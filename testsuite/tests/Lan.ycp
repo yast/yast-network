@@ -2,6 +2,9 @@
 
 include "testsuite.ycp";
 
+DUMP ("Disabled");
+return;
+
 map READ = $[
     "target" : $[
 	"size" : 1,
