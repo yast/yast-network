@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar 16 15:09:36 CET 2004 - msvec@suse.cz
+
+- offer possibility to change configuration name (#36147)
+- fixed kernel module selection
+- 2.9.14
+
+-------------------------------------------------------------------
 Tue Mar 16 12:35:26 CET 2004 - msvec@suse.cz
 
 - better device selection for installation (#35624)

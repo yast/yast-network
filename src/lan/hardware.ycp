@@ -75,7 +75,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     }
     string realtype = RealType(type, hotplug);
     string device = Lan::device;
-    string default_device = device;
+    string default_device = Lan::nm_name;
 
     list<string> device_types = [ "arc", /* FIXME */ "dummy", "eth", "fddi", "myri", "tr", /* FIXME */ "usb", "wlan" ];
 
@@ -153,8 +153,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     if(!contains(devices, device)) devices = prepend(devices, device);
 
     term DeviceNumberBox = `ReplacePoint(`id(`rnum),
-	/* Combobox label */
-	`ComboBox(`id(`num), `opt(`hstretch), _("D&evice Number"), devices));
+	/* TextEntry label */
+	`TextEntry(`id(`num), `opt(`hstretch), _("&Configuration Name"), Lan::nm_name));
 
     /* TextEntry label */
     term MTUBox = `TextEntry(`id(`mtu), _("M&aximum Transfer Unit (MTU)"), mtu);
@@ -167,13 +167,13 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	`VBox(
 	    `VSpacing(0.5),
 	    /* Frame label */
-	    `Frame(_("Network &interface"),`VBox(
+	    `Frame(_("Network &Configuration"),`VBox(
 		`VSpacing(0.2),
 		`HBox(
 		    `HSpacing(0.5),
 		    `ComboBox(`id(`dev), `opt(`hstretch, `notify),
 			/* ComboBox label */
-			_("Network &device"), BuildTypesList(device_types, type)),
+			_("&Device Type"), BuildTypesList(device_types, type)),
 		    `HSpacing(1.5),
 		    DeviceNumberBox,
 		    `HSpacing(0.5)
@@ -203,7 +203,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    `VBox(
 		`VSpacing(0.5),
 		/* Frame label */
-		`Frame(_("Network &Interface"),`VBox(
+		`Frame(_("Configuration Name"),`VBox(
 		    `VSpacing(0.2),
 		    `HBox(
 			`HSpacing(0.9),
@@ -244,12 +244,21 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    `HSpacing(2),
 	    `VBox(
 		`VSpacing(0.5),
-		`Left(`HBox(
-		    /* Label text */
-		    `Label(_("Network Device")),
-		    `HSpacing(0.5),
-		    `Label(`opt(`outputField), device_name(realtype, Lan::device))
-		)),
+		`Left(`HSquash(`Left(`VBox(
+		    `HBox(
+			/* Label text */
+			`HWeight(1, `Right(`Label(_("Configuration Name")))),
+			`HSpacing(0.5),
+			`HWeight(1, `Left(`Label(`opt(`outputField), device_name(realtype, Lan::device))))
+		    ),
+		    `VSpacing(0.5),
+		    `HBox(
+			/* Label text */
+			`HWeight(1, `Right(`Label(_("Hardware Name")))),
+			`HSpacing(0.5),
+			`HWeight(1, `Left(`Label(`opt(`outputField), Lan::nm_name)))
+		    )
+		)))),
 		`VSpacing(1.5),
 		KernelBox,
 		`VSpacing(0.4),
@@ -257,8 +266,9 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		`VSpacing(1.5),
 		WirelessButton,
 		`VSpacing(0.5)
-		),
-	    `HSpacing(2));
+	    ),
+	    `HSpacing(2)
+	);
 
     }
 
@@ -275,7 +285,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     ChangeWidgetIfExists(`id(`usb), `Enabled, (hotplug == "usb" || hotplug == "") && type != "dummy");
     ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hotplug == "pcmcia" || hotplug == "") && type != "dummy");
     ChangeWidgetIfExists(`id(`wire), `Enabled, type == "wlan");
-    ChangeWidgetIfExists(`id(`num), `Value, device);
+    // ChangeWidgetIfExists(`id(`num), `Value, device);
 
     any ret = nil;
     while(true) {
@@ -318,10 +328,10 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hotplug == "pcmcia" || hotplug == "") && type != "dummy");
 	    ChangeWidgetIfExists(`id(`wire), `Enabled, type == "wlan");
 
-	    list devices = Lan::FreeDevices(realtype);
-	    default_device = (string) devices[0]:"";
-	    /* Combobox label */
-	    UI::ReplaceWidget(`id(`rnum), `ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"), devices));
+	    // list devices = Lan::FreeDevices(realtype);
+	    // default_device = (string) devices[0]:"";
+	    /* TextEntry label */
+	    // UI::ReplaceWidget(`id(`rnum), `TextEntry(`id(`num), `opt(`hstretch), _("&Configuration Name"), Lan::nm_name));
 
 	    if(Arch::s390) {
 		if(type == "tr" || type == "eth") modul = "lcs";

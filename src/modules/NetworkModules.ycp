@@ -71,7 +71,7 @@ global define boolean Read() {
     list<string> allfiles = (list<string>) SCR::Dir(.sysconfig.hardware.section);
     if(allfiles == nil) allfiles = [];
     list<string> modules = filter(string file, allfiles, {
-	return !regexpmatch(file, "[\.~]");
+	return !regexpmatch(file, "[~]");
     });
     y2debug("modules=%1", modules);
 

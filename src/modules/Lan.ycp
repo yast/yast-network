@@ -86,7 +86,7 @@ boolean write_only = false;
 map hw = $[];
 
 /* NetworkModules:: name */
-string nm_name = "";
+global string nm_name = "";
 
 /**
  * Abort function
@@ -433,6 +433,14 @@ global define void SelectHW(integer which) {
     string mac = hw["mac"]:"";
     string busid = hw["busid"]:"";
 
+    if(busid != nil && busid != "") {
+	nm_name = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
+    }
+    else {
+	y2error("No HW info found: %1", device);
+	// nm_name = "";
+    }
+
     /* eth, tr */
     if(mac != nil && mac != "")
 	device = "id-" + hw["mac"]:"";
@@ -442,14 +450,6 @@ global define void SelectHW(integer which) {
     /* dummy */
     else
 	y2milestone("No detailed HW info: %1", device);
-
-    if(busid != nil && busid != "") {
-	nm_name = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
-    }
-    else {
-	y2error("No HW info found: %1", device);
-	nm_name = "";
-    }
 
     y2security("hw=%1", hw);
     y2milestone("device=%1", device);
@@ -509,12 +509,14 @@ global define boolean Select(string dev) {
 
     /* dev=="" -> Add */
     if(dev == "") {
+
 	type = "eth";
-	nm_name = "";
+	device = NetworkDevices::GetFreeDevice(type);
+
 	// FIXME: MOD AddModule(type);
 	NetworkModules::AddM();
 
-	device = NetworkDevices::GetFreeDevice(type);
+	nm_name = sformat("unknown-%1", device);
 
 	/* FIXME: alias: how to prefill new alias? */
 	alias = "";
