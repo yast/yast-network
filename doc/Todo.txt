@@ -22,9 +22,6 @@ TOCHECK:
     as default or there are no modems at all, display a question wheather
     user wants to delete also the provider.
 
-- #10739 ???
-- #13450 ???
-
 - autodetection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
     DetectionIP() { if detection_started; run ping; }
 
@@ -37,7 +34,49 @@ TOCHECK:
 
   SSH_CLIENT	Warn
 
+#19910: builtin IBM cards?
+#21009: NFS & hostname?
+#23332: s390 devices support
+#24836: ssh installation?
+#24928: wlan|pcmcia switch
+#25106: ??
+#25432: provider & `immediate
+#25491: ??
+#25506: ??
+#25739: ??
+#13450: default gateway in first lan dialog
+#26217: fix ISA card adding
+#16131: IP-masquerading
+#17346: ethtool
+#17564: provider0
+#17631: ??
+#18256: start mail after ISDN
+#18791: proxy: input checking
+#22739: ifcfg-usb-usb
+#22802: better message for broken fields (eg. domain) -- Checker
+#23491: ??
+#23977: ??
+#24000: edit dsl HW goes through provider again (default provider?)
+#24803: better helps for proxy
+#24882: rename ifaces when deleted
+#25220: winmodems support
+
 TOSORT:
+
+- provider: use INS file (#25774)
+
+- all: update /etc/hosts (#22825)
+
+- dsl: better proposal (#23662)
+- dsl: detect hardware (#24462)
+
+- lan: wireless keys check (#24839)
+- lan (all): temporary interface disable (#24926)
+
+- proxy: use immediately (#23728)
+
+- provider: warn if deleting default provider for modem|isdn|dsl (#17497)
+- provider: delete default route if removed (#10739)
 
 - lan: check for myrinet driver presence [warning + info]
 
@@ -194,19 +233,13 @@ DetectionStop() {
 - compare with old lan
 - where is this used?
 
-
-MODULES:
+Modules:
 - see the "*ISDN*" paper
 
 MODULES=$[];	-> Lan.ycp
 DELETED=[];	-> Lan.ycp
-ReadModules();	->M
-WriteModules();	<-D,M
+ReadModules();	-> M
+WriteModules();	<- D,M
 Select: C,M -> global vars
 AddEdit: global vars -> C,M
 Delete: global vars -> C,M,D
-
-DSL Device:
-alias neco eth0
-touch ifcfg-eth0
-rcnetwork start
