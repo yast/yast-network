@@ -54,9 +54,9 @@
     {
         ret = $[
 		// this is a heading
-		"rich_text_title" :       _("Remote Administration"),
+		"rich_text_title" :       _("VNC Remote Administration"),
 		// this is a menu entry
-		"menu_title"      :       _("&Remote Administration"),
+		"menu_title"      :       _("VNC &Remote Administration"),
 		"id"              :       "admin_stuff"
 	];
     }

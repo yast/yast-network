@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Sep 02 14:36:21 CEST 2003 - arvin@suse.de
+
+- better text for vnc remote administration (bug #29717)
+
+-------------------------------------------------------------------
 Tue Sep  2 07:11:45 CEST 2003 - nashif@suse.de
 
 - fixed testsuite

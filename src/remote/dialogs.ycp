@@ -37,7 +37,8 @@ global define symbol RemoteMainDialog() ``{
     ));
 
     /* Ramote Administration dialog help */
-    string help = _("Here you can allow remote administration of the system.");
+    string help = _("Here you can allow VNC Remote Administration of the
+system. Use any VNC view to connect to the system.");
 
     Wizard::SetContentsButtons(caption, contents, help,
 	    Label::BackButton(), Label::FinishButton());
