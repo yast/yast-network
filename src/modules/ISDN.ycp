@@ -643,7 +643,8 @@ global define boolean Delete(string item) ``{
 	y2error("Key not found: %1", item);
 	return false;
     }
-
+    if (type == "net")
+	interface = lookup(typemap, num, $[]);
     type = typ;
     device = num;
     operation = `delete;
@@ -775,7 +776,17 @@ global define boolean Commit() ``{
         y2debug("op testdev");
 
     } else if(operation == `delete) {
-
+	if (type == "net") {
+	    string p = interface["PROTOCOL"]:"";
+	    string devnam = "";
+	    if (p == "syncppp")
+		devnam = sformat("ippp%1", device);
+	    else if (p == "rawip")
+		devnam = sformat("isdn%1", device);
+	    else
+		devnam = sformat("unknown%1", device);
+	    Firewall::Change(devnam, false);
+	}
 	DeleteDevice(type, device);
 
 	if (type == "contr")

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sun Sep 21 09:32:05 CEST 2003 - kkeil@suse.de
+
+- fix Firewall setting lookup (#31322)
+- if the interface was deleted, delete also the firewll entry
+
+-------------------------------------------------------------------
 Fri Sep 19 21:32:39 CEST 2003 - msvec@suse.cz
 
 - fixed default baud rate value (#31442)

@@ -199,6 +199,7 @@ global define symbol interface_dialog() ``{
     boolean firewall = lookup(ISDN::interface, "FIREWALL", "yes") == "yes";
     string fwqm = lookup(ISDN::interface, "fwqm", "");
     boolean FirewallQuickmode = true;
+    string devstr = sformat("%1%2", syncppp ? "ippp" : "isdn", ISDN::device);
 
     if (fwqm == "no")
 	FirewallQuickmode = false;
@@ -209,8 +210,6 @@ global define symbol interface_dialog() ``{
 	ISDN::interface = remove(ISDN::interface, "fwqm");
     y2debug("FirewallQuickmode=%1",FirewallQuickmode);
 
-    string devstr = sformat("%1%2", syncppp ? "ippp" : "isdn",
-				ISDN::device);
     /* DIALOG TEXTS */
     string caption = sformat("%1 %2 interface %3", ISDN::operation == `editif ? "Edit" : "Add",
 			syncppp ? "syncppp" : "rawip", devstr);
