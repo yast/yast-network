@@ -9,6 +9,7 @@ Bugs:
 - modem|dsl: info popup + run|stop kinternet, if DISPLAY and (not)running
 
 2sort:
+- check already present default route (partially #11132)
 - dsl: add/edit/delete #15301
 - check IP presence #9951
 - cable modems support? what is missing? [suse-network]
@@ -34,6 +35,7 @@ Bugs:
 - include public_html/network
 
 Enhancements:
+- ip: bits2netmask, netmask2bits
 - dns: xauth agent </dev/null (and some more work)
 - dns: restart only DHCP devices
 - routing: restart only routing
