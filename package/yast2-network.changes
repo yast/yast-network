@@ -5,6 +5,7 @@ Thu Sep  5 15:06:00 CEST 2002 - kkeil@suse.de
 - don't start smpppd/kinternet in save only mode (#18831)
 - set default STARTMODE for interface depending on STARTMODE
   of hardware
+- 2.6.25
 
 -------------------------------------------------------------------
 Wed Sep  4 12:10:30 CEST 2002 - msvec@suse.cz

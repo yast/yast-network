@@ -22,6 +22,9 @@ Bugs:
 - chmod 0700 ~/.wgetrc? asi neni potreba ...
 - sigi&isdn: http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html
 
+#18840 -> FIREWALL=yes|no to each ifcfg-XXX
+- this way it could be done also for modems
+
 Adding network device mini-howto: grep for "escon" for example.
 
 DOC:
