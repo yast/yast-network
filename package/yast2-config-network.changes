@@ -1,3 +1,4 @@
+- enable DHCP checkboxes only in case of any DHCP device (#13223)
 - better modems summary and overview
 - prepared for the overall network config
 - properly fix substring lookup (#13735)

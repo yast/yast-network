@@ -15,8 +15,7 @@ BuildArchitectures:	noarch
 Summary:	Configuration of network
 
 %description
-This package is a part of YaST2. It contains the necessary scripts to
-configure network.
+-
 
 @PREP@
 
@@ -28,11 +27,11 @@ configure network.
 
 %files
 %defattr(-,root,root)
-%dir @YAST2DIR@/include/network
-@YAST2DIR@/include/network/*
-@YAST2DIR@/clients/*.ycp
-@YAST2DIR@/modules/*.ycp
-@YAST2DIR@/menuentries/menuentry_*.y2cc
-@YAST2DIR@/scrconf/*.scr
-@YAST2DIR@/netcards.ycp
-%doc @DOCDIR@
+%dir @yncludedir@/network
+@yncludedir@/network/*
+@clientdir@/*.ycp
+@moduledir@/*.ycp
+@menudir@/menuentry_*.y2cc
+@scrconfdir@/*.scr
+@yast2dir@/netcards.ycp
+%doc @docdir@

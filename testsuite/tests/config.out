@@ -46,9 +46,9 @@ Dir	.network.value."/etc/sysconfig/network/ifcfg-eth1": ["IPADDR"]
 Read	.network.value."/etc/sysconfig/network/ifcfg-eth1".IPADDR "1"
 Return	true
 Dump	eth|tr=$["eth":$["0":$["IPADDR":"0"], "1":$["IPADDR":"1"]]]
-Dump	AnyDHCPDevice
-Return	true
-Return	false
-Return	false
-Return	true
-Return	true
+Dump	LocateDevices
+Return	["eth0"]
+Return	[]
+Return	[]
+Return	["eth1"]
+Return	["tr1"]

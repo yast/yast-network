@@ -23,6 +23,7 @@
 textdomain "network";
 
 import "DNS";
+import "Lan";
 import "Wizard";
 
 /* The main () */
@@ -42,6 +43,7 @@ global define boolean Modified() ``{
 /* main ui function */
 
 DNS::Read();
+Lan::Read();
 Wizard::CreateDialog();
 Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), FinishButtonLabel()));
 any ret = DNSMainDialog();

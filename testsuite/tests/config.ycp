@@ -42,16 +42,16 @@ DUMP(sformat("ppp|eth=%1",CONFIG));
 TEST(``(ReadConfig("eth|tr")), [READ], nil);
 DUMP(sformat("eth|tr=%1",CONFIG));
 
-DUMP("AnyDHCPDevice");
+DUMP("LocateDevices");
 CONFIG=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "dhcp" ]]];
-TEST(``(AnyDHCPDevice()), [], nil);
+TEST(``(LocateDevices("BOOTPROTO", "dhcp")), [], nil);
 CONFIG=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "" ]]];
-TEST(``(AnyDHCPDevice()), [], nil);
+TEST(``(LocateDevices("BOOTPROTO", "dhcp")), [], nil);
 CONFIG=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "static" ]]];
-TEST(``(AnyDHCPDevice()), [], nil);
+TEST(``(LocateDevices("BOOTPROTO", "dhcp")), [], nil);
 CONFIG=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "static" ], "1" : $[ "BOOTPROTO" : "dhcp"]]];
-TEST(``(AnyDHCPDevice()), [], nil);
+TEST(``(LocateDevices("BOOTPROTO", "dhcp")), [], nil);
 CONFIG=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "static" ]], "tr" : $["1" : $[ "BOOTPROTO" : "dhcp"]]];
-TEST(``(AnyDHCPDevice()), [], nil);
+TEST(``(LocateDevices("BOOTPROTO", "dhcp")), [], nil);
 
 }

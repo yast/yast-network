@@ -182,7 +182,6 @@ global define boolean Read() ``{
  * Only write configuration without starting any init scripts and SuSEconfig
  * @return true on success
  */
-
 global define boolean WriteOnly()``{
        WriteConfig();
        WriteModulesConf();
@@ -482,6 +481,16 @@ global define boolean Commit() ``{
     modified = true;
     operation = nil;
     return true;
+}
+
+/**
+ * Check if any device is configured with DHCP
+ * @return true if any DHCP device is configured
+ */
+global define boolean AnyDHCPDevice() ``{
+    list devs = LocateDevices("BOOTPROTO", "dhcp");
+    if(size(devs) > 0) return true;
+    return false;
 }
 
 /* EOF */
