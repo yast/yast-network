@@ -1,0 +1,97 @@
+/**
+ * File:	clients/dsl_proposal.ycp
+ * Package:	Network configuration
+ * Summary:	DSL configuration proposal
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("DSL proposal started");
+y2milestone("Arguments: %1", WFM::Args());
+
+import "DSL";
+import "Popup";
+import "Progress";
+
+include "network/routines.ycp";
+
+string func = (string) WFM::Args(0);
+map param = (map) WFM::Args(1);
+map ret = $[];
+
+/* create a textual proposal */
+if(func == "MakeProposal") {
+    string proposal = "";
+    string warning = nil;
+    symbol warning_level = nil;
+    boolean force_reset = param["force_reset"]:false;
+
+    if(force_reset || !DSL::proposal_valid) {
+	DSL::proposal_valid = true;
+	Progress::off();
+	/* Popup text */
+	BusyPopup(_("Detecting DSL devices..."));
+	DSL::Read();
+	DSL::Propose();
+	BusyPopupClose();
+    }
+    list sum = DSL::Summary(false);
+    proposal = sum[0]:"";
+    Progress::on();
+
+    ret = $[
+	"preformatted_proposal" : proposal,
+	"warning_level" : warning_level,
+	"warning" : warning,
+    ];
+}
+/* run the module */
+else if(func == "AskUser") {
+    map stored = DSL::Export();
+    symbol result = (symbol) WFM::CallFunction("dsl", [.propose]);
+    if(result != `next) DSL::Import(stored);
+    y2debug("stored=%1", stored);
+    y2debug("result=%1", result);
+    ret = $[ "workflow_sequence" : result ];
+}
+/* create titles */
+else if(func == "Description") {
+    ret = $[
+	/* RichText label */
+	"rich_text_title" : _("DSL Connections"),
+	/* Menu label */
+	"menu_title" : _("&DSL Connections"),
+	"id" : "dsl",
+    ];
+}
+/* write the proposal */
+else if(func == "Write") {
+    if(PackagesInstall(DSL::Packages()) != `next) {
+	/* Popup text */
+	Popup::Error("Required packages installation failed.
+DSL configuration cannot be saved.");
+	y2error("Packages installation failure, not saving");
+    }
+    else
+	DSL::Write();
+}
+/* unknown function */
+else {
+    y2error("unknown function: %1", func);
+}
+
+/* Finish */
+y2debug("ret=%1",ret);
+y2milestone("DSL proposal finished");
+y2milestone("----------------------------------------");
+return ret;
+
+/* EOF */
+}

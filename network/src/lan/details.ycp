@@ -1,0 +1,135 @@
+/**
+ * File:	include/network/lan/details.ycp
+ * Package:	Network configuration
+ * Summary:	Network card details dialogs
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "CWM";
+import "Label";
+import "Lan";
+import "NetworkConfig";
+import "Popup";
+import "Wizard";
+
+include "network/routines.ycp";
+include "network/widgets.ycp";
+
+/**
+ * Dialog for detailed network card options
+ * @return dialog result
+ */
+define any DetailsDialog() {
+
+    ScreenName("lan-details");
+
+    /* Details dialog caption */
+    string caption = _("Detailed Network Card Settings");
+
+    /* Details dialog help 1 */
+    string help = _("<p>Configure the detailed network card settings here.</p>") +
+
+    /* Details dialog help 2 */
+    _("<p>You can set the maximum transfer unit (<b>MTU</b>) of an interface.</p>") +
+
+    /* Details dialog help 3 */
+_("<p><b>Device Activation</b> may either happen during boot or manually
+with tools like <b>ifup</b>.</p>") +
+
+    /* Details dialog help 3 */
+_("<p>Ethernet devices can detect if the cable is plugged in and wireless
+devices can detect signal strength. In such cases you can set
+Device Activation to If Plugged In. <b>ifplugd</b> will be then used to control
+the device.</p>") +
+
+    widget_descr["USERCONTROL", "help"]:"";
+
+    string mtu = Lan::mtu;
+    string startmode = Lan::startmode;
+    boolean usercontrol = Lan::usercontrol;
+
+    list StartModes = [
+	/* ComboBox item (device start mode) */
+	`item(`id("onboot"), _("At Boot Time"), startmode == "onboot"),
+	/* ComboBox item (device start mode) */
+	`item(`id("ifplugd"), _("If Plugged In"), startmode == "ifplugd"),
+	/* ComboBox item (device start mode) */
+	`item(`id("hotplug"), _("When Hotplugged"), startmode == "hotplug"),
+	/* ComboBox item (device start mode) */
+	`item(`id("manual"), _("Manually"), startmode == "manual"),
+	/* ComboBox item (device start mode) */
+	`item(`id("off"), _("Disabled"), startmode == "off"),
+    ];
+
+    list<map> widgets = CWM::CreateWidgets (
+	["USERCONTROL",],
+	widget_descr);
+
+    /* Details dialog contents */
+    term contents = `HBox(
+	`HSpacing(6),
+	/* Frame label */
+	`Frame(_("Detailed Network Card Settings"), `HBox(`HSpacing(2), `VBox(
+	    `VSpacing(1),
+	    /* TextEntry label */
+	    `Left(`TextEntry(`id(`mtu), _("&MTU"), mtu)),
+	    `VSpacing(0.5),
+	    /* ComboBox label */
+	    `Left(`ComboBox(`id(`startmode), _("&Device Activation"), StartModes)),
+	    `VSpacing(0.5),
+	    // 0 is index to CreateWidgets... ugly
+	    `Left(widgets[0, "widget"]:`Empty ()),
+	    `VSpacing(1)
+	    ), `HSpacing(2))),
+	`HSpacing(6)
+    );
+
+    Wizard::SetContentsButtons(caption, contents, help,
+	    Label::BackButton(), Label::OKButton());
+
+    UI::ChangeWidget (`id ("USERCONTROL"), `Value, usercontrol);
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* back */
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    /* check* */
+	    break;
+	}
+	else {
+	    y2error("Unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+
+    /* update the configuration */
+    if(ret == `next) {
+	Lan::startmode = (string) UI::QueryWidget(`id(`startmode), `Value);
+	Lan::usercontrol = (boolean) UI::QueryWidget (`id ("USERCONTROL"), `Value);
+	Lan::mtu = (string) UI::QueryWidget(`id(`mtu), `Value);
+    }
+
+    return ret;
+}
+
+
+/* EOF */
+}

@@ -1,0 +1,397 @@
+/**
+ * File:	include/network/hardware.ycp
+ * Package:	Network configuration
+ * Summary:	Hardware routines
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * All hardware settings are stored in a global variable Hardware.
+ *
+ * If you want to add a new HW type, you have to do the following steps:
+ * - add the type to ReadHardware
+ * - add the type to SelectHardware
+ * - add the type to ControllerType
+ */
+
+{
+
+textdomain "network";
+
+import "Arch";
+import "Confirm";
+import "Map";
+
+define string DistinguishedName(string name, map hwdevice) {
+    if(hwdevice["sysfs_bus_id"]:"" != "")
+	return sformat("%1 (%2)", name, hwdevice["sysfs_bus_id"]:"");
+    return name;
+}
+
+/**
+ * Extract the device 'name'
+ * @param hwdevice hardware device
+ * @return name consisting of vendor and device name
+ */
+define string DeviceName(map hwdevice) {
+    string delimiter = " "; // "\n";
+    string model = "";
+    string vendor = "";
+    string dev = "";
+
+    model = hwdevice["model"]:"";
+    if(model != "" && model != nil) return model;
+
+    vendor = hwdevice["sub_vendor"]:"";
+    dev = hwdevice["sub_device"]:"";
+
+    if((vendor == "") || (dev == "")) {
+	vendor = hwdevice["vendor"]:"";
+	dev = hwdevice["device"]:"";
+    }
+
+    if(vendor != "")
+	return vendor + delimiter + dev;
+    else
+	return dev;
+}
+
+/**
+ * Simple convertor from subclass to controller type.
+ * @param hwdevice map with card info containing "subclass"
+ * @return short device name
+ * @example ControllerType(<ethernet controller map>) -> "eth"
+ */
+define string ControllerType(map hwdevice) {
+
+    if(hwdevice["subclass"]:"" == "Modem") return "modem";
+    if(hwdevice["subclass"]:"" == "ISDN") return "isdn";
+    if(hwdevice["subclass"]:"" == "DSL") return "dsl";
+
+    integer subclass_id = hwdevice["sub_class_id"]:-1;
+
+    /* Network controller */
+    if(hwdevice["class_id"]:-1 == 2) {
+	if(subclass_id == 0) return "eth";
+	else if(subclass_id == 1) return "tr";
+	else if(subclass_id == 2) return "fddi";
+	else if(subclass_id == 3) return "atm";
+	else if(subclass_id == 4) return "isdn";
+	else if(subclass_id == 0x81) return "myri";
+	else if(subclass_id == 0x82) return "wlan";
+	else if(subclass_id == 0x83) return "xp";
+	else if(subclass_id == 0x86) return "qeth";
+	else if(subclass_id == 0x87) return "hsi";
+	else if(subclass_id == 0x88) return "ctc";
+	else if(subclass_id == 0x89) return "lcs";
+	else if(subclass_id == 0x8E) return "ficon";
+	else if(subclass_id == 0x8F) return "escon";
+	else if(subclass_id == 0x90) return "iucv";
+	else if(subclass_id == 0x91) return "usb"; // #22739
+	else if(subclass_id == 0x80) {
+	    /* Nothing was found */
+	    y2error("Unknown network controller type: %1", hwdevice);
+	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
+	    return "";
+	}
+	else {
+	    /* Nothing was found */
+	    y2error("Unknown network controller type: %1", hwdevice);
+	    return "";
+	}
+
+    }
+    /* Communication controller */
+    if(hwdevice["class_id"]:-1 == 7) {
+	if(subclass_id == 3) return "modem";
+	else if(subclass_id == 0x80) {
+	    /* Nothing was found */
+	    y2error("Unknown network controller type: %1", hwdevice);
+	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
+	    return "";
+	}
+	else {
+	    /* Nothing was found */
+	    y2error("Unknown network controller type: %1", hwdevice);
+	    return "";
+	}
+
+    }
+    /* Network Interface */
+    else if(hwdevice["class_id"]:-1 == 0x107) {
+	if(subclass_id == 0) return "lo";
+	else if(subclass_id == 1) return "eth";
+	else if(subclass_id == 2) return "tr";
+	else if(subclass_id == 3) return "fddi";
+	else if(subclass_id == 4) return "ctc";
+	else if(subclass_id == 5) return "iucv";
+	else if(subclass_id == 6) return "hsi";
+	else if(subclass_id == 7) return "qeth";
+	else if(subclass_id == 8) return "escon";
+	else if(subclass_id == 9) return "myri";
+	else if(subclass_id == 10) return "wlan";
+	else if(subclass_id == 0x80) {
+	    /* Nothing was found */
+	    y2error("Unknown network interface type: %1", hwdevice);
+	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
+	    return "";
+	}
+	else if(subclass_id == 0x81) return "sit";
+	else {
+	    /* Nothing was found */
+	    y2error("Unknown network interface type: %1", hwdevice);
+	    return "";
+	}
+    }
+    else if(hwdevice["class_id"]:-1 == 0x102)
+	return "modem";
+    else if(hwdevice["class_id"]:-1 == 0x103)
+	return "isdn";
+    else if(hwdevice["class_id"]:-1 == 0x114)
+	return "dsl";
+
+    /* Nothing was found */
+    y2error("Unknown controller type: %1", hwdevice);
+    return "";
+}
+
+/**
+ * Read HW information
+ * @param hwtype type of devices to read (netcard|modem|isdn)
+ * @return true if success
+ */
+define list<map> ReadHardware(string hwtype) {
+    list<map> Hardware = [];
+
+    y2debug("hwtype=%1", hwtype);
+
+    integer num = 0;
+    list paths = [];
+    list allcards = [];
+
+    map<string,path> hwtypes = $[
+	"netcard"	: .probe.netcard,
+	"modem"		: .probe.modem,
+	"isdn"		: .probe.isdn,
+	"dsl"		: .probe.dsl,
+    ];
+
+    map<string,string> hwstrings = $[
+	/* Confirmation: label text (detecting hardware: xxx) */
+	"netcard"	: _("Network Cards"),
+	/* Confirmation: label text (detecting hardware: xxx) */
+	"modem"		: _("Modems"),
+	/* Confirmation: label text (detecting hardware: xxx) */
+	"isdn"		: _("ISDN Cards"),
+	/* Confirmation: label text (detecting hardware: xxx) */
+	"dsl"		: _("DSL Devices"),
+    ];
+
+    /* Confirmation: label text (detecting hardware: xxx) */
+    string hwstring = _("All Network Devices");
+    if(haskey(hwstrings, hwtype)) hwstring = hwstrings[hwtype]:"";
+    if(!Confirm::Detection(hwstring)) return [];
+
+    /* read the corresponding hardware */
+    if(haskey(hwtypes, hwtype))
+	allcards = (list) SCR::Read(hwtypes[hwtype]:nil);
+    else if(hwtype == "all" || hwtype == "" || hwtype == nil)
+	maplist(path v, (list<path>) Map::Values(hwtypes), {
+	    allcards = merge(allcards, (list) SCR::Read(v));
+	});
+    else {
+	y2error("unknown hwtype: %1", hwtype);
+	return [];
+    }
+
+    y2debug("allcards=%1", allcards);
+    if(allcards == nil) {
+	y2error("hardware detection failure");
+	allcards = [];
+    }
+
+    /* fill in the hardware data */
+    maplist(map card, (list<map>) allcards, {
+	map one = $[];
+
+	/* common stuff */
+	map resource = card["resource"]:$[];
+	string controller = ControllerType(card);
+	one["name"] = DeviceName(card);
+	one["type"] = controller;
+	one["unique"] = card["unique_key"]:"";
+	one["requires"] = card["requires"]:[];
+	one["num"] = num;
+
+	/* Temporary solution for s390: #40587 */
+	if(Arch::s390 ()) one["name"] = DistinguishedName(one["name"]:"", card);
+
+	/* modem */
+	if(controller == "modem") {
+	    one["device_name"] = card["dev_name"]:"";
+	    one["drivers"] = card["drivers"]:[];
+	    one["speed"] = resource["baud", 0, "speed"]:57600;
+	    one["init1"] = resource["init_strings", 0, "init1"]:"";
+	    one["init2"] = resource["init_strings", 0, "init2"]:"";
+	    one["pppd_options"] = resource["pppd_option", 0, "option"]:"";
+	}
+	/* isdn card */
+	else if(controller == "isdn") {
+	    map resource = card["resource"]:$[];
+	    list drivers = card["isdn"]:[];
+	    one["drivers"] = drivers;
+	    one["sel_drv"] = 0;
+	    one["bus"] = card["bus"]:"";
+	    one["io"] = resource["io", 0, "start"]:0;
+	    one["irq"] = resource["irq", 0, "irq"]:0;
+	}
+	/* dsl card */
+	else if(controller == "dsl") {
+	    map driver_info = card["dsl", 0]:$[];
+	    map<string, string> translate_mode = $[
+		"capiadsl": "capi-adsl",
+		"pppoe": "pppoe",
+		];
+	    string m = driver_info["mode"]:"";
+	    one["pppmode"] = translate_mode[m]:m;
+	    // driver_info["name"]:"" has no use here??
+	}
+	/* treat the rest as a network card */
+	else if(controller != "") {
+	    list drivers = card["drivers"]:[];
+	    if(size(drivers) < 0) y2error("Not enough drivers");
+	    map driver = drivers[0]:$[];
+	    one["active"] = driver["active"]:false;
+	    list modules = driver["modules", 0]:[];
+	    one["module"] = modules[0]:"";
+	    one["options"] = modules[1]:"";
+
+	    // Wireless Card Features
+	    // TODO adjust to reality
+	    one["wl_auth_modes"] = card["wl_auth_modes"]:nil;
+	    one["wl_channels"] = card["wl_channels"]:nil;
+	    one["wl_bitrates"] = card["wl_bitrates"]:nil;
+
+	    /* FIXME: this should be also done for modems and others */
+	    /* FIXME: #13571 */
+	    string hp = card["hotplug"]:"";
+	    if(hp == "pcmcia" || hp == "cardbus")
+		one["hotplug"] = "pcmcia";
+	    else if(hp == "usb")
+		one["hotplug"] = "usb";
+
+	    /* store the BUS type */
+	    string bus = card["bus_hwcfg"]:(card["bus"]:"");
+	    if(bus == "PCI") bus = "pci";
+	    else if(bus == "USB") bus = "usb";
+	    one["bus"] = bus;
+
+	    one["busid"] = card["sysfs_bus_id"]:"";
+	    one["mac"] = resource["hwaddr", 0, "addr"]:"";
+	    // is the cable plugged in? nil = don't know
+	    one["link"] = resource["link", 0, "state"]:nil;
+	}
+
+	y2debug("found device: %1", one);
+	if(controller != "") {
+	    Hardware[size(Hardware)] = one;
+	    num = num + 1;
+	}
+	else {
+	    y2error("Unknown controller: %1", card);
+	}
+    });
+
+    y2debug("Hardware=%1", Hardware);
+    return Hardware;
+}
+
+/**
+ * Select the given hardware item or clean up structures (item == nil)
+ * @param which item to be chosen
+ */
+map FindHardware (list Hardware, integer which) {
+    map sel = $[];
+
+    if(which != nil) {
+	sel = Hardware[which]:$[];
+
+	if(which > size(Hardware) || which < 0)
+	    y2error("Item not found in Hardware: %1 (%2)", which, size(Hardware));
+    }
+    return sel;
+}
+
+/**
+ * Select the given hardware item
+ * SelectHardware is a "virtual method", that is named SelectHW in "subclasses"
+ * like Lan and Modem.
+ * @param sel item to be chosen
+ */
+map SelectHardwareMap (map sel) {
+    /* common stuff */
+    name = sel["name"]:"";
+    type = sel["type"]:"eth";
+    hotplug = sel["hotplug"]:"";
+
+    unique = sel["unique"]:"";
+    Requires = sel["requires"]:[];
+    // #44977: Requires now contain the appropriate kernel packages
+    // but they are handled differently due to multiple kernel flavors
+    // (see Package::InstallKernel)
+    // Leave only those not starting with "kernel".
+    Requires = filter (string r, Requires, ``( find (r, "kernel") != 0 ));
+    y2milestone ("requires=%1", Requires);
+
+    // FIXME: devname
+    hotplug = "";
+
+    return sel;
+}
+
+    /* modem * /
+    if(type == "modem") {
+	Init1 = sel["init1"]:"";
+	Init2 = sel["init2"]:"";
+	Device = sel["device_name"]:"";
+	BaudRate = sel["speed"]:57600;
+	PPPDoptions = sel["pppd_options"]:"";
+	Requires = sel["requires"]:[];
+	type = "modem";
+    }
+    /* isdn card * /
+    else if(type == "isdn") {
+	/* FIXME: ISDN * /
+	y2error("isdn not ready yet");
+    }
+    /* dsl card * /
+    else if(type == "dsl") {
+	/* FIXME: DSL HW * /
+	pppmode = sel["pppmode"]:"capi-adsl";
+	startmode = sel["startmode"]:"manual";
+    }
+    /* treat the rest as a network card * /
+    else {
+	/* don't make modprobe.conf entries for hotpluggable HW (29547) * /
+	if(hotplug == "") {
+	    Module["module"] = sel["module"]:"";
+	    Module["options"] = sel["options"]:"";
+	}
+	else
+	    y2debug("HOTPLUG(%1) -> ignoring modprobe.conf", hotplug);
+    }
+
+    device = GetFreeDevice(NetworkDevices::RealType(type, hotplug));
+}
+*/
+
+/**
+ * Select the given hardware item or clean up structures (item == nil)
+ * @param which item to be chosen
+ */
+map SelectHardware (list Hardware, integer which) {
+    return SelectHardwareMap (FindHardware (Hardware, which));
+}
+
+/* EOF */
+}

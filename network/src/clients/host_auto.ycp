@@ -1,0 +1,131 @@
+/**
+ * File:	clients/host_auto.ycp
+ * Package:	Network configuration
+ * Summary:	Client for autoinstallation
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * This is a client for autoinstallation. It takes its arguments,
+ * goes through the configuration and return the setting.
+ * Does not do any changes to the configuration.
+ */
+
+/**
+ * @param first a map of host settings
+ * @return boolean success of operation
+ * @example map mm = $[ "FAIL_DELAY" : "77" ];
+ * @example map ret = WFM::CallFunction("host_auto", [ mm ]);
+ */
+
+{
+
+textdomain "network";
+
+y2milestone("----------------------------------------");
+y2milestone("Host auto started");
+
+import "Host";
+import "Label";
+import "Wizard";
+
+include "network/services/host.ycp";
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+define boolean Modified() {
+    return Host::modified;
+}
+
+any ret = nil;
+string func = "";
+map param = $[];
+
+/* Check arguments */
+if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
+    func = (string) WFM::Args(0);
+    if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
+	param = (map) WFM::Args(1);
+}
+y2debug("func=%1", func);
+y2debug("param=%1", param);
+
+/* Create a summary*/
+if(func == "Summary") {
+    ret = Host::Summary();
+}
+/* Reset configuration */
+else if (func == "Reset") {
+    Host::modified = false;
+    Host::Import($[]);
+    ret = $[];
+}
+/* Change configuration (run AutoSequence) */
+else if (func == "Change") {
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("host");
+    Wizard::SetNextButton(`next, Label::FinishButton() );
+    ret = HostsMainDialog(false);
+    Wizard::CloseDialog();
+}
+/* Import configuration */
+else if (func == "Import") {
+    list<map> hosts = param["hosts"]:[];
+    map hostlist = listmap(map host, hosts, {
+	    return $[ host["host_address"]:"error" : host["names"]:[] ];
+    });
+    ret = Host::Import($["hosts": hostlist]);
+}
+/* Return actual state */
+else if (func == "Export") {
+    map ret1 = Host::Export();
+    map<string,list> hosts = ret1["hosts"]:$[];
+    list ret2 = maplist (string hostaddress, list names, hosts, {
+	    return($["host_address": hostaddress, "names": names]);
+    });
+    if (size(ret2) > 0 )
+        ret = $["hosts" : ret2 ];
+    else
+        ret = $[];
+}
+/* Read current state */
+else if (func == "Read") {
+    import "Progress";
+    Progress::off();
+    ret = Host::Read();
+    Progress::on();
+}
+else if (func == "Packages") {
+    ret = $[];
+}
+/* Write givven settings */
+else if (func == "Write") {
+    import "Progress";
+    Progress::off();
+    Host::write_only = true;
+    ret = Host::Write();
+    Progress::on();
+}
+else if (func == "SetModified") {
+    ret = Host::SetModified ();
+}
+else if (func == "GetModified") {
+    ret = Host::GetModified ();
+}
+/* Unknown function */
+else {
+    y2error("Unknown function: %1", func);
+    ret = false;
+}
+
+y2debug("ret=%1", ret);
+y2milestone("Host auto finished");
+y2milestone("----------------------------------------");
+
+return ret;
+
+/* EOF */
+
+}

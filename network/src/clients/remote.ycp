@@ -1,0 +1,88 @@
+/**
+ * File:	clients/remote.ycp
+ * Package:	Network configuration
+ * Summary:	Remote Administration
+ * Authors:	Arvin Schnell <arvin@suse.de>
+ *		Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("Remote module started");
+
+import "Label";
+import "Remote";
+import "Wizard";
+
+import "CommandLine";
+import "RichText";
+
+include "network/remote/dialogs.ycp";
+
+/**
+ * Main remote GUI
+ */
+any RemoteGUI() {
+    Remote::Read();
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("remote");
+    Wizard::SetNextButton(`next, Label::FinishButton() );
+
+    any ret = RemoteMainDialog();
+    if(ret == `next) Remote::Write();
+
+    UI::CloseDialog();
+    return ret;
+};
+
+/**
+ * Handler for action "list"
+ * @param options action options
+ */
+define void ListHandler(map options) {
+
+    string summary = "";
+    /* Headline */
+    summary = "\n" + _("Remote Configuration Summary:") + "\n\n" +
+	RichText::Rich2Plain(Remote::Summary()) + "\n";
+
+    y2debug("%1", summary);
+    CommandLine::Print(summary);
+}
+
+/**
+ * Command line definition
+ */
+map cmdline = $[
+    /* Commandline help title */
+    "help"	: _("Remote configuration"),
+    "id"	: "remote",
+    "guihandler": RemoteGUI,
+    "initialize": Remote::Read,
+    "finish"	: Remote::Write, // FIXME
+    "actions"	: $[
+	"list" : $[
+	    /* Commandline command help */
+	    "help"	: _("Display configuration summary"),
+	    "handler"	: ListHandler,
+	],
+    ],
+];
+
+any ret = CommandLine::Run(cmdline);
+y2debug("ret=%1", ret);
+
+/* Finish */
+y2milestone("Remote module finished");
+y2milestone("----------------------------------------");
+return ret;
+
+/* EOF */
+}

@@ -1,0 +1,50 @@
+/**
+ * File:        include/network/widgets.ycp
+ * Package:     Network configuration
+ * Summary:     Widgets for CWM
+ * Authors:     Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+// Gradually all yast2-network UI will be converted to CWM
+// for easier maintenance.
+// This is just a start.
+
+map<string, map<string,any> > widget_descr = $[
+
+    "USERCONTROL": $[
+	"widget": `checkbox,
+	/* CheckBox label */
+	// is the interface administrable by users (as opposed to root)
+	"label": _("&User Controlled"),
+	"opt": [`notify],
+	"help":
+	// Details dialog help
+_("<p>When <b>User Controlled</b> is enabled, ordinary users can
+manipulate the interface, not only <b>root</b>.</p>"),
+	],
+
+    // #23315
+    "DIALPREFIXREGEX": $[
+	"widget": `textentry,
+	// TextEntry label
+	"label": _("&Dial Prefix Regular Expression"),
+	"help":
+	// dial prefix regex help
+_("<p>When <b>Dial Prefix Regular Expression</b> is set, users can
+change the dial prefix in KInternet provided that it matches the expression.
+A recommended value is <tt>[09]?</tt>, allowing <tt>0</tt>, <tt>9</tt>,
+and the empty prefix. If the expression is empty, users are not allowed
+to change the prefix.</p>
+"),
+	],
+
+    ];
+
+/* EOF */
+}

@@ -1,0 +1,86 @@
+/**
+ * File:	clients/proxy_proposal.ycp
+ * Package:	Configuration of proxy
+ * Summary:	Proposal function dispatcher.
+ * Authors:	Martin Vidner <mvidner@suse.cz>
+ *		Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Proposal function dispatcher for proxy configuration.
+ * See source/installation/proposal/proposal-API.txt
+ */
+
+{
+
+textdomain "network";
+
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("Proxy proposal started");
+y2milestone("Arguments: %1", WFM::Args());
+
+import "Proxy";
+import "Progress";
+
+string func = (string) WFM::Args(0);
+map param = (map) WFM::Args(1);
+map ret = $[];
+
+/* create a textual proposal */
+if(func == "MakeProposal") {
+    string proposal = "";
+    string warning = nil;
+    symbol warning_level = nil;
+    boolean force_reset = param["force_reset"]:false;
+
+    if(force_reset || !Proxy::proposal_valid) {
+	Proxy::proposal_valid = true;
+	Progress::off();
+	Proxy::Read();
+    }
+    proposal = Proxy::Summary();
+    Progress::on();
+
+    ret = $[
+	"preformatted_proposal" : proposal,
+	"warning_level" : warning_level,
+	"warning" : warning,
+    ];
+}
+/* run the module */
+else if(func == "AskUser") {
+    map stored = Proxy::Export();
+    symbol result =(symbol) WFM::CallFunction("proxy", [.propose]);
+    if(result != `next) Proxy::Import(stored);
+    y2debug("stored=%1", stored);
+    y2debug("result=%1", result);
+    ret = $[ "workflow_sequence" : result ];
+}
+/* create titles */
+else if(func == "Description") {
+    ret = $[
+	/* Rich text title */
+	"rich_text_title" : _("Proxy"),
+	/* MenuButton title */
+	"menu_title" : _("&Proxy"),
+	"id" : "proxy",
+    ];
+}
+/* write the proposal */
+else if(func == "Write") {
+    Proxy::Write();
+}
+/* unknown function */
+else {
+    y2error("unknown function: %1", func);
+}
+
+/* Finish */
+y2debug("ret=%1",ret);
+y2milestone("Proxy proposal finished");
+y2milestone("----------------------------------------");
+return ret;
+
+/* EOF */
+}

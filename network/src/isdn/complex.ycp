@@ -1,0 +1,409 @@
+/**
+ * File:	include/network/isdn/complex.ycp
+ * Package:	Configuration of network
+ * Summary:	Summary and overview dialogs for ISDN configuration.
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "ISDN";
+import "Label";
+import "Popup";
+import "Provider";
+import "Wizard";
+import "Wizard_hw";
+
+include "network/routines.ycp";
+include "network/summary.ycp";
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+define boolean Modified() ``{
+    return ISDN::Modified() || Provider::Modified("isdn");
+}
+
+/**
+ * Commit changes to internal structures
+ * @return always `next
+ */
+define symbol Commit() ``{
+    ISDN::Commit();
+    return `next;
+}
+
+/**
+ * Read settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol ReadDialog() ``{
+
+    /* isdns read dialog help 1/2 */
+    string helptext = _("<P><B><BIG>Initializing ISDN cards configuration
+</BIG></B><BR>Please wait for a while...<BR></P>");
+
+    /* isdns read dialog help 2/2 */
+    helptext = helptext + _("<P><B><BIG>Aborting the initialization:
+</BIG></B><BR>You can safely abort the configuration utility by pressing
+the <B>Abort</B> button now.</P>");
+
+    Wizard::RestoreHelp(helptext);
+    ISDN::AbortFunction = ``{return PollAbort();};
+    boolean ret = ISDN::Read();
+    return ret ? `next : `abort;
+}
+
+/**
+ * Write settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol WriteDialog() ``{
+    if(!Modified()) return `next;
+
+    /* isdns write dialog help 1/2 */
+    string helptext = _("<P><B><BIG>Saving ISDN cards configuration
+</BIG></B><BR>Please wait for a while...<BR></P>");
+
+    /* isdns write dialog help 2/2 */
+    helptext = helptext + _("<P><B><BIG>Aborting the saving:</BIG></B><BR>
+You can abort the saving by pressing the <B>Abort</B> button.
+An additional dialog will inform you whether it is safe to do so or not.</P>");
+
+    Wizard::RestoreHelp(helptext);
+    ISDN::AbortFunction = ``{return PollAbort() && ReallyAbort();};
+    boolean ret = ISDN::Write(true);
+    return ret ? `next : `abort;
+}
+
+/**
+ * Ask to handle provider or interface
+ * in edit and delete functions
+ *
+ * @param  string op  "edit" or "delete"
+ * @return dialog result
+ */
+define any Provider_or_IF(string op) ``{
+    any ret = nil;
+    // popup text to select between Interface or Provider for edit or delete 1/2
+    string txt = op == "edit" ?
+       // popup text to select between Interface or Provider
+       _("Select the item to edit.") :
+       // popup text to select between Interface or Provider
+       _("Select the item to delete.");
+    UI::OpenDialog(
+	`opt(`decorated),
+	`HBox(
+	    `HSpacing(1),
+	    `VBox(
+		`VSpacing(1),
+		`Label(txt),
+		`VSpacing(2),
+		`HBox(
+		    // PushButton label
+		    `PushButton(`id(`interface), _("&Interface")),
+		    `HSpacing(1),
+		    // PushButton label
+		    `PushButton(`id(`provider), `opt(`default), _("&Provider"))
+		),
+		`VSpacing(1)
+	    ),
+	    `HSpacing(1)
+	)
+    );
+    while(true) {
+	ret = UI::UserInput();
+	if ((ret == `interface) || (ret == `provider))
+	    break;
+    }
+    UI::CloseDialog();
+    return ret;
+}
+
+/**
+ * Main dialog
+ * @return dialog result
+ */
+define any SummaryDialog() ``{
+
+    /* ISDN summary dialog caption */
+    // dialog title
+    string caption = _("ISDN cards configuration");
+
+    /* isdns summary dialog help 1/3 */
+    string helptext = _("<P><B><BIG>ISDN cards setup</BIG></B><BR>
+Here you can configure your isdn.
+<BR></P>");
+
+    /* isdns summary dialog help 2/3 */
+    helptext = helptext + _("<P><B><BIG>Adding a ISDN card:</BIG></B><BR>
+Choose an ISDN card from the list of the detected ISDN cards.
+If your ISDN card was not autodetected, use <B>Other (not detected)</B>.
+Then press <B>Configure</B>.
+</P>");
+
+    /* isdns summary dialog help 3/3 */
+    helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
+If you press <B>Edit</B>, an additional dialog (where you
+can change the configuration and setup dialup connections) will open.
+</P>");
+
+    list summary = ISDN::Summary(true);
+    list unconfigured = summary[1]:[];
+    string configured = summary[0]:"";
+
+    y2debug("unconfigured=%1",unconfigured);
+    // table title for detected ISDN cards
+    term contents = Wizard_hw::DetectedContent(_("ISDN cards to configure"),
+	    unconfigured, false, configured);
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    Label::BackButton(), Label::FinishButton());
+
+    if (size(unconfigured) > 1 || configured == "")
+	UI::SetFocus(`id(`detected_selbox));
+    else if (ISDN::Modified())
+	Wizard::SetFocusToNextButton();
+    else
+	UI::SetFocus(`id(`edit_button));
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+	y2debug("ret=%1", ret);
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* overview dialog */
+	else if(ret == `edit_button) {
+	    ret = `overview;
+	    break;
+	}
+	/* configure the selected card */
+	else if(ret == `configure_button || ret == `detected_selbox) {
+	    ISDN::Add();
+	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
+	    if(selected == `other) {
+		ret = `other;
+	    }
+	    else {
+		ISDN::SelectHW((integer) selected);
+		ret = `configure;
+	    }
+	    break;
+	}
+	else if(ret == `next || ret == `back) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    return ret;
+}
+
+/**
+ * Overview dialog
+ * @return dialog result
+ */
+define any OverviewDialog() ``{
+
+    /* ISDN overview dialog caption */
+    // dialog title
+    string caption = _("ISDN configuration overview");
+
+    string helptext = /* isdns overview dialog help 1/5 */
+    _("<P><B><BIG>ISDN cards overview</BIG></B><BR>
+Here you can get an overview about installed ISDN cards and connection setups.
+Additionally you can edit their configuration.<BR></P>");
+
+    /* isdns overview dialog help 2/5 */
+    helptext = helptext + _("<P><B><BIG>Adding an ISDN card:</BIG></B><BR>
+If you press <B>Add</B>, you can manually configure an ISDN card.</P>");
+
+    /* isdns overview dialog help 3/5 */
+    helptext = helptext + _("<P><B><BIG>Test an ISDN card setup:</BIG></B><BR>
+If you press <B>Test</B>, the system tries to load the driver for the
+selected card.</P>");
+
+    /* isdns overview dialog help 4/5 */
+    helptext = helptext + _("<P><B><BIG>Adding an ISDN connection:</BIG></B><BR>
+If you press <B>Add</B>, you can configure an ISDN dialup connection.</P>");
+
+    /* isdns overview dialog help 5/5 */
+    helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
+Choose an ISDN card or connection, whose configuration you want to change or remove.
+Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
+
+    list overview = ISDN::OverviewDev();
+    list overviewp = Provider::Overview("isdn");
+    //list overviewif = ISDN::OverviewIf();
+    y2debug("overview=%1",overview);
+    y2debug("overviewp=%1",overviewp);
+
+    term contents = OverviewTableDouble(
+        /* Table label */
+        _("ISDN cards"),
+	`header(
+	    /* Table header 3/4 */
+	    _("Device"),
+	    /* Table header 2/4 */
+	    _("Type"),
+	    /* Table header 4/4 */
+	    _("Hardware")),
+        overview,
+        /* Table label */
+        _("Provider"),
+        `header(
+            /* Table header 1/2 */
+            _("Name"),
+            /* Table header 2/2 */
+            _("Provider"),
+            /* Table header 2/2 */
+            _("Phone")),
+        overviewp
+    );
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+            Label::BackButton(), Label::FinishButton());
+
+    if(size(overview) < 1) {
+        UI::ChangeWidget(`id(`edit), `Enabled, false);
+        UI::ChangeWidget(`id(`delete), `Enabled, false);
+    }
+
+    if(size(overviewp) < 1) {
+        UI::ChangeWidget(`id(`Edit), `Enabled, false);
+        UI::ChangeWidget(`id(`Delete), `Enabled, false);
+    }
+
+    UI::SetFocus(`id(`table));
+    any ret = nil;
+    while(true) {
+
+        ret = UI::UserInput();
+
+        /* abort? */
+        if(ret == `abort || ret == `cancel) {
+            if(ReallyAbort()) break;
+            else continue;
+        }
+        /* add */
+        else if(ret == `add) {
+            ISDN::Add();
+            break;
+        }
+        /* edit */
+        else if(ret == `edit || ret == `table) {
+            string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+	    if(dev == nil) {
+		y2error("Empty device during Edit");
+		continue;
+	    }
+            ISDN::Edit(dev);
+	    ret = `edit;
+            break;
+        }
+        /* delete */
+        else if(ret == `delete) {
+            string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+            ISDN::Delete(dev);
+            ISDN::Commit();
+            overview = ISDN::OverviewDev();
+            UI::ChangeWidget(`id(`table), `Items, overview);
+            if(size(overview) < 1) {
+                UI::ChangeWidget(`id(`edit), `Enabled, false);
+                UI::ChangeWidget(`id(`delete), `Enabled, false);
+            }
+            y2debug("overview=%1",overview);
+            continue;
+        }
+        /* provider add */
+        else if(ret == `Add) {
+	    Provider::Add("isdn");
+            break;
+        }
+        /* provider edit */
+        else if(ret == `Edit || ret == `Table) {
+	    ret = Provider_or_IF("edit");
+	    if (ret == `provider) {
+		string prov = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
+		if(prov == nil) {
+		    y2error("Empty device during Edit");
+		    continue;
+		}
+		ISDN::type = "net";
+		Provider::Edit(prov);
+		ISDN::operation = `editprov;
+		ret = `Editprov;
+	    } else {
+		if (ISDN::SelectInterface(true)) {
+		    string ifstr = sformat("net%1", ISDN::device);
+		    ISDN::EditIf(ifstr);
+		    ret = `Editif;
+		} else
+		    continue;
+	    }
+	    break;
+        }
+        /* provider delete */
+	else if(ret == `Delete) {
+	    ret = Provider_or_IF("delete");
+	    if (ret == `provider) {
+		string dev = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
+		string ifc = ISDN::GetInterface4Provider(dev);
+		if (ifc == "") {
+		    Provider::Delete(dev);
+		    Provider::Commit();
+		    overviewp = Provider::Overview("isdn");
+		    UI::ChangeWidget(`id(`Table), `Items, overviewp);
+		    if(size(overviewp) < 1) {
+			UI::ChangeWidget(`id(`Edit), `Enabled, false);
+			UI::ChangeWidget(`id(`Delete), `Enabled, false);
+		    }
+		    y2debug("overviewp=%1",overviewp);
+		} else {
+		    string txt = sformat(
+// Popup::Message text
+_("You tried to delete a provider that
+is the default provider for interface
+%1. First select another
+default provider for interface %2
+or delete the interface itself.
+"), ifc, ifc);
+		    Popup::Message(txt);
+		}
+	    } else {
+		if (ISDN::SelectInterface(true)) {
+		    string ifstr = sformat("net%1", ISDN::device);
+		    ISDN::Delete(ifstr);
+		    ISDN::Commit();
+		}
+	    }
+	    continue;
+        }
+        else if(ret == `next || ret == `back) {
+            break;
+        }
+        else {
+            y2error("unexpected retcode: %1", ret);
+            continue;
+        }
+    }
+
+    return ret;
+}
+
+/* EOF */
+}

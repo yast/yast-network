@@ -1,0 +1,56 @@
+[Desktop Entry]
+Type=Application
+Categories=Qt;X-SuSE-YaST;X-SuSE-YaST-Net_advanced;
+
+X-KDE-ModuleType=Library
+X-KDE-RootOnly=true
+X-KDE-HasReadOnlyMode=true
+X-KDE-Library=yast2
+X-SuSE-YaST-Call=routing
+
+X-SuSE-YaST-Group=Net_advanced
+X-SuSE-YaST-Argument=
+X-SuSE-YaST-RootOnly=true
+X-SuSE-YaST-AutoInst=write
+X-SuSE-YaST-Geometry=
+X-SuSE-YaST-SortKey=
+X-SuSE-YaST-AutoInstResource=routing
+
+Icon=routing
+Exec=/sbin/yast2 routing 
+
+Name=Routing
+GenericName=Configure routing
+Name[cs]=Směrování
+GenericName[cs]=Konfigurovat směrování
+GenericName[de]=Routing konfigurieren
+Name[es]=Enrutado
+GenericName[es]=Configurar enrutado
+Name[hu]=Útválasztás
+GenericName[hu]=Az útválasztás beállítása
+GenericName[it]=Configurazione routing
+Name[ko]=라우팅
+GenericName[ko]=라우팅 설정
+GenericName[nl]=Configureer routing
+Name[pt]=Roteamento
+GenericName[pt]=Configurar roteamento
+Name[sk]=Smerovanie
+GenericName[sk]=Nastavenie smerovania
+GenericName[sv]=Ställ in routing
+Name[bg]=Рутиране
+GenericName[bg]=Настройка на рутирането
+GenericName[da]=Indstil routing
+Name[el]=Δρομολόγηση
+GenericName[el]=Ρύθμιση δρομολόγησης
+Name[fr]=Routage
+GenericName[fr]=Configurer le routage
+Name[ja]=ルーティング
+GenericName[ja]=ルーティングを設定する
+Name[lt]=Maršrutizacija
+GenericName[lt]=Konfigūruoti maršrutus
+Name[ru]=Роутинг
+GenericName[ru]=Настройка роутинга
+Name[sl]=Usmerjanje
+GenericName[sl]=Nastavite usmerjanje
+Name[tr]=Yönlendirme
+GenericName[tr]=Yönlendirmeyi yapılandır

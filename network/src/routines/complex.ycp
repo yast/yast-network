@@ -1,0 +1,497 @@
+/**
+ * File:	include/network/complex.ycp
+ * Package:	Network configuration
+ * Summary:	Summary and overview functions
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+textdomain "network";
+
+import "Detection";
+import "NetworkDevices";
+import "Popup";
+import "Summary";
+
+include "network/routines.ycp";
+include "network/summary.ycp";
+
+define string CheckEmptyName(string devtype, string hwname);
+define string DeviceStatus(string devtype, string devnum, map devmap);
+define string HardwareName(list<map> Hardware, string unq);
+
+/**
+ * Build textual summary
+ * @param split split configured and unconfigured?
+ * @return [ configured, unconfigured ] if split, [ summary ] otherwise
+ */
+define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, boolean split) {
+    y2milestone("Devs=%1", Devs);
+    y2milestone("Hardware=%1", Hardware);
+    y2debug("split=%1", split);
+
+    list uniques = [];
+    list uniques_old = [];
+    list<string> configured = [];
+    list<map> unconfigured = [];
+
+    /* build a list of configured devices */
+    maplist(string devtype, map devsmap, Devs, {
+	maplist(string devnum, map devmap, (map<string,map>)devsmap, {
+
+	    /* main device summary */
+	    string unq = devmap["UNIQUE"]:"";
+
+	    string hwname = HardwareName(Hardware, devnum);
+	    if(hwname == nil || hwname == "") hwname = HardwareName(Hardware, unq);
+	    hwname = CheckEmptyName(devtype, hwname);
+
+	    string status = DeviceStatus(devtype, devnum, devmap);
+
+	    configured = add(configured, Summary::Device(hwname, status));
+	    uniques = add(uniques, devnum);
+	    uniques_old = add(uniques_old, unq);
+
+	    /* aliases summary */
+	    map<string,map> aliasee = devmap["_aliases"]:$[];
+	    if(aliasee != $[])
+		maplist(string aid, map amap, aliasee, {
+		    /* Table item */
+		    // this is what used to be Virtual Interface
+		    // (eth0:1)
+		    hwname = _("Additional Address");
+		    status = DeviceStatus(devtype, devnum /* FIXME: devname + sformat(":%1", aid)*/, amap);
+		    configured = add(configured, Summary::Device(hwname, status));
+		});
+
+	});
+    });
+
+    y2debug("uniques(%1)", uniques);
+    y2debug("uniques_old(%1)", uniques_old);
+
+    /* build a list of unconfigured devices */
+    maplist(map h, Hardware, {
+	string unq = h["unique"]:"";
+
+	string busid = "bus-" + h["bus"]:"" + "-" + h["busid"]:"";
+	string mac = "id-" + h["mac"]:"";
+	string hwtype = h["type"]:"";
+	string hwname = CheckEmptyName(hwtype, h["name"]:"");
+	y2debug("busid=%1, mac=%2", busid, mac);
+	if(!contains(uniques, busid) && !contains(uniques, mac) && !contains(uniques_old, unq)) {
+	    if(split)
+		unconfigured = add(unconfigured, h);
+	    else
+		configured = add(configured, Summary::Device(hwname, Summary::NotConfigured()));
+	}
+    });
+
+    y2debug("configured=%1", configured);
+    y2debug("unconfigured=%1", unconfigured);
+
+    /* create a summary text */
+    string summary = Summary::DevicesList(configured);
+
+    /* if not split -> summary is finished */
+    if(!split) return [ summary ];
+
+    /* add headers */
+    if(size(configured) > 0)
+	/* Summary text */
+	summary = Summary::AddHeader("", _("Already configured devices:")) + summary;
+    else
+	/* Summary text */
+	summary = Summary::AddHeader("", _("Nothing is configured."));
+
+    /* create a table of unconfigured devices */
+    integer selected = unconfigured[0, "num"]:0;
+    list devs = hwlist2items(unconfigured, selected);
+
+    // FIXME OtherDevices(devs, type);
+
+    /* Label for not detected devices */
+    devs = add(devs, `item(`id(`other), _("Other (not detected)"), size(devs) == 0));
+
+    y2debug("summary=%1", summary);
+    y2debug("devs=%1", devs);
+    return [ summary, devs ];
+}
+
+/**
+ * Build textual summary
+ * @param split split configured and unconfigured?
+ * @return [ configured, unconfigured ] if split, [ summary ] otherwise
+ */
+define list<any> BuildSummary(string devregex, list<map> Hardware, boolean split) {
+    map <string, map> Devs = NetworkDevices::FilterDevices (devregex);
+    return BuildSummaryDevs (Devs, Hardware, split);
+}
+
+/**
+ * Fill in sensible string if the name is empty
+ * @param devtype device type
+ * @param hwname device name
+ * @return hwname if not empty, "Unknown device" otherwise
+ */
+define string CheckEmptyName(string devtype, string hwname) {
+    if(hwname != nil && hwname != "") return hwname;
+
+    map device_names = $[
+	/* Device type label */
+	"arc"		: _("ARCnet Network Card"),
+	/* Device type label */
+	"atm"		: _("Asynchronous Transfer Mode (ATM)"),
+	/* Device type label */
+	"bnep"		: _("Bluetooth Connection"),
+	/* Device type label */
+	"ci"		: _("Common Link Access for Workstation (CLAW)"),
+	/* Device type label */
+	"contr"		: _("ISDN card"),
+	/* Device type label */
+	"contr-pcmcia"	: _("PCMCIA ISDN Card"),
+	/* Device type label */
+	"contr-usb"	: _("USB ISDN Card"),
+	/* Device type label */
+	"ctc"		: _("Channel to Channel Interface (CTC)"),
+	/* Device type label */
+	"dsl"		: _("DSL Connection"),
+	/* Device type label */
+	"dummy"		: _("Dummy network device"),
+	/* Device type label */
+	"escon"		: _("Enterprise System Connector (ESCON)"),
+	/* Device type label */
+	"eth"		: _("Ethernet Network Card"),
+	/* Device type label */
+	"eth-pcmcia"	: _("PCMCIA Ethernet Network Card"),
+	/* Device type label */
+	"eth-usb"	: _("USB Ethernet Network Card"),
+	/* Device type label */
+	"fddi"		: _("FDDI Network Card"),
+	/* Device type label */
+	"fddi-pcmcia"	: _("PCMCIA FDDI Network Card"),
+	/* Device type label */
+	"fddi-usb"	: _("USB FDDI Network Card"),
+	/* Device type label */
+	"hippi"		: _("HIgh Performance Parallel Interface (HIPPI)"),
+	/* Device type label */
+	"hsi"		: _("Hipersockets Interface (HSI)"),
+	/* Device type label */
+	"ippp"		: _("ISDN connection"),
+	/* Device type label */
+	"ippp-pcmcia"	: _("PCMCIA ISDN Connection"),
+	/* Device type label */
+	"ippp-usb"	: _("USB ISDN Connection"),
+	/* Device type label */
+	"irlan"		: _("Infrared Network Device"),
+	/* Device type label */
+	"irda"		: _("Infrared Device"),
+	/* Device type label */
+	"isdn"		: _("ISDN connection"),
+	/* Device type label */
+	"isdn-pcmcia"	: _("PCMCIA ISDN Connection"),
+	/* Device type label */
+	"isdn-usb"	: _("USB ISDN Connection"),
+	/* Device type label */
+	"iucv"		: _("Inter User Communication Vehicle (IUCV)"),
+	/* Device type label */
+	"lcs"		: _("OSA LCS Network Card"),
+	/* Device type label */
+	"lo"		: _("Loopback device"),
+	/* Device type label */
+	"modem"		: _("Modem"),
+	/* Device type label */
+	"modem-pcmcia"	: _("PCMCIA Modem"),
+	/* Device type label */
+	"modem-usb"	: _("USB Modem"),
+	/* Device type label */
+	"myri"		: _("Myrinet Network Card"),
+	/* Device type label */
+	"net"		: _("ISDN connection"),
+	/* Device type label */
+	"plip"		: _("Parallel Line Connection"),
+	/* Device type label */
+	"ppp"		: _("Modem"),
+	/* Device type label */
+	"ppp-pcmcia"	: _("PCMCIA Modem"),
+	/* Device type label */
+	"ppp-usb"	: _("USB Modem"),
+	/* Device type label */
+	"qeth"		: _("OSA-Express or QDIO Device (QETH)"),
+	/* Device type label */
+	"sit"		: _("IPv6-in-IPv4 Encapsulation Device"),
+	/* Device type label */
+	"slip"		: _("Serial Line Connection"),
+	/* Device type label */
+	"tr"		: _("Token Ring Network Card"),
+	/* Device type label */
+	"tr-pcmcia"	: _("PCMCIA Token Ring Network Card"),
+	/* Device type label */
+	"tr-usb"	: _("USB Token Ring Network Card"),
+	/* Device type label */
+	"usb"		: _("USB Network Device"),
+	"usb-usb"	: _("USB Network Device"),
+	/* Device type label */
+	"vmnet"		: _("VMWare Network Device"),
+	/* Device type label */
+	"wlan"		: _("Wireless Network Card"),
+	/* Device type label */
+	"wlan-pcmcia"	: _("PCMCIA Wireless Network Card"),
+	/* Device type label */
+	"wlan-usb"	: _("USB Wireless Network Card"),
+	/* Device type label */
+	"xp"		: _("XP Network"),
+    ];
+
+    if(haskey(device_names, devtype))
+	return device_names[devtype]:"";
+
+    if(haskey(device_names, devtype + "-")) {
+	y2warning("- device found: %1, %2", devtype, hwname);
+	return device_names[devtype + "-"]:"";
+    }
+
+    y2error("Unknown type: %1", devtype);
+    /* Device type label */
+    return _("Unknown network device");
+}
+
+/**
+ * iface["ip"]:"" + Optional(" (%1)", iface["name"]:"")
+ * "bus-" + h["bus"]:"" + Optional ("-%1", h["busid"]:"")
+ */
+string Optional (string format, string what) {
+    if (what == "" || what == nil)
+    {
+	return "";
+    }
+    return sformat (format, what);
+}
+
+/**
+ * Return a human readable hardware name for device with given id
+ * @param Hardware hardware map
+ * @param id id-..., bus-...-..., or unique
+ * @return hardware name
+ */
+define string HardwareName(list<map> Hardware, string id) {
+    string hwname = "";
+    if(id != "")
+    {
+	foreach (map h, Hardware, {
+	    list<string> have = [
+		"id-" + h["mac"]:"",
+		"bus-" + h["bus"]:"" + Optional ("-%1", h["busid"]:""),
+		h["unique"]:"",
+		];
+	    y2debug ("what: %1, have: %2", id, have);
+	    if (contains (have, id))
+	    {
+		hwname = h["name"]:"";
+		break;
+	    }
+	});
+    }
+    y2milestone("hwname=%1", hwname);
+    return hwname;
+}
+
+/**
+ * Get aprovider name from the provider map
+ * @param provider identifier
+ * @return provider name
+ * @example ProviderName("tonline") -> "T-Online"
+ */
+define string ProviderName(string provider) {
+    import "Provider";
+
+    if(provider == nil || provider == "")
+	return "";
+
+    Provider::Select(provider);
+    string nam = Provider::Current["PROVIDER"]:provider;
+    if(nam == nil || nam == "") return provider;
+    return nam;
+}
+
+/**
+ * Return the textual device status
+ * @param devtype device type
+ * @param devnum device number
+ * @param devmap map with devices settings
+ * @return text wth device status
+ */
+define string DeviceStatus(string devtype, string devnum, map devmap) {
+    string dev = NetworkDevices::device_name(devtype, devnum);
+
+    /* Modem and DSL */
+    if(devtype == "ppp" || devtype == "modem" || devtype == "dsl") {
+
+	string nam = ProviderName(devmap["PROVIDER"]:"");
+
+	if(nam == "" || nam == nil)
+	    /* Modem status (%1 is device) */
+	    return sformat(_("Configured as %1."), dev);
+	else
+	    /* Modem status (%1 is device, %2 is provider) */
+	    return sformat(_("Configured as %1 with provider %2."), dev, nam);
+    }
+    /* ISDN card */
+    else if(devtype == "isdn" || devtype == "contr") {
+	/* ISDN device status (%1 is device) */
+	return sformat(_("Configured as %1."), dev);
+    }
+    /* ISDN stuff */
+    else if(devtype == "net") {
+
+	string nam = ProviderName(devmap["PROVIDER"]:"");
+	/* Connection protocol (syncppp|rawip) */
+	string proto = devmap["PROTOCOL"]:"";
+
+	/* ISDN status (%1 is device, %2 is provider, %3 protocol) */
+	return sformat(_("Configured as %1 with provider %2 (protocol %3)."), dev, nam, proto);
+
+	/* example: ISDN Connection to Arcor with syncppp on net0 */
+	// return sformat(_("to %1 with %2 on %3"), provider, proto, dev);
+    }
+    /* Treat others as network cards */
+    else {
+	/*
+	if(!regexpmatch(devtype, NetworkAllRegex))
+	    y2error("Unknown type: %1", devtype);
+	*/
+
+	string proto = devmap["BOOTPROTO"]:"static";
+
+	if(proto == "" || proto == "static" || proto == "none" || proto == nil) {
+	    string addr = devmap["IPADDR"]:"";
+	    string host = Detection::ResolveIP (addr);
+	    string remip = devmap["REMOTE_IPADDR"]:"";
+	    if(addr == "" || addr == nil)
+		/* Network card status */
+		return sformat(_("Configured."));
+	    else if(remip == "" || remip == nil)
+		/* Network card status (%1 is address) */
+		return sformat(_("Configured with Address %1."), (host=="")?addr:(addr+" ("+host+")"));
+	    else
+		/* Network card status (%1 is address, %2 is address) */
+		return sformat(_("Configured with Address %1 (remote %2)."), addr, remip);
+	}
+	else
+	    /* Network card status (%1 is protocol) */
+	    return sformat(_("Configured with %1."), toupper(proto));
+
+	// This is the old version of the above code, including the
+	// configuration name. But the name is long and cryptic so wen
+	// don't use it.
+	/* FIXME: dropped interface name */
+	if(proto == "" || proto == "static" || proto == "none" || proto == nil) {
+	    string addr = devmap["IPADDR"]:"";
+	    string remip = devmap["REMOTE_IPADDR"]:"";
+	    if(addr == "" || addr == nil)
+		/* Network card status (%1 is device) */
+		return sformat(_("Configured as %1."), dev);
+	    else if(remip == "" || remip == nil)
+		/* Network card status (%1 is device, %2 is address) */
+		return sformat(_("Configured as %1 with address %2."), dev, addr);
+	    else
+		/* Network card status (%1 is device, %2 is address, %3 is address) */
+		return sformat(_("Configured as %1 with address %2 (remote %3)."), dev, addr, remip);
+	}
+	else
+	    /* Network card status (%1 is device, %2 is protocol) */
+	    return sformat(_("Configured as %1 with %2."), dev, toupper(proto));
+    }
+}
+
+/**
+ * Return the device protocol or IP address in case of static config
+ * @param devmap device map
+ * @return textual device protocol
+ */
+define string DeviceProtocol(map devmap) {
+    string ip = devmap["BOOTPROTO"]:"static";
+    if(ip == nil || ip == "" || ip == "static" || ip == "none")
+	ip = devmap["IPADDR"]:"";
+    else ip = toupper(ip);
+    return ip;
+}
+
+/**
+ * Create overview table contents
+ * @return table items
+ */
+define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
+    list overview = [];
+
+    maplist(string type, map devmap, Devs, {
+	maplist(string k, map v, (map<string,map>)devmap, {
+	    term item = nil;
+	    string dev = NetworkDevices::device_name(type, k);
+	    string ip = DeviceProtocol(v);
+
+	    string unq = v["UNIQUE"]:"";
+	    string hwname = HardwareName(Hardware, k);
+	    if(hwname == nil || hwname == "") hwname = HardwareName(Hardware, unq);
+	    hwname = CheckEmptyName(type, hwname);
+
+	    if(size(hwname) > 17) hwname = substring(hwname, 0, 16) + "...";
+
+	    /* Modem and DSL */
+	    if(type == "ppp" || type == "modem" || type == "dsl")
+		item = `item(`id(dev), dev, DeviceType(type), ProviderName(v["PROVIDER"]:""));
+	    /* ISDN stuff */
+	    else if (type == "contr") {
+		string cname = v["NAME"]:"unknown";
+		item = `item(`id(dev), dev, DeviceType(type), cname /*, "active?", ip, "?", "?"*/);
+	    }
+	    /* ISDN stuff */
+	    else if (type == "net") {
+		string cname = v["PROVIDER"]:"unknown";
+		string rip   = v["PTPADDR"]:"none";
+		string proto = v["PROTOCOL"]:"unknown";
+		item = `item(`id(dev), dev, proto, cname, ip, rip);
+	    }
+	    /* Treat others as network cards */
+	    else {
+		/*
+		if(!regexpmatch(type, NetworkAllRegex))
+		    y2error("Unknown type: %1", type);
+		*/
+		item = `item(`id(dev), hwname, dev /*DeviceType(type)*/, /*"active?",*/ ip/*, "?", "?"*/);
+	    }
+	    overview = add(overview, item);
+
+	    /* aliases summary */
+	    map<string,map> aliasee = v["_aliases"]:$[];
+	    if(aliasee != $[])
+		maplist(string aid, map amap, aliasee, {
+		    //hwname = CheckEmptyName(devtype, HardwareName(unq));
+		    string adev = NetworkDevices::alias_name(type, k, aid);
+		    ip = DeviceProtocol(amap);
+		    item = `item(`id(adev), DeviceType(adev), adev, ip);
+		    overview = add(overview, item);
+		});
+
+	});
+    });
+
+    y2debug("overview=%1", overview);
+    return overview;
+}
+
+/**
+ * Create overview table contents
+ * @return table items
+ */
+define list BuildOverview(string devregex, list<map> Hardware) {
+    map <string, map> Devs = NetworkDevices::FilterDevices (devregex);
+    return BuildOverviewDevs (Devs, Hardware);
+}
+
+/* EOF */
+}

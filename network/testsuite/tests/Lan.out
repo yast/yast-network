@@ -1,0 +1,5 @@
+Read	.target.tmpdir "/tmp"
+Dump	Read
+Dump	Write
+Dump	Import
+Dump	Export

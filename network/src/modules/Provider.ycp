@@ -1,0 +1,810 @@
+/**
+ * File:	modules/Provider.ycp
+ * Package:	Network configuration
+ * Summary:	Provider data
+ * Authors:	Dan Vesely <dan@suse.cz>
+ *		Petr Blahos <pblahos@suse.cz>
+ *		Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Used by Modem, ISDN, DSL.
+ * The provider data is grouped by country. There are predefined ones
+ * (providers.rpm) and custom ones (/etc/sysconfig/network/providers,
+ * represented here as country = "_custom")
+ */
+
+{
+
+module "Provider";
+textdomain "network";
+
+import "Map";
+import "String";
+import "Summary";
+
+/*------------------*/
+/* GLOBAL VARIABLES */
+
+/**
+ * Current provider name
+ */
+global string Name = "";
+
+/**
+ * Current provider
+ * structure depends on Type. See providers.rpm
+ */
+global map Current = $[];
+
+/**
+ * Current provider type
+ */
+global string Type = "modem";
+
+/**
+ * Last selected country
+ */
+global string LastCountry = nil;
+
+/*-----------------*/
+/* LOCAL VARIABLES */
+
+/**
+ * Supported provider types
+ */
+list<string> Supported = [ "modem", "isdn", "dsl" ];
+
+/**
+ * Custom providers
+ * (system ones are too many and thus read on demand)
+ */
+map<string,map> Providers = $[];
+
+/**
+ * Custom providers (initial copy)
+ */
+map<string,map> OriginalProviders = $[];
+
+/**
+ * Countries list
+ */
+list Countries = [];
+
+/**
+ * Deleted providers
+ */
+list<string> Deleted = [];
+
+/**
+ * Pending operation (nil = none)
+ */
+symbol operation = nil;
+
+/**
+ * True if providers are already read
+ */
+boolean initialized = false;
+
+/**
+ * Country
+ */
+string country = nil;
+
+/*------------------*/
+/* GLOBAL FUNCTIONS */
+
+define boolean CheckType(string type);
+define boolean CloneProvider();
+define map Filter(map<string,map> providers, string type);
+global define string ProviderType();
+global string GetCountry();
+
+/**
+ * Were the providers changed?
+ * @return true if modified
+ */
+global define boolean Modified(string type) {
+    if(!CheckType(type)) return false;
+    map OriginalProvs = Filter(OriginalProviders, type);
+    map Provs = Filter(Providers, type);
+    y2milestone("OriginalProvs=%1", OriginalProvs);
+    y2milestone("Provs=%1", Provs);
+    return Provs != OriginalProvs;
+}
+
+/**
+ * Read providers data (custom only) and country mappings
+ * @return true if success
+ */
+global define boolean Read() {
+
+    boolean ret = true;
+    if(initialized) return true;
+
+    /* Read custom providers */
+    Providers = $[];
+    list<string> dir = SCR::Dir(.sysconfig.network.providers.s);
+
+    /* Filter away backups (files with ~) */
+    dir = filter(string file, dir, {
+	return !regexpmatch(file, "[~]");
+    });
+
+    /* Fill the Providers map */
+    foreach(string name, dir, {
+	path prov = add(.sysconfig.network.providers.v, name);
+	map p = listmap(string i, SCR::Dir(prov), {
+	    map ii = $[];
+	    // TODO: quoting should be improved everywhere
+	    ii[i] = String::UnQuote((string) SCR::Read(add(prov, i)));
+	    return ii;
+	});
+	Providers[name] = p;
+    });
+    OriginalProviders = Providers;
+
+    /* Read countries */
+    map country_names = (map) eval(SCR::Read(.target.yast2, "country.ycp"));
+    if(country_names == nil) {
+	//Report:Error(_("Country database not found"));
+	y2error("Country database not found");
+	country_names = $[];
+	ret = false;
+    }
+    textdomain "country";
+    country_names = (map) eval(country_names);
+    textdomain "network";
+
+    /* Country heuristics */
+    country = GetCountry ();
+    LastCountry = country;
+    y2debug("LastCountry=%1", LastCountry);
+
+    /* Initialize the countries selection box */
+    Countries = [];
+    integer index = -1;
+    Countries = SCR::Dir(.providers.s);
+    if(Countries == nil) Countries = [];
+    y2debug("Countries=%1", Countries);
+    if(!contains(Countries, LastCountry)) LastCountry = "CZ";
+    Countries = maplist(string i, (list<string>) Countries, {
+	index = index + 1;
+	return `item(`id(i), country_names[i]:i, i == LastCountry);
+    });
+    y2debug("Countries=%1", Countries);
+
+    /* Read system providers */
+    /* Slow -- better read them upon request (SelectSystem)
+    map P = $[];
+    P = listmap(string cs, SCR::Dir(.providers.s), {
+	path pp = add(.providers.s, cs);
+	// y2debug("--- (%1), %2 ---", pp, SCR::Dir(pp));
+	return [ cs, listmap(string c, SCR::Dir(pp), {
+	    pp = add(add(.providers.v, cs), c);
+	    // y2debug("--- %1 ---", SCR::Dir(pp));
+	    return [ c,
+	    listmap(string vs, SCR::Dir(pp), {
+		// y2debug("%1=%2", vs, SCR::Read(add(pp, vs)));
+		return [ vs, SCR::Read(add(pp, vs)) ];
+	    }) ];
+	}) ];
+    });
+    */
+
+    initialized = true;
+    return ret;
+}
+
+/**
+ * This is a single point of dependence on the Language module of yast2-country
+ */
+global string GetCountry () {
+    import "Language";
+    return Language::GetLanguageCountry();
+}
+
+/**
+ */
+define map Filter(map<string,map> providers, string type) {
+    if(providers == nil || type == nil || type == "" || type == "all")
+	return providers;
+
+    return filter(string k, map v, providers, {
+	y2debug("%1 %2",v["PROVIDER"]:"",v[toupper(type)+"SUPPORTED"]:"no");
+	return v[toupper(type)+"SUPPORTED"]:"no" == "yes";
+    });
+}
+
+/**
+ */
+define map FilterNOT(map<string,map> providers, string type) {
+    if(providers == nil || type == nil || type == "" || type == "all")
+	return $[];
+
+    return filter(string k, map v, providers, {
+	y2debug("%1 %2",v["PROVIDER"]:"",v[toupper(type)+"SUPPORTED"]:"no");
+	return v[toupper(type)+"SUPPORTED"]:"no" == "no";
+    });
+}
+
+/**
+ */
+define boolean CheckType(string type) {
+    y2debug(2, "type=%1", type);
+    if(type != "all" && !contains(Supported, type)) {
+	y2error(2, "Unsupported provider type: %1", type);
+	return false;
+    }
+    return true;
+}
+
+/**
+ * Write custom providers data
+ * @param type providers the module is working with ("all"|"modem"|"isdn"|"dsl")
+ * @return true if sucess
+ */
+global define boolean Write(string type) {
+
+    y2milestone("Writing configuration");
+
+    boolean ret = true;
+    if(!CheckType(type)) return false;
+
+    map<string,map> OriginalProvs = (map<string,map>) Filter(OriginalProviders, type);
+    map<string,map<string,string> > Provs = (map<string,map<string,string> >) Filter(Providers, type);
+    y2debug("OriginalProvs=%1", OriginalProvs);
+    y2debug("Provs=%1", Provs);
+
+    /* Check for changes */
+    if(Provs == OriginalProvs) {
+	y2milestone("No changes to %1 providers -> nothing to write", type);
+	return true;
+    }
+
+    /* Remove deleted custom providers */
+    foreach(string provider, Deleted, {
+	if(!haskey(OriginalProvs, provider)) return;
+	path p = add(.sysconfig.network.providers.section, provider);
+	y2debug("deleting: %1", p);
+	SCR::Write(p, nil);
+    });
+    Deleted = filter(string prov, Deleted, {
+	return haskey(OriginalProvs, prov);
+    });
+    y2debug("Deleted=%1", Deleted);
+
+    /* Write custom providers */
+    foreach(string name, map<string,string> provider, Provs, {
+
+	name = filterchars(name, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.");
+	path base = add(.sysconfig.network.providers.v, name);
+
+	/* Ensure all neccesary items are present */
+	if(!haskey(provider, "MODEMSUPPORTED"))
+	    provider["MODEMSUPPORTED"] = "yes";
+	if(!haskey(provider, "ISDNSUPPORTED"))
+	    provider["ISDNSUPPORTED"] = "no";
+	if(!haskey(provider, "DSLSUPPORTED"))
+	    provider["DSLSUPPORTED"] = "no";
+
+	/* Write all values */
+	foreach(string k, string v, provider, {
+
+	    /* Adjust some values */
+	    if(k == "ASKPASSWORD" || k == "STUPIDMODE" || k == "COMPUSERVE" ||
+		    k == "ISDNSUPPORTED" || k == "DSLSUPPORTED" ||
+		    k == "MODEMSUPPORTED") {
+		if(v == "0") v = "no";
+		else if(v == "1") v = "yes";
+		else if(v != "no" && v != "yes")
+		    v = (find(v, "no") != -1 ? "no" : "yes");
+	    }
+
+	    /* Do the write */
+	    SCR::Write(add(base, k), String::Quote(v));
+	});
+    });
+
+    /* Flush */
+    SCR::Write(.sysconfig.network.providers, nil);
+
+    /* Change the rights (provider can contain password #13353 */
+    SCR::Execute(.target.bash, "/bin/chown root:root /etc/sysconfig/network/providers");
+    SCR::Execute(.target.bash, "/bin/chmod 0700 /etc/sysconfig/network/providers");
+
+    return ret;
+}
+
+/**
+ * Import data
+ * @param providers providers to be imported
+ * @return true on success
+ */
+global define map Import(string type, map providers) {
+    if(!CheckType(type)) return $[];
+    map Provs = FilterNOT(Providers, type);
+    y2debug("Provs=%1", Provs);
+
+    Name = "";
+    Current = $[];
+    Providers = (map<string,map>) union(Provs, providers);
+    OriginalProviders = nil;
+}
+
+/**
+ * Export data
+ * @return dumped settings (later acceptable by Import())
+ */
+global define map Export(string type) {
+    if(!CheckType(type)) return $[];
+    map Provs = Filter(Providers, type);
+    y2debug("Provs=%1", Provs);
+    return Provs;
+}
+
+/**
+ * Select the given system provider
+ * @param name SCR path to the system provider
+ * @return true if success
+ */
+global define boolean SelectSystem(path name) {
+
+    y2debug("name=%1", name);
+
+    Name = sformat("%1", name);
+    if(findlastof(Name, ".") != -1)
+	Name = regexpsub(Name, "^.*\\.([^.]*)", "\\1");
+    if(Name == nil) Name = "";
+
+    if("\"" == substring(Name, 0, 1))
+	Name = substring(Name, 1, size(Name) - 2);
+
+    list<string> values = SCR::Dir(name);
+    Current = listmap(string value, values, {
+	return $[ value: SCR::Read(add(name, value)) ];
+    });
+
+    y2debug("Name=%1", Name);
+    y2debug("Current=%1", Current);
+
+    return true;
+}
+
+/**
+ * Select the given provider
+ * @param name provider to select ("" for new provider, default values)
+ * @return true if success
+ */
+global define boolean Select(string name) {
+
+    Name = "";
+    Current = $[];
+
+    y2debug("name=%1", name);
+    if(name != "" && !haskey(Providers, name)) {
+	y2error("No such provider: %1", name);
+	return false;
+    }
+
+    Name = name;
+    Current = (map) eval(Providers[Name]:$[]);
+    if(name != "") Type = ProviderType();
+
+    if(Current == $[]) {
+	/* Default provider map */
+	Current = $[
+	    /* FIXME: remaining items */
+	];
+
+	/* Variable key -> not functional #16701 */
+	Current[toupper(Type) + "SUPPORTED"] = "yes";
+    }
+
+    y2debug("Name=%1", Name);
+    y2debug("Type=%1", Type);
+    y2debug("Current=%1", Current);
+
+    return true;
+}
+
+/**
+ * Add a new provider
+ * @param type provider type (modem|isdn|dsl)
+ * @return true if success
+ */
+global define boolean Add(string type) {
+    operation = nil;
+    if(!CheckType(type)) return false;
+    Type = type;
+    if(Select("") != true) return false;
+    if(CloneProvider() != true) return false;
+    LastCountry = country;
+    operation = `add;
+    return true;
+}
+
+/**
+ * Edit the given provider
+ * @param name provider to edit
+ * @return true if success
+ */
+global define boolean Edit(string name) {
+    operation = nil;
+    Type = "";
+    if(Select(name) != true) return false;
+    LastCountry = "_custom";
+    operation = `edit;
+    return true;
+}
+
+/**
+ * Delete the given provider
+ * @param name provider to delete
+ * @return true if success
+ */
+global define boolean Delete(string name) {
+    operation = nil;
+
+    y2debug("Delete(%1)", name);
+    if(!haskey(Providers, name)) {
+	y2error("Key not found: %1", name);
+	return false;
+    }
+
+    Name = name;
+    operation = `delete;
+    return true;
+}
+
+/**
+ * Commit pending operation
+ * @return true if success
+ */
+global define boolean Commit() {
+    y2debug("operation=%1", operation);
+
+    if(operation == `add || operation == `edit) {
+	y2debug("Providers=%1", Providers);
+	Providers[Name] = Current;
+	y2debug("Providers=%1", Providers);
+    }
+    else if(operation == `delete) {
+	if(!haskey(Providers, Name)) {
+	    y2error("Key not found: %1", Name);
+	    return false;
+	}
+	Providers = remove(Providers, Name);
+	Deleted[size(Deleted)] = Name;
+    }
+    else {
+	y2error("Unknown operation: %1 (%2)", operation, Name);
+	return false;
+    }
+
+    Name = "";
+    Type = "";
+    Current = $[];
+    operation = nil;
+    LastCountry = country;
+    y2debug("LastCountry=%1", LastCountry);
+    return true;
+}
+
+/**
+ * Clone the given provider
+ * @param name provider to clone
+ * @return true if success
+ */
+global define boolean Clone(string name) {
+    operation = nil;
+    if(Select(name) != true) return false;
+    if(CloneProvider() != true) return false;
+    operation = `add;
+    return true;
+}
+
+/**
+ * Clone the given system provider
+ * @param name SCR path to system provider to clone
+ * @return true if success
+ */
+global define boolean CloneSystem(path name) {
+    operation = nil;
+    if(SelectSystem(name) != true) return false;
+    if(CloneProvider() != true) return false;
+    operation = `add;
+    return true;
+}
+
+/**
+ * Clone current provider
+ * @return true if success
+ */
+define boolean CloneProvider() {
+
+    string fullname = Current["PROVIDER"]:"";
+    y2debug("fullname=%1", fullname);
+
+    /* Split possible (1) from the end */
+    if(regexpmatch(fullname, " \\([0-9]+\\)$")) {
+	fullname = regexpsub(fullname, "(.*) \\([0-9]+\\)$", "\\1");
+	y2debug("fullname=%1", fullname);
+    }
+
+    /* Generate unique full name (Current["PROVIDER"]) */
+    integer suffix = 0;
+    string gen = fullname;
+    list forbidden = maplist(string k, map v, Providers, {
+	return v["PROVIDER"]:"";
+    });
+    while(contains(forbidden, gen)) {
+	suffix = suffix + 1;
+	gen = sformat("%1 (%2)", fullname, suffix);
+    }
+    Current["PROVIDER"] = gen;
+    y2debug("fullname=%1", gen);
+
+    /* Generate unique Name */
+    suffix = 0;
+    string name = Name;
+    y2debug("Name=%1", Name);
+
+    /* Split possible number from the end */
+    if(regexpmatch(name, "[0-9]+$")) {
+	name = regexpsub(name, "(.*)[0-9]+", "\\1");
+	y2debug("name=%1", name);
+    }
+
+    /* Sensible defaults for new providers */
+    gen = name;
+    if(gen == "") {
+	gen = "provider0";
+	name = "provider";
+    }
+    if(gen == "provider")
+	gen = "provider0";
+
+    /* Generate unique name (Name) */
+    forbidden = Map::Keys(Providers);
+    while(contains(forbidden, gen)) {
+	suffix = suffix + 1;
+	gen = sformat("%1%2", name, suffix);
+    }
+    Name = gen;
+    y2debug("Name=%1", Name);
+
+    return true;
+}
+
+/**
+ * Create an overview table with all configured providers
+ * @return table items
+ */
+global define list Overview(string type) {
+
+    if(!CheckType(type)) return [];
+    map<string,map<string,string> > Provs = (map<string,map<string,string> >) Filter(Providers, type);
+    y2debug("Provs=%1", Provs);
+
+    list overview = [];
+    maplist(string name, map provmap, Provs, {
+	y2debug("provider(%1): %2", name, provmap);
+	// overview = add(overview, `item(`id(name), name, provmap["PROVIDER"]:"", provmap["PHONE"]:"", provmap["MODEMSUPPORTED"]:"no", provmap["ISDNSUPPORTED"]:"no", provmap["DSLSUPPORTED"]:"no"));
+	term it = `item(`id(name), name, provmap["PROVIDER"]:"");
+	if(type != "dsl") it = add(it, provmap["PHONE"]:"");
+	overview = add(overview, it);
+    });
+    y2debug("overview=%1", overview);
+
+    return overview;
+}
+
+/**
+ * Create a textual summary and a list of unconfigured providers
+ * @param split split configured and unconfigured?
+ * @return summary of the current configuration
+ */
+global define list Summary(string type, boolean split) {
+
+    if(!CheckType(type)) return [];
+    map<string,map<string,string> > Provs = (map<string,map<string,string> >) Filter(Providers, type);
+    y2debug("Provs=%1", Provs);
+
+    string summary = "";
+    if(size(Provs) < 1)
+	/* Summary text */
+	summary = Summary::AddHeader("", _("Nothing is configured."));
+    else
+	/* Summary text */
+	summary = Summary::AddHeader("", _("Already configured providers:"));
+
+    list<string> provs = [];
+    maplist(string name, map provmap, Provs, {
+	/* Summary text description (%1 is provider name) */
+	string descr = sformat(_("Configured as %1"), name);
+	string phone = provmap["PHONE"]:"";
+	if(phone != "" && phone != nil)
+	    /* Summary text description (%1 is provider name) */
+	    descr = sformat(_("Configured as %1 (phone %2)"), name, phone);
+	provs = add(provs, Summary::Device(provmap["PROVIDER"]:"", descr));
+    });
+    summary = Summary::DevicesList(provs);
+
+    return [
+	summary,
+	[
+	    /* List item to providers summary */
+	    `item(`id("modem"), _("Modem provider"), true),
+	    /* List item to providers summary */
+	    `item(`id("isdn"), _("ISDN Provider")),
+	    /* List item to providers summary */
+	    `item(`id("dsl"), _("DSL Provider")),
+	]
+    ];
+}
+
+/**
+ * Get list of countries
+ * @return list for SelectionBox
+ */
+global define list GetCountries() {
+    return Countries;
+}
+
+/**
+ * Check if provider name is unique
+ * @param name provider name
+ * @return true if OK
+ */
+global define boolean IsUnique(string name) {
+    list forbidden = maplist(string k, map v, Providers, {
+	return v["PROVIDER"]:"";
+    });
+    return !contains(forbidden, name);
+}
+
+/**
+ * Return current provider type
+ * @return current provider type
+ */
+global define string ProviderType() {
+    list supp = filter(string t, Supported, {
+	return Current[toupper(t+"SUPPORTED")]:"no" == "yes";
+    });
+    y2debug("supp=%1", supp);
+    return supp[0]:"modem";
+}
+
+/*-------------------------------------------------------------------*/
+/* FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME */
+/*-------------------------------------------------------------------*/
+
+/**
+ * Filter providers based on the type
+ * @param provs list of providers
+ * @param type desired type "modem"|"isdn"|"rawip"|"syncppp"|"dsl"
+ * @return list of type capable providers
+ */
+define list FilterProviders(list provs, string type) {
+    y2debug("provs,type=%1,%2", provs, type);
+    string supported = toupper(type) + "SUPPORTED";
+    boolean etst = false;
+    if (type == "rawip" || type == "syncppp") {
+	supported = "ISDNSUPPORTED";
+	etst = true;
+    }
+    y2debug("supported=%1", supported);
+
+    return filter(any i, provs, {
+	y2debug("i=%1", i);
+	if(is(i, string)) {
+	    map p = (map) Providers[(string) i]:$[];
+	    if(p[supported]:"no" == "yes")
+		if (etst)
+		    return p["ENCAP"]:"_nodef" == type;
+		else
+		    return true;
+	    else
+		return false;
+	}
+	else if(SCR::Read((path)i + topath("."+supported)) == "yes")
+	    if (etst)
+		return (SCR::Read((path)i + topath(".ENCAP")) == type);
+	    else
+		return true;
+	else
+	    return false;
+    });
+}
+
+/**
+ * Sorts providers alphabeticly (non-case-sensitively) and by priority.
+ * In the first step, priority and name of each provider is obtained.
+ * List of strings built from these values is created. Item lists are:
+ * "<1-character-priority><34-characters-provider-name><provider-identifier>"
+ * This list is sorted, result is correctly sorted, by priority and
+ * alphabeticaly. I did not use builtin sort with sort code because it
+ * uses bubble sort -- it was bloody slow.
+ *
+ * @param provs list of providers
+ * @return sorted list of providers
+ */
+define list SortProviders(list provs) {
+    list pre = sort(maplist(any i, add(provs, "--"), {
+	if("--" == i)
+	    return "9                                  .\"--\"";
+	if(is(i, string))
+	    return "x                                  " + (string) i;
+	else {
+	    string tmp = (string) SCR::Read((path)i + .PRIORITY);
+	    if(nil == tmp)
+		tmp = "-1";
+	    integer p = 8 - tointeger(tmp);
+	    if(p < 0 || p > 9)
+		y2error("Wrong priority (%1), you must change the algorithm! [%2]", p, tmp);
+	    tmp = tolower((string) SCR::Read((path)i + .PROVIDER)) + "                                   ";
+	    tmp = sformat("%1", p) + tmp;
+	    return sformat("%1%2", substring(tmp, 0, 35), i);
+	}
+    }));
+    if(".\"--\"" == substring(pre[0]:"", 35))
+	pre = remove(pre, 0);
+    return maplist(string i, (list<string>) pre, {
+	if("x" == substring(i, 0, 1))
+	    return (any) substring(i, 35);
+	return (any) topath(substring(i, 35));
+    });
+}
+
+/**
+ * Get providers from a group (country/other)
+ * @param country we want providers from this country
+ * @param preselect preselect this provider
+ * @return list of items for SelectionBox
+ */
+global define list GetProviders(string type, string country, string preselect) {
+    list provs = [];
+
+    y2debug("%1-%2", country, preselect);
+    /* Custom providers */
+    if(country == "_custom") {
+	foreach(string k, map v, Providers, {
+	    provs[size(provs)] =  k;
+	});
+    }
+    /* Providers from given country */
+    else {
+	list<string> dir = SCR::Dir(add(.providers.s, country));
+	path base = add(.providers.v, country);
+	provs = maplist(string i, dir, {
+	    return add(base, i);
+	});
+    }
+
+    y2debug("type=%1", type);
+    y2debug("provs=%1", provs);
+    /* Filter only desired providers */
+    provs = FilterProviders(provs, type);
+
+    y2debug("provs=%1",provs);
+    /* Sort and create divider (line) */
+    provs = SortProviders(provs);
+
+    y2debug("provs=%1",provs);
+    integer index = -1;
+    /* i is either string or path */
+    return maplist(any i, provs, {
+	index = index + 1;
+	if(is(i, string))
+	    return `item(`id(i), Providers[(string) i, "PROVIDER"]:i, index == 0 || preselect == i);
+	else
+	    if(."--" == i)
+		return `item(`id(i), "----------------");
+	    else
+		return `item(`id(i), SCR::Read((path) i + .PROVIDER), 0 == index);
+    });
+}
+
+/* EOF */
+}

@@ -1,0 +1,267 @@
+/**
+ * File:	include/network/provider/complex.ycp
+ * Package:	Network configuration
+ * Summary:	Complex providers dialogs
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Label";
+import "Popup";
+import "Provider";
+import "Wizard";
+import "Wizard_hw";
+
+include "network/routines.ycp";
+include "network/summary.ycp";
+include "network/provider/helps.ycp";
+
+/**
+ * Commit changes to internal structures
+ * @return always `next
+ */
+define symbol CommitProvider() {
+    Provider::Commit();
+    return `next;
+}
+
+/**
+ * Read settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol ReadDialog() {
+    ScreenName("provider-read");
+    Wizard::RestoreHelp(HELPS["read"]:"");
+    // Provider::AbortFunction = ``{return PollAbort();};
+    boolean ret = Provider::Read();
+    return ret ? `next : `abort;
+}
+
+/**
+ * Write settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol WriteDialog() {
+    ScreenName("provider-write");
+    if(!Modified()) return `next;
+    Wizard::RestoreHelp(HELPS["write"]:"");
+    // Provider::AbortFunction = ``{return PollAbort() && ReallyAbort();};
+    boolean ret = Provider::Write("all");
+    return ret ? `next : `abort;
+}
+
+/**
+ * Choose provider type dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define any TypeDialog() {
+
+    ScreenName("provider-type");
+
+    /* Provider type dialog caption */
+    string caption = _("Provider Type");
+
+    /* Provider type dialog contents */
+    term contents = `HBox(
+	`HSpacing(8),
+	/* Frame label */
+	//`Frame(_("Available network modules:"), `HBox(`HSpacing(2),
+	`VBox(
+	    `VSpacing(3),
+	    /* Selection box label */
+	    `SelectionBox(`id(`modules), _("&Available Provider Types:"), [
+		/* Selection box item */
+		`item(`id("modem"), _("Modem provider"), true),
+		/* Selection box item */
+		`item(`id("isdn"), _("ISDN Provider")),
+		/* Selection box item */
+		`item(`id("dsl"), _("DSL Provider"))
+	    ]),
+	    `VSpacing(3)
+	    ),
+	    //`HSpacing(2))),
+	`HSpacing(8)
+    );
+
+    Wizard::SetContentsButtons(caption, contents, HELPS["type"]:"",
+	    Label::BackButton(), Label::NextButton());
+
+    UI::SetFocus(`id(`modules));
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    /* if(ReallyAbort()) break;
+	    else continue; */
+	    break;
+	}
+	/* next */
+	else if(ret == `next) {
+	    /* check_* */
+	    break;
+	}
+	/* back */
+	else if(ret == `back) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    if(ret == `next) {
+	string type = (string) UI::QueryWidget(`id(`modules), `CurrentItem);
+	y2debug("type=%1", type);
+	Provider::Add(type);
+    }
+
+    return ret;
+}
+
+/**
+ * Main dialog
+ * @return dialog result
+ */
+define any SummaryDialog() {
+
+    ScreenName("provider-summary");
+
+    /* Provider summary dialog caption */
+    string caption = _("Provider Configuration");
+
+    list summary = Provider::Summary("all", true);
+    list unconfigured = summary[1]:[];
+    string configured = summary[0]:"";
+    y2debug("unconfigured=%1", unconfigured);
+
+    /* Frame label */
+    term contents = Wizard_hw::DetectedContent(_("Providers to configure"),
+	    unconfigured, false, configured);
+
+    Wizard::SetContentsButtons(caption, contents, HELPS["summary"]:"",
+	    Label::BackButton(), Label::FinishButton());
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+	y2debug("ret=%1", ret);
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel || ret == `back) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* overview dialog */
+	else if(ret == `edit_button) {
+	    ret = `overview;
+	    break;
+	}
+	/* configure the selected card */
+	else if(ret == `configure_button || ret == `detected_selbox) {
+	    string type = (string) UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
+	    Provider::Add(type);
+	    ret = `configure;
+	    break;
+	}
+	else if(ret == `next) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    return ret;
+}
+
+/**
+ * Overview dialog
+ * @return dialog result
+ */
+define any OverviewDialog() {
+
+    ScreenName("provider-overview");
+
+    /* Provider overview dialog help caption */
+    string caption = _("Providers configuration overview");
+
+    list overview = Provider::Overview("all");
+    y2debug("overview=%1",overview);
+
+    term contents = OverviewTable(
+	/* Table header */
+	`header(_("Name"), _("Provider"), _("Phone")),
+	// `header(_("Name"), _("Provider"), _("Phone"), _("Modem"), _("ISDN"), _("DSL")),
+	overview
+    );
+
+    Wizard::SetContentsButtons(caption, contents, HELPS["overview"]:"",
+	    Label::BackButton(), Label::FinishButton());
+
+    if(size(overview) < 1) {
+	UI::ChangeWidget(`id(`edit), `Enabled, false);
+	UI::ChangeWidget(`id(`delete), `Enabled, false);
+    }
+    else
+	UI::SetFocus(`id(`table));
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* add */
+	else if(ret == `add) {
+	    break;
+	}
+	/* edit */
+	else if(ret == `edit || ret == `table) {
+	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+	    Provider::Edit(dev);
+	    break;
+	}
+	/* delete */
+	else if(ret == `delete) {
+	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+	    Provider::Delete(dev);
+	    Provider::Commit();
+	    overview = Provider::Overview("all");
+	    UI::ChangeWidget(`id(`table), `Items, overview);
+	    if(size(overview) < 1) {
+		UI::ChangeWidget(`id(`edit), `Enabled, false);
+		UI::ChangeWidget(`id(`delete), `Enabled, false);
+	    }
+	    y2debug("overview=%1",overview);
+	    continue;
+	}
+	else if(ret == `next || ret == `back) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    return ret;
+}
+
+/* EOF */
+}

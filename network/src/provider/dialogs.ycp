@@ -1,0 +1,224 @@
+/**
+ * File:	include/network/provider/dialogs.ycp
+ * Package:	Network configuration
+ * Summary:	Provider dialogs
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *		Petr Blahos <pblahos@suse.cz>
+ *		Dan Vesely <dan@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Label";
+import "Popup";
+import "Provider";
+import "Wizard";
+
+include "network/routines.ycp";
+include "network/provider/helps.ycp";
+
+/**
+ * The SelectionBox "----" divider hack
+ * @param provs list of providers for the current selection
+ * @param prev previously selected provider
+ * @return new provider selection
+ */
+define any dividerHack(list provs, any prev) {
+    integer p = -1;
+    find(term e, (list<term>) provs, {
+	p = p + 1;
+	any id = e[0, 0]:"x";
+	return id == prev;
+    });
+    integer i = -1;
+    find(term e, (list<term>) provs, {
+	i = i + 1;
+	any id = e[0, 0]:"x";
+	return id == ."--";
+    });
+    return provs[p<i ? i+1 : i-1, 0, 0]:"x";
+}
+
+/**
+ * Providers dialog
+ * @param edit true in case of edit sequence
+ * @return symbol dialog result
+ */
+define any ProvidersDialog(boolean edit) {
+
+    ScreenName("provider-list");
+    string type = Provider::Type;
+    y2security("type=%1", type);
+
+    /* Provider dialog caption */
+    string caption = _("Select Internet Service Provider (ISP)");
+
+    string country = Provider::LastCountry;
+    y2debug("country=%1", country);
+    any provider = nil;
+
+    list provs = [];
+
+    /* Provider dialog contents */
+    term contents = `HBox(
+	`HSpacing(),
+	`VBox(
+	    `VSpacing(1),
+	    `HBox(
+		`HWeight(1, `VBox(
+		    `RadioButtonGroup(`id(`radio), `VBox(
+			/* RadioButton label */
+			`RadioButton(`id(`custom), `opt(`hstretch, `notify), _("C&ustom Providers"), country == "_custom"),
+			`VSpacing(0.2),
+			/* RadioButton label */
+			`RadioButton(`id(`country), `opt(`hstretch, `notify), _("&Countries"), country != "_custom")
+		    )),
+		    `HBox(
+			`HSpacing(3.4),
+			/* SelectionBox label */
+			`SelectionBox(`id(`countries), `opt(`notify), _("&Select a Country:"), Provider::GetCountries())
+		    )
+		)),
+		`HSpacing(),
+		`HWeight(1, `HBox(
+		    `ReplacePoint(`id(`providers_rep), `VSpacing(1)),
+		    `HSpacing(2.4)
+		))
+	    ),
+	    `HBox(`HSpacing(3.4), `Label(`id(`homepage), `opt(`hstretch), "")),
+	    `HBox(`HSpacing(3.4), `Label(`id(`hotline), `opt(`hstretch),  "")),
+	    /* PushButton label (New provider) */
+	    `PushButton(`id(`new), _("Ne&w")),
+        `VSpacing(1)
+	),
+	`HSpacing()
+    );
+
+    Wizard::SetContentsButtons(caption, contents, HELPS["providers"]:"",
+	    Label::BackButton(), Label::NextButton());
+
+    if(country != "_custom")
+	UI::ChangeWidget(`id(`countries), `CurrentItem, country);
+
+    /**
+     * Update widgets in the ProviderDialog
+     * @param re UserInput
+     */
+    define void UpdateProvider(any re) {
+
+	/* Update custom and providers tables */
+	if(re != `providers) {
+	    if((boolean) UI::QueryWidget(`id(`custom), `Value))
+		country = "_custom";
+	    else
+		country = (string) UI::QueryWidget(`id(`countries), `CurrentItem);
+
+	    y2debug("country=%1", country);
+	    UI::ChangeWidget(`id(`countries), `Enabled, country != "_custom");
+
+	    if(country != Provider::LastCountry || !UI::WidgetExists(`id(`providers))) {
+		provs = Provider::GetProviders(type, country, Provider::Name);
+		y2debug("provs=%1", provs);
+		UI::ReplaceWidget(`id(`providers_rep),
+		    /* SelectionBox label */
+		    `SelectionBox(`id(`providers), `opt(`notify), _("&Providers"), provs));
+		Provider::LastCountry = country;
+	    }
+	}
+
+	/* Update provider info */
+	any prev = provider;
+	provider = UI::QueryWidget(`id(`providers), `CurrentItem);
+	if(is(provider, path) && ."--" == provider) {
+	    provider = dividerHack(provs, prev);
+	    UI::ChangeWidget(`id(`providers), `CurrentItem, provider);
+	}
+	/* No provider found for the given type */
+	if(provider == nil) {
+	    UI::ChangeWidget(`id(`homepage), `Value, "");
+	    UI::ChangeWidget(`id(`hotline), `Value, "");
+	    return;
+	}
+
+	if((boolean) UI::QueryWidget(`id(`custom), `Value))
+	    /* Custom provider -> Select */
+	    Provider::Select((string) provider);
+	else
+	    /* System provider -> SelectSystem */
+	    Provider::SelectSystem((path) provider);
+
+	string info = Provider::Current["HOMEPAGE"]:"";
+	/* Label text (param is URL) */
+	if(info != "") info = sformat(_("Home Page: %1"), info);
+	UI::ChangeWidget(`id(`homepage), `Value, info);
+
+	info = Provider::Current["HOTLINE"]:"";
+	/* Label text (param is phone) */
+	if(info != "") info = sformat(_("Hot Line: %1"), info);
+	UI::ChangeWidget(`id(`hotline), `Value, info);
+    }
+
+    UpdateProvider(nil);
+
+   /* MAIN CYCLE */
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* back */
+	else if(ret == `back) {
+	    break;
+	}
+	/* next */
+	else if(ret == `next || ret == `new) {
+	    UpdateProvider(ret);
+	    break;
+	}
+	/* custom providers */
+	else if(ret == `custom || ret == `country || ret == `countries || ret == `providers) {
+	    UpdateProvider(ret);
+	    continue;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    /* New or no provider found */
+    if(ret == `new || provider == nil) {
+	Provider::Add(type);
+    }
+    /* Next */
+    else if(ret == `next) {
+	/* Custom provider */
+	if((boolean) UI::QueryWidget(`id(`custom), `Value)) {
+	    if(edit)
+		/* Edit existent */
+		Provider::Edit((string) provider);
+	    else
+		/* Clone existent */
+		Provider::Clone((string) provider);
+	}
+	else
+	    /* System provider -> SelectSystem */
+	    Provider::CloneSystem((path) provider);
+    }
+
+    y2debug("country=%1", country);
+    y2debug("country=%1", Provider::LastCountry);
+    return ret;
+}
+
+/* EOF */
+}
