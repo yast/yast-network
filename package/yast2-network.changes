@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Thu Feb 10 16:37:07 CET 2005 - mvidner@suse.cz
+Fri Feb 11 13:36:09 CET 2005 - mvidner@suse.cz
 
+- Fixed selecting an ISDN card manually (#50725).
 - Do not propose a dynamic address if the product (OES) says
   force_static_ip (#50524).
 - Warn when selecting a device without a module (#29296).

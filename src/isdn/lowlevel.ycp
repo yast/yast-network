@@ -182,7 +182,7 @@ particular vendors by selecting a vendor.</p>");
 
     if(ret == `next) {
 	card = (integer) UI::QueryWidget(`id(`cards), `CurrentItem);
-	cur_card = ISDN::ISDNCDB["Cards"]:$[][card]:$[];
+	cur_card = ISDN::ISDNCDB["Cards", card]:$[];
 	ISDN::hw_device = union(ISDN::hw_device, $[
 	    "PARA_TYPE"		: sformat("%1", get_i4ltype(cur_card)),
 	    "PARA_SUBTYPE"	: sformat("%1", get_i4lsubtype(cur_card)),
@@ -357,7 +357,7 @@ define any isdn_lowlevel() ``{
     }
 
     map cur_card = get_isdncard_by_type(ISDN::ISDNCDB, Default_TYPE, Default_SUBTYPE);
-    map cur_vendor = ISDN::ISDNCDB["Vendors"]:$[][cur_card["VendorRef"]:-1]:$[];
+    map cur_vendor = ISDN::ISDNCDB["Vendors", cur_card["VendorRef"]:-1]:$[];
 
     y2debug("DefaultTYPE : %1/%2", Default_TYPE, Default_SUBTYPE);
 

@@ -58,7 +58,48 @@ global string global_ac = "";
 // global start mode
 global string global_sm = "";
 
-/* ISDN database based on CDB */
+/**
+ * ISDN database based on CDB
+ *
+ * map with two keys, of maps:
+ * Cards:
+ *   map, keyed by integers, of maps:
+ *   CardID:	integer (the key)
+ *   VendorRef:	integer
+ *   bus:	string (ISA)
+ *   class:	string (ISDN Single/Multiple Basic Rate)
+ *   device:	integer
+ *   driver:	list of driver maps
+ *   features:	integer
+ *   lines:	integer
+ *   longname:	string
+ *   name:	string
+ *   revision:	integer
+ *   subdevice:	integer
+ *   subvendor:	integer
+ *   vendor:	integer
+ * Vendors:
+ *   map, keyed by integers, of maps:
+ *   VendorID:	integer (the key)
+ *   name:	string
+ *   refcnt:	integer
+ *   shortname:	string
+ *
+ *
+ * driver map:
+ *   IO:	list<string>
+ *   IRQ:	list<string>
+ *   MEMBASE:	list<string>
+ *   description: string
+ *   drvid:	integer
+ *   info:	string
+ *   mod_name:	string
+ *   name:	string
+ *   need_pkg:	list<string>
+ *   protocol:	list<string>
+ *   subtype:	integer
+ *   type:	integer
+ */
 global map ISDNCDB = $[];
 
 
