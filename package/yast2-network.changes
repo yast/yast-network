@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Sep  5 15:06:00 CEST 2002 - kkeil@suse.de
+
+- write FIREWALL=[yes|no] for isdn (additional fix for #18840)
+- don't start smpppd/kinternet in save only mode (#18831)
+- set default STARTMODE for interface depending on STARTMODE
+  of hardware
+
+-------------------------------------------------------------------
 Wed Sep  4 12:10:30 CEST 2002 - msvec@suse.cz
 
 - write the correct ISDN device for the firewall (#18840)
