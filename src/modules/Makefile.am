@@ -11,11 +11,14 @@ Proxy.ybc: NetworkDevices.ybc
 YCPCFLAGS =
 
 network:
-	ln -sf ../routines network
+	ln -sf ../routines $@
 
 network/isdn:
-	ln -sf ../isdn network/isdn
+	ln -sf ../isdn $@
 
-ycpchook = network network/isdn
+network/lan:
+	ln -sf ../lan $@
+
+ycpchook = network network/isdn network/lan
 
 include $(top_srcdir)/Makefile.am.common
