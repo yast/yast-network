@@ -94,6 +94,9 @@ else if (func == "Read") {
     ret = Host::Read();
     Progress::on();
 }
+else if  (func == "Packages") {
+	ret = $[];
+}
 /* Write givven settings */
 else if (func == "Write") {
     import "Progress";

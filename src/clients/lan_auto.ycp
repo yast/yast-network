@@ -226,6 +226,9 @@ else if(func == "Read") {
 	ret = Lan::Read();
 	Progress::on();
 }
+else if (func == "Packages") {
+	ret = $[];
+}
 else if (func == "Export") {
     map settings = Lan::Export();
     map autoyast = ToAY(settings);
