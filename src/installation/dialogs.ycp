@@ -70,7 +70,7 @@ global define symbol TestStepsDialog() ``{
     string help = _("<p>Here, validate the Internet connection just
 configured. The test is entirely optional.</p>");
 
-    if(!contains(Product::flags, "no_you")) {
+    if(Product::run_you) {
 	/* Steps dialog caption 2/2 */
 	help = help + _("<p>A successful result enables you to run
 the YaST Online Update.</p>");
@@ -118,7 +118,7 @@ activate the test procedure."),
 	/* label text - one step of during network test */
 	steps = add(steps, `Left(`Label(_("- Download latest release notes"))));
     }
-    if(!contains(Product::flags, "no_you")) {
+    if(Product::run_you) {
 	/* label text - one step of during network test */
 	steps = add(steps, `Left(`Label(_("- Check for latest updates"))));
     }

@@ -112,7 +112,7 @@ and correct the setting.</p>");
 	    progress = add(progress, `Left(`HBox(`Heading(`id(`s1), dash), `Label(l1))));
 	if(true)
 	    progress = add(progress, `Left(`HBox(`Heading(`id(`s2), dash), `Label(l2))));
-	if(!contains(Product::flags, "no_you"))
+	if(Product::run_you)
 	    progress = add(progress, `Left(`HBox(`Heading(`id(`s3), dash), `Label(l3))));
 	if(!already_up)
 	    progress = add(progress, `Left(`HBox(`Heading(`id(`s4), dash), `Label(l4))));
@@ -348,7 +348,7 @@ the logs for details.
 
 	if (test_stage == `patches)		// check for updates
 	{
-	    if(contains(Product::flags, "no_you"))
+	    if(!Product::run_you)
 	    {
 		test_stage = `close;
 		return;
