@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Wed Mar  9 17:10:47 CET 2005 - mvidner@suse.cz
+Fri Mar 11 13:58:19 CET 2005 - mvidner@suse.cz
 
+- Added WLAN channels 13 and 14 to the default list (#67150).
 - Enable user control of newly added WLAN cards (#63767).
 
 -------------------------------------------------------------------
