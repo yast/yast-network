@@ -60,7 +60,7 @@ example, '0a5f-41e6-48').
  * @param key
  * @return prefixed key
  */
-define string ComposeKey (string type, string key) ``{
+define string ComposeWepKey (string type, string key) ``{
 // prefixes for key types
 map <string, string> prefix = $[
     "ascii": "s:",
@@ -79,7 +79,7 @@ map <string, string> prefix = $[
     }
 }
 
-define map<string, string> ParseKey (string tkey) ``{
+define map<string, string> ParseWepKey (string tkey) ``{
     if (substring (tkey, 0, 2) == "s:") 
     {
 	return $[ "key": substring (tkey, 2), "type": "ascii", ];
@@ -149,25 +149,29 @@ define any WirelessDialog() ``{
     string helptext = _("<p>Here, set the most important settings
 for wireless networking.</p>") +
 
-	// TODO for next translation,
-	// restrict to Ad-hoc, Managed and Master only
     /* Wireless dialog help 2/7 */
 _("<p>The <b>Operating Mode</b> depends on the network topology. The mode
 can be <b>Ad-hoc</b> (peer-to-peer network without an access point),
 <b>Managed</b> (network managed by an access point, sometimes also
-called <i>Infrastructure Mode</i>), <b>Master</b> (the node is the
-synchronization master or acts as an access point), <b>Repeater</b>
-(the node forwards packets on the air), <b>Secondary</b> (the node acts
-as a backup master or repeater), or <b>Auto</b>.</p>") +
+called <i>Infrastructure Mode</i>) or <b>Master</b>.</p>") +
 
-	// TODO for next translation
-	// remove reference to NWID
     /* Wireless dialog help 3/7 */
 _("<p>Set the <b>Network Name (ESSID)</b> used to identify cells that are
 part of the same virtual network. As opposed to the NWID, which defines a
 single cell, the ESSID defines a group of cells, connected via repeaters or
 infrastructure, where the user may roam.</p>") +
 
+
+    /* Wireless keys dialog help 3/3 */
+    _("<p>The <b>Authentication Mode</b> defines the behavior of your card when
+using encryption. <b>Open</b> mode means that no authentication is performed.
+<b>Shared Key</b> mode means that shared key authentication is made if
+needed.</p>") +
+
+    /* Wireless keys dialog help 3/3 */
+    _("<p>NOTE: Shared key authentication makes it easier for a potential
+attacker to break into your network. Unless you have specific needs for shared
+key authentication, use the <b>Open</b> mode.</p>") +
 
     /* Wireless dialog help 5/7 */
 _("<p>WEP (Wired Equivalent Privacy) is a system to encrypt wireless
@@ -189,9 +193,20 @@ _("<p>These values will be written to the interface configuration file
 add them manually. Refer to the file 'wireless' in the same directory for all
 available options.</p>");
 
-    map<string, string> wkey = ParseKey (Lan::wl_key[0]:"");
-    string key = wkey["key"]:"";
-    string type = wkey["type"]:"";
+    string authmode = Lan::wl_auth_mode;
+    string key = nil;
+    string type = nil;
+    if (authmode == "psk")
+    {
+	key = Lan::wl_wpa_psk;
+	type = (size (key) == 64)? "hex": "passphrase";
+    }
+    else
+    {
+	map<string, string> wkey = ParseWepKey (Lan::wl_key[0]:"");
+	key = wkey["key"]:"";
+	type = wkey["type"]:"";
+    }
 
     /* PushButton label */
     term multikeys = `PushButton(`id(`keys), _("&Multiple Keys"));
@@ -204,7 +219,7 @@ available options.</p>");
 	    `VSpacing(0.5),
 	    /* Frame label */
 	    `Frame(_("Wireless Device Settings"), `HBox(`HSpacing(2), `VBox(
-		`VSpacing(1),
+		`VSpacing(0.5),
 		/* ComboBox label */
 		`ComboBox(`id(`mode), `opt(`hstretch), _("O&perating Mode"), [
 		    /* ComboBox item */
@@ -218,13 +233,25 @@ available options.</p>");
 		/* Text entry label */
 		`TextEntry(`id(`essid), _("Ne&twork Name (ESSID)"), Lan::wl_essid),
 		`VSpacing(0.2),
+		`Left (`ComboBox (`id (`authmode), `opt (`hstretch, `notify),
+				  /* ComboBox label */
+				  _("&Authentication Mode"), [
+		    /* ComboBox item */
+		    `item (`id ("open"), _("Open")),
+		    /* ComboBox item */
+		    `item (`id ("sharedkey"), _("Shared Key")),
+		    /* ComboBox item */
+		    // Ask me what it means, I don't know yet
+		    `item (`id ("psk"), _("WPA-PSK")),
+		])),
+		`VSpacing(0.2),
 		type_w,
 		`VSpacing(0.2),
 		/* Text entry label */
 		`TextEntry(`id(`key), _("&Encryption Key"), key),
-		`VSpacing(1)
+		`VSpacing(0.5)
 		), `HSpacing(2))),
-	    `VSpacing(1),
+	    `VSpacing(0.5),
 	    `HBox(
 		/* PushButton label */
 		`PushButton(`id(`expert), _("E&xpert Settings")),
@@ -239,13 +266,18 @@ available options.</p>");
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::NextButton());
 
-    // UI::ChangeWidget(`id(`keys), `Enabled, false);
     UI::ChangeWidget (`id (`type_g), `CurrentButton, type);
+    UI::ChangeWidget (`id (`authmode), `Value, authmode);
 
     string ckey = nil;
     any ret = nil;
     while(true) {
+	UI::ChangeWidget (`id ("ascii"), `Enabled, authmode != "psk");
+	UI::ChangeWidget (`id (`keys), `Enabled, authmode != "psk");
+
 	ret = UI::UserInput();
+
+	authmode = (string) UI::QueryWidget (`id (`authmode), `Value);
 
 	if(ret == `abort || ret == `cancel) {
 	    if(ReallyAbort()) break;
@@ -257,33 +289,61 @@ available options.</p>");
 	else if(ret == `next || ret == `expert || ret == `keys) {
 
 	    string essid = (string) UI::QueryWidget(`id(`essid), `Value);
-	    if(essid != "" && size(essid) > 32) {
+	    if (essid == "" && authmode == "psk")
+	    {
+		UI::SetFocus (`id (`essid));
+		/* Popup text */
+		Popup::Error (_("The network name be specified for this authentication mode."));
+		continue;
+	    }
+	    if (size(essid) > 32) {
+		UI::SetFocus (`id (`essid));
 		/* Popup text */
 		Popup::Error(_("The network name must be shorter than 32 characters."));
-		UI::SetFocus(`id(`key));
 		continue;
 	    }
 
 	    key = (string) UI::QueryWidget (`id (`key), `Value);
 	    type = (string) UI::QueryWidget (`id (`type_g), `CurrentButton);
-	    ckey = ComposeKey (type, key);
-	    if (ckey != "") {
-		// TODO validate also according to key length
-		if (!CheckWirelessKey (ckey))
+	    if (authmode == "psk")
+	    {
+		integer sz = size (key);
+		if (type == "passphrase" &&
+		    (sz < 8 || sz > 63))
 		{
 		    UI::SetFocus(`id(`key));
-		    /* Popup text */
-		    Popup::Error(_("The encryption key is invalid."));
+		    Popup::Error(_("The passphrase must have between 8 and 63 characters (inclusively)."));
+		    continue;
+		}
+		// TODO: validchars
+		else if (type == "hex" && sz != 64)
+		{
+		    UI::SetFocus(`id(`key));
+		    Popup::Error(_("The key must have 64 hexadecimal digits."));
 		    continue;
 		}
 	    }
-	    else {
-		/* Popup text */
-		string pop = _("Using no encryption is a security risk!
+	    else
+	    {
+		ckey = ComposeWepKey (type, key);
+		if (ckey != "") {
+		    // TODO validate also according to key length
+		    if (!CheckWirelessKey (ckey))
+		    {
+			UI::SetFocus(`id(`key));
+			/* Popup text */
+			Popup::Error(_("The encryption key is invalid."));
+			continue;
+		    }
+		}
+		else {
+		    /* Popup text */
+		    string pop = _("Using no encryption is a security risk!
 Really continue?");
-		if(!Popup::YesNo(pop)) {
-		    UI::SetFocus(`id(`key));
-		    continue;
+		    if(!Popup::YesNo(pop)) {
+			UI::SetFocus(`id(`key));
+			continue;
+		    }
 		}
 	    }
 	    break;
@@ -297,6 +357,7 @@ Really continue?");
     if(ret == `next || ret == `expert || ret == `keys) {
 	Lan::wl_essid = (string) UI::QueryWidget(`id(`essid), `Value);
 	Lan::wl_mode = (string) UI::QueryWidget(`id(`mode), `Value);
+	Lan::wl_auth_mode = authmode;
 	Lan::wl_key[0] = ckey;
     }
 
@@ -435,7 +496,7 @@ the channel, select the desired value.</p>
 define string WirelessKeyPopup (string tkey) ``{
     ScreenName("lan-hardware-wireless-key");
 
-    map<string, string> wkey = ParseKey (tkey);
+    map<string, string> wkey = ParseWepKey (tkey);
     string key = wkey["key"]:"";
     string type = wkey["type"]:"";
 
@@ -486,7 +547,7 @@ define string WirelessKeyPopup (string tkey) ``{
 	{
 	    key = (string) UI::QueryWidget (`id (`key), `Value);
 	    type = (string) UI::QueryWidget (`id (`type_g), `CurrentButton);
-	    ckey = ComposeKey (type, key);
+	    ckey = ComposeWepKey (type, key);
 	    // TODO validate also according to key length
 	    if (CheckWirelessKey (ckey))
 	    {
@@ -562,20 +623,9 @@ Possible are 64 and 128 bit, sometimes also referred to as 40 and 104 bit.
 Some older hardware might not be able to handle 128 bit keys, so if your
 wireless LAN connection does not establish, you may need to set this
 value to 64.</p>") +
-
-    /* Wireless keys dialog help 3/3 */
-    _("<p>The <b>Authentication Mode</b> defines the behavior of your card when
-using encryption. <b>Open</b> mode means that no authentication is performed.
-<b>Shared Key</b> mode means that shared key authentication is made if
-needed.</p>") +
-
-    /* Wireless keys dialog help 3/3 */
-    _("<p>NOTE: Shared key authentication makes it easier for a potential
-attacker to break into your network. Unless you have specific needs for shared
-key authentication, use the <b>Open</b> mode.</p>");
+    "";
 
     string length = Lan::wl_key_length;
-    string authmode = Lan::wl_auth_mode;
     list<string> keys = Lan::wl_key;
     integer default = FindGoodDefault (keys, Lan::wl_default_key);
 
@@ -583,20 +633,12 @@ key authentication, use the <b>Open</b> mode.</p>");
     term contents = `HBox(
 	`HSpacing(5),
 	`VBox(
-	    `VSpacing(2),
+	    `VSpacing(1),
 	    /* Frame label */
 	    `Frame(_("WEP Keys"), `HBox(`HSpacing(3), `VBox(
 		`VSpacing(1),
 		/* ComboBox label */
 		`Left(`ComboBox(`id(`length), _("&Key Length"), ["128","64"])),
-		`VSpacing(0.2),
-		/* ComboBox label */
-		`Left(`ComboBox(`id(`authmode), _("&Authentication Mode"), [
-		    /* ComboBox item */
-		    `item (`id ("open"), _("Open")),
-		    /* ComboBox item */
-		    `item (`id ("sharedkey"), _("Shared Key")),
-		])),
 		`VSpacing(1),
 		`Table(`id(`table), `opt(`notify),
 		       `header(
@@ -617,7 +659,7 @@ key authentication, use the <b>Open</b> mode.</p>");
 		    `PushButton(`id(`default), _("&Set as Default"))),
 		`VSpacing(1)
 		), `HSpacing(3))),
-	    `VSpacing(2)
+	    `VSpacing(1)
 	),
 	`HSpacing(5)
     );
@@ -626,7 +668,6 @@ key authentication, use the <b>Open</b> mode.</p>");
 	    Label::BackButton(), Label::OKButton());
 
     UI::ChangeWidget (`id (`length), `Value, length);
-    UI::ChangeWidget (`id (`authmode), `Value, authmode);
 
     integer current = (integer) UI::QueryWidget (`id (`table), `CurrentItem);
 
@@ -655,7 +696,6 @@ key authentication, use the <b>Open</b> mode.</p>");
 	    UI::ChangeWidget (`id (`table), `Items, WirelessKeysItems (keys, default));	    
 	}
 	else if(ret == `next) {
-	    authmode = (string) UI::QueryWidget (`id (`authmode), `Value);
 	    length = (string) UI::QueryWidget (`id (`length), `Value);
 	    // no validation necessary (?)
 	    break;
@@ -670,7 +710,6 @@ key authentication, use the <b>Open</b> mode.</p>");
     }
 
     if(ret == `next) {
-	Lan::wl_auth_mode = authmode;
 	Lan::wl_key_length = length;
 	Lan::wl_key = keys;
 	Lan::wl_default_key = default;
