@@ -479,7 +479,7 @@ global define map Export() {
  * @param hw the component
  */
 void SelectHWMap (map hw) {
-    SelectHardwareMap (hw)
+    SelectHardwareMap (hw);
     unique = hw["unique"]:"";
 
     if(hotplug == "") {
@@ -966,7 +966,7 @@ global define boolean Propose() {
 	if (tosel == nil) {
 	    tosel = find (map h, Hardware, ``( 
 			      h["active"]:false
-			      && h["type"] != "wlan"
+			      && h["type"]:"" != "wlan"
 			      ));
 	}
 
@@ -975,7 +975,7 @@ global define boolean Propose() {
 	    y2milestone("No active driver found, trying further.");
 	    tosel = find (map h, Hardware, ``( 
 			      h["module"]:"" != ""
-			      && h["type"] != "wlan"
+			      && h["type"]:"" != "wlan"
 			      && y2milestone("Using driver: %1", h) == nil
 			      ));
 	}
