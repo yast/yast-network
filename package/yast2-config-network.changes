@@ -1,3 +1,8 @@
+-------------------------------------------------------------------
+Thu Jan 24 13:38:33 CET 2002 - msvec@suse.cz
+
+- modems configuration UI
+- expect missing /etc/resolv.conf
 - preliminary lan autoinstallation support
 - 2.5.5
 

@@ -26,6 +26,7 @@ import "Wizard";
 include "wizard/sequencer.ycp";
 
 include "network/modem/dialogs.ycp";
+include "network/modem/complex.ycp";
 /* include "network/modem/"; */
 /* other dialogs ... */
 
@@ -103,10 +104,10 @@ global define symbol MainSequence() ``{
     map aliases = $[
 	"summary"	: ``(SummaryDialog()),
 	"overview"	: ``(OverviewDialog()),
-	"configure"	: [ ``(AddressSequence()), true ],
-	"other"		: [ ``(ManualSequence()), true ],
-	"add"		: [ ``(ManualSequence()), true ],
-	"edit"		: [ ``(AddressSequence()), true ],
+	"configure"	: [ ``(OneModemSequence(true)), true ],
+	"other"		: [ ``(OneModemSequence(false)), true ],
+	"add"		: [ ``(OneModemSequence(false)), true ],
+	"edit"		: [ ``(OneModemSequence(false)), true ],
 	"commit"	: [ ``(Commit()), true ],
     ];
 
@@ -149,68 +150,65 @@ global define symbol MainSequence() ``{
     return WizardSequencer(aliases, sequence);
 }
 
-/**
- * Configuration sequence
- * @return sequence result
- */
-global define symbol ManualSequence() ``{
+global define symbol OneModemSequence(boolean detected) ``{
 
     map aliases = $[
-	"manual"	: ``(ManualDialog()),
-	"list"		: ``(ManualSelection()),
-	"address"	: [ ``(AddressSequence()), true ],
+	"parameters_detected"	: ``(modem_params(`Detected)),
+	"parameters"		: ``(modem_params(`other)),
+	"details"		: ``(modem_details()),
+	"details_detected"	: ``(modem_details()),
+	"providers"		: ``(runProvidersDialog(false)),
+	"provider"		: ``(runEditModemProviderDialog(true)),
+	"new_provider"		: ``(runEditModemProviderDialog(false)),
+	"connection"		: ``(modem_connection()),
+	"connection_details"	: ``(modem_connection_details()),
     ];
+
+    string entry = "parameters";
+    if(detected) entry = "parameters_detected";
 
     map sequence = $[
-	"ws_start"	: "manual",
-	"manual" : $[
-	    `abort	: `abort,
-	    `list	: "list",
-	    `next	: "address",
+	"ws_start" : entry,
+	"parameters": $[
+	    `next   : "providers",
+	    `Details: "details",
+	    `abort  : `abort
 	],
-	"list" : $[
-	    `next	: "manual",
-	    `abort	: `abort,
+	"parameters_detected" : $[
+	    `next   : "providers",
+	    `Details: "details_detected",
+	    `abort  : `abort
 	],
-	"address" : $[
-	    `abort	: `abort,
-	    `next	: `next,
+	"details"   : $[
+	    `next   : "parameters",
+	    `abort  : `abort
 	],
-    ];
-
-    return WizardSequencer(aliases, sequence);
-}
-
-/**
- * Configuration sequence
- * @return sequence result
- */
-global define symbol AddressSequence() ``{
-
-    map aliases = $[
-	"address"	: ``(AddressDialog()),
-	"hostname"	: ``(DNSMainDialog()),
-	"routing"	: ``(RoutingMainDialog()),
-	"commit"	: [ ``(Commit()), true ],
-    ];
-
-    map sequence = $[
-	"ws_start"	: "address",
-	"address" : $[
-	    `abort	: `abort,
-	    `next	: "commit",
-	    `routing	: "routing",
-	    `hostname	: "hostname",
+	"details_detected" : $[
+	    `next   : "parameters_detected",
+	    `abort  : `abort
 	],
-	"routing" : $[
-	    `next	: "address",
+	"providers" : $[
+	    `next   : "provider",
+	    `new    : "new_provider",
+	    `abort  : `abort
 	],
-	"hostname" : $[
-	    `next	: "address",
+	"provider" : $[
+	    `next   : "connection",
+	    `abort  : `abort
 	],
-	"commit" : $[
-	    `next	: `next,
+	"new_provider" : $[
+	    `next   : "connection",
+	    `abort  : `abort
 	],
+	"connection" : $[
+	    `next   : `next,
+	    `Details: "connection_details",
+	    `abort  : `abort
+	],
+	"connection_details" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	]
     ];
 
     return WizardSequencer(aliases, sequence);

@@ -1,0 +1,259 @@
+/**
+ * File:
+ *   include/network/modem/complex.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   Summary, overview and IO dialogs for modems configuration.
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+textdomain "network";
+
+import "Modem";
+
+import "Wizard";
+import "Wizard_hw";
+
+include "ui/common_popups.ycp";
+include "ui/common_messages.ycp";
+include "network/routines.ycp";
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+global define boolean Modified() ``{
+    return Modem::Modified();
+}
+
+/**
+ * Commit changes to internal structures
+ * @return always `next
+ */
+global define symbol Commit() ``{
+    Modem::Commit();
+    return `next;
+}
+
+/**
+ * Read settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+global define symbol ReadDialog() ``{
+
+    /* modems read dialog help 1/2 */
+    string helptext = _("<P><B><BIG>Initializing modems configuration
+</BIG></B><BR>Please wait for a while...<BR></P>");
+
+    /* modems read dialog help 2/2 */
+    helptext = helptext + _("<P><B><BIG>Aborting the initialization:
+</BIG></B><BR>You can safely abort the configuration utility by pressing
+the <B>Abort</B> button now.</P>");
+
+    Wizard::RestoreHelp(helptext);
+    Modem::AbortFunction = ``{return PollAbort();};
+    boolean ret = Modem::Read();
+    return ret ? `next : `abort;
+}
+
+/**
+ * Write settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+global define symbol WriteDialog() ``{
+    if(!Modified()) return `next;
+
+    /* modems write dialog help 1/2 */
+    string helptext = _("<P><B><BIG>Saving modems configuration</BIG></B><BR>
+Please wait for a while...<BR></P>");
+
+    /* modems write dialog help 2/2 */
+    helptext = helptext + _("<P><B><BIG>Aborting the saving:</BIG></B><BR>
+You can abort the saving by pressing the <B>Abort</B> button.
+An additional dialog will inform you whether it is safe to do so or not.</P>");
+
+    Wizard::RestoreHelp(helptext);
+    Modem::AbortFunction = ``{return PollAbort() && ReallyAbort();};
+    boolean ret = Modem::Write();
+    return ret ? `next : `abort;
+}
+
+/**
+ * Main dialog
+ * @return dialog result
+ */
+global define symbol SummaryDialog() ``{
+
+    string caption = _("Modems configuration");
+
+    /* modems summary dialog help 1/3 */
+    string helptext = _("<P><B><BIG>Modems setup</BIG></B><BR>
+Here you can configure your modem.
+<BR></P>");
+
+    /* modems summary dialog help 2/3 */
+    helptext = helptext + _("<P><B><BIG>Adding a modem:</BIG></B><BR>
+Choose a modem from the list of the detected modem.
+If your modem was not autodetected, use <B>Other (not detected)</B>.
+Then press <B>Configure</B>.
+</P>");
+
+    /* modems summary dialog help 3/3 */
+    helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
+If you press <B>Edit</B>, an additional dialog (where you
+can change the configuration) will open.
+</P>");
+
+    list summary = Modem::Summary();
+    list unconfigured = select(summary, 0, []);
+    string configured = select(summary, 1, "");
+
+    y2debug("unconfigured=%1",unconfigured);
+    term contents = Wizard_hw::DetectedContent(_("Modems to configure"),
+	    unconfigured, false, configured);
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    BackButtonLabel(), FinishButtonLabel());
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* overview dialog */
+	else if(ret == `edit_button) {
+	    ret = `overview;
+	    break;
+	}
+	/* configure the selected card */
+	else if(ret == `configure_button) {
+	    Modem::Add();
+	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
+	    if(selected == `other) {
+		ret = `other;
+	    }
+	    else {
+		Modem::SelectHW(selected);
+		ret = `configure;
+	    }
+	    break;
+	}
+	else if(ret == `next || ret == `back) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    return ret;
+}
+
+/**
+ * Overview dialog
+ * @return dialog result
+ */
+global define symbol OverviewDialog() ``{
+
+    string caption = _("Modems configuration overview");
+
+    string helptext = /* modems overview dialog help 1/3 */
+    _("<P><B><BIG>Modems overview</BIG></B><BR>
+Here you can get an overview about installed modems. Additionally
+you can edit their configuration.<BR></P>");
+
+    /* modems overview dialog help 2/3 */
+    helptext = helptext + _("<P><B><BIG>Adding a modem:</BIG></B><BR>
+If you press <B>Add</B>, you can manually configure a modem.</P>");
+
+    /* modems overview dialog help 3/3 */
+    helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
+Choose a modems, whose configuration you want to change or remove.
+Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
+
+    list overview = Modem::Overview();
+    y2debug("overview=%1",overview);
+
+    /* Header of table with installed cards */
+    term contents = Wizard_hw::ConfiguredContent(
+	    `header(_("No."), _("Type"), _("Device"), /*_("Active"),*/ _("IP Address")/*, "PCMCIA", "Driver"*/),
+	    overview, nil, nil, nil, nil);
+
+    contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    BackButtonLabel(), FinishButtonLabel());
+
+    if(size(overview) < 1) {
+	UI::ChangeWidget(`id(`edit_button), `Enabled, false);
+	UI::ChangeWidget(`id(`delete_button), `Enabled, false);
+    }
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* add */
+	else if(ret == `add_button) {
+	    Modem::Add();
+	    ret = `add;
+	    break;
+	}
+	/* edit */
+	else if(ret == `edit_button) {
+	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+	    Modem::Edit(dev);
+	    ret = `edit;
+	    break;
+	}
+	/* delete */
+	else if(ret == `delete_button) {
+	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+	    Modem::Delete(dev);
+	    Modem::Commit();
+	    overview = Modem::Overview();
+	    UI::ChangeWidget(`id(`table), `Items, overview);
+	    if(size(overview) < 1) {
+		UI::ChangeWidget(`id(`edit_button), `Enabled, false);
+		UI::ChangeWidget(`id(`delete_button), `Enabled, false);
+	    }
+	    y2debug("overview=%1",overview);
+	    continue;
+	}
+	else if(ret == `next || ret == `back) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    return ret;
+}
+
+/* EOF */
+}
+

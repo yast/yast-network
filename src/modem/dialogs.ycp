@@ -31,82 +31,6 @@ include "network/providers.ycp";
 
 // Old code: map TmpConfiguration=$[];
 
-/**
- * sequence for modem setup
- * @param entrypoint can be one of 'params_etected' / 'params'
- * @return symbol [`next, `abort, `back]
- */
-
-global define symbol modem_sequence(string entrypoint) ``{
-    map aliases = $[
-	"params_detected"	: ``(modem_params(`Detected)),
-	"params"		: ``(modem_params(`other)),
-	"details"		: ``(modem_details()),
-	"details_detected"	: ``(modem_details()),
-	"providers"		: ``(runProvidersDialog(false)),
-	"provider"		: ``(runEditModemProviderDialog (true)),
-	"new_provider"		: ``(runEditModemProviderDialog (false)),
-	"connection"		: ``(modem_connection()),
-	"connection_details"	: ``(modem_connection_details())
-    ];
-
-    map sequence = $[
-	"ws_start" : entrypoint,
-	"params":
-	$[
-	    `next   : "providers",
-            `Details: "details",
-            `abort  : `abort
-	],
-	"params_detected" :
-	$[
-	    `next   : "providers",
-	    `Details: "details_detected",
-	    `abort  : `abort
-	],
-	"details"   :
-	$[
-	    `next   : "params",
-	    `abort  : `abort
-	],
-	"details_detected" :
-	$[
-	    `next   : "params_detected",
-	    `abort  : `abort
-	],
-	"providers" :
-	$[
-	    `next   : "provider",
-	    `new    : "new_provider",
-	    `abort  : `abort
-	],
-	"provider" :
-	$[
-	    `next   : "connection",
-	    `abort  : `abort
-	],
-	"new_provider" :
-	$[
-	    `next   : "connection",
-	    `abort  : `abort
-	],
-	"connection" :
-	$[
-	    `next   : `next,
-	    `Details: "connection_details",
-	    `abort  : `abort
-	],
-	"connection_details" :
-	$[
-	    `next   : "connection",
-	    `abort  : `abort
-	]
-    ];
-
-    return WizardSequencer(aliases, sequence);
-}
-
-
 /* DIALOG */
 
 /**
@@ -309,8 +233,7 @@ Initialization strings.</p>");
  * @return any user input
  */
 
-global define symbol modem_details()
-``{
+global define symbol modem_details() ``{
 
     /* PREPARE VARIABLES */
     integer BaudRate = Modem::BaudRate;
@@ -680,17 +603,6 @@ global define symbol modem_connection_details() ``{
 
     return ret;
 }
-
-
-/* DIALOGS TESTING */
-//Wizard::CreateDialog();
-
-//Dialog1(`Detected);
-//Dialog2();
-//Dialog3();
-//Dialog4();
-
-//UI::CloseDialog();
 
 /* EOF */
 }

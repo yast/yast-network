@@ -25,6 +25,12 @@ module "Modem";
 import "DNS";
 import "Routing";
 import "Progress";
+import "Summary";
+
+include "network/config.ycp";
+include "network/hardware.ycp";
+include "network/routines.ycp";
+include "network/ip.ycp";
 
 textdomain "network";
 
@@ -51,6 +57,125 @@ global boolean Firewall = true;
 global boolean AutoReconnect = true;
 global boolean AutoDNS = true;
 global string IdleSeconds = "hh";
+
+/*--------------*/
+/* PRIVATE DATA */
+
+/**
+ * Config information
+ */
+map CONFIG = $[];
+
+/**
+ * Abort function
+ * return boolean return true if abort
+ */
+global block AbortFunction = nil;
+
+/**
+ * Data was modified?
+ */
+boolean modified = false;
+
+/**
+ * Which operation is pending?
+ */
+symbol operation = nil;
+
+/*------------------*/
+/* GLOBAL FUNCTIONS */
+
+/**
+ * Data was modified?
+ * @return true if modified
+ */
+global define boolean Modified() ``{
+    y2debug("modified=%1",modified);
+    return modified;
+};
+
+global define boolean Read() ``{
+    return true;
+}
+
+global define boolean Write() ``{
+    return true;
+}
+
+global define boolean Add() ``{
+    return true;
+}
+
+global define boolean Edit() ``{
+    return true;
+}
+
+global define boolean Delete() ``{
+    return true;
+}
+
+global define boolean Commit() ``{
+    return true;
+}
+
+global define boolean Import(map settings) ``{
+    CONFIG = settings;
+}
+
+global define map Export() ``{
+    return CONFIG;
+}
+
+/**
+ * Build a textual summary and a list of unconfigured cards
+ * @return summary of the current configuration
+ */
+global define list Summary() ``{
+
+    return [ [], "" ];
+
+    list configured = [];
+    list unconfigured = [];
+
+    maplist(`d, HARDWARE, ``{
+	string hwname = lookup(d, "name", _("Unknown network card"));
+	string ty = lookup(d, "type", "eth");
+	string un = lookup(d, "unique", nil);
+	string status = IsConfigured(ty, un);
+	y2debug("status(%1)=%2",status,d);
+	if(status != "")
+	    change(configured, summaryDevice(hwname, status));
+	else
+	    change(unconfigured, d);
+    });
+
+    list allhw = maplist(`d, HARDWARE, ``(lookup(d, "unique", nil)));
+    maplist(`s, OtherConfigured(allhw), ``{
+	change(configured, summaryDevice(_("Unknown network card"), s));
+    });
+
+    string summary = "";
+    if(size(configured) > 0)
+	summary = summaryAddHeader("", _("Already configured network cards:")) +
+	    summaryDevicesList(configured);
+    else
+	summary = summaryAddHeader("", _("No configured network card."));
+
+    integer selected = lookup(select(unconfigured, 0, $[]), "num", 0);
+    list devs = hwlist2items(unconfigured, selected);
+    if(size(devs)==0)
+	change(devs, `item(`id(`other), _("Other (not detected)"), true));
+    else
+	change(devs, `item(`id(`other), _("Other (not detected)")));
+
+    return [ devs, summary ];
+}
+
+/**
+ */
+global define list Overview() ``{
+    return CreateOverview("modem");
+}
 
 /* EOF */
 }
