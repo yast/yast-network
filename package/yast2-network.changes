@@ -1,10 +1,12 @@
 -------------------------------------------------------------------
-Wed Jan 12 10:56:44 CET 2005 - mvidner@suse.cz
+Fri Jan 14 13:04:50 CET 2005 - mvidner@suse.cz
 
 - Remove old data from /etc/hosts after having re-configured
   hostname or IP during installation (#49634).
 - UI for Wireless card feature enquiry.
 - Keep logs from internet connection test (#46285).
+- Fixed building with new devtools.
+- 2.11.11
 
 -------------------------------------------------------------------
 Wed Dec 22 11:27:38 CET 2004 - mvidner@suse.cz
