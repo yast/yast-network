@@ -50,6 +50,14 @@ global define boolean ReadHardware() ``{
 }
 
 /**
+ * Write /etc/modules.conf
+ * @return true if success
+ */
+global define boolean WriteModulesConf() ``{
+    return false;
+}
+
+/**
  * Extract the device 'name'
  * @param hwdevice hardware device
  * @return name consisting of vendor and device name

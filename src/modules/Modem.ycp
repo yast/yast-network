@@ -3,7 +3,7 @@
  *   modules/Modem.ycp
  *
  * Package:
- *   Configuration of modem
+ *   Configuration of network
  *
  * Summary:
  *   Data for configuration of modem, input and output functions.

@@ -1,0 +1,14 @@
+{
+
+include "testsuite.ycp";
+include "network/routines.ycp";
+
+DUMP("mapkeys");
+TEST(``(mapkeys(nil)), [], nil);
+TEST(``(mapkeys($[])), [], nil);
+TEST(``(mapkeys($[1:2])), [], nil);
+TEST(``(mapkeys($["2":3])), [], nil);
+TEST(``(mapkeys($[`x:4])), [], nil);
+TEST(``(mapkeys($[1:2,3:4])), [], nil);
+
+}

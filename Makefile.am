@@ -99,4 +99,4 @@ checkpo:
 	test ! -e $(srcdir)/Y2TEXTDOMAIN \
 	  || { $(MAKE) -C po checkpo && $(MAKE) -C po make-pox; }
 # No ./SUBDIRS file found - assuming default: All direct subdirs with Makefile.am
-SUBDIRS = data doc src testsuite 
+SUBDIRS = agents data doc src testsuite 

@@ -1,0 +1,7 @@
+Dump	mapkeys
+Return	[]
+Return	[]
+Return	[1]
+Return	["2"]
+Return	[`x]
+Return	[1, 3]

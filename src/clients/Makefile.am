@@ -5,11 +5,6 @@
 #
 
 clientsdir = $(YAST2DIR)/clients
-
-clients_DATA =			\
-	lan.ycp
-#	lan_auto.ycp		\
-#	lan_summary.ycp		\
-#	lan_write.ycp
+clients_DATA = $(wildcard *.ycp)
 
 EXTRA_DIST = $(clients_DATA)

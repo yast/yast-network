@@ -68,6 +68,15 @@ global define boolean ReallyAbort() ``{
 
 
 /**
+ * Progress::NextStage and Progress::Title combined into one function
+ * @param title progressbar title
+ */
+global define void ProgressNextStage(string title) ``{
+    Progress::NextStage();
+    Progress::Title(title);
+}
+
+/**
  * Create a list of items for UI from the given list
  * @param l given list for conversion
  * @param selected selected item (0 for the first)
@@ -101,6 +110,25 @@ global define list hwlist2items(list l, integer selected) ``{
     });
     return items;
     //return list2items(maplist(`h, l, ``(lookup(h, "name", _("Unknown device")))), selected);
+}
+
+/**
+ * Return a device type
+ * @param dev device
+ * @return device type
+ */
+global define string device_type(string dev) ``{
+    return regexpsub(dev, "^([a-zA-Z]+).*$", "\\1");
+}
+
+/**
+ * Return a device number
+ * @param dev device
+ * @return device number
+ */
+global define integer device_num(string dev) ``{
+    string num = regexpsub(dev, "^[a-zA-Z]*([0-9]+).*$", "\\1");
+    return tointeger(num);
 }
 
 /* EOF */

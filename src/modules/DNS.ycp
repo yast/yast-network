@@ -1,0 +1,102 @@
+/**
+ * File:
+ *   modules/DNS.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   Hostname and DNS settings
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+textdomain "network";
+
+global string hostname = ""; //blah";
+global string domain = ""; //blum.cz";
+global list nameservers = []; //"ns1","ns2"];
+global list searchlist = []; //"s1","s2"];
+global boolean dhcp_hostname = false;
+
+boolean has_dhcp = true;
+
+/**
+ * Reads current DNS and hostname configuration status
+ * @return true if success
+ */
+global define boolean Read() ``{
+
+    /* set hostname via dhcp? */
+    dhcp_hostname = false;
+    if(tolower(SCR::Read(.rc.dhcpcd.DHCLIENT_SET_HOSTNAME)) == "yes")
+	dhcp_hostname = true;
+
+    /* install.inf from linuxrc */
+    map install_inf = $[];
+    if(SCR::Read(.target.size,"/etc/install.inf") != -1)
+	install_inf = SCR(`Read(.etc.install_inf));
+
+    /* any dhcp device? */
+    has_dhcp = true;
+    //has_dhcp = (size(filter (`e, devs, ``(SCR(`Read(topath(sformat(".rc.system.IFCONFIG%1", e)))) == "dhcpclient"))) > 0);
+
+    /*
+    if (SCR (`Execute (.target.bash, "/sbin/modify_resolvconf check -q")) != 0) {
+	string process = SCR (`Read (.resolver.process));
+	symbol ui = ModifyResolvConfPopup (process);
+	if (ui == `modify)
+	{
+	    modify_header = true;
+	}
+	else if (ui == `keep)
+	{
+	    keep_original = true;
+	}
+    }
+    */
+
+    /* name servers and search list */
+    list resolvlist = SCR::Read(.resolver.search);
+    if(resolvlist != nil) searchlist = resolvlist;
+
+    resolvlist = SCR::Read(.resolver.nameserver);
+    if(resolvlist == nil) {
+	if(size(lookup(install_inf, "nameserver", "")) > 0)
+	    change(nameserver, (lookup(install_inf, "nameserver", "")));
+    }
+    else
+	nameservers = resolvlist;
+
+    /* host name and domain */
+    string fqhostname = SCR::Read(.rc.system.FQHOSTNAME);
+    if(fqhostname != "") {
+	integer dot = findfirstof(fqhostname, ".");
+	if(dot != nil) {
+	    hostname = substring(fqhostname,0,dot);
+	    domain = substring(fqhostname,dot+1);
+	}
+	else
+	    hostname = fqhostname;
+    }
+    else {
+	/* default hostname and domain (if not in install.inf) */
+	hostname = lookup(install_inf, "machinename", "linux");
+	domain = lookup(install_inf, "domain", "local");
+    }
+}
+
+/**
+ */
+global define Write() ``{
+    return false;
+}
+
+/* EOF */
+}

@@ -5,12 +5,6 @@
 #
 
 modulesdir = $(YAST2DIR)/modules
-
-modules_DATA =		\
-	Lan.ycp		\
-	Modem.ycp	\
-	ISDN.ycp	\
-	DSL.ycp		\
-	Network.ycp
+modules_DATA = $(wildcard *.ycp)
 
 EXTRA_DIST = $(modules_DATA)

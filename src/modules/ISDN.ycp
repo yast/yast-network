@@ -3,7 +3,7 @@
  *   modules/ISDN.ycp
  *
  * Package:
- *   Configuration of ISDN
+ *   Configuration of network
  *
  * Summary:
  *   Data for configuration of ISDN, input and output functions.

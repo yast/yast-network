@@ -14,7 +14,7 @@
  * $Id$
  *
  * All config settings are stored in a global variable CONFIG.
- *
+ * Deleted devices are in the global list DELETED.
  */
 
 {
@@ -73,6 +73,7 @@ global define boolean ReadConfig(string devregex) ``{
     y2debug("CONFIG=%1",CONFIG);
 
     /* read aliases */
+    /* -> not supported yet
     maplist(`d, aliases, ``{
 	string devtype = regexpsub(d, "^.*ifcfg-([a-z]+)[^a-z]*$", "\\1");
 	if(devtype == "lo") return;
@@ -108,6 +109,7 @@ global define boolean ReadConfig(string devregex) ``{
     });
 
     y2debug("CONFIG=%1",CONFIG);
+    */
     return true;
 }
 
@@ -118,8 +120,42 @@ global define boolean ReadConfig(string devregex) ``{
 global define boolean WriteConfig() ``{
 
     y2debug("CONFIG=%1",CONFIG);
-
     string sysconfig = "/etc/sysconfig/network";
+
+    /* remove deleted devices */
+    maplist(`d, DELETED, ``{
+	path p = topath(".network.section.\"" + sysconfig + "/ifcfg-" + d + "\"");
+	y2debug("deleting: %1", p);
+	SCR::Write(p, nil);
+    });
+
+    /* write all devices */
+    maplist(`typ, `devsmap, CONFIG, ``{
+	maplist(`num, `devmap, devsmap, ``{
+	    string dev = typ + num;
+	    string p = ".network.value.\"" + sysconfig + "/ifcfg-" + dev + "\".";
+	    SCR::Write(topath(p+"BOOTMODE"), "onboot");
+	    SCR::Write(topath(p+"UNIQUE"), lookup(devmap, "UNIQUE", ""));
+	    string proto = lookup(devmap, "BOOTPROTO", "static");
+	    SCR::Write(topath(p+"BOOTPROTO"), proto);
+	    if(proto == "" || proto == "static") {
+		SCR::Write(topath(p+"IPADDR"), lookup(devmap, "IPADDR", ""));
+		SCR::Write(topath(p+"NETMASK"), lookup(devmap, "NETMASK", ""));
+		SCR::Write(topath(p+"NETWORK"), lookup(devmap, "NETWORK", ""));
+		SCR::Write(topath(p+"BROADCAST"), lookup(devmap, "BROADCAST", ""));
+	    }
+	    else {
+		SCR::Write(topath(p+"IPADDR"), nil);
+		SCR::Write(topath(p+"NETMASK"), nil);
+		SCR::Write(topath(p+"NETWORK"), nil);
+		SCR::Write(topath(p+"BROADCAST"), nil);
+	    }
+	});
+    });
+
+    /* finish him */
+    SCR::Write(.network, nil);
+
     /* ... */
 
     return true;
@@ -191,6 +227,7 @@ global define string ProtoStatus(string device, string proto, string addr) ``{
 	return sformat(_("Configured as %1 with address %2"), device, addr);
     else
 	return sformat(_("Configured as %1 with %2"), device, proto);
+    /* toupper */
 }
 
 /**
@@ -213,42 +250,84 @@ global define OtherConfigured(list uniques) ``{
 }
 
 /**
+ * Update CONFIG map
+ * @param type device type
+ * @param device device number
+ * @param newdev new device map
+ * @param check if check if device already exists
+ * @return true if success
  */
-global define boolean ConfigAdd(string type, integer device, map newdev) ``{
+global define boolean ConfigAdd(string type, integer device, map newdev, boolean check) ``{
     y2debug("CONFIG=%1",CONFIG);
     map devmap = lookup(CONFIG, type, $[]);
     string dev = sformat("%1",device);
 
-    if(haskey(devmap, dev)) {
+    if(check && haskey(devmap, dev)) {
 	y2error("Key already present: %1(%2)", dev, type);
 	return false;
     }
     change(devmap, dev, newdev);
     change(CONFIG, type, devmap);
     y2debug("CONFIG=%1",CONFIG);
+    return true;
 }
 
 /**
+ * Delete a device from CONFIG map
+ * @param type device type
+ * @param device device number
+ * @return true if success
  */
 global define boolean ConfigDelete(string type, integer device) ``{
     y2debug("CONFIG=%1",CONFIG);
+    map devmap = lookup(CONFIG, type, $[]);
+    string dev = sformat("%1",device);
+
+    if(!haskey(devmap, dev)) {
+	y2error("Key not found: %1(%2)", dev, type);
+	return false;
+    }
+    //remove(devmap, dev);
+    devmap = remove(devmap, dev);
+    change(CONFIG, type, devmap);
     y2debug("CONFIG=%1",CONFIG);
+    return true;
 }
 
-/* FIXME
+/**
+ * Return textual device type
+ * @param type device type
+ * @return textual form of device type
+ * @example DeviceType("eth") -> "Ethernet"
+ */
+global define string DeviceType(string type) ``{
+    if(type == "eth") return "Ethernet";
+    if(type == "tr") return "Token-Ring";
+    if(type == "fddi") return "FDDI";
+    if(type == "modem") return "Modem";
+    if(type == "isdn") return "ISDN";
+    return type;
+}
 
-include "devel/debug.ycp";
-map CONFIG = $[];
+/**
+ * Create overview table contents
+ * @param type type of devices in the table
+ * @return table items
+ */
+global define list CreateOverview(string type) ``{
+    map devmap = lookup(CONFIG, type, $[]);
 
-ReadConfig("");
-y2debug("CONFIG=%1",CONFIG);
-DEBUG(CONFIG);
+    list overview = maplist(`k, `v, devmap, ``{
+	string dev = sformat("%1%2", type, k);
+	string ip = lookup(v, "BOOTPROTO", "static");
+	if(ip == "" || ip == "static") ip = lookup(v, "IPADDR", "");
+	/* toupper */
+	return `item(`id(dev), k, DeviceType(type), dev, /*"active?",*/ ip/*, "?", "?"*/);
+    });
 
-CONFIG = $[];
-ReadConfig("eth|tr");
-y2debug("CONFIG=%1",CONFIG);
-DEBUG(CONFIG);
+    y2debug("overview=%1",overview);
+    return overview;
+}
 
-*/
-
+/* EOF */
 }

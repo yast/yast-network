@@ -1,0 +1,156 @@
+/**
+ * File:
+ *   include/network/services/dns.ycp
+ *
+ * Module:
+ *   Configuration of network
+ *
+ * Summary:
+ *   Hostname and DNS setup dialog
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+textdomain "lan";
+
+import "DNS";
+import "Wizard";
+
+include "ui/wizard_dialog.ycp";
+include "ui/common_popups.ycp";
+
+/**
+ * Dialog for querying DNS & hostname info
+ * @return any user input
+ */
+global define DNSMainDialog() ``{
+
+    string hostname = DNS::hostname;
+    string domain = DNS::domain;
+    list nameservers = DNS::nameservers;
+    list searchlist = DNS::searchlist;
+    boolean dhcp_hostname = DNS::dhcp_hostname;
+
+    boolean has_dhcp = true;
+
+    // main dialog label
+    string caption = _("Host name and name server configuration");
+    string helptext = _("HelptextDNS");
+
+    // domain search
+    string s1 = "";
+    string s2 = "";
+    string s3 = "";
+
+    // name servers
+    string ns1 = "";
+    string ns2 = "";
+    string ns3 = "";
+
+    ns1 = select(nameservers, 0, "");
+    ns2 = select(nameservers, 1, "");
+    ns3 = select(nameservers, 2, "");
+
+    s1 = select(searchlist, 0, "");
+    s2 = select(searchlist, 1, "");
+    s3 = select(searchlist, 2, "");
+
+    term contents = `HSquash(`VBox(
+	`Frame(_("Host name and domain name"), `VBox(
+	    `HBox(
+		// text entry label
+		`TextEntry(`id(`host), _("&Host name"), hostname),
+		// text entry label
+		`TextEntry(`id(`domain), _("&Domain name"), domain)
+	    ),
+	    `Left(`CheckBox(`id(`dn), `opt(`notify), _("&Change host name via DHCP")))
+	    //`Left(`RadioButtonGroup(`id(`rb), `VBox(
+		//`CheckBox(`id(`dn), `opt(`notify), _("&Change host name via DHCP"))
+	    //)))
+	)),
+	`VSpacing(1),
+	`HBox(
+	    // common label for more text entries
+	    `Frame(_("Na&me server list"), `VBox(
+		`TextEntry(`id(`ns1), " ", ns1),
+		`TextEntry(`id(`ns2), " ", ns2),
+		`TextEntry(`id(`ns3), " ", ns3)
+	    )),
+	    // common label for more text entries
+	    `Frame(_("Domain &search list"), `VBox(
+		`TextEntry(`id(`s1), " ", s1),
+		`TextEntry(`id(`s2), " ", s2),
+		`TextEntry(`id(`s3), " ", s3)
+	    ))
+	)
+    ));
+
+    Wizard::SetContents(caption, contents, helptext, true, true);
+
+    UI::ChangeWidget(`id(`dn), `Enabled, has_dhcp);
+    if(has_dhcp) UI::ChangeWidget(`id(`dn), `Value, dhcp_hostname);
+
+    // ugly hack for ISDN call (#6020)
+    //if(ok_label) UI::ChangeWidget(`id(`next), `Label, _("&OK")));
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(UI::ReallyAbortPopup(true))
+		break;
+	    else
+		continue;
+	}
+	/* hostname via dhcp */
+	else if(ret == `dn) {
+	    dhcp_hostname = UI::QueryWidget(`id(`dn), `Value);
+	    UI::ChangeWidget(`id(`host), `Enabled, !dhcp_hostname);
+	    UI::ChangeWidget(`id(`domain), `Enabled, !dhcp_hostname);
+	    continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    /* check_* */
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+
+    if(ret == `next) {
+	DNS::hostname = UI::QueryWidget(`id(`host), `Value);
+	DNS::domain = UI::QueryWidget(`id(`domain), `Value);
+
+	ns1 = tolower(UI::QueryWidget(`id(`ns1), `Value));
+	ns2 = tolower(UI::QueryWidget(`id(`ns2), `Value));
+	ns3 = tolower(UI::QueryWidget(`id(`ns3), `Value));
+	DNS::nameservers = filter(`n, [ ns1, ns2, ns3 ], ``(n != ""));
+
+	s1 = tolower(UI::QueryWidget(`id(`s1), `Value));
+	s2 = tolower(UI::QueryWidget(`id(`s2), `Value));
+	s3 = tolower(UI::QueryWidget(`id(`s3), `Value));
+	DNS::searchlist = filter(`s, [ s1, s2, s3 ], ``(s != ""));
+
+	DNS::dhcp_hostname = UI::QueryWidget(`id(`dn), `Value);
+    }
+
+    return ret;
+}
+
+/* EOF */
+}

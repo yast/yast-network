@@ -3,7 +3,6 @@
 #
 
 datadir = $(YAST2DIR)
-
 data_DATA = netcards.ycp
 
 EXTRA_DIST = $(data_DATA)

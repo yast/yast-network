@@ -70,14 +70,6 @@ global define symbol WriteDialog() ``{
 }
 
 /**
- * Delete dialog
- * @return dialog result
- */
-global define symbol DeleteDialog() ``{
-    return `next;
-}
-
-/**
  * Main dialog
  * @return dialog result
  */
@@ -144,18 +136,23 @@ global define symbol OverviewDialog() ``{
 
     string caption = _("Network cards configuration overview");
 
+    list overview = Lan::Overview();
+    y2debug("overview=%1",overview);
+
     /* Header of table with installed cards */
     term contents = Wizard_hw::ConfiguredContent(
-	    `header(_("No."), _("Type"), _("Device"), _("Active"), _("IP Address"), "PCMCIA", "Driver"),
-	    [ `item(`id(0),0,"Ethernet","eth0","Active", "10.20.30.40", "No", "tulip"),
-	    `item(`id(1),1,"Token-Ring","tr1","-", "10.20.30.40", "No", "tulip")],
-	    nil, nil, nil, nil);
+	    `header(_("No."), _("Type"), _("Device"), /*_("Active"),*/ _("IP Address")/*, "PCMCIA", "Driver"*/),
+	    overview, nil, nil, nil, nil);
 
     contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);
 
-
     Wizard::SetContentsButtons(caption, contents, OverviewDialogHelp(),
 	    BackButtonLabel(), FinishButtonLabel());
+
+    if(size(overview) < 1) {
+	UI::ChangeWidget(`id(`edit_button), `Enabled, false);
+	UI::ChangeWidget(`id(`delete_button), `Enabled, false);
+    }
 
     any ret = nil;
     while(true) {
@@ -175,15 +172,24 @@ global define symbol OverviewDialog() ``{
 	}
 	/* edit */
 	else if(ret == `edit_button) {
-	    Lan::Edit();
+	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+	    Lan::Edit(dev);
 	    ret = `edit;
 	    break;
 	}
 	/* delete */
 	else if(ret == `delete_button) {
-	    Lan::Delete();
-	    ret = `delete;
-	    break;
+	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+	    Lan::Delete(dev);
+	    Lan::Commit();
+	    overview = Lan::Overview();
+	    UI::ChangeWidget(`id(`table), `Items, overview);
+	    if(size(overview) < 1) {
+		UI::ChangeWidget(`id(`edit_button), `Enabled, false);
+		UI::ChangeWidget(`id(`delete_button), `Enabled, false);
+	    }
+	    y2debug("overview=%1",overview);
+	    continue;
 	}
 	else if(ret == `next || ret == `back) {
 	    break;

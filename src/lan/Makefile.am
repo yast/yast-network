@@ -5,12 +5,6 @@
 #
 
 includedir = $(YAST2DIR)/include/network/lan
-
-include_DATA =			\
-	address.ycp		\
-	manual.ycp		\
-	helps.ycp		\
-	dialogs.ycp		\
-	wizards.ycp
+include_DATA = $(wildcard *.ycp)
 
 EXTRA_DIST = $(include_DATA)

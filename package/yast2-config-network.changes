@@ -1,8 +1,12 @@
+-------------------------------------------------------------------
+Wed Jan  9 17:27:09 CET 2002 - msvec@suse.cz
+
 - complete rewrite (almost no old code left)
 - updated network cards list from yast1
 - supports new /etc/sysconfig scheme
 - only dialog layouts are similar
 - uses modules and devtools
+- new agents added
 - 2.5.0
 
 -------------------------------------------------------------------

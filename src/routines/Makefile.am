@@ -5,10 +5,6 @@
 #
 
 includedir = $(YAST2DIR)/include/network
-
-include_DATA =		\
-	routines.ycp	\
-	hardware.ycp	\
-	config.ycp
+include_DATA = $(wildcard *.ycp)
 
 EXTRA_DIST = $(include_DATA)

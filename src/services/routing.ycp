@@ -1,0 +1,257 @@
+/**
+ * File:
+ *   include/network/services/routing.ycp
+ *
+ * Module:
+ *   Configuration of network
+ *
+ * Summary:
+ *   Routing configuration dialogs
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Routing configuration dialogs
+ *
+ */
+
+{
+
+textdomain "network";
+
+import "Routing";
+import "Wizard";
+
+include "ui/common_popups.ycp";
+include "ui/wizard_dialog.ycp";
+
+/**
+ * Main routing dialog
+ * @param settings routing map
+ * @return symbol dialog result
+ */
+global define symbol RoutingMainDialog(map settings) ``{
+
+    string caption = _("Routing configuration");
+
+    string help = _("<p>The routing can be set up in this dialog. The
+    default route matches every possible destination, but poorly, so that
+    if any other entry exists that matches the required address it will be
+    used instead of the default route. The idea of the default route is
+    simply to enable you to say \"and everything else should go here\".</p>");
+
+    integer max = 0;
+    integer items = 0;
+    list table_items = [];
+    boolean expert = false;
+
+    string defgw = "";
+    string defgwdev = "";
+
+    list route_conf = Routing::route_conf;
+
+    /* make ui items from the routes list */
+    term item = nil;
+    while(items < size(route_conf)) {
+	map r = select(route_conf, items, $[]);
+	if(lookup(r,"destination","") == "default") {
+	    defgw = lookup(r, "gateway", "");
+	    defgwdev = lookup(r, "device", "");
+	}
+	else {
+	    item = `item(`id(items),
+		    lookup(r,"destination",""),
+		    lookup(r,"gateway",""),
+		    lookup(r,"netmask",""),
+		    lookup(r,"device",""));
+	    change(table_items, item);
+	}
+	items = items + 1;
+    }
+    items = items - 1;
+
+    y2debug("table_items=%1",table_items);
+    y2debug("items=%1",items);
+
+    /* contents of the main dialog */
+    term contents = `HBox(`HSpacing(5),`VBox(`VStretch(),
+	`ComboBox(`id(`gw), `opt(`editable, `hstretch), _("Default &gateway"), [ defgw ]),
+	`VSpacing(1),
+	`Frame(_("Routing table"),
+	    `VBox(
+		`Left(`CheckBox(`id(`expert), `opt(`notify), _("E&xpert configuration"))),
+		`Table(`id(`table), `header(_("Destination"), _("Dummy/Gateway"), _("Netmask"), _("Device")), []),
+		`HBox(`PushButton(`id(`add), _("Ad&d")),
+		    `PushButton(`id(`edit), `opt(`disabled), _("&Edit")),
+		    `PushButton(`id(`delete), `opt(`disabled), _("De&lete"))))),
+	`VStretch()),
+	`HSpacing(5));
+
+    Wizard::CreateDialog();
+    Wizard::SetContents(caption,contents,help,true,true);
+
+    UI::ChangeWidget(`id(`table), `Items, table_items);
+    UI::ChangeWidget(`id(`table), `Enabled, expert);
+    UI::ChangeWidget(`id(`add), `Enabled, expert);
+    UI::SetFocus(`id(`gw));
+
+    any ret = nil;
+
+    /* TODO:
+     * check_*
+     * devices
+     * current item should stay the same
+     * settings read
+     * settings update
+     */
+    while(true) {
+	UI::ChangeWidget(`id(`edit), `Enabled, expert && (items>0));
+	UI::ChangeWidget(`id(`delete), `Enabled, expert && (items>0));
+	if(expert && items>0) {
+	    integer cur = select(select(select(table_items, 0, []), 0, []), 0, 0);
+	    UI::ChangeWidget(`id(`table), `CurrentItem, cur);
+	}
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(UI::ReallyAbortPopup(true)) break;
+	    else continue;
+	}
+	/* expert mode */
+	else if(ret == `expert) {
+	    expert = ! expert;
+	    UI::ChangeWidget(`id(`table), `Enabled, expert);
+	    UI::ChangeWidget(`id(`add), `Enabled, expert);
+	    continue;
+	}
+	/* edit route */
+	else if(ret == `edit) {
+	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
+	    list cur_item = filter(`e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
+	    term item = select(cur_item, 0, nil);
+	    /* FIXME: current device is lost in during Edit */
+	    item = RoutingEditDialog(cur, item, ["eth2", "eth7"]);
+	    if(item == nil) continue;
+	    table_items = maplist(`e, table_items, ``{
+		if(cur == select(select(e, 0, []), 0, -1))
+		    return item;
+		return e;
+	    });
+	    UI::ChangeWidget(`id(`table), `Items, table_items);
+	    continue;
+	}
+	/* add route */
+	else if(ret == `add) {
+	    term item = RoutingEditDialog(max, `empty(), ["eth2", "eth7"]);
+	    if(item == nil) continue;
+	    change(table_items, item);
+	    UI::ChangeWidget(`id(`table), `Items, table_items);
+	    items = items + 1;
+	    max = max + 1;
+	    continue;
+	}
+	/* delete route */
+	else if(ret == `delete) {
+	    items = items - 1;
+	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
+	    table_items = filter(`e, table_items, ``(cur != select(select(e, 0, []), 0, nil)));
+	    UI::ChangeWidget(`id(`table), `Items, table_items);
+	    continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    /* check_* */
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    break;
+	}
+    };
+
+    /* update routes from widgets */
+    if(ret == `next) {
+	route_conf = maplist (`e, table_items, ``($[
+	    "destination" : select(e, 1, ""),
+	    "gateway"     : select(e, 2, ""),
+	    "netmask"     : select(e, 3, ""),
+	    "device"      : select(e, 4, "")]
+	));
+
+	if(defgw != UI::QueryWidget(`id(`gw), `Value))
+	    defgwdev = ""; // FIXME: find correct device
+
+	defgw = UI::QueryWidget(`id(`gw), `Value);
+
+	change(route_conf, $[
+	    "destination" : "default",
+	    "gateway" : defgw,
+	    "netmask" : "0.0.0.0",
+	    "device" : defgwdev
+	]);
+
+    }
+
+    Routing::route_conf = route_conf;
+    y2debug("table_items=%1",table_items);
+    y2debug("route_conf=%1",route_conf);
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/**
+ * Route edit dialog
+ * @return route map or nil, if canceled
+ */
+global define term RoutingEditDialog(integer id, term entry, list devs) ``{
+
+    UI::OpenDialog(`opt(`decorated),`VBox(
+	`HSpacing(1),
+	`VBox(
+	    `TextEntry(`id(`destination), _("&Destination"), select(entry, 1, "")),
+	    `TextEntry(`id(`gateway), _("Dummy/&Gateway"), select(entry, 2, "")),
+	    `TextEntry(`id(`netmask), _("&Netmask"), select(entry, 3, "")),
+	    `ComboBox(`id(`device), `opt(`editable, `hstretch), _("De&vice (optional)"), devs)
+	    ),
+	`HSpacing(1),
+	`HBox(
+	    `PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
+	    `PushButton(`id(`cancel), CancelButtonLabel())
+	    )
+	));
+
+    any ret = nil;
+    term route = nil;
+
+    while(true) {
+	route = nil;
+	ret = UI::UserInput();
+	if(ret != `ok) break;
+
+	route = `item(`id(id));
+	string val = UI::QueryWidget(`id(`destination), `Value);
+	// FIXME if(check_*(val)) error(); continue;
+	change(route, val);
+	val = UI::QueryWidget(`id(`gateway), `Value);
+	change(route, val);
+	val = UI::QueryWidget(`id(`netmask), `Value);
+	change(route, val);
+	val = UI::QueryWidget(`id(`device), `Value);
+	change(route, val);
+	break;
+    }
+
+    UI::CloseDialog();
+    if(ret != `ok) return nil;
+    return route;
+}
+
+/* EOF */
+}

@@ -3,17 +3,17 @@
  *   modules/Lan.ycp
  *
  * Package:
- *   Configuration of network cards
+ *   Configuration of network
  *
  * Summary:
- *   Data for configuration of network, input and output functions.
+ *   Data for configuration of network card, input and output functions.
  *
  * Authors:
  *   Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
- * Representation of the configuration of network.
+ * Representation of the configuration of network cards.
  * Input and output routines.
  *
  */
@@ -75,6 +75,11 @@ list HARDWARE = [];
 map CONFIG = $[];
 
 /**
+ * Deleted devices
+ */
+list DELETED = [];
+
+/**
  * Data was modified?
  */
 boolean modified = false;
@@ -86,6 +91,7 @@ symbol operation = nil;
 
 /**
  * Data was modified?
+ * @return true if modified
  */
 global define boolean Modified() ``{
     y2debug("modified=%1",modified);
@@ -99,41 +105,43 @@ global define boolean Modified() ``{
 global define boolean Read() ``{
 
     string caption = _("Initializing network configuration");
-    integer steps = 3;
+    integer steps = 4;
 
     /* FIXME */
-    integer sl = 0; //2000;
+    integer sl = 0; //1000;
+    sleep(sl);
 
     Progress::New(caption, " ", steps, [
 	_("Detect devices"),
 	_("Read current configuration"),
+	_("Read installation information"),
 	_("Detect current status"),
     ], [], "");
 
-    sleep(sl);
     if(Abort()) return false;
-    Progress::NextStage();
-    Progress::Title(_("Detecting network cards"));
+    ProgressNextStage(_("Detecting network cards"));
     ReadHardware();
     sleep(sl);
 
     if(Abort()) return false;
-    Progress::NextStage();
-    Progress::Title(_("Reading current configuration"));
+    ProgressNextStage(_("Reading current configuration"));
     ReadConfig("eth|tr");
     sleep(sl);
 
     if(Abort()) return false;
-    Progress::NextStage();
-    Progress::Title(_("Detecting current status"));
+    ProgressNextStage(_("Reading installation information"));
+    //ReadInstallInf();
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Detecting current status"));
     ReadStatus();
     sleep(sl);
 
     if(Abort()) return false;
-    Progress::NextStage();
-    Progress::Title(_("Finished"));
-
+    ProgressNextStage(_("Finished"));
     sleep(sl);
+
     if(Abort()) return false;
     return true;
 }
@@ -145,34 +153,49 @@ global define boolean Read() ``{
 global define boolean Write() ``{
 
     string caption = _("Saving network configuration");
-    integer steps = 2;
+    integer steps = 5;
 
     /* FIXME */
     integer sl = 1000;
+    sleep(sl);
 
     Progress::New(caption, " ", steps, [
+	_("Stop network"),
 	_("Write configuration"),
+	_("Write drivers information"),
 	_("Run SuSEconfig"),
+	_("Start network"),
     ], [], "");
 
-    sleep(sl);
     if(Abort()) return false;
-    Progress::NextStage();
-    Progress::Title(_("Writing configuration"));
+    ProgressNextStage(_("Stopping network"));
+    //StopNetwork();
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Writing configuration"));
     WriteConfig();
     sleep(sl);
 
     if(Abort()) return false;
-    Progress::NextStage();
-    Progress::Title(_("Running SuSEconfig"));
+    ProgressNextStage(_("Writing /etc/modules.conf"));
+    WriteModulesConf();
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Running SuSEconfig"));
     RunSuSEconfig();
     sleep(sl);
 
     if(Abort()) return false;
-    Progress::NextStage();
-    Progress::Title(_("Finished"));
-
+    ProgressNextStage(_("Starting network"));
+    //StartNetwork();
     sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Finished"));
+    sleep(sl);
+
     if(Abort()) return false;
     return true;
 }
@@ -237,6 +260,12 @@ global define list Summary() ``{
 	change(devs, `item(`id(`other), _("Other (not detected)")));
 
     return [ devs, summary ];
+}
+
+/**
+ */
+global define list Overview() ``{
+    return union(CreateOverview("eth"), CreateOverview("tr"));
 }
 
 /*-------------------*/
@@ -311,8 +340,9 @@ global define void SelectHW(integer which) ``{
 }
 
 /**
+ * @return true if success
  */
-global define Add() ``{
+global define boolean Add() ``{
 
     /* kernel options */
     name = "";
@@ -330,66 +360,92 @@ global define Add() ``{
     device = select(GetFreeDevices(type,1), 0, -1);
 
     operation = `add;
+    return true;
 }
 
 /**
+ * @return true if success
  */
-global define Edit(string typ, integer dev) ``{
-// OR: global define Edit(string dev) ``{
+global define boolean Edit(string dev) ``{
     operation = nil;
+    string typ = device_type(dev);
+    integer num = device_num(dev);
+    string n = sformat("%1",num);
 
     map typemap = lookup(CONFIG, typ, $[]);
-    if(!haskey(typemap, dev)) {
+    if(!haskey(typemap, n)) {
 	y2error("Key not found: %1", dev);
-	return;
+	return false;
     }
-    map devmap = lookup(typemap, dev, $[]);
+    map devmap = lookup(typemap, n, $[]);
 
     /* address options */
-    bootproto = lookup(devmap, "BOOTPROTO", "");
+    bootproto = lookup(devmap, "BOOTPROTO", "static");
     ipaddr = lookup(devmap, "IPADDR", "");
     netmask = lookup(devmap, "NETMASK", "");
-    device = dev;
+    unique = lookup(devmap, "UNIQUE", "");
+    device = num;
     type = typ;
 
     operation = `edit;
+    return true;
 }
 
 /**
+ * @return true if success
  */
-global define Delete() ``{
+global define boolean Delete(string dev) ``{
+    operation = nil;
+    string typ = device_type(dev);
+    integer num = device_num(dev);
+
+    map typemap = lookup(CONFIG, typ, $[]);
+    if(!haskey(typemap, sformat("%1",num))) {
+	y2error("Key not found: %1", dev);
+	return false;
+    }
+
+    type = typ;
+    device = num;
     operation = `delete;
+    return true;
 }
 
 /**
+ * @return true if success
  */
-global define Commit() ``{
+global define boolean Commit() ``{
+    y2debug("Commit(%1)",operation);
     if(operation == `add || operation == `edit) {
 	map newdev = $[
 	    "BOOTMODE"	: "onboot",
 	    "BOOTPROTO"	: bootproto,
 	    "UNIQUE"	: unique,
 	];
-	if(bootproto == "static") {
+	//if(bootproto == "static") {
+	if(ipaddr != "") {
 	    change(newdev, "IPADDR", ipaddr);
 	    change(newdev, "NETMASK", netmask);
 	    change(newdev, "BROADCAST", compute_broadcast(ipaddr, netmask));
 	    change(newdev, "NETWORK", compute_network(ipaddr, netmask));
 	}
 	if(operation == `add)
-	    ConfigAdd(type, device, newdev);
-	//else
-	    //ConfigUpdate(type, device, newdev);
+	    ConfigAdd(type, device, newdev,true);
+	else
+	    ConfigAdd(type, device, newdev,false);
     }
     else if(operation == `delete) {
 	ConfigDelete(type, device);
+	change(DELETED, type+device);
     }
     else {
 	y2error("Unknown operation: %1", operation);
-	return;
+	return false;
     }
 
     modified = true;
+    operation = nil;
+    return true;
 }
 
 /* EOF */
