@@ -66,6 +66,19 @@ global define string FastestType(string dev) ``{
     return type;
 }
 
+
+/**
+ * Return the filename of the log for the fastest connection.
+ */
+global define string FastestLogFile (string dev) ``{
+    string file = "/var/log/messages";
+    string type = FastestType (dev);
+    if (type == "dsl" || type == "modem")
+	file = "/var/log/smpppd/ifcfg-" + dev + ".log";
+    return file;
+}
+
+
 /**
  * Find the fastest connection to the Internet
  * @return device with the fastest connection
