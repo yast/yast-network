@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Apr  2 19:39:05 CEST 2004 - msvec@suse.cz
+
+- further smartlink-softmodems fixes (#37335)
+- changed license to GPL
+- 2.9.25
+
+-------------------------------------------------------------------
 Fri Apr  2 12:31:45 CEST 2004 - msvec@suse.cz
 
 - improved smartlink-softmodems support (#37335)

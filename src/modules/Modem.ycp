@@ -224,10 +224,12 @@ global define boolean Write() {
     /* Setup SL modem */
     if(contains(Requires, "smartlink-softmodem")) {
 
+	y2milestone("Setting up smartlink-softmodem ...");
+
 	Service::Stop("slmodemd");
 
 	string country = Language::GetLanguageCountry();
-	map keys = (map) eval(SCR::Read(.target.ycp, "modem-t35-keys.ycp"));
+	map keys = (map) eval(SCR::Read(.target.yast2, "modem-t35-keys.ycp"));
 	country = keys[country]:"";
 
 	y2milestone("Setting up slmodemd (%1)", country);
@@ -238,7 +240,6 @@ global define boolean Write() {
 
 	Service::Enable("slmodemd");
 	Service::Start("slmodemd");
-
     }
 
     if(Abort()) return false;
