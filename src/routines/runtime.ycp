@@ -55,8 +55,8 @@ global define boolean RunSuSEconfigModule(string modul) ``{
  */
 global define boolean RunKInternet() ``{
     y2milestone("Running KInternet ...");
-    return SCR::Execute(.target.bash_background, "[ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu --nonewdcop -u $USER -- kinternet -quiet") == 0;
-    // return SCR::Execute(.target.bash, "{ [ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu -u $USER -- kinternet -quiet; } >/dev/null 2>&1 &") == 0;
+    return SCR::Execute(.target.bash_background, "[ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu --nonewdcop -u $USER -- kinternet --quiet") == 0;
+    // return SCR::Execute(.target.bash, "{ [ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu -u $USER -- kinternet --quiet; } >/dev/null 2>&1 &") == 0;
 }
 
 /**
