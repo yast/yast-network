@@ -222,6 +222,11 @@ global define string DeviceType(string type) ``{
     if(regexpmatch(type, "isdn")) return _("ISDN");
     if(regexpmatch(type, "ppp")) return _("Modem");
     if(regexpmatch(type, "tr")) return _("Token-Ring");
+    if(regexpmatch(type, "hsi")) return _("HiperSockets Interface");
+    if(regexpmatch(type, "ctc")) return _("Channel-to-Channel (CTC)");
+    if(regexpmatch(type, "iucv")) return "IUCV";
+    if(regexpmatch(type, "escon")) return "ESCON";
+
     y2error("Unknown type: %1", type);
     return type;
 }

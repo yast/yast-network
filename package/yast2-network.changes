@@ -1,9 +1,11 @@
-- merged proofread texts
-
 -------------------------------------------------------------------
-Wed Jul 17 10:44:24 CEST 2002 - msvec@suse.cz
+Mon Jul 22 16:47:14 CEST 2002 - msvec@suse.cz
 
+- set up network in runlevels 2,3,5 (#17076)
+- write proxy user/pass to /root/.wgetrc (#17005)
 - fixed multiple proposals (#17016)
+- merged proofread texts
+- wireless help text
 - 2.6.7
 
 -------------------------------------------------------------------

@@ -115,17 +115,18 @@ global define boolean ReadHardware(string hwtype) ``{
 global define void SelectHardware(integer which) ``{
     map sel = $[];
 
-    if(which != nil)
+    if(which != nil) {
 	sel = select(HARDWARE, which, $[]);
 
-    if(which > size(HARDWARE) || which < 0)
-	y2error("Item not found in HARDWARE: %1 (%2)", which, size(HARDWARE));
+	if(which > size(HARDWARE) || which < 0)
+	    y2error("Item not found in HARDWARE: %1 (%2)", which, size(HARDWARE));
+    }
 
     /* common stuff */
     name = lookup(sel, "name", "");
     unique = lookup(sel, "unique", "");
     type = lookup(sel, "type", "eth");
-    device = select(GetFreeDevices(type,1), 0, -1);
+    device = GetFreeDevice(type);
 
     /* modem */
     if(type == "modem") {

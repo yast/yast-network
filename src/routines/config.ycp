@@ -213,7 +213,7 @@ global define boolean WriteConfig() ``{
  * @param type device type
  * @param num how many free devices return
  * @return num of free devices
- * @example GetFreeDevices("eth", 2) -&gt; [ "eth1", "eth2" ]
+ * @example GetFreeDevices("eth", 2) -&gt; [ 1, 2 ]
  */
 global define list GetFreeDevices(string type, integer num) ``{
     y2debug("CONFIG=%1",CONFIG);
@@ -237,6 +237,19 @@ global define list GetFreeDevices(string type, integer num) ``{
     }
 
     y2debug("Free devices=%1",ret);
+    return ret;
+}
+
+/**
+ * Return free device
+ * @param type device type
+ * @return free device
+ * @example GetFreeDevice("eth") -&gt; 1
+ */
+global define integer GetFreeDevice(string type) ``{
+    integer ret = select(GetFreeDevices(type, 1), 0, -1);
+    if(ret < 0) y2error("Free device location error: %1", ret);
+    y2debug("Free device=%1",ret);
     return ret;
 }
 

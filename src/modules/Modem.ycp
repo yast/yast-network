@@ -210,7 +210,7 @@ global define boolean AddEdit(string dev) ``{
     /* dev=="" -> Add */
     if(dev == "") {
 	type = "ppp";
-	device = select(GetFreeDevices(type,1), 0, -1);
+	device = GetFreeDevice(type);
 	operation = `add;
     }
     /* dev!="" -> Edit */

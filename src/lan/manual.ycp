@@ -308,7 +308,36 @@ global define symbol WirelessDialog() ``{
     string caption = _("Wireless network card configuration");
 
     /* Wireless dialog help 1/1 */
-    string helptext = _("<p>FIXME Help text</p>");
+    string helptext = _("<p>Here, set the most important settings
+for wireless networking.</p>") +
+
+_("<p>The <b>operating mode</b> depends on the network topology. The mode can
+be Ad-hoc (network composed of only one cell without an access point), Managed
+(network composed of many cells with roaming or an access point), Master
+(the node is the synchronization master or acts as an access point), Repeater
+(the node forward packets on the air), Secondary (the node acts as a backup
+master or repeater), or Auto.</p>") +
+
+_("<p>Set the <b>Network name (ESSID)</b>, which is used to identify cells that are
+part of the same virtual network. As opposed to the NWID, which defines a
+single cell, the ESSID defines a group of cells, connected via repeaters or
+infrastructure, where the user may roam.</p>") +
+
+_("<p>As all adjacent wireless networks share the same medium, the <b>Network
+identifier (NWID)</b> is used to differentiate them (create logical colocated
+networks) and identify nodes belonging to the same cell.</p>") +
+
+_("<p>To set the current <b>Encryption key</b>, enter the key in hex digits as
+XXXX-XXXX-XXXX-XXXX or XXXXXXXX. You can also enter the key as an ASCII
+string by using the 's:' prefix.</p>") +
+
+_("<p>The <b>Nick name</b> means the station name. Most 802.11 products do
+define it, but only some diagnostic tools use it.</p>") +
+
+_("<p>These values will be written to the interface configuration file
+'ifcfg-*' in '/etc/sysconfig/network'. If you need additional settings,
+add them manually. Refer to the file 'wireless' in the same directory for all
+available options.</p>");
 
     /* Wireless dialog contents */
     term contents = `HBox(

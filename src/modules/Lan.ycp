@@ -167,6 +167,7 @@ global define boolean Read() ``{
     ProgressNextStage(_("Reading installation information"));
     if(SCR::Read(.target.size,"/etc/install.inf") > 0)
 	INSTALL_INF = SCR::Read(.etc.install_inf);
+    if(INSTALL_INF == nil) INSTALL_INF = $[];
     //ReadInstallInf();
     sleep(sl);
 
@@ -222,7 +223,8 @@ global define boolean Write() ``{
 	_("Write host name and DNS configuration"),
 	_("Write firewall settings"),
 	_("Run SuSEconfig"),
-	_("Activate local network services"),
+	_("Set up network services"),
+	_("Activate network services"),
     ], [], "");
 
     if(Abort()) return false;
@@ -261,7 +263,12 @@ global define boolean Write() ``{
     sleep(sl);
 
     if(Abort()) return false;
-    ProgressNextStage(_("Activating local network services"));
+    ProgressNextStage(_("Setting up network services"));
+    if(!write_only) SetupNetwork();
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Activating network services"));
     if(!write_only) StartNetwork();
     sleep(sl);
 
@@ -406,7 +413,7 @@ global define boolean AddEdit(string dev) ``{
     /* dev=="" -> Add */
     if(dev == "") {
         type = "eth";
-        device = select(GetFreeDevices(type,1), 0, -1);
+        device = GetFreeDevice(type);
 	operation = `add;
     }
     /* dev!="" -> Edit */
@@ -550,17 +557,27 @@ global define void Propose() ``{
     y2milestone("HARDWARE=%1", HARDWARE);
     y2milestone("INSTALL_INF=%1", INSTALL_INF);
 
-    if(size(HARDWARE) < 1) return;
+    /* Something is already configured -> do nothing */
     if(size(CONFIG["eth"]:$[]) > 0 || size(CONFIG["tr"]:$[]) > 0) return;
 
+    if(INSTALL_INF == nil) INSTALL_INF = $[];
     AddEdit("");
-    Select(0);
 
-    string ip = "";
-    /* if exists /etc/install.inf, use it for proposal */
-    if(INSTALL_INF != nil && INSTALL_INF != $[])
-	ip = INSTALL_INF["ip"]:"bootp";
+    /* Some HW found -> use the first */
+    if(size(HARDWARE) > 0) {
+	Select(0);
+    }
+    /* Nothing detected -> use INSTALL_INF */
+    else {
+	return;
+	Select(nil);
+	modul = INSTALL_INF["Alias"]:"";
+	options = INSTALL_INF["Options"]:"";
+	type = INSTALL_INF["xxx"]:"eth";
+	device = GetFreeDevice(type);
+    }
 
+    string ip = INSTALL_INF["ip"]:"bootp";
     if(ip != nil && ip != "" && ip != "bootp" && ip != "dhcp") {
 
 	/* propose address setup from /etc/install.inf */
@@ -585,8 +602,10 @@ global define void Propose() ``{
 	string mn = INSTALL_INF["machinename"]:"";
 	string dn = INSTALL_INF["domain"]:"";
 	if(ns != "") DNS::nameservers = [ ns ];
-	if(mn != "") DNS::hostname = mn;
-	if(dn != "") DNS::domain = dn;
+	if(mn != "" && dn != "") {
+	    DNS::hostname = mn;
+	    DNS::domain = dn;
+	}
 	DNS::modified = true;
 
     }

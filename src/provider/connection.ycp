@@ -78,8 +78,9 @@ disable <b>DNS modification</b> when connected.</p>
 ") +
 
     /* Connection dialog help 4/8 */
-_("<p><b>Stupid mode</b> help FIXME
-</p>") +
+_("<p><b>Stupid mode</b> will disable the detection of
+any prompts from the dialin server. If the connection
+buildup is slow or does not work at all try this option.</p>") +
 
     /* Connection dialog help 5/8 */
 _("<p>Selecting <b>Activate firewall</b> will block all incoming

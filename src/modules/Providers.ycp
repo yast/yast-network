@@ -159,7 +159,7 @@ global define boolean Read(string type) ``{
 	country_names = $[];
 	ret = false;
     }
-    textdomain "country_db";
+    textdomain "country";
     country_names = eval(country_names);
     textdomain "network";
 

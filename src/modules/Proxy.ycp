@@ -36,9 +36,9 @@ global define boolean Read() ``{
     if(ftp == nil) ftp = "";
     no = SCR::Read(.sysconfig.proxy.NO_PROXY);
     if(no == nil) no = "";
-    user = SCR::Read(.sysconfig.proxy.PROXY_USER);
+    user = SCR::Read(.root.wgetrc.proxy_user);
     if(user == nil) user = "";
-    pass = SCR::Read(.sysconfig.proxy.PROXY_PASSWORD);
+    pass = SCR::Read(.root.wgetrc.proxy_passwd);
     if(pass == nil) pass = "";
 
     return true;
@@ -56,9 +56,10 @@ global define boolean Write() ``{
     SCR::Write(.sysconfig.proxy.HTTP_PROXY, http);
     SCR::Write(.sysconfig.proxy.FTP_PROXY, ftp);
     SCR::Write(.sysconfig.proxy.NO_PROXY, no);
-    SCR::Write(.sysconfig.proxy.PROXY_USER, user);
-    SCR::Write(.sysconfig.proxy.PROXY_PASSWORD, pass);
+    SCR::Write(.root.wgetrc.proxy_user, user);
+    SCR::Write(.root.wgetrc.proxy_passwd, pass);
     SCR::Write(.sysconfig.proxy, nil);
+    SCR::Write(.root.wgetrc, nil);
 
     return ret == true;
 }

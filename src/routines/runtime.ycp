@@ -65,5 +65,20 @@ global define boolean SetupSMPPPD() ``{
     return true;
 }
 
+/**
+ * Setup smpppd(8)
+ * @return true if success
+ */
+global define boolean SetupNetwork() ``{
+    Runlevel::ServiceFinetune("network", [ "2", "3", "5" ]);
+    /*
+    if(Runlevel::ServiceStatus("network") == 0)
+	Runlevel::RunInitScript("network", "reload");
+    else
+	Runlevel::RunInitScript("network", "start");
+    */
+    return true;
+}
+
 /* EOF */
 }
