@@ -152,7 +152,11 @@ global define boolean Write() {
 
 // FIXME whrere was NetworkDevices::Read called?
     /* Update /etc/hosts */
-    list<string> devs = NetworkDevices::LocateNOT("IPADDR", "");
+    // Take static network addresses.
+    // Watch out, there may be an unused IPADDR for a DHCP interface, #49055
+    list<string> devs =
+	NetworkDevices::Locate ("BOOTPROTO", "static") +
+	NetworkDevices::Locate ("BOOTPROTO", ""); // static is the default
     list<string> ips = maplist(string dev, devs, {
 	return NetworkDevices::GetValue(dev, "IPADDR");
     });
