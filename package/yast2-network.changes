@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Tue Dec 14 15:25:09 CET 2004 - mvidner@suse.cz
+Wed Dec 15 13:17:26 CET 2004 - mvidner@suse.cz
 
+- Using Progress::set
 - Resolver: if the search list is empty, prefill the domain (#49094).
 
 -------------------------------------------------------------------

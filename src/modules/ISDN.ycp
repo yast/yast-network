@@ -254,9 +254,9 @@ global define boolean Read() ``{
     if(Abort()) return false;
     // stage 4 in reading current ISDN setup
     ProgressNextStage(_("Reading firewall settings"));
-    Progress::off ();
+    boolean progress_orig = Progress::set (false);
     SuSEFirewallInterfaces::Read ();
-    Progress::on ();
+    Progress::set (progress_orig);
     sleep(sl);
 
     if(Abort()) return false;
@@ -388,9 +388,9 @@ global define boolean Write(boolean start) ``{
     if(Abort()) return false;
     // stage 5 in writing current ISDN setup
     ProgressNextStage(_("Writing firewall settings"));
-    Progress::off ();
+    boolean progress_orig = Progress::set (false);
     SuSEFirewallInterfaces::Write ();
-    Progress::on ();
+    Progress::set (progress_orig);
     sleep(sl);
 
     if(Abort()) return false;

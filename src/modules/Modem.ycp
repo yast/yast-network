@@ -141,9 +141,9 @@ global define boolean Read() {
     if(Abort()) return false;
     /* Progress step 3/4 */
     ProgressNextStage(_("Reading firewall settings..."));
-    Progress::off ();
+    boolean progress_orig = Progress::set (false);
     SuSEFirewallInterfaces::Read ();
-    Progress::on ();
+    Progress::set (progress_orig);
     sleep(sl);
 
     if(Abort()) return false;
@@ -211,9 +211,9 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 2/6 */
     ProgressNextStage(_("Writing firewall settings..."));
-    Progress::off ();
+    boolean progress_orig = Progress::set (false);
     SuSEFirewallInterfaces::Write ();
-    Progress::on ();
+    Progress::set (progress_orig);
     sleep(sl);
 
     if(Abort()) return false;
