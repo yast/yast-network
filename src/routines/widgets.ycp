@@ -22,5 +22,18 @@
 _("<p>When <b>User Controlled</b> is enabled, ordinary users can
 manipulate the interface, not only <b>root</b>.</p>"),
 	    ],
+	// #23315
+	"DIALPREFIXREGEX": $[
+	    "widget": `textentry,
+	    // TextEntry label
+	    "label": _("&Dial prefix regular expression"),
+	    "help":
+	    // dial prefix regex help
+_("<p>When <b>Dial prefix regular expression</b> is set, users can
+change the dial prefix in KInternet provided that it matches the expression.
+A recommended value is <tt>[09]?</tt>, allowing <tt>0</tt>, <tt>9</tt>
+and the empty prefix. If the expression is empty, users are not allowed
+to change the prefix.</p>"),
+	    ],
 	];
 }

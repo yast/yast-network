@@ -49,6 +49,7 @@ global boolean Speaker = true;
 
 global string Device = "/dev/modem";
 global string DialPrefix = "";
+global string DialPrefixRx = "";
 global string PPPDoptions = "";
 
 global list<string> Requires = [];
@@ -312,6 +313,7 @@ global define boolean Select(string dev) {
 
     Device = devmap["MODEM_DEVICE"]:"/dev/modem";
     DialPrefix = devmap["DIALPREFIX"]:"";
+    DialPrefixRx = devmap["DIALPREFIXREGEX"]:"";
     PPPDoptions = devmap["PPPD_OPTIONS"]:"";
 
     /* provider settings */
@@ -380,6 +382,7 @@ global define boolean Commit() {
 	    "DIALCOMMAND"	: PulseDial ? "ATDP" : "ATDT",
 	    "MODEM_DEVICE"	: Device,
 	    "DIALPREFIX"	: DialPrefix,
+	    "DIALPREFIXREGEX"	: DialPrefixRx,
 	    "PROVIDER"		: Provider::Name,
 	    // "PROVIDER_NAME"	: Provider::Current["PROVIDER"]:"",
 	    "PPPD_OPTIONS"	: PPPDoptions,

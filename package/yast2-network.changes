@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Jul 29 16:44:09 CEST 2004 - mvidner@suse.cz
+
+- Added Dial prefix regular expression for modem ifcfgs (#23315).
+
+-------------------------------------------------------------------
 Tue Jul 27 17:30:44 CEST 2004 - mvidner@suse.cz
 
 - New checkbox for interfaces: "User Controlled".
