@@ -196,7 +196,7 @@ boolean HaveDialupLikeInterfaces () {
 define boolean SetupSMPPPD() {
     boolean ret = true;
     /* Stop and disable */
-    if (HaveDialupLikeInterfaces ()) {
+    if (!HaveDialupLikeInterfaces ()) {
 	ret = Service::Disable("smpppd") && ret;
 	ret = Service::Stop("smpppd") && ret;
     }
@@ -223,7 +223,7 @@ define boolean SetupSMPPPD() {
  */
 define boolean RunKInternet() {
     /* Any dialup devices? */
-    if (HaveDialupLikeInterfaces ())
+    if (!HaveDialupLikeInterfaces ())
     {
 	y2milestone ("No dialup-like interfaces");
 	return true;
