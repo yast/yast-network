@@ -53,7 +53,7 @@ TESTSUITE_INIT([READ, $[], EXEC],nil);
 import "Provider";
 
 DUMP("Read");
-TEST(``(Provider::Read()), [READ], nil);
+TEST(``(Provider::Read()), [READ, $[], EXEC], nil);
 
 // DUMP("GetProvider");
 // TEST(``(Provider::ReadProvider(.path.to.provider)), [READ], nil);
