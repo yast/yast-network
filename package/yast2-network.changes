@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Dec 15 17:27:36 CET 2004 - mvidner@suse.cz
+
+- fixed build
+- 2.11.9
+
+-------------------------------------------------------------------
 Wed Dec 15 15:11:51 CET 2004 - mvidner@suse.cz
 
 - Using new firewall code in yast2.rpm via SuSEFirewall4Network.
