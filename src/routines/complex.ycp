@@ -323,9 +323,9 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
  */
 global define string DeviceType(string type) ``{
 
-    /* Device type label */
     if(issubstring(type, ":"))
-	return _("Virtual interface");
+	/* Device type label */
+	return _("Virtual Interface");
 
     map device_types = $[
 	/* Device type label */
@@ -646,6 +646,7 @@ global define symbol FinishPopup(boolean modified, string head, string text, str
     if(t == "")
 	t = texts[run]:text;
     if(t == "")
+	/* Popup text */
 	t = sformat(_("Run configuration of %1?"), run);
 
     any ret = nil;

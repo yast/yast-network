@@ -242,6 +242,7 @@ remove a channel.
     boolean FirewallChecked = Firewall::Query(devstr);
     y2debug("FirewallChecked=%1",FirewallChecked);
 
+    /* CheckBox label */
     term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("Activate fire&wall..."), FirewallChecked));
 
     term contents =

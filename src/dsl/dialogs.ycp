@@ -124,8 +124,10 @@ be appropriate for dial on demand connections.</p>");
 	    `VSpacing(1),
 	    pppwidget,
 	    `VSpacing(1),
+	    /* Frame label */
 	    `Frame(_("PPP mode dependent settings"), `HBox(`HSpacing(2), `VBox(
 		`VSpacing(0.2),
+		/* TextEntry label */
 		`TextEntry(`id(`vpivci),  _("&VPI/VCI"), vpivci),
 		`VSpacing(0.2),
 		`HBox(
@@ -142,9 +144,14 @@ be appropriate for dial on demand connections.</p>");
 		)
 	    ), `HSpacing(2))),
 	    `VSpacing(1),
+	    /* ComboBox label */
 	    `Left(`ComboBox(`id(`startmode), _("&Device activation"), [
+		/* ComboBox item */
 		`item(`id("manual"), _("Manually"), startmode == "manual"),
+		/* ComboBox item */
 		`item(`id("onboot"), _("On boot"), startmode == "onboot"),
+		/* ComboBox item */
+		`item(`id("hotplug"), _("Hot plug"), startmode == "hotplug"),
 	    ])),
 	    `VSpacing(1)
 	    ), `HSpacing(2))),

@@ -96,11 +96,9 @@ the test procedure."),
     term buttons = `VBox (
 			  `VSpacing(1),
 			  /* RadioButton label */
-			  `Left(`RadioButton(`id(`yes),
-					     _("&Yes, Test Connection to the Internet"), test)),
+			  `Left(`RadioButton(`id(`yes), _("&Yes, Test Connection to the Internet"), test)),
 			  /* RadioButton label */
-			  `Left(`RadioButton(`id(`no),
-					     _("N&o, Skip This Test"), !test)),
+			  `Left(`RadioButton(`id(`no), _("N&o, Skip This Test"), !test)),
 			  `VSpacing(1)
 			  );
 

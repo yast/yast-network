@@ -57,11 +57,12 @@ global define symbol HostsMainDialog(boolean standalone) ``{
     /* Hosts dialog caption */
     string caption = _("Host Configuration");
 
-    /* Hosts dialog help 1/1 */
+    /* Hosts dialog help 1/2 */
     string help = _("<p>The hosts can be set up in this dialog.</p>") +
 
-    _("<p>Fill in a host <b>IP address</b>, a <b>host name</b>, and optional
-<b>host aliases</b>, separated by spaces.</p>");
+    /* Hosts dialog help 2/2 */
+    _("<p>Fill in a host <b>IP Address</b>, a <b>Host Name</b>, and optional
+<b>Host Aliases</b>, separated by spaces.</p>");
 
     integer items = 0;
     integer max = 0;

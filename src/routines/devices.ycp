@@ -205,6 +205,7 @@ global define list GetFreeDevices(string type, integer num) ``{
  * @example GetFreeDevice("eth") -&gt; "1"
  */
 global define integer GetFreeDevice(string type) ``{
+    y2debug("type=%1", type);
     integer ret = select(GetFreeDevices(type, 1), 0, -1);
     if(ret < 0) y2error("Free device location error: %1", ret);
     y2debug("Free device=%1", ret);
@@ -244,6 +245,7 @@ global define boolean ChangeDevice(string type, string device, map newdev, boole
  */
 global define boolean ChangeDevice2(string dev, map newdev, boolean check) ``{
     y2debug("ChangeDevice(%1,%2,%3)", dev, newdev, check);
+    y2debug("ChangeDevice(%1,%2,%3)", type, device, hotplug);
     y2debug("Devices=%1", Devices);
 
     if(CheckDevice(dev) && check) {
@@ -251,18 +253,23 @@ global define boolean ChangeDevice2(string dev, map newdev, boolean check) ``{
 	return false;
     }
 
-    map devsmap = Devices[type]:$[];
-    map devmap = devsmap[device]:$[];
+    string t = device_type(dev);
+    string d = device_num(dev);
+    string a = alias_num(dev);
+    y2debug("ChangeDevice(%1,%2,%3)", t, d, a);
+
+    map devsmap = Devices[t]:$[];
+    map devmap = devsmap[d]:$[];
     map amap = devmap["_aliases"]:$[];
 
-    if(alias != "")
-	change(amap, alias, newdev);
+    if(a != "")
+	change(amap, a, newdev);
     else
 	devmap = newdev;
 
     change(devmap, "_aliases", amap);
-    change(devsmap, device, devmap);
-    change(Devices, type, devsmap);
+    change(devsmap, d, devmap);
+    change(Devices, t, devsmap);
 
     y2debug("Devices=%1", Devices);
     return true;

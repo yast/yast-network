@@ -36,6 +36,12 @@ global string unique = "";
 global string startmode = "manual";
 
 /**
+ * Special Capi-ADSL mode -- different presets for the first device.
+ * Used for ISDN-DSL combined hardware.
+ */
+global boolean capiadsl = false;
+
+/**
  * Ethernet network interface
  */
 global string interface = "";
@@ -316,6 +322,10 @@ global define boolean Select(string dev) ``{
     /* provider settings */
     Provider::Name = devmap["PROVIDER"]:"";
 
+    /* Capi-ADSL mode */
+    if(dev == "" && capiadsl)
+	pppmode = "capi-adsl";
+
     /* ppp mode heuristics */
     if(pppmode == nil || pppmode == "") {
 	string language = Language::GetLanguageCountry();
@@ -407,6 +417,9 @@ global define boolean Commit() ``{
 	y2error("Unknown operation: %1", operation);
 	return false;
     }
+
+    /* Capi-ADSL mode */
+    if(capiadsl) capiadsl = false;
 
     modified = true;
     operation = nil;

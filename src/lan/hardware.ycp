@@ -51,9 +51,11 @@ _("<p>If you have a <b>PCMCIA</b> network card, click on the PCMCIA check
 box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 
     if(Arch::s390)
+	/* Manual dialog help 5/4 */
 	help = _("<p>Here, set up your networking device. The values will be
 written into <i>/etc/modules.conf</i> or <i>/etc/chandev.conf</i>.</p>") +
 
+	/* Manual dialog help 6/4 */
 _("<p>Options for the module should be written in the format specified
 in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
