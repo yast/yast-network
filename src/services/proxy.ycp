@@ -237,7 +237,7 @@ should be done directly without caching.</p>") +
 	}
 
 	Proxy::modified = true;
-	if (!Mode::config)
+	if (!Mode::config ())
 		ProxyFinishPopup(true);
     }
 

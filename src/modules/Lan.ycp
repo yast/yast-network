@@ -215,7 +215,7 @@ global define boolean Read() {
     // if(!Arch::s390 ()) /* FIXME: Temporary hack until the detection is functional */
 
     // Dont read hardware data in config mode
-    if(!Mode::config) {
+    if(!Mode::config ()) {
 	if(!Detection::running) Detection::Start();
 	Hardware = ReadHardware("netcard");
     }

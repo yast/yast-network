@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
-Mon Oct 25 19:01:05 CEST 2004 - mvidner@suse.cz
+Wed Oct 27 11:36:30 CEST 2004 - mvidner@suse.cz
 
+- Adapted to changes in Mode.
+- Actually assign to allow_administration in Remote::Read (#44684).
 - Changed label: IUCV "link name/partner" to "peer name" (#42789).
 - Added qeth options and IP takeover to qeth and hsi (hare, #41570)
 

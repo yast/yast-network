@@ -22,7 +22,7 @@ import "String";
  */
 define boolean Abort() {
     import "Mode";
-    if(Mode::commandline) return false;
+    if(Mode::commandline ()) return false;
     return UI::PollInput() == `abort;
 
     /* FIXME: NI

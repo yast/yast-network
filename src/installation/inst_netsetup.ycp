@@ -10,6 +10,8 @@
 {
 
 import "Arch";
+import "Installation";
+import "Linuxrc";
 import "Mode";
 
 symbol mode = (symbol) WFM::Args (2);
@@ -78,7 +80,7 @@ define void load_modules () {
  */
 define boolean do_network_setup ()
 {
-    if (Mode::test || Arch::s390 () || Mode::vnc || Mode::usessh) {
+    if (Mode::test () || Arch::s390 () || Linuxrc::vnc () || Linuxrc::usessh ()) {
 	y2milestone("NOT doing the basic network setup");
 	return false;
     }
@@ -93,8 +95,8 @@ if (mode == `up)
     {
 	SCR::Execute (.target.bash, "/sbin/ifconfig lo 127.0.0.1 up");
 
-	if ((Mode::boot == "nfs") || (Mode::boot == "http") ||
-	    (Mode::boot == "smb") || (Mode::boot == "ftp"))
+	if ((Installation::boot () == "nfs") || (Installation::boot () == "http") ||
+	    (Installation::boot () == "smb") || (Installation::boot () == "ftp"))
 	{
 	    if (netconfig == "static")
 	    {
@@ -142,7 +144,7 @@ if (mode == `up)
 	}
     }
 
-    if (Mode::boot == "nfs")
+    if (Installation::boot () == "nfs")
     {
 	SCR::Execute (.target.bash, "/sbin/rcportmap start");
     }

@@ -18,7 +18,7 @@ y2milestone("Arguments: %1", WFM::Args());
 
 import "Arch";
 import "Lan";
-import "Mode";
+import "Linuxrc";
 import "Progress";
 
 include "network/lan/wizards.ycp";
@@ -81,7 +81,7 @@ else if (func == "Write") {
 	// popup already shown
 	y2error("Packages installation failure, not saving");
     }
-    else if (Arch::s390 () || Mode::vnc || Mode::usessh )
+    else if (Arch::s390 () || Linuxrc::vnc () || Linuxrc::usessh () )
 	Lan::WriteOnly();
     else {
 	Lan::Write();

@@ -96,7 +96,7 @@ activate the test procedure."),
 	label = labels[Internet::type]:"";
 
     boolean already_up = false;
-    if(!Mode::test) already_up = Internet::Status();
+    if(!Mode::test ()) already_up = Internet::Status();
 
     /* Radiobuttons */
     term buttons = `VBox(

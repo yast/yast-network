@@ -1,15 +1,3 @@
-Read	.target.size "/etc/install.inf" nil
-Read	.etc.install_inf.Sourcemounted nil
-Read	.etc.install_inf.AutoYaST nil
-Read	.etc.install_inf.Repair nil
-Read	.etc.install_inf.Textmode nil
-Read	.etc.install_inf.Manual nil
-Read	.target.string "/proc/cmdline" nil
-Read	.etc.install_inf.Console nil
-Read	.etc.install_inf.Braille nil
-Read	.etc.install_inf.VNC nil
-Read	.etc.install_inf.UseSSH nil
-Read	.etc.install_inf.InstMode nil
 Read	.target.tmpdir "/tmp"
 Dump	Fastest
 Dir	.network.section: ["dsl0", "eth0"]

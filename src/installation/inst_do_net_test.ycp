@@ -52,7 +52,7 @@ list<map> logs = [];
 string logdir = (string) SCR::Read (.target.tmpdir) + "/internet-test";
 
 
-if(!Mode::test)
+if(!Mode::test ())
     already_up = Internet::Status();
 
 
@@ -274,7 +274,7 @@ and correct the setting.</p>");
     {
 	if (test_stage == `open)		// open connection
 	{
-	    if(Mode::test) {
+	    if(Mode::test ()) {
 		mark_label(1, `arrow);
 		test_stage = `wait;
 		return;
@@ -318,7 +318,7 @@ the logs for details.
 
 	if (test_stage == `wait)		// wait until really connected
 	{
-	    if(Mode::test) {
+	    if(Mode::test ()) {
 		test_stage = `copy;
 		mark_label(1, `check);
 		return;
@@ -423,7 +423,7 @@ the logs for details.
 
 	if (test_stage == `close)		// close connection
 	{
-	    if(Mode::test) {
+	    if(Mode::test ()) {
 		mark_label(4, `arrow);
 		test_stage = `finish;
 		mark_label(4, `check);

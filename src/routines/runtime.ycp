@@ -183,7 +183,7 @@ define boolean SetupSMPPPD() {
 	ret = Service::Enable("smpppd") && ret;
 
 	/* Installation? */
-	if(Mode::normal) {
+	if(Mode::normal ()) {
 	    if(Service::Status("smpppd") == 0)
 		ret = Service::Reload("smpppd") && ret;
 	    else
@@ -208,7 +208,7 @@ define boolean RunKInternet() {
     }
 
     /* Installation? */
-    if(!Mode::normal) {
+    if(!Mode::normal ()) {
 	y2milestone("No normal mode");
 	return true;
     }

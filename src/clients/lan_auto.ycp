@@ -35,11 +35,10 @@ if(size(WFM::Args()) > 0 && is(WFM::Args(0), string))
 }
 y2debug("func=%1", func);
 y2debug("param=%1", param);
-Mode::test = false;
 
-if (Mode::test)
+if (Mode::test ())
 {
-    Mode::autoinst = true;
+    Mode::autoinst () = true;
     param = $["dns":$["dhcp_hostname":false, "dhcp_resolv":false],
     "interfaces":[$["bootproto":"dhcp", "device":"eth-id-00:0e:0c:08:36:7a",
     "startmode":"onboot"]], "routing":$["ip_forward":false]];
@@ -95,7 +94,7 @@ define map FromAY(map input)
 {
 
     list<map> hw = [];
-    if (Mode::autoinst)
+    if (Mode::autoinst ())
     {
         hw = Lan::PrepareForAutoinst();
     }
@@ -120,7 +119,7 @@ define map FromAY(map input)
         string configured_device = interface["DEVICE"]:"";
         string new_device = "";	// will be combined with "_type"
         boolean configured = false;
-        if ( Mode::autoinst)
+        if ( Mode::autoinst ())
         {
 	    // Try to match "device" to a piece of hw
 	    // Here done using "mac" only
@@ -177,7 +176,7 @@ define map FromAY(map input)
 
 	string type = nil;
 	string id = nil;
-        if (Mode::autoinst)
+        if (Mode::autoinst ())
         {
             type = if_data["_type"]:"";
 	    id = devname;	// suspicious
@@ -206,7 +205,7 @@ define map FromAY(map input)
                                 "MODULE_OPTIONS":options,
                                 "STARTMODE":start_mode
                                 ];
-            if (Mode::autoinst)
+            if (Mode::autoinst ())
             {
                 device_name = devicemapping[device_name]:"";
             }
@@ -214,7 +213,7 @@ define map FromAY(map input)
         });
     }
     // AAAARGH! arbitrary matching of devices with hardware!
-    if ( Mode::autoinst)
+    if ( Mode::autoinst ())
     {
 	map alias = $[];
 	map options = $[];

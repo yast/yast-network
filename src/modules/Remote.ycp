@@ -110,7 +110,7 @@ global boolean Write() {
     });
     SCR::Write(.etc.xinetd_conf.services, xinetd);
 
-    if(Mode::normal) {
+    if(Mode::normal ()) {
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module xdm");
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kde3");
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kdm3");
