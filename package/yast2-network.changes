@@ -1,16 +1,17 @@
 -------------------------------------------------------------------
-Sun Sep 21 09:32:05 CEST 2003 - kkeil@suse.de
-
-- fix Firewall setting lookup (#31322)
-- if the interface was deleted, delete also the firewll entry
-
--------------------------------------------------------------------
-Fri Sep 19 21:32:39 CEST 2003 - msvec@suse.cz
+Sun Sep 21 15:42:34 CEST 2003 - msvec@suse.cz
 
 - fixed default baud rate value (#31442)
 - added more milestone calls to proposal clients
 - save the original providers for later comparison (#31322)
+- disable IPADDR prefilling (#31369)
 - 2.8.40
+
+-------------------------------------------------------------------
+Sun Sep 21 09:32:05 CEST 2003 - kkeil@suse.de
+
+- fix Firewall setting lookup (#31322)
+- if the interface was deleted, delete also the firewll entry
 
 -------------------------------------------------------------------
 Thu Sep 18 11:40:00 CEST 2003 - arvin@suse.de

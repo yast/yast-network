@@ -496,7 +496,7 @@ global define boolean Select(string dev) ``{
 
     /* address options */
     bootproto = devmap["BOOTPROTO"]:"static";
-    ipaddr = devmap["IPADDR"]:(Detection::result["IPADDR"]:"");
+    ipaddr = devmap["IPADDR"]:""; // FIXME: #31369 (Detection::result["IPADDR"]:"");
     remoteip = devmap["REMOTE_IPADDR"]:"";
     netmask = devmap["NETMASK"]:(Detection::result["NETMASK"]:"255.255.255.0");
     mtu = devmap["MTU"]:"";
