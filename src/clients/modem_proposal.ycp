@@ -34,16 +34,17 @@ if(func == "MakeProposal") {
     boolean force_reset = param["force_reset"]:false;
 
     if(force_reset || !Modem::proposal_valid) {
-        Modem::proposal_valid = true;
-	Progress::off();
+	Modem::proposal_valid = true;
 	/* Popup text */
 	BusyPopup(_("Detecting modems..."));
+	boolean progress_orig = Progress::set (false);
 	Modem::Read();
+	// no Modem::Propose () ?
+	Progress::set (progress_orig);
 	BusyPopupClose();
     }
     list sum = Modem::Summary(false);
     proposal = sum[0]:"";
-    Progress::on();
 
     ret = $[
 	"preformatted_proposal" : proposal,

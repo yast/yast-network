@@ -35,16 +35,16 @@ if(func == "MakeProposal") {
 
     if(force_reset || !DSL::proposal_valid) {
 	DSL::proposal_valid = true;
-	Progress::off();
 	/* Popup text */
 	BusyPopup(_("Detecting DSL devices..."));
+	boolean progress_orig = Progress::set (false);
 	DSL::Read();
 	DSL::Propose();
+	Progress::set (progress_orig);
 	BusyPopupClose();
     }
     list sum = DSL::Summary(false);
     proposal = sum[0]:"";
-    Progress::on();
 
     ret = $[
 	"preformatted_proposal" : proposal,

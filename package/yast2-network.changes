@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jan 25 17:34:09 CET 2005 - mvidner@suse.cz
+
+- Use Progress::set also in clients.
+
+-------------------------------------------------------------------
 Mon Jan 24 21:19:34 CET 2005 - nashif@suse.de
 
 - Fixed second argument used to skip client when going back in the workflow

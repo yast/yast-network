@@ -36,11 +36,11 @@ if(func == "MakeProposal") {
 
     if(force_reset || !Proxy::proposal_valid) {
 	Proxy::proposal_valid = true;
-	Progress::off();
+	boolean progress_orig = Progress::set (false);
 	Proxy::Read();
+	Progress::set (progress_orig);
     }
     proposal = Proxy::Summary();
-    Progress::on();
 
     ret = $[
 	"preformatted_proposal" : proposal,

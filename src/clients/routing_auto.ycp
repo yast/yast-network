@@ -71,9 +71,9 @@ else if (func == "Export") {
 /* Write givven settings */
 else if (func == "Write") {
     import "Progress";
-    Progress::off();
+    boolean progress_orig = Progress::set (false);
     ret = Routing::Write();
-    Progress::on();
+    Progress::set (progress_orig);
 }
 /* Unknown function */
 else {

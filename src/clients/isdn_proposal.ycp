@@ -33,16 +33,17 @@ if(func == "MakeProposal") {
     boolean force_reset = param["force_reset"]:false;
 
     if(force_reset || !ISDN::proposal_valid) {
-        ISDN::proposal_valid = true;
-	Progress::off();
+	ISDN::proposal_valid = true;
 	/* Popup text */
 	BusyPopup(_("Detecting ISDN cards..."));
+	boolean progress_orig = Progress::set (false);
 	ISDN::Read();
+	// no ISDN::Propose () ?
+	Progress::set (progress_orig);
 	BusyPopupClose();
     }
     list sum = ISDN::Summary(false);
     proposal = sum[0]:"";
-    Progress::on();
 
     ret = $[
 	"preformatted_proposal" : proposal,

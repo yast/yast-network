@@ -38,16 +38,16 @@ if(func == "MakeProposal") {
 
     if(force_reset || !Lan::proposal_valid) {
 	Lan::proposal_valid = true;
-	Progress::off();
 	/* Popup text */
 	BusyPopup(_("Detecting network cards..."));
+	boolean progress_orig = Progress::set (false);
 	Lan::Read();
 	Lan::Propose();
+	Progress::set (progress_orig);
 	BusyPopupClose();
     }
     list sum = Lan::Summary("summary");
     proposal = sum[0]:"";
-    Progress::on();
 
     ret = $[
 	"preformatted_proposal" : proposal,

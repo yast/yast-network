@@ -364,9 +364,9 @@ else if(func == "Import") {
     ret = Lan::Import(autoyast);
 }
 else if(func == "Read") {
-    Progress::off();
+    boolean progress_orig = Progress::set (false);
     ret = Lan::Read();
-    Progress::on();
+    Progress::set (progress_orig);
 }
 else if (func == "Packages") {
     ret = Lan::AutoPackages ();
@@ -384,9 +384,9 @@ else if (func == "Export") {
     ret = autoyast;
 }
 else if (func == "Write") {
-    Progress::off();
+    boolean progress_orig = Progress::set (false);
     ret = Lan::WriteOnly();
-    Progress::on();
+    Progress::set (progress_orig);
 }
 /* unknown function */
 else {
