@@ -76,7 +76,7 @@ else if(func == "Description") {
 }
 /* write the proposal */
 else if (func == "Write") {
-    if (Arch::s390 || Mode::vnc || Mode::usessh || Mode::live_eval)
+    if (Arch::s390 || Mode::vnc || Mode::usessh )
 	Lan::WriteOnly();
     else {
 	Lan::Write();
