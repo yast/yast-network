@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Tue Feb  1 13:44:03 CET 2005 - mvidner@suse.cz
+Tue Feb  1 14:47:37 CET 2005 - mvidner@suse.cz
 
+- For WLAN interfaces, wireless-tools.rpm is needed (#49880).
 - Help text fix: cannot correct network settings during an update
   (#50381).
 
