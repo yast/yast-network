@@ -1,10 +1,10 @@
 -------------------------------------------------------------------
-Fri Sep 24 19:30:01 CEST 2004 - mvidner@suse.cz
+Sat Sep 25 11:01:45 CEST 2004 - mvidner@suse.cz
 
 - Check whether kinternet is installed (#43556).
 - Run it via a desktop file (#37864).
 - Use yast2-firewall to access the firewall configuration (#45857).
-  Still not a complete fix.
+- Edit the default wireless key, not the first one (#46029).
 - 2.10.24
 
 -------------------------------------------------------------------

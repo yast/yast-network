@@ -218,7 +218,7 @@ available options.</p>");
     }
     else
     {
-	map<string, string> wkey = ParseWepKey (Lan::wl_key[0]:"");
+	map<string, string> wkey = ParseWepKey (Lan::wl_key[Lan::wl_default_key]:"");
 	key = wkey["key"]:"";
 	type = wkey["type"]:"";
     }
@@ -401,7 +401,7 @@ Really continue?");
 	}
 	else
 	{
-	    Lan::wl_key[0] = ckey;
+	    Lan::wl_key[Lan::wl_default_key] = ckey;
 	}
     }
 
