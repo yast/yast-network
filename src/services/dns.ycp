@@ -347,8 +347,8 @@ disabled during the connection.</p>");
 	    DNS::nameservers = filter(string n, [ ns1, ns2, ns3 ], ``(n != ""));
 	    DNS::searchlist = filter(string s, [ s1, s2, s3 ], ``(s != ""));
 
-	    NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = (boolean) UI::QueryWidget(`id(`dn), `Value) ? "yes" : "no";
-	    NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"] = (boolean) UI::QueryWidget(`id(`dr), `Value) ? "yes" : "no";
+	    NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = (boolean) UI::QueryWidget(`id(`dn), `Value);
+	    NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"] = (boolean) UI::QueryWidget(`id(`dr), `Value);
 
 	    /* update modified flag */
 	    DNS::modified = true;
