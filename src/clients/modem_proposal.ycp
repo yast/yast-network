@@ -35,9 +35,13 @@ if(func == "MakeProposal") {
     string proposal = "";
     string warning = nil;
     symbol warning_level = nil;
+    boolean force_reset = param["force_reset"]:false;
 
-    Progress::off();
-    Modem::Read();
+    if(force_reset || !Modem::proposal_valid) {
+        Modem::proposal_valid = true;
+	Progress::off();
+	Modem::Read();
+    }
     list sum = Modem::Summary(false);
     proposal = select(sum, 0, "");
     Progress::on();
@@ -50,8 +54,11 @@ if(func == "MakeProposal") {
 }
 /* run the module */
 else if(func == "AskUser") {
-    symbol seq = `next;
-    CallFunction(`modem());
+    map stored = Modem::Export();
+    symbol seq = CallFunction(`modem(.propose));
+    if(seq != `next) Modem::Import(stored);
+    y2debug("stored=%1",stored);
+    y2debug("seq=%1",seq);
     ret = $[
 	"workflow_sequence" : seq
     ];

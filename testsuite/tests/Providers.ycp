@@ -1,0 +1,33 @@
+{
+
+include "testsuite.ycp";
+import "Providers";
+
+map READ = $[
+    "custom_providers" : $[
+	"s" : $[
+	    "first" : $[ "PROVIDER" : "first one", ],
+	    "second" :$[ "PROVIDER" : "second one", ],
+	    "third" : $[ "PROVIDER" : "third one", ],
+	],
+	"v" : $[
+	    "first" : $[ "PROVIDER" : "first one", ],
+	    "second": $[ "PROVIDER" : "second one", ],
+	    "third" : $[ "PROVIDER" : "third one", ],
+	]
+    ],
+    "target" : $[
+	"yast2" : $[
+	    "CZ" : "Czech",
+	],
+    ],
+];
+
+DUMP("Read");
+TEST(``(Providers::Read()), [READ], nil);
+
+DUMP("getProvider");
+TEST(``(Providers::getProvider(.path.to.provider)), [], nil);
+TEST(``(Providers::getProvider(.path.to."provi der")), [], nil);
+
+}

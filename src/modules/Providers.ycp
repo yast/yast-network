@@ -16,17 +16,18 @@
  * $Id$
  *
  * Dialogs and functions for Providers.
+ *
  */
 
 {
+
 module "Providers";
 
 textdomain "network";
 
+import "DSL";
 import "Modem";
 import "ISDN";
-import "DSL";
-
 
 /**
  * Modem we are currently working with.
@@ -34,10 +35,10 @@ import "DSL";
  * "DialMessage1" :
  * "DialMessage2" :
  * "Provider" : nice name of provider
- * "ShortName" : short name of provider (name of the section in *.wvdial.conf)
+ * "ShortName" : short name of provider (name of the section in *.conf)
  * "Username" :
  * "Password" :
- * "Ask Password" : 0 or 1
+ * "Ask Password" : "no" or "yes"
  * "Phone" : the most important - phone number
  * "DNS1" : first dns
  * "DNS2" : second dns
@@ -46,7 +47,7 @@ import "DSL";
  * "DialMessage1" :
  * "DialMessage2" :
  * "Provider" : nice name of provider
- * "ShortName" : short name of provider (name of the section in *.wvdial.conf)
+ * "ShortName" : short name of provider (name of the section in *.conf)
  * "Username" :
  * "Password" :
  * "Phone" : the most important - phone number
@@ -65,69 +66,41 @@ boolean dirty = false;
  */
 map providers = $[];
 
-/**
- * Map for translation sysconfig style provider to /usr/share/providers
- * style
- */
-map sysconfig2share = $[
-    "PROVIDER"		: "Provider",
-    "PRODUCT"		: "Product",
-    "HOMEPAGE"		: "Homepage",
-    "PHONE"		: "Phone",
-    "USERNAME"		: "Username",
-    "PASSWORD"		: "Password",
-    "LINEID"		: "LINEID",
-    "USERCODE"		: "USERCODE",
-    "TONLINEID"		: "TONLINEID",
-    "ASKPASSWORD"	: "Ask Password",
-    "DNS1"		: "DNS1",
-    "DNS2"		: "DNS2",
-    "STUPIDMODE"	: "Stupid Mode",
-    "COMPUSERVE"	: "Compuserve",
-    "DIALMESSAGE1"	: "DialMessage1",
-    "DIALMESSAGE2"	: "DialMessage2",
-    "AUTODNS"		: "AUTODNS",
-    "AUTORECONNECT"	: "AUTORECONNECT",
-    "IDLETIME"		: "IDLETIME",
-    "DEMAND"		: "DEMAND",
-    "PRIORITY"		: "Priority",
-    "MODEMSUPPORTED"	: "Modem supported",
-    "ISDNSUPPORTED"	: "ISDN supported",
-    "DSLSUPPORTED"	: "DSLSUPPORTED",
-    "COUNTRY"		: "Country",
-];
+/* provider settings */
+global string provShortName = "";
 
 /**
- * Map for translation /usr/share/providers
- * style to sysconfig style provider
+ * Country code -> country name translation
  */
-map share2sysconfig = $[
-    "Provider"		: "PROVIDER"		,
-    "Product"		: "PRODUCT"		,
-    "Homepage"		: "HOMEPAGE"		,
-    "Phone"		: "PHONE"		,
-    "Username"		: "USERNAME"		,
-    "Password"		: "PASSWORD"		,
-    "LINEID"		: "LINEID"		,
-    "USERCODE"		: "USERCODE"		,
-    "TONLINEID"		: "TONLINEID"		,
-    "Ask Password"	: "ASKPASSWORD"		,
-    "DNS1"		: "DNS1"		,
-    "DNS2"		: "DNS2"		,
-    "Stupid Mode"	: "STUPIDMODE"		,
-    "Compuserve"	: "COMPUSERVE"		,
-    "DialMessage1"	: "DIALMESSAGE1"	,
-    "DialMessage2"	: "DIALMESSAGE2"	,
-    "AUTODNS"		: "AUTODNS"		,
-    "AUTORECONNECT"	: "AUTORECONNECT"	,
-    "IDLETIME"		: "IDLETIME"		,
-    "DEMAND"		: "DEMAND"		,
-    "Priority"		: "PRIORITY"		,
-    "Modem supported"	: "MODEMSUPPORTED"	,
-    "ISDN supported"	: "ISDNSUPPORTED"	,
-    "DSLSUPPORTED"	: "DSLSUPPORTED"	,
-    "Country"		: "COUNTRY"		,
-];
+map country = $[];
+
+/**
+ * 2 character country id --> country nice name mapping.
+ */
+map country_nice_name = nil;
+
+/**
+ * Get nice name of country.
+ * @param fn file name from which we take the country
+ * @return nice name of the country
+ */
+define string getCountryNiceName (string fn) ``{
+    if (nil == country_nice_name)
+    {	// First time, read mapping.
+	country_nice_name = SCR::Read (.target.yast2, "country.ycp");
+	textdomain "country_db";
+	country_nice_name = eval (country_nice_name);
+	textdomain "network";
+	if (nil == country_nice_name)
+	    country_nice_name = $[];
+    }
+    // "/usr/share/providers/XX....";
+    if ("/usr/share/providers/" == substring (fn, 0, 21))
+	fn = substring (fn, 21, 2);
+    if ("UK" == fn)
+	fn = "GB";
+    return lookup (country_nice_name, fn, fn);
+}
 
 /**
  * Export data
@@ -135,6 +108,7 @@ map share2sysconfig = $[
 global define map Export () ``{
     return providers;
 }
+
 /**
  * Import data
  */
@@ -143,26 +117,29 @@ global define map Import (map in) ``{
     provider = $[];
     dirty = true;
 }
+
 /**
  * were the providers changed?
  */
 global define boolean Modified () ``{
     return dirty;
 }
+
 /**
- * Most probably it means to check if section name in wvdial.conf is
+ * Most probably it means to check if section name in .conf is
  * unque.
  */
 global define boolean IsSectionUnique (string name) ``{
     list forbidden = maplist (`k, `v, providers, ``( k ));
     return !contains (forbidden, name);
 }
+
 /**
- * Most probably it means to check if provider name in wvdial.conf is
+ * Most probably it means to check if provider name in .conf is
  * unque.
  */
 global define boolean IsProviderUnique (string name) ``{
-    forbidden = maplist (`k, `v, providers, ``( lookup (v, "Provider", "")));
+    list forbidden = maplist (`k, `v, providers, ``( lookup (v, "PROVIDER", "")));
     return !contains (forbidden, name);
 }
 
@@ -186,20 +163,20 @@ global define void editProvider (any prov_id) ``{
     }
     provider = add (provider, "ShortName", gen);
 
-    name = lookup (provider, "Provider", "");
+    name = lookup (provider, "PROVIDER", "");
     gen = name;
     suffix = 0;
-    forbidden = maplist (`k, `v, providers, ``( lookup (v, "Provider", "")));
+    forbidden = maplist (`k, `v, providers, ``( lookup (v, "PROVIDER", "")));
     while (contains (forbidden, gen))
     {
 	suffix = suffix + 1;
 	gen = sformat ("%1 (%2)", name, suffix);
     }
-    provider = add (provider, "Provider", gen);
+    provider = add (provider, "PROVIDER", gen);
     // initialize provider with new values
     provider = union ($[
 	    "AUTODNS" : "yes",
-	    "IDLETIME" : "0",
+	    "IDLETIME" : "300",
 	    "DEMAND" : "no",
 	    "DNS1" : "",
 	    "DNS2" : "", ],
@@ -213,54 +190,49 @@ global define void editProvider (any prov_id) ``{
 global define void Commit () ``{
     dirty = true;
     providers = add (providers, lookup (provider, "ShortName", ""), provider);
-    Modem::provShortName = lookup (provider, "ShortName", "");
+    provShortName = lookup (provider, "ShortName", "");
 }
 
 /**
- * Unfortunatelly we have different file format for providers in
- * /usr/share/providers/ and in /etc/sysconfig/network/providers
- * @param prov provider map in sysconfig format
- * @return provider map in share format
+ * Read providers data
+ * @return true if success
  */
-define map ProviderToShare (map prov) ``{
-    map out = mapmap (`k, `v, prov, ``{
-	return [ lookup (sysconfig2share, k, nil), v ];
-    });
-    out = add (out, "Modem supported", lookup (prov, "MODEMSUPPORTED", "yes") == "yes" ? "1" : "0");
-    out = add (out, "ISDN supported", lookup (prov, "ISDNSUPPORTED", "no") == "yes" ? "1" : "0");
-    out = add (out, "DSL supported", lookup (prov, "DSLSUPPORTED", "no") == "yes" ? "1" : "0");
-    return out;
-}
-/**
- * Unfortunatelly we have different file format for providers in
- * /usr/share/providers/ and in /etc/sysconfig/network/providers
- * @param prov provider map in share format
- * @return provider map in sysconfig format
- */
-define map ProviderToSysconfig (map prov) ``{
-    map out = mapmap (`k, `v, prov, ``{
-	return [ lookup (share2sysconfig, k, nil), v ];
-    });
-    out = add (out, "MODEMSUPPORTED", lookup (prov, "Modem supported", "1") == "1" ? "yes" : "no");
-    out = add (out, "ISDNSUPPORTED", lookup (prov, "ISDN supported", "0") == "1" ? "yes" : "no");
-    out = add (out, "DSLSUPPORTED", lookup (prov, "DSL supported", "0") == "1" ? "yes" : "no");
-    return out;
-}
+global define boolean Read () ``{
 
-/**
- * Read all custom providers
- */
-global define void Read () ``{
+    /* read custom providers */
     providers = $[];
-    // custom providers
-    list dir = SCR::Dir (.custom_providers.s);
+    list dir = SCR::Dir(.custom_providers.s);
     foreach (`i, dir, ``{
-	map p = ProviderToShare (getProvider (add (.custom_providers.v, i)));
+	map p = getProvider (add (.custom_providers.v, i));
 	integer slash = findlastof (i, "/");
 	string shortname = nil == slash ? i : substring (i, slash + 1);
 	p = add (p, "ShortName", shortname);
 	providers = add (providers, shortname, p);
     });
+
+    /* read countries */
+    country = SCR::Read(.target.yast2, "country.ycp");
+    if(country == nil) {
+	//Report:Error(_("Countries database not found"));
+	return false;
+    }
+
+    return true;
+}
+
+/**
+ * Ensure all neccesary items are present.
+ * @param prov provider map
+ * @return new provider map with all entries
+ */
+define map completeProvider (map prov) ``{
+    if (!haskey (prov, "MODEMSUPPORTED"))
+	prov = add (prov, "MODEMSUPPORTED", "yes");
+    if (!haskey (prov, "ISDNSUPPORTED"))
+	prov = add (prov, "ISDNSUPPORTED", "no");
+    if (!haskey (prov, "DSLSUPPORTED"))
+	prov = add (prov, "DSLSUPPORTED", "no");
+    return prov;
 }
 
 /**
@@ -273,36 +245,74 @@ global define void Write () ``{
 	string sname = lookup (value, "ShortName", "other");
 	sname = filterchars (sname, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.");
 	path base = add (.custom_providers.v, sformat ("/etc/sysconfig/network/providers/%1", sname));
-	foreach (`k, `v, ProviderToSysconfig (value), ``{
-	    SCR::Write (add (base, k), v);
+	foreach (`k, `v, completeProvider (value), ``{
+	    // adjust some values
+	    if ("ASKPASSWORD" == k || "STUPIDMODE" == k || "COMPUSERVE" == k || "ISDNSUPPORTED" == k || "DSLSUPPORTED" == k || "MODEMSUPPORTED" == k)
+	    {
+		if ("0" == v)		v = "no";
+		else if ("1" == v)	v = "yes";
+		else if ("no" != v && "yes" !=v)
+		    v = (-1 != find (v, "no") ? "no" : "yes");
+	    }
+	    if ("ShortName" != k)
+		SCR::Write (add (base, k), v);
 	});
+    });
+    SCR::Write (.custom_providers, nil);
+    foreach (`key, `value, providers, ``{
+	string sname = lookup (value, "ShortName", "other");
+	SCR::Execute (.target.bash, "/bin/chown root:root /etc/sysconfig/network/providers/" + sname);
+	SCR::Execute (.target.bash, "/bin/chmod 0600 /etc/sysconfig/network/providers/" + sname);
     });
 }
 
 /**
  * Get list of countries
- * @param preselect country to preselect
  * @return list for selection box
  */
-global define list getCountries (string preselect) ``{
-    map table = $[
-	"/usr/share/providers/CZ.wvdial.conf" : _("Czech Republic"),
-	"/usr/share/providers/DE.wvdial.conf" : _("Germany"),
-	"/usr/share/providers/UK.wvdial.conf" : _("UK"),
-	"/usr/share/providers/US.wvdial.conf" : _("USA"),
-	];
+global define list getCountries () ``{
     list out = [];
     list countries = SCR::Dir (.providers.s);
     integer index = -1;
     out = maplist (`i, countries, ``{
 	    index = index + 1;
-	    return `item (`id (i), lookup (table, i, i), 0 == index || i == preselect);
+	    return `item (`id (i), getCountryNiceName (i), 0 == index);
     });
-    if (0 != size (providers))
-	out = add (out, `item (`id ("_custom"), _("Custom"), "_custom" == preselect));
     return out;
 }
 
+/**
+ * Lets only DSL providers "go in"
+ * @param provs list of providers
+ * @return list of dsl capable providers
+ */
+define list filterDSL (list provs) ``{
+    return filter (`i, provs, ``{
+	if (is (i, string))
+	{
+	    return "yes" == lookup (lookup (providers, i, $[]), "DSLSUPPORTED", "no");
+	}
+	else if ("yes" == SCR::Read (i + ."DSLSUPPORTED"))
+	    return true;
+	return false;
+    });
+}
+/**
+ * Lets only modem providers "go in"
+ * @param provs list of providers
+ * @return list of modem capable providers
+ */
+define list filterModem (list provs) ``{
+    return filter (`i, provs, ``{
+	if (is (i, string))
+	{
+	    return "yes" == lookup (lookup (providers, i, $[]), "MODEMSUPPORTED", "no");
+	}
+	else if ("no" == SCR::Read (i + ."MODEMSUPPORTED"))
+	    return false;
+	return true;
+    });
+}
 /**
  * Lets only isdn capable providers "go in"
  * @param provs list of providers
@@ -311,11 +321,10 @@ global define list getCountries (string preselect) ``{
 define list filterIsdn (list provs) ``{
     return filter (`i, provs, ``{
 	if (is (i, string))
-	{	// lets pretend that these custom providers allow isdn by default
-	    if ("1" == lookup (lookup (providers, i, $[]), "ISDN supported", "1"))
-		return true;
+	{
+	    return "yes" == lookup (lookup (providers, i, $[]), "ISDNSUPPORTED", "no");
 	}
-	else if ("1" == SCR::Read (i + ."ISDN supported"))
+	else if ("yes" == SCR::Read (i + ."ISDNSUPPORTED"))
 	    return true;
 	return false;
     });
@@ -346,6 +355,10 @@ global define list getProviders (string country, symbol type, string preselect) 
     // filter providers
     if (`isdn == type)
 	provs = filterIsdn (provs);
+    else if (`tdsl == type || `adsl == type)
+	provs = filterDSL (provs);
+    else
+	provs = filterModem (provs);
 
     // sort and create divider (line)
     provs = sortProviders (provs);
@@ -354,12 +367,12 @@ global define list getProviders (string country, symbol type, string preselect) 
     return maplist (`i, provs, ``{
 	index = index + 1;
 	if (is (i, string))
-	    return `item (`id (i), lookup (lookup (providers, i, $[]), "Provider", i), 0 == index || preselect == i);
+	    return `item (`id (i), lookup (lookup (providers, i, $[]), "PROVIDER", i), 0 == index || preselect == i);
 	else
 	    if (."--" == i)
 		return `item (`id (i), "----------------");
 	    else
-		return `item (`id (i), SCR::Read (i + .Provider), 0 == index);
+		return `item (`id (i), SCR::Read (i + .PROVIDER), 0 == index);
     });
 }
 
@@ -388,6 +401,7 @@ global define map getProvider (any provider) ``{
     }
     return lookup (providers, provider, $[]);
 }
+
 /**
  * Sorts providers alphabeticly (non-case-sensitivly) and by priority.
  * In the first step, priority and name of each provider is obtained.
@@ -407,13 +421,13 @@ define list sortProviders (list provs) ``{
 	    return "x                                  " + i;
 	else
 	{
-	    string tmp = SCR::Read (i + .Priority);
+	    string tmp = SCR::Read (i + .PRIORITY);
 	    if (nil == tmp)
 		tmp = "-1";
 	    integer p = 8 - tointeger (tmp);
 	    if (p < 0 || p > 9)
 		y2error ("======= wrong priority, you must change the algorithm!!! %1 =======", tmp);
-	    tmp = tolower (SCR::Read (i + .Provider)) + "                                   ";
+	    tmp = tolower (SCR::Read (i + .PROVIDER)) + "                                   ";
 	    tmp = sformat ("%1", p) + tmp;
 	    return sformat ("%1%2", substring (tmp, 0, 35), i);
 	}
@@ -427,4 +441,5 @@ define list sortProviders (list provs) ``{
     });
 }
 
+/* EOF */
 }

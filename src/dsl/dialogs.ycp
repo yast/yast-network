@@ -6,7 +6,7 @@
  *   Configuration of network
  *
  * Summary:
- *   Summary, overview and IO dialogs for DSL configuration.
+ *   Configuration dialogs for DSL
  *
  * Authors:
  *   Michal Svec <msvec@suse.cz>
@@ -20,349 +20,272 @@
 textdomain "network";
 
 import "DSL";
-
+import "DSLDevice";
+import "Firewall";
 import "Wizard";
-import "Wizard_hw";
 
-include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
-
-include "network/routines.ycp";
-
-/**
- * Return a modification status
- * @return true if data was modified
- */
-global define boolean Modified() ``{
-    return DSL::Modified();
-}
+include "ui/common_popups.ycp";
+include "network/ip.ycp";
 
 /**
- * Commit changes to internal structures
- * @return always `next
- */
-global define symbol Commit() ``{
-    DSL::Commit();
-    return `next;
-}
-
-/**
- * Read settings dialog
- * @return `abort if aborted and `next otherwise
- */
-global define symbol ReadDialog() ``{
-    Wizard::RestoreHelp(ReadDialogHelp());
-    DSL::AbortFunction = ``{return PollAbort();};
-    boolean ret = DSL::Read();
-    return ret ? `next : `abort;
-}
-
-/**
- * Write settings dialog
- * @return `abort if aborted and `next otherwise
- */
-global define symbol WriteDialog() ``{
-    if(!Modified()) return `next;
-    Wizard::RestoreHelp(WriteDialogHelp());
-    DSL::AbortFunction = ``{return PollAbort() && ReallyAbort();};
-    boolean ret = DSL::Write();
-    return ret ? `next : `abort;
-}
-
-/**
- * Main dialog
+ * Temporary DSL sequence (only showing one dialog)
+ * @param tdsl true in case T-Online DSL is configured
  * @return dialog result
  */
-global define symbol SummaryDialog() ``{
-
-    string caption = _("DSL configuration");
-
-    list summary = DSL::Summary();
-    list unconfigured = select(summary, 0, []);
-    string configured = select(summary, 1, "");
-
-    y2debug("unconfigured=%1",unconfigured);
-    term contents = Wizard_hw::DetectedContent(_("Network cards to configure"),
-	    unconfigured, false, configured);
-
-    Wizard::SetContentsButtons(caption, contents, SummaryDialogHelp(),
-	    BackButtonLabel(), FinishButtonLabel());
-
-    any ret = nil;
-    while(true) {
-
-	ret = UI::UserInput();
-
-	/* abort? */
-	if(ret == `abort || ret == `cancel) {
-	    if(ReallyAbort()) break;
-	    else continue;
-	}
-	/* overview dialog */
-	else if(ret == `edit_button) {
-	    ret = `overview;
-	    break;
-	}
-	/* configure the selected card */
-	else if(ret == `configure_button) {
-	    DSL::Add();
-	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
-	    if(selected == `other) {
-		ret = `other;
-	    }
-	    else {
-		DSL::SelectHW(selected);
-		ret = `configure;
-	    }
-	    break;
-	}
-	else if(ret == `next || ret == `back) {
-	    break;
-	}
-	else {
-	    y2error("unexpected retcode: %1", ret);
-	    continue;
-	}
-    }
-
-    return ret;
-}
-
-/**
- * Overview dialog
- * @return dialog result
- */
-global define symbol OverviewDialog() ``{
-
-    string caption = _("DSL configuration overview");
-
-    list overview = DSL::Overview();
-    y2debug("overview=%1",overview);
-
-    /* Header of table with installed cards */
-    term contents = Wizard_hw::ConfiguredContent(
-	    `header(_("No."), _("Type"), _("Device"), /*_("Active"),*/ _("IP Address")/*, "PCMCIA", "Driver"*/),
-	    overview, nil, nil, nil, nil);
-
-    contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);
-
-    Wizard::SetContentsButtons(caption, contents, OverviewDialogHelp(),
-	    BackButtonLabel(), FinishButtonLabel());
-
-    if(size(overview) < 1) {
-	UI::ChangeWidget(`id(`edit_button), `Enabled, false);
-	UI::ChangeWidget(`id(`delete_button), `Enabled, false);
-    }
-
-    any ret = nil;
-    while(true) {
-
-	ret = UI::UserInput();
-
-	/* abort? */
-	if(ret == `abort || ret == `cancel) {
-	    if(ReallyAbort()) break;
-	    else continue;
-	}
-	/* add */
-	else if(ret == `add_button) {
-	    DSL::Add();
-	    ret = `add;
-	    break;
-	}
-	/* edit */
-	else if(ret == `edit_button) {
-	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-	    DSL::Edit(dev);
-	    ret = `edit;
-	    break;
-	}
-	/* delete */
-	else if(ret == `delete_button) {
-	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-	    DSL::Delete(dev);
-	    DSL::Commit();
-	    overview = DSL::Overview();
-	    UI::ChangeWidget(`id(`table), `Items, overview);
-	    if(size(overview) < 1) {
-		UI::ChangeWidget(`id(`edit_button), `Enabled, false);
-		UI::ChangeWidget(`id(`delete_button), `Enabled, false);
-	    }
-	    y2debug("overview=%1",overview);
-	    continue;
-	}
-	else if(ret == `next || ret == `back) {
-	    break;
-	}
-	else {
-	    y2error("unexpected retcode: %1", ret);
-	    continue;
-	}
-    }
-
-    return ret;
-}
-
-global define symbol dsl_dlg(boolean adsl) ``{
-
-    /* DIALOG TEXTS */
-    string caption = _("Configuration for DSL");
-
-    string helptext = "";
-
-    if (adsl)
+global define symbol DSLSequence(boolean tdsl) ``{
+    Wizard::CreateDialog();
+    DSL::Read();
+    DSLDevice::Read ();
+    symbol ret = DSLDialog(tdsl);
+    if(ret == `next)
     {
-	helptext =
-_("<p>
-This module is only relevant for providers using PPPoE.
+	DSLDevice::Write ();
+	DSL::Write();
+	// The message is too short and the window decorations in KDE3
+	// make it misaligned. Don't want to fix kde now.
+	string pad = "          ";
+	// TODO: a better message.
+	// Text freeze, but this message is already translated.
+	UI::MessagePopup (pad + _("Finished") + pad);
+    }
+    else y2debug("NOT WRITING ...");
+    Wizard::CloseDialog();
+    return ret;
+}
+
+/**
+ * General DSL dialog
+ * In case of T-Online, the username is 12 digit Line ID, 12 digit T-Online ID,
+ * 4 digit user code and a string "@t-online.de"
+ * @param tonline if split username -> Line ID, T-Online ID and username
+ * @return dialog result
+ */
+global define symbol DSLDialog(boolean tonline) ``{
+
+    /* DSL dialog caption */
+    string caption = _("DSL configuration");
+    string helptext = "";
+    boolean tdsl = nil;
+
+    if(tonline == nil) {
+	string user = DSL::username;
+	if(user == "") {
+	    /* Initial popup text */
+	    tdsl = (UI::YesNoPopup(_("Are you using T-Online as DSL Provider?")) == true);
+	}
+	else
+	    tdsl = issubstring(user, "t-online");
+    }
+    else
+	tdsl = tonline;
+
+    if (tdsl)
+	/* DSL dialog help 1/8 (T-Online) */
+	helptext = _("<p>
+This module is only used for the <b>German T-Online T-DSL</b> service.
+For example, in the US, DSL connections are not configured in this dialog.
+</p>");
+
+    else
+	/* DSL dialog help 1/8 */
+	helptext = _("<p>
+This module is only relevant for providers using PPPoE or PPPoATM.
 In the US, some providers use PPTP, so you only need to configure
 your ethernet card in the Network/Base module in YaST2.
 If you are not sure, ask your provider.
-</p>") +
-
-_("<p>
-<b>First</b>, configure your ethernet card.
-</p>") +
-
-_("<p>
-<b>Second</b>, enter your access data. You will be asked for your 
-<i>user name</i> and <i>password</i>.
-</p>") +
-
-_("<p>
-Enter the device of your ethernet card, for example, <i>eth0</i>.
-If you have two cards, it could also be <i>eth1</i>.
-</p>") +
-    // helptext  main dialog ADSL
-    // Translators: You might choose not to translate 'idletime', but it's up to you...
-_("<p>
-The <i>idle time</i> is the time after which the connection
-terminates if no data has been transferred.
-</p>") +
-
-_("<p>
-Selecting <i>activate firewall</i> will block all incoming connections.
-Choosing this option will make dial-up Internet connections more secure
-against external attacks.
-</p>") +
-
-_("<p>
-<i>Dial-on-demand</i> means that a DSL connection will be made automatically
-if data has been requested. To use it, specify at least one <i>name server</i>.
 </p>");
 
-    }
+    if (tdsl)
+        /* DSL dialog help 2/8 (T-Online) */
+        helptext = helptext + _("<p>First, configure your ethernet card.</p>");
+
     else
-    {
-	helptext =
-_("<p>
-This module is ONLY used for the <b>GERMAN T-Online T-DSL</b> service.
-For example, in the US, DSL connections are NOT configured in this dialog.
-Configure your ethernet card in the \"Network/Base\" module in YaST2.
-</p>") +
+        /* DSL dialog help 2/8 */
+        helptext = helptext + _("<p>Frist, choose your PPP mode. This is
+either PPPoE (PPP over Ethernet) or PPPaATM (PPP over ATM). Use PPPoE if
+your DSL modem is connected via ethernet to your computer. If you are not
+sure which mode to use, ask your provider.</p>") +
 
-_("<p>
-First, configure your ethernet card.
-</p>") +
+        /* DSL dialog help 3/8 */
+        _("<p>If you are using PPPoE, first configure your ethernet card.</p>");
 
-_("<p>
-Second, enter your registration data. Enter your <i>Line ID</i> 
-(Anschlusskennung), e.g., 00056780362, the <i>T-Online ID</i>, e.g., 
-870008594732, the <i>user code</i> (Mitbenutzernummer), typically 0001, and your
-<i>password</i>.
-</p>") +
+    if (tdsl)
+	/* DSL dialog help 4/8 (T-Online) */
+	helptext = helptext + _("<p>Second, enter your registration data.
+Enter your <i>Line ID</i> (Anschlusskennung), e.g., 00056780362,
+the <i>T-Online ID</i>, e.g. 870008594732, the <i>user code</i>
+(Mitbenutzernummer), typically 0001, and your <i>password</i>.</p>");
 
-_("<p>
-Enter the device of your ethernet card, for example, <i>eth0</i>.
-If you have two cards, it could also be <i>eth1</i>.
-</p>") +
+    else
+	/* DSL dialog help 4/8 */
+	helptext = helptext + _("<p>Second, enter your access data.
+You will be asked for your <i>user name</i> and <i>password</i>.</p>");
 
-_("<p>
-The <i>idle time</i> is the time after which the connection is disconnected,
-if no data is being transferred.
-</p>") +
-
-_("<p>
-Selecting <i>activate firewall</i> will block all incoming connections.
-Choosing this option will make dial-up Internet connections more secure
-against external attacks.
-</p>") +
-
-_("<p>
-<i>Dial-on-demand</i> means that a T-DSL connection will be made automatically
-if data is requested. To use this, specify at least one <i>name server.</i>
+    if (tdsl)
+        /* DSL dialog help 5/8 (T-Online) */
+        helptext = helptext + _("<p>Enter the device of your ethernet card,
+for example, <i>eth0</i>. If you have two cards, it could also be <i>eth1</i>.
 </p>");
 
-    }
+    else
+        /* DSL dialog help 5/8 */
+        helptext = helptext + _("<p>For PPPoE enter the device of your
+ethernet card, for example, <i>eth0</i>. If you have two cards, it could also
+be <i>eth1</i>. For PPPoATM enter your VPI/VCI pair, for example <i>0.38</i>
+for British Telecom.</p>");
 
-    /* DIALOG CONTENTS */
+    /* DSL dialog help 6/8 */
+    helptext = helptext + _("<p>The <i>idle time</i> is the time in seconds
+after which the connection terminates, if no data has been transferred.</p>") +
+
+    /* DSL dialog help 7/8 */
+_("<p>Selecting <i>activate firewall</i> will block all incoming connections.
+Choosing this option will make dial-up Internet connections more secure
+against external attacks.</p>") +
+
+    /* DSL dialog help 8/8 */
+_("<p><i>Dial-on-demand</i> means that the DSL connection will be made
+automatically if data is requested. To use this, specify at least one
+<i>name server.</i></p>");
+
+
+    /* DSL dialog contents */
 
     term subcontents = nil;
 
-    if (adsl)
-    {
-	subcontents =
-	    `VBox(
-		`TextEntry(`id(`user), _("&User"), DSL::username),
-                `VSpacing( 0.5 ),
-                `TextEntry(`id(`password),  _("&Password"), DSL::password)
-	    );
-    }
-    else
-    {
-	subcontents =
-	    `VBox(
-		`HBox(
-		    `TextEntry(`id(`lineid), _("&Line ID"), DSL::lineid),
-		    `HSpacing(1),
-		    `TextEntry(`id(`t_onlineid), _("&T-Online ID"), DSL::t_onlineid)
-		),
-		`VSpacing( 0.5 ),
-		`HBox(
-		    `TextEntry(`id(`user), _("&User"), DSL::username),
-		    `HSpacing(1),
-		    `TextEntry(`id(`password),  _("&Password"), DSL::password)
-		)
-	    );
-    }
+    string dns1 = DSL::dns1;
+    string dns2 = DSL::dns2;
+    string idle = sformat("%1",DSL::idletime);
+    string pppmode = DSL::pppmode;
 
-    term contents =
-	`HSquash(
-	    `VBox(
-		`VSpacing( 1 ),
-		subcontents,
-                `VSpacing( 2 ),
-                `HBox(
-		    `TextEntry(`id(`interface),  _("&Ethernet card"), DSL::interface),
-                    `HSpacing( 4 ),
-                    `TextEntry(`id(`idletime), _("&Idle time"), sformat("%1", DSL::idletime))
-                ),
-                `VSpacing( 1 ),
-                `Left(`CheckBox(`id(`firewall),
-			sformat(_("&Activate %1"), "firewall"), DSL::firewall)),
-                `Left(`CheckBox(`id(`dialondemand),`opt(`notify), _("Dial &on demand"), DSL::dialondemand)),
-                `HBox(
-		    `TextEntry(`id(`dns1), _("Name Server &1"), DSL::dns1),
-                    `HSpacing( 4 ),
-                    `TextEntry(`id(`dns2),  _("Name Server &2"), DSL::dns2)
-                ),
-                `VSpacing( 1 )
+    list seconds = [ "30", "60", "90", "120", "150", "180", "240", "300", "360", "480", "600" ];
+    if(!contains(seconds, idle))
+	change(seconds, idle);
+
+    if(tdsl) {
+	string user = DSL::username;
+	string name = "0001";
+	string lineid = "";
+	string t_onlineid = "";
+
+	if(user != "") {
+	    if(issubstring(user, "@t-online.de"))
+		user = regexpsub(user, "^(.*)@t-online.de$", "\\1");
+	    y2debug("user=%1",user);
+
+	    if(issubstring(user, "#")) {
+		name = regexpsub(user, "^.*#(.*)$", "\\1");
+		user = regexpsub(user, "^(.*)#.*$", "\\1");
+	    }
+	    else {
+		if(size(user) > 3) {
+		    name = regexpsub(user, "^.*(....)$", "\\1");
+		    user = regexpsub(user, "^(.*)....$", "\\1");
+		}
+	    }
+	    if(name == "") name = "0001";
+
+	    y2debug("user=%1",user);
+	    if(size(user) > 12) {
+		lineid = regexpsub(user, "^(.{12}).*$", "\\1");
+		t_onlineid = regexpsub(user, "^.{12}(.*)$", "\\1");
+	    }
+	    else
+		lineid = user;
+	}
+
+	if(dns1 == "" && dns2 == "") {
+	    dns1 = "217.5.115.7";
+	    dns2 = "194.25.2.129";
+	}
+
+	pppmode = "pppoe";
+
+	subcontents = `VBox(
+	    `HBox(
+		`TextEntry(`id(`lineid), _("&Line ID"), lineid),
+		`HSpacing(1),
+		`TextEntry(`id(`t_onlineid), _("&T-Online ID"), t_onlineid)
+	    ),
+	    `VSpacing( 0.5 ),
+	    `HBox(
+		`TextEntry(`id(`user), _("&User code"), name),
+		`HSpacing(1),
+		`Password(`id(`password),  _("&Password"), DSL::password)
 	    )
 	);
+    }
+    else {
+	subcontents = `VBox(
+	    `TextEntry(`id(`user), _("&User"), DSL::username),
+	    `VSpacing( 0.5 ),
+	    `Password(`id(`password), _("&Password"), DSL::password)
+	);
+    }
+
+    list pppmodes = [
+	`item(`id("pppoe"), _("PPP over Ethernet"), pppmode == "pppoe"),
+	`item(`id("pppoatm"), _("PPP over ATM"), pppmode == "pppoatm"),
+    ];
+    term pppwidget = nil;
+    string Interface = "";
+    if(!tdsl) {
+	pppwidget = `Left(`ComboBox(`id(`pppmode), _("PPP &mode"), pppmodes));
+	Interface = _("&Ethernet card or VPI/VCI");
+    }
+    else {
+	pppwidget = `VSpacing(-1);
+	Interface = _("&Ethernet card");
+    }
+
+    boolean FirewallChecked = Firewall::Query("ppp0");
+
+    term contents = `HSquash(`VBox(
+	`VSpacing(1),
+	subcontents,
+	`VSpacing(2),
+	`HBox(
+	    `TextEntry(`id(`interface),  Interface,
+		       DSL::interface == "" ?
+		       DSLDevice::device : DSL::interface),
+	    `HSpacing(4),
+	    //`TextEntry(`id(`idletime), _("&Idle time"), sformat("%1", DSL::idletime))
+	    `ComboBox(`id(`idletime), `opt(`editable), _("&Idle time"),
+		maplist(`e, seconds, ``(`item(`id(e), e, e == idle))))
+	),
+	`VSpacing(1),
+	//`Left(`CheckBox(`id(`pppoe), _("&Use PPP over Ethernet"), DSL::pppoe)),
+	//`Left(`ComboBox(`id(`pppmode), _("PPP &mode"), pppmodes)),
+	pppwidget,
+	`VSpacing(1),
+	`Left(`CheckBox(`id(`firewall), _("&Activate firewall"), FirewallChecked)),
+	//`VSpacing(1),
+	`Left(`CheckBox(`id(`dialondemand),`opt(`notify), _("Dial &on demand"), DSL::dialondemand)),
+	`HBox(
+	    `TextEntry(`id(`dns1), _("Name server &1"), dns1),
+	    `HSpacing(4),
+	    `TextEntry(`id(`dns2),  _("Name server &2"), dns2)
+	),
+	`VSpacing(1)
+    ));
 
     /* DIALOG PREPARE */
 
-    Wizard::SetContents(caption, contents, helptext, true, true);
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    BackButtonLabel(), FinishButtonLabel());
+    UI::ChangeWidget(`id(`firewall), `Enabled, !Firewall::firewallpresent);
 
     UI::ChangeWidget(`id(`dns1), `Enabled, DSL::dialondemand);
     UI::ChangeWidget(`id(`dns2), `Enabled, DSL::dialondemand);
+    UI::ChangeWidget(`id(`idletime), `ValidChars, "0123456789" );
 
-    UI::ChangeWidget(`id(`hex_digits), `ValidChars, "0123456789" );
-
-    if (!adsl)
-    {
-
+    if(tdsl) {
+	UI::ChangeWidget(`id(`lineid), `ValidChars, "0123456789" );
+	UI::ChangeWidget(`id(`t_onlineid), `ValidChars, "0123456789" );
+	UI::ChangeWidget(`id(`user), `ValidChars, "0123456789" );
     }
+
     /* MAIN CYCLE */
     any ret = nil;
     while(true) {
@@ -370,52 +293,56 @@ if data is requested. To use this, specify at least one <i>name server.</i>
         ret = UI::UserInput();
 
 	/* abort? */
-        if (ret == `abort || ret == `cancel) {
+        if(ret == `abort || ret == `cancel) {
+	    break;
+	    /* FIXME */
             if(ReallyAbort()) break;
             else continue;
         }
-        else if (ret == `back) {
+        else if(ret == `back) {
             break;
         }
-	else if (ret == `dialondemand)
-	{
+	else if(ret == `dialondemand) {
 	    boolean val = UI::QueryWidget(`id(`dialondemand), `Value);
 	    UI::ChangeWidget(`id(`dns1), `Enabled, val);
 	    UI::ChangeWidget(`id(`dns2), `Enabled, val);
+	    continue;
 	}
-        else if (ret == `next) {
-            /* check_* */
-	    string dns1 = UI::QueryWidget(`id(`dns1), `Value);
-	    string dns2 = UI::QueryWidget(`id(`dns2), `Value);
+        else if(ret == `next) {
+	    dns1 = UI::QueryWidget(`id(`dns1), `Value);
+	    dns2 = UI::QueryWidget(`id(`dns2), `Value);
 
-	    string error = "";
-
+	    /* check name servers */
 	    boolean dialondemand = UI::QueryWidget(`id(`dialondemand), `Value);
-	    if (dialondemand)
-	    {
-		if (dns1 == "" && dns2 == "")
-		{
-		    error = _("To use dial on demand, specify a least Name Server 1\n");
+	    if(dialondemand) {
+		if(dns1 == "" && dns2 == "") {
+		    UI::MessagePopup(_("To use dial on demand, specify a least one name server\n"));
+		    UI::SetFocus(`id(`dns1));
+		    continue;
 		}
-		else if (dns1 != "" && !checkIP(dns1))
-		{
-		    error = error + _("Name Server 1 does not contain a valid IP address.");
+		if(dns1 != "" && !check_ip4(dns1)) {
+		    UI::MessagePopup(_("First name server does not contain a valid IP address."));
+		    UI::SetFocus(`id(`dns1));
+		    continue;
 		}
-		else if (snd2 != "" && !checkIP(dns2))
-		{
-		    error = error + _("Name Server 2 does not contain a valid IP address.");
+		if(dns2 != "" && !check_ip4(dns2)) {
+		    UI::MessagePopup(_("Second name server does not contain a valid IP address."));
+		    UI::SetFocus(`id(`dns2));
+		    continue;
 		}
 	    }
-	    if (tointeger(UI::QueryWidget(`id(`idletime), `Value)) == nil)
-	    {
-		error = error + _("The idle time may only contain decimal digits.");
+
+	    /* check user name */
+	    if(UI::QueryWidget(`id(`user), `Value) == "") {
+		UI::MessagePopup(_("User name cannot be empty."));
+		UI::SetFocus(`id(`dns2));
+		continue;
 	    }
 
-	    // TODO: passwd & username
-
-	    if (error != "")
-	    {
-		UI::MessagePopup(error);
+	    /* check interface */
+	    if(UI::QueryWidget(`id(`interface), `Value) == "") {
+		UI::MessagePopup(_("Ethernet card and VPI/VCI cannot be empty."));
+		UI::SetFocus(`id(`interface));
 		continue;
 	    }
 
@@ -430,50 +357,67 @@ if data is requested. To use this, specify at least one <i>name server.</i>
 
     /* UPDATE VARIABLES */
 
-    if (ret == `next)
-    {
-	DSL::username = UI::QueryWidget(`id(`user), `Value);
+    if(ret == `next) {
 	DSL::password = UI::QueryWidget(`id(`password), `Value);
 	DSL::interface = UI::QueryWidget(`id(`interface), `Value);
+	// checked already that it is nonempty
+	if (DSL::interface != DSLDevice::device)
+	{
+	    // Dont activate the detected device if the proposal was changed
+	    DSLDevice::activate = false;
+	}
 	DSL::idletime = tointeger(UI::QueryWidget(`id(`idletime), `Value));
-	DSL::firewall = UI::QueryWidget(`id(`firewall), `Value);
 	DSL::dialondemand = UI::QueryWidget(`id(`dialondemand), `Value);
 
-	if(DSL::dialondemand)
-	{
+	if(FirewallChecked != UI::QueryWidget(`id(`firewall), `Value)) {
+	    FirewallChecked = UI::QueryWidget(`id(`firewall), `Value);
+	    Firewall::Change("ppp0", FirewallChecked);
+	}
+
+	if(tdsl) {
+	    string lineid = UI::QueryWidget(`id(`lineid), `Value);
+	    string tonlineid = UI::QueryWidget(`id(`t_onlineid), `Value);
+	    string name = UI::QueryWidget(`id(`user), `Value);
+
+	    DSL::username = lineid + tonlineid;
+	    if(size(tonlineid) < 12)
+		DSL::username = DSL::username + "#";
+	    DSL::username = DSL::username + name + "@t-online.de";
+	    DSL::pppmode = "pppoe";
+	}
+	else {
+	    DSL::username = UI::QueryWidget(`id(`user), `Value);
+	    DSL::pppmode = UI::QueryWidget(`id(`pppmode), `Value);
+	}
+
+	if(DSL::dialondemand) {
 	    DSL::dns1 = tolower(UI::QueryWidget(`id(`dns1), `Value));
 	    DSL::dns2 = tolower(UI::QueryWidget(`id(`dns2), `Value));
 	}
-	else
-	{
+	else {
 	    DSL::dns1 = "";
 	    DSL::dns2 = "";
-	}
-
-	if (!adsl)
-	{
-	    DSL::t_onlineid = UI::QueryWidget(`id(t_onlineid), `Value);
-	    DSL::lineid = UI::QueryWidget(`id(lineid), `Value);
-	}
-	else
-	{
-	    DSL::t_onlineid = "";
-	    DSL::lineid = "";
 	}
     }
 
     return ret;
 }
 
-global define adsl_dlg() ``{
-    return dsl_dlg(true);
+/**
+ * DSL configuration in general DSL mode
+ * @return dialog result
+ */
+global define symbol ADSLDialog() ``{
+    return DSLDialog(true);
 }
 
-global define tdsl_dlg() ``{
-    return dsl_dlg(false);
+/**
+ * DSL configuration in T-Online mode
+ * @return dialog result
+ */
+global define symbol TDSLDialog() ``{
+    return DSLDialog(false);
 }
 
 /* EOF */
 }
-
-

@@ -1,0 +1,122 @@
+/**
+ * File:
+ *   include/network/isdn/routines.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   helper functions for ISDN configuration
+ *
+ * Authors:
+ *   Karsten Keil <kkeil@suse.de>
+ *
+ * $Id$
+ *
+ * 
+ *
+ */
+
+{
+
+  textdomain "network";
+
+  include "ui/common_messages.ycp";
+
+global define boolean driver_has_type(map drv, integer i4ltyp, integer i4lsubtyp) ``{
+    boolean ret = false;
+
+    if (i4ltyp == lookup(drv, "type", -2)) {
+	if (i4lsubtyp == lookup(drv, "subtype", -2))
+	    ret = true;
+    }
+    return(ret);
+}
+
+global define boolean card_has_type(map card, integer i4ltyp, integer i4lsubtyp) ``{
+    boolean ret = false;
+
+    maplist(`d, lookup(card, "driver", []),
+    ``{
+	if (driver_has_type(d, i4ltyp, i4lsubtyp))
+	   ret = true;
+    });
+    return(ret);
+}
+
+global define map get_isdndriver_by_type(list dev, integer i4ltyp, integer i4lsubtyp) ``{
+    map ret =  $[];
+
+    maplist(`c, dev,
+    ``{
+	maplist(`d, lookup(c, "driver", []),
+	``{
+	   if (driver_has_type(d, i4ltyp, i4lsubtyp))
+		ret = d;
+	});
+    });
+    return(ret);
+}
+
+global define map get_isdncard_by_type(list dev, integer i4ltyp, integer i4lsubtyp) ``{
+    map ret =  $[];
+
+    maplist(`c, dev,
+    ``{
+	if (card_has_type(c, i4ltyp, i4lsubtyp))
+	    ret = c;
+    });
+    return(ret);
+}
+
+global define integer get_i4lsubtype(map card) ``{
+    integer ret = -1;
+
+    ret = lookup(select(lookup(card, "drivers", []),
+		lookup(card, "sel_drv", 0), $[]), "subtype", -1);
+    return(ret);
+}
+
+global define integer get_i4ltype(map card) ``{
+    integer ret = -1;
+
+    ret = lookup(select(lookup(card, "drivers", []),
+		lookup(card, "sel_drv", 0), $[]), "type", -1);
+    return(ret);
+}
+
+global define boolean display_testresult(integer result, string details) ``{
+    symbol ret = nil;
+    string msg = "";
+
+    if (result == 0) {
+	msg = sformat(_("The test was successful"));
+    } else {
+	msg = sformat(_("The test was not successful\n ReturnValue: %1"), result);
+    }
+    UI::OpenDialog(
+	`opt(`decorated),
+	`HBox(
+	    `HSpacing(1),
+	    `VBox(
+		`VSpacing(1),
+		`Label(msg),
+		`VSpacing(1),
+		`HBox(
+		    `PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
+		    `PushButton(`id(`detail), _("&Details"))
+		),
+		`VSpacing(1)
+	    ),
+	    `HSpacing(1)
+	)
+    );
+    UI::SetFocus(`id(`ok));
+    ret = UI::UserInput();
+    if (ret == `detail)
+    	UI::MessagePopup (details);
+    UI::CloseDialog();
+    return true;
+};
+
+}

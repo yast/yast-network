@@ -50,11 +50,14 @@ map settings = select(args, 0, $[]);
 y2debug("Imported: %1", settings);
 
 ISDN::Import(settings);
-ISDNAutoSequence();
-map ret = ISDN::Export();
-y2debug("Exported: %1", ret);
+symbol ret = ISDNAutoSequence();
+y2debug("ret=%1", ret);
 
 y2milestone("ISDN auto finished");
-return ret;
+if(ret == `next)
+    return ISDN::Export();
 
+return $[];
+
+/* EOF */
 }

@@ -23,6 +23,7 @@
 module "Modem";
 textdomain "network";
 
+import "Firewall";
 import "Providers";
 import "Progress";
 import "Summary";
@@ -54,16 +55,13 @@ global string Device = "/dev/modem";
 global string DialPrefix = "";
 global string PPPDoptions = "";
 
-/* provider settings */
-global string provShortName = "";
-
 /* obsolete stuff */
 // global string DefaultModem = "";
 // global boolean IsDefault = true;
 // global string Provider = "";
 
-/* other stuff */
-global boolean Firewall = false;
+/* something already proposed? */
+global boolean proposal_valid = false;
 
 /*--------------*/
 /* PRIVATE DATA */
@@ -122,7 +120,7 @@ global define boolean Modified() ``{
 global define boolean Read() ``{
 
     string caption = _("Initializing modem configuration");
-    integer steps = 3;
+    integer steps = 4;
 
     /* FIXME */
     integer sl = 0; //1000;
@@ -131,11 +129,8 @@ global define boolean Read() ``{
     Progress::New(caption, " ", steps, [
         _("Detect devices"),
         _("Read current configuration"),
+	_("Read firewall settings"),
         _("Read providers"),
-        //_("Read routing configuration"),
-        //_("Read hostname and DNS configuration"),
-        //_("Read installation information"),
-        //_("Detect current status"),
     ], [], "");
 
     if(Abort()) return false;
@@ -145,7 +140,12 @@ global define boolean Read() ``{
 
     if(Abort()) return false;
     ProgressNextStage(_("Reading current configuration"));
-    ReadConfig("ppp");
+    ReadConfig("-ppp");		// #13735: "ppp" is substring "ippp" -> use "-ppp" - FIXME later: fix ReadConfig() instead
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Reading firewall settings"));
+    Firewall::Read();
     sleep(sl);
 
     if(Abort()) return false;
@@ -158,6 +158,7 @@ global define boolean Read() ``{
     sleep(sl);
 
     if(Abort()) return false;
+    modified = false;
     return true;
 }
 
@@ -167,8 +168,11 @@ global define boolean Read() ``{
  */
 global define boolean Write() ``{
 
-    string caption = _("Saving network configuration");
-    integer steps = 3;
+    if(!modified) return true;
+    y2milestone("Writing configuration");
+
+    string caption = _("Saving modem configuration");
+    integer steps = 4;
 
     /* FIXME */
     integer sl = 0; //1000;
@@ -176,6 +180,7 @@ global define boolean Write() ``{
 
     Progress::New(caption, " ", steps, [
         _("Write configuration"),
+        _("Write firewall settings"),
         _("Write providers"),
         _("Set up smpppd"),
     ], [], "");
@@ -183,6 +188,11 @@ global define boolean Write() ``{
     if(Abort()) return false;
     ProgressNextStage(_("Writing configuration"));
     WriteConfig();
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Writing firewall settings"));
+    Firewall::Write();
     sleep(sl);
 
     if(Abort()) return false;
@@ -237,6 +247,7 @@ global define boolean AddEdit(string dev) ``{
     if(dev == "") {
 	type = "ppp";
 	device = select(GetFreeDevices(type,1), 0, -1);
+	operation = `add;
     }
     /* dev!="" -> Edit */
     else {
@@ -253,6 +264,7 @@ global define boolean AddEdit(string dev) ``{
 
 	type = typ;
 	device = num;
+	operation = `edit;
     }
 
     /* general stuff */
@@ -263,27 +275,23 @@ global define boolean AddEdit(string dev) ``{
     Init1 = devmap["INIT1"]:"ATZ";
     Init2 = devmap["INIT2"]:"AT Q0 V1 E1 S0=0 &C1 &D2 +FCLASS=0";
     Init3 = devmap["INIT3"]:"";
-    BaudRate = devmap["SPEED"]:57600;
+    BaudRate = tointeger(devmap["SPEED"]:"57600");
 
+    PulseDial = devmap["DIALCOMMAND"]:"ATDT" == "ATDP";
     Speaker = devmap["INIT8"]:"ATM1" == "ATM1";
     Carrier = devmap["INIT9"]:"" == "";
-    PulseDial = devmap["DIALCOMMAND"]:"ATDT" == "ATDP";
 
     Device = devmap["MODEM_DEVICE"]:"/dev/modem";
     DialPrefix = devmap["DIALPREFIX"]:"";
     PPPDoptions = devmap["PPPD_OPTIONS"]:"";
 
     /* provider settings */
-    provShortName = devmap["PROVIDER"]:"";
+    Providers::provShortName = devmap["PROVIDER"]:"";
 
     //IsDefault = true;
     //DefaultModem = "";
     //Provider = devmap["PROVIDER"]:"";
 
-    /* other stuff */
-    Firewall = devmap["FIREWALL"]:"no" == "yes";
-
-    operation = `edit;
     return true;
 }
 
@@ -316,18 +324,18 @@ global define boolean Commit() ``{
     y2debug("Commit(%1)",operation);
     if(operation == `add || operation == `edit) {
 	map newdev = $[
-	    "BOOTMODE"	: "off",
+	    "STARTMODE"	: "manual",
 	    "BOOTPROTO"	: "none",
 	    "UNIQUE"	: unique,
 	    "INIT1"	: Init1,
 	    "INIT2"	: Init2,
 	    "SPEED"	: BaudRate,
-	    "INIT8"	: Carrier ? "" : "ATX3",
-	    "INIT9"	: Speaker ? "ATM1" : "ATM0",
+	    "INIT8"	: Speaker ? "ATM1" : "ATM0",
+	    "INIT9"	: Carrier ? "" : "ATX3",
 	    "DIALCOMMAND"	: PulseDial ? "ATDP" : "ATDT",
 	    "MODEM_DEVICE"	: Device,
 	    "DIALPREFIX"	: DialPrefix,
-	    "PROVIDER"		: provShortName,
+	    "PROVIDER"		: Providers::provShortName,
 	    "PPPD_OPTIONS"	: PPPDoptions,
 	];
 
@@ -350,14 +358,20 @@ global define boolean Commit() ``{
     return true;
 }
 
+/**
+ */
 global define boolean Import(map settings) ``{
-    Providers::Import (lookup (settings, "PROVIDERS", $[]));
-    CONFIG = add (settings, "PROVIDERS", nil);
+    Providers::Import(lookup(settings, "_PROVIDERS", $[]));
+    map blah = remove(settings, "_PROVIDERS");
+    CONFIG = eval(blah);
 }
 
+/**
+ */
 global define map Export() ``{
-    map PROVIDERS = Providers::Export ();
-    return add (CONFIG, "PROVIDERS", PROVIDERS);
+    map PROVIDERS = Providers::Export();
+    map blah = add(CONFIG, "_PROVIDERS", PROVIDERS);
+    return eval(blah);
 }
 
 /**

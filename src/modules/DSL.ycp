@@ -22,30 +22,118 @@
 
 module "DSL";
 textdomain "network";
+
 import "Progress";
+import "Firewall";
 
-    global string username = "";
+include "network/config.ycp";
+include "network/runtime.ycp";
 
-    global string password = "";
+/**
+ * DSL network interface
+ */
+global string interface = "";
 
-    global string interface = "";
+/**
+ * PPP mode: pppoe or pppoatm
+ */
+global string pppmode = "pppoe";
 
-    global boolean firewall = false;
+/* Provider settings */
+/* authorization settings */
+global string username = "";
+global string password = "";
 
-    global boolean dialondemand = false;
+/* connection settings */
+global integer idletime = 300;
+global boolean dialondemand = false;
+global string dns1 = "";
+global string dns2 = "";
 
-    global string dns1 = "";
+/**
+ * DSL configuration
+ */
+map CONFIG = $[];
+list DELETED = [];
 
-    global string dns2 = "";
+/**
+ * Read the DSL settings
+ * @return true on sucess
+ */
+global define boolean Read() ``{
+    /* read config */
+    ReadConfig("dsl");
+    map devmap = lookup(lookup(CONFIG, "dsl", $[]), "0", $[]);
+    pppmode = devmap["PPPMODE"]:"pppoe";
 
-    global integer idletime = 0;
+    if(pppmode == "pppoe")
+	interface = devmap["DEVICE"]:"";
+    else
+	interface = devmap["VPIVCI"]:"";
 
-    global string lineid = "";
+    /* read provider */
+    list vars = SCR::Dir(.sysconfig.dslprovider);
+    if(contains(vars, "USERNAME"))
+	username = SCR::Read(.sysconfig.dslprovider.USERNAME);
+    if(contains(vars, "PASSWORD"))
+	password = SCR::Read(.sysconfig.dslprovider.PASSWORD);
+    if(contains(vars, "IDLETIME"))
+	idletime = tointeger(SCR::Read(.sysconfig.dslprovider.IDLETIME));
+    if(contains(vars, "DEMAND"))
+	dialondemand = (SCR::Read(.sysconfig.dslprovider.DEMAND) == "yes");
+    if(contains(vars, "DNS1"))
+	dns1 = SCR::Read(.sysconfig.dslprovider.DNS1);
+    if(contains(vars, "DNS2"))
+	dns2 = SCR::Read(.sysconfig.dslprovider.DNS2);
 
-    global string t_onlineid = "";
+    Firewall::Read();
+    return true;
+}
 
+/**
+ * Write the DSL settings
+ * @return true on sucess
+ */
+global define boolean Write() ``{
 
+    /* write config */
+    map devmap = $[
+	"PROVIDER" : "dsl-provider0",
+	"PPPMODE" : pppmode,
+    ];
 
+    if(pppmode == "pppoe")
+	change(devmap, "DEVICE", interface);
+    else
+	change(devmap, "VPIVCI", interface);
+
+    if (!dialondemand)
+        change (devmap, "STARTMODE", "manual");
+    else
+	change (devmap, "STARTMODE", "onboot");
+
+    CONFIG = $[ "dsl" : $[ "0" : devmap ]];
+    WriteConfig();
+
+    /* write provider */
+    SCR::Write(.sysconfig.dslprovider.PROVIDER, "DSL provider");
+    SCR::Write(.sysconfig.dslprovider.DSLSUPPORTED, "yes");
+    SCR::Write(.sysconfig.dslprovider.MODEMSUPPORTED, "no");
+    SCR::Write(.sysconfig.dslprovider.ISDNSUPPORTED, "no");
+    SCR::Write(.sysconfig.dslprovider.USERNAME, username);
+    SCR::Write(.sysconfig.dslprovider.PASSWORD, password);
+    SCR::Write(.sysconfig.dslprovider.IDLETIME, sformat("%1",idletime));
+    SCR::Write(.sysconfig.dslprovider.DEMAND, dialondemand?"yes":"no");
+    SCR::Write(.sysconfig.dslprovider.DNS1, dns1);
+    SCR::Write(.sysconfig.dslprovider.DNS2, dns2);
+    SCR::Write(.sysconfig.dslprovider, nil);
+
+    /* setup smpppd */
+    SetupSMPPPD();
+
+    Firewall::Write();
+    return true;
+}
 
 /* EOF */
 }

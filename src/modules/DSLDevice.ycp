@@ -1,0 +1,167 @@
+/**
+ * File:
+ *   modules/DSLDevice.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   A hack to autoconfigure the network card for DSL, if possible. (#15182)
+ *
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ *
+ */
+
+{
+    module "DSLDevice";
+    // no translatable texts, no textdomain
+
+    include "network/hardware.ycp";
+
+    /**
+     * Read only. If there is a single network device,
+     * it will be presented here to fill into DSL::interface
+     */
+    global string device = "";
+
+    /**
+     * Should the device be configured and activated?
+     * If not, Write does nothing.
+     */
+    global boolean activate = false;
+
+    /**
+     * .probe.netdev data for the single network card, if there is one
+     */
+    map card0 = $[];
+
+
+    /**
+     * If there is one network card, put it into <i>device</i>.
+     * If it is not configured yet (by ifcfg) set <i>activate</i>.
+     * Based on ReadHardware and ReadConfig
+     * @return success?
+     */
+    global define boolean Read () ``{
+	list cards = SCR::Read (.probe.netdev);
+	if (size (cards) != 1)
+	{
+	    return true;
+	}
+	card0 = cards[0]:$[];
+	y2debug ("card0: %1", card0);
+
+	// read sysconfig data - find if there is 0 or 1 cards configured
+	string devregex = "eth|eth-pcmcia-|eth-usb-|tr|tr-pcmcia-|tr-usb-";
+	string sysconfig = "/etc/sysconfig/network";
+
+	list devices =  SCR::Dir(.network.section);
+	devices = filter (`file, devices, ``(!regexpmatch (file, "[\.~]")));
+	y2debug("devices=%1", devices);
+	devices = filter (`file, devices, ``(regexpmatch (file, devregex)));
+	y2debug("devices=%1", devices);
+	list maindevs = filter (`d, devices, ``(find(d, ":") == -1));
+	y2debug("maindevs=%1", maindevs);
+
+	if (size (maindevs) == 0)
+	{
+	    y2debug ("One network card, unconfigured yet");
+	    device = ControllerType (card0) + "0";
+	    activate = true;
+	}
+	else if (size (maindevs) == 1)
+	{
+	    y2debug ("One configured network card");
+	    string d = maindevs[0]:"";
+	    device = regexpsub(d, "^.*ifcfg-([a-z-]+[0-9]+).*$", "\\1");
+	}
+	return true;
+    }
+
+    /**
+     * If activate is set, write the configuration for device and ifup it.
+     * Based on WriteConfig
+     * @return success?
+     */
+    global define boolean Write () ``{
+	if (! activate)
+	{
+	    return true;
+	}
+	y2milestone ("Configuring device %1 for DSL.", device);
+
+	// write an ifcfg file or only load the module?
+	boolean use_ifcfg = false;
+if (use_ifcfg)
+ {
+	map config =   $[
+	    "NAME": "YaST autoconfigured for DSL",
+	    "STARTMODE": "onboot",
+	    "BOOTPROTO": "static",
+	    // a dummy address and netmask
+	    "IPADDR": "192.168.38.1",
+	    "NETMASK": "255.255.255.0",
+	    "UNIQUE": card0["unique_key"]:"",
+	    ];
+
+	string sysconfig = "/etc/sysconfig/network";
+	string p = ".network.value.\"" + sysconfig + "/ifcfg-"+ device + "\".";
+	/* write all keys to config */
+	foreach (string k, string v, config, ``{
+	    SCR::Write (topath (p+k), v);
+	});
+ }
+
+	/* write modules.conf */
+	map driver = card0["drivers",0]:$[];
+	list modules = driver["modules",0]:[];
+	y2debug ("modules: %1", modules);
+	string mod = modules[0]:"";
+	if (mod != "")
+	{
+	    SCR::Write(.modules.alias, mod, device);
+	}
+	string opts = modules[1]:"";
+	list opts_list = filter (string s, splitstring (opts, " "), ``(s != ""));
+	map opts_map = listmap (string opt, opts_list, ``{
+	    list tok = splitstring (opt, "=");
+	    return [ tok[0]:"?", tok[1]:"" ];
+	});
+	if (size (opts_map) > 0)
+	{
+	    SCR::Write(.modules.options, opts_map, device);
+	}
+
+	/* update libhd unique number */
+	string unq = card0["unique_key"]:"";
+	if (unq != "")
+	{
+	    SCR::Write(.probe.status.configured, unq, `yes);
+	}
+
+	/* flush */
+	SCR::Write(.network, nil);
+	SCR::Write(.modules, nil);
+
+	string cmd = nil;
+
+if (use_ifcfg)
+ {
+        cmd = "/sbin/ifup";
+ }
+else
+ {
+	if (driver["active"]:false)
+	{
+	    return true;
+	}
+	cmd = driver["modprobe"]:false ? "/sbin/modprobe" : "/sbin/insmod";
+ }
+	y2milestone ("Starting the device.");
+	return 0 == SCR::Execute (.target.bash, cmd + " " + device);
+    }
+/* EOF */
+}

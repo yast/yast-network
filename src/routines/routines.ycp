@@ -87,7 +87,6 @@ global define boolean ReallyAbort() ``{
     return !Modified() || UI::ReallyAbortPopup(true);
 }
 
-
 /**
  * Progress::NextStage and Progress::Title combined into one function
  * @param title progressbar title
@@ -137,19 +136,40 @@ global define list hwlist2items(list l, integer selected) ``{
  * Return a device type
  * @param dev device
  * @return device type
+ * @example device_type("eth1") -> "eth"
  */
 global define string device_type(string dev) ``{
-    return regexpsub(dev, "^([a-zA-Z]+).*$", "\\1");
+    return regexpsub(dev, "^([a-zA-Z-]+).*$", "\\1");
 }
 
 /**
  * Return a device number
  * @param dev device
  * @return device number
+ * @example device_num("eth1") -> 1
  */
 global define integer device_num(string dev) ``{
-    string num = regexpsub(dev, "^[a-zA-Z]*([0-9]+).*$", "\\1");
+    string num = regexpsub(dev, "^[a-zA-Z-]*([0-9]+).*$", "\\1");
     return tointeger(num);
+}
+
+/**
+ * Create a device name from its type and number
+ * @param typ device type
+ * @param num device number
+ * @return device name
+ * @example device_name("eth", 1) -> "eth1"
+ */
+global define string device_name(string typ, integer num) ``{
+    if(typ == nil || typ == "") {
+	y2error("wrong type: %1", typ);
+	return nil;
+    }
+    if(num == nil || num < 0) {
+	y2error("wrong number: %1", num);
+	return nil;
+    }
+    return sformat("%1%2",typ,num);
 }
 
 /* EOF */

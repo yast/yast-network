@@ -1,0 +1,170 @@
+/**
+ * File:
+ *   modules/Firewall.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   Firewall configuration
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+module "Firewall";
+textdomain "network";
+import "Runlevel";
+include "network/routines.ycp";
+
+/**
+ * Firewalled devices
+ */
+list devices = [];
+list devices_init = [];
+
+/**
+ * Is SuSEfirewall active?
+ */
+global boolean firewallpresent = false;
+
+/**
+ * Read firewall settings
+ * @return true if success
+ */
+global define boolean Read() ``{
+
+    /* read SuSEfirewall2 status */
+    firewallpresent = Runlevel::ServiceEnabled("SuSEfirewall2_init")
+	|| Runlevel::ServiceEnabled("SuSEfirewall2_setup")
+	|| Runlevel::ServiceEnabled("SuSEfirewall2_final");
+
+    y2debug("firewallpresent=%1",firewallpresent);
+    y2debug("s1=%1",Runlevel::ServiceEnabled("SuSEfirewall2_init"));
+    y2debug("s2=%1",Runlevel::ServiceEnabled("SuSEfirewall2_setup"));
+    y2debug("s3=%1",Runlevel::ServiceEnabled("SuSEfirewall2_final"));
+
+    /* read firewalled devices */
+    string devs = SCR::Read(.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS);
+    y2debug("devs=%1", devs);
+    if(devs == nil) return false;
+    if(devs == "") return true;
+
+    devices = splitstring(devs, " ");
+    y2debug("devices=%1", devices);
+    devices_init = eval(devices);
+
+    return true;
+}
+
+/**
+ * Write firewall settings and apply changes
+ * @return true if success
+ */
+global define boolean Write() ``{
+
+    /* Check if there is anything to do */
+    if(devices_init == devices) {
+	y2debug("Devices not modified");
+	return true;
+    }
+
+    /* Check if SuSEfirewall is active */
+    if(firewallpresent) {
+	y2error("SuSEfirewall active -> no changes");
+	return false;
+    }
+
+    string devs = "";
+    if(size(devices) > 0)
+	devs = mergestring(devices, " ");
+
+    any ret = SCR::Write(.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS, devs);
+
+    SCR::Execute(.target.bash, "/sbin/SuSEpersonal-firewall");
+
+    return ret == true;
+}
+
+/**
+ * Get all the firewall configuration from a map.
+ * When called by *_auto (preparing autoinstallation data)
+ * the list may be empty.
+ * @param settings autoinstallation settings
+ * @return true if success
+ */
+global define boolean Import(list settings) ``{
+    if(size(settings) == 0)
+	return true;
+
+    devices = eval(settings);
+    return true;
+}
+
+/**
+ * Dump the firewall settings to a list, for autoinstallation use.
+ * @return autoinstallation settings
+ */
+global define list Export() ``{
+    return eval(devices);
+}
+
+/**
+ * Update firewall information about device
+ * @param device given device
+ * @param fw true for firewalled device
+ * @return true if sucess
+ */
+global define boolean Change(string device, boolean fw) ``{
+    string dev = device2fw(device);
+    if(dev == nil || dev == "" || fw == nil) return false;
+
+    if(fw) {
+	if(contains(devices, dev)) {
+	    y2error("device already present: %1", device);
+	    return false;
+	}
+	devices = add(devices, dev);
+    }
+    else {
+	if(!contains(devices, dev)) {
+	    y2error("device not found: %1", device);
+	    return false;
+	}
+	devices = filter(`l, devices, ``(l!=dev));
+    }
+    return true;
+}
+
+/**
+ * Check if the device is firewalled
+ * @param device given device
+ * @return true if firewalled
+ */
+global define boolean Query(string device) ``{
+    string dev = device2fw(device);
+    if(dev == nil || dev == "") return false;
+    return contains(devices, dev);
+}
+
+/**
+ * Convert real device to the firewall device specification
+ * @param device real device
+ * @return firewall device
+ */
+define string device2fw(string device) ``{
+    if(device == nil || device == "") {
+	y2error("wrong device identification: %1", device);
+	return nil;
+    }
+    if(device_type(device) == "ppp") return "modem";
+    else return device;
+}
+
+/* EOF */
+}

@@ -50,11 +50,14 @@ map settings = select(args, 0, $[]);
 y2debug("Imported: %1", settings);
 
 Lan::Import(settings);
-LanAutoSequence();
-map ret = Lan::Export();
-y2debug("Exported: %1", ret);
+symbol ret = LanAutoSequence();
+y2debug("ret=%1", ret);
 
 y2milestone("Lan auto finished");
-return ret;
+if(ret == `next)
+    return Lan::Export();
 
+return $[];
+
+/* EOF */
 }

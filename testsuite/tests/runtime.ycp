@@ -1,0 +1,29 @@
+{
+
+include "testsuite.ycp";
+include "network/runtime.ycp";
+
+map READ = $[ "init" : $[ "scripts" : $[ "exists" : true ]]];
+
+map EXEC0 = $[ "target" : $[ "bash" : 0 ]];
+map EXEC1 = $[ "target" : $[ "bash" : 1 ]];
+
+DUMP("ReadStatus");
+TEST(``(ReadStatus()), [], nil);
+
+DUMP("RunSuSEconfig");
+TEST(``(RunSuSEconfig()), [$[],$[],EXEC0], nil);
+TEST(``(RunSuSEconfig()), [$[],$[],EXEC1], nil);
+
+DUMP("StartNetwork");
+TEST(``(StartNetwork()), [$[],$[],EXEC0], nil);
+TEST(``(StartNetwork()), [$[],$[],EXEC1], nil);
+
+DUMP("StopNetwork");
+TEST(``(StopNetwork()), [$[],$[],EXEC0], nil);
+TEST(``(StopNetwork()), [$[],$[],EXEC1], nil);
+
+DUMP("SetupSMPPPD");
+TEST(``(SetupSMPPPD()), [READ], nil);
+
+}

@@ -97,10 +97,30 @@ global define list BuildSummary(boolean split) ``{
 global define string CheckEmptyName(string devtype, string hwname) ``{
     if(hwname != nil && hwname != "") return hwname;
 
-    if(regexpmatch(devtype, "modem|ppp"))
+    if(regexpmatch(devtype, "(isdn|ippp)-pcmcia-"))
+        return _("Unknown PCMCIA ISDN connection");
+    else if(regexpmatch(devtype, "(isdn|ippp)-usb-"))
+        return _("Unknown USB ISDN connection");
+    else if(regexpmatch(devtype, "isdn|ippp"))
+        return _("Unknown ISDN connection");
+    else if(regexpmatch(devtype, "(modem|ppp)-pcmcia-"))
+	return _("Unknown PCMCIA modem");
+    else if(regexpmatch(devtype, "(modem|ppp)-usb-"))
+	return _("Unknown USB modem");
+    else if(regexpmatch(devtype, "modem|ppp"))
 	return _("Unknown modem");
-    else if(regexpmatch(devtype, "isdn"))
+    else if(regexpmatch(devtype, "contr-pcmcia-"))
+	return _("Unknown PCMCIA ISDN card");
+    else if(regexpmatch(devtype, "contr-usb-"))
+	return _("Unknown USB ISDN card");
+    else if(regexpmatch(devtype, "contr"))
 	return _("Unknown ISDN card");
+    else if(regexpmatch(devtype, "net"))
+	return _("ISDN connection");
+    else if(regexpmatch(devtype, "(eth|tr|fddi)-pcmcia-"))
+	return _("Unknown PCMCIA network card");
+    else if(regexpmatch(devtype, "(eth|tr|fddi)-usb-"))
+	return _("Unknown USB network card");
     else if(regexpmatch(devtype, "eth|tr|fddi"))
 	return _("Unknown network card");
     else {
@@ -133,7 +153,8 @@ global define string HardwareName(string unq) ``{
  */
 global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
     string dev = devtype + devnum;
-    if(devtype == "eth" || devtype == "tr") {
+    //if(regexpmatch(devtype, "eth|tr|fddi")) {  wrong tr match contr too
+    if(devtype == "eth" || devtype == "tr" || devtype == "fddi") {
 	string proto = lookup(devmap, "BOOTPROTO", "static");
 	string addr = lookup(devmap, "IPADDR", "");
 
@@ -144,60 +165,19 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
     }
     else if(devtype == "ppp")
 	return sformat(_("Configured as %1"), dev);
-    else if(devtype == "isdn")
+    else if(devtype == "contr" )
 	return sformat(_("Configured as %1"), dev);
-    else {
+    else if(devtype == "net" ) {
+        // proto: connection protocol (syncppp | rawip)
+	string proto    = lookup(devmap, "PROTOCOL", "unknown protocol");
+	// provider: name of the provider
+	string provider = lookup(devmap, "PROVIDER", "unknown");
+	// example: ISDN Connection to Arcor with syncppp on net0
+	return sformat(_("to %1 with %2 on %3"), provider, proto, dev);
+    } else {
 	y2error("unknown type: %1", devtype);
 	return sformat(_("Configured as %1"), dev);
     }
-}
-
-/**
- * Check if device is configured
- * @param type device type
- * @param unique device unique number
- * @return device if configured, empty string if not
- * @example IsConfigured("eth", "aazjka9yd") -&gt; "eth3"
- */
-/*
-global define string IsConfigured(string type, string unique) ``{
-
-    map devmap = lookup(CONFIG, type, $[]);
-    map dev = filter(`k, `v, devmap, ``{
-	//y2debug("UN(%1,%2) = %3,%4",lookup(v, "UNIQUE", ""),unique,k,v);
-	return lookup(v, "UNIQUE", "") == unique;
-    });
-
-    if(dev == nil && dev == $[])
-	return "";
-
-    string n = select(mapkeys(dev), 0, "");
-    if(n == "") return "";
-
-    map onedev = lookup(dev, n, $[]);
-    string proto = lookup(onedev, "BOOTPROTO", "static");
-
-    return ProtoStatus(type+n, proto, lookup(onedev, "IPADDR", ""));
-}
-
-/**
- */
-/*
-global define OtherConfigured(list uniques) ``{
-    list ret = [];
-    maplist(`type, `devs, CONFIG, ``{
-	y2debug("type=%1",type);
-	maplist(`dev, `devmap, devs, ``{
-	    if(!contains(uniques, lookup(devmap, "UNIQUE", ""))) {
-		string proto = lookup(devmap, "BOOTPROTO", "static");
-		string ipadd = lookup(devmap, "IPADDR", "");
-		change(ret, ProtoStatus(type+dev,proto,ipadd));
-	    }
-	    else
-		y2debug("type+dev=%1+%2",type,dev);
-	});
-    });
-    return ret;
 }
 
 /**
@@ -207,11 +187,14 @@ global define OtherConfigured(list uniques) ``{
  * @example DeviceType("eth") -> "Ethernet"
  */
 global define string DeviceType(string type) ``{
-    if(type == "eth") return "Ethernet";
-    if(type == "tr") return "Token-Ring";
-    if(type == "fddi") return "FDDI";
-    if(type == "isdn") return "ISDN";
-    if(type == "ppp") return "Modem";
+    if(regexpmatch(type, "eth")) return "Ethernet";
+    if(regexpmatch(type, "fddi")) return "FDDI";
+    if(regexpmatch(type, "contr")) return "ISDN";
+    if(regexpmatch(type, "net")) return "ISDN";
+    if(regexpmatch(type, "ippp")) return "ISDN";
+    if(regexpmatch(type, "isdn")) return "ISDN";
+    if(regexpmatch(type, "ppp")) return "Modem";
+    if(regexpmatch(type, "tr")) return "Token-Ring";
     return type;
 }
 
@@ -228,9 +211,19 @@ global define list BuildOverview(string type) ``{
 	string ip = lookup(v, "BOOTPROTO", "static");
 	if(ip == "" || ip == "static" || ip == "none") ip = lookup(v, "IPADDR", "");
 	else ip = toupper(ip);
-	if(type == "eth" || type == "tr")
+
+        if (type == "contr") {
+            string cname = lookup(v, "NAME", "unknown");
+	    return `item(`id(dev), k, DeviceType(type), dev, cname /*, "active?", ip, "?", "?"*/);
+	} else if(regexpmatch(type, "eth|tr|fddi"))
+	//if(type == "eth" || type == "tr")
 	    return `item(`id(dev), k, DeviceType(type), dev, /*"active?",*/ ip/*, "?", "?"*/);
-	else
+        else if (type == "net") {
+            string cname = lookup(v, "PROVIDER", "unknown");
+            string rip   = lookup(v, "PTPADDR", "none");
+            string proto = lookup(v, "PROTOCOL", "unknown");
+	    return `item(`id(dev), k, proto, cname, ip, rip);
+	} else
 	    return `item(`id(dev), k, DeviceType(type), dev /*, "active?", ip, "?", "?"*/);
     });
 

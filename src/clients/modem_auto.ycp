@@ -50,11 +50,14 @@ map settings = select(args, 0, $[]);
 y2debug("Imported: %1", settings);
 
 Modem::Import(settings);
-ModemAutoSequence();
-map ret = Modem::Export();
-y2debug("Exported: %1", ret);
+symbol ret = ModemAutoSequence();
+y2debug("ret=%1", ret);
 
 y2milestone("Modem auto finished");
-return ret;
+if(ret == `next)
+    return Modem::Export();
 
+return $[];
+
+/* EOF */
 }

@@ -11,4 +11,77 @@ TEST(``(mapkeys($["2":3])), [], nil);
 TEST(``(mapkeys($[`x:4])), [], nil);
 TEST(``(mapkeys($[1:2,3:4])), [], nil);
 
+DUMP("mapvalues");
+TEST(``(mapvalues(nil)), [], nil);
+TEST(``(mapvalues($[])), [], nil);
+TEST(``(mapvalues($[1:2])), [], nil);
+TEST(``(mapvalues($["2":3])), [], nil);
+TEST(``(mapvalues($[`x:4])), [], nil);
+TEST(``(mapvalues($[1:2,3:4])), [], nil);
+
+DUMP("mapvalue");
+TEST(``(mapvalue(nil, 1)), [], nil);
+TEST(``(mapvalue($[], 1)), [], nil);
+TEST(``(mapvalue($[1:2], nil)), [], nil);
+TEST(``(mapvalue($[1:2], 1)), [], nil);
+TEST(``(mapvalue($[1:2], 2)), [], nil);
+TEST(``(mapvalue($["2":3], 1)), [], nil);
+TEST(``(mapvalue($["2":3], "2")), [], nil);
+TEST(``(mapvalue($[`x:4], `x)), [], nil);
+TEST(``(mapvalue($[`x:4], `y)), [], nil);
+TEST(``(mapvalue($[`x:4], 1)), [], nil);
+TEST(``(mapvalue($[1:2,3:4], 1)), [], nil);
+TEST(``(mapvalue($[1:2,3:4], 2)), [], nil);
+TEST(``(mapvalue($[1:2,3:4], `x)), [], nil);
+
+DUMP("mapcheckkeys");
+TEST(``(mapcheckkeys(nil, [1])), [], nil);
+TEST(``(mapcheckkeys($[], [1])), [], nil);
+TEST(``(mapcheckkeys($[1:2], [nil])), [], nil);
+TEST(``(mapcheckkeys($[1:2], [1])), [], nil);
+TEST(``(mapcheckkeys($[1:2], [2])), [], nil);
+TEST(``(mapcheckkeys($["2":3], [1])), [], nil);
+TEST(``(mapcheckkeys($["2":3], ["2"])), [], nil);
+TEST(``(mapcheckkeys($[`x:4], [`x])), [], nil);
+TEST(``(mapcheckkeys($[`x:4], [`y])), [], nil);
+TEST(``(mapcheckkeys($[`x:4], [1])), [], nil);
+TEST(``(mapcheckkeys($[1:2,3:4], [1])), [], nil);
+TEST(``(mapcheckkeys($[1:2,3:4], [1,3])), [], nil);
+TEST(``(mapcheckkeys($[1:2,3:4], [3,1])), [], nil);
+TEST(``(mapcheckkeys($[1:2,3:4], [2,3])), [], nil);
+TEST(``(mapcheckkeys($[1:2,3:4], [4,5])), [], nil);
+TEST(``(mapcheckkeys($[1:2,3:4], [2,1])), [], nil);
+TEST(``(mapcheckkeys($[1:2,3:4], [`x])), [], nil);
+
+DUMP("list2items");
+TEST(``(list2items(["x","y"], 0)), [], nil);
+
+DUMP("hwlist2items");
+TEST(``(hwlist2items([$["name":"x"],$["name":"y"]], 0)), [], nil);
+
+DUMP("device_type");
+TEST(``(device_type("eth0")), [], nil);
+TEST(``(device_type("eth1")), [], nil);
+TEST(``(device_type("eth-pcmcia-0")), [], nil);
+TEST(``(device_type("tr-pcmcia-1")), [], nil);
+TEST(``(device_type("ippp2")), [], nil);
+TEST(``(device_type("ppp2")), [], nil);
+
+DUMP("device_num");
+TEST(``(device_num("eth0")), [], nil);
+TEST(``(device_num("eth1")), [], nil);
+TEST(``(device_num("eth-pcmcia-0")), [], nil);
+TEST(``(device_num("eth-usb-1")), [], nil);
+TEST(``(device_num("tr-pcmcia-2")), [], nil);
+TEST(``(device_num("ippp2")), [], nil);
+TEST(``(device_num("ppp2")), [], nil);
+
+DUMP("device_name");
+TEST(``(device_name("eth",0)), [], nil);
+TEST(``(device_name("eth",1)), [], nil);
+TEST(``(device_name("eth-pcmcia-",0)), [], nil);
+TEST(``(device_name("tr-pcmcia-",1)), [], nil);
+TEST(``(device_name("ippp",2)), [], nil);
+TEST(``(device_name("ppp",2)), [], nil);
+
 }

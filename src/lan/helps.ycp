@@ -107,7 +107,7 @@ edit their configuration.
 ") +
 // network overview dialog help 2/3
 _("<P><B><BIG>Adding a network card:</BIG></B><BR>
-Press <B>Add</B> to manually configure a new network card.
+Press <B>Add</B> to configure a new network card manually.
 </P>
 ") +
 // network overview dialog help 3/3

@@ -28,11 +28,8 @@ include "wizard/sequencer.ycp";
 include "network/modem/dialogs.ycp";
 include "network/modem/complex.ycp";
 
-//include "network/services/dns.ycp";
-//include "network/services/routing.ycp";
-
 /**
- * Whole configuration of network
+ * Whole configuration of modems
  * @return sequence result
  */
 global define symbol ModemSequence() ``{
@@ -61,7 +58,7 @@ global define symbol ModemSequence() ``{
 	]
     ];
 
-    string caption = _("Modems configuration");
+    string caption = _("Modem configuration");
     term contents = `Label(_("Initializing ..."));
 
     Wizard::CreateDialog();
@@ -75,12 +72,12 @@ global define symbol ModemSequence() ``{
 }
 
 /**
- * Whole configuration of network but without reading and writing.
+ * Whole configuration of modems but without reading and writing.
  * For use with autoinstallation.
  * @return sequence result
  */
 global define symbol ModemAutoSequence() ``{
-    string caption = _("Modems configuration");
+    string caption = _("Modem configuration");
     term contents = `Label(_("Initializing ..."));
 
     Wizard::CreateDialog();
@@ -94,7 +91,7 @@ global define symbol ModemAutoSequence() ``{
 }
 
 /**
- * Main workflow of the network configuration
+ * Main workflow of the modem configuration
  * @return sequence result
  */
 global define symbol MainSequence() ``{
@@ -106,7 +103,6 @@ global define symbol MainSequence() ``{
 	"other"		: [ ``(OneModemSequence(false)), true ],
 	"add"		: [ ``(OneModemSequence(false)), true ],
 	"edit"		: [ ``(OneModemSequence(false)), true ],
-	"commit"	: [ ``(Commit()), true ],
     ];
 
     map sequence = $[
@@ -132,9 +128,6 @@ global define symbol MainSequence() ``{
 	    `abort	: `abort,
 	    `next	: "summary",
 	],
-	"commit" : $[
-	    `next	: "summary",
-	],
 	"add" : $[
 	    `abort	: `abort,
 	    `next	: "overview",
@@ -148,6 +141,11 @@ global define symbol MainSequence() ``{
     return WizardSequencer(aliases, sequence);
 }
 
+/**
+ * Workflow of the configuration of one modem
+ * @param detected true if modem was detected (more entries otherwise)
+ * @return sequence result
+ */
 global define symbol OneModemSequence(boolean detected) ``{
 
     map aliases = $[
@@ -159,7 +157,6 @@ global define symbol OneModemSequence(boolean detected) ``{
 	"provider"		: ``(runEditModemProviderDialog(true)),
 	"new_provider"		: ``(runEditModemProviderDialog(false)),
 	"connection"		: ``(modem_connection()),
-	"connection_details"	: ``(modem_connection_details()),
 	"commit"		: [ ``(Commit()), true ],
     ];
 
@@ -200,12 +197,7 @@ global define symbol OneModemSequence(boolean detected) ``{
 	    `abort  : `abort
 	],
 	"connection" : $[
-	    `Details: "connection_details",
 	    `next   : "commit",
-	    `abort  : `abort
-	],
-	"connection_details" : $[
-	    `next   : "connection",
 	    `abort  : `abort
 	],
 	"commit" : $[

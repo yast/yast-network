@@ -1,5 +1,8 @@
 // $Id$
+// Author: Michal Svec <msvec@suse.cz>
+//
 // copyied from yast1 NetCardDlg.cc
+//
 // stored in form:
 // $[<class_name> : list] where class_name is:
 //"fddi", "tr", "arc", "ci", "hippi", "eth", "escon", "iucv", "ctc", "air",
@@ -222,10 +225,12 @@ $[
       "module" : "yellowfin",
       "options" : "",
     ],
+/*
     $["name" : "PCMCIA",
       "module" : "off",
       "options" : "",
     ],
+*/
     $["name" : "Racal-Interlan EISA ES3210",
       "module" : "es3210",
       "options" : "",

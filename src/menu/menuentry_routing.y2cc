@@ -32,4 +32,7 @@ Geometry =
 ; string to use for sorting instead of Name
 SortKey = 
 
+; which textdomain to use for translations (important!)
+Textdomain = network
+
 ; vim:syntax=dosini

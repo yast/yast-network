@@ -19,7 +19,7 @@
 .providers
 
 `ag_ini(
-  IniAgent( [ "/usr/share/providers/*.wvdial.conf",  ],
+  IniAgent( [ "/usr/share/providers/*.conf",  ],
     $[
       "options" : [ "read_only" ],
       "comments": [ "^[ \t]*#.*", "^[ \t]*$" ],
@@ -30,7 +30,7 @@
       ],
       "params" : [
         $[
-        "match" : [ "^[ \t]*([^=]*[^ \t=])[ \t]*=[ \t]*(.*[^ \t]|)[ \t]*$" , "%s = %s"],
+        "match" : [ "^[ \t]*([^=]*[^ \t=])[ \t]*=[ \t]*\"([^\"]*)\"[ \t]*$" , "%s=\"%s\""],
       ],
     ],
     ]

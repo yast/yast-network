@@ -105,12 +105,9 @@ global define symbol MainSequence() ``{
 
     map aliases = $[
 	"summary"	: ``(SummaryDialog()),
-	"overview"	: ``(OverviewDialog()),
-	"configure"	: [ ``(OneISDNSequence(true)), true ],
-	"other"		: [ ``(OneISDNSequence(false)), true ],
-	"add"		: [ ``(OneISDNSequence(false)), true ],
-	"edit"		: [ ``(OneISDNSequence(false)), true ],
-	"commit"	: [ ``(Commit()), true ],
+	"overview"	: [ ``(OneISDNSequence("overview")), true ],
+	"configure"	: [ ``(OneISDNSequence("lowlevel_detected")), true ],
+	"other"		: [ ``(OneISDNSequence("other")), true ]
     ];
 
     map sequence = $[
@@ -124,67 +121,70 @@ global define symbol MainSequence() ``{
 	],
 	"overview" : $[
 	    `abort	: `abort,
-	    `next	: `next,
-	    `add	: "add",
-	    `edit	: "edit",
-	],
-	"other" : $[
-	    `abort	: `abort,
-	    `next	: "summary",
+	    `back	: `next,
+	    `next	: `next
 	],
 	"configure" : $[
 	    `abort	: `abort,
-	    `next	: "summary",
+	    `next	: "summary"
 	],
-	"commit" : $[
-	    `next	: "summary",
-	],
-	"add" : $[
+	"other" : $[
 	    `abort	: `abort,
-	    `next	: "overview",
-	],
-	"edit" : $[
-	    `abort	: `abort,
-	    `next	: "overview",
-	],
+	    `next	: "summary"
+	]
     ];
 
     return WizardSequencer(aliases, sequence);
 }
 
-global define symbol OneISDNSequence(boolean detected) ``{
+global define symbol OneISDNSequence(string entry) ``{
 
     map aliases = $[
 	"lowlevel_detected"	:   ``(isdn_lowlevel(`Detected)),
 	"lowlevel_detectedISA"	:   ``(isdn_lowlevel(`DetectedISA)),
-	"lowlevel"		:   ``(isdn_lowlevel(`other)),
+	"other"			:   ``(isdn_lowlevel(`other)),
+	"edit"			:   ``(isdn_lowlevel(`edit)),
+	"overview"		:   ``(OverviewDialog()),
 	"connection"		:   ``(isdn_connection()),
 	"ip"			:   ``(isdn_ip()),
 	"callback"		:   ``(isdn_callback()),
-	"providers"		:   ``(runProvidersDialog(true)),
+	"providers"		:   ``(runProvidersDialog(`isdn)),
 	"provider"		:   ``(runEditIsdnProviderDialog()),
-	"new_provider"		:   ``(runEditIsdnProviderDialog())
+	"new_provider"		:   ``(runEditIsdnProviderDialog()),
+	"testdev"		: [ ``(Commit(false)), true ],
+	"commit_hw"		: [ ``(Commit(false)), true ],
+	"commit_if"		: [ ``(Commit(true)), true ]
     ];
-
-    string entry = "provider";
-    if(detected)
-	entry = "lowlevel_detected";
 
     /* FIXME: detected ISA unsupported */
 
     map sequence = $[
 	"ws_start" : entry,
 	"lowlevel_detected" : $[
-	    `next : "providers",
+	    `next :  "commit_hw",
 	    `abort : `abort
 	],
 	"lowlevel_detectedISA" : $[
-	    `next : "providers",
+	    `next :  "commit_hw",
 	    `abort : `abort
 	],
-	"lowlevel" : $[
-	    `next : "providers",
+	"other" : $[
+	    `next :  "commit_hw",
 	    `abort : `abort
+	],
+	"edit" : $[
+	    `next :  "commit_hw",
+	    `abort : `abort
+	],
+	"overview" : $[
+	    `abort	: `abort,
+	    `back	: `next,
+	    `next	: `next,
+	    `add	: "other",
+	    `edit	: "edit",
+	    `addif	: "providers",
+	    `editif	: "providers",
+	    `testdev	: "testdev"
 	],
 	"providers" : $[
 	    `next : "provider",
@@ -202,7 +202,7 @@ global define symbol OneISDNSequence(boolean detected) ``{
 	"connection" : $[
 	    `ipsettings : "ip",
 	    `callbacksettings : "callback",
-	    `next : `next,
+	    `next : "commit_if",
 	    `abort : `abort
 	],
 	"ip" : $[
@@ -212,6 +212,15 @@ global define symbol OneISDNSequence(boolean detected) ``{
 	"callback" : $[
 	    `next : "connection",
 	    `abort : `abort
+	],
+	"testdev" : $[
+	    `next   : "overview"
+	],
+	"commit_hw" : $[
+	    `next   : "overview"
+	],
+	"commit_if" : $[
+	    `next   : "overview"
 	]
     ];
 

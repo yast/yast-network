@@ -26,14 +26,33 @@ textdomain "network";
 y2milestone("DSL module started");
 y2milestone("----------------------------------------");
 
-include "network/dsl/wizards.ycp";
+//include "network/dsl/wizards.ycp";
+include "network/dsl/dialogs.ycp";
+
+/* T-DSL configuration? */
+boolean tonline = nil;
+
+list args = Args();
+if(size(args) > 0) {
+    if(is(Args(0), path) && Args(0) == .tonline) {
+	y2milestone("Using T-Online mode");
+	tonline = true;
+    }
+    else if(is(Args(0), path) && Args(0) == .standard) {
+	y2milestone("Using standard mode");
+	tonline = false;
+    }
+    else
+	y2error("Bad argument for dsl: %1",Args(0));
+}
 
 /* main ui function */
-any ret = DSLSequence();
+any ret = DSLSequence(tonline);
 y2debug("ret == %1", ret);
 
 /* Finish */
 y2milestone("DSL module finished");
 return ret;
 
+/* EOF */
 }

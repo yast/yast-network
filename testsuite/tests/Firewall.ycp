@@ -1,0 +1,66 @@
+{
+
+include "testsuite.ycp";
+import "Firewall";
+
+define FWTEST(list devs, term op) ``{
+    Firewall::devices = devs;
+    eval(op);
+    return Firewall::devices;
+}
+
+DUMP("Change(true)");
+TEST(``(FWTEST([],``(Firewall::Change("eth0",true)))), [], nil);
+TEST(``(FWTEST(["eth1"],``(Firewall::Change("eth0",true)))), [], nil);
+TEST(``(FWTEST(["eth0"],``(Firewall::Change("eth0",true)))), [], nil);
+TEST(``(FWTEST(["eth0"],``(Firewall::Change("ppp1",true)))), [], nil);
+TEST(``(FWTEST(["modem"],``(Firewall::Change("ppp1",true)))), [], nil);
+
+DUMP("Change(false)");
+TEST(``(FWTEST([],``(Firewall::Change("eth0",false)))), [], nil);
+TEST(``(FWTEST(["eth0"],``(Firewall::Change("eth0",false)))), [], nil);
+TEST(``(FWTEST(["eth0", "eth1"],``(Firewall::Change("eth0",false)))), [], nil);
+TEST(``(FWTEST(["eth1"],``(Firewall::Change("eth0",false)))), [], nil);
+TEST(``(FWTEST(["eth1"],``(Firewall::Change("ppp1",false)))), [], nil);
+TEST(``(FWTEST(["eth1", "modem"],``(Firewall::Change("ppp1",false)))), [], nil);
+TEST(``(FWTEST(["modem"],``(Firewall::Change("ppp1",false)))), [], nil);
+
+DUMP("Query");
+TEST(``(FWTEST([],``(Firewall::Query("eth0")))), [], nil);
+TEST(``(FWTEST(["eth0"],``(Firewall::Query("eth0")))), [], nil);
+TEST(``(FWTEST(["eth1"],``(Firewall::Query("eth0")))), [], nil);
+TEST(``(FWTEST(["modem"],``(Firewall::Query("eth0")))), [], nil);
+TEST(``(FWTEST(["modem"],``(Firewall::Query("ppp1")))), [], nil);
+TEST(``(FWTEST(["eth0", "modem"],``(Firewall::Query("ppp1")))), [], nil);
+TEST(``(FWTEST(["eth0"],``(Firewall::Query("ppp1")))), [], nil);
+
+DUMP("Write");
+Firewall::devices = [ "eth0", "ippp1" ];
+TEST(``(Firewall::Write()), [], nil);
+Firewall::firewallpresent = true;
+TEST(``(Firewall::Write()), [], nil);
+
+map READ = $[
+    "init" : $[
+	"scripts" : $[
+	    "exists" : true,
+	    "runlevel" : $[
+		"SuSEfirewall2_init" : $["start":["5"],"stop":["5"]],
+		"SuSEfirewall2_setup" : $["start":["5"],"stop":["5"]],
+		"SuSEfirewall2_final" : $["start":["5"],"stop":["5"]],
+	    ]
+	]
+    ],
+    "sysconfig" : $[
+	"personal-firewall" : $[
+	    "REJECT_ALL_INCOMING_CONNECTIONS" : "eth1 ippp0",
+	]
+    ]
+];
+
+DUMP("Read");
+TEST(``(Firewall::Read()), [READ], nil);
+DUMP(sformat("Firewall::firewallpresent %1",Firewall::firewallpresent));
+DUMP(sformat("Firewall::devices %1",Firewall::devices));
+
+}

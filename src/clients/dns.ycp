@@ -39,7 +39,7 @@ Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), FinishButtonLa
 any ret = DNSMainDialog();
 y2debug("ret == %1", ret);
 
-DNS::Write();
+if(DNS::modified) DNS::Write();
 UI::CloseDialog();
 
 /* Finish */

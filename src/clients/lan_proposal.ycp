@@ -35,9 +35,13 @@ if(func == "MakeProposal") {
     string proposal = "";
     string warning = nil;
     symbol warning_level = nil;
+    boolean force_reset = param["force_reset"]:false;
 
-    Progress::off();
-    Lan::Read();
+    if(force_reset || !Lan::proposal_valid) {
+	Lan::proposal_valid = true;
+	Progress::off();
+	Lan::Read();
+    }
     list sum = Lan::Summary(false);
     proposal = select(sum, 0, "");
     Progress::on();
@@ -50,8 +54,9 @@ if(func == "MakeProposal") {
 }
 /* run the module */
 else if(func == "AskUser") {
-    symbol seq = `next;
-    CallFunction(`lan());
+    map stored = Lan::Export();
+    symbol seq = CallFunction(`lan(.propose));
+    if(seq != `next) Lan::Import(stored);
     ret = $[
 	"workflow_sequence" : seq
     ];

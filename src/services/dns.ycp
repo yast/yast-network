@@ -23,12 +23,14 @@ import "DNS";
 import "Wizard";
 
 include "ui/common_popups.ycp";
+include "network/dns.ycp";
+include "network/ip.ycp";
 
 /**
  * Dialog for querying DNS & hostname info
- * @return any user input
+ * @return user input
  */
-global define DNSMainDialog() ``{
+global define symbol DNSMainDialog() ``{
 
     string hostname = DNS::hostname;
     string domain = DNS::domain;
@@ -63,7 +65,8 @@ check whether to get a host name via DHCP or leave it unchanged.</p>");
     /* DNS dialog helptext 5/6 */
     helptext = helptext + _("<p>If you plan to use a dial-up Internet
 connection and have set up your connection to use dynamic DNS assignment,
-these values will be temporally disabled during the connection.</p>");
+these values will be temporarily disabled during the connection.</p>
+");
 
     /* DNS dialog helptext 6/6 */
     /* FIXME: button label
@@ -100,7 +103,7 @@ your changes and <b>finish</b> the network configuration.</p>");
 		// text entry label
 		`TextEntry(`id(`domain), _("&Domain name"), domain)
 	    ),
-	    `Left(`CheckBox(`id(`dn), `opt(`notify), _("&Change host name via DHCP")))
+	    `Left(`CheckBox(`id(`dn), _("&Change host name via DHCP")))
 	    //`Left(`RadioButtonGroup(`id(`rb), `VBox(
 		//`CheckBox(`id(`dn), `opt(`notify), _("&Change host name via DHCP"))
 	    //)))
@@ -153,7 +156,63 @@ your changes and <b>finish</b> the network configuration.</p>");
 	    break;
 	}
 	else if(ret == `next) {
-	    /* check_* */
+
+	    if(!dhcp_hostname) {
+		/* check host name and domain */
+		if(!check_hostname(UI::QueryWidget(`id(`host), `Value))) {
+		    UI::ErrorPopup(_("The host name is incorrect"));
+		    UI::SetFocus(`id(`host));
+		    continue;
+		}
+		if(!check_domainname(UI::QueryWidget(`id(`domain), `Value))) {
+		    UI::ErrorPopup(_("The domain name is incorrect"));
+		    UI::SetFocus(`id(`domain));
+		    continue;
+		}
+	    }
+
+	    /* check nameservers */
+	    ns1 = tolower(UI::QueryWidget(`id(`ns1), `Value));
+	    ns2 = tolower(UI::QueryWidget(`id(`ns2), `Value));
+	    ns3 = tolower(UI::QueryWidget(`id(`ns3), `Value));
+
+	    if(ns1 != "" && !check_ip4(ns1)) {
+		UI::ErrorPopup(_("The primary name server is not correct"));
+		UI::SetFocus(`id(`ns1));
+		continue;
+	    }
+	    if(ns2 != "" && !check_ip4(ns2)) {
+		UI::ErrorPopup(_("The secondary name server is not correct"));
+		UI::SetFocus(`id(`ns2));
+		continue;
+	    }
+	    if(ns3 != "" && !check_ip4(ns3)) {
+		UI::ErrorPopup(_("The tertiary name server is not correct"));
+		UI::SetFocus(`id(`ns3));
+		continue;
+	    }
+
+	    /* check search domains */
+	    s1 = tolower(UI::QueryWidget(`id(`s1), `Value));
+	    s2 = tolower(UI::QueryWidget(`id(`s2), `Value));
+	    s3 = tolower(UI::QueryWidget(`id(`s3), `Value));
+
+	    if(s1 != "" && !check_domainname(s1)) {
+		UI::ErrorPopup(_("The primary search domain is not correct"));
+		UI::SetFocus(`id(`s1));
+		continue;
+	    }
+	    if(s2 != "" && !check_domainname(s2)) {
+		UI::ErrorPopup(_("The secondary search domain is not correct"));
+		UI::SetFocus(`id(`s2));
+		continue;
+	    }
+	    if(s3 != "" && !check_domainname(s3)) {
+		UI::ErrorPopup(_("The tertiary search domain is not correct"));
+		UI::SetFocus(`id(`s3));
+		continue;
+	    }
+
 	    break;
 	}
 	else {
@@ -164,20 +223,23 @@ your changes and <b>finish</b> the network configuration.</p>");
     }
 
     if(ret == `next) {
+
 	DNS::hostname = UI::QueryWidget(`id(`host), `Value);
 	DNS::domain = UI::QueryWidget(`id(`domain), `Value);
 
-	ns1 = tolower(UI::QueryWidget(`id(`ns1), `Value));
-	ns2 = tolower(UI::QueryWidget(`id(`ns2), `Value));
-	ns3 = tolower(UI::QueryWidget(`id(`ns3), `Value));
 	DNS::nameservers = filter(`n, [ ns1, ns2, ns3 ], ``(n != ""));
-
-	s1 = tolower(UI::QueryWidget(`id(`s1), `Value));
-	s2 = tolower(UI::QueryWidget(`id(`s2), `Value));
-	s3 = tolower(UI::QueryWidget(`id(`s3), `Value));
 	DNS::searchlist = filter(`s, [ s1, s2, s3 ], ``(s != ""));
 
 	DNS::dhcp_hostname = UI::QueryWidget(`id(`dn), `Value);
+
+	/* update modified flag */
+	if(hostname != DNS::hostname || domain != DNS::domain ||
+		nameservers != DNS::nameservers ||
+		searchlist != DNS::searchlist ||
+		dhcp_hostname != DNS::dhcp_hostname)
+	    DNS::modified = true;
+	else
+	    y2debug("not modified");
     }
 
     return ret;

@@ -38,26 +38,30 @@ global define symbol ManualDialog() ``{
     /* Manual dialog caption */
     string caption = _("Manual network card configuration");
 
-    /* Manual dialog help 1/3 */
+    /* Manual dialog help 1/4 */
     string help = _("<p>Here, set up your networking device.
 The values will be written into <i>/etc/modules.conf</i>.</p>")
         +
-    /* Manual dialog help 2/3 */
+    /* Manual dialog help 2/4 */
     _("<p>Options for the module should be written in the format
 <i>option</i>=<i>value</i>. Each entry should be space separated,
 for example, <i>io=220 irq=5</i>. <b>Note:</b> If  two cards are configured
-with the same module name, options will be merged while saving.</p>
-")
+with the same module name, options will be merged while saving.</p>")
         +
-    /* Manual dialog help 3/3 */
+    /* Manual dialog help 3/4 */
     _("<p>Get a list of available network cards 
-by pressing <b>List</b>.</p>
-");
+by pressing <b>List</b>.</p>")
+	+
+    /* Manual dialog help 4/4 */
+    _("<p>If you have a <b>PCMCIA</b> network card, click on the PCMCIA check
+box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 
     string modul = Lan::modul;
     string options = Lan::options;
     boolean pcmcia = Lan::pcmcia;
+    boolean usb = Lan::usb;
     string type = Lan::type;
+    string realtype = type;
     string device = "";
 
     if(Lan::device == -1)
@@ -65,8 +69,12 @@ by pressing <b>List</b>.</p>
     else
 	device = sformat("%1",Lan::device);
 
+    if(pcmcia) realtype = type + "-pcmcia-";
+    else if(usb) realtype = type + "-usb-";
+
     /* satisfy check_ycp -- don't translate this string */
     string PCMCIA = "&PCMCIA";
+    string USB = "&USB";
 
     /* Manual dialog contents */
     term contents = `HBox(
@@ -82,7 +90,7 @@ by pressing <b>List</b>.</p>
 		    `ReplacePoint(`id(`rnum),
 			// combo box label
 			`ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"),
-			    maplist(`d,Lan::FreeDevices(type),``(sformat("%1",d)))))
+			    maplist(`d,Lan::FreeDevices(realtype),``(sformat("%1",d)))))
 		),
 		`VSpacing(0.2)
 	    )),
@@ -96,7 +104,13 @@ by pressing <b>List</b>.</p>
 		// textentry label
 		`TextEntry(`id(`options), _("Op&tions"), options),
 		`VSpacing(0.2),
-		`CheckBox(`id(`pcmcia), `opt(`notify), PCMCIA, pcmcia),
+		`HBox(
+		    `HSpacing(0.2),
+		    `CheckBox(`id(`pcmcia), `opt(`notify), PCMCIA, pcmcia),
+		    `HSpacing(0.2),
+		    `CheckBox(`id(`usb), `opt(`notify), USB, usb),
+		    `HSpacing(0.2)
+		),
 		`VSpacing(0.2)
 	    )),
 	    `VSpacing(2),
@@ -108,9 +122,9 @@ by pressing <b>List</b>.</p>
     Wizard::SetContentsButtons(caption, contents, help,
 	    BackButtonLabel(), NextButtonLabel());
 
-    UI::ChangeWidget(`id(`modul), `Enabled, !pcmcia);
-    UI::ChangeWidget(`id(`options), `Enabled, !pcmcia);
-    UI::ChangeWidget(`id(`list), `Enabled, !pcmcia);
+    UI::ChangeWidget(`id(`modul), `Enabled, !(pcmcia||usb));
+    UI::ChangeWidget(`id(`options), `Enabled, !(pcmcia||usb));
+    UI::ChangeWidget(`id(`list), `Enabled, !(pcmcia||usb));
     UI::ChangeWidget(`id(`num), `Value, device);
     UI::SetFocus(`id(`next));
 
@@ -129,20 +143,26 @@ by pressing <b>List</b>.</p>
 	    Lan::device = tointeger(UI::QueryWidget(`id(`num), `Value));
 	    break;
 	}
-	/* change device type */
-	else if(ret == `dev) {
-	    list devices = [];
+	/* change device type or pcmcia/usb card? */
+	else if(ret == `pcmcia || ret == `usb || ret == `dev) {
+	    if(ret == `pcmcia || ret == `usb) {
+		pcmcia = UI::QueryWidget(`id(`pcmcia), `Value);
+		usb = UI::QueryWidget(`id(`usb), `Value);
+		UI::ChangeWidget(`id(`modul), `Enabled, !(pcmcia||usb));
+		UI::ChangeWidget(`id(`options), `Enabled, !(pcmcia||usb));
+		UI::ChangeWidget(`id(`list), `Enabled, !(pcmcia||usb));
+		if(ret == `pcmcia)
+		    UI::ChangeWidget(`id(`usb), `Enabled, !pcmcia);
+		if(ret == `usb)
+		    UI::ChangeWidget(`id(`pcmcia), `Enabled, !usb);
+	    }
 	    type = UI::QueryWidget(`id(`dev), `Value);
-	    devices = maplist(`d,Lan::FreeDevices(type),``(sformat("%1",d)));
+	    if(pcmcia) realtype = type + "-pcmcia-";
+	    else if(usb) realtype = type + "-usb-";
+
+	    list devices = [];
+	    devices = maplist(`d,Lan::FreeDevices(realtype),``(sformat("%1",d)));
 	    UI::ReplaceWidget(`id(`rnum),`ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"), devices));
-	    continue;
-	}
-	/* pcmcia card? */
-	else if(ret == `pcmcia) {
-	    pcmcia = UI::QueryWidget(`id(`pcmcia), `Value);
-	    UI::ChangeWidget(`id(`modul), `Enabled, !pcmcia);
-	    UI::ChangeWidget(`id(`options), `Enabled, !pcmcia);
-	    UI::ChangeWidget(`id(`list), `Enabled, !pcmcia);
 	    continue;
 	}
 	else if(ret == `back) {
@@ -162,7 +182,11 @@ by pressing <b>List</b>.</p>
 	Lan::modul = UI::QueryWidget(`id(`modul), `Value);
 	Lan::options = UI::QueryWidget(`id(`options), `Value);
 	Lan::device = tointeger(UI::QueryWidget(`id(`num), `Value));
-	Lan::pcmcia = pcmcia;
+	Lan::pcmcia = UI::QueryWidget(`id(`pcmcia), `Value);
+	Lan::usb = UI::QueryWidget(`id(`usb), `Value);
+	type = UI::QueryWidget(`id(`dev), `Value);
+	if(pcmcia) type = type + "-pcmcia-";
+	else if(usb) type = type + "-usb-";
 	Lan::type = type;
     }
 

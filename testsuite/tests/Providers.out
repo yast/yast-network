@@ -1,3 +1,4 @@
+Dump	Read
 Dir	.custom_providers.s: ["first", "second", "third"]
 Dir	.custom_providers.v."first": ["PROVIDER"]
 Read	.custom_providers.v."first"."PROVIDER" "first one"
@@ -5,4 +6,10 @@ Dir	.custom_providers.v."second": ["PROVIDER"]
 Read	.custom_providers.v."second"."PROVIDER" "second one"
 Dir	.custom_providers.v."third": ["PROVIDER"]
 Read	.custom_providers.v."third"."PROVIDER" "third one"
-Return	nil
+Read	.target.yast2 "country.ycp" $["CZ":"Czech"]
+Return	true
+Dump	getProvider
+Dir	.path.to.provider: []
+Return	$["ShortName":"provider"]
+Dir	.path.to."provi der": []
+Return	$["ShortName":"provi der"]

@@ -34,7 +34,7 @@ include "network/routines.ycp";
  * @return true if data was modified
  */
 global define boolean Modified() ``{
-    return Modem::Modified() || Providers::Modified ();
+    return Modem::Modified() || Providers::Modified();
 }
 
 /**
@@ -42,7 +42,7 @@ global define boolean Modified() ``{
  * @return always `next
  */
 global define symbol Commit() ``{
-    Providers::Commit ();
+    Providers::Commit();
     Modem::Commit();
     return `next;
 }
@@ -54,8 +54,9 @@ global define symbol Commit() ``{
 global define symbol ReadDialog() ``{
 
     /* modems read dialog help 1/2 */
-    string helptext = _("<P><B><BIG>Initializing modems configuration
-</BIG></B><BR>Please wait for a while...<BR></P>");
+    string helptext = _("<P><B><BIG>Initializing modem configuration
+</BIG></B><BR>Please wait...<BR></P>
+");
 
     /* modems read dialog help 2/2 */
     helptext = helptext + _("<P><B><BIG>Aborting the initialization:
@@ -76,13 +77,14 @@ global define symbol WriteDialog() ``{
     if(!Modified()) return `next;
 
     /* modems write dialog help 1/2 */
-    string helptext = _("<P><B><BIG>Saving modems configuration</BIG></B><BR>
-Please wait for a while...<BR></P>");
+    string helptext = _("<P><B><BIG>Saving modem configuration</BIG></B><BR>
+Please wait...<BR></P>
+");
 
     /* modems write dialog help 2/2 */
     helptext = helptext + _("<P><B><BIG>Aborting the saving:</BIG></B><BR>
-You can abort the saving by pressing the <B>Abort</B> button.
-An additional dialog will inform you whether it is safe to do so or not.</P>");
+You can abort the saving by pressing the <B>Abort</B> button. An additional
+dialog will possibly inform you whether it is safe to do so or not.</P>");
 
     Wizard::RestoreHelp(helptext);
     Modem::AbortFunction = ``{return PollAbort() && ReallyAbort();};
@@ -96,25 +98,24 @@ An additional dialog will inform you whether it is safe to do so or not.</P>");
  */
 global define symbol SummaryDialog() ``{
 
-    string caption = _("Modems configuration");
+    string caption = _("Modem configuration");
 
     /* modems summary dialog help 1/3 */
-    string helptext = _("<P><B><BIG>Modems setup</BIG></B><BR>
-Here you can configure your modem.
-<BR></P>");
+    string helptext = _("<P><B><BIG>Modem setup</BIG></B><BR>
+Here, you can configure your modem.<BR></P>
+");
 
     /* modems summary dialog help 2/3 */
     helptext = helptext + _("<P><B><BIG>Adding a modem:</BIG></B><BR>
-Choose a modem from the list of the detected modem.
-If your modem was not autodetected, use <B>Other (not detected)</B>.
-Then press <B>Configure</B>.
-</P>");
+Choose a modem from the list of detected modems. If your modem was not
+autodetected, use <B>Other (not detected)</B>. Then press <B>Configure</B>.
+</P>
+");
 
     /* modems summary dialog help 3/3 */
     helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
-If you press <B>Edit</B>, an additional dialog in which
-to change the configuration opens.
-</P>
+If you press <B>Edit</B>, an additional dialog opens in which to change the
+configuration.</P>
 ");
 
     list summary = Modem::Summary(true);
@@ -174,12 +175,13 @@ to change the configuration opens.
  */
 global define symbol OverviewDialog() ``{
 
-    string caption = _("Modems configuration overview");
+    string caption = _("Modem configuration overview");
 
-    string helptext = /* modems overview dialog help 1/3 */
-    _("<P><B><BIG>Modems overview</BIG></B><BR>
-Here you can get an overview about installed modems. Additionally
-you can edit their configuration.<BR></P>");
+    /* modems overview dialog help 1/3 */
+    string helptext = _("<P><B><BIG>Modem overview</BIG></B><BR>
+Here, get an overview of installed modems. Additionally,
+edit their configuration.<BR></P>
+");
 
     /* modems overview dialog help 2/3 */
     helptext = helptext + _("<P><B><BIG>Adding a modem:</BIG></B><BR>
@@ -187,15 +189,16 @@ If you press <B>Add</B>, you can manually configure a modem.</P>");
 
     /* modems overview dialog help 3/3 */
     helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
-Choose a modems, whose configuration you want to change or remove.
-Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
+Choose a modem for which to change or remove the configuration.
+Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
+");
 
     list overview = Modem::Overview();
     y2debug("overview=%1",overview);
 
     /* Header of table with installed cards */
     term contents = Wizard_hw::ConfiguredContent(
-	    `header(_("No."), _("Type"), _("Device") /*, _("Active"),*/ /*_("IP Address"), "PCMCIA", "Driver"*/),
+	    `header(_("No."), _("Type"), _("Device")),
 	    overview, nil, nil, nil, nil);
 
     contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);

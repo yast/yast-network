@@ -1,0 +1,27 @@
+{
+
+include "testsuite.ycp";
+import "Routing";
+
+map READ = $[
+    "target" : $[ "size" : 1 ],
+    "routes" : ["r1", "r2"],
+];
+
+DUMP("Read");
+TEST(``(Routing::Read()), [READ], nil);
+DUMP(sformat("Routing::routes %1",Routing::routes));
+
+DUMP("Write");
+Routing::modified = true;
+TEST(``(Routing::Write()), [READ], nil);
+Routing::routes = [ "r1", "r3" ];
+TEST(``(Routing::Write()), [READ], nil);
+
+DUMP("Import");
+TEST(``(Routing::Import(["r7", "r8"])), [], nil);
+
+DUMP("Export");
+TEST(``(Routing::Export()), [], nil);
+
+}

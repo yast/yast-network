@@ -1,4 +1,0 @@
-Dir	.path.to.provider: []
-Return	$["ShortName":"provider"]
-Dir	.path.to."provi der": []
-Return	$["ShortName":"provi der"]

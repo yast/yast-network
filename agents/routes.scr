@@ -52,8 +52,10 @@
 		`gateway(String("^ \t\n")),
 		Whitespace(),
 		`netmask(String("^ \t\n")),
-		Whitespace(),
-		`device(String("^ \t\n"))
+		Optional(Whitespace()),
+		Optional(`device(String("^ \t\n"))),
+		Optional(Whitespace()),
+		Optional(`extrapara(String("^\n")))
 	    ),
 	"\n"
 	))

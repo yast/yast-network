@@ -35,9 +35,13 @@ if(func == "MakeProposal") {
     string proposal = "";
     string warning = nil;
     symbol warning_level = nil;
+    boolean force_reset = param["force_reset"]:false;
 
-    Progress::off();
-    ISDN::Read();
+    if(force_reset || !ISDN::proposal_valid) {
+        ISDN::proposal_valid = true;
+	Progress::off();
+	ISDN::Read();
+    }
     list sum = ISDN::Summary(false);
     proposal = select(sum, 0, "");
     Progress::on();
@@ -50,8 +54,9 @@ if(func == "MakeProposal") {
 }
 /* run the module */
 else if(func == "AskUser") {
-    symbol seq = `next;
-    CallFunction(`isdn());
+    map stored = ISDN::Export();
+    symbol seq = CallFunction(`isdn(.propose));
+    if(seq != `next) ISDN::Import(stored);
     ret = $[
 	"workflow_sequence" : seq
     ];
@@ -66,7 +71,7 @@ else if(func == "Description") {
 }
 /* write the proposal */
 else if(func == "Write") {
-    ISDN::Write();
+    ISDN::Write(false);
 }
 /* unknown function */
 else {

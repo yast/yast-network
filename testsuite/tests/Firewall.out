@@ -1,0 +1,46 @@
+Dump	Change(true)
+Return	["eth0"]
+Return	["eth1", "eth0"]
+Log	device already present: eth0
+Return	["eth0"]
+Return	["eth0", "modem"]
+Log	device already present: ppp1
+Return	["modem"]
+Dump	Change(false)
+Log	device not found: eth0
+Return	[]
+Return	[]
+Return	["eth1"]
+Log	device not found: eth0
+Return	["eth1"]
+Log	device not found: ppp1
+Return	["eth1"]
+Return	["eth1"]
+Return	[]
+Dump	Query
+Return	[]
+Return	["eth0"]
+Return	["eth1"]
+Return	["modem"]
+Return	["modem"]
+Return	["eth0", "modem"]
+Return	["eth0"]
+Dump	Write
+Write	.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS "eth0 ippp1" true
+Execute	.target.bash "/sbin/SuSEpersonal-firewall" 0
+Return	true
+Log	SuSEfirewall active -> no changes
+Return	false
+Dump	Read
+Read	.init.scripts.exists "SuSEfirewall2_init" true
+Read	.init.scripts.runlevel "SuSEfirewall2_init" $["SuSEfirewall2_final":$["start":["5"], "stop":["5"]], "SuSEfirewall2_init":$["start":["5"], "stop":["5"]], "SuSEfirewall2_setup":$["start":["5"], "stop":["5"]]]
+Read	.init.scripts.exists "SuSEfirewall2_init" true
+Read	.init.scripts.runlevel "SuSEfirewall2_init" $["SuSEfirewall2_final":$["start":["5"], "stop":["5"]], "SuSEfirewall2_init":$["start":["5"], "stop":["5"]], "SuSEfirewall2_setup":$["start":["5"], "stop":["5"]]]
+Read	.init.scripts.exists "SuSEfirewall2_setup" true
+Read	.init.scripts.runlevel "SuSEfirewall2_setup" $["SuSEfirewall2_final":$["start":["5"], "stop":["5"]], "SuSEfirewall2_init":$["start":["5"], "stop":["5"]], "SuSEfirewall2_setup":$["start":["5"], "stop":["5"]]]
+Read	.init.scripts.exists "SuSEfirewall2_final" true
+Read	.init.scripts.runlevel "SuSEfirewall2_final" $["SuSEfirewall2_final":$["start":["5"], "stop":["5"]], "SuSEfirewall2_init":$["start":["5"], "stop":["5"]], "SuSEfirewall2_setup":$["start":["5"], "stop":["5"]]]
+Read	.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS "eth1 ippp0"
+Return	true
+Dump	Firewall::firewallpresent true
+Dump	Firewall::devices ["eth1", "ippp0"]

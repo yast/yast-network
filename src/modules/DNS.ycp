@@ -28,6 +28,11 @@ global list searchlist = []; //"s1", "s2"];
 global boolean dhcp_hostname = false;
 
 /**
+ * Data was modified?
+ */
+global boolean modified = false;
+
+/**
  * Is any device configured with DHCP?
  */
 boolean has_dhcp = true;
@@ -56,7 +61,7 @@ global define boolean Import(map settings) ``{
     nameservers = lookup(settings, "nameservers", []);
     searchlist = lookup(settings, "searchlist", []);
     dhcp_hostname = lookup(settings, "dhcp_hostname", false);
-
+    modified = true;
     return true;
 }
 
@@ -98,7 +103,7 @@ global define boolean Read() ``{
 
     /* FIXME
     if(SCR(`Execute (.target.bash, "/sbin/modify_resolvconf check -q")) != 0) {
-	string process = SCR (`Read (.resolver.process));
+	string process = SCR (`Read (.etc.resolv_conf.process));
 	symbol ui = ModifyResolvConfPopup (process);
 	if (ui == `modify)
 	{
@@ -163,28 +168,31 @@ global define boolean Read() ``{
  */
 global define boolean Write() ``{
 
+    if(!modified) return true;
+    y2milestone("Writing configuration");
+
     /* build FQ hostname */
     string fqhostname = hostname;
     if(domain != "") fqhostname = fqhostname + "." + domain;
 
     /* set hostname via dhcp? */
     SCR::Write(.sysconfig.dhcp.DHCLIENT_SET_HOSTNAME, dhcp_hostname?"yes":"no");
+    SCR::Write(.sysconfig.dhcp, nil);
 
-    if(!dhcp_hostname) {
+    //if(!dhcp_hostname) {
 	/* remember the X authorization key */
 	string xauth_key = SCR::Read(.xauth.key);
 
 	/* change the hostname */
 	SCR::Execute(.target.bash, "/bin/hostname " + hostname);
 
-	/* update X authorization */
-	SCR::Write(.xauth.key, xauth_key);
-
 	/* write hostname */
 	SCR::Write(.target.string, "/etc/HOSTNAME", fqhostname + "\n");
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --quick --nonewpackage --module hostname");
 
-    }
+	/* update X authorization */
+	SCR::Write(.xauth.key, xauth_key);
+    //}
 
     if(SCR::Read(.target.size, resolv_conf) < 0)
 	SCR::Write(.target.string, resolv_conf, "");
@@ -192,13 +200,12 @@ global define boolean Write() ``{
     /* update /etc/resolv.conf */
     SCR::Write(.etc.resolv_conf.search, searchlist);
     SCR::Write(.etc.resolv_conf.nameserver, nameservers);
-    SCR::Write(.etc.resolv_conf, nil);
-
     /* update domain in /etc/resolv.conf */
     if(size(searchlist) > 0)
-	SCR::Write(.resolver.domain, "");
+	SCR::Write(.etc.resolv_conf.domain, "");
     else
-	SCR::Write(.resolver.domain, domain);
+	SCR::Write(.etc.resolv_conf.domain, domain);
+    SCR::Write(.etc.resolv_conf, nil);
 
     return true;
 }

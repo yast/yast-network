@@ -32,6 +32,11 @@ global list routes = [];
 global list routes_init = [];
 
 /**
+ * Data was modified?
+ */
+global boolean modified = false;
+
+/**
  * "routes" file location
  */
 string routes_file = "/etc/sysconfig/network/routes";
@@ -58,6 +63,9 @@ global define boolean Read() ``{
  * @return true if success
  */
 global define boolean Write() ``{
+
+    if(!modified) return true;
+    y2milestone("Writing configuration");
 
     /* Check if there is anything to do */
     if(routes_init == routes) {
@@ -96,11 +104,11 @@ global define boolean Write() ``{
  * @param settings autoinstallation settings
  * @return true if success
  */
-global define boolean Import(map settings) ``{
+global define boolean Import(list settings) ``{
     if(size(settings) == 0)
 	return true;
-    
-    routes = settings["routing"]:[];
+
+    routes = eval(settings);
     return true;
 }
 
@@ -108,10 +116,8 @@ global define boolean Import(map settings) ``{
  * Dump the Routing settings to a list, for autoinstallation use.
  * @return autoinstallation settings
  */
-
-global define list Export () ``{
-    return routes;
-
+global define list Export() ``{
+    return eval(routes);
 }
 
 /* EOF */

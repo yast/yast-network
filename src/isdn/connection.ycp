@@ -23,6 +23,7 @@ import "Wizard";
 import "ISDN";
 
 include "ui/common_popups.ycp";
+include "network/ip.ycp";
 
 /**
  * Dialog for ISDN Provider
@@ -45,7 +46,7 @@ global define symbol isdn_connection() ``{
 */
 /*
     if (Local_IP == "InvalidIP" || Remote_IP == "InvalidIP") {
-	if (I4L_ENCAP == "syncppp") {
+	if (ISDN::con_protocol  == "syncppp") {
 	integer Number = tointeger(substring(lookup(ProviderISDN, "netdev", ""), 4));
 	Local_IP = sformat("192.168.%1.1", Number);
 	Remote_IP = sformat("192.168.%1.99", Number);
@@ -91,28 +92,40 @@ specified hup-timeout.</p>");
   // help text 5/7
   helptext = helptext +
 _("<p>Automatic hang-up -- you can set that the line will be hung up
-automatically after 'IDLE timeout'. The checkbox Chargehup tells that the line
+automatically after 'IDLE timeout' seconds. The checkbox Chargehup tells that the line
 stays connected after 'IDLE timeout' until immediately before the next counting
 pulse (this only works if your ISDN provider transmits the charge-info during
 and after the connection)</p>");
 
   // help text 5/7
   helptext = helptext +
-_("<p>If you want the ISDN service to be initialized on start-up, press the
-corresponding button. If not, you will have to start the service manually by
+_("<p><b>Start Mode: </b><b>OnBoot</b> the driver is loaded during
+system boot. <b>Manual</b> the driver must be started with the
+<b>rcisdn start</b> command, only the user root can do this.
+<b>HotPlug </b> is a special case for PCMCIA and USB devices.</p>");
+
+  helptext = helptext +
+_("<p>If you select manual you have to start/stop the service manually by
 issuing the following commands (while logged in as 'root'):
 <tt>
- <br> rci4l_hardware start
- <br> rci4l start
- <br> rcroute start
- <br>  to start ISDN.</tt></p>
+ <br> <b>start: </b>ifup ippp0
+ <br> <b>stop : </b>ifdown ippp0
+ <br>
+</tt>
+Note: ippp0 is an example</p>
 ");
 
-  // help text 5/7
+  // help text 6/7
   helptext = helptext +
 _("<p>Selecting <b>activate firewall</b> will block all incoming connections.
 Choosing this option will make dial-up connections to the Internet safe from
 attacks from the outside.</p>");
+
+  // help text 7/7
+  helptext = helptext +
+_("<p>Selecting <b>channel bundling</b> will setup a 128kBit connection on demand 
+also known as <b>M</b>ultilink <b>PPP</b>. This option is in a experimental
+state and may crash your machine.</p>");
 
     /* DIALOG CONTENTS */
 
@@ -127,11 +140,12 @@ attacks from the outside.</p>");
 
   term contents =
 	`HBox(
-	    `HSpacing(7),
+	    `HSpacing(6),
 	    `VBox(
 		`HBox(
 		    `TextEntry(`id(`localmsn), _("&My phone number"), ISDN::localMSN),
-		    `ComboBox(`id(`dialmode), _("&Dial mode"),
+		    `HSpacing(1),
+		    `ComboBox(`id(`dialmode), _("&Dial mode "),
 		    [
 		        `item(`id("auto"), _("Automatic"), ISDN::dialMode == "auto"),
 			`item(`id("manual"), _("Manual"), ISDN::dialMode == "manual"),
@@ -156,20 +170,26 @@ attacks from the outside.</p>");
 			`HSpacing()
 		    )
 		),
-		`Left(`CheckBox(`id(`starting_isdn), _("&Start ISDN during system boot"), ISDN::startAtBoot)),
+		`ComboBox(`id(`startmode), _("&Start Mode"),
+		    [
+			`item(`id("onboot"), _("OnBoot"), ISDN::if_bootmode == "onboot"),
+			`item(`id("manual"), _("Manual"), ISDN::if_bootmode == "manual"),
+			`item(`id("hotplug"), _("HotPlug"), ISDN::if_bootmode == "hotplug")
+		    ]),
 		FirewallCheckbox,
+		`Left(`CheckBox(`id(`multilink), _("Ch&annel bundling"), ISDN::multilink)),
 		`VSpacing(0.3),
 		`PushButton(`id(`ipsettings), _("IP se&ttings")),
 		`PushButton(`id(`callbacksettings), _("&Callback settings"))
 	    ),
-	    `HSpacing(7)
+	    `HSpacing(6)
 	);
 
     /* DIALOG PREPARE */
     Wizard::SetContents(caption, contents, helptext, true, true);
 
     Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), 
-	    ((ISDN::encap == "rawip") ? OKButtonLabel() : FinishButtonLabel())));
+	    ((ISDN::con_protocol == "rawip") ? OKButtonLabel() : FinishButtonLabel())));
 
 
     /* MAIN CYCLE */
@@ -188,7 +208,7 @@ attacks from the outside.</p>");
 	    break;
 	}
 	else if (contains ([`next, `ipsettings, `callbacksettings], ret)) {
-	    if (ret == `next && (!checkIP(Local_IP) || !checkIP(Remote_IP))) {
+	    if (ret == `next && (!check_ip4(Local_IP) || !check_ip4(Remote_IP))) {
 		UI::MessagePopup(_("You have to fill in Local and Remote IP addresses correctly"));
 		continue;
 	    }
@@ -210,6 +230,8 @@ attacks from the outside.</p>");
 	ISDN::localMSN = UI::QueryWidget(`id(`localmsn), `Value);
 	ISDN::dialMode = UI::QueryWidget(`id(`dialmode), `Value);
 	ISDN::startAtBoot = UI::QueryWidget(`id(`starting_isdn), `Value);
+	ISDN::if_bootmode = UI::QueryWidget(`id(`startmode), `Value);
+	ISDN::multilink = UI::QueryWidget(`id(`multilink), `Value);
 	ISDN::idleTime = sformat("%1", UI::QueryWidget(`id(`idletime), `Value));
 
 	ISDN::firewall = UI::QueryWidget(`id(`Firewall), `Value);
@@ -222,11 +244,6 @@ attacks from the outside.</p>");
 	{
 	  ISDN::chargeHUP = "off";
 	}
-    }
-
-    if (ret == `next && ISDN::encap == "rawip")
-    {
-	return `routedns;
     }
 
     return ret;

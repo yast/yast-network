@@ -52,12 +52,15 @@ y2debug("Imported: %1", settings);
 Routing::Import(settings);
 Wizard::CreateDialog();
 Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), FinishButtonLabel()));
-RoutingMainDialog();
+symbol ret = RoutingMainDialog();
+y2debug("ret=%1", ret);
 UI::CloseDialog();
-list ret = Routing::Export();
-y2debug("Exported: %1", ret);
 
 y2milestone("Routing auto finished");
-return ret;
+if(ret == `next)
+    return Routing::Export();
 
+return $[];
+
+/* EOF */
 }

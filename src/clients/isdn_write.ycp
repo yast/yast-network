@@ -50,7 +50,7 @@ y2milestone("Only writing... (%1)", settings);
 
 Progress::off();
 ISDN::Import(settings);
-boolean ret = ISDN::Write();
+boolean ret = ISDN::Write(true);
 Progress::on();
 
 y2milestone("ISDN write finished");

@@ -48,10 +48,10 @@ global define boolean ReadConfig(string devregex) ``{
 
     /* read main devices */
     maplist(`d, maindevs, ``{
-	string devtype = regexpsub(d, "^.*ifcfg-([a-z]+)[^a-z]*$", "\\1");
+	string devtype = regexpsub(d, "^.*ifcfg-([a-z-]+)[^a-z-]*$", "\\1");
 	if(devtype == "lo") return;
 
-	string devnum = regexpsub(d, "^.*ifcfg-[a-z]+([0-9]+)", "\\1");
+	string devnum = regexpsub(d, "^.*ifcfg-[a-z-]+([0-9]+)", "\\1");
 	y2debug("devnum=%1",devnum);
 
 	map dev = lookup(CONFIG, devtype, $[]);
@@ -125,11 +125,15 @@ global define boolean WriteConfig() ``{
 
     /* remove deleted devices */
     maplist(`d, DELETED, ``{
+	/* delete config file */
 	path p = topath(".network.section.\"" + sysconfig + "/ifcfg-" + d + "\"");
 	y2debug("deleting: %1", p);
 	SCR::Write(p, nil);
-	/* FIXME: delete modules.conf entry */
+	/* delete modules.conf entry */
+	SCR::Write(.modules.alias, nil, d);
+	SCR::Write(.modules.options, nil, d);
     });
+    DELETED = [];
 
     /* write all devices */
     maplist(`typ, `devsmap, CONFIG, ``{
@@ -147,11 +151,20 @@ global define boolean WriteConfig() ``{
 	    /* write modules.conf */
 	    string mod = lookup(devmap, "module", "");
 	    string opts = lookup(devmap, "options", "");
+	    list opts_list = filter (string s, splitstring (opts, " "), ``(s != ""));
+	    map opts_map = listmap (string opt, opts_list, ``{
+		list tok = splitstring (opt, "=");
+		return [ tok[0]:"?", tok[1]:"" ];
+	    });
 
 	    if(mod != nil && mod != "")
 		SCR::Write(.modules.alias, mod, dev);
-	    if(opts != nil && opts != "")
-		SCR::Write(.modules.options, opts, dev);
+	    if (size (opts_map) > 0)
+		SCR::Write(.modules.options, opts_map, dev);
+
+	    /* update libhd unique number */
+	    string unq = lookup(devmap, "UNIQUE", "");
+	    if(unq != "") SCR::Write(.probe.status.configured, unq, `yes);
 	});
     });
 
@@ -159,8 +172,41 @@ global define boolean WriteConfig() ``{
     SCR::Write(.network, nil);
     SCR::Write(.modules, nil);
 
-    /* clean up variables */
-    DELETED = [];
+    /* ugly PCMCIA hackery */
+    list ugly = [ "eth-pcmcia", "eth-usb", "tr-pcmcia", "tr-usb" ];
+    maplist(`u, ugly, ``{
+	string uu = u + "-";
+	string uu2 = "/etc/sysconfig/network/ifcfg-" + uu;
+	string uu2x = "/etc/sysconfig/network/ifcfg-" + u;
+	y2debug("uu2=%1",uu2);
+	if((SCR::Read(.target.size, uu2x) > 0) && (SCR::Read(.target.symlink, uu2x) == nil))
+	    return;
+	list uu1 = mapkeys(CONFIG);
+	y2debug("uu1=%1",uu1);
+	if(contains(uu1, uu)) {
+	    list uu3 = mapkeys(lookup(CONFIG, uu, $[]));
+	    y2debug("uu3=%1",uu3);
+	    if(size(uu3) == 1) {
+		string uu4 = select(uu3, 0, "0");
+		SCR::Execute(.target.symlink, uu2+uu4, uu2x);
+	    }
+	    else
+		SCR::Execute(.target.remove, uu2x);
+	}
+	else
+	    SCR::Execute(.target.remove, uu2x);
+    });
+
+    /* FIXME: move it somewhere else */
+    /* /dev/modem symlink */
+    if(contains(mapkeys(CONFIG), "ppp")) {
+	list ml = mapkeys(lookup(CONFIG, "ppp", $[]));
+	string ms = select(ml, 0, "0");
+	map mm = lookup(lookup(CONFIG, "ppp", $[]), ms, $[]);
+	string mdev = lookup(mm, "MODEM_DEVICE", "");
+	if(mdev != "" && mdev != "/dev/modem")
+	    SCR::Execute(.target.symlink, mdev, "/dev/modem");
+    }
 
     return true;
 }

@@ -33,14 +33,16 @@ include "network/routines.ycp";
  * @return true if data was modified
  */
 global define boolean Modified() ``{
-    return ISDN::Modified();
+    return ISDN::Modified() || Providers::Modified();
 }
 
 /**
  * Commit changes to internal structures
  * @return always `next
  */
-global define symbol Commit() ``{
+global define symbol Commit(boolean prov) ``{
+    if (prov)
+	Providers::Commit();
     ISDN::Commit();
     return `next;
 }
@@ -84,7 +86,7 @@ An additional dialog will inform you whether it is safe to do so or not.</P>");
 
     Wizard::RestoreHelp(helptext);
     ISDN::AbortFunction = ``{return PollAbort() && ReallyAbort();};
-    boolean ret = ISDN::Write();
+    boolean ret = ISDN::Write(true);
     return ret ? `next : `abort;
 }
 
@@ -111,7 +113,7 @@ Then press <B>Configure</B>.
     /* isdns summary dialog help 3/3 */
     helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
 If you press <B>Edit</B>, an additional dialog (where you
-can change the configuration) will open.
+can change the configuration and setup dialup connections) will open.
 </P>");
 
     list summary = ISDN::Summary(true);
@@ -173,43 +175,80 @@ global define symbol OverviewDialog() ``{
 
     string caption = _("ISDN cards configuration overview");
 
-    string helptext = /* isdns overview dialog help 1/3 */
+    string helptext = /* isdns overview dialog help 1/5 */
     _("<P><B><BIG>ISDN cards overview</BIG></B><BR>
-Here you can get an overview about installed ISDN cards. Additionally
-you can edit their configuration.<BR></P>");
+Here you can get an overview about installed ISDN cards and connection setups.
+Additionally you can edit their configuration.<BR></P>");
 
-    /* isdns overview dialog help 2/3 */
+    /* isdns overview dialog help 2/5 */
     helptext = helptext + _("<P><B><BIG>Adding an ISDN card:</BIG></B><BR>
 If you press <B>Add</B>, you can manually configure an ISDN card.</P>");
 
-    /* isdns overview dialog help 3/3 */
+    /* isdns overview dialog help 3/5 */
+    helptext = helptext + _("<P><B><BIG>Test an ISDN card setup:</BIG></B><BR>
+If you press <B>Test</B>, the system tries to load the driver for the 
+selcted card</P>");
+
+    /* isdns overview dialog help 4/5 */
+    helptext = helptext + _("<P><B><BIG>Adding an ISDN connection:</BIG></B><BR>
+If you press <B>Add</B>, you can configure an ISDN dialup connection.</P>");
+
+    /* isdns overview dialog help 5/5 */
     helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
-Choose an ISDN card, whose configuration you want to change or remove.
+Choose an ISDN card or connection, whose configuration you want to change or remove.
 Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 
-    list overview = ISDN::Overview();
-    y2debug("overview=%1",overview);
+    list overviewdev = ISDN::OverviewDev();
+    list overviewif = ISDN::OverviewIf();
+
+    y2debug("overviewdev=%1",overviewdev);
+    y2debug("overviewif=%1",overviewif);
 
     /* Header of table with installed cards */
+
+    term but_box = `HBox (
+	`opt (`hstretch),
+	`PushButton (`id (`addif_button), _("&Add")),
+	`PushButton (`id (`editif_button),  _("Ed&it")),
+	`PushButton (`id (`delif_button), _("Dele&te"))
+    );
+  
+    term contentsif =
+	`VBox(
+	    `Left(`Heading(`id(`title_i), _("ISDN connections"))),
+	    `Table (`id (`TableIf),
+		`header(_("No."), _("Type"), _("Connection"), _("IP"), _("Remote IP")),
+		overviewif),
+	    but_box
+	);
+    term titledev = `Left(`Heading(`id(`title_d), _("ISDN controler")));
     term contents = Wizard_hw::ConfiguredContent(
-	    `header(_("No."), _("Type"), _("Device")/*, _("Active"), _("IP Address"), "PCMCIA", "Driver"*/),
-	    overview, nil, nil, nil, nil);
+	    `header(_("No."), _("Type"), _("Device"), _("Hardware")/*, _("Active"), _("IP Address"), "PCMCIA", "Driver"*/),
+	    overviewdev, titledev, nil, contentsif, 
+	    `PushButton (`id (`test_button), _("Te&st"))
+    );
 
     contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);
 
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    BackButtonLabel(), FinishButtonLabel());
 
-    if(size(overview) < 1) {
+    if(size(overviewdev) < 1) {
 	UI::ChangeWidget(`id(`edit_button), `Enabled, false);
 	UI::ChangeWidget(`id(`delete_button), `Enabled, false);
+	UI::ChangeWidget(`id(`test_button), `Enabled, false);
+    }
+
+    if(size(overviewif) < 1) {
+	UI::ChangeWidget(`id(`editif_button), `Enabled, false);
+	UI::ChangeWidget(`id(`delif_button), `Enabled, false);
     }
 
     any ret = nil;
     while(true) {
 
 	ret = UI::UserInput();
-
+	y2debug("UserInput: %1", ret);
 	/* abort? */
 	if(ret == `abort || ret == `cancel) {
 	    if(ReallyAbort()) break;
@@ -224,6 +263,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	/* edit */
 	else if(ret == `edit_button) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+	    
 	    ISDN::Edit(dev);
 	    ret = `edit;
 	    break;
@@ -233,13 +273,59 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
 	    ISDN::Delete(dev);
 	    ISDN::Commit();
-	    overview = ISDN::Overview();
-	    UI::ChangeWidget(`id(`table), `Items, overview);
-	    if(size(overview) < 1) {
+	    overviewdev = ISDN::OverviewDev();
+	    UI::ChangeWidget(`id(`table), `Items, overviewdev);
+	    if(size(overviewdev) < 1) {
 		UI::ChangeWidget(`id(`edit_button), `Enabled, false);
 		UI::ChangeWidget(`id(`delete_button), `Enabled, false);
+		UI::ChangeWidget(`id(`test_button), `Enabled, false);
 	    }
-	    y2debug("overview=%1",overview);
+	    y2debug("overviewdev=%1",overviewif);
+	    continue;
+	}
+	/* test */
+	else if(ret == `test_button) {
+	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+	    
+	    if (! UI::YesNoPopup (_("Warning !\n
+You like to test the selected card.
+Please note that the system now will shutdown
+the ISDN subsystem (if allready running)
+and then try to load the selected card driver.
+So don't use this feature if you are using any ISDN
+services at the moment.
+
+\nContinue?\n")))
+		    continue;
+	    ISDN::TestDev(dev);
+	    ret = `testdev;
+	    break;
+	}
+	/* addif */
+	else if(ret == `addif_button) {
+	    ISDN::AddIf();
+	    ret = `addif;
+	    break;
+	}
+	/* editif */
+	else if(ret == `editif_button) {
+	    string dev = UI::QueryWidget(`id(`TableIf), `CurrentItem);
+	    ISDN::EditIf(dev);
+	    ret = `editif;
+	    break;
+	}
+	/* delif */
+	else if(ret == `delif_button) {
+	    string dev = UI::QueryWidget(`id(`TableIf), `CurrentItem);
+	    ISDN::Delete(dev);
+	    ISDN::Commit();
+	    overviewif = ISDN::OverviewIf();
+	    UI::ChangeWidget(`id(`TableIf), `Items, overviewif);
+	    if(size(overviewif) < 1) {
+		UI::ChangeWidget(`id(`delif_button), `Enabled, false);
+		UI::ChangeWidget(`id(`editif_button), `Enabled, false);
+	    }
+	    y2debug("overviewif=%1",overviewif);
 	    continue;
 	}
 	else if(ret == `next || ret == `back) {

@@ -38,8 +38,9 @@ Wizard::CreateDialog();
 Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), FinishButtonLabel()));
 any ret = RoutingMainDialog();
 y2debug("ret == %1", ret);
+
+if(Routing::modified) Routing::Write();
 UI::CloseDialog();
-Routing::Write();
 
 /* Finish */
 y2milestone("Routing module finished");

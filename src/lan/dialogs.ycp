@@ -106,7 +106,7 @@ global define symbol SummaryDialog() ``{
 	}
 	/* configure the selected card */
 	else if(ret == `configure_button) {
-	    Lan::Add();
+	    Lan::AddEdit("");
 	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
 	    if(selected == `other) {
 		ret = `other;
@@ -167,14 +167,14 @@ global define symbol OverviewDialog() ``{
 	}
 	/* add */
 	else if(ret == `add_button) {
-	    Lan::Add();
+	    Lan::AddEdit("");
 	    ret = `add;
 	    break;
 	}
 	/* edit */
 	else if(ret == `edit_button) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-	    Lan::Edit(dev);
+	    Lan::AddEdit(dev);
 	    ret = `edit;
 	    break;
 	}

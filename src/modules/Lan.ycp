@@ -25,6 +25,7 @@ textdomain "network";
 
 import "DNS";
 import "Routing";
+import "Firewall";
 import "Progress";
 import "Summary";
 
@@ -46,12 +47,15 @@ global string unique = "";
 global string type = "";
 
 global boolean pcmcia = false;
+global boolean usb = false;
 
 /* address options */
 global string bootproto = "static";
 global string ipaddr = "";
 global string netmask = "";
 global integer device = -1;
+
+global boolean proposal_valid = false;
 
 /**
  * Abort function
@@ -112,7 +116,7 @@ global define boolean Modified() ``{
 global define boolean Read() ``{
 
     string caption = _("Initializing network configuration");
-    integer steps = 6;
+    integer steps = 7;
 
     /* FIXME */
     integer sl = 0; //1000;
@@ -124,6 +128,7 @@ global define boolean Read() ``{
 	_("Read routing configuration"),
 	_("Read host name and DNS configuration"),
 	_("Read installation information"),
+	_("Read firewall settings"),
 	_("Detect current status"),
     ], [], "");
 
@@ -134,7 +139,7 @@ global define boolean Read() ``{
 
     if(Abort()) return false;
     ProgressNextStage(_("Reading current configuration"));
-    ReadConfig("eth|tr");
+    ReadConfig("eth|eth-pcmcia-|eth-usb-|tr|tr-pcmcia-|tr-usb-");
     sleep(sl);
 
     if(Abort()) return false;
@@ -153,6 +158,11 @@ global define boolean Read() ``{
     sleep(sl);
 
     if(Abort()) return false;
+    ProgressNextStage(_("Reading firewall settings"));
+    Firewall::Read();
+    sleep(sl);
+
+    if(Abort()) return false;
     ProgressNextStage(_("Detecting current status"));
     ReadStatus();
     sleep(sl);
@@ -162,6 +172,7 @@ global define boolean Read() ``{
     sleep(sl);
 
     if(Abort()) return false;
+    modified = false;
     return true;
 }
 
@@ -184,25 +195,29 @@ global define boolean WriteOnly()``{
  */
 global define boolean Write() ``{
 
+    if(!modified) return true;
+    y2milestone("Writing configuration");
+
     string caption = _("Saving network configuration");
-    integer steps = 7;
+    integer steps = 8;
 
     /* FIXME */
     integer sl = 0; //1000;
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-	_("Stop network"),
+	_("Deactivate local network services"),
 	_("Write configuration"),
 	_("Write drivers information"),
 	_("Write routing configuration"),
 	_("Write host name and DNS configuration"),
+	_("Write firewall settings"),
 	_("Run SuSEconfig"),
-	_("Start network"),
+	_("Activate local network services"),
     ], [], "");
 
     if(Abort()) return false;
-    ProgressNextStage(_("Stopping network"));
+    ProgressNextStage(_("Deactivating local network services"));
     StopNetwork();
     sleep(sl);
 
@@ -227,12 +242,17 @@ global define boolean Write() ``{
     sleep(sl);
 
     if(Abort()) return false;
+    ProgressNextStage(_("Writing firewall settings"));
+    Firewall::Write();
+    sleep(sl);
+
+    if(Abort()) return false;
     ProgressNextStage(_("Running SuSEconfig"));
     RunSuSEconfig();
     sleep(sl);
 
     if(Abort()) return false;
-    ProgressNextStage(_("Starting network"));
+    ProgressNextStage(_("Activating local network services"));
     StartNetwork();
     sleep(sl);
 
@@ -264,9 +284,9 @@ global define boolean Import(map settings) ``{
 	}
     });
 
-    CONFIG=$["eth":eth,"tr":token];
-    DNS::Import(settings["dns"]:$[]);
-    Routing::Import(settings);
+    CONFIG=eval($["eth":eth,"tr":token]);
+    DNS::Import(eval(settings["dns"]:$[]));
+    Routing::Import(eval(settings["routing"]:[]));
     return true;
 }
 
@@ -284,16 +304,16 @@ global define map Export() ``{
 	});
 	autoinst_cfg=union( autoinst_cfg, interfaces);
     });
-    return ($[
-	      "interfaces":autoinst_cfg,
-	      "dns":DNS::Export(),
-	      "routing":Routing::Export()
+    return eval($[
+	"interfaces":autoinst_cfg,
+	"dns":DNS::Export(),
+	"routing":Routing::Export()
     ]);
-    return true;
 }
 
 /**
  * Create a textual summary and a list of unconfigured cards
+ * @param split split configured and unconfigured?
  * @return summary of the current configuration
  */
 global define list Summary(boolean split) ``{
@@ -305,7 +325,13 @@ global define list Summary(boolean split) ``{
  * @return table items
  */
 global define list Overview() ``{
-    return merge(BuildOverview("eth"), BuildOverview("tr"));
+    list eth = merge(BuildOverview("eth"), BuildOverview("eth-pcmcia-"));
+    eth = merge(eth, BuildOverview("eth-usb-"));
+    list tr = merge(BuildOverview("tr"), BuildOverview("tr-pcmcia-"));
+    tr = merge(tr, BuildOverview("tr-usb-"));
+    y2debug("eth=%1",eth);
+    y2debug("tr=%1",tr);
+    return merge(eth,tr);
 }
 
 /*-------------------*/
@@ -345,9 +371,9 @@ global define string Configured(string type, string unique) ``{
 
 /**
  * Select the given hardware item or clean up structures
+ * FIXME: -> routines/hardware.ycp (?)
  * @param which item to be chosen
  */
-// FIXME: -> routines/hardware.ycp (?)
 global define void SelectHW(integer which) ``{
     map sel = $[];
 
@@ -367,61 +393,66 @@ global define void SelectHW(integer which) ``{
 }
 
 /**
+ * Add a new device or edit existing (prepare before Commit)
+ * @param dev device to edit
  * @return true if success
  */
-global define boolean Add() ``{
+global define boolean AddEdit(string dev) ``{
+    operation = nil;
+    map devmap  = $[];
+
+    /* dev=="" -> Add */
+    if(dev == "") {
+        type = "eth";
+        device = select(GetFreeDevices(type,1), 0, -1);
+	operation = `add;
+    }
+    /* dev!="" -> Edit */
+    else {
+        string typ = device_type(dev);
+        integer num = device_num(dev);
+        string n = sformat("%1",num);
+
+        map typemap = lookup(CONFIG, typ, $[]);
+        if(!haskey(typemap, n)) {
+            y2error("Key not found: %1", dev);
+            return false;
+        }
+        devmap = lookup(typemap, n, $[]);
+
+        type = typ;
+        device = num;
+	operation = `edit;
+    }
 
     /* general stuff */
-    name = "";
-    type = "eth";
-    device = select(GetFreeDevices(type,1), 0, -1);
-    unique = "";
+    name = devmap["NAME"]:"";
+    unique = devmap["UNIQUE"]:"";
+
+    /* address options */
+    bootproto = devmap["BOOTPROTO"]:"static";
+    ipaddr = devmap["IPADDR"]:"";
+    netmask = devmap["NETMASK"]:"";
 
     /* kernel options */
-    modul = "";
-    options = "";
+    modul = devmap["module"]:"";
+    options = devmap["options"]:"";
+
     pcmcia = false;
-
-    /* address options */
-    bootproto = "static";
-    ipaddr = "";
-    netmask = "";
-
-    operation = `add;
-    return true;
-}
-
-/**
- * @return true if success
- */
-global define boolean Edit(string dev) ``{
-    operation = nil;
-    string typ = device_type(dev);
-    integer num = device_num(dev);
-    string n = sformat("%1",num);
-
-    map typemap = lookup(CONFIG, typ, $[]);
-    if(!haskey(typemap, n)) {
-	y2error("Key not found: %1", dev);
-	return false;
-    }
-    map devmap = lookup(typemap, n, $[]);
-
-    /* address options */
-    bootproto = lookup(devmap, "BOOTPROTO", "static");
-    ipaddr = lookup(devmap, "IPADDR", "");
-    netmask = lookup(devmap, "NETMASK", "");
-    unique = lookup(devmap, "UNIQUE", "");
-    device = num;
-    type = typ;
+    usb = false;
+    if(issubstring(type, "pcmcia"))
+	pcmcia = true;
+    else if(issubstring(type, "usb"))
+	usb = true;
 
     if(bootproto == "" || bootproto == "none") bootproto = "static";
 
-    operation = `edit;
     return true;
 }
 
 /**
+ * Delete the given device
+ * @param dev device to edit
  * @return true if success
  */
 global define boolean Delete(string dev) ``{
@@ -442,13 +473,15 @@ global define boolean Delete(string dev) ``{
 }
 
 /**
+ * Commit pending operation
  * @return true if success
+ * @see AddEdit
  */
 global define boolean Commit() ``{
     y2debug("Commit(%1)",operation);
+
     if(operation == `add || operation == `edit) {
 	map newdev = $[
-	    "BOOTMODE"	: "onboot",
 	    "BOOTPROTO"	: bootproto,
 	    "UNIQUE"	: unique,
 	];
@@ -459,6 +492,12 @@ global define boolean Commit() ``{
 	    change(newdev, "BROADCAST", compute_broadcast(ipaddr, netmask));
 	    change(newdev, "NETWORK", compute_network(ipaddr, netmask));
 	}
+	if(pcmcia||usb)
+	    change(newdev, "STARTMODE", "hotplug");
+	else
+	    change(newdev, "STARTMODE", "onboot");
+	if(pcmcia)
+	    change(newdev, "DHCLIENT_SET_DOWN_LINK", "yes");
 	change(newdev, "module", modul);
 	change(newdev, "options", options);
 	if(operation == `add)

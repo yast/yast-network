@@ -70,7 +70,13 @@ global define boolean ReadHardware(string hwtype) ``{
 	}
 	/* isdn card */
 	else if(controller == "isdn") {
-	    /* FIXME: isdn data */
+	    map resource = lookup(card, "resource", []);
+	    list drivers = lookup(card, "isdn", []);
+	    change(one, "drivers", drivers);
+	    change(one, "sel_drv", 0);
+	    change(one, "bus", lookup(card, "bus", ""));
+	    change(one, "io", lookup(select(lookup(resource, "io", []),0, $[]), "start", 0));
+	    change(one, "irq", lookup(select(lookup(resource, "irq", []), 0, $[]), "irq", 0));
 	}
 	/* network cards */
 	/* FIXME treat the rest as a network card */

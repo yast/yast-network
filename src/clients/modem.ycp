@@ -28,8 +28,23 @@ y2milestone("----------------------------------------");
 
 include "network/modem/wizards.ycp";
 
+/* is this proposal or not? */
+boolean propose = false;
+list args = Args();
+if(size(args) > 0) {
+    if(is(Args(0), path) && Args(0) == .propose) {
+	y2milestone("Using PROPOSE mode");
+	propose = true;
+    }
+    else
+	y2error("Bad argument for modem: %1",Args(0));
+}
+
 /* main ui function */
-any ret = ModemSequence();
+any ret = nil;
+
+if(propose) ret = ModemAutoSequence();
+else ret = ModemSequence();
 y2debug("ret == %1", ret);
 
 /* Finish */

@@ -1,6 +1,6 @@
 /**
  * File:
- *   include/networ/runtime.ycp
+ *   include/network/runtime.ycp
  *
  * Package:
  *   Configuration of network
@@ -33,7 +33,7 @@ global define boolean ReadStatus() ``{
  * @return true if success
  */
 global define boolean RunSuSEconfig() ``{
-    return true;
+    return SCR::Execute(.target.bash, "/sbin/SuSEconfig --quick --nonewpackage --module hostname") == 0;
 }
 
 /**
@@ -41,7 +41,7 @@ global define boolean RunSuSEconfig() ``{
  * @return true if success
  */
 global define boolean StartNetwork() ``{
-    return SCR::Execute(.target.bash, "/etc/init.d/network start");
+    return SCR::Execute(.target.bash, "/etc/init.d/network start") == 0;
 }
 
 /**
@@ -49,7 +49,7 @@ global define boolean StartNetwork() ``{
  * @return true if success
  */
 global define boolean StopNetwork() ``{
-    return SCR::Execute(.target.bash, "/etc/init.d/network stop");
+    return SCR::Execute(.target.bash, "/etc/init.d/network stop") == 0;
 }
 
 /**

@@ -32,8 +32,23 @@ y2milestone("----------------------------------------");
 
 include "network/lan/wizards.ycp";
 
+/* is this proposal or not? */
+boolean propose = false;
+list args = Args();
+if(size(args) > 0) {
+    if(is(Args(0), path) && Args(0) == .propose) {
+	y2milestone("Using PROPOSE mode");
+	propose = true;
+    }
+    else
+	y2error("Bad argument for lan: %1",Args(0));
+}
+
 /* main ui function */
-any ret = LanSequence();
+any ret = nil;
+
+if(propose) ret = LanAutoSequence();
+else ret = LanSequence();
 y2debug("ret == %1", ret);
 
 /* Finish */

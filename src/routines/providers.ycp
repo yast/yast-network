@@ -21,11 +21,10 @@
 
 textdomain "network";
 
+import "DSL";
 import "Modem";
 import "ISDN";
-import "DSL";
 import "Providers";
-
 import "Wizard";
 
 include "ui/common_popups.ycp";
@@ -52,6 +51,7 @@ global define ReallyAbort () ``{
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
+
 /**
  * Get help text for modem or isdn provider editation.
  * @param modem true for modem, false for isdn
@@ -69,20 +69,22 @@ from the  list, these values are provided.
 	helptext = helptext +
 	// help text 2/4
 _("<p>
-Please select the type of packet encapsulation. <b>RawIP</b> means
-that MAC headers are stripped off. <b>SyncPPP</b> stands for Synchronous PPP.
-</p>") +
+Select the type of packet encapsulation. <b>RawIP</b> means
+that MAC headers are stripped. <b>SyncPPP</b> stands for Synchronous PPP.
+</p>
+") +
     // help text 3/4
 _("<p>
-Please enter a <b>name</b> of the connection  and a <b>phone number</b>
+Enter a <b>name</b> of the connection  and a <b>phone number</b>
 to access your provider.
-</p>") +
+</p>
+") +
     // help text 4/4
 _("<p>
-Enter the <b>user name</b> and the <b>password</b> that will be used
+Enter the <b>user name</b> and the <b>password</b> to use
 for logging in (ask your provider if you are not sure).
-</p>");
-    if (modem)
+</p>
+");
 	helptext = helptext +
 _("<p>
 Check the <b>Ask</b> button to have it always ask for the password.
@@ -104,47 +106,47 @@ Check the <b>Ask</b> button to have it always ask for the password.
  */
 global define string getProviderInfoText (map prov) ``{
     string InfoText = "";
-    string hp = lookup (prov, "Homepage", "");
-    string hl = lookup (prov, "Hotline", "");
+    string hp = lookup (prov, "HOMEPAGE", "");
+    string hl = lookup (prov, "HOTLINE", "");
     if (hp != "")
 	InfoText = sformat (_("<p>%1Home page: %2</p>"), InfoText, hp);
     if (hl != "")
 	InfoText = sformat (_("<p>%1Hotline: %2</p>"), InfoText, hl);
-    if (lookup (Providers::provider, "DialMessage1", "") !="" || lookup (Providers::provider, "DialMessage2", "") != "")
+    if (lookup (Providers::provider, "DIALMESSAGE1", "") !="" || lookup (Providers::provider, "DIALMESSAGE2", "") != "")
 	InfoText = sformat("%1<p>%2%3</p>",
 			    InfoText,
-			    lookup (Providers::provider, "DialMessage1", ""),
-			    lookup (Providers::provider, "DialMessage2", "")
+			    lookup (Providers::provider, "DIALMESSAGE1", ""),
+			    lookup (Providers::provider, "DIALMESSAGE2", "")
 		    );
-    else if (lookup (Providers::provider, "Phone", "") == "")
+    else if (lookup (Providers::provider, "PHONE", "") == "")
     {
 	if (hp != "" && hl != "")
 	{
 	    string it =
 _("<p>
-To register for <b>%1</b> and find the best dialing number, connect to the 
+To register for <b>%1</b> and find the best dialing number, connect to the
 home page <b>%2</b> or call the hotline <b>%3</b>.
 </p>");
-	    InfoText = sformat(it, lookup (Providers::provider, "Provider", ""), hp, hl);
+	    InfoText = sformat(it, lookup (Providers::provider, "PROVIDER", ""), hp, hl);
 	}
 
 	if (hp != "" && hl == "")
 	{
 	    string it =
 _("<p>
-To register for <b>%1</b> and find the best dialing number, connect to the 
+To register for <b>%1</b> and find the best dialing number, connect to the
 home page <b>%2</b>.
 </p>");
-	    InfoText = sformat(it, lookup (Providers::provider, "Provider", ""), hp);
+	    InfoText = sformat(it, lookup (Providers::provider, "PROVIDER", ""), hp);
 	}
 	if (hp == "" && hl != "")
 	{
 	    string it =
 _("<p>
-To register for <b>%1</b> and find the best dialing number, call the hotline 
+To register for <b>%1</b> and find the best dialing number, call the hotline
 <b>%2</b>.
 </p>");
-	    InfoText = sformat(it, lookup (Providers::provider, "Provider", ""), hl);
+	    InfoText = sformat(it, lookup (Providers::provider, "PROVIDER", ""), hl);
 	}
     }
     return InfoText;
@@ -167,53 +169,64 @@ global define any dividerHack (list provs, any prev) ``{
     term item = select (provs, p < i ? i + 1 : i - 1, "");
     return select (select (item, 0, `id ("x")), 0, "x");
 }
+
 /**
  * Providers dialog.
  * @param type show only modem/isdn/[at]dsl capable providers? [`modem, `isdn, `tdsl, `dsl]
  * @return symbol for wizard sequencer (`next, `back, `abort, `new)
  */
 global define symbol runProvidersDialog (symbol type) ``{
+
     string caption = _("Select Internet Service Provider (ISP)");
 
-    string helptext =
-_("<p>
-Please select the appropriate <b>provider</b>.
-</p>") +
-    // help text 2/3
-_("<p>
-Choose the country or region where you are located then choose one of the listed
-providers.
-</p>") +
-    // help text 3/3
-_("<p> 
-Use the <b>New</b> button to add a provider not in the list.
-</p>");
+    /* providers dialog help text 1/3 */
+    string helptext = _("<p>Select the appropriate <b>provider</b>.</p>");
 
+    /* providers dialog help text 2/3 */
+    helptext = helptext + _("<p>Choose the country or region where you are
+located then choose one of the listed providers.</p>");
 
+    /* providers dialog help text 3/3 */
+    helptext = helptext + _("<p>Use the <b>New</b> button to add a provider
+not in the list.</p>");
 
-    list countries = Providers::getCountries ((nil != Modem::provShortName && Modem::provShortName != "") ? "_custom" : nil);
-    list provs = [];
-
-    string country = "";
+    string prev_country = "x";
+    string country = (nil != Providers::provShortName && Providers::provShortName != "") ? "_custom" : nil;
     any provider = nil;
-
+    list countries = Providers::getCountries ();
+    list provs = [];
 
     term contents =
 	`HBox(
 	    `HSpacing(),
 	    `VBox(
+		`VSpacing (1),
 		`HBox(
 		    `HWeight (1,
-			`SelectionBox(`id(`countries), `opt(`notify), _("&Country"), countries)
+			`VBox (
+			    `RadioButtonGroup (`id (`radio),
+				`VBox (
+				    `RadioButton (`id (`custom_p), `opt (`hstretch, `notify), _("C&ustom Providers"), country != nil),
+				    `VSpacing (0.2),
+				    `RadioButton (`id (`country_p), `opt (`hstretch, `notify), _("&Countries"), country == nil)
+				    )
+				),
+			    `HBox (
+				`HSpacing (3.4),
+				`SelectionBox(`id(`countries), `opt(`notify), _("&Select a country:"), countries)
+				)
+			    )
 		    ),
 		    `HSpacing(),
 		    `HWeight (1,
-			`ReplacePoint(`id(`providers_rep),
-			`VSpacing (1))
+			`HBox (
+				`ReplacePoint(`id(`providers_rep), `VSpacing (1)),
+				`HSpacing (2.4)
+			    )
 		    )
 		),
-		`Left(`Label(`id(`homepage), `opt(`hstretch), "")),
-		`Left(`Label(`id(`hotline), `opt(`hstretch),  "")),
+		`HBox (`HSpacing (3.4), `Label(`id(`homepage), `opt(`hstretch), "")),
+		`HBox (`HSpacing (3.4), `Label(`id(`hotline), `opt(`hstretch),  "")),
 		`PushButton(`id(`new), _("Ne&w"))
 	    ),
 	    `HSpacing()
@@ -221,17 +234,37 @@ Use the <b>New</b> button to add a provider not in the list.
 
     Wizard::SetContents(caption, contents, helptext, true, true);
     UI::ChangeWidget (`id (`next), `Label, NextButtonLabel ());
-    symbol ret = `countries;
+    symbol ret = country == nil ? `countries : `custom_p;
+    boolean change_providers = false;
     while (`next != ret && `back != ret && `abort != ret && `new != ret)
     {
+	if (`custom_p == ret || `country_p == ret)
+	{
+	    change_providers = true;
+	    UI::ChangeWidget (`id (`countries), `Enabled, `custom_p != ret);
+	    if (`custom_p == UI::QueryWidget (`id (`radio), `CurrentButton))
+		country = "_custom";
+	    else
+		ret = `countries;
+	}
 	if (`countries == ret)
 	{
 	    //string prev = country;
 	    country = UI::QueryWidget (`id (`countries), `CurrentItem);
-	    provs = Providers::getProviders (country, type, Modem::provShortName);
-	    UI::ReplaceWidget (`id (`providers_rep),
-		    `SelectionBox (`id (`providers), `opt (`notify), _("&Provider"), provs));
-	    ret = `providers;
+	    UI::ChangeWidget (`id (`country_p), `Value, true);
+	    change_providers = true;
+	}
+	if (change_providers)
+	{
+	    change_providers = false;
+	    if (prev_country != country)
+	    {
+		provs = Providers::getProviders (country, type, Providers::provShortName);
+		UI::ReplaceWidget (`id (`providers_rep),
+			`SelectionBox (`id (`providers), `opt (`notify), _("&Provider"), provs));
+		ret = `providers;
+		prev_country = country;
+	    }
 	}
 	if (`providers == ret)
 	{
@@ -243,15 +276,14 @@ Use the <b>New</b> button to add a provider not in the list.
 		UI::ChangeWidget (`id (`providers), `CurrentItem, provider);
 	    }
 	    map p = Providers::getProvider (provider);
-	    string tmp = lookup (p, "Homepage", nil);
+	    string tmp = lookup (p, "HOMEPAGE", nil);
 	    tmp = ((nil == tmp || "" == tmp) ? "" : sformat (_("Home Page: %1"), tmp));
 	    UI::ChangeWidget (`id (`homepage), `Value, tmp);
-	    tmp = lookup (p, "Hotline", nil);
+	    tmp = lookup (p, "HOTLINE", nil);
 	    tmp = ((nil == tmp || "" == tmp) ? "" : sformat (_("Hot Line: %1"), tmp));
 	    UI::ChangeWidget (`id (`hotline), `Value, tmp);
 	}
 	ret = UI::UserInput ();
-
 	if (`abort == ret || `cancel == ret)
 	{
 	    ret = ReallyAbort () ? `abort : nil;
@@ -261,7 +293,16 @@ Use the <b>New</b> button to add a provider not in the list.
     {
 	// do not do union with the old Providers::provider here because we
 	// take completly new provider here.
-	Providers::provider = Providers::getProvider (provider);
+	// if no provider is selected, handle it like add new provider
+	if (provider == nil)
+	{
+	    Providers::provider = $[];
+	    ret = `new;
+	}
+	else
+	{
+	    Providers::provider = Providers::getProvider (provider);
+	}
 	Providers::editProvider (provider);
     }
     else if (`new == ret)
@@ -271,23 +312,24 @@ Use the <b>New</b> button to add a provider not in the list.
     }
     return ret;
 }
+
 /**
  * Edit modem provider/create new provider.
  * @param edit add new provider or edit an existing?
  * @return symbol for wizard sequencer (`next, `back, `abort)
  */
 global define symbol runEditModemProviderDialog (boolean edit) ``{
-    string caption = _("Set parameters for Internet connection");
+    string caption = _("Set parameters for the Internet connection");
 
     string InfoText= getProviderInfoText ( Providers::provider );
 
     // fillup 'Modem' provider variables
-    string provName = lookup(Providers::provider, "Provider", "");
+    string provName = lookup(Providers::provider, "PROVIDER", "");
     string provShortName = lookup(Providers::provider, "ShortName", "");
-    string provUsername = lookup(Providers::provider, "Username", "");
-    string provPassword = lookup(Providers::provider, "Password", "");
-    boolean ask_pass = lookup(Providers::provider, "Ask Password", "0") == "1";
-    string provPhone = lookup(Providers::provider, "Phone", "");
+    string provUsername = lookup(Providers::provider, "USERNAME", "");
+    string provPassword = lookup(Providers::provider, "PASSWORD", "");
+    boolean ask_pass = lookup(Providers::provider, "ASKPASSWORD", "no") == "yes";
+    string provPhone = lookup(Providers::provider, "PHONE", "");
 
     term contents =
 	`HBox (
@@ -328,7 +370,7 @@ global define symbol runEditModemProviderDialog (boolean edit) ``{
     }
     if (ask_pass)
     {
-	UI::ChangeWidget (`id (`passwd), `Enabled, true);
+	UI::ChangeWidget (`id (`passwd), `Enabled, false);
     }
 
     symbol ret = nil;
@@ -365,32 +407,32 @@ global define symbol runEditModemProviderDialog (boolean edit) ``{
 	    }
 	    else if (shortname != lookup (Providers::provider, "ShortName", "") && !Providers::IsSectionUnique (shortname))
 	    {
-		UI::MessagePopup (_("Name %1 already exists."), shortname);
+		UI::MessagePopup (sformat (_("Name %1 already exists."), shortname));
 		UI::SetFocus (`id (`ShortName));
 	    }
-	    else if (name != lookup (Providers::provider, "Provider", "") && !Providers::IsProviderUnique (name))
+	    else if (name != lookup (Providers::provider, "PROVIDER", "") && !Providers::IsProviderUnique (name))
 	    {
-		UI::MessagePopup (_("Connection Name %1 already exists."), name);
+		UI::MessagePopup (sformat (_("Connection Name %1 already exists."), name));
 		UI::SetFocus (`id (`Section));
 	    }
-	    if (name == "")
+	    else if (name == "")
 	    {
-		UI::MessagePopup (_("You have to fill connection name."));
+		UI::MessagePopup (_("Enter the connection name."));
 		UI::SetFocus (`id (`Section));
 	    }
 	    else if ("" == phone)
 	    {
-		UI::MessagePopup (_("You have to fill phone number."));
+		UI::MessagePopup (_("Enter the phone number."));
 		UI::SetFocus (`id (`PhoneNumber));
 	    }
 	    else if ("" == us)
 	    {
-		UI::MessagePopup (_("You have to fill user name."));
+		UI::MessagePopup (_("Enter the user name."));
 		UI::SetFocus (`id (`Username));
 	    }
 	    else if (!ask_pass && "" == pass)
 	    {
-		UI::MessagePopup (_("You have to fill password."));
+		UI::MessagePopup (_("Enter the password."));
 		UI::SetFocus (`id (`passwd));
 	    }
 	    else if (filterchars (phone, "0123456789") != phone &&
@@ -403,13 +445,13 @@ global define symbol runEditModemProviderDialog (boolean edit) ``{
 
 	    if(ret == `next) {
 		Providers::provider = union(Providers::provider,
-			$[	"Provider" : name,
+			$[	"PROVIDER" : name,
 			    "ShortName" : shortname,
-			    "Username" : us,
-			    "Password" : pass,
-			    "Ask Password" : ask_pass ? "1" : "0",
-			    "Password" : pass,
-			    "Phone" : phone,
+			    "USERNAME" : us,
+			    "PASSWORD" : pass,
+			    "ASKPASSWORD" : ask_pass ? "yes" : "no",
+			    "PASSWORD" : pass,
+			    "PHONE" : phone,
 			]
 		    );
 	    }
@@ -422,10 +464,18 @@ global define symbol runEditModemProviderDialog (boolean edit) ``{
  * @return symbol for wizard sequencer (`next, `back, `abort)
  */
 global define symbol runEditIsdnProviderDialog () ``{
-    string caption = _("Set parameters for Internet connection");
+    string caption = _("Set parameters for the Internet connection");
 
-    string I4L_ENCAP = "syncppp";
+    string provName = lookup(Providers::provider, "PROVIDER", "");
+    string provShortName = lookup(Providers::provider, "ShortName", "");
+    string Protocol = ISDN::con_protocol;
+    if (Protocol == nil || Protocol == "")
+	Protocol = lookup(Providers::provider, "Protocol", "syncppp");
     string InfoText = getProviderInfoText (Providers::provider);
+    string modem = lookup(Providers::provider, "MODEMSUPPORTED", "no");
+    boolean ask_pass = lookup(Providers::provider, "ASKPASSWORD", "no") == "yes";
+    string provUsername = lookup(Providers::provider, "USERNAME", "");
+    string provPassword = lookup(Providers::provider, "PASSWORD", "");
     term contents =
 	`VBox(
 	    `VSpacing(1),
@@ -442,12 +492,12 @@ global define symbol runEditIsdnProviderDialog () ``{
 					`Left(`RadioButton(`id(`syncppp),
 					    `opt(`notify),
 					    _("ISDN S&yncPPP"),
-					    I4L_ENCAP=="syncppp")
+					    Protocol=="syncppp")
 					),
 					`Left(`RadioButton(`id(`rawip),
 					    `opt(`notify),
 					    _("ISDN Ra&wIP"),
-					    I4L_ENCAP!="syncppp")
+					    Protocol!="syncppp")
 					),
 					`VSpacing(0.1)
 				    ),
@@ -456,25 +506,33 @@ global define symbol runEditIsdnProviderDialog () ``{
 			    )
 			)
 		    ),
-		    `TextEntry(`id(`Section), _("&Connection Name"),
-			lookup (Providers::provider, "ShortName", "")
-		    ),
+		    `TextEntry(`id(`ShortName), _("Name for &dialing"), provShortName),
+		    `TextEntry(`id(`Section), _("&Connection Name"), provName),
 		    `VSpacing(0.3),
 		    `VSquash(
 			`HBox(
 			    `TextEntry(`id(`PhoneNumber),
 				_("&Phone number"),
-				filterchars (lookup (Providers::provider, "Phone", ""), "0123456789")
+				filterchars (lookup (Providers::provider, "PHONE", ""), "0123456789")
 			    ),
 			    `Bottom(`PushButton(`id(`Info), `opt(`disabled), _("&Info")))
 			)
 		    ),
 		    `VSpacing(0.3),
-		    `TextEntry(`id(`Username), _("&User name"), lookup (Providers::provider, "Username", "")),
+		    `TextEntry(`id(`Username), _("&User name"),provUsername),
 		    `VSpacing(0.3),
-		    `Password(`id(`Passwd), _("Pa&ssword"), lookup (Providers::provider, "Password", ""))
+		    `Frame(_("Request for password"),
+			`HBox(
+			    `HSpacing(),
+			    `VBox(
+				`Left(`CheckBox(`id(`askpass), `opt(`notify), _("&Always ask me"), ask_pass)),
+				`Password(`id(`Passwd), _("&Password"), provPassword)
+			    ),
+			    `HSpacing()
+			)
+		    )
 		),
-		`HSpacing(4)
+		`HSpacing(3)
 	    ),
 	    `VSpacing(2)
 	);
@@ -485,11 +543,17 @@ global define symbol runEditIsdnProviderDialog () ``{
     {
 	UI::ChangeWidget (`id (`Info), `Enabled, true);
     }
-    if ("rawip" == I4L_ENCAP)
+    if ("rawip" == Protocol)
     {
 	UI (``{ ChangeWidget (`id (`Username), `Enabled, false);
-		ChangeWidget (`id (`Passwd), `Enabled, false); });
+		ChangeWidget (`id (`Passwd), `Enabled, false);
+		ChangeWidget (`id (`askpass), `Enabled, false);
+	});
     }
+    if (ask_pass) {
+	UI::ChangeWidget (`id (`Passwd), `Enabled, false);
+    }
+
     symbol ret = nil;
     while (`next != ret && `back != ret && `abort != ret)
     {
@@ -501,39 +565,62 @@ global define symbol runEditIsdnProviderDialog () ``{
 	else if (`syncppp == ret || `rawip == ret)
 	{
 	    UI (``{ ChangeWidget (`id (`Username), `Enabled, QueryWidget (`id (`syncppp), `Value));
-		    ChangeWidget (`id (`Passwd),   `Enabled, QueryWidget (`id (`syncppp), `Value)); });
+		    ChangeWidget (`id (`askpass), `Enabled, QueryWidget (`id (`syncppp), `Value));
+		    ChangeWidget (`id (`Passwd),   `Enabled, QueryWidget (`id (`syncppp), `Value)
+		    	&& !QueryWidget (`id (`askpass), `Value));
+		});
+	}
+	else if (`askpass == ret)
+	{
+	    UI (``(ChangeWidget (`id (`Passwd), `Enabled, !UI::QueryWidget (`id (`askpass), `Value))));
 	}
 	else if (`next == ret)
 	{	// validate data
 	    ret = nil;
 	    string name = UI::QueryWidget (`id (`Section), `Value);
 	    string phone = UI::QueryWidget (`id (`PhoneNumber), `Value);
+	    string shortname = UI::QueryWidget (`id (`ShortName), `Value);
 	    string us = UI::QueryWidget (`id (`Username), `Value);
 	    string pass = UI::QueryWidget (`id (`Passwd), `Value);
-	    boolean i4l_encap = UI::QueryWidget (`id (`syncppp), `Value); //true: "syncppp", false: "rawip"
-	    if (name != lookup (Providers::provider, "Provider", "") && !wvdialIsProviderUnique (name))
+	    ask_pass = UI::QueryWidget (`id (`askpass), `Value);
+	    boolean protocol = UI::QueryWidget (`id (`syncppp), `Value); //true: "syncppp", false: "rawip"
+	    Protocol = protocol ? "syncppp" : "rawip";
+
+	    if ("" == shortname)
+		UI (``{ MessagePopup (_("Name for dialing must not be empty.")); SetFocus (`id (`ShortName));});
+	    else if (nil != findfirstof (shortname, " \t"))
+	    {
+		UI::MessagePopup (_("Name for dialing must not contain spaces."));
+		UI::SetFocus (`id (`ShortName));
+	    }
+	    else if (shortname != lookup (Providers::provider, "ShortName", "") && !Providers::IsSectionUnique (shortname))
+	    {
+		UI::MessagePopup (_("Name %1 already exists."), shortname);
+		UI::SetFocus (`id (`ShortName));
+	    }
+	    else if (name != lookup (Providers::provider, "PROVIDER", "") && !Providers::IsProviderUnique (name))
 	    {
 		UI::MessagePopup (_("Connection Name %1 already exists."), name);
 		UI::SetFocus (`id (`Section));
 	    }
-	    if (name == "")
+	    else if (name == "")
 	    {
-		UI::MessagePopup (_("You have to fill connection name."));
+		UI::MessagePopup (_("Enter the connection name."));
 		UI::SetFocus (`id (`Section));
 	    }
 	    else if ("" == phone)
 	    {
-		UI::MessagePopup (_("You have to fill phone number."));
+		UI::MessagePopup (_("Enter the phone number."));
 		UI::SetFocus (`id (`PhoneNumber));
 	    }
-	    else if (i4l_encap && "" == us)
+	    else if (protocol && "" == us)
 	    {
-		UI::MessagePopup (_("You have to fill user name."));
+		UI::MessagePopup (_("Enter the user name."));
 		UI::SetFocus (`id (`Username));
 	    }
-	    else if (i4l_encap && "" == pass)
+	    else if (protocol && !ask_pass && "" == pass)
 	    {
-		UI::MessagePopup (_("You have to fill password."));
+		UI::MessagePopup (_("Enter the password."));
 		UI::SetFocus (`id (`Passwd));
 	    }
 	    else if (filterchars (phone, "0123456789") != phone &&
@@ -549,16 +636,18 @@ global define symbol runEditIsdnProviderDialog () ``{
 		 * Settings to save: (FIXME)
 		 */
 		Providers::provider = union (Providers::provider, $[
-		     "Provider": name,
-		     //"ShortName" is missing in this dialog, is it necessary to have?
-		     "Username" : us,  // May be unused. May we save it anyway?
-		     "Password" : pass,// May be unused. May we save it anyway?
-		     "Phone" : phone,
-		     "I4L_ENCAP" : i4l_encap ? "syncppp" : "rawip",
-		     //Provider ISDN::netdev = i4l_encap ? "ippp" : "isdn", //original isdn sets this too.
+		     "PROVIDER" : name,
+		     "ShortName": shortname,
+		     "USERNAME" : us,  // May be unused. May we save it anyway?
+		     "PASSWORD" : pass,// May be unused. May we save it anyway?
+		     "PHONE"    : phone,
+		     "Protocol" : protocol ? "syncppp" : "rawip",
+		     "ASKPASSWORD" : ask_pass ? "yes" : "no",
+		     "ISDNSUPPORTED": "yes",
+		     "MODEMSUPPORTED": "no",
+		     //Provider ISDN::netdev = protocol ? "ippp" : "isdn", //original isdn sets this too.
 		    ]);
-		//FIXME: this is an ISDN. Does anybody know anything about
-		//it?
+		ISDN::con_protocol = protocol ? "syncppp" : "rawip";
 	    }
 	}
 	else if (`abort == ret || `cancel == ret)

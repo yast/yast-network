@@ -1,0 +1,15 @@
+Dump	Read
+Read	.target.size "/etc/sysconfig/network/routes" 1
+Read	.routes ["r1", "r2"]
+Return	true
+Dump	Routing::routes ["r1", "r2"]
+Dump	Write
+Return	true
+Read	.target.size "/etc/sysconfig/network/routes" 1
+Execute	.target.bash "/bin/cp /etc/sysconfig/network/routes /etc/sysconfig/network/routes.YaST2save" 0
+Write	.routes ["r1", "r3"] true
+Return	true
+Dump	Import
+Return	true
+Dump	Export
+Return	["r7", "r8"]

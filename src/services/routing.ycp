@@ -25,10 +25,11 @@ import "Routing";
 import "Wizard";
 
 include "ui/common_popups.ycp";
+include "network/ip.ycp";
 
 /**
  * Main routing dialog
- * @return symbol dialog result
+ * @return dialog result
  */
 global define symbol RoutingMainDialog() ``{
 
@@ -40,8 +41,7 @@ global define symbol RoutingMainDialog() ``{
     default route matches every possible destination, but poorly. 
     If any other entry exists that matches the required address, it will be
     used instead of the default route. The idea of the default route is
-    simply to enable you to say \"and everything else should go here\".</p>
-");
+    simply to enable you to say \"and everything else should go here\".</p>");
 
     integer max = 0;
     integer items = 0;
@@ -105,8 +105,8 @@ global define symbol RoutingMainDialog() ``{
      * current item should stay the same
      */
     while(true) {
-	UI::ChangeWidget(`id(`edit), `Enabled, expert && (items>0));
-	UI::ChangeWidget(`id(`delete), `Enabled, expert && (items>0));
+	UI::ChangeWidget(`id(`edit), `Enabled, expert && (items>=0));
+	UI::ChangeWidget(`id(`delete), `Enabled, expert && (items>=0));
 	if(expert && items>0) {
 	    integer cur = select(select(select(table_items, 0, []), 0, []), 0, 0);
 	    UI::ChangeWidget(`id(`table), `CurrentItem, cur);
@@ -131,9 +131,13 @@ global define symbol RoutingMainDialog() ``{
 	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
 	    list cur_item = filter(`e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
 	    term item = select(cur_item, 0, nil);
-	    /* FIXME: current device is lost in during Edit */
 	    /* FIXME: fill in available devices */
-	    item = RoutingEditDialog(cur, item, []);
+	    list devs = [];
+	    /* add at least the current device, if not device is lost */
+	    string dev = select(item, 4, "");
+	    if (dev != "")
+		devs = add(devs, `item(`id(dev), dev, true));
+	    item = RoutingEditDialog(cur, item, devs);
 	    if(item == nil) continue;
 	    table_items = maplist(`e, table_items, ``{
 		if(cur == select(select(e, 0, []), 0, -1))
@@ -166,7 +170,12 @@ global define symbol RoutingMainDialog() ``{
 	    break;
 	}
 	else if(ret == `next) {
-	    /* check_* */
+	    string gw = UI::QueryWidget(`id(`gw), `Value);
+	    if(gw != "" && !check_ip4(gw)) {
+		UI::ErrorPopup(_("The default gateway is incorrect"));
+		UI::SetFocus(`id(`gw));
+		continue;
+	    }
 	    break;
 	}
 	else {
@@ -189,16 +198,20 @@ global define symbol RoutingMainDialog() ``{
 
 	defgw = UI::QueryWidget(`id(`gw), `Value);
 
-	change(route_conf, $[
-	    "destination" : "default",
-	    "gateway" : defgw,
-	    "netmask" : "0.0.0.0",
-	    "device" : defgwdev
-	]);
+	if(defgw != "")
+	    change(route_conf, $[
+		"destination" : "default",
+		"gateway" : defgw,
+		"netmask" : "-",
+		"device" : defgwdev
+	    ]);
 
     }
 
-    Routing::routes = route_conf;
+    if(Routing::routes != route_conf) {
+	Routing::modified = true;
+	Routing::routes = route_conf;
+    }
     y2debug("table_items=%1",table_items);
     y2debug("route_conf=%1",route_conf);
 
@@ -207,6 +220,9 @@ global define symbol RoutingMainDialog() ``{
 
 /**
  * Route edit dialog
+ * @param id id of the edited route
+ * @param entry edited entry
+ * @param devs available devices
  * @return route map or nil, if canceled
  */
 global define term RoutingEditDialog(integer id, term entry, list devs) ``{

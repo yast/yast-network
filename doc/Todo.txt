@@ -1,0 +1,56 @@
+# $Id$
+
+Done, but needs to be fixed:
+- differentiate between i(ppp)
+- two resolv.conf agents
+- check_domain (3com)
+
+Bugs:
+- check and install required packages
+- dns: resolv.conf warning
+- dns: resolv.conf header
+- dns: modify_resolv_conf
+- dns: restart dhcp client
+- routing: restart routing
+- routing: remove Routing:modified
+- config: dhcp_devices() -> list (dhcp hostname)
+- config: devices(string type) -> list (dsl, network printers)
+- modem: start smpppd only if >0 devs
+- lan: read /etc/install.inf (map INSTALL)
+- providers: add/edit/delete
+- check existence of the modem device
+
+Enhancements:
+- dns: xauth agent </dev/null (and some more work)
+- dsl: more than one connection
+- dsl: vpivci heuristics to module (maybe also tonline mode)
+- dsl: set pppoe in dependence on the country (DE->E,GB->A,AT->A,CA->E)
+- lan: use bootp reply for static configuration
+- lan: dual port network cards
+- lan: compiled in kernel drivers
+- modem: pap|chap secrets writing
+- providers: -> CDB-NG
+- base: edit without restart (reload)
+- base: use map instead of variables (-> fill all variables)
+- package: include all agents
+- proposals (at least lan)
+
+Future:
+- lan: wireless cards
+- lan: fddi
+- lan: arcnet
+- usb network
+- hippi et al (s390)
+- ui: local net (slcs)
+- ui: cable connection (plip, slip, usb)
+
+UI proposal:
+- detected
+- choose your card (current list)
+- hw params only (current manual)
+
+Hardware:
+- usb: network cabel, ethernet card, TR card, ISDN card, modem
+- pcmcia: ethernet card, TR card, ISDN card, modem
+- wireless network cards
+- fddi card
