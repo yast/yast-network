@@ -1,7 +1,9 @@
 -------------------------------------------------------------------
-Mon Mar 14 15:38:40 CET 2005 - mvidner@suse.cz
+Mon Mar 14 17:14:50 CET 2005 - mvidner@suse.cz
 
+- Reload lwresd if resolv.conf changes (#72450).
 - Moved the single quote fix to NetworkDevices.ycp (#72164).
+- 2.11.25
 
 -------------------------------------------------------------------
 Fri Mar 11 16:25:44 CET 2005 - mvidner@suse.cz

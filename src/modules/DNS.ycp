@@ -21,6 +21,7 @@ import "Hostname";
 import "IP";
 import "NetworkConfig";
 import "NetworkDevices";
+import "Service";
 
 // include "network/routines.ycp";
 include "network/runtime.ycp";
@@ -220,6 +221,11 @@ global define boolean Write() {
 	SCR::Write(.etc.resolv_conf, nil);
 	SCR::Execute(.target.bash, "/bin/chmod a+r /etc/resolv.conf");
 
+	// reload the lightweight resolver daemon if running, #72450
+	if (Service::Status ("lwresd") == 0)
+	{
+	    Service::Reload ("lwresd");
+	}
     }
 
     modified = false;
