@@ -27,8 +27,9 @@ include "network/installation/dialogs.ycp";
 
 
 /* Called backwards */
-if(WFM::Args(2) == true)
-    return `auto;
+if(GetInstArgs::going_back())
+   return `auto;
+
 
 if(!Internet::do_test)
     return `auto;
