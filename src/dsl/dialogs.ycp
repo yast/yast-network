@@ -35,7 +35,7 @@ global define symbol DSLSequence(boolean tdsl) ``{
 	DSL::Write();
 
 	// start kinternet via kdesu
-	SCR::Execute (.target.bash, "if [ -n \"$USER\" ] ; then kdesu -u $USER -- kinternet -quiet ; fi");
+	SCR::Execute (.target.bash_background, "if [ -n \"$USER\" ] ; then kdesu -u $USER -- kinternet -quiet ; fi");
 
 	// The message is too short and the window decorations in KDE3
 	// make it misaligned. Don't want to fix kde now.
