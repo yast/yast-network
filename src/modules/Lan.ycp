@@ -63,6 +63,12 @@ global string wl_nwid = "";
 global string wl_key = "";
 global string wl_nick = "";
 
+global string wl_channel = "";
+global string wl_frequency = "";
+global string wl_bitrate = "";
+global string wl_accesspoint = "";
+global boolean wl_power = true;
+
 /* s390 options */
 global string read_channel = "";
 global string write_channel = "";
@@ -509,11 +515,17 @@ global define boolean Select(string dev) {
     mtu = devmap["MTU"]:"";
 
     /* wireless options */
-    wl_mode = devmap["WIRELESS_MODE"]:"";
+    wl_mode = devmap["WIRELESS_MODE"]:"Managed";
     wl_essid = devmap["WIRELESS_ESSID"]:"";
     wl_nwid = devmap["WIRELESS_NWID"]:"";
     wl_key = devmap["WIRELESS_KEY"]:"";
     wl_nick = devmap["WIRELESS_NICK"]:"";
+
+    wl_channel = devmap["WIRELESS_CHANNEL"]:"";
+    wl_frequency = devmap["WIRELESS_FREQUENCY"]:"";
+    wl_bitrate = devmap["WIRELESS_BITRATE"]:"auto";
+    wl_accesspoint = devmap["WIRELESS_AP"]:"";
+    wl_power = devmap["WIRELESS_POWER"]:"yes" == "yes";
 
     /* s/390 options */
     read_channel = devmap["READ_CHANNEL"]:"";
@@ -631,6 +643,12 @@ global define boolean Commit() {
 	    newdev["WIRELESS_NWID"] = wl_nwid;
 	    newdev["WIRELESS_KEY"] = wl_key;
 	    newdev["WIRELESS_NICK"] = wl_nick;
+
+	    newdev["WIRELESS_CHANNEL"] = wl_channel;
+	    newdev["WIRELESS_FREQUENCY"] = wl_frequency;
+	    newdev["WIRELESS_BITRATE"] = wl_bitrate;
+	    newdev["WIRELESS_AP"] = wl_accesspoint;
+	    newdev["WIRELESS_POWER"] = wl_power ? "yes" : "no";
 	}
 
 	if(Arch::s390) {

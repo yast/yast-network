@@ -190,6 +190,8 @@ define symbol HardwareSequence() ``{
 	"hardware"	: ``(HardwareDialog()),
 	"list"		: ``(SelectionDialog()),
 	"wire"		: ``(WirelessDialog()),
+	"expert"	: ``(WirelessExpertDialog()),
+	"keys"		: ``(WirelessKeysDialog()),
 	"s390"		: ``(S390Dialog()),
     ];
 
@@ -204,6 +206,16 @@ define symbol HardwareSequence() ``{
 	],
 	"wire" : $[
 	    `next	: "hardware",
+	    `expert	: "expert",
+	    `keys	: "keys",
+	    `abort	: `abort,
+	],
+	"expert" : $[
+	    `next	: "wire",
+	    `abort	: `abort,
+	],
+	"keys" : $[
+	    `next	: "wire",
 	    `abort	: `abort,
 	],
 	"s390" : $[
