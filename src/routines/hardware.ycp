@@ -112,7 +112,7 @@ global define boolean ReadHardware(string hwtype) ``{
 	    /* FIXME: DSL HW */
 	}
 	/* treat the rest as a network card */
-	else {
+	else if(controller != "") {
 	    list drivers = lookup(card, "drivers", []);
 	    if(size(drivers) < 0) y2error("Not enough drivers");
 	    map driver = select(drivers, 0, $[]);
@@ -134,9 +134,12 @@ global define boolean ReadHardware(string hwtype) ``{
 	if(one["module"]:"" == "nvnet") {
 	    y2milestone("nForce2 found: skipping (driver not available)");
 	}
-	else {
+	else if(controller != "") {
 	    change(Hardware, one);
 	    num = num + 1;
+	}
+	else {
+	    y2error("Unknown controller: %1", card);
 	}
     });
 
@@ -255,15 +258,31 @@ global define string ControllerType(map hwdevice) ``{
 	else if(subclass_id == 0x81) return "myri";
 	else if(subclass_id == 0x82) return "wlan";
 	else if(subclass_id == 0x80) {
-	    /* Nothing was found, default is eth */
+	    /* Nothing was found */
 	    y2error("Unknown network controller type: %1", hwdevice);
 	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
-	    return "eth";
+	    return "";
 	}
 	else {
-	    /* Nothing was found, default is eth */
+	    /* Nothing was found */
 	    y2error("Unknown network controller type: %1", hwdevice);
-	    return "eth";
+	    return "";
+	}
+
+    }
+    /* Communication controller */
+    if(lookup(hwdevice, "class_id", -1) == 7) {
+	if(subclass_id == 3) return "modem";
+	else if(subclass_id == 0x80) {
+	    /* Nothing was found */
+	    y2error("Unknown network controller type: %1", hwdevice);
+	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
+	    return "";
+	}
+	else {
+	    /* Nothing was found */
+	    y2error("Unknown network controller type: %1", hwdevice);
+	    return "";
 	}
 
     }
@@ -281,16 +300,16 @@ global define string ControllerType(map hwdevice) ``{
 	else if(subclass_id == 9) return "myri";
 	else if(subclass_id == 10) return "wlan";
 	else if(subclass_id == 0x80) {
-	    /* Nothing was found, default is eth */
+	    /* Nothing was found */
 	    y2error("Unknown network interface type: %1", hwdevice);
 	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
-	    return "eth";
+	    return "";
 	}
 	else if(subclass_id == 0x81) return "sit";
 	else {
-	    /* Nothing was found, default is eth */
+	    /* Nothing was found */
 	    y2error("Unknown network interface type: %1", hwdevice);
-	    return "eth";
+	    return "";
 	}
     }
     else if(lookup(hwdevice, "class_id", -1) == 0x102)
@@ -298,9 +317,9 @@ global define string ControllerType(map hwdevice) ``{
     else if(lookup(hwdevice, "class_id", -1) == 0x103)
 	return "isdn";
 
-    /* Nothing was found, default is eth */
+    /* Nothing was found */
     y2error("Unknown controller type: %1", hwdevice);
-    return "eth";
+    return "";
 }
 
 /**

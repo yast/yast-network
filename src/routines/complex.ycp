@@ -90,7 +90,7 @@ global define list BuildSummary(boolean split) ``{
     /* build a list of unconfigured devices */
     maplist(map h, Hardware, ``{
 	string unq = h["unique"]:"";
-	string hwtype = h["type"]:""; //ControllerType(h);
+	string hwtype = h["type"]:"";
 	string hwname = CheckEmptyName(hwtype, h["name"]:"");
 	y2debug("unq(%1)", unq);
 	if(!contains(uniques, unq)) {

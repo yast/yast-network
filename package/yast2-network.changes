@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Sep 16 13:07:00 CEST 2003 - msvec@suse.cz
+
+- don't detect unknown devices (#31022)
+- prefer cards with a driver during proposal (#30993)
+- make PCI modems known (#31022)
+- 2.8.36
+
+-------------------------------------------------------------------
 Mon Sep 15 18:06:56 CEST 2003 - adrian@suse.de
 
 - allow also remote root login in remote admin mode

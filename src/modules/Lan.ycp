@@ -681,8 +681,21 @@ global define boolean Propose() ``{
 	    i = i + 1;
 	});
 
-	/* No active driver -> use the first */
-	if(tosel == -1) tosel = 0;
+	/* No active driver -> select the first with a driver */
+	if(tosel == -1) {
+	    y2milestone("No active driver found, trying further.");
+	    maplist(map h, Hardware, ``{
+		if(h["module"]:"" != "")
+		    if(tosel == -1) tosel = i;
+		i = i + 1;
+	    });
+	}
+
+	/* No active driver or no card with a driver -> select the first */
+	if(tosel == -1) {
+	    y2milestone("No card with a driver found, selecting the first one");
+	    tosel = 0;
+	}
 
 	y2debug("Hardware=%1", Hardware);
 	y2debug("tosel=%1", tosel);
