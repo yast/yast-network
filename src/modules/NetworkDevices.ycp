@@ -208,8 +208,8 @@ global define boolean Read() {
 		_aliases[s] = suf;
 		config["_aliases"] = _aliases;
 	    }
-	    y2milestone("config=%1", config);
 	});
+	y2milestone("config=%1", config);
 
 	dev[devnum] = config;
 	Devices[devtype] = dev;
