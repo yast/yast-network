@@ -149,9 +149,14 @@ global define boolean Import(map settings) {
  * @return autoinstallation settings
  */
 global define map Export() {
-    return $[
-	"hosts": eval(hosts),
-    ];
+    if (size(hosts)>0)
+    {
+        return $[
+            "hosts": eval(hosts),
+        ];
+    } else {
+        return $[];
+    }
 }
 
 /**
@@ -285,5 +290,19 @@ global define string Summary() {
 	return summary;
 }
 
+/**
+ * Function which returns if the settings were modified
+ * @return boolean  settings were modified
+ */
+global define boolean GetModified () {
+    return modified;
+}
+/**
+ * Function sets internal variable, which indicates, that any
+ * settings were modified, to "true"
+ */
+global define void SetModified () {
+    modified = true;
+}
 /* EOF */
 }

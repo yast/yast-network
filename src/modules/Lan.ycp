@@ -1126,5 +1126,20 @@ global list<string> Packages () {
     return ["smpppd"];
 }
 
+/**
+ * Function which returns if the settings were modified
+ * @return boolean  settings were modified
+ */
+global define boolean GetModified () {
+    return modified;
+}
+/**
+ * Function sets internal variable, which indicates, that any
+ * settings were modified, to "true"
+ */
+global define void SetModified () {
+    modified = true;
+}
+
 /* EOF */
 }

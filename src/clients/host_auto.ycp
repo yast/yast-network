@@ -84,8 +84,10 @@ else if (func == "Export") {
     list ret2 = maplist (string hostaddress, list names, hosts, {
 	    return($["host_address": hostaddress, "names": names]);
     });
-    map result = $["hosts" : ret2 ];
-    ret = result;
+    if (size(ret2) > 0 )
+        ret = $["hosts" : ret2 ];
+    else
+        ret = $[];
 }
 /* Read current state */
 else if (func == "Read") {
@@ -104,6 +106,12 @@ else if (func == "Write") {
     Host::write_only = true;
     ret = Host::Write();
     Progress::on();
+}
+else if (func == "SetModified") {
+    ret = Host::SetModified ();
+}
+else if (func == "GetModified") {
+    ret = Host::GetModified ();
 }
 /* Unknown function */
 else {

@@ -92,6 +92,12 @@ else if (func == "Packages") {
 else if (func == "Import") {
     ret = Proxy::Import(param);
 }
+else if (func == "SetModified") {
+    ret = Proxy::SetModified ();
+}
+else if (func == "GetModified") {
+    ret = Proxy::GetModified ();
+}
 /* Return actual state */
 else if (func == "Export") {
     ret = Proxy::Export();

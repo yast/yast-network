@@ -18,6 +18,7 @@ import "Lan";
 import "Progress";
 import "Arch";
 import "Mode";
+import "Map";
 include "network/lan/wizards.ycp";
 include "network/routines.ycp";
 
@@ -57,32 +58,42 @@ map UpcaseCondSet (map ret, map m, string key) {
     return ret;
 }
 
+
+map<string, list> configured = $[];
+
+/**
+ * Return next device index
+ */
+define integer NextDevice(string type, list<map> hw)
+{
+
+    integer i = 0;
+    boolean selected = false;
+    integer next_index = -1;
+    foreach(map dev, hw, {
+            if (dev["type"]:"" == type
+                &&
+                !contains(configured[type]:[], i)
+                && !selected )
+            {
+                next_index = i;
+                list c= configured[type]:[];
+                c=add(c, i);
+                configured[type] = c;
+                selected = true;
+            }
+            });
+    return next_index;
+}
+
 /**
  * Convert data from autoyast to structure used by module.
  * @param input autoyast settings
  * @return native network settings
  */
-define map FromAY(map input) {
-    list upcase = [
-		   "bootproto",
-		   "broadcast",
-		   "dhclient_set_down_link",
-		   "ipaddr",
-		   "mtu",
-		   "netmask",
-		   "network",
-		   "remote_ipaddr",
-		   "startmode",
-		   "wireless",	// useless?
-		   "wireless_essid",
-		   "wireless_key",
-		   "wireless_mode",
-		   "wireless_nick",
-		   "wireless_nwid",
-		   // missing: wireless_{bitrate,channel,frequency,power}
-    ];
+define map FromAY(map input)
+{
 
-    integer dn = 0;		// device number
     list<map> hw = [];
     if (Mode::autoinst)
     {
@@ -90,20 +101,24 @@ define map FromAY(map input) {
     }
     map devicemapping = $[];	// used for hwcfg
     // similar transformation to NetworkDevices::Read???
-    map<string,map> interfaces = listmap(map<string,string> interface,
+    map<string,map> interfaces = listmap(map<string, string> interface,
             input["interfaces"]:[],
     {
-	map new_interface = $[];
-	foreach(string k, string v, interface, {
-	    if (contains(upcase, k)) {
-		new_interface[toupper(k)] = v;
-	    }
-	    else if (v != "" && k!="device") {
+    map new_interface = $[];
+
+    string newk = nil;
+    interface =  mapmap(string k, string v, interface, ``{
+        newk = toupper(k);
+        return $[newk: v];
+        });
+
+    foreach(string k, any v, interface , {
+	    if (v != "" && k!="DEVICE") {
 		new_interface[k] = v;
 	    }
 	});
-        string configured_device = interface["device"]:"";
-        string device = ""; 	// will be combined with "_type"
+        string configured_device = interface["DEVICE"]:"";
+        string new_device = "";	// will be combined with "_type"
         boolean configured = false;
         if ( Mode::autoinst)
         {
@@ -118,7 +133,7 @@ define map FromAY(map input) {
                 list avail = filter(map conf, hw, ``(conf["mac"]:"" == mac));
                 if (size(avail) > 0)
                 {
-                    device = devid[1]:"" + "-" +  devid[2]:"";
+                    new_device = devid[1]:"" + "-" +  devid[2]:"";
                     new_interface["_type"] = avail[0, "type"]:"";
                     configured = true;
                 }
@@ -127,40 +142,33 @@ define map FromAY(map input) {
             // else create it
             if (!configured)
             {
-	        integer pos = findfirstof( configured_device, "0123456789");
-                string inttok = "";
-                if (pos!=nil)
-	            inttok = substring(configured_device, pos);
-                else
-                    inttok = "";
-
                 integer device_idx = 0;
-                if (inttok != "" && deletechars(inttok, "0123456789") == "")
+                //device_idx = tointeger(device_num(configured_device));
+                device_idx = NextDevice(device_type(configured_device), hw);
+                if (device_idx == -1)
                 {
-		    // configured_device =~ /^[^0-9]*([0-9]+)$/
-                    device_idx = tointeger(inttok);
+                    // Device does not exist
+                    new_device = device_num(configured_device);
+                    new_interface["_type"] = device_type(configured_device);
+                } else {
+
+                    // Device_idx is the number from "device"
+                    // or the offset of the interface item.
+                    // In any case it is pure luck
+                    // if it matches the hardware index!!!
+                    Lan::SelectHW(device_idx);
+                    new_device = Lan::device;
+                    new_interface["_type"] = hw[device_idx, "type"]:"";
                 }
-                else
-                {
-                    device_idx = dn;
-                }
-		// Device_idx is the number from "device"
-		// or the offset of the interface item.
-		// In any case it is pure luck
-		// if it matches the hardware index!!!
-                Lan::SelectHW(device_idx);
-                device = Lan::device;
-                new_interface["_type"] = hw[device_idx, "type"]:"";
             }
-            devicemapping[configured_device] = device;
+            devicemapping[configured_device] = new_device;
         }
         else
         {
-            device = configured_device;
+            new_device = configured_device;
 	    // no _type. it will be parsed in the next loop
         }
-        dn = dn + 1;
-	return $[ device : new_interface ];
+	return $[ new_device : new_interface ];
     });
 
     map<string, map> devices = $[];
@@ -169,13 +177,13 @@ define map FromAY(map input) {
 
 	string type = nil;
 	string id = nil;
-        if (!Mode::autoinst)
+        if (Mode::autoinst)
         {
-	    type = device_type (devname);
-	    id = device_num (devname);
-        } else {
             type = if_data["_type"]:"";
 	    id = devname;	// suspicious
+        } else {
+	    type = device_type (devname);
+	    id = device_num (devname);
         }
 	map d = devices[type]:$[];
 	d[id] = if_data;
@@ -223,7 +231,7 @@ define map FromAY(map input) {
 		devmap["UNIQUE"] = HW_type[n, "unique"]:"";
 		string modname = HW_type[n, "module"]:"";
 		string options = HW_type[n, "options"]:"";
-                Lan::SelectHW(dn);
+                Lan::SelectHW(n);
                 string device = Lan::device;
                 if (!haskey(hwcfg, device))
                 {
@@ -362,6 +370,12 @@ else if(func == "Read") {
 }
 else if (func == "Packages") {
     ret = Lan::Packages ();
+}
+else if (func == "SetModified") {
+    ret = Lan::SetModified ();
+}
+else if (func == "GetModified") {
+    ret = Lan::GetModified ();
 }
 else if (func == "Export") {
     map settings = Lan::Export();
