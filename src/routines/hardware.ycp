@@ -22,6 +22,125 @@ import "Confirm";
 import "Map";
 
 /**
+ * Extract the device 'name'
+ * @param hwdevice hardware device
+ * @return name consisting of vendor and device name
+ */
+global define string DeviceName(map hwdevice) ``{
+    string delimiter = " "; // "\n";
+    string model = "";
+    string vendor = "";
+    string dev = "";
+
+    model = hwdevice["model"]:"";
+    if(model != "" && model != nil) return model;
+
+    vendor = hwdevice["sub_vendor"]:"";
+    dev = hwdevice["sub_device"]:"";
+
+    if((vendor == "") || (dev == "")) {
+	vendor = hwdevice["vendor"]:"";
+	dev = hwdevice["device"]:"";
+    }
+
+    if(vendor != "")
+	return vendor + delimiter + dev;
+    else
+	return dev;
+}
+
+/**
+ * Simple convertor from subclass to controller type.
+ * @param hwdevice map with card info containing "subclass"
+ * @return short device name
+ * @example ControllerType(<ethernet controller map>) -> "eth"
+ */
+global define string ControllerType(map hwdevice) ``{
+
+    if(hwdevice["subclass"]:"" == "Modem") return "modem";
+    if(hwdevice["subclass"]:"" == "ISDN") return "isdn";
+    if(hwdevice["subclass"]:"" == "DSL") return "dsl";
+
+    integer subclass_id = hwdevice["sub_class_id"]:-1;
+
+    /* Network controller */
+    if(hwdevice["class_id"]:-1 == 2) {
+	if(subclass_id == 0) return "eth";
+	else if(subclass_id == 1) return "tr";
+	else if(subclass_id == 2) return "fddi";
+	else if(subclass_id == 3) return "ctc";
+	else if(subclass_id == 4) return "iucv";
+	else if(subclass_id == 5) return "hsi";
+	else if(subclass_id == 6) return "qeth";
+	else if(subclass_id == 7) return "escon";
+	else if(subclass_id == 0x81) return "myri";
+	else if(subclass_id == 0x82) return "wlan";
+	else if(subclass_id == 0x80) {
+	    /* Nothing was found */
+	    y2error("Unknown network controller type: %1", hwdevice);
+	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
+	    return "";
+	}
+	else {
+	    /* Nothing was found */
+	    y2error("Unknown network controller type: %1", hwdevice);
+	    return "";
+	}
+
+    }
+    /* Communication controller */
+    if(hwdevice["class_id"]:-1 == 7) {
+	if(subclass_id == 3) return "modem";
+	else if(subclass_id == 0x80) {
+	    /* Nothing was found */
+	    y2error("Unknown network controller type: %1", hwdevice);
+	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
+	    return "";
+	}
+	else {
+	    /* Nothing was found */
+	    y2error("Unknown network controller type: %1", hwdevice);
+	    return "";
+	}
+
+    }
+    /* Network Interface */
+    else if(hwdevice["class_id"]:-1 == 0x107) {
+	if(subclass_id == 0) return "lo";
+	else if(subclass_id == 1) return "eth";
+	else if(subclass_id == 2) return "tr";
+	else if(subclass_id == 3) return "fddi";
+	else if(subclass_id == 4) return "ctc";
+	else if(subclass_id == 5) return "iucv";
+	else if(subclass_id == 6) return "hsi";
+	else if(subclass_id == 7) return "qeth";
+	else if(subclass_id == 8) return "escon";
+	else if(subclass_id == 9) return "myri";
+	else if(subclass_id == 10) return "wlan";
+	else if(subclass_id == 0x80) {
+	    /* Nothing was found */
+	    y2error("Unknown network interface type: %1", hwdevice);
+	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
+	    return "";
+	}
+	else if(subclass_id == 0x81) return "sit";
+	else {
+	    /* Nothing was found */
+	    y2error("Unknown network interface type: %1", hwdevice);
+	    return "";
+	}
+    }
+    else if(hwdevice["class_id"]:-1 == 0x102)
+	return "modem";
+    else if(hwdevice["class_id"]:-1 == 0x103)
+	return "isdn";
+
+    /* Nothing was found */
+    y2error("Unknown controller type: %1", hwdevice);
+    return "";
+}
+
+/**
  * Read HW information
  * @param hwtype type of devices to read (netcard|modem|isdn)
  * @return true if success
@@ -63,7 +182,7 @@ global define boolean ReadHardware(string hwtype) ``{
 
     /* read the corresponding hardware */
     if(haskey(hwtypes, hwtype))
-	allcards = SCR::Read(lookup(hwtypes, hwtype, nil));
+	allcards = SCR::Read(hwtypes[hwtype]:nil);
     else if(hwtype == "all" || hwtype == "" || hwtype == nil)
 	maplist(path v, Map::Values(hwtypes), ``{
 	    allcards = merge(allcards, SCR::Read(v));
@@ -91,10 +210,10 @@ global define boolean ReadHardware(string hwtype) ``{
 
 	/* modem */
 	if(controller == "modem") {
-	    map resource = lookup(card, "resource", []);
-	    change(one, "device_name", lookup(card, "dev_name", ""));
-	    change(one, "drivers", lookup(card, "drivers", []));
-	    change(one, "requires", lookup(card, "requires", []));
+	    map resource = card["resource"]:[];
+	    change(one, "device_name", card["dev_name"]:"");
+	    change(one, "drivers", card["drivers"]:[]);
+	    change(one, "requires", card["requires"]:[]);
 	    change(one, "speed", lookup(select(lookup(resource, "baud", []), 0, $[]), "speed", 57600));
 	    change(one, "init1", lookup(select(lookup(resource, "init_strings", []),0,$[]), "init1", ""));
 	    change(one, "init2", lookup(select(lookup(resource, "init_strings", []),0,$[]), "init2", ""));
@@ -102,11 +221,11 @@ global define boolean ReadHardware(string hwtype) ``{
 	}
 	/* isdn card */
 	else if(controller == "isdn") {
-	    map resource = lookup(card, "resource", []);
-	    list drivers = lookup(card, "isdn", []);
+	    map resource = card["resource"]:[];
+	    list drivers = card["isdn"]:[];
 	    change(one, "drivers", drivers);
 	    change(one, "sel_drv", 0);
-	    change(one, "bus", lookup(card, "bus", ""));
+	    change(one, "bus", card["bus"]:"");
 	    change(one, "io", lookup(select(lookup(resource, "io", []),0, $[]), "start", 0));
 	    change(one, "irq", lookup(select(lookup(resource, "irq", []), 0, $[]), "irq", 0));
 	}
@@ -117,13 +236,13 @@ global define boolean ReadHardware(string hwtype) ``{
 	}
 	/* treat the rest as a network card */
 	else if(controller != "") {
-	    list drivers = lookup(card, "drivers", []);
+	    list drivers = card["drivers"]:[];
 	    if(size(drivers) < 0) y2error("Not enough drivers");
-	    map driver = select(drivers, 0, $[]);
+	    map driver = drivers[0]:$[];
 	    change(one, "active", driver["active"]:false);
 	    list modules = select(lookup(driver, "modules", []), 0, []);
-	    change(one, "module", select(modules, 0, ""));
-	    change(one, "options", select(modules, 1, ""));
+	    change(one, "module", modules[0]:"");
+	    change(one, "options", modules[1]:"");
 
 	    /* FIXME: this should be also done for modems and others */
 	    /* FIXME: #13571 */
@@ -207,133 +326,6 @@ global define void SelectHardware(integer which) ``{
     device = GetFreeDevice(RealType(type, hotplug));
 
     return true;
-}
-
-/**
- * Extract the device 'name'
- * @param hwdevice hardware device
- * @return name consisting of vendor and device name
- */
-global define string DeviceName(map hwdevice) ``{
-    string delimiter = " "; // "\n";
-    string model = "";
-    string vendor = "";
-    string dev = "";
-
-    model = lookup(hwdevice, "model", "");
-    if(model != "" && model != nil) return model;
-
-    vendor = lookup(hwdevice, "sub_vendor", "");
-    dev = lookup(hwdevice, "sub_device", "");
-
-    if((vendor == "") || (dev == "")) {
-	vendor = lookup(hwdevice, "vendor", "");
-	dev = lookup(hwdevice, "device", "");
-    }
-
-    if(vendor != "")
-	return vendor + delimiter + dev;
-    else
-	return dev;
-}
-
-/**
- * Simple convertor from subclass to controller type.
- * @param hwdevice map with card info containing "subclass"
- * @return short device name
- * @example ControllerType(<ethernet controller map>) -> "eth"
- */
-global define string ControllerType(map hwdevice) ``{
-
-    if(lookup(hwdevice, "subclass", "") == "Modem") return "modem";
-    if(lookup(hwdevice, "subclass", "") == "ISDN") return "isdn";
-    if(lookup(hwdevice, "subclass", "") == "DSL") return "dsl";
-
-    integer subclass_id = lookup(hwdevice, "sub_class_id", -1);
-
-    /* Network controller */
-    if(lookup(hwdevice, "class_id", -1) == 2) {
-	if(subclass_id == 0) return "eth";
-	else if(subclass_id == 1) return "tr";
-	else if(subclass_id == 2) return "fddi";
-	else if(subclass_id == 3) return "ctc";
-	else if(subclass_id == 4) return "iucv";
-	else if(subclass_id == 5) return "hsi";
-	else if(subclass_id == 6) return "qeth";
-	else if(subclass_id == 7) return "escon";
-	else if(subclass_id == 0x81) return "myri";
-	else if(subclass_id == 0x82) return "wlan";
-	else if(subclass_id == 0x80) {
-	    /* Nothing was found */
-	    y2error("Unknown network controller type: %1", hwdevice);
-	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
-	    return "";
-	}
-	else {
-	    /* Nothing was found */
-	    y2error("Unknown network controller type: %1", hwdevice);
-	    return "";
-	}
-
-    }
-    /* Communication controller */
-    if(lookup(hwdevice, "class_id", -1) == 7) {
-	if(subclass_id == 3) return "modem";
-	else if(subclass_id == 0x80) {
-	    /* Nothing was found */
-	    y2error("Unknown network controller type: %1", hwdevice);
-	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
-	    return "";
-	}
-	else {
-	    /* Nothing was found */
-	    y2error("Unknown network controller type: %1", hwdevice);
-	    return "";
-	}
-
-    }
-    /* Network Interface */
-    else if(lookup(hwdevice, "class_id", -1) == 0x107) {
-	if(subclass_id == 0) return "lo";
-	else if(subclass_id == 1) return "eth";
-	else if(subclass_id == 2) return "tr";
-	else if(subclass_id == 3) return "fddi";
-	else if(subclass_id == 4) return "ctc";
-	else if(subclass_id == 5) return "iucv";
-	else if(subclass_id == 6) return "hsi";
-	else if(subclass_id == 7) return "qeth";
-	else if(subclass_id == 8) return "escon";
-	else if(subclass_id == 9) return "myri";
-	else if(subclass_id == 10) return "wlan";
-	else if(subclass_id == 0x80) {
-	    /* Nothing was found */
-	    y2error("Unknown network interface type: %1", hwdevice);
-	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
-	    return "";
-	}
-	else if(subclass_id == 0x81) return "sit";
-	else {
-	    /* Nothing was found */
-	    y2error("Unknown network interface type: %1", hwdevice);
-	    return "";
-	}
-    }
-    else if(lookup(hwdevice, "class_id", -1) == 0x102)
-	return "modem";
-    else if(lookup(hwdevice, "class_id", -1) == 0x103)
-	return "isdn";
-
-    /* Nothing was found */
-    y2error("Unknown controller type: %1", hwdevice);
-    return "";
-}
-
-/**
- * Return detected Hardware list
- * @return Hardware list
- */
-global define list  GetHardware() ``{
-    return Hardware;
 }
 
 /* EOF */
