@@ -80,7 +80,7 @@ global define symbol DNSMainDialog() ``{
     boolean dhcp_hostname = DNS::dhcp_hostname;
     boolean dhcp_resolv = DNS::dhcp_resolv;
 
-    boolean has_dhcp = Lan::AnyDHCPDevice() || (Lan::bootproto == "dhcp");
+    boolean has_dhcp = (Lan::bootproto == "dhcp") || Lan::AnyDHCPDevice();
 
     /* DNS dialog caption */
     string caption = _("Host name and name server configuration");
