@@ -1150,6 +1150,14 @@ global list<string> Packages () {
 }
 
 /**
+ * @return list of packages needed when writing the config in autoinst
+ * mode
+ */
+global map AutoPackages () {
+      return ($["install": Packages(), "remove": []]);
+}
+
+/**
  * Function which returns if the settings were modified
  * @return boolean  settings were modified
  */

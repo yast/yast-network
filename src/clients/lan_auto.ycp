@@ -369,7 +369,7 @@ else if(func == "Read") {
     Progress::on();
 }
 else if (func == "Packages") {
-    ret = Lan::Packages ();
+    ret = Lan::AutoPackages ();
 }
 else if (func == "SetModified") {
     ret = Lan::SetModified ();
