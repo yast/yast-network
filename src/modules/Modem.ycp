@@ -21,8 +21,36 @@
 {
 
 module "Modem";
-textdomain "network";
+
+import "DNS";
+import "Routing";
 import "Progress";
+
+textdomain "network";
+
+global string Name = "xx";
+global string DialPrefix = "yy";
+global string Device = "zz";
+global boolean PulseDial = true;
+global boolean Speaker = true;
+global boolean Carrier = true;
+
+global string Init1 = "aa";
+global string Init2 = "bb";
+global string Init3 = "cc";
+global integer BaudRate = 12345;
+
+global string Provider = "dd";
+global boolean IsDefault = true;
+global boolean DialOnDemand = true;
+global string DefaultModem = "ee";
+global string DNS1 = "ff";
+global string DNS2 = "gg";
+global boolean Firewall = true;
+
+global boolean AutoReconnect = true;
+global boolean AutoDNS = true;
+global string IdleSeconds = "hh";
 
 /* EOF */
 }
