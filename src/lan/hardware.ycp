@@ -115,18 +115,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
     /* Pushbutton label */
     term WirelessButton = `PushButton(`id(`wire), _("Wireless &Settings"));
-
-    /* Frame label */
-    term ButtonBox = `HBox(
-	`HStretch(),
-	`HSpacing(0.5),
-	WirelessButton,
-	`HSpacing(0.5),
-	/* Pushbutton label */
-	`PushButton(`id(`list), _("Select from &List")),
-	`HSpacing(0.5),
-	`HStretch()
-    );
+    /* Pushbutton label */
+    term ListButton = `PushButton(`id(`list), _("Select from &List"));
 
     /* Disable PCMCIA and USB checkboxex on Edit and s390 */
     if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 == true)
@@ -162,10 +152,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     // FIXME: help missing
 
     /* Manual dialog contents */
-    term contents = `HBox(
-	`HSpacing(2),
-	`VBox(
-	    `VSpacing(0.5),
+    term TypeNameWidgets = 
 	    /* Frame label */
 	    `Frame(_("Network &Configuration"),`VBox(
 		`VSpacing(0.2),
@@ -179,16 +166,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		    `HSpacing(0.5)
 		),
 		`VSpacing(0.2)
-	    )),
-	    `VSpacing(0.5),
-	    KernelBox,
-	    `VSpacing(0.4),
-	    MTUBox,
-	    `VSpacing(1.5),
-	    ButtonBox,
-	    `VSpacing(0.5)
-	    ),
-	`HSpacing(2));
+	    ));
 
     /* Add hardware -> don't allow some changes (card type) */
     // FIXME: devname if(Lan::operation == `add && Lan::unique != "") {
@@ -198,10 +176,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	if(hotplug == "pcmcia") typ = typ + " (PCMCIA)";
 	if(hotplug == "usb") typ = typ + " (USB)";
 
-	contents = `HBox(
-	    `HSpacing(2),
-	    `VBox(
-		`VSpacing(0.5),
+	TypeNameWidgets =
 		/* Frame label */
 		`Frame(_("Configuration Name"),`VBox(
 		    `VSpacing(0.2),
@@ -218,32 +193,17 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 			`HSpacing(0.5)
 		    ),
 		    `VSpacing(0.2)
-		)),
-		`VSpacing(1.5),
-		KernelBox,
-		`VSpacing(0.4),
-		MTUBox,
-		`VSpacing(1.5),
-		ButtonBox,
-		/* Pushbutton label */
-		// #25234 `PushButton(`id(`wire), _("Wireless &settings")),
-		// FIXME: show only in the case of wireless device
-		`VSpacing(0.5)
-		),
-	    `HSpacing(2));
-
+		));
     }
 
     /* Edit -> don't allow some changes */
     // FIXME: devname if(true /* FIXME: devname Lan::operation == `edit */) {
     if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */) {
 
+	ListButton = `VSpacing(0);
 	if(type != "wlan") WirelessButton = `VSpacing(0);
 
-	contents = `HBox(
-	    `HSpacing(2),
-	    `VBox(
-		`VSpacing(0.5),
+	TypeNameWidgets =
 		`Left(`HSquash(`Left(`VBox(
 		    `HBox(
 			/* Label text */
@@ -258,19 +218,35 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 			`HSpacing(0.5),
 			`HWeight(1, `Left(`Label(`opt(`outputField), hwcfg)))
 		    )
-		)))),
-		`VSpacing(1.5),
-		KernelBox,
-		`VSpacing(0.4),
-		MTUBox,
-		`VSpacing(1.5),
-		WirelessButton,
-		`VSpacing(0.5)
-	    ),
-	    `HSpacing(2)
-	);
-
+		))));
     }
+
+    /* Frame label */
+    term ButtonBox = `HBox(
+	`HStretch(),
+	`HSpacing(0.5),
+	WirelessButton,
+	`HSpacing(0.5),
+	ListButton,
+	`HSpacing(0.5),
+	`HStretch()
+    );
+
+    term contents = `HBox(
+	`HSpacing(2),
+	`VBox(
+	    `VSpacing(0.5),
+	    TypeNameWidgets,
+	    `VSpacing(1.5),
+	    KernelBox,
+	    `VSpacing(0.4),
+	    MTUBox,
+	    `VSpacing(1.5),
+	    ButtonBox,
+	    `VSpacing(0.5)
+	    ),
+	`HSpacing(2)
+	);
 
     if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */)
 	Wizard::SetContentsButtons(caption, contents, help,
