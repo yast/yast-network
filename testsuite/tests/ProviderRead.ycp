@@ -1,0 +1,17 @@
+//Providers::Read
+{
+    import "Providers";
+    include "testsuite.ycp";
+
+    map R = $[
+	"custom_providers" : $[
+	    "s" : $[
+		"first" : $[ "a" : "a", ],
+		"second" :$[ "b" : "b", ],
+		"third" : $[ "c" : "c", ],
+	    ]
+	]
+	];
+
+    TEST (``(Providers::Read ()), [R, $[], $[] ], nil);
+}

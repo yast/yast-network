@@ -1,0 +1,12 @@
+//Providers::getProvider
+{
+    import "Providers";
+    include "testsuite.ycp";
+
+    any provider = nil;
+
+    provider = .path.to.provider;
+    TEST (``(Providers::getProvider (provider)), [], nil);
+    provider = .path.to."provi der";
+    TEST (``(Providers::getProvider (provider)), [], nil);
+}

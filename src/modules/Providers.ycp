@@ -1,0 +1,307 @@
+/**
+ * File:
+ *   modules/Providers.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   Providers dialogs
+ *
+ * Authors:
+ *   Dan Vesely <dan@suse.cz>
+ *   Petr Blahos <pblahos@suse.cz>
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Dialogs and functions for Providers.
+ */
+
+{
+module "Providers";
+
+textdomain "network";
+
+import "Modem";
+import "ISDN";
+import "DSL";
+
+/**
+ * Modem we are currently working with.
+ * Members for dialup - phone provider:
+ * "DialMessage1" :
+ * "DialMessage2" :
+ * "Provider" : nice name of provider
+ * "YaST2 Section" : short name of provider (name of the section in *.wvdial.conf)
+ * "Username" :
+ * "Password" :
+ * "Ask Password" : 0 or 1
+ * "Phone" : the most important - phone number
+ *
+ * Members for isdn provider:
+ * "DialMessage1" :
+ * "DialMessage2" :
+ * "Provider" : nice name of provider
+ * "YaST2 Section" : short name of provider (name of the section in *.wvdial.conf)
+ * "Username" :
+ * "Password" :
+ * "Phone" : the most important - phone number
+ * "I4L_ENCAP" : encapsulation but who knows what it means
+ */
+global map modem = $[];
+
+/**
+ * Currently selected provider. path or string
+ */
+global any provider = nil;
+
+/**
+ * Custom providers.
+ */
+map providers = $[];
+
+/**
+ * Most probably it means to check if section name in wvdial.conf is
+ * unque.
+ */
+global define boolean IsSectionUnique (string name) ``{
+    list forbidden = maplist (`k, `v, providers, ``( k ));
+    return !contains (forbidden, name);
+}
+/**
+ * Most probably it means to check if provider name in wvdial.conf is
+ * unque.
+ */
+global define boolean IsProviderUnique (string name) ``{
+    forbidden = maplist (`k, `v, providers, ``( lookup (v, "Provider", "")));
+    return !contains (forbidden, name);
+}
+
+/**
+ * Prepare for editation of currently selected provider.
+ * Check/change its name (YaST2 Section) and nice-name
+ * (Provider) to unused.
+ */
+global define void editProvider () ``{
+    if (is (provider, string)) //User chose provider from "Other" -- edit it.
+	return ;
+    integer suffix = 0;
+    string name = lookup (modem, "YaST2 Section", "");
+    string gen = name;
+    list forbidden = maplist (`k, `v, providers, ``( k ));
+    while (contains (forbidden, gen))
+    {
+	suffix = suffix + 1;
+	gen = sformat ("%1%2", name, suffix);
+    }
+    modem = add (modem, "YaST2 Section", gen);
+
+    name = lookup (modem, "Provider", "");
+    gen = name;
+    suffix = 0;
+    forbidden = maplist (`k, `v, providers, ``( lookup (v, "Provider", "")));
+    while (contains (forbidden, gen))
+    {
+	suffix = suffix + 1;
+	gen = sformat ("%1 (%2)", name, suffix);
+    }
+    modem = add (modem, "Provider", gen);
+}
+
+/**
+ * Add currently edited provider to the map of custom providers.
+ * Copy settings to Modem::something
+ */
+global define void Add () ``{
+    providers = add (providers, lookup (modem, "YaST2 Section", ""), modem);
+
+    Modem::provShortName = lookup (modem, "YaST2 Section", "");
+    Modem::provName = lookup (modem, "Provider", Modem::provShortName);
+    Modem::provAskPassword = (lookup (modem, "Ask Password", "1") == 1);
+
+    Modem::provUsername = lookup (modem, "Username", "");
+    Modem::provPassword = lookup (modem, "Password", "");
+    Modem::provPhone = lookup (modem, "Phone", "");
+}
+/**
+ * Read all custom providers
+ */
+global define void Read () ``{
+    providers = $[];
+    // custom providers
+    list dir = SCR::Dir (.custom_providers.s);
+    foreach (`i, dir, ``{
+	list l = SCR::Dir (add (.custom_providers.s, i));
+	foreach (`j, l, ``{
+	    providers = add (providers, j, getProvider (add ( add (.custom_providers.v, i), j)));
+	});
+    });
+}
+
+/**
+ * Save custom providers into /etc/sysconfig/modem/providers.conf.
+ * To change placement of the file of custom providers, edit it here
+ * and in providers.scr!!!!!
+ */
+global define void Write () ``{
+    foreach (`key, `value, providers, ``{
+	string sname = lookup (value, "YaST2 Section", "other");
+	sname = filterchars (sname, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.");
+	path base = add (add (.custom_providers.v, sformat ("/etc/sysconfig/network/providers/%1", sname)), key);
+	foreach (`k, `v, value, ``{
+	    if ("YaST2 Section" != k)
+		SCR::Write (add (base, k), v);
+	});
+    });
+}
+
+/**
+ * Get list of countries
+ * @param preselect country to preselect
+ * @return list for selection box
+ */
+global define list getCountries (string preselect) ``{
+    map table = $[
+	"/usr/share/providers/CZ.wvdial.conf" : _("Czech Republic"),
+	"/usr/share/providers/DE.wvdial.conf" : _("Germany"),
+	"/usr/share/providers/UK.wvdial.conf" : _("UK"),
+	"/usr/share/providers/US.wvdial.conf" : _("USA"),
+	];
+    list out = [];
+    list countries = SCR::Dir (.providers.s);
+    integer index = -1;
+    out = maplist (`i, countries, ``{
+	    index = index + 1;
+	    return `item (`id (i), lookup (table, i, i), 0 == index || i == preselect);
+    });
+    if (0 != size (providers))
+	out = add (out, `item (`id ("_custom"), _("Other"), "_custom" == preselect));
+    return out;
+}
+
+/**
+ * Lets only isdn capable providers "go in"
+ * @param provs list of providers
+ * @return list of isdn capable providers
+ */
+define list filterIsdn (list provs) ``{
+    return filter (`i, provs, ``{
+	if (is (i, string))
+	{	// lets pretend that these custom providers allow isdn by default
+	    if ("1" == lookup (lookup (providers, i, $[]), "ISDN supported", "1"))
+		return true;
+	}
+	else if ("1" == SCR::Read (i + ."ISDN supported"))
+	    return true;
+	return false;
+    });
+}
+
+/**
+ * Get providers from a group (country/other)
+ * @param country we want providers from this country
+ * @param type `isdn, `tdsl, `adsl, `anything_else
+ * @param preselect preselect this provider
+ */
+global define list getProviders (string country, symbol type, string preselect) ``{
+    list provs = [];
+    if ("_custom" == country) {
+	// custom providers
+	foreach (`k, `v, providers, ``{
+	    provs = add (provs, k);
+	});
+    }
+    else {
+	list dir = SCR::Dir (add (.providers.s, country));
+	path base = add (.providers.v, country);
+	provs = maplist (`i, dir, ``{
+	    return add (base, i);
+	});
+    }
+
+    // filter providers
+    if (`isdn == type)
+	provs = filterIsdn (provs);
+
+    // sort and create divider (line)
+    provs = sortProviders (provs);
+
+    integer index = -1;
+    return maplist (`i, provs, ``{
+	index = index + 1;
+	if (is (i, string))
+	    return `item (`id (i), lookup (lookup (providers, i, $[]), "Provider", i), 0 == index || preselect == i);
+	else
+	    if (."--" == i)
+		return `item (`id (i), "----------------");
+	    else
+		return `item (`id (i), SCR::Read (i + .Provider), 0 == index);
+    });
+}
+
+/**
+ * Read all provider keys from ini file to map.
+ * Adds also key "YaST2 Section" : "section_name";
+ * @param provs list of providers
+ * @return provider map
+ */
+global define map getProvider (any provider) ``{
+    if (is (provider, path))
+    {
+	string pr = sformat ("%1", provider);
+	integer pos = findlastof (pr, ".");
+	if (-1 != pos)
+	{
+	    pr = substring (pr, pos + 1);
+	    pr = substring (pr, 0, size (pr));
+	    if ("\"" == substring (pr, 0, 1))
+		pr = substring (pr, 1, size (pr) - 2);
+	}
+	list l = SCR::Dir (provider);
+	return add (listmap (`i, l, ``{
+	    return [ i, SCR::Read ( add (provider, i)) ];
+	}), "YaST2 Section", pr);
+    }
+    return lookup (providers, provider, $[]);
+}
+/**
+ * Sorts providers alphabeticly (non-case-sensitivly) and by priority.
+ * In the first step, priority and name of each provider is obtained.
+ * List of strings built from these values is created. Item lists are:
+ * "<1-character-priority><34-characters-provider-name><provider-identifier>"
+ * This list is sorted, result is correctly sorted, by priority and
+ * alphabeticly. I did not use builtin sort with sort code because it
+ * uses bubble sort -- it was bloody slow.
+ * @param provs list of providers
+ * @return sorted list of providers
+ */
+define list sortProviders (list provs) ``{
+    list pre = sort (maplist (`i, add (provs, "--"), ``{
+	if ("--" == i)
+	    return "9                                  .\"--\"";
+	if (is (i, string))
+	    return "x                                  " + i;
+	else
+	{
+	    string tmp = SCR::Read (i + .Priority);
+	    if (nil == tmp)
+		tmp = "-1";
+	    integer p = 8 - tointeger (tmp);
+	    if (p < 0 || p > 9)
+		y2error ("======= wrong priority, you must change the algorithm!!! %1 =======", tmp);
+	    tmp = tolower (SCR::Read (i + .Provider)) + "                                   ";
+	    tmp = sformat ("%1", p) + tmp;
+	    return sformat ("%1%2", substring (tmp, 0, 35), i);
+	}
+    }));
+    if (".\"--\"" == substring (select (pre, 0, ""), 35))
+	pre = remove (pre, 0);
+    return maplist (`i, pre, ``{
+	if ("x" == substring (i, 0, 1))
+	    return substring (i, 35);
+	return topath (substring (i, 35));
+    });
+}
+
+}

@@ -1,0 +1,8 @@
+Dir	.custom_providers.s: ["first", "second", "third"]
+Dir	.custom_providers.s."first": ["a"]
+Dir	.custom_providers.v."first"."a": []
+Dir	.custom_providers.s."second": ["b"]
+Dir	.custom_providers.v."second"."b": []
+Dir	.custom_providers.s."third": ["c"]
+Dir	.custom_providers.v."third"."c": []
+Return	nil

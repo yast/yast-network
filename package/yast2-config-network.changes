@@ -1,3 +1,7 @@
+-------------------------------------------------------------------
+Mon Feb 11 14:29:38 CET 2002 - pblahos@suse.cz
+
+- implemented module Providers
 - don't set FQ hostname
 - 2.5.14
 

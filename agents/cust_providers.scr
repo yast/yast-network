@@ -1,8 +1,8 @@
 /**
- * File:	providers.scr
+ * File:	cust_providers.scr
  * Summary:	SCR agent for dialup providers
  * Author:	Petr Blahos <pblahos@suse.cz>
- * Access:	Read
+ * Access:	Read/Write
  * See:		yast2-config-network package
  *
  * General syntax:
@@ -14,14 +14,14 @@
  * $Id$
  *
  * <p>Reads dialup providers from files
- * /usr/share/providers/*.wvdial.conf.</p>
+ * /etc/sysconfig/network/providers/*.</p>
  */
-.providers
+.custom_providers
 
 `ag_ini(
-  IniAgent( [ "/usr/share/providers/*.wvdial.conf",  ],
+  IniAgent( [ "/etc/sysconfig/network/providers/*" ],
     $[
-      "options" : [ "read_only" ],
+      "options" : [ ],
       "comments": [ "^[ \t]*#.*", "^[ \t]*$" ],
       "sections" : [
         $[
@@ -36,3 +36,4 @@
     ]
   )
 )
+
