@@ -746,15 +746,6 @@ global define boolean Commit() {
 	if(unique != "" && unique != nil)
 	    newdev["UNIQUE"] = unique;
 
-	if(type == "dummy") {
-	    y2debug("");
-	    /* 2.4 */
-	    // FIXME: MOD Module["module"] = "dummy";
-	    // FIXME: MOD Module["options"] = sformat("-o=dummy%1", device);
-	    /* 2.6 */
-	    // FIXME: MOD Module["install"] = sformat("/sbin/modprobe -o dummy%1 --ignore-install dummy", device);
-	}
-
 	if(hotplug == "") {
 	    // newdev["STARTMODE"] = "onboot";
 	    if(alias == "") {

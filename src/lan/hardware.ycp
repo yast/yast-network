@@ -254,11 +254,12 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	Wizard::SetContentsButtons(caption, contents, help,
 		Label::BackButton(), Label::NextButton());
 
-    boolean no_hotplug_dummy = hotplug == "" && type != "dummy";
+    boolean no_hotplug = hotplug == "";
+    boolean no_hotplug_dummy = no_hotplug && type != "dummy";
     UI::ChangeWidget(`id(`modul), `Enabled, no_hotplug_dummy);
     UI::ChangeWidget(`id(`options), `Enabled, no_hotplug_dummy);
     ChangeWidgetIfExists(`id(`list), `Enabled, no_hotplug_dummy);
-    ChangeWidgetIfExists(`id(`hwcfg), `Enabled, no_hotplug_dummy);
+    ChangeWidgetIfExists(`id(`hwcfg), `Enabled, no_hotplug);
     ChangeWidgetIfExists(`id(`usb), `Enabled, (hotplug == "usb" || hotplug == "") && type != "dummy");
     ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hotplug == "pcmcia" || hotplug == "") && type != "dummy");
     // ChangeWidgetIfExists(`id(`num), `Value, device);
@@ -297,11 +298,12 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		hotplug = "usb";
 	    }
 
-	    no_hotplug_dummy = hotplug == "" && type != "dummy";
+	    no_hotplug = hotplug == "";
+	    no_hotplug_dummy = no_hotplug && type != "dummy";
 	    UI::ChangeWidget(`id(`modul), `Enabled, no_hotplug_dummy);
 	    UI::ChangeWidget(`id(`options), `Enabled, no_hotplug_dummy);
 	    ChangeWidgetIfExists(`id(`list), `Enabled, no_hotplug_dummy);
-	    ChangeWidgetIfExists(`id(`hwcfg), `Enabled, no_hotplug_dummy);
+	    ChangeWidgetIfExists(`id(`hwcfg), `Enabled, no_hotplug);
 	    ChangeWidgetIfExists(`id(`usb), `Enabled, (hotplug == "usb" || hotplug == "") && type != "dummy");
 	    ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hotplug == "pcmcia" || hotplug == "") && type != "dummy");
 
@@ -335,6 +337,13 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    if(type == "xp") {
 		modul = "xpnet";
 		UI::ChangeWidget(`id(`modul), `Value, modul);
+	    }
+	    else if (type == "dummy") // #44582
+	    {
+		modul = "dummy";
+		options = "";
+		UI::ChangeWidget(`id(`modul), `Value, modul);
+		UI::ChangeWidget(`id(`options), `Value, options);
 	    }
 
 	    continue;
