@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Feb 04 19:28:19 CET 2003 - arvin@suse.de
+
+- added missing inst_{ask,do}_net_test.ycp files
+
+-------------------------------------------------------------------
 Mon Feb  3 16:40:45 CET 2003 - msvec@suse.cz
 
 - P2P tunneling protocol
