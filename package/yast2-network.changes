@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Dec  2 12:51:48 CET 2004 - locilka@suse.cz
+
+- Added module SuSEFirewall4Network for handling network interfaces
+  in SuSEfirewall2 using SuSEFirewall module.
+
+-------------------------------------------------------------------
 Fri Nov 12 17:54:10 CET 2004 - mvidner@suse.cz
 
 - Fixed deleting additional addresses via the specialized dialog (#48191).
