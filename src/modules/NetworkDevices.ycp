@@ -853,14 +853,14 @@ global define list Summary(string devregex, list<map> Hardware, boolean split) {
     return BuildSummary(Hardware, split);
 }
 
-global define list Overview(string devregex) {
+global define list Overview(string devregex, list<map> Hardware) {
     Devs = Filter(Devices, devregex);
-    return BuildOverview();
+    return BuildOverview(Hardware);
 }
 
-global define list OverviewAliases(string devregex) {
+global define list OverviewAliases(string devregex, list<map> Hardware) {
     Devs = Current["_aliases"]:$[];
-    return BuildOverview();
+    return BuildOverview(Hardware);
 }
 
 /**

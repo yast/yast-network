@@ -210,7 +210,7 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
 
     term contents = OverviewTable(
 	/* Table header */
-	`header(/*_("No."), */_("Device"), _("Type"), _("IP Address")),
+	`header(/*_("No."), */ _("Name"), _("Device"), /* _("Type"), */ _("IP Address")),
 	overview
     );
 

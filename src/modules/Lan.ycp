@@ -478,7 +478,7 @@ global define list Summary(boolean split) {
  * @return table items
  */
 global define list Overview() {
-    return NetworkDevices::Overview("netcard");
+    return NetworkDevices::Overview("netcard", Hardware);
 }
 
 /*-------------------*/

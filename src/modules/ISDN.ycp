@@ -831,13 +831,13 @@ global define list Summary(boolean split) ``{
  */
 global define list OverviewDev() ``{
     Devs = Devices;
-    return filter(term i, (list<term>)BuildOverview(), ``(issubstring(i[0, 0]:"","contr")));
+    return filter(term i, (list<term>)BuildOverview(Hardware), ``(issubstring(i[0, 0]:"","contr")));
     //return BuildOverview("contr");
 }
 
 global define list OverviewIf() ``{
     Devs = Devices;
-    return filter(term i, (list<term>)BuildOverview(), ``(issubstring(i[0, 0]:"","net")));
+    return filter(term i, (list<term>)BuildOverview(Hardware), ``(issubstring(i[0, 0]:"","net")));
     //return BuildOverview("net");
 }
 

@@ -423,7 +423,7 @@ global define list Summary(boolean split) {
  * @return table items
  */
 global define list Overview() {
-    return NetworkDevices::Overview("modem");
+    return NetworkDevices::Overview("modem", Hardware);
 }
 
 /**
@@ -439,6 +439,7 @@ global define void SelectHW(integer which) {
     BaudRate = sel["speed"]:57600;
     PPPDoptions = sel["pppd_options"]:"";
     Requires = sel["requires"]:[];
+    unique = sel["unique"]:"";
     type = "ppp";
 }
 

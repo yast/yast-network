@@ -385,7 +385,7 @@ define string DeviceProtocol(map devmap) {
  * Create overview table contents
  * @return table items
  */
-define list BuildOverview() {
+define list BuildOverview(list<map> Hardware) {
     list overview = [];
 
     maplist(string type, map devmap, (map<string,map>) Devs, {
@@ -393,6 +393,13 @@ define list BuildOverview() {
 	    term item = nil;
 	    string dev = device_name(type, k);
 	    string ip = DeviceProtocol(v);
+
+	    string unq = v["UNIQUE"]:"";
+	    string hwname = HardwareName(Hardware, k);
+	    if(hwname == nil || hwname == "") hwname = HardwareName(Hardware, unq);
+	    hwname = CheckEmptyName(type, hwname);
+
+	    if(size(hwname) > 42) hwname = substring(hwname, 42) + "...";
 
 	    /* Modem and DSL */
 	    if(type == "modem" || type == "ppp" || type == "dsl")
@@ -415,7 +422,7 @@ define list BuildOverview() {
 		if(!regexpmatch(type, NetworkAllRegex))
 		    y2error("Unknown type: %1", type);
 		*/
-		item = `item(`id(dev), dev, DeviceType(type), /*"active?",*/ ip/*, "?", "?"*/);
+		item = `item(`id(dev), hwname, dev /*DeviceType(type)*/, /*"active?",*/ ip/*, "?", "?"*/);
 	    }
 	    overview = add(overview, item);
 
