@@ -61,12 +61,7 @@ global define symbol LanSequence() ``{
 	]
     ];
 
-    string caption = _("Network cards configuration");
-    term contents = `Label(_("Initializing ..."));
-
     Wizard::CreateDialog();
-    Wizard::SetContentsButtons(caption, contents, "",
-				Label::BackButton(), Label::NextButton());
 
     symbol ret = WizardSequencer(aliases, sequence);
 

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Aug 20 16:28:43 CEST 2003 - jsuchome@suse.de
+
+- removed redundant "initialization dialog" (#28779)
+- 2.8.12
+
+-------------------------------------------------------------------
 Tue Aug 19 14:21:53 CEST 2003 - msvec@suse.cz
 
 - better WLAN help text (#28598)

@@ -61,15 +61,8 @@ global define symbol ISDNSequence() ``{
 	    `next	: `next,
 	]
     ];
-    // main srceen title
-    string caption = _("ISDN configuration");
-    // static text
-    term contents = `Label(_("Initializing ..."));
 
     Wizard::CreateDialog();
-    Wizard::SetContentsButtons(caption, contents, "",
-	    Label::BackButton(), Label::NextButton());
-
     symbol ret = WizardSequencer(aliases, sequence);
 
     UI::CloseDialog();

@@ -55,14 +55,7 @@ global define symbol ProviderSequence() ``{
 	],
     ];
 
-    /* Initial dialog caption */
-    string caption = _("Provider configuration");
-    /* Initial dialog contents */
-    term contents = `Label(_("Initializing ..."));
-
     Wizard::CreateDialog();
-    Wizard::SetContentsButtons(caption, contents, "",
-	    Label::BackButton(), Label::NextButton());
 
     symbol ret = WizardSequencer(aliases, sequence);
 

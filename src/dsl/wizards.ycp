@@ -58,12 +58,7 @@ global define symbol DSLSequence() ``{
 	]
     ];
 
-    string caption = _("DSL configuration");
-    term contents = `Label(_("Initializing ..."));
-
     Wizard::CreateDialog();
-    Wizard::SetContentsButtons(caption, contents, "",
-	    Label::BackButton(), Label::NextButton());
 
     symbol ret = WizardSequencer(aliases, sequence);
 
