@@ -19,7 +19,7 @@ Summary:	Configuration of network
 @HEADER-INSTSYS@
 Summary:	Network stuff for instsys
 
-%description
+%description instsys
 -
 
 @PREP@

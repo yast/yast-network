@@ -1,3 +1,4 @@
+- multiple providers support
 - yast2-config-network -> yast2-network
 - netmask bits function and testsuite
 - new providers dialogs

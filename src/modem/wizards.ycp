@@ -17,12 +17,14 @@ include "wizard/sequencer.ycp";
 
 include "network/routines.ycp";
 
-include "network/modem/dialogs.ycp";
-include "network/modem/complex.ycp";
+include "network/providers/wizards.ycp";
 
 include "network/providers/details.ycp";
 include "network/providers/dialogs.ycp";
 include "network/providers/connection.ycp";
+
+include "network/modem/dialogs.ycp";
+include "network/modem/complex.ycp";
 
 /**
  * Whole configuration of modems
@@ -104,6 +106,8 @@ global define symbol MainSequence() ``{
 	"other"		: [ ``(OneModemSequence(false)), true ],
 	"add"		: [ ``(OneModemSequence(false)), true ],
 	"edit"		: [ ``(OneModemSequence(false)), true ],
+	"Add"		: [ ``(OneProviderSequence(true)), true ],
+	"Edit"		: [ ``(OneProviderSequence(false)), true ],
     ];
 
     map sequence = $[
@@ -120,6 +124,8 @@ global define symbol MainSequence() ``{
 	    `next	: `next,
 	    `add	: "add",
 	    `edit	: "edit",
+	    `Add	: "Add",
+	    `Edit	: "Edit",
 	],
 	"other" : $[
 	    `abort	: `abort,
@@ -134,6 +140,14 @@ global define symbol MainSequence() ``{
 	    `next	: "overview",
 	],
 	"edit" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+	"Add" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+	"Edit" : $[
 	    `abort	: `abort,
 	    `next	: "overview",
 	],

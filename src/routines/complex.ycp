@@ -322,7 +322,7 @@ global define OverviewTableContents(string caption, term header, list contents, 
 	`VSpacing(0.0),
 	caption != ""? `Left(`Heading(caption)) : `VSpacing(0.0),
 	`Table(
-	    `id(`table),
+	    `id(first?`table:`Table),
 	    header,
 	    contents
 	),

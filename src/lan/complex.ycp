@@ -22,6 +22,7 @@ include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
 
 include "network/routines.ycp";
+include "network/complex.ycp";
 
 /**
  * Return a modification status
@@ -183,19 +184,18 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
     list overview = Lan::Overview();
     y2debug("overview=%1",overview);
 
-    /* Header of table with installed cards */
-    term contents = Wizard_hw::ConfiguredContent(
-	    `header(_("No."), _("Type"), _("Device"), /*_("Active"),*/ _("IP Address")/*, "PCMCIA", "Driver"*/),
-	    overview, nil, nil, nil, nil);
-
-    contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);
+    term contents = OverviewTable(
+	/* Table header */
+	`header(_("No."), _("Type"), _("Device"), _("IP Address")),
+	overview
+    );
 
     Wizard::SetContentsButtons(caption, contents, help,
 	    BackButtonLabel(), FinishButtonLabel());
 
     if(size(overview) < 1) {
-	UI::ChangeWidget(`id(`edit_button), `Enabled, false);
-	UI::ChangeWidget(`id(`delete_button), `Enabled, false);
+	UI::ChangeWidget(`id(`edit), `Enabled, false);
+	UI::ChangeWidget(`id(`delete), `Enabled, false);
     }
 
     any ret = nil;
@@ -209,28 +209,26 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
 	    else continue;
 	}
 	/* add */
-	else if(ret == `add_button) {
+	else if(ret == `add) {
 	    Lan::AddEdit("");
-	    ret = `add;
 	    break;
 	}
 	/* edit */
-	else if(ret == `edit_button) {
+	else if(ret == `edit) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
 	    Lan::AddEdit(dev);
-	    ret = `edit;
 	    break;
 	}
 	/* delete */
-	else if(ret == `delete_button) {
+	else if(ret == `delete) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
 	    Lan::Delete(dev);
 	    Lan::Commit();
 	    overview = Lan::Overview();
 	    UI::ChangeWidget(`id(`table), `Items, overview);
 	    if(size(overview) < 1) {
-		UI::ChangeWidget(`id(`edit_button), `Enabled, false);
-		UI::ChangeWidget(`id(`delete_button), `Enabled, false);
+		UI::ChangeWidget(`id(`edit), `Enabled, false);
+		UI::ChangeWidget(`id(`delete), `Enabled, false);
 	    }
 	    y2debug("overview=%1",overview);
 	    continue;
