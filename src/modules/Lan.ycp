@@ -362,9 +362,6 @@ global define boolean Write() ``{
     /* Progress step 9/10 */
     ProgressNextStage(_("Activating network services..."));
     if(!write_only) StartNetwork();
-    if(!write_only)
-	if(SCR::Read(.target.size, "/etc/init.d/pcmcia") > 0)
-	    RestartService("pcmcia");
     sleep(sl);
 
     if(Abort()) return false;
