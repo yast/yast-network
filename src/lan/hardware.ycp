@@ -146,7 +146,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
     term DeviceNumberBox = `ReplacePoint(`id(`rnum),
 	/* TextEntry label */
-	`ComboBox (`id(`num), `opt(`editable, `hstretch), _("&Configuration Name"), device));
+	`ComboBox (`id(`num), `opt(`editable, `hstretch), _("&Configuration Name"), [device]));
 
     /* TextEntry label */
     term MTUBox = `TextEntry(`id(`mtu), _("M&aximum Transfer Unit (MTU)"), mtu);
