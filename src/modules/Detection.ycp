@@ -1,5 +1,5 @@
 /**
- * File:	include/network/detection.ycp
+ * File:	modules/Detection.ycp
  * Package:	Network configuration
  * Summary:	Detection routines
  * Authors:	Michal Svec <msvec@suse.cz>
@@ -30,13 +30,20 @@
 
 {
 
+module "Detection";
+
 textdomain "network";
 
 import "Directory";
 include "network/hardware.ycp";
 
-global string detection_module = "";
-global boolean detection_interface = false;
+global map result = $[];
+
+string device = "eth0";
+string tmpdir = Directory::tmpdir;
+
+string detection_module = "";
+boolean detection_interface = false;
 
 global define boolean StartEthInterface() ``{
 
@@ -77,9 +84,9 @@ global define boolean StartEthInterface() ``{
 
     /* Setup the interface */
     detection_interface=false;
-    if(SCR::Execute(.target.bash, sformat("ifconfig eth%1 2>&1 | grep 'inet addr'", 0)) != 0) {
-	y2milestone("Setting up interface eth%1 ...", 0);
-	SCR::Execute(.target.bash, sformat("/sbin/ifconfig eth%1 up 2>&1", 0));
+    if(SCR::Execute(.target.bash, sformat("ifconfig %1 2>&1 | grep 'inet addr'", device)) != 0) {
+	y2milestone("Setting up interface %1 ...", device);
+	SCR::Execute(.target.bash, sformat("/sbin/ifconfig %1 up 2>&1", device));
 	detection_interface=true;
     }
     y2debug("detection_interface=%1", detection_interface);
@@ -93,8 +100,8 @@ global define boolean StopEthInterface() ``{
     y2milestone("Network detection finish");
 
     if(detection_interface) {
-	y2milestone("Shut down interface eth%1 ...", 0);
-	SCR::Execute(.target.bash, sformat("/sbin/ifconfig eth%1 down 2>&1", 0));
+	y2milestone("Shut down interface %1 ...", device);
+	SCR::Execute(.target.bash, sformat("/sbin/ifconfig %1 down 2>&1", device));
     }
     detection_interface = false;
 
@@ -114,11 +121,9 @@ global define boolean StopEthInterface() ``{
  */
 global define boolean StartDetection() ``{
 
-    string tmpdir = Directory::tmpdir;
-
     /* Start DHCP detection */
-    SCR::Execute(.target.bash, sformat("rm -f %1/dhcpcd-eth0.*", tmpdir));
-    SCR::Execute(.target.bash, sformat("dhcpcd -Td -t 10 -NYRG -L %1 eth0", tmpdir));
+    SCR::Execute(.target.bash, sformat("rm -f %1/dhcpcd-*", tmpdir));
+    SCR::Execute(.target.bash, sformat("dhcpcd -Td -t 10 -NYRG -L %1 %2", tmpdir, device));
 
     return true;
 }
@@ -129,21 +134,29 @@ global define boolean StartDetection() ``{
  */
 global define boolean FinishDetection() ``{
 
-    string tmpdir = Directory::tmpdir;
-
     /* Read DHCP data */
-    string info = sformat("%1/dhcpcd-eth0.info", tmpdir);
+    string info = sformat("%1/dhcpcd-%2.info", tmpdir, device);
     info = "/var/lib/dhcpcd/dhcpcd-eth0.info";
 
+    path detpath = .detection.dhcp;
     string tmpfile = tmpdir + "/detection_dhcp.scr";
-    string scrfile = sformat(".detection.dhcp\n\n`ag_ini(SysConfigFile(\"%1\"))\n", info);
+    string scrfile = sformat("%1\n\n`ag_ini(SysConfigFile(\"%2\"))\n", detpath, info);
     SCR::Write(.target.string, tmpfile, scrfile);
-    SCR::RegisterAgent(.detection.dhcp, tmpfile);
+    SCR::RegisterAgent(detpath, tmpfile);
 
-    y2debug("x=%1", SCR::Read(.detection.dhcp.IPADDR));
+    result = $[];
+    list keys = SCR::Dir(detpath);
+    y2debug("keys=%1", keys);
+    maplist(string k, keys, ``{
+	string v = SCR::Read(add(detpath, k));
+	y2debug("%1=%2", k, v);
+	/* FIXME: duplicate keys (make list? add with suffix1, etc? ...? */
+	change(result, k, v);
+    });
+    SCR::UnregisterAgent(.detection.dhcp);
 
     /* Finish DHCP detection */
-    // SCR::Execute(.target.bash, sformat("kill `cat %1/dhcpcd-$device.pid`", tmpdir));
+    SCR::Execute(.target.bash, sformat("kill $(cat %1/dhcpcd-%2.pid)", tmpdir, device));
 
     return true;
 }

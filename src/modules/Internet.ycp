@@ -17,20 +17,22 @@ include "network/complex.ycp";
 include "network/devices.ycp";
 include "network/routines.ycp";
 
-
-// flag to remember if user wants to run internet test
+/**
+ * Flag to remember if user wants to run internet test
+ */
 global boolean do_test = true;
 
-
-// flag to remember if you should be started
+/**
+ * Flag to remember if you should be started
+ */
 global boolean do_you = false;
+
 
 global string device = "";
 global string provider = "";
 global string password = "";
 global boolean demand = false;
 global boolean askpassword = nil;
-
 
 /**
  * Devices in order from fastest to slowest.
@@ -45,7 +47,6 @@ map FastestRegexps = $[
     4 : NetworkDeviceRegex
 ];
 
-
 /**
  * Types in order from fastest to slowest.
  * @see FastestRegexps
@@ -56,7 +57,6 @@ map FastestTypes = $[
     3 : "modem",
     4 : "netcard"
 ];
-
 
 /**
  * Return the fastest connection type
@@ -75,18 +75,16 @@ global define string FastestType(string dev) ``{
     return type;
 }
 
-
 /**
  * Return the filename of the log for the fastest connection.
  */
-global define string FastestLogFile (string dev) ``{
+global define string FastestLogFile(string dev) ``{
     string file = "/var/log/messages";
-    string type = FastestType (dev);
-    if (type == "dsl" || type == "modem")
+    string type = FastestType(dev);
+    if(type == "dsl" || type == "modem")
 	file = "/var/log/smpppd/ifcfg-" + dev + ".log";
     return file;
 }
-
 
 /**
  * Find the fastest connection to the Internet
@@ -134,7 +132,7 @@ global define boolean Fastest() ``{
 
     /* Lookup the provider values */
     provider = devmap["PROVIDER"]:"";
-    if (provider != "") {
+    if(provider != "") {
 	import "Provider";
 	Provider::Read("all");
 	Provider::Select(provider);
@@ -150,56 +148,45 @@ global define boolean Fastest() ``{
     return true;
 }
 
-
 /**
  * Start the fastest interface
  * @return true if successful started
  */
 global define boolean Start() ``{
 
-    string type = FastestType (device);
+    string type = FastestType(device);
 
-    if (type == "isdn")
-    {
- 	if (SCR::Execute (.target.bash, "/etc/init.d/isdn status") != 0)
- 	{
- 	    if (SCR::Execute (.target.bash, "/etc/init.d/isdn start") != 0)
- 	    {
- 		y2error ("starting of isdn failed");
- 		return false;
- 	    }
- 	}
+    if(type == "isdn") {
+	if(SCR::Execute(.target.bash, "/etc/init.d/isdn status") != 0) {
+	    if(SCR::Execute(.target.bash, "/etc/init.d/isdn start") != 0) {
+		y2error("starting of isdn failed");
+		return false;
+	    }
+	}
     }
 
-    if (askpassword != nil && askpassword)
-    {
- 	if (SCR::Execute (.target.bash_input, "/sbin/ifup " + device, password) != 0)
- 	{
- 	    y2error ("ifup failed");
- 	    return false;
- 	}
+    if(askpassword == true) {
+	if(SCR::Execute(.target.bash_input, "/sbin/ifup " + device, password) != 0) {
+	    y2error("ifup failed");
+	    return false;
+	}
     }
-    else
-    {
- 	if (SCR::Execute (.target.bash, "/sbin/ifup " + device) != 0)
- 	{
- 	    y2error ("ifup failed");
- 	    return false;
- 	}
+    else {
+	if(SCR::Execute(.target.bash, "/sbin/ifup " + device) != 0) {
+	    y2error("ifup failed");
+	    return false;
+	}
     }
 
-    if (type == "isdn")
-    {
-	if (SCR::Execute (.target.bash, "/usr/sbin/isdnctrl dial " + device) != 0)
-	{
-	    y2error ("isdnctrl failed");
+    if(type == "isdn") {
+	if(SCR::Execute(.target.bash, "/usr/sbin/isdnctrl dial " + device) != 0) {
+	    y2error("isdnctrl failed");
 	    return false;
 	}
     }
 
     return true;
 }
-
 
 /**
  * Stop the fastest interface
@@ -209,45 +196,49 @@ global define boolean Stop() ``{
     return SCR::Execute(.target.bash, "/sbin/ifdown " + device) == 0;
 }
 
-
 /**
  * Status of the fastest interface
  * @return true if interface is up (which is not equal to connected)
  */
 global define boolean Status() ``{
-    integer tmp1 = SCR::Execute(.target.bash, "/sbin/ifstatus " + device);
-    return tmp1 == 0 || tmp1 == 10;
+    integer ret = SCR::Execute(.target.bash, "/sbin/ifstatus " + device);
+    return ret == 0 || ret == 10;
 }
 
-
+/**
+ * Test if the interface is connected
+ * @return true if connected
+ */
 global define boolean Connected() ``{
 
-    string type = FastestType (device);
+    string type = FastestType(device);
 
-    if (type == "dsl" || type == "modem") {
-	string tmp1 = SCR::Read (.target.string, "/var/lib/smpppd/ifcfg-" +
+    if(type == "dsl" || type == "modem") {
+	string tmp1 = SCR::Read(.target.string, "/var/lib/smpppd/ifcfg-" +
 				 device + ".info");
-	list tmp2 = splitstring (tmp1, "\n");
-	return contains (tmp2, "status: connected");
+	list tmp2 = splitstring(tmp1, "\n");
+	return contains(tmp2, "status: connected");
     }
 
-    if (type == "isdn") {
-	// FIXME
-	return SCR::Execute (.target.bash, "/usr/bin/grep -q pppd /etc/resolv.conf") == 0;
+    /* FIXME: isdn */
+    if(type == "isdn") {
+	return SCR::Execute(.target.bash, "/usr/bin/grep -q pppd /etc/resolv.conf") == 0;
     }
 
     return true;
 }
 
-
-global define void SetDemand (boolean tmp) ``{
+/**
+ * Set dial-on-demand
+ * @param demand true if dial-on-demand should be set
+ */
+global define void SetDemand(boolean demand) ``{
     path pp = .sysconfig.network.providers.v;
-    pp = add (pp, provider);
-    pp = add (pp, "DEMAND");
-    SCR::Write (pp, tmp ? "yes" : "no");
-    SCR::Write (.sysconfig.network.providers, nil);
+    pp = add(pp, provider);
+    pp = add(pp, "DEMAND");
+    SCR::Write(pp, (demand == true) ? "yes" : "no");
+    SCR::Write(.sysconfig.network.providers, nil);
 }
-
 
 /* EOF */
 }

@@ -12,9 +12,10 @@
 
 textdomain "network";
 
-import "Wizard";
+import "Mode";
 import "Internet";
 import "Product";
+import "Wizard";
 
 include "ui/common_messages.ycp";
 include "ui/common_popups.ycp";
@@ -47,7 +48,7 @@ global define boolean AskForPassword() ``{
 
     symbol ret = UI::UserInput();
 
-    if (ret == `ok)
+    if(ret == `ok)
 	Internet::password = UI::QueryWidget(`id(`password), `Value);
 
     UI::CloseDialog();
@@ -66,40 +67,37 @@ global define symbol TestStepsDialog() ``{
     /* Steps dialog caption */
     string caption = _("Test Internet Connection");
 
-    /* help for dialog "Test Internet Connection" */
+    /* Steps dialog caption 1/2 */
     string help = _("<p>Here, you can validate the Internet connection just
 configured. The test is entirely optional.</p>");
 
-    if (!contains (Product::flags, "no_you"))
-    {
-	/* help for dialog "Test Internet Connection" */
-	help = help + _("A successful result will enable you to run the YaST
-Online Update.</p>");
+    if(!contains(Product::flags, "no_you")) {
+	/* Steps dialog caption 2/2 */
+	help = help + _("<p>A successful result will enable you to run
+the YaST Online Update.</p>");
     }
 
     /* Label text (keep lines max. 65 chars long) */
-    string label = _("To validate your Internet access, activate the test procedure.");
+    string label = _("To validate your Internet access,
+activate the test procedure.");
 
     map labels = $[
 	/* Label text (keep lines max. 65 chars long) */
-	"dsl" : _("To validate your DSL Internet access, activate
-the test procedure."),
+	"dsl" : _("To validate your DSL Internet access,
+activate the test procedure."),
 	/* Label text (keep lines max. 65 chars long) */
-	"isdn" : _("To validate your ISDN Internet access, activate
-the test procedure."),
+	"isdn" : _("To validate your ISDN Internet access,
+activate the test procedure."),
 	/* Label text (keep lines max. 65 chars long) */
-	"modem" : _("To validate your modem Internet access, activate
-the test procedure."),
+	"modem" : _("To validate your modem Internet access,
+activate the test procedure."),
     ];
 
     string type = Internet::FastestType(Internet::device);
     if(haskey(labels, type)) label = labels[type]:"";
 
-
     boolean already_up = false;
-    if (!Mode::test)
-	already_up = Internet::Status ();
-
+    if(!Mode::test) already_up = Internet::Status();
 
     /* Radiobuttons */
     term buttons = `VBox(
@@ -112,22 +110,22 @@ the test procedure."),
     );
 
     /* the steps */
-    term steps = `VBox ();
-    if (!already_up) {
+    term steps = `VBox();
+    if(!already_up) {
 	/* Label text */
-	steps = add (steps, `Left(`Label(_("- Connect to SuSE server via Internet"))));
+	steps = add(steps, `Left(`Label(_("- Connect to SuSE server via Internet"))));
     }
-    if (true) {
+    if(true) {
 	/* Label text */
-	steps = add (steps, `Left(`Label(_("- Download latest release notes"))));
+	steps = add(steps, `Left(`Label(_("- Download latest release notes"))));
     }
-    if (!contains (Product::flags, "no_you")) {
+    if(!contains(Product::flags, "no_you")) {
 	/* Label text */
-	steps = add (steps, `Left(`Label(_("- Check for latest updates"))));
+	steps = add(steps, `Left(`Label(_("- Check for latest updates"))));
     }
-    if (!already_up) {
+    if(!already_up) {
 	/* Label text */
-	steps = add (steps, `Left(`Label(_("- Close connection"))));
+	steps = add(steps, `Left(`Label(_("- Close connection"))));
     }
 
     /* Steps dialog contents */
@@ -152,23 +150,20 @@ the test procedure."),
 	`HSpacing(5)
     );
 
-    Wizard::SetContents (caption, contents, help, true, true);
+    Wizard::SetContents(caption, contents, help, true, true);
 
     any ret = nil;
 
-    while(true)
-    {
+    while(true) {
 	ret = UI::UserInput();
 
 	if(ret == `abort || ret == `cancel) {
-	    if (CallFunction (`inst_confirm_abort (`incomplete)))
-		break;
+	    if(CallFunction(`inst_confirm_abort(`incomplete))) break;
 	    continue;
 	}
 	else if (ret == `next || ret == `back) {
 	    break;
 	}
-
 	y2error("Unexpected return code: %1", ret);
     }
 
@@ -206,8 +201,7 @@ global define symbol AskYOUDialog() ``{
 	    `Left(`Heading(_("Online Updates Available"))),
 	    `VSpacing(1),
 	    /* Label text */
-	    `Label(_("Download and install
-them via the YaST Online Update?")),
+	    `Label(_("Download and install them via the YaST Online Update?")),
 	    `RadioButtonGroup(`HBox(
 		`HSpacing(2),
 		buttons,
@@ -222,7 +216,7 @@ them via the YaST Online Update?")),
     UI::OpenDialog(content);
     UI::UserInput();
 
-    Internet::do_you = UI::QueryWidget (`id(`yes), `Value);
+    Internet::do_you = UI::QueryWidget(`id(`yes), `Value);
     y2debug("Internet::do_you=%1", Internet::do_you);
 
     UI::CloseDialog ();
