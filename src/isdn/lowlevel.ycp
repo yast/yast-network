@@ -36,7 +36,6 @@ include "ui/common_popups.ycp";
 /* TODO: revise & test */
 
 global define symbol isdn_lowlevel(symbol Detected) ``{
-
     /* PREPARE VARIABLES */
 
     // FIXME: reading ISDN DB
@@ -163,17 +162,16 @@ more information.</p>");
 					),
 					`TextEntry(`id(`options),
 					    _("ISDN module o&ptions (only needed in special cases)"), 
-					    ISDN::moduleOptions 
-				    ),
-				    `HSpacing()
+					    ISDN::moduleOptions),
+					`HSpacing()
+				    )
 				)
 			    )
 			),
 			`VSpacing(0.3),
 			ISDN_protocol
-			),
+		    ),
 		   `HSpacing(5)
-		    )
 		);
 	}
     }

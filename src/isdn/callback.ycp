@@ -29,7 +29,7 @@ include "ui/common_popups.ycp";
  * @return any user input
  */
 
-global define symbol callback() ``{
+global define symbol isdn_callback() ``{
 
     /* DIALOG TEXTS */
 

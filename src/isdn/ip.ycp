@@ -29,12 +29,12 @@ include "ui/common_popups.ycp";
  * @return any user input
  */
 
-global define symbol ip() ``{
+global define symbol isdn_ip() ``{
 
     /* PREPARE VARIABLES */
 
-    string Local_IP = ISDN::Local_IP;
-    string Remote_IP = ISDN::Remote_IP;
+    string Local_IP = ISDN::localIP;
+    string Remote_IP = ISDN::remoteIP;
 
     /* DIALOG TEXTS and  DIALOG CONTENTS */
 
