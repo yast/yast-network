@@ -36,7 +36,6 @@ global define symbol ProviderSequence() ``{
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
 	"write"	: [ ``( WriteDialog() ), true ],
-	"finish": [ ``( Finished(Provider::Modified(), finished, "mail", ["dialup"]) ), true ],
     ];
 
     map sequence = $[
@@ -51,11 +50,8 @@ global define symbol ProviderSequence() ``{
 	],
 	"write" : $[
 	    `abort	: `abort,
-	    `next	: "finish"
-	],
-	"finish" : $[
 	    `next	: `next,
-	]
+	],
     ];
 
     /* Initial dialog caption */
