@@ -17,4 +17,4 @@ Return	true
 Dump	Import
 Return	true
 Dump	Export
-Return	["r7", "r8"]
+Return	$["ip_forwarding":false, "routes":["r7", "r8"]]

@@ -44,22 +44,22 @@ map lan_settings = $[
 	    "options"	: ""
 	]
     ],
-    "routing" : [
+    "routing" : $[
+	 "routes":[
 	    $[
 		"destination"	: "default",
 		"device"	: "",
 		"gateway"	: "10.10.0.8",
 		"netmask"	: "0.0.0.0"
-	    ]
+	    ]],
+	 "ip_forwarding":false
     ]
 ];
 
-/*
 DUMP("Import");
 TEST(``(Lan::Import(lan_settings)), [], nil);
 
 DUMP("Export");
 TEST(``(Lan::Export()), [], nil);
-*/
 
 }
