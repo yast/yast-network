@@ -1,4 +1,5 @@
-WIP, not yet functional!
+-------------------------------------------------------------------
+Wed Jan  8 14:54:45 CET 2003 - msvec@suse.de
 
 - dsl:
   - add/edit/delete (#15301, #17217, #19855)
@@ -7,7 +8,7 @@ WIP, not yet functional!
 
 - general:
   - new hosts manipulation and editor (#20970)
-  - display info popup during proposal
+  - display info popup during proposal detection
   - new devices manipulation
 
 - hardware:

@@ -129,7 +129,10 @@ global define boolean Read(string type) ``{
     foreach(string name, dir, ``{
 	path prov = add(.sysconfig.network.providers.v, name);
 	map p = listmap(string i, SCR::Dir(prov), ``{
-	    return [ i, SCR::Read(add(prov, i)) ];
+	    list ii = [];
+	    change(ii, i);
+	    change(ii, SCR::Read(add(prov, i)));
+	    return ii;
 	});
 	change(Providers, name, p);
     });
@@ -326,12 +329,15 @@ global define boolean Select(string name) ``{
     Provider = eval(Providers[Name]:$[]);
     Type = CurrentType();
 
-    if(Provider == $[])
+    if(Provider == $[]) {
 	/* Default provider map */
 	Provider = $[
-	    toupper(Type)+"SUPPORTED" : "yes",
 	    /* FIXME: remaining items */
 	];
+
+	/* Variable key -> not functional #16701 */
+	change(Provider, toupper(Type)+"SUPPORTED", "yes");
+    }
 
     y2debug("Name=%1", Name);
     y2debug("Type=%1", Type);
