@@ -239,7 +239,7 @@ connection will be shut down (0 means the connection will not time-out).</p>
 		    continue;
 		}
 		if(size(DNS2) > 0 && !IP::Check4(DNS2)) {
-		    Popup::Error(_("The secondary name server is invlid."));
+		    Popup::Error(_("The secondary name server is invalid."));
 		    UI::SetFocus(`id(`DNS2));
 		    continue;
 		}
