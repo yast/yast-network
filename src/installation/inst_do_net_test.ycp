@@ -39,6 +39,10 @@
 	return `next;
     }
 
+    boolean already_up = false;
+    if (!Mode::test)
+	Internet::Status ();
+
 
     /* Progress step 1/4 */
     string l1 = _("Connecting to SuSE server via Internet...");
@@ -63,12 +67,22 @@ Internet Connection Test.</p>") +
 	_("<p>The test can be aborted by pressing the <b>Abort Test</b> button.</p>");
 
 	/* Progress labels */
-	term progress = `VBox(
-			      `Left(`Label (`id (`s1), "-   " + l1)),
-			      `Left(`Label (`id (`s2), "-   " + l2)),
-			      `Left(`Label (`id (`s3), "-   " + l3)),
-			      `Left(`Label (`id (`s4), "-   " + l4))
-			      );
+	term progress = nil;
+	if (already_up)
+	{
+	    progress = `VBox(
+			     `Left(`Label (`id (`s2), "-   " + l2)),
+			     `Left(`Label (`id (`s3), "-   " + l3))
+			     );
+	}
+	else {
+	    progress = `VBox(
+			     `Left(`Label (`id (`s1), "-   " + l1)),
+			     `Left(`Label (`id (`s2), "-   " + l2)),
+			     `Left(`Label (`id (`s3), "-   " + l3)),
+			     `Left(`Label (`id (`s4), "-   " + l4))
+			     );
+	}
 
 	/* Test dialog contents */
 	term contents = `VBox(
@@ -154,18 +168,25 @@ Internet Connection Test.</p>") +
 		return;
 	    }
 
-	    // start the connection
-	    y2milestone ("called Start");
-	    if (!Internet::Start ()) {
-		set_result (`failure);
-		return;
+	    if (already_up)
+	    {
+		set_stage (3);
 	    }
+	    else
+	    {
+		// start the connection
+		y2milestone ("called Start");
+		if (!Internet::Start ()) {
+		    set_result (`failure);
+		    return;
+		}
 
-	    // ping anything (www.suse.com) to trigger dod connections
-	    SCR::Execute (.target.bash_background,
-			  "/bin/ping -c 1 213.95.15.200");
+		// ping anything (www.suse.com) to trigger dod connections
+		SCR::Execute (.target.bash_background,
+			      "/bin/ping -c 1 213.95.15.200");
 
-	    set_stage (1);
+		set_stage (1);
+	    }
 	    return;
 	}
 
@@ -205,8 +226,16 @@ Internet Connection Test.</p>") +
 	{
 	    // check for patches
 	    sleep (100);
-	    set_stage (4);
-	    mark_label (3);
+
+	    if (already_up)
+	    {
+		set_result (`success);
+	    }
+	    else
+	    {
+		set_stage (4);
+		mark_label (3);
+	    }
 	    return;
 	}
 

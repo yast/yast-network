@@ -85,6 +85,12 @@ the test procedure."),
     string type = Internet::FastestType(Internet::device);
     if(haskey(labels, type)) label = labels[type]:"";
 
+
+    boolean already_up = false;
+    if (!Mode::test)
+	Internet::Status ();
+
+
     /* Radiobuttons */
     term buttons = `VBox(
 	`VSpacing(1),
@@ -95,6 +101,31 @@ the test procedure."),
 	`VSpacing(1)
     );
 
+    /* the steps */
+    term steps = nil;
+    if (already_up)
+    {
+	steps = `VBox (
+		       /* Label text */
+		       `Left(`Label(_("- Download latest release notes"))),
+		       /* Label text */
+		       `Left(`Label(_("- Check for latest updates")))
+		       );
+    }
+    else
+    {
+	steps = `VBox (
+		       /* Label text */
+		       `Left(`Label(_("- Connect to SuSE server via Internet"))),
+		       /* Label text */
+		       `Left(`Label(_("- Download latest release notes"))),
+		       /* Label text */
+		       `Left(`Label(_("- Check for latest updates"))),
+		       /* Label text */
+		       `Left(`Label(_("- Close connection")))
+		       );
+    }
+
     /* Steps dialog contents */
     term contents = `HBox(
 	`HSpacing(5),
@@ -104,14 +135,7 @@ the test procedure."),
 	    /* Heading text */
 	    `Left(`Heading(_("The following steps will be performed:"))),
 	    `VSpacing(1),
-	    /* Label text */
-	    `Left(`Label(_("- Connect to SuSE server via Internet"))),
-	    /* Label text */
-	    `Left(`Label(_("- Download latest release notes"))),
-	    /* Label text */
-	    `Left(`Label(_("- Check for latest updates"))),
-	    /* Label text */
-	    `Left(`Label(_("- Close connection"))),
+	    steps,
 	    `VSpacing(2),
 	    /* Frame label */
 	    `Frame(_("Select:"), `RadioButtonGroup(`id(`rb), `HBox(
