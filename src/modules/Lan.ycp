@@ -170,7 +170,6 @@ global define boolean Modified() {
 
 include "network/hardware.ycp";
 include "network/install.ycp";
-// FIXME: MOD include "network/modules.ycp";
 include "network/routines.ycp";
 include "network/runtime.ycp";
 
