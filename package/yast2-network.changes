@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Sep  2 07:11:45 CEST 2003 - nashif@suse.de
+
+- fixed testsuite
+- 2.8.21
+
+-------------------------------------------------------------------
 Tue Sep  2 00:31:31 CEST 2003 - nashif@suse.de
 
 - Fixed kernel module handling in normal and autoinst mode
