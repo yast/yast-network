@@ -10,6 +10,10 @@
 
     textdomain "network";
 
+    import "Runlevel";
+
+    include "network/routines.ycp";
+
 
     // allow Remote Administration
     global boolean allow_administration = false;
@@ -31,10 +35,20 @@
      */
     global define boolean Write () ``{
 
-	// install tightvnc and XFree86-Xvnc
+	// install and enable xinetd, tightvnc and XFree86-Xvnc
 	if (allow_administration)
 	{
-	    // FIXME
+	    if (Packages (["xinetd", "tightvnc", "XFree86-Xvnc"]) != `next)
+	    {
+		y2error ("installing of required packages failed");
+		return false;
+	    }
+
+	    if (!Runlevel::ServiceAdjust ("xinetd", "enable"))
+	    {
+		y2error ("enabling of xinetd failed");
+		return false;
+	    }
 	}
 
 	// set DISPLAYMANAGER_REMOTE_ACCESS in sysconfig/displaymanager
