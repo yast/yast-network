@@ -36,8 +36,10 @@ global define symbol ConnectionDialog() ``{
     string Provider = lookup(Provider::Provider, "PROVIDER", "");
 
     boolean demand = lookup(Provider::Provider, "DEMAND", "no") == "yes";
-    boolean modifydns = lookup(Provider::Provider, "MODIFYDNS", "yes") == "yes";
     boolean stupidmode = lookup(Provider::Provider, "STUPIDMODE", "no") == "yes";
+
+    boolean modifydns = lookup(Provider::Provider, "MODIFYDNS", "yes") == "yes";
+    boolean autodns = lookup(Provider::Provider, "AUTODNS", "yes") == "yes";
 
     string DNS1 = lookup(Provider::Provider, "DNS1", "");
     string DNS2 = lookup(Provider::Provider, "DNS2", "");
@@ -69,7 +71,7 @@ global define symbol ConnectionDialog() ``{
     string caption = _("Connection parameters");
 
     /* Connection dialog help 1/8 */
-    string helptext = _("<p><b>Dial on demand</b> means that the
+    string helptext = _("<p><b>Dial on Demand</b> means that the
 internet connection will be established automatically when data from
 the internet are requested. To use this feature you must specify at
 least one <i>name server</i>. Please use this feature only if your
@@ -81,25 +83,30 @@ _("<p>When <b>Modify DNS</b> is enabled, the <i>name server</i> will be
 changed automatically when connected to the Internet.</p>") +
 
     /* Connection dialog help 3/8 */
-_("<p>The <b>Name servers</b> are required to convert host names
+_("<p>If the provider does not transmit his Domain Name Server (DNS)
+after connecting disable the <b>Automatically Retrieve DNS</b> and
+manually enter the DNS.</p>") +
+
+    /* Connection dialog help 4/8 */
+_("<p>The <b>Name Servers</b> are required to convert host names
 <i>(e.g., www.suse.com)</i> to IP addresses (e.g., 213.95.15.200). You only
 need to specify the name servers if you enable <i>Dial on demand</i> or
 disable <b>DNS modification</b> when connected.</p>");
 
     if (type == "modem")
 	helptext = helptext +
-    /* Connection dialog help 4/8 */
-_("<p><b>Stupid mode</b> will disable the detection of
+    /* Connection dialog help 5/8 */
+_("<p><b>Stupid Mode</b> will disable the detection of
 any prompts from the dial-in server. If the connection
 buildup is slow or does not work at all, try this option.</p>");
 
     helptext = helptext +
-    /* Connection dialog help 5/8 */
-_("<p>Selecting <b>Activate firewall</b> will block all incoming
+    /* Connection dialog help 6/8 */
+_("<p>Selecting <b>Activate Firewall</b> will block all incoming
 connections. Choosing this option will make dial-up connections
 to the Internet safe from external attacks.</p>") +
 
-    /* Connection dialog help 6/8 */
+    /* Connection dialog help 7/8 */
 _("<p>The <b>Idle Time-Out</b> specifies the time after which an idle
 connection will be shut down (0 means an infinite idle time-out).</p>");
 
@@ -127,14 +134,14 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
     term StupidMode = `VSpacing(0.1);
     if (type == "modem")
 	/* Checkbox label */
-	StupidMode = `Left(`CheckBox(`id(`stupidmode), _("S&tupid mode"), stupidmode));
+	StupidMode = `Left(`CheckBox(`id(`stupidmode), _("S&tupid Mode"), stupidmode));
 
     term details = `VSpacing(0.1);
     // FIXME if(type == "isdn")
     if(false)
 	details = `HBox(
 	    /* Push button label */
-	    `PushButton(`id(`Details), _("&Connection details")),
+	    `PushButton(`id(`Details), _("&Connection Details")),
 	    `HSpacing(0.5),
 	    /* Push button label */
 	    `PushButton(`id(`IPDetails), _("I&P Details"))
@@ -159,14 +166,16 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    `HBox(
 		`VBox(
 		    /* Checkbox label */
-		    `Left(`CheckBox(`id(`demand), `opt(`notify), _("Dial on d&emand"), demand)),
+		    `Left(`CheckBox(`id(`demand), `opt(`notify), _("Dial on D&emand"), demand)),
 		    /* Checkbox label */
-		    `Left(`CheckBox(`id(`modifydns), `opt(`notify), _("&Modify DNS when connected"), modifydns))
+		    `Left(`CheckBox(`id(`modifydns), `opt(`notify), _("&Modify DNS when Connected"), modifydns)),
+		    /* Checkbox label */
+		    `Left(`CheckBox(`id(`autodns), `opt(`notify), _("&Automatically Retrieve DNS"), autodns))
 		 )
 	    ),
 	    `VSpacing(1),
 	    /* Frame label */
-	    `Frame(`id(`nameservers), _("Name servers"),
+	    `Frame(`id(`nameservers), _("Name Servers"),
 		`HBox(
 		    /* Text entry label */
 		    `TextEntry(`id(`DNS1), _("F&irst"), DNS1),
@@ -180,7 +189,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    FirewallCheckbox,
 	    `VSpacing(0.5),
 	    /* Combo box label */
-	    `Left(`ComboBox(`id(`idletime), `opt(`editable), _("I&dle timeout (seconds)"), seconds)),
+	    `Left(`ComboBox(`id(`idletime), `opt(`editable), _("I&dle Timeout (seconds)"), seconds)),
 	    `VSpacing(1),
 	    details
 	),
@@ -192,7 +201,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::NextButton());
 
-    UI::ChangeWidget(`id(`nameservers), `Enabled, demand && modifydns);
+    UI::ChangeWidget(`id(`nameservers), `Enabled, modifydns && (demand || !autodns));
 
     /* MAIN CYCLE */
     any ret = nil;
@@ -216,7 +225,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 		UI::SetFocus(`id(`idletime));
 		continue;
 	    }
-	    if(demand && modifydns) {
+	    if(modifydns && (demand || !autodns)) {
 		DNS1 = UI::QueryWidget(`id(`DNS1), `Value);
 		DNS2 = UI::QueryWidget(`id(`DNS2), `Value);
 		if(!(check_ip4(DNS1))) {
@@ -232,10 +241,11 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    }
 	    break;
 	}
-	else if(ret == `demand || ret == `modifydns) {
+	else if(ret == `demand || ret == `modifydns || ret == `autodns) {
 	    demand = UI::QueryWidget(`id(`demand), `Value);
 	    modifydns = UI::QueryWidget(`id(`modifydns), `Value);
-	    UI::ChangeWidget(`id(`nameservers), `Enabled, demand && modifydns);
+	    autodns = UI::QueryWidget(`id(`autodns), `Value);
+	    UI::ChangeWidget(`id(`nameservers), `Enabled, modifydns && (demand || !autodns));
 	}
 	else {
 	    y2error("unexpected retcode: %1", ret);
@@ -248,17 +258,19 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
     if(ret == `next || ret == `Details || ret == `IPDetails) {
 	demand = UI::QueryWidget(`id(`demand), `Value);
 	modifydns = UI::QueryWidget(`id(`modifydns), `Value);
+	autodns = UI::QueryWidget(`id(`autodns), `Value);
 
 	/* update provider info */
 	Provider::Provider = union(Provider::Provider, $[
 	    "DEMAND" : demand ? "yes" : "no",
 	    "MODIFYDNS" : modifydns ? "yes" : "no",
+	    "AUTODNS" : autodns ? "yes" : "no",
 	    "IDLETIME" : UI::QueryWidget(`id(`idletime), `Value),
 	    "MODEMSUPPORTED" : type == "modem" ? "yes" : "no",
 	    "ISDNSUPPORTED" : type == "isdn" ? "yes" : "no",
 	    "DSLSUPPORTED" : type == "dsl" ? "yes" : "no"
 	]);
-	if (demand && modifydns)
+	if (modifydns && (demand || !autodns))
 	    Provider::Provider = union(Provider::Provider, $[
 		"DNS1" : UI::QueryWidget(`id(`DNS1), `Value),
 		"DNS2" : UI::QueryWidget(`id(`DNS2), `Value),

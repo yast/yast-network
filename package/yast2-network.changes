@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Mon Oct 20 16:42:40 CEST 2003 - msvec@suse.cz
+
+- preliminary USB Network support (#22739)
+- preliminary dummy device support (#15960)
+- replace obsolete require calls (#31673)
+- allow to select a different card (#32450)
+- prefill "http://" in proxy fields (#31269)
+- automatic DNS support (#27955)
+- 2.9.0
+
+-------------------------------------------------------------------
 Tue Sep 23 15:47:33 CEST 2003 - msvec@suse.cz
 
 - ignore partially activated interfaces during Detection (#29452)

@@ -55,6 +55,12 @@ global define symbol ProxyMainDialog(boolean standalone) ``{
     string user = Proxy::user;
     string pass = Proxy::pass;
 
+    /* String to pre-filled into the proxy server field */
+    string prefill = "http://";
+
+    if(http == "") http = prefill;
+    if(ftp == "") ftp = prefill;
+
     /* Proxy dialog caption */
     string caption = _("Proxy Configuration");
 
@@ -73,12 +79,12 @@ to the world wide web (WWW).</p>") +
 to the file transfer services (FTP).</p>") +
 
     /* Proxy dialog help 4/5 */
-    _("<p><b>No proxy domains</b> is a list of domains for which the requests
+    _("<p><b>No Proxy Domains</b> is a list of domains for which the requests
 should be done directly without caching.</p>") +
 
     /* Proxy dialog help 5/5 */
     _("<p>If you are using a proxy server with authorization, fill in
-<b>Proxy user name</b> and <b>Proxy password</b>.</p>");
+<b>Proxy User Name</b> and <b>Proxy Password</b>.</p>");
 
     /* Proxy dialog contents */
     term contents = `HBox(
@@ -88,7 +94,7 @@ should be done directly without caching.</p>") +
 	`Left(`CheckBox(`id(`enabled), `opt(`notify), _("&Enable Proxy"), enabled)),
 	`VSpacing(1),
 	/* Frame label */
-	`Frame(`id(`frame), _("Proxy settings"), `HBox(`HSpacing(2), `VBox(
+	`Frame(`id(`frame), _("Proxy Settings"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(1),
 	    /* Text entry label */
 	    `TextEntry(`id(`http), _("&HTTP Proxy URL"), http),
@@ -97,13 +103,13 @@ should be done directly without caching.</p>") +
 	    `TextEntry(`id(`ftp), _("F&TP Proxy URL"), ftp),
 	    `VSpacing(0.2),
 	    /* Text entry label */
-	    `TextEntry(`id(`no), _("N&o proxy domains"), no),
+	    `TextEntry(`id(`no), _("N&o Proxy Domains"), no),
 	    `VSpacing(0.2),
 	    /* Text entry label */
-	    `TextEntry(`id(`user), _("Proxy &user name"), user),
+	    `TextEntry(`id(`user), _("Proxy &User Name"), user),
 	    `VSpacing(0.2),
 	    /* Password entry label */
-	    `Password(`id(`pass), _("Proxy &password"), pass),
+	    `Password(`id(`pass), _("Proxy &Password"), pass),
 	    `VSpacing(1)
 	    ), `HSpacing(2)))
 	),
@@ -143,13 +149,13 @@ should be done directly without caching.</p>") +
 	/* next */
 	else if(ret == `next) {
 
+	    enabled = UI::QueryWidget(`id(`enabled), `Value);
+	    if(enabled == false) break;
+
 	    http = UI::QueryWidget(`id(`http), `Value);
 	    ftp = UI::QueryWidget(`id(`ftp), `Value);
-	    enabled = UI::QueryWidget(`id(`enabled), `Value);
 	    user = UI::QueryWidget(`id(`user), `Value);
 	    pass = UI::QueryWidget(`id(`pass), `Value);
-
-	    if(enabled == false) break;
 
 	    /* check_* */
 	    if(user == "" && pass != "") {
@@ -158,7 +164,7 @@ should be done directly without caching.</p>") +
 		UI::SetFocus(`id(`user));
 		continue;
 	    }
-	    if(http != "") {
+	    if(http != "" && http != prefill) {
 		if(!URL::Check(http)) {
 		    /* Popup::Error text */
 		    Popup::Error(_("HTTP proxy URL is invalid."));
@@ -173,7 +179,7 @@ should be done directly without caching.</p>") +
 		    continue;
 		}
 	    }
-	    if(ftp != "") {
+	    if(ftp != "" && ftp != prefill) {
 		if(!URL::Check(ftp)) {
 		    /* Popup::Error text */
 		    Popup::Error(_("FTP proxy URL is invalid."));
@@ -209,10 +215,14 @@ should be done directly without caching.</p>") +
 	    no = UI::QueryWidget(`id(`no), `Value);
 	    user = UI::QueryWidget(`id(`user), `Value);
 	    pass = UI::QueryWidget(`id(`pass), `Value);
+
+	    if(http == prefill) http = "";
+	    if(ftp == prefill) ftp = "";
 	}
 
 	if(Proxy::http == http && Proxy::ftp == ftp && Proxy::no == no &&
-		Proxy::user == user && Proxy::pass == pass && Proxy::enabled == enabled) {
+		Proxy::user == user && Proxy::pass == pass &&
+		Proxy::enabled == enabled) {
 
 	    y2debug("not modified");
 	    return ret;

@@ -52,9 +52,9 @@ global define boolean ReadInstallInf() ``{
     /* Split network device */
     string netdevice = InstallInf["netdevice"]:"";
     if(netdevice != "") {
-	string type = device_type(netdevice);
-	if(type != nil && type != "")
-	    change(InstallInf, "type", type);
+	string devtype = device_type(netdevice);
+	if(devtype != nil && devtype != "")
+	    change(InstallInf, "type", devtype);
 	InstallInf = remove(InstallInf, "netdevice");
     }
 

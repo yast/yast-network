@@ -15,7 +15,7 @@
  * @param first a map of modem settings
  * @return boolean success of operation
  * @example map mm = $[ "FAIL_DELAY" : "77" ];
- * @example map ret = WFM::CallModule("modem_auto", [ mm ]);
+ * @example map ret = WFM::CallFunction("modem_auto", [ mm ]);
  */
 
 {

@@ -76,7 +76,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     string device = Lan::device;
     string default_device = device;
 
-    list device_types = [ "arc", /* "dummy", */ "eth", "fddi", "myri", "tr", "wlan" ];
+    list device_types = [ "arc", /* FIXME */ "dummy", "eth", "fddi", "myri", "tr", /* FIXME */ "usb", "wlan" ];
 
     if(Arch::s390)
 	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv" ];
@@ -116,19 +116,19 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	`HSpacing(1.5)
     );
 
-     /* Frame label */
-    term WirelessBox = `Frame(_("Wireless support"),`VBox(
-	`VSpacing(0.4),
-	`HBox(
-	    `HStretch(),
-	    `HSpacing(0.5),
-	    /* Pushbutton label */
-	    `PushButton(`id(`wire), _("Wireless &settings")),
-	    `HSpacing(0.5),
-	    `HStretch()
-	),
-	`VSpacing(0.4)
-    ));
+    /* Pushbutton label */
+    term WirelessButton = `PushButton(`id(`wire), _("Wireless &settings"));
+
+    /* Frame label */
+    term ButtonBox = `HBox(
+	`HStretch(),
+	`HSpacing(0.5),
+	WirelessButton,
+	/* Pushbutton label */
+	`PushButton(`id(`list), _("Select from &List")),
+	`HSpacing(0.5),
+	`HStretch()
+    );
 
     /* Disable PCMCIA and USB checkboxex on Edit and s390 */
     if(Lan::operation == `edit || Lan::unique != "" || Arch::s390 == true)
@@ -177,14 +177,11 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		`VSpacing(0.2)
 	    )),
 	    `VSpacing(0.5),
-	    WirelessBox,
-	    `VSpacing(0.5),
 	    KernelBox,
 	    `VSpacing(0.4),
 	    MTUBox,
-	    `VSpacing(0.4),
-	    /* Pushbutton label */
-	    `PushButton(`id(`list), _("Select from &List")),
+	    `VSpacing(1.5),
+	    ButtonBox,
 	    `VSpacing(0.5)
 	    ),
 	`HSpacing(2));
@@ -221,8 +218,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		KernelBox,
 		`VSpacing(0.4),
 		MTUBox,
-		`VSpacing(0.4),
-		WirelessBox,
+		`VSpacing(1.5),
+		ButtonBox,
 		/* Pushbutton label */
 		// #25234 `PushButton(`id(`wire), _("Wireless &settings")),
 		// FIXME: show only in the case of wireless device
@@ -235,7 +232,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     /* Edit -> don't allow some changes */
     if(Lan::operation == `edit) {
 
-	if(type != "wlan") WirelessBox = `VSpacing(0);
+	if(type != "wlan") WirelessButton = `VSpacing(0);
 
 	contents = `HBox(
 	    `HSpacing(2),
@@ -251,8 +248,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		KernelBox,
 		`VSpacing(0.4),
 		MTUBox,
-		`VSpacing(0.4),
-		WirelessBox,
+		`VSpacing(1.5),
+		WirelessButton,
 		`VSpacing(0.5)
 		),
 	    `HSpacing(2));
@@ -302,6 +299,11 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    }
 	    y2debug("type=%1", type);
 	    y2debug("realtype=%1", realtype);
+
+	    if(type == "usb") {
+		UI::ChangeWidget(`id(`usb), `Value, true);
+		hotplug = "usb";
+	    }
 
 	    UI::ChangeWidget(`id(`modul), `Enabled, hotplug == "" && type != "dummy");
 	    UI::ChangeWidget(`id(`options), `Enabled, hotplug == "" && type != "dummy");

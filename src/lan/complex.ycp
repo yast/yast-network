@@ -152,7 +152,7 @@ to change the configuration opens.</p>");
 	    break;
 	}
 	/* configure the selected card */
-	else if(ret == `configure_button) {
+	else if(ret == `configure_button || ret == `detected_selbox) {
 	    Lan::Add();
 	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
 	    if(selected == `other) {

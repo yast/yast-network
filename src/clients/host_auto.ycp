@@ -15,7 +15,7 @@
  * @param first a map of host settings
  * @return boolean success of operation
  * @example map mm = $[ "FAIL_DELAY" : "77" ];
- * @example map ret = WFM::CallModule("host_auto", [ mm ]);
+ * @example map ret = WFM::CallFunction("host_auto", [ mm ]);
  */
 
 {
@@ -38,7 +38,6 @@ include "network/services/host.ycp";
 global define boolean Modified() ``{
     return Host::modified;
 }
-
 
 any ret = nil;
 string func = "";
@@ -64,28 +63,28 @@ else if (func == "Reset") {
 }
 /* Change configuration (run AutoSequence) */
 else if (func == "Change") {
-	Wizard::CreateDialog();
-	Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), Label::FinishButton()));
+    Wizard::CreateDialog();
+    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), Label::FinishButton()));
     ret = HostsMainDialog(false);
-	Wizard::CloseDialog();
+    Wizard::CloseDialog();
 }
 /* Import configuration */
 else if (func == "Import") {
-	list hosts = param["hosts"]:[];
-	map hostlist = listmap(map host, hosts, ``{
-		return ([ host["host_address"]:"error", host["names"]:[] ] );
-	});
+    list hosts = param["hosts"]:[];
+    map hostlist = listmap(map host, hosts, ``{
+	    return ([ host["host_address"]:"error", host["names"]:[] ] );
+    });
     ret = Host::Import($["hosts": hostlist]);
 }
 /* Return actual state */
 else if (func == "Export") {
     map ret1 = Host::Export();
-	map hosts = ret1["hosts"]:$[];
-	list ret2 = maplist (string hostaddress, list names, hosts, ``{
-		return($["host_address": hostaddress, "names": names]);
-	});
-	map result = $["hosts" : ret2 ];
-	ret = result;
+    map hosts = ret1["hosts"]:$[];
+    list ret2 = maplist (string hostaddress, list names, hosts, ``{
+	    return($["host_address": hostaddress, "names": names]);
+    });
+    map result = $["hosts" : ret2 ];
+    ret = result;
 }
 /* Read current state */
 else if (func == "Read") {
@@ -95,7 +94,7 @@ else if (func == "Read") {
     Progress::on();
 }
 else if (func == "Packages") {
-	ret = $[];
+    ret = $[];
 }
 /* Write givven settings */
 else if (func == "Write") {

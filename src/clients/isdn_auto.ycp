@@ -15,7 +15,7 @@
  * @param first a map of isdn settings
  * @return boolean success of operation
  * @example map mm = $[ "FAIL_DELAY" : "77" ];
- * @example map ret = WFM::CallModule("isdn_auto", [ mm ]);
+ * @example map ret = WFM::CallFunction("isdn_auto", [ mm ]);
  */
 
 {

@@ -191,8 +191,8 @@ global define symbol Packages(list packages) ``{
     if(size(packages) < 1) return `next;
     y2debug("Checking packages: %1", packages);
 
-    include "require.ycp";
-    if(AreAllPackagesInstalled(packages)) return `next;
+    import "Require";
+    if(Require::AreAllPackagesInstalled(packages)) return `next;
 
     /* Popup text */
     string text = _("These packages need to be installed:") + "<p>";
@@ -201,10 +201,10 @@ global define symbol Packages(list packages) ``{
 
     boolean ret = false;
     while(true) {
-	ret = InstallAndRemove(packages, [], text);
+	ret = Require::RequireAndConflict(packages, [], text);
 	if(ret == true) break;
 
-	if(ret == false && AreAllPackagesInstalled(packages)) {
+	if(ret == false && Require::AreAllPackagesInstalled(packages)) {
 	    ret = true;
 	    break;
 	}

@@ -23,7 +23,7 @@ include "network/routines.ycp";
 /**
  * Regular expression for all network card types
  */
-global string NetworkCardRegex = "arc|ci|ctc|escon|eth|fddi|hsi|iucv|myri|tr|wlan";
+global string NetworkCardRegex = "arc|ci|ctc|dummy|escon|eth|fddi|hsi|iucv|myri|tr|wlan";
 
 /**
  * Regular expression for all network device types
@@ -31,6 +31,7 @@ global string NetworkCardRegex = "arc|ci|ctc|escon|eth|fddi|hsi|iucv|myri|tr|wla
 global string NetworkDeviceRegex = "eth-pcmcia|eth-pcmcia-|eth-usb|eth-usb-|" +
     "tr-pcmcia|tr-pcmia-|tr-usb|tr-usb-|" +
     "wlan-pcmcia|wlan-pcmia-|wlan-usb|wlan-usb-|" +
+    "usb-usb|usb-usb-|" +
     NetworkCardRegex;
 
 /**
@@ -48,7 +49,7 @@ global string ISDNDeviceRegex = "isdn-pcmcia-|isdn-usb-|ippp-pcmcia-|ippp-usb-|"
  * Regular expression for all network card types
  */
 global string NetworkAllRegex = "dummy|irlan|lo|plip|"
-    + NetworkCardRegex;
+    + NetworkDeviceRegex;
 
 /**
  * Build textual summary
@@ -213,10 +214,8 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	/* Device type label */
 	"contr"		: _("ISDN card"),
 	/* Device type label */
-	"contr-pcmcia-"	: _("PCMCIA ISDN Card"),
 	"contr-pcmcia"	: _("PCMCIA ISDN Card"),
 	/* Device type label */
-	"contr-usb-"	: _("USB ISDN Card"),
 	"contr-usb"	: _("USB ISDN Card"),
 	/* Device type label */
 	"ctc"		: _("Channel to Channel Interface (CTC)"),
@@ -229,18 +228,14 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	/* Device type label */
 	"eth"		: _("Ethernet Network Card"),
 	/* Device type label */
-	"eth-pcmcia-"	: _("PCMCIA Ethernet Network Card"),
 	"eth-pcmcia"	: _("PCMCIA Ethernet Network Card"),
 	/* Device type label */
-	"eth-usb-"	: _("USB Ethernet Network Card"),
 	"eth-usb"	: _("USB Ethernet Network Card"),
 	/* Device type label */
 	"fddi"		: _("FDDI Network Card"),
 	/* Device type label */
-	"fddi-pcmcia-"	: _("PCMCIA FDDI Network Card"),
 	"fddi-pcmcia"	: _("PCMCIA FDDI Network Card"),
 	/* Device type label */
-	"fddi-usb-"	: _("USB FDDI Network Card"),
 	"fddi-usb"	: _("USB FDDI Network Card"),
 	/* Device type label */
 	"hippi"		: _("HIgh Performance Parallel Interface (HIPPI)"),
@@ -249,10 +244,8 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	/* Device type label */
 	"ippp"		: _("ISDN connection"),
 	/* Device type label */
-	"ippp-pcmcia-"	: _("PCMCIA ISDN Connection"),
 	"ippp-pcmcia"	: _("PCMCIA ISDN Connection"),
 	/* Device type label */
-	"ippp-usb-"	: _("USB ISDN Connection"),
 	"ippp-usb"	: _("USB ISDN Connection"),
 	/* Device type label */
 	"irlan"		: _("Infrared Network Device"),
@@ -261,10 +254,8 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	/* Device type label */
 	"isdn"		: _("ISDN connection"),
 	/* Device type label */
-	"isdn-pcmcia-"	: _("PCMCIA ISDN Connection"),
 	"isdn-pcmcia"	: _("PCMCIA ISDN Connection"),
 	/* Device type label */
-	"isdn-usb-"	: _("USB ISDN Connection"),
 	"isdn-usb"	: _("USB ISDN Connection"),
 	/* Device type label */
 	"iucv"		: _("Inter User Communication Vehicle (IUCV)"),
@@ -273,10 +264,8 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	/* Device type label */
 	"modem"		: _("Modem"),
 	/* Device type label */
-	"modem-pcmcia-"	: _("PCMCIA Modem"),
 	"modem-pcmcia"	: _("PCMCIA Modem"),
 	/* Device type label */
-	"modem-usb-"	: _("USB Modem"),
 	"modem-usb"	: _("USB Modem"),
 	/* Device type label */
 	"myri"		: _("Myrinet Network Card"),
@@ -287,10 +276,8 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	/* Device type label */
 	"ppp"		: _("Modem"),
 	/* Device type label */
-	"ppp-pcmcia-"	: _("PCMCIA Modem"),
 	"ppp-pcmcia"	: _("PCMCIA Modem"),
 	/* Device type label */
-	"ppp-usb-"	: _("USB Modem"),
 	"ppp-usb"	: _("USB Modem"),
 	/* Device type label */
 	"sit"		: _("IPv6-in-IPv4 Encapsulation Device"),
@@ -299,27 +286,29 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	/* Device type label */
 	"tr"		: _("Token Ring Network Card"),
 	/* Device type label */
-	"tr-pcmcia-"	: _("PCMCIA Token Ring Network Card"),
 	"tr-pcmcia"	: _("PCMCIA Token Ring Network Card"),
 	/* Device type label */
-	"tr-usb-"	: _("USB Token Ring Network Card"),
 	"tr-usb"	: _("USB Token Ring Network Card"),
+	/* Device type label */
+	"usb"		: _("USB Network Device"),
+	"usb-usb"	: _("USB Network Device"),
 	/* Device type label */
 	"vmnet"		: _("VMWare Network Device"),
 	/* Device type label */
 	"wlan"		: _("Wireless Network Card"),
 	/* Device type label */
 	"wlan-pcmcia"	: _("PCMCIA Wireless Network Card"),
-	"wlan-pcmcia-"	: _("PCMCIA Wireless Network Card"),
 	/* Device type label */
 	"wlan-usb"	: _("USB Wireless Network Card"),
-	"wlan-usb-"	: _("USB Wireless Network Card"),
-
-
     ];
 
     if(haskey(device_names, devtype))
 	return device_names[devtype]:"";
+
+    if(haskey(device_names, devtype + "-")) {
+	y2warning("- device found: %1, %2", devtype, hwname);
+	return device_names[devtype + "-"]:"";
+    }
 
     y2error("Unknown type: %1", devtype);
     /* Device type label */
@@ -487,6 +476,8 @@ global define string DeviceType(string type) ``{
 	"slip"	: _("Serial Line"),
 	/* Device type label */
 	"tr"	: _("Token Ring"),
+	/* Device type label */
+	"usb"	: _("USB"),
 	/* Device type label */
 	"vmnet"	: _("VMWare"),
 	/* Device type label */

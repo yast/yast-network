@@ -530,6 +530,9 @@ global define boolean Select(string dev) ``{
     /* kernel options */
     if(hotplug == "")
 	SelectModule(dev);
+    else {
+	SelectModule("");
+    }
 
     if(bootproto == "none") bootproto = "static";
 

@@ -1,15 +1,14 @@
 # $Id$
 
 Bugs:
-- dialup: don't always start smpppd and KInternet (#26382)
-- dialup: don't run KInternet in ncurses (#27891)
-- dialup: run KInternet according to the number of connections (#29475)
-- lan: UNIQUE missing after nfs install (#25739)
-- provider: provider & `immediate (#25432)
-- provider: provider0 (#17564)
+- [KInternet] handling
 - provider: wrong providers handling (installation: conflicting types) (#31508)
 - all: required packages not installed during installation (#31536)
 - isdn: cleanup [ISDN]
+
+in-progress:
+- [snwint] ifcfg-usb-usb: detected devices (manual adding done, detected missing) (#22739)
+- dummy: >1 devices, check: [suse-network] and [DUMMY] (#15960)
 
 Improvements:
 - dns: two resolv.conf scrconfs
@@ -21,11 +20,7 @@ Improvements:
 - routing: restart only routing
 - routing: check already present default route (partially #11132)
 - routines: check for yast2-mail presence
-- routines: support plip, slip, myri, ppp (serial cable, not modem)
-- routines: better kinternet handling (kdelibs, kdebase?)
-- dialup: start and setup smpppd only if >0 devs
-- dialup: info popup (configured + kinternet, cinternet)
-- dialup: run|stop kinternet, if DISPLAY and (not)running (#14320)
+- routines: support plip, slip, ppp (serial cable, not modem)
 - provider: offer to delete provider after device delete if not used (#16094)
 - provider: warn if deleting default provider for modem|isdn|dsl (#17497)
 - provider: delete default route if removed (#10739)
@@ -36,7 +31,6 @@ Improvements:
 - lan: builtin IBM cards? (#19910)
 - dns: better message for broken fields (eg. domain) (#22802)
 - lan: s390 devices numbering (#23332)
-- lan: detect wlan cards (#23491)
 - lan: yp configuration failed (#25506)
 - lan: ssh installation (install.inf format) (#24836)
 - all: don't always ask for the mail config (#31472)
@@ -45,13 +39,12 @@ Enhancements:
 - proxy: use immediately (#23728)
 - detection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
 - lan: defaut gw in the first dialog (#13450)
-- modem: winmodems support (#25220, #15556)
+- modem: winmodems support (#15556)
 - lan: dual port network cards #10077, #12387 [see 2002-05.txt]
 - lan: compiled in kernel drivers
 - modem: speaker volume as combo (or better as slider)
 - modem: pap|chap secrets writing
 - providers: no-global-values
-- providers: preload the country providers (other upon request)
 - providers: -> HWDB-NG
 - all: edit without restart (reload)
 - device: use map instead of variables (-> fill all variables)
@@ -59,7 +52,6 @@ Enhancements:
 - package: require yast2-language, yast2-mail, ...
 - hardware: cable connection (plip, slip, usb)
 - hardware: wireless connection (irda, bluetooth)
-- provider: use INS file (#25774)
 - feature: IP-masquerading (#16131), is already in the firewall
 - routing: default route without GW (#23977)
 - lan: use ethtool to map drivers to device names (#17346)
@@ -71,9 +63,8 @@ Enhancements:
 - lan: temporary interface disable (#24926)
 - all: temporary interface disable
 - dsl: flat rate (#27840)
-- ifcfg-usb-usb (#22739)
 - better network UI [sigi] (#29721)
-- support custom provider from INS file (#27955)
+- support custom provider from INS file (#25774)
 - improve modules.conf options merging (maybe obsolete with 2.6) (#29995)
 - make DHCP options iface-local (questionable) (#30476)
 - propose "http://" for the proxy strings (#31269)
@@ -88,7 +79,6 @@ Enhancements:
 - dsl: better proposal (#23662)
 - dsl: detect hardware (#24462)
 - dsl: empty ifcfg-ethX (#17631)
-- dummy: dummy device adding (#15960) [suse-network] [DUMMY]
 - alias: virtual interfaces (#6627) [ALIASES]
 - dns: replace SuSEconfig.hostname [HOSTNAME]
 - dialup: mail question only if new device was added
@@ -108,6 +98,15 @@ Documentation:
 - doc: include public_html/network, dia, ...
 
 ##############################################################################
+
+KInternet:
+- dialup: don't always start smpppd and KInternet (#26382)
+- dialup: don't run KInternet in ncurses (#27891)
+- dialup: run KInternet according to the number of connections (#29475)
+- routines: better kinternet handling (kdelibs, kdebase?)
+- dialup: start and setup smpppd only if >0 devs
+- dialup: info popup (configured + kinternet, cinternet)
+- dialup: run|stop kinternet, if DISPLAY and (not)running (#14320)
 
 ISDN:
 - code cleanup (use yast2-network structure: Provider, devices, ...)

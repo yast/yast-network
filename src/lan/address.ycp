@@ -70,7 +70,7 @@ the network configuration.</p>");
     string type = Lan::type;
     string device = "";
 
-    if(!Arch::s390 && bootproto == "static" && ipaddr == "")
+    if(!Arch::s390 && type != "dummy" && bootproto == "static" && ipaddr == "")
 	bootproto = "dhcp";
 
     if(ipaddr == "" && netmask == "") {
@@ -170,49 +170,50 @@ completes the configuration.</p>");
     /* s390 help hackery */
     }
 
-    /* S/390 Hipersockets */
-    if(type == "hsi" || Arch::s390)
+    /* No DHCP Setup */
+    if(type == "dummy" || type == "hsi" || Arch::s390)
 
 	/* Frame label */
-	frame1 = `Frame(_("Static Address Setup"),
-	    `VBox(
-		`VSpacing(0.5),
-		`HBox(
-		    /* Text entry label */
-		    `TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
-		    `HSpacing(2),
-		    /* Text entry label */
-		    `TextEntry(`id(`netmask), _("&Subnet mask"), netmask)
-		),
-		`VSpacing(0.5)
-	    ));
+	frame1 = `Frame(_("Static Address Setup"), `VBox(
+	    `VSpacing(0.5),
+	    `HBox(
+		/* Text entry label */
+		`TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
+		`HSpacing(2),
+		/* Text entry label */
+		`TextEntry(`id(`netmask), _("&Subnet mask"), netmask)
+	    ),
+	    `VSpacing(0.5)
+	));
 
-
-    /* S/390 CTC, ESCON and IUCV */
+    /* PPP devices */
     if(type == "ctc" || type == "escon" || type == "iucv")
 
 	/* Frame label */
-	frame1 = `Frame(_("Static Address Setup"),
-	    `VBox(
-		`VSpacing(0.5),
-		`HBox(
-		    /* Text entry label */
-		    `TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
-		    `HSpacing(2),
-		    /* Text entry label */
-		    `TextEntry(`id(`remoteip), _("R&emote IP Address"), remoteip)
-		),
-		`VSpacing(0.5)
-	    ));
+	frame1 = `Frame(_("Static Address Setup"), `VBox(
+	    `VSpacing(0.5),
+	    `HBox(
+		/* Text entry label */
+		`TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
+		`HSpacing(2),
+		/* Text entry label */
+		`TextEntry(`id(`remoteip), _("R&emote IP Address"), remoteip)
+	    ),
+	    `VSpacing(0.5)
+	));
 
     /* Push button label */
     term HardwareButton = `PushButton(`id(`hardware), `opt(`hstretch), _("H&ardware Details"));
-    if(Lan::operation == `add && Lan::unique == "")
+    if(type == "dummy" || (Lan::operation == `add && Lan::unique == ""))
 	HardwareButton = `VSpacing(0);
 
     /* Push button label */
     term VirtualButton = `PushButton(`id(`virtual), `opt(`hstretch), _("&Virtual Aliases"));
     VirtualButton = `VSpacing(0);
+
+    /* Push button label */
+    term DHCPButton = `PushButton(`id(`dhclient), `opt(`hstretch), _("DHCP &Client Options"));
+    if(type == "dummy") DHCPButton = `VSpacing(0);
 
     /* Frame label */
     term frame2 = `Frame(_("Detailed settings"), `HBox(`HStretch(),
@@ -222,8 +223,7 @@ completes the configuration.</p>");
 	    `PushButton(`id(`hostname), `opt(`hstretch), _("&Host name and name server")),
 	    /* Push button label */
 	    `PushButton(`id(`routing), `opt(`hstretch), _("R&outing")),
-	    /* Push button label */
-	    `PushButton(`id(`dhclient), `opt(`hstretch), _("DHCP &Client Options")),
+	    DHCPButton,
 	    HardwareButton,
 	    VirtualButton,
 	    `VSpacing(0.4)
