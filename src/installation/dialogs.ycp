@@ -25,7 +25,7 @@ include "network/routines.ycp";
  * Ask for password if required
  * @return true on success
  */
-global define boolean AskForPassword() ``{
+define boolean AskForPassword() ``{
 
     if (Internet::askpassword == nil)
 	return true;
@@ -59,7 +59,7 @@ global define boolean AskForPassword() ``{
  * Connection steps dialog
  * @return dialog result
  */
-global define symbol TestStepsDialog() ``{
+define symbol TestStepsDialog() ``{
 
     ScreenName("installation-steps-dialog");
 
@@ -180,7 +180,7 @@ activate the test procedure."),
  * Connection test dialog
  * @return dialog result
  */
-global define any AskYOUDialog() ``{
+define any AskYOUDialog() ``{
 
     ScreenName("installation-you-dialog");
 
@@ -230,7 +230,7 @@ global define any AskYOUDialog() ``{
  * @param logs log files
  * @param logdir log files directory
  */
-global define void ShowLogs(list logs, string logdir) ``{
+define void ShowLogs(list logs, string logdir) ``{
 
     ScreenName("installation-show-logs");
 
