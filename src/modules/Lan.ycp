@@ -302,7 +302,7 @@ global define boolean Write() ``{
     if(Abort()) return false;
     // stage 8 in writing current Lan setup
     ProgressNextStage(_("Setting up network services"));
-    if(!write_only) SetupNetwork();
+    SetupNetwork();
     sleep(sl);
 
     if(Abort()) return false;
