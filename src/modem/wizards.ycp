@@ -5,8 +5,6 @@
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
- * Wizards definitions.
  */
 
 {
@@ -32,7 +30,7 @@ include "network/providers/connection.ycp";
  */
 global define symbol ModemSequence() ``{
 
-    /* popup text */
+    /* Popup text */
     string finished = _("Would you like to configure the mail now?");
 
     map aliases = $[

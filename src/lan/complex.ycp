@@ -12,6 +12,8 @@
 textdomain "network";
 
 import "Lan";
+import "DNS";
+import "Routing";
 
 import "Wizard";
 import "Wizard_hw";
@@ -20,7 +22,6 @@ include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
 
 include "network/routines.ycp";
-include "network/lan/helps.ycp";
 
 /**
  * Return a modification status
@@ -45,11 +46,11 @@ global define symbol Commit() ``{
  */
 global define symbol ReadDialog() ``{
 
-    /* Network read dialog help 1/2 */
+    /* Network cards read dialog help 1/2 */
     string help = _("<p><b><big>Initializing network card
 configuration</big></b><br>Please wait...<br></p>") +
 
-    /* Network read dialog help 2/2 */
+    /* Network cards read dialog help 2/2 */
 _("<p><b><big>Aborting the initialization:</big></b><br>
 Safely abort the configuration utility by pressing <B>Abort</B> now.</p>");
 
@@ -66,11 +67,11 @@ Safely abort the configuration utility by pressing <B>Abort</B> now.</p>");
 global define symbol WriteDialog() ``{
     if(!Modified()) return `next;
 
-    /* Network write dialog help 1/2 */
+    /* Network cards write dialog help 1/2 */
     string help = _("<p><b><big>Saving network card
 configuration</big></b><br>Please wait...<br></p>") +
 
-    /* Network write dialog help 2/2 */
+    /* Network cards write dialog help 2/2 */
 _("<p><b><big>Aborting saving:</big></b><br>
 Abort saving by pressing <b>Abort</b>.</p>");
 
@@ -86,20 +87,20 @@ Abort saving by pressing <b>Abort</b>.</p>");
  */
 global define symbol SummaryDialog() ``{
 
-    /* Network summary dialog caption */
+    /* Network cards summary dialog caption */
     string caption = _("Network cards configuration");
 
-    /* Network summary dialog help 1/3 */
+    /* Network cards summary dialog help 1/3 */
     string help = _("<p><b><big>Network card setup</big></b><br>
 Configure your network card here.<br></p>") +
 
-    /* Network summary dialog help 2/3 */
+    /* Network cards summary dialog help 2/3 */
 _("<p><b><big>Adding a network card:</big></b><br>
 Choose a network card from the list of detected network cards.
 If your network card was not autodetected, select <b>Other (not detected)</b>
 then press <b>Configure</b>.</p>") +
 
-    /* Network summary dialog help 3/3 */
+    /* Network cards summary dialog help 3/3 */
 _("<p><b><big>Editing or deleting:</big></b><br>
 If you press <b>Edit</b>, an additional dialog in which
 to change the configuration opens.</p>");
@@ -162,19 +163,19 @@ to change the configuration opens.</p>");
  */
 global define symbol OverviewDialog() ``{
 
-    /* Network overview dialog caption */
+    /* Network cards overview dialog caption */
     string caption = _("Network cards configuration overview");
 
-    /* Network overview dialog help 1/3 */
+    /* Network cards overview dialog help 1/3 */
     string help = _("<p><b><big>Network card overview</big></b><br>
 Obtain an overview of installed network cards. Additionally,
 edit their configuration.<br></p>") +
 
-    /* Network overview dialog help 2/3 */
+    /* Network cards overview dialog help 2/3 */
 _("<p><b><big>Adding a network card:</big></b><br>
 Press <b>Add</b> to configure a new network card manually.</p>") +
 
-    /* Network overview dialog help 3/3 */
+    /* Network cards overview dialog help 3/3 */
 _("<p><b><big>Editing or deleting:</big></b><br>
 Choose a network card to change or remove.
 Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");

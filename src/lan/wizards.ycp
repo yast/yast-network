@@ -5,8 +5,6 @@
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
- * Wizards definitions.
  */
 
 {
@@ -20,7 +18,7 @@ include "wizard/sequencer.ycp";
 include "network/routines.ycp";
 include "network/lan/manual.ycp";
 include "network/lan/address.ycp";
-include "network/lan/dialogs.ycp";
+include "network/lan/complex.ycp";
 include "network/services/dns.ycp";
 include "network/services/routing.ycp";
 
@@ -30,7 +28,7 @@ include "network/services/routing.ycp";
  */
 global define symbol LanSequence() ``{
 
-    /* popup text */
+    /* Popup text */
     string finished = _("Would you like to configure the mail now?");
 
     map aliases = $[

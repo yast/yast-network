@@ -27,7 +27,7 @@ include "network/dsl/complex.ycp";
  */
 global define symbol DSLSequence() ``{
 
-    /* popup text */
+    /* Popup text */
     string finished = _("Would you like to configure the mail now?");
 
     map aliases = $[

@@ -30,8 +30,6 @@ Bugs:
     [nebo Name servers: 10.20.0.1, 10.20.1.16]
     Gateway: 10.20.0.1 (jmeno)
 
-- ReadHardware vs. HardwareRead (Config, ...)
-
 - include public_html/network
 
 - [Hardware details]: wireless, eth numbers, dual port cards,
@@ -117,7 +115,6 @@ WriteModules();	<-D,M
 Select: C,M -> global vars
 AddEdit: global vars -> C,M
 Delete: global vars -> C,M,D
-
 
 DSL Device:
 alias neco eth0

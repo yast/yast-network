@@ -12,6 +12,7 @@
 textdomain "network";
 
 import "DSL";
+import "Providers";
 
 import "Wizard";
 import "Wizard_hw";

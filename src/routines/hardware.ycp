@@ -23,7 +23,7 @@ textdomain "network";
  * @param hwtype type of devices to read (netcard|modem|isdn)
  * @return true if success
  */
-global define boolean HardwareRead(string hwtype) ``{
+global define boolean ReadHardware(string hwtype) ``{
     HARDWARE = [];
 
     integer num = 0;
@@ -34,6 +34,7 @@ global define boolean HardwareRead(string hwtype) ``{
 	"netcard" : .probe.netcard,
 	"modem" : .probe.modem,
 	"isdn" : .probe.isdn,
+	"dsl" : .probe.isdn,
     ];
 
     /* read the corresponding hardware */
@@ -83,6 +84,11 @@ global define boolean HardwareRead(string hwtype) ``{
 	    change(one, "io", lookup(select(lookup(resource, "io", []),0, $[]), "start", 0));
 	    change(one, "irq", lookup(select(lookup(resource, "irq", []), 0, $[]), "irq", 0));
 	}
+	/* dsl card */
+	else if(controller == "dsl") {
+	    y2error("dsl not ready yet");
+	    /* FIXME */
+	}
 	/* treat the rest as a network card */
 	else {
 	    list drivers = lookup(card, "drivers", []);
@@ -106,7 +112,7 @@ global define boolean HardwareRead(string hwtype) ``{
  * Select the given hardware item or clean up structures
  * @param which item to be chosen
  */
-global define void HardwareSelect(integer which) ``{
+global define void SelectHardware(integer which) ``{
     map sel = $[];
 
     if(which != nil)
@@ -132,6 +138,12 @@ global define void HardwareSelect(integer which) ``{
     }
     /* isdn card */
     else if(type == "isdn") {
+	y2error("isdn not ready yet");
+	/* FIXME */
+    }
+    /* dsl card */
+    else if(type == "dsl") {
+	y2error("dsl not ready yet");
 	/* FIXME */
     }
     /* treat the rest as a network card */
@@ -147,7 +159,7 @@ global define void HardwareSelect(integer which) ``{
  * Read /etc/modules.conf
  * @return true if success
  */
-global define boolean ModulesRead() ``{
+global define boolean ReadModules() ``{
     return false;
 }
 
@@ -155,7 +167,7 @@ global define boolean ModulesRead() ``{
  * Write /etc/modules.conf
  * @return true if success
  */
-global define boolean ModulesWrite() ``{
+global define boolean WriteModules() ``{
     return false;
 }
 
@@ -163,7 +175,7 @@ global define boolean ModulesWrite() ``{
  * Select the given modules.conf entry or clean up structures
  * @param which item to be chosen
  */
-global define void ModulesSelect(integer which) ``{
+global define void SelectModules(integer which) ``{
 }
 
 /**
@@ -204,6 +216,7 @@ global define string ControllerType(map hwdevice) ``{
 
     if(lookup(hwdevice, "subclass", "") == "Modem") return "modem";
     if(lookup(hwdevice, "subclass", "") == "ISDN") return "isdn";
+    if(lookup(hwdevice, "subclass", "") == "DSL") return "dsl";
 
     integer subclass_id = lookup(hwdevice, "sub_class_id", -1);
 
@@ -212,7 +225,11 @@ global define string ControllerType(map hwdevice) ``{
 	if(subclass_id == 00) return "eth";
 	else if(subclass_id == 01) return "tr";
 	else if(subclass_id == 02) return "fddi";
-	else return "eth";  /* default */
+	else {
+	    /* Nothing was found, default is eth */
+	    y2error("Unknown network controller type: %1", hwdevice);
+	    return "eth";
+	}
 
     }
     /* Network Interface */
@@ -224,7 +241,11 @@ global define string ControllerType(map hwdevice) ``{
 	else if(subclass_id == 70) return "escon";
 	else if(subclass_id == 80) return "unknown";
 	else if(subclass_id == 81) return "sit";
-	else return "eth";  /* default */
+	else {
+	    /* Nothing was found, default is eth */
+	    y2error("Unknown network interface type: %1", hwdevice);
+	    return "eth";
+	}
     }
     else if(lookup(hwdevice, "class_id", -1) == 0x102)
 	return "modem";
@@ -232,7 +253,8 @@ global define string ControllerType(map hwdevice) ``{
 	return "isdn";
 
     /* Nothing was found, default is eth */
-    return "unknown";
+    y2error("Unknown controller type: %1", hwdevice);
+    return "eth";
 }
 
 /* EOF */

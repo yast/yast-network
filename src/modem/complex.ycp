@@ -19,6 +19,7 @@ import "Wizard_hw";
 
 include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
+
 include "network/routines.ycp";
 
 /**
