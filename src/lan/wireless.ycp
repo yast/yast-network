@@ -70,7 +70,7 @@ available options.</p>");
 
     /* PushButton label */
     term multikeys = `PushButton(`id(`keys), _("&Multiple Keys"));
-    multikeys = `VSpacing(0);
+    // multikeys = `VSpacing(0);
 
     /* Wireless dialog contents */
     term contents = `HBox(
@@ -324,7 +324,7 @@ define any WirelessKeysDialog() ``{
     ScreenName("lan-hardware-wireless-keys");
 
     /* Wireless keys dialog caption */
-    string caption = _("Wireless Expert Settings");
+    string caption = _("Wireless Keys");
 
     /* Wireless keys dialog help 1/3 */
     string helptext = _("<p>In this dialog, define your WEP keys used
@@ -341,51 +341,54 @@ wireless LAN connection does not establish, you may need to set this
 value to 64.</p>") +
 
     /* Wireless keys dialog help 3/3 */
-    _("<p>The <b>Security Mode</b> defines the behavior of your card when
-using encryption. In restricted mode, unencrypted data is
-dropped. In open mode, unencrypted data is accepted. However, open mode
-better protects your encryption key, because it is not sent for authentication.
-Unless you have specific needs for the restricted mode, use the <b>open</b>
-security mode.</p>");
+    _("<p>The <b>Authentication Mode</b> defines the behavior of your card when
+using encryption. <b>Open</b> mode means that no authentication is performed.
+<b>Shared Key</b> mode means that shared key authentication gets done if
+needed.</p>") +
+
+    /* Wireless keys dialog help 3/3 */
+    _("<p>NOTE: Shared key authentication makes it easier for a potential
+attacker to break into your network. Unless you have specific needs for shared
+key authentication, use the <b>Open</b> mode.</p>");
 
     /* Wireless keys dialog contents */
     term contents = `HBox(
-	`HSpacing(4),
+	`HSpacing(5),
 	`VBox(
-	    `VSpacing(0.5),
+	    `VSpacing(2),
 	    /* Frame label */
-	    `Frame(_("Wireless Expert Settings"), `HBox(`HSpacing(2), `VBox(
+	    `Frame(_("WEP Keys"), `HBox(`HSpacing(3), `VBox(
 		`VSpacing(1),
-		/* Combobox item */
-		`ComboBox(`id(`mode), `opt(`hstretch), _("O&perating Mode"), [
-		    /* Combobox item */
-		    `item(`id("Ad-hoc"), _("Ad-hoc"), Lan::wl_mode == "Ad-hoc"),
-		    /* Combobox item */
-		    `item(`id("Managed"), _("Managed"), Lan::wl_mode == "Managed"),
-		    /* Combobox item */
-		    `item(`id("Repeater"), _("Repeater"), Lan::wl_mode == "Repeater"),
-		    /* Combobox item */
-		    `item(`id("Secondary"), _("Secondary"), Lan::wl_mode == "Secondary"),
-		    /* Combobox item */
-		    `item(`id("Automatic"), _("Automatic"), Lan::wl_mode == "Auto")
-		 ]),
+		/* ComboBox label */
+		`Left(`ComboBox(`id(`length), _("&Key Length"), ["128","64"])),
 		`VSpacing(0.2),
-		/* Text entry label */
-		`TextEntry(`id(`essid), _("Ne&twork Name (ESSID)"), Lan::wl_essid),
-		`VSpacing(0.2),
-		/* Text entry label */
-		`TextEntry(`id(`nwid), _("Network &Identifier (NWID)"), Lan::wl_nwid),
-		`VSpacing(0.2),
-		/* Text entry label */
-		`TextEntry(`id(`key), _("&Encryption Key"), Lan::wl_key),
-		`VSpacing(0.2),
-		/* Text entry label */
-		`TextEntry(`id(`nick), _("Nic&k Name"), Lan::wl_nick),
+		/* ComboBox label */
+		`Left(`ComboBox(`id(`authmode), _("&Authentication Mode"), [
+		    /* ComboBox item */
+		    _("Open"),
+		    /* ComboBox item */
+		    _("Shared Key"),
+		])),
+		`VSpacing(1),
+		`Table(`id(`table), `opt(`notify), `header(
+                    /* Table header label */
+                    _("Nr."),
+                    /* Table header label */
+                    _("Key"),
+                    /* Table header label */
+                    _("Default")), []),
+		`HBox(
+		    /* PushButton label */
+		    `PushButton(`id(`edit), `opt(`disabled), Label::EditButton()),
+		    /* PushButton label */
+		    `PushButton(`id(`delete), `opt(`disabled), Label::DeleteButton()),
+		    /* PushButton label */
+		    `PushButton(`id(`default), _("&Set as Default"))),
 		`VSpacing(1)
-		), `HSpacing(2))),
-	    `VSpacing(0.5)
+		), `HSpacing(3))),
+	    `VSpacing(2)
 	),
-	`HSpacing(4)
+	`HSpacing(5)
     );
 
     Wizard::SetContentsButtons(caption, contents, helptext,

@@ -42,17 +42,19 @@ string nameserver = (string) SCR::Read (.etc.install_inf.Nameserver);
 if (nameserver == nil) nameserver = "";
 
 y2milestone("Original netdevice: %1 (%2)", netdevice, hwaddr);
-string command = sformat("/sbin/ifconfig | grep -i \"HWaddr *%1\" | cut -d\" \" -f1", hwaddr);
 
-y2milestone("IFCONFIG0: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
+if(hwaddr != nil && hwaddr != "") {
+    string command = sformat("/sbin/ifconfig -a | grep -i \"HWaddr *%1\" | cut -d\" \" -f1", hwaddr);
+    y2milestone("IFCONFIG0: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
 
-map output = (map) SCR::Execute(.target.bash_output, command, $["LC_MESSAGES":"C"]);
-y2milestone("Output: %1", output);
-if(output != nil) {
-    string newdevice = output["stdout"]:"";
-    newdevice = select(splitstring(newdevice, "\n"), 0, "");
-    if(newdevice != "" && newdevice != nil) netdevice = newdevice;
-    y2milestone("Updated netdevice: %1 (%2)", netdevice, newdevice);
+    map output = (map) SCR::Execute(.target.bash_output, command, $["LC_MESSAGES":"C"]);
+    y2milestone("Output: %1", output);
+    if(output != nil) {
+	string newdevice = output["stdout"]:"";
+	newdevice = select(splitstring(newdevice, "\n"), 0, "");
+	if(newdevice != "" && newdevice != nil) netdevice = newdevice;
+	y2milestone("Updated netdevice: %1 (%2)", netdevice, newdevice);
+    }
 }
 
 define void load_modules () {
@@ -73,14 +75,10 @@ define void load_modules () {
  */
 define boolean do_network_setup ()
 {
-    if (Mode::test)
+    if (Mode::test || Arch::s390 || Mode::vnc || Mode::usessh) {
+	y2milestone("NOT doing the basic network setup");
 	return false;
-
-    if (Arch::s390)
-	return false;
-
-    if (Mode::vnc || Mode::usessh)
-	return false;
+    }
 
     return true;
 }
