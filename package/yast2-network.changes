@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Feb 22 17:33:39 CET 2005 - mvidner@suse.cz
+
+- Adjusted to the actual wireless card features implementation in
+  agent-probe (#65391).
+
+-------------------------------------------------------------------
 Mon Feb 21 16:57:57 CET 2005 - mvidner@suse.cz
 
 - Improved the layout of the internet connection test dialog

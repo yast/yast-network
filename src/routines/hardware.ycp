@@ -237,7 +237,6 @@ define list<map> ReadHardware(string hwtype) {
 	}
 	/* isdn card */
 	else if(controller == "isdn") {
-	    map resource = card["resource"]:$[];
 	    list drivers = card["isdn"]:[];
 	    one["drivers"] = drivers;
 	    one["sel_drv"] = 0;
@@ -266,12 +265,6 @@ define list<map> ReadHardware(string hwtype) {
 	    one["module"] = modules[0]:"";
 	    one["options"] = modules[1]:"";
 
-	    // Wireless Card Features
-	    // TODO adjust to reality
-	    one["wl_auth_modes"] = card["wl_auth_modes"]:nil;
-	    one["wl_channels"] = card["wl_channels"]:nil;
-	    one["wl_bitrates"] = card["wl_bitrates"]:nil;
-
 	    /* FIXME: this should be also done for modems and others */
 	    /* FIXME: #13571 */
 	    string hp = card["hotplug"]:"";
@@ -290,6 +283,13 @@ define list<map> ReadHardware(string hwtype) {
 	    one["mac"] = resource["hwaddr", 0, "addr"]:"";
 	    // is the cable plugged in? nil = don't know
 	    one["link"] = resource["link", 0, "state"]:nil;
+
+	    // Wireless Card Features
+	    one["wl_channels"]    = resource["wlan", 0, "channels"]:nil;
+	    //one["wl_frequencies"] = resource["wlan", 0, "frequencies"]:nil;
+	    one["wl_bitrates"]    = resource["wlan", 0, "bitrates"]:nil;
+	    one["wl_auth_modes"]  = resource["wlan", 0, "auth_modes"]:nil;
+	    //one["wl_enc_modes"]   = resource["wlan", 0, "enc_modes"]:nil;
 	}
 
 	y2debug("found device: %1", one);

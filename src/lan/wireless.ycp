@@ -153,6 +153,11 @@ list<term> AuthModeItems (list<string> authmodes) {
     {
 	authmodes = (list<string>)Map::Keys (names);
     }
+    else
+    {
+	// keep only those that we know how to handle
+	authmodes = filter (string am, authmodes, ``( haskey (names, am) ));
+    }
     return maplist (string am, authmodes, ``( `item (`id (am), names[am]:am) ));
 }
 
