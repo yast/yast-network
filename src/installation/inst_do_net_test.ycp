@@ -42,9 +42,20 @@ if(!Internet::FindFastest())
 
 boolean we_have_patches = false;
 
+// do we have a connection already?
+// then don't open or close it, don't show respective steps
 boolean already_up = false;
 
+// Stage transitions in handle_stage:
+// open: wait (test), copy, finish (failure), wait
+// wait: copy (test), finish (failure), copy
+// copy: relnotes
+// relnotes: patches
+// patches: close
+// close: finish
+// finish
 symbol test_stage = `open;
+
 symbol test_result = `success;
 
 // list of all log files to show
