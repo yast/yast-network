@@ -35,11 +35,14 @@ global define term Card_Parameter(integer cidx) ``{
 	string startm = lookup(ISDN::hw_device, "STARTMODE", "onboot");
 	map   cur_card = select(ISDN::ISDN_Devices, cidx, nil);
 	integer i = 0;
+	integer typ = -1;
 	boolean found = false;
 
 	if (cur_card == nil)
 	    return contens;
 	y2debug("cur_card %1",cur_card);
+	typ = get_i4ltype(cur_card);
+	y2debug("typ : %1", typ);
 	i = lookup(cur_card, "class", 0);
 	if ((i == 4) || (i==8)) /* PCMCIA, USB */
 		startm = "hotplug";
@@ -52,6 +55,10 @@ global define term Card_Parameter(integer cidx) ``{
 		`item(`id("manual"), _("Manual"), startm == "manual"),
 		`item(`id("hotplug"), _("HotPlug"), startm == "hotplug")
 	    ])));
+	if (typ == 8005) { /* AVM T1 */
+	    // CheckBox label
+	    contens = add(contens, `CheckBox(`id(`t1b), _("&T1B Version"), false));
+	}
 	if ((i != 3) && (i != 6) && (i != 7))
 	    return contens;
 	/* only legal ISA parport and serial devices */
@@ -185,6 +192,7 @@ global define symbol isdn_lowlevel(symbol Detected) ``{
     integer Default_TYPE = tointeger(lookup(ISDN::hw_device, "PARA_TYPE", "-1"));
     integer Default_SUBTYPE = tointeger(lookup(ISDN::hw_device, "PARA_SUBTYPE", "-1"));
     integer feature = 0;
+    boolean t1b = false;
     string  CardName = "";
     string  protocol = lookup(ISDN::hw_device, "PROTOCOL", "euro");
     string  areacode = lookup(ISDN::hw_device, "AREACODE", "");
@@ -202,6 +210,16 @@ global define symbol isdn_lowlevel(symbol Detected) ``{
 	Default_SUBTYPE = get_i4lsubtype(first_card);
     }
     y2debug("DefaultTYPE : %1/%2", Default_TYPE, Default_SUBTYPE);
+    /* Special Handling AVM T1 */
+    if (Default_TYPE == 8005) {
+	if (Default_SUBTYPE == 1) {
+	    Default_SUBTYPE = 0;
+	    t1b = true;
+	} else if (Default_SUBTYPE == 3) {
+	    Default_SUBTYPE = 2;
+	    t1b = true;
+	}
+    }
 
     map CurrentCard = get_isdncard_by_type(ISDN::ISDN_Devices, Default_TYPE, Default_SUBTYPE);
 
@@ -373,6 +391,9 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
     UI::ChangeWidget(`id("euro"), `Enabled, (feature & 0x02)==0x02);
     UI::ChangeWidget(`id("ni1"), `Enabled, (feature & 0x04)==0x04);
     UI::ChangeWidget(`id("leased"), `Enabled, (feature & 0x08)==0x08);
+    /* Special Handling AVM T1 */
+    if (Default_TYPE == 8005)
+	UI::ChangeWidget(`id(`t1b), `Value, t1b);
 
     /* MAIN CYCLE */
     symbol ret = nil;
@@ -459,6 +480,11 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 	    CardDrivers = lookup(CurrentCard, "driver", []);
 	    Default_TYPE = get_i4ltype(CurrentCard);
 	    Default_SUBTYPE = get_i4lsubtype(CurrentCard);
+	    /* Special Handling AVM T1 */
+	    if (Default_TYPE == 8005) {
+		if (UI::QueryWidget(`id(`t1b), `Value))
+		   Default_SUBTYPE = Default_SUBTYPE + 1;
+	    }
 	    ISDN::hw_device = union(ISDN::hw_device, $[
 		"PARA_TYPE"	: sformat("%1", Default_TYPE),
 		"PARA_SUBTYPE"	: sformat("%1", Default_SUBTYPE),
