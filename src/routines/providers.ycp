@@ -630,14 +630,14 @@ global define symbol runEditIsdnProviderDialog () ``{
 }
 
 /*
-Wizard::CreateDialog();
-runProvidersDialog(false);
-runProvidersDialog(true);
-runEditModemProviderDialog(false);
-runEditModemProviderDialog(true);
-runEditIsdnProviderDialog();
-UI::CloseDialog();
 */
+//Wizard::CreateDialog();
+//runProvidersDialog(false);
+//runProvidersDialog(true);
+//runEditModemProviderDialog(false);
+//runEditModemProviderDialog(true);
+//runEditIsdnProviderDialog();
+//UI::CloseDialog();
 
 /* EOF */
 }
