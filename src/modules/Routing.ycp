@@ -19,7 +19,7 @@ import "Map";
 /**
  * All routes
  */
-global list Routes = [];
+global list<map> Routes = [];
 
 /**
  * Enable IP forwarding
@@ -60,7 +60,7 @@ global define boolean Read() {
 
     /* read route.conf */
     if(SCR::Read(.target.size, routes_file) > 0)
-	Routes = (list) SCR::Read(.routes);
+	Routes = (list<map>) SCR::Read(.routes);
     else
 	Routes = [];
 
@@ -149,7 +149,7 @@ global define boolean Import(map settings) {
     if(size(settings) == 0)
 	return true;
 
-    Routes = (list) eval(settings["routes"]:[]);
+    Routes = (list<map>) eval(settings["routes"]:[]);
     Forward = settings["ip_forward"]:false;
 
     Orig_Routes = nil;

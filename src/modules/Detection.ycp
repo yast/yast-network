@@ -80,7 +80,7 @@ define boolean StartEthInterface() {
     if(size(Hardware) < 1) return false;
 
     /* Look for eth cards */
-    list ethernet_cards = filter(map h, Hardware, {
+    list ethernet_cards = filter(map h, (list<map>) Hardware, {
 	return h["type"]:"" == "eth";
 	});
     map card = (map) (ethernet_cards[0]:nil);
@@ -176,7 +176,7 @@ define boolean StopDetection() {
 	SCR::Write(.target.string, tmpfile, scrfile);
 	SCR::RegisterAgent(detpath, tmpfile);
 
-	list keys = SCR::Dir(detpath);
+	list<string> keys = SCR::Dir(detpath);
 	y2debug("keys=%1", keys);
 
 	maplist(string k, keys, {

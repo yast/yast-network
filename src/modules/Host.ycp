@@ -1,4 +1,4 @@
-/**
+/**OB
  * File:	modules/Host.ycp
  * Package:	Network configuration
  * Summary:	Hosts data
@@ -16,12 +16,12 @@ import "Summary";
 /**
  * All hosts
  */
-global map hosts = $[];
+global map<string, any > hosts = $[];
 
 /**
  * Deleted hosts
  */
-global list Deleted = [];
+global list<string> Deleted = [];
 
 /**
  * Data was modified?
@@ -31,7 +31,7 @@ global boolean modified = false;
 /**
  * All hosts read at the start
  */
-map hosts_init = $[];
+map<string,any> hosts_init = $[];
 
 /**
  * "hosts" file location
@@ -52,10 +52,10 @@ global define boolean Read() {
 
     /* read route.conf */
     if(SCR::Read(.target.size, hosts_file) > 0) {
-	list hostlist = SCR::Dir(.etc.hosts);
+	list<string> hostlist = (list<string>)SCR::Dir(.etc.hosts);
 	hosts = listmap(string host, hostlist, {
 	    string name = (string) SCR::Read(topath(sformat(".etc.hosts.\"%1\"", host)));
-	    list names = filter(string s, splitstring(name, "[ \t]"), {
+	    list<string> names = filter(string s, splitstring(name, "[ \t]"), {
 		return s != nil && s != "";
 	    });
 	    return $[ host: names ];
@@ -103,7 +103,7 @@ global define boolean Write() {
 	    return SCR::Write(add(.etc.hosts, ho), nil);
 	});
 	/* Add and update new hosts */
-	maplist(string ho, list<string> names, hosts, {
+	maplist(string ho, list<string> names, (map<string,list<string> >)hosts, {
 	    if(contains(Deleted, ho) || hosts_init[ho]:nil != names) {
 		y2debug("changed: %1 (%2:%3)", ho, names, hosts_init[ho]:nil);
 		SCR::Write(add(.etc.hosts, ho), mergestring(names, " "));
@@ -125,7 +125,7 @@ global define boolean Write() {
 global define boolean Import(map settings) {
     modified = true;
 
-    hosts = (map) eval(settings["hosts"]:$[]);
+    hosts = eval(settings["hosts"]:$[]);
     return true;
 }
 
@@ -157,7 +157,7 @@ global define list GetSystemHosts() {
  * @param ips localhost IP addresses
  * @return true if success
  */
-global define boolean Update(string hostname, string domain, list ips) {
+global define boolean Update(string hostname, string domain, list<string> ips) {
 
     string fqhostname = hostname;
     if(domain != "") fqhostname = fqhostname + "." + domain;
@@ -214,7 +214,7 @@ global define string Summary() {
 	    return Summary::NotConfigured();
 
 	summary = Summary::OpenList(summary);
-	foreach(string k, list<string> v, hosts, {
+	foreach(string k, list<string> v, (map<string,list<string> >)hosts, {
 	    summary = Summary::AddListItem(summary, k + " - " + mergestring(v, " ") );
 	});
 	summary = Summary::CloseList(summary);

@@ -96,7 +96,7 @@ global block<boolean> AbortFunction = nil;
  * Hardware information
  * @see ReadHardware
  */
-list Hardware = [];
+list<map> Hardware = [];
 
 /**
  * Modules information
@@ -107,7 +107,7 @@ map Modules = $[];
 /**
  * Deleted modules
  */
-list DeletedModules = [];
+list<string> DeletedModules = [];
 
 /**
  * /etc/install.inf data
@@ -593,7 +593,7 @@ global define boolean Commit() {
     y2debug("Commit(%1)", operation);
 
     if(operation == `add || operation == `edit) {
-	map newdev = $[
+	map<string,any> newdev = $[
 	    "BOOTPROTO"	: bootproto,
 	    "UNIQUE"	: unique,
 	];
@@ -854,7 +854,7 @@ global define boolean Propose() {
  * @return true if any DHCP device except the current one is configured
  */
 global define boolean AnyDHCPDevice() {
-    list devs = NetworkDevices::Locate("BOOTPROTO", "dhcp");
+    list<string> devs = NetworkDevices::Locate("BOOTPROTO", "dhcp");
     devs = filter(string dev, devs, {
 	return dev != device_name(RealType(type, hotplug), device);
     });
