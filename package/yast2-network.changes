@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov  4 10:52:12 CET 2004 - mvidner@suse.cz
+
+- Fixed errors found by stricter type checking.
+- Replaced selects and lookups by brackets.
+- 2.11.5
+
+-------------------------------------------------------------------
 Wed Oct 27 15:38:09 CEST 2004 - mvidner@suse.cz
 
 - Actually assign to allow_administration in Remote::Read (#44684).
