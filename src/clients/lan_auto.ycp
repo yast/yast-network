@@ -1,0 +1,60 @@
+/**
+ * File:
+ *   lan_auto.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   Client for autoinstallation
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * This is a client for autoinstallation. It takes its arguments,
+ * goes through the configuration and return the setting.
+ * Does not do any changes to the configuration.
+ */
+
+/**
+ * @param first a map of lan settings
+ * @return boolean success of operation
+ * @example map mm = $[ "FAIL_DELAY" : "77" ];
+ * @example map ret = CallModule("lan_auto", [ mm ]);
+ */
+
+{
+
+textdomain "network";
+
+y2milestone("Lan auto started");
+y2milestone("----------------------------------------");
+
+import "Lan";
+include "network/lan/wizards.ycp";
+
+list args = Args();
+if( size(args) <= 0 ) {
+    y2error("Did not get the settings, probably some mistake...");
+    return false;
+}
+if( !is( Args(0), map ) ) {
+    y2error("Bad argument for lan_auto: %1", Args(0));
+    return false;
+}
+
+/* The settings are in the first argument */
+map settings = select(args, 0, $[]);
+y2debug("Imported: (%1)", settings);
+
+Lan::Import(settings);
+LanAutoSequence();
+map ret = Lan::Export();
+y2debug("Exported: (%1)", ret);
+
+y2milestone("Lan auto finished");
+return ret;
+
+}

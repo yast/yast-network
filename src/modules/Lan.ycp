@@ -62,6 +62,11 @@ global block AbortFunction = nil;
 /* PRIVATE DATA */
 
 /**
+ * Config information
+ */
+map CONFIG = $[];
+
+/**
  * Hardware information
  * [
  *     "name"	: "Digital DecCHIP 1234",
@@ -71,11 +76,6 @@ global block AbortFunction = nil;
  * ]
  */
 list HARDWARE = [];
-
-/**
- * Config information
- */
-map CONFIG = $[];
 
 /**
  * Deleted devices
@@ -245,7 +245,7 @@ global define boolean StartNetwork() ``{
  * @return true on success
  */
 global define boolean Import(map settings) ``{
-    return false;
+    CONFIG = settings;
 }
 
 /**
@@ -254,7 +254,7 @@ global define boolean Import(map settings) ``{
  * @return dumped settings (later acceptable by Import())
  */
 global define map Export() ``{
-    return $[];
+    return CONFIG;
 }
 
 /**

@@ -1,0 +1,59 @@
+/**
+ * File:
+ *   lan_write.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   Writing only client
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * This is a write-only client. It takes its arguments and just
+ * write the settings.
+ */
+
+/**
+ * @param first a map of network settings
+ * @return boolean success of operation
+ * @example map mm = $[ "FAIL_DELAY" : "77" ];
+ * @example any ret = CallModule("network_write", [ mm ]);
+ */
+
+{
+
+textdomain "network";
+
+y2milestone("Lan write started");
+y2milestone("----------------------------------------");
+
+import "Lan";
+import "Progress";
+
+list args = Args();
+if(size(args) <= 0) {
+    y2error("NOT writing, probably some mistake...");
+    return false;
+}
+if(!is(Args(0), map) ) {
+    y2error("Bad argument for network write: %1", Args(0));
+    return false;
+}
+
+/* The settings are in the first argument */
+map settings = select(args, 0, $[]);
+y2milestone("Only writing... (%1)", settings);
+
+Progress::off();
+Network::Import(settings);
+boolean ret = Network::Write();
+Progress::on();
+
+y2milestone("Lan write finished");
+return ret;
+
+}
