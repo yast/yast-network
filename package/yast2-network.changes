@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Mar 14 13:40:29 CET 2003 - msvec@suse.de
+
+- change permissions of files containing wireless keys (#24842)
+- 2.7.34
+
+-------------------------------------------------------------------
 Thu Mar 13 13:20:03 CET 2003 - msvec@suse.de
 
 - allow to set autodetected NICs as WLAN (#25234)

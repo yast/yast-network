@@ -131,6 +131,9 @@ global define boolean WriteDevices() ``{
     });
     DeletedDevices = [];
 
+    /* Devices with chmod=0600 */
+    list chmod = [];
+
     /* write all devices */
     maplist(string typ, map devsmap, Devices, ``{
 	maplist(string num, map devmap, devsmap, ``{
@@ -166,13 +169,20 @@ global define boolean WriteDevices() ``{
 	    y2debug("Permission change: %1, %2", key != "", file);
 	    if(key != "") {
 		y2debug("CHANGED");
-		SCR::Execute(.target.bash, "/bin/chmod 0600 " + file);
+		change(chmod, file);
 	    }
 	});
     });
 
     /* Finish him */
     SCR::Write(.network, nil);
+
+    /* CHMOD */
+    y2debug("chmod=%1", chmod);
+    maplist(string file, chmod, ``{
+	y2debug("changing: %1", file);
+	SCR::Execute(.target.bash, "/bin/chmod 0600 " + file);
+    });
 
     return true;
 }
