@@ -14,6 +14,7 @@ textdomain "network";
 import "Proxy";
 import "URL";
 import "Wizard";
+import "Mode";
 
 include "network/dns.ycp";
 include "network/complex.ycp";
@@ -209,7 +210,8 @@ should be done directly without caching.</p>") +
 	}
 
 	Proxy::modified = true;
-	ProxyFinishPopup(true);
+	if (!Mode::config)
+		ProxyFinishPopup(true);
     }
 
     return ret;
