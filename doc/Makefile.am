@@ -6,7 +6,7 @@ SUBDIRS = autodocs # files hwinfo
 
 htmldir = $(docdir)
 
-doc_DATA =
+doc_DATA = 
 html_DATA = todo.html $(wildcard *.html)
 
 todo.html: Todo.txt
@@ -19,4 +19,4 @@ todo.html: Todo.txt
 	) | sed "s/##TITLE##/Things To Do/g" > todo.html
 
 CLEANFILES = todo.html
-EXTRA_DIST = $(doc_DATA) $(html_DATA)
+EXTRA_DIST = Todo.txt $(doc_DATA) $(html_DATA)

@@ -106,8 +106,8 @@ global define boolean WriteModules() ``{
     /* Write options */
     maplist(string m, string o, Modules["options"]:$[], ``{
 	if(o != nil && o != "")
-	    // y2milestone("%1 %2", add(.modules.options, m), string2map(o));
-	    SCR::Write(add(.modules.options, m), string2map(o));
+	    // y2milestone("%1 %2", add(.modules.options, m), Map::FromString(o));
+	    SCR::Write(add(.modules.options, m), Map::FromString(o));
     });
 
     /* Preload ARCNet modules (#26858) */
@@ -192,8 +192,8 @@ global define boolean ChangeModule(string name, boolean check) ``{
     else {
 	if(m == "" || m == nil || m == "dummy") m = name;
 
-	map m_orig = string2map(Modules["options", m]: "");
-	map m_new = string2map(o);
+	map m_orig = Map::FromString(Modules["options", m]: "");
+	map m_new = Map::FromString(o);
 	y2debug("M=%1", Modules["options", m]: "");
 	y2debug("o=%1", o);
 	y2debug("m_orig=%1", m_orig);
