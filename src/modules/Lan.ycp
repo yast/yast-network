@@ -19,6 +19,7 @@ import "Arch";
 import "DNS";
 import "Detection";
 import "IP";
+import "Map";
 import "Mode";
 import "NetworkConfig";
 import "Routing";
@@ -605,6 +606,7 @@ global define boolean Commit() ``{
 	if(type == "dummy") {
 	    Module["module"] = "dummy";
 	    Module["options"] = sformat("-o=dummy%1", device);
+	    Module["install"] = sformat("/sbin/modprobe -o dummy%1 --ignore-install dummy%1", device);
 	}
 
 	if(hotplug == "") {
@@ -865,12 +867,12 @@ global define list GetDevices(string type) ``{
     list ret = [];
     if(type == "all") {
 	maplist(string t, map d, Devices, ``{
-	    maplist(string n, mapkeys(d), ``(change(ret, device_name(t,n))));
+	    maplist(string n, Map::Keys(d), ``(change(ret, device_name(t,n))));
 	});
     }
     else {
 	map d = Devices[type]:$[];
-	maplist(string n, mapkeys(d), ``(change(ret, device_name(type,n))));
+	maplist(string n, Map::Keys(d), ``(change(ret, device_name(type,n))));
     }
 
     y2debug("ret=%1", ret);

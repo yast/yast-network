@@ -14,56 +14,6 @@ map READ = $[
 TESTSUITE_INIT([READ], nil);
 include "network/routines.ycp";
 
-DUMP("mapkeys");
-TEST(``(mapkeys(nil)), [], nil);
-TEST(``(mapkeys($[])), [], nil);
-TEST(``(mapkeys($[1:2])), [], nil);
-TEST(``(mapkeys($["2":3])), [], nil);
-TEST(``(mapkeys($[`x:4])), [], nil);
-TEST(``(mapkeys($[1:2,3:4])), [], nil);
-
-DUMP("mapvalues");
-TEST(``(mapvalues(nil)), [], nil);
-TEST(``(mapvalues($[])), [], nil);
-TEST(``(mapvalues($[1:2])), [], nil);
-TEST(``(mapvalues($["2":3])), [], nil);
-TEST(``(mapvalues($[`x:4])), [], nil);
-TEST(``(mapvalues($[1:2,3:4])), [], nil);
-
-DUMP("mapvalue");
-TEST(``(mapvalue(nil, 1)), [], nil);
-TEST(``(mapvalue($[], 1)), [], nil);
-TEST(``(mapvalue($[1:2], nil)), [], nil);
-TEST(``(mapvalue($[1:2], 1)), [], nil);
-TEST(``(mapvalue($[1:2], 2)), [], nil);
-TEST(``(mapvalue($["2":3], 1)), [], nil);
-TEST(``(mapvalue($["2":3], "2")), [], nil);
-TEST(``(mapvalue($[`x:4], `x)), [], nil);
-TEST(``(mapvalue($[`x:4], `y)), [], nil);
-TEST(``(mapvalue($[`x:4], 1)), [], nil);
-TEST(``(mapvalue($[1:2,3:4], 1)), [], nil);
-TEST(``(mapvalue($[1:2,3:4], 2)), [], nil);
-TEST(``(mapvalue($[1:2,3:4], `x)), [], nil);
-
-DUMP("mapcheckkeys");
-TEST(``(mapcheckkeys(nil, [1])), [], nil);
-TEST(``(mapcheckkeys($[], [1])), [], nil);
-TEST(``(mapcheckkeys($[1:2], [nil])), [], nil);
-TEST(``(mapcheckkeys($[1:2], [1])), [], nil);
-TEST(``(mapcheckkeys($[1:2], [2])), [], nil);
-TEST(``(mapcheckkeys($["2":3], [1])), [], nil);
-TEST(``(mapcheckkeys($["2":3], ["2"])), [], nil);
-TEST(``(mapcheckkeys($[`x:4], [`x])), [], nil);
-TEST(``(mapcheckkeys($[`x:4], [`y])), [], nil);
-TEST(``(mapcheckkeys($[`x:4], [1])), [], nil);
-TEST(``(mapcheckkeys($[1:2,3:4], [1])), [], nil);
-TEST(``(mapcheckkeys($[1:2,3:4], [1,3])), [], nil);
-TEST(``(mapcheckkeys($[1:2,3:4], [3,1])), [], nil);
-TEST(``(mapcheckkeys($[1:2,3:4], [2,3])), [], nil);
-TEST(``(mapcheckkeys($[1:2,3:4], [4,5])), [], nil);
-TEST(``(mapcheckkeys($[1:2,3:4], [2,1])), [], nil);
-TEST(``(mapcheckkeys($[1:2,3:4], [`x])), [], nil);
-
 DUMP("list2items");
 TEST(``(list2items(["x","y"], 0)), [], nil);
 

@@ -11,96 +11,9 @@
 
 textdomain "network";
 
-import "String";
 import "Popup";
 import "Progress";
-
-/**
- * Return all keys from the map
- * @param m the map
- * @return a list of all keys from the map
- */
-global define list mapkeys(map m) ``{
-    if(m==nil || m==$[]) return [];
-    return maplist(any var, any val, m, ``(var));
-}
-
-/**
- * Return all values from the map
- * @param m the map
- * @return a list of all values from the map
- */
-global define list mapvalues(map m) ``{
-    if(m==nil || m==$[]) return [];
-    return maplist(any var, any val, m, ``(val));
-}
-
-/**
- * Return value from a map for the given key, nil if not found
- * @param m the map
- * @param k the key
- * @return the found value, nil if not found
- */
-global define any mapvalue(map m, any k) ``{
-    if(m==nil || m==$[]) return nil;
-    return m[k]:nil;
-}
-
-/**
- * Check if a map contains all needed keys
- * @param m map to be checked
- * @param keys needed keys
- * @return true if map kontains all keys
- */
-global define boolean mapcheckkeys(map m, list keys) ``{
-    if(m == nil || keys == nil)
-	return false;
-
-    boolean ret = true;
-    foreach(any k, keys, ``{
-	if(!haskey(m, k)) {
-	    y2error("Missing key: %1", k);
-	    ret = false;
-	}
-    });
-
-    return ret;
-}
-
-/**
- * Convert options map $[var:val, ...] to string "var=val ..."
- * @param m map to be converted
- * @return converted map
- */
-global define string map2string(map m) ``{
-    if(m == nil) return nil;
-
-    string ret = "";
-    foreach(string var, string val, m, ``{
-	ret = ret + sformat(" %1=%2", var, val);
-    });
-    return String::CutBlanks(ret);
-}
-
-/**
- * Convert string "var=val ..." to map $[val:var, ...]
- * @param s string to be converted
- * @return converted string
- */
-global define map string2map(string s) ``{
-    if(s == nil) return nil;
-
-    map ret = $[];
-    foreach(string vals, splitstring(s, " "), ``{
-	list val = splitstring(vals, "=");
-	if(size(val) < 1 || val[0]:"" == "") return;
-	if(size(val) > 1)
-	    change(ret, val[0]:"", val[1]:"");
-	else
-	    change(ret, val[0]:"", "");
-    });
-    return ret;
-}
+import "String";
 
 /**
  * Abort function

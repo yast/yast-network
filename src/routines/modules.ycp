@@ -31,6 +31,7 @@
 textdomain "network";
 
 import "Arch";
+import "Map";
 import "String";
 
 include "network/routines.ycp";
@@ -66,7 +67,7 @@ global define boolean ReadModules(string devregex) ``{
     maplist(string al, opts, ``{
 	map optsmap = SCR::Read(add(.modules.options, al));
 	if(optsmap != nil)
-	    Modules["options", al] = map2string(optsmap);
+	    Modules["options", al] = Map::FromString(optsmap);
     });
 
     y2debug("Modules=%1", Modules);
@@ -112,6 +113,7 @@ global define boolean WriteModules() ``{
     /* Preload ARCNet modules (#26858) */
     if(arcnet)
 	SCR::Write(.modules.above.arcnet, "rfc1201 rfc1051 arc-rawmode");
+	// FIXME: 2.6 SCR::Write(.modules.install.arcnet, "/sbin/modprobe --ignore-install arcnet && { /sbin/modprobe -k tuner; /sbin/modprobe -k msp3400; }");
 
     /* FIXME: s390 modules hack */
     if(false) {
@@ -205,7 +207,7 @@ global define boolean ChangeModule(string name, boolean check) ``{
 	});
 
 	map options = Modules["options"]:$[];
-	options[m] = map2string(m_orig);
+	options[m] = Map::ToString(m_orig);
 	Modules["options"] = options;
     }
 

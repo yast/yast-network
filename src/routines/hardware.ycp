@@ -17,7 +17,9 @@
 {
 
 textdomain "network";
+
 import "Confirm";
+import "Map";
 
 /**
  * Read HW information
@@ -63,7 +65,7 @@ global define boolean ReadHardware(string hwtype) ``{
     if(haskey(hwtypes, hwtype))
 	allcards = SCR::Read(lookup(hwtypes, hwtype, nil));
     else if(hwtype == "all" || hwtype == "" || hwtype == nil)
-	maplist(path v, mapvalues(hwtypes), ``{
+	maplist(path v, Map::Values(hwtypes), ``{
 	    allcards = merge(allcards, SCR::Read(v));
 	});
     else {
@@ -328,7 +330,6 @@ global define string ControllerType(map hwdevice) ``{
 
 /**
  * Return detected Hardware list
- * @param void
  * @return Hardware list
  */
 global define list  GetHardware() ``{

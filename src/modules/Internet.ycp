@@ -13,6 +13,8 @@
 module "Internet";
 textdomain "network";
 
+import "Map";
+
 include "network/complex.ycp";
 include "network/devices.ycp";
 include "network/routines.ycp";
@@ -92,11 +94,11 @@ global define boolean FindFastest () ``{
     map Devices = $[];
     ReadDevices("");
     y2debug("Devices=%1", Devices);
-    list types = mapkeys(Devices);
+    list types = Map::Keys(Devices);
     y2debug("types=%1", types);
     list devices = [];
     maplist(string t, types, ``{
-	devices = union(devices, maplist(string n, mapkeys(Devices[t]:$[]), ``(t+n)));
+	devices = union(devices, maplist(string n, Map::Keys(Devices[t]:$[]), ``(t+n)));
     });
     y2debug("devices=%1", devices);
 

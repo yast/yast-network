@@ -15,6 +15,7 @@ module "Provider";
 textdomain "network";
 
 import "Language";
+import "Map";
 import "String";
 import "Summary";
 
@@ -507,7 +508,7 @@ define boolean CloneProvider() ``{
 	gen = "provider0";
 
     /* Generate unique name (Name) */
-    forbidden = mapkeys(Providers);
+    forbidden = Map::Keys(Providers);
     while(contains(forbidden, gen)) {
 	suffix = suffix + 1;
 	gen = sformat("%1%2", name, suffix);

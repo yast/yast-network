@@ -20,6 +20,8 @@
 {
 
 textdomain "network";
+
+import "Map";
 include "network/routines.ycp";
 
 /**
@@ -96,7 +98,7 @@ global define boolean WriteISDNConfig(string isdntyp) ``{
 	    string p = ".isdn.value.\"" + sysconfig + "/cfg-" + dev + "\".";
 
 	    /* write all keys to config */
-	    maplist(`k, mapkeys(devmap), ``{
+	    maplist(`k, Map::Keys(devmap), ``{
 		if(k == "module" || k == "options") return;
 		SCR::Write(topath(p+k), lookup(devmap, k, ""));
 	    });
@@ -134,7 +136,7 @@ global define boolean WriteOneISDNConfig(string contr) ``{
 	    string p = ".isdn.value.\"" + sysconfig + "/cfg-" + dev + "\".";
 
 	    /* write all keys to config */
-	    maplist(`k, mapkeys(devmap), ``{
+	    maplist(`k, Map::Keys(devmap), ``{
 		if(k == "module" || k == "options") return;
 		SCR::Write(topath(p+k), lookup(devmap, k, ""));
 	    });
