@@ -11,6 +11,7 @@
 
 import "Arch";
 import "Runlevel";
+import "Service";
 
 textdomain "network";
 
@@ -60,98 +61,13 @@ define boolean RunKInternet() ``{
 }
 
 /**
- * Enable service
- * @param service service to be enabled
- * @return true if success
- */
-define boolean EnableService(string service) ``{
-    if(service == nil || service == "") {
-	y2error("Wrong service: %1", service);
-	return false;
-    }
-    y2milestone("Enabling service %1", service);
-    /* return Runlevel::ServiceFinetune(service, [ "2", "3", "5" ]); */
-    return Runlevel::ServiceAdjust(service, "enable");
-}
-
-/**
- * Disable service
- * @param service service to be disabled
- * @return true if success
- */
-define boolean DisableService(string service) ``{
-    if(service == nil || service == "") {
-	y2error("Wrong service: %1", service);
-	return false;
-    }
-    y2milestone("Disabling service %1", service);
-    return Runlevel::ServiceAdjust(service, "disable");
-}
-
-/**
- * Start service (reload if already running)
- * @param service service to be started
- * @return true if success
- */
-define boolean StartService(string service) ``{
-    if(service == nil || service == "") {
-	y2error("Wrong service: %1", service);
-	return false;
-    }
-    any ret = nil;
-    y2milestone("Starting service %1", service);
-    /*
-    if(Runlevel::ServiceStatus(service) == 0)
-	ret = Runlevel::RunInitScript(service, "reload");
-    else
-    */
-	ret = Runlevel::RunInitScript(service, "start");
-    y2debug("ret=%1", ret);
-    return ret == 0;
-}
-
-/**
- * Restart service (reload if already running)
- * @param service service to be started
- * @return true if success
- */
-define boolean RestartService(string service) ``{
-    if(service == nil || service == "") {
-	y2error("Wrong service: %1", service);
-	return false;
-    }
-    any ret = nil;
-    y2milestone("Restarting service %1", service);
-    ret = Runlevel::RunInitScript(service, "restart");
-    y2debug("ret=%1", ret);
-    return ret == 0;
-}
-
-/**
- * Stop service
- * @param service service to be stopped
- * @return true if success
- */
-define boolean StopService(string service) ``{
-    if(service == nil || service == "") {
-	y2error("Wrong service: %1", service);
-	return false;
-    }
-    any ret = nil;
-    y2milestone("Stopping service %1", service);
-    ret = Runlevel::RunInitScript(service, "stop");
-    y2debug("ret=%1", ret);
-    return ret == 0;
-}
-
-/**
  * Start network
  * @return true if success
  */
 define boolean StartNetwork() ``{
     boolean ret = true;
-    if(Arch::s390) ret = StartService("chandev");
-    ret = StartService("network") && ret;
+    if(Arch::s390) ret = Service::Start("chandev");
+    ret = Service::Start("network") && ret;
     return ret;
 }
 
@@ -160,7 +76,7 @@ define boolean StartNetwork() ``{
  * @return true if success
  */
 define boolean RestartNetwork() ``{
-    return RestartService("network");
+    return Service::Restart("network");
 }
 
 /**
@@ -168,7 +84,7 @@ define boolean RestartNetwork() ``{
  * @return true if success
  */
 define boolean StopNetwork() ``{
-    return StopService("network");
+    return Service::Stop("network");
 }
 
 /**
@@ -178,12 +94,12 @@ define boolean StopNetwork() ``{
 define boolean EnableSMPPPD() ``{
 
     boolean ret = true;
-    ret = EnableService("smpppd") && ret;
+    ret = Service::Enable("smpppd") && ret;
 
-    if(Runlevel::ServiceStatus("smpppd") == 0)
-	ret = (Runlevel::RunInitScript("smpppd", "reload") == 0) && ret;
+    if(Service::Status("smpppd") == 0)
+	ret = Service::Reload("smpppd") && ret;
     else
-	ret = (Runlevel::RunInitScript("smpppd", "start") == 0) && ret;
+	ret = Service::Restart("smpppd") && ret;
     y2debug("ret=%1", ret);
 
     return ret;
@@ -194,7 +110,7 @@ define boolean EnableSMPPPD() ``{
  * @return true if success
  */
 define boolean EnableNetwork() ``{
-    return EnableService("network");
+    return Service::Enable("network");
 }
 
 /* EOF */

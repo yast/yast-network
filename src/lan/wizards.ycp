@@ -13,9 +13,8 @@ textdomain "network";
 
 import "Label";
 import "Lan";
+import "Sequencer";
 import "Wizard";
-
-include "wizard/sequencer.ycp";
 
 include "network/routines.ycp";
 include "network/lan/address.ycp";
@@ -70,7 +69,7 @@ define symbol LanSequence() ``{
 
     Wizard::CreateDialog();
 
-    symbol ret = WizardSequencer(aliases, sequence);
+    symbol ret = Sequencer::Run(aliases, sequence);
 
     UI::CloseDialog();
     return ret;
@@ -147,7 +146,7 @@ define symbol MainSequence() ``{
 	],
     ];
 
-    return WizardSequencer(aliases, sequence);
+    return Sequencer::Run(aliases, sequence);
 }
 
 /**
@@ -178,7 +177,7 @@ define symbol NetworkCardSequence(string action) ``{
 	],
     ];
 
-    return WizardSequencer(aliases, sequence);
+    return Sequencer::Run(aliases, sequence);
 }
 
 /**
@@ -217,7 +216,7 @@ define symbol HardwareSequence() ``{
 	],
     ];
 
-    return WizardSequencer(aliases, sequence);
+    return Sequencer::Run(aliases, sequence);
 }
 
 /**
@@ -267,7 +266,7 @@ define symbol AddressSequence() ``{
 	],
     ];
 
-    return WizardSequencer(aliases, sequence);
+    return Sequencer::Run(aliases, sequence);
 }
 
 /* EOF */

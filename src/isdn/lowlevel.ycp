@@ -34,7 +34,7 @@ include "network/isdn/routines.ycp";
  */
 
 define list ISDNCards4Vendor(integer vendor, integer defcard) ``{
-    list cards = maplist(`i, `c, ISDN::ISDNCDB["Cards"]:$[], ``(c));
+    list cards = maplist(integer i, map c, ISDN::ISDNCDB["Cards"]:$[], ``(c));
     boolean first = (defcard == -1);
     string n_id = "";
 

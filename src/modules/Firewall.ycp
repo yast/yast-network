@@ -76,15 +76,15 @@ global define boolean Write() {
     /* Setup init scripts */
     if(size(devices) > 0) {
 	EnableNetwork();
-	EnableService("SuSEfirewall2_init");
-	EnableService("SuSEfirewall2_setup");
-	EnableService("SuSEfirewall2_final");
+	Service::Enable("SuSEfirewall2_init");
+	Service::Enable("SuSEfirewall2_setup");
+	Service::Enable("SuSEfirewall2_final");
 	SCR::Execute(.target.bash, "/sbin/SuSEfirewall2 start");
     }
     else {
-	DisableService("SuSEfirewall2_final");
-	DisableService("SuSEfirewall2_setup");
-	DisableService("SuSEfirewall2_init");
+	Service::Disable("SuSEfirewall2_final");
+	Service::Disable("SuSEfirewall2_setup");
+	Service::Disable("SuSEfirewall2_init");
 	SCR::Execute(.target.bash, "/sbin/SuSEfirewall2 stop");
     }
 

@@ -1,11 +1,12 @@
 -------------------------------------------------------------------
 Wed Feb 18 12:25:19 CET 2004 - msvec@suse.cz
 
-- correct module name for Apple gmac (#34687)
+- reduced neededforbuild
 - fixed network proposal creation
 - fixed writing of kernel modules
 - resurrected virtual aliases support
-- reduced neededforbuild
+- correct module name for Apple gmac (#34687)
+- use Sequencer and Service modules
 - 2.9.5
 
 -------------------------------------------------------------------

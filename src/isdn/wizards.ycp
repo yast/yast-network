@@ -13,9 +13,8 @@ textdomain "network";
 
 import "Label";
 import "ISDN";
+import "Sequencer";
 import "Wizard";
-
-include "wizard/sequencer.ycp";
 
 include "network/routines.ycp";
 
@@ -87,7 +86,7 @@ define symbol OneProviderSequence(boolean country) ``{
 	],
     ];
 
-    return WizardSequencer(aliases, sequence);
+    return Sequencer::Run(aliases, sequence);
 }
 
 /**
@@ -124,7 +123,7 @@ define symbol ISDNSequence() ``{
     ];
 
     Wizard::CreateDialog();
-    symbol ret = WizardSequencer(aliases, sequence);
+    symbol ret = Sequencer::Run(aliases, sequence);
 
     UI::CloseDialog();
     return ret;
@@ -221,7 +220,7 @@ define symbol MainSequence() ``{
 	],
     ];
 
-    return WizardSequencer(aliases, sequence);
+    return Sequencer::Run(aliases, sequence);
 }
 
 
@@ -284,7 +283,7 @@ define symbol OneISDNSequence(string entry) ``{
 	],
     ];
 
-    return WizardSequencer(aliases, sequence);
+    return Sequencer::Run(aliases, sequence);
 
 }
 
@@ -338,7 +337,7 @@ define symbol OneISDNIFSequence(string entry) ``{
 	],
     ];
 
-    return WizardSequencer(aliases, sequence);
+    return Sequencer::Run(aliases, sequence);
 
 }
 /* EOF */

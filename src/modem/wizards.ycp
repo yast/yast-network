@@ -12,9 +12,8 @@
 textdomain "network";
 
 import "Label";
+import "Sequencer";
 import "Wizard";
-
-include "wizard/sequencer.ycp";
 
 include "network/routines.ycp";
 
@@ -78,7 +77,7 @@ define symbol OneProviderSequence(boolean country) ``{
 	],
     ];
 
-    return WizardSequencer(aliases, sequence);
+    return Sequencer::Run(aliases, sequence);
 }
 
 /**
@@ -152,7 +151,7 @@ define symbol OneModemProviderSequence(boolean detected, boolean edit) ``{
 	],
     ];
 
-    return WizardSequencer(aliases, sequence);
+    return Sequencer::Run(aliases, sequence);
 }
 
 /**
@@ -216,7 +215,7 @@ define symbol MainSequence() ``{
 	],
     ];
 
-    return WizardSequencer(aliases, sequence);
+    return Sequencer::Run(aliases, sequence);
 }
 
 /**
@@ -262,7 +261,7 @@ define symbol OneModemSequence(boolean detected) ``{
 	],
     ];
 
-    return WizardSequencer(aliases, sequence);
+    return Sequencer::Run(aliases, sequence);
 }
 
 /**
@@ -304,7 +303,7 @@ define symbol ModemSequence() ``{
 
     Wizard::CreateDialog();
 
-    symbol ret = WizardSequencer(aliases, sequence);
+    symbol ret = Sequencer::Run(aliases, sequence);
 
     UI::CloseDialog();
     return ret;
