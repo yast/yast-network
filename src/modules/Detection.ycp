@@ -68,14 +68,14 @@ define boolean StartEthInterface() ``{
 
     y2milestone("Network detection prepare");
 
-    list Hardware = [];
+    list<map> Hardware = [];
     ReadHardware("netcard");
 
     y2debug("Hardware=%1", Hardware);
     if(size(Hardware) < 1) return false;
 
     /* Look for eth cards */
-    list ethernet_cards = filter (map h, Hardware, ``(h["type"]:"" == "eth"));
+    list<map> ethernet_cards = filter(map h, Hardware, ``(h["type"]:"" == "eth"));
     map card = ethernet_cards[0]:nil;
     y2debug("card=%1", card);
     if(card == nil || card == $[]) return false;

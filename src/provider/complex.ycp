@@ -67,7 +67,7 @@ global define symbol WriteDialog() ``{
  * Choose provider type dialog
  * @return `abort if aborted and `next otherwise
  */
-global define symbol TypeDialog() ``{
+global define any TypeDialog() ``{
 
     ScreenName("provider-type");
 
@@ -128,7 +128,7 @@ global define symbol TypeDialog() ``{
     }
 
     if(ret == `next) {
-	string type = UI::QueryWidget(`id(`modules), `CurrentItem);
+	string type = (string) UI::QueryWidget(`id(`modules), `CurrentItem);
 	y2debug("type=%1", type);
 	Provider::Add(type);
     }
@@ -140,7 +140,7 @@ global define symbol TypeDialog() ``{
  * Main dialog
  * @return dialog result
  */
-global define symbol SummaryDialog() ``{
+global define any SummaryDialog() ``{
 
     ScreenName("provider-summary");
 
@@ -148,8 +148,8 @@ global define symbol SummaryDialog() ``{
     string caption = _("Provider Configuration");
 
     list summary = Provider::Summary("all", true);
-    list unconfigured = select(summary, 1, []);
-    string configured = select(summary, 0, "");
+    list unconfigured = (list) select(summary, 1, []);
+    string configured = (string) select(summary, 0, "");
     y2debug("unconfigured=%1", unconfigured);
 
     /* Frame label */
@@ -177,7 +177,7 @@ global define symbol SummaryDialog() ``{
 	}
 	/* configure the selected card */
 	else if(ret == `configure_button || ret == `detected_selbox) {
-	    string type = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
+	    string type = (string) UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
 	    Provider::Add(type);
 	    ret = `configure;
 	    break;
@@ -198,7 +198,7 @@ global define symbol SummaryDialog() ``{
  * Overview dialog
  * @return dialog result
  */
-global define symbol OverviewDialog() ``{
+global define any OverviewDialog() ``{
 
     ScreenName("provider-overview");
 
@@ -241,13 +241,13 @@ global define symbol OverviewDialog() ``{
 	}
 	/* edit */
 	else if(ret == `edit || ret == `table) {
-	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 	    Provider::Edit(dev);
 	    break;
 	}
 	/* delete */
 	else if(ret == `delete) {
-	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 	    Provider::Delete(dev);
 	    Provider::Commit();
 	    overview = Provider::Overview("all");

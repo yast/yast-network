@@ -15,6 +15,7 @@ import "ISDN";
 import "Provider";
 import "Wizard";
 
+include "network/routines.ycp";
 include "network/provider/helps.ycp";
 
 import "Popup";
@@ -377,7 +378,7 @@ at the end.</p>");
 	    break;
 	}
 	else if(ret == `encap) {
-	    encap = UI::QueryWidget(`id(`encap), `Value);
+	    encap = (string) UI::QueryWidget(`id(`encap), `Value);
 	    boolean e = encap == "syncppp";
 	    // seems that disabling via frame is not possible
 	    // UI::ChangeWidget(`id(`auth), `Enabled, encap == "syncppp");
@@ -385,7 +386,7 @@ at the end.</p>");
 	    ChangeWidgetIfExists(`id(`usercode), `Enabled, e);
 	    ChangeWidgetIfExists(`id(`lineid), `Enabled, e);
 	    ChangeWidgetIfExists(`id(`t_onlineid), `Enabled, e);
-	    UI::ChangeWidget(`id(`password), `Enabled, e && !UI::QueryWidget(`id(`askpass), `Value));
+	    UI::ChangeWidget(`id(`password), `Enabled, e && !(boolean)UI::QueryWidget(`id(`askpass), `Value));
 	    UI::ChangeWidget(`id(`askpass), `Enabled, e);
 	    continue;
 	}
@@ -395,23 +396,23 @@ at the end.</p>");
 	    continue;
 	}
 	else if(ret == `askpass) {
-	    UI::ChangeWidget(`id(`password), `Enabled, !UI::QueryWidget(`id(`askpass), `Value));
+	    UI::ChangeWidget(`id(`password), `Enabled, !(boolean)UI::QueryWidget(`id(`askpass), `Value));
 	    continue;
 	}
 	/* next */
 	else if(ret == `next) {
 
 	    /* check_* */
-	    name = UI::QueryWidget(`id(`name), `Value);
-	    username = QueryWidgetIfExists(`id(`username), `Value, username);
-	    password = UI::QueryWidget(`id(`password), `Value);
-	    ask_pass = UI::QueryWidget(`id(`askpass), `Value);
+	    name = (string) UI::QueryWidget(`id(`name), `Value);
+	    username = (string) QueryWidgetIfExists(`id(`username), `Value, username);
+	    password = (string) UI::QueryWidget(`id(`password), `Value);
+	    ask_pass = (boolean) UI::QueryWidget(`id(`askpass), `Value);
 
-	    phone = QueryWidgetIfExists(`id(`phone), `Value, phone);
+	    phone = (string) QueryWidgetIfExists(`id(`phone), `Value, phone);
 
 	    boolean auth_chk = true;
 	    if(type == "isdn") { /* FIXME: ISDN ??? */
-		encap = UI::QueryWidget(`id(`encap), `Value);
+		encap = (string) UI::QueryWidget(`id(`encap), `Value);
 		if (encap == "rawip")
 			auth_chk = false;
 	    }
@@ -419,9 +420,9 @@ at the end.</p>");
 	    // if(issubstring(uimode, "T-Online"))
 	    if(uimode == "T-Online" || uimode == "T-Online DSL") {
 
-		lineid = UI::QueryWidget(`id(`lineid), `Value);
-		t_onlineid = UI::QueryWidget(`id(`t_onlineid), `Value);
-		usercode = UI::QueryWidget(`id(`usercode), `Value);
+		lineid = (string) UI::QueryWidget(`id(`lineid), `Value);
+		t_onlineid = (string) UI::QueryWidget(`id(`t_onlineid), `Value);
+		usercode = (string) UI::QueryWidget(`id(`usercode), `Value);
 
 		if(lineid == "") {
 		    /* Popup::Message text */

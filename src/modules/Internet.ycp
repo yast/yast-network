@@ -128,7 +128,7 @@ global define boolean FindFastest () ``{
     provider = devmap["PROVIDER"]:"";
     if (provider != "") {
 	import "Provider";
-	Provider::Read("all");
+	Provider::Read();
 	Provider::Select(provider);
 	demand = Provider::Current["DEMAND"]:"no" == "yes";
 	password = Provider::Current["PASSWORD"]:"";
@@ -195,9 +195,8 @@ global define boolean Start(string log) ``{
  */
 global define boolean Stop(string log) ``{
     string cmd = "/sbin/ifdown " + device;
-    if (log != "")
-	cmd = cmd + "> " + log + " 2>&1";
-    integer ret = SCR::Execute(.target.bash, cmd);
+    if(log != "") cmd = cmd + "> " + log + " 2>&1";
+    integer ret = (integer) SCR::Execute(.target.bash, cmd);
     return ret == 0;
 }
 
@@ -206,7 +205,7 @@ global define boolean Stop(string log) ``{
  * @return true if interface is up (which is not equal to connected)
  */
 global define boolean Status() ``{
-    integer ret = SCR::Execute(.target.bash, "/sbin/ifstatus " + device);
+    integer ret = (integer) SCR::Execute(.target.bash, "/sbin/ifstatus " + device);
     return ret == 0 || ret == 10;
 }
 
@@ -217,8 +216,7 @@ global define boolean Status() ``{
 global define boolean Connected() ``{
 
     if(type == "dsl" || type == "modem" || (type == "isdn" && capi_isdn)) {
-	string tmp1 = SCR::Read(.target.string, "/var/lib/smpppd/ifcfg-" +
-				 device + ".info");
+	string tmp1 = (string) SCR::Read(.target.string, "/var/lib/smpppd/ifcfg-" + device + ".info");
 	list tmp2 = splitstring(tmp1, "\n");
 	return contains(tmp2, "status: connected");
     }

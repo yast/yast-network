@@ -23,7 +23,7 @@ include "network/routines.ycp";
  * IP details dialog
  * @return dialog result
  */
-global define symbol IPDetailsDialog() ``{
+global define any IPDetailsDialog() ``{
 
     ScreenName("provider-details");
 
@@ -163,7 +163,7 @@ single machines or subnetworks through this provider.</p>");
     }
 
     /* MAIN CYCLE */
-    symbol ret = nil;
+    any ret = nil;
     while(true) {
 	ret = UI::UserInput();
 
@@ -174,7 +174,7 @@ single machines or subnetworks through this provider.</p>");
 	    else
 		continue;
 	} else if(ret == `modifyip) {
-	    boolean dip = UI::QueryWidget(`id(`modifyip), `Value);
+	    boolean dip = (boolean) UI::QueryWidget(`id(`modifyip), `Value);
 	    UI::ChangeWidget(`id(`IP_local), `Enabled, !dip);
 	    UI::ChangeWidget(`id(`IP_remote), `Enabled, !dip);
 	    continue;
@@ -185,12 +185,12 @@ single machines or subnetworks through this provider.</p>");
 	}
 	/* next */
 	else if(ret == `next) {
-	    Local_IP = UI::QueryWidget(`id(`IP_local), `Value);
-	    Remote_IP = UI::QueryWidget(`id(`IP_remote), `Value);
-	    defaultroute = UI::QueryWidget(`id(`defaultroute), `Value);
+	    Local_IP = (string) UI::QueryWidget(`id(`IP_local), `Value);
+	    Remote_IP = (string) UI::QueryWidget(`id(`IP_remote), `Value);
+	    defaultroute = (boolean) UI::QueryWidget(`id(`defaultroute), `Value);
 
 	    if(encap != "rawip")
-		modifyip = UI::QueryWidget(`id(`modifyip), `Value);
+		modifyip = (boolean) UI::QueryWidget(`id(`modifyip), `Value);
 
 	    if((encap=="rawip" || !modifyip) && (!IP::Check4(Local_IP) || !IP::Check4(Remote_IP))) {
 		Popup::Message(_("You have to fill in Local and Remote IP addresses correctly"));

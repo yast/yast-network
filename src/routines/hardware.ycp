@@ -157,22 +157,22 @@ global define boolean ReadHardware(string hwtype) ``{
     list paths = [];
     list allcards = [];
 
-    map hwtypes = $[
-	"netcard" : .probe.netcard,
-	"modem" : .probe.modem,
-	"isdn" : .probe.isdn,
-	"dsl" : .probe.dsl,
+    map<string,path> hwtypes = $[
+	"netcard"	: .probe.netcard,
+	"modem"		: .probe.modem,
+	"isdn"		: .probe.isdn,
+	"dsl"		: .probe.dsl,
     ];
 
     map hwstrings = $[
 	/* Confirmation: label text (detecting hardware: xxx) */
-	"netcard" : _("Network Cards"),
+	"netcard"	: _("Network Cards"),
 	/* Confirmation: label text (detecting hardware: xxx) */
-	"modem" : _("Modems"),
+	"modem"		: _("Modems"),
 	/* Confirmation: label text (detecting hardware: xxx) */
-	"isdn" : _("ISDN Cards"),
+	"isdn"		: _("ISDN Cards"),
 	/* Confirmation: label text (detecting hardware: xxx) */
-	"dsl" : _("DSL Devices"),
+	"dsl"		: _("DSL Devices"),
     ];
 
     /* Confirmation: label text (detecting hardware: xxx) */
@@ -182,10 +182,10 @@ global define boolean ReadHardware(string hwtype) ``{
 
     /* read the corresponding hardware */
     if(haskey(hwtypes, hwtype))
-	allcards = SCR::Read(hwtypes[hwtype]:nil);
+	allcards = (list) SCR::Read(hwtypes[hwtype]:nil);
     else if(hwtype == "all" || hwtype == "" || hwtype == nil)
 	maplist(path v, Map::Values(hwtypes), ``{
-	    allcards = merge(allcards, SCR::Read(v));
+	    allcards = merge(allcards, (list) SCR::Read(v));
 	});
     else {
 	y2error("unknown hwtype: %1", hwtype);
@@ -210,24 +210,24 @@ global define boolean ReadHardware(string hwtype) ``{
 
 	/* modem */
 	if(controller == "modem") {
-	    map resource = card["resource"]:[];
+	    map resource = card["resource"]:$[];
 	    change(one, "device_name", card["dev_name"]:"");
 	    change(one, "drivers", card["drivers"]:[]);
 	    change(one, "requires", card["requires"]:[]);
-	    change(one, "speed", lookup(select(lookup(resource, "baud", []), 0, $[]), "speed", 57600));
-	    change(one, "init1", lookup(select(lookup(resource, "init_strings", []),0,$[]), "init1", ""));
-	    change(one, "init2", lookup(select(lookup(resource, "init_strings", []),0,$[]), "init2", ""));
-	    change(one, "pppd_options", lookup(select(lookup(resource, "pppd_option", []),0,$[]), "option", ""));
+	    change(one, "speed", lookup((map) select(lookup(resource, "baud", []), 0, $[]), "speed", 57600));
+	    change(one, "init1", lookup((map) select(lookup(resource, "init_strings", []),0,$[]), "init1", ""));
+	    change(one, "init2", lookup((map) select(lookup(resource, "init_strings", []),0,$[]), "init2", ""));
+	    change(one, "pppd_options", lookup((map) select(lookup(resource, "pppd_option", []),0,$[]), "option", ""));
 	}
 	/* isdn card */
 	else if(controller == "isdn") {
-	    map resource = card["resource"]:[];
+	    map resource = card["resource"]:$[];
 	    list drivers = card["isdn"]:[];
 	    change(one, "drivers", drivers);
 	    change(one, "sel_drv", 0);
 	    change(one, "bus", card["bus"]:"");
-	    change(one, "io", lookup(select(lookup(resource, "io", []),0, $[]), "start", 0));
-	    change(one, "irq", lookup(select(lookup(resource, "irq", []), 0, $[]), "irq", 0));
+	    change(one, "io", lookup((map) select(lookup(resource, "io", []),0, $[]), "start", 0));
+	    change(one, "irq", lookup((map) select(lookup(resource, "irq", []), 0, $[]), "irq", 0));
 	}
 	/* dsl card */
 	else if(controller == "dsl") {
@@ -240,7 +240,7 @@ global define boolean ReadHardware(string hwtype) ``{
 	    if(size(drivers) < 0) y2error("Not enough drivers");
 	    map driver = drivers[0]:$[];
 	    change(one, "active", driver["active"]:false);
-	    list modules = select(lookup(driver, "modules", []), 0, []);
+	    list modules = (list) select((list) lookup(driver, "modules", []), 0, []);
 	    change(one, "module", modules[0]:"");
 	    change(one, "options", modules[1]:"");
 

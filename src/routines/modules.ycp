@@ -56,7 +56,7 @@ global define boolean ReadModules(string devregex) ``{
     list allaliases = SCR::Dir(.modules.alias);
     maplist(string al, allaliases, ``{
 	if(regexpmatch(al, regex)) {
-	    string modul = SCR::Read(add(.modules.alias, al));
+	    string modul = (string) SCR::Read(add(.modules.alias, al));
 	    if(modul != nil)
 		Modules["alias", al] = modul;
 	}
@@ -65,7 +65,7 @@ global define boolean ReadModules(string devregex) ``{
     /* Read options */
     list opts = SCR::Dir(.modules.options);
     maplist(string al, opts, ``{
-	map optsmap = SCR::Read(add(.modules.options, al));
+	map optsmap = (map) SCR::Read(add(.modules.options, al));
 	if(optsmap != nil)
 	    Modules["options", al] = Map::ToString(optsmap);
     });
@@ -119,14 +119,15 @@ global define boolean WriteModules() ``{
     }
 
     /* FIXME: s390 modules hack */
+    /*
     if(false) {
-	/* write module options */
+	/* write module options *
 	if(size(opts_map) > 0) {
-	    /* write module options normally */
+	    /* write module options normally *
 	    if(!Arch::s390)
 		SCR::Write(.modules.options, opts_map, dev);
 	    else {
-		/* merge module options */
+		/* merge module options *
 		if(typ == "iucv") {
 		    map curopts = SCR::Read(.modules.options, "netiucv");
 		    maplist(string k, string v, opts_map, ``{
@@ -137,7 +138,7 @@ global define boolean WriteModules() ``{
 		    });
 		    SCR::Write(.modules.options, curopts, "netiucv");
 		}
-		/* write options to chandev.conf */
+		/* write options to chandev.conf *
 		else {
 		    path chandev = topath(".etc.chandev_conf."+mod+num);
 		    if(typ == "escon") chandev = topath(".etc.chandev_conf.escon"+num);
@@ -147,6 +148,7 @@ global define boolean WriteModules() ``{
 	    }
 	}
     }
+    */
 
     /* Finish him */
     SCR::Write(.modules, nil);

@@ -237,13 +237,12 @@ global define boolean Write(string type) ``{
 
     /* Remove deleted custom providers */
     foreach(string provider, Deleted, ``{
-	if(haskey(OriginalProvs, provider)) return;
+	if(!haskey(OriginalProvs, provider)) return;
 	path p = add(.sysconfig.network.providers.section, provider);
 	y2debug("deleting: %1", p);
 	SCR::Write(p, nil);
-	Deleted = remove(Deleted, provider);
     });
-    Deleted = filter(string prov, Deleted, ``(!haskey(OriginalProvs, prov)));
+    Deleted = filter(string prov, Deleted, ``(haskey(OriginalProvs, prov)));
     y2debug("Deleted=%1", Deleted);
 
     /* Write custom providers */
@@ -548,7 +547,7 @@ define boolean CloneProvider() ``{
  */
 global define list Overview(string type) ``{
 
-    if(!CheckType(type)) return false;
+    if(!CheckType(type)) return [];
     map Provs = Filter(Providers, type);
     y2debug("Provs=%1", Provs);
 
@@ -572,7 +571,7 @@ global define list Overview(string type) ``{
  */
 global define list Summary(string type, boolean split) ``{
 
-    if(!CheckType(type)) return false;
+    if(!CheckType(type)) return [];
     map Provs = Filter(Providers, type);
     y2debug("Provs=%1", Provs);
 

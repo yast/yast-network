@@ -27,14 +27,6 @@ import "Firewall";
 import "Progress";
 import "Summary";
 
-include "network/complex.ycp";
-include "network/devices.ycp";
-include "network/hardware.ycp";
-include "network/install.ycp";
-include "network/modules.ycp";
-include "network/routines.ycp";
-include "network/runtime.ycp";
-
 /*-------------*/
 /* GLOBAL DATA */
 
@@ -93,7 +85,7 @@ global boolean write_only = false;
  * Abort function
  * return boolean return true if abort
  */
-global block AbortFunction = nil;
+global block<boolean> AbortFunction = nil;
 
 /*--------------*/
 /* PRIVATE DATA */
@@ -153,6 +145,14 @@ global define boolean Modified() ``{
     y2debug("modified=%1",modified);
     return modified;
 }
+
+include "network/complex.ycp";
+include "network/devices.ycp";
+include "network/hardware.ycp";
+include "network/install.ycp";
+include "network/modules.ycp";
+include "network/routines.ycp";
+include "network/runtime.ycp";
 
 /**
  * Read all network settings from the SCR
