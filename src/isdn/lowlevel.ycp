@@ -515,7 +515,30 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 	`Left(`CheckBox(`id(`ilog), _("Start &ISDN Log"), isdnlog))
     );
 
-    string desc = lookup(select(CardDrivers, CurrentDrvIndex, $[]), "description", "default");
+    /* 
+     * unfortunatly the desc string comes direcly from libhd and is untranslated
+     * as workaround I make this local translation map for it, since here are
+     * not so much entries
+     */
+    map drvdesc = $[
+	// short description of card feature
+	"binary only CAPI with FAX G3" : _("binary only CAPI with FAX G3"),
+	// short description of card feature
+	"under development" : _("under development"),
+	// short description of card feature
+	"OpenSource without Fax G3" : _("OpenSource without FAX G3"),
+	// short description of card feature
+	"binary only CAPI with FAX G3 and DSL" : _("binary only CAPI with FAX G3 and DSL"),
+	// short description of card feature
+	"DSL only card with CAPI2.0" : _("DSL only card with CAPI2.0"),
+	// short description of card feature
+	"Bluetooth Dongle,need ISDN Accesspoint" : _("Bluetooth Dongle,need ISDN Accesspoint")
+    ];
+
+    string desc = lookup(select(CardDrivers, CurrentDrvIndex, $[]), "description", "");
+    if (desc != "")
+	desc = drvdesc[desc]:desc;
+
     term ISDN_driver = create_drv_term(DrvList, desc);
 
     // frame title
@@ -598,7 +621,9 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 	} else if (ret == `DrvBox) {
 	    id = tointeger(UI::QueryWidget(`id(`DrvBox), `Value));
 	    if (id != CurrentDrvIndex) {
-		desc = lookup(select(CardDrivers, drvid, $[]), "description", "default");
+		desc = lookup(select(CardDrivers, id, $[]), "description", "");
+		if (desc != "")
+		    desc = drvdesc[desc]:desc;
 		CurrentDrvIndex = id;
 		UI::ChangeWidget(`id(`DrvDesc), `Value, desc);
 		EnableProtocols(select(CardDrivers, CurrentDrvIndex, $[]));
