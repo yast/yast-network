@@ -190,7 +190,11 @@ global define boolean Read() ``{
     /* Progress step 1/9 */
     ProgressNextStage(_("Detecting network devices..."));
     // if(!Arch::s390) /* FIXME: Temporary hack until the detection is functional */
-    ReadHardware("netcard");
+
+	// Dont read hardware data in config mode
+	if (!Mode::config)
+	    ReadHardware("netcard");
+
     /* ReadHardware(""); /* TESTING */
     sleep(sl);
 

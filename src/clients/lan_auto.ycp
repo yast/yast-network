@@ -155,11 +155,13 @@ define map FromAY(map input) ``{
  */
 define map ToAY (map settings) ``{
     list interfaces = [];
+	list discard = ["UNIQUE"];
     foreach(string device, map devsmap, settings["devices"]:$[], ``{
 	foreach(string num, map devmap, devsmap, ``{
 	    map newmap = $[];
 	    foreach(string key, string val, devmap, ``{
-			if ( size(val) > 0 )
+			y2milestone("Adding: %1=%2", key, val);
+			if ( size(val) > 0 && ( !contains(discard, key) && !contains(discard, tolower(key))))
 				change(newmap, tolower(key), val);
 	    });
 	    change(newmap, "device", device + num);
