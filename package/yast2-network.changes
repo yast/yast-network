@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Mar 22 09:10:56 CET 2005 - mvidner@suse.cz
+
+- ISDN proposal: full init before internet test (#74096).
+
+-------------------------------------------------------------------
 Tue Mar 22 08:28:31 CET 2005 - mvidner@suse.cz
 
 - Fritz!Card DSL: drdsl must not use the -n switch (#74205).
