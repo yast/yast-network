@@ -23,7 +23,7 @@ Summary:	Network configuration
 @BUILD@
 
 @INSTALL@
-%ifarch 390 s390x
+%ifarch s390 s390x
 rm @configdir@/dsl.y2cc
 rm @configdir@/isdn.y2cc
 rm @configdir@/modem.y2cc
