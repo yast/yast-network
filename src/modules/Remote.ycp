@@ -24,12 +24,25 @@
 
     }
 
+
     /**
      * Update the SCR according to network settings
      * @return true on success
      */
     global define boolean Write () ``{
 
+	// install tightvnc and XFree86-Xvnc
+	if (allow_administration)
+	{
+	    // FIXME
+	}
+
+	// set DISPLAYMANAGER_REMOTE_ACCESS in sysconfig/displaymanager
+	SCR::Write (.sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS,
+		    allow_administration ? "yes" : "no");
+	SCR::Write (.sysconfig.displaymanager, nil);
+
+	// en- or disable vnc10 and vnchttpd10 in xinetd.d/vnc
 	// FIXME
 
 	return true;
