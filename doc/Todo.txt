@@ -77,12 +77,14 @@ Enhancements:
 - dsl: detect hardware (#24462)
 - dsl: empty ifcfg-ethX (#17631)
 - alias: virtual interfaces (#6627) [ALIASES]
-- dns: replace SuSEconfig.hostname [HOSTNAME]
 - dialup: mail question only if new device was added
 - lan: install dhcpcd|sysconfig|... (before Write)
 - lan: install wireless-tools, hotplug, ... if needed (before Write)
 - IPv6 support (tunnels)
 - wireless improvements (waiting for jg@suse.de)
+
+- host: drop oldhostentry file
+- host: better deleted hostnames handling
 
 Documentation:
 - example dhcpcd-eth0.info
@@ -100,26 +102,6 @@ ISDN:
 - code cleanup (use yast2-network structure: Provider, devices, ...)
 - UI cleanup (http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html)
 - isdn: start mail after config (#18256)
-
-HOSTNAME:
-- replace SuSEconfig.hostname (#22825)
-- /var/adm/SuSEconfig/oldhostentry:
-notebook.suse.cz
-1.2.3.4
-- add "127.0.0.1 localhost" if missing
-- grep [IPADDRs] frrom sysconfig/network/ifcfg-*
-- read HOSTNAME from /etc/HOSTNAME
-- for all [IPADDRs] if IPADDR <> 127.0.0.1 || 0.0.0.0:
-- add "$IPADDR $HOSTNAME $NICKNAME" for the first item
-- add "$IPADDR $HOSTNAME" for other IPADDRs
-- if [IPADDRs] == [] add "127.0.0.2 $HOSTNAME $NICKNAME"
-
-- remove BEAUTIFY_ETC_HOSTS [comments at top, sort; implement in yast2?]
-- remove CHECK_ETC_HOSTS
-
-UpdateHosts("hostname", [IPADDRs]);
-
-- see Host::Update()
 
 WARN:
 - #19851, #27137

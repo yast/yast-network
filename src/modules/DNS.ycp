@@ -13,6 +13,7 @@ module "DNS";
 textdomain "network";
 
 import "Detection";
+import "Host";
 import "Hostname";
 import "NetworkConfig";
 import "NetworkDevices";
@@ -30,6 +31,9 @@ global list<string> nameservers = [];
 global list<string> searchlist = [];
 global string resolv_conf_process = "";
 global boolean resolv_conf_force = false;
+
+string oldhostname = "";
+global list<string> oldhostnames = [];
 
 /**
  * Data was modified?
@@ -87,6 +91,7 @@ global define boolean Read() {
     if(SCR::Read(.target.size, "/etc/HOSTNAME") > 0) {
 	fqhostname = (string) SCR::Read(.target.string, "/etc/HOSTNAME");
 	fqhostname = substring(fqhostname, 0, findfirstof(fqhostname, "\n"));
+	oldhostname = fqhostname;
     }
 
     if(fqhostname != "") {
@@ -118,8 +123,7 @@ global define boolean Write() {
     }
 
     /* build FQ hostname */
-    string fqhostname = hostname;
-    if(domain != "") fqhostname = fqhostname + "." + domain;
+    string fqhostname = Hostname::MergeFQ(hostname, domain);
 
     /* Allow to set hostname even if it's modified by DHCP (#bug)
     if(NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false != true) { */
@@ -132,6 +136,15 @@ global define boolean Write() {
 
 	/* write hostname */
 	SCR::Write(.target.string, "/etc/HOSTNAME", fqhostname + "\n");
+
+	/* Update /etc/hosts */
+	list<string> devs = NetworkDevices::LocateNOT("IPADDR", "");
+	list<string> ips = maplist(string dev, devs, {
+	    return NetworkDevices::GetValue(dev, "IPADDR");
+	});
+	Host::Update(fqhostname, oldhostname, ips);
+
+	/* Finish him */
 	RunSuSEconfig();
 
 	/* update X authorization */
@@ -213,8 +226,7 @@ global define string Summary() {
 	summary = summary + _("Host Name: set by DHCP");
     else
 	/* Summary text */
-	summary = summary + sformat(_("Host Name: %1"), hostname) +
-	    (domain != ""? "." + domain : "");
+	summary = summary + sformat(_("Host Name: %1"), Hostname::MergeFQ(hostname, domain));
 
     summary = summary + "<p>";
 

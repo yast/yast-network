@@ -11,12 +11,15 @@
 
 module "Host";
 textdomain "network";
+
+import "Hostname";
+import "String";
 import "Summary";
 
 /**
  * All hosts
  */
-global map<string, any > hosts = $[];
+global map<string, list<string> > hosts = $[];
 
 /**
  * Deleted hosts
@@ -157,48 +160,86 @@ global define list GetSystemHosts() {
  * @param ips localhost IP addresses
  * @return true if success
  */
-global define boolean Update(string hostname, string domain, list<string> ips) {
+global define boolean Update(string oldhn, string newhn, list<string> ips) {
 
-    string fqhostname = hostname;
-    if(domain != "") fqhostname = fqhostname + "." + domain;
+    y2milestone("Hosts: %1", hosts);
+    y2milestone("Updating /etc/hosts: %1 -> %2: %3", oldhn, newhn, ips);
+
+    string nick = select(Hostname::SplitFQ(newhn), 0, "");
+    string oldnick = select(Hostname::SplitFQ(oldhn), 0, "");
 
     string oldhostname = "";
     string oldhostip = "";
 
     /* Read oldhostname entry */
-    list oldhost = splitstring((string) SCR::Read(.var.adm.SuSEconfig.oldhostentry), "\n");
+    list oldhost = [];
+    string ohentry = (string) SCR::Read(.target.string, "/var/adm/SuSEconfig/oldhostentry");
+    if(ohentry != nil) oldhost = splitstring(ohentry, "\n");
+
     if(size(oldhost) > 0)
-	oldhostname = oldhost[0]:"";
+	oldhostname = String::CutBlanks(oldhost[0]:"");
     if(size(oldhost) > 1)
-	oldhostip = oldhost[1]:"";
+	oldhostip = String::CutBlanks(oldhost[1]:"");
+    y2milestone("oldhostname: '%1' : '%2'", oldhostname, oldhostip);
 
     /* Remove old hostname from hosts */
-    if(haskey(hosts, oldhostip))
+    if(haskey(hosts, oldhostip)) {
+	y2debug("Deleteing: %1", oldhostip);
+	Deleted = add(Deleted, oldhostip);
 	hosts = remove(hosts, oldhostip);
+    }
+    y2debug("Hosts: %1", hosts);
+
+    /* Remove old hostname from hosts */
+    list oldhnlist = [];
+    hosts = filter(string ip, list<string> hs, hosts, {
+	if(size(hs) < 1) return false;
+	if(contains(hs, oldhn) || contains(hs, oldnick)) {
+	    oldhnlist = hs;
+	    return false;
+	}
+	else
+	    return true;
+    });
+    y2debug("Hosts: %1", hosts);
+
+    /* Resurect the rest of oldhnlist without old hostname */
+    // FIXME: maybe
+
+    /* Add localhost if missing */
+    if(!haskey(hosts, "127.0.0.1")) {
+	hosts["127.0.0.1"] = ["localhost"];
+    }
 
     /* Add at least one hostname/ip */
     if(size(ips) < 1) {
-	hosts["127.0.0.2"] = fqhostname + " " + hostname;
+	y2milestone("No IP found, adding dummy 127.0.0.2");
+	hosts["127.0.0.2"] = [ newhn + " " + nick ];
+	y2milestone("Hosts: %1", hosts);
 	return true;
     }
 
     /* Add hostname/ip for all ips */
     boolean nickadded = false;
     maplist(string ip, ips, {
+
 	/* Only add if not present yet */
 	if(haskey(hosts, ip)) return;
+	/* Omit some IP addresses */
+	if(ip == "" || ip == nil || ip == "127.0.0.1" || ip == "127.0.0.2") return;
 
-	string name = fqhostname;
+	string name = newhn;
 	/* Add nick for the first one */
 	if(!nickadded) {
 	    nickadded = true;
-	    name = name + " " + hostname;
+	    name = name + " " + nick;
 	}
 
-	hosts[ip] = name;
+	hosts[ip] = [ name ];
+
     });
 
-    /* */
+    y2milestone("Hosts: %1", hosts);
 
     return true;
 }

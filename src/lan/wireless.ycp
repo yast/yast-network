@@ -243,7 +243,7 @@ the channel, do this by selecting the desired value.</p>");
     /* Combobox item */
     channels = prepend(channels, `item(`id(""), _("Automatic")));
 
-    list bitrates = [ "54", "48", "36", "24", "18", "12", "9", "6", "11", "5.5", "2", "1" ];
+    list bitrates = [ "54", "48", "36", "24", "18", "12", "11", "9", "6", "5.5", "2", "1" ];
     if(Lan::wl_bitrate != "auto" && !contains(bitrates, Lan::wl_bitrate))
 	bitrates = prepend(bitrates, Lan::wl_bitrate);
     /* Combobox item */

@@ -341,6 +341,7 @@ disabled during the connection.</p>");
     if(ret == `next) {
 
 	if(DNSModified()) {
+
 	    DNS::hostname = (string) UI::QueryWidget(`id(`host), `Value);
 	    DNS::domain = (string) UI::QueryWidget(`id(`domain), `Value);
 
