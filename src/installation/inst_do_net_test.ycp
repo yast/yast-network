@@ -11,10 +11,16 @@
 {
     textdomain "network";
 
+    import "Internet";
+
     include "network/routines.ycp";
     include "network/installation/dialogs.ycp";
 
+
     if (WFM::Args (2) == true)	// called backwards
+	return `auto;
+
+    if (!Internet::do_test)	// nothing to test
 	return `auto;
 
     if (!Internet::Fastest())	// nothing to test

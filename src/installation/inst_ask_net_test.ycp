@@ -11,6 +11,8 @@
 {
     textdomain "network";
 
+    import "Internet";
+
     include "network/routines.ycp";
     include "network/installation/dialogs.ycp";
 

@@ -56,6 +56,7 @@ define boolean AskForPassword() ``{
     return false;
 }
 
+
 /**
  * Connection steps dialog
  * @return dialog result
@@ -90,15 +91,17 @@ the test procedure."),
     string type = device_type(Internet::device);
     if(haskey(labels, type)) label = labels[type]:"";
 
-    boolean test = true;
-
     /* Radiobuttons */
     term buttons = `VBox (
 			  `VSpacing(1),
-			  /* RadioButton label */
-			  `Left(`RadioButton(`id(`yes), _("&Yes, test connection to the Internet"), test)),
-			  /* RadioButton label */
-			  `Left(`RadioButton(`id(`no), _("N&o, skip this test"), !test)),
+			  `Left(`RadioButton(`id(`yes),
+					     /* RadioButton label */
+					     _("&Yes, test connection to the Internet"),
+					     Internet::do_test)),
+			  `Left(`RadioButton(`id(`no),
+					     /* RadioButton label */
+					     _("N&o, skip this test"),
+					     !Internet::do_test)),
 			  `VSpacing(1)
 			  );
 
@@ -138,35 +141,32 @@ the test procedure."),
 				BackButtonLabel(), NextButtonLabel());
 
     any ret = nil;
-    while(true) {
+
+    while (true)
+    {
 	ret = UI::UserInput();
 
-	if(ret == `abort || ret == `cancel) {
+	if (ret == `abort)
+	{
 	    if (UI::ReallyAbortPopup (false))
 		break;
 	    else
 		continue;
 	}
-	else if(ret == `back) {
+	else if (ret == `next || ret == `back)
+	{
 	    break;
 	}
-	else if(ret == `next) {
-	    /* check_* */
-	    break;
-	}
-	else {
-	    y2error("Unexpected return code: %1", ret);
-	    continue;
-	}
+
+	y2error("Unexpected return code: %1", ret);
     }
 
-    if(ret == `next) {
-	test = UI::QueryWidget(`id(`rb), `CurrentButton) == `yes;
-	y2debug("test=%1", test);
-    }
+    Internet::do_test = UI::QueryWidget(`id(`rb), `CurrentButton) == `yes;
+    y2debug("Internet::do_test=%1", Internet::do_test);
 
     return ret;
 }
+
 
 /**
  * Connection test dialog
