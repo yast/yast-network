@@ -1,0 +1,30 @@
+/**
+ * File:	include/network/installation/dialogs.ycp
+ * Package:	Network configuration
+ * Summary:	Configuration dialogs for installation
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *		Arvin Schnell <arvin@suse.de>
+ *
+ * $Id$
+ */
+
+{
+    textdomain "network";
+
+    include "network/routines.ycp";
+    include "network/installation/dialogs.ycp";
+
+    if (WFM::Args (2) == true)	// called backwards
+	return `auto;
+
+    if (!Internet::Fastest())	// nothing to test
+	return `auto;
+
+
+    if (!AskForPassword()) {
+	y2error("Password required");
+	return `next;
+    }
+
+    return TestConnectionDialog ();
+}

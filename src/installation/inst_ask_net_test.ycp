@@ -1,0 +1,22 @@
+/**
+ * File:	include/network/installation/dialogs.ycp
+ * Package:	Network configuration
+ * Summary:	Configuration dialogs for installation
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *		Arvin Schnell <arvin@suse.de>
+ *
+ * $Id$
+ */
+
+{
+    textdomain "network";
+
+    include "network/routines.ycp";
+    include "network/installation/dialogs.ycp";
+
+    if (!Internet::Fastest())	// nothing to test
+	return `auto;
+
+
+    return TestStepsDialog ();
+}

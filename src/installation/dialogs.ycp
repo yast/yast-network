@@ -142,8 +142,10 @@ the test procedure."),
 	ret = UI::UserInput();
 
 	if(ret == `abort || ret == `cancel) {
-	    if(ReallyAbort()) break;
-	    else continue;
+	    if (UI::ReallyAbortPopup (false))
+		break;
+	    else
+		continue;
 	}
 	else if(ret == `back) {
 	    break;
@@ -214,7 +216,7 @@ global define symbol TestConnectionDialog() ``{
 				 `Label (`id(`res), `opt(`outputField, `hstretch), ""),
 				 `HSpacing(1)
 				 ),
-			   `VSpacing(2),
+			   `VSpacing(1),
 			   `VStretch()
 			   );
 
@@ -232,8 +234,10 @@ global define symbol TestConnectionDialog() ``{
 	ret = UI::UserInput();
 
 	if(ret == `abort || ret == `cancel) {
-	    if(ReallyAbort()) break;
-	    else continue;
+	    if (UI::ReallyAbortPopup (false))
+		break;
+	    else
+		continue;
 	}
 	else if(ret == `back) {
 	    break;
@@ -253,24 +257,6 @@ global define symbol TestConnectionDialog() ``{
     }
 
     return ret;
-}
-
-if(true) {
-
-    if(!Internet::Fastest()) {
-	y2error("No device found");
-	return false;
-    }
-
-    if(!AskForPassword()) {
-	y2error("Password required");
-	return false;
-    }
-
-    Wizard::CreateDialog();
-    TestStepsDialog();
-    Internet::Start();
-    TestConnectionDialog();
 }
 
 /* EOF */
