@@ -2,6 +2,8 @@
 # neededforbuild yast2-devel-packages yast2-country yast2-installation
 
 @HEADER@
+# yast2-core >= 2.10.6: carrier detection
+Requires:	yast2-core >= 2.10.6
 Requires:	yast2 sysconfig yast2-country yast2-inetd
 PreReq:		/bin/rm
 

@@ -199,17 +199,31 @@ define list list2items(list l, integer selected) {
 }
 
 /**
- * Create a list of items for UI from the given hardware list
+ * Create a list of items for UI from the given hardware list.
+ *
+ * This list is used when selecting <ol>
+ * <li> detected unconfigured cards,
+ * there we want to see the link status </li>
+ * <li> undetected cards manually. there is no link status there
+ * and it won't be displayed. all is ok. </li>
+ * </ol>
  * @param l given list for conversion
  * @param selected selected item (0 for the first)
  * @return a list of items
  */
 define list hwlist2items(list<map> l, integer selected) {
+    // Translators: Appended after a network card name to indicate that
+    // there is no carrier, no link to the network, the cable is not
+    // plugged in. Preferably a short string.
+    string nolink = _("unplugged");
+
     list items = [];
     integer n = 0;
     foreach(map i, l, {
 	/* Table field (Unknown device) */
 	string hwname = i["name"]:_("Unknown");
+	string label = hwname + (i["link"]:nil == false ?
+				 sformat (" (%1)", nolink) : "");
 	integer num = i["num"]:n;
 	items = add(items, `item(`id(num), hwname, num == selected));
 	n = n + 1;
