@@ -432,7 +432,7 @@ global define void SelectHW(integer which) {
 
 global list<string> Packages() {
     if(size(NetworkDevices::List("modem")) < 1) return [];
-    return ["smpppdx"];
+    return ["smpppd"];
 }
 
 /* EOF */

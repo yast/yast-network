@@ -526,7 +526,7 @@ global define void SelectHW(integer which) {
 
 global list<string> Packages() {
     if(size(NetworkDevices::List("dsl")) < 1) return [];
-    return ["smpppdx", "ppp", "pptp", "linux-atm-lib"];
+    return ["smpppd", "ppp", "pptp", "linux-atm-lib"];
 }
 
 /**
