@@ -75,7 +75,7 @@ boolean initialized = false;
  * Predefined network card regular expressions
  */
 global map<string,string> CardRegex = $[
-    "netcard"	: "arc|ci|ctc|dummy|escon|eth|fddi|hsi|qeth|lcs|iucv|myri|tr|wlan|xp ",
+    "netcard"	: "arc|bnep|ci|ctc|dummy|escon|eth|fddi|hsi|qeth|lcs|iucv|myri|tr|wlan|xp ",
     "modem"	: "ppp",
     "isdn"	: "isdn|ippp",
     "dsl"	: "dsl",

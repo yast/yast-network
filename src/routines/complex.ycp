@@ -138,6 +138,8 @@ define string CheckEmptyName(string devtype, string hwname) {
 	/* Device type label */
 	"atm"		: _("Asynchronous Transfer Mode (ATM)"),
 	/* Device type label */
+	"bnep"		: _("Bluetooth Connection"),
+	/* Device type label */
 	"ci"		: _("Common Link Access for Workstation (CLAW)"),
 	/* Device type label */
 	"contr"		: _("ISDN card"),

@@ -131,6 +131,14 @@ Documentation:
 - doc: adding network device mini-howto: grep for "escon" for example
 - doc: include public_html/network, dia, ...
 
+New device type:
+- lan/cards.ycp			add type cards (at least one entry)
+- lan/hardware.ycp		update "device_types" list
+- modules/NetworkDevices.ycp	update "netcard" list
+- routines/complex.ycp		add "device_name" to CheckEmptyName
+- routines/hardware.ycp		update ControllerType (detection)
+- routines/summary.ycp		add "device_type" to DeviceType
+
 Debug (bugzilla):
 - 'hwinfo --all --log hwinfo.log'
 - /etc/sysconfig/hardware/hwcfg-*

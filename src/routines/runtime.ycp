@@ -113,9 +113,13 @@ boolean DuplicateIP(string ip) {
 /**
  * Link detection
  * @return true if link found
- * @see ip(8)
+ * @see ethtool(8)
  */
 boolean HasLink() {
+    string ifname = "eth0";
+
+    string command = sformat("ethtool %1 | grep -q 'Link detected: no'", ifname);
+    if((integer) SCR::Execute(.target.bash, command) == 1) return false;
     return true;
 }
 

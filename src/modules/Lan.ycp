@@ -19,6 +19,7 @@ import "Arch";
 import "DNS";
 import "Detection";
 import "Host";
+import "Hostname";
 import "IP";
 import "Map";
 import "Mode";
