@@ -241,7 +241,7 @@ global define string ControllerType(map hwdevice) ``{
 	else if(subclass_id == 5) return "hsi";
 	else if(subclass_id == 6) return "qeth";
 	else if(subclass_id == 7) return "escon";
-	else if(subclass_id == 8) return "myri";
+	else if(subclass_id == 129) return "myri";
 	else if(subclass_id == 9) return "wlan";
 	else if(subclass_id == 0x82) return "wlan";
 	else if(subclass_id == 0x80) {
@@ -268,7 +268,7 @@ global define string ControllerType(map hwdevice) ``{
 	else if(subclass_id == 6) return "hsi";
 	else if(subclass_id == 7) return "qeth";
 	else if(subclass_id == 8) return "escon";
-	else if(subclass_id == 9) return "myri";
+	else if(subclass_id == 129) return "myri";
 	else if(subclass_id == 10) return "wlan";
 	else if(subclass_id == 0x80) {
 	    /* Nothing was found, default is eth */
