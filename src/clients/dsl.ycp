@@ -1,21 +1,13 @@
 /**
- * File:
- *   clients/dsl.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   DSL main file
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/dsl.ycp
+ * Package:	Configuration of network
+ * Summary:	DSL main file
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
  * Main file for DSL configuration.
  * Uses all other files.
- *
  */
 
 {
@@ -23,8 +15,8 @@
 textdomain "network";
 
 /* The main () */
-y2milestone("DSL module started");
 y2milestone("----------------------------------------");
+y2milestone("DSL module started");
 
 //include "network/dsl/wizards.ycp";
 include "network/dsl/dialogs.ycp";
@@ -52,6 +44,7 @@ y2debug("ret == %1", ret);
 
 /* Finish */
 y2milestone("DSL module finished");
+y2milestone("----------------------------------------");
 return ret;
 
 /* EOF */

@@ -22,6 +22,8 @@ import "Modem";
 import "ISDN";
 import "Language";
 
+include "network/routines.ycp";
+
 /**
  * Modem we are currently working with.
  * Members for dialup - phone provider:
@@ -57,7 +59,7 @@ global string provLongName = "";
 /**
  * Dirty bit
  */
-boolean dirty = false;
+boolean modified = false;
 
 /**
  * Custom providers.
@@ -85,7 +87,7 @@ global define map Export() ``{
 global define map Import(map in) ``{
     providers = in;
     provider = $[];
-    dirty = true;
+    modified = true;
 }
 
 /**
@@ -93,7 +95,7 @@ global define map Import(map in) ``{
  * @return true if modified
  */
 global define boolean Modified() ``{
-    return dirty;
+    return modified;
 }
 
 /**
@@ -101,9 +103,9 @@ global define boolean Modified() ``{
  * @param name section name
  * @return true if OK
  */
-global define boolean IsSectionUnique (string name) ``{
-    list forbidden = maplist (`k, `v, providers, ``( k ));
-    return !contains (forbidden, name);
+global define boolean IsSectionUnique(string name) ``{
+    list forbidden = mapkeys(providers);
+    return !contains(forbidden, name);
 }
 
 /**
@@ -111,48 +113,57 @@ global define boolean IsSectionUnique (string name) ``{
  * @param name provider name
  * @return true if OK
  */
-global define boolean IsProviderUnique (string name) ``{
-    list forbidden = maplist (`k, `v, providers, ``( lookup (v, "PROVIDER", "")));
-    return !contains (forbidden, name);
+global define boolean IsProviderUnique(string name) ``{
+    list forbidden = maplist(`k, `v, providers, ``(v["PROVIDER"]:""));
+    return !contains(forbidden, name);
 }
 
 /**
  * Prepare for editation of currently selected provider.
  * Check/change its name (ShortName) and nice-name (Provider) to unused.
- * @param prov_id provider to edit
+ * @param new true if create new provider, false if edit existing
  */
-global define void editProvider (any prov_id) ``{
-    if (is (prov_id, string)) //User chose provider from "Other" -- edit it.
-	return ;
-    integer suffix = 0;
-    string name = lookup (provider, "ShortName", "");
-    string gen = name;
-    list forbidden = maplist (`k, `v, providers, ``( k ));
-    while (contains (forbidden, gen))
-    {
-	suffix = suffix + 1;
-	gen = sformat ("%1%2", name, suffix);
-    }
-    provider = add (provider, "ShortName", gen);
+global define void editProvider(boolean new) ``{
 
-    name = lookup (provider, "PROVIDER", "");
-    gen = name;
-    suffix = 0;
-    forbidden = maplist (`k, `v, providers, ``( lookup (v, "PROVIDER", "")));
-    while (contains (forbidden, gen))
-    {
-	suffix = suffix + 1;
-	gen = sformat ("%1 (%2)", name, suffix);
+    /* generate unique ShortName */
+    integer suffix = 0;
+    string name = lookup(provider, "ShortName", "");
+    string gen = name;
+    if(gen == "") {
+	gen = "provider0";
+	name = "provider";
     }
-    provider = add (provider, "PROVIDER", gen);
+
+    list forbidden = mapkeys(providers);
+    while(contains(forbidden, gen)) {
+	suffix = suffix + 1;
+	gen = sformat("%1%2", name, suffix);
+    }
+    provider = add(provider, "ShortName", gen);
+
+    if(new) return;
+
+    /* generate unique name */
+    name = lookup(provider, "PROVIDER", "");
+    gen = name;
+
+    suffix = 0;
+    forbidden = maplist(`k, `v, providers, ``(v["PROVIDER"]:""));
+    while(contains(forbidden, gen)) {
+	suffix = suffix + 1;
+	gen = sformat("%1 (%2)", name, suffix);
+    }
+    provider = add(provider, "PROVIDER", gen);
+
     // initialize provider with new values
-    provider = union ($[
-	    "AUTODNS" : "yes",
-	    "IDLETIME" : "300",
-	    "DEMAND" : "no",
-	    "DNS1" : "",
-	    "DNS2" : "", ],
-	    provider);
+    provider = union($[
+	"MODIFYDNS" : "yes",
+	"IDLETIME" : "300",
+	"DEMAND" : "no",
+	"DNS1" : "",
+	"DNS2" : "",
+    ], provider);
+
 }
 
 /**
@@ -161,9 +172,9 @@ global define void editProvider (any prov_id) ``{
  */
 global define void Commit() ``{
     providers = add(providers, lookup(provider, "ShortName", ""), provider);
-    provShortName = lookup (provider, "ShortName", "");
-    provLongName = lookup (provider, "PROVIDER", "");
-    dirty = true;
+    provShortName = lookup(provider, "ShortName", "");
+    provLongName = lookup(provider, "PROVIDER", "");
+    modified = true;
 }
 
 /**
@@ -248,6 +259,7 @@ global define boolean Write() ``{
     /* change the rights (provider can contain password #13353  */
     SCR::Execute(.target.bash, "/bin/chown -R root:root /etc/sysconfig/network/providers");
     SCR::Execute(.target.bash, "/bin/chmod -R 0600 /etc/sysconfig/network/providers");
+    SCR::Execute(.target.bash, "/bin/chmod 0700 /etc/sysconfig/network/providers");
 
     return ret;
 }
@@ -381,30 +393,30 @@ global define map GetProvider(any provider) ``{
  * @return sorted list of providers
  */
 define list SortProviders(list provs) ``{
-    list pre = sort (maplist (`i, add (provs, "--"), ``{
-	if ("--" == i)
+    list pre = sort(maplist(`i, add(provs, "--"), ``{
+	if("--" == i)
 	    return "9                                  .\"--\"";
-	if (is (i, string))
+	if(is(i, string))
 	    return "x                                  " + i;
 	else
 	{
-	    string tmp = SCR::Read (i + .PRIORITY);
-	    if (nil == tmp)
+	    string tmp = SCR::Read(i + .PRIORITY);
+	    if(nil == tmp)
 		tmp = "-1";
-	    integer p = 8 - tointeger (tmp);
-	    if (p < 0 || p > 9)
-		y2error ("======= wrong priority, you must change the algorithm!!! %1 =======", tmp);
-	    tmp = tolower (SCR::Read (i + .PROVIDER)) + "                                   ";
-	    tmp = sformat ("%1", p) + tmp;
-	    return sformat ("%1%2", substring (tmp, 0, 35), i);
+	    integer p = 8 - tointeger(tmp);
+	    if(p < 0 || p > 9)
+		y2error("======= wrong priority, you must change the algorithm!!! %1 =======", tmp);
+	    tmp = tolower(SCR::Read(i + .PROVIDER)) + "                                   ";
+	    tmp = sformat("%1", p) + tmp;
+	    return sformat("%1%2", substring(tmp, 0, 35), i);
 	}
     }));
-    if (".\"--\"" == substring (select (pre, 0, ""), 35))
-	pre = remove (pre, 0);
-    return maplist (`i, pre, ``{
-	if ("x" == substring (i, 0, 1))
-	    return substring (i, 35);
-	return topath (substring (i, 35));
+    if(".\"--\"" == substring(select(pre, 0, ""), 35))
+	pre = remove(pre, 0);
+    return maplist(`i, pre, ``{
+	if("x" == substring(i, 0, 1))
+	    return substring(i, 35);
+	return topath(substring(i, 35));
     });
 }
 

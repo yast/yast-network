@@ -1,15 +1,8 @@
 /**
- * File:
- *   clients/dns_auto.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Client for autoinstallation
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/dns_auto.ycp
+ * Package:	Configuration of network
+ * Summary:	Client for autoinstallation
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
@@ -29,8 +22,8 @@
 
 textdomain "network";
 
-y2milestone("DNS auto started");
 y2milestone("----------------------------------------");
+y2milestone("DNS auto started");
 
 import "DNS";
 include "network/services/dns.ycp";
@@ -57,9 +50,9 @@ y2milestone("ret=%1", ret);
 UI::CloseDialog();
 
 y2milestone("DNS auto finished");
-if(ret == `next)
-    return DNS::Export();
+y2milestone("----------------------------------------");
 
+if(ret == `next) return DNS::Export();
 return $[];
 
 /* EOF */

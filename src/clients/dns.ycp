@@ -1,21 +1,13 @@
 /**
- * File:
- *   clients/dns.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Hostname and DNS client
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/dns.ycp
+ * Package:	Configuration of network
+ * Summary:	Hostname and DNS client
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
  * Main file for hostname and DNS configuration.
  * Uses all other files.
- *
  */
 
 {
@@ -27,8 +19,8 @@ import "Lan";
 import "Wizard";
 
 /* The main () */
-y2milestone("DNS module started");
 y2milestone("----------------------------------------");
+y2milestone("DNS module started");
 
 include "network/services/dns.ycp";
 include "network/runtime.ycp";
@@ -58,6 +50,7 @@ UI::CloseDialog();
 
 /* Finish */
 y2milestone("DNS module finished");
+y2milestone("----------------------------------------");
 return ret;
 
 /* EOF */

@@ -1,15 +1,8 @@
 /**
- * File:
- *   clients/isdn_auto.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Client for autoinstallation
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/isdn_auto.ycp
+ * Package:	Configuration of network
+ * Summary:	Client for autoinstallation
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
@@ -29,8 +22,8 @@
 
 textdomain "network";
 
-y2milestone("ISDN auto started");
 y2milestone("----------------------------------------");
+y2milestone("ISDN auto started");
 
 import "ISDN";
 include "network/isdn/wizards.ycp";
@@ -54,9 +47,9 @@ symbol ret = ISDNAutoSequence();
 y2debug("ret=%1", ret);
 
 y2milestone("ISDN auto finished");
-if(ret == `next)
-    return ISDN::Export();
+y2milestone("----------------------------------------");
 
+if(ret == `next) return ISDN::Export();
 return $[];
 
 /* EOF */

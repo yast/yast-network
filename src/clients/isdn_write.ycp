@@ -1,15 +1,8 @@
 /**
- * File:
- *   clients/isdn_write.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Writing only client
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/isdn_write.ycp
+ * Package:	Configuration of network
+ * Summary:	Writing only client
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
@@ -28,8 +21,8 @@
 
 textdomain "network";
 
-y2milestone("ISDN write started");
 y2milestone("----------------------------------------");
+y2milestone("ISDN write started");
 
 import "ISDN";
 import "Progress";
@@ -54,6 +47,8 @@ boolean ret = ISDN::Write(true);
 Progress::on();
 
 y2milestone("ISDN write finished");
+y2milestone("----------------------------------------");
 return ret;
 
+/* EOF */
 }

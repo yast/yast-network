@@ -1,21 +1,13 @@
 /**
- * File:
- *   clients/routing.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Routing client
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/routing.ycp
+ * Package:	Configuration of network
+ * Summary:	Routing client
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
  * Main file for routing configuration.
  * Uses all other files.
- *
  */
 
 {
@@ -26,8 +18,8 @@ import "Routing";
 import "Wizard";
 
 /* The main () */
-y2milestone("Routing module started");
 y2milestone("----------------------------------------");
+y2milestone("Routing module started");
 
 include "network/services/routing.ycp";
 include "network/runtime.ycp";
@@ -56,6 +48,7 @@ UI::CloseDialog();
 
 /* Finish */
 y2milestone("Routing module finished");
+y2milestone("----------------------------------------");
 return ret;
 
 /* EOF */

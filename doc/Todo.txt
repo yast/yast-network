@@ -6,7 +6,7 @@ Bugs:
 - modem: start smpppd only if >0 devs
 - providers: add/edit/delete #16094
 - check existence of the modem device
-- modem|dsl: info popup + run|stop kinternet, if DISPLAY and (not)running
+- modem|dsl: info popup + run|stop kinternet, if DISPLAY and (not)running (#14320)
 
 2sort:
 - check already present default route (partially #11132)

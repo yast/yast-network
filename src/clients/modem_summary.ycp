@@ -1,21 +1,13 @@
 /**
- * File:
- *   clients/modem_summary.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Modems summary
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/modem_summary.ycp
+ * Package:	Configuration of network
+ * Summary:	Modems summary
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
  * Main file for network card configuration.
  * Uses all other files.
- *
  */
 
 {
@@ -26,8 +18,8 @@ import "Modem";
 import "Summary";
 
 /* The main () */
-y2milestone("Modem summary started");
 y2milestone("----------------------------------------");
+y2milestone("Modem summary started");
 
 Progress::off();
 Modem::Read();
@@ -37,6 +29,8 @@ Progress::on();
 
 /* Finish */
 y2milestone("Modem summary finished");
+y2milestone("----------------------------------------");
 return ret;
 
+/* EOF */
 }

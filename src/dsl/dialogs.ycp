@@ -1,18 +1,9 @@
 /**
- * File:
- *   include/network/dsl/dialogs.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Configuration dialogs for DSL
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
- *
+ * File:	include/network/dsl/dialogs.ycp
+ * Package:	Configuration of network
+ * Summary:	Configuration dialogs for DSL
+ * Authors:	Michal Svec <msvec@suse.cz>
  * $Id$
- *
  */
 
 {

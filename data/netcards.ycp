@@ -10,7 +10,7 @@
 // "name"   ... <string> that contains user readable name of the card
 // "module" ... <map>    with module info : "name" (string) and "options" (map)
 // "architecture" <list> with list of architectures, possibilities:
-//"macintosh", "s390", "itanium", "rs6000", "axp", "i386", "iseries", "ppc", "sparc", 
+//"macintosh", "s390", "itanium", "rs6000", "axp", "i386", "iseries", "ppc", "sparc",
 $[
   "eth" : [
     $["name" : "Apple onboard Ethernet mace",

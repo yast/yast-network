@@ -1,18 +1,10 @@
 /**
- * File:
- *   clients/modem_proposal.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Modem configuration proposal
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/modem_proposal.ycp
+ * Package:	Configuration of network
+ * Summary:	Modem configuration proposal
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
  */
 
 {
@@ -23,8 +15,8 @@ import "Modem";
 import "Progress";
 
 /* The main () */
-y2milestone("Modem proposal started");
 y2milestone("----------------------------------------");
+y2milestone("Modem proposal started");
 
 string func = Args(0);
 map param = Args(1);
@@ -81,8 +73,9 @@ else {
 }
 
 /* Finish */
-y2milestone("Modem proposal finished");
 y2debug("ret=%1",ret);
+y2milestone("Modem proposal finished");
+y2milestone("----------------------------------------");
 return ret;
 
 /* EOF */

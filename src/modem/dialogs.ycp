@@ -2,7 +2,7 @@
  * File:	include/network/modem/dialogs.ycp
  * Package:	Configuration of network
  * Summary:	Modem configuration dialogs
- * Author:	Michal Svec <msvec@suse.cz>
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  */
@@ -212,7 +212,7 @@ should be in your modem manual.</p>");
 	`VBox(
 	    /* Combo box label */
 	    `ComboBox(`id(`Baud), `opt(`hstretch, `editable), _("B&aud rate"), BaudRates),
-	    `VSpacing(0.2),
+	    `VSpacing(0.5),
 		/* Frame label */
 		`Frame(_("Modem initialization strings"),
 		`HBox(
@@ -220,11 +220,13 @@ should be in your modem manual.</p>");
 		    `VBox(
 			/* Text entry label */
 			`TextEntry(`id(`Init1), _("Init &1"), Init1),
+			`VSpacing(0.5),
 			/* Text entry label */
 			`TextEntry(`id(`Init2), _("Init &2"), Init2),
+			`VSpacing(0.5),
 			/* Text entry label */
 			`TextEntry(`id(`Init3), _("Init &3"), Init3),
-			`VSpacing(0.5)
+			`VSpacing(0.4)
 		    ),
 		    `HSpacing(0.2)
 		)

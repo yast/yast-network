@@ -1,15 +1,8 @@
 /**
- * File:
- *   clients/modem_auto.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Client for autoinstallation
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/modem_auto.ycp
+ * Package:	Configuration of network
+ * Summary:	Client for autoinstallation
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
@@ -29,8 +22,8 @@
 
 textdomain "network";
 
-y2milestone("Modem auto started");
 y2milestone("----------------------------------------");
+y2milestone("Modem auto started");
 
 import "Modem";
 include "network/modem/wizards.ycp";
@@ -54,9 +47,9 @@ symbol ret = ModemAutoSequence();
 y2debug("ret=%1", ret);
 
 y2milestone("Modem auto finished");
-if(ret == `next)
-    return Modem::Export();
+y2milestone("----------------------------------------");
 
+if(ret == `next) return Modem::Export();
 return $[];
 
 /* EOF */

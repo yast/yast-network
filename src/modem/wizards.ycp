@@ -20,6 +20,7 @@ include "wizard/sequencer.ycp";
 include "network/modem/dialogs.ycp";
 include "network/modem/complex.ycp";
 
+include "network/providers/details.ycp";
 include "network/providers/dialogs.ycp";
 include "network/providers/connection.ycp";
 
@@ -36,7 +37,7 @@ global define symbol ModemSequence() ``{
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
 	"write"	: [ ``( WriteDialog() ), true ],
-	"finish" : [ ``( Finished(Modem::Modified(), finished, "mail", ["dialup"]) ), true ],
+	"finish": [ ``( Finished(Modem::Modified(), finished, "mail", ["dialup"]) ), true ],
     ];
 
     map sequence = $[
@@ -154,9 +155,10 @@ global define symbol OneModemSequence(boolean detected) ``{
 	"details"		: ``(ModemDetailsDialog()),
 	"details_detected"	: ``(ModemDetailsDialog()),
 	"providers"		: ``(ProvidersDialog("modem")),
-	"provider"		: ``(runEditModemProviderDialog(true)),
-	"new_provider"		: ``(runEditModemProviderDialog(false)),
+	"provider"		: ``(ProviderDialog("modem")),
+	"new_provider"		: ``(ProviderDialog("modem")),
 	"connection"		: ``(ConnectionDialog("modem")),
+	"ipdetails"		: ``(IPDetailsDialog("modem")),
 	"commit"		: [ ``(Commit()), true ],
     ];
 
@@ -197,6 +199,10 @@ global define symbol OneModemSequence(boolean detected) ``{
 	    `abort  : `abort
 	],
 	"connection" : $[
+	    `next   : "ipdetails",
+	    `abort  : `abort
+	],
+	"ipdetails" : $[
 	    `next   : "commit",
 	    `abort  : `abort
 	],

@@ -1,21 +1,13 @@
 /**
- * File:
- *   clients/modem.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Modems main file
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/modem.ycp
+ * Package:	Configuration of network
+ * Summary:	Modems main file
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
  * Main file for modem configuration.
  * Uses all other files.
- *
  */
 
 {
@@ -23,8 +15,8 @@
 textdomain "network";
 
 /* The main () */
-y2milestone("Modem module started");
 y2milestone("----------------------------------------");
+y2milestone("Modem module started");
 
 include "network/modem/wizards.ycp";
 
@@ -49,6 +41,8 @@ y2debug("ret == %1", ret);
 
 /* Finish */
 y2milestone("Modem module finished");
+y2milestone("----------------------------------------");
 return ret;
 
+/* EOF */
 }

@@ -1,20 +1,12 @@
 /**
- * File:
- *   include/network/lan/manual.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Network card adresss configuration
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/lan/manual.ycp
+ * Package:	Configuration of network
+ * Summary:	Network card adresss configuration
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
  * Dialogs definitions.
- *
  */
 
 {

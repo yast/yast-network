@@ -17,8 +17,8 @@ textdomain "network";
 import "Lan";
 
 /* The main () */
-y2milestone("Lan summary started");
 y2milestone("----------------------------------------");
+y2milestone("Lan summary started");
 
 Progress::off();
 Lan::Read();
@@ -28,6 +28,7 @@ Progress::on();
 
 /* Finish */
 y2milestone("Lan summary finished");
+y2milestone("----------------------------------------");
 return ret;
 
 /* EOF */

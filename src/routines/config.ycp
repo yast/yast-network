@@ -69,6 +69,7 @@ global define boolean ReadConfig(string devregex) ``{
     y2debug("CONFIG=%1",CONFIG);
 
     /* read aliases */
+    /* FIXME
     maplist(`d, aliases, ``{
 	string devtype = device_type(d);
 	if(devtype == "lo") return;
@@ -102,6 +103,7 @@ global define boolean ReadConfig(string devregex) ``{
 	change(dev, devnum, config);
 	change(CONFIG, devtype, dev);
     });
+    */
 
     y2debug("CONFIG=%1",CONFIG);
     return true;
@@ -243,7 +245,7 @@ global define list GetFreeDevices(string type, integer num) ``{
  * @param check if check if device already exists
  * @return true if success
  */
-global define boolean ConfigAdd(string type, integer device, map newdev, boolean check) ``{
+global define boolean ConfigAddEdit(string type, integer device, map newdev, boolean check) ``{
     y2debug("CONFIG=%1",CONFIG);
     map devmap = lookup(CONFIG, type, $[]);
     string dev = sformat("%1",device);

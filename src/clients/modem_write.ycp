@@ -1,15 +1,8 @@
 /**
- * File:
- *   clients/modem_write.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Writing only client
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/modem_write.ycp
+ * Package:	Configuration of network
+ * Summary:	Writing only client
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
@@ -28,8 +21,8 @@
 
 textdomain "network";
 
-y2milestone("Modem write started");
 y2milestone("----------------------------------------");
+y2milestone("Modem write started");
 
 import "Modem";
 import "Progress";
@@ -54,6 +47,7 @@ boolean ret = Modem::Write();
 Progress::on();
 
 y2milestone("Modem write finished");
+y2milestone("----------------------------------------");
 return ret;
 
 }

@@ -15,8 +15,8 @@ import "Lan";
 import "Progress";
 
 /* The main () */
-y2milestone("Lan proposal started");
 y2milestone("----------------------------------------");
+y2milestone("Lan proposal started");
 
 string func = Args(0);
 map param = Args(1);
@@ -72,8 +72,9 @@ else {
 }
 
 /* Finish */
-y2milestone("Lan proposal finished");
 y2debug("ret=%1",ret);
+y2milestone("Lan proposal finished");
+y2milestone("----------------------------------------");
 return ret;
 
 /* EOF */

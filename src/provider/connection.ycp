@@ -2,7 +2,7 @@
  * File:	include/network/providers/connection.ycp
  * Package:	Configuration of network
  * Summary:	Connection configuration dialogs
- * Author:	Michal Svec <msvec@suse.cz>
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  */
@@ -32,7 +32,8 @@ global define symbol ConnectionDialog(string type) ``{
     string Provider = lookup(Providers::provider, "PROVIDER", "");
 
     boolean DialOnDemand = lookup(Providers::provider, "DEMAND", "no") == "yes";
-    boolean AutoDNS = lookup(Providers::provider, "AUTODNS", "yes") == "yes";
+    boolean AutoDNS = lookup(Providers::provider, "MODIFYDNS", "yes") == "yes";
+    boolean stupidmode = lookup(Providers::provider, "STUPIDMODE", "no") == "yes";
 
     string DNS1 = lookup(Providers::provider, "DNS1", "");
     string DNS2 = lookup(Providers::provider, "DNS2", "");
@@ -56,7 +57,7 @@ global define symbol ConnectionDialog(string type) ``{
     /* Connection dialog caption */
     string caption = _("Connection parameters");
 
-    /* Connection dialog help 1/7 */
+    /* Connection dialog help 1/8 */
     string helptext = _("<p><b>Dial on demand</b> means that the
 internet connection will be established automatically when data from
 the internet are requested. To use this feature you must specify at
@@ -64,54 +65,73 @@ least one <i>name server</i>. Please use this feature only if your
 internet connection is cheap since there are programs that periodically
 request data from the internet.</p>") +
 
-    /* Connection dialog help 2/7 */
+    /* Connection dialog help 2/8 */
 _("<p>When <b>Modify DNS</b> is enabled the <i>name server</i> will be
 changed automatically when connected to the internet.</p>") +
 
-    /* Connection dialog help 3/7 */
+    /* Connection dialog help 3/8 */
 _("<p>The <b>Name servers</b> are required to convert host names
 <i>(e.g. www.suse.com)</i> to IP addresses (e.g. 213.95.15.200). You only
 need to specify the name servers if you enable <i>Dial on demand</i> or
 disable <b>DNS modification</b> when connected.</p>") +
 
-    /* Connection dialog help 4/7 */
+    /* Connection dialog help 4/8 */
+_("<p><b>Stupid mode</b> help FIXME
+</p>") +
+
+    /* Connection dialog help 5/8 */
 _("<p>Selecting <b>Activate firewall</b> will block all incoming
 connections. Choosing this option will make dial-up connections
 to the Internet safe from external attacks.</p>") +
 
-    /* Connection dialog help 5/7 */
+    /* Connection dialog help 6/8 */
 _("<p>The <b>Idle timeout</b> specifies the time after which an idle
 connection will be shut down.</p>");
 
     if(type == "isdn")
 
-	/* FIXME Connection dialog help 6/6 */
+	/* FIXME Connection dialog help 7/8 */
 	helptext = helptext + _("<p><b>Connection details</b> help FIXME
 </p>") +
 
-	/* FIXME Connection dialog help 7/7 */
+	/* FIXME Connection dialog help 8/8 */
 _("<p><b>IP details</b> help FIXME
 </p>");
 
     /* DIALOG CONTENTS */
 
-    list seconds = maplist(`e, toset([ "30", "60", "90", "120", "150", "180", "240", "300", "360", "480", "600", IdleSeconds ]),
+    list seconds = [ "30", "60", "90", "120", "150", "180", "240", "300", "360", "480", "600" ];
+    if(!contains(seconds, IdleSeconds))
+	change(seconds, IdleSeconds);
+
+    seconds = maplist(`e, seconds,
 	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == IdleSeconds)));
 
     /* Checkbox label */
     term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("Activate fire&wall ..."), FirewallChecked));
 
+    term details = `VSpacing(0.1);
+    //if(type == "isdn")
+    if(false)
+	details = `HBox(
+	    /* Push button label */
+	    `PushButton(`id(`Details), _("&Connection details")),
+	    `HSpacing(0.5),
+	    /* Push button label */
+	    `PushButton(`id(`IPDetails), _("&IP details"))
+	);
+
     term contents = `HBox(
 	`HSpacing(6),
 	`VBox(
-	    `VSpacing(0.2),
+	    `VSpacing(0.5),
 	    `Left(`HBox(
 		/* Label */
 		`Label(_("Provider:")),
 		`HSpacing(0.5),
 		`Label(`opt(`outputField), Provider)
 	    )),
-	    `VSpacing(1),
+	    `VSpacing(0.5),
 	    `HBox(
 		`VBox(
 		    /* Checkbox label */
@@ -121,31 +141,25 @@ _("<p><b>IP details</b> help FIXME
 		 )
 	    ),
 	    `VSpacing(1),
-	    `HBox(
-		/* Frame label */
-		`Frame(`id(`NameServers), _("Name servers"),
-		    `VBox(
-			/* Text entry label */
-			`TextEntry(`id(`DNS1), _("&First"), DNS1),
-			/* Text entry label */
-			`TextEntry(`id(`DNS2), _("&Second"), DNS2)
-		    )
+	    /* Frame label */
+	    `Frame(`id(`NameServers), _("Name servers"),
+		`HBox(
+		    /* Text entry label */
+		    `TextEntry(`id(`DNS1), _("&First"), DNS1),
+		    `HSpacing(0.5),
+		    /* Text entry label */
+		    `TextEntry(`id(`DNS2), _("&Second"), DNS2)
 		)
 	    ),
 	    `VSpacing(1),
+	    /* Checkbox label */
+	    `Left(`CheckBox(`id(`stupidmode), _("S&tupid mode"), stupidmode)),
 	    FirewallCheckbox,
-	    `VSpacing(0.2),
+	    `VSpacing(0.5),
 	    /* Combo box label */
 	    `Left(`ComboBox(`id(`IdleSeconds), `opt(`editable), _("I&dle timeout (seconds)"), seconds)),
 	    `VSpacing(1),
-	    (type == "isdn") ?
-		`HBox(
-		    /* Push button label */
-		    `PushButton(`id(`Details), _("&Connection details")),
-		    /* Push button label */
-		    `PushButton(`id(`IPDetails), _("&IP details"))
-		 )
-	    :`VSpacing(0)
+	    details
 	),
 	`HSpacing(6)
     );
@@ -209,8 +223,9 @@ _("<p><b>IP details</b> help FIXME
 	    "DNS1" : UI::QueryWidget(`id(`DNS1), `Value),
 	    "DNS2" : UI::QueryWidget(`id(`DNS2), `Value),
 	    "DEMAND" : UI::QueryWidget(`id(`DialOnDemand), `Value) ? "yes" : "no",
-	    "AUTODNS" : UI::QueryWidget(`id(`AutoDNS), `Value) ? "yes" : "no",
+	    "MODIFYDNS" : UI::QueryWidget(`id(`AutoDNS), `Value) ? "yes" : "no",
 	    "IDLETIME" : UI::QueryWidget(`id(`IdleSeconds), `Value),
+	    "STUPIDMODE" : UI::QueryWidget(`id(`stupidmode), `Value) ? "yes" : "no",
 	    "MODEMSUPPORTED" : type == "modem" ? "yes" : "no",
 	    "ISDNSUPPORTED" : type == "isdn" ? "yes" : "no",
 	    "DSLSUPPORTED" : type == "isdn" ? "yes" : "no"
@@ -232,18 +247,11 @@ _("<p><b>IP details</b> help FIXME
 global define symbol ConnectionDetailsDialog() ``{
 }
 
-/**
- * IP details dialog
- * @return dialog result
- */
-global define symbol IPDetailsDialog() ``{
-}
-
 if(false) {
 Providers::provider = $["PROVIDER":"AICOM, Havlickuv Brod"];
 Wizard::CreateDialog();
-ConnectionDialog("modem");
-//ConnectionDialog("isdn");
+//ConnectionDialog("modem");
+ConnectionDialog("isdn");
 //ConnectionDialog("dsl");
 }
 

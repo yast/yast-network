@@ -1,21 +1,13 @@
 /**
- * File:
- *   clients/isdn_summary.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   ISDN summary
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/isdn_summary.ycp
+ * Package:	Configuration of network
+ * Summary:	ISDN summary
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
  * Main file for network card configuration.
  * Uses all other files.
- *
  */
 
 {
@@ -26,8 +18,8 @@ import "ISDN";
 import "Summary";
 
 /* The main () */
-y2milestone("ISDN summary started");
 y2milestone("----------------------------------------");
+y2milestone("ISDN summary started");
 
 include "ui/summary.ycp";
 
@@ -39,6 +31,8 @@ Progress::on();
 
 /* Finish */
 y2milestone("ISDN summary finished");
+y2milestone("----------------------------------------");
 return ret;
 
+/* EOF */
 }

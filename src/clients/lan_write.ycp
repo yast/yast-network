@@ -21,8 +21,8 @@
 
 textdomain "network";
 
-y2milestone("Lan write started");
 y2milestone("----------------------------------------");
+y2milestone("Lan write started");
 
 import "Lan";
 import "Progress";
@@ -47,6 +47,7 @@ boolean ret = Lan::WriteOnly();
 Progress::on();
 
 y2milestone("Lan write finished");
+y2milestone("----------------------------------------");
 return ret;
 
 /* EOF */

@@ -19,8 +19,8 @@
 textdomain "network";
 
 /* The main () */
-y2milestone("Lan module started");
 y2milestone("----------------------------------------");
+y2milestone("Lan module started");
 
 include "network/lan/wizards.ycp";
 
@@ -45,6 +45,7 @@ y2debug("ret == %1", ret);
 
 /* Finish */
 y2milestone("Lan module finished");
+y2milestone("----------------------------------------");
 return ret;
 
 /* EOF */

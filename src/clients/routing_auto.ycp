@@ -1,15 +1,8 @@
 /**
- * File:
- *   clients/routing_auto.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Client for autoinstallation
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/routing_auto.ycp
+ * Package:	Configuration of network
+ * Summary:	Client for autoinstallation
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
@@ -29,8 +22,8 @@
 
 textdomain "network";
 
-y2milestone("Routing auto started");
 y2milestone("----------------------------------------");
+y2milestone("Routing auto started");
 
 import "Routing";
 include "network/services/routing.ycp";
@@ -57,9 +50,9 @@ y2debug("ret=%1", ret);
 UI::CloseDialog();
 
 y2milestone("Routing auto finished");
-if(ret == `next)
-    return Routing::Export();
+y2milestone("----------------------------------------");
 
+if(ret == `next) return Routing::Export();
 return $[];
 
 /* EOF */

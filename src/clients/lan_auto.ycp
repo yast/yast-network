@@ -22,8 +22,8 @@
 
 textdomain "network";
 
-y2milestone("Lan auto started");
 y2milestone("----------------------------------------");
+y2milestone("Lan auto started");
 
 import "Lan";
 include "network/lan/wizards.ycp";
@@ -82,6 +82,9 @@ repeat {
 	set_contents();
     }
 } until (ret == `back ||  ret == `abort ||  ret == `next || ret ==`key);
+
+y2milestone("Lan auto finished");
+y2milestone("----------------------------------------");
 
 return [ret, settings];
 

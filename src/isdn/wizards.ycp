@@ -23,6 +23,7 @@ include "network/isdn/callback.ycp";
 include "network/isdn/lowlevel.ycp";
 include "network/isdn/connection.ycp";
 
+include "network/providers/details.ycp";
 include "network/providers/dialogs.ycp";
 include "network/providers/connection.ycp";
 
@@ -143,15 +144,14 @@ global define symbol OneISDNSequence(string entry) ``{
 	"connection"		:   ``(ConnectionDialog("isdn")),
 	"ip"			:   ``(isdn_ip()),
 	"callback"		:   ``(isdn_callback()),
+	"ipdetails"		:   ``(IPDetailsDialog("isdn")),
 	"providers"		:   ``(ProvidersDialog("isdn")),
-	"provider"		:   ``(runEditIsdnProviderDialog()),
-	"new_provider"		:   ``(runEditIsdnProviderDialog()),
+	"provider"		:   ``(ProviderDialog("isdn")),
+	"new_provider"		:   ``(ProviderDialog("isdn")),
 	"testdev"		: [ ``(Commit(false)), true ],
 	"commit_hw"		: [ ``(Commit(false)), true ],
 	"commit_if"		: [ ``(Commit(true)), true ]
     ];
-
-    /* FIXME: detected ISA unsupported */
 
     map sequence = $[
 	"ws_start" : entry,
@@ -199,6 +199,14 @@ global define symbol OneISDNSequence(string entry) ``{
 	    `callbacksettings : "callback",
 	    `Details : "callback",
 	    `IPDetails : "ip",
+	    `next : "commit_if",
+	    `abort : `abort
+	],
+	"connection" : $[
+	    `next : "ipdetails",
+	    `abort : `abort
+	],
+	"ipdetails" : $[
 	    `next : "commit_if",
 	    `abort : `abort
 	],

@@ -1,34 +1,22 @@
 /**
- * File:
- *   clients/isdn.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   ISDN main file
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/isdn.ycp
+ * Package:	Configuration of network
+ * Summary:	ISDN main file
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
  * Main file for ISDN configuration.
  * Uses all other files.
- *
  */
 
 {
 
-/***
- * <h3>Configuration of network</h3>
- */
-
 textdomain "network";
 
 /* The main () */
-y2milestone("ISDN module started");
 y2milestone("----------------------------------------");
+y2milestone("ISDN module started");
 
 include "network/isdn/wizards.ycp";
 
@@ -53,6 +41,8 @@ y2debug("ret == %1", ret);
 
 /* Finish */
 y2milestone("ISDN module finished");
+y2milestone("----------------------------------------");
 return ret;
 
+/* EOF */
 }

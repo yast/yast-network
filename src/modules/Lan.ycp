@@ -110,14 +110,15 @@ global define boolean Modified() ``{
 global define boolean Read() ``{
 
     string caption = _("Initializing network configuration");
-    integer steps = 7;
+    integer steps = 8;
 
     /* FIXME */
-    integer sl = 0; //1000;
+    integer sl = 1000; //1000;
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
 	_("Detect devices"),
+	_("Read /etc/modules.conf"),
 	_("Read current configuration"),
 	_("Read routing configuration"),
 	_("Read host name and DNS configuration"),
@@ -130,6 +131,11 @@ global define boolean Read() ``{
     ProgressNextStage(_("Detecting network cards"));
     //ReadHardware("");
     ReadHardware("netcard");
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Reading /etc/modules.conf"));
+    ReadModules();
     sleep(sl);
 
     if(Abort()) return false;
@@ -222,7 +228,7 @@ global define boolean Write() ``{
 
     if(Abort()) return false;
     ProgressNextStage(_("Writing /etc/modules.conf"));
-    WriteModulesConf();
+    WriteModules();
     sleep(sl);
 
     if(Abort()) return false;
@@ -486,9 +492,9 @@ global define boolean Commit() ``{
 	change(newdev, "module", modul);
 	change(newdev, "options", options);
 	if(operation == `add)
-	    ConfigAdd(type, device, newdev, true);
+	    ConfigAddEdit(type, device, newdev, true);
 	else
-	    ConfigAdd(type, device, newdev, false);
+	    ConfigAddEdit(type, device, newdev, false);
     }
     else if(operation == `delete) {
 	ConfigDelete(type, device);

@@ -1,20 +1,12 @@
 /**
- * File:
- *   include/network/lan/wizards.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Network cards configuration wizards.
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/lan/wizards.ycp
+ * Package:	Configuration of network
+ * Summary:	Network cards configuration wizards.
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
  * Wizards definitions.
- *
  */
 
 {

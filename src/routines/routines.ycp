@@ -99,8 +99,7 @@ global define void ProgressNextStage(string title) ``{
  * @param params parameters to pass to the module
  * @return always `next
  */
-global define symbol Finished(boolean modified, string text,
-       	      	     	      string run, list params) ``{
+global define symbol Finished(boolean modified, string text, string run, list params) ``{
     if(!modified) return `next;
     /* popup headline */
     string head = _("Configuration has been successfully saved.");

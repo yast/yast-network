@@ -144,10 +144,18 @@ global define void SelectHardware(integer which) ``{
 }
 
 /**
+ * Read /etc/modules.conf
+ * @return true if success
+ */
+global define boolean ReadModules() ``{
+    return false;
+}
+
+/**
  * Write /etc/modules.conf
  * @return true if success
  */
-global define boolean WriteModulesConf() ``{
+global define boolean WriteModules() ``{
     return false;
 }
 

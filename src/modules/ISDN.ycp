@@ -608,9 +608,9 @@ global define boolean Commit() ``{
 	// FIX me IO, IRQ ...
 
 	if(operation == `add)
-	    ConfigAdd(type, device, newdev, true);
+	    ConfigAddEdit(type, device, newdev, true);
 	else
-	    ConfigAdd(type, device, newdev, false);
+	    ConfigAddEdit(type, device, newdev, false);
 	modified_hw = true;
     } else if (operation == `addif || operation == `editif) {
 	change(newdev, "MSN", localMSN);
@@ -633,9 +633,9 @@ global define boolean Commit() ``{
 	change(newdev, "FIREWALL", firewall ? "yes":"no");
 
 	if(operation == `addif)
-	    ConfigAdd(type, device, newdev, true);
+	    ConfigAddEdit(type, device, newdev, true);
 	else
-	    ConfigAdd(type, device, newdev, false);
+	    ConfigAddEdit(type, device, newdev, false);
 	modified_if = true;
     } else if(operation == `testdev) {
         y2debug("op testdev");
