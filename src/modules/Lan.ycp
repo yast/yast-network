@@ -304,14 +304,12 @@ global define boolean Write() {
 
     /* Write dialog caption */
     string caption = _("Saving network configuration");
-    integer steps = 10;
+    integer steps = 11;
 
     integer sl = 0; /* 1000; /* TESTING */
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-	/* Progress stage 1 */
-	_("Deactivate local network services"),
 	/* Progress stage 2 */
 	_("Write drivers information"),
 	/* Progress stage 3 - multiple devices may be present,really plural*/
@@ -335,20 +333,6 @@ global define boolean Write() {
 	/* Progress stage 12 */
 	_("Run KInternet"),
     ], [], "");
-
-    // Temporary fix: #42248
-    Progress::New(caption, " ", 1, [
-	_("Write network configuration"),
-    ], [], "");
-
-    ProgressNextStage(_("Writing network configuration..."));
-    boolean orig2 = Progress::set (false);
-
-    if(Abort()) return false;
-    /* Progress step 1 */
-    ProgressNextStage(_("Deactivating local network services..."));
-    if(!write_only) StopNetwork();
-    sleep(sl);
 
     if(Abort()) return false;
     /* Progress step 2 */
@@ -402,7 +386,7 @@ global define boolean Write() {
     ProgressNextStage(_("Activating network services..."));
     if(!write_only) {
 	NetworkModules::HwUp ();
-	StartNetwork();
+	ReloadOrStartNetwork();
     }
     sleep(sl);
 
@@ -427,9 +411,6 @@ global define boolean Write() {
 	RunKInternet();
     }
     sleep(sl);
-
-    // Temporary fix: #42248
-    Progress::set (orig2);
 
     if(Abort()) return false;
     /* Final progress step */

@@ -52,7 +52,7 @@ any RoutingGUI() {
 
     if(ret == `next && Routing::Modified()) {
 	Routing::Write();
-	RestartNetwork();
+	ReloadOrStartNetwork();
     }
 
     UI::CloseDialog();

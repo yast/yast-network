@@ -1,8 +1,10 @@
 -------------------------------------------------------------------
-Thu Jan 27 17:23:09 CET 2005 - mvidner@suse.cz
+Thu Jan 27 17:33:54 CET 2005 - mvidner@suse.cz
 
+- Use /etc/init.d/network reload (#31698).
 - hwdown and hwup changed devices (#44794).
 - Added SGI Gigabit Ethernet (#48973).
+- 2.11.15
 
 -------------------------------------------------------------------
 Thu Jan 27 14:32:53 CET 2005 - mvidner@suse.cz

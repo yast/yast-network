@@ -86,14 +86,6 @@ DUMP("StopNetwork");
 TEST(``(StopNetwork()), [READ,$[],EXEC0], nil);
 TEST(``(StopNetwork()), [READ,$[],EXEC1], nil);
 
-DUMP("StartNetwork");
-TEST(``(StartNetwork()), [READ,$[],EXEC0], nil);
-TEST(``(StartNetwork()), [READ,$[],EXEC1], nil);
-
-DUMP("RestartNetwork");
-TEST(``(RestartNetwork()), [READ,$[],EXEC0], nil);
-TEST(``(RestartNetwork()), [READ,$[],EXEC1], nil);
-
 DUMP("SetupSMPPPD");
 TEST(``(SetupSMPPPD()), [READ,$[],EXEC0], nil);
 TEST(``(SetupSMPPPD()), [READ,$[],EXEC1], nil);

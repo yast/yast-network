@@ -22,14 +22,6 @@ Execute	.target.bash "cd /; /etc/init.d/network stop" 0
 Return	true
 Execute	.target.bash "cd /; /etc/init.d/network stop" 1
 Return	false
-Dump	StartNetwork
-Return	true
-Return	false
-Dump	RestartNetwork
-Execute	.target.bash "cd /; /etc/init.d/network restart" 0
-Return	true
-Execute	.target.bash "cd /; /etc/init.d/network restart" 1
-Return	false
 Dump	SetupSMPPPD
 Return	true
 Return	false
