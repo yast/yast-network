@@ -36,7 +36,7 @@ global define boolean Modified() ``{
 Wizard::CreateDialog();
 DNS::Read();
 Lan::Read();
-Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), FinishButtonLabel()));
+Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), FinishButtonLabel()));
 /* main ui function */
 any ret = DNSMainDialog(true);
 y2debug("ret == %1", ret);

@@ -34,7 +34,7 @@ global define boolean Modified() ``{
 
 Proxy::Read();
 Wizard::CreateDialog();
-Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), FinishButtonLabel()));
+Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), FinishButtonLabel()));
 /* main ui function */
 any ret = ProxyMainDialog(true);
 y2debug("ret == %1", ret);

@@ -484,11 +484,11 @@ global define term OverviewTableContents(string caption, term header, list conte
     term deletebutton = nil;
     if(first) {
 	/* Pushbutton label */
-	addbutton = `PushButton(`id(`add), _("A&dd"));
+	addbutton = `PushButton(`id(`add), `opt(`key_F3), _("A&dd"));
 	/* Pushbutton label */
-	editbutton = `PushButton(`id(`edit), _("&Edit"));
+	editbutton = `PushButton(`id(`edit), `opt(`key_F4), _("&Edit"));
 	/* Pushbutton label */
-	deletebutton = `PushButton(`id(`delete), _("De&lete"));
+	deletebutton = `PushButton(`id(`delete), `opt(`key_F5), _("De&lete"));
     }
     else {
 	/* Pushbutton label (different shortcut) */

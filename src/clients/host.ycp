@@ -34,7 +34,7 @@ global define boolean Modified() ``{
 
 Host::Read();
 Wizard::CreateDialog();
-Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), FinishButtonLabel()));
+Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), FinishButtonLabel()));
 /* main ui function */
 any ret = HostsMainDialog(true);
 y2debug("ret == %1", ret);
