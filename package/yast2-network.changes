@@ -2,6 +2,7 @@
 Thu Mar 17 13:01:46 CET 2005 - mvidner@suse.cz
 
 - Fixed autoinstallation by reintroducing uppercasing (#73595).
+- 2.11.26
 
 -------------------------------------------------------------------
 Mon Mar 14 17:14:50 CET 2005 - mvidner@suse.cz
