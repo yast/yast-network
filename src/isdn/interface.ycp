@@ -278,6 +278,9 @@ remove a channel.
     symbol ret = nil;
     while (true) {
 
+    /* Do we need '*' and '#' here as in #16021? */
+    UI::ChangeWidget(`id(`msn), `ValidChars, "0123456789" );
+
 	ret = UI::UserInput();
 
 	/* abort? */
