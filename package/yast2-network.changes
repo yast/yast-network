@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Feb 14 12:47:27 CET 2005 - mvidner@suse.cz
+
+- set modified to false when Resetting
+
+-------------------------------------------------------------------
 Fri Feb 11 17:24:05 CET 2005 - mvidner@suse.cz
 
 - Fixed CLI handlers (wrong function signatures).
