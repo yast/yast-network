@@ -55,7 +55,7 @@
 
 
     /* Progress step 1/4 */
-    string l1 = _("Connecting to SuSE server via Internet...");
+    string l1 = _("Connecting to Internet...");
     /* Progress step 2/4 */
     string l2 = _("Downloading the latest release notes...");
     /* Progress step 3/4 */
@@ -183,7 +183,10 @@ and correct the setting.</p>");
 
 		// start the connection
 		y2milestone("called Start");
-		logs = add (logs, $[ `menuname : _("ifup"), `filename : "ifup.log" ]);
+		// label of combobox where the log is selected
+		logs = add (logs, $[ `menuname : _("Opening of Connection"),
+				     `filename : "ifup.log",
+				     `prio : 16 ]);
 		if(!Internet::Start(logdir + "/ifup.log")) {
 		    test_result = `failure;
 		    show_result();
@@ -217,14 +220,22 @@ and correct the setting.</p>");
 		set_stage(2);
 		mark_label(1, `check);
 
-		logs = add (logs, $[ `menuname : _("ifconfig"), `filename : "ifconfig.log" ]);
-		SCR::Execute (.target.bash, "/sbin/ifconfig > " + logdir + "/ifconfig.log");
+		// label of combobox where the log is selected
+		logs = add (logs, $[ `menuname : _("Kernel Network Interface"),
+				     `filename : "ifconfig.log" ]);
+		SCR::Execute (.target.bash, "/sbin/ifconfig > " +
+			      logdir + "/ifconfig.log");
 
-		logs = add (logs, $[ `menuname : _("route"), `filename : "route.log" ]);
+		// label of combobox where the log is selected
+		logs = add (logs, $[ `menuname : _("Kernel Routing Table"),
+				     `filename : "route.log" ]);
 		SCR::Execute (.target.bash, "/sbin/route -n > " + logdir + "/route.log");
 
-		logs = add (logs, $[ `menuname : _("resolv"), `filename : "resolv.conf" ]);
-		SCR::Execute (.target.bash, "/bin/cp /etc/resolv.conf " + logdir + "/resolv.conf");
+		// label of combobox where the log is selected
+		logs = add (logs, $[ `menuname : _("Host Name Lookup"),
+				     `filename : "resolv.conf" ]);
+		SCR::Execute (.target.bash, "/bin/cp /etc/resolv.conf " +
+			      logdir + "/resolv.conf");
 
 		return;
 	    }
@@ -243,12 +254,14 @@ and correct the setting.</p>");
 	    string url = "http://www.suse.com/relnotes/sl_82/release-notes.rpm";
 
 	    // proxy settings are read from /root/.curlrc
-	    string cmd = "/usr/bin/curl -f -m 300 " + url + " -o " + tmp;
+	    string cmd = "/usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + tmp;
 	    cmd = cmd + "> " + logdir + "/curl.log 2>&1";
 	    integer ret = SCR::Execute(.target.bash, cmd);
 	    y2milestone("curl command returned %1", ret);
 
-	    logs = add (logs, $[ `menuname : _("curl"), `filename : "curl.log", `prio : 2 ]);
+	    // label of combobox where the log is selected
+	    logs = add (logs, $[ `menuname : _("Download of Release Notes"),
+				 `filename : "curl.log" ]);
 
 	    if(ret != 0)
 	    {
@@ -277,12 +290,14 @@ and correct the setting.</p>");
 	    mark_label(3, `arrow);
 
 	    // proxy settings are read from /root/.curlrc
-	    string cmd = "/usr/bin/online_update -q";
+	    string cmd = "/usr/bin/online_update -q -V";
 	    cmd = cmd + "> " + logdir + "/you.log 2>&1";
 	    integer ret = SCR::Execute(.target.bash, cmd);
 	    y2milestone("online_update command returned %1", ret);
 
-	    logs = add (logs, $[ `menuname : _("you"), `filename : "you.log", `prio : 1 ]);
+	    // label of combobox where the log is selected
+	    logs = add (logs, $[ `menuname : _("Check for Patches"),
+				 `filename : "you.log" ]);
 
 	    if(ret == 1 || ret == 2)	// there are patches
 	    {
@@ -314,7 +329,10 @@ and correct the setting.</p>");
 
 		/* Stop connection */
 		y2milestone("Connection: stop");
-		logs = add (logs, $[ `menuname : _("ifdown"), `filename : "ifdown.log" ]);
+		// label of combobox where the log is selected
+		logs = add (logs, $[ `menuname : _("Closing of Connection"),
+				     `filename : "ifdown.log",
+				     `prio : 14 ]);
 		if(!Internet::Stop(logdir + "/ifdown.log"))
 		    test_result = `failure;
 		mark_label(4, `check);
@@ -359,12 +377,17 @@ and correct the setting.</p>");
 	else if(ret == `view_log) {
 
 	    // FIXME
-	    logs = add (logs, $[ `menuname : _("messages"), `filename : "messages" ]);
+	    // label of combobox where the log is selected
+	    logs = add (logs, $[ `menuname : _("Kernel Messages"),
+				 `filename : "messages" ]);
 	    SCR::Execute (.target.bash, "/bin/cp /var/log/messages " + logdir + "/messages");
 
 	    // FIXME
 	    if (Internet::logfile != "") {
-		logs = add (logs, $[ `menuname : _("smpppd"), `filename : "smpppd.log" ]);
+		// label of combobox where the log is selected
+		logs = add (logs, $[ `menuname : _("PPP Daemon"),
+				     `filename : "smpppd.log",
+				     `prio : 20 ]);
 		SCR::Execute (.target.bash, "/bin/cp " + Internet::logfile + " " +
 			      logdir + "/smpppd.log");
 	    }

@@ -113,7 +113,7 @@ activate the test procedure."),
     term steps = `VBox();
     if(!already_up) {
 	/* Label text */
-	steps = add(steps, `Left(`Label(_("- Connect to SuSE server via Internet"))));
+	steps = add(steps, `Left(`Label(_("- Connect to Internet"))));
     }
     if(true) {
 	/* Label text */
@@ -230,7 +230,7 @@ global define void ShowLogs (list logs, string logdir) ``{
 
     ScreenName ("installation-show-logs");
 
-    logs = sort (`x, `y, logs, ``{ return x[`prio]:0 <= y[`prio]:0; });
+    logs = sort (`x, `y, logs, ``{ return x[`prio]:0 >= y[`prio]:0; });
 
     list menunames = [];
     foreach (`v, logs, ``{
