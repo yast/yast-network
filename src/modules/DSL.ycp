@@ -194,7 +194,7 @@ global define boolean Write() ``{
 
     /* Write dialog caption */
     string caption = _("Saving DSL configuration");
-    integer steps = 6;
+    integer steps = 7;
 
     /* FIXME */
     integer sl = 0; //1000;

@@ -211,14 +211,15 @@ global define string ControllerType(map hwdevice) ``{
 
     /* Network controller */
     if(lookup(hwdevice, "class_id", -1) == 2) {
-	if(subclass_id == 00) return "eth";
-	else if(subclass_id == 01) return "tr";
-	else if(subclass_id == 02) return "fddi";
-	else if(subclass_id == 03) return "ctc";
-	else if(subclass_id == 04) return "iucv";
-	else if(subclass_id == 05) return "hsi";
-	else if(subclass_id == 06) return "qeth";
-	else if(subclass_id == 07) return "escon";
+	if(subclass_id == 0) return "eth";
+	else if(subclass_id == 1) return "tr";
+	else if(subclass_id == 2) return "fddi";
+	else if(subclass_id == 3) return "ctc";
+	else if(subclass_id == 4) return "iucv";
+	else if(subclass_id == 5) return "hsi";
+	else if(subclass_id == 6) return "qeth";
+	else if(subclass_id == 7) return "escon";
+	else if(subclass_id == 8) return "myri";
 	else if(subclass_id == 0x80) {
 	    /* Nothing was found, default is eth */
 	    y2error("Unknown network controller type: %1", hwdevice);
@@ -243,6 +244,7 @@ global define string ControllerType(map hwdevice) ``{
 	else if(subclass_id == 6) return "hsi";
 	else if(subclass_id == 7) return "qeth";
 	else if(subclass_id == 8) return "escon";
+	else if(subclass_id == 9) return "myri";
 	else if(subclass_id == 0x80) {
 	    /* Nothing was found, default is eth */
 	    y2error("Unknown network interface type: %1", hwdevice);

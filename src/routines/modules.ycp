@@ -75,7 +75,7 @@ global define boolean WriteModules() ``{
 
     /* Remove deleted modules */
     maplist(string d, DeletedModules, ``{
-	y2debug("deleting: %1", p);
+	y2debug("deleting: %1", d);
 	SCR::Write(add(.modules.alias, d), nil);
 	SCR::Write(add(.modules.options, d), nil);
 	SCR::Execute(.target.bash, sformat("/sbin/rmmod %1 2>&1", d));
@@ -214,16 +214,19 @@ global define list LocateModules(string key, string val) ``{
  */
 global define boolean AddModule(string type) ``{
 
+    Module["module"] = "";
+    Module["options"] = "";
+
     y2debug("Add(%1)", type);
     if(type == nil) {
 	y2error("Invalid type: %1", type);
 	return false;
     }
 
-    /* FIXME: type dependent heuristics */
-
+    /* FIXME: type dependent heuristics *//*
     Module["module"] = "";
-    Module["options"] = "";
+    Module["options"] = ""; */
+
     return true;
 }
 
@@ -233,6 +236,9 @@ global define boolean AddModule(string type) ``{
  * @return true on success
  */
 global define boolean SelectModule(string name) ``{
+
+    Module["module"] = "";
+    Module["options"] = "";
 
     y2debug("Select(%1)", name);
     if(name != "" && !haskey(Modules, name)) {
