@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
-Mon Feb 21 13:36:17 CET 2005 - mvidner@suse.cz
+Mon Feb 21 16:57:57 CET 2005 - mvidner@suse.cz
 
+- Improved the layout of the internet connection test dialog
+  (F100294).
 - Confirm also detection of PPPoE DSL (Novell #66056).
 - Provider help texts now match the dialog (Novell #66001).
 - Set modified to false when resetting in autoyast.
