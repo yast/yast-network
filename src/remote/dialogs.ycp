@@ -37,8 +37,11 @@ global define symbol RemoteMainDialog() ``{
     ));
 
     /* Ramote Administration dialog help */
-    string help = _("Here, you can allow VNC remote administration of the
-system. Use any VNC view to connect to the system.");
+    string help = _("If this feature is enabled you will be able to administer
+this machine remotely from another machine. You can use a VNC client such as
+krdc (connect to <hostname>:5910) or a Java capable web browser (connect to
+http://<hostname>:5910/). Please note that this form of remote administration
+is less secure than using ssh which is enabled by default.");
 
     Wizard::SetContentsButtons(caption, contents, help,
 	    Label::BackButton(), Label::FinishButton());
