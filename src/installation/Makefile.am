@@ -1,5 +1,5 @@
 #
-# Makefile.am for y2c_network/src/installation
+# Makefile.am for network/src/installation
 #
 # $Id$
 #
