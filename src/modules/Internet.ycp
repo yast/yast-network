@@ -28,6 +28,9 @@ global boolean do_test = true;
 global boolean do_you = false;
 
 
+/**
+ * Values for selected connection.
+ */
 global string device = "";
 global string type = "";
 global string logfile = "";
@@ -35,6 +38,22 @@ global string provider = "";
 global string password = "";
 global boolean demand = false;
 global boolean askpassword = nil;
+global boolean capi_isdn = false;
+
+
+/**
+ * Reset values.
+ */
+global define void Reset () ``{
+    device = "";
+    type = "";
+    logfile = "";
+    provider = "";
+    password = "";
+    demand = false;
+    askpassword = nil;
+    capi_isdn = false;
+}
 
 
 /**
@@ -71,12 +90,7 @@ map FastestTypes = $[
  */
 global define boolean FindFastest () ``{
 
-    /* Reset Values */
-    device = "";
-    type = "";
-    logfile = "";
-    demand = false;
-    askpassword = nil;
+    Reset ();
 
     /* Read available devcies */
     map Devices = $[];
@@ -109,27 +123,24 @@ global define boolean FindFastest () ``{
 	    type = FastestTypes[num]:"";
     });
 
-    /* Set logfile */
-    if (type == "dsl" || type == "modem")
-	logfile = "/var/log/smpppd/ifcfg-" + device + ".log";
-
     /* Lookup the provider values */
     map devmap = Devices[device_type(device), device_num(device)]:$[];
     y2debug("devmap=%1", devmap);
 
     provider = devmap["PROVIDER"]:"";
-    if(provider != "") {
+    if (provider != "") {
 	import "Provider";
 	Provider::Read("all");
 	Provider::Select(provider);
 	demand = Provider::Provider["DEMAND"]:"no" == "yes";
 	password = Provider::Provider["PASSWORD"]:"";
 	askpassword = Provider::Provider["ASKPASSWORD"]:"no" == "yes";
-    } else {
-	demand = false;
-	password = "";
-	askpassword = nil;
+	capi_isdn = Provider::Provider["PPPMODE"]:"ippp" == "capi-isdn";
     }
+
+    /* Set logfile */
+    if (type == "dsl" || type == "modem" || (type == "isdn" && capi_isdn))
+	logfile = "/var/log/smpppd/ifcfg-" + device + ".log";
 
     return true;
 }
@@ -168,7 +179,7 @@ global define boolean Start(string logfile) ``{
 	}
     }
 
-    if(type == "isdn") {
+    if(type == "isdn" && !capi_isdn) {
 	if(SCR::Execute(.target.bash, "/usr/sbin/isdnctrl dial " + device) != 0) {
 	    y2error("isdnctrl failed");
 	    return false;
@@ -207,15 +218,14 @@ global define boolean Status() ``{
  */
 global define boolean Connected() ``{
 
-    if(type == "dsl" || type == "modem") {
+    if(type == "dsl" || type == "modem" || (type == "isdn" && capi_isdn)) {
 	string tmp1 = SCR::Read(.target.string, "/var/lib/smpppd/ifcfg-" +
 				 device + ".info");
 	list tmp2 = splitstring(tmp1, "\n");
 	return contains(tmp2, "status: connected");
     }
 
-    /* FIXME: isdn */
-    if(type == "isdn") {
+    if(type == "isdn" && !capi_isdn) {
 	return SCR::Execute(.target.bash, "/usr/bin/grep -q pppd /etc/resolv.conf") == 0;
     }
 
