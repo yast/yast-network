@@ -21,7 +21,7 @@ import "NetworkDevices";
 import "Provider";
 import "Progress";
 import "Summary";
-import "SuSEFirewallInterfaces";
+import "SuSEFirewall4Network";
 
 include "network/complex.ycp";
 
@@ -168,7 +168,7 @@ global define boolean Read() {
     /* Progress step 3/5 */
     ProgressNextStage(_("Reading firewall configuration..."));
     boolean progress_orig = Progress::set (false);
-    SuSEFirewallInterfaces::Read ();
+    SuSEFirewall4Network::Read ();
     Progress::set (progress_orig);
     sleep(sl);
 
@@ -257,7 +257,7 @@ global define boolean Write() {
     /* Progress step 3/7 */
     ProgressNextStage(_("Writing firewall settings..."));
     progress_orig = Progress::set (false);
-    SuSEFirewallInterfaces::Write ();
+    SuSEFirewall4Network::Write ();
     Progress::set (progress_orig);
     sleep(sl);
 

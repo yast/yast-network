@@ -1,8 +1,10 @@
 -------------------------------------------------------------------
-Wed Dec 15 13:17:26 CET 2004 - mvidner@suse.cz
+Wed Dec 15 15:11:51 CET 2004 - mvidner@suse.cz
 
+- Using new firewall code in yast2.rpm via SuSEFirewall4Network.
 - Using Progress::set
 - Resolver: if the search list is empty, prefill the domain (#49094).
+- 2.11.8
 
 -------------------------------------------------------------------
 Thu Dec  9 17:44:03 CET 2004 - mvidner@suse.cz

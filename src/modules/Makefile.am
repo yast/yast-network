@@ -1,8 +1,7 @@
 # Makefile.am for network/src/modules
 # $Id$
 
-module_DATA = $(wildcard *.ycp) \
-	SuSEFirewallInterfaces.pm
+module_DATA = $(wildcard *.ycp)
 EXTRA_DIST = $(module_DATA)
 
 DNS.ybc: ISDN.ybc
