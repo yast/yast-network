@@ -18,6 +18,7 @@ y2milestone("Remote proposal started");
 y2milestone("Arguments: %1", WFM::Args());
 
 import "Remote";
+include "network/remote/dialogs.ycp";
 
 string func = (string) WFM::Args(0);
 map param = (map) WFM::Args(1);
@@ -36,7 +37,12 @@ if(func == "MakeProposal") {
 /* run the module */
 else if(func == "AskUser") {
     // single dialog, no need to Export/Import
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("remote");
     symbol result = (symbol) RemoteMainDialog ();
+    UI::CloseDialog();
+
     y2debug("result=%1", result);
     ret = $[ "workflow_sequence" : result ];
 }
