@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Sep 27 16:11:47 CEST 2004 - mvidner@suse.cz
+
+- Lan: install packages reported by hwinfo, eg. firmware (#45960).
+- Fixed firewall fix (#45857).
+- 2.10.25
+
+-------------------------------------------------------------------
 Sat Sep 25 12:43:17 CEST 2004 - mvidner@suse.cz
 
 - Removed inst_netsetup (`dn) and write resolv.conf directly.

@@ -112,6 +112,8 @@ map hw = $[];
 global string nm_name = "";
 global string nm_name_old = nil;
 
+global list<string> Requires = [];
+
 /**
  * Abort function
  * return boolean return true if abort
@@ -487,6 +489,14 @@ void SelectHWMap (map hw) {
     SelectHardwareMap (hw);
     unique = hw["unique"]:"";
 
+    Requires = hw["requires"]:[];
+    // #44977: Requires now contain the appropriate kernel packages
+    // but they are handled differently due to multiple kernel flavors
+    // (see Package::InstallKernel)
+    // Leave only those not starting with "kernel".
+    Requires = filter (string r, Requires, ``( find (r, "kernel") != 0 ));
+    y2milestone ("requires=%1", Requires);
+
     if(hotplug == "") {
 	// FIXME: MOD Module["module"] = hw["module"]:"";
 	// FIXME: MOD Module["options"] = hw["options"]:"";
@@ -525,7 +535,7 @@ void SelectHWMap (map hw) {
     else
 	y2milestone("No detailed HW info: %1", device);
 
-    y2security("hw=%1", hw);
+    y2milestone("hw=%1", hw);
     y2milestone("device=%1", device);
 }
 
@@ -963,7 +973,7 @@ global define boolean Propose() {
 	/* No install.inf driver -> select the first active */
 	// but not wlan, #44951
 	if (tosel == nil) {
-	    tosel = find (map h, Hardware, ``( 
+	    tosel = find (map h, Hardware, ``(
 			      h["active"]:false
 			      && h["type"]:"" != "wlan"
 			      ));
@@ -972,7 +982,7 @@ global define boolean Propose() {
 	/* No active driver -> select the first with a driver */
 	if (tosel == nil) {
 	    y2milestone("No active driver found, trying further.");
-	    tosel = find (map h, Hardware, ``( 
+	    tosel = find (map h, Hardware, ``(
 			      h["module"]:"" != ""
 			      && h["type"]:"" != "wlan"
 			      && y2milestone("Using driver: %1", h) == nil
