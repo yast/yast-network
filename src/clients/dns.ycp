@@ -69,7 +69,7 @@ any DNSGUI() {
  * Handler for action "list"
  * @param options action options
  */
-define void ListHandler(map options) {
+define boolean ListHandler(map<string, string> options) {
 
     string summary = "";
     /* Command line output Headline */
@@ -78,6 +78,7 @@ define void ListHandler(map options) {
 
     y2debug("%1", summary);
     CommandLine::Print(summary);
+    return true;
 }
 
 /**
