@@ -305,6 +305,13 @@ global define string Summary() {
  */
 global define boolean IsHostLocal (string check_host) {
     Read ();
+    /* FIXME: May not work properly in following situations:
+	- multiple addresses per interface
+        - aliases in /etc/hosts
+	- host name or IP address is set through DHCP
+	- IPADDR=IP/24
+    */
+
     // loopback interface
     if (check_host == "127.0.0.1" || check_host == "::1")
 	return true;
