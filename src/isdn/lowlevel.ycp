@@ -446,22 +446,26 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 	);
 
     map CountryCodes = $[
-	// Contry name
+	// Country name
 	"+43"	: _("Austria"),
-	// Contry name
+	// Country name
 	"+49"	: _("Germany"),
-	// Contry name
+	// Country name
 	"+352"   : _("Luxemburg"),
-	// Contry name
+	// Country name
 	"+31"   : _("Netherlands"),
-	// Contry name
+	// Country name
 	"+47"   : _("Norway"),
-	// Contry name
+	// Country name
 	"+48"	: _("Poland"),
-	// Contry name
-	"+42"   : _("Slovakia"),
-	// Contry name
-	"+41"	: _("Switzerland")
+	// Country name
+	"+421"   : _("Slovakia"),
+	// Country name
+	"+41"	: _("Switzerland"),
+	// Country name
+	"+420"   : _("Czech Republic"),
+	// Country name
+	"+1"   : _("North America"),
     ];
 
     string ccode = "";

@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
-Fri Aug 27 15:09:15 CEST 2004 - mvidner@suse.cz
+Fri Aug 27 16:31:33 CEST 2004 - mvidner@suse.cz
 
+- Fixed telephone country code of Slovakia, added Czech Rep. and
+  North America. (#44085)
 - Merged proofread texts.
 
 -------------------------------------------------------------------
