@@ -1,5 +1,5 @@
 /**
- * File:	include/network/installation/dialogs.ycp
+ * File:	clients/inst_do_net_test.ycp
  * Package:	Network configuration
  * Summary:	Configuration dialogs for installation
  * Authors:	Michal Svec <msvec@suse.cz>

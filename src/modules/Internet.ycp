@@ -41,7 +41,9 @@ global boolean askpassword = nil;
  * Devices in order from fastest to slowest.
  *
  * Though real network devices are faster than the others we preferable
- * want to test dialup connection.
+ * want to test dialup connection. The network cards are last because
+ * we assume local network and one (slower) connection to the Internet
+ * in the case more network devices.
  */
 map FastestRegexps = $[
     1 : "dsl",

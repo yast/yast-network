@@ -15,7 +15,7 @@ global string ValidCharsHostname = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGH
 global string ValidCharsDomain = ValidCharsHostname + ".";
 global string ValidCharsFQHostname = ValidCharsDomain;
 
-/* FIXME: move the bellow to "routines/check.ycp" */
+/* FIXME: move the below to "routines/check.ycp" */
 
 include "network/ip.ycp";
 
