@@ -67,7 +67,7 @@ global define boolean ReadModules(string devregex) ``{
     maplist(string al, opts, ``{
 	map optsmap = SCR::Read(add(.modules.options, al));
 	if(optsmap != nil)
-	    Modules["options", al] = Map::FromString(optsmap);
+	    Modules["options", al] = Map::ToString(optsmap);
     });
 
     y2debug("Modules=%1", Modules);
@@ -111,9 +111,12 @@ global define boolean WriteModules() ``{
     });
 
     /* Preload ARCNet modules (#26858) */
-    if(arcnet)
+    if(arcnet) {
+	/* 2.4 */
 	SCR::Write(.modules.above.arcnet, "rfc1201 rfc1051 arc-rawmode");
-	// FIXME: 2.6 SCR::Write(.modules.install.arcnet, "/sbin/modprobe --ignore-install arcnet && { /sbin/modprobe -k tuner; /sbin/modprobe -k msp3400; }");
+	/* 2.6 */
+	SCR::Write(.modules.install.arcnet, "install arcnet /sbin/modprobe -i arcnet && { /sbin/modprobe arc-rawmode; /sbin/modprobe rfc1051; /sbin/modprobe rfc1201 || true; }");
+    }
 
     /* FIXME: s390 modules hack */
     if(false) {

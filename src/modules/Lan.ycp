@@ -604,9 +604,11 @@ global define boolean Commit() ``{
 	change(newdev, "MTU", mtu);
 
 	if(type == "dummy") {
+	    /* 2.4 */
 	    Module["module"] = "dummy";
 	    Module["options"] = sformat("-o=dummy%1", device);
-	    Module["install"] = sformat("/sbin/modprobe -o dummy%1 --ignore-install dummy%1", device);
+	    /* 2.6 */
+	    Module["install"] = sformat("/sbin/modprobe -o dummy%1 --ignore-install dummy", device);
 	}
 
 	if(hotplug == "") {
