@@ -149,30 +149,17 @@ global define void ChangeWidgetIfExists(term id, symbol param, any value) ``{
 }
 
 /**
- * Display the finished popup and possibly run another module.
- * If not modified, don't do anything.
- * @param modified true if there are any modified data
- * @param text text to be shown
- * @param run module to be run
- * @param params parameters to pass to the module
- * @return always `next
+ * Query UI widget only if it exists
+ * @param id widget id
+ * @param param widget parameter
+ * @param value previous parameter value
+ * @return widget value if exists, previous value otherwise
  */
-global define symbol Finished(boolean modified, string text, string run, list params) ``{
-    if(!modified) return `next;
-    /* Popup headline */
-    string head = _("Configuration has been successfully saved.");
-    any ret = UI::YesNoHeadlinePopup(head, text);
-    if(ret == true) CallModule(run, params);
-    return `next;
-}
-
-/**
- * Question at the end of the network modules about the mail configuration
- * @return question text
- */
-global define string FinishedMailText() ``{
-    /* Popup text */
-    return _("Configure the mail now?");
+global define any QueryWidgetIfExists(term id, symbol param, any value) ``{
+    if(UI::WidgetExists(id))
+	return UI::QueryWidget(id, param);
+    y2debug("Not changing: %1", id);
+    return value;
 }
 
 /**
@@ -207,6 +194,37 @@ the configuration will be aborted.\n\nDo you want to try again?\n")))
     }
 
     return ret == true ? `next : `abort;
+}
+
+/**
+ * Create comment for changed file
+ * @param modul YaST2 module changing the file
+ * @return comment
+ * @example ChangedComment("lan") -> # Changed by YaST2 module lan 1.1.2000"
+ */
+global define string ChangedComment(string modul) ``{
+    string ret = "\n# Changed by YaST2";
+    if(modul != nil && modul != "") ret = ret + " module " + modul;
+    string date = lookup(SCR::Execute(.target.bash_output, "/bin/date '+%x'"), "stdout", "");
+    if(date != "") ret = ret + " " + date;
+    return ret;
+}
+
+/**
+ * Show busy popup (for proposal)
+ * @param message label to bw shown
+ */
+global define void BusyPopup(string message) ``{
+    UI::BusyCursor();
+    UI::OpenDialog(`VBox(`Label(message)));
+}
+
+/**
+ * Close busy popup
+ * @see BusyPopup
+ */
+global define void BusyPopupClose() ``{
+    UI::CloseDialog();
 }
 
 /**

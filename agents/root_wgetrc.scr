@@ -6,13 +6,13 @@
  * See:		wget(1)
  *
  * Example:
- *   Dir(.etc.nsswitch_conf)
- *   (["passwd", "group", "hosts", "networks", "services"])
+ *   Dir(.root.wgetrc)
+ *   (["proxy_user", "proxy_user"])
  **
- *   Read(.etc.nsswitch_conf.passwd)
- *   ("compat")
+ *   Read(.root.wgetrc.proxy_user)
+ *   ("olduser")
  **
- *   Write(.etc.nsswitch_conf.passwd, "files ldap")
+ *   Write(.root.wgetrc.proxy_user, "newuser")
  *   (true)
  *
  * $Id$

@@ -42,6 +42,14 @@ global define symbol Commit() ``{
 }
 
 /**
+ * Display finished popup
+ * @return dialog result
+ */
+global define symbol FinishDialog() ``{
+    return FinishPopup(Modified(), "lan", "", "mail", ["permanent"]);
+}
+
+/**
  * Read settings dialog
  * @return `abort if aborted and `next otherwise
  */

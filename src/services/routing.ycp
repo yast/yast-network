@@ -1,6 +1,6 @@
 /**
  * File:	include/network/services/routing.ycp
- * Module:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Routing configuration dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
@@ -52,26 +52,25 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 
     /* make ui items from the routes list */
     term item = nil;
-    while(items < size(route_conf)) {
-	map r = select(route_conf, items, $[]);
-	if(lookup(r,"destination","") == "default") {
-	    defgw = lookup(r, "gateway", "");
-	    defgwdev = lookup(r, "device", "");
+    maplist(map r, route_conf, ``{
+	if(r["destination"]:"" == "default") {
+	    defgw = r["gateway"]:"";
+	    defgwdev = r["device"]:"";
 	}
 	else {
 	    item = `item(`id(items),
-		    lookup(r,"destination",""),
-		    lookup(r,"gateway",""),
-		    lookup(r,"netmask",""),
-		    lookup(r,"device",""));
+		    r["destination"]:"",
+		    r["gateway"]:"",
+		    r["netmask"]:"",
+		    r["device"]:"");
 	    change(table_items, item);
+	    items = items + 1;
 	}
-	items = items + 1;
-    }
-    items = items - 1;
+    });
 
-    y2debug("table_items=%1",table_items);
-    y2debug("items=%1",items);
+    y2debug("table_items=%1", table_items);
+    y2debug("items=%1", items);
+    max = items;
 
     /* Routing dialog contents */
     term contents = `HBox(
@@ -86,14 +85,14 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 		/* CheckBox label */
 		`Left(`CheckBox(`id(`expert), `opt(`notify), _("E&xpert configuration"))),
 		`Table(`id(`table), `header(
-                    /* Table header 1/4 */
-                    _("Destination"),
-                    /* Table header 2/4 */
-                    _("Dummy or Gateway"),
-                    /* Table header 3/4 */
-                    _("Netmask"),
-                    /* Table header 4/4 */
-                    _("Device")), []),
+		    /* Table header 1/4 */
+		    _("Destination"),
+		    /* Table header 2/4 */
+		    _("Gateway"),
+		    /* Table header 3/4 */
+		    _("Netmask"),
+		    /* Table header 4/4 */
+		    _("Device")), []),
 		/* PushButton label */
 		`HBox(`PushButton(`id(`add), _("Ad&d")),
 		/* PushButton label */
@@ -115,7 +114,7 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 	Wizard::SetContentsButtons(caption, contents, help,
 		BackButtonLabel(), OKButtonLabel());
 
-    UI::ChangeWidget(`id(`gw), `ValidChars, "0123456789.");
+    UI::ChangeWidget(`id(`gw), `ValidChars, ValidCharsIP4);
     UI::ChangeWidget(`id(`table), `Items, table_items);
     UI::ChangeWidget(`id(`forward), `Value, forward);
     UI::ChangeWidget(`id(`table), `Enabled, expert);
@@ -123,19 +122,10 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
     UI::SetFocus(`id(`gw));
 
     any ret = nil;
-
-    /* TODO:
-     * check_*
-     * devices
-     * current item should stay the same
-     */
     while(true) {
-	UI::ChangeWidget(`id(`edit), `Enabled, expert && (items>=0));
-	UI::ChangeWidget(`id(`delete), `Enabled, expert && (items>=0));
-	if(expert && items>0) {
-	    integer cur = select(select(select(table_items, 0, []), 0, []), 0, 0);
-	    UI::ChangeWidget(`id(`table), `CurrentItem, cur);
-	}
+
+	UI::ChangeWidget(`id(`edit), `Enabled, expert && (items > 0));
+	UI::ChangeWidget(`id(`delete), `Enabled, expert && (items > 0));
 
 	ret = UI::UserInput();
 
@@ -153,7 +143,7 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 	}
 	/* expert mode */
 	else if(ret == `expert) {
-	    expert = ! expert;
+	    expert = UI::QueryWidget(`id(`expert), `Value);
 	    UI::ChangeWidget(`id(`table), `Enabled, expert);
 	    UI::ChangeWidget(`id(`add), `Enabled, expert);
 	    continue;
@@ -162,10 +152,14 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 	else if(ret == `edit) {
 	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
 	    list cur_item = filter(`e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
-	    term item = select(cur_item, 0, nil);
+
+	    y2debug("cur=%1", cur);
+	    y2debug("cur_item=%1", cur_item);
+
+	    term item = cur_item[0]:nil;
 	    /* FIXME: fill in available devices */
 	    list devs = [];
-	    /* add at least the current device, if not device is lost */
+	    /* add at least the current device, if not, device is lost */
 	    string dev = select(item, 4, "");
 	    if (dev != "")
 		devs = add(devs, `item(`id(dev), dev, true));
@@ -180,6 +174,7 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 		return e;
 	    });
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
+	    UI::ChangeWidget(`id(`table), `CurrentItem, cur);
 	    continue;
 	}
 	/* add route */
@@ -191,6 +186,7 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 
 	    change(table_items, item);
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
+	    UI::ChangeWidget(`id(`table), `CurrentItem, max);
 	    items = items + 1;
 	    max = max + 1;
 	    continue;
@@ -225,7 +221,7 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 
     /* update routes from widgets */
     if(ret == `next) {
-	route_conf = maplist (`e, table_items, ``($[
+	route_conf = maplist(term e, table_items, ``($[
 	    "destination" : select(e, 1, ""),
 	    "gateway"     : select(e, 2, ""),
 	    "netmask"     : select(e, 3, ""),
@@ -269,7 +265,7 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
  * @param id id of the edited route
  * @param entry edited entry
  * @param devs available devices
- * @return route map or nil, if canceled
+ * @return route or nil, if canceled
  */
 global define term RoutingEditDialog(integer id, term entry, list devs) ``{
 
@@ -279,20 +275,23 @@ global define term RoutingEditDialog(integer id, term entry, list devs) ``{
 	    /* TextEntry label */
 	    `TextEntry(`id(`destination), _("&Destination"), select(entry, 1, "")),
 	    /* TextEntry label */
-	    `TextEntry(`id(`gateway), _("Dummy or &Gateway"), select(entry, 2, "")),
+	    `TextEntry(`id(`gateway), _("&Gateway"), select(entry, 2, "")),
 	    /* TextEntry label */
 	    `TextEntry(`id(`netmask), _("&Netmask"), select(entry, 3, "")),
 	    /* ComboBox label */
 	    `ComboBox(`id(`device), `opt(`editable, `hstretch), _("De&vice (optional)"), devs)
-	    ),
+	),
 	`HSpacing(1),
 	`HBox(
 	    `PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
 	    `PushButton(`id(`cancel), CancelButtonLabel())
-	    )
-	));
+	)
+    ));
 
-    // UI::ChangeWidget(`id(`gw), `ValidChars, "0123456789.");
+    UI::ChangeWidget(`id(`destination), `ValidChars, ValidCharsIP4);
+    UI::ChangeWidget(`id(`gateway), `ValidChars, ValidCharsIP4);
+    UI::ChangeWidget(`id(`netmask), `ValidChars, ValidCharsNetmask4);
+    UI::SetFocus(`id(`destination));
 
     any ret = nil;
     term route = nil;

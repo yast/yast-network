@@ -25,13 +25,13 @@ global string NetworkCardRegex = "arc|ci|ctc|escon|eth|fddi|hsi|iucv|myri|tr";
 /**
  * Regular expression for all network card types
  */
-global string NetworkDeviceRegex = "|eth-pcmcia-|eth-usb-|tr-pcmia-|tr-usb-"
+global string NetworkDeviceRegex = "eth-pcmcia-|eth-usb-|tr-pcmia-|tr-usb-|"
     + NetworkCardRegex;
 
 /**
  * Regular expression for all network card types
  */
-global string NetworkAllRegex = "dummy|lo|"
+global string NetworkAllRegex = "dummy|irlan|lo|plip|"
     + NetworkCardRegex;
 
 /**
@@ -192,6 +192,8 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	/* Device type label */
 	"net"		: _("ISDN connection"),
 	/* Device type label */
+	"plip"		: _("Parallel line connection"),
+	/* Device type label */
 	"ppp"		: _("Modem"),
 	/* Device type label */
 	"ppp-pcmcia-"	: _("PCMCIA modem"),
@@ -199,6 +201,8 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	"ppp-usb-"	: _("USB modem"),
 	/* Device type label */
 	"sit"		: _("IPv6-in-IPv4 encapsulation device"),
+	/* Device type label */
+	"slip"		: _("Serial line connection"),
 	/* Device type label */
 	"tr"		: _("Token Ring network card"),
 	/* Device type label */
@@ -348,9 +352,13 @@ global define string DeviceType(string type) ``{
 	/* Device type label */
 	"net"	: _("ISDN"),
 	/* Device type label */
+	"plip"	: _("Parallel line"),
+	/* Device type label */
 	"ppp"	: _("Modem"),
 	/* Device type label */
 	"sit"	: _("IPv6-in-IPv4"),
+	/* Device type label */
+	"slip"	: _("Serial line"),
 	/* Device type label */
 	"tr"	: _("Token Ring"),
 	/* Device type label */
@@ -569,6 +577,79 @@ global define term OverviewTableDouble(string caption1, term header1, list conte
     UI::UserInput();
 
 */
+
+/**
+ * Display the finished popup and possibly run another module.
+ * If not modified, don't do anything.
+ * @param modified true if there are any modified data
+ * @param head headline to be shown
+ * @param text text to be shown
+ * @param run module to be run
+ * @param params parameters to pass to the module
+ * @return always `next
+ */
+global define symbol FinishPopup(boolean modified, string head, string text, string run, list params) ``{
+
+    if(!modified) return `next;
+
+    string h = head;
+    if(h == nil || h == "")
+	/* Popup headline */
+	h = _("Configuration has been successfully saved.");
+
+    map heads = $[
+	/* Popup headline */
+	"dns"	: _("DNS configuration has been successfully saved."),
+	/* Popup headline */
+	"dsl"	: _("DSL configuration has been successfully saved."),
+	/* Popup headline */
+	"host"	: _("Hosts configuration has been successfully saved."),
+	/* Popup headline */
+	"isdn"	: _("ISDN configuration has been successfully saved."),
+	/* Popup headline */
+	"lan"	: _("Network card configuration has been successfully saved."),
+	/* Popup headline */
+	"modem"	: _("Modem configuration has been successfully saved."),
+	/* Popup headline */
+	"proxy"	: _("Proxy configuration has been successfully saved."),
+	/* Popup headline */
+	"provider"	: _("Provider configuration has been successfully saved."),
+	/* Popup headline */
+	"routing"	: _("Routing configuration has been successfully saved."),
+    ];
+    h = heads[head]:h;
+
+    string t = text;
+    map texts = $[
+	/* Popup text */
+	"mail"	: _("Configure the mail now?"),
+	/* Popup text */
+	"mail"	: _("Would you like to configure the mail now?"),
+    ];
+    if(t == "")
+	t = texts[run]:text;
+    if(t == "")
+	t = sformat(_("Run configuration of %1?"), run);
+
+    any ret = nil;
+    if(run != "") {
+	ret = UI::YesNoHeadlinePopup(h, t);
+	/* FIXME: check for the module presence */
+	if(ret == true) CallModule(run, params);
+    }
+    else
+	ret = UI::AnyMessagePopup(h, t);
+
+    return `next;
+}
+
+/**
+ * Question at the end of the network modules about the mail configuration
+ * @return question text
+ */
+global define string FinishedMailText() ``{
+    /* Popup text */
+}
 
 /* EOF */
 }

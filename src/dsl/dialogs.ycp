@@ -25,6 +25,8 @@ include "network/runtime.ycp";
 include "network/routines.ycp";
 
 /**
+ * DSL device dialog
+ * @return dialog result
  */
 global define symbol DSLDialog() ``{
 
@@ -34,6 +36,14 @@ global define symbol DSLDialog() ``{
     /* DSL dialog help 1/6 */
     string helptext = _("<p>Here, set the most important settings
 for DSL connection.</p>") +
+
+    /* DSL dialog help 6/6 */
+_("<p>FIXME
+</p>") +
+
+    /* DSL dialog help 6/6 */
+_("<p>The <b>VPI/VCI</b> makes sense only for <i>PPP over ATM</i> connections,
+<b>Ethernet card</b> is needed for <i>PPP over Ethernet</i> connections.</p>") +
 
     /* DSL dialog help 6/6 */
 _("<p>FIXME
@@ -49,6 +59,8 @@ _("<p>FIXME
 	/* ComboBox item */
 	`item(`id("pppoatm"), _("PPP over ATM"), pppmode == "pppoatm"),
 	/* ComboBox item */
+	// `item(`id("ppptp"), _("PPP tunelling protocol"), pppmode == "ppptp"),
+	/* ComboBox item */
 	`item(`id("capi-adsl"), _("CAPI for ADSL"), pppmode == "capi-adsl"),
     ];
     /* ComboBox label */
@@ -57,10 +69,11 @@ _("<p>FIXME
     string interface = DSL::interface; // FIXME == "" ? DSLDevice::device : DSL::interface;
     string vpivci = DSL::vpivci;
 
-    /* DSL dialog contents */
+    /* DSL dialog contents * /
+    FIXME: remove
     term contents = `HBox(
 	`HSpacing(8),
-	/* Frame label */
+	/* Frame label * /
 	`Frame(_("DSL connection settings"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(1),
 	    pppwidget,
@@ -71,9 +84,41 @@ _("<p>FIXME
 	`HSpacing(8)
     );
 
+    /* DSL dialog contents */
+    term contents = `HBox(
+	`HSpacing(8),
+	/* Frame label */
+	`Frame(_("DSL connection settings"), `HBox(`HSpacing(2), `VBox(
+	    `VSpacing(1),
+	    pppwidget,
+	    `VSpacing(1),
+	    `Frame(_("PPP mode dependent settings"), `HBox(`HSpacing(2), `VBox(
+		`VSpacing(0.2),
+		`TextEntry(`id(`vpivci),  _("&VPI/VCI"), vpivci),
+		`VSpacing(0.2),
+		`VBox(
+		    /* TextEntry label */
+		    `TextEntry(`id(`interface), _("&Ethernet card"), interface),
+		    `VSpacing(0.1),
+		    /* PushButton label */
+		    `PushButton(`id(`lan), _("&Configure network cards"))
+		)
+	    ), `HSpacing(2))),
+	    `VSpacing(1)
+	    ), `HSpacing(2))),
+	`HSpacing(8)
+    );
+
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    BackButtonLabel(), NextButtonLabel());
 
+    UI::ChangeWidget(`id(`vpivci), `Enabled, pppmode == "pppoatm");
+    UI::ChangeWidget(`id(`interface), `Enabled, pppmode == "pppoe");
+    UI::ChangeWidget(`id(`lan), `Enabled, pppmode == "pppoe");
+
+    /**
+     * Update widget containing PPP protocol dependent settings
+     */
     define void UpdateCustomWidget() ``{
 	/* TextEntry label */
 	term vpibox = `TextEntry(`id(`vpivci),  _("&VPI/VCI"), vpivci);
@@ -105,7 +150,7 @@ _("<p>FIXME
 	    UI::ReplaceWidget(`id(`rp), `VSpacing(1));
     }
 
-    UpdateCustomWidget();
+    // FIXME: remove: UpdateCustomWidget();
 
     any ret = nil;
     while(true) {
@@ -123,7 +168,10 @@ _("<p>FIXME
 	}
 	else if(ret == `pppmode) {
 	    pppmode = UI::QueryWidget(`id(`pppmode), `Value);
-	    UpdateCustomWidget();
+	    // FIXME: remove: UpdateCustomWidget();
+	    UI::ChangeWidget(`id(`vpivci), `Enabled, pppmode == "pppoatm");
+	    UI::ChangeWidget(`id(`interface), `Enabled, pppmode == "pppoe");
+	    UI::ChangeWidget(`id(`lan), `Enabled, pppmode == "pppoe");
 	    continue;
 	}
 	else if(ret == `lan) {
@@ -133,7 +181,7 @@ _("<p>FIXME
 	    y2error("Unexpected return code: %1", ret);
 	    continue;
 	}
-    };
+    }
 
     if(ret == `next) {
 	pppmode = UI::QueryWidget(`id(`pppmode), `Value);
@@ -149,12 +197,12 @@ _("<p>FIXME
 
 /**
  * Helper function to create the user data frame
- * @param string username  current username
- * @param string password  current password
- * @param boolean tonline if t-online account
- * @return term data
+ * @param username  current username
+ * @param password  current password
+ * @param tonline if t-online account
+ * @return data
  */
-global define symbol CreateUserDataTerm(
+global define term CreateUserDataTerm(
 			string username,
 			string password,
 			boolean tonline) ``{
@@ -193,18 +241,18 @@ global define symbol CreateUserDataTerm(
 	}
 	udt = `VBox(
 	    `HBox(
-        /* TextEntry label */
+		/* TextEntry label */
 		`TextEntry(`id(`lineid), _("&Line ID"), lineid),
 		`HSpacing(1),
-        /* TextEntry label */
+		/* TextEntry label */
 		`TextEntry(`id(`t_onlineid), _("&T-Online ID"), t_onlineid)
 	    ),
 	    `VSpacing( 0.5 ),
 	    `HBox(
-        /* TextEntry label */
+		/* TextEntry label */
 		`TextEntry(`id(`user), _("&User code"), name),
 		`HSpacing(1),
-        /* Password entry label */
+		/* Password entry label */
 		`Password(`id(`password),  _("&Password"), password)
 	    )
 	);
@@ -334,11 +382,11 @@ automatically if data is requested. To use this, specify at least one
 	pppmode = "pppoe";
 
     list pppmodes = [
-    /* ComboBox item */
+	/* ComboBox item */
 	`item(`id("pppoe"), _("PPP over Ethernet"), pppmode == "pppoe"),
-    /* ComboBox item */
+	/* ComboBox item */
 	`item(`id("pppoatm"), _("PPP over ATM"), pppmode == "pppoatm"),
-    /* ComboBox item */
+	/* ComboBox item */
 	`item(`id("capi-adsl"), _("CAPI for ADSL"), pppmode == "capi-adsl"),
     ];
     term pppwidget = nil;
@@ -635,8 +683,8 @@ global define symbol TDSLDialog() ``{
 
 if(false) {
     Wizard::CreateDialog();
-    // DSLDialog(false, false);
     DSLDialog();
+    DSLDialog2(false, false);
 }
 
 /* EOF */

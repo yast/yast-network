@@ -27,6 +27,7 @@ include "ui/common_messages.ycp";
 global define string ProviderInfoText() ``{
 
     string info = "";
+    string type = Provider::CurrentType();
 
     string hp = Provider::Provider["HOTLINE"]:"";
     string hl = Provider::Provider["HOMEPAGE"]:"";
@@ -45,7 +46,7 @@ global define string ProviderInfoText() ``{
 		Provider::Provider["DIALMESSAGE1"]:"",
 		Provider::Provider["DIALMESSAGE2"]:"");
     }
-    else if(Provider::Provider["PHONE"]:"" == "") {
+    else if(Provider::Provider["PHONE"]:"" == "" && type != "dsl") {
 	if(hp != "" && hl != "") {
 	    /* Provider info text */
 	    string it = _("<p>To register for <b>%1</b> and find the best
@@ -76,6 +77,57 @@ dialing number, call the hotline <b>%2</b>.</p>");
 }
 
 /**
+ * Create T-Online username from LineID, T-OnlineID and UserCode
+ *
+ * It's concatenation of LineID (10 digits), T-OnlineID (10 digits,
+ * if less, then with appended '#', the user code (4 digits) and
+ * finally of the string "@t-online.de".
+ */
+global define void tonline2username() ``{
+    username = lineid + t_onlineid + (size(t_onlineid) < 12? "#":"" ) +
+	usercode + "@t-online.de";
+    y2debug("T-Online: [%1,%2,%3] -> %4", lineid, t_onlineid, usercode, username);
+}
+
+/**
+ * Split username to LineID, T-OnlineID and UserCode
+ * @see tonline2username
+ */
+global define void username2tonline() ``{
+    string user = username;
+    usercode = "0001";
+    lineid = "";
+    t_onlineid = "";
+
+    if(user != "") {
+	if(issubstring(user, "@t-online.de"))
+	    user = regexpsub(user, "^(.*)@t-online.de$", "\\1");
+	y2debug("user=%1",user);
+
+	if(issubstring(user, "#")) {
+	    usercode = regexpsub(user, "^.*#(.*)$", "\\1");
+	    user = regexpsub(user, "^(.*)#.*$", "\\1");
+	}
+	else {
+	    if(size(user) > 3) {
+		usercode = regexpsub(user, "^.*(....)$", "\\1");
+		user = regexpsub(user, "^(.*)....$", "\\1");
+	    }
+	}
+	if(usercode == "") usercode = "0001";
+
+	y2debug("user=%1",user);
+	if(size(user) > 12) {
+	    lineid = regexpsub(user, "^(.{12}).*$", "\\1");
+	    t_onlineid = regexpsub(user, "^.{12}(.*)$", "\\1");
+	}
+	else
+	    lineid = user;
+    }
+    y2debug("T-Online: %1 -> [%2,%3,%4]", username, lineid, t_onlineid, usercode);
+}
+
+/**
  * Provider dialog
  * @return dialog result
  */
@@ -84,18 +136,22 @@ global define symbol ProviderDialog() ``{
     string type = Provider::CurrentType();
 
     string name = Provider::Provider["PROVIDER"]:"";
-    string username = Provider::Provider["USERNAME"]:"";
-    string password = Provider::Provider["PASSWORD"]:"";
     string phone = Provider::Provider["PHONE"]:"";
     string encap = Provider::Provider["ENCAP"]:"";
-    boolean ask_pass = Provider::Provider["ASKPASSWORD"]:"no" == "yes";
     string infotext = ProviderInfoText();
 
-    boolean tonline = false;
-    if (name == "T-Online") {
-        username = "";
-        tonline = true;
-    }
+    string username = Provider::Provider["USERNAME"]:"";
+    string password = Provider::Provider["PASSWORD"]:"";
+    boolean ask_pass = Provider::Provider["ASKPASSWORD"]:"no" == "yes";
+
+    string uimode = Provider::Provider["UIMODE"]:"";
+
+    string lineid = "";
+    string t_onlineid = "";
+    string usercode = "";
+
+    if(uimode == "T-Online")
+	username2tonline();
 
     /* Provider dialog caption */
     string caption = _("Set parameters for the Internet connection");
@@ -129,7 +185,7 @@ the password every time.</p>");
 	    /* TextEntry label */
 	    `TextEntry(`id(`username), _("&User name"), username),
 	    `Label(""),
-        `VSpacing(0.2)
+	    `VSpacing(0.2)
 	),
 	`HSpacing(0.5),
 	`VBox(
@@ -137,12 +193,12 @@ the password every time.</p>");
 	    `Password(`id(`password), _("&Password"), password),
 	    /* CheckBox label */
 	    `Left(`CheckBox(`id(`askpass), `opt(`notify), _("&Always ask for password"), ask_pass)),
-        `VSpacing(0.2)
+	    `VSpacing(0.2)
 	),
 	`HSpacing(0.5)
     ));
 
-    term encapbox = `VSpacing(0.1);
+    term encapbox = `Empty();
     if(type == "isdn") {
 	/* ComboBox label */
 	encapbox = `Left(`ComboBox(`id(`encap), `opt(`notify), _("Packet &encapsulation"), [
@@ -175,9 +231,47 @@ the password every time.</p>");
 	    `Label(""),
 	    /* PushButton label */
 	    `PushButton(`id(`info), `opt(`disabled), _("&Info"))
-	    )
+	)
     );
 
+    /* Provider specific UI mode */
+    if(uimode == "T-Online") {
+	y2debug("Using uimode=%1", uimode);
+
+	auth = `Frame(`id(`auth), _("Authorization"), `VBox(
+	    `HBox(
+		`HSpacing(0.5),
+		/* TextEntry label */
+		`TextEntry(`id(`lineid), _("&Line ID"), lineid),
+		`HSpacing(0.5),
+		/* TextEntry label */
+		`TextEntry(`id(`t_onlineid), _("&T-Online ID"), t_onlineid),
+		`HSpacing(0.5)
+	    ),
+	    `VSpacing( 0.5 ),
+	    `HBox(
+		`HSpacing(0.5),
+		`VBox(
+		    /* TextEntry label */
+		    `TextEntry(`id(`usercode), _("&User code"), usercode),
+		    `Label(""),
+		    `VSpacing(0.2)
+		),
+		`HSpacing(0.5),
+		`VBox(
+		    /* TextEntry label */
+		    `Password(`id(`password), _("&Password"), password),
+		    /* CheckBox label */
+		    `Left(`CheckBox(`id(`askpass), `opt(`notify), _("&Always ask for password"), ask_pass)),
+		    `VSpacing(0.2)
+		),
+		`HSpacing(0.5)
+	    )
+	));
+
+    }
+
+    /* Provider dialog contents */
     term contents = `VBox(`VSpacing(2), `HBox(
 	`HSpacing(4),
 	`VBox(
@@ -191,9 +285,9 @@ the password every time.</p>");
 	    namebox,
 	    `VSpacing(0.5),
 	    phonebox,
-	    `VSpacing(1),
+	    `VSpacing(0.5),
 	    encapbox,
-	    `VSpacing(1),
+	    type == "isdn"?`VSpacing(1):`Empty(),
 	    auth
 	    //`VSpacing(0.5),
 	    //ip
@@ -205,25 +299,23 @@ the password every time.</p>");
 	    BackButtonLabel(), NextButtonLabel());
 
     /* '*' and '#' are for GPRS connections #16021 */
-    ChangeWidgetIfExists(`id(`phone), `ValidChars, "0123456789*#" );
+    ChangeWidgetIfExists(`id(`phone), `ValidChars, "0123456789*#");
+    ChangeWidgetIfExists(`id(`usercode), `ValidChars, "0123456789#");
+    ChangeWidgetIfExists(`id(`lineid), `ValidChars, "0123456789");
+    ChangeWidgetIfExists(`id(`t_onlineid), `ValidChars, "0123456789");
 
-    // FIXME trying to fix bugs: #16756, #6244
-    if(tonline)
-        // the name should be generated some way
-        UI::ChangeWidget(`id(`username), `ValidChars, "0123456789#" );
-
-    if(infotext != nil && infotext != "")
-	UI::ChangeWidget(`id(`info), `Enabled, true);
-
-    if(ask_pass)
-	UI::ChangeWidget(`id(`password), `Enabled, false);
+    ChangeWidgetIfExists(`id(`password), `Enabled, !ask_pass);
+    ChangeWidgetIfExists(`id(`info), `Enabled, infotext != nil && infotext != "");
 
     if(type == "isdn" && encap == "rawip") {
 	// seems that disabling via frame is not possible
 	// UI::ChangeWidget(`id(`auth), `Enabled, false);
-	UI::ChangeWidget(`id(`askpass), `Enabled, false);
-	UI::ChangeWidget(`id(`username), `Enabled, false);
+	ChangeWidgetIfExists(`id(`username), `Enabled, false);
+	ChangeWidgetIfExists(`id(`usercode), `Enabled, false);
+	ChangeWidgetIfExists(`id(`lineid), `Enabled, false);
+	ChangeWidgetIfExists(`id(`t_onlineid), `Enabled, false);
 	UI::ChangeWidget(`id(`password), `Enabled, false);
+	UI::ChangeWidget(`id(`askpass), `Enabled, false);
     }
 
     /* MAIN CYCLE */
@@ -243,15 +335,19 @@ the password every time.</p>");
 	}
 	else if(ret == `encap) {
 	    encap = UI::QueryWidget(`id(`encap), `Value);
+	    boolean e = encap == "syncppp";
 	    // seems that disabling via frame is not possible
-	    // UI::ChangeWidget(`id(`auth), `Enabled, true);
-	    UI::ChangeWidget(`id(`askpass), `Enabled, encap == "syncppp");
-	    UI::ChangeWidget(`id(`username), `Enabled, encap == "syncppp");
-	    UI::ChangeWidget(`id(`password), `Enabled, encap == "syncppp" && !UI::QueryWidget(`id(`askpass), `Value));
+	    // UI::ChangeWidget(`id(`auth), `Enabled, encap == "syncppp");
+	    ChangeWidgetIfExists(`id(`username), `Enabled, e);
+	    ChangeWidgetIfExists(`id(`usercode), `Enabled, e);
+	    ChangeWidgetIfExists(`id(`lineid), `Enabled, e);
+	    ChangeWidgetIfExists(`id(`t_onlineid), `Enabled, e);
+	    UI::ChangeWidget(`id(`password), `Enabled, e && !UI::QueryWidget(`id(`askpass), `Value));
+	    UI::ChangeWidget(`id(`askpass), `Enabled, e);
 	    continue;
 	}
 	else if(ret == `info) {
-        /* Popup text */
+	    /* Popup text */
 	    UI::LongTextPopup(_("Provider info"), `RichText(infotext), 43, 13);
 	    continue;
 	}
@@ -264,20 +360,48 @@ the password every time.</p>");
 
 	    /* check_* */
 	    name = UI::QueryWidget(`id(`name), `Value);
-	    username = UI::QueryWidget(`id(`username), `Value);
+	    username = QueryWidgetIfExists(`id(`username), `Value, username);
 	    password = UI::QueryWidget(`id(`password), `Value);
 	    ask_pass = UI::QueryWidget(`id(`askpass), `Value);
-	    if(UI::WidgetExists(`id(`phone)))
-		phone = UI::QueryWidget(`id(`phone), `Value);
-	    boolean auth_chk = true;
 
+	    phone = QueryWidgetIfExists(`id(`phone), `Value, phone);
+
+	    boolean auth_chk = true;
 	    if(type == "isdn") {
 		encap = UI::QueryWidget(`id(`syncppp), `Value) ? "syncppp" : "rawip";
 		if (encap == "rawip")
 			auth_chk = false;
 	    }
 
-	    if(name != lookup(Provider::Provider, "PROVIDER", "") && !Provider::IsUnique(name)) {
+	    if(uimode == "T-Online") {
+
+		lineid = UI::QueryWidget(`id(`lineid), `Value);
+		t_onlineid = UI::QueryWidget(`id(`t_onlineid), `Value);
+		usercode = UI::QueryWidget(`id(`usercode), `Value);
+
+		if(lineid == "") {
+		    /* MessagePopup text */
+		    UI::MessagePopup(_("Enter the line ID."));
+		    UI::SetFocus(`id(`lineid));
+		    continue;
+		}
+		if(t_onlineid == "") {
+		    /* MessagePopup text */
+		    UI::MessagePopup(_("Enter the T-Online ID."));
+		    UI::SetFocus(`id(`t_onlineid));
+		    continue;
+		}
+		if(usercode == "") {
+		    /* MessagePopup text */
+		    UI::MessagePopup(_("Enter the user code."));
+		    UI::SetFocus(`id(`usercode));
+		    continue;
+		}
+
+		tonline2username();
+	    }
+
+	    if(name != Provider::Provider["PROVIDER"]:"" && !Provider::IsUnique(name)) {
 		y2debug("n(%1), p(%2)",name,lookup(Provider::Provider, "PROVIDER", ""));
 		/* MessagePopup text */
 		UI::MessagePopup(sformat(_("Provider name %1 already exists."), name));
@@ -296,7 +420,7 @@ the password every time.</p>");
 		UI::SetFocus(`id(`phone));
 		continue;
 	    }
-	    else if(auth_chk && "" == username) {
+	    else if(auth_chk && username == "") {
 		/* MessagePopup text */
 		UI::MessagePopup(_("Enter the user name."));
 		UI::SetFocus(`id(`username));
@@ -332,11 +456,12 @@ the password every time.</p>");
 	    "PHONE"		: phone,
 	    "ASKPASSWORD"	: ask_pass ? "yes" : "no",
 	    "MODEMSUPPORTED"	: (type == "modem" ? "yes" : "no"),
+	    "ISDNSUPPORTED"	: (type == "isdn" ? "yes" : "no"),
+	    "DSLSUPPORTED"	: (type == "dsl" ? "yes" : "no"),
 	]);
 	if(type == "isdn") {
 	    Provider::Provider = union(Provider::Provider, $[
 		"ENCAP"		: encap,
-		"ISDNSUPPORTED"	: "yes",
 	    ]);
 	    if(ISDN::operation == `addif)
 		ISDN::provider_file = Provider::Name;

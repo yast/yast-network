@@ -25,12 +25,24 @@ include "ui/common_popups.ycp";
 /**
  * Check if given host is system and present warning in this case.
  * @param host host to be checked
+ * @param delete true if the host will be deleted
  * @return true if continue
  */
-global define boolean HostSystemPopup(string host) ``{
+global define boolean HostSystemPopup(string host, boolean delete) ``{
+
     if(!contains(Host::GetSystemHosts(), host)) return true;
-    return UI::YesNoPopup(sformat(_("The host %1 is a system host.
-Do you really want to change it?"), host));
+
+    /* Warning popup text 1/2 */
+    string text = sformat(_("The host %1 is a system host.") + "\n", host);
+
+    if(delete)
+	/* Warning popup text 2/2 */
+	text = text + _("Do you really want to delete it?");
+    else
+	/* Warning popup text 2/2 */
+	text = text + _("Do you really want to change it?");
+
+    return UI::AnyQuestionPopup("", text, YesButtonLabel(), NoButtonLabel(), `focus_no);
 }
 
 /**
@@ -47,7 +59,7 @@ global define symbol HostsMainDialog(boolean standalone) ``{
     string help = _("<p>The hosts can be set up in this dialog.</p>") +
 
     _("<p>Fill in a host <b>IP address</b>, a <b>host name</b> and optional
-<b>host aliases</b>.</p>");
+<b>host aliases</b>, divided by space.</p>");
 
     integer items = 0;
     integer max = 0;
@@ -107,23 +119,13 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 		BackButtonLabel(), OKButtonLabel());
 
     UI::ChangeWidget(`id(`table), `Items, table_items);
-    UI::ChangeWidget(`id(`edit), `Enabled, items > 0);
-    UI::ChangeWidget(`id(`delete), `Enabled, items > 0);
+    if(items > 0) UI::SetFocus(`id(`table));
 
     any ret = nil;
-
-    /* TODO:
-     * check_*
-     * devices
-     * current item should stay the same
-     */
     while(true) {
+
 	UI::ChangeWidget(`id(`edit), `Enabled, items > 0);
 	UI::ChangeWidget(`id(`delete), `Enabled, items > 0);
-	if(items > 0) {
-	    integer cur = select(select(select(table_items, 0, []), 0, []), 0, 0);
-	    UI::ChangeWidget(`id(`table), `CurrentItem, cur);
-	}
 
 	ret = UI::UserInput();
 
@@ -132,26 +134,19 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
-	/* expert mode */
-	else if(ret == `expert) {
-	    expert = ! expert;
-	    UI::ChangeWidget(`id(`table), `Enabled, expert);
-	    UI::ChangeWidget(`id(`add), `Enabled, expert);
-	    continue;
-	}
-	/* edit route */
+	/* edit host */
 	else if(ret == `edit) {
 	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
-	    y2debug("cur=%1", cur);
 	    list cur_item = filter(term e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
+
+	    y2debug("cur=%1", cur);
 	    y2debug("cur_item=%1", cur_item);
+
 	    term item = cur_item[0]:nil;
 	    list forbidden = maplist(term e, table_items, ``(select(e, 1, "")));
 	    forbidden = filter(string h, forbidden, ``(h != select(item, 1, "")));
 
-	    if(!HostSystemPopup(select(item, 1, "")))
-		continue;
-
+	    if(!HostSystemPopup(select(item, 1, ""), false)) continue;
 	    item = HostDialog(cur, item, forbidden);
 
 	    if(item == nil) continue;
@@ -163,9 +158,10 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 		return e;
 	    });
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
+	    UI::ChangeWidget(`id(`table), `CurrentItem, cur);
 	    continue;
 	}
-	/* add route */
+	/* add host */
 	else if(ret == `add) {
 	    list forbidden = maplist(term e, table_items, ``(select(e, 1, "")));
 	    term item = HostDialog(max, `empty(), forbidden);
@@ -174,13 +170,22 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 
 	    change(table_items, item);
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
+	    UI::ChangeWidget(`id(`table), `CurrentItem, max);
 	    items = items + 1;
 	    max = max + 1;
 	    continue;
 	}
-	/* delete route */
+	/* delete host */
 	else if(ret == `delete) {
 	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
+	    list cur_item = filter(term e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
+
+	    y2debug("cur=%1", cur);
+	    y2debug("cur_item=%1", cur_item);
+
+	    term item = cur_item[0]:nil;
+	    if(!HostSystemPopup(select(item, 1, ""), true)) continue;
+
 	    table_items = filter(term e, table_items, ``{
 		string ip = select(e, 1, "");
 		if(cur == select(select(e, 0, []), 0, nil)) {
@@ -226,10 +231,10 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 
 /**
  * Route edit dialog
- * @param id id of the edited route
+ * @param id id of the edited host
  * @param entry edited entry
  * @param forbidden already used IP addresses
- * @return route map or nil, if canceled
+ * @return host or nil, if canceled
  */
 global define term HostDialog(integer id, term entry, list forbidden) ``{
 

@@ -34,36 +34,31 @@ global define symbol AddressDialog() ``{
     string help = _("<p>Configure your IP address.</p>") +
 
     /* Address dialog help 2/8 */
-_("<p>You can select dynamic address assignment,
-if you have a <b>DHCP server</b> running on your local network.</p>") +
+    _("<p>You can select dynamic address assignment, if you have a
+<b>DHCP server</b> running on your local network.</p>") +
 
     /* Address dialog help 3/8 */
-_("<p>Also select this if you do not have a static
-IP address assigned by the system administrator or your cable or DSL provider.
-</p>") +
+    _("<p>Also select this if you do not have a static IP address assigned
+by the system administrator or your cable or DSL provider.</p>") +
 
     /* Address dialog help 4/8 */
-_("<p>Network addresses will then be obtained
-<b>automatically</b> from the server.</p>") +
+    _("<p>Network addresses will then be obtained <b>automatically</b>
+from the server.</p>") +
 
     /* Address dialog help 5/8 */
-_("<p>Clicking <b>Next</b> 
-completes the configuration.</p>") +
+    _("<p>Clicking <b>Next</b> completes the configuration.</p>") +
 
     /* Address dialog help 6/8 */
-_("<p>Otherwise, network addresses must be assigned
-<b>manually</b>.</p>") +
+    _("<p>Otherwise, network addresses must be assigned <b>manually</b>.</p>") +
 
     /* Address dialog help 7/8 */
-_("<p>Enter the IP address (e.g., 192.168.100.99) for
-your computer, the network mask (usually 255.255.255.0), and, optionally, the
-default gateway IP address.</p>") +
+    _("<p>Enter the IP address (e.g., 192.168.100.99) for your computer,
+the network mask (usually 255.255.255.0), and, optionally, the default gateway
+IP address.</p>") +
 
     /* Address dialog help 8/8 */
-_("<p>Contact your <b>network administrator</b>
-for more information about the network configuration.</p>");
-
-// FIXME: better helps layout
+    _("<p>Contact your <b>network administrator</b> for more information about
+the network configuration.</p>");
 
     string bootproto = Lan::bootproto;
     string ipaddr = Lan::ipaddr;
@@ -107,7 +102,7 @@ for more information about the network configuration.</p>");
 	    `VBox(
 		`VSpacing(0.5),
 		/* Radio button label */
-		`Left(`RadioButton(`id(`dynamic), `opt(`notify), _("A&utomatic address setup (via DHCP)"), bootproto != "static")),
+		`Left(`RadioButton(`id(`dhcp), `opt(`notify), _("A&utomatic address setup (via DHCP)"), bootproto == "dhcp")),
 		`VSpacing(0.5),
 		/* Radio button label */
 		`Left(`RadioButton(`id(`static), `opt(`notify), _("S&tatic address setup"), bootproto == "static")),
@@ -239,10 +234,10 @@ completes the configuration.</p>");
     Wizard::SetContentsButtons(caption, contents, help,
 	    BackButtonLabel(), NextButtonLabel());
 
-    UI::ChangeWidget(`id(`ipaddr), `Enabled, bootproto=="static");
-    ChangeWidgetIfExists(`id(`netmask), `Enabled, bootproto=="static");
-    ChangeWidgetIfExists(`id(`dynamic), `Value, bootproto!="static");
-    ChangeWidgetIfExists(`id(`static), `Value, bootproto=="static");
+    UI::ChangeWidget(`id(`ipaddr), `Enabled, bootproto == "static");
+    ChangeWidgetIfExists(`id(`netmask), `Enabled, bootproto == "static");
+    ChangeWidgetIfExists(`id(`dhcp), `Value, bootproto == "dhcp");
+    ChangeWidgetIfExists(`id(`static), `Value, bootproto == "static");
 
     any ret = nil;
     while(true) {
@@ -255,7 +250,7 @@ completes the configuration.</p>");
 	    else continue;
 	}
 	/* static ip address */
-	else if(ret == `dynamic) {
+	else if(ret == `dhcp) {
 	    UI::ChangeWidget(`id(`ipaddr), `Enabled, false);
 	    ChangeWidgetIfExists(`id(`netmask), `Enabled, false);
 	    ChangeWidgetIfExists(`id(`remoteip), `Enabled, false);
@@ -281,7 +276,7 @@ completes the configuration.</p>");
 	}
 	/* FIXME: better hostname and routing workflow */
 	else if(ret == `next || ret == `routing || ret == `hostname || ret == `hardware) {
-	    if(UI::QueryWidget(`id(`rb), `CurrentButton) != `dynamic) {
+	    if(UI::QueryWidget(`id(`rb), `CurrentButton) == `static) {
 		if(!check_ip4(UI::QueryWidget(`id(`ipaddr), `Value))) {
 		    /* Popup text */
 		    UI::ErrorPopup(_("The IP address is incorrect"));
@@ -318,10 +313,12 @@ completes the configuration.</p>");
 	    Lan::netmask = UI::QueryWidget(`id(`netmask), `Value);
 
 	if(UI::WidgetExists(`id(`rb))) {
-	    if(UI::QueryWidget(`id(`rb), `CurrentButton) == `dynamic)
+	    if(UI::QueryWidget(`id(`rb), `CurrentButton) == `dhcp)
 		Lan::bootproto = "dhcp";
-	    else
+	    else if(UI::QueryWidget(`id(`rb), `CurrentButton) == `dhcp)
 		Lan::bootproto = "static";
+	    else
+		Lan::bootproto = "";
 	}
 
 	if(UI::WidgetExists(`id(`remoteip)))

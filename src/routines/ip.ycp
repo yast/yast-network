@@ -15,6 +15,10 @@ global string ValidCharsIP = "0123456789abcdefABCDEF.:";
 global string ValidCharsIP4 = "0123456789.";
 global string ValidCharsIP6 = "0123456789abcdefABCDEF:";
 
+global string ValidCharsNetmask = "0123456789.";
+global string ValidCharsNetmask4 = "0123456789.";
+global string ValidCharsNetmask6 = "0123456789";
+
 /**
  * Check syntax of IP address
  * @param ip IP address

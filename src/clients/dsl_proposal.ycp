@@ -14,6 +14,8 @@ textdomain "network";
 import "DSL";
 import "Progress";
 
+include "network/routines.ycp";
+
 /* The main () */
 y2milestone("----------------------------------------");
 y2milestone("DSL proposal started");
@@ -32,7 +34,10 @@ if(func == "MakeProposal") {
     if(force_reset || !DSL::proposal_valid) {
         DSL::proposal_valid = true;
 	Progress::off();
+	/* Popup text */
+	BusyPopup(_("Detecting DSL devices ..."));
 	DSL::Read();
+	BusyPopupClose();
     }
     list sum = DSL::Summary(false);
     proposal = sum[0]:"";

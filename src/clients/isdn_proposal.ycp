@@ -14,6 +14,8 @@ textdomain "network";
 import "ISDN";
 import "Progress";
 
+include "network/routines.ycp";
+
 /* The main () */
 y2milestone("----------------------------------------");
 y2milestone("ISDN proposal started");
@@ -32,7 +34,10 @@ if(func == "MakeProposal") {
     if(force_reset || !ISDN::proposal_valid) {
         ISDN::proposal_valid = true;
 	Progress::off();
+	/* Popup text */
+	BusyPopup(_("Detecting ISDN cards ..."));
 	ISDN::Read();
+	BusyPopupClose();
     }
     list sum = ISDN::Summary(false);
     proposal = sum[0]:"";

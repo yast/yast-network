@@ -400,9 +400,31 @@ global map NetworkCards = $[
   ],
 
   "arc" : [
-    $["name" : "ARCnet",
-      "module" : "arcnet",
-      "options" : "io=0x300",
+    /* Network card name */
+    $["name" : _("ARCnet COM90xx (standard)"),
+      "module" : "com90xx",
+      "options" : "",
+    ],
+    /* Network card name */
+    $["name" : _("ARCnet COM90xx (in IO-mapped mode)"),
+      "module" : "com90io",
+      "options" : "",
+    ],
+    $["name" : "ARCnet RIM I",
+      "module" : "arcrimi",
+      "options" : "",
+    ],
+    $["name" : "ARCnet COM20020",
+      "module" : "com20020",
+      "options" : "",
+    ],
+    $["name" : "ARCnet COM20020 (ISA)",
+      "module" : "com20020-isa",
+      "options" : "",
+    ],
+    $["name" : "ARCnet COM20020 (PCI)",
+      "module" : "com20020-pci",
+      "options" : "",
     ],
   ],
 
@@ -414,7 +436,13 @@ global map NetworkCards = $[
   ],
 
   "fddi" : [
-    $["name" : "SysKonnect FDDI (SK-55xx/SK-58xx)",
+    /* Network card name */
+    $["name" : _("Digital Equipment Corporation FDDI controller"),
+      "module" : "defxx",
+      "options" : "",
+    ],
+    /* Network card name */
+    $["name" : _("SysKonnect FDDI adapter (SK-55xx, SK-58xx, Netelligent 100)"),
       "module" : "skfp",
       "options" : "",
     ],
@@ -428,35 +456,40 @@ global map NetworkCards = $[
   ],
 
   "ctc" : [
-    $["name" : "CTC Network",
+    /* Network subsystem name */
+    $["name" : _("Channel-to-Channel (CTC) network"),
       "module" : "ctc",
       "options" : "",
     ],
   ],
 
   "hsi" : [
-    $["name" : "HSI Network",
+    /* Network subsystem name */
+    $["name" : _("Hippersockets (HSI) network"),
       "module" : "qeth",
       "options" : "",
     ],
   ],
 
   "escon" : [
-    $["name" : "ESCON Network",
+    /* Network subsystem name */
+    $["name" : _("Enterprise System Connector (ESCON) network"),
       "module" : "ctc",
       "options" : "",
     ],
   ],
 
   "iucv" : [
-    $["name" : "IUCV Network",
+    /* Network subsystem name */
+    $["name" : _("Inter User Communication Vehicle (IUCV)"),
       "module" : "netiucv",
       "options" : "",
     ],
   ],
 
   "ci" : [
-    $["name" : "CI7000 Network",
+    /* Network card name */
+    $["name" : _("CI7000 adapter"),
       "module" : "c7000",
       "options" : "",
     ],

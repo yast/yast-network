@@ -47,7 +47,7 @@ global define any dividerHack(list provs, any prev) ``{
 
 /**
  * Providers dialog
- * @param type providers type to be shown ("all"|"modem"|"isdn"|"dsl")
+ * @param edit true in case of edit sequence
  * @return symbol dialog result
  */
 global define symbol ProvidersDialog(boolean edit) ``{

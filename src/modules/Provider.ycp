@@ -42,7 +42,7 @@ global map Provider = $[];
 /**
  * Current provider type
  */
-string Type = "";
+string Type = "modem";
 
 /**
  * All providers type
@@ -97,6 +97,7 @@ global define boolean Modified() ``{
 
 /**
  * Read providers data (custom only) and country mappings
+ * @param type providers the module is working with ("all"|"modem"|"isdn"|"dsl")
  * @return true if success
  */
 global define boolean Read(string type) ``{
@@ -113,6 +114,9 @@ global define boolean Read(string type) ``{
 
     if(GlobalType != "all")
 	Type = type;
+
+    y2debug("GlobalType=%1", GlobalType);
+    y2debug("Type=%1", Type);
 
     /* Read custom providers */
     Providers = $[];
@@ -316,13 +320,18 @@ global define boolean Select(string name) ``{
     }
 
     Name = name;
-    Provider = eval(Providers[Name]:$[
+    Provider = eval(Providers[Name]:$[]);
+    Type = CurrentType();
+
+    if(Provider == $[])
 	/* Default provider map */
-	toupper(type)+"SUPPORTED" : "yes",
-	/* FIXME: remaining items */
-    ]);
+	Provider = $[
+	    toupper(Type)+"SUPPORTED" : "yes",
+	    /* FIXME: remaining items */
+	];
 
     y2debug("Name=%1", Name);
+    y2debug("Type=%1", Type);
     y2debug("Provider=%1", Provider);
 
     return true;
@@ -353,6 +362,7 @@ global define boolean Add(string type) ``{
  */
 global define boolean Edit(any name) ``{
     operation = nil;
+    Type = "";
     if(Select(name) != true) return false;
     operation = `edit;
     return true;
@@ -572,6 +582,10 @@ global define boolean IsUnique(string name) ``{
     return !contains(forbidden, name);
 }
 
+/**
+ * Return current provider type
+ * @return current provider type
+ */
 global define string CurrentType() ``{
     y2debug("Type=%1", Type);
     if(Type != "") return Type;
@@ -595,13 +609,14 @@ global define string CurrentType() ``{
  * @return list of type capable providers
  */
 define list FilterProviders(list provs, string type) ``{
+    y2debug("provs,type=%1,%2", provs, type);
     string supported = toupper(type) + "SUPPORTED";
     boolean etst = false;
     if (type == "rawip" || type == "syncppp") {
 	supported = "ISDNSUPPORTED";
 	etst = true;
     }
-    y2debug("supported=%1",supported);
+    y2debug("supported=%1", supported);
 
     return filter(`i, provs, ``{
 	y2debug("i=%1", i);
@@ -634,7 +649,7 @@ define list FilterProviders(list provs, string type) ``{
 global define list GetProviders(string country, string preselect) ``{
     list provs = [];
 
-    y2debug("%1-%2",country,preselect);
+    y2debug("%1-%2", country, preselect);
     /* Custom providers */
     if(country == "_custom") {
 	foreach(`k, `v, Providers, ``{

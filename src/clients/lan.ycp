@@ -13,7 +13,7 @@
 {
 
 /***
- * <h3>Configuration of network</h3>
+ * <h3>Network configuration</h3>
  */
 
 textdomain "network";

@@ -1,10 +1,35 @@
 WIP, not yet functional!
 
-- complex dsl screens (#many bugs)
-- editing of hardware settings (#15062, ...)
-- new hosts manipulation and editor (#20970)
-- new providers handling (#many bugs)
-- new devices manipulation
+- dsl:
+  - add/edit/delete (#15301, #17217, #19855)
+
+- general:
+  - new hosts manipulation and editor (#20970)
+  - display info popup during proposal
+  - new devices manipulation
+
+- hardware:
+  - ARCnet support
+  - MyriNet support					#?
+  - FDDI support
+
+- lan:
+  - editing of hardware settings (#15062)		#10077,#12378,#9209
+  - remove kernel module after delete
+
+- providers:
+  - new providers handling (#17496, #18356)		#16094?
+  - UI mode (#6244, #16291)				#16756?
+
+- proxy:
+  - display info popup at the end of configuration
+  - use /root/.curlrc for storing proxy user and password (#?)
+  - added minimal input constraints (#18791)
+
+- routing:
+  - fixed crash (#21334)
+  - minor GUI clenup and fixes
+
 - 2.7.0
 
 -------------------------------------------------------------------

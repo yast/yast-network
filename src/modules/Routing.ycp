@@ -103,6 +103,7 @@ global define boolean Write() ``{
     /* and finally set up the new routes */
     // FIXME SCR::Execute(.target.bash, "/etc/init.d/route start");
 
+    modified = false;
     return ret == true;
 }
 

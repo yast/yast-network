@@ -75,7 +75,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     string PCMCIA = "&PCMCIA";
     string USB = "&USB";
 
-    list device_types = [ "arc", "eth", "myri", "tr" ];
+    list device_types = [ "arc", "eth", "fddi", "myri", "tr" ];
 
     if(Arch::s390)
 	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv" ];
@@ -394,6 +394,8 @@ for a particular network card by entering the name in the search entry.</p>");
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    BackButtonLabel(), OKButtonLabel());
 
+    UI::SetFocus(`id(`cards));
+
     any ret = nil;
     while(true) {
 	ret = UI::UserInput();
@@ -496,7 +498,7 @@ available options.</p>");
 	`Frame(_("Wireless device settings"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(1),
 	    /* Combobox item */
-	    `ComboBox(`id(`mode), `opt(`hstretch, `notify), _("O&perating mode"), [
+	    `ComboBox(`id(`mode), `opt(`hstretch), _("O&perating mode"), [
 		/* Combobox item */
 		`item(`id("Ad-hoc"), _("Ad-hoc"), Lan::wl_mode == "Ad-hoc"),
 		/* Combobox item */
@@ -527,8 +529,9 @@ available options.</p>");
 
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    BackButtonLabel(), OKButtonLabel());
+
     // FIXME: provide a better check and an error message, #17546
-    UI::ChangeWidget (`id (`key), `ValidChars, "0123456789abcdefABCDEF-:s");
+    UI::ChangeWidget(`id(`key), `ValidChars, "0123456789abcdefABCDEF-:s");
 
     any ret = nil;
     while(true) {
@@ -543,9 +546,6 @@ available options.</p>");
 	}
 	else if(ret == `next) {
 	    break;
-	}
-	else if(ret == `mode) {
-	    continue;
 	}
 	else {
 	    y2error("Unexpected return code: %1", ret);
@@ -623,8 +623,7 @@ add them manually.</p>");
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    BackButtonLabel(), NextButtonLabel());
 
-    // FIXME: provide a better check and an error message, #17546
-    // UI::ChangeWidget (`id (`key), `ValidChars, "0123456789abcdefABCDEF-:s");
+    // UI::ChangeWidget(`id(`key), `ValidChars, "0123456789abcdefABCDEF-:s");
 
     any ret = nil;
     while(true) {

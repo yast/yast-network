@@ -1,6 +1,6 @@
 /**
  * File:	include/network/services/dns.ycp
- * Module:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Hostname and DNS setup dialog
  * Authors:	Michal Svec <msvec@suse.cz>
  *
@@ -16,10 +16,11 @@ import "DNS";
 import "Lan";
 import "Wizard";
 
-include "ui/common_popups.ycp";
 include "network/dns.ycp";
 include "network/ip.ycp";
 include "network/routines.ycp";
+
+include "ui/common_popups.ycp";
 
 /**
  * If there's running a process modifying resolv.conf,
@@ -32,11 +33,11 @@ global define boolean ModifyResolvConfPopup() ``{
     string process = DNS::resolv_conf_process;
     if(process == "") return true;
 
-    /* warning popup text 1/2 */
+    /* Warning popup text 1/2 */
     string text = _("<p>The resolver configuration file (/etc/resolv.conf)
 has been temporarily modified by %1. You have two options:</p>") +
 
-    /* warning popup text 2/2 */
+    /* Warning popup text 2/2 */
     _("<ol>
 <li>Modify the current (changed!) version of the file</li>
 <li>Press 'Accept' now and continue editing other (non resolver) data. You
@@ -181,14 +182,14 @@ disabled during the connection.</p>");
     if(has_dhcp) UI::ChangeWidget(`id(`dn), `Value, dhcp_hostname);
     if(has_dhcp) UI::ChangeWidget(`id(`dr), `Value, dhcp_resolv);
 
-    UI::ChangeWidget(`id(`host), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-");
-    UI::ChangeWidget(`id(`domain), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.");
-    UI::ChangeWidget(`id(`s1), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.");
-    UI::ChangeWidget(`id(`s2), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.");
-    UI::ChangeWidget(`id(`s3), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.");
-    UI::ChangeWidget(`id(`ns1), `ValidChars, "0123456789.");
-    UI::ChangeWidget(`id(`ns2), `ValidChars, "0123456789.");
-    UI::ChangeWidget(`id(`ns3), `ValidChars, "0123456789.");
+    UI::ChangeWidget(`id(`host), `ValidChars, ValidCharsHostname);
+    UI::ChangeWidget(`id(`domain), `ValidChars, ValidCharsDomain);
+    UI::ChangeWidget(`id(`s1), `ValidChars, ValidCharsFQHostname);
+    UI::ChangeWidget(`id(`s2), `ValidChars, ValidCharsFQHostname);
+    UI::ChangeWidget(`id(`s3), `ValidChars, ValidCharsFQHostname);
+    UI::ChangeWidget(`id(`ns1), `ValidChars, ValidCharsIP4);
+    UI::ChangeWidget(`id(`ns2), `ValidChars, ValidCharsIP4);
+    UI::ChangeWidget(`id(`ns3), `ValidChars, ValidCharsIP4);
 
     if(ModifyResolvConfPopup() != true) {
 	UI::ChangeWidget(`id(`dr), `Enabled, false);
@@ -200,7 +201,7 @@ disabled during the connection.</p>");
 	UI::ChangeWidget(`id(`ns3), `Enabled, false);
     }
 
-    // ugly hack for ISDN call (#6020)
+    // FIXME ugly hack for ISDN call (#6020)
     //if(ok_label) UI::ChangeWidget(`id(`next), `Label, _("&OK")));
 
     any ret = nil;

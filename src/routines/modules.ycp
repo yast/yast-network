@@ -78,6 +78,7 @@ global define boolean WriteModules() ``{
 	y2debug("deleting: %1", p);
 	/* Delete only alias, keep options */
 	SCR::Write(add(.modules.alias, d), nil);
+	SCR::Execute(.target.bash, sformat("/sbin/rmmod %1 2>&1", d));
 	// SCR::Write(add(.modules.options, d), nil);
     });
     DeletedModules = [];

@@ -11,7 +11,7 @@
 
 textdomain "network";
 
-global string ValidCharsHostname = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.";
+global string ValidCharsHostname = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-";
 global string ValidCharsDomain = ValidCharsHostname + ".";
 global string ValidCharsFQHostname = ValidCharsDomain;
 

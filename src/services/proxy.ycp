@@ -14,10 +14,29 @@ textdomain "network";
 import "Proxy";
 import "Wizard";
 
+include "network/dns.ycp";
+include "network/complex.ycp";
+include "network/routines.ycp";
+include "network/url.ycp";
+
 include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
 
-include "network/routines.ycp";
+/**
+ * Display popup at the end of the proxy configuration
+ * @param modified true if proxy settings have been modified
+ */
+global define void ProxyFinishPopup(boolean modified) ``{
+
+    /* Popup text */
+string text = _("Applications which support it (like YaST2 Online Update)
+could use them immediately, other applications will use
+them only if run from newly started terminal (lynx, wget)
+and some applications don't support these settings at
+all (they use they own settings system, like mozilla).");
+
+    FinishPopup(modified, "proxy", text, "", []);
+}
 
 /**
  * Proxy dialog
@@ -25,6 +44,12 @@ include "network/routines.ycp";
  * @return dialog result
  */
 global define symbol ProxyMainDialog(boolean standalone) ``{
+
+    string http = Proxy::http;
+    string ftp = Proxy::ftp;
+    string no = Proxy::no;
+    string user = Proxy::user;
+    string pass = Proxy::pass;
 
     /* Proxy dialog caption */
     string caption = _("Proxy configuration");
@@ -58,19 +83,19 @@ should be done directly without caching.</p>") +
 	`Frame(_("Proxy settings"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(1),
 	    /* Text entry label */
-	    `TextEntry(`id(`http), _("&HTTP proxy"), Proxy::http),
+	    `TextEntry(`id(`http), _("&HTTP proxy"), http),
 	    `VSpacing(0.2),
 	    /* Text entry label */
-	    `TextEntry(`id(`ftp), _("F&TP proxy"), Proxy::ftp),
+	    `TextEntry(`id(`ftp), _("F&TP proxy"), ftp),
 	    `VSpacing(0.2),
 	    /* Text entry label */
-	    `TextEntry(`id(`no), _("N&o proxy domains"), Proxy::no),
+	    `TextEntry(`id(`no), _("N&o proxy domains"), no),
 	    `VSpacing(0.2),
 	    /* Text entry label */
-	    `TextEntry(`id(`user), _("Proxy &user name"), Proxy::user),
+	    `TextEntry(`id(`user), _("Proxy &user name"), user),
 	    `VSpacing(0.2),
 	    /* Text entry label */
-	    `TextEntry(`id(`pass), _("Proxy &password"), Proxy::pass),
+	    `TextEntry(`id(`pass), _("Proxy &password"), pass),
 	    `VSpacing(1)
 	    ), `HSpacing(2))),
 	`HSpacing(6)
@@ -83,20 +108,36 @@ should be done directly without caching.</p>") +
 	Wizard::SetContentsButtons(caption, contents, help,
 		BackButtonLabel(), OKButtonLabel());
 
+    string ValidCharsUsername = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:_-/";
+    UI::ChangeWidget(`id(`http), `ValidChars, ValidCharsUrl);
+    UI::ChangeWidget(`id(`ftp), `ValidChars, ValidCharsUrl);
+    UI::ChangeWidget(`id(`no), `ValidChars, ValidCharsDomain + " ,");
+    UI::ChangeWidget(`id(`user), `ValidChars, ValidCharsUsername);
+    UI::SetFocus(`id(`http));
+
     any ret = nil;
     while(true) {
 
 	ret = UI::UserInput();
 
 	/* abort? */
-	if(ret == `abort || ret == `cancel) {
+	if(ret == `abort || ret == `cancel || ret == `back) {
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
 	/* next */
 	else if(ret == `next) {
+
+	    user = UI::QueryWidget(`id(`user), `Value);
+	    pass = UI::QueryWidget(`id(`pass), `Value);
+
 	    /* check_* */
-	    // FIXME!
+	    if(user == "" && pass != "") {
+		/* ErrorPopup text */
+		UI::ErrorPopup(_("You can't fill in the password and leave the user name empty."));
+		UI::SetFocus(`id(`user));
+		continue;
+	    }
 	    break;
 	}
 	/* back */
@@ -110,22 +151,31 @@ should be done directly without caching.</p>") +
     }
 
     if(ret == `next) {
-	Proxy::http = UI::QueryWidget(`id(`http), `Value);
-	Proxy::ftp = UI::QueryWidget(`id(`ftp), `Value);
-	Proxy::no = UI::QueryWidget(`id(`no), `Value);
-	Proxy::user = UI::QueryWidget(`id(`user), `Value);
-	Proxy::pass = UI::QueryWidget(`id(`pass), `Value);
-	// #17623
-	// FIXME: only set it when a value has changed
+
+	http = UI::QueryWidget(`id(`http), `Value);
+	ftp = UI::QueryWidget(`id(`ftp), `Value);
+	no = UI::QueryWidget(`id(`no), `Value);
+	user = UI::QueryWidget(`id(`user), `Value);
+	pass = UI::QueryWidget(`id(`pass), `Value);
+
+	if(Proxy::http == http && Proxy::ftp == ftp && Proxy::no == no &&
+		Proxy::user == user && Proxy::pass == pass) {
+
+	    y2debug("not modified");
+	    return ret;
+	}
+
+	Proxy::http = http;
+	Proxy::ftp = ftp;
+	Proxy::no = no;
+	Proxy::user = user;
+	Proxy::pass = pass;
+
 	Proxy::modified = true;
+	ProxyFinishPopup(true);
     }
 
     return ret;
-}
-
-if(false) {
-    Wizard::CreateDialog();
-    ProxyMainDialog();
 }
 
 /* EOF */

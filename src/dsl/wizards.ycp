@@ -31,7 +31,7 @@ global define symbol DSLSequence() ``{
 	"main"	:   ``( MainSequence() ),
 	"rpm"	: [ ``( Packages(["smpppd"]) ), true ],
 	"write"	: [ ``( WriteDialog() ), true ],
-	"finish": [ ``( Finished(DSL::Modified(), FinishedMailText(), "mail", ["dialup"]) ), true ],
+	"finish": [ ``( FinishDialog() ), true ],
     ];
 
     map sequence = $[
@@ -156,6 +156,7 @@ global define symbol MainSequence() ``{
 /**
  * Workflow of the configuration of one DSL
  * @param detected true if DSL was detected (more entries otherwise)
+ * @param edit true in case of edit sequence
  * @return sequence result
  */
 global define symbol OneDSLProviderSequence(boolean detected, boolean edit) ``{

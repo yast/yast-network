@@ -530,7 +530,7 @@ global define boolean Select(string dev) ``{
     unique = devmap["UNIQUE"]:"";
 
     /* address options */
-    bootproto = devmap["BOOTPROTO"]:"static";
+    bootproto = devmap["BOOTPROTO"]:"";
     ipaddr = devmap["IPADDR"]:"";
     remoteip = devmap["REMOTE_IPADDR"]:"";
     netmask = devmap["NETMASK"]:"";
@@ -564,7 +564,7 @@ global define boolean Select(string dev) ``{
     if(hotplug == "")
 	SelectModule(dev);
 
-    if(bootproto == "" || bootproto == "none") bootproto = "static";
+    if(bootproto == "none") bootproto = "static";
 
     return true;
 }

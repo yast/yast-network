@@ -126,7 +126,9 @@ global define boolean Write() ``{
     SCR::Write(.sysconfig.dhcp.DHCLIENT_MODIFY_RESOLV_CONF, dhcp_resolv?"yes":"no");
     SCR::Write(.sysconfig.dhcp, nil);
 
-    //if(!dhcp_hostname) {
+    /* Allow to set hostname even if it's modified by DHCP (#bug)
+    if(!dhcp_hostname) { */
+
 	/* remember the X authorization key */
 	string xauth_key = SCR::Read(.xauth.key);
 
@@ -139,7 +141,6 @@ global define boolean Write() ``{
 
 	/* update X authorization */
 	SCR::Write(.xauth.key, xauth_key);
-    //}
 
     if(SCR::Read(.target.size, resolv_conf) < 0)
 	SCR::Write(.target.string, resolv_conf, "");
@@ -166,6 +167,7 @@ global define boolean Write() ``{
 
     }
 
+    modified = false;
     return true;
 }
 

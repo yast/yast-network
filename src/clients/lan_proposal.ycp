@@ -15,6 +15,8 @@ import "Lan";
 import "Arch";
 import "Progress";
 
+include "network/routines.ycp";
+
 /* The main () */
 y2milestone("----------------------------------------");
 y2milestone("Lan proposal started");
@@ -33,7 +35,10 @@ if(func == "MakeProposal") {
     if(force_reset || !Lan::proposal_valid) {
 	Lan::proposal_valid = true;
 	Progress::off();
+	/* Popup text */
+	BusyPopup(_("Detecting network cards ..."));
 	Lan::Read();
+	BusyPopupClose();
     }
     Lan::Propose();
     list sum = Lan::Summary(false);

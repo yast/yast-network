@@ -97,6 +97,8 @@ global define symbol TypeDialog() ``{
     Wizard::SetContentsButtons(caption, contents, HELPS["type"]:"",
 	    BackButtonLabel(), NextButtonLabel());
 
+    UI::SetFocus(`id(`modules));
+
     any ret = nil;
     while(true) {
 

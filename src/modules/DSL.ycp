@@ -17,6 +17,7 @@ textdomain "network";
 
 import "Lan";
 import "Firewall";
+import "Language";
 import "Provider";
 import "Progress";
 import "Summary";
@@ -313,6 +314,21 @@ global define boolean Select(string dev) ``{
 
     /* provider settings */
     Provider::Name = devmap["PROVIDER"]:"";
+
+    /* ppp mode heuristics */
+    if(pppmode == nil || pppmode == "") {
+	string language = Language::GetLanguageCountry();
+	y2debug("language=%1", language);
+
+	map pppmodes = $[
+	    "AT" : "pppoatm",
+	    "CZ" : "pppoe", // FIXME
+	    "DE" : "pppoe",
+	    "GB" : "pppoatm",
+	    "CA" : "pppoe",
+	];
+	pppmode = pppmodes[language]:"pppoe";
+    }
 
     return true;
 }

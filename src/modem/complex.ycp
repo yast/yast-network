@@ -45,6 +45,14 @@ global define symbol Commit(string what) ``{
 }
 
 /**
+ * Display finished popup
+ * @return dialog result
+ */
+global define symbol FinishDialog() ``{
+    return FinishPopup(Modified(), "modem", "", "mail", ["dialup"]);
+}
+
+/**
  * Read settings dialog
  * @return `abort if aborted and `next otherwise
  */

@@ -17,14 +17,13 @@ Documentation:
 TOCHECK:
 
 - Net-HOWTO
-- mail from bk@suse.de about s390 changes
+- mail [patch] from bk@suse.de about s390 changes
 - check and install required packages #14315
 - provider: use routines/complex.ycp (BuildSumary, ...)
 - remove writing of NETWORK (also BROADCAST?)
 
 - sigi&isdn: http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html
-- chmod 0700 ~/.wgetrc? asi neni potreba ...
-- use /etc/wgetrc?
+- chmod 0700 ~/.curlrc? asi neni potreba ... [draht]
 
 - #16094:
     Further enhancement: if the provider is not used by any other modem
@@ -41,11 +40,20 @@ TOCHECK:
 
 TOSORT:
 
+- routines: modules: rmmod $deleted
+
+- lan: check for myrinet driver presence [warning + info]
+
+- wireless: missing "Master" in the "Operationg mode"
+- wireless: check encryption key XXXX-XXXX-XXXX-XXXX (hex) or XXXXXXXX or ... [iwconfig]
+
+- routing: other fields
+- routing: rename to Route
+
 - modem|isdn|lan|dsl: info popup during proposal
 
 - agents: two resolv.conf scrconfs
 
-- dsl: add/edit/delete #15301 #17217 #19855
 - dsl: in installation settings #15160
 
 - routing: list of available devices in expert dialog
@@ -87,7 +95,7 @@ TOSORT:
 - alias: virtual interfaces #6627
 
 - hardware: cable modems support? what is missing? [suse-network]
-- modem: check existence of the modem device (symlink) in Modem::Write
+- modem: check existence of the modem device in ModemDialog
 - dialup: start smpppd only if >0 devs
 - dialup: info popup (configured + kinternet, cinternet)
 - dialup: run|stop kinternet, if DISPLAY and (not)running (#14320)
@@ -101,6 +109,12 @@ TOSORT:
 - doc: slip: IP/RI (Serial Line IP, obsoleted by PPP)
 - doc: ppp: IP/RI (Serial Point-To-Point protocol)
 
+- doc: T-Online UIMODE:
+  - Line ID [10 chars]
+  - T-Online ID [10 chars]
+  - User code [numbers, usually 0001]
+  -> username = "LT#U@t-online.de"
+
 ##############################################################################
 
 Enhancements:
@@ -108,30 +122,21 @@ Enhancements:
 - dns: restart only DHCP devices
 - routing: restart only routing
 - dsl: ReadHardware("dsl") see #16539
-- dsl: more than one connection
-- dsl: ReplaceWidget(vpi|eth)
-- dsl: vpivci heuristics to module (maybe also tonline mode)
 - dsl: PPPMODE to dsl providers (pppoe|pppoatm|ppptp)
-- dsl: set PPPMODE in dependence on the country (DE->E,GB->A,AT->A,CA->E)
 - lan: use bootp reply for static configuration
-- lan: dual port network cards #10077, #12387 viz 2002-05.txt
+- lan: dual port network cards #10077, #12387 [see 2002-05.txt]
 - lan: compiled in kernel drivers
 - modem: pap|chap secrets writing
-- providers: UIMODE="tonline" #16291, #6244
 - providers: no-global-values
-- providers: ReallyAbort()
 - providers: preload the country providers (other upon request)
 - providers: -> HWDB-NG
 - providers: Czech Telecom DSL
-- base: edit without restart (reload)
-- base: use map instead of variables (-> fill all variables)
-- package: include all agents
+- all: edit without restart (reload)
+- device: use map instead of variables (-> fill all variables)
+- package: include all agents (ag_xauth, ag_resolver, ag_hostnames, ...)
 - package: require yast2-language, yast2-mail, ...
 
 Future:
-- lan: fddi
-- lan: arcnet
-- hippi et al (s390)
 - ui: local net (slcs)
 - ui: cable connection (plip, slip, usb)
 
@@ -160,7 +165,6 @@ notebook.suse.cz
 - remove CHECK_ETC_HOSTS
 
 UpdateHosts("hostname", [IPADDRs]);
-
 
 UI proposal:
 - detected

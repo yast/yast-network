@@ -57,6 +57,8 @@ Wizard::CreateDialog();
 Wizard::SetContentsButtons(caption, contents, help,
 	BackButtonLabel(), /* FinishButtonLabel() */ _("&Launch"));
 
+UI::SetFocus(`id(`modules));
+
 any ret = nil;
 while(true) {
 
