@@ -16,6 +16,7 @@ import "Arch";
 import "Progress";
 
 include "network/routines.ycp";
+include "network/lan/wizards.ycp";
 
 /* The main () */
 y2milestone("----------------------------------------");
@@ -56,7 +57,7 @@ if(func == "MakeProposal") {
 /* run the module */
 else if(func == "AskUser") {
     map stored = Lan::Export();
-    symbol seq = WFM::CallFunction(`lan(.propose));
+    symbol seq = LanAutoSequence();
     if(seq != `next) Lan::Import(stored);
     ret = $[
 	"workflow_sequence" : seq
@@ -87,7 +88,7 @@ else {
 }
 
 /* Finish */
-y2debug("ret=%1",ret);
+y2debug("ret=%1", ret);
 y2milestone("Lan proposal finished");
 y2milestone("----------------------------------------");
 return ret;
