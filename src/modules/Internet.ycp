@@ -26,6 +26,7 @@ global boolean do_test = true;
 global boolean do_you = false;
 
 global string device = "";
+global string provider = "";
 global string password = "";
 global boolean demand = false;
 global boolean askpassword = nil;
@@ -129,7 +130,7 @@ global define boolean Fastest() ``{
     y2debug("devmap=%1", devmap);
 
     /* Lookup the provider values */
-    string provider = devmap["PROVIDER"]:"";
+    provider = devmap["PROVIDER"]:"";
     if (provider != "") {
 	import "Provider";
 	Provider::Read("all");
@@ -229,6 +230,15 @@ global define boolean Connected() ``{
     }
 
     return true;
+}
+
+
+global define void SetDemand (boolean tmp) ``{
+    path pp = .sysconfig.network.providers.v;
+    pp = add (pp, provider);
+    pp = add (pp, "DEMAND");
+    SCR::Write (pp, tmp ? "yes" : "no");
+    SCR::Write (.sysconfig.network.providers, nil);
 }
 
 
