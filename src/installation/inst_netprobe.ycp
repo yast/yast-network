@@ -15,5 +15,6 @@ import "Detection";
 
 if(!Detection::running) Detection::Start();
 
-/* EOF */
+return `auto;
+
 }
