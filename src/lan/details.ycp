@@ -33,7 +33,7 @@ define any DetailsDialog() {
     string help = _("<p>Configure the detailed network card settings here.</p>") +
 
     /* Details dialog help 2/8 */
-    _("<p>You can set the Maximum Transfer Unit (<b>MTU</b>) of an interface</p>") +
+    _("<p>You can set the maximum transfer unit (<b>MTU</b>) of an interface</p>") +
 
     /* Details dialog help 3/8 */
 _("<p><b>Device Activation</b> may either happen during boot or manually
@@ -46,7 +46,7 @@ with tools like <b>ifup</b>.</p>");
 	/* ComboBox item (device start mode) */
 	`item(`id("onboot"), _("At Boot Time"), startmode == "onboot"),
 	/* ComboBox item (device start mode) */
-	`item(`id("hotplug"), _("When Hot-Plugged"), startmode == "hotplug"),
+	`item(`id("hotplug"), _("When Hotplugged"), startmode == "hotplug"),
 	/* ComboBox item (device start mode) */
 	`item(`id("manual"), _("Manually"), startmode == "manual"),
 	/* ComboBox item (device start mode) */

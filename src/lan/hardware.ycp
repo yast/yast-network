@@ -391,7 +391,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		    if(contains(NetworkModules::ListM(""), nm)) {
 			/* Popup text */
 			Popup::Error(sformat(_("Hardware configuration %1 already exists.
-Please choose a different one."), nm));
+Choose a different one."), nm));
 			UI::SetFocus(`id(`hwcfg));
 			continue;
 		    }
@@ -404,7 +404,7 @@ Please choose a different one."), nm));
 		    if(contains(NetworkDevices::List(""), device_name(type, nm))) {
 			/* Popup text */
 			Popup::Error(sformat(_("Configuration name %1 (%2) already exists.
-Please choose a different one."), nm, device_name(type, nm)));
+Choose a different one."), nm, device_name(type, nm)));
 			UI::SetFocus(`id(`num));
 			continue;
 		    }

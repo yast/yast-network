@@ -382,7 +382,7 @@ completes the configuration.</p>");
 		y2debug("device=%1", device);
 		if(NetworkDevices::Check(device)) {
 		    /* Popup text */
-		    Popup::Error(sformat(_("Configuration %1 already present"), device));
+		    Popup::Error(sformat(_("Configuration %1 already present."), device));
 		    UI::SetFocus(`id(`device));
 		    continue;
 		}

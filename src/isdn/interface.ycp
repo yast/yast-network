@@ -230,7 +230,7 @@ system boot. <b>Manual</b> the driver must be started with the
 
     helptext = helptext +
     // help text 3/5
-_("<p>If you select manual you have to start/stop the service manually by
+_("<p>If you select manual, start and stop the service manually by
 issuing the following commands (while logged in as 'root'):
 <tt>
  <br> <b>start: </b>ifup ippp0
