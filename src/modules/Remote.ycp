@@ -147,7 +147,7 @@ _("For the settings to take effect, the display manager
 must be restarted. Because this terminates all X Window System
 sessions, do it manually from the console with
 \"%1\".
-Note that restarting the X server alone is not enough.")
+Note that restarting the X server alone is not enough."),
 "rcxdm restart"));
 	}
     }
