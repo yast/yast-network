@@ -974,9 +974,16 @@ define map FindMatchingDevice(map interface) {
     list<string> devs = NetworkDevices::List("netcard");
     y2milestone("Configured devices: %1", devs );
 
+    // this condition is always true for SLES9, HEAD uses $[] for proposal
     if (interface != $[])
     {
+	// Notes for comments about matching:
+	// - interface["device"] is the key which we look for in the actual hw
+	// - H iterates over Hardware
+	// - patterns are shell-like
+
         /* code for eth-id-00:80:c8:f6:48:4c configurations */
+	// *-id-$ID => find H["mac"] == $ID
         list device_id = splitstring(interface["device"]:"", "-");
         if (size(device_id)> 1 && issubstring(interface["device"]:"", "id"))
         {
@@ -987,6 +994,7 @@ define map FindMatchingDevice(map interface) {
             y2milestone("Rule: matching mac in device name");
         }
         /* code for eth-bus-pci-0000:00:0d.0 configurations */
+	// *-bus-pci-$ID => find H["bus"] == "pci" & H["busid"] == $ID
         else if ((size(device_id)> 1 &&
                     issubstring(interface["device"]:"", "bus-pci")))
         {
@@ -999,6 +1007,8 @@ define map FindMatchingDevice(map interface) {
         }
 
         /* code for module configuration */
+	// join with the modules list of the ay profile according to "device"
+	// if exists => find H["module"] == AH["module"]
         map aymodule = GetModuleForInterface(interface["device"]:"", 
                 autoinstall_settings["modules"]:[]);
         y2milestone("module data: %1", aymodule );
@@ -1010,10 +1020,13 @@ define map FindMatchingDevice(map interface) {
         }
     }
     
-    // First device was alread configured, we are now looking for 
+    // First device was already configured, we are now looking for 
     // a second (third,...) one
     if (size(devs) > 0 )
     {
+	// go thru all devices, check whether there's one that does
+	// not have a configuration yet
+	// and has the same type as the current profile item
         integer hw_index = 0;
         while (true) {
             map h = Hardware[hw_index]:$[];
@@ -1036,7 +1049,10 @@ define map FindMatchingDevice(map interface) {
         }
 
     } else {
+	// this is the first interface, match the hardware with install.inf
+
         /* Select the one from install.inf with the same MAC */
+	// find H["mac"] == InstallInf["hwaddr"]
         if (tosel == nil  ) {
             string hwaddr = InstallInf["hwaddr"]:"";
             if(hwaddr != nil && hwaddr != "") {
@@ -1046,6 +1062,7 @@ define map FindMatchingDevice(map interface) {
         }
 
         /* Select the one from install.inf with the same module */
+	// find H["module"] == InstallInf["module"]
         if (tosel == nil) {
             string infmodule = InstallInf["module"]:"";
             if(infmodule != nil && infmodule != "") {
@@ -1056,6 +1073,7 @@ define map FindMatchingDevice(map interface) {
 
         /* No install.inf driver -> select the first active */
         // but not wlan, #44951
+	// find H["active"] == true && H["type"] != "wlan"
         if (tosel == nil) {
             tosel = find (map h, Hardware, ``(
                         h["active"]:false
@@ -1065,6 +1083,7 @@ define map FindMatchingDevice(map interface) {
         }
 
         /* No active driver -> select the first with a driver */
+	// find H["module"] != "" && H["type"] != "wlan"
         if (tosel == nil) {
             y2milestone("No active driver found, trying further.");
             tosel = find (map h, Hardware, ``(
@@ -1287,12 +1306,6 @@ global define boolean Autoinstall() {
 		y2milestone("No hardware, no install.inf -> no autoinstallation possible.");
 		return false;
 	    }
-
-            string newk = nil;
-            interface =  mapmap(string k, string v, interface, ``{
-                    newk = toupper(k);
-                    return $[newk: v];
-                    });
 
 
             // Set interface variables
