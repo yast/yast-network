@@ -371,7 +371,7 @@ available options.</p>");
 			Popup::Error (_("The encryption key must be specified for this authentication mode."));
 			continue;
 		    }
-		    else	// warning only
+		    else if (ret != `keys)	// warning only
 		    {
 			/* Popup text */
 			string pop = _("Using no encryption is a security risk!
