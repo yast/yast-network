@@ -36,9 +36,6 @@ SortKey =
 Textdomain = network
 
 ; Autoinstall features
-Autoinst = write
-
-; Resource in control file
-AutoinstResource = proxy
+Autoinst = all
 
 ; vim:syntax=dosini
