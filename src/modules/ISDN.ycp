@@ -409,7 +409,7 @@ global define boolean Write(boolean start) ``{
     // step 2 in writing current ISDN setup
     ProgressNextStage(_("Stopping ISDN subsystem..."));
     if (modified_hw) {
-	cmd = sformat("/etc/init.d/isdn stop");
+	cmd = sformat("/etc/init.d/isdn unload");
 	SCR::Execute(.target.bash, cmd);
     }
     sleep(sl);
@@ -565,7 +565,7 @@ global define boolean TestDev(string dev) ``{
     if(Abort()) return false;
     // step 3 in testing current ISDN setup
     ProgressNextStage(_("Unloading ISDN driver..."));
-    cmd = sformat("/etc/init.d/isdn stop");
+    cmd = sformat("/etc/init.d/isdn unload");
     out = (map) SCR::Execute(.target.bash_output, cmd);
     details = details + cmd + "\n";
     details = details + out["stdout"]:"";
@@ -588,7 +588,7 @@ global define boolean TestDev(string dev) ``{
     if(Abort()) return false;
     // step 5 in testing current ISDN setup
     ProgressNextStage(_("Unloading controller..."));
-    cmd = sformat("/etc/init.d/isdn stop");
+    cmd = sformat("/etc/init.d/isdn unload");
     out = (map) SCR::Execute(.target.bash_output, cmd);
     details = details + cmd + "\n";
     details = details + out["stdout"]:"";
