@@ -230,7 +230,7 @@ define boolean RunKInternet() {
     }
 
     // run it by creating a file in /var/lib/Desktop
-    Desktop::RunViaDesktop ("kinternet");
+    Desktop::RunViaDesktop ("kinternet", ["--quiet"]);
 }
 
 /* EOF */
