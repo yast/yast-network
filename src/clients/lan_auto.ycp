@@ -25,7 +25,8 @@ string func = "";
 map param = $[];
 
 /* Check arguments */
-if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
+if(size(WFM::Args()) > 0 && is(WFM::Args(0), string))
+{
     func = (string) WFM::Args(0);
     if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
 	param = (map) WFM::Args(1);
@@ -38,7 +39,7 @@ if (Mode::test)
 {
     Mode::autoinst = true;
     param = $["dns":$["dhcp_hostname":false, "dhcp_resolv":false],
-    "interfaces":[$["bootproto":"dhcp", "device":"eth0",
+    "interfaces":[$["bootproto":"dhcp", "device":"eth-id-00:0e:0c:08:36:7a",
     "startmode":"onboot"]], "routing":$["ip_forward":false]];
     func = "Import";
 }
@@ -92,11 +93,25 @@ define map FromAY(map input) {
 	});
         string configured_device = interface["device"]:"";
         string device = "";
-        if (  Mode::autoinst )
+        boolean configured = false;
+        if ( Mode::autoinst )
         {
-            Lan::SelectHW(dn);
-            device = Lan::device;
-            new_interface["_type"] = hw[dn, "type"]:"";
+            list devid = splitstring(configured_device, "-");
+            if (size(devid)> 0 )
+            {
+                string mac = devid[2]:"";
+                list avail = filter(map conf, hw, ``(conf["mac"]:"" == mac));
+                if (size(avail) > 0) {
+                    device = devid[1]:"" + "-" +  devid[2]:"";
+                    new_interface["_type"] = avail[0, "type"]:"";
+                    configured = true;
+                }
+            }
+            if (!configured) {
+                Lan::SelectHW(dn);
+                device = Lan::device;
+                new_interface["_type"] = hw[dn, "type"]:"";
+            }
             devicemapping[configured_device] = device;
         }
         else
@@ -244,11 +259,11 @@ define map ToAY (map settings) {
     // Modules
 
     list modules = [];
-    foreach(string device, string mod, settings["modules", "alias"]:$[], {
+    foreach(string device, map mod, settings["hwcfg"]:$[], {
             map newmap = $[];
             newmap["device"] =  device;
-            newmap["module"] =  mod;
-            newmap["options"] = settings["modules", "options", mod]:"";
+            newmap["module"] =  mod["MODULE"]:"";
+            newmap["options"] = mod["MODULE_OPTIONS"]:"";
             modules = add(modules, newmap);
             });
 
