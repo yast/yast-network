@@ -278,10 +278,29 @@ global define boolean Write(string devregex) {
     y2milestone("Deleted=%1", Deleted);
     foreach(string d, Deleted, {
 	// if(!haskey(OriginalDevs, d)) return;
-	/* delete config file */
-	path p = topath(".network.section.\"" + d + "\"");
-	y2debug("deleting: %1", p);
-	SCR::Write(p, nil);
+	string anum = alias_num (d);
+	if (anum == "")
+	{
+	    /* delete config file */
+	    path p = add (.network.section, d);
+	    y2debug("deleting: %1", p);
+	    SCR::Write(p, nil);
+	}
+	else
+	{
+	    string typ = device_type (d);
+	    string num = device_num (d);
+	    string dev = device_name (typ, num);
+	    path base = add (.network.value, dev);
+	    // look in OriginalDevs because we need to catch all variables
+	    // of the alias
+	    foreach (string key, any dummy, OriginalDevs[typ, num, "_aliases", anum]:$[], {
+		path p = add (base, key + "_" + anum);
+		y2debug ("deleting: %1", p);
+		SCR::Write (p, nil);
+	    });
+	    
+	}
     });
 
     /* Devices with chmod=0600 */
@@ -632,13 +651,6 @@ define boolean Delete2(string name) {
     map devsmap = Devices[t]:$[];
 
     if(a != "") {
-	/*
-	map devmap = devsmap[device]:$[];
-	map amap = devmap["_aliases"]:$[];
-	amap = remove(amap, alias);
-	devmap["_aliases"] = amap;
-	devsmap[device] = devmap;
-	*/
 	map amap = devsmap[d, "_aliases"]:$[];
 	amap = remove(amap, a);
 	devsmap[d, "_aliases"] = amap;
@@ -648,7 +660,7 @@ define boolean Delete2(string name) {
 
     Devices[t] = devsmap;
 
-    if(haskey(OriginalDevices, t) && haskey(OriginalDevices[t]:$[], d) && a == "") {
+    if(haskey(OriginalDevices, t) && haskey(OriginalDevices[t]:$[], d)) {
 	y2milestone("Deleting file: %1", name);
 	Deleted[size(Deleted)] = name;
     }
