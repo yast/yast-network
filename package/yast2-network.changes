@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Aug 17 15:02:09 CEST 2004 - mvidner@suse.cz
+
+- VNC: Using xorg-x11 instead of XFree86.
+- Fixed parallel build (nested directory symlinks).
+- 2.10.7
+
+-------------------------------------------------------------------
 Mon Aug 16 16:39:27 CEST 2004 - mvidner@suse.cz
 
 - Phone number checking relaxed from validchars to are-you-sure (#43723).

@@ -63,9 +63,9 @@ global boolean Write() {
 
     if(allow_administration) {
 	/* Install require packages */
+	list<string> packages = ["xinetd", "tightvnc", "xorg-x11", "xorg-x11-Xvnc", ];
 	// #40155: have to specify a concrete window manager,
 	// "windowmanager" only works for yast2 -i
-	list<string> packages = ["xinetd", "tightvnc", "XFree86", "XFree86-Xvnc", ];
 	if (!Package::Installed ("kdebase3"))
 	{
 	    packages = add (packages, "fvwm2");
