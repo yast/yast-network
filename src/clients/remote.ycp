@@ -50,7 +50,7 @@ define void ListHandler(map options) {
 
     string summary = "";
     /* Command line output Headline */
-    summary = "\n" + _("Remote Configuration Summary:") + "\n\n" +
+    summary = "\n" + _("Remote Access Configuration Summary:") + "\n\n" +
 	RichText::Rich2Plain(Remote::Summary()) + "\n";
 
     y2debug("%1", summary);
@@ -62,7 +62,7 @@ define void ListHandler(map options) {
  */
 map cmdline = $[
     /* Commandline help title */
-    "help"	: _("Remote Configuration"),
+    "help"	: _("Remote Access Configuration"),
     "id"	: "remote",
     "guihandler": RemoteGUI,
     "initialize": Remote::Read,

@@ -338,7 +338,7 @@ global define boolean Write(boolean start) ``{
 
 	if (DRDSLrun) {
 	    // stage 9/13
-	    plist = add(plist, _("Running drdsl (could take over a minute)..."));
+	    plist = add(plist, _("Run drdsl"));
 	    steps = 9;
 	}
 	if (haveISDNif) {
@@ -357,7 +357,7 @@ global define boolean Write(boolean start) ``{
     Progress::New(caption, " ", steps, plist, [], "");
     if(Abort()) return false;
     // step 1 in writing current ISDN setup
-    ProgressNextStage(_("Stop ISDN networking"));
+    ProgressNextStage(_("Stopping ISDN networking..."));
     cmd = sformat("/etc/init.d/network stop -o type=isdn");
     SCR::Execute(.target.bash, cmd);
     cmd = sformat("/etc/init.d/network stop -o type=ippp");
@@ -366,7 +366,7 @@ global define boolean Write(boolean start) ``{
 
     if(Abort()) return false;
     // step 2 in writing current ISDN setup
-    ProgressNextStage(_("Stop ISDN subsystem"));
+    ProgressNextStage(_("Stopping ISDN subsystem..."));
     if (modified_hw) {
 	cmd = sformat("/etc/init.d/isdn stop");
 	SCR::Execute(.target.bash, cmd);
@@ -506,7 +506,7 @@ global define boolean TestDev(string dev) ``{
 
     if(Abort()) return false;
     // step 2 in testing current ISDN setup
-    ProgressNextStage(_("Stop ISDN network"));
+    ProgressNextStage(_("Stopping ISDN network..."));
     cmd = sformat("/etc/init.d/network stop -o type=isdn");
     out = (map) SCR::Execute(.target.bash_output, cmd);
     details = details + cmd + "\n";
@@ -523,7 +523,7 @@ global define boolean TestDev(string dev) ``{
 
     if(Abort()) return false;
     // step 3 in testing current ISDN setup
-    ProgressNextStage(_("Unload ISDN driver"));
+    ProgressNextStage(_("Unloading ISDN driver..."));
     cmd = sformat("/etc/init.d/isdn stop");
     out = (map) SCR::Execute(.target.bash_output, cmd);
     details = details + cmd + "\n";
@@ -534,7 +534,7 @@ global define boolean TestDev(string dev) ``{
 
     if(Abort()) return false;
     // step 4 in testing current ISDN setup
-    ProgressNextStage(_("Load controller"));
+    ProgressNextStage(_("Loading controller..."));
     cmd = sformat("/etc/init.d/isdn start %1 -o all", dev);
     out = (map) SCR::Execute(.target.bash_output, cmd);
     details = details + cmd + "\n";
@@ -546,7 +546,7 @@ global define boolean TestDev(string dev) ``{
 
     if(Abort()) return false;
     // step 5 in testing current ISDN setup
-    ProgressNextStage(_("Unload controller"));
+    ProgressNextStage(_("Unloading controller..."));
     cmd = sformat("/etc/init.d/isdn stop");
     out = (map) SCR::Execute(.target.bash_output, cmd);
     details = details + cmd + "\n";
