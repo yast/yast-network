@@ -15,10 +15,7 @@
 
 textdomain "network";
 
-// import "Popup";
-// import "Summary";
-
-// include "network/routines.ycp";
+import "String";
 
 /**
  * Return textual device type
@@ -109,8 +106,9 @@ define string DeviceType(string type) {
     if(haskey(device_types, type))
 	return device_types[type]:"";
 
-    if(haskey(device_types, select(splitstring(type, "-"), 0, "-")))
-	return device_types[select(splitstring(type, "-"), 0, "-")]:"";
+    string type1 = String::FirstChunk (type, "-");
+    if(haskey(device_types, type1))
+	return device_types[type1]:"";
 
     y2error("Unknown type: %1", type);
     return type;

@@ -318,7 +318,7 @@ global boolean DeleteM(string name) {
 }
 
 global string GetFreeName(string prefix) {
-    return select(GetFreeNames(prefix, 1), 0, "");
+    return GetFreeNames(prefix, 1)[0]:"";
 }
 
 global list<string> GetFreeNames(string prefix, integer num) {

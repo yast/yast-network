@@ -255,7 +255,8 @@ y2milestone("IFCONFIG4: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig")
  */
 global boolean DuplicateIP (string ip) {
     string command = "LC_ALL=C ip link show|grep BROADCAST|grep -v NOARP|cut -d: -f2";
-    string ifs = (string) lookup((map) SCR::Execute(.target.bash_output, command), "stdout", "");
+    map exe = (map) SCR::Execute (.target.bash_output, command);
+    string ifs = exe["stdout"]:"";
     list<string> ifsl = filter (string i, splitstring (ifs, " \t\n"), ``( i != ""));
 
     // #45169: must only probe the interface being set up
@@ -288,7 +289,7 @@ global string ResolveIP(string ip) {
     map getent = (map) SCR::Execute(.target.bash_output, sformat(command, ip));
     string hnent = getent["stdout"]:"";
     y2debug("%1", hnent);
-    hnent = select(splitstring(hnent, " \t\n"), 0, "");
+    hnent = String::FirstChunk (hnent, " \t\n");
     if(hnent == nil) hnent = "";
     y2debug("'%1'", hnent);
     return String::CutBlanks(hnent);

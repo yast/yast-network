@@ -140,8 +140,8 @@ define any SummaryDialog() {
     string caption = _("Provider Configuration");
 
     list summary = Provider::Summary("all", true);
-    list unconfigured = (list) select(summary, 1, []);
-    string configured = (string) select(summary, 0, "");
+    list unconfigured = summary[1]:[];
+    string configured = summary[0]:"";
     y2debug("unconfigured=%1", unconfigured);
 
     /* Frame label */

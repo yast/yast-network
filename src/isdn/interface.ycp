@@ -191,15 +191,15 @@ in the DSL configuration dialog.</p>");
 define any interface_dialog() ``{
 
     /* PREPARE VARIABLES */
-    string msn = lookup(ISDN::interface, "MSN", "0");
-    string startmode = lookup(ISDN::interface, "STARTMODE", "manual");
+    string msn = ISDN::interface["MSN"]:"0";
+    string startmode = ISDN::interface["STARTMODE"]:"manual";
     boolean usercontrol = ISDN::interface["USERCONTROL"]:"no" == "yes";
-    boolean syncppp = lookup(ISDN::interface, "PROTOCOL", "syncppp") == "syncppp";
-    boolean chargeHUP = lookup(ISDN::interface, "CHARGEHUP", "on") == "on";
-    boolean multilink = lookup(ISDN::interface, "MULTILINK", "no") == "yes";
-    boolean firewall = lookup(ISDN::interface, "FIREWALL", "yes") == "yes";
+    boolean syncppp = ISDN::interface["PROTOCOL"]:"syncppp" == "syncppp";
+    boolean chargeHUP = ISDN::interface["CHARGEHUP"]:"on" == "on";
+    boolean multilink = ISDN::interface["MULTILINK"]:"no" == "yes";
+    boolean firewall = ISDN::interface["FIREWALL"]:"yes" == "yes";
     // temp var while we're in the detailed dialog
-    boolean efwi = lookup(ISDN::interface, "efwi", nil);
+    boolean efwi = (boolean) ISDN::interface["efwi"]:nil;
     boolean ExternalFwInterface = true;
     string devstr = sformat("%1%2", syncppp ? "ippp" : "isdn", ISDN::device);
 

@@ -159,14 +159,15 @@ Try again?
 define string ChangedComment(string modul) {
     string ret = "\n# Changed by YaST2";
     if(modul != nil && modul != "") ret = ret + " module " + modul;
-    string date = lookup((map)SCR::Execute(.target.bash_output, "/bin/date '+%x'"), "stdout", "");
+    map out = (map)SCR::Execute(.target.bash_output, "/bin/date '+%x'");
+    string date = out["stdout"]:"";
     if(date != "") ret = ret + " " + date;
     return ret;
 }
 
 /**
  * Show busy popup (for proposal)
- * @param message label to bw shown
+ * @param message label to be shown
  */
 define void BusyPopup(string message) {
     UI::BusyCursor();

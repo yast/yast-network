@@ -32,12 +32,12 @@ import "Wizard";
 define any IFDetailDialog() ``{
 
     /* PREPARE VARIABLES */
-    string remote_in = (string) lookup(ISDN::interface, "REMOTE_IN", "");
-    string ipppd_opt = (string) lookup(ISDN::interface, "IPPPD_OPTIONS", "");
-    boolean syncppp = (string) lookup(ISDN::interface, "PROTOCOL", "syncppp") == "syncppp";
-    boolean secure = (string) lookup(ISDN::interface, "SECURE", "on") == "on";
-    integer cbdel = tointeger((string) lookup(ISDN::interface, "CBDELAY", "2"));
-    string callback = (string) lookup(ISDN::interface, "CALLBACK", "off");
+    string remote_in = ISDN::interface["REMOTE_IN"]:"";
+    string ipppd_opt = ISDN::interface["IPPPD_OPTIONS"]:"";
+    boolean syncppp = ISDN::interface["PROTOCOL"]:"syncppp" == "syncppp";
+    boolean secure = ISDN::interface["SECURE"]:"on" == "on";
+    integer cbdel = tointeger(ISDN::interface["CBDELAY"]:"2");
+    string callback = ISDN::interface["CALLBACK"]:"off";
 
     /* DIALOG TEXTS */
 

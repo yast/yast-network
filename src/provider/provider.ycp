@@ -251,7 +251,7 @@ at the end.</p>");
 	]));
 	/*
 	if (encap == "" && ISDN::operation == `addif)
-		encap = lookup(ISDN::interface, "PROTOCOL", "syncppp");
+		encap = ISDN::interface["PROTOCOL"]:"syncppp";
 	*/
     }
 
@@ -449,7 +449,7 @@ at the end.</p>");
 		tonline2username();
 
 	    if(name != Provider::Current["PROVIDER"]:"" && !Provider::IsUnique(name)) {
-		y2debug("n(%1), p(%2)",name,lookup(Provider::Current, "PROVIDER", ""));
+		y2debug("n(%1), p(%2)",name,Provider::Current["PROVIDER"]:"");
 		/* Popup::Message text */
 		Popup::Message(sformat(_("Provider name %1 already exists."), name));
 		UI::SetFocus(`id(`name));

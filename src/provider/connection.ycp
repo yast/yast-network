@@ -34,18 +34,18 @@ define any ConnectionDialog() {
     string type = Provider::Type;
 
     /* PREPARE VARIABLES */
-    string Provider = lookup(Provider::Current, "PROVIDER", "");
+    string Provider = Provider::Current["PROVIDER"]:"";
 
-    boolean demand = lookup(Provider::Current, "DEMAND", "no") == "yes";
-    boolean stupidmode = lookup(Provider::Current, "STUPIDMODE", "no") == "yes";
+    boolean demand = Provider::Current["DEMAND"]:"no" == "yes";
+    boolean stupidmode = Provider::Current["STUPIDMODE"]:"no" == "yes";
 
-    boolean modifydns = lookup(Provider::Current, "MODIFYDNS", "yes") == "yes";
-    boolean autodns = lookup(Provider::Current, "AUTODNS", "yes") == "yes";
+    boolean modifydns = Provider::Current["MODIFYDNS"]:"yes" == "yes";
+    boolean autodns = Provider::Current["AUTODNS"]:"yes" == "yes";
 
-    string DNS1 = lookup(Provider::Current, "DNS1", "");
-    string DNS2 = lookup(Provider::Current, "DNS2", "");
+    string DNS1 = Provider::Current["DNS1"]:"";
+    string DNS2 = Provider::Current["DNS2"]:"";
 
-    string idletime = lookup(Provider::Current, "IDLETIME", "300");
+    string idletime = Provider::Current["IDLETIME"]:"300";
 
     string device = nil;
     if(type == "modem") device = device_name(Modem::type, Modem::device);

@@ -467,7 +467,7 @@ define any SelectionDialog() {
     /* map NetworkCards */
     include "network/lan/cards.ycp";
 
-    list<map> hwlist = lookup(NetworkCards, type, []);
+    list<map> hwlist = NetworkCards[type]:[];
     list cards = hwlist2items(hwlist, 0);
 
     /* Manual selection caption */
@@ -507,11 +507,11 @@ for a particular network card by entering the name in the search entry.</p>");
 	    string entry = (string) UI::QueryWidget(`id(`search), `Value);
 
 	    list l = filter(term e, (list<term>) cards, {
-		return tolower(substring(select(e, 1, ""), 0, size(entry))) == tolower(entry);
+		return tolower(substring(e[1]:"", 0, size(entry))) == tolower(entry);
 	    });
 
 	    if(size(entry) == 0) selected = 0;
-	    if(size(l) > 0) selected = (integer) select((term) select((term) select(l, 0, `it()), 0, `it()), 0, 0);
+	    if(size(l) > 0) selected = l[0, 0, 0]:0;
 
 	    cards = [];
 	    cards = hwlist2items(hwlist, selected);
@@ -535,7 +535,7 @@ for a particular network card by entering the name in the search entry.</p>");
     if(ret == `next) {
 	selected = (integer) UI::QueryWidget(`id(`cards), `CurrentItem);
 	if(selected == nil) selected = 0;
-	map card = (map) select(hwlist, selected, $[]);
+	map card = hwlist[selected]:$[];
 	Lan::name = card["name"]:"";
 
 	NetworkModules::Alias /* FIXME: MOD Lan::Module["module"] */ = card["module"]:"";

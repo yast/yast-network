@@ -797,7 +797,7 @@ global define list GetProviders(string type, string country, string preselect) {
     return maplist(any i, provs, {
 	index = index + 1;
 	if(is(i, string))
-	    return `item(`id(i), lookup(Providers[(string) i]:$[], "PROVIDER", i), index == 0 || preselect == i);
+	    return `item(`id(i), Providers[(string) i, "PROVIDER"]:i, index == 0 || preselect == i);
 	else
 	    if(."--" == i)
 		return `item(`id(i), "----------------");

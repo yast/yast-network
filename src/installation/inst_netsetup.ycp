@@ -13,6 +13,7 @@ import "Arch";
 import "Installation";
 import "Linuxrc";
 import "Mode";
+import "String";
 
 symbol mode = (symbol) WFM::Args (2);
 
@@ -56,7 +57,7 @@ if(hwaddr != nil && hwaddr != "") {
     y2milestone("Output: %1", output);
     if(output != nil) {
 	string newdevice = output["stdout"]:"";
-	newdevice = select(splitstring(newdevice, "\n"), 0, "");
+	newdevice = String::FirstChunk (newdevice, "\n");
 	if(newdevice != "" && newdevice != nil) netdevice = newdevice;
 	y2milestone("Updated netdevice: %1 (%2)", netdevice, newdevice);
     }

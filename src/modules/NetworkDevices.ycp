@@ -780,7 +780,7 @@ global define boolean UpdateModemSymlink() {
     if(contains(Map::Keys(Devices), "modem")) {
 	list ml = Map::Keys(Devices["modem"]:$[]);
 	string ms = ml[0]:"0";
-	// map mm = lookup(Devices["modem"]:$[], ms, $[]);
+	// map mm = Devices["modem"]:$[][ms]:$[];
 	map mm = Devices["modem", ms]:$[];
 	string mdev = mm["MODEM_DEVICE"]:"";
 	if(mdev != "" && mdev != "/dev/modem") {
@@ -808,7 +808,8 @@ global define boolean CleanHotplugSymlink() {
     maplist(string t, types, {
 	string link = "/etc/sysconfig/network/ifcfg-" + t;
 	y2debug("link=%1", link);
-	if(lookup((map)SCR::Read(.target.lstat, link), "islink", false) == true) {
+	map lstat = (map) SCR::Read(.target.lstat, link);
+	if(lstat["islink"]:false == true) {
 	    string file = (string) SCR::Read(.target.symlink, link);
 	    file = "/etc/sysconfig/network/" + file;
 	    y2debug("file=%1", file);

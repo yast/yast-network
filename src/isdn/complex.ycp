@@ -154,8 +154,8 @@ can change the configuration and setup dialup connections) will open.
 </P>");
 
     list summary = ISDN::Summary(true);
-    list unconfigured = (list) select(summary, 1, []);
-    string configured = (string) select(summary, 0, "");
+    list unconfigured = summary[1]:[];
+    string configured = summary[0]:"";
 
     y2debug("unconfigured=%1",unconfigured);
     // table title for detected ISDN cards

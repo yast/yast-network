@@ -198,7 +198,7 @@ particular vendors by selecting a vendor.</p>");
  */
 define term Card_Parameter(map drv) ``{
 	term  contens = `HBox();
-	integer typ = tointeger(lookup(ISDN::hw_device, "PARA_TYPE", "-1"));
+	integer typ = tointeger(ISDN::hw_device["PARA_TYPE"]:"-1");
 	boolean found = false;
 
 	if (drv == nil)
@@ -208,14 +208,14 @@ define term Card_Parameter(map drv) ``{
 	    // CheckBox label
 	    contens = add(contens, `CheckBox(`id(`t1b), _("&T1B Version"), false));
 	}
-	list io  = lookup(drv, "IO", []);
-	list irq = lookup(drv, "IRQ", []);
-	list mem = lookup(drv, "MEMBASE", []);
+	list io  = drv["IO"]:[];
+	list irq = drv["IRQ"]:[];
+	list mem = drv["MEMBASE"]:[];
 	if ( 0 == (size(io) + size(irq) + size(mem)))
 	    return contens;
 	if (io != []) {
-	    integer default_io = tointeger(select(io, 0, 0));
-	    string cur_io = lookup(ISDN::hw_device, "PARA_IO", "");
+	    integer default_io = tointeger(io[0]:0);
+	    string cur_io = ISDN::hw_device["PARA_IO"]:"";
 	    if (cur_io != "")
 		default_io = tointeger(cur_io);
 	    list iol = [];
@@ -236,8 +236,8 @@ define term Card_Parameter(map drv) ``{
 		contens = add(contens, `ComboBox(`id(`IOADR),  _("&IO Address"), iol));
 	}
 	if (irq != []) {
-	    integer default_irq = tointeger(select(irq, 2, "5"));
-	    string cur_irq = lookup(ISDN::hw_device, "PARA_IRQ", "");
+	    integer default_irq = tointeger(irq[2]:"5");
+	    string cur_irq = ISDN::hw_device["PARA_IRQ"]:"";
 	    if (cur_irq != "")
 		default_irq = tointeger(cur_irq);
 	    list irql = [];
@@ -258,8 +258,8 @@ define term Card_Parameter(map drv) ``{
 		contens = add(contens, `ComboBox(`id(`IRQ),  _("IR&Q"), irql));
 	}
 	if (mem != []) {
-	    integer default_mem = tointeger(select(mem, 0, 0));
-	    string cur_memb = lookup(ISDN::hw_device, "PARA_MEMBASE", "");
+	    integer default_mem = tointeger(mem[0]:0);
+	    string cur_memb = ISDN::hw_device["PARA_MEMBASE"]:"";
 	    if (cur_memb != "")
 		default_mem = tointeger(cur_memb);
 	    list meml = [];
@@ -335,14 +335,14 @@ define any isdn_lowlevel() ``{
     integer CurrentDrvIndex = -1;
     boolean t1b = false;
     string  CardName = "";
-    string  protocol = lookup(ISDN::hw_device, "PROTOCOL", "euro");
-    string  areacode = lookup(ISDN::hw_device, "AREACODE", "");
-    string  dialprefix = lookup(ISDN::hw_device, "DIALPREFIX", "");
-    boolean isdnlog = lookup(ISDN::hw_device, "ISDNLOG_START", "yes") == "yes";
-    string  startmode = lookup(ISDN::hw_device, "STARTMODE", "onboot");
+    string  protocol = ISDN::hw_device["PROTOCOL"]:"euro";
+    string  areacode = ISDN::hw_device["AREACODE"]:"";
+    string  dialprefix = ISDN::hw_device["DIALPREFIX"]:"";
+    boolean isdnlog = ISDN::hw_device["ISDNLOG_START"]:"yes" == "yes";
+    string  startmode = ISDN::hw_device["STARTMODE"]:"onboot";
 
-    integer Default_TYPE = tointeger(lookup(ISDN::hw_device, "PARA_TYPE", "-1"));
-    integer Default_SUBTYPE = tointeger(lookup(ISDN::hw_device, "PARA_SUBTYPE", "-1"));
+    integer Default_TYPE = tointeger(ISDN::hw_device["PARA_TYPE"]:"-1");
+    integer Default_SUBTYPE = tointeger(ISDN::hw_device["PARA_SUBTYPE"]:"-1");
     /* Special Handling AVM T1 */
     if (Default_TYPE == 8005) {
 	if (Default_SUBTYPE == 1) {
@@ -355,23 +355,23 @@ define any isdn_lowlevel() ``{
     }
 
     map cur_card = get_isdncard_by_type(ISDN::ISDNCDB, Default_TYPE, Default_SUBTYPE);
-    map cur_vendor = lookup(ISDN::ISDNCDB["Vendors"]:$[], cur_card["VendorRef"]:-1, $[]);
+    map cur_vendor = ISDN::ISDNCDB["Vendors"]:$[][cur_card["VendorRef"]:-1]:$[];
 
     y2debug("DefaultTYPE : %1/%2", Default_TYPE, Default_SUBTYPE);
 
-    list CardDrivers = lookup(cur_card, "driver", []);
+    list CardDrivers = cur_card["driver"]:[];
     integer DriverCnt = size(CardDrivers);
     integer id = -1;
     list DrvList = maplist(map d, (list<map>) CardDrivers, ``{
 	id = id + 1;
 	boolean Tmp = (boolean) driver_has_type(d, Default_TYPE, Default_SUBTYPE);
 	if (Tmp) CurrentDrvIndex = id;
-	return `item(`id(id), lookup(d, "name", "unknown"), Tmp);
+	return `item(`id(id), d["name"]:"unknown", Tmp);
     });
     y2debug("CurrentDrvIndex %1", CurrentDrvIndex);
     y2debug("DrvList %1", DrvList);
 
-    if (contains(lookup((map) select(CardDrivers, CurrentDrvIndex, $[]), "features", []), "DSLONLY"))
+    if (contains(CardDrivers[CurrentDrvIndex, "features"]:[], "DSLONLY"))
 	ISDN::only_dsl = true;
     else
 	ISDN::only_dsl = false;
@@ -475,8 +475,8 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
     if (areacode != "") {
 	list c = splitstring(areacode, " ");
 	if (2 >= size(c)) {
-	    newcc = (string) select(c, 0, "");
-	    areacode = (string) select(c, 1, "");
+	    newcc = (string) c[0]:"";
+	    areacode = (string) c[1]:"";
 	} else if (1 == size(c)) {
 	    if ("+" == substring(areacode, 0, 1)) {
 		newcc = areacode;
@@ -492,7 +492,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
     list countries = maplist(string i, string n, (map<string,string>) CountryCodes, ``{
 	return(`item(`id(i), n, (i == ccode)));
     });
-    countries = sort(term x, term y, (list<term>) countries, ``(select(x,1,"") < select(y,1,"")));
+    countries = sort(term x, term y, (list<term>) countries, ``(x[1]:"" < y[1]:""));
     // other country in list
     countries = add(countries, `item(`id("-1"), _("other"), ("-1" == ccode)));
     ccode = newcc;
@@ -538,7 +538,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 	"Bluetooth Dongle,need ISDN Accesspoint" : _("Bluetooth Dongle, need ISDN Access point")
     ];
 
-    string desc = lookup((map) select(CardDrivers, CurrentDrvIndex, $[]), "description", "");
+    string desc = CardDrivers[CurrentDrvIndex, "description"]:"";
     if (desc != "")
 	desc = drvdesc[desc]:desc;
 
@@ -556,7 +556,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 		`Left(`Label(`id(`CardN), cur_card["name"]:"unknown"))
 	    ))
 	),
-	Card_Parameter((map) select(CardDrivers, CurrentDrvIndex, $[]))
+	Card_Parameter((map) CardDrivers[CurrentDrvIndex]:$[])
     ));
 
     if (cur_card["bus"]:"" == "USB" || cur_card["bus"]:"" == "PCMCIA")
@@ -603,7 +603,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
     UI::ChangeWidget(`id(`CCode), `Enabled, !haskey(CountryCodes, ccode));
 
     if (!ISDN::only_dsl)
-	EnableProtocols((map) select(CardDrivers, CurrentDrvIndex, $[]));
+	EnableProtocols((map) CardDrivers[CurrentDrvIndex]:$[]);
 
     /* Special Handling AVM T1 */
     if (Default_TYPE == 8005)
@@ -624,12 +624,12 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 	} else if (ret == `DrvBox) {
 	    id = tointeger(UI::QueryWidget(`id(`DrvBox), `Value));
 	    if (id != CurrentDrvIndex) {
-		desc = lookup((map) select(CardDrivers, id, $[]), "description", "");
+		desc = CardDrivers[id, "description"]:"";
 		if (desc != "")
 		    desc = drvdesc[desc]:desc;
 		CurrentDrvIndex = id;
 		UI::ChangeWidget(`id(`DrvDesc), `Value, desc);
-		EnableProtocols((map) select(CardDrivers, CurrentDrvIndex, $[]));
+		EnableProtocols((map) CardDrivers[CurrentDrvIndex]:$[]);
 	    }
 	}
 	else if (ret == `Country) {
@@ -691,8 +691,8 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 	    ISDN::hw_device = union(ISDN::hw_device, $[
 		"PARA_TYPE"	: sformat("%1", Default_TYPE),
 		"PARA_SUBTYPE"	: sformat("%1", Default_SUBTYPE),
-		"NAME"		: sformat("%1", lookup(cur_card, "longname", "unknown")),
-		"DRIVER"	: sformat("%1", lookup((map) select(CardDrivers, CurrentDrvIndex, $[]), "mod_name", "unknown")),
+		"NAME"		: sformat("%1", cur_card["longname"]:"unknown"),
+		"DRIVER"	: sformat("%1", CardDrivers[CurrentDrvIndex, "mod_name"]:"unknown"),
 		"STARTMODE"	: UI::QueryWidget(`id(`startmode), `Value),
 		"PROTOCOL"	: protocol,
 		"AREACODE"	: ccode + " " + areacode,
@@ -702,23 +702,24 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 	    // check and maybe install missing packages
 	    list pkgs = [];
 
-	    pkgs = lookup((map) select(CardDrivers, CurrentDrvIndex, $[]), "need_pkg", []);
+	    pkgs = CardDrivers[CurrentDrvIndex, "need_pkg"]:[];
 	    if (pkgs != nil && pkgs != [] && !isdnlog) {
 		pkgs = filter(string p, (list<string>) pkgs, ``(p != "i4l-isdnlog"));
 	    }
 	    if (pkgs == [""])
-		y2warning("no package list for %1", lookup(cur_card, "longname","unknown"));
+		y2warning("no package list for %1", cur_card["longname"]:"unknown");
 	    else
 		ISDN::installpackages = merge(ISDN::installpackages, pkgs);
  
+	    list<string> features = CardDrivers[CurrentDrvIndex, "features"]:[];
 	    // if it is a DSL capable card
-	    if (contains(lookup((map) select(CardDrivers, CurrentDrvIndex, $[]), "features", []), "DSL")) {
+	    if (contains (features, "DSL")) {
 		ISDN::have_dsl = true;
 		// only one time needed
 		ISDN::DRDSLrun = true;
 	    } else
 		ISDN::have_dsl = false;
-	    if (contains(lookup((map) select(CardDrivers, CurrentDrvIndex, $[]), "features", []), "DSLONLY")) {
+	    if (contains (features, "DSLONLY")) {
 		ISDN::have_dsl = true;
 		// only one time needed
 		ISDN::DRDSLrun = true;

@@ -33,13 +33,13 @@ define void ListHandler(map options) {
     if(cf == false && uncf == false)
 	/* Headline */
 	summary = "\n" + _("Network Configuration Summary:") + "\n\n" +
-	    RichText::Rich2Plain((string) select(Lan::Summary("summary"), 0, "")) + "\n";
+	    RichText::Rich2Plain(Lan::Summary("summary")[0]:"") + "\n";
     else {
 	list l = Lan::Summary("split");
 	if(cf) summary = RichText::Rich2Plain(sformat("%1", l[0]:"")) + "\n";
 	/* Headline */
 	if(uncf) summary = _("Available Devices:") + "\n" +
-	    sformat("%1", mergestring(maplist(term i, l[1]:[], { return "* " + select(i,1,"") + "\n"; } ), ""));
+	    sformat("%1", mergestring(maplist(term i, l[1]:[], { return "* " + i[1]:"" + "\n"; } ), ""));
 	summary = "\n" + summary;
     }
 

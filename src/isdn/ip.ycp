@@ -53,11 +53,11 @@ route.</p>
 ");
 
     /* PREPARE VARIABLES */
-    string Local_IP = lookup(ISDN::interface, "IPADDR", "");
-    string Remote_IP = lookup(ISDN::interface, "PTPADDR", "");
-    boolean syncppp = lookup(ISDN::interface, "PROTOCOL", "syncppp") == "syncppp";
-    boolean defaultroute = lookup(ISDN::interface, "DEFAULTROUTE", "yes") == "yes";
-    boolean dynip = lookup(ISDN::interface, "DYNAMICIP", "yes") == "yes";
+    string Local_IP = ISDN::interface["IPADDR"]:"";
+    string Remote_IP = ISDN::interface["PTPADDR"]:"";
+    boolean syncppp = ISDN::interface["PROTOCOL"]:"syncppp" == "syncppp";
+    boolean defaultroute = ISDN::interface["DEFAULTROUTE"]:"yes" == "yes";
+    boolean dynip = ISDN::interface["DYNAMICIP"]:"yes" == "yes";
 
     /* DIALOG CONTENTS */
 

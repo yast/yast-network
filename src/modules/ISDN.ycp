@@ -622,7 +622,7 @@ void set_hwparameters (map hw) {
     // Fixme parameter lookup for ISA hardware
     hw_device["PARA_TYPE"] = sformat("%1", get_i4ltype(hw));
     hw_device["PARA_SUBTYPE"] = sformat("%1", get_i4lsubtype(hw));
-    hw_device["NAME"] = sformat("%1", lookup(hw, "name", "unknown"));
+    hw_device["NAME"] = sformat("%1", hw["name"]:"unknown");
     hw_device["UNIQUE"] = hw["unique"]:"";
 }
 

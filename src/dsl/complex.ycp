@@ -128,8 +128,8 @@ If you press <b>Change</b>, an additional dialog opens in which to change the
 configuration.</p>");
 
     list summary = DSL::Summary(true);
-    list unconfigured = (list) select(summary, 1, []);
-    string configured = (string) select(summary, 0, "");
+    list unconfigured = summary[1]:[];
+    string configured = summary[0]:"";
 
     y2debug("unconfigured=%1", unconfigured);
     /* Frame label */

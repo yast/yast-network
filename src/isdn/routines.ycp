@@ -34,8 +34,8 @@
 define boolean driver_has_type(map drv, integer i4ltyp, integer i4lsubtyp) ``{
     boolean ret = false;
 
-    if (i4ltyp == lookup(drv, "type", -2)) {
-	if (i4lsubtyp == lookup(drv, "subtype", -2))
+    if (i4ltyp == drv["type"]:-2) {
+	if (i4lsubtyp == drv["subtype"]:-2)
 	    ret = true;
     }
     return(ret);

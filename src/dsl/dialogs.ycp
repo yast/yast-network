@@ -123,7 +123,8 @@ be appropriate for dial-on-demand connections.</p>") +
 	NetworkDevices::Push();
 	if(Lan::Propose()) {
 	    UpdateInterfaces();
-	    string i = select((term) select((term) ifaces[0]:`id(), 0, `id()), 0, "");
+	    // list<term (term (string), string, boolean)>
+	    string i = ifaces[0, 0, 0]:"";
 	    y2milestone("i=%1", i);
 	    Lan::Edit(i);
 	    Lan::bootproto = "";

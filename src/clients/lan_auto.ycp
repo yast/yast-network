@@ -349,7 +349,7 @@ define map ToAY (map settings) {
 
 
 if(func == "Summary") {
-    ret = select(Lan::Summary("summary"),0, "");
+    ret = Lan::Summary("summary")[0]:"";
 }
 else if (func == "Reset") {
     Lan::Import($[]);

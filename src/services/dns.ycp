@@ -153,13 +153,13 @@ disabled during the connection.</p>");
 	    dhcp_hostname != NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false;
     }
 
-    ns1 = select(nameservers, 0, "");
-    ns2 = select(nameservers, 1, "");
-    ns3 = select(nameservers, 2, "");
+    ns1 = nameservers[0]:"";
+    ns2 = nameservers[1]:"";
+    ns3 = nameservers[2]:"";
 
-    s1 = select(searchlist, 0, "");
-    s2 = select(searchlist, 1, "");
-    s3 = select(searchlist, 2, "");
+    s1 = searchlist[0]:"";
+    s2 = searchlist[1]:"";
+    s3 = searchlist[2]:"";
 
     /* DNS dialog contents */
     term contents = `HSquash(`VBox(

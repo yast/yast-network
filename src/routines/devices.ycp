@@ -69,7 +69,7 @@ global define list<string> GetFreeDevices(string type, integer num) ``{
  */
 global define string GetFreeDevice(string type) ``{
     y2debug("type=%1", type);
-    string ret = select(GetFreeDevices(type, 1), 0, nil);
+    string ret = GetFreeDevices(type, 1)[0]:nil;
     if(ret == nil) y2error("Free device location error: %1", ret);
     y2debug("Free device=%1", ret);
     return ret;
