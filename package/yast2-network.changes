@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sat Mar 19 16:36:14 CET 2005 - nashif@suse.de
+
+- DSL: Offer Point to Point Tunneling Protocol again (#73043)
+- V 2.11.29
+
+-------------------------------------------------------------------
 Fri Mar 18 23:23:59 CET 2005 - nashif@suse.de
 
 - Do not set empty UNIQUE when autoinstalling  (#73922)
