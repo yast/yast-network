@@ -21,6 +21,7 @@ import "Product";
 import "Wizard";
 import "PackageCallbacks";
 import "Proxy";
+import "GetInstArgs";
 
 include "network/routines.ycp";
 include "network/installation/dialogs.ycp";
