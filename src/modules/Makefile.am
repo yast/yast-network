@@ -11,6 +11,9 @@ YCPCFLAGS = -M. -I.
 network:
 	ln -sf ../routines network
 
-ycpchook = network
+network/isdn:
+	ln -sf ../isdn network/isdn
+
+ycpchook = network network/isdn
 
 include $(top_srcdir)/Makefile.am.common
