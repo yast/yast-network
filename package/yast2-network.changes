@@ -1,8 +1,15 @@
 -------------------------------------------------------------------
+Mon Apr  5 19:27:05 CEST 2004 - msvec@suse.cz
+
+- fixed shortcuts in ISDN dialog (#38216)
+- 2.9.29
+
+-------------------------------------------------------------------
 Mon Apr 05 18:56:53 CEST 2004 - arvin@suse.de
 
 - don't setup and shutdown network if it has already been setup
   before yast is started (bug #38354)
+- 2.9.28
 
 -------------------------------------------------------------------
 Mon Apr  5 17:31:35 CEST 2004 - msvec@suse.cz
