@@ -46,7 +46,6 @@ global string unique = "";
 
 global string type = "";
 global string device = "";
-global string alias = "";
 
 /**
  * Hotplug type ("" if not hot pluggable)
@@ -61,7 +60,7 @@ global string netmask = "";
 global string mtu = "";
 
 /* wireless options */
-global boolean wireless = false;
+// FIXME: wlan global boolean wireless = false;
 global string wl_mode = "";
 global string wl_essid = "";
 global string wl_nwid = "";
@@ -80,6 +79,9 @@ global integer wait_for_interfaces = nil;
 /* propose options */
 global boolean proposal_valid = false;
 global boolean write_only = false;
+
+global boolean dhclient_broadcast = false;
+global string dhclient_id = "";
 
 /**
  * Abort function
@@ -154,32 +156,34 @@ global define boolean Read() ``{
 
     /* Read dialog caption */
     string caption = _("Initializing network configuration");
-    integer steps = 8;
+    integer steps = 9;
 
     integer sl = 0; /* 1000; /* TESTING */
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-	/* Progress stage 1/8 */
+	/* Progress stage 1/9 */
 	_("Detect network devices"),
-	/* Progress stage 2/8 */
+	/* Progress stage 2/9 */
 	_("Read /etc/modules.conf"),
-	/* Progress stage 3/8 */
+	/* Progress stage 3/9 */
 	_("Read current configuration"),
-	/* Progress stage 4/8 */
+	/* Progress stage 4/9 */
+	_("Read DHCP configuration"),
+	/* Progress stage 5/9 */
 	_("Read routing configuration"),
-	/* Progress stage 5/8 */
+	/* Progress stage 6/9 */
 	_("Read host name and DNS configuration"),
-	/* Progress stage 6/8 */
+	/* Progress stage 7/9 */
 	_("Read installation information"),
-	/* Progress stage 7/8 */
+	/* Progress stage 8/9 */
 	_("Read firewall settings"),
-	/* Progress stage 8/8 */
+	/* Progress stage 9/9 */
 	_("Detect current status"),
     ], [], "");
 
     if(Abort()) return false;
-    /* Progress step 1/8 */
+    /* Progress step 1/9 */
     ProgressNextStage(_("Detecting network devices..."));
     // if(!Arch::s390) /* FIXME: Temporary hack until the detection is functional */
     ReadHardware("netcard");
@@ -187,49 +191,61 @@ global define boolean Read() ``{
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 2/8 */
+    /* Progress step 2/9 */
     ProgressNextStage(_("Reading /etc/modules.conf..."));
     ReadModules(NetworkCardRegex);
     /* ReadModules(""); /* TESTING */
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 3/8 */
+    /* Progress step 3/9 */
     ProgressNextStage(_("Reading current configuration..."));
     ReadDevices(NetworkDeviceRegex);
     CleanHotplugSymlink();
     /* ReadDevices(""); /* TESTING */
     sleep(sl);
 
+    if(Abort()) return false;
+    /* Progress step 4/9 */
+    ProgressNextStage(_("Reading DHCP configuration..."));
+    /* Read network config data */
     string wait = SCR::Read(.sysconfig.network.config.WAIT_FOR_INTERFACES);
     if(wait != "" && wait != nil) wait_for_interfaces = tointeger(wait);
+    /* Read dhcp config data */
+    dhclient_id = SCR::Read(.sysconfig.dhcp.DHCLIENT_CLIENT_ID);
+    if(dhclient_id == nil) dhclient_id = "";
+    wait = SCR::Read(.sysconfig.dhcp.DHCLIENT_ADDITIONAL_OPTIONS);
+    if(wait != nil && issubstring(wait, "-B")) dhclient_broadcast = true;
+    y2milestone("id=%1", dhclient_id);
+    y2milestone("bc=%1", dhclient_broadcast);
+    sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 4/8 */
+    /* Progress step 5/9 */
     ProgressNextStage(_("Reading routing configuration..."));
     Routing::Read();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 5/8 */
+    /* Progress step 6/9 */
     ProgressNextStage(_("Reading host name and DNS configuration..."));
     DNS::Read();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 6/8 */
+    /* Progress step 7/9 */
     ProgressNextStage(_("Reading installation information..."));
     ReadInstallInf();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 7/8 */
+    /* Progress step 8/9 */
     ProgressNextStage(_("Reading firewall settings..."));
     Firewall::Read();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 8/8 */
+    /* Progress step 9/9 */
     ProgressNextStage(_("Detecting current status..."));
     ReadStatus();
     sleep(sl);
@@ -264,29 +280,31 @@ global define boolean Write() ``{
 
     /* Write dialog caption */
     string caption = _("Saving network configuration");
-    integer steps = 9;
+    integer steps = 10;
 
     integer sl = 0; /* 1000; /* TESTING */
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-	/* Progress stage 1/9 */
+	/* Progress stage 1/10 */
 	_("Deactivate local network services"),
-	/* Progress stage 2/9 */
+	/* Progress stage 2/10 */
 	_("Write drivers information"),
-	/* Progress stage 3/9 */
+	/* Progress stage 3/10 */
 	_("Write configuration"),
-	/* Progress stage 4/9 */
+	/* Progress stage 4/10 */
+	_("Write DHCP configuration"),
+	/* Progress stage 5/10 */
 	_("Write routing configuration"),
-	/* Progress stage 5/9 */
+	/* Progress stage 6/10 */
 	_("Write host name and DNS configuration"),
-	/* Progress stage 6/9 */
+	/* Progress stage 7/10 */
 	_("Set up network services"),
-	/* Progress stage 7/9 */
+	/* Progress stage 8/10 */
 	_("Write firewall settings"),
-	/* Progress stage 8/9 */
+	/* Progress stage 9/10 */
 	_("Activate network services"),
-	/* Progress stage 9/9 */
+	/* Progress stage 10/10 */
 	_("Run SuSEconfig"),
     ], [], "");
 
@@ -294,59 +312,81 @@ global define boolean Write() ``{
     if(!write_only && Detection::running) Detection::Stop();
 
     if(Abort()) return false;
-    /* Progress step 1/9 */
+    /* Progress step 1/10 */
     ProgressNextStage(_("Deactivating local network services..."));
     if(!write_only) StopNetwork();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 2/9 */
+    /* Progress step 2/10 */
     ProgressNextStage(_("Writing /etc/modules.conf..."));
     WriteModules();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 3/9 */
+    /* Progress step 3/10 */
     ProgressNextStage(_("Writing configuration..."));
     WriteDevices();
     sleep(sl);
 
-    if(wait_for_interfaces != nil)
+    if(Abort()) return false;
+    /* Progress step 4/10 */
+    ProgressNextStage(_("Writing DHCP configuration..."));
+    /* Write network config data */
+    if(wait_for_interfaces != nil) {
 	SCR::Write(.sysconfig.network.config.WAIT_FOR_INTERFACES, sformat("%1",wait_for_interfaces));
+	SCR::Write(.sysoncfig.network.config, nil);
+    }
+    /*  Write dhcp config data */
+    if(dhclient_id != nil)
+	SCR::Write(.sysconfig.dhcp.DHCLIENT_CLIENT_ID, dhclient_id);
+    string options = SCR::Read(.sysconfig.dhcp.DHCLIENT_ADDITIONAL_OPTIONS);
+    if(options != nil) {
+	if(dhclient_broadcast && !issubstring(options, "-B")) {
+	    SCR::Write(.sysconfig.dhcp.DHCLIENT_ADDITIONAL_OPTIONS, options + " -B");
+	}
+	else if(!dhclient_broadcast && issubstring(options, "-B")) {
+	    SCR::Write(.sysconfig.dhcp.DHCLIENT_ADDITIONAL_OPTIONS, regexpsub(options, "(.*)-B(.*)", "\\1\\2"));
+	}
+    }
+    SCR::Write(.sysoncfig.dhcp, nil);
+    y2milestone("id=%1", dhclient_id);
+    y2milestone("bc=%1 (%2)", dhclient_broadcast, options);
+    sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 4/9 */
+    /* Progress step 5/10 */
     ProgressNextStage(_("Writing routing configuration..."));
     Routing::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 5/9 */
+    /* Progress step 6/10 */
     ProgressNextStage(_("Writing host name and DNS configuration..."));
     DNS::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 6/9 */
+    /* Progress step 7/10 */
     ProgressNextStage(_("Setting up network services..."));
     EnableNetwork();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 7/9 */
+    /* Progress step 8/10 */
     ProgressNextStage(_("Writing firewall settings..."));
     Firewall::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 8/9 */
+    /* Progress step 9/10 */
     ProgressNextStage(_("Activating network services..."));
     if(!write_only) StartNetwork();
     if(!write_only) RestartService("pcmcia");
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 9/9 */
+    /* Progress step 10/10 */
     ProgressNextStage(_("Running SuSEconfig..."));
     if(!write_only) RunSuSEconfig();
     sleep(sl);
@@ -464,7 +504,6 @@ global define boolean Select(string dev) ``{
 	device = GetFreeDevice(type);
 	AddModule(type);
 	/* FIXME: ? */
-	alias = "";
     }
     /* dev!="" -> Edit */
     else {
@@ -473,8 +512,6 @@ global define boolean Select(string dev) ``{
 	    return false;
 	}
 	devmap = lookup(Devices[type]:$[], device, $[]);
-	if(alias != "")
-	    devmap = lookup(devmap["_aliases"]:$[], alias, $[]);
     }
 
     /* general stuff */
@@ -489,7 +526,7 @@ global define boolean Select(string dev) ``{
     mtu = devmap["MTU"]:"";
 
     /* wireless options */
-    wireless = devmap["WIRELESS"]:"no" == "yes";
+    // FIXME: wlan wireless = devmap["WIRELESS"]:"no" == "yes";
     wl_mode = devmap["WIRELESS_MODE"]:"";
     wl_essid = devmap["WIRELESS_ESSID"]:"";
     wl_nwid = devmap["WIRELESS_NWID"]:"";
@@ -592,8 +629,8 @@ global define boolean Commit() ``{
 	if(hotplug == "pcmcia")
 	    change(newdev, "DHCLIENT_SET_DOWN_LINK", "yes");
 
-	if(wireless) {
-	    change(newdev, "WIRELESS", "yes");
+	if(type == "wlan") {
+	    // FIXME: wlan change(newdev, "WIRELESS", "yes");
 	    change(newdev, "WIRELESS_MODE", wl_mode);
 	    change(newdev, "WIRELESS_ESSID", wl_essid);
 	    change(newdev, "WIRELESS_NWID", wl_nwid);
@@ -619,18 +656,11 @@ global define boolean Commit() ``{
 	    if(wait_for_interfaces == nil || wait_for_interfaces < 15)
 		wait_for_interfaces = 15;
 
-	if(alias == "")
-	    ChangeDevice2(device_name(RealType(type, hotplug), device), newdev, operation == `add);
-	else
-	    ChangeDevice2(RealType(type, hotplug)+device+":"+alias, newdev, operation == `add);
+	ChangeDevice2(device_name(RealType(type, hotplug), device), newdev, operation == `add);
     }
     else if(operation == `delete) {
-	if(alias == "") {
-	    if(hotplug == "") DeleteModule(type+device);
-	    DeleteDevice2(type+device);
-	}
-	else
-	    DeleteDevice2(type+device+":"+alias);
+	if(hotplug == "") DeleteModule(type+device);
+	DeleteDevice2(type+device);
     }
     else {
 	y2error("Unknown operation: %1", operation);
@@ -794,20 +824,6 @@ global define boolean AnyDHCPDevice() ``{
     // The current is type+device
     devs = filter(string dev, devs, ``( dev != type + device ));
     return size(devs) > 0;
-}
-
-/**
- * Check if the given device has any virtual alias.
- * @param dev device to be checked
- * @return true if there are some aliases
- */
-global define boolean HasAliases(string dev) ``{
-    if(!CheckDevice(dev)) {
-	y2error("Device not found: %1", dev);
-	return false;
-    }
-    return alias == "" &&
-	lookup(lookup(Devices[type]:$[], device, $[]), "_aliases", $[]) != $[];
 }
 
 /**

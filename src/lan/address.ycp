@@ -1,5 +1,5 @@
 /**
- * File:	include/network/lan/manual.ycp
+ * File:	include/network/lan/address.ycp
  * Package:	Network configuration
  * Summary:	Network card adresss configuration dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
@@ -13,12 +13,11 @@ textdomain "network";
 
 import "Arch";
 import "Detection";
+import "Label";
 import "Lan";
+import "Popup";
 import "Routing";
 import "Wizard";
-
-import "Popup";
-import "Label";
 
 include "network/routines.ycp";
 include "network/ip.ycp";
@@ -85,11 +84,6 @@ the network configuration.</p>");
     }
     else
 	device = device_name(RealType(Lan::type, Lan::hotplug), Lan::device);
-
-    if(Lan::alias != "") {
-	device = device + ":" + Lan::alias;
-	bootproto = "static";
-    }
 
     term label = `HBox(
 	/* Label text */
@@ -176,8 +170,8 @@ completes the configuration.</p>");
     /* s390 help hackery */
     }
 
-    /* S/390 Hipersockets or virtual alias */
-    if(type == "hsi" || Arch::s390 || Lan::alias != "")
+    /* S/390 Hipersockets */
+    if(type == "hsi" || Arch::s390)
 
 	/* Frame label */
 	frame1 = `Frame(_("Static Address Setup"),
@@ -224,8 +218,10 @@ completes the configuration.</p>");
 	    `PushButton(`id(`hostname), `opt(`hstretch), _("&Host name and name server")),
 	    /* Push button label */
 	    `PushButton(`id(`routing), `opt(`hstretch), _("R&outing")),
+	    /* Push button label */
+	    `PushButton(`id(`dhclient), `opt(`hstretch), _("DHCP &client options")),
 	    HardwareButton,
-	    /*
+	    /* FIXME: wlan
 	    Lan::wireless?
 		`PushButton(`id(`wire), `opt(`hstretch), _("Wireless &settings"))
 		:`VSpacing(0), */
@@ -287,7 +283,7 @@ completes the configuration.</p>");
 	    break;
 	}
 	/* next|routing|hostname|hardware */
-	else if(ret == `next || ret == `routing || ret == `hostname || ret == `hardware) {
+	else if(ret == `next || ret == `routing || ret == `hostname || ret == `hardware || ret == `dhclient) {
 
 	    y2debug("bootproto=%1", bootproto);
 	    if(UI::WidgetExists(`id(`rb))) {
@@ -330,7 +326,7 @@ completes the configuration.</p>");
     }
 
     /* update the configuration */
-    if(ret == `next || ret == `routing || ret == `hostname || ret == `hardware) {
+    if(ret == `next || ret == `routing || ret == `hostname || ret == `hardware || ret == `dhclient) {
 
 	Lan::bootproto = bootproto;
 	Lan::ipaddr = UI::QueryWidget(`id(`ipaddr), `Value);

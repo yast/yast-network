@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Jul 22 15:12:20 CEST 2003 - msvec@suse.cz
+
+- additional DHCP options dialog (improvement 31.2)
+- cleanup obsolete virtual aliases support
+- preliminary more IPs support
+- 2.8.3
+
+-------------------------------------------------------------------
 Thu Jul 10 15:09:00 CEST 2003 - msvec@suse.de
 
 - proxy: better helps (#24803)

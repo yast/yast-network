@@ -102,7 +102,6 @@ define map FromAY(map input) ``{
 	});
     }
 
-    // FIXME: add aliasing support
     input["devices"] = devices;
     input["modules"] = native_modules;
     return input;

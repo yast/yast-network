@@ -40,11 +40,10 @@ global boolean demand = false;
 global boolean askpassword = nil;
 global boolean capi_isdn = false;
 
-
 /**
  * Reset values.
  */
-global define void Reset () ``{
+define void Reset() ``{
     device = "";
     type = "";
     logfile = "";
@@ -54,7 +53,6 @@ global define void Reset () ``{
     askpassword = nil;
     capi_isdn = false;
 }
-
 
 /**
  * Devices in order from fastest to slowest.
@@ -71,7 +69,6 @@ map FastestRegexps = $[
     4 : NetworkDeviceRegex
 ];
 
-
 /**
  * Types in order from fastest to slowest.
  * @see FastestRegexps
@@ -82,7 +79,6 @@ map FastestTypes = $[
     3 : "modem",
     4 : "netcard"
 ];
-
 
 /**
  * Find the fastest connection to the Internet
@@ -145,9 +141,9 @@ global define boolean FindFastest () ``{
     return true;
 }
 
-
 /**
  * Start the fastest interface
+ * @param logfile file for the commands output
  * @return true if successful started
  */
 global define boolean Start(string log) ``{
@@ -190,9 +186,9 @@ global define boolean Start(string log) ``{
     return true;
 }
 
-
 /**
  * Stop the fastest interface
+ * @param logfile file for the commands output
  * @return true if successful stopped
  */
 global define boolean Stop(string log) ``{
@@ -203,7 +199,6 @@ global define boolean Stop(string log) ``{
     return ret == 0;
 }
 
-
 /**
  * Status of the fastest interface
  * @return true if interface is up (which is not equal to connected)
@@ -212,7 +207,6 @@ global define boolean Status() ``{
     integer ret = SCR::Execute(.target.bash, "/sbin/ifstatus " + device);
     return ret == 0 || ret == 10;
 }
-
 
 /**
  * Test if the interface is connected
@@ -234,7 +228,6 @@ global define boolean Connected() ``{
     return true;
 }
 
-
 /**
  * Set dial-on-demand
  * @param demand true if dial-on-demand should be set
@@ -247,4 +240,5 @@ global define void SetDemand(boolean demand) ``{
     SCR::Write(.sysconfig.network.providers, nil);
 }
 
+/* EOF */
 }

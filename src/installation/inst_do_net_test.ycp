@@ -64,6 +64,9 @@
     string l4 = _("Closing connection...");
 
 
+    /**
+     * Create the dialog contents
+     */
     define void make_dialog() ``{
 
 	/* Test dialog caption */

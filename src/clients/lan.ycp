@@ -95,7 +95,9 @@ map cmdline = $[
     ]
 ];
 
-/** handler for action "list" */
+/**
+ * Handler for action "list"
+ */
 define void ListHandler(map options) ``{
 
     boolean cf = false;
@@ -121,12 +123,16 @@ define void ListHandler(map options) ``{
     CommandLine::Print(summary);
 }
 
-/** handler for action "add" */
+/**
+ * Handler for action "add"
+ */
 define void AddHandler(map options) ``{
     string dev = options["device"]:"";
 }
 
-/** handler for action "delete" */
+/**
+ * Handler for action "delete"
+ */
 define void DeleteHandler(map options) ``{
     string dev = options["device"]:"";
     CommandLine::Print("Deleting: "+dev);

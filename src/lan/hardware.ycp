@@ -66,7 +66,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     string options = Lan::Module["options"]:"";
 
     string hotplug = Lan::hotplug;
-    boolean wireless = Lan::wireless;
+    // FIXME: wlan boolean wireless = Lan::wireless;
     string mtu = Lan::mtu;
 
     string type = Lan::type;
@@ -78,7 +78,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     string device = Lan::device;
     string default_device = device;
 
-    list device_types = [ "arc", "eth", "fddi", "myri", "tr" ];
+    list device_types = [ "arc", "eth", "fddi", "myri", "tr", "wlan" ];
 
     if(Arch::s390)
 	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv" ];
@@ -117,6 +117,23 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	`CheckBox(`id(`pci), `opt(`notify), _("P&CI"), hotplug == "pci"),
 	`HSpacing(1.5)
     );
+
+     /* Frame label */
+    term WirelessBox = `Frame(_("Wireless support"),`VBox(
+	`VSpacing(0.4),
+	`HBox(
+	    `HStretch(),
+	    `HSpacing(0.5),
+	    /* CheckBox label */
+	    // FIXME: wlan `CheckBox(`id(`wireless), `opt(`notify), _("&Wireless device"), wireless),
+	    // FIXME: wlan `HSpacing(1.5),
+	    /* Pushbutton label */
+	    `PushButton(`id(`wire), _("Wireless &settings")),
+	    `HSpacing(0.5),
+	    `HStretch()
+	),
+	`VSpacing(0.4)
+    ));
 
     /* Disable PCMCIA and USB checkboxex on Edit and s390 */
     if(Lan::operation == `edit || Lan::unique != "" || Arch::s390 == true)
@@ -165,22 +182,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		`VSpacing(0.2)
 	    )),
 	    `VSpacing(0.5),
-	    /* Frame label */
-	    `Frame(_("Wireless support"),`VBox(
-	    `VSpacing(0.4),
-	    `HBox(
-		`HStretch(),
-		`HSpacing(0.5),
-		/* CheckBox label */
-		`CheckBox(`id(`wireless), `opt(`notify), _("&Wireless device"), wireless),
-		`HSpacing(1.5),
-		/* Pushbutton label */
-		`PushButton(`id(`wire), _("Wireless &settings")),
-		`HSpacing(0.5),
-		`HStretch()
-	    ),
-	    `VSpacing(0.4)
-	    )),
+	    WirelessBox,
 	    `VSpacing(0.5),
 	    KernelBox,
 	    `VSpacing(0.4),
@@ -225,17 +227,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		`VSpacing(0.4),
 		MTUBox,
 		`VSpacing(0.4),
-		`HBox(
-		    `HStretch(),
-		    `HSpacing(0.5),
-		    /* CheckBox label */
-		    `CheckBox(`id(`wireless), `opt(`notify), _("&Wireless device"), wireless),
-		    `HSpacing(1.5),
-		    /* Pushbutton label */
-		    `PushButton(`id(`wire), _("Wireless &settings")),
-		    `HSpacing(0.5),
-		    `HStretch()
-		),
+		WirelessBox,
 		/* Pushbutton label */
 		// #25234 `PushButton(`id(`wire), _("Wireless &settings")),
 		// FIXME: show only in the case of wireless device
@@ -247,6 +239,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
     /* Edit -> don't allow some changes */
     if(Lan::operation == `edit) {
+
+	if(type != "wlan") WirelessBox = `VSpacing(0);
 
 	contents = `HBox(
 	    `HSpacing(2),
@@ -263,9 +257,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		`VSpacing(0.4),
 		MTUBox,
 		`VSpacing(0.4),
-		/* Pushbutton label */
-		`PushButton(`id(`wire), _("Wireless &settings")),
-		// FIXME: show only in the case of wireless device
+		WirelessBox,
 		`VSpacing(0.5)
 		),
 	    `HSpacing(2));
@@ -284,7 +276,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     ChangeWidgetIfExists(`id(`list), `Enabled, hotplug == "");
     ChangeWidgetIfExists(`id(`usb), `Enabled, hotplug == "usb" || hotplug == "");
     ChangeWidgetIfExists(`id(`pcmcia), `Enabled, hotplug == "pcmcia" || hotplug == "");
-    ChangeWidgetIfExists(`id(`wire), `Enabled, wireless);
+    ChangeWidgetIfExists(`id(`wire), `Enabled, type == "wlan");
     ChangeWidgetIfExists(`id(`num), `Value, device);
 
     any ret = nil;
@@ -321,6 +313,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		type = UI::QueryWidget(`id(`dev), `Value);
 		realtype = RealType(type, hotplug);
 	    }
+	    ChangeWidgetIfExists(`id(`wire), `Enabled, type == "wlan");
 
 	    list devices = [];
 	    devices = Lan::FreeDevices(realtype);
@@ -338,11 +331,11 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
 	    continue;
 	}
-	else if(ret == `wireless) {
-	    wireless = UI::QueryWidget(`id(`wireless), `Value);
-	    UI::ChangeWidget(`id(`wire), `Enabled, wireless);
-	    continue;
-	}
+	// FIXME: wlan else if(ret == `wireless) {
+	    // FIXME: wlan wireless = UI::QueryWidget(`id(`wireless), `Value);
+	    // FIXME: wlan UI::ChangeWidget(`id(`wire), `Enabled, wireless);
+	    // FIXME: wlan continue;
+	// FIXME: wlan }
 	else if(ret == `back) {
 	    break;
 	}
@@ -392,8 +385,8 @@ Really continue?
 	if(UI::WidgetExists(`id(`num)))
 	    Lan::device = UI::QueryWidget(`id(`num), `Value);
 
-	if(UI::WidgetExists(`id(`wireless)))
-	    Lan::wireless = UI::QueryWidget(`id(`wireless), `Value);
+	// FIXME: wlan if(UI::WidgetExists(`id(`wireless)))
+	    // FIXME: wlan Lan::wireless = UI::QueryWidget(`id(`wireless), `Value);
 
 	if(UI::WidgetExists(`id(`pcmcia)) || UI::WidgetExists(`id(`usb))) {
 	    if(UI::QueryWidget(`id(`pcmcia), `Value) == true)
@@ -428,7 +421,7 @@ global define symbol SelectionDialog() ``{
     ScreenName("lan-hardware-selection");
 
     string type = Lan::type;
-    if(Lan::wireless) type = "wireless";
+    // FIXME: wlan if(Lan::wireless) type = "wireless";
     integer selected = 0;
 
     /* map NetworkCards */

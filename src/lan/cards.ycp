@@ -31,7 +31,7 @@ textdomain "network";
  */
 global map NetworkCards = $[
 
-  "wireless": [
+  "wlan": [
 
     $[
     "module" : "airo_cs",

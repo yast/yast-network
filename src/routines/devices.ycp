@@ -13,6 +13,7 @@
 {
 
 textdomain "network";
+
 import "Arch";
 include "network/routines.ycp";
 
@@ -26,12 +27,16 @@ global define boolean ReadDevices(string devregex) ``{
 
     Devices = $[];
 
+    /* Variables which could be suffixed and thus duplicated */
+    list Locals = [ "IPADDR", "REMOTE_IPADDR", "NETMASK", "PREFIXLEN",
+	    "BROADCAST", "SCOPE", "LABEL", "IP_OPTIONS" ];
+
     /* preparation */
     list allfiles = SCR::Dir(.network.section);
     list devices = filter(string file, allfiles, ``(!regexpmatch(file, "[\.~]")));
     y2debug("devices=%1", devices);
 
-    devices = filter(string d, devices, ``(regexpmatch(d, "[a-z][a-z-]*[0-9]*(:[0-9]+)?")));
+    devices = filter(string d, devices, ``(regexpmatch(d, "[a-z][a-z-]*[0-9]*")));
     y2debug("devices=%1", devices);
 
     if(devregex != nil && devregex != "") {
@@ -41,12 +46,8 @@ global define boolean ReadDevices(string devregex) ``{
 	y2debug("devices=%1", devices);
     }
 
-    list aliases = filter(string d, devices, ``(find(d, ":") != -1));
-    list maindevs = filter(string d, devices, ``(find(d, ":") == -1));
-    y2debug("maindevs=%1", maindevs);
-
-    /* read main devices */
-    maplist(string d, maindevs, ``{
+    /* Read devices */
+    maplist(string d, devices, ``{
 	string devtype = device_type(d);
 
 	string devnum = "";
@@ -62,55 +63,41 @@ global define boolean ReadDevices(string devregex) ``{
 
 	string pth = ".network.value.\"" + device_name(devtype, devnum) + "\"";
 	list values = SCR::Dir(topath(pth));
-	map config = listmap(string val, values, ``{
+
+	map config = $[];
+	maplist(string val, values, ``{
 	    string item = SCR::Read(topath(pth + "." + val));
-	    if(item!=nil) return [ val, item ];
+	    if(item == nil) return;
+	    /* No underscore '_' -> global */
+	    /* Also temporarily standard globals */
+	    if(find(val, "_") < 0 || contains(Locals, val)) {
+		config[val] = item;
+		return;
+	    }
+	    /* Try to strip _suffix */
+	    string v = substring(val, 0, findlastof(val, "_"));
+	    string s = substring(val, findlastof(val, "_"));
+	    if(size(s) > 1) s = substring(s, 1);
+	    y2milestone("%1:%2:%3", val, v, s);
+	    /* Global */
+	    if(!contains(Locals, v))
+		config[val] = item;
+	    /* Local */
+	    else {
+		map aliases = config["_aliases"]:$[];
+		map suf = aliases[s]:$[];
+		suf[v] = item;
+		aliases[s] = suf;
+		config["_aliases"] = aliases;
+	    }
+	    y2milestone("config=%1", config);
 	});
 
 	change(dev, devnum, config);
 	change(Devices, devtype, dev);
     });
-
     y2debug("Devices=%1", Devices);
 
-    /* read aliases */
-    maplist(string d, aliases, ``{
-	string devtype = device_type(d);
-
-	string devnum = "";
-	if(regexpmatch(d, "[a-z][a-z-]*[0-9]+"))
-	    devnum = sformat("%1", device_num(d));
-
-	string aliasnum = sformat("%1", alias_num(d));
-	y2debug("devnum=%1(%2)", devnum, aliasnum);
-
-	map dev = Devices[devtype]:$[];
-	if(!haskey(dev, devnum)) {
-	    y2error("main device missing: %1", devnum);
-	    return;
-	}
-
-	map config = dev[devnum]:$[];
-	map aliases = config["_aliases"]:$[];
-	if(haskey(aliases, aliasnum)) {
-	    y2error("alias already present: %1", aliasnum);
-	    return;
-	}
-
-	string pth = ".network.value.\"" + devtype + devnum + ":" + aliasnum + "\"";
-	list values = SCR::Dir(topath(pth));
-	map aliasconfig = listmap(string v, values, ``{
-	    string item = SCR::Read(topath(pth+"."+v));
-	    if(item!=nil) return [ v, item ];
-	});
-
-	change(aliases, aliasnum, aliasconfig);
-	change(config, "_aliases", aliases);
-	change(dev, devnum, config);
-	change(Devices, devtype, dev);
-    });
-
-    y2debug("Devices=%1", Devices);
     return true;
 }
 
@@ -143,17 +130,11 @@ global define boolean WriteDevices() ``{
 
 	    /* write all keys to config */
 	    maplist(string k, mapkeys(devmap), ``{
-		/* write aliases */
+		/* Write locals */
 		if(k == "_aliases") {
-		    maplist(string anum, map amap, devmap[k]:$[], ``{
-			maplist(string ak, string av, amap, ``{
-			    dev = typ + num + ":" + anum;
-			    p = ".network.value.\"" + dev + "\".";
-			    SCR::Write(topath(p+ak), av);
-			});
-		    });
+		    // ignore for now
 		}
-		/* write regular keys */
+		/* Write globals */
 		else
 		    SCR::Write(topath(p+k), devmap[k]:"");
 	    });
@@ -284,20 +265,10 @@ global define boolean ChangeDevice2(string dev, map newdev, boolean check) ``{
 
     string t = device_type(dev);
     string d = device_num(dev);
-    string a = alias_num(dev);
-    y2debug("ChangeDevice(%1,%2,%3)", t, d, a);
+    y2debug("ChangeDevice(%1,%2)", t, d);
 
     map devsmap = Devices[t]:$[];
-    map devmap = devsmap[d]:$[];
-    map amap = devmap["_aliases"]:$[];
-
-    if(a != "")
-	change(amap, a, newdev);
-    else
-	devmap = newdev;
-
-    change(devmap, "_aliases", amap);
-    change(devsmap, d, devmap);
+    change(devsmap, d, newdev);
     change(Devices, t, devsmap);
 
     y2debug("Devices=%1", Devices);
@@ -345,16 +316,7 @@ global define boolean DeleteDevice2(string dev) ``{
     }
 
     map devsmap = Devices[type]:$[];
-
-    if(alias != "") {
-	map devmap = devsmap[device]:$[];
-	map amap = devmap["_aliases"]:$[];
-	amap = remove(amap, alias);
-	change(devmap, "_aliases", amap);
-	change(devsmap, device, devmap);
-    }
-    else
-	devsmap = remove(devsmap, device);
+    devsmap = remove(devsmap, device);
 
     change(Devices, type, devsmap);
     change(DeletedDevices, dev);
@@ -365,7 +327,7 @@ global define boolean DeleteDevice2(string dev) ``{
 }
 
 /**
- * Check presence of device (alias) and fill in type|device|alias variables.
+ * Check presence of device and fill in type|device variables.
  * @param dev device identifier
  * @return true if device is present
  */
@@ -374,7 +336,6 @@ global define boolean CheckDevice(string dev) ``{
     y2debug("CheckDevice(%1)", dev);
     string typ = device_type(dev);
     string num = device_num(dev);
-    string anum = alias_num(dev);
 
     if(!haskey(Devices, typ))
 	return false;
@@ -385,17 +346,8 @@ global define boolean CheckDevice(string dev) ``{
 
     type = typ;
     device = num;
-    alias = "";
 
-    if(anum != "") {
-	map devmap = devsmap[num]:$[];
-	map amap = devmap["_aliases"]:$[];
-	if(!haskey(amap, anum))
-	    return false;
-	alias = anum;
-    }
-
-    y2debug("CheckDevice(%1,%2,%3)", type, device, alias);
+    y2debug("CheckDevice(%1,%2)", type, device);
     return true;
 }
 

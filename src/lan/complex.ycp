@@ -124,8 +124,6 @@ to change the configuration opens.</p>");
     list unconfigured = select(summary, 1, []);
     string configured = select(summary, 0, "");
 
-    // change(unconfigured, `item(`id(`alias), _("Virtual alias")));
-
     y2debug("configured=%1", configured);
     y2debug("unconfigured=%1", unconfigured);
 
@@ -253,16 +251,6 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
 	/* delete */
 	else if(ret == `delete) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-
-	    /* Popup text */
-	    string pop = sformat(_("All virtual aliases belonging to the interface %1
-will be deleted as well.
-
-Really continue?
-"), dev);
-	    if(Lan::HasAliases(dev) && Popup::YesNoHeadline(Label::WarningMsg(), pop) != true)
-		continue;
-
 	    Lan::Delete(dev);
 	    Lan::Commit();
 	    overview = Lan::Overview();

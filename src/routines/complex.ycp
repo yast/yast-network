@@ -23,13 +23,15 @@ include "network/routines.ycp";
 /**
  * Regular expression for all network card types
  */
-global string NetworkCardRegex = "arc|ci|ctc|escon|eth|fddi|hsi|iucv|myri|tr";
+global string NetworkCardRegex = "arc|ci|ctc|escon|eth|fddi|hsi|iucv|myri|tr|wlan";
 
 /**
  * Regular expression for all network device types
  */
 global string NetworkDeviceRegex = "eth-pcmcia|eth-pcmcia-|eth-usb|eth-usb-|" +
-    "tr-pcmcia|tr-pcmia-|tr-usb|tr-usb-|" + NetworkCardRegex;
+    "tr-pcmcia|tr-pcmia-|tr-usb|tr-usb-|" +
+    "wlan-pcmcia|wlan-pcmia-|wlan-usb|wlan-usb-|" +
+    NetworkCardRegex;
 
 /**
  * Regular expression for all ISDN card types
@@ -69,16 +71,6 @@ global define list BuildSummary(boolean split) ``{
 	    string status = DeviceStatus(devtype, devnum, devmap);
 	    change(configured, Summary::Device(hwname, status));
 	    change(uniques, unq);
-
-	    /* aliases summary */
-	    map aliases = devmap["_aliases"]:$[];
-	    if(aliases != $[])
-		maplist(string anum, map amap, aliases, ``{
-		    //hwname = CheckEmptyName(devtype, HardwareName(unq));
-		    hwname = _("Virtual network interface");
-		    status = DeviceStatus(devtype, devnum + ":" + anum, amap);
-		    change(configured, Summary::Device(hwname, status));
-		});
 
 	});
     });
@@ -303,6 +295,8 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	"tr-usb"	: _("USB Token Ring Network Card"),
 	/* Device type label */
 	"vmnet"		: _("VMWare Network Device"),
+	/* Device type label */
+	"wlan"		: _("Wireless Network Card"),
     ];
 
     if(haskey(device_names, devtype))
@@ -476,6 +470,8 @@ global define string DeviceType(string type) ``{
 	"tr"	: _("Token Ring"),
 	/* Device type label */
 	"vmnet"	: _("VMWare"),
+	/* Device type label */
+	"wlan"	: _("Wireless"),
     ];
 
     if(haskey(device_types, type))
@@ -546,17 +542,6 @@ global define list BuildOverview() ``{
 		item = `item(`id(dev), dev, DeviceType(type), /*"active?",*/ ip/*, "?", "?"*/);
 	    }
 	    overview = add(overview, item);
-
-	    /* aliases summary */
-	    map aliases = v["_aliases"]:$[];
-	    if(aliases != $[])
-		maplist(string anum, map amap, aliases, ``{
-		    //hwname = CheckEmptyName(devtype, HardwareName(unq));
-		    dev = sformat("%1:%2", dev, anum);
-		    ip = DeviceProtocol(amap);
-		    item = `item(`id(dev), dev, DeviceType(dev), ip);
-		    overview = add(overview, item);
-		});
 
 	});
     });

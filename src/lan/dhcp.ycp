@@ -1,0 +1,109 @@
+/**
+ * File:	include/network/lan/dhcp.ycp
+ * Package:	Network configuration
+ * Summary:	Network card adresss configuration dialogs
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Label";
+import "Lan";
+import "Popup";
+import "Wizard";
+
+include "network/routines.ycp";
+
+/**
+ * Dialog for DHCP client options
+ * @return dialog result
+ */
+global define symbol DHCPDialog() ``{
+
+    ScreenName("lan-dhcp");
+
+    /* DHCP dialog caption */
+    string caption = _("DHCP Client Options");
+
+    /* DHCP dialog help 1/8 */
+    string help = _("<p>Configure the <b>DHCP Client Options</b> here.</p>") +
+
+    /* DHCP dialog help 2/8 */
+    _("<p>
+<b>Request Broadcast Response</b> ...
+</p>") +
+
+    /* DHCP dialog help 3/8 */
+    _("<p>
+<b>DHCP Client Identifier</b> ...
+</p>");
+
+    /* S/390 dialog contents */
+    term contents = `HBox(
+	`HSpacing(6),
+	/* Frame label */
+	`Frame(_("DHCP Client Options"), `HBox(`HSpacing(2), `VBox(
+	    `VSpacing(1),
+	    /* CheckBox label */
+	    `Left(`CheckBox(`id(`broadcast), _("Request Broad&cast Response"), Lan::dhclient_broadcast == true)),
+	    // `VSpacing(0.2),
+	    /* CheckBox label */
+	    // `Left(`CheckBox(`id(`setbc), `opt(`notify), _("&Set DHCP Client Identifier"), Lan::dhclient_id != "")),
+	    `VSpacing(0.5),
+	    /* TextEntry label */
+	    `Left(`TextEntry(`id(`dhid), _("DHCP Client &Identifier"), Lan::dhclient_id)),
+	    `VSpacing(1)
+	    ), `HSpacing(2))),
+	`HSpacing(6)
+    );
+
+    Wizard::SetContentsButtons(caption, contents, help,
+	    Label::BackButton(), Label::OKButton());
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* set broadcast * /
+	else if(ret == `setbc) {
+	    boolean setbc = UI::QueryWidget(`id(`setbc), `Value);
+	    UI::ChangeWidget(`id(`dhid), `Enabled, setbc);
+	    continue;
+	}
+	/* back */
+	else if(ret == `back) {
+	    break;
+	}
+	/* next|routing|hostname|hardware */
+	else if(ret == `next) {
+	    /* FIXME check* */
+	    break;
+	}
+	else {
+	    y2error("Unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+
+    /* update the configuration */
+    if(ret == `next) {
+	Lan::dhclient_broadcast = UI::QueryWidget(`id(`broadcast), `Value) == true;
+	Lan::dhclient_id = UI::QueryWidget(`id(`dhid), `Value);
+    }
+
+    return ret;
+}
+
+/* EOF */
+}
