@@ -32,8 +32,7 @@ include "ui/common_popups.ycp";
 
 /* !!! undeclared variable Card !!! */
 /* test: none */
-/* revision: none */
-/* TODO: revise & test */
+/* TODO: test */
 
 global define symbol isdn_lowlevel(symbol Detected) ``{
     /* PREPARE VARIABLES */
