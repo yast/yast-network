@@ -348,7 +348,7 @@ in your modem manual.</p>");
 global define symbol modem_connection() ``{
 
     /* PREPARE VARIABLES */
-    string Provider = Modem::Provider;
+    string Provider = Modem::provName;
     boolean IsDefault = Modem::IsDefault;
     boolean DialOnDemand = Modem::DialOnDemand;
 

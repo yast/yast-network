@@ -155,7 +155,7 @@ global define symbol OneModemSequence(boolean detected) ``{
 	"parameters"		: ``(modem_params(`other)),
 	"details"		: ``(modem_details()),
 	"details_detected"	: ``(modem_details()),
-	"providers"		: ``(runProvidersDialog(false)),
+	"providers"		: ``(runProvidersDialog(`modem)),
 	"provider"		: ``(runEditModemProviderDialog(true)),
 	"new_provider"		: ``(runEditModemProviderDialog(false)),
 	"connection"		: ``(modem_connection()),
