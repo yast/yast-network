@@ -43,6 +43,7 @@ module "Detection";
 textdomain "network";
 
 import "Directory";
+import "Package";
 
 /* general stuff */
 global string name = "";
@@ -82,18 +83,20 @@ define boolean StartEthInterface() {
     y2debug("Hardware=%1", Hardware);
     if(size(Hardware) < 1) return false;
 
-    foreach(map h, Hardware, {
-	string mod = h["module"]:"";
-	y2milestone("Module: %1", mod);
-	if(mod != nil && mod != "") {
-	    if(SCR::Execute(.target.bash, sformat("grep ^%1 /proc/modules", mod)) != 0) {
-		y2milestone("Loading module: %1", mod);
-		if(SCR::Execute(.target.bash, sformat("/sbin/modprobe %1 2>&1", mod)) == 0)
-		    detection_modules = add(detection_modules, mod);
-	    }
-	}
+    map <string, boolean> needed_modules = listmap (map h, Hardware, {
+	return $[ (h["module"]:"") : true ];
     });
-    y2milestone("Loaded modules: %1", detection_modules);
+    needed_modules = filter (string m, boolean foo, needed_modules, {
+	return m != nil && m != "" &&
+	  SCR::Execute (.target.bash, sformat ("grep ^%1 /proc/modules", m)) != 0;
+    });
+    detection_modules = maplist (string m, boolean a, needed_modules, ``( m ));
+//    Package::InstallKernel (maplist (string m, detection_modules, ``(m+".ko")));
+    foreach (string mod, detection_modules, {
+	y2milestone("Loading module: %1", mod);
+	SCR::Execute (.target.bash, sformat ("/sbin/modprobe %1 2>&1", mod));
+    });
+
 
     /* Setup the interface */
     detection_interface=false;

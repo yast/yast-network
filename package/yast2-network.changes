@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Sep  6 17:27:57 CEST 2004 - mvidner@suse.cz
+
+- Prepare for installing kernel RPMs (#44394).
+
+-------------------------------------------------------------------
 Fri Sep  3 14:48:06 CEST 2004 - mvidner@suse.cz
 
 - Renamed Virtual Aliases to Additional Addresses (#42412).

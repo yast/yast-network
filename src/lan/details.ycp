@@ -32,15 +32,21 @@ define any DetailsDialog() {
     /* Details dialog caption */
     string caption = _("Detailed Network Card Settings");
 
-    /* Details dialog help 1/8 */
+    /* Details dialog help 1 */
     string help = _("<p>Configure the detailed network card settings here.</p>") +
 
-    /* Details dialog help 2/8 */
+    /* Details dialog help 2 */
     _("<p>You can set the maximum transfer unit (<b>MTU</b>) of an interface.</p>") +
 
-    /* Details dialog help 3/8 */
+    /* Details dialog help 3 */
 _("<p><b>Device Activation</b> may either happen during boot or manually
 with tools like <b>ifup</b>.</p>") +
+
+    /* Details dialog help 3 */
+_("<p>Ethernet devices can detect if the cable is plugged in and wireless
+devices can detect signal strength. In such cases you can set
+Device Activation to If Plugged In. <b>ifplugd</b> will be then used to control
+the device.</p>") +
 
     widget_descr["USERCONTROL", "help"]:"";
 
@@ -51,6 +57,8 @@ with tools like <b>ifup</b>.</p>") +
     list StartModes = [
 	/* ComboBox item (device start mode) */
 	`item(`id("onboot"), _("At Boot Time"), startmode == "onboot"),
+	/* ComboBox item (device start mode) */
+	`item(`id("ifplugd"), _("If Plugged In"), startmode == "ifplugd"),
 	/* ComboBox item (device start mode) */
 	`item(`id("hotplug"), _("When Hotplugged"), startmode == "hotplug"),
 	/* ComboBox item (device start mode) */

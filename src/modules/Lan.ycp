@@ -62,9 +62,16 @@ global string ipaddr = "";
 global string remoteip = "";
 global string netmask = "";
 
-global string startmode = "onboot";
+global string startmode = "auto";
 global boolean usercontrol = false;
 global string mtu = "";
+
+// map aliases to their canonical values
+map <string, string> normalize_startmode = $[
+    "on": "auto",
+    "boot": "auto",
+    "onboot": "auto",
+    ];
 
 /* wireless options */
 global string wl_mode = "";
@@ -617,7 +624,8 @@ global define boolean Select(string dev) {
     netmask = devmap["NETMASK"]:(Detection::result["NETMASK"]:"255.255.255.0");
 
     mtu = devmap["MTU"]:"";
-    startmode = devmap["STARTMODE"]:"onboot";
+    startmode = devmap["STARTMODE"]:"manual";
+    startmode = normalize_startmode[startmode]:startmode;
     usercontrol = devmap["USERCONTROL"]:"no" == "yes";
 
     /* wireless options */
@@ -717,6 +725,11 @@ global define boolean Delete(string name) {
     return true;
 }
 
+map <string, string> ifplugd_priorities = $[
+    "eth": "20",
+    "wlan": "10",
+    ];
+
 /**
  * Commit pending operation
  * @return true if success
@@ -739,6 +752,12 @@ global define boolean Commit() {
 	if(alias == "") {
 	    newdev["MTU"] = mtu;
 	    newdev["STARTMODE"] = startmode;
+	    // it is not in Select yet because we don't have a widget for it
+	    if (startmode == "ifplugd")
+	    {
+		string prio = ifplugd_priorities[type]:"";
+		newdev["IFPLUGD_PRIORITY"] = prio;
+	    }
 	    newdev["USERCONTROL"] = usercontrol? "yes": "no";
 	    newdev["BOOTPROTO"] = bootproto;
 	}
@@ -747,7 +766,6 @@ global define boolean Commit() {
 	    newdev["UNIQUE"] = unique;
 
 	if(hotplug == "") {
-	    // newdev["STARTMODE"] = "onboot";
 	    if(alias == "") {
 		// FIXME: MOD ChangeModule(device_name(type, device), operation == `add);
 		y2milestone("HWCFG name %1 (%2)", nm_name, nm_name_old);
@@ -815,8 +833,6 @@ global define boolean Commit() {
 		}
 	    }
 	}
-	else
-	    // newdev["STARTMODE"] = "hotplug";
 
 	if(hotplug == "pcmcia")
 	    newdev["DHCLIENT_SET_DOWN_LINK"] = "yes";
