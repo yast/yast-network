@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar  9 14:31:28 CET 2004 - msvec@suse.cz
+
+- added missing helps
+- minor fixes to WLAN configuration
+- 2.9.8
+
+-------------------------------------------------------------------
 Mon Mar  8 17:50:33 CET 2004 - msvec@suse.cz
 
 - use the new device naming (#33073)

@@ -68,6 +68,10 @@ _("<p>These values will be written to the interface configuration file
 add them manually. Refer to the file 'wireless' in the same directory for all
 available options.</p>");
 
+    /* PushButton label */
+    term multikeys = `PushButton(`id(`keys), _("&Multiple Keys"));
+    multikeys = `VSpacing(0);
+
     /* Wireless dialog contents */
     term contents = `HBox(
 	`HSpacing(4),
@@ -108,8 +112,7 @@ available options.</p>");
 		/* PushButton label */
 		`PushButton(`id(`expert), _("E&xpert Settings")),
 		`HSpacing(0.5),
-		/* PushButton label */
-		`PushButton(`id(`keys), _("&Multiple Keys"))
+		multikeys
 	     ),
 	    `VSpacing(0.5)
 	),
@@ -119,7 +122,7 @@ available options.</p>");
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::OKButton());
 
-    UI::ChangeWidget(`id(`keys), `Enabled, false);
+    // UI::ChangeWidget(`id(`keys), `Enabled, false);
 
     any ret = nil;
     while(true) {
@@ -204,11 +207,10 @@ define any WirelessExpertDialog() ``{
 (rarely needed).</p>") +
 
     /* Wireless expert dialog help 2/5 */
-    _("<p>If you want your card not to hop through the channels searching for
-an access point or if you want to set a fixed channel for other reasons, set
-the <b>Channel</b> value. If you would prefer to specify the <b>Frequency</b>
-instead of the channel, do this by checking the frequency radio button and
-selecting the desired frequency.</p>") +
+    _("<p>If you want to use your wireless LAN card in master or ad-hoc mode,
+you can set the <b>Channel</b> the card should use here. This is not needed
+for managed mode, the card will hop through the channels searching for access
+points in that case.</p>") +
 
     /* Wireless expert dialog help 3/5 */
 _("<p>In some rare cases, you may want to set a transmission
@@ -222,6 +224,18 @@ define the one to which to connect by entering its MAC address.</p>") +
 _("<p>You can <b>Use Power Management</b> to enable power saving mechanisms.
 This is generally a good idea, especially if you are a notebook user and may
 be disconnected from AC power.</p>");
+
+    string helpunused =
+    /* Wireless expert dialog help 2b/5 */
+    _("<p>If you would prefer to specify the <b>Frequency</b> instead of
+the channel, do this by selecting the desired value.</p>");
+
+    /* Combobox label */
+    term freq = `ComboBox(`id(`frequency), `opt(`hstretch), _("&Frequency"), [
+	/* Combobox item */
+	`item(`id("Automatic"), _("Automatic"), Lan::wl_frequency == ""),
+	`item(`id("Automatic"), "FIXME: ASK jg@suse.de", Lan::wl_frequency != ""),
+     ]);
 
     list channels = [ "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" ];
     if(Lan::wl_channel != "" && !contains(channels, Lan::wl_channel))
@@ -247,13 +261,6 @@ be disconnected from AC power.</p>");
 		`VSpacing(1),
 		/* Combobox label */
 		`ComboBox(`id(`channel), `opt(`hstretch), _("&Channel"), channels),
-		`VSpacing(0.2),
-		/* Combobox label */
-		`ComboBox(`id(`frequency), `opt(`hstretch), _("&Frequency"), [
-		    /* Combobox item */
-		    `item(`id("Automatic"), _("Automatic"), Lan::wl_frequency == ""),
-		    `item(`id("Automatic"), "FIXME: ASK jg@suse.de", Lan::wl_frequency != ""),
-		 ]),
 		`VSpacing(0.2),
 		/* Combobox label */
 		`ComboBox(`id(`bitrate), `opt(`hstretch), _("B&it Rate"), bitrates),

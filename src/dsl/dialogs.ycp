@@ -65,7 +65,7 @@ modem is connected. If you did not set up your ethernet card yet, do
 so by pressing <b>Configure Network Cards</b>.</p>") +
 
     /* DSL dialog help 7/7 */
-_("<p><b>Device activation</b> may either happen during boot or manually
+_("<p><b>Device Activation</b> may either happen during boot or manually
 with tools like <b>ifup</b> or <b>kinternet</b>. An activation during boot may
 be appropriate for dial-on-demand connections.</p>");
 

@@ -33,12 +33,11 @@ define any DetailsDialog() {
     string help = _("<p>Configure the detailed network card settings here.</p>") +
 
     /* Details dialog help 2/8 */
-    _("<p><b>MTU</b>
-    </p>") +
+    _("<p>You can set the Maximum Transfer Unit (<b>MTU</b>) of an interface</p>") +
 
     /* Details dialog help 3/8 */
-    _("<p><b>Start Mode</b>
-    </p>");
+_("<p><b>Device Activation</b> may either happen during boot or manually
+with tools like <b>ifup</b>.</p>");
 
     string mtu = "";
     string startmode = "onboot";
@@ -64,7 +63,7 @@ define any DetailsDialog() {
 	    `Left(`TextEntry(`id(`mtu), _("&MTU"), mtu)),
 	    `VSpacing(0.5),
 	    /* ComboBox label */
-	    `Left(`ComboBox(`id(`startmode), _("&Start Mode"), StartModes)),
+	    `Left(`ComboBox(`id(`startmode), _("&Device Activation"), StartModes)),
 	    `VSpacing(1)
 	    ), `HSpacing(2))),
 	`HSpacing(6)
