@@ -25,6 +25,9 @@ include "network/lan/wizards.ycp";
  * @return native network settings
  */
 define map FromAY(map input) ``{
+	// Used netdevice during installation
+	Lan::ReadInstallInf();
+	string netdevice = Lan::InstallInf["netdevice"]:"eth0";
 
     list upcase = [
 		   "bootproto",
@@ -53,7 +56,7 @@ define map FromAY(map input) ``{
 		new_interface[k] = v;
 	    }
 	});
-	return([interface["device"]:"unknown",new_interface]);
+	return([interface["device"]:netdevice,new_interface]);
     });
 
     map devices = $[];
@@ -84,12 +87,16 @@ define map FromAY(map input) ``{
 	list HW = Lan::GetHardware();
 	devices = mapmap(string type, map devsmap, devices, ``{
 	    list HW_type = filter(`dev, HW, ``(dev["type"]:"" == type ));
+
 	    y2debug("hw from type %1 = %2", type, HW_type);
+
 	    map newmap = mapmap(string num, map devmap, devsmap, ``{
+
 		devmap = add(devmap, "UNIQUE", HW_type[ tointeger(num) ,"unique"]:"" );
 		string device = sformat ("%1%2", type, num );
 		native_modules[device] = $[ "module": HW_type[ tointeger(num) ,"module"]:"", "options": HW_type[ tointeger(num) ,"options"]:"" ];
 		return([num, devmap]);
+
 	    });
 	    return ([ type, newmap ] );
 	});
