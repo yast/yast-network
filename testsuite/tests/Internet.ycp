@@ -11,6 +11,17 @@ import "Internet";
 
 
 DUMP("Fastest");
+READ = $[
+    "network" : $[
+	"section" : $[ "dsl0":$[], "eth0":$[] ],
+	"value" : $[ "dsl0" :$["DEVICE":"eth0"], "eth0":$[] ],
+    ]
+];
+TEST(``(Internet::Fastest()), [READ], nil);
+DUMP(Internet::device);
+READ = $[ "network" : $[ "section" : $[ "dsl0":$[], "eth0":$[] ]]];
+TEST(``(Internet::Fastest()), [READ], nil);
+DUMP(Internet::device);
 READ = $[ "network" : $[ "section" : $[ "eth1":$[], "tr0":$[] ]]];
 TEST(``(Internet::Fastest()), [READ], nil);
 DUMP(Internet::device);
@@ -35,5 +46,11 @@ DUMP(Internet::device);
 READ = $[ "network" : $[ "section" : $[]]];
 TEST(``(Internet::Fastest()), [READ], nil);
 DUMP(Internet::device);
+
+DUMP("FastestType");
+TEST(``(Internet::FastestType("ippp")), [], nil);
+TEST(``(Internet::FastestType("dsl")), [], nil);
+TEST(``(Internet::FastestType("ppp")), [], nil);
+TEST(``(Internet::FastestType("eth")), [], nil);
 
 }

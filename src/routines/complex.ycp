@@ -23,10 +23,21 @@ import "Summary";
 global string NetworkCardRegex = "arc|ci|ctc|escon|eth|fddi|hsi|iucv|myri|tr";
 
 /**
- * Regular expression for all network card types
+ * Regular expression for all network device types
  */
 global string NetworkDeviceRegex = "eth-pcmcia-|eth-usb-|tr-pcmia-|tr-usb-|"
     + NetworkCardRegex;
+
+/**
+ * Regular expression for all ISDN card types
+ */
+global string ISDNCardRegex = "isdn|ippp";
+
+/**
+ * Regular expression for all ISDN device types
+ */
+global string ISDNDeviceRegex = "isdn-pcmcia-|isdn-usb-|ippp-pcmcia-|ippp-usb-|"
+    + ISDNCardRegex;
 
 /**
  * Regular expression for all network card types
@@ -84,8 +95,8 @@ global define list BuildSummary(boolean split) ``{
 	}
     });
 
-    y2debug("configured=%1",configured);
-    y2debug("unconfigured=%1",unconfigured);
+    y2debug("configured=%1", configured);
+    y2debug("unconfigured=%1", unconfigured);
 
     /* create a summary text */
     string summary = Summary::DevicesList(configured);
@@ -104,11 +115,76 @@ global define list BuildSummary(boolean split) ``{
     /* create a table of unconfigured devices */
     integer selected = lookup(unconfigured[0]:$[], "num", 0);
     list devs = hwlist2items(unconfigured, selected);
+
+    // FIXME OtherDevices(devs, type);
+
     /* Label for not detected devices */
     change(devs, `item(`id(`other), _("Other (not detected)"), size(devs) == 0));
 
     return [ summary, devs ];
 
+}
+
+/**
+ * Generate other (not detected) devices names
+ * @param devs devices list to be changed
+ * @param type names to configure (netcard|modem|isdn|all|...)
+ * @return true on success
+ */
+global define boolean OtherDevices(list devs, string type) ``{
+
+    if(type == "all" || type == "modem") {
+	/* SelectionBox item */
+        if(has_pcmcia) change(devs, `item(`id(`pcmcia_modem), _("PCMCIA modem")));
+	/* SelectionBox item */
+        if(has_usb) change(devs, `item(`id(`usb_modem), _("USB modem")));
+	/* SelectionBox item */
+	change(devs, `item(`id(`other_modem), _("Other modem (not detected)")));
+    }
+    if(type == "all" || type == "isdn") {
+	/* SelectionBox item */
+        if(has_pcmcia) change(devs, `item(`id(`pcmcia_isdn), _("PCMCIA ISDN card")));
+	/* SelectionBox item */
+        if(has_usb) change(devs, `item(`id(`usb_isdn), _("USB ISDN card")));
+	/* SelectionBox item */
+	change(devs, `item(`id(`other_isdn), _("Other ISDN card (not detected)")));
+    }
+    if(type == "all" || type == "netcard") {
+	/* offer only eth so far */
+	if(true) {
+	    /* SelectionBox item */
+	    if(has_pcmcia) change(devs, `item(`id(`pcmcia_eth), _("PCMCIA network card")));
+	    /* SelectionBox item */
+	    if(has_usb) change(devs, `item(`id(`usb_eth), _("USB network card")));
+	}
+	/* maybe also TR ... */
+	else {
+	    if(has_pcmcia) {
+		/* SelectionBox item */
+		change(devs, `item(`id(`pcmcia_eth), _("PCMCIA ethernet network card")));
+		/* SelectionBox item */
+		change(devs, `item(`id(`pcmcia_tr), _("PCMCIA token-ring network card")));
+	    }
+	    if(has_usb) {
+		/* SelectionBox item */
+		change(devs, `item(`id(`usb_eth), _("USB ethernet network card")));
+		/* SelectionBox item */
+		change(devs, `item(`id(`usb_tr), _("USB token-ring network card")));
+	    }
+	}
+	/* SelectionBox item */
+        change(devs, `item(`id(`other), _("Other network card (not detected)")));
+    }
+    if(type == "all" || type == "dummy") {
+	/* SelectionBox item */
+        change(devs, `item(`id(`dummy), _("Dummy device")));
+    }
+    else {
+        y2error("Unknown type: %1", devtype);
+	return false;
+    }
+
+    return true;
 }
 
 /**
@@ -131,8 +207,10 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	"contr"		: _("ISDN card"),
 	/* Device type label */
 	"contr-pcmcia-"	: _("PCMCIA ISDN Card"),
+	"contr-pcmcia"	: _("PCMCIA ISDN Card"),
 	/* Device type label */
 	"contr-usb-"	: _("USB ISDN Card"),
+	"contr-usb"	: _("USB ISDN Card"),
 	/* Device type label */
 	"ctc"		: _("Channel to Channel Interface (CTC)"),
 	/* Device type label */
@@ -145,14 +223,18 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	"eth"		: _("Ethernet Network Card"),
 	/* Device type label */
 	"eth-pcmcia-"	: _("PCMCIA Ethernet Network Card"),
+	"eth-pcmcia"	: _("PCMCIA Ethernet Network Card"),
 	/* Device type label */
 	"eth-usb-"	: _("USB Ethernet Network Card"),
+	"eth-usb"	: _("USB Ethernet Network Card"),
 	/* Device type label */
 	"fddi"		: _("FDDI Network Card"),
 	/* Device type label */
 	"fddi-pcmcia-"	: _("PCMCIA FDDI Network Card"),
+	"fddi-pcmcia"	: _("PCMCIA FDDI Network Card"),
 	/* Device type label */
 	"fddi-usb-"	: _("USB FDDI Network Card"),
+	"fddi-usb"	: _("USB FDDI Network Card"),
 	/* Device type label */
 	"hippi"		: _("HIgh Performance Parallel Interface (HIPPI)"),
 	/* Device type label */
@@ -161,8 +243,10 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	"ippp"		: _("ISDN connection"),
 	/* Device type label */
 	"ippp-pcmcia-"	: _("PCMCIA ISDN Connection"),
+	"ippp-pcmcia"	: _("PCMCIA ISDN Connection"),
 	/* Device type label */
 	"ippp-usb-"	: _("USB ISDN Connection"),
+	"ippp-usb"	: _("USB ISDN Connection"),
 	/* Device type label */
 	"irlan"		: _("Infrared Network Device"),
 	/* Device type label */
@@ -171,8 +255,10 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	"isdn"		: _("ISDN connection"),
 	/* Device type label */
 	"isdn-pcmcia-"	: _("PCMCIA ISDN Connection"),
+	"isdn-pcmcia"	: _("PCMCIA ISDN Connection"),
 	/* Device type label */
 	"isdn-usb-"	: _("USB ISDN Connection"),
+	"isdn-usb"	: _("USB ISDN Connection"),
 	/* Device type label */
 	"iucv"		: _("Inter User Communication Vehicle (IUCV)"),
 	/* Device type label */
@@ -181,8 +267,10 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	"modem"		: _("Modem"),
 	/* Device type label */
 	"modem-pcmcia-"	: _("PCMCIA Modem"),
+	"modem-pcmcia"	: _("PCMCIA Modem"),
 	/* Device type label */
 	"modem-usb-"	: _("USB Modem"),
+	"modem-usb"	: _("USB Modem"),
 	/* Device type label */
 	"myri"		: _("Myrinet Network Card"),
 	/* Device type label */
@@ -193,8 +281,10 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	"ppp"		: _("Modem"),
 	/* Device type label */
 	"ppp-pcmcia-"	: _("PCMCIA Modem"),
+	"ppp-pcmcia"	: _("PCMCIA Modem"),
 	/* Device type label */
 	"ppp-usb-"	: _("USB Modem"),
+	"ppp-usb"	: _("USB Modem"),
 	/* Device type label */
 	"sit"		: _("IPv6-in-IPv4 Encapsulation Device"),
 	/* Device type label */
@@ -203,8 +293,10 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	"tr"		: _("Token Ring Network Card"),
 	/* Device type label */
 	"tr-pcmcia-"	: _("PCMCIA Token Ring Network Card"),
+	"tr-pcmcia"	: _("PCMCIA Token Ring Network Card"),
 	/* Device type label */
 	"tr-usb-"	: _("USB Token Ring Network Card"),
+	"tr-usb"	: _("USB Token Ring Network Card"),
 	/* Device type label */
 	"vmnet"		: _("VMWare Network Device"),
     ];
@@ -258,7 +350,7 @@ global define string ProviderName(string provider) ``{
  * @return text wth device status
  */
 global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
-    string dev = devtype + devnum;
+    string dev = device_name(devtype, devnum);
 
     /* Modem and DSL */
     if(devtype == "ppp" || devtype == "modem" || devtype == "dsl") {
@@ -425,7 +517,7 @@ global define list BuildOverview() ``{
     maplist(string type, map devmap, Devices, ``{
 	maplist(string k, map v, devmap, ``{
 	    term item = nil;
-	    string dev = sformat("%1%2", type, k);
+	    string dev = device_name(type, k);
 	    string ip = DeviceProtocol(v);
 
 	    /* Modem and DSL */
@@ -465,7 +557,7 @@ global define list BuildOverview() ``{
 	});
     });
 
-    y2debug("overview=%1",overview);
+    y2debug("overview=%1", overview);
     return overview;
 }
 
@@ -515,7 +607,7 @@ global define term OverviewTableContents(string caption, term header, list conte
 	    deletebutton
 	),
 	`VSpacing(0.5)
-    ),`HSpacing(1.5));
+    ), `HSpacing(1.5));
 
 }
 
@@ -561,8 +653,8 @@ global define term OverviewTableDouble(string caption1, term header1, list conte
 	`item(`id(1), "1", "ippp", "Czech Online", "1.2.3.6", "6.3.2.1"),
     ];
 
-    y2debug("overviewdev=%1",overviewdev);
-    y2debug("overviewif=%1",overviewif);
+    y2debug("overviewdev=%1", overviewdev);
+    y2debug("overviewif=%1", overviewif);
 
     import "Wizard";
     include "ui/common_messages.ycp";

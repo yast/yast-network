@@ -9,35 +9,36 @@
  */
 
 {
-    textdomain "network";
 
-    import "Internet";
+textdomain "network";
 
-    include "network/routines.ycp";
-    include "network/installation/dialogs.ycp";
+import "Internet";
 
+include "network/routines.ycp";
+include "network/installation/dialogs.ycp";
 
-    if (WFM::Args (2) == true)	// called backwards
-	return `auto;
+/* Called backwards */
+if(WFM::Args(2) == true)
+    return `auto;
 
-    if (!Internet::do_test)	// nothing to test
-	return `auto;
+if(!Internet::do_test)
+    return `auto;
 
-    if (!Internet::Fastest())	// nothing to test
-	return `auto;
+/* Nothing to test */
+if(!Internet::Fastest())
+    return `auto;
 
+if(!AskForPassword()) {
+    y2error("Password required");
+    return `next;
+}
 
-    if (!AskForPassword()) {
-	y2error("Password required");
-	return `next;
-    }
+symbol ret = TestConnectionDialog();
 
-    symbol ret = TestConnectionDialog ();
+if(ret == `next)
+    AskYOUDialog();
 
-    if (ret == `next)
-    {
-	AskYOUDialog ();
-    }
+return ret;
 
-    return ret;
+/* EOF */
 }

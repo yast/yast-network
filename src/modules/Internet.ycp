@@ -17,13 +17,11 @@ include "network/complex.ycp";
 include "network/devices.ycp";
 include "network/routines.ycp";
 
-
 // flag to remember if user wants to run internet test
 global boolean do_test = true;
 
 // flag to remember if user wants to run you
 global boolean do_you = true;
-
 
 global string device = "";
 global string password = "";
@@ -36,9 +34,37 @@ global boolean askpassword = nil;
 map FastestRegexps = $[
     1 : NetworkDeviceRegex,
     2 : "dsl",
-    3 : "isdn|ippp|isdn-pcmcia-|isdn-usb-|ippp-pcmcia-|ippp-usb-",
-    4 : "ppp",
+    3 : ISDNDeviceRegex,
+    4 : "modem|ppp",
 ];
+
+/**
+ * Types in order from fastest to slowest
+ * @see FastestRegexps
+ */
+map FastestTypes = $[
+    1 : "netcard",
+    2 : "dsl",
+    3 : "isdn",
+    4 : "modem",
+];
+
+/**
+ * Return the fastest connection type
+ * @param dev device name
+ * @return device type
+ * @see FastestTypes
+ * @example FastestType("ippp") -> "isdn"
+ * @example FastestType("ppp") -> "modem"
+ */
+global define string FastestType(string dev) ``{
+    string type = "";
+    maplist(integer num, string regex, FastestRegexps, ``{
+	if(type == "" && regexpmatch(dev, "^" + regex + "[0-9]*$"))
+	    type = FastestTypes[num]:"";
+    });
+    return type;
+}
 
 /**
  * Find the fastest connection to the Internet
@@ -62,15 +88,24 @@ global define boolean Fastest() ``{
     device = "";
     maplist(integer num, string regex, FastestRegexps, ``{
 	maplist(string dev, devices, ``{
-	    if(device == "" && regexpmatch(dev, "^"+regex+"[0-9]*$")) device = dev;
+	    if(device == "" && regexpmatch(dev, "^" + regex + "[0-9]*$"))
+		device = dev;
 	});
     });
     y2milestone("fastest=%1", device);
 
-    // no fallback since there are devices that should not be tested (e.g. lo)
+    /* No fallback since there are devices that should not be tested (lo) */
+    if(device == "") return false;
 
-    if (device == "")
-	return false;
+    /* Handle DSL PPPoE ethernet cards */
+    if(device == "eth0" && contains(devices, "dsl0")) {
+	map ethmap = Devices[device_type("eth0"), device_num("eth0")]:$[];
+	map dslmap = Devices[device_type("dsl0"), device_num("dsl0")]:$[];
+	/* Only DSL cards with correct device */
+	if(dslmap["DEVICE"]:"" == "eth0") {
+	    device = "dsl0";
+	}
+    }
 
     map devmap = Devices[device_type(device), device_num(device)]:$[];
     y2debug("devmap=%1", devmap);

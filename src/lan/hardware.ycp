@@ -67,18 +67,13 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     string mtu = Lan::mtu;
 
     string type = Lan::type;
-    string realtype = RealType(type, hotplug);
-
-    string device = Lan::device;
-    if(device == "") {
-	y2error("Shouldn't happen -- device is empty. Assuming eth.");
-	device = "eth";
+    if(type == "") {
+	y2error("Shouldn't happen -- type is empty. Assuming eth.");
+	type = "eth";
     }
+    string realtype = RealType(type, hotplug);
+    string device = Lan::device;
     string default_device = device;
-
-    /* satisfy check_ycp -- don't translate these strings */
-    string PCMCIA = "&PCMCIA";
-    string USB = "&USB";
 
     list device_types = [ "arc", "eth", "fddi", "myri", "tr" ];
 
@@ -103,9 +98,20 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
     term CheckBoxes = `HBox(
 	`HSpacing(1.5),
-	`CheckBox(`id(`pcmcia), `opt(`notify), PCMCIA, hotplug == "pcmcia"),
+	/* CheckBox label */
+	`CheckBox(`id(`pcmcia), `opt(`notify), _("&PCMCIA"), hotplug == "pcmcia"),
 	`HSpacing(1.5),
-	`CheckBox(`id(`usb), `opt(`notify), USB, hotplug == "usb"),
+	/* CheckBox label */
+	`CheckBox(`id(`usb), `opt(`notify), _("&USB"), hotplug == "usb"),
+	`HSpacing(1.5)
+    );
+
+    /* Placeholders (translations) */
+    term XBox = `HBox(
+	/* ComboBox label */
+	`ComboBox(`id(`hotplug), `opt(`notify), _("&Hot plug type"), []),
+	/* CheckBox label */
+	`CheckBox(`id(`pci), `opt(`notify), _("P&CI"), hotplug == "pci"),
 	`HSpacing(1.5)
     );
 
@@ -129,7 +135,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     term DeviceNumberBox = `ReplacePoint(`id(`rnum),
 	/* Combobox label */
 	`ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"),
-	    maplist(integer d, Lan::FreeDevices(realtype), ``(sformat("%1", d)))));
+	    Lan::FreeDevices(realtype)));
+	    // FIXME maplist(integer d, Lan::FreeDevices(realtype), ``(sformat("%1", d)))));
 
     /* TextEntry label */
     term MTUBox = `TextEntry(`id(`mtu), _("M&aximum transfer unit (MTU)"), mtu);
@@ -301,7 +308,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    }
 
 	    list devices = [];
-	    devices = maplist(integer d, Lan::FreeDevices(realtype), ``(sformat("%1",d)));
+	    devices = Lan::FreeDevices(realtype);
+	    // FIXME devices = maplist(integer d, Lan::FreeDevices(realtype), ``(sformat("%1",d)));
 	    default_device = select(devices, 0, "");
 	    /* Combobox label */
 	    UI::ReplaceWidget(`id(`rnum), `ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"), devices));

@@ -282,10 +282,11 @@ global define list hwlist2items(list l, integer selected) ``{
  * @param dev device
  * @return device type
  * @example device_type("eth1") -> "eth"
+ * @example device_type("eth-pcmcia-0") -> "eth-pcmcia"
  */
 global define string device_type(string dev) ``{
-    if(regexpmatch(dev, "([a-zA-Z-]+)[^a-zA-Z-]*$") != true) return "";
-    string ret = regexpsub(dev, "([a-zA-Z-]+)[^a-zA-Z-]*$", "\\1");
+    if(regexpmatch(dev, "([a-zA-Z-]*[a-zA-Z])[^a-zA-Z]*$") != true) return "";
+    string ret = regexpsub(dev, "([a-zA-Z-]*[a-zA-Z])[^a-zA-Z]*$", "\\1");
     if(ret == nil) ret = "";
     return ret;
 
@@ -343,6 +344,7 @@ global define string device_name(string typ, string num) ``{
 	y2error("wrong number: %1", num);
 	return nil;
     }
+    if(IsHotplug(typ) && num != "") return sformat("%1-%2", typ, num);
     return sformat("%1%2", typ, num);
 }
 
@@ -371,6 +373,17 @@ global define string alias_name(string typ, string num, string anum) ``{
 }
 
 /**
+ * Test hotplugability of a device
+ * @param type device type
+ * @return true if hotpluggable
+ */
+global define boolean IsHotplug(string type) ``{
+    if(type == "" || type == nil) return false;
+    if(regexpmatch(type, "(pcmcia|usb|pci)$")) return true;
+    return false;
+}
+
+/**
  * Return real type of the device (incl. PCMCIA, USB, ...)
  * @param type basic device type
  * @param hotplug hot plug type
@@ -388,7 +401,7 @@ global define string RealType(string type, string hotplug) ``{
     if(hotplug == "" || hotplug == nil)
 	return type;
 
-    string realtype = type + "-" + hotplug + "-";
+    string realtype = type + "-" + hotplug; // FIXME + "-";
     y2debug("realtype=%1", realtype);
     return realtype;
 }

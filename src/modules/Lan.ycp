@@ -41,8 +41,8 @@ global map Module = $[];
 
 global string name = "";
 global string unique = "";
-global string type = "";
 
+global string type = "";
 global string device = "";
 global string alias = "";
 
@@ -196,6 +196,7 @@ global define boolean Read() ``{
     /* Progress step 3/8 */
     ProgressNextStage(_("Reading current configuration..."));
     ReadDevices(NetworkDeviceRegex);
+    CleanHotplugSymlink();
     // ReadDevices("");
     sleep(sl);
 
@@ -579,7 +580,7 @@ global define boolean Commit() ``{
 
 	if(hotplug == "") {
 	    change(newdev, "STARTMODE", "onboot");
-	    ChangeModule(type+device, operation == `add);
+	    ChangeModule(device_name(type, device), operation == `add);
 	}
 	else
 	    change(newdev, "STARTMODE", "hotplug");
@@ -615,7 +616,7 @@ global define boolean Commit() ``{
 		wait_for_interfaces = 15;
 
 	if(alias == "")
-	    ChangeDevice2(RealType(type, hotplug)+device, newdev, operation == `add);
+	    ChangeDevice2(device_name(RealType(type, hotplug), device), newdev, operation == `add);
 	else
 	    ChangeDevice2(RealType(type, hotplug)+device+":"+alias, newdev, operation == `add);
     }

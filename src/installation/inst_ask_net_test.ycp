@@ -9,16 +9,19 @@
  */
 
 {
-    textdomain "network";
 
-    import "Internet";
+textdomain "network";
 
-    include "network/routines.ycp";
-    include "network/installation/dialogs.ycp";
+import "Internet";
 
-    if (!Internet::Fastest())	// nothing to test
-	return `auto;
+include "network/routines.ycp";
+include "network/installation/dialogs.ycp";
 
+/* Nothing to test */
+if(!Internet::Fastest())
+    return `auto;
 
-    return TestStepsDialog ();
+return TestStepsDialog();
+
+/* EOF */
 }

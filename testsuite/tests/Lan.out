@@ -21,6 +21,10 @@ Log	hardware detection failure
 Dir	.modules.alias: []
 Dir	.modules.options: []
 Dir	.network.section: []
+Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-pcmcia" nil
+Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-usb" nil
+Read	.target.lstat "/etc/sysconfig/network/ifcfg-tr-pcmcia" nil
+Read	.target.lstat "/etc/sysconfig/network/ifcfg-tr-usb" nil
 Read	.sysconfig.network.config.WAIT_FOR_INTERFACES nil
 Read	.target.size "/etc/sysconfig/network/routes" 1
 Read	.routes nil

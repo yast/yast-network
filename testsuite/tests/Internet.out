@@ -16,6 +16,17 @@ Read	.probe.has_pcmcia nil
 Read	.probe.has_smp nil
 Read	.probe.system []
 Dump	Fastest
+Dir	.network.section: ["dsl0", "eth0"]
+Dir	.network.value."dsl0": ["DEVICE"]
+Read	.network.value."dsl0".DEVICE "eth0"
+Dir	.network.value."eth0": []
+Return	true
+Dump	dsl0
+Dir	.network.section: ["dsl0", "eth0"]
+Dir	.network.value."dsl0": []
+Dir	.network.value."eth0": []
+Return	true
+Dump	eth0
 Dir	.network.section: ["eth1", "tr0"]
 Dir	.network.value."eth1": []
 Dir	.network.value."tr0": []
@@ -52,3 +63,8 @@ Return	true
 Dump	ippp0
 Dir	.network.section: []
 Return	false
+Dump	FastestType
+Return	isdn
+Return	dsl
+Return	modem
+Return	netcard

@@ -34,52 +34,52 @@ global map NetworkCards = $[
   "wireless": [
 
     $[
-    "module" : "airo_cs.o",
+    "module" : "airo_cs",
     /* Network card name (wireless) */
     "name" :  _("Cisco/Aironet 802.11 wireless ISA/PCI and PCMCIA ethernet cards"),
     ],
     $[
-    "module" : "orinoco.o",
+    "module" : "orinoco",
     /* Network card name (wireless) */
     "name" :  _("Lucent Orinoco, Prism II based and similar wireless cards"),
     ],
     $[
-    "module" : "orinoco_cs.o",
+    "module" : "orinoco_cs",
     /* Network card name (wireless) */
     "name" :  _("PCMCIA Lucent Orinoco, Prism II based and similar wireless cards"),
     ],
     $[
-    "module" : "orinoco_pci.o",
+    "module" : "orinoco_pci",
     /* Network card name (wireless) */
     "name" :  _("Wireless LAN cards using direct PCI interface"),
     ],
     $[
-    "module" : "orinoco_plx.o",
+    "module" : "orinoco_plx",
     /* Network card name (wireless) */
     "name" :  _("Wireless LAN cards using the PLX9052 PCI bridge"),
     ],
     $[
-    "module" : "p80211.o",
+    "module" : "p80211",
     /* Network card name (wireless) */
     "name" : _("Wireless device using kernel module p80211.o"),
     ],
     $[
-    "module" : "prism2_cs.o",
+    "module" : "prism2_cs",
     /* Network card name (wireless) */
     "name" : _("Wireless device using kernel module prism2_cs.o"),
     ],
     $[
-    "module" : "prism2_pci.o",
+    "module" : "prism2_pci",
     /* Network card name (wireless) */
     "name" : _("Wireless device using kernel module prism2_pci.o"),
     ],
     $[
-    "module" : "prism2_plx.o",
+    "module" : "prism2_plx",
     /* Network card name (wireless) */
     "name" : _("Wireless device using kernel module prism2_plx.o"),
     ],
     $[
-    "module" : "prism2_usb.o",
+    "module" : "prism2_usb",
     /* Network card name (wireless) */
     "name" : _("Wireless device using kernel module prism2_usb.o"),
     ],

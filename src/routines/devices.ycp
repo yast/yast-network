@@ -58,7 +58,7 @@ global define boolean ReadDevices(string devregex) ``{
 	    return;
 	}
 
-	string pth = ".network.value.\"" + devtype + devnum + "\"";
+	string pth = ".network.value.\"" + device_name(devtype, devnum) + "\"";
 	list values = SCR::Dir(topath(pth));
 	map config = listmap(string val, values, ``{
 	    string item = SCR::Read(topath(pth + "." + val));
@@ -177,18 +177,26 @@ global define list GetFreeDevices(string type, integer num) ``{
     y2debug("Devices=%1", Devices);
     y2debug("type,num=%1,%2", type, num);
     y2debug("Devices[%1]=%2", type, Devices[type]:$[]);
+
     list curdevs = mapkeys(Devices[type]:$[]);
-    list numdevs = maplist(string l, curdevs, ``(tointeger(l)));
     y2debug("curdevs=%1", curdevs);
-    y2debug("numdevs=%1", numdevs);
 
     integer i = 0;
     integer count = 0;
     list ret = [];
 
+    /* Hotpluggable devices */
+    if(IsHotplug(type) && !contains(curdevs, "")) {
+	y2debug("Added simple hotplug device");
+	count = count + 1;
+	change(ret, "");
+    }
+
+    /* Remaining numbered devices */
     while(count < num) {
-	if(!contains(numdevs, i)) {
-	    change(ret, i); //sformat("%1", i));
+	string ii = sformat("%1", i);
+	if(!contains(curdevs, ii)) {
+	    change(ret, ii);
 	    count = count + 1;
 	}
 	i = i + 1;
@@ -204,12 +212,12 @@ global define list GetFreeDevices(string type, integer num) ``{
  * @return free device
  * @example GetFreeDevice("eth") -&gt; "1"
  */
-global define integer GetFreeDevice(string type) ``{
+global define string GetFreeDevice(string type) ``{
     y2debug("type=%1", type);
-    integer ret = select(GetFreeDevices(type, 1), 0, -1);
-    if(ret < 0) y2error("Free device location error: %1", ret);
+    string ret = select(GetFreeDevices(type, 1), 0, nil);
+    if(ret == nil) y2error("Free device location error: %1", ret);
     y2debug("Free device=%1", ret);
-    return sformat("%1", ret);
+    return ret;
 }
 
 /**
@@ -249,7 +257,7 @@ global define boolean ChangeDevice2(string dev, map newdev, boolean check) ``{
     y2debug("Devices=%1", Devices);
 
     if(CheckDevice(dev) && check) {
-	y2error("Device already present: %1(%2)", dev);
+	y2error("Device already present: %1", dev);
 	return false;
     }
 
@@ -366,6 +374,7 @@ global define boolean CheckDevice(string dev) ``{
 	alias = anum;
     }
 
+    y2debug("CheckDevice(%1,%2,%3)", type, device, alias);
     return true;
 }
 
@@ -410,6 +419,31 @@ global define boolean UpdateModemSymlink() ``{
 	}
     }
     return ret;
+}
+
+/**
+ * Clean the hotplug devices compatibility symlink,
+ * usually ifcfg-eth-pcmcia -> ifcfg-eth-pcmcia-0.
+ * @return true if success
+ */
+global define boolean CleanHotplugSymlink() ``{
+
+    list types = [ "eth-pcmcia", "eth-usb", "tr-pcmcia", "tr-usb" ];
+    maplist(string t, types, ``{
+	string link = "/etc/sysconfig/network/ifcfg-" + t;
+	y2debug("link=%1", link);
+	if(lookup(SCR::Read(.target.lstat, link), "islink", false) == true) {
+	    string file = SCR::Read(.target.symlink, link);
+	    file = "/etc/sysconfig/network/" + file;
+	    y2debug("file=%1", file);
+	    if(SCR::Read(.target.size, file) > -1) {
+		y2milestone("Cleaning hotplug symlink");
+		y2milestone("Devices[%1]=%2", t, Devices[t]:$[]);
+		Devices[t] = remove(Devices[t]:$[], "");
+		y2milestone("Devices[%1]=%2", t, Devices[t]:$[]);
+	    }
+	}
+    });
 }
 
 /* EOF */

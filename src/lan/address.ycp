@@ -75,11 +75,13 @@ the network configuration.</p>");
     if(ipaddr == "" && netmask == "")
 	netmask = "255.255.255.0";
 
-    if(Lan::device == "")
+    if(false && Lan::device == "") {
+	y2error("Empty device");
 	/* Label text (Network device: unknown device) */
 	device = _("Unknown device");
+    }
     else
-	device = RealType(Lan::type, Lan::hotplug) + Lan::device;
+	device = device_name(RealType(Lan::type, Lan::hotplug), Lan::device);
 
     if(Lan::alias != "") {
 	device = device + ":" + Lan::alias;
