@@ -12,12 +12,11 @@
 textdomain "network";
 
 import "Arch";
-// Arch::s390=true;
-import "Lan";
-import "Wizard";
-
-import "Popup";
 import "Label";
+import "Lan";
+import "Popup";
+import "Wizard";
+// Arch::s390=true;
 
 include "network/complex.ycp";
 include "network/routines.ycp";
@@ -78,7 +77,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     string device = Lan::device;
     string default_device = device;
 
-    list device_types = [ "arc", "eth", "fddi", "myri", "tr", "wlan" ];
+    list device_types = [ "arc", /* "dummy", */ "eth", "fddi", "myri", "tr", "wlan" ];
 
     if(Arch::s390)
 	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv" ];
@@ -268,11 +267,11 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	Wizard::SetContentsButtons(caption, contents, help,
 		Label::BackButton(), Label::NextButton());
 
-    UI::ChangeWidget(`id(`modul), `Enabled, hotplug == "");
-    UI::ChangeWidget(`id(`options), `Enabled, hotplug == "");
-    ChangeWidgetIfExists(`id(`list), `Enabled, hotplug == "");
-    ChangeWidgetIfExists(`id(`usb), `Enabled, hotplug == "usb" || hotplug == "");
-    ChangeWidgetIfExists(`id(`pcmcia), `Enabled, hotplug == "pcmcia" || hotplug == "");
+    UI::ChangeWidget(`id(`modul), `Enabled, hotplug == "" && type != "dummy");
+    UI::ChangeWidget(`id(`options), `Enabled, hotplug == "" && type != "dummy");
+    ChangeWidgetIfExists(`id(`list), `Enabled, hotplug == "" && type != "dummy");
+    ChangeWidgetIfExists(`id(`usb), `Enabled, (hotplug == "usb" || hotplug == "") && type != "dummy");
+    ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hotplug == "pcmcia" || hotplug == "") && type != "dummy");
     ChangeWidgetIfExists(`id(`wire), `Enabled, type == "wlan");
     ChangeWidgetIfExists(`id(`num), `Value, device);
 
@@ -288,28 +287,28 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	/* change device type or pcmcia/usb card? */
 	else if(ret == `pcmcia || ret == `usb || ret == `dev) {
 
-	    if(ret == `pcmcia || ret == `usb) {
-		if(UI::WidgetExists(`id(`pcmcia)) || UI::WidgetExists(`id(`usb))) {
-		    if(UI::QueryWidget(`id(`pcmcia), `Value) == true)
-			hotplug = "pcmcia";
-		    else if(UI::QueryWidget(`id(`usb), `Value) == true)
-			hotplug = "usb";
-		    else
-			hotplug = "";
-		}
-
-		y2debug("hotplug=%1", hotplug);
-		UI::ChangeWidget(`id(`modul), `Enabled, hotplug == "");
-		UI::ChangeWidget(`id(`options), `Enabled, hotplug == "");
-		ChangeWidgetIfExists(`id(`list), `Enabled, hotplug == "");
-		ChangeWidgetIfExists(`id(`usb), `Enabled, hotplug == "usb" || hotplug == "");
-		ChangeWidgetIfExists(`id(`pcmcia), `Enabled, hotplug == "pcmcia" || hotplug == "");
+	    if(UI::WidgetExists(`id(`pcmcia)) || UI::WidgetExists(`id(`usb))) {
+		if(UI::QueryWidget(`id(`pcmcia), `Value) == true)
+		    hotplug = "pcmcia";
+		else if(UI::QueryWidget(`id(`usb), `Value) == true)
+		    hotplug = "usb";
+		else
+		    hotplug = "";
 	    }
+	    y2debug("hotplug=%1", hotplug);
 
 	    if(UI::WidgetExists(`id(`dev))) {
 		type = UI::QueryWidget(`id(`dev), `Value);
 		realtype = RealType(type, hotplug);
 	    }
+	    y2debug("type=%1", type);
+	    y2debug("realtype=%1", realtype);
+
+	    UI::ChangeWidget(`id(`modul), `Enabled, hotplug == "" && type != "dummy");
+	    UI::ChangeWidget(`id(`options), `Enabled, hotplug == "" && type != "dummy");
+	    ChangeWidgetIfExists(`id(`list), `Enabled, hotplug == "" && type != "dummy");
+	    ChangeWidgetIfExists(`id(`usb), `Enabled, (hotplug == "usb" || hotplug == "") && type != "dummy");
+	    ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hotplug == "pcmcia" || hotplug == "") && type != "dummy");
 	    ChangeWidgetIfExists(`id(`wire), `Enabled, type == "wlan");
 
 	    list devices = [];
@@ -480,151 +479,11 @@ for a particular network card by entering the name in the search entry.</p>");
 
     if(ret == `next) {
 	selected = UI::QueryWidget(`id(`cards), `CurrentItem);
+	if(selected == nil) selected = 0;
 	map card = select(hwlist, selected, $[]);
 	Lan::name = card["name"]:"";
 	Lan::Module["module"] = card["module"]:"";
 	Lan::Module["options"] = card["options"]:"";
-    }
-
-    return ret;
-}
-
-/**
- * Wireless devices configuration dialog
- * @return dialog result
- */
-global define symbol WirelessDialog() ``{
-
-    ScreenName("lan-hardware-wireless");
-
-    /* Wireless dialog caption */
-    string caption = _("Wireless Network Card Configuration");
-
-    /* Wireless dialog help 1/7 */
-    string helptext = _("<p>Here, set the most important settings
-for wireless networking.</p>") +
-
-    /* Wireless dialog help 2/7 */
-_("<p>The <b>Operating Mode</b> depends on the network topology. The mode
-can be <b>Ad-hoc</b> (peer-to-peer network without an access point),
-<b>Managed</b> (network managed by an access point, sometimes also
-called <i>Infrastructure Mode</i>), <b>Master</b> (the node is the
-synchronization master or acts as an access point), <b>Repeater</b>
-(the node forwards packets on the air), <b>Secondary</b> (the node acts
-as a backup master or repeater), or <b>Auto</b>.</p>") +
-
-    /* Wireless dialog help 3/7 */
-_("<p>Set the <b>Network Name (ESSID)</b> used to identify cells that are
-part of the same virtual network. As opposed to the NWID, which defines a
-single cell, the ESSID defines a group of cells, connected via repeaters or
-infrastructure, where the user may roam.</p>
-") +
-
-    /* Wireless dialog help 4/7 */
-_("<p>As all adjacent wireless networks share the same medium, the <b>Network
-Identifier (NWID)</b> is used to differentiate them (create logical colocated
-networks) and identify nodes belonging to the same cell.</p>") +
-
-    /* Wireless dialog help 5/7 */
-_("<p>To set the current <b>Encryption Key</b>, enter the key in hex digits as
-XXXX-XXXX-XXXX-XXXX or XXXXXXXX. You can also enter the key as an ASCII
-string by using the 's:' prefix.</p>") +
-
-    /* Wireless dialog help 6/7 */
-_("<p>The <b>Nick Name</b> means the station name. Most 802.11 products
-define it, but only some diagnostic tools use it.</p>") +
-
-    /* Wireless dialog help 7/7 */
-_("<p>These values will be written to the interface configuration file
-'ifcfg-*' in '/etc/sysconfig/network'. If you need additional settings,
-add them manually. Refer to the file 'wireless' in the same directory for all
-available options.</p>");
-
-    /* Wireless dialog contents */
-    term contents = `HBox(
-	`HSpacing(6),
-	/* Frame label */
-	`Frame(_("Wireless Device Settings"), `HBox(`HSpacing(2), `VBox(
-	    `VSpacing(1),
-	    /* Combobox item */
-	    `ComboBox(`id(`mode), `opt(`hstretch), _("O&perating Mode"), [
-		/* Combobox item */
-		`item(`id("Ad-hoc"), _("Ad-hoc"), Lan::wl_mode == "Ad-hoc"),
-		/* Combobox item */
-		`item(`id("Managed"), _("Managed"), Lan::wl_mode == "Managed"),
-		/* Combobox item */
-		`item(`id("Repeater"), _("Repeater"), Lan::wl_mode == "Repeater"),
-		/* Combobox item */
-		`item(`id("Secondary"), _("Secondary"), Lan::wl_mode == "Secondary"),
-		/* Combobox item */
-		`item(`id("Automatic"), _("Automatic"), Lan::wl_mode == "Auto")
-	     ]),
-	    `VSpacing(0.2),
-	    /* Text entry label */
-	    `TextEntry(`id(`essid), _("Ne&twork Name (ESSID)"), Lan::wl_essid),
-	    `VSpacing(0.2),
-	    /* Text entry label */
-	    `TextEntry(`id(`nwid), _("Network &Identifier (NWID)"), Lan::wl_nwid),
-	    `VSpacing(0.2),
-	    /* Text entry label */
-	    `TextEntry(`id(`key), _("&Encryption Key"), Lan::wl_key),
-	    `VSpacing(0.2),
-	    /* Text entry label */
-	    `TextEntry(`id(`nick), _("Nic&k Name"), Lan::wl_nick),
-	    `VSpacing(1)
-	    ), `HSpacing(2))),
-	`HSpacing(6)
-    );
-
-    Wizard::SetContentsButtons(caption, contents, helptext,
-	    Label::BackButton(), Label::OKButton());
-
-    any ret = nil;
-    while(true) {
-	ret = UI::UserInput();
-
-	if(ret == `abort || ret == `cancel) {
-	    if(ReallyAbort()) break;
-	    else continue;
-	}
-	else if(ret == `back) {
-	    break;
-	}
-	else if(ret == `next) {
-
-	    /* Key is either:
-	     *   s:AAAAA (5 ascii chars or more) or
-	     *   XXXX-XXXX-XX or XXXXXXXXXX (10 or more hex digits)
-	     */
-	    string key = UI::QueryWidget(`id(`key), `Value);
-	    if(key != "") {
-
-		if(regexpmatch(key, "^s:.{5,}$")) break;
-		if(regexpmatch(key, "^[0-9A-Fa-f]{10,}$")) break;
-
-		string h = "[0-9A-Fa-f]";
-		if(size(key) < 12 || !regexpmatch(key, "^"+h+"{4}"+"(-"+h+"{4}){1,}-"+h+"{1,4}$")) {
-		    /* Popup text */
-		    Popup::Error(_("The encryption key is invalid."));
-		    UI::SetFocus(`id(`key));
-		    continue;
-		}
-	    }
-
-	    break;
-	}
-	else {
-	    y2error("Unexpected return code: %1", ret);
-	    continue;
-	}
-    }
-
-    if(ret == `next) {
-	Lan::wl_essid = UI::QueryWidget(`id(`essid), `Value);
-	Lan::wl_nick = UI::QueryWidget(`id(`nick), `Value);
-	Lan::wl_nwid = UI::QueryWidget(`id(`nwid), `Value);
-	Lan::wl_mode = UI::QueryWidget(`id(`mode), `Value);
-	Lan::wl_key = UI::QueryWidget(`id(`key), `Value);
     }
 
     return ret;
@@ -725,7 +584,6 @@ add them manually.</p>");
 
     return ret;
 }
-
 
 /* EOF */
 }

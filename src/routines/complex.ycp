@@ -728,19 +728,19 @@ global define symbol FinishPopup(boolean modified, string head, string text, str
 
     map heads = $[
 	/* Popup headline */
-	"dns"	: _("DNS Configuration Successfully Saved"),
+	"dns"		: _("DNS Configuration Successfully Saved"),
 	/* Popup headline */
-	"dsl"	: _("DSL Configuration Successfully Saved"),
+	"dsl"		: _("DSL Configuration Successfully Saved"),
 	/* Popup headline */
-	"host"	: _("Hosts Configuration Successfully Saved"),
+	"host"		: _("Hosts Configuration Successfully Saved"),
 	/* Popup headline */
-	"isdn"	: _("ISDN Configuration Successfully Saved"),
+	"isdn"		: _("ISDN Configuration Successfully Saved"),
 	/* Popup headline */
-	"lan"	: _("Network Card Configuration Successfully Saved"),
+	"lan"		: _("Network Card Configuration Successfully Saved"),
 	/* Popup headline */
-	"modem"	: _("Modem Configuration Successfully Saved"),
+	"modem"		: _("Modem Configuration Successfully Saved"),
 	/* Popup headline */
-	"proxy"	: _("Proxy Configuration Successfully Saved"),
+	"proxy"		: _("Proxy Configuration Successfully Saved"),
 	/* Popup headline */
 	"provider"	: _("Provider Configuration Successfully Saved"),
 	/* Popup headline */

@@ -86,7 +86,8 @@ define boolean StartEthInterface() ``{
     if(detection_module != "") {
 	if(SCR::Execute(.target.bash, sformat("grep ^%1 /proc/modules", detection_module)) != 0) {
 	    y2milestone("Loading module %1 ...", detection_module);
-	    SCR::Execute(.target.bash, sformat("/sbin/modprobe %1 2>&1", detection_module));
+	    if(SCR::Execute(.target.bash, sformat("/sbin/modprobe %1 2>&1", detection_module)) != 0)
+		detection_module = "";
 	}
 	else
 	    detection_module = "";
@@ -95,7 +96,7 @@ define boolean StartEthInterface() ``{
 
     /* Setup the interface */
     detection_interface=false;
-    if(SCR::Execute(.target.bash, sformat("ifconfig %1 2>&1 | grep 'inet addr'", device)) != 0) {
+    if(SCR::Execute(.target.bash, sformat("/sbin/ifconfig %1 2>&1 | grep 'inet addr'", device), $["LC_MESSAGES":"C"]) != 0) {
 	y2milestone("Setting up interface %1 ...", device);
 	SCR::Execute(.target.bash, sformat("/sbin/ifconfig %1 up 2>&1", device));
 	detection_interface=true;
@@ -149,29 +150,35 @@ define boolean StartDetection() ``{
  */
 define boolean StopDetection() ``{
 
+    result = $[];
+
     /* Read DHCP data */
     string info = sformat("%1/dhcpcd-%2.info", tmpdir, device);
     // info = "/var/lib/dhcpcd/dhcpcd-eth0.info";
 
-    path detpath = .detection.dhcp;
-    string tmpfile = tmpdir + "/detection_dhcp.scr";
-    string scrfile = sformat("%1\n\n`ag_ini(SysConfigFile(\"%2\"))\n", detpath, info);
-    SCR::Write(.target.string, tmpfile, scrfile);
-    SCR::RegisterAgent(detpath, tmpfile);
+    if(SCR::Read(.target.size, info) > 0) {
 
-    result = $[];
-    list keys = SCR::Dir(detpath);
-    y2debug("keys=%1", keys);
-    maplist(string k, keys, ``{
-	string v = SCR::Read(add(detpath, k));
-	y2debug("%1=%2", k, v);
-	/* FIXME: duplicate keys (make list? add with suffix1, etc? ...? */
-	change(result, k, v);
-    });
-    SCR::UnregisterAgent(.detection.dhcp);
+	path detpath = .detection.dhcp;
+	string tmpfile = tmpdir + "/detection_dhcp.scr";
+	string scrfile = sformat("%1\n\n`ag_ini(SysConfigFile(\"%2\"))\n", detpath, info);
+	SCR::Write(.target.string, tmpfile, scrfile);
+	SCR::RegisterAgent(detpath, tmpfile);
+
+	list keys = SCR::Dir(detpath);
+	y2debug("keys=%1", keys);
+
+	maplist(string k, keys, ``{
+	    string v = SCR::Read(add(detpath, k));
+	    y2debug("%1=%2", k, v);
+	    /* FIXME: duplicate keys (make list? add with suffix1, etc? ...? */
+	    change(result, k, v);
+	});
+	SCR::UnregisterAgent(detpath);
+
+    }
 
     /* Finish DHCP detection */
-    SCR::Execute(.target.bash, sformat("kill $(cat %1/dhcpcd-%2.pid)", tmpdir, device));
+    SCR::Execute(.target.bash, sformat("test -f %1/dhcpcd-%2.pid && kill $(cat %1/dhcpcd-%2.pid)", tmpdir, device));
 
     return true;
 }

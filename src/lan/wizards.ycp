@@ -23,6 +23,7 @@ include "network/lan/complex.ycp";
 include "network/lan/dhcp.ycp";
 include "network/lan/hardware.ycp";
 include "network/lan/virtual.ycp";
+include "network/lan/wireless.ycp";
 include "network/services/dns.ycp";
 include "network/services/routing.ycp";
 

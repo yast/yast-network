@@ -498,8 +498,12 @@ global define list Summary(boolean split) ``{
     list sum = BuildSummary(split);
     if(HWDetected != true) return sum;
 
-    /* Summary label */
-    string hwdet = Summary::DevicesList(["<li>" + _("DSL Hardware Detected") + "</li>"]);
+    string hwdet = Summary::DevicesList( [
+	"<li>" +
+	/* Summary label */
+	_("Unknown (PPPOE style) DSL Device Detected") +
+	"</li>"
+    ]);
     // FIXME: HW
 
     y2milestone("hwdet=%1", HWDetected);
