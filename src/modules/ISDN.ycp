@@ -21,15 +21,6 @@ import "Provider";
 import "Progress";
 import "Summary";
 
-include "network/complex.ycp";
-include "network/devices.ycp";
-include "network/hardware.ycp";
-include "network/routines.ycp";
-include "network/runtime.ycp";
-
-include "network/isdn/config.ycp";
-include "network/isdn/routines.ycp";
-
 /*-------------*/
 /* GLOBAL DATA */
 
@@ -134,7 +125,7 @@ map Devices = $[];
 /**
  * deleted devices
  */
-list DeletedDevices = [];
+list<string> DeletedDevices = [];
 
 /**
  * Abort function
@@ -159,6 +150,23 @@ global define boolean Modified() ``{
     y2debug("modified(hw,if)=%1,%2", modified_hw, modified_if);
     return (modified_hw || modified_if);
 }
+
+string name = "";
+string unique = "";
+string hotplug = "";
+string alias = "";
+
+// include "network/complex.ycp";
+include "network/devices.ycp";
+include "network/hardware.ycp";
+include "network/routines.ycp";
+include "network/runtime.ycp";
+
+map Devs = $[];
+include "network/complex.ycp";
+
+include "network/isdn/config.ycp";
+include "network/isdn/routines.ycp";
 
 /**
  * Read all ISDN settings from the SCR
@@ -191,7 +199,7 @@ global define boolean Read() ``{
     if(Abort()) return false;
     // stage 1 in reading current ISDN setup
     ProgressNextStage(_("Detecting ISDN cards"));
-    ReadHardware("isdn");
+    Hardware = ReadHardware("isdn");
     sleep(sl);
 
     if(Abort()) return false;
@@ -343,7 +351,7 @@ global define boolean Write(boolean start) ``{
     // stage 6 in writing current ISDN setup
     ProgressNextStage(_("Writing providers"));
     if (Provider::Modified())
-	Provider::Write();
+	Provider::Write("isdn");
     sleep(sl);
 
     if(Abort()) return false;
@@ -453,13 +461,13 @@ global define boolean TestDev(string dev) ``{
     // stage 2 in testing current ISDN setup
     ProgressNextStage(_("Stop ISDN network"));
     cmd = sformat("/etc/init.d/network stop -o type=isdn");
-    out = SCR::Execute(.target.bash_output, cmd);
+    out = (map) SCR::Execute(.target.bash_output, cmd);
     details = details + cmd + "\n";
     details = details + out["stdout"]:"";
     details = details + out["stderr"]:"";
     details = details + "\n";
     cmd = sformat("/etc/init.d/network stop -o type=ippp");
-    out = SCR::Execute(.target.bash_output, cmd);
+    out = (map) SCR::Execute(.target.bash_output, cmd);
     details = details + cmd + "\n";
     details = details + out["stdout"]:"";
     details = details + out["stderr"]:"";
@@ -470,7 +478,7 @@ global define boolean TestDev(string dev) ``{
     // stage 3 in testing current ISDN setup
     ProgressNextStage(_("Unload ISDN driver"));
     cmd = sformat("/etc/init.d/isdn stop");
-    out = SCR::Execute(.target.bash_output, cmd);
+    out = (map) SCR::Execute(.target.bash_output, cmd);
     details = details + cmd + "\n";
     details = details + out["stdout"]:"";
     details = details + out["stderr"]:"";
@@ -481,7 +489,7 @@ global define boolean TestDev(string dev) ``{
     // stage 4 in testing current ISDN setup
     ProgressNextStage(_("Load controller"));
     cmd = sformat("/etc/init.d/isdn start %1 -o all", dev);
-    out = SCR::Execute(.target.bash_output, cmd);
+    out = (map) SCR::Execute(.target.bash_output, cmd);
     details = details + cmd + "\n";
     details = details + out["stdout"]:"";
     details = details + out["stderr"]:"";
@@ -493,7 +501,7 @@ global define boolean TestDev(string dev) ``{
     // stage 5 in testing current ISDN setup
     ProgressNextStage(_("Unload controller"));
     cmd = sformat("/etc/init.d/isdn stop");
-    out = SCR::Execute(.target.bash_output, cmd);
+    out = (map) SCR::Execute(.target.bash_output, cmd);
     details = details + cmd + "\n";
     details = details + out["stdout"]:"";
     details = details + out["stderr"]:"";
@@ -517,7 +525,7 @@ global define boolean TestDev(string dev) ``{
  * @param map of parameters
  *
  */
-global define set_cardparameter(map cfg) ``{
+global define void set_cardparameter(map cfg) ``{
     string ac = cfg["AREACODE"]: global_ac;
     if (ac != "" && global_ac == "")
 	global_ac = ac;
@@ -541,7 +549,7 @@ global define set_cardparameter(map cfg) ``{
  * @param map of parameters
  *
  */
-global define set_ifparameter(map cfg) ``{
+global define void set_ifparameter(map cfg) ``{
     string sm = cfg["STARTMODE"]: global_sm;
     if (sm != "" && global_sm == "")
         global_sm = sm;
@@ -557,7 +565,7 @@ global define set_ifparameter(map cfg) ``{
  * @param map of detected hw settings
  *
  */
-global define set_hwparameter(map hw) ``{
+global define void set_hwparameter(map hw) ``{
     // Fixme parameter lookup for ISA hardware
     hw_device["PARA_TYPE"] = sformat("%1", get_i4ltype(hw));
     hw_device["PARA_SUBTYPE"] = sformat("%1", get_i4lsubtype(hw));
@@ -766,7 +774,7 @@ global define boolean Commit() ``{
 
 	Provider::Commit();
 	/* [msvec] Why is interface changed after changing provider? */
-	interface["PROVIDER"]:provider_file;
+	interface["PROVIDER"] = provider_file;
 	ChangeDevice(type, device, interface, operation == `addprov);
 	modified_if = true;
 
@@ -821,17 +829,20 @@ global define map Export() ``{
  * @return summary of the current configuration
  */
 global define list Summary(boolean split) ``{
-    return BuildSummary(split);
+    Devs = Devices;
+    return BuildSummary(Hardware, split);
 }
 
 /**
  */
 global define list OverviewDev() ``{
+    Devs = Devices;
     return filter(list i, BuildOverview(), ``(issubstring(i[0, 0]:"","contr")));
     //return BuildOverview("contr");
 }
 
 global define list OverviewIf() ``{
+    Devs = Devices;
     return filter(list i, BuildOverview(), ``(issubstring(i[0, 0]:"","net")));
     //return BuildOverview("net");
 }
@@ -852,7 +863,7 @@ global define integer CountIF() ``{
  *         false if here aren't any interfaces
  */
 global define boolean PrepareInterface() ``{
-    if ((device > -1) && (type == "net"))
+    if ((tointeger(device) > -1) && (type == "net"))
 	return true;
     map typemap = Devices["net"]:$[];
     if (0 == size(typemap))
@@ -890,7 +901,7 @@ global define boolean SelectInterface(boolean auto) ``{
 	return SelIf(id);
     }
 
-    list ifl = maplist(`num, `devmap, typemap, ``{
+    list ifl = maplist(string num, map devmap, typemap, ``{
 	string p = devmap["PROTOCOL"]:"";
 	string devid = sformat("net%1", num);
 	string devnam = "";
@@ -900,7 +911,7 @@ global define boolean SelectInterface(boolean auto) ``{
 	    devnam = sformat("isdn%1", num);
 	else
 	    devnam = sformat("unknown%1", num);
-	return `item(`id(devid), devnam, (tointeger(num) == device));
+	return `item(`id(devid), devnam, (num == device));
     });
     y2debug("ifl=%1", ifl);
     // popup title to select a interface for an edit/delete operation
@@ -912,7 +923,7 @@ global define string GetInterface4Provider(string prov) ``{
     string ifn = "";
     map typemap = Devices["net"]:$[];
 
-    maplist(`num, `devmap, typemap, ``{
+    maplist(string num, map devmap, typemap, ``{
 	if (prov == devmap["PROVIDER"]:"") {
 	    if ("syncppp" == devmap["PROTOCOL"]:"")
 		ifn = sformat("ippp%1",num);

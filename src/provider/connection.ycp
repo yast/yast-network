@@ -15,7 +15,7 @@ import "DSL";
 import "Firewall";
 import "Modem";
 import "IP";
-// FIXME: NI import "ISDN";
+import "ISDN";
 import "Label";
 import "Popup";
 import "Provider";
@@ -50,7 +50,6 @@ define any ConnectionDialog() ``{
     string device = nil;
     if(type == "modem") device = "ppp"; //device_name(Modem::type, Modem::device);
     else if(type == "dsl") device = "ppp"; // FIXME device_name(DSL::type, DSL::device);
-    /* FIXME: NI
     else if(type == "isdn") {
 	// FIXME: #18840
 	if(ISDN::type == "net")
@@ -58,7 +57,6 @@ define any ConnectionDialog() ``{
 	else
 	    device = device_name(ISDN::type, ISDN::device);
     }
-    */
     else {
 	y2error("Unknown type: %1", type);
 	return nil;

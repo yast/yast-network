@@ -31,7 +31,7 @@
  * @param i4lsubtyp - the I4L SUBTYPE
  * @return boolean  - true if match false if not
  */
-global define boolean driver_has_type(map drv, integer i4ltyp, integer i4lsubtyp) ``{
+define boolean driver_has_type(map drv, integer i4ltyp, integer i4lsubtyp) ``{
     boolean ret = false;
 
     if (i4ltyp == lookup(drv, "type", -2)) {
@@ -48,7 +48,7 @@ global define boolean driver_has_type(map drv, integer i4ltyp, integer i4lsubtyp
  * @param i4lsubtyp - the I4L SUBTYPE
  * @return boolean  - true if match false if not
  */
-global define boolean card_has_type(map card, integer i4ltyp, integer i4lsubtyp) ``{
+define boolean card_has_type(map card, integer i4ltyp, integer i4lsubtyp) ``{
     boolean ret = false;
 
     maplist(map d, card["driver"]:[],
@@ -66,7 +66,7 @@ global define boolean card_has_type(map card, integer i4ltyp, integer i4lsubtyp)
  * @param i4lsubtyp - the I4L SUBTYPE
  * @return map of matching driver info
  */
-global define map get_isdndriver_by_type(map cdb, integer i4ltyp, integer i4lsubtyp) ``{
+define map get_isdndriver_by_type(map cdb, integer i4ltyp, integer i4lsubtyp) ``{
     map ret =  $[];
 
     maplist(any i, map c, cdb["Cards"]:$[],
@@ -87,7 +87,7 @@ global define map get_isdndriver_by_type(map cdb, integer i4ltyp, integer i4lsub
  * @param i4lsubtyp - the I4L SUBTYPE
  * @return map of matching card info
  */
-global define map get_isdncard_by_type(map cdb, integer i4ltyp, integer i4lsubtyp) ``{
+define map get_isdncard_by_type(map cdb, integer i4ltyp, integer i4lsubtyp) ``{
     map ret =  $[];
 
     maplist(any i, map c, cdb["Cards"]:$[],
@@ -103,7 +103,7 @@ global define map get_isdncard_by_type(map cdb, integer i4ltyp, integer i4lsubty
  * @param card      - map of card info
  * @return I4L SUBTYPE
  */
-global define integer get_i4lsubtype(map card) ``{
+define integer get_i4lsubtype(map card) ``{
     integer ret = -1;
     list d = card["driver"]:[];
 
@@ -118,7 +118,7 @@ global define integer get_i4lsubtype(map card) ``{
  * @param card      - map of card info
  * @return I4L TYPE
  */
-global define integer get_i4ltype(map card) ``{
+define integer get_i4ltype(map card) ``{
     integer ret = -1;
     list d = card["driver"]:[];
 
@@ -134,7 +134,7 @@ global define integer get_i4ltype(map card) ``{
  * @param details  - string of collected infos during the test 
  * @return allways true
  */
-global define boolean display_testresult(integer result, string details) ``{
+define boolean display_testresult(integer result, string details) ``{
     any ret = nil;
     string msg = "";
 
@@ -166,7 +166,7 @@ global define boolean display_testresult(integer result, string details) ``{
     UI::SetFocus(`id(`ok));
     ret = UI::UserInput();
     if (ret == `detail)
-    	Popup::Message (details);
+	Popup::Message (details);
     UI::CloseDialog();
     return true;
 }
@@ -177,7 +177,7 @@ global define boolean display_testresult(integer result, string details) ``{
  * @param lst  - list of items
  * @return name of the selected item
  */
-global define string select_fromlist_popup(string title, list lst) ``{
+define string select_fromlist_popup(string title, list lst) ``{
     any ret = nil;
 
     UI::OpenDialog(

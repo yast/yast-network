@@ -19,13 +19,13 @@ import "Wizard";
 import "Wizard_hw";
 
 include "network/routines.ycp";
-include "network/complex.ycp";
+include "network/summary.ycp";
 
 /**
  * Return a modification status
  * @return true if data was modified
  */
-global define boolean Modified() ``{
+define boolean Modified() ``{
     return ISDN::Modified() || Provider::Modified();
 }
 
@@ -33,7 +33,7 @@ global define boolean Modified() ``{
  * Commit changes to internal structures
  * @return always `next
  */
-global define symbol Commit() ``{
+define symbol Commit() ``{
     ISDN::Commit();
     return `next;
 }
@@ -42,7 +42,7 @@ global define symbol Commit() ``{
  * Read settings dialog
  * @return `abort if aborted and `next otherwise
  */
-global define symbol ReadDialog() ``{
+define symbol ReadDialog() ``{
 
     /* isdns read dialog help 1/2 */
     string helptext = _("<P><B><BIG>Initializing ISDN cards configuration
@@ -63,7 +63,7 @@ the <B>Abort</B> button now.</P>");
  * Write settings dialog
  * @return `abort if aborted and `next otherwise
  */
-global define symbol WriteDialog() ``{
+define symbol WriteDialog() ``{
     if(!Modified()) return `next;
 
     /* isdns write dialog help 1/2 */
@@ -88,8 +88,8 @@ An additional dialog will inform you whether it is safe to do so or not.</P>");
  * @param  string op  "edit" or "delete"
  * @return dialog result
  */
-global define symbol Provider_or_IF(string op) ``{
-    symbol ret = nil;
+define any Provider_or_IF(string op) ``{
+    any ret = nil;
     // popup text to select between Interface or Provider for edit or delete 1/2
     string txt = op == "edit" ?
        // popup text to select between Interface or Provider
@@ -129,7 +129,7 @@ global define symbol Provider_or_IF(string op) ``{
  * Main dialog
  * @return dialog result
  */
-global define symbol SummaryDialog() ``{
+define any SummaryDialog() ``{
 
     /* ISDN summary dialog caption */
     // dialog title
@@ -154,8 +154,8 @@ can change the configuration and setup dialup connections) will open.
 </P>");
 
     list summary = ISDN::Summary(true);
-    list unconfigured = select(summary, 1, []);
-    string configured = select(summary, 0, "");
+    list unconfigured = (list) select(summary, 1, []);
+    string configured = (string) select(summary, 0, "");
 
     y2debug("unconfigured=%1",unconfigured);
     // table title for detected ISDN cards
@@ -196,7 +196,7 @@ can change the configuration and setup dialup connections) will open.
 		ret = `other;
 	    }
 	    else {
-		ISDN::SelectHW(selected);
+		ISDN::SelectHW((integer) selected);
 		ret = `configure;
 	    }
 	    break;
@@ -217,7 +217,7 @@ can change the configuration and setup dialup connections) will open.
  * Overview dialog
  * @return dialog result
  */
-global define symbol OverviewDialog() ``{
+define any OverviewDialog() ``{
 
     /* ISDN overview dialog caption */
     // dialog title
@@ -306,7 +306,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
         }
         /* edit */
         else if(ret == `edit || ret == `table) {
-            string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+            string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 	    if(dev == nil) {
 		y2error("Empty device during Edit");
 		continue;
@@ -317,7 +317,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
         }
         /* delete */
         else if(ret == `delete) {
-            string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+            string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
             ISDN::Delete(dev);
             ISDN::Commit();
             overview = ISDN::OverviewDev();
@@ -338,7 +338,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
         else if(ret == `Edit || ret == `Table) {
 	    ret = Provider_or_IF("edit");
 	    if (ret == `provider) {
-		string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
+		string dev = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
 		if(dev == nil) {
 		    y2error("Empty device during Edit");
 		    continue;
@@ -360,7 +360,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	else if(ret == `Delete) {
 	    ret = Provider_or_IF("delete");
 	    if (ret == `provider) {
-		string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
+		string dev = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
 		string ifc = ISDN::GetInterface4Provider(dev);
 		if (ifc == "") {
 		    Provider::Delete(dev);

@@ -19,6 +19,8 @@ import "Map";
 
 include "network/routines.ycp";
 
+global define boolean CheckDevice(string dev);
+
 /**
  * Read Devices from files
  * @param devregex regular expression for the device type
@@ -95,8 +97,8 @@ global define boolean ReadDevices(string devregex) ``{
 	    y2milestone("config=%1", config);
 	});
 
-	change(dev, devnum, config);
-	change(Devices, devtype, dev);
+	dev[devnum] = config;
+	Devices[devtype] = dev;
     });
     y2debug("Devices=%1", Devices);
 
@@ -157,7 +159,7 @@ global define boolean WriteDevices() ``{
 	    y2debug("Permission change: %1, %2", key != "", file);
 	    if(key != "") {
 		y2debug("CHANGED");
-		change(chmod, file);
+		chmod = add(chmod, file);
 	    }
 	});
     });
@@ -198,14 +200,14 @@ global define list<string> GetFreeDevices(string type, integer num) ``{
     if(IsHotplug(type) && !contains(curdevs, "")) {
 	y2debug("Added simple hotplug device");
 	count = count + 1;
-	change(ret, "");
+	ret = add(ret, "");
     }
 
     /* Remaining numbered devices */
     while(count < num) {
 	string ii = sformat("%1", i);
 	if(!contains(curdevs, ii)) {
-	    change(ret, ii);
+	    ret = add(ret, ii);
 	    count = count + 1;
 	}
 	i = i + 1;
@@ -247,8 +249,8 @@ global define boolean ChangeDevice(string type, string device, map newdev, boole
 	y2error("Key already present: %1(%2)", dev, type);
 	return false;
     }
-    change(devmap, dev, newdev);
-    change(Devices, type, devmap);
+    devmap[dev] = newdev;
+    Devices[type] = devmap;
     y2debug("Devices=%1", Devices);
     return true;
 }
@@ -280,13 +282,13 @@ global define boolean ChangeDevice2(string dev, map newdev, boolean check) ``{
     map amap = devmap["_aliases"]:$[];
 
     if(a != "")
-	change(amap, a, newdev);
+	amap[a] = newdev;
     else
 	devmap = newdev;
 
-    change(devmap, "_aliases", amap);
-    change(devsmap, d, devmap);
-    change(Devices, t, devsmap);
+    devmap["_aliases"] = amap;
+    devsmap[d] = devmap;
+    Devices[t] = devsmap;
 
     y2debug("Devices=%1", Devices);
     return true;
@@ -309,8 +311,8 @@ global define boolean DeleteDevice(string type, string dev) ``{
     }
     //remove(devmap, dev);
     devmap = remove(devmap, dev);
-    change(Devices, type, devmap);
-    change(DeletedDevices, type+dev);
+    Devices[type] = devmap;
+    DeletedDevices = add(DeletedDevices, type+dev);
 
     y2debug("Devices=%1", Devices);
     y2debug("DeletedDevices=%1", DeletedDevices);
@@ -338,14 +340,14 @@ global define boolean DeleteDevice2(string dev) ``{
 	map devmap = devsmap[device]:$[];
 	map amap = devmap["_aliases"]:$[];
 	amap = remove(amap, alias);
-	change(devmap, "_aliases", amap);
-	change(devsmap, device, devmap);
+	devmap["_aliases"] = amap;
+	devsmap[device] = devmap;
     }
     else
 	devsmap = remove(devsmap, device);
 
-    change(Devices, type, devsmap);
-    change(DeletedDevices, dev);
+    Devices[type] = devsmap;
+    DeletedDevices = add(DeletedDevices, dev);
 
     y2debug("Devices=%1", Devices);
     y2debug("DeletedDevices=%1", DeletedDevices);
@@ -398,7 +400,7 @@ global define list LocateDevices(string key, string val) ``{
     list ret = [];
     maplist(string typ, map devsmap, Devices, ``{
 	maplist(string num, map devmap, devsmap, ``{
-	    if(devmap[key]:"" == val) change(ret, typ+num);
+	    if(devmap[key]:"" == val) ret = add(ret, typ+num);
 	});
     });
 

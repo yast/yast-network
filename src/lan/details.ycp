@@ -1,0 +1,131 @@
+/**
+ * File:	include/network/lan/details.ycp
+ * Package:	Network configuration
+ * Summary:	Network card details dialogs
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Label";
+import "NetworkConfig";
+import "Popup";
+import "Wizard";
+
+include "network/routines.ycp";
+
+/**
+ * Dialog for DHCP client options
+ * @return dialog result
+ */
+global define any DetailsDialog() ``{
+
+ScreenName("lan-details");
+
+/* Details dialog caption */
+string caption = _("Detailed Network Card Settings");
+
+/* Details dialog help 1/8 */
+string help = _("<p>Configure the detailed network card settings here.</p>") +
+
+/* Details dialog help 2/8 */
+_("<p><b>MTU</b>
+</p>") +
+
+/* Details dialog help 3/8 */
+_("<p><b>Start Mode</b>
+</p>");
+
+string mtu = "";
+string startmode = "onboot";
+
+list StartModes = [
+    /* ComboBox item (device start mode) */
+    `item(`id("onboot"), _("At Boot Time"), startmode == "onboot"),
+    /* ComboBox item (device start mode) */
+    `item(`id("hotplug"), _("Started When Hot-Plugged"), startmode == "hotplug"),
+    /* ComboBox item (device start mode) */
+    `item(`id("manual"), _("Manually"), startmode == "manual"),
+    /* ComboBox item (device start mode) */
+    `item(`id("off"), _("Disabled"), startmode == "off"),
+];
+
+/* Details dialog contents */
+term contents = `HBox(
+    `HSpacing(6),
+    /* Frame label */
+    `Frame(_("Detailed Network Card Settings"), `HBox(`HSpacing(2), `VBox(
+	`VSpacing(1),
+	/* TextEntry label */
+	`Left(`TextEntry(`id(`mtu), _("&MTU"), mtu)),
+	`VSpacing(0.5),
+	/* ComboBox label */
+	`Left(`ComboBox(`id(`startmode), _("&Start Mode"), StartModes)),
+	`VSpacing(1)
+	), `HSpacing(2))),
+    `HSpacing(6)
+);
+
+Wizard::SetContentsButtons(caption, contents, help,
+	Label::BackButton(), Label::OKButton());
+
+any ret = nil;
+while(true) {
+
+    ret = UI::UserInput();
+
+    /* abort? */
+    if(ret == `abort || ret == `cancel) {
+	if(ReallyAbort()) break;
+	else continue;
+    }
+    /* back */
+    else if(ret == `back) {
+	break;
+    }
+    else if(ret == `next) {
+	/* check* */
+	break;
+    }
+    else {
+	y2error("Unexpected retcode: %1", ret);
+	continue;
+    }
+
+}
+
+/* update the configuration */
+if(ret == `next) {
+    /*
+    NetworkConfig::DHCP["DHCLIENT_CLIENT_ID"] = UI::QueryWidget(`id(`clientid), `Value);
+    NetworkConfig::DHCP["DHCLIENT_HOSTNAME_OPTION"] = UI::QueryWidget(`id(`hostname), `Value);
+    dhclient_broadcast = UI::QueryWidget(`id(`broadcast), `Value) == true;
+    */
+
+    /* DHCP data */
+    /*
+    string options = NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"]:"";
+    if(options == nil) options = "";
+    if(dhclient_broadcast && !issubstring(options, "-B")) {
+	NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"] = options + " -B";
+    }
+    else if(!dhclient_broadcast && issubstring(options, "-B")) {
+	NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"] = regexpsub(options, "(.*)-B(.*)", "\\1\\2");
+    }
+    */
+}
+
+return ret;
+}
+
+/*
+Wizard::CreateDialog();
+DetailsDialog();
+*/
+
+/* EOF */
+}

@@ -21,8 +21,8 @@ import "Progress";
 
 include "network/routines.ycp";
 
-string func = WFM::Args(0);
-map param = WFM::Args(1);
+string func = (string) WFM::Args(0);
+map param = (map) WFM::Args(1);
 map ret = $[];
 
 /* create a textual proposal */
@@ -53,7 +53,7 @@ if(func == "MakeProposal") {
 /* run the module */
 else if(func == "AskUser") {
     map stored = ISDN::Export();
-    symbol seq = WFM::CallFunction(`isdn(.propose));
+    any seq = WFM::CallFunction("isdn", [.propose]);
     if(seq != `next) ISDN::Import(stored);
     ret = $[
 	"workflow_sequence" : seq

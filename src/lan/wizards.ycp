@@ -21,6 +21,7 @@ include "network/routines.ycp";
 include "network/lan/address.ycp";
 include "network/lan/complex.ycp";
 include "network/lan/dhcp.ycp";
+include "network/lan/details.ycp";
 include "network/lan/hardware.ycp";
 include "network/lan/virtual.ycp";
 include "network/lan/wireless.ycp";

@@ -19,28 +19,88 @@ include "wizard/sequencer.ycp";
 
 include "network/routines.ycp";
 
-include "network/provider/wizards.ycp";
-include "network/provider/details.ycp";
-include "network/provider/dialogs.ycp";
-include "network/provider/connection.ycp";
-
 include "network/isdn/lowlevel.ycp";
 include "network/isdn/complex.ycp";
 include "network/isdn/interface.ycp";
 include "network/isdn/ip.ycp";
 include "network/isdn/ifdetails.ycp";
 
+// include "network/provider/wizards.ycp";
+include "network/provider/details.ycp";
+include "network/provider/dialogs.ycp";
+include "network/provider/connection.ycp";
+include "network/provider/provider.ycp";
+
+define symbol ISDNSequence();
+define symbol ISDNAutoSequence();
+define symbol MainSequence();
+define symbol OneISDNSequence(string entry);
+define symbol OneISDNIFSequence(string entry);
+
+// FIXME: duplicated from provider/wizards.ycp
+
+define symbol CommitProvider() ``{
+    Provider::Commit();
+    return `next;
+}
+
+define symbol OneProviderSequence(boolean country) ``{
+
+    map aliases = $[
+	"providers"		: ``(ProvidersDialog(false)),
+	"provider"		: ``(ProviderDialog()),
+	"new_provider"		: ``(ProviderDialog()),
+	"connection"		: ``(ConnectionDialog()),
+	"ipdetails"		: ``(IPDetailsDialog()),
+	"commit"		: [ ``(CommitProvider()), true ],
+    ];
+
+    string entry = "provider";
+    if(country) entry = "providers";
+
+    map sequence = $[
+	"ws_start" : entry,
+	"providers" : $[
+	    `next   : "provider",
+	    `new    : "new_provider",
+	    `abort  : `abort
+	],
+	"provider" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"new_provider" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"connection" : $[
+	    `IPDetails	: "ipdetails",
+	    `next   : "commit",
+	    `abort  : `abort
+	],
+	"ipdetails" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"commit" : $[
+	    `next   : `next,
+	],
+    ];
+
+    return WizardSequencer(aliases, sequence);
+}
+
 /**
  * Whole configuration of network
  * @return sequence result
  */
-global define symbol ISDNSequence() ``{
+define symbol ISDNSequence() ``{
 
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
 	"write"	: [ ``( WriteDialog() ), true ],
-	"finish": [ ``( Finished(ISDN::Modified(), FinishedMailText(), "mail", ["dialup"]) ), true ],
+//	"finish": [ ``( Finished(ISDN::Modified(), FinishedMailText(), "mail", ["dialup"]) ), true ],
     ];
 
     map sequence = $[
@@ -55,11 +115,12 @@ global define symbol ISDNSequence() ``{
 	],
 	"write" : $[
 	    `abort	: `abort,
-	    `next	: "finish"
-	],
-	"finish" : $[
 	    `next	: `next,
-	]
+//	    `next	: "finish"
+	],
+//	"finish" : $[
+//	    `next	: `next,
+//	]
     ];
 
     Wizard::CreateDialog();
@@ -74,7 +135,7 @@ global define symbol ISDNSequence() ``{
  * For use with autoinstallation.
  * @return sequence result
  */
-global define symbol ISDNAutoSequence() ``{
+define symbol ISDNAutoSequence() ``{
     // main srceen title
     string caption = _("ISDN configuration");
     // static text
@@ -94,7 +155,7 @@ global define symbol ISDNAutoSequence() ``{
  * Main workflow of the network configuration
  * @return sequence result
  */
-global define symbol MainSequence() ``{
+define symbol MainSequence() ``{
 
     map aliases = $[
 	"summary"	: ``(SummaryDialog()),
@@ -169,7 +230,7 @@ global define symbol MainSequence() ``{
  * @param entry sequence entry
  * @return sequence result
  */
-global define symbol OneISDNSequence(string entry) ``{
+define symbol OneISDNSequence(string entry) ``{
 
     map aliases = $[
 	"lowlevel"	: ``(isdn_lowlevel()),
@@ -232,7 +293,7 @@ global define symbol OneISDNSequence(string entry) ``{
  * @param entry sequence entry
  * @return sequence result
  */
-global define symbol OneISDNIFSequence(string entry) ``{
+define symbol OneISDNIFSequence(string entry) ``{
 
     map aliases = $[
 	"add_if"		: ``(interface_dialog()),

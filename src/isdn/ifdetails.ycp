@@ -29,15 +29,15 @@ import "Wizard";
  * @return any user input
  */
 
-global define symbol IFDetailDialog() ``{
+define any IFDetailDialog() ``{
 
     /* PREPARE VARIABLES */
-    string remote_in = lookup(ISDN::interface, "REMOTE_IN", "");
-    string ipppd_opt = lookup(ISDN::interface, "IPPPD_OPTIONS", "");
-    boolean syncppp = lookup(ISDN::interface, "PROTOCOL", "syncppp") == "syncppp";
-    boolean secure = lookup(ISDN::interface, "SECURE", "on") == "on";
-    integer cbdel = tointeger(lookup(ISDN::interface, "CBDELAY", "2"));
-    string callback = lookup(ISDN::interface, "CALLBACK", "off");
+    string remote_in = (string) lookup(ISDN::interface, "REMOTE_IN", "");
+    string ipppd_opt = (string) lookup(ISDN::interface, "IPPPD_OPTIONS", "");
+    boolean syncppp = (string) lookup(ISDN::interface, "PROTOCOL", "syncppp") == "syncppp";
+    boolean secure = (string) lookup(ISDN::interface, "SECURE", "on") == "on";
+    integer cbdel = tointeger((string) lookup(ISDN::interface, "CBDELAY", "2"));
+    string callback = (string) lookup(ISDN::interface, "CALLBACK", "off");
 
     /* DIALOG TEXTS */
 
@@ -141,7 +141,7 @@ for example, +pap +chap for the dial-in server authentication.</p>");
         UI::ChangeWidget(`id(`cbdelay), `Enabled, false);
 
     /* MAIN CYCLE */
-    symbol ret = nil;
+    any ret = nil;
     while (true) {
 
 	ret = UI::UserInput();
@@ -169,12 +169,12 @@ for example, +pap +chap for the dial-in server authentication.</p>");
 	    UI::ChangeWidget(`id(`cbdelay), `Enabled, true);
 	}
 	else if (ret == `next) {
-	    remote_in = UI::QueryWidget(`id(`remote_in), `Value);
-	    secure = UI::QueryWidget(`id(`secure), `Value);
+	    remote_in = (string) UI::QueryWidget(`id(`remote_in), `Value);
+	    secure = (boolean) UI::QueryWidget(`id(`secure), `Value);
 //	    callback = UI::QueryWidget(`id(`callback), `CurrentButton);
-	    cbdel = UI::QueryWidget(`id(`cbdelay), `Value);
+	    cbdel = (integer) UI::QueryWidget(`id(`cbdelay), `Value);
 	    if (syncppp) {
-		ipppd_opt = UI::QueryWidget(`id(`ipppd_opt), `Value);
+		ipppd_opt = (string) UI::QueryWidget(`id(`ipppd_opt), `Value);
 	    }
 	    /* check_* */
 	    break;
@@ -196,7 +196,7 @@ for example, +pap +chap for the dial-in server authentication.</p>");
         ]);
 	if (syncppp) {
 	    ISDN::interface = union(ISDN::interface, $[
-        	"IPPPD_OPTIONS"	: ipppd_opt,
+		"IPPPD_OPTIONS"	: ipppd_opt,
 	    ]);
 	}
     }

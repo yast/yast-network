@@ -37,7 +37,7 @@ include "network/dsl/dialogs.ycp";
  * @return any user input
  */
 
-global define symbol isdn_if_sel(symbol op) ``{
+define any isdn_if_sel(symbol op) ``{
 
     /* DIALOG TEXTS */
 
@@ -119,7 +119,7 @@ in the DSL configuration dialog.</p>
     ISDN::skip = false;
 
     /* MAIN CYCLE */
-    symbol ret = nil;
+    any ret = nil;
     while (true) {
 
 	ret = UI::UserInput();
@@ -187,8 +187,7 @@ in the DSL configuration dialog.</p>
  * Dialog for ISDN interface settings
  * @return any user input
  */
-
-global define symbol interface_dialog() ``{
+define any interface_dialog() ``{
 
     /* PREPARE VARIABLES */
     string msn = lookup(ISDN::interface, "MSN", "0");
@@ -271,7 +270,7 @@ this box.
     term prov = `VSpacing(0.1);
     if(ISDN::operation  == `editif) {
 	Provider::Add("isdn");
-	provlist = Provider::GetProviders("_custom", ISDN::provider_file);
+	provlist = Provider::GetProviders("isdn", "_custom", ISDN::provider_file);
 	y2debug("provlist: %1", provlist);
 	/* ComboBox label */
 	prov = `Left(`ComboBox(`id(`prov), _("D&efault Provider"), provlist));
@@ -340,7 +339,7 @@ this box.
     UI::SetFocus(`id(`msn));
 
     /* MAIN CYCLE */
-    symbol ret = nil;
+    any ret = nil;
     while (true) {
 
     /* We need ":"  for NI1 SPID and "VB" in future (for pending DATA over VOICE patch)
@@ -364,10 +363,10 @@ this box.
 	    break;
 	}
 	else if (ret == `next || ret == `detail) {
-	    msn = UI::QueryWidget(`id(`msn), `Value);
-	    startmode = UI::QueryWidget(`id(`startmode), `Value);
-	    multilink = UI::QueryWidget(`id(`multilink), `Value);
-	    chargeHUP = UI::QueryWidget(`id(`chargehup), `Value);
+	    msn = (string) UI::QueryWidget(`id(`msn), `Value);
+	    startmode = (string) UI::QueryWidget(`id(`startmode), `Value);
+	    multilink = (boolean) UI::QueryWidget(`id(`multilink), `Value);
+	    chargeHUP = (boolean) UI::QueryWidget(`id(`chargehup), `Value);
 	    /* check_* */
 	    break;
 	}
@@ -382,8 +381,8 @@ this box.
         /* update firewall info */
 	/* Better update allways, maybe somebody changed it */
 
-	firewall = UI::QueryWidget(`id(`Firewall), `Value);
-	FirewallQuickmode = UI::QueryWidget(`id(`FirewallQuick), `Value);
+	firewall = (boolean) UI::QueryWidget(`id(`Firewall), `Value);
+	FirewallQuickmode = (boolean) UI::QueryWidget(`id(`FirewallQuick), `Value);
 	Firewall::Change(devstr, FirewallQuickmode);
 
 	/* UPDATE VARIABLES */
@@ -397,7 +396,7 @@ this box.
 	if (ret == `detail) //temporary
 	    ISDN::interface = add(ISDN::interface, "fwqm", FirewallQuickmode ? "yes" : "no");
 	if (ISDN::operation  == `editif)
-	    ISDN::provider_file = UI::QueryWidget(`id(`prov), `Value);
+	    ISDN::provider_file = (string) UI::QueryWidget(`id(`prov), `Value);
 
     }
     return ret;

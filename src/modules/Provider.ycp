@@ -199,8 +199,8 @@ define map Filter(map providers, string type) ``{
 	return providers;
 
     return filter(string k, map v, providers, ``{
-	y2debug("%1 %2",v["PROVIDER"]:"",v[toupper(type)+"SUPPORTED"]:"yes");
-	return v[toupper(type)+"SUPPORTED"]:"yes" == "yes";
+	y2debug("%1 %2",v["PROVIDER"]:"",v[toupper(type)+"SUPPORTED"]:"no");
+	return v[toupper(type)+"SUPPORTED"]:"no" == "yes";
     });
 }
 

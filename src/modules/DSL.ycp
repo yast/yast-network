@@ -155,7 +155,7 @@ global define boolean Read() ``{
     /* Progress step 1/5 */
     ProgressNextStage(_("Detecting DSL devices..."));
     if(!Detection::running) Detection::Start();
-    ReadHardware("dsl");
+    Hardware = ReadHardware("dsl");
 
     /* In case of capiadsl we can emulate the detection with the parameters
      * from ISDN. Advantage: we can setup the dialog items correctly.

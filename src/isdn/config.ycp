@@ -60,11 +60,11 @@ global define boolean ReadISDNConfig(string devregex) ``{
 	list<string> values = (list<string>) SCR::Dir(topath(pth));
 	map config = listmap(string val, values, ``{
 	    string item = (string) SCR::Read(topath(pth + "." + val));
-	    if(item!=nil) return [ val, item ];
+	    if(item!=nil) return $[ val : item ];
 	});
 
-	change(dev, devnum, config);
-	change(Devices, devtype, dev);
+	dev[devnum] = config;
+	Devices[devtype] = dev;
     });
 
     y2debug("Devices=%1",Devices);
@@ -112,7 +112,9 @@ global define boolean WriteISDNConfig(string isdntyp) ``{
     SCR::Write(.isdn, nil);
 
     /* clean up variables */
-    devs = filter(string x, DeletedDevices, ``(!regexpmatch(x, isdntyp)));
+    devs = filter(string x, DeletedDevices, ``{
+	return !regexpmatch(x, isdntyp);
+    });
     y2debug("DeletedDevices: %1 devs: %2", DeletedDevices, devs);
     DeletedDevices = devs;
 
