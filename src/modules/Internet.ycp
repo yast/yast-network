@@ -16,12 +16,6 @@ textdomain "network";
 import "Map";
 import "NetworkDevices";
 
-/* NI: required wrt functions in routines.ycp */
-block<boolean> AbortFunction = nil;
-define boolean Modified() { return true; }
-
-include "network/routines.ycp";
-
 /**
  * Flag to remember if user wants to run internet test
  */

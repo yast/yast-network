@@ -29,12 +29,12 @@ include "network/modem/complex.ycp";
 
 // FIXME: duplicated from provider/wizards.ycp
 
-define symbol CommitProvider() ``{
+define symbol CommitProvider() {
     Provider::Commit();
     return `next;
 }
 
-define symbol OneProviderSequence(boolean country) ``{
+define symbol OneProviderSequence(boolean country) {
 
     map aliases = $[
 	"providers"		: ``(ProvidersDialog(false)),
@@ -86,7 +86,7 @@ define symbol OneProviderSequence(boolean country) ``{
  * @param edit true in case of edit sequence
  * @return sequence result
  */
-define symbol OneModemProviderSequence(boolean detected, boolean edit) ``{
+define symbol OneModemProviderSequence(boolean detected, boolean edit) {
 
     map aliases = $[
 	"parameters_detected"	: ``(ModemDialog(true)),
@@ -158,7 +158,7 @@ define symbol OneModemProviderSequence(boolean detected, boolean edit) ``{
  * Main workflow of the modem configuration
  * @return sequence result
  */
-define symbol MainSequence() ``{
+define symbol MainSequence() {
 
     map aliases = $[
 	"summary"	: ``(SummaryDialog()),
@@ -170,20 +170,21 @@ define symbol MainSequence() ``{
 	// "edit"		: [ ``(OneModemSequence(false)), true ],
 	"Add"		: [ ``(OneProviderSequence(true)), true ],
 	"Edit"		: [ ``(OneProviderSequence(false)), true ],
+	"packages"	: [ ``( Packages(["smpppd"]) ), true ],
     ];
 
     map sequence = $[
 	"ws_start" : "summary",
 	"summary" : $[
 	    `abort	: `abort,
-	    `next	: `next,
+	    `next	: "packages",
 	    `configure	: "configure",
 	    `other	: "other",
 	    `overview	: "overview"
 	],
 	"overview" : $[
 	    `abort	: `abort,
-	    `next	: `next,
+	    `next	: "packages",
 	    `add	: "add",
 	    `edit	: "edit",
 	    `Add	: "Add",
@@ -213,6 +214,10 @@ define symbol MainSequence() ``{
 	    `abort	: `abort,
 	    `next	: "overview",
 	],
+	"packages" : $[
+	    `abort	: `abort,
+	    `next	: `next,
+	],
     ];
 
     return Sequencer::Run(aliases, sequence);
@@ -223,7 +228,7 @@ define symbol MainSequence() ``{
  * @param detected true if modem was detected (more entries otherwise)
  * @return sequence result
  */
-define symbol OneModemSequence(boolean detected) ``{
+define symbol OneModemSequence(boolean detected) {
 
     map aliases = $[
 	"parameters_detected"	: ``(ModemDialog(true)),
@@ -268,14 +273,14 @@ define symbol OneModemSequence(boolean detected) ``{
  * Whole configuration of modems
  * @return sequence result
  */
-define symbol ModemSequence() ``{
+define symbol ModemSequence() {
 
     map aliases = $[
-	"read"	: [ ``( ReadDialog() ), true ],
-	"main"	:   ``( MainSequence() ),
-	"rpm"	: [ ``( Packages(["smpppd"]) ), true ],
-	"write"	: [ ``( WriteDialog() ), true ],
-	"finish": [ ``( FinishDialog() ), true ],
+	"read"		: [ ``( ReadDialog() ), true ],
+	"main"		:   ``( MainSequence() ),
+	"packages"	: [ ``( Packages(["smpppd"]) ), true ],
+	"write"		: [ ``( WriteDialog() ), true ],
+	"finish"	: [ ``( FinishDialog() ), true ],
     ];
 
     map sequence = $[
@@ -286,9 +291,9 @@ define symbol ModemSequence() ``{
 	],
 	"main" : $[
 	    `abort	: `abort,
-	    `next	: "rpm"
+	    `next	: "write", // "packages"
 	],
-	"rpm" : $[
+	"packages" : $[
 	    `abort	: `abort,
 	    `next	: "write"
 	],
@@ -314,7 +319,7 @@ define symbol ModemSequence() ``{
  * For use with autoinstallation.
  * @return sequence result
  */
-define symbol ModemAutoSequence() ``{
+define symbol ModemAutoSequence() {
     string caption = _("Modem configuration");
     term contents = `Label(_("Initializing ..."));
 

@@ -13,21 +13,18 @@ module "Remote";
 textdomain "network";
 
 import "Label";
+import "Package";
 import "Service";
 
-/* NI: required wrt functions in routines.ycp */
-block<boolean> AbortFunction = nil;
-define boolean Modified() { return true; }
-
-include "network/routines.ycp";
-
-// allow Remote Administration
+/**
+ * Allow remote administration
+ */
 global boolean allow_administration = false;
 
 /**
  * Reset all module data.
  */
-global define void Reset () {
+global define void Reset() {
     allow_administration = false;
 }
 
@@ -37,31 +34,30 @@ global define void Reset () {
  */
 global define boolean Write() {
 
-    // install and enable xinetd, tightvnc and XFree86-Xvnc
-    if (allow_administration)
-    {
-	if (Packages (["xinetd", "tightvnc", "XFree86-Xvnc"]) != `next)
-	{
-	    y2error ("installing of required packages failed");
+    if(allow_administration) {
+	/* Install require packages */
+	if(!Package::InstallAll(["xinetd", "tightvnc", "XFree86-Xvnc"])) {
+	    y2error("Installing of required packages failed");
 	    return false;
 	}
 
-	if (!Service::Enable("xinetd"))
-	{
-	    y2error ("enabling of xinetd failed");
+	/* Enable xinetd */
+	if(!Service::Enable("xinetd")) {
+	    y2error("Enabling of xinetd failed");
 	    return false;
 	}
     }
 
-    // set DISPLAYMANAGER_REMOTE_ACCESS in sysconfig/displaymanager
+    /* Set DISPLAYMANAGER_REMOTE_ACCESS in sysconfig/displaymanager */
     SCR::Write(.sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS,
 		allow_administration ? "yes" : "no");
     SCR::Write(.sysconfig.displaymanager.DISPLAYMANAGER_ROOT_LOGIN_REMOTE,
 		allow_administration ? "yes" : "no");
     SCR::Write(.sysconfig.displaymanager, nil);
+    // FIXME: SUSEconfig missing if not in installation
 
-    // en- or disable vnc10 and vnchttpd10 in xinetd.d/vnc
-    // note: we make use of the "alias problem"
+    /* En- or disable vnc10 and vnchttpd10 in xinetd.d/vnc
+     * note: we make use of the "alias problem" */
     list xinetd = (list) SCR::Read(.etc.xinetd_conf.services);
     foreach(map m, xinetd, {
 	string s = m["service"]:"";

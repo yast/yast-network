@@ -12,21 +12,16 @@
 module "Firewall";
 textdomain "network";
 
+import "Service";
+
+include "network/routines.ycp";
+include "network/runtime.ycp";
+
 /**
  * Firewalled devices
  */
 list<string> devices = [];
 list<string> devices_init = [];
-
-/* NI: required wrt functions in routines.ycp */
-block<boolean> AbortFunction = nil;
-boolean Modified()
-{
-   return true;
-}
-
-include "network/routines.ycp";
-include "network/runtime.ycp";
 
 /**
  * Read firewall settings

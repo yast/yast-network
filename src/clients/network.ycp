@@ -21,12 +21,6 @@ y2milestone("Network module started");
 import "Label";
 import "Wizard";
 
-/* NI: required wrt functions in routines.ycp */
-block<boolean> AbortFunction = nil;
-define boolean Modified() ``{ return true; }
-
-include "network/routines.ycp";
-
 /* Network dialog caption */
 string caption = _("Network Configuration");
 

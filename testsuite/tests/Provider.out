@@ -4,7 +4,6 @@ Log	Failed reading <.sysconfig.language.RC_LANG>
 Read	.sysconfig.language.DEFAULT_LANGUAGE ""
 Read	.target.yast2 "lang2iso.ycp" $["CZ":"Czech"]
 Read	.target.size "/etc/sysconfig/language" -1
-Read	.target.tmpdir "/tmp"
 Dump	Read
 Dir	.sysconfig.network.providers.s: ["first", "second", "third"]
 Dir	.sysconfig.network.providers.v."first": ["PROVIDER"]

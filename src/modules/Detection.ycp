@@ -238,5 +238,11 @@ y2milestone("IFCONFIG4: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig")
     return ret;
 }
 
+global define boolean DuplicateIP(string ip) {
+    string interface = "eth0";
+    string command = sformat("arping -q -c 2 -w 3 -D -I %1 %2", interface, ip);
+    return SCR::Execute(.target.bash, command) == 0;
+}
+
 /* EOF */
 }

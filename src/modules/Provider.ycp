@@ -23,12 +23,6 @@ import "Summary";
 /* GLOBAL VARIABLES */
 
 /**
- * Abort function
- * return boolean return true if abort
- */
-global block<boolean> AbortFunction = nil;
-
-/**
  * Current provider name
  */
 global string Name = "";
@@ -111,8 +105,6 @@ global define boolean Modified(string type) {
     y2milestone("Provs=%1", Provs);
     return Provs != OriginalProvs;
 }
-
-include "network/routines.ycp";
 
 /**
  * Read providers data (custom only) and country mappings

@@ -24,7 +24,7 @@ include "network/lan/wizards.ycp";
  * @param input autoyast settings
  * @return native network settings
  */
-define map FromAY(map input) ``{
+define map FromAY(map input) {
 	// Used netdevice during installation
 	map InstallInf = $[];
 	include "network/install.ycp";
@@ -49,9 +49,9 @@ define map FromAY(map input) ``{
 		   "remote_ipaddr"
     ];
 
-    map interfaces = listmap(map interface, input["interfaces"]:[], ``{
+    map interfaces = listmap(map interface, input["interfaces"]:[], {
 	map new_interface = $[];
-	foreach(string k, string v, interface, ``{
+	foreach(string k, string v, interface, {
 	    if (contains(upcase, k)) {
 		new_interface[toupper(k)] = v;
 	    }
@@ -63,7 +63,7 @@ define map FromAY(map input) ``{
     });
 
     map devices = $[];
-    foreach(string device, map if_data, interfaces, ``{
+    foreach(string device, map if_data, interfaces, {
 
 	integer pos = findfirstof( device, "0123456789");
 	string strtok =  substring(device, 0, pos);
@@ -77,12 +77,12 @@ define map FromAY(map input) ``{
     map native_modules = $[];
 
     if (size(input["modules"]:[]) > 0) {
-	map tmp_modules = listmap(map mod, input["modules"]:[], ``{
+	map tmp_modules = listmap(map mod, input["modules"]:[], {
 	    string dev = mod["device"]:"";
 	    return $[dev : mod["module"]:""];
 	});
 	native_modules["alias"] = tmp_modules;
-	tmp_modules = listmap(map mod, input["modules"]:[], ``{
+	tmp_modules = listmap(map mod, input["modules"]:[], {
         string options = mod["options"]:"";
         string module_name = mod["module"]:"";
 		return $[module_name : options];
@@ -104,12 +104,14 @@ define map FromAY(map input) ``{
 	}
 	map alias = $[];
 	map options = $[];
-	devices = mapmap(string type, map devsmap, devices, ``{
-	    list HW_type = filter(map dev, HW, ``(dev["type"]:"" == type ));
+	devices = mapmap(string type, map devsmap, devices, {
+	    list HW_type = filter(map dev, HW, {
+		return dev["type"]:"" == type;
+	    });
 
 	    y2debug("hw from type %1 = %2", type, HW_type);
 
-	    map newmap = mapmap(string num, map devmap, devsmap, ``{
+	    map newmap = mapmap(string num, map devmap, devsmap, {
 
 		integer nnum = tointeger(num);
 		devmap["UNIQUE"] = HW_type[nnum, "unique"]:"";
@@ -161,13 +163,13 @@ define map FromAY(map input) ``{
  * @param settings native network settings
  * @return autoyast network settings
  */
-define map ToAY (map settings) ``{
+define map ToAY (map settings) {
     list interfaces = [];
 	list discard = ["UNIQUE"];
-    foreach(string device, map devsmap, settings["devices"]:$[], ``{
-	foreach(string num, map devmap, devsmap, ``{
+    foreach(string device, map devsmap, settings["devices"]:$[], {
+	foreach(string num, map devmap, devsmap, {
 	    map newmap = $[];
-	    foreach(string key, string val, devmap, ``{
+	    foreach(string key, string val, devmap, {
 			y2milestone("Adding: %1=%2", key, val);
 			if ( size(val) > 0 && ( !contains(discard, key) && !contains(discard, tolower(key))))
 				newmap[tolower(key)] = val;
@@ -180,7 +182,7 @@ define map ToAY (map settings) ``{
 	// Modules
 
     list modules = [];
-    foreach(string device, string mod, settings["modules", "alias"]:$[], ``{
+    foreach(string device, string mod, settings["modules", "alias"]:$[], {
 	    map newmap = $[];
 	    newmap["device"] =  device;
 	    newmap["module"] =  mod;

@@ -36,10 +36,10 @@ include "network/services/proxy.ycp";
  * Return a modification status
  * @return true if data was modified
  */
-define boolean Modified() ``{
+define boolean Modified() {
     return Proxy::modified;
 }
-define string ProxySummary() ``{
+define string ProxySummary() {
    string summary = "";
    string nc = Summary::NotConfigured ();
    summary = Summary::AddHeader(summary, _("Status of Proxy Configuration"));

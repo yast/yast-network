@@ -28,12 +28,9 @@ import "Wizard";
  * Return a modification status
  * @return true if data was modified
  */
-define boolean Modified() ``{
+define boolean Modified() {
     return DNS::modified;
 }
-
-/* NI: required wrt functions in routines.ycp */
-block<boolean> AbortFunction = nil;
 
 include "network/runtime.ycp";
 include "network/services/dns.ycp";

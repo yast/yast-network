@@ -27,10 +27,6 @@ import "Label";
 import "Lan";
 import "RichText";
 
-/* NI: required wrt functions in routines.ycp */
-block<boolean> AbortFunction = nil;
-// define boolean Modified() ``{ return true; }
-
 include "commandline/commandline.ycp";
 include "network/lan/wizards.ycp";
 

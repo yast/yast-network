@@ -25,7 +25,7 @@ include "network/provider/helps.ycp";
  * Commit changes to internal structures
  * @return always `next
  */
-define symbol CommitProvider() ``{
+define symbol CommitProvider() {
     Provider::Commit();
     return `next;
 }
@@ -34,10 +34,10 @@ define symbol CommitProvider() ``{
  * Read settings dialog
  * @return `abort if aborted and `next otherwise
  */
-define symbol ReadDialog() ``{
+define symbol ReadDialog() {
     ScreenName("provider-read");
     Wizard::RestoreHelp(HELPS["read"]:"");
-    Provider::AbortFunction = ``{return PollAbort();};
+    // Provider::AbortFunction = ``{return PollAbort();};
     boolean ret = Provider::Read();
     return ret ? `next : `abort;
 }
@@ -46,11 +46,11 @@ define symbol ReadDialog() ``{
  * Write settings dialog
  * @return `abort if aborted and `next otherwise
  */
-define symbol WriteDialog() ``{
+define symbol WriteDialog() {
     ScreenName("provider-write");
     if(!Modified()) return `next;
     Wizard::RestoreHelp(HELPS["write"]:"");
-    Provider::AbortFunction = ``{return PollAbort() && ReallyAbort();};
+    // Provider::AbortFunction = ``{return PollAbort() && ReallyAbort();};
     boolean ret = Provider::Write("all");
     return ret ? `next : `abort;
 }
@@ -59,7 +59,7 @@ define symbol WriteDialog() ``{
  * Choose provider type dialog
  * @return `abort if aborted and `next otherwise
  */
-define any TypeDialog() ``{
+define any TypeDialog() {
 
     ScreenName("provider-type");
 
@@ -132,7 +132,7 @@ define any TypeDialog() ``{
  * Main dialog
  * @return dialog result
  */
-define any SummaryDialog() ``{
+define any SummaryDialog() {
 
     ScreenName("provider-summary");
 
@@ -190,7 +190,7 @@ define any SummaryDialog() ``{
  * Overview dialog
  * @return dialog result
  */
-define any OverviewDialog() ``{
+define any OverviewDialog() {
 
     ScreenName("provider-overview");
 

@@ -13,6 +13,7 @@ textdomain "network";
 
 import "Label";
 import "Modem";
+import "NetworkDevices";
 import "Popup";
 import "Provider";
 import "Routing";
@@ -26,7 +27,7 @@ include "network/summary.ycp";
  * Return a modification status
  * @return true if data was modified
  */
-define boolean Modified() ``{
+define boolean Modified() {
     return Modem::Modified() || Provider::Modified("modem");
 }
 
@@ -35,7 +36,7 @@ define boolean Modified() ``{
  * @param what what everything should be commited ("modem"|"provider"|"all")
  * @return always `next
  */
-define symbol Commit(string what) ``{
+define symbol Commit(string what) {
     if(what == "" || what == "all" || what == "modem")
 	Modem::Commit();
     if(what == "" || what == "all" || what == "provider")
@@ -47,7 +48,7 @@ define symbol Commit(string what) ``{
  * Display finished popup
  * @return dialog result
  */
-define symbol FinishDialog() ``{
+define symbol FinishDialog() {
     return FinishPopup(Modified(), "modem", "", "mail", ["dialup"]);
 }
 
@@ -55,7 +56,7 @@ define symbol FinishDialog() ``{
  * Read settings dialog
  * @return `abort if aborted and `next otherwise
  */
-define symbol ReadDialog() ``{
+define symbol ReadDialog() {
 
     ScreenName("modem-read");
 
@@ -78,7 +79,7 @@ the <B>Abort</B> button now.</P>");
  * Write settings dialog
  * @return `abort if aborted and `next otherwise
  */
-define symbol WriteDialog() ``{
+define symbol WriteDialog() {
 
     ScreenName("modem-write");
 
@@ -103,7 +104,7 @@ dialog will possibly inform you whether it is safe to do so or not.</P>");
  * Main dialog
  * @return dialog result
  */
-define any SummaryDialog() ``{
+define any SummaryDialog() {
 
     ScreenName("modem-summary");
 
@@ -187,7 +188,7 @@ configuration.</p>");
  * Overview dialog
  * @return dialog result
  */
-define any OverviewDialog() ``{
+define any OverviewDialog() {
 
     ScreenName("modem-overview");
 
@@ -322,7 +323,7 @@ Delete it as well?
 	    }
 
 	    /* Check if the provider is not used (#17497) */
-	    if(Modem::LocateProvider(dev)) {
+	    if(NetworkDevices::LocateProvider(dev)) {
 		y2debug("Provider used: %1", dev);
 
 		/* Popup text */

@@ -52,11 +52,6 @@ global define boolean Modified() {
     return ret;
 }
 
-/* NI: required wrt functions in routines.ycp */
-block<boolean> AbortFunction = nil;
-
-include "network/routines.ycp";
-
 /**
  * Read routing settings
  * @return true if success

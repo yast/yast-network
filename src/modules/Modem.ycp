@@ -430,16 +430,5 @@ global define void SelectHW(integer which) {
     type = "ppp";
 }
 
-/**
- * Check if any device is using the specified provider
- * @param provider provider identification
- * @return true if there is any
- */
-/* NI: FIXME: move to ND.ycp */
-global define boolean LocateProvider(string provider) {
-    list devs = NetworkDevices::Locate("PROVIDER", provider);
-    return size(devs) > 0;
-}
-
 /* EOF */
 }

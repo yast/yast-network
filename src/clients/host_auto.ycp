@@ -35,7 +35,7 @@ include "network/services/host.ycp";
  * Return a modification status
  * @return true if data was modified
  */
-define boolean Modified() ``{
+define boolean Modified() {
     return Host::modified;
 }
 
@@ -71,7 +71,7 @@ else if (func == "Change") {
 /* Import configuration */
 else if (func == "Import") {
     list hosts = param["hosts"]:[];
-    map hostlist = listmap(map host, hosts, ``{
+    map hostlist = listmap(map host, hosts, {
 	    return $[ host["host_address"]:"error" : host["names"]:[] ];
     });
     ret = Host::Import($["hosts": hostlist]);
@@ -80,7 +80,7 @@ else if (func == "Import") {
 else if (func == "Export") {
     map ret1 = Host::Export();
     map hosts = ret1["hosts"]:$[];
-    list ret2 = maplist (string hostaddress, list names, hosts, ``{
+    list ret2 = maplist (string hostaddress, list names, hosts, {
 	    return($["host_address": hostaddress, "names": names]);
     });
     map result = $["hosts" : ret2 ];

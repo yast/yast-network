@@ -643,6 +643,16 @@ global define list Locate(string key, string val) {
 }
 
 /**
+ * Check if any device is using the specified provider
+ * @param provider provider identification
+ * @return true if there is any
+ */
+global define boolean LocateProvider(string provider) {
+    list devs = Locate("PROVIDER", provider);
+    return size(devs) > 0;
+}
+
+/**
  * Update /dev/modem symlink
  * @return true if success
  */

@@ -19,10 +19,6 @@ y2milestone("Arguments: %1", WFM::Args());
 import "DSL";
 import "Progress";
 
-/* NI: required wrt functions in routines.ycp */
-block<boolean> AbortFunction = nil;
-define boolean Modified() ``{ return true; }
-
 include "network/routines.ycp";
 
 string func = (string) WFM::Args(0);

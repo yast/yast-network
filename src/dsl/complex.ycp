@@ -13,6 +13,7 @@ textdomain "network";
 
 import "DSL";
 import "Label";
+import "NetworkDevices";
 import "Popup";
 import "Provider";
 import "Wizard";
@@ -25,7 +26,7 @@ include "network/summary.ycp";
  * Return a modification status
  * @return true if data was modified
  */
-define boolean Modified() ``{
+define boolean Modified() {
     return DSL::Modified() || Provider::Modified("dsl");
 }
 
@@ -34,7 +35,7 @@ define boolean Modified() ``{
  * @param what what everything should be commited ("modem"|"provider"|"all")
  * @return always `next
  */
-define symbol Commit(string what) ``{
+define symbol Commit(string what) {
     if(what == "" || what == "all" || what == "dsl")
 	DSL::Commit();
     if(what == "" || what == "all" || what == "provider")
@@ -46,7 +47,7 @@ define symbol Commit(string what) ``{
  * Display finished popup
  * @return dialog result
  */
-define symbol FinishDialog() ``{
+define symbol FinishDialog() {
     /* In this case, we have been called from ISDN: we are not finished yet */
     if(DSL::capiadsl != nil) return `next;
     return FinishPopup(Modified(), "dsl", "", "mail", ["permanent"]);
@@ -56,7 +57,7 @@ define symbol FinishDialog() ``{
  * Read settings dialog
  * @return `abort if aborted and `next otherwise
  */
-define symbol ReadDialog() ``{
+define symbol ReadDialog() {
 
     ScreenName("dsl-read");
 
@@ -79,7 +80,7 @@ the <B>Abort</B> button now.</P>");
  * Write settings dialog
  * @return `abort if aborted and `next otherwise
  */
-define symbol WriteDialog() ``{
+define symbol WriteDialog() {
 
     ScreenName("dsl-write");
 
@@ -104,7 +105,7 @@ dialog will possibly inform you whether it is safe to do so or not.</P>");
  * Main dialog
  * @return dialog result
  */
-define any SummaryDialog() ``{
+define any SummaryDialog() {
 
     ScreenName("dsl-summary");
 
@@ -184,7 +185,7 @@ configuration.</p>");
  * Overview dialog
  * @return dialog result
  */
-define any OverviewDialog() ``{
+define any OverviewDialog() {
 
     ScreenName("dsl-overview");
 
@@ -299,7 +300,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	    string dev = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
 
 	    /* Check if the provider is not used (#17497) */
-	    if(DSL::LocateProvider(dev)) {
+	    if(NetworkDevices::LocateProvider(dev)) {
 		y2debug("Provider used: %1", dev);
 
 		/* Popup text */

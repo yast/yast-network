@@ -2,7 +2,6 @@
 
 Bugs:
 - KInternet: better helptext (configured + kinternet, cinternet)
-- provider: wrong providers handling (installation: conflicting types) (#31508)
 - all: required packages not installed during installation (#31536)
 - isdn: cleanup [ISDN]
 
@@ -21,7 +20,6 @@ Improvements:
 - routines: check for yast2-mail presence
 - routines: support plip, slip, ppp (serial cable, not modem)
 - provider: offer to delete provider after device delete if not used (#16094)
-- provider: warn if deleting default provider for modem|isdn|dsl (#17497)
 - provider: delete default route if removed (#10739)
 - lan: warn before the network restart (#27137, #19851) [WARN]
 - dns: better "DNS and Hostname" and "Hosts" titles (#29722)

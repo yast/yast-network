@@ -8,6 +8,7 @@ Tue Feb 24 13:41:15 CET 2004 - msvec@suse.cz
 - don't run KInternet in ncurses (#27891)
 - run KInternet according to the number of connections (#29475)
 - run|stop kinternet, if DISPLAY and (not)running (#14320)
+- don't allow to delete default provider (#17497)
 - 2.9.6
 
 -------------------------------------------------------------------
