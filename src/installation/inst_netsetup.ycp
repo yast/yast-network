@@ -15,7 +15,8 @@ import "Linuxrc";
 import "Mode";
 import "String";
 
-symbol mode = (symbol) WFM::Args (2);
+//symbol mode = (symbol) WFM::Args (2);
+symbol mode = `up;
 
 y2milestone("----------------------------------------");
 y2milestone("Lan netsetup module started");
