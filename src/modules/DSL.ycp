@@ -24,5 +24,28 @@ module "DSL";
 textdomain "network";
 import "Progress";
 
+    global string username = "";
+
+    global string password = "";
+
+    global string interface = "";
+
+    global boolean firewall = false;
+
+    global boolean dialondemand = false;
+
+    global string dns1 = "";
+
+    global string dns2 = "";
+
+    global integer idletime = 0;
+
+    global string lineid = "";
+
+    global string t_onlineid = "";
+
+
+
+
 /* EOF */
 }
