@@ -148,17 +148,18 @@ the test procedure."),
 	`HSpacing(5)
     );
 
-    Wizard::SetContentsButtons(caption, contents, help,
-	    BackButtonLabel(), NextButtonLabel());
+    Wizard::SetContents (caption, contents, help, true, true);
 
     any ret = nil;
 
-    while(true) {
+    while(true)
+    {
 	ret = UI::UserInput();
 
 	if(ret == `abort || ret == `cancel) {
-	    if(UI::ReallyAbortPopup(false)) break;
-	    else continue;
+	    if (CallFunction (`inst_confirm_abort (`incomplete)))
+		break;
+	    continue;
 	}
 	else if (ret == `next || ret == `back) {
 	    break;

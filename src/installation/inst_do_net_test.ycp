@@ -120,8 +120,7 @@ and correct the setting.</p>");
 			      `VStretch()
 			      );
 
-	Wizard::SetContentsButtons(caption, contents, help,
-				   BackButtonLabel(), NextButtonLabel());
+	Wizard::SetContents (caption, contents, help, true, true);
     }
 
 
@@ -327,7 +326,7 @@ and correct the setting.</p>");
 	    continue;
 	}
 	else if (ret == `abort || ret == `cancel) {
-	    if (UI::ReallyAbortPopup(false))
+	    if (CallFunction (`inst_confirm_abort (`incomplete)))
 	    {
 		Internet::Stop ();
 		set_result (`failure);

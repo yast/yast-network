@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Feb 21 15:20:06 CET 2003 - arvin@suse.de
+
+- better text for "abort installation" popup (bug #24019)
+
+-------------------------------------------------------------------
 Fri Feb 21 11:42:56 CET 2003 - arvin@suse.de
 
 - better help text for network test (bug #23866)
