@@ -1,5 +1,5 @@
 /**
- * File:	include/network/providers/dialogs.ycp
+ * File:	include/network/provider/dialogs.ycp
  * Package:	Configuration of network
  * Summary:	Providers dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
@@ -236,7 +236,8 @@ located then choose one of the listed providers.</p>") +
 	    //Providers::editProvider(true);
 	}
 	else {
-	    Providers::AddEdit(sformat("%1",provider), true);
+	    y2debug("-- %1",provider);
+	    Providers::AddEdit(provider, true);
 	    //Providers::provider = Providers::GetProvider(provider);
 	    //Providers::editProvider(false);
 	}

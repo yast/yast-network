@@ -21,6 +21,7 @@ include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
 
 include "network/routines.ycp";
+include "network/complex.ycp";
 
 /**
  * Return a modification status
@@ -34,9 +35,8 @@ global define boolean Modified() ``{
  * Commit changes to internal structures
  * @return always `next
  */
-global define symbol Commit(boolean prov) ``{
-    if (prov)
-	Providers::Commit();
+global define symbol Commit() ``{
+    Providers::Commit();
     ISDN::Commit();
     return `next;
 }
@@ -169,7 +169,7 @@ can change the configuration and setup dialup connections) will open.
 global define symbol OverviewDialog() ``{
 
     /* ISDN overview dialog caption */
-    string caption = _("ISDN cards configuration overview");
+    string caption = _("ISDN configuration overview");
 
     string helptext = /* isdns overview dialog help 1/5 */
     _("<P><B><BIG>ISDN cards overview</BIG></B><BR>
@@ -182,7 +182,7 @@ If you press <B>Add</B>, you can manually configure an ISDN card.</P>");
 
     /* isdns overview dialog help 3/5 */
     helptext = helptext + _("<P><B><BIG>Test an ISDN card setup:</BIG></B><BR>
-If you press <B>Test</B>, the system tries to load the driver for the 
+If you press <B>Test</B>, the system tries to load the driver for the
 selcted card</P>");
 
     /* isdns overview dialog help 4/5 */
@@ -194,143 +194,105 @@ If you press <B>Add</B>, you can configure an ISDN dialup connection.</P>");
 Choose an ISDN card or connection, whose configuration you want to change or remove.
 Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 
-    list overviewdev = ISDN::OverviewDev();
-    list overviewif = ISDN::OverviewIf();
+    list overview = ISDN::OverviewDev();
+    list overviewp = Providers::Overview();
+    //list overviewif = ISDN::OverviewIf();
+    y2debug("overview=%1",overview);
+    y2debug("overviewp=%1",overviewp);
 
-    y2debug("overviewdev=%1",overviewdev);
-    y2debug("overviewif=%1",overviewif);
-
-    /* Header of table with installed cards */
-
-    term but_box = `HBox (
-	`opt (`hstretch),
-	`PushButton (`id (`addif_button), _("&Add")),
-	`PushButton (`id (`editif_button),  _("Ed&it")),
-	`PushButton (`id (`delif_button), _("Dele&te"))
+    term contents = OverviewTableDouble(
+        /* Table label */
+        _("ISDN cards"),
+        /* Table header */
+	`header(_("No."), _("Type"), _("Device"), _("Hardware")),
+        overview,
+        /* Table label */
+        _("Providers"),
+        /* Table header */
+        `header(_("Name"), _("Provider")),
+        overviewp
     );
-  
-    term contentsif =
-	`VBox(
-	    `Left(`Heading(`id(`title_i), _("ISDN connections"))),
-	    `Table (`id (`TableIf),
-		`header(_("No."), _("Type"), _("Connection"), _("IP"), _("Remote IP")),
-		overviewif),
-	    but_box
-	);
-    term titledev = `Left(`Heading(`id(`title_d), _("ISDN controler")));
-    term contents = Wizard_hw::ConfiguredContent(
-	    `header(_("No."), _("Type"), _("Device"), _("Hardware")/*, _("Active"), _("IP Address"), "PCMCIA", "Driver"*/),
-	    overviewdev, titledev, nil, contentsif, 
-	    `PushButton (`id (`test_button), _("Te&st"))
-    );
-
-    contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);
 
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), FinishButtonLabel());
+            BackButtonLabel(), FinishButtonLabel());
 
-    if(size(overviewdev) < 1) {
-	UI::ChangeWidget(`id(`edit_button), `Enabled, false);
-	UI::ChangeWidget(`id(`delete_button), `Enabled, false);
-	UI::ChangeWidget(`id(`test_button), `Enabled, false);
+    if(size(overview) < 1) {
+        UI::ChangeWidget(`id(`edit), `Enabled, false);
+        UI::ChangeWidget(`id(`delete), `Enabled, false);
     }
 
-    if(size(overviewif) < 1) {
-	UI::ChangeWidget(`id(`editif_button), `Enabled, false);
-	UI::ChangeWidget(`id(`delif_button), `Enabled, false);
+    if(size(overviewp) < 1) {
+        UI::ChangeWidget(`id(`Edit), `Enabled, false);
+        UI::ChangeWidget(`id(`Delete), `Enabled, false);
     }
 
     any ret = nil;
     while(true) {
 
-	ret = UI::UserInput();
-	y2debug("UserInput: %1", ret);
-	/* abort? */
-	if(ret == `abort || ret == `cancel) {
-	    if(ReallyAbort()) break;
-	    else continue;
-	}
-	/* add */
-	else if(ret == `add_button) {
-	    ISDN::Add();
-	    ret = `add;
-	    break;
-	}
-	/* edit */
-	else if(ret == `edit_button) {
-	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-	    
-	    ISDN::Edit(dev);
-	    ret = `edit;
-	    break;
-	}
-	/* delete */
-	else if(ret == `delete_button) {
-	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-	    ISDN::Delete(dev);
-	    ISDN::Commit();
-	    overviewdev = ISDN::OverviewDev();
-	    UI::ChangeWidget(`id(`table), `Items, overviewdev);
-	    if(size(overviewdev) < 1) {
-		UI::ChangeWidget(`id(`edit_button), `Enabled, false);
-		UI::ChangeWidget(`id(`delete_button), `Enabled, false);
-		UI::ChangeWidget(`id(`test_button), `Enabled, false);
-	    }
-	    y2debug("overviewdev=%1",overviewif);
-	    continue;
-	}
-	/* test */
-	else if(ret == `test_button) {
-	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-	    
-	    if (! UI::YesNoPopup (_("Warning !\n
-You like to test the selected card.
-Please note that the system now will shutdown
-the ISDN subsystem (if allready running)
-and then try to load the selected card driver.
-So don't use this feature if you are using any ISDN
-services at the moment.
+        ret = UI::UserInput();
 
-\nContinue?\n")))
-		    continue;
-	    ISDN::TestDev(dev);
-	    ret = `testdev;
-	    break;
-	}
-	/* addif */
-	else if(ret == `addif_button) {
-	    ISDN::AddIf();
-	    ret = `addif;
-	    break;
-	}
-	/* editif */
-	else if(ret == `editif_button) {
-	    string dev = UI::QueryWidget(`id(`TableIf), `CurrentItem);
-	    ISDN::EditIf(dev);
-	    ret = `editif;
-	    break;
-	}
-	/* delif */
-	else if(ret == `delif_button) {
-	    string dev = UI::QueryWidget(`id(`TableIf), `CurrentItem);
-	    ISDN::Delete(dev);
-	    ISDN::Commit();
-	    overviewif = ISDN::OverviewIf();
-	    UI::ChangeWidget(`id(`TableIf), `Items, overviewif);
-	    if(size(overviewif) < 1) {
-		UI::ChangeWidget(`id(`delif_button), `Enabled, false);
-		UI::ChangeWidget(`id(`editif_button), `Enabled, false);
-	    }
-	    y2debug("overviewif=%1",overviewif);
-	    continue;
-	}
-	else if(ret == `next || ret == `back) {
-	    break;
-	}
-	else {
-	    y2error("unexpected retcode: %1", ret);
-	    continue;
-	}
+        /* abort? */
+        if(ret == `abort || ret == `cancel) {
+            if(ReallyAbort()) break;
+            else continue;
+        }
+        /* add */
+        else if(ret == `add) {
+            ISDN::Add();
+            break;
+        }
+        /* edit */
+        else if(ret == `edit) {
+            string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+            ISDN::Edit(dev);
+            break;
+        }
+        /* delete */
+        else if(ret == `delete) {
+            string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+            ISDN::Delete(dev);
+            ISDN::Commit();
+            overview = ISDN::OverviewDev();
+            UI::ChangeWidget(`id(`table), `Items, overview);
+            if(size(overview) < 1) {
+                UI::ChangeWidget(`id(`edit), `Enabled, false);
+                UI::ChangeWidget(`id(`delete), `Enabled, false);
+            }
+            y2debug("overview=%1",overview);
+            continue;
+        }
+        /* provider add */
+        else if(ret == `Add) {
+            Providers::AddEdit("", false);
+            break;
+        }
+        /* provider edit */
+        else if(ret == `Edit) {
+            string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
+            Providers::AddEdit(dev, false);
+            break;
+        }
+        /* provider delete */
+        else if(ret == `Delete) {
+            string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
+            Providers::Delete(dev);
+            Providers::Commit();
+            overviewp = Providers::Overview();
+            UI::ChangeWidget(`id(`Table), `Items, overviewp);
+            if(size(overviewp) < 1) {
+                UI::ChangeWidget(`id(`Edit), `Enabled, false);
+                UI::ChangeWidget(`id(`Delete), `Enabled, false);
+            }
+            y2debug("overviewp=%1",overviewp);
+            continue;
+        }
+        else if(ret == `next || ret == `back) {
+            break;
+        }
+        else {
+            y2error("unexpected retcode: %1", ret);
+            continue;
+        }
     }
 
     return ret;

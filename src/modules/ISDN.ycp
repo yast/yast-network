@@ -496,6 +496,7 @@ global define boolean Add() ``{
     if (device<0)
         return false;
     set_cardparameter($[]);
+    Providers::provShortName = "";
     operation = `add;
     return true;
 }
@@ -519,6 +520,8 @@ global define boolean Edit(string dev) ``{
     device = num;
     type = typ;
     set_cardparameter(devmap);
+    y2debug("devmap=%1",devmap);
+    Providers::provShortName = devmap["PROVIDER"]:"";
     operation = `edit;
     return true;
 }

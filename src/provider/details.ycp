@@ -1,5 +1,5 @@
 /**
- * File:	include/network/providers/details.ycp
+ * File:	include/network/provider/details.ycp
  * Package:	Configuration of network
  * Summary:	Providers details configuration dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
@@ -150,6 +150,9 @@ waits for callback of the remote machine.");
 	    ),
 	    `VSpacing(0.5)
 	));
+
+    y2debug("type=%1",type);
+    y2debug("contents=%1",contents);
 
     /* DIALOG PREPARE */
     Wizard::SetContentsButtons(caption, contents, helptext,

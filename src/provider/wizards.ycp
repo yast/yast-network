@@ -1,5 +1,5 @@
 /**
- * File:	include/network/providers/wizards.ycp
+ * File:	include/network/provider/wizards.ycp
  * Package:	Configuration of network
  * Summary:	Providers configuration wizards
  * Authors:	Michal Svec <msvec@suse.cz>
@@ -17,10 +17,10 @@ import "Wizard";
 
 include "wizard/sequencer.ycp";
 
-include "network/providers/details.ycp";
-include "network/providers/dialogs.ycp";
-include "network/providers/connection.ycp";
-include "network/providers/complex.ycp";
+include "network/provider/details.ycp";
+include "network/provider/dialogs.ycp";
+include "network/provider/connection.ycp";
+include "network/provider/complex.ycp";
 
 /**
  * Whole configuration of modems
@@ -98,10 +98,10 @@ global define symbol MainSequence() ``{
     map aliases = $[
 	"summary"	: ``(SummaryDialog()),
 	"overview"	: ``(OverviewDialog()),
-	"configure"	: [ ``(OneProviderSequence(true)), true ],
-	"other"		: [ ``(OneProviderSequence(true)), true ],
-	"add"		: [ ``(OneProviderSequence(true)), true ],
-	"edit"		: [ ``(OneProviderSequence(false)), true ],
+	"configure"	: [ ``(OneProviderSequence("modem",true)), true ],
+	"other"		: [ ``(OneProviderSequence("modem",true)), true ],
+	"add"		: [ ``(OneProviderSequence("modem",true)), true ],
+	"edit"		: [ ``(OneProviderSequence("modem",false)), true ],
     ];
 
     map sequence = $[
@@ -145,14 +145,14 @@ global define symbol MainSequence() ``{
  * @param country true if country list should be shown
  * @return sequence result
  */
-global define symbol OneProviderSequence(boolean country) ``{
+global define symbol OneProviderSequence(string type, boolean country) ``{
 
     map aliases = $[
-	"providers"		: ``(ProvidersDialog("modem")),
-	"provider"		: ``(ProviderDialog("modem")),
-	"new_provider"		: ``(ProviderDialog("modem")),
-	"connection"		: ``(ConnectionDialog("modem")),
-	"ipdetails"		: ``(IPDetailsDialog("modem")),
+	"providers"		: ``(ProvidersDialog(type)),
+	"provider"		: ``(ProviderDialog(type)),
+	"new_provider"		: ``(ProviderDialog(type)),
+	"connection"		: ``(ConnectionDialog(type)),
+	"ipdetails"		: ``(IPDetailsDialog(type)),
 	"commit"		: [ ``(Commit()), true ],
     ];
 

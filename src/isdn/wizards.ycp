@@ -17,15 +17,13 @@ include "wizard/sequencer.ycp";
 
 include "network/routines.ycp";
 
-include "network/isdn/ip.ycp";
-include "network/isdn/complex.ycp";
-include "network/isdn/callback.ycp";
-include "network/isdn/lowlevel.ycp";
-include "network/isdn/connection.ycp";
+include "network/provider/wizards.ycp";
+include "network/provider/details.ycp";
+include "network/provider/dialogs.ycp";
+include "network/provider/connection.ycp";
 
-include "network/providers/details.ycp";
-include "network/providers/dialogs.ycp";
-include "network/providers/connection.ycp";
+include "network/isdn/lowlevel.ycp";
+include "network/isdn/complex.ycp";
 
 /**
  * Whole configuration of network
@@ -95,9 +93,14 @@ global define symbol MainSequence() ``{
 
     map aliases = $[
 	"summary"	: ``(SummaryDialog()),
-	"overview"	: [ ``(OneISDNSequence("overview")), true ],
+	"overview"	: ``(OverviewDialog()),
 	"configure"	: [ ``(OneISDNSequence("lowlevel_detected")), true ],
-	"other"		: [ ``(OneISDNSequence("other")), true ]
+	"other"		: [ ``(OneISDNSequence("other")), true ],
+	"add"		: [ ``(OneISDNSequence("other")), true ],
+	//"edit"		: [ ``(OneISDNSequence("edit")), true ],
+	"edit"		: ``(isdn_lowlevel(`edit)),
+	"Add"		: [ ``(OneProviderSequence("isdn",true)), true ],
+	"Edit"		: [ ``(OneProviderSequence("isdn",false)), true ],
     ];
 
     map sequence = $[
@@ -111,21 +114,41 @@ global define symbol MainSequence() ``{
 	],
 	"overview" : $[
 	    `abort	: `abort,
-	    `back	: `next,
-	    `next	: `next
-	],
-	"configure" : $[
-	    `abort	: `abort,
-	    `next	: "summary"
+	    `next	: `next,
+	    `add	: "add",
+	    `edit	: "edit",
+	    `Add	: "Add",
+	    `Edit	: "Edit",
 	],
 	"other" : $[
 	    `abort	: `abort,
-	    `next	: "summary"
-	]
+	    `next	: "summary",
+	],
+	"configure" : $[
+	    `abort	: `abort,
+	    `next	: "summary",
+	],
+	"add" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+	"edit" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+	"Add" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+	"Edit" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
     ];
 
     return WizardSequencer(aliases, sequence);
 }
+
 
 /**
  * One ISDN card workflow
@@ -135,51 +158,35 @@ global define symbol MainSequence() ``{
 global define symbol OneISDNSequence(string entry) ``{
 
     map aliases = $[
-	"lowlevel_detected"	:   ``(isdn_lowlevel(`Detected)),
-	"lowlevel_detectedISA"	:   ``(isdn_lowlevel(`DetectedISA)),
-	"other"			:   ``(isdn_lowlevel(`other)),
-	"edit"			:   ``(isdn_lowlevel(`edit)),
-	"overview"		:   ``(OverviewDialog()),
-	"connection"		:   ``(isdn_connection()),
-	"connection"		:   ``(ConnectionDialog("isdn")),
-	"ip"			:   ``(isdn_ip()),
-	"callback"		:   ``(isdn_callback()),
-	"ipdetails"		:   ``(IPDetailsDialog("isdn")),
-	"providers"		:   ``(ProvidersDialog("isdn")),
-	"provider"		:   ``(ProviderDialog("isdn")),
-	"new_provider"		:   ``(ProviderDialog("isdn")),
-	"testdev"		: [ ``(Commit(false)), true ],
-	"commit_hw"		: [ ``(Commit(false)), true ],
-	"commit_if"		: [ ``(Commit(true)), true ]
+	"lowlevel_detected"	: ``(isdn_lowlevel(`Detected)),
+	"lowlevel_detectedISA"	: ``(isdn_lowlevel(`DetectedISA)),
+	"other"			: ``(isdn_lowlevel(`other)),
+	"edit"			: ``(isdn_lowlevel(`edit)),
+	"providers"		: ``(ProvidersDialog("isdn")),
+	"provider"		: ``(ProviderDialog("isdn")),
+	"new_provider"		: ``(ProviderDialog("isdn")),
+	"connection"		: ``(ConnectionDialog("isdn")),
+	"ipdetails"		: ``(IPDetailsDialog("isdn")),
+	"commit"		: [ ``(Commit()), true ],
     ];
 
     map sequence = $[
 	"ws_start" : entry,
 	"lowlevel_detected" : $[
-	    `next :  "commit_hw",
+	    `next :  "providers",
 	    `abort : `abort
 	],
 	"lowlevel_detectedISA" : $[
-	    `next :  "commit_hw",
-	    `abort : `abort
-	],
-	"other" : $[
-	    `next :  "commit_hw",
+	    `next :  "providers",
 	    `abort : `abort
 	],
 	"edit" : $[
-	    `next :  "commit_hw",
+	    `next :  "providers",
 	    `abort : `abort
 	],
-	"overview" : $[
-	    `abort	: `abort,
-	    `back	: `next,
-	    `next	: `next,
-	    `add	: "other",
-	    `edit	: "edit",
-	    `addif	: "providers",
-	    `editif	: "providers",
-	    `testdev	: "testdev"
+	"other" : $[
+	    `next :  "providers",
+	    `abort : `abort
 	],
 	"providers" : $[
 	    `next : "provider",
@@ -190,43 +197,17 @@ global define symbol OneISDNSequence(string entry) ``{
 	    `next : "connection",
 	    `abort : `abort
 	],
-	"new_provider": $[
-	    `next : "connection",
-	    `abort : `abort
-	],
-	"connection" : $[
-	    `ipsettings : "ip",
-	    `callbacksettings : "callback",
-	    `Details : "callback",
-	    `IPDetails : "ip",
-	    `next : "commit_if",
-	    `abort : `abort
-	],
 	"connection" : $[
 	    `next : "ipdetails",
 	    `abort : `abort
 	],
 	"ipdetails" : $[
-	    `next : "commit_if",
+	    `next : "commit",
 	    `abort : `abort
 	],
-	"ip" : $[
-	    `next : "connection",
-	    `abort : `abort
+	"commit" : $[
+	    `next   : `next,
 	],
-	"callback" : $[
-	    `next : "connection",
-	    `abort : `abort
-	],
-	"testdev" : $[
-	    `next   : "overview"
-	],
-	"commit_hw" : $[
-	    `next   : "overview"
-	],
-	"commit_if" : $[
-	    `next   : "overview"
-	]
     ];
 
     return WizardSequencer(aliases, sequence);

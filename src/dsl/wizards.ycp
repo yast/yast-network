@@ -17,9 +17,11 @@ include "wizard/sequencer.ycp";
 
 include "network/routines.ycp";
 
+//include "network/provider/wizards.ycp";
+//include "network/provider/.ycp";
+
 include "network/dsl/dialogs.ycp";
 include "network/dsl/complex.ycp";
-//include "network/providers/.ycp";
 
 /**
  * Whole configuration of network

@@ -4,7 +4,7 @@
 # $Id$
 #
 
-yncludedir = @yncludedir@/network/providers
+yncludedir = @yncludedir@/network/provider
 ynclude_DATA = $(wildcard *.ycp)
 
 EXTRA_DIST = $(ynclude_DATA)

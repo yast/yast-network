@@ -21,8 +21,6 @@ import "Summary";
 y2milestone("----------------------------------------");
 y2milestone("ISDN summary started");
 
-include "ui/summary.ycp";
-
 Progress::off();
 ISDN::Read();
 list sum = ISDN::Summary(false);

@@ -311,31 +311,6 @@ global define list GetProviders(string country, string type, string preselect) `
 }
 
 /**
- * Read all provider keys from ini file to map.
- * Adds also key "ShortName" : "section_name";
- * @param provider which provider to get
- * @return provider map
- */
-global define map ReadProvider(any provider) ``{
-    y2debug("provider=%1",provider);
-    if(provider != nil && is(provider, path)) {
-	string pr = sformat("%1", provider);
-	integer pos = findlastof(pr, ".");
-	if(pos != -1) {
-	    pr = substring(pr, pos + 1);
-	    pr = substring(pr, 0, size(pr));
-	    if("\"" == substring(pr, 0, 1))
-		pr = substring(pr, 1, size(pr) - 2);
-	}
-	list l = SCR::Dir(provider);
-	return add(listmap(`i, l, ``{
-	    return [ i, SCR::Read( add(provider, i)) ];
-	}), "ShortName", pr);
-    }
-    return lookup(providers, provider, $[]);
-}
-
-/**
  * Sorts providers alphabeticly (non-case-sensitivly) and by priority.
  * In the first step, priority and name of each provider is obtained.
  * List of strings built from these values is created. Item lists are:
@@ -423,18 +398,47 @@ global define void editProvider(boolean new) ``{
 }
 */
 
-global define boolean AddEdit(string name, boolean clone) ``{
+/**
+ * Read all provider keys from ini file to map.
+ * Adds also key "ShortName" : "section_name";
+ * @param provider which provider to get
+ * @return provider map
+ */
+global define map ReadProvider(any provider) ``{
+    y2debug("provider=%1",provider);
+    if(provider != nil && is(provider, path)) {
+	y2debug("path");
+	string pr = sformat("%1", provider);
+	integer pos = findlastof(pr, ".");
+	if(pos != -1) {
+	    pr = substring(pr, pos + 1);
+	    pr = substring(pr, 0, size(pr));
+	    if("\"" == substring(pr, 0, 1))
+		pr = substring(pr, 1, size(pr) - 2);
+	}
+	list l = SCR::Dir(provider);
+	return add(listmap(`i, l, ``{
+	    return [ i, SCR::Read( add(provider, i)) ];
+	}), "ShortName", pr);
+    }
+    y2debug("lookup: %1",lookup(providers, provider, $[]));
+    return lookup(providers, provider, $[]);
+}
+
+/**
+ * @param name provider name if Edit, empty if Add
+ */
+global define boolean AddEdit(any name, boolean clone) ``{
     operation = nil;
 
     y2debug("name=%1",name);
     y2debug("clone=%1",clone);
 
+    /* edit existing */
     if(name != "") {
 
-	if(clone)
-	    provider = ReadProvider(topath(name));
-	else
-	    provider = ReadProvider(name);
+	provider = ReadProvider(name);
+	y2debug("provider=%1",provider);
 
 	string name = lookup(provider, "PROVIDER", "");
 	string gen = name;
@@ -462,6 +466,7 @@ global define boolean AddEdit(string name, boolean clone) ``{
 
     }
 
+    /* add or clone existing */
     if(name == "" || clone) {
 
 	if(name == "")

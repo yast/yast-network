@@ -1,5 +1,5 @@
 /**
- * File:	include/network/providers/connection.ycp
+ * File:	include/network/provider/connection.ycp
  * Package:	Configuration of network
  * Summary:	Connection configuration dialogs
  * Authors:	Michal Svec <msvec@suse.cz>

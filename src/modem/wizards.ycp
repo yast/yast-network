@@ -17,11 +17,10 @@ include "wizard/sequencer.ycp";
 
 include "network/routines.ycp";
 
-include "network/providers/wizards.ycp";
-
-include "network/providers/details.ycp";
-include "network/providers/dialogs.ycp";
-include "network/providers/connection.ycp";
+include "network/provider/wizards.ycp";
+include "network/provider/details.ycp";
+include "network/provider/dialogs.ycp";
+include "network/provider/connection.ycp";
 
 include "network/modem/dialogs.ycp";
 include "network/modem/complex.ycp";
@@ -106,8 +105,8 @@ global define symbol MainSequence() ``{
 	"other"		: [ ``(OneModemSequence(false)), true ],
 	"add"		: [ ``(OneModemSequence(false)), true ],
 	"edit"		: [ ``(OneModemSequence(false)), true ],
-	"Add"		: [ ``(OneProviderSequence(true)), true ],
-	"Edit"		: [ ``(OneProviderSequence(false)), true ],
+	"Add"		: [ ``(OneProviderSequence("modem",true)), true ],
+	"Edit"		: [ ``(OneProviderSequence("modem",false)), true ],
     ];
 
     map sequence = $[

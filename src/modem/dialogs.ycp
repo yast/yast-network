@@ -26,11 +26,7 @@ global define symbol ModemDialog(boolean detected) ``{
 
     /* PREPARE VARIABLES */
 
-    /* FIXME */
-    /* move Connection to src/providers/ ? Add complex.ycp wizards.ycp? */
-    /* move Connection to src/services/providers.ycp ? */
-    /* create clients/providers.ycp, but don't install it */
-    /* make the Connection dialog optional in the provider dialog */
+    /* FIXME make the Connection dialog optional in the provider dialog */
 
     list devices = maplist(`e, toset([ Modem::Device, "/dev/modem",
 		"/dev/ttyS0", "/dev/ttyS1", "/dev/ttyS2", "/dev/ttyS3",
