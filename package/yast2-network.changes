@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Feb 17 18:59:54 CET 2003 - kkaempf@suse.de
+
+- dialogs.ycp:AskForPassword() must be global.
+
+-------------------------------------------------------------------
 Mon Feb 17 18:02:00 CET 2003 - kkeil@suse.de
 
 - reenable isdn in provider dialog (#23725)

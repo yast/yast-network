@@ -24,7 +24,7 @@ include "network/routines.ycp";
  * Ask for password if required
  * @return true on success
  */
-define boolean AskForPassword() ``{
+global define boolean AskForPassword() ``{
 
     if(Internet::askpassword == nil) return true;
     if(Internet::askpassword == false) return true;
