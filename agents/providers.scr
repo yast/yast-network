@@ -1,8 +1,8 @@
 /**
  * File:	providers.scr
  * Summary:	SCR agent for dialup providers
- * Author:	Petr Blahos <pblahos@suse.cz>
- * Access:	Read
+ * Authors:	Petr Blahos <pblahos@suse.cz>, Michal Svec <msvec@suse.cz>
+ * Access:	read-only
  * See:		yast2-config-network package
  *
  * General syntax:
@@ -19,20 +19,27 @@
 .providers
 
 `ag_ini(
-  IniAgent( [ "/usr/share/providers/*.conf",  ],
-    $[
-      "options" : [ "read_only" ],
-      "comments": [ "^[ \t]*#.*", "^[ \t]*$" ],
-      "sections" : [
-        $[
-        "begin" : [ "[ \t]*\\[Dialer[ \t]+(.*[^ \t])[ \t]*\\][ \t]*", "[Dialer %s]" ],
-        ],
-      ],
-      "params" : [
-        $[
-        "match" : [ "^[ \t]*([^=]*[^ \t=])[ \t]*=[ \t]*\"([^\"]*)\"[ \t]*$" , "%s=\"%s\""],
-      ],
-    ],
-    ]
-  )
+    IniAgent( [ "/usr/share/providers/*.conf",  ],
+	$[
+	    /* read-only */
+	    "options"	: [ "read_only" ],
+	    /* empty lines and whole-line comments */
+	    "comments"	: [ "^[ \t]*$", "^[ \t]*#.*" ],
+	    /* matching rules */
+	    "sections"	: [
+		$[
+		    "begin" : [ "[ \t]*\\[Dialer[ \t]+(.*[^ \t])[ \t]*\\][ \t]*", "[Dialer %s]" ],
+		],
+		],
+		    "params" : [
+		$[
+		    "match" : [ "^[ \t]*([^=]*[^ \t=])[ \t]*=[ \t]*\"([^\"]*)\"[ \t]*$" , "%s=\"%s\""],
+		],
+	    ],
+	    /* rewrite rules */
+	    "rewrite"	: [
+		[ "/usr/share/providers/(.*)\.conf$",  "/usr/share/providers/%s.conf", ],
+	    ],
+	]
+    )
 )

@@ -19,6 +19,8 @@
 
 textdomain "network";
 
+include "ui/common_popups.ycp";
+
 /**
  * Return all keys from the map
  * @param m the map
@@ -97,6 +99,23 @@ global define void ProgressNextStage(string title) ``{
 }
 
 /**
+ * Display the finished popup and possibly run another module.
+ * If not modified, don't do anything.
+ * @param modified true if there are any modified data
+ * @param text text to be shown
+ * @param run module to be run
+ * @return always `next
+ */
+global define symbol Finished(boolean modified, string text, string run) ``{
+    if(!modified) return `next;
+    /* popup headline */
+    string head = _("Configuration has been successfully saved.");
+    any ret = UI::YesNoHeadlinePopup(head, text);
+    if(ret == true) CallModule(run, []);
+    return `next;
+}
+
+/**
  * Create a list of items for UI from the given list
  * @param l given list for conversion
  * @param selected selected item (0 for the first)
@@ -139,7 +158,8 @@ global define list hwlist2items(list l, integer selected) ``{
  * @example device_type("eth1") -> "eth"
  */
 global define string device_type(string dev) ``{
-    return regexpsub(dev, "^([a-zA-Z-]+).*$", "\\1");
+    //return regexpsub(dev, "^([a-zA-Z-]+)[^a-zA-Z-]*$", "\\1");
+    return regexpsub(dev, "([a-zA-Z-]+)[^a-zA-Z-]*$", "\\1");
 }
 
 /**
@@ -149,7 +169,19 @@ global define string device_type(string dev) ``{
  * @example device_num("eth1") -> 1
  */
 global define integer device_num(string dev) ``{
-    string num = regexpsub(dev, "^[a-zA-Z-]*([0-9]+).*$", "\\1");
+    //string num = regexpsub(dev, "^[a-zA-Z-]*([0-9]+).*$", "\\1");
+    string num = regexpsub(dev, "[a-zA-Z-]*([0-9]+)", "\\1");
+    return tointeger(num);
+}
+
+/**
+ * Return a device alias number
+ * @param dev device
+ * @return device number
+ * @example device_num("eth1") -> 1
+ */
+global define integer device_alias(string dev) ``{
+    string num = regexpsub(dev, "[a-zA-Z-]*[0-9]*:([0-9]+)", "\\1");
     return tointeger(num);
 }
 

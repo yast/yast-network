@@ -9,19 +9,21 @@ map READ = $[];
 READ = $[
     "network" : $[
 	"section" : $[
-	    "ifcfg-eth0" : nil,
-	    "ifcfg-eth1" : nil,
-	    "ifcfg-ppp2" : nil,
-	    "ifcfg-ippp3" : nil,
-	    "ifcfg-ppp5.bak" : nil,
-	    "ifcfg-pcmcia" : nil,
-	    // "ifcfg-pcmcia" : nil, -> brakes regexpsub without check
+	    "eth0" : nil,
+	    //"eth0:1" : nil,
+	    "eth1" : nil,
+	    "ppp2" : nil,
+	    "ippp3" : nil,
+	    "ppp5.bak" : nil,
+	    "pcmcia" : nil,
+	    // "pcmcia" : nil, -> brakes regexpsub without check
 	],
 	"value" : $[
-	    "/etc/sysconfig/network/ifcfg-eth0" : $[ "IPADDR" : "0"],
-	    "/etc/sysconfig/network/ifcfg-eth1" : $[ "IPADDR" : "1"],
-	    "/etc/sysconfig/network/ifcfg-ppp2" : $[ "IPADDR" : "2"],
-	    "/etc/sysconfig/network/ifcfg-ippp3" : $[ "IPADDR" : "3"],
+	    "eth0" : $[ "IPADDR" : "0"],
+	    //"eth0:1" : $[ "IPADDR" : "0:1"],
+	    "eth1" : $[ "IPADDR" : "1"],
+	    "ppp2" : $[ "IPADDR" : "2"],
+	    "ippp3" : $[ "IPADDR" : "3"],
 	],
     ],
 ];

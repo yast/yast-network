@@ -34,10 +34,14 @@ include "network/modem/complex.ycp";
  */
 global define symbol ModemSequence() ``{
 
+    /* popup text */
+    string finished = _("Would you like to configure the mail now?");
+
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
-	"write"	: [ ``( WriteDialog() ), true ]
+	"write"	: [ ``( WriteDialog() ), true ],
+	"finish" : [ ``( Finished(Modem::Modified(), finished, "mail") ), true ],
     ];
 
     map sequence = $[
@@ -54,7 +58,10 @@ global define symbol ModemSequence() ``{
 	],
 	"write" : $[
 	    `abort	: `abort,
-	    `next	: `next
+	    `next	: "finish"
+	],
+	"finish" : $[
+	    `next	: `next,
 	]
     ];
 

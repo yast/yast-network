@@ -67,38 +67,31 @@ global define symbol modem_params(symbol Type) ``{
 
     /* DIALOG TEXTS */
 
+    /* Modem dialog caption */
     string caption = _("Modem parameters");
 
-    // help text 1/5
-    string helptext = _("<p>Enter all modem configuration values.</p>");
+    /* Modem dialog help 1/5 */
+    string helptext = _("<p>Enter all modem configuration values.</p>") +
 
-    // help text 2/5
-    helptext = helptext +
-_("<P><b>Device</b> specifies to which port your modem is connected.
-ttyS0, ttyS1, etc., refer to serial ports and usually correspond to 
-COM1, COM2, etc., in DOS/Windows. ttyACM0 and ttyACM1 refer to USB ports.</p>
-");
+    /* Modem dialog help 2/5 */
+_("<p><b>Device</b> specifies to which port your modem is connected. ttyS0,
+ttyS1, etc., refer to serial ports and usually correspond to COM1, COM2, etc.,
+in DOS/Windows. ttyACM0 and ttyACM1 refer to USB ports.</p>") +
 
-    // help text 3/5
-    helptext = helptext +
-_("<P>If you are on a PBX, you probably need to enter a <B>Dial prefix</B>.
-Often, this is <I>9</I>.</P>
-");
+    /* Modem dialog help 3/5 */
+_("<p>If you are on a PBX, you probably need to enter a <B>Dial prefix</B>.
+Often, this is <i>9</i>.</p>") +
 
-    // help text 4/5
-    helptext = helptext +
+    /* Modem dialog help 4/5 */
 _("<p>Choose <b>Dial mode</b> according to your phone link. Most telephone
 companies use <I>tone dial</I> as the <B>Dial mode</B>. Check the additional
 check boxes to turn on your modem speaker (<i>Speaker on</i>)
 or for your modem to wait until it detects a dial tone (<i>Detect Dial
-tone</i>).</p>
-");
+tone</i>).</p>") +
 
-    // help text 5/5
-    helptext = helptext +
+    /* Modem dialog help 5/5 */
 _("<p>Press <b>Details</b> to configure the baud rate and the modem 
-initialization strings.</p>
-");
+initialization strings.</p>");
 
     /* DIALOG CONTENTS */
 
@@ -109,7 +102,7 @@ initialization strings.</p>
     term contents =
 	`HSquash(
 	    `VBox(
-		`VSpacing(),
+		`VSpacing(0.5),
 		DeviceTerm,
 		`VSpacing(0.5),
 		`HBox(
@@ -156,8 +149,8 @@ initialization strings.</p>
 
     /* DIALOG PREPARE */
 
-    Wizard::SetContents(caption, contents, helptext, true, true);
-    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), NextButtonLabel()));
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    BackButtonLabel(), NextButtonLabel());
 
     /* MAIN CYCLE */
 
@@ -168,14 +161,14 @@ initialization strings.</p>
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel) {
-	    if(UI::ReallyAbortPopup(true))
-		break;
-	    else
-		continue;
+	    if(ReallyAbort()) break;
+	    else continue;
 	}
+	/* back */
 	else if(ret == `back) {
 	    break;
 	}
+	/* next */
 	else if(ret == `next || ret == `Details) {
 
 	    //name = UI::QueryWidget(`id(`ModemName), `Value);
@@ -204,15 +197,13 @@ initialization strings.</p>
 
     /* UPDATE VARIABLES */
 
-    if (ret == `next || ret == `Details)
-    {
+    if (ret == `next || ret == `Details) {
+
 	  // Modem::name = UI::QueryWidget(`id(`ModemName), `Value);
 	  Modem::DialPrefix = UI::QueryWidget(`id(`DialPrefix), `Value);
 
 	  if (Type != `Detected)
-	  {
 	    Modem::Device = UI::QueryWidget(`id(`Device), `Value);
-	  }
 
 	  Modem::PulseDial = UI::QueryWidget(`id(`Pulse), `Value);
 	  Modem::Speaker = UI::QueryWidget(`id(`Speaker), `Value);
@@ -239,18 +230,17 @@ global define symbol modem_details() ``{
 
     /* DIALOG TEXTS */
 
+    /* Modem datails dialog caption */
     string caption = _("Modem parameter details");
 
-    //help text 1/2
+    /* Modem datails dialog help 1/2 */
     string helptext =
 _("<p>The item BaudRate is a transmission speed that tells how many bits per 
-second your computer communicates with your modem.</p>");
+second your computer communicates with your modem.</p>") +
 
-    //help text 2/2
-    helptext = helptext +
+    /* Modem datails dialog help 2/2 */
 _("<p>All the relevant information about <b>init strings</b>
-should be in your modem manual.</p>
-");
+should be in your modem manual.</p>");
 
 
     /* DIALOG CONTENTS */
@@ -283,8 +273,8 @@ should be in your modem manual.</p>
 
     /* DIALOG PREPARE */
 
-    Wizard::SetContents(caption, contents, helptext, true, true);
-    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), OKButtonLabel()));
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    BackButtonLabel(), NextButtonLabel());
 
     /* MAIN CYCLE */
 
@@ -294,24 +284,18 @@ should be in your modem manual.</p>
 	ret = UI::UserInput();
 
 	/* abort? */
-	if (ret == `abort || ret == `cancel)
-	{
-	    if(UI::ReallyAbortPopup(true))
-		break;
-	    else
-		continue;
+	if (ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
 	}
-	else if (ret == `back)
-	{
+	else if (ret == `back) {
 	    break;
 	}
-	else if (ret == `next)
-	{
+	else if (ret == `next) {
 	    /* check_* */
 	    break;
 	}
-	else
-	{
+	else {
 	    y2error("unexpected retcode: %1", ret);
 	    continue;
 	}
@@ -342,6 +326,7 @@ should be in your modem manual.</p>
 global define symbol modem_connection() ``{
 
     /* PREPARE VARIABLES */
+
     string Provider = lookup (Providers::provider, "PROVIDER", "");
     //boolean IsDefault = Modem::IsDefault;
     boolean DialOnDemand = lookup (Providers::provider, "DEMAND", "no") == "yes";
@@ -370,41 +355,39 @@ global define symbol modem_connection() ``{
     }));
 */
 
-    y2debug("--%1", Modem::device);
+    y2debug("Modem::device = %1", Modem::device);
     boolean FirewallChecked = Firewall::Query(device_name(Modem::type, Modem::device));
 
     /* DIALOG TEXTS */
 
+    /* Connection dialog caption */
+    string caption = _("Connection parameters");
+
     /* Connection dialog help 1/5 */
     string helptext = _("<p>Selecting <b>Activate firewall</b> will block
 all incoming connections. Choosing this option will make dial-up connections
-to the Internet safe from external attacks.</p>");
+to the Internet safe from external attacks.</p>") +
 
     /* Connection dialog help 2/5 */
-    helptext = helptext + _("<p><b>Dial on demand</b> means that the
-internet connection will be established automatically when data from
-the internet are requested. To use this feature you must specify at
-least one <i>name server</i>. Please use this feature only if your
-internet connection is cheap since there are programs that periodically
-request data from the internet.</p>");
+_("<p><b>Dial on demand</b> means that the internet connection will be
+established automatically when data from the internet are requested.
+To use this feature you must specify at least one <i>name server</i>.
+Please use this feature only if your internet connection is cheap since
+there are programs that periodically request data from the internet.</p>") +
 
     /* Connection dialog help 3/5 */
-    helptext = helptext + _("<p>The <b>Name servers</b> are required
-to convert host names <i>(e.g. www.suse.com)</i> to ip addresses
-(e.g. 213.95.15.200). You only need to specify the name servers
-if you enable <i>Dial on demand</i>.</p>");
+_("<p>The <b>Name servers</b> are required to convert host names
+<i>(e.g. www.suse.com)</i> to ip addresses (e.g. 213.95.15.200).
+You only need to specify the name servers if you enable
+<i>Dial on demand</i>.</p>") +
 
     /* Connection dialog help 4/5 */
-    helptext = helptext + _("<p>When <b>Modify DNS</b> is enabled the
-<i>name server</i> will be changed automatically when connected to the
-internet.</p>");
+_("<p>When <b>Modify DNS</b> is enabled the <i>name server</i> will be
+changed automatically when connected to the internet.</p>") +
 
     /* Connection dialog help 5/5 */
-    helptext = helptext + _("<p>The <b>Idle timeout</b> specifies the time
-after which an idle connection will be shut down.</p>");
-
-    /* Connection dialog caption */
-    string caption = _("Connection parameters");
+_("<p>The <b>Idle timeout</b> specifies the time after which an idle
+connection will be shut down.</p>");
 
     /* DIALOG CONTENTS */
 
@@ -450,10 +433,10 @@ after which an idle connection will be shut down.</p>");
 	);
 
     /* DIALOG PREPARE */
-    Wizard::SetContents(caption, contents, helptext, true, true);
-    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), NextButtonLabel()));
-    UI::ChangeWidget(`id(`Firewall), `Enabled, !Firewall::firewallpresent);
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    BackButtonLabel(), NextButtonLabel());
 
+    UI::ChangeWidget(`id(`Firewall), `Enabled, !Firewall::firewallpresent);
     UI::ChangeWidget(`id (`NameServers), `Enabled, DialOnDemand);
     UI::ChangeWidget(`id (`DNS1), `Enabled, DialOnDemand);
     UI::ChangeWidget(`id (`DNS2), `Enabled, DialOnDemand);
@@ -489,8 +472,7 @@ after which an idle connection will be shut down.</p>");
 
 	    break;
 	}
-	else if (ret == `DialOnDemand)
-	{
+	else if (ret == `DialOnDemand) {
 	    DialOnDemand = UI::QueryWidget(`id(`DialOnDemand), `Value);
 	    UI::ChangeWidget(`id(`NameServers), `Enabled, DialOnDemand);
 	    UI::ChangeWidget(`id(`DNS1), `Enabled, DialOnDemand);

@@ -232,8 +232,9 @@ not in the list.</p>");
 	    `HSpacing()
 	);
 
-    Wizard::SetContents(caption, contents, helptext, true, true);
-    UI::ChangeWidget (`id (`next), `Label, NextButtonLabel ());
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    BackButtonLabel(), NextButtonLabel());
+
     symbol ret = country == nil ? `countries : `custom_p;
     boolean change_providers = false;
     while (`next != ret && `back != ret && `abort != ret && `new != ret)
@@ -319,9 +320,11 @@ not in the list.</p>");
  * @return symbol for wizard sequencer (`next, `back, `abort)
  */
 global define symbol runEditModemProviderDialog (boolean edit) ``{
+
+    /* Edit provider dialog caption */
     string caption = _("Set parameters for the Internet connection");
 
-    string InfoText= getProviderInfoText ( Providers::provider );
+    string InfoText = getProviderInfoText ( Providers::provider );
 
     // fillup 'Modem' provider variables
     string provName = lookup(Providers::provider, "PROVIDER", "");
@@ -331,47 +334,46 @@ global define symbol runEditModemProviderDialog (boolean edit) ``{
     boolean ask_pass = lookup(Providers::provider, "ASKPASSWORD", "no") == "yes";
     string provPhone = lookup(Providers::provider, "PHONE", "");
 
-    term contents =
-	`HBox (
-	    `HSpacing (4),
-	    `VBox (
-		`TextEntry(`id(`ShortName), _("Name for &dialing"), provShortName),
-		`TextEntry(`id(`Section), _("&Connection Name"), provName),
-		`VSquash(
-		    `HBox(
-			`TextEntry(`id(`PhoneNumber),
-			    _("P&hone number"),
-			    filterchars (provPhone, "0123456789")
-			),
-			`Bottom(`PushButton(`id(`info), `opt(`disabled), _("&Info")))
-		    )
-		),
-		`TextEntry(`id(`Username), _("&User name"), provUsername),
-		`VSpacing(0.5),
-		`Frame(_("Request for password"),
-		    `HBox(
-			`HSpacing(),
-			`VBox(
-			       `Left(`CheckBox(`id(`askpass), `opt(`notify), _("&Always ask me"), ask_pass)),
-			       `Password(`id(`passwd), _("&Password"), provPassword)
-			),
-			`HSpacing()
-		    )
+    term contents = `HBox(
+	`HSpacing(4),
+	`VBox(
+	    `TextEntry(`id(`ShortName), _("Name for &dialing"), provShortName),
+	    `TextEntry(`id(`Section), _("&Connection name"), provName),
+	    `VSquash(
+		`HBox(
+		    `TextEntry(`id(`PhoneNumber), _("P&hone number"), provPhone),
+			//filterchars(provPhone, "0123456789*#")
+		    //),
+		    `Bottom(`PushButton(`id(`info), `opt(`disabled), _("&Info")))
 		)
 	    ),
-	    `HSpacing(4)
-	);
+	    `TextEntry(`id(`Username), _("&User name"), provUsername),
+	    `VSpacing(0.5),
+	    `Frame(_("Request for password"),
+		`HBox(
+		    `HSpacing(),
+		    `VBox(
+			   `Left(`CheckBox(`id(`askpass), `opt(`notify), _("&Always ask me"), ask_pass)),
+			   `Password(`id(`passwd), _("&Password"), provPassword)
+		    ),
+		    `HSpacing()
+		)
+	    )
+	),
+	`HSpacing(4)
+    );
 
-    Wizard::SetContents(caption, contents, getEditProviderHelp (true), true, true);
-    UI::ChangeWidget (`id (`next), `Label, NextButtonLabel ());
-    if (nil != InfoText && "" != InfoText)
-    {
-	UI::ChangeWidget (`id (`info), `Enabled, true);
-    }
-    if (ask_pass)
-    {
-	UI::ChangeWidget (`id (`passwd), `Enabled, false);
-    }
+    Wizard::SetContentsButtons(caption, contents, getEditProviderHelp(true),
+	    BackButtonLabel(), NextButtonLabel());
+
+    /* '*' and '#' are for GPRS connections #16021 */
+    UI::ChangeWidget(`id(`PhoneNumber), `ValidChars, "0123456789*#" );
+
+    if(InfoText != nil && InfoText != "")
+	UI::ChangeWidget(`id(`info), `Enabled, true);
+
+    if(ask_pass)
+	UI::ChangeWidget(`id(`passwd), `Enabled, false);
 
     symbol ret = nil;
     while (`next != ret && `back != ret && `abort != ret)
@@ -430,11 +432,12 @@ global define symbol runEditModemProviderDialog (boolean edit) ``{
 		UI::MessagePopup (_("Enter the user name."));
 		UI::SetFocus (`id (`Username));
 	    }
+	    /* password could be empty #16021
 	    else if (!ask_pass && "" == pass)
 	    {
 		UI::MessagePopup (_("Enter the password."));
 		UI::SetFocus (`id (`passwd));
-	    }
+	    } */
 	    else if (filterchars (phone, "0123456789") != phone &&
 		    !UI::YesNoPopup (_("You have entered some characters that are not numbers in the phone field.\n\nContinue?")))
 	    {

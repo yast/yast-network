@@ -31,18 +31,16 @@ include "network/routines.ycp";
 global define boolean ReadConfig(string devregex) ``{
 
     CONFIG = $[];
-    string sysconfig = "/etc/sysconfig/network";
 
     list allfiles = SCR::Dir(.network.section);
     list devices = filter(`file, allfiles, ``(!regexpmatch(file, "[\.~]")));
     y2debug("devices=%1", devices);
 
-    devices = filter(`d, devices, ``(regexpmatch(d, "ifcfg-[a-z][a-z-]*[0-9]+(:[0-9]+)?")));
+    devices = filter(`d, devices, ``(regexpmatch(d, "[a-z][a-z-]*[0-9]+(:[0-9]+)?")));
     y2debug("devices=%1", devices);
 
     if(devregex != nil && devregex != "") {
-	//devices = filter(`file, devices, ``(regexpmatch(file, devregex)));
-	devices = filter(`file, devices, ``(regexpmatch(file, "-" + devregex + "[0-9]")));
+	devices = filter(`file, devices, ``(regexpmatch(file, "^" + devregex + "[0-9]")));
 	y2debug("devices=%1", devices);
     }
 
@@ -52,11 +50,11 @@ global define boolean ReadConfig(string devregex) ``{
 
     /* read main devices */
     maplist(`d, maindevs, ``{
-	string devtype = regexpsub(d, "^.*ifcfg-([a-z-]+)[^a-z-]*$", "\\1");
+	string devtype = device_type(d);
 	if(devtype == "lo") return;
 
-	string devnum = regexpsub(d, "^.*ifcfg-[a-z-]+([0-9]+)", "\\1");
-	y2debug("devnum=%1",devnum);
+	string devnum = sformat("%1", device_num(d));
+	y2debug("devnum=%1", devnum);
 
 	map dev = lookup(CONFIG, devtype, $[]);
 	if(haskey(dev, devnum)) {
@@ -64,7 +62,7 @@ global define boolean ReadConfig(string devregex) ``{
 	    return;
 	}
 
-	string pth = ".network.value.\"" + sysconfig + "/ifcfg-"+devtype+devnum+"\"";
+	string pth = ".network.value.\"" + devtype + devnum + "\"";
 	list values = SCR::Dir(topath(pth));
 	map config = listmap(`val, values, ``{
 	    string item = SCR::Read(topath(pth + "." + val));
@@ -78,13 +76,12 @@ global define boolean ReadConfig(string devregex) ``{
     y2debug("CONFIG=%1",CONFIG);
 
     /* read aliases */
-    /* -> not supported yet
     maplist(`d, aliases, ``{
-	string devtype = regexpsub(d, "^.*ifcfg-([a-z]+)[^a-z]*$", "\\1");
+	string devtype = device_type(d);
 	if(devtype == "lo") return;
 
-	string devnum = regexpsub(d, "^.*ifcfg-[a-z]+([0-9]+)", "\\1");
-	string aliasnum = regexpsub(d, "^.*ifcfg-[a-z]+[0-9]+:([0-9]+)[^0-9]*$", "\\1");
+	string devnum = sformat("%1", device_num(d));
+	string aliasnum = sformat("%1", device_alias(d));
 	y2debug("devnum=%1(%2)",devnum,aliasnum);
 
 	map dev = lookup(CONFIG, devtype, $[]);
@@ -100,7 +97,7 @@ global define boolean ReadConfig(string devregex) ``{
 	    return;
 	}
 
-	string pth = ".network.value.\"" + sysconfig + "/ifcfg-"+devtype+devnum+":"+aliasnum+"\"";
+	string pth = ".network.value.\"" + devtype + devnum + ":" + aliasnum + "\"";
 	list values = SCR::Dir(topath(pth));
 	map aliasconfig = listmap(`v, values, ``{
 	    string item = SCR::Read(topath(pth+"."+v));
@@ -114,7 +111,6 @@ global define boolean ReadConfig(string devregex) ``{
     });
 
     y2debug("CONFIG=%1",CONFIG);
-    */
     return true;
 }
 
@@ -125,12 +121,11 @@ global define boolean ReadConfig(string devregex) ``{
 global define boolean WriteConfig() ``{
 
     y2debug("CONFIG=%1",CONFIG);
-    string sysconfig = "/etc/sysconfig/network";
 
     /* remove deleted devices */
     maplist(`d, DELETED, ``{
 	/* delete config file */
-	path p = topath(".network.section.\"" + sysconfig + "/ifcfg-" + d + "\"");
+	path p = topath(".network.section.\"" + d + "\"");
 	y2debug("deleting: %1", p);
 	SCR::Write(p, nil);
 	/* delete modules.conf entry */
@@ -144,7 +139,7 @@ global define boolean WriteConfig() ``{
 	maplist(`num, `devmap, devsmap, ``{
 	    /* write sysconfig */
 	    string dev = typ + num;
-	    string p = ".network.value.\"" + sysconfig + "/ifcfg-" + dev + "\".";
+	    string p = ".network.value.\"" + dev + "\".";
 
 	    /* write all keys to config */
 	    maplist(`k, mapkeys(devmap), ``{

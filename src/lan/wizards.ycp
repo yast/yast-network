@@ -24,11 +24,10 @@ textdomain "network";
 import "Wizard";
 
 include "wizard/sequencer.ycp";
-
+include "network/routines.ycp";
 include "network/lan/manual.ycp";
 include "network/lan/address.ycp";
 include "network/lan/dialogs.ycp";
-
 include "network/services/dns.ycp";
 include "network/services/routing.ycp";
 
@@ -38,10 +37,14 @@ include "network/services/routing.ycp";
  */
 global define symbol LanSequence() ``{
 
+    /* popup text */
+    string finished = _("Would you like to configure the mail now?");
+
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
-	"write"	: [ ``( WriteDialog() ), true ]
+	"write"	: [ ``( WriteDialog() ), true ],
+	"finish" : [ ``( Finished(Lan::Modified(), finished, "mail") ), true ],
     ];
 
     map sequence = $[
@@ -58,7 +61,10 @@ global define symbol LanSequence() ``{
 	],
 	"write" : $[
 	    `abort	: `abort,
-	    `next	: `next
+	    `next	: `next,
+	],
+	"finish" : $[
+	    `next	: `next,
 	]
     ];
 

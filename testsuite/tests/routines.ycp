@@ -63,9 +63,20 @@ DUMP("device_type");
 TEST(``(device_type("eth0")), [], nil);
 TEST(``(device_type("eth1")), [], nil);
 TEST(``(device_type("eth-pcmcia-0")), [], nil);
+TEST(``(device_type("eth-usb-1")), [], nil);
 TEST(``(device_type("tr-pcmcia-1")), [], nil);
 TEST(``(device_type("ippp2")), [], nil);
 TEST(``(device_type("ppp2")), [], nil);
+TEST(``(device_type("lo")), [], nil);
+TEST(``(device_type("eth0:1")), [], nil);
+TEST(``(device_type("eth1:20")), [], nil);
+TEST(``(device_type("eth-pcmcia-0:3")), [], nil);
+TEST(``(device_type("eth-usb-1:0")), [], nil);
+TEST(``(device_type("tr-pcmcia-2:432")), [], nil);
+TEST(``(device_type("ippp2:2")), [], nil);
+TEST(``(device_type("ppp2:2")), [], nil);
+TEST(``(device_type("lo:1")), [], nil);
+
 
 DUMP("device_num");
 TEST(``(device_num("eth0")), [], nil);
@@ -75,6 +86,27 @@ TEST(``(device_num("eth-usb-1")), [], nil);
 TEST(``(device_num("tr-pcmcia-2")), [], nil);
 TEST(``(device_num("ippp2")), [], nil);
 TEST(``(device_num("ppp2")), [], nil);
+TEST(``(device_num("eth0:1")), [], nil);
+TEST(``(device_num("eth1:20")), [], nil);
+TEST(``(device_num("eth-pcmcia-0:3")), [], nil);
+TEST(``(device_num("eth-usb-1:0")), [], nil);
+TEST(``(device_num("tr-pcmcia-2:432")), [], nil);
+TEST(``(device_num("ippp2:2")), [], nil);
+TEST(``(device_num("ppp2:2")), [], nil);
+TEST(``(device_num("lo:1")), [], nil);
+//TEST(``(device_num("lo")), [], nil);
+
+DUMP("device_alias");
+TEST(``(device_alias("eth0:1")), [], nil);
+TEST(``(device_alias("eth1:20")), [], nil);
+TEST(``(device_alias("eth-pcmcia-0:3")), [], nil);
+TEST(``(device_alias("eth-usb-1:0")), [], nil);
+TEST(``(device_alias("tr-pcmcia-2:432")), [], nil);
+TEST(``(device_alias("ippp2:2")), [], nil);
+TEST(``(device_alias("ppp2:2")), [], nil);
+TEST(``(device_alias("lo:1")), [], nil);
+//TEST(``(device_num("eth0")), [], nil);
+//TEST(``(device_num("lo")), [], nil);
 
 DUMP("device_name");
 TEST(``(device_name("eth",0)), [], nil);

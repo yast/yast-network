@@ -73,35 +73,7 @@ global string provLongName = "";
 /**
  * Country code -> country name translation
  */
-map country = $[];
-
-/**
- * 2 character country id --> country nice name mapping.
- */
-map country_nice_name = nil;
-
-/**
- * Get nice name of country.
- * @param fn file name from which we take the country
- * @return nice name of the country
- */
-define string getCountryNiceName (string fn) ``{
-    if (nil == country_nice_name)
-    {	// First time, read mapping.
-	country_nice_name = SCR::Read (.target.yast2, "country.ycp");
-	textdomain "country_db";
-	country_nice_name = eval (country_nice_name);
-	textdomain "network";
-	if (nil == country_nice_name)
-	    country_nice_name = $[];
-    }
-    // "/usr/share/providers/XX....";
-    if ("/usr/share/providers/" == substring (fn, 0, 21))
-	fn = substring (fn, 21, 2);
-    if ("UK" == fn)
-	fn = "GB";
-    return lookup (country_nice_name, fn, fn);
-}
+map country_names = $[];
 
 /**
  * Export data
@@ -213,11 +185,16 @@ global define boolean Read () ``{
     });
 
     /* read countries */
-    country = SCR::Read(.target.yast2, "country.ycp");
-    if(country == nil) {
-	//Report:Error(_("Countries database not found"));
+    country_names = SCR::Read(.target.yast2, "country.ycp");
+    if(country_names == nil) {
+	//Report:Error(_("Country database not found"));
+	y2error("Country database not found");
+	country_names = $[];
 	return false;
     }
+    textdomain "country_db";
+    country_names = eval(country_names);
+    textdomain "network";
 
     return true;
 }
@@ -272,13 +249,13 @@ global define void Write () ``{
  * Get list of countries
  * @return list for selection box
  */
-global define list getCountries () ``{
+global define list getCountries() ``{
     list out = [];
-    list countries = SCR::Dir (.providers.s);
+    list countries = SCR::Dir(.providers.s);
     integer index = -1;
     out = maplist (`i, countries, ``{
 	    index = index + 1;
-	    return `item (`id (i), getCountryNiceName (i), 0 == index);
+	    return `item(`id(i), country_names[i]:i, index == 0);
     });
     return out;
 }
@@ -338,7 +315,7 @@ define list filterIsdn (list provs) ``{
  * @param type `isdn, `tdsl, `adsl, `anything_else
  * @param preselect preselect this provider
  */
-global define list getProviders (string country, symbol type, string preselect) ``{
+global define list getProviders(string country, symbol type, string preselect) ``{
     list provs = [];
     if ("_custom" == country) {
 	// custom providers
@@ -347,7 +324,7 @@ global define list getProviders (string country, symbol type, string preselect) 
 	});
     }
     else {
-	list dir = SCR::Dir (add (.providers.s, country));
+	list dir = SCR::Dir(add(.providers.s, country));
 	path base = add (.providers.v, country);
 	provs = maplist (`i, dir, ``{
 	    return add (base, i);

@@ -38,11 +38,24 @@ global define list BuildSummary(boolean split) ``{
     /* build a list of configured devices */
     maplist(`devtype, `devsmap, CONFIG, ``{
 	maplist(`devnum, `devmap, devsmap, ``{
+
+	    /* main device summary */
 	    string unq = lookup(devmap, "UNIQUE", "");
 	    string hwname = CheckEmptyName(devtype, HardwareName(unq));
 	    string status = DeviceStatus(devtype, devnum, devmap);
 	    change(configured, Summary::Device(hwname, status));
 	    change(uniques, unq);
+
+	    /* aliases summary */
+	    map aliases = lookup(devmap, "_aliases", $[]);
+	    if(aliases != $[])
+		maplist(`anum, `amap, aliases, ``{
+		    //hwname = CheckEmptyName(devtype, HardwareName(unq));
+		    hwname = _("Virtual network interface");
+		    status = DeviceStatus(devtype, devnum + ":" + anum, amap);
+		    change(configured, Summary::Device(hwname, status));
+		});
+
 	});
     });
 
@@ -123,6 +136,10 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	return _("Unknown USB network card");
     else if(regexpmatch(devtype, "eth|tr|fddi"))
 	return _("Unknown network card");
+    else if(regexpmatch(devtype, "dummy"))
+	return _("Dummy network device");
+    else if(regexpmatch(devtype, "lo"))
+	return _("Loopback device");
     else {
 	y2error("Unknown type: %1", devtype);
 	return _("Unknown network device");
@@ -178,8 +195,8 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
     }
     /* treat the rest as a network card */
     else {
-	if(!regexpmatch(devtype, "eth|tr|fddi"))
-	    y2error("unknown type: %1", devtype);
+	if(!regexpmatch(devtype, "lo|dummy|eth|tr|fddi"))
+	    y2error("Unknown type: %1", devtype);
 
 	string proto = lookup(devmap, "BOOTPROTO", "static");
 	if(proto == "" || proto == "static" || proto == "none" || proto == nil) {
@@ -201,7 +218,9 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
  * @example DeviceType("eth") -> "Ethernet"
  */
 global define string DeviceType(string type) ``{
+    if(issubstring(type, ":")) return _("Virtual interface");
     if(regexpmatch(type, "lo")) return _("Loopback");
+    if(regexpmatch(type, "dummy")) return _("Dummy");
     if(regexpmatch(type, "eth")) return _("Ethernet");
     if(regexpmatch(type, "fddi")) return _("FDDI");
     if(regexpmatch(type, "contr")) return _("ISDN");
@@ -210,7 +229,21 @@ global define string DeviceType(string type) ``{
     if(regexpmatch(type, "isdn")) return _("ISDN");
     if(regexpmatch(type, "ppp")) return _("Modem");
     if(regexpmatch(type, "tr")) return _("Token-Ring");
+    y2error("Unknown type: %1", type);
     return type;
+}
+
+/**
+ * Return the device protocol or IP address in case of static config
+ * @param devmap device map
+ * @return textual device protocol
+ */
+global define string DeviceProtocol(map devmap) ``{
+    string ip = lookup(devmap, "BOOTPROTO", "static");
+    if(ip == nil || ip == "" || ip == "static" || ip == "none")
+	ip = lookup(devmap, "IPADDR", "");
+    else ip = toupper(ip);
+    return ip;
 }
 
 /**
@@ -221,32 +254,48 @@ global define list BuildOverview() ``{
     list overview = [];
 
     maplist(`type, `devmap, CONFIG, ``{
-	list view = maplist(`k, `v, devmap, ``{
+	maplist(`k, `v, devmap, ``{
+	    term item = nil;
 	    string dev = sformat("%1%2", type, k);
-	    string ip = lookup(v, "BOOTPROTO", "static");
-	    if(ip == "" || ip == "static" || ip == "none") ip = lookup(v, "IPADDR", "");
-	    else ip = toupper(ip);
+	    string ip = DeviceProtocol(v);
 
 	    /* modem */
 	    if(type == "modem" || type == "ppp")
-		return `item(`id(dev), k, DeviceType(type), dev, v["PROVIDER_NAME"]:_("Unknown provider"));
+		item = `item(`id(dev), k, DeviceType(type), dev, v["PROVIDER_NAME"]:_("Unknown provider"));
+	    /* ISDN stuff */
 	    else if (type == "contr") {
 		string cname = lookup(v, "NAME", "unknown");
-		return `item(`id(dev), k, DeviceType(type), dev, cname /*, "active?", ip, "?", "?"*/);
+		item = `item(`id(dev), k, DeviceType(type), dev, cname /*, "active?", ip, "?", "?"*/);
 	    }
+	    /* ISDN stuff */
 	    else if (type == "net") {
 		string cname = lookup(v, "PROVIDER", "unknown");
 		string rip   = lookup(v, "PTPADDR", "none");
 		string proto = lookup(v, "PROTOCOL", "unknown");
-		return `item(`id(dev), k, proto, cname, ip, rip);
+		item = `item(`id(dev), k, proto, cname, ip, rip);
 	    }
-	    else if(regexpmatch(type, "eth|tr|fddi"))
-	    //if(type == "eth" || type == "tr")
-		return `item(`id(dev), k, DeviceType(type), dev, /*"active?",*/ ip/*, "?", "?"*/);
-	    else
-		return `item(`id(dev), k, DeviceType(type), dev /*, "active?", ip, "?", "?"*/);
+	    /* other known types */
+	    else if(regexpmatch(type, "lo|dummy|eth|tr|fddi"))
+		item = `item(`id(dev), k, DeviceType(type), dev, /*"active?",*/ ip/*, "?", "?"*/);
+	    /* unknown type */
+	    else {
+		y2error("Unknown type: %1", type);
+		item = `item(`id(dev), k, DeviceType(type), dev, /*"active?",*/ ip/*, "?", "?"*/);
+	    }
+	    overview = add(overview, item);
+
+	    /* aliases summary */
+	    map aliases = lookup(v, "_aliases", $[]);
+	    if(aliases != $[])
+		maplist(`anum, `amap, aliases, ``{
+		    //hwname = CheckEmptyName(devtype, HardwareName(unq));
+		    dev = sformat("%1:%2", dev, anum);
+		    ip = DeviceProtocol(amap);
+		    item = `item(`id(dev), k + ":" + anum, DeviceType(dev), dev, ip);
+		    overview = add(overview, item);
+		});
+
 	});
-	overview = merge(overview, view);
     });
 
     y2debug("overview=%1",overview);

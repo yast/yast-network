@@ -32,7 +32,11 @@
 		/* VAR1='val1 xxx" xx' */
 		$[ "match" : [ "^[ \t]*([a-zA-Z_][a-zA-Z0-9_]*)='([^']*)'", "%s='%s'" ] ],
 		/* VAR1=val1 */
-		$[ "match" : [ "^[ \t]*([a-zA-Z_][a-zA-Z0-9_]*)=([^ \t\"$`'\\#]*)", "%s=%s" ] ]
-	    ]
+		$[ "match" : [ "^[ \t]*([a-zA-Z_][a-zA-Z0-9_]*)=([^ \t\"$`'\\#]*)", "%s=%s" ] ],
+	    ],
+	    /* matching rules */
+	    "rewrite"	: [
+		[ "/etc/sysconfig/network/ifcfg-(.*)", "/etc/sysconfig/network/ifcfg-%s" ],
+	    ],
 	]
 ))

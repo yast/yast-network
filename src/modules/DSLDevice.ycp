@@ -34,7 +34,7 @@
     global boolean activate = false;
 
     /**
-     * .probe.netdev data for the single network card, if there is one
+     * .probe.netcard data for the single network card, if there is one
      */
     map card0 = $[];
 
@@ -46,7 +46,7 @@
      * @return success?
      */
     global define boolean Read () ``{
-	list cards = SCR::Read (.probe.netdev);
+	list cards = SCR::Read (.probe.netcard);
 	if (size (cards) != 1)
 	{
 	    return true;
