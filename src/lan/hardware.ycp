@@ -259,7 +259,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     ChangeWidgetIfExists(`id(`hwcfg), `Enabled, no_hotplug);
     ChangeWidgetIfExists(`id(`usb), `Enabled, (hotplug == "usb" || hotplug == "") && type != "dummy");
     ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hotplug == "pcmcia" || hotplug == "") && type != "dummy");
-    // ChangeWidgetIfExists(`id(`num), `Value, device);
+    ChangeWidgetIfExists(`id(`num), `ValidChars, NetworkDevices::ValidCharsIfcfg ());
+    ChangeWidgetIfExists(`id(`hwcfg), `ValidChars, NetworkModules::ValidCharsHwcfg ());
 
     any ret = nil;
     while(true) {

@@ -24,6 +24,7 @@ textdomain "network";
 import "Arch";
 import "Map";
 import "NetworkDevices";
+import "String";
 
 /**
  * Current module identifier
@@ -482,6 +483,14 @@ global boolean HwUp () {
     });
     return ok;
 }
+
+/**
+ * #46803: forbid "/" (filename), maybe also "-" (separator) "_" (escape)
+ */
+global string ValidCharsHwcfg () {
+    return String::ValidCharsFilename ();
+}
+
 
 /* EOF */
 }
