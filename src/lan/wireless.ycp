@@ -171,6 +171,10 @@ list<integer> ParseKeyLengths (list<string> enc_modes) {
 
 /**
  * Make a list of ComboBox items for authentication mode.
+ * We must translate WPA-PSK: it is "wpa-psk" in hwinfo but "psk" in syconfig
+ * (#74496).
+ * @param authmodes allowed modes as returned by hwinfo. nil == don't know.
+ * @return combo box items
  */
 list<term> AuthModeItems (list<string> authmodes) {
     map <string, string> names = $[
@@ -181,8 +185,9 @@ list<term> AuthModeItems (list<string> authmodes) {
 	"sharedkey": _("Shared Key"),
 	/* ComboBox item */
 	// Ask me what it means, I don't know yet
-	"psk": _("WPA-PSK"),
+	"wpa-psk": _("WPA-PSK"),
 	];
+    map <string, string> ids = $["wpa-psk": "psk"];
     if (authmodes == nil)
     {
 	authmodes = (list<string>)Map::Keys (names);
@@ -192,7 +197,7 @@ list<term> AuthModeItems (list<string> authmodes) {
 	// keep only those that we know how to handle
 	authmodes = filter (string am, authmodes, ``( haskey (names, am) ));
     }
-    return maplist (string am, authmodes, ``( `item (`id (am), names[am]:am) ));
+    return maplist (string am, authmodes, ``( `item (`id (ids[am]:am), names[am]:am) ));
 }
 
 /**

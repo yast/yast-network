@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Mar 25 12:05:19 CET 2005 - mvidner@suse.cz
+
+- Fixed detection of WPA-PSK support (#74496).
+- 2.11.33
+
+-------------------------------------------------------------------
 Tue Mar 22 09:56:21 CET 2005 - mvidner@suse.cz
 
 - isdnctrl was moved to /sbin (#74096).
