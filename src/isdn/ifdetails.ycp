@@ -35,7 +35,7 @@ global define symbol IFDetailDialog() ``{
     string remote_in = lookup(ISDN::interface, "REMOTE_IN", "");
     string ipppd_opt = lookup(ISDN::interface, "IPPPD_OPTIONS", "");
     boolean syncppp = lookup(ISDN::interface, "PROTOCOL", "syncppp") == "syncppp";
-    boolean secure = lookup(ISDN::interface, "SECURE", "yes") == "yes";
+    boolean secure = lookup(ISDN::interface, "SECURE", "on") == "on";
     integer cbdel = tointeger(lookup(ISDN::interface, "CBDELAY", "2"));
     string callback = lookup(ISDN::interface, "CALLBACK", "off");
 
@@ -159,7 +159,7 @@ for example +pap +chap for the dialin server authentification.</p>");
     if(ret == `next) {
         ISDN::interface = union(ISDN::interface, $[
             "REMOTE_IN"		: remote_in,
-            "SECURE"		: secure ? "yes" : "no",
+            "SECURE"		: secure ? "on" : "off",
 	    "CALLBACK"		: callback,
 	    "CBDELAY"		: sformat("%1", cbdel),
         ]);
