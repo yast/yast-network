@@ -36,7 +36,8 @@ define any HardwareDialog() {
 
     /* Manual dialog help 1/4 */
     string help = _("<p>Here, set up your networking device.
-The values will be written into <i>/etc/sysconfig/hardware/hwcfg-*</i>.</p>") +
+The values are written to <i>/etc/sysconfig/hardware/hwcfg-*</i>.</p>
+") +
 
     /* Manual dialog help 2/4 */
 _("<p><b>Options</b> for the module should be written in the format
@@ -599,7 +600,7 @@ add them manually.</p>");
 	    `HSpacing(6)
 	);
 	/* S/390 dialog help: QETH */
-	helptext = _("<p>Enter the <b>Port Name</b> for this interface (case sensitive).</p>");
+	helptext = _("<p>Enter the <b>Port Name</b> for this interface (case-sensitive).</p>");
     }
 
     if(Lan::type == "lcs") {
@@ -620,13 +621,13 @@ add them manually.</p>");
 
     list ctcitems = [
 	/* ComboBox item: CTC device protocol */
-	`item(`id("0"), _("Compatibility mode")),
+	`item(`id("0"), _("Compatibility Mode")),
 	/* ComboBox item: CTC device protocol */
-	`item(`id("1"), _("Extended mode")),
+	`item(`id("1"), _("Extended Mode")),
 	/* ComboBox item: CTC device protocol */
-	`item(`id("2"), _("CTC-based tty (Linux to Linux connections)")),
+	`item(`id("2"), _("CTC-Based tty (Linux to Linux Connections)")),
 	/* ComboBox item: CTC device protocol */
-	`item(`id("3"), _("Compatibility mode with OS/390 and z/OS")),
+	`item(`id("3"), _("Compatibility Mode with OS/390 and z/OS")),
     ];
 
     if(Lan::type == "ctc") {
@@ -659,7 +660,8 @@ add them manually.</p>");
 	);
 	/* S/390 dialog help: IUCV */
 	helptext = _("<p>Enter the name of the <b>Link</b> partner,
-e.g. the z/VM username you want to connect with (case sensitive).</p>");
+for example, the z/VM user name with which to connect (case-sensitive).</p>
+");
     }
 
     Wizard::SetContentsButtons(caption, contents, helptext,

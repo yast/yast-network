@@ -214,9 +214,9 @@ define any interface_dialog() ``{
     /* DIALOG TEXTS */
     string fcaption = ISDN::operation == `editif ?
 	// dialog caption, %1: SyncPPP or RawIP, %2: interface name, eg. ppp0
-	_("Edit %1 interface %2") :
+	_("Edit %1 Interface %2") :
 	// dialog caption, %1: SyncPPP or RawIP, %2: interface name, eg. ppp0
-	_("Add %1 interface %2");
+	_("Add %1 Interface %2");
     string caption = sformat(fcaption, syncppp ? "SyncPPP" : "RawIP", devstr);
 
     string helptext =

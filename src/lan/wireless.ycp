@@ -48,7 +48,7 @@ string wep_key_help =
 key. Enter five characters for 64-bit keys and six to thirteen
 characters for 128-bit keys.
 <br><b>Hexadecimal</b>: Directly enter the hex codes of the key. Enter
-ten hex digits for 64-bit keys and 26 digits for 128-bit keys. You may
+ten hex digits for 64-bit keys and twenty-six digits for 128-bit keys. You may
 use dashes ('-') to separate pairs of digits or groups of them (for
 example, '0a5f-41e6-48').
 </p>
@@ -153,7 +153,8 @@ for wireless networking.</p>") +
 _("<p>The <b>Operating Mode</b> depends on the network topology. The mode
 can be <b>Ad-hoc</b> (peer-to-peer network without an access point),
 <b>Managed</b> (network managed by an access point, sometimes also
-called <i>Infrastructure Mode</i>) or <b>Master</b>.</p>") +
+called <i>Infrastructure Mode</i>), or <b>Master</b>.</p>
+") +
 
     /* Wireless dialog help 3/7 */
 _("<p>Set the <b>Network Name (ESSID)</b> used to identify cells that are
@@ -293,7 +294,7 @@ available options.</p>");
 	    {
 		UI::SetFocus (`id (`essid));
 		/* Popup text */
-		Popup::Error (_("The network name be specified for this authentication mode."));
+		Popup::Error (_("Specify the network name for this authentication mode."));
 		continue;
 	    }
 	    if (size(essid) > 32) {
@@ -312,14 +313,14 @@ available options.</p>");
 		    (sz < 8 || sz > 63))
 		{
 		    UI::SetFocus(`id(`key));
-		    Popup::Error(_("The passphrase must have between 8 and 63 characters (inclusively)."));
+		    Popup::Error(_("The passphrase must have between eight and sixty-three characters (inclusively)."));
 		    continue;
 		}
 		// TODO: validchars
 		else if (type == "hex" && sz != 64)
 		{
 		    UI::SetFocus(`id(`key));
-		    Popup::Error(_("The key must have 64 hexadecimal digits."));
+		    Popup::Error(_("The key must have sixty-four hexadecimal digits."));
 		    continue;
 		}
 	    }

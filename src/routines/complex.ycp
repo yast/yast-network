@@ -212,7 +212,7 @@ define string CheckEmptyName(string devtype, string hwname) {
 	/* Device type label */
 	"ppp-usb"	: _("USB Modem"),
 	/* Device type label */
-	"qeth"		: _("OSA-Express / QDIO Device (QETH)"),
+	"qeth"		: _("OSA-Express or QDIO Device (QETH)"),
 	/* Device type label */
 	"sit"		: _("IPv6-in-IPv4 Encapsulation Device"),
 	/* Device type label */

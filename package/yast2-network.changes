@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Aug 10 17:51:22 CEST 2004 - mvidner@suse.cz
+
+- VNC: Fixed status display and restarting xinetd,
+  enhanced XDM warning (#43264)
+- Merged proofread texts.
+
+-------------------------------------------------------------------
 Thu Aug  5 12:51:45 CEST 2004 - msvec@suse.cz
 
 - modem config files are now ifcfg-modem*
