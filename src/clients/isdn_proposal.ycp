@@ -1,0 +1,82 @@
+/**
+ * File:
+ *   clients/isdn_proposal.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   ISDN configuration proposal
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+textdomain "network";
+
+import "ISDN";
+import "Progress";
+
+/* The main () */
+y2milestone("ISDN proposal started");
+y2milestone("----------------------------------------");
+
+string func = Args(0);
+map param = Args(1);
+map ret = $[];
+
+/* create a textual proposal */
+if(func == "MakeProposal") {
+    string proposal = "";
+    string warning = nil;
+    symbol warning_level = nil;
+
+    Progress::off();
+    ISDN::Read();
+    list sum = ISDN::Summary(false);
+    proposal = select(sum, 0, "");
+    Progress::on();
+
+    ret = $[
+	"preformatted_proposal" : proposal,
+	"warning_level" : warning_level,
+	"warning" : warning,
+    ];
+}
+/* run the module */
+else if(func == "AskUser") {
+    symbol seq = `next;
+    CallFunction(`isdn());
+    ret = $[
+	"workflow_sequence" : seq
+    ];
+}
+/* create titles */
+else if(func == "Description") {
+    ret = $[
+	"rich_text_title" : _("ISDN adapters"),
+	"menu_title" : _("&ISDN adapters"),
+	"id" : "isdn",
+    ];
+}
+/* write the proposal */
+else if(func == "Write") {
+    ISDN::Write();
+}
+/* unknown function */
+else {
+    y2error("unknown function: %1", func);
+}
+
+/* Finish */
+y2milestone("ISDN proposal finished");
+y2debug("ret=%1",ret);
+return ret;
+
+/* EOF */
+}

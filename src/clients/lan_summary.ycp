@@ -21,9 +21,7 @@
 {
 
 textdomain "network";
-
 import "Lan";
-import "Summary";
 
 /* The main () */
 y2milestone("Lan summary started");
