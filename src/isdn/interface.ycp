@@ -101,6 +101,7 @@ _("<p>To avoid adding an interface now, use
     if (ISDN::CountIF() == 0) {
 	UI::ChangeWidget(`id(`AddProvider), `Enabled, false);
     }
+    ISDN::skip = false;
 
     /* MAIN CYCLE */
     symbol ret = nil;
@@ -151,6 +152,12 @@ _("<p>To avoid adding an interface now, use
 	}
 
     }
+    if (ret == `next) {
+        y2debug("ISDN::provider=%1", Providers::provider);
+        y2debug("ISDN::interface=%1", ISDN::interface);
+        ISDN::skip = true;
+    }
+
     return ret;
 }
 

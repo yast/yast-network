@@ -108,6 +108,11 @@ global boolean have_dsl = false;
  */
 global symbol operation = nil;
 
+/**
+ * If the interface or provider configuration is skipped
+ */
+global boolean skip = false;
+
 /*--------------*/
 /* PRIVATE DATA */
 
