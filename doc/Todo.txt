@@ -69,6 +69,10 @@ UpdateHosts("hostname", [IPADDRs]);
 
 TO-SORT:
 
+- all: use rcnetwork reload (but probably only in some cases, things like
+  remove 2 eth cards and add them in a different order won't work due to
+  the kernel modules not being unloaded)
+
 - routing: summary: split gateway of the other routes
 - routing: summary: print other routes in nice form
 - routing: summary: print gateway hostname [Gateway: 10.20.0.1 (chimera.suse.cz)]
