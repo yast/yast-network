@@ -175,7 +175,7 @@ global define boolean Write() ``{
 	string xauth_key = SCR::Read(.xauth.key);
 
 	/* change the hostname */
-	SCR::Execute(.target.bash, "/bin/hostname " + fqhostname);
+	SCR::Execute(.target.bash, "/bin/hostname " + hostname);
 
 	/* update X authorization */
 	SCR::Write(.xauth.key, xauth_key);

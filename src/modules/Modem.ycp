@@ -23,6 +23,7 @@
 module "Modem";
 textdomain "network";
 
+import "Providers";
 import "Progress";
 import "Summary";
 
@@ -137,7 +138,7 @@ global define boolean Modified() ``{
 global define boolean Read() ``{
 
     string caption = _("Initializing modem configuration");
-    integer steps = 2;
+    integer steps = 3;
 
     /* FIXME */
     integer sl = 0; //1000;
@@ -146,6 +147,7 @@ global define boolean Read() ``{
     Progress::New(caption, " ", steps, [
         _("Detect devices"),
         _("Read current configuration"),
+        _("Read providers"),
         //_("Read routing configuration"),
         //_("Read hostname and DNS configuration"),
         //_("Read installation information"),
@@ -163,6 +165,11 @@ global define boolean Read() ``{
     sleep(sl);
 
     if(Abort()) return false;
+    ProgressNextStage(_("Reading providers"));
+    Providers::Read();
+    sleep(sl);
+
+    if(Abort()) return false;
     ProgressNextStage(_("Finished"));
     sleep(sl);
 
@@ -177,7 +184,7 @@ global define boolean Read() ``{
 global define boolean Write() ``{
 
     string caption = _("Saving network configuration");
-    integer steps = 2;
+    integer steps = 3;
 
     /* FIXME */
     integer sl = 0; //1000;
@@ -185,7 +192,7 @@ global define boolean Write() ``{
 
     Progress::New(caption, " ", steps, [
         _("Write configuration"),
-        _("Write provider information"),
+        _("Write providers"),
         _("Set up smpppd"),
     ], [], "");
 
@@ -196,7 +203,7 @@ global define boolean Write() ``{
 
     if(Abort()) return false;
     ProgressNextStage(_("Writing providers"));
-    //WriteProviders();
+    Providers::Write();
     sleep(sl);
 
     if(Abort()) return false;
