@@ -45,6 +45,7 @@ boolean LanSequence() {
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
+	"packages"	: [ ``( PackagesInstall(Lan::Packages()) ), true ],
 	"write"	: [ ``( WriteDialog() ), true ],
 	"finish": [ ``( FinishDialog() ), true ],
     ];
@@ -56,6 +57,10 @@ boolean LanSequence() {
 	    `next	: "main"
 	],
 	"main" : $[
+	    `abort	: `abort,
+	    `next	: "packages",
+	],
+	"packages" : $[
 	    `abort	: `abort,
 	    `next	: "write"
 	],

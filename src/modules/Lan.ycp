@@ -297,26 +297,30 @@ global define boolean Write() {
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-	/* Progress stage 1/10 */
+	/* Progress stage 1 */
 	_("Deactivate local network services"),
-	/* Progress stage 2/10 */
+	/* Progress stage 2 */
 	_("Write drivers information"),
-	/* Progress stage 3/10 - multiple devices may be present,really plural*/
+	/* Progress stage 3 - multiple devices may be present,really plural*/
 	_("Write device configuration"),
-	/* Progress stage 4/10 */
+	/* Progress stage 4 */
 	_("Write network configuration"),
-	/* Progress stage 5/10 */
+	/* Progress stage 5 */
 	_("Write routing configuration"),
-	/* Progress stage 6/10 */
+	/* Progress stage 6 */
 	_("Write host name and DNS configuration"),
-	/* Progress stage 7/10 */
+	/* Progress stage 7 */
 	_("Set up network services"),
-	/* Progress stage 8/10 */
+	/* Progress stage 8 */
 	_("Write firewall settings"),
-	/* Progress stage 9/10 */
+	/* Progress stage 9 */
 	_("Activate network services"),
-	/* Progress stage 10/10 */
+	/* Progress stage 10 */
 	_("Run SuSEconfig"),
+	/* Progress stage 11 */
+	_("Set up smpppd"),
+	/* Progress stage 12 */
+	_("Run KInternet"),
     ], [], "");
 
     // Temporary fix: #42248
@@ -328,58 +332,58 @@ global define boolean Write() {
     Progress::off();
 
     if(Abort()) return false;
-    /* Progress step 1/10 */
+    /* Progress step 1 */
     ProgressNextStage(_("Deactivating local network services..."));
     if(!write_only) StopNetwork();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 2/10 */
+    /* Progress step 2 */
     ProgressNextStage(_("Writing /etc/modprobe.conf..."));
     // FIXME: MOD WriteModules();
     NetworkModules::Write("netcard");
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 3/10 - multiple devices may be present, really plural*/
+    /* Progress step 3 - multiple devices may be present, really plural*/
     ProgressNextStage(_("Writing device configuration..."));
     NetworkDevices::Write("netcard");
     // WriteDevices();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 4/10 */
+    /* Progress step 4 */
     ProgressNextStage(_("Writing network configuration..."));
     NetworkConfig::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 5/10 */
+    /* Progress step 5 */
     ProgressNextStage(_("Writing routing configuration..."));
     Routing::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 6/10 */
+    /* Progress step 6 */
     ProgressNextStage(_("Writing host name and DNS configuration..."));
     DNS::Write();
     Host::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 7/10 */
+    /* Progress step 7 */
     ProgressNextStage(_("Setting up network services..."));
     EnableNetwork();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 8/10 */
+    /* Progress step 8 */
     ProgressNextStage(_("Writing firewall settings..."));
     Firewall::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 9/10 */
+    /* Progress step 9 */
     ProgressNextStage(_("Activating network services..."));
     if(!write_only) {
 	Service::Start("coldplug");
@@ -388,9 +392,25 @@ global define boolean Write() {
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 10/10 */
+    /* Progress step 10 */
     ProgressNextStage(_("Running SuSEconfig..."));
     if(!write_only) RunSuSEconfig();
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Progress step 11 */
+    ProgressNextStage(_("Setting up smpppd(8)..."));
+    // takes care of autoinst by itself
+    SetupSMPPPD();
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Progress step 12 */
+    ProgressNextStage(_("Running KInternet..."));
+    if (!write_only)
+    {
+	RunKInternet();
+    }
     sleep(sl);
 
     // Temporary fix: #42248
@@ -1092,6 +1112,17 @@ global define list<map> PrepareForAutoinst() {
     Hardware = ReadHardware("netcard");
     y2milestone("hw=%1", Hardware);
     return Hardware;
+}
+
+/**
+ * @return list of packages needed when writing the config
+ */
+global list<string> Packages () {
+    if (NetworkDevices::Locate ("USERCONTROL", "yes") == [])
+    {
+	return [];
+    }
+    return ["smpppd"];
 }
 
 /* EOF */

@@ -172,25 +172,37 @@ define boolean EnableNetwork() {
 }
 
 /**
+ * Are there interfaces controlled by smpppd and kinternet?
+ * They are the dialup ones and ones with USERCONTROL=yes
+ * @return true/false
+ */
+boolean HaveDialupLikeInterfaces () {
+    list devs = NetworkDevices::List ("dialup");
+    y2milestone ("dialup interfaces: %1", devs);
+    if (devs != [])
+    {
+	return true;
+    }
+
+    devs = NetworkDevices::Locate ("USERCONTROL", "yes");
+    y2milestone ("user controlled interfaces: %1", devs);
+    return devs != [];
+}
+
+/**
  * Setup smpppd(8)
  * @return true if success
  */
 define boolean SetupSMPPPD() {
-    list devs = NetworkDevices::List("dialup");
-    y2milestone("dialup devices: %1", devs);
-
     boolean ret = true;
     /* Stop and disable */
-    if(size(devs) < 1) {
-	if(Service::Enabled("smpppd"))
-	    ret = Service::Disable("smpppd") && ret;
-	if(Service::Status("smpppd") == 0)
-	    ret = Service::Stop("smpppd") && ret;
+    if (HaveDialupLikeInterfaces ()) {
+	ret = Service::Disable("smpppd") && ret;
+	ret = Service::Stop("smpppd") && ret;
     }
     /* Start and enable */
     else {
-	if(!Service::Enabled("smpppd"))
-	    ret = Service::Enable("smpppd") && ret;
+	ret = Service::Enable("smpppd") && ret;
 
 	/* Installation? */
 	if(Mode::normal) {
@@ -210,12 +222,10 @@ define boolean SetupSMPPPD() {
  * @return true if success
  */
 define boolean RunKInternet() {
-    list devs = NetworkDevices::List("dialup");
-    y2milestone("dialup devices: %1", devs);
-
     /* Any dialup devices? */
-    if(size(devs) < 1) {
-	y2milestone("No dialup devices");
+    if (HaveDialupLikeInterfaces ())
+    {
+	y2milestone ("No dialup-like interfaces");
 	return true;
     }
 

@@ -361,7 +361,7 @@ else if(func == "Read") {
     Progress::on();
 }
 else if (func == "Packages") {
-    ret = $[];
+    ret = Lan::Packages ();
 }
 else if (func == "Export") {
     map settings = Lan::Export();

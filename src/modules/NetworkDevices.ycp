@@ -828,7 +828,8 @@ global define list<string> List(string devregex) {
 	});
     }
     else {
-	string regex = "^(" + DeviceRegex[devregex]:devregex + ")[0-9]*$";
+	// it's a regex for type, not the whole name
+	string regex = "^(" + DeviceRegex[devregex]:devregex + ")$";
 	maplist(string t, map d, Devices, {
 	    if(regexpmatch(t, regex)) {
 		maplist(string n, (list<string>) Map::Keys(d), {

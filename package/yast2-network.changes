@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Tue Aug 24 16:22:58 CEST 2004 - mvidner@suse.cz
+Thu Aug 26 16:44:47 CEST 2004 - mvidner@suse.cz
 
+- Activate smpppd+kinternet for user controlled interfaces (#44303).
 - Restore interface configuration name when switching back from
   bus-{usb,pcmcia} (#38213)
 

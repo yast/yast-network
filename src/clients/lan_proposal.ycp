@@ -76,7 +76,12 @@ else if(func == "Description") {
 }
 /* write the proposal */
 else if (func == "Write") {
-    if (Arch::s390 || Mode::vnc || Mode::usessh )
+    if (PackagesInstall (Lan::Packages ()) != `next)
+    {
+	// popup already shown
+        y2error("Packages installation failure, not saving");
+    }
+    else if (Arch::s390 || Mode::vnc || Mode::usessh )
 	Lan::WriteOnly();
     else {
 	Lan::Write();
