@@ -1,6 +1,6 @@
 {
 
-// testedfiles: install.ycp
+// testedfiles: install.ycp Testsuite.ycp
 
 include "testsuite.ycp";
 

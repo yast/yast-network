@@ -1,6 +1,6 @@
 {
 
-// testedfiles: hardware.ycp
+// testedfiles: hardware.ycp Testsuite.ycp
 
 include "testsuite.ycp";
 

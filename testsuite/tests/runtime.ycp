@@ -1,6 +1,6 @@
 {
 
-// testedfiles: runtime.ycp
+// testedfiles: runtime.ycp Testsuite.ycp
 
 include "testsuite.ycp";
 

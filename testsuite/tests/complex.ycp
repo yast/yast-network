@@ -1,6 +1,6 @@
 {
 
-// testedfiles: complex.ycp
+// testedfiles: complex.ycp Testsuite.ycp
 
 include "testsuite.ycp";
 

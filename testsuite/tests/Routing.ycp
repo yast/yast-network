@@ -1,6 +1,6 @@
 {
 
-// testedfiles: Routing.ycp
+// testedfiles: Routing.ycp Testsuite.ycp
 
 include "testsuite.ycp";
 
