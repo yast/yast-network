@@ -18,6 +18,7 @@ textdomain "network";
 import "Detection";
 import "Host";
 import "Hostname";
+import "IP";
 import "NetworkConfig";
 import "NetworkDevices";
 
@@ -56,11 +57,18 @@ global boolean modified = false;
 string resolv_conf = "/etc/resolv.conf";
 
 /**
+ * True if DNS is already read
+ */
+boolean initialized = false;
+
+/**
  * Reads current DNS and hostname settings
  * Includes Host,NetworkConfig::Read
  * @return true if success
  */
 global define boolean Read() {
+
+    if(initialized == true) return true;
 
     Host::Read();
     NetworkConfig::Read();
@@ -128,6 +136,7 @@ global define boolean Read() {
     y2milestone("hostname=%1", hostname);
     y2milestone("domain=%1", domain);
 
+    initialized = true;
     return true;
 }
 
@@ -141,6 +150,7 @@ global define boolean Write() {
     /* build FQ hostname */
     string fqhostname = Hostname::MergeFQ(hostname, domain);
 
+// FIXME whrere was NetworkDevices::Read called?
     /* Update /etc/hosts */
     list<string> devs = NetworkDevices::LocateNOT("IPADDR", "");
     list<string> ips = maplist(string dev, devs, {
@@ -224,6 +234,7 @@ global define boolean Import(map settings) {
     nameservers = (list<string>) eval(settings["nameservers"]:[]);
     searchlist = (list<string>) eval(settings["searchlist"]:[]);
     modified = true;
+    initialized = true;
     return true;
 }
 
@@ -282,6 +293,47 @@ global define string Summary() {
 
     if(size(summary) < 1) return "";
     return Summary::DevicesList(summary);
+}
+
+/**
+ * Check if host name or IP address is local computer
+ * Used to determine if LDAP server is local (and it should be checked if
+ *  required schemes are included
+ * Calls Read () function before querying any data
+ * @param check_host string host name or IP address to check
+ * @return boolean true if host name is local host
+ */
+global define boolean IsHostLocal (string check_host) {
+    Read ();
+    // loopback interface
+    if (check_host == "127.0.0.1" || check_host == "::1")
+	return true;
+    // localhost host name
+    if (check_host == "localhost" || check_host == "localhost.localdomain")
+	return true;
+
+    // IPv4 address
+    if (IP::Check4 (check_host))
+    {
+	NetworkDevices::Read ();
+	return 0 != size (NetworkDevices::Locate ("IPADDR", check_host));
+    }
+    // IPv6 address
+    else if (IP::Check6 (check_host))
+    {
+	// TODO make it similar to IPv4 after other code adapted to IPv6
+    }
+    // short host name
+    else if (findfirstof (check_host, ".") == nil)
+    {
+	return tolower (check_host) == tolower (hostname);
+    }
+    // fully qualified host name
+    else
+    {
+	return tolower (check_host) == tolower (hostname + "." + domain);
+    }
+    return false;
 }
 
 /* EOF */

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jul 23 13:46:03 CEST 2004 - jsrain@suse.cz
+
+- added function to detect if host name (or IP address) is local
+  host
+
+-------------------------------------------------------------------
 Fri Jul 23 12:38:40 CEST 2004 - mvidner@suse.cz
 
 - Fixed configuration of s390 LCS devices (#42886).
