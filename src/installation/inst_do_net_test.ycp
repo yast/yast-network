@@ -276,8 +276,18 @@ logs for details."));
 	{
 	    mark_label(2, `arrow);
 
-	    string tmp = SCR::Read(.target.tmpdir) + "/release-notes.rpm";
-	    string url = "http://www.suse.com/relnotes/sl_82/release-notes.rpm";
+	    // FIXME: get from content file
+	    string url = "http://www.suse.com/relnotes/sl_83/release-notes.rpm";
+
+	    integer pos = findlastof (url, "/");
+	    if (pos == nil)
+	    {
+		y2error ("broken url for release notes: %s", url);
+		test_stage = `patches;
+		return;
+	    }
+
+	    string tmp = SCR::Read(.target.tmpdir) + substring (url, pos);
 
 	    // proxy settings are read from /root/.curlrc
 	    string cmd = "/usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + tmp;
@@ -289,7 +299,7 @@ logs for details."));
 	    logs = add (logs, $[ `menuname : _("Download of Release Notes"),
 				 `filename : "curl.log" ]);
 
-	    if(ret != 0)
+	    if (ret != 0)
 	    {
 		// popup to inform user about the failure
 		Popup::Message(_("Download of latest release notes failed. View
@@ -298,7 +308,8 @@ logs for details."));
 	    }
 	    else
 	    {
-		SCR::Execute(.target.bash, "/bin/rpm -U --force " + tmp);
+		if (SCR::Execute(.target.bash, "/bin/rpm -U --replacepkgs " + tmp) != 0)
+		    y2error ("installing of release notes failed");
 	    }
 
 	    test_stage = `patches;
