@@ -20,7 +20,7 @@ Icon=hosts-editor
 Exec=/sbin/yast2 host 
 
 Name=Host Names
-GenericName=Configure Host Names
+GenericName=Configure host names
 Name[cs]=Jména počítačů
 GenericName[cs]=Konfigurovat jména počítačů
 Name[de]=Hostnamen

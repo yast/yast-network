@@ -42,9 +42,9 @@ if(func == "MakeProposal") {
 	/* Popup text */
 	BusyPopup(_("Detecting network cards..."));
 	Lan::Read();
+	Lan::Propose();
 	BusyPopupClose();
     }
-    Lan::Propose();
     list sum = Lan::Summary(false);
     proposal = sum[0]:"";
     Progress::on();

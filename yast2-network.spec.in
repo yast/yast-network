@@ -29,6 +29,9 @@ Summary:	Network configuration
 /bin/rm -f @desktopdir@/isdn.desktop
 /bin/rm -f @desktopdir@/modem.desktop
 %endif
+# /bin/rm -f @desktopdir@/remote.desktop
+# /bin/rm -f @desktopdir@/network.desktop
+# /bin/rm -f @desktopdir@/providers.desktop
 
 @CLEAN@
 

@@ -66,6 +66,7 @@ import "NetworkDevices";
 DUMP("NetworkDevices::Read");
 TEST(``(NetworkDevices::Read()), [READ], nil);
 DUMP(sformat("all=%1", NetworkDevices::Devices));
+NetworkDevices::OriginalDevices = nil;
 
 DUMP("NetworkDevices::Write");
 TEST(``(NetworkDevices::Write("")), [READ], nil);

@@ -163,6 +163,7 @@ Write	.network.value."ippp5".BOOTPROTO "dhcp" true
 Write	.network.value."ippp5".STARTMODE "manual" true
 Write	.network nil true
 Return	true
+Write	.network nil true
 Return	true
 Write	.network.value."atm5".BOOTPROTO "dhcp" true
 Write	.network.value."atm5".STARTMODE "manual" true

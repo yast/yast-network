@@ -20,7 +20,7 @@ Icon=network
 Exec=/sbin/yast2 network 
 
 Name=Expert Network Configuration
-GenericName=Configure Network
+GenericName=Configure network
 Name[cs]=Expertní konfigurace sítě
 GenericName[cs]=Konfigurovat síť
 Name[de]=Netzwerkkonfiguration für Experten

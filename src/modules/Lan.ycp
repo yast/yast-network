@@ -93,17 +93,6 @@ global block<boolean> AbortFunction = nil;
 /* PRIVATE DATA */
 
 /**
- * Devices information
- * @see ReadDevices
- */
-// map Devices = $[];
-
-/**
- * Deleted devices
- */
-list DeletedDevices = [];
-
-/**
  * Hardware information
  * @see ReadHardware
  */
@@ -711,8 +700,10 @@ global define boolean Propose() {
     y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);
 
     /* Something is already configured -> do nothing */
-    if(size(NetworkDevices::List("netcard")) > 0) {
-	y2milestone("Something already configured: don't propose.");
+    list devs = NetworkDevices::List("netcard");
+    if(size(devs) > 0) {
+	y2milestone("Something already configured: don't propose).");
+	y2milestone("devs=%1", devs);
 	return false;
     }
 

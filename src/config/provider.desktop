@@ -8,7 +8,7 @@ X-KDE-HasReadOnlyMode=true
 X-KDE-Library=yast2
 X-SuSE-YaST-Call=host
 
-X-SuSE-YaST-Group=Net_advanced
+X-SuSE-YaST-Group=Network
 X-SuSE-YaST-Argument=
 X-SuSE-YaST-RootOnly=true
 X-SuSE-YaST-AutoInst=write
@@ -16,11 +16,11 @@ X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=provider
 
-Icon=provider
+Icon=modem
 Exec=/sbin/yast2 host 
 
 Name=Providers
-GenericName=Configure Providers
+GenericName=Configure providers
 Name[cs]=Poskytovatelé
 GenericName[cs]=Konfigurovat poskytovatele
 Name[de]=Provider

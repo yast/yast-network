@@ -153,8 +153,10 @@ global define boolean Write() {
 	    SCR::Write(.etc.resolv_conf.domain, domain);
 
 	/* write only an original header */
-	if(resolv_conf_force == true)
+	if(resolv_conf_force == true &&
+		(NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false == true)) {
 	    SCR::Write(.etc.resolv_conf.write_header, true);
+	}
 
 	/* flush the cache */
 	SCR::Write(.etc.resolv_conf, nil);

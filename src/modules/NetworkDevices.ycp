@@ -193,6 +193,7 @@ global define boolean Read() {
     });
     y2debug("Devices=%1", Devices);
 
+    OriginalDevices = Devices;
     initialized = true;
     return true;
 }
@@ -237,6 +238,7 @@ global define boolean Write(string devregex) {
 
     y2milestone("Writing configuration");
     y2debug("Devices=%1", Devices);
+    y2debug("Deleted=%1", Deleted);
 
     map Devs = Filter(Devices, devregex);
     map OriginalDevs = Filter(OriginalDevices, devregex);
@@ -250,6 +252,7 @@ global define boolean Write(string devregex) {
     }
 
     /* remove deleted devices */
+    y2milestone("Deleted=%1", Deleted);
     foreach(string d, Deleted, {
 	if(!haskey(OriginalDevs, d)) return;
 	/* delete config file */
@@ -257,7 +260,6 @@ global define boolean Write(string devregex) {
 	y2debug("deleting: %1", p);
 	SCR::Write(p, nil);
     });
-    Deleted = filter(string dev, Deleted, { return haskey(OriginalDevs, dev); });
 
     /* Devices with chmod=0600 */
     list chmod = [];
@@ -581,7 +583,17 @@ define boolean Delete2(string name) {
 	devsmap = remove(devsmap, d);
 
     Devices[t] = devsmap;
-    Deleted[size(Deleted)] = name;
+
+    if(haskey(OriginalDevices, t) && haskey(OriginalDevices[t]:$[], d) && a == "") {
+	y2milestone("Deleting file: %1", name);
+	Deleted[size(Deleted)] = name;
+    }
+    else {
+	y2milestone("Not deleting file: %1", name);
+	y2debug("OriginalDevices=%1", OriginalDevices);
+	y2debug("a=%1", a);
+    }
+
     return true;
 }
 
