@@ -80,6 +80,8 @@ else if (func == "Write") {
 	Lan::WriteOnly();
     else {
 	Lan::Write();
+	// With a little help from my friends:
+	// Let yast2-printer listen for CUPS broadcasts
 	SCR::Execute(.target.bash_background, "test -f /usr/lib/YaST2/bin/listen_remote_ipp && /usr/lib/YaST2/bin/listen_remote_ipp 120");
     }
 }
