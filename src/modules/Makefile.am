@@ -14,12 +14,13 @@ Routing.ybc: ISDN.ybc
 YCPCFLAGS =
 
 idirs := lan isdn modem dsl installation provider remote services
+nidirs = $(foreach idir, $(idirs), network/$(idir))
 network:
 	ln -sf ../routines $@
-network/%: network
+${nidirs}: network/%: network
 	ln -sf ../$* $@
 
-ycpchook = network $(foreach idir, $(idirs), network/$(idir))
+ycpchook = network ${nidirs}
 
 include $(top_srcdir)/Makefile.am.common
 CLEANFILES += $(ycpchook)
