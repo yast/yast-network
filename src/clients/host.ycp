@@ -67,7 +67,8 @@ define void ListHandler(map options) {
 
     string summary = "";
     /* Headline */
-    summary = "\n" + _("Hosts Configuration Summary:") + "\n\n" +
+    // configuration of hosts
+    summary = "\n" + _("Host Configuration Summary:") + "\n\n" +
 	RichText::Rich2Plain(Host::Summary()) + "\n";
 
     y2debug("%1", summary);
@@ -79,7 +80,8 @@ define void ListHandler(map options) {
  */
 map cmdline = $[
     /* Commandline help title */
-    "help"	: _("Hosts configuration"),
+    // configuration of hosts
+    "help"	: _("Host configuration"),
     "id"	: "host",
     "guihandler": HostGUI,
     "initialize": Host::Read,
