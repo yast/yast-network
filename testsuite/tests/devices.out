@@ -1,4 +1,3 @@
-Read	.target.tmpdir "/tmp"
 Dump	NetworkDevices::Read
 Dir	.network.section: ["arc5", "atm5", "ci5", "ctc5", "dummy5", "escon5", "eth5", "eth6", "eth7", "eth8", "fddi5", "hippi5", "hsi5", "ippp5", "iucv5", "lo", "myri5", "ppp5", "tr5", "tr~"]
 Dir	.network.value."arc5": ["BOOTPROTO", "STARTMODE"]
