@@ -107,6 +107,27 @@ define map FromAY(map input) ``{
 
     input["devices"] = devices;
     input["modules"] = native_modules;
+	map dhcpopts =  input["dhcp_options"]:$[];
+
+	map dns = input["dns"]:$[];
+	map dhcp = $[];
+
+	if (haskey(dns, "dhcp_hostname"))
+        dhcp["DHCLIENT_SET_HOSTNAME"] = dns["dhcp_hostname"]:false;
+	if (haskey(dns, "dhcp_resolv"))
+		dhcp["DHCLIENT_MODIFY_RESOLV_CONF"] = dns["dhcp_resolv"]:false;
+
+	if (haskey(dhcpopts, "dhclient_client_id"))
+	    dhcp["DHCLIENT_CLIENT_ID"] = dhcpopts["dhclient_client_id"]:"";
+    if (haskey(dhcpopts, "dhclient_additional_options"))
+	    dhcp["DHCLIENT_ADDITIONAL_OPTIONS"] = dhcpopts["dhclient_additional_options"]:"";
+    if (haskey(dhcpopts, "dhclient_hostname_option"))
+	    dhcp["DHCLIENT_HOSTNAME_OPTION"] = dhcpopts["dhclient_hostname_option"]:"AUTO";
+
+	map config = $[];
+	config["dhcp"] = dhcp;
+	input["config"] = config;
+
     return input;
 }
 
@@ -137,12 +158,37 @@ define map ToAY (map settings) ``{
 	    change(newmap, "device", device);
 	    change(modules, newmap);
     });
-	return $[
-		"interfaces": interfaces,
-		"dns"		: settings["dns"]:$[],
-		"routing"	: settings["routing"]:$[],
-		"modules"	: modules
-	];
+
+	map config = settings["config"]:$[];
+	map dhcp = config["dhcp"]:$[];
+	boolean dhcp_resolv = dhcp["DHCLIENT_MODIFY_RESOLV_CONF"]:false;
+	boolean dhcp_hostname = dhcp["DHCLIENT_SET_HOSTNAME"]:false;
+	map dns = settings["dns"]:$[];
+	dns["dhcp_hostname"] = dhcp_hostname;
+	dns["dhcp_resolv"] = dhcp_resolv;
+	map dhcpopts = $[];
+	if (haskey(dhcp, "DHCLIENT_HOSTNAME_OPTION"))
+		dhcpopts["dhclient_hostname_option"] = dhcp["DHCLIENT_HOSTNAME_OPTION"]:"AUTO";
+	if (haskey(dhcp, "DHCLIENT_ADDITIONAL_OPTIONS"))
+        dhcpopts["dhclient_additional_options"] = dhcp["DHCLIENT_ADDITIONAL_OPTIONS"]:"";
+	if (haskey(dhcp, "DHCLIENT_CLIENT_ID"))
+        dhcpopts["dhclient_client_id"] = dhcp["DHCLIENT_CLIENT_ID"]:"";
+
+
+	map ret = $[];
+	if (size(modules) > 0 )
+		ret["modules"] = modules;
+	if (size(dns) > 0 )
+        ret["dns"] = dns;
+    if (size(dhcpopts) > 0 )
+        ret["dhcp_options"] = dhcpopts;
+    if (size(settings["routing"]:$[]) > 0 )
+        ret["routing"] = settings["routing"]:$[];
+    if (size(interfaces) > 0 )
+        ret["interfaces"] = interfaces;
+
+	return (ret);
+
 }
 
 
