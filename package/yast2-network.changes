@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb 24 17:36:27 CET 2003 - mvidner@suse.de
+
+- Added proxy to the network configuration proposal (#24204).
+- 2.7.18
+
+-------------------------------------------------------------------
 Mon Feb 24 14:38:07 CET 2003 - arvin@suse.de
 
 - only access widget with id s4 if it exists (bug #23800)
