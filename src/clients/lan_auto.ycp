@@ -68,19 +68,21 @@ map UpcaseCondSet (map ret, map m, string key) {
 define map FromAY(map input)
 {
 
-    // similar transformation to NetworkDevices::Read???
     map<string,map> interfaces = listmap(map<string, string> interface,
             input["interfaces"]:[],
     {
-    map new_interface = $[];
+	// input: list of items $[ "device": "d", "foo": "f", "bar": "b"]
+	// output: map of items  "d": $["FOO": "f", "BAR": "b"]
+	map new_interface = $[];
 
-    string newk = nil;
-    interface =  mapmap(string k, string v, interface, ``{
-        newk = toupper(k);
-        return $[newk: v];
+	// uppercase map keys
+	string newk = nil;
+	interface =  mapmap(string k, string v, interface, ``{
+	    newk = toupper(k);
+	    return $[newk: v];
         });
 
-    foreach(string k, any v, interface , {
+	foreach(string k, any v, interface , {
 	    if (v != "" && k!="DEVICE") {
 		new_interface[k] = v;
 	    }
@@ -89,6 +91,7 @@ define map FromAY(map input)
 	return $[ new_device : new_interface ];
     });
 
+    // split to a two level map like NetworkDevices
     map<string, map> devices = $[];
 
     foreach(string devname, map if_data, interfaces, {
