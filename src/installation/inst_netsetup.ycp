@@ -9,7 +9,21 @@
     symbol mode = WFM::Args (2);
 
 
-    // TODO: handle dhcp case correctly
+    string netdevice = SCR::Read (.etc.install_inf.Netdevice);
+    if (netdevice == nil) netdevice = "eth0";
+
+    string netconfig = SCR::Read (.etc.install_inf.NetConfig);
+    if (netconfig == nil) netconfig = "static";
+    if (netconfig == "dhcp") netconfig = "static"; // FIXME
+
+    string ipaddr = SCR::Read (.etc.install_inf.IP);
+    if (ipaddr == nil) ipaddr = "";
+
+    string netmask = SCR::Read (.etc.install_inf.Netmask);
+    if (netmask == nil) netmask = "";
+
+    string gateway = SCR::Read (.etc.install_inf.Gateway);
+    if (gateway == nil) gateway = "";
 
 
     if (mode == `up)
@@ -18,32 +32,29 @@
 	{
 	    SCR::Execute (.target.bash, "/sbin/ifconfig lo 127.0.0.1 up");
 
-	    if ((Mode::boot == "nfs")
-		|| (Mode::boot == "http")
-		|| (Mode::boot == "smb")
-		|| (Mode::boot == "ftp"))
+	    if ((Mode::boot == "nfs") || (Mode::boot == "http") ||
+		(Mode::boot == "smb") || (Mode::boot == "ftp"))
 	    {
-		string netdev = SCR::Read (.etc.install_inf.Netdevice);
-		if (netdev == nil) netdev = "eth0";
-
-		string ipaddr = SCR::Read (.etc.install_inf.IP);
-		if (ipaddr == nil) ipaddr = "";
-
-		string ifconfig = "/sbin/ifconfig " + netdev + " up " + ipaddr;
-
-		string netmask = SCR::Read (.etc.install_inf.Netmask);
-		if (netmask != nil && netmask != "")
+		if (netconfig == "static")
 		{
-		    ifconfig = ifconfig + " netmask " + netmask;
-		}
-
-		SCR::Execute (.target.bash, ifconfig);
-
-		string gateway = SCR::Read (.etc.install_inf.Gateway);
-		if (gateway != nil && gateway != "")
-		{
-		    ifconfig = "/sbin/route add default gw " + gateway;
+		    string ifconfig = "/sbin/ifconfig " + netdevice + " up " + ipaddr;
+		    if (netmask != "")
+			ifconfig = ifconfig + " netmask " + netmask;
 		    SCR::Execute (.target.bash, ifconfig);
+
+		    if (gateway != "")
+		    {
+			string route = "/sbin/route add default gw " + gateway;
+			SCR::Execute (.target.bash, route);
+		    }
+		}
+		else if (netconfig == "dhcp")
+		{
+		    // FIXME
+		}
+		else
+		{
+		    y2error ("unknown netconfig %1", netconfig);
 		}
 	    }
 	}
@@ -62,23 +73,31 @@
 	    SCR::Execute (.target.bash, "/sbin/rcportmap stop");
 	}
 
-	if ((Mode::boot == "nfs")
-	    || (Mode::boot == "http")
-	    || (Mode::boot == "smb")
-	    || (Mode::boot == "ftp"))
+	if (!Mode::test && !Arch::s390)
 	{
-	    string gateway = SCR::Read (.etc.install_inf.Gateway);
-	    if (gateway != nil && gateway != "")
+	    if ((Mode::boot == "nfs") || (Mode::boot == "http") ||
+		(Mode::boot == "smb") || (Mode::boot == "ftp"))
 	    {
-		ifconfig = "/sbin/route del default gw " + gateway;
-		SCR::Execute (.target.bash, ifconfig);
+		if (netconfig == "static")
+		{
+		    if (gateway != "")
+		    {
+			string route = "/sbin/route del default gw " + gateway;
+			SCR::Execute (.target.bash, route);
+		    }
+
+		    string ifconfig = "/sbin/ifconfig " + netdevice + " down";
+		    SCR::Execute (.target.bash, ifconfig);
+		}
+		else if (netconfig == "dhcp")
+		{
+		    // FIXME
+		}
+		else
+		{
+		    y2error ("unknown netconfig %1", netconfig);
+		}
 	    }
-
-	    string netdev = SCR::Read (.etc.install_inf.Netdevice);
-	    if (netdev == nil) netdev = "eth0";
-
-	    string ifconfig = "/sbin/ifconfig " + netdev + " down";
-	    SCR::Execute (.target.bash, ifconfig);
 	}
     }
 
