@@ -45,6 +45,7 @@ Summary:	Network routines for installation
 @configdir@/modem.y2cc
 %endif
 @configdir@/dns.y2cc
+@configdir@/host.y2cc
 @configdir@/routing.y2cc
 @configdir@/proxy.y2cc
 @scrconfdir@/*.scr

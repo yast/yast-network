@@ -174,9 +174,11 @@ global define boolean Read() ``{
     if(Abort()) return false;
     /* Progress step 5/5 */
     ProgressNextStage(_("Reading network card configuration..."));
-    Progress::off();
-    if(!proposal_valid) Lan::Read();
-    Progress::on();
+    if(!proposal_valid) {
+	Progress::off();
+	Lan::Read();
+	Progress::on();
+    }
     sleep(sl);
 
     if(Abort()) return false;

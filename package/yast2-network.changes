@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Feb 19 19:30:43 CET 2003 - msvec@suse.de
+
+- changed proxy info popup text (#23728)
+- added missing host editor entry to Y2CC
+- surpress ProgressBar warning (#23796)
+- 2.7.12
+
+-------------------------------------------------------------------
 Mon Feb 17 18:59:54 CET 2003 - kkaempf@suse.de
 
 - dialogs.ycp:AskForPassword() must be global.

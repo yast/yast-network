@@ -29,11 +29,10 @@ include "ui/common_messages.ycp";
 global define void ProxyFinishPopup(boolean modified) ``{
 
     /* Popup text */
-string text = _("Applications that support it (like YaST2 Online Update)
-could use them immediately.  Other applications will use
-them only if run from a newly-started terminal (lynx, wget).
-Some applications do not support these settings at
-all -- they use their own settings system, like Mozilla.");
+string text = _("Applications that support it, such as YaST2 Online Update,
+will use them immediately. Other applications will use them after a new login
+(lynx, wget). Some applications, like Mozilla, do not support these settings
+at all -- they use their own settings system.");
 
     FinishPopup(modified, "proxy", text, "", []);
 }
