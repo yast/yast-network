@@ -18,8 +18,11 @@ include "network/devices.ycp";
 include "network/routines.ycp";
 
 
-// flag to remember if we want to make the internet test
+// flag to remember if user wants to run internet test
 global boolean do_test = true;
+
+// flag to remember if user wants to run you
+global boolean do_you = true;
 
 
 global string device = "";

@@ -275,10 +275,14 @@ global define symbol AskYOUDialog() ``{
     /* Radiobuttons */
     term buttons = `VBox (
 			  `VSpacing(1),
-			  /* RadioButton label */
-			  `Left(`RadioButton(`id(`yes), _("&Yes, run online update now"), true)),
-			  /* RadioButton label */
-			  `Left(`RadioButton(`id(`no), _("N&o, skip update"), false)),
+			  `Left(`RadioButton(`id(`yes),
+					     /* RadioButton label */
+					     _("&Yes, run online update now"),
+					     Internet::do_you)),
+			  `Left(`RadioButton(`id(`no),
+					     /* RadioButton label */
+					     _("N&o, skip update"),
+					     !Internet::do_you)),
 			  `VSpacing(1)
 			  );
 
@@ -308,7 +312,12 @@ them via the YaST Online Update?")),
 	       );
 
     UI::OpenDialog (content);
+
     UI::UserInput ();
+
+    Internet::do_you = UI::QueryWidget (`id(`yes), `Value);
+    y2debug("Internet::do_you=%1", Internet::do_you);
+
     UI::CloseDialog ();
 }
 
