@@ -176,7 +176,7 @@ default gateway IP address.</p>");
 for more information about the network configuration.</p>") +
 
     /* Address dialog help 8/8 */
-_("<p>Clicking <b>Next</b> 
+_("<p>Clicking <b>Next</b>
 completes the configuration.</p>");
 
     /* s390 help hackery */
@@ -450,6 +450,12 @@ Really continue?
 	    y2milestone("num=%1", device_num(uidev));
 	    Lan::device = device_num(uidev);
 	}
+    }
+
+    // proceed with WLAN settings if appropriate, #42420
+    if (ret == `next && Lan::type == "wlan" && Lan::alias == "")
+    {
+	ret = `wire;
     }
 
     if(ret == `routing)

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jul 23 18:27:51 CEST 2004 - mvidner@suse.cz
+
+- Moved the wireless dialog from the hardware one
+  to after the address one (#42420).
+
+-------------------------------------------------------------------
 Fri Jul 23 13:46:03 CEST 2004 - jsrain@suse.cz
 
 - added function to detect if host name (or IP address) is local

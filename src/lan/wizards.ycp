@@ -206,9 +206,6 @@ define symbol HardwareSequence() ``{
     map aliases = $[
 	"hardware"	: ``(HardwareDialog()),
 	"list"		: ``(SelectionDialog()),
-	"wire"		: ``(WirelessDialog()),
-	"expert"	: ``(WirelessExpertDialog()),
-	"keys"		: ``(WirelessKeysDialog()),
 	"s390"		: ``(S390Dialog()),
     ];
 
@@ -217,23 +214,8 @@ define symbol HardwareSequence() ``{
 	"hardware" : $[
 	    `abort	: `abort,
 	    `list	: "list",
-	    `wire	: "wire",
 	    `s390	: "s390",
 	    `next	: `next,
-	],
-	"wire" : $[
-	    `next	: "hardware",
-	    `expert	: "expert",
-	    `keys	: "keys",
-	    `abort	: `abort,
-	],
-	"expert" : $[
-	    `next	: "wire",
-	    `abort	: `abort,
-	],
-	"keys" : $[
-	    `next	: "wire",
-	    `abort	: `abort,
 	],
 	"s390" : $[
 	    `next	: "hardware",
@@ -264,6 +246,9 @@ define symbol AddressSequence() ``{
 	"hostname"	: ``(DNSMainDialog(false)),
 	"routing"	: ``(RoutingMainDialog(false)),
 	"s390"		: ``(S390Dialog()),
+	"wire"		: ``(WirelessDialog()),
+	"expert"	: ``(WirelessExpertDialog()),
+	"keys"		: ``(WirelessKeysDialog()),
 	"commit"	: [ ``(Commit()), true ],
     ];
 
@@ -272,6 +257,7 @@ define symbol AddressSequence() ``{
 	"address" : $[
 	    `abort	: `abort,
 	    `next	: "commit",
+	    `wire	: "wire",
 	    `details	: "details",
 	    `dhclient	: "dhcp",
 	    `hosts	: "hosts",
@@ -313,6 +299,20 @@ define symbol AddressSequence() ``{
 	"hostname" : $[
 	    `abort	: `abort,
 	    `next	: "address",
+	],
+	"wire" : $[
+	    `next	: "commit",
+	    `expert	: "expert",
+	    `keys	: "keys",
+	    `abort	: `abort,
+	],
+	"expert" : $[
+	    `next	: "wire",
+	    `abort	: `abort,
+	],
+	"keys" : $[
+	    `next	: "wire",
+	    `abort	: `abort,
 	],
 	"commit" : $[
 	    `next	: `next,

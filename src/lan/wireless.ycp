@@ -237,7 +237,7 @@ available options.</p>");
     );
 
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    Label::BackButton(), Label::OKButton());
+	    Label::BackButton(), Label::NextButton());
 
     // UI::ChangeWidget(`id(`keys), `Enabled, false);
     UI::ChangeWidget (`id (`type_g), `CurrentButton, type);

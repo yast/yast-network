@@ -34,6 +34,7 @@ define any HardwareDialog() {
     /* Manual dialog caption */
     string caption = _("Manual network card configuration");
 
+    //FIXME: hwcfg-
     /* Manual dialog help 1/4 */
     string help = _("<p>Here, set up your networking device.
 The values will be written into <i>/etc/modprobe.conf</i>.</p>") +
@@ -113,8 +114,6 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	`HSpacing(1.5)
     );
 
-    /* Pushbutton label */
-    term WirelessButton = `PushButton(`id(`wire), _("Wireless &Settings"));
     /* Pushbutton label */
     term ListButton = `PushButton(`id(`list), _("Select from &List"));
 
@@ -201,7 +200,6 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */) {
 
 	ListButton = `VSpacing(0);
-	if(type != "wlan") WirelessButton = `VSpacing(0);
 
 	TypeNameWidgets =
 		`Left(`HSquash(`Left(`VBox(
@@ -224,8 +222,6 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     /* Frame label */
     term ButtonBox = `HBox(
 	`HStretch(),
-	`HSpacing(0.5),
-	WirelessButton,
 	`HSpacing(0.5),
 	ListButton,
 	`HSpacing(0.5),
@@ -255,13 +251,13 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	Wizard::SetContentsButtons(caption, contents, help,
 		Label::BackButton(), Label::NextButton());
 
-    UI::ChangeWidget(`id(`modul), `Enabled, hotplug == "" && type != "dummy");
-    UI::ChangeWidget(`id(`options), `Enabled, hotplug == "" && type != "dummy");
-    ChangeWidgetIfExists(`id(`list), `Enabled, hotplug == "" && type != "dummy");
-    ChangeWidgetIfExists(`id(`hwcfg), `Enabled, hotplug == "" && type != "dummy");
+    boolean no_hotplug_dummy = hotplug == "" && type != "dummy";
+    UI::ChangeWidget(`id(`modul), `Enabled, no_hotplug_dummy);
+    UI::ChangeWidget(`id(`options), `Enabled, no_hotplug_dummy);
+    ChangeWidgetIfExists(`id(`list), `Enabled, no_hotplug_dummy);
+    ChangeWidgetIfExists(`id(`hwcfg), `Enabled, no_hotplug_dummy);
     ChangeWidgetIfExists(`id(`usb), `Enabled, (hotplug == "usb" || hotplug == "") && type != "dummy");
     ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hotplug == "pcmcia" || hotplug == "") && type != "dummy");
-    ChangeWidgetIfExists(`id(`wire), `Enabled, type == "wlan");
     // ChangeWidgetIfExists(`id(`num), `Value, device);
 
     any ret = nil;
@@ -298,13 +294,13 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		hotplug = "usb";
 	    }
 
-	    UI::ChangeWidget(`id(`modul), `Enabled, hotplug == "" && type != "dummy");
-	    UI::ChangeWidget(`id(`options), `Enabled, hotplug == "" && type != "dummy");
-	    ChangeWidgetIfExists(`id(`list), `Enabled, hotplug == "" && type != "dummy");
-	    ChangeWidgetIfExists(`id(`hwcfg), `Enabled, hotplug == "" && type != "dummy");
+	    no_hotplug_dummy = hotplug == "" && type != "dummy";
+	    UI::ChangeWidget(`id(`modul), `Enabled, no_hotplug_dummy);
+	    UI::ChangeWidget(`id(`options), `Enabled, no_hotplug_dummy);
+	    ChangeWidgetIfExists(`id(`list), `Enabled, no_hotplug_dummy);
+	    ChangeWidgetIfExists(`id(`hwcfg), `Enabled, no_hotplug_dummy);
 	    ChangeWidgetIfExists(`id(`usb), `Enabled, (hotplug == "usb" || hotplug == "") && type != "dummy");
 	    ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hotplug == "pcmcia" || hotplug == "") && type != "dummy");
-	    ChangeWidgetIfExists(`id(`wire), `Enabled, type == "wlan");
 
 	    // list devices = Lan::FreeDevices(realtype);
 	    // default_device = (string) devices[0]:"";
@@ -343,7 +339,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    Lan::device = tointeger(UI::QueryWidget(`id(`num), `Value));
 	    break;
 	} */
-	else if(ret == `next || ret == `list || ret == `wire) {
+	else if(ret == `next || ret == `list) {
 	    /* FIXME: check_* */
 
 	    if(UI::WidgetExists(`id(`hwcfg))) {
@@ -400,7 +396,7 @@ Really continue?
 	}
     }
 
-    if(ret == `next || ret == `list || ret == `wire) {
+    if(ret == `next || ret == `list) {
 	NetworkModules::Alias /* FIXME: MOD Lan::Module["module"] */ = (string) UI::QueryWidget(`id(`modul), `Value);
 	NetworkModules::Options /* FIXME: MOD Lan::Module["options"] */ = (string) UI::QueryWidget(`id(`options), `Value);
 
