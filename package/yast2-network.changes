@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Oct 14 14:01:45 CEST 2004 - jsrain@suse.cz
+
+- fixed testsuite
+
+-------------------------------------------------------------------
 Mon Oct 11 16:25:46 CEST 2004 - jsrain@suse.cz
 
 - adapted to new Arch:: interface
