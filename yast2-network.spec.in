@@ -34,10 +34,15 @@ Summary:	Network configuration
 
 @CLEAN@
 
-# temporary hack (#24842)
-%post
-/bin/chown -f root:root /etc/sysconfig/network/ifcfg-wlan* || true
-/bin/chmod -f 0600 /etc/sysconfig/network/ifcfg-wlan* || true
+%post -p /bin/bash
+# This fixes the files that were touched when #24842 was in effect.
+# #42990: shut up when no wlan files are there.
+shopt -s nullglob
+files=/etc/sysconfig/network/ifcfg-wlan*
+if [ -n "$files" ]; then
+    /bin/chown root:root $files
+    /bin/chmod 0600 $files
+fi
 
 %files
 %defattr(-,root,root)
