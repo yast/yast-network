@@ -9,7 +9,6 @@
  */
 
 {
-
     textdomain "network";
 
     import "Directory";
@@ -62,6 +61,19 @@
     string l3 = _("Checking for latest updates...");
     /* Progress step 4/4 */
     string l4 = _("Closing connection...");
+
+
+    /**
+     * Return current language with .UTF-8 appended.
+     * FIXME: there must be a better way!
+     */
+    define string GetLanguageUTF8 () ``{
+	string tmp = WFM::GetLanguage ();
+	integer pos = findfirstof (tmp, "@.");
+	if (pos != nil)
+	    tmp = substring (tmp, 0, pos);
+	return tmp + ".UTF-8";
+    };
 
 
     /**
@@ -158,12 +170,14 @@ and correct the setting.</p>");
 	logs = add (logs, $[ `menuname : _("Kernel Network Interfaces"),
 			     `filename : "ifconfig.log" ]);
 	SCR::Execute (.target.bash, "/sbin/ifconfig > " +
-		      logdir + "/ifconfig.log");
+		      logdir + "/ifconfig.log",
+		      $["LANG" : GetLanguageUTF8 ()]);
 
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Kernel Routing Table"),
 			     `filename : "route.log" ]);
-	SCR::Execute (.target.bash, "/sbin/route -n > " + logdir + "/route.log");
+	SCR::Execute (.target.bash, "/sbin/route -n > " + logdir + "/route.log",
+		      $["LANG" : GetLanguageUTF8 ()]);
 
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Host Name Lookup"),
@@ -297,7 +311,8 @@ the logs for details.
 	    // proxy settings are read from /root/.curlrc
 	    string cmd = "/usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + tmp;
 	    cmd = cmd + "> " + logdir + "/curl.log 2>&1";
-	    integer ret = SCR::Execute(.target.bash, cmd);
+	    integer ret = SCR::Execute (.target.bash, cmd,
+					$["LANG" : GetLanguageUTF8 ()]);
 	    y2milestone("curl command returned %1", ret);
 
 	    // label of combobox where the log is selected
@@ -314,7 +329,7 @@ the logs for details.
 	    }
 	    else
 	    {
-		if (SCR::Execute(.target.bash, "/bin/rpm -U --replacepkgs " + tmp) != 0)
+		if (SCR::Execute (.target.bash, "/bin/rpm -U --replacepkgs " + tmp) != 0)
 		    y2error ("installing of release notes failed");
 	    }
 
@@ -336,7 +351,8 @@ the logs for details.
 	    // proxy settings are read from /root/.curlrc
 	    string cmd = "/usr/bin/online_update -q -V";
 	    cmd = cmd + "> " + logdir + "/you.log 2>&1";
-	    integer ret = SCR::Execute(.target.bash, cmd);
+	    integer ret = SCR::Execute (.target.bash, cmd,
+					$["LANG" : GetLanguageUTF8 ()]);
 	    y2milestone("online_update command returned %1", ret);
 
 	    // label of combobox where the log is selected
