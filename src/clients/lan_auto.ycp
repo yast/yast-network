@@ -50,14 +50,47 @@ map settings = select(args, 0, $[]);
 y2debug("Imported: %1", settings);
 
 Lan::Import(settings);
-symbol ret = LanAutoSequence();
-y2debug("ret=%1", ret);
-
-y2milestone("Lan auto finished");
-if(ret == `next)
-    return Lan::Export();
-
-return $[];
-
-/* EOF */
+define set_contents()
+    ``{
+    term contents =
+	`VBox(
+	      `VSpacing(1),
+	      `RichText( `id(`summary), select(Lan::Summary(false), 0 , "")),
+	      `VSpacing(0.5),
+	      `HBox(
+		    `PushButton(`id(`configure), _("&Configure Network")),
+		    `HStretch(),
+		    `PushButton(`id(`reset), _("&Reset Configuration"))
+		    ),
+	      `VSpacing(1)
+	      );
+    Wizard::SetContents(_("Network Configuration"),
+			contents, "", true, true);
 }
+set_contents();
+any result = nil;
+any ret = nil;
+repeat {
+    ret = UI::UserInput();
+    if (ret == `configure)
+    {
+	result = LanAutoSequence();
+	if (result == `next || result == `finish)
+	{
+	    settings = Lan::Export ();
+	}
+	Lan::Import(settings);
+	set_contents();
+    }
+    else if ( ret == `reset)
+    {
+	settings= $[];
+	Lan::Import(settings);
+	set_contents();
+    }
+} until (ret == `back || ret == `next || ret ==`key);
+
+return [ret, settings];
+
+}
+/* EOF */

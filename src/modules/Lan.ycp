@@ -280,7 +280,17 @@ global define boolean Write() ``{
  */
 global define boolean Import(map settings) ``{
     map interfaces = listmap(map interface, settings["interfaces"]:[],``{
-	return([interface["device"]:"unknown",interface]);
+	string upcase = "BOOTPROTO BROADCAST IPADDR NETMASK NETWORK STARTMODE";
+	string ignore = "UNIQUE";
+	map new_interface = mapmap(`k,`v, interface, ``{
+	    if (issubstring(upcase, k)) {
+		return([toupper(k),v]);
+	    }
+	    else if (!issubstring(ignore, k)) {
+		return([k,v]);
+	    }
+	});	
+	return([interface["device"]:"unknown",new_interface]);
     });
     map eth = $[];
     map token = $[];
@@ -305,10 +315,22 @@ global define boolean Import(map settings) ``{
  */
 global define map Export() ``{
     list autoinst_cfg = [];
+    
+    string upcase = "BOOTPROTO BROADCAST IPADDR NETMASK NETWORK STARTMODE";
+    string ignore = "UNIQUE";
+    
     foreach(string device, map data, CONFIG, ``{
-	list interfaces = maplist(string device_nr, map device_data, data, ``{
+	list interfaces = maplist(string device_nr, map device_data, data, ``{	    
 	    device_data = add(device_data,"device", device + device_nr);
-	    return(device_data);
+	    map new_device = mapmap(`k,`v, device_data, ``{
+		if (issubstring(upcase, k)) {
+		    return([tolower(k),v]);
+		}
+		else if (!issubstring(ignore, k)) {
+		    return([k,v]);
+		}
+	    });
+	    return(new_device);
 	});
 	autoinst_cfg=union( autoinst_cfg, interfaces);
     });
