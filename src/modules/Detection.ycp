@@ -137,10 +137,13 @@ define boolean StopEthInterface() ``{
  */
 define boolean StartDetection() ``{
 
+    y2milestone("Network detection start");
+
     /* Start DHCP detection */
     SCR::Execute(.target.bash, sformat("/bin/rm -f %1/dhcpcd-*", tmpdir));
     SCR::Execute(.target.bash, sformat("/usr/sbin/dhcpcd-test %1 > %2/dhcpcd-%1.info", device, tmpdir));
 
+    y2milestone("Network detection start (end)");
     return true;
 }
 
@@ -149,6 +152,8 @@ define boolean StartDetection() ``{
  * @return true if success
  */
 define boolean StopDetection() ``{
+
+    y2milestone("Network detection stop");
 
     result = $[];
 
@@ -180,6 +185,7 @@ define boolean StopDetection() ``{
     /* Finish DHCP detection */
     SCR::Execute(.target.bash, sformat("test -f %1/dhcpcd-%2.pid && kill $(cat %1/dhcpcd-%2.pid)", tmpdir, device));
 
+    y2milestone("Network detection stop (end)");
     return true;
 }
 
@@ -193,11 +199,16 @@ global define boolean Start() ``{
 	return false;
     }
 
+y2milestone("IFCONFIG1: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
+    boolean ret = false;
     if(StartEthInterface() && StartDetection()) {
 	running = true;
-	return true;
+	ret = true;
     }
-    return false;
+
+y2milestone("IFCONFIG2: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
+    y2milestone("Detection start result: %1", ret);
+    return ret;
 }
 
 /**
@@ -210,7 +221,14 @@ global define boolean Stop() ``{
 	return false;
     }
     running = false;
-    return StopEthInterface() && StopDetection();
+
+y2milestone("IFCONFIG3: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
+    ret = StopDetection();
+    ret = StopEthInterface() && ret;
+
+y2milestone("IFCONFIG4: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
+    y2milestone("Detection stop result: %1", ret);
+    return ret;
 }
 
 /* EOF */

@@ -14,6 +14,9 @@ import "Mode";
 
 symbol mode = WFM::Args (2);
 
+y2milestone("----------------------------------------");
+y2milestone("Lan netsetup module started");
+
 
 string netdevice = SCR::Read (.etc.install_inf.Netdevice);
 if (netdevice == nil) netdevice = "eth0";
@@ -107,6 +110,9 @@ if (mode == `dn)
     }
 }
 
+
+y2milestone("Lan netsetup module finished");
+y2milestone("----------------------------------------");
 
 return `auto;
 

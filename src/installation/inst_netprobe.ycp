@@ -13,7 +13,13 @@ textdomain "network";
 
 import "Detection";
 
+y2milestone("----------------------------------------");
+y2milestone("Lan netprobe module started");
+
 if(!Detection::running) Detection::Start();
+
+y2milestone("Lan netprobe module finished");
+y2milestone("----------------------------------------");
 
 return `auto;
 
