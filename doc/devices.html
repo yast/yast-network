@@ -1,12 +1,12 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html><head>
-<title>Network configuration: Devices Overview</title>
+<title>Network Configuration: Devices Overview</title>
 </head><body bgcolor=#ffffff>
 
 <!-- Author: Michal Svec <msvec@suse.cz> -->
 <!-- $Id$ -->
 <a name="top"></a>
-<h1>Network configuration -- Devices Overview</h1>
+<h1>Network Configuration: Devices Overview</h1>
 <hr>
 
 <table border="1" summary="overview">
@@ -180,24 +180,31 @@
     </tr>
 <!-- ========================================================= -->
     <tr>
-      <td rowspan=6><a href="#local">Local</a></td>
-      <td>Serial line</td>
+      <td rowspan=4><a href="#cable">Cable</a></td>
+      <td rowspan=2>Serial Line</td>
+      <td>slip</td>
+    </tr>
+    <tr>
       <td>ppp</td>
     </tr>
     <tr>
-      <td>Parallel line</td>
+      <td>Parallel Line</td>
       <td>plip</td>
     </tr>
     <tr>
-      <td>Infra-Red</td>
+      <td>USB Network</td>
+      <td>usb?</td>
+    </tr>
+<!-- ========================================================= -->
+    <tr>
+      <td rowspan=7><a href="#wireless">Wireless</a></td>
+      <td rowspan=3>Infra-Red</td>
       <td>irda</td>
     </tr>
     <tr>
-      <td>Infra-Red</td>
       <td>irlan</td>
     </tr>
     <tr>
-      <td>Infra-Red</td>
       <td>ppp</td>
     </tr>
     <tr>
@@ -246,7 +253,6 @@ Channel-To-Channel
 <li><a name="escon">Escon</a>
 Enteprise System CONnector (something like a mixture of SCSI and
 Ethernet - its a channel, but can carry network traffic)
-- short: its a point-to point network interface
 
 <li><a name="eth">Ethernet</a>
 <li><a name="fddi">FDDI</a>
@@ -256,7 +262,6 @@ Hipersockets
 <li><a name="iucv">IUCV</a>
 Inter User Communication Vehicle (means: DMA based network pipe
 between Virtual Machine instances (like vmware) on an s390)
-- short: its a point-to point network interface
 
 <li><a name="myri">Myrinet</a>
 <a href="http://www.myri.com">http://www.myri.com</a>

@@ -183,15 +183,6 @@ TO-SORT:
 ##### Some details, other stuff, old #####
 
 DOC:
- ESCON = Enteprise System CONnector (something like a mixture of SCSI and
-         Ethernet - its a channel, but can carry network traffic)
-         - short: its a point-to point network interface
-
- IUCV  = Inter User Communication Vehicle (means: DMA based network pipe
-         between Virtual Machine instances (like vmware) on an s390)
-         - short: its a point-to point network interface
-
-DOC:
 - doc: dummy: IP/NM/BC
 - doc: irlan: IP/NM/BC (eth?)
 - doc: irnet: IP/RI (?)
