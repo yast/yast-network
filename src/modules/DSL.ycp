@@ -386,7 +386,6 @@ global define boolean Commit() ``{
     }
     else if(operation == `delete) {
 	DeleteDevice(type, device);
-	change(DeletedDevices, type+device);
     }
     else {
 	y2error("Unknown operation: %1", operation);

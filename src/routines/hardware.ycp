@@ -101,8 +101,8 @@ global define boolean ReadHardware(string hwtype) ``{
 
 	    /* FIXME: this should be also done for modems and others */
 	    /* FIXME: #13571 */
-	    string hotplug = card["hotplug"]:"";
-	    if(hotplug == "pcmcia" || hotplug == "cardbus")
+	    string hp = card["hotplug"]:"";
+	    if(hp == "pcmcia" || hp == "cardbus")
 		change(one, "hotplug", "pcmcia");
 	    else if(hotplug == "usb")
 		change(one, "hotplug", "usb");

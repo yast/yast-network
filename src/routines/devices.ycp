@@ -243,6 +243,8 @@ global define boolean ChangeDevice(string type, integer device, map newdev, bool
  */
 global define boolean DeleteDevice(string type, integer device) ``{
     y2debug("Devices=%1", Devices);
+    y2debug("DeletedDevices=%1", DeletedDevices);
+
     map devmap = Devices[type]:$[];
     string dev = sformat("%1", device);
 
@@ -253,7 +255,10 @@ global define boolean DeleteDevice(string type, integer device) ``{
     //remove(devmap, dev);
     devmap = remove(devmap, dev);
     change(Devices, type, devmap);
+    change(DeletedDevices, type+device);
+
     y2debug("Devices=%1", Devices);
+    y2debug("DeletedDevices=%1", DeletedDevices);
     return true;
 }
 

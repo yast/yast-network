@@ -677,8 +677,8 @@ global define boolean Commit() ``{
 	ChangeDevice(RealType(type, hotplug), device, newdev, operation == `add);
     }
     else if(operation == `delete) {
+	DeleteModule(type+device);
 	DeleteDevice(type, device);
-	change(DeletedDevices, type+device);
     }
     else {
 	y2error("Unknown operation: %1", operation);
