@@ -251,7 +251,11 @@ define map ToAY (map settings) {
                     y2debug("val: %1", val);
                     }
                     });
-                newmap["device"] = device + num;
+                if (deletechars(num, "0123456789")
+                        == "")
+                    newmap["device"] = device + num;
+                else
+                    newmap["device"] = device + "-" + num;
                 interfaces = add(interfaces, newmap);
                 });
             });
