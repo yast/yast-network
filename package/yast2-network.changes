@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Feb 26 16:19:34 CET 2003 - arvin@suse.de
+
+- fixed result field of internet test (bug #24354)
+
+-------------------------------------------------------------------
 Mon Feb 24 17:36:27 CET 2003 - mvidner@suse.de
 
 - Added proxy to the network configuration proposal (#24204).

@@ -276,19 +276,20 @@ and correct the setting.</p>");
 		return;
 	    }
 
-	    if (!already_up)
-	    {
-		// stop connection
-		y2milestone ("called Stop");
-		if (!Internet::Stop ()) {
-		    set_result (`failure);
-		}
-		mark_label (4);
-	    }
-	    else
+	    if (already_up)
 	    {
 		set_result (`success);
 	    }
+	    else
+	    {
+		// stop connection
+		y2milestone ("called Stop");
+		if (!Internet::Stop ())
+		    set_result (`failure);
+		else
+		    set_result (`success);
+	    }
+	    mark_label (4);
 	    return;
 	}
     }
