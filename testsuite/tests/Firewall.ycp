@@ -55,7 +55,8 @@ map READ = $[
 	"personal-firewall" : $[
 	    "REJECT_ALL_INCOMING_CONNECTIONS" : "eth1 ippp0",
 	]
-    ]
+    ],
+    "target" : $[ "size" : 1 ],
 ];
 
 DUMP("Read");

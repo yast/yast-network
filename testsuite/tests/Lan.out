@@ -2,15 +2,21 @@ Dump	Read
 Read	.probe.netcard nil
 Log	hardware detection failure
 Dir	.network.section: []
-Read	.target.size "/etc/sysconfig/network/routes" -1
+Read	.target.size "/etc/sysconfig/network/routes" 1
+Read	.routes nil
 Read	.sysconfig.sysctl.IP_FORWARD nil
 Read	.sysconfig.dhcp.DHCLIENT_SET_HOSTNAME nil
 Read	.sysconfig.dhcp.DHCLIENT_MODIFY_RESOLV_CONF nil
-Read	.target.size "/etc/install.inf" -1
+Read	.target.size "/etc/install.inf" 1
+Read	.etc.install_inf nil
 Execute	.target.bash "/sbin/modify_resolvconf check -q" 0
-Read	.target.size "/etc/resolv.conf" -1
-Read	.target.size "/etc/HOSTNAME" -1
-Read	.target.size "/etc/install.inf" -1
+Read	.target.size "/etc/resolv.conf" 1
+Read	.etc.resolv_conf.nameserver ["1.2.3.4", "5.6.7.8"]
+Read	.etc.resolv_conf.search ["suse.cz", "suse.de"]
+Read	.target.size "/etc/HOSTNAME" 1
+Read	.target.string "/etc/HOSTNAME" "Blah\n"
+Read	.target.size "/etc/install.inf" 1
+Read	.etc.install_inf nil
 Read	.init.scripts.exists "SuSEfirewall2_init" true
 Read	.init.scripts.runlevel "SuSEfirewall2_init" nil
 Read	.init.scripts.exists "SuSEfirewall2_setup" true
@@ -23,6 +29,7 @@ Read	.init.scripts.exists "SuSEfirewall2_setup" true
 Read	.init.scripts.runlevel "SuSEfirewall2_setup" nil
 Read	.init.scripts.exists "SuSEfirewall2_final" true
 Read	.init.scripts.runlevel "SuSEfirewall2_final" nil
+Read	.target.size "/etc/sysconfig/personal-firewall" 1
 Read	.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS nil
 Return	true
 Dump	Write

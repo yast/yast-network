@@ -40,6 +40,7 @@ Read	.init.scripts.exists "SuSEfirewall2_setup" true
 Read	.init.scripts.runlevel "SuSEfirewall2_setup" $["SuSEfirewall2_final":$["start":["5"], "stop":["5"]], "SuSEfirewall2_init":$["start":["5"], "stop":["5"]], "SuSEfirewall2_setup":$["start":["5"], "stop":["5"]]]
 Read	.init.scripts.exists "SuSEfirewall2_final" true
 Read	.init.scripts.runlevel "SuSEfirewall2_final" $["SuSEfirewall2_final":$["start":["5"], "stop":["5"]], "SuSEfirewall2_init":$["start":["5"], "stop":["5"]], "SuSEfirewall2_setup":$["start":["5"], "stop":["5"]]]
+Read	.target.size "/etc/sysconfig/personal-firewall" 1
 Read	.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS "eth1 ippp0"
 Return	true
 Dump	Firewall::firewallpresent true
