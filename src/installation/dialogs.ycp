@@ -234,7 +234,7 @@ define void ShowLogs(list logs, string logdir) ``{
 
     ScreenName("installation-show-logs");
 
-    logs = sort(map x, map y, logs, ``( x[`prio]:0 >= y[`prio]:0 ));
+    logs = sort(map x, map y, logs, ``( x[`prio]:0 > y[`prio]:0 ));
 
     list menunames = [];
     maplist(map v, logs, ``{

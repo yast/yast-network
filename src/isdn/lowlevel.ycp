@@ -39,7 +39,7 @@ define list ISDNCards4Vendor(integer vendor, integer defcard) ``{
     string n_id = "";
 
     if (vendor == -1) {
-	cards = sort(map x, map y, cards, ``(x["VendorRef"]:-1 <= y["VendorRef"]:-1));
+	cards = sort(map x, map y, cards, ``(x["VendorRef"]:-1 < y["VendorRef"]:-1));
 	n_id = "longname";
     } else {
 	cards = filter(map c, cards, ``(c["VendorRef"]:-1 == vendor));
@@ -488,7 +488,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
     list countries = maplist(string i, string n, CountryCodes, ``{
 	return(`item(`id(i), n, (i == ccode)));
     });
-    countries = sort(list x, list y, countries, ``(select(x,1,"") <= select(y,1,"")));
+    countries = sort(list x, list y, countries, ``(select(x,1,"") < select(y,1,"")));
     // other country in list
     countries = add(countries, `item(`id("-1"), _("other"), ("-1" == ccode)));
     ccode = newcc;

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Feb 19 13:23:53 CET 2004 - mvidner@suse.cz
+
+- changed sort to use "<" instead of "<=" because of the switch to std::sort
+
+-------------------------------------------------------------------
 Wed Feb 18 12:25:19 CET 2004 - msvec@suse.cz
 
 - reduced neededforbuild
