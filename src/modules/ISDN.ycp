@@ -225,7 +225,7 @@ global define boolean WriteOnly()``{
  */
 global define boolean Write(boolean start) ``{
 
-    if(!(modified_hw || modified_if)) return true;
+    if(!(modified_hw || modified_if || Providers::Modified())) return true;
     y2milestone("Writing configuration");
 
     string caption = _("Saving ISDN configuration");
@@ -278,9 +278,8 @@ global define boolean Write(boolean start) ``{
 
     if(Abort()) return false;
     ProgressNextStage(_("Writing controller configuration"));
-    if (modified_hw) {
+    if (modified_hw)
 	WriteISDNConfig("contr");
-    }
     sleep(sl);
 
     if(Abort()) return false;
@@ -294,8 +293,10 @@ global define boolean Write(boolean start) ``{
     sleep(sl);
 
     if(Abort()) return false;
+
     ProgressNextStage(_("Writing providers"));
-    Providers::Write();
+    if (Providers::Modified())
+	Providers::Write();
     sleep(sl);
 
     if(Abort()) return false;
@@ -633,7 +634,7 @@ global define boolean SelIf(string item) ``{
  * @return true if the current item was found
  */
 global define boolean Commit() ``{
-    y2debug("Commit(%1) dev:%2%3",operation,type,device);
+    y2warning("Commit(%1) dev:%2%3",operation,type,device);
     string n = sformat("%1", device);
 
     if (operation == nil)
@@ -665,7 +666,7 @@ global define boolean Commit() ``{
 	} else
 	    ConfigAddEdit(type, device, interface, false);
 	modified_if = true;
-    } else if(operation == `addprov) {
+    } else if(operation == `addprov || operation == `editprov) {
 	Providers::Commit();
 	change(interface, "PROVIDER", provider_file);
 	ConfigAddEdit(type, device, interface, false);

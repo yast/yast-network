@@ -307,6 +307,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	    if (ret == `provider) {
 		string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
 		Providers::AddEdit(dev, false);
+		ISDN::operation = `editprov;
 		ret = `Editprov;
 	    } else {
 		if (ISDN::SelectInterface(true)) {

@@ -151,7 +151,7 @@ global define symbol MainSequence() ``{
 	],
 	"Editprov" : $[
 	    `abort	: `abort,
-	    `next	: "overview",
+	    `next	: "commit",
 	],
 	"commit" : $[
 	    `next	: "overview",
@@ -213,7 +213,7 @@ global define symbol OneISDNSequence(string entry) ``{
 	    `abort	: `abort
 	],
 	"addprovider" : $[
-	    `next	: `next,
+	    `next	: "commit",
 	    `abort	: `abort
 	],
 	"commit" : $[
