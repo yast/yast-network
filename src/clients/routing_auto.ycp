@@ -21,13 +21,14 @@
 
 {
 
-textdomain "routing";
+textdomain "network";
 
 y2milestone("----------------------------------------");
 y2milestone("Routing auto started");
 
 import "Routing";
 import "Wizard";
+
 include "network/services/routing.ycp";
 
 any ret = nil;

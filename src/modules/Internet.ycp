@@ -1,113 +1,113 @@
 /**
  * File:	modules/Internet.ycp
  * Package:	Network configuration
- * Summary:	provide an internet connection
- * Authors:	Arvin Schnell <arvin@suse.de>
+ * Summary:	Internet data
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *		Arvin Schnell <arvin@suse.de>
  *
  * $Id$
  */
 
 {
-    module "Internet";
-    textdomain "network";
 
-    import "Wizard";
-    include "ui/common_messages.ycp";
+module "Internet";
+textdomain "network";
 
-    /**
-     *  lan, dsl, isdn, modem or empty
-     */
-    global string type = "";
+include "network/complex.ycp";
+include "network/devices.ycp";
+include "network/routines.ycp";
 
-    /**
-     *  the ifcfg file
-     */
-    global string ifcfg_file = "";
+global string device = "";
+global string password = "";
+global boolean demand = false;
+global boolean askpassword = nil;
 
-    /**
-     *  the provider file (only valid for dsl, isdn and modem)
-     */
-    global string provider_file = "";
+/**
+ * Devices in order from fastest to slowest
+ */
+map FastestRegexps = $[
+    1 : NetworkDeviceRegex,
+    2 : "dsl",
+    3 : "isdn|ippp|isdn-pcmcia-|isdn-usb-|ippp-pcmcia-|ippp-usb-",
+    4 : "ppp",
+];
 
-    /**
-     *  demand (only valid for dsl, isdn and modem)
-     */
-    global boolean demand = false;
+/**
+ * Find the fastest connection to the Internet
+ * @return device with the fastest connection
+ */
+global define boolean Fastest() ``{
 
-    /**
-     *  ask password (only valid for dsl, isdn and modem)
-     */
-    global boolean ask_password = false;
+    /* Read available devcies */
+    map Devices = $[];
+    ReadDevices("");
+    y2debug("Devices=%1", Devices);
+    list types = mapkeys(Devices);
+    y2debug("types=%1", types);
+    list devices = [];
+    maplist(string t, types, ``{
+	devices = union(devices, maplist(string n, mapkeys(Devices[t]:$[]), ``(t+n)));
+    });
+    y2debug("devices=%1", devices);
 
-    /**
-     *  true if ask_password is true and the password has successfully been
-     *  asked for
-     */
-    boolean password_known = false;
+    /* Find the fastest device */
+    device = "";
+    maplist(integer num, string regex, FastestRegexps, ``{
+	maplist(string dev, devices, ``{
+	    if(device == "" && regexpmatch(dev, "^"+regex+"[0-9]*$")) device = dev;
+	});
+    });
+    y2milestone("fastest=%1", device);
 
-    /**
-     *  the password (only valid for dsl, isdn and modem)
-     */
-    string password = "";
+    /* Fallback, should not happen */
+    if(device == "" && size(devices) > 0) {
+	device = devices[0]:"";
+	y2error("No device found (%1)", devices);
+	y2milestone("fastest=%1", device);
+    }
+    if(device == "") return false;
 
-    /**
-     *  somehow find the "fastest" configured internet connection
-     */
-    global define void FindFastest () ``{
-	// FIXME
-	type = "dsl";
-	ifcfg_file = "ifcfg-dsl0";
-	provider_file = "tonline-dsl";
-	demand = false;
-	ask_password = false;
+    map devmap = Devices[device_type(device), device_num(device)]:$[];
+    y2debug("devmap=%1", devmap);
+
+    /* Lookup the provider values */
+    string provider = devmap["PROVIDER"]:"";
+    if(provider != "") {
+	import "Providers";
+	Providers::Read("all");
+	Providers::Select(provider);
+	demand = Providers::Provider["DEMAND"]:"no" == "yes";
+	password = Providers::Provider["PASSWORD"]:"";
+	askpassword = Providers::Provider["ASKPASSWORD"]:"no" == "yes";
     }
 
-    define boolean AskForPassword () ``{
+    return true;
+}
 
-	UI::OpenDialog (`VBox (`Heading (_("Enter Provider Password")),
-			       `Password (`id(`password), _("&Password:")),
-			       `HBox (`PushButton (`id(`ok), `opt(`default),
-						   OKButtonLabel()),
-				      `PushButton (`id(`cancel),
-						   CancelButtonLabel()))));
+/**
+ * Start the fastest interface
+ * @return true if started OK
+ */
+global define boolean Start() ``{
+    // FIXME: use password and askpassword
+    return SCR::Execute(.target.bash, "ifup " + device) == 0;
+}
 
-	UI::SetFocus (`id (`password));
-	symbol ret = UI::UserInput ();
-	UI::CloseDialog ();
+/**
+ * Stop the fastest interface
+ * @return true if started OK
+ */
+global define boolean Stop() ``{
+    return SCR::Execute(.target.bash, "ifdown " + device) == 0;
+}
 
-	if (ret == `ok)
-	{
-	    password_known = true;
-	    password = UI::QueryWidget (`id(`password), `Value);
-	    return true;
-	}
-	else
-	{
-	    password_known = false;
-	    password = "";
-	    return false;
-	}
-    }
+/**
+ * Stop the fastest interface
+ * @return true if started OK
+ */
+global define boolean Status() ``{
+    return SCR::Execute(.target.bash, "ifstatus " + device) == 0;
+}
 
-    global define boolean Start () ``{
-
-	if ((type == "dsl" || type == "isdn" || type == "modem") &&
-	    (ask_password && !password_known))
-	{
-	    if (!AskForPassword ())
-		return false;
-	}
-
-	// integer ret = SCR::Execute (.target.bash, "/sbin/ifup " + ifcfg_file);
-    }
-
-    global define boolean Status () ``{
-
-
-    }
-
-    global define boolean Stop () ``{
-
-
-    }
+/* EOF */
 }

@@ -25,6 +25,37 @@ include "network/routines.ycp";
 
 
 /**
+ * Ask for password if required
+ * @return true on success
+ */
+define boolean AskForPassword() ``{
+
+    if(Internet::askpassword == nil) return true;
+    if(Internet::askpassword == false) return true;
+
+    UI::OpenDialog(`VBox(
+	/* Heading text */
+	`Heading(_("Enter Provider Password")),
+	/* PasswordEntry text */
+	`Password(`id(`password), _("&Password:")),
+	`HBox(
+	    `PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
+	    `PushButton(`id(`cancel), CancelButtonLabel()))
+    ));
+
+    UI::SetFocus(`id(`password));
+    symbol ret = UI::UserInput();
+    UI::CloseDialog();
+
+    if(ret == `ok) {
+	Internet::password = UI::QueryWidget(`id(`password), `Value);
+	return true;
+    }
+
+    return false;
+}
+
+/**
  * Connection steps dialog
  * @return dialog result
  */
@@ -40,20 +71,23 @@ global define symbol TestStepsDialog() ``{
 </p>");
 
     /* Label text (keep lines max. 65 chars long) */
-    string label1 = _("To validate your Internet access we suggest to
+    string label = _("To validate your Internet access we suggest to
 activate the test procedure.");
-    if (Internet::type == "dsl")
+
+    map labels = $[
 	/* Label text (keep lines max. 65 chars long) */
-	label1 = _("To validate your DSL Internet access we suggest to
-activate the test procedure.");
-    if (Internet::type == "isdn")
+	"dsl" : _("To validate your DSL Internet access we suggest to
+activate the test procedure."),
 	/* Label text (keep lines max. 65 chars long) */
-	label1 = _("To validate your ISDN Internet access we suggest to
-activate the test procedure.");
-    if (Internet::type == "modem")
+	"isdn" : _("To validate your ISDN Internet access we suggest to
+activate the test procedure."),
 	/* Label text (keep lines max. 65 chars long) */
-	label1 = _("To validate your Modem Internet access we suggest to
-activate the test procedure.");
+	"modem" : _("To validate your Modem Internet access we suggest to
+activate the test procedure."),
+    ];
+
+    string type = device_type(Internet::device);
+    if(haskey(labels, type)) label = labels[type]:"";
 
     boolean test = true;
 
@@ -61,7 +95,7 @@ activate the test procedure.");
     term contents = `HBox(
 	`HSpacing(6),
 	`VBox(
-	    `Left(`Label(label1)),
+	    `Left(`Label(label)),
 	    `VSpacing(1),
 	    /* Frame label */
 	    `Frame(_("Please select:"), `RadioButtonGroup(`id(`rb), `HBox(`HSpacing(2), `VBox(
@@ -185,10 +219,20 @@ global define symbol TestConnectionDialog() ``{
 }
 
 if(true) {
-    Internet::FindFastest ();
+
+    if(!Internet::Fastest()) {
+	y2error("No device found");
+	return false;
+    }
+
+    if(!AskForPassword()) {
+	y2error("Password required");
+	return false;
+    }
+
     Wizard::CreateDialog();
     TestStepsDialog();
-    Internet::Start ();
+    Internet::Start();
     TestConnectionDialog();
 }
 

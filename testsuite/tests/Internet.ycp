@@ -1,0 +1,39 @@
+{
+
+include "testsuite.ycp";
+
+map READ = $[
+    "probe" : $[ "system" : []],
+];
+
+TESTSUITE_INIT([READ], nil);
+import "Internet";
+
+
+DUMP("Fastest");
+READ = $[ "network" : $[ "section" : $[ "eth1":$[], "tr0":$[] ]]];
+TEST(``(Internet::Fastest()), [READ], nil);
+DUMP(Internet::device);
+READ = $[ "network" : $[ "section" : $[ "dsl0":$[], "tr0":$[] ]]];
+TEST(``(Internet::Fastest()), [READ], nil);
+DUMP(Internet::device);
+READ = $[ "network" : $[ "section" : $[ "dsl0":$[], "ppp0":$[] ]]];
+TEST(``(Internet::Fastest()), [READ], nil);
+DUMP(Internet::device);
+READ = $[ "network" : $[ "section" : $[ "ppp0":$[], "tr1":$[] ]]];
+TEST(``(Internet::Fastest()), [READ], nil);
+DUMP(Internet::device);
+READ = $[ "network" : $[ "section" : $[ "ppp0":$[] ]]];
+TEST(``(Internet::Fastest()), [READ], nil);
+DUMP(Internet::device);
+READ = $[ "network" : $[ "section" : $[ "ippp0":$[], "tr1":$[] ]]];
+TEST(``(Internet::Fastest()), [READ], nil);
+DUMP(Internet::device);
+READ = $[ "network" : $[ "section" : $[ "ippp0":$[], "ppp0":$[] ]]];
+TEST(``(Internet::Fastest()), [READ], nil);
+DUMP(Internet::device);
+READ = $[ "network" : $[ "section" : $[]]];
+TEST(``(Internet::Fastest()), [READ], nil);
+DUMP(Internet::device);
+
+}

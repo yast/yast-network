@@ -21,13 +21,14 @@
 
 {
 
-textdomain "proxy";
+textdomain "network";
 
 y2milestone("----------------------------------------");
 y2milestone("Proxy auto started");
 
 import "Proxy";
 import "Wizard";
+
 include "network/services/proxy.ycp";
 
 any ret = nil;

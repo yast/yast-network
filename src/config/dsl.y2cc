@@ -15,7 +15,7 @@ Name = _("DSL")
 Group = Network
 
 ; icon displayed in y2cc
-Icon = adsl.png
+Icon = dsl.png
 
 ; *one* *short* descriptive line for y2cc
 Helptext = _("Configure DSL connection")
@@ -36,6 +36,9 @@ SortKey =
 Textdomain = network
 
 ; Autoinstall features
-Autoinst = 
+Autoinst = write
+
+; Resource in control file
+AutoinstResource = dsl
 
 ; vim:syntax=dosini

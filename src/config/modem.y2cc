@@ -36,6 +36,9 @@ SortKey =
 Textdomain = network
 
 ; Autoinstall features
-Autoinst = 
+Autoinst = write
+
+; Resource in control file
+AutoinstResource = modem
 
 ; vim:syntax=dosini

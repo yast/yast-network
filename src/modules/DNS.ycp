@@ -211,7 +211,7 @@ global define map Export() ``{
  */
 global define string Summary() ``{
 
-    string summary = "";
+    string summary = "<p>";
 
     if(dhcp_hostname == true)
 	/* Summary text */
@@ -219,17 +219,19 @@ global define string Summary() ``{
     else
 	/* Summary text */
 	summary = summary + sformat(_("Hostname: %1"), hostname) +
-	    domain != ""? "." + domain : "";
+	    (domain != ""? "." + domain : "");
+
+    summary = summary + "<p>";
 
     if(dhcp_resolv == true) {
 	/* Summary text */
-	summary = summary + _("Name servers: set by DHCP");
+	summary = summary + _("Name servers: set by DHCP") + "<br>";
 	/* Summary text */
 	summary = summary + _("Search list: set by DHCP");
     }
     else {
 	/* Summary text */
-	summary = summary + sformat(_("Name servers: %1"), nameservers);
+	summary = summary + sformat(_("Name servers: %1"), nameservers) + "<p>";
 	/* Summary text */
 	summary = summary + sformat(_("Search list: %1"), searchlist);
     }
