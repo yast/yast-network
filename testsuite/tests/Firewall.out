@@ -45,8 +45,8 @@ Return	["modem"]
 Return	["eth0", "modem"]
 Return	["eth0"]
 Dump	Write
-Write	.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS "eth0 ippp1" true
-Write	.sysconfig.personal-firewall nil true
+Write	.sysconfig.SuSEfirewall2.FW_DEV_EXT "eth0 ippp1" true
+Write	.sysconfig.SuSEfirewall2 nil true
 Read	.init.scripts.exists "network" true
 Read	.init.scripts.exists "network" true
 Read	.init.scripts.exists "network" true
@@ -73,8 +73,8 @@ Read	.init.scripts.comment "SuSEfirewall2_final" nil
 Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/SuSEfirewall2_final" $["exit":0]
 Execute	.target.bash "/sbin/SuSEfirewall2 start" 0
 Return	true
-Write	.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS "ippp1" true
-Write	.sysconfig.personal-firewall nil true
+Write	.sysconfig.SuSEfirewall2.FW_DEV_EXT "ippp1" true
+Write	.sysconfig.SuSEfirewall2 nil true
 Read	.init.scripts.exists "network" true
 Read	.init.scripts.exists "network" true
 Read	.init.scripts.exists "network" true
@@ -102,7 +102,6 @@ Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/SuSEfirewall2_final" $
 Execute	.target.bash "/sbin/SuSEfirewall2 start" 0
 Return	true
 Dump	Read
-Read	.target.size "/etc/sysconfig/personal-firewall" 1
-Read	.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS "eth1 ippp0"
+Read	.sysconfig.SuSEfirewall2.FW_DEV_EXT "eth1 ippp0"
 Return	true
 Dump	Firewall::devices ["eth1", "ippp0"]
