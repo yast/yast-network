@@ -274,7 +274,7 @@ Internet Connection Test.</p>") +
 	    }
 	    continue;
 	}
-	else if (ret == `back || (ret == `next) {
+	else if (ret == `back || ret == `next) {
 	    break;
 	}
 	else {
