@@ -786,12 +786,12 @@ global define list GetDevices(string type) ``{
     list ret = [];
     if(type == "all") {
 	maplist(string t, map d, Devices, ``{
-	    maplist(string n, mapkeys(d), ``(change(ret, t+n)));
+	    maplist(string n, mapkeys(d), ``(change(ret, device_name(t,n))));
 	});
     }
     else {
 	map d = Devices[type]:$[];
-	maplist(string n, mapkeys(d), ``(change(ret, type+n)));
+	maplist(string n, mapkeys(d), ``(change(ret, device_name(type,n))));
     }
 
     y2debug("ret=%1", ret);

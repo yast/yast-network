@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Mon Mar  3 14:15:32 CET 2003 - msvec@suse.de
+
+- better proxy proposal
+- default proxy proposal to disabled (#24277)
+- translated double clicks to edit (#23997)
+- don't read Routing in modem proposal (#24114)
+- offer USB and PCMCIA network cards in DSL configuration (#24056)
+- 2.7.24
+
+-------------------------------------------------------------------
 Sat Mar  1 19:49:57 CET 2003 - nashif@suse.de
 
 - enable host and proxy configurations for autoyast

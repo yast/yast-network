@@ -12,6 +12,8 @@
 module "Proxy";
 textdomain "network";
 
+import "Summary";
+
 include "network/routines.ycp";
 include "network/runtime.ycp";
 
@@ -147,29 +149,38 @@ global define map Export() ``{
  */
 global define string Summary() ``{
 
-    /* Summary text */
-    if(!enabled) return _("Proxy is disabled.");
+    list ret = [];
 
-    return [
+    /* Summary text */
+    if(!enabled) ret = [ Summary::Device(_("Proxy is disabled."), "") ];
+
+    else {
+
 	/* Summary text */
-	_("Proxy is enabled.") + "\n<p>" +
+	ret = [ Summary::Device(_("Proxy is enabled."), "" +
 	/* Summary text */
-	sformat(_("HTTP Proxy: %1"), http) + "\n<br>" +
+	(http != "" ? sformat(_("HTTP Proxy: %1") + "<br>", http):"" ) +
 	/* Summary text */
-	sformat(_("FTP Proxy: %1"), ftp) + "\n<br>" +
-	/* Summary text */
-	sformat(_("No Proxy Domains: %1"), no) + "\n<br>" +
-	"<p>" + ( user == "" ?
-	    /* Summary text */
-	    _("Proxy user name is not set.") :
-	    /* Summary text */
-	    sformat(_("Proxy User Name: %1"), user)) +
-	"<br>" + ( pass == "" ?
-	    /* Summary text */
-	    _("Proxy password is not set.") :
-	    /* Summary text */
-	    _("Proxy password is set."))
-    ];
+	(ftp != "" ? sformat(_("FTP Proxy: %1") + "<br>", ftp):"" ) +
+
+	"" )];
+
+	    /* Summary text * /
+	    Summary::Device(sformat(_("No Proxy Domains: %1"), no) + "\n<br>" +
+	    "<p>" + ( user == "" ?
+		/* Summary text * /
+		_("Proxy user name is not set.") :
+		/* Summary text * /
+		sformat(_("Proxy User Name: %1"), user)) +
+	    "<br>" + ( pass == "" ?
+		/* Summary text * /
+		_("Proxy password is not set.") :
+		/* Summary text * /
+		_("Proxy password is set.")) ];
+		*/
+    }
+
+    return Summary::DevicesList(ret);
 }
 
 /* EOF */

@@ -37,8 +37,8 @@ if(func == "MakeProposal") {
 	Progress::off();
 	Proxy::Read();
     }
-    list sum = Proxy::Summary();
-    proposal = sum[0]:"";
+    Proxy::enabled = false;
+    proposal = Proxy::Summary();
     Progress::on();
 
     ret = $[

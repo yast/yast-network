@@ -163,7 +163,9 @@ global define boolean Read() ``{
     if(Abort()) return false;
     /* Progress step 4/4 */
     ProgressNextStage(_("Reading routes..."));
-    Routing::Read();
+    if(!proposal_valid) {
+	Routing::Read();
+    }
     sleep(sl);
 
     if(Abort()) return false;

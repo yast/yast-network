@@ -55,7 +55,7 @@ y2debug("param=%1", param);
 
 /* Create a summary*/
 if(func == "Summary") {
-    ret = select(Proxy::Summary(), 0, "");
+    ret = Proxy::Summary();
 }
 /* Reset configuration */
 else if (func == "Reset") {

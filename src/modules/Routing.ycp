@@ -37,11 +37,8 @@ list devices = [];
 
 /**
  * All routes read at the start
- * To make Read-Write, Read-Read-Write, and Read-Write-Read-Write work
- * correctly, Read only sets this if nil and Write makes this nil again.
- * #24114
  */
-list routes_init = nil;
+list routes_init = [];
 
 /**
  * "routes" file location
@@ -55,15 +52,13 @@ string routes_file = "/etc/sysconfig/network/routes";
 global define boolean Read() ``{
 
     /* read route.conf */
-    // FIXME: the condition should probably be routes_init == nil,
-    // otherwise Write(no-routes)-Read is bogus.
-    // That is uncommon however, let's wait for Michal's opinion.
     if(SCR::Read(.target.size, routes_file) > 0)
 	routes = SCR::Read(.routes);
+    else
+	routes = [];
 
     /* save routes to check for changes later */
-    if (routes_init == nil)
-	routes_init = routes;
+    routes_init = routes;
     y2debug("routes=%1", routes);
 
     /* enabled IP forwarding */
@@ -129,7 +124,6 @@ global define boolean Write() ``{
     /* and finally set up the new routes */
     // FIXME SCR::Execute(.target.bash, "/etc/init.d/route start");
 
-    routes_init = nil;
     modified = false;
     return ret == true;
 }

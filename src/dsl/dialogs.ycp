@@ -91,20 +91,16 @@ be appropriate for dial-on-demand connections.</p>");
     string interface = DSL::interface;
     list ifaces = [];
 
-    ifaces = Lan::GetDevices("eth");
-    if(size(ifaces) < 1) {
-	if(Lan::Propose()) {
-	    Lan::Edit("eth0");
-	    Lan::bootproto = "";
-	    Lan::ipaddr = "";
-	    Lan::Commit();
-	}
-    }
-
     /**
      */
     define void UpdateInterfaces() ``{
 	ifaces = Lan::GetDevices("eth");
+	y2debug("ifaces=%1", ifaces);
+	ifaces = union(ifaces, Lan::GetDevices("eth-pcmcia"));
+	y2debug("ifaces=%1", ifaces);
+	ifaces = union(ifaces, Lan::GetDevices("eth-usb"));
+	y2debug("ifaces=%1", ifaces);
+
 	if(false && /*interface != "" && */!contains(ifaces, interface))
 	    change(ifaces, interface);
 
@@ -115,6 +111,14 @@ be appropriate for dial-on-demand connections.</p>");
     }
 
     UpdateInterfaces();
+    if(size(ifaces) < 1) {
+	if(Lan::Propose()) {
+	    Lan::Edit("eth0");
+	    Lan::bootproto = "";
+	    Lan::ipaddr = "";
+	    Lan::Commit();
+	}
+    }
 
     /* DSL dialog contents */
     term contents = `HBox(
