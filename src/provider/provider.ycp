@@ -198,7 +198,7 @@ Synchronous PPP.</p>");
     if(uimode == "T-Online" || uimode == "T-Online DSL")
 
 	/* Provider dialog help 4/5 (T-Online) */
-	helptext = helptext + _("<p>Enter the <b>T-Online ID</b>
+	helptext = helptext + _("<p>Enter the <b>Line ID</b>
 (e.g. 00056780362), the <b>T-Online number</b> (e.g. 870008594732),
 the <b>User code</b> (typically 0001) and the <b>Password</b>
 to use as the login (ask your provider if unsure).</p>");
@@ -430,7 +430,7 @@ at the end.</p>");
 		}
 		if(t_onlineid == "") {
 		    /* MessagePopup text */
-		    UI::MessagePopup(_("Enter the T-Online Number."));
+		    UI::MessagePopup(_("Enter the T-Online number."));
 		    UI::SetFocus(`id(`t_onlineid));
 		    continue;
 		}
