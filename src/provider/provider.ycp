@@ -271,7 +271,7 @@ the password every time.</p>");
 		`TextEntry(`id(`lineid), _("&Line ID"), lineid),
 		`HSpacing(0.5),
 		/* TextEntry label */
-		`TextEntry(`id(`t_onlineid), _("&T-Online ID"), t_onlineid),
+		`TextEntry(`id(`t_onlineid), _("&T-Online Number"), t_onlineid),
 		`HSpacing(0.5)
 	    ),
 	    `VSpacing( 0.5 ),

@@ -28,7 +28,7 @@ Wed Jan  8 14:54:45 CET 2003 - msvec@suse.de
   - preliminary virtual aliases support (only edit|delete so far)
 
 - providers:
-  - UI mode (#6244, #16291)
+  - UI mode (#6244, #16291, #21499)
   - new providers handling (#17496, #18356)
   - correctly handle the providers with unknown type
   - correctly handle the nameservers requirement
