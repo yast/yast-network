@@ -1,9 +1,9 @@
+Read	.target.tmpdir "/tmp"
 Read	.probe.architecture nil
 Read	.probe.has_apm nil
 Read	.probe.has_pcmcia nil
 Read	.probe.has_smp nil
 Read	.probe.system []
-Read	.target.tmpdir "/tmp"
 Dump	Read
 Read	.target.size "/etc/sysconfig/network/routes" 1
 Read	.routes ["r1", "r2"]
