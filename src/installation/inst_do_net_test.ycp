@@ -9,7 +9,6 @@
  */
 
 {
-
     textdomain "network";
 
     import "Internet";
@@ -143,7 +142,6 @@ and correct the setting.</p>");
 
 
     define void show_result() ``{
-	set_stage(-1);
 	if(test_result == `success) {
 	    /* result of internet test */
 	    UI::ChangeWidget(`id(`res), `Value, _("Success"));
@@ -151,8 +149,6 @@ and correct the setting.</p>");
 	    /* result of internet test */
 	    UI::ChangeWidget(`id(`res), `Value, _("Failure"));
 	}
-	UI::ChangeWidget(`id(`abort_test), `Enabled, false);
-	UI::ChangeWidget(`id(`view_log), `Enabled, true);
     }
 
 
@@ -177,7 +173,7 @@ and correct the setting.</p>");
 		if(!AskForPassword()) {
 		    y2error("Password required");
 		    test_result = `failure;
-		    show_result();
+		    set_stage (-1);
 		    return;
 		}
 
@@ -189,7 +185,7 @@ and correct the setting.</p>");
 				     `prio : 16 ]);
 		if(!Internet::Start(logdir + "/ifup.log")) {
 		    test_result = `failure;
-		    show_result();
+		    set_stage (-1);
 		    return;
 		}
 
@@ -209,7 +205,7 @@ and correct the setting.</p>");
 	    // status must be up
 	    if(!Internet::Status()) {
 		test_result = `failure;
-		show_result();
+		set_stage (-1);
 		return;
 	    }
 
@@ -319,7 +315,7 @@ and correct the setting.</p>");
 	{
 	    if(Mode::test) {
 		mark_label(4, `arrow);
-		show_result();
+		set_stage (-1);
 		mark_label(4, `check);
 		return;
 	    }
@@ -338,83 +334,112 @@ and correct the setting.</p>");
 		mark_label(4, `check);
 	    }
 
-	    show_result();
-
+	    set_stage (-1);
 	    return;
 	}
     }
-
-
-    make_dialog();
 
 
     // Create logdir
     if (!SCR::Execute (.target.mkdir, logdir))
 	y2error ("can't create logdir");
 
-
     any ret = nil;
-    while(true)
+
+    make_dialog();
+
+    UI::ChangeWidget(`id(`back), `Enabled, false);
+    UI::ChangeWidget(`id(`abort), `Enabled, false);
+    UI::ChangeWidget(`id(`next), `Enabled, false);
+    UI::ChangeWidget(`id(`abort_test), `Enabled, true);
+    UI::ChangeWidget(`id(`view_log), `Enabled, false);
+
+
+    // loop during internet test
+
+    SCR::Execute (.target.bash, "/bin/logger BEGIN OF YAST2 INTERNET TEST");
+
+    while (true)
     {
-	handle_stage();
+	handle_stage ();
 
-	if(test_stage != -1) {
-	    sleep(500);
-	    ret = UI::PollInput();
-	    if(ret == nil) continue;
-	}
-	else
-	    ret = UI::UserInput();
+	if (test_stage == -1)
+	    break;
 
-	if(ret == `abort_test) {
-	    if(test_stage != -1) {
-		Internet::Stop();
-		test_result = `failure;
-		show_result();
-	    }
+	sleep (500);
+	ret = UI::PollInput ();
+	if (ret == nil)
 	    continue;
-	}
-	else if(ret == `view_log) {
 
-	    // FIXME
-	    // label of combobox where the log is selected
-	    logs = add (logs, $[ `menuname : _("Kernel Messages"),
-				 `filename : "messages" ]);
-	    SCR::Execute (.target.bash, "/bin/cp /var/log/messages " + logdir + "/messages");
-
-	    // FIXME
-	    if (Internet::logfile != "") {
-		// label of combobox where the log is selected
-		logs = add (logs, $[ `menuname : _("PPP Daemon"),
-				     `filename : "smpppd.log",
-				     `prio : 20 ]);
-		SCR::Execute (.target.bash, "/bin/cp " + Internet::logfile + " " +
-			      logdir + "/smpppd.log");
-	    }
-
-	    ShowLogs (logs, logdir);
-	}
-	else if(ret == `abort || ret == `cancel) {
-	    if(CallFunction(`inst_confirm_abort(`incomplete))) {
-		if(test_stage != -1) {
-		    Internet::Stop();
-		}
-		break;
-	    }
-	    continue;
-	}
-	else if(ret == `back || ret == `next) {
+	if (ret == `abort_test)
+	{
+	    Internet::Stop ();
+	    test_result = `failure;
 	    break;
 	}
-	else {
-	    y2error("Unexpected return code: %1", ret);
-	    continue;
-	}
+
+	y2error ("Unexpected return code: %1", ret);
     }
 
-    if(ret == `next) {
-	if(we_have_patches)
-	    AskYOUDialog();
+    SCR::Execute (.target.bash, "/bin/logger END OF YAST2 INTERNET TEST");
+
+
+    show_result ();
+
+    // label of combobox where the log is selected
+    logs = add (logs, $[ `menuname : _("Kernel Messages"),
+			 `filename : "messages" ]);
+    SCR::Execute (.target.bash, "/bin/cp /var/log/messages " +
+		  logdir + "/messages");
+
+    if (Internet::logfile != "") {
+	// label of combobox where the log is selected
+	logs = add (logs, $[ `menuname : _("PPP Daemon"),
+			     `filename : "smpppd.log",
+			     `prio : 20 ]);
+	SCR::Execute (.target.bash, "/bin/cp " + Internet::logfile + " " +
+		      logdir + "/smpppd.log");
+    }
+
+
+    UI::ChangeWidget(`id(`back), `Enabled, true);
+    UI::ChangeWidget(`id(`abort), `Enabled, true);
+    UI::ChangeWidget(`id(`next), `Enabled, true);
+    UI::ChangeWidget(`id(`abort_test), `Enabled, false);
+    UI::ChangeWidget(`id(`view_log), `Enabled, true);
+
+
+    // loop after internet test
+    while (true)
+    {
+	ret = UI::UserInput();
+
+	if (ret == `view_log)
+	{
+	    ShowLogs (logs, logdir);
+	    continue;
+	}
+
+	if (ret == `abort || ret == `cancel)
+	{
+	    if (CallFunction (`inst_confirm_abort (`incomplete)))
+		break;
+	    continue;
+	}
+
+	if (ret == `back || ret == `next)
+	{
+	    break;
+	}
+
+	y2error ("Unexpected return code: %1", ret);
+    }
+
+
+    if (ret == `next)
+    {
+	if (we_have_patches)
+	    AskYOUDialog ();
 	else
 	    Internet::do_you = false;
     }
