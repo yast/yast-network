@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
-Tue Feb  8 14:46:26 CET 2005 - mvidner@suse.cz
+Thu Feb 10 16:37:07 CET 2005 - mvidner@suse.cz
 
+- Do not propose a dynamic address if the product (OES) says
+  force_static_ip (#50524).
 - Warn when selecting a device without a module (#29296).
 
 -------------------------------------------------------------------

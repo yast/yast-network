@@ -19,6 +19,7 @@ import "Lan";
 import "Netmask";
 import "NetworkDevices";
 import "Popup";
+import "ProductFeatures";
 import "Routing";
 import "SuSEFirewall4Network";
 import "Wizard";
@@ -39,6 +40,13 @@ define any AddressDialog() {
     /* Address dialog help 1/8 */
     string help = _("<p>Configure your IP address.</p>") +
 
+	(ProductFeatures::force_static_ip ?
+
+    /* Address dialog help 2-6/8: static address preferred */
+    _("<p>DHCP configuration is not recommended for this product.
+Components of this product might not work with DHCP.</p>")
+	 :
+    /* Address dialog help 2-6/8: dynamic address preferred */
     /* Address dialog help 2/8 */
     _("<p>You can select dynamic address assignment
 if you have a <b>DHCP server</b> running on your local network.</p>
@@ -57,7 +65,8 @@ by the system administrator or your cable or DSL provider.</p>") +
     _("<p>Clicking <b>Next</b> completes the configuration.</p>") +
 
     /* Address dialog help 6/8 */
-    _("<p>Otherwise, network addresses must be assigned <b>manually</b>.</p>") +
+    _("<p>Otherwise, network addresses must be assigned <b>manually</b>.</p>")
+	 ) +
 
     /* Address dialog help 7/8 */
     _("<p>Enter the IP address (e.g., 192.168.100.99) for your computer,

@@ -26,6 +26,7 @@ import "Mode";
 import "NetworkConfig";
 import "NetworkDevices";
 import "NetworkModules";
+import "ProductFeatures";
 import "Routing";
 import "Progress";
 import "Service";
@@ -1074,6 +1075,13 @@ global define boolean Propose() {
 	    bootproto = "static";
 	}
 	else {
+	    // Open Enterprise Server does not like DHCP (#50524).
+	    // In that case, we cannot propose.
+	    if (ProductFeatures::force_static_ip)
+	    {
+		y2milestone ("Static config forced but no info available -> no proposal.");
+		return false;
+	    }
 	    y2milestone("DHCP proposal");
 	    ipaddr = "";
 	    bootproto = "dhcp";
