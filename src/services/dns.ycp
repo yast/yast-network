@@ -233,6 +233,8 @@ disabled during the connection.</p>");
 	UI::ChangeWidget(`id(`ns3), `Enabled, false);
     }
 
+    UI::SetFocus (`id (`host));
+
     any ret = nil;
     while(true) {
 
