@@ -23,6 +23,7 @@ Bugs:
 - #13450 ???
 
 - check for yast2-mail presence
+- enh: speaker volume as combo
 
 - autodetection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
     DetectionIP() { if detection_started; run ping; }

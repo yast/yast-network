@@ -1,0 +1,91 @@
+/**
+ * File:	modules/Proxy.ycp
+ * Package:	Configuration of network
+ * Summary:	Proxy configuration
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+module "Proxy";
+textdomain "network";
+include "network/routines.ycp";
+
+/**
+ * Data was modified?
+ */
+global boolean modified = false;
+
+global string http = "";
+global string ftp = "";
+global string no = "";
+global string user = "";
+global string pass = "";
+
+/**
+ * Read settings
+ * @return true if success
+ */
+global define boolean Read() ``{
+
+    http = SCR::Read(.sysconfig.proxy.HTTP_PROXY);
+    if(http == nil) http = "";
+    ftp = SCR::Read(.sysconfig.proxy.FTP_PROXY);
+    if(ftp == nil) ftp = "";
+    no = SCR::Read(.sysconfig.proxy.NO_PROXY);
+    if(no == nil) no = "";
+    user = SCR::Read(.sysconfig.proxy.PROXY_USER);
+    if(user == nil) user = "";
+    pass = SCR::Read(.sysconfig.proxy.PROXY_PASSWORD);
+    if(pass == nil) pass = "";
+
+    return true;
+}
+
+/**
+ * Write routing settings and apply changes
+ * @return true if success
+ */
+global define boolean Write() ``{
+
+    if(!modified) return true;
+    y2milestone("Writing configuration");
+
+    SCR::Write(.sysconfig.proxy.HTTP_PROXY, http);
+    SCR::Write(.sysconfig.proxy.FTP_PROXY, ftp);
+    SCR::Write(.sysconfig.proxy.NO_PROXY, no);
+    SCR::Write(.sysconfig.proxy.PROXY_USER, user);
+    SCR::Write(.sysconfig.proxy.PROXY_PASSWORD, pass);
+    SCR::Write(.sysconfig.proxy, nil);
+
+    return ret == true;
+}
+
+
+/**
+ * Get all settings from a map.
+ * When called by <name>_auto (preparing autoinstallation data)
+ * the map may be empty.
+ * @param settings autoinstallation settings
+ * @return true if success
+ */
+global define boolean Import(map settings) ``{
+    if(size(settings) == 0)
+	return true;
+
+    modified = true;
+    return true;
+}
+
+/**
+ * Dump the Routing settings to a map, for autoinstallation use.
+ * @return autoinstallation settings
+ */
+global define map Export() ``{
+    return $[];
+}
+
+/* EOF */
+}

@@ -1,0 +1,103 @@
+/**
+ * File:	include/network/services/proxy.ycp
+ * Package:	Configuration of network
+ * Summary:	Proxy configuration
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Proxy";
+import "Wizard";
+
+include "ui/common_popups.ycp";
+include "ui/common_messages.ycp";
+
+include "network/routines.ycp";
+
+/**
+ * Proxy dialog
+ * @return dialog result
+ */
+global define symbol ProxyMainDialog() ``{
+
+    /* Proxy dialog caption */
+    string caption = _("Proxy configuration");
+
+    /* Proxy dialog help 1/3 */
+    string help = _("<p>HELP</p>");
+
+    /* Proxy dialog contents */
+    term contents = `HBox(
+	`HSpacing(6),
+	`Frame(_("Proxy settings"), `HBox(`HSpacing(2), `VBox(
+	    `VSpacing(1),
+	    /* Text entry label */
+	    `TextEntry(`id(`http), _("&HTTP proxy"), Proxy::http),
+	    `VSpacing(0.2),
+	    /* Text entry label */
+	    `TextEntry(`id(`ftp), _("F&TP proxy"), Proxy::ftp),
+	    `VSpacing(0.2),
+	    /* Text entry label */
+	    `TextEntry(`id(`no), _("N&o proxy domains"), Proxy::no),
+	    `VSpacing(0.2),
+	    /* Text entry label */
+	    `TextEntry(`id(`user), _("Proxy &user name"), Proxy::user),
+	    `VSpacing(0.2),
+	    /* Text entry label */
+	    `TextEntry(`id(`pass), _("Proxy &password"), Proxy::pass),
+	    `VSpacing(1)
+	    ), `HSpacing(2))),
+	`HSpacing(6)
+    );
+
+    Wizard::SetContentsButtons(caption, contents, help,
+	    BackButtonLabel(), FinishButtonLabel());
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* next */
+	else if(ret == `next) {
+	    /* check_* */
+	    break;
+	}
+	/* back */
+	else if(ret == `back) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    if(ret == `next) {
+	Proxy::http = UI::QueryWidget(`id(`http), `Value);
+	Proxy::ftp = UI::QueryWidget(`id(`ftp), `Value);
+	Proxy::no = UI::QueryWidget(`id(`no), `Value);
+	Proxy::user = UI::QueryWidget(`id(`user), `Value);
+	Proxy::pass = UI::QueryWidget(`id(`pass), `Value);
+    }
+
+    return ret;
+}
+
+if(false) {
+    Wizard::CreateDialog();
+    ProxyMainDialog();
+}
+
+/* EOF */
+}
