@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Wed Sep 29 13:08:55 CEST 2004 - mvidner@suse.cz
+Wed Sep 29 14:30:23 CEST 2004 - mvidner@suse.cz
 
+- Don't display DHCP if the resolver is set up statically (#46377).
 - Don't use "ppp" as the firewall interface (#46378).
 - 2.10.28
 
