@@ -12,16 +12,15 @@
 textdomain "network";
 
 import "DSL";
-import "Modem";
 import "IP";
 import "ISDN";
 import "Label";
+import "NetworkDevices";
+import "Modem";
 import "Popup";
 import "Provider";
 import "SuSEFirewallInterfaces";
 import "Wizard";
-
-include "network/routines.ycp";
 
 /**
  * Connection dialog
@@ -48,14 +47,14 @@ define any ConnectionDialog() {
     string idletime = Provider::Current["IDLETIME"]:"300";
 
     string device = nil;
-    if(type == "modem") device = device_name(Modem::type, Modem::device);
-    else if(type == "dsl") device = device_name(DSL::type, DSL::device);
+    if(type == "modem") device = NetworkDevices::device_name(Modem::type, Modem::device);
+    else if(type == "dsl") device = NetworkDevices::device_name(DSL::type, DSL::device);
     else if(type == "isdn") {
 	// FIXME: #18840
 	if(ISDN::type == "net")
-	    device = device_name("ippp", ISDN::device);
+	    device = NetworkDevices::device_name("ippp", ISDN::device);
 	else
-	    device = device_name(ISDN::type, ISDN::device);
+	    device = NetworkDevices::device_name(ISDN::type, ISDN::device);
     }
     else {
 	y2error("Unknown type: %1", type);

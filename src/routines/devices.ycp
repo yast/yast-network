@@ -18,8 +18,7 @@
 textdomain "network";
 
 import "Map";
-
-include "network/routines.ycp";
+import "NetworkDevices";
 
 /**
  * Compute free devices
@@ -41,7 +40,7 @@ global define list<string> GetFreeDevices(string type, integer num) ``{
     list<string> ret = [];
 
     /* Hotpluggable devices */
-    if(IsHotplug(type) && !contains(curdevs, "")) {
+    if(NetworkDevices::IsHotplug(type) && !contains(curdevs, "")) {
 	y2debug("Added simple hotplug device");
 	count = count + 1;
 	ret = add(ret, "");

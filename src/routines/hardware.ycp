@@ -358,7 +358,7 @@ map SelectHardwareMap (map sel) {
 	    y2debug("HOTPLUG(%1) -> ignoring modprobe.conf", hotplug);
     }
 
-    device = GetFreeDevice(RealType(type, hotplug));
+    device = GetFreeDevice(NetworkDevices::RealType(type, hotplug));
 }
 */
 

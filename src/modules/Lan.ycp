@@ -636,9 +636,9 @@ global define boolean Select(string dev) {
 	*/
 	NetworkDevices::Edit(dev);
 	devmap = NetworkDevices::Current;
-	type = device_type(dev);
-	device = device_num(dev);
-	alias = alias_num(dev);
+	type = NetworkDevices::device_type(dev);
+	device = NetworkDevices::device_num(dev);
+	alias = NetworkDevices::alias_num(dev);
 	nm_name = devmap["_nm_name"]:"";
     }
 
@@ -804,7 +804,7 @@ global define boolean Commit() {
 
 	if(hotplug == "") {
 	    if(alias == "") {
-		// FIXME: MOD ChangeModule(device_name(type, device), operation == `add);
+		// FIXME: MOD ChangeModule(NetworkDevices::device_name(type, device), operation == `add);
 		y2milestone("HWCFG name %1 (%2)", nm_name, nm_name_old);
 		if(nm_name != nil && nm_name != "" && operation == `edit &&
 			nm_name_old != nil && nm_name_old != "" &&
@@ -909,10 +909,10 @@ global define boolean Commit() {
 	if(alias == "") {
 	    newdev["_aliases"] = aliases;
 	    y2milestone("%1", aliases);
-	    NetworkDevices::Name = device_name(RealType(type, hotplug), device);
+	    NetworkDevices::Name = NetworkDevices::device_name(NetworkDevices::RealType(type, hotplug), device);
 	}
 	else
-	    NetworkDevices::Name = alias_name(RealType(type, hotplug), device, alias);
+	    NetworkDevices::Name = NetworkDevices::alias_name(NetworkDevices::RealType(type, hotplug), device, alias);
 
 	NetworkDevices::Current = newdev;
 	NetworkDevices::Commit();
@@ -921,13 +921,13 @@ global define boolean Commit() {
 	NetworkDevices::Commit();
 	if(alias == "") {
 	    if(hotplug == "") {
-		// FIXME: MOD DeleteModule(device_name(type, device));
+		// FIXME: MOD DeleteModule(NetworkDevices::device_name(type, device));
 		NetworkModules::DeleteM(nm_name);
-	    // FIXME: NI DeleteDevice2(device_name(type, device));
+	    // FIXME: NI DeleteDevice2(NetworkDevices::device_name(type, device));
 	    }
 	}
 	else {
-	    // FIXME: NI DeleteDevice2(device_name(type, device) + ":" + alias);
+	    // FIXME: NI DeleteDevice2(NetworkDevices::device_name(type, device) + ":" + alias);
 	}
     }
     else {
@@ -1126,7 +1126,7 @@ global define boolean Propose() {
 global define boolean AnyDHCPDevice() {
     list<string> devs = NetworkDevices::Locate("BOOTPROTO", "dhcp");
     devs = filter(string dev, devs, {
-	return dev != device_name(RealType(type, hotplug), device);
+	return dev != NetworkDevices::device_name(NetworkDevices::RealType(type, hotplug), device);
     });
     return size(devs) > 0;
 }

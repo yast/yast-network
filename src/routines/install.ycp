@@ -14,7 +14,7 @@
 textdomain "network";
 
 import "Hostname";
-include "network/routines.ycp";
+import "NetworkDevices";
 
 /**
  * Read one install.inf item
@@ -72,7 +72,7 @@ define boolean ReadInstallInf() {
     /* Split network device */
     string netdevice = InstallInf["netdevice"]:"";
     if(netdevice != "") {
-	string devtype = device_type(netdevice);
+	string devtype = NetworkDevices::device_type(netdevice);
 	if(devtype != nil && devtype != "")
 	    InstallInf["type"] = devtype;
 	InstallInf = remove(InstallInf, "netdevice");

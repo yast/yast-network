@@ -14,9 +14,8 @@ textdomain "network";
 import "CommandLine";
 import "Label";
 import "Lan";
+import "NetworkDevices";
 import "RichText";
-
-include "network/routines.ycp";
 
 /**
  * Handler for action "list"
@@ -65,8 +64,8 @@ define void AddHandler(map options) {
     if(options["ipaddr"]:"" != "") Lan::ipaddr = options["ipaddr"]:"";
     if(options["netmask"]:"" != "") Lan::netmask = options["netmask"]:"";
     if(options["bootproto"]:"" != "") Lan::bootproto = options["bootproto"]:"";
-    Lan::type = device_type(dev);
-    Lan::device = device_num(dev);
+    Lan::type = NetworkDevices::device_type(dev);
+    Lan::device = NetworkDevices::device_num(dev);
 
     Lan::Commit();
     /* Progress result */

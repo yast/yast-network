@@ -142,13 +142,13 @@ define map FromAY(map input)
             if (!configured)
             {
                 integer device_idx = 0;
-                //device_idx = tointeger(device_num(configured_device));
-                device_idx = NextDevice(device_type(configured_device), hw);
+                //device_idx = tointeger(NetworkDevices::device_num(configured_device));
+                device_idx = NextDevice(NetworkDevices::device_type(configured_device), hw);
                 if (device_idx == -1)
                 {
                     // Device does not exist
-                    new_device = device_num(configured_device);
-                    new_interface["_type"] = device_type(configured_device);
+                    new_device = NetworkDevices::device_num(configured_device);
+                    new_interface["_type"] = NetworkDevices::device_type(configured_device);
                 } else {
 
                     // Device_idx is the number from "device"
@@ -181,8 +181,8 @@ define map FromAY(map input)
             type = if_data["_type"]:"";
 	    id = devname;	// suspicious
         } else {
-	    type = device_type (devname);
-	    id = device_num (devname);
+	    type = NetworkDevices::device_type (devname);
+	    id = NetworkDevices::device_num (devname);
         }
 	map d = devices[type]:$[];
 	d[id] = if_data;

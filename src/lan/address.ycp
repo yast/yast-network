@@ -22,7 +22,6 @@ import "Popup";
 import "Routing";
 import "Wizard";
 
-include "network/routines.ycp";
 include "network/summary.ycp";
 
 /**
@@ -86,10 +85,10 @@ the network configuration.</p>");
 	device = _("Unknown device");
     }
     else if(Lan::alias == "") {
-	device = device_name(RealType(Lan::type, Lan::hotplug), Lan::device);
+	device = NetworkDevices::device_name(NetworkDevices::RealType(Lan::type, Lan::hotplug), Lan::device);
     }
     else {
-	device = alias_name(RealType(Lan::type, Lan::hotplug), Lan::device, Lan::alias);
+	device = NetworkDevices::alias_name(NetworkDevices::RealType(Lan::type, Lan::hotplug), Lan::device, Lan::alias);
 	bootproto = "static";
     }
 
@@ -396,7 +395,7 @@ Really continue?
 		}
 	    }
 	    if(Lan::operation == `add) {
-		device = device_name (
+		device = NetworkDevices::device_name (
 		    (string) UI::QueryWidget(`id(`dev), `Value),
 		    (string) UI::QueryWidget(`id(`num), `Value));
 		y2debug("device=%1", device);
@@ -407,9 +406,9 @@ Really continue?
 		    continue;
 		}
 		// FIXME obsolete?
-		if(!regexpmatch(device_type(device), NetworkDevices::DeviceRegex["netcard"]:"")) {
+		if(!regexpmatch(NetworkDevices::device_type(device), NetworkDevices::DeviceRegex["netcard"]:"")) {
 		    /* Popup text */
-		    Popup::Error(sformat(_("Unsupported network card type: %1"), device_type(device)));
+		    Popup::Error(sformat(_("Unsupported network card type: %1"), NetworkDevices::device_type(device)));
 		    UI::SetFocus(`id(`dev));
 		    continue;
 		}
@@ -430,11 +429,11 @@ Really continue?
 	    ret == `hosts || ret == `proxy || ret == `s390) {
 
 	if(Lan::operation == `add) {
-	    device = device_name (
+	    device = NetworkDevices::device_name (
 		(string) UI::QueryWidget(`id(`dev), `Value),
 		(string) UI::QueryWidget(`id(`num), `Value));
-	    Lan::device = device_num(device);
-	    Lan::type = device_type(device);
+	    Lan::device = NetworkDevices::device_num(device);
+	    Lan::type = NetworkDevices::device_type(device);
 	}
 
 	Lan::bootproto = bootproto;

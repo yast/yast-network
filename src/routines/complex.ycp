@@ -16,6 +16,7 @@
 textdomain "network";
 
 import "Detection";
+import "NetworkDevices";
 import "Popup";
 import "Summary";
 
@@ -319,7 +320,7 @@ define string ProviderName(string provider) {
  * @return text wth device status
  */
 define string DeviceStatus(string devtype, string devnum, map devmap) {
-    string dev = device_name(devtype, devnum);
+    string dev = NetworkDevices::device_name(devtype, devnum);
 
     /* Modem and DSL */
     if(devtype == "ppp" || devtype == "modem" || devtype == "dsl") {
@@ -424,7 +425,7 @@ define list BuildOverview(list<map> Hardware) {
     maplist(string type, map devmap, (map<string,map>) Devs, {
 	maplist(string k, map v, (map<string,map>)devmap, {
 	    term item = nil;
-	    string dev = device_name(type, k);
+	    string dev = NetworkDevices::device_name(type, k);
 	    string ip = DeviceProtocol(v);
 
 	    string unq = v["UNIQUE"]:"";
@@ -464,7 +465,7 @@ define list BuildOverview(list<map> Hardware) {
 	    if(aliasee != $[])
 		maplist(string aid, map amap, aliasee, {
 		    //hwname = CheckEmptyName(devtype, HardwareName(unq));
-		    string adev = alias_name(type, k, aid);
+		    string adev = NetworkDevices::alias_name(type, k, aid);
 		    ip = DeviceProtocol(amap);
 		    item = `item(`id(adev), DeviceType(adev), adev, ip);
 		    overview = add(overview, item);

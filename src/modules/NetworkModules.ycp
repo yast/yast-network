@@ -25,8 +25,6 @@ import "Arch";
 import "Map";
 import "NetworkDevices";
 
-include "network/routines.ycp";
-
 /**
  * Current module identifier
  * @example eth0, eth1:blah, lo, ...
@@ -358,7 +356,7 @@ global define list ListM(string devregex) {
 	maplist(string t, map d, Modules, {
 	    if(regexpmatch(t, regex)) {
 		maplist(string n, (list<string>) Map::Keys(d), {
-		    ret[size(ret)] = device_name(t,n);
+		    ret[size(ret)] = NetworkDevices::device_name(t,n);
 		});
 	    }
 	});
@@ -417,7 +415,7 @@ global define list GetFreeModules(string type, integer num) {
     list ret = [];
 
     /* Hotpluggable modules */
-    if(IsHotplug(type) && !contains(curdevs, "")) {
+    if(NetworkDevices::IsHotplug(type) && !contains(curdevs, "")) {
 	y2debug("Added simple hotplug module");
 	count = count + 1;
 	ret = add(ret, "");
@@ -448,7 +446,7 @@ global define list List(string devregex) {
     if(devregex == "" || devregex == nil) {
 	maplist(string t, map d, Modules, {
 	    maplist(string n, (list<string>) Map::Keys(d), {
-		ret[size(ret)] = device_name(t,n);
+		ret[size(ret)] = NetworkDevices::device_name(t,n);
 	    });
 	});
     }
@@ -457,13 +455,13 @@ global define list List(string devregex) {
 	maplist(string t, map d, Modules, {
 	    if(regexpmatch(t, regex)) {
 		maplist(string n, (list<string>) Map::Keys(d), {
-		    ret[size(ret)] = device_name(t,n);
+		    ret[size(ret)] = NetworkDevices::device_name(t,n);
 		});
 	    }
 	});
 	/*
 	map d = Modules[type]:$[];
-	maplist(string n, Map::Keys(d), {ret[size(ret)] = device_name(type,n);});
+	maplist(string n, Map::Keys(d), {ret[size(ret)] = NetworkDevices::device_name(type,n);});
 	*/
     }
 

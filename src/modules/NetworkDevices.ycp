@@ -14,12 +14,9 @@
 {
 
 module "NetworkDevices";
-textdomain "network";
 
 import "Arch";
 import "Map";
-
-include "network/routines.ycp";
 
 /**
  * Current device identifier
@@ -43,8 +40,6 @@ global map<string,any> Current = $[];
  * the type determines the fields of the interface file.
  * Multiple addresses for an interface are nested maps
  * [type, id, "_aliases", aid]
- * (Aliases currently do not work because ":" has changed its meaning
- * in ifcfg file names and it clashes with yast's internal use of it)
  * @see Read
  */
 map<string,map> Devices = $[];
@@ -130,6 +125,146 @@ map<integer,string> FastestTypes = $[
  * @see Push
  */
 map stack = $[];
+
+// -------------------- components of configuration names --------------------
+
+/**
+ * Return a device type
+ * @param dev device
+ * @return device type
+ * @example device_type("eth1") -> "eth"
+ * @example device_type("eth-pcmcia-0") -> "eth-pcmcia"
+ */
+global string device_type (string dev) {
+    if(regexpmatch(dev, "^([a-zA-Z]+)-?[^a-zA-Z]*") != true) return "";
+    string ret = regexpsub(dev, "^([a-zA-Z]+)-?[^a-zA-Z]*", "\\1");
+    /* FIXME: devname
+    if(regexpmatch(dev, "^([a-zA-Z-]*[a-zA-Z])[^a-zA-Z]*") != true) return "";
+    string ret = regexpsub(dev, "^([a-zA-Z-]*[a-zA-Z])[^a-zA-Z]*", "\\1");
+    */
+    if(ret == nil) ret = "";
+    return ret;
+}
+
+/**
+ * Return a device number
+ * @param dev device
+ * @return device number
+ * @example device_num("eth1") -> "1"
+ * @example device_num("lo") -> ""
+ */
+global string device_num (string dev) {
+    if(regexpmatch(dev, "^[a-zA-Z]+-?([^#]*)") != true) return "";
+    string ret = regexpsub(dev, "^[a-zA-Z]+-?([^#]*)", "\\1");
+    /* FIXME: devname
+    if(regexpmatch(dev, "[a-zA-Z-]*([0-9]+)") != true) return "";
+    string ret = regexpsub(dev, "[a-zA-Z-]*([0-9]+)", "\\1");
+    */
+    if(ret == nil) ret = "";
+    return ret;
+}
+
+/**
+ * Return a device alias number
+ * @param dev device
+ * @return alias number
+ * @example alias_num("eth1#2") -> "2"
+ * @example alias_num("eth1#blah") -> "blah"
+ */
+global string alias_num (string dev) {
+    // FIXME: devname
+    // return "";
+    if(regexpmatch(dev, "[a-zA-Z-]*[0-9]*#([a-zA-Z0-9_-]+)") != true) return "";
+    string ret = regexpsub(dev, "[a-zA-Z-]*[0-9]*#([a-zA-Z0-9_-]+)", "\\1");
+    if(ret == nil) ret = "";
+    return ret;
+}
+
+/**
+ * Create a device name from its type and number
+ * @param typ device type
+ * @param num device number
+ * @return device name
+ * @example device_name("eth", "1") -> "eth1"
+ * @example device_name("lo", "") -> "lo"
+ */
+global string device_name (string typ, string num) {
+    if(typ == nil || typ == "") {
+	y2error("wrong type: %1", typ);
+	return nil;
+    }
+    if(num == nil /* || num < 0 */) {
+	y2error("wrong number: %1", num);
+	return nil;
+    }
+    /* FIXME: devname
+    if(IsHotplug(typ) && num != "") return sformat("%1-%2", typ, num);
+    return sformat("%1%2", typ, num);
+    */
+    if(regexpmatch(num, "^[0-9]*$"))
+	return sformat("%1%2", typ, num);
+    return sformat("%1-%2", typ, num);
+}
+
+/**
+ * Create a alias name from its type and numbers
+ * @param typ device type
+ * @param num device number
+ * @param anum alias number
+ * @return alias name
+ * @example alias_name("eth", "1", "2") -> "eth1#2"
+ */
+global string alias_name (string typ, string num, string anum) {
+    if(typ == nil || typ == "") {
+	y2error("wrong type: %1", typ);
+	return nil;
+    }
+    if(num == nil /* || num < 0 */) {
+	y2error("wrong number: %1", num);
+	return nil;
+    }
+    if(anum == nil || anum == "") {
+	y2error("wrong alias number: %1", anum);
+	return nil;
+    }
+    return sformat("%1#%2", device_name(typ, num), anum);
+}
+
+/**
+ * Test hotplugability of a device
+ * @param type device type
+ * @return true if hotpluggable
+ */
+global boolean IsHotplug (string type) {
+    if(type == "" || type == nil) return false;
+    if(regexpmatch(type, "(pcmcia|usb|pci)$")) return true;
+    return false;
+}
+
+/**
+ * Return real type of the device (incl. PCMCIA, USB, ...)
+ * @param type basic device type
+ * @param hotplug hot plug type
+ * @return real type
+ * @example RealType("eth", "usb") -> "eth-usb"
+ */
+global string RealType (string type, string hotplug) {
+
+    y2debug("type=%1", type);
+    if(type == "" || type == nil) {
+	y2error("Wrong type: %1", type);
+	return "eth";
+    }
+
+    if(hotplug == "" || hotplug == nil)
+	return type;
+
+    string realtype = type + "-" + hotplug;
+    y2debug("realtype=%1", realtype);
+    return realtype;
+}
+
+// ---------------------------------------------------------------------------
 
 /**
  * Read devices from files

@@ -313,8 +313,8 @@ global define boolean Select(string dev) {
     }
     /* dev!="" -> Edit */
     else {
-	string typ = device_type(dev);
-	string num = device_num(dev);
+	string typ = NetworkDevices::device_type(dev);
+	string num = NetworkDevices::device_num(dev);
 
 	NetworkDevices::Edit(dev);
 	devmap = NetworkDevices::Current;
@@ -418,7 +418,7 @@ global define boolean Commit() {
 	newdev["VPIVCI"] = vpivci;
 	newdev["MODEM_IP"] = modemip;
 
-	NetworkDevices::Name = device_name(type, device);
+	NetworkDevices::Name = NetworkDevices::device_name(type, device);
 	NetworkDevices::Current = newdev;
 	NetworkDevices::Commit();
     }

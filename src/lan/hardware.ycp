@@ -20,7 +20,6 @@ import "Popup";
 import "Wizard";
 
 include "network/summary.ycp";
-include "network/routines.ycp";
 
 /**
  * Manual network card configuration dialog
@@ -75,7 +74,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	y2error("Shouldn't happen -- type is empty. Assuming eth.");
 	type = "eth";
     }
-    string realtype = RealType(type, hotplug);
+    string realtype = NetworkDevices::RealType(type, hotplug);
     string device = Lan::device;
     string default_device = Lan::device;
     // #38213, remember device id when we switch back from pcmcia/usb
@@ -208,7 +207,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 			/* Label text */
 			`HWeight(1, `Right(`Label(_("Configuration Name")))),
 			`HSpacing(0.5),
-			`HWeight(1, `Left(`Label(`opt(`outputField), device_name(realtype, device))))
+			`HWeight(1, `Left(`Label(`opt(`outputField), NetworkDevices::device_name(realtype, device))))
 		    ),
 		    `VSpacing(0.5),
 		    `HBox(
@@ -286,7 +285,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
 	    if(UI::WidgetExists(`id(`dev))) {
 		type = (string) UI::QueryWidget(`id(`dev), `Value);
-		realtype = RealType(type, hotplug);
+		realtype = NetworkDevices::RealType(type, hotplug);
 	    }
 	    y2debug("type=%1", type);
 	    y2debug("realtype=%1", realtype);
@@ -376,10 +375,10 @@ Choose a different one."), hwcfg));
 	    if(Lan::operation == `add && UI::WidgetExists(`id(`num))) {
 		string nm = (string) UI::QueryWidget(`id(`num), `Value);
 		if(Lan::operation == `add || (device != Lan::device && type != Lan::type)) {
-		    if(contains(NetworkDevices::List(""), device_name(type, nm))) {
+		    if(contains(NetworkDevices::List(""), NetworkDevices::device_name(type, nm))) {
 			/* Popup text */
 			Popup::Error(sformat(_("Configuration name %1 (%2) already exists.
-Choose a different one."), nm, device_name(type, nm)));
+Choose a different one."), nm, NetworkDevices::device_name(type, nm)));
 			UI::SetFocus(`id(`num));
 			continue;
 		    }
