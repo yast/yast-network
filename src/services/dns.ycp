@@ -25,6 +25,7 @@ import "Wizard";
 include "ui/common_popups.ycp";
 include "network/dns.ycp";
 include "network/ip.ycp";
+include "network/routines.ycp";
 
 /**
  * Dialog for querying DNS & hostname info
@@ -149,10 +150,8 @@ your changes and <b>finish</b> the network configuration.</p>");
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel) {
-	    if(UI::ReallyAbortPopup(true))
-		break;
-	    else
-		continue;
+	    if(ReallyAbort()) break;
+	    else continue;
 	}
 	/* hostname via dhcp */
 	else if(ret == `dn) {
@@ -161,7 +160,7 @@ your changes and <b>finish</b> the network configuration.</p>");
 	    UI::ChangeWidget(`id(`domain), `Enabled, !dhcp_hostname);
 	    continue;
 	}
-	/* hostname via dhcp */
+	/* resolv.conf via dhcp */
 	else if(ret == `dr) {
 	    dhcp_resolv = UI::QueryWidget(`id(`dr), `Value);
 	    UI::ChangeWidget(`id(`ns1), `Enabled, !dhcp_resolv);
@@ -251,11 +250,13 @@ your changes and <b>finish</b> the network configuration.</p>");
 	DNS::searchlist = filter(`s, [ s1, s2, s3 ], ``(s != ""));
 
 	DNS::dhcp_hostname = UI::QueryWidget(`id(`dn), `Value);
+	DNS::dhcp_resolv = UI::QueryWidget(`id(`dr), `Value);
 
 	/* update modified flag */
 	if(hostname != DNS::hostname || domain != DNS::domain ||
 		nameservers != DNS::nameservers ||
 		searchlist != DNS::searchlist ||
+		dhcp_resolv != DNS::dhcp_resolv ||
 		dhcp_hostname != DNS::dhcp_hostname)
 	    DNS::modified = true;
 	else

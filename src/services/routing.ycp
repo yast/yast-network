@@ -26,6 +26,7 @@ import "Wizard";
 
 include "ui/common_popups.ycp";
 include "network/ip.ycp";
+include "network/routines.ycp";
 
 /**
  * Main routing dialog
@@ -94,6 +95,8 @@ global define symbol RoutingMainDialog() ``{
 
     Wizard::SetContents(caption,contents,help,true,true);
 
+    UI::ChangeWidget(`id(`gw), `ValidChars, "0123456789.");
+
     UI::ChangeWidget(`id(`table), `Items, table_items);
     UI::ChangeWidget(`id(`table), `Enabled, expert);
     UI::ChangeWidget(`id(`add), `Enabled, expert);
@@ -118,7 +121,7 @@ global define symbol RoutingMainDialog() ``{
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel) {
-	    if(UI::ReallyAbortPopup(true)) break;
+	    if(ReallyAbort()) break;
 	    else continue;
 	}
 	/* expert mode */

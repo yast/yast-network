@@ -35,7 +35,7 @@ include "network/lan/helps.ycp";
  * @return true if data was modified
  */
 global define boolean Modified() ``{
-    return Lan::Modified();
+    return Lan::Modified() || DNS::modified || Routing::modified;
 }
 
 /**

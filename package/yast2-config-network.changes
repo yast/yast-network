@@ -1,7 +1,9 @@
 - agent for sysconfig/sysctl
+- abort confirmation should work better cross modules (#14926)
 - added labels to DNS config (#13443)
 - allow setup of DHCP resolv.conf setting (#14792)
 - limit allowable characters in DNS dialog (#15653)
+- limit allowable characters in routing dialog
 - fixed checkycp complaints in ISDN config
 - use ycpdoc more-dirs mode
 - 2.6.0

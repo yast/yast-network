@@ -31,6 +31,14 @@ y2milestone("----------------------------------------");
 
 include "network/services/dns.ycp";
 
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+global define boolean Modified() ``{
+    return true;
+}
+
 /* main ui function */
 
 DNS::Read();
