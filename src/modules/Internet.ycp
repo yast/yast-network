@@ -15,6 +15,7 @@ textdomain "network";
 
 import "Map";
 import "NetworkDevices";
+import "Service";
 
 /**
  * Flag to remember if user wants to run internet test
@@ -100,10 +101,8 @@ global define boolean FindFastest() {
 global define boolean Start(string log) {
 
     if ((type == "dsl" && capi_adsl) || (type == "isdn")) {
-	// TODO use Service::
-	if(SCR::Execute(.target.bash, "/etc/init.d/isdn status") != 0) {
-	    if(SCR::Execute(.target.bash, "/etc/init.d/isdn start") != 0) {
-		y2error("starting of isdn failed");
+	if (Service::Status ("isdn") != 0) {
+	    if (! Service::Start ("isdn")) {
 		return false;
 	    }
 	}
