@@ -1,6 +1,6 @@
 /**
  * File:	include/network/hardware.ycp
- * Package:	Configuration of network cards
+ * Package:	Network configuration
  * Summary:	Hardware routines
  * Authors:	Michal Svec <msvec@suse.cz>
  *

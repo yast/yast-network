@@ -1,6 +1,6 @@
 /**
  * File:	clients/lan.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Network cards main file
  * Authors:	Michal Svec <msvec@suse.cz>
  *

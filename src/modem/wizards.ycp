@@ -1,6 +1,6 @@
 /**
  * File:	include/network/modem/wizards.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Modem configuration wizards
  * Authors:	Michal Svec <msvec@suse.cz>
  *

@@ -1,0 +1,138 @@
+/**
+ * File:	modules/Host.ycp
+ * Package:	Network configuration
+ * Summary:	Hosts data
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+module "Host";
+textdomain "network";
+include "network/routines.ycp";
+
+/**
+ * All hosts
+ */
+global map hosts = $[];
+
+/**
+ * Deleted hosts
+ */
+global list Deleted = [];
+
+/**
+ * Data was modified?
+ */
+global boolean modified = false;
+
+/**
+ * All hosts read at the start
+ */
+map hosts_init = $[];
+
+/**
+ * "hosts" file location
+ */
+string hosts_file = "/etc/hosts";
+
+/**
+ * Read hosts settings
+ * @return true if success
+ */
+global define boolean Read() ``{
+
+    /* read route.conf */
+    if(SCR::Read(.target.size, hosts_file) > 0) {
+	list hostlist = SCR::Dir(.etc.hosts);
+	hosts = listmap(string host, hostlist, ``{
+	    string name = SCR::Read(topath(sformat(".etc.hosts.\"%1\"", host)));
+	    list names = filter(string s, splitstring(name, "[ \t]"), ``(s != nil && s != ""));
+	    return [ host, names ];
+	});
+    }
+
+    /* save hosts to check for changes later */
+    hosts_init = hosts;
+
+    y2debug("hosts=%1", hosts);
+    return true;
+}
+
+/**
+ * Write hosts settings and apply changes
+ * @return true if success
+ */
+global define boolean Write() ``{
+
+    if(!modified) return true;
+    y2milestone("Writing configuration");
+
+    /* Check if there is anything to do */
+    if(hosts_init == hosts) {
+	y2debug("Hosts not modified");
+	return true;
+    }
+
+    /* Create if not exists, otherwise backup */
+    if(SCR::Read(.target.size, hosts_file) < 0)
+	SCR::Write(.target.string, hosts_file, "");
+    else
+	SCR::Execute(.target.bash, "/bin/cp "+hosts_file+" "+hosts_file+".YaST2save");
+
+    any ret = false;
+    if(hosts == $[] || hosts == nil)
+	/* Workaround bug [#4476] */
+	ret = SCR::Write(.target.string, hosts_file, "");
+    else {
+	/* Update the hosts config */
+	y2debug("hosts=%1", hosts);
+	y2debug("Deleted=%1", Deleted);
+	/* Deleted deleted hosts */
+	maplist(string ho, Deleted, ``(SCR::Write(add(.etc.hosts, ho), nil)));
+	/* Add and update new hosts */
+	maplist(string ho, list names, hosts, ``{
+	    if(contains(Deleted, ho) || hosts_init[ho]:nil != names) {
+		y2debug("changed: %1 (%2:%3)", ho, names, hosts_init[ho]:nil);
+		SCR::Write(add(.etc.hosts, ho), mergestring(names, " "));
+	    }
+	});
+	ret = true;
+    }
+
+    return ret == true;
+}
+
+/**
+ * Get all the Hosts configuration from a map.
+ * When called by hosts_auto (preparing autoinstallation data)
+ * the map may be empty.
+ * @param settings autoinstallation settings
+ * @return true if success
+ */
+global define boolean Import(map settings) ``{
+    if(size(settings) == 0)
+	return true;
+
+    modified = true;
+
+    hosts = settings["hosts"]:[];
+    forward = settings["ip_forward"]:false;
+    return true;
+}
+
+/**
+ * Dump the Hosts settings to a map, for autoinstallation use.
+ * @return autoinstallation settings
+ */
+global define map Export() ``{
+    return $[
+	"hosts": eval(hosts),
+	"ip_forward": forward
+    ];
+}
+
+/* EOF */
+}

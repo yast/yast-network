@@ -1,0 +1,303 @@
+/**
+ * File:	include/network/devices.ycp
+ * Package:	Network configuration
+ * Summary:	Device manipulation functions
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * All config settings are stored in a global variable Devices.
+ * Deleted devices are in the global list DeletedDevices.
+ */
+
+{
+
+textdomain "network";
+import "Arch";
+include "network/routines.ycp";
+
+/**
+ * Read Devices from files
+ * @param devregex regular expression for the device type
+ * @return true if sucess
+ * @example ReadDevices("eth|tr");
+ */
+global define boolean ReadDevices(string devregex) ``{
+
+    Devices = $[];
+
+    /* preparation */
+    list allfiles = SCR::Dir(.network.section);
+    list devices = filter(string file, allfiles, ``(!regexpmatch(file, "[\.~]")));
+    y2debug("devices=%1", devices);
+
+    devices = filter(string d, devices, ``(regexpmatch(d, "[a-z][a-z-]*[0-9]*(:[0-9]+)?")));
+    y2debug("devices=%1", devices);
+
+    if(devregex != nil && devregex != "") {
+	devices = filter(string file, devices, ``(regexpmatch(file, "^" + devregex + "([0-9]|$)")));
+	y2debug("devices=%1", devices);
+    }
+
+    list aliases = filter(string d, devices, ``(find(d, ":") != -1));
+    list maindevs = filter(string d, devices, ``(find(d, ":") == -1));
+    y2debug("maindevs=%1", maindevs);
+
+    /* read main devices */
+    maplist(string d, maindevs, ``{
+	string devtype = device_type(d);
+
+	string devnum = "";
+	if(regexpmatch(d, "[a-z][a-z-]*[0-9]+"))
+	    devnum = sformat("%1", device_num(d));
+	y2debug("devnum=%1", devnum);
+
+	map dev = Devices[devtype]:$[];
+	if(haskey(dev, devnum)) {
+	    y2error("device already present: %1", devnum);
+	    return;
+	}
+
+	string pth = ".network.value.\"" + devtype + devnum + "\"";
+	list values = SCR::Dir(topath(pth));
+	map config = listmap(`val, values, ``{
+	    string item = SCR::Read(topath(pth + "." + val));
+	    if(item!=nil) return [ val, item ];
+	});
+
+	change(dev, devnum, config);
+	change(Devices, devtype, dev);
+    });
+
+    y2debug("Devices=%1", Devices);
+
+    /* read aliases */
+    maplist(string d, aliases, ``{
+	string devtype = device_type(d);
+
+	string devnum = "";
+	if(regexpmatch(d, "[a-z][a-z-]*[0-9]+"))
+	    devnum = sformat("%1", device_num(d));
+
+	string aliasnum = sformat("%1", alias_num(d));
+	y2debug("devnum=%1(%2)", devnum, aliasnum);
+
+	map dev = Devices[devtype]:$[];
+	if(!haskey(dev, devnum)) {
+	    y2error("main device missing: %1", devnum);
+	    return;
+	}
+
+	map config = dev[devnum]:$[];
+	map aliases = config["_aliases"]:$[];
+	if(haskey(aliases, aliasnum)) {
+	    y2error("alias already present: %1", aliasnum);
+	    return;
+	}
+
+	string pth = ".network.value.\"" + devtype + devnum + ":" + aliasnum + "\"";
+	list values = SCR::Dir(topath(pth));
+	map aliasconfig = listmap(`v, values, ``{
+	    string item = SCR::Read(topath(pth+"."+v));
+	    if(item!=nil) return [ v, item ];
+	});
+
+	change(aliases, aliasnum, aliasconfig);
+	change(config, "_aliases", aliases);
+	change(dev, devnum, config);
+	change(Devices, devtype, dev);
+    });
+
+    y2debug("Devices=%1", Devices);
+    return true;
+}
+
+/**
+ * Write Devices to files
+ * @return true if success
+ */
+global define boolean WriteDevices() ``{
+
+    y2debug("Devices=%1", Devices);
+
+    /* remove deleted devices */
+    maplist(string d, DeletedDevices, ``{
+	/* delete config file */
+	path p = topath(".network.section.\"" + d + "\"");
+	y2debug("deleting: %1", p);
+	SCR::Write(p, nil);
+    });
+    DeletedDevices = [];
+
+    /* write all devices */
+    maplist(string typ, map devsmap, Devices, ``{
+	maplist(string num, map devmap, devsmap, ``{
+	    /* write sysconfig */
+	    string dev = typ + num;
+	    string p = ".network.value.\"" + dev + "\".";
+
+	    /* write all keys to config */
+	    maplist(string k, mapkeys(devmap), ``{
+		/* write aliases */
+		if(k == "_aliases") {
+		    maplist(string anum, map amap, devmap[k]:$[], ``{
+			maplist(string ak, string av, amap, ``{
+			    dev = typ + num + ":" + anum;
+			    p = ".network.value.\"" + dev + "\".";
+			    SCR::Write(topath(p+ak), av);
+			});
+		    });
+		}
+		/* write regular keys */
+		else
+		    SCR::Write(topath(p+k), devmap[k]:"");
+	    });
+
+	    /* update libhd unique number */
+	    // FIXME: move it somewhere else: hardware
+	    string unq = devmap["UNIQUE"]:"";
+	    if(unq != "") SCR::Write(.probe.status.configured, unq, `yes);
+	});
+    });
+
+    /* Finish him */
+    SCR::Write(.network, nil);
+
+    return true;
+}
+
+/**
+ * Compute free devices
+ * @param type device type
+ * @param num how many free devices return
+ * @return num of free devices
+ * @example GetFreeDevices("eth", 2) -&gt; [ 1, 2 ]
+ */
+global define list GetFreeDevices(string type, integer num) ``{
+    y2debug("Devices=%1", Devices);
+    y2debug("type,num=%1,%2", type, num);
+    y2debug("Devices[type]=%1", Devices[type]:$[]);
+    list curdevs = mapkeys(Devices[type]:$[]);
+    list numdevs = maplist(string l, curdevs, ``(tointeger(l)));
+    y2debug("curdevs=%1", curdevs);
+    y2debug("numdevs=%1", numdevs);
+
+    integer i = 0;
+    integer count = 0;
+    list ret = [];
+
+    while(count < num) {
+	if(!contains(numdevs, i)) {
+	    change(ret, i); //sformat("%1", i));
+	    count = count + 1;
+	}
+	i = i + 1;
+    }
+
+    y2debug("Free devices=%1", ret);
+    return ret;
+}
+
+/**
+ * Return free device
+ * @param type device type
+ * @return free device
+ * @example GetFreeDevice("eth") -&gt; 1
+ */
+global define integer GetFreeDevice(string type) ``{
+    integer ret = select(GetFreeDevices(type, 1), 0, -1);
+    if(ret < 0) y2error("Free device location error: %1", ret);
+    y2debug("Free device=%1", ret);
+    return ret;
+}
+
+/**
+ * Update Devices map
+ * @param type device type
+ * @param device device number
+ * @param newdev new device map
+ * @param check if check if device already exists
+ * @return true if success
+ */
+global define boolean ChangeDevice(string type, integer device, map newdev, boolean check) ``{
+    y2debug("Devices=%1", Devices);
+    map devmap = Devices[type]:$[];
+    string dev = sformat("%1", device);
+
+    if(check && haskey(devmap, dev)) {
+	y2error("Key already present: %1(%2)", dev, type);
+	return false;
+    }
+    change(devmap, dev, newdev);
+    change(Devices, type, devmap);
+    y2debug("Devices=%1", Devices);
+    return true;
+}
+
+/**
+ * Delete a device from Devices map
+ * @param type device type
+ * @param device device number
+ * @return true if success
+ */
+global define boolean DeleteDevice(string type, integer device) ``{
+    y2debug("Devices=%1", Devices);
+    map devmap = Devices[type]:$[];
+    string dev = sformat("%1", device);
+
+    if(!haskey(devmap, dev)) {
+	y2error("Key not found: %1(%2)", dev, type);
+	return false;
+    }
+    //remove(devmap, dev);
+    devmap = remove(devmap, dev);
+    change(Devices, type, devmap);
+    y2debug("Devices=%1", Devices);
+    return true;
+}
+
+/**
+ * Locate devices of the given type and value
+ * @param key device key
+ * @param val device value
+ * @return list of devices with key=val
+ */
+global define list LocateDevices(string key, string val) ``{
+    list ret = [];
+    maplist(string typ, map devsmap, Devices, ``{
+	maplist(string num, map devmap, devsmap, ``{
+	    if(devmap[key]:"" == val) change(ret, typ+num);
+	});
+    });
+
+    return ret;
+}
+
+/**
+ * Update /dev/modem symlink
+ * @return true if success
+ */
+global define boolean UpdateModemSymlink() ``{
+    boolean ret = false;
+    if(contains(mapkeys(Devices), "ppp")) {
+	list ml = mapkeys(Devices["ppp"]:$[]);
+	string ms = ml[0]:"0";
+	// map mm = lookup(Devices["ppp"]:$[], ms, $[]);
+	map mm = Devices["ppp", ms]:$[];
+	string mdev = mm["MODEM_DEVICE"]:"";
+	if(mdev != "" && mdev != "/dev/modem") {
+	    string curlink = nil;
+	    map m = SCR::Read(.target.lstat, "/dev/modem");
+	    if(m["islink"]:false == true)
+		curlink = SCR::Read(.target.symlink, "/dev/modem");
+	    if(curlink != mdev) {
+		SCR::Execute(.target.symlink, mdev, "/dev/modem");
+		ret = true;
+	    }
+	}
+    }
+    return ret;
+}
+
+/* EOF */
+}

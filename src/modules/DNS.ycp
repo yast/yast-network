@@ -1,7 +1,7 @@
 /**
  * File:	modules/DNS.ycp
- * Package:	Configuration of network
- * Summary:	Hostname and DNS settings
+ * Package:	Network configuration
+ * Summary:	Hostname and DNS data
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
@@ -34,44 +34,6 @@ global boolean modified = false;
 string resolv_conf = "/etc/resolv.conf";
 
 /**
- * Get all the DNS configuration from a map.
- * When called by dns_auto (preparing autoinstallation data)
- * the map may be empty.
- * @param settings autoinstallation settings
- * @return true if success
- */
-global define boolean Import(map settings) ``{
-    if(size(settings) == 0)
-	return false;
-
-	modified = true;
-
-    hostname = lookup(settings, "hostname", "");
-    domain = lookup(settings, "domain", "");
-    nameservers = lookup(settings, "nameservers", []);
-    searchlist = lookup(settings, "searchlist", []);
-    dhcp_hostname = lookup(settings, "dhcp_hostname", false);
-    dhcp_resolv = lookup(settings, "dhcp_resolv", false);
-    modified = true;
-    return true;
-}
-
-/**
- * Dump the DNS settings to a map, for autoinstallation use.
- * @return autoinstallation settings
- */
-global define map Export() ``{
-    return $[
-	"hostname"	: hostname,
-	"domain"	: domain,
-	"nameservers"	: nameservers,
-	"searchlist"	: searchlist,
-	"dhcp_hostname"	: dhcp_hostname,
-	"dhcp_resolv"	: dhcp_resolv,
-    ];
-}
-
-/**
  * Reads current DNS and hostname settings
  * @return true if success
  */
@@ -97,7 +59,7 @@ global define boolean Read() ``{
 	install_inf = SCR(`Read(.etc.install_inf));
 
     /* check for externally modified resolv.conf */
-    if(SCR::Execute(.target.bash, "/sbin/modify_resolvconf check -q") != 0)
+    if(SCR::Execute(.target.bash, "/sbin/modify_resolvconf check -q < /dev/null") != 0)
 	resolv_conf_process = SCR::Read(.etc.resolv_conf.process);
 
     /* only read /etc/resolv.conf if present */
@@ -106,8 +68,8 @@ global define boolean Read() ``{
 	/* name servers */
 	list resolvlist = SCR::Read(.etc.resolv_conf.nameserver);
 	if(resolvlist == nil) {
-	    if(size(lookup(install_inf, "nameserver", "")) > 0)
-		change(nameserver, (lookup(install_inf, "nameserver", "")));
+	    if(size(install_inf["nameserver"]:"") > 0)
+		change(nameserver, install_inf["nameserver"]:"");
 	}
 	else
 	    nameservers = resolvlist;
@@ -139,8 +101,8 @@ global define boolean Read() ``{
     }
     else {
 	/* default hostname and domain (if not in /etc/install.inf) */
-	hostname = lookup(install_inf, "machinename", "linux");
-	domain = lookup(install_inf, "domain", "local");
+	hostname = install_inf["machinename"]:"linux";
+	domain = install_inf["domain"]:"local";
     }
 
     return true;
@@ -205,6 +167,74 @@ global define boolean Write() ``{
     }
 
     return true;
+}
+
+/**
+ * Get all the DNS configuration from a map.
+ * When called by dns_auto (preparing autoinstallation data)
+ * the map may be empty.
+ * @param settings autoinstallation settings
+ * @return true if success
+ */
+global define boolean Import(map settings) ``{
+    if(size(settings) == 0)
+	return false;
+
+    hostname = settings["hostname"]:"";
+    domain = settings["domain"]:"";
+    nameservers = settings["nameservers"]:[];
+    searchlist = settings["searchlist"]:[];
+    dhcp_hostname = settings["dhcp_hostname"]:false;
+    dhcp_resolv = settings["dhcp_resolv"]:false;
+    modified = true;
+    return true;
+}
+
+/**
+ * Dump the DNS settings to a map, for autoinstallation use.
+ * @return autoinstallation settings
+ */
+global define map Export() ``{
+    return $[
+	"hostname"	: hostname,
+	"domain"	: domain,
+	"nameservers"	: nameservers,
+	"searchlist"	: searchlist,
+	"dhcp_hostname"	: dhcp_hostname,
+	"dhcp_resolv"	: dhcp_resolv,
+    ];
+}
+
+/**
+ * Create DNS text summary
+ * @return summary text
+ */
+global define string Summary() ``{
+
+    string summary = "";
+
+    if(dhcp_hostname == true)
+	/* Summary text */
+	summary = summary + _("Hostname: set by DHCP");
+    else
+	/* Summary text */
+	summary = summary + sformat(_("Hostname: %1"), hostname) +
+	    domain != ""? "." + domain : "";
+
+    if(dhcp_resolv == true) {
+	/* Summary text */
+	summary = summary + _("Name servers: set by DHCP");
+	/* Summary text */
+	summary = summary + _("Search list: set by DHCP");
+    }
+    else {
+	/* Summary text */
+	summary = summary + sformat(_("Name servers: %1"), nameservers);
+	/* Summary text */
+	summary = summary + sformat(_("Search list: %1"), searchlist);
+    }
+
+    return summary;
 }
 
 /* EOF */

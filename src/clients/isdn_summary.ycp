@@ -24,7 +24,7 @@ y2milestone("ISDN summary started");
 Progress::off();
 ISDN::Read();
 list sum = ISDN::Summary(false);
-string ret = select(sum, 0, "");
+string ret = sum[0]:"";
 Progress::on();
 
 /* Finish */

@@ -1,7 +1,7 @@
 /**
  * File:	include/network/provider/wizards.ycp
- * Package:	Configuration of network
- * Summary:	Providers configuration wizards
+ * Package:	Network configuration
+ * Summary:	Provider configuration wizards
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
@@ -26,7 +26,7 @@ include "network/provider/complex.ycp";
  * Whole configuration of modems
  * @return sequence result
  */
-global define symbol ProvidersSequence() ``{
+global define symbol ProviderSequence() ``{
 
     /* Popup text */
     string finished = _("Configure mail now?");
@@ -35,7 +35,7 @@ global define symbol ProvidersSequence() ``{
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
 	"write"	: [ ``( WriteDialog() ), true ],
-	"finish": [ ``( Finished(Providers::Modified(), finished, "mail", ["dialup"]) ), true ],
+	"finish": [ ``( Finished(Provider::Modified(), finished, "mail", ["dialup"]) ), true ],
     ];
 
     map sequence = $[
@@ -77,7 +77,7 @@ global define symbol ProvidersSequence() ``{
  * For use with autoinstallation.
  * @return sequence result
  */
-global define symbol ProvidersAutoSequence() ``{
+global define symbol ProviderAutoSequence() ``{
 
     /* Initial dialog caption */
     string caption = _("Provider configuration");
@@ -103,10 +103,10 @@ global define symbol MainSequence() ``{
     map aliases = $[
 	"summary"	: ``(SummaryDialog()),
 	"overview"	: ``(OverviewDialog()),
-	"configure"	: [ ``(OneProviderSequence("modem",true)), true ],
-	"other"		: [ ``(OneProviderSequence("modem",true)), true ],
-	"add"		: [ ``(OneProviderSequence("modem",true)), true ],
-	"edit"		: [ ``(OneProviderSequence("modem",false)), true ],
+	"type"		: ``(TypeDialog()),
+	"add"		: [ ``(OneProviderSequence(true)), true ],
+	"edit"		: [ ``(OneProviderSequence(false)), true ],
+	"configure"	: [ ``(OneProviderSequence(true)), true ],
     ];
 
     map sequence = $[
@@ -115,22 +115,21 @@ global define symbol MainSequence() ``{
 	    `abort	: `abort,
 	    `next	: `next,
 	    `configure	: "configure",
-	    `other	: "other",
 	    `overview	: "overview"
 	],
 	"overview" : $[
 	    `abort	: `abort,
 	    `next	: `next,
-	    `add	: "add",
+	    `add	: "type",
 	    `edit	: "edit",
-	],
-	"other" : $[
-	    `abort	: `abort,
-	    `next	: "summary",
 	],
 	"configure" : $[
 	    `abort	: `abort,
 	    `next	: "summary",
+	],
+	"type" : $[
+	    `abort	: `abort,
+	    `next	: "add",
 	],
 	"add" : $[
 	    `abort	: `abort,
@@ -150,7 +149,14 @@ global define symbol MainSequence() ``{
  * @param country true if country list should be shown
  * @return sequence result
  */
-global define symbol OneProviderSequence(string type, boolean country) ``{
+global define symbol OneProviderSequence(boolean country) ``{
+
+    /* FIXME: better way for the type */
+    string type = "";
+    if(Provider::Provider["MODEMSUPPORTED"]:"no" == "yes") type = "modem";
+    if(Provider::Provider["ISDNSUPPORTED"]:"no" == "yes") type = "isdn";
+    if(Provider::Provider["DSLSUPPORTED"]:"no" == "yes") type = "dsl";
+    if(type == "") type = "modem";
 
     map aliases = $[
 	"providers"		: ``(ProvidersDialog(type)),

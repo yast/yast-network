@@ -1,6 +1,6 @@
 /**
  * File:	clients/routing_auto.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Client for autoinstallation
  * Authors:	Michal Svec <msvec@suse.cz>
  *
@@ -39,7 +39,7 @@ if(!is(WFM::Args(0), list)) {
 }
 
 /* The settings are in the first argument */
-list settings = select(args, 0, []);
+list settings = args[0]:[];
 y2debug("Imported: %1", settings);
 
 Routing::Import(settings);

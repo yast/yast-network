@@ -1,6 +1,6 @@
 /**
  * File:	include/network/services/proxy.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Proxy configuration
  * Authors:	Michal Svec <msvec@suse.cz>
  *
@@ -26,7 +26,7 @@ include "network/routines.ycp";
 global define symbol ProxyMainDialog() ``{
 
     /* Proxy dialog caption */
-    string caption = _("Proxy Configuration");
+    string caption = _("Proxy configuration");
 
     /* Proxy dialog help 1/5 */
     string help = _("<p>Here, configure your Internet proxy (caching) settings.</p>") +

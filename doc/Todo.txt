@@ -1,36 +1,7 @@
 # $Id$
 
 Bugs:
-- two resolv.conf agents
-- check and install required packages #14315
-- modem: start smpppd only if >0 devs
-- providers: add/edit/delete #16094
-- check existence of the modem device
-- modem|dsl: info popup + run|stop kinternet, if DISPLAY and (not)running (#14320)
 
-- install kinternet if KDE are present (kdelibs, kdebase?)
-- remove writing of NETWORK (also BROADCAST?)
-
-2sort:
-- check already present default route (partially #11132)
-- dsl: add/edit/delete #15301
-- check IP presence #9951
-- cable modems support? what is missing? [suse-network]
-- dummy module (for what is it useful? [suse-network] #15960
-- virtual interfaces #6627
-- edit modules.conf #15062
-- dsl in installation settings #15160
-- install dhcpcd in lan (before Write)
-- sigi&isdn: http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html
-- chmod 0700 ~/.wgetrc? asi neni potreba ...
-- use /etc/wgetrc?
-
-- list of available devices to routing expert dialog
-
-#18840 -> FIREWALL=yes|no to each ifcfg-XXX
-- this way it could be done also for modems
-
-Adding network device mini-howto: grep for "escon" for example.
 
 DOC:
  ESCON = Enteprise System CONnector (something like a mixture of SCSI and
@@ -49,19 +20,83 @@ DOC:
 - #10739 ???
 - #13450 ???
 
-- check for yast2-mail presence
-- enh: speaker volume as combo (or better as slider)
-
 - autodetection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
     DetectionIP() { if detection_started; run ping; }
 
-- better Summary (take DNS, Routing):
-    Hostname: beholder.suse.cz
-    Name server: 10.20.0.1 (jmeno)
-    [nebo Name servers: 10.20.0.1, 10.20.1.16]
-    Gateway: 10.20.0.1 (jmeno)
+##############################################################################
 
-- include public_html/network
+TOCHECK:
+
+- Net-HOWTO
+- mail from bk@suse.de about s390 changes
+- check and install required packages #14315
+- provider: use routines/complex.ycp (BuildSumary, ...)
+- remove writing of NETWORK (also BROADCAST?)
+
+- sigi&isdn: http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html
+- chmod 0700 ~/.wgetrc? asi neni potreba ...
+- use /etc/wgetrc?
+
+TOSORT:
+
+- agents: two resolv.conf scrconfs
+
+- providers: choose provider type during Add
+- providers: add/edit/delete #16094
+
+- dsl: add/edit/delete #15301
+- dsl: in installation settings #15160
+
+- lan: install dhcpcd|sysconfig|... (before Write)
+- lan: install wireless-tools, hotplug, ... if needed (before Write)
+
+- routing: summary: split gateway of the other routes
+- routing: summary: print other routes in nice form
+- routing: summary: print gateway hostname [Gateway: 10.20.0.1 (chimera.suse.cz)]
+- dns: summary: print ns and sl in nice form
+- dns: summary: print ns hostname [Name server: 10.20.0.1 (chimera.suse.cz)]
+- dns: summary: differentiate between 1 and more ns
+    [Name servers: 10.20.0.1 (chimera.suse.cz), 10.20.1.16 (yeti.suse.cz)]
+
+- doc: adding network device mini-howto: grep for "escon" for example
+- doc: include public_html/network
+
+- routing: list of available devices in expert dialog
+- routing: check already present default route (partially #11132)
+- lan: check IP presence (#9951)
+- lan: check link presence
+
+- lan: support arcnet (arc)
+- lan: support myrinet (myri)
+- routines: support arcnet, plip, slip, myri, ppp (not modem)
+
+- routines: check for yast2-mail presence
+- routines: install kinternet if KDE are present (kdelibs, kdebase?)
+- modem: speaker volume as combo (or better as slider)
+
+- hosts: /etc/hosts editor
+- hosts: scan for hosts on the local network [Add]
+- hosts: add (update) all hosts in the local network
+
+- dummy: dummy device adding #15960 for what is it useful? [suse-network]
+- alias: virtual interfaces #6627
+
+- hardware: cable modems support? what is missing? [suse-network]
+- modem: check existence of the modem device (symlink) in Modem::Write
+- dialup: start smpppd only if >0 devs
+- dialup: info popup (configured + kinternet, cinternet)
+- dialup: run|stop kinternet, if DISPLAY and (not)running (#14320)
+
+- routines: -> FIREWALL=yes|no to each ifcfg-XXX #18840 (support for modems)
+
+- doc: dummy: IP/NM/BC
+- doc: irlan: IP/NM/BC (eth?)
+- doc: irnet: IP/RI (?)
+- doc: plip: IP/RI (Parallel Line IP)
+- doc: slip: IP/RI (Serial Line IP, obsoleted by PPP)
+- doc: ppp: IP/RI (Serial Point-To-Point protocol)
+
+##############################################################################
 
 - [Hardware details]: wireless, eth numbers, dual port cards,
                       edit modules.conf, better PCMCIA/USB

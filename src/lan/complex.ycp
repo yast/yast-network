@@ -1,6 +1,6 @@
 /**
  * File:	include/network/lan/dialogs.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Summary, overview and IO dialogs for network cards config
  * Authors:	Michal Svec <msvec@suse.cz>
  *
@@ -188,7 +188,7 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
 
     term contents = OverviewTable(
 	/* Table header */
-	`header(_("No."), _("Type"), _("Device"), _("IP Address")),
+	`header(/*_("No."), */_("Device"), _("Type"), _("IP Address")),
 	overview
     );
 

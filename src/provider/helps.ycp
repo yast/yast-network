@@ -1,0 +1,80 @@
+/**
+ * File:	include/network/provider/helps.ycp
+ * Package:	Network configuration
+ * Summary:	Provider dialog helps
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+/**
+ * Provider dialog help texts
+ */
+
+global map HELPS = $[
+
+    /* Provider read dialog help 1/2 */
+    "read" : _("<p><b><big>Initializing provider
+configuration</big></b><br>Please wait...<br></p>") +
+
+    /* Provider read dialog help 2/2 */
+_("<p><b><big>Aborting the initialization:</big></b><br>
+Safely abort the configuration utility by pressing <B>Abort</B> now.</p>"),
+
+    /* Provider write dialog help 1/2 */
+    "write" : _("<p><b><big>Saving provider
+configuration</big></b><br>Please wait...<br></p>") +
+
+    /* Provider write dialog help 2/2 */
+_("<p><b><big>Aborting saving:</big></b><br>
+Abort saving by pressing <b>Abort</b>.</p>"),
+
+    /* Provider summary dialog help 1/3 */
+    "summary" : _("<p><b><big>Provider setup</big></b><br>
+Configure your provider here.<br></p>") +
+
+    /* Provider summary dialog help 2/3 */
+_("<p><b><big>Adding a provider:</big></b><br>
+Choose a provider from the list of available providers
+then press <b>Configure</b>.</p>") +
+
+    /* Provider summary dialog help 3/3 */
+_("<p><b><big>Editing or deleting:</big></b><br>
+If you press <b>Edit</b>, an additional dialog in which
+to change the configuration opens.</p>"),
+
+    /* Provider overview dialog help 1/3 */
+    "overview" : _("<p><b><big>Providers overview</big></b><br>
+Obtain an overview of installed providers. Additionally,
+edit their configuration.<br></p>") +
+
+    /* Provider overview dialog help 2/3 */
+_("<p><b><big>Adding a provider:</big></b><br>
+Press <b>Add</b> to configure a new provider manually.</p>") +
+
+    /* Provider overview dialog help 3/3 */
+_("<p><b><big>Editing or deleting:</big></b><br>
+Choose a provider to change or remove.
+Then press <b>Edit</b> or <b>Delete</b> as desired.</p>"),
+
+    /* Provider dialog help 1/3 */
+    "providers" : _("<p>Select the appropriate <b>provider</b>.</p>") +
+
+    /* Provider dialog help 2/3 */
+    _("<p>Choose the country or region where you are
+located then choose one of the listed providers.</p>") +
+
+    /* Provider dialog help 3/3 */
+    _("<p>Use <b>New</b> to add a provider not in the list.</p>"),
+
+    /* Provider type dialog help 1/1 */
+    "type" : _("<p>Choose one of the available provider types.</p>"),
+
+];
+
+/* EOF */
+}

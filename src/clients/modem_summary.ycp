@@ -1,6 +1,6 @@
 /**
  * File:	clients/modem_summary.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Modems summary
  * Authors:	Michal Svec <msvec@suse.cz>
  *
@@ -24,7 +24,7 @@ y2milestone("Modem summary started");
 Progress::off();
 Modem::Read();
 list sum = Modem::Summary(false);
-string ret = select(sum, 0, "");
+string ret = sum[0]:"";
 Progress::on();
 
 /* Finish */

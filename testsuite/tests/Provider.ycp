@@ -1,0 +1,53 @@
+{
+
+include "testsuite.ycp";
+import "Pkg";
+
+map READ = $[
+    "sysconfig" : $[
+	"network" : $[ "providers" : $[
+	    "s" : $[
+		"first" : $[ "PROVIDER" : "first one", ],
+		"second" :$[ "PROVIDER" : "second one", ],
+		"third" : $[ "PROVIDER" : "third one", ],
+	    ],
+	    "v" : $[
+		"first" : $[ "PROVIDER" : "first one", ],
+		"second": $[ "PROVIDER" : "second one", ],
+		"third" : $[ "PROVIDER" : "third one", ],
+	    ]
+	]],
+	"language" : $[ "DEFAULT_LANGUAGE" : "" ],
+    ],
+    "providers" : $[
+	"s" : $[
+	    "CZ" : nil,
+	    "DE" : nil,
+	    "GB" : nil,
+	    "HU" : nil,
+	    "NL" : nil,
+	    "US" : nil,
+	],
+    ],
+    "target" : $[
+	"yast2" : $[
+	    "CZ" : "Czech",
+	],
+	"symlink" : nil,
+    ],
+    "probe" : $[
+	"system" : [],
+    ],
+];
+
+TESTSUITE_INIT([READ],nil);
+import "Provider";
+
+DUMP("Read");
+TEST(``(Provider::Read(/*"all"*/)), [READ], nil);
+
+// DUMP("GetProvider");
+// TEST(``(Provider::ReadProvider(.path.to.provider)), [READ], nil);
+// TEST(``(Provider::ReadProvider(.path.to."provi der")), [READ], nil);
+
+}

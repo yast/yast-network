@@ -1,0 +1,29 @@
+Read	.target.tmpdir nil
+Read	.target.size "/etc/install.inf" nil
+Read	.etc.install_inf.Sourcemounted nil
+Read	.etc.install_inf.AutoYaST nil
+Read	.etc.install_inf.Demo nil
+Read	.etc.install_inf.Textmode nil
+Read	.etc.install_inf.Manual nil
+Read	.etc.install_inf.Console nil
+Read	.etc.install_inf.Braille nil
+Read	.etc.install_inf.VNC nil
+Read	.etc.install_inf.UseSSH nil
+Read	.etc.install_inf.Locale nil
+Read	.etc.install_inf.InstMode nil
+Read	.target.symlink "/var/X11R6/bin/X" nil
+Read	.sysconfig.language.RC_LANG nil
+Log	Failed reading <.sysconfig.language.RC_LANG>
+Read	.sysconfig.language.DEFAULT_LANGUAGE ""
+Read	.target.yast2 "lang2iso.ycp" $["CZ":"Czech"]
+Dump	Read
+Dir	.sysconfig.network.providers.s: ["first", "second", "third"]
+Dir	.sysconfig.network.providers.v."first": ["PROVIDER"]
+Read	.sysconfig.network.providers.v."first"."PROVIDER" "first one"
+Dir	.sysconfig.network.providers.v."second": ["PROVIDER"]
+Read	.sysconfig.network.providers.v."second"."PROVIDER" "second one"
+Dir	.sysconfig.network.providers.v."third": ["PROVIDER"]
+Read	.sysconfig.network.providers.v."third"."PROVIDER" "third one"
+Read	.target.yast2 "country.ycp" $["CZ":"Czech"]
+Dir	.providers.s: ["CZ", "DE", "GB", "HU", "NL", "US"]
+Return	true

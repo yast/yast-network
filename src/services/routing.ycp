@@ -212,8 +212,8 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 	    break;
 	}
 	else {
-	    y2error("unexpected retcode: %1", ret);
-	    break;
+	    y2error("Unexpected retcode: %1", ret);
+	    continue;
 	}
     };
 

@@ -1,6 +1,6 @@
 /**
  * File:	include/network/dsl/complex.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Summary, overview and IO dialogs for DSL configuration.
  * Authors:	Michal Svec <msvec@suse.cz>
  *

@@ -27,7 +27,7 @@ Read	.sysconfig.dhcp.DHCLIENT_SET_HOSTNAME nil
 Read	.sysconfig.dhcp.DHCLIENT_MODIFY_RESOLV_CONF nil
 Read	.target.size "/etc/install.inf" 1
 Read	.etc.install_inf nil
-Execute	.target.bash "/sbin/modify_resolvconf check -q" 0
+Execute	.target.bash "/sbin/modify_resolvconf check -q < /dev/null" 0
 Read	.target.size "/etc/resolv.conf" 1
 Read	.etc.resolv_conf.nameserver ["1.2.3.4", "5.6.7.8"]
 Read	.etc.resolv_conf.search ["suse.cz", "suse.de"]

@@ -1,7 +1,7 @@
 /**
  * File:	include/network/provider/details.ycp
- * Package:	Configuration of network
- * Summary:	Providers details configuration dialogs
+ * Package:	Network configuration
+ * Summary:	Provider details configuration dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
@@ -11,16 +11,12 @@
 
 textdomain "network";
 
-import "DSL";
-import "Modem";
-import "ISDN";
-import "Firewall";
-import "Providers";
+import "Provider";
 import "Wizard";
 
-include "ui/common_popups.ycp";
-include "network/routines.ycp";
 include "network/ip.ycp";
+include "network/routines.ycp";
+include "ui/common_popups.ycp";
 
 /**
  * IP details dialog
@@ -32,12 +28,12 @@ global define symbol IPDetailsDialog(string type) ``{
     /* PREPARE VARIABLES */
 
     /* FIXME: help texts, contents */
-    string Local_IP = lookup(Providers::provider, "IPADDR", "");
-    string Remote_IP = lookup(Providers::provider, "REMOTE_IPADDR", "");
+    string Local_IP = Provider::Provider["IPADDR"]:"";
+    string Remote_IP = Provider::Provider["REMOTE_IPADDR"]:"";
 
-    string encap = lookup(Providers::provider, "ENCAP", "syncppp");
-    boolean defaultroute = lookup(Providers::provider, "DEFAULTROUTE", "yes") == "yes";
-    boolean modifyip = lookup(Providers::provider, "MODIFYIP", "yes") == "yes";
+    string encap = Provider::Provider["ENCAP"]:"syncppp";
+    boolean defaultroute = Provider::Provider["DEFAULTROUTE"]:"yes" == "yes";
+    boolean modifyip = Provider::Provider["MODIFYIP"]:"yes" == "yes";
 
     /* DIALOG TEXTS and  DIALOG CONTENTS */
 
@@ -206,7 +202,7 @@ waits for callback of the remote machine.");
     /* UPDATE VARIABLES */
 
     if(ret == `next) {
-        Providers::provider = union(Providers::provider, $[
+        Provider::Provider = union(Provider::Provider, $[
             "IPADDR"		: Local_IP,
             "REMOTE_IPADDR"	: Remote_IP,
             "DEFAULTROUTE"	: defaultroute ? "yes" : "no",
@@ -217,7 +213,7 @@ waits for callback of the remote machine.");
 }
 
 if(false) {
-Providers::provider = $["PROVIDER":"AICOM, Havlickuv Brod"];
+Provider::Provider = $["PROVIDER":"AICOM, Havlickuv Brod"];
 Wizard::CreateDialog();
 IPDetailsDialog("modem");
 IPDetailsDialog("isdn");

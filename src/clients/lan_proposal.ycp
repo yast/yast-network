@@ -1,6 +1,6 @@
 /**
  * File:	clients/lan_proposal.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Lan configuration proposal
  * Authors:	Michal Svec <msvec@suse.cz>
  *
@@ -37,7 +37,7 @@ if(func == "MakeProposal") {
     }
     Lan::Propose();
     list sum = Lan::Summary(false);
-    proposal = select(sum, 0, "");
+    proposal = sum[0]:"";
     Progress::on();
 
     ret = $[
@@ -58,9 +58,9 @@ else if(func == "AskUser") {
 /* create titles */
 else if(func == "Description") {
     ret = $[
-    // rich text title
+	/* RichText label */
 	"rich_text_title" : _("Network interfaces"),
-    // menu title
+	/* Menu label */
 	"menu_title" : _("&Network interfaces"),
 	"id" : "lan",
     ];
@@ -68,13 +68,9 @@ else if(func == "Description") {
 /* write the proposal */
 else if (func == "Write") {
     if (Arch::s390 || Mode::vnc || Mode::usessh)
-    {
-	Lan::WriteOnly ();
-    }
+	Lan::WriteOnly();
     else
-    {
-	Lan::Write ();
-    }
+	Lan::Write();
 }
 /* unknown function */
 else {

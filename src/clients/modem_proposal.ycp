@@ -1,6 +1,6 @@
 /**
  * File:	clients/modem_proposal.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Modem configuration proposal
  * Authors:	Michal Svec <msvec@suse.cz>
  *
@@ -35,7 +35,7 @@ if(func == "MakeProposal") {
 	Modem::Read();
     }
     list sum = Modem::Summary(false);
-    proposal = select(sum, 0, "");
+    proposal = sum[0]:"";
     Progress::on();
 
     ret = $[
@@ -58,9 +58,9 @@ else if(func == "AskUser") {
 /* create titles */
 else if(func == "Description") {
     ret = $[
-    // rich text title
+	/* RichText label */
 	"rich_text_title" : _("Modems"),
-    // menu title
+	/* Menu label */
 	"menu_title" : _("&Modems"),
 	"id" : "modem",
     ];

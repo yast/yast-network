@@ -1,6 +1,6 @@
 /**
  * File:	clients/routing.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Routing client
  * Authors:	Michal Svec <msvec@suse.cz>
  *

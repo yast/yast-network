@@ -1,8 +1,8 @@
 /**
  * File:	clients/proxy_write.ycp
- * Package:	Configuration of Proxy
+ * Package:	Network configurat`ion
  * Summary:	Writing only client
- * Authors:	Anas Nashif <nashif@suse.de>
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
@@ -35,7 +35,7 @@ if(!is(WFM::Args(0), map)) {
 }
 
 /* The settings are in the first argument */
-map settings = select(args, 0, $[]);
+map settings = args[0]:$[];
 y2milestone("Only writing... (%1)", settings);
 
 

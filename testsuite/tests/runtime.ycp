@@ -14,20 +14,29 @@ map READ = $[
 TESTSUITE_INIT([READ], nil);
 include "network/runtime.ycp";
 
-map EXEC0 = $[ "target" : $[ "bash" : 0,
-			     "bash_output": $[ "exit": 0,
-					       "stdout": "",
-					       "stderr": "",
-					       ],
-			     ],
-		   ];
-map EXEC1 = $[ "target" : $[ "bash" : 1,
-			     "bash_output": $[ "exit": 1,
-					       "stdout": "",
-					       "stderr": "Dummy error message",
-					       ],
-			     ],
-		   ];
+map EXEC0 = $[
+    "target" : $[
+	"bash" : 0,
+	"bash_background" : 0,
+	"bash_output" : $[
+	    "exit"	: 0,
+	    "stdout"	: "",
+	    "stderr"	: "",
+	],
+    ],
+];
+
+map EXEC1 = $[
+    "target" : $[
+	"bash" : 1,
+	"bash_background" : 1,
+	"bash_output" : $[
+	    "exit"	: 1,
+	    "stdout"	: "",
+	    "stderr"	: "Dummy error message",
+	],
+    ],
+];
 
 DUMP("ReadStatus");
 TEST(``(ReadStatus()), [], nil);
@@ -36,20 +45,48 @@ DUMP("RunSuSEconfig");
 TEST(``(RunSuSEconfig()), [$[],$[],EXEC0], nil);
 TEST(``(RunSuSEconfig()), [$[],$[],EXEC1], nil);
 
+DUMP("RunSuSEconfigModule");
+TEST(``(RunSuSEconfigModule("postfix")), [$[],$[],EXEC0], nil);
+TEST(``(RunSuSEconfigModule("postfix")), [$[],$[],EXEC1], nil);
+
+DUMP("RunKInternet");
+TEST(``(RunKInternet()), [READ,$[],EXEC0], nil);
+TEST(``(RunKInternet()), [READ,$[],EXEC1], nil);
+
 DUMP("StopNetwork");
-TEST(``(StopNetwork()), [$[],$[],EXEC0], nil);
-TEST(``(StopNetwork()), [$[],$[],EXEC1], nil);
+TEST(``(StopNetwork()), [READ,$[],EXEC0], nil);
+TEST(``(StopNetwork()), [READ,$[],EXEC1], nil);
 
 DUMP("StartNetwork");
-TEST(``(StartNetwork()), [$[],$[],EXEC0], nil);
-TEST(``(StartNetwork()), [$[],$[],EXEC1], nil);
+TEST(``(StartNetwork()), [READ,$[],EXEC0], nil);
+TEST(``(StartNetwork()), [READ,$[],EXEC1], nil);
 
 DUMP("RestartNetwork");
-TEST(``(RestartNetwork()), [$[],$[],EXEC0], nil);
-TEST(``(RestartNetwork()), [$[],$[],EXEC1], nil);
+TEST(``(RestartNetwork()), [READ,$[],EXEC0], nil);
+TEST(``(RestartNetwork()), [READ,$[],EXEC1], nil);
 
-DUMP("SetupSMPPPD");
-TEST(``(SetupSMPPPD()), [READ,$[],EXEC0], nil);
-TEST(``(SetupSMPPPD()), [READ,$[],EXEC1], nil);
+DUMP("EnableSMPPPD");
+TEST(``(EnableSMPPPD()), [READ,$[],EXEC0], nil);
+TEST(``(EnableSMPPPD()), [READ,$[],EXEC1], nil);
+
+DUMP("EnableService");
+TEST(``(EnableService("service")), [READ,$[],EXEC0], nil);
+TEST(``(EnableService("service")), [READ,$[],EXEC1], nil);
+
+DUMP("DisableService");
+TEST(``(DisableService("service")), [READ,$[],EXEC0], nil);
+TEST(``(DisableService("service")), [READ,$[],EXEC1], nil);
+
+DUMP("StartService");
+TEST(``(StartService("service")), [READ,$[],EXEC0], nil);
+TEST(``(StartService("service")), [READ,$[],EXEC1], nil);
+
+DUMP("StopService");
+TEST(``(StopService("service")), [READ,$[],EXEC0], nil);
+TEST(``(StopService("service")), [READ,$[],EXEC1], nil);
+
+DUMP("RestartService");
+TEST(``(RestartService("service")), [READ,$[],EXEC0], nil);
+TEST(``(RestartService("service")), [READ,$[],EXEC1], nil);
 
 }

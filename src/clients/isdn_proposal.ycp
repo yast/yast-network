@@ -35,7 +35,7 @@ if(func == "MakeProposal") {
 	ISDN::Read();
     }
     list sum = ISDN::Summary(false);
-    proposal = select(sum, 0, "");
+    proposal = sum[0]:"";
     Progress::on();
 
     ret = $[
@@ -56,9 +56,9 @@ else if(func == "AskUser") {
 /* create titles */
 else if(func == "Description") {
     ret = $[
-    // rich text title
+	/* RichText label */
 	"rich_text_title" : _("ISDN adapters"),
-    // menu title
+	/* Menu label */
 	"menu_title" : _("&ISDN adapters"),
 	"id" : "isdn",
     ];

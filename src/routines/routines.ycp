@@ -1,6 +1,6 @@
 /**
  * File:	include/network/routines.ycp
- * Package:	Configuration of network cards
+ * Package:	Network configuration
  * Summary:	Miscellaneous routines
  * Authors:	Michal Svec <msvec@suse.cz>
  *
@@ -100,6 +100,12 @@ global define void ProgressNextStage(string title) ``{
     Progress::Title(title);
 }
 
+/**
+ * Change UI widget only if it exists
+ * @param id widget id
+ * @param param widget parameter
+ * @param value widget parameter value
+ */
 global define void ChangeWidgetIfExists(term id, symbol param, any value) ``{
     if(UI::WidgetExists(id))
 	UI::ChangeWidget(id, param, value);
@@ -123,6 +129,10 @@ global define symbol Finished(boolean modified, string text, string run, list pa
     return `next;
 }
 
+/**
+ * Question at the end of the network modules about the mail configuration
+ * @return question text
+ */
 global define string FinishedMailText() ``{
     /* Popup text */
     return _("Configure the mail now?");
@@ -144,7 +154,21 @@ global define symbol Packages(list packages) ``{
     string text = _("These packages need to be installed:") + "<p>";
     maplist(string l, packages, ``{ text = text + sformat("%1<br>",l); });
     y2debug("Installing packages: %1", text);
-    boolean ret = InstallAndRemove(packages, [], text);
+
+    while(true) {
+	boolean ret = InstallAndRemove(packages, [], text);
+	if(ret == true) break;
+
+	if(ret == false && AreAllPackagesInstalled(packages)) {
+	    ret = true;
+	    break;
+	}
+
+	if(!UI::YesNoPopup(_("The required packages are not installed,
+the configuration will be aborted.\n\nDo you want to try again?\n")))
+	    break;
+    }
+
     return ret == true ? `next : `abort;
 }
 
@@ -201,6 +225,7 @@ global define string device_type(string dev) ``{
  * @param dev device
  * @return device number
  * @example device_num("eth1") -> 1
+ * @example device_num("lo") -> -1
  */
 global define integer device_num(string dev) ``{
     //string num = regexpsub(dev, "^[a-zA-Z-]*([0-9]+).*$", "\\1");
@@ -211,10 +236,10 @@ global define integer device_num(string dev) ``{
 /**
  * Return a device alias number
  * @param dev device
- * @return device number
- * @example device_num("eth1") -> 1
+ * @return alias number
+ * @example alias_num("eth1:2") -> 2
  */
-global define integer device_alias(string dev) ``{
+global define integer alias_num(string dev) ``{
     string num = regexpsub(dev, "[a-zA-Z-]*[0-9]*:([0-9]+)", "\\1");
     return tointeger(num);
 }
@@ -235,7 +260,31 @@ global define string device_name(string typ, integer num) ``{
 	y2error("wrong number: %1", num);
 	return nil;
     }
-    return sformat("%1%2",typ,num);
+    return sformat("%1%2", typ, num);
+}
+
+/**
+ * Create a alias name from its type and numbers
+ * @param typ device type
+ * @param num device number
+ * @param anum alias number
+ * @return alias name
+ * @example alias_name("eth", 1) -> "eth1"
+ */
+global define string alias_name(string typ, integer num, integer anum) ``{
+    if(typ == nil || typ == "") {
+	y2error("wrong type: %1", typ);
+	return nil;
+    }
+    if(num == nil || num < 0) {
+	y2error("wrong number: %1", num);
+	return nil;
+    }
+    if(anum == nil || anum < 0) {
+	y2error("wrong alias number: %1", anum);
+	return nil;
+    }
+    return sformat("%1%2:%3", typ, num, anum);
 }
 
 /* EOF */

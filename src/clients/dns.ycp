@@ -1,6 +1,6 @@
 /**
  * File:	clients/dns.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Hostname and DNS client
  * Authors:	Michal Svec <msvec@suse.cz>
  *

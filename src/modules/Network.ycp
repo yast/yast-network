@@ -1,7 +1,7 @@
 /**
  * File:	modules/Network.ycp
- * Package:	Configuration of network
- * Summary:	Data for configuration of network, input and output functions.
+ * Package:	Network configuration
+ * Summary:	Network data
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$

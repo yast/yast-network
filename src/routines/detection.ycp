@@ -1,6 +1,6 @@
 /**
  * File:	include/network/detection.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Runtime routines
  * Authors:	Michal Svec <msvec@suse.cz>
  *

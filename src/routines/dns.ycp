@@ -11,6 +11,12 @@
 
 textdomain "network";
 
+global string ValidCharsHostname = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.";
+global string ValidCharsDomain = ValidCharsHostname + ".";
+global string ValidCharsFQHostname = ValidCharsDomain;
+
+/* FIXME: move the bellow to "routines/check.ycp" */
+
 include "network/ip.ycp";
 
 /**
@@ -18,15 +24,6 @@ include "network/ip.ycp";
  */
 global define string valid_address() ``{
     return valid_ip4() + "\n" + valid_domainname();
-}
-
-/**
- * Check syntax of a network address (ip4 or name)
- * @param a an address
- * @return true if correct
- */
-global define boolean check_address(string a) ``{
-    return check_ip4(a) || check_domainname(a);
 }
 
 /**
@@ -40,6 +37,26 @@ Each component contains letters, digits, and hyphens.
 A hyphen may not start or end a component
 and the last component may not begin with a digit.");
 }
+
+/**
+ * Check syntax of a network address (ip4 or name)
+ * @param address an address
+ * @return true if correct
+ */
+global define boolean check_address(string address) ``{
+    return check_ip(address) || check_fqhostname(address);
+}
+
+/**
+ * Check syntax of a network address (ip4 or name)
+ * @param address an address
+ * @return true if correct
+ */
+global define boolean check_address4(string address) ``{
+    return check_ip4(address) || check_fqhostname(address);
+}
+
+/* FIXME: move the above to "routines/check.ycp" */
 
 /**
  * Check syntax of hostname entry

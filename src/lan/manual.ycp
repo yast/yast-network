@@ -1,6 +1,6 @@
 /**
  * File:	include/network/lan/manual.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Manual network card configuration dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
@@ -79,7 +79,9 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     string USB = "&USB";
 
     list device_types = [
+	`item(`id("arc"), "ARCnet", type == "arc"),
 	`item(`id("eth"), "Ethernet", type == "eth"),
+	`item(`id("myri"), "Myrinet", type == "myri"),
 	`item(`id("tr"), "Token-Ring", type == "tr"),
     ];
 

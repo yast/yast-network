@@ -1,6 +1,6 @@
 /**
  * File:	clients/lan_auto.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Client for autoinstallation
  * Authors:	Michal Svec <msvec@suse.cz>
  *
@@ -39,7 +39,7 @@ if(!is(WFM::Args(0), map)) {
 }
 
 /* The settings are in the first argument */
-map settings = select(args, 0, $[]);
+map settings = args[0]:$[];
 y2debug("Imported: %1", settings);
 
 Lan::Import(settings);

@@ -1,8 +1,9 @@
 /**
  * File:	providers.scr
- * Summary:	Agent for dialup providers
+ * Summary:	Agent for predefined (system) providers
  * Authors:	Petr Blahos <pblahos@suse.cz>, Michal Svec <msvec@suse.cz>
  * Access:	read-only
+ * See:		providers.rpm
  *
  * General syntax:
  *	# comment
@@ -11,7 +12,7 @@
  *
  * $Id$
  *
- * <p>Reads dialup providers from files /usr/share/providers/*.conf.</p>
+ * <p>Reads providers from files /usr/share/providers/*.conf.</p>
  */
 .providers
 

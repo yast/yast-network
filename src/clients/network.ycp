@@ -1,9 +1,104 @@
 /**
- * Author:	Martin Vidner <mvidner@suse.cz>
- * Summary:	Just a redirection
+ * File:	clients/network.ycp
+ * Package:	Network configuration
+ * Summary:	Main network client
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
  * $Id$
+ *
+ * Main file for the network configuration.
+ * Uses all other files.
  */
+
 {
-    string target = "lan";
-    return WFM::CallFunction (target, WFM::Args ());
+
+textdomain "network";
+
+import "Wizard";
+
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("Network module started");
+
+include "network/routines.ycp";
+
+/* Network dialog caption */
+string caption = _("Network configuration");
+
+/* Network dialog help */
+string help = _("<p>Choose one of the available network modules to configure
+the corresponding devices and press <b>Launch</b>.</p>");
+
+/* Network dialog contents */
+term contents = `HBox(
+    `HSpacing(8),
+    /* Frame label */
+    //`Frame(_("Available network modules:"), `HBox(`HSpacing(2),
+    `VBox(
+	`VSpacing(3),
+	/* Selection box label */
+	`SelectionBox(`id(`modules), _("&Available network modules:"), [
+	    /* Selection box item */
+	    `item(`id("lan"), _("Network card"), true),
+	    /* Selection box item */
+	    `item(`id("isdn"), _("ISDN card")),
+	    /* Selection box item */
+	    `item(`id("modem"), _("Modem")),
+	    /* Selection box item */
+	    `item(`id("dsl"), _("DSL connection"))
+	]),
+	`VSpacing(3)
+	),
+	//`HSpacing(2))),
+    `HSpacing(8)
+);
+
+Wizard::CreateDialog();
+Wizard::SetContentsButtons(caption, contents, help,
+	BackButtonLabel(), /* FinishButtonLabel() */ _("&Launch"));
+
+any ret = nil;
+while(true) {
+
+    ret = UI::UserInput();
+
+    /* abort? */
+    if(ret == `abort || ret == `cancel) {
+	/* if(ReallyAbort()) break;
+	else continue; */
+	break;
+    }
+    /* next */
+    else if(ret == `next) {
+	/* check_* */
+	break;
+    }
+    /* back */
+    else if(ret == `back) {
+	break;
+    }
+    else {
+	y2error("unexpected retcode: %1", ret);
+	continue;
+    }
+}
+
+string launch = "lan";
+if(ret == `next) {
+    launch = UI::QueryWidget(`id(`modules), `CurrentItem);
+    y2debug("launch=%1", launch);
+}
+
+UI::CloseDialog();
+
+/* Finish */
+y2milestone("Network module finished");
+y2milestone("----------------------------------------");
+
+if(ret == `next)
+    return WFM::CallFunction(launch, WFM::Args());
+else
+    return `back;
+
+/* EOF */
 }

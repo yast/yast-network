@@ -1,0 +1,123 @@
+/**
+ * File:	include/network/modules.ycp
+ * Package:	Network configuration
+ * Summary:	Modules manipulation functions
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * All modules.conf settings are stored in a global variable Modules.
+ * Deleted modules are in the global list DeletedModules.
+ */
+
+{
+
+textdomain "network";
+import "Arch";
+include "network/routines.ycp";
+
+/**
+ * Read Modules from files
+ * @param devregex regular expression for the module type
+ * @return true if sucess
+ * @example ReadModules("eth|tr");
+ */
+global define boolean ReadModules(string devregex) ``{
+
+    Modules = $[];
+
+    /* FIXME */
+
+    y2debug("Modules=%1", Modules);
+    return true;
+}
+
+/**
+ * Write Modules to files
+ * @return true if success
+ */
+global define boolean WriteModules() ``{
+
+    y2debug("Modules=%1", Modules);
+
+    /* Remove deleted modules */
+    maplist(string d, DeletedModules, ``{
+	/* delete config file */
+	y2debug("deleting: %1", p);
+	/* FIXME */
+    });
+    DeletedModules = [];
+
+    /* Write all modules */
+    /* FIXME */
+
+    /* Finish him */
+    SCR::Write(.modules, nil);
+
+    return true;
+}
+
+/**
+ * Update Modules map
+ * @param type module type
+ * @param module module number
+ * @param newdev new module map
+ * @param check if check if module already exists
+ * @return true if success
+ */
+global define boolean ChangeModule(string type, integer modul, map newdev, boolean check) ``{
+    y2debug("Modules=%1", Modules);
+    map devmap = Modules[type]:$[];
+    string dev = sformat("%1", modul);
+
+    if(check && haskey(devmap, dev)) {
+	y2error("Key already present: %1(%2)", dev, type);
+	return false;
+    }
+    change(devmap, dev, newdev);
+    change(Modules, type, devmap);
+    y2debug("Modules=%1", Modules);
+    return true;
+}
+
+/**
+ * Delete a module from Modules map
+ * @param type module type
+ * @param module module number
+ * @return true if success
+ */
+global define boolean DeleteModule(string type, integer modul) ``{
+    y2debug("Modules=%1", Modules);
+    map devmap = Modules[type]:$[];
+    string dev = sformat("%1", modul);
+
+    if(!haskey(devmap, dev)) {
+	y2error("Key not found: %1(%2)", dev, type);
+	return false;
+    }
+    //remove(devmap, dev);
+    devmap = remove(devmap, dev);
+    change(Modules, type, devmap);
+    y2debug("Modules=%1", Modules);
+    return true;
+}
+
+/**
+ * Locate modules of the given type and value
+ * @param key module key
+ * @param val module value
+ * @return list of modules with key=val
+ */
+global define list LocateModules(string key, string val) ``{
+    list ret = [];
+    maplist(string typ, map devsmap, Modules, ``{
+	maplist(string num, map devmap, devsmap, ``{
+	    if(devmap[key]:"" == val) change(ret, typ+num);
+	});
+    });
+
+    return ret;
+}
+
+/* EOF */
+}

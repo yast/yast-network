@@ -1,6 +1,6 @@
 /**
  * File:	include/network/lan/manual.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Network card adresss configuration dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *

@@ -1,6 +1,6 @@
 /**
  * File:	include/network/modem/complex.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Summary, overview and IO dialogs for modems configuration.
  * Authors:	Michal Svec <msvec@suse.cz>
  *
@@ -199,7 +199,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
 	/* Table label */
 	_("Modems"),
 	/* Table header */
-	`header(_("No."), _("Type"), _("Device"), _("Provider")),
+	`header(/*_("No."), */_("Device"), _("Type"), _("Provider")),
 	overview,
 	/* Table label */
 	_("Providers"),

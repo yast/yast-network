@@ -1,0 +1,117 @@
+{
+
+include "testsuite.ycp";
+
+map READ = $[
+    "network" : $[
+	"section" : $[
+	    "arc5"	: nil,
+	    "atm5"	: nil,
+	    "ci5"	: nil,
+	    "ctc5"	: nil,
+	    "dummy5"	: nil,
+	    "escon5"	: nil,
+	    "eth5"	: nil,
+	    "eth5:5"	: nil,
+	    "eth6"	: nil,
+	    "eth7"	: nil,
+	    "eth8"	: nil,
+	    "eth-pcmcia": nil,
+	    "eth-usb"	: nil,
+	    "fddi5"	: nil,
+	    "hippi5"	: nil,
+	    "hsi5"	: nil,
+	    "ippp5"	: nil,
+	    "iucv5"	: nil,
+	    "lo"	: nil,
+	    "lo:5"	: nil,
+	    "myri5"	: nil,
+	    "ppp5"	: nil,
+	    "tr5"	: nil,
+	    "tr.bak5"	: nil,
+	],
+	"value" : $[
+	    "arc5"	: $["BOOTPROTO":"dhcp", "STARTMODE":"manual"],
+	    "atm5"	: $["BOOTPROTO":"dhcp", "STARTMODE":"manual"],
+	    "ci5"	: $["BOOTPROTO":"dhcp", "STARTMODE":"manual"],
+	    "ctc5"	: $["BOOTPROTO":"dhcp", "STARTMODE":"manual"],
+	    "dummy5"	: $["BOOTPROTO":"static", "IPADDR":"1.2.3.4", "STARTMODE" : "manual"],
+	    "escon5"	: $["BOOTPROTO":"dhcp", "STARTMODE":"manual"],
+	    "eth5"	: $["BOOTPROTO":"dhcp", "STARTMODE":"manual"],
+	    "eth5:5"	: $["BOOTPROTO":"dhcp", "STARTMODE":"manual"],
+	    "eth6"	: $["BOOTPROTO":"static", "IPADDR":"1.2.3.4", "STARTMODE":"manual"],
+	    "eth7"	: $["STARTMODE":"manual"],
+	    "eth8"	: $["IPADDR":"1.2.3.4", "STARTMODE":"manual"],
+	    "eth-pcmcia": $["BOOTPROTO":"dhcp", "STARTMODE":"hotplug"],
+	    "eth-usb"	: $["BOOTPROTO":"dhcp", "STARTMODE":"hotplug"],
+	    "fddi5"	: $["BOOTPROTO":"dhcp", "STARTMODE":"manual"],
+	    "hippi5"	: $["BOOTPROTO":"dhcp", "STARTMODE":"manual"],
+	    "hsi5"	: $["BOOTPROTO":"dhcp", "STARTMODE":"manual"],
+	    "ippp5"	: $["BOOTPROTO":"dhcp", "STARTMODE":"manual"],
+	    "iucv5"	: $["BOOTPROTO":"dhcp", "STARTMODE":"manual"],
+	    "lo"	: $["BROADCAST":"127.255.255.255", "IPADDR":"127.0.0.1", "NETMASK":"255.0.0.0", "NETWORK":"127.0.0.0", "STARTMODE":"onboot"],
+	    "lo:5"	: $["BOOTPROTO":"dhcp", "STARTMODE":"manual"],
+	    "myri5"	: $["BOOTPROTO":"dhcp", "STARTMODE":"manual"],
+	    "ppp5"	: $["BOOTPROTO":"dhcp", "STARTMODE":"manual"],
+	    "tr5"	: $["BOOTPROTO":"dhcp", "STARTMODE":"manual"],
+	]
+    ],
+    "probe" : $[
+	"system" : [],
+    ],
+];
+
+map Devices = $[];
+list DeletedDevices = [];
+
+TESTSUITE_INIT([READ], nil);
+
+include "network/devices.ycp";
+
+DUMP("ReadDevices");
+TEST(``(ReadDevices("")), [READ], nil);
+DUMP(sformat("all=%1",Devices));
+TEST(``(ReadDevices("eth")), [READ], nil);
+DUMP(sformat("eth=%1",Devices));
+TEST(``(ReadDevices("ppp")), [READ], nil);
+DUMP(sformat("ppp=%1",Devices));
+TEST(``(ReadDevices("ippp")), [READ], nil);
+DUMP(sformat("ippp=%1",Devices));
+TEST(``(ReadDevices("trx")), [READ], nil);
+DUMP(sformat("trx=%1",Devices));
+TEST(``(ReadDevices("atm|tr")), [READ], nil);
+DUMP(sformat("atm|tr=%1",Devices));
+
+DUMP("WriteDevices");
+Devices=$["arc":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "atm":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "ci":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "ctc":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "dummy":$["5":$["BOOTPROTO":"static", "IPADDR":"1.2.3.4", "STARTMODE":"manual"]], "escon":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "eth":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual", "_aliases":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]]], "6":$["BOOTPROTO":"static", "IPADDR":"1.2.3.4", "STARTMODE":"manual"], "7":$["STARTMODE":"manual"], "8":$["IPADDR":"1.2.3.4", "STARTMODE":"manual"]], "eth-pcmcia":$["":$["BOOTPROTO":"dhcp", "STARTMODE":"hotplug"]], "eth-usb":$["":$["BOOTPROTO":"dhcp", "STARTMODE":"hotplug"]], "fddi":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "hippi":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "hsi":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "ippp":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "iucv":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "lo":$["":$["BROADCAST":"127.255.255.255", "IPADDR":"127.0.0.1", "NETMASK":"255.0.0.0", "NETWORK":"127.0.0.0", "STARTMODE":"onboot", "_aliases":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]]]], "myri":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "ppp":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "tr":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]]];
+TEST(``(WriteDevices()), [], nil);
+
+DUMP("LocateDevices");
+Devices=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "dhcp" ]]];
+TEST(``(LocateDevices("BOOTPROTO", "dhcp")), [], nil);
+Devices=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "" ]]];
+TEST(``(LocateDevices("BOOTPROTO", "dhcp")), [], nil);
+Devices=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "static" ]]];
+TEST(``(LocateDevices("BOOTPROTO", "dhcp")), [], nil);
+Devices=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "static" ], "1" : $[ "BOOTPROTO" : "dhcp"]]];
+TEST(``(LocateDevices("BOOTPROTO", "dhcp")), [], nil);
+Devices=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "static" ]], "tr" : $["1" : $[ "BOOTPROTO" : "dhcp"]]];
+TEST(``(LocateDevices("BOOTPROTO", "dhcp")), [], nil);
+
+DUMP("UpdateModemSymlink");
+Devices=$["arc":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]]];
+TEST(``(UpdateModemSymlink()), [], nil);
+Devices=$["ppp":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]]];
+TEST(``(UpdateModemSymlink()), [], nil);
+Devices=$["ppp":$["5":$["MODEM_DEVICE":"", "STARTMODE":"manual"]]];
+TEST(``(UpdateModemSymlink()), [], nil);
+Devices=$["ppp":$["5":$["MODEM_DEVICE":"/dev/modem", "STARTMODE":"manual"]]];
+TEST(``(UpdateModemSymlink()), [], nil);
+Devices=$["ppp":$["5":$["MODEM_DEVICE":"/dev/ttyS1", "STARTMODE":"manual"]]];
+TEST(``(UpdateModemSymlink()), [], nil);
+READ=$["target":$["lstat":$["islink":true], "symlink":"/dev/ttyS1"]];
+TEST(``(UpdateModemSymlink()), [READ], nil);
+READ=$["target":$["lstat":$["islink":true], "symlink":"/dev/ttyS2"]];
+TEST(``(UpdateModemSymlink()), [READ], nil);
+
+}

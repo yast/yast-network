@@ -1,7 +1,7 @@
 /**
  * File:	modules/ISDN.ycp
- * Package:	Configuration of network
- * Summary:	Data for configuration of ISDN cards
+ * Package:	Network configuration
+ * Summary:	ISDN data
  * Authors:	Michal Svec  <msvec@suse.cz>
  *		Karsten Keil <kkeil@suse.de>
  *

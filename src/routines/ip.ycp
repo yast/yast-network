@@ -11,6 +11,10 @@
 
 textdomain "network";
 
+global string ValidCharsIP = "0123456789abcdefABCDEF.:";
+global string ValidCharsIP4 = "0123456789.";
+global string ValidCharsIP6 = "0123456789abcdefABCDEF:";
+
 /**
  * Check syntax of IP address
  * @param ip IP address
@@ -156,7 +160,7 @@ global define string ip2string(integer ip) ``{
 
 /**
  * Converts IPv4 address from string to hex format
- * @param ip IP address as string in "ipv4" format
+ * @param ip IPv4 address as string in "ipv4" format
  * @return string representing IP in Hex
  * @example ip2hex("192.168.1.1") -> "0xC0A80101"
  * @example ip2hex("10.10.0.1") -> "0x0A0A0001"
@@ -211,7 +215,7 @@ global define string bits2netmask(integer bits) ``{
 }
 
 /**
- * Convert netmask as string (255.255.240.0) to bits form (24)
+ * Convert IPv4 netmask as string (255.255.240.0) to bits form (24)
  * @param netmask netmask as string
  * @return number of bits in netmask
  */

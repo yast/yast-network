@@ -1,6 +1,6 @@
 /**
  * File:	include/network/provider/connection.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Connection configuration dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
@@ -15,7 +15,7 @@ import "DSL";
 import "Modem";
 import "ISDN";
 import "Firewall";
-import "Providers";
+import "Provider";
 import "Wizard";
 
 include "ui/common_popups.ycp";
@@ -29,16 +29,16 @@ include "network/routines.ycp";
 global define symbol ConnectionDialog(string type) ``{
 
     /* PREPARE VARIABLES */
-    string Provider = lookup(Providers::provider, "PROVIDER", "");
+    string Provider = lookup(Provider::Provider, "PROVIDER", "");
 
-    boolean DialOnDemand = lookup(Providers::provider, "DEMAND", "no") == "yes";
-    boolean AutoDNS = lookup(Providers::provider, "MODIFYDNS", "yes") == "yes";
-    boolean stupidmode = lookup(Providers::provider, "STUPIDMODE", "no") == "yes";
+    boolean DialOnDemand = lookup(Provider::Provider, "DEMAND", "no") == "yes";
+    boolean AutoDNS = lookup(Provider::Provider, "MODIFYDNS", "yes") == "yes";
+    boolean stupidmode = lookup(Provider::Provider, "STUPIDMODE", "no") == "yes";
 
-    string DNS1 = lookup(Providers::provider, "DNS1", "");
-    string DNS2 = lookup(Providers::provider, "DNS2", "");
+    string DNS1 = lookup(Provider::Provider, "DNS1", "");
+    string DNS2 = lookup(Provider::Provider, "DNS2", "");
 
-    string IdleSeconds = lookup(Providers::provider, "IDLETIME", "300");
+    string IdleSeconds = lookup(Provider::Provider, "IDLETIME", "300");
 
     string device = nil;
     if(type == "modem") device = device_name(Modem::type, Modem::device);
@@ -135,12 +135,12 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    `PushButton(`id(`Details), _("&Connection details")),
 	    `HSpacing(0.5),
 	    /* Push button label */
-	    `PushButton(`id(`IPDetails), _("&IP details"))
+	    `PushButton(`id(`IPDetails), _("I&P details"))
 	);
     if(type == "modem")
 	details = `HBox(
 	    /* Push button label */
-	    `PushButton(`id(`IPDetails), _("&IP details"))
+	    `PushButton(`id(`IPDetails), _("I&P details"))
 	);
 
     term contents = `HBox(
@@ -240,7 +240,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 
     if(ret == `next || ret == `Details || ret == `IPDetails) {
 	/* update provider info */
-	Providers::provider = union(Providers::provider, $[
+	Provider::Provider = union(Provider::Provider, $[
 	    "DNS1" : UI::QueryWidget(`id(`DNS1), `Value),
 	    "DNS2" : UI::QueryWidget(`id(`DNS2), `Value),
 	    "DEMAND" : UI::QueryWidget(`id(`DialOnDemand), `Value) ? "yes" : "no",
@@ -251,11 +251,11 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    "DSLSUPPORTED" : type == "dsl" ? "yes" : "no"
 	]);
 	if (type == "modem")
-	    Providers::provider = union(Providers::provider, $[
+	    Provider::Provider = union(Provider::Provider, $[
 		"STUPIDMODE" : UI::QueryWidget(`id(`stupidmode), `Value) ? "yes" : "no"
 	    ]);
 	if (type == "isdn")
-	    Providers::provider = union(Providers::provider, $[
+	    Provider::Provider = union(Provider::Provider, $[
 		"FIREWALL" : UI::QueryWidget(`id(`Firewall), `Value) ? "yes" : "no"
 	    ]);
 	/* update firewall info */
@@ -276,7 +276,7 @@ global define symbol ConnectionDetailsDialog() ``{
 }
 
 if(false) {
-Providers::provider = $["PROVIDER":"AICOM, Havlickuv Brod"];
+Provider::Provider = $["PROVIDER":"AICOM, Havlickuv Brod"];
 Wizard::CreateDialog();
 //ConnectionDialog("modem");
 ConnectionDialog("isdn");

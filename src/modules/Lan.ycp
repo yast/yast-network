@@ -1,7 +1,7 @@
 /**
  * File:	modules/Lan.ycp
- * Package:	Configuration of network
- * Summary:	Data for configuration of network card
+ * Package:	Network configuration
+ * Summary:	Network card data
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
@@ -23,7 +23,7 @@ import "Progress";
 import "Summary";
 
 include "network/complex.ycp";
-include "network/config.ycp";
+include "network/devices.ycp";
 include "network/hardware.ycp";
 include "network/ip.ycp";
 include "network/routines.ycp";
@@ -86,15 +86,15 @@ global block AbortFunction = nil;
 list HARDWARE = [];
 
 /**
- * Config information
- * @see ReadConfig
+ * Devices information
+ * @see ReaDevices
  */
-map CONFIG = $[];
+map Devices = $[];
 
 /**
  * Deleted devices
  */
-list DELETED = [];
+list DeletedDevices = [];
 
 /**
  * /etc/install.inf data
@@ -110,7 +110,7 @@ boolean modified = false;
  * Which operation is pending?
  */
 global symbol operation = nil;
-// FIXME: used in lan/address.ycp (#17346)
+// FIXME: used in lan/address.ycp (#17346) -> "global"
 
 /*------------------*/
 /* GLOBAL FUNCTIONS */
@@ -173,8 +173,8 @@ global define boolean Read() ``{
     if(Abort()) return false;
     // stage 3 in reading current Lan setup
     ProgressNextStage(_("Reading current configuration"));
-    //ReadConfig("");
-    ReadConfig("eth|eth-pcmcia-|eth-usb-|tr|tr-pcmcia-|tr-usb-|ctc|hsi|escon|iucv|ci");
+    //ReadDevices("");
+    ReadDevices("eth|eth-pcmcia-|eth-usb-|tr|tr-pcmcia-|tr-usb-|ctc|hsi|escon|iucv|ci|fddi|arc|myri");
     sleep(sl);
 
     string wait = SCR::Read(.sysconfig.network.config.WAIT_FOR_INTERFACES);
@@ -214,7 +214,7 @@ global define boolean Read() ``{
     sleep(sl);
 
     if(Abort()) return false;
-    // last stage in reading current Lan setup
+    /* Final progress stage */
     ProgressNextStage(_("Finished"));
     sleep(sl);
 
@@ -271,64 +271,64 @@ global define boolean Write() ``{
     ], [], "");
 
     if(Abort()) return false;
-    // stage 1 in writing current Lan setup
+    /* Progress stage 1/9 */
     ProgressNextStage(_("Deactivating local network services"));
     if(!write_only) StopNetwork();
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 2 in writing current Lan setup
+    /* Progress stage 2/9 */
     ProgressNextStage(_("Writing /etc/modules.conf"));
     WriteModules();
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 3 in writing current Lan setup
+    /* Progress stage 3/9 */
     ProgressNextStage(_("Writing configuration"));
-    WriteConfig();
+    WriteDevices();
     sleep(sl);
 
     if(wait_for_interfaces != nil)
 	SCR::Write(.sysconfig.network.config.WAIT_FOR_INTERFACES, sformat("%1",wait_for_interfaces));
 
     if(Abort()) return false;
-    // stage 4 in writing current Lan setup
+    /* Progress stage 4/9 */
     ProgressNextStage(_("Writing routing configuration"));
     Routing::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 5 in writing current Lan setup
+    /* Progress stage 5/9 */
     ProgressNextStage(_("Writing host name and DNS configuration"));
     DNS::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 6 in writing current Lan setup
+    /* Progress stage 6/9 */
     ProgressNextStage(_("Setting up network services"));
     EnableNetwork();
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 7 in writing current Lan setup
+    /* Progress stage 7/9 */
     ProgressNextStage(_("Writing firewall settings"));
     Firewall::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 8 in writing current Lan setup
+    /* Progress stage 8/9 */
     ProgressNextStage(_("Activating network services"));
     if(!write_only) StartNetwork();
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 9 in writing current Lan setup
+    /* Progress stage 9/9 */
     ProgressNextStage(_("Running SuSEconfig"));
     if(!write_only) RunSuSEconfig();
     sleep(sl);
 
     if(Abort()) return false;
-    // last stage in writing current Lan setup
+    /* Final progress stage */
     ProgressNextStage(_("Finished"));
     sleep(sl);
 
@@ -380,7 +380,7 @@ global define boolean Import(map settings) ``{
 	}
     });
 
-    CONFIG = eval($["eth":eth, "tr":token]);
+    Devices = eval($["eth":eth, "tr":token]);
     DNS::Import(eval(settings["dns"]:$[]));
     Routing::Import(eval(settings["routing"]:$[]));
 	modified = true;
@@ -399,7 +399,7 @@ global define map Export() ``{
 					"REMOTE_IPADDR"];
     list ignore = [ "UNIQUE" ];
 
-    foreach(string device, map data, CONFIG, ``{
+    foreach(string device, map data, Devices, ``{
 	list interfaces = maplist(string device_nr, map device_data, data, ``{
 	    map new_device = $[];
 	    new_device = add(new_device,"device", device + device_nr);
@@ -427,12 +427,12 @@ global define map Export() ``{
  * Select the hardware component
  * @param which index of the component
  */
-global define void Select(integer which) ``{
+global define void SelectHW(integer which) ``{
     SelectHardware(which);
 }
 
 /**
- * Create a textual summary and a list of unconfigured cards
+ * Create a textual summary and a list of unconfigured devices
  * @param split split configured and unconfigured?
  * @return summary of the current configuration
  */
@@ -441,7 +441,7 @@ global define list Summary(boolean split) ``{
 }
 
 /**
- * Create an overview table with all configured cards
+ * Create an overview table with all configured devices
  * @return table items
  */
 global define list Overview() ``{
@@ -457,7 +457,7 @@ global define list Overview() ``{
  * @return list of 10 free devices
  */
 global define list FreeDevices(string type) ``{
-    y2debug("CONFIG=%1",CONFIG);
+    y2debug("Devices=%1", Devices);
     return GetFreeDevices(type, 10);
 }
 
@@ -468,19 +468,21 @@ global define list FreeDevices(string type) ``{
  * @return list of 10 free devices
  */
 global define list FreeAliases(string type, integer num) ``{
-    y2debug("CONFIG=%1",CONFIG);
-    map CONFIG = lookup(lookup(CONFIG, type, $[]), sformat("%1",num), $[]);
-    y2debug("CONFIG=%1",CONFIG);
+    y2debug("Devices=%1", Devices);
+    map Devices = lookup(Devices[type]:$[], sformat("%1",num), $[]);
+    y2debug("Devices=%1", Devices);
     return GetFreeDevices("_aliases", 10);
 }
 
+
 /**
- * Add a new device or edit an existing one (prepare before Commit)
- * @param dev device to edit, "" means to add one
+ * Select the given device
+ * @param dev device to select ("" for new device, default values)
  * @return true if success
  */
-global define boolean AddEdit(string dev) ``{
-    operation = nil;
+global define boolean Select(string dev) ``{
+
+    y2debug("dev=%1", dev);
     map devmap  = $[];
 
     /* dev=="" -> Add */
@@ -495,7 +497,7 @@ global define boolean AddEdit(string dev) ``{
         integer num = device_num(dev);
         string n = sformat("%1",num);
 
-        map typemap = lookup(CONFIG, typ, $[]);
+        map typemap = lookup(Devices, typ, $[]);
         if(!haskey(typemap, n)) {
             y2error("Key not found: %1", dev);
             return false;
@@ -548,18 +550,43 @@ global define boolean AddEdit(string dev) ``{
 }
 
 /**
- * Delete the given device
- * @param dev device to edit
+ * Add a new device
  * @return true if success
  */
-global define boolean Delete(string dev) ``{
+global define boolean Add() ``{
     operation = nil;
-    string typ = device_type(dev);
-    integer num = device_num(dev);
+    if(Select("") != true) return false;
+    operation = `add;
+    return true;
+}
 
-    map typemap = lookup(CONFIG, typ, $[]);
+/**
+ * Edit the given device
+ * @param name device to edit
+ * @return true if success
+ */
+global define boolean Edit(any name) ``{
+    operation = nil;
+    if(Select(name) != true) return false;
+    operation = `edit;
+    return true;
+}
+
+/**
+ * Delete the given device
+ * @param name device to delete
+ * @return true if success
+ */
+global define boolean Delete(string name) ``{
+    operation = nil;
+
+    y2debug("Delete(%1)", name);
+    string typ = device_type(name);
+    integer num = device_num(name);
+
+    map typemap = Devices[typ]:$[];
     if(!haskey(typemap, sformat("%1",num))) {
-	y2error("Key not found: %1", dev);
+	y2error("Key not found: %1", name);
 	return false;
     }
 
@@ -572,7 +599,6 @@ global define boolean Delete(string dev) ``{
 /**
  * Commit pending operation
  * @return true if success
- * @see AddEdit
  */
 global define boolean Commit() ``{
     y2debug("Commit(%1)",operation);
@@ -633,8 +659,8 @@ global define boolean Commit() ``{
 	    ConfigAddEdit(type, device, newdev, false);
     }
     else if(operation == `delete) {
-	ConfigDelete(type, device);
-	change(DELETED, type+device);
+	DeleteDevice(type, device);
+	change(DeletedDevices, type+device);
     }
     else {
 	y2error("Unknown operation: %1", operation);
@@ -651,12 +677,12 @@ global define boolean Commit() ``{
  */
 global define void Propose() ``{
 
-    y2milestone("CONFIG=%1", CONFIG);
+    y2milestone("Devices=%1", Devices);
     y2milestone("HARDWARE=%1", HARDWARE);
     y2milestone("INSTALL_INF=%1", INSTALL_INF);
 
     /* Something is already configured -> do nothing */
-    if(size(CONFIG) > 0) {
+    if(size(Devices) > 0) {
 	y2milestone("Something already configured: don't propose");
 	return;
     }
@@ -738,7 +764,7 @@ global define void Propose() ``{
     }
 
     Commit();
-    y2milestone("CONFIG=%1", CONFIG);
+    y2milestone("Devices=%1", Devices);
 }
 
 /**

@@ -1,6 +1,6 @@
 /**
  * File:	clients/lan_summary.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Network cards summary
  * Authors:	Michal Svec <msvec@suse.cz>
  *
@@ -23,7 +23,7 @@ y2milestone("Lan summary started");
 Progress::off();
 Lan::Read();
 list sum = Lan::Summary(false);
-string ret = select(sum, 0, "");
+string ret = sum[0]:"";
 Progress::on();
 
 /* Finish */

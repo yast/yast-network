@@ -1,6 +1,6 @@
 /**
  * File:	include/network/dsl/wizards.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	DSL configuration wizards
  * Authors:	Michal Svec <msvec@suse.cz>
  *

@@ -1,7 +1,7 @@
 /**
  * File:	modules/Firewall.ycp
- * Package:	Configuration of network
- * Summary:	Firewall configuration
+ * Package:	Network configuration
+ * Summary:	Firewall data
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$

@@ -1,6 +1,6 @@
 /**
  * File:	include/network/dsl/dialogs.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Configuration dialogs for DSL
  * Authors:	Michal Svec <msvec@suse.cz>
  *

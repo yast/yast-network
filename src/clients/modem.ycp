@@ -1,6 +1,6 @@
 /**
  * File:	clients/modem.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Modems main file
  * Authors:	Michal Svec <msvec@suse.cz>
  *

@@ -1,12 +1,12 @@
 /**
- * File:	clients/proxy.ycp
+ * File:	clients/host.ycp
  * Package:	Network configuration
- * Summary:	Proxy client
+ * Summary:	Hosts client
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
- * Main file for proxy configuration.
+ * Main file for hosts configuration.
  * Uses all other files.
  */
 
@@ -14,14 +14,14 @@
 
 textdomain "network";
 
-import "Proxy";
+import "Host";
 import "Wizard";
 
 /* The main () */
 y2milestone("----------------------------------------");
-y2milestone("Proxy module started");
+y2milestone("Host module started");
 
-include "network/services/proxy.ycp";
+include "network/services/host.ycp";
 include "network/runtime.ycp";
 
 /**
@@ -29,24 +29,25 @@ include "network/runtime.ycp";
  * @return true if data was modified
  */
 global define boolean Modified() ``{
-    return Proxy::modified;
+    return Host::modified;
 }
 
-Proxy::Read();
+Host::Read();
 Wizard::CreateDialog();
 Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), FinishButtonLabel()));
 /* main ui function */
-any ret = ProxyMainDialog();
+any ret = HostsMainDialog();
 y2debug("ret == %1", ret);
 
-if(ret == `next && Proxy::modified) {
-    Proxy::Write();
+if(ret == `next && Host::modified) {
+    Host::Write();
+    /* Not needed? RestartNetwork(); */
 }
 
 UI::CloseDialog();
 
 /* Finish */
-y2milestone("Proxy module finished");
+y2milestone("Host module finished");
 y2milestone("----------------------------------------");
 return ret;
 

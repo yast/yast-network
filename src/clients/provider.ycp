@@ -1,12 +1,12 @@
 /**
- * File:	clients/providers.ycp
- * Package:	Configuration of network
- * Summary:	Providers main file
+ * File:	clients/provider.ycp
+ * Package:	Network configuration
+ * Summary:	Provider main file
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
- * Main file for network card configuration.
+ * Main file for provider configuration.
  * Uses all other files.
  */
 
@@ -16,7 +16,7 @@ textdomain "network";
 
 /* The main () */
 y2milestone("----------------------------------------");
-y2milestone("Providers module started");
+y2milestone("Provider module started");
 
 include "network/provider/wizards.ycp";
 
@@ -29,18 +29,18 @@ if(size(args) > 0) {
 	propose = true;
     }
     else
-	y2error("Bad argument for providers: %1",WFM::Args(0));
+	y2error("Bad argument for providers: %1", WFM::Args(0));
 }
 
 /* main ui function */
 any ret = nil;
 
-if(propose) ret = ProvidersAutoSequence();
-else ret = ProvidersSequence();
-y2debug("ret == %1", ret);
+if(propose) ret = ProviderAutoSequence();
+else ret = ProviderSequence();
+y2debug("ret=%1", ret);
 
 /* Finish */
-y2milestone("Providers module finished");
+y2milestone("Provider module finished");
 y2milestone("----------------------------------------");
 return ret;
 

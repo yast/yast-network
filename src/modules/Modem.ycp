@@ -1,7 +1,7 @@
 /**
  * File:	modules/Modem.ycp
- * Package:	Configuration of network
- * Summary:	Data for configuration of modem
+ * Package:	Network configuration
+ * Summary:	Modem data
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
@@ -193,13 +193,14 @@ global define boolean Write() ``{
         // progress step 4/5
         _("Set up smpppd"),
         // progress step 6/6
-        _("Run kinternet"),
+        _("Run KInternet"),
     ], [], "");
 
     if(Abort()) return false;
     // stage 1 in writing current Modem setup
     ProgressNextStage(_("Writing configuration"));
     WriteConfig();
+    UpdateModemSymlink();
     sleep(sl);
 
     if(Abort()) return false;
@@ -228,7 +229,7 @@ global define boolean Write() ``{
 
     if(Abort()) return false;
     // last stage in writing current Modem setup
-    ProgressNextStage(_("Running kinternet"));
+    ProgressNextStage(_("Running KInternet"));
     RunKInternet();
     sleep(sl);
 
@@ -379,7 +380,8 @@ global define map Export() ``{
 }
 
 /**
- * Build a textual summary and a list of unconfigured cards
+ * Create a textual summary and a list of unconfigured devices
+ * @param split split configured and unconfigured?
  * @return summary of the current configuration
  */
 global define list Summary(boolean split) ``{
@@ -387,6 +389,8 @@ global define list Summary(boolean split) ``{
 }
 
 /**
+ * Create an overview table with all configured devices
+ * @return table items
  */
 global define list Overview() ``{
     return BuildOverview();

@@ -1,6 +1,6 @@
 /**
  * File:	include/network/lan/wizards.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Network cards configuration wizards
  * Authors:	Michal Svec <msvec@suse.cz>
  *

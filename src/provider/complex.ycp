@@ -1,6 +1,6 @@
 /**
  * File:	include/network/provider/complex.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Complex providers dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
@@ -11,7 +11,7 @@
 
 textdomain "network";
 
-import "Providers";
+import "Provider";
 
 import "Wizard";
 import "Wizard_hw";
@@ -21,13 +21,14 @@ include "ui/common_messages.ycp";
 
 include "network/routines.ycp";
 include "network/complex.ycp";
+include "network/provider/helps.ycp";
 
 /**
  * Return a modification status
  * @return true if data was modified
  */
 global define boolean Modified() ``{
-    return Providers::Modified();
+    return Provider::Modified();
 }
 
 /**
@@ -35,7 +36,7 @@ global define boolean Modified() ``{
  * @return always `next
  */
 global define symbol Commit() ``{
-    Providers::Commit();
+    Provider::Commit();
     return `next;
 }
 
@@ -44,18 +45,9 @@ global define symbol Commit() ``{
  * @return `abort if aborted and `next otherwise
  */
 global define symbol ReadDialog() ``{
-
-    /* Providers read dialog help 1/2 */
-    string help = _("<p><b><big>Initializing provider
-configuration</big></b><br>Please wait...<br></p>") +
-
-    /* Providers read dialog help 2/2 */
-_("<p><b><big>Aborting the initialization:</big></b><br>
-Safely abort the configuration utility by pressing <B>Abort</B> now.</p>");
-
-    Wizard::RestoreHelp(help);
-    Providers::AbortFunction = ``{return PollAbort();};
-    boolean ret = Providers::Read("all");
+    Wizard::RestoreHelp(HELPS["read"]:"");
+    Provider::AbortFunction = ``{return PollAbort();};
+    boolean ret = Provider::Read(/*"all"*/);
     return ret ? `next : `abort;
 }
 
@@ -65,19 +57,79 @@ Safely abort the configuration utility by pressing <B>Abort</B> now.</p>");
  */
 global define symbol WriteDialog() ``{
     if(!Modified()) return `next;
-
-    /* Providers write dialog help 1/2 */
-    string help = _("<p><b><big>Saving provider
-configuration</big></b><br>Please wait...<br></p>") +
-
-    /* Providers write dialog help 2/2 */
-_("<p><b><big>Aborting saving:</big></b><br>
-Abort saving by pressing <b>Abort</b>.</p>");
-
-    Wizard::RestoreHelp(help);
-    Providers::AbortFunction = ``{return PollAbort() && ReallyAbort();};
-    boolean ret = Providers::Write();
+    Wizard::RestoreHelp(HELPS["write"]:"");
+    Provider::AbortFunction = ``{return PollAbort() && ReallyAbort();};
+    boolean ret = Provider::Write();
     return ret ? `next : `abort;
+}
+
+/**
+ * Choose provider type dialog
+ * @return `abort if aborted and `next otherwise
+ */
+global define symbol TypeDialog() ``{
+
+    /* Provider type dialog caption */
+    string caption = _("Provider type");
+
+    /* Provider type dialog contents */
+    term contents = `HBox(
+	`HSpacing(8),
+	/* Frame label */
+	//`Frame(_("Available network modules:"), `HBox(`HSpacing(2),
+	`VBox(
+	    `VSpacing(3),
+	    /* Selection box label */
+	    `SelectionBox(`id(`modules), _("&Available provider types:"), [
+		/* Selection box item */
+		`item(`id("modem"), _("Modem provider"), true),
+		/* Selection box item */
+		`item(`id("isdn"), _("ISDN provider")),
+		/* Selection box item */
+		`item(`id("dsl"), _("DSL provider"))
+	    ]),
+	    `VSpacing(3)
+	    ),
+	    //`HSpacing(2))),
+	`HSpacing(8)
+    );
+
+    Wizard::SetContentsButtons(caption, contents, HELPS["type"]:"",
+	    BackButtonLabel(), NextButtonLabel());
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    /* if(ReallyAbort()) break;
+	    else continue; */
+	    break;
+	}
+	/* next */
+	else if(ret == `next) {
+	    /* check_* */
+	    break;
+	}
+	/* back */
+	else if(ret == `back) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    if(ret == `next) {
+	string type = UI::QueryWidget(`id(`modules), `CurrentItem);
+	y2debug("type=%1", type);
+	Provider::Add(type);
+    }
+
+    return ret;
 }
 
 /**
@@ -86,24 +138,10 @@ Abort saving by pressing <b>Abort</b>.</p>");
  */
 global define symbol SummaryDialog() ``{
 
-    /* Providers summary dialog caption */
-    string caption = _("Provider Configurations");
+    /* Provider summary dialog caption */
+    string caption = _("Provider configurations");
 
-    /* Providers summary dialog help 1/3 */
-    string help = _("<p><b><big>Provider setup</big></b><br>
-Configure your provider here.<br></p>") +
-
-    /* Providers summary dialog help 2/3 */
-_("<p><b><big>Adding a provider:</big></b><br>
-Choose a provider from the list of available providers
-then press <b>Configure</b>.</p>") +
-
-    /* Providers summary dialog help 3/3 */
-_("<p><b><big>Editing or deleting:</big></b><br>
-If you press <b>Edit</b>, an additional dialog in which
-to change the configuration opens.</p>");
-
-    list summary = Providers::Summary(true);
+    list summary = Provider::Summary(true);
     list unconfigured = select(summary, 1, []);
     string configured = select(summary, 0, "");
     y2debug("unconfigured=%1", unconfigured);
@@ -112,7 +150,7 @@ to change the configuration opens.</p>");
     term contents = Wizard_hw::DetectedContent(_("Providers to configure"),
 	    unconfigured, false, configured);
 
-    Wizard::SetContentsButtons(caption, contents, help,
+    Wizard::SetContentsButtons(caption, contents, HELPS["summary"]:"",
 	    BackButtonLabel(), FinishButtonLabel());
 
     any ret = nil;
@@ -132,15 +170,9 @@ to change the configuration opens.</p>");
 	}
 	/* configure the selected card */
 	else if(ret == `configure_button) {
-	    Providers::AddEdit("", false);
-	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
-	    if(selected == `other) {
-		ret = `other;
-	    }
-	    else {
-		Providers::Select(selected);
-		ret = `configure;
-	    }
+	    string type = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
+	    Provider::Add(type);
+	    ret = `configure;
 	    break;
 	}
 	else if(ret == `next || ret == `back) {
@@ -161,33 +193,20 @@ to change the configuration opens.</p>");
  */
 global define symbol OverviewDialog() ``{
 
-    /* Providers overview dialog help caption */
+    /* Provider overview dialog help caption */
     string caption = _("Providers configuration overview");
 
-    /* Providers overview dialog help 1/3 */
-    string help = _("<p><b><big>Providers overview</big></b><br>
-Obtain an overview of installed providers. Additionally,
-edit their configuration.<br></p>") +
-
-    /* Providers overview dialog help 2/3 */
-_("<p><b><big>Adding a provider:</big></b><br>
-Press <b>Add</b> to configure a new provider manually.</p>") +
-
-    /* Providers overview dialog help 3/3 */
-_("<p><b><big>Editing or deleting:</big></b><br>
-Choose a provider to change or remove.
-Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
-
-    list overview = Providers::Overview();
+    list overview = Provider::Overview();
     y2debug("overview=%1",overview);
 
     term contents = OverviewTable(
 	/* Table header */
-	`header(_("Name"), _("Provider")),
+	`header(_("Name"), _("Provider"), _("Phone")),
+	// `header(_("Name"), _("Provider"), _("Phone"), _("Modem"), _("ISDN"), _("DSL")),
 	overview
     );
 
-    Wizard::SetContentsButtons(caption, contents, help,
+    Wizard::SetContentsButtons(caption, contents, HELPS["overview"]:"",
 	    BackButtonLabel(), FinishButtonLabel());
 
     if(size(overview) < 1) {
@@ -207,21 +226,20 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
 	}
 	/* add */
 	else if(ret == `add) {
-	    Providers::AddEdit("", false);
 	    break;
 	}
 	/* edit */
 	else if(ret == `edit) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-	    Providers::AddEdit(dev, false);
+	    Provider::Edit(dev);
 	    break;
 	}
 	/* delete */
 	else if(ret == `delete) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-	    Providers::Delete(dev);
-	    Providers::Commit();
-	    overview = Providers::Overview();
+	    Provider::Delete(dev);
+	    Provider::Commit();
+	    overview = Provider::Overview();
 	    UI::ChangeWidget(`id(`table), `Items, overview);
 	    if(size(overview) < 1) {
 		UI::ChangeWidget(`id(`edit), `Enabled, false);
@@ -244,7 +262,7 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
 
 if(false) {
 Wizard::CreateDialog();
-Providers::Read();
+Provider::Read();
 OverviewDialog();
 }
 

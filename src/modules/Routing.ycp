@@ -1,7 +1,7 @@
 /**
  * File:	modules/Routing.ycp
- * Package:	Configuration of network
- * Summary:	Routing configuration
+ * Package:	Network configuration
+ * Summary:	Routing data
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
@@ -134,6 +134,29 @@ global define map Export() ``{
 	"routes": eval(routes),
 	"ip_forward": forward
     ];
+}
+
+/**
+ * Create routing text summary
+ * @return summary text
+ */
+global define string Summary() ``{
+
+    string summary = "";
+
+    if(forward == true)
+	/* Summary text */
+	summary = summary + _("IP forwarding: on");
+    else
+	/* Summary text */
+	summary = summary + _("IP forwarding: off");
+
+    if(routes != []) {
+	/* Summary text */
+	summary = summary + sformat(_("Routes: %1"), routes);
+    }
+
+    return summary;
 }
 
 /* EOF */

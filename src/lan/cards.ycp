@@ -1,6 +1,6 @@
 /**
  * File:	include/network/lan/cards.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Network cards database
  * Authors:	Michal Svec <msvec@suse.cz>
  *

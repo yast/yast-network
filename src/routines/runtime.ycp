@@ -1,6 +1,6 @@
 /**
  * File:	include/network/runtime.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	Runtime routines
  * Authors:	Michal Svec <msvec@suse.cz>
  *
@@ -37,6 +37,7 @@ global define boolean RunSuSEconfig() ``{
 
 /**
  * Run one SuSEconfig module
+ * @param modul SuSEconfig module
  * @return true if success
  */
 global define boolean RunSuSEconfigModule(string modul) ``{
@@ -54,7 +55,8 @@ global define boolean RunSuSEconfigModule(string modul) ``{
  */
 global define boolean RunKInternet() ``{
     y2milestone("Running KInternet ...");
-    return SCR::Execute(.target.bash, "{ [ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu -u $USER -- kinternet -quiet; } >/dev/null 2>&1 &") == 0;
+    return SCR::Execute(.target.bash_background, "[ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu -u $USER -- kinternet -quiet") == 0;
+    // return SCR::Execute(.target.bash, "{ [ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu -u $USER -- kinternet -quiet; } >/dev/null 2>&1 &") == 0;
 }
 
 /**
@@ -62,8 +64,10 @@ global define boolean RunKInternet() ``{
  * @return true if success
  */
 global define boolean StartNetwork() ``{
-    if(Arch::s390) SCR::Execute(.target.bash, "/etc/init.d/chandev reload");
-    return SCR::Execute(.target.bash, "/etc/init.d/network start") == 0;
+    boolean ret = true;
+    if(Arch::s390) ret = StartService("chandev");
+    ret = StartService("network") && ret;
+    return ret;
 }
 
 /**
@@ -71,7 +75,7 @@ global define boolean StartNetwork() ``{
  * @return true if success
  */
 global define boolean RestartNetwork() ``{
-    return SCR::Execute(.target.bash, "/etc/init.d/network restart") == 0;
+    return RestartService("network");
 }
 
 /**
@@ -79,7 +83,7 @@ global define boolean RestartNetwork() ``{
  * @return true if success
  */
 global define boolean StopNetwork() ``{
-    return SCR::Execute(.target.bash, "/etc/init.d/network stop") == 0;
+    return StopService("network");
 }
 
 /**
@@ -87,13 +91,10 @@ global define boolean StopNetwork() ``{
  * @return true if success
  */
 global define boolean EnableSMPPPD() ``{
-    EnableService("smpppd");
-    // FIXME: move somewhere else
-    if(Runlevel::ServiceStatus("smpppd") == 0)
-	Runlevel::RunInitScript("smpppd", "reload");
-    else
-	Runlevel::RunInitScript("smpppd", "start");
-    return true;
+    boolean ret = true;
+    ret = EnableService("smpppd") && ret;
+    ret = StartService("smpppd") && ret;
+    return ret;
 }
 
 /**
@@ -131,6 +132,60 @@ global define boolean DisableService(string service) ``{
     }
     y2milestone("Disabling service %1", service);
     return Runlevel::ServiceAdjust(service, "disable");
+}
+
+/**
+ * Start service (reload if already running)
+ * @param service service to be started
+ * @return true if success
+ */
+global define boolean StartService(string service) ``{
+    if(service == nil || service == "") {
+	y2error("Wrong service: %1", service);
+	return false;
+    }
+    any ret = nil;
+    y2milestone("Starting service %1", service);
+    if(Runlevel::ServiceStatus(service) == 0)
+	ret = Runlevel::RunInitScript(service, "reload");
+    else
+	ret = Runlevel::RunInitScript(service, "start");
+    y2debug("ret=%1", ret);
+    return ret == 0;
+}
+
+/**
+ * Restart service (reload if already running)
+ * @param service service to be started
+ * @return true if success
+ */
+global define boolean RestartService(string service) ``{
+    if(service == nil || service == "") {
+	y2error("Wrong service: %1", service);
+	return false;
+    }
+    any ret = nil;
+    y2milestone("Restarting service %1", service);
+    ret = Runlevel::RunInitScript(service, "restart");
+    y2debug("ret=%1", ret);
+    return ret == 0;
+}
+
+/**
+ * Stop service
+ * @param service service to be stopped
+ * @return true if success
+ */
+global define boolean StopService(string service) ``{
+    if(service == nil || service == "") {
+	y2error("Wrong service: %1", service);
+	return false;
+    }
+    any ret = nil;
+    y2milestone("Stopping service %1", service);
+    ret = Runlevel::RunInitScript(service, "stop");
+    y2debug("ret=%1", ret);
+    return ret == 0;
 }
 
 /* EOF */

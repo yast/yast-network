@@ -1,7 +1,7 @@
 /**
  * File:	modules/DSL.ycp
- * Package:	Configuration of network
- * Summary:	Data for configuration of DSL, input and output functions.
+ * Package:	Network configuration
+ * Summary:	DSL data
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
@@ -132,12 +132,21 @@ global define boolean Write() ``{
     return true;
 }
 
-global define list Overview() ``{
-    return BuildOverview();
-}
-
+/**
+ * Create a textual summary and a list of unconfigured devices
+ * @param split split configured and unconfigured?
+ * @return summary of the current configuration
+ */
 global define list Summary(boolean split) ``{
     return BuildSummary(split);
+}
+
+/**
+ * Create an overview table with all configured devices
+ * @return table items
+ */
+global define list Overview() ``{
+    return BuildOverview();
 }
 
 /* EOF */

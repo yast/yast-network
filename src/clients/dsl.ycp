@@ -1,6 +1,6 @@
 /**
  * File:	clients/dsl.ycp
- * Package:	Configuration of network
+ * Package:	Network configuration
  * Summary:	DSL main file
  * Authors:	Michal Svec <msvec@suse.cz>
  *

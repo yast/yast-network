@@ -1,12 +1,12 @@
 /**
  * File:	include/network/complex.ycp
- * Package:	Configuration of network cards
+ * Package:	Network configuration
  * Summary:	Summary and overview functions
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
- * All config settings are stored in a global variable CONFIG.
+ * All config settings are stored in a global variable Devices.
  * All hardware settings are stored in a global variable HARDWARE.
  * Deleted devices are in the global list DELETED.
  */
@@ -29,7 +29,7 @@ global define list BuildSummary(boolean split) ``{
     list unconfigured = [];
 
     /* build a list of configured devices */
-    maplist(`devtype, `devsmap, CONFIG, ``{
+    maplist(`devtype, `devsmap, Devices, ``{
 	maplist(`devnum, `devmap, devsmap, ``{
 
 	    /* main device summary */
@@ -108,73 +108,86 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
     if(hwname != nil && hwname != "") return hwname;
 
     map device_names = $[
-
 	/* Device type label */
-	"isdn-pcmcia-"	: _("PCMCIA ISDN connection"),
+	"arc"		: _("ARCnet network card"),
 	/* Device type label */
-	"ippp-pcmcia-"	: _("PCMCIA ISDN connection"),
+	"atm"		: _("Asynchronous Transfer Mode (ATM)"),
 	/* Device type label */
-	"isdn-usb-"	: _("USB ISDN connection"),
+	"ci"		: _("Common link access for workstation (CLAW)"),
 	/* Device type label */
-	"ippp-usb-"	: _("USB ISDN connection"),
-	/* Device type label */
-	"isdn"		: _("ISDN connection"),
-	/* Device type label */
-	"ippp"		: _("ISDN connection"),
-	/* Device type label */
-	"modem-pcmcia-"	: _("PCMCIA modem"),
-	/* Device type label */
-	"ppp-pcmcia-"	: _("PCMCIA modem"),
-	/* Device type label */
-	"modem-usb-"	: _("USB modem"),
-	/* Device type label */
-	"ppp-usb-"	: _("USB modem"),
-	/* Device type label */
-	"modem"		: _("Modem"),
-	/* Device type label */
-	"ppp"		: _("Modem"),
+	"contr"		: _("ISDN card"),
 	/* Device type label */
 	"contr-pcmcia-"	: _("PCMCIA ISDN card"),
 	/* Device type label */
 	"contr-usb-"	: _("USB ISDN card"),
 	/* Device type label */
-	"contr"		: _("ISDN card"),
-	/* Device type label */
-	"net"		: _("ISDN connection"),
-	/* Device type label */
-	"eth-pcmcia-"	: _("PCMCIA Ethernet network card"),
-	/* Device type label */
-	"tr-pcmcia-"	: _("PCMCIA Token Ring network card"),
-	/* Device type label */
-	"fddi-pcmcia-"	: _("PCMCIA FDDI network card"),
-	/* Device type label */
-	"eth-usb-"	: _("USB Ethernet network card"),
-	/* Device type label */
-	"tr-usb-"	: _("USB Token Ring network card"),
-	/* Device type label */
-	"fddi-usb-"	: _("USB FDDI network card"),
-	/* Device type label */
-	"eth"		: _("Ethernet network card"),
-	/* Device type label */
-	"tr"		: _("Token Ring network card"),
-	/* Device type label */
-	"fddi"		: _("FDDI network card"),
+	"ctc"		: _("Channel to channel interface (CTC)"),
 	/* Device type label */
 	"dummy"		: _("Dummy network device"),
 	/* Device type label */
-	"vmnet"		: _("VMWare network device"),
-	/* Device type label */
-	"lo"		: _("Loopback device"),
-	/* Device type label */
 	"escon"		: _("Enteprise system connector (ESCON)"),
 	/* Device type label */
-	"iucv"		: _("Inter user communication vehicle (IUCV)"),
+	"eth"		: _("Ethernet network card"),
 	/* Device type label */
-	"ctc"		: _("Channel to channel interface (CTC)"),
+	"eth-pcmcia-"	: _("PCMCIA Ethernet network card"),
+	/* Device type label */
+	"eth-usb-"	: _("USB Ethernet network card"),
+	/* Device type label */
+	"fddi"		: _("FDDI network card"),
+	/* Device type label */
+	"fddi-pcmcia-"	: _("PCMCIA FDDI network card"),
+	/* Device type label */
+	"fddi-usb-"	: _("USB FDDI network card"),
+	/* Device type label */
+	"hippi"		: _("HIgh Performance Parallel Interface (HIPPI)"),
 	/* Device type label */
 	"hsi"		: _("Hipersockets interface (HSI)"),
 	/* Device type label */
-	"ci"		: _("Common link access for workstation (CLAW)"),
+	"ippp"		: _("ISDN connection"),
+	/* Device type label */
+	"ippp-pcmcia-"	: _("PCMCIA ISDN connection"),
+	/* Device type label */
+	"ippp-usb-"	: _("USB ISDN connection"),
+	/* Device type label */
+	"irlan"		: _("Infra-red network device"),
+	/* Device type label */
+	"irda"		: _("Infra-red device"),
+	/* Device type label */
+	"isdn"		: _("ISDN connection"),
+	/* Device type label */
+	"isdn-pcmcia-"	: _("PCMCIA ISDN connection"),
+	/* Device type label */
+	"isdn-usb-"	: _("USB ISDN connection"),
+	/* Device type label */
+	"iucv"		: _("Inter user communication vehicle (IUCV)"),
+	/* Device type label */
+	"lo"		: _("Loopback device"),
+	/* Device type label */
+	"modem"		: _("Modem"),
+	/* Device type label */
+	"modem-pcmcia-"	: _("PCMCIA modem"),
+	/* Device type label */
+	"modem-usb-"	: _("USB modem"),
+	/* Device type label */
+	"myri"		: _("Myrinet network card"),
+	/* Device type label */
+	"net"		: _("ISDN connection"),
+	/* Device type label */
+	"ppp"		: _("Modem"),
+	/* Device type label */
+	"ppp-pcmcia-"	: _("PCMCIA modem"),
+	/* Device type label */
+	"ppp-usb-"	: _("USB modem"),
+	/* Device type label */
+	"sit"		: _("IPv6-in-IPv4 encapsulation device"),
+	/* Device type label */
+	"tr"		: _("Token Ring network card"),
+	/* Device type label */
+	"tr-pcmcia-"	: _("PCMCIA Token Ring network card"),
+	/* Device type label */
+	"tr-usb-"	: _("USB Token Ring network card"),
+	/* Device type label */
+	"vmnet"		: _("VMWare network device"),
     ];
 
     if(haskey(device_names, devtype))
@@ -232,14 +245,14 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
 	string proto    = lookup(devmap, "PROTOCOL", _("Unknown protocol"));
 	// provider: name of the provider
 	string sn = lookup(devmap, "PROVIDER", "unknown____");
-	map p = Providers::ReadProvider(sn);
+	map p = Provider::ReadProvider(sn);
 	string provider = sn; //lookup(p, "PROVIDER", _("Unknown provider"));
 	// example: ISDN Connection to Arcor with syncppp on net0
 	return sformat(_("to %1 with %2 on %3"), provider, proto, dev);
     }
     /* treat the rest as a network card */
     else {
-	if(!regexpmatch(devtype, "lo|dummy|eth|tr|fddi|escon|hsi|ctc|iucv|claw"))
+	if(!regexpmatch(devtype, "lo|dummy|arc|myri|eth|tr|fddi|escon|hsi|ctc|iucv|claw"))
 	    y2error("Unknown type: %1", devtype);
 
 	string proto = lookup(devmap, "BOOTPROTO", "static");
@@ -276,37 +289,53 @@ global define string DeviceType(string type) ``{
 
     map device_types = $[
 	/* Device type label */
-	"lo"	: _("Loopback"),
+	"arc"	: _("ARCnet"),
 	/* Device type label */
-	"vmnet"	: _("VMWare"),
+	"atm"	: _("ATM"),
+	/* Device type label */
+	"ci"	: _("CLAW"),
+	/* Device type label */
+	"contr"	: _("ISDN"),
+	/* Device type label */
+	"ctc"	: _("CTC"),
+	/* Device type label */
+	"dsl"	: _("DSL"),
 	/* Device type label */
 	"dummy"	: _("Dummy"),
+	/* Device type label */
+	"escon"	: _("ESCON"),
 	/* Device type label */
 	"eth"	: _("Ethernet"),
 	/* Device type label */
 	"fddi"	: _("FDDI"),
 	/* Device type label */
-	"contr"	: _("ISDN"),
+	"hippi"	: _("HIPPI"),
 	/* Device type label */
-	"net"	: _("ISDN"),
+	"hsi"	: _("HSI"),
 	/* Device type label */
 	"ippp"	: _("ISDN"),
 	/* Device type label */
+	"irlan"	: _("IrDA"),
+	/* Device type label */
+	"irda"	: _("IrDA"),
+	/* Device type label */
 	"isdn"	: _("ISDN"),
+	/* Device type label */
+	"iucv"	: _("IUCV"),
+	/* Device type label */
+	"lo"	: _("Loopback"),
+	/* Device type label */
+	"myri"	: _("Myrinet"),
+	/* Device type label */
+	"net"	: _("ISDN"),
 	/* Device type label */
 	"ppp"	: _("Modem"),
 	/* Device type label */
+	"sit"	: _("IPv6-in-IPv4"),
+	/* Device type label */
 	"tr"	: _("Token Ring"),
 	/* Device type label */
-	"hsi"	: _("Hipersockets (HSI)"),
-	/* Device type label */
-	"ctc"	: _("Channel To Channel (CTC)"),
-	/* Device type label */
-	"iucv"	: "IUCV",
-	/* Device type label */
-	"escon"	: "ESCON",
-	/* Device type label */
-	"ci"	: "CLAW",
+	"vmnet"	: _("VMWare"),
     ];
 
     if(haskey(device_types, type))
@@ -325,9 +354,9 @@ global define string DeviceType(string type) ``{
  * @return textual device protocol
  */
 global define string DeviceProtocol(map devmap) ``{
-    string ip = lookup(devmap, "BOOTPROTO", "static");
+    string ip = devmap["BOOTPROTO"]:"static";
     if(ip == nil || ip == "" || ip == "static" || ip == "none")
-	ip = lookup(devmap, "IPADDR", "");
+	ip = devmap["IPADDR"]:"";
     else ip = toupper(ip);
     return ip;
 }
@@ -339,7 +368,7 @@ global define string DeviceProtocol(map devmap) ``{
 global define list BuildOverview() ``{
     list overview = [];
 
-    maplist(`type, `devmap, CONFIG, ``{
+    maplist(`type, `devmap, Devices, ``{
 	maplist(`k, `v, devmap, ``{
 	    term item = nil;
 	    string dev = sformat("%1%2", type, k);
@@ -347,27 +376,26 @@ global define list BuildOverview() ``{
 
 	    /* modem */
 	    if(type == "modem" || type == "ppp")
-        // table item
-		item = `item(`id(dev), k, DeviceType(type), dev, v["PROVIDER_NAME"]:_("Unknown provider"));
+		item = `item(`id(dev), dev, DeviceType(type), v["PROVIDER_NAME"]:_("Unknown provider"));
 	    /* ISDN stuff */
 	    else if (type == "contr") {
 		string cname = lookup(v, "NAME", "unknown");
-		item = `item(`id(dev), k, DeviceType(type), dev, cname /*, "active?", ip, "?", "?"*/);
+		item = `item(`id(dev), dev, DeviceType(type), cname /*, "active?", ip, "?", "?"*/);
 	    }
 	    /* ISDN stuff */
 	    else if (type == "net") {
 		string cname = lookup(v, "PROVIDER", "unknown");
 		string rip   = lookup(v, "PTPADDR", "none");
 		string proto = lookup(v, "PROTOCOL", "unknown");
-		item = `item(`id(dev), k, proto, cname, ip, rip);
+		item = `item(`id(dev), dev, proto, cname, ip, rip);
 	    }
 	    /* other known types */
-	    else if(regexpmatch(type, "lo|dummy|eth|tr|fddi|escon|hsi|ctc|iucv|ci"))
-		item = `item(`id(dev), k, DeviceType(type), dev, /*"active?",*/ ip/*, "?", "?"*/);
+	    else if(regexpmatch(type, "lo|dummy|arc|myri|eth|tr|fddi|escon|hsi|ctc|iucv|ci"))
+		item = `item(`id(dev), dev, DeviceType(type), /*"active?",*/ ip/*, "?", "?"*/);
 	    /* unknown type */
 	    else {
 		y2error("Unknown type: %1", type);
-		item = `item(`id(dev), k, DeviceType(type), dev, /*"active?",*/ ip/*, "?", "?"*/);
+		item = `item(`id(dev), dev, DeviceType(type), /*"active?",*/ ip/*, "?", "?"*/);
 	    }
 	    overview = add(overview, item);
 
@@ -378,7 +406,7 @@ global define list BuildOverview() ``{
 		    //hwname = CheckEmptyName(devtype, HardwareName(unq));
 		    dev = sformat("%1:%2", dev, anum);
 		    ip = DeviceProtocol(amap);
-		    item = `item(`id(dev), k + ":" + anum, DeviceType(dev), dev, ip);
+		    item = `item(`id(dev), dev, DeviceType(dev), ip);
 		    overview = add(overview, item);
 		});
 
@@ -389,8 +417,15 @@ global define list BuildOverview() ``{
     return overview;
 }
 
-
-global define OverviewTableContents(string caption, term header, list contents, boolean first) ``{
+/**
+ * Create table widget for the overview screens with correct spacings
+ * @param caption table caption
+ * @param header table header
+ * @param contents table contents
+ * @param first table is first of the two tables
+ * @return table widget
+ */
+global define term OverviewTableContents(string caption, term header, list contents, boolean first) ``{
 
     term addbutton = nil;
     term editbutton = nil;
@@ -432,14 +467,30 @@ global define OverviewTableContents(string caption, term header, list contents, 
 
 }
 
-global define OverviewTable(term header, list contents) ``{
+/**
+ * Create table widget for the overview screens
+ * @param header table header
+ * @param contents table contents
+ * @return table widget
+ */
+global define term OverviewTable(term header, list contents) ``{
     return `VBox(
 	`VSpacing(0.5),
 	OverviewTableContents("", header, contents, true)
     );
 }
 
-global define OverviewTableDouble(string caption1, term header1, list contents1, string caption2, term header2, list contents2) ``{
+/**
+ * Create two table widgets for the overview screens
+ * @param caption1 first table caption
+ * @param header1 first table header
+ * @param contents1 first table contents
+ * @param caption2 second table caption
+ * @param header2 second table header
+ * @param contents2 second table contents
+ * @return table widget
+ */
+global define term OverviewTableDouble(string caption1, term header1, list contents1, string caption2, term header2, list contents2) ``{
 
     return `VBox(
 	`VSpacing(0.5),
