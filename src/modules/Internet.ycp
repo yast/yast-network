@@ -162,5 +162,25 @@ global define boolean Status() ``{
     return SCR::Execute(.target.bash, "/sbin/ifstatus " + device) == 0;
 }
 
+
+global define boolean Connected() ``{
+
+    string type = FastestType (device);
+
+    if (type == "dsl" || type == "modem") {
+	string tmp1 = SCR::Read (.target.string, "/var/lib/smpppd/ifcfg-" +
+				 device + ".info");
+	list tmp2 = splitstring (tmp1, "\n");
+	return contains (tmp2, "status: connected");
+    }
+
+    if (type == "isdn") {
+	// FIXME
+    }
+
+    return true;
+}
+
+
 /* EOF */
 }

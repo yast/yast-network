@@ -10,35 +10,264 @@
 
 {
 
-textdomain "network";
+    textdomain "network";
 
-import "Internet";
+    import "Mode";
+    import "Wizard";
+    import "Internet";
 
-include "network/routines.ycp";
-include "network/installation/dialogs.ycp";
+    include "ui/common_messages.ycp";
+    include "ui/common_popups.ycp";
 
-/* Called backwards */
-if(WFM::Args(2) == true)
-    return `auto;
+    include "network/routines.ycp";
+    include "network/installation/dialogs.ycp";
 
-if(!Internet::do_test)
-    return `auto;
 
-/* Nothing to test */
-if(!Internet::Fastest())
-    return `auto;
+    /* Called backwards */
+    if(WFM::Args(2) == true)
+	return `auto;
 
-if(!AskForPassword()) {
-    y2error("Password required");
-    return `next;
-}
+    if(!Internet::do_test)
+	return `auto;
 
-symbol ret = TestConnectionDialog();
+    /* Nothing to test */
+    if(!Internet::Fastest())
+	return `auto;
 
-if(ret == `next)
-    AskYOUDialog();
+    if(!AskForPassword()) {
+	y2error("Password required");
+	return `next;
+    }
 
-return ret;
+
+    /* Progress step 1/4 */
+    string l1 = _("Connecting to SuSE server via Internet...");
+    /* Progress step 2/4 */
+    string l2 = _("Downloading the latest release notes...");
+    /* Progress step 3/4 */
+    string l3 = _("Checking for latest updates...");
+    /* Progress step 4/4 */
+    string l4 = _("Closing connection...");
+
+
+    define void make_dialog () ``{
+
+	/* Test dialog caption */
+	string caption = _("Running Internet Connection Test");
+
+	/* help for dialog "Running Internet Connection Test" */
+	string help = _("<p>Here, you can see the progress and the log of the
+Internet Connection Test.</p>") +
+
+	/* help for dialog "Running Internet Connection Test" */
+	_("<p>The test can be aborted by pressing the <b>Abort Test</b> button.</p>");
+
+	/* Progress labels */
+	term progress = `VBox(
+			      `Left(`Label (`id (`s1), "- " + l1)),
+			      `Left(`Label (`id (`s2), "- " + l2)),
+			      `Left(`Label (`id (`s3), "- " + l3)),
+			      `Left(`Label (`id (`s4), "- " + l4))
+			      );
+
+	/* Test dialog contents */
+	term contents = `VBox(
+			      `VSpacing(1),
+			      `VBox(`HVCenter(`HSquash(progress))),
+			      `VSpacing(1),
+			      /* Push Button to abort internet test */
+			      `PushButton(`id (`abort_test), _("&Abort Test")),
+			      `VSpacing(1),
+			      `HBox(
+				    `HSpacing(1),
+				    /* Label of LogView showing protocol of internet test */
+				    `LogView(`id(`log), _("Test Log:"), 5, 50),
+				    `HSpacing(1)
+				    ),
+			      `VSpacing(1),
+			      `HBox(
+				    `HSpacing(1),
+				    /* Label for result of internet test */
+				    `Label(_("Result:")),
+				    `HSpacing(2),
+				    `Label(`id(`res), `opt(`outputField, `hstretch), ""),
+				    `HSpacing(1)
+				    ),
+			      `VSpacing(1),
+			      `VStretch()
+			      );
+
+	Wizard::SetContentsButtons(caption, contents, help,
+				   BackButtonLabel(), NextButtonLabel());
+    }
+
+
+    /**
+     *  Update the log in TestConnectionDialog.
+     */
+    define void update_log () ``{
+	string file = Internet::FastestLogFile (Internet::device);
+	map tmp = SCR::Execute (.target.bash_output,
+				sformat ("/usr/bin/tail -n 50 %1", file));
+	string text = tmp["stdout"]:"";
+	UI::ChangeWidget (`id(`log), `Value, text);
+    }
+
+
+    define void set_stage (integer stage) ``{
+	test_stage = stage;
+    }
+
+
+    define void set_result (symbol result) ``{
+	set_stage (-1);
+	test_result = result;
+	if (test_result == `success) {
+	    /* Possible result of internet test */
+	    UI::ChangeWidget(`id(`res), `Value, _("Success"));
+	} else {
+	    /* Possible result of internet test */
+	    UI::ChangeWidget(`id(`res), `Value, _("Failure"));
+	}
+	UI::ChangeWidget (`id (`abort_test), `Enabled, false);
+    }
+
+
+    define void handle_stage () ``{
+
+	if (test_stage == 0)
+	{
+	    if (Mode::test) {
+		set_stage (1);
+		return;
+	    }
+
+	    y2milestone ("called Start");
+	    if (!Internet::Start ()) {
+		set_result (`failure);
+		return;
+	    }
+
+	    set_stage (1);
+	    return;
+	}
+
+	if (test_stage == 1)
+	{
+	    if (Mode::test) {
+		set_stage (2);
+		return;
+	    }
+
+	    if (!Internet::Status ()) {
+		set_result (`failure);
+		return;
+	    }
+
+	    if (Internet::Connected ()) {
+		y2milestone ("Connected ok");
+		set_stage (2);
+		return;
+	    }
+	}
+
+	if (test_stage == 2)
+	{
+	    // get release notes
+	    sleep (100);
+	    set_stage (3);
+	    return;
+	}
+
+	if (test_stage == 3)
+	{
+	    // check for patches
+	    sleep (100);
+	    set_stage (4);
+	    return;
+	}
+
+	if (test_stage == 4)
+	{
+	    if (Mode::test) {
+		set_result (`success);
+		return;
+	    }
+
+	    y2milestone ("called Stop");
+	    if (!Internet::Stop ()) {
+		set_result (`failure);
+		return;
+	    }
+
+	    set_result (`success);
+	    return;
+	}
+
+    }
+
+
+    integer test_stage = 0;
+    symbol test_result = `running;
+
+    make_dialog ();
+
+    any ret = nil;
+    while(true)
+    {
+	handle_stage ();
+
+	if (test_stage != -1)
+	{
+	    update_log ();
+	    sleep (500);
+	    ret = UI::PollInput();
+
+	    if (ret == nil)
+		continue;
+	}
+	else
+	{
+	    ret = UI::UserInput ();
+	}
+
+	if (ret == `abort_test)
+	{
+	    if (test_stage != -1)
+	    {
+		Internet::Stop ();
+		set_result (`failure);
+	    }
+	    continue;
+	}
+	else if(ret == `abort || ret == `cancel) {
+	    if(UI::ReallyAbortPopup(false))
+	    {
+		Internet::Stop ();
+		set_result (`failure);
+		break;
+	    }
+	    continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    /* check_* */
+	    break;
+	}
+	else {
+	    y2error("Unexpected return code: %1", ret);
+	    continue;
+	}
+    }
+
+    if (ret == `next && test_result == `success) // FIXME
+    {
+	AskYOUDialog();
+    }
+
+    return ret;
 
 /* EOF */
 }
