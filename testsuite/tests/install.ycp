@@ -16,9 +16,9 @@ InstallInf = $[];
 path install_inf = .etc.install_inf;
 
 DUMP("ReadInstallInfItem");
-TEST(``(ReadInstallInfItem("bootproto", "NetConfig")), [READ], nil);
+TEST(``(ReadInstallInfItem(install_inf, "bootproto", "NetConfig")), [READ], nil);
 DUMP(InstallInf);
-TEST(``(ReadInstallInfItem("ipaddr", "IP")), [READ], nil);
+TEST(``(ReadInstallInfItem(install_inf, "ipaddr", "IP")), [READ], nil);
 DUMP(InstallInf);
 
 }
