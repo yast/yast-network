@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Mar 12 13:52:42 CET 2003 - msvec@suse.de
+
+- get around CallFunction scope problems (#25116)
+- 2.7.32
+
+-------------------------------------------------------------------
 Tue Mar 11 11:08:09 CET 2003 - msvec@suse.de
 
 - fixed reading of unknown devices (#24972)

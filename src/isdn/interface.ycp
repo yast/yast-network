@@ -125,7 +125,7 @@ _("<p>To avoid adding an interface now, use
 	    break;
 	}
 	else if (ret == `AddDSLPPP) {
-	    ret = CallFunction("dsl", [.capiadsl]);
+	    ret = Call::Function("dsl", [.capiadsl]);
 	}
 	else if (ret == `AddSyncPPP) {
 	    if (op == `hw)
