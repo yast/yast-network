@@ -329,7 +329,7 @@ the logs for details.
 	    }
 	    else
 	    {
-		if (SCR::Execute (.target.bash, "/bin/rpm -U --replacepkgs " + tmp) != 0)
+		if (!Pkg::TargetInstall (tmp))
 		    y2error ("installing of release notes failed");
 	    }
 
