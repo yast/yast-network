@@ -22,6 +22,7 @@ global define boolean StartDetection() ``{
     // FIXME (only if not running!)
 
     /* start DHCP detection */
+    // FIXME: use .target.tmpdir
     SCR::Execute(.target.bash, "rm -f /var/tmp/dhcpcd-eth0.*");
     SCR::Execute(.target.bash, "dhcpcd -Td -t 10 -NYRG -L /var/tmp eth0");
 
