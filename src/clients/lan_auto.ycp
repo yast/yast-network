@@ -55,7 +55,7 @@ define map FromAY(map input) ``{
 	    if (contains(upcase, k)) {
 		new_interface[toupper(k)] = v;
 	    }
-	    else if (v != "") {
+	    else if (v != "" && k!="device") {
 		new_interface[k] = v;
 	    }
 	});
