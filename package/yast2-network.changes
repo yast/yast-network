@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Apr  1 17:13:37 CEST 2004 - msvec@suse.cz
+
+- reintroduce unique key writing to map device to cfg
+- better naming for hotplug devices (#37666, #35225)
+- show shorter netcard name in overvew (#36147)
+- 2.9.23
+
+-------------------------------------------------------------------
 Wed Mar 31 17:55:02 CEST 2004 - msvec@suse.cz
 
 - dropped testing desktop entries (#37522)

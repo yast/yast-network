@@ -399,7 +399,7 @@ define list BuildOverview(list<map> Hardware) {
 	    if(hwname == nil || hwname == "") hwname = HardwareName(Hardware, unq);
 	    hwname = CheckEmptyName(type, hwname);
 
-	    if(size(hwname) > 42) hwname = substring(hwname, 42) + "...";
+	    if(size(hwname) > 17) hwname = substring(hwname, 0, 16) + "...";
 
 	    /* Modem and DSL */
 	    if(type == "modem" || type == "ppp" || type == "dsl")

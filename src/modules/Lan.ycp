@@ -429,6 +429,7 @@ global define map Export() {
  */
 global define void SelectHW(integer which) {
     hw = SelectHardware(Hardware, which);
+    unique = hw["unique"]:"";
 
     if(hotplug == "") {
 	// FIXME: MOD Module["module"] = hw["module"]:"";
@@ -453,9 +454,12 @@ global define void SelectHW(integer which) {
     /* eth, tr */
     if(mac != nil && mac != "")
 	device = "id-" + hw["mac"]:"";
-    /* USB, PCMCIA */
+    /* other devs */
     else if(busid != nil && busid != "")
 	device = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
+    /* USB, PCMCIA */
+    else if(hw["hotplug"]:"" != "")
+	device = "bus-" + hw["hotplug"]:"";
     /* dummy */
     else
 	y2milestone("No detailed HW info: %1", device);

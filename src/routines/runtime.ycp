@@ -153,7 +153,7 @@ define boolean RunKInternet() {
     }
 
     /* KDE running? */
-    if((integer) SCR::Execute(.target.bash, "test \"$KDE_FULL_SESSION\"") != 0) {
+    if((integer) SCR::Execute(.target.bash, "test \"$KDE_FULL_SESSION\" || test \"$KDESU_USER\"") != 0) {
 	y2milestone("KDE not running");
 	return true;
     }
