@@ -62,7 +62,7 @@ global define boolean StopEthInterface() ``{
 
     y2debug("Giving up interface %1 ...", 0);
     SCR::Execute(.target.bash, sformat("/sbin/ifconfig eth%1 up 2>&1", 0));
-    if(module
+
 }
 
 /**

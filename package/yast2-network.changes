@@ -9,6 +9,7 @@ Thu Mar 06 12:15:17 CET 2003 - arvin@suse.de
 
 - better result in internet connection test (bug #24734)
 - avoid rocking progress labels during internet connection test
+- 2.7.28
 
 -------------------------------------------------------------------
 Wed Mar  5 12:46:08 CET 2003 - msvec@suse.de
