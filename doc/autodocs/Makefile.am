@@ -1,15 +1,9 @@
-#
-# Makefile.am for y2c_network/doc/autodocs
-#
-# $Id$
-#
+# Makefile.am for YCP module .../doc/autodocs
 
-docdir = @DOCDIR@
-htmldir = $(docdir)/autodocs
-
-index.html: $(srcdir)/../../src/*/*.ycp
-	@YAST2DIR@/bin/ycpdoc -d. -s$(srcdir)/../../src/ $(srcdir)/../../src/*/*.ycp
+htmldir = @docdir@/autodocs
 
 html_DATA = index.html $(wildcard *.html)
-
 CLEANFILES = $(html_DATA)
+
+index.html: $(srcdir)/../../src/*.ycp
+	@ybindir@/ycpdoc -d. -s$(srcdir)/../../src/ $(srcdir)/../../src/*.ycp
