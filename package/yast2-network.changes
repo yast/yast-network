@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Aug 24 16:22:58 CEST 2004 - mvidner@suse.cz
+
+- Restore interface configuration name when switching back from
+  bus-{usb,pcmcia} (#38213)
+
+-------------------------------------------------------------------
 Mon Aug 23 12:23:35 CEST 2004 - mvidner@suse.cz
 
 - Enable USERCONTROL for new modem, DSL and ISDN interfaces (#43945).

@@ -79,6 +79,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     string realtype = RealType(type, hotplug);
     string device = Lan::device;
     string default_device = Lan::device;
+    // #38213, remember device id when we switch back from pcmcia/usb
+    string non_hotplug_device_id = device;
     string hwcfg = Lan::nm_name;
 
     // FIXME duplicated in address.ycp
@@ -139,12 +141,12 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	`VSpacing(0.4)
     ),`HSpacing(0.5)));
 
-    list devices = Lan::FreeDevices(realtype);
+    list devices = Lan::FreeDevices(realtype); // TODO: id-, bus-, ... here
     if(!contains(devices, device)) devices = prepend(devices, device);
 
     term DeviceNumberBox = `ReplacePoint(`id(`rnum),
 	/* TextEntry label */
-	`ComboBox (`id(`num), `opt(`editable, `hstretch), _("&Configuration Name"), [Lan::device]));
+	`ComboBox (`id(`num), `opt(`editable, `hstretch), _("&Configuration Name"), device));
 
     /* TextEntry label */
     term MTUBox = `TextEntry(`id(`mtu), _("M&aximum Transfer Unit (MTU)"), mtu);
@@ -208,7 +210,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 			/* Label text */
 			`HWeight(1, `Right(`Label(_("Configuration Name")))),
 			`HSpacing(0.5),
-			`HWeight(1, `Left(`Label(`opt(`outputField), device_name(realtype, Lan::device))))
+			`HWeight(1, `Left(`Label(`opt(`outputField), device_name(realtype, device))))
 		    ),
 		    `VSpacing(0.5),
 		    `HBox(
@@ -308,12 +310,18 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    /* TextEntry label */
 	    // UI::ReplaceWidget(`id(`rnum), `TextEntry(`id(`num), `opt(`hstretch), _("&Configuration Name"), Lan::nm_name));
 
+	    device = (string) UI::QueryWidget (`id (`num), `Value);
+	    if (device != "bus-usb" && device != "bus-pcmcia")
+	    {
+		non_hotplug_device_id = device;
+	    }
+
 	    if(hotplug == "usb")
 		device = "bus-usb";
 	    else if(hotplug == "pcmcia")
 		device = "bus-pcmcia";
 	    else
-		device = NetworkDevices::GetFreeDevice(realtype);
+		device = non_hotplug_device_id;
 
 	    UI::ChangeWidget(`id(`num), `Value, device);
 
