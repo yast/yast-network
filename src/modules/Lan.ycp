@@ -356,7 +356,8 @@ global define boolean Import(map settings) ``{
 					  "wireless_essid",
 					  "wireless_nwid",
 					  "wireless_key",
-					  "wireless_nick"
+					  "wireless_nick",
+					  "remote_ipaddr"
 					];
 	map new_interface = mapmap(`k,`v, interface, ``{
 	    if (contains(upcase, k)) {
@@ -393,7 +394,8 @@ global define boolean Import(map settings) ``{
 global define map Export() ``{
     list autoinst_cfg = [];
     list upcase = [ "BOOTPROTO", "BROADCAST", "IPADDR", "NETMASK", "NETWORK", "STARTMODE", "DHCLIENT_SET_DOWN_LINK",
-					"WIRELESS", "WIRELESS_MODE", "WIRELESS_ESSID", "WIRELESS_NWID", "WIRELESS_KEY", "WIRELESS_NICK" ];
+					"WIRELESS", "WIRELESS_MODE", "WIRELESS_ESSID", "WIRELESS_NWID", "WIRELESS_KEY", "WIRELESS_NICK" , 
+					"REMOTE_IPADDR"];
     list ignore = [ "UNIQUE" ];
 
     foreach(string device, map data, CONFIG, ``{
