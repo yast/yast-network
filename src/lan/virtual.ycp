@@ -11,8 +11,10 @@
 
 textdomain "network";
 
-import "Lan";
+import "IP";
 import "Label";
+import "Lan";
+import "Netmask";
 import "Popup";
 import "Wizard";
 
@@ -266,8 +268,8 @@ global define term VirtualEditDialog(integer id, term entry, list forbidden) ``{
 	));
 
     UI::ChangeWidget(`id(`name), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    UI::ChangeWidget(`id(`ipaddr), `ValidChars, ValidCharsIP);
-    UI::ChangeWidget(`id(`netmask), `ValidChars, ValidCharsNetmask);
+    UI::ChangeWidget(`id(`ipaddr), `ValidChars, IP::ValidChars);
+    UI::ChangeWidget(`id(`netmask), `ValidChars, Netmask::ValidChars);
 
     if(entry == `empty())
 	UI::SetFocus(`id(`name));
@@ -284,7 +286,7 @@ global define term VirtualEditDialog(integer id, term entry, list forbidden) ``{
 
 	host = `item(`id(id));
 	string val = UI::QueryWidget(`id(`name), `Value);
-	if(false && !check_ip(val)) {
+	if(false && !IP::Check(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("The IP address is invalid."));
 	    UI::SetFocus(`id(`name));
@@ -299,7 +301,7 @@ global define term VirtualEditDialog(integer id, term entry, list forbidden) ``{
 	host = add(host, val);
 
 	val = UI::QueryWidget(`id(`ipaddr), `Value);
-	if(!check_ip(val)) {
+	if(!IP::Check(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("The IP address is incorrect."));
 	    UI::SetFocus(`id(`ipaddr));
@@ -308,7 +310,7 @@ global define term VirtualEditDialog(integer id, term entry, list forbidden) ``{
 	host = add(host, val);
 
 	val = UI::QueryWidget(`id(`netmask), `Value);
-	if(!check_netmask(val)) {
+	if(!Netmask::Check(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("The subnet mask is incorrect"));
 	    UI::SetFocus(`id(`netmask));

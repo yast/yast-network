@@ -80,7 +80,7 @@ global define list BuildSummary(boolean split) ``{
 		maplist(string aid, map amap, aliasee, ``{
 		    /* Table item */
 		    hwname = _("Virtual network interface");
-		    status = DeviceStatus(devtype, devnum + sformat("(%1)",aid), amap);
+		    status = DeviceStatus(devtype, devnum + sformat(":%1", aid), amap);
 		    change(configured, Summary::Device(hwname, status));
 		});
 
@@ -756,7 +756,7 @@ global define symbol FinishPopup(boolean modified, string head, string text, str
     if(run != "") {
 	ret = Popup::YesNoHeadline(h, t);
 	/* FIXME: check for the module presence */
-	if(ret == true) WFM::CallModule(run, params);
+	if(ret == true) CallModule(run, params);
     }
     else
 	ret = Popup::AnyMessage(h, t);

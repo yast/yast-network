@@ -14,12 +14,12 @@
 textdomain "network";
 
 import "Host";
+import "Hostname";
+import "IP";
 import "Label";
 import "Popup";
 import "Wizard";
 
-include "network/ip.ycp";
-include "network/dns.ycp";
 include "network/routines.ycp";
 
 /**
@@ -264,9 +264,9 @@ global define term HostDialog(integer id, term entry, list forbidden) ``{
 	    )
 	));
 
-    UI::ChangeWidget(`id(`host), `ValidChars, ValidCharsIP);
-    UI::ChangeWidget(`id(`name), `ValidChars, ValidCharsFQHostname);
-    UI::ChangeWidget(`id(`aliases), `ValidChars, ValidCharsFQHostname + " ");
+    UI::ChangeWidget(`id(`host), `ValidChars, IP::ValidChars);
+    UI::ChangeWidget(`id(`name), `ValidChars, Hostname::ValidCharsFQ);
+    UI::ChangeWidget(`id(`aliases), `ValidChars, Hostname::ValidCharsFQ + " ");
 
     if(entry == `empty())
 	UI::SetFocus(`id(`host));
@@ -283,7 +283,7 @@ global define term HostDialog(integer id, term entry, list forbidden) ``{
 
 	host = `item(`id(id));
 	string val = UI::QueryWidget(`id(`host), `Value);
-	if(!check_ip(val)) {
+	if(!IP::Check(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("The IP address is invalid."));
 	    UI::SetFocus(`id(`host));
@@ -298,7 +298,7 @@ global define term HostDialog(integer id, term entry, list forbidden) ``{
 	host = add(host, val);
 
 	val = UI::QueryWidget(`id(`name), `Value);
-	if(!check_fqhostname(val)) {
+	if(!Hostname::CheckFQ(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("Host name is invalid."));
 	    UI::SetFocus(`id(`name));
@@ -309,7 +309,7 @@ global define term HostDialog(integer id, term entry, list forbidden) ``{
 	val = UI::QueryWidget(`id(`aliases), `Value);
 	if(val != "") {
 	    list vals = splitstring(val, " ");
-	    vals = filter(string ho, vals, ``(ho != "" && !check_fqhostname(ho)));
+	    vals = filter(string ho, vals, ``(ho != "" && !Hostname::CheckFQ(ho)));
 	    if(size(vals) > 0) {
 		/* Popup::Error text */
 		Popup::Error(sformat(_("Alias name \"%1\" is invalid."), vals[0]:""));

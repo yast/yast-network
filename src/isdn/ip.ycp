@@ -12,12 +12,11 @@
 
 textdomain "network";
 
+import "IP";
 import "ISDN";
 import "Label";
 import "Popup";
 import "Wizard";
-
-include "network/ip.ycp";
 
 /**
  * Dialog for ISDN IP settings
@@ -160,7 +159,7 @@ route.</p>
 	    if(syncppp)
 		dynip = UI::QueryWidget(`id(`dynip), `Value);
 
-	    if((!syncppp || !dynip) && (!check_ip4(Local_IP) || !check_ip4(Remote_IP))) {
+	    if((!syncppp || !dynip) && (!IP::Check4(Local_IP) || !IP::Check4(Remote_IP))) {
 		// Popup::Message if entries are incorrect
 		Popup::Message(_("You have to fill in Local and Remote IP addresses correctly"));
 		continue;

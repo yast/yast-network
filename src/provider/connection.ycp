@@ -14,6 +14,7 @@ textdomain "network";
 import "DSL";
 import "Firewall";
 import "Modem";
+import "IP";
 import "ISDN";
 import "Label";
 import "Popup";
@@ -228,12 +229,12 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    if(modifydns && (demand || !autodns)) {
 		DNS1 = UI::QueryWidget(`id(`DNS1), `Value);
 		DNS2 = UI::QueryWidget(`id(`DNS2), `Value);
-		if(!(check_ip4(DNS1))) {
+		if(!(IP::Check4(DNS1))) {
 		    Popup::Error(_("The primary name server is not correct"));
 		    UI::SetFocus(`id(`DNS1));
 		    continue;
 		}
-		if(size(DNS2) > 0 && !check_ip4(DNS2)) {
+		if(size(DNS2) > 0 && !IP::Check4(DNS2)) {
 		    Popup::Error(_("The secondary name server is not correct"));
 		    UI::SetFocus(`id(`DNS2));
 		    continue;

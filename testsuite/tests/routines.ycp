@@ -87,7 +87,7 @@ TEST(``(device_type("tr-pcmcia-2:432")), [], nil);
 TEST(``(device_type("ippp2:2")), [], nil);
 TEST(``(device_type("ppp2:2")), [], nil);
 TEST(``(device_type("lo:1")), [], nil);
-
+TEST(``(device_type("eth1:blah")), [], nil);
 
 DUMP("device_num");
 TEST(``(device_num("eth0")), [], nil);
@@ -104,8 +104,22 @@ TEST(``(device_num("eth-usb-1:0")), [], nil);
 TEST(``(device_num("tr-pcmcia-2:432")), [], nil);
 TEST(``(device_num("ippp2:2")), [], nil);
 TEST(``(device_num("ppp2:2")), [], nil);
+TEST(``(device_num("eth1:blah")), [], nil);
 TEST(``(device_num("lo:1")), [], nil);
 TEST(``(device_num("lo")), [], nil);
+
+DUMP("alias_num");
+TEST(``(alias_num("eth0:1")), [], nil);
+TEST(``(alias_num("eth1:20")), [], nil);
+TEST(``(alias_num("eth-pcmcia-0:3")), [], nil);
+TEST(``(alias_num("eth-usb-1:0")), [], nil);
+TEST(``(alias_num("tr-pcmcia-2:432")), [], nil);
+TEST(``(alias_num("ippp2:2")), [], nil);
+TEST(``(alias_num("ppp2:2")), [], nil);
+TEST(``(alias_num("lo:1")), [], nil);
+TEST(``(alias_num("eth0:blah")), [], nil);
+TEST(``(alias_num("eth0")), [], nil);
+TEST(``(alias_num("lo")), [], nil);
 
 DUMP("device_name");
 TEST(``(device_name("eth","0")), [], nil);
@@ -116,18 +130,13 @@ TEST(``(device_name("ippp","2")), [], nil);
 TEST(``(device_name("ppp","2")), [], nil);
 TEST(``(device_name("lo","")), [], nil);
 
-DUMP("quote");
-TEST(``(quote(nil)), [], nil);
-TEST(``(quote("")), [], nil);
-TEST(``(quote("a")), [], nil);
-TEST(``(quote("a'b")), [], nil);
-TEST(``(quote("a'b'c")), [], nil);
-
-DUMP("unquote");
-TEST(``(unquote(nil)), [], nil);
-TEST(``(unquote("")), [], nil);
-TEST(``(unquote("a")), [], nil);
-TEST(``(unquote("a'\\''b")), [], nil);
-TEST(``(unquote("a'\\''b'\\''c")), [], nil);
+DUMP("alias_name");
+TEST(``(alias_name("eth","0","5")), [], nil);
+TEST(``(alias_name("eth","1","4")), [], nil);
+TEST(``(alias_name("eth-pcmcia-","0","1")), [], nil);
+TEST(``(alias_name("tr-pcmcia-","1","1")), [], nil);
+TEST(``(alias_name("ippp","2","0")), [], nil);
+TEST(``(alias_name("ppp","2","0")), [], nil);
+TEST(``(alias_name("lo", "", "7")), [], nil);
 
 }

@@ -148,6 +148,8 @@ Write	.network.value."escon5".BOOTPROTO "dhcp" true
 Write	.network.value."escon5".STARTMODE "manual" true
 Write	.network.value."eth5".BOOTPROTO "dhcp" true
 Write	.network.value."eth5".STARTMODE "manual" true
+Write	.network.value."eth5".IPADDR_x "1.1.1.1" true
+Write	.network.value."eth5".NETMASK_x "0.0.0.0" true
 Write	.network.value."eth6".BOOTPROTO "static" true
 Write	.network.value."eth6".IPADDR "1.2.3.4" true
 Write	.network.value."eth6".STARTMODE "manual" true
@@ -173,6 +175,7 @@ Write	.network.value."lo".IPADDR "127.0.0.1" true
 Write	.network.value."lo".NETMASK "255.0.0.0" true
 Write	.network.value."lo".NETWORK "127.0.0.0" true
 Write	.network.value."lo".STARTMODE "onboot" true
+Write	.network.value."lo".IPADDR_1 "7.7.7.7" true
 Write	.network.value."myri5".BOOTPROTO "dhcp" true
 Write	.network.value."myri5".STARTMODE "manual" true
 Write	.network.value."ppp5".BOOTPROTO "dhcp" true

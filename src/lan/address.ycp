@@ -13,14 +13,15 @@ textdomain "network";
 
 import "Arch";
 import "Detection";
+import "IP";
 import "Label";
 import "Lan";
+import "Netmask";
 import "Popup";
 import "Routing";
 import "Wizard";
 
 include "network/routines.ycp";
-include "network/ip.ycp";
 
 /**
  * Dialog for setting up IP address
@@ -84,6 +85,11 @@ the network configuration.</p>");
     }
     else
 	device = device_name(RealType(Lan::type, Lan::hotplug), Lan::device);
+
+    if(Lan::alias != "") {
+	device = device + ":" + Lan::alias;
+	bootproto = "static";
+    }
 
     term label = `HBox(
 	/* Label text */
@@ -171,7 +177,7 @@ completes the configuration.</p>");
     }
 
     /* No DHCP Setup */
-    if(type == "dummy" || type == "hsi" || Arch::s390)
+    if(type == "dummy" || type == "hsi" || Lan::alias != "" || Arch::s390)
 
 	/* Frame label */
 	frame1 = `Frame(_("Static Address Setup"), `VBox(
@@ -279,7 +285,7 @@ completes the configuration.</p>");
 	else if(ret == `netmask) {
 	    string nm = UI::QueryWidget(`id(`netmask), `Value);
 	    if(regexpmatch(nm, "^[0-9]+$"))
-		UI::ChangeWidget(`id(`netmask), `Value, bits2netmask(tointeger(nm)));
+		UI::ChangeWidget(`id(`netmask), `Value, Netmask::FromBits(tointeger(nm)));
 	    continue;
 	}
 	/* back */
@@ -302,19 +308,19 @@ completes the configuration.</p>");
 
 	    y2debug("bootproto=%1", bootproto);
 	    if(bootproto == "static") {
-		if(!check_ip4(UI::QueryWidget(`id(`ipaddr), `Value))) {
+		if(!IP::Check(UI::QueryWidget(`id(`ipaddr), `Value))) {
 		    /* Popup text */
 		    Popup::Error(_("The IP address is incorrect"));
 		    UI::SetFocus(`id(`ipaddr));
 		    continue;
 		}
-		if(UI::WidgetExists(`id(`remoteip)) && !check_ip4(UI::QueryWidget(`id(`remoteip), `Value))) {
+		if(UI::WidgetExists(`id(`remoteip)) && !IP::Check(UI::QueryWidget(`id(`remoteip), `Value))) {
 		    /* Popup text */
 		    Popup::Error(_("The remote IP address is invalid."));
 		    UI::SetFocus(`id(`remoteip));
 		    continue;
 		}
-		if(UI::WidgetExists(`id(`netmask)) && !check_netmask(UI::QueryWidget(`id(`netmask), `Value))) {
+		if(UI::WidgetExists(`id(`netmask)) && !Netmask::Check(UI::QueryWidget(`id(`netmask), `Value))) {
 		    /* Popup text */
 		    Popup::Error(_("The subnet mask is incorrect"));
 		    UI::SetFocus(`id(`netmask));

@@ -13,16 +13,15 @@ textdomain "network";
 
 import "Arch";
 import "DNS";
+import "Hostname";
+import "IP";
+import "Label";
 import "Lan";
 import "NetworkConfig";
+import "Popup";
 import "Wizard";
 
-include "network/dns.ycp";
-include "network/ip.ycp";
 include "network/routines.ycp";
-
-import "Label";
-import "Popup";
 
 /**
  * If there's running a process modifying resolv.conf,
@@ -186,14 +185,14 @@ disabled during the connection.</p>");
     if(has_dhcp) UI::ChangeWidget(`id(`dn), `Value, dhcp_hostname);
     if(has_dhcp) UI::ChangeWidget(`id(`dr), `Value, dhcp_resolv);
 
-    UI::ChangeWidget(`id(`host), `ValidChars, ValidCharsHostname);
-    UI::ChangeWidget(`id(`domain), `ValidChars, ValidCharsDomain);
-    UI::ChangeWidget(`id(`s1), `ValidChars, ValidCharsFQHostname);
-    UI::ChangeWidget(`id(`s2), `ValidChars, ValidCharsFQHostname);
-    UI::ChangeWidget(`id(`s3), `ValidChars, ValidCharsFQHostname);
-    UI::ChangeWidget(`id(`ns1), `ValidChars, ValidCharsIP4);
-    UI::ChangeWidget(`id(`ns2), `ValidChars, ValidCharsIP4);
-    UI::ChangeWidget(`id(`ns3), `ValidChars, ValidCharsIP4);
+    UI::ChangeWidget(`id(`host), `ValidChars, Hostname::ValidChars);
+    UI::ChangeWidget(`id(`domain), `ValidChars, Hostname::ValidCharsDomain);
+    UI::ChangeWidget(`id(`s1), `ValidChars, Hostname::ValidCharsFQ);
+    UI::ChangeWidget(`id(`s2), `ValidChars, Hostname::ValidCharsFQ);
+    UI::ChangeWidget(`id(`s3), `ValidChars, Hostname::ValidCharsFQ);
+    UI::ChangeWidget(`id(`ns1), `ValidChars, IP::ValidChars);
+    UI::ChangeWidget(`id(`ns2), `ValidChars, IP::ValidChars);
+    UI::ChangeWidget(`id(`ns3), `ValidChars, IP::ValidChars);
 
     if(ModifyResolvConfPopup() != true) {
 	UI::ChangeWidget(`id(`dr), `Enabled, false);
@@ -246,13 +245,13 @@ disabled during the connection.</p>");
 
 	    if(!dhcp_hostname) {
 		/* check host name and domain */
-		if(!check_hostname(UI::QueryWidget(`id(`host), `Value))) {
+		if(!Hostname::Check(UI::QueryWidget(`id(`host), `Value))) {
 		    /* Popup::Error text */
 		    Popup::Error(_("The host name is incorrect"));
 		    UI::SetFocus(`id(`host));
 		    continue;
 		}
-		if(!check_domainname(UI::QueryWidget(`id(`domain), `Value))) {
+		if(!Hostname::CheckDomain(UI::QueryWidget(`id(`domain), `Value))) {
 		    /* Popup::Error text */
 		    Popup::Error(_("The domain name is incorrect"));
 		    UI::SetFocus(`id(`domain));
@@ -265,19 +264,19 @@ disabled during the connection.</p>");
 	    ns2 = tolower(UI::QueryWidget(`id(`ns2), `Value));
 	    ns3 = tolower(UI::QueryWidget(`id(`ns3), `Value));
 
-	    if(ns1 != "" && !check_ip4(ns1)) {
+	    if(ns1 != "" && !IP::Check(ns1)) {
 		/* Popup::Error text */
 		Popup::Error(_("The primary name server is not correct"));
 		UI::SetFocus(`id(`ns1));
 		continue;
 	    }
-	    if(ns2 != "" && !check_ip4(ns2)) {
+	    if(ns2 != "" && !IP::Check(ns2)) {
 		/* Popup::Error text */
 		Popup::Error(_("The secondary name server is not correct"));
 		UI::SetFocus(`id(`ns2));
 		continue;
 	    }
-	    if(ns3 != "" && !check_ip4(ns3)) {
+	    if(ns3 != "" && !IP::Check(ns3)) {
 		/* Popup::Error text */
 		Popup::Error(_("The tertiary name server is not correct"));
 		UI::SetFocus(`id(`ns3));
@@ -289,19 +288,19 @@ disabled during the connection.</p>");
 	    s2 = tolower(UI::QueryWidget(`id(`s2), `Value));
 	    s3 = tolower(UI::QueryWidget(`id(`s3), `Value));
 
-	    if(s1 != "" && !check_domainname(s1)) {
+	    if(s1 != "" && !Hostname::CheckDomain(s1)) {
 		/* Popup::Error text */
 		Popup::Error(_("The primary search domain is not correct"));
 		UI::SetFocus(`id(`s1));
 		continue;
 	    }
-	    if(s2 != "" && !check_domainname(s2)) {
+	    if(s2 != "" && !Hostname::CheckDomain(s2)) {
 		/* Popup::Error text */
 		Popup::Error(_("The secondary search domain is not correct"));
 		UI::SetFocus(`id(`s2));
 		continue;
 	    }
-	    if(s3 != "" && !check_domainname(s3)) {
+	    if(s3 != "" && !Hostname::CheckDomain(s3)) {
 		/* Popup::Error text */
 		Popup::Error(_("The tertiary search domain is not correct"));
 		UI::SetFocus(`id(`s3));

@@ -11,18 +11,16 @@
 
 textdomain "network";
 
+import "Hostname";
+import "Label";
+import "Mode";
+import "Popup";
 import "Proxy";
 import "URL";
 import "Wizard";
-import "Mode";
 
-include "network/dns.ycp";
 include "network/complex.ycp";
 include "network/routines.ycp";
-include "network/url.ycp";
-
-import "Popup";
-import "Label";
 
 /**
  * Display popup at the end of the proxy configuration
@@ -124,9 +122,9 @@ should be done directly without caching.</p>") +
 		Label::BackButton(), Label::OKButton());
 
     string ValidCharsUsername = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:_-/\\";
-    UI::ChangeWidget(`id(`http), `ValidChars, ValidCharsUrl);
-    UI::ChangeWidget(`id(`ftp), `ValidChars, ValidCharsUrl);
-    UI::ChangeWidget(`id(`no), `ValidChars, ValidCharsDomain + " ,");
+    UI::ChangeWidget(`id(`http), `ValidChars, URL::ValidChars);
+    UI::ChangeWidget(`id(`ftp), `ValidChars, URL::ValidChars);
+    UI::ChangeWidget(`id(`no), `ValidChars, Hostname::ValidCharsDomain + " ,");
     UI::ChangeWidget(`id(`user), `ValidChars, ValidCharsUsername);
     UI::ChangeWidget(`id(`frame), `Enabled, enabled);
     UI::SetFocus(`id(`http));

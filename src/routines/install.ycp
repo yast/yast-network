@@ -13,7 +13,6 @@
 
 textdomain "network";
 
-include "network/dns.ycp";
 include "network/routines.ycp";
 
 /**
@@ -62,7 +61,7 @@ global define boolean ReadInstallInf() ``{
     string domain = InstallInf["domain"]:"";
     string hostname = InstallInf["hostname"]:"";
     if(hostname != "") {
-	list split = split_fqhostname(hostname);
+	list split = Hostname::SplitFQ(hostname);
 	InstallInf["hostname"] = split[0]:hostname;
 	if(domain == "")
 	    InstallInf["hostname"] = split[1]:"";

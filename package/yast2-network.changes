@@ -1,5 +1,5 @@
 -------------------------------------------------------------------
-Tue Oct 21 14:04:29 CEST 2003 - msvec@suse.cz
+Tue Nov 11 17:11:54 CET 2003 - msvec@suse.cz
 
 - dummy device support (#15960)
 - preliminary USB Network support (#22739)
@@ -7,7 +7,10 @@ Tue Oct 21 14:04:29 CEST 2003 - msvec@suse.cz
 - allow to select a different card (#32450)
 - prefill "http://" in proxy fields (#31269)
 - don't allow to delete a provider which is used (#17497)
+- preliminary virtual aliases support (read|write and edit|delete so far)
+- allow "default" to be entered as a route destination (#21398)
 - automatic DNS support (#27955)
+- cleanup of redundant stuff
 - 2.9.0
 
 -------------------------------------------------------------------

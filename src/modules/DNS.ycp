@@ -13,9 +13,9 @@ module "DNS";
 textdomain "network";
 
 import "Detection";
+import "Hostname";
 import "NetworkConfig";
 
-include "network/dns.ycp";
 include "network/routines.ycp";
 include "network/runtime.ycp";
 
@@ -85,7 +85,7 @@ global define boolean Read() ``{
     }
 
     if(fqhostname != "") {
-	list split = split_fqhostname(fqhostname);
+	list split = Hostname::SplitFQ(fqhostname);
 	hostname = split[0]:"";
 	domain = split[1]:"";
     }

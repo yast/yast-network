@@ -178,9 +178,9 @@ global define boolean ChangeModule(string name, boolean check) ``{
 	    Modules = remove(Modules, "alias");
     }
     else {
-	map alias = Modules["alias"]:$[];
-	alias[name] = m;
-	Modules["alias"] = alias;
+	map aliasmap = Modules["alias"]:$[];
+	aliasmap[name] = m;
+	Modules["alias"] = aliasmap;
     }
 
     if(o == "" || o == nil) {

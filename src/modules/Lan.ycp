@@ -18,6 +18,7 @@ textdomain "network";
 import "Arch";
 import "DNS";
 import "Detection";
+import "IP";
 import "Mode";
 import "NetworkConfig";
 import "Routing";
@@ -25,12 +26,10 @@ import "Firewall";
 import "Progress";
 import "Summary";
 
-include "network/dns.ycp";
 include "network/complex.ycp";
 include "network/devices.ycp";
 include "network/hardware.ycp";
 include "network/install.ycp";
-include "network/ip.ycp";
 include "network/modules.ycp";
 include "network/routines.ycp";
 include "network/runtime.ycp";
@@ -54,6 +53,7 @@ global string unique = "";
 
 global string type = "";
 global string device = "";
+global string alias = "";
 
 /**
  * Hotplug type ("" if not hot pluggable)
@@ -479,7 +479,8 @@ global define boolean Select(string dev) ``{
 	type = "eth";
 	device = GetFreeDevice(type);
 	AddModule(type);
-	/* FIXME: ? */
+	/* FIXME: alias: how to prefill new alias? */
+	alias = "";
     }
     /* dev!="" -> Edit */
     else {
@@ -488,6 +489,8 @@ global define boolean Select(string dev) ``{
 	    return false;
 	}
 	devmap = lookup(Devices[type]:$[], device, $[]);
+	if(alias != "")
+	    devmap = lookup(devmap["_aliases"]:$[], alias, $[]);
     }
 
     /* general stuff */
@@ -514,7 +517,7 @@ global define boolean Select(string dev) ``{
     data_channel = devmap["DATA_CHANNEL"]:"";
     portname = devmap["PORTNAME"]:"";
 
-    aliases = eval(devmap["_aliases"]:$[]);
+    // aliases = eval(devmap["_aliases"]:$[]);
 
     hotplug = "";
     if(issubstring(type, "pcmcia"))
@@ -528,7 +531,7 @@ global define boolean Select(string dev) ``{
     y2debug("type=%1", type);
 
     /* kernel options */
-    if(hotplug == "")
+    if(hotplug == "" && alias == "")
 	SelectModule(dev);
     else {
 	SelectModule("");
@@ -593,8 +596,8 @@ global define boolean Commit() ``{
 	if(ipaddr != "") {
 	    change(newdev, "IPADDR", ipaddr);
 	    change(newdev, "NETMASK", netmask);
-	    change(newdev, "BROADCAST", compute_broadcast(ipaddr, netmask));
-	    change(newdev, "NETWORK", compute_network(ipaddr, netmask));
+	    change(newdev, "BROADCAST", IP::ComputeBroadcast(ipaddr, netmask));
+	    change(newdev, "NETWORK", IP::ComputeNetwork(ipaddr, netmask));
 	}
 	change(newdev, "REMOTE_IPADDR", remoteip);
 	change(newdev, "MTU", mtu);
@@ -606,7 +609,8 @@ global define boolean Commit() ``{
 
 	if(hotplug == "") {
 	    change(newdev, "STARTMODE", "onboot");
-	    ChangeModule(device_name(type, device), operation == `add);
+	    if(alias == "")
+		ChangeModule(device_name(type, device), operation == `add);
 	}
 	else
 	    change(newdev, "STARTMODE", "hotplug");
@@ -638,13 +642,19 @@ global define boolean Commit() ``{
 	    if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 15)
 		NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 15;
 
-	change(newdev, "_aliases", eval(aliases));
-
-	ChangeDevice2(device_name(RealType(type, hotplug), device), newdev, operation == `add);
+	// FIXME: ? change(newdev, "_aliases", eval(aliases));
+	if(alias == "")
+	    ChangeDevice2(device_name(RealType(type, hotplug), device), newdev, operation == `add);
+	else
+	    ChangeDevice2(device_name(RealType(type, hotplug), device) + ":" + alias, newdev, operation == `add);
     }
     else if(operation == `delete) {
-	if(hotplug == "") DeleteModule(type+device);
-	DeleteDevice2(type+device);
+	if(alias == "") {
+	    if(hotplug == "") DeleteModule(type+device);
+	    DeleteDevice2(device_name(type, device));
+	}
+	else
+	    DeleteDevice2(device_name(type, device) + ":" + alias);
     }
     else {
 	y2error("Unknown operation: %1", operation);
@@ -764,7 +774,7 @@ global define boolean Propose() ``{
 	    string hnent = getent["stdout"]:"";
 	    y2debug("%1", hnent);
 	    hnent = select(splitstring(hnent, " "), 0, "");
-	    list hnsplit = split_fqhostname(hnent);
+	    list hnsplit = Hostname::SplitFQ(hnent);
 	    hn = hnsplit[0]:hn;
 	    y2debug("%1", hn);
 	    hnent = hnsplit[1]:"";
@@ -827,6 +837,20 @@ global define boolean AnyDHCPDevice() ``{
     // The current is type+device
     devs = filter(string dev, devs, ``( dev != type + device ));
     return size(devs) > 0;
+}
+
+/**
+ * Check if the given device has any virtual alias.
+ * @param dev device to be checked
+ * @return true if there are some aliases
+ */
+global define boolean HasAliases(string dev) ``{
+    if(!CheckDevice(dev)) {
+	y2error("Device not found: %1", dev);
+	return false;
+    }
+    return alias == "" &&
+	lookup(lookup(Devices[type]:$[], device, $[]), "_aliases", $[]) != $[];
 }
 
 /**

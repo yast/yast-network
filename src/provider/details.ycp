@@ -11,12 +11,12 @@
 
 textdomain "network";
 
+import "IP";
 import "Label";
 import "Popup";
 import "Provider";
 import "Wizard";
 
-include "network/ip.ycp";
 include "network/routines.ycp";
 
 /**
@@ -192,7 +192,7 @@ single machines or subnetworks through this provider.</p>");
 	    if(encap != "rawip")
 		modifyip = UI::QueryWidget(`id(`modifyip), `Value);
 
-	    if((encap=="rawip" || !modifyip) && (!check_ip4(Local_IP) || !check_ip4(Remote_IP))) {
+	    if((encap=="rawip" || !modifyip) && (!IP::Check4(Local_IP) || !IP::Check4(Remote_IP))) {
 		Popup::Message(_("You have to fill in Local and Remote IP addresses correctly"));
 		continue;
 	    }

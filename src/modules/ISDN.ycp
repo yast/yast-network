@@ -24,7 +24,6 @@ import "Summary";
 include "network/complex.ycp";
 include "network/devices.ycp";
 include "network/hardware.ycp";
-include "network/ip.ycp";
 include "network/routines.ycp";
 include "network/runtime.ycp";
 
