@@ -59,13 +59,10 @@ global define boolean Fastest() ``{
     });
     y2milestone("fastest=%1", device);
 
-    /* Fallback, should not happen */
-    if(device == "" && size(devices) > 0) {
-	device = devices[0]:"";
-	y2error("No device found (%1)", devices);
-	y2milestone("fastest=%1", device);
-    }
-    if(device == "") return false;
+    // no fallback since there are devices that should not be tested (e.g. lo)
+
+    if (device == "")
+	return false;
 
     map devmap = Devices[device_type(device), device_num(device)]:$[];
     y2debug("devmap=%1", devmap);
