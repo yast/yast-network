@@ -7,9 +7,7 @@ configure: all
 all:
 	y2tool y2autoconf
 	y2tool y2automake
-	aclocal
-	autoconf
-	automake -a
+	autoreconf --force --install
 
 install: configure
 	make
