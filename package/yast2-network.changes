@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jul 31 11:08:19 CEST 2003 - jsrain@suse.de
+
+- added sensible descriptions of wlan-usb and wlan-pcmcia devices
+  to LAN summary
+
+-------------------------------------------------------------------
 Wed Jul 30 18:28:41 CEST 2003 - msvec@suse.de
 
 - drop yast2-network-instsys package
