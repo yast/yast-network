@@ -11,12 +11,14 @@
 
 textdomain "network";
 
+import "CWM";
 import "Label";
 import "Modem";
 import "Popup";
 import "Wizard";
 
 include "network/routines.ycp";
+include "network/widgets.ycp";
 
 /**
  * Modem dialog
@@ -198,6 +200,7 @@ define symbol ModemDetailsDialog() {
     string Init1 = Modem::Init1;
     string Init2 = Modem::Init2;
     string Init3 = Modem::Init3;
+    boolean usercontrol = Modem::usercontrol;
 
 
     /* DIALOG TEXTS */
@@ -211,7 +214,9 @@ how many bits per second your computer communicates with your modem.</p>") +
 
     /* Modem datails dialog help 2/2 */
 _("<p>All the relevant information about <b>init strings</b>
-should be in your modem manual.</p>");
+should be in your modem manual.</p>") +
+
+	widget_descr["USERCONTROL", "help"]:"";
 
 
     /* DIALOG CONTENTS */
@@ -219,6 +224,10 @@ should be in your modem manual.</p>");
     list BaudRates = maplist(integer e, toset([1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, BaudRate]), {
 	return `item(`id(sformat("%1", e)), sformat("%1", e), e == BaudRate);
     });
+
+    list<map> widgets = CWM::CreateWidgets (
+	["USERCONTROL",],
+	widget_descr);
 
     term contents = `HBox(
 	`HSpacing(6),
@@ -244,6 +253,9 @@ should be in your modem manual.</p>");
 		    `HSpacing(0.2)
 		)
 	    ),
+	    `VSpacing (1),
+	    // 0 is index to CreateWidgets... ugly
+	    `Left(widgets[0, "widget"]:`Empty ()),
 	    `VSpacing(3)
 	),
 	`HSpacing(6)
@@ -254,6 +266,7 @@ should be in your modem manual.</p>");
 
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::OKButton());
+    UI::ChangeWidget (`id ("USERCONTROL"), `Value, usercontrol);
 
     /* MAIN CYCLE */
 
@@ -288,6 +301,7 @@ should be in your modem manual.</p>");
 	Modem::Init1 = (string) UI::QueryWidget(`id(`Init1), `Value);
 	Modem::Init2 = (string) UI::QueryWidget(`id(`Init2), `Value);
 	Modem::Init3 = (string) UI::QueryWidget(`id(`Init3), `Value);
+	Modem::usercontrol = (boolean) UI::QueryWidget (`id ("USERCONTROL"), `Value);
     }
 
     return ret;

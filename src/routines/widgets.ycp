@@ -1,0 +1,26 @@
+/**
+ * File:        include/network/widgets.ycp
+ * Package:     Network configuration
+ * Summary:     Widgets for CWM
+ * Authors:     Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ */
+{
+    // Gradually all yast2-network UI will be converted to CWM
+    // for easier maintenance.
+    // This is just a start.
+
+    map widget_descr = $[
+	"USERCONTROL": $[
+	    "widget": `checkbox,
+	    /* CheckBox label */
+	    // is the interface administrable by users (as opposed to root)
+	    "label": _("&User Controlled"),
+	    "help": 
+	    // Details dialog help
+_("<p>When <b>User Controlled</b> is enabled, ordinary users can
+manipulate the interface, not only <b>root</b>.</p>"),
+	    ],
+	];
+}

@@ -61,6 +61,7 @@ global string remoteip = "";
 global string netmask = "";
 
 global string startmode = "onboot";
+global boolean usercontrol = false;
 global string mtu = "";
 
 /* wireless options */
@@ -603,6 +604,7 @@ global define boolean Select(string dev) {
 
     mtu = devmap["MTU"]:"";
     startmode = devmap["STARTMODE"]:"onboot";
+    usercontrol = devmap["USERCONTROL"]:"no" == "yes";
 
     /* wireless options */
     wl_mode = devmap["WIRELESS_MODE"]:"Managed";
@@ -722,6 +724,7 @@ global define boolean Commit() {
 	if(alias == "") {
 	    newdev["MTU"] = mtu;
 	    newdev["STARTMODE"] = startmode;
+	    newdev["USERCONTROL"] = usercontrol? "yes": "no";
 	    newdev["BOOTPROTO"] = bootproto;
 	}
 
@@ -752,10 +755,10 @@ global define boolean Commit() {
 
 		if(Arch::s390) {
 		    // handle HSI like qeth, #40692#c15
- 		    string type2 = (type == "hsi")? "qeth": type;
+		    string type2 = (type == "hsi")? "qeth": type;
 		    // handle tr like lcs
 		    if (type == "tr" || type == "eth")
-		        type2 = "lcs";
+			type2 = "lcs";
 		    if(type2 == "iucv") {
 			NetworkModules::SCRIPTUP = "hwup-iucv";
 		    }

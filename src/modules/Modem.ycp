@@ -30,6 +30,7 @@ global string type = "";
 global string device = "";
 global string unique = "";
 global string startmode = "manual";
+global boolean usercontrol = false;
 
 /**
  * Hotplug type ("" if not hot pluggable)
@@ -295,6 +296,7 @@ global define boolean Select(string dev) {
     name = devmap["NAME"]:"";
     unique = devmap["UNIQUE"]:"";
     startmode = devmap["STARTMODE"]:"manual";
+    usercontrol = devmap["USERCONTROL"]:"no" == "yes";
 
     /* modem settings */
     Init1 = devmap["INIT1"]:"ATZ";
@@ -366,6 +368,7 @@ global define boolean Commit() {
     if(operation == `add || operation == `edit) {
 	map<string,any> newdev = $[
 	    "STARTMODE"	: startmode,
+	    "USERCONTROL": usercontrol? "yes": "no",
 	    "BOOTPROTO"	: "none",
 	    "UNIQUE"	: unique,
 	    "INIT1"	: Init1,

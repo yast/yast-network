@@ -75,6 +75,7 @@ global map ISDNCDB = $[];
  * CALLBACK       callback mode
  * CBDELAY        callback delay
  * STARTMODE      onboot | manual | hotplug
+ * USERCONTROL    controllable bt user yes/no
  * MULTILINK      channel bundling yes/no
  * PROVIDER       default provider filename
  * IPPPD_OPTIONS  additional ipppd options

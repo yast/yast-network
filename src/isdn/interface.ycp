@@ -20,6 +20,7 @@
 textdomain "network";
 
 import "Call";
+import "CWM";
 import "Firewall";
 import "ISDN";
 import "Label";
@@ -28,6 +29,7 @@ import "Provider";
 import "Wizard";
 
 include "network/dsl/dialogs.ycp";
+include "network/widgets.ycp";
 
 /**
  * Dialog for ISDN interface selection
@@ -191,6 +193,7 @@ define any interface_dialog() ``{
     /* PREPARE VARIABLES */
     string msn = lookup(ISDN::interface, "MSN", "0");
     string startmode = lookup(ISDN::interface, "STARTMODE", "onboot");
+    boolean usercontrol = ISDN::interface["USERCONTROL"]:"no" == "yes";
     boolean syncppp = lookup(ISDN::interface, "PROTOCOL", "syncppp") == "syncppp";
     boolean chargeHUP = lookup(ISDN::interface, "CHARGEHUP", "on") == "on";
     boolean multilink = lookup(ISDN::interface, "MULTILINK", "no") == "yes";
@@ -243,6 +246,8 @@ issuing the following commands (while logged in as 'root'):
 </tt>
 Note: ippp0 is an example</p>");
 
+    helptext = helptext + widget_descr["USERCONTROL", "help"]:"";
+
     helptext = helptext +
     // help text 4/5
 _("<p>Selecting <b>channel bundling</b> will set up a 128-kBit connection
@@ -269,23 +274,31 @@ this box.
 
     /* DIALOG CONTENTS */
     list provlist = [];
-    term prov = `VSpacing(0.1);
+    term prov = `VSpacing(0.0);
+    float afterprov = 0.0;
     if(ISDN::operation  == `editif) {
 	Provider::Add("isdn");
 	provlist = Provider::GetProviders("isdn", "_custom", ISDN::provider_file);
 	y2debug("provlist: %1", provlist);
 	/* ComboBox label */
 	prov = `Left(`ComboBox(`id(`prov), _("D&efault Provider"), provlist));
+	afterprov = 0.5;
     }
 
     y2debug("device %1", devstr);
 
     /* CheckBox label */
     term FirewallCheckbox = `HBox(
-	`Left(`CheckBox(`id(`Firewall), _("Activate fire&wall..."), firewall)),
-	`Left(`CheckBox(`id(`FirewallQuick), _("Firewall &QuickMode"), FirewallQuickmode)),
-	`HSpacing(10)
+	`HWeight (1,
+	    `Left(`CheckBox(`id(`Firewall), _("Activate fire&wall..."), firewall))),
+	`HSpacing (1),
+	`HWeight (1,
+	    `Left(`CheckBox(`id(`FirewallQuick), _("Firewall &QuickMode"), FirewallQuickmode)))
     );
+
+    list<map> widgets = CWM::CreateWidgets (
+	["USERCONTROL",],
+	widget_descr);
 
     term contents =
     `Top(
@@ -302,19 +315,27 @@ this box.
 	    `VSpacing(0.5),
 	    `HBox(
 		`VBox(
-		    // ComboBox label
-		    `Left(`ComboBox(`id(`startmode), _("Start &Mode"),
-			[
+		    `HBox (
+			`HWeight (1, `Top (
+			    // ComboBox label
+			    `Left(`ComboBox(`id(`startmode), _("Start &Mode"),
+					    [
 			    // ComboBox item
 			    `item(`id("onboot"), _("OnBoot"), startmode == "onboot"),
 			    // ComboBox item
 			    `item(`id("manual"), _("Manual"), startmode == "manual"),
 			    // ComboBox item
 			    `item(`id("hotplug"), _("HotPlug"), startmode == "hotplug")
-			])),
+					    ])))),
+			`HSpacing (1),
+			`HWeight (1, `Top (`VBox (
+					       `Label (""),
+					       `Left (widgets[0, "widget"]:`Empty ())
+					       )))
+			),
 		    `VSpacing(0.5),
 		    prov,
-		    `VSpacing(0.5),
+		    `VSpacing(afterprov),
 			// CheckBox label
 			`Left(`CheckBox(`id(`chargehup), _("Charge&HUP"), chargeHUP)),
 		    `VSpacing(0.5),
@@ -338,6 +359,7 @@ this box.
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::NextButton());
 
+    UI::ChangeWidget (`id ("USERCONTROL"), `Value, usercontrol);
     UI::SetFocus(`id(`msn));
 
     /* MAIN CYCLE */
@@ -367,6 +389,7 @@ this box.
 	else if (ret == `next || ret == `detail) {
 	    msn = (string) UI::QueryWidget(`id(`msn), `Value);
 	    startmode = (string) UI::QueryWidget(`id(`startmode), `Value);
+	    usercontrol = (boolean) UI::QueryWidget (`id ("USERCONTROL"), `Value);
 	    multilink = (boolean) UI::QueryWidget(`id(`multilink), `Value);
 	    chargeHUP = (boolean) UI::QueryWidget(`id(`chargehup), `Value);
 	    /* check_* */
@@ -391,6 +414,7 @@ this box.
 	ISDN::interface = union(ISDN::interface, $[
 	    "MSN"		: msn,
 	    "STARTMODE"		: startmode,
+	    "USERCONTROL"	: usercontrol ? "yes" : "no",
 	    "MULTILINK"		: multilink ? "yes" : "no",
 	    "CHARGEHUP"		: chargeHUP ? "on" : "off",
 	    "FIREWALL"		: firewall ? "yes" : "no",

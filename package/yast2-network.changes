@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jul 27 17:30:44 CEST 2004 - mvidner@suse.cz
+
+- New checkbox for interfaces: "User Controlled".
+
+-------------------------------------------------------------------
 Fri Jul 23 18:27:51 CEST 2004 - mvidner@suse.cz
 
 - Moved the wireless dialog from the hardware one

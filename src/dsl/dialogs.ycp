@@ -12,6 +12,7 @@
 textdomain "network";
 
 import "Call";
+import "CWM";
 import "DSL";
 import "Firewall";
 import "IP";
@@ -23,6 +24,7 @@ import "Wizard";
 
 include "network/runtime.ycp";
 include "network/routines.ycp";
+include "network/widgets.ycp";
 
 /**
  * DSL device dialog
@@ -67,7 +69,9 @@ so by pressing <b>Configure Network Cards</b>.</p>") +
     /* DSL dialog help 7/7 */
 _("<p><b>Device Activation</b> may either happen during boot or manually
 with tools like <b>ifup</b> or <b>kinternet</b>. An activation during boot may
-be appropriate for dial-on-demand connections.</p>");
+be appropriate for dial-on-demand connections.</p>") +
+
+	widget_descr["USERCONTROL", "help"]:"";
 
     string pppmode = DSL::pppmode;
     if (pppmode == nil || pppmode == "")
@@ -88,6 +92,7 @@ be appropriate for dial-on-demand connections.</p>");
 
     string vpivci = DSL::vpivci;
     string startmode = DSL::startmode;
+    boolean usercontrol = DSL::usercontrol;
     string interface = DSL::interface;
     string modemip = DSL::modemip;
     list ifaces = [];
@@ -129,6 +134,10 @@ be appropriate for dial-on-demand connections.</p>");
 	NetworkDevices::Pop();
     }
 
+    list<map> widgets = CWM::CreateWidgets (
+	["USERCONTROL",],
+	widget_descr);
+
     /* DSL dialog contents */
     term contents = `HBox(
 	`HSpacing(6),
@@ -160,15 +169,19 @@ be appropriate for dial-on-demand connections.</p>");
 		`TextEntry(`id(`modemip), _("Modem &IP Address"), modemip)
 	    ), `HSpacing(2))),
 	    `VSpacing(1),
-	    /* ComboBox label */
-	    `Left(`ComboBox(`id(`startmode), _("&Device Activation"), [
-		/* ComboBox item */
-		`item(`id("manual"), _("Manually"), startmode == "manual"),
-		/* ComboBox item */
-		`item(`id("onboot"), _("On Boot"), startmode == "onboot"),
-		/* ComboBox item */
-		`item(`id("hotplug"), _("Hot Plug"), startmode == "hotplug"),
-	    ])),
+	    `HBox (
+		/* ComboBox label */
+		`Left(`ComboBox(`id(`startmode), _("&Device Activation"), [
+		    /* ComboBox item */
+		    `item(`id("manual"), _("Manually"), startmode == "manual"),
+		    /* ComboBox item */
+		    `item(`id("onboot"), _("On Boot"), startmode == "onboot"),
+		    /* ComboBox item */
+		    `item(`id("hotplug"), _("Hot Plug"), startmode == "hotplug"),
+		    ])),
+		`HSpacing (1),
+		`Bottom (widgets[0, "widget"]:`Empty ())
+		),
 	    `VSpacing(1)
 	    ), `HSpacing(2))),
 	`HSpacing(6)
@@ -176,6 +189,8 @@ be appropriate for dial-on-demand connections.</p>");
 
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::NextButton());
+
+    UI::ChangeWidget (`id ("USERCONTROL"), `Value, usercontrol);
 
     UI::ChangeWidget(`id(`vpivci), `Enabled, pppmode == "pppoatm");
     UI::ChangeWidget(`id(`interface), `Enabled, pppmode == "pppoe");
@@ -253,6 +268,7 @@ be appropriate for dial-on-demand connections.</p>");
 	if(pppmode == "pptp")
 	    DSL::modemip = (string) UI::QueryWidget(`id(`modemip), `Value);
 	DSL::startmode = (string) UI::QueryWidget(`id(`startmode), `Value);
+	DSL::usercontrol = (boolean) UI::QueryWidget (`id ("USERCONTROL"), `Value);
     }
 
     return ret;
