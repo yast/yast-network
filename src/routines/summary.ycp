@@ -30,7 +30,12 @@ define string DeviceType(string type) {
 
     if(issubstring(type, "#"))
 	/* Device type label */
-	return _("Virtual Interface");
+	// This is what used to be Virtual Interface (eth0:1).
+	// In our data model, additional addresses for an interface
+	// are represented as its sub-interfaces.
+	// And also we frequently confuse "device" and "interface"
+	// :-(
+	return _("Additional Address");
 
     map device_types = $[
 	/* Device type label */

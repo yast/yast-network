@@ -65,10 +65,10 @@ define any VirtualDialog(boolean standalone) {
     ScreenName("lan-virtual");
 
     /* Aliases dialog caption */
-    string caption = _("Virtual Aliases");
+    string caption = _("Additional Addresses");
 
     /* Aliases dialog help 1/2 */
-    string help = _("<p>Configure virtual aliases in this dialog.</p>") +
+    string help = _("<p>Configure additional addresses of an interface (its aliases) in this dialog.</p>") +
 
     /* Aliases dialog help 2/2 */
     _("<p>Enter an <b>Alias Name</b>, an <b>IP Address</b>, and
@@ -97,7 +97,7 @@ the <b>Netmask</b>.</p>");
 	`VBox(
 	    `VSpacing(2),
 	    /* Frame label */
-	    `Frame(_("Virtual Aliases"), `HBox(`HSpacing(3), `VBox(
+	    `Frame(_("Additional Addresses"), `HBox(`HSpacing(3), `VBox(
 		`VSpacing(1),
 		`Table(`id(`table), `opt(`notify), `header(
                     /* Table header label */

@@ -1,9 +1,12 @@
 -------------------------------------------------------------------
-Fri Sep  3 13:16:28 CEST 2004 - mvidner@suse.cz
+Fri Sep  3 14:48:06 CEST 2004 - mvidner@suse.cz
 
-- Deleted a redundant copy of DuplicateIP and fixed the other one.
+- Renamed Virtual Aliases to Additional Addresses (#42412).
+- Deleted a redundant copy of DuplicateIP and fixed
+  the other one (#9951).
 - Call hwup for hwcfg-static* instead of rccoldplug (#44626).
 - Don't write hwcfg files for bus-(pcmcia|usb) devices (#42421).
+- 2.10.14
 
 -------------------------------------------------------------------
 Thu Sep  2 16:54:07 CEST 2004 - msvec@suse.cz

@@ -232,24 +232,6 @@ completes the configuration.</p>");
 	    `VSpacing(0.5)
 	));
 
-    /* Push button label */
-    term HardwareButton = `PushButton(`id(`hardware), `opt(`hstretch), _("H&ardware Details"));
-    if(Lan::alias != "" || type == "dummy" || (Lan::operation == `add /* FIXME: unique && Lan::unique == "" */ ))
-	HardwareButton = `VSpacing(0);
-
-    /* Push button label */
-    term VirtualButton = `PushButton(`id(`virtual), `opt(`hstretch), _("&Virtual Aliases"));
-    if(Lan::alias != "" || Lan::hotplug != "" /* !regexpmatch(type, NetworkDevices::CardRegex["netcard"]:"") */)
-	VirtualButton = `VSpacing(0);
-
-    /* Push button label */
-    term DHCPButton = `PushButton(`id(`dhclient), `opt(`hstretch), _("DHCP &Client Options"));
-    if(Lan::alias != "" || type == "dummy") DHCPButton = `VSpacing(0);
-
-    /* Push button label */
-    term DetailsButton = `PushButton(`id(`details), `opt(`hstretch), _("&Detailed Settings"));
-    // if(Lan::alias != "" || type == "dummy") DetailsButton = `VSpacing(0);
-
     list MB_list = [
 	/* MenuButton item */
 	`item(`id(`hardware), _("H&ardware Details")),
@@ -258,12 +240,10 @@ completes the configuration.</p>");
 	/* MenuButton item */
 	`item(`id(`details), _("&Detailed Settings")),
 	/* MenuButton item */
-	`item(`id(`virtual), _("&Virtual Aliases")),
+	`item(`id(`virtual), _("Addi&tional Addresses")),
     ];
 
     list MB_backup = [
-	/* MenuButton item */
-	`item(`id(`virtual), _("&Virtual Aliases")),
 	/* MenuButton item */
 	`item(`id(`hostname), _("&Host name and name server")),
 	/* MenuButton item */
@@ -289,12 +269,6 @@ completes the configuration.</p>");
 	    `PushButton(`id(`hostname), `opt(`hstretch), _("&Host name and name server")),
 	    /* Push button label */
 	    `PushButton(`id(`routing), `opt(`hstretch), _("R&outing")),
-	    /*
-	    DHCPButton,
-	    HardwareButton,
-	    VirtualButton,
-	    DetailsButton,
-	    */
 	    MB,
 	    `VSpacing(0.4)
 	)),
