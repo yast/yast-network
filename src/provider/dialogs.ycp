@@ -28,15 +28,15 @@ import "Label";
  * @param prev previously selected provider
  * @return new provider selection
  */
-define any dividerHack(list provs, any prev) ``{
+define any dividerHack(list provs, any prev) {
     integer p = -1;
-    find(term e, provs, ``{
+    find(term e, (list<term>) provs, {
 	p = p + 1;
 	any id = select(select(e, 0, `id("x")), 0, "x");
 	return id == prev;
     });
     integer i = -1;
-    find(term e, provs, ``{
+    find(term e, (list<term>) provs, {
 	i = i + 1;
 	any id = select(select(e, 0, `id("x")), 0, "x");
 	return id == ."--";
@@ -50,7 +50,7 @@ define any dividerHack(list provs, any prev) ``{
  * @param edit true in case of edit sequence
  * @return symbol dialog result
  */
-define any ProvidersDialog(boolean edit) ``{
+define any ProvidersDialog(boolean edit) {
 
     ScreenName("provider-list");
     string type = Provider::Type;
@@ -110,7 +110,7 @@ define any ProvidersDialog(boolean edit) ``{
      * Update widgets in the ProviderDialog
      * @param re UserInput
      */
-    define void UpdateProvider(any re) ``{
+    define void UpdateProvider(any re) {
 
 	/* Update custom and providers tables */
 	if(re != `providers) {

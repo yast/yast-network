@@ -224,8 +224,12 @@ define list hwlist2items(list<map> l, integer selected) {
  * @example device_type("eth-pcmcia-0") -> "eth-pcmcia"
  */
 define string device_type(string dev) {
+    if(regexpmatch(dev, "^([a-zA-Z]+)-?[^a-zA-Z]*") != true) return "";
+    string ret = regexpsub(dev, "^([a-zA-Z]+)-?[^a-zA-Z]*", "\\1");
+    /* FIXME: devname
     if(regexpmatch(dev, "^([a-zA-Z-]*[a-zA-Z])[^a-zA-Z]*") != true) return "";
     string ret = regexpsub(dev, "^([a-zA-Z-]*[a-zA-Z])[^a-zA-Z]*", "\\1");
+    */
     if(ret == nil) ret = "";
     return ret;
 }
@@ -238,8 +242,12 @@ define string device_type(string dev) {
  * @example device_num("lo") -> ""
  */
 define string device_num(string dev) {
+    if(regexpmatch(dev, "^[a-zA-Z]+-?(.*)") != true) return "";
+    string ret = regexpsub(dev, "^[a-zA-Z]+-?(.*)", "\\1");
+    /* FIXME: devname
     if(regexpmatch(dev, "[a-zA-Z-]*([0-9]+)") != true) return "";
     string ret = regexpsub(dev, "[a-zA-Z-]*([0-9]+)", "\\1");
+    */
     if(ret == nil) ret = "";
     return ret;
 }
@@ -252,6 +260,8 @@ define string device_num(string dev) {
  * @example alias_num("eth1:blah") -> "blah"
  */
 define string alias_num(string dev) {
+    // FIXME: devname
+    return "";
     if(regexpmatch(dev, "[a-zA-Z-]*[0-9]*:([a-zA-Z0-9_-]+)") != true) return "";
     string ret = regexpsub(dev, "[a-zA-Z-]*[0-9]*:([a-zA-Z0-9_-]+)", "\\1");
     if(ret == nil) ret = "";
@@ -286,8 +296,13 @@ define string device_name(string typ, string num) {
 	y2error("wrong number: %1", num);
 	return nil;
     }
+    /* FIXME: devname
     if(IsHotplug(typ) && num != "") return sformat("%1-%2", typ, num);
     return sformat("%1%2", typ, num);
+    */
+    if(regexpmatch(num, "^[0-9]*$"))
+	return sformat("%1%2", typ, num);
+    return sformat("%1-%2", typ, num);
 }
 
 /**
@@ -311,7 +326,7 @@ define string alias_name(string typ, string num, string anum) {
 	y2error("wrong alias number: %1", anum);
 	return nil;
     }
-    return sformat("%1%2:%3", typ, num, anum);
+    return sformat("%1:%2", device_name(typ, num), anum);
 }
 
 /**

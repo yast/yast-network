@@ -36,9 +36,11 @@ include "network/runtime.ycp";
 include "network/services/dns.ycp";
 
 Wizard::CreateDialog();
+Wizard::SetDesktopIcon("dns");
 DNS::Read();
 Lan::Read();
 Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), Label::FinishButton()));
+
 /* main ui function */
 any ret = DNSMainDialog(true);
 y2debug("ret == %1", ret);

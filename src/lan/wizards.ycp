@@ -70,6 +70,7 @@ define symbol LanSequence() ``{
     ];
 
     Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("lan");
 
     symbol ret = Sequencer::Run(aliases, sequence);
 
@@ -87,6 +88,7 @@ define symbol LanAutoSequence() ``{
     term contents = `Label(_("Initializing ..."));
 
     Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("lan");
     Wizard::SetContentsButtons(caption, contents, "",
 				Label::BackButton(), Label::NextButton());
 

@@ -20,8 +20,7 @@ Read	.etc.install_inf.InstMode nil
 Dump	Read
 Read	.probe.netcard nil
 Log	hardware detection failure
-Dir	.modules.alias: []
-Dir	.modules.options: []
+Dir	.sysconfig.hardware.section: []
 Dir	.network.section: []
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-pcmcia" nil
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-usb" nil

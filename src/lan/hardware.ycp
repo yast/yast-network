@@ -14,6 +14,7 @@ textdomain "network";
 import "Arch";
 import "Label";
 import "Lan";
+import "NetworkModules";
 import "Popup";
 import "Wizard";
 // Arch::s390=true;
@@ -25,7 +26,7 @@ include "network/routines.ycp";
  * Manual network card configuration dialog
  * @return dialog result
  */
-define any HardwareDialog() ``{
+define any HardwareDialog() {
 
     ScreenName("lan-hardware");
 
@@ -61,8 +62,8 @@ written into <i>/etc/modprobe.conf</i> or <i>/etc/chandev.conf</i>.</p>") +
 _("<p>Options for the module should be written in the format specified
 in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
-    string modul = Lan::Module["module"]:"";
-    string options = Lan::Module["options"]:"";
+    string modul = NetworkModules::Alias; // FIXME: MOD Lan::Module["module"]:"";
+    string options = NetworkModules::Options; // FIXME: MOD Lan::Module["options"]:"";
 
     string hotplug = Lan::hotplug;
     string mtu = Lan::mtu;
@@ -117,7 +118,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     );
 
     /* Pushbutton label */
-    term WirelessButton = `PushButton(`id(`wire), _("Wireless &settings"));
+    term WirelessButton = `PushButton(`id(`wire), _("Wireless &Settings"));
 
     /* Frame label */
     term ButtonBox = `HBox(
@@ -136,10 +137,10 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	CheckBoxes = `VSpacing(0);
 
     /* Frame label */
-    term KernelBox = `Frame(_("&Kernel module"), `HBox(`HSpacing(0.5), `VBox(
+    term KernelBox = `Frame(_("&Kernel Module"), `HBox(`HSpacing(0.5), `VBox(
 	`VSpacing(0.4),
 	/* Text entry label */
-	`TextEntry(`id(`modul), _("&Module name"), modul),
+	`TextEntry(`id(`modul), _("&Module Name"), modul),
 	`VSpacing(0.2),
 	/* Text entry label */
 	`TextEntry(`id(`options), _("Op&tions"), options),
@@ -150,7 +151,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
     term DeviceNumberBox = `ReplacePoint(`id(`rnum),
 	/* Combobox label */
-	`ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"),
+	`ComboBox(`id(`num), `opt(`hstretch), _("D&evice Number"),
 	    Lan::FreeDevices(realtype)));
 
     /* TextEntry label */
@@ -188,7 +189,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	`HSpacing(2));
 
     /* Add hardware -> don't allow some changes (card type) */
-    if(Lan::operation == `add && Lan::unique != "") {
+    // FIXME: devname if(Lan::operation == `add && Lan::unique != "") {
+    if(false) {
 
 	string typ = DeviceType(type);
 	if(hotplug == "pcmcia") typ = typ + " (PCMCIA)";
@@ -199,7 +201,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    `VBox(
 		`VSpacing(0.5),
 		/* Frame label */
-		`Frame(_("Network &interface"),`VBox(
+		`Frame(_("Network &Interface"),`VBox(
 		    `VSpacing(0.2),
 		    `HBox(
 			`HSpacing(0.9),
@@ -231,7 +233,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     }
 
     /* Edit -> don't allow some changes */
-    if(Lan::operation == `edit) {
+    // FIXME: devname if(true /* FIXME: devname Lan::operation == `edit */) {
+    if(Lan::operation == `edit || Lan::unique != "") {
 
 	if(type != "wlan") WirelessButton = `VSpacing(0);
 
@@ -241,9 +244,9 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		`VSpacing(0.5),
 		`Left(`HBox(
 		    /* Label text */
-		    `Label(_("Network device")),
+		    `Label(_("Network Device")),
 		    `HSpacing(0.5),
-		    `Label(`opt(`outputField), realtype + Lan::device)
+		    `Label(`opt(`outputField), device_name(realtype, Lan::device))
 		)),
 		`VSpacing(1.5),
 		KernelBox,
@@ -369,8 +372,8 @@ Really continue?
     }
 
     if(ret == `next || ret == `list || ret == `wire) {
-	Lan::Module["module"] = UI::QueryWidget(`id(`modul), `Value);
-	Lan::Module["options"] = UI::QueryWidget(`id(`options), `Value);
+	NetworkModules::Alias /* FIXME: MOD Lan::Module["module"] */ = (string) UI::QueryWidget(`id(`modul), `Value);
+	NetworkModules::Options /* FIXME: MOD Lan::Module["options"] */ = (string) UI::QueryWidget(`id(`options), `Value);
 
 	if(UI::WidgetExists(`id(`mtu)))
 	    Lan::mtu = (string) UI::QueryWidget(`id(`mtu), `Value);
@@ -406,7 +409,7 @@ Really continue?
  * Call back for a manual selection from the list
  * @return dialog result
  */
-define any SelectionDialog() ``{
+define any SelectionDialog() {
 
     ScreenName("lan-hardware-selection");
 
@@ -455,7 +458,9 @@ for a particular network card by entering the name in the search entry.</p>");
 
 	    string entry = (string) UI::QueryWidget(`id(`search), `Value);
 
-	    list l = filter(term e, cards, ``(tolower(substring(select(e, 1, ""), 0, size(entry))) == tolower(entry)));
+	    list l = filter(term e, (list<term>) cards, {
+		return tolower(substring(select(e, 1, ""), 0, size(entry))) == tolower(entry);
+	    });
 
 	    if(size(entry) == 0) selected = 0;
 	    if(size(l) > 0) selected = (integer) select((term) select((term) select(l, 0, `it()), 0, `it()), 0, 0);
@@ -484,8 +489,9 @@ for a particular network card by entering the name in the search entry.</p>");
 	if(selected == nil) selected = 0;
 	map card = (map) select(hwlist, selected, $[]);
 	Lan::name = card["name"]:"";
-	Lan::Module["module"] = card["module"]:"";
-	Lan::Module["options"] = card["options"]:"";
+
+	NetworkModules::Alias /* FIXME: MOD Lan::Module["module"] */ = card["module"]:"";
+	NetworkModules::Options /* FIXME: MOD Lan::Module["options"] */ = card["options"]:"";
     }
 
     return ret;
@@ -495,7 +501,7 @@ for a particular network card by entering the name in the search entry.</p>");
  * S/390 devices configuration dialog
  * @return dialog result
  */
-define any S390Dialog() ``{
+define any S390Dialog() {
 
     ScreenName("lan-hardware-s390");
 

@@ -54,7 +54,7 @@ boolean initialized = false;
 /**
  * Which operation is pending?
  */
-global symbol operation = nil;
+/* global */ symbol operation = nil;
 // FIXME: used in lan/address.ycp (#17346) -> "global"
 
 /**
@@ -131,21 +131,23 @@ global define boolean Read() {
     list<string> allfiles = (list<string>) SCR::Dir(.network.section);
     if(allfiles == nil) allfiles = [];
     list<string> devices = filter(string file, allfiles, {
-	return !regexpmatch(file, "[\.~]");
+	return !regexpmatch(file, "[~]");
     });
     y2debug("devices=%1", devices);
 
+    /* FIXME: devname
     devices = filter(string d, devices, {
 	return regexpmatch(d, "[a-z][a-z-]*[0-9]*");
     });
     y2debug("devices=%1", devices);
+    */
 
     /* Read devices */
     maplist(string d, devices, {
 	string devtype = device_type(d);
 
 	string devnum = "";
-	if(regexpmatch(d, "[a-z][a-z-]*[0-9]+"))
+	// if(regexpmatch(d, "[a-z][a-z-]*[0-9]+"))
 	    devnum = sformat("%1", device_num(d));
 	y2debug("devnum=%1", devnum);
 
@@ -156,12 +158,14 @@ global define boolean Read() {
 	}
 
 	string pth = ".network.value.\"" + device_name(devtype, devnum) + "\"";
+	y2debug("pth=%1", pth);
 	list<string> values = (list<string>) SCR::Dir(topath(pth));
 	y2debug("values=%1", values);
 
 	map config = $[];
 	maplist(string val, values, {
 	    string item = (string) SCR::Read(topath(pth + "." + val));
+	    y2debug("item=%1", item);
 	    if(item == nil) return;
 	    /* No underscore '_' -> global */
 	    /* Also temporarily standard globals */
@@ -254,7 +258,7 @@ global define boolean Write(string devregex) {
     /* remove deleted devices */
     y2milestone("Deleted=%1", Deleted);
     foreach(string d, Deleted, {
-	if(!haskey(OriginalDevs, d)) return;
+	// if(!haskey(OriginalDevs, d)) return;
 	/* delete config file */
 	path p = topath(".network.section.\"" + d + "\"");
 	y2debug("deleting: %1", p);
@@ -351,6 +355,39 @@ global define boolean Modified(string devregex) {
     return Devs == OriginalDevs;
 }
 
+global define list GetFreeDevices(string type, integer num) {
+    y2debug("Devices=%1", Devices);
+    y2debug("type,num=%1,%2", type, num);
+    y2debug("Devices[%1]=%2", type, Devices[type]:$[]);
+
+    list curdevs = Map::Keys(Devices[type]:$[]);
+    y2debug("curdevs=%1", curdevs);
+
+    integer i = 0;
+    integer count = 0;
+    list ret = [];
+
+    /* Hotpluggable devices */
+    if(IsHotplug(type) && !contains(curdevs, "")) {
+	y2debug("Added simple hotplug device");
+	count = count + 1;
+	ret = add(ret, "");
+    }
+
+    /* Remaining numbered devices */
+    while(count < num) {
+	string ii = sformat("%1", i);
+	if(!contains(curdevs, ii)) {
+	    ret = add(ret, ii);
+	    count = count + 1;
+	}
+	i = i + 1;
+    }
+
+    y2debug("Free devices=%1", ret);
+    return ret;
+}
+
 /**
  * Compute free devices
  * @param type device type
@@ -358,7 +395,7 @@ global define boolean Modified(string devregex) {
  * @return num of free devices
  * @example GetFreeDevices("eth", 2) -&gt; [ 1, 2 ]
  */
-global define list GetFreeDevices(string type, integer num) {
+global define list GetFreeDevicesOld(string type, integer num) {
     y2debug("Devices=%1", Devices);
     y2debug("type,num=%1,%2", type, num);
     y2debug("Devices[%1]=%2", type, Devices[type]:$[]);

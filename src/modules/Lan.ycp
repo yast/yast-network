@@ -23,6 +23,7 @@ import "Map";
 import "Mode";
 import "NetworkConfig";
 import "NetworkDevices";
+import "NetworkModules";
 import "Routing";
 import "Firewall";
 import "Progress";
@@ -34,7 +35,7 @@ import "Summary";
 /**
  * Current module information
  */
-global map Module = $[];
+// FIXME: MOD global map Module = $[];
 
 
 global string name = "";
@@ -82,6 +83,8 @@ global map aliases = $[];
 global boolean proposal_valid = false;
 boolean write_only = false;
 
+/* current selected HW */
+map hw = $[];
 
 /**
  * Abort function
@@ -102,12 +105,12 @@ list<map> Hardware = [];
  * Modules information
  * @see ReadModules
  */
-map Modules = $[];
+// FIXME: MOD map Modules = $[];
 
 /**
  * Deleted modules
  */
-list<string> DeletedModules = [];
+// FIXME: MOD list<string> DeletedModules = [];
 
 /**
  * /etc/install.inf data
@@ -141,7 +144,7 @@ global define boolean Modified() {
 // include "network/complex.ycp";
 include "network/hardware.ycp";
 include "network/install.ycp";
-include "network/modules.ycp";
+// FIXME: MOD include "network/modules.ycp";
 include "network/routines.ycp";
 include "network/runtime.ycp";
 
@@ -194,7 +197,8 @@ global define boolean Read() {
     if(Abort()) return false;
     /* Progress step 2/9 */
     ProgressNextStage(_("Reading /etc/modprobe.conf..."));
-    ReadModules(NetworkDevices::CardRegex["netcard"]:"");
+    // FIXME: MOD // ReadModules(NetworkDevices::CardRegex["netcard"]:"");
+    NetworkModules::Read();
     sleep(sl);
 
     if(Abort()) return false;
@@ -301,7 +305,8 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 2/10 */
     ProgressNextStage(_("Writing /etc/modprobe.conf..."));
-    WriteModules();
+    // FIXME: MOD WriteModules();
+    NetworkModules::Write("netcard");
     sleep(sl);
 
     if(Abort()) return false;
@@ -379,7 +384,7 @@ global define boolean WriteOnly() {
 global define boolean Import(map settings) {
 
     DNS::Import((map) eval(settings["dns"]:$[]));
-    Modules = (map) eval(settings["modules"]:$[]);
+    // FIXME: MOD Modules = (map) eval(settings["modules"]:$[]);
     NetworkConfig::Import(settings["config"]:$[]);
     NetworkDevices::Import("netcard", (map<string, map>) settings["devices"]:$[]);
     Routing::Import((map) eval(settings["routing"]:$[]));
@@ -395,7 +400,7 @@ global define boolean Import(map settings) {
 global define map Export() {
     return $[
 	"dns"		: DNS::Export(),
-	"modules"	: Modules,
+	// FIXME: MOD "modules"	: Modules,
 	"config"	: NetworkConfig::Export(),
 	"devices"	: NetworkDevices::Export("netcard"),
 	"routing"	: Routing::Export(),
@@ -407,14 +412,35 @@ global define map Export() {
  * @param which index of the component
  */
 global define void SelectHW(integer which) {
-    map sel = SelectHardware(Hardware, which);
+    hw = SelectHardware(Hardware, which);
 
     if(hotplug == "") {
-	Module["module"] = sel["module"]:"";
-	Module["options"] = sel["options"]:"";
+	// FIXME: MOD Module["module"] = hw["module"]:"";
+	// FIXME: MOD Module["options"] = hw["options"]:"";
+	NetworkModules::Alias = hw["module"]:"";
+	NetworkModules::Options = hw["options"]:"";
+	y2debug("");
     }
     else
 	y2debug("HOTPLUG(%1) -> ignoring modprobe.conf", hotplug);
+
+    string mac = hw["mac"]:"";
+    string busid = hw["busid"]:"";
+
+    /* temporarily disable by-MAC identification */
+    mac = "";
+
+    /* eth, tr */
+    if(mac != nil && mac != "")
+	device = "id-" + hw["mac"]:"";
+    /* USB, PCMCIA */
+    else if(busid != nil && busid != "")
+	device = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
+    /* dummy */
+    else
+	y2debug("No detailed HW info: %1", device);
+
+    y2security("hw=%1", hw);
 }
 
 /**
@@ -472,8 +498,11 @@ global define boolean Select(string dev) {
     /* dev=="" -> Add */
     if(dev == "") {
 	type = "eth";
+	// FIXME: MOD AddModule(type);
+	NetworkModules::AddM();
+
 	device = NetworkDevices::GetFreeDevice(type);
-	AddModule(type);
+
 	/* FIXME: alias: how to prefill new alias? */
 	alias = "";
     }
@@ -536,10 +565,13 @@ global define boolean Select(string dev) {
     y2debug("type=%1", type);
 
     /* kernel options */
-    if(hotplug == "" && alias == "")
-	SelectModule(dev);
+    if(hotplug == "" && alias == "") {
+	// FIXME: MOD SelectModule(dev);
+	NetworkModules::SelectM(dev);
+    }
     else {
-	SelectModule("");
+	// FIXME: MOD SelectModule("");
+	NetworkModules::AddM();
     }
 
     if(bootproto == "none") bootproto = "static";
@@ -608,17 +640,20 @@ global define boolean Commit() {
 	newdev["MTU"] = mtu;
 
 	if(type == "dummy") {
+	    y2debug("");
 	    /* 2.4 */
-	    Module["module"] = "dummy";
-	    Module["options"] = sformat("-o=dummy%1", device);
+	    // FIXME: MOD Module["module"] = "dummy";
+	    // FIXME: MOD Module["options"] = sformat("-o=dummy%1", device);
 	    /* 2.6 */
-	    Module["install"] = sformat("/sbin/modprobe -o dummy%1 --ignore-install dummy", device);
+	    // FIXME: MOD Module["install"] = sformat("/sbin/modprobe -o dummy%1 --ignore-install dummy", device);
 	}
 
 	if(hotplug == "") {
 	    newdev["STARTMODE"] = "onboot";
-	    if(alias == "")
-		ChangeModule(device_name(type, device), operation == `add);
+	    if(alias == "") {
+		// FIXME: MOD ChangeModule(device_name(type, device), operation == `add);
+		NetworkModules::ChangeM(device_name(type, device));
+	    }
 	}
 	else
 	    newdev["STARTMODE"] = "hotplug";
@@ -652,9 +687,11 @@ global define boolean Commit() {
 	    if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 40)
 		NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 40;
 
+	/* FIXME: MOD
 	if(type == "hsi" || Module["module"]:"" == "qeth")
 	    if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 15)
 		NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 15;
+	*/
 
 	if(alias == "") {
 	    newdev["_aliases"] = aliases;
@@ -670,8 +707,11 @@ global define boolean Commit() {
     else if(operation == `delete) {
 	NetworkDevices::Commit();
 	if(alias == "") {
-	    if(hotplug == "") DeleteModule(type+device);
+	    if(hotplug == "") {
+		// FIXME: MOD DeleteModule(device_name(type, device));
+		NetworkModules::DeleteM(device_name(type, device));
 	    // FIXME: NI DeleteDevice2(device_name(type, device));
+	    }
 	}
 	else {
 	    // FIXME: NI DeleteDevice2(device_name(type, device) + ":" + alias);
@@ -750,8 +790,11 @@ global define boolean Propose() {
 	    return false;
 	}
 
-	Module["module"] = InstallInf["module"]:"";
-	Module["options"] = InstallInf["options"]:"";
+	// FIXME: MOD Module["module"] = InstallInf["module"]:"";
+	// FIXME: MOD Module["options"] = InstallInf["options"]:"";
+
+	NetworkModules::Alias = InstallInf["module"]:"";
+	NetworkModules::Options = InstallInf["options"]:"";
 
 	type = InstallInf["type"]:"eth";
 	device = NetworkDevices::GetFreeDevice(type);

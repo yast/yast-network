@@ -53,6 +53,7 @@ term contents = `HBox(
 );
 
 Wizard::CreateDialog();
+Wizard::SetDesktopIcon("network");
 Wizard::SetContentsButtons(caption, contents, help,
 	Label::BackButton(), /* Label::FinishButton() */ _("&Launch"));
 

@@ -302,6 +302,7 @@ define symbol DSLSequence() ``{
     ];
 
     Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("dsl");
 
     symbol ret = Sequencer::Run(aliases, sequence);
 
@@ -319,6 +320,7 @@ define symbol DSLAutoSequence() ``{
     term contents = `Label(_("Initializing ..."));
 
     Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("dsl");
     Wizard::SetContentsButtons(caption, contents, "",
 	    Label::BackButton(), Label::NextButton());
 

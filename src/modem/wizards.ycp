@@ -302,6 +302,7 @@ define symbol ModemSequence() {
     ];
 
     Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("modem");
 
     symbol ret = Sequencer::Run(aliases, sequence);
 
@@ -319,6 +320,7 @@ define symbol ModemAutoSequence() {
     term contents = `Label(_("Initializing ..."));
 
     Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("modem");
     Wizard::SetContentsButtons(caption, contents, "",
 	    Label::BackButton(), Label::NextButton());
 

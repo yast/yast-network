@@ -28,7 +28,7 @@ include "network/routines.ycp";
  * DSL device dialog
  * @return dialog result
  */
-define any DSLDialog() ``{
+define any DSLDialog() {
 
     ScreenName("dsl-dialog");
 
@@ -94,7 +94,7 @@ be appropriate for dial-on-demand connections.</p>");
 
     /**
      */
-    define void UpdateInterfaces() ``{
+    define void UpdateInterfaces() {
 	ifaces = NetworkDevices::List("eth");
 	y2debug("ifaces=%1", ifaces);
 	ifaces = union(ifaces, NetworkDevices:::List("eth-pcmcia"));
@@ -107,8 +107,9 @@ be appropriate for dial-on-demand connections.</p>");
 	    ifaces = add(ifaces, interface);
 
 	y2debug("ifaces=%1", ifaces);
-	ifaces = maplist(string e, ifaces,
-	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == interface)));
+	ifaces = maplist(string e, (list<string>) ifaces, {
+	    return `item(`id(sformat("%1", e)), sformat("%1", e), e == interface);
+	});
 	y2debug("ifaces=%1", ifaces);
     }
 

@@ -17,6 +17,7 @@ import "Wizard";
 include "network/remote/dialogs.ycp";
 
 Wizard::CreateDialog();
+Wizard::SetDesktopIcon("remote");
 Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10),
 	    Label::FinishButton()));
 

@@ -34,8 +34,11 @@ include "network/runtime.ycp";
 include "network/services/routing.ycp";
 
 Routing::Read();
+
 Wizard::CreateDialog();
+Wizard::SetDesktopIcon("routing");
 Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), Label::FinishButton()));
+
 /* main ui function */
 any ret = RoutingMainDialog(true);
 y2debug("ret == %1", ret);

@@ -49,7 +49,7 @@ define map FromAY(map input) {
 		   "remote_ipaddr"
     ];
 
-    map interfaces = listmap(map interface, input["interfaces"]:[], {
+    map<string,map> interfaces = listmap(map<string,string> interface, input["interfaces"]:[], {
 	map new_interface = $[];
 	foreach(string k, string v, interface, {
 	    if (contains(upcase, k)) {
@@ -93,7 +93,7 @@ define map FromAY(map input) {
     else if (size(input["modules"]:[]) == 0 && Mode::autoinst)
     {
 	import "Arch";
-	list HW = [];
+	list<map> HW = [];
 	if(!Arch::s390) {
 	    string name = "";
 	    string unique = "";
@@ -104,14 +104,14 @@ define map FromAY(map input) {
 	}
 	map alias = $[];
 	map options = $[];
-	devices = mapmap(string type, map devsmap, devices, {
+	devices = mapmap(string type, map devsmap, (map<string,map>) devices, {
 	    list HW_type = filter(map dev, HW, {
 		return dev["type"]:"" == type;
 	    });
 
 	    y2debug("hw from type %1 = %2", type, HW_type);
 
-	    map newmap = mapmap(string num, map devmap, devsmap, {
+	    map newmap = mapmap(string num, map devmap, (map<string,map>) devsmap, {
 
 		integer nnum = tointeger(num);
 		devmap["UNIQUE"] = HW_type[nnum, "unique"]:"";
@@ -167,9 +167,9 @@ define map ToAY (map settings) {
     list interfaces = [];
     list discard = ["UNIQUE"];
     foreach(string device, map devsmap, settings["devices"]:$[], {
-	foreach(string num, map devmap, devsmap, {
+	foreach(string num, map devmap, (map<string,map>) devsmap, {
 	    map<string, any> newmap = $[];
-	    foreach(string key, any val, devmap, {
+	    foreach(string key, any val, (map<string,any>) devmap, {
 			y2milestone("Adding: %1=%2", key, val);
                         if (key!="_aliases")
                         {

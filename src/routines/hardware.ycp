@@ -203,6 +203,7 @@ define list<map> ReadHardware(string hwtype) {
 	map one = $[];
 
 	/* common stuff */
+	map resource = card["resource"]:$[];
 	string controller = ControllerType(card);
 	one["name"] = DeviceName(card);
 	one["type"] = controller;
@@ -211,7 +212,6 @@ define list<map> ReadHardware(string hwtype) {
 
 	/* modem */
 	if(controller == "modem") {
-	    map resource = card["resource"]:$[];
 	    one["device_name"] = card["dev_name"]:"";
 	    one["drivers"] = card["drivers"]:[];
 	    one["requires"] = card["requires"]:[];
@@ -252,6 +252,18 @@ define list<map> ReadHardware(string hwtype) {
 		one["hotplug"] = "pcmcia";
 	    else if(hp == "usb")
 		one["hotplug"] = "usb";
+
+	    /* store the BUS type */
+	    string bus = card["bus"]:"";
+	    if(bus == "PCI") bus = "pci";
+	    else if(bus == "USB") bus = "usb";
+	    one["bus"] = bus;
+
+	    string busid = card["sysfs_bus_id"]:"";
+	    one["busid"] = busid;
+
+	    string mac = lookup((map) select(resource["hwaddr"]:[], 0, $[]), "addr", "");
+	    one["mac"] = mac;
 	}
 
 	y2debug("found device: %1", one);
@@ -287,6 +299,9 @@ define map SelectHardware(list Hardware, integer which) {
     unique = sel["unique"]:"";
     type = sel["type"]:"eth";
     hotplug = sel["hotplug"]:"";
+
+    // FIXME: devname
+    hotplug = "";
 
     return sel;
 }

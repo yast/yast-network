@@ -34,8 +34,11 @@ include "network/runtime.ycp";
 include "network/services/host.ycp";
 
 Host::Read();
+
 Wizard::CreateDialog();
+Wizard::SetDesktopIcon("host");
 Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), Label::FinishButton()));
+
 /* main ui function */
 any ret = HostsMainDialog(true);
 y2debug("ret == %1", ret);

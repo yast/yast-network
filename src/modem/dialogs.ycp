@@ -23,7 +23,7 @@ include "network/routines.ycp";
  * @param detected true if the type is detected
  * @return dialog result
  */
-define symbol ModemDialog(boolean detected) ``{
+define symbol ModemDialog(boolean detected) {
 
     ScreenName("modem-dialog");
 
@@ -33,8 +33,9 @@ define symbol ModemDialog(boolean detected) ``{
 
     list devices = maplist(string e, toset([ Modem::Device, "/dev/modem",
 		"/dev/ttyS0", "/dev/ttyS1", "/dev/ttyS2", "/dev/ttyS3",
-		"/dev/ttyACM0", "/dev/ttyACM1", "/dev/ttyACM2", "/dev/ttyACM3" ]),
-	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == Modem::Device)));
+		"/dev/ttyACM0", "/dev/ttyACM1", "/dev/ttyACM2", "/dev/ttyACM3" ]), {
+	return `item(`id(sformat("%1", e)), sformat("%1", e), e == Modem::Device);
+    });
 
     /* DIALOG TEXTS */
 
@@ -188,7 +189,7 @@ initialization strings.</p>");
  * Modem details dialog
  * @return dialog result
  */
-define symbol ModemDetailsDialog() ``{
+define symbol ModemDetailsDialog() {
 
     ScreenName("modem-details");
 
@@ -215,8 +216,9 @@ should be in your modem manual.</p>");
 
     /* DIALOG CONTENTS */
 
-    list BaudRates = maplist(string e, toset([1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, BaudRate]),
-	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == sformat("%1", BaudRate))));
+    list BaudRates = maplist(integer e, toset([1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, BaudRate]), {
+	return `item(`id(sformat("%1", e)), sformat("%1", e), e == BaudRate);
+    });
 
     term contents = `HBox(
 	`HSpacing(6),

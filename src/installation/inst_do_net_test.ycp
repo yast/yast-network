@@ -48,7 +48,7 @@ symbol test_stage = `open;
 symbol test_result = `success;
 
 // list of all log files to show
-list logs = [];
+list<map> logs = [];
 
 // dir of log files
 string logdir = (string) SCR::Read (.target.tmpdir) + "/internet-test";

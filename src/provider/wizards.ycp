@@ -156,6 +156,7 @@ define symbol ProviderSequence() ``{
     ];
 
     Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("provider");
 
     symbol ret = Sequencer::Run(aliases, sequence);
 
@@ -176,6 +177,7 @@ define symbol ProviderAutoSequence() ``{
     term contents = `Label(_("Initializing ..."));
 
     Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("provider");
     Wizard::SetContentsButtons(caption, contents, "",
 	    Label::BackButton(), Label::NextButton());
 

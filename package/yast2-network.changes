@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Mar  8 17:50:33 CET 2004 - msvec@suse.cz
+
+- use the new device naming (#33073)
+- set title icons
+- 2.9.7
+
+-------------------------------------------------------------------
 Fri Mar  5 13:07:34 CET 2004 - msvec@suse.cz
 
 - simple device interface (GetValue, SetValue)

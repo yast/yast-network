@@ -25,7 +25,7 @@ include "network/routines.ycp";
  * Ask for password if required
  * @return true on success
  */
-define boolean AskForPassword() ``{
+define boolean AskForPassword() {
 
     if (Internet::askpassword == nil)
 	return true;
@@ -59,7 +59,7 @@ define boolean AskForPassword() ``{
  * Connection steps dialog
  * @return dialog result
  */
-define symbol TestStepsDialog() ``{
+define symbol TestStepsDialog() {
 
     ScreenName("installation-steps-dialog");
 
@@ -180,7 +180,7 @@ activate the test procedure."),
  * Connection test dialog
  * @return dialog result
  */
-define any AskYOUDialog() ``{
+define any AskYOUDialog() {
 
     ScreenName("installation-you-dialog");
 
@@ -230,14 +230,16 @@ define any AskYOUDialog() ``{
  * @param logs log files
  * @param logdir log files directory
  */
-define void ShowLogs(list logs, string logdir) ``{
+define void ShowLogs(list<map> logs, string logdir) {
 
     ScreenName("installation-show-logs");
 
-    logs = sort(map x, map y, logs, ``( x[`prio]:0 > y[`prio]:0 ));
+    logs = sort(map x, map y, logs, {
+	return x[`prio]:0 > y[`prio]:0;
+    });
 
     list menunames = [];
-    maplist(map v, logs, ``{
+    maplist(map v, logs, {
 	menunames = add(menunames, v[`menuname]:"none");
     });
 
@@ -281,7 +283,7 @@ define void ShowLogs(list logs, string logdir) ``{
 	else if(ret == `selector) {
 	    string menuname = (string) UI::QueryWidget(`id(`selector), `Value);
 
-	    maplist(map v, logs, ``{
+	    maplist(map v, logs, {
 		if(v[`menuname]:"none" == menuname)
 		    filename = v[`filename]:"none";
 	    });

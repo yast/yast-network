@@ -34,7 +34,7 @@ include "network/isdn/routines.ycp";
  */
 
 define list ISDNCards4Vendor(integer vendor, integer defcard) ``{
-    list cards = maplist(integer i, map c, ISDN::ISDNCDB["Cards"]:$[], ``(c));
+    list<map> cards = maplist(integer i, map c, ISDN::ISDNCDB["Cards"]:$[], ``(c));
     boolean first = (defcard == -1);
     string n_id = "";
 
@@ -127,7 +127,7 @@ particular vendors by selecting a vendor.</p>");
 	    if (size(entry) == 0)
 		continue;
 
-	    list l = filter(list e, cards, ``(tolower(substring((string) select(e, 1, ""), 0, size(entry))) == tolower(entry)));
+	    list l = filter(list e, (list<list>) cards, ``(tolower(substring((string) select(e, 1, ""), 0, size(entry))) == tolower(entry)));
 	    if(size(l) > 0) {
 		card = (integer) select((list) select((list) select(l, 0, []), 0, []), 0, 0);
 		UI::ChangeWidget(`id(`cards), `CurrentItem, card);
@@ -139,7 +139,7 @@ particular vendors by selecting a vendor.</p>");
 		m = filter(integer i, map c, ISDN::ISDNCDB["Cards"]:$[], ``(0 <= find(tolower(c["longname"]:""), tolower(entry))));
 	    if(size(m) == 0)
 		continue;
-	    l = maplist(integer i, map c, m, ``(c));
+	    l = maplist(integer i, map c, (map<integer,map>) m, ``(c));
 	    m = (map) select(l, 0, []);
 
 	    card = m["CardID"]:-1;
@@ -219,7 +219,7 @@ define term Card_Parameter(map drv) ``{
 		default_io = tointeger(cur_io);
 	    list iol = [];
 	    found = false;
-	    maplist(string v, io, ``{
+	    maplist(string v, (list<string>) io, ``{
 		boolean tmp = (tointeger(v) == default_io);
 		if (tmp)
 			found = true;
@@ -241,7 +241,7 @@ define term Card_Parameter(map drv) ``{
 		default_irq = tointeger(cur_irq);
 	    list irql = [];
 	    found = false;
-	    maplist(string v, irq, ``{
+	    maplist(string v, (list<string>) irq, ``{
 		boolean tmp = (tointeger(v) == default_irq);
 		if (tmp)
 			found = true;
@@ -263,7 +263,7 @@ define term Card_Parameter(map drv) ``{
 		default_mem = tointeger(cur_memb);
 	    list meml = [];
 	    found = false;
-	    maplist(string v, mem, ``{
+	    maplist(string v, (list<string>) mem, ``{
 		boolean tmp = (tointeger(v) == default_mem);
 		if (tmp)
 			found = true;
@@ -361,7 +361,7 @@ define any isdn_lowlevel() ``{
     list CardDrivers = lookup(cur_card, "driver", []);
     integer DriverCnt = size(CardDrivers);
     integer id = -1;
-    list DrvList = maplist(map d, CardDrivers, ``{
+    list DrvList = maplist(map d, (list<map>) CardDrivers, ``{
 	id = id + 1;
 	boolean Tmp = (boolean) driver_has_type(d, Default_TYPE, Default_SUBTYPE);
 	if (Tmp) CurrentDrvIndex = id;
@@ -485,10 +485,10 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
     else
 	ccode = newcc;
 
-    list countries = maplist(string i, string n, CountryCodes, ``{
+    list countries = maplist(string i, string n, (map<string,string>) CountryCodes, ``{
 	return(`item(`id(i), n, (i == ccode)));
     });
-    countries = sort(list x, list y, countries, ``(select(x,1,"") < select(y,1,"")));
+    countries = sort(list x, list y, (list<list>) countries, ``(select(x,1,"") < select(y,1,"")));
     // other country in list
     countries = add(countries, `item(`id("-1"), _("other"), ("-1" == ccode)));
     ccode = newcc;
@@ -700,7 +700,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 
 	    pkgs = lookup((map) select(CardDrivers, CurrentDrvIndex, $[]), "need_pkg", []);
 	    if (pkgs != nil && pkgs != [] && !isdnlog) {
-		pkgs = filter(string p, pkgs, ``(p != "i4l-isdnlog"));
+		pkgs = filter(string p, (list<string>) pkgs, ``(p != "i4l-isdnlog"));
 	    }
 	    if (pkgs == [""])
 		y2warning("no package list for %1", lookup(cur_card, "longname","unknown"));

@@ -48,8 +48,11 @@ if(size(args) > 0) {
 if (!propose) {
     Proxy::Read();
 }
+
 Wizard::CreateDialog();
+Wizard::SetDesktopIcon("proxy");
 Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), Label::FinishButton()));
+
 /* main ui function */
 any ret = ProxyMainDialog(true);
 y2debug("ret == %1", ret);

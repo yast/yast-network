@@ -30,7 +30,7 @@ define term RoutingEditDialog(integer id, term entry, list devs);
  * @param standalone true if not run from another ycp client
  * @return dialog result
  */
-define any RoutingMainDialog(boolean standalone) ``{
+define any RoutingMainDialog(boolean standalone) {
 
     ScreenName("routing");
 
@@ -60,7 +60,7 @@ _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>");
 
     /* make ui items from the routes list */
     term item = nil;
-    maplist(map r, route_conf, ``{
+    maplist(map r, route_conf, {
 	if(r["destination"]:"" == "default") {
 	    defgw = r["gateway"]:"";
 	    defgwdev = r["device"]:"";
@@ -160,7 +160,9 @@ _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>");
 	/* edit route */
 	else if(ret == `edit || ret == `table) {
 	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
-	    list<term> cur_item = filter(term e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
+	    list<term> cur_item = filter(term e, table_items, {
+		return cur == select(select(e, 0, `empty()), 0, nil);
+	    });
 
 	    y2debug("cur=%1", cur);
 	    y2debug("cur_item=%1", cur_item);
@@ -175,8 +177,8 @@ _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>");
 	    item = RoutingEditDialog(cur, item, devs);
 	    if(item == nil) continue;
 
-	    table_items = maplist(term e, table_items, ``{
-		if(cur == select(select(e, 0, []), 0, -1))
+	    table_items = maplist(term e, table_items, {
+		if(cur == select(select(e, 0, `empty()), 0, -1))
 		    return item;
 		return e;
 	    });
@@ -200,7 +202,9 @@ _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>");
 	else if(ret == `delete) {
 	    items = items - 1;
 	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
-	    table_items = filter(term e, table_items, ``(cur != select(select(e, 0, []), 0, nil)));
+	    table_items = filter(term e, table_items, {
+		return cur != select(select(e, 0, `empty()), 0, nil);
+	    });
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
 	    continue;
 	}
@@ -225,12 +229,14 @@ _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>");
 
     /* update routes from widgets */
     if(ret == `next) {
-	route_conf = maplist(term e, table_items, ``($[
-	    "destination" : select(e, 1, ""),
-	    "gateway"     : select(e, 2, ""),
-	    "netmask"     : select(e, 3, ""),
-	    "device"      : select(e, 4, "")]
-	));
+	route_conf = maplist(term e, table_items, {
+	    return $[
+		"destination" : select(e, 1, ""),
+		"gateway"     : select(e, 2, ""),
+		"netmask"     : select(e, 3, ""),
+		"device"      : select(e, 4, ""),
+	    ];
+	});
 
 	if(defgw != UI::QueryWidget(`id(`gw), `Value))
 	    defgwdev = "-"; // FIXME: find correct device
@@ -264,7 +270,7 @@ _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>");
  * @param devs available devices
  * @return route or nil, if canceled
  */
-define term RoutingEditDialog(integer id, term entry, list devs) ``{
+define term RoutingEditDialog(integer id, term entry, list devs) {
 
     ScreenName("routing-edit");
 
@@ -347,7 +353,7 @@ define term RoutingEditDialog(integer id, term entry, list devs) ``{
  * @param defgw current default gw widget contents
  * @return true if differ
  */
-define boolean RoutingModified(string defgw) ``{
+define boolean RoutingModified(string defgw) {
     boolean forward = (boolean) UI::QueryWidget(`id(`forward), `Value);
     string defg = (string) UI::QueryWidget(`id(`gw), `Value);
     return forward != Routing::Forward || defg != defgw;

@@ -27,7 +27,7 @@ include "network/routines.ycp";
  * Connection dialog
  * @return dialog result
  */
-define any ConnectionDialog() ``{
+define any ConnectionDialog() {
 
     ScreenName("provider-connection");
 
@@ -124,8 +124,9 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
     if(!contains(seconds, idletime))
 	seconds = add(seconds, idletime);
 
-    seconds = maplist(string e, seconds,
-	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == idletime)));
+    seconds = maplist(string e, (list<string>) seconds, {
+	return `item(`id(sformat("%1", e)), sformat("%1", e), e == idletime);
+    });
 
     /* Checkbox label */
     term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("Activate Fire&wall"), FirewallChecked));
@@ -305,7 +306,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
  * Connection details dialog
  * @return dialog result
  */
-define symbol ConnectionDetailsDialog() ``{
+define symbol ConnectionDetailsDialog() {
     return `abort;
 }
 

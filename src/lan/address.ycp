@@ -235,11 +235,11 @@ completes the configuration.</p>");
 	`item(`id(`dhclient), _("DHCP &Client Options")),
 	/* MenuButton item */
 	`item(`id(`details), _("&Detailed Settings")),
-	/* MenuButton item */
-	`item(`id(`virtual), _("&Virtual Aliases")),
     ]);
 
     list MB_backup = [
+	/* MenuButton item */
+	`item(`id(`virtual), _("&Virtual Aliases")),
 	/* MenuButton item */
 	`item(`id(`hostname), _("&Host name and name server")),
 	/* MenuButton item */
