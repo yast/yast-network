@@ -152,6 +152,7 @@ global define void SelectHardware(integer which) ``{
     name = sel["name"]:"";
     unique = sel["unique"]:"";
     type = sel["type"]:"eth";
+    hotplug = sel["hotplug"]:"";
 
     /* modem */
     if(type == "modem") {
@@ -174,11 +175,15 @@ global define void SelectHardware(integer which) ``{
     }
     /* treat the rest as a network card */
     else {
-	Module["module"] = sel["module"]:"";
-	Module["options"] = sel["options"]:"";
+	/* don't make modules.conf entries for hotpluggable HW (29547) */
+	if(hotplug == "") {
+	    Module["module"] = sel["module"]:"";
+	    Module["options"] = sel["options"]:"";
+	}
+	else
+	    y2debug("HOTPLUG(%1) -> ignoring modules.conf", hotplug);
     }
 
-    hotplug = sel["hotplug"]:"";
     device = GetFreeDevice(RealType(type, hotplug));
 
     return true;

@@ -3,6 +3,7 @@ Thu Aug 28 15:35:34 CEST 2003 - msvec@suse.cz
 
 - don't shut down network interface during detection (#29452)
 - don't show error messages in case detection isn't started (#29582)
+- don't make modules.conf entries for hotpluggable hardware (#29547)
 - improve DSL detection message (#29576)
 - 2.8.18
 
