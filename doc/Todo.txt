@@ -16,7 +16,7 @@ Improvements:
 - lan: myrinet: check for driver presence [warning + info]
 - lan: remove writing of NETWORK (also BROADCAST?), probably not used
 - modem: check existence of the modem device in ModemDialog
-- routing: restart only routing
+- routing: restart only routing (#33025)
 - routing: check already present default route (partially #11132)
 - routines: check for yast2-mail presence
 - routines: support plip, slip, ppp (serial cable, not modem)

@@ -68,7 +68,7 @@ global define symbol ConnectionDialog() ``{
     /* DIALOG TEXTS */
 
     /* Connection dialog caption */
-    string caption = _("Connection parameters");
+    string caption = _("Connection Parameters");
 
     /* Connection dialog help 1/8 */
     string helptext = _("<p><b>Dial on Demand</b> means that the

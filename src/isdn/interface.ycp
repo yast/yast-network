@@ -270,7 +270,7 @@ this box.
     list provlist = [];
     term prov = `VSpacing(0.1);
     if(ISDN::operation  == `editif) {
-	Provider::Select("");
+	Provider::Add("isdn");
 	provlist = Provider::GetProviders("_custom", ISDN::provider_file);
 	y2debug("provlist: %1", provlist);
 	/* ComboBox label */

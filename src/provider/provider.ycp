@@ -179,7 +179,7 @@ global define symbol ProviderDialog() ``{
 	username2tonline();
 
     /* Provider dialog caption */
-    string caption = _("Set parameters for the Internet connection");
+    string caption = _("Provider Parameters");
 
     /* Provider dialog help 1/5 */
     string helptext = _("<p>Access to your Internet provider. If you have
@@ -233,7 +233,7 @@ at the end.</p>");
 	    /* TextEntry label */
 	    `Password(`id(`password), _("&Password"), password),
 	    /* CheckBox label */
-	    `Left(`CheckBox(`id(`askpass), `opt(`notify), _("&Always ask for password"), ask_pass)),
+	    `Left(`CheckBox(`id(`askpass), `opt(`notify), _("&Always Ask for Password"), ask_pass)),
 	    `VSpacing(0.2)
 	),
 	`HSpacing(0.5)
@@ -255,10 +255,10 @@ at the end.</p>");
     }
 
     /* TextEntry label */
-    term namebox = `TextEntry(`id(`name), _("Pr&ovider name"), name);
+    term namebox = `TextEntry(`id(`name), _("Pr&ovider Name"), name);
 
     /* TextEntry label */
-    term phonebox = `TextEntry(`id(`phone), _("P&hone number"), phone);
+    term phonebox = `TextEntry(`id(`phone), _("P&hone Number"), phone);
 
     if(type == "dsl") {
 	phonebox = namebox;
@@ -295,7 +295,7 @@ at the end.</p>");
 		`HSpacing(0.5),
 		`VBox(
 		    /* TextEntry label */
-		    `TextEntry(`id(`usercode), _("&User code"), usercode),
+		    `TextEntry(`id(`usercode), _("&User Code"), usercode),
 		    `Label(""),
 		    `VSpacing(0.2)
 		),
@@ -304,7 +304,7 @@ at the end.</p>");
 		    /* TextEntry label */
 		    `Password(`id(`password), _("&Password"), password),
 		    /* CheckBox label */
-		    `Left(`CheckBox(`id(`askpass), `opt(`notify), _("&Always ask for password"), ask_pass)),
+		    `Left(`CheckBox(`id(`askpass), `opt(`notify), _("&Always Ask for Password"), ask_pass)),
 		    `VSpacing(0.2)
 		),
 		`HSpacing(0.5)
@@ -319,7 +319,7 @@ at the end.</p>");
 	`VBox(
 	    `Left(`HBox(
 		/* Label text */
-		`Label(_("Name for dialing:")),
+		`Label(_("Name for Dialing:")),
 		`HSpacing(0.5),
 		`Label(`opt(`outputField), Provider::Name)
 	    )),

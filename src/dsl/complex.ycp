@@ -262,7 +262,6 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	    }
 	    DSL::Edit(dev);
 	    Provider::Edit(Provider::Name);
-	    // Provider::AddEdit(Provider::provShortName, false);
 	    ret = `edit;
 	    break;
 	}

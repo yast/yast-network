@@ -265,7 +265,6 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	    }
 	    Modem::Edit(dev);
 	    Provider::Edit(Provider::Name);
-	    // Provider::AddEdit(Provider::provShortName, false);
 	    ret = `edit;
 	    break;
 	}
