@@ -45,10 +45,10 @@ global define boolean AskForPassword() ``{
 
     UI::SetFocus(`id(`password));
 
-    symbol ret = UI::UserInput();
+    any ret = UI::UserInput();
 
     if(ret == `ok)
-	Internet::password = UI::QueryWidget(`id(`password), `Value);
+	Internet::password = (string) UI::QueryWidget(`id(`password), `Value);
 
     UI::CloseDialog();
 
@@ -173,14 +173,14 @@ activate the test procedure."),
     Internet::do_test = UI::QueryWidget(`id(`rb), `CurrentButton) == `yes;
     y2debug("Internet::do_test=%1", Internet::do_test);
 
-    return ret;
+    return (symbol) ret;
 }
 
 /**
  * Connection test dialog
  * @return dialog result
  */
-global define symbol AskYOUDialog() ``{
+global define any AskYOUDialog() ``{
 
     ScreenName("installation-you-dialog");
 
@@ -218,7 +218,7 @@ global define symbol AskYOUDialog() ``{
     UI::OpenDialog(content);
     UI::UserInput();
 
-    Internet::do_you = UI::QueryWidget(`id(`yes), `Value);
+    Internet::do_you = (boolean) UI::QueryWidget(`id(`yes), `Value);
     y2debug("Internet::do_you=%1", Internet::do_you);
 
     UI::CloseDialog ();
@@ -237,7 +237,9 @@ global define void ShowLogs(list logs, string logdir) ``{
     logs = sort(map x, map y, logs, ``( x[`prio]:0 >= y[`prio]:0 ));
 
     list menunames = [];
-    maplist(map v, logs, ``(change(menunames, v[`menuname]:"none")));
+    maplist(map v, logs, ``{
+	menunames = add(menunames, v[`menuname]:"none");
+    });
 
     term content = `VBox(
 	/* Heading */
@@ -267,17 +269,17 @@ global define void ShowLogs(list logs, string logdir) ``{
     while(true) {
 
 	/* Read file and fill logview */
-	string tmp2 = SCR::Read(.target.string, logdir + "/" + filename);
+	string tmp2 = (string) SCR::Read(.target.string, logdir + "/" + filename);
 	if(tmp2 == nil) tmp2 = "file not found";
 	UI::ChangeWidget(`id(`log), `Value, "<pre>" + tmp2 + "</pre>");
 
-	symbol ret = UI::UserInput();
+	any ret = UI::UserInput();
 
 	if(ret == `ok) {
 	    break;
 	}
 	else if(ret == `selector) {
-	    string menuname = UI::QueryWidget(`id(`selector), `Value);
+	    string menuname = (string) UI::QueryWidget(`id(`selector), `Value);
 
 	    maplist(map v, logs, ``{
 		if(v[`menuname]:"none" == menuname)

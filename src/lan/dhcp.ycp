@@ -22,7 +22,7 @@ include "network/routines.ycp";
  * Dialog for DHCP client options
  * @return dialog result
  */
-global define symbol DHCPDialog() ``{
+define any DHCPDialog() ``{
 
     ScreenName("lan-dhcp");
 

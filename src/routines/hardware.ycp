@@ -26,7 +26,7 @@ import "Map";
  * @param hwdevice hardware device
  * @return name consisting of vendor and device name
  */
-global define string DeviceName(map hwdevice) ``{
+define string DeviceName(map hwdevice) ``{
     string delimiter = " "; // "\n";
     string model = "";
     string vendor = "";
@@ -55,7 +55,7 @@ global define string DeviceName(map hwdevice) ``{
  * @return short device name
  * @example ControllerType(<ethernet controller map>) -> "eth"
  */
-global define string ControllerType(map hwdevice) ``{
+define string ControllerType(map hwdevice) ``{
 
     if(hwdevice["subclass"]:"" == "Modem") return "modem";
     if(hwdevice["subclass"]:"" == "ISDN") return "isdn";
@@ -145,13 +145,13 @@ global define string ControllerType(map hwdevice) ``{
  * @param hwtype type of devices to read (netcard|modem|isdn)
  * @return true if success
  */
-global define boolean ReadHardware(string hwtype) ``{
-    Hardware = [];
+define list ReadHardware(string hwtype) ``{
+    list Hardware = [];
 
     y2debug("hwtype=%1", hwtype);
 
     /* FIXME: no clean DSL hardware support yet */
-    if(hwtype == "dsl") return false;
+    if(hwtype == "dsl") return [];
 
     integer num = 0;
     list paths = [];
@@ -178,7 +178,7 @@ global define boolean ReadHardware(string hwtype) ``{
     /* Confirmation: label text (detecting hardware: xxx) */
     string hwstring = _("All Network Devices");
     if(haskey(hwstrings, hwtype)) hwstring = hwstrings[hwtype]:"";
-    if(!Confirm::Detection(hwstring)) return false;
+    if(!Confirm::Detection(hwstring)) return [];
 
     /* read the corresponding hardware */
     if(haskey(hwtypes, hwtype))
@@ -189,9 +189,10 @@ global define boolean ReadHardware(string hwtype) ``{
 	});
     else {
 	y2error("unknown hwtype: %1", hwtype);
-	return false;
+	return [];
     }
 
+    y2debug("allcards=%1", allcards);
     if(allcards == nil) {
 	y2error("hardware detection failure");
 	allcards = [];
@@ -203,31 +204,31 @@ global define boolean ReadHardware(string hwtype) ``{
 
 	/* common stuff */
 	string controller = ControllerType(card);
-	change(one, "name", DeviceName(card));
-	change(one, "type", controller);
-	change(one, "unique", card["unique_key"]:"");
-	change(one, "num", num);
+	one["name"] = DeviceName(card);
+	one["type"] = controller;
+	one["unique"] = card["unique_key"]:"";
+	one["num"] = num;
 
 	/* modem */
 	if(controller == "modem") {
 	    map resource = card["resource"]:$[];
-	    change(one, "device_name", card["dev_name"]:"");
-	    change(one, "drivers", card["drivers"]:[]);
-	    change(one, "requires", card["requires"]:[]);
-	    change(one, "speed", lookup((map) select(lookup(resource, "baud", []), 0, $[]), "speed", 57600));
-	    change(one, "init1", lookup((map) select(lookup(resource, "init_strings", []),0,$[]), "init1", ""));
-	    change(one, "init2", lookup((map) select(lookup(resource, "init_strings", []),0,$[]), "init2", ""));
-	    change(one, "pppd_options", lookup((map) select(lookup(resource, "pppd_option", []),0,$[]), "option", ""));
+	    one["device_name"] = card["dev_name"]:"";
+	    one["drivers"] = card["drivers"]:[];
+	    one["requires"] = card["requires"]:[];
+	    one["speed"] = lookup((map) select(lookup(resource, "baud", []), 0, $[]), "speed", 57600);
+	    one["init1"] = lookup((map) select(lookup(resource, "init_strings", []),0,$[]), "init1", "");
+	    one["init2"] = lookup((map) select(lookup(resource, "init_strings", []),0,$[]), "init2", "");
+	    one["pppd_options"] = lookup((map) select(lookup(resource, "pppd_option", []),0,$[]), "option", "");
 	}
 	/* isdn card */
 	else if(controller == "isdn") {
 	    map resource = card["resource"]:$[];
 	    list drivers = card["isdn"]:[];
-	    change(one, "drivers", drivers);
-	    change(one, "sel_drv", 0);
-	    change(one, "bus", card["bus"]:"");
-	    change(one, "io", lookup((map) select(lookup(resource, "io", []),0, $[]), "start", 0));
-	    change(one, "irq", lookup((map) select(lookup(resource, "irq", []), 0, $[]), "irq", 0));
+	    one["drivers"] = drivers;
+	    one["sel_drv"] = 0;
+	    one["bus"] = card["bus"]:"";
+	    one["io"] = lookup((map) select(lookup(resource, "io", []),0, $[]), "start", 0);
+	    one["irq"] = lookup((map) select(lookup(resource, "irq", []), 0, $[]), "irq", 0);
 	}
 	/* dsl card */
 	else if(controller == "dsl") {
@@ -239,18 +240,18 @@ global define boolean ReadHardware(string hwtype) ``{
 	    list drivers = card["drivers"]:[];
 	    if(size(drivers) < 0) y2error("Not enough drivers");
 	    map driver = drivers[0]:$[];
-	    change(one, "active", driver["active"]:false);
-	    list modules = (list) select((list) lookup(driver, "modules", []), 0, []);
-	    change(one, "module", modules[0]:"");
-	    change(one, "options", modules[1]:"");
+	    one["active"] = driver["active"]:false;
+	    list modules = (list) select((list) (driver["modules"]:[]), 0, []);
+	    one["module"] = modules[0]:"";
+	    one["options"] = modules[1]:"";
 
 	    /* FIXME: this should be also done for modems and others */
 	    /* FIXME: #13571 */
 	    string hp = card["hotplug"]:"";
 	    if(hp == "pcmcia" || hp == "cardbus")
-		change(one, "hotplug", "pcmcia");
+		one["hotplug"] = "pcmcia";
 	    else if(hp == "usb")
-		change(one, "hotplug", "usb");
+		one["hotplug"] = "usb";
 	}
 
 	y2debug("found device: %1", one);
@@ -268,14 +269,14 @@ global define boolean ReadHardware(string hwtype) ``{
     });
 
     y2debug("Hardware=%1", Hardware);
-    return true;
+    return Hardware;
 }
 
 /**
  * Select the given hardware item or clean up structures (item == nil)
  * @param which item to be chosen
  */
-global define void SelectHardware(integer which) ``{
+define map SelectHardware(list Hardware, integer which) ``{
     map sel = $[];
 
     if(which != nil) {
@@ -291,7 +292,10 @@ global define void SelectHardware(integer which) ``{
     type = sel["type"]:"eth";
     hotplug = sel["hotplug"]:"";
 
-    /* modem */
+    return sel;
+}
+
+    /* modem * /
     if(type == "modem") {
 	Init1 = sel["init1"]:"";
 	Init2 = sel["init2"]:"";
@@ -301,20 +305,20 @@ global define void SelectHardware(integer which) ``{
 	Requires = sel["requires"]:[];
 	type = "ppp";
     }
-    /* isdn card */
+    /* isdn card * /
     else if(type == "isdn") {
-	/* FIXME: ISDN */
+	/* FIXME: ISDN * /
 	y2error("isdn not ready yet");
     }
-    /* dsl card */
+    /* dsl card * /
     else if(type == "dsl") {
-	/* FIXME: DSL HW */
+	/* FIXME: DSL HW * /
 	pppmode = sel["pppmode"]:"capi-adsl";
 	startmode = sel["startmode"]:"manual";
     }
-    /* treat the rest as a network card */
+    /* treat the rest as a network card * /
     else {
-	/* don't make modules.conf entries for hotpluggable HW (29547) */
+	/* don't make modules.conf entries for hotpluggable HW (29547) * /
 	if(hotplug == "") {
 	    Module["module"] = sel["module"]:"";
 	    Module["options"] = sel["options"]:"";
@@ -324,9 +328,8 @@ global define void SelectHardware(integer which) ``{
     }
 
     device = GetFreeDevice(RealType(type, hotplug));
-
-    return true;
 }
+*/
 
 /* EOF */
 }

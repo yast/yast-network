@@ -141,7 +141,7 @@ global define boolean Read() ``{
     OriginalProviders = (map) eval(Providers);
 
     /* Read countries */
-    map country_names = (map) SCR::Read(.target.yast2, "country.ycp");
+    map country_names = (map) eval(SCR::Read(.target.yast2, "country.ycp"));
     if(country_names == nil) {
 	//Report:Error(_("Country database not found"));
 	y2error("Country database not found");
@@ -161,6 +161,7 @@ global define boolean Read() ``{
     Countries = [];
     integer index = -1;
     Countries = SCR::Dir(.providers.s);
+    if(Countries == nil) Countries = [];
     y2debug("Countries=%1", Countries);
     if(!contains(Countries, LastCountry)) LastCountry = "CZ";
     Countries = maplist(string i, Countries, ``{
@@ -427,7 +428,7 @@ global define boolean Delete(string name) ``{
  * @return true if success
  */
 global define boolean Commit() ``{
-    y2debug("Commit(%1)", operation);
+    y2debug("operation=%1", operation);
 
     if(operation == `add || operation == `edit) {
 	y2debug("Providers=%1", Providers);
@@ -554,10 +555,10 @@ global define list Overview(string type) ``{
     list overview = [];
     maplist(string name, map provmap, Provs, ``{
 	y2debug("provider(%1): %2", name, provmap);
-	// change(overview, `item(`id(name), name, provmap["PROVIDER"]:"", provmap["PHONE"]:"", provmap["MODEMSUPPORTED"]:"no", provmap["ISDNSUPPORTED"]:"no", provmap["DSLSUPPORTED"]:"no"));
+	// overview = add(overview, `item(`id(name), name, provmap["PROVIDER"]:"", provmap["PHONE"]:"", provmap["MODEMSUPPORTED"]:"no", provmap["ISDNSUPPORTED"]:"no", provmap["DSLSUPPORTED"]:"no"));
 	term it = `item(`id(name), name, provmap["PROVIDER"]:"");
 	if(type != "dsl") it = add(it, provmap["PHONE"]:"");
-	change(overview, it);
+	overview = add(overview, it);
     });
     y2debug("overview=%1", overview);
 

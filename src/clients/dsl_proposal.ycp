@@ -19,6 +19,10 @@ y2milestone("Arguments: %1", WFM::Args());
 import "DSL";
 import "Progress";
 
+/* NI: required wrt functions in routines.ycp */
+block<boolean> AbortFunction = nil;
+define boolean Modified() ``{ return true; }
+
 include "network/routines.ycp";
 
 string func = (string) WFM::Args(0);
@@ -54,7 +58,7 @@ if(func == "MakeProposal") {
 /* run the module */
 else if(func == "AskUser") {
     map stored = DSL::Export();
-    symbol result = WFM::CallFunction("dsl", [.propose]);
+    symbol result = (symbol) WFM::CallFunction("dsl", [.propose]);
     if(result != `next) DSL::Import(stored);
     y2debug("stored=%1", stored);
     y2debug("result=%1", result);

@@ -11,7 +11,7 @@
 
 textdomain "network";
 
-import "ISDN";
+// FIXME: NI import "ISDN";
 import "Provider";
 import "Wizard";
 
@@ -25,7 +25,7 @@ import "Label";
  * Build provider info text.
  * @return provider info text
  */
-global define string ProviderInfoText() ``{
+define string ProviderInfoText() ``{
 
     string info = "";
     string type = Provider::Type;
@@ -78,6 +78,31 @@ dialing number, call the hotline <b>%2</b>.</p>");
 }
 
 /**
+ * Provider dialog
+ * @return dialog result
+ */
+define any ProviderDialog() ``{
+
+    ScreenName("provider-dialog");
+
+    string type = Provider::Type;
+
+    string name = Provider::Current["PROVIDER"]:"";
+    string phone = Provider::Current["PHONE"]:"";
+    string encap = Provider::Current["ENCAP"]:"";
+    string infotext = ProviderInfoText();
+
+    string username = Provider::Current["USERNAME"]:"";
+    string password = Provider::Current["PASSWORD"]:"";
+    boolean ask_pass = Provider::Current["ASKPASSWORD"]:"no" == "yes";
+
+    string uimode = Provider::Current["UIMODE"]:"";
+
+    string lineid = "";
+    string t_onlineid = "";
+    string usercode = "";
+
+/**
  * Create T-Online username from LineID, T-OnlineNo and UserCode
  *
  * It's concatenation of LineID (12 digits), T-OnlineNo (12 digits,
@@ -87,7 +112,7 @@ dialing number, call the hotline <b>%2</b>.</p>");
  * T-Online Business DSL is created as
  * t-online-com/<12 character (real) username>@t-online-com.de
  */
-global define void tonline2username() ``{
+define void tonline2username() ``{
     if(uimode == "T-Online DSL Business")
 	username = "t-online-com/" + username + "@t-online-com.de";
     else {
@@ -102,7 +127,7 @@ global define void tonline2username() ``{
  * Split username to LineID, T-OnlineNo and UserCode
  * @see tonline2username
  */
-global define void username2tonline() ``{
+define void username2tonline() ``{
     string user = username;
     usercode = "0001";
     lineid = "";
@@ -150,31 +175,6 @@ global define void username2tonline() ``{
     }
     y2debug("T-Online: %1 -> [%2,%3,%4]", username, lineid, t_onlineid, usercode);
 }
-
-/**
- * Provider dialog
- * @return dialog result
- */
-global define symbol ProviderDialog() ``{
-
-    ScreenName("provider-dialog");
-
-    string type = Provider::Type;
-
-    string name = Provider::Current["PROVIDER"]:"";
-    string phone = Provider::Current["PHONE"]:"";
-    string encap = Provider::Current["ENCAP"]:"";
-    string infotext = ProviderInfoText();
-
-    string username = Provider::Current["USERNAME"]:"";
-    string password = Provider::Current["PASSWORD"]:"";
-    boolean ask_pass = Provider::Current["ASKPASSWORD"]:"no" == "yes";
-
-    string uimode = Provider::Current["UIMODE"]:"";
-
-    string lineid = "";
-    string t_onlineid = "";
-    string usercode = "";
 
     if(issubstring(uimode, "T-Online"))
 	username2tonline();
@@ -510,8 +510,8 @@ at the end.</p>");
 	    Provider::Current = union(Provider::Current, $[
 		"ENCAP"		: encap,
 	    ]);
-	    if(ISDN::operation == `addif)
-		ISDN::provider_file = Provider::Name;
+	    // FIXME: NI if(ISDN::operation == `addif)
+		// FIXME: NI ISDN::provider_file = Provider::Name;
 	}
     }
 

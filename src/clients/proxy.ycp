@@ -22,16 +22,19 @@ import "Label";
 import "Proxy";
 import "Wizard";
 
-include "network/services/proxy.ycp";
-include "network/runtime.ycp";
-
 /**
  * Return a modification status
  * @return true if data was modified
  */
-global define boolean Modified() ``{
+define boolean Modified() ``{
     return Proxy::modified;
 }
+
+/* NI: required wrt functions in routines.ycp */
+block<boolean> AbortFunction = nil;
+
+include "network/runtime.ycp";
+include "network/services/proxy.ycp";
 
 /* is this proposal or not? */
 boolean propose = false;

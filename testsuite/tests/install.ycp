@@ -1,13 +1,13 @@
 {
 
 include "testsuite.ycp";
-include "network/install.ycp";
 
 map READ = $[
     "etc" : $[ "install_inf" : $[ "NetConfig" : "bootp" ]],
 ];
 
 map InstallInf = $[];
+include "network/install.ycp";
 
 // DUMP("ReadInstallInf");
 // TEST(``(ReadInstallInf()), [], nil);

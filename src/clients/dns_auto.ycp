@@ -38,7 +38,7 @@ map param = $[];
 /* Check arguments */
 if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
     func = (string) WFM::Args(0);
-    if(size(Args()) > 1 && is(Args(1), map))
+    if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
 	param = (map) WFM::Args(1);
 }
 y2debug("func=%1", func);
@@ -71,7 +71,7 @@ else if (func == "Export") {
 else if (func == "Write") {
     import "Progress";
     Progress::off();
-    DNS::write_only = true;
+    // DNS::write_only = true;
     ret = DNS::Write();
     Progress::on();
 }

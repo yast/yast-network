@@ -6,7 +6,7 @@
  *
  * $Id$
  *
- * All config settings are stored in a global variable Devices.
+ * All config settings are stored in a global variable Devs.
  * All hardware settings are stored in a global variable Hardware.
  * Deleted devices are in the global list DELETED.
  */
@@ -15,65 +15,42 @@
 
 textdomain "network";
 
-import "Call";
 import "Popup";
 import "Summary";
 
 include "network/routines.ycp";
+include "network/summary.ycp";
 
-/**
- * Regular expression for all network card types
- */
-global string NetworkCardRegex = "arc|ci|ctc|dummy|escon|eth|fddi|hsi|iucv|myri|tr|wlan";
-
-/**
- * Regular expression for all network device types
- */
-global string NetworkDeviceRegex = "eth-pcmcia|eth-pcmcia-|eth-usb|eth-usb-|" +
-    "tr-pcmcia|tr-pcmia-|tr-usb|tr-usb-|" +
-    "wlan-pcmcia|wlan-pcmia-|wlan-usb|wlan-usb-|" +
-    "usb-usb|usb-usb-|" +
-    NetworkCardRegex;
-
-/**
- * Regular expression for all ISDN card types
- */
-global string ISDNCardRegex = "isdn|ippp";
-
-/**
- * Regular expression for all ISDN device types
- */
-global string ISDNDeviceRegex = "isdn-pcmcia-|isdn-usb-|ippp-pcmcia-|ippp-usb-|"
-    + ISDNCardRegex;
-
-/**
- * Regular expression for all network card types
- */
-global string NetworkAllRegex = "dummy|irlan|lo|plip|"
-    + NetworkDeviceRegex;
+define string CheckEmptyName(string devtype, string hwname);
+define string DeviceStatus(string devtype, string devnum, map devmap);
+define string HardwareName(list Hardware, string unq);
 
 /**
  * Build textual summary
  * @param split split configured and unconfigured?
  * @return [ configured, unconfigured ] if split, [ summary ] otherwise
  */
-global define list BuildSummary(boolean split) ``{
+define list BuildSummary(list Hardware, boolean split) ``{
+
+    y2debug("Devs=%1", Devs);
+    y2debug("Hardware=%1", Hardware);
+    y2debug("split=%1", split);
 
     list uniques = [];
     list configured = [];
     list unconfigured = [];
 
     /* build a list of configured devices */
-    maplist(string devtype, map devsmap, Devices, ``{
+    maplist(string devtype, map devsmap, Devs, ``{
 	maplist(string devnum, map devmap, devsmap, ``{
 
 	    /* main device summary */
 	    string unq = devmap["UNIQUE"]:"";
-	    string hwname = CheckEmptyName(devtype, HardwareName(unq));
+	    string hwname = CheckEmptyName(devtype, HardwareName(Hardware, unq));
 	    string status = DeviceStatus(devtype, devnum, devmap);
 
-	    change(configured, Summary::Device(hwname, status));
-	    change(uniques, unq);
+	    configured = add(configured, Summary::Device(hwname, status));
+	    uniques = add(uniques, unq);
 
 	    /* aliases summary */
 	    map aliasee = devmap["_aliases"]:$[];
@@ -82,7 +59,7 @@ global define list BuildSummary(boolean split) ``{
 		    /* Table item */
 		    hwname = _("Virtual network interface");
 		    status = DeviceStatus(devtype, devnum + sformat(":%1", aid), amap);
-		    change(configured, Summary::Device(hwname, status));
+		    configured = add(configured, Summary::Device(hwname, status));
 		});
 
 	});
@@ -97,9 +74,9 @@ global define list BuildSummary(boolean split) ``{
 	y2debug("unq(%1)", unq);
 	if(!contains(uniques, unq)) {
 	    if(split)
-		change(unconfigured, h);
+		unconfigured = add(unconfigured, h);
 	    else
-		change(configured, Summary::Device(hwname, Summary::NotConfigured()));
+		configured = add(configured, Summary::Device(hwname, Summary::NotConfigured()));
 	}
     });
 
@@ -127,73 +104,11 @@ global define list BuildSummary(boolean split) ``{
     // FIXME OtherDevices(devs, type);
 
     /* Label for not detected devices */
-    change(devs, `item(`id(`other), _("Other (not detected)"), size(devs) == 0));
+    devs = add(devs, `item(`id(`other), _("Other (not detected)"), size(devs) == 0));
 
     y2debug("summary=%1", summary);
     y2debug("devs=%1", devs);
     return [ summary, devs ];
-}
-
-/**
- * Generate other (not detected) devices names
- * @param devs devices list to be changed
- * @param type names to configure (netcard|modem|isdn|all|...)
- * @return true on success
- */
-global define boolean OtherDevices(list devs, string type) ``{
-
-    if(type == "all" || type == "modem") {
-	/* SelectionBox item */
-        if(has_pcmcia) change(devs, `item(`id(`pcmcia_modem), _("PCMCIA Modem")));
-	/* SelectionBox item */
-        if(has_usb) change(devs, `item(`id(`usb_modem), _("USB Modem")));
-	/* SelectionBox item */
-	change(devs, `item(`id(`other_modem), _("Other Modem (not detected)")));
-    }
-    if(type == "all" || type == "isdn") {
-	/* SelectionBox item */
-        if(has_pcmcia) change(devs, `item(`id(`pcmcia_isdn), _("PCMCIA ISDN Card")));
-	/* SelectionBox item */
-        if(has_usb) change(devs, `item(`id(`usb_isdn), _("USB ISDN Card")));
-	/* SelectionBox item */
-	change(devs, `item(`id(`other_isdn), _("Other ISDN Card (not detected)")));
-    }
-    if(type == "all" || type == "netcard") {
-	/* offer only eth so far */
-	if(true) {
-	    /* SelectionBox item */
-	    if(has_pcmcia) change(devs, `item(`id(`pcmcia_eth), _("PCMCIA Network Card")));
-	    /* SelectionBox item */
-	    if(has_usb) change(devs, `item(`id(`usb_eth), _("USB Network Card")));
-	}
-	/* maybe also TR ... */
-	else {
-	    if(has_pcmcia) {
-		/* SelectionBox item */
-		change(devs, `item(`id(`pcmcia_eth), _("PCMCIA Ethernet Network Card")));
-		/* SelectionBox item */
-		change(devs, `item(`id(`pcmcia_tr), _("PCMCIA Token Ring Network Card")));
-	    }
-	    if(has_usb) {
-		/* SelectionBox item */
-		change(devs, `item(`id(`usb_eth), _("USB Ethernet Network Card")));
-		/* SelectionBox item */
-		change(devs, `item(`id(`usb_tr), _("USB Token Ring Network Card")));
-	    }
-	}
-	/* SelectionBox item */
-        change(devs, `item(`id(`other), _("Other Network Card (not detected)")));
-    }
-    if(type == "all" || type == "dummy") {
-	/* SelectionBox item */
-        change(devs, `item(`id(`dummy), _("Dummy Device")));
-    }
-    else {
-        y2error("Unknown type: %1", devtype);
-	return false;
-    }
-
-    return true;
 }
 
 /**
@@ -202,7 +117,7 @@ global define boolean OtherDevices(list devs, string type) ``{
  * @param hwname device name
  * @return hwname if not empty, "Unknown device" otherwise
  */
-global define string CheckEmptyName(string devtype, string hwname) ``{
+define string CheckEmptyName(string devtype, string hwname) ``{
     if(hwname != nil && hwname != "") return hwname;
 
     map device_names = $[
@@ -321,7 +236,7 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
  * @param unq unique number
  * @return hardware name
  */
-global define string HardwareName(string unq) ``{
+define string HardwareName(list Hardware, string unq) ``{
     string hwname = "";
     if(unq != "")
 	maplist(map h, Hardware, ``{
@@ -337,7 +252,7 @@ global define string HardwareName(string unq) ``{
  * @return provider name
  * @example ProviderName("tonline") -> "T-Online"
  */
-global define string ProviderName(string provider) ``{
+define string ProviderName(string provider) ``{
     import "Provider";
 
     if(provider == nil || provider == "")
@@ -356,7 +271,7 @@ global define string ProviderName(string provider) ``{
  * @param devmap map with devices settings
  * @return text wth device status
  */
-global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
+define string DeviceStatus(string devtype, string devnum, map devmap) ``{
     string dev = device_name(devtype, devnum);
 
     /* Modem and DSL */
@@ -391,8 +306,10 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
     }
     /* Treat others as network cards */
     else {
+	/*
 	if(!regexpmatch(devtype, NetworkAllRegex))
 	    y2error("Unknown type: %1", devtype);
+	*/
 
 	string proto = devmap["BOOTPROTO"]:"static";
 	if(proto == "" || proto == "static" || proto == "none" || proto == nil) {
@@ -415,102 +332,11 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
 }
 
 /**
- * Return textual device type
- * @param type device type
- * @return textual form of device type
- * @example DeviceType("eth") -> "Ethernet"
- */
-global define string DeviceType(string type) ``{
-
-    if(issubstring(type, ":"))
-	/* Device type label */
-	return _("Virtual Interface");
-
-    map device_types = $[
-	/* Device type label */
-	"arc"	: _("ARCnet"),
-	/* Device type label */
-	"atm"	: _("ATM"),
-	/* Device type label */
-	"ci"	: _("CLAW"),
-	/* Device type label */
-	"contr"	: _("ISDN"),
-	/* Device type label */
-	"ctc"	: _("CTC"),
-	/* Device type label */
-	"dsl"	: _("DSL"),
-	/* Device type label */
-	"dummy"	: _("Dummy"),
-	/* Device type label */
-	"escon"	: _("ESCON"),
-	/* Device type label */
-	"eth"	: _("Ethernet"),
-	/* Device type label */
-	"fddi"	: _("FDDI"),
-	/* Device type label */
-	"hippi"	: _("HIPPI"),
-	/* Device type label */
-	"hsi"	: _("Hipersockets"),
-	/* Device type label */
-	"ippp"	: _("ISDN"),
-	/* Device type label */
-	"irlan"	: _("IrDA"),
-	/* Device type label */
-	"irda"	: _("IrDA"),
-	/* Device type label */
-	"isdn"	: _("ISDN"),
-	/* Device type label */
-	"iucv"	: _("IUCV"),
-	/* Device type label */
-	"lo"	: _("Loopback"),
-	/* Device type label */
-	"myri"	: _("Myrinet"),
-	/* Device type label */
-	"net"	: _("ISDN"),
-	/* Device type label */
-	"plip"	: _("Parallel Line"),
-	/* Device type label */
-	"ppp"	: _("Modem"),
-	/* Device type label */
-	"sit"	: _("IPv6-in-IPv4"),
-	/* Device type label */
-	"slip"	: _("Serial Line"),
-	/* Device type label */
-	"tr"	: _("Token Ring"),
-	/* Device type label */
-	"usb"	: _("USB"),
-	/* Device type label */
-	"vmnet"	: _("VMWare"),
-	/* Device type label */
-	"wlan"	: _("Wireless"),
-    ];
-
-    if(haskey(device_types, type))
-	return device_types[type]:"";
-
-    if(haskey(device_types, select(splitstring(type, "-"), 0, "-")))
-	return device_types[select(splitstring(type, "-"), 0, "-")]:"";
-
-    y2error("Unknown type: %1", type);
-    return type;
-}
-
-/**
- * Create list of Table items
- * @param types list of types
- * @param cur current type
- * @return Table items
- */
-global define list BuildTypesList(list types, string cur) ``{
-    return maplist(string t, types, ``(`item(`id(t), DeviceType(t), t == cur)));
-}
-
-/**
  * Return the device protocol or IP address in case of static config
  * @param devmap device map
  * @return textual device protocol
  */
-global define string DeviceProtocol(map devmap) ``{
+define string DeviceProtocol(map devmap) ``{
     string ip = devmap["BOOTPROTO"]:"static";
     if(ip == nil || ip == "" || ip == "static" || ip == "none")
 	ip = devmap["IPADDR"]:"";
@@ -522,10 +348,10 @@ global define string DeviceProtocol(map devmap) ``{
  * Create overview table contents
  * @return table items
  */
-global define list BuildOverview() ``{
+define list BuildOverview() ``{
     list overview = [];
 
-    maplist(string type, map devmap, Devices, ``{
+    maplist(string type, map devmap, Devs, ``{
 	maplist(string k, map v, devmap, ``{
 	    term item = nil;
 	    string dev = device_name(type, k);
@@ -548,8 +374,10 @@ global define list BuildOverview() ``{
 	    }
 	    /* Treat others as network cards */
 	    else {
+		/*
 		if(!regexpmatch(type, NetworkAllRegex))
 		    y2error("Unknown type: %1", type);
+		*/
 		item = `item(`id(dev), dev, DeviceType(type), /*"active?",*/ ip/*, "?", "?"*/);
 	    }
 	    overview = add(overview, item);
@@ -570,207 +398,6 @@ global define list BuildOverview() ``{
 
     y2debug("overview=%1", overview);
     return overview;
-}
-
-/**
- * Create table widget for the overview screens with correct spacings
- * @param caption table caption
- * @param header table header
- * @param contents table contents
- * @param first table is first of the two tables
- * @return table widget
- */
-global define term OverviewTableContents(string caption, term header, list contents, boolean first) ``{
-
-    term addbutton = nil;
-    term editbutton = nil;
-    term deletebutton = nil;
-    if(first) {
-	/* Pushbutton label */
-	addbutton = `PushButton(`id(`add), `opt(`key_F3), _("A&dd"));
-	/* Pushbutton label */
-	editbutton = `PushButton(`id(`edit), `opt(`key_F4), _("&Edit"));
-	/* Pushbutton label */
-	deletebutton = `PushButton(`id(`delete), `opt(`key_F5), _("De&lete"));
-    }
-    else {
-	/* Pushbutton label (different shortcut) */
-	addbutton = `PushButton(`id(`Add), _("&Add"));
-	/* Pushbutton label (different shortcut) */
-	editbutton = `PushButton(`id(`Edit), _("Ed&it"));
-	/* Pushbutton label (different shortcut) */
-	deletebutton = `PushButton(`id(`Delete), _("Dele&te"));
-    }
-
-    return `HBox(`HSpacing(1.5), `VBox(
-	`VSpacing(0.0),
-	caption != ""? `Left(`Heading(caption)) : `VSpacing(0.0),
-	`Table(
-	    `id(first?`table:`Table),
-	    `opt(`notify),
-	    header,
-	    contents
-	),
-	`VSpacing(0.4),
-	`HBox(
-	    `opt(`hstretch),
-	    addbutton,
-	    editbutton,
-	    deletebutton
-	),
-	`VSpacing(0.5)
-    ), `HSpacing(1.5));
-
-}
-
-/**
- * Create table widget for the overview screens
- * @param header table header
- * @param contents table contents
- * @return table widget
- */
-global define term OverviewTable(term header, list contents) ``{
-    return `VBox(
-	`VSpacing(0.5),
-	OverviewTableContents("", header, contents, true)
-    );
-}
-
-/**
- * Create two table widgets for the overview screens
- * @param caption1 first table caption
- * @param header1 first table header
- * @param contents1 first table contents
- * @param caption2 second table caption
- * @param header2 second table header
- * @param contents2 second table contents
- * @return table widget
- */
-global define term OverviewTableDouble(string caption1, term header1, list contents1, string caption2, term header2, list contents2) ``{
-
-    return `VBox(
-	`VSpacing(0.5),
-	OverviewTableContents(caption1, header1, contents1, true),
-	OverviewTableContents(caption2, header2, contents2, false)
-    );
-
-}
-
-/*
-    list overviewdev = [
-	`item(`id(0), "0", "ISDN", "ippp0", "Hisax ISDN"),
-    ];
-    list overviewif = [
-	`item(`id(0), "0", "ippp", "Contactel", "1.2.3.4", "4.3.2.1"),
-	`item(`id(1), "1", "ippp", "Czech Online", "1.2.3.6", "6.3.2.1"),
-    ];
-
-    y2debug("overviewdev=%1", overviewdev);
-    y2debug("overviewif=%1", overviewif);
-
-    import "Wizard";
-    import "Label";
-    Wizard::CreateDialog();
-    term contents = nil;
-
-    contents = OverviewTable(
-	`header(_("No."), _("Type"), _("Device"), _("Hardware")),
-	overviewdev
-    );
-
-    Wizard::SetContentsButtons("Network cards configuration overview", contents, "helptext",
-	    Label::BackButton(), Label::FinishButton());
-
-    UI::UserInput();
-
-    contents = OverviewTableDouble(
-	"ISDN devices",
-	`header(_("No."), _("Type"), _("Device"), _("Hardware")),
-	overviewdev,
-	"Providers",
-	`header(_("No."), _("Type"), _("Connection"), _("IP"), _("Remote IP")),
-	overviewif
-    );
-
-    Wizard::SetContentsButtons("ISDN configuration overview", contents, "helptext",
-	    Label::BackButton(), Label::FinishButton());
-
-    UI::UserInput();
-
-*/
-
-/**
- * Display the finished popup and possibly run another module.
- * If not modified, don't do anything.
- * @param modified true if there are any modified data
- * @param head headline to be shown
- * @param text text to be shown
- * @param run module to be run
- * @param params parameters to pass to the module
- * @return always `next
- */
-global define symbol FinishPopup(boolean modified, string head, string text, string run, list params) ``{
-
-    if(!modified) return `next;
-
-    string h = head;
-    if(h == nil || h == "")
-	/* Popup headline */
-	h = _("Configuration has been successfully saved.");
-
-    map heads = $[
-	/* Popup headline */
-	"dns"		: _("DNS Configuration Successfully Saved"),
-	/* Popup headline */
-	"dsl"		: _("DSL Configuration Successfully Saved"),
-	/* Popup headline */
-	"host"		: _("Hosts Configuration Successfully Saved"),
-	/* Popup headline */
-	"isdn"		: _("ISDN Configuration Successfully Saved"),
-	/* Popup headline */
-	"lan"		: _("Network Card Configuration Successfully Saved"),
-	/* Popup headline */
-	"modem"		: _("Modem Configuration Successfully Saved"),
-	/* Popup headline */
-	"proxy"		: _("Proxy Configuration Successfully Saved"),
-	/* Popup headline */
-	"provider"	: _("Provider Configuration Successfully Saved"),
-	/* Popup headline */
-	"routing"	: _("Routing Configuration Successfully Saved"),
-    ];
-    h = heads[head]:h;
-
-    string t = text;
-    map texts = $[
-	/* Popup text */
-	"mail"	: _("Configure the mail now?"),
-	/* Popup text */
-	"mail"	: _("Configure mail now?"),
-    ];
-    if(t == "")
-	t = texts[run]:text;
-    if(t == "")
-	/* Popup text */
-	t = sformat(_("Run configuration of %1?"), run);
-
-    any ret = nil;
-    if(run != "") {
-	ret = Popup::YesNoHeadline(h, t);
-	/* FIXME: check for the module presence */
-	if(ret == true) Call::Function(run, params);
-    }
-    else
-	ret = Popup::AnyMessage(h, t);
-
-    return `next;
-}
-
-/**
- * Question at the end of the network modules about the mail configuration
- * @return question text
- */
-global define string FinishedMailText() ``{
-    /* Popup text */
 }
 
 /* EOF */

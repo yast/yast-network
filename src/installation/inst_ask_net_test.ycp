@@ -15,6 +15,10 @@ textdomain "network";
 import "Internet";
 import "Mode";
 
+/* NI: required wrt functions in routines.ycp */
+block<boolean> AbortFunction = nil;
+define boolean Modified() ``{ return true; }
+
 include "network/routines.ycp";
 include "network/installation/dialogs.ycp";
 

@@ -35,7 +35,7 @@ include "network/services/proxy.ycp";
  * Return a modification status
  * @return true if data was modified
  */
-global define boolean Modified() ``{
+define boolean Modified() ``{
     return Proxy::modified;
 }
 
@@ -45,10 +45,10 @@ string func = "";
 map param = $[];
 
 /* Check arguments */
-if(size(Args()) > 0 && is(Args(0), string)) {
-    func = WFM::Args(0);
-    if(size(Args()) > 1 && is(Args(1), map))
-	param = WFM::Args(1);
+if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
+    func = (string) WFM::Args(0);
+    if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
+	param = (map) WFM::Args(1);
 }
 y2debug("func=%1", func);
 y2debug("param=%1", param);

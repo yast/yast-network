@@ -27,9 +27,23 @@ import "Label";
 import "Lan";
 import "RichText";
 
+/* NI: required wrt functions in routines.ycp */
+block<boolean> AbortFunction = nil;
+// define boolean Modified() ``{ return true; }
+
 include "commandline/commandline.ycp";
 include "network/lan/wizards.ycp";
 
+/* main ui function */
+any ret = nil;
+
+ret = LanSequence();
+y2debug("ret == %1", ret);
+
+return ret;
+}
+
+{
 /**
  * Command line definition
  */
@@ -114,7 +128,7 @@ define void ListHandler(map options) ``{
     if(cf == false && uncf == false)
 	/* Headline */
 	summary = "\n" + _("Network Configuration Summary:") +
-	    RichText::Rich2Plain(select(Lan::Summary(false), 0, "")) + "\n";
+	    RichText::Rich2Plain((string) select(Lan::Summary(false), 0, "")) + "\n";
     else {
 	list l = Lan::Summary(true);
 	if(cf) summary = RichText::Rich2Plain(sformat("%1", l[0]:"")) + "\n";

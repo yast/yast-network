@@ -19,13 +19,13 @@ import "Wizard";
 import "Wizard_hw";
 
 include "network/routines.ycp";
-include "network/complex.ycp";
+include "network/summary.ycp";
 
 /**
  * Return a modification status
  * @return true if data was modified
- */
-global define boolean Modified() ``{
+ * FIXME: NI /
+define boolean Modified() ``{
     return DSL::Modified() || Provider::Modified();
 }
 
@@ -34,7 +34,7 @@ global define boolean Modified() ``{
  * @param what what everything should be commited ("modem"|"provider"|"all")
  * @return always `next
  */
-global define symbol Commit(string what) ``{
+define symbol Commit(string what) ``{
     if(what == "" || what == "all" || what == "dsl")
 	DSL::Commit();
     if(what == "" || what == "all" || what == "provider")
@@ -46,7 +46,7 @@ global define symbol Commit(string what) ``{
  * Display finished popup
  * @return dialog result
  */
-global define symbol FinishDialog() ``{
+define symbol FinishDialog() ``{
     /* In this case, we have been called from ISDN: we are not finished yet */
     if(DSL::capiadsl != nil) return `next;
     return FinishPopup(Modified(), "dsl", "", "mail", ["permanent"]);
@@ -56,7 +56,7 @@ global define symbol FinishDialog() ``{
  * Read settings dialog
  * @return `abort if aborted and `next otherwise
  */
-global define symbol ReadDialog() ``{
+define symbol ReadDialog() ``{
 
     ScreenName("dsl-read");
 
@@ -79,7 +79,7 @@ the <B>Abort</B> button now.</P>");
  * Write settings dialog
  * @return `abort if aborted and `next otherwise
  */
-global define symbol WriteDialog() ``{
+define symbol WriteDialog() ``{
 
     ScreenName("dsl-write");
 
@@ -104,7 +104,7 @@ dialog will possibly inform you whether it is safe to do so or not.</P>");
  * Main dialog
  * @return dialog result
  */
-global define symbol SummaryDialog() ``{
+define any SummaryDialog() ``{
 
     ScreenName("dsl-summary");
 
@@ -127,8 +127,8 @@ If you press <b>Change</b>, an additional dialog opens in which to change the
 configuration.</p>");
 
     list summary = DSL::Summary(true);
-    list unconfigured = select(summary, 1, []);
-    string configured = select(summary, 0, "");
+    list unconfigured = (list) select(summary, 1, []);
+    string configured = (string) select(summary, 0, "");
 
     y2debug("unconfigured=%1",unconfigured);
     /* Frame label */
@@ -163,7 +163,7 @@ configuration.</p>");
 		ret = `other;
 	    }
 	    else {
-		DSL::SelectHW(selected);
+		DSL::SelectHW((integer) selected);
 		ret = `configure;
 	    }
 	    break;
@@ -184,7 +184,7 @@ configuration.</p>");
  * Overview dialog
  * @return dialog result
  */
-global define symbol OverviewDialog() ``{
+define any OverviewDialog() ``{
 
     ScreenName("dsl-overview");
 
@@ -254,7 +254,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	}
 	/* edit */
 	else if(ret == `edit || ret == `table) {
-	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 	    if(dev == nil) {
 		y2error("Empty device during Edit");
 		continue;
@@ -266,7 +266,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	}
 	/* delete */
 	else if(ret == `delete) {
-	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 	    DSL::Delete(dev);
 	    DSL::Commit();
 	    overview = DSL::Overview();
@@ -285,7 +285,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	}
 	/* provider edit */
 	else if(ret == `Edit || ret == `Table) {
-	    string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
+	    string dev = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
 	    if(dev == nil) {
 		y2error("Empty device during Edit");
 		continue;
@@ -296,7 +296,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	}
 	/* provider delete */
 	else if(ret == `Delete) {
-	    string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
+	    string dev = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
 
 	    /* Check if the provider is not used (#17497) */
 	    if(DSL::LocateProvider(dev)) {

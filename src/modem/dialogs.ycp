@@ -23,7 +23,7 @@ include "network/routines.ycp";
  * @param detected true if the type is detected
  * @return dialog result
  */
-global define symbol ModemDialog(boolean detected) ``{
+define symbol ModemDialog(boolean detected) ``{
 
     ScreenName("modem-dialog");
 
@@ -145,7 +145,7 @@ initialization strings.</p>");
     symbol ret = nil;
     while(true) {
 
-	ret = UI::UserInput();
+	ret = (symbol) UI::UserInput();
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel) {
@@ -171,14 +171,14 @@ initialization strings.</p>");
     /* UPDATE VARIABLES */
 
     if(ret == `next || ret == `Details) {
-	Modem::DialPrefix = UI::QueryWidget(`id(`DialPrefix), `Value);
+	Modem::DialPrefix = (string) UI::QueryWidget(`id(`DialPrefix), `Value);
 
 	if(detected != true)
-	    Modem::Device = UI::QueryWidget(`id(`Device), `Value);
+	    Modem::Device = (string) UI::QueryWidget(`id(`Device), `Value);
 
-	Modem::PulseDial = UI::QueryWidget(`id(`Pulse), `Value);
-	Modem::Speaker = UI::QueryWidget(`id(`Speaker), `Value);
-	Modem::Carrier = UI::QueryWidget(`id(`CarrierDetect), `Value);
+	Modem::PulseDial = (boolean) UI::QueryWidget(`id(`Pulse), `Value);
+	Modem::Speaker = (boolean) UI::QueryWidget(`id(`Speaker), `Value);
+	Modem::Carrier = (boolean) UI::QueryWidget(`id(`CarrierDetect), `Value);
     }
 
     return ret;
@@ -188,7 +188,7 @@ initialization strings.</p>");
  * Modem details dialog
  * @return dialog result
  */
-global define symbol ModemDetailsDialog() ``{
+define symbol ModemDetailsDialog() ``{
 
     ScreenName("modem-details");
 
@@ -216,7 +216,7 @@ should be in your modem manual.</p>");
     /* DIALOG CONTENTS */
 
     list BaudRates = maplist(string e, toset([1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, BaudRate]),
-	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == BaudRate)));
+	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == sformat("%1", BaudRate))));
 
     term contents = `HBox(
 	`HSpacing(6),
@@ -258,7 +258,7 @@ should be in your modem manual.</p>");
     symbol ret = nil;
     while(true) {
 
-	ret = UI::UserInput();
+	ret = (symbol) UI::UserInput();
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel) {
@@ -283,9 +283,9 @@ should be in your modem manual.</p>");
 
     if(ret == `next) {
 	Modem::BaudRate = tointeger(UI::QueryWidget(`id(`Baud), `Value));
-	Modem::Init1 = UI::QueryWidget(`id(`Init1), `Value);
-	Modem::Init2 = UI::QueryWidget(`id(`Init2), `Value);
-	Modem::Init3 = UI::QueryWidget(`id(`Init3), `Value);
+	Modem::Init1 = (string) UI::QueryWidget(`id(`Init1), `Value);
+	Modem::Init2 = (string) UI::QueryWidget(`id(`Init2), `Value);
+	Modem::Init3 = (string) UI::QueryWidget(`id(`Init3), `Value);
     }
 
     return ret;

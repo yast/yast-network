@@ -20,13 +20,13 @@ import "Wizard";
 import "Wizard_hw";
 
 include "network/routines.ycp";
-include "network/complex.ycp";
+include "network/summary.ycp";
 
 /**
  * Return a modification status
  * @return true if data was modified
  */
-global define boolean Modified() ``{
+define boolean Modified() ``{
     return Modem::Modified() || Provider::Modified();
 }
 
@@ -35,7 +35,7 @@ global define boolean Modified() ``{
  * @param what what everything should be commited ("modem"|"provider"|"all")
  * @return always `next
  */
-global define symbol Commit(string what) ``{
+define symbol Commit(string what) ``{
     if(what == "" || what == "all" || what == "modem")
 	Modem::Commit();
     if(what == "" || what == "all" || what == "provider")
@@ -47,7 +47,7 @@ global define symbol Commit(string what) ``{
  * Display finished popup
  * @return dialog result
  */
-global define symbol FinishDialog() ``{
+define symbol FinishDialog() ``{
     return FinishPopup(Modified(), "modem", "", "mail", ["dialup"]);
 }
 
@@ -55,7 +55,7 @@ global define symbol FinishDialog() ``{
  * Read settings dialog
  * @return `abort if aborted and `next otherwise
  */
-global define symbol ReadDialog() ``{
+define symbol ReadDialog() ``{
 
     ScreenName("modem-read");
 
@@ -78,7 +78,7 @@ the <B>Abort</B> button now.</P>");
  * Write settings dialog
  * @return `abort if aborted and `next otherwise
  */
-global define symbol WriteDialog() ``{
+define symbol WriteDialog() ``{
 
     ScreenName("modem-write");
 
@@ -103,7 +103,7 @@ dialog will possibly inform you whether it is safe to do so or not.</P>");
  * Main dialog
  * @return dialog result
  */
-global define symbol SummaryDialog() ``{
+define any SummaryDialog() ``{
 
     ScreenName("modem-summary");
 
@@ -126,8 +126,8 @@ If you press <b>Change</b>, an additional dialog opens in which to change the
 configuration.</p>");
 
     list summary = Modem::Summary(true);
-    list unconfigured = select(summary, 1, []);
-    string configured = select(summary, 0, "");
+    list unconfigured = (list) select(summary, 1, []);
+    string configured = (string) select(summary, 0, "");
 
     y2debug("unconfigured=%1",unconfigured);
     /* Frame label */
@@ -162,7 +162,7 @@ configuration.</p>");
 		ret = `other;
 	    }
 	    else {
-		Modem::SelectHW(selected);
+		Modem::SelectHW((integer) selected);
 		if(Modem::Requires != [] && Modem::Requires != nil) {
 		    if(Packages(Modem::Requires) != `next)
 			continue;
@@ -187,7 +187,7 @@ configuration.</p>");
  * Overview dialog
  * @return dialog result
  */
-global define symbol OverviewDialog() ``{
+define any OverviewDialog() ``{
 
     ScreenName("modem-overview");
 
@@ -257,7 +257,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	}
 	/* edit */
 	else if(ret == `edit || ret == `table) {
-	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 	    if(dev == nil) {
 		y2error("Empty device during Edit");
 		continue;
@@ -269,7 +269,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	}
 	/* delete */
 	else if(ret == `delete) {
-	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 	    Modem::Delete(dev);
 	    Modem::Commit();
 	    overview = Modem::Overview();
@@ -288,7 +288,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	}
 	/* provider edit */
 	else if(ret == `Edit || ret == `Table) {
-	    string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
+	    string dev = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
 	    if(dev == nil) {
 		y2error("Empty device during Edit");
 		continue;
@@ -299,7 +299,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	}
 	/* provider delete */
 	else if(ret == `Delete) {
-	    string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
+	    string dev = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
 
 	    /* Check default route for remote IP (#10739) */
 	    if(Provider::Select(dev)) {

@@ -22,7 +22,7 @@ import "Wizard";
 
 include "network/routines.ycp";
 
-global define term HostDialog(integer id, term entry, list forbidden);
+define term HostDialog(integer id, term entry, list forbidden);
 
 /**
  * Check if given host is system and present warning in this case.
@@ -30,7 +30,7 @@ global define term HostDialog(integer id, term entry, list forbidden);
  * @param delete true if the host will be deleted
  * @return true if continue
  */
-global define boolean HostSystemPopup(string host, boolean delete) ``{
+define boolean HostSystemPopup(string host, boolean delete) ``{
 
     if(!contains(Host::GetSystemHosts(), host)) return true;
 
@@ -52,7 +52,7 @@ global define boolean HostSystemPopup(string host, boolean delete) ``{
  * @param standalone true if not run from another ycp client
  * @return dialog result
  */
-global define symbol HostsMainDialog(boolean standalone) ``{
+define symbol HostsMainDialog(boolean standalone) ``{
 
     ScreenName("host");
 
@@ -248,7 +248,7 @@ global define symbol HostsMainDialog(boolean standalone) ``{
  * @param forbidden already used IP addresses
  * @return host or nil, if canceled
  */
-global define term HostDialog(integer id, term entry, list forbidden) ``{
+define term HostDialog(integer id, term entry, list forbidden) ``{
 
     ScreenName("host-edit");
 

@@ -23,7 +23,7 @@ include "network/routines.ycp";
  * IP details dialog
  * @return dialog result
  */
-global define any IPDetailsDialog() ``{
+define any IPDetailsDialog() ``{
 
     ScreenName("provider-details");
 

@@ -27,11 +27,16 @@ include "network/lan/wireless.ycp";
 include "network/services/dns.ycp";
 include "network/services/routing.ycp";
 
+define symbol NetworkCardSequence(string action);
+define symbol MainSequence();
+define symbol AddressSequence();
+define symbol HardwareSequence();
+
 /**
  * Whole configuration of network
  * @return sequence result
  */
-global define symbol LanSequence() ``{
+define symbol LanSequence() ``{
 
     /* Popup text */
     string finished = _("Configure the mail now?");
@@ -40,7 +45,7 @@ global define symbol LanSequence() ``{
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
 	"write"	: [ ``( WriteDialog() ), true ],
-	"finish" : [ ``( Finished(Lan::Modified(), finished, "mail", ["permanent"]) ), true ],
+	"finish": [ ``( FinishDialog() ), true ],
     ];
 
     map sequence = $[
@@ -75,7 +80,7 @@ global define symbol LanSequence() ``{
  * For use with autoinstallation.
  * @return sequence result
  */
-global define symbol LanAutoSequence() ``{
+define symbol LanAutoSequence() ``{
     string caption = _("Network cards configuration");
     term contents = `Label(_("Initializing ..."));
 
@@ -93,7 +98,7 @@ global define symbol LanAutoSequence() ``{
  * Main workflow of the network configuration
  * @return sequence result
  */
-global define symbol MainSequence() ``{
+define symbol MainSequence() ``{
 
     map aliases = $[
 	"summary"	: ``(SummaryDialog()),
@@ -149,7 +154,7 @@ global define symbol MainSequence() ``{
  * @param action which workflow ("add"|"edit")
  * @return sequence result
  */
-global define symbol NetworkCardSequence(string action) ``{
+define symbol NetworkCardSequence(string action) ``{
 
     map aliases = $[
 	"hardware"	: ``(HardwareSequence()),
@@ -179,7 +184,7 @@ global define symbol NetworkCardSequence(string action) ``{
  * Configuration sequence
  * @return sequence result
  */
-global define symbol HardwareSequence() ``{
+define symbol HardwareSequence() ``{
 
     map aliases = $[
 	"hardware"	: ``(HardwareDialog()),
@@ -218,7 +223,7 @@ global define symbol HardwareSequence() ``{
  * Configuration sequence
  * @return sequence result
  */
-global define symbol AddressSequence() ``{
+define symbol AddressSequence() ``{
 
     map aliases = $[
 	"address"	: ``(AddressDialog()),

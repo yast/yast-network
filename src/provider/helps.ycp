@@ -15,7 +15,7 @@ textdomain "network";
  * Provider dialog help texts
  */
 
-global map HELPS = $[
+map HELPS = $[
 
     /* Provider read dialog help 1/2 */
     "read" : _("<p><b><big>Initializing provider

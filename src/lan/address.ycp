@@ -17,6 +17,7 @@ import "IP";
 import "Label";
 import "Lan";
 import "Netmask";
+import "NetworkDevices";
 import "Popup";
 import "Routing";
 import "Wizard";
@@ -27,7 +28,7 @@ include "network/routines.ycp";
  * Dialog for setting up IP address
  * @return dialog result
  */
-global define symbol AddressDialog() ``{
+define any AddressDialog() ``{
 
     ScreenName("lan-address");
 
@@ -283,7 +284,7 @@ completes the configuration.</p>");
 	}
 	/* netmask from bits to IP mapping */
 	else if(ret == `netmask) {
-	    string nm = UI::QueryWidget(`id(`netmask), `Value);
+	    string nm = (string) UI::QueryWidget(`id(`netmask), `Value);
 	    if(regexpmatch(nm, "^[0-9]+$"))
 		UI::ChangeWidget(`id(`netmask), `Value, Netmask::FromBits(tointeger(nm)));
 	    continue;
@@ -308,19 +309,19 @@ completes the configuration.</p>");
 
 	    y2debug("bootproto=%1", bootproto);
 	    if(bootproto == "static") {
-		if(!IP::Check(UI::QueryWidget(`id(`ipaddr), `Value))) {
+		if(!IP::Check((string) UI::QueryWidget(`id(`ipaddr), `Value))) {
 		    /* Popup text */
 		    Popup::Error(_("The IP address is incorrect"));
 		    UI::SetFocus(`id(`ipaddr));
 		    continue;
 		}
-		if(UI::WidgetExists(`id(`remoteip)) && !IP::Check(UI::QueryWidget(`id(`remoteip), `Value))) {
+		if(UI::WidgetExists(`id(`remoteip)) && !IP::Check((string) UI::QueryWidget(`id(`remoteip), `Value))) {
 		    /* Popup text */
 		    Popup::Error(_("The remote IP address is invalid."));
 		    UI::SetFocus(`id(`remoteip));
 		    continue;
 		}
-		if(UI::WidgetExists(`id(`netmask)) && !Netmask::Check(UI::QueryWidget(`id(`netmask), `Value))) {
+		if(UI::WidgetExists(`id(`netmask)) && !Netmask::Check((string) UI::QueryWidget(`id(`netmask), `Value))) {
 		    /* Popup text */
 		    Popup::Error(_("The subnet mask is incorrect"));
 		    UI::SetFocus(`id(`netmask));
@@ -341,10 +342,10 @@ completes the configuration.</p>");
 	    || ret == `dhclient || ret == `virtual) {
 
 	Lan::bootproto = bootproto;
-	Lan::ipaddr = UI::QueryWidget(`id(`ipaddr), `Value);
+	Lan::ipaddr = (string) UI::QueryWidget(`id(`ipaddr), `Value);
 
-	Lan::netmask = QueryWidgetIfExists(`id(`netmask), `Value, Lan::netmask);
-	Lan::remoteip = QueryWidgetIfExists(`id(`remoteip), `Value, Lan::remoteip);
+	Lan::netmask = (string) QueryWidgetIfExists(`id(`netmask), `Value, Lan::netmask);
+	Lan::remoteip = (string) QueryWidgetIfExists(`id(`remoteip), `Value, Lan::remoteip);
 
 	// not used any more
 	if(UI::WidgetExists(`id(`num))) {
@@ -355,7 +356,7 @@ completes the configuration.</p>");
     }
 
     if(ret == `routing)
-	Routing::SetDevices(Lan::GetDevices("all"));
+	Routing::SetDevices(NetworkDevices::GetDevices("all"));
 
     return ret;
 }

@@ -9,6 +9,7 @@
  */
 
 {
+
     textdomain "network";
 
     import "Directory";
@@ -18,6 +19,10 @@
     import "Popup";
     import "Product";
     import "Wizard";
+
+/* NI: required wrt functions in routines.ycp */
+block<boolean> AbortFunction = nil;
+define boolean Modified() ``{ return true; }
 
     include "network/routines.ycp";
     include "network/installation/dialogs.ycp";
@@ -46,7 +51,7 @@
     list logs = [];
 
     // dir of log files
-    string logdir = SCR::Read (.target.tmpdir) + "/internet-test";
+string logdir = (string) SCR::Read (.target.tmpdir) + "/internet-test";
 
 
     if(!Mode::test)
@@ -306,12 +311,12 @@ the logs for details.
 		return;
 	    }
 
-	    string tmp = SCR::Read(.target.tmpdir) + substring (url, pos);
+	    string tmp = (string) SCR::Read(.target.tmpdir) + substring (url, pos);
 
 	    // proxy settings are read from /root/.curlrc
 	    string cmd = "/usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + tmp;
 	    cmd = cmd + "> " + logdir + "/curl.log 2>&1";
-	    integer ret = SCR::Execute (.target.bash, cmd,
+	    integer ret = (integer) SCR::Execute (.target.bash, cmd,
 					$["LANG" : GetLanguageUTF8 ()]);
 	    y2milestone("curl command returned %1", ret);
 
@@ -354,7 +359,7 @@ the logs for details.
 	    // proxy settings are read from /root/.curlrc
 	    string cmd = "/usr/bin/online_update -q -V";
 	    cmd = cmd + "> " + logdir + "/you.log 2>&1";
-	    integer ret = SCR::Execute (.target.bash, cmd,
+	    integer ret = (integer) SCR::Execute (.target.bash, cmd,
 					$["LANG" : GetLanguageUTF8 ()]);
 	    y2milestone("online_update command returned %1", ret);
 
@@ -410,7 +415,7 @@ the logs for details.
 
 
     // Create logdir
-    if (!SCR::Execute (.target.mkdir, logdir))
+    if (!(boolean)SCR::Execute (.target.mkdir, logdir))
 	y2error ("can't create logdir");
 
     any ret = nil;
@@ -500,7 +505,7 @@ the logs for details.
 	    Internet::do_you = false;
     }
 
-    return ret;
+    return (symbol) ret;
 
 /* EOF */
 }

@@ -14,9 +14,12 @@ module "Internet";
 textdomain "network";
 
 import "Map";
+import "NetworkDevices";
 
-include "network/complex.ycp";
-include "network/devices.ycp";
+/* NI: required wrt functions in routines.ycp */
+block<boolean> AbortFunction = nil;
+define boolean Modified() ``{ return true; }
+
 include "network/routines.ycp";
 
 /**
@@ -57,32 +60,6 @@ define void Reset() ``{
 }
 
 /**
- * Devices in order from fastest to slowest.
- *
- * Though real network devices are faster than the others we preferable
- * want to test dialup connection. The network cards are last because
- * we assume local network and one (slower) connection to the Internet
- * in the case more network devices.
- */
-map FastestRegexps = $[
-    1 : "dsl",
-    2 : ISDNDeviceRegex,
-    3 : "modem|ppp",
-    4 : NetworkDeviceRegex
-];
-
-/**
- * Types in order from fastest to slowest.
- * @see FastestRegexps
- */
-map FastestTypes = $[
-    1 : "dsl",
-    2 : "isdn",
-    3 : "modem",
-    4 : "netcard"
-];
-
-/**
  * Find the fastest connection to the Internet
  * @return true if a "good" connection was found
  */
@@ -90,42 +67,17 @@ global define boolean FindFastest () ``{
 
     Reset ();
 
-    /* Read available devcies */
-    map Devices = $[];
-    ReadDevices("");
-    y2debug("Devices=%1", Devices);
-    list types = Map::Keys(Devices);
-    y2debug("types=%1", types);
-    list devices = [];
-    maplist(string t, types, ``{
-	devices = union(devices, maplist(string n, Map::Keys(Devices[t]:$[]), ``(t+n)));
-    });
-    y2debug("devices=%1", devices);
-
-    /* Find the fastest device */
-    maplist(integer num, string regex, FastestRegexps, ``{
-	maplist(string dev, devices, ``{
-	    if(device == "" && regexpmatch(dev, "^" + regex + "[0-9]*$"))
-		device = dev;
-	});
-    });
+    NetworkDevices::Read();
+    device = NetworkDevices::Fastest();
     y2milestone("fastest=%1", device);
 
     /* No fallback since there are devices that must not be tested (e.g. lo) */
-    if (device == "")
-	return false;
+    if(device == "") return false;
 
-    /* Set type */
-    maplist(integer num, string regex, FastestRegexps, ``{
-	if (type == "" && regexpmatch(device, "^" + regex + "[0-9]*$"))
-	    type = FastestTypes[num]:"";
-    });
+    NetworkDevices::Select(device);
+    type = NetworkDevices::FastestType(device);
 
-    /* Lookup the provider values */
-    map devmap = Devices[device_type(device), device_num(device)]:$[];
-    y2debug("devmap=%1", devmap);
-
-    provider = devmap["PROVIDER"]:"";
+    provider = NetworkDevices::Current["PROVIDER"]:"";
     if (provider != "") {
 	import "Provider";
 	Provider::Read();

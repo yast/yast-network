@@ -8,10 +8,11 @@ map READ = $[
 ];
 
 TESTSUITE_INIT([READ], nil);
-include "network/modules.ycp";
 
 map Module = $[];
 map Modules = $[];
+list DeletedModules = [];
+include "network/modules.ycp";
 
 DUMP("AddModule");
 TEST(``(AddModule("eth")), [], nil);

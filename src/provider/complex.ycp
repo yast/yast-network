@@ -18,22 +18,14 @@ import "Wizard";
 import "Wizard_hw";
 
 include "network/routines.ycp";
-include "network/complex.ycp";
+include "network/summary.ycp";
 include "network/provider/helps.ycp";
-
-/**
- * Return a modification status
- * @return true if data was modified
- */
-global define boolean Modified() ``{
-    return Provider::Modified();
-}
 
 /**
  * Commit changes to internal structures
  * @return always `next
  */
-global define symbol CommitProvider() ``{
+define symbol CommitProvider() ``{
     Provider::Commit();
     return `next;
 }
@@ -42,7 +34,7 @@ global define symbol CommitProvider() ``{
  * Read settings dialog
  * @return `abort if aborted and `next otherwise
  */
-global define symbol ReadDialog() ``{
+define symbol ReadDialog() ``{
     ScreenName("provider-read");
     Wizard::RestoreHelp(HELPS["read"]:"");
     Provider::AbortFunction = ``{return PollAbort();};
@@ -54,7 +46,7 @@ global define symbol ReadDialog() ``{
  * Write settings dialog
  * @return `abort if aborted and `next otherwise
  */
-global define symbol WriteDialog() ``{
+define symbol WriteDialog() ``{
     ScreenName("provider-write");
     if(!Modified()) return `next;
     Wizard::RestoreHelp(HELPS["write"]:"");
@@ -67,7 +59,7 @@ global define symbol WriteDialog() ``{
  * Choose provider type dialog
  * @return `abort if aborted and `next otherwise
  */
-global define any TypeDialog() ``{
+define any TypeDialog() ``{
 
     ScreenName("provider-type");
 
@@ -140,7 +132,7 @@ global define any TypeDialog() ``{
  * Main dialog
  * @return dialog result
  */
-global define any SummaryDialog() ``{
+define any SummaryDialog() ``{
 
     ScreenName("provider-summary");
 
@@ -198,7 +190,7 @@ global define any SummaryDialog() ``{
  * Overview dialog
  * @return dialog result
  */
-global define any OverviewDialog() ``{
+define any OverviewDialog() ``{
 
     ScreenName("provider-overview");
 

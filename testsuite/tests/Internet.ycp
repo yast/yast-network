@@ -11,6 +11,7 @@ map READ = $[
 
 TESTSUITE_INIT([READ], nil);
 import "Internet";
+import "NetworkDevices";
 
 DUMP("Fastest");
 READ = $[
@@ -23,46 +24,55 @@ TEST(``(Internet::FindFastest()), [READ], nil);
 DUMP(Internet::device);
 DUMP(Internet::type);
 
+NetworkDevices::initialized = false;
 READ = $[ "network" : $[ "section" : $[ "dsl0":$[], "eth0":$[] ]]];
 TEST(``(Internet::FindFastest()), [READ], nil);
 DUMP(Internet::device);
 DUMP(Internet::type);
 
+NetworkDevices::initialized = false;
 READ = $[ "network" : $[ "section" : $[ "eth1":$[], "tr0":$[] ]]];
 TEST(``(Internet::FindFastest()), [READ], nil);
 DUMP(Internet::device);
 DUMP(Internet::type);
 
+NetworkDevices::initialized = false;
 READ = $[ "network" : $[ "section" : $[ "dsl0":$[], "tr0":$[] ]]];
 TEST(``(Internet::FindFastest()), [READ], nil);
 DUMP(Internet::device);
 DUMP(Internet::type);
 
+NetworkDevices::initialized = false;
 READ = $[ "network" : $[ "section" : $[ "dsl0":$[], "ppp0":$[] ]]];
 TEST(``(Internet::FindFastest()), [READ], nil);
 DUMP(Internet::device);
 DUMP(Internet::type);
 
+NetworkDevices::initialized = false;
 READ = $[ "network" : $[ "section" : $[ "ppp0":$[], "tr1":$[] ]]];
 TEST(``(Internet::FindFastest()), [READ], nil);
 DUMP(Internet::device);
 DUMP(Internet::type);
 
+NetworkDevices::initialized = false;
 READ = $[ "network" : $[ "section" : $[ "ppp0":$[] ]]];
 TEST(``(Internet::FindFastest()), [READ], nil);
 DUMP(Internet::device);
 DUMP(Internet::type);
 
+NetworkDevices::initialized = false;
 READ = $[ "network" : $[ "section" : $[ "ippp0":$[], "tr1":$[] ]]];
 TEST(``(Internet::FindFastest()), [READ], nil);
 DUMP(Internet::device);
 DUMP(Internet::type);
 
+NetworkDevices::initialized = false;
 READ = $[ "network" : $[ "section" : $[ "ippp0":$[], "ppp0":$[] ]]];
 TEST(``(Internet::FindFastest()), [READ], nil);
 DUMP(Internet::device);
 DUMP(Internet::type);
 
+NetworkDevices::initialized = false;
 READ = $[ "network" : $[ "section" : $[]]];
 TEST(``(Internet::FindFastest()), [READ], nil);
 DUMP(Internet::device);

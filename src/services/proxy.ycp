@@ -19,14 +19,13 @@ import "Proxy";
 import "URL";
 import "Wizard";
 
-include "network/complex.ycp";
 include "network/routines.ycp";
 
 /**
  * Display popup at the end of the proxy configuration
  * @param modified true if proxy settings have been modified
  */
-global define void ProxyFinishPopup(boolean modified) ``{
+define void ProxyFinishPopup(boolean modified) ``{
 
     /* Popup text */
 string text = _("Applications that support it, such as YaST2 Online Update,
@@ -42,7 +41,7 @@ at all -- they use their own settings system.");
  * @param standalone true if not run from another ycp client
  * @return dialog result
  */
-global define symbol ProxyMainDialog(boolean standalone) ``{
+define any ProxyMainDialog(boolean standalone) ``{
 
     ScreenName("proxy");
 
@@ -140,20 +139,20 @@ should be done directly without caching.</p>") +
 	    else continue;
 	}
 	if(ret == `enabled) {
-	    enabled = UI::QueryWidget(`id(`enabled), `Value);
+	    enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
 	    UI::ChangeWidget(`id(`frame), `Enabled, enabled);
 	    continue;
 	}
 	/* next */
 	else if(ret == `next) {
 
-	    enabled = UI::QueryWidget(`id(`enabled), `Value);
+	    enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
 	    if(enabled == false) break;
 
-	    http = UI::QueryWidget(`id(`http), `Value);
-	    ftp = UI::QueryWidget(`id(`ftp), `Value);
-	    user = UI::QueryWidget(`id(`user), `Value);
-	    pass = UI::QueryWidget(`id(`pass), `Value);
+	    http = (string) UI::QueryWidget(`id(`http), `Value);
+	    ftp = (string) UI::QueryWidget(`id(`ftp), `Value);
+	    user = (string) UI::QueryWidget(`id(`user), `Value);
+	    pass = (string) UI::QueryWidget(`id(`pass), `Value);
 
 	    /* check_* */
 	    if(user == "" && pass != "") {
@@ -206,13 +205,13 @@ should be done directly without caching.</p>") +
 
     if(ret == `next) {
 
-	enabled = UI::QueryWidget(`id(`enabled), `Value);
+	enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
 	if(enabled) {
-	    http = UI::QueryWidget(`id(`http), `Value);
-	    ftp = UI::QueryWidget(`id(`ftp), `Value);
-	    no = UI::QueryWidget(`id(`no), `Value);
-	    user = UI::QueryWidget(`id(`user), `Value);
-	    pass = UI::QueryWidget(`id(`pass), `Value);
+	    http = (string) UI::QueryWidget(`id(`http), `Value);
+	    ftp = (string) UI::QueryWidget(`id(`ftp), `Value);
+	    no = (string) UI::QueryWidget(`id(`no), `Value);
+	    user = (string) UI::QueryWidget(`id(`user), `Value);
+	    pass = (string) UI::QueryWidget(`id(`pass), `Value);
 
 	    if(http == prefill) http = "";
 	    if(ftp == prefill) ftp = "";

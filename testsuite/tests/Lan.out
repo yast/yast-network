@@ -32,7 +32,6 @@ Dir	.sysconfig.network.dhcp: []
 Read	.target.size "/etc/sysconfig/network/routes" 1
 Read	.routes nil
 Read	.sysconfig.sysctl.IP_FORWARD nil
-Dir	.network.section: []
 Dir	.sysconfig.network.config: []
 Dir	.sysconfig.network.dhcp: []
 Read	.target.size "/etc/install.inf" 1

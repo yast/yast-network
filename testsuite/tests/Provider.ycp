@@ -35,6 +35,7 @@ map READ = $[
 	],
 	"symlink" : nil,
 	"tmpdir" : "/tmp",
+	"size" : -1,
     ],
     "probe" : $[
 	"display" : [],

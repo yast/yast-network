@@ -20,15 +20,17 @@ import "Popup";
 import "Routing";
 import "Wizard";
 
-include "network/devices.ycp";
+// include "network/devices.ycp";
 include "network/routines.ycp";
+
+define term RoutingEditDialog(integer id, term entry, list devs);
 
 /**
  * Main routing dialog
  * @param standalone true if not run from another ycp client
  * @return dialog result
  */
-global define symbol RoutingMainDialog(boolean standalone) ``{
+define any RoutingMainDialog(boolean standalone) ``{
 
     ScreenName("routing");
 
@@ -47,8 +49,8 @@ _("<p>Enable the <b>IP Forwarding</b> if the system is a router.</p>");
 
     integer max = 0;
     integer items = 0;
-    list table_items = [];
-    list table_items_orig = [];
+    list<term> table_items = [];
+    list<term> table_items_orig = [];
     boolean expert = false;
     string defgw = "";
     string defgwdev = "";
@@ -69,11 +71,11 @@ _("<p>Enable the <b>IP Forwarding</b> if the system is a router.</p>");
 		    r["gateway"]:"",
 		    r["netmask"]:"",
 		    r["device"]:"");
-	    change(table_items, item);
+	    table_items = add(table_items, item);
 	    items = items + 1;
 	}
     });
-    table_items_orig = eval(table_items);
+    table_items_orig = (list<term>) eval(table_items);
 
     y2debug("table_items=%1", table_items);
     y2debug("items=%1", items);
@@ -150,15 +152,15 @@ _("<p>Enable the <b>IP Forwarding</b> if the system is a router.</p>");
 	}
 	/* expert mode */
 	else if(ret == `expert) {
-	    expert = UI::QueryWidget(`id(`expert), `Value);
+	    expert = (boolean) UI::QueryWidget(`id(`expert), `Value);
 	    UI::ChangeWidget(`id(`table), `Enabled, expert);
 	    UI::ChangeWidget(`id(`add), `Enabled, expert);
 	    continue;
 	}
 	/* edit route */
 	else if(ret == `edit || ret == `table) {
-	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
-	    list cur_item = filter(`e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
+	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
+	    list<term> cur_item = filter(term e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
 
 	    y2debug("cur=%1", cur);
 	    y2debug("cur_item=%1", cur_item);
@@ -187,7 +189,7 @@ _("<p>Enable the <b>IP Forwarding</b> if the system is a router.</p>");
 	    term item = RoutingEditDialog(max, `empty(), devs);
 	    if(item == nil) continue;
 
-	    change(table_items, item);
+	    table_items = add(table_items, item);
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
 	    UI::ChangeWidget(`id(`table), `CurrentItem, max);
 	    items = items + 1;
@@ -197,8 +199,8 @@ _("<p>Enable the <b>IP Forwarding</b> if the system is a router.</p>");
 	/* delete route */
 	else if(ret == `delete) {
 	    items = items - 1;
-	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
-	    table_items = filter(`e, table_items, ``(cur != select(select(e, 0, []), 0, nil)));
+	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
+	    table_items = filter(term e, table_items, ``(cur != select(select(e, 0, []), 0, nil)));
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
 	    continue;
 	}
@@ -206,7 +208,7 @@ _("<p>Enable the <b>IP Forwarding</b> if the system is a router.</p>");
 	    break;
 	}
 	else if(ret == `next) {
-	    string gw = UI::QueryWidget(`id(`gw), `Value);
+	    string gw = (string) UI::QueryWidget(`id(`gw), `Value);
 	    if(gw != "" && !IP::Check(gw)) {
 		/* Popup::Error text */
 		Popup::Error(_("The default gateway is incorrect"));
@@ -233,11 +235,11 @@ _("<p>Enable the <b>IP Forwarding</b> if the system is a router.</p>");
 	if(defgw != UI::QueryWidget(`id(`gw), `Value))
 	    defgwdev = "-"; // FIXME: find correct device
 
-	defgw = UI::QueryWidget(`id(`gw), `Value);
-	forward = UI::QueryWidget(`id(`forward), `Value);
+	defgw = (string) UI::QueryWidget(`id(`gw), `Value);
+	forward = (boolean) UI::QueryWidget(`id(`forward), `Value);
 
 	if(defgw != "")
-	    change(route_conf, $[
+	    route_conf = add(route_conf, $[
 		"destination"	: "default",
 		"gateway"	: defgw,
 		"netmask"	: "-",
@@ -262,7 +264,7 @@ _("<p>Enable the <b>IP Forwarding</b> if the system is a router.</p>");
  * @param devs available devices
  * @return route or nil, if canceled
  */
-global define term RoutingEditDialog(integer id, term entry, list devs) ``{
+define term RoutingEditDialog(integer id, term entry, list devs) ``{
 
     ScreenName("routing-edit");
 
@@ -305,7 +307,7 @@ global define term RoutingEditDialog(integer id, term entry, list devs) ``{
 	if(ret != `ok) break;
 
 	route = `item(`id(id));
-	string val = UI::QueryWidget(`id(`destination), `Value);
+	string val = (string) UI::QueryWidget(`id(`destination), `Value);
 	if(val != "default" && !IP::Check(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("Destination is incorrect"));
@@ -313,7 +315,7 @@ global define term RoutingEditDialog(integer id, term entry, list devs) ``{
 	    continue;
 	}
 	route = add(route, val);
-	val = UI::QueryWidget(`id(`gateway), `Value);
+	val = (string) UI::QueryWidget(`id(`gateway), `Value);
 	if(!IP::Check(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("Gateway IP address is incorrect"));
@@ -321,7 +323,7 @@ global define term RoutingEditDialog(integer id, term entry, list devs) ``{
 	    continue;
 	}
 	route = add(route, val);
-	val = UI::QueryWidget(`id(`netmask), `Value);
+	val = (string) UI::QueryWidget(`id(`netmask), `Value);
 	if(val != "0.0.0.0" && !Netmask::Check(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("Subnet mask is incorrect"));
@@ -329,13 +331,14 @@ global define term RoutingEditDialog(integer id, term entry, list devs) ``{
 	    continue;
 	}
 	route = add(route, val);
-	val = UI::QueryWidget(`id(`device), `Value);
+	val = (string) UI::QueryWidget(`id(`device), `Value);
 	route = add(route, val);
 	break;
     }
 
     UI::CloseDialog();
     if(ret != `ok) return nil;
+    y2debug("route=%1", route);
     return route;
 }
 
@@ -344,9 +347,9 @@ global define term RoutingEditDialog(integer id, term entry, list devs) ``{
  * @param defgw current default gw widget contents
  * @return true if differ
  */
-global define boolean RoutingModified(string defgw) ``{
-    boolean forward = UI::QueryWidget(`id(`forward), `Value);
-    string defg = UI::QueryWidget(`id(`gw), `Value);
+define boolean RoutingModified(string defgw) ``{
+    boolean forward = (boolean) UI::QueryWidget(`id(`forward), `Value);
+    string defg = (string) UI::QueryWidget(`id(`gw), `Value);
     return forward != Routing::Forward || defg != defgw;
 }
 

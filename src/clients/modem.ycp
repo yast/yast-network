@@ -18,6 +18,10 @@ textdomain "network";
 y2milestone("----------------------------------------");
 y2milestone("Modem module started");
 
+/* NI: required wrt functions in routines.ycp */
+block<boolean> AbortFunction = nil;
+// define boolean Modified() ``{ return true; }
+
 include "network/modem/wizards.ycp";
 
 /* is this proposal or not? */

@@ -25,71 +25,61 @@ include "network/provider/dialogs.ycp";
 include "network/provider/provider.ycp";
 
 /**
- * Whole configuration of modems
+ * Workflow of the configuration of one modem
+ * @param country true if country list should be shown
  * @return sequence result
  */
-global define symbol ProviderSequence() ``{
-
-    /* Popup text */
-    string finished = _("Configure mail now?");
+define symbol OneProviderSequence(boolean country) ``{
 
     map aliases = $[
-	"read"	: [ ``( ReadDialog() ), true ],
-	"main"	:   ``( MainSequence() ),
-	"write"	: [ ``( WriteDialog() ), true ],
+	"providers"		: ``(ProvidersDialog(false)),
+	"provider"		: ``(ProviderDialog()),
+	"new_provider"		: ``(ProviderDialog()),
+	"connection"		: ``(ConnectionDialog()),
+	"ipdetails"		: ``(IPDetailsDialog()),
+	"commit"		: [ ``(CommitProvider()), true ],
     ];
 
+    string entry = "provider";
+    if(country) entry = "providers";
+
     map sequence = $[
-	"ws_start" : "read",
-	"read" : $[
-	    `abort	: `abort,
-	    `next	: "main"
+	"ws_start" : entry,
+	"providers" : $[
+	    `next   : "provider",
+	    `new    : "new_provider",
+	    `abort  : `abort
 	],
-	"main" : $[
-	    `abort	: `abort,
-	    `next	: "write"
+	"provider" : $[
+	    `next   : "connection",
+	    `abort  : `abort
 	],
-	"write" : $[
-	    `abort	: `abort,
+	"new_provider" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"connection" : $[
+	    `IPDetails	: "ipdetails",
+	    `next   : "commit",
+	    `abort  : `abort
+	],
+	"ipdetails" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"commit" : $[
 	    `next	: `next,
 	],
     ];
 
-    Wizard::CreateDialog();
-
-    symbol ret = WizardSequencer(aliases, sequence);
-
-    UI::CloseDialog();
-    return ret;
-}
-
-/**
- * Whole configuration of modems but without reading and writing.
- * For use with autoinstallation.
- * @return sequence result
- */
-global define symbol ProviderAutoSequence() ``{
-
-    /* Initial dialog caption */
-    string caption = _("Provider configuration");
-    /* Initial dialog contents */
-    term contents = `Label(_("Initializing ..."));
-
-    Wizard::CreateDialog();
-    Wizard::SetContentsButtons(caption, contents, "",
-	    Label::BackButton(), Label::NextButton());
-
-    symbol ret = MainSequence();
-
-    UI::CloseDialog();
-    return ret;
+    return WizardSequencer(aliases, sequence);
 }
 
 /**
  * Main workflow of the modem configuration
  * @return sequence result
  */
-global define symbol MainSequence() ``{
+define symbol MainSequence() ``{
 
     map aliases = $[
 	"summary"	: ``(SummaryDialog()),
@@ -136,54 +126,64 @@ global define symbol MainSequence() ``{
 }
 
 /**
- * Workflow of the configuration of one modem
- * @param country true if country list should be shown
+ * Whole configuration of modems
  * @return sequence result
  */
-global define symbol OneProviderSequence(boolean country) ``{
+define symbol ProviderSequence() ``{
+
+    /* Popup text */
+    string finished = _("Configure mail now?");
 
     map aliases = $[
-	"providers"		: ``(ProvidersDialog(false)),
-	"provider"		: ``(ProviderDialog()),
-	"new_provider"		: ``(ProviderDialog()),
-	"connection"		: ``(ConnectionDialog()),
-	"ipdetails"		: ``(IPDetailsDialog()),
-	"commit"		: [ ``(CommitProvider()), true ],
+	"read"	: [ ``( ReadDialog() ), true ],
+	"main"	:   ``( MainSequence() ),
+	"write"	: [ ``( WriteDialog() ), true ],
     ];
 
-    string entry = "provider";
-    if(country) entry = "providers";
-
     map sequence = $[
-	"ws_start" : entry,
-	"providers" : $[
-	    `next   : "provider",
-	    `new    : "new_provider",
-	    `abort  : `abort
+	"ws_start" : "read",
+	"read" : $[
+	    `abort	: `abort,
+	    `next	: "main"
 	],
-	"provider" : $[
-	    `next   : "connection",
-	    `abort  : `abort
+	"main" : $[
+	    `abort	: `abort,
+	    `next	: "write"
 	],
-	"new_provider" : $[
-	    `next   : "connection",
-	    `abort  : `abort
-	],
-	"connection" : $[
-	    `IPDetails	: "ipdetails",
-	    `next   : "commit",
-	    `abort  : `abort
-	],
-	"ipdetails" : $[
-	    `next   : "connection",
-	    `abort  : `abort
-	],
-	"commit" : $[
+	"write" : $[
+	    `abort	: `abort,
 	    `next   : `next,
 	],
     ];
 
-    return WizardSequencer(aliases, sequence);
+    Wizard::CreateDialog();
+
+    symbol ret = WizardSequencer(aliases, sequence);
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/**
+ * Whole configuration of modems but without reading and writing.
+ * For use with autoinstallation.
+ * @return sequence result
+ */
+define symbol ProviderAutoSequence() ``{
+
+    /* Initial dialog caption */
+    string caption = _("Provider configuration");
+    /* Initial dialog contents */
+    term contents = `Label(_("Initializing ..."));
+
+    Wizard::CreateDialog();
+    Wizard::SetContentsButtons(caption, contents, "",
+	    Label::BackButton(), Label::NextButton());
+
+    symbol ret = MainSequence();
+
+    UI::CloseDialog();
+    return ret;
 }
 
 /* EOF */

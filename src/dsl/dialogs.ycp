@@ -17,6 +17,7 @@ import "Firewall";
 import "IP";
 import "Label";
 import "Lan";
+import "NetworkDevices";
 import "Popup";
 import "Wizard";
 
@@ -27,7 +28,7 @@ include "network/routines.ycp";
  * DSL device dialog
  * @return dialog result
  */
-global define symbol DSLDialog() ``{
+define any DSLDialog() ``{
 
     ScreenName("dsl-dialog");
 
@@ -94,16 +95,16 @@ be appropriate for dial-on-demand connections.</p>");
     /**
      */
     define void UpdateInterfaces() ``{
-	ifaces = Lan::GetDevices("eth");
+	ifaces = NetworkDevices::GetDevices("eth");
 	y2debug("ifaces=%1", ifaces);
-	ifaces = union(ifaces, Lan::GetDevices("eth-pcmcia"));
+	ifaces = union(ifaces, NetworkDevices::GetDevices("eth-pcmcia"));
 	y2debug("ifaces=%1", ifaces);
-	ifaces = union(ifaces, Lan::GetDevices("eth-usb"));
+	ifaces = union(ifaces, NetworkDevices::GetDevices("eth-usb"));
 	y2debug("ifaces=%1", ifaces);
 
 	/* FIXME Why is not the current interface added? */
 	if(false && /*interface != "" && */!contains(ifaces, interface))
-	    change(ifaces, interface);
+	    ifaces = add(ifaces, interface);
 
 	y2debug("ifaces=%1", ifaces);
 	ifaces = maplist(string e, ifaces,
@@ -188,10 +189,10 @@ be appropriate for dial-on-demand connections.</p>");
 	}
 	else if(ret == `next) {
 	    /* check_* */
-	    pppmode = UI::QueryWidget(`id(`pppmode), `Value);
-	    interface = UI::QueryWidget(`id(`interface), `Value);
-	    vpivci = UI::QueryWidget(`id(`vpivci), `Value);
-	    modemip = UI::QueryWidget(`id(`modemip), `Value);
+	    pppmode = (string) UI::QueryWidget(`id(`pppmode), `Value);
+	    interface = (string) UI::QueryWidget(`id(`interface), `Value);
+	    vpivci = (string) UI::QueryWidget(`id(`vpivci), `Value);
+	    modemip = (string) UI::QueryWidget(`id(`modemip), `Value);
 	    if(pppmode == "pppoatm" && vpivci == "") {
 		/* Popup text */
 		Popup::Error(_("Enter the VPI/VCI."));
@@ -213,7 +214,7 @@ be appropriate for dial-on-demand connections.</p>");
 	    break;
 	}
 	else if(ret == `pppmode) {
-	    pppmode = UI::QueryWidget(`id(`pppmode), `Value);
+	    pppmode = (string) UI::QueryWidget(`id(`pppmode), `Value);
 	    UI::ChangeWidget(`id(`vpivci), `Enabled, pppmode == "pppoatm");
 	    UI::ChangeWidget(`id(`interface), `Enabled, pppmode == "pppoe" || pppmode == "pptp");
 	    UI::ChangeWidget(`id(`lan), `Enabled, pppmode == "pppoe" || pppmode == "pptp");
@@ -223,7 +224,7 @@ be appropriate for dial-on-demand connections.</p>");
 	else if(ret == `lan) {
 	    // WFM::CallFunction("lan_proposal", ["AskUser"]);
 	    Call::Function("lan_proposal", ["AskUser"]);
-	    interface = UI::QueryWidget(`id(`interface), `Value);
+	    interface = (string) UI::QueryWidget(`id(`interface), `Value);
 	    UpdateInterfaces();
 	    UI::ReplaceWidget(`id(`rp), `ComboBox(`id(`interface), _("&Ethernet card"), ifaces));
 	    continue;
@@ -235,15 +236,15 @@ be appropriate for dial-on-demand connections.</p>");
     }
 
     if(ret == `next) {
-	pppmode = UI::QueryWidget(`id(`pppmode), `Value);
+	pppmode = (string) UI::QueryWidget(`id(`pppmode), `Value);
 	DSL::pppmode = pppmode;
 	if(pppmode == "pppoe" || pppmode == "pptp")
-	    DSL::interface = UI::QueryWidget(`id(`interface), `Value);
+	    DSL::interface = (string) UI::QueryWidget(`id(`interface), `Value);
 	if(pppmode == "pppoatm")
-	    DSL::vpivci = UI::QueryWidget(`id(`vpivci), `Value);
+	    DSL::vpivci = (string) UI::QueryWidget(`id(`vpivci), `Value);
 	if(pppmode == "pptp")
-	    DSL::modemip = UI::QueryWidget(`id(`modemip), `Value);
-	DSL::startmode = UI::QueryWidget(`id(`startmode), `Value);
+	    DSL::modemip = (string) UI::QueryWidget(`id(`modemip), `Value);
+	DSL::startmode = (string) UI::QueryWidget(`id(`startmode), `Value);
     }
 
     return ret;

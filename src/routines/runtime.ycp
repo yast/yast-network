@@ -18,7 +18,7 @@ textdomain "network";
  * Read status information
  * @return true if success
  */
-global define boolean ReadStatus() ``{
+define boolean ReadStatus() ``{
     return true;
 }
 
@@ -26,7 +26,7 @@ global define boolean ReadStatus() ``{
  * Run SuSEconfig
  * @return true if success
  */
-global define boolean RunSuSEconfig() ``{
+define boolean RunSuSEconfig() ``{
     y2milestone("Running SuSEconfig ...");
     SCR::Execute(.target.bash, "/sbin/SuSEconfig --module hostname");
     SCR::Execute(.target.bash, "/sbin/SuSEconfig --module apache 2>/dev/null");
@@ -40,7 +40,7 @@ global define boolean RunSuSEconfig() ``{
  * @param modul SuSEconfig module
  * @return true if success
  */
-global define boolean RunSuSEconfigModule(string modul) ``{
+define boolean RunSuSEconfigModule(string modul) ``{
     if(modul == nil || modul == "") {
 	y2error("Wrong SuSEconfig module: %1", modul);
 	return false;
@@ -53,7 +53,7 @@ global define boolean RunSuSEconfigModule(string modul) ``{
  * Run KInternet
  * @return true if success
  */
-global define boolean RunKInternet() ``{
+define boolean RunKInternet() ``{
     y2milestone("Running KInternet ...");
     return SCR::Execute(.target.bash_background, "[ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu --nonewdcop -u $USER -- kinternet --quiet") == 0;
     // return SCR::Execute(.target.bash, "{ [ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu -u $USER -- kinternet --quiet; } >/dev/null 2>&1 &") == 0;
@@ -64,7 +64,7 @@ global define boolean RunKInternet() ``{
  * @param service service to be enabled
  * @return true if success
  */
-global define boolean EnableService(string service) ``{
+define boolean EnableService(string service) ``{
     if(service == nil || service == "") {
 	y2error("Wrong service: %1", service);
 	return false;
@@ -79,7 +79,7 @@ global define boolean EnableService(string service) ``{
  * @param service service to be disabled
  * @return true if success
  */
-global define boolean DisableService(string service) ``{
+define boolean DisableService(string service) ``{
     if(service == nil || service == "") {
 	y2error("Wrong service: %1", service);
 	return false;
@@ -93,7 +93,7 @@ global define boolean DisableService(string service) ``{
  * @param service service to be started
  * @return true if success
  */
-global define boolean StartService(string service) ``{
+define boolean StartService(string service) ``{
     if(service == nil || service == "") {
 	y2error("Wrong service: %1", service);
 	return false;
@@ -115,7 +115,7 @@ global define boolean StartService(string service) ``{
  * @param service service to be started
  * @return true if success
  */
-global define boolean RestartService(string service) ``{
+define boolean RestartService(string service) ``{
     if(service == nil || service == "") {
 	y2error("Wrong service: %1", service);
 	return false;
@@ -132,7 +132,7 @@ global define boolean RestartService(string service) ``{
  * @param service service to be stopped
  * @return true if success
  */
-global define boolean StopService(string service) ``{
+define boolean StopService(string service) ``{
     if(service == nil || service == "") {
 	y2error("Wrong service: %1", service);
 	return false;
@@ -148,7 +148,7 @@ global define boolean StopService(string service) ``{
  * Start network
  * @return true if success
  */
-global define boolean StartNetwork() ``{
+define boolean StartNetwork() ``{
     boolean ret = true;
     if(Arch::s390) ret = StartService("chandev");
     ret = StartService("network") && ret;
@@ -159,7 +159,7 @@ global define boolean StartNetwork() ``{
  * Restart network
  * @return true if success
  */
-global define boolean RestartNetwork() ``{
+define boolean RestartNetwork() ``{
     return RestartService("network");
 }
 
@@ -167,7 +167,7 @@ global define boolean RestartNetwork() ``{
  * Stop network
  * @return true if success
  */
-global define boolean StopNetwork() ``{
+define boolean StopNetwork() ``{
     return StopService("network");
 }
 
@@ -175,7 +175,7 @@ global define boolean StopNetwork() ``{
  * Enable and start smpppd(8)
  * @return true if success
  */
-global define boolean EnableSMPPPD() ``{
+define boolean EnableSMPPPD() ``{
 
     boolean ret = true;
     ret = EnableService("smpppd") && ret;
@@ -193,7 +193,7 @@ global define boolean EnableSMPPPD() ``{
  * Enable the network service
  * @return true if success
  */
-global define boolean EnableNetwork() ``{
+define boolean EnableNetwork() ``{
     return EnableService("network");
 }
 

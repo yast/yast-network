@@ -60,71 +60,61 @@ map READ = $[
     ],
 ];
 
-map Devices = $[];
-list DeletedDevices = [];
-
 TESTSUITE_INIT([READ], nil);
+import "NetworkDevices";
 
-include "network/devices.ycp";
+DUMP("NetworkDevices::Read");
+TEST(``(NetworkDevices::Read()), [READ], nil);
+DUMP(sformat("all=%1", NetworkDevices::Devices));
 
-DUMP("ReadDevices");
-TEST(``(ReadDevices("")), [READ], nil);
-DUMP(sformat("all=%1",Devices));
-TEST(``(ReadDevices("eth")), [READ], nil);
-DUMP(sformat("eth=%1",Devices));
-TEST(``(ReadDevices("ppp")), [READ], nil);
-DUMP(sformat("ppp=%1",Devices));
-TEST(``(ReadDevices("ippp")), [READ], nil);
-DUMP(sformat("ippp=%1",Devices));
-TEST(``(ReadDevices("trx")), [READ], nil);
-DUMP(sformat("trx=%1",Devices));
-TEST(``(ReadDevices("atm|tr")), [READ], nil);
-DUMP(sformat("atm|tr=%1",Devices));
+DUMP("NetworkDevices::Write");
+TEST(``(NetworkDevices::Write("")), [READ], nil);
+TEST(``(NetworkDevices::Write("eth")), [READ], nil);
+TEST(``(NetworkDevices::Write("ppp")), [READ], nil);
+TEST(``(NetworkDevices::Write("ippp")), [READ], nil);
+TEST(``(NetworkDevices::Write("trx")), [READ], nil);
+TEST(``(NetworkDevices::Write("atm|tr")), [READ], nil);
 
-DUMP("WriteDevices");
-Devices=$["arc":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "atm":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "ci":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "ctc":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "dummy":$["5":$["BOOTPROTO":"static", "IPADDR":"1.2.3.4", "STARTMODE":"manual"]], "escon":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "eth":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual", "_aliases":$["x":$["IPADDR":"1.1.1.1", "NETMASK":"0.0.0.0"]]], "6":$["BOOTPROTO":"static", "IPADDR":"1.2.3.4", "STARTMODE":"manual"], "7":$["STARTMODE":"manual"], "8":$["IPADDR":"1.2.3.4", "STARTMODE":"manual"]], "eth-pcmcia":$["":$["BOOTPROTO":"dhcp", "STARTMODE":"hotplug"]], "eth-usb":$["":$["BOOTPROTO":"dhcp", "STARTMODE":"hotplug"]], "fddi":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "hippi":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "hsi":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "ippp":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "iucv":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "lo":$["":$["BROADCAST":"127.255.255.255", "IPADDR":"127.0.0.1", "NETMASK":"255.0.0.0", "NETWORK":"127.0.0.0", "STARTMODE":"onboot", "_aliases":$["1":$["IPADDR":"7.7.7.7"]]]], "myri":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "ppp":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "tr":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]]];
-TEST(``(WriteDevices()), [], nil);
+DUMP("NetworkDevices::GetFreeDevices");
+NetworkDevices::Devices=$["eth":$["0":$[]]];
+TEST(``(NetworkDevices::GetFreeDevices("eth", 2)), [], nil);
+NetworkDevices::Devices=$["eth":$["1":$[]]];
+TEST(``(NetworkDevices::GetFreeDevices("eth", 2)), [], nil);
+NetworkDevices::Devices=$["eth":$["2":$[]]];
+TEST(``(NetworkDevices::GetFreeDevices("eth", 2)), [], nil);
+NetworkDevices::Devices=$["eth-pcmcia":$["":$[]]];
+TEST(``(NetworkDevices::GetFreeDevices("eth-pcmcia", 2)), [], nil);
+NetworkDevices::Devices=$["eth-pcmcia":$["0":$[]]];
+TEST(``(NetworkDevices::GetFreeDevices("eth-pcmcia", 2)), [], nil);
+NetworkDevices::Devices=$["eth-pcmcia":$["1":$[]]];
+TEST(``(NetworkDevices::GetFreeDevices("eth-pcmcia", 2)), [], nil);
 
-DUMP("GetFreeDevices");
-Devices=$["eth":$["0":$[]]];
-TEST(``(GetFreeDevices("eth", 2)), [], nil);
-Devices=$["eth":$["1":$[]]];
-TEST(``(GetFreeDevices("eth", 2)), [], nil);
-Devices=$["eth":$["2":$[]]];
-TEST(``(GetFreeDevices("eth", 2)), [], nil);
-Devices=$["eth-pcmcia":$["":$[]]];
-TEST(``(GetFreeDevices("eth-pcmcia", 2)), [], nil);
-Devices=$["eth-pcmcia":$["0":$[]]];
-TEST(``(GetFreeDevices("eth-pcmcia", 2)), [], nil);
-Devices=$["eth-pcmcia":$["1":$[]]];
-TEST(``(GetFreeDevices("eth-pcmcia", 2)), [], nil);
+DUMP("NetworkDevices::Locate");
+NetworkDevices::Devices=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "dhcp" ]]];
+TEST(``(NetworkDevices::Locate("BOOTPROTO", "dhcp")), [], nil);
+NetworkDevices::Devices=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "" ]]];
+TEST(``(NetworkDevices::Locate("BOOTPROTO", "dhcp")), [], nil);
+NetworkDevices::Devices=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "static" ]]];
+TEST(``(NetworkDevices::Locate("BOOTPROTO", "dhcp")), [], nil);
+NetworkDevices::Devices=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "static" ], "1" : $[ "BOOTPROTO" : "dhcp"]]];
+TEST(``(NetworkDevices::Locate("BOOTPROTO", "dhcp")), [], nil);
+NetworkDevices::Devices=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "static" ]], "tr" : $["1" : $[ "BOOTPROTO" : "dhcp"]]];
+TEST(``(NetworkDevices::Locate("BOOTPROTO", "dhcp")), [], nil);
 
-DUMP("LocateDevices");
-Devices=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "dhcp" ]]];
-TEST(``(LocateDevices("BOOTPROTO", "dhcp")), [], nil);
-Devices=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "" ]]];
-TEST(``(LocateDevices("BOOTPROTO", "dhcp")), [], nil);
-Devices=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "static" ]]];
-TEST(``(LocateDevices("BOOTPROTO", "dhcp")), [], nil);
-Devices=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "static" ], "1" : $[ "BOOTPROTO" : "dhcp"]]];
-TEST(``(LocateDevices("BOOTPROTO", "dhcp")), [], nil);
-Devices=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "static" ]], "tr" : $["1" : $[ "BOOTPROTO" : "dhcp"]]];
-TEST(``(LocateDevices("BOOTPROTO", "dhcp")), [], nil);
-
-DUMP("UpdateModemSymlink");
-Devices=$["arc":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]]];
-TEST(``(UpdateModemSymlink()), [], nil);
-Devices=$["ppp":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]]];
-TEST(``(UpdateModemSymlink()), [], nil);
-Devices=$["ppp":$["5":$["MODEM_DEVICE":"", "STARTMODE":"manual"]]];
-TEST(``(UpdateModemSymlink()), [], nil);
-Devices=$["ppp":$["5":$["MODEM_DEVICE":"/dev/modem", "STARTMODE":"manual"]]];
-TEST(``(UpdateModemSymlink()), [], nil);
-Devices=$["ppp":$["5":$["MODEM_DEVICE":"/dev/ttyS1", "STARTMODE":"manual"]]];
-TEST(``(UpdateModemSymlink()), [], nil);
+DUMP("NetworkDevices::UpdateModemSymlink");
+NetworkDevices::Devices=$["arc":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]]];
+TEST(``(NetworkDevices::UpdateModemSymlink()), [], nil);
+NetworkDevices::Devices=$["ppp":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]]];
+TEST(``(NetworkDevices::UpdateModemSymlink()), [], nil);
+NetworkDevices::Devices=$["ppp":$["5":$["MODEM_DEVICE":"", "STARTMODE":"manual"]]];
+TEST(``(NetworkDevices::UpdateModemSymlink()), [], nil);
+NetworkDevices::Devices=$["ppp":$["5":$["MODEM_DEVICE":"/dev/modem", "STARTMODE":"manual"]]];
+TEST(``(NetworkDevices::UpdateModemSymlink()), [], nil);
+NetworkDevices::Devices=$["ppp":$["5":$["MODEM_DEVICE":"/dev/ttyS1", "STARTMODE":"manual"]]];
+TEST(``(NetworkDevices::UpdateModemSymlink()), [], nil);
 READ=$["target":$["lstat":$["islink":true], "symlink":"/dev/ttyS1"]];
-TEST(``(UpdateModemSymlink()), [READ], nil);
+TEST(``(NetworkDevices::UpdateModemSymlink()), [READ], nil);
 READ=$["target":$["lstat":$["islink":true], "symlink":"/dev/ttyS2"]];
-TEST(``(UpdateModemSymlink()), [READ], nil);
+TEST(``(NetworkDevices::UpdateModemSymlink()), [READ], nil);
 
 }

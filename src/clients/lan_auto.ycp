@@ -18,7 +18,6 @@ import "Lan";
 import "Progress";
 import "Mode";
 include "network/lan/wizards.ycp";
-include "network/install.ycp";
 
 /**
  * Convert data from autoyast to structure used by module.
@@ -28,6 +27,7 @@ include "network/install.ycp";
 define map FromAY(map input) ``{
 	// Used netdevice during installation
 	map InstallInf = $[];
+	include "network/install.ycp";
 	ReadInstallInf();
 	string netdevice = InstallInf["netdevice"]:"eth0";
 
@@ -59,7 +59,7 @@ define map FromAY(map input) ``{
 		new_interface[k] = v;
 	    }
 	});
-	return([interface["device"]:netdevice,new_interface]);
+	return $[ interface["device"]:netdevice : new_interface ];
     });
 
     map devices = $[];
@@ -79,13 +79,13 @@ define map FromAY(map input) ``{
     if (size(input["modules"]:[]) > 0) {
 	map tmp_modules = listmap(map mod, input["modules"]:[], ``{
 	    string dev = mod["device"]:"";
-	    return([dev, mod["module"]:""]);
+	    return $[dev : mod["module"]:""];
 	});
 	native_modules["alias"] = tmp_modules;
 	tmp_modules = listmap(map mod, input["modules"]:[], ``{
         string options = mod["options"]:"";
         string module_name = mod["module"]:"";
-		return([module_name, options]);
+		return $[module_name : options];
     });
 	native_modules["options"] = tmp_modules;
 
@@ -93,28 +93,36 @@ define map FromAY(map input) ``{
     else if (size(input["modules"]:[]) == 0 && Mode::autoinst)
     {
 	import "Arch";
-	if(!Arch::s390) Lan::ReadHardware("netcard");
-	list HW = Lan::GetHardware();
+	list HW = [];
+	if(!Arch::s390) {
+	    string name = "";
+	    string unique = "";
+	    string type = "";
+	    string hotplug = "";
+	    include "network/hardware.ycp";
+	    HW = ReadHardware("netcard");
+	}
 	map alias = $[];
 	map options = $[];
 	devices = mapmap(string type, map devsmap, devices, ``{
-	    list HW_type = filter(`dev, HW, ``(dev["type"]:"" == type ));
+	    list HW_type = filter(map dev, HW, ``(dev["type"]:"" == type ));
 
 	    y2debug("hw from type %1 = %2", type, HW_type);
 
 	    map newmap = mapmap(string num, map devmap, devsmap, ``{
 
-		devmap = add(devmap, "UNIQUE", HW_type[ tointeger(num) ,"unique"]:"" );
+		integer nnum = tointeger(num);
+		devmap["UNIQUE"] = HW_type[nnum, "unique"]:"";
 		string device = sformat ("%1%2", type, num );
-		string modname = HW_type[ tointeger(num) ,"module"]:"";
+		string modname = HW_type[nnum, "module"]:"";
 		alias[device] = modname;
 		// map tmpopt = $[modname: HW_type[ tointeger(num) ,"options"]:""];
-		options[modname] = HW_type[ tointeger(num) ,"options"]:"";
+		options[modname] = HW_type[nnum, "options"]:"";
 
-		return([num, devmap]);
+		return $[num : devmap];
 
 	    });
-	    return ([ type, newmap ] );
+	    return $[type : newmap];
 	});
 	native_modules["alias"] = alias;
 	native_modules["options"] = options;
@@ -162,10 +170,10 @@ define map ToAY (map settings) ``{
 	    foreach(string key, string val, devmap, ``{
 			y2milestone("Adding: %1=%2", key, val);
 			if ( size(val) > 0 && ( !contains(discard, key) && !contains(discard, tolower(key))))
-				change(newmap, tolower(key), val);
+				newmap[tolower(key)] = val;
 	    });
-	    change(newmap, "device", device + num);
-	    change(interfaces, newmap);
+	    newmap["device"] = device + num;
+	    interfaces = add(interfaces, newmap);
 	});
     });
 
@@ -177,7 +185,7 @@ define map ToAY (map settings) ``{
 	    newmap["device"] =  device;
 	    newmap["module"] =  mod;
 		newmap["options"] = settings["modules", "options", mod]:"";
-	    change(modules, newmap);
+	    modules = add(modules, newmap);
     });
 
 	map config = settings["config"]:$[];
@@ -220,7 +228,7 @@ map param = $[];
 /* Check arguments */
 if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
     func = (string) WFM::Args(0);
-    if(size(Args()) > 1 && is(WFM::Args(1), map))
+    if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
 	param = (map) WFM::Args(1);
 }
 y2debug("func=%1", func);
@@ -256,8 +264,7 @@ else if (func == "Export") {
 }
 else if (func == "Write") {
     Progress::off();
-    Lan::write_only = true;
-    ret = Lan::Write();
+    ret = Lan::WriteOnly();
     Progress::on();
 }
 /* unknown function */

@@ -25,9 +25,9 @@ Summary:	Network configuration
 
 @INSTALL@
 %ifarch s390 s390x
-/bin/rm -f @configdir@/dsl.y2cc
-/bin/rm -f @configdir@/isdn.y2cc
-/bin/rm -f @configdir@/modem.y2cc
+# /bin/rm -f @configdir@/dsl.y2cc
+# /bin/rm -f @configdir@/isdn.y2cc
+# /bin/rm -f @configdir@/modem.y2cc
 /bin/rm -f @desktopdir@/dsl.desktop
 /bin/rm -f @desktopdir@/isdn.desktop
 /bin/rm -f @desktopdir@/modem.desktop
@@ -41,7 +41,7 @@ Summary:	Network configuration
 @yncludedir@/network
 @clientdir@/*.ycp
 @moduledir@/*.ycp
-@configdir@/*.y2cc
+@moduledir@/*.ybc
 @desktopdir@/*.desktop
 @scrconfdir@/*.scr
 %doc @docdir@

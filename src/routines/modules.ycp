@@ -42,7 +42,7 @@ include "network/routines.ycp";
  * @return true if sucess
  * @example ReadModules("eth|tr");
  */
-global define boolean ReadModules(string devregex) ``{
+define boolean ReadModules(string devregex) ``{
 
     Modules = $[
 	"alias" : $[],
@@ -78,7 +78,7 @@ global define boolean ReadModules(string devregex) ``{
  * Write Modules to files
  * @return true if success
  */
-global define boolean WriteModules() ``{
+define boolean WriteModules() ``{
 
     boolean arcnet = false;
     y2debug("Modules=%1", Modules);
@@ -132,9 +132,9 @@ global define boolean WriteModules() ``{
 		    map curopts = SCR::Read(.modules.options, "netiucv");
 		    maplist(string k, string v, opts_map, ``{
 			if(haskey(curopts, k))
-			    change(curopts, k, curopts[k]:"" + ":" + v);
+			    curopts[k] = curopts[k]:"" + ":" + v;
 			else
-			    change(curopts, k, v);
+			    curopts[k] = v;
 		    });
 		    SCR::Write(.modules.options, curopts, "netiucv");
 		}
@@ -162,7 +162,7 @@ global define boolean WriteModules() ``{
  * @param check if check if module already exists
  * @return true if success
  */
-global define boolean ChangeModule(string name, boolean check) ``{
+define boolean ChangeModule(string name, boolean check) ``{
     y2debug("name=%1", name);
     y2debug("Module=%1", Module);
     y2debug("Modules=%1", Modules);
@@ -225,7 +225,7 @@ global define boolean ChangeModule(string name, boolean check) ``{
  * @param name device name
  * @return true if success
  */
-global define boolean DeleteModule(string name) ``{
+define boolean DeleteModule(string name) ``{
     y2debug("Modules=%1", Modules);
     y2debug("DeletedModules=%1", DeletedModules);
 
@@ -235,7 +235,7 @@ global define boolean DeleteModule(string name) ``{
     }
 
     Modules["alias"] = remove(Modules["alias"]:$[], name);
-    change(DeletedModules, name);
+    DeletedModules = add(DeletedModules, name);
 
     y2debug("Modules=%1", Modules);
     y2debug("DeletedModules=%1", DeletedModules);
@@ -247,7 +247,7 @@ global define boolean DeleteModule(string name) ``{
  * @param type added module type
  * @return true on success
  */
-global define boolean AddModule(string type) ``{
+define boolean AddModule(string type) ``{
 
     Module["module"] = "";
     Module["options"] = "";
@@ -270,7 +270,7 @@ global define boolean AddModule(string type) ``{
  * @param name module name
  * @return true on success
  */
-global define boolean SelectModule(string name) ``{
+define boolean SelectModule(string name) ``{
 
     Module["module"] = "";
     Module["options"] = "";

@@ -23,13 +23,13 @@ import "Popup";
 import "Label";
 
 include "network/routines.ycp";
-include "network/complex.ycp";
+include "network/summary.ycp";
 
 /**
  * Return a modification status
  * @return true if data was modified
  */
-global define boolean Modified() ``{
+define boolean Modified() ``{
     return Lan::Modified() || DNS::modified || Routing::Modified() ||
 	NetworkConfig::Modified();
 }
@@ -38,7 +38,7 @@ global define boolean Modified() ``{
  * Commit changes to internal structures
  * @return always `next
  */
-global define symbol Commit() ``{
+define symbol Commit() ``{
     Lan::Commit();
     return `next;
 }
@@ -47,7 +47,7 @@ global define symbol Commit() ``{
  * Display finished popup
  * @return dialog result
  */
-global define symbol FinishDialog() ``{
+define symbol FinishDialog() ``{
     return FinishPopup(Modified(), "lan", "", "mail", ["permanent"]);
 }
 
@@ -55,7 +55,7 @@ global define symbol FinishDialog() ``{
  * Read settings dialog
  * @return `abort if aborted and `next otherwise
  */
-global define symbol ReadDialog() ``{
+define symbol ReadDialog() ``{
 
     ScreenName("lan-read");
 
@@ -77,7 +77,7 @@ Safely abort the configuration utility by pressing <B>Abort</B> now.</p>");
  * Write settings dialog
  * @return `abort if aborted and `next otherwise
  */
-global define symbol WriteDialog() ``{
+define symbol WriteDialog() ``{
     ScreenName("lan-write");
 
     if(!Modified()) return `next;
@@ -100,7 +100,7 @@ Abort saving by pressing <b>Abort</b>.</p>");
  * Main dialog
  * @return dialog result
  */
-global define symbol SummaryDialog() ``{
+define any SummaryDialog() ``{
 
     ScreenName("lan-summary");
 
@@ -123,8 +123,8 @@ If you press <b>Change</b>, an additional dialog in which
 to change the configuration opens.</p>");
 
     list summary = Lan::Summary(true);
-    list unconfigured = select(summary, 1, []);
-    string configured = select(summary, 0, "");
+    list unconfigured = (list) select(summary, 1, []);
+    string configured = (string) select(summary, 0, "");
 
     y2debug("configured=%1", configured);
     y2debug("unconfigured=%1", unconfigured);
@@ -159,7 +159,7 @@ to change the configuration opens.</p>");
 		ret = `other;
 	    }
 	    else if(is(selected, integer)) {
-		Lan::SelectHW(selected);
+		Lan::SelectHW((integer) selected);
 		ret = `configure;
 	    }
 	    else {
@@ -184,7 +184,7 @@ to change the configuration opens.</p>");
  * Overview dialog
  * @return dialog result
  */
-global define symbol OverviewDialog() ``{
+define any OverviewDialog() ``{
 
     ScreenName("lan-overview");
 
@@ -241,7 +241,7 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
 	}
 	/* edit */
 	else if(ret == `edit || ret == `table) {
-	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 	    if(dev == nil) {
 		y2error("Empty device during Edit");
 		continue;
@@ -252,7 +252,7 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
 	}
 	/* delete */
 	else if(ret == `delete) {
-	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
 
 	    /* Popup text */
 	    string pop = sformat(_("All virtual aliases belonging to the interface %1

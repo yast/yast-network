@@ -21,7 +21,11 @@ import "Lan";
 import "Mode";
 import "Progress";
 
-include "network/routines.ycp";
+/* NI: required wrt functions in routines.ycp */
+block<boolean> AbortFunction = nil;
+// define boolean Modified() ``{ return true; }
+
+// include "network/routines.ycp";
 include "network/lan/wizards.ycp";
 
 list args = WFM::Args();

@@ -22,6 +22,7 @@ import "IP";
 import "Map";
 import "Mode";
 import "NetworkConfig";
+import "NetworkDevices";
 import "Routing";
 import "Firewall";
 import "Progress";
@@ -29,11 +30,6 @@ import "Summary";
 
 /*-------------*/
 /* GLOBAL DATA */
-
-/**
- * Current device information (FIXME: placeholder)
- */
-global map Device = $[];
 
 /**
  * Current module information
@@ -78,7 +74,7 @@ global map aliases = $[];
 
 /* propose options */
 global boolean proposal_valid = false;
-global boolean write_only = false;
+boolean write_only = false;
 
 
 /**
@@ -91,21 +87,21 @@ global block<boolean> AbortFunction = nil;
 /* PRIVATE DATA */
 
 /**
- * Hardware information
- * @see ReadHardware
- */
-list Hardware = [];
-
-/**
  * Devices information
  * @see ReadDevices
  */
-map Devices = $[];
+// map Devices = $[];
 
 /**
  * Deleted devices
  */
 list DeletedDevices = [];
+
+/**
+ * Hardware information
+ * @see ReadHardware
+ */
+list Hardware = [];
 
 /**
  * Modules information
@@ -146,8 +142,8 @@ global define boolean Modified() ``{
     return modified;
 }
 
-include "network/complex.ycp";
-include "network/devices.ycp";
+// include "network/devices.ycp";
+// include "network/complex.ycp";
 include "network/hardware.ycp";
 include "network/install.ycp";
 include "network/modules.ycp";
@@ -195,7 +191,7 @@ global define boolean Read() ``{
 
     // Dont read hardware data in config mode
     if (!Mode::config)
-	ReadHardware("netcard");
+	Hardware = ReadHardware("netcard");
 
     /* ReadHardware(""); /* TESTING */
     sleep(sl);
@@ -203,16 +199,14 @@ global define boolean Read() ``{
     if(Abort()) return false;
     /* Progress step 2/9 */
     ProgressNextStage(_("Reading /etc/modules.conf..."));
-    ReadModules(NetworkCardRegex);
-    /* ReadModules(""); /* TESTING */
+    ReadModules(NetworkDevices::CardRegex["netcard"]:"");
     sleep(sl);
 
     if(Abort()) return false;
     /* Progress step 3/9 - multiple devices may be present, really plural*/
     ProgressNextStage(_("Reading device configuration..."));
-    /* ReadDevices(""); /* TESTING */
-    ReadDevices(NetworkDeviceRegex);
-    CleanHotplugSymlink();
+    NetworkDevices::Read();
+    NetworkDevices::CleanHotplugSymlink();
     sleep(sl);
 
     if(Abort()) return false;
@@ -259,15 +253,6 @@ global define boolean Read() ``{
     if(Abort()) return false;
     modified = false;
     return true;
-}
-
-/**
- * Only write configuration without starting any init scripts and SuSEconfig
- * @return true on success
- */
-global define boolean WriteOnly()``{
-       write_only = true;
-       return Write();
 }
 
 /**
@@ -327,7 +312,8 @@ global define boolean Write() ``{
     if(Abort()) return false;
     /* Progress step 3/10 - multiple devices may be present, really plural*/
     ProgressNextStage(_("Writing device configuration..."));
-    WriteDevices();
+    NetworkDevices::Write("netcard");
+    // WriteDevices();
     sleep(sl);
 
     if(Abort()) return false;
@@ -382,17 +368,26 @@ global define boolean Write() ``{
 }
 
 /**
+ * Only write configuration without starting any init scripts and SuSEconfig
+ * @return true on success
+ */
+global define boolean WriteOnly()``{
+    write_only = true;
+    return Write();
+}
+
+/**
  * Import data
  * @param settings settings to be imported
  * @return true on success
  */
 global define boolean Import(map settings) ``{
 
-    Devices = eval(settings["devices"]:$[]);
-    Modules = eval(settings["modules"]:$[]);
-    DNS::Import(eval(settings["dns"]:$[]));
+    // FIXME: NI Devices = (map) eval(settings["devices"]:$[]);
+    Modules = (map) eval(settings["modules"]:$[]);
+    DNS::Import((map) eval(settings["dns"]:$[]));
     NetworkConfig::Import(settings["config"]:$[]);
-    Routing::Import(eval(settings["routing"]:$[]));
+    Routing::Import((map) eval(settings["routing"]:$[]));
 
     modified = true;
     return true;
@@ -404,8 +399,8 @@ global define boolean Import(map settings) ``{
  */
 global define map Export() ``{
 
-    return eval($[
-	"devices"	: Devices,
+    return (map) eval($[
+// FIXME: NI	"devices"	: Devices,
 	"modules"	: Modules,
 	"config"	: NetworkConfig::Export(),
 	"dns"		: DNS::Export(),
@@ -419,7 +414,7 @@ global define map Export() ``{
  * @param which index of the component
  */
 global define void SelectHW(integer which) ``{
-    SelectHardware(which);
+    SelectHardware(Hardware, which);
 }
 
 /**
@@ -428,7 +423,7 @@ global define void SelectHW(integer which) ``{
  * @return summary of the current configuration
  */
 global define list Summary(boolean split) ``{
-    return BuildSummary(split);
+    return NetworkDevices::Summary("netcard", Hardware, split);
 }
 
 /**
@@ -436,7 +431,7 @@ global define list Summary(boolean split) ``{
  * @return table items
  */
 global define list Overview() ``{
-    return BuildOverview();
+    return NetworkDevices::Overview("netcard");
 }
 
 /*-------------------*/
@@ -448,8 +443,8 @@ global define list Overview() ``{
  * @return list of 10 free devices
  */
 global define list FreeDevices(string type) ``{
-    y2debug("Devices=%1", Devices);
-    return GetFreeDevices(type, 10);
+    // y2debug("Devices=%1", Devices);
+    return NetworkDevices::GetFreeDevices(type, 10);
 }
 
 /**
@@ -459,10 +454,10 @@ global define list FreeDevices(string type) ``{
  * @return list of 10 free devices
  */
 global define list FreeAliases(string type, integer num) ``{
-    y2debug("Devices=%1", Devices);
-    map Devices_1 = Devices[type, sformat("%1",num)]:$[];
+    // FIXME: NI y2debug("Devices=%1", Devices);
+    map Devices_1 = $[]; // FIXME: NI Devices[type, sformat("%1",num)]:$[];
     y2debug("Devices=%1", Devices_1);
-    return GetFreeDevices("_aliases", 10);
+    return NetworkDevices::GetFreeDevices("_aliases", 10);
 }
 
 /**
@@ -478,20 +473,25 @@ global define boolean Select(string dev) ``{
     /* dev=="" -> Add */
     if(dev == "") {
 	type = "eth";
-	device = GetFreeDevice(type);
+	device = NetworkDevices::GetFreeDevice(type);
 	AddModule(type);
 	/* FIXME: alias: how to prefill new alias? */
 	alias = "";
     }
     /* dev!="" -> Edit */
     else {
+	/* FIXME: NI:
 	if(!CheckDevice(dev)) {
 	    y2error("Device not found: %1", dev);
 	    return false;
 	}
-	devmap = Devices[type, device]:$[];
-	if(alias != "")
-	    devmap = devmap["_aliases", alias]:$[];
+	*/
+	NetworkDevices::Edit(dev);
+	devmap = NetworkDevices::Current;
+	type = device_type(dev);
+	device = device_num(dev);
+	// if(alias != "") FIXME: NI:
+	   // devmap = devmap["_aliases", alias]:$[];
     }
 
     /* general stuff */
@@ -549,6 +549,7 @@ global define boolean Select(string dev) ``{
  */
 global define boolean Add() ``{
     operation = nil;
+    NetworkDevices::Add();
     if(Select("") != true) return false;
     operation = `add;
     return true;
@@ -556,27 +557,26 @@ global define boolean Add() ``{
 
 /**
  * Edit the given device
- * @param dev device to edit
+ * @param name device to edit
  * @return true if success
  */
-global define boolean Edit(string dev) ``{
+global define boolean Edit(string name) ``{
     operation = nil;
-    if(Select(dev) != true) return false;
+    NetworkDevices::Edit(name);
+    if(Select(name) != true) return false;
     operation = `edit;
     return true;
 }
 
 /**
  * Delete the given device
- * @param dev device to delete
+ * @param name device to delete
  * @return true if success
  */
-global define boolean Delete(string dev) ``{
+global define boolean Delete(string name) ``{
     operation = nil;
-    if(!CheckDevice(dev)) {
-	y2error("Device not found: %1", dev);
-	return false;
-    }
+    NetworkDevices::Delete(name);
+    if(Select(name) != true) return false;
     operation = `delete;
     return true;
 }
@@ -646,19 +646,26 @@ global define boolean Commit() ``{
 	    if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 15)
 		NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 15;
 
-	// FIXME: ? change(newdev, "_aliases", eval(aliases));
+	/* FIXME: ? newdev["_aliases"] = eval(aliases);
 	if(alias == "")
 	    ChangeDevice2(device_name(RealType(type, hotplug), device), newdev, operation == `add);
 	else
 	    ChangeDevice2(device_name(RealType(type, hotplug), device) + ":" + alias, newdev, operation == `add);
+	*/
+
+	NetworkDevices::Name = device_name(RealType(type, hotplug), device);
+	NetworkDevices::Current = newdev;
+	NetworkDevices::Commit();
     }
     else if(operation == `delete) {
+	NetworkDevices::Commit();
 	if(alias == "") {
 	    if(hotplug == "") DeleteModule(type+device);
-	    DeleteDevice2(device_name(type, device));
+	    // FIXME: NI DeleteDevice2(device_name(type, device));
 	}
-	else
-	    DeleteDevice2(device_name(type, device) + ":" + alias);
+	else {
+	    // FIXME: NI DeleteDevice2(device_name(type, device) + ":" + alias);
+	}
     }
     else {
 	y2error("Unknown operation: %1", operation);
@@ -676,7 +683,7 @@ global define boolean Commit() ``{
  */
 global define boolean Propose() ``{
 
-    y2milestone("Devices=%1", Devices);
+    // FIXME: NI y2milestone("Devices=%1", Devices);
     y2milestone("Hardware=%1", Hardware);
     y2milestone("InstallInf=%1", InstallInf);
 
@@ -684,7 +691,7 @@ global define boolean Propose() ``{
     y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);
 
     /* Something is already configured -> do nothing */
-    if(size(Devices) > 0) {
+    if(size(NetworkDevices::GetDevices("all")) > 0) {
 	y2milestone("Something already configured: don't propose.");
 	return false;
     }
@@ -736,7 +743,7 @@ global define boolean Propose() ``{
 	Module["options"] = InstallInf["options"]:"";
 
 	type = InstallInf["type"]:"eth";
-	device = GetFreeDevice(type);
+	device = NetworkDevices::GetFreeDevice(type);
     }
     else {
 	y2debug("No hardware, no install.inf -> no proposal.");
@@ -774,7 +781,7 @@ global define boolean Propose() ``{
 	/* try to get hostname from the network */
 	if(hn == "") {
 	    string command = "/usr/bin/getent hosts \"%1\" | sed \"s/^[0-9.: \t]\\+//g\"";
-	    map getent = SCR::Execute(.target.bash_output, sformat(command, ipaddr));
+	    map getent = (map) SCR::Execute(.target.bash_output, sformat(command, ipaddr));
 	    string hnent = getent["stdout"]:"";
 	    y2debug("%1", hnent);
 	    hnent = select(splitstring(hnent, " "), 0, "");
@@ -803,7 +810,7 @@ global define boolean Propose() ``{
     }
     else {
 	/* Propose static config in case of DSL hardware is found */
-	list pppoe = SCR::Read(.probe.pppoe);
+	list pppoe = (list) SCR::Read(.probe.pppoe);
 	// FIXME: testing pppoe = [ $["a" : "b"] ];
 	map pppoedev = pppoe[0]:$[];
 	y2debug("pppoe=%1", pppoe);
@@ -823,7 +830,7 @@ global define boolean Propose() ``{
 
     Commit();
 
-    y2milestone("Devices=%1", Devices);
+    // FIXME: NI y2milestone("Devices=%1", Devices);
     y2milestone("NetworkConfig::Config=%1", NetworkConfig::Config);
     y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);
 
@@ -837,7 +844,7 @@ global define boolean Propose() ``{
  * @return true if any DHCP device except the current one is configured
  */
 global define boolean AnyDHCPDevice() ``{
-    list devs = LocateDevices("BOOTPROTO", "dhcp");
+    list devs = NetworkDevices::Locate("BOOTPROTO", "dhcp");
     // The current is type+device
     devs = filter(string dev, devs, ``( dev != type + device ));
     return size(devs) > 0;
@@ -849,36 +856,14 @@ global define boolean AnyDHCPDevice() ``{
  * @return true if there are some aliases
  */
 global define boolean HasAliases(string dev) ``{
+    /* FIXME: NI:
     if(!CheckDevice(dev)) {
 	y2error("Device not found: %1", dev);
 	return false;
     }
-    return alias == "" &&
-	Devices[type, device, "_aliases"]:$[] != $[];
-}
-
-/**
- * Get devices of the given type
- * @param type devices type
- * @return list of found devices
  */
-global define list GetDevices(string type) ``{
-
-    if(type == nil || type == "") return [];
-
-    list ret = [];
-    if(type == "all") {
-	maplist(string t, map d, Devices, ``{
-	    maplist(string n, Map::Keys(d), ``{ret[size(ret)] = device_name(t,n);});
-	});
-    }
-    else {
-	map d = Devices[type]:$[];
-	maplist(string n, Map::Keys(d), ``{ret[size(ret)] = device_name(type,n);});
-    }
-
-    y2debug("ret=%1", ret);
-    return ret;
+    // FIXME: NI return alias == "" && Devices[type, device, "_aliases"]:$[] != $[];
+    return false;
 }
 
 /* EOF */

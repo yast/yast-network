@@ -38,10 +38,16 @@
 {
 
 module "Detection";
-
 textdomain "network";
 
 import "Directory";
+
+/* general stuff */
+global string name = "";
+global string type = "";
+global string unique = "";
+global string hotplug = "";
+
 include "network/hardware.ycp";
 
 /**
@@ -68,15 +74,14 @@ define boolean StartEthInterface() ``{
 
     y2milestone("Network detection prepare");
 
-    list<map> Hardware = [];
-    ReadHardware("netcard");
+    list Hardware = ReadHardware("netcard");
 
     y2debug("Hardware=%1", Hardware);
     if(size(Hardware) < 1) return false;
 
     /* Look for eth cards */
-    list<map> ethernet_cards = filter(map h, Hardware, ``(h["type"]:"" == "eth"));
-    map card = ethernet_cards[0]:nil;
+    list ethernet_cards = filter(map h, Hardware, ``(h["type"]:"" == "eth"));
+    map card = (map) (ethernet_cards[0]:nil);
     y2debug("card=%1", card);
     if(card == nil || card == $[]) return false;
 
@@ -176,7 +181,7 @@ define boolean StopDetection() ``{
 	    string v = (string) SCR::Read(add(detpath, k));
 	    y2debug("%1=%2", k, v);
 	    /* FIXME: duplicate keys (make list? add with suffix1, etc? ...? */
-	    change(result, k, v);
+	    result[k] = v;
 	});
 	SCR::UnregisterAgent(detpath);
 

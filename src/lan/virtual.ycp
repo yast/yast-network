@@ -35,7 +35,7 @@ include "network/routines.ycp";
  * @param delete true if the host will be deleted
  * @return true if continue
  * /
-global defin boolean HostSystemPopup(string host, boolean delete) ``{
+defin boolean HostSystemPopup(string host, boolean delete) ``{
 
     if(!contains(Host::GetSystemHosts(), host)) return true;
 
@@ -53,12 +53,14 @@ global defin boolean HostSystemPopup(string host, boolean delete) ``{
 }
 */
 
+define term VirtualEditDialog(integer id, term entry, list forbidden);
+
 /**
  * Main aliases dialog
  * @param standalone true if not run from another ycp client
  * @return dialog result
  */
-global define symbol VirtualDialog(boolean standalone) ``{
+define any VirtualDialog(boolean standalone) ``{
 
     ScreenName("lan-virtual");
 
@@ -74,14 +76,14 @@ the <b>Netmask</b>.</p>");
 
     integer items = 0;
     integer max = 0;
-    list table_items = [];
+    list<term> table_items = [];
 
     /* make ui items from the aliases list */
     maplist(string alias, map data, Lan::aliases, ``{
 	string ipaddr = data["IPADDR"]:"";
 	string netmask = data["NETMASK"]:"";
 	term item = `item(`id(items), alias, ipaddr, netmask);
-	change(table_items, item);
+	table_items = add(table_items, item);
 	items = items + 1;
     });
 
@@ -143,18 +145,18 @@ the <b>Netmask</b>.</p>");
 	}
 	/* edit alias */
 	else if(ret == `edit) {
-	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
-	    list cur_item = filter(term e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
+	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
+	    list<term> cur_item = filter(term e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
 
 	    y2debug("cur=%1", cur);
 	    y2debug("cur_item=%1", cur_item);
 
 	    term item = cur_item[0]:nil;
-	    list forbidden = maplist(term e, table_items, ``(select(e, 1, "")));
-	    forbidden = filter(string h, forbidden, ``(h != select(item, 1, "")));
+	    list forbidden = maplist(term e, table_items, ``(e[1]:""));
+	    forbidden = filter(string h, forbidden, ``(h != item[1]:""));
 	    forbidden = [];
 
-	    // if(!HostSystemPopup(select(item, 1, ""), false)) continue;
+	    // if(!HostSystemPopup(item[1]:"", false)) continue;
 	    item = VirtualEditDialog(cur, item, forbidden);
 
 	    if(item == nil) continue;
@@ -170,11 +172,11 @@ the <b>Netmask</b>.</p>");
 	}
 	/* add alias */
 	else if(ret == `add) {
-	    list forbidden = maplist(term e, table_items, ``(select(e, 1, "")));
+	    list forbidden = maplist(term e, table_items, ``(e[1]:""));
 	    term item = VirtualEditDialog(max, `empty(), forbidden);
 	    if(item == nil) continue;
 
-	    change(table_items, item);
+	    table_items = add(table_items, item);
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
 	    UI::ChangeWidget(`id(`table), `CurrentItem, max);
 	    items = items + 1;
@@ -183,20 +185,20 @@ the <b>Netmask</b>.</p>");
 	}
 	/* delete alias */
 	else if(ret == `delete) {
-	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
-	    list cur_item = filter(term e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
+	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
+	    list<term> cur_item = filter(term e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
 
 	    y2debug("cur=%1", cur);
 	    y2debug("cur_item=%1", cur_item);
 
 	    term item = cur_item[0]:nil;
-	    // if(!HostSystemPopup(select(item, 1, ""), true)) continue;
+	    // if(!HostSystemPopup(item[1]:"", true)) continue;
 
 	    table_items = filter(term e, table_items, ``{
-		string ip = select(e, 1, "");
+		string ip = e[1]:"";
 		if(cur == select(select(e, 0, []), 0, nil)) {
 		    // if(ip != "" && ip != nil)
-			// change(Host::Deleted, ip);
+			// Host::Deleted = add(Host::Deleted, ip);
 		    return false;
 		}
 		return true;
@@ -223,9 +225,9 @@ the <b>Netmask</b>.</p>");
 	Lan::aliases = $[];
 	maplist(term e, table_items, ``{
 	    map alias = $[];
-	    change(alias, "IPADDR", select(e, 2, ""));
-	    change(alias, "NETMASK", select(e, 3, ""));
-	    change(Lan::aliases, select(e, 1, ""), alias);
+	    alias["IPADDR"] = e[2]:"";
+	    alias["NETMASK"] = e[3]:"";
+	    Lan::aliases[e[1]:""] = alias;
 	});
     }
 
@@ -242,7 +244,7 @@ the <b>Netmask</b>.</p>");
  * @param forbidden already used IP addresses
  * @return host or nil, if canceled
  */
-global define term VirtualEditDialog(integer id, term entry, list forbidden) ``{
+define term VirtualEditDialog(integer id, term entry, list forbidden) ``{
 
     ScreenName("lan-virtual-edit");
 
@@ -254,11 +256,11 @@ global define term VirtualEditDialog(integer id, term entry, list forbidden) ``{
 	`HSpacing(1),
 	`VBox(
 	    /* TextEntry label */
-	    `TextEntry(`id(`name), _("Alias &Name"), select(entry, 1, "")),
+	    `TextEntry(`id(`name), _("Alias &Name"), entry[1]:""),
 	    /* TextEntry label */
-	    `TextEntry(`id(`ipaddr), _("&IP Address"), select(entry, 2, "")),
+	    `TextEntry(`id(`ipaddr), _("&IP Address"), entry[2]:""),
 	    /* TextEntry label */
-	    `TextEntry(`id(`netmask), _("Net&mask"), select(entry, 3, ""))
+	    `TextEntry(`id(`netmask), _("Net&mask"), entry[3]:"")
 	    ),
 	`HSpacing(1),
 	`HBox(
@@ -285,7 +287,7 @@ global define term VirtualEditDialog(integer id, term entry, list forbidden) ``{
 	if(ret != `ok) break;
 
 	host = `item(`id(id));
-	string val = UI::QueryWidget(`id(`name), `Value);
+	string val = (string) UI::QueryWidget(`id(`name), `Value);
 	if(false && !IP::Check(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("The IP address is invalid."));
@@ -300,7 +302,7 @@ global define term VirtualEditDialog(integer id, term entry, list forbidden) ``{
 	}
 	host = add(host, val);
 
-	val = UI::QueryWidget(`id(`ipaddr), `Value);
+	val = (string) UI::QueryWidget(`id(`ipaddr), `Value);
 	if(!IP::Check(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("The IP address is incorrect."));
@@ -309,7 +311,7 @@ global define term VirtualEditDialog(integer id, term entry, list forbidden) ``{
 	}
 	host = add(host, val);
 
-	val = UI::QueryWidget(`id(`netmask), `Value);
+	val = (string) UI::QueryWidget(`id(`netmask), `Value);
 	if(!Netmask::Check(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("The subnet mask is incorrect"));

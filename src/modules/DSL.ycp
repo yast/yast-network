@@ -19,15 +19,10 @@ import "Detection";
 import "Lan";
 import "Firewall";
 import "Language";
+import "NetworkDevices";
 import "Provider";
 import "Progress";
 import "Summary";
-
-include "network/complex.ycp";
-include "network/devices.ycp";
-include "network/hardware.ycp";
-include "network/routines.ycp";
-include "network/runtime.ycp";
 
 /* general stuff */
 global string name = "";
@@ -35,6 +30,7 @@ global string type = "";
 global string device = "";
 global string unique = "";
 global string startmode = "manual";
+global string hotplug = "";
 
 /**
  * Special Capi-ADSL mode -- different presets for the first device.
@@ -91,12 +87,6 @@ list Hardware = [];
 boolean HWDetected = false;
 
 /**
- * Devices information
- * @see ReadDevices
- */
-map Devices = $[];
-
-/**
  * Deleted devices
  */
 list DeletedDevices = [];
@@ -128,6 +118,12 @@ global define boolean Modified() ``{
     y2debug("modified=%1",modified);
     return modified;
 }
+
+// include "network/complex.ycp";
+// include "network/devices.ycp";
+include "network/hardware.ycp";
+include "network/routines.ycp";
+include "network/runtime.ycp";
 
 /**
  * Read all network settings from the SCR
@@ -164,13 +160,13 @@ global define boolean Read() ``{
     /* In case of capiadsl we can emulate the detection with the parameters
      * from ISDN. Advantage: we can setup the dialog items correctly.
      */
-    if(capiadsl != nil) change(Hardware, capiadsl);
+    if(capiadsl != nil) Hardware = add(Hardware, capiadsl);
     sleep(sl);
 
     if(Abort()) return false;
     /* Progress step 2/5 */
     ProgressNextStage(_("Reading current configuration..."));
-    ReadDevices("dsl");
+    NetworkDevices::Read();
     sleep(sl);
 
     if(Abort()) return false;
@@ -249,7 +245,7 @@ global define boolean Write() ``{
     if(Abort()) return false;
     /* Progress step 1/7 */
     ProgressNextStage(_("Writing configuration..."));
-    WriteDevices();
+    NetworkDevices::Write("dsl");
     sleep(sl);
 
     if(Abort()) return false;
@@ -312,19 +308,15 @@ global define boolean Select(string dev) ``{
     /* dev=="" -> Add */
     if(dev == "") {
 	type = "dsl";
-	device = GetFreeDevice(type);
+	device = NetworkDevices::GetFreeDevice(type);
     }
     /* dev!="" -> Edit */
     else {
 	string typ = device_type(dev);
 	string num = device_num(dev);
 
-	map typemap = Devices[typ]:$[];
-	if(!haskey(typemap, num)) {
-	    y2error("Key not found: %1", dev);
-	    return false;
-	}
-	devmap = typemap[num]:$[];
+	NetworkDevices::Edit(dev);
+	devmap = NetworkDevices::Current;
 
 	type = typ;
 	device = num;
@@ -370,6 +362,7 @@ global define boolean Select(string dev) ``{
  */
 global define boolean Add() ``{
     operation = nil;
+    NetworkDevices::Add();
     if(Select("") != true) return false;
     operation = `add;
     return true;
@@ -380,8 +373,9 @@ global define boolean Add() ``{
  * @param name device to edit
  * @return true if success
  */
-global define boolean Edit(any name) ``{
+global define boolean Edit(string name) ``{
     operation = nil;
+    NetworkDevices::Edit(name);
     if(Select(name) != true) return false;
     operation = `edit;
     return true;
@@ -394,17 +388,8 @@ global define boolean Edit(any name) ``{
  */
 global define boolean Delete(string name) ``{
     operation = nil;
-    string typ = device_type(name);
-    string num = device_num(name);
-
-    map typemap = Devices[typ]:$[];
-    if(!haskey(typemap, num)) {
-        y2error("Key not found: %1", name);
-        return false;
-    }
-
-    type = typ;
-    device = num;
+    NetworkDevices::Delete(name);
+    if(Select(name) != true) return false;
     operation = `delete;
     return true;
 }
@@ -415,6 +400,7 @@ global define boolean Delete(string name) ``{
  */
 global define boolean Commit() ``{
     y2debug("Commit(%1)",operation);
+
     if(operation == `add || operation == `edit) {
 	map newdev = $[
 	    "STARTMODE"	: startmode,
@@ -429,10 +415,12 @@ global define boolean Commit() ``{
 	newdev["VPIVCI"] = vpivci;
 	newdev["MODEM_IP"] = modemip;
 
-	ChangeDevice(type, device, newdev, operation == `add);
+	NetworkDevices::Name = device_name(type, device);
+	NetworkDevices::Current = newdev;
+	NetworkDevices::Commit();
     }
     else if(operation == `delete) {
-	DeleteDevice(type, device);
+	NetworkDevices::Commit();
     }
     else {
 	y2error("Unknown operation: %1", operation);
@@ -450,14 +438,17 @@ global define boolean Commit() ``{
  */
 global define boolean Propose() ``{
 
-    y2milestone("Devices=%1", Devices);
     y2milestone("Hardware=%1", Hardware);
 
-    /* Something is already configured -> do nothing */
+    /*
+    y2milestone("Devices=%1", Devices);
+
+    /* Something is already configured -> do nothing * /
     if(size(Devices) > 0) {
 	y2milestone("Something already configured: don't propose.");
 	return false;
     }
+    */
 
     Add();
 
@@ -470,7 +461,7 @@ global define boolean Propose() ``{
  * @return true on success
  */
 global define boolean Import(map settings) ``{
-    Devices = eval(settings["devices"]:$[]);
+    // FIXME: NI Devices = eval(settings["devices"]:$[]);
     Provider::Import(settings["providers"]:$[]);
     return true;
 }
@@ -480,8 +471,8 @@ global define boolean Import(map settings) ``{
  * @return dumped settings (later acceptable by Import())
  */
 global define map Export() ``{
-    return eval($[
-	"devices" : Devices,
+    return (map) eval($[
+	// FIXME: NI "devices" : Devices,
 	"providers" : Provider::Export(),
     ]);
 }
@@ -493,7 +484,7 @@ global define map Export() ``{
  */
 global define list Summary(boolean split) ``{
 
-    list sum = BuildSummary(split);
+    list sum = NetworkDevices::Summary("dsl", Hardware, split);
     if(HWDetected != true) return sum;
 
     string hwdet = Summary::DevicesList( [
@@ -519,7 +510,7 @@ global define list Summary(boolean split) ``{
  * @return table items
  */
 global define list Overview() ``{
-    return BuildOverview();
+    return NetworkDevices::Overview("dsl");
 }
 
 /**
@@ -527,7 +518,7 @@ global define list Overview() ``{
  * @param which index of the component
  */
 global define void SelectHW(integer which) ``{
-    SelectHardware(which);
+    map sel = SelectHardware(Hardware, which);
 }
 
 /**
@@ -536,7 +527,7 @@ global define void SelectHW(integer which) ``{
  * @return true if yes
  */
 global define boolean UsesDevice(string device) ``{
-    return size(LocateDevices("DEVICE", device)) > 0;
+    return size(NetworkDevices::Locate("DEVICE", device)) > 0;
 }
 
 /**
@@ -545,7 +536,7 @@ global define boolean UsesDevice(string device) ``{
  * @return true if there is any
  */
 global define boolean LocateProvider(string provider) ``{
-    list devs = LocateDevices("PROVIDER", provider);
+    list devs = NetworkDevices::Locate("PROVIDER", provider);
     return size(devs) > 0;
 }
 

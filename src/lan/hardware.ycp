@@ -18,14 +18,14 @@ import "Popup";
 import "Wizard";
 // Arch::s390=true;
 
-include "network/complex.ycp";
+include "network/summary.ycp";
 include "network/routines.ycp";
 
 /**
  * Manual network card configuration dialog
  * @return dialog result
  */
-global define symbol HardwareDialog() ``{
+define any HardwareDialog() ``{
 
     ScreenName("lan-hardware");
 
@@ -294,7 +294,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    y2debug("hotplug=%1", hotplug);
 
 	    if(UI::WidgetExists(`id(`dev))) {
-		type = UI::QueryWidget(`id(`dev), `Value);
+		type = (string) UI::QueryWidget(`id(`dev), `Value);
 		realtype = RealType(type, hotplug);
 	    }
 	    y2debug("type=%1", type);
@@ -314,7 +314,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
 	    list devices = [];
 	    devices = Lan::FreeDevices(realtype);
-	    default_device = select(devices, 0, "");
+	    default_device = (string) select(devices, 0, "");
 	    /* Combobox label */
 	    UI::ReplaceWidget(`id(`rnum), `ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"), devices));
 
@@ -340,7 +340,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	else if(ret == `next || ret == `list || ret == `wire) {
 	    /* FIXME: check_* */
 	    if(UI::WidgetExists(`id(`num))) {
-		string devic = UI::QueryWidget(`id(`num), `Value);
+		string devic = (string) UI::QueryWidget(`id(`num), `Value);
 		if(devic != default_device) {
 		    y2warning("Default device: %1 -> %2", default_device, devic);
 		    /* Popup text */
@@ -372,10 +372,10 @@ Really continue?
 	Lan::Module["options"] = UI::QueryWidget(`id(`options), `Value);
 
 	if(UI::WidgetExists(`id(`mtu)))
-	    Lan::mtu = UI::QueryWidget(`id(`mtu), `Value);
+	    Lan::mtu = (string) UI::QueryWidget(`id(`mtu), `Value);
 
 	if(UI::WidgetExists(`id(`num)))
-	    Lan::device = UI::QueryWidget(`id(`num), `Value);
+	    Lan::device = (string) UI::QueryWidget(`id(`num), `Value);
 
 	if(UI::WidgetExists(`id(`pcmcia)) || UI::WidgetExists(`id(`usb))) {
 	    if(UI::QueryWidget(`id(`pcmcia), `Value) == true)
@@ -387,7 +387,7 @@ Really continue?
 	}
 
 	if(UI::WidgetExists(`id(`dev))) {
-	    type = UI::QueryWidget(`id(`dev), `Value);
+	    type = (string) UI::QueryWidget(`id(`dev), `Value);
 	    if(type == "qeth") type = "eth";
 	    Lan::type = type;
 	}
@@ -405,7 +405,7 @@ Really continue?
  * Call back for a manual selection from the list
  * @return dialog result
  */
-global define symbol SelectionDialog() ``{
+define any SelectionDialog() ``{
 
     ScreenName("lan-hardware-selection");
 
@@ -452,12 +452,12 @@ for a particular network card by entering the name in the search entry.</p>");
 	}
 	else if(ret == `search) {
 
-	    string entry = UI::QueryWidget(`id(`search), `Value);
+	    string entry = (string) UI::QueryWidget(`id(`search), `Value);
 
-	    list l = filter(`e, cards, ``(tolower(substring(select(e, 1, ""), 0, size(entry))) == tolower(entry)));
+	    list l = filter(term e, cards, ``(tolower(substring(select(e, 1, ""), 0, size(entry))) == tolower(entry)));
 
 	    if(size(entry) == 0) selected = 0;
-	    if(size(l) > 0) selected = select(select(select(l, 0, []), 0, []), 0, 0);
+	    if(size(l) > 0) selected = (integer) select((term) select((term) select(l, 0, `it()), 0, `it()), 0, 0);
 
 	    cards = [];
 	    cards = hwlist2items(hwlist, selected);
@@ -479,9 +479,9 @@ for a particular network card by entering the name in the search entry.</p>");
     }
 
     if(ret == `next) {
-	selected = UI::QueryWidget(`id(`cards), `CurrentItem);
+	selected = (integer) UI::QueryWidget(`id(`cards), `CurrentItem);
 	if(selected == nil) selected = 0;
-	map card = select(hwlist, selected, $[]);
+	map card = (map) select(hwlist, selected, $[]);
 	Lan::name = card["name"]:"";
 	Lan::Module["module"] = card["module"]:"";
 	Lan::Module["options"] = card["options"]:"";
@@ -494,7 +494,7 @@ for a particular network card by entering the name in the search entry.</p>");
  * S/390 devices configuration dialog
  * @return dialog result
  */
-global define symbol S390Dialog() ``{
+define any S390Dialog() ``{
 
     ScreenName("lan-hardware-s390");
 
@@ -577,10 +577,10 @@ add them manually.</p>");
     }
 
     if(ret == `next) {
-	Lan::read_channel = UI::QueryWidget(`id(`read_channel), `Value);
-	Lan::write_channel = UI::QueryWidget(`id(`write_channel), `Value);
-	Lan::data_channel = UI::QueryWidget(`id(`data_channel), `Value);
-	Lan::portname = UI::QueryWidget(`id(`portname), `Value);
+	Lan::read_channel = (string) UI::QueryWidget(`id(`read_channel), `Value);
+	Lan::write_channel = (string) UI::QueryWidget(`id(`write_channel), `Value);
+	Lan::data_channel = (string) UI::QueryWidget(`id(`data_channel), `Value);
+	Lan::portname = (string) UI::QueryWidget(`id(`portname), `Value);
     }
 
     return ret;

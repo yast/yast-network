@@ -21,7 +21,7 @@ include "network/routines.ycp";
  * Remote administration dialog
  * @return dialog result
  */
-global define symbol RemoteMainDialog() ``{
+define symbol RemoteMainDialog() ``{
 
     ScreenName("remote");
 

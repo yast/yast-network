@@ -29,7 +29,7 @@ block<boolean> AbortFunction = nil;
  * Return a modification status
  * @return true if data was modified
  */
-global define boolean Modified() ``{
+define boolean Modified() ``{
     return Host::modified;
 }
 

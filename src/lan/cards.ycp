@@ -29,7 +29,7 @@ textdomain "network";
 /**
  * Network cards database
  */
-global map NetworkCards = $[
+map NetworkCards = $[
 
   "wlan": [
 

@@ -19,6 +19,11 @@ y2milestone("----------------------------------------");
 y2milestone("DSL module started");
 
 import "DSL";
+
+/* NI: required wrt functions in routines.ycp */
+block<boolean> AbortFunction = nil;
+define boolean Modified() ``{ return true; }
+
 include "network/dsl/wizards.ycp";
 
 /* is this proposal or not? */
@@ -32,7 +37,7 @@ if(size(args) > 0) {
     else if(is(WFM::Args(0), path) && WFM::Args(0) == .capiadsl) {
         y2milestone("Using CAPI-ADSL mode");
 	DSL::capiadsl = nil;
-	if(size(args) > 1) DSL::capiadsl = WFM::Args(1);
+	if(size(args) > 1) DSL::capiadsl = (map) WFM::Args(1);
 	if(DSL::capiadsl == nil) DSL::capiadsl = $[];
     }
     else

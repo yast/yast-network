@@ -1,21 +1,9 @@
-Read	.target.size "/etc/install.inf" nil
-Read	.etc.install_inf.Sourcemounted nil
-Read	.etc.install_inf.AutoYaST nil
-Read	.etc.install_inf.Repair nil
-Read	.etc.install_inf.Demo nil
-Read	.etc.install_inf.Textmode nil
-Read	.etc.install_inf.Manual nil
-Read	.target.string "/proc/cmdline" nil
-Read	.etc.install_inf.Console nil
-Read	.etc.install_inf.Braille nil
-Read	.etc.install_inf.VNC nil
-Read	.etc.install_inf.UseSSH nil
-Read	.etc.install_inf.InstMode nil
+Read	.target.size "/etc/install.inf" -1
 Read	.sysconfig.language.RC_LANG nil
 Log	Failed reading <.sysconfig.language.RC_LANG>
 Read	.sysconfig.language.DEFAULT_LANGUAGE ""
 Read	.target.yast2 "lang2iso.ycp" $["CZ":"Czech"]
-Read	.target.size "/etc/sysconfig/language" nil
+Read	.target.size "/etc/sysconfig/language" -1
 Read	.target.tmpdir "/tmp"
 Dump	Read
 Dir	.sysconfig.network.providers.s: ["first", "second", "third"]

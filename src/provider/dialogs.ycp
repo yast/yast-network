@@ -13,10 +13,11 @@
 
 textdomain "network";
 
-import "ISDN";
+// FIXME: NI import "ISDN";
 import "Provider";
 import "Wizard";
 
+include "network/routines.ycp";
 include "network/provider/helps.ycp";
 
 import "Popup";
@@ -28,7 +29,7 @@ import "Label";
  * @param prev previously selected provider
  * @return new provider selection
  */
-global define any dividerHack(list provs, any prev) ``{
+define any dividerHack(list provs, any prev) ``{
     integer p = -1;
     find(term e, provs, ``{
 	p = p + 1;
@@ -41,7 +42,7 @@ global define any dividerHack(list provs, any prev) ``{
 	any id = select(select(e, 0, `id("x")), 0, "x");
 	return id == ."--";
     });
-    term item = select(provs, p < i ? i + 1 : i - 1, "");
+    term item = (term) select(provs, p < i ? i + 1 : i - 1, "");
     return select(select(item, 0, `id("x")), 0, "x");
 }
 
@@ -50,7 +51,7 @@ global define any dividerHack(list provs, any prev) ``{
  * @param edit true in case of edit sequence
  * @return symbol dialog result
  */
-global define symbol ProvidersDialog(boolean edit) ``{
+define any ProvidersDialog(boolean edit) ``{
 
     ScreenName("provider-list");
     string type = Provider::Type;
@@ -114,10 +115,10 @@ global define symbol ProvidersDialog(boolean edit) ``{
 
 	/* Update custom and providers tables */
 	if(re != `providers) {
-	    if(UI::QueryWidget(`id(`custom), `Value))
+	    if((boolean) UI::QueryWidget(`id(`custom), `Value))
 		country = "_custom";
 	    else
-		country = UI::QueryWidget(`id(`countries), `CurrentItem);
+		country = (string) UI::QueryWidget(`id(`countries), `CurrentItem);
 
 	    y2debug("country=%1", country);
 	    UI::ChangeWidget(`id(`countries), `Enabled, country != "_custom");
@@ -146,12 +147,12 @@ global define symbol ProvidersDialog(boolean edit) ``{
 	    return;
 	}
 
-	if(UI::QueryWidget(`id(`custom), `Value))
+	if((boolean) UI::QueryWidget(`id(`custom), `Value))
 	    /* Custom provider -> Select */
-	    Provider::Select(provider);
+	    Provider::Select((string) provider);
 	else
 	    /* System provider -> SelectSystem */
-	    Provider::SelectSystem(provider);
+	    Provider::SelectSystem((path) provider);
 
 	string info = Provider::Current["HOMEPAGE"]:"";
 	/* Label text (param is URL) */
@@ -204,17 +205,17 @@ global define symbol ProvidersDialog(boolean edit) ``{
     /* Next */
     else if(ret == `next) {
 	/* Custom provider */
-	if(UI::QueryWidget(`id(`custom), `Value)) {
+	if((boolean) UI::QueryWidget(`id(`custom), `Value)) {
 	    if(edit)
 		/* Edit existent */
-		Provider::Edit(provider);
+		Provider::Edit((string) provider);
 	    else
 		/* Clone existent */
-		Provider::Clone(provider);
+		Provider::Clone((string) provider);
 	}
 	else
 	    /* System provider -> SelectSystem */
-	    Provider::CloneSystem(provider);
+	    Provider::CloneSystem((path) provider);
     }
 
     y2debug("country=%1", country);

@@ -1,6 +1,11 @@
 {
 
 include "testsuite.ycp";
+
+string name = "";
+string type = "";
+string unique = "";
+string hotplug = "";
 include "network/hardware.ycp";
 
 DUMP("DeviceName");

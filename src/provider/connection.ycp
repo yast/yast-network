@@ -15,7 +15,7 @@ import "DSL";
 import "Firewall";
 import "Modem";
 import "IP";
-import "ISDN";
+// FIXME: NI import "ISDN";
 import "Label";
 import "Popup";
 import "Provider";
@@ -27,7 +27,7 @@ include "network/routines.ycp";
  * Connection dialog
  * @return dialog result
  */
-global define symbol ConnectionDialog() ``{
+define any ConnectionDialog() ``{
 
     ScreenName("provider-connection");
 
@@ -50,13 +50,15 @@ global define symbol ConnectionDialog() ``{
     string device = nil;
     if(type == "modem") device = "ppp"; //device_name(Modem::type, Modem::device);
     else if(type == "dsl") device = "ppp"; // FIXME device_name(DSL::type, DSL::device);
+    /* FIXME: NI
     else if(type == "isdn") {
-	/* FIXME: #18840 */
+	// FIXME: #18840
 	if(ISDN::type == "net")
 	    device = device_name("ippp", ISDN::device);
 	else
 	    device = device_name(ISDN::type, ISDN::device);
     }
+    */
     else {
 	y2error("Unknown type: %1", type);
 	return nil;
@@ -123,7 +125,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 
     list seconds = [ "0", "30", "60", "90", "120", "150", "180", "240", "300", "360", "480", "600" ];
     if(!contains(seconds, idletime))
-	change(seconds, idletime);
+	seconds = add(seconds, idletime);
 
     seconds = maplist(string e, seconds,
 	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == idletime)));
@@ -227,8 +229,8 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 		continue;
 	    }
 	    if(modifydns && (demand || !autodns)) {
-		DNS1 = UI::QueryWidget(`id(`DNS1), `Value);
-		DNS2 = UI::QueryWidget(`id(`DNS2), `Value);
+		DNS1 = (string) UI::QueryWidget(`id(`DNS1), `Value);
+		DNS2 = (string) UI::QueryWidget(`id(`DNS2), `Value);
 		if(!(IP::Check4(DNS1))) {
 		    Popup::Error(_("The primary name server is not correct"));
 		    UI::SetFocus(`id(`DNS1));
@@ -243,9 +245,9 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    break;
 	}
 	else if(ret == `demand || ret == `modifydns || ret == `autodns) {
-	    demand = UI::QueryWidget(`id(`demand), `Value);
-	    modifydns = UI::QueryWidget(`id(`modifydns), `Value);
-	    autodns = UI::QueryWidget(`id(`autodns), `Value);
+	    demand = (boolean) UI::QueryWidget(`id(`demand), `Value);
+	    modifydns = (boolean) UI::QueryWidget(`id(`modifydns), `Value);
+	    autodns = (boolean) UI::QueryWidget(`id(`autodns), `Value);
 	    UI::ChangeWidget(`id(`nameservers), `Enabled, modifydns && (demand || !autodns));
 	}
 	else {
@@ -257,9 +259,9 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
     /* UPDATE VARIABLES */
 
     if(ret == `next || ret == `Details || ret == `IPDetails) {
-	demand = UI::QueryWidget(`id(`demand), `Value);
-	modifydns = UI::QueryWidget(`id(`modifydns), `Value);
-	autodns = UI::QueryWidget(`id(`autodns), `Value);
+	demand = (boolean) UI::QueryWidget(`id(`demand), `Value);
+	modifydns = (boolean) UI::QueryWidget(`id(`modifydns), `Value);
+	autodns = (boolean) UI::QueryWidget(`id(`autodns), `Value);
 
 	/* update provider info */
 	Provider::Current = union(Provider::Current, $[
@@ -280,7 +282,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	/* update provider type-specific info */
 	if (type == "modem")
 	    Provider::Current = union(Provider::Current, $[
-		"STUPIDMODE" : UI::QueryWidget(`id(`stupidmode), `Value) ? "yes" : "no"
+		"STUPIDMODE" : (boolean) UI::QueryWidget(`id(`stupidmode), `Value) ? "yes" : "no"
 	    ]);
 
 	/* update firewall info */
@@ -288,13 +290,13 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 
 	    /* Update /etc/sysconfig/firewall */
 	    if(FirewallChecked != UI::QueryWidget(`id(`Firewall), `Value)) {
-		FirewallChecked = UI::QueryWidget(`id(`Firewall), `Value);
+		FirewallChecked = (boolean) UI::QueryWidget(`id(`Firewall), `Value);
 		Firewall::Change(device, FirewallChecked);
 	    }
 
 	    /* Also store it in ifcfg-file for possible dynamic use */
 	    Provider::Current = union(Provider::Current, $[
-		"FIREWALL" : UI::QueryWidget(`id(`Firewall), `Value) ? "yes" : "no"
+		"FIREWALL" : (boolean) UI::QueryWidget(`id(`Firewall), `Value) ? "yes" : "no"
 	    ]);
 	}
     }
@@ -306,7 +308,8 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
  * Connection details dialog
  * @return dialog result
  */
-global define symbol ConnectionDetailsDialog() ``{
+define symbol ConnectionDetailsDialog() ``{
+    return `abort;
 }
 
 /* EOF */

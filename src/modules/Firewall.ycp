@@ -66,7 +66,7 @@ global define boolean Write() ``{
     devices = filter(`v, devices, ``(v != "no"));
     devices = filter(`v, devices, ``(v != "nothing"));
     y2debug("devices=%1", devices);
-    if(size(devices) > 0) devs = mergestring(devices, " ");
+    if(size(devices) > 0) devs = mergestring((list<string>) devices, " ");
     SCR::Write(.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS, devs);
     SCR::Write(.sysconfig.personal-firewall, nil);
 

@@ -16,14 +16,14 @@ import "Lan";
 import "Popup";
 import "Wizard";
 
-include "network/complex.ycp";
+// include "network/complex.ycp";
 include "network/routines.ycp";
 
 /**
  * Wireless devices configuration dialog
  * @return dialog result
  */
-global define symbol WirelessDialog() ``{
+define any WirelessDialog() ``{
 
     ScreenName("lan-hardware-wireless");
 
@@ -125,7 +125,7 @@ available options.</p>");
 	     *   s:AAAAA (5 ascii chars or more) or
 	     *   XXXX-XXXX-XX or XXXXXXXXXX (10 or more hex digits)
 	     */
-	    string key = UI::QueryWidget(`id(`key), `Value);
+	    string key = (string) UI::QueryWidget(`id(`key), `Value);
 	    if(key != "") {
 
 		if(regexpmatch(key, "^s:.{5,}$")) break;
@@ -149,11 +149,11 @@ available options.</p>");
     }
 
     if(ret == `next) {
-	Lan::wl_essid = UI::QueryWidget(`id(`essid), `Value);
-	Lan::wl_nick = UI::QueryWidget(`id(`nick), `Value);
-	Lan::wl_nwid = UI::QueryWidget(`id(`nwid), `Value);
-	Lan::wl_mode = UI::QueryWidget(`id(`mode), `Value);
-	Lan::wl_key = UI::QueryWidget(`id(`key), `Value);
+	Lan::wl_essid = (string) UI::QueryWidget(`id(`essid), `Value);
+	Lan::wl_nick = (string) UI::QueryWidget(`id(`nick), `Value);
+	Lan::wl_nwid = (string) UI::QueryWidget(`id(`nwid), `Value);
+	Lan::wl_mode = (string) UI::QueryWidget(`id(`mode), `Value);
+	Lan::wl_key = (string) UI::QueryWidget(`id(`key), `Value);
     }
 
     return ret;
