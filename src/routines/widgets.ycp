@@ -11,7 +11,7 @@
     // for easier maintenance.
     // This is just a start.
 
-    map widget_descr = $[
+    map<string, map<string,any> > widget_descr = $[
 	"USERCONTROL": $[
 	    "widget": `checkbox,
 	    /* CheckBox label */

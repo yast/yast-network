@@ -204,7 +204,7 @@ define symbol ModemDetailsDialog() {
     string DialPrefixRx = Modem::DialPrefixRx;
 
 
-    list<map> widgets = CWM::CreateWidgets (
+    list< map<string, any> > widgets = CWM::CreateWidgets (
 	["USERCONTROL", "DIALPREFIXREGEX", ],
 	widget_descr);
 
