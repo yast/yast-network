@@ -268,5 +268,14 @@ global define string ControllerType(map hwdevice) ``{
     return "eth";
 }
 
+/**
+ * Return detected Hardware list
+ * @param void
+ * @return Hardware list
+ */
+global define list  GetHardware() ``{
+    return Hardware;
+}
+
 /* EOF */
 }
