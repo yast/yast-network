@@ -64,7 +64,7 @@ else if (func == "Import") {
     ret = Routing::Import(param);
 }
 /* Return actual state */
-else if (func == "Result") {
+else if (func == "Export") {
     ret = Routing::Export();
 }
 /* Write givven settings */

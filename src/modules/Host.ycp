@@ -11,6 +11,7 @@
 
 module "Host";
 textdomain "network";
+import "Summary";
 include "network/routines.ycp";
 
 /**
@@ -194,6 +195,23 @@ global define boolean Update(string hostname, string domain, list ips) ``{
     /* */
 
     return true;
+}
+/**
+ * Create host summary
+ * @return summary text
+ */
+global define string Summary() ``{
+
+	string summary = "";
+	if (hosts == $[] )
+		return Summary::NotConfigured();
+
+	summary = Summary::OpenList(summary);
+	foreach(`k, `v, hosts, ``{
+		summary = Summary::AddListItem(summary, k + " - " + mergestring(v, " ") );
+	});
+	summary = Summary::CloseList(summary);
+	return summary;
 }
 
 /* EOF */

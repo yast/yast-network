@@ -64,7 +64,7 @@ else if (func == "Import") {
     ret = DNS::Import(param);
 }
 /* Return actual state */
-else if (func == "Result") {
+else if (func == "Export") {
     ret = DNS::Export();
 }
 /* Write givven settings */

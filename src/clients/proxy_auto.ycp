@@ -31,6 +31,15 @@ import "Wizard";
 
 include "network/services/proxy.ycp";
 
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+global define boolean Modified() ``{
+    return Proxy::modified;
+}
+
+
 any ret = nil;
 string func = "";
 map param = $[];
@@ -64,7 +73,7 @@ else if (func == "Import") {
     ret = Proxy::Import(param);
 }
 /* Return actual state */
-else if (func == "Result") {
+else if (func == "Export") {
     ret = Proxy::Export();
 }
 /* Write givven settings */

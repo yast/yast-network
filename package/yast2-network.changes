@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Sat Mar  1 19:49:57 CET 2003 - nashif@suse.de
+
+- enable host and proxy configurations for autoyast
+
+-------------------------------------------------------------------
 Fri Feb 28 13:44:16 CET 2003 - mvidner@suse.de
 
 - Fix writing /etc/sysconfig/network/routes in the network proposal (#24114).
