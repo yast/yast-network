@@ -268,19 +268,22 @@ define void ShowLogs(list<map> logs, string logdir) {
     map tmp1 = logs[0]:$[];
     string filename = tmp1[`filename]:"none";
 
-    while(true) {
-
+    while(true)
+    {
 	/* Read file and fill logview */
 	string tmp2 = (string) SCR::Read(.target.string, logdir + "/" + filename);
 	if(tmp2 == nil) tmp2 = "file not found";
-	UI::ChangeWidget(`id(`log), `Value, "<pre>" + tmp2 + "</pre>");
+	UI::ChangeWidget(`id(`log), `Value, "<pre>" +
+			 String::EscapeTags (tmp2) + "</pre>");
 
 	any ret = UI::UserInput();
 
-	if(ret == `ok) {
+	if(ret == `ok)
+	{
 	    break;
 	}
-	else if(ret == `selector) {
+	else if(ret == `selector)
+	{
 	    string menuname = (string) UI::QueryWidget(`id(`selector), `Value);
 
 	    maplist(map v, logs, {

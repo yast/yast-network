@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Oct 07 16:41:15 CEST 2004 - arvin@suse.de
+
+- protect special characters when displaying logs from Internet
+  connection test (bug #46410)
+
+-------------------------------------------------------------------
 Thu Sep 30 13:43:59 CEST 2004 - mvidner@suse.cz
 
 - One more place to pass the required packages (#45960).

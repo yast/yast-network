@@ -11,7 +11,7 @@
 
     string url = "http://www.suse.com/relnotes/i386/SUSE-LINUX/9.1/release-notes.rpm";
 
-    string cmd = "/usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + "tmp.rpm";
+    string cmd = "/usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + "/dev/null";
     cmd = cmd + " > " + logdir + "/curl.log 2>&1";
 
     integer ret = (integer) SCR::Execute (.target.bash, cmd);
