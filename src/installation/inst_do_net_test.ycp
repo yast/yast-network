@@ -43,6 +43,10 @@
 	already_up = Internet::Status ();
 
 
+    integer test_stage = 0;
+    symbol test_result = `success;
+
+
     /* Progress step 1/4 */
     string l1 = _("Connecting to SuSE server via Internet...");
     /* Progress step 2/4 */
@@ -132,9 +136,8 @@ and correct the setting.</p>");
     }
 
 
-    define void set_result (symbol result) ``{
+    define void show_result () ``{
 	set_stage (-1);
-	test_result = result;
 	if (test_result == `success) {
 	    /* result of internet test */
 	    UI::ChangeWidget(`id(`res), `Value, _("Success"));
@@ -164,14 +167,16 @@ and correct the setting.</p>");
 	    {
 		if (!AskForPassword ()) {
 		    y2error("Password required");
-		    set_result (`failure);
+		    test_result = `failure;
+		    show_result ();
 		    return;
 		}
 
 		// start the connection
 		y2milestone ("called Start");
 		if (!Internet::Start ()) {
-		    set_result (`failure);
+		    test_result = `failure;
+		    show_result ();
 		    return;
 		}
 
@@ -194,7 +199,8 @@ and correct the setting.</p>");
 
 	    // status must be up
 	    if (!Internet::Status ()) {
-		set_result (`failure);
+		test_result = `failure;
+		show_result ();
 		return;
 	    }
 
@@ -221,6 +227,7 @@ and correct the setting.</p>");
 	    {
 		// popup to inform user about the failure
 		UI::MessagePopup (_("Download of latest release notes failed."));
+		test_result = `failure;
 	    }
 	    else
 	    {
@@ -246,6 +253,7 @@ and correct the setting.</p>");
 	    {
 		// popup to inform user about the failure
 		UI::MessagePopup (_("Check for latest updates failed."));
+		test_result = `failure;
 	    }
 
 	    set_stage (4);
@@ -256,32 +264,28 @@ and correct the setting.</p>");
 	if (test_stage == 4)		// close connection
 	{
 	    if (Mode::test) {
-		set_result (`success);
+		show_result ();
 		mark_label (4);
 		return;
 	    }
 
 	    if (already_up)
 	    {
-		set_result (`success);
+		show_result ();
 	    }
 	    else
 	    {
 		// stop connection
 		y2milestone ("called Stop");
 		if (!Internet::Stop ())
-		    set_result (`failure);
-		else
-		    set_result (`success);
+		    test_result = `failure;
+		show_result ();
 	    }
 	    mark_label (4);
 	    return;
 	}
     }
 
-
-    integer test_stage = 0;
-    symbol test_result = `running;
 
     make_dialog ();
 
@@ -308,7 +312,8 @@ and correct the setting.</p>");
 	    if (test_stage != -1)
 	    {
 		Internet::Stop ();
-		set_result (`failure);
+		test_result = `failure;
+		show_result ();
 	    }
 	    continue;
 	}
@@ -323,7 +328,8 @@ and correct the setting.</p>");
 	    if (CallFunction (`inst_confirm_abort (`incomplete)))
 	    {
 		Internet::Stop ();
-		set_result (`failure);
+		test_result = `failure;
+		show_result ();
 		break;
 	    }
 	    continue;
