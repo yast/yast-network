@@ -57,14 +57,15 @@ global define boolean Write() {
     // FIXME: SUSEconfig missing if not in installation
 
     /* En- or disable vnc10 and vnchttpd10 in xinetd.d/vnc
-     * note: we make use of the "alias problem" */
+     */
     list<map> xinetd = (list<map>) SCR::Read(.etc.xinetd_conf.services);
-    foreach(map m, xinetd, {
+    xinetd = maplist (map m, xinetd, {
 	string s = m["service"]:"";
 	if (s == "vnc10" || s == "vnchttpd10") {
 	    m["changed"] = true;
 	    m["enabled"] = allow_administration;
 	}
+	return m;
     });
     SCR::Write(.etc.xinetd_conf.services, xinetd);
 
