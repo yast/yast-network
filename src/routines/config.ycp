@@ -287,5 +287,20 @@ global define boolean ConfigDelete(string type, integer device) ``{
     return true;
 }
 
+/**
+ * Check if any device is configured with DHCP
+ * @return true if any DHCP device is configured
+ */
+global define boolean AnyDHCPDevice() ``{
+    boolean ret = false;
+    maplist(`typ, `devsmap, CONFIG, ``{
+	maplist(`num, `devmap, devsmap, ``{
+	    if(devmap["BOOTPROTO"]:"" == "dhcp") ret = true;
+	});
+    });
+
+    return ret;
+}
+
 /* EOF */
 }

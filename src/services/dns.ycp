@@ -37,7 +37,9 @@ global define symbol DNSMainDialog() ``{
     list nameservers = DNS::nameservers;
     list searchlist = DNS::searchlist;
     boolean dhcp_hostname = DNS::dhcp_hostname;
+    boolean dhcp_resolv = DNS::dhcp_resolv;
 
+    // FIXME
     boolean has_dhcp = true;
 
     /* DNS dialog caption */
@@ -60,13 +62,13 @@ search domains (e.g., suse.com).</p>");
 
     /* DNS dialog helptext 4/6 */
     helptext = helptext + _("<p>If you are using DHCP to get an IP address,
-check whether to get a host name via DHCP or leave it unchanged.</p>");
+check whether to get a host name via DHCP or to set name servers and searched
+domains via DHCP.</p>");
 
     /* DNS dialog helptext 5/6 */
     helptext = helptext + _("<p>If you plan to use a dial-up Internet
 connection and have set up your connection to use dynamic DNS assignment,
-these values will be temporarily disabled during the connection.</p>
-");
+these values will be temporarily disabled during the connection.</p>");
 
     /* DNS dialog helptext 6/6 */
     /* FIXME: button label
@@ -92,8 +94,6 @@ your changes and <b>finish</b> the network configuration.</p>");
     s2 = select(searchlist, 1, "");
     s3 = select(searchlist, 2, "");
 
-    string space = " ";
-
     /* DNS dialog contents */
     term contents = `HSquash(`VBox(
 	`Frame(_("Host name and domain name"), `VBox(
@@ -104,31 +104,40 @@ your changes and <b>finish</b> the network configuration.</p>");
 		`TextEntry(`id(`domain), _("&Domain name"), domain)
 	    ),
 	    `Left(`CheckBox(`id(`dn), _("&Change host name via DHCP")))
-	    //`Left(`RadioButtonGroup(`id(`rb), `VBox(
-		//`CheckBox(`id(`dn), `opt(`notify), _("&Change host name via DHCP"))
-	    //)))
 	)),
 	`VSpacing(1),
+	`Frame(_("Name servers and domain search list"), `VBox(
 	`HBox(
-	    // common label for more text entries
-	    `Frame(_("Na&me server list"), `VBox(
-		`TextEntry(`id(`ns1), space, ns1),
-		`TextEntry(`id(`ns2), space, ns2),
-		`TextEntry(`id(`ns3), space, ns3)
-	    )),
-	    // common label for more text entries
-	    `Frame(_("Domain &search list"), `VBox(
-		`TextEntry(`id(`s1), space, s1),
-		`TextEntry(`id(`s2), space, s2),
-		`TextEntry(`id(`s3), space, s3)
-	    ))
-	)
+	    `VBox(
+		`TextEntry(`id(`ns1), _("Name server &1"), ns1),
+		`TextEntry(`id(`ns2), _("Name server &2"), ns2),
+		`TextEntry(`id(`ns3), _("Name server &3"), ns3)
+	    ),
+	    `VBox(
+		`TextEntry(`id(`s1), _("D&omain search 1"), s1),
+		`TextEntry(`id(`s2), _("Do&main search 2"), s2),
+		`TextEntry(`id(`s3), _("Dom&ain search 3"), s3)
+	    )
+	),
+	`Left(`CheckBox(`id(`dr), `opt(`notify), _("&Update name servers and search list via DHCP")))
+	))
     ));
 
     Wizard::SetContents(caption, contents, helptext, true, true);
 
     UI::ChangeWidget(`id(`dn), `Enabled, has_dhcp);
+    UI::ChangeWidget(`id(`dr), `Enabled, has_dhcp);
     if(has_dhcp) UI::ChangeWidget(`id(`dn), `Value, dhcp_hostname);
+    if(has_dhcp) UI::ChangeWidget(`id(`dr), `Value, dhcp_resolv);
+
+    UI::ChangeWidget(`id(`host), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-");
+    UI::ChangeWidget(`id(`domain), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.");
+    UI::ChangeWidget(`id(`s1), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.");
+    UI::ChangeWidget(`id(`s2), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.");
+    UI::ChangeWidget(`id(`s3), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.");
+    UI::ChangeWidget(`id(`ns1), `ValidChars, "0123456789.");
+    UI::ChangeWidget(`id(`ns2), `ValidChars, "0123456789.");
+    UI::ChangeWidget(`id(`ns3), `ValidChars, "0123456789.");
 
     // ugly hack for ISDN call (#6020)
     //if(ok_label) UI::ChangeWidget(`id(`next), `Label, _("&OK")));
@@ -150,6 +159,17 @@ your changes and <b>finish</b> the network configuration.</p>");
 	    dhcp_hostname = UI::QueryWidget(`id(`dn), `Value);
 	    UI::ChangeWidget(`id(`host), `Enabled, !dhcp_hostname);
 	    UI::ChangeWidget(`id(`domain), `Enabled, !dhcp_hostname);
+	    continue;
+	}
+	/* hostname via dhcp */
+	else if(ret == `dr) {
+	    dhcp_resolv = UI::QueryWidget(`id(`dr), `Value);
+	    UI::ChangeWidget(`id(`ns1), `Enabled, !dhcp_resolv);
+	    UI::ChangeWidget(`id(`ns2), `Enabled, !dhcp_resolv);
+	    UI::ChangeWidget(`id(`ns3), `Enabled, !dhcp_resolv);
+	    UI::ChangeWidget(`id(`s1), `Enabled, !dhcp_resolv);
+	    UI::ChangeWidget(`id(`s2), `Enabled, !dhcp_resolv);
+	    UI::ChangeWidget(`id(`s3), `Enabled, !dhcp_resolv);
 	    continue;
 	}
 	else if(ret == `back) {

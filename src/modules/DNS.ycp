@@ -26,6 +26,7 @@ global string domain = ""; //blum.cz";
 global list nameservers = []; //"ns1", "ns2"];
 global list searchlist = []; //"s1", "s2"];
 global boolean dhcp_hostname = false;
+global boolean dhcp_resolv = false;
 
 /**
  * Data was modified?
@@ -61,6 +62,7 @@ global define boolean Import(map settings) ``{
     nameservers = lookup(settings, "nameservers", []);
     searchlist = lookup(settings, "searchlist", []);
     dhcp_hostname = lookup(settings, "dhcp_hostname", false);
+    dhcp_resolv = lookup(settings, "dhcp_resolv", false);
     modified = true;
     return true;
 }
@@ -75,7 +77,8 @@ global define map Export() ``{
 	"domain"	: domain,
 	"nameservers"	: nameservers,
 	"searchlist"	: searchlist,
-	"dhcp_hostname"	: dhcp_hostname
+	"dhcp_hostname"	: dhcp_hostname,
+	"dhcp_resolv"	: dhcp_resolv,
     ];
 }
 
@@ -91,6 +94,13 @@ global define boolean Read() ``{
     if(dhcp == nil) dhcp = "";
     y2debug("dhcp=%1",dhcp);
     dhcp_hostname = (tolower(dhcp) == "yes") ? true : false;
+
+    /* set hostname via dhcp? */
+    dhcp = "";
+    dhcp = SCR::Read(.sysconfig.dhcp.DHCLIENT_MODIFY_RESOLV_CONF);
+    if(dhcp == nil) dhcp = "";
+    y2debug("dhcp=%1",dhcp);
+    dhcp_resolv = (tolower(dhcp) == "yes") ? true : false;
 
     /* install.inf from linuxrc */
     map install_inf = $[];
@@ -177,6 +187,7 @@ global define boolean Write() ``{
 
     /* set hostname via dhcp? */
     SCR::Write(.sysconfig.dhcp.DHCLIENT_SET_HOSTNAME, dhcp_hostname?"yes":"no");
+    SCR::Write(.sysconfig.dhcp.DHCLIENT_MODIFY_RESOLV_CONF, dhcp_resolv?"yes":"no");
     SCR::Write(.sysconfig.dhcp, nil);
 
     //if(!dhcp_hostname) {

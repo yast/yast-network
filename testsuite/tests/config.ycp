@@ -1,0 +1,20 @@
+{
+
+include "testsuite.ycp";
+include "network/config.ycp";
+
+map CONFIG = $[];
+
+DUMP("AnyDHCPDevice");
+CONFIG=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "dhcp" ]]];
+TEST(``(AnyDHCPDevice()), [], nil);
+CONFIG=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "" ]]];
+TEST(``(AnyDHCPDevice()), [], nil);
+CONFIG=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "static" ]]];
+TEST(``(AnyDHCPDevice()), [], nil);
+CONFIG=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "static" ], "1" : $[ "BOOTPROTO" : "dhcp"]]];
+TEST(``(AnyDHCPDevice()), [], nil);
+CONFIG=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "static" ]], "tr" : $["1" : $[ "BOOTPROTO" : "dhcp"]]];
+TEST(``(AnyDHCPDevice()), [], nil);
+
+}

@@ -78,6 +78,8 @@ global define symbol RoutingMainDialog() ``{
 
     /* Routing dialog contents */
     term contents = `HBox(`HSpacing(5),`VBox(`VStretch(),
+	//`Left(`CheckBox(`id(`enabled), _("Enable IP &forwarding"))),
+	//`VSpacing(1),
 	`ComboBox(`id(`gw), `opt(`editable, `hstretch), _("Default &gateway"), [ defgw ]),
 	`VSpacing(1),
 	`Frame(_("Routing table"),

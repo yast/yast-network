@@ -1,4 +1,4 @@
 Dump	Import
 Return	true
 Dump	Export
-Return	$["dns":$["dhcp_hostname":false, "domain":"suse.com", "hostname":"nashif", "nameservers":["10.0.0.1"], "searchlist":["suse.com"]], "interfaces":[$["BOOTPROTO":"static", "BROADCAST":"10.10.1.255", "IPADDR":"10.10.1.1", "NETMASK":"255.255.255.0", "NETWORK":"10.10.1.0", "STARTMODE":"onboot", "UNIQUE":"", "device":"eth0", "module":"", "options":""]], "routing":[$["destination":"default", "device":"", "gateway":"10.10.0.8", "netmask":"0.0.0.0"]]]
+Return	$["dns":$["dhcp_hostname":false, "dhcp_resolv":false, "domain":"suse.com", "hostname":"nashif", "nameservers":["10.0.0.1"], "searchlist":["suse.com"]], "interfaces":[$["BOOTPROTO":"static", "BROADCAST":"10.10.1.255", "IPADDR":"10.10.1.1", "NETMASK":"255.255.255.0", "NETWORK":"10.10.1.0", "STARTMODE":"onboot", "UNIQUE":"", "device":"eth0", "module":"", "options":""]], "routing":[$["destination":"default", "device":"", "gateway":"10.10.0.8", "netmask":"0.0.0.0"]]]

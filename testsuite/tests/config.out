@@ -1,0 +1,6 @@
+Dump	AnyDHCPDevice
+Return	true
+Return	false
+Return	false
+Return	true
+Return	true
