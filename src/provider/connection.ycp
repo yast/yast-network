@@ -102,8 +102,9 @@ option.</p>");
 
     helptext = helptext +
     /* Connection dialog help 6/8 */
-_("<p>Selecting <b>Activate Firewall</b> blocks all incoming
-connections. Choosing this option makes dial-up connections
+_("<p>Selecting <b>External Firewall Interface</b> activates the firewall
+and sets this interface as external.
+Choosing this option makes dial-up connections
 to the Internet safe from external attacks.</p>") +
 
     /* Connection dialog help 7/8 */
@@ -129,7 +130,8 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
     });
 
     /* Checkbox label */
-    term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("Activate Fire&wall"), FirewallChecked));
+    // this is an external interface protected by the firewall
+    term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("External Fire&wall Interface"), FirewallChecked));
     if(type == "isdn") FirewallCheckbox = `VSpacing(0);
 
     term StupidMode = `VSpacing(0.1);

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Sep 14 16:36:23 CEST 2004 - mvidner@suse.cz
+
+- Firewall for network interfaces: use FW_DEV_EXT instead of
+  personal-firewall (#33649).
+
+-------------------------------------------------------------------
 Mon Sep 13 15:44:18 CEST 2004 - mvidner@suse.cz
 
 - Added Lan::AutoPackages for autoinst mode (nashif).

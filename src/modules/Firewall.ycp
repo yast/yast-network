@@ -6,8 +6,8 @@
  *
  * $Id$
  *
- * Uses SuSEfirewall2.rpm. Only operates on
- * .sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS.
+ * Uses SuSEfirewall2.rpm.
+ * Rewritten to operate on FW_DEV_EXT (#33649).
  * See also the standalone module yast2-firewall.rpm, SuSEFirewall2.ycp
  * to which we eventually should migrate.
  */
@@ -35,16 +35,14 @@ list<string> devices_init = [];
 global define boolean Read() {
 
     /* read firewalled devices */
-    string devs = "";
-    if(SCR::Read(.target.size, "/etc/sysconfig/personal-firewall") > 0)
-	devs = (string) SCR::Read(.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS);
+    string devs = (string) SCR::Read(.sysconfig.SuSEfirewall2.FW_DEV_EXT);
     y2debug("devs=%1", devs);
     if(devs == nil) return false;
     if(devs == "") return true;
 
     devices = splitstring(devs, " ");
     y2debug("devices=%1", devices);
-    devices_init = (list<string>) eval(devices);
+    devices_init = devices;
 
     return true;
 }
@@ -68,8 +66,8 @@ global define boolean Write() {
     devices = filter(string v, devices, { return (v != "nothing"); });
     y2debug("devices=%1", devices);
     if(size(devices) > 0) devs = mergestring(devices, " ");
-    SCR::Write(.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS, devs);
-    SCR::Write(.sysconfig.personal-firewall, nil);
+    SCR::Write(.sysconfig.SuSEfirewall2.FW_DEV_EXT, devs);
+    SCR::Write(.sysconfig.SuSEfirewall2, nil);
 
     /* Setup init scripts */
     if(size(devices) > 0) {
@@ -87,29 +85,6 @@ global define boolean Write() {
     }
 
     return true;
-}
-
-/**
- * Get all the firewall configuration from a map.
- * When called by *_auto (preparing autoinstallation data)
- * the list may be empty.
- * @param settings autoinstallation settings
- * @return true if success
- */
-global define boolean Import(list<string> settings) {
-    if(size(settings) == 0)
-	return true;
-
-    devices = (list<string>) eval(settings);
-    return true;
-}
-
-/**
- * Dump the firewall settings to a list, for autoinstallation use.
- * @return autoinstallation settings
- */
-global define list Export() {
-    return (list) eval(devices);
 }
 
 /**

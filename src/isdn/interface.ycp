@@ -198,18 +198,19 @@ define any interface_dialog() ``{
     boolean chargeHUP = lookup(ISDN::interface, "CHARGEHUP", "on") == "on";
     boolean multilink = lookup(ISDN::interface, "MULTILINK", "no") == "yes";
     boolean firewall = lookup(ISDN::interface, "FIREWALL", "yes") == "yes";
-    string fwqm = lookup(ISDN::interface, "fwqm", "");
-    boolean FirewallQuickmode = true;
+    // temp var while we're in the detailed dialog
+    boolean efwi = lookup(ISDN::interface, "efwi", nil);
+    boolean ExternalFwInterface = true;
     string devstr = sformat("%1%2", syncppp ? "ippp" : "isdn", ISDN::device);
 
-    if (fwqm == "no")
-	FirewallQuickmode = false;
-    if (ISDN::operation  == `editif && fwqm == "") {
-	FirewallQuickmode = Firewall::Query(devstr);
+    if (efwi == false)
+	ExternalFwInterface = false;
+    if (ISDN::operation  == `editif && efwi == nil) {
+	ExternalFwInterface = Firewall::Query(devstr);
     }
-    if (fwqm != "")
-	ISDN::interface = remove(ISDN::interface, "fwqm");
-    y2debug("FirewallQuickmode=%1",FirewallQuickmode);
+    if (efwi != nil)
+	ISDN::interface = remove(ISDN::interface, "efwi");
+    y2debug("ExternalFwInterface=%1",ExternalFwInterface);
 
     /* DIALOG TEXTS */
     string fcaption = ISDN::operation == `editif ?
@@ -265,10 +266,10 @@ remove a channel.
 
     helptext = helptext +
     // help text 5/5
-_("<p>Selecting <b>Firewall</b> restarts the firewall if a connection is established.
-<b>Firewall QuickMode</b> enables a simple firewall with only a few options for this interface.
-If you have configured your own firewall in /etc/sysconfig/SuSEfirewall2, you should uncheck
-this box.
+_("<p>Selecting
+<b>External Firewall Interface</b> activates the firewall
+and sets this interface as external.
+<b>Restart Firewall</b> restarts the firewall if a connection is established.
 </p>");
 
 
@@ -287,13 +288,13 @@ this box.
 
     y2debug("device %1", devstr);
 
-    /* CheckBox label */
     term FirewallCheckbox = `HBox(
 	`HWeight (1,
-	    `Left(`CheckBox(`id(`Firewall), _("Activate fire&wall..."), firewall))),
+	    `Left(`CheckBox(`id(`FirewallExt), _("External Fire&wall Interface"), ExternalFwInterface))),
 	`HSpacing (1),
 	`HWeight (1,
-	    `Left(`CheckBox(`id(`FirewallQuick), _("Firewall &QuickMode"), FirewallQuickmode)))
+		  /* CheckBox label */
+	    `Left(`CheckBox(`id(`Firewall), _("Restart Fire&wall"), firewall)))
     );
 
     list<map> widgets = CWM::CreateWidgets (
@@ -407,8 +408,8 @@ this box.
 	/* Better update allways, maybe somebody changed it */
 
 	firewall = (boolean) UI::QueryWidget(`id(`Firewall), `Value);
-	FirewallQuickmode = (boolean) UI::QueryWidget(`id(`FirewallQuick), `Value);
-	Firewall::Change(devstr, FirewallQuickmode);
+	ExternalFwInterface = (boolean) UI::QueryWidget(`id(`FirewallExt), `Value);
+	Firewall::Change(devstr, ExternalFwInterface);
 
 	/* UPDATE VARIABLES */
 	ISDN::interface = union(ISDN::interface, $[
@@ -420,7 +421,7 @@ this box.
 	    "FIREWALL"		: firewall ? "yes" : "no",
 	]);
 	if (ret == `detail) //temporary
-	    ISDN::interface = add(ISDN::interface, "fwqm", FirewallQuickmode ? "yes" : "no");
+	    ISDN::interface = add(ISDN::interface, "efwi", ExternalFwInterface);
 	if (ISDN::operation  == `editif)
 	    ISDN::provider_file = (string) UI::QueryWidget(`id(`prov), `Value);
 

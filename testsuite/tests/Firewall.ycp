@@ -75,8 +75,8 @@ map READ = $[
 	]
     ],
     "sysconfig" : $[
-	"personal-firewall" : $[
-	    "REJECT_ALL_INCOMING_CONNECTIONS" : "eth1 ippp0",
+	"SuSEfirewall2" : $[
+	    "FW_DEV_EXT" : "eth1 ippp0",
 	]
     ],
     "probe" : $[
