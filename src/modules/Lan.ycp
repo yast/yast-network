@@ -31,6 +31,7 @@ import "Summary";
 include "network/config.ycp";
 include "network/hardware.ycp";
 include "network/routines.ycp";
+include "network/summary.ycp";
 include "network/runtime.ycp";
 include "network/ip.ycp";
 
@@ -128,7 +129,7 @@ global define boolean Read() ``{
 
     if(Abort()) return false;
     ProgressNextStage(_("Detecting network cards"));
-    ReadHardware();
+    ReadHardware("netcard");
     sleep(sl);
 
     if(Abort()) return false;
@@ -167,7 +168,7 @@ global define boolean Read() ``{
 /**
  * Only write configuration without starting any init scripts and SuSEconfig
  * @return true on success
- */ 
+ */
 
 global define boolean WriteOnly()``{
        WriteConfig();
@@ -260,10 +261,10 @@ global define boolean Import(map settings) ``{
 	    eth=add(eth,substring(device,3), if_data);
 	} else if (issubstring(device, "tr")) {
 	    token=add(token,substring(device,2), if_data);
-	}	    	    
+	}
     });
-    
-    CONFIG=$["eth":eth,"tr":token];    
+
+    CONFIG=$["eth":eth,"tr":token];
     DNS::Import(settings["dns"]:$[]);
     Routing::Import(settings);
     return true;
@@ -281,7 +282,7 @@ global define map Export() ``{
 	    device_data = add(device_data,"device", device + device_nr);
 	    return(device_data);
 	});
-	autoinst_cfg=union( autoinst_cfg, interfaces);	
+	autoinst_cfg=union( autoinst_cfg, interfaces);
     });
     return ($[
 	      "interfaces":autoinst_cfg,
@@ -292,49 +293,16 @@ global define map Export() ``{
 }
 
 /**
- * Build a textual summary and a list of unconfigured cards
+ * Create a textual summary and a list of unconfigured cards
  * @return summary of the current configuration
  */
-global define list Summary() ``{
-
-    list configured = [];
-    list unconfigured = [];
-
-    maplist(`d, HARDWARE, ``{
-	string hwname = lookup(d, "name", _("Unknown network card"));
-	string ty = lookup(d, "type", "eth");
-	string un = lookup(d, "unique", nil);
-	string status = IsConfigured(ty, un);
-	y2debug("status(%1)=%2",status,d);
-	if(status != "")
-	    change(configured, Summary::Device(hwname, status));
-	else
-	    change(unconfigured, d);
-    });
-
-    list allhw = maplist(`d, HARDWARE, ``(lookup(d, "unique", nil)));
-    maplist(`s, OtherConfigured(allhw), ``{
-	change(configured, Summary::Device(_("Unknown network card"), s));
-    });
-
-    string summary = "";
-    if(size(configured) > 0)
-	summary = Summary::AddHeader("", _("Already configured network cards:")) +
-	    Summary::DevicesList(configured);
-    else
-	summary = Summary::AddHeader("", _("No configured network card."));
-
-    integer selected = lookup(select(unconfigured, 0, $[]), "num", 0);
-    list devs = hwlist2items(unconfigured, selected);
-    if(size(devs)==0)
-	change(devs, `item(`id(`other), _("Other (not detected)"), true));
-    else
-	change(devs, `item(`id(`other), _("Other (not detected)")));
-
-    return [ devs, summary ];
+global define list Summary(boolean split) ``{
+    return BuildSummary(split);
 }
 
 /**
+ * Create an overview table with all configured cards
+ * @return table items
  */
 global define list Overview() ``{
     return merge(CreateOverview("eth"), CreateOverview("tr"));
@@ -369,14 +337,17 @@ global define list FreeDevices(string type) ``{
  * @param type device type
  * @return device if configured, empty string if not
  */
+/* FIXME: remove (not used anywhere)
 global define string Configured(string type, string unique) ``{
     return IsConfigured(type, unique);
 }
+*/
 
 /**
  * Select the given hardware item or clean up structures
  * @param which item to be chosen
  */
+// FIXME: -> routines/hardware.ycp (?)
 global define void SelectHW(integer which) ``{
     map sel = $[];
 

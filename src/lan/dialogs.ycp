@@ -78,9 +78,9 @@ global define symbol SummaryDialog() ``{
 
     string caption = _("Network cards configuration");
 
-    list summary = Lan::Summary();
-    list unconfigured = select(summary, 0, []);
-    string configured = select(summary, 1, "");
+    list summary = Lan::Summary(true);
+    list unconfigured = select(summary, 1, []);
+    string configured = select(summary, 0, "");
 
     y2debug("unconfigured=%1",unconfigured);
     term contents = Wizard_hw::DetectedContent(_("Network cards to configure"),

@@ -22,19 +22,23 @@
 
 textdomain "network";
 
+import "ISDN";
+import "Summary";
+
 /* The main () */
 y2milestone("ISDN summary started");
 y2milestone("----------------------------------------");
 
 include "ui/summary.ycp";
 
-/* main ui function */
-//any ret = LanSequence();
-any ret = [];
-y2debug("ret == %1", ret);
+Progress::off();
+ISDN::Read();
+list sum = ISDN::Summary(false);
+string ret = select(sum, 0, "");
+Progress::on();
 
 /* Finish */
 y2milestone("ISDN summary finished");
-return summaryDevicesList(ret);
+return ret;
 
 }

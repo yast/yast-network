@@ -22,27 +22,68 @@ textdomain "network";
 
 /**
  * Read HW information
+ * @param hwtype type of devices to read (netcard|modem|isdn)
  * @return true if success
  */
-global define boolean ReadHardware() ``{
+global define boolean ReadHardware(string hwtype) ``{
     HARDWARE = [];
 
     integer num = 0;
-    list allcards = SCR::Read(.probe.netdev);
+    list paths = [];
+    list allcards = [];
 
+    map hwtypes = $[
+	"isdn" : .probe.isdn,
+	"modem" : .probe.modem,
+	"netcard" : .probe.netdev
+    ];
+
+    /* read the corresponding hardware */
+    if(haskey(hwtypes, hwtype))
+	allcards = SCR::Read(lookup(hwtypes, hwtype, nil));
+    else if(hwtype == "all")
+	maplist(`v, mapvalues(hwtypes), ``{
+	    allcards = merge(allcards, SCR::Read(v));
+	});
+    else {
+	y2error("unknown hwtype: %1", hwtype);
+	return false;
+    }
+
+    /* fill in the hardware data */
     maplist (`card, allcards, ``{
 	map one = $[];
+	string controller = ControllerType(card);
 	change(one, "name", DeviceName(card));
-	list drivers = lookup(card, "drivers", []);
-	/* FIXME: error if no driver found */
-	map driver = select(drivers, 0, $[]);
-	list modules = select(lookup(driver, "modules", []), 0, []);
-	change(one, "module", select(modules, 0, ""));
-	change(one, "options", select(modules, 1, ""));
+	change(one, "type", controller);
 	change(one, "unique", lookup(card, "unique_key", ""));
-	change(one, "type", ControllerType(card));
 	change(one, "num", num);
-	y2debug("found card: %1", one);
+
+	/* modem */
+	if(controller == "modem") {
+	    map resource = lookup(card, "resource", []);
+	    change(one, "dev_name", lookup(card, "dev_name", ""));
+	    change(one, "speed", lookup(select(lookup(resource, "baud", []), 0, $[]), "speed", ""));
+	    change(one, "init1", lookup(select(lookup(resource, "init_strings", []),0,$[]), "init1", ""));
+	    change(one, "init2", lookup(select(lookup(resource, "init_strings", []),0,$[]), "init2", ""));
+	    change(one, "ppd_options", lookup(lookup(resource, "ppd_options", $[]), "option", ""));
+	}
+	/* isdn card */
+	else if(controller == "isdn") {
+	    /* FIXME: isdn data */
+	}
+	/* network cards */
+	/* FIXME treat the rest as a network card */
+	else {
+	    list drivers = lookup(card, "drivers", []);
+	    /* FIXME: error if no driver found */
+	    map driver = select(drivers, 0, $[]);
+	    list modules = select(lookup(driver, "modules", []), 0, []);
+	    change(one, "module", select(modules, 0, ""));
+	    change(one, "options", select(modules, 1, ""));
+	}
+
+	y2debug("found device: %1", one);
 	change(HARDWARE, one);
 	num = num + 1;
     });
@@ -117,7 +158,7 @@ global define string ControllerType(map hwdevice) ``{
 	return "isdn";
 
     /* Nothing was found, default is eth */
-    return "eth";
+    return "unknown";
 }
 
 }

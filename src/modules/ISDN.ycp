@@ -28,6 +28,7 @@ import "Summary";
 include "network/config.ycp";
 include "network/hardware.ycp";
 include "network/routines.ycp";
+include "network/summary.ycp";
 include "network/ip.ycp";
 
 /*-------------*/
@@ -96,6 +97,15 @@ global string callback = "off";
 map CONFIG = $[];
 
 /**
+ * Hardware information
+ * [
+ *     "name"	: "Digital DecCHIP 1234",
+ *     "unique"	: "uihd98723hodi2hgday8",
+ * ]
+ */
+list HARDWARE = [];
+
+/**
  * Abort function
  * return boolean return true if abort
  */
@@ -124,6 +134,8 @@ global define boolean Modified() ``{
 };
 
 global define boolean Read() ``{
+    ReadHardware("isdn");
+    ReadConfig("isdn");
     return true;
 }
 
@@ -159,8 +171,8 @@ global define map Export() ``{
  * Build a textual summary and a list of unconfigured cards
  * @return summary of the current configuration
  */
-global define list Summary() ``{
-    return [ [], "" ];
+global define list Summary(boolean split) ``{
+    return BuildSummary(split);
 }
 
 /**

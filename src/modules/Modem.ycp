@@ -28,6 +28,7 @@ import "Summary";
 include "network/config.ycp";
 include "network/hardware.ycp";
 include "network/routines.ycp";
+include "network/summary.ycp";
 include "network/ip.ycp";
 
 global string Name = "xx";
@@ -63,6 +64,15 @@ global string IdleSeconds = "hh";
 map CONFIG = $[];
 
 /**
+ * Hardware information
+ * [
+ *     "name"	: "Digital DecCHIP 1234",
+ *     "unique"	: "uihd98723hodi2hgday8",
+ * ]
+ */
+list HARDWARE = [];
+
+/**
  * Abort function
  * return boolean return true if abort
  */
@@ -91,6 +101,8 @@ global define boolean Modified() ``{
 };
 
 global define boolean Read() ``{
+    ReadHardware("modem");
+    ReadConfig("ppp");
     return true;
 }
 
@@ -126,51 +138,14 @@ global define map Export() ``{
  * Build a textual summary and a list of unconfigured cards
  * @return summary of the current configuration
  */
-global define list Summary() ``{
-
-    return [ [], "" ];
-
-    list configured = [];
-    list unconfigured = [];
-
-    maplist(`d, HARDWARE, ``{
-	string hwname = lookup(d, "name", _("Unknown network card"));
-	string ty = lookup(d, "type", "eth");
-	string un = lookup(d, "unique", nil);
-	string status = IsConfigured(ty, un);
-	y2debug("status(%1)=%2",status,d);
-	if(status != "")
-	    change(configured, summaryDevice(hwname, status));
-	else
-	    change(unconfigured, d);
-    });
-
-    list allhw = maplist(`d, HARDWARE, ``(lookup(d, "unique", nil)));
-    maplist(`s, OtherConfigured(allhw), ``{
-	change(configured, summaryDevice(_("Unknown network card"), s));
-    });
-
-    string summary = "";
-    if(size(configured) > 0)
-	summary = summaryAddHeader("", _("Already configured network cards:")) +
-	    summaryDevicesList(configured);
-    else
-	summary = summaryAddHeader("", _("No configured network card."));
-
-    integer selected = lookup(select(unconfigured, 0, $[]), "num", 0);
-    list devs = hwlist2items(unconfigured, selected);
-    if(size(devs)==0)
-	change(devs, `item(`id(`other), _("Other (not detected)"), true));
-    else
-	change(devs, `item(`id(`other), _("Other (not detected)")));
-
-    return [ devs, summary ];
+global define list Summary(boolean split) ``{
+    return BuildSummary(split);
 }
 
 /**
  */
 global define list Overview() ``{
-    return CreateOverview("modem");
+    return CreateOverview("ppp");
 }
 
 /* EOF */

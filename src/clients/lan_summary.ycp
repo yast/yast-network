@@ -22,19 +22,21 @@
 
 textdomain "network";
 
+import "Lan";
+import "Summary";
+
 /* The main () */
 y2milestone("Lan summary started");
 y2milestone("----------------------------------------");
 
-include "ui/summary.ycp";
-
-/* main ui function */
-//any ret = LanSequence();
-any ret = [];
-y2debug("ret == %1", ret);
+Progress::off();
+Lan::Read();
+list sum = Lan::Summary(false);
+string ret = select(sum, 0, "");
+Progress::on();
 
 /* Finish */
 y2milestone("Lan summary finished");
-return summaryDevicesList(ret);
+return ret;
 
 }

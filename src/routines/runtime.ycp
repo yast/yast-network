@@ -21,7 +21,7 @@
  * Read status information
  * @return true if success
  */
-define boolean ReadStatus() ``{
+global define boolean ReadStatus() ``{
     return true;
 }
 
@@ -29,7 +29,7 @@ define boolean ReadStatus() ``{
  * Run SuSEconfig
  * @return true if success
  */
-define boolean RunSuSEconfig() ``{
+global define boolean RunSuSEconfig() ``{
     return true;
 }
 
