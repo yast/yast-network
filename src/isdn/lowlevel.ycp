@@ -445,6 +445,7 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 
 	    CurrentCard = select(ISDN::ISDN_Devices, CurrentCardIndex, $[]);
 	    change(CurrentCard, "sel_drv", CurrentDrvIndex);
+	    y2debug("CurrentCard %1", CurrentCard);
 	    CardDrivers = lookup(CurrentCard, "driver", []);
 	    Default_TYPE = get_i4ltype(CurrentCard);
 	    Default_SUBTYPE = get_i4lsubtype(CurrentCard);
@@ -458,9 +459,22 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 		"AREACODE"	: areacode,
 		"DIALPREFIX"	: dialprefix,
 	    ]);
+	    // check and maybe install missing packages
+	    list pkgs = [];
+
+// FIXME workaround: not needed if yast2-core is udated to deliver need_pkg as list
+	    if (is(lookup(select(CardDrivers, CurrentDrvIndex, $[]), "need_pkg", []), string))
+		pkgs = splitstring (lookup(select(CardDrivers, CurrentDrvIndex, $[]), "need_pkg", ""), ",");
+	    else
+		pkgs = lookup(select(CardDrivers, CurrentDrvIndex, $[]), "need_pkg", []);
+	    y2debug("pkgs: %1", pkgs);
+	    if (pkgs != nil && pkgs!=[]) {
+		symbol retp = Packages(pkgs);
+		y2debug("Packages returns %1", retp);
+// TODO warning message if packages are not installed
+	    } 
 	    // if it is a DSL capable card
 	    feature = lookup(CurrentCard, "features", 0);
-	    y2warning("CurrentCard %1", CurrentCard);
 	    if ((feature & 0x4) == 0x4)
 		ISDN::have_dsl = true;
 	    if ((Default_TYPE == 8002) || (Default_TYPE == 8003)) {
