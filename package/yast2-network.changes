@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jan 27 17:23:09 CET 2005 - mvidner@suse.cz
+
+- hwdown and hwup changed devices (#44794).
+- Added SGI Gigabit Ethernet (#48973).
+
+-------------------------------------------------------------------
 Thu Jan 27 14:32:53 CET 2005 - mvidner@suse.cz
 
 - Improved and unified labels and helps for STARTMODE (#50095).

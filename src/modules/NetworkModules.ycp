@@ -174,7 +174,26 @@ define map FilterNOT(map<string,map> modules, string devregex) {
 }
 
 /**
+ * One-way difference of two maps. Take away the identical items.
+ * @param left  left map
+ * @param right right map
+ * @return the keys of left which are not in right or whose values are
+ * not equal in the two maps.
+ */
+define list MapMinus (map left, map right) {
+    list ret = [];
+    foreach (any lkey, any lval, left, {
+	if (!haskey (right, lkey) || lval != right[lkey]:nil)
+	{
+	    ret = add (ret, lkey);
+	}
+    });
+    return ret;
+}
+
+/**
  * Write modules to files
+ * And also do hwdown before and hwup after, on changed ones (#44794)
  * @param devregex regular expression for the module type
  * @return true if success
  * @example NetworkModule::Write("eth|tr");
@@ -195,6 +214,14 @@ global define boolean Write(string devregex) {
 	y2milestone("No changes to %1 modules -> nothing to write", devregex);
 	return true;
     }
+
+    /* modules which have to be brought down
+       because they have been deleted or changed */
+    list todown = MapMinus (OriginalMods, Mods);
+    foreach (string down, (list<string>)todown, {
+	y2milestone ("hwdown %1", down);
+	SCR::Execute (.target.bash, "/sbin/hwdown " + down);
+    });
 
     /* remove deleted modules */
     y2milestone("Deleted=%1", Deleted);
@@ -223,6 +250,14 @@ global define boolean Write(string devregex) {
 
     /* Finish him */
     SCR::Write(.sysconfig.hardware, nil);
+
+    /* modules which have to be brought up
+       because they have been added or changed */
+    list toup = MapMinus (Mods, OriginalMods);
+    foreach (string up, (list<string>)toup, {
+	y2milestone ("hwup %1", up);
+	SCR::Execute (.target.bash, "/sbin/hwup " + up);
+    });
 
     return true;
 }
