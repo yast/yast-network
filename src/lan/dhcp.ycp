@@ -33,14 +33,16 @@ global define symbol DHCPDialog() ``{
     string help = _("<p>Configure the <b>DHCP Client Options</b> here.</p>") +
 
     /* DHCP dialog help 2/8 */
-    _("<p>
-<b>Request Broadcast Response</b> ...
-</p>") +
+    _("<p>The <b>Request Broadcast Response</b> option causes the DHCP client
+to ask the server to always broadcast its responses. You may need this e.g. if
+your machine is a mobile client moving between different networks.</p>") +
 
     /* DHCP dialog help 3/8 */
-    _("<p>
-<b>DHCP Client Identifier</b> ...
-</p>");
+    _("<p>The <b>DHCP Client Identifier</b>, if left empty, defaults to
+the hardware address of the network interface. It must be different for each
+DHCP client on a single network. You must therefore specify a unique free-form
+identifier here if you have several (virtual) machines using the same network
+interface and thus the same hardware address.</p>");
 
     /* S/390 dialog contents */
     term contents = `HBox(
