@@ -476,10 +476,10 @@ global define map Export() {
 
 /**
  * Select the hardware component
- * @param which index of the component
+ * @param hw the component
  */
-global define void SelectHW(integer which) {
-    hw = SelectHardware(Hardware, which);
+void SelectHWMap (map hw) {
+    SelectHardwareMap (hw)
     unique = hw["unique"]:"";
 
     if(hotplug == "") {
@@ -522,6 +522,15 @@ global define void SelectHW(integer which) {
     y2security("hw=%1", hw);
     y2milestone("device=%1", device);
 }
+
+/**
+ * Select the hardware component
+ * @param which index of the component
+ */
+global define void SelectHW(integer which) {
+    SelectHWMap (FindHardware (Hardware, which));
+}
+
 
 /**
  * Create a textual summary and a list of unconfigured devices
@@ -936,67 +945,48 @@ global define boolean Propose() {
     /* Some HW found -> use it for proposal */
     if(size(Hardware) > 0) {
 
-	integer i = 0;
-	integer tosel = -1;
+	map tosel = nil;
 
 	/* Select the one from install.inf with the same MAC */
 	string hwaddr = InstallInf["hwaddr"]:"";
 	if(hwaddr != nil && hwaddr != "") {
-	    i = 0;
-	    maplist(map h, Hardware, {
-		if(h["mac"]:"" == hwaddr)
-		    if(tosel == -1) tosel = i;
-		i = i + 1;
-	    });
+	    tosel = find (map h, Hardware, ``( h["mac"]:"" == hwaddr ));
 	}
 
 	/* Select the one from install.inf with the same module */
-	if(tosel == -1) {
+	if (tosel == nil) {
 	    string infmodule = InstallInf["module"]:"";
 	    if(infmodule != nil && infmodule != "") {
-		i = 0;
-		maplist(map h, Hardware, {
-		    if(h["module"]:"" == infmodule)
-			if(tosel == -1) tosel = i;
-		    i = i + 1;
-		});
+		tosel = find (map h, Hardware, ``( h["module"]:"" == infmodule ));
 	    }
 	}
 
 	/* No install.inf driver -> select the first active */
-	if(tosel == -1) {
-	    i = 0;
-	    maplist(map h, Hardware, {
-		if(h["active"]:false == true)
-		    if(tosel == -1) tosel = i;
-		i = i + 1;
-	    });
+	if (tosel == nil) {
+	    tosel = find (map h, Hardware, ``( 
+			      h["active"]:false
+			      ));
 	}
 
 	/* No active driver -> select the first with a driver */
-	if(tosel == -1) {
+	if (tosel == nil) {
 	    y2milestone("No active driver found, trying further.");
-	    i = 0;
-	    maplist(map h, Hardware, {
-		if(h["module"]:"" != "")
-		    if(tosel == -1) {
-			y2milestone("Using driver: %1", h);
-			tosel = i;
-		    }
-		i = i + 1;
-	    });
+	    tosel = find (map h, Hardware, ``( 
+			      h["module"]:"" != ""
+			      && y2milestone("Using driver: %1", h) == nil
+			      ));
 	}
 
 	/* No active driver or no card with a driver -> select the first */
-	if(tosel == -1) {
+	if(tosel == nil) {
 	    y2milestone("No card with a driver found, selecting the first one");
-	    tosel = 0;
+	    tosel = Hardware[0]:$[];
 	}
 
 	y2debug("Hardware=%1", Hardware);
 	y2milestone("tosel=%1", tosel);
 
-	SelectHW(tosel);
+	SelectHWMap(tosel);
     }
     /* Nothing detected -> use InstallInf */
     else if(size(InstallInf) > 0) {
