@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Aug 20 12:09:03 CEST 2002 - arvin@suse.de
+
+- don't stop/start network during writing of proposal on s390
+
+-------------------------------------------------------------------
 Mon Aug 19 17:46:07 CEST 2002 - kkeil@suse.de
 
 - display long provider name for isdn overview (#17564)
@@ -19,7 +24,7 @@ Mon Aug 19 14:07:47 CEST 2002 - mvidner@suse.cz
 Fri Aug 16 18:48:13 CEST 2002 - jsuchome@suse.cz
 
 - Providers: Added simple check for user name for T-Online provider
-  (#16756, #6244) 
+  (#16756, #6244)
 
 -------------------------------------------------------------------
 Fri Aug 16 09:55:20 CEST 2002 - mvidner@suse.cz
