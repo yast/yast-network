@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jan 28 17:49:15 EST 2002 - nashif@suse.de
+
+- Adapted for auto-installation
+- 2.5.8
+
+-------------------------------------------------------------------
 Mon Jan 28 16:21:12 CET 2002 - msvec@suse.cz
 
 - fixed default route writing
