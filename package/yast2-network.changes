@@ -1,3 +1,7 @@
+-------------------------------------------------------------------
+Mon Feb  3 16:40:45 CET 2003 - msvec@suse.cz
+
+- P2P tunneling protocol
 - ISDN: support for AVM T1B version
 - Capi-ADSL PPP mode
 - proofread texts
