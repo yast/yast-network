@@ -17,8 +17,8 @@ import "Firewall";
 import "Lan";
 import "Wizard";
 
-include "ui/common_messages.ycp";
-include "ui/common_popups.ycp";
+import "Label";
+import "Popup";
 
 include "network/ip.ycp";
 include "network/runtime.ycp";
@@ -165,7 +165,7 @@ be appropriate for dial-on-demand connections.</p>");
     );
 
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     UI::ChangeWidget(`id(`vpivci), `Enabled, pppmode == "pppoatm");
     UI::ChangeWidget(`id(`interface), `Enabled, pppmode == "pppoe");
@@ -189,13 +189,13 @@ be appropriate for dial-on-demand connections.</p>");
 	    vpivci = UI::QueryWidget(`id(`vpivci), `Value);
 	    if(pppmode == "pppoatm" && vpivci == "") {
 		/* Popup text */
-		UI::ErrorPopup(_("Enter the VPI/VCI."));
+		Popup::Error(_("Enter the VPI/VCI."));
 		UI::SetFocus(`id(`vpivci));
 		continue;
 	    }
 	    if(pppmode == "pppoe" && interface == "") {
 		/* Popup text */
-		UI::ErrorPopup(_("At least one ethernet interface must be configured."));
+		Popup::Error(_("At least one ethernet interface must be configured."));
 		UI::SetFocus(`id(`lan));
 		continue;
 	    }

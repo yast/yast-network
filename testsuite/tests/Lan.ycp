@@ -5,6 +5,7 @@ include "testsuite.ycp";
 map READ = $[
     "target" : $[
 	"size" : 1,
+	"tmpdir" : "/tmp",
 	"string" : "Blah\n",
     ],
     "init" : $[

@@ -19,10 +19,11 @@
 
 textdomain "network";
 
-import "Wizard";
 import "ISDN";
+import "Label";
+import "Popup";
+import "Wizard";
 
-include "ui/common_popups.ycp";
 include "network/isdn/routines.ycp";
 
 /**
@@ -381,7 +382,7 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 
     /* DIALOG PREPARE */
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), OKButtonLabel());
+	    Label::BackButton(), Label::OKButton());
 
     if (1>=size(DrvList))
 	UI::ChangeWidget(`id(`DrvBox), `Enabled, false);
@@ -404,7 +405,7 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 	/* abort? */
 	if(ret == `abort || ret == `cancel)
 	{
-	    if (UI::ReallyAbortPopup(true))
+	    if (Popup::ReallyAbort(true))
 	    {
 		break;
 	    }
@@ -514,8 +515,8 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 	    if ((feature & 0x4) == 0x4)
 		ISDN::have_dsl = true;
 	    if ((Default_TYPE == 8002) || (Default_TYPE == 8003)) {
-// multiline YesNoPopup text
-		if (! UI::YesNoPopup (_(" WARNING !!!\n
+// multiline Popup::YesNo text
+		if (! Popup::YesNo (_(" WARNING !!!\n
 You have selected an binary only driver.
 This driver will provide you additional features
 like analog modulation, full CAPI 2.0 and Fax G3

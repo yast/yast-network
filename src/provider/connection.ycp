@@ -12,13 +12,14 @@
 textdomain "network";
 
 import "DSL";
+import "Firewall";
 import "Modem";
 import "ISDN";
-import "Firewall";
+import "Label";
+import "Popup";
 import "Provider";
 import "Wizard";
 
-include "ui/common_popups.ycp";
 include "network/routines.ycp";
 
 /**
@@ -189,7 +190,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
     /* DIALOG PREPARE */
 
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     UI::ChangeWidget(`id(`nameservers), `Enabled, demand && modifydns);
 
@@ -211,7 +212,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    /* check_* */
 	    if(UI::QueryWidget(`id(`idletime), `Value) == "") {
 		/* Popup text */
-		UI::ErrorPopup(_("You must set the idle seconds."));
+		Popup::Error(_("You must set the idle seconds."));
 		UI::SetFocus(`id(`idletime));
 		continue;
 	    }
@@ -219,12 +220,12 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 		DNS1 = UI::QueryWidget(`id(`DNS1), `Value);
 		DNS2 = UI::QueryWidget(`id(`DNS2), `Value);
 		if(!(check_ip4(DNS1))) {
-		    UI::ErrorPopup(_("The primary name server is not correct"));
+		    Popup::Error(_("The primary name server is not correct"));
 		    UI::SetFocus(`id(`DNS1));
 		    continue;
 		}
 		if(size(DNS2) > 0 && !check_ip4(DNS2)) {
-		    UI::ErrorPopup(_("The secondary name server is not correct"));
+		    Popup::Error(_("The secondary name server is not correct"));
 		    UI::SetFocus(`id(`DNS2));
 		    continue;
 		}

@@ -13,10 +13,10 @@
 
 textdomain "network";
 
+import "Label";
+import "Popup";
 import "Routing";
 import "Wizard";
-
-include "ui/common_popups.ycp";
 
 include "network/ip.ycp";
 include "network/devices.ycp";
@@ -116,10 +116,10 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 
     if(standalone == true)
 	Wizard::SetContentsButtons(caption, contents, help,
-		BackButtonLabel(), FinishButtonLabel());
+		Label::BackButton(), Label::FinishButton());
     else
 	Wizard::SetContentsButtons(caption, contents, help,
-		BackButtonLabel(), OKButtonLabel());
+		Label::BackButton(), Label::OKButton());
 
     UI::ChangeWidget(`id(`gw), `ValidChars, ValidCharsIP4);
     UI::ChangeWidget(`id(`table), `Items, table_items);
@@ -211,8 +211,8 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 	else if(ret == `next) {
 	    string gw = UI::QueryWidget(`id(`gw), `Value);
 	    if(gw != "" && !check_ip4(gw)) {
-		/* ErrorPopup text */
-		UI::ErrorPopup(_("The default gateway is incorrect"));
+		/* Popup::Error text */
+		Popup::Error(_("The default gateway is incorrect"));
 		UI::SetFocus(`id(`gw));
 		continue;
 	    }
@@ -290,8 +290,8 @@ global define term RoutingEditDialog(integer id, term entry, list devs) ``{
 	),
 	`HSpacing(1),
 	`HBox(
-	    `PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
-	    `PushButton(`id(`cancel), CancelButtonLabel())
+	    `PushButton(`id(`ok), `opt(`default), Label::OKButton()),
+	    `PushButton(`id(`cancel), Label::CancelButton())
 	)
     ));
 
@@ -314,24 +314,24 @@ global define term RoutingEditDialog(integer id, term entry, list devs) ``{
 	string val = UI::QueryWidget(`id(`destination), `Value);
 	if(val == "default") val = "0.0.0.0";
 	if(!check_ip4(val)) {
-	    /* ErrorPopup text */
-	    UI::ErrorPopup(_("Destination is incorrect"));
+	    /* Popup::Error text */
+	    Popup::Error(_("Destination is incorrect"));
 	    UI::SetFocus(`id(`destination));
 	    continue;
 	}
 	route = add(route, val);
 	val = UI::QueryWidget(`id(`gateway), `Value);
 	if(!check_ip4(val)) {
-	    /* ErrorPopup text */
-	    UI::ErrorPopup(_("Gateway IP address is incorrect"));
+	    /* Popup::Error text */
+	    Popup::Error(_("Gateway IP address is incorrect"));
 	    UI::SetFocus(`id(`gateway));
 	    continue;
 	}
 	route = add(route, val);
 	val = UI::QueryWidget(`id(`netmask), `Value);
 	if(val != "0.0.0.0" && !check_netmask(val)) {
-	    /* ErrorPopup text */
-	    UI::ErrorPopup(_("Subnet mask is incorrect"));
+	    /* Popup::Error text */
+	    Popup::Error(_("Subnet mask is incorrect"));
 	    UI::SetFocus(`id(`netmask));
 	    continue;
 	}

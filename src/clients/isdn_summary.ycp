@@ -14,13 +14,13 @@
 
 textdomain "network";
 
-import "ISDN";
-import "Progress";
-import "Summary";
-
 /* The main () */
 y2milestone("----------------------------------------");
 y2milestone("ISDN summary started");
+
+import "ISDN";
+import "Progress";
+import "Summary";
 
 Progress::off();
 ISDN::Read();

@@ -17,8 +17,8 @@ import "Provider";
 import "Wizard";
 import "Wizard_hw";
 
-include "ui/common_popups.ycp";
-include "ui/common_messages.ycp";
+import "Popup";
+import "Label";
 
 include "network/routines.ycp";
 include "network/complex.ycp";
@@ -165,7 +165,7 @@ can change the configuration and setup dialup connections) will open.
 	    unconfigured, false, configured);
 
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), FinishButtonLabel());
+	    Label::BackButton(), Label::FinishButton());
 
     any ret = nil;
     while(true) {
@@ -270,7 +270,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
     );
 
     Wizard::SetContentsButtons(caption, contents, helptext,
-            BackButtonLabel(), FinishButtonLabel());
+            Label::BackButton(), Label::FinishButton());
 
     if(size(overview) < 1) {
         UI::ChangeWidget(`id(`edit), `Enabled, false);
@@ -367,14 +367,14 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 		    y2debug("overviewp=%1",overviewp);
 		} else {
 		    string txt = sformat(
-// MessagePopup text
+// Popup::Message text
 _("You tried to delete a provider that
 is the default provider for interface
 %1. First select another
 default provider for interface %2
 or delete the interface itself.
 "), ifc, ifc);
-		    UI::MessagePopup(txt);
+		    Popup::Message(txt);
 		}
 	    } else {
 		if (ISDN::SelectInterface(true)) {

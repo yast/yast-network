@@ -16,8 +16,8 @@ import "Arch";
 import "Lan";
 import "Wizard";
 
-include "ui/common_popups.ycp";
-include "ui/common_messages.ycp";
+import "Popup";
+import "Label";
 
 include "network/complex.ycp";
 include "network/routines.ycp";
@@ -272,10 +272,10 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
     if(Lan::operation == `edit || Lan::unique != "")
 	Wizard::SetContentsButtons(caption, contents, help,
-		BackButtonLabel(), OKButtonLabel());
+		Label::BackButton(), Label::OKButton());
     else
 	Wizard::SetContentsButtons(caption, contents, help,
-		BackButtonLabel(), NextButtonLabel());
+		Label::BackButton(), Label::NextButton());
 
     UI::ChangeWidget(`id(`modul), `Enabled, hotplug == "");
     UI::ChangeWidget(`id(`options), `Enabled, hotplug == "");
@@ -365,7 +365,7 @@ this would probably result in a nonfunctional network configuration.
 
 Really continue?
 ");
-		    if(UI::YesNoHeadlinePopup(WarningMsg(), pop) == true) {
+		    if(Popup::YesNoHeadline(Label::WarningMsg(), pop) == true) {
 			y2warning("Default device changed!");
 			break;
 		    }
@@ -454,7 +454,7 @@ for a particular network card by entering the name in the search entry.</p>");
     );
 
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), OKButtonLabel());
+	    Label::BackButton(), Label::OKButton());
 
     UI::SetFocus(`id(`cards));
 
@@ -592,7 +592,7 @@ available options.</p>");
     );
 
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), OKButtonLabel());
+	    Label::BackButton(), Label::OKButton());
 
     // FIXME: provide a better check and an error message, #17546
     // removed #24839 UI::ChangeWidget(`id(`key), `ValidChars, "0123456789abcdefABCDEF-:s");
@@ -687,7 +687,7 @@ add them manually.</p>");
     );
 
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     // UI::ChangeWidget(`id(`key), `ValidChars, "0123456789abcdefABCDEF-:s");
 

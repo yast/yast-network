@@ -14,12 +14,12 @@
 
 textdomain "network";
 
-import "Proxy";
-import "Progress";
-
 /* The main () */
 y2milestone("----------------------------------------");
 y2milestone("Proxy proposal started");
+
+import "Proxy";
+import "Progress";
 
 string func = WFM::Args(0);
 map param = WFM::Args(1);

@@ -59,6 +59,9 @@ map READ = $[
     "probe" : $[
 	"system" : [],
     ],
+    "target" : $[
+	"tmpdir" : "/tmp",
+    ],
 ];
 
 map Devices = $[];

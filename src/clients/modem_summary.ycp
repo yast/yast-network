@@ -14,13 +14,13 @@
 
 textdomain "network";
 
-import "Modem";
-import "Progress";
-import "Summary";
-
 /* The main () */
 y2milestone("----------------------------------------");
 y2milestone("Modem summary started");
+
+import "Modem";
+import "Progress";
+import "Summary";
 
 Progress::off();
 Modem::Read();

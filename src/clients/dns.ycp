@@ -14,14 +14,15 @@
 
 textdomain "network";
 
-import "DNS";
-import "Lan";
-import "Runlevel";
-import "Wizard";
-
 /* The main () */
 y2milestone("----------------------------------------");
 y2milestone("DNS module started");
+
+import "DNS";
+import "Label";
+import "Lan";
+import "Runlevel";
+import "Wizard";
 
 include "network/services/dns.ycp";
 include "network/runtime.ycp";
@@ -37,7 +38,7 @@ global define boolean Modified() ``{
 Wizard::CreateDialog();
 DNS::Read();
 Lan::Read();
-Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), FinishButtonLabel()));
+Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), Label::FinishButton()));
 /* main ui function */
 any ret = DNSMainDialog(true);
 y2debug("ret == %1", ret);

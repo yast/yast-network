@@ -29,6 +29,11 @@ Summary:	Network routines for installation
 @BUILD@
 
 @INSTALL@
+%ifarch 390 s390x
+rm @configdir@/dsl.y2cc
+rm @configdir@/isdn.y2cc
+rm @configdir@/modem.y2cc
+%endif
 
 @CLEAN@
 
@@ -38,16 +43,17 @@ Summary:	Network routines for installation
 @yncludedir@/network
 @clientdir@/*.ycp
 @moduledir@/*.ycp
-@configdir@/lan.y2cc
-%ifnarch s390 s390x
-@configdir@/dsl.y2cc
-@configdir@/isdn.y2cc
-@configdir@/modem.y2cc
-%endif
-@configdir@/dns.y2cc
-@configdir@/host.y2cc
-@configdir@/routing.y2cc
-@configdir@/proxy.y2cc
+@configdir@/*.y2cc
+# @configdir@/lan.y2cc
+# %ifnarch s390 s390x
+# @configdir@/dsl.y2cc
+# @configdir@/isdn.y2cc
+# @configdir@/modem.y2cc
+# %endif
+# @configdir@/dns.y2cc
+# @configdir@/host.y2cc
+# @configdir@/routing.y2cc
+# @configdir@/proxy.y2cc
 @scrconfdir@/*.scr
 %doc @docdir@
 

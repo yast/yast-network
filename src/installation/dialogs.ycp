@@ -17,8 +17,8 @@ import "Internet";
 import "Product";
 import "Wizard";
 
-include "ui/common_messages.ycp";
-include "ui/common_popups.ycp";
+import "Label";
+import "Popup";
 
 include "network/routines.ycp";
 
@@ -40,8 +40,8 @@ global define boolean AskForPassword() ``{
 	/* PasswordEntry label */
 	`Password(`id(`password), _("&Password:")),
 	`HBox(
-	    `PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
-	    `PushButton(`id(`cancel), CancelButtonLabel()))
+	    `PushButton(`id(`ok), `opt(`default), Label::OKButton()),
+	    `PushButton(`id(`cancel), Label::CancelButton()))
     ));
 
     UI::SetFocus(`id(`password));
@@ -207,7 +207,7 @@ global define symbol AskYOUDialog() ``{
 		buttons,
 		`HSpacing(2)
 	    )),
-	    `HBox(`PushButton(`opt(`default), OKButtonLabel())),
+	    `HBox(`PushButton(`opt(`default), Label::OKButton())),
 	    `VSpacing(0.5)
 	),
 	`HSpacing(1)
@@ -255,7 +255,7 @@ global define void ShowLogs (list logs, string logdir) ``{
 				 `RichText (`id (`log), ""),
 				 `HSpacing (0.5)
 				 ),
-			  `PushButton (`id(`ok), UI::OKButtonLabel ())
+			  `PushButton (`id(`ok), Label::OKButton ())
 			  );
 
     UI::OpenDialog (content);

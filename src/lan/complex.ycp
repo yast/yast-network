@@ -18,8 +18,8 @@ import "Routing";
 import "Wizard";
 import "Wizard_hw";
 
-include "ui/common_popups.ycp";
-include "ui/common_messages.ycp";
+import "Popup";
+import "Label";
 
 include "network/routines.ycp";
 include "network/complex.ycp";
@@ -134,7 +134,7 @@ to change the configuration opens.</p>");
 	    unconfigured, false, configured);
 
     Wizard::SetContentsButtons(caption, contents, help,
-	    BackButtonLabel(), FinishButtonLabel());
+	    Label::BackButton(), Label::FinishButton());
 
     any ret = nil;
     while(true) {
@@ -215,7 +215,7 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
     );
 
     Wizard::SetContentsButtons(caption, contents, help,
-	    BackButtonLabel(), FinishButtonLabel());
+	    Label::BackButton(), Label::FinishButton());
 
     if(size(overview) < 1) {
 	UI::ChangeWidget(`id(`edit), `Enabled, false);
@@ -260,7 +260,7 @@ will be deleted as well.
 
 Really continue?
 "), dev);
-	    if(Lan::HasAliases(dev) && UI::YesNoHeadlinePopup(WarningMsg(), pop) != true)
+	    if(Lan::HasAliases(dev) && Popup::YesNoHeadline(Label::WarningMsg(), pop) != true)
 		continue;
 
 	    Lan::Delete(dev);

@@ -12,6 +12,7 @@ Read	.etc.install_inf.VNC nil
 Read	.etc.install_inf.UseSSH nil
 Read	.etc.install_inf.Locale nil
 Read	.etc.install_inf.InstMode nil
+Read	.target.tmpdir "/tmp"
 Read	.probe.architecture nil
 Read	.probe.has_apm nil
 Read	.probe.has_pcmcia nil

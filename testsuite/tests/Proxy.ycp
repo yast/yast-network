@@ -18,6 +18,9 @@ map READ = $[
     "probe" : $[
 	"system" : [],
     ],
+    "target" : $[
+	"tmpdir" : "/tmp",
+    ],
 ];
 
 TESTSUITE_INIT([READ], nil);

@@ -21,7 +21,8 @@
 
   textdomain "network";
 
-  include "ui/common_messages.ycp";
+  import "Label";
+  import "Popup";
 
 /**
  * Return true if the given driver match i4ltyp and i4l subtype
@@ -155,7 +156,7 @@ global define boolean display_testresult(integer result, string details) ``{
 		`Label(msg),
 		`VSpacing(1),
 		`HBox(
-		    `PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
+		    `PushButton(`id(`ok), `opt(`default), Label::OKButton()),
 		    // Button label for details about the HW test
 		    `PushButton(`id(`detail), _("&Details"))
 		),
@@ -167,7 +168,7 @@ global define boolean display_testresult(integer result, string details) ``{
     UI::SetFocus(`id(`ok));
     ret = UI::UserInput();
     if (ret == `detail)
-    	UI::MessagePopup (details);
+    	Popup::Message (details);
     UI::CloseDialog();
     return true;
 };
@@ -189,7 +190,7 @@ global define boolean select_fromlist_popup(string title, list lst) ``{
 		`VSpacing(1),
 		`ComboBox(`id(`sel), `opt(`hstretch,`notify), title, lst),
 		`VSpacing(1),
-		`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
+		`PushButton(`id(`ok), `opt(`default), Label::OKButton()),
 		`VSpacing(1)
 	    ),
 	    `HSpacing(1)

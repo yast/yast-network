@@ -11,6 +11,7 @@
 
 textdomain "network";
 
+import "Label";
 import "Wizard";
 
 include "wizard/sequencer.ycp";
@@ -62,7 +63,7 @@ global define symbol DSLSequence() ``{
 
     Wizard::CreateDialog();
     Wizard::SetContentsButtons(caption, contents, "",
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     symbol ret = WizardSequencer(aliases, sequence);
 
@@ -81,7 +82,7 @@ global define symbol DSLAutoSequence() ``{
 
     Wizard::CreateDialog();
     Wizard::SetContentsButtons(caption, contents, "",
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     symbol ret = DSLMainSequence();
 

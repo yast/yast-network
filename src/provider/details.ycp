@@ -11,12 +11,13 @@
 
 textdomain "network";
 
+import "Label";
+import "Popup";
 import "Provider";
 import "Wizard";
 
 include "network/ip.ycp";
 include "network/routines.ycp";
-include "ui/common_popups.ycp";
 
 /**
  * IP details dialog
@@ -154,7 +155,7 @@ single machines or subnetworks through this provider.</p>");
 
     /* DIALOG PREPARE */
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), OKButtonLabel());
+	    Label::BackButton(), Label::OKButton());
 
     if(modifyip && encap != "rawip") {
 	UI::ChangeWidget(`id(`IP_local), `Enabled, false);
@@ -168,7 +169,7 @@ single machines or subnetworks through this provider.</p>");
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel) {
-	    if(UI::ReallyAbortPopup(true))
+	    if(Popup::ReallyAbort(true))
 		break;
 	    else
 		continue;
@@ -192,7 +193,7 @@ single machines or subnetworks through this provider.</p>");
 		modifyip = UI::QueryWidget(`id(`modifyip), `Value);
 
 	    if((encap=="rawip" || !modifyip) && (!check_ip4(Local_IP) || !check_ip4(Remote_IP))) {
-		UI::MessagePopup(_("You have to fill in Local and Remote IP addresses correctly"));
+		Popup::Message(_("You have to fill in Local and Remote IP addresses correctly"));
 		continue;
 	    }
 	    break;

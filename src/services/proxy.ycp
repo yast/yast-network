@@ -19,8 +19,8 @@ include "network/complex.ycp";
 include "network/routines.ycp";
 include "network/url.ycp";
 
-include "ui/common_popups.ycp";
-include "ui/common_messages.ycp";
+import "Popup";
+import "Label";
 
 /**
  * Display popup at the end of the proxy configuration
@@ -110,12 +110,12 @@ should be done directly without caching.</p>") +
 
     if(standalone == true)
 	Wizard::SetContentsButtons(caption, contents, help,
-		BackButtonLabel(), FinishButtonLabel());
+		Label::BackButton(), Label::FinishButton());
     else
 	Wizard::SetContentsButtons(caption, contents, help,
-		BackButtonLabel(), OKButtonLabel());
+		Label::BackButton(), Label::OKButton());
 
-    string ValidCharsUsername = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:_-/";
+    string ValidCharsUsername = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:_-/\\";
     UI::ChangeWidget(`id(`http), `ValidChars, ValidCharsUrl);
     UI::ChangeWidget(`id(`ftp), `ValidChars, ValidCharsUrl);
     UI::ChangeWidget(`id(`no), `ValidChars, ValidCharsDomain + " ,");
@@ -149,8 +149,8 @@ should be done directly without caching.</p>") +
 
 	    /* check_* */
 	    if(user == "" && pass != "") {
-		/* ErrorPopup text */
-		UI::ErrorPopup(_("You cannot enter a password and leave the user name empty."));
+		/* Popup::Error text */
+		Popup::Error(_("You cannot enter a password and leave the user name empty."));
 		UI::SetFocus(`id(`user));
 		continue;
 	    }

@@ -3,7 +3,10 @@
 include "testsuite.ycp";
 
 map READ = $[
-    "target" : $[ "size" : 1 ],
+    "target" : $[
+	"size" : 1,
+	"tmpdir" : "/tmp",
+    ],
     "routes" : ["r1", "r2"],
     "sysconfig" : $[ "sysctl" : $[ "IP_FORWARD" : "yes" ]],
     "probe" : $[ "system" : [] ],

@@ -1,9 +1,10 @@
-- provider:
-  o recognize provider change in ncurses (#25432)
+-------------------------------------------------------------------
+Fri Jun 20 14:24:48 CEST 2003 - msvec@suse.de
 
-- dns:
-  o restart only dhcp services
-
+- provider: recognize provider change in ncurses (#25432)
+- proxy: allow '\' in the username field (#27444)
+- dns: restart only dhcp services
+- several updates and bugfixes
 - 2.8.0
 
 -------------------------------------------------------------------

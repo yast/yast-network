@@ -11,14 +11,14 @@
 
 textdomain "network";
 
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("Modem proposal started");
+
 import "Modem";
 import "Progress";
 
 include "network/routines.ycp";
-
-/* The main () */
-y2milestone("----------------------------------------");
-y2milestone("Modem proposal started");
 
 string func = WFM::Args(0);
 map param = WFM::Args(1);

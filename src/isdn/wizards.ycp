@@ -11,6 +11,7 @@
 
 textdomain "network";
 
+import "Label";
 import "ISDN";
 import "Wizard";
 
@@ -67,7 +68,7 @@ global define symbol ISDNSequence() ``{
 
     Wizard::CreateDialog();
     Wizard::SetContentsButtons(caption, contents, "",
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     symbol ret = WizardSequencer(aliases, sequence);
 
@@ -88,7 +89,7 @@ global define symbol ISDNAutoSequence() ``{
 
     Wizard::CreateDialog();
     Wizard::SetContentsButtons(caption, contents, "",
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     symbol ret = MainSequence();
 

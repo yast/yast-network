@@ -13,6 +13,7 @@
 
 textdomain "network";
 
+import "Label";
 import "Wizard";
 
 include "wizard/sequencer.ycp";
@@ -61,7 +62,7 @@ global define symbol ProviderSequence() ``{
 
     Wizard::CreateDialog();
     Wizard::SetContentsButtons(caption, contents, "",
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     symbol ret = WizardSequencer(aliases, sequence);
 
@@ -83,7 +84,7 @@ global define symbol ProviderAutoSequence() ``{
 
     Wizard::CreateDialog();
     Wizard::SetContentsButtons(caption, contents, "",
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     symbol ret = MainSequence();
 

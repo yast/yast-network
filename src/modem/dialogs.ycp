@@ -11,10 +11,11 @@
 
 textdomain "network";
 
+import "Label";
 import "Modem";
+import "Popup";
 import "Wizard";
 
-include "ui/common_popups.ycp";
 include "network/routines.ycp";
 
 /**
@@ -137,7 +138,7 @@ initialization strings.</p>");
     /* DIALOG PREPARE */
 
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     /* MAIN CYCLE */
 
@@ -250,7 +251,7 @@ should be in your modem manual.</p>");
     /* DIALOG PREPARE */
 
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), OKButtonLabel());
+	    Label::BackButton(), Label::OKButton());
 
     /* MAIN CYCLE */
 

@@ -17,8 +17,8 @@ import "Wizard";
 
 include "network/provider/helps.ycp";
 
-include "ui/common_popups.ycp";
-include "ui/common_messages.ycp";
+import "Popup";
+import "Label";
 
 /**
  * Build provider info text.
@@ -338,7 +338,7 @@ at the end.</p>");
     ),`VSpacing(2));
 
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     /* '*' and '#' are for GPRS connections (#16021) */
     /* ',' is for pausing dialing (#23678) */
@@ -391,7 +391,7 @@ at the end.</p>");
 	}
 	else if(ret == `info) {
 	    /* Popup text */
-	    UI::LongTextPopup(_("Provider info"), `RichText(infotext), 43, 13);
+	    Popup::LongText(_("Provider info"), `RichText(infotext), 43, 13);
 	    continue;
 	}
 	else if(ret == `askpass) {
@@ -424,20 +424,20 @@ at the end.</p>");
 		usercode = UI::QueryWidget(`id(`usercode), `Value);
 
 		if(lineid == "") {
-		    /* MessagePopup text */
-		    UI::MessagePopup(_("Enter the line ID."));
+		    /* Popup::Message text */
+		    Popup::Message(_("Enter the line ID."));
 		    UI::SetFocus(`id(`lineid));
 		    continue;
 		}
 		if(t_onlineid == "") {
-		    /* MessagePopup text */
-		    UI::MessagePopup(_("Enter the T-Online number."));
+		    /* Popup::Message text */
+		    Popup::Message(_("Enter the T-Online number."));
 		    UI::SetFocus(`id(`t_onlineid));
 		    continue;
 		}
 		if(usercode == "") {
-		    /* MessagePopup text */
-		    UI::MessagePopup(_("Enter the user code."));
+		    /* Popup::Message text */
+		    Popup::Message(_("Enter the user code."));
 		    UI::SetFocus(`id(`usercode));
 		    continue;
 		}
@@ -449,38 +449,38 @@ at the end.</p>");
 
 	    if(name != Provider::Provider["PROVIDER"]:"" && !Provider::IsUnique(name)) {
 		y2debug("n(%1), p(%2)",name,lookup(Provider::Provider, "PROVIDER", ""));
-		/* MessagePopup text */
-		UI::MessagePopup(sformat(_("Provider name %1 already exists."), name));
+		/* Popup::Message text */
+		Popup::Message(sformat(_("Provider name %1 already exists."), name));
 		UI::SetFocus(`id(`name));
 		continue;
 	    }
 	    else if(name == "") {
-		/* MessagePopup text */
-		UI::MessagePopup(_("Enter the provider name."));
+		/* Popup::Message text */
+		Popup::Message(_("Enter the provider name."));
 		UI::SetFocus(`id(`name));
 		continue;
 	    }
 	    else if(UI::WidgetExists(`id(`phone)) && phone == "") {
-		/* MessagePopup text */
-		UI::MessagePopup(_("Enter the phone number."));
+		/* Popup::Message text */
+		Popup::Message(_("Enter the phone number."));
 		UI::SetFocus(`id(`phone));
 		continue;
 	    }
 	    else if(auth_chk && username == "") {
-		/* MessagePopup text */
-		UI::MessagePopup(_("Enter the user name."));
+		/* Popup::Message text */
+		Popup::Message(_("Enter the user name."));
 		UI::SetFocus(`id(`username));
 		continue;
 	    }
 	    /* password could be empty #16021
 	    else if(!ask_pass && auth_chk && "" == pass)
 	    {
-		UI::MessagePopup(_("Enter the password."));
+		Popup::Message(_("Enter the password."));
 		UI::SetFocus(`id(`passwd));
 	    } */
 	    else if(filterchars(phone, "0123456789*#") != phone &&
-		    /* YesNoPopup text */
-		    !UI::YesNoPopup(_("You have entered some characters that are not numbers in the phone field.\n\nContinue?")))
+		    /* Popup::YesNo text */
+		    !Popup::YesNo(_("You have entered some characters that are not numbers in the phone field.\n\nContinue?")))
 	    {
 		UI::SetFocus(`id(`PhoneNumber));
 		continue;

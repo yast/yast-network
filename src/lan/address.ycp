@@ -16,8 +16,8 @@ import "Lan";
 import "Routing";
 import "Wizard";
 
-include "ui/common_popups.ycp";
-include "ui/common_messages.ycp";
+import "Popup";
+import "Label";
 
 include "network/routines.ycp";
 include "network/ip.ycp";
@@ -242,7 +242,7 @@ completes the configuration.</p>");
     ));
 
     Wizard::SetContentsButtons(caption, contents, help,
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     UI::ChangeWidget(`id(`ipaddr), `Enabled, bootproto == "static");
     ChangeWidgetIfExists(`id(`netmask), `Enabled, bootproto == "static");
@@ -301,19 +301,19 @@ completes the configuration.</p>");
 	    if(bootproto == "static") {
 		if(!check_ip4(UI::QueryWidget(`id(`ipaddr), `Value))) {
 		    /* Popup text */
-		    UI::ErrorPopup(_("The IP address is incorrect"));
+		    Popup::Error(_("The IP address is incorrect"));
 		    UI::SetFocus(`id(`ipaddr));
 		    continue;
 		}
 		if(UI::WidgetExists(`id(`remoteip)) && !check_ip4(UI::QueryWidget(`id(`remoteip), `Value))) {
 		    /* Popup text */
-		    UI::ErrorPopup(_("The remote IP address is invalid."));
+		    Popup::Error(_("The remote IP address is invalid."));
 		    UI::SetFocus(`id(`remoteip));
 		    continue;
 		}
 		if(UI::WidgetExists(`id(`netmask)) && !check_netmask(UI::QueryWidget(`id(`netmask), `Value))) {
 		    /* Popup text */
-		    UI::ErrorPopup(_("The subnet mask is incorrect"));
+		    Popup::Error(_("The subnet mask is incorrect"));
 		    UI::SetFocus(`id(`netmask));
 		    continue;
 		}

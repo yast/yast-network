@@ -3,6 +3,7 @@ Read	.probe.has_apm nil
 Read	.probe.has_pcmcia nil
 Read	.probe.has_smp nil
 Read	.probe.system []
+Read	.target.tmpdir "/tmp"
 Dump	ReadDevices
 Dir	.network.section: ["arc5", "atm5", "ci5", "ctc5", "dummy5", "escon5", "eth-pcmcia", "eth-usb", "eth5", "eth5:5", "eth6", "eth7", "eth8", "fddi5", "hippi5", "hsi5", "ippp5", "iucv5", "lo", "lo:5", "myri5", "ppp5", "tr.bak5", "tr5"]
 Dir	.network.value."arc5": ["BOOTPROTO", "STARTMODE"]

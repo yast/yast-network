@@ -14,12 +14,13 @@
 
 textdomain "network";
 
-import "Proxy";
-import "Wizard";
-
 /* The main () */
 y2milestone("----------------------------------------");
 y2milestone("Proxy module started");
+
+import "Label";
+import "Proxy";
+import "Wizard";
 
 include "network/services/proxy.ycp";
 include "network/runtime.ycp";
@@ -48,7 +49,7 @@ if (!propose) {
     Proxy::Read();
 }
 Wizard::CreateDialog();
-Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), FinishButtonLabel()));
+Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), Label::FinishButton()));
 /* main ui function */
 any ret = ProxyMainDialog(true);
 y2debug("ret == %1", ret);

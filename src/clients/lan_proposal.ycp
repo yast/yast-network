@@ -11,6 +11,10 @@
 
 textdomain "network";
 
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("Lan proposal started");
+
 import "Arch";
 import "Lan";
 import "Mode";
@@ -18,10 +22,6 @@ import "Progress";
 
 include "network/routines.ycp";
 include "network/lan/wizards.ycp";
-
-/* The main () */
-y2milestone("----------------------------------------");
-y2milestone("Lan proposal started");
 
 list args = WFM::Args();
 

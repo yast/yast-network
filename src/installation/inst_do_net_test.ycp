@@ -17,8 +17,8 @@
     import "Wizard";
     import "Directory";
 
-    include "ui/common_messages.ycp";
-    include "ui/common_popups.ycp";
+    import "Label";
+    import "Popup";
 
     include "network/routines.ycp";
     include "network/installation/dialogs.ycp";
@@ -221,7 +221,7 @@ and correct the setting.</p>");
 				     `prio : 16 ]);
 		if(!Internet::Start(logdir + "/ifup.log")) {
 		    // popup to inform user about the failure
-		    UI::MessagePopup(_("Connecting to Internet failed. View
+		    Popup::Message(_("Connecting to Internet failed. View
 logs for details."));
 		    test_stage = `finish;
 		    test_result = `failure;
@@ -244,7 +244,7 @@ logs for details."));
 	    // status must be up
 	    if(!Internet::Status()) {
 		// popup to inform user about the failure
-		UI::MessagePopup(_("Connecting to Internet failed. View
+		Popup::Message(_("Connecting to Internet failed. View
 logs for details."));
 		test_stage = `finish;
 		test_result = `failure;
@@ -292,7 +292,7 @@ logs for details."));
 	    if(ret != 0)
 	    {
 		// popup to inform user about the failure
-		UI::MessagePopup(_("Download of latest release notes failed. View
+		Popup::Message(_("Download of latest release notes failed. View
 logs for details."));
 		test_result = `failure;
 	    }
@@ -333,7 +333,7 @@ logs for details."));
 	    else if(ret != 0)
 	    {
 		// popup to inform user about the failure
-		UI::MessagePopup(_("Check for latest updates failed. View
+		Popup::Message(_("Check for latest updates failed. View
 logs for details."));
 		test_result = `failure;
 	    }

@@ -19,8 +19,8 @@ import "Wizard";
 
 include "network/provider/helps.ycp";
 
-include "ui/common_popups.ycp";
-include "ui/common_messages.ycp";
+import "Popup";
+import "Label";
 
 /**
  * The SelectionBox "----" divider hack
@@ -102,7 +102,7 @@ global define symbol ProvidersDialog(boolean edit) ``{
     );
 
     Wizard::SetContentsButtons(caption, contents, HELPS["providers"]:"",
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     /**
      * Update widgets in the ProviderDialog

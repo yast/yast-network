@@ -26,7 +26,9 @@ y2milestone("----------------------------------------");
 y2milestone("Host auto started");
 
 import "Host";
+import "Label";
 import "Wizard";
+
 include "network/services/host.ycp";
 
 /**
@@ -63,7 +65,7 @@ else if (func == "Reset") {
 /* Change configuration (run AutoSequence) */
 else if (func == "Change") {
 	Wizard::CreateDialog();
-	Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), FinishButtonLabel()));
+	Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), Label::FinishButton()));
     ret = HostsMainDialog(false);
 	Wizard::CloseDialog();
 }

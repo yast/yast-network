@@ -14,12 +14,13 @@
 
 textdomain "network";
 
-import "Routing";
-import "Wizard";
-
 /* The main () */
 y2milestone("----------------------------------------");
 y2milestone("Routing module started");
+
+import "Label";
+import "Routing";
+import "Wizard";
 
 include "network/services/routing.ycp";
 include "network/runtime.ycp";
@@ -34,7 +35,7 @@ global define boolean Modified() ``{
 
 Routing::Read();
 Wizard::CreateDialog();
-Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), FinishButtonLabel()));
+Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), Label::FinishButton()));
 /* main ui function */
 any ret = RoutingMainDialog(true);
 y2debug("ret == %1", ret);

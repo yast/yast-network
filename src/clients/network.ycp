@@ -14,11 +14,12 @@
 
 textdomain "network";
 
-import "Wizard";
-
 /* The main () */
 y2milestone("----------------------------------------");
 y2milestone("Network module started");
+
+import "Label";
+import "Wizard";
 
 include "network/routines.ycp";
 
@@ -55,7 +56,7 @@ term contents = `HBox(
 
 Wizard::CreateDialog();
 Wizard::SetContentsButtons(caption, contents, help,
-	BackButtonLabel(), /* FinishButtonLabel() */ _("&Launch"));
+	Label::BackButton(), /* Label::FinishButton() */ _("&Launch"));
 
 UI::SetFocus(`id(`modules));
 

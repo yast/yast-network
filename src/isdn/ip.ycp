@@ -12,10 +12,11 @@
 
 textdomain "network";
 
-import "Wizard";
 import "ISDN";
+import "Label";
+import "Popup";
+import "Wizard";
 
-include "ui/common_popups.ycp";
 include "network/ip.ycp";
 
 /**
@@ -122,7 +123,7 @@ route.</p>
 
     /* DIALOG PREPARE */
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), NextButtonLabel());
+	    Label::BackButton(), Label::NextButton());
 
     if(dynip && syncppp) {
 	UI::ChangeWidget(`id(`IP_local), `Enabled, false);
@@ -136,7 +137,7 @@ route.</p>
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel) {
-	    if(UI::ReallyAbortPopup(true))
+	    if(Popup::ReallyAbort(true))
 		break;
 	    else
 		continue;
@@ -160,8 +161,8 @@ route.</p>
 		dynip = UI::QueryWidget(`id(`dynip), `Value);
 
 	    if((!syncppp || !dynip) && (!check_ip4(Local_IP) || !check_ip4(Remote_IP))) {
-		// MessagePopup if entries are incorrect
-		UI::MessagePopup(_("You have to fill in Local and Remote IP addresses correctly"));
+		// Popup::Message if entries are incorrect
+		Popup::Message(_("You have to fill in Local and Remote IP addresses correctly"));
 		continue;
 	    }
 	    break;

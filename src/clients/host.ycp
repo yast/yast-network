@@ -14,12 +14,13 @@
 
 textdomain "network";
 
-import "Host";
-import "Wizard";
-
 /* The main () */
 y2milestone("----------------------------------------");
 y2milestone("Host module started");
+
+import "Host";
+import "Label";
+import "Wizard";
 
 include "network/services/host.ycp";
 include "network/runtime.ycp";
@@ -34,7 +35,7 @@ global define boolean Modified() ``{
 
 Host::Read();
 Wizard::CreateDialog();
-Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), FinishButtonLabel()));
+Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), Label::FinishButton()));
 /* main ui function */
 any ret = HostsMainDialog(true);
 y2debug("ret == %1", ret);

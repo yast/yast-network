@@ -14,6 +14,7 @@ map R = $[
     "target" : $[
 	"size" : 1,
 	"string" : "Blah\n",
+	"tmpdir" : "/tmp",
     ],
 ];
 map E = $[

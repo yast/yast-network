@@ -19,10 +19,10 @@
 
 textdomain "network";
 
-import "Wizard";
 import "ISDN";
-
-include "ui/common_popups.ycp";
+import "Label";
+import "Popup";
+import "Wizard";
 
 /**
  * Dialog for ISDN interface detail settings
@@ -135,7 +135,7 @@ for example, +pap +chap for the dial-in server authentication.</p>");
 
     /* DIALOG PREPARE */
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), OKButtonLabel());
+	    Label::BackButton(), Label::OKButton());
 
     if (callback== "off")
         UI::ChangeWidget(`id(`cbdelay), `Enabled, false);
@@ -148,7 +148,7 @@ for example, +pap +chap for the dial-in server authentication.</p>");
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel) {
-	    if (UI::ReallyAbortPopup(true))
+	    if (Popup::ReallyAbort(true))
 		break;
 	    else
 		continue;
