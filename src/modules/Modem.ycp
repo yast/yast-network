@@ -69,9 +69,14 @@ global boolean Firewall = false;
 /* Dane, hod prosim ty veci z provideru sem
  * -- asi to bude minimalne toto: */
 
-string Username = "";
-string Password = "";
-string Phone = "";
+global string provUsername = "";
+global string provPassword = "";
+global string provPhone = "";
+
+global string provName = "";
+global string provShortName = "";
+global boolean provAskPassword = false;
+
 /* ... */
 
 /*--------------*/
