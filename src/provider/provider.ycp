@@ -497,7 +497,7 @@ at the end.</p>");
 	Provider::Provider = union(Provider::Provider, $[
 	    "PROVIDER"		: name,
 	    "USERNAME"		: username,
-	    "PASSWORD"		: password,
+	    "PASSWORD"		: ask_pass? "" : password,
 	    "PHONE"		: phone,
 	    "ASKPASSWORD"	: ask_pass ? "yes" : "no",
 	    "MODEMSUPPORTED"	: (type == "modem" ? "yes" : "no"),
