@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jan 24 21:19:34 CET 2005 - nashif@suse.de
+
+- Fixed second argument used to skip client when going back in the workflow
+
+-------------------------------------------------------------------
 Mon Jan 24 19:34:52 CET 2005 - nashif@suse.de
 
 - Hardcode argument of inst_netsetup, currently argument `up is not 
