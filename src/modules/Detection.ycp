@@ -70,7 +70,7 @@ boolean detection_interface = false;
  * Set up the first eth interface, if not already running
  * @return true if success
  */
-define boolean StartEthInterface() ``{
+define boolean StartEthInterface() {
 
     y2milestone("Network detection prepare");
 
@@ -80,7 +80,9 @@ define boolean StartEthInterface() ``{
     if(size(Hardware) < 1) return false;
 
     /* Look for eth cards */
-    list ethernet_cards = filter(map h, Hardware, ``(h["type"]:"" == "eth"));
+    list ethernet_cards = filter(map h, Hardware, {
+	return h["type"]:"" == "eth";
+	});
     map card = (map) (ethernet_cards[0]:nil);
     y2debug("card=%1", card);
     if(card == nil || card == $[]) return false;
@@ -116,7 +118,7 @@ define boolean StartEthInterface() ``{
  * Shut down the eth interface, previously set up by StartEthInterface
  * @return true if success
  */
-define boolean StopEthInterface() ``{
+define boolean StopEthInterface() {
 
     y2milestone("Network detection finish");
 
@@ -140,7 +142,7 @@ define boolean StopEthInterface() ``{
  * Start detection
  * @return true if success
  */
-define boolean StartDetection() ``{
+define boolean StartDetection() {
 
     y2milestone("Network detection start");
 
@@ -156,7 +158,7 @@ define boolean StartDetection() ``{
  * Finish detection
  * @return true if success
  */
-define boolean StopDetection() ``{
+define boolean StopDetection() {
 
     y2milestone("Network detection stop");
 
@@ -177,7 +179,7 @@ define boolean StopDetection() ``{
 	list keys = SCR::Dir(detpath);
 	y2debug("keys=%1", keys);
 
-	maplist(string k, keys, ``{
+	maplist(string k, keys, {
 	    string v = (string) SCR::Read(add(detpath, k));
 	    y2debug("%1=%2", k, v);
 	    /* FIXME: duplicate keys (make list? add with suffix1, etc? ...? */
@@ -198,7 +200,7 @@ define boolean StopDetection() ``{
  * Start the detection
  * @return true on success
  */
-global define boolean Start() ``{
+global define boolean Start() {
     if(running == true) {
 	y2error("Detection already running");
 	return false;
@@ -220,7 +222,7 @@ y2milestone("IFCONFIG2: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig")
  * Stop the detection
  * @return true on success
  */
-global define boolean Stop() ``{
+global define boolean Stop() {
     if(running != true) {
 	y2error("Detection not running");
 	return false;

@@ -21,7 +21,7 @@ y2milestone("DNS module started");
 import "DNS";
 import "Label";
 import "Lan";
-import "Runlevel";
+import "Service";
 import "Wizard";
 
 /**
@@ -48,7 +48,7 @@ y2debug("ret == %1", ret);
 
 if(ret == `next && DNS::modified) {
     DNS::Write();
-    Runlevel::RunInitScript("network", "restart-all-dhcp-clients");
+    Service::RunInitScript("network", "restart-all-dhcp-clients");
     // RestartNetwork();
 }
 

@@ -16,7 +16,7 @@ import "Summary";
 
 /* NI: required wrt functions in routines.ycp */
 block<boolean> AbortFunction = nil;
-define boolean Modified() ``{ return true; }
+define boolean Modified() { return true; }
 
 include "network/routines.ycp";
 include "network/runtime.ycp";
@@ -41,7 +41,7 @@ global string pass = "";
  * Read settings
  * @return true if success
  */
-global define boolean Read() ``{
+global define boolean Read() {
 
     /* Read /etc/sysconfig/proxy */
     http = (string) SCR::Read(.sysconfig.proxy.HTTP_PROXY);
@@ -80,7 +80,7 @@ global define boolean Read() ``{
  * Write routing settings and apply changes
  * @return true if success
  */
-global define boolean Write() ``{
+global define boolean Write() {
 
     y2milestone("Writing configuration");
     if(!modified) {
@@ -126,7 +126,7 @@ global define boolean Write() ``{
  * @param settings autoinstallation settings
  * @return true if success
  */
-global define boolean Import(map settings) ``{
+global define boolean Import(map settings) {
     enabled = settings["enabled"]:false;
     http = settings["http_proxy"]:"";
     ftp = settings["ftp_proxy"]:"";
@@ -142,7 +142,7 @@ global define boolean Import(map settings) ``{
  * Dump the Routing settings to a map, for autoinstallation use.
  * @return autoinstallation settings
  */
-global define map Export() ``{
+global define map Export() {
     map settings = $[
 	"enabled"	: enabled,
 	"http_proxy"	: http,
@@ -158,7 +158,7 @@ global define map Export() ``{
  * Create proxy summary
  * @return summary text
  */
-global define string Summary() ``{
+global define string Summary() {
 
     list ret = [];
 

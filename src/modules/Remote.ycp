@@ -13,11 +13,11 @@ module "Remote";
 textdomain "network";
 
 import "Label";
-import "Runlevel";
+import "Service";
 
 /* NI: required wrt functions in routines.ycp */
 block<boolean> AbortFunction = nil;
-define boolean Modified() ``{ return true; }
+define boolean Modified() { return true; }
 
 include "network/routines.ycp";
 
@@ -27,7 +27,7 @@ global boolean allow_administration = false;
 /**
  * Reset all module data.
  */
-global define void Reset () ``{
+global define void Reset () {
     allow_administration = false;
 }
 
@@ -35,7 +35,7 @@ global define void Reset () ``{
  * Update the SCR according to network settings
  * @return true on success
  */
-global define boolean Write() ``{
+global define boolean Write() {
 
     // install and enable xinetd, tightvnc and XFree86-Xvnc
     if (allow_administration)
@@ -46,7 +46,7 @@ global define boolean Write() ``{
 	    return false;
 	}
 
-	if (!Runlevel::ServiceAdjust ("xinetd", "enable"))
+	if (!Service::Enable("xinetd"))
 	{
 	    y2error ("enabling of xinetd failed");
 	    return false;
@@ -63,7 +63,7 @@ global define boolean Write() ``{
     // en- or disable vnc10 and vnchttpd10 in xinetd.d/vnc
     // note: we make use of the "alias problem"
     list xinetd = (list) SCR::Read(.etc.xinetd_conf.services);
-    foreach(map m, xinetd, ``{
+    foreach(map m, xinetd, {
 	string s = m["service"]:"";
 	if (s == "vnc10" || s == "vnchttpd10") {
 	    m["changed"] = true;

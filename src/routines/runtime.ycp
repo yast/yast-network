@@ -10,7 +10,9 @@
 {
 
 import "Arch";
-import "Runlevel";
+import "Mode";
+import "NetworkDevices";
+import "Package";
 import "Service";
 
 textdomain "network";
@@ -19,7 +21,7 @@ textdomain "network";
  * Read status information
  * @return true if success
  */
-define boolean ReadStatus() ``{
+define boolean ReadStatus() {
     return true;
 }
 
@@ -27,7 +29,7 @@ define boolean ReadStatus() ``{
  * Run SuSEconfig
  * @return true if success
  */
-define boolean RunSuSEconfig() ``{
+define boolean RunSuSEconfig() {
     y2milestone("Running SuSEconfig ...");
     SCR::Execute(.target.bash, "/sbin/SuSEconfig --module hostname");
     SCR::Execute(.target.bash, "/sbin/SuSEconfig --module apache 2>/dev/null");
@@ -41,7 +43,7 @@ define boolean RunSuSEconfig() ``{
  * @param modul SuSEconfig module
  * @return true if success
  */
-define boolean RunSuSEconfigModule(string modul) ``{
+define boolean RunSuSEconfigModule(string modul) {
     if(modul == nil || modul == "") {
 	y2error("Wrong SuSEconfig module: %1", modul);
 	return false;
@@ -51,20 +53,10 @@ define boolean RunSuSEconfigModule(string modul) ``{
 }
 
 /**
- * Run KInternet
- * @return true if success
- */
-define boolean RunKInternet() ``{
-    y2milestone("Running KInternet ...");
-    return SCR::Execute(.target.bash_background, "[ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu --nonewdcop -u $USER -- kinternet --quiet") == 0;
-    // return SCR::Execute(.target.bash, "{ [ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu -u $USER -- kinternet --quiet; } >/dev/null 2>&1 &") == 0;
-}
-
-/**
  * Start network
  * @return true if success
  */
-define boolean StartNetwork() ``{
+define boolean StartNetwork() {
     boolean ret = true;
     if(Arch::s390) ret = Service::Start("chandev");
     ret = Service::Start("network") && ret;
@@ -75,7 +67,7 @@ define boolean StartNetwork() ``{
  * Restart network
  * @return true if success
  */
-define boolean RestartNetwork() ``{
+define boolean RestartNetwork() {
     return Service::Restart("network");
 }
 
@@ -83,34 +75,87 @@ define boolean RestartNetwork() ``{
  * Stop network
  * @return true if success
  */
-define boolean StopNetwork() ``{
+define boolean StopNetwork() {
     return Service::Stop("network");
-}
-
-/**
- * Enable and start smpppd(8)
- * @return true if success
- */
-define boolean EnableSMPPPD() ``{
-
-    boolean ret = true;
-    ret = Service::Enable("smpppd") && ret;
-
-    if(Service::Status("smpppd") == 0)
-	ret = Service::Reload("smpppd") && ret;
-    else
-	ret = Service::Start("smpppd") && ret;
-    y2debug("ret=%1", ret);
-
-    return ret;
 }
 
 /**
  * Enable the network service
  * @return true if success
  */
-define boolean EnableNetwork() ``{
+define boolean EnableNetwork() {
     return Service::Enable("network");
+}
+
+/**
+ * Setup smpppd(8)
+ * @return true if success
+ */
+define boolean SetupSMPPPD() {
+    list devs = NetworkDevices::List("dialup");
+    y2milestone("dialup devices: %1", devs);
+
+    boolean ret = true;
+    /* Stop and disable */
+    if(size(devs) < 1) {
+	if(Service::Enabled("smpppd"))
+	    ret = Service::Disable("smpppd") && ret;
+	if(Service::Status("smpppd") == 0)
+	    ret = Service::Stop("smpppd") && ret;
+    }
+    /* Start and enable */
+    else {
+	if(!Service::Enabled("smpppd"))
+	    ret = Service::Enable("smpppd") && ret;
+
+	/* Installation? */
+	if(Mode::normal) {
+	    if(Service::Status("smpppd") == 0)
+		ret = Service::Reload("smpppd") && ret;
+	    else
+		ret = Service::Start("smpppd") && ret;
+	}
+    }
+
+    y2debug("ret=%1", ret);
+    return ret;
+}
+
+/**
+ * Run KInternet
+ * @return true if success
+ */
+define boolean RunKInternet() {
+    list devs = NetworkDevices::List("dialup");
+    y2milestone("dialup devices: %1", devs);
+
+    /* Any dialup devices? */
+    if(size(devs) < 1) return true;
+
+    /* Installation? */
+    if(!Mode::normal) return true;
+
+    /* Text mode? */
+    map ui = UI::GetDisplayInfo();
+    boolean ncurses = (boolean) ui["TextMode"]:nil;
+    y2debug("ncurses=%1", ncurses);
+    if(ncurses == nil || ncurses == true) return true;
+
+    /* KDE installed? * FIXME /
+    if(!Package::Installed("kdebase3")) return true;
+
+    /* KDE running? * FIXME /
+    if((integer) SCR::Execute(.target.bash, "ps x|grep kdeinit") != 0)
+	return true;
+
+    /* KInternet already running? * FIXME /
+    if((integer) SCR::Execute(.target.bash, "ps x|grep 'kinternet$'") == 0)
+	return true;
+    */
+
+    y2milestone("Running KInternet ...");
+    return SCR::Execute(.target.bash_background, "[ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu --nonewdcop -u $USER -- kinternet --quiet") == 0;
+    // return SCR::Execute(.target.bash, "{ [ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu -u $USER -- kinternet --quiet; } >/dev/null 2>&1 &") == 0;
 }
 
 /* EOF */

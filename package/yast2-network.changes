@@ -4,6 +4,10 @@ Tue Feb 24 13:41:15 CET 2004 - msvec@suse.cz
 - simple device interface (GetValue, SetValue)
 - possibility to set MTU (#34397, #20035)
 - possibility do change startmode (#24926)
+- don't always start smpppd and KInternet (#26382)
+- don't run KInternet in ncurses (#27891)
+- run KInternet according to the number of connections (#29475)
+- run|stop kinternet, if DISPLAY and (not)running (#14320)
 - 2.9.6
 
 -------------------------------------------------------------------

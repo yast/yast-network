@@ -52,7 +52,7 @@ boolean initialized = false;
  * Data was modified?
  * @return true if modified
  */
-global define boolean Modified() ``{
+global define boolean Modified() {
     boolean ret = (DHCP != Orig_DHCP || Config != Orig_Config);
     y2debug("ret=%1", ret);
     return ret;
@@ -62,7 +62,7 @@ global define boolean Modified() ``{
  * Read all network settings from the SCR
  * @return true on success
  */
-global define boolean Read() ``{
+global define boolean Read() {
 
     if(initialized == true) return true;
 
@@ -80,7 +80,7 @@ global define boolean Read() ``{
  * Update the SCR according to network settings
  * @return true on success
  */
-global define boolean Write() ``{
+global define boolean Write() {
 
     y2milestone("Writing configuration");
     if(!Modified()) {
@@ -99,7 +99,7 @@ global define boolean Write() ``{
  * @param settings settings to be imported
  * @return true on success
  */
-global define boolean Import(map settings) ``{
+global define boolean Import(map settings) {
 
     Config = (map) eval(settings["config"]:$[]);
     DHCP = (map) eval(settings["dhcp"]:$[]);
@@ -114,7 +114,7 @@ global define boolean Import(map settings) ``{
  * Export data
  * @return dumped settings (later acceptable by Import())
  */
-global define map Export() ``{
+global define map Export() {
 
     return (map) eval($[
 	"config"	: Config,

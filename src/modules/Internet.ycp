@@ -18,7 +18,7 @@ import "NetworkDevices";
 
 /* NI: required wrt functions in routines.ycp */
 block<boolean> AbortFunction = nil;
-define boolean Modified() ``{ return true; }
+define boolean Modified() { return true; }
 
 include "network/routines.ycp";
 
@@ -48,7 +48,7 @@ global boolean capi_isdn = false;
 /**
  * Reset values.
  */
-define void Reset() ``{
+define void Reset() {
     device = "";
     type = "";
     logfile = "";
@@ -63,7 +63,7 @@ define void Reset() ``{
  * Find the fastest connection to the Internet
  * @return true if a "good" connection was found
  */
-global define boolean FindFastest() ``{
+global define boolean FindFastest() {
 
     Reset();
 
@@ -100,7 +100,7 @@ global define boolean FindFastest() ``{
  * @param log file for the commands output
  * @return true if successful started
  */
-global define boolean Start(string log) ``{
+global define boolean Start(string log) {
 
     if(type == "isdn") {
 	if(SCR::Execute(.target.bash, "/etc/init.d/isdn status") != 0) {
@@ -145,7 +145,7 @@ global define boolean Start(string log) ``{
  * @param log file for the commands output
  * @return true if successful stopped
  */
-global define boolean Stop(string log) ``{
+global define boolean Stop(string log) {
     string cmd = "/sbin/ifdown " + device;
     if(log != "") cmd = cmd + "> " + log + " 2>&1";
     integer ret = (integer) SCR::Execute(.target.bash, cmd);
@@ -156,7 +156,7 @@ global define boolean Stop(string log) ``{
  * Status of the fastest interface
  * @return true if interface is up (which is not equal to connected)
  */
-global define boolean Status() ``{
+global define boolean Status() {
     integer ret = (integer) SCR::Execute(.target.bash, "/sbin/ifstatus " + device);
     return ret == 0 || ret == 10;
 }
@@ -165,7 +165,7 @@ global define boolean Status() ``{
  * Test if the interface is connected
  * @return true if connected
  */
-global define boolean Connected() ``{
+global define boolean Connected() {
 
     if(type == "dsl" || type == "modem" || (type == "isdn" && capi_isdn)) {
 	string tmp1 = (string) SCR::Read(.target.string, "/var/lib/smpppd/ifcfg-" + device + ".info");
@@ -184,7 +184,7 @@ global define boolean Connected() ``{
  * Set dial-on-demand
  * @param demand true if dial-on-demand should be set
  */
-global define void SetDemand(boolean demand) ``{
+global define void SetDemand(boolean demand) {
     path pp = .sysconfig.network.providers.v;
     pp = add(pp, provider);
     pp = add(pp, "DEMAND");

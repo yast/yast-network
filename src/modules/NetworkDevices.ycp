@@ -92,10 +92,13 @@ define string HotplugRegex(list<string> devs) {
  * Predefined network device regular expressions
  */
 map DeviceRegex = $[
+    /* device types */
     "netcard"	: CardRegex["netcard"]:"" + HotplugRegex(["eth", "tr", "wlan"]) + "|usb-usb|usb-usb-",
     "modem"	: CardRegex["modem"]:"",
     "isdn"	: CardRegex["isdn"]:"" + HotplugRegex(["isdn", "ippp"]),
     "dsl"	: CardRegex["dsl"]:"",
+    /* device groups */
+    "dialup"	: CardRegex["modem"]:"" + "|" + CardRegex["dsl"]:"" + "|" + CardRegex["isdn"]:"",
 ];
 
 /**
@@ -749,10 +752,17 @@ global define string Fastest() {
 
 global define string FastestType(string name) {
     string ret = "";
+    maplist(integer num, string type, FastestTypes, {
+	string regex = DeviceRegex[type]:"";
+	if (ret == "" && regexpmatch(name, "^" + regex + "[0-9]*$"))
+	ret = type;
+    });
+    /*
     maplist(string typ, string regex, DeviceRegex, {
 	if (ret == "" && regexpmatch(name, "^" + regex + "[0-9]*$"))
 	ret = typ;
     });
+    */
     return ret;
 }
 

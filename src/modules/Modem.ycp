@@ -86,12 +86,11 @@ symbol operation = nil;
  * Data was modified?
  * @return true if modified
  */
-global define boolean Modified() ``{
+global define boolean Modified() {
     y2debug("modified=%1",modified);
     return modified;
 }
 
-// include "network/complex.ycp";
 include "network/hardware.ycp";
 include "network/routines.ycp";
 include "network/runtime.ycp";
@@ -100,7 +99,7 @@ include "network/runtime.ycp";
  * Read all network settings from the SCR
  * @return true on success
  */
-global define boolean Read() ``{
+global define boolean Read() {
 
     /* Read dialog caption */
     string caption = _("Initializing modem configuration");
@@ -110,16 +109,16 @@ global define boolean Read() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-        /* Progress stage 1/4 */
-        _("Detect modems"),
-        /* Progress stage 2/4 */
-        _("Read current configuration"),
-        /* Progress stage 3/4 */
+	/* Progress stage 1/4 */
+	_("Detect modems"),
+	/* Progress stage 2/4 */
+	_("Read current configuration"),
+	/* Progress stage 3/4 */
 	_("Read firewall settings"),
-        /* Progress stage 4/4 */
-        _("Read providers"),
-        /* Progress stage 5/5 */
-        _("Read routing"),
+	/* Progress stage 4/4 */
+	_("Read providers"),
+	/* Progress stage 5/5 */
+	_("Read routing"),
     ], [], "");
 
     if(Abort()) return false;
@@ -168,7 +167,7 @@ global define boolean Read() ``{
  * Update the SCR according to network settings
  * @return true on success
  */
-global define boolean Write() ``{
+global define boolean Write() {
 
     if(!modified && !Provider::Modified("modem")) return true;
     y2milestone("Writing configuration");
@@ -181,18 +180,18 @@ global define boolean Write() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-        /* Progress stage 1/6 */
-        _("Write configuration"),
-        /* Progress stage 2/6 */
-        _("Write firewall settings"),
-        /* Progress stage 3/6 */
-        _("Write providers"),
-        /* Progress stage 4/6 */
-        _("Set up network services"),
-        /* Progress stage 5/5 */
-        _("Set up smpppd"),
-        /* Progress stage 6/6 */
-        _("Run KInternet"),
+	/* Progress stage 1/6 */
+	_("Write configuration"),
+	/* Progress stage 2/6 */
+	_("Write firewall settings"),
+	/* Progress stage 3/6 */
+	_("Write providers"),
+	/* Progress stage 4/6 */
+	_("Set up network services"),
+	/* Progress stage 5/5 */
+	_("Set up smpppd"),
+	/* Progress stage 6/6 */
+	_("Run KInternet"),
     ], [], "");
 
     if(Abort()) return false;
@@ -223,7 +222,7 @@ global define boolean Write() ``{
     if(Abort()) return false;
     /* Progress step 5/6 */
     ProgressNextStage(_("Setting up smpppd(8)..."));
-    EnableSMPPPD();
+    SetupSMPPPD();
     sleep(sl);
 
     if(Abort()) return false;
@@ -246,7 +245,7 @@ global define boolean Write() ``{
  * @param dev device to select ("" for new device, default values)
  * @return true if success
  */
-global define boolean Select(string dev) ``{
+global define boolean Select(string dev) {
 
     y2debug("dev=%1", dev);
     map devmap = $[];
@@ -300,7 +299,7 @@ global define boolean Select(string dev) ``{
  * Add a new device
  * @return true if success
  */
-global define boolean Add() ``{
+global define boolean Add() {
     operation = nil;
     NetworkDevices::Add();
     if(Select("") != true) return false;
@@ -313,7 +312,7 @@ global define boolean Add() ``{
  * @param name device to edit
  * @return true if success
  */
-global define boolean Edit(string name) ``{
+global define boolean Edit(string name) {
     operation = nil;
     NetworkDevices::Edit(name);
     if(Select(name) != true) return false;
@@ -327,7 +326,7 @@ global define boolean Edit(string name) ``{
  * @param name device to delete
  * @return true if success
  */
-global define boolean Delete(string name) ``{
+global define boolean Delete(string name) {
     operation = nil;
     NetworkDevices::Delete(name);
     if(Select(name) != true) return false;
@@ -339,7 +338,7 @@ global define boolean Delete(string name) ``{
  * Commit the pending operation
  * @return true if success
  */
-global define boolean Commit() ``{
+global define boolean Commit() {
     y2debug("Commit(%1)",operation);
     if(operation == `add || operation == `edit) {
 	map newdev = $[
@@ -381,7 +380,7 @@ global define boolean Commit() ``{
  * @param settings settings to be imported
  * @return true on success
  */
-global define boolean Import(map settings) ``{
+global define boolean Import(map settings) {
     NetworkDevices::Import("modem", settings["devices"]:$[]);
     Provider::Import("modem", settings["providers"]:$[]);
     return true;
@@ -391,7 +390,7 @@ global define boolean Import(map settings) ``{
  * Export data
  * @return dumped settings (later acceptable by Import())
  */
-global define map Export() ``{
+global define map Export() {
     return $[
 	"devices"	: NetworkDevices::Export("modem"),
 	"providers"	: Provider::Export("modem"),
@@ -403,7 +402,7 @@ global define map Export() ``{
  * @param split split configured and unconfigured?
  * @return summary of the current configuration
  */
-global define list Summary(boolean split) ``{
+global define list Summary(boolean split) {
     return NetworkDevices::Summary("modem", Hardware, split);
 }
 
@@ -411,7 +410,7 @@ global define list Summary(boolean split) ``{
  * Create an overview table with all configured devices
  * @return table items
  */
-global define list Overview() ``{
+global define list Overview() {
     return NetworkDevices::Overview("modem");
 }
 
@@ -419,7 +418,7 @@ global define list Overview() ``{
  * Select the hardware component
  * @param which index of the component
  */
-global define void SelectHW(integer which) ``{
+global define void SelectHW(integer which) {
     map sel = SelectHardware(Hardware, which);
 
     Init1 = sel["init1"]:"";
@@ -437,7 +436,7 @@ global define void SelectHW(integer which) ``{
  * @return true if there is any
  */
 /* NI: FIXME: move to ND.ycp */
-global define boolean LocateProvider(string provider) ``{
+global define boolean LocateProvider(string provider) {
     list devs = NetworkDevices::Locate("PROVIDER", provider);
     return size(devs) > 0;
 }

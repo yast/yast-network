@@ -48,14 +48,16 @@ global boolean write_only = false;
  * Read hosts settings
  * @return true if success
  */
-global define boolean Read() ``{
+global define boolean Read() {
 
     /* read route.conf */
     if(SCR::Read(.target.size, hosts_file) > 0) {
 	list hostlist = SCR::Dir(.etc.hosts);
-	hosts = listmap(string host, hostlist, ``{
+	hosts = listmap(string host, hostlist, {
 	    string name = (string) SCR::Read(topath(sformat(".etc.hosts.\"%1\"", host)));
-	    list names = filter(string s, splitstring(name, "[ \t]"), ``(s != nil && s != ""));
+	    list names = filter(string s, splitstring(name, "[ \t]"), {
+		return s != nil && s != "";
+	    });
 	    return $[ host: names ];
 	});
     }
@@ -71,7 +73,7 @@ global define boolean Read() ``{
  * Write hosts settings and apply changes
  * @return true if success
  */
-global define boolean Write() ``{
+global define boolean Write() {
 
     if(!modified) return true;
     y2milestone("Writing configuration");
@@ -97,9 +99,11 @@ global define boolean Write() ``{
 	y2debug("hosts=%1", hosts);
 	y2debug("Deleted=%1", Deleted);
 	/* Deleted deleted hosts */
-	maplist(string ho, Deleted, ``(SCR::Write(add(.etc.hosts, ho), nil)));
+	maplist(string ho, Deleted, {
+	    return SCR::Write(add(.etc.hosts, ho), nil);
+	});
 	/* Add and update new hosts */
-	maplist(string ho, list<string> names, hosts, ``{
+	maplist(string ho, list<string> names, hosts, {
 	    if(contains(Deleted, ho) || hosts_init[ho]:nil != names) {
 		y2debug("changed: %1 (%2:%3)", ho, names, hosts_init[ho]:nil);
 		SCR::Write(add(.etc.hosts, ho), mergestring(names, " "));
@@ -118,7 +122,7 @@ global define boolean Write() ``{
  * @param settings autoinstallation settings
  * @return true if success
  */
-global define boolean Import(map settings) ``{
+global define boolean Import(map settings) {
     modified = true;
 
     hosts = (map) eval(settings["hosts"]:$[]);
@@ -129,7 +133,7 @@ global define boolean Import(map settings) ``{
  * Dump the Hosts settings to a map, for autoinstallation use.
  * @return autoinstallation settings
  */
-global define map Export() ``{
+global define map Export() {
     return $[
 	"hosts": eval(hosts),
     ];
@@ -139,7 +143,7 @@ global define map Export() ``{
  * Return "system" predefined hosts (should be present all the time)
  * @return list of system hosts
  */
-global define list GetSystemHosts() ``{
+global define list GetSystemHosts() {
     return [
 	"127.0.0.1",
 	"::1", "fe00::0", "ff00::0", "ff02::1", "ff02::2", "ff02::3"
@@ -153,7 +157,7 @@ global define list GetSystemHosts() ``{
  * @param ips localhost IP addresses
  * @return true if success
  */
-global define boolean Update(string hostname, string domain, list ips) ``{
+global define boolean Update(string hostname, string domain, list ips) {
 
     string fqhostname = hostname;
     if(domain != "") fqhostname = fqhostname + "." + domain;
@@ -180,7 +184,7 @@ global define boolean Update(string hostname, string domain, list ips) ``{
 
     /* Add hostname/ip for all ips */
     boolean nickadded = false;
-    maplist(string ip, ips, ``{
+    maplist(string ip, ips, {
 	/* Only add if not present yet */
 	if(haskey(hosts, ip)) return;
 
@@ -203,14 +207,14 @@ global define boolean Update(string hostname, string domain, list ips) ``{
  * Create host summary
  * @return summary text
  */
-global define string Summary() ``{
+global define string Summary() {
 
 	string summary = "";
 	if(hosts == $[] )
 	    return Summary::NotConfigured();
 
 	summary = Summary::OpenList(summary);
-	foreach(string k, list<string> v, hosts, ``{
+	foreach(string k, list<string> v, hosts, {
 	    summary = Summary::AddListItem(summary, k + " - " + mergestring(v, " ") );
 	});
 	summary = Summary::CloseList(summary);

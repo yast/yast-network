@@ -46,7 +46,7 @@ string routes_file = "/etc/sysconfig/network/routes";
  * Data was modified?
  * @return true if modified
  */
-global define boolean Modified() ``{
+global define boolean Modified() {
     boolean ret = (Routes != Orig_Routes || Forward != Orig_Forward);
     y2debug("ret=%1", ret);
     return ret;
@@ -61,7 +61,7 @@ include "network/routines.ycp";
  * Read routing settings
  * @return true if success
  */
-global define boolean Read() ``{
+global define boolean Read() {
 
     /* read route.conf */
     if(SCR::Read(.target.size, routes_file) > 0)
@@ -102,7 +102,7 @@ global define boolean Read() ``{
  * Write routing settings and apply changes
  * @return true if success
  */
-global define boolean Write() ``{
+global define boolean Write() {
 
     y2milestone("Writing configuration");
     if(!Modified()) {
@@ -150,7 +150,7 @@ global define boolean Write() ``{
  * @param settings autoinstallation settings
  * @return true if success
  */
-global define boolean Import(map settings) ``{
+global define boolean Import(map settings) {
     if(size(settings) == 0)
 	return true;
 
@@ -167,7 +167,7 @@ global define boolean Import(map settings) ``{
  * Dump the Routing settings to a map, for autoinstallation use.
  * @return autoinstallation settings
  */
-global define map Export() ``{
+global define map Export() {
     return $[
 	"routes": eval(Routes),
 	"ip_forward": Forward
@@ -178,7 +178,7 @@ global define map Export() ``{
  * Create routing text summary
  * @return summary text
  */
-global define string Summary() ``{
+global define string Summary() {
 
     string summary = "";
 
@@ -201,7 +201,7 @@ global define string Summary() ``{
  * Get the current devices list
  * @return devices list
  */
-global define list GetDevices() ``{
+global define list GetDevices() {
     return devices;
 }
 
@@ -209,9 +209,9 @@ global define list GetDevices() ``{
  * Get the default gateway
  * @return gateway
  */
-global define string GetGateway() ``{
+global define string GetGateway() {
     string defgw = "";
-    maplist(map r, Routes, ``{
+    maplist(map r, Routes, {
 	if(r["destination"]:"" == "default")
 	    defgw = r["gateway"]:"";
     });
@@ -223,7 +223,7 @@ global define string GetGateway() ``{
  * @param devs new devices list
  * @return true if success
  */
-global define boolean SetDevices(list devs) ``{
+global define boolean SetDevices(list devs) {
     if(devs == nil) {
 	devices = [];
 	return false;

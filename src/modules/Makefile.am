@@ -6,7 +6,7 @@ EXTRA_DIST = $(module_DATA)
 
 NetworkDevices.ybc: Provider.ybc
 
-YCPCFLAGS = -M. -I.
+YCPCFLAGS =
 
 network:
 	ln -sf ../routines network

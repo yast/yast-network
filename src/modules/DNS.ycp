@@ -15,10 +15,11 @@ textdomain "network";
 import "Detection";
 import "Hostname";
 import "NetworkConfig";
+import "NetworkDevices";
 
 /* NI: required wrt functions in routines.ycp */
 block<boolean> AbortFunction = nil;
-define boolean Modified() ``{ return true; }
+define boolean Modified() { return true; }
 
 include "network/routines.ycp";
 include "network/runtime.ycp";
@@ -44,7 +45,7 @@ string resolv_conf = "/etc/resolv.conf";
  * Reads current DNS and hostname settings
  * @return true if success
  */
-global define boolean Read() ``{
+global define boolean Read() {
 
     NetworkConfig::Read();
 
@@ -106,7 +107,7 @@ global define boolean Read() ``{
  * Write new DNS and hostname settings
  * @return true if success
  */
-global define boolean Write() ``{
+global define boolean Write() {
 
     NetworkConfig::Write();
 
@@ -172,7 +173,7 @@ global define boolean Write() ``{
  * @param settings autoinstallation settings
  * @return true if success
  */
-global define boolean Import(map settings) ``{
+global define boolean Import(map settings) {
     if(size(settings) == 0)
 	return false;
 
@@ -188,7 +189,7 @@ global define boolean Import(map settings) ``{
  * Dump the DNS settings to a map, for autoinstallation use.
  * @return autoinstallation settings
  */
-global define map Export() ``{
+global define map Export() {
     return $[
 	"hostname"	: hostname,
 	"domain"	: domain,
@@ -201,7 +202,7 @@ global define map Export() ``{
  * Create DNS text summary
  * @return summary text
  */
-global define string Summary() ``{
+global define string Summary() {
 
     string summary = "<p>";
 

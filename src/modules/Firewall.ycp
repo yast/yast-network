@@ -12,8 +12,6 @@
 module "Firewall";
 textdomain "network";
 
-import "Runlevel";
-
 /**
  * Firewalled devices
  */

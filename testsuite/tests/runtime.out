@@ -1,8 +1,3 @@
-Read	.probe.architecture nil
-Read	.probe.has_apm nil
-Read	.probe.has_pcmcia nil
-Read	.probe.has_smp nil
-Read	.probe.system []
 Dump	ReadStatus
 Return	true
 Dump	RunSuSEconfig
@@ -22,52 +17,17 @@ Return	true
 Execute	.target.bash "/sbin/SuSEconfig --module postfix" 1
 Return	false
 Dump	RunKInternet
-Execute	.target.bash_background "[ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu --nonewdcop -u $USER -- kinternet --quiet" 0
 Return	true
-Execute	.target.bash_background "[ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu --nonewdcop -u $USER -- kinternet --quiet" 1
-Return	false
+Return	true
 Dump	StopNetwork
-Read	.init.scripts.exists "network" true
-Execute	.target.bash "/etc/init.d/network stop" $["TERM":"raw"] 0
 Return	true
-Read	.init.scripts.exists "network" true
-Execute	.target.bash "/etc/init.d/network stop" $["TERM":"raw"] 1
 Return	false
 Dump	StartNetwork
-Read	.init.scripts.exists "network" true
-Execute	.target.bash "/etc/init.d/network start" $["TERM":"raw"] 0
 Return	true
-Read	.init.scripts.exists "network" true
-Execute	.target.bash "/etc/init.d/network start" $["TERM":"raw"] 1
 Return	false
 Dump	RestartNetwork
-Read	.init.scripts.exists "network" true
-Execute	.target.bash "/etc/init.d/network restart" $["TERM":"raw"] 0
 Return	true
-Read	.init.scripts.exists "network" true
-Execute	.target.bash "/etc/init.d/network restart" $["TERM":"raw"] 1
 Return	false
-Dump	EnableSMPPPD
-Read	.init.scripts.exists "smpppd" true
-Read	.init.scripts.exists "smpppd" true
-Read	.init.scripts.exists "smpppd" true
-Read	.init.scripts.runlevel "smpppd" nil
-Read	.init.scripts.comment "smpppd" nil
-Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/smpppd" $["exit":0, "stderr":"", "stdout":""]
-Read	.init.scripts.exists "smpppd" true
-Execute	.target.bash "/etc/init.d/smpppd status" $["TERM":"raw"] 0
-Read	.init.scripts.exists "smpppd" true
-Execute	.target.bash "/etc/init.d/smpppd reload" $["TERM":"raw"] 0
+Dump	SetupSMPPPD
 Return	true
-Read	.init.scripts.exists "smpppd" true
-Read	.init.scripts.exists "smpppd" true
-Read	.init.scripts.exists "smpppd" true
-Read	.init.scripts.runlevel "smpppd" nil
-Read	.init.scripts.comment "smpppd" nil
-Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/smpppd" $["exit":1, "stderr":"Dummy error message", "stdout":""]
-Log	Unable to enable service smpppd:
-Read	.init.scripts.exists "smpppd" true
-Execute	.target.bash "/etc/init.d/smpppd status" $["TERM":"raw"] 1
-Read	.init.scripts.exists "smpppd" true
-Execute	.target.bash "/etc/init.d/smpppd start" $["TERM":"raw"] 1
 Return	false
