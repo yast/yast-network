@@ -130,9 +130,11 @@ Check the <b>Ask</b> button to have it always ask for the password.
  * and in providers.scr!!!!!
  * FIXME: this should go into Write ()
  */
-global define void saveCustomProviders (map provider) ``{
+global define void saveCustomProviders () ``{
     foreach (`key, `value, modem_providers_to_write, ``{
-	path base = add (.providers.v."/etc/sysconfig/modem/providers.conf", key);
+	string sname = lookup (value, "YaST2 Section", "other");
+	sname = filterchars (sname, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.");
+	path base = add (add (.providers.v, sformat ("/etc/sysconfig/network/providers/%1", sname)), key);
 	foreach (`k, `v, value, ``{
 	    if ("YaST2 Section" != k)
 		SCR::Write (add (base, k), v);
@@ -149,16 +151,21 @@ global define void saveCustomProviders (map provider) ``{
 /**
  * Read all provider keys from ini file to map.
  * Adds also key "YaST2 Section" : "section_name";
- * @param country country of the providers
  * @param provs list of providers
  * @return provider map
  */
-global define map getProvider (string country, string provider) ``{
-    path base = add (add (.providers.v, country), provider);
-    list l = SCR::Dir (base);
+global define map getProvider (path provider) ``{
+    string pr = sformat ("%1", provider);
+    integer pos = findlastof (pr, ".");
+    if (-1 != pos)
+    {
+	pr = substring (pr, pos + 2);
+	pr = substring (pr, 0, size (pr) - 1);
+    }
+    list l = SCR::Dir (.providers.v + provider);
     return add (listmap (`i, l, ``{
-	return [ i, SCR::Read (add (base, i)) ];
-    }), "YaST2 Section", provider);
+	return [ i, SCR::Read ( add (.providers.v + provider, i)) ];
+    }), "YaST2 Section", pr);
 }
 /**
  * Returns only those providers which support ISDN.
@@ -166,10 +173,9 @@ global define map getProvider (string country, string provider) ``{
  * @param provs list of providers
  * @return list of isdn capable providers
  */
-global define list filterIsdn (string country, list provs) ``{
-    path base = add (.providers.v, country);
+global define list filterIsdn (list provs) ``{
     return filter (`i, provs, ``{
-	string isdn_sup = SCR::Read (add (add (base, i), "ISDN supported"));
+	string isdn_sup = SCR::Read (.providers.v + i, "ISDN supported");
 	if (nil == isdn_sup)
 	    isdn_sup = "0";
 	return "1" == isdn_sup;
@@ -183,31 +189,27 @@ global define list filterIsdn (string country, list provs) ``{
  * This list is sorted, result is correctly sorted, by priority and
  * alphabeticly. I did not use builtin sort with sort code because it
  * uses bubble sort -- it was bloody slow.
- * @param country country of the providers
  * @param provs list of providers
  * @return sorted list of providers
  */
-global define list sortProviders (string country, list provs) ``{
-    path base = add (.providers.v, country);
+global define list sortProviders (list provs) ``{
     list pre = sort (maplist (`i, add (provs, "--"), ``{
 	if ("--" == i)
-	{
-	    return "9                                  --";
-	}
-	path sec = add (base, i);
-	string tmp = SCR::Read (add (sec, "Priority"));
+	    return "9                                  .\"--\"";
+	path sec = .providers.v + i;
+	string tmp = SCR::Read (sec + .Priority);
 	if (nil == tmp)
 	    tmp = "-1";
 	integer p = 8 - tointeger (tmp);
 	if (p < 0 || p > 9)
 	    y2error ("======= wrong priority, you must change the algorithm!!! %1 =======", tmp);
-	tmp = tolower (SCR::Read (add (sec, "Provider"))) + "                                   ";
+	tmp = tolower (SCR::Read (sec + .Provider)) + "                                   ";
 	tmp = sformat ("%1", p) + tmp;
-	return substring (tmp, 0, 35) + i;
+	return sformat ("%1%2", substring (tmp, 0, 35), i);
     }));
-    if ("--" == substring (select (pre, 0), 35))
+    if (".\"--\"" == substring (select (pre, 0, ""), 35))
 	pre = remove (pre, 0);
-    return maplist (`i, pre, ``(substring (i, 35)));
+    return maplist (`i, pre, ``(topath (substring (i, 35))));
 }
 /**
  * Get item list of provider countries for selection box. Note that
@@ -223,40 +225,41 @@ global define list getProvidersCountryList (list provs,string preselect) ``{
 	"/usr/share/providers/DE.wvdial.conf" : _("Germany"),
 	"/usr/share/providers/UK.wvdial.conf" : _("UK"),
 	"/usr/share/providers/US.wvdial.conf" : _("USA"),
-	"/etc/sysconfig/modem/providers.conf" : _("Other"),
 	];
     integer i = -1;
-    /* uncomment this and comment the following to have Other providers separated by ----------
-    list out = [];
-    foreach (`e, provs, ``{
-	i = i + 1;
-	if ("/etc/sysconfig/modem/providers.conf" == e)
-	    out = add (out, `item (`id ("--"), "----------------"));
-	out = add (out, `item (`id (e), lookup (table, e, e), 0 == i || preselect == e));
-    });
-    return out;*/
-    return maplist (`e, provs, ``{
-	i = i + 1;
-	return `item (`id (e), lookup (table, e, e), 0 == i || preselect == e);
-    });
+    boolean other_present = false;
+    return filter (`x, maplist (`e, provs, ``{
+	    i = i + 1;
+	    if ("/etc" == substring (e, 0, 4))
+	    {
+		if (other_present)
+		    return nil;
+		other_present = true;
+		return `item (`id (""), _("Other"), 0 == i || preselect == "/etc");
+	    }
+	    else
+	    {
+		return `item (`id (e), lookup (table, e, e), 0 == i || preselect == e);
+	    }
+	}),
+    ``{ return x != nil;});
 }
 /**
  * Get item list of providers for selection box.
- * @param country country of the providers
  * @param provs list of providers
  * @param preselect preselect this item
  * @return list of providers for selection box.
  *      Items are: `item (`id ("prov_ident"), "Name")
  */
-global define list getProvidersList (string country, list provs, string preselect) ``{
+global define list getProvidersList (list provs, path preselect) ``{
     path base = add (.providers.v, country);
     integer i = -1;
     string n = "";
     return maplist (`e, provs, ``{
 	i = i + 1;
-	if ("--" == e)
+        if (."--" == e)
 	    return `item (`id (e), "----------------");
-	n = SCR::Read (add (add (base, e), "Provider"));
+	n = SCR::Read (.providers.v + e + .Provider);
 	return `item (`id (e), nil == n ? e : n, 0 == i || preselect == e);
     });
 }
@@ -312,6 +315,26 @@ To register for <b>%1</b> and find the best dialing number, call the hotline
     }
     return InfoText;
 }
+/**
+ * We must keep user-defined providers each in separate file.
+ * But here in UI we merge them into one section of "Other".
+ * This gives us a list of "Other" providers.
+ * @return list of providers
+ */
+global define list getOtherProvs () ``{
+   list countries = SCR::Dir (.providers.s);
+   list provs = [];
+   foreach (`i, countries, ``{
+       if (substring (i, 0, 4) == "/etc")
+       {
+	list l = SCR::Dir (add (.providers.s, i));
+	foreach (`j, l, ``{
+	    provs = add (provs, add (add (., i), j));
+	});
+       }
+   });
+   return provs;
+}
 
 /**
  * Providers dialog.
@@ -341,7 +364,7 @@ Use the <b>New</b> button to add a provider not in the list.
     list provs = [];
 
     string country = "";
-    string provider = "";
+    path provider = .;
 
 
     term contents =
@@ -375,50 +398,37 @@ Use the <b>New</b> button to add a provider not in the list.
 	{
 	    //string prev = country;
 	    country = UI::QueryWidget (`id (`countries), `CurrentItem);
-	    /* uncomment this if you want to separate countries from Other
-	    if ("--" == country)
+	    provs = (country != "" ? maplist (`i, SCR::Dir (add (.providers.s, country)), ``{ return add (add (., country), i);}) : getOtherProvs ());
+	    if (`isdn == type)
 	    {
-		if (prev == "/etc/sysconfig/modem/providers.conf")
-		{
-		    integer i = -1;
-		    find (`e, countries, ``{ i = i + 1; return e == "/etc/sysconfig/modem/providers.conf"; });
-		    country = select (countries, i - 1);
-		}
-		else
-		    country = "/etc/sysconfig/modem/providers.conf";
-		UI::ChangeWidget (`id (`countries), `CurrentItem, country);
-	    }*/
-	    provs = SCR::Dir (add (.providers.s, country));
-	    if (type == `isdn)
-	    {
-		provs = filterIsdn (country, provs);
+		provs = filterIsdn (provs);
 	    }
-	    if (type == `adsl || type == `tdsl)
+	    else if (`adsl == type || `tdsl == type)
 	    {
-
+		// FIXME
 	    }
-	    provs = sortProviders (country, provs);
+	    provs = sortProviders (provs);
 	    UI::ReplaceWidget (`id (`providers_rep), `SelectionBox (`id (`providers), `opt (`notify), _("&Provider"),
-			getProvidersList (country, provs, provider)));
+			getProvidersList (provs, provider)));
 	    ret = `providers;
 	}
 	if (`providers == ret)
 	{
-	    string prev = provider;
+	    path prev = provider;
 	    provider = UI::QueryWidget (`id (`providers), `CurrentItem);
-	    if ("--" == provider)
+	    if (."--" == provider)
 	    {
 		integer p = -1;
 		find (`e, provs, ``{ p = p + 1; return e == prev; });
 		integer i = -1;
-		find (`e, provs, ``{ i = i + 1; return e == "--"; });
-		provider = select (provs, p < i ? i + 1 : i - 1);
+		find (`e, provs, ``{ i = i + 1; return e == ."--"; });
+		provider = select (provs, p < i ? i + 1 : i - 1, "");
 		UI::ChangeWidget (`id (`providers), `CurrentItem, provider);
 	    }
-	    string tmp = SCR::Read (add (add (add (.providers.v, country), provider), "Homepage"));
+	    string tmp = SCR::Read (.providers.v + provider + .Homepage);
 	    tmp = ((nil == tmp || "" == tmp) ? "" : sformat (_("Home Page: %1"), tmp));
 	    UI::ChangeWidget (`id (`homepage), `Value, tmp);
-	    tmp = SCR::Read (add (add (add (.providers.v, country), provider), "Hotline"));
+	    tmp = SCR::Read (.providers.v + provider + .Hotline);
 	    tmp = ((nil == tmp || "" == tmp) ? "" : sformat (_("Hot Line: %1"), tmp));
 	    UI::ChangeWidget (`id (`hotline), `Value, tmp);
 	}
@@ -433,7 +443,7 @@ Use the <b>New</b> button to add a provider not in the list.
     {
 	// do not do union with the old user_settings here because we
 	// take completly new provider here.
-	user_settings = getProvider (country, provider);
+	user_settings = getProvider (provider);
     }
     return ret;
 }
@@ -617,7 +627,7 @@ global define symbol runEditModemProviderDialog (boolean edit) ``{
 
 		if (!edit)
 		{
-		    modem_providers_to_write = add (modem_providers_to_write, name, user_settings);
+		    modem_providers_to_write = add (modem_providers_to_write, shortname, user_settings);
 		}
 	    }
 	}
@@ -778,12 +788,12 @@ global define symbol runEditIsdnProviderDialog () ``{
 /*
 */
 //Wizard::CreateDialog();
-//runProvidersDialog(false);
+//runProvidersDialog(`modem);
 //runProvidersDialog(true);
-//runEditModemProviderDialog(false);
+//runEditModemProviderDialog(true);
 //runEditModemProviderDialog(true);
 //runEditIsdnProviderDialog();
-//UI::CloseDialog();
+UI::CloseDialog();
 
 /* EOF */
 }
