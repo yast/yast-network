@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Apr  1 10:45:14 CEST 2005 - mvidner@suse.cz
+
+- Fixed detection of WPA-PSK support (#74496).
+- Removed obsolete file for personal firewall.
+
+-------------------------------------------------------------------
 Tue Mar 22 09:56:21 CET 2005 - mvidner@suse.cz
 
 - isdnctrl was moved to /sbin (#74096).
