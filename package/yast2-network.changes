@@ -1,8 +1,10 @@
 -------------------------------------------------------------------
-Tue Feb 22 17:33:39 CET 2005 - mvidner@suse.cz
+Thu Feb 24 14:37:16 CET 2005 - mvidner@suse.cz
 
+- Allow WEP keys of lengths that the card supports (#60011).
 - Adjusted to the actual wireless card features implementation in
   agent-probe (#65391).
+- 2.11.20
 
 -------------------------------------------------------------------
 Mon Feb 21 16:57:57 CET 2005 - mvidner@suse.cz

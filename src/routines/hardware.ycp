@@ -289,7 +289,7 @@ define list<map> ReadHardware(string hwtype) {
 	    //one["wl_frequencies"] = resource["wlan", 0, "frequencies"]:nil;
 	    one["wl_bitrates"]    = resource["wlan", 0, "bitrates"]:nil;
 	    one["wl_auth_modes"]  = resource["wlan", 0, "auth_modes"]:nil;
-	    //one["wl_enc_modes"]   = resource["wlan", 0, "enc_modes"]:nil;
+	    one["wl_enc_modes"]   = resource["wlan", 0, "enc_modes"]:nil;
 	}
 
 	y2debug("found device: %1", one);

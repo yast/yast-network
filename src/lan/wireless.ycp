@@ -104,15 +104,16 @@ define map<string, string> ParseWepKey (string tkey) ``{
  * Is the entered key valid?
  * TODO: check according to the selected key length
  * (or better adjust the length?)
+ * @param lengths allowed real key lengths
  */
-define boolean CheckWirelessKey (string key) ``{
+define boolean CheckWirelessKey (string key,  list<integer> lengths) {
     if (key == nil)
     {
 	return false;
     }
 
-    if (regexpmatch (key, "^s:.{5}$") && true /* 64b */ ||
-	regexpmatch (key, "^s:.{6,13}$") && true /* 128b */)
+    if (regexpmatch (key, "^s:.{5}$")    && contains (lengths, 40) ||
+	regexpmatch (key, "^s:.{6,13}$") && contains (lengths, 104))
     {
 	return true;
     }
@@ -120,11 +121,12 @@ define boolean CheckWirelessKey (string key) ``{
     if (regexpmatch (key, "^[0-9A-Fa-f-]*$"))
     {
 	key = deletechars (key, "-");
-	if (regexpmatch (key, "^[0-9A-Fa-f]{10}$") && true /* 64b */ ||
-	    regexpmatch (key, "^[0-9A-Fa-f]{26}$") && true /* 128b */)
+	integer actual_bits = size (key) * 4; // 4 bits per hex digit
+	if (contains (lengths, actual_bits))
 	{
 	    return true;
 	}
+	y2milestone ("Key length: actual %1, allowed %2", actual_bits, lengths);
     }
 
     if (regexpmatch (key, "^h:"))
@@ -133,6 +135,36 @@ define boolean CheckWirelessKey (string key) ``{
     }
 
     return false;
+}
+
+
+/**
+ * Takes the WEP items from the list and returns the key lengths as integers
+ * Like the input, uses the real length which is 24 bits shorter
+ * than the marketing one.
+ * If the input is nil, return the default set of key lengths.
+ * @param enc_modes a subset of WEP40, WEP104, WEP128, WEP232, TKIP, CCMP
+ * @return list of real key lengths
+ */
+list<integer> ParseKeyLengths (list<string> enc_modes) {
+    if (enc_modes == nil)
+    {
+	return [40, 104];
+    }
+
+    list<integer> lengths = [];
+    foreach (string em, enc_modes, {
+	if (substring (em, 0, 3) == "WEP")
+	{
+	    lengths = add (lengths, tointeger (substring (em, 3)));
+	}
+    });
+
+    if (lengths == [])
+    {
+	y2warning ("empty set of key lengths");
+    }
+    return lengths;
 }
 
 /**
@@ -254,6 +286,8 @@ available options.</p>");
 	type = wkey["type"]:"";
     }
 
+    list<integer> key_lengths = ParseKeyLengths (Lan::wl_enc_modes);
+
     /* PushButton label */
     term multikeys = `PushButton(`id(`keys), _("&Multiple Keys"));
     // multikeys = `VSpacing(0);
@@ -364,13 +398,15 @@ available options.</p>");
 		    (sz < 8 || sz > 63))
 		{
 		    UI::SetFocus(`id(`key));
+		    // Error popup
 		    Popup::Error(_("The passphrase must have between 8 and 63 characters (inclusively)."));
 		    continue;
 		}
 		else if (type == "hex" && !regexpmatch (key, "^[0-9A-Fa-f]{64}$"))
 		{
 		    UI::SetFocus(`id(`key));
-		    Popup::Error(_("The key must have 64 hexadecimal digits."));
+		    // Error popup
+		    Popup::Error(sformat (_("The key must have %1 hexadecimal digits."), 64));
 		    continue;
 		}
 	    }
@@ -378,8 +414,7 @@ available options.</p>");
 	    {
 		ckey = ComposeWepKey (type, key);
 		if (ckey != "") {
-		    // TODO validate also according to key length
-		    if (!CheckWirelessKey (ckey))
+		    if (!CheckWirelessKey (ckey, key_lengths))
 		    {
 			UI::SetFocus(`id(`key));
 			/* Popup text */
@@ -571,8 +606,9 @@ the channel, select the desired value.</p>
 /**
  * Used to add or edit a key
  * @param tkey has s: for ascii or h: for passphrase
+ * @param lengths allowed real key lengths
  */
-define string WirelessKeyPopup (string tkey) ``{
+define string WirelessKeyPopup (string tkey, list<integer> lengths) ``{
     ScreenName("lan-hardware-wireless-key");
 
     map<string, string> wkey = ParseWepKey (tkey);
@@ -627,8 +663,7 @@ define string WirelessKeyPopup (string tkey) ``{
 	    key = (string) UI::QueryWidget (`id (`key), `Value);
 	    type = (string) UI::QueryWidget (`id (`type_g), `CurrentButton);
 	    ckey = ComposeWepKey (type, key);
-	    // TODO validate also according to key length
-	    if (CheckWirelessKey (ckey))
+	    if (CheckWirelessKey (ckey, lengths))
 	    {
 		break;
 	    }
@@ -705,6 +740,13 @@ value to 64.</p>") +
     "";
 
     string length = Lan::wl_key_length;
+    list<string> ui_key_lengths = maplist (integer kl,
+					   ParseKeyLengths (Lan::wl_enc_modes),
+					   ``( tostring (kl + 24) ));
+    if (!contains (ui_key_lengths, length))
+    {
+	ui_key_lengths = add (ui_key_lengths, length);
+    }
     list<string> keys = Lan::wl_key;
     integer default = FindGoodDefault (keys, Lan::wl_default_key);
 
@@ -717,7 +759,7 @@ value to 64.</p>") +
 	    `Frame(_("WEP Keys"), `HBox(`HSpacing(3), `VBox(
 		`VSpacing(1),
 		/* ComboBox label */
-		`Left(`ComboBox(`id(`length), _("&Key Length"), ["128","64"])),
+		`Left(`ComboBox(`id(`length), _("&Key Length"), ui_key_lengths)),
 		`VSpacing(1),
 		`Table(`id(`table), `opt(`notify),
 		       `header(
@@ -760,13 +802,15 @@ value to 64.</p>") +
 	ret = UI::UserInput();
 
 	current = (integer) UI::QueryWidget (`id (`table), `CurrentItem);
+	length = (string) UI::QueryWidget (`id (`length), `Value);
+	integer rlength = tointeger (length) - 24;
 
 	if(ret == `abort || ret == `cancel) {
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
 	else if(ret == `table || ret == `edit || ret == `delete) {
-	    keys[current] = (ret != `delete) ? WirelessKeyPopup (keys[current]:"") : "";
+	    keys[current] = (ret != `delete) ? WirelessKeyPopup (keys[current]:"", [rlength]) : "";
 	    default = FindGoodDefault (keys, default);
 	    UI::ChangeWidget (`id (`table), `Items, WirelessKeysItems (keys, default));
 	}
@@ -774,12 +818,7 @@ value to 64.</p>") +
 	    default = FindGoodDefault (keys, current);
 	    UI::ChangeWidget (`id (`table), `Items, WirelessKeysItems (keys, default));
 	}
-	else if(ret == `next) {
-	    length = (string) UI::QueryWidget (`id (`length), `Value);
-	    // no validation necessary (?)
-	    break;
-	}
-	else if(ret == `back) {
+	else if(ret == `next || ret == `back) {
 	    break;
 	}
 	else {

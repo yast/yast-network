@@ -91,6 +91,7 @@ global boolean wl_power = true;
 // Card Features from hwinfo
 // if not provided, we use the default full list
 global list<string> wl_auth_modes = nil;
+global list<string> wl_enc_modes = nil;
 global list<string> wl_channels = nil;
 global list<string> wl_bitrates = nil;
 list<string> nilliststring = nil; // to save some casting
@@ -482,6 +483,7 @@ void SelectHWMap (map hw) {
 
     // Wireless Card Features
     wl_auth_modes = hw["wl_auth_modes"]:nilliststring;
+    wl_enc_modes = hw["wl_enc_modes"]:nilliststring;
     wl_channels = hw["wl_channels"]:nilliststring;
     wl_bitrates = hw["wl_bitrates"]:nilliststring;
     string mac = hw["mac"]:"";
