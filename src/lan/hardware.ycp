@@ -269,6 +269,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     UI::ChangeWidget(`id(`modul), `Enabled, hotplug == "");
     UI::ChangeWidget(`id(`options), `Enabled, hotplug == "");
     ChangeWidgetIfExists(`id(`list), `Enabled, hotplug == "");
+    ChangeWidgetIfExists(`id(`usb), `Enabled, hotplug == "usb" || hotplug == "");
+    ChangeWidgetIfExists(`id(`pcmcia), `Enabled, hotplug == "pcmcia" || hotplug == "");
     ChangeWidgetIfExists(`id(`wire), `Enabled, wireless);
     ChangeWidgetIfExists(`id(`num), `Value, device);
 
