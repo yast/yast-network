@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Aug 19 16:46:07 CEST 2002 - kkeil@suse.de
+
+- check and install needed packages for isdn (#17615)
+
+-------------------------------------------------------------------
 Mon Aug 19 14:07:47 CEST 2002 - mvidner@suse.cz
 
 - Now cardbus cards are detected, so use eth-pcmcia-0
