@@ -1,0 +1,30 @@
+@HEADER-COMMENT@
+# neededforbuild  autoconf automake ycpdoc yast2-testsuite dejagnu expect tcl yast2-base libycp liby2 libyui libscr yast2-core-wfm yast2-core-scr yast2-agent-system libycp-devel yast2-devtools
+
+@HEADER@
+Requires:	yast2 yast2-trans-network yast2-lib-wizard yast2-lib-sequencer yast2-lib-network sysconfig
+BuildArchitectures:	noarch
+
+Summary:	Configuration of network
+
+%description
+This package is a part of YaST2. It contains the necessary scripts to
+configure network.
+
+@PREP@
+
+@BUILD-YCP@
+
+@INSTALL-YCP@
+
+@CLEAN@
+
+%files
+%defattr(-,root,root)
+# %dir @YAST2DIR@/include/network
+@YAST2DIR@/include/network/*
+@YAST2DIR@/clients/network.ycp
+@YAST2DIR@/clients/network_*.ycp
+@YAST2DIR@/modules/Network.ycp
+@YAST2DIR@/menuentries/menuentry_network.ycp
+%doc @DOCDIR@

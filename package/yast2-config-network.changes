@@ -1,0 +1,625 @@
+- complete rewrite (almost no old code left)
+- 2.5.0
+
+-------------------------------------------------------------------
+Tue Sep 25 10:45:39 CEST 2001 - dan@suse.cz
+
+- test for running i4l only if it exists (#11286)
+
+-------------------------------------------------------------------
+Mon Sep 24 16:17:39 CEST 2001 - dan@suse.cz
+
+- start smpppd only if it exists (#11250)
+- fix adding providers for PCMCIA
+
+-------------------------------------------------------------------
+Fri Sep 21 11:30:43 CEST 2001 - dan@suse.cz
+
+- add PollInput to avoid strange UserInput behavior
+  also fixes (#11069)
+
+-------------------------------------------------------------------
+Tue Sep 18 12:41:58 CEST 2001 - dan@suse.cz
+
+- start smpppd after starting ISDN (#10545)
+- enable to write 0.0.0.0 as default route (#10751)
+- 2.4.16
+
+-------------------------------------------------------------------
+Fri Sep 14 17:26:51 CEST 2001 - msvec@suse.cz
+
+- fixed shortcuts (#10401)
+- 2.4.14
+
+-------------------------------------------------------------------
+Fri Sep 14 13:43:10 CEST 2001 - dan@suse.cz
+
+- generate correct device numbers (#10580)
+- start smpppd after starting ISDN (#10545)
+- fix values from install.inf (#10628)
+- just one DNS is needed for modems (#10640)
+
+-------------------------------------------------------------------
+Wed Sep 12 13:32:53 CEST 2001 - dan@suse.cz
+
+- adding providers for PCMCIA cards fix (#10116)
+- 2.4.12
+
+-------------------------------------------------------------------
+Tue Sep 11 11:42:44 CEST 2001 - dan@suse.cz
+
+- use LSB complainant return values
+- remember entered DNS values
+
+-------------------------------------------------------------------
+Mon Sep 10 09:09:02 CEST 2001 - dan@suse.cz
+
+- fixed reading exiting configuration (also #10348)
+
+-------------------------------------------------------------------
+Thu Sep  6 17:15:44 CEST 2001 - msvec@suse.cz
+
+- progress bar again functional
+- fixed some anyagent error messages
+- fixed route writing (maybe also #10123)
+- 2.4.9
+
+-------------------------------------------------------------------
+Wed Sep  5 18:21:50 CEST 2001 - msvec@suse.cz
+
+- fixed some CallFunction(lan_route)
+- fixed some other CallFunctions
+- fixed some untranslated messages
+- hopefully finally fixed the hostname settings (#10192)
+- more trailing whitespace removed
+- use :: in the dns configuration
+- 2.4.8
+
+-------------------------------------------------------------------
+Tue Sep  4 21:05:13 CEST 2001 - msvec@suse.cz
+
+- partial fix of duplicated variables (#9991)
+- fixed SCR variables (#10031)
+- fixed route writing (#10123)
+- removed some trailing whitespace
+- fixed some typos (#10034)
+- enabled parseycp check
+- fixed complex dialog
+- fixed hostname settings
+- 2.4.7
+
+-------------------------------------------------------------------
+Fri Aug 31 00:49:12 CEST 2001 - ro@suse.de
+
+- added <libycp-devel> to neededforbuild (for testsuite)
+
+-------------------------------------------------------------------
+Wed Aug 22 11:22:08 CEST 2001 - dan@suse.cz
+
+- static DNS enabled for ISDN flow (also #6020) 
+
+-------------------------------------------------------------------
+Tue Aug 21 12:14:05 CEST 2001 - msvec@suse.cz
+
+- fixed netcards.ycp database
+- removed more obsolete builtins
+- fixed some minor bugs
+- 2.4.5
+
+-------------------------------------------------------------------
+Tue Aug 21 09:26:32 CEST 2001 - msvec@suse.cz
+
+- removed obsolete fileexist builtin
+- enabled abuild checking
+- 2.4.4
+
+-------------------------------------------------------------------
+Thu Aug 16 16:46:48 CEST 2001 - dan@suse.cz
+
+- adoption to the new probe format 
+
+-------------------------------------------------------------------
+Tue Aug 14 14:52:58 CEST 2001 - msvec@suse.cz
+
+- AddtoSecrets fixed (#9716)
+- AddtoSecrets testsuite
+- 2.4.2
+
+-------------------------------------------------------------------
+Fri Jul 27 11:38:36 CEST 2001 - dan@suse.cz
+
+- hostname change re-enabled on a running system
+
+-------------------------------------------------------------------
+Fri Jul 20 14:42:10 CEST 2001 - dan@suse.cz
+
+- split of the nfs services, sendmail and nis configuration <msvec@suse.cz>
+- removed superfluous first dialog of NFS client <mvidner@suse.cz>
+- version 2.4.0
+- new libycp adoption
+- minor text changes
+
+-------------------------------------------------------------------
+Tue Jul 10 01:35:40 CEST 2001 - ro@suse.de
+
+- removed yast2-core-translator from neededforbuild
+
+-------------------------------------------------------------------
+Tue May 22 10:29:47 CEST 2001 - dan@suse.cz
+
+- removing search from resolv.conf fixed (#8578) 
+
+-------------------------------------------------------------------
+Tue May 15 18:14:39 CEST 2001 - dan@suse.cz
+
+- propagate installation parameter to set-up hostname during installation (#7964)
+- set-up /etc/HOSTNAME after reboot (#8344)
+- write MODEM variable into rc.config (#7895) 
+
+-------------------------------------------------------------------
+Tue May 15 13:52:36 CEST 2001 - kkaempf@suse.de
+
+- write "--module hostname" to /var/lib/YaST2/run_suseconfig to
+  force hostname change propagation on next reboot.
+
+-------------------------------------------------------------------
+Tue May 15 10:35:11 CEST 2001 - dan@suse.cz
+
+- write PCMCIA ISDN cards under NETCONFIG_PCMCIA instead of NETCONFIG 
+in the rc.config file (bug #8069)
+- y2log cleanup (bug #8327) 
+
+-------------------------------------------------------------------
+Mon May 14 17:38:26 CEST 2001 - dan@suse.cz
+
+- do not write empty headers into '/etc/resolv.conf' (bug #8299) 
+
+-------------------------------------------------------------------
+Mon May 14 15:07:35 CEST 2001 - dan@suse.cz
+
+- write hostname for PCMCIA cards (bug #7964)
+- run full SuSE config during intsllation to set-up '/etc/HOSTNAME' (bug
+#8183)
+- DNS info writting fixed (bug #8256)
+
+-------------------------------------------------------------------
+Fri May 11 15:53:21 CEST 2001 - dan@suse.cz
+
+- quote user and name in '/etc/ppp/ioptions.<dev>'
+- message in DNS popup fixed (#8071) 
+
+-------------------------------------------------------------------
+Fri May 11 12:47:57 CEST 2001 - dan@suse.cz
+
+- Inherits fixes for modem (#7968)
+- do not stop/start PCMCIA directly
+- message fixes for DNS dialog 
+
+-------------------------------------------------------------------
+Mon May  7 15:29:37 CEST 2001 - dan@suse.cz
+
+- manual setup flow fixed
+- allow to change hostname during installation (#7630)
+- writing of chap/pap secrets fixed (#7377) 
+
+-------------------------------------------------------------------
+Fri May  4 13:04:01 CEST 2001 - dan@suse.cz
+
+- reindexing isdn cards when reindexing
+- unique keys handeling unified 
+
+-------------------------------------------------------------------
+Mon Apr 30 17:46:37 CEST 2001 - dan@suse.cz
+
+- isdn subclass fixes 
+
+-------------------------------------------------------------------
+Fri Apr 27 15:40:26 CEST 2001 - dan@suse.cz
+
+- resolving fixes
+- multiple bugfixes in workflow 
+
+-------------------------------------------------------------------
+Tue Apr 24 15:26:20 CEST 2001 - dan@suse.cz
+
+- fixes for modem, isdn
+- ypclient fix 
+- summary info fixes
+
+-------------------------------------------------------------------
+Tue Apr 17 15:53:33 CEST 2001 - dan@suse.cz
+
+- summary added
+- isdn config files under /etc/ppp/providers
+- menuentries fixed
+- saving resolv.conf fixed 
+
+-------------------------------------------------------------------
+Tue Apr 17 15:33:45 CEST 2001 - kkaempf@suse.de
+
+- set "START_PORTMAP" to "yes" when configuring NFS server (#6270)
+
+-------------------------------------------------------------------
+Thu Apr 12 14:51:11 CEST 2001 - dan@suse.cz
+
+- new resolving and hwprobe compliant
+- abort button allowed again
+
+-------------------------------------------------------------------
+Thu Apr  5 10:59:31 CEST 2001 - msvec@suse.cz
+
+- translation package rename
+- documentation moved to $RPMNAME
+- enabled abuild checking
+- version 2.3.3
+
+-------------------------------------------------------------------
+Tue Apr  3 14:32:05 CEST 2001 - kukuk@suse.de
+
+- Remove ycpdoc from requires
+
+-------------------------------------------------------------------
+Fri Mar 30 16:18:44 CEST 2001 - dan@suse.cz
+
+- alone function header removed
+
+-------------------------------------------------------------------
+Fri Mar 30 15:32:24 CEST 2001 - dan@suse.cz
+
+- more new libycp addopting, using wizard library,
+- adopting to the new resolver agent
+
+-------------------------------------------------------------------
+Tue Mar 27 19:55:36 CEST 2001 - dan@suse.cz
+
+- switch to the new libycp
+- package rename
+
+-------------------------------------------------------------------
+Fri Jan 26 16:22:02 CET 2001 - msvec@suse.cz
+
+- translation fix (broken textdomains) #6166
+
+-------------------------------------------------------------------
+Fri Jan 26 12:57:05 CET 2001 - arvin@suse.de
+
+- use absolute path for rci4l scripts
+
+-------------------------------------------------------------------
+Fri Jan 26 12:45:43 CET 2001 - dan@suse.de
+
+- temporal fix of rcnfsserver start call (bug #6157)
+
+-------------------------------------------------------------------
+Fri Jan 26 09:47:45 CET 2001 - dan@suse.cz
+
+- ISDN default vaules fix (bug #6151) 
+
+-------------------------------------------------------------------
+Thu Jan 25 13:40:30 CET 2001 - dan@suse.cz
+
+- minor log fixes, added providers.ycp to enamble translation of ISP
+countries 
+
+-------------------------------------------------------------------
+Mon Jan 22 14:14:40 CET 2001 - dan@suse.cz
+
+- missing textdomain
+
+-------------------------------------------------------------------
+Mon Jan 22 10:30:23 CET 2001 - dan@suse.cz
+
+- include missing
+
+-------------------------------------------------------------------
+Fri Jan 19 16:13:44 CET 2001 - smid@suse.cz
+
+- bugfixes
+
+-------------------------------------------------------------------
+Thu Jan 18 17:27:11 CET 2001 - dan@suse.cz
+
+- wait for dhclient up to 55 secs that should be enough.
+- don't start dhclient for pcmcia cards
+- always write "off" to pcmcia device 
+
+-------------------------------------------------------------------
+Wed Jan 17 15:13:23 CET 2001 - smid@suse.cz
+
+- bugfixes
+
+-------------------------------------------------------------------
+Tue Jan 16 17:16:43 CET 2001 - dan@suse.cz
+
+- editing fixes 
+
+-------------------------------------------------------------------
+Tue Jan 16 08:55:17 CET 2001 - smid@suse.cz
+
+- many bugfixes
+
+-------------------------------------------------------------------
+Mon Jan 15 19:20:17 CET 2001 - mike@suse.de
+
+- bug 5617 confusing names 
+
+-------------------------------------------------------------------
+Mon Jan 15 17:11:31 CET 2001 - dan@suse.cz
+
+- mostly button fixes, dhclient delay increased 
+
+-------------------------------------------------------------------
+Fri Jan 12 18:57:30 CET 2001 - kkaempf@suse.de
+
+- mark routing helptext as translatable
+
+-------------------------------------------------------------------
+Fri Jan 12 10:13:50 CET 2001 - smid@suse.de
+
+- next button in route dialog fixed
+- forgotten debug dialog from isdn removed
+
+-------------------------------------------------------------------
+Thu Jan 11 17:32:21 CET 2001 - dan@suse.de
+
+- pcmcia fixes, enabling dhclient to set hostname
+- personal firewall checkbox added 
+
+-------------------------------------------------------------------
+Thu Jan 11 00:44:07 CET 2001 - smid@suse.cz
+
+- bugfixes
+
+-------------------------------------------------------------------
+Wed Jan 10 01:38:37 CET 2001 - smid@suse.cz
+
+- bugfixes (xauth, saving)
+
+-------------------------------------------------------------------
+Tue Jan  9 23:27:13 CET 2001 - dan@suse.cz
+
+- new configuration workflow (another version :)) 
+
+
+-------------------------------------------------------------------
+Thu Jan  4 12:40:06 CET 2001 - dan@suse.cz
+
+- new configuration workflow 
+
+-------------------------------------------------------------------
+Tue Dec 19 18:57:56 CET 2000 - smid@suse.cz
+
+- added detection of init strings
+
+-------------------------------------------------------------------
+Tue Dec 19 16:53:47 CET 2000 - dan@suse.cz
+
+- more bugfixes (#4833, #4737, #4838, #4815) 
+
+-------------------------------------------------------------------
+Mon Dec 18 14:26:14 CET 2000 - dan@suse.cz
+
+- more fixes (esp. checks), isdn saving fix (bugs #4738, #4751)
+
+-------------------------------------------------------------------
+Fri Dec 15 16:25:22 CET 2000 - dan@suse.cz
+
+- fixes of bugs #4736, #4734, #4733, #4731
+
+-------------------------------------------------------------------
+Fri Dec 15 14:14:39 CET 2000 - dan@suse.cz
+
+- passing unique_keys fixed, y2t_lan required again
+
+-------------------------------------------------------------------
+Fri Dec 15 13:24:31 CET 2000 - dan@suse.cz
+
+- restarting network just in the case of editing ethernet or token ring (bug #4677) 
+
+-------------------------------------------------------------------
+Fri Dec 15 10:55:41 CET 2000 - dan@suse.cz
+
+- PCMCIA fix (for manual), minor changes (default values ...) 
+
+-------------------------------------------------------------------
+Wed Dec 13 18:59:30 CET 2000 - mike@suse.de
+
+- new menuentry
+
+-------------------------------------------------------------------
+Wed Dec 13 08:22:31 CET 2000 - dan@suse.cz
+
+- spec file fixed (missing database for manual selection) 
+- xauth agent used for setting xauthority 
+
+-------------------------------------------------------------------
+Sun Dec 10 20:26:37 CET 2000 - dan@suse.cz
+
+- ypcliet script is ypbind now
+- debug dialog removed from sendmail config 
+
+-------------------------------------------------------------------
+Sun Dec 10 17:34:43 CET 2000 - dan@suse.cz
+
+- typo fixed 
+
+-------------------------------------------------------------------
+Sat Dec  9 14:07:36 CET 2000 - dan@suse.cz
+
+- Unknown provider label when provider is not recognized 
+- fixed route saving
+- fixed modem list 
+
+-------------------------------------------------------------------
+Fri Dec  8 01:25:24 CET 2000 - kendy@suse.cz
+
+- Fixed saving of resolv.conf and route.conf
+- test_mode switched off in dialup
+- added textdomains for dialup modules
+- /sbin/init.d changed to /etc/init.d
+
+-------------------------------------------------------------------
+Thu Dec  7 19:12:09 CET 2000 - kkaempf@suse.de
+
+- fix double qouted terms
+
+-------------------------------------------------------------------
+Thu Dec  7 13:12:41 CET 2000 - kkaempf@suse.de
+
+- fix dhcp setup
+
+-------------------------------------------------------------------
+Wed Dec  6 17:45:06 CET 2000 - kkaempf@suse.de
+
+- read default values from /etc/install.inf
+
+-------------------------------------------------------------------
+Wed Dec  6 16:12:22 CET 2000 - kkaempf@suse.de
+
+- fix filelist in spec
+
+-------------------------------------------------------------------
+Wed Dec  6 15:58:08 CET 2000 - kkaempf@suse.de
+
+- use bzip2 for packaging
+
+-------------------------------------------------------------------
+Fri Dec  1 13:46:09 CET 2000 - dan@suse.cz
+
+- merge with dial, initial
+
+-------------------------------------------------------------------
+Fri Oct 27 14:02:05 CEST 2000 - dan@suse.de
+
+- configuration of more devices enabled.
+
+-------------------------------------------------------------------
+Mon Jul 24 15:16:01 MEST 2000 - dan@suse.de
+
+- added cheching for running NIS server (bugfix of #3422) and testing if /etc/route.conf exists (bugfix #3627) 
+
+-------------------------------------------------------------------
+Mon Jul 24 12:03:31 CEST 2000 - kkaempf@suse.de
+
+- fix ip address checking
+  version 2.0.22
+
+-------------------------------------------------------------------
+Thu Jul 20 13:34:28 CEST 2000 - kkaempf@suse.de
+
+- dont check unwanted values
+  version 2.0.21
+
+-------------------------------------------------------------------
+Thu Jul 13 13:36:40 CEST 2000 - kkaempf@suse.de
+
+- call ifconfig before rcdhclient
+  version 2.0.20
+
+-------------------------------------------------------------------
+Thu Jul 13 09:27:10 MEST 2000 - dan@suse.de
+
+- minor dhcp changes (now accepts both dhclient and dhcpcd, longer delay)
+
+-------------------------------------------------------------------
+Tue Jul 11 10:59:51 CEST 2000 - kkaempf@suse.de
+
+- bump version to 2.0.18
+
+-------------------------------------------------------------------
+Mon Jul 10 18:02:46 MEST 2000 - dan@suse.de
+
+- fixed dhcp configuration 
+
+-------------------------------------------------------------------
+Fri Jul  7 18:28:45 CEST 2000 - kkaempf@suse.de
+
+- fix modules.conf writing
+  version 2.0.16
+
+-------------------------------------------------------------------
+Tue Jul  4 11:19:00 MEST 2000 - dan@suse.de
+
+- fixed cheching of running DHCP client 
+
+-------------------------------------------------------------------
+Mon Jul  3 16:52:17 MEST 2000 - dan@suse.de
+
+- added message for dhcp error 
+
+-------------------------------------------------------------------
+Fri Jun 30 11:39:19 MEST 2000 - dan@suse.de
+
+- Correct setting of hostname and domainname, bugfix (bug #2461) 
+
+-------------------------------------------------------------------
+Fri Jun 30 09:24:33 MEST 2000 - dan@suse.de
+
+- calling /bin/domainname to set correct domain name (bugfix, bug #3084) 
+
+-------------------------------------------------------------------
+Thu Jun 29 16:00:25 MEST 2000 - dan@suse.de
+
+- correction of calling split function 
+
+-------------------------------------------------------------------
+Thu Jun 29 15:20:40 MEST 2000 - dan@suse.de
+
+- fixed bug #3085, allow to enter more than one NIS servers (space separated) 
+
+-------------------------------------------------------------------
+Thu Jun 29 14:18:00 CEST 2000 - kkaempf@suse.de
+
+- put y2t_lan as Requires
+
+-------------------------------------------------------------------
+Thu Jun 29 09:58:03 MEST 2000 - dan@suse.de
+
+- fixed smarthost bug (bug #3013) 
+
+-------------------------------------------------------------------
+Mon Jun 26 16:50:07 CEST 2000 - kkaempf@suse.de
+
+- messages fixes
+  version 2.0.8
+
+-------------------------------------------------------------------
+Fri Jun 23 13:38:49 MEST 2000 - dan@suse.de
+
+- comment for translators 
+
+-------------------------------------------------------------------
+Thu Jun 22 13:24:35 MEST 2000 - dan@suse.de
+
+- correction of calling anyagents 
+
+-------------------------------------------------------------------
+Thu Jun 22 09:49:02 MEST 2000 - dan@suse.de
+
+- more message corrections 
+
+-------------------------------------------------------------------
+Wed Jun 21 08:55:45 MEST 2000 - dan@suse.de
+
+- messages corrections 
+
+-------------------------------------------------------------------
+Tue Jun 20 16:02:26 MEST 2000 - dan@suse.de
+
+- NFS problems (hopefully) fixed 
+
+-------------------------------------------------------------------
+Fri Jun 16 11:14:40 MEST 2000 - dan@suse.de
+
+- sendmail configuration, nfs configuration, bugfixes 
+
+-------------------------------------------------------------------
+Thu Jun  8 20:46:57 MEST 2000 - dan@suse.cz
+
+- ypclient added, kernel card support
+
+-------------------------------------------------------------------
+Fri May 19 09:44:08 CEST 2000 - kkaempf@suse.de
+
+- initial version
+
