@@ -118,6 +118,7 @@ global define boolean Modified() ``{
  */
 global define boolean Read() ``{
 
+    // title for Lan reading current setup progress screen
     string caption = _("Initializing network configuration");
     integer steps = 8;
 
@@ -126,44 +127,59 @@ global define boolean Read() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
+    // progress steps for the Lan reading current setup progress screen
+    // progress step 1/8
 	_("Detect devices"),
+    // progress step 2/8
 	_("Read /etc/modules.conf"),
+    // progress step 3/8
 	_("Read current configuration"),
+    // progress step 4/8
 	_("Read routing configuration"),
+    // progress step 5/8
 	_("Read host name and DNS configuration"),
+    // progress step 6/8
 	_("Read installation information"),
+    // progress step 7/8
 	_("Read firewall settings"),
+    // progress step 8/8
 	_("Detect current status"),
     ], [], "");
 
     if(Abort()) return false;
+    // stage 1 in reading current Lan setup
     ProgressNextStage(_("Detecting network cards"));
     //ReadHardware("");
     ReadHardware("netcard");
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 2 in reading current Lan setup
     ProgressNextStage(_("Reading /etc/modules.conf"));
     ReadModules();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 3 in reading current Lan setup
     ProgressNextStage(_("Reading current configuration"));
     //ReadConfig("");
     ReadConfig("eth|eth-pcmcia-|eth-usb-|tr|tr-pcmcia-|tr-usb-");
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 4 in reading current Lan setup
     ProgressNextStage(_("Reading routing configuration"));
     Routing::Read();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 5 in reading current Lan setup
     ProgressNextStage(_("Reading host name and DNS configuration"));
     DNS::Read();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 6 in reading current Lan setup
     ProgressNextStage(_("Reading installation information"));
     if(SCR::Read(.target.size,"/etc/install.inf") > 0)
 	INSTALL_INF = SCR::Read(.etc.install_inf);
@@ -172,16 +188,19 @@ global define boolean Read() ``{
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 7 in reading current Lan setup
     ProgressNextStage(_("Reading firewall settings"));
     Firewall::Read();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 8 in reading current Lan setup
     ProgressNextStage(_("Detecting current status"));
     ReadStatus();
     sleep(sl);
 
     if(Abort()) return false;
+    // last stage in reading current Lan setup
     ProgressNextStage(_("Finished"));
     sleep(sl);
 
@@ -208,6 +227,7 @@ global define boolean Write() ``{
     if(!modified) return true;
     y2milestone("Writing configuration");
 
+    // title for Lan writing current setup progress screen
     string caption = _("Saving network configuration");
     integer steps = 9;
 
@@ -216,63 +236,83 @@ global define boolean Write() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
+    // progress steps for the Lan writing current setup progress screen
+    // progress step 1/9
 	_("Deactivate local network services"),
+    // progress step 2/9
 	_("Write drivers information"),
+    // progress step 3/9
 	_("Write configuration"),
+    // progress step 4/9
 	_("Write routing configuration"),
+    // progress step 5/9
 	_("Write host name and DNS configuration"),
+    // progress step 6/9
 	_("Write firewall settings"),
+    // progress step 7/9
 	_("Run SuSEconfig"),
+    // progress step 8/9
 	_("Set up network services"),
+    // progress step 9/9
 	_("Activate network services"),
     ], [], "");
 
     if(Abort()) return false;
+    // stage 1 in writing current Lan setup
     ProgressNextStage(_("Deactivating local network services"));
     if(!write_only) StopNetwork();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 2 in writing current Lan setup
     ProgressNextStage(_("Writing /etc/modules.conf"));
     WriteModules();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 3 in writing current Lan setup
     ProgressNextStage(_("Writing configuration"));
     WriteConfig();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 4 in writing current Lan setup
     ProgressNextStage(_("Writing routing configuration"));
     Routing::Write();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 5 in writing current Lan setup
     ProgressNextStage(_("Writing host name and DNS configuration"));
     DNS::Write();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 6 in writing current Lan setup
     ProgressNextStage(_("Writing firewall settings"));
     Firewall::Write();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 7 in writing current Lan setup
     ProgressNextStage(_("Running SuSEconfig"));
     if(!write_only) RunSuSEconfig();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 8 in writing current Lan setup
     ProgressNextStage(_("Setting up network services"));
     if(!write_only) SetupNetwork();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 1 in writing current Lan setup
     ProgressNextStage(_("Activating network services"));
     if(!write_only) StartNetwork();
     sleep(sl);
 
     if(Abort()) return false;
+    // last stage in writing current Lan setup
     ProgressNextStage(_("Finished"));
     sleep(sl);
 

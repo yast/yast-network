@@ -78,16 +78,20 @@ global define list BuildSummary(boolean split) ``{
 
     /* add headers */
     if(size(configured) > 0)
+    // Summary text
 	summary = Summary::AddHeader("", _("Already configured devices:")) + summary;
     else
+    // Summary text
 	summary = Summary::AddHeader("", _("Nothing is configured."));
 
     /* create a table of unconfigured devices */
     integer selected = lookup(select(unconfigured, 0, $[]), "num", 0);
     list devs = hwlist2items(unconfigured, selected);
     if(size(devs)==0)
-	change(devs, `item(`id(`other), _("Other (not detected)"), true));
+    // Label of not detected device
+    change(devs, `item(`id(`other), _("Other (not detected)"), true));
     else
+    // Label of not detected device
 	change(devs, `item(`id(`other), _("Other (not detected)")));
 
     return [ summary, devs ];
@@ -104,37 +108,53 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
     if(hwname != nil && hwname != "") return hwname;
 
     if(regexpmatch(devtype, "(isdn|ippp)-pcmcia-"))
+        // unknown name of device
         return _("Unknown PCMCIA ISDN connection");
     else if(regexpmatch(devtype, "(isdn|ippp)-usb-"))
+        // unknown name of device
         return _("Unknown USB ISDN connection");
     else if(regexpmatch(devtype, "isdn|ippp"))
+        // unknown name of device
         return _("Unknown ISDN connection");
     else if(regexpmatch(devtype, "(modem|ppp)-pcmcia-"))
+    // unknown name of device
 	return _("Unknown PCMCIA modem");
     else if(regexpmatch(devtype, "(modem|ppp)-usb-"))
+    // unknown name of device
 	return _("Unknown USB modem");
     else if(regexpmatch(devtype, "modem|ppp"))
+    // unknown name of device
 	return _("Unknown modem");
     else if(regexpmatch(devtype, "contr-pcmcia-"))
+    // unknown name of device
 	return _("Unknown PCMCIA ISDN card");
     else if(regexpmatch(devtype, "contr-usb-"))
+    // unknown name of device
 	return _("Unknown USB ISDN card");
     else if(regexpmatch(devtype, "contr"))
+    // unknown name of device
 	return _("Unknown ISDN card");
     else if(regexpmatch(devtype, "net"))
+    // unknown name of device
 	return _("ISDN connection");
     else if(regexpmatch(devtype, "(eth|tr|fddi)-pcmcia-"))
+    // unknown name of device
 	return _("Unknown PCMCIA network card");
     else if(regexpmatch(devtype, "(eth|tr|fddi)-usb-"))
+    // unknown name of device
 	return _("Unknown USB network card");
     else if(regexpmatch(devtype, "eth|tr|fddi"))
+    // unknown name of device
 	return _("Unknown network card");
     else if(regexpmatch(devtype, "dummy"))
+    // unknown name of device
 	return _("Dummy network device");
     else if(regexpmatch(devtype, "lo"))
+    // unknown name of device
 	return _("Loopback device");
     else {
 	y2error("Unknown type: %1", devtype);
+    // unknown name of device
 	return _("Unknown network device");
     }
 }
@@ -171,12 +191,15 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
 	    prov = devmap["PROVIDER"]:"";
 
 	if(prov == "" || prov == nil)
+        // modem status (%1 is the device type and number)
 	    return sformat(_("Configured as %1"), dev);
 	else
+        // modem status (%1 is the device type and number, %2 is provider)
 	    return sformat(_("Configured as %1 with provider %2"), dev, prov);
     }
     /* isdn stuff */
     else if(devtype == "contr")
+    // isdn device status (%1 is the device type and number)
 	return sformat(_("Configured as %1"), dev);
     else if(devtype == "net") {
         // proto: connection protocol (syncppp | rawip)
@@ -195,11 +218,14 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
 	if(proto == "" || proto == "static" || proto == "none" || proto == nil) {
 	    string addr = lookup(devmap, "IPADDR", "");
 	    if(addr == "" || addr == nil)
+        // network card status (%1 is the device type and number)
 		return sformat(_("Configured as %1"), dev);
 	    else
+        // network card status (%1 is the device type and number, %2 is address)
 		return sformat(_("Configured as %1 with address %2"), dev, addr);
 	}
 	else
+        // network card status (%1 is the device type and number, %2 protocol)
 	    return sformat(_("Configured as %1 with %2"), dev, toupper(proto));
     }
 }
@@ -211,18 +237,31 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
  * @example DeviceType("eth") -> "Ethernet"
  */
 global define string DeviceType(string type) ``{
+    // for translators: device type
     if(issubstring(type, ":")) return _("Virtual interface");
+    // for translators: device type
     if(regexpmatch(type, "lo")) return _("Loopback");
+    // for translators: device type
     if(regexpmatch(type, "dummy")) return _("Dummy");
+    // for translators: device type
     if(regexpmatch(type, "eth")) return _("Ethernet");
+    // for translators: device type
     if(regexpmatch(type, "fddi")) return _("FDDI");
+    // for translators: device type
     if(regexpmatch(type, "contr")) return _("ISDN");
+    // for translators: device type
     if(regexpmatch(type, "net")) return _("ISDN");
+    // for translators: device type
     if(regexpmatch(type, "ippp")) return _("ISDN");
+    // for translators: device type
     if(regexpmatch(type, "isdn")) return _("ISDN");
+    // for translators: device type
     if(regexpmatch(type, "ppp")) return _("Modem");
+    // for translators: device type
     if(regexpmatch(type, "tr")) return _("Token-Ring");
+    // for translators: device type
     if(regexpmatch(type, "hsi")) return _("HiperSockets Interface");
+    // for translators: device type
     if(regexpmatch(type, "ctc")) return _("Channel-to-Channel (CTC)");
     if(regexpmatch(type, "iucv")) return "IUCV";
     if(regexpmatch(type, "escon")) return "ESCON";
@@ -259,6 +298,7 @@ global define list BuildOverview() ``{
 
 	    /* modem */
 	    if(type == "modem" || type == "ppp")
+        // table item
 		item = `item(`id(dev), k, DeviceType(type), dev, v["PROVIDER_NAME"]:_("Unknown provider"));
 	    /* ISDN stuff */
 	    else if (type == "contr") {

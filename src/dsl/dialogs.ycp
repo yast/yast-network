@@ -200,38 +200,49 @@ automatically if data is requested. To use this, specify at least one
 
 	subcontents = `VBox(
 	    `HBox(
+        /* TextEntry label */
 		`TextEntry(`id(`lineid), _("&Line ID"), lineid),
 		`HSpacing(1),
+        /* TextEntry label */
 		`TextEntry(`id(`t_onlineid), _("&T-Online ID"), t_onlineid)
 	    ),
 	    `VSpacing( 0.5 ),
 	    `HBox(
+        /* TextEntry label */
 		`TextEntry(`id(`user), _("&User code"), name),
 		`HSpacing(1),
+        /* Password entry label */
 		`Password(`id(`password),  _("&Password"), DSL::password)
 	    )
 	);
     }
     else {
 	subcontents = `VBox(
+        /* TextEntry label */
 	    `TextEntry(`id(`user), _("&User"), DSL::username),
 	    `VSpacing( 0.5 ),
+        /* Password entry label */
 	    `Password(`id(`password), _("&Password"), DSL::password)
 	);
     }
 
     list pppmodes = [
+    /* ComboBox item */
 	`item(`id("pppoe"), _("PPP over Ethernet"), pppmode == "pppoe"),
+    /* ComboBox item */
 	`item(`id("pppoatm"), _("PPP over ATM"), pppmode == "pppoatm"),
     ];
     term pppwidget = nil;
     string Interface = "";
     if(!tdsl) {
+    /* ComboBox label */
 	pppwidget = `Left(`ComboBox(`id(`pppmode), _("PPP &mode"), pppmodes));
+    /* TextEntry label */
 	Interface = _("&Ethernet card or VPI/VCI");
     }
     else {
 	pppwidget = `VSpacing(-1);
+    /* TextEntry label */
 	Interface = _("&Ethernet card");
     }
 
@@ -255,12 +266,16 @@ automatically if data is requested. To use this, specify at least one
 	//`Left(`ComboBox(`id(`pppmode), _("PPP &mode"), pppmodes)),
 	pppwidget,
 	`VSpacing(1),
+    /* CheckBox label */
 	`Left(`CheckBox(`id(`firewall), _("&Activate firewall"), FirewallChecked)),
 	//`VSpacing(1),
+    /* CheckBox label */
 	`Left(`CheckBox(`id(`dialondemand),`opt(`notify), _("Dial &on demand"), DSL::dialondemand)),
 	`HBox(
+        /* TextEntry label */
 	    `TextEntry(`id(`dns1), _("Name server &1"), dns1),
 	    `HSpacing(4),
+        /* TextEntry label */
 	    `TextEntry(`id(`dns2),  _("Name server &2"), dns2)
 	),
 	`VSpacing(1)
@@ -312,16 +327,19 @@ automatically if data is requested. To use this, specify at least one
 	    boolean dialondemand = UI::QueryWidget(`id(`dialondemand), `Value);
 	    if(dialondemand) {
 		if(dns1 == "" && dns2 == "") {
+            /* MessagePopup text */
 		    UI::MessagePopup(_("To use dial on demand, specify a least one name server\n"));
 		    UI::SetFocus(`id(`dns1));
 		    continue;
 		}
 		if(dns1 != "" && !check_ip4(dns1)) {
+            /* MessagePopup text */
 		    UI::MessagePopup(_("First name server does not contain a valid IP address."));
 		    UI::SetFocus(`id(`dns1));
 		    continue;
 		}
 		if(dns2 != "" && !check_ip4(dns2)) {
+            /* MessagePopup text */
 		    UI::MessagePopup(_("Second name server does not contain a valid IP address."));
 		    UI::SetFocus(`id(`dns2));
 		    continue;
@@ -330,6 +348,7 @@ automatically if data is requested. To use this, specify at least one
 
 	    /* check user name */
 	    if(UI::QueryWidget(`id(`user), `Value) == "") {
+        /* MessagePopup text */
 		UI::MessagePopup(_("User name cannot be empty."));
 		UI::SetFocus(`id(`dns2));
 		continue;
@@ -337,6 +356,7 @@ automatically if data is requested. To use this, specify at least one
 
 	    /* check interface */
 	    if(UI::QueryWidget(`id(`interface), `Value) == "") {
+        /* MessagePopup text */
 		UI::MessagePopup(_("Ethernet card and VPI/VCI cannot be empty."));
 		UI::SetFocus(`id(`interface));
 		continue;

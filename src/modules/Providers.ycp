@@ -594,12 +594,15 @@ global define list Summary(boolean split) ``{
 
     string summary = "";
     if(size(providers) < 1)
+    // Summary text
 	summary = Summary::AddHeader("", _("Nothing is configured."));
     else
+    // Summary text
 	summary = Summary::AddHeader("", _("Already configured providers:"));
 
     list provs = [];
     maplist(`name, `provmap, providers, ``{
+    // Summary text description (%1 is provider name)
 	string descr = sformat(_("Configured as %1"), name);
 	change(provs, Summary::Device(provmap["PROVIDER"]:"", descr));
     });
@@ -607,6 +610,7 @@ global define list Summary(boolean split) ``{
 
     return [
 	summary,
+    // List item to providers summary
 	[ `item(`id(`other), _("Modem provider"), true) ]
     ];
 }

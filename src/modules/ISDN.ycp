@@ -160,12 +160,17 @@ global define boolean Read() ``{
     integer sl = 0; //1000;
     sleep(sl);
 
-    // steps for the ISDN reading current setup progress screen
     Progress::New(caption, " ", steps, [
+    // steps for the ISDN reading current setup progress screen
+    // step 1/5
 	_("Detect devices"),
+    // step 2/5
 	_("Read current device configuration"),
+    // step 3/5
 	_("Read current connection setup"),
+    // step 4/5
 	_("Read firewall settings"),
+    // step 5/5
 	_("Read providers"),
     ], [], "");
 
@@ -243,32 +248,52 @@ global define boolean Write(boolean start) ``{
     integer sl = 0;
 
     if (start) {
-	// steps for the ISDN writing current setup progress screen with start
 	Progress::New(caption, " ", steps, [
+	    // steps for the ISDN writing current setup progress screen with start
+        // step 1/11
 	    _("Stop ISDN networking"),
+        // step 2/11
 	    _("Stop ISDN subsystem"),
+        // step 3/11
 	    _("Write controller configuration"),
+        // step 4/11
 	    _("Write interface configuration"),
+        // step 5/11
 	    _("Write Firewall"),
+        // step 6/11
 	    _("Write providers"),
+        // step 7/11
 	    _("Run SuSEconfig"),
+        // step 8/11
 	    _("Start ISDN subsystem"),
+        // step 9/11
 	    _("Start ISDN networking"),
+        // step 10/11
 	    _("Set up smpppd"),
+        // step 11/11
 	    _("Run kinternet"),
 	    ], [], "");
 	steps = 11;
     } else {
 	Progress::New(caption, " ", steps, [
 	    // steps for the ISDN writing current setup progress screen without start
+        // step 1/9
 	    _("Stop ISDN networking"),
+        // step 2/9
 	    _("Stop ISDN subsystem"),
+        // step 3/9
 	    _("Write controller configuration"),
+        // step 4/9
 	    _("Write interface configuration"),
+        // step 5/9
 	    _("Write Firewall"),
+        // step 6/9
 	    _("Write providers"),
+        // step 7/9
 	    _("Run SuSEconfig"),
+        // step 8/9
 	    _("Set up smpppd"),
+        // step 9/9
 	    _("Run kinternet"),
 	    ], [], "");
 	steps = 9;
@@ -384,12 +409,17 @@ global define boolean TestDev(string dev) ``{
     integer sl = 500; //1000;
     sleep(sl);
 
-    // steps for the ISDN testing current setup progress screen
     Progress::New(caption, " ", steps, [
+    // steps for the ISDN testing current setup progress screen
+    // step 1/5
 	_("Write controller configuration"),
+    // step 2/5
 	_("Stop ISDN network"),
+    // step 3/5
 	_("Unload ISDN driver"),
+    // step 4/5
 	_("Load controller"),
+    // step 5/5
 	_("Unload controller")
     ], [], "");
 

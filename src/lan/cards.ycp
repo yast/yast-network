@@ -31,56 +31,69 @@ global map NetworkCards = $[
 
 $[
 "module" : "airo_cs.o",
+// Network card name (wireless)
 "name" :  _("Cisco/Aironet 802.11 wireless ISA/PCI and PCMCIA ethernet cards")
 ],
 $[
 "module" : "orinoco.o",
+// Network card name (wireless)
 "name" :  _("Lucent Orinoco, Prism II based and similar wireless cards")
 ],
 $[
 "module" : "orinoco_cs.o",
+// Network card name (wireless)
 "name" :  _("PCMCIA Lucent Orinoco, Prism II based and similar wireless cards")
 ],
 $[
 "module" : "orinoco_pci.o",
+// Network card name (wireless)
 "name" :  _("Wireless LAN cards using direct PCI interface")
 ],
 $[
 "module" : "orinoco_plx.o",
+// Network card name (wireless)
 "name" :  _("Wireless LAN cards using the PLX9052 PCI bridge")
 ],
 $[
 "module" : "p80211.o",
+// Network card name (wireless)
 "name" : _("Wireless device using kernel module p80211.o")
 ],
 $[
 "module" : "prism2_cs.o",
+// Network card name (wireless)
 "name" : _("Wireless device using kernel module prism2_cs.o")
 ],
 $[
 "module" : "prism2_pci.o",
+// Network card name (wireless)
 "name" : _("Wireless device using kernel module prism2_pci.o")
 ],
 $[
 "module" : "prism2_plx.o",
+// Network card name (wireless)
 "name" : _("Wireless device using kernel module prism2_plx.o")
 ],
 $[
 "module" : "prism2_usb.o",
+// Network card name (wireless)
 "name" : _("Wireless device using kernel module prism2_usb.o")
 ],
 
 ],
 
   "eth" : [
+    // Network card name
     $["name" : _("Apple onboard Ethernet mace"),
       "module" : "mace",
       "options" : "",
     ],
+    // Network card name
     $["name" : _("Apple onboard Ethernet bmac"),
       "module" : "bmac",
       "options" : "",
     ],
+    // Network card name
     $["name" : _("Apple onboard Ethernet gmac"),
       "module" : "gmac",
       "options" : "",
@@ -137,10 +150,12 @@ $[
       "module" : "ac3200",
       "options" : "io=0x300 irq=10 mem=0xd0000",
     ],
+    // Network card name
     $["name" : _("Apricot Xen-II onboard ethernet"),
       "module" : "apricot",
       "options" : "io=0x300",
     ],
+    // Network card name
     $["name" : _("AT-LAN-TEC/RealTek pocket adapter"),
       "module" : "atp",
       "options" : "",
@@ -165,10 +180,12 @@ $[
       "module" : "cs89x0",
       "options" : "",
     ],
+    // Network card name
     $["name" : _("D-Link DE600 pocket adapter"),
       "module" : "de600",
       "options" : "",
     ],
+    // Network card name
     $["name" : _("D-Link DE620 pocket adapter"),
       "module" : "de620",
       "options" : "io=0x378 irq=7 bnc=1",
@@ -359,6 +376,7 @@ $[
       "module" : "olympic",
       "options" : "",
     ],
+    // Network card name
     $["name" : _("IBM network cards with lcs kernel module"),
       "module" : "lcs",
       "options" : "noauto=1 devno_portno_pairs=0xfc20,1",

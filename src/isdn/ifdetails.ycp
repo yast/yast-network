@@ -44,40 +44,40 @@ global define symbol IFDetailDialog() ``{
     // title of ISDN interface detail screen
     string caption = _("ISDN detail settings");
 
-    // help text 1/7
     string helptext =
+    // help text 1/7
 _("<p>The <b>Remote phone number list</b> list controls which remote sides are
 allowed to connect this interface.</p>");
 
-    // help text 2/7
     helptext = helptext +
+    // help text 2/7
 _("<p>If you deselect the <b>Only listed numbers allowed</b> checkbox, you
 allow all caller id's.</p>");
 
-    // help text 3/7
     helptext = helptext +
+    // help text 3/7
 _("<p>If <b>callback mode</b> is <b>off</b>,  calls  are handled normally without special 
 processing.</p>");
 
-    // help text 4/7
     helptext = helptext +
+    // help text 4/7
 _("<p>If <b>callback mode</b> is <b>server</b>, after getting an incoming call, a callback 
 is triggered.</p>");
 
-    // help text 5/7
     helptext = helptext +
+    // help text 5/7
 _("<p>If <b>callback mode</b> is <b>client</b>, the local system does the initial call then 
 waits for callback of the remote machine.</p>");
 
-    // help text 6/7
     helptext = helptext +
+    // help text 6/7
 _("<p>If <b>Callback Delay</b> is the amount of seconds between the initial and the
 callback(server) or the hangup(client). It should be greater on the server as on
 the client.</p>");
 
-    // help text 7/7
     if (syncppp) {
 	helptext = helptext +
+    // help text 7/7
 _("<p>In <b>Additional ipppd options</b> you can add extra options for ipppd
 for example +pap +chap for the dialin server authentification.</p>");
     }
@@ -95,9 +95,11 @@ for example +pap +chap for the dialin server authentification.</p>");
 		`VBox(
 		    `RadioButtonGroup(`id(`callback),`HBox(
 			`VBox(
-			    // RadioButtons for callback modes
+			    // RadioButton for callback modes
 			    `Left(`RadioButton(`id("off"), _("Callback &Off"), callback == "off")),
+			    // RadioButton for callback modes
 			    `Left(`RadioButton(`id("in"), _("Callback &Server"), callback == "in")),
+			    // RadioButton for callback modes
 			    `Left(`RadioButton(`id("out"), _("Callback &Client"), callback == "out"))
 			)
 		    )),

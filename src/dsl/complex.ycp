@@ -136,9 +136,15 @@ global define symbol OverviewDialog() ``{
     list overview = DSL::Overview();
     y2debug("overview=%1",overview);
 
-    /* Header of table with installed cards */
     term contents = Wizard_hw::ConfiguredContent(
-	    `header(_("No."), _("Type"), _("Device"), _("IP Address")),
+        /* Header of table with installed cards 1/4 */
+	    `header(_("No."),
+                /* Header of table with installed cards 2/4 */
+                _("Type"),
+                /* Header of table with installed cards 3/4 */
+                _("Device"),
+                /* Header of table with installed cards 4/4 */
+                _("IP Address")),
 	    overview, nil, nil, nil, nil);
 
     contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);

@@ -39,20 +39,20 @@ global define symbol isdn_if_sel(symbol op) ``{
     // title of ISDN service selection dialog
     string caption = _("ISDN service selection");
 
-    // help text 1/3
     string helptext =
+    // help text 1/3
 _("<p>For networking over ISDN here are two types of interfaces 
 <b>RawIP</b> and <b>SyncPPP</b>. In most cases you will use SyncPPP, it's
 the default for all common Internet providers</p>");
 
-    // helptext text 2/3
     helptext = helptext +
+    // helptext text 2/3
 _("<p>If you like to switch between various Internet providers, you don't
 need a interface for each provider, you can simple add the provider to the
 same interface.</p>");
 
-    // helptext text 3/3
     helptext = helptext +
+    // helptext text 3/3
 _("If you don't like to add a interface now, you can simple use the
 <b>Skip</b> button to not enter the interface and provider dialogs.");
 
@@ -60,9 +60,11 @@ _("If you don't like to add a interface now, you can simple use the
     /* DIALOG CONTENTS */
     term network = `VBox();
     network = add(network, `VSpacing(0.5));
-    // PushButton labels to select the next Dialog
+    // PushButton label to select the next Dialog
     network = add(network, `PushButton(`id(`AddSyncPPP), _("Add new &SyncPPP network interface")));
+    // PushButton label to select the next Dialog
     network = add(network, `PushButton(`id(`AddRawIP), _("Add new Raw&IP network interface")));
+    // PushButton label to select the next Dialog
     network = add(network, `PushButton(`id(`AddProvider), _("Add &Provider to existing interface")));
     network = add(network, `VSpacing(0.5));
 
@@ -157,8 +159,8 @@ global define symbol interface_dialog() ``{
     string caption = sformat("%1 %2 interface %3", ISDN::operation == `editif ? "Edit" : "Add",
 			syncppp ? "syncppp" : "rawip", devstr);
 
-    // help text 1/4
     string helptext =
+    // help text 1/4
 _("<p>My phone number --  As your own telephone number (MSN), put in your 
 telephone number (without area code) if your ISDN card is connected directly
 to the phone company-provided socket. If it is connected to a PBX, put in the
@@ -166,15 +168,15 @@ MSN stored in the PBX (e.g., your phone extension or the last digit or digits
 of your phone extension) . If this fails, try using 0, which normally means
 the default MSN is actually used.</p>");
 
-    // help text 2/4
     helptext = helptext +
+    // help text 2/4
 _("<p><b>Start Mode: </b><b>OnBoot</b> the driver is loaded during
 system boot. <b>Manual</b> the driver must be started with the
 <b>rcisdn start</b> command, only the user root can do this.
 <b>HotPlug </b> is a special case for PCMCIA and USB devices.</p>");
 
-    // help text 3/4
     helptext = helptext +
+    // help text 3/4
 _("<p>If you select manual you have to start/stop the service manually by
 issuing the following commands (while logged in as 'root'):
 <tt>
@@ -185,8 +187,8 @@ issuing the following commands (while logged in as 'root'):
 Note: ippp0 is an example</p>
 ");
 
-    // help text 4/4
     helptext = helptext +
+    // help text 4/4
 _("<p>Selecting <b>channel bundling</b> will setup a 128kBit connection 
 also known as <b>M</b>ultilink <b>PPP</b>. To bring up or down the second channel
 you have to use the following commands:
@@ -221,9 +223,11 @@ remove a channel.
 		    // ComboBox label
 		    `Left(`ComboBox(`id(`startmode), _("Start &Mode"),
 			[
-			    // ComboBox items
+			    // ComboBox item
 			    `item(`id("onboot"), _("OnBoot"), startmode == "onboot"),
+			    // ComboBox item
 			    `item(`id("manual"), _("Manual"), startmode == "manual"),
+			    // ComboBox item
 			    `item(`id("hotplug"), _("HotPlug"), startmode == "hotplug")
 			])),
 		    `VSpacing(0.5),

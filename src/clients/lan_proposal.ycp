@@ -57,7 +57,9 @@ else if(func == "AskUser") {
 /* create titles */
 else if(func == "Description") {
     ret = $[
+    // rich text title
 	"rich_text_title" : _("Network interfaces"),
+    // menu title
 	"menu_title" : _("&Network interfaces"),
 	"id" : "lan",
     ];

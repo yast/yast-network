@@ -109,6 +109,7 @@ global define boolean Modified() ``{
  */
 global define boolean Read() ``{
 
+    // title for Modem reading current setup progress screen
     string caption = _("Initializing modem configuration");
     integer steps = 4;
 
@@ -117,33 +118,43 @@ global define boolean Read() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
+        // progress steps for the Modem reading current setup progress screen
+        // progress step 1/4
         _("Detect devices"),
+        // progress step 2/4
         _("Read current configuration"),
-	_("Read firewall settings"),
+        // progress step 3/4
+	    _("Read firewall settings"),
+        // progress step 4/4
         _("Read providers"),
     ], [], "");
 
     if(Abort()) return false;
+    // stage 1 in reading current Modem setup
     ProgressNextStage(_("Detecting modems"));
     ReadHardware("modem");
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 2 in reading current Modem setup
     ProgressNextStage(_("Reading current configuration"));
     ReadConfig("ppp");
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 3 in reading current Modem setup
     ProgressNextStage(_("Reading firewall settings"));
     Firewall::Read();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 4 in reading current Modem setup
     ProgressNextStage(_("Reading providers"));
     Providers::Read("modem");
     sleep(sl);
 
     if(Abort()) return false;
+    // last stage in reading current Modem setup
     ProgressNextStage(_("Finished"));
     sleep(sl);
 
@@ -160,6 +171,7 @@ global define boolean Write() ``{
 
     y2milestone("Writing configuration");
 
+    // title for Modem writing current setup progress screen
     string caption = _("Saving modem configuration");
     integer steps = 5;
 
@@ -168,34 +180,45 @@ global define boolean Write() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
+        // progress steps for the Modem writing current setup progress screen
+        // progress step 1/5
         _("Write configuration"),
+        // progress step 2/5
         _("Write firewall settings"),
+        // progress step 3/5
         _("Write providers"),
+        // progress step 4/5
         _("Set up smpppd"),
+        // progress step 5/5
         _("Run kinternet"),
     ], [], "");
 
     if(Abort()) return false;
+    // stage 1 in writing current Modem setup
     ProgressNextStage(_("Writing configuration"));
     WriteConfig();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 2 in writing current Modem setup
     ProgressNextStage(_("Writing firewall settings"));
     Firewall::Write();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 3 in writing current Modem setup
     ProgressNextStage(_("Writing providers"));
     Providers::Write();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 4 in writing current Modem setup
     ProgressNextStage(_("Setting up smpppd(8)"));
     SetupSMPPPD();
     sleep(sl);
 
     if(Abort()) return false;
+    // last stage in writing current Modem setup
     ProgressNextStage(_("Running kinternet"));
     RunKInternet();
     sleep(sl);

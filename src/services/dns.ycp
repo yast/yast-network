@@ -52,8 +52,10 @@ could return to this dialog later, when the above service has terminated.</li>
 	    `RichText(text)
 	),
 	`HBox(
+        // button label
 	    `PushButton(`id(`accept), `opt(`default), _("&Accept")),
 	    `HSpacing(2),
+        // button label
 	    `PushButton(`id(`modify), _("&Modify"))
 	)
     ));
@@ -134,6 +136,7 @@ your changes and <b>finish</b> the network configuration.</p>");
 
     /* DNS dialog contents */
     term contents = `HSquash(`VBox(
+    // frame label
 	`Frame(_("Host name and domain name"), `VBox(
 	    `HBox(
 		// text entry label
@@ -141,22 +144,31 @@ your changes and <b>finish</b> the network configuration.</p>");
 		// text entry label
 		`TextEntry(`id(`domain), _("&Domain name"), domain)
 	    ),
+        // check box label
 	    `Left(`CheckBox(`id(`dn), _("&Change host name via DHCP")))
 	)),
 	`VSpacing(1),
+    // frame label
 	`Frame(_("Name servers and domain search list"), `VBox(
 	`HBox(
 	    `VBox(
+		// text entry label
 		`TextEntry(`id(`ns1), _("Name server &1"), ns1),
+		// text entry label
 		`TextEntry(`id(`ns2), _("Name server &2"), ns2),
+		// text entry label
 		`TextEntry(`id(`ns3), _("Name server &3"), ns3)
 	    ),
 	    `VBox(
+		// text entry label
 		`TextEntry(`id(`s1), _("D&omain search 1"), s1),
+		// text entry label
 		`TextEntry(`id(`s2), _("Do&main search 2"), s2),
+		// text entry label
 		`TextEntry(`id(`s3), _("Dom&ain search 3"), s3)
 	    )
 	),
+    // check box label
 	`Left(`CheckBox(`id(`dr), `opt(`notify), _("&Update name servers and search list via DHCP")))
 	))
     ));
@@ -232,11 +244,13 @@ your changes and <b>finish</b> the network configuration.</p>");
 	    if(!dhcp_hostname) {
 		/* check host name and domain */
 		if(!check_hostname(UI::QueryWidget(`id(`host), `Value))) {
+            // ErrorPopup text
 		    UI::ErrorPopup(_("The host name is incorrect"));
 		    UI::SetFocus(`id(`host));
 		    continue;
 		}
 		if(!check_domainname(UI::QueryWidget(`id(`domain), `Value))) {
+            // ErrorPopup text
 		    UI::ErrorPopup(_("The domain name is incorrect"));
 		    UI::SetFocus(`id(`domain));
 		    continue;
@@ -249,16 +263,19 @@ your changes and <b>finish</b> the network configuration.</p>");
 	    ns3 = tolower(UI::QueryWidget(`id(`ns3), `Value));
 
 	    if(ns1 != "" && !check_ip4(ns1)) {
+        // ErrorPopup text
 		UI::ErrorPopup(_("The primary name server is not correct"));
 		UI::SetFocus(`id(`ns1));
 		continue;
 	    }
 	    if(ns2 != "" && !check_ip4(ns2)) {
+        // ErrorPopup text
 		UI::ErrorPopup(_("The secondary name server is not correct"));
 		UI::SetFocus(`id(`ns2));
 		continue;
 	    }
 	    if(ns3 != "" && !check_ip4(ns3)) {
+        // ErrorPopup text
 		UI::ErrorPopup(_("The tertiary name server is not correct"));
 		UI::SetFocus(`id(`ns3));
 		continue;
@@ -270,16 +287,19 @@ your changes and <b>finish</b> the network configuration.</p>");
 	    s3 = tolower(UI::QueryWidget(`id(`s3), `Value));
 
 	    if(s1 != "" && !check_domainname(s1)) {
+        // ErrorPopup text
 		UI::ErrorPopup(_("The primary search domain is not correct"));
 		UI::SetFocus(`id(`s1));
 		continue;
 	    }
 	    if(s2 != "" && !check_domainname(s2)) {
+        // ErrorPopup text
 		UI::ErrorPopup(_("The secondary search domain is not correct"));
 		UI::SetFocus(`id(`s2));
 		continue;
 	    }
 	    if(s3 != "" && !check_domainname(s3)) {
+        // ErrorPopup text
 		UI::ErrorPopup(_("The tertiary search domain is not correct"));
 		UI::SetFocus(`id(`s3));
 		continue;

@@ -34,6 +34,7 @@ global define symbol ProxyMainDialog() ``{
     /* Proxy dialog contents */
     term contents = `HBox(
 	`HSpacing(6),
+    /* Frame label */
 	`Frame(_("Proxy settings"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(1),
 	    /* Text entry label */

@@ -58,7 +58,9 @@ else if(func == "AskUser") {
 /* create titles */
 else if(func == "Description") {
     ret = $[
+    // rich text title
 	"rich_text_title" : _("Modems"),
+    // menu title
 	"menu_title" : _("&Modems"),
 	"id" : "modem",
     ];

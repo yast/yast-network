@@ -66,11 +66,13 @@ initialization strings.</p>");
 
     if(detected == true)
 	DeviceTerm = `Left(`HBox(
+        /* Label text */
 	    `Label(_("Modem device:")),
 	    `HSpacing(0.5),
 	    `Label(`opt(`outputField), Modem::Device)
 	));
     else
+    /* ComboBox label */
 	DeviceTerm = `ComboBox(`id(`Device), `opt(`hstretch, `editable), _("Modem de&vice"), devices);
 
     term contents = `HBox(
@@ -81,10 +83,12 @@ initialization strings.</p>");
 	    `VSpacing(1),
 	    `HBox(
 		//`TextEntry(`id(`ModemName), _("&Modem name"), name),
+        /* TextEntry label */
 		`TextEntry(`id(`DialPrefix), _("Dial prefi&x (if needed)"), Modem::DialPrefix)
 	    ),
 	    `VSpacing(0.8),
 	    `HBox(
+        /* Frame label */
 		`Frame(_("Dial mode"),
 		    `VBox(
 			`VSpacing(0.3),
@@ -92,7 +96,9 @@ initialization strings.</p>");
 			    `HSpacing(0.3),
 			    `RadioButtonGroup(`id(`DialMode),
 				`VBox(
+                    /* RadioButton label */
 				    `Left(`RadioButton(`id(`Tone), _("&Tone dialing"), !Modem::PulseDial)),
+                    /* RadioButton label */
 				    `Left(`RadioButton(`id(`Pulse), _("&Pulse dialing"), Modem::PulseDial))
 				)
 			    ),
@@ -102,12 +108,15 @@ initialization strings.</p>");
 		    )
 		),
 		`HSpacing(1),
+        /* Frame label */
 		`Frame(_("Special settings"),
 		    `HBox(
 			`HSpacing(0.3),
 			`VBox(
 			    `VSpacing(0.3),
+                /* Checkbox label */
 			    `Left(`CheckBox(`id(`Speaker), _("&Speaker on"), Modem::Speaker)),
+                /* Checkbox label */
 			    `Left(`CheckBox(`id(`CarrierDetect), _("D&etect Dial Tone"), Modem::Carrier)),
 			    `VSpacing(0.3)
 			),
@@ -116,6 +125,7 @@ initialization strings.</p>");
 		)
 	    ),
 	    `VSpacing(1),
+        /* Button label */
 	    `PushButton(`id(`Details), _("&Details")),
 	    `VSpacing(0.2)
 	),

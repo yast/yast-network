@@ -92,9 +92,13 @@ An additional dialog will inform you whether it is safe to do so or not.</P>");
  */
 global define symbol Provider_or_IF(string op) ``{
     symbol ret = nil;
-    // popup text to select between Interface or Provider for edit or delete 
+    // popup text to select between Interface or Provider for edit or delete 1/2
     string txt = sformat(_("Please select, which item do you like to %1."),
-		op == "edit" ? _("edit") : _("delete"));
+		op == "edit" ?
+        // popup text continue (2/2): "edit" operation
+        _("edit") :
+        // popup text continue (2/2): "delete" operation
+        _("delete"));
     UI::OpenDialog(
 	`opt(`decorated),
 	`HBox(
@@ -246,13 +250,23 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
     term contents = OverviewTableDouble(
         /* Table label */
         _("ISDN cards"),
-        /* Table header */
-	`header(_("No."), _("Type"), _("Device"), _("Hardware")),
+	`header(
+        /* Table header 1/4 */
+        _("No."),
+        /* Table header 2/4 */
+        _("Type"),
+        /* Table header 3/4 */
+        _("Device"),
+        /* Table header 4/4 */
+        _("Hardware")),
         overview,
         /* Table label */
         _("Providers"),
-        /* Table header */
-        `header(_("Name"), _("Provider")),
+        `header(
+            /* Table header 1/2 */
+            _("Name"),
+            /* Table header 2/2 */
+            _("Provider")),
         overviewp
     );
 
@@ -343,8 +357,8 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 		    }
 		    y2debug("overviewp=%1",overviewp);
 		} else {
-// MessagePopup text
 		    string txt = sformat(
+// MessagePopup text
 _("You try to delete a provider which
 is the default provider for interface
 %1. Please select first an other

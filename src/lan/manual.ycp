@@ -77,6 +77,7 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 	// frame label
 	`VBox(
 	    `VSpacing(0.5),
+        // Frame label
 	    `Frame(_("Network &interface"),`VBox(
 		`VSpacing(0.2),
 		`HBox(
@@ -94,13 +95,16 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 		`VSpacing(0.2)
 	    )),
 	    `VSpacing(0.5),
+        // Frame label
 	    `Frame(_("Wireless support"),`VBox(
 	    `VSpacing(0.4),
 	    `HBox(
 		`HStretch(),
 		`HSpacing(0.5),
+        // CheckBox label
 		`CheckBox(`id(`wireless), `opt(`notify), _("&Wireless device"), wireless),
 		`HSpacing(1.5),
+        // PushButton label
 		`PushButton(`id(`wire), _("Wireless &settings")),
 		`HSpacing(0.5),
 		`HStretch()
@@ -170,6 +174,7 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 
 	    list devices = [];
 	    devices = maplist(`d,Lan::FreeDevices(realtype),``(sformat("%1",d)));
+        // combobox label
 	    UI::ReplaceWidget(`id(`rnum),`ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"), devices));
 	    continue;
 	}
@@ -307,10 +312,11 @@ global define symbol WirelessDialog() ``{
     /* Wireless dialog caption */
     string caption = _("Wireless network card configuration");
 
-    /* Wireless dialog help 1/1 */
+    /* Wireless dialog help 1/7 */
     string helptext = _("<p>Here, set the most important settings
 for wireless networking.</p>") +
 
+    /* Wireless dialog help 2/7 */
 _("<p>The <b>operating mode</b> depends on the network topology. The mode can
 be Ad-hoc (network composed of only one cell without an access point), Managed
 (network composed of many cells with roaming or an access point), Master
@@ -318,22 +324,27 @@ be Ad-hoc (network composed of only one cell without an access point), Managed
 (the node forward packets on the air), Secondary (the node acts as a backup
 master or repeater), or Auto.</p>") +
 
+    /* Wireless dialog help 3/7 */
 _("<p>Set the <b>Network name (ESSID)</b>, which is used to identify cells that are
 part of the same virtual network. As opposed to the NWID, which defines a
 single cell, the ESSID defines a group of cells, connected via repeaters or
 infrastructure, where the user may roam.</p>") +
 
+    /* Wireless dialog help 4/7 */
 _("<p>As all adjacent wireless networks share the same medium, the <b>Network
 identifier (NWID)</b> is used to differentiate them (create logical colocated
 networks) and identify nodes belonging to the same cell.</p>") +
 
+    /* Wireless dialog help 5/7 */
 _("<p>To set the current <b>Encryption key</b>, enter the key in hex digits as
 XXXX-XXXX-XXXX-XXXX or XXXXXXXX. You can also enter the key as an ASCII
 string by using the 's:' prefix.</p>") +
 
+    /* Wireless dialog help 6/7 */
 _("<p>The <b>Nick name</b> means the station name. Most 802.11 products do
 define it, but only some diagnostic tools use it.</p>") +
 
+    /* Wireless dialog help 7/7 */
 _("<p>These values will be written to the interface configuration file
 'ifcfg-*' in '/etc/sysconfig/network'. If you need additional settings,
 add them manually. Refer to the file 'wireless' in the same directory for all
@@ -342,14 +353,20 @@ available options.</p>");
     /* Wireless dialog contents */
     term contents = `HBox(
 	`HSpacing(6),
+    /* Frame label */
 	`Frame(_("Wireless device settings"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(1),
-	    /* Combobox label */
+	    /* Combobox item */
 	    `ComboBox(`id(`mode), `opt(`hstretch, `notify), _("O&perating mode"), [
+	    /* Combobox item */
 		`item(`id("Ad-hoc"), _("Ad-hoc"), Lan::wl_mode == "Ad-hoc"),
+	    /* Combobox item */
 		`item(`id("Managed"), _("Managed"), Lan::wl_mode == "Managed"),
+	    /* Combobox item */
 		`item(`id("Repeater"), _("Repeater"), Lan::wl_mode == "Repeater"),
+	    /* Combobox item */
 		`item(`id("Secondary"), _("Secondary"), Lan::wl_mode == "Secondary"),
+	    /* Combobox item */
 		`item(`id("Automatic"), _("Automatic"), Lan::wl_mode == "Auto")
 	     ]),
 	    `VSpacing(0.2),

@@ -51,12 +51,15 @@ define set_contents()
 	      `RichText( `id(`summary), select(Lan::Summary(false), 0 , "")),
 	      `VSpacing(0.5),
 	      `HBox(
+            // push button label
 		    `PushButton(`id(`configure), _("&Configure Network")),
 		    `HStretch(),
+            // push button label
 		    `PushButton(`id(`reset), _("&Reset Configuration"))
 		    ),
 	      `VSpacing(1)
 	      );
+    // caption of lan auto configuration
     Wizard::SetContents(_("Network Configuration"),
 			contents, "", true, true);
 }
