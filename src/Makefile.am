@@ -21,7 +21,7 @@ include_DATA =			\
 	ui.ycp
 
 menu_DATA =			\
-	menuentry_network.ycp
+	menuentry_network.y2cc
 
 modules_DATA =			\
 	Network.ycp
