@@ -1,3 +1,6 @@
+-------------------------------------------------------------------
+Wed May 15 20:30:32 CEST 2002 - msvec@suse.cz
+
 - added checking of error values to routing
 - fixed Abort confirmation in routing, dns (#14926)
 - IP forwarding support (#13053)

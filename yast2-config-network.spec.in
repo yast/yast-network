@@ -31,7 +31,7 @@ Summary:	Configuration of network
 @yncludedir@/network/*
 @clientdir@/*.ycp
 @moduledir@/*.ycp
-@menudir@/menuentry_*.y2cc
+@configdir@/*.y2cc
 @scrconfdir@/*.scr
-@yast2dir@/netcards.ycp
+@YAST2DIR@/netcards.ycp
 %doc @docdir@

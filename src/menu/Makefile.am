@@ -4,7 +4,6 @@
 # $Id$
 #
 
-menudir = $(YAST2DIR)/menuentries
-menu_DATA = $(filter-out menuentry_network.y2cc, $(wildcard *.y2cc))
+config_DATA = $(filter-out menuentry_network.y2cc, $(wildcard *.y2cc))
 
-EXTRA_DIST = $(menu_DATA)
+EXTRA_DIST = $(config_DATA)
