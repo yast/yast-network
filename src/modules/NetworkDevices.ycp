@@ -299,7 +299,6 @@ global define boolean Write(string devregex) {
 		y2debug ("deleting: %1", p);
 		SCR::Write (p, nil);
 	    });
-	    
 	}
     });
 
