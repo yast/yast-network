@@ -362,8 +362,9 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 	));
 
     /* DIALOG PREPARE */
-    Wizard::SetContents(caption, contents, helptext, true, true);
-    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), OKButtonLabel()));
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    BackButtonLabel(), OKButtonLabel());
+
     if (1>=size(DrvList))
 	UI::ChangeWidget(`id(`DrvBox), `Enabled, false);
 
@@ -372,8 +373,7 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
     UI::ChangeWidget(`id("euro"), `Enabled, (feature & 0x02)==0x02);
     UI::ChangeWidget(`id("ni1"), `Enabled, (feature & 0x04)==0x04);
     UI::ChangeWidget(`id("leased"), `Enabled, (feature & 0x08)==0x08);
-	
-    
+
     /* MAIN CYCLE */
     symbol ret = nil;
     while (true)

@@ -132,9 +132,8 @@ for example, +pap +chap for the dial-in server authentication.</p>");
 	);
 
     /* DIALOG PREPARE */
-    Wizard::SetContents(caption, contents, helptext, true, true);
-
-    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), OKButtonLabel()));
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    BackButtonLabel(), OKButtonLabel());
 
     if (callback== "off")
         UI::ChangeWidget(`id(`cbdelay), `Enabled, false);

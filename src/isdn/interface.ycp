@@ -291,9 +291,8 @@ remove a channel.
 
 
     /* DIALOG PREPARE */
-    Wizard::SetContents(caption, contents, helptext, true, true);
-
-    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), NextButtonLabel()));
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    BackButtonLabel(), NextButtonLabel());
 
     /* MAIN CYCLE */
     symbol ret = nil;

@@ -189,7 +189,7 @@ selected your provider from the  list, these values are provided.</p>") +
     _("<p>Enter a <b>Provider name</b> for the provider and a <b>Phone number</b>
 to access your provider.</p>");
 
-    if(type == "isdn")
+    if(false && /* FIXME: ISDN */ type == "isdn")
 	/* Provider dialog help 2/5 */
 	helptext = helptext + _("<p>Select the type of packet encapsulation.
 <b>RawIP</b> means that MAC headers are stripped. <b>SyncPPP</b> stands for
@@ -240,7 +240,7 @@ at the end.</p>");
     ));
 
     term encapbox = `Empty();
-    if(type == "isdn") {
+    if(false && /* FIXME: ISDN */ type == "isdn") {
 	/* ComboBox label */
 	encapbox = `Left(`ComboBox(`id(`encap), `opt(`notify), _("Packet &encapsulation"), [
 	    /* ComboBox item */
@@ -349,7 +349,7 @@ at the end.</p>");
     ChangeWidgetIfExists(`id(`password), `Enabled, !ask_pass);
     ChangeWidgetIfExists(`id(`info), `Enabled, infotext != nil && infotext != "");
 
-    if(type == "isdn" && encap == "rawip") {
+    if(false && /* FIXME: ISDN */ type == "isdn" && encap == "rawip") {
 	// seems that disabling via frame is not possible
 	// UI::ChangeWidget(`id(`auth), `Enabled, false);
 	ChangeWidgetIfExists(`id(`username), `Enabled, false);
@@ -409,7 +409,7 @@ at the end.</p>");
 	    phone = QueryWidgetIfExists(`id(`phone), `Value, phone);
 
 	    boolean auth_chk = true;
-	    if(type == "isdn") {
+	    if(false && /* FIXME: ISDN */ type == "isdn") {
 		encap = UI::QueryWidget(`id(`encap), `Value);
 		if (encap == "rawip")
 			auth_chk = false;
@@ -504,7 +504,7 @@ at the end.</p>");
 	    "ISDNSUPPORTED"	: (type == "isdn" ? "yes" : "no"),
 	    "DSLSUPPORTED"	: (type == "dsl" ? "yes" : "no"),
 	]);
-	if(type == "isdn") {
+	if(false && /* FIXME: ISDN */ type == "isdn") {
 	    Provider::Provider = union(Provider::Provider, $[
 		"ENCAP"		: encap,
 	    ]);
