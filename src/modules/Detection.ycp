@@ -186,7 +186,7 @@ define boolean StopDetection() {
     }
 
     /* Finish DHCP detection */
-    SCR::Execute(.target.bash, sformat("test -f %1/dhcpcd-%2.pid && kill $(cat %1/dhcpcd-%2.pid)", tmpdir, device));
+    // nothing, #44557
 
     y2milestone("Network detection stop (end)");
     return true;

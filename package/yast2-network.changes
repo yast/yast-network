@@ -3,6 +3,7 @@ Wed Sep  8 16:42:53 CEST 2004 - mvidner@suse.cz
 
 - LAN: STARTMODE="manual" if not specified but "auto"
   for new configurations (#44804).
+- There's no dhcp detection process to kill (#44557).
 - 2.10.16
 
 -------------------------------------------------------------------
