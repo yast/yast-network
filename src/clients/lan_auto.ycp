@@ -160,19 +160,27 @@ define map FromAY(map input) {
 
 /**
  * Convert data from native network to autoyast for XML
- * @param settings native network settings
- * @return autoyast network settings
+ * @param map settings native network settings
+ * @return map autoyast network settings
  */
 define map ToAY (map settings) {
     list interfaces = [];
-	list discard = ["UNIQUE"];
+    list discard = ["UNIQUE"];
     foreach(string device, map devsmap, settings["devices"]:$[], {
 	foreach(string num, map devmap, devsmap, {
-	    map newmap = $[];
-	    foreach(string key, string val, devmap, {
+	    map<string, any> newmap = $[];
+	    foreach(string key, any val, devmap, {
 			y2milestone("Adding: %1=%2", key, val);
-			if ( size(val) > 0 && ( !contains(discard, key) && !contains(discard, tolower(key))))
-				newmap[tolower(key)] = val;
+                        if (key!="_aliases")
+                        {
+                        if ( size((string)val) > 0 && ( !contains(discard, key) && !contains(discard, tolower(key))))
+                            newmap[tolower(key)] = (string)val;
+                        }
+                        else
+                        {
+                            // FIXME: handle aliases
+                            y2debug("val: %1", val);
+                        }
 	    });
 	    newmap["device"] = device + num;
 	    interfaces = add(interfaces, newmap);
@@ -261,6 +269,7 @@ else if (func == "Packages") {
 }
 else if (func == "Export") {
     map settings = Lan::Export();
+    y2debug("settings: %1", settings);
     map autoyast = ToAY(settings);
     ret = autoyast;
 }
