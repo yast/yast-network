@@ -134,7 +134,7 @@ configuration.</P>
 	ret = UI::UserInput();
 
 	/* abort? */
-	if(ret == `abort || ret == `cancel) {
+	if(ret == `abort || ret == `cancel || ret == `back) {
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
@@ -146,6 +146,7 @@ configuration.</P>
 	/* configure the selected card */
 	else if(ret == `configure_button) {
 	    Modem::Add();
+	    Provider::Add("modem");
 	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
 	    if(selected == `other) {
 		ret = `other;
@@ -156,7 +157,7 @@ configuration.</P>
 	    }
 	    break;
 	}
-	else if(ret == `next || ret == `back) {
+	else if(ret == `next) {
 	    break;
 	}
 	else {

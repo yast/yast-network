@@ -16,12 +16,7 @@ import "Wizard";
 include "wizard/sequencer.ycp";
 
 include "network/routines.ycp";
-
 include "network/provider/wizards.ycp";
-include "network/provider/details.ycp";
-include "network/provider/dialogs.ycp";
-include "network/provider/connection.ycp";
-
 include "network/modem/dialogs.ycp";
 include "network/modem/complex.ycp";
 
@@ -103,10 +98,11 @@ global define symbol MainSequence() ``{
     map aliases = $[
 	"summary"	: ``(SummaryDialog()),
 	"overview"	: ``(OverviewDialog()),
-	"configure"	: [ ``(OneModemProviderSequence(true)), true ],
-	"other"		: [ ``(OneModemProviderSequence(false)), true ],
-	"add"		: [ ``(OneModemProviderSequence(false)), true ],
-	"edit"		: [ ``(OneModemSequence(false)), true ],
+	"configure"	: [ ``(OneModemProviderSequence(true,  false)), true ],
+	"other"		: [ ``(OneModemProviderSequence(false, false)), true ],
+	"add"		: [ ``(OneModemProviderSequence(false, false)), true ],
+	"edit"		: [ ``(OneModemProviderSequence(false, true)),  true ],
+	// "edit"		: [ ``(OneModemSequence(false)), true ],
 	"Add"		: [ ``(OneProviderSequence(true)), true ],
 	"Edit"		: [ ``(OneProviderSequence(false)), true ],
     ];
@@ -162,18 +158,18 @@ global define symbol MainSequence() ``{
  * @param detected true if modem was detected (more entries otherwise)
  * @return sequence result
  */
-global define symbol OneModemProviderSequence(boolean detected) ``{
+global define symbol OneModemProviderSequence(boolean detected, boolean edit) ``{
 
     map aliases = $[
 	"parameters_detected"	: ``(ModemDialog(true)),
 	"parameters"		: ``(ModemDialog(false)),
 	"details"		: ``(ModemDetailsDialog()),
 	"details_detected"	: ``(ModemDetailsDialog()),
-	"providers"		: ``(ProvidersDialog("modem")),
-	"provider"		: ``(ProviderDialog("modem")),
-	"new_provider"		: ``(ProviderDialog("modem")),
-	"connection"		: ``(ConnectionDialog("modem")),
-	"ipdetails"		: ``(IPDetailsDialog("modem")),
+	"providers"		: ``(ProvidersDialog(edit)),
+	"provider"		: ``(ProviderDialog()),
+	"new_provider"		: ``(ProviderDialog()),
+	"connection"		: ``(ConnectionDialog()),
+	"ipdetails"		: ``(IPDetailsDialog()),
 	"commit"		: [ ``(Commit("")), true ],
     ];
 

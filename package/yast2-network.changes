@@ -1,9 +1,10 @@
 WIP, not yet functional!
 
-- editing of hardware settings (#15062)
-- new hosts manipulation and editor
+- complex dsl screens (#many bugs)
+- editing of hardware settings (#15062, ...)
+- new hosts manipulation and editor (#20970)
+- new providers handling (#many bugs)
 - new devices manipulation
-- new providers handling
 - 2.7.0
 
 -------------------------------------------------------------------

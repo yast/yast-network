@@ -18,6 +18,23 @@ include "network/routines.ycp";
 import "Summary";
 
 /**
+ * Regular expression for all network card types
+ */
+global string NetworkCardRegex = "arc|ci|ctc|escon|eth|fddi|hsi|iucv|myri|tr";
+
+/**
+ * Regular expression for all network card types
+ */
+global string NetworkDeviceRegex = "|eth-pcmcia-|eth-usb-|tr-pcmia-|tr-usb-"
+    + NetworkCardRegex;
+
+/**
+ * Regular expression for all network card types
+ */
+global string NetworkAllRegex = "dummy|lo|"
+    + NetworkCardRegex;
+
+/**
  * Build textual summary
  * @param split split configured and unconfigured?
  * @return [ configured, unconfigured ] if split, [ summary ] otherwise
@@ -123,6 +140,8 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	/* Device type label */
 	"ctc"		: _("Channel to channel interface (CTC)"),
 	/* Device type label */
+	"dsl"		: _("DSL connection"),
+	/* Device type label */
 	"dummy"		: _("Dummy network device"),
 	/* Device type label */
 	"escon"		: _("Enteprise system connector (ESCON)"),
@@ -223,8 +242,8 @@ global define string HardwareName(string unq) ``{
 global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
     string dev = devtype + devnum;
 
-    /* modem */
-    if(devtype == "ppp" || devtype == "modem") {
+    /* Modem and DSL */
+    if(devtype == "ppp" || devtype == "modem" || devtype == "dsl") {
 	string prov = devmap["PROVIDER_NAME"]:"";
 	if(prov == "" || prov == nil)
 	    prov = devmap["PROVIDER"]:"";
@@ -236,7 +255,7 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
 	    // modem status (%1 is the device type and number, %2 is provider)
 	    return sformat(_("Configured as %1 with provider %2"), dev, prov);
     }
-    /* isdn stuff */
+    /* ISDN stuff */
     else if(devtype == "contr")
 	// isdn device status (%1 is the device type and number)
 	return sformat(_("Configured as %1"), dev);
@@ -250,9 +269,9 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
 	// example: ISDN Connection to Arcor with syncppp on net0
 	return sformat(_("to %1 with %2 on %3"), provider, proto, dev);
     }
-    /* treat the rest as a network card */
+    /* Treat others as network cards */
     else {
-	if(!regexpmatch(devtype, "lo|dummy|arc|myri|eth|tr|fddi|escon|hsi|ctc|iucv|claw"))
+	if(!regexpmatch(devtype, NetworkAllRegex))
 	    y2error("Unknown type: %1", devtype);
 
 	string proto = lookup(devmap, "BOOTPROTO", "static");
@@ -384,9 +403,9 @@ global define list BuildOverview() ``{
 	    string dev = sformat("%1%2", type, k);
 	    string ip = DeviceProtocol(v);
 
-	    /* modem */
-	    if(type == "modem" || type == "ppp")
-		item = `item(`id(dev), dev, DeviceType(type), v["PROVIDER_NAME"]:_("Unknown provider"));
+	    /* Modem and DSL */
+	    if(type == "modem" || type == "ppp" || type == "dsl")
+		item = `item(`id(dev), dev, DeviceType(type), v["PROVIDER_NAME"]:"");
 	    /* ISDN stuff */
 	    else if (type == "contr") {
 		string cname = lookup(v, "NAME", "unknown");
@@ -399,12 +418,10 @@ global define list BuildOverview() ``{
 		string proto = lookup(v, "PROTOCOL", "unknown");
 		item = `item(`id(dev), dev, proto, cname, ip, rip);
 	    }
-	    /* other known types */
-	    else if(regexpmatch(type, "lo|dummy|arc|myri|eth|tr|fddi|escon|hsi|ctc|iucv|ci"))
-		item = `item(`id(dev), dev, DeviceType(type), /*"active?",*/ ip/*, "?", "?"*/);
-	    /* unknown type */
+	    /* Treat others as network cards */
 	    else {
-		y2error("Unknown type: %1", type);
+		if(!regexpmatch(type, NetworkAllRegex))
+		    y2error("Unknown type: %1", type);
 		item = `item(`id(dev), dev, DeviceType(type), /*"active?",*/ ip/*, "?", "?"*/);
 	    }
 	    overview = add(overview, item);

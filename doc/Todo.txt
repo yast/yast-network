@@ -1,27 +1,16 @@
 # $Id$
 
+Fixed:
+
+- [Hardware details]: wireless, eth numbers, dual port cards,
+                      edit modules.conf, better PCMCIA/USB
+		      #10077 #12378 #15062 #9209 ...
+
 Bugs:
 
+Enhancements:
 
-DOC:
- ESCON = Enteprise System CONnector (something like a mixture of SCSI and
-         Ethernet - its a channel, but can carry network traffic)
-         - short: its a point-to point network interface
-
- IUCV  = Inter User Communication Vehicle (means: DMA based network pipe
-         between Virtual Machine instances (like vmware) on an s390)
-         - short: its a point-to point network interface
-
-- #16094:
-    Further enhancement: if the provider is not used by any other modem
-    as default or there are no modems at all, display a question wheather
-    user wants to delete also the provider.
-
-- #10739 ???
-- #13450 ???
-
-- autodetection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
-    DetectionIP() { if detection_started; run ping; }
+Documentation:
 
 ##############################################################################
 
@@ -37,22 +26,35 @@ TOCHECK:
 - chmod 0700 ~/.wgetrc? asi neni potreba ...
 - use /etc/wgetrc?
 
+- #16094:
+    Further enhancement: if the provider is not used by any other modem
+    as default or there are no modems at all, display a question wheather
+    user wants to delete also the provider.
+
+- #10739 ???
+- #13450 ???
+
+- autodetection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
+    DetectionIP() { if detection_started; run ping; }
+
+- providers: add/edit/delete #16094
+
 TOSORT:
+
+- modem|isdn|lan|dsl: info popup during proposal
 
 - agents: two resolv.conf scrconfs
 
-- providers: choose provider type during Add
-- providers: add/edit/delete #16094
-
-- dsl: add/edit/delete #15301
+- dsl: add/edit/delete #15301 #17217 #19855
 - dsl: in installation settings #15160
 
-- lan: install dhcpcd|sysconfig|... (before Write)
-- lan: install wireless-tools, hotplug, ... if needed (before Write)
+- routing: list of available devices in expert dialog
+- routing: check already present default route (partially #11132)
 
 - routing: summary: split gateway of the other routes
 - routing: summary: print other routes in nice form
 - routing: summary: print gateway hostname [Gateway: 10.20.0.1 (chimera.suse.cz)]
+
 - dns: summary: print ns and sl in nice form
 - dns: summary: print ns hostname [Name server: 10.20.0.1 (chimera.suse.cz)]
 - dns: summary: differentiate between 1 and more ns
@@ -61,17 +63,20 @@ TOSORT:
 - doc: adding network device mini-howto: grep for "escon" for example
 - doc: include public_html/network
 
-- routing: list of available devices in expert dialog
-- routing: check already present default route (partially #11132)
+- lan: install dhcpcd|sysconfig|... (before Write)
+- lan: install wireless-tools, hotplug, ... if needed (before Write)
+
 - lan: check IP presence (#9951)
 - lan: check link presence
 
 - lan: support arcnet (arc)
 - lan: support myrinet (myri)
+
 - routines: support arcnet, plip, slip, myri, ppp (not modem)
 
 - routines: check for yast2-mail presence
 - routines: install kinternet if KDE are present (kdelibs, kdebase?)
+
 - modem: speaker volume as combo (or better as slider)
 
 - host: scan for hosts on the local network [Add]
@@ -97,10 +102,6 @@ TOSORT:
 - doc: ppp: IP/RI (Serial Point-To-Point protocol)
 
 ##############################################################################
-
-- [Hardware details]: wireless, eth numbers, dual port cards,
-                      edit modules.conf, better PCMCIA/USB
-		      #10077 #12378 #15062 #9209 ...
 
 Enhancements:
 - dns: xauth agent </dev/null (and some more work)
@@ -133,6 +134,15 @@ Future:
 - hippi et al (s390)
 - ui: local net (slcs)
 - ui: cable connection (plip, slip, usb)
+
+DOC:
+ ESCON = Enteprise System CONnector (something like a mixture of SCSI and
+         Ethernet - its a channel, but can carry network traffic)
+         - short: its a point-to point network interface
+
+ IUCV  = Inter User Communication Vehicle (means: DMA based network pipe
+         between Virtual Machine instances (like vmware) on an s390)
+         - short: its a point-to point network interface
 
 SuSEconfig.hostname:
 - /var/adm/SuSEconfig/oldhostentry:

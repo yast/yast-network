@@ -130,21 +130,21 @@ _("<p>To avoid adding an interface now, use
 	    if (op == `hw)
 		ISDN::Commit();
 	    ISDN::AddIf("syncppp");
-            Providers::AddEdit("", false);
+            Provider::AddEdit("", false);
 	    break;
 	}
 	else if (ret == `AddRawIP) {
 	    if (op == `hw)
 		ISDN::Commit();
 	    ISDN::AddIf("rawip");
-            Providers::AddEdit("", false);
+            Provider::AddEdit("", false);
 	    break;
 	}
 	else if (ret == `AddProvider) {
 	    if (op == `hw)
 		ISDN::Commit();
 	    ISDN::operation = `addprov;
-            Providers::AddEdit("", false);
+            Provider::AddEdit("", false);
 	    break;
 	}
 	else {
@@ -154,7 +154,7 @@ _("<p>To avoid adding an interface now, use
 
     }
     if (ret == `next) {
-        y2debug("ISDN::provider=%1", Providers::provider);
+        y2debug("Provider::Provider=%1", Provider::Provider);
         y2debug("ISDN::interface=%1", ISDN::interface);
         ISDN::skip = true;
     }
@@ -230,7 +230,7 @@ remove a channel.
     list provlist = [];
     term prov = `VSpacing(0.1);
     if (ISDN::operation  == `editif) {
-	provlist = Providers::GetProviders("_custom", syncppp ? "syncppp" : "rawip", ISDN::provider_file);
+	provlist = Provider::GetProvider("_custom", syncppp ? "syncppp" : "rawip", ISDN::provider_file);
 	y2debug("provlist: %1", provlist);
 	// ComboBox label
 	prov = `Left(`ComboBox(`id(`prov), _("D&efault Provider"), provlist));

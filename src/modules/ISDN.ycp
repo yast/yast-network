@@ -17,12 +17,12 @@ module "ISDN";
 textdomain "network";
 
 import "Firewall";
-import "Providers";
+import "Provider";
 import "Progress";
 import "Summary";
 
 include "network/complex.ycp";
-include "network/config.ycp";
+include "network/devices.ycp";
 include "network/hardware.ycp";
 include "network/ip.ycp";
 include "network/routines.ycp";
@@ -124,14 +124,14 @@ list HARDWARE = [];
 
 /**
  * Config information
- * @see ReadConfig
+ * @see ReadDevices
  */
-map CONFIG = $[];
+map Devices = $[];
 
 /**
  * deleted devicces
  */
-list DELETED = [];
+list DeletedDevices = [];
 
 /**
  * Abort function
@@ -184,7 +184,7 @@ global define boolean Read() ``{
 	_("Read providers"),
     ], [], "");
 
-    CONFIG = $[];
+    Devices = $[];
 
     if(Abort()) return false;
     // stage 1 in reading current ISDN setup
@@ -213,7 +213,7 @@ global define boolean Read() ``{
     if(Abort()) return false;
     // stage 5 in reading current ISDN setup
     ProgressNextStage(_("Reading providers"));
-    Providers::Read("isdn");
+    Provider::Read("isdn");
     sleep(sl);
 
     if(Abort()) return false;
@@ -236,7 +236,7 @@ global define boolean Read() ``{
 global define boolean WriteOnly()``{
     WriteISDNConfig("contr");
     WriteISDNConfig("net");
-    Providers::Write();
+    Provider::Write();
     return true;
 }
 
@@ -248,7 +248,7 @@ global define boolean WriteOnly()``{
  */
 global define boolean Write(boolean start) ``{
 
-    if(!(modified_hw || modified_if || Providers::Modified())) return true;
+    if(!(modified_hw || modified_if || Provider::Modified())) return true;
     y2milestone("Writing configuration");
 
     // title for ISDN writing current setup progress screen
@@ -346,8 +346,8 @@ global define boolean Write(boolean start) ``{
     if(Abort()) return false;
     // stage 6 in writing current ISDN setup
     ProgressNextStage(_("Writing providers"));
-    if (Providers::Modified())
-	Providers::Write();
+    if (Provider::Modified())
+	Provider::Write();
     sleep(sl);
 
     if(Abort()) return false;
@@ -607,7 +607,7 @@ global define boolean Edit(string dev) ``{
     integer num = device_num(dev);
     string n = sformat("%1",num);
 
-    map typemap = lookup(CONFIG, typ, $[]);
+    map typemap = lookup(Devices, typ, $[]);
     if(!haskey(typemap, n)) {
 	y2error("Key not found: %1", dev);
 	return false;
@@ -634,7 +634,7 @@ global define boolean Delete(string item) ``{
     string typ = device_type(item);
     integer num = device_num(item);
 
-    map typemap = lookup(CONFIG, typ, $[]);
+    map typemap = lookup(Devices, typ, $[]);
     if(!haskey(typemap, sformat("%1",num))) {
 	y2error("Key not found: %1", item);
 	return false;
@@ -674,7 +674,7 @@ global define boolean EditIf(string item) ``{
     integer num = device_num(item);
     string n = sformat("%1",num);
 
-    map typemap = lookup(CONFIG, typ, $[]);
+    map typemap = lookup(Devices, typ, $[]);
     if(!haskey(typemap, n)) {
 	y2error("Key not found: %1", item);
 	return false;
@@ -698,7 +698,7 @@ global define boolean SelIf(string item) ``{
     integer num = device_num(item);
     string n = sformat("%1",num);
 
-    map typemap = lookup(CONFIG, typ, $[]);
+    map typemap = lookup(Devices, typ, $[]);
     if(!haskey(typemap, n)) {
 	y2error("Key not found: %1", item);
 	return false;
@@ -729,14 +729,17 @@ global define boolean Commit() ``{
         return true;
     }
     if (operation == `edit || operation == `editif || operation == `addproc) {
-	map typemap = lookup(CONFIG, type, $[]);
+
+	map typemap = lookup(Devices, type, $[]);
 	y2debug("typemap %1", typemap);
 	if(!haskey(typemap, n)) {
 	    y2error("Key not found: %1", device);
 	    return false;
 	}
+
     }
     if (operation == `add || operation == `edit) {
+
 	string ac = hw_device["AREACODE"]:"";
 	if (ac != "")
 	    global_ac = ac;
@@ -748,33 +751,38 @@ global define boolean Commit() ``{
 	if (sm == "manual" && global_sm == "onboot")
 	    global_sm = "manual";
 
-	if(operation == `add)
-	    ConfigAddEdit(type, device, hw_device, true);
-	else
-	    ConfigAddEdit(type, device, hw_device, false);
+	ChangeDevice(type, device, hw_device, operation == `add);
 	modified_hw = true;
+
     } else if (operation == `addif || operation == `editif) {
+
 	change(interface, "PROVIDER", provider_file);
-	if(operation == `addif) {
-	    Providers::Commit();
-	    ConfigAddEdit(type, device, interface, true);
-	} else
-	    ConfigAddEdit(type, device, interface, false);
+	if(operation == `addif)
+	    Provider::Commit();
+	ChangeDevice(type, device, interface, operation == `addif);
 	modified_if = true;
+
     } else if(operation == `addprov || operation == `editprov) {
-	Providers::Commit();
+
+	Provider::Commit();
 	change(interface, "PROVIDER", provider_file);
-	ConfigAddEdit(type, device, interface, false);
+	ChangeDevice(type, device, interface, operation == `addprov);
 	modified_if = true;
+
     } else if(operation == `testdev) {
+
         y2debug("op testdev");
+
     } else if(operation == `delete) {
-	ConfigDelete(type, device);
-	change(DELETED, type+device);
+
+	DeleteDevice(type, device);
+	change(DeletedDevices, type+device);
+
 	if (type == "contr")
 	    modified_hw = true;
 	else
 	    modified_if = true;
+
     } else {
 	y2error("Unknown operation: %1", operation);
 	return false;
@@ -787,15 +795,15 @@ global define boolean Commit() ``{
 /**
  */
 global define boolean Import(map settings) ``{
-    Providers::Import(lookup(settings, "_PROVIDERS", $[]));
-    CONFIG = add(settings, "_PROVIDERS", nil);
+    Provider::Import(lookup(settings, "_PROVIDERS", $[]));
+    Devices = add(settings, "_PROVIDERS", nil);
 }
 
 /**
  */
 global define map Export() ``{
-    map PROVIDERS = Providers::Export();
-    return add(CONFIG, "_PROVIDERS", PROVIDERS);
+    map PROVIDERS = Provider::Export();
+    return add(Devices, "_PROVIDERS", PROVIDERS);
 }
 
 /**
@@ -823,7 +831,7 @@ global define list OverviewIf() ``{
  * @return count
  */
 global define integer CountIF() ``{
-    map typemap = lookup(CONFIG, "net", $[]);
+    map typemap = lookup(Devices, "net", $[]);
 
     return size(typemap);
 }
@@ -836,7 +844,7 @@ global define integer CountIF() ``{
 global define boolean PrepareInterface() ``{
     if ((device > -1) && (type == "net"))
 	return true;
-    map typemap = lookup(CONFIG, "net", $[]);
+    map typemap = lookup(Devices, "net", $[]);
     if (0 == size(typemap))
 	return false;
     string id = "";
@@ -856,7 +864,7 @@ global define boolean PrepareInterface() ``{
  */
 global define boolean SelectInterface(boolean auto) ``{
 
-    map typemap = lookup(CONFIG, "net", $[]);
+    map typemap = lookup(Devices, "net", $[]);
     string id = "";
     integer s = size(typemap);
 
@@ -892,7 +900,7 @@ global define boolean SelectInterface(boolean auto) ``{
 
 global define string GetInterface4Provider(string prov) ``{
     string ifn = "";
-    map typemap = lookup(CONFIG, "net", $[]);
+    map typemap = lookup(Devices, "net", $[]);
 
     maplist(`num, `devmap, typemap, ``{
 	if (prov == lookup(devmap, "PROVIDER", "")) {

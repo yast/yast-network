@@ -12,7 +12,7 @@
 textdomain "network";
 
 import "ISDN";
-import "Providers";
+import "Provider";
 
 import "Wizard";
 import "Wizard_hw";
@@ -28,7 +28,7 @@ include "network/complex.ycp";
  * @return true if data was modified
  */
 global define boolean Modified() ``{
-    return ISDN::Modified() || Providers::Modified();
+    return ISDN::Modified() || Provider::Modified();
 }
 
 /**
@@ -241,7 +241,7 @@ Choose an ISDN card or connection, whose configuration you want to change or rem
 Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 
     list overview = ISDN::OverviewDev();
-    list overviewp = Providers::Overview();
+    list overviewp = Provider::Overview();
     //list overviewif = ISDN::OverviewIf();
     y2debug("overview=%1",overview);
     y2debug("overviewp=%1",overviewp);
@@ -250,22 +250,22 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
         /* Table label */
         _("ISDN cards"),
 	`header(
-        /* Table header 1/4 */
-        _("No."),
-        /* Table header 2/4 */
-        _("Type"),
-        /* Table header 3/4 */
-        _("Device"),
-        /* Table header 4/4 */
-        _("Hardware")),
+	    /* Table header 3/4 */
+	    _("Device"),
+	    /* Table header 2/4 */
+	    _("Type"),
+	    /* Table header 4/4 */
+	    _("Hardware")),
         overview,
         /* Table label */
-        _("Providers"),
+        _("Provider"),
         `header(
             /* Table header 1/2 */
             _("Name"),
             /* Table header 2/2 */
-            _("Provider")),
+            _("Provider"),
+            /* Table header 2/2 */
+            _("Phone")),
         overviewp
     );
 
@@ -319,6 +319,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
         }
         /* provider add */
         else if(ret == `Add) {
+	    Provider::Add("isdn");
             break;
         }
         /* provider edit */
@@ -326,7 +327,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	    ret = Provider_or_IF("edit");
 	    if (ret == `provider) {
 		string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
-		Providers::AddEdit(dev, false);
+		Provider::Edit(dev);
 		ISDN::operation = `editprov;
 		ret = `Editprov;
 	    } else {
@@ -346,9 +347,9 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 		string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
 		string ifc = ISDN::GetInterface4Provider(dev);
 		if (ifc == "") {
-		    Providers::Delete(dev);
-		    Providers::Commit();
-		    overviewp = Providers::Overview();
+		    Provider::Delete(dev);
+		    Provider::Commit();
+		    overviewp = Provider::Overview();
 		    UI::ChangeWidget(`id(`Table), `Items, overviewp);
 		    if(size(overviewp) < 1) {
 			UI::ChangeWidget(`id(`Edit), `Enabled, false);

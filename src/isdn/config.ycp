@@ -13,8 +13,8 @@
  *
  * $Id$
  *
- * All config settings are stored in a global variable CONFIG.
- * Deleted devices are in the global list DELETED.
+ * All config settings are stored in a global variable Devices.
+ * Deleted devices are in the global list DeletedDevices.
  */
 
 {
@@ -23,7 +23,7 @@ textdomain "network";
 include "network/routines.ycp";
 
 /**
- * Read CONFIG from files
+ * Read Devices from files
  * @param devregex regular expression for the device type
  * @return true if sucess
  * @example ReadConfig("eth|tr");
@@ -48,7 +48,7 @@ global define boolean ReadISDNConfig(string devregex) ``{
 	    return;
 	y2debug("devtype=%1 devnum=%2", devtype, devnum);
 
-	map dev = lookup(CONFIG, devtype, $[]);
+	map dev = lookup(Devices, devtype, $[]);
 	if(haskey(dev, devnum)) {
 	    y2error("device already present: %1", devnum);
 	    return;
@@ -62,24 +62,24 @@ global define boolean ReadISDNConfig(string devregex) ``{
 	});
 
 	change(dev, devnum, config);
-	change(CONFIG, devtype, dev);
+	change(Devices, devtype, dev);
     });
 
-    y2debug("CONFIG=%1",CONFIG);
+    y2debug("Devices=%1",Devices);
     return true;
 }
 
 /**
- * Write CONFIG to files
+ * Write Devices to files
  * @return true if success
  */
 global define boolean WriteISDNConfig(string isdntyp) ``{
 
-    y2debug("CONFIG=%1",CONFIG);
+    y2debug("Devices=%1",Devices);
     string sysconfig = "/etc/sysconfig/isdn";
 
     /* remove deleted devices */
-    list devs = filter(`x, DELETED, ``(regexpmatch(x, isdntyp)));
+    list devs = filter(`x, DeletedDevices, ``(regexpmatch(x, isdntyp)));
     maplist(`d, devs, ``{
 	path p = topath(".isdn.section.\"" + sysconfig + "/cfg-" + d + "\"");
 	y2debug("deleting: %1", p);
@@ -87,7 +87,7 @@ global define boolean WriteISDNConfig(string isdntyp) ``{
     });
 
     /* write all devices */
-    maplist(`typ, `devsmap, CONFIG, ``{
+    maplist(`typ, `devsmap, Devices, ``{
 	maplist(`num, `devmap, devsmap, ``{
 	    /* write sysconfig */
 	    if (typ != isdntyp)
@@ -110,23 +110,23 @@ global define boolean WriteISDNConfig(string isdntyp) ``{
     SCR::Write(.isdn, nil);
 
     /* clean up variables */
-    devs = filter(`x, DELETED, ``(!regexpmatch(x, isdntyp)));
-    y2debug("DELETED: %1 devs: %2", DELETED, devs);
-    DELETED = devs;
-    
+    devs = filter(`x, DeletedDevices, ``(!regexpmatch(x, isdntyp)));
+    y2debug("DeletedDevices: %1 devs: %2", DeletedDevices, devs);
+    DeletedDevices = devs;
+
     return true;
 }
 
 /**
- * Write one CONFIG to file
+ * Write one Devices to file
  * @return true if success
  */
 global define boolean WriteOneISDNConfig(string contr) ``{
 
-    y2debug("CONFIG=%1",CONFIG);
+    y2debug("Devices=%1",Devices);
     string sysconfig = "/etc/sysconfig/isdn";
 
-    maplist(`typ, `devsmap, CONFIG, ``{
+    maplist(`typ, `devsmap, Devices, ``{
 	maplist(`num, `devmap, devsmap, ``{
 	    string dev = typ + num;
 	    if (contr != dev)

@@ -20,12 +20,13 @@ include "ui/common_popups.ycp";
 
 /**
  * IP details dialog
- * @param type provider type (modem|isdn)
  * @return dialog result
  */
-global define symbol IPDetailsDialog(string type) ``{
+global define symbol IPDetailsDialog() ``{
 
     /* PREPARE VARIABLES */
+
+    string type = Provider::CurrentType();
 
     /* FIXME: help texts, contents */
     string Local_IP = Provider::Provider["IPADDR"]:"";
@@ -149,7 +150,7 @@ waits for callback of the remote machine.");
 
     /* DIALOG PREPARE */
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), NextButtonLabel());
+	    BackButtonLabel(), OKButtonLabel());
 
     if(modifyip && encap != "rawip") {
 	UI::ChangeWidget(`id(`IP_local), `Enabled, false);

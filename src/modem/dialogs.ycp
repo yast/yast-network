@@ -286,10 +286,5 @@ should be in your modem manual.</p>");
     return ret;
 }
 
-if(false) {
-Wizard::CreateDialog();
-ModemDialog(true);
-}
-
 /* EOF */
 }

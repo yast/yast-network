@@ -136,9 +136,6 @@ global define void SelectHardware(integer which) ``{
     unique = sel["unique"]:"";
     type = sel["type"]:"eth";
 
-    hotplug = sel["hotplug"]:"";
-    device = GetFreeDevice(RealType(type, hotplug));
-
     /* modem */
     if(type == "modem") {
 	Init1 = sel["init1"]:"";
@@ -163,6 +160,9 @@ global define void SelectHardware(integer which) ``{
 	Module["module"] = sel["module"]:"";
 	Module["options"] = sel["options"]:"";
     }
+
+    hotplug = sel["hotplug"]:"";
+    device = GetFreeDevice(RealType(type, hotplug));
 
     return true;
 }

@@ -32,6 +32,11 @@ global string type = "";
 global integer device = -1;
 global string unique = "";
 
+/**
+ * Hotplug type ("" if not hot pluggable)
+ */
+global string hotplug = "";
+
 /* modem settings */
 global string Init1 = "ATZ";
 global string Init2 = "AT Q0 V1 E1 S0=0 &C1 &D2 +FCLASS=0";
@@ -118,7 +123,7 @@ global define boolean Read() ``{
 
     Progress::New(caption, " ", steps, [
         /* Progress step 1/4 */
-        _("Detect devices"),
+        _("Detect modems"),
         /* Progress step 2/4 */
         _("Read current configuration"),
         /* Progress step 3/4 */
@@ -148,7 +153,7 @@ global define boolean Read() ``{
     if(Abort()) return false;
     /* Progress stage 4/4 */
     ProgressNextStage(_("Reading providers"));
-    Provider::Read();
+    Provider::Read("modem");
     sleep(sl);
 
     if(Abort()) return false;

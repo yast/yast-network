@@ -126,7 +126,7 @@ to change the configuration opens.</p>");
 	ret = UI::UserInput();
 
 	/* abort? */
-	if(ret == `abort || ret == `cancel) {
+	if(ret == `abort || ret == `cancel || ret == `back) {
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
@@ -148,7 +148,7 @@ to change the configuration opens.</p>");
 	    }
 	    break;
 	}
-	else if(ret == `next || ret == `back) {
+	else if(ret == `next) {
 	    break;
 	}
 	else {

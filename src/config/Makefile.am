@@ -4,6 +4,6 @@
 # $Id$
 #
 
-config_DATA = $(filter-out network.y2cc, $(wildcard *.y2cc))
+config_DATA = $(filter-out network.y2cc provider.y2cc, $(wildcard *.y2cc))
 
 EXTRA_DIST = $(config_DATA)

@@ -38,10 +38,7 @@ include "network/runtime.ycp";
  */
 global map Module = $[];
 
-/* kernel options */
 global string name = "";
-// global string modul = "";
-// global string options = "";
 global string unique = "";
 global string type = "";
 
@@ -49,7 +46,6 @@ global string type = "";
  * Hotplug type ("" if not hot pluggable)
  */
 global string hotplug = "";
-
 
 /* address options */
 global string bootproto = "static";
@@ -127,16 +123,6 @@ map INSTALL_INF = $[];
 boolean modified = false;
 
 /**
- * Network modules regex
- */
-string network_modules = "eth|tr|ctc|hsi|escon|iucv|ci|fddi|arc|myri";
-
-/**
- * Network devices regex
- */
-string network_devices = network_modules + "|eth-pcmcia-|eth-usb-|tr-pcmia-|tr-usb-";
-
-/**
  * Which operation is pending?
  */
 global symbol operation = nil;
@@ -170,7 +156,7 @@ global define boolean Read() ``{
 
     Progress::New(caption, " ", steps, [
 	/* Progress step 1/8 */
-	_("Detect devices"),
+	_("Detect network devices"),
 	/* Progress step 2/8 */
 	_("Read /etc/modules.conf"),
 	/* Progress step 3/8 */
@@ -189,7 +175,7 @@ global define boolean Read() ``{
 
     if(Abort()) return false;
     /* Progress stage 1/8 */
-    ProgressNextStage(_("Detecting network cards"));
+    ProgressNextStage(_("Detecting network devices"));
     if(!Arch::s390) /* FIXME: Temporary hack until the detection is functional */
 	ReadHardware("netcard");
 	//ReadHardware("");
@@ -198,14 +184,14 @@ global define boolean Read() ``{
     if(Abort()) return false;
     /* Progress stage 2/8 */
     ProgressNextStage(_("Reading /etc/modules.conf"));
-    ReadModules(network_modules);
+    ReadModules(NetworkCardRegex);
     // ReadModules("");
     sleep(sl);
 
     if(Abort()) return false;
     /* Progress stage 3/8 */
     ProgressNextStage(_("Reading current configuration"));
-    ReadDevices(network_devices);
+    ReadDevices(NetworkDeviceRegex);
     //ReadDevices("");
     sleep(sl);
 
@@ -374,23 +360,21 @@ global define boolean Write() ``{
  * @return true on success
  */
 global define boolean Import(map settings) ``{
+
+    DNS::Import(eval(settings["dns"]:$[]));
+    Routing::Import(eval(settings["routing"]:$[]));
+    Devices = eval(settings["devices"]:$[]);
+    Modules = eval(settings["modules"]:$[]);
+
+    map Global = settings["global"]:$[];
+    wait_for_interfaces = Global["wait_for_interfaces"]:nil;
+
+    modified = true;
+    return true;
+
+    /* This is broken: it ignores aliases, different HW types, ... * /
+
     map interfaces = listmap(map interface, settings["interfaces"]:[],``{
-	list upcase = [
-					  "bootproto",
-					  "broadcast",
-					  "ipaddr",
-					  "netmask",
-					  "network",
-					  "startmode",
-					  "dhclient_set_down_link",
-					  "wireless",
-					  "wireless_mode",
-					  "wireless_essid",
-					  "wireless_nwid",
-					  "wireless_key",
-					  "wireless_nick",
-					  "remote_ipaddr"
-					];
 	map new_interface = mapmap(`k,`v, interface, ``{
 	    if (contains(upcase, k)) {
 		return([toupper(k),v]);
@@ -414,8 +398,9 @@ global define boolean Import(map settings) ``{
     Devices = eval($["eth":eth, "tr":token]);
     DNS::Import(eval(settings["dns"]:$[]));
     Routing::Import(eval(settings["routing"]:$[]));
-	modified = true;
+    modified = true;
     return true;
+    */
 }
 
 /**
@@ -423,34 +408,37 @@ global define boolean Import(map settings) ``{
  * @return dumped settings (later acceptable by Import())
  */
 global define map Export() ``{
-    list autoinst_cfg = [];
-    list upcase = [ "BOOTPROTO", "BROADCAST", "IPADDR", "NETMASK", "NETWORK", "STARTMODE", "DHCLIENT_SET_DOWN_LINK",
-					"WIRELESS", "WIRELESS_MODE", "WIRELESS_ESSID", "WIRELESS_NWID", "WIRELESS_KEY", "WIRELESS_NICK" , 
-					"REMOTE_IPADDR"];
-    list ignore = [ "UNIQUE" ];
 
-    foreach(string device, map data, Devices, ``{
-	list interfaces = maplist(string device_nr, map device_data, data, ``{
-	    map new_device = $[];
-	    new_device = add(new_device,"device", device + device_nr);
-	    foreach(`k,`v, device_data, ``{
-		if (contains(upcase, k)) {
-		    new_device[tolower(k)] = v;
-		}
-		else if (!contains(ignore, k)) {
-		    new_device[k] = v;
-		}
+    return eval($[
+	"dns"		: DNS::Export(),
+	"routing"	: Routing::Export(),
+	"devices"	: Devices,
+	"modules"	: Modules,
+	"global"	: $[
+	    "wait_for_interfaces" : wait_for_interfaces,
+	]
+    ]);
+
+    /* This is broken: it ignores aliases, different HW types, ... * /
+
+    list interfaces = [];
+    maplist(string device, map devsmap, Devices, ``{
+	maplist(string num, map devmap, devsmap, ``{
+	    map newmap = $[];
+	    maplist(string key, string val, devmap, ``{
+		change(newmap, tolower(key), val);
 	    });
-	    return(new_device);
+	    change(newmap, "device", device+num);
+	    change(interfaces, newmap);
 	});
-	autoinst_cfg=union( autoinst_cfg, interfaces);
     });
 
     return eval($[
-	"interfaces"	: autoinst_cfg,
 	"dns"		: DNS::Export(),
 	"routing"	: Routing::Export(),
+	"interfaces"	: interfaces,
     ]);
+    */
 }
 
 /**

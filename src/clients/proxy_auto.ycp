@@ -1,5 +1,5 @@
 /**
- * File:	clients/modem_auto.ycp
+ * File:	clients/proxy_auto.ycp
  * Package:	Network configuration
  * Summary:	Client for autoinstallation
  * Authors:	Michal Svec <msvec@suse.cz>
@@ -12,10 +12,10 @@
  */
 
 /**
- * @param first a map of modem settings
+ * @param first a map of proxy settings
  * @return boolean success of operation
  * @example map mm = $[ "FAIL_DELAY" : "77" ];
- * @example map ret = WFM::CallModule("modem_auto", [ mm ]);
+ * @example map ret = WFM::CallModule("proxy_auto", [ mm ]);
  */
 
 {
@@ -23,10 +23,10 @@
 textdomain "network";
 
 y2milestone("----------------------------------------");
-y2milestone("Modem auto started");
+y2milestone("Proxy auto started");
 
-import "Modem";
-include "network/modem/wizards.ycp";
+import "Proxy";
+include "network/proxy/wizards.ycp";
 
 list args = WFM::Args();
 if(size(args) <= 0) {
@@ -34,7 +34,7 @@ if(size(args) <= 0) {
     return false;
 }
 if(!is(WFM::Args(0), map)) {
-    y2error("Bad argument for modem_auto: %1", WFM::Args(0));
+    y2error("Bad argument for proxy_auto: %1", WFM::Args(0));
     return false;
 }
 
@@ -42,14 +42,14 @@ if(!is(WFM::Args(0), map)) {
 map settings = args[0]:$[];
 y2debug("Imported: %1", settings);
 
-Modem::Import(settings);
-symbol ret = ModemAutoSequence();
+Proxy::Import(settings);
+symbol ret = ProxyAutoSequence();
 y2debug("ret=%1", ret);
 
-y2milestone("Modem auto finished");
+y2milestone("Proxy auto finished");
 y2milestone("----------------------------------------");
 
-if(ret == `next) return Modem::Export();
+if(ret == `next) return Proxy::Export();
 return $[];
 
 /* EOF */

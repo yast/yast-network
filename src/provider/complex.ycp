@@ -47,7 +47,7 @@ global define symbol CommitProvider() ``{
 global define symbol ReadDialog() ``{
     Wizard::RestoreHelp(HELPS["read"]:"");
     Provider::AbortFunction = ``{return PollAbort();};
-    boolean ret = Provider::Read(/*"all"*/);
+    boolean ret = Provider::Read("all");
     return ret ? `next : `abort;
 }
 
@@ -159,7 +159,7 @@ global define symbol SummaryDialog() ``{
 	ret = UI::UserInput();
 
 	/* abort? */
-	if(ret == `abort || ret == `cancel) {
+	if(ret == `abort || ret == `cancel || ret == `back) {
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
@@ -175,7 +175,7 @@ global define symbol SummaryDialog() ``{
 	    ret = `configure;
 	    break;
 	}
-	else if(ret == `next || ret == `back) {
+	else if(ret == `next) {
 	    break;
 	}
 	else {

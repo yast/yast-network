@@ -25,60 +25,125 @@ include "network/runtime.ycp";
 include "network/routines.ycp";
 
 /**
- * Temporary DSL sequence (only showing one dialog)
- * @param tdsl true in case T-Online DSL is configured
- * @return dialog result
  */
-global define symbol DSLSequence(boolean tdsl) ``{
-    Wizard::CreateDialog();
-    DSL::Read();
-    if (DSL::pppmode != "capi-adsl")
-	DSLDevice::Read ();
-    symbol ret = DSLDialog(tdsl, false);
-    if(ret == `next)
-    {
-	if(Packages(["smpppd"]) == `next) {
-	    if (DSL::pppmode != "capi-adsl")
-		DSLDevice::Write ();
-	    DSL::Write();
+global define symbol DSLDialog() ``{
 
-	    RunKInternet();
+    /* DSL dialog caption */
+    string caption = _("DSL configuration");
 
-	    // The message is too short and the window decorations in KDE3
-	    // make it misaligned. Don't want to fix kde now.
-	    string pad = "          ";
-	    // TODO: a better message.
-	    // Text freeze, but this message is already translated.
-	    UI::MessagePopup (pad + _("Finished") + pad);
-	}
+    /* DSL dialog help 1/6 */
+    string helptext = _("<p>Here, set the most important settings
+for DSL connection.</p>") +
+
+    /* DSL dialog help 6/6 */
+_("<p>FIXME
+</p>");
+
+    string pppmode = DSL::pppmode;
+    if (pppmode == nil || pppmode == "")
+	pppmode = "pppoe";
+
+    list pppmodes = [
+	/* ComboBox item */
+	`item(`id("pppoe"), _("PPP over Ethernet"), pppmode == "pppoe"),
+	/* ComboBox item */
+	`item(`id("pppoatm"), _("PPP over ATM"), pppmode == "pppoatm"),
+	/* ComboBox item */
+	`item(`id("capi-adsl"), _("CAPI for ADSL"), pppmode == "capi-adsl"),
+    ];
+    /* ComboBox label */
+    term pppwidget = `Left(`ComboBox(`id(`pppmode), `opt(`hstretch,`notify), _("PPP &mode"), pppmodes));
+
+    string interface = DSL::interface; // FIXME == "" ? DSLDevice::device : DSL::interface;
+    string vpivci = DSL::vpivci;
+
+    /* DSL dialog contents */
+    term contents = `HBox(
+	`HSpacing(8),
+	/* Frame label */
+	`Frame(_("DSL connection settings"), `HBox(`HSpacing(2), `VBox(
+	    `VSpacing(1),
+	    pppwidget,
+	    `VSpacing(1),
+	    `ReplacePoint(`id(`rp), `VSpacing(1)),
+	    `VSpacing(1)
+	    ), `HSpacing(2))),
+	`HSpacing(8)
+    );
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    BackButtonLabel(), NextButtonLabel());
+
+    define void UpdateCustomWidget() ``{
+	/* TextEntry label */
+	term vpibox = `TextEntry(`id(`vpivci),  _("&VPI/VCI"), vpivci);
+	/* TextEntry label */
+	term ethbox = `TextEntry(`id(`interface), _("&Ethernet card"), interface);
+	ethbox = `Left(`HBox(
+	    /* TextEntry label */
+	    `TextEntry(`id(`interface), _("&Ethernet card"), interface),
+	    `HSpacing(0.5),
+	    `VBox(
+		`Label(""),
+		/* PushButton label */
+		`PushButton(`id(`lan), `opt(`disabled), _("&Configure network cards"))
+	    )
+	));
+	ethbox = `VBox(
+	    /* TextEntry label */
+	    `TextEntry(`id(`interface), _("&Ethernet card"), interface),
+	    `VSpacing(0.5),
+	    /* PushButton label */
+	    `PushButton(`id(`lan), `opt(`disabled), _("&Configure network cards"))
+	);
+
+	if(pppmode == "pppoe")
+	    UI::ReplaceWidget(`id(`rp), ethbox);
+	else if(pppmode == "pppoatm")
+	    UI::ReplaceWidget(`id(`rp), vpibox);
+	else
+	    UI::ReplaceWidget(`id(`rp), `VSpacing(1));
     }
-    else y2debug("NOT WRITING ...");
-    Wizard::CloseDialog();
-    return ret;
-}
 
-/**
- * Temporary DSL sequence for call via the ISDN module
- * @param  pppm default pppmode ("capi-adsl")
- * @param  interf default interface
- * @return dialog result
- */
-global define symbol ISDNDSLSequence(string pppm, string interf) ``{
-    boolean tdsl = nil;
-    Wizard::CreateDialog();
-    DSL::Read();
-    DSL::pppmode = pppm;
-    DSL::interface = interf;
-    DSL::device = interf;
-    symbol ret = DSLDialog(tdsl, true);
-    if(ret == `next)
-    {
-	if(Packages(["smpppd"]) == `next) {
-	    DSL::Write();
+    UpdateCustomWidget();
+
+    any ret = nil;
+    while(true) {
+	ret = UI::UserInput();
+
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
 	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    break;
+	}
+	else if(ret == `pppmode) {
+	    pppmode = UI::QueryWidget(`id(`pppmode), `Value);
+	    UpdateCustomWidget();
+	    continue;
+	}
+	else if(ret == `lan) {
+	    continue;
+	}
+	else {
+	    y2error("Unexpected return code: %1", ret);
+	    continue;
+	}
+    };
+
+    if(ret == `next) {
+	pppmode = UI::QueryWidget(`id(`pppmode), `Value);
+	DSL::pppmode = pppmode;
+	if(pppmode == "pppoe")
+	    DSL::interface = UI::QueryWidget(`id(`interface), `Value);
+	else if(pppmode == "pppoatm")
+	    DSL::vpivci = UI::QueryWidget(`id(`vpivci), `Value);
     }
-    else y2debug("NOT WRITING ...");
-    Wizard::CloseDialog();
+
     return ret;
 }
 
@@ -166,7 +231,7 @@ global define symbol CreateUserDataTerm(
  *                     presetted parameter
  * @return dialog result
  */
-global define symbol DSLDialog(boolean tonline, boolean subdialog) ``{
+global define symbol DSLDialog2(boolean tonline, boolean subdialog) ``{
 
     /* DSL dialog caption */
     string caption = _("DSL configuration");
@@ -507,7 +572,7 @@ automatically if data is requested. To use this, specify at least one
 	    DSLDevice::device = "";
 	    DSLDevice::activate = false;
 	}
-	else { 
+	else {
 	    DSL::interface = UI::QueryWidget(`id(`interface), `Value);
 	    // checked already that it is nonempty
 	    if (DSL::interface != DSLDevice::device)
@@ -566,6 +631,12 @@ global define symbol ADSLDialog() ``{
  */
 global define symbol TDSLDialog() ``{
     return DSLDialog(false);
+}
+
+if(false) {
+    Wizard::CreateDialog();
+    // DSLDialog(false, false);
+    DSLDialog();
 }
 
 /* EOF */

@@ -23,10 +23,11 @@ include "network/routines.ycp";
 
 /**
  * Connection dialog
- * @param type "modem"|"isdn"
  * @return dialog result
  */
-global define symbol ConnectionDialog(string type) ``{
+global define symbol ConnectionDialog() ``{
+
+    string type = Provider::CurrentType();
 
     /* PREPARE VARIABLES */
     string Provider = lookup(Provider::Provider, "PROVIDER", "");
@@ -41,7 +42,7 @@ global define symbol ConnectionDialog(string type) ``{
     string IdleSeconds = lookup(Provider::Provider, "IDLETIME", "300");
 
     string device = nil;
-    if(type == "modem") device = device_name(Modem::type, Modem::device);
+    if(type == "modem") device = "ppp"; //device_name(Modem::type, Modem::device);
     else if(type == "isdn") {
 	/* FIXME: #18840 */
 	if(ISDN::type == "net")
@@ -151,7 +152,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 		/* Label */
 		`Label(_("Provider:")),
 		`HSpacing(0.5),
-		`HWeight(1,`Label(`opt(`outputField), Provider))
+		`Label(`opt(`outputField), Provider)
 	    )),
 	    `VSpacing(0.5),
 	    `HBox(

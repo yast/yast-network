@@ -110,7 +110,7 @@ global define symbol MainSequence() ``{
 	"edit"		: ``(isdn_lowlevel(`edit)),
 	"Add"		: [ ``(OneISDNSequence("selif_add")), true ],
 	"Editif"	: [ ``(OneISDNSequence("edit_if")), true ],
-	"Editprov"	: [ ``(OneProviderSequence("isdn",false)), true ],
+	"Editprov"	: [ ``(OneProviderSequence(false)), true ],
 	"commit"	: ``(Commit()),
     ];
 
@@ -183,7 +183,7 @@ global define symbol OneISDNSequence(string entry) ``{
 	"selif_hw"		: ``(isdn_if_sel(`hw)),
 	"add_if"		: [ ``(OneISDNIFSequence("add_if")), true ],
 	"edit_if"		: [ ``(OneISDNIFSequence("edit_if")), true ],
-	"addprovider"		: [ ``(OneProviderSequence("isdn",true)), true ],
+	"addprovider"		: [ ``(OneProviderSequence(true)), true ],
 	"commit"		: [ ``(Commit()), true ],
     ];
 

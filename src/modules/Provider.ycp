@@ -40,6 +40,21 @@ global map Provider = $[];
 /* LOCAL VARIABLES */
 
 /**
+ * Current provider type
+ */
+string Type = "";
+
+/**
+ * All providers type
+ */
+string GlobalType = "all";
+
+/**
+ * Supported provider types
+ */
+list Supported = [ "modem", "isdn", "dsl" ];
+
+/**
  * Custom providers
  */
 map Providers = $[];
@@ -84,9 +99,20 @@ global define boolean Modified() ``{
  * Read providers data (custom only) and country mappings
  * @return true if success
  */
-global define boolean Read() ``{
+global define boolean Read(string type) ``{
 
     boolean ret = true;
+
+    /* Save the providers type for future use */
+    if(type != "all" && !contains(Supported, type)) {
+	y2error("Unsupported provider type: %1", type);
+	GlobalType = "all";
+    }
+    else
+	GlobalType = type;
+
+    if(GlobalType != "all")
+	Type = type;
 
     /* Read custom providers */
     Providers = $[];
@@ -284,7 +310,6 @@ global define boolean SelectSystem(path name) ``{
 global define boolean Select(string name) ``{
 
     y2debug("name=%1", name);
-
     if(name != "" && !haskey(Providers, name)) {
 	y2error("No such provider: %1", name);
 	return false;
@@ -293,6 +318,8 @@ global define boolean Select(string name) ``{
     Name = name;
     Provider = eval(Providers[Name]:$[
 	/* Default provider map */
+	toupper(type)+"SUPPORTED" : "yes",
+	/* FIXME: remaining items */
     ]);
 
     y2debug("Name=%1", Name);
@@ -303,15 +330,18 @@ global define boolean Select(string name) ``{
 
 /**
  * Add a new provider
- * @param type provider type
+ * @param type provider type (modem|isdn|dsl)
  * @return true if success
  */
 global define boolean Add(string type) ``{
     operation = nil;
+    if(!contains(Supported, type)) {
+	y2error("Unsupported provider type: %1", type);
+	return false;
+    }
+    Type = type;
     if(Select("") != true) return false;
     if(CloneProvider() != true) return false;
-    /* FIXME: better way for supported types? */
-    Provider[toupper(type)+"SUPPORTED"] = "yes";
     operation = `add;
     return true;
 }
@@ -373,6 +403,7 @@ global define boolean Commit() ``{
     }
 
     Name = "";
+    Type = "";
     Provider = $[];
     modified = true;
     operation = nil;
@@ -471,11 +502,15 @@ global define list Overview() ``{
     list overview = [];
 
     y2debug("Providers=%1", Providers);
-    maplist(string name, string provmap, Providers, ``{
-	// change(overview, `item(`id(name), name, provmap["PROVIDER"]:"", provmap["PHONE"]:"", provmap["MODEMSUPPORTED"]:"no", provmap["ISDNSUPPORTED"]:"no", provmap["DSLSUPPORTED"]:"no"));
-	change(overview, `item(`id(name), name, provmap["PROVIDER"]:"", provmap["PHONE"]:""));
+    maplist(string name, map provmap, Providers, ``{
+	/* Filter only specified type */
+	if(GlobalType == "all" || provmap[toupper(GlobalType)+"SUPPORTED"]:"no" == "yes") {
+	    // change(overview, `item(`id(name), name, provmap["PROVIDER"]:"", provmap["PHONE"]:"", provmap["MODEMSUPPORTED"]:"no", provmap["ISDNSUPPORTED"]:"no", provmap["DSLSUPPORTED"]:"no"));
+	    change(overview, `item(`id(name), name, provmap["PROVIDER"]:"", provmap["PHONE"]:""));
+	}
     });
     y2debug("overview=%1", overview);
+
     return overview;
 }
 
@@ -537,6 +572,18 @@ global define boolean IsUnique(string name) ``{
     return !contains(forbidden, name);
 }
 
+global define string CurrentType() ``{
+    y2debug("Type=%1", Type);
+    if(Type != "") return Type;
+    list supp = filter(string t, Supported, ``(Provider[toupper(t+"SUPPORTED")]:"no" == "yes"));
+    y2debug("supp=%1", supp);
+    if(size(supp) < 1) {
+	y2error("None supported type: %1", Provider);
+	return "modem";
+    }
+    return supp[0]:"modem";
+}
+
 /*-------------------------------------------------------------------*/
 /* FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME */
 /*-------------------------------------------------------------------*/
@@ -581,14 +628,13 @@ define list FilterProviders(list provs, string type) ``{
 /**
  * Get providers from a group (country/other)
  * @param country we want providers from this country
- * @param type "all"|"isdn"|"rawip"|"syncppp"|"modem"|"dsl"
  * @param preselect preselect this provider
  * @return list of items for SelectionBox
  */
-global define list GetProviders(string country, string type, string preselect) ``{
+global define list GetProviders(string country, string preselect) ``{
     list provs = [];
 
-    y2debug("%1-%2-%3",country,type,preselect);
+    y2debug("%1-%2",country,preselect);
     /* Custom providers */
     if(country == "_custom") {
 	foreach(`k, `v, Providers, ``{
@@ -604,10 +650,10 @@ global define list GetProviders(string country, string type, string preselect) `
 	});
     }
 
-    y2debug("provs=%1",provs);
+    y2debug("Type=%1", Type);
+    y2debug("provs=%1", provs);
     /* Filter only desired providers */
-    if(type != "" && type != "all" && type != nil)
-	provs = FilterProviders(provs, type);
+    provs = FilterProviders(provs, Type);
 
     y2debug("provs=%1",provs);
     /* Sort and create divider (line) */

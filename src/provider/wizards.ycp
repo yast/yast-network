@@ -17,10 +17,11 @@ import "Wizard";
 
 include "wizard/sequencer.ycp";
 
+include "network/provider/complex.ycp";
+include "network/provider/connection.ycp";
 include "network/provider/details.ycp";
 include "network/provider/dialogs.ycp";
-include "network/provider/connection.ycp";
-include "network/provider/complex.ycp";
+include "network/provider/provider.ycp";
 
 /**
  * Whole configuration of modems
@@ -151,19 +152,12 @@ global define symbol MainSequence() ``{
  */
 global define symbol OneProviderSequence(boolean country) ``{
 
-    /* FIXME: better way for the type */
-    string type = "";
-    if(Provider::Provider["MODEMSUPPORTED"]:"no" == "yes") type = "modem";
-    if(Provider::Provider["ISDNSUPPORTED"]:"no" == "yes") type = "isdn";
-    if(Provider::Provider["DSLSUPPORTED"]:"no" == "yes") type = "dsl";
-    if(type == "") type = "modem";
-
     map aliases = $[
-	"providers"		: ``(ProvidersDialog(type)),
-	"provider"		: ``(ProviderDialog(type)),
-	"new_provider"		: ``(ProviderDialog(type)),
-	"connection"		: ``(ConnectionDialog(type)),
-	"ipdetails"		: ``(IPDetailsDialog(type)),
+	"providers"		: ``(ProvidersDialog(false)),
+	"provider"		: ``(ProviderDialog()),
+	"new_provider"		: ``(ProviderDialog()),
+	"connection"		: ``(ConnectionDialog()),
+	"ipdetails"		: ``(IPDetailsDialog()),
 	"commit"		: [ ``(CommitProvider()), true ],
     ];
 

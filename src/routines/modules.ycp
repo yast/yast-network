@@ -83,7 +83,58 @@ global define boolean WriteModules() ``{
     DeletedModules = [];
 
     /* Write all modules */
-    /* FIXME */
+    maplist(string m, map modmap, Modules, ``{
+	string modul = modmap["module"]:"";
+	string options = modmap["options"]:"";
+
+	/* Write module alias */
+	if(modul != nil && modul != "")
+	    // y2debug("%1 %2", add(.modules.alias, m), modul);
+	    SCR::Write(add(.modules.alias, m), modul);
+
+	/* Create module options map */
+	list optslist = filter(string s, splitstring(options, " "), ``(s != ""));
+	map optsmap = listmap(string opt, optslist, ``{
+	    list tok = splitstring(opt, "=");
+	    return [ tok[0]:"", tok[1]:"" ];
+	});
+
+	/* Write module options */
+	if(size(optsmap) > 0)
+	    // y2milestone("%1 %2", add(.modules.options, m), optsmap);
+	    SCR::Write(add(.modules.options, m), optsmap);
+
+	/* FIXME: s390 modules hack */
+	if(false) {
+	    /* write module options */
+	    if(size(opts_map) > 0) {
+		/* write module options normally */
+		if(!Arch::s390)
+		    SCR::Write(.modules.options, opts_map, dev);
+		else {
+		    /* merge module options */
+		    if(typ == "iucv") {
+			map curopts = SCR::Read(.modules.options, "netiucv");
+			maplist(`k, `v, opts_map, ``{
+			    if(haskey(curopts, k))
+				change(curopts, k, curopts[k]:"" + ":" + v);
+			    else
+				change(curopts, k, v);
+			});
+			SCR::Write(.modules.options, curopts, "netiucv");
+		    }
+		    /* write options to chandev.conf */
+		    else {
+			path chandev = topath(".etc.chandev_conf."+mod+num);
+			if(typ == "escon") chandev = topath(".etc.chandev_conf.escon"+num);
+			y2milestone("Write(%1,%2)", chandev, opts);
+			SCR::Write(chandev, opts);
+		    }
+		}
+	    }
+	}
+
+    });
 
     /* Finish him */
     SCR::Write(.modules, nil);

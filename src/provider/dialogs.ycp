@@ -13,8 +13,6 @@
 
 textdomain "network";
 
-import "DSL";
-import "Modem";
 import "ISDN";
 import "Provider";
 import "Wizard";
@@ -23,64 +21,6 @@ include "network/provider/helps.ycp";
 
 include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
-
-/**
- * Build provider info text.
- * @param prov provider settings
- * @return provider info text
- */
-global define string getProviderInfoText(map prov) ``{
-    string InfoText = "";
-    string hp = lookup (prov, "HOMEPAGE", "");
-    string hl = lookup (prov, "HOTLINE", "");
-    if (hp != "")
-    // provider info text (%2 is URL)
-	InfoText = sformat (_("<p>%1Home page: %2</p>"), InfoText, hp);
-    if (hl != "")
-    // provider info text (%2 is phone no.)
-	InfoText = sformat (_("<p>%1Hotline: %2</p>"), InfoText, hl);
-    if (lookup (Provider::Provider, "DIALMESSAGE1", "") !="" || lookup (Provider::Provider, "DIALMESSAGE2", "") != "")
-	InfoText = sformat("%1<p>%2%3</p>",
-			    InfoText,
-			    lookup (Provider::Provider, "DIALMESSAGE1", ""),
-			    lookup (Provider::Provider, "DIALMESSAGE2", "")
-		    );
-    else if (lookup (Provider::Provider, "PHONE", "") == "")
-    {
-	if (hp != "" && hl != "")
-	{
-	    string it =
-    // provider info text
-_("<p>
-To register for <b>%1</b> and find the best dialing number, connect to the
-home page <b>%2</b> or call the hotline <b>%3</b>.
-</p>");
-	    InfoText = sformat(it, lookup (Provider::Provider, "PROVIDER", ""), hp, hl);
-	}
-
-	if (hp != "" && hl == "")
-	{
-	    string it =
-    // provider info text
-_("<p>
-To register for <b>%1</b> and find the best dialing number, connect to the
-home page <b>%2</b>.
-</p>");
-	    InfoText = sformat(it, lookup (Provider::Provider, "PROVIDER", ""), hp);
-	}
-	if (hp == "" && hl != "")
-	{
-	    string it =
-    // provider info text
-_("<p>
-To register for <b>%1</b> and find the best dialing number, call the hotline
-<b>%2</b>.
-</p>");
-	    InfoText = sformat(it, lookup (Provider::Provider, "PROVIDER", ""), hl);
-	}
-    }
-    return InfoText;
-}
 
 /**
  * The SelectionBox "----" divider hack
@@ -110,7 +50,7 @@ global define any dividerHack(list provs, any prev) ``{
  * @param type providers type to be shown ("all"|"modem"|"isdn"|"dsl")
  * @return symbol dialog result
  */
-global define symbol ProvidersDialog(string type) ``{
+global define symbol ProvidersDialog(boolean edit) ``{
 
     /* Provider dialog caption */
     string caption = _("Select Internet Service Provider (ISP)");
@@ -175,7 +115,7 @@ global define symbol ProvidersDialog(string type) ``{
 	    UI::ChangeWidget(`id(`countries), `Enabled, country != "_custom");
 
 	    if(country != prev_country) {
-		provs = Provider::GetProviders(country, type, Provider::Name);
+		provs = Provider::GetProviders(country, Provider::Name);
 		y2debug("provs=%1", provs);
 		UI::ReplaceWidget(`id(`providers_rep),
 		    /* SelectionBox label */
@@ -192,7 +132,11 @@ global define symbol ProvidersDialog(string type) ``{
 	    UI::ChangeWidget(`id(`providers), `CurrentItem, provider);
 	}
 	/* No provider found for the given type */
-	if(provider == nil) return;
+	if(provider == nil) {
+	    UI::ChangeWidget(`id(`homepage), `Value, "");
+	    UI::ChangeWidget(`id(`hotline), `Value, "");
+	    return;
+	}
 
 	if(UI::QueryWidget(`id(`custom), `Value))
 	    /* Custom provider -> Select */
@@ -244,296 +188,24 @@ global define symbol ProvidersDialog(string type) ``{
 	}
     }
 
-    /* New */
-    if(ret == `new) {
-	Provider::Add(type);
+    /* New or no provider found */
+    if(ret == `new || provider == nil) {
+	Provider::Add(Provider::CurrentType());
     }
     /* Next */
     else if(ret == `next) {
-	if(UI::QueryWidget(`id(`custom), `Value))
-	    /* Custom provider -> Clone */
-	    Provider::Clone(provider);
+	/* Custom provider */
+	if(UI::QueryWidget(`id(`custom), `Value)) {
+	    if(edit)
+		/* Edit existent */
+		Provider::Edit(provider);
+	    else
+		/* Clone existent */
+		Provider::Clone(provider);
+	}
 	else
 	    /* System provider -> SelectSystem */
 	    Provider::CloneSystem(provider);
-    }
-
-    return ret;
-}
-
-/**
- * Provider dialog
- * @param type provider type (modem|isdn)
- * @return dialog result
- */
-global define symbol ProviderDialog(string type) ``{
-
-    string name = Provider::Provider["PROVIDER"]:"";
-    string username = Provider::Provider["USERNAME"]:"";
-    string password = Provider::Provider["PASSWORD"]:"";
-    string phone = Provider::Provider["PHONE"]:"";
-    string encap = Provider::Provider["ENCAP"]:"";
-    boolean ask_pass = Provider::Provider["ASKPASSWORD"]:"no" == "yes";
-    string infotext = getProviderInfoText(Provider::Provider);
-
-    boolean tonline = false;
-    if (name == "T-Online") {
-        username = "";
-        tonline = true;
-    }
-
-    /* Provider dialog caption */
-    string caption = _("Set parameters for the Internet connection");
-
-    /* Provider dialog help 1/5 */
-    string helptext = _("<p>Access to your Internet provider. If you have
-selected your provider from the  list, these values are provided.</p>") +
-
-	/* Provider dialog help 3/5 */
-	_("<p>Enter a <b>name</b> for the provider and a <b>phone number</b>
-to access your provider.</p>
-");
-
-    if(type == "isdn")
-	/* Provider dialog help 2/5 */
-	helptext = helptext + _("<p>Select the type of packet encapsulation.
-<b>RawIP</b> means that MAC headers are stripped. <b>SyncPPP</b> stands for
-Synchronous PPP.</p>");
-
-	/* Provider dialog help 4/5 */
-	helptext = helptext + _("<p>Enter the <b>user name</b> and the
-<b>password</b> to use as the login (ask your provider if unsure).
-</p>
-") +
-
-	/* Provider dialog help 5/5 */
-	_("<p>Check <b>Always ask</b> to be asked for
-the password every time.</p>
-");
-
-    // frame label
-    term auth = `Frame(`id(`auth), _("Authorization"), `HBox(
-	`HSpacing(0.5),
-	`VBox(
-        // textentry label
-	    `TextEntry(`id(`username), _("&User name"), username),
-	    `Label(""),
-        `VSpacing(0.2)
-	),
-	`HSpacing(0.5),
-	`VBox(
-        // password entry label
-	    `Password(`id(`password), _("&Password"), password),
-        // check box label
-	    `Left(`CheckBox(`id(`askpass), `opt(`notify), _("&Always ask for password"), ask_pass)),
-        `VSpacing(0.2)
-	),
-	`HSpacing(0.5)
-    ));
-
-    term rbgroup = `VSpacing(0.1);
-    if(type == "isdn") {
-	if (encap == "" && ISDN::operation == `addif)
-		encap = lookup(ISDN::interface, "PROTOCOL", "syncppp");
-	// frame label
-	rbgroup = `Left(`Frame(_("Packet encapsulation"),
-        `HBox(
-         `VBox(
-	    `VSpacing(0.4),
-	    `RadioButtonGroup(`id(`raw), `opt(`notify), `HBox(
-		`HSpacing(0.5),
-		`RadioButton(`id(`syncppp), `opt(`notify), "&Sync PPP", encap != "rawip"),
-		`HSpacing(0.5),
-		`RadioButton(`id(`rawip), `opt(`notify), "Ra&w IP", encap == "rawip"),
-		`HSpacing(0.5)
-	    )),
-	    `VSpacing(0.4)
-	    ),
-        `HWeight(1,`Label(""))
-        )));
-    }
-
-    term contents = `VBox(`VSpacing(3), `HBox(
-	`HSpacing(4),
-	`VBox(
-	    `Left(`HBox(
-        // Label text
-		`Label(_("Name for dialing:")),
-		`HSpacing(0.5),
-        `HWeight(1,
-		`Label(`opt(`outputField), Provider::Name))
-	    )),
-	    `VSpacing(1),
-        // text entry label
-	    `TextEntry(`id(`name), _("Pr&ovider name"), name),
-	    `VSpacing(0.5),
-	    `HBox(
-        // text entry label
-		`TextEntry(`id(`phone), _("P&hone number"), phone),
-		`HSpacing(0.5),
-		`VBox(
-		    `Label(""),
-            // button label
-		    `PushButton(`id(`info), `opt(`disabled), _("&Info"))
-		    )
-	    ),
-	    `VSpacing(1),
-	    rbgroup,
-	    `VSpacing(1),
-	    auth
-	    //`VSpacing(0.5),
-	    //ip
-	),
-	`HSpacing(4)
-    ),`VSpacing(3));
-
-    Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), NextButtonLabel());
-
-    /* '*' and '#' are for GPRS connections #16021 */
-    UI::ChangeWidget(`id(`phone), `ValidChars, "0123456789*#" );
-
-    // trying to fix bugs: #16756, #6244
-    if (tonline) {
-        // the name should be generated some way
-        UI::ChangeWidget(`id(`username), `ValidChars, "0123456789#" );
-    }
-
-    if(infotext != nil && infotext != "")
-	UI::ChangeWidget(`id(`info), `Enabled, true);
-
-    if(ask_pass)
-	UI::ChangeWidget(`id(`password), `Enabled, false);
-
-    if(type == "isdn" && encap == "rawip") {
-	// seems that disabling via frame is not possible
-	// UI::ChangeWidget(`id(`auth), `Enabled, false);
-	UI::ChangeWidget(`id(`askpass), `Enabled, false);
-	UI::ChangeWidget(`id(`username), `Enabled, false);
-	UI::ChangeWidget(`id(`password), `Enabled, false);
-    }
-
-    /* MAIN CYCLE */
-    any ret = nil;
-    while(true) {
-
-	ret = UI::UserInput();
-
-	/* abort? */
-	if(ret == `abort || ret == `cancel) {
-	    if(ReallyAbort()) break;
-	    else continue;
-	}
-	/* back */
-	else if(ret == `back) {
-	    break;
-	}
-	else if(ret == `syncppp) {
-	    // seems that disabling via frame is not possible
-	    // UI::ChangeWidget(`id(`auth), `Enabled, true);
-	    UI::ChangeWidget(`id(`askpass), `Enabled, true);
-	    UI::ChangeWidget(`id(`username), `Enabled, true);
-	    UI::ChangeWidget(`id(`password), `Enabled, !UI::QueryWidget(`id(`askpass), `Value));
-	    continue;
-	}
-	else if(ret == `rawip) {
-	    // seems that disabling via frame is not possible
-	    // UI::ChangeWidget(`id(`auth), `Enabled, false);
-	    UI::ChangeWidget(`id(`askpass), `Enabled, false);
-	    UI::ChangeWidget(`id(`username), `Enabled, false);
-	    UI::ChangeWidget(`id(`password), `Enabled, false);
-	    continue;
-	}
-	else if(ret == `info) {
-        // Popup text
-	    UI::LongTextPopup(_("Provider info"), `RichText(infotext), 43, 13);
-	    continue;
-	}
-	else if(ret == `askpass) {
-	    UI::ChangeWidget(`id(`password), `Enabled, !UI::QueryWidget(`id(`askpass), `Value));
-	    continue;
-	}
-	/* next */
-	else if(ret == `next) {
-
-	    /* check_* */
-	    name = UI::QueryWidget(`id(`name), `Value);
-	    phone = UI::QueryWidget(`id(`phone), `Value);
-	    username = UI::QueryWidget(`id(`username), `Value);
-	    password = UI::QueryWidget(`id(`password), `Value);
-	    ask_pass = UI::QueryWidget(`id(`askpass), `Value);
-	    boolean auth_chk = true;
-
-	    if(type == "isdn") {
-		encap = UI::QueryWidget(`id(`syncppp), `Value) ? "syncppp" : "rawip";
-		if (encap == "rawip")
-			auth_chk = false;
-	    }
-
-	    if(name != lookup(Provider::Provider, "PROVIDER", "") && !Provider::IsUnique(name)) {
-		y2security("n(%1), p(%2)",name,lookup(Provider::Provider, "PROVIDER", ""));
-        // MessagePopup text (%1 is provider name)
-		UI::MessagePopup(sformat(_("Connection name %1 already exists."), name));
-		UI::SetFocus(`id(`name));
-		continue;
-	    }
-	    else if(name == "") {
-        // MessagePopup text
-		UI::MessagePopup(_("Enter the connection name."));
-		UI::SetFocus(`id(`name));
-		continue;
-	    }
-	    else if("" == phone) {
-        // MessagePopup text
-		UI::MessagePopup(_("Enter the phone number."));
-		UI::SetFocus(`id(`phone));
-		continue;
-	    }
-	    else if(auth_chk && "" == username) {
-        // MessagePopup text
-		UI::MessagePopup(_("Enter the user name."));
-		UI::SetFocus(`id(`username));
-		continue;
-	    }
-	    /* password could be empty #16021
-	    else if(!ask_pass && auth_chk && "" == pass)
-	    {
-		UI::MessagePopup(_("Enter the password."));
-		UI::SetFocus(`id(`passwd));
-	    } */
-	    else if(filterchars(phone, "0123456789*#") != phone &&
-            // YesNoPopup text
-		    !UI::YesNoPopup(_("You have entered some characters that are not numbers in the phone field.\n\nContinue?")))
-	    {
-		UI::SetFocus(`id(`PhoneNumber));
-		continue;
-	    }
-	    else
-		break;
-	}
-	else {
-	    y2error("unexpected retcode: %1", ret);
-	    continue;
-	}
-    }
-
-    if(ret == `next) {
-	Provider::Provider = union(Provider::Provider, $[
-	    "PROVIDER"		: name,
-	    "USERNAME"		: username,
-	    "PASSWORD"		: password,
-	    "PHONE"		: phone,
-	    "ASKPASSWORD"	: ask_pass ? "yes" : "no",
-	    "MODEMSUPPORTED"	: (type == "modem" ? "yes" : "no"),
-	]);
-	if(type == "isdn") {
-	    Provider::Provider = union(Provider::Provider, $[
-		"ENCAP"		: encap,
-		"ISDNSUPPORTED"	: "yes",
-	    ]);
-	    if(ISDN::operation == `addif)
-		ISDN::provider_file = Provider::Name;
-	}
     }
 
     return ret;

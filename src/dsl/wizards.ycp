@@ -16,27 +16,22 @@ import "Wizard";
 include "wizard/sequencer.ycp";
 
 include "network/routines.ycp";
-
-//include "network/provider/wizards.ycp";
-//include "network/provider/.ycp";
-
+include "network/provider/wizards.ycp";
 include "network/dsl/dialogs.ycp";
 include "network/dsl/complex.ycp";
 
 /**
- * Whole configuration of network
+ * Whole configuration of DSL
  * @return sequence result
  */
 global define symbol DSLSequence() ``{
 
-    /* Popup text */
-    string finished = _("Configure the mail now?");
-
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
+	"rpm"	: [ ``( Packages(["smpppd"]) ), true ],
 	"write"	: [ ``( WriteDialog() ), true ],
-	"finish" : [ ``( Finished(DSL::Modified(), finished, "mail", ["permanent"]) ), true ],
+	"finish": [ ``( Finished(DSL::Modified(), FinishedMailText(), "mail", ["dialup"]) ), true ],
     ];
 
     map sequence = $[
@@ -47,15 +42,19 @@ global define symbol DSLSequence() ``{
 	],
 	"main" : $[
 	    `abort	: `abort,
+	    `next	: "rpm"
+	],
+	"rpm" : $[
+	    `abort	: `abort,
 	    `next	: "write"
 	],
 	"write" : $[
 	    `abort	: `abort,
-	    `next	: `next
+	    `next	: "finish"
 	],
-        "finish" : $[
-	    `next       : `next,
-	],
+	"finish" : $[
+	    `next	: `next,
+	]
     ];
 
     string caption = _("DSL configuration");
@@ -63,7 +62,7 @@ global define symbol DSLSequence() ``{
 
     Wizard::CreateDialog();
     Wizard::SetContentsButtons(caption, contents, "",
-				BackButtonLabel(), NextButtonLabel());
+	    BackButtonLabel(), NextButtonLabel());
 
     symbol ret = WizardSequencer(aliases, sequence);
 
@@ -72,7 +71,7 @@ global define symbol DSLSequence() ``{
 }
 
 /**
- * Whole configuration of network but without reading and writing.
+ * Whole configuration of DSL but without reading and writing.
  * For use with autoinstallation.
  * @return sequence result
  */
@@ -82,7 +81,7 @@ global define symbol DSLAutoSequence() ``{
 
     Wizard::CreateDialog();
     Wizard::SetContentsButtons(caption, contents, "",
-				BackButtonLabel(), NextButtonLabel());
+	    BackButtonLabel(), NextButtonLabel());
 
     symbol ret = MainSequence();
 
@@ -91,7 +90,7 @@ global define symbol DSLAutoSequence() ``{
 }
 
 /**
- * Main workflow of the network configuration
+ * Main workflow of the DSL configuration
  * @return sequence result
  */
 global define symbol MainSequence() ``{
@@ -99,11 +98,13 @@ global define symbol MainSequence() ``{
     map aliases = $[
 	"summary"	: ``(SummaryDialog()),
 	"overview"	: ``(OverviewDialog()),
-	"configure"	: [ ``(AddressSequence()), true ],
-	"other"		: [ ``(ManualSequence()), true ],
-	"add"		: [ ``(ManualSequence()), true ],
-	"edit"		: [ ``(AddressSequence()), true ],
-	"commit"	: [ ``(Commit()), true ],
+	"configure"	: [ ``(OneDSLProviderSequence(true,  false)), true ],
+	"other"		: [ ``(OneDSLProviderSequence(false, false)), true ],
+	"add"		: [ ``(OneDSLProviderSequence(false, false)), true ],
+	"edit"		: [ ``(OneDSLProviderSequence(false, true)), true ],
+	// "edit"		: [ ``(OneDSLSequence(false)), true ],
+	"Add"		: [ ``(OneProviderSequence(true)), true ],
+	"Edit"		: [ ``(OneProviderSequence(false)), true ],
     ];
 
     map sequence = $[
@@ -120,6 +121,8 @@ global define symbol MainSequence() ``{
 	    `next	: `next,
 	    `add	: "add",
 	    `edit	: "edit",
+	    `Add	: "Add",
+	    `Edit	: "Edit",
 	],
 	"other" : $[
 	    `abort	: `abort,
@@ -127,9 +130,6 @@ global define symbol MainSequence() ``{
 	],
 	"configure" : $[
 	    `abort	: `abort,
-	    `next	: "summary",
-	],
-	"commit" : $[
 	    `next	: "summary",
 	],
 	"add" : $[
@@ -140,37 +140,13 @@ global define symbol MainSequence() ``{
 	    `abort	: `abort,
 	    `next	: "overview",
 	],
-    ];
-
-    return WizardSequencer(aliases, sequence);
-}
-
-/**
- * Configuration sequence
- * @return sequence result
- */
-global define symbol ManualSequence() ``{
-
-    map aliases = $[
-	"manual"	: ``(ManualDialog()),
-	"list"		: ``(ManualSelection()),
-	"address"	: [ ``(AddressSequence()), true ],
-    ];
-
-    map sequence = $[
-	"ws_start"	: "manual",
-	"manual" : $[
+	"Add" : $[
 	    `abort	: `abort,
-	    `list	: "list",
-	    `next	: "address",
+	    `next	: "overview",
 	],
-	"list" : $[
-	    `next	: "manual",
+	"Edit" : $[
 	    `abort	: `abort,
-	],
-	"address" : $[
-	    `abort	: `abort,
-	    `next	: `next,
+	    `next	: "overview",
 	],
     ];
 
@@ -178,34 +154,118 @@ global define symbol ManualSequence() ``{
 }
 
 /**
- * Configuration sequence
+ * Workflow of the configuration of one DSL
+ * @param detected true if DSL was detected (more entries otherwise)
  * @return sequence result
  */
-global define symbol AddressSequence() ``{
+global define symbol OneDSLProviderSequence(boolean detected, boolean edit) ``{
 
     map aliases = $[
-	"address"	: ``(AddressDialog()),
-	"hostname"	: ``(DNSMainDialog()),
-	"routing"	: ``(RoutingMainDialog()),
-	"commit"	: [ ``(Commit()), true ],
+	"parameters_detected"	: ``(DSLDialog()),
+	"parameters"		: ``(DSLDialog()),
+	"details"		: ``(DSLDetailsDialog()),
+	"details_detected"	: ``(DSLDetailsDialog()),
+	"providers"		: ``(ProvidersDialog(edit)),
+	"provider"		: ``(ProviderDialog()),
+	"new_provider"		: ``(ProviderDialog()),
+	"connection"		: ``(ConnectionDialog()),
+	"ipdetails"		: ``(IPDetailsDialog()),
+	"commit"		: [ ``(Commit("")), true ],
     ];
 
+    string entry = "parameters";
+    if(detected) entry = "parameters_detected";
+
     map sequence = $[
-	"ws_start"	: "address",
-	"address" : $[
-	    `abort	: `abort,
-	    `next	: "commit",
-	    `routing	: "routing",
-	    `hostname	: "hostname",
+	"ws_start" : entry,
+	"parameters": $[
+	    `next   : "providers",
+	    `Details: "details",
+	    `abort  : `abort
 	],
-	"routing" : $[
-	    `next	: "address",
+	"parameters_detected" : $[
+	    `next   : "providers",
+	    `Details: "details_detected",
+	    `abort  : `abort
 	],
-	"hostname" : $[
-	    `next	: "address",
+	"details"   : $[
+	    `next   : "parameters",
+	    `abort  : `abort
+	],
+	"details_detected" : $[
+	    `next   : "parameters_detected",
+	    `abort  : `abort
+	],
+	"providers" : $[
+	    `next   : "provider",
+	    `new    : "new_provider",
+	    `abort  : `abort
+	],
+	"provider" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"new_provider" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"connection" : $[
+	    `IPDetails   : "ipdetails",
+	    `next   : "commit",
+	    `abort  : `abort
+	],
+	"ipdetails" : $[
+	    `next   : "connection",
+	    `abort  : `abort
 	],
 	"commit" : $[
-	    `next	: `next,
+	    `next   : `next,
+	],
+    ];
+
+    return WizardSequencer(aliases, sequence);
+}
+
+/**
+ * Workflow of the configuration of one DSL
+ * @param detected true if DSL was detected (more entries otherwise)
+ * @return sequence result
+ */
+global define symbol OneDSLSequence(boolean detected) ``{
+
+    map aliases = $[
+	"parameters_detected"	: ``(DSLDialog()),
+	"parameters"		: ``(DSLDialog()),
+	"details"		: ``(DSLDetailsDialog()),
+	"details_detected"	: ``(DSLDetailsDialog()),
+	"commit"		: [ ``(Commit("dsl")), true ],
+    ];
+
+    string entry = "parameters";
+    if(detected) entry = "parameters_detected";
+
+    map sequence = $[
+	"ws_start" : entry,
+	"parameters": $[
+	    `next   : "commit",
+	    `Details: "details",
+	    `abort  : `abort
+	],
+	"parameters_detected" : $[
+	    `next   : "commit",
+	    `Details: "details_detected",
+	    `abort  : `abort
+	],
+	"details"   : $[
+	    `next   : "parameters",
+	    `abort  : `abort
+	],
+	"details_detected" : $[
+	    `next   : "parameters_detected",
+	    `abort  : `abort
+	],
+	"commit" : $[
+	    `next   : `next,
 	],
     ];
 

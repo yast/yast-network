@@ -12,7 +12,7 @@
 textdomain "network";
 
 import "DSL";
-import "Providers";
+import "Provider";
 
 import "Wizard";
 import "Wizard_hw";
@@ -28,15 +28,19 @@ include "network/complex.ycp";
  * @return true if data was modified
  */
 global define boolean Modified() ``{
-    return DSL::Modified();
+    return DSL::Modified() || Provider::Modified();
 }
 
 /**
  * Commit changes to internal structures
+ * @param what what everything should be commited ("modem"|"provider"|"all")
  * @return always `next
  */
-global define symbol Commit() ``{
-    DSL::Commit();
+global define symbol Commit(string what) ``{
+    if(what == "" || what == "all" || what == "dsl")
+	DSL::Commit();
+    if(what == "" || what == "all" || what == "provider")
+	Provider::Commit();
     return `next;
 }
 
@@ -45,7 +49,18 @@ global define symbol Commit() ``{
  * @return `abort if aborted and `next otherwise
  */
 global define symbol ReadDialog() ``{
-    Wizard::RestoreHelp("");
+
+    /* DSL read dialog help 1/2 */
+    string helptext = _("<P><B><BIG>Initializing DSL configuration
+</BIG></B><BR>Please wait...<BR></P>
+");
+
+    /* DSL read dialog help 2/2 */
+    helptext = helptext + _("<P><B><BIG>Aborting the initialization:
+</BIG></B><BR>You can safely abort the configuration utility by pressing
+the <B>Abort</B> button now.</P>");
+
+    Wizard::RestoreHelp(helptext);
     DSL::AbortFunction = ``{return PollAbort();};
     boolean ret = DSL::Read();
     return ret ? `next : `abort;
@@ -57,7 +72,18 @@ global define symbol ReadDialog() ``{
  */
 global define symbol WriteDialog() ``{
     if(!Modified()) return `next;
-    Wizard::RestoreHelp("");
+
+    /* DSL write dialog help 1/2 */
+    string helptext = _("<P><B><BIG>Saving DSL configuration</BIG></B><BR>
+Please wait...<BR></P>
+");
+
+    /* DSL write dialog help 2/2 */
+    helptext = helptext + _("<P><B><BIG>Aborting the saving:</BIG></B><BR>
+You can abort the saving by pressing the <B>Abort</B> button. An additional
+dialog will possibly inform you whether it is safe to do so or not.</P>");
+
+    Wizard::RestoreHelp(helptext);
     DSL::AbortFunction = ``{return PollAbort() && ReallyAbort();};
     boolean ret = DSL::Write();
     return ret ? `next : `abort;
@@ -72,16 +98,33 @@ global define symbol SummaryDialog() ``{
     /* DSL summary dialog caption */
     string caption = _("DSL configuration");
 
+    /* DSL summary dialog help 1/3 */
+    string helptext = _("<P><B><BIG>DSL setup</BIG></B><BR>
+Here, you can configure your DSL.<BR></P>
+");
+
+    /* DSL summary dialog help 2/3 */
+    helptext = helptext + _("<P><B><BIG>Adding a DSL device:</BIG></B><BR>
+Choose a DSL device from the list of detected DSL devices. If your DSL device
+was not autodetected, use <B>Other (not detected)</B>. Then press
+<B>Configure</B>.</P>");
+
+    /* DSL summary dialog help 3/3 */
+    helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
+If you press <B>Edit</B>, an additional dialog opens in which to change the
+configuration.</P>
+");
+
     list summary = DSL::Summary(true);
     list unconfigured = select(summary, 1, []);
     string configured = select(summary, 0, "");
 
     y2debug("unconfigured=%1",unconfigured);
     /* Frame label */
-    term contents = Wizard_hw::DetectedContent(_("DSL cards to configure"),
+    term contents = Wizard_hw::DetectedContent(_("DSL devices to configure"),
 	    unconfigured, false, configured);
 
-    Wizard::SetContentsButtons(caption, contents, "",
+    Wizard::SetContentsButtons(caption, contents, helptext,
 	    BackButtonLabel(), FinishButtonLabel());
 
     any ret = nil;
@@ -90,7 +133,7 @@ global define symbol SummaryDialog() ``{
 	ret = UI::UserInput();
 
 	/* abort? */
-	if(ret == `abort || ret == `cancel) {
+	if(ret == `abort || ret == `cancel || ret == `back) {
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
@@ -102,6 +145,7 @@ global define symbol SummaryDialog() ``{
 	/* configure the selected card */
 	else if(ret == `configure_button) {
 	    DSL::Add();
+	    Provider::Add("dsl");
 	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
 	    if(selected == `other) {
 		ret = `other;
@@ -112,7 +156,7 @@ global define symbol SummaryDialog() ``{
 	    }
 	    break;
 	}
-	else if(ret == `next || ret == `back) {
+	else if(ret == `next) {
 	    break;
 	}
 	else {
@@ -133,28 +177,51 @@ global define symbol OverviewDialog() ``{
     /* DSL overview dialog caption */
     string caption = _("DSL configuration overview");
 
+    /* DSL overview dialog help 1/3 */
+    string helptext = _("<P><B><BIG>DSL overview</BIG></B><BR>
+Here, get an overview of installed DSL devices. Additionally,
+edit their configuration.<BR></P>
+");
+
+    /* DSL overview dialog help 2/3 */
+    helptext = helptext + _("<P><B><BIG>Adding a DSL device:</BIG></B><BR>
+If you press <B>Add</B>, you can manually configure a DSL device.</P>");
+
+    /* DSL overview dialog help 3/3 */
+    helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
+Choose a DSL device for which to change or remove the configuration.
+Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
+");
+
     list overview = DSL::Overview();
+    list overviewp = Provider::Overview();
     y2debug("overview=%1",overview);
+    y2debug("overviewp=%1",overviewp);
 
-    term contents = Wizard_hw::ConfiguredContent(
-        /* Header of table with installed cards 1/4 */
-	    `header(_("No."),
-                /* Header of table with installed cards 2/4 */
-                _("Type"),
-                /* Header of table with installed cards 3/4 */
-                _("Device"),
-                /* Header of table with installed cards 4/4 */
-                _("IP Address")),
-	    overview, nil, nil, nil, nil);
+    term contents = OverviewTableDouble(
+	/* Table label */
+	_("DSL devices"),
+	/* Table header */
+	`header(/*_("No."), */_("Device"), _("Type"), _("Provider")),
+	overview,
+	/* Table label */
+	_("Providers"),
+	/* Table header */
+	`header(_("Name"), _("Provider"), _("Phone")),
+	overviewp
+    );
 
-    contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);
-
-    Wizard::SetContentsButtons(caption, contents, "",
+    Wizard::SetContentsButtons(caption, contents, helptext,
 	    BackButtonLabel(), FinishButtonLabel());
 
     if(size(overview) < 1) {
-	UI::ChangeWidget(`id(`edit_button), `Enabled, false);
-	UI::ChangeWidget(`id(`delete_button), `Enabled, false);
+	UI::ChangeWidget(`id(`edit), `Enabled, false);
+	UI::ChangeWidget(`id(`delete), `Enabled, false);
+    }
+
+    if(size(overviewp) < 1) {
+	UI::ChangeWidget(`id(`Edit), `Enabled, false);
+	UI::ChangeWidget(`id(`Delete), `Enabled, false);
     }
 
     any ret = nil;
@@ -168,30 +235,56 @@ global define symbol OverviewDialog() ``{
 	    else continue;
 	}
 	/* add */
-	else if(ret == `add_button) {
+	else if(ret == `add) {
 	    DSL::Add();
-	    ret = `add;
+	    Provider::Add("dsl");
 	    break;
 	}
 	/* edit */
-	else if(ret == `edit_button) {
+	else if(ret == `edit) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
 	    DSL::Edit(dev);
-	    ret = `edit;
+	    Provider::Edit(Provider::Name);
+	    // Provider::AddEdit(Provider::provShortName, false);
 	    break;
 	}
 	/* delete */
-	else if(ret == `delete_button) {
+	else if(ret == `delete) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
 	    DSL::Delete(dev);
 	    DSL::Commit();
 	    overview = DSL::Overview();
 	    UI::ChangeWidget(`id(`table), `Items, overview);
 	    if(size(overview) < 1) {
-		UI::ChangeWidget(`id(`edit_button), `Enabled, false);
-		UI::ChangeWidget(`id(`delete_button), `Enabled, false);
+		UI::ChangeWidget(`id(`edit), `Enabled, false);
+		UI::ChangeWidget(`id(`delete), `Enabled, false);
 	    }
 	    y2debug("overview=%1",overview);
+	    continue;
+	}
+	/* provider add */
+	else if(ret == `Add) {
+	    Provider::Add("dsl");
+	    break;
+	}
+	/* provider edit */
+	else if(ret == `Edit) {
+	    string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
+	    Provider::Edit(dev);
+	    break;
+	}
+	/* provider delete */
+	else if(ret == `Delete) {
+	    string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
+	    Provider::Delete(dev);
+	    Provider::Commit();
+	    overviewp = Provider::Overview();
+	    UI::ChangeWidget(`id(`Table), `Items, overviewp);
+	    if(size(overviewp) < 1) {
+		UI::ChangeWidget(`id(`Edit), `Enabled, false);
+		UI::ChangeWidget(`id(`Delete), `Enabled, false);
+	    }
+	    y2debug("overviewp=%1",overviewp);
 	    continue;
 	}
 	else if(ret == `next || ret == `back) {

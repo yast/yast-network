@@ -551,19 +551,18 @@ available options.</p>");
 	    y2error("Unexpected return code: %1", ret);
 	    continue;
 	}
-    };
+    }
 
     if(ret == `next) {
-	    Lan::wl_essid = UI::QueryWidget(`id(`essid), `Value);
-	    Lan::wl_nick = UI::QueryWidget(`id(`nick), `Value);
-	    Lan::wl_nwid = UI::QueryWidget(`id(`nwid), `Value);
-	    Lan::wl_mode = UI::QueryWidget(`id(`mode), `Value);
-	    Lan::wl_key = UI::QueryWidget(`id(`key), `Value);
+	Lan::wl_essid = UI::QueryWidget(`id(`essid), `Value);
+	Lan::wl_nick = UI::QueryWidget(`id(`nick), `Value);
+	Lan::wl_nwid = UI::QueryWidget(`id(`nwid), `Value);
+	Lan::wl_mode = UI::QueryWidget(`id(`mode), `Value);
+	Lan::wl_key = UI::QueryWidget(`id(`key), `Value);
     }
 
     return ret;
 }
-
 
 /**
  * S/390 devices configuration dialog
@@ -605,16 +604,16 @@ add them manually.</p>");
 	/* Frame label */
 	`Frame(_("S/390 device settings"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(1),
-	    /* Text entry label */
+	    /* TextEntry label */
 	    `TextEntry(`id(`read_channel), _("R&ead channel"), Lan::read_channel),
 	    `VSpacing(0.2),
-	    /* Text entry label */
+	    /* TextEntry label */
 	    `TextEntry(`id(`write_channel), _("&Write channel"), Lan::write_channel),
 	    `VSpacing(0.2),
-	    /* Text entry label */
+	    /* TextEntry label */
 	    `TextEntry(`id(`data_channel), _("&Data channel"), Lan::data_channel),
 	    `VSpacing(0.2),
-	    /* Text entry label */
+	    /* TextEntry label */
 	    `TextEntry(`id(`portname), _("&Portname"), Lan::portname),
 	    `VSpacing(1)
 	    ), `HSpacing(2))),
@@ -651,10 +650,10 @@ add them manually.</p>");
     };
 
     if(ret == `next) {
-	    Lan::read_channel = UI::QueryWidget(`id(`read_channel), `Value);
-	    Lan::write_channel = UI::QueryWidget(`id(`write_channel), `Value);
-	    Lan::data_channel = UI::QueryWidget(`id(`data_channel), `Value);
-	    Lan::portname = UI::QueryWidget(`id(`portname), `Value);
+	Lan::read_channel = UI::QueryWidget(`id(`read_channel), `Value);
+	Lan::write_channel = UI::QueryWidget(`id(`write_channel), `Value);
+	Lan::data_channel = UI::QueryWidget(`id(`data_channel), `Value);
+	Lan::portname = UI::QueryWidget(`id(`portname), `Value);
     }
 
     return ret;
