@@ -29,7 +29,7 @@ global define symbol IPDetailsDialog() ``{
 
     /* PREPARE VARIABLES */
 
-    string type = Provider::CurrentType();
+    string type = Provider::Type;
 
     /* FIXME: help texts, contents */
     string Local_IP = Provider::Current["IPADDR"]:"";

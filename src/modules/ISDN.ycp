@@ -215,7 +215,7 @@ global define boolean Read() ``{
     if(Abort()) return false;
     // stage 5 in reading current ISDN setup
     ProgressNextStage(_("Reading providers"));
-    Provider::Read("isdn");
+    Provider::Read();
     sleep(sl);
 
     if(Abort()) return false;
@@ -238,7 +238,7 @@ global define boolean Read() ``{
 global define boolean WriteOnly()``{
     WriteISDNConfig("contr");
     WriteISDNConfig("net");
-    Provider::Write();
+    Provider::Write("isdn");
     return true;
 }
 

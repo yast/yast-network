@@ -11,15 +11,13 @@
 
 textdomain "network";
 
+import "Label";
 import "Modem";
+import "Popup";
 import "Provider";
 import "Routing";
-
 import "Wizard";
 import "Wizard_hw";
-
-import "Popup";
-import "Label";
 
 include "network/routines.ycp";
 include "network/complex.ycp";
@@ -143,6 +141,7 @@ configuration.</p>");
     while(true) {
 
 	ret = UI::UserInput();
+	y2debug("ret=%1", ret);
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel || ret == `back) {
@@ -210,7 +209,7 @@ Choose a modem for which to change or remove the configuration.
 Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 
     list overview = Modem::Overview();
-    list overviewp = Provider::Overview();
+    list overviewp = Provider::Overview("modem");
     y2debug("overview=%1",overview);
     y2debug("overviewp=%1",overviewp);
 
@@ -338,7 +337,7 @@ Delete it as well?
 	    /* Delete the provider */
 	    Provider::Delete(dev);
 	    Provider::Commit();
-	    overviewp = Provider::Overview();
+	    overviewp = Provider::Overview("modem");
 	    UI::ChangeWidget(`id(`Table), `Items, overviewp);
 	    if(size(overviewp) < 1) {
 		UI::ChangeWidget(`id(`Edit), `Enabled, false);

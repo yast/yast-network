@@ -11,13 +11,11 @@
 
 textdomain "network";
 
+import "Label";
+import "Popup";
 import "Provider";
-
 import "Wizard";
 import "Wizard_hw";
-
-import "Popup";
-import "Label";
 
 include "network/routines.ycp";
 include "network/complex.ycp";
@@ -48,7 +46,7 @@ global define symbol ReadDialog() ``{
     ScreenName("provider-read");
     Wizard::RestoreHelp(HELPS["read"]:"");
     Provider::AbortFunction = ``{return PollAbort();};
-    boolean ret = Provider::Read("all");
+    boolean ret = Provider::Read();
     return ret ? `next : `abort;
 }
 
@@ -61,7 +59,7 @@ global define symbol WriteDialog() ``{
     if(!Modified()) return `next;
     Wizard::RestoreHelp(HELPS["write"]:"");
     Provider::AbortFunction = ``{return PollAbort() && ReallyAbort();};
-    boolean ret = Provider::Write();
+    boolean ret = Provider::Write("all");
     return ret ? `next : `abort;
 }
 
@@ -149,7 +147,7 @@ global define symbol SummaryDialog() ``{
     /* Provider summary dialog caption */
     string caption = _("Provider Configuration");
 
-    list summary = Provider::Summary(true);
+    list summary = Provider::Summary("all", true);
     list unconfigured = select(summary, 1, []);
     string configured = select(summary, 0, "");
     y2debug("unconfigured=%1", unconfigured);
@@ -165,6 +163,7 @@ global define symbol SummaryDialog() ``{
     while(true) {
 
 	ret = UI::UserInput();
+	y2debug("ret=%1", ret);
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel || ret == `back) {
@@ -206,7 +205,7 @@ global define symbol OverviewDialog() ``{
     /* Provider overview dialog help caption */
     string caption = _("Providers configuration overview");
 
-    list overview = Provider::Overview();
+    list overview = Provider::Overview("all");
     y2debug("overview=%1",overview);
 
     term contents = OverviewTable(
@@ -244,11 +243,6 @@ global define symbol OverviewDialog() ``{
 	else if(ret == `edit || ret == `table) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
 	    Provider::Edit(dev);
-	    if(Provider::CurrentType() == "") {
-		/* Popup text */
-		Popup::Error(_("Cannot determine the provider type."));
-		continue;
-	    }
 	    break;
 	}
 	/* delete */
@@ -256,7 +250,7 @@ global define symbol OverviewDialog() ``{
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
 	    Provider::Delete(dev);
 	    Provider::Commit();
-	    overview = Provider::Overview();
+	    overview = Provider::Overview("all");
 	    UI::ChangeWidget(`id(`table), `Items, overview);
 	    if(size(overview) < 1) {
 		UI::ChangeWidget(`id(`edit), `Enabled, false);

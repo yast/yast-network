@@ -27,7 +27,7 @@ import "Label";
 global define string ProviderInfoText() ``{
 
     string info = "";
-    string type = Provider::CurrentType();
+    string type = Provider::Type;
 
     string hp = Provider::Current["HOMEPAGE"]:"";
     string hl = Provider::Current["HOTLINE"]:"";
@@ -158,7 +158,7 @@ global define symbol ProviderDialog() ``{
 
     ScreenName("provider-dialog");
 
-    string type = Provider::CurrentType();
+    string type = Provider::Type;
 
     string name = Provider::Current["PROVIDER"]:"";
     string phone = Provider::Current["PHONE"]:"";

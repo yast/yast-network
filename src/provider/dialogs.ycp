@@ -53,15 +53,14 @@ global define any dividerHack(list provs, any prev) ``{
 global define symbol ProvidersDialog(boolean edit) ``{
 
     ScreenName("provider-list");
+    string type = Provider::Type;
+    y2security("type=%1", type);
 
     /* Provider dialog caption */
     string caption = _("Select Internet Service Provider (ISP)");
 
-    string prev_country = "x";
-    // #23994, don't select custom providers if there are none.
-    // Provider::Name is "provider0" so the former check did not work.
-    // GetProviders may be an overkill, feel free to optimize.
-    string country = (Provider::GetProviders ("_custom", Provider::Name) != []) ? "_custom" : nil;
+    string country = Provider::LastCountry;
+    y2debug("country=%1", country);
     any provider = nil;
 
     list provs = [];
@@ -75,10 +74,10 @@ global define symbol ProvidersDialog(boolean edit) ``{
 		`HWeight(1, `VBox(
 		    `RadioButtonGroup(`id(`radio), `VBox(
 			/* RadioButton label */
-			`RadioButton(`id(`custom), `opt(`hstretch, `notify), _("C&ustom Providers"), country != nil),
+			`RadioButton(`id(`custom), `opt(`hstretch, `notify), _("C&ustom Providers"), country == "_custom"),
 			`VSpacing(0.2),
 			/* RadioButton label */
-			`RadioButton(`id(`country), `opt(`hstretch, `notify), _("&Countries"), country == nil)
+			`RadioButton(`id(`country), `opt(`hstretch, `notify), _("&Countries"), country != "_custom")
 		    )),
 		    `HBox(
 			`HSpacing(3.4),
@@ -104,6 +103,9 @@ global define symbol ProvidersDialog(boolean edit) ``{
     Wizard::SetContentsButtons(caption, contents, HELPS["providers"]:"",
 	    Label::BackButton(), Label::NextButton());
 
+    if(country != "_custom")
+	UI::ChangeWidget(`id(`countries), `CurrentItem, country);
+
     /**
      * Update widgets in the ProviderDialog
      * @param re UserInput
@@ -117,15 +119,16 @@ global define symbol ProvidersDialog(boolean edit) ``{
 	    else
 		country = UI::QueryWidget(`id(`countries), `CurrentItem);
 
+	    y2debug("country=%1", country);
 	    UI::ChangeWidget(`id(`countries), `Enabled, country != "_custom");
 
-	    if(country != prev_country) {
-		provs = Provider::GetProviders(country, Provider::Name);
+	    if(country != Provider::LastCountry || !UI::WidgetExists(`id(`providers))) {
+		provs = Provider::GetProviders(type, country, Provider::Name);
 		y2debug("provs=%1", provs);
 		UI::ReplaceWidget(`id(`providers_rep),
 		    /* SelectionBox label */
 		    `SelectionBox(`id(`providers), `opt(`notify), _("&Providers"), provs));
-		prev_country = country;
+		Provider::LastCountry = country;
 	    }
 	}
 
@@ -196,7 +199,7 @@ global define symbol ProvidersDialog(boolean edit) ``{
 
     /* New or no provider found */
     if(ret == `new || provider == nil) {
-	Provider::Add(Provider::CurrentType());
+	Provider::Add(type);
     }
     /* Next */
     else if(ret == `next) {
@@ -214,6 +217,8 @@ global define symbol ProvidersDialog(boolean edit) ``{
 	    Provider::CloneSystem(provider);
     }
 
+    y2debug("country=%1", country);
+    y2debug("country=%1", Provider::LastCountry);
     return ret;
 }
 

@@ -182,7 +182,7 @@ global define boolean Read() ``{
     if(Abort()) return false;
     /* Progress step 4/5 */
     ProgressNextStage(_("Reading providers..."));
-    Provider::Read("dsl");
+    Provider::Read();
     sleep(sl);
 
     if(Abort()) return false;
@@ -269,7 +269,7 @@ global define boolean Write() ``{
     if(Abort()) return false;
     /* Progress step 4/7 */
     ProgressNextStage(_("Writing providers..."));
-    Provider::Write();
+    Provider::Write("dsl");
     sleep(sl);
 
     if(Abort()) return false;

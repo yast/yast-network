@@ -12,13 +12,11 @@
 textdomain "network";
 
 import "DSL";
+import "Label";
+import "Popup";
 import "Provider";
-
 import "Wizard";
 import "Wizard_hw";
-
-import "Popup";
-import "Label";
 
 include "network/routines.ycp";
 include "network/complex.ycp";
@@ -144,6 +142,7 @@ configuration.</p>");
     while(true) {
 
 	ret = UI::UserInput();
+	y2debug("ret=%1", ret);
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel || ret == `back) {
@@ -207,7 +206,7 @@ Choose a DSL device for which to change or remove the configuration.
 Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 
     list overview = DSL::Overview();
-    list overviewp = Provider::Overview();
+    list overviewp = Provider::Overview("dsl");
     y2debug("overview=%1",overview);
     y2debug("overviewp=%1",overviewp);
 
@@ -314,7 +313,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 
 	    Provider::Delete(dev);
 	    Provider::Commit();
-	    overviewp = Provider::Overview();
+	    overviewp = Provider::Overview("dsl");
 	    UI::ChangeWidget(`id(`Table), `Items, overviewp);
 	    if(size(overviewp) < 1) {
 		UI::ChangeWidget(`id(`Edit), `Enabled, false);

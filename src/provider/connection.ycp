@@ -31,7 +31,7 @@ global define symbol ConnectionDialog() ``{
 
     ScreenName("provider-connection");
 
-    string type = Provider::CurrentType();
+    string type = Provider::Type;
 
     /* PREPARE VARIABLES */
     string Provider = lookup(Provider::Current, "PROVIDER", "");
