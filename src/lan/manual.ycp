@@ -405,6 +405,9 @@ available options.</p>");
 	else if(ret == `next) {
 	    break;
 	}
+	else if(ret == `mode) {
+	    continue;
+	}
 	else {
 	    y2error("Unexpected return code: %1", ret);
 	    continue;
