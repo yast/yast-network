@@ -162,6 +162,7 @@ global define boolean Write() {
     });
     Host::Update(oldhostname, fqhostname, ips);
     Host::Write();
+    oldhostname = fqhostname;	// #49634
 
     NetworkConfig::Write();
 
