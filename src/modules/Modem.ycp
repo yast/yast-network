@@ -448,6 +448,11 @@ global define void SelectHW(integer which) ``{
     SelectHardware(which);
 }
 
+/**
+ * Check if any device is using the specified provider
+ * @param provider provider identification
+ * @return true if there is any
+ */
 global define boolean LocateProvider(string provider) ``{
     list devs = LocateDevices("PROVIDER", provider);
     return size(devs) > 0;

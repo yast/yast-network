@@ -35,7 +35,7 @@ include "network/routines.ycp";
  * @param delete true if the host will be deleted
  * @return true if continue
  * /
-global define boolean HostSystemPopup(string host, boolean delete) ``{
+global defin boolean HostSystemPopup(string host, boolean delete) ``{
 
     if(!contains(Host::GetSystemHosts(), host)) return true;
 

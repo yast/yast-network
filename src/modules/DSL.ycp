@@ -539,6 +539,11 @@ global define boolean UsesDevice(string device) ``{
     return size(LocateDevices("DEVICE", device)) > 0;
 }
 
+/**
+ * Check if any device is using the specified provider
+ * @param provider provider identification
+ * @return true if there is any
+ */
 global define boolean LocateProvider(string provider) ``{
     list devs = LocateDevices("PROVIDER", provider);
     return size(devs) > 0;

@@ -13,6 +13,7 @@
 
 textdomain "network";
 
+import "Hostname";
 include "network/routines.ycp";
 
 /**

@@ -8,6 +8,7 @@ Bugs:
 
 in-progress:
 - [snwint] ifcfg-usb-usb: detected devices (manual adding done, detected missing) (#22739)
+- [zoz] routing: restart only routing (#33025)
 
 Improvements:
 - dns: two resolv.conf scrconfs
@@ -16,7 +17,6 @@ Improvements:
 - lan: myrinet: check for driver presence [warning + info]
 - lan: remove writing of NETWORK (also BROADCAST?), probably not used
 - modem: check existence of the modem device in ModemDialog
-- routing: restart only routing (#33025)
 - routing: check already present default route (partially #11132)
 - routines: check for yast2-mail presence
 - routines: support plip, slip, ppp (serial cable, not modem)
@@ -150,6 +150,7 @@ TO-SORT:
 - all: use rcnetwork reload (but probably only in some cases, things like
   remove 2 eth cards and add them in a different order won't work due to
   the kernel modules not being unloaded)
+  * "rcnetwork reload" (if DeletedModules\!=[] "restart")
 
 - routing: summary: split gateway of the other routes
 - routing: summary: print other routes in nice form

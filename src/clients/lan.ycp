@@ -101,6 +101,7 @@ map cmdline = $[
 
 /**
  * Handler for action "list"
+ * @param options action options
  */
 define void ListHandler(map options) ``{
 
@@ -129,6 +130,7 @@ define void ListHandler(map options) ``{
 
 /**
  * Handler for action "add"
+ * @param options action options
  */
 define void AddHandler(map options) ``{
     string dev = options["device"]:"";
@@ -136,6 +138,7 @@ define void AddHandler(map options) ``{
 
 /**
  * Handler for action "delete"
+ * @param options action options
  */
 define void DeleteHandler(map options) ``{
     string dev = options["device"]:"";

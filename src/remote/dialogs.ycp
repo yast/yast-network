@@ -17,6 +17,10 @@ import "Wizard";
 
 include "network/routines.ycp";
 
+/**
+ * Remote administration dialog
+ * @return dialog result
+ */
 global define symbol RemoteMainDialog() ``{
 
     ScreenName("remote");
