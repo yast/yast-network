@@ -77,11 +77,18 @@ define map FromAY(map input) ``{
     map native_modules = $[];
 
     if (size(input["modules"]:[]) > 0) {
-	native_modules = listmap(map mod, input["modules"]:[], ``{
+	map tmp_modules = listmap(map mod, input["modules"]:[], ``{
 	    string dev = mod["device"]:"";
-	    remove(mod, "device");
-	    return([dev, mod]);
+	    return([dev, mod["module"]:""]);
 	});
+	native_modules["alias"] = tmp_modules;
+	tmp_modules = listmap(map mod, input["modules"]:[], ``{
+        string options = mod["options"]:"";
+        string module_name = mod["module"]:"";
+		return([module_name, options]);
+    });
+	native_modules["options"] = tmp_modules;
+
     }
     else if (size(input["modules"]:[]) == 0 && Mode::autoinst)
     {
@@ -149,13 +156,15 @@ define map ToAY (map settings) ``{
 	    change(interfaces, newmap);
 	});
     });
+
+	// Modules
+
     list modules = [];
-    foreach(string device, map modmap, settings["modules"]:$[], ``{
+    foreach(string device, string mod, settings["modules", "alias"]:$[], ``{
 	    map newmap = $[];
-	    foreach(string key, string val, modmap, ``{
-			change(newmap, tolower(key), val);
-	    });
-	    change(newmap, "device", device);
+	    newmap["device"] =  device;
+	    newmap["module"] =  mod;
+		newmap["options"] = settings["modules", "options", mod, mod]:"";
 	    change(modules, newmap);
     });
 
