@@ -41,7 +41,7 @@ global define symbol DSLDialog() ``{
 for DSL connection.</p>") +
 
     /* DSL dialog help 2/7 */
-    _("<p>Frist, choose your <b>PPP mode</b>. This is either
+    _("<p>First, choose your <b>PPP mode</b>. This is either
 <i>PPP over Ethernet</i> (PPPoE) or <i>PPP over ATM</i> (PPPoATM). Use
 <i>PPP over Ethernet</i> if your DSL modem is connected via ethernet to your
 computer. If you are not sure which mode to use, ask your provider.</p>") +
