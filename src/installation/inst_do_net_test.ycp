@@ -73,8 +73,9 @@
 	string caption = _("Running Internet Connection Test");
 
 	/* help for dialog "Running Internet Connection Test" */
-	string help = _("<p>Here, you can see the progress of the
-Internet Connection Test.</p>") +
+	string help = _("<p>Here, view the progress of the
+Internet connection test.</p>
+") +
 
 	    /* help for dialog "Running Internet Connection Test" */
 	    _("<p>The test can be aborted by pressing the <b>Abort Test</b>
@@ -224,8 +225,9 @@ and correct the setting.</p>");
 				     `prio : 16 ]);
 		if(!Internet::Start(logdir + "/ifup.log")) {
 		    // popup to inform user about the failure
-		    Popup::Message(_("Connecting to Internet failed. View
-logs for details."));
+		    Popup::Message(_("Connecting to the Internet failed. View
+the logs for details.
+"));
 		    test_stage = `finish;
 		    test_result = `failure;
 		    return;
@@ -247,8 +249,9 @@ logs for details."));
 	    // status must be up
 	    if(!Internet::Status()) {
 		// popup to inform user about the failure
-		Popup::Message(_("Connecting to Internet failed. View
-logs for details."));
+		Popup::Message(_("Connecting to the Internet failed. View
+the logs for details.
+"));
 		test_stage = `finish;
 		test_result = `failure;
 		return;
@@ -305,7 +308,8 @@ logs for details."));
 	    {
 		// popup to inform user about the failure
 		Popup::Message(_("Download of latest release notes failed. View
-logs for details."));
+the logs for details.
+"));
 		test_result = `failure;
 	    }
 	    else
@@ -347,7 +351,8 @@ logs for details."));
 	    {
 		// popup to inform user about the failure
 		Popup::Message(_("Check for latest updates failed. View
-logs for details."));
+the logs for details.
+"));
 		test_result = `failure;
 	    }
 

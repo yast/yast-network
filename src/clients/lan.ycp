@@ -108,13 +108,13 @@ define void ListHandler(map options) ``{
     string summary = "";
     if(cf == false && uncf == false)
 	/* Headline */
-	summary = "\n" + _("Network configuration summary:") +
+	summary = "\n" + _("Network Configuration Summary:") +
 	    CommandLine::Rich2Plain(select(Lan::Summary(false), 0, "")) + "\n";
     else {
 	list l = Lan::Summary(true);
 	if(cf) summary = CommandLine::Rich2Plain(sformat("%1", l[0]:"")) + "\n";
 	/* Headline */
-	if(uncf) summary = _("Available devices:") + "\n" +
+	if(uncf) summary = _("Available Devices:") + "\n" +
 	    sformat("%1", mergestring(maplist(term i, l[1]:"", ``("* " + select(i,1,"") + "\n")), ""));
 	summary = "\n" + summary;
     }

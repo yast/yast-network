@@ -47,7 +47,8 @@ with the same module name, options will be merged while saving.</p>");
 
     /* Manual dialog help 3/4 */
 help = help + _("<p>Get a list of available network cards by pressing
-<b>Select From List</b>.</p>") +
+<b>Select from List</b>.</p>
+") +
 
     /* Manual dialog help 4/4 */
 _("<p>If you have a <b>PCMCIA</b> network card, click on the PCMCIA check
@@ -189,7 +190,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    MTUBox,
 	    `VSpacing(0.4),
 	    /* Pushbutton label */
-	    `PushButton(`id(`list), _("Select From &List")),
+	    `PushButton(`id(`list), _("Select from &List")),
 	    `VSpacing(0.5)
 	    ),
 	`HSpacing(2));
@@ -525,10 +526,11 @@ be Ad-hoc (network composed of only one cell without an access point), Managed
 master or repeater), or Auto.</p>") +
 
     /* Wireless dialog help 3/7 */
-_("<p>Set the <b>Network Name (ESSID)</b>, which is used to identify cells that are
+_("<p>Set the <b>Network Name (ESSID)</b> used to identify cells that are
 part of the same virtual network. As opposed to the NWID, which defines a
 single cell, the ESSID defines a group of cells, connected via repeaters or
-infrastructure, where the user may roam.</p>") +
+infrastructure, where the user may roam.</p>
+") +
 
     /* Wireless dialog help 4/7 */
 _("<p>As all adjacent wireless networks share the same medium, the <b>Network
@@ -615,7 +617,7 @@ available options.</p>");
 		string h = "[0-9A-Fa-f]";
 		if(size(key) < 12 || !regexpmatch(key, "^"+h+"{4}"+"(-"+h+"{4}){1,}-"+h+"{1,4}$")) {
 		    /* Popup text */
-		    Popup::Error(_("The Encryption Key is incorrect"));
+		    Popup::Error(_("The encryption key is invalid."));
 		    UI::SetFocus(`id(`key));
 		    continue;
 		}

@@ -152,7 +152,7 @@ be appropriate for dial-on-demand connections.</p>");
 		),
 		`VSpacing(0.2),
 		/* TextEntry label */
-		`TextEntry(`id(`modemip), _("Modem &IP address"), modemip)
+		`TextEntry(`id(`modemip), _("Modem &IP Address"), modemip)
 	    ), `HSpacing(2))),
 	    `VSpacing(1),
 	    /* ComboBox label */
@@ -208,7 +208,7 @@ be appropriate for dial-on-demand connections.</p>");
 	    }
 	    if(pppmode == "pptp" && !check_ip(modemip)) {
 		/* Popup text */
-		Popup::Error(_("Modem IP address is not correct"));
+		Popup::Error(_("Modem IP address is invalid."));
 		UI::SetFocus(`id(`modemip));
 		continue;
 	    }

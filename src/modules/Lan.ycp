@@ -171,7 +171,7 @@ global define boolean Read() ``{
 	_("Detect network devices"),
 	/* Progress stage 2/9 */
 	_("Read /etc/modules.conf"),
-	/* Progress stage 3/9 */
+	/* Progress stage 3/9 - multiple devices may be present, really plural*/
 	_("Read devices configuration"),
 	/* Progress stage 4/9 */
 	_("Read network configuration"),
@@ -203,7 +203,7 @@ global define boolean Read() ``{
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 3/9 */
+    /* Progress step 3/9 - multiple devices may be present, really plural*/
     ProgressNextStage(_("Reading devices configuration..."));
     /* ReadDevices(""); /* TESTING */
     ReadDevices(NetworkDeviceRegex);
@@ -286,7 +286,7 @@ global define boolean Write() ``{
 	_("Deactivate local network services"),
 	/* Progress stage 2/10 */
 	_("Write drivers information"),
-	/* Progress stage 3/10 */
+	/* Progress stage 3/10 - multiple devices may be present,really plural*/
 	_("Write devices configuration"),
 	/* Progress stage 4/10 */
 	_("Write network configuration"),
@@ -320,7 +320,7 @@ global define boolean Write() ``{
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress step 3/10 */
+    /* Progress step 3/10 - multiple devices may be present, really plural*/
     ProgressNextStage(_("Writing devices configuration..."));
     WriteDevices();
     sleep(sl);

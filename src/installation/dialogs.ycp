@@ -67,13 +67,15 @@ global define symbol TestStepsDialog() ``{
     string caption = _("Test Internet Connection");
 
     /* Steps dialog caption 1/2 */
-    string help = _("<p>Here, you can validate the Internet connection just
-configured. The test is entirely optional.</p>");
+    string help = _("<p>Here, validate the Internet connection just
+configured. The test is entirely optional.</p>
+");
 
     if(!contains(Product::flags, "no_you")) {
 	/* Steps dialog caption 2/2 */
-	help = help + _("<p>A successful result will enable you to run
-the YaST Online Update.</p>");
+	help = help + _("<p>A successful result enables you to run
+the YaST Online Update.</p>
+");
     }
 
     /* Label text (keep lines max. 65 chars long) */
@@ -112,7 +114,7 @@ activate the test procedure."),
     term steps = `VBox();
     if(!already_up) {
 	/* label text - one step of during network test */
-	steps = add(steps, `Left(`Label(_("- Connect to Internet"))));
+	steps = add(steps, `Left(`Label(_("- Connect to the Internet"))));
     }
     if(true) {
 	/* label text - one step of during network test */

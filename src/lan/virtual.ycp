@@ -64,11 +64,12 @@ global define symbol VirtualDialog(boolean standalone) ``{
     string caption = _("Virtual Aliases");
 
     /* Hosts dialog help 1/2 */
-    string help = _("<p>The virtual aliases can be set up in this dialog.</p>") +
+    string help = _("<p>Configure virtual aliases in this dialog.</p>") +
 
     /* Hosts dialog help 2/2 */
-    _("<p>Fill in an <b>Alias Name</b>, an <b>IP Address</b>, and
-<b>Netmask</b>.</p>");
+    _("<p>Enter an <b>Alias Name</b>, an <b>IP Address</b>, and
+the <b>Netmask</b>.</p>
+");
 
     integer items = 0;
     integer max = 0;

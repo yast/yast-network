@@ -30,13 +30,14 @@ global define symbol DHCPDialog() ``{
     string caption = _("DHCP Client Options");
 
     /* DHCP dialog help 1/8 */
-    string help = _("<p>Configure the <b>DHCP Client Options</b> here.</p>") +
+    string help = _("<p>Configure the DHCP client options here.</p>") +
 
     /* DHCP dialog help 2/8 */
-    _("<p>The <b>Request Broadcast Response</b> option causes the DHCP client
+    _("<p><b>Request Broadcast Response</b> causes the DHCP client
 to ask the server always to broadcast its responses. You may need this,
 for example, if your machine is a mobile client moving between different
-networks.</p>") +
+networks.</p>
+") +
 
     /* DHCP dialog help 3/8 */
     _("<p>The <b>DHCP Client Identifier</b>, if left empty, defaults to

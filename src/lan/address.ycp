@@ -211,7 +211,7 @@ completes the configuration.</p>");
 	HardwareButton = `VSpacing(0);
 
     /* Push button label */
-    term VirtualButton = `PushButton(`id(`virtual), `opt(`hstretch), _("&Virtual aliases"));
+    term VirtualButton = `PushButton(`id(`virtual), `opt(`hstretch), _("&Virtual Aliases"));
     VirtualButton = `VSpacing(0);
 
     /* Frame label */
@@ -223,7 +223,7 @@ completes the configuration.</p>");
 	    /* Push button label */
 	    `PushButton(`id(`routing), `opt(`hstretch), _("R&outing")),
 	    /* Push button label */
-	    `PushButton(`id(`dhclient), `opt(`hstretch), _("DHCP &client options")),
+	    `PushButton(`id(`dhclient), `opt(`hstretch), _("DHCP &Client Options")),
 	    HardwareButton,
 	    VirtualButton,
 	    /* FIXME: wlan
