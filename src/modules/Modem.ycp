@@ -23,6 +23,8 @@ import "Service";
 import "Summary";
 import "SuSEFirewallInterfaces";
 
+include "network/complex.ycp";
+
 /* general stuff */
 global string name = "";
 global string type = "";
@@ -439,7 +441,7 @@ global define map Export() {
  * @return summary of the current configuration
  */
 global define list Summary(boolean split) {
-    return NetworkDevices::Summary("modem", Hardware, split);
+    return BuildSummary("modem", Hardware, split);
 }
 
 /**
@@ -447,7 +449,7 @@ global define list Summary(boolean split) {
  * @return table items
  */
 global define list Overview() {
-    return NetworkDevices::Overview("modem", Hardware);
+    return BuildOverview("modem", Hardware);
 }
 
 /**

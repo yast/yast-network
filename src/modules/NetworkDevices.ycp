@@ -372,6 +372,13 @@ define map<string,map> Filter(map<string,map> devices, string devregex) {
 }
 
 /**
+ * Used in BuildSummary, BuildOverview
+ */
+global map<string,map> FilterDevices (string devregex) {
+    return Filter (Devices, devregex);
+}
+
+/**
  */
 define map FilterNOT(map<string,map> devices, string devregex) {
     if(devices == nil || devregex == nil || devregex == "")
@@ -1030,24 +1037,6 @@ global define string FastestType(string name) {
     });
     */
     return ret;
-}
-
-map<string,map> Devs = $[];
-include "network/complex.ycp";
-
-global define list Summary(string devregex, list<map> Hardware, boolean split) {
-    Devs = Filter(Devices, devregex);
-    return BuildSummary(Hardware, split);
-}
-
-global define list Overview(string devregex, list<map> Hardware) {
-    Devs = Filter(Devices, devregex);
-    return BuildOverview(Hardware);
-}
-
-global define list OverviewAliases(string devregex, list<map> Hardware) {
-    Devs = Current["_aliases"]:$[];
-    return BuildOverview(Hardware);
 }
 
 /**

@@ -33,6 +33,7 @@ import "String";
 import "Summary";
 import "SuSEFirewallInterfaces";
 
+include "network/complex.ycp";
 include "network/runtime.ycp";
 
 /*-------------*/
@@ -558,7 +559,7 @@ global define void SelectHW(integer which) {
 global define list Summary(string mode) {
     boolean split = (mode == "split");
 
-    list sum = NetworkDevices::Summary("netcard", Hardware, split);
+    list sum = BuildSummary("netcard", Hardware, split);
 
     /* Testing improved summary */
     if(mode == "summary")
@@ -572,7 +573,7 @@ global define list Summary(string mode) {
  * @return table items
  */
 global define list Overview() {
-    return NetworkDevices::Overview("netcard", Hardware);
+    return BuildOverview("netcard", Hardware);
 }
 
 /*-------------------*/

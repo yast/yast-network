@@ -168,7 +168,6 @@ include "network/devices.ycp";
 include "network/hardware.ycp";
 include "network/routines.ycp";
 
-map<string,map> Devs = $[];
 include "network/complex.ycp";
 
 include "network/isdn/config.ycp";
@@ -893,21 +892,18 @@ global define list<string> NetDeviceList() ``{
  * @return summary of the current configuration
  */
 global define list Summary(boolean split) ``{
-    Devs = Devices;
-    return BuildSummary(Hardware, split);
+    return BuildSummaryDevs (Devices, Hardware, split);
 }
 
 /**
  */
 global define list OverviewDev() ``{
-    Devs = Devices;
-    return filter(term i, (list<term>)BuildOverview(Hardware), ``(issubstring(i[0, 0]:"","contr")));
+    return filter(term i, (list<term>)BuildOverviewDevs (Devices, Hardware), ``(issubstring(i[0, 0]:"","contr")));
     //return BuildOverview("contr");
 }
 
 global define list OverviewIf() ``{
-    Devs = Devices;
-    return filter(term i, (list<term>)BuildOverview(Hardware), ``(issubstring(i[0, 0]:"","net")));
+    return filter(term i, (list<term>)BuildOverviewDevs (Devices, Hardware), ``(issubstring(i[0, 0]:"","net")));
     //return BuildOverview("net");
 }
 

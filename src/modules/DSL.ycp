@@ -23,6 +23,8 @@ import "Progress";
 import "Summary";
 import "SuSEFirewallInterfaces";
 
+include "network/complex.ycp";
+
 /* general stuff */
 global string name = "";
 global string type = "";
@@ -487,7 +489,7 @@ global define map Export() {
  */
 global define list Summary(boolean split) {
 
-    list sum = NetworkDevices::Summary("dsl", Hardware, split);
+    list sum = BuildSummary("dsl", Hardware, split);
     if(HWDetected != true) return sum;
 
     string hwdet = Summary::DevicesList( [
@@ -513,7 +515,7 @@ global define list Summary(boolean split) {
  * @return table items
  */
 global define list Overview() {
-    return NetworkDevices::Overview("dsl", Hardware);
+    return BuildOverview("dsl", Hardware);
 }
 
 /**

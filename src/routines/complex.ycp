@@ -6,9 +6,6 @@
  *
  * $Id$
  *
- * All config settings are stored in a global variable Devs.
- * All hardware settings are stored in a global variable Hardware.
- * Deleted devices are in the global list DELETED.
  */
 
 {
@@ -32,8 +29,7 @@ define string HardwareName(list<map> Hardware, string unq);
  * @param split split configured and unconfigured?
  * @return [ configured, unconfigured ] if split, [ summary ] otherwise
  */
-define list<any> BuildSummary(list<map> Hardware, boolean split) {
-
+define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, boolean split) {
     y2milestone("Devs=%1", Devs);
     y2milestone("Hardware=%1", Hardware);
     y2debug("split=%1", split);
@@ -44,7 +40,7 @@ define list<any> BuildSummary(list<map> Hardware, boolean split) {
     list<map> unconfigured = [];
 
     /* build a list of configured devices */
-    maplist(string devtype, map devsmap, (map<string,map>) Devs, {
+    maplist(string devtype, map devsmap, Devs, {
 	maplist(string devnum, map devmap, (map<string,map>)devsmap, {
 
 	    /* main device summary */
@@ -124,6 +120,16 @@ define list<any> BuildSummary(list<map> Hardware, boolean split) {
     y2debug("summary=%1", summary);
     y2debug("devs=%1", devs);
     return [ summary, devs ];
+}
+
+/**
+ * Build textual summary
+ * @param split split configured and unconfigured?
+ * @return [ configured, unconfigured ] if split, [ summary ] otherwise
+ */
+define list<any> BuildSummary(string devregex, list<map> Hardware, boolean split) {
+    map <string, map> Devs = NetworkDevices::FilterDevices (devregex);
+    return BuildSummaryDevs (Devs, Hardware, split);
 }
 
 /**
@@ -419,10 +425,10 @@ define string DeviceProtocol(map devmap) {
  * Create overview table contents
  * @return table items
  */
-define list BuildOverview(list<map> Hardware) {
+define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
     list overview = [];
 
-    maplist(string type, map devmap, (map<string,map>) Devs, {
+    maplist(string type, map devmap, Devs, {
 	maplist(string k, map v, (map<string,map>)devmap, {
 	    term item = nil;
 	    string dev = NetworkDevices::device_name(type, k);
@@ -476,6 +482,15 @@ define list BuildOverview(list<map> Hardware) {
 
     y2debug("overview=%1", overview);
     return overview;
+}
+
+/**
+ * Create overview table contents
+ * @return table items
+ */
+define list BuildOverview(string devregex, list<map> Hardware) {
+    map <string, map> Devs = NetworkDevices::FilterDevices (devregex);
+    return BuildOverviewDevs (Devs, Hardware);
 }
 
 /* EOF */
