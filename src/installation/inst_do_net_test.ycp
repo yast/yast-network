@@ -59,7 +59,7 @@
 	string caption = _("Running Internet Connection Test");
 
 	/* help for dialog "Running Internet Connection Test" */
-	string help = _("<p>Here, you can see the progress and the log of the
+	string help = _("<p>Here, you can see the progress of the
 Internet Connection Test.</p>") +
 
 	/* help for dialog "Running Internet Connection Test" */
@@ -94,16 +94,6 @@ and correct the setting.</p>");
 			      `VSpacing(1),
 			      `VBox(`HVCenter(`HSquash(progress))),
 			      `VSpacing(1),
-			      /* Push Button to abort internet test */
-			      `PushButton(`id (`abort_test), _("&Abort Test")),
-			      `VSpacing(1),
-			      `HBox(
-				    `HSpacing(1),
-				    /* Label of LogView showing protocol of internet test */
-				    `LogView(`id(`log), _("Test Log:"), 5, 50),
-				    `HSpacing(1)
-				    ),
-			      `VSpacing(1),
 			      `HBox(
 				    `HSpacing(1),
 				    /* Label for result of internet test */
@@ -113,22 +103,15 @@ and correct the setting.</p>");
 				    `HSpacing(1)
 				    ),
 			      `VSpacing(1),
+			      /* Push Button to abort internet test */
+			      `PushButton(`id (`abort_test), _("&Abort Test")),
+			      `VSpacing(1),
+			      /* Push Button to see log of internet test */
+			      `PushButton(`id (`view_log), `opt(`disabled), _("&View Log")),
 			      `VStretch()
 			      );
 
 	Wizard::SetContents (caption, contents, help, true, true);
-    }
-
-
-    /**
-     *  Update the log.
-     */
-    define void update_log () ``{
-	string file = Internet::FastestLogFile (Internet::device);
-	map tmp = SCR::Execute (.target.bash_output,
-				sformat ("/usr/bin/tail -n 50 %1", file));
-	string text = tmp["stdout"]:"";
-	UI::ChangeWidget (`id(`log), `Value, text);
     }
 
 
@@ -150,7 +133,6 @@ and correct the setting.</p>");
 
 
     define void set_result (symbol result) ``{
-	update_log ();
 	set_stage (-1);
 	test_result = result;
 	if (test_result == `success) {
@@ -161,6 +143,7 @@ and correct the setting.</p>");
 	    UI::ChangeWidget(`id(`res), `Value, _("Failure"));
 	}
 	UI::ChangeWidget (`id (`abort_test), `Enabled, false);
+	UI::ChangeWidget (`id (`view_log), `Enabled, true);
     }
 
 
@@ -309,7 +292,6 @@ and correct the setting.</p>");
 
 	if (test_stage != -1)
 	{
-	    update_log ();
 	    sleep (500);
 	    ret = UI::PollInput();
 
@@ -330,7 +312,14 @@ and correct the setting.</p>");
 	    }
 	    continue;
 	}
-	else if (ret == `abort || ret == `cancel) {
+	else if (ret == `view_log)
+	{
+	    string file = Internet::FastestLogFile (Internet::device);
+	    /* Title of Popup with Log */
+	    ShowFilePopup (_("Internet Connection Test Log:"), file);
+	}
+	else if (ret == `abort || ret == `cancel)
+	{
 	    if (CallFunction (`inst_confirm_abort (`incomplete)))
 	    {
 		Internet::Stop ();
