@@ -1,3 +1,6 @@
+
+- general library: Added {check,valid}_address, valid_ip4.
+
 -------------------------------------------------------------------
 Wed Jul 10 20:12:34 CEST 2002 - msvec@suse.cz
 

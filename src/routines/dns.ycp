@@ -11,6 +11,24 @@
 
 textdomain "network";
 
+include "network/ip.ycp";
+
+/**
+ * @return a description of a valid address (ip4 or name)
+ */
+global define string valid_address () ``{
+    return valid_ip4 () + "\n" + valid_domainname ();
+}
+
+/**
+ * Check syntax of a network address (ip4 or name)
+ * @param a an address
+ * @return true if correct
+ */
+global define boolean check_address (string a) ``{
+    return check_ip4 (a) || check_domainname (a);
+}
+
 /**
  * @return describe a valid domain name
  */
