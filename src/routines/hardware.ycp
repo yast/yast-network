@@ -220,6 +220,7 @@ define list<map> ReadHardware(string hwtype) {
 	one["name"] = DeviceName(card);
 	one["type"] = controller;
 	one["unique"] = card["unique_key"]:"";
+	one["requires"] = card["requires"]:[];
 	one["num"] = num;
 
 	/* Temporary solution for s390: #40587 */
@@ -229,7 +230,6 @@ define list<map> ReadHardware(string hwtype) {
 	if(controller == "modem") {
 	    one["device_name"] = card["dev_name"]:"";
 	    one["drivers"] = card["drivers"]:[];
-	    one["requires"] = card["requires"]:[];
 	    one["speed"] = resource["baud", 0, "speed"]:57600;
 	    one["init1"] = resource["init_strings", 0, "init1"]:"";
 	    one["init2"] = resource["init_strings", 0, "init2"]:"";
