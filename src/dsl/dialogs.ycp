@@ -19,6 +19,7 @@ import "Label";
 import "Lan";
 import "NetworkDevices";
 import "Popup";
+import "SuSEFirewall4Network";
 import "Wizard";
 
 include "network/runtime.ycp";
@@ -260,7 +261,16 @@ be appropriate for dial-on-demand connections.</p>") +
 	pppmode = (string) UI::QueryWidget(`id(`pppmode), `Value);
 	DSL::pppmode = pppmode;
 	if(pppmode == "pppoe" || pppmode == "pptp")
+	{
 	    DSL::interface = (string) UI::QueryWidget(`id(`interface), `Value);
+	    // If firewall is active and interface in no zone, nothing
+	    // gets through (#47309) so add it to the external zone
+	    if (SuSEFirewall4Network::IsOn ())
+	    {
+		SuSEFirewall4Network::ProtectByFirewall (DSL::interface,
+							 "EXT", true);
+	    }
+	}
 	if(pppmode == "pppoatm")
 	    DSL::vpivci = (string) UI::QueryWidget(`id(`vpivci), `Value);
 	if(pppmode == "pptp")
