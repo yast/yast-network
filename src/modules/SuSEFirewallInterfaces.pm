@@ -16,18 +16,16 @@ YaST::YCP::Import ("SuSEFirewall");
 
 our %TYPEINFO;
 
-# reads if we aren't in autoyast or installation
 BEGIN { $TYPEINFO{Read} = ["function", "boolean" ] };
 sub Read {
     y2milestone("Reading the configuration.");
-    return SuSEFirewall::Read();
+    return SuSEFirewall->Read();
 }
 
-# reads if we aren't in autoyast or installation
 BEGIN { $TYPEINFO{Write} = ["function", "boolean" ] };
 sub Write {
     y2milestone("Writing the configuration.");
-    return SuSEFirewall::Write();
+    return SuSEFirewall->Write();
 }
 
 # hack for -> is firewall running and is this interface external?
@@ -54,7 +52,7 @@ sub ProtectByFirewall {
     my $interface = shift;
     my $protect = shift;
 
-    SuSEFirewall::SetModified();
+    SuSEFirewall->SetModified();
 
     # if $protect is true  -> add interface into external, set to start firewall
     # if $protect is flase -> remove interface from external
