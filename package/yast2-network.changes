@@ -1,3 +1,7 @@
+-------------------------------------------------------------------
+Wed Jul 30 18:28:41 CEST 2003 - msvec@suse.de
+
+- drop yast2-network-instsys package
 - change wireless devices to wlan* (#28048)
 - basic more IPs support
 - 2.8.4

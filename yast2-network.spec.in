@@ -18,12 +18,6 @@ Summary:	Network configuration
 %description
 -
 
-@HEADER-INSTSYS@
-Summary:	Network routines for installation
-
-%description instsys
--
-
 @PREP@
 
 @BUILD@
@@ -56,8 +50,3 @@ rm @configdir@/modem.y2cc
 # @configdir@/proxy.y2cc
 @scrconfdir@/*.scr
 %doc @docdir@
-
-%files instsys
-%defattr(-,root,root)
-@yncludedir@/network/dns.ycp
-@yncludedir@/network/ip.ycp
