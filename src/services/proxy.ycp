@@ -29,7 +29,14 @@ global define symbol ProxyMainDialog() ``{
     string caption = _("Proxy configuration");
 
     /* Proxy dialog help 1/3 */
-    string help = _("<p>HELP FIXME</p>");
+    string help = _("<p></p>") +
+    _("<p></p>") +
+    _("<p></p>") +
+    _("<p></p>") +
+    _("<p></p>") +
+    _("<p></p>") +
+    _("<p></p>") +
+    _("<p></p>");
 
     /* Proxy dialog contents */
     term contents = `HBox(

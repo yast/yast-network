@@ -37,6 +37,7 @@ global define symbol ModemSequence() ``{
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
+	"rpm"	: [ ``( Packages(["smpppd"]) ), true ],
 	"write"	: [ ``( WriteDialog() ), true ],
 	"finish": [ ``( Finished(Modem::Modified(), finished, "mail", ["dialup"]) ), true ],
     ];
@@ -48,6 +49,10 @@ global define symbol ModemSequence() ``{
 	    `next	: "main"
 	],
 	"main" : $[
+	    `abort	: `abort,
+	    `next	: "rpm"
+	],
+	"rpm" : $[
 	    `abort	: `abort,
 	    `next	: "write"
 	],

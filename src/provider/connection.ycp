@@ -91,15 +91,13 @@ to the Internet safe from external attacks.</p>") +
 _("<p>The <b>Idle time-out</b> specifies the time after which an idle
 connection will be shut down (0 means an infinite idle timeout).</p>");
 
-    if(type == "isdn")
+    // if(type == "isdn")
 
 	/* FIXME Connection dialog help 7/8 */
-	helptext = helptext + _("<p><b>Connection details</b> help FIXME
-</p>") +
+	// helptext = helptext + _("<p><b>Connection details</b> help FIXME</p>") +
 
 	/* FIXME Connection dialog help 8/8 */
-_("<p><b>IP details</b> help FIXME
-</p>");
+	// _("<p><b>IP details</b> help FIXME</p>");
 
     /* DIALOG CONTENTS */
 

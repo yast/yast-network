@@ -119,6 +119,26 @@ global define symbol Finished(boolean modified, string text, string run, list pa
 }
 
 /**
+ * Check if required packages are installed and install them if they're not
+ * @param packages list of required packages
+ * @return `next if packages installation is successfull, `abort otherwise
+ */
+global define symbol Packages(list packages) ``{
+    if(size(packages) < 1) return `next;
+    y2debug("Checking packages: %1", packages);
+
+    include "require.ycp";
+    if(AreAllPackagesInstalled(packages)) return `next;
+
+    /* Popup text */
+    string text = _("These packages need to be installed:") + "<p>";
+    maplist(`l, packages, ``{text = text + sformat("%1<br>",l);});
+    y2debug("Installing packages: %1", text);
+    boolean ret = InstallAndRemove(packages, [], text);
+    return ret == true ? `next : `abort;
+}
+
+/**
  * Create a list of items for UI from the given list
  * @param l given list for conversion
  * @param selected selected item (0 for the first)

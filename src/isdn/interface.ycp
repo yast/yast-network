@@ -53,8 +53,8 @@ same interface.</p>");
 
     helptext = helptext +
     // helptext text 3/3
-_("If you don't like to add a interface now, you can simple use the
-<b>Skip</b> button to not enter the interface and provider dialogs.");
+_("<p>If you don't like to add a interface now, you can simple use the
+<b>Skip</b> button to not enter the interface and provider dialogs.</p>");
 
 
     /* DIALOG CONTENTS */
