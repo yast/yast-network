@@ -1,5 +1,5 @@
 #
-# Makefile.am for y2c_network/src/modules
+# Makefile.am for network/src/modules
 #
 # $Id$
 #

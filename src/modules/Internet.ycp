@@ -1,0 +1,50 @@
+/**
+ * File:	modules/Internet.ycp
+ * Package:	Network configuration
+ * Summary:	provide an internet connection
+ * Authors:	Arvin Schnell <arvin@suse.de>
+ *
+ * $Id$
+ */
+
+{
+    module "Internet";
+    textdomain "network";
+
+    /**
+     *  lan, dsl, isdn, modem or empty
+     */
+    global string type = "";
+
+    /**
+     *  the ifcfg file
+     */
+    global string ifcfg_file = "";
+
+    /**
+     *  the provider file (only valid for dsl, isdn and modem)
+     */
+    global string provider_file = "";
+
+    /**
+     *  demand (only valid for dsl, isdn and modem)
+     */
+    global boolean demand = false;
+
+    /**
+     *  ask password (only valid for dsl, isdn and modem)
+     */
+    global boolean ask_password = false;
+
+    /**
+     *  somehow find the "fastest" configured internet connection
+     */
+    global define void FindFastest () ``{
+	// FIXME
+	type = "dsl";
+	ifcfg_file = "ifcfg-dsl0";
+	provider_file = "tonline-dsl";
+	demand = false;
+	ask_password = false;
+    }
+}
