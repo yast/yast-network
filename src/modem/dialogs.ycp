@@ -70,11 +70,11 @@ initialization strings.</p>");
     term DeviceTerm = nil;
 
     if(detected == true)
-	//DeviceTerm = `Label(`opt(`outputField), Device);
-	DeviceTerm = `VBox(
-	    `Left(`HSquash(`Label(_("Modem device:")))),
-	    `Left(`Label(`opt(`outputField), Modem::Device))
-	);
+	DeviceTerm = `Left(`HBox(
+	    `Label(_("Modem device:")),
+	    `HSpacing(0.5),
+	    `Label(`opt(`outputField), Modem::Device)
+	));
     else
 	DeviceTerm = `ComboBox(`id(`Device), `opt(`hstretch, `editable), _("Modem de&vice"), devices);
 
@@ -277,6 +277,11 @@ should be in your modem manual.</p>");
     }
 
     return ret;
+}
+
+if(false) {
+Wizard::CreateDialog();
+ModemDialog(true);
 }
 
 /* EOF */

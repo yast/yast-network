@@ -4,7 +4,7 @@ include "testsuite.ycp";
 import "Providers";
 
 map READ = $[
-    "custom_providers" : $[
+    "sysconfig" : $[ "network" : $[ "providers" : $[
 	"s" : $[
 	    "first" : $[ "PROVIDER" : "first one", ],
 	    "second" :$[ "PROVIDER" : "second one", ],
@@ -15,6 +15,16 @@ map READ = $[
 	    "second": $[ "PROVIDER" : "second one", ],
 	    "third" : $[ "PROVIDER" : "third one", ],
 	]
+    ]]],
+    "providers" : $[
+	"s" : $[
+	    "CZ" : nil,
+	    "DE" : nil,
+	    "GB" : nil,
+	    "HU" : nil,
+	    "NL" : nil,
+	    "US" : nil,
+	],
     ],
     "target" : $[
 	"yast2" : $[
@@ -26,8 +36,8 @@ map READ = $[
 DUMP("Read");
 TEST(``(Providers::Read()), [READ], nil);
 
-DUMP("getProvider");
-TEST(``(Providers::getProvider(.path.to.provider)), [], nil);
-TEST(``(Providers::getProvider(.path.to."provi der")), [], nil);
+DUMP("GetProvider");
+TEST(``(Providers::GetProvider(.path.to.provider)), [], nil);
+TEST(``(Providers::GetProvider(.path.to."provi der")), [], nil);
 
 }

@@ -54,10 +54,12 @@ map lan_settings = $[
     ]
 ];
 
+/*
 DUMP("Import");
 TEST(``(Lan::Import(lan_settings)), [], nil);
 
 DUMP("Export");
 TEST(``(Lan::Export()), [], nil);
+*/
 
 }

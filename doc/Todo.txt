@@ -20,8 +20,9 @@ Enhancements:
 - lan: dual port network cards
 - lan: compiled in kernel drivers
 - modem: pap|chap secrets writing
-- providers: UIMODE="tonline" | "1to1"
+- providers: UIMODE="tonline"
 - providers: remove [Dialer ] from providers.rpm
+- providers: remove default_language
 - providers: no-global-values
 - providers: ReallyAbort()
 - providers: preload the country providers (other upon request)
@@ -29,6 +30,7 @@ Enhancements:
 - base: edit without restart (reload)
 - base: use map instead of variables (-> fill all variables)
 - package: include all agents
+- package: require yast2-config-language
 - proposals (at least lan)
 
 Future:
