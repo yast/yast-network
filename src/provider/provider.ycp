@@ -344,7 +344,8 @@ at the end.</p>");
 
     /* '*' and '#' are for GPRS connections (#16021) */
     /* ',' is for pausing dialing (#23678) */
-    ChangeWidgetIfExists(`id(`phone), `ValidChars, "0123456789*#,");
+    // `phone: in rare cases other characters are allowed (#43723)
+    string phonevalidchars = "0123456789*#,";
     ChangeWidgetIfExists(`id(`usercode), `ValidChars, "0123456789#");
     ChangeWidgetIfExists(`id(`lineid), `ValidChars, "0123456789");
     ChangeWidgetIfExists(`id(`t_onlineid), `ValidChars, "0123456789");
@@ -480,11 +481,11 @@ at the end.</p>");
 		Popup::Message(_("Enter the password."));
 		UI::SetFocus(`id(`passwd));
 	    } */
-	    else if(filterchars(phone, "0123456789*#") != phone &&
+	    else if(filterchars(phone, phonevalidchars) != phone &&
 		    /* Popup::YesNo text */
 		    !Popup::YesNo(_("You have entered some characters that are not numbers in the phone field.\n\nContinue?")))
 	    {
-		UI::SetFocus(`id(`PhoneNumber));
+		UI::SetFocus(`id(`phone));
 		continue;
 	    }
 	    else
