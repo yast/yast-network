@@ -386,7 +386,7 @@ global define boolean Write() {
     /* Progress step 9 */
     ProgressNextStage(_("Activating network services..."));
     if(!write_only) {
-	Service::Start("coldplug");
+	NetworkModules::HwUp ();
 	StartNetwork();
     }
     sleep(sl);

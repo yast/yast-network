@@ -265,6 +265,10 @@ global boolean SelectM(string name) {
     return true;
 }
 
+/**
+ * Commit data to Modules[name]
+ * @param name hwcfg name
+ */
 global boolean ChangeM(string name) {
     if(name == nil || name == "" /* || !haskey(Modules, name) */) {
 	y2error("Wrong module: %1", name);
@@ -769,6 +773,21 @@ global define list List(string devregex) {
     y2debug("ret=%1", ret);
     return ret;
 }
+
+/**
+ * Call HwUp for hardware that is not handled by hotplug (#44626)
+ */
+global boolean HwUp () {
+    boolean ok = true;
+    foreach (string hwcfg_name, any v, Modules, {
+	if (regexpmatch (hwcfg_name, "^static")
+	{
+	    ok = SCR::Execute (.target.bash, "hwup "+ hwcfg_name) == 0 && ok;
+	}
+    });
+    return ok;
+}
+
 
 /*
 map Mods = $[];
