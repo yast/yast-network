@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Aug 18 17:05:14 CEST 2003 - nashif@suse.de
+
+- Fixed dhcp configuration in autoinst mode
+- 2.8.9
+
+-------------------------------------------------------------------
 Tue Aug 12 20:43:53 CEST 2003 - arvin@suse.de
 
 - added remote administration proposal
