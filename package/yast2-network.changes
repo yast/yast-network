@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Sep 24 14:01:23 CEST 2004 - mvidner@suse.cz
+
+- Don't require installation of generically named kernel packages
+  (#44977).
+- Do not warn about no wireless key if we proceed with the key
+  dialog (#46025).
+- 2.10.23
+
+-------------------------------------------------------------------
 Thu Sep 23 16:36:59 CEST 2004 - arvin@suse.de
 
 - set proxy for downloading of release notes (bug #35370)
