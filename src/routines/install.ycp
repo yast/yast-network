@@ -41,7 +41,7 @@ global define boolean ReadInstallInf() ``{
     ReadInstallInfItem("ipaddr", "IP");
     ReadInstallInfItem("netmask", "Netmask");
     ReadInstallInfItem("bootproto", "NetConfig");
-    ReadInstallInfItem("netdevice", "netdevice");
+    ReadInstallInfItem("netdevice", "Netdevice");
     ReadInstallInfItem("gateway", "Gateway");
     ReadInstallInfItem("nameserver", "Nameserver");
     ReadInstallInfItem("hostname", "Machinename");
