@@ -32,6 +32,9 @@ Summary:	Network configuration
 /bin/rm -f $RPM_BUILD_ROOT/@desktopdir@/network.desktop
 /bin/rm -f $RPM_BUILD_ROOT/@desktopdir@/provider.desktop
 
+# 36936: remove bad translation (workaround)
+sed -i -e '/^Name\[de\]/d' ${RPM_BUILD_ROOT}/@desktopdir@/routing.desktop
+
 @CLEAN@
 
 %files

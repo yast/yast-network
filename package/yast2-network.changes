@@ -1,10 +1,18 @@
 -------------------------------------------------------------------
+Mon Apr  5 17:31:35 CEST 2004 - msvec@suse.cz
+
+- workaround bad german routing.desktop translation (#36936)
+- fixed syntax errors now reported by new core
+- 2.9.27
+
+-------------------------------------------------------------------
 Sun Apr  4 06:14:25 CEST 2004 - nashif@suse.de
 
 - create network config files using mac or pci ids when 
   auto-installing (#37186)
 - fixed module parsing due to change in data structure in 
   auto-install mode
+- 2.9.26
 
 -------------------------------------------------------------------
 Fri Apr  2 19:39:05 CEST 2004 - msvec@suse.cz

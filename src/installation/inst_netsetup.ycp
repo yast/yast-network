@@ -41,8 +41,10 @@ if (hwaddr == nil) hwaddr = "";
 string nameserver = (string) SCR::Read (.etc.install_inf.Nameserver);
 if (nameserver == nil) nameserver = "";
 
-y2milestone("Original netdevice: %1", netdevice);
+y2milestone("Original netdevice: %1 (%2)", netdevice, hwaddr);
 string command = sformat("/sbin/ifconfig | grep -i \"HWaddr *%1\" | cut -d\" \" -f1", hwaddr);
+
+y2milestone("IFCONFIG0: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
 
 map output = (map) SCR::Execute(.target.bash_output, command, $["LC_MESSAGES":"C"]);
 y2milestone("Output: %1", output);
