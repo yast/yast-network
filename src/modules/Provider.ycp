@@ -525,7 +525,11 @@ global define list Overview() ``{
     list overview = [];
 
     y2debug("Providers=%1", Providers);
+    y2debug("GlobalType=%1", GlobalType);
+    y2debug("Type=%1", Type);
+    y2debug("CurrentType()=%1", CurrentType());
     maplist(string name, map provmap, Providers, ``{
+	y2debug("provider(%1): %2", name, provmap);
 	/* Filter only specified type */
 	if(GlobalType == "all" || provmap[toupper(GlobalType)+"SUPPORTED"]:"no" == "yes") {
 	    // change(overview, `item(`id(name), name, provmap["PROVIDER"]:"", provmap["PHONE"]:"", provmap["MODEMSUPPORTED"]:"no", provmap["ISDNSUPPORTED"]:"no", provmap["DSLSUPPORTED"]:"no"));
