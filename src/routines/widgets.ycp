@@ -25,8 +25,9 @@ map<string, map<string,any> > widget_descr = $[
 	"opt": [`notify],
 	"help":
 	// Details dialog help
-_("<p>When <b>User Controlled</b> is enabled, ordinary users can
-manipulate the interface, not only <b>root</b>.</p>"),
+_("<p>Normally only the system administator may (de)activate a network
+interface. If you choose <b>User Controlled</b> ordinary user may
+(de)activate the interface via KInternet.</p>"),
 	],
 
     // #23315
@@ -45,6 +46,74 @@ to change the prefix.</p>
 	],
 
     ];
+
+/**
+ * This is the data for widget_descr["STARTMODE"].
+ * It is separated because the list of items depends on the device type
+ * and will be substituted dynamically.
+ * Helps are rich text, but not paragraphs.
+ */
+map<string, map<string, string> > startmode_items = $[
+    // onboot, on and boot are aliases for auto
+    // See NetworkDevices::CanonicalizeStartmode
+    "auto": $[
+	// Combo box option for Device Activation
+	"label": _("At Boot Time"),
+	"help": "",	    // is a part of the static help text
+	],
+    "off": $[
+	"label": _("Never"),
+	"help": "",	    // is a part of the static help text
+	],
+    "manual": $[
+	// Combo box option for Device Activation
+	"label": _("Manually"),
+	// help text for Device Activation
+	"help": _("<b>Manually</b>: You control the interface manually
+via 'ifup' or 'kinternet' (See 'User Controlled' below)."),
+	],
+    "ifplugd": $[
+	// Combo box option for Device Activation
+	"label": _("When Cable Is Plugged"),
+	// help text for Device Activation
+	"help": _("<b>When Cable Is Plugged</b>:
+The interface will be watched, whether there is a physical
+network connection. That means either the cable is connected or the
+wireless interface can connect to an access point."),
+	],
+    "hotplug": $[
+	// Combo box option for Device Activation
+	"label": _("When Device Is Hot Plugged"),
+	// help text for Device Activation
+	"help": _("<b>When Device Is Hot Plugged</b>:
+The interface will be set up as soon as it is available. This is
+nearly the same as 'At Boot Time', but does not result in an error at
+boot time if the interface is not present."),
+	],
+    ];
+
+map<string, any> MakeStartmode (list<string> ids) {
+    map<string, any> ret = $[
+	"widget": `combobox,
+	// Combo box label
+	"label": _("&Device activation"),
+	"help":
+	// Device activation main help. The individual parts will be
+	// substituted as %1
+_("<p>With <b>Device Activation</b> you may choose when the network
+interface will be set up. Beside <b>At Boot Time</b> and <b>Never</b>
+there are: %1</p>"),
+	];
+    string helps = "";
+    list items = maplist (string id, ids, {
+	helps = helps + startmode_items[id, "help"]:"";
+	return [id, startmode_items[id, "label"]:""];
+    });
+
+    ret["help"] = sformat (ret["help"]:"%1", helps);
+    ret["items"] = items;
+    return ret;
+}
 
 /* EOF */
 }

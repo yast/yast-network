@@ -43,7 +43,7 @@ global boolean proposal_valid = false;
  * PARA_SUBTYPE card sub type
  * NAME         full card name
  * DRIVER       driver module name
- * STARTMODE    "onboot"|"manual"|"hotplug"
+ * STARTMODE    "auto"|"manual"|"hotplug"
  * DEBUG        debuglevel
  * UNIQUE       unique hw id
  *
@@ -75,7 +75,7 @@ global map ISDNCDB = $[];
  * CHARGEHUP      try to hangup on idle just before next charge
  * CALLBACK       callback mode
  * CBDELAY        callback delay
- * STARTMODE      onboot | manual | hotplug
+ * STARTMODE      auto | manual | hotplug
  * USERCONTROL    controllable bt user yes/no
  * MULTILINK      channel bundling yes/no
  * PROVIDER       default provider filename
@@ -584,11 +584,11 @@ map set_cardparameters (map cfg) {
     if (dp != "")
 	cfg["DIALPREFIX"] = dp;
 
-    string sm = cfg["STARTMODE"]: "onboot";
+    string sm = cfg["STARTMODE"]: "auto";
     if (sm == "hotplug")
         global_sm = "hotplug";
     if (sm == "")
-	sm = "onboot";
+	sm = "auto";
     cfg["STARTMODE"] = sm;
 
     return cfg;
@@ -605,7 +605,7 @@ map set_ifparameters (map cfg) {
     if (global_sm == "")
         global_sm = sm;
     if (sm == "")
-	sm = "onboot";
+	sm = "auto";
     cfg["STARTMODE"] = sm;
 
     provider_file = cfg["PROVIDER"]: "";
@@ -802,7 +802,7 @@ global define boolean Commit() ``{
 	string sm = hw_device["STARTMODE"]: "";
 	if (sm == "hotplug")
 	    global_sm = "hotplug";
-	if (sm == "manual" && global_sm == "onboot")
+	if (sm == "manual" && global_sm == "auto")
 	    global_sm = "manual";
 
 	ChangeDevice(type, device, hw_device, operation == `add);

@@ -220,6 +220,9 @@ define any interface_dialog() ``{
 	_("Add %1 Interface %2");
     string caption = sformat(fcaption, syncppp ? "SyncPPP" : "RawIP", devstr);
 
+    widget_descr["STARTMODE"] = MakeStartmode (
+	["auto", "hotplug", "manual", "off", ]);
+
     string helptext =
     // help text 1/5
 _("<p>My phone number --  As your own telephone number (MSN), put in your 
@@ -229,12 +232,7 @@ MSN stored in the PBX (e.g., your phone extension or the last digit or digits
 of your phone extension) . If this fails, try using 0, which normally means
 the default MSN is actually used.</p>");
 
-    helptext = helptext +
-    // help text 2/5
-_("<p><b>Start Mode: </b><b>OnBoot</b> the driver is loaded during
-system boot. <b>Manual</b> the driver must be started with the
-<b>rcisdn start</b> command, only the user root can do this.
-<b>HotPlug </b> is a special case for PCMCIA and USB devices.</p>");
+    helptext = helptext + widget_descr["STARTMODE", "help"]:"";
 
     helptext = helptext +
     // help text 3/5
@@ -298,7 +296,7 @@ and sets this interface as external.
     );
 
     list<map> widgets = CWM::CreateWidgets (
-	["USERCONTROL",],
+	["USERCONTROL", "STARTMODE"],
 	widget_descr);
 
     term contents =
@@ -318,16 +316,9 @@ and sets this interface as external.
 		`VBox(
 		    `HBox (
 			`HWeight (1, `Top (
-			    // ComboBox label
-			    `Left(`ComboBox(`id(`startmode), _("Start &Mode"),
-					    [
-			    // ComboBox item
-			    `item(`id("onboot"), _("OnBoot"), startmode == "onboot"),
-			    // ComboBox item
-			    `item(`id("manual"), _("Manual"), startmode == "manual"),
-			    // ComboBox item
-			    `item(`id("hotplug"), _("HotPlug"), startmode == "hotplug")
-					    ])))),
+				      // STARTMODE
+				      `Left (widgets[1, "widget"]:`Empty ())
+				      )),
 			`HSpacing (1),
 			`HWeight (1, `Top (`VBox (
 					       `Label (""),
@@ -361,6 +352,7 @@ and sets this interface as external.
 	    Label::BackButton(), Label::NextButton());
 
     UI::ChangeWidget (`id ("USERCONTROL"), `Value, usercontrol);
+    UI::ChangeWidget (`id ("STARTMODE"), `Value, startmode);
     UI::SetFocus(`id(`msn));
 
     /* MAIN CYCLE */
@@ -389,7 +381,7 @@ and sets this interface as external.
 	}
 	else if (ret == `next || ret == `detail) {
 	    msn = (string) UI::QueryWidget(`id(`msn), `Value);
-	    startmode = (string) UI::QueryWidget(`id(`startmode), `Value);
+	    startmode = (string) UI::QueryWidget(`id("STARTMODE"), `Value);
 	    usercontrol = (boolean) UI::QueryWidget (`id ("USERCONTROL"), `Value);
 	    multilink = (boolean) UI::QueryWidget(`id(`multilink), `Value);
 	    chargeHUP = (boolean) UI::QueryWidget(`id(`chargehup), `Value);

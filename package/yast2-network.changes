@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jan 27 14:32:53 CET 2005 - mvidner@suse.cz
+
+- Improved and unified labels and helps for STARTMODE (#50095).
+  Canonicalized its values (on, boot, onboot -> auto).
+- 2.11.14
+
+-------------------------------------------------------------------
 Tue Jan 25 17:34:09 CET 2005 - mvidner@suse.cz
 
 - Use Progress::set also in clients.

@@ -29,6 +29,9 @@ define any DetailsDialog() {
 
     ScreenName("lan-details");
 
+    widget_descr["STARTMODE"] = MakeStartmode (
+	["auto", "ifplugd", "hotplug", "manual", "off", ]);
+
     /* Details dialog caption */
     string caption = _("Detailed Network Card Settings");
 
@@ -38,37 +41,15 @@ define any DetailsDialog() {
     /* Details dialog help 2 */
     _("<p>You can set the maximum transfer unit (<b>MTU</b>) of an interface.</p>") +
 
-    /* Details dialog help 3 */
-_("<p><b>Device Activation</b> may either happen during boot or manually
-with tools like <b>ifup</b>.</p>") +
-
-    /* Details dialog help 3 */
-_("<p>Ethernet devices can detect if the cable is plugged in and wireless
-devices can detect signal strength. In such cases you can set
-Device Activation to If Plugged In. <b>ifplugd</b> will be then used to control
-the device.</p>") +
-
+    widget_descr["STARTMODE", "help"]:""+
     widget_descr["USERCONTROL", "help"]:"";
 
     string mtu = Lan::mtu;
     string startmode = Lan::startmode;
     boolean usercontrol = Lan::usercontrol;
 
-    list StartModes = [
-	/* ComboBox item (device start mode) */
-	`item(`id("onboot"), _("At Boot Time"), startmode == "onboot"),
-	/* ComboBox item (device start mode) */
-	`item(`id("ifplugd"), _("If Plugged In"), startmode == "ifplugd"),
-	/* ComboBox item (device start mode) */
-	`item(`id("hotplug"), _("When Hotplugged"), startmode == "hotplug"),
-	/* ComboBox item (device start mode) */
-	`item(`id("manual"), _("Manually"), startmode == "manual"),
-	/* ComboBox item (device start mode) */
-	`item(`id("off"), _("Disabled"), startmode == "off"),
-    ];
-
     list<map> widgets = CWM::CreateWidgets (
-	["USERCONTROL",],
+	["USERCONTROL", "STARTMODE", ],
 	widget_descr);
 
     /* Details dialog contents */
@@ -80,9 +61,10 @@ the device.</p>") +
 	    /* TextEntry label */
 	    `Left(`TextEntry(`id(`mtu), _("&MTU"), mtu)),
 	    `VSpacing(0.5),
-	    /* ComboBox label */
-	    `Left(`ComboBox(`id(`startmode), _("&Device Activation"), StartModes)),
+	    // STARTMODE
+	    `Left(widgets[1, "widget"]:`Empty ()),
 	    `VSpacing(0.5),
+	    // USERCONTROL
 	    // 0 is index to CreateWidgets... ugly
 	    `Left(widgets[0, "widget"]:`Empty ()),
 	    `VSpacing(1)
@@ -94,6 +76,7 @@ the device.</p>") +
 	    Label::BackButton(), Label::OKButton());
 
     UI::ChangeWidget (`id ("USERCONTROL"), `Value, usercontrol);
+    UI::ChangeWidget (`id ("STARTMODE"), `Value, startmode);
 
     any ret = nil;
     while(true) {
@@ -122,7 +105,7 @@ the device.</p>") +
 
     /* update the configuration */
     if(ret == `next) {
-	Lan::startmode = (string) UI::QueryWidget(`id(`startmode), `Value);
+	Lan::startmode = (string) UI::QueryWidget(`id("STARTMODE"), `Value);
 	Lan::usercontrol = (boolean) UI::QueryWidget (`id ("USERCONTROL"), `Value);
 	Lan::mtu = (string) UI::QueryWidget(`id(`mtu), `Value);
     }

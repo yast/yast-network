@@ -19,12 +19,14 @@
 
 textdomain "network";
 
+import "CWM";
 import "ISDN";
 import "Label";
 import "Popup";
 import "Wizard";
 
 include "network/isdn/routines.ycp";
+include "network/widgets.ycp";
 
 /**
  * Helper to create a SelectionBox item list
@@ -339,7 +341,7 @@ define any isdn_lowlevel() ``{
     string  areacode = ISDN::hw_device["AREACODE"]:"";
     string  dialprefix = ISDN::hw_device["DIALPREFIX"]:"";
     boolean isdnlog = ISDN::hw_device["ISDNLOG_START"]:"yes" == "yes";
-    string  startmode = ISDN::hw_device["STARTMODE"]:"onboot";
+    string  startmode = ISDN::hw_device["STARTMODE"]:"auto";
 
     integer Default_TYPE = tointeger(ISDN::hw_device["PARA_TYPE"]:"-1");
     integer Default_SUBTYPE = tointeger(ISDN::hw_device["PARA_SUBTYPE"]:"-1");
@@ -380,6 +382,9 @@ define any isdn_lowlevel() ``{
     // title for dialog
     string caption = sformat(_("ISDN low-level configuration for %1%2"),
 	ISDN::type, ISDN::device);
+
+    widget_descr["STARTMODE"] = MakeStartmode (
+	["auto", "hotplug", "manual", "off", ]);
 
     string helptext = "";
 
@@ -424,7 +429,15 @@ enter it here. This is only used on a internal S0 bus and most common one is \"0
     // helptext text 7/7
 _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log</b>.</p>");
 
+    helptext = helptext + widget_descr["STARTMODE", "help"]:"";
+
     /* DIALOG CONTENTS */
+
+    // USERCONTROL is unused here but it will make indexing consistent
+    // until we get a better CWM API
+    list<map> widgets = CWM::CreateWidgets (
+	["USERCONTROL", "STARTMODE",],
+	widget_descr);
 
     term ISDN_protocol =
 	`VSquash(
@@ -579,17 +592,8 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 		`HWeight(54, ISDN_area)
 	    ),
 	    `VSpacing(1.5),
-	    `Left(
-		// ComboBox label
-		`ComboBox(`id(`startmode), _("&Start Mode"),
-		    [
-			// ComboBox items
-			`item(`id("onboot"), _("OnBoot"), startmode == "onboot"),
-			`item(`id("manual"), _("Manual"), startmode == "manual"),
-			`item(`id("hotplug"), _("HotPlug"), startmode == "hotplug")
-		    ]
-		)
-	    ),
+	    // STARTMODE
+	    `Left (widgets[1, "widget"]:`Empty ()),
 	    `VSpacing(1.5)
     ));
 
@@ -608,6 +612,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
     /* Special Handling AVM T1 */
     if (Default_TYPE == 8005)
 	UI::ChangeWidget(`id(`t1b), `Value, t1b);
+    UI::ChangeWidget (`id ("STARTMODE"), `Value, startmode);
 
     /* MAIN CYCLE */
     any ret = nil;
@@ -693,7 +698,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 		"PARA_SUBTYPE"	: sformat("%1", Default_SUBTYPE),
 		"NAME"		: sformat("%1", cur_card["longname"]:"unknown"),
 		"DRIVER"	: sformat("%1", CardDrivers[CurrentDrvIndex, "mod_name"]:"unknown"),
-		"STARTMODE"	: UI::QueryWidget(`id(`startmode), `Value),
+		"STARTMODE"	: UI::QueryWidget(`id("STARTMODE"), `Value),
 		"PROTOCOL"	: protocol,
 		"AREACODE"	: ccode + " " + areacode,
 		"DIALPREFIX"	: dialprefix,

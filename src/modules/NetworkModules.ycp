@@ -51,7 +51,7 @@ global string QETH_IPA_TAKEOVER = "";
 
 /**
  * Current module information
- * @example $["BOOTPROTO":"dhcp", "STARTMODE":"onboot"]
+ * @example $["BOOTPROTO":"dhcp", "STARTMODE":"auto"]
  */
 global map Current = $[];
 

@@ -69,13 +69,6 @@ global string startmode = "auto";
 global boolean usercontrol = false;
 global string mtu = "";
 
-// map aliases to their canonical values
-map <string, string> normalize_startmode = $[
-    "on": "auto",
-    "boot": "auto",
-    "onboot": "auto",
-    ];
-
 /* wireless options */
 global string wl_mode = "";
 global string wl_essid = "";
@@ -656,7 +649,6 @@ global define boolean Select(string dev) {
 
     mtu = devmap["MTU"]:"";
     startmode = devmap["STARTMODE"]:"manual";
-    startmode = normalize_startmode[startmode]:startmode;
     usercontrol = devmap["USERCONTROL"]:"no" == "yes";
 
     /* wireless options */
