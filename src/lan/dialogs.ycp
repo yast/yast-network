@@ -112,7 +112,7 @@ global define symbol SummaryDialog() ``{
 		ret = `other;
 	    }
 	    else {
-		Lan::SelectHW(selected);
+		Lan::Select(selected);
 		ret = `configure;
 	    }
 	    break;

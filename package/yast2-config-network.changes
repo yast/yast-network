@@ -1,3 +1,8 @@
+- better modems summary and overview
+- prepared for the overall network config
+- properly fix substring lookup (#13735)
+- 2.6.1
+
 -------------------------------------------------------------------
 Wed Apr 17 09:22:51 CEST 2002 - msvec@suse.cz
 

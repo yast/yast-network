@@ -159,6 +159,7 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 	    type = UI::QueryWidget(`id(`dev), `Value);
 	    if(pcmcia) realtype = type + "-pcmcia-";
 	    else if(usb) realtype = type + "-usb-";
+	    else realtype = type;
 
 	    list devices = [];
 	    devices = maplist(`d,Lan::FreeDevices(realtype),``(sformat("%1",d)));
@@ -186,7 +187,7 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 	Lan::usb = UI::QueryWidget(`id(`usb), `Value);
 	type = UI::QueryWidget(`id(`dev), `Value);
 	if(pcmcia) type = type + "-pcmcia-";
-	else if(usb) type = type + "-usb-";
+	if(usb) type = type + "-usb-";
 	Lan::type = type;
     }
 

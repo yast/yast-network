@@ -134,12 +134,14 @@ global define boolean Read() ``{
 
     if(Abort()) return false;
     ProgressNextStage(_("Detecting network cards"));
-    ReadHardware("netcard");
+    ReadHardware("");
+    //ReadHardware("netcard");
     sleep(sl);
 
     if(Abort()) return false;
     ProgressNextStage(_("Reading current configuration"));
-    ReadConfig("eth|eth-pcmcia-|eth-usb-|tr|tr-pcmcia-|tr-usb-");
+    ReadConfig("");
+    //ReadConfig("eth|eth-pcmcia-|eth-usb-|tr|tr-pcmcia-|tr-usb-");
     sleep(sl);
 
     if(Abort()) return false;
@@ -311,6 +313,10 @@ global define map Export() ``{
     ]);
 }
 
+global define void Select(integer which) ``{
+    SelectHardware(which);
+}
+
 /**
  * Create a textual summary and a list of unconfigured cards
  * @param split split configured and unconfigured?
@@ -325,13 +331,7 @@ global define list Summary(boolean split) ``{
  * @return table items
  */
 global define list Overview() ``{
-    list eth = merge(BuildOverview("eth"), BuildOverview("eth-pcmcia-"));
-    eth = merge(eth, BuildOverview("eth-usb-"));
-    list tr = merge(BuildOverview("tr"), BuildOverview("tr-pcmcia-"));
-    tr = merge(tr, BuildOverview("tr-usb-"));
-    y2debug("eth=%1",eth);
-    y2debug("tr=%1",tr);
-    return merge(eth,tr);
+    return BuildOverview();
 }
 
 /*-------------------*/
@@ -355,41 +355,6 @@ define boolean Abort() ``{
 global define list FreeDevices(string type) ``{
     y2debug("CONFIG=%1",CONFIG);
     return GetFreeDevices(type, 10);
-}
-
-/**
- * Check if the given device is configured and return
- * the corresponding device
- * @param type device type
- * @return device if configured, empty string if not
- */
-/* FIXME: remove (not used anywhere)
-global define string Configured(string type, string unique) ``{
-    return IsConfigured(type, unique);
-}
-*/
-
-/**
- * Select the given hardware item or clean up structures
- * FIXME: -> routines/hardware.ycp (?)
- * @param which item to be chosen
- */
-global define void SelectHW(integer which) ``{
-    map sel = $[];
-
-    if(which != nil)
-	sel = select(HARDWARE, which, $[]);
-
-    if(which > size(HARDWARE) || which < 0)
-	y2error("Item not found in HARDWARE: %1 (%2)", which, size(HARDWARE));
-
-    name = lookup(sel, "name", "");
-    unique = lookup(sel, "unique", "");
-    type = lookup(sel, "type", "eth");
-    device = select(GetFreeDevices(type,1), 0, -1);
-
-    modul = lookup(sel, "module", "");
-    options = lookup(sel, "options", "");
 }
 
 /**

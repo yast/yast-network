@@ -152,7 +152,7 @@ configuration.</P>
 		ret = `other;
 	    }
 	    else {
-		Modem::SelectHW(selected);
+		Modem::Select(selected);
 		ret = `configure;
 	    }
 	    break;
@@ -198,7 +198,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
 
     /* Header of table with installed cards */
     term contents = Wizard_hw::ConfiguredContent(
-	    `header(_("No."), _("Type"), _("Device")),
+	    `header(_("No."), _("Type"), _("Device"), _("Provider")),
 	    overview, nil, nil, nil, nil);
 
     contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);

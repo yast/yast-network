@@ -153,30 +153,44 @@ global define string HardwareName(string unq) ``{
  */
 global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
     string dev = devtype + devnum;
-    //if(regexpmatch(devtype, "eth|tr|fddi")) {  wrong tr match contr too
-    if(devtype == "eth" || devtype == "tr" || devtype == "fddi") {
-	string proto = lookup(devmap, "BOOTPROTO", "static");
-	string addr = lookup(devmap, "IPADDR", "");
 
-	if(proto == "" || proto == "static" || proto == "none")
-	    return sformat(_("Configured as %1 with address %2"), dev, addr);
+    /* modem */
+    if(devtype == "ppp" || devtype == "modem") {
+	string prov = devmap["PROVIDER_NAME"]:"";
+	if(prov == "" || prov == nil)
+	    prov = devmap["PROVIDER"]:"";
+
+	if(prov == "" || prov == nil)
+	    return sformat(_("Configured as %1"), dev);
 	else
-	    return sformat(_("Configured as %1 with %2"), dev, toupper(proto));
+	    return sformat(_("Configured as %1 with provider %2"), dev, prov);
     }
-    else if(devtype == "ppp")
+    /* isdn stuff */
+    else if(devtype == "contr")
 	return sformat(_("Configured as %1"), dev);
-    else if(devtype == "contr" )
-	return sformat(_("Configured as %1"), dev);
-    else if(devtype == "net" ) {
+    else if(devtype == "net") {
         // proto: connection protocol (syncppp | rawip)
 	string proto    = lookup(devmap, "PROTOCOL", "unknown protocol");
 	// provider: name of the provider
 	string provider = lookup(devmap, "PROVIDER", "unknown");
 	// example: ISDN Connection to Arcor with syncppp on net0
 	return sformat(_("to %1 with %2 on %3"), provider, proto, dev);
-    } else {
-	y2error("unknown type: %1", devtype);
-	return sformat(_("Configured as %1"), dev);
+    }
+    /* treat the rest as a network card */
+    else {
+	if(!regexpmatch(devtype, "eth|tr|fddi"))
+	    y2error("unknown type: %1", devtype);
+
+	string proto = lookup(devmap, "BOOTPROTO", "static");
+	if(proto == "" || proto == "static" || proto == "none" || proto == nil) {
+	    string addr = lookup(devmap, "IPADDR", "");
+	    if(addr == "" || addr == nil)
+		return sformat(_("Configured as %1"), dev);
+	    else
+		return sformat(_("Configured as %1 with address %2"), dev, addr);
+	}
+	else
+	    return sformat(_("Configured as %1 with %2"), dev, toupper(proto));
     }
 }
 
@@ -187,44 +201,52 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
  * @example DeviceType("eth") -> "Ethernet"
  */
 global define string DeviceType(string type) ``{
-    if(regexpmatch(type, "eth")) return "Ethernet";
-    if(regexpmatch(type, "fddi")) return "FDDI";
-    if(regexpmatch(type, "contr")) return "ISDN";
-    if(regexpmatch(type, "net")) return "ISDN";
-    if(regexpmatch(type, "ippp")) return "ISDN";
-    if(regexpmatch(type, "isdn")) return "ISDN";
-    if(regexpmatch(type, "ppp")) return "Modem";
-    if(regexpmatch(type, "tr")) return "Token-Ring";
+    if(regexpmatch(type, "lo")) return _("Loopback");
+    if(regexpmatch(type, "eth")) return _("Ethernet");
+    if(regexpmatch(type, "fddi")) return _("FDDI");
+    if(regexpmatch(type, "contr")) return _("ISDN");
+    if(regexpmatch(type, "net")) return _("ISDN");
+    if(regexpmatch(type, "ippp")) return _("ISDN");
+    if(regexpmatch(type, "isdn")) return _("ISDN");
+    if(regexpmatch(type, "ppp")) return _("Modem");
+    if(regexpmatch(type, "tr")) return _("Token-Ring");
     return type;
 }
 
 /**
  * Create overview table contents
- * @param type type of devices in the table
  * @return table items
  */
-global define list BuildOverview(string type) ``{
-    map devmap = lookup(CONFIG, type, $[]);
+global define list BuildOverview() ``{
+    list overview = [];
 
-    list overview = maplist(`k, `v, devmap, ``{
-	string dev = sformat("%1%2", type, k);
-	string ip = lookup(v, "BOOTPROTO", "static");
-	if(ip == "" || ip == "static" || ip == "none") ip = lookup(v, "IPADDR", "");
-	else ip = toupper(ip);
+    maplist(`type, `devmap, CONFIG, ``{
+	list view = maplist(`k, `v, devmap, ``{
+	    string dev = sformat("%1%2", type, k);
+	    string ip = lookup(v, "BOOTPROTO", "static");
+	    if(ip == "" || ip == "static" || ip == "none") ip = lookup(v, "IPADDR", "");
+	    else ip = toupper(ip);
 
-        if (type == "contr") {
-            string cname = lookup(v, "NAME", "unknown");
-	    return `item(`id(dev), k, DeviceType(type), dev, cname /*, "active?", ip, "?", "?"*/);
-	} else if(regexpmatch(type, "eth|tr|fddi"))
-	//if(type == "eth" || type == "tr")
-	    return `item(`id(dev), k, DeviceType(type), dev, /*"active?",*/ ip/*, "?", "?"*/);
-        else if (type == "net") {
-            string cname = lookup(v, "PROVIDER", "unknown");
-            string rip   = lookup(v, "PTPADDR", "none");
-            string proto = lookup(v, "PROTOCOL", "unknown");
-	    return `item(`id(dev), k, proto, cname, ip, rip);
-	} else
-	    return `item(`id(dev), k, DeviceType(type), dev /*, "active?", ip, "?", "?"*/);
+	    /* modem */
+	    if(type == "modem" || type == "ppp")
+		return `item(`id(dev), k, DeviceType(type), dev, v["PROVIDER_NAME"]:_("Unknown provider"));
+	    else if (type == "contr") {
+		string cname = lookup(v, "NAME", "unknown");
+		return `item(`id(dev), k, DeviceType(type), dev, cname /*, "active?", ip, "?", "?"*/);
+	    }
+	    else if (type == "net") {
+		string cname = lookup(v, "PROVIDER", "unknown");
+		string rip   = lookup(v, "PTPADDR", "none");
+		string proto = lookup(v, "PROTOCOL", "unknown");
+		return `item(`id(dev), k, proto, cname, ip, rip);
+	    }
+	    else if(regexpmatch(type, "eth|tr|fddi"))
+	    //if(type == "eth" || type == "tr")
+		return `item(`id(dev), k, DeviceType(type), dev, /*"active?",*/ ip/*, "?", "?"*/);
+	    else
+		return `item(`id(dev), k, DeviceType(type), dev /*, "active?", ip, "?", "?"*/);
+	});
+	overview = merge(overview, view);
     });
 
     y2debug("overview=%1",overview);

@@ -1,3 +1,51 @@
+Dump	ReadConfig
+Dir	.network.section: ["ifcfg-eth0", "ifcfg-eth1", "ifcfg-ippp3", "ifcfg-pcmcia", "ifcfg-ppp2", "ifcfg-ppp5.bak"]
+Dir	.network.value."/etc/sysconfig/network/ifcfg-eth0": ["IPADDR"]
+Read	.network.value."/etc/sysconfig/network/ifcfg-eth0".IPADDR "0"
+Dir	.network.value."/etc/sysconfig/network/ifcfg-eth1": ["IPADDR"]
+Read	.network.value."/etc/sysconfig/network/ifcfg-eth1".IPADDR "1"
+Dir	.network.value."/etc/sysconfig/network/ifcfg-ippp3": ["IPADDR"]
+Read	.network.value."/etc/sysconfig/network/ifcfg-ippp3".IPADDR "3"
+Dir	.network.value."/etc/sysconfig/network/ifcfg-ppp2": ["IPADDR"]
+Read	.network.value."/etc/sysconfig/network/ifcfg-ppp2".IPADDR "2"
+Return	true
+Dump	all=$["eth":$["0":$["IPADDR":"0"], "1":$["IPADDR":"1"]], "ippp":$["3":$["IPADDR":"3"]], "ppp":$["2":$["IPADDR":"2"]]]
+Dir	.network.section: ["ifcfg-eth0", "ifcfg-eth1", "ifcfg-ippp3", "ifcfg-pcmcia", "ifcfg-ppp2", "ifcfg-ppp5.bak"]
+Dir	.network.value."/etc/sysconfig/network/ifcfg-eth0": ["IPADDR"]
+Read	.network.value."/etc/sysconfig/network/ifcfg-eth0".IPADDR "0"
+Dir	.network.value."/etc/sysconfig/network/ifcfg-eth1": ["IPADDR"]
+Read	.network.value."/etc/sysconfig/network/ifcfg-eth1".IPADDR "1"
+Return	true
+Dump	eth=$["eth":$["0":$["IPADDR":"0"], "1":$["IPADDR":"1"]]]
+Dir	.network.section: ["ifcfg-eth0", "ifcfg-eth1", "ifcfg-ippp3", "ifcfg-pcmcia", "ifcfg-ppp2", "ifcfg-ppp5.bak"]
+Dir	.network.value."/etc/sysconfig/network/ifcfg-ppp2": ["IPADDR"]
+Read	.network.value."/etc/sysconfig/network/ifcfg-ppp2".IPADDR "2"
+Return	true
+Dump	ppp=$["ppp":$["2":$["IPADDR":"2"]]]
+Dir	.network.section: ["ifcfg-eth0", "ifcfg-eth1", "ifcfg-ippp3", "ifcfg-pcmcia", "ifcfg-ppp2", "ifcfg-ppp5.bak"]
+Dir	.network.value."/etc/sysconfig/network/ifcfg-ippp3": ["IPADDR"]
+Read	.network.value."/etc/sysconfig/network/ifcfg-ippp3".IPADDR "3"
+Return	true
+Dump	ippp=$["ippp":$["3":$["IPADDR":"3"]]]
+Dir	.network.section: ["ifcfg-eth0", "ifcfg-eth1", "ifcfg-ippp3", "ifcfg-pcmcia", "ifcfg-ppp2", "ifcfg-ppp5.bak"]
+Return	true
+Dump	tr=$[]
+Dir	.network.section: ["ifcfg-eth0", "ifcfg-eth1", "ifcfg-ippp3", "ifcfg-pcmcia", "ifcfg-ppp2", "ifcfg-ppp5.bak"]
+Dir	.network.value."/etc/sysconfig/network/ifcfg-eth0": ["IPADDR"]
+Read	.network.value."/etc/sysconfig/network/ifcfg-eth0".IPADDR "0"
+Dir	.network.value."/etc/sysconfig/network/ifcfg-eth1": ["IPADDR"]
+Read	.network.value."/etc/sysconfig/network/ifcfg-eth1".IPADDR "1"
+Dir	.network.value."/etc/sysconfig/network/ifcfg-ppp2": ["IPADDR"]
+Read	.network.value."/etc/sysconfig/network/ifcfg-ppp2".IPADDR "2"
+Return	true
+Dump	ppp|eth=$["eth":$["0":$["IPADDR":"0"], "1":$["IPADDR":"1"]], "ppp":$["2":$["IPADDR":"2"]]]
+Dir	.network.section: ["ifcfg-eth0", "ifcfg-eth1", "ifcfg-ippp3", "ifcfg-pcmcia", "ifcfg-ppp2", "ifcfg-ppp5.bak"]
+Dir	.network.value."/etc/sysconfig/network/ifcfg-eth0": ["IPADDR"]
+Read	.network.value."/etc/sysconfig/network/ifcfg-eth0".IPADDR "0"
+Dir	.network.value."/etc/sysconfig/network/ifcfg-eth1": ["IPADDR"]
+Read	.network.value."/etc/sysconfig/network/ifcfg-eth1".IPADDR "1"
+Return	true
+Dump	eth|tr=$["eth":$["0":$["IPADDR":"0"], "1":$["IPADDR":"1"]]]
 Dump	AnyDHCPDevice
 Return	true
 Return	false

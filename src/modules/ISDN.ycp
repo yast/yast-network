@@ -234,7 +234,7 @@ global define boolean Write(boolean start) ``{
     integer steps = 10;
     string cmd = "";
     integer sl = 0;
-    
+
     if (start) {
 	Progress::New(caption, " ", steps, [
 	    _("Stop ISDN networking"),
@@ -329,7 +329,7 @@ global define boolean Write(boolean start) ``{
     ProgressNextStage(_("Setting up smpppd"));
     SetupSMPPPD();
     sleep(sl);
-                
+
     if(Abort()) return false;
     ProgressNextStage(_("Finished"));
     sleep(sl);
@@ -437,12 +437,12 @@ global define set_cardparameter(map cfg) ``{
     hisaxdebug   = cfg["DEBUG"]: "4";
     areacode     = cfg["AREACODE"]: global_ac;
     if (areacode != "" && global_ac == "")
-    	global_ac = areacode;
+	global_ac = areacode;
     if (areacode == "" && global_ac != "")
         areacode = global_ac;
     dialprefix   = cfg["DIALPREFIX"]: global_dp;
     if (dialprefix != "" && global_dp == "")
-    	global_dp = dialprefix;
+	global_dp = dialprefix;
     unique       = cfg["UNIQUE"]: "";
     hw_bootmode	 = cfg["STARTMODE"]: "onboot";
     if (hw_bootmode == "hotplug")

@@ -135,12 +135,12 @@ global define boolean Read() ``{
 
     if(Abort()) return false;
     ProgressNextStage(_("Detecting modems"));
-    ReadHardware("ppp");
+    ReadHardware("modem");
     sleep(sl);
 
     if(Abort()) return false;
     ProgressNextStage(_("Reading current configuration"));
-    ReadConfig("-ppp");		// #13735: "ppp" is substring "ippp" -> use "-ppp" - FIXME later: fix ReadConfig() instead
+    ReadConfig("ppp");
     sleep(sl);
 
     if(Abort()) return false;
@@ -207,32 +207,6 @@ global define boolean Write() ``{
 
     if(Abort()) return false;
     return true;
-}
-
-/**
- * Select the given hardware item or clean up structures
- * @param which item to be chosen
- */
-// FIXME: -> routines/hardware.ycp (?)
-global define void SelectHW(integer which) ``{
-    map sel = $[];
-
-    if(which != nil)
-	sel = select(HARDWARE, which, $[]);
-
-    if(which > size(HARDWARE) || which < 0)
-	y2error("Item not found in HARDWARE: %1 (%2)", which, size(HARDWARE));
-
-    name = lookup(sel, "name", "");
-    unique = lookup(sel, "unique", "");
-    type = lookup(sel, "type", "eth");
-    device = select(GetFreeDevices(type,1), 0, -1);
-
-    BaudRate = sel["speed"]:"115200";
-    Device = sel["device_name"]:"";
-    Init1 = sel["init1"]:"";
-    Init2 = sel["init2"]:"";
-    PPPDoptions = sel["pppd_options"]:"";
 }
 
 /**
@@ -336,6 +310,7 @@ global define boolean Commit() ``{
 	    "MODEM_DEVICE"	: Device,
 	    "DIALPREFIX"	: DialPrefix,
 	    "PROVIDER"		: Providers::provShortName,
+	    "PROVIDER_NAME"	: Providers::provLongName,
 	    "PPPD_OPTIONS"	: PPPDoptions,
 	];
 
@@ -385,7 +360,7 @@ global define list Summary(boolean split) ``{
 /**
  */
 global define list Overview() ``{
-    return BuildOverview("ppp");
+    return BuildOverview();
 }
 
 /**
@@ -394,6 +369,12 @@ define boolean Abort() ``{
     if(AbortFunction != nil)
         return eval(AbortFunction) == true;
     return false;
+}
+
+/**
+ */
+global define void Select(integer which) ``{
+    SelectHardware(which);
 }
 
 /* EOF */

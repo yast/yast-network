@@ -14,6 +14,11 @@
  * $Id$
  *
  * All hardware settings are stored in a global variable HARDWARE.
+ *
+ * If you want to add a new HW type, you have to do the following steps:
+ * - add the type to ReadHardware
+ * - add the type to SelectHardware
+ * - add the type to ControllerType
  */
 
 {
@@ -33,15 +38,15 @@ global define boolean ReadHardware(string hwtype) ``{
     list allcards = [];
 
     map hwtypes = $[
-	"netcard" : .probe.netdev,
+	"netcard" : .probe.netcard,
+	"modem" : .probe.modem,
 	"isdn" : .probe.isdn,
-	"ppp" : .probe.modem,
     ];
 
     /* read the corresponding hardware */
     if(haskey(hwtypes, hwtype))
 	allcards = SCR::Read(lookup(hwtypes, hwtype, nil));
-    else if(hwtype == "all")
+    else if(hwtype == "all" || hwtype == "" || hwtype == nil)
 	maplist(`v, mapvalues(hwtypes), ``{
 	    allcards = merge(allcards, SCR::Read(v));
 	});
@@ -53,6 +58,8 @@ global define boolean ReadHardware(string hwtype) ``{
     /* fill in the hardware data */
     maplist (`card, allcards, ``{
 	map one = $[];
+
+	/* common stuff */
 	string controller = ControllerType(card);
 	change(one, "name", DeviceName(card));
 	change(one, "type", controller);
@@ -60,7 +67,7 @@ global define boolean ReadHardware(string hwtype) ``{
 	change(one, "num", num);
 
 	/* modem */
-	if(controller == "ppp") {
+	if(controller == "modem") {
 	    map resource = lookup(card, "resource", []);
 	    change(one, "device_name", lookup(card, "dev_name", ""));
 	    change(one, "speed", lookup(select(lookup(resource, "baud", []), 0, $[]), "speed", ""));
@@ -78,11 +85,10 @@ global define boolean ReadHardware(string hwtype) ``{
 	    change(one, "io", lookup(select(lookup(resource, "io", []),0, $[]), "start", 0));
 	    change(one, "irq", lookup(select(lookup(resource, "irq", []), 0, $[]), "irq", 0));
 	}
-	/* network cards */
-	/* FIXME treat the rest as a network card */
+	/* treat the rest as a network card */
 	else {
 	    list drivers = lookup(card, "drivers", []);
-	    /* FIXME: error if no driver found */
+	    if(size(drivers) < 0) y2error("Not enough drivers");
 	    map driver = select(drivers, 0, $[]);
 	    list modules = select(lookup(driver, "modules", []), 0, []);
 	    change(one, "module", select(modules, 0, ""));
@@ -95,6 +101,47 @@ global define boolean ReadHardware(string hwtype) ``{
     });
 
     y2debug("HARDWARE=%1",HARDWARE);
+    return true;
+}
+
+/**
+ * Select the given hardware item or clean up structures
+ * @param which item to be chosen
+ */
+global define void SelectHardware(integer which) ``{
+    map sel = $[];
+
+    if(which != nil)
+	sel = select(HARDWARE, which, $[]);
+
+    if(which > size(HARDWARE) || which < 0)
+	y2error("Item not found in HARDWARE: %1 (%2)", which, size(HARDWARE));
+
+    /* common stuff */
+    name = lookup(sel, "name", "");
+    unique = lookup(sel, "unique", "");
+    type = lookup(sel, "type", "eth");
+    device = select(GetFreeDevices(type,1), 0, -1);
+
+    /* modem */
+    if(type == "modem") {
+	Init1 = sel["init1"]:"";
+	Init2 = sel["init2"]:"";
+	Device = sel["device_name"]:"";
+	BaudRate = sel["speed"]:"115200";
+	PPPDoptions = sel["pppd_options"]:"";
+	type = "ppp";
+    }
+    /* isdn card */
+    else if(type == "isdn") {
+	/* FIXME */
+    }
+    /* treat the rest as a network card */
+    else {
+	modul = sel["module"]:"";
+	options = sel["options"]:"";
+    }
+
     return true;
 }
 
@@ -113,8 +160,12 @@ global define boolean WriteModulesConf() ``{
  */
 global define string DeviceName(map hwdevice) ``{
     string delimiter = " "; // "\n";
+    string model = "";
     string vendor = "";
     string dev = "";
+
+    model = lookup(hwdevice, "model", "");
+    if(model != "" && model != nil) return model;
 
     vendor = lookup(hwdevice, "sub_vendor", "");
     dev = lookup(hwdevice, "sub_device", "");
@@ -134,11 +185,11 @@ global define string DeviceName(map hwdevice) ``{
  * Simple convertor from subclass to controller type.
  * @param hwdevice map with card info containing "subclass"
  * @return short device name
- * @example ControllerType("Ethernet Controller") -> "eth"
+ * @example ControllerType(<ethernet controller map>) -> "eth"
  */
 global define string ControllerType(map hwdevice) ``{
 
-    if(lookup(hwdevice, "subclass", "") == "Modem") return "ppp";
+    if(lookup(hwdevice, "subclass", "") == "Modem") return "modem";
     if(lookup(hwdevice, "subclass", "") == "ISDN") return "isdn";
 
     integer subclass_id = lookup(hwdevice, "sub_class_id", -1);
@@ -153,13 +204,17 @@ global define string ControllerType(map hwdevice) ``{
     }
     /* Network Interface */
     else if(lookup(hwdevice, "class_id", -1) == 0x107) {
-	if(subclass_id == 01) return "eth";
+	if(subclass_id == 00) return "lo";
+	else if(subclass_id == 01) return "eth";
 	else if(subclass_id == 02) return "tr";
 	else if(subclass_id == 03) return "fddi";
+	else if(subclass_id == 70) return "escon";
+	else if(subclass_id == 80) return "unknown";
+	else if(subclass_id == 81) return "sit";
 	else return "eth";  /* default */
     }
     else if(lookup(hwdevice, "class_id", -1) == 0x102)
-	return "ppp";
+	return "modem";
     else if(lookup(hwdevice, "class_id", -1) == 0x103)
 	return "isdn";
 
@@ -167,4 +222,5 @@ global define string ControllerType(map hwdevice) ``{
     return "unknown";
 }
 
+/* EOF */
 }

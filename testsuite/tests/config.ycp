@@ -4,6 +4,43 @@ include "testsuite.ycp";
 include "network/config.ycp";
 
 map CONFIG = $[];
+map READ = $[];
+
+READ = $[
+    "network" : $[
+	"section" : $[
+	    "ifcfg-eth0" : nil,
+	    "ifcfg-eth1" : nil,
+	    "ifcfg-ppp2" : nil,
+	    "ifcfg-ippp3" : nil,
+	    "ifcfg-ppp5.bak" : nil,
+	    "ifcfg-pcmcia" : nil,
+	    // "ifcfg-pcmcia" : nil, -> brakes regexpsub without check
+	],
+	"value" : $[
+	    "/etc/sysconfig/network/ifcfg-eth0" : $[ "IPADDR" : "0"],
+	    "/etc/sysconfig/network/ifcfg-eth1" : $[ "IPADDR" : "1"],
+	    "/etc/sysconfig/network/ifcfg-ppp2" : $[ "IPADDR" : "2"],
+	    "/etc/sysconfig/network/ifcfg-ippp3" : $[ "IPADDR" : "3"],
+	],
+    ],
+];
+
+DUMP("ReadConfig");
+TEST(``(ReadConfig("")), [READ], nil);
+DUMP(sformat("all=%1",CONFIG));
+TEST(``(ReadConfig("eth")), [READ], nil);
+DUMP(sformat("eth=%1",CONFIG));
+TEST(``(ReadConfig("ppp")), [READ], nil);
+DUMP(sformat("ppp=%1",CONFIG));
+TEST(``(ReadConfig("ippp")), [READ], nil);
+DUMP(sformat("ippp=%1",CONFIG));
+TEST(``(ReadConfig("tr")), [READ], nil);
+DUMP(sformat("tr=%1",CONFIG));
+TEST(``(ReadConfig("ppp|eth")), [READ], nil);
+DUMP(sformat("ppp|eth=%1",CONFIG));
+TEST(``(ReadConfig("eth|tr")), [READ], nil);
+DUMP(sformat("eth|tr=%1",CONFIG));
 
 DUMP("AnyDHCPDevice");
 CONFIG=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "dhcp" ]]];

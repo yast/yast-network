@@ -68,6 +68,7 @@ map providers = $[];
 
 /* provider settings */
 global string provShortName = "";
+global string provLongName = "";
 
 /**
  * Country code -> country name translation
@@ -191,6 +192,7 @@ global define void Commit () ``{
     dirty = true;
     providers = add (providers, lookup (provider, "ShortName", ""), provider);
     provShortName = lookup (provider, "ShortName", "");
+    provLongName = lookup (provider, "PROVIDER", "");
 }
 
 /**

@@ -37,8 +37,12 @@ global define boolean ReadConfig(string devregex) ``{
     list devices = filter(`file, allfiles, ``(!regexpmatch(file, "[\.~]")));
     y2debug("devices=%1", devices);
 
+    devices = filter(`d, devices, ``(regexpmatch(d, "ifcfg-[a-z][a-z-]*[0-9]+(:[0-9]+)?")));
+    y2debug("devices=%1", devices);
+
     if(devregex != nil && devregex != "") {
-	devices = filter(`file, devices, ``(regexpmatch(file, devregex)));
+	//devices = filter(`file, devices, ``(regexpmatch(file, devregex)));
+	devices = filter(`file, devices, ``(regexpmatch(file, "-" + devregex + "[0-9]")));
 	y2debug("devices=%1", devices);
     }
 
@@ -151,15 +155,15 @@ global define boolean WriteConfig() ``{
 	    /* write modules.conf */
 	    string mod = lookup(devmap, "module", "");
 	    string opts = lookup(devmap, "options", "");
-	    list opts_list = filter (string s, splitstring (opts, " "), ``(s != ""));
-	    map opts_map = listmap (string opt, opts_list, ``{
-		list tok = splitstring (opt, "=");
+	    list opts_list = filter(string s, splitstring(opts, " "), ``(s != ""));
+	    map opts_map = listmap(string opt, opts_list, ``{
+		list tok = splitstring(opt, "=");
 		return [ tok[0]:"?", tok[1]:"" ];
 	    });
 
 	    if(mod != nil && mod != "")
 		SCR::Write(.modules.alias, mod, dev);
-	    if (size (opts_map) > 0)
+	    if(size(opts_map) > 0)
 		SCR::Write(.modules.options, opts_map, dev);
 
 	    /* update libhd unique number */

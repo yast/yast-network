@@ -3,7 +3,6 @@
 Done, but needs to be fixed:
 - differentiate between i(ppp)
 - two resolv.conf agents
-- check_domain (3com)
 
 Bugs:
 - check and install required packages
