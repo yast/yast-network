@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Jul 12 15:42:00 CEST 2004 - mvidner@suse.cz
+
+- For temporary network setup during installation (inst_netsetup),
+  use also the domain name from install.inf (#42758).
+- Moved nsswitch.conf agent to yast2-pam.
+- 2.10.2
+
+-------------------------------------------------------------------
 Thu Jul  8 12:37:46 CEST 2004 - mvidner@suse.cz
 
 - Fixed deleting virtual aliases (#42386).
