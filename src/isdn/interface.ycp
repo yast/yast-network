@@ -278,8 +278,13 @@ remove a channel.
     symbol ret = nil;
     while (true) {
 
-    /* Do we need '*' and '#' here as in #16021? */
-    UI::ChangeWidget(`id(`msn), `ValidChars, "0123456789" );
+    /* We need ":"  for NI1 SPID and "VB" in future (for pending DATA over VOICE patch)
+     * it should not hurt if we enable this now here, since the chance that a
+     * customer enter V or B by accident is very low
+     * since VB is only allowed as first char, maybe we should make a post
+     * check for it too
+     */
+    UI::ChangeWidget(`id(`msn), `ValidChars, "0123456789:BV" );
 
 	ret = UI::UserInput();
 
