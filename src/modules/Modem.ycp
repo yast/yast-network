@@ -124,50 +124,50 @@ global define boolean Read() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-        /* Progress step 1/4 */
-        _("Detecting modems..."),
-        /* Progress step 2/4 */
+        /* Progress stage 1/4 */
+        _("Detect modems"),
+        /* Progress stage 2/4 */
         _("Read current configuration"),
-        /* Progress step 3/4 */
+        /* Progress stage 3/4 */
 	_("Read firewall settings"),
-        /* Progress step 4/4 */
+        /* Progress stage 4/4 */
         _("Read providers"),
-        /* Progress step 5/5 */
-        _("Reading routing..."),
+        /* Progress stage 5/5 */
+        _("Read routing"),
     ], [], "");
 
     if(Abort()) return false;
-    /* Progress stage 1/4 */
-    ProgressNextStage(_("Detecting modems"));
+    /* Progress step 1/4 */
+    ProgressNextStage(_("Detecting modems..."));
     ReadHardware("modem");
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 2/4 */
-    ProgressNextStage(_("Reading current configuration"));
+    /* Progress step 2/4 */
+    ProgressNextStage(_("Reading current configuration..."));
     ReadDevices("ppp");
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 3/4 */
-    ProgressNextStage(_("Reading firewall settings"));
+    /* Progress step 3/4 */
+    ProgressNextStage(_("Reading firewall settings..."));
     Firewall::Read();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 4/4 */
-    ProgressNextStage(_("Reading providers"));
+    /* Progress step 4/4 */
+    ProgressNextStage(_("Reading providers..."));
     Provider::Read("modem");
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 4/4 */
+    /* Progress step 4/4 */
     ProgressNextStage(_("Reading routes..."));
     Routing::Read();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Final progress stage */
+    /* Final progress step */
     ProgressNextStage(_("Finished"));
     sleep(sl);
 
@@ -194,59 +194,59 @@ global define boolean Write() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-        /* Progress step 1/6 */
+        /* Progress stage 1/6 */
         _("Write configuration"),
-        /* Progress step 2/6 */
+        /* Progress stage 2/6 */
         _("Write firewall settings"),
-        /* Progress step 3/6 */
+        /* Progress stage 3/6 */
         _("Write providers"),
-        /* Progress step 4/6 */
+        /* Progress stage 4/6 */
         _("Set up network services"),
-        /* Progress step 5/5 */
+        /* Progress stage 5/5 */
         _("Set up smpppd"),
-        /* Progress step 6/6 */
-        _("Running KInternet..."),
+        /* Progress stage 6/6 */
+        _("Run KInternet"),
     ], [], "");
 
     if(Abort()) return false;
-    /* Progress stage 1/6 */
-    ProgressNextStage(_("Writing configuration"));
+    /* Progress step 1/6 */
+    ProgressNextStage(_("Writing configuration..."));
     WriteDevices();
     UpdateModemSymlink();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 2/6 */
-    ProgressNextStage(_("Writing firewall settings"));
+    /* Progress step 2/6 */
+    ProgressNextStage(_("Writing firewall settings..."));
     Firewall::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 3/6 */
-    ProgressNextStage(_("Writing providers"));
+    /* Progress step 3/6 */
+    ProgressNextStage(_("Writing providers..."));
     Provider::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 4/6 */
-    ProgressNextStage(_("Setting up network services"));
+    /* Progress step 4/6 */
+    ProgressNextStage(_("Setting up network services..."));
     EnableNetwork();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 5/6 */
-    ProgressNextStage(_("Setting up smpppd(8)"));
+    /* Progress step 5/6 */
+    ProgressNextStage(_("Setting up smpppd(8)..."));
     EnableSMPPPD();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 6/6 */
+    /* Progress step 6/6 */
     ProgressNextStage(_("Running KInternet..."));
     RunKInternet();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Final progress stage */
+    /* Final progress step */
     ProgressNextStage(_("Finished"));
     sleep(sl);
 

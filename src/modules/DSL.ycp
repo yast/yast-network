@@ -357,7 +357,6 @@ global define boolean Edit(any name) ``{
     return true;
 }
 
-
 /**
  * Delete the given device
  * @param name device to delete
