@@ -30,8 +30,6 @@ include "network/isdn/routines.ycp";
  * @param Detected detected card
  * @return any user input
  */
-
-
 global define term Card_Parameter(integer cidx) ``{
 	term  contens = `VBox();
 	string bootm = ISDN::hw_bootmode;
@@ -171,7 +169,7 @@ global define symbol isdn_lowlevel(symbol Detected) ``{
     map CurrentCard = get_isdncard_by_type(ISDN::ISDN_Devices, Default_TYPE, Default_SUBTYPE);
 
     y2debug("CurrentCard %1", CurrentCard);
-        
+
     list CardList = maplist(`e, ISDN::ISDN_Devices,
     ``{
 	id = id + 1;
@@ -203,45 +201,46 @@ global define symbol isdn_lowlevel(symbol Detected) ``{
     string helptext = "";
 
     if (Detected != `Detected && ISDN::operation != `edit) {
-	// helptext text 1/6
+	// helptext text 1/7
 	helptext = helptext +
 _("<p>Please select ISDN card from the list.</p>");
     }
-	// helptext text 2/6
+	// helptext text 2/7
 	helptext = helptext +
 _("<p>If you have an old legal ISA card, you can enter values for
 IO port or memory addresses and the used interrupt.
 For the correct values check with your technical manual or contact your salesman.</p>");
-        // helptext text 3/6
+
+        // helptext text 3/7
 	helptext = helptext +
 _("<p><b>Start Mode: </b><b>OnBoot</b> the driver is loaded during
 system boot. <b>Manual</b> the driver must be started with the
 <b>rcisdn start</b> command, only the user root can do this.
 <b>HotPlug </b> is a special case for PCMCIA and USB devices.</p>");
 
-	// helptext text 4/6
-    	helptext = helptext +
+	// helptext text 4/7
+	helptext = helptext +
 _("<p>For some isdncard exist multiple drivers,
 Please select one from the list.</p>");
 
-    // helptext text 5/6
-    helptext = helptext +
+	// helptext text 5/7
+	helptext = helptext +
 _("<p><b>ISDN protocol: </b>In most cases, the protocol is Euro-ISDN, 
 especially if your ISDN card is connected directly to the public ISDN 
 network. 1TR6 is only rarely used in older German private networks on 
 internal ports. In the United States, NI1 is usually used. Because it 
 is still experimental, contact the suse-isdn@suse.com mail list for 
 more information.</p>");
-	// helptext text 6/6
-    	helptext = helptext +
+
+	// helptext text 6/7
+	helptext = helptext +
 _("<p><b>Areacode: </b> You should enter your local areacode for the ISDN
 line here, including the country prefix, for example 
-<tt>
-<br>\"+49 911\"
-<br>
-</tt>
-</p>
-<p><b>Dial Prefix: </b> If you need a prefix to get an public line, you
+<tt><br>\"+49 911\"<br></tt></p>");
+
+	// helptext text 7/7
+	helptext = helptext +
+_("<p><b>Dial Prefix: </b> If you need a prefix to get an public line, you
 can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 
     /* DIALOG CONTENTS */
@@ -263,11 +262,10 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 	    )
 	);
 
-    term ISDN_line = 
-	`VBox(
-	    `TextEntry(`id(`areacode), _("&Areacode"), ISDN::areacode),
-	    `TextEntry(`id(`dialprefix), _("&Dialprefix"), ISDN::dialprefix)
-	);
+    term ISDN_line = `VBox(
+	`TextEntry(`id(`areacode), _("&Areacode"), ISDN::areacode),
+	`TextEntry(`id(`dialprefix), _("&Dialprefix"), ISDN::dialprefix)
+    );
 
     string desc = lookup(select(CardDrivers, CurrentDrvIndex, $[]), "description", "default");
     term ISDN_driver = create_drv_term(DrvList, desc);
@@ -301,6 +299,7 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 		ISDN_line
 	    )
 	);
+
     /* DIALOG PREPARE */
     Wizard::SetContents(caption, contents, helptext, true, true);
     Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), OKButtonLabel()));
@@ -415,4 +414,5 @@ serious problems, if this driver is used.
     return ret;
 }
 
+/* EOF */
 }
