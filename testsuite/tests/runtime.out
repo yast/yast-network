@@ -22,14 +22,14 @@ Execute	.target.bash "/etc/init.d/network restart" 1
 Return	false
 Dump	SetupSMPPPD
 Read	.init.scripts.exists "smpppd" true
-Execute	.target.bash_output "/sbin/insserv -r smpppd" $["exit":0, "stderr":"", "stdout":""]
-Execute	.target.bash_output "/sbin/insserv smpppd,start=2,3,5" $["exit":0, "stderr":"", "stdout":""]
+Execute	.target.bash_output "/sbin/insserv -rf /etc/init.d/smpppd" $["exit":0, "stderr":"", "stdout":""]
+Execute	.target.bash_output "/sbin/insserv /etc/init.d/smpppd,start=2,3,5" $["exit":0, "stderr":"", "stdout":""]
 Read	.init.scripts.exists "smpppd" true
 Execute	.target.bash "/etc/init.d/smpppd status" $["TERM":"raw"] 0
 Execute	.target.bash "/etc/init.d/smpppd reload" $["TERM":"raw"] 0
 Return	true
 Read	.init.scripts.exists "smpppd" true
-Execute	.target.bash_output "/sbin/insserv -r smpppd" $["exit":1, "stderr":"Dummy error message", "stdout":""]
+Execute	.target.bash_output "/sbin/insserv -rf /etc/init.d/smpppd" $["exit":1, "stderr":"Dummy error message", "stdout":""]
 Log	Unable to disable service smpppd:
 Read	.init.scripts.exists "smpppd" true
 Execute	.target.bash "/etc/init.d/smpppd status" $["TERM":"raw"] 1
