@@ -186,7 +186,7 @@ global define symbol ProviderDialog() ``{
 selected your provider from the  list, these values are provided.</p>") +
 
     /* Provider dialog help 3/5 */
-    _("<p>Enter a <b>name</b> for the provider and a <b>phone number</b>
+    _("<p>Enter a <b>Provider name</b> for the provider and a <b>Phone number</b>
 to access your provider.</p>");
 
     if(type == "isdn")
@@ -195,13 +195,29 @@ to access your provider.</p>");
 <b>RawIP</b> means that MAC headers are stripped. <b>SyncPPP</b> stands for
 Synchronous PPP.</p>");
 
-	/* Provider dialog help 4/5 */
-	helptext = helptext + _("<p>Enter the <b>user name</b> and the
-<b>password</b> to use as the login (ask your provider if unsure).</p>") +
+    if(uimode == "T-Online" || uimode == "T-Online DSL")
 
-	/* Provider dialog help 5/5 */
-	_("<p>Check <b>Always ask</b> to be asked for
-the password every time.</p>");
+	/* Provider dialog help 4/5 (T-Online) */
+	helptext = helptext + _("<p>Enter the <b>T-Online ID</b>
+(e.g. 00056780362), the <b>T-Online number</b> (e.g. 870008594732),
+the <b>User code</b> (typically 0001) and the <b>Password</b>
+to use as the login (ask your provider if unsure).</p>");
+
+    else
+
+	/* Provider dialog help 4/5 (general) */
+	helptext = helptext + _("<p>Enter the <b>User name</b> and the
+<b>Password</b> to use as the login (ask your provider if unsure).</p>");
+
+    if(uimode == "T-Online DSL Business")
+
+	/* Provider dialog help 4.5/5 (T-Online Business) */
+	helptext = helptext + _("<p>The <b>User name</b> will be extended
+with the <i>t-online-com/</i> at the start and with <i>@t-online-com.de</i>
+at the end.</p>");
+
+    /* Provider dialog help 5/5 */
+    helptext = helptext + _("<p>Check <b>Always ask</b> to be asked for the password every time.</p>");
 
     /* Frame label */
     term auth = `Frame(`id(`auth), _("Authorization"), `HBox(
@@ -271,7 +287,7 @@ the password every time.</p>");
 		`TextEntry(`id(`lineid), _("&Line ID"), lineid),
 		`HSpacing(0.5),
 		/* TextEntry label */
-		`TextEntry(`id(`t_onlineid), _("&T-Online Number"), t_onlineid),
+		`TextEntry(`id(`t_onlineid), _("&T-Online number"), t_onlineid),
 		`HSpacing(0.5)
 	    ),
 	    `VSpacing( 0.5 ),

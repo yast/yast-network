@@ -188,6 +188,19 @@ global define list GetDevices() ``{
 }
 
 /**
+ * Get the default gateway
+ * @return gateway
+ */
+global define string GetGateway() ``{
+    string defgw = "";
+    maplist(map r, routes, ``{
+	if(r["destination"]:"" == "default")
+	    defgw = r["gateway"]:"";
+    });
+    return defgw;
+}
+
+/**
  * Set the available devices list (for expert routing dialog)
  * @param devs new devices list
  * @return true if success

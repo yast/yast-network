@@ -525,7 +525,9 @@ global define list Overview() ``{
 	/* Filter only specified type */
 	if(GlobalType == "all" || provmap[toupper(GlobalType)+"SUPPORTED"]:"no" == "yes") {
 	    // change(overview, `item(`id(name), name, provmap["PROVIDER"]:"", provmap["PHONE"]:"", provmap["MODEMSUPPORTED"]:"no", provmap["ISDNSUPPORTED"]:"no", provmap["DSLSUPPORTED"]:"no"));
-	    change(overview, `item(`id(name), name, provmap["PROVIDER"]:"", provmap["PHONE"]:""));
+	    term it = `item(`id(name), name, provmap["PROVIDER"]:"");
+	    if(GlobalType != "dsl") it = add(it, provmap["PHONE"]:"");
+	    change(overview, it);
 	}
     });
     y2debug("overview=%1", overview);

@@ -222,7 +222,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
 	/* Table label */
 	_("Providers"),
 	/* Table header */
-	`header(_("Name"), _("Provider"), _("Phone")),
+	`header(_("Name"), _("Provider") /*, not for DSL: _("Phone") */),
 	overviewp
     );
 

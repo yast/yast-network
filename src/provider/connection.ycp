@@ -101,7 +101,7 @@ connections. Choosing this option will make dial-up connections
 to the Internet safe from external attacks.</p>") +
 
     /* Connection dialog help 6/8 */
-_("<p>The <b>Idle time-out</b> specifies the time after which an idle
+_("<p>The <b>Idle timeout</b> specifies the time after which an idle
 connection will be shut down (0 means an infinite idle time-out).</p>");
 
     // if(type == "isdn")
@@ -140,7 +140,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    /* Push button label */
 	    `PushButton(`id(`IPDetails), _("I&P details"))
 	);
-    if(type == "modem")
+    if(type != "isdn")
 	details = `HBox(
 	    /* Push button label */
 	    `PushButton(`id(`IPDetails), _("I&P details"))
@@ -225,7 +225,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 		    UI::SetFocus(`id(`DNS1));
 		    continue;
 		}
-		if(size(DNS2) != "" && check_ip4(DNS2)) {
+		if(size(DNS2) > 0 && !check_ip4(DNS2)) {
 		    UI::ErrorPopup(_("The secondary name server is not correct"));
 		    UI::SetFocus(`id(`DNS2));
 		    continue;

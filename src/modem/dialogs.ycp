@@ -44,7 +44,7 @@ global define symbol ModemDialog(boolean detected) ``{
     string helptext = _("<p>Enter all modem configuration values.</p>") +
 
     /* Modem dialog help 2/5 */
-_("<p><b>Device</b> specifies to which port your modem is connected. ttyS0,
+_("<p><b>Modem device</b> specifies to which port your modem is connected. ttyS0,
 ttyS1, etc., refer to serial ports and usually correspond to COM1, COM2, etc.,
 in DOS/Windows. ttyACM0 and ttyACM1 refer to USB ports.</p>") +
 

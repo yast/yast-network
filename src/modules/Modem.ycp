@@ -18,6 +18,7 @@ textdomain "network";
 import "Firewall";
 import "Provider";
 import "Progress";
+import "Routing";
 import "Summary";
 
 include "network/complex.ycp";
@@ -116,7 +117,7 @@ global define boolean Read() ``{
 
     /* Read dialog caption */
     string caption = _("Initializing modem configuration");
-    integer steps = 4;
+    integer steps = 5;
 
     /* FIXME */
     integer sl = 0; //1000;
@@ -131,6 +132,8 @@ global define boolean Read() ``{
 	_("Read firewall settings"),
         /* Progress step 4/4 */
         _("Read providers"),
+        /* Progress step 5/5 */
+        _("Read routing"),
     ], [], "");
 
     if(Abort()) return false;
@@ -155,6 +158,12 @@ global define boolean Read() ``{
     /* Progress stage 4/4 */
     ProgressNextStage(_("Reading providers"));
     Provider::Read("modem");
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Progress stage 4/4 */
+    ProgressNextStage(_("Reading routes"));
+    Routing::Read();
     sleep(sl);
 
     if(Abort()) return false;

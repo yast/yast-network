@@ -43,18 +43,15 @@ global define symbol IPDetailsDialog() ``{
     /* IP details dialog caption */
     string caption = _("IP address settings");
 
-    string helptext =
     /* IP details dialog help 1/3 */
-_("<p>Please fill in the IP addresses if you got an fixed IP address
-from your provider for syncppp or you use raw IP.</p>");
+    string helptext = _("<p>Please fill in the IP addresses if you got an fixed
+IP address from your provider for syncppp or you use raw IP.</p>");
 
-    helptext = helptext +
     /* IP details dialog help 2/3 */
-_("<p>Check the button for <b>dynamic IP address</b> if your provider
-assign you one temporary address per connection. In this case the
-outgoing address is unknown until the moment the link is established.
-This is the default with most providers.
-</p>");
+    helptext = helptext + _("<p>Check the button for <b>Dynamic IP address</b>
+if your provider assign you one temporary address per connection. In this case
+the outgoing address is unknown until the moment the link is established.
+This is the default with most providers.</p>");
 
     if(false) // FIXME: not needed
     if(encap != "rawip")
@@ -84,6 +81,10 @@ waits for callback of the remote machine.");
 
     }
 
+    /* IP details dialog help 4/4 */
+    helptext = helptext + _("<p><b>Default route</b> FIXME
+</p>");
+
     term contents = nil;
 
     if(encap == "rawip") {
@@ -107,7 +108,7 @@ waits for callback of the remote machine.");
 		    ),
 		    `VSpacing(),
 		    /* Checkbox label */
-		    `Left(`CheckBox(`id(`defaultroute), _("D&efaultroute"), defaultroute))
+		    `Left(`CheckBox(`id(`defaultroute), _("D&efault route"), defaultroute))
 		//)
 	    );
     }
@@ -136,7 +137,7 @@ waits for callback of the remote machine.");
 		    ),
 		    `VSpacing(),
 		    /* Checkbox label */
-		    `Left(`CheckBox(`id(`defaultroute), _("D&efaultroute"), defaultroute))
+		    `Left(`CheckBox(`id(`defaultroute), _("D&efault route"), defaultroute))
 		)
 	    );
     }
