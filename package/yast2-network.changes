@@ -1,9 +1,11 @@
 -------------------------------------------------------------------
-Thu Nov 11 15:35:29 CET 2004 - mvidner@suse.cz
+Fri Nov 12 17:54:10 CET 2004 - mvidner@suse.cz
 
+- Fixed deleting additional addresses via the specialized dialog (#48191).
 - Do not allow slashes ifcfg and hwcfg names (#46803).
 - Run kinternet with the --quiet option (#46828).
 - Install wpa_supplicant when a device uses WPA-PSK (#47809).
+- 2.11.7
 
 -------------------------------------------------------------------
 Wed Nov 10 10:51:52 CET 2004 - mvidner@suse.cz
