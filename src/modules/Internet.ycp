@@ -150,7 +150,7 @@ global define boolean FindFastest () ``{
  * Start the fastest interface
  * @return true if successful started
  */
-global define boolean Start(string logfile) ``{
+global define boolean Start(string log) ``{
 
     if(type == "isdn") {
 	if(SCR::Execute(.target.bash, "/etc/init.d/isdn status") != 0) {
@@ -162,7 +162,8 @@ global define boolean Start(string logfile) ``{
     }
 
     string cmd = "/sbin/ifup " + device;
-    cmd = cmd + "> " + logfile + " 2>&1";
+    if (log != "")
+	cmd = cmd + "> " + log + " 2>&1";
 
     if(askpassword == true)
     {
@@ -194,9 +195,10 @@ global define boolean Start(string logfile) ``{
  * Stop the fastest interface
  * @return true if successful stopped
  */
-global define boolean Stop(string logfile) ``{
+global define boolean Stop(string log) ``{
     string cmd = "/sbin/ifdown " + device;
-    cmd = cmd + "> " + logfile + " 2>&1";
+    if (log != "")
+	cmd = cmd + "> " + log + " 2>&1";
     integer ret = SCR::Execute(.target.bash, cmd);
     return ret == 0;
 }

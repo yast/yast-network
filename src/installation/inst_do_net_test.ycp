@@ -416,7 +416,7 @@ logs for details."));
 	if (ret == `abort_test)
 	{
 	    if (!already_up)
-		Internet::Stop ();
+		Internet::Stop ("");
 	    test_result = `failure;
 	    break;
 	}
