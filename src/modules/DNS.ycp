@@ -284,10 +284,10 @@ global define string Summary() {
 	});
 
 	if(size(nslist) > 0)
-	/* Summary text */
+	    /* Summary text */
 	    summary = add(summary, Summary::Device(sformat(_("Name Servers: %1"), mergestring(nslist, ", ")), ""));
 	if(size(searchlist) > 0)
-	/* Summary text */
+	    /* Summary text */
 	    summary = add(summary, Summary::Device(sformat(_("Search List: %1"), mergestring(searchlist, ", ")), ""));
     }
 

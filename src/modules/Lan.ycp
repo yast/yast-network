@@ -515,7 +515,7 @@ global define void SelectHW(integer which) {
 global define list Summary(boolean split) {
     list sum = NetworkDevices::Summary("netcard", Hardware, split);
     /* Testing improved summary */
-    sum[0] = sum[0]:"" + "<br>" + DNS::Summary() + "<br>" + Routing::Summary();
+    sum[0] = sum[0]:"" + "&nbsp;<br>" + DNS::Summary() + "&nbsp;<br>" + Routing::Summary();
     return sum;
 }
 
