@@ -884,7 +884,7 @@ global define boolean Commit() {
 
 	if(alias == "") {
 	    newdev["_aliases"] = aliases;
-	    y2milestone("%1", aliases);
+	    y2milestone("aliases %1", aliases);
 	    NetworkDevices::Name = NetworkDevices::device_name(NetworkDevices::RealType(type, hotplug), device);
 	}
 	else
@@ -932,7 +932,7 @@ global define boolean Propose() {
     /* Something is already configured -> do nothing */
     list devs = NetworkDevices::List("netcard");
     if(size(devs) > 0) {
-	y2milestone("Something already configured: don't propose).");
+	y2milestone("Something already configured: don't propose.");
 	y2milestone("devs=%1", devs);
 	return false;
     }
