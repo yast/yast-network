@@ -86,27 +86,27 @@ global define boolean Fastest() ``{
 
 /**
  * Start the fastest interface
- * @return true if started OK
+ * @return true if successful started
  */
 global define boolean Start() ``{
     // FIXME: use password and askpassword
-    return SCR::Execute(.target.bash, "ifup " + device) == 0;
+    return SCR::Execute(.target.bash, "/sbin/ifup " + device) == 0;
 }
 
 /**
  * Stop the fastest interface
- * @return true if started OK
+ * @return true if successful stopped
  */
 global define boolean Stop() ``{
-    return SCR::Execute(.target.bash, "ifdown " + device) == 0;
+    return SCR::Execute(.target.bash, "/sbin/ifdown " + device) == 0;
 }
 
 /**
- * Stop the fastest interface
- * @return true if started OK
+ * Status of the fastest interface
+ * @return true if interface is up (which is not equal to connected)
  */
 global define boolean Status() ``{
-    return SCR::Execute(.target.bash, "ifstatus " + device) == 0;
+    return SCR::Execute(.target.bash, "/sbin/ifstatus " + device) == 0;
 }
 
 /* EOF */
