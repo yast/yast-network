@@ -49,7 +49,9 @@ global define boolean Read() ``{
     enabled = SCR::Read(.sysconfig.proxy.PROXY_ENABLED) != "no";
 
     /* Read /root/.curlrc */
-    user = SCR::Read(.root.curlrc.proxy-user);
+    if(SCR::Read(.target.size, "/root/.curlrc") > 0)
+	user = SCR::Read(.root.curlrc.proxy-user);
+
     if(user == nil) user = "";
 
     if(issubstring(user, ":")) {

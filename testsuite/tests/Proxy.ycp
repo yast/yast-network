@@ -19,6 +19,7 @@ map READ = $[
 	"system" : [],
     ],
     "target" : $[
+	"size" : 1,
 	"tmpdir" : "/tmp",
     ],
 ];

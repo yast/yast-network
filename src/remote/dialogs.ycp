@@ -1,11 +1,14 @@
 /**
  * File:	remote/dialogs.ycp
- * Module:	Network
+ * Module:	Network configuration
  * Summary:	Dialog for Remote Administration
  * Authors:	Arvin Schnell <arvin@suse.de>
+ *
+ * $Id$
  */
 
 {
+
     textdomain "network";
 
     import "Wizard";
@@ -74,4 +77,6 @@
 
 	return ret;
     }
+
+/* EOF */
 }

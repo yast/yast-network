@@ -1,4 +1,4 @@
-Read	.target.size "/etc/install.inf" nil
+Read	.target.size "/etc/install.inf" 1
 Read	.etc.install_inf.Sourcemounted nil
 Read	.etc.install_inf.AutoYaST nil
 Read	.etc.install_inf.Repair nil
@@ -22,6 +22,7 @@ Read	.sysconfig.proxy.HTTP_PROXY "h"
 Read	.sysconfig.proxy.FTP_PROXY "f"
 Read	.sysconfig.proxy.NO_PROXY nil
 Read	.sysconfig.proxy.PROXY_ENABLED nil
+Read	.target.size "/root/.curlrc" 1
 Read	.root.curlrc.proxy-user "user:pass"
 Return	true
 Dump	Write

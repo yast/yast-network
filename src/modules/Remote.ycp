@@ -1,64 +1,64 @@
 /**
  * File:	src/modules/Remote.ycp
- * Module:	Network
+ * Module:	Network configuration
  * Summary:	Module for Remote Administration
  * Authors:	Arvin Schnell <arvin@suse.de>
+ *
+ * $Id$
  */
 
 {
-    module "Remote";
 
-    textdomain "network";
+module "Remote";
+textdomain "network";
 
-    import "Runlevel";
+import "Label";
+import "Runlevel";
 
-    include "network/routines.ycp";
+include "network/routines.ycp";
 
+// allow Remote Administration
+global boolean allow_administration = false;
 
-    // allow Remote Administration
-    global boolean allow_administration = false;
+/**
+ * Reset all module data.
+ */
+global define void Reset () ``{
+    allow_administration = false;
+}
 
+/**
+ * Update the SCR according to network settings
+ * @return true on success
+ */
+global define boolean Write() ``{
 
-    /**
-     * Reset all module data.
-     */
-    global define void Reset () ``{
-
-	allow_administration = false;
-
-    }
-
-
-    /**
-     * Update the SCR according to network settings
-     * @return true on success
-     */
-    global define boolean Write () ``{
-
-	// install and enable xinetd, tightvnc and XFree86-Xvnc
-	if (allow_administration)
+    // install and enable xinetd, tightvnc and XFree86-Xvnc
+    if (allow_administration)
+    {
+	if (Packages (["xinetd", "tightvnc", "XFree86-Xvnc"]) != `next)
 	{
-	    if (Packages (["xinetd", "tightvnc", "XFree86-Xvnc"]) != `next)
-	    {
-		y2error ("installing of required packages failed");
-		return false;
-	    }
-
-	    if (!Runlevel::ServiceAdjust ("xinetd", "enable"))
-	    {
-		y2error ("enabling of xinetd failed");
-		return false;
-	    }
+	    y2error ("installing of required packages failed");
+	    return false;
 	}
 
-	// set DISPLAYMANAGER_REMOTE_ACCESS in sysconfig/displaymanager
-	SCR::Write (.sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS,
-		    allow_administration ? "yes" : "no");
-	SCR::Write (.sysconfig.displaymanager, nil);
-
-	// en- or disable vnc10 and vnchttpd10 in xinetd.d/vnc
-	// FIXME
-
-	return true;
+	if (!Runlevel::ServiceAdjust ("xinetd", "enable"))
+	{
+	    y2error ("enabling of xinetd failed");
+	    return false;
+	}
     }
+
+    // set DISPLAYMANAGER_REMOTE_ACCESS in sysconfig/displaymanager
+    SCR::Write(.sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS,
+		allow_administration ? "yes" : "no");
+    SCR::Write(.sysconfig.displaymanager, nil);
+
+    // en- or disable vnc10 and vnchttpd10 in xinetd.d/vnc
+    // FIXME
+
+    return true;
+}
+
+/* EOF */
 }

@@ -67,7 +67,6 @@ global string netmask = "";
 global string mtu = "";
 
 /* wireless options */
-// FIXME: wlan global boolean wireless = false;
 global string wl_mode = "";
 global string wl_essid = "";
 global string wl_nwid = "";
@@ -499,7 +498,6 @@ global define boolean Select(string dev) ``{
     mtu = devmap["MTU"]:"";
 
     /* wireless options */
-    // FIXME: wlan wireless = devmap["WIRELESS"]:"no" == "yes";
     wl_mode = devmap["WIRELESS_MODE"]:"";
     wl_essid = devmap["WIRELESS_ESSID"]:"";
     wl_nwid = devmap["WIRELESS_NWID"]:"";
@@ -605,15 +603,12 @@ global define boolean Commit() ``{
 	    change(newdev, "DHCLIENT_SET_DOWN_LINK", "yes");
 
 	if(type == "wlan") {
-	    // FIXME: wlan change(newdev, "WIRELESS", "yes");
 	    change(newdev, "WIRELESS_MODE", wl_mode);
 	    change(newdev, "WIRELESS_ESSID", wl_essid);
 	    change(newdev, "WIRELESS_NWID", wl_nwid);
 	    change(newdev, "WIRELESS_KEY", wl_key);
 	    change(newdev, "WIRELESS_NICK", wl_nick);
 	}
-// FIXME: wlan	else
-	    // FIXME: wlan change(newdev, "WIRELESS", "no");
 
 	if(Arch::s390) {
 	    /* s390 options */

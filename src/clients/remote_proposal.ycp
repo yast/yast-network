@@ -1,11 +1,14 @@
 /**
  * File:        clients/remote_proposal.ycp
- * Package:     Network
+ * Package:     Network configuration
  * Summary:     Proposal for Remote Administration
  * Authors:     Arvin Schnell <arvin@suse.de>
+ *
+ * $Id$
  */
 
 {
+
     textdomain "network";
 
     import "Remote";
@@ -63,4 +66,6 @@
     }
 
     return ret;
+
+/* EOF */
 }

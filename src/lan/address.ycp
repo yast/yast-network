@@ -226,10 +226,6 @@ completes the configuration.</p>");
 	    `PushButton(`id(`dhclient), `opt(`hstretch), _("DHCP &Client Options")),
 	    HardwareButton,
 	    VirtualButton,
-	    /* FIXME: wlan
-	    Lan::wireless?
-		`PushButton(`id(`wire), `opt(`hstretch), _("Wireless &settings"))
-		:`VSpacing(0), */
 	    `VSpacing(0.4)
 	)),
 	`HStretch()

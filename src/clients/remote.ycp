@@ -1,25 +1,30 @@
 /**
  * File:	clients/remote.ycp
- * Package:	Network
+ * Package:	Network configuration
  * Summary:	Remote Administration
  * Authors:	Arvin Schnell <arvin@suse.de>
+ *
+ * $Id$
  */
 
 {
-    textdomain "network";
 
-    import "Label";
-    import "Wizard";
+textdomain "network";
 
-    include "network/remote/dialogs.ycp";
+import "Label";
+import "Wizard";
 
-    Wizard::CreateDialog ();
-    Wizard::ReplaceNextButton (`PushButton(`id(`next), `opt(`default, `key_F10),
-					   Label::FinishButton()));
+include "network/remote/dialogs.ycp";
 
-    any ret = RemoteMainDialog ();
+Wizard::CreateDialog();
+Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10),
+	    Label::FinishButton()));
 
-    UI::CloseDialog();
+any ret = RemoteMainDialog();
 
-    return ret;
+UI::CloseDialog();
+
+return ret;
+
+/* EOF */
 }
