@@ -1,7 +1,9 @@
 -------------------------------------------------------------------
-Tue Mar 22 09:10:56 CET 2005 - mvidner@suse.cz
+Tue Mar 22 09:16:34 CET 2005 - mvidner@suse.cz
 
 - ISDN proposal: full init before internet test (#74096).
+- Sleep before drdsl to avoid some race.
+- 2.11.31
 
 -------------------------------------------------------------------
 Tue Mar 22 08:28:31 CET 2005 - mvidner@suse.cz

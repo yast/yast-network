@@ -464,6 +464,15 @@ global define boolean Write(boolean start) ``{
 	if (DRDSLrun) {
 	    // step 9 in writing current ISDN setup
 	    ProgressNextStage(_("Running drdsl (could take over a minute)..."));
+	    // Avoid some race. kkeil:
+	    // I got one customer report about this race, but never
+	    // was able to reproduce, on the customer side this sleep
+	    // fixes the problem. It seems that after loading the
+	    // firmware the controller does some more internal
+	    // stuff. If drdsl is called too early, it will confuse
+	    // the controller and it does not get valid values.
+	    // One second is small compared to 10-20s for drdsl itself.
+	    sleep (1000);
 	    cmd = sformat("/usr/sbin/drdsl -q");
 	    SCR::Execute(.target.bash, cmd);
 	    sleep(sl);
