@@ -452,7 +452,7 @@ global define void SelectHW(integer which) {
     }
 
     /* eth, tr */
-    if(mac != nil && mac != "")
+    if(mac != nil && mac != "" && mac != "00:00:00:00:00:00")
 	device = "id-" + hw["mac"]:"";
     /* other devs */
     else if(busid != nil && busid != "")
