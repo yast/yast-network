@@ -734,7 +734,7 @@ global define boolean Commit() ``{
 	    global_ac = ac;
 	string dp = hw_device["DIALPREFIX"]:"";
 	global_dp = dp;
-	string sm = cfg["STARTMODE"]: "";
+	string sm = hw_device["STARTMODE"]: "";
 	if (sm == "hotplug")
 	    global_sm = "hotplug";
 	if (sm == "manual" && global_sm == "onboot")
