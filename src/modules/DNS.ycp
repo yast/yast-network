@@ -43,9 +43,6 @@ global define boolean Import(map settings) ``{
     if(size(settings) == 0)
 	return false;
 
-    if(!mapcheckkeys(settings, ["hostname", "domain", "nameservers", "searchlist"]))
-	return false;
-
     hostname = lookup(settings, "hostname", "");
     domain = lookup(settings, "domain", "");
     nameservers = lookup(settings, "nameservers", []);
