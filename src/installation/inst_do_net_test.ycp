@@ -126,13 +126,13 @@ and correct the setting.</p>");
 
     define void mark_label (integer i) ``{
 	if (i == 1)
-	    UI::ChangeWidget (`id (`s1), `Value, UI::Glyph(`CheckMark) + " " + l1);
+	    UI::ChangeWidget (`id (`s1), `Value, UI::Glyph(`CheckMark));
 	else if (i == 2)
-	    UI::ChangeWidget (`id (`s2), `Value, UI::Glyph(`CheckMark) + " " + l2);
+	    UI::ChangeWidget (`id (`s2), `Value, UI::Glyph(`CheckMark));
 	else if (i == 3)
-	    UI::ChangeWidget (`id (`s3), `Value, UI::Glyph(`CheckMark) + " " + l3);
+	    UI::ChangeWidget (`id (`s3), `Value, UI::Glyph(`CheckMark));
 	else if (i == 4)
-	    UI::ChangeWidget (`id (`s4), `Value, UI::Glyph(`CheckMark) + " " + l4);
+	    UI::ChangeWidget (`id (`s4), `Value, UI::Glyph(`CheckMark));
     }
 
 
@@ -327,9 +327,10 @@ and correct the setting.</p>");
 	{
 	    if (CallFunction (`inst_confirm_abort (`incomplete)))
 	    {
-		Internet::Stop ();
-		test_result = `failure;
-		show_result ();
+		if (test_stage != -1)
+		{
+		    Internet::Stop ();
+		}
 		break;
 	    }
 	    continue;
