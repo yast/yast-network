@@ -30,12 +30,14 @@ include "network/routines.ycp";
 global define symbol DSLSequence(boolean tdsl) ``{
     Wizard::CreateDialog();
     DSL::Read();
-    DSLDevice::Read ();
-    symbol ret = DSLDialog(tdsl);
+    if (DSL::pppmode != "capi-adsl")
+	DSLDevice::Read ();
+    symbol ret = DSLDialog(tdsl, false);
     if(ret == `next)
     {
 	if(Packages(["smpppd"]) == `next) {
-	    DSLDevice::Write ();
+	    if (DSL::pppmode != "capi-adsl")
+		DSLDevice::Write ();
 	    DSL::Write();
 
 	    RunKInternet();
@@ -54,13 +56,40 @@ global define symbol DSLSequence(boolean tdsl) ``{
 }
 
 /**
+ * Temporary DSL sequence for call via the ISDN module
+ * @param  pppm default pppmode ("capi-adsl")
+ * @param  interf default interface
+ * @return dialog result
+ */
+global define symbol ISDNDSLSequence(string pppm, string interf) ``{
+    boolean tdsl = nil;
+    Wizard::CreateDialog();
+    DSL::Read();
+    DSL::pppmode = pppm;
+    DSL::interface = interf;
+    DSL::device = interf;
+    symbol ret = DSLDialog(tdsl, true);
+    if(ret == `next)
+    {
+	if(Packages(["smpppd"]) == `next) {
+	    DSL::Write();
+	}
+    }
+    else y2debug("NOT WRITING ...");
+    Wizard::CloseDialog();
+    return ret;
+}
+
+/**
  * General DSL dialog
  * In case of T-Online, the username is 12 digit Line ID, 12 digit T-Online ID,
  * 4 digit user code and a string "@t-online.de"
  * @param tonline if split username -> Line ID, T-Online ID and username
+ * @param subdialog if this dialog was called from an other module with
+ *                     presetted parameter
  * @return dialog result
  */
-global define symbol DSLDialog(boolean tonline) ``{
+global define symbol DSLDialog(boolean tonline, boolean subdialog) ``{
 
     /* DSL dialog caption */
     string caption = _("DSL configuration");
@@ -81,7 +110,7 @@ global define symbol DSLDialog(boolean tonline) ``{
 
     if (tdsl)
 	/* DSL dialog help 1/8 (T-Online) */
-	helptext = _("<p>
+	helptext = helptext + _("<p>
 This module is only used for the <b>German T-Online T-DSL</b> service.
 For example, in the US, DSL connections are not configured in this dialog.
 </p>");
@@ -162,6 +191,9 @@ automatically if data is requested. To use this, specify at least one
     if(!contains(seconds, idle))
 	change(seconds, idle);
 
+    if (pppmode == nil || pppmode == "")
+	pppmode = "pppoe";
+
     if(tdsl) {
 	string user = DSL::username;
 	string name = "0001";
@@ -199,8 +231,6 @@ automatically if data is requested. To use this, specify at least one
 	    dns2 = "194.25.2.129";
 	}
 
-	pppmode = "pppoe";
-
 	subcontents = `VBox(
 	    `HBox(
         /* TextEntry label */
@@ -234,20 +264,14 @@ automatically if data is requested. To use this, specify at least one
 	`item(`id("pppoe"), _("PPP over Ethernet"), pppmode == "pppoe"),
     /* ComboBox item */
 	`item(`id("pppoatm"), _("PPP over ATM"), pppmode == "pppoatm"),
+    /* ComboBox item */
+	`item(`id("capi-adsl"), _("CAPI for ADSL"), pppmode == "capi-adsl"),
     ];
     term pppwidget = nil;
-    string Interface = "";
-    if(!tdsl) {
     /* ComboBox label */
-	pppwidget = `Left(`ComboBox(`id(`pppmode), _("PPP &mode"), pppmodes));
-    /* TextEntry label */
-	Interface = _("&Ethernet card or VPI/VCI");
-    }
-    else {
-	pppwidget = `VSpacing(-1);
-    /* TextEntry label */
-	Interface = _("&Ethernet card");
-    }
+    pppwidget = `Left(`ComboBox(`id(`pppmode), `opt(`hstretch,`notify), _("PPP &mode"), pppmodes));
+
+    string Interface = DSL::interface == "" ? DSLDevice::device : DSL::interface;
 
     boolean FirewallChecked = Firewall::Query("ppp0");
 
@@ -255,19 +279,15 @@ automatically if data is requested. To use this, specify at least one
 	`VSpacing(1),
 	subcontents,
 	`VSpacing(2),
+	pppwidget,
+	`VSpacing(1),
 	`HBox(
-	    `TextEntry(`id(`interface),  Interface,
-		       DSL::interface == "" ?
-		       DSLDevice::device : DSL::interface),
-	    `HSpacing(4),
-	    //`TextEntry(`id(`idletime), _("&Idle time"), sformat("%1", DSL::idletime))
+	    `TextEntry(`id(`interface),  _("&Ethernet card or VPI/VCI"),
+		Interface),
+	    `HSpacing(3),
 	    `ComboBox(`id(`idletime), `opt(`editable), _("&Idle time"),
 		maplist(`e, seconds, ``(`item(`id(e), e, e == idle))))
 	),
-	`VSpacing(1),
-	//`Left(`CheckBox(`id(`pppoe), _("&Use PPP over Ethernet"), DSL::pppoe)),
-	//`Left(`ComboBox(`id(`pppmode), _("PPP &mode"), pppmodes)),
-	pppwidget,
 	`VSpacing(1),
     /* CheckBox label */
 	`Left(`CheckBox(`id(`firewall), _("&Activate firewall"), FirewallChecked)),
@@ -286,8 +306,15 @@ automatically if data is requested. To use this, specify at least one
 
     /* DIALOG PREPARE */
 
-    Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), FinishButtonLabel());
+    if (subdialog) {
+	Wizard::SetContentsButtons(caption, contents, helptext,
+		BackButtonLabel(), OKButtonLabel());
+	UI::ChangeWidget(`id(`pppmode), `Enabled, false);
+    }
+    else
+	Wizard::SetContentsButtons(caption, contents, helptext,
+		BackButtonLabel(), FinishButtonLabel());
+
     UI::ChangeWidget(`id(`firewall), `Enabled, !Firewall::firewallpresent);
 
     UI::ChangeWidget(`id(`dns1), `Enabled, DSL::dialondemand);
@@ -300,6 +327,12 @@ automatically if data is requested. To use this, specify at least one
 	UI::ChangeWidget(`id(`user), `ValidChars, "0123456789" );
     }
 
+    if (pppmode == "capi-adsl") {
+	UI::ChangeWidget(`id(`interface), `Value, "");
+	UI::ChangeWidget(`id(`interface), `Enabled, false);
+    } else
+	UI::ChangeWidget(`id(`interface), `Enabled, true);
+
     /* MAIN CYCLE */
     any ret = nil;
     while(true) {
@@ -307,12 +340,12 @@ automatically if data is requested. To use this, specify at least one
         ret = UI::UserInput();
 
 	/* abort? */
-        if(ret == `abort || ret == `cancel) {
-	    break;
-	    /* FIXME */
-            if(ReallyAbort()) break;
-            else continue;
-        }
+	if(ret == `abort || ret == `cancel) {
+	    if (UI::ReallyAbortPopup(true))
+		break;
+	    else
+		continue;
+	}
         else if(ret == `back) {
             break;
         }
@@ -321,6 +354,18 @@ automatically if data is requested. To use this, specify at least one
 	    UI::ChangeWidget(`id(`dns1), `Enabled, val);
 	    UI::ChangeWidget(`id(`dns2), `Enabled, val);
 	    continue;
+	}
+	else if(ret == `pppmode) {
+	    pppmode = UI::QueryWidget(`id(`pppmode), `Value);
+	    if (pppmode == "capi-adsl") {
+		Interface = UI::QueryWidget(`id(`interface), `Value);
+		UI::ChangeWidget(`id(`interface), `Value, "");
+		UI::ChangeWidget(`id(`interface), `Enabled, false);
+	    }
+	    else {
+		UI::ChangeWidget(`id(`interface), `Value, Interface);
+		UI::ChangeWidget(`id(`interface), `Enabled, true);
+	    }
 	}
         else if(ret == `next) {
 	    dns1 = UI::QueryWidget(`id(`dns1), `Value);
@@ -349,16 +394,33 @@ automatically if data is requested. To use this, specify at least one
 		}
 	    }
 
+	    /* check T-Online fields */
+	    if (tdsl) {
+		if(UI::QueryWidget(`id(`lineid), `Value) == "") {
+		    /* MessagePopup text */
+		    UI::MessagePopup(_("Line ID cannot be empty."));
+		    UI::SetFocus(`id(`lineid));
+		    continue;
+		}
+		if(UI::QueryWidget(`id(`t_onlineid), `Value) == "") {
+		    /* MessagePopup text */
+		    UI::MessagePopup(_("T-Online ID cannot be empty."));
+		    UI::SetFocus(`id(`t_onlineid));
+		    continue;
+		}
+	    }
+
 	    /* check user name */
 	    if(UI::QueryWidget(`id(`user), `Value) == "") {
         /* MessagePopup text */
 		UI::MessagePopup(_("User name cannot be empty."));
-		UI::SetFocus(`id(`dns2));
+		UI::SetFocus(`id(`user));
 		continue;
 	    }
 
 	    /* check interface */
-	    if(UI::QueryWidget(`id(`interface), `Value) == "") {
+	    pppmode = UI::QueryWidget(`id(`pppmode), `Value);
+	    if(UI::QueryWidget(`id(`interface), `Value) == "" && pppmode != "capi-adsl") {
         /* MessagePopup text */
 		UI::MessagePopup(_("Ethernet card and VPI/VCI cannot be empty."));
 		UI::SetFocus(`id(`interface));
@@ -378,12 +440,21 @@ automatically if data is requested. To use this, specify at least one
 
     if(ret == `next) {
 	DSL::password = UI::QueryWidget(`id(`password), `Value);
-	DSL::interface = UI::QueryWidget(`id(`interface), `Value);
-	// checked already that it is nonempty
-	if (DSL::interface != DSLDevice::device)
-	{
-	    // Dont activate the detected device if the proposal was changed
+	DSL::pppmode = UI::QueryWidget(`id(`pppmode), `Value);
+	if (DSL::pppmode == "capi-adsl") {
+	    // no interface
+	    DSL::interface = "";
+	    DSLDevice::device = "";
 	    DSLDevice::activate = false;
+	}
+	else { 
+	    DSL::interface = UI::QueryWidget(`id(`interface), `Value);
+	    // checked already that it is nonempty
+	    if (DSL::interface != DSLDevice::device)
+	    {
+		// Dont activate the detected device if the proposal was changed
+		DSLDevice::activate = false;
+	    }
 	}
 	DSL::idletime = tointeger(UI::QueryWidget(`id(`idletime), `Value));
 	DSL::dialondemand = UI::QueryWidget(`id(`dialondemand), `Value);
@@ -402,12 +473,11 @@ automatically if data is requested. To use this, specify at least one
 	    if(size(tonlineid) < 12)
 		DSL::username = DSL::username + "#";
 	    DSL::username = DSL::username + name + "@t-online.de";
-	    DSL::pppmode = "pppoe";
 	}
 	else {
 	    DSL::username = UI::QueryWidget(`id(`user), `Value);
-	    DSL::pppmode = UI::QueryWidget(`id(`pppmode), `Value);
 	}
+
 
 	if(DSL::dialondemand) {
 	    DSL::dns1 = tolower(UI::QueryWidget(`id(`dns1), `Value));

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Aug 13 21:58:14 CEST 2002 - kkeil@suse.de
+
+- add support for Fritz!DSL
+- fix bug according regexpsub in DSLDevice module
+
+-------------------------------------------------------------------
 Mon Aug 12 21:28:18 CEST 2002 - arvin@suse.de
 
 - fixed testsuite

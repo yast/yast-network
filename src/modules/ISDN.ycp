@@ -98,6 +98,16 @@ global string  provider_file = "";
 global string  type = "";
 global integer device = -1;
 
+/**
+ * Flag for Fritz!DSL configuration
+ */
+global boolean have_dsl = false;
+
+/**
+ * Which operation is pending?
+ */
+global symbol operation = nil;
+
 /*--------------*/
 /* PRIVATE DATA */
 
@@ -129,11 +139,6 @@ global block AbortFunction = nil;
  */
 boolean modified_hw = false;
 boolean modified_if = false;
-
-/**
- * Which operation is pending?
- */
-global symbol operation = nil;
 
 /*------------------*/
 /* GLOBAL FUNCTIONS */

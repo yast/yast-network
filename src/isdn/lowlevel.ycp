@@ -451,13 +451,18 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 	    ISDN::hw_device = union(ISDN::hw_device, $[
 		"PARA_TYPE"	: sformat("%1", Default_TYPE),
 		"PARA_SUBTYPE"	: sformat("%1", Default_SUBTYPE),
-		"NAME"		: sformat("%1", lookup(CurrentCard, "name", ISDN::name)),
+		"NAME"		: sformat("%1", lookup(CurrentCard, "name", "unknown")),
 		"DRIVER"	: sformat("%1", lookup(select(CardDrivers, CurrentDrvIndex, $[]), "mod_name", "unknown")),
 		"STARTMODE"	: UI::QueryWidget(`id(`startmode), `Value),
 		"PROTOCOL"	: protocol,
 		"AREACODE"	: areacode,
 		"DIALPREFIX"	: dialprefix,
 	    ]);
+	    // if it is a DSL capable card
+	    feature = lookup(CurrentCard, "features", 0);
+	    y2warning("CurrentCard %1", CurrentCard);
+	    if ((feature & 0x4) == 0x4)
+		ISDN::have_dsl = true;
 	    if ((Default_TYPE == 8002) || (Default_TYPE == 8003)) {
 // multiline YesNoPopup text
 		if (! UI::YesNoPopup (_(" WARNING !!!\n

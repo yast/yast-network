@@ -55,7 +55,9 @@
 	y2debug ("card0: %1", card0);
 
 	// read sysconfig data - find if there is 0 or 1 cards configured
-	string devregex = "eth|eth-pcmcia-|eth-usb-|tr|tr-pcmcia-|tr-usb-";
+	// I think for the DSL device only eth are valid devices - kkeil
+	// old:string devregex = "eth|eth-pcmcia-|eth-usb-|tr|tr-pcmcia-|tr-usb-";
+	string devregex = "eth|eth-pcmcia-|eth-usb-";
 	string sysconfig = "/etc/sysconfig/network";
 
 	list devices =  SCR::Dir(.network.section);
@@ -75,8 +77,13 @@
 	else if (size (maindevs) == 1)
 	{
 	    y2debug ("One configured network card");
-	    string d = maindevs[0]:"";
-	    device = regexpsub(d, "^.*ifcfg-([a-z-]+[0-9]+).*$", "\\1");
+/* 
+ * maindevs[0] contains allready plain names, so this code is
+ * wrong now
+ *	    string d = maindevs[0]:"";
+ *	    device = regexpsub(d, "^.*ifcfg-([a-z-]+[0-9]+).*$", "\\1");
+ */
+	    device = maindevs[0]:"";
 	}
 	return true;
     }
