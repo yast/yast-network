@@ -36,6 +36,6 @@ SortKey =
 Textdomain = network
 
 ; Autoinstall features
-Autoinst = 
+Autoinst = write
 
 ; vim:syntax=dosini
