@@ -501,10 +501,15 @@ global define void SelectHW(integer which) {
  * @param split split configured and unconfigured?
  * @return summary of the current configuration
  */
-global define list Summary(boolean split) {
+global define list Summary(string mode) {
+    boolean split = (mode == "split");
+
     list sum = NetworkDevices::Summary("netcard", Hardware, split);
+
     /* Testing improved summary */
-    sum[0] = sum[0]:"" + "&nbsp;<br>" + DNS::Summary() + "&nbsp;<br>" + Routing::Summary();
+    if(mode == "summary")
+	sum[0] = sum[0]:"" + "<p>&nbsp;" + DNS::Summary() + "&nbsp;" + Routing::Summary();
+
     return sum;
 }
 

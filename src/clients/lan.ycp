@@ -27,19 +27,11 @@ import "Label";
 import "Lan";
 import "RichText";
 
-include "commandline/commandline.ycp";
+include "network/lan/cmdline.ycp";
 include "network/lan/wizards.ycp";
 
-/* main ui function */
-any ret = nil;
+// return LanSequence();
 
-ret = LanSequence();
-y2debug("ret == %1", ret);
-
-return ret;
-}
-
-{
 /**
  * Command line definition
  */
@@ -47,27 +39,25 @@ map cmdline = $[
     /* Commandline help title */
     "help"	: _("Network cards configuration"),
     "id"	: "lan",
-    "guihandler": ``(LanSequence()),
-    "initialize": ``(Lan::Read()),
-    "finish"	: ``(Lan::Write()),
+    "guihandler": LanSequence,
+    "initialize": Lan::Read,
+    "finish"	: Lan::Write,
     "actions"	: $[
 	"list" : $[
 	    /* Commandline command help */
 	    "help"	: _("Display configuration summary"),
 	    "example"	: "lan list configured",
-	    "handler"	: ``(ListHandler())
+	    "handler"	: ListHandler,
 	],
-	/* FIXME
 	"add" : $[
-	    /* Commandline command help * /
+	    /* Commandline command help */
 	    "help"	: _("Add a network card"),
-	    "handler"	: ``(AddHandler())
+	    "handler"	: AddHandler,
 	],
-	*/
 	"delete" : $[
 	    /* Commandline command help */
 	    "help"	: _("Delete a network card"),
-	    "handler"	: ``(DeleteHandler())
+	    "handler"	: DeleteHandler,
 	]
     ],
     "options" : $[
@@ -91,7 +81,12 @@ map cmdline = $[
 	    "type"	: "string",
 	    "example"	: "lan add device=eth0"
 	],
-	"ip" : $[
+	"bootproto" : $[
+	    /* Commandline option help */
+	    "help": _("Device boot protocol"),
+	    "type": "string"
+	],
+	"ipaddr" : $[
 	    /* Commandline option help */
 	    "help": _("Device IP address"),
 	    "type": "ip"
@@ -104,66 +99,13 @@ map cmdline = $[
     ],
     "mappings" : $[
 	"list"	: [ "configured", "unconfigured" ],
-	// FIXME: "add"	: [ "device", "ip", "netmask" ],
+	"add"	: [ "device", "bootproto", "ipaddr", "netmask" ],
 	"delete": [ "device" ],
     ]
 ];
 
-/**
- * Handler for action "list"
- * @param options action options
- */
-define void ListHandler(map options) ``{
-
-    boolean cf = false;
-    boolean uncf = false;
-    if(options["configured"]:nil != nil) cf = true;
-    if(options["unconfigured"]:nil != nil) uncf = true;
-
-    string summary = "";
-    if(cf == false && uncf == false)
-	/* Headline */
-	summary = "\n" + _("Network Configuration Summary:") +
-	    RichText::Rich2Plain((string) select(Lan::Summary(false), 0, "")) + "\n";
-    else {
-	list l = Lan::Summary(true);
-	if(cf) summary = RichText::Rich2Plain(sformat("%1", l[0]:"")) + "\n";
-	/* Headline */
-	if(uncf) summary = _("Available Devices:") + "\n" +
-	    sformat("%1", mergestring(maplist(term i, l[1]:"", ``("* " + select(i,1,"") + "\n")), ""));
-	summary = "\n" + summary;
-    }
-
-    y2debug("%1", summary);
-    CommandLine::Print(summary);
-}
-
-/**
- * Handler for action "add"
- * @param options action options
- */
-define void AddHandler(map options) ``{
-    string dev = options["device"]:"";
-}
-
-/**
- * Handler for action "delete"
- * @param options action options
- */
-define void DeleteHandler(map options) ``{
-    string dev = options["device"]:"";
-    /* Progress text */
-    CommandLine::Print(sformat(_("Deleting device: %1"), dev));
-
-    if(Lan::Delete(dev) && Lan::Commit())
-	/* Progress result */
-	CommandLine::Print(_("Success"));
-    else
-	/* Progress result */
-	CommandLine::Print(Label::ErrorMsg());
-}
-
-CommandLineRun(cmdline);
+any ret = CommandLine::Run(cmdline);
+y2debug("ret=%1", ret);
 
 /* Finish */
 y2milestone("Lan module finished");

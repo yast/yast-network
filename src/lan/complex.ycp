@@ -122,7 +122,7 @@ _("<p><b><big>Editing or Deleting:</big></b><br>
 If you press <b>Change</b>, an additional dialog in which
 to change the configuration opens.</p>");
 
-    list summary = Lan::Summary(true);
+    list summary = Lan::Summary("split");
     list unconfigured = (list) select(summary, 1, []);
     string configured = (string) select(summary, 0, "");
 

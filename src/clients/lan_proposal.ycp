@@ -45,7 +45,7 @@ if(func == "MakeProposal") {
 	Lan::Propose();
 	BusyPopupClose();
     }
-    list sum = Lan::Summary(false);
+    list sum = Lan::Summary("summary");
     proposal = sum[0]:"";
     Progress::on();
 

@@ -267,7 +267,7 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
 }
 
 /**
- * Create host summary
+ * Create summary
  * @return summary text
  */
 global define string Summary() {
@@ -278,7 +278,8 @@ global define string Summary() {
 
 	summary = Summary::OpenList(summary);
 	foreach(string k, list<string> v, (map<string,list<string> >)hosts, {
-	    summary = Summary::AddListItem(summary, k + " - " + mergestring(v, " ") );
+	    if(!contains(Host::GetSystemHosts(), k))
+		summary = Summary::AddListItem(summary, k + " - " + mergestring(v, " ") );
 	});
 	summary = Summary::CloseList(summary);
 	return summary;

@@ -22,6 +22,9 @@ import "Host";
 import "Label";
 import "Wizard";
 
+import "CommandLine";
+import "RichText";
+
 /**
  * Return a modification status
  * @return true if data was modified
@@ -33,22 +36,65 @@ define boolean Modified() {
 include "network/runtime.ycp";
 include "network/services/host.ycp";
 
-Host::Read();
+/**
+ * Main hosts GUI
+ */
+any HostGUI() {
+    Host::Read();
 
-Wizard::CreateDialog();
-Wizard::SetDesktopIcon("host");
-Wizard::SetNextButton(`next, Label::FinishButton() );
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("host");
+    Wizard::SetNextButton(`next, Label::FinishButton() );
 
-/* main ui function */
-any ret = HostsMainDialog(true);
-y2debug("ret == %1", ret);
+    /* main ui function */
+    any ret = HostsMainDialog(true);
+    y2debug("ret == %1", ret);
 
-if(ret == `next && Host::modified) {
-    Host::Write();
-    /* Not needed? RestartNetwork(); */
+    if(ret == `next && Host::modified) {
+	Host::Write();
+	/* Not needed? RestartNetwork(); */
+    }
+
+    UI::CloseDialog();
+    return ret;
 }
 
-UI::CloseDialog();
+/**
+ * Handler for action "list"
+ * @param options action options
+ */
+define void ListHandler(map options) {
+
+    string summary = "";
+    /* Headline */
+    summary = "\n" + _("Hosts Configuration Summary:") + "\n\n" +
+	RichText::Rich2Plain(Host::Summary()) + "\n";
+
+    y2debug("%1", summary);
+    CommandLine::Print(summary);
+}
+
+/**
+ * Command line definition
+ */
+map cmdline = $[
+    /* Commandline help title */
+    "help"	: _("Hosts configuration"),
+    "id"	: "host",
+    "guihandler": HostGUI,
+    "initialize": Host::Read,
+    "finish"	: Host::Write, // FIXME
+    "actions"	: $[
+	"list" : $[
+	    /* Commandline command help */
+	    "help"	: _("Display configuration summary"),
+	    "handler"	: ListHandler,
+	],
+    ],
+];
+
+any ret = CommandLine::Run(cmdline);
+y2debug("ret=%1", ret);
 
 /* Finish */
 y2milestone("Host module finished");

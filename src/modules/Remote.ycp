@@ -37,7 +37,7 @@ global void Reset() {
  */
 global boolean Read() {
     // FIXME: missing (#40458)
-    return false;
+    return true;
 }
 
 /**
@@ -127,6 +127,23 @@ so you should do it manually from the console by calling
     }
 
     return true;
+}
+
+/**
+ * Create summary
+ * @return summary text
+ */
+global define string Summary() {
+
+    if(allow_administration) {
+	/* Label in proposal text */
+	return _("Remote administration is enabled.");
+    }
+    else {
+	/* Label in proposal text */
+	return _("Remote administration is disabled.");
+    }
+
 }
 
 /* EOF */

@@ -223,7 +223,7 @@ global define string Summary() {
     if(size(Routes) < 1) return "";
 
     import "Summary";
-    list<string> summary = [];
+    string summary = "";
 
     string gw = GetGateway();
     string gwhost = ResolveIP(gw);
@@ -231,22 +231,26 @@ global define string Summary() {
 
     if(gw != "") {
 	/* Summary text */
-	summary = add(summary, Summary::Device(sformat(_("Gateway: %1"), gw), ""));
+	summary = Summary::AddListItem(summary, sformat(_("Gateway: %1"), gw));
+	// summary = add(summary, Summary::Device(sformat(_("Gateway: %1"), gw), ""));
     }
 
     if(Forward == true)
 	/* Summary text */
-	summary = add(summary, Summary::Device(_("IP Forwarding: on"), ""));
+	summary = Summary::AddListItem(summary, _("IP Forwarding: on"));
+	// summary = add(summary, Summary::Device(_("IP Forwarding: on"), ""));
     else
 	/* Summary text */
-	summary = add(summary, Summary::Device(_("IP Forwarding: off"), ""));
+	summary = Summary::AddListItem(summary, _("IP Forwarding: off"));
+	// summary = add(summary, Summary::Device(_("IP Forwarding: off"), ""));
 
     if(Routes != []) {
 	/* Summary text */
 	// summary = add(summary, Summary::Device(sformat(_("Routes: %1"), Routes), ""));
     }
 
-    return Summary::DevicesList(summary);
+    if(size(summary) < 1) return "";
+    return "<ul>" + summary + "</ul>";
 }
 
 /* EOF */

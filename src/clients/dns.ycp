@@ -24,6 +24,9 @@ import "Lan";
 import "Service";
 import "Wizard";
 
+import "CommandLine";
+import "RichText";
+
 /**
  * Return a modification status
  * @return true if data was modified
@@ -35,26 +38,69 @@ define boolean Modified() {
 include "network/runtime.ycp";
 include "network/services/dns.ycp";
 
-Wizard::CreateDialog();
-Wizard::SetDesktopIcon("dns");
-DNS::Read();
-Lan::Read();
+/**
+ * Main DNS GUI
+ */
+any DNSGUI() {
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("dns");
+    DNS::Read();
+    Lan::Read();
 
-Wizard::SetNextButton(`next, Label::FinishButton() );
+    Wizard::SetNextButton(`next, Label::FinishButton() );
 
-/* main ui function */
-any ret = DNSMainDialog(true);
-y2debug("ret == %1", ret);
+    /* main ui function */
+    any ret = DNSMainDialog(true);
+    y2debug("ret == %1", ret);
 
-if(ret == `next && DNS::modified) {
-    // #38834
-    Service::RunInitScript("network", "stop-all-dhcp-clients");
-    DNS::Write();
-    // #41303
-    Service::RunInitScript("network", "start");
+    if(ret == `next && DNS::modified) {
+	// #38834
+	Service::RunInitScript("network", "stop-all-dhcp-clients");
+	DNS::Write();
+	// #41303
+	Service::RunInitScript("network", "start");
+    }
+
+    UI::CloseDialog();
+    return ret;
 }
 
-UI::CloseDialog();
+/**
+ * Handler for action "list"
+ * @param options action options
+ */
+define void ListHandler(map options) {
+
+    string summary = "";
+    /* Headline */
+    summary = "\n" + _("DNS Configuration Summary:") + "\n\n" +
+	RichText::Rich2Plain(DNS::Summary()) + "\n";
+
+    y2debug("%1", summary);
+    CommandLine::Print(summary);
+}
+
+/**
+ * Command line definition
+ */
+map cmdline = $[
+    /* Commandline help title */
+    "help"	: _("DNS configuration"),
+    "id"	: "routing",
+    "guihandler": DNSGUI,
+    "initialize": DNS::Read,
+    "finish"	: DNS::Write, // FIXME
+    "actions"	: $[
+	"list" : $[
+	    /* Commandline command help */
+	    "help"	: _("Display configuration summary"),
+	    "handler"	: ListHandler,
+	],
+    ],
+];
+
+any ret = CommandLine::Run(cmdline);
+y2debug("ret=%1", ret);
 
 /* Finish */
 y2milestone("DNS module finished");

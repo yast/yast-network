@@ -3,6 +3,8 @@ Thu Aug  5 12:51:45 CEST 2004 - msvec@suse.cz
 
 - modem config files are now ifcfg-modem*
 - enabled preliminary Bluetooth support
+- minimal commandline support
+- improved summary output
 - 2.10.5
 
 -------------------------------------------------------------------

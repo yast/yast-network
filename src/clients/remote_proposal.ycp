@@ -31,19 +31,7 @@ if(func == "MakeProposal") {
     boolean force_reset = param["force_reset"]:false;
 
     if(force_reset) Remote::Reset();
-
-    if(Remote::allow_administration) {
-	ret = $[
-	    /* label in proposal text */
-	    "raw_proposal" : [ _("Remote administration is enabled.") ],
-	];
-    }
-    else {
-	ret = $[
-	    /* label in proposal text */
-	    "raw_proposal" : [ _("Remote administration is disabled.") ],
-	];
-    }
+    ret = $[ "raw_proposal" : [ Remote::Summary() ] ];
 }
 /* run the module */
 else if(func == "AskUser") {
