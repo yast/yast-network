@@ -13,10 +13,10 @@ YCPCFLAGS =
 network:
 	ln -sf ../routines $@
 
-network/isdn:
+network/isdn: network
 	ln -sf ../isdn $@
 
-network/lan:
+network/lan: network
 	ln -sf ../lan $@
 
 ycpchook = network network/isdn network/lan
