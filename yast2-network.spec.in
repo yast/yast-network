@@ -1,0 +1,36 @@
+@HEADER-COMMENT@
+# neededforbuild autoconf automake dejagnu expect tcl yast2 yast2-core yast2-core-devel yast2-devtools yast2-testsuite yast2-runlevel yast2-country
+
+@HEADER@
+Requires:	yast2 sysconfig yast2-runlevel yast2-country
+
+Provides:	y2c_lan y2c_dial yast2-config-adsl y2c_adsl
+Obsoletes:	y2c_lan y2c_dial yast2-config-adsl y2c_adsl
+Provides:	yast2-lib-network yast2-config-network
+Obsoletes:	yast2-lib-network yast2-config-network
+
+BuildArchitectures:	noarch
+
+Summary:	Configuration of network
+
+%description
+-
+
+@PREP@
+
+@BUILD-YCP@
+
+@INSTALL-YCP@
+
+@CLEAN@
+
+%files
+%defattr(-,root,root)
+%dir @yncludedir@/network
+@yncludedir@/network/*
+@clientdir@/*.ycp
+@moduledir@/*.ycp
+@configdir@/*.y2cc
+@scrconfdir@/*.scr
+@ydatadir@/netcards.ycp
+%doc @docdir@

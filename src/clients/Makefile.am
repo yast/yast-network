@@ -4,7 +4,5 @@
 # $Id$
 #
 
-clientsdir = $(YAST2DIR)/clients
-clients_DATA = $(wildcard *.ycp)
-
-EXTRA_DIST = $(clients_DATA)
+client_DATA = $(wildcard *.ycp)
+EXTRA_DIST = $(client_DATA)

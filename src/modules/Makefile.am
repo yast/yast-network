@@ -4,7 +4,5 @@
 # $Id$
 #
 
-modulesdir = $(YAST2DIR)/modules
-modules_DATA = $(wildcard *.ycp)
-
-EXTRA_DIST = $(modules_DATA)
+module_DATA = $(wildcard *.ycp)
+EXTRA_DIST = $(module_DATA)

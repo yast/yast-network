@@ -4,7 +4,7 @@
 # $Id$
 #
 
-yincludedir = $(YAST2DIR)/include/network/modem
-yinclude_DATA = $(wildcard *.ycp)
+yncludedir = @yncludedir@/network/modem
+ynclude_DATA = $(wildcard *.ycp)
 
-EXTRA_DIST = $(yinclude_DATA)
+EXTRA_DIST = $(ynclude_DATA)

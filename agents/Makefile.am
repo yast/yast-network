@@ -4,7 +4,5 @@
 # $Id$
 #
 
-scrconfdir = $(YAST2DIR)/scrconf
-scrconf_DATA = $(wildcard *.scr)
-
-EXTRA_DIST = $(scrconf_DATA)
+agent_DATA = $(wildcard *.scr)
+EXTRA_DIST = $(agent_DATA)

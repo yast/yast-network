@@ -1,9 +1,10 @@
+- yast2-config-network -> yast2-network
 - netmask bits function and testsuite
 - new providers dialogs
 - added stupid mode checkbox (#16330)
 - IP6 checking
 - tell mail who is calling (#13565)
-- merged with y2l_network
+- merged with yast2-lib-network
 - allow IP settings for ISDN rawip connections (#16309)
 - always write ifcfg- file entries with '' (#16549)
 - removed dependence on -trans package
