@@ -248,6 +248,7 @@ global define boolean Write(boolean start) ``{
     integer sl = 0;
 
     if (start) {
+	steps = 11;
 	Progress::New(caption, " ", steps, [
 	    // steps for the ISDN writing current setup progress screen with start
         // step 1/11
@@ -273,8 +274,8 @@ global define boolean Write(boolean start) ``{
         // step 11/11
 	    _("Run kinternet"),
 	    ], [], "");
-	steps = 11;
     } else {
+	steps = 9;
 	Progress::New(caption, " ", steps, [
 	    // steps for the ISDN writing current setup progress screen without start
         // step 1/9
@@ -296,7 +297,6 @@ global define boolean Write(boolean start) ``{
         // step 9/9
 	    _("Run kinternet"),
 	    ], [], "");
-	steps = 9;
     }
     if(Abort()) return false;
     // stage 1 in writing current ISDN setup
