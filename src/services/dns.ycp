@@ -296,7 +296,7 @@ your changes and <b>finish</b> the network configuration.</p>");
 
     if(ret == `next) {
 
-	if(CheckModified()) {
+	if(DNSModified()) {
 	    DNS::hostname = UI::QueryWidget(`id(`host), `Value);
 	    DNS::domain = UI::QueryWidget(`id(`domain), `Value);
 
