@@ -610,6 +610,18 @@ global define boolean Commit() {
     return true;
 }
 
+global define string GetValue(string name, string key) {
+    if(!Select(name)) return nil;
+    return Current[key]:"";
+}
+
+global define boolean SetValue(string name, string key, string value) {
+    if(!Edit(name)) return nil;
+    if(key == nil || key == "" || value == nil) return false;
+    Current[key] = value;
+    return Commit();
+}
+
 /**
  * Locate devices of the given type and value
  * @param key device key
