@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Mar 18 23:23:59 CET 2005 - nashif@suse.de
+
+- Do not set empty UNIQUE when autoinstalling  (#73922)
+
+-------------------------------------------------------------------
 Fri Mar 18 15:22:06 CET 2005 - mvidner@suse.cz
 
 - DSL: do not offer Point to Point Tunneling Protocol,
