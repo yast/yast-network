@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 22 09:56:21 CET 2005 - mvidner@suse.cz
+
+- isdnctrl was moved to /sbin (#74096).
+- 2.11.32
+
+-------------------------------------------------------------------
 Tue Mar 22 09:16:34 CET 2005 - mvidner@suse.cz
 
 - ISDN proposal: full init before internet test (#74096).
