@@ -107,7 +107,7 @@ global define boolean Read() {
     else {
 	/* default hostname and domain (if not in /etc/install.inf) */
 	hostname = install_inf["machinename"]:(Detection::result["HOSTNAME"]:"linux");
-	domain = install_inf["domain"]:(Detection::result["DOMAIN"]:"local");
+	domain = install_inf["domain"]:(Detection::result["DOMAIN"]:"site");
     }
 
     return true;
