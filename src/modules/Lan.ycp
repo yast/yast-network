@@ -64,7 +64,10 @@ global string mtu = "";
 global string wl_mode = "";
 global string wl_essid = "";
 global string wl_nwid = "";
-global string wl_key = "";
+global string wl_auth_mode = "";
+global string wl_key_length = "";
+global list<string> wl_key = [];
+global integer wl_default_key = 0;
 global string wl_nick = "";
 
 global string wl_channel = "";
@@ -566,7 +569,14 @@ global define boolean Select(string dev) {
     wl_mode = devmap["WIRELESS_MODE"]:"Managed";
     wl_essid = devmap["WIRELESS_ESSID"]:"";
     wl_nwid = devmap["WIRELESS_NWID"]:"";
-    wl_key = devmap["WIRELESS_KEY"]:"";
+    wl_auth_mode = devmap["WIRELESS_AUTH_MODE"]:"open";
+    wl_key_length = devmap["WIRELESS_KEY_LENGTH"]:"128";
+    wl_key = []; // ensure exactly 4 entries
+    wl_key[0] = devmap["WIRELESS_KEY_0"]:devmap["WIRELESS_KEY"]:"";
+    wl_key[1] = devmap["WIRELESS_KEY_1"]:"";
+    wl_key[2] = devmap["WIRELESS_KEY_2"]:"";
+    wl_key[3] = devmap["WIRELESS_KEY_3"]:"";
+    wl_default_key = tointeger (devmap["WIRELESS_DEFAULT_KEY"]:"0");
     wl_nick = devmap["WIRELESS_NICK"]:"";
 
     wl_channel = devmap["WIRELESS_CHANNEL"]:"";
@@ -709,7 +719,15 @@ global define boolean Commit() {
 	    newdev["WIRELESS_MODE"] = wl_mode;
 	    newdev["WIRELESS_ESSID"] = wl_essid;
 	    newdev["WIRELESS_NWID"] = wl_nwid;
-	    newdev["WIRELESS_KEY"] = wl_key;
+	    newdev["WIRELESS_AUTH_MODE"] = wl_auth_mode;
+	    newdev["WIRELESS_KEY_LENGTH"] = wl_key_length;
+	    // obsoleted by WIRELESS_KEY_0
+	    newdev["WIRELESS_KEY"] = ""; // TODO: delete the varlable
+	    newdev["WIRELESS_KEY_0"] = wl_key[0]:"";
+	    newdev["WIRELESS_KEY_1"] = wl_key[1]:"";
+	    newdev["WIRELESS_KEY_2"] = wl_key[2]:"";
+	    newdev["WIRELESS_KEY_3"] = wl_key[3]:"";
+	    newdev["WIRELESS_DEFAULT_KEY"] = tostring (wl_default_key);
 	    newdev["WIRELESS_NICK"] = wl_nick;
 
 	    newdev["WIRELESS_CHANNEL"] = wl_channel;

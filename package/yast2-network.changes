@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Apr 16 15:24:50 CEST 2004 - mvidner@suse.cz
+
+- added a dialog for multiple WEP keys (#35857)
+- 2.9.32
+
+-------------------------------------------------------------------
 Wed Apr 07 12:07:57 CEST 2004 - arvin@suse.de
 
 - start capi during Internet test also for capi based dsl
