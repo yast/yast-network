@@ -25,10 +25,6 @@ import "Wizard";
 include "ui/common_popups.ycp";
 include "network/providers.ycp";
 
-/* DATA */
-
-// Old code: map TmpConfiguration=$[];
-
 /* DIALOG */
 
 /**
@@ -36,12 +32,11 @@ include "network/providers.ycp";
  * @param Type detected or not
  * @return symbol user input
  */
-
 global define symbol modem_params(symbol Type) ``{
 
     /* PREPARE VARIABLES */
 
-    string name = Modem::name;
+    // string name = Modem::name;
     string DialPrefix = Modem::DialPrefix;
     string Device = Modem::Device;
 
@@ -120,7 +115,7 @@ initialization strings.</p>
 		DeviceTerm,
 		`VSpacing(0.5),
 		`HBox(
-		    `TextEntry(`id(`ModemName), _("&Modem name"), name),
+		    //`TextEntry(`id(`ModemName), _("&Modem name"), name),
 		    `TextEntry(`id(`DialPrefix), _("Dial prefi&x (if needed)"), DialPrefix)
 		),
 		`VSpacing(0.8),
@@ -185,7 +180,7 @@ initialization strings.</p>
 	}
 	else if(ret == `next || ret == `Details) {
 
-	    name = UI::QueryWidget(`id(`ModemName), `Value);
+	    //name = UI::QueryWidget(`id(`ModemName), `Value);
 
 	    /*
 	    if (name == "" || findfirstof(name, " \t") != nil) {
@@ -213,7 +208,7 @@ initialization strings.</p>
 
     if (ret == `next || ret == `Details)
     {
-	  Modem::name = UI::QueryWidget(`id(`ModemName), `Value);
+	  // Modem::name = UI::QueryWidget(`id(`ModemName), `Value);
 	  Modem::DialPrefix = UI::QueryWidget(`id(`DialPrefix), `Value);
 
 	  if (Type != `Detected)
@@ -229,14 +224,12 @@ initialization strings.</p>
     return ret;
 }
 
-
 /* DIALOG */
 
 /**
  * Dialog for modem parameters details
  * @return any user input
  */
-
 global define symbol modem_details() ``{
 
     /* PREPARE VARIABLES */
@@ -349,15 +342,14 @@ should be in your modem manual.</p>
  * Dialog for provider parameters
  * @return symbol user input
  */
-
 global define symbol modem_connection() ``{
 
     /* PREPARE VARIABLES */
     string Provider = Modem::provName;
-    boolean IsDefault = Modem::IsDefault;
+    //boolean IsDefault = Modem::IsDefault;
     boolean DialOnDemand = Modem::DialOnDemand;
 
-    string DefaultModem = Modem::DefaultModem;
+    //string DefaultModem = Modem::DefaultModem;
     string DNS1 = Modem::DNS1;
     string DNS2 = Modem::DNS2;
 
@@ -374,8 +366,6 @@ global define symbol modem_connection() ``{
 */
 
     boolean FirewallChecked = Modem::Firewall;
-
-
 
     /* DIALOG TEXTS */
 
@@ -410,13 +400,13 @@ external attacks.</p>
 		`Left(`HSquash(`Label(_("Profile for selected provider:")))),
 		`Label(`opt(`outputField), Provider),
 		`VSpacing(0.2),
-		`ComboBox(`id(`DefaultModem), `opt(`hstretch),
-			    _("Default modem for this &provider"), DefaultModemList),
+		//`ComboBox(`id(`DefaultModem), `opt(`hstretch),
+			    //_("Default modem for this &provider"), DefaultModemList),
 		`VSpacing(0.2),
                 `HBox(
 		    `VBox(
-			`Left(`CheckBox(`id(`IsDefault),
-			    _("Set this provider as default for the program `&wvdial'"), IsDefault)),
+			//`Left(`CheckBox(`id(`IsDefault),
+			    //_("Set this provider as default for the program `&wvdial'"), IsDefault)),
                         FirewallCheckbox,
                         `Left(`CheckBox (`id(`DialOnDemand), `opt (`notify), _("Dial-on-d&emand"), DialOnDemand))
                      )
@@ -487,11 +477,11 @@ external attacks.</p>
 
     /* UPDATE VARIABLES */
     if (ret == `next || ret == `Details) {
-        Modem::DefaultModem = UI::QueryWidget(`id(`DefaultModem), `Value);
+        //Modem::DefaultModem = UI::QueryWidget(`id(`DefaultModem), `Value);
 	Modem::DNS1 = UI::QueryWidget(`id(`DNS1), `Value);
 	Modem::DNS2 = UI::QueryWidget(`id(`DNS2), `Value);
 	Modem::DialOnDemand = UI::QueryWidget(`id(`DialOnDemand), `Value);
-	Modem::IsDefault = UI::QueryWidget(`id(`IsDefault), `Value);
+	//Modem::IsDefault = UI::QueryWidget(`id(`IsDefault), `Value);
 	Modem::Firewall = UI::QueryWidget(`id(`Firewall), `Value);
     }
 
@@ -502,29 +492,21 @@ external attacks.</p>
     return ret;
 }
 
-
-
-/* DIALOG */
-
 /**
  * Dialog with details for provider
  * @return symbol user input
  */
-
 global define symbol modem_connection_details() ``{
 
     /* PREPARE VARIABLES */
 
-    boolean AutoReconnect = Modem::AutoReconnect;
     boolean AutoDNS = Modem::AutoDNS;
     string IdleSeconds = Modem::IdleSeconds;
 
     list seconds = [ "30", "60", "90", "120", "150", "180", "240", "300", "360", "480", "600" ];
 
-    if (!contains(seconds, IdleSeconds))
-    {
+    if(!contains(seconds, IdleSeconds))
 	seconds = add(seconds, IdleSeconds);
-    }
 
     /* DIALOG TEXTS */
 
@@ -541,8 +523,6 @@ global define symbol modem_connection_details() ``{
 		    `HSpacing(0.4),
 		    `VBox(
 			`VSpacing(0.4),
-			`Left(`CheckBox(`id(`AutoReconnect), _("R&econnect when the connection is lost"),
-						AutoReconnect)),
 			`Left(`CheckBox(`id(`AutoDNS), _("&Modify DNS when connected"), AutoDNS)),
 			`Left(`ComboBox(`id(`IdleSeconds), `opt(`editable), _("&Disconnect after (seconds)"),
 						   maplist(`e, seconds,
@@ -566,33 +546,24 @@ global define symbol modem_connection_details() ``{
 	ret = UI::UserInput();
 
 	/* abort? */
-	if (ret == `abort || ret == `cancel)
-	{
-	    if (UI::ReallyAbortPopup(true))
-		break;
-	    else
-		continue;
+	if (ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
 	}
-	else if (ret == `back)
-	{
+	else if (ret == `back) {
 	    break;
 	}
-	else if (ret == `next)
-	{
+	else if (ret == `next) {
 	    IdleSeconds = UI::QueryWidget(`id(`IdleSeconds), `Value);
 
-	    if (IdleSeconds == "")
-	    {
+	    if (IdleSeconds == "") {
 		UI::MessagePopup(_("You must set the idle seconds."));
 		continue;
 	    }
-	    else
-	    {
-		break;
-	    }
+
+	    break;
 	}
-	else
-	{
+	else {
 	    y2error("unexpected retcode: %1", ret);
 	    continue;
 	}
@@ -601,7 +572,6 @@ global define symbol modem_connection_details() ``{
 
     /* UPDATE VARIABLES */
     if (ret == `next) {
-	Modem::AutoReconnect = UI::QueryWidget(`id(`AutoReconnect), `Value);
 	Modem::AutoDNS = UI::QueryWidget(`id(`AutoDNS), `Value);
 	Modem::IdleSeconds = UI::QueryWidget(`id(`IdleSeconds), `Value);
     }

@@ -38,29 +38,31 @@ global string type = "";
 global integer device = -1;
 global string unique = "";
 
-global string Init1 = "";
-global string Init2 = "";
+global string Init1 = "ATZ";
+global string Init2 = "AT Q0 V1 E1 S0=0 &C1 &D2 +FCLASS=0";
 global string Init3 = "";
-global integer BaudRate = 115200;
+global integer BaudRate = 57600;
 
 global boolean PulseDial = true;
 global boolean Carrier = true;
 global boolean Speaker = true;
 
-global string Device = "";
+global string Device = "/dev/modem";
 global string DialPrefix = "";
-global string Provider = "";
+global string PPPDoptions = "";
 
 /* provider settings */
-global boolean IsDefault = true;
-global boolean DialOnDemand = true;
-global string DefaultModem = "";
+global boolean DialOnDemand = false;
 global string DNS1 = "";
 global string DNS2 = "";
 
-global boolean AutoReconnect = true;
 global boolean AutoDNS = true;
-global string IdleSeconds = "0";
+global string IdleSeconds = "300";
+
+/* obsolete stuff */
+// global string DefaultModem = "";
+// global boolean IsDefault = true;
+// global string Provider = "";
 
 /* other stuff */
 global boolean Firewall = false;
@@ -224,6 +226,7 @@ global define void SelectHW(integer which) ``{
     Device = sel["device_name"]:"";
     Init1 = sel["init1"]:"";
     Init2 = sel["init2"]:"";
+    PPPDoptions = sel["pppd_options"]:"";
 }
 
 /**
@@ -238,28 +241,40 @@ global define boolean Add() ``{
     unique = "";
 
     /* ... */
+    Init1 = "ATZ";
+    Init2 = "AT Q0 V1 E1 S0=0 &C1 &D2 +FCLASS=0";
+    Init3 = "";
+    BaudRate = 57600;
+
+    Device = "/dev/modem";
     DialPrefix = "";
-    Device = "";
+    PPPDoptions = "";
+
     PulseDial = true;
     Speaker = true;
     Carrier = true;
 
-    Init1 = "";
-    Init2 = "";
-    Init3 = "";
-    BaudRate = 115200;
+    /* provider settings */
+    provUsername = "";
+    provPassword = "";
+    provPhone = "";
 
-    Provider = "";
-    IsDefault = true;
-    DialOnDemand = true;
-    DefaultModem = "";
+    provName = "";
+    provShortName = "";
+    provAskPassword = false;
+
+    DialOnDemand = false;
     DNS1 = "";
     DNS2 = "";
-    Firewall = false;
 
-    AutoReconnect = true;
+    //IsDefault = true;
+    //DefaultModem = "";
+    //Provider = "";
     AutoDNS = true;
-    IdleSeconds = "0";
+    IdleSeconds = "300";
+
+    /* other stuff */
+    Firewall = false;
 
     operation = `add;
     return true;
@@ -290,26 +305,33 @@ global define boolean Edit(string dev) ``{
     Init1 = devmap["INIT1"]:"";
     Init2 = devmap["INIT2"]:"";
     Init3 = devmap["INIT3"]:"";
-    BaudRate = devmap["SPEED"]:115200;
+    BaudRate = devmap["SPEED"]:57600;
 
-    PulseDial = devmap["PULSE_DIALING"]:true;
-    Carrier = devmap["DETECT_CARRIER"]:true;
-    Speaker = devmap["SPEAKER_ON"]:true;
+    Speaker = devmap["INIT8"]:"ATM0" == "ATM0";
+    Carrier = devmap["INIT9"]:"ATX3" == "ATX3";
+    PulseDial = devmap["DIALCOMMAND"]:"ATDP" == "ATDP";
 
-    Device = devmap["MODEM_DEVICE"]:"";
-    DialPrefix = devmap["DIAL_PREFIX"]:"";
-
-    Provider = devmap["PROVIDER"]:"";
+    Device = devmap["MODEM_DEVICE"]:"/dev/modem";
+    DialPrefix = devmap["DIALPREFIX"]:"";
+    PPPDoptions = devmap["PPPD_OPTIONS"]:"";
 
     /* FIXME provider settings */
+    provUsername = "";
+    provPassword = "";
+    provPhone = "";
+
+    provName = "";
+    provShortName = devmap["PROVIDER"]:"";
+    provAskPassword = false;
+
     DialOnDemand = false;
-    DefaultModem = "";
-    IsDefault = true;
+    //IsDefault = true;
+    //DefaultModem = "";
+    //Provider = devmap["PROVIDER"]:"";
 
     DNS1 = "";
     DNS2 = "";
 
-    AutoReconnect = true;
     AutoDNS = true;
     IdleSeconds = "0";
 
@@ -353,12 +375,13 @@ global define boolean Commit() ``{
 	    "INIT1"	: Init1,
 	    "INIT2"	: Init2,
 	    "SPEED"	: BaudRate,
-	    "PULSE_DIALING"	: PulseDial ? "yes" : "no",
-	    "DETECT_CARRIER"	: Carrier ? "yes" : "no",
-	    "SPEAKER_ON"	: Speaker ? "yes" : "no",
+	    "INIT8"	: Carrier ? "ATX3" : "",
+	    "INIT9"	: Speaker ? "ATM0" : "ATM1",
+	    "DIALCOMMAND"	: PulseDial ? "ATDP" : "ATDT",
 	    "MODEM_DEVICE"	: Device,
-	    "DIAL_PREFIX"	: DialPrefix,
-	    "PROVIDER"		: Provider,
+	    "DIALPREFIX"	: DialPrefix,
+	    "PROVIDER"		: provShortName,
+	    "PPPD_OPTIONS"	: PPPDoptions,
 	];
 
 	if(operation == `add)

@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Wed Jan 30 17:10:06 CET 2002 - msvec@suse.cz
+
+- added preliminary dsl dialogs
+- write detected PPPD_OPTIONS
+- AutoReconnect is not supported any more
+- removed some other obsolete settings
+- proof-read texts
+- 2.5.11
+
+-------------------------------------------------------------------
 Tue Jan 29 20:36:39 CET 2002 - msvec@suse.cz
 
 - reading progress for modems and isdn
