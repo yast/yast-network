@@ -1,4 +1,7 @@
-- install required packages for modem (#16863)
+-------------------------------------------------------------------
+Mon Aug  5 11:49:16 CEST 2002 - msvec@suse.cz
+
+- install required packages for modem (#16863) and dsl (#14315)
 - fixed help texts
 - 2.6.11
 

@@ -33,17 +33,19 @@ global define symbol DSLSequence(boolean tdsl) ``{
     symbol ret = DSLDialog(tdsl);
     if(ret == `next)
     {
-	DSLDevice::Write ();
-	DSL::Write();
+	if(Packages(["smpppd"]) == true) {
+	    DSLDevice::Write ();
+	    DSL::Write();
 
-	RunKInternet();
+	    RunKInternet();
 
-	// The message is too short and the window decorations in KDE3
-	// make it misaligned. Don't want to fix kde now.
-	string pad = "          ";
-	// TODO: a better message.
-	// Text freeze, but this message is already translated.
-	UI::MessagePopup (pad + _("Finished") + pad);
+	    // The message is too short and the window decorations in KDE3
+	    // make it misaligned. Don't want to fix kde now.
+	    string pad = "          ";
+	    // TODO: a better message.
+	    // Text freeze, but this message is already translated.
+	    UI::MessagePopup (pad + _("Finished") + pad);
+	}
     }
     else y2debug("NOT WRITING ...");
     Wizard::CloseDialog();
