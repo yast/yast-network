@@ -209,7 +209,7 @@ global define boolean Write() ``{
     y2milestone("Writing configuration");
 
     string caption = _("Saving network configuration");
-    integer steps = 8;
+    integer steps = 9;
 
     /* FIXME */
     integer sl = 0; //1000;
