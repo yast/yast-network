@@ -613,23 +613,27 @@ global define void Propose() ``{
     /* Nothing detected -> use INSTALL_INF */
     else {
 	return;
+	/* placeholder for s390 and others without autodetected HW
 	Select(nil);
 	modul = INSTALL_INF["Alias"]:"";
 	options = INSTALL_INF["Options"]:"";
 	type = INSTALL_INF["xxx"]:"eth";
 	device = GetFreeDevice(type);
+	*/
     }
 
-    string ip = INSTALL_INF["ip"]:"bootp";
+    string ip = SCR::Read(.etc.install_inf.IP);
     if(ip != nil && ip != "" && ip != "bootp" && ip != "dhcp") {
 
 	/* propose address setup from /etc/install.inf */
 	bootproto = "static";
 	ipaddr = ip;
-	netmask = INSTALL_INF["netmask"]:"255.255.255.0";
+	netmask = SCR::Read(.etc.install_inf.Netmask);
+	if(netmask == nil || netmask == "")
+	    netmask = "255.255.255.0";
 
 	/* propose default gateway from /etc/install.inf */
-	string gw = INSTALL_INF["gateway"]:"";
+	string gw = SCR::Read(.etc.install_inf.Gateway);
 	if(gw != "" && gw != nil) {
 	    Routing::routes = [ $[
 		"destination"       : "default",
@@ -641,11 +645,11 @@ global define void Propose() ``{
 	}
 
 	/* propose DNS setup from /etc/install.inf */
-	string ns = INSTALL_INF["nameserver"]:"";
-	string mn = INSTALL_INF["machinename"]:"";
-	string dn = INSTALL_INF["domain"]:"";
-	if(ns != "") DNS::nameservers = [ ns ];
-	if(mn != "" && dn != "") {
+	string ns = SCR::Read(.etc.install_inf.Nameserver);
+	string mn = SCR::Read(.etc.install_inf.Machinename);
+	string dn = SCR::Read(.etc.install_inf.Domainname);
+	if(ns != "" && ns != nil) DNS::nameservers = [ ns ];
+	if(mn != "" && dn != "" && dn != nil && mn != nil) {
 	    DNS::hostname = mn;
 	    DNS::domain = dn;
 	}

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Aug  6 17:25:59 CEST 2002 - msvec@suse.cz
+
+- adapt proposal to the new install.inf agent
+- 2.6.13
+
+-------------------------------------------------------------------
 Tue Aug 06 10:41:41 CEST 2002 - arvin@suse.de
 
 - adapted testsuite to new /etc/install.inf agent
