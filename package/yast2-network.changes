@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Feb 10 08:41:53 CET 2004 - msvec@suse.cz
+
+- typo in shellcommand (may affect #29452, #33049)
+- 2.9.3
+
+-------------------------------------------------------------------
 Sat Feb  7 23:57:14 CET 2004 - msvec@suse.cz
 
 - ISDN compiles and seems to work
