@@ -28,6 +28,7 @@ y2milestone("Proxy auto started");
 
 import "Proxy";
 import "Wizard";
+import "Summary";
 
 include "network/services/proxy.ycp";
 
@@ -38,7 +39,21 @@ include "network/services/proxy.ycp";
 define boolean Modified() ``{
     return Proxy::modified;
 }
-
+define string ProxySummary() ``{
+   string summary = "";
+   string nc = Summary::NotConfigured ();
+   summary = Summary::AddHeader(summary, _("Status of Proxy Configuration"));
+   summary = Summary::AddLine(summary, Proxy::enabled ? _("Enabled") : nc );
+   if (Proxy::http!="") {
+    summary = Summary::AddHeader(summary, _("HTTP"));
+    summary = Summary::AddLine(summary, Proxy::http  );
+   }
+   if (Proxy::ftp!="") {
+    summary = Summary::AddHeader(summary, _("FTP"));
+    summary = Summary::AddLine(summary, Proxy::ftp  );
+   }
+   return summary;
+}
 
 any ret = nil;
 string func = "";
@@ -55,7 +70,7 @@ y2debug("param=%1", param);
 
 /* Create a summary*/
 if(func == "Summary") {
-    ret = Proxy::Summary();
+    ret = ProxySummary();
 }
 /* Reset configuration */
 else if (func == "Reset") {
