@@ -298,7 +298,7 @@ define list<map> ReadHardware(string hwtype) {
  * Select the given hardware item or clean up structures (item == nil)
  * @param which item to be chosen
  */
-define map SelectHardware(list Hardware, integer which) {
+map FindHardware (list Hardware, integer which) {
     map sel = $[];
 
     if(which != nil) {
@@ -307,7 +307,14 @@ define map SelectHardware(list Hardware, integer which) {
 	if(which > size(Hardware) || which < 0)
 	    y2error("Item not found in Hardware: %1 (%2)", which, size(Hardware));
     }
+    return sel;
+}
 
+/**
+ * Select the given hardware item
+ * @param sel item to be chosen
+ */
+map SelectHardwareMap (map sel) {
     /* common stuff */
     name = sel["name"]:"";
     type = sel["type"]:"eth";
@@ -354,6 +361,14 @@ define map SelectHardware(list Hardware, integer which) {
     device = GetFreeDevice(RealType(type, hotplug));
 }
 */
+
+/**
+ * Select the given hardware item or clean up structures (item == nil)
+ * @param which item to be chosen
+ */
+map SelectHardware (list Hardware, integer which) {
+    return SelectHardwareMap (FindHardware (Hardware, which));
+}
 
 /* EOF */
 }

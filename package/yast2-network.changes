@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Sep 17 13:00:01 CEST 2004 - mvidner@suse.cz
+
+- Do not (mis)configure WLAN cards automatically (#44951).
+- Do not falsely alarm about duplicate IPs if we have more
+  interfaces (#45169).
+- 2.10.18
+
+-------------------------------------------------------------------
 Tue Sep 14 16:36:23 CEST 2004 - mvidner@suse.cz
 
 - Firewall for network interfaces: use FW_DEV_EXT instead of

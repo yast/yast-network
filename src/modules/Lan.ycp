@@ -962,9 +962,11 @@ global define boolean Propose() {
 	}
 
 	/* No install.inf driver -> select the first active */
+	// but not wlan, #44951
 	if (tosel == nil) {
 	    tosel = find (map h, Hardware, ``( 
 			      h["active"]:false
+			      && h["type"] != "wlan"
 			      ));
 	}
 
@@ -973,6 +975,7 @@ global define boolean Propose() {
 	    y2milestone("No active driver found, trying further.");
 	    tosel = find (map h, Hardware, ``( 
 			      h["module"]:"" != ""
+			      && h["type"] != "wlan"
 			      && y2milestone("Using driver: %1", h) == nil
 			      ));
 	}
