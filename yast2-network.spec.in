@@ -1,5 +1,5 @@
 @HEADER-COMMENT@
-# neededforbuild autoconf automake dejagnu expect tcl yast2 yast2-core yast2-core-devel yast2-devtools yast2-testsuite yast2-runlevel yast2-country
+# neededforbuild yast2-devel-packages yast2-runlevel yast2-country
 
 @HEADER@
 Requires:	yast2 sysconfig yast2-runlevel yast2-country
@@ -12,6 +12,12 @@ Obsoletes:	yast2-lib-network yast2-config-network
 BuildArchitectures:	noarch
 
 Summary:	Configuration of network
+
+%description
+-
+
+@HEADER-INSTSYS@
+Summary:	Network stuff for instsys
 
 %description
 -
@@ -34,3 +40,8 @@ Summary:	Configuration of network
 @scrconfdir@/*.scr
 @ydatadir@/netcards.ycp
 %doc @docdir@
+
+%files instsys
+%defattr(-,root,root)
+@yncludedir@/network/dns.ycp
+@yncludedir@/network/ip.ycp
