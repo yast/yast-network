@@ -245,6 +245,14 @@ global boolean DuplicateIP (string ip) {
     string ifs = (string) lookup((map) SCR::Execute(.target.bash_output, command), "stdout", "");
     list<string> ifsl = filter (string i, splitstring (ifs, " \t\n"), ``( i != ""));
 
+    // #45169: must only probe the interface being set up
+    // but I don't know which one it is :-(
+    // so pretend there are no dups if we have more interfaces
+    if (size (ifsl) > 1)
+    {
+	return false;
+    }
+
     // find the interface that detects the dup
     string ifc = find (string ifname, ifsl, {
 	command = "arping -qD -c2 -w3 -I" + ifname + " " + ip;
