@@ -14,8 +14,9 @@
 {
 
 textdomain "network";
-include "network/routines.ycp";
+
 import "Summary";
+include "network/routines.ycp";
 
 /**
  * Regular expression for all network card types
@@ -658,7 +659,7 @@ global define term OverviewTableDouble(string caption1, term header1, list conte
     y2debug("overviewif=%1", overviewif);
 
     import "Wizard";
-    include "ui/common_messages.ycp";
+    import "Label";
     Wizard::CreateDialog();
     term contents = nil;
 
@@ -668,7 +669,7 @@ global define term OverviewTableDouble(string caption1, term header1, list conte
     );
 
     Wizard::SetContentsButtons("Network cards configuration overview", contents, "helptext",
-	    BackButtonLabel(), FinishButtonLabel());
+	    Label::BackButton(), Label::FinishButton());
 
     UI::UserInput();
 
@@ -682,7 +683,7 @@ global define term OverviewTableDouble(string caption1, term header1, list conte
     );
 
     Wizard::SetContentsButtons("ISDN configuration overview", contents, "helptext",
-	    BackButtonLabel(), FinishButtonLabel());
+	    Label::BackButton(), Label::FinishButton());
 
     UI::UserInput();
 
@@ -744,12 +745,12 @@ global define symbol FinishPopup(boolean modified, string head, string text, str
 
     any ret = nil;
     if(run != "") {
-	ret = UI::YesNoHeadlinePopup(h, t);
+	ret = Popup::YesNoHeadline(h, t);
 	/* FIXME: check for the module presence */
 	if(ret == true) WFM::CallModule(run, params);
     }
     else
-	ret = UI::AnyMessagePopup(h, t);
+	ret = Popup::AnyMessage(h, t);
 
     return `next;
 }

@@ -59,7 +59,7 @@ TOCHECK:
 #24000: edit dsl HW goes through provider again (default provider?)
 #24803: better helps for proxy
 #24882: rename ifaces when deleted
-#25220: winmodems support
+#25220: winmodems support #15556
 
 TOSORT:
 

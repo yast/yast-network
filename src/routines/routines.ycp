@@ -11,7 +11,7 @@
 
 textdomain "network";
 
-include "ui/common_popups.ycp";
+import "Popup";
 
 /**
  * Return all keys from the map
@@ -123,7 +123,7 @@ global define boolean PollAbort() ``{
  * @return true if abort is confirmed
  */
 global define boolean ReallyAbort() ``{
-    return !Modified() || UI::ReallyAbortPopup(true);
+    return !Modified() || Popup::ReallyAbort(true);
 }
 
 /**
@@ -199,7 +199,7 @@ global define symbol Packages(list packages) ``{
 	}
 
 	/* Popup text */
-	if(!UI::YesNoPopup(_("The required packages are not installed.
+	if(!Popup::YesNo(_("The required packages are not installed.
 The configuration will be aborted.
 
 Try again?
