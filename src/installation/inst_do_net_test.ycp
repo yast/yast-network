@@ -39,7 +39,7 @@
 
     boolean already_up = false;
 
-    integer test_stage = 0;
+    symbol test_stage = `open;
     symbol test_result = `success;
 
     // list of all log files to show
@@ -121,11 +121,6 @@ and correct the setting.</p>");
     }
 
 
-    define void set_stage(integer stage) ``{
-	test_stage = stage;
-    }
-
-
     define void mark_label(integer i, symbol s) ``{
 
 	string glyph = s == `arrow ? UI::Glyph(`BulletArrowRight) : UI::Glyph(`CheckMark);
@@ -152,7 +147,7 @@ and correct the setting.</p>");
     }
 
 
-    define void copy1 () ``{
+    define void copy_logs1 () ``{
 
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Kernel Network Interfaces"),
@@ -173,7 +168,7 @@ and correct the setting.</p>");
     }
 
 
-    define void copy2 () ``{
+    define void copy_logs2 () ``{
 
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Kernel Messages"),
@@ -194,18 +189,17 @@ and correct the setting.</p>");
 
     define void handle_stage() ``{
 
-	if(test_stage == 0)		// open connection
+	if (test_stage == `open)		// open connection
 	{
 	    if(Mode::test) {
 		mark_label(1, `arrow);
-		set_stage(1);
+		test_stage = `wait;
 		return;
 	    }
 
 	    if(already_up)
 	    {
-		set_stage(2);
-		copy1 ();
+		test_stage = `copy;
 	    }
 	    else
 	    {
@@ -213,8 +207,8 @@ and correct the setting.</p>");
 
 		if(!AskForPassword()) {
 		    y2error("Password required");
+		    test_stage = `finish;
 		    test_result = `failure;
-		    set_stage (-1);
 		    return;
 		}
 
@@ -225,29 +219,28 @@ and correct the setting.</p>");
 				     `filename : "ifup.log",
 				     `prio : 16 ]);
 		if(!Internet::Start(logdir + "/ifup.log")) {
+		    test_stage = `finish;
 		    test_result = `failure;
-		    set_stage (-1);
 		    return;
 		}
 
-		set_stage(1);
+		test_stage = `wait;
 	    }
 	    return;
 	}
 
-	if(test_stage == 1)		// wait until really connected
+	if (test_stage == `wait)		// wait until really connected
 	{
 	    if(Mode::test) {
-		set_stage(2);
+		test_stage = `copy;
 		mark_label(1, `check);
-		copy1 ();
 		return;
 	    }
 
 	    // status must be up
 	    if(!Internet::Status()) {
+		test_stage = `finish;
 		test_result = `failure;
-		set_stage (-1);
 		return;
 	    }
 
@@ -255,9 +248,8 @@ and correct the setting.</p>");
 	    if(Internet::Connected())
 	    {
 		y2milestone("Connected ok");
-		set_stage(2);
+		test_stage = `copy;
 		mark_label(1, `check);
-		copy1 ();
 		return;
 	    }
 
@@ -267,7 +259,13 @@ and correct the setting.</p>");
 	    return;
 	}
 
-	if(test_stage == 2)		// download release notes
+	if (test_stage == `copy)		// copy some status
+	{
+	    copy_logs1 ();
+	    test_stage = `relnotes;
+	}
+
+	if (test_stage == `relnotes)		// download release notes
 	{
 	    mark_label(2, `arrow);
 
@@ -295,16 +293,16 @@ and correct the setting.</p>");
 		SCR::Execute(.target.bash, "/bin/rpm -U --force " + tmp);
 	    }
 
-	    set_stage(3);
+	    test_stage = `patches;
 	    mark_label(2, `check);
 	    return;
 	}
 
-	if(test_stage == 3)		// check for updates
+	if (test_stage == `patches)		// check for updates
 	{
 	    if(contains(Product::flags, "no_you"))
 	    {
-		set_stage(4);
+		test_stage = `close;
 		return;
 	    }
 
@@ -331,16 +329,16 @@ and correct the setting.</p>");
 		test_result = `failure;
 	    }
 
-	    set_stage(4);
+	    test_stage = `close;
 	    mark_label(3, `check);
 	    return;
 	}
 
-	if(test_stage == 4)		// close connection
+	if (test_stage == `close)		// close connection
 	{
 	    if(Mode::test) {
 		mark_label(4, `arrow);
-		set_stage (-1);
+		test_stage = `finish;
 		mark_label(4, `check);
 		return;
 	    }
@@ -359,7 +357,7 @@ and correct the setting.</p>");
 		mark_label(4, `check);
 	    }
 
-	    set_stage (-1);
+	    test_stage = `finish;
 	    return;
 	}
     }
@@ -388,7 +386,7 @@ and correct the setting.</p>");
     {
 	handle_stage ();
 
-	if (test_stage == -1)
+	if (test_stage == `finish)
 	    break;
 
 	sleep (500);
@@ -412,7 +410,7 @@ and correct the setting.</p>");
 
     show_result ();
 
-    copy2 ();
+    copy_logs2 ();
 
 
     UI::ChangeWidget(`id(`back), `Enabled, true);
