@@ -19,7 +19,7 @@ X-SuSE-YaST-AutoinstResource=networking
 Icon=network
 Exec=/sbin/yast2 lan 
 
-Name=Network card
+Name=Network Card
 GenericName=Configure network card
 Name[cs]=Síťová karta
 GenericName[cs]=Konfigurovat síťovou kartu

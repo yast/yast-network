@@ -10,6 +10,7 @@ Tue Nov 11 17:11:54 CET 2003 - msvec@suse.cz
 - preliminary virtual aliases support (read|write and edit|delete so far)
 - allow "default" to be entered as a route destination (#21398)
 - fixed concurrent providers usage during installation (#31508)
+- fix netcard y2cc label (#33802)
 - automatic DNS support (#27955)
 - cleanup of redundant stuff
 - 2.9.0
