@@ -39,7 +39,7 @@ has been temporarily modified by %1. You have two options:</p>");
     text = text + _("<ol>
 <li>Modify the current (changed!) version of the file</li>
 <li>Press 'Accept' now and continue editing other (non resolver) data. You
-could return to this dialog later, when the above service has terminated.</li>
+could return to this dialog later when the above service has terminated.</li>
 </ol>");
 
     /* has been modified by "unknown process" */

@@ -26,7 +26,7 @@ include "network/routines.ycp";
 global define symbol ProxyMainDialog() ``{
 
     /* Proxy dialog caption */
-    string caption = _("Proxy configuration");
+    string caption = _("Proxy Configuration");
 
     /* Proxy dialog help 1/5 */
     string help = _("<p>Here, configure your Internet proxy (caching) settings.</p>") +

@@ -39,32 +39,32 @@ global define symbol isdn_if_sel(symbol op) ``{
     /* DIALOG TEXTS */
 
     // title of ISDN service selection dialog
-    string caption = _("ISDN service selection");
+    string caption = _("ISDN Service Selection");
     string helptext = "";
 
     if (ISDN::have_dsl)
 	helptext = helptext +
     // conditional help text 1/4
 _("<p>If you have a combined ISDN/DSL CAPI controller you can config your DSL
-connetion via the <b>Add DSL CAPI interface</b> button. You can also do this later
+connection via the <b>Add DSL CAPI interface</b> button. You can also do this later
 in the DSL configuration dialog.</p>");
 
     helptext = helptext +
     // help text 1/4
-_("<p>For networking over ISDN here are two types of interfaces 
-<b>RawIP</b> and <b>SyncPPP</b>. In most cases you will use SyncPPP, it's
+_("<p>For networking over ISDN, there are two types of interfaces:
+<b>RawIP</b> and <b>SyncPPP</b>. In most cases, you will use SyncPPP. It is
 the default for all common Internet providers.</p>");
 
     helptext = helptext +
     // helptext text 2/4
-_("<p>If you like to switch between various Internet providers, you don't
-need a interface for each provider, you can simple add the provider to the
+_("<p>For switching between various Internet providers, an
+interface for each provider is not required. Simply add multiple providers to the
 same interface.</p>");
 
     helptext = helptext +
     // helptext text 3/4
-_("<p>If you don't like to add a interface now, you can simple use the
-<b>Skip</b> button to not enter the interface and provider dialogs.</p>");
+_("<p>To avoid adding an interface now, use
+<b>Skip</b> not to enter the interface and provider dialogs.</p>");
 
 
     /* DIALOG CONTENTS */
@@ -78,7 +78,7 @@ _("<p>If you don't like to add a interface now, you can simple use the
     // PushButton label to select the next Dialog
     network = add(network, `PushButton(`id(`AddRawIP), _("Add new Raw&IP network interface")));
     // PushButton label to select the next Dialog
-    network = add(network, `PushButton(`id(`AddProvider), _("Add &Provider to existing interface")));
+    network = add(network, `PushButton(`id(`AddProvider), _("Add &provider to existing interface")));
     network = add(network, `VSpacing(0.5));
 
     term contents =
@@ -204,16 +204,16 @@ Note: ippp0 is an example</p>
 
     helptext = helptext +
     // help text 4/4
-_("<p>Selecting <b>channel bundling</b> will setup a 128kBit connection 
-also known as <b>M</b>ultilink <b>PPP</b>. To bring up or down the second channel
-you have to use the following commands:
+_("<p>Selecting <b>channel bundling</b> will set up a 128-kBit connection
+also known as <b>M</b>ultilink <b>PPP</b>. To bring up or down the second channel,
+use the following commands:
 <tt>
  <br> isdnctrl addlink ippp0
  <br> isdnctrl removelink ippp0
  <br>
 </tt>
-You can also install the package <b>xibod</b>, this make this process automaticly, if
-here is a demand for more bandwidth, it add a channel, if the trafic goes down, it
+You can also install the package <b>xibod</b> to have this happen automatically. If
+there is a demand for more bandwidth, it will add a channel. If the traffic goes down, it will
 remove a channel.
 </p>");
 

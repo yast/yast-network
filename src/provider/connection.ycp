@@ -79,8 +79,8 @@ disable <b>DNS modification</b> when connected.</p>
 
     /* Connection dialog help 4/8 */
 _("<p><b>Stupid mode</b> will disable the detection of
-any prompts from the dialin server. If the connection
-buildup is slow or does not work at all try this option.</p>") +
+any prompts from the dial-in server. If the connection
+buildup is slow or does not work at all, try this option.</p>") +
 
     /* Connection dialog help 5/8 */
 _("<p>Selecting <b>Activate firewall</b> will block all incoming
@@ -89,7 +89,7 @@ to the Internet safe from external attacks.</p>") +
 
     /* Connection dialog help 6/8 */
 _("<p>The <b>Idle time-out</b> specifies the time after which an idle
-connection will be shut down (0 means an infinite idle timeout).</p>");
+connection will be shut down (0 means an infinite idle time-out).</p>");
 
     // if(type == "isdn")
 

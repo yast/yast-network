@@ -258,7 +258,7 @@ global define string DeviceType(string type) ``{
     // for translators: device type
     if(regexpmatch(type, "ppp")) return _("Modem");
     // for translators: device type
-    if(regexpmatch(type, "tr")) return _("Token-Ring");
+    if(regexpmatch(type, "tr")) return _("Token Ring");
     // for translators: device type
     if(regexpmatch(type, "hsi")) return _("HiperSockets Interface");
     // for translators: device type

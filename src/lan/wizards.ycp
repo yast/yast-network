@@ -29,7 +29,7 @@ include "network/services/routing.ycp";
 global define symbol LanSequence() ``{
 
     /* Popup text */
-    string finished = _("Would you like to configure the mail now?");
+    string finished = _("Configure the mail now?");
 
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],

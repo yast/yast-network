@@ -47,9 +47,9 @@ This is the default with most providers.
 
     helptext = helptext +
     // help text 3/3
-_("<p>Check the button for <b>Defaultroute</b> if you want that this
-interface get the default route. Note: only one interface can get the default
-route.</b>.</p>");
+_("<p>Check <b>Default route</b> to use this interface as the
+default route. Only one interface can be the default
+route.</p>");
 
     /* PREPARE VARIABLES */
     string Local_IP = lookup(ISDN::interface, "IPADDR", "");

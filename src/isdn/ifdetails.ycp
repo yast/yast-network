@@ -42,17 +42,17 @@ global define symbol IFDetailDialog() ``{
     /* DIALOG TEXTS */
 
     // title of ISDN interface detail screen
-    string caption = _("ISDN detail settings");
+    string caption = _("ISDN Detail Settings");
 
     string helptext =
     // help text 1/7
-_("<p>The <b>Remote phone number list</b> list controls which remote sides are
-allowed to connect this interface.</p>");
+_("<p>The <b>Remote phone number list</b> controls which remote machines are
+allowed to connect to this interface.</p>");
 
     helptext = helptext +
     // help text 2/7
-_("<p>If you deselect the <b>Only listed numbers allowed</b> checkbox, you
-allow all caller id's.</p>");
+_("<p>Deselect the <b>Only listed numbers allowed</b> check box
+to allow all caller ids.</p>");
 
     helptext = helptext +
     // help text 3/7
@@ -67,19 +67,19 @@ is triggered.</p>");
     helptext = helptext +
     // help text 5/7
 _("<p>If <b>callback mode</b> is <b>client</b>, the local system does the initial call then 
-waits for callback of the remote machine.</p>");
+waits for callback from the remote machine.</p>");
 
     helptext = helptext +
     // help text 6/7
-_("<p>If <b>Callback Delay</b> is the amount of seconds between the initial and the
-callback(server) or the hangup(client). It should be greater on the server as on
+_("<p><b>Callback Delay</b> is the amount of seconds between the initial call and the
+callback (server) or the hangup (client). It should be greater on the server than on
 the client.</p>");
 
     if (syncppp) {
 	helptext = helptext +
     // help text 7/7
-_("<p>In <b>Additional ipppd options</b> you can add extra options for ipppd
-for example +pap +chap for the dialin server authentification.</p>");
+_("<p>In <b>Additional ipppd options</b>, add extra options for ipppd,
+for example, +pap +chap for the dial-in server authentication.</p>");
     }
 
     /* DIALOG CONTENTS */

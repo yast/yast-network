@@ -294,7 +294,7 @@ Synchronous PPP.</p>");
 
 	/* Provider dialog help 4/5 */
 	helptext = helptext + _("<p>Enter the <b>user name</b> and the
-<b>password</b> to use as the login (ask your provider if you are not sure).
+<b>password</b> to use as the login (ask your provider if unsure).
 </p>
 ") +
 

@@ -87,7 +87,7 @@ Abort saving by pressing <b>Abort</b>.</p>");
 global define symbol SummaryDialog() ``{
 
     /* Providers summary dialog caption */
-    string caption = _("Providers configuration");
+    string caption = _("Provider Configurations");
 
     /* Providers summary dialog help 1/3 */
     string help = _("<p><b><big>Provider setup</big></b><br>

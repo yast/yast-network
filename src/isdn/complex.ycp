@@ -93,12 +93,11 @@ An additional dialog will inform you whether it is safe to do so or not.</P>");
 global define symbol Provider_or_IF(string op) ``{
     symbol ret = nil;
     // popup text to select between Interface or Provider for edit or delete 1/2
-    string txt = sformat(_("Please select, which item do you like to %1."),
-		op == "edit" ?
-        // popup text continue (2/2): "edit" operation
-        _("edit") :
-        // popup text continue (2/2): "delete" operation
-        _("delete"));
+    string txt = op == "edit" ?
+       // popup text to select between Interface or Provider
+       _("Select the item to edit.") :
+       // popup text to select between Interface or Provider
+       _("Select the item to delete.");
     UI::OpenDialog(
 	`opt(`decorated),
 	`HBox(
@@ -230,7 +229,7 @@ If you press <B>Add</B>, you can manually configure an ISDN card.</P>");
     /* isdns overview dialog help 3/5 */
     helptext = helptext + _("<P><B><BIG>Test an ISDN card setup:</BIG></B><BR>
 If you press <B>Test</B>, the system tries to load the driver for the
-selcted card</P>");
+selected card.</P>");
 
     /* isdns overview dialog help 4/5 */
     helptext = helptext + _("<P><B><BIG>Adding an ISDN connection:</BIG></B><BR>
@@ -359,11 +358,11 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 		} else {
 		    string txt = sformat(
 // MessagePopup text
-_("You try to delete a provider which
+_("You tried to delete a provider that
 is the default provider for interface
-%1. Please select first an other
+%1. First select another
 default provider for interface %2
-or delete the interface itself first.
+or delete the interface itself.
 "), ifc, ifc);
 		    UI::MessagePopup(txt);
 		}

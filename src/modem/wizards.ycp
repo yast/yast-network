@@ -32,7 +32,7 @@ include "network/modem/complex.ycp";
 global define symbol ModemSequence() ``{
 
     /* Popup text */
-    string finished = _("Would you like to configure the mail now?");
+    string finished = _("Configure the mail now?");
 
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
