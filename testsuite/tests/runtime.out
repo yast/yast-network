@@ -22,9 +22,9 @@ Return	true
 Execute	.target.bash "/sbin/SuSEconfig --module postfix" 1
 Return	false
 Dump	RunKInternet
-Execute	.target.bash_background "[ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu --nonewdcop -u $USER -- kinternet -quiet" 0
+Execute	.target.bash_background "[ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu --nonewdcop -u $USER -- kinternet --quiet" 0
 Return	true
-Execute	.target.bash_background "[ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu --nonewdcop -u $USER -- kinternet -quiet" 1
+Execute	.target.bash_background "[ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu --nonewdcop -u $USER -- kinternet --quiet" 1
 Return	false
 Dump	StopNetwork
 Execute	.target.bash "/etc/init.d/network stop" $["TERM":"raw"] 0

@@ -53,6 +53,9 @@ global string Device = "/dev/modem";
 global string DialPrefix = "";
 global string PPPDoptions = "";
 
+global list Requires = [];
+global list Drivers = [];
+
 /* obsolete stuff */
 // global string DefaultModem = "";
 // global boolean IsDefault = true;

@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Sep 22 09:50:11 CEST 2003 - msvec@suse.cz
+
+- install required packages for winmodems (#31443, #31471)
+- install all required packages after DSL configuration (#31536)
+- fixed starting of kinternet <kkeil@suse.de>
+- updated testsuite
+- 2.8.42
+
+-------------------------------------------------------------------
 Sun Sep 21 22:03:22 CEST 2003 - kkeil@suse.de
 
 - fix start of kinternet,option must be --quiet not -quiet (#31322) 

@@ -164,6 +164,10 @@ configuration.</p>");
 	    }
 	    else {
 		Modem::SelectHW(selected);
+		if(Modem::Requires != [] && Modem::Requires != nil) {
+		    if(Packages(Modem::Requires) != `next)
+			continue;
+		}
 		ret = `configure;
 	    }
 	    break;

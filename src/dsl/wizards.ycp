@@ -30,7 +30,7 @@ global define symbol DSLSequence() ``{
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( DSLMainSequence() ),
-	"rpm"	: [ ``( Packages(["smpppd"]) ), true ],
+	"rpm"	: [ ``( Packages(["smpppd", "ppp", "pptp", "linux-atm-lib"]) ), true ],
 	"write"	: [ ``( WriteDialog() ), true ],
 	"finish": [ ``( FinishDialog() ), true ],
     ];
