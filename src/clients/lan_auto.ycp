@@ -141,6 +141,12 @@ else if(func == "Import") {
     map autoyast = FromAY(param);
     ret = Lan::Import(autoyast);
 }
+else if(func == "Read") {
+	import "Progress";
+	Progress::off();
+	ret = Lan::Read();
+	Progress::on();
+}
 else if (func == "Result") {
     map settings = Lan::Export();
     map autoyast = ToAY(settings);
