@@ -2,7 +2,6 @@ Read	.target.size "/etc/install.inf" 1
 Read	.etc.install_inf.Sourcemounted nil
 Read	.etc.install_inf.AutoYaST nil
 Read	.etc.install_inf.Repair nil
-Read	.etc.install_inf.Demo nil
 Read	.etc.install_inf.Textmode nil
 Read	.etc.install_inf.Manual nil
 Read	.target.string "/proc/cmdline" "Blah\n"
