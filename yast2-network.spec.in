@@ -37,6 +37,7 @@ Summary:	Network configuration
 %files
 %defattr(-,root,root)
 @ybindir@/*
+@ydatadir@/*
 @yncludedir@/network
 @clientdir@/*.ycp
 @moduledir@/*.ycp

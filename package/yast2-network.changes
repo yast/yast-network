@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Apr  2 12:31:45 CEST 2004 - msvec@suse.cz
+
+- improved smartlink-softmodems support (#37335)
+- added more milestones to debug #38031
+- 2.9.24
+
+-------------------------------------------------------------------
 Thu Apr  1 17:13:37 CEST 2004 - msvec@suse.cz
 
 - reintroduce unique key writing to map device to cfg

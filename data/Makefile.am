@@ -1,6 +1,4 @@
-#
-# Makefile.am for y2c_network/data
-#
+# Makefile.am for .../source/network/data
 
-ydata_DATA = # netcards.ycp
+ydata_DATA = modem-t35-keys.ycp # netcards.ycp
 EXTRA_DIST = $(ydata_DATA)

@@ -90,7 +90,7 @@ global define boolean Write() {
 
     /* Check if there is anything to do */
     if(hosts_init == hosts) {
-	y2debug("Hosts not modified");
+	y2milestone("Hosts not modified");
 	return true;
     }
 
@@ -106,16 +106,17 @@ global define boolean Write() {
 	ret = SCR::Write(.target.string, hosts_file, "");
     else {
 	/* Update the hosts config */
-	y2debug("hosts=%1", hosts);
-	y2debug("Deleted=%1", Deleted);
+	y2milestone("hosts=%1", hosts);
+	y2milestone("Deleted=%1", Deleted);
 	/* Deleted deleted hosts */
 	maplist(string ho, Deleted, {
 	    return SCR::Write(add(.etc.hosts, ho), nil);
 	});
 	/* Add and update new hosts */
 	maplist(string ho, list<string> names, (map<string,list<string> >)hosts, {
+	    y2milestone("%1 (%2:%3)", ho, names, hosts_init[ho]:nil);
 	    if(contains(Deleted, ho) || hosts_init[ho]:nil != names) {
-		y2debug("changed: %1 (%2:%3)", ho, names, hosts_init[ho]:nil);
+		y2milestone("changed: %1 (%2:%3)", ho, names, hosts_init[ho]:nil);
 		SCR::Write(add(.etc.hosts, ho), mergestring(names, " "));
 	    }
 	});

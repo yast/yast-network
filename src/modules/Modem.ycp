@@ -223,12 +223,22 @@ global define boolean Write() {
 
     /* Setup SL modem */
     if(contains(Requires, "smartlink-softmodem")) {
+
+	Service::Stop("slmodemd");
+
 	string country = Language::GetLanguageCountry();
+	map keys = (map) eval(SCR::Read(.target.ycp, "modem-t35-keys.ycp"));
+	country = keys[country]:"";
+
 	y2milestone("Setting up slmodemd (%1)", country);
-	SCR::Write(.sysconfig.slmodemd.COUNTRY, toupper(country));
-	SCR::Write(.sysconfig.slmodemd, nil);
+	if(country != nil && country != "") {
+	    SCR::Write(.sysconfig.slmodemd.SLMODEMD_COUNTRY, toupper(country));
+	    SCR::Write(.sysconfig.slmodemd, nil);
+	}
+
 	Service::Enable("slmodemd");
 	Service::Start("slmodemd");
+
     }
 
     if(Abort()) return false;

@@ -1,0 +1,66 @@
+/**
+ * $Id$
+ * Author: Michal Svec <msvec@suse.cz>
+ */
+
+{
+
+return $[
+    "AR" : "ARGENTINA",
+    "AT" : "AUSTRIA",
+    "AU" : "AUSTRALIA",
+    "BE" : "BELGIUM",
+    "BG" : "BULGARIA",
+    "BH" : "BAHREIN",
+    "CA" : "CANADA",
+    "CH" : "SWITZERLAND",
+    "CL" : "CHILE",
+    "CZ" : "CZECH_REPUBLIC/SLOVAKIA",
+    "DE" : "GERMANY",
+    "DK" : "DENMARK",
+    "DZ" : "ALGERIA",
+    "EE" : "ESTONIA",
+    "EG" : "EGYPT",
+    "ES" : "SPAIN",
+    "FI" : "FINLAND",
+    "FR" : "FRANCE",
+    "GR" : "GREECE",
+    "HU" : "HUNGARY",
+    "ID" : "INDONESIA",
+    "IE" : "IRELAND",
+    "IL" : "ISRAEL",
+    "IN" : "INDIA",
+    "IS" : "ICELAND",
+    "IT" : "ITALY",
+    "JO" : "JORDAN",
+    "KW" : "KUWAIT",
+    "LB" : "LEBANON",
+    "LT" : "LITHUANIA",
+    "LV" : "LATVIA",
+    "MA" : "MOROCCO",
+    "MT" : "MALTA",
+    "MX" : "MEXICO",
+    "MY" : "MALAYSIA",
+    "NL" : "NETHERLANDS",
+    "NO" : "NORWAY",
+    "OM" : "OMAN",
+    "PE" : "PERU",
+    "PH" : "PHILIPPINES",
+    "PK" : "PAKISTAN",
+    "PL" : "POLAND",
+    "PT" : "PORTUGAL",
+    "RO" : "ROMANIA",
+    "RU" : "RUSSIA",
+    "SE" : "SWEDEN",
+    "SG" : "SINGAPORE",
+    "SI" : "SLOVENIA",
+    "SK" : "SLOVAKIA",
+    "TH" : "THAILAND",
+    "TN" : "TUNISIA",
+    "TR" : "TURKEY",
+    "US" : "USA",
+    "UY" : "URUGUAY",
+];
+
+/* EOF */
+}
