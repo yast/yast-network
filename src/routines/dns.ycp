@@ -53,7 +53,7 @@ global define boolean check_domainname(string domain) ``{
     if(domain == nil || domain == "") return false;
     list l = splitstring (domain, ".");
     if(contains(maplist(`h, l, ``(check_hostname(h))), false)) return false;
-    return regexpmatch(domain, "\.[[:alpha:]]([[:alnum:]-]*[[:alnum:]])?$");
+    return regexpmatch(domain, "\\.[[:alpha:]]([[:alnum:]-]*[[:alnum:]])?$");
 }
 
 /* EOF */
