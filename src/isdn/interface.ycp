@@ -148,21 +148,21 @@ in the DSL configuration dialog.</p>
 	    ret = Call::Function("dsl", [.capiadsl, dslpara]);
 	}
 	else if (ret == `AddSyncPPP) {
-	    if (op == `hw)
+	    if (op == `hw && ISDN::type == "contr")
 		ISDN::Commit();
 	    ISDN::AddIf("syncppp");
             Provider::Add("isdn");
 	    break;
 	}
 	else if (ret == `AddRawIP) {
-	    if (op == `hw)
+	    if (op == `hw && ISDN::type == "contr")
 		ISDN::Commit();
 	    ISDN::AddIf("rawip");
             Provider::Add("isdn");
 	    break;
 	}
 	else if (ret == `AddProvider) {
-	    if (op == `hw)
+	    if (op == `hw && ISDN::type == "contr")
 		ISDN::Commit();
 	    ISDN::operation = `addprov;
             Provider::Add("isdn");
@@ -337,6 +337,8 @@ this box.
     /* DIALOG PREPARE */
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::NextButton());
+
+    UI::SetFocus(`id(`msn));
 
     /* MAIN CYCLE */
     symbol ret = nil;

@@ -167,6 +167,13 @@ can change the configuration and setup dialup connections) will open.
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::FinishButton());
 
+    if (size(unconfigured) > 1 || configured == "")
+	UI::SetFocus(`id(`detected_selbox));
+    else if (ISDN::Modified())
+	UI::SetFocus(`id(`next));
+    else
+	UI::SetFocus(`id(`edit_button));
+
     any ret = nil;
     while(true) {
 
@@ -282,6 +289,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
         UI::ChangeWidget(`id(`Delete), `Enabled, false);
     }
 
+    UI::SetFocus(`id(`table));
     any ret = nil;
     while(true) {
 
