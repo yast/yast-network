@@ -232,7 +232,7 @@ remove a channel.
 	provlist = Providers::GetProviders("_custom", syncppp ? "syncppp" : "rawip", ISDN::provider_file);
 	y2debug("provlist: %1", provlist);
 	// ComboBox label
-	prov = `Left(`ComboBox(`id(`prov), _("&Default Provider"), provlist));
+	prov = `Left(`ComboBox(`id(`prov), _("D&efault Provider"), provlist));
     }
     term contents =
 	`VBox(
