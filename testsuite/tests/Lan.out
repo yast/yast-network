@@ -35,18 +35,6 @@ Read	.target.size "/etc/HOSTNAME" 1
 Read	.target.string "/etc/HOSTNAME" "Blah\n"
 Read	.target.size "/etc/install.inf" 1
 Read	.etc.install_inf nil
-Read	.init.scripts.exists "SuSEfirewall2_init" true
-Read	.init.scripts.runlevel "SuSEfirewall2_init" nil
-Read	.init.scripts.exists "SuSEfirewall2_setup" true
-Read	.init.scripts.runlevel "SuSEfirewall2_setup" nil
-Read	.init.scripts.exists "SuSEfirewall2_final" true
-Read	.init.scripts.runlevel "SuSEfirewall2_final" nil
-Read	.init.scripts.exists "SuSEfirewall2_init" true
-Read	.init.scripts.runlevel "SuSEfirewall2_init" nil
-Read	.init.scripts.exists "SuSEfirewall2_setup" true
-Read	.init.scripts.runlevel "SuSEfirewall2_setup" nil
-Read	.init.scripts.exists "SuSEfirewall2_final" true
-Read	.init.scripts.runlevel "SuSEfirewall2_final" nil
 Read	.target.size "/etc/sysconfig/personal-firewall" 1
 Read	.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS nil
 Return	true

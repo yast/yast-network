@@ -19,8 +19,11 @@ Bugs:
 - edit modules.conf #15062
 - dsl in installation settings #15160
 - install dhcpcd in lan (before start)
-- chmod 0700 ~/.wgetrc? asi neni potreba ...
 - sigi&isdn: http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html
+- chmod 0700 ~/.wgetrc? asi neni potreba ...
+- use /etc/wgetrc?
+
+- list of available devices to routing expert dialog
 
 #18840 -> FIREWALL=yes|no to each ifcfg-XXX
 - this way it could be done also for modems
@@ -35,7 +38,6 @@ DOC:
  IUCV  = Inter User Communication Vehicle (means: DMA based network pipe
          between Virtual Machine instances (like vmware) on an s390)
          - short: its a point-to point network interface
-
 
 - #16094:
     Further enhancement: if the provider is not used by any other modem
@@ -119,7 +121,6 @@ DetectionStop() {
   killall netprobe
   ReadDetection();
 }
-
 
 - make device optional in routes agent
 - DefaultDevice(ip)

@@ -337,8 +337,6 @@ automatically if data is requested. To use this, specify at least one
 	Wizard::SetContentsButtons(caption, contents, helptext,
 		BackButtonLabel(), FinishButtonLabel());
 
-    UI::ChangeWidget(`id(`firewall), `Enabled, !Firewall::firewallpresent);
-
     UI::ChangeWidget(`id(`dns1), `Enabled, DSL::dialondemand);
     UI::ChangeWidget(`id(`dns2), `Enabled, DSL::dialondemand);
     UI::ChangeWidget(`id(`idletime), `ValidChars, "0123456789" );

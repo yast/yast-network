@@ -258,7 +258,7 @@ global define boolean Write(boolean start) ``{
     integer sl = 0;
 
     if (start) {
-	steps = 11;
+	steps = 12;
 	Progress::New(caption, " ", steps, [
 	    // steps for the ISDN writing current setup progress screen with start
         // step 1/11
@@ -277,11 +277,13 @@ global define boolean Write(boolean start) ``{
 	    _("Run SuSEconfig"),
         // step 8/11
 	    _("Start ISDN subsystem"),
-        // step 9/11
-	    _("Set up smpppd"),
+	// step 9/11
+	    _("Set up network services"),
         // step 10/11
-	    _("Start ISDN networking"),
+	    _("Set up smpppd"),
         // step 11/11
+	    _("Start ISDN networking"),
+        // step 12/11
 	    _("Run kinternet"),
 	    ], [], "");
     } else {
@@ -368,12 +370,18 @@ global define boolean Write(boolean start) ``{
 
 	if(Abort()) return false;
 	// stage 9 in writing current ISDN setup
+	ProgressNextStage(_("Setting up network services"));
+	SetupNetwork();
+	sleep(sl);
+
+	if(Abort()) return false;
+	// stage 10 in writing current ISDN setup
 	ProgressNextStage(_("Setting up smpppd(8)"));
 	SetupSMPPPD();
 	sleep(sl);
 
 	if(Abort()) return false;
-	// stage 10 in writing current ISDN setup
+	// stage 11 in writing current ISDN setup
 	ProgressNextStage(_("Load ISDN network"));
 	cmd = sformat("/etc/init.d/network start -o type=isdn");
 	SCR::Execute(.target.bash, cmd);
@@ -383,7 +391,7 @@ global define boolean Write(boolean start) ``{
 	sleep(sl);
 
 	if(Abort()) return false;
-	// stage 11 in writing current ISDN setup
+	// stage 12 in writing current ISDN setup
 	ProgressNextStage(_("Running kinternet"));
 	RunKInternet();
 	sleep(sl);
@@ -739,7 +747,7 @@ global define boolean Commit() ``{
 	    global_sm = "hotplug";
 	if (sm == "manual" && global_sm == "onboot")
 	    global_sm = "manual";
-	
+
 	if(operation == `add)
 	    ConfigAddEdit(type, device, hw_device, true);
 	else

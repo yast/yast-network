@@ -297,7 +297,9 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	y2milestone("type=%1",type);
     }
 
+    /* s390 screen not used #19542
     if(ret == `next && Lan::type == "hsi") ret = `s390;
+    */
     return ret;
 }
 

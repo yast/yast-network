@@ -92,7 +92,15 @@ for more information about the network configuration.</p>");
 	`Label(`opt(`outputField), device)
 	//`ComboBox(`id(`num), `opt(`hstretch,`editable), "", [ "eth1" ])
     );
-    //label = `ComboBox(`id(`num), `opt(`hstretch,`editable), _("Network device"), [ "eth1" ]);
+
+    string realtype = type;
+    if(Lan::pcmcia) realtype = type + "-pcmcia-";
+    else if(Lan::usb) realtype = type + "-usb-";
+
+    if(Lan::operation == `add)
+	label = `ComboBox(`id(`num), `opt(`hstretch),
+		_("Network device"),
+		maplist(`d,Lan::FreeDevices(realtype),``(sformat("%1%2",type,d))));
 
     /* Frame label */
     term frame1 = `Frame(_("Choose the setup method"),
@@ -314,6 +322,11 @@ completes the configuration.</p>");
 
 	if(UI::WidgetExists(`id(`remoteip)))
 	    Lan::remoteip = UI::QueryWidget(`id(`remoteip), `Value);
+
+	if(UI::WidgetExists(`id(`num))) {
+	    y2milestone("num=%1", device_num(UI::QueryWidget(`id(`num), `Value)));
+	    Lan::device = device_num(UI::QueryWidget(`id(`num), `Value));
+	}
     }
 
     return ret;

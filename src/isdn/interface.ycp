@@ -19,6 +19,7 @@
 
 textdomain "network";
 
+import "Firewall";
 import "Wizard";
 import "ISDN";
 import "DSL";
@@ -234,6 +235,12 @@ remove a channel.
 	// ComboBox label
 	prov = `Left(`ComboBox(`id(`prov), _("D&efault Provider"), provlist));
     }
+    y2debug("device %1", devstr);
+    boolean FirewallChecked = Firewall::Query(devstr);
+    y2debug("FirewallChecked=%1",FirewallChecked);
+
+    term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("Activate fire&wall..."), FirewallChecked));
+
     term contents =
     `Top(
 	`VBox(
@@ -267,6 +274,9 @@ remove a channel.
 		    `VSpacing(0.5),
 			// CheckBox label
 			`Left(`CheckBox(`id(`multilink), _("Ch&annel bundling"), multilink)),
+		    `VSpacing(0.5),
+			// CheckBox label
+			FirewallCheckbox,
 		    `VSpacing(0.5)
 		))
         ),
@@ -331,6 +341,14 @@ remove a channel.
         ]);
 	if (ISDN::operation  == `editif)
 	    ISDN::provider_file = UI::QueryWidget(`id(`prov), `Value);
+
+        /* update firewall info */
+        if(FirewallChecked != UI::QueryWidget(`id(`Firewall), `Value)) {
+            FirewallChecked = UI::QueryWidget(`id(`Firewall), `Value);
+            Firewall::Change(devstr, FirewallChecked);
+	}
+
+
     }
     return ret;
 }

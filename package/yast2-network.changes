@@ -1,4 +1,50 @@
 -------------------------------------------------------------------
+Mon Oct 21 11:35:40 CEST 2002 - msvec@suse.cz
+
+- fixed default gateway in the complex routing dialog (#21122)
+- 2.6.33
+
+-------------------------------------------------------------------
+Thu Oct 17 12:44:46 CEST 2002 - msvec@suse.cz
+
+- moved firewall checkbox to the isdn interface dialog (#18840)
+- 2.6.32
+
+-------------------------------------------------------------------
+Wed Oct 16 11:59:03 CEST 2002 - arvin@suse.de
+
+- the string returned from ip2hex has a fixed with
+  of 8 now (bug #20936)
+
+-------------------------------------------------------------------
+Mon Oct 14 11:29:04 CEST 2002 - msvec@suse.cz
+
+- really use the custom device number (#17346)
+- 2.6.30
+
+-------------------------------------------------------------------
+Wed Oct  9 11:49:20 CEST 2002 - msvec@suse.cz
+
+- setup network in the firewall setup (#18840)
+- 2.6.29
+
+-------------------------------------------------------------------
+Mon Oct  7 18:31:53 CEST 2002 - msvec@suse.cz
+
+- disable the s390 specific dialog
+- don't restart network after proxy configuration (#19615)
+- really enable the new proxy settings (#20179)
+- allow to choose custom network device (#17346)
+- fix firewall setup (#18840)
+- 2.6.28
+
+-------------------------------------------------------------------
+Fri Sep 13 15:20:35 CEST 2002 - arvin@suse.de
+
+- activate service network when saving isdn (bug #19625)
+- 2.6.27
+
+-------------------------------------------------------------------
 Mon Sep  9 17:18:21 CEST 2002 - msvec@suse.cz
 
 - chmod a+r /etc/resolv.conf (#19188)

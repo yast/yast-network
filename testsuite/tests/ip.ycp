@@ -123,6 +123,7 @@ TEST(``(ip2string(169083165)), [], nil);
 
 DUMP("ip2hex");
 TEST(``(ip2hex("0.0.0.0")), [], nil);
+TEST(``(ip2hex("10.10.0.1")), [], nil);
 TEST(``(ip2hex("192.168.1.1")), [], nil);
 TEST(``(ip2hex("255.255.255.255")), [], nil);
 

@@ -57,6 +57,7 @@ global define symbol ConnectionDialog(string type) ``{
 
     y2debug("device %1", device);
     boolean FirewallChecked = Firewall::Query(device);
+    y2debug("FirewallChecked=%1",FirewallChecked);
 
     /* DIALOG TEXTS */
 
@@ -119,6 +120,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 
     /* Checkbox label */
     term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("Activate fire&wall..."), FirewallChecked));
+    if(type == "isdn") FirewallCheckbox = `VSpacing(0);
     // FIXME: "..." at the end of the message
 
     term StupidMode = `VSpacing(0.1);
@@ -189,7 +191,6 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    BackButtonLabel(), NextButtonLabel());
 
-    UI::ChangeWidget(`id(`Firewall), `Enabled, !Firewall::firewallpresent);
     UI::ChangeWidget(`id(`NameServers), `Enabled, DialOnDemand || !AutoDNS);
 
     /* MAIN CYCLE */

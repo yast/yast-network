@@ -11,8 +11,10 @@
 
 module "Firewall";
 textdomain "network";
+
 import "Runlevel";
 include "network/routines.ycp";
+include "network/runtime.ycp";
 
 /**
  * Firewalled devices
@@ -21,25 +23,10 @@ list devices = [];
 list devices_init = [];
 
 /**
- * Is SuSEfirewall active?
- */
-global boolean firewallpresent = false;
-
-/**
  * Read firewall settings
  * @return true if success
  */
 global define boolean Read() ``{
-
-    /* read SuSEfirewall2 status */
-    firewallpresent = Runlevel::ServiceEnabled("SuSEfirewall2_init")
-	|| Runlevel::ServiceEnabled("SuSEfirewall2_setup")
-	|| Runlevel::ServiceEnabled("SuSEfirewall2_final");
-
-    y2debug("firewallpresent=%1",firewallpresent);
-    y2debug("s1=%1",Runlevel::ServiceEnabled("SuSEfirewall2_init"));
-    y2debug("s2=%1",Runlevel::ServiceEnabled("SuSEfirewall2_setup"));
-    y2debug("s3=%1",Runlevel::ServiceEnabled("SuSEfirewall2_final"));
 
     /* read firewalled devices */
     string devs = "";
@@ -68,21 +55,33 @@ global define boolean Write() ``{
 	return true;
     }
 
-    /* Check if SuSEfirewall is active */
-    if(firewallpresent) {
-	y2error("SuSEfirewall active -> no changes");
-	return false;
+    /* Update sysconfig */
+    string devs = "";
+    y2debug("devices=%1", devices);
+    devices = filter(`v, devices, ``(v != "no"));
+    devices = filter(`v, devices, ``(v != "nothing"));
+    y2debug("devices=%1", devices);
+    if(size(devices) > 0) devs = mergestring(devices, " ");
+    SCR::Write(.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS, devs);
+    SCR::Write(.sysconfig.personal-firewall, nil);
+
+    /* Setup init scripts */
+    if(size(devices) > 0) {
+	SetupNetwork();
+	SetupService("SuSEfirewall2_init");
+	SetupService("SuSEfirewall2_setup");
+	SetupService("SuSEfirewall2_final");
+
+	SCR::Execute(.target.bash, "/sbin/SuSEfirewall2 start");
+    }
+    else {
+	Runlevel::ServiceAdjust("SuSEfirewall2_final", "disable");
+	Runlevel::ServiceAdjust("SuSEfirewall2_setup", "disable");
+	Runlevel::ServiceAdjust("SuSEfirewall2_init", "disable");
+	SCR::Execute(.target.bash, "/sbin/SuSEfirewall2 stop");
     }
 
-    string devs = "";
-    if(size(devices) > 0)
-	devs = mergestring(devices, " ");
-
-    any ret = SCR::Write(.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS, devs);
-
-    SCR::Execute(.target.bash, "/sbin/SuSEpersonal-firewall");
-
-    return ret == true;
+    return true;
 }
 
 /**
@@ -115,6 +114,7 @@ global define list Export() ``{
  * @return true if sucess
  */
 global define boolean Change(string device, boolean fw) ``{
+    y2debug("Change(%1,%2)", device, fw);
     string dev = device2fw(device);
     if(dev == nil || dev == "" || fw == nil) return false;
 
@@ -132,6 +132,7 @@ global define boolean Change(string device, boolean fw) ``{
 	}
 	devices = filter(`l, devices, ``(l!=dev));
     }
+    y2debug("devices=%1", devices);
     return true;
 }
 

@@ -94,6 +94,7 @@ global define boolean ReadHardware(string hwtype) ``{
 	    list drivers = lookup(card, "drivers", []);
 	    if(size(drivers) < 0) y2error("Not enough drivers");
 	    map driver = select(drivers, 0, $[]);
+	    change(one, "active", driver["active"]:false);
 	    list modules = select(lookup(driver, "modules", []), 0, []);
 	    change(one, "module", select(modules, 0, ""));
 	    change(one, "options", select(modules, 1, ""));

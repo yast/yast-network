@@ -41,7 +41,6 @@ y2debug("ret == %1", ret);
 
 if(ret == `next && Proxy::modified) {
     Proxy::Write();
-    RestartNetwork();
 }
 
 UI::CloseDialog();

@@ -109,7 +109,8 @@ boolean modified = false;
 /**
  * Which operation is pending?
  */
-symbol operation = nil;
+global symbol operation = nil;
+// FIXME: used in lan/address.ycp (#17346)
 
 /*------------------*/
 /* GLOBAL FUNCTIONS */
@@ -260,11 +261,11 @@ global define boolean Write() ``{
 	/* Progress step 5/9 */
 	_("Write host name and DNS configuration"),
 	/* Progress step 6/9 */
-	_("Write firewall settings"),
-	/* Progress step 7/9 */
-	_("Activate network services"),
-	/* Progress step 8/9 */
 	_("Set up network services"),
+	/* Progress step 7/9 */
+	_("Write firewall settings"),
+	/* Progress step 8/9 */
+	_("Activate network services"),
 	/* Progress step 9/9 */
 	_("Run SuSEconfig"),
     ], [], "");
@@ -304,24 +305,24 @@ global define boolean Write() ``{
 
     if(Abort()) return false;
     // stage 6 in writing current Lan setup
+    ProgressNextStage(_("Setting up network services"));
+    SetupNetwork();
+    sleep(sl);
+
+    if(Abort()) return false;
+    // stage 7 in writing current Lan setup
     ProgressNextStage(_("Writing firewall settings"));
     Firewall::Write();
     sleep(sl);
 
     if(Abort()) return false;
     // stage 8 in writing current Lan setup
-    ProgressNextStage(_("Setting up network services"));
-    SetupNetwork();
-    sleep(sl);
-
-    if(Abort()) return false;
-    // stage 1 in writing current Lan setup
     ProgressNextStage(_("Activating network services"));
     if(!write_only) StartNetwork();
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 7 in writing current Lan setup
+    // stage 9 in writing current Lan setup
     ProgressNextStage(_("Running SuSEconfig"));
     if(!write_only) RunSuSEconfig();
     sleep(sl);
@@ -663,14 +664,30 @@ global define void Propose() ``{
     if(INSTALL_INF == nil) INSTALL_INF = $[];
     AddEdit("");
 
-    /* Some HW found -> use the first */
+    /* Some HW found -> use it for proposal */
     if(size(HARDWARE) > 0) {
-	Select(0);
+
+	/* Select the first active */
+	integer i = 0;
+	integer tosel = -1;
+	maplist(`h, HARDWARE, ``{
+	    if(h["active"]:false == true)
+		if(tosel == -1) tosel = i;
+	    i = i + 1;
+	});
+
+	/* No active driver -> use the first */
+	if(tosel == -1) tosel = 0;
+
+	y2debug("HARDWARE=%1",HARDWARE);
+	y2debug("tosel=%1",tosel);
+
+	Select(tosel);
     }
     /* Nothing detected -> use INSTALL_INF */
     else {
 	return;
-	/* placeholder for s390 and others without autodetected HW
+	/* FIXME placeholder for s390 and others without autodetected HW
 	Select(nil);
 	modul = INSTALL_INF["Alias"]:"";
 	options = INSTALL_INF["Options"]:"";

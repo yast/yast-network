@@ -101,6 +101,20 @@ global define boolean SetupSMPPPD() ``{
  */
 global define boolean SetupNetwork() ``{
     Runlevel::ServiceFinetune("network", [ "2", "3", "5" ]);
+    return true;
+}
+
+/**
+ * Setup a service
+ * @return true if success
+ */
+global define boolean SetupService(string service) ``{
+    if(service == nil || service == "") {
+	y2error("Wrong service: %1", service);
+	return false;
+    }
+    y2milestone("Setting up service %1", service);
+    Runlevel::ServiceFinetune(service, [ "2", "3", "5" ]);
     /*
     if(Runlevel::ServiceStatus("network") == 0)
 	Runlevel::RunInitScript("network", "reload");
