@@ -56,6 +56,8 @@ global string bootproto = "static";
 global string ipaddr = "";
 global string remoteip = "";
 global string netmask = "";
+
+global string startmode = "onboot";
 global string mtu = "";
 
 /* wireless options */
@@ -552,7 +554,9 @@ global define boolean Select(string dev) {
     ipaddr = devmap["IPADDR"]:""; // FIXME: #31369 (Detection::result["IPADDR"]:"");
     remoteip = devmap["REMOTE_IPADDR"]:"";
     netmask = devmap["NETMASK"]:(Detection::result["NETMASK"]:"255.255.255.0");
+
     mtu = devmap["MTU"]:"";
+    startmode = devmap["STARTMODE"]:"onboot";
 
     /* wireless options */
     wl_mode = devmap["WIRELESS_MODE"]:"Managed";
@@ -660,7 +664,9 @@ global define boolean Commit() {
 	    newdev["NETWORK"] = IP::ComputeNetwork(ipaddr, netmask);
 	}
 	newdev["REMOTE_IPADDR"] = remoteip;
+
 	newdev["MTU"] = mtu;
+	newdev["STARTMODE"] = startmode;
 
 	if(unique != "" && unique != nil)
 	    newdev["UNIQUE"] = unique;
@@ -675,7 +681,7 @@ global define boolean Commit() {
 	}
 
 	if(hotplug == "") {
-	    newdev["STARTMODE"] = "onboot";
+	    // newdev["STARTMODE"] = "onboot";
 	    if(alias == "") {
 		// FIXME: MOD ChangeModule(device_name(type, device), operation == `add);
 		y2milestone("HWCFG name %1 (%2)", nm_name, nm_name_old);
@@ -690,7 +696,7 @@ global define boolean Commit() {
 	    }
 	}
 	else
-	    newdev["STARTMODE"] = "hotplug";
+	    // newdev["STARTMODE"] = "hotplug";
 
 	if(hotplug == "pcmcia")
 	    newdev["DHCLIENT_SET_DOWN_LINK"] = "yes";

@@ -16,10 +16,12 @@ module "Modem";
 textdomain "network";
 
 import "Firewall";
+import "Language";
 import "NetworkDevices";
 import "Provider";
 import "Progress";
 import "Routing";
+import "Service";
 import "Summary";
 
 /* general stuff */
@@ -218,6 +220,16 @@ global define boolean Write() {
     ProgressNextStage(_("Setting up network services..."));
     EnableNetwork();
     sleep(sl);
+
+    /* Setup SL modem */
+    if(contains(Requires, "smartlink-softmodem")) {
+	string country = Language::GetLanguageCountry();
+	y2milestone("Setting up slmodemd (%1)", country);
+	SCR::Write(.sysconfig.slmodemd.COUNTRY, toupper(country));
+	SCR::Write(.sysconfig.slmodemd, nil);
+	Service::Enable("slmodemd");
+	Service::Start("slmodemd");
+    }
 
     if(Abort()) return false;
     /* Progress step 5/6 */

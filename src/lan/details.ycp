@@ -39,8 +39,8 @@ define any DetailsDialog() {
 _("<p><b>Device Activation</b> may either happen during boot or manually
 with tools like <b>ifup</b>.</p>");
 
-    string mtu = "";
-    string startmode = "onboot";
+    string mtu = Lan::mtu;
+    string startmode = Lan::startmode;
 
     list StartModes = [
 	/* ComboBox item (device start mode) */
@@ -99,8 +99,8 @@ with tools like <b>ifup</b>.</p>");
 
     /* update the configuration */
     if(ret == `next) {
-	startmode = (string) UI::QueryWidget(`id(`startmode), `Value);
-	mtu = (string) UI::QueryWidget(`id(`mtu), `Value);
+	Lan::startmode = (string) UI::QueryWidget(`id(`startmode), `Value);
+	Lan::mtu = (string) UI::QueryWidget(`id(`mtu), `Value);
     }
 
     return ret;

@@ -25,12 +25,12 @@ Summary:	Network configuration
 
 @INSTALL@
 %ifarch s390 s390x
-/bin/rm -f @desktopdir@/dsl.desktop
-/bin/rm -f @desktopdir@/isdn.desktop
-/bin/rm -f @desktopdir@/modem.desktop
+/bin/rm -f $RPM_BUILD_ROOT/@desktopdir@/dsl.desktop
+/bin/rm -f $RPM_BUILD_ROOT/@desktopdir@/isdn.desktop
+/bin/rm -f $RPM_BUILD_ROOT/@desktopdir@/modem.desktop
 %endif
-/bin/rm -f @desktopdir@/network.desktop
-/bin/rm -f @desktopdir@/provider.desktop
+/bin/rm -f $RPM_BUILD_ROOT/@desktopdir@/network.desktop
+/bin/rm -f $RPM_BUILD_ROOT/@desktopdir@/provider.desktop
 
 @CLEAN@
 

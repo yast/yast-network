@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Mar 30 16:36:24 CEST 2004 - msvec@suse.cz
+
+- dropped testing desktop entries (#37522)
+- fixed STARTMODE and MTU writing (#37516)
+- better smartlink-softmodems support (#37335)
+- 2.9.22
+
+-------------------------------------------------------------------
 Mon Mar 29 17:11:33 CEST 2004 - msvec@suse.cz
 
 - fixed DSL configuration write (#36629)
