@@ -26,13 +26,14 @@ boolean propose = false;
 list args = WFM::Args();
 if(size(args) > 0) {
     if(is(WFM::Args(0), path) && WFM::Args(0) == .propose) {
-        y2milestone("Using PROPOSE mode");
-        propose = true;
+	y2milestone("Using PROPOSE mode");
+	propose = true;
     }
     else if(is(WFM::Args(0), path) && WFM::Args(0) == .capiadsl) {
         y2milestone("Using CAPI-ADSL mode");
-	DSL::capiadsl = true;
-	DSL::capiadsl_hw = WFM::Args(1);
+	DSL::capiadsl = nil;
+	if(size(args > 1)) DSL::capiadsl = WFM::Args(1);
+	if(DSL::capiadsl == nil) DSL::capiadsl = $[];
     }
     else
         y2error("Bad argument for modem: %1",WFM::Args(0));

@@ -49,11 +49,9 @@ global define symbol Commit(string what) ``{
  * @return dialog result
  */
 global define symbol FinishDialog() ``{
-    if (DSL::capiadsl)
-	// in this case we are not finished yet
-	return `next;
-    else
-	return FinishPopup(Modified(), "dsl", "", "mail", ["permanent"]);
+    /* In this case, we have been called from ISDN: we are not finished yet */
+    if(DSL::capiadsl != nil) return `next;
+    return FinishPopup(Modified(), "dsl", "", "mail", ["permanent"]);
 }
 
 /**

@@ -27,6 +27,11 @@ import "Confirm";
 global define boolean ReadHardware(string hwtype) ``{
     Hardware = [];
 
+    y2debug("hwtype=%1", hwtype);
+
+    /* FIXME: no clean DSL hardware support yet */
+    if(hwtype == "dsl") return false;
+
     integer num = 0;
     list paths = [];
     list allcards = [];
@@ -170,13 +175,13 @@ global define void SelectHardware(integer which) ``{
     }
     /* isdn card */
     else if(type == "isdn") {
-	y2error("isdn not ready yet");
 	/* FIXME: ISDN */
+	y2error("isdn not ready yet");
     }
     /* dsl card */
     else if(type == "dsl") {
 	/* FIXME: DSL HW */
-	pppmode = sel["pppmode"]:"";
+	pppmode = sel["pppmode"]:"capi-adsl";
 	startmode = sel["startmode"]:"manual";
     }
     /* treat the rest as a network card */
