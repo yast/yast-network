@@ -68,7 +68,7 @@ define string DeviceType(string type) {
 	/* Device type label */
 	"iucv"	: _("IUCV"),
 	/* Device type label */
-	"lcs"	: _("LCS"),
+	"lcs"	: _("OSA LCS"),
 	/* Device type label */
 	"lo"	: _("Loopback"),
 	/* Device type label */

@@ -256,7 +256,7 @@ completes the configuration.</p>");
     ];
 
     /* MenuButton item */
-    if(Arch::s390 && (Lan::type == "qeth" || Lan::type == "ctc"))
+    if(Arch::s390 && (Lan::type == "qeth" || Lan::type == "ctc" || Lan::type == "lcs"))
 	MB_list = add(MB_list, `item(`id(`s390), _("&S/390")));
 
     /* MenuButton label */

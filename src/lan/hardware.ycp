@@ -94,22 +94,6 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	hotplug = "usb";
     y2milestone("hotplug=%1", Lan::hotplug);
 
-    /*
-    if(Arch::s390) {
-	device_types = [
-	    `item(`id("eth"), "OSA Ethernet", type == "eth"),
-	    `item(`id("qeth"), "OSA Express Ethernet", type == "qeth"),
-	    `item(`id("tr"), "OSA Token-Ring", type == "tr"),
-	    `item(`id("hsi"), "Hipersockets", type == "hsi"),
-	    `item(`id("ctc"), "Channel To Channel", type == "ctc"),
-	    `item(`id("escon"), "Escon", type == "escon"),
-	    `item(`id("iucv"), "IUCV", type == "iucv"),
-	];
-	if(modul == "")
-	    modul = "lcs";
-    }
-    */
-
     term CheckBoxes = `HBox(
 	`HSpacing(1.5),
 	/* CheckBox label */
@@ -361,7 +345,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    UI::ChangeWidget(`id(`num), `Value, device);
 
 	    if(Arch::s390) {
-		if(type == "tr" || type == "eth") modul = "lcs";
+		if(type == "tr" || type == "lcs") modul = "lcs";
 		if(type == "hsi" || type == "qeth") modul = "qeth";
 		if(type == "ctc" || type == "escon") modul = "ctc";
 		if(type == "iucv") modul = "netiucv";
@@ -644,6 +628,22 @@ add them manually.</p>");
 	);
 	/* S/390 dialog help: QETH */
 	helptext = _("<p>Enter the <b>Port Name</b> for this interface (case sensitive).</p>");
+    }
+
+    if(Lan::type == "lcs") {
+	contents = `HBox(
+	    `HSpacing(6),
+	    /* Frame label */
+	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
+		`VSpacing(1),
+		/* TextEntry label */
+		`TextEntry(`id(`chan_mode), _("&Port Number"), Lan::chan_mode),
+		`VSpacing(1)
+		), `HSpacing(2))),
+	    `HSpacing(6)
+	);
+	/* S/390 dialog help: LCS */
+	helptext = _("<p>Choose the <b>Port Number</b> for this interface.</p>");
     }
 
     list ctcitems = [

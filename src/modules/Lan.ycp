@@ -746,7 +746,10 @@ global define boolean Commit() {
 
 		if(Arch::s390) {
 		    // handle HSI like qeth, #40692#c15
-		    string type2 = (type == "hsi" || type == "eth")? "qeth": type;
+ 		    string type2 = (type == "hsi")? "qeth": type;
+		    // handle tr like lcs
+		    if (type == "tr" || type == "eth")
+		        type2 = "lcs";
 		    if(type2 == "iucv") {
 			NetworkModules::SCRIPTUP = "hwup-iucv";
 		    }
@@ -773,7 +776,7 @@ global define boolean Commit() {
 		    string devid1 = PadZerosTmp(regexpsub(tohexstring(devid+1), "0x(.*)", "\\1"), 4);
 		    string devid2 = PadZerosTmp(regexpsub(tohexstring(devid+2), "0x(.*)", "\\1"), 4);
 
-		    if(type2 == "ctc") {
+		    if(type2 == "ctc" || type2 == "lcs") {
 			NetworkModules::CCW_CHAN_IDS = sformat("%1%2 %1%3", devstr, devid0, devid1);
 			NetworkModules::CCW_CHAN_MODE = chan_mode;
 			NetworkModules::CCW_CHAN_NUM = "2";

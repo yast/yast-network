@@ -83,7 +83,7 @@ define string ControllerType(map hwdevice) {
 	else if(subclass_id == 0x86) return "qeth";
 	else if(subclass_id == 0x87) return "hsi";
 	else if(subclass_id == 0x88) return "ctc";
-	else if(subclass_id == 0x89) return "qeth";
+	else if(subclass_id == 0x89) return "lcs";
 	else if(subclass_id == 0x8E) return "ficon";
 	else if(subclass_id == 0x8F) return "escon";
 	else if(subclass_id == 0x90) return "iucv";

@@ -32,8 +32,8 @@ define string HardwareName(list<map> Hardware, string unq);
  */
 define list<any> BuildSummary(list<map> Hardware, boolean split) {
 
-    y2debug("Devs=%1", Devs);
-    y2debug("Hardware=%1", Hardware);
+    y2milestone("Devs=%1", Devs);
+    y2milestone("Hardware=%1", Hardware);
     y2debug("split=%1", split);
 
     list uniques = [];
@@ -187,7 +187,7 @@ define string CheckEmptyName(string devtype, string hwname) {
 	/* Device type label */
 	"iucv"		: _("Inter User Communication Vehicle (IUCV)"),
 	/* Device type label */
-	"lcs"		: _("LCS"),
+	"lcs"		: _("OSA LCS Network Card"),
 	/* Device type label */
 	"lo"		: _("Loopback device"),
 	/* Device type label */
