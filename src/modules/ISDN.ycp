@@ -526,22 +526,26 @@ global define boolean TestDev(string dev) ``{
  * @param map of parameters
  *
  */
-global define void set_cardparameter(map cfg) ``{
+map set_cardparameters (map cfg) {
     string ac = cfg["AREACODE"]: global_ac;
-    if (ac != "" && global_ac == "")
+    if (global_ac == "")
 	global_ac = ac;
     cfg["AREACODE"] = ac;
+
     string dp = cfg["DIALPREFIX"]: global_dp;
-    if (dp != "" && global_dp == "")
+    if (global_dp == "")
 	global_dp = dp;
     if (dp != "")
 	cfg["DIALPREFIX"] = dp;
+
     string sm = cfg["STARTMODE"]: "onboot";
     if (sm == "hotplug")
         global_sm = "hotplug";
     if (sm == "")
 	sm = "onboot";
     cfg["STARTMODE"] = sm;
+
+    return cfg;
 }
 
 /**
@@ -550,14 +554,17 @@ global define void set_cardparameter(map cfg) ``{
  * @param map of parameters
  *
  */
-global define void set_ifparameter(map cfg) ``{
+map set_ifparameters (map cfg) {
     string sm = cfg["STARTMODE"]: global_sm;
-    if (sm != "" && global_sm == "")
+    if (global_sm == "")
         global_sm = sm;
     if (sm == "")
 	sm = "onboot";
     cfg["STARTMODE"] = sm;
+
     provider_file = cfg["PROVIDER"]: "";
+
+    return cfg;
 }
 
 /**
@@ -566,7 +573,7 @@ global define void set_ifparameter(map cfg) ``{
  * @param map of detected hw settings
  *
  */
-global define void set_hwparameter(map hw) ``{
+void set_hwparameters (map hw) {
     // Fixme parameter lookup for ISA hardware
     hw_device["PARA_TYPE"] = sformat("%1", get_i4ltype(hw));
     hw_device["PARA_SUBTYPE"] = sformat("%1", get_i4lsubtype(hw));
@@ -590,9 +597,8 @@ global define void SelectHW(integer which) ``{
 
     type = "contr";
     device = GetFreeDevice(type);
-    hw_device = $[];
-    set_cardparameter(hw_device);
-    set_hwparameter(sel);
+    hw_device = set_cardparameters ($[]);
+    set_hwparameters (sel);
     operation = `add;
 }
 
@@ -604,8 +610,7 @@ global define void SelectHW(integer which) ``{
 global define boolean Add() ``{
     type = "contr";
     device = GetFreeDevice(type);
-    hw_device = $[];
-    set_cardparameter(hw_device);
+    hw_device = set_cardparameters ($[]);
     operation = `add;
     return true;
 }
@@ -630,7 +635,7 @@ global define boolean Edit(string dev) ``{
 
     device = num;
     type = typ;
-    set_cardparameter(hw_device);
+    hw_device = set_cardparameters (hw_device);
     y2debug("devmap=%1", hw_device);
     operation = `edit;
     return true;
@@ -668,33 +673,11 @@ global define boolean Delete(string item) ``{
 global define boolean AddIf(string proto) ``{
     type = "net";
     device = GetFreeDevice(type);
-    interface = $[];
-    set_ifparameter(interface);
-    interface["PROTOCOL"] = proto;
+    interface = $[
+	"PROTOCOL": proto,
+	];
+    interface = set_ifparameters (interface);
     operation = `addif;
-    return true;
-}
-
-/*
- * selects interface cfg-<item> for edit
- * @param  string item interface to edit
- * @return true if cfg-<item> was found
- */
-global define boolean EditIf(string item) ``{
-    string typ = device_type(item);
-    string num = device_num(item);
-
-    map typemap = Devices[typ]:$[];
-    if(!haskey(typemap, num)) {
-	y2error("Key not found: %1", item);
-	return false;
-    }
-    interface = typemap[num]:$[];
-    /* interface settings */
-    set_ifparameter(interface);
-    device = num;
-    type = typ;
-    operation = `editif;
     return true;
 }
 
@@ -713,10 +696,25 @@ global define boolean SelIf(string item) ``{
 	return false;
     }
     interface = typemap[num]:$[];
-    set_ifparameter(interface);
+    /* interface settings */
+    interface = set_ifparameters (interface);
     device = num;
     type = typ;
     return true;
+}
+
+/*
+ * selects interface cfg-<item> for edit
+ * @param  string item interface to edit
+ * @return true if cfg-<item> was found
+ */
+global define boolean EditIf(string item) ``{
+    if (SelIf (item))
+    {
+	operation = `editif;
+	return true;
+    }
+    return false;
 }
 
 /*
