@@ -21,7 +21,7 @@ import "RichText";
  * Handler for action "list"
  * @param options action options
  */
-define void ListHandler(map options) {
+define boolean ListHandler(map<string, string> options) {
 
     boolean cf = false;
     boolean uncf = false;
@@ -44,13 +44,14 @@ define void ListHandler(map options) {
 
     y2debug("%1", summary);
     CommandLine::Print(summary);
+    return true;
 }
 
 /**
  * Handler for action "add"
  * @param options action options
  */
-define void AddHandler(map options) {
+define boolean AddHandler(map<string, string> options) {
     string dev = options["device"]:"";
 
     /* Progress text */
@@ -58,7 +59,7 @@ define void AddHandler(map options) {
 
     if(!Lan::Add()) {
 	CommandLine::Print(Label::ErrorMsg());
-	return;
+	return false;
     }
 
     if(options["ipaddr"]:"" != "") Lan::ipaddr = options["ipaddr"]:"";
@@ -70,13 +71,14 @@ define void AddHandler(map options) {
     Lan::Commit();
     /* Progress result */
     CommandLine::Print(_("Success"));
+    return true;
 }
 
 /**
  * Handler for action "delete"
  * @param options action options
  */
-define void DeleteHandler(map options) {
+define boolean DeleteHandler(map<string, string> options) {
     string dev = options["device"]:"";
 
     /* Progress text */
@@ -86,8 +88,12 @@ define void DeleteHandler(map options) {
 	/* Progress result */
 	CommandLine::Print(_("Success"));
     else
+    {
 	/* Progress result */
 	CommandLine::Print(Label::ErrorMsg());
+	return false;
+    }
+    return true;
 }
 
 /* EOF */
