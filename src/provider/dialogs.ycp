@@ -158,7 +158,8 @@ located then choose one of the listed providers.</p>") +
 	    `HBox(`HSpacing(3.4), `Label(`id(`homepage), `opt(`hstretch), "")),
 	    `HBox(`HSpacing(3.4), `Label(`id(`hotline), `opt(`hstretch),  "")),
         // pushbutton label
-	    `PushButton(`id(`new), _("Ne&w"))
+	    `PushButton(`id(`new), _("Ne&w")),
+        `VSpacing(1)
 	),
 	`HSpacing()
     );
@@ -313,16 +314,18 @@ the password every time.</p>
     term auth = `Frame(`id(`auth), _("Authorization"), `HBox(
 	`HSpacing(0.5),
 	`VBox(
-	    `Label(""),
         // textentry label
-	    `TextEntry(`id(`username), _("&User name"), username)
+	    `TextEntry(`id(`username), _("&User name"), username),
+	    `Label(""),
+        `VSpacing(0.2)
 	),
 	`HSpacing(0.5),
 	`VBox(
+        // password entry label
+	    `Password(`id(`password), _("&Password"), password),
         // check box label
 	    `Left(`CheckBox(`id(`askpass), `opt(`notify), _("&Always ask for password"), ask_pass)),
-        // password entry label
-	    `Password(`id(`password), _("&Password"), password)
+        `VSpacing(0.2)
 	),
 	`HSpacing(0.5)
     ));
@@ -332,7 +335,9 @@ the password every time.</p>
 	if (encap == "" && ISDN::operation == `addif)
 		encap = lookup(ISDN::interface, "PROTOCOL", "syncppp");
     // frame label
-	rbgroup = `Left(`Frame(_("Packet encapsulation"), `VBox(
+	rbgroup = `Left(`Frame(_("Packet encapsulation"),
+        `HBox(
+         `VBox(
 	    `VSpacing(0.4),
 	    `RadioButtonGroup(`id(`raw), `opt(`notify), `HBox(
 		`HSpacing(0.5),
@@ -342,7 +347,9 @@ the password every time.</p>
 		`HSpacing(0.5)
 	    )),
 	    `VSpacing(0.4)
-	)));
+	    ),
+        `HWeight(1,`Label(""))
+        )));
     }
 
     term contents = `VBox(`VSpacing(3), `HBox(
@@ -352,7 +359,8 @@ the password every time.</p>
         // Label text
 		`Label(_("Name for dialing:")),
 		`HSpacing(0.5),
-		`Label(`opt(`outputField), shortname)
+        `HWeight(1,
+		`Label(`opt(`outputField), shortname))
 	    )),
 	    `VSpacing(1),
         // text entry label

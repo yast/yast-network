@@ -93,6 +93,7 @@ for example, +pap +chap for the dial-in server authentication.</p>");
 	    // Frame title
 	    `Frame(_("Callback functions"),
 		`VBox(
+		    `VSpacing(0.2),
 		    `RadioButtonGroup(`id(`callback),`HBox(
 			`VBox(
 			    // RadioButton for callback modes
@@ -104,25 +105,30 @@ for example, +pap +chap for the dial-in server authentication.</p>");
 			)
 		    )),
 		    `VSpacing(0.5),
+            `HBox(
+            `HSpacing(0.5),
 		    `Left(`HSquash(
 			// IntField label
 			`IntField(`id(`cbdelay), _("Callback &Delay"), 0, 10, cbdel)
-		    ))
+		    ))),
+		    `VSpacing(0.2)
 		)
 	);
 
     term contents =
-	`HVSquash(
+	`HBox(
+        `HSpacing(2),
 	    `VBox(
 		// TextEntry label
 		`TextEntry(`id(`remote_in), _("Remote &phone number list"), remote_in),
 		// CheckBox label
-		`CheckBox(`id(`secure), _("Only &listed numbers allowed"), secure),
+		`Left(`CheckBox(`id(`secure), _("Only &listed numbers allowed"), secure)),
 		`VSpacing(0.5),
 		cbterm,
 		`VSpacing(0.5),
 		ipppd
-	    )
+	    ),
+        `HSpacing(2)
 	);
 
     /* DIALOG PREPARE */

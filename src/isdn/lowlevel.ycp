@@ -43,15 +43,15 @@ global define term Card_Parameter(integer cidx) ``{
 	i = lookup(cur_card, "class", 0);
 	if ((i == 4) || (i==8)) /* PCMCIA, USB */
 		startm = "hotplug";
-	contens = add(contens, 
+	contens = add(contens,
 	    // ComboBox label
-	    `ComboBox(`id(`startmode), _("&Start Mode"),
+	    `Bottom(`ComboBox(`id(`startmode), _("&Start Mode"),
 	    [
 		// ComboBox items
 		`item(`id("onboot"), _("OnBoot"), startm == "onboot"),
 		`item(`id("manual"), _("Manual"), startm == "manual"),
 		`item(`id("hotplug"), _("HotPlug"), startm == "hotplug")
-	    ]));
+	    ])));
 	if ((i != 3) && (i != 6) && (i != 7))
 	    return contens;
 	/* only legal ISA parport and serial devices */
@@ -320,27 +320,36 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
     term ISDN_card = nil;
     if (Detected == `Detected || ISDN::operation == `edit) {
 	// frame title
-        ISDN_card = `Frame(_("ISDN card"),
+        ISDN_card = `VSquash(`Frame(_("ISDN card"),
 	    `HBox(
-		`HWeight(1, `Label(`id(`CardN), CardName)),
+        `HSpacing(0.5),
+        `Top(`VBox(
+         `Label(""),
+         `HBox(
+		 `HWeight(1, `Label(`id(`CardN), `opt(`outputField), CardName)))
+        )),
 		`HSpacing(),
-		`ReplacePoint(`id(`ParaR), Card_Parameter(CurrentCardIndex))
+		`ReplacePoint(`id(`ParaR), Card_Parameter(CurrentCardIndex)),
+        `HSpacing(0.5)
 	    )
-	);
+	));
     } else {
 	// frame title
         ISDN_card = `Frame(_("ISDN cards"),
 	    `HBox(
+        `HSpacing(0.5),
 		// SelectionBox label
 		`HWeight(1, `SelectionBox(`id(`Card), `opt(`notify), _("Select your ISDN &card"),  CardList)),
 		`HSpacing(),
-		`ReplacePoint(`id(`ParaR), Card_Parameter(CurrentCardIndex))
+		`ReplacePoint(`id(`ParaR), Card_Parameter(CurrentCardIndex)),
+        `HSpacing(0.5)
 	    )
 	);
     }
     contents =
-	`VBox(
-	    ISDN_card,
+	`Top(`VBox(
+	    `VSpacing(1.5),
+         ISDN_card,
 	    `VSpacing(0.2),
 	    `ReplacePoint(`id(`DrvRpl), ISDN_driver),
 	    `VSpacing(0.2),
@@ -348,8 +357,9 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 		ISDN_protocol,
 		`HSpacing(1),
 		ISDN_line
-	    )
-	);
+	    ),
+	    `VSpacing(1.5)
+	));
 
     /* DIALOG PREPARE */
     Wizard::SetContents(caption, contents, helptext, true, true);

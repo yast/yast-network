@@ -138,7 +138,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 		/* Label */
 		`Label(_("Provider:")),
 		`HSpacing(0.5),
-		`Label(`opt(`outputField), Provider)
+		`HWeight(1,`Label(`opt(`outputField), Provider))
 	    )),
 	    `VSpacing(0.5),
 	    `HBox(

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Aug 20 17:01:06 CEST 2002 - jsuchome@suse.cz
+
+- updated dialogs's look (#17572)
+
+-------------------------------------------------------------------
 Tue Aug 20 12:09:03 CEST 2002 - arvin@suse.de
 
 - don't stop/start network during writing of proposal on s390

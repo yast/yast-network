@@ -72,13 +72,13 @@ _("<p>To avoid adding an interface now, use
     network = add(network, `VSpacing(0.5));
     if (ISDN::have_dsl)
 	// PushButton label to select the next Dialog
-	network = add(network, `PushButton(`id(`AddDSLPPP), _("Add &DSL CAPI interface")));
+	network = add(network, `PushButton(`id(`AddDSLPPP),`opt(`hstretch), _("Add &DSL CAPI interface")));
     // PushButton label to select the next Dialog
-    network = add(network, `PushButton(`id(`AddSyncPPP), _("Add new &SyncPPP network interface")));
+    network = add(network, `PushButton(`id(`AddSyncPPP),`opt(`hstretch), _("Add new &SyncPPP network interface")));
     // PushButton label to select the next Dialog
-    network = add(network, `PushButton(`id(`AddRawIP), _("Add new Raw&IP network interface")));
+    network = add(network, `PushButton(`id(`AddRawIP), `opt(`hstretch), _("Add new Raw&IP network interface")));
     // PushButton label to select the next Dialog
-    network = add(network, `PushButton(`id(`AddProvider), _("Add &provider to existing interface")));
+    network = add(network, `PushButton(`id(`AddProvider),`opt(`hstretch), _("Add &provider to existing interface")));
     network = add(network, `VSpacing(0.5));
 
     term contents =
@@ -235,7 +235,14 @@ remove a channel.
 	prov = `Left(`ComboBox(`id(`prov), _("D&efault Provider"), provlist));
     }
     term contents =
+    `Top(
 	`VBox(
+	    `VSpacing(1.5),
+        // Frame title
+        `Frame(_("Connection settings"),
+        `HBox(
+        `HSpacing(1),
+        `VBox(
 	    `VSpacing(0.5),
 	    // TextEntry label
 	    `Left(`TextEntry(`id(`msn), _("My &phone number"), msn)),
@@ -255,18 +262,20 @@ remove a channel.
 		    `VSpacing(0.5),
 		    prov,
 		    `VSpacing(0.5),
-		    `HBox(
 			// CheckBox label
 			`Left(`CheckBox(`id(`chargehup), _("Charge&HUP"), chargeHUP)),
+		    `VSpacing(0.5),
 			// CheckBox label
-			`Left(`CheckBox(`id(`multilink), _("Ch&annel bundling"), multilink))
-		    )
-		)
-	    ),
+			`Left(`CheckBox(`id(`multilink), _("Ch&annel bundling"), multilink)),
+		    `VSpacing(0.5)
+		))
+        ),
+        `HSpacing(1)
+        )),
 	    `VSpacing(0.5),
 	    // PushButton label
-	    `PushButton(`id(`detail), _("&Details"))
-	);
+	    `PushButton(`id(`detail), _("&Details..."))
+	));
 
 
     /* DIALOG PREPARE */
