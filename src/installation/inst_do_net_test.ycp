@@ -422,9 +422,9 @@ the logs for details.
 
     make_dialog();
 
-    UI::ChangeWidget(`id(`back), `Enabled, false);
+    Wizard::DisableBackButton();
     UI::ChangeWidget(`id(`abort), `Enabled, false);
-    UI::ChangeWidget(`id(`next), `Enabled, false);
+    Wizard::DisableNextButton();
     UI::ChangeWidget(`id(`abort_test), `Enabled, true);
     UI::ChangeWidget(`id(`view_log), `Enabled, false);
 
@@ -463,9 +463,9 @@ the logs for details.
     copy_logs2 ();
 
 
-    UI::ChangeWidget(`id(`back), `Enabled, true);
+    Wizard::EnableBackButton();
     UI::ChangeWidget(`id(`abort), `Enabled, true);
-    UI::ChangeWidget(`id(`next), `Enabled, true);
+    Wizard::EnableNextButton();
     UI::ChangeWidget(`id(`abort_test), `Enabled, false);
     UI::ChangeWidget(`id(`view_log), `Enabled, true);
 
