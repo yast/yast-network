@@ -4,7 +4,7 @@
 client_DATA = $(wildcard *.ycp)
 EXTRA_DIST = $(client_DATA)
 
-YCPCFLAGS = -M../modules -I..
+YCPCFLAGS = -M../modules -I../modules
 # the rest has been already done in ../modules
 network:
 	ln -sf ../routines $@

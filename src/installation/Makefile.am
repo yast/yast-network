@@ -11,7 +11,7 @@ client_DATA = inst_ask_net_test.ycp inst_do_net_test.ycp	\
 
 EXTRA_DIST = $(ynclude_DATA) $(client_DATA) $(ybin_SCRIPTS)
 
-YCPCFLAGS = -M../modules -I..
+YCPCFLAGS = -M../modules -I../modules
 # the rest has been already done in ../modules
 network:
 	ln -sf ../routines $@
