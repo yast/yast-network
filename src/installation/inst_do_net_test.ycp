@@ -194,7 +194,7 @@ and correct the setting.</p>");
 
 		// ping anything (www.suse.com) to trigger dod connections
 		SCR::Execute (.target.bash_background,
-			      "/bin/ping -c 1 213.95.15.200");
+			      "/bin/ping -c 1 -w 1 213.95.15.200");
 
 		set_stage (1);
 	    }
