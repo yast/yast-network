@@ -39,7 +39,6 @@ import "Summary";
 
 
 global string name = "";
-global string unique = "";
 
 global string type = "";
 global string device = "";
@@ -85,6 +84,9 @@ boolean write_only = false;
 
 /* current selected HW */
 map hw = $[];
+
+/* NetworkModules:: name */
+string nm_name = "";
 
 /**
  * Abort function
@@ -188,8 +190,10 @@ global define boolean Read() {
     // if(!Arch::s390) /* FIXME: Temporary hack until the detection is functional */
 
     // Dont read hardware data in config mode
-    if (!Mode::config)
+    if(!Mode::config) {
+	if(!Detection::running) Detection::Start();
 	Hardware = ReadHardware("netcard");
+    }
 
     /* ReadHardware(""); /* TESTING */
     sleep(sl);
@@ -260,8 +264,14 @@ global define boolean Read() {
  */
 global define boolean Write() {
 
-    if(!modified) return true;
     y2milestone("Writing configuration");
+    if(!write_only && Detection::running) Detection::Stop();
+
+    /* Stop the detection */
+    if(!modified) {
+	y2milestone("No changes to network setup -> nothing to write");
+	return true;
+    }
 
     /* Write dialog caption */
     string caption = _("Saving network configuration");
@@ -292,9 +302,6 @@ global define boolean Write() {
 	/* Progress stage 10/10 */
 	_("Run SuSEconfig"),
     ], [], "");
-
-    /* Stop the detection */
-    if(!write_only && Detection::running) Detection::Stop();
 
     if(Abort()) return false;
     /* Progress step 1/10 */
@@ -419,16 +426,12 @@ global define void SelectHW(integer which) {
 	// FIXME: MOD Module["options"] = hw["options"]:"";
 	NetworkModules::Alias = hw["module"]:"";
 	NetworkModules::Options = hw["options"]:"";
-	y2debug("");
     }
     else
 	y2milestone("HOTPLUG(%1) -> ignoring modprobe.conf", hotplug);
 
     string mac = hw["mac"]:"";
     string busid = hw["busid"]:"";
-
-    /* temporarily disable by-MAC identification */
-    mac = "";
 
     /* eth, tr */
     if(mac != nil && mac != "")
@@ -439,6 +442,14 @@ global define void SelectHW(integer which) {
     /* dummy */
     else
 	y2milestone("No detailed HW info: %1", device);
+
+    if(busid != nil && busid != "") {
+	nm_name = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
+    }
+    else {
+	y2error("No HW info found: %1", device);
+	nm_name = "";
+    }
 
     y2security("hw=%1", hw);
     y2milestone("device=%1", device);
@@ -499,6 +510,7 @@ global define boolean Select(string dev) {
     /* dev=="" -> Add */
     if(dev == "") {
 	type = "eth";
+	nm_name = "";
 	// FIXME: MOD AddModule(type);
 	NetworkModules::AddM();
 
@@ -520,11 +532,11 @@ global define boolean Select(string dev) {
 	type = device_type(dev);
 	device = device_num(dev);
 	alias = alias_num(dev);
+	nm_name = devmap["_nm_name"]:"";
     }
 
     /* general stuff */
     name = devmap["NAME"]:"";
-    unique = devmap["UNIQUE"]:"";
 
     /* address options */
     bootproto = devmap["BOOTPROTO"]:"static";
@@ -566,9 +578,9 @@ global define boolean Select(string dev) {
     y2debug("type=%1", type);
 
     /* kernel options */
-    if(hotplug == "" && alias == "" && dev != "") {
+    if(hotplug == "" && alias == "" && nm_name != "") {
 	// FIXME: MOD SelectModule(dev);
-	NetworkModules::SelectM(dev);
+	NetworkModules::SelectM(nm_name);
     }
     else {
 	// FIXME: MOD SelectModule("");
@@ -628,7 +640,6 @@ global define boolean Commit() {
     if(operation == `add || operation == `edit) {
 	map<string,any> newdev = $[
 	    "BOOTPROTO"	: bootproto,
-	    "UNIQUE"	: unique,
 	];
 	//if(bootproto == "static") {
 	if(ipaddr != "") {
@@ -653,7 +664,7 @@ global define boolean Commit() {
 	    newdev["STARTMODE"] = "onboot";
 	    if(alias == "") {
 		// FIXME: MOD ChangeModule(device_name(type, device), operation == `add);
-		NetworkModules::ChangeM(device_name(type, device));
+		NetworkModules::ChangeM(nm_name);
 	    }
 	}
 	else
@@ -684,6 +695,9 @@ global define boolean Commit() {
 	    newdev["PORTNAME"] = portname;
 	}
 
+	if(nm_name != nil && nm_name != "")
+	    newdev["_nm_name"] = nm_name;
+
 	if(type == "ctc" || type == "escon")
 	    if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 40)
 		NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 40;
@@ -710,7 +724,7 @@ global define boolean Commit() {
 	if(alias == "") {
 	    if(hotplug == "") {
 		// FIXME: MOD DeleteModule(device_name(type, device));
-		NetworkModules::DeleteM(device_name(type, device));
+		NetworkModules::DeleteM(nm_name);
 	    // FIXME: NI DeleteDevice2(device_name(type, device));
 	    }
 	}

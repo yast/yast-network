@@ -118,6 +118,9 @@ define map Filter(map<string,map> modules, string devregex) {
     if(modules == nil || devregex == nil || devregex == "")
 	return modules;
 
+    /* FIXME: broken filtering */
+    return modules;
+
     string regex = "^(" + NetworkDevices::CardRegex[devregex]:devregex + ")[^a-zA-Z].*$";
     y2debug("regex=%1", regex);
     modules = filter(string file, map devmap, modules, {
@@ -132,6 +135,9 @@ define map Filter(map<string,map> modules, string devregex) {
 define map FilterNOT(map<string,map> modules, string devregex) {
     if(modules == nil || devregex == nil || devregex == "")
 	return $[];
+
+    /* FIXME: broken filtering */
+    return $[];
 
     string regex = "^(" + NetworkDevices::CardRegex[devregex]:devregex + ")[^a-zA-Z].*$";
     y2debug("regex=%1", regex);
@@ -170,7 +176,7 @@ global define boolean Write(string devregex) {
     foreach(string d, Deleted, {
 	// if(!haskey(OriginalMods, d)) return;
 	/* delete config file */
-	path p = topath(".network.section.\"" + d + "\"");
+	path p = topath(".sysconfig.hardware.section.\"" + d + "\"");
 	y2debug("deleting: %1", p);
 	SCR::Write(p, nil);
     });
@@ -236,6 +242,7 @@ global boolean DeleteM(string name) {
     }
     Deleted = add(Deleted, name);
     Modules = remove(Modules, name);
+    y2milestone("Deleted=%1", Deleted);
     y2milestone("Modules=%1", Modules);
     return true;
 }
@@ -550,7 +557,7 @@ global define list Locate(string key, string val) {
     list ret = [];
     maplist(string typ, map devsmap, Modules, {
 	maplist(string num, map devmap, (map<string,map>) devsmap, {
-	    if(devmap[key]:"" == val) ret = add(ret, typ+num);
+	    if(devmap[key]:"" == val) ret = add(ret, device_name(typ, num));
 	});
     });
 

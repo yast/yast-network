@@ -45,12 +45,11 @@ define list<any> BuildSummary(list<map> Hardware, boolean split) {
 	maplist(string devnum, map devmap, (map<string,map>)devsmap, {
 
 	    /* main device summary */
-	    string unq = devmap["UNIQUE"]:"";
-	    string hwname = CheckEmptyName(devtype, HardwareName(Hardware, unq));
+	    string hwname = CheckEmptyName(devtype, HardwareName(Hardware, devnum));
 	    string status = DeviceStatus(devtype, devnum, devmap);
 
 	    configured = add(configured, Summary::Device(hwname, status));
-	    uniques = add(uniques, unq);
+	    uniques = add(uniques, devnum);
 
 	    /* aliases summary */
 	    map<string,map> aliasee = devmap["_aliases"]:$[];
@@ -68,11 +67,12 @@ define list<any> BuildSummary(list<map> Hardware, boolean split) {
     y2debug("uniques(%1)", uniques);
     /* build a list of unconfigured devices */
     maplist(map h, Hardware, {
-	string unq = h["unique"]:"";
+	string busid = "bus-" + h["bus"]:"" + "-" + h["busid"]:"";
+	string mac = "id-" + h["mac"]:"";
 	string hwtype = h["type"]:"";
 	string hwname = CheckEmptyName(hwtype, h["name"]:"");
-	y2debug("unq(%1)", unq);
-	if(!contains(uniques, unq)) {
+	y2debug("busid=%1, mac=%2", busid, mac);
+	if(!contains(uniques, busid) && !contains(uniques, mac)) {
 	    if(split)
 		unconfigured = add(unconfigured, h);
 	    else
@@ -236,13 +236,16 @@ define string CheckEmptyName(string devtype, string hwname) {
  * @param unq unique number
  * @return hardware name
  */
-define string HardwareName(list<map> Hardware, string unq) {
+define string HardwareName(list<map> Hardware, string id) {
     string hwname = "";
-    if(unq != "")
+    if(id != "")
 	maplist(map h, Hardware, {
-	    if(h["unique"]:"" == unq)
+	    if(hwname == "" && ("id-" + h["mac"]:"" == id))
+		hwname = h["name"]:"";
+	    if(hwname == "" && ("bus-" + h["bus"]:"" + "-" + h["busid"]:"" == id))
 		hwname = h["name"]:"";
 	});
+    y2milestone("hwname=%1", hwname);
     return hwname;
 }
 
@@ -312,6 +315,25 @@ define string DeviceStatus(string devtype, string devnum, map devmap) {
 	*/
 
 	string proto = devmap["BOOTPROTO"]:"static";
+
+	if(proto == "" || proto == "static" || proto == "none" || proto == nil) {
+	    string addr = devmap["IPADDR"]:"";
+	    string remip = devmap["REMOTE_IPADDR"]:"";
+	    if(addr == "" || addr == nil)
+		/* Network card status */
+		return sformat(_("Configured"));
+	    else if(remip == "" || remip == nil)
+		/* Network card status (%1 is address) */
+		return sformat(_("Configured with address %1"), addr);
+	    else
+		/* Network card status (%1 is address, %2 is address) */
+		return sformat(_("Configured with address %1 (remote %2)"), addr, remip);
+	}
+	else
+	    /* Network card status (%1 is device, %2 is protocol) */
+	    return sformat(_("Configured as %1 with %2"), dev, toupper(proto));
+
+	/* FIXME: dropped interface name */
 	if(proto == "" || proto == "static" || proto == "none" || proto == nil) {
 	    string addr = devmap["IPADDR"]:"";
 	    string remip = devmap["REMOTE_IPADDR"]:"";

@@ -87,11 +87,6 @@ list<map> Hardware = [];
 boolean HWDetected = false;
 
 /**
- * Deleted devices
- */
-list DeletedDevices = [];
-
-/**
  * Abort function
  * return boolean return true if abort
  */
@@ -362,8 +357,8 @@ global define boolean Select(string dev) {
  */
 global define boolean Add() {
     operation = nil;
-    NetworkDevices::Add();
     if(Select("") != true) return false;
+    NetworkDevices::Add();
     operation = `add;
     return true;
 }
@@ -375,8 +370,8 @@ global define boolean Add() {
  */
 global define boolean Edit(string name) {
     operation = nil;
-    NetworkDevices::Edit(name);
     if(Select(name) != true) return false;
+    NetworkDevices::Edit(name);
     operation = `edit;
     return true;
 }
@@ -388,8 +383,8 @@ global define boolean Edit(string name) {
  */
 global define boolean Delete(string name) {
     operation = nil;
-    NetworkDevices::Delete(name);
     if(Select(name) != true) return false;
+    NetworkDevices::Delete(name);
     operation = `delete;
     return true;
 }

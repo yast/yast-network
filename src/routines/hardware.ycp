@@ -207,7 +207,6 @@ define list<map> ReadHardware(string hwtype) {
 	string controller = ControllerType(card);
 	one["name"] = DeviceName(card);
 	one["type"] = controller;
-	one["unique"] = card["unique_key"]:"";
 	one["num"] = num;
 
 	/* modem */
@@ -296,7 +295,6 @@ define map SelectHardware(list Hardware, integer which) {
 
     /* common stuff */
     name = sel["name"]:"";
-    unique = sel["unique"]:"";
     type = sel["type"]:"eth";
     hotplug = sel["hotplug"]:"";
 

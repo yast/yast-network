@@ -1,9 +1,13 @@
 -------------------------------------------------------------------
-Mon Mar 15 10:23:46 CET 2004 - msvec@suse.cz
+Mon Mar 15 17:52:04 CET 2004 - msvec@suse.cz
 
+- use MAC address as a primary identification (#35731)
+- stop using UNIQUE numbers for ifcfg and hwcfg mapping
+- always use BUSID for HW configuration
 - write hostname to /etc/hosts (#22825)
 - dropped unused desktop entries (#35618)
 - proper focus in proxy (#35614)
+- fixed deleting of modem and DSL devices
 - fixed testsuite
 - 2.9.11
 

@@ -63,7 +63,7 @@ global boolean running = false;
 string device = "eth0";
 string tmpdir = Directory::tmpdir;
 
-string detection_module = "";
+list<string> detection_modules = [];
 boolean detection_interface = false;
 
 /**
@@ -74,32 +74,23 @@ define boolean StartEthInterface() {
 
     y2milestone("Network detection prepare");
 
-    list Hardware = ReadHardware("netcard");
+    list<map> Hardware = ReadHardware("netcard");
 
     y2debug("Hardware=%1", Hardware);
     if(size(Hardware) < 1) return false;
 
-    /* Look for eth cards */
-    list ethernet_cards = filter(map h, (list<map>) Hardware, {
-	return h["type"]:"" == "eth";
-	});
-    map card = (map) (ethernet_cards[0]:nil);
-    y2debug("card=%1", card);
-    if(card == nil || card == $[]) return false;
-
-    /* Load the module */
-    detection_module = card["module"]:"";
-    y2debug("detection_module=%1", detection_module);
-    if(detection_module != "") {
-	if(SCR::Execute(.target.bash, sformat("grep ^%1 /proc/modules", detection_module)) != 0) {
-	    y2milestone("Loading module %1 ...", detection_module);
-	    if(SCR::Execute(.target.bash, sformat("/sbin/modprobe %1 2>&1", detection_module)) != 0)
-		detection_module = "";
+    foreach(map h, Hardware, {
+	string mod = h["module"]:"";
+	y2milestone("Module: %1", mod);
+	if(mod != nil && mod != "") {
+	    if(SCR::Execute(.target.bash, sformat("grep ^%1 /proc/modules", mod)) != 0) {
+		y2milestone("Loading module: %1", mod);
+		if(SCR::Execute(.target.bash, sformat("/sbin/modprobe %1 2>&1", mod)) == 0)
+		    detection_modules = add(detection_modules, mod);
+	    }
 	}
-	else
-	    detection_module = "";
-    }
-    y2debug("detection_module=%1", detection_module);
+    });
+    y2milestone("Loaded modules: %1", detection_modules);
 
     /* Setup the interface */
     detection_interface=false;
@@ -128,11 +119,10 @@ define boolean StopEthInterface() {
     }
     detection_interface = false;
 
-    if(detection_module != "") {
-	y2milestone("Removing module %1 ...", detection_module);
-	SCR::Execute(.target.bash, sformat("/sbin/rmmod %1 2>&1", detection_module));
-    }
-    detection_module = "";
+    foreach(string mod, detection_modules, {
+	y2milestone("Removing module %1 ...", mod);
+	SCR::Execute(.target.bash, sformat("/sbin/rmmod %1 2>&1", mod));
+    });
 
     y2milestone("Network detection finish (end)");
     return true;

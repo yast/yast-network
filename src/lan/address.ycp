@@ -211,7 +211,7 @@ completes the configuration.</p>");
 
     /* Push button label */
     term HardwareButton = `PushButton(`id(`hardware), `opt(`hstretch), _("H&ardware Details"));
-    if(Lan::alias != "" || type == "dummy" || (Lan::operation == `add && Lan::unique == ""))
+    if(Lan::alias != "" || type == "dummy" || (Lan::operation == `add /* FIXME: unique && Lan::unique == "" */ ))
 	HardwareButton = `VSpacing(0);
 
     /* Push button label */

@@ -18,15 +18,19 @@ import "Hostname";
 import "NetworkConfig";
 import "NetworkDevices";
 
-/* NI: required wrt functions in routines.ycp */
-block<boolean> AbortFunction = nil;
-define boolean Modified() { return true; }
-
 include "network/routines.ycp";
 include "network/runtime.ycp";
 
+/**
+ * Short Host Name
+ */
 global string hostname = "";
+
+/**
+ * Domain Name
+ */
 global string domain = "";
+
 global list<string> nameservers = [];
 global list<string> searchlist = [];
 global string resolv_conf_process = "";

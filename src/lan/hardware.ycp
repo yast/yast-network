@@ -43,7 +43,7 @@ _("<p><b>Options</b> for the module should be written in the format
 for example, <i>io=0x300 irq=5</i>. <b>Note:</b> If  two cards are configured
 with the same module name, options will be merged while saving.</p>");
 
-    if(!(Lan::operation == `edit || Lan::unique != "" || Arch::s390 == true))
+    if(!(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 == true))
 
     /* Manual dialog help 3/4 */
 help = help + _("<p>Get a list of available network cards by pressing
@@ -133,7 +133,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     );
 
     /* Disable PCMCIA and USB checkboxex on Edit and s390 */
-    if(Lan::operation == `edit || Lan::unique != "" || Arch::s390 == true)
+    if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 == true)
 	CheckBoxes = `VSpacing(0);
 
     /* Frame label */
@@ -149,10 +149,12 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	`VSpacing(0.4)
     ),`HSpacing(0.5)));
 
+    list devices = Lan::FreeDevices(realtype);
+    if(!contains(devices, device)) devices = prepend(devices, device);
+
     term DeviceNumberBox = `ReplacePoint(`id(`rnum),
 	/* Combobox label */
-	`ComboBox(`id(`num), `opt(`hstretch), _("D&evice Number"),
-	    Lan::FreeDevices(realtype)));
+	`ComboBox(`id(`num), `opt(`hstretch), _("D&evice Number"), devices));
 
     /* TextEntry label */
     term MTUBox = `TextEntry(`id(`mtu), _("M&aximum Transfer Unit (MTU)"), mtu);
@@ -234,7 +236,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
     /* Edit -> don't allow some changes */
     // FIXME: devname if(true /* FIXME: devname Lan::operation == `edit */) {
-    if(Lan::operation == `edit || Lan::unique != "") {
+    if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */) {
 
 	if(type != "wlan") WirelessButton = `VSpacing(0);
 
@@ -260,7 +262,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
     }
 
-    if(Lan::operation == `edit || Lan::unique != "")
+    if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */)
 	Wizard::SetContentsButtons(caption, contents, help,
 		Label::BackButton(), Label::OKButton());
     else
@@ -316,9 +318,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hotplug == "pcmcia" || hotplug == "") && type != "dummy");
 	    ChangeWidgetIfExists(`id(`wire), `Enabled, type == "wlan");
 
-	    list devices = [];
-	    devices = Lan::FreeDevices(realtype);
-	    default_device = (string) select(devices, 0, "");
+	    list devices = Lan::FreeDevices(realtype);
+	    default_device = (string) devices[0]:"";
 	    /* Combobox label */
 	    UI::ReplaceWidget(`id(`rnum), `ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"), devices));
 

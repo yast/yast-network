@@ -18,6 +18,10 @@ Read	.etc.install_inf.VNC nil
 Read	.etc.install_inf.UseSSH nil
 Read	.etc.install_inf.InstMode nil
 Dump	Read
+Execute	.target.bash_output "/sbin/ifconfig" 0
+Read	.probe.netcard nil
+Log	hardware detection failure
+Execute	.target.bash_output "/sbin/ifconfig" 0
 Read	.probe.netcard nil
 Log	hardware detection failure
 Dir	.sysconfig.hardware.section: []

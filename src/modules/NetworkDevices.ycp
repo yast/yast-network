@@ -291,10 +291,11 @@ global define boolean Write(string devregex) {
 		    SCR::Write(topath(p + k), devmap[k]:"");
 	    });
 
-	    /* update libhd unique number */
+	    /* update libhd unique number * /
 	    // FIXME: move it somewhere else: hardware
 	    string unq = devmap["UNIQUE"]:"";
 	    if(unq != "") SCR::Write(.probe.status.configured, unq, `yes);
+	    */
 
 	    /* 0600 if contains encryption key (#24842) */
 	    string key = devmap["WIRELESS_KEY"]:"";
