@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug  9 00:11:13 EDT 2002 - nashif@suse.de
+
+- lower case of wireless/pcmcia options
+
+-------------------------------------------------------------------
 Tue Aug  6 17:25:59 CEST 2002 - msvec@suse.cz
 
 - adapt proposal to the new install.inf agent
