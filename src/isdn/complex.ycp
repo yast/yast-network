@@ -168,7 +168,7 @@ can change the configuration and setup dialup connections) will open.
     if (size(unconfigured) > 1 || configured == "")
 	UI::SetFocus(`id(`detected_selbox));
     else if (ISDN::Modified())
-	UI::SetFocus(`id(`next));
+	Wizard::SetFocusToNextButton();
     else
 	UI::SetFocus(`id(`edit_button));
 
