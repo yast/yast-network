@@ -110,7 +110,9 @@ to change the configuration opens.</p>");
     list unconfigured = select(summary, 1, []);
     string configured = select(summary, 0, "");
 
+    y2debug("configured=%1",configured);
     y2debug("unconfigured=%1",unconfigured);
+
     /* Frame label */
     term contents = Wizard_hw::DetectedContent(_("Network cards to configure"),
 	    unconfigured, false, configured);

@@ -44,6 +44,7 @@ global boolean usb = false;
 /* address options */
 global string bootproto = "static";
 global string ipaddr = "";
+global string remoteip = "";
 global string netmask = "";
 global integer device = -1;
 
@@ -54,6 +55,9 @@ global string wl_essid = "";
 global string wl_nwid = "";
 global string wl_key = "";
 global string wl_nick = "";
+
+/* global options */
+global integer wait_for_interfaces = nil;
 
 /* FIXME */
 global boolean proposal_valid = false;
@@ -118,7 +122,7 @@ global define boolean Modified() ``{
  */
 global define boolean Read() ``{
 
-    // title for Lan reading current setup progress screen
+    /* Read dialog caption */
     string caption = _("Initializing network configuration");
     integer steps = 8;
 
@@ -127,22 +131,21 @@ global define boolean Read() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-    // progress steps for the Lan reading current setup progress screen
-    // progress step 1/8
+	/* Progress step 1/8 */
 	_("Detect devices"),
-    // progress step 2/8
+	/* Progress step 2/8 */
 	_("Read /etc/modules.conf"),
-    // progress step 3/8
+	/* Progress step 3/8 */
 	_("Read current configuration"),
-    // progress step 4/8
+	/* Progress step 4/8 */
 	_("Read routing configuration"),
-    // progress step 5/8
+	/* Progress step 5/8 */
 	_("Read host name and DNS configuration"),
-    // progress step 6/8
+	/* Progress step 6/8 */
 	_("Read installation information"),
-    // progress step 7/8
+	/* Progress step 7/8 */
 	_("Read firewall settings"),
-    // progress step 8/8
+	/* Progress step 8/8 */
 	_("Detect current status"),
     ], [], "");
 
@@ -163,8 +166,11 @@ global define boolean Read() ``{
     // stage 3 in reading current Lan setup
     ProgressNextStage(_("Reading current configuration"));
     //ReadConfig("");
-    ReadConfig("eth|eth-pcmcia-|eth-usb-|tr|tr-pcmcia-|tr-usb-");
+    ReadConfig("eth|eth-pcmcia-|eth-usb-|tr|tr-pcmcia-|tr-usb-|ctc|hsi|escon|iucv|ci");
     sleep(sl);
+
+    string wait = SCR::Read(.sysconfig.network.config.WAIT_FOR_INTERFACES);
+    if(wait != "" && wait != nil) wait_for_interfaces = tointeger(wait);
 
     if(Abort()) return false;
     // stage 4 in reading current Lan setup
@@ -227,7 +233,7 @@ global define boolean Write() ``{
     if(!modified) return true;
     y2milestone("Writing configuration");
 
-    // title for Lan writing current setup progress screen
+    /* Write dialog caption */
     string caption = _("Saving network configuration");
     integer steps = 9;
 
@@ -236,25 +242,24 @@ global define boolean Write() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-    // progress steps for the Lan writing current setup progress screen
-    // progress step 1/9
+	/* Progress step 1/9 */
 	_("Deactivate local network services"),
-    // progress step 2/9
+	/* Progress step 2/9 */
 	_("Write drivers information"),
-    // progress step 3/9
+	/* Progress step 3/9 */
 	_("Write configuration"),
-    // progress step 4/9
+	/* Progress step 4/9 */
 	_("Write routing configuration"),
-    // progress step 5/9
+	/* Progress step 5/9 */
 	_("Write host name and DNS configuration"),
-    // progress step 6/9
+	/* Progress step 6/9 */
 	_("Write firewall settings"),
-    // progress step 7/9
-	_("Run SuSEconfig"),
-    // progress step 8/9
-	_("Set up network services"),
-    // progress step 9/9
+	/* Progress step 7/9 */
 	_("Activate network services"),
+	/* Progress step 8/9 */
+	_("Set up network services"),
+	/* Progress step 9/9 */
+	_("Run SuSEconfig"),
     ], [], "");
 
     if(Abort()) return false;
@@ -275,6 +280,9 @@ global define boolean Write() ``{
     WriteConfig();
     sleep(sl);
 
+    if(wait_for_interfaces != nil)
+	SCR::Write(.sysconfig.network.config.WAIT_FOR_INTERFACES, sformat("%1",wait_for_interfaces));
+
     if(Abort()) return false;
     // stage 4 in writing current Lan setup
     ProgressNextStage(_("Writing routing configuration"));
@@ -294,12 +302,6 @@ global define boolean Write() ``{
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 7 in writing current Lan setup
-    ProgressNextStage(_("Running SuSEconfig"));
-    if(!write_only) RunSuSEconfig();
-    sleep(sl);
-
-    if(Abort()) return false;
     // stage 8 in writing current Lan setup
     ProgressNextStage(_("Setting up network services"));
     SetupNetwork();
@@ -309,6 +311,12 @@ global define boolean Write() ``{
     // stage 1 in writing current Lan setup
     ProgressNextStage(_("Activating network services"));
     if(!write_only) StartNetwork();
+    sleep(sl);
+
+    if(Abort()) return false;
+    // stage 7 in writing current Lan setup
+    ProgressNextStage(_("Running SuSEconfig"));
+    if(!write_only) RunSuSEconfig();
     sleep(sl);
 
     if(Abort()) return false;
@@ -496,6 +504,7 @@ global define boolean AddEdit(string dev) ``{
     /* address options */
     bootproto = devmap["BOOTPROTO"]:"static";
     ipaddr = devmap["IPADDR"]:"";
+    remoteip = devmap["REMOTE_IPADDR"]:"";
     netmask = devmap["NETMASK"]:"";
 
     /* kernel options */
@@ -564,12 +573,14 @@ global define boolean Commit() ``{
 	    change(newdev, "BROADCAST", compute_broadcast(ipaddr, netmask));
 	    change(newdev, "NETWORK", compute_network(ipaddr, netmask));
 	}
+	change(newdev, "REMOTE_IPADDR", remoteip);
 	if(pcmcia||usb)
 	    change(newdev, "STARTMODE", "hotplug");
 	else
 	    change(newdev, "STARTMODE", "onboot");
 	if(pcmcia)
 	    change(newdev, "DHCLIENT_SET_DOWN_LINK", "yes");
+
 	change(newdev, "module", modul);
 	change(newdev, "options", options);
 
@@ -583,6 +594,14 @@ global define boolean Commit() ``{
 	}
 	else
 	    change(newdev, "WIRELESS", "no");
+
+	if(type == "ctc" || type == "escon")
+	    if(wait_for_interfaces == nil || wait_for_interfaces < 40)
+		wait_for_interfaces = 40;
+
+	if(type == "hsi" || modul == "qeth")
+	    if(wait_for_interfaces == nil || wait_for_interfaces < 15)
+		wait_for_interfaces = 15;
 
 	if(operation == `add)
 	    ConfigAddEdit(type, device, newdev, true);

@@ -11,6 +11,7 @@
 
 textdomain "network";
 
+import "Arch";
 import "DNS";
 import "Lan";
 import "Wizard";
@@ -81,6 +82,7 @@ global define symbol DNSMainDialog() ``{
     boolean dhcp_resolv = DNS::dhcp_resolv;
 
     boolean has_dhcp = (Lan::bootproto == "dhcp") || Lan::AnyDHCPDevice();
+    if(Arch::s390) has_dhcp = false;
 
     /* DNS dialog caption */
     string caption = _("Host name and name server configuration");

@@ -217,11 +217,12 @@ global define symbol OneModemSequence(boolean detected) ``{
 	    `abort  : `abort
 	],
 	"connection" : $[
-	    `next   : "ipdetails",
+	    `IPDetails   : "ipdetails",
+	    `next   : "commit",
 	    `abort  : `abort
 	],
 	"ipdetails" : $[
-	    `next   : "commit",
+	    `next   : "connection",
 	    `abort  : `abort
 	],
 	"commit" : $[

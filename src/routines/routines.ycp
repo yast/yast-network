@@ -100,6 +100,11 @@ global define void ProgressNextStage(string title) ``{
     Progress::Title(title);
 }
 
+global define void ChangeWidgetIfExists(term id, symbol param, any value) ``{
+    if(UI::WidgetExists(id))
+	UI::ChangeWidget(id, param, value);
+}
+
 /**
  * Display the finished popup and possibly run another module.
  * If not modified, don't do anything.

@@ -97,6 +97,7 @@ global define boolean ReadHardware(string hwtype) ``{
 	    list modules = select(lookup(driver, "modules", []), 0, []);
 	    change(one, "module", select(modules, 0, ""));
 	    change(one, "options", select(modules, 1, ""));
+
 	    // #13571
 	    string hotplug = card["hotplug"]:"";
 	    if (hotplug == "pcmcia" || hotplug == "cardbus")

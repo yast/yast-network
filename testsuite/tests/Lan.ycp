@@ -1,9 +1,6 @@
 {
 
 include "testsuite.ycp";
-import "Lan";
-import "Progress";
-Progress::off();
 
 map READ = $[
     "target" : $[
@@ -22,7 +19,16 @@ map READ = $[
 	    "domain" : "blah",
 	],
     ],
+    "probe" : $[
+	"system" : [],
+    ],
 ];
+
+TESTSUITE_INIT([READ], nil);
+
+import "Lan";
+import "Progress";
+Progress::off();
 
 DUMP("Read");
 TEST(``(Lan::Read()), [READ], nil);

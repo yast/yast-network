@@ -1,9 +1,18 @@
 {
 
 include "testsuite.ycp";
-include "network/runtime.ycp";
 
-map READ = $[ "init" : $[ "scripts" : $[ "exists" : true ]]];
+map READ = $[
+    "init" : $[
+	"scripts" : $[ "exists" : true ]
+    ],
+    "probe" : $[
+	"system" : [],
+    ],
+];
+
+TESTSUITE_INIT([READ], nil);
+include "network/runtime.ycp";
 
 map EXEC0 = $[ "target" : $[ "bash" : 0,
 			     "bash_output": $[ "exit": 0,

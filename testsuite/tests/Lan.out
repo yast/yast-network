@@ -1,7 +1,25 @@
+Read	.probe.architecture nil
+Read	.probe.has_apm nil
+Read	.probe.has_pcmcia nil
+Read	.probe.has_smp nil
+Read	.probe.system []
+Read	.target.size "/etc/install.inf" 1
+Read	.etc.install_inf.Sourcemounted nil
+Read	.etc.install_inf.AutoYaST nil
+Read	.etc.install_inf.Demo nil
+Read	.etc.install_inf.Textmode nil
+Read	.etc.install_inf.Manual nil
+Read	.etc.install_inf.Console nil
+Read	.etc.install_inf.Braille nil
+Read	.etc.install_inf.VNC nil
+Read	.etc.install_inf.UseSSH nil
+Read	.etc.install_inf.Locale nil
+Read	.etc.install_inf.InstMode nil
 Dump	Read
 Read	.probe.netcard nil
 Log	hardware detection failure
 Dir	.network.section: []
+Read	.sysconfig.network.config.WAIT_FOR_INTERFACES nil
 Read	.target.size "/etc/sysconfig/network/routes" 1
 Read	.routes nil
 Read	.sysconfig.sysctl.IP_FORWARD nil

@@ -19,6 +19,18 @@ Bugs:
 - edit modules.conf #15062
 - dsl in installation settings #15160
 
+Adding network device mini-howto: grep for "escon" for example.
+
+DOC:
+ ESCON = Enteprise System CONnector (something like a mixture of SCSI and
+         Ethernet - its a channel, but can carry network traffic)
+         - short: its a point-to point network interface
+
+ IUCV  = Inter User Communication Vehicle (means: DMA based network pipe
+         between Virtual Machine instances (like vmware) on an s390)
+         - short: its a point-to point network interface
+
+
 - #16094:
     Further enhancement: if the provider is not used by any other modem
     as default or there are no modems at all, display a question wheather

@@ -1,7 +1,6 @@
 {
 
 include "testsuite.ycp";
-include "network/config.ycp";
 
 map CONFIG = $[];
 map READ = $[];
@@ -26,7 +25,14 @@ READ = $[
 	    "ippp3" : $[ "IPADDR" : "3"],
 	],
     ],
+    "probe" : $[
+	"system" : [],
+    ],
 ];
+
+TESTSUITE_INIT([READ], nil);
+
+include "network/config.ycp";
 
 DUMP("ReadConfig");
 TEST(``(ReadConfig("")), [READ], nil);

@@ -1,20 +1,19 @@
 /**
  * File:	include/network/lan/manual.ycp
  * Package:	Configuration of network
- * Summary:	Network card adresss configuration
+ * Summary:	Network card adresss configuration dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
- * Dialogs definitions.
  */
 
 {
 
 textdomain "network";
 
-import "Wizard";
+import "Arch";
 import "Lan";
+import "Wizard";
 
 include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
@@ -32,45 +31,48 @@ global define symbol AddressDialog() ``{
     string caption = _("Network address setup");
 
     /* Address dialog help 1/8 */
-    string helptext = _("<p>Configure your IP address.</p>");
+    string helptext = _("<p>Configure your IP address.</p>") +
 
     /* Address dialog help 2/8 */
-    helptext = helptext + _("<p>You can select dynamic address assignment,
-if you have a <b>DHCP server</b> running on your local network.</p>");
+_("<p>You can select dynamic address assignment,
+if you have a <b>DHCP server</b> running on your local network.</p>") +
 
     /* Address dialog help 3/8 */
-    helptext = helptext + _("<p>Also select this if you do not have a static
+_("<p>Also select this if you do not have a static
 IP address assigned by the system administrator or your cable or DSL provider.
-</p>");
+</p>") +
 
     /* Address dialog help 4/8 */
-    helptext = helptext + _("<p>Network addresses will then be obtained
-<b>automatically</b> from the server.</p>");
+_("<p>Network addresses will then be obtained
+<b>automatically</b> from the server.</p>") +
 
     /* Address dialog help 5/8 */
-    helptext = helptext + _("<p>Clicking <b>Next</b> 
-completes the configuration.</p>");
+_("<p>Clicking <b>Next</b> 
+completes the configuration.</p>") +
 
     /* Address dialog help 6/8 */
-    helptext = helptext + _("<p>Otherwise,  network addresses must be assigned
-<b>manually</b>.</p>");
+_("<p>Otherwise, network addresses must be assigned
+<b>manually</b>.</p>") +
 
     /* Address dialog help 7/8 */
-    helptext = helptext + _("<p>Enter the IP address (e.g., 192.168.100.99) for
+_("<p>Enter the IP address (e.g., 192.168.100.99) for
 your computer, the network mask (usually 255.255.255.0), and, optionally, the
-default gateway IP address.</p>");
+default gateway IP address.</p>") +
 
     /* Address dialog help 8/8 */
-    helptext = helptext + _("<p>Contact your <b>network administrator</b>
+_("<p>Contact your <b>network administrator</b>
 for more information about the network configuration.</p>");
+
+// FIXME: better helps layout
 
     string bootproto = Lan::bootproto;
     string ipaddr = Lan::ipaddr;
+    string remoteip = Lan::remoteip;
     string netmask = Lan::netmask;
     string type = Lan::type;
     string device = "";
 
-    if(bootproto == "static" && ipaddr == "")
+    if(!Arch::s390 && bootproto == "static" && ipaddr == "")
 	bootproto = "dhcp";
 
     if(ipaddr == "" && netmask == "")
@@ -82,7 +84,6 @@ for more information about the network configuration.</p>");
     else
 	device = type + Lan::device;
 
-    // Label for radio button group (dynamic/static ip address setup method)
     term label = `HBox(
 	/* Label text */
 	`Label(_("Network device")),
@@ -98,16 +99,16 @@ for more information about the network configuration.</p>");
 	`HBox(`HSpacing(1),
 	    `VBox(
 		`VSpacing(0.5),
-		// Radio button label
+		/* Radio button label */
 		`Left(`RadioButton(`id(`dynamic), `opt(`notify), _("A&utomatic address setup (via DHCP)"), bootproto != "static")),
 		`VSpacing(0.5),
-		// Radio button label
+		/* Radio button label */
 		`Left(`RadioButton(`id(`static), `opt(`notify), _("S&tatic address setup"), bootproto == "static")),
 		`HBox(
-		    // Text entry label for IP address
+		    /* Text entry label for IP address */
 		    `TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
 		    `HSpacing(2),
-		    // Text entry label for network mask
+		    /* Text entry label for network mask */
 		    `TextEntry(`id(`netmask), _("&Subnet mask"), netmask)
 		),
 		`VSpacing(0.5)
@@ -115,13 +116,96 @@ for more information about the network configuration.</p>");
 	`HSpacing(1))
     );
 
+    if(Arch::s390) {
+
+    /* Address dialog help 1/8 */
+    helptext = _("<p>Configure your IP address.</p>");
+
+    if(!Arch::s390)
+    /* Address dialog help 2/8 */
+    helptext = helptext + _("<p>You can select dynamic address assignment,
+if you have a <b>DHCP server</b> running on your local network.</p>") +
+
+    /* Address dialog help 3/8 */
+_("<p>Also select this if you do not have a static
+IP address assigned by the system administrator or your cable or DSL provider.
+</p>") +
+
+    /* Address dialog help 4/8 */
+_("<p>Network addresses will then be obtained
+<b>automatically</b> from the server.</p>") +
+
+    /* Address dialog help 5/8 */
+_("<p>Otherwise, network addresses must be assigned
+<b>manually</b>.</p>");
+
+    if(type == "ctc" || type == "escon" || type == "iucv")
+    /* Address dialog help 6/8 */
+helptext = helptext + _("<p>Enter the <b>IP address</b> (e.g., 192.168.100.99)
+for your computer and the <b>remote IP address</b> (e.g., 192.168.100.254)
+of your peer.</p>");
+
+    else
+    /* Address dialog help 6/8 */
+    helptext = helptext + _("<p>Enter the IP address (e.g., 192.168.100.99) for
+your computer, the network mask (usually 255.255.255.0), and, optionally, the
+default gateway IP address.</p>");
+
+    /* Address dialog help 7/8 */
+    helptext = helptext + _("<p>Contact your <b>network administrator</b>
+for more information about the network configuration.</p>") +
+
+    /* Address dialog help 8/8 */
+_("<p>Clicking <b>Next</b> 
+completes the configuration.</p>");
+
+    /* s390 help hackery */
+    }
+
+    /* S/390 Hipersockets */
+    if(type == "hsi" || Arch::s390)
+
+	/* Frame label */
+	frame1 = `Frame(_("Static address setup"),
+	    `VBox(
+		`VSpacing(0.5),
+		`HBox(
+		    /* Text entry label */
+		    // FIXME: Address -> address
+		    `TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
+		    `HSpacing(2),
+		    /* Text entry label */
+		    `TextEntry(`id(`netmask), _("&Subnet mask"), netmask)
+		),
+		`VSpacing(0.5)
+	    ));
+
+
+    /* S/390 CTC, ESCON and IUCV */
+    if(type == "ctc" || type == "escon" || type == "iucv")
+
+	/* Frame label */
+	frame1 = `Frame(_("Static address setup"),
+	    `VBox(
+		`VSpacing(0.5),
+		`HBox(
+		    /* Text entry label */
+		    `TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
+		    // FIXME: Address -> address
+		    `HSpacing(2),
+		    /* Text entry label */
+		    `TextEntry(`id(`remoteip), _("R&emote IP address"), remoteip)
+		),
+		`VSpacing(0.5)
+	    ));
+
     /* Frame label */
     term frame2 = `Frame(_("Detailed settings"), `HBox(`HStretch(),
 	`HSquash(`VBox(
 	    `VSpacing(0.5),
-	    // Push button label
+	    /* Push button label */
 	    `PushButton(`id(`hostname), `opt(`hstretch), _("&Host name and name server")),
-	    // Push button label
+	    /* Push button label */
 	    `PushButton(`id(`routing), `opt(`hstretch), _("R&outing")),
 	    `VSpacing(0.5)
 	)),
@@ -141,9 +225,9 @@ for more information about the network configuration.</p>");
 	    BackButtonLabel(), NextButtonLabel());
 
     UI::ChangeWidget(`id(`ipaddr), `Enabled, bootproto=="static");
-    UI::ChangeWidget(`id(`netmask), `Enabled, bootproto=="static");
-    UI::ChangeWidget(`id(`dynamic), `Value, bootproto!="static");
-    UI::ChangeWidget(`id(`static), `Value, bootproto=="static");
+    ChangeWidgetIfExists(`id(`netmask), `Enabled, bootproto=="static");
+    ChangeWidgetIfExists(`id(`dynamic), `Value, bootproto!="static");
+    ChangeWidgetIfExists(`id(`static), `Value, bootproto=="static");
 
     any ret = nil;
     while(true) {
@@ -158,13 +242,15 @@ for more information about the network configuration.</p>");
 	/* static ip address */
 	else if(ret == `dynamic) {
 	    UI::ChangeWidget(`id(`ipaddr), `Enabled, false);
-	    UI::ChangeWidget(`id(`netmask), `Enabled, false);
+	    ChangeWidgetIfExists(`id(`netmask), `Enabled, false);
+	    ChangeWidgetIfExists(`id(`remoteip), `Enabled, false);
 	    continue;
 	}
 	/* dynamic ip address via dhcp */
 	else if(ret == `static) {
 	    UI::ChangeWidget(`id(`ipaddr), `Enabled, true);
-	    UI::ChangeWidget(`id(`netmask), `Enabled, true);
+	    ChangeWidgetIfExists(`id(`netmask), `Enabled, true);
+	    ChangeWidgetIfExists(`id(`remoteip), `Enabled, true);
 	    continue;
 	}
 	/* netmask from bits to IP mapping */
@@ -187,7 +273,13 @@ for more information about the network configuration.</p>");
 		    UI::SetFocus(`id(`ipaddr));
 		    continue;
 		}
-		if(!check_netmask(UI::QueryWidget(`id(`netmask), `Value))) {
+		if(UI::WidgetExists(`id(`remoteip)) && !check_ip4(UI::QueryWidget(`id(`remoteip), `Value))) {
+		    /* Popup text */
+		    UI::ErrorPopup(_("The remote IP address is incorrect"));
+		    UI::SetFocus(`id(`remoteip));
+		    continue;
+		}
+		if(UI::WidgetExists(`id(`netmask)) && !check_netmask(UI::QueryWidget(`id(`netmask), `Value))) {
 		    /* Popup text */
 		    UI::ErrorPopup(_("The subnet mask is incorrect"));
 		    UI::SetFocus(`id(`netmask));
@@ -206,11 +298,19 @@ for more information about the network configuration.</p>");
     /* update the configuration */
     if(ret == `next || ret == `routing || ret == `hostname) {
 	Lan::ipaddr = UI::QueryWidget(`id(`ipaddr), `Value);
-	Lan::netmask = UI::QueryWidget(`id(`netmask), `Value);
-	if(UI::QueryWidget(`id(`rb), `CurrentButton) == `dynamic)
-	    Lan::bootproto = "dhcp";
-	else
-	    Lan::bootproto = "static";
+
+	if(UI::WidgetExists(`id(`netmask)))
+	    Lan::netmask = UI::QueryWidget(`id(`netmask), `Value);
+
+	if(UI::WidgetExists(`id(`rb))) {
+	    if(UI::QueryWidget(`id(`rb), `CurrentButton) == `dynamic)
+		Lan::bootproto = "dhcp";
+	    else
+		Lan::bootproto = "static";
+	}
+
+	if(UI::WidgetExists(`id(`remoteip)))
+	    Lan::remoteip = UI::QueryWidget(`id(`remoteip), `Value);
     }
 
     return ret;

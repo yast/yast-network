@@ -3,6 +3,7 @@
  * Package:	Configuration of network
  * Summary:	Configuration dialogs for DSL
  * Authors:	Michal Svec <msvec@suse.cz>
+ *
  * $Id$
  */
 
@@ -22,6 +23,7 @@ include "network/ip.ycp";
 include "network/runtime.ycp";
 
 include "network/routines.ycp";
+
 /**
  * Temporary DSL sequence (only showing one dialog)
  * @param tdsl true in case T-Online DSL is configured

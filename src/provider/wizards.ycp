@@ -17,7 +17,7 @@ import "Wizard";
 
 include "wizard/sequencer.ycp";
 
-// include "network/provider/details.ycp";
+include "network/provider/details.ycp";
 include "network/provider/dialogs.ycp";
 include "network/provider/connection.ycp";
 include "network/provider/complex.ycp";
@@ -157,7 +157,7 @@ global define symbol OneProviderSequence(string type, boolean country) ``{
 	"provider"		: ``(ProviderDialog(type)),
 	"new_provider"		: ``(ProviderDialog(type)),
 	"connection"		: ``(ConnectionDialog(type)),
-//	"ipdetails"		: ``(IPDetailsDialog(type)),
+	"ipdetails"		: ``(IPDetailsDialog(type)),
 	"commit"		: [ ``(Commit()), true ],
     ];
 
@@ -180,16 +180,14 @@ global define symbol OneProviderSequence(string type, boolean country) ``{
 	    `abort  : `abort
 	],
 	"connection" : $[
-//	    `next   : "ipdetails",
+	    `IPDetails	: "ipdetails",
 	    `next   : "commit",
 	    `abort  : `abort
 	],
-/*
 	"ipdetails" : $[
-	    `next   : "commit",
+	    `next   : "connection",
 	    `abort  : `abort
 	],
-*/
 	"commit" : $[
 	    `next   : `next,
 	],

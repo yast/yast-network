@@ -334,7 +334,7 @@ the password every time.</p>
     if(type == "isdn") {
 	if (encap == "" && ISDN::operation == `addif)
 		encap = lookup(ISDN::interface, "PROTOCOL", "syncppp");
-    // frame label
+	// frame label
 	rbgroup = `Left(`Frame(_("Packet encapsulation"),
         `HBox(
          `VBox(

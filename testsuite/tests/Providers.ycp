@@ -34,6 +34,9 @@ map READ = $[
 	],
 	"symlink" : nil,
     ],
+    "probe" : $[
+	"system" : [],
+    ],
 ];
 
 TESTSUITE_INIT([READ],nil);

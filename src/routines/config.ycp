@@ -13,6 +13,7 @@
 {
 
 textdomain "network";
+import "Arch";
 include "network/routines.ycp";
 
 /**
@@ -154,10 +155,36 @@ global define boolean WriteConfig() ``{
 		return [ tok[0]:"?", tok[1]:"" ];
 	    });
 
+	    /* write module alias */
 	    if(mod != nil && mod != "")
 		SCR::Write(.modules.alias, mod, dev);
-	    if(size(opts_map) > 0)
-		SCR::Write(.modules.options, opts_map, dev);
+
+	    /* write module options */
+	    if(size(opts_map) > 0) {
+		/* write module options normally */
+		if(!Arch::s390)
+		    SCR::Write(.modules.options, opts_map, dev);
+		else {
+		    /* merge module options */
+		    if(typ == "iucv") {
+			map curopts = SCR::Read(.modules.options, "netiucv");
+			maplist(`k, `v, opts_map, ``{
+			    if(haskey(curopts, k))
+				change(curopts, k, curopts[k]:"" + ":" + v);
+			    else
+				change(curopts, k, v);
+			});
+			SCR::Write(.modules.options, curopts, "netiucv");
+		    }
+		    /* write options to chandev.conf */
+		    else {
+			path chandev = topath(".etc.chandev_conf."+mod+num);
+			if(typ == "escon") chandev = topath(".etc.chandev_conf.escon"+num);
+			y2milestone("Write(%1,%2)", chandev, opts);
+			SCR::Write(chandev, opts);
+		    }
+		}
+	    }
 
 	    /* update libhd unique number */
 	    string unq = lookup(devmap, "UNIQUE", "");
@@ -168,6 +195,9 @@ global define boolean WriteConfig() ``{
     /* finish him */
     SCR::Write(.network, nil);
     SCR::Write(.modules, nil);
+
+    if(Arch::s390)
+	SCR::Write(.etc.chandev_conf, nil);
 
     /* ugly PCMCIA hackery */
     list ugly = [ "eth-pcmcia", "eth-usb", "tr-pcmcia", "tr-usb" ];

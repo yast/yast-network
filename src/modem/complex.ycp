@@ -240,6 +240,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
 	else if(ret == `edit) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
 	    Modem::AddEdit(dev);
+	    // Providers::AddEdit(Providers::provShortName, false);
 	    break;
 	}
 	/* delete */

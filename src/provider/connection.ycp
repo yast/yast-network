@@ -113,6 +113,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 
     /* Checkbox label */
     term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("Activate fire&wall..."), FirewallChecked));
+    // FIXME: "..." at the end of the message
 
     term StupidMode = `VSpacing(0.1);
     if (type == "modem")
@@ -126,6 +127,11 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    /* Push button label */
 	    `PushButton(`id(`Details), _("&Connection details")),
 	    `HSpacing(0.5),
+	    /* Push button label */
+	    `PushButton(`id(`IPDetails), _("&IP details"))
+	);
+    if(type == "modem")
+	details = `HBox(
 	    /* Push button label */
 	    `PushButton(`id(`IPDetails), _("&IP details"))
 	);

@@ -1,6 +1,14 @@
 {
 
 include "testsuite.ycp";
+
+map READ = $[
+    "probe" : $[
+	"system" : [],
+    ],
+];
+
+TESTSUITE_INIT([READ], nil);
 include "network/routines.ycp";
 
 DUMP("mapkeys");

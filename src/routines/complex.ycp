@@ -107,56 +107,82 @@ global define list BuildSummary(boolean split) ``{
 global define string CheckEmptyName(string devtype, string hwname) ``{
     if(hwname != nil && hwname != "") return hwname;
 
-    if(regexpmatch(devtype, "(isdn|ippp)-pcmcia-"))
-        // unknown name of device
-        return _("Unknown PCMCIA ISDN connection");
-    else if(regexpmatch(devtype, "(isdn|ippp)-usb-"))
-        // unknown name of device
-        return _("Unknown USB ISDN connection");
-    else if(regexpmatch(devtype, "isdn|ippp"))
-        // unknown name of device
-        return _("Unknown ISDN connection");
-    else if(regexpmatch(devtype, "(modem|ppp)-pcmcia-"))
-    // unknown name of device
-	return _("Unknown PCMCIA modem");
-    else if(regexpmatch(devtype, "(modem|ppp)-usb-"))
-    // unknown name of device
-	return _("Unknown USB modem");
-    else if(regexpmatch(devtype, "modem|ppp"))
-    // unknown name of device
-	return _("Unknown modem");
-    else if(regexpmatch(devtype, "contr-pcmcia-"))
-    // unknown name of device
-	return _("Unknown PCMCIA ISDN card");
-    else if(regexpmatch(devtype, "contr-usb-"))
-    // unknown name of device
-	return _("Unknown USB ISDN card");
-    else if(regexpmatch(devtype, "contr"))
-    // unknown name of device
-	return _("Unknown ISDN card");
-    else if(regexpmatch(devtype, "net"))
-    // unknown name of device
-	return _("ISDN connection");
-    else if(regexpmatch(devtype, "(eth|tr|fddi)-pcmcia-"))
-    // unknown name of device
-	return _("Unknown PCMCIA network card");
-    else if(regexpmatch(devtype, "(eth|tr|fddi)-usb-"))
-    // unknown name of device
-	return _("Unknown USB network card");
-    else if(regexpmatch(devtype, "eth|tr|fddi"))
-    // unknown name of device
-	return _("Unknown network card");
-    else if(regexpmatch(devtype, "dummy"))
-    // unknown name of device
-	return _("Dummy network device");
-    else if(regexpmatch(devtype, "lo"))
-    // unknown name of device
-	return _("Loopback device");
-    else {
-	y2error("Unknown type: %1", devtype);
-    // unknown name of device
-	return _("Unknown network device");
-    }
+    map device_names = $[
+
+	/* Device type label */
+	"isdn-pcmcia-"	: _("PCMCIA ISDN connection"),
+	/* Device type label */
+	"ippp-pcmcia-"	: _("PCMCIA ISDN connection"),
+	/* Device type label */
+	"isdn-usb-"	: _("USB ISDN connection"),
+	/* Device type label */
+	"ippp-usb-"	: _("USB ISDN connection"),
+	/* Device type label */
+	"isdn"		: _("ISDN connection"),
+	/* Device type label */
+	"ippp"		: _("ISDN connection"),
+	/* Device type label */
+	"modem-pcmcia-"	: _("PCMCIA modem"),
+	/* Device type label */
+	"ppp-pcmcia-"	: _("PCMCIA modem"),
+	/* Device type label */
+	"modem-usb-"	: _("USB modem"),
+	/* Device type label */
+	"ppp-usb-"	: _("USB modem"),
+	/* Device type label */
+	"modem"		: _("Modem"),
+	/* Device type label */
+	"ppp"		: _("Modem"),
+	/* Device type label */
+	"contr-pcmcia-"	: _("PCMCIA ISDN card"),
+	/* Device type label */
+	"contr-usb-"	: _("USB ISDN card"),
+	/* Device type label */
+	"contr"		: _("ISDN card"),
+	/* Device type label */
+	"net"		: _("ISDN connection"),
+	/* Device type label */
+	"eth-pcmcia-"	: _("PCMCIA Ethernet network card"),
+	/* Device type label */
+	"tr-pcmcia-"	: _("PCMCIA Token Ring network card"),
+	/* Device type label */
+	"fddi-pcmcia-"	: _("PCMCIA FDDI network card"),
+	/* Device type label */
+	"eth-usb-"	: _("USB Ethernet network card"),
+	/* Device type label */
+	"tr-usb-"	: _("USB Token Ring network card"),
+	/* Device type label */
+	"fddi-usb-"	: _("USB FDDI network card"),
+	/* Device type label */
+	"eth"		: _("Ethernet network card"),
+	/* Device type label */
+	"tr"		: _("Token Ring network card"),
+	/* Device type label */
+	"fddi"		: _("FDDI network card"),
+	/* Device type label */
+	"dummy"		: _("Dummy network device"),
+	/* Device type label */
+	"vmnet"		: _("VMWare network device"),
+	/* Device type label */
+	"lo"		: _("Loopback device"),
+	/* Device type label */
+	"escon"		: _("Enteprise system connector (ESCON)"),
+	/* Device type label */
+	"iucv"		: _("Inter user communication vehicle (IUCV)"),
+	/* Device type label */
+	"ctc"		: _("Channel to channel interface (CTC)"),
+	/* Device type label */
+	"hsi"		: _("Hipersockets interface (HSI)"),
+	/* Device type label */
+	"ci"		: _("Common link access for workstation (CLAW)"),
+    ];
+
+    if(haskey(device_names, devtype))
+	return device_names[devtype]:"";
+
+    y2error("Unknown type: %1", devtype);
+    /* Device type label */
+    return _("Unknown network device");
 }
 
 /**
@@ -191,43 +217,47 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
 	    prov = devmap["PROVIDER"]:"";
 
 	if(prov == "" || prov == nil)
-        // modem status (%1 is the device type and number)
+	    // modem status (%1 is the device type and number)
 	    return sformat(_("Configured as %1"), dev);
 	else
-        // modem status (%1 is the device type and number, %2 is provider)
+	    // modem status (%1 is the device type and number, %2 is provider)
 	    return sformat(_("Configured as %1 with provider %2"), dev, prov);
     }
     /* isdn stuff */
     else if(devtype == "contr")
-    // isdn device status (%1 is the device type and number)
+	// isdn device status (%1 is the device type and number)
 	return sformat(_("Configured as %1"), dev);
     else if(devtype == "net") {
         // proto: connection protocol (syncppp | rawip)
-	string proto    = lookup(devmap, "PROTOCOL", "unknown protocol");
+	string proto    = lookup(devmap, "PROTOCOL", _("Unknown protocol"));
 	// provider: name of the provider
 	string sn = lookup(devmap, "PROVIDER", "unknown____");
 	map p = Providers::ReadProvider(sn);
-	string provider = lookup(p, "PROVIDER", _("Unknown provider"));
+	string provider = sn; //lookup(p, "PROVIDER", _("Unknown provider"));
 	// example: ISDN Connection to Arcor with syncppp on net0
 	return sformat(_("to %1 with %2 on %3"), provider, proto, dev);
     }
     /* treat the rest as a network card */
     else {
-	if(!regexpmatch(devtype, "lo|dummy|eth|tr|fddi"))
+	if(!regexpmatch(devtype, "lo|dummy|eth|tr|fddi|escon|hsi|ctc|iucv|claw"))
 	    y2error("Unknown type: %1", devtype);
 
 	string proto = lookup(devmap, "BOOTPROTO", "static");
 	if(proto == "" || proto == "static" || proto == "none" || proto == nil) {
 	    string addr = lookup(devmap, "IPADDR", "");
+	    string remip = lookup(devmap, "REMOTE_IPADDR", "");
 	    if(addr == "" || addr == nil)
-        // network card status (%1 is the device type and number)
+		// network card status (%1 is the device type and number)
 		return sformat(_("Configured as %1"), dev);
-	    else
-        // network card status (%1 is the device type and number, %2 is address)
+	    else if(remip == "" || remip == nil)
+		// network card status (%1 is the device type and number, %2 is address)
 		return sformat(_("Configured as %1 with address %2"), dev, addr);
+	    else
+		// network card status (%1 is the device type and number, %2 is address)
+		return sformat(_("Configured as %1 with address %2 (remote %3)"), dev, addr, remip);
 	}
 	else
-        // network card status (%1 is the device type and number, %2 protocol)
+	    // network card status (%1 is the device type and number, %2 protocol)
 	    return sformat(_("Configured as %1 with %2"), dev, toupper(proto));
     }
 }
@@ -239,34 +269,51 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
  * @example DeviceType("eth") -> "Ethernet"
  */
 global define string DeviceType(string type) ``{
-    // for translators: device type
-    if(issubstring(type, ":")) return _("Virtual interface");
-    // for translators: device type
-    if(regexpmatch(type, "lo")) return _("Loopback");
-    // for translators: device type
-    if(regexpmatch(type, "dummy")) return _("Dummy");
-    // for translators: device type
-    if(regexpmatch(type, "eth")) return _("Ethernet");
-    // for translators: device type
-    if(regexpmatch(type, "fddi")) return _("FDDI");
-    // for translators: device type
-    if(regexpmatch(type, "contr")) return _("ISDN");
-    // for translators: device type
-    if(regexpmatch(type, "net")) return _("ISDN");
-    // for translators: device type
-    if(regexpmatch(type, "ippp")) return _("ISDN");
-    // for translators: device type
-    if(regexpmatch(type, "isdn")) return _("ISDN");
-    // for translators: device type
-    if(regexpmatch(type, "ppp")) return _("Modem");
-    // for translators: device type
-    if(regexpmatch(type, "tr")) return _("Token Ring");
-    // for translators: device type
-    if(regexpmatch(type, "hsi")) return _("HiperSockets Interface");
-    // for translators: device type
-    if(regexpmatch(type, "ctc")) return _("Channel-to-Channel (CTC)");
-    if(regexpmatch(type, "iucv")) return "IUCV";
-    if(regexpmatch(type, "escon")) return "ESCON";
+
+    /* Device type label */
+    if(issubstring(type, ":"))
+	return _("Virtual interface");
+
+    map device_types = $[
+	/* Device type label */
+	"lo"	: _("Loopback"),
+	/* Device type label */
+	"vmnet"	: _("VMWare"),
+	/* Device type label */
+	"dummy"	: _("Dummy"),
+	/* Device type label */
+	"eth"	: _("Ethernet"),
+	/* Device type label */
+	"fddi"	: _("FDDI"),
+	/* Device type label */
+	"contr"	: _("ISDN"),
+	/* Device type label */
+	"net"	: _("ISDN"),
+	/* Device type label */
+	"ippp"	: _("ISDN"),
+	/* Device type label */
+	"isdn"	: _("ISDN"),
+	/* Device type label */
+	"ppp"	: _("Modem"),
+	/* Device type label */
+	"tr"	: _("Token Ring"),
+	/* Device type label */
+	"hsi"	: _("Hipersockets (HSI)"),
+	/* Device type label */
+	"ctc"	: _("Channel To Channel (CTC)"),
+	/* Device type label */
+	"iucv"	: "IUCV",
+	/* Device type label */
+	"escon"	: "ESCON",
+	/* Device type label */
+	"ci"	: "CLAW",
+    ];
+
+    if(haskey(device_types, type))
+	return device_types[type]:"";
+
+    if(haskey(device_types, select(splitstring(type, "-"), 0, "-")))
+	return device_types[select(splitstring(type, "-"), 0, "-")]:"";
 
     y2error("Unknown type: %1", type);
     return type;
@@ -315,7 +362,7 @@ global define list BuildOverview() ``{
 		item = `item(`id(dev), k, proto, cname, ip, rip);
 	    }
 	    /* other known types */
-	    else if(regexpmatch(type, "lo|dummy|eth|tr|fddi"))
+	    else if(regexpmatch(type, "lo|dummy|eth|tr|fddi|escon|hsi|ctc|iucv|ci"))
 		item = `item(`id(dev), k, DeviceType(type), dev, /*"active?",*/ ip/*, "?", "?"*/);
 	    /* unknown type */
 	    else {

@@ -1,20 +1,19 @@
 /**
  * File:	include/network/lan/manual.ycp
  * Package:	Configuration of network
- * Summary:	Manual network card configuration
+ * Summary:	Manual network card configuration dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
- * Dialogs definitions.
  */
 
 {
 
 textdomain "network";
 
-import "Wizard";
+import "Arch";
 import "Lan";
+import "Wizard";
 
 include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
@@ -32,21 +31,28 @@ global define symbol ManualDialog() ``{
 
     /* Manual dialog help 1/4 */
     string help = _("<p>Here, set up your networking device.
-The values will be written into <i>/etc/modules.conf</i>.</p>")
-        +
+The values will be written into <i>/etc/modules.conf</i>.</p>") +
+
     /* Manual dialog help 2/4 */
-    _("<p>Options for the module should be written in the format
+_("<p>Options for the module should be written in the format
 <i>option</i>=<i>value</i>. Each entry should be space separated,
 for example, <i>io=220 irq=5</i>. <b>Note:</b> If  two cards are configured
-with the same module name, options will be merged while saving.</p>")
-        +
+with the same module name, options will be merged while saving.</p>") +
+
     /* Manual dialog help 3/4 */
-    _("<p>Get a list of available network cards 
-by pressing <b>List</b>.</p>")
-	+
+_("<p>Get a list of available network cards 
+by pressing <b>List</b>.</p>") +
+
     /* Manual dialog help 4/4 */
-    _("<p>If you have a <b>PCMCIA</b> network card, click on the PCMCIA check
+_("<p>If you have a <b>PCMCIA</b> network card, click on the PCMCIA check
 box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
+
+    if(Arch::s390)
+	help = _("<p>Here, set up your networking device. The values will be
+written into <i>/etc/modules.conf</i> or <i>/etc/chandev.conf</i>.</p>") +
+
+_("<p>Options for the module should be written in the format specified
+in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
     string modul = Lan::modul;
     string options = Lan::options;
@@ -71,23 +77,41 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
     string PCMCIA = "&PCMCIA";
     string USB = "&USB";
 
+    list device_types = [
+	`item(`id("eth"), "Ethernet", type == "eth"),
+	`item(`id("tr"), "Token-Ring", type == "tr"),
+    ];
+
+    if(Arch::s390) {
+	device_types = [
+	    `item(`id("eth"), "OSA Ethernet", type == "eth"),
+	    `item(`id("qeth"), "OSA Express Ethernet", type == "qeth"),
+	    `item(`id("tr"), "OSA Token-Ring", type == "tr"),
+	    `item(`id("hsi"), "Hipersockets", type == "hsi"),
+	    `item(`id("ctc"), "Channel To Channel", type == "ctc"),
+	    `item(`id("escon"), "Escon", type == "escon"),
+	    `item(`id("iucv"), "IUCV", type == "iucv"),
+	];
+	if(modul == "")
+	    modul = "lcs";
+    }
+
     /* Manual dialog contents */
     term contents = `HBox(
 	`HSpacing(2),
-	// frame label
 	`VBox(
 	    `VSpacing(0.5),
-        // Frame label
+	    /* Frame label */
 	    `Frame(_("Network &interface"),`VBox(
 		`VSpacing(0.2),
 		`HBox(
 		    `HSpacing(0.5),
-		    // combo box label
-		    `ComboBox(`id(`dev), `opt(`hstretch, `notify), _("Network &device"),
-			[`item(`id("eth"), "Ethernet", type == "eth"), `item(`id("tr"), "Token-Ring", type == "tr")]),
+		    `ComboBox(`id(`dev), `opt(`hstretch, `notify),
+			/* Combobox label */
+			_("Network &device"), device_types),
 		    `HSpacing(1.5),
 		    `ReplacePoint(`id(`rnum),
-			// combo box label
+			/* Combobox label */
 			`ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"),
 			    maplist(`d,Lan::FreeDevices(realtype),``(sformat("%1",d))))),
 		    `HSpacing(0.5)
@@ -95,16 +119,16 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 		`VSpacing(0.2)
 	    )),
 	    `VSpacing(0.5),
-        // Frame label
+	    /* Frame label */
 	    `Frame(_("Wireless support"),`VBox(
 	    `VSpacing(0.4),
 	    `HBox(
 		`HStretch(),
 		`HSpacing(0.5),
-        // CheckBox label
+		/* Checkbox label */
 		`CheckBox(`id(`wireless), `opt(`notify), _("&Wireless device"), wireless),
 		`HSpacing(1.5),
-        // PushButton label
+		/* Pushbutton label */
 		`PushButton(`id(`wire), _("Wireless &settings")),
 		`HSpacing(0.5),
 		`HStretch()
@@ -112,13 +136,13 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 	    `VSpacing(0.4)
 	    )),
 	    `VSpacing(0.5),
-	    // frame label
+	    /* Frame label */
 	    `Frame(_("&Kernel module"), `HBox(`HSpacing(0.5), `VBox(
 		`VSpacing(0.4),
-		// text entry label
+		/* Text entry label */
 		`TextEntry(`id(`modul), _("&Module name"), modul),
 		`VSpacing(0.2),
-		// textentry label
+		/* Text entry label */
 		`TextEntry(`id(`options), _("Op&tions"), options),
 		`VSpacing(0.4),
 		`HBox(
@@ -131,8 +155,46 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 		`VSpacing(0.4)
 	    ),`HSpacing(0.5))),
 	    `VSpacing(0.4),
-	    // button label
+	    /* Pushbutton label */
 	    `PushButton(`id(`list), _("Select from &list")),
+	    `VSpacing(0.5)
+	    ),
+	`HSpacing(2));
+
+    /* S/390 Manual dialog contents */
+    if(Arch::s390)
+    contents = `HBox(
+	`HSpacing(2),
+	`VBox(
+	    `VSpacing(0.5),
+	    /* Frame label */
+	    `Frame(_("Network &interface"),`VBox(
+		`VSpacing(0.2),
+		`HBox(
+		    `HSpacing(0.5),
+		    `ComboBox(`id(`dev), `opt(`hstretch, `notify),
+			/* Combobox label */
+			_("Network &device"), device_types),
+		    `HSpacing(1.5),
+		    `ReplacePoint(`id(`rnum),
+			/* Combobox label */
+			`ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"),
+			    maplist(`d,Lan::FreeDevices(realtype),``(sformat("%1",d))))),
+		    `HSpacing(0.5)
+		),
+		`VSpacing(0.2)
+	    )),
+	    `VSpacing(0.5),
+	    /* Frame label */
+	    `Frame(_("&Kernel module"), `HBox(`HSpacing(0.5), `VBox(
+		`VSpacing(0.4),
+		/* Text entry label */
+		`TextEntry(`id(`modul), _("&Module name"), modul),
+		`VSpacing(0.2),
+		/* Text entry label */
+		`TextEntry(`id(`options), _("Op&tions"), options),
+		`VSpacing(0.4)
+	    ),`HSpacing(0.5))),
 	    `VSpacing(0.5)
 	    ),
 	`HSpacing(2));
@@ -140,10 +202,13 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
     Wizard::SetContentsButtons(caption, contents, help,
 	    BackButtonLabel(), NextButtonLabel());
 
-    UI::ChangeWidget(`id(`modul), `Enabled, !(pcmcia||usb));
-    UI::ChangeWidget(`id(`options), `Enabled, !(pcmcia||usb));
-    UI::ChangeWidget(`id(`list), `Enabled, !(pcmcia||usb));
-    UI::ChangeWidget(`id(`wire), `Enabled, wireless);
+    if(!Arch::s390) {
+	UI::ChangeWidget(`id(`modul), `Enabled, !(pcmcia||usb));
+	UI::ChangeWidget(`id(`options), `Enabled, !(pcmcia||usb));
+	UI::ChangeWidget(`id(`list), `Enabled, !(pcmcia||usb));
+	UI::ChangeWidget(`id(`wire), `Enabled, wireless);
+    }
+
     UI::ChangeWidget(`id(`num), `Value, device);
     UI::SetFocus(`id(`next));
 
@@ -158,7 +223,7 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 	}
 	/* change device type or pcmcia/usb card? */
 	else if(ret == `pcmcia || ret == `usb || ret == `dev) {
-	    if(ret == `pcmcia || ret == `usb) {
+	    if(!Arch::s390 && (ret == `pcmcia || ret == `usb)) {
 		pcmcia = UI::QueryWidget(`id(`pcmcia), `Value);
 		usb = UI::QueryWidget(`id(`usb), `Value);
 		UI::ChangeWidget(`id(`modul), `Enabled, !(pcmcia||usb));
@@ -170,12 +235,22 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 	    type = UI::QueryWidget(`id(`dev), `Value);
 	    if(pcmcia) realtype = type + "-pcmcia-";
 	    else if(usb) realtype = type + "-usb-";
+	    else if(type == "qeth") realtype = "eth";
 	    else realtype = type;
 
 	    list devices = [];
 	    devices = maplist(`d,Lan::FreeDevices(realtype),``(sformat("%1",d)));
-        // combobox label
+	    /* Combobox label */
 	    UI::ReplaceWidget(`id(`rnum),`ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"), devices));
+
+	    if(Arch::s390) {
+		if(type == "tr" || type == "eth") modul = "lcs";
+		if(type == "hsi" || type == "qeth") modul = "qeth";
+		if(type == "ctc" || type == "escon") modul = "ctc";
+		if(type == "iucv") modul = "netiucv";
+		UI::ChangeWidget(`id(`modul), `Value, modul);
+	    }
+
 	    continue;
 	}
 	else if(ret == `wireless) {
@@ -203,16 +278,22 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
     };
 
     if(ret == `next || ret == `list || ret == `wire) {
+	type = UI::QueryWidget(`id(`dev), `Value);
 	Lan::modul = UI::QueryWidget(`id(`modul), `Value);
 	Lan::options = UI::QueryWidget(`id(`options), `Value);
 	Lan::device = tointeger(UI::QueryWidget(`id(`num), `Value));
-	Lan::wireless = UI::QueryWidget(`id(`wireless), `Value);
-	Lan::pcmcia = UI::QueryWidget(`id(`pcmcia), `Value);
-	Lan::usb = UI::QueryWidget(`id(`usb), `Value);
-	type = UI::QueryWidget(`id(`dev), `Value);
+
+	if(!Arch::s390) {
+	    Lan::wireless = UI::QueryWidget(`id(`wireless), `Value);
+	    Lan::pcmcia = UI::QueryWidget(`id(`pcmcia), `Value);
+	    Lan::usb = UI::QueryWidget(`id(`usb), `Value);
+	}
+
 	if(pcmcia) type = type + "-pcmcia-";
 	if(usb) type = type + "-usb-";
+	if(type == "qeth") type = "eth";
 	Lan::type = type;
+	y2milestone("type=%1",type);
     }
 
     return ret;
@@ -353,20 +434,20 @@ available options.</p>");
     /* Wireless dialog contents */
     term contents = `HBox(
 	`HSpacing(6),
-    /* Frame label */
+	/* Frame label */
 	`Frame(_("Wireless device settings"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(1),
 	    /* Combobox item */
 	    `ComboBox(`id(`mode), `opt(`hstretch, `notify), _("O&perating mode"), [
-	    /* Combobox item */
+		/* Combobox item */
 		`item(`id("Ad-hoc"), _("Ad-hoc"), Lan::wl_mode == "Ad-hoc"),
-	    /* Combobox item */
+		/* Combobox item */
 		`item(`id("Managed"), _("Managed"), Lan::wl_mode == "Managed"),
-	    /* Combobox item */
+		/* Combobox item */
 		`item(`id("Repeater"), _("Repeater"), Lan::wl_mode == "Repeater"),
-	    /* Combobox item */
+		/* Combobox item */
 		`item(`id("Secondary"), _("Secondary"), Lan::wl_mode == "Secondary"),
-	    /* Combobox item */
+		/* Combobox item */
 		`item(`id("Automatic"), _("Automatic"), Lan::wl_mode == "Auto")
 	     ]),
 	    `VSpacing(0.2),
