@@ -164,7 +164,7 @@ define list<map> ReadHardware(string hwtype) {
 	"dsl"		: .probe.dsl,
     ];
 
-    map hwstrings = $[
+    map<string,string> hwstrings = $[
 	/* Confirmation: label text (detecting hardware: xxx) */
 	"netcard"	: _("Network Cards"),
 	/* Confirmation: label text (detecting hardware: xxx) */

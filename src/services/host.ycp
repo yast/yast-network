@@ -142,35 +142,6 @@ define symbol HostsMainDialog(boolean standalone) ``{
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
-	/* edit host */
-	else if(ret == `edit || ret == `table) {
-	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
-	    list<term> cur_item = filter(term e, table_items, ``{
-		return cur == select(select(e, 0, []), 0, nil);
-	    });
-
-	    y2debug("cur=%1", cur);
-	    y2debug("cur_item=%1", cur_item);
-
-	    term item = cur_item[0]:nil;
-	    list forbidden = maplist(term e, table_items, ``(select(e, 1, "")));
-	    forbidden = filter(string h, forbidden, ``(h != select(item, 1, "")));
-
-	    if(!HostSystemPopup(select(item, 1, ""), false)) continue;
-	    item = HostDialog(cur, item, forbidden);
-
-	    if(item == nil) continue;
-	    else Host::modified = true;
-
-	    table_items = maplist(term e, table_items, ``{
-		if(cur == select(select(e, 0, []), 0, -1))
-		    return item;
-		return e;
-	    });
-	    UI::ChangeWidget(`id(`table), `Items, table_items);
-	    UI::ChangeWidget(`id(`table), `CurrentItem, cur);
-	    continue;
-	}
 	/* add host */
 	else if(ret == `add) {
 	    list forbidden = maplist(term e, table_items, ``(select(e, 1, "")));
@@ -183,6 +154,45 @@ define symbol HostsMainDialog(boolean standalone) ``{
 	    UI::ChangeWidget(`id(`table), `CurrentItem, max);
 	    items = items + 1;
 	    max = max + 1;
+	    continue;
+	}
+	/* edit host */
+	else if(ret == `edit || ret == `table) {
+	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
+	    list<term> cur_item = filter(term e, table_items, ``{
+		return cur == select(select(e, 0, []), 0, nil);
+	    });
+
+	    y2debug("cur=%1", cur);
+	    y2debug("cur_item=%1", cur_item);
+
+	    term olditem = cur_item[0]:nil;
+	    list forbidden = maplist(term e, table_items, ``(select(e, 1, "")));
+	    forbidden = filter(string h, forbidden, ``(h != select(olditem, 1, "")));
+
+	    if(!HostSystemPopup(select(olditem, 1, ""), false)) continue;
+	    term item = HostDialog(cur, olditem, forbidden);
+
+	    if(item == nil) continue;
+	    else Host::modified = true;
+
+	    table_items = maplist(term e, table_items, ``{
+		if(cur == select(select(e, 0, []), 0, -1)) {
+		    y2debug("item: %1", item);
+		    y2debug("olditem: %1", olditem);
+		    string ip = select(item, 1, "");
+		    string oldip = select(olditem, 1, "");
+		    if(ip != oldip) {
+			Host::Deleted = add(Host::Deleted, oldip);
+			y2debug("Deleting: %1 (%2)", oldip, ip);
+		    }
+
+		    return item;
+		}
+		return e;
+	    });
+	    UI::ChangeWidget(`id(`table), `Items, table_items);
+	    UI::ChangeWidget(`id(`table), `CurrentItem, cur);
 	    continue;
 	}
 	/* delete host */

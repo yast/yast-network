@@ -52,7 +52,7 @@ global define boolean Read() {
 
     /* read route.conf */
     if(SCR::Read(.target.size, hosts_file) > 0) {
-	list<string> hostlist = (list<string>)SCR::Dir(.etc.hosts);
+	list<string> hostlist = (list<string>) SCR::Dir(.etc.hosts);
 	hosts = listmap(string host, hostlist, {
 	    string name = (string) SCR::Read(topath(sformat(".etc.hosts.\"%1\"", host)));
 	    list<string> names = filter(string s, splitstring(name, "[ \t]"), {

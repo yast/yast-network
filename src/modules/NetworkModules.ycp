@@ -1,0 +1,679 @@
+/**
+ * File:	modules/NetworkModules.ycp
+ * Package:	Network configuration
+ * Summary:	Modules manipulation functions
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+module "NetworkModules";
+textdomain "network";
+
+import "Arch";
+import "Map";
+import "NetworkDevices";
+
+include "network/routines.ycp";
+
+/**
+ * Current module identifier
+ * @example eth0, eth1:blah, lo, ...
+ */
+/* global */ string Name = "";
+
+global string Alias = "";
+global string Options = "";
+
+/**
+ * Current module information
+ * @example $["BOOTPROTO":"dhcp", "STARTMODE":"onboot"]
+ */
+global map Current = $[];
+
+/**
+ * Modules information
+ * @see ReadModules
+ */
+map<string,map> Modules = $[];
+
+/**
+ * Modules information
+ * @see ReadModules
+ */
+map<string,map> OriginalModules = $[];
+
+/**
+ * Deleted modules
+ */
+list<string> Deleted = [];
+
+/**
+ * True if modules are already read
+ */
+boolean initialized = false;
+
+symbol operation = nil;
+
+/**
+ * Read modules from files
+ * @return true if sucess
+ */
+global define boolean Read() {
+
+    if(initialized == true) return true;
+
+    Modules = $[];
+
+    /* preparation */
+    list<string> allfiles = (list<string>) SCR::Dir(.sysconfig.hardware.section);
+    if(allfiles == nil) allfiles = [];
+    list<string> modules = filter(string file, allfiles, {
+	return !regexpmatch(file, "[\.~]");
+    });
+    y2debug("modules=%1", modules);
+
+    /*
+    modules = filter(string d, modules, {
+	return regexpmatch(d, "[a-z][a-z-]*[0-9]*");
+    });
+    y2debug("modules=%1", modules);
+    */
+
+    /* Read modules */
+    maplist(string d, modules, {
+
+	if(haskey(Modules, d)) {
+	    y2error("module already present: %1", d);
+	    return;
+	}
+
+	string pth = ".sysconfig.hardware.value.\"" + d + "\"";
+	y2debug("pth=%1", pth);
+	list<string> values = (list<string>) SCR::Dir(topath(pth));
+	y2debug("values=%1", values);
+
+	map config = $[];
+	maplist(string val, values, {
+	    string item = (string) SCR::Read(topath(pth + "." + val));
+	    if(item == nil) return;
+	    config[val] = item;
+	    y2milestone("config=%1", config);
+	});
+
+	Modules[d] = config;
+    });
+    y2debug("Modules=%1", Modules);
+
+    OriginalModules = Modules;
+    initialized = true;
+    return true;
+}
+
+/**
+ */
+define map Filter(map modules, string devregex) {
+    if(modules == nil || devregex == nil || devregex == "")
+	return modules;
+
+    string regex = "^(" + NetworkDevices::CardRegex[devregex]:devregex + ")[^a-zA-Z].*$";
+    y2debug("regex=%1", regex);
+    modules = filter(string file, string devmap, (map<string,string>) modules, {
+	return regexpmatch(file, regex) == true;
+    });
+    y2debug("modules=%1", modules);
+    return modules;
+}
+
+/**
+ */
+define map FilterNOT(map modules, string devregex) {
+    if(modules == nil || devregex == nil || devregex == "")
+	return $[];
+
+    string regex = "^(" + NetworkDevices::CardRegex[devregex]:devregex + ")[^a-zA-Z].*$";
+    y2debug("regex=%1", regex);
+    modules = filter(string file, string devmap, (map<string,string>) modules, {
+	return regexpmatch(file, regex) != true;
+    });
+    y2debug("modules=%1", modules);
+    return modules;
+}
+
+/**
+ * Write modules to files
+ * @param devregex regular expression for the module type
+ * @return true if success
+ * @example NetworkModule::Write("eth|tr");
+ */
+global define boolean Write(string devregex) {
+
+    y2milestone("Writing configuration");
+    y2debug("Modules=%1", Modules);
+    y2debug("Deleted=%1", Deleted);
+
+    map Mods = Filter(Modules, devregex);
+    map OriginalMods = Filter(OriginalModules, devregex);
+    y2milestone("OriginalMods=%1", OriginalMods);
+    y2milestone("Mods=%1", Mods);
+
+    /* Check for changes */
+    if(Mods == OriginalMods) {
+	y2milestone("No changes to %1 modules -> nothing to write", devregex);
+	return true;
+    }
+
+    /* remove deleted modules */
+    y2milestone("Deleted=%1", Deleted);
+    foreach(string d, Deleted, {
+	// if(!haskey(OriginalMods, d)) return;
+	/* delete config file */
+	path p = topath(".network.section.\"" + d + "\"");
+	y2debug("deleting: %1", p);
+	SCR::Write(p, nil);
+    });
+
+    /* Modules with chmod=0600 */
+    list chmod = [];
+
+    /* write all modules */
+    maplist(string d, map devmap, (map<string,map>) Mods, {
+
+	/* write sysconfig */
+	string p = ".sysconfig.hardware.value.\"" + d + "\".";
+
+	/* write all keys to config */
+	maplist(string k, (list<string>) Map::Keys(devmap), {
+	    SCR::Write(topath(p + k), devmap[k]:"");
+	});
+    });
+
+    /* Finish him */
+    SCR::Write(.sysconfig.hardware, nil);
+
+    return true;
+}
+
+global boolean AddM() {
+    Alias = "";
+    Options = "";
+    return true;
+}
+
+global boolean SelectM(string name) {
+    if(name == nil || name == "" || !haskey(Modules, name)) {
+	y2error("Wrong module: %1", name);
+	return false;
+    }
+
+    Alias = Modules[name, "MODULE"]:"";
+    Options = Modules[name, "MODULE_OPTIONS"]:"";
+    y2milestone("Modules=%1", Modules);
+    return true;
+}
+
+global boolean ChangeM(string name) {
+    if(name == nil || name == "" /* || !haskey(Modules, name) */) {
+	y2error("Wrong module: %1", name);
+	return false;
+    }
+
+    if(!haskey(Modules, name)) Modules[name] = $[];
+
+    Modules[name, "MODULE"] = Alias;
+    Modules[name, "MODULE_OPTIONS"] = Options;
+    Modules[name, "STARTMODE"] = "auto";
+    y2milestone("Modules=%1", Modules);
+    return true;
+}
+
+global boolean DeleteM(string name) {
+    if(name == nil || name == "" || !haskey(Modules, name)) {
+	y2error("Wrong module: %1", name);
+	return false;
+    }
+    Deleted = add(Deleted, name);
+    Modules = remove(Modules, name);
+    y2milestone("Modules=%1", Modules);
+    return true;
+}
+
+/**
+ * Import data
+ * @param settings settings to be imported
+ * @return true on success
+ */
+global define boolean Import(string devregex, map<string,map> modules) {
+    map Mods = FilterNOT(Modules, devregex);
+    y2debug("Mods=%1", Mods);
+    Modules = (map<string,map>) union(Mods, modules);
+    OriginalModules = nil;
+    return true;
+}
+
+/**
+ * Export data
+ * @return dumped settings (later acceptable by Import())
+ */
+global define map<string,map> Export(string devregex) {
+    map Mods = Filter(Modules, devregex);
+    y2debug("Mods=%1", Mods);
+    return (map<string,map>) Mods;
+}
+
+/**
+ * Were the modules changed?
+ * @return true if modified
+ */
+global define boolean Modified(string devregex) {
+    map Mods = Filter(Modules, devregex);
+    map OriginalMods = Filter(OriginalModules, devregex);
+    y2debug("OriginalMods=%1", OriginalMods);
+    y2debug("Mods=%1", Mods);
+    return Mods == OriginalMods;
+}
+
+global define list GetFreeModules(string type, integer num) {
+    y2debug("Modules=%1", Modules);
+    y2debug("type,num=%1,%2", type, num);
+    y2debug("Modules[%1]=%2", type, Modules[type]:$[]);
+
+    list curdevs = Map::Keys(Modules[type]:$[]);
+    y2debug("curdevs=%1", curdevs);
+
+    integer i = 0;
+    integer count = 0;
+    list ret = [];
+
+    /* Hotpluggable modules */
+    if(IsHotplug(type) && !contains(curdevs, "")) {
+	y2debug("Added simple hotplug module");
+	count = count + 1;
+	ret = add(ret, "");
+    }
+
+    /* Remaining numbered modules */
+    while(count < num) {
+	string ii = sformat("%1", i);
+	if(!contains(curdevs, ii)) {
+	    ret = add(ret, ii);
+	    count = count + 1;
+	}
+	i = i + 1;
+    }
+
+    y2debug("Free modules=%1", ret);
+    return ret;
+}
+
+/**
+ * Check presence of the module (alias)
+ * @param dev module identifier
+ * @return true if module is present
+ */
+define boolean Check(string dev) {
+
+    y2debug("Check(%1)", dev);
+    string typ = device_type(dev);
+    string num = device_num(dev);
+    string anum = alias_num(dev);
+    y2milestone("Check(%1,%2,%3)", typ, num, anum);
+
+    if(!haskey(Modules, typ))
+	return false;
+
+    map devsmap = Modules[typ]:$[];
+    if(!haskey(devsmap, num))
+	return false;
+
+    /* FIXME NI: not needed?
+    Name = dev;
+    Current = (map) eval(devsmap[num]:$[]);
+    */
+
+    if(anum != "") {
+	map devmap = devsmap[num]:$[];
+	map amap = devmap["_aliases"]:$[];
+	if(!haskey(amap, anum))
+	    return false;
+	/* FIXME NI: not needed?
+	Current = (map) eval(amap[anum]:$[]);
+	alias = anum;
+	*/
+    }
+
+    y2debug("Check passed");
+    return true;
+}
+
+/**
+ * Select the given module
+ * @param module to select ("" for new module, default values)
+ * @return true if success
+ */
+global define boolean Select(string name) {
+
+    Name = "";
+    Current = $[];
+
+    y2debug("name=%1", name);
+    if(name != "" && !Check(name)) {
+	y2error("No such module: %1", name);
+	return false;
+    }
+
+    Name = name;
+    // FIXME NI: Current = Modules[device_type(Name), device_num(Name)]:$[];
+    string t = device_type(Name);
+    Current = Modules[t, device_num(Name)]:$[];
+    string a = alias_num(Name);
+    if(a != nil && a != "") Current = Current["_aliases", a]:$[];
+
+    if(Current == $[]) {
+	/* Default module map */
+	Current = $[
+	    /* FIXME: remaining items */
+	];
+    }
+
+    y2debug("Name=%1", Name);
+    y2debug("Current=%1", Current);
+
+    return true;
+}
+
+/**
+ * Add a new module
+ * @return true if success
+ */
+global define boolean Add() {
+    operation = nil;
+    if(Select("") != true) return false;
+    operation = `add;
+    return true;
+}
+
+/**
+ * Edit the given module
+ * @param dev module to edit
+ * @return true if success
+ */
+global define boolean Edit(string name) {
+    operation = nil;
+    if(Select(name) != true) return false;
+    operation = `edit;
+    return true;
+}
+
+/**
+ * Delete the given module
+ * @param dev module to delete
+ * @return true if success
+ */
+global define boolean Delete(string name) {
+    operation = nil;
+    if(Select(name) != true) return false;
+    operation = `delete;
+    return true;
+}
+
+/**
+ * Update Modules map
+ * @param dev module identifier
+ * @param newdev new module map
+ * @param check if check if module already exists
+ * @return true if success
+ */
+define boolean Change2(string name, map newdev, boolean check) {
+    y2debug("Change(%1,%2,%3)", name, newdev, check);
+    y2debug("Modules=%1", Modules);
+
+    if(Check(name) && check) {
+	y2error("Module already present: %1", name);
+	return false;
+    }
+
+    string t = device_type(name);
+    string d = device_num(name);
+    string a = alias_num(name);
+    y2debug("ChangeModule(%1,%2,%3)", t, d, a);
+
+    map devsmap = Modules[t]:$[];
+    map devmap = devsmap[d]:$[];
+    map amap = devmap["_aliases"]:$[];
+
+    if(a != "") {
+	amap[a] = newdev;
+	devmap["_aliases"] = amap;
+    }
+    else
+	devmap = newdev;
+
+    devsmap[d] = devmap;
+    Modules[t] = devsmap;
+
+    y2debug("Modules=%1", Modules);
+    return true;
+}
+
+define boolean Delete2(string name) {
+
+    if(!Check(name)) {
+	y2error("Module not found: %1", name);
+	return false;
+    }
+
+    string t = device_type(name);
+    string d = device_num(name);
+    string a = alias_num(name);
+    map devsmap = Modules[t]:$[];
+
+    if(a != "") {
+	/*
+	map devmap = devsmap[module]:$[];
+	map amap = devmap["_aliases"]:$[];
+	amap = remove(amap, alias);
+	devmap["_aliases"] = amap;
+	devsmap[module] = devmap;
+	*/
+	map amap = devsmap[d, "_aliases"]:$[];
+	amap = remove(amap, a);
+	devsmap[d, "_aliases"] = amap;
+    }
+    else
+	devsmap = remove(devsmap, d);
+
+    Modules[t] = devsmap;
+
+    if(haskey(OriginalModules, t) && haskey(OriginalModules[t]:$[], d) && a == "") {
+	y2milestone("Deleting file: %1", name);
+	Deleted[size(Deleted)] = name;
+    }
+    else {
+	y2milestone("Not deleting file: %1", name);
+	y2debug("OriginalModules=%1", OriginalModules);
+	y2debug("a=%1", a);
+    }
+
+    return true;
+}
+
+global define boolean Commit() {
+    y2debug("Name=%1", Name);
+    y2debug("Current=%1", Current);
+    y2debug("Modules=%1", Modules);
+    y2debug("Deleted=%1", Deleted);
+    y2debug("operation=%1", operation);
+
+    if(operation == `add || operation == `edit) {
+	Change2(Name, Current, operation == `add);
+    }
+    else if(operation == `delete) {
+	Delete2(Name);
+    }
+    else {
+	y2error("Unknown operation: %1 (%2)", operation, Name);
+	return false;
+    }
+
+    y2debug("Modules=%1", Modules);
+    y2debug("Deleted=%1", Deleted);
+
+    Name = "";
+    Current = $[];
+    operation = nil;
+
+    return true;
+}
+
+global define string GetValue(string name, string key) {
+    if(!Select(name)) return nil;
+    return Current[key]:"";
+}
+
+global define boolean SetValue(string name, string key, string value) {
+    if(!Edit(name)) return nil;
+    if(key == nil || key == "" || value == nil) return false;
+    Current[key] = value;
+    return Commit();
+}
+
+/**
+ * Locate modules of the given type and value
+ * @param key module key
+ * @param val module value
+ * @return list of modules with key=val
+ */
+global define list Locate(string key, string val) {
+    list ret = [];
+    maplist(string typ, map devsmap, Modules, {
+	maplist(string num, map devmap, (map<string,map>) devsmap, {
+	    if(devmap[key]:"" == val) ret = add(ret, typ+num);
+	});
+    });
+
+    return ret;
+}
+
+/**
+ * Check if any module is using the specified provider
+ * @param provider provider identification
+ * @return true if there is any
+ */
+global define boolean LocateProvider(string provider) {
+    list devs = Locate("PROVIDER", provider);
+    return size(devs) > 0;
+}
+
+/**
+ * Update /dev/modem symlink
+ * @return true if success
+ */
+global define boolean UpdateModemSymlink() {
+    boolean ret = false;
+    if(contains(Map::Keys(Modules), "ppp")) {
+	list ml = Map::Keys(Modules["ppp"]:$[]);
+	string ms = ml[0]:"0";
+	// map mm = lookup(Modules["ppp"]:$[], ms, $[]);
+	map mm = Modules["ppp", ms]:$[];
+	string mdev = mm["MODEM_DEVICE"]:"";
+	if(mdev != "" && mdev != "/dev/modem") {
+	    string curlink = nil;
+	    map m = (map) SCR::Read(.target.lstat, "/dev/modem");
+	    if(m["islink"]:false == true)
+		curlink = (string) SCR::Read(.target.symlink, "/dev/modem");
+	    if(curlink != mdev) {
+		SCR::Execute(.target.symlink, mdev, "/dev/modem");
+		ret = true;
+	    }
+	}
+    }
+    return ret;
+}
+
+/**
+ * Clean the hotplug modules compatibility symlink,
+ * usually ifcfg-eth-pcmcia -> ifcfg-eth-pcmcia-0.
+ * @return true if success
+ */
+global define boolean CleanHotplugSymlink() {
+
+    list<string> types = [ "eth-pcmcia", "eth-usb", "tr-pcmcia", "tr-usb" ];
+    maplist(string t, types, {
+	string link = "/etc/sysconfig/network/ifcfg-" + t;
+	y2debug("link=%1", link);
+	if(lookup((map)SCR::Read(.target.lstat, link), "islink", false) == true) {
+	    string file = (string) SCR::Read(.target.symlink, link);
+	    file = "/etc/sysconfig/network/" + file;
+	    y2debug("file=%1", file);
+	    if(SCR::Read(.target.size, file) > -1) {
+		y2milestone("Cleaning hotplug symlink");
+		y2milestone("Modules[%1]=%2", t, Modules[t]:$[]);
+		Modules[t] = remove(Modules[t]:$[], "");
+		y2milestone("Modules[%1]=%2", t, Modules[t]:$[]);
+	    }
+	}
+    });
+
+    y2debug("Modules=%1", Modules);
+    return true;
+}
+
+/**
+ * Get modules of the given type
+ * @param type modules type ("" for all)
+ * @return list of found modules
+ */
+global define list List(string devregex) {
+
+    list ret = [];
+    if(devregex == "" || devregex == nil) {
+	maplist(string t, map d, Modules, {
+	    maplist(string n, (list<string>) Map::Keys(d), {
+		ret[size(ret)] = device_name(t,n);
+	    });
+	});
+    }
+    else {
+	string regex = "^(" + NetworkDevices::CardRegex[devregex]:devregex + ")[0-9]*$";
+	maplist(string t, map d, Modules, {
+	    if(regexpmatch(t, regex)) {
+		maplist(string n, (list<string>) Map::Keys(d), {
+		    ret[size(ret)] = device_name(t,n);
+		});
+	    }
+	});
+	/*
+	map d = Modules[type]:$[];
+	maplist(string n, Map::Keys(d), {ret[size(ret)] = device_name(type,n);});
+	*/
+    }
+
+    y2debug("ret=%1", ret);
+    return ret;
+}
+
+/*
+map Mods = $[];
+include "network/complex.ycp";
+
+global define list Summary(string devregex, list Hardware, boolean split) {
+    Mods = Filter(Modules, devregex);
+    return BuildSummary(Hardware, split);
+}
+
+global define list Overview(string devregex) {
+    Mods = Filter(Modules, devregex);
+    return BuildOverview();
+}
+
+global define list OverviewAliases(string devregex) {
+    Mods = Current["_aliases"]:$[];
+    return BuildOverview();
+}
+*/
+
+/* EOF */
+}

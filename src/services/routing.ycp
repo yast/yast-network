@@ -56,7 +56,7 @@ _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>");
     string defgwdev = "";
 
     boolean forward = Routing::Forward;
-    list route_conf = Routing::Routes;
+    list<map> route_conf = Routing::Routes;
 
     /* make ui items from the routes list */
     term item = nil;

@@ -11,7 +11,7 @@ TESTSUITE_INIT([READ], nil);
 
 map Module = $[];
 map Modules = $[];
-list DeletedModules = [];
+list<string> DeletedModules = [];
 include "network/modules.ycp";
 
 DUMP("AddModule");

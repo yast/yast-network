@@ -76,7 +76,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     string device = Lan::device;
     string default_device = device;
 
-    list device_types = [ "arc", /* FIXME */ "dummy", "eth", "fddi", "myri", "tr", /* FIXME */ "usb", "wlan" ];
+    list<string> device_types = [ "arc", /* FIXME */ "dummy", "eth", "fddi", "myri", "tr", /* FIXME */ "usb", "wlan" ];
 
     if(Arch::s390)
 	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv" ];
@@ -416,7 +416,7 @@ define any SelectionDialog() ``{
     /* map NetworkCards */
     include "network/lan/cards.ycp";
 
-    list hwlist = lookup(NetworkCards, type, []);
+    list<map> hwlist = lookup(NetworkCards, type, []);
     list cards = hwlist2items(hwlist, 0);
 
     /* Manual selection caption */

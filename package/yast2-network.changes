@@ -1,5 +1,5 @@
 -------------------------------------------------------------------
-Mon Mar  1 13:17:46 CET 2004 - msvec@suse.cz
+Fri Mar  5 13:07:34 CET 2004 - msvec@suse.cz
 
 - simple device interface (GetValue, SetValue)
 - possibility to set MTU (#34397, #20035)
@@ -13,6 +13,8 @@ Mon Mar  1 13:17:46 CET 2004 - msvec@suse.cz
 - allow to delete proposed network cards (#34859)
 - drop resolv.conf header if not needed
 - correctly delete files on disk
+- fixed hosts writing (#35349)
+- added strict type casts
 - proof-read messages
 - 2.9.6
 

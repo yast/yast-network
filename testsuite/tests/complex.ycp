@@ -5,7 +5,7 @@ include "testsuite.ycp";
 map Devs = $[];
 include "network/complex.ycp";
 
-list Hardware = [ $["unique":"1234", "name":"hwtest"] ];
+list<map> Hardware = [ $["unique":"1234", "name":"hwtest"] ];
 
 DUMP("HardwareName");
 TEST(``(HardwareName(Hardware, "")), [], nil);

@@ -7,7 +7,7 @@ map READ = $[
 	"size" : 1,
 	"tmpdir" : "/tmp",
     ],
-    "routes" : ["r1", "r2"],
+    "routes" : [$["1":"r1"], $["2":"r2"]],
     "sysconfig" : $[ "sysctl" : $[ "IP_FORWARD" : "yes" ]],
     "probe" : $[ "system" : [] ],
 ];
@@ -22,7 +22,7 @@ DUMP(sformat("Routing::routes %1",Routing::Routes));
 DUMP("Write");
 // Routing::Forward = true;
 TEST(``(Routing::Write()), [READ], nil);
-Routing::Routes = [ "r1", "r3" ];
+Routing::Routes = [ $["1":"r1"], $["3":"r3"] ];
 TEST(``(Routing::Write()), [READ], nil);
 
 DUMP("Import");
