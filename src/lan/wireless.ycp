@@ -134,6 +134,14 @@ available options.</p>");
 	}
 	else if(ret == `next || ret == `expert || ret == `keys) {
 
+	    string essid = (string) UI::QueryWidget(`id(`essid), `Value);
+	    if(essid != "" && size(essid) > 32) {
+		/* Popup text */
+		Popup::Error(_("The network name must be shorter than 32 characters."));
+		UI::SetFocus(`id(`key));
+		continue;
+	    }
+
 	    /* Key is either:
 	     *   s:AAAAA (5 ascii chars or more) or
 	     *   XXXX-XXXX-XX or XXXXXXXXXX (10 or more hex digits)
@@ -152,7 +160,15 @@ available options.</p>");
 		    continue;
 		}
 	    }
-
+	    else {
+		/* Popup text */
+		string pop = _("Using no encryption is a security risk!
+Are you sure you want to continue?");
+		if(!Popup::YesNo(pop)) {
+		    UI::SetFocus(`id(`key));
+		    continue;
+		}
+	    }
 	    break;
 	}
 	else {
@@ -298,21 +314,35 @@ be disconnected from AC power.</p>");
  */
 define any WirelessKeysDialog() ``{
 
-    ScreenName("lan-hardware-wireless-expert");
+    ScreenName("lan-hardware-wireless-keys");
 
-    /* Wireless dialog caption */
+    /* Wireless keys dialog caption */
     string caption = _("Wireless Expert Settings");
 
-    /* Wireless dialog help 1/7 */
-    string helptext = _("<p>Here, set the most important settings
-for wireless networking.</p>") +
+    /* Wireless keys dialog help 1/3 */
+    string helptext = _("<p>In this dialog you can define your WEP keys used
+to encrypt your data before it gets transmitted. You can have up to 4 keys,
+although only one key gets used to encrypt the data. This is the default key.
+The other keys can be used to decrypt data. Usually you will have only
+one key.</p>") +
 
-    /* Wireless dialog help 7/7 */
-_("<p>
-FIXME
-</p>");
+    /* Wireless keys dialog help 2/3 */
+    _("<p><b>Key Length</b> defines the bit length of your WEP key(s).
+Possible are 64 and 128 bit, sometimes also referred to as 40 and 104 bit.
+Some older hardware might not be able to handle 128 bit keys, so if your
+wireless LAN connection does not establish, you may need to set this
+value to 64.</p>") +
 
-    /* Wireless dialog contents */
+    /* Wireless keys dialog help 3/3 */
+    _("<p>The <b>Security Mode</b> defines the behaviour of your card when
+using encryption. In restricted mode all received unencrypted data gets
+dropped, in open mode unencrypted data gets accepted. It also means
+that authentication will be used when available, which is probably not
+a good idea as this system does not add extra security and even makes
+your encryption key more attackable. So if you don't need this then
+stay with <b>open</b> security mode.</p>");
+
+    /* Wireless keys dialog contents */
     term contents = `HBox(
 	`HSpacing(4),
 	`VBox(

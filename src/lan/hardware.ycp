@@ -124,6 +124,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	`HStretch(),
 	`HSpacing(0.5),
 	WirelessButton,
+	`HSpacing(0.5),
 	/* Pushbutton label */
 	`PushButton(`id(`list), _("Select from &List")),
 	`HSpacing(0.5),
