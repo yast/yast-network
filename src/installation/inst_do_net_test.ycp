@@ -152,6 +152,46 @@ and correct the setting.</p>");
     }
 
 
+    define void copy1 () ``{
+
+	// label of combobox where the log is selected
+	logs = add (logs, $[ `menuname : _("Kernel Network Interfaces"),
+			     `filename : "ifconfig.log" ]);
+	SCR::Execute (.target.bash, "/sbin/ifconfig > " +
+		      logdir + "/ifconfig.log");
+
+	// label of combobox where the log is selected
+	logs = add (logs, $[ `menuname : _("Kernel Routing Table"),
+			     `filename : "route.log" ]);
+	SCR::Execute (.target.bash, "/sbin/route -n > " + logdir + "/route.log");
+
+	// label of combobox where the log is selected
+	logs = add (logs, $[ `menuname : _("Host Name Lookup"),
+			     `filename : "resolv.conf" ]);
+	SCR::Execute (.target.bash, "/bin/cp /etc/resolv.conf " +
+		      logdir + "/resolv.conf");
+    }
+
+
+    define void copy2 () ``{
+
+	// label of combobox where the log is selected
+	logs = add (logs, $[ `menuname : _("Kernel Messages"),
+			     `filename : "messages" ]);
+	SCR::Execute (.target.bash, "/bin/cp /var/log/messages " +
+		      logdir + "/messages");
+
+	if (Internet::logfile != "") {
+	    // label of combobox where the log is selected
+	    logs = add (logs, $[ `menuname : _("PPP Daemon"),
+				 `filename : "smpppd.log",
+				 `prio : 20 ]);
+	    SCR::Execute (.target.bash, "/bin/cp " + Internet::logfile + " " +
+			  logdir + "/smpppd.log");
+	}
+    }
+
+
     define void handle_stage() ``{
 
 	if(test_stage == 0)		// open connection
@@ -165,6 +205,7 @@ and correct the setting.</p>");
 	    if(already_up)
 	    {
 		set_stage(2);
+		copy1 ();
 	    }
 	    else
 	    {
@@ -199,6 +240,7 @@ and correct the setting.</p>");
 	    if(Mode::test) {
 		set_stage(2);
 		mark_label(1, `check);
+		copy1 ();
 		return;
 	    }
 
@@ -215,24 +257,7 @@ and correct the setting.</p>");
 		y2milestone("Connected ok");
 		set_stage(2);
 		mark_label(1, `check);
-
-		// label of combobox where the log is selected
-		logs = add (logs, $[ `menuname : _("Kernel Network Interface"),
-				     `filename : "ifconfig.log" ]);
-		SCR::Execute (.target.bash, "/sbin/ifconfig > " +
-			      logdir + "/ifconfig.log");
-
-		// label of combobox where the log is selected
-		logs = add (logs, $[ `menuname : _("Kernel Routing Table"),
-				     `filename : "route.log" ]);
-		SCR::Execute (.target.bash, "/sbin/route -n > " + logdir + "/route.log");
-
-		// label of combobox where the log is selected
-		logs = add (logs, $[ `menuname : _("Host Name Lookup"),
-				     `filename : "resolv.conf" ]);
-		SCR::Execute (.target.bash, "/bin/cp /etc/resolv.conf " +
-			      logdir + "/resolv.conf");
-
+		copy1 ();
 		return;
 	    }
 
@@ -373,7 +398,8 @@ and correct the setting.</p>");
 
 	if (ret == `abort_test)
 	{
-	    Internet::Stop ();
+	    if (!already_up)
+		Internet::Stop ();
 	    test_result = `failure;
 	    break;
 	}
@@ -386,20 +412,7 @@ and correct the setting.</p>");
 
     show_result ();
 
-    // label of combobox where the log is selected
-    logs = add (logs, $[ `menuname : _("Kernel Messages"),
-			 `filename : "messages" ]);
-    SCR::Execute (.target.bash, "/bin/cp /var/log/messages " +
-		  logdir + "/messages");
-
-    if (Internet::logfile != "") {
-	// label of combobox where the log is selected
-	logs = add (logs, $[ `menuname : _("PPP Daemon"),
-			     `filename : "smpppd.log",
-			     `prio : 20 ]);
-	SCR::Execute (.target.bash, "/bin/cp " + Internet::logfile + " " +
-		      logdir + "/smpppd.log");
-    }
+    copy2 ();
 
 
     UI::ChangeWidget(`id(`back), `Enabled, true);
