@@ -804,7 +804,15 @@ global define boolean Commit() {
 
 		}
 
-		NetworkModules::ChangeM(nm_name);
+		// #42421, 36147#c19: do not write a hwcfg file
+		if (device == "bus-pcmcia" || device == "bus-usb")
+		{
+		    nm_name = "";
+		}
+		else
+		{
+		    NetworkModules::ChangeM(nm_name);
+		}
 	    }
 	}
 	else
