@@ -91,7 +91,7 @@ define boolean StartEthInterface() {
 	  SCR::Execute (.target.bash, sformat ("grep ^%1 /proc/modules", m)) != 0;
     });
     detection_modules = maplist (string m, boolean a, needed_modules, ``( m ));
-//    Package::InstallKernel (maplist (string m, detection_modules, ``(m+".ko")));
+    Package::InstallKernel (maplist (string m, detection_modules, ``(m+".ko")));
     foreach (string mod, detection_modules, {
 	y2milestone("Loading module: %1", mod);
 	SCR::Execute (.target.bash, sformat ("/sbin/modprobe %1 2>&1", mod));
