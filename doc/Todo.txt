@@ -18,6 +18,7 @@ Bugs:
 - virtual interfaces #6627
 - edit modules.conf #15062
 - dsl in installation settings #15160
+- install dhcpcd in lan (before start)
 
 Adding network device mini-howto: grep for "escon" for example.
 

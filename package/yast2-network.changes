@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Aug 29 17:10:52 CEST 2002 - msvec@suse.cz
+
+- fixed testsuite (new Installation.ycp constructor)
+- 2.6.22
+
+-------------------------------------------------------------------
 Tue Aug 27 15:18:23 CEST 2002 - msvec@suse.cz
 
 - provide/obsolete old translation packages

@@ -242,6 +242,12 @@ global define string ControllerType(map hwdevice) ``{
 	if(subclass_id == 00) return "eth";
 	else if(subclass_id == 01) return "tr";
 	else if(subclass_id == 02) return "fddi";
+	else if(subclass_id == 128) {
+	    /* Nothing was found, default is eth */
+	    y2error("Unknown network controller type: %1", hwdevice);
+	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
+	    return "eth";
+	}
 	else {
 	    /* Nothing was found, default is eth */
 	    y2error("Unknown network controller type: %1", hwdevice);

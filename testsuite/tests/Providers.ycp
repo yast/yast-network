@@ -1,6 +1,7 @@
 {
 
 include "testsuite.ycp";
+import "Pkg";
 
 map READ = $[
     "sysconfig" : $[
