@@ -38,6 +38,9 @@ if (gateway == nil) gateway = "";
 string hwaddr = (string) SCR::Read (.etc.install_inf.HWAddr);
 if (hwaddr == nil) hwaddr = "";
 
+string nameserver = (string) SCR::Read (.etc.install_inf.Nameserver);
+if (nameserver == nil) nameserver = "";
+
 y2milestone("Original netdevice: %1", netdevice);
 string command = sformat("/sbin/ifconfig | grep -i \"HWaddr *%1\" | cut -d\" \" -f1", hwaddr);
 
@@ -87,6 +90,14 @@ if (mode == `up)
 		    SCR::Execute (.target.bash, route);
 		    y2milestone("Setting up route: %1", route);
 		}
+
+		if (nameserver != "")
+		{
+		    SCR::Execute (.target.bash, "/sbin/modify_resolvconf modify " +
+				  "--service yast2 --process y2base " +
+				  "--text 'yast2 needs a nameserver' " +
+				  "--nameservers " + nameserver);
+		}
 	    }
 	    else if (netconfig == "dhcp")
 	    {
@@ -126,6 +137,12 @@ if (mode == `dn)
 	{
 	    if (netconfig == "static")
 	    {
+		if (nameserver != "")
+		{
+		    SCR::Execute (.target.bash, "/sbin/modify_resolvconf restore " +
+				  "--service yast2");
+		}
+
 		if (gateway != "")
 		{
 		    string route = "/sbin/route del default gw " + gateway;
