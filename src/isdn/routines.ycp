@@ -23,6 +23,13 @@
 
   include "ui/common_messages.ycp";
 
+/**
+ * Return true if the given driver match i4ltyp and i4l subtype
+ * @param drv       - the driver info map
+ * @param i4ltyp    - the I4L TYPE
+ * @param i4lsubtyp - the I4L SUBTYPE
+ * @return boolean  - true if match false if not
+ */
 global define boolean driver_has_type(map drv, integer i4ltyp, integer i4lsubtyp) ``{
     boolean ret = false;
 
@@ -33,6 +40,13 @@ global define boolean driver_has_type(map drv, integer i4ltyp, integer i4lsubtyp
     return(ret);
 }
 
+/**
+ * Return true if the given card match i4ltyp and i4l subtype
+ * @param card      - the card info map
+ * @param i4ltyp    - the I4L TYPE
+ * @param i4lsubtyp - the I4L SUBTYPE
+ * @return boolean  - true if match false if not
+ */
 global define boolean card_has_type(map card, integer i4ltyp, integer i4lsubtyp) ``{
     boolean ret = false;
 
@@ -44,6 +58,13 @@ global define boolean card_has_type(map card, integer i4ltyp, integer i4lsubtyp)
     return(ret);
 }
 
+/**
+ * Return the matching driver for i4ltyp and i4l subtype
+ * @param dev       - list of all cards
+ * @param i4ltyp    - the I4L TYPE
+ * @param i4lsubtyp - the I4L SUBTYPE
+ * @return map of matching driver info
+ */
 global define map get_isdndriver_by_type(list dev, integer i4ltyp, integer i4lsubtyp) ``{
     map ret =  $[];
 
@@ -58,6 +79,13 @@ global define map get_isdndriver_by_type(list dev, integer i4ltyp, integer i4lsu
     return(ret);
 }
 
+/**
+ * Return the matching card for i4ltyp and i4l subtype
+ * @param dev       - list of all cards
+ * @param i4ltyp    - the I4L TYPE
+ * @param i4lsubtyp - the I4L SUBTYPE
+ * @return map of matching card info
+ */
 global define map get_isdncard_by_type(list dev, integer i4ltyp, integer i4lsubtyp) ``{
     map ret =  $[];
 
@@ -69,6 +97,11 @@ global define map get_isdncard_by_type(list dev, integer i4ltyp, integer i4lsubt
     return(ret);
 }
 
+/**
+ * Return the I4L SUBTYPE from card info
+ * @param card      - map of card info
+ * @return I4L SUBTYPE
+ */
 global define integer get_i4lsubtype(map card) ``{
     integer ret = -1;
 
@@ -77,6 +110,11 @@ global define integer get_i4lsubtype(map card) ``{
     return(ret);
 }
 
+/**
+ * Return the I4L TYPE from card info
+ * @param card      - map of card info
+ * @return I4L TYPE
+ */
 global define integer get_i4ltype(map card) ``{
     integer ret = -1;
 
@@ -85,6 +123,12 @@ global define integer get_i4ltype(map card) ``{
     return(ret);
 }
 
+/**
+ * Creates a popup with test OK/ not OK and displays details on request
+ * @param result   - return code of the test 0 is OK
+ * @param details  - string of collected infos during the test 
+ * @return allways true
+ */
 global define boolean display_testresult(integer result, string details) ``{
     symbol ret = nil;
     string msg = "";
