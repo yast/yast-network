@@ -147,6 +147,8 @@ define string ControllerType(map hwdevice) {
 	return "modem";
     else if(hwdevice["class_id"]:-1 == 0x103)
 	return "isdn";
+    else if(hwdevice["class_id"]:-1 == 0x114)
+	return "dsl";
 
     /* Nothing was found */
     y2error("Unknown controller type: %1", hwdevice);
@@ -162,9 +164,6 @@ define list<map> ReadHardware(string hwtype) {
     list<map> Hardware = [];
 
     y2debug("hwtype=%1", hwtype);
-
-    /* FIXME: no clean DSL hardware support yet */
-    if(hwtype == "dsl") return [];
 
     integer num = 0;
     list paths = [];
@@ -248,8 +247,14 @@ define list<map> ReadHardware(string hwtype) {
 	}
 	/* dsl card */
 	else if(controller == "dsl") {
-	    y2error("dsl not ready yet");
-	    /* FIXME: DSL HW */
+	    map driver_info = card["dsl", 0]:$[];
+	    map<string, string> translate_mode = $[
+		"capiadsl": "capi-adsl",
+		"pppoe": "pppoe",
+		];
+	    string m = driver_info["mode"]:"";
+	    one["pppmode"] = translate_mode[m]:m;
+	    // driver_info["name"]:"" has no use here??
 	}
 	/* treat the rest as a network card */
 	else if(controller != "") {
