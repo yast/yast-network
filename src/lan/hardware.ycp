@@ -84,7 +84,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     if(Arch::s390)
 	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv" ];
 
-//    if(Arch::ia64)
+    if(Arch::ia64)
 	device_types = add(device_types, "xp");
 
     if(issubstring(device, "bus-pcmcia"))
