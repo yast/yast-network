@@ -31,9 +31,10 @@ include "network/isdn/routines.ycp";
  * of ISDN cards for a specific vendor
  * @param integer vendor  - vendor id if -1 all vendors
  * @param integer defcard - default card, if -1 first card
+ * @return item list: list<term (term (?), ?, boolean)>
  */
 
-define list ISDNCards4Vendor(integer vendor, integer defcard) ``{
+define list<term> ISDNCards4Vendor(integer vendor, integer defcard) ``{
     list<map> cards = maplist(integer i, map c, ISDN::ISDNCDB["Cards"]:$[], ``(c));
     boolean first = (defcard == -1);
     string n_id = "";
@@ -45,7 +46,7 @@ define list ISDNCards4Vendor(integer vendor, integer defcard) ``{
 	cards = filter(map c, cards, ``(c["VendorRef"]:-1 == vendor));
 	n_id = "name";
     }
-    list itemlist = maplist(map c, cards, ``{
+    list<term> itemlist = maplist(map c, cards, ``{
 	boolean sel = false;
 
 	if (first) {
@@ -77,8 +78,8 @@ particular vendors by selecting a vendor.</p>");
     if (ISDN::ISDNCDB == $[])
 	    ISDN::ISDNCDB = (map) SCR::Read(.probe.cdb_isdn);
 
-    integer typ = tointeger(lookup(ISDN::hw_device, "PARA_TYPE", "-1"));
-    integer subtyp = tointeger(lookup(ISDN::hw_device, "PARA_SUBTYPE", "-1"));
+    integer typ = tointeger(ISDN::hw_device["PARA_TYPE"]:"-1");
+    integer subtyp = tointeger(ISDN::hw_device["PARA_SUBTYPE"]:"-1");
     map cur_card = get_isdncard_by_type(ISDN::ISDNCDB, typ, subtyp);
 
     integer vendor = cur_card["VendorRef"]:-1;
@@ -87,7 +88,7 @@ particular vendors by selecting a vendor.</p>");
     list vendors = maplist(integer i, map v, ISDN::ISDNCDB["Vendors"]:$[], ``(`item(`id(i), v["name"]:"unknown", (i == vendor))));
     vendors = prepend(vendors, `item(`id(-1), _("All"), (-1 == vendor)));
 
-    list cards = ISDNCards4Vendor(vendor, card);
+    list<term> cards = ISDNCards4Vendor(vendor, card);
 
     /* Manual selection contents */
     term contents = `VBox(
@@ -127,9 +128,9 @@ particular vendors by selecting a vendor.</p>");
 	    if (size(entry) == 0)
 		continue;
 
-	    list l = filter(list e, (list<list>) cards, ``(tolower(substring((string) select(e, 1, ""), 0, size(entry))) == tolower(entry)));
+	    list<term> l = filter(term e, cards, ``(tolower(substring(e[1]:"", 0, size(entry))) == tolower(entry)));
 	    if(size(l) > 0) {
-		card = (integer) select((list) select((list) select(l, 0, []), 0, []), 0, 0);
+		card = l[0, 0, 0]:0;
 		UI::ChangeWidget(`id(`cards), `CurrentItem, card);
 		UI::ReplaceWidget(`id(`rp), `SelectionBox(`id(`cards), _("Se&lect ISDN Card"), cards));
 		continue;
@@ -139,8 +140,8 @@ particular vendors by selecting a vendor.</p>");
 		m = filter(integer i, map c, ISDN::ISDNCDB["Cards"]:$[], ``(0 <= find(tolower(c["longname"]:""), tolower(entry))));
 	    if(size(m) == 0)
 		continue;
-	    l = maplist(integer i, map c, (map<integer,map>) m, ``(c));
-	    m = (map) select(l, 0, []);
+	    list<map> ml = maplist(integer i, map c, (map<integer,map>) m, ``(c));
+	    m = ml[0]:$[];
 
 	    card = m["CardID"]:-1;
 	    vendor = m["VendorRef"]:-1;
@@ -179,11 +180,11 @@ particular vendors by selecting a vendor.</p>");
 
     if(ret == `next) {
 	card = (integer) UI::QueryWidget(`id(`cards), `CurrentItem);
-	cur_card = lookup(ISDN::ISDNCDB["Cards"]:$[], card, $[]);
+	cur_card = ISDN::ISDNCDB["Cards"]:$[][card]:$[];
 	ISDN::hw_device = union(ISDN::hw_device, $[
 	    "PARA_TYPE"		: sformat("%1", get_i4ltype(cur_card)),
 	    "PARA_SUBTYPE"	: sformat("%1", get_i4lsubtype(cur_card)),
-	    "NAME"		: sformat("%1", lookup(cur_card, "name", "unknown"))
+	    "NAME"		: sformat("%1", cur_card["name"]:"unknown")
 	]);
     }
 

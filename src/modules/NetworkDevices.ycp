@@ -413,7 +413,7 @@ global define boolean Modified(string devregex) {
     return Devs == OriginalDevs;
 }
 
-global define list GetFreeDevices(string type, integer num) {
+global define list<string> GetFreeDevices(string type, integer num) {
     y2debug("Devices=%1", Devices);
     y2debug("type,num=%1,%2", type, num);
     y2debug("Devices[%1]=%2", type, Devices[type]:$[]);
@@ -423,7 +423,7 @@ global define list GetFreeDevices(string type, integer num) {
 
     integer i = 0;
     integer count = 0;
-    list ret = [];
+    list<string> ret = [];
 
     /* Hotpluggable devices */
     if(IsHotplug(type) && !contains(curdevs, "")) {
@@ -494,7 +494,8 @@ global define list GetFreeDevicesOld(string type, integer num) {
  */
 global define string GetFreeDevice(string type) {
     y2debug("type=%1", type);
-    string ret = (string) select(GetFreeDevices(type, 1), 0, nil);
+    list <string> freedevs = GetFreeDevices(type, 1);
+    string ret = (string) freedevs[0]:nil;
     if(ret == nil) y2error("Free device location error: %1", ret);
     y2debug("Free device=%1", ret);
     return ret;

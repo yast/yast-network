@@ -854,6 +854,7 @@ global define boolean Commit() ``{
 global define boolean Import(map settings) ``{
     Provider::Import("isdn", settings["_PROVIDERS"]:$[]);
     Devices = (map<string,map>)add(settings, "_PROVIDERS", nil);
+    return true;
 }
 
 /**

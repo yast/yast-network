@@ -180,7 +180,7 @@ activate the test procedure."),
  * Connection test dialog
  * @return dialog result
  */
-define any AskYOUDialog() {
+define void AskYOUDialog() {
 
     ScreenName("installation-you-dialog");
 
