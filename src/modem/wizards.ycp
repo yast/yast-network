@@ -1,20 +1,12 @@
 /**
- * File:
- *   include/network/modem/wizards.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   User interface functions for modem configuration.
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/modem/wizards.ycp
+ * Package:	Configuration of network
+ * Summary:	User interface functions for modem configuration.
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
  * Wizards definitions.
- *
  */
 
 {
@@ -27,6 +19,9 @@ include "wizard/sequencer.ycp";
 
 include "network/modem/dialogs.ycp";
 include "network/modem/complex.ycp";
+
+include "network/providers/connection.ycp";
+include "network/providers.ycp";
 
 /**
  * Whole configuration of modems
@@ -46,13 +41,11 @@ global define symbol ModemSequence() ``{
 
     map sequence = $[
 	"ws_start" : "read",
-	"read" :
-	$[
+	"read" : $[
 	    `abort	: `abort,
 	    `next	: "main"
 	],
-	"main" :
-	$[
+	"main" : $[
 	    `abort	: `abort,
 	    `next	: "write"
 	],
@@ -156,14 +149,14 @@ global define symbol MainSequence() ``{
 global define symbol OneModemSequence(boolean detected) ``{
 
     map aliases = $[
-	"parameters_detected"	: ``(modem_params(`Detected)),
-	"parameters"		: ``(modem_params(`other)),
-	"details"		: ``(modem_details()),
-	"details_detected"	: ``(modem_details()),
-	"providers"		: ``(runProvidersDialog(`modem)),
+	"parameters_detected"	: ``(ModemDialog(true)),
+	"parameters"		: ``(ModemDialog(false)),
+	"details"		: ``(ModemDetailsDialog()),
+	"details_detected"	: ``(ModemDetailsDialog()),
+	"providers"		: ``(ProvidersDialog("modem")),
 	"provider"		: ``(runEditModemProviderDialog(true)),
 	"new_provider"		: ``(runEditModemProviderDialog(false)),
-	"connection"		: ``(modem_connection()),
+	"connection"		: ``(ConnectionDialog("modem")),
 	"commit"		: [ ``(Commit()), true ],
     ];
 

@@ -1,18 +1,10 @@
 /**
- * File:
- *   include/network/modem/complex.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Summary, overview and IO dialogs for modems configuration.
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/modem/complex.ycp
+ * Package:	Configuration of network
+ * Summary:	Summary, overview and IO dialogs for modems configuration.
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
  */
 
 {
@@ -262,4 +254,3 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
 
 /* EOF */
 }
-

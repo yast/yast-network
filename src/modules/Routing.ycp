@@ -1,18 +1,10 @@
 /**
- * File:
- *   modules/Routing.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Routing configuration
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	modules/Routing.ycp
+ * Package:	Configuration of network
+ * Summary:	Routing configuration
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
  */
 
 {

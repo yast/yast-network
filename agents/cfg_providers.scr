@@ -33,7 +33,7 @@
 	    ],
 	    /* rewrite rules */
 	    "rewrite"	: [
-		//[ "/usr/share/providers/(.*)\.conf$",  "/usr/share/providers/%s.conf", ],
+		[ "/etc/sysconfig/network/providers/(.*)$", "/etc/sysconfig/network/providers/%s" ],
 	    ],
 	]
     )

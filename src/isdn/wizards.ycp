@@ -1,20 +1,12 @@
 /**
- * File:
- *   include/network/isdn/wizards.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   User interface functions for isdn configuration.
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/isdn/wizards.ycp
+ * Package:	Configuration of network
+ * Summary:	User interface functions for isdn configuration.
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
  * Wizards definitions.
- *
  */
 
 {
@@ -30,10 +22,9 @@ include "network/isdn/complex.ycp";
 include "network/isdn/callback.ycp";
 include "network/isdn/lowlevel.ycp";
 include "network/isdn/connection.ycp";
-include "network/providers.ycp";
 
-//include "network/services/dns.ycp";
-//include "network/services/routing.ycp";
+include "network/providers/connection.ycp";
+include "network/providers.ycp";
 
 /**
  * Whole configuration of network
@@ -49,13 +40,11 @@ global define symbol ISDNSequence() ``{
 
     map sequence = $[
 	"ws_start" : "read",
-	"read" :
-	$[
+	"read" : $[
 	    `abort	: `abort,
 	    `next	: "main"
 	],
-	"main" :
-	$[
+	"main" : $[
 	    `abort	: `abort,
 	    `next	: "write"
 	],
@@ -137,6 +126,11 @@ global define symbol MainSequence() ``{
     return WizardSequencer(aliases, sequence);
 }
 
+/**
+ * One ISDN card workflow
+ * @param entry sequence entry
+ * @return sequence result
+ */
 global define symbol OneISDNSequence(string entry) ``{
 
     map aliases = $[
@@ -146,9 +140,10 @@ global define symbol OneISDNSequence(string entry) ``{
 	"edit"			:   ``(isdn_lowlevel(`edit)),
 	"overview"		:   ``(OverviewDialog()),
 	"connection"		:   ``(isdn_connection()),
+	"connection"		:   ``(ConnectionDialog("isdn")),
 	"ip"			:   ``(isdn_ip()),
 	"callback"		:   ``(isdn_callback()),
-	"providers"		:   ``(runProvidersDialog(`isdn)),
+	"providers"		:   ``(ProvidersDialog("isdn")),
 	"provider"		:   ``(runEditIsdnProviderDialog()),
 	"new_provider"		:   ``(runEditIsdnProviderDialog()),
 	"testdev"		: [ ``(Commit(false)), true ],
@@ -202,6 +197,8 @@ global define symbol OneISDNSequence(string entry) ``{
 	"connection" : $[
 	    `ipsettings : "ip",
 	    `callbacksettings : "callback",
+	    `Details : "callback",
+	    `IPDetails : "ip",
 	    `next : "commit_if",
 	    `abort : `abort
 	],

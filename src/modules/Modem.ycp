@@ -1,21 +1,13 @@
 /**
- * File:
- *   modules/Modem.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Data for configuration of modem, input and output functions.
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	modules/Modem.ycp
+ * Package:	Configuration of network
+ * Summary:	Data for configuration of modem
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
  * Representation of the configuration of modem.
  * Input and output routines.
- *
  */
 
 {
@@ -67,18 +59,16 @@ global boolean proposal_valid = false;
 /* PRIVATE DATA */
 
 /**
- * Config information
- */
-map CONFIG = $[];
-
-/**
  * Hardware information
- * [
- *     "name"	: "Digital DecCHIP 1234",
- *     "unique"	: "uihd98723hodi2hgday8",
- * ]
+ * @see ReadHardware
  */
 list HARDWARE = [];
+
+/**
+ * Config information
+ * @see ReadConfig
+ */
+map CONFIG = $[];
 
 /**
  * Deleted devices
@@ -251,7 +241,9 @@ global define boolean AddEdit(string dev) ``{
     Init3 = devmap["INIT3"]:"";
     BaudRate = tointeger(devmap["SPEED"]:"57600");
 
-    PulseDial = devmap["DIALCOMMAND"]:"ATDT" == "ATDP";
+    /* PulseDial = devmap["DIALCOMMAND"]:"ATDT" == "ATDP";
+     * better heuristics: */
+    PulseDial = filterchars(devmap["DIALCOMMAND"]:"ATDT", "P") == "P";
     Speaker = devmap["INIT8"]:"ATM1" == "ATM1";
     Carrier = devmap["INIT9"]:"" == "";
 

@@ -20,9 +20,10 @@ Enhancements:
 - lan: dual port network cards
 - lan: compiled in kernel drivers
 - modem: pap|chap secrets writing
-- providers: use rewrite rules
+- providers: UIMODE="tonline" | "1to1"
+- providers: remove [Dialer ] from providers.rpm
+- providers: no-global-values
 - providers: ReallyAbort()
-- providers: choose default country intelligently
 - providers: preload the country providers (other upon request)
 - providers: -> HWDB-NG
 - base: edit without restart (reload)

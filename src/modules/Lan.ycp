@@ -1,21 +1,13 @@
 /**
- * File:
- *   modules/Lan.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Data for configuration of network card, input and output functions.
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	modules/Lan.ycp
+ * Package:	Configuration of network
+ * Summary:	Data for configuration of network card
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
  * Representation of the configuration of network cards.
  * Input and output routines.
- *
  */
 
 {
@@ -67,20 +59,16 @@ global block AbortFunction = nil;
 /* PRIVATE DATA */
 
 /**
- * Config information
- */
-map CONFIG = $[];
-
-/**
  * Hardware information
- * [
- *     "name"	: "Digital DecCHIP 1234",
- *     "unique"	: "uihd98723hodi2hgday8",
- *     "modul"	: "tulip",
- *     "options" : ""
- * ]
+ * @see ReadHardware
  */
 list HARDWARE = [];
+
+/**
+ * Config information
+ * @see ReadConfig
+ */
+map CONFIG = $[];
 
 /**
  * Deleted devices
@@ -289,7 +277,7 @@ global define boolean Import(map settings) ``{
 	    else if (!issubstring(ignore, k)) {
 		return([k,v]);
 	    }
-	});	
+	});
 	return([interface["device"]:"unknown",new_interface]);
     });
     map eth = $[];
@@ -315,12 +303,12 @@ global define boolean Import(map settings) ``{
  */
 global define map Export() ``{
     list autoinst_cfg = [];
-    
+
     string upcase = "BOOTPROTO BROADCAST IPADDR NETMASK NETWORK STARTMODE";
     string ignore = "UNIQUE";
-    
+
     foreach(string device, map data, CONFIG, ``{
-	list interfaces = maplist(string device_nr, map device_data, data, ``{	    
+	list interfaces = maplist(string device_nr, map device_data, data, ``{
 	    device_data = add(device_data,"device", device + device_nr);
 	    map new_device = mapmap(`k,`v, device_data, ``{
 		if (issubstring(upcase, k)) {
@@ -341,6 +329,10 @@ global define map Export() ``{
     ]);
 }
 
+/**
+ * Select the hardware component
+ * @param which index of the component
+ */
 global define void Select(integer which) ``{
     SelectHardware(which);
 }

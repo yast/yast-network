@@ -1,18 +1,10 @@
 /**
- * File:
- *   modules/DNS.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Hostname and DNS settings
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	modules/DNS.ycp
+ * Package:	Configuration of network
+ * Summary:	Hostname and DNS settings
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
  */
 
 {

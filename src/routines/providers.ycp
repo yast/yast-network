@@ -28,24 +28,12 @@ include "ui/common_messages.ycp";
  * - fix getting and saving settings in runEditIsdnProviderDialog
  */
 
-global define ReallyAbort() ``{
-    return UI::ReallyAbortPopup(true);
-}
-
-////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////
-///// H E L P     T E X T S ////////////////////////////
-////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////
-
 /**
  * Get help text for modem or isdn provider editation.
  * @param modem true for modem, false for isdn
- * return help text
+ * @return help text
  */
-global define getEditProviderHelp (boolean modem) ``{
+global define string getEditProviderHelp (boolean modem) ``{
     // help text 1/4
     string helptext =
 _("<p>
@@ -80,13 +68,6 @@ Check the <b>Ask</b> button to have it always ask for the password.
     return helptext;
 }
 
-////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////
-///// D I A L O G S   A N D   O T H E R S //////////////
-////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////
 /**
  * Build provider info text.
  * @param prov provider settings
@@ -143,93 +124,98 @@ To register for <b>%1</b> and find the best dialing number, call the hotline
 
 /**
  * Huh, what is this function doing?
+ * @param provs ?
+ * @param prev ?
+ * @return ?
  * FIXME
  */
 global define any dividerHack(list provs, any prev) ``{
     integer p = -1;
-    find (`e, provs, ``{
+    find(`e, provs, ``{
 	p = p + 1;
-	any id = select (select (e, 0, `id ("x")), 0, "x");
+	any id = select(select(e, 0, `id("x")), 0, "x");
 	return id == prev;
     });
     integer i = -1;
-    find (`e, provs, ``{
+    find(`e, provs, ``{
 	i = i + 1;
-	any id = select (select (e, 0, `id ("x")), 0, "x");
+	any id = select(select(e, 0, `id("x")), 0, "x");
 	return id == ."--";
     });
-    term item = select (provs, p < i ? i + 1 : i - 1, "");
-    return select (select (item, 0, `id ("x")), 0, "x");
+    term item = select(provs, p < i ? i + 1 : i - 1, "");
+    return select(select(item, 0, `id("x")), 0, "x");
 }
 
 /**
- * Providers dialog.
- * @param type show only modem/isdn/[at]dsl capable providers? [`modem, `isdn, `tdsl, `dsl]
- * @return symbol for wizard sequencer (`next, `back, `abort, `new)
+ * Providers dialog
+ * @param type providers type to be shown ("all"|"modem"|"isdn"|"dsl")
+ * @return symbol dialog result
  */
-global define symbol runProvidersDialog (symbol type) ``{
+global define symbol ProvidersDialog(string type) ``{
 
+    /* Providers dialog caption */
     string caption = _("Select Internet Service Provider (ISP)");
 
-    /* providers dialog help text 1/3 */
+    /* Providers dialog help 1/3 */
     string helptext = _("<p>Select the appropriate <b>provider</b>.</p>");
 
-    /* providers dialog help text 2/3 */
+    /* Providers dialog help 2/3 */
     helptext = helptext + _("<p>Choose the country or region where you are
 located then choose one of the listed providers.</p>");
 
-    /* providers dialog help text 3/3 */
+    /* Providers dialog help 3/3 */
     helptext = helptext + _("<p>Use the <b>New</b> button to add a provider
 not in the list.</p>");
 
     string prev_country = "x";
     string country = (nil != Providers::provShortName && Providers::provShortName != "") ? "_custom" : nil;
+    y2debug("country=%1", country);
     any provider = nil;
-    list countries = Providers::getCountries ();
+
     list provs = [];
 
-    term contents =
-	`HBox(
-	    `HSpacing(),
-	    `VBox(
-		`VSpacing (1),
-		`HBox(
-		    `HWeight (1,
-			`VBox (
-			    `RadioButtonGroup (`id (`radio),
-				`VBox (
-				    `RadioButton (`id (`custom_p), `opt (`hstretch, `notify), _("C&ustom Providers"), country != nil),
-				    `VSpacing (0.2),
-				    `RadioButton (`id (`country_p), `opt (`hstretch, `notify), _("&Countries"), country == nil)
-				    )
-				),
-			    `HBox (
-				`HSpacing (3.4),
-				`SelectionBox(`id(`countries), `opt(`notify), _("&Select a country:"), countries)
-				)
+
+    term contents = `HBox(
+	`HSpacing(),
+	`VBox(
+	    `VSpacing(1),
+	    `HBox(
+		`HWeight(1,
+		    `VBox(
+			`RadioButtonGroup(`id(`radio),
+			    `VBox(
+				`RadioButton(`id(`custom_p), `opt(`hstretch, `notify), _("C&ustom Providers"), country != nil),
+				`VSpacing(0.2),
+				`RadioButton(`id(`country_p), `opt(`hstretch, `notify), _("&Countries"), country == nil)
 			    )
-		    ),
-		    `HSpacing(),
-		    `HWeight (1,
-			`HBox (
-				`ReplacePoint(`id(`providers_rep), `VSpacing (1)),
-				`HSpacing (2.4)
-			    )
+			),
+			`HBox(
+			    `HSpacing(3.4),
+			    `SelectionBox(`id(`countries), `opt(`notify), _("&Select a country:"), Providers::GetCountries())
+			)
 		    )
 		),
-		`HBox (`HSpacing (3.4), `Label(`id(`homepage), `opt(`hstretch), "")),
-		`HBox (`HSpacing (3.4), `Label(`id(`hotline), `opt(`hstretch),  "")),
-		`PushButton(`id(`new), _("Ne&w"))
+		`HSpacing(),
+		`HWeight(1,
+		    `HBox(
+			`ReplacePoint(`id(`providers_rep), `VSpacing(1)),
+			`HSpacing(2.4)
+		    )
+		)
 	    ),
-	    `HSpacing()
-	);
+	    `HBox(`HSpacing(3.4), `Label(`id(`homepage), `opt(`hstretch), "")),
+	    `HBox(`HSpacing(3.4), `Label(`id(`hotline), `opt(`hstretch),  "")),
+	    `PushButton(`id(`new), _("Ne&w"))
+	),
+	`HSpacing()
+    );
 
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    BackButtonLabel(), NextButtonLabel());
 
     symbol ret = country == nil ? `countries : `custom_p;
     boolean change_providers = false;
-    while (`next != ret && `back != ret && `abort != ret && `new != ret)
+    while(`next != ret && `back != ret && `abort != ret && `new != ret)
     {
 	if (`custom_p == ret || `country_p == ret)
 	{
@@ -252,7 +238,8 @@ not in the list.</p>");
 	    change_providers = false;
 	    if (prev_country != country)
 	    {
-		provs = Providers::getProviders (country, type, Providers::provShortName);
+		provs = Providers::GetProviders(country, type, Providers::provShortName);
+		y2debug("provs=%1", provs);
 		UI::ReplaceWidget (`id (`providers_rep),
 			`SelectionBox (`id (`providers), `opt (`notify), _("&Provider"), provs));
 		ret = `providers;
@@ -268,7 +255,7 @@ not in the list.</p>");
 		provider = dividerHack (provs, prev);
 		UI::ChangeWidget (`id (`providers), `CurrentItem, provider);
 	    }
-	    map p = Providers::getProvider (provider);
+	    map p = Providers::GetProvider(provider);
 	    string tmp = lookup (p, "HOMEPAGE", nil);
 	    tmp = ((nil == tmp || "" == tmp) ? "" : sformat (_("Home Page: %1"), tmp));
 	    UI::ChangeWidget (`id (`homepage), `Value, tmp);
@@ -294,7 +281,7 @@ not in the list.</p>");
 	}
 	else
 	{
-	    Providers::provider = Providers::getProvider (provider);
+	    Providers::provider = Providers::GetProvider(provider);
 	}
 	Providers::editProvider (provider);
     }
@@ -562,7 +549,7 @@ global define symbol runEditIsdnProviderDialog () ``{
 	    UI (``{ ChangeWidget (`id (`Username), `Enabled, QueryWidget (`id (`syncppp), `Value));
 		    ChangeWidget (`id (`askpass), `Enabled, QueryWidget (`id (`syncppp), `Value));
 		    ChangeWidget (`id (`Passwd),   `Enabled, QueryWidget (`id (`syncppp), `Value)
-		    	&& !QueryWidget (`id (`askpass), `Value));
+			&& !QueryWidget (`id (`askpass), `Value));
 		});
 	}
 	else if (`askpass == ret)
@@ -652,6 +639,13 @@ global define symbol runEditIsdnProviderDialog () ``{
     }
 
     return ret;
+}
+
+
+if(false) {
+    Wizard::CreateDialog();
+    Providers::Read();
+    ProvidersDialog("dsl");
 }
 
 /* EOF */

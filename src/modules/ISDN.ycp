@@ -1,22 +1,14 @@
 /**
- * File:
- *   modules/ISDN.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Data for configuration of ISDN, input and output functions.
- *
- * Authors:
- *   Michal Svec  <msvec@suse.cz>
- *   Karsten Keil <kkeil@suse.de>
+ * File:	modules/ISDN.ycp
+ * Package:	Configuration of network
+ * Summary:	Data for configuration of ISDN cards
+ * Authors:	Michal Svec  <msvec@suse.cz>
+ *		Karsten Keil <kkeil@suse.de>
  *
  * $Id$
  *
  * Representation of the configuration of ISDN.
  * Input and output routines.
- *
  */
 
 {
@@ -103,22 +95,21 @@ global integer device = -1;
 /* PRIVATE DATA */
 
 /**
+ * Hardware information
+ * @see ReadHardware
+ */
+list HARDWARE = [];
+
+/**
  * Config information
+ * @see ReadConfig
  */
 map CONFIG = $[];
 
-/* deleted devicces */
-list DELETED = [];
-
-
 /**
- * Hardware information
- * [
- *     "name"	: "Digital DecCHIP 1234",
- *     "unique"	: "uihd98723hodi2hgday8",
- * ]
+ * deleted devicces
  */
-list HARDWARE = [];
+list DELETED = [];
 
 /**
  * Abort function

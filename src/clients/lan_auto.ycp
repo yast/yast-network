@@ -72,17 +72,17 @@ any result = nil;
 any ret = nil;
 repeat {
     ret = UI::UserInput();
-    if (ret == `configure)
+    if(ret == `configure)
     {
 	result = LanAutoSequence();
-	if (result == `next || result == `finish)
+	if(result == `next || result == `finish)
 	{
-	    settings = Lan::Export ();
+	    settings = Lan::Export();
 	}
 	Lan::Import(settings);
 	set_contents();
     }
-    else if ( ret == `reset)
+    else if( ret == `reset)
     {
 	settings= $[];
 	Lan::Import(settings);

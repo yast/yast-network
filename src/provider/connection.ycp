@@ -1,0 +1,247 @@
+/**
+ * File:	include/network/providers/connection.ycp
+ * Package:	Configuration of network
+ * Summary:	Connection configuration dialogs
+ * Author:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "DSL";
+import "Modem";
+import "ISDN";
+import "Firewall";
+import "Providers";
+import "Wizard";
+
+include "ui/common_popups.ycp";
+include "network/routines.ycp";
+
+/**
+ * Connection dialog
+ * @param type "modem"|"isdn"
+ * @return dialog result
+ */
+global define symbol ConnectionDialog(string type) ``{
+
+    /* PREPARE VARIABLES */
+    string Provider = lookup(Providers::provider, "PROVIDER", "");
+
+    boolean DialOnDemand = lookup(Providers::provider, "DEMAND", "no") == "yes";
+    boolean AutoDNS = lookup(Providers::provider, "AUTODNS", "yes") == "yes";
+
+    string DNS1 = lookup(Providers::provider, "DNS1", "");
+    string DNS2 = lookup(Providers::provider, "DNS2", "");
+
+    string IdleSeconds = lookup(Providers::provider, "IDLETIME", "300");
+
+    string device = nil;
+    if(type == "modem") device = device_name(Modem::type, Modem::device);
+    else if(type == "isdn") device = device_name(ISDN::type, ISDN::device);
+    else if(type == "dsl") device = "ppp0"; // device_name(DSL::type, DSL::device);
+    else {
+	y2error("Unknown type: %1", type);
+	return nil;
+    }
+
+    y2debug("device %1", device);
+    boolean FirewallChecked = Firewall::Query(device);
+
+    /* DIALOG TEXTS */
+
+    /* Connection dialog caption */
+    string caption = _("Connection parameters");
+
+    /* Connection dialog help 1/5 */
+    string helptext = _("<p><b>Dial on demand</b> means that the
+internet connection will be established automatically when data from
+the internet are requested. To use this feature you must specify at
+least one <i>name server</i>. Please use this feature only if your
+internet connection is cheap since there are programs that periodically
+request data from the internet.</p>") +
+
+    /* Connection dialog help 2/5 */
+_("<p>When <b>Modify DNS</b> is enabled the <i>name server</i> will be
+changed automatically when connected to the internet.</p>") +
+
+    /* Connection dialog help 3/5 */
+_("<p>The <b>Name servers</b> are required to convert host names
+<i>(e.g. www.suse.com)</i> to IP addresses (e.g. 213.95.15.200). You only
+need to specify the name servers if you enable <i>Dial on demand</i> or
+disable <b>DNS modification</b> when connected.</p>") +
+
+    /* Connection dialog help 4/5 */
+_("<p>Selecting <b>Activate firewall</b> will block all incoming
+connections. Choosing this option will make dial-up connections
+to the Internet safe from external attacks.</p>") +
+
+    /* Connection dialog help 5/5 */
+_("<p>The <b>Idle timeout</b> specifies the time after which an idle
+connection will be shut down.</p>");
+
+    if(type == "isdn")
+
+	/* FIXME Connection dialog help 6/5 */
+	helptext = helptext + _("<p><b>Connection details</b> help FIXME
+</p>") +
+
+	/* FIXME Connection dialog help 7/5 */
+_("<p><b>IP details</b> help FIXME
+</p>");
+
+    /* DIALOG CONTENTS */
+
+    list seconds = maplist(`e, toset([ "30", "60", "90", "120", "150", "180", "240", "300", "360", "480", "600", IdleSeconds ]),
+	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == IdleSeconds)));
+
+    /* Checkbox label */
+    term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("Activate fire&wall ..."), FirewallChecked));
+
+    term contents = `HBox(
+	`HSpacing(6),
+	`VBox(
+	    `VSpacing(0.2),
+	    /* Label */
+	    `Left(`HSquash(`Label(_("Profile for selected provider:")))),
+	    `Left(`Label(`opt(`outputField), Provider)),
+	    `VSpacing(1),
+	    `HBox(
+		`VBox(
+		    /* Checkbox label */
+		    `Left(`CheckBox(`id(`DialOnDemand), `opt(`notify), _("Dial on d&emand"), DialOnDemand)),
+		    /* Checkbox label */
+		    `Left(`CheckBox(`id(`AutoDNS), `opt(`notify), _("&Modify DNS when connected"), AutoDNS))
+		 )
+	    ),
+	    `VSpacing(1),
+	    `HBox(
+		/* Frame label */
+		`Frame(`id(`NameServers), _("Name servers"),
+		    `VBox(
+			/* Text entry label */
+			`TextEntry(`id(`DNS1), _("&First"), DNS1),
+			/* Text entry label */
+			`TextEntry(`id(`DNS2), _("&Second"), DNS2)
+		    )
+		)
+	    ),
+	    `VSpacing(1),
+	    FirewallCheckbox,
+	    `VSpacing(0.2),
+	    /* Combo box label */
+	    `Left(`ComboBox(`id(`IdleSeconds), `opt(`editable), _("I&dle timeout (seconds)"), seconds)),
+	    `VSpacing(1),
+	    (type == "isdn") ?
+		`HBox(
+		    /* Push button label */
+		    `PushButton(`id(`Details), _("&Connection details")),
+		    /* Push button label */
+		    `PushButton(`id(`IPDetails), _("&IP details"))
+		 )
+	    :`VSpacing(0)
+	),
+	`HSpacing(6)
+    );
+
+    /* DIALOG PREPARE */
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    BackButtonLabel(), NextButtonLabel());
+
+    UI::ChangeWidget(`id(`Firewall), `Enabled, !Firewall::firewallpresent);
+    UI::ChangeWidget(`id(`NameServers), `Enabled, DialOnDemand || !AutoDNS);
+
+    /* MAIN CYCLE */
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next || ret == `Details || ret == `IPDetails) {
+	    /* check_* */
+	    if(UI::QueryWidget(`id(`IdleSeconds), `Value) == "") {
+		UI::ErrorPopup(_("You must set the idle seconds."));
+		UI::SetFocus(`id(`IdleSeconds));
+		continue;
+	    }
+
+	    /* FIXME
+	    if(DialOnDemand && !(check_ip4(DNS1) && (size(DNS2) == 0 || check_ip4(DNS2))))
+	    {
+		UI::ErrorPopup(_("Wrong IP address!"));
+		continue;
+	    }
+	    */
+
+	    break;
+	}
+	else if(ret == `DialOnDemand || ret == `AutoDNS) {
+	    DialOnDemand = UI::QueryWidget(`id(`DialOnDemand), `Value);
+	    AutoDNS = UI::QueryWidget(`id(`AutoDNS), `Value);
+	    UI::ChangeWidget(`id(`NameServers), `Enabled, DialOnDemand || !AutoDNS);
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    /* UPDATE VARIABLES */
+
+    if(ret == `next || ret == `Details || ret == `IPDetails) {
+	/* update provider info */
+	Providers::provider = union(Providers::provider, $[
+	    "DNS1" : UI::QueryWidget(`id(`DNS1), `Value),
+	    "DNS2" : UI::QueryWidget(`id(`DNS2), `Value),
+	    "DEMAND" : UI::QueryWidget(`id(`DialOnDemand), `Value) ? "yes" : "no",
+	    "AUTODNS" : UI::QueryWidget(`id(`AutoDNS), `Value) ? "yes" : "no",
+	    "IDLETIME" : UI::QueryWidget(`id(`IdleSeconds), `Value),
+	    "MODEMSUPPORTED" : type == "modem" ? "yes" : "no",
+	    "ISDNSUPPORTED" : type == "isdn" ? "yes" : "no",
+	    "DSLSUPPORTED" : type == "isdn" ? "yes" : "no"
+	]);
+	/* update firewall info */
+	if(FirewallChecked != UI::QueryWidget(`id(`Firewall), `Value)) {
+	    FirewallChecked = UI::QueryWidget(`id(`Firewall), `Value);
+	    Firewall::Change(device, FirewallChecked);
+	}
+    }
+
+    return ret;
+}
+
+/**
+ * Connection details dialog
+ * @return dialog result
+ */
+global define symbol ConnectionDetailsDialog() ``{
+}
+
+/**
+ * IP details dialog
+ * @return dialog result
+ */
+global define symbol IPDetailsDialog() ``{
+}
+
+if(false) {
+Wizard::CreateDialog();
+ConnectionDialog("modem");
+ConnectionDialog("isdn");
+ConnectionDialog("dsl");
+}
+
+/* EOF */
+}

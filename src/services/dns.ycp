@@ -1,18 +1,10 @@
 /**
- * File:
- *   include/network/services/dns.ycp
- *
- * Module:
- *   Configuration of network
- *
- * Summary:
- *   Hostname and DNS setup dialog
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/services/dns.ycp
+ * Module:	Configuration of network
+ * Summary:	Hostname and DNS setup dialog
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
  */
 
 {

@@ -1,20 +1,12 @@
 /**
- * File:
- *   include/network/services/routing.ycp
- *
- * Module:
- *   Configuration of network
- *
- * Summary:
- *   Routing configuration dialogs
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/services/routing.ycp
+ * Module:	Configuration of network
+ * Summary:	Routing configuration dialogs
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
  * Routing configuration dialogs
- *
  */
 
 {
@@ -318,6 +310,7 @@ global define term RoutingEditDialog(integer id, term entry, list devs) ``{
 
 /**
  * Check if internal data differ from the dialog values
+ * @param defgw current default gw widget contents
  * @return true if differ
  */
 global define boolean RoutingModified(string defgw) ``{

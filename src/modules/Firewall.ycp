@@ -1,18 +1,10 @@
 /**
- * File:
- *   modules/Firewall.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Firewall configuration
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	modules/Firewall.ycp
+ * Package:	Configuration of network
+ * Summary:	Firewall configuration
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
  */
 
 {
