@@ -12,45 +12,79 @@
  */
 
 /**
- * @param first a map of proxy settings
- * @return boolean success of operation
+ * @param function to execute
+ * @param map/list of proxy settings
+ * @return map edited settings, Summary or boolean on success depending on called function
  * @example map mm = $[ "FAIL_DELAY" : "77" ];
- * @example map ret = WFM::CallModule("proxy_auto", [ mm ]);
+ * @example map ret = WFM::CallFunction ("proxy_auto", [ "Summary", mm ]);
  */
 
 {
 
-textdomain "network";
+textdomain "proxy";
 
 y2milestone("----------------------------------------");
 y2milestone("Proxy auto started");
 
 import "Proxy";
-include "network/proxy/wizards.ycp";
+import "Wizard";
+include "network/services/proxy.ycp";
 
-list args = WFM::Args();
-if(size(args) <= 0) {
-    y2error("Did not get the settings, probably some mistake...");
-    return false;
+any ret = nil;
+string func = "";
+map param = $[];
+
+/* Check arguments */
+if(size(Args()) > 0 && is(Args(0), string)) {
+    func = WFM::Args(0);
+    if(size(Args()) > 1 && is(Args(1), map))
+	param = WFM::Args(1);
 }
-if(!is(WFM::Args(0), map)) {
-    y2error("Bad argument for proxy_auto: %1", WFM::Args(0));
-    return false;
+y2debug("func=%1", func);
+y2debug("param=%1", param);
+
+/* Create a summary*/
+if(func == "Summary") {
+    ret = select(Proxy::Summary(), 0, "");
+}
+/* Reset configuration */
+else if (func == "Reset") {
+    Proxy::Import($[]);
+    ret = $[];
+}
+/* Change configuration (run AutoSequence) */
+else if (func == "Change") {
+    Wizard::CreateDialog();
+    ret = ProxyMainDialog(true);
+    UI::CloseDialog();
+}
+/* Import configuration */
+else if (func == "Import") {
+    ret = Proxy::Import(param);
+}
+/* Return actual state */
+else if (func == "Result") {
+    ret = Proxy::Export();
+}
+/* Write givven settings */
+else if (func == "Write") {
+    import "Progress";
+    Progress::off();
+    Proxy::write_only = true;
+    ret = Proxy::Write();
+    Progress::on();
+}
+/* Unknown function */
+else {
+    y2error("Unknown function: %1", func);
+    ret = false;
 }
 
-/* The settings are in the first argument */
-map settings = args[0]:$[];
-y2debug("Imported: %1", settings);
-
-Proxy::Import(settings);
-symbol ret = ProxyAutoSequence();
 y2debug("ret=%1", ret);
-
 y2milestone("Proxy auto finished");
 y2milestone("----------------------------------------");
 
-if(ret == `next) return Proxy::Export();
-return $[];
+return ret;
 
 /* EOF */
 }

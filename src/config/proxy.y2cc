@@ -38,4 +38,7 @@ Textdomain = network
 ; Autoinstall features
 Autoinst = write
 
+; Resource in control file
+AutoinstResource = proxy
+
 ; vim:syntax=dosini

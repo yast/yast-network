@@ -12,48 +12,79 @@
  */
 
 /**
- * @param first a map of routing settings
- * @return boolean success of operation
+ * @param function to execute
+ * @param map/list of routing settings
+ * @return map edited settings, Summary or boolean on success depending on called function
  * @example map mm = $[ "FAIL_DELAY" : "77" ];
- * @example map ret = WFM::CallModule("routing_auto", [ mm ]);
+ * @example map ret = WFM::CallFunction ("routing_auto", [ "Summary", mm ]);
  */
 
 {
 
-textdomain "network";
+textdomain "routing";
 
 y2milestone("----------------------------------------");
 y2milestone("Routing auto started");
 
 import "Routing";
+import "Wizard";
 include "network/services/routing.ycp";
 
-list args = WFM::Args();
-if(size(args) <= 0) {
-    y2error("Did not get the settings, probably some mistake...");
-    return false;
+any ret = nil;
+string func = "";
+map param = $[];
+
+/* Check arguments */
+if(size(Args()) > 0 && is(Args(0), string)) {
+    func = WFM::Args(0);
+    if(size(Args()) > 1 && is(Args(1), map))
+	param = WFM::Args(1);
 }
-if(!is(WFM::Args(0), list)) {
-    y2error("Bad argument for routing_auto: %1", WFM::Args(0));
-    return false;
+y2debug("func=%1", func);
+y2debug("param=%1", param);
+
+/* Create a summary*/
+if(func == "Summary") {
+    ret = Routing::Summary();
+}
+/* Reset configuration */
+else if (func == "Reset") {
+    Routing::Import($[]);
+    ret = $[];
+}
+/* Change configuration (run AutoSequence) */
+else if (func == "Change") {
+    Wizard::CreateDialog();
+    ret = RoutingMainDialog(true);
+    UI::CloseDialog();
+}
+/* Import configuration */
+else if (func == "Import") {
+    ret = Routing::Import(param);
+}
+/* Return actual state */
+else if (func == "Result") {
+    ret = Routing::Export();
+}
+/* Write givven settings */
+else if (func == "Write") {
+    import "Progress";
+    Progress::off();
+    Routing::write_only = true;
+    ret = Routing::Write();
+    Progress::on();
+}
+/* Unknown function */
+else {
+    y2error("Unknown function: %1", func);
+    ret = false;
 }
 
-/* The settings are in the first argument */
-list settings = args[0]:[];
-y2debug("Imported: %1", settings);
-
-Routing::Import(settings);
-Wizard::CreateDialog();
-Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), FinishButtonLabel()));
-symbol ret = RoutingMainDialog();
 y2debug("ret=%1", ret);
-UI::CloseDialog();
-
 y2milestone("Routing auto finished");
 y2milestone("----------------------------------------");
 
-if(ret == `next) return Routing::Export();
-return $[];
+return ret;
 
 /* EOF */
 }

@@ -475,7 +475,7 @@ for a particular network card by entering the name in the search entry.</p>");
 	map card = select(hwlist, selected, $[]);
 	Lan::name = card["name"]:"";
 	Lan::Module["module"] = card["module"]:"";
-	Lan::Module["optionse"] = card["options"]:"";
+	Lan::Module["options"] = card["options"]:"";
     }
 
     return ret;

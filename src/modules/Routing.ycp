@@ -173,7 +173,7 @@ global define string Summary() ``{
 
     if(routes != []) {
 	/* Summary text */
-	summary = summary + sformat(_("Routes: %1"), routes);
+	summary = summary + "<p>" + sformat(_("Routes: %1"), sformat("<br>%1", routes));
     }
 
     return summary;

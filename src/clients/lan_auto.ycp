@@ -127,32 +127,31 @@ y2debug("func=%1", func);
 y2debug("param=%1", param);
 
 
-if(func == "Import") {
-    map autoyast = FromAY(param);
-    ret = Lan::Import(autoyast);
-}
-else if(func == "Summary") {
-    ret =  select(Lan::Summary(false),0, "");
+if(func == "Summary") {
+    ret = select(Lan::Summary(false),0, "");
 }
 else if (func == "Reset") {
     Lan::Import($[]);
-    ret =  $[];
+    ret = $[];
 }
 else if (func == "Change") {
     ret = LanAutoSequence();
-    return ret;
+}
+else if(func == "Import") {
+    map autoyast = FromAY(param);
+    ret = Lan::Import(autoyast);
 }
 else if (func == "Result") {
     map settings = Lan::Export();
     map autoyast = ToAY(settings);
-    ret =  autoyast;
+    ret = autoyast;
 }
 else if (func == "Write") {
-	import "Progress";
-	Progress::off();
+    import "Progress";
+    Progress::off();
     Lan::write_only = true;
-    ret =  Lan::Write();
-	Progress::on();
+    ret = Lan::Write();
+    Progress::on();
 }
 /* unknown function */
 else {
