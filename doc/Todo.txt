@@ -9,6 +9,7 @@ Bugs:
 - modem|dsl: info popup + run|stop kinternet, if DISPLAY and (not)running (#14320)
 
 - install kinternet if KDE are present (kdelibs, kdebase?)
+- remove writing of NETWORK (also BROADCAST?)
 
 2sort:
 - check already present default route (partially #11132)
