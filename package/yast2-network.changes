@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jan 17 09:42:44 CET 2005 - mvidner@suse.cz
+
+- Recognize USB Host-to-Host link detected by hwinfo (#22739).
+
+-------------------------------------------------------------------
 Fri Jan 14 13:04:50 CET 2005 - mvidner@suse.cz
 
 - Remove old data from /etc/hosts after having re-configured

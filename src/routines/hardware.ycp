@@ -87,6 +87,7 @@ define string ControllerType(map hwdevice) {
 	else if(subclass_id == 0x8E) return "ficon";
 	else if(subclass_id == 0x8F) return "escon";
 	else if(subclass_id == 0x90) return "iucv";
+	else if(subclass_id == 0x91) return "usb"; // #22739
 	else if(subclass_id == 0x80) {
 	    /* Nothing was found */
 	    y2error("Unknown network controller type: %1", hwdevice);
