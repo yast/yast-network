@@ -46,6 +46,7 @@ include "network/runtime.ycp";
 // FIXME: MOD global map Module = $[];
 
 
+global map autoinstall_settings = $[];
 global string description = "";
 global string unique = "";
 
@@ -439,11 +440,16 @@ global define boolean WriteOnly() {
  */
 global define boolean Import(map settings) {
 
-    DNS::Import((map) eval(settings["dns"]:$[]));
-    // FIXME: MOD Modules = (map) eval(settings["modules"]:$[]);
+    if (!Mode::autoinst()) {
+        // FIXME: MOD Modules = (map) eval(settings["modules"]:$[]);
+        NetworkDevices::Import("netcard", (map<string, map>) settings["devices"]:$[]);
+        NetworkModules::Import("netcard", (map<string, map>) settings["hwcfg"]:$[]);
+    } else {
+        autoinstall_settings = settings;
+    }
+
     NetworkConfig::Import(settings["config"]:$[]);
-    NetworkDevices::Import("netcard", (map<string, map>) settings["devices"]:$[]);
-    NetworkModules::Import("netcard", (map<string, map>) settings["hwcfg"]:$[]);
+    DNS::Import((map) eval(settings["dns"]:$[]));
     Routing::Import((map) eval(settings["routing"]:$[]));
 
     modified = true;
@@ -579,6 +585,58 @@ global define list FreeAliases(string type, integer num) {
     return NetworkDevices::GetFreeDevices("_aliases", 10);
 }
 
+
+/**
+ * Set various device variables
+ * @param devmap map with variables
+ * @return void
+ */
+void SetDeviceVars(map devmap) {
+
+    unique = devmap["UNIQUE"]:"";
+
+    /* address options */
+    bootproto = devmap["BOOTPROTO"]:"static";
+    ipaddr = devmap["IPADDR"]:"";
+    remoteip = devmap["REMOTE_IPADDR"]:"";
+    netmask = devmap["NETMASK"]:"";
+
+    mtu = devmap["MTU"]:"";
+    startmode = devmap["STARTMODE"]:"manual";
+    usercontrol = devmap["USERCONTROL"]:"no" == "yes";
+
+    /* wireless options */
+    wl_mode = devmap["WIRELESS_MODE"]:"Managed";
+    wl_essid = devmap["WIRELESS_ESSID"]:"";
+    wl_nwid = devmap["WIRELESS_NWID"]:"";
+    wl_auth_mode = devmap["WIRELESS_AUTH_MODE"]:"open";
+    wl_wpa_psk = devmap["WIRELESS_WPA_PSK"]:"";
+    wl_key_length = devmap["WIRELESS_KEY_LENGTH"]:"128";
+    wl_key = []; // ensure exactly 4 entries
+    wl_key[0] = devmap["WIRELESS_KEY_0"]:devmap["WIRELESS_KEY"]:"";
+    wl_key[1] = devmap["WIRELESS_KEY_1"]:"";
+    wl_key[2] = devmap["WIRELESS_KEY_2"]:"";
+    wl_key[3] = devmap["WIRELESS_KEY_3"]:"";
+    wl_default_key = tointeger (devmap["WIRELESS_DEFAULT_KEY"]:"0");
+    wl_nick = devmap["WIRELESS_NICK"]:"";
+
+    wl_channel = devmap["WIRELESS_CHANNEL"]:"";
+    wl_frequency = devmap["WIRELESS_FREQUENCY"]:"";
+    wl_bitrate = devmap["WIRELESS_BITRATE"]:"auto";
+    wl_accesspoint = devmap["WIRELESS_AP"]:"";
+    wl_power = devmap["WIRELESS_POWER"]:"yes" == "yes";
+
+    /* s/390 options */
+    read_channel = devmap["READ_CHANNEL"]:"";
+    write_channel = devmap["WRITE_CHANNEL"]:"";
+    data_channel = devmap["DATA_CHANNEL"]:"";
+    portname = devmap["PORTNAME"]:"";
+    
+    aliases = devmap["_aliases"]:$[];
+
+    return;
+}
+
 /**
  * Select the given device
  * @param dev device to select ("" for new device, default values)
@@ -623,46 +681,9 @@ global define boolean Select(string dev) {
 
     /* general stuff */
     description = BuildDescription (type, device, devmap, Hardware);
-    unique = devmap["UNIQUE"]:"";
 
-    /* address options */
-    bootproto = devmap["BOOTPROTO"]:"static";
-    ipaddr = devmap["IPADDR"]:"";
-    remoteip = devmap["REMOTE_IPADDR"]:"";
-    netmask = devmap["NETMASK"]:"";
+    SetDeviceVars(devmap);
 
-    mtu = devmap["MTU"]:"";
-    startmode = devmap["STARTMODE"]:"manual";
-    usercontrol = devmap["USERCONTROL"]:"no" == "yes";
-
-    /* wireless options */
-    wl_mode = devmap["WIRELESS_MODE"]:"Managed";
-    wl_essid = devmap["WIRELESS_ESSID"]:"";
-    wl_nwid = devmap["WIRELESS_NWID"]:"";
-    wl_auth_mode = devmap["WIRELESS_AUTH_MODE"]:"open";
-    wl_wpa_psk = devmap["WIRELESS_WPA_PSK"]:"";
-    wl_key_length = devmap["WIRELESS_KEY_LENGTH"]:"128";
-    wl_key = []; // ensure exactly 4 entries
-    wl_key[0] = devmap["WIRELESS_KEY_0"]:devmap["WIRELESS_KEY"]:"";
-    wl_key[1] = devmap["WIRELESS_KEY_1"]:"";
-    wl_key[2] = devmap["WIRELESS_KEY_2"]:"";
-    wl_key[3] = devmap["WIRELESS_KEY_3"]:"";
-    wl_default_key = tointeger (devmap["WIRELESS_DEFAULT_KEY"]:"0");
-    wl_nick = devmap["WIRELESS_NICK"]:"";
-
-    wl_channel = devmap["WIRELESS_CHANNEL"]:"";
-    wl_frequency = devmap["WIRELESS_FREQUENCY"]:"";
-    wl_bitrate = devmap["WIRELESS_BITRATE"]:"auto";
-    wl_accesspoint = devmap["WIRELESS_AP"]:"";
-    wl_power = devmap["WIRELESS_POWER"]:"yes" == "yes";
-
-    /* s/390 options */
-    read_channel = devmap["READ_CHANNEL"]:"";
-    write_channel = devmap["WRITE_CHANNEL"]:"";
-    data_channel = devmap["DATA_CHANNEL"]:"";
-    portname = devmap["PORTNAME"]:"";
-
-    aliases = devmap["_aliases"]:$[];
 
     hotplug = "";
     /*
@@ -921,6 +942,144 @@ global define boolean Commit() {
 }
 
 /**
+ * Get the module configuration for the modules configured in the 
+ * interface section
+ * @param ay_device Device, for example eth0
+ * @param ay_modules list of modules from the AY profile
+ * @return map the module map with module name and options
+ */
+define map GetModuleForInterface(string ay_device ,
+				    list<map> ay_modules) {
+    map ayret = $[];
+    list<map> ay_filtered = filter(map ay_m, ay_modules,
+				  ``(
+				     ay_m["device"]:"" == ay_device ));
+    
+    if (size(ay_filtered) > 0 ) {
+	ayret = ay_filtered[0]:$[];
+    }
+
+    return ayret;
+}
+
+
+/**
+ * Find matching device 
+ * Find a device, optionally with some predefined values
+ * @param interface interface map 
+ * @return map The map of the matching device.
+ */
+define map FindMatchingDevice(map interface) {
+    map tosel = nil;
+    list<string> devs = NetworkDevices::List("netcard");
+    y2milestone("Configured devices: %1", devs );
+
+    if (interface != $[])
+    {
+        /* code for eth-id-00:80:c8:f6:48:4c configurations */
+        list device_id = splitstring(interface["device"]:"", "-");
+        if (size(device_id)> 1 && issubstring(interface["device"]:"", "id"))
+        {
+            string hwaddr = device_id[2]:"";
+            if(hwaddr != nil && hwaddr != "") {
+                tosel = find (map h, Hardware, ``( h["mac"]:"" == hwaddr ));
+            }			
+            y2milestone("Rule: matching mac in device name");
+        }
+        /* code for eth-bus-pci-0000:00:0d.0 configurations */
+        else if ((size(device_id)> 1 &&
+                    issubstring(interface["device"]:"", "bus-pci")))
+        {
+            string busid = device_id[3]:"";
+            if(busid != nil && busid != "") {
+                tosel = find (map h, Hardware, ``( h["busid"]:"" == busid
+                            && h["bus"]:"" == "pci" ));
+            }	
+            y2milestone("Rule: matching pci id in device name");
+        }
+
+        /* code for module configuration */
+        map aymodule = GetModuleForInterface(interface["device"]:"", 
+                autoinstall_settings["modules"]:[]);
+        y2milestone("module data: %1", aymodule );
+        if (tosel == nil && aymodule != $[]) {
+            if(aymodule != nil && aymodule["module"]:"" != "") {
+                tosel = find (map h, Hardware, ``( h["module"]:"" == aymodule["module"]:"" ));
+            }
+            y2milestone("Rule: matching module configuration");
+        }
+    }
+    
+    // First device was alread configured, we are now looking for 
+    // a second (third,...) one
+    if (size(devs) > 0 )
+    {
+        integer hw_index = 0;
+        while (true) {
+            map h = Hardware[hw_index]:$[];
+            y2milestone("Checking for device=%1", h);
+            SelectHWMap(h);
+            string _device_name = NetworkDevices::device_name(NetworkDevices::RealType(type, hotplug), device);
+            if (!NetworkDevices::Check(_device_name) &&
+                type == NetworkDevices::device_type(interface["device"]:"")
+                )
+            {
+                y2milestone("Selected: %1", h );
+                tosel = h;
+                break;
+            }
+            hw_index = hw_index + 1;
+        }
+        if (tosel == nil )
+        {
+            y2error("Nothing found");
+        }
+
+    } else {
+        /* Select the one from install.inf with the same MAC */
+        if (tosel == nil  ) {
+            string hwaddr = InstallInf["hwaddr"]:"";
+            if(hwaddr != nil && hwaddr != "") {
+                tosel = find (map h, Hardware, ``( h["mac"]:"" == hwaddr ));
+            }
+            y2milestone("Rule: matching hwaddr in install.inf");
+        }
+
+        /* Select the one from install.inf with the same module */
+        if (tosel == nil) {
+            string infmodule = InstallInf["module"]:"";
+            if(infmodule != nil && infmodule != "") {
+                tosel = find (map h, Hardware, ``( h["module"]:"" == infmodule ));
+            }
+            y2milestone("Rule: matching module in install.inf");
+        }
+
+        /* No install.inf driver -> select the first active */
+        // but not wlan, #44951
+        if (tosel == nil) {
+            tosel = find (map h, Hardware, ``(
+                        h["active"]:false
+                        && h["type"]:"" != "wlan"
+                        ));
+            y2milestone("Rule: first active");
+        }
+
+        /* No active driver -> select the first with a driver */
+        if (tosel == nil) {
+            y2milestone("No active driver found, trying further.");
+            tosel = find (map h, Hardware, ``(
+                        h["module"]:"" != ""
+                        && h["type"]:"" != "wlan"
+                        && y2milestone("Using driver: %1", h) == nil
+                        ));
+            y2milestone("Rule: first with driver");
+        }
+    }
+
+    return tosel;
+}
+
+/**
  * Propose a configuration
  * @return true if something was proposed
  */
@@ -949,40 +1108,9 @@ global define boolean Propose() {
 
     /* Some HW found -> use it for proposal */
     if(size(Hardware) > 0) {
-
-	/* Select the one from install.inf with the same MAC */
-	string hwaddr = InstallInf["hwaddr"]:"";
-	if(hwaddr != nil && hwaddr != "") {
-	    tosel = find (map h, Hardware, ``( h["mac"]:"" == hwaddr ));
-	}
-
-	/* Select the one from install.inf with the same module */
-	if (tosel == nil) {
-	    string infmodule = InstallInf["module"]:"";
-	    if(infmodule != nil && infmodule != "") {
-		tosel = find (map h, Hardware, ``( h["module"]:"" == infmodule ));
-	    }
-	}
-
-	/* No install.inf driver -> select the first active */
-	// but not wlan, #44951
-	if (tosel == nil) {
-	    tosel = find (map h, Hardware, ``(
-			      h["active"]:false
-			      && h["type"]:"" != "wlan"
-			      ));
-	}
-
-	/* No active driver -> select the first with a driver */
-	if (tosel == nil) {
-	    y2milestone("No active driver found, trying further.");
-	    tosel = find (map h, Hardware, ``(
-			      h["module"]:"" != ""
-			      && h["type"]:"" != "wlan"
-			      && y2milestone("Using driver: %1", h) == nil
-			      ));
-	}
+        tosel =  FindMatchingDevice($[]);
     }
+        
 
     y2debug("Hardware=%1", Hardware);
     y2milestone("tosel=%1", tosel);
@@ -1104,6 +1232,96 @@ global define boolean Propose() {
 }
 
 /**
+ * Create a configuration for autoyast
+ * @return true if something was proposed
+ */
+global define boolean Autoinstall() {
+
+    y2milestone("Hardware=%1", Hardware);
+    map tosel = nil;
+
+    /* Some HW found -> use it for proposal */
+    if(size(Hardware) > 0
+       && size(autoinstall_settings["interfaces"]:[]) > 0) {
+
+        foreach(map<string, string> interface, autoinstall_settings["interfaces"]:[], ``{
+                
+            list<string> devs = NetworkDevices::List("netcard");
+            y2milestone("devs: %1", devs);
+            tosel = nil;
+
+            Add();
+
+    	    tosel = FindMatchingDevice(interface);
+
+	    y2milestone("tosel=%1", tosel);
+
+            // Read module data from autoyast
+            map aymodule = GetModuleForInterface(interface["device"]:"",
+                autoinstall_settings["modules"]:[]);
+
+
+	    if (tosel != nil)
+	    {
+		tosel["module"] = (aymodule["module"]:""!= "")?
+		    aymodule["module"]:"" : tosel["module"]:"";
+		tosel["options"] = (aymodule["options"]:""!= "")?
+		    aymodule["options"]:"" : tosel["options"]:"";
+		
+		SelectHWMap(tosel);
+	    }
+	    /* Nothing detected -> use InstallInf */
+	    else if(size(InstallInf) > 0) {
+
+		if(!haskey(InstallInf, "module")) {
+		    y2milestone("No hardware, no install.inf module -> no proposal.");
+		    return false;
+		}
+		NetworkModules::Alias = InstallInf["module"]:"";
+		NetworkModules::Options = InstallInf["options"]:"";
+
+		type = InstallInf["type"]:"eth";
+		device = NetworkDevices::GetFreeDevice(type);
+	    }
+	    else {
+		y2milestone("No hardware, no install.inf -> no autoinstallation possible.");
+		return false;
+	    }
+
+            string newk = nil;
+            interface =  mapmap(string k, string v, interface, ``{
+                    newk = toupper(k);
+                    return $[newk: v];
+                    });
+
+
+            // Set interface variables
+            SetDeviceVars(interface);
+	    
+	    y2debug("ipaddr,bootproto=%1,%2", ipaddr, bootproto);
+            if(bootproto == "static" && ipaddr != "" && ipaddr != nil) 
+            {
+
+                y2milestone("static configuration");
+
+		if(netmask == nil || netmask == "")
+		    netmask = "255.255.255.0";
+	
+	    }
+	    Commit();
+	});
+    } 
+    else 
+    {
+        y2milestone("no interface configuration, taking everything from install.inf");
+        Propose();
+    }
+
+    return true;
+}
+
+
+/**
  * Check if any device except the current one is configured with DHCP.
  * The current one is checked separately because there may be uncommitted
  * changes. (#17391)
@@ -1128,8 +1346,9 @@ global define boolean HasAliases(string dev) {
 
 
 global define list<map> PrepareForAutoinst() {
+  
+    ReadInstallInf();     
     Hardware = ReadHardware("netcard");
-    y2milestone("hw=%1", Hardware);
     return Hardware;
 }
 
