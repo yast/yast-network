@@ -23,7 +23,6 @@ Demo: 0
 Floppydisk: /dev/fd0
 UpdateDir: /linux/suse/i386-9.0
 YaST2update: 0
-YaST2serial: 0
 Textmode: 0
 MemFree: 452000
 VNC: 0
