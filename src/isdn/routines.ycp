@@ -104,8 +104,11 @@ global define map get_isdncard_by_type(list dev, integer i4ltyp, integer i4lsubt
  */
 global define integer get_i4lsubtype(map card) ``{
     integer ret = -1;
+    list d = lookup(card, "driver", []);
 
-    ret = lookup(select(lookup(card, "driver", []),
+    if (d == [])
+	d = lookup(card, "drivers", []);
+    ret = lookup(select(d,
 		lookup(card, "sel_drv", 0), $[]), "subtype", -1);
     return(ret);
 }
@@ -117,8 +120,11 @@ global define integer get_i4lsubtype(map card) ``{
  */
 global define integer get_i4ltype(map card) ``{
     integer ret = -1;
+    list d = lookup(card, "driver", []);
 
-    ret = lookup(select(lookup(card, "driver", []),
+    if (d == [])
+	d = lookup(card, "drivers", []);
+    ret = lookup(select(d,
 		lookup(card, "sel_drv", 0), $[]), "type", -1);
     return(ret);
 }
