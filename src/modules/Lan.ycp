@@ -565,7 +565,7 @@ global define boolean Select(string dev) {
     y2debug("type=%1", type);
 
     /* kernel options */
-    if(hotplug == "" && alias == "") {
+    if(hotplug == "" && alias == "" && dev != "") {
 	// FIXME: MOD SelectModule(dev);
 	NetworkModules::SelectM(dev);
     }
@@ -766,7 +766,10 @@ global define boolean Propose() {
 	    y2milestone("No active driver found, trying further.");
 	    maplist(map h, Hardware, {
 		if(h["module"]:"" != "")
-		    if(tosel == -1) tosel = i;
+		    if(tosel == -1) {
+			y2milestone("Using driver: %1", h);
+			tosel = i;
+		    }
 		i = i + 1;
 	    });
 	}
@@ -786,7 +789,7 @@ global define boolean Propose() {
     else if(size(InstallInf) > 0) {
 
 	if(!haskey(InstallInf, "module")) {
-	    y2debug("No hardware, no install.inf module -> no proposal.");
+	    y2milestone("No hardware, no install.inf module -> no proposal.");
 	    return false;
 	}
 
@@ -800,7 +803,7 @@ global define boolean Propose() {
 	device = NetworkDevices::GetFreeDevice(type);
     }
     else {
-	y2debug("No hardware, no install.inf -> no proposal.");
+	y2milestone("No hardware, no install.inf -> no proposal.");
 	return false;
     }
 

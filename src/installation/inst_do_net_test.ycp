@@ -423,7 +423,7 @@ the logs for details.
     make_dialog();
 
     Wizard::DisableBackButton();
-    UI::ChangeWidget(`id(`abort), `Enabled, false);
+    Wizard::DisableAbortButton();
     Wizard::DisableNextButton();
     UI::ChangeWidget(`id(`abort_test), `Enabled, true);
     UI::ChangeWidget(`id(`view_log), `Enabled, false);
@@ -464,7 +464,7 @@ the logs for details.
 
 
     Wizard::EnableBackButton();
-    UI::ChangeWidget(`id(`abort), `Enabled, true);
+    Wizard::DisableAbortButton();
     Wizard::EnableNextButton();
     UI::ChangeWidget(`id(`abort_test), `Enabled, false);
     UI::ChangeWidget(`id(`view_log), `Enabled, true);

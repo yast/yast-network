@@ -114,13 +114,13 @@ global define boolean Read() {
 
 /**
  */
-define map Filter(map modules, string devregex) {
+define map Filter(map<string,map> modules, string devregex) {
     if(modules == nil || devregex == nil || devregex == "")
 	return modules;
 
     string regex = "^(" + NetworkDevices::CardRegex[devregex]:devregex + ")[^a-zA-Z].*$";
     y2debug("regex=%1", regex);
-    modules = filter(string file, string devmap, (map<string,string>) modules, {
+    modules = filter(string file, map devmap, modules, {
 	return regexpmatch(file, regex) == true;
     });
     y2debug("modules=%1", modules);
@@ -129,13 +129,13 @@ define map Filter(map modules, string devregex) {
 
 /**
  */
-define map FilterNOT(map modules, string devregex) {
+define map FilterNOT(map<string,map> modules, string devregex) {
     if(modules == nil || devregex == nil || devregex == "")
 	return $[];
 
     string regex = "^(" + NetworkDevices::CardRegex[devregex]:devregex + ")[^a-zA-Z].*$";
     y2debug("regex=%1", regex);
-    modules = filter(string file, string devmap, (map<string,string>) modules, {
+    modules = filter(string file, map devmap, modules, {
 	return regexpmatch(file, regex) != true;
     });
     y2debug("modules=%1", modules);
