@@ -174,7 +174,7 @@ global define boolean Write() ``{
     integer steps = 7;
 
     /* FIXME */
-    integer sl = 1000;
+    integer sl = 0; //1000;
     sleep(sl);
 
     Progress::New(caption, " ", steps, [

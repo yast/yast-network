@@ -131,7 +131,8 @@ global define symbol RoutingMainDialog() ``{
 	    list cur_item = filter(`e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
 	    term item = select(cur_item, 0, nil);
 	    /* FIXME: current device is lost in during Edit */
-	    item = RoutingEditDialog(cur, item, ["eth2", "eth7"]);
+	    /* FIXME: fill in available devices */
+	    item = RoutingEditDialog(cur, item, []);
 	    if(item == nil) continue;
 	    table_items = maplist(`e, table_items, ``{
 		if(cur == select(select(e, 0, []), 0, -1))
@@ -143,7 +144,8 @@ global define symbol RoutingMainDialog() ``{
 	}
 	/* add route */
 	else if(ret == `add) {
-	    term item = RoutingEditDialog(max, `empty(), ["eth2", "eth7"]);
+	    /* FIXME: fill in available devices */
+	    term item = RoutingEditDialog(max, `empty(), []);
 	    if(item == nil) continue;
 	    change(table_items, item);
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
@@ -182,7 +184,7 @@ global define symbol RoutingMainDialog() ``{
 	));
 
 	if(defgw != UI::QueryWidget(`id(`gw), `Value))
-	    defgwdev = ""; // FIXME: find correct device
+	    defgwdev = "-"; // FIXME: find correct device
 
 	defgw = UI::QueryWidget(`id(`gw), `Value);
 

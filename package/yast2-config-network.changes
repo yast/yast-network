@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jan 28 16:21:12 CET 2002 - msvec@suse.cz
+
+- fixed default route writing
+- 2.5.7
+
+-------------------------------------------------------------------
 Fri Jan 25 17:27:43 CET 2002 - msvec@suse.cz
 
 - fixed modules initialization and cleanup (#12905)
