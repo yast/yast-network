@@ -18,8 +18,8 @@ import "Progress";
 y2milestone("----------------------------------------");
 y2milestone("Lan proposal started");
 
-string func = Args(0);
-map param = Args(1);
+string func = WFM::Args(0);
+map param = WFM::Args(1);
 map ret = $[];
 
 /* create a textual proposal */
@@ -48,7 +48,7 @@ if(func == "MakeProposal") {
 /* run the module */
 else if(func == "AskUser") {
     map stored = Lan::Export();
-    symbol seq = CallFunction(`lan(.propose));
+    symbol seq = WFM::CallFunction(`lan(.propose));
     if(seq != `next) Lan::Import(stored);
     ret = $[
 	"workflow_sequence" : seq

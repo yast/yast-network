@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jul 12 16:46:36 CEST 2002 - arvin@suse.de
+
+- use proper namespace for Args and CallFunction (#16776)
+
+-------------------------------------------------------------------
 Thu Jul 11 20:33:29 CEST 2002 - mvidner@suse.cz
 
 - general library: Added {check,valid}_address, valid_ip4.

@@ -15,7 +15,7 @@
  * @param first a map of routing settings
  * @return boolean success of operation
  * @example map mm = $[ "FAIL_DELAY" : "77" ];
- * @example map ret = CallModule("routing_auto", [ mm ]);
+ * @example map ret = WFM::CallModule("routing_auto", [ mm ]);
  */
 
 {
@@ -28,13 +28,13 @@ y2milestone("Routing auto started");
 import "Routing";
 include "network/services/routing.ycp";
 
-list args = Args();
+list args = WFM::Args();
 if(size(args) <= 0) {
     y2error("Did not get the settings, probably some mistake...");
     return false;
 }
-if(!is(Args(0), list)) {
-    y2error("Bad argument for routing_auto: %1", Args(0));
+if(!is(WFM::Args(0), list)) {
+    y2error("Bad argument for routing_auto: %1", WFM::Args(0));
     return false;
 }
 

@@ -24,18 +24,18 @@ include "network/dsl/dialogs.ycp";
 /* T-DSL configuration? */
 boolean tonline = nil;
 
-list args = Args();
+list args = WFM::Args();
 if(size(args) > 0) {
-    if(is(Args(0), path) && Args(0) == .tonline) {
+    if(is(WFM::Args(0), path) && WFM::Args(0) == .tonline) {
 	y2milestone("Using T-Online mode");
 	tonline = true;
     }
-    else if(is(Args(0), path) && Args(0) == .standard) {
+    else if(is(WFM::Args(0), path) && WFM::Args(0) == .standard) {
 	y2milestone("Using standard mode");
 	tonline = false;
     }
     else
-	y2error("Bad argument for dsl: %1",Args(0));
+	y2error("Bad argument for dsl: %1",WFM::Args(0));
 }
 
 /* main ui function */

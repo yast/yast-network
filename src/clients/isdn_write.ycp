@@ -14,7 +14,7 @@
  * @param first a map of network settings
  * @return boolean success of operation
  * @example map mm = $[ "FAIL_DELAY" : "77" ];
- * @example any ret = CallModule("network_write", [ mm ]);
+ * @example any ret = WFM::CallModule("network_write", [ mm ]);
  */
 
 {
@@ -27,13 +27,13 @@ y2milestone("ISDN write started");
 import "ISDN";
 import "Progress";
 
-list args = Args();
+list args = WFM::Args();
 if(size(args) <= 0) {
     y2error("NOT writing, probably some mistake...");
     return false;
 }
-if(!is(Args(0), map) ) {
-    y2error("Bad argument for network write: %1", Args(0));
+if(!is(WFM::Args(0), map) ) {
+    y2error("Bad argument for network write: %1", WFM::Args(0));
     return false;
 }
 

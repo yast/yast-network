@@ -22,14 +22,14 @@ include "network/modem/wizards.ycp";
 
 /* is this proposal or not? */
 boolean propose = false;
-list args = Args();
+list args = WFM::Args();
 if(size(args) > 0) {
-    if(is(Args(0), path) && Args(0) == .propose) {
+    if(is(WFM::Args(0), path) && WFM::Args(0) == .propose) {
 	y2milestone("Using PROPOSE mode");
 	propose = true;
     }
     else
-	y2error("Bad argument for modem: %1",Args(0));
+	y2error("Bad argument for modem: %1",WFM::Args(0));
 }
 
 /* main ui function */

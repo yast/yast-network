@@ -15,7 +15,7 @@
  * @param first a map of isdn settings
  * @return boolean success of operation
  * @example map mm = $[ "FAIL_DELAY" : "77" ];
- * @example map ret = CallModule("isdn_auto", [ mm ]);
+ * @example map ret = WFM::CallModule("isdn_auto", [ mm ]);
  */
 
 {
@@ -28,13 +28,13 @@ y2milestone("ISDN auto started");
 import "ISDN";
 include "network/isdn/wizards.ycp";
 
-list args = Args();
+list args = WFM::Args();
 if( size(args) <= 0 ) {
     y2error("Did not get the settings, probably some mistake...");
     return false;
 }
-if( !is( Args(0), map ) ) {
-    y2error("Bad argument for isdn_auto: %1", Args(0));
+if( !is( WFM::Args(0), map ) ) {
+    y2error("Bad argument for isdn_auto: %1", WFM::Args(0));
     return false;
 }
 
