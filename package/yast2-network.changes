@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Aug 15 19:16:35 CEST 2002 - jsuchome@suse.cz
+
+- Corrected bug in writing modem configuration (check for providers
+  change).
+
+-------------------------------------------------------------------
 Wed Aug 14 12:16:49 CEST 2002 - mvidner@suse.cz
 
 - Installation proposal: differentiate between static and dhcp
