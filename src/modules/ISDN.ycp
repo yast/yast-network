@@ -293,7 +293,7 @@ global define boolean Write(boolean start) ``{
 
 	if (DRDSLrun) {
 	    // step 9/13
-	    plist = add(plist, _("Running drdsl (could take over a minute)"));
+	    plist = add(plist, _("Running drdsl (could take over a minute)..."));
 	    steps = 9;
 	}
 	if (haveISDNif) {
@@ -375,7 +375,7 @@ global define boolean Write(boolean start) ``{
 	if(Abort()) return false;
 	if (DRDSLrun) {
 	    // stage 9 in writing current ISDN setup
-	    ProgressNextStage(_("Running drdsl (could take over a minute)"));
+	    ProgressNextStage(_("Running drdsl (could take over a minute)..."));
 	    cmd = sformat("/usr/sbin/drdsl -q -n");
 	    SCR::Execute(.target.bash, cmd);
 	    sleep(sl);

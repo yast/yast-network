@@ -531,7 +531,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 	// short description of card feature
 	"DSL only card with CAPI2.0" : _("DSL only card with CAPI2.0"),
 	// short description of card feature
-	"Bluetooth Dongle,need ISDN Accesspoint" : _("Bluetooth Dongle,need ISDN Accesspoint")
+	"Bluetooth Dongle,need ISDN Accesspoint" : _("Bluetooth Dongle, need ISDN Access point")
     ];
 
     string desc = lookup((map) select(CardDrivers, CurrentDrvIndex, $[]), "description", "");
@@ -727,20 +727,23 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 
 	    if ((Default_TYPE == 8002) || (Default_TYPE == 8003) || (Default_TYPE == 8004)) {
 // multiline Popup::YesNo text
-		if (! Popup::YesNo (_(" WARNING !!!\n
-You have selected an binary only driver.
-This driver will provide you additional features
-like analog modulation, full CAPI 2.0 and Fax G3
-support for this card.
-This driver works only on systems with i386 
-architectur. 
-Please understand that SuSE Linux AG can't check
-the source code of this driver, so we cannot do
-any debuging if here are problems in the system.
-SuSE Linux AG is also not responsible for any 
-serious problems, if this driver is used.
+		if (! Popup::YesNo (_(" WARNING
 
-\nYou accept this?\n")))
+You have selected a binary-only driver.
+This driver provides additional features,
+like analog modulation and full CAPI 2.0 and Fax G3
+support for this card.
+This driver works only on systems with an i386 
+architecture. 
+SUSE LINUX AG cannot check
+the source code of this driver, so we cannot do
+any debugging if there are problems in the system.
+SUSE LINUX AG is also not responsible for any 
+serious problems if this driver is used.
+
+
+Do you accept this?
+")))
 		    continue;
 	    }
 	    break;

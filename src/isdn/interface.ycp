@@ -50,8 +50,7 @@ define any isdn_if_sel(symbol op) ``{
     // conditional help text 1/4
 _("<p>If you have a combined ISDN/DSL CAPI controller, configure your DSL
 connection via <b>Add DSL CAPI Interface</b>. You can also do this later
-in the DSL configuration dialog.</p>
-");
+in the DSL configuration dialog.</p>");
 
     helptext = helptext +
     // help text 1/4
@@ -72,12 +71,11 @@ _("<p>To avoid adding an interface now, use
 
 
     if (ISDN::only_dsl)
-	helptext = 
+	helptext =
     // conditional help text 1/1
 _("<p>You have a DSL CAPI controller.  Configure your DSL
 connection via <b>Add DSL CAPI Interface</b>. You can also do this later
-in the DSL configuration dialog.</p>
-");
+in the DSL configuration dialog.</p>");
 
 
     /* DIALOG CONTENTS */
@@ -238,8 +236,7 @@ issuing the following commands (while logged in as 'root'):
  <br> <b>stop : </b>ifdown ippp0
  <br>
 </tt>
-Note: ippp0 is an example</p>
-");
+Note: ippp0 is an example</p>");
 
     helptext = helptext +
     // help text 4/5
@@ -258,9 +255,9 @@ remove a channel.
 
     helptext = helptext +
     // help text 5/5
-_("<p>Selecting <b>Firewall</b> will restart the firewall, if a connection is established.
-<b>Firewall QuickMode</b> enable a simple firewall with only few options for this interface.
-If you have configured your own firewall in /etc/sysconfig/SuSEfirewall2 you should uncheck
+_("<p>Selecting <b>Firewall</b> restarts the firewall if a connection is established.
+<b>Firewall QuickMode</b> enables a simple firewall with only a few options for this interface.
+If you have configured your own firewall in /etc/sysconfig/SuSEfirewall2, you should uncheck
 this box.
 </p>");
 

@@ -45,7 +45,7 @@ used instead of the default route. The idea of the default route is simply
 to enable you to say \"and everything else should go here\".</p>") +
 
     /* Routing dialog help 2/2 */
-_("<p>Enable the <b>IP Forwarding</b> if the system is a router.</p>");
+_("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>");
 
     integer max = 0;
     integer items = 0;

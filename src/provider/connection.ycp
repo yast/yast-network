@@ -72,39 +72,38 @@ define any ConnectionDialog() ``{
     string caption = _("Connection Parameters");
 
     /* Connection dialog help 1/8 */
-    string helptext = _("<p><b>Dial on Demand</b> means that the
-internet connection will be established automatically when data from
-the internet are requested. To use this feature you must specify at
-least one <i>name server</i>. Please use this feature only if your
-internet connection is cheap since there are programs that periodically
-request data from the internet.</p>") +
+    string helptext = _("<p><b>Dial on Demand</b> means that the Internet
+connection will be established automatically when data from the Internet is
+requested. To use this feature, specify at least one <i>name server</i>. Use
+this feature only if your Internet connection is inexpensive, because there are
+programs that periodically request data from the Internet.</p>") +
 
     /* Connection dialog help 2/8 */
 _("<p>When <b>Modify DNS</b> is enabled, the <i>name server</i> will be
 changed automatically when connected to the Internet.</p>") +
 
     /* Connection dialog help 3/8 */
-_("<p>If the provider does not transmit his Domain Name Server (DNS)
-after connecting disable the <b>Automatically Retrieve DNS</b> and
+_("<p>If the provider does not transmit its domain name server (DNS)
+after connecting, disable <b>Automatically Retrieve DNS</b> and
 manually enter the DNS.</p>") +
 
     /* Connection dialog help 4/8 */
-_("<p>The <b>Name Servers</b> are required to convert host names
-<i>(e.g., www.suse.com)</i> to IP addresses (e.g., 213.95.15.200). You only
+_("<p><b>Name Servers</b> are required to convert host names
+(e.g., www.suse.com) to IP addresses (e.g., 213.95.15.200). You only
 need to specify the name servers if you enable <i>Dial on demand</i> or
-disable <b>DNS modification</b> when connected.</p>");
+disable <b>DNS Modification</b> when connected.</p>");
 
     if (type == "modem")
 	helptext = helptext +
     /* Connection dialog help 5/8 */
-_("<p><b>Stupid Mode</b> will disable the detection of
-any prompts from the dial-in server. If the connection
-buildup is slow or does not work at all, try this option.</p>");
+_("<p><b>Stupid Mode</b> disables the detection of any prompts from the dial-in
+server. If the connection build-up is slow or does not work at all, try this
+option.</p>");
 
     helptext = helptext +
     /* Connection dialog help 6/8 */
-_("<p>Selecting <b>Activate Firewall</b> will block all incoming
-connections. Choosing this option will make dial-up connections
+_("<p>Selecting <b>Activate Firewall</b> blocks all incoming
+connections. Choosing this option makes dial-up connections
 to the Internet safe from external attacks.</p>") +
 
     /* Connection dialog help 7/8 */
@@ -190,7 +189,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    FirewallCheckbox,
 	    `VSpacing(0.5),
 	    /* Combo box label */
-	    `Left(`ComboBox(`id(`idletime), `opt(`editable), _("I&dle Timeout (seconds)"), seconds)),
+	    `Left(`ComboBox(`id(`idletime), `opt(`editable), _("I&dle Time-out (seconds)"), seconds)),
 	    `VSpacing(1),
 	    details
 	),

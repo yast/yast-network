@@ -162,7 +162,7 @@ global define boolean Read() {
 	/* Progress stage 1/9 */
 	_("Detect network devices"),
 	/* Progress stage 2/9 */
-	_("Read drivers information"),
+	_("Read driver information"),
 	/* Progress stage 3/9 - multiple devices may be present, really plural*/
 	_("Read device configuration"),
 	/* Progress stage 4/9 */
