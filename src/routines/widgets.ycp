@@ -106,7 +106,7 @@ there are: %1</p>"),
 	];
     string helps = "";
     list items = maplist (string id, ids, {
-	helps = helps + startmode_items[id, "help"]:"";
+	helps = helps + " " + startmode_items[id, "help"]:"";
 	return [id, startmode_items[id, "label"]:""];
     });
 
