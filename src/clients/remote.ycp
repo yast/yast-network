@@ -1,0 +1,25 @@
+/**
+ * File:	clients/remote.ycp
+ * Package:	Network
+ * Summary:	Remote Administration
+ * Authors:	Arvin Schnell <arvin@suse.de>
+ */
+
+{
+    textdomain "network";
+
+    import "Label";
+    import "Wizard";
+
+    include "network/remote/dialogs.ycp";
+
+    Wizard::CreateDialog ();
+    Wizard::ReplaceNextButton (`PushButton(`id(`next), `opt(`default, `key_F10),
+					   Label::FinishButton()));
+
+    any ret = RemoteMainDialog ();
+
+    UI::CloseDialog();
+
+    return ret;
+}

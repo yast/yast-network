@@ -1,0 +1,77 @@
+/**
+ * File:	remote/dialogs.ycp
+ * Module:	Network
+ * Summary:	Dialog for Remote Administration
+ * Authors:	Arvin Schnell <arvin@suse.de>
+ */
+
+{
+    textdomain "network";
+
+    import "Wizard";
+    import "Remote";
+
+    global define symbol RemoteMainDialog () ``{
+
+	ScreenName ("remote");
+
+	// caption for dialog "Remote Administration"
+	string caption = _("Remote Administration");
+
+	term allow_buttons =
+	    `RadioButtonGroup (
+			       `VBox (
+				      `Left(`RadioButton(`id(`allow),
+							 // a button label
+							 _("&Allow Remote Administration"),
+							 false)),
+				      `Left(`RadioButton(`id(`disallow),
+							 // a button lable
+							 _("&Do not allow Remote Administration"),
+							 false))
+				      )
+			       );
+
+	term contents =
+	    `VBox (
+		   `HBox (
+			  `HStretch (),
+			  allow_buttons,
+			  `HStretch ()
+			  )
+		   );
+
+	// help text for dialog "Remote Administration"
+	string help = _("Here you can allow remote administration of the system.");
+
+	Wizard::SetContentsButtons (caption, contents, help,
+				    Label::BackButton(), Label::FinishButton());
+
+	UI::ChangeWidget (`id(`allow), `Value, Remote::allow_administration);
+	UI::ChangeWidget (`id(`disallow), `Value, !Remote::allow_administration);
+
+	any ret = nil;
+
+	repeat {
+
+	    ret = Wizard::UserInput();
+
+	    if (ret == `abort)
+	    {
+		break;
+	    }
+	    else if (ret == `help)
+	    {
+		Wizard::ShowHelp (help);
+	    }
+
+	} until ( ret == `next || ret == `back );
+
+	if (ret == `next)
+	{
+	    Remote::allow_administration = UI::QueryWidget (`id(`allow), `Value);
+	}
+
+	return ret;
+    }
+}

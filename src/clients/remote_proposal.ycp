@@ -1,0 +1,66 @@
+/**
+ * File:        clients/remote_proposal.ycp
+ * Package:     Network
+ * Summary:     Proposal for Remote Administration
+ * Authors:     Arvin Schnell <arvin@suse.de>
+ */
+
+{
+    textdomain "network";
+
+    import "Remote";
+
+    string func  = WFM::Args(0);
+    map    param = WFM::Args(1);
+    map    ret   = $[];
+
+    if ( func == "MakeProposal" )
+    {
+        boolean force_reset      = param["force_reset"     ]:false;
+        boolean language_changed = param["language_changed"]:false;
+
+	if (force_reset)
+	{
+	    Remote::Reset ();
+	}
+
+	if (Remote::allow_administration)
+	{
+	    ret = $[ "raw_proposal" : [
+				       // label in proposal text
+				       _("Remote Administration is enabled.")
+		     ] ];
+	}
+	else
+	{
+	    ret = $[ "raw_proposal" : [
+				       // label in proposal text
+				       _("Remote Administration is disabled.")
+		     ] ];
+	}
+    }
+    else if ( func == "AskUser" )
+    {
+        boolean has_next = param["has_next"]:false;
+
+        symbol result = WFM::CallFunction (`remote ());
+
+	ret = $[ "workflow_sequence" : result ];
+    }
+    else if ( func == "Description" )
+    {
+        ret = $[
+		// this is a heading
+		"rich_text_title" :       _("Remote Administration"),
+		// this is a menu entry
+		"menu_title"      :       _("&Remote Administration"),
+		"id"              :       "admin_stuff"
+	];
+    }
+    else if ( func == "Write" )
+    {
+	Remote::Write ();
+    }
+
+    return ret;
+}

@@ -3,4 +3,4 @@
 #
 
 SUBDIRS = clients modules routines lan services modem isdn dsl config	\
-	provider installation
+	provider installation remote

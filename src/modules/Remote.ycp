@@ -1,0 +1,37 @@
+/**
+ * File:	src/modules/Remote.ycp
+ * Module:	Network
+ * Summary:	Module for Remote Administration
+ * Authors:	Arvin Schnell <arvin@suse.de>
+ */
+
+{
+    module "Remote";
+
+    textdomain "network";
+
+
+    // allow Remote Administration
+    global boolean allow_administration = false;
+
+
+    /**
+     * Reset all module data.
+     */
+    global define void Reset () ``{
+
+	allow_administration = false;
+
+    }
+
+    /**
+     * Update the SCR according to network settings
+     * @return true on success
+     */
+    global define boolean Write () ``{
+
+	// FIXME
+
+	return true;
+    }
+}
