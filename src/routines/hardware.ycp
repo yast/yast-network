@@ -40,17 +40,17 @@ global define boolean ReadHardware(string hwtype) ``{
 
     map hwstrings = $[
 	/* Confirmation: label text (detecting hardware: xxx) */
-	"netcard" : _("network cards"),
+	"netcard" : _("Network Cards"),
 	/* Confirmation: label text (detecting hardware: xxx) */
-	"modem" : _("modems"),
+	"modem" : _("Modems"),
 	/* Confirmation: label text (detecting hardware: xxx) */
-	"isdn" : _("ISDN cards"),
+	"isdn" : _("ISDN Cards"),
 	/* Confirmation: label text (detecting hardware: xxx) */
-	"dsl" : _("DSL devices"),
+	"dsl" : _("DSL Devices"),
     ];
 
     /* Confirmation: label text (detecting hardware: xxx) */
-    string hwstring = _("all network devices");
+    string hwstring = _("All Network Devices");
     if(haskey(hwstrings, hwtype)) hwstring = hwstrings[hwtype]:"";
     if(!Confirm::Detection(hwstring)) return false;
 

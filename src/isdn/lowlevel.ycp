@@ -68,7 +68,7 @@ global define symbol SelectISDNCard() ``{
     ScreenName("isdn-hardware-selection");
 
     /* Manual selection caption */
-    string caption = _("Manual ISDN card selection");
+    string caption = _("Manual ISDN Card Selection");
 
     /* Manual selection help */
     string helptext = _("<p>Select the ISDN card to configure. Filter cards for 
@@ -94,9 +94,9 @@ particular vendors by selecting a vendor.</p>");
 	`VSpacing(0.5),
 	`HBox(
 	    /* Selection box label */
-	    `SelectionBox(`id(`vendor), `opt(`notify), _("Select &vendor"), vendors),
+	    `SelectionBox(`id(`vendor), `opt(`notify), _("Select &Vendor"), vendors),
 	    /* Selection box label */
-	    `ReplacePoint(`id(`rpc), `SelectionBox(`id(`cards), `opt(`notify), _("Se&lect ISDN card"), cards))
+	    `ReplacePoint(`id(`rpc), `SelectionBox(`id(`cards), `opt(`notify), _("Se&lect ISDN Card"), cards))
 	),
 	`VSpacing(0.5),
 	/* Text entry field */
@@ -131,7 +131,7 @@ particular vendors by selecting a vendor.</p>");
 	    if(size(l) > 0) {
 		card = select(select(select(l, 0, []), 0, []), 0, 0);
 		UI::ChangeWidget(`id(`cards), `CurrentItem, card);
-		UI::ReplaceWidget(`id(`rp), `SelectionBox(`id(`cards), _("Se&lect ISDN card"), cards));
+		UI::ReplaceWidget(`id(`rp), `SelectionBox(`id(`cards), _("Se&lect ISDN Card"), cards));
 		continue;
 	    } 
 	    map m = filter(`i, `c, ISDN::ISDNCDB["Cards"]:$[], ``(tolower(substring(c["longname"]:"", 0, size(entry))) == tolower(entry)));
@@ -147,7 +147,7 @@ particular vendors by selecting a vendor.</p>");
 	    cards = ISDNCards4Vendor(vendor, card);
 	    /* Selection box title */
 	    UI::ChangeWidget(`id(`vendor), `CurrentItem, vendor);
-	    UI::ReplaceWidget(`id(`rpc), `SelectionBox(`id(`cards), _("Se&lect ISDN card"), cards));
+	    UI::ReplaceWidget(`id(`rpc), `SelectionBox(`id(`cards), _("Se&lect ISDN Card"), cards));
 	    card = UI::QueryWidget(`id(`cards), `CurrentItem);
 	}
 	else if(ret == `vendor) {
@@ -159,7 +159,7 @@ particular vendors by selecting a vendor.</p>");
 		card = -1;
 	    vendor = v;
 	    cards = ISDNCards4Vendor(vendor, card);
-	    UI::ReplaceWidget(`id(`rpc), `SelectionBox(`id(`cards), _("Se&lect ISDN card"), cards));
+	    UI::ReplaceWidget(`id(`rpc), `SelectionBox(`id(`cards), _("Se&lect ISDN Card"), cards));
 	    card = UI::QueryWidget(`id(`cards), `CurrentItem);
 	}
 	else if(ret == `cards) {
@@ -413,22 +413,23 @@ Please select one from the list.</p>");
 
     helptext = helptext +
     // helptext text 4/7
-_("<p><b>ISDN protocol: </b>In most cases, the protocol is Euro-ISDN.</p>");
+_("<p><b>ISDN Protocol: </b>In most cases, the protocol is Euro-ISDN.</p>");
 
     helptext = helptext +
     // helptext text 5/7
-_("<p><b>Area code: </b> Enter your local area code for the ISDN
+_("<p><b>Area Code: </b> Enter your local area code for the ISDN
 line here, without a leading zero and without a country prefix.</p>
 ");
 
     helptext = helptext +
     // helptext text 6/7
-_("<p><b>Dial Prefix: </b> If you need a prefix to get an public line, you
-can enter it here. Only used on a internal S0 bus, most common is \"0\".</p>");
+_("<p><b>Dial Prefix: </b> If you need a prefix to get an public line, 
+enter it here. This is only used on a internal S0 bus and most common one is \"0\".</p>
+");
 
     helptext = helptext +
     // helptext text 7/7
-_("<p>If you don't want to log all your ISDN trafic uncheck <b>Start isdnlog</b>.</p>");
+_("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log</b>.</p>");
 
     /* DIALOG CONTENTS */
 
@@ -460,7 +461,7 @@ _("<p>If you don't want to log all your ISDN trafic uncheck <b>Start isdnlog</b>
 	// Contry name
 	"+352"   : _("Luxemburg"),
 	// Contry name
-	"+31"   : _("Netherland"),
+	"+31"   : _("Netherlands"),
 	// Contry name
 	"+47"   : _("Norway"),
 	// Contry name
@@ -514,7 +515,7 @@ _("<p>If you don't want to log all your ISDN trafic uncheck <b>Start isdnlog</b>
     term ISDN_driver = create_drv_term(DrvList, desc);
 
     // frame title
-    term ISDN_card = `Frame(_("ISDN card info"),`VBox(
+    term ISDN_card = `Frame(_("ISDN Card Information"),`VBox(
 	    `HBox(
 	    `HWeight(30, `VBox(
 		`Left(`Label(`id(`Vend), _("Vendor"))),
@@ -556,7 +557,7 @@ _("<p>If you don't want to log all your ISDN trafic uncheck <b>Start isdnlog</b>
 		// TextEntry label for phone number prefix to get a public line (german Amtsholziffer)
 		`HWeight(35, `TextEntry(`id(`dialprefix), _("&Dialprefix"), dialprefix)),
 		// CheckBox label
-		`HWeight(35, `CheckBox(`id(`ilog), _("Start &isdnlog"), isdnlog))
+		`HWeight(35, `CheckBox(`id(`ilog), _("Start &ISDN Log"), isdnlog))
 	    ),
 	    `VSpacing(1.5)
     ));

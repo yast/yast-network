@@ -26,7 +26,7 @@ global define symbol RemoteMainDialog() ``{
 	/* RadioButton label */
 	`Left(`RadioButton(`id(`allow), _("&Allow Remote Administration"), false)),
 	/* RadioButton label */
-	`Left(`RadioButton(`id(`disallow), _("&Do not allow Remote Administration"), false))
+	`Left(`RadioButton(`id(`disallow), _("&Do Not Allow Remote Administration"), false))
     ));
 
     /* Ramote Administration dialog contents */
@@ -37,7 +37,7 @@ global define symbol RemoteMainDialog() ``{
     ));
 
     /* Ramote Administration dialog help */
-    string help = _("Here you can allow VNC Remote Administration of the
+    string help = _("Here, you can allow VNC remote administration of the
 system. Use any VNC view to connect to the system.");
 
     Wizard::SetContentsButtons(caption, contents, help,

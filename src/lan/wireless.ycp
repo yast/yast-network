@@ -47,8 +47,7 @@ as a backup master or repeater), or <b>Auto</b>.</p>") +
 _("<p>Set the <b>Network Name (ESSID)</b> used to identify cells that are
 part of the same virtual network. As opposed to the NWID, which defines a
 single cell, the ESSID defines a group of cells, connected via repeaters or
-infrastructure, where the user may roam.</p>
-") +
+infrastructure, where the user may roam.</p>") +
 
     /* Wireless dialog help 4/7 */
 _("<p>As all adjacent wireless networks share the same medium, the <b>Network

@@ -36,8 +36,7 @@ global define symbol DHCPDialog() ``{
     _("<p><b>Request Broadcast Response</b> causes the DHCP client
 to ask the server always to broadcast its responses. You may need this,
 for example, if your machine is a mobile client moving between different
-networks.</p>
-") +
+networks.</p>") +
 
     /* DHCP dialog help 3/8 */
     _("<p>The <b>DHCP Client Identifier</b>, if left empty, defaults to
@@ -49,11 +48,11 @@ network interface and thus the same hardware address.</p>") +
     /* DHCP dialog help 4/8 */
     _("<p>The <b>Host Name to Send</b> specifies a string used for the
 host name option field when dhcpcd sends DHCP messages. Some DHCP servers
-will update nameserver entries according to this host name (dynamic DNS).
+update name server entries according to this host name (dynamic DNS).
 
 Also, some DHCP servers require the <b>Host Name to Send</b> option field to
 contain a specific string in the DHCP messages from clients. Leave <i>AUTO</i>
-to send current host name. Leave empty not to send a host name.</p>");
+to send the current host name. Leave empty not to send a host name.</p>");
 
     boolean dhclient_broadcast = false;
     if(issubstring(NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"]:"", "-B"))

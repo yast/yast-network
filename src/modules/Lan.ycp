@@ -290,7 +290,7 @@ global define boolean Write() ``{
 	/* Progress stage 2/10 */
 	_("Write drivers information"),
 	/* Progress stage 3/10 - multiple devices may be present,really plural*/
-	_("Write devices configuration"),
+	_("Write device configuration"),
 	/* Progress stage 4/10 */
 	_("Write network configuration"),
 	/* Progress stage 5/10 */
@@ -324,7 +324,7 @@ global define boolean Write() ``{
 
     if(Abort()) return false;
     /* Progress step 3/10 - multiple devices may be present, really plural*/
-    ProgressNextStage(_("Writing devices configuration..."));
+    ProgressNextStage(_("Writing device configuration..."));
     WriteDevices();
     sleep(sl);
 

@@ -68,9 +68,9 @@ else if(func == "AskUser") {
 else if(func == "Description") {
     ret = $[
 	/* RichText label */
-	"rich_text_title" : _("Network interfaces"),
+	"rich_text_title" : _("Network Interfaces"),
 	/* Menu label */
-	"menu_title" : _("&Network interfaces"),
+	"menu_title" : _("&Network Interfaces"),
 	"id" : "lan",
     ];
 }

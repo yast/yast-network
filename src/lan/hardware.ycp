@@ -46,8 +46,7 @@ with the same module name, options will be merged while saving.</p>");
 
     /* Manual dialog help 3/4 */
 help = help + _("<p>Get a list of available network cards by pressing
-<b>Select from List</b>.</p>
-") +
+<b>Select from List</b>.</p>") +
 
     /* Manual dialog help 4/4 */
 _("<p>If you have a <b>PCMCIA</b> network card, click on the PCMCIA check

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Sep  5 09:17:58 CEST 2003 - msvec@suse.cz
+
+- proof read texts
+- 2.8.26
+
+-------------------------------------------------------------------
 Thu Sep  4 10:21:23 CEST 2003 - msvec@suse.cz
 
 - use dhcpcd-test script for testing of DHCP (#29945)

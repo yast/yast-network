@@ -31,14 +31,14 @@
 	{
 	    ret = $[ "raw_proposal" : [
 				       // label in proposal text
-				       _("Remote Administration is enabled.")
+				       _("Remote administration is enabled.")
 		     ] ];
 	}
 	else
 	{
 	    ret = $[ "raw_proposal" : [
 				       // label in proposal text
-				       _("Remote Administration is disabled.")
+				       _("Remote administration is disabled.")
 		     ] ];
 	}
     }

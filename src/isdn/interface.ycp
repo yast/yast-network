@@ -74,7 +74,7 @@ _("<p>To avoid adding an interface now, use
     if (ISDN::only_dsl)
 	helptext = 
     // conditional help text 1/1
-_("<p>You have a DSL CAPI controller, configure your DSL
+_("<p>You have a DSL CAPI controller.  Configure your DSL
 connection via <b>Add DSL CAPI Interface</b>. You can also do this later
 in the DSL configuration dialog.</p>
 ");

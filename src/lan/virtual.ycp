@@ -68,8 +68,7 @@ global define symbol VirtualDialog(boolean standalone) ``{
 
     /* Hosts dialog help 2/2 */
     _("<p>Enter an <b>Alias Name</b>, an <b>IP Address</b>, and
-the <b>Netmask</b>.</p>
-");
+the <b>Netmask</b>.</p>");
 
     integer items = 0;
     integer max = 0;

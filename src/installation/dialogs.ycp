@@ -68,14 +68,12 @@ global define symbol TestStepsDialog() ``{
 
     /* Steps dialog caption 1/2 */
     string help = _("<p>Here, validate the Internet connection just
-configured. The test is entirely optional.</p>
-");
+configured. The test is entirely optional.</p>");
 
     if(!contains(Product::flags, "no_you")) {
 	/* Steps dialog caption 2/2 */
 	help = help + _("<p>A successful result enables you to run
-the YaST Online Update.</p>
-");
+the YaST Online Update.</p>");
     }
 
     /* Label text (keep lines max. 65 chars long) */
@@ -106,7 +104,7 @@ activate the test procedure."),
 	/* RadioButton label */
 	`Left(`RadioButton(`id(`yes), _("&Yes, Test Connection to the Internet"), Internet::do_test)),
 	/* RadioButton label */
-	`Left(`RadioButton(`id(`no), _("N&o, Skip this Test"), !Internet::do_test)),
+	`Left(`RadioButton(`id(`no), _("N&o, Skip This Test"), !Internet::do_test)),
 	`VSpacing(1)
     );
 

@@ -501,7 +501,7 @@ global define list Summary(boolean split) ``{
     string hwdet = Summary::DevicesList( [
 	"<li>" +
 	/* Summary label */
-	_("Unknown (PPPOE style) DSL Device Detected") +
+	_("Unknown (PPPOE-style) DSL Device Detected") +
 	"</li>"
     ]);
     // FIXME: HW
