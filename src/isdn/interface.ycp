@@ -22,7 +22,7 @@ textdomain "network";
 import "Firewall";
 import "Wizard";
 import "ISDN";
-import "DSL";
+import "Call";
 
 include "ui/common_popups.ycp";
 include "network/dsl/dialogs.ycp";
@@ -125,7 +125,7 @@ _("<p>To avoid adding an interface now, use
 	    break;
 	}
 	else if (ret == `AddDSLPPP) {
-	    ret = ISDNDSLSequence("capi-adsl", "");
+	    ret = CallFunction("dsl", [.capiadsl]);
 	}
 	else if (ret == `AddSyncPPP) {
 	    if (op == `hw)
