@@ -127,7 +127,7 @@ define map FromAY(map input)
 
             // Check if device id is given
             list devid = splitstring(configured_device, "-");
-            if (size(devid)> 0 )
+            if (size(devid)> 1 )
             {
                 string mac = devid[2]:"";
                 list avail = filter(map conf, hw, ``(conf["mac"]:"" == mac));
