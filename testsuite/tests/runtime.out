@@ -17,6 +17,7 @@ Execute	.target.bash "/etc/init.d/network stop" 1
 Return	false
 Dump	SetupSMPPPD
 Read	.init.scripts.exists "smpppd" true
+Execute	.target.bash "/sbin/insserv -r smpppd" 0
 Execute	.target.bash "/sbin/insserv smpppd,start=2,3,5" 0
 Read	.init.scripts.exists "smpppd" true
 Execute	.target.bash "/etc/init.d/smpppd status" $["TERM":"raw"] 0
