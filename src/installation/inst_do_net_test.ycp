@@ -19,6 +19,7 @@ import "Mode";
 import "Popup";
 import "Product";
 import "Wizard";
+import "PackageCallbacks";
 
 include "network/routines.ycp";
 include "network/installation/dialogs.ycp";
@@ -68,7 +69,8 @@ string l4 = _("Closing connection...");
  * Return current language with .UTF-8 appended.
  * FIXME: there must be a better way!
  */
-define string GetLanguageUTF8 () {
+define string GetLanguageUTF8 ()
+{
     string tmp = WFM::GetLanguage ();
     integer pos = findfirstof (tmp, "@.");
     if (pos != nil)
@@ -80,8 +82,8 @@ define string GetLanguageUTF8 () {
     /**
      * Create the dialog contents
      */
-    define void make_dialog() {
-
+    define void make_dialog ()
+    {
 	/* Test dialog caption */
 	string caption = _("Running Internet Connection Test");
 
@@ -139,7 +141,8 @@ and correct the setting.</p>");
     }
 
 
-    define void mark_label(integer i, symbol s) {
+    define void mark_label (integer i, symbol s)
+    {
 
 	string glyph = s == `arrow ? UI::Glyph(`BulletArrowRight) : UI::Glyph(`CheckMark);
 
@@ -154,7 +157,8 @@ and correct the setting.</p>");
     }
 
 
-    define void show_result() {
+    define void show_result ()
+    {
 	if(test_result == `success) {
 	    /* result of internet test */
 	    UI::ChangeWidget(`id(`res), `Value, _("Success"));
@@ -165,8 +169,8 @@ and correct the setting.</p>");
     }
 
 
-    define void copy_logs1 () {
-
+    define void copy_logs1 ()
+    {
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Kernel Network Interfaces"),
 			     `filename : "ifconfig.log" ]);
@@ -188,8 +192,8 @@ and correct the setting.</p>");
     }
 
 
-    define void copy_logs2 () {
-
+    define void copy_logs2 ()
+    {
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Kernel Messages"),
 			     `filename : "messages" ]);
@@ -207,8 +211,34 @@ and correct the setting.</p>");
     }
 
 
-    define void handle_stage() {
+    define boolean install_release_notes (string filename)
+    {
+	boolean ret1 = Pkg::RpmChecksig (filename);
 
+	if (!ret1)
+	{
+	    // FIXME: show popup
+	    y2error ("checksig of release notes failed");
+	    return false;
+	}
+
+	boolean old2 = PackageCallbacks::EnableAsterixPackage (false);
+	boolean ret2 = Pkg::TargetInstall (filename);
+	PackageCallbacks::EnableAsterixPackage (old2);
+
+	if (!ret2)
+	{
+	    // FIXME: show popup
+	    y2error ("installing of release notes failed");
+	    return false;
+	}
+
+	return true;
+    }
+
+
+    define void handle_stage ()
+    {
 	if (test_stage == `open)		// open connection
 	{
 	    if(Mode::test) {
@@ -330,11 +360,7 @@ the logs for details.
 	    }
 	    else
 	    {
-		// FIXME use Pkg::TargetInstall (tmp) and see that callbacks
-		// are set appropriate
-
-		if (SCR::Execute (.target.bash, "/bin/rpm -U --replacepkgs " + tmp) != 0)
-		    y2error ("installing of release notes failed");
+		install_release_notes (tmp);
 	    }
 
 	    test_stage = `patches;

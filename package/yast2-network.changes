@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Sep 22 16:10:02 CEST 2004 - arvin@suse.de
+
+- check signature of release notes (bug #45647)
+
+-------------------------------------------------------------------
 Mon Sep 20 16:38:00 CEST 2004 - kkeil@suse.de
 
 - do only install addon packages if proposal was accepted (#45314)
@@ -29,7 +34,7 @@ Tue Sep 14 16:36:23 CEST 2004 - mvidner@suse.cz
 Mon Sep 13 15:44:18 CEST 2004 - mvidner@suse.cz
 
 - Added Lan::AutoPackages for autoinst mode (nashif).
-- Install RPMs with kernel modules (#44394). 
+- Install RPMs with kernel modules (#44394).
 - 2.10.17
 
 -------------------------------------------------------------------

@@ -4,7 +4,7 @@
 @HEADER@
 # yast2-core >= 2.10.6: carrier detection
 Requires:	yast2-core >= 2.10.6
-Requires:	yast2 sysconfig yast2-country yast2-inetd
+Requires:	yast2 sysconfig yast2-country yast2-inetd yast2-packager
 PreReq:		/bin/rm
 
 Provides:	y2c_lan y2c_dial yast2-config-adsl y2c_adsl
