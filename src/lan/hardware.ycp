@@ -517,14 +517,14 @@ global define symbol WirelessDialog() ``{
     ScreenName("lan-hardware-wireless");
 
     /* Wireless dialog caption */
-    string caption = _("Wireless network card configuration");
+    string caption = _("Wireless Network Card Configuration");
 
     /* Wireless dialog help 1/7 */
     string helptext = _("<p>Here, set the most important settings
 for wireless networking.</p>") +
 
     /* Wireless dialog help 2/7 */
-_("<p>The <b>operating mode</b> depends on the network topology. The mode can
+_("<p>The <b>Operating Mode</b> depends on the network topology. The mode can
 be Ad-hoc (network composed of only one cell without an access point), Managed
 (network composed of many cells with roaming or an access point), Master
 (the node is the synchronization master or acts as an access point), Repeater
@@ -532,18 +532,18 @@ be Ad-hoc (network composed of only one cell without an access point), Managed
 master or repeater), or Auto.</p>") +
 
     /* Wireless dialog help 3/7 */
-_("<p>Set the <b>Network name (ESSID)</b>, which is used to identify cells that are
+_("<p>Set the <b>Network Name (ESSID)</b>, which is used to identify cells that are
 part of the same virtual network. As opposed to the NWID, which defines a
 single cell, the ESSID defines a group of cells, connected via repeaters or
 infrastructure, where the user may roam.</p>") +
 
     /* Wireless dialog help 4/7 */
 _("<p>As all adjacent wireless networks share the same medium, the <b>Network
-identifier (NWID)</b> is used to differentiate them (create logical colocated
+Identifier (NWID)</b> is used to differentiate them (create logical colocated
 networks) and identify nodes belonging to the same cell.</p>") +
 
     /* Wireless dialog help 5/7 */
-_("<p>To set the current <b>Encryption key</b>, enter the key in hex digits as
+_("<p>To set the current <b>Encryption Key</b>, enter the key in hex digits as
 XXXX-XXXX-XXXX-XXXX or XXXXXXXX. You can also enter the key as an ASCII
 string by using the 's:' prefix.</p>") +
 
@@ -561,10 +561,10 @@ available options.</p>");
     term contents = `HBox(
 	`HSpacing(6),
 	/* Frame label */
-	`Frame(_("Wireless device settings"), `HBox(`HSpacing(2), `VBox(
+	`Frame(_("Wireless Device Settings"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(1),
 	    /* Combobox item */
-	    `ComboBox(`id(`mode), `opt(`hstretch), _("O&perating mode"), [
+	    `ComboBox(`id(`mode), `opt(`hstretch), _("O&perating Mode"), [
 		/* Combobox item */
 		`item(`id("Ad-hoc"), _("Ad-hoc"), Lan::wl_mode == "Ad-hoc"),
 		/* Combobox item */
@@ -578,16 +578,16 @@ available options.</p>");
 	     ]),
 	    `VSpacing(0.2),
 	    /* Text entry label */
-	    `TextEntry(`id(`essid), _("Ne&twork name (ESSID)"), Lan::wl_essid),
+	    `TextEntry(`id(`essid), _("Ne&twork Name (ESSID)"), Lan::wl_essid),
 	    `VSpacing(0.2),
 	    /* Text entry label */
-	    `TextEntry(`id(`nwid), _("Network &identifier (NWID)"), Lan::wl_nwid),
+	    `TextEntry(`id(`nwid), _("Network &Identifier (NWID)"), Lan::wl_nwid),
 	    `VSpacing(0.2),
 	    /* Text entry label */
-	    `TextEntry(`id(`key), _("&Encryption key"), Lan::wl_key),
+	    `TextEntry(`id(`key), _("&Encryption Key"), Lan::wl_key),
 	    `VSpacing(0.2),
 	    /* Text entry label */
-	    `TextEntry(`id(`nick), _("Nic&k name"), Lan::wl_nick),
+	    `TextEntry(`id(`nick), _("Nic&k Name"), Lan::wl_nick),
 	    `VSpacing(1)
 	    ), `HSpacing(2))),
 	`HSpacing(6)
@@ -595,9 +595,6 @@ available options.</p>");
 
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::OKButton());
-
-    // FIXME: provide a better check and an error message, #17546
-    // removed #24839 UI::ChangeWidget(`id(`key), `ValidChars, "0123456789abcdefABCDEF-:s");
 
     any ret = nil;
     while(true) {
@@ -611,6 +608,26 @@ available options.</p>");
 	    break;
 	}
 	else if(ret == `next) {
+
+	    /* Key is either:
+	     *   s:AAAAA (5 ascii chars or more) or
+	     *   XXXX-XXXX-XX or XXXXXXXXXX (10 or more hex digits)
+	     */
+	    string key = UI::QueryWidget(`id(`key), `Value);
+	    if(key != "") {
+
+		if(regexpmatch(key, "^s:.{5,}$")) break;
+		if(regexpmatch(key, "^[0-9A-Fa-f]{10,}$")) break;
+
+		string h = "[0-9A-Fa-f]";
+		if(size(key) < 12 || !regexpmatch(key, "^"+h+"{4}"+"(-"+h+"{4}){1,}-"+h+"{1,4}$")) {
+		    /* Popup text */
+		    Popup::Error(_("The Encryption Key is incorrect"));
+		    UI::SetFocus(`id(`key));
+		    continue;
+		}
+	    }
+
 	    break;
 	}
 	else {

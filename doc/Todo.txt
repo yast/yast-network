@@ -2,40 +2,6 @@
 
 Bugs:
 
-Enhancements:
-
-Documentation:
-- example dhcpcd-eth0.info
-- example intstall.inf's
-
-##############################################################################
-
-TOCHECK:
-
-- Net-HOWTO
-- mail [patch] from bk@suse.de about s390 changes
-- remove writing of NETWORK (also BROADCAST?)
-
-- sigi&isdn: http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html
-- chmod 0700 ~/.curlrc? asi neni potreba ... [draht]
-
-- #16094:
-    Further enhancement: if the provider is not used by any other modem
-    as default or there are no modems at all, display a question wheather
-    user wants to delete also the provider.
-
-- autodetection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
-    DetectionIP() { if detection_started; run ping; }
-
-#19851: warn before rcnetwork restart -> RestartNetwork() | StopNetwork();
-  DISPLAY=
-  :0.0		OK
-  localhost:0.0	OK
-  beholder:0.0	OK
-  wyvern:11.0	Warn
-
-  SSH_CLIENT	Warn
-
 #19910: builtin IBM cards?
 #21009: NFS & hostname?
 #23332: s390 devices support
@@ -47,144 +13,42 @@ TOCHECK:
 #25506: ??
 #25739: ??
 #13450: default gateway in first lan dialog
-#26217: fix ISA card adding
 #16131: IP-masquerading
 #17346: ethtool
 #17564: provider0
 #17631: ??
-#18256: start mail after ISDN
-#18791: proxy: input checking
 #22739: ifcfg-usb-usb
 #22802: better message for broken fields (eg. domain) -- Checker
 #23491: ??
 #23977: ??
 #24000: edit dsl HW goes through provider again (default provider?)
-#24803: better helps for proxy
 #24882: rename ifaces when deleted
-#25220: winmodems support #15556
 
-TOSORT:
-
-- provider: use INS file (#25774)
-
-- all: update /etc/hosts (#22825)
+- dns: update /etc/hosts (#22825)
 
 - dsl: better proposal (#23662)
 - dsl: detect hardware (#24462)
 
-- lan: wireless keys check (#24839)
-- lan (all): temporary interface disable (#24926)
+- lan: temporary interface disable (#24926)
+- all: temporary interface disable
 
+- proxy: better helps for proxy (#24803)
+- proxy: proxy: input checking (#18791)
 - proxy: use immediately (#23728)
 
 - provider: warn if deleting default provider for modem|isdn|dsl (#17497)
 - provider: delete default route if removed (#10739)
 
-- lan: check for myrinet driver presence [warning + info]
+- dummy: dummy device adding (#15960) for what is it useful? [suse-network]
+- alias: virtual interfaces (#6627)
 
-- wireless: missing "Master" in the "Operationg mode"
-- wireless: check encryption key XXXX-XXXX-XXXX-XXXX (hex) or XXXXXXXX or ... [iwconfig]
-
-- routing: other fields
-- routing: rename to Route
-
-- modem|isdn|lan|dsl: info popup during proposal
-
-- agents: two resolv.conf scrconfs
-
-- routing: list of available devices in expert dialog
-- routing: check already present default route (partially #11132)
-
-- routing: summary: split gateway of the other routes
-- routing: summary: print other routes in nice form
-- routing: summary: print gateway hostname [Gateway: 10.20.0.1 (chimera.suse.cz)]
-
-- dns: summary: print ns and sl in nice form
-- dns: summary: print ns hostname [Name server: 10.20.0.1 (chimera.suse.cz)]
-- dns: summary: differentiate between 1 and more ns
-    [Name servers: 10.20.0.1 (chimera.suse.cz), 10.20.1.16 (yeti.suse.cz)]
-
-- doc: adding network device mini-howto: grep for "escon" for example
-- doc: include public_html/network
-
-- lan: install dhcpcd|sysconfig|... (before Write)
-- lan: install wireless-tools, hotplug, ... if needed (before Write)
-
-- lan: check IP presence (#9951)
-- lan: check link presence
-
-- lan: support arcnet (arc)
-- lan: support myrinet (myri)
-
-- routines: support arcnet, plip, slip, myri, ppp (not modem)
-
-- routines: check for yast2-mail presence
-- routines: install kinternet if KDE are present (kdelibs, kdebase?)
-
-- modem: speaker volume as combo (or better as slider)
-
-- host: scan for hosts on the local network [Add]
-- host: add (update) all hosts in the local network
-- host: show system hosts checkbox (like users have)
-
-- dummy: dummy device adding #15960 for what is it useful? [suse-network]
-- alias: virtual interfaces #6627
-
-- hardware: cable modems support? what is missing? [suse-network]
-- modem: check existence of the modem device in ModemDialog
-- dialup: start smpppd only if >0 devs
-- dialup: info popup (configured + kinternet, cinternet)
-- dialup: run|stop kinternet, if DISPLAY and (not)running (#14320)
-
-- routines: -> FIREWALL=yes|no to each ifcfg-XXX #18840 (support for modems)
-
-- doc: dummy: IP/NM/BC
-- doc: irlan: IP/NM/BC (eth?)
-- doc: irnet: IP/RI (?)
-- doc: plip: IP/RI (Parallel Line IP)
-- doc: slip: IP/RI (Serial Line IP, obsoleted by PPP)
-- doc: ppp: IP/RI (Serial Point-To-Point protocol)
-
-- doc: T-Online UIMODE:
-  - Line ID [10 chars]
-  - T-Online ID [10 chars]
-  - User code [numbers, usually 0001]
-  -> username = "LT#U@t-online.de"
+- isdn: start mail after config (#18256)
 
 ##############################################################################
 
-Enhancements:
-- dns: xauth agent </dev/null (and some more work)
-- dns: restart only DHCP devices
-- routing: restart only routing
-- dsl: ReadHardware("dsl") see #16539
-- dsl: PPPMODE to dsl providers (pppoe|pppoatm|ppptp)
-- lan: use bootp reply for static configuration
-- lan: dual port network cards #10077, #12387 [see 2002-05.txt]
-- lan: compiled in kernel drivers
-- modem: pap|chap secrets writing
-- providers: no-global-values
-- providers: preload the country providers (other upon request)
-- providers: -> HWDB-NG
-- providers: Czech Telecom DSL
-- all: edit without restart (reload)
-- device: use map instead of variables (-> fill all variables)
-- package: include all agents (ag_xauth, ag_resolver, ag_hostnames, ...)
-- package: require yast2-language, yast2-mail, ...
+Implementation:
 
-Future:
-- ui: local net (slcs)
-- ui: cable connection (plip, slip, usb)
-
-DOC:
- ESCON = Enteprise System CONnector (something like a mixture of SCSI and
-         Ethernet - its a channel, but can carry network traffic)
-         - short: its a point-to point network interface
-
- IUCV  = Inter User Communication Vehicle (means: DMA based network pipe
-         between Virtual Machine instances (like vmware) on an s390)
-         - short: its a point-to point network interface
-
+#22825:
 SuSEconfig.hostname:
 - /var/adm/SuSEconfig/oldhostentry:
 notebook.suse.cz
@@ -202,6 +66,127 @@ notebook.suse.cz
 
 UpdateHosts("hostname", [IPADDRs]);
 
+- see Host::Update()
+
+#19851: warn before rcnetwork restart -> RestartNetwork() | StopNetwork();
+  DISPLAY=
+  :0.0		OK
+  localhost:0.0	OK
+  beholder:0.0	OK
+  wyvern:11.0	Warn
+
+  SSH_CLIENT	Warn
+
+##############################################################################
+
+TOCHECK:
+
+- sigi&isdn: http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html
+
+- autodetection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
+    DetectionIP() { if detection_started; run ping; }
+
+- #16094:
+    Further enhancement: if the provider is not used by any other modem
+    as default or there are no modems at all, display a question wheather
+    user wants to delete also the provider.
+
+TOSORT:
+
+- wireless: missing "Master"|"Monitor" in the "Operating mode"
+
+- routing: other fields
+- routing: rename to Route
+
+- routing: list of available devices in expert dialog
+- routing: check already present default route (partially #11132)
+
+- routing: summary: split gateway of the other routes
+- routing: summary: print other routes in nice form
+- routing: summary: print gateway hostname [Gateway: 10.20.0.1 (chimera.suse.cz)]
+
+- dns: summary: print ns and sl in nice form
+- dns: summary: print ns hostname [Name server: 10.20.0.1 (chimera.suse.cz)]
+- dns: summary: differentiate between 1 and more ns
+    [Name servers: 10.20.0.1 (chimera.suse.cz), 10.20.1.16 (yeti.suse.cz)]
+
+- lan: install dhcpcd|sysconfig|... (before Write)
+- lan: install wireless-tools, hotplug, ... if needed (before Write)
+
+- lan: check IP presence (#9951)
+- lan: check link presence
+
+- host: scan for hosts on the local network [Add]
+- host: add (update) all hosts in the local network
+- host: show system hosts checkbox (like users have)
+
+- dialup: start smpppd only if >0 devs
+- dialup: info popup (configured + kinternet, cinternet)
+- dialup: run|stop kinternet, if DISPLAY and (not)running (#14320)
+
+- routines: -> FIREWALL=yes|no to each ifcfg-XXX #18840 (support for modems)
+
+##############################################################################
+
+Improvements:
+
+- dns: xauth agent </dev/null (and some more work)
+- dns: two resolv.conf scrconfs
+- lan: myrinet: check for driver presence [warning + info]
+- lan: remove writing of NETWORK (also BROADCAST?), probably not used
+- modem: check existence of the modem device in ModemDialog
+- routing: restart only routing
+- routines: check for yast2-mail presence
+- routines: support plip, slip, myri, ppp (serial cable, not modem)
+- routines: better kinternet handling (kdelibs, kdebase?)
+
+Enhancements:
+- modem: winmodems support (#25220, #15556)
+- lan: dual port network cards #10077, #12387 [see 2002-05.txt]
+- lan: compiled in kernel drivers
+- modem: speaker volume as combo (or better as slider)
+- modem: pap|chap secrets writing
+- providers: no-global-values
+- providers: preload the country providers (other upon request)
+- providers: -> HWDB-NG
+- providers: Czech Telecom DSL
+- all: edit without restart (reload)
+- device: use map instead of variables (-> fill all variables)
+- package: include all agents (ag_xauth, ag_resolver, ag_hostnames, ...)
+- package: require yast2-language, yast2-mail, ...
+- hardware: cable connection (plip, slip, usb)
+- hardware: wireless connection (irda, bluetooth)
+- provider: use INS file (#25774)
+
+Documentation:
+- example dhcpcd-eth0.info
+- example intstall.inf's
+- Net-HOWTO link
+- s390 devices (see bellow, also from mails)
+- overall device overview (see bellow, also required data like IP, RI, NM)
+- UIMODE: link to autodocs
+- doc: adding network device mini-howto: grep for "escon" for example
+- doc: include public_html/network, dia, ...
+
+##############################################################################
+
+DOC:
+ ESCON = Enteprise System CONnector (something like a mixture of SCSI and
+         Ethernet - its a channel, but can carry network traffic)
+         - short: its a point-to point network interface
+
+ IUCV  = Inter User Communication Vehicle (means: DMA based network pipe
+         between Virtual Machine instances (like vmware) on an s390)
+         - short: its a point-to point network interface
+
+DOC:
+- doc: dummy: IP/NM/BC
+- doc: irlan: IP/NM/BC (eth?)
+- doc: irnet: IP/RI (?)
+- doc: plip: IP/RI (Parallel Line IP)
+- doc: slip: IP/RI (Serial Line IP, obsoleted by PPP)
+- doc: ppp: IP/RI (Serial Point-To-Point protocol)
+
 UI proposal:
 - detected
 - choose your card (current list)
@@ -212,19 +197,6 @@ Hardware:
 - pcmcia: ethernet card, TR card, ISDN card, modem
 - wireless network cards
 - fddi card
-
-Detection() {
-  CONFIG=$[];
-  ReadConfig("eth");
-  status(eth0) -> set up
-  netprobe();
-}
-
-DetectionStop() {
-  if set up -> stop(eth0)
-  killall netprobe
-  ReadDetection();
-}
 
 - make device optional in routes agent
 - DefaultDevice(ip)
