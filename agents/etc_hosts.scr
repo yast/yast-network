@@ -3,6 +3,7 @@
  * Summary:	Agent for reading/writing /etc/hosts
  * Access:	read/write
  * Authors:	Michal Svec <msvec@suse.cz>
+ * See:		hosts(5)
  *
  * Example:
  *   Dir(.etc.hosts)

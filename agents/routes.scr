@@ -3,7 +3,7 @@
  * Summary:	Agent for /etc/sysconfig/network/routes
  * Author:	Michal Svec <msvec@suse.cz>
  * Access:	read / write
- * See:		sysconfig package
+ * See:		sysconfig.rpm
  *
  * General syntax:
  *     10.10.0.0	0.0.0.0		255.255.0.0	eth0

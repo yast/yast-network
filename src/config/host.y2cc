@@ -5,20 +5,20 @@
 ; $Id$
 ;
 
-[Y2Module dsl]
+[Y2Module host]
 
 ; name of the entry, shown in y2cc
-Name = _("DSL")
+Name = _("Host names")
 
 ; "raw" group name to which this module belongs
 ; see /usr/lib/YaST2/etc/y2controlcentericons.y2cc for valid values
-Group = Network
+Group = Net_advanced
 
 ; icon displayed in y2cc
-Icon = adsl.png
+Icon = host.png
 
 ; *one* *short* descriptive line for y2cc
-Helptext = _("Configure DSL connection")
+Helptext = _("Configure host names")
 
 ; arguments, seperated by space
 Arguments = 
@@ -36,6 +36,6 @@ SortKey =
 Textdomain = network
 
 ; Autoinstall features
-Autoinst = 
+Autoinst = write
 
 ; vim:syntax=dosini

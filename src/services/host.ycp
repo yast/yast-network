@@ -23,6 +23,17 @@ include "network/routines.ycp";
 include "ui/common_popups.ycp";
 
 /**
+ * Check if given host is system and present warning in this case.
+ * @param host host to be checked
+ * @return true if continue
+ */
+global define boolean HostSystemPopup(string host) ``{
+    if(!contains(Host::GetSystemHosts(), host)) return true;
+    return UI::YesNoPopup(sformat(_("The host %1 is a system host.
+Do you really want to change it?"), host));
+}
+
+/**
  * Main hosts dialog
  * @return dialog result
  */
@@ -132,7 +143,12 @@ global define symbol HostsMainDialog() ``{
 	    term item = cur_item[0]:nil;
 	    list forbidden = maplist(term e, table_items, ``(select(e, 1, "")));
 	    forbidden = filter(string h, forbidden, ``(h != select(item, 1, "")));
+
+	    if(!HostSystemPopup(select(item, 1, "")))
+		continue;
+
 	    item = HostDialog(cur, item, forbidden);
+
 	    if(item == nil) continue;
 	    else Host::modified = true;
 

@@ -3,6 +3,7 @@
  * Summary:	Agent for reading/writing /root/.wgetrc
  * Access:	read / write
  * Author:	Michal Svec <msvec@suse.cz>
+ * See:		wget(1)
  *
  * Example:
  *   Dir(.etc.nsswitch_conf)

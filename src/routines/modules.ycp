@@ -8,6 +8,16 @@
  *
  * All modules.conf settings are stored in a global variable Modules.
  * Deleted modules are in the global list DeletedModules.
+ *
+ * <pre>
+ * map Modules = $[
+ *     "eth0" : [ "alias" : "tulip", "options" : "io=0x220 irq=7" ],
+ *     "eth1" : [ "alias" : "off" ],
+ *     ...
+ * ];
+ *
+ * list DeletedModules = [ "eth0" ];
+ * </pre>
  */
 
 {

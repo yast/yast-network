@@ -74,9 +74,9 @@ TOSORT:
 - routines: install kinternet if KDE are present (kdelibs, kdebase?)
 - modem: speaker volume as combo (or better as slider)
 
-- hosts: /etc/hosts editor
-- hosts: scan for hosts on the local network [Add]
-- hosts: add (update) all hosts in the local network
+- host: scan for hosts on the local network [Add]
+- host: add (update) all hosts in the local network
+- host: show system hosts checkbox (like users have)
 
 - dummy: dummy device adding #15960 for what is it useful? [suse-network]
 - alias: virtual interfaces #6627
@@ -133,6 +133,24 @@ Future:
 - hippi et al (s390)
 - ui: local net (slcs)
 - ui: cable connection (plip, slip, usb)
+
+SuSEconfig.hostname:
+- /var/adm/SuSEconfig/oldhostentry:
+notebook.suse.cz
+1.2.3.4
+- add "127.0.0.1 localhost" if missing
+- grep [IPADDRs] frrom sysconfig/network/ifcfg-*
+- read HOSTNAME from /etc/HOSTNAME
+- for all [IPADDRs] if IPADDR <> 127.0.0.1 || 0.0.0.0:
+- add "$IPADDR $HOSTNAME $NICKNAME" for the first item
+- add "$IPADDR $HOSTNAME" for other IPADDRs
+- if [IPADDRs] == [] add "127.0.0.2 $HOSTNAME $NICKNAME"
+
+- remove BEAUTIFY_ETC_HOSTS [comments at top, sort; implement in yast2?]
+- remove CHECK_ETC_HOSTS
+
+UpdateHosts("hostname", [IPADDRs]);
+
 
 UI proposal:
 - detected

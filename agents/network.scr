@@ -3,7 +3,7 @@
  * Summary:	Agent for /etc/sysconfig/network/ifcfg-*
  * Author:	Michal Svec <msvec@suse.cz>
  * Access:	read / write
- * See:		sysconfig package
+ * See:		sysconfig.rpm
  *
  * General syntax:
  *     # comment0

@@ -134,5 +134,62 @@ global define map Export() ``{
     ];
 }
 
+/**
+ * Return "system" predefined hosts (should be present all the time)
+ * @return list of system hosts
+ */
+global define list GetSystemHosts() ``{
+    return [
+	"127.0.0.1",
+	"::1", "fe00::0", "ff00::0", "ff02::1", "ff02::2", "ff02::3"
+    ];
+}
+
+global define boolean Update(string hostname, string domain, list ips) ``{
+
+    string fqhostname = hostname;
+    if(domain != "") fqhostname = fqhostname + "." + domain;
+
+    string oldhostname = "";
+    string oldhostip = "";
+
+    /* Read oldhostname entry */
+    list oldhost = splitstring(SCR::Read(.var.adm.SuSEconfig.oldhostentry), "\n");
+    if(size(oldhost) > 0)
+	oldhostname = oldhost[0]:"";
+    if(size(oldhost) > 1)
+	oldhostip = oldhost[1]:"";
+
+    /* Remove old hostname from hosts */
+    if(contains(hosts, oldhostip))
+	hosts = remove(hosts, oldhostip);
+
+    /* Add at least one hostname/ip */
+    if(size(ips) < 1) {
+	change(hosts, "127.0.0.2", fqhostname + " " + hostname);
+	return true;
+    }
+
+    /* Add hostname/ip for all ips */
+    boolean nickadded = false;
+    maplist(string ip, ips, ``{
+	/* Only add if not present yet */
+	if(contains(hosts, ip)) return;
+
+	string name = fqhostname;
+	/* Add nick for the first one */
+	if(!nickadded) {
+	    nickadded = true;
+	    name = name + " " + hostname;
+	}
+
+	change(hosts, ip, name);
+    });
+
+    /* */
+
+    return true;
+}
+
 /* EOF */
 }
