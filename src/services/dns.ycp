@@ -203,9 +203,6 @@ disabled during the connection.</p>");
 	UI::ChangeWidget(`id(`ns3), `Enabled, false);
     }
 
-    // FIXME ugly hack for ISDN call (#6020)
-    //if(ok_label) UI::ChangeWidget(`id(`next), `Label, _("&OK")));
-
     any ret = nil;
     while(true) {
 

@@ -87,7 +87,7 @@ global define boolean ReadHardware(string hwtype) ``{
 	/* dsl card */
 	else if(controller == "dsl") {
 	    y2error("dsl not ready yet");
-	    /* FIXME */
+	    /* FIXME: DSL HW */
 	}
 	/* treat the rest as a network card */
 	else {
@@ -148,12 +148,12 @@ global define void SelectHardware(integer which) ``{
     /* isdn card */
     else if(type == "isdn") {
 	y2error("isdn not ready yet");
-	/* FIXME */
+	/* FIXME: ISDN */
     }
     /* dsl card */
     else if(type == "dsl") {
 	y2error("dsl not ready yet");
-	/* FIXME */
+	/* FIXME: DSL HW */
     }
     /* treat the rest as a network card */
     else {

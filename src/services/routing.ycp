@@ -241,10 +241,10 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 
 	if(defgw != "")
 	    change(route_conf, $[
-		"destination" : "default",
-		"gateway" : defgw,
-		"netmask" : "-",
-		"device" : defgwdev
+		"destination"	: "default",
+		"gateway"	: defgw,
+		"netmask"	: "-",
+		"device"	: defgwdev
 	    ]);
 
     }

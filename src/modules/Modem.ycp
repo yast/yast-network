@@ -119,8 +119,7 @@ global define boolean Read() ``{
     string caption = _("Initializing modem configuration");
     integer steps = 5;
 
-    /* FIXME */
-    integer sl = 0; //1000;
+    integer sl = 0; /* 1000; /* TESTING */
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
@@ -191,8 +190,7 @@ global define boolean Write() ``{
     string caption = _("Saving modem configuration");
     integer steps = 6;
 
-    /* FIXME */
-    integer sl = 0; //1000;
+    integer sl = 0; /* 1000; /* TESTING */
     sleep(sl);
 
     Progress::New(caption, " ", steps, [

@@ -75,7 +75,7 @@ global string portname = "";
 /* global options */
 global integer wait_for_interfaces = nil;
 
-/* FIXME */
+/* propose options */
 global boolean proposal_valid = false;
 global boolean write_only = false;
 
@@ -154,8 +154,7 @@ global define boolean Read() ``{
     string caption = _("Initializing network configuration");
     integer steps = 8;
 
-    /* FIXME */
-    integer sl = 0; //1000;
+    integer sl = 0; /* 1000; /* TESTING */
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
@@ -182,14 +181,14 @@ global define boolean Read() ``{
     ProgressNextStage(_("Detecting network devices..."));
     // if(!Arch::s390) /* FIXME: Temporary hack until the detection is functional */
     ReadHardware("netcard");
-    // ReadHardware("");
+    /* ReadHardware(""); /* TESTING */
     sleep(sl);
 
     if(Abort()) return false;
     /* Progress step 2/8 */
     ProgressNextStage(_("Reading /etc/modules.conf..."));
     ReadModules(NetworkCardRegex);
-    // ReadModules("");
+    /* ReadModules(""); /* TESTING */
     sleep(sl);
 
     if(Abort()) return false;
@@ -197,7 +196,7 @@ global define boolean Read() ``{
     ProgressNextStage(_("Reading current configuration..."));
     ReadDevices(NetworkDeviceRegex);
     CleanHotplugSymlink();
-    // ReadDevices("");
+    /* ReadDevices(""); /* TESTING */
     sleep(sl);
 
     string wait = SCR::Read(.sysconfig.network.config.WAIT_FOR_INTERFACES);
@@ -265,8 +264,7 @@ global define boolean Write() ``{
     string caption = _("Saving network configuration");
     integer steps = 9;
 
-    /* FIXME */
-    integer sl = 0; //1000;
+    integer sl = 0; /* 1000; /* TESTING */
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
@@ -460,7 +458,7 @@ global define boolean Select(string dev) ``{
 	type = "eth";
 	device = GetFreeDevice(type);
 	AddModule(type);
-	/* FIXME */
+	/* FIXME: ? */
 	alias = "";
     }
     /* dev!="" -> Edit */

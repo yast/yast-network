@@ -283,7 +283,7 @@ completes the configuration.</p>");
 	else if(ret == `back) {
 	    break;
 	}
-	/* FIXME: better hostname and routing workflow */
+	/* next|routing|hostname|hardware */
 	else if(ret == `next || ret == `routing || ret == `hostname || ret == `hardware) {
 
 	    y2debug("bootproto=%1", bootproto);

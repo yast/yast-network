@@ -136,7 +136,6 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	/* Combobox label */
 	`ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"),
 	    Lan::FreeDevices(realtype)));
-	    // FIXME maplist(integer d, Lan::FreeDevices(realtype), ``(sformat("%1", d)))));
 
     /* TextEntry label */
     term MTUBox = `TextEntry(`id(`mtu), _("M&aximum Transfer Unit (MTU)"), mtu);
@@ -322,7 +321,6 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
 	    list devices = [];
 	    devices = Lan::FreeDevices(realtype);
-	    // FIXME devices = maplist(integer d, Lan::FreeDevices(realtype), ``(sformat("%1",d)));
 	    default_device = select(devices, 0, "");
 	    /* Combobox label */
 	    UI::ReplaceWidget(`id(`rnum), `ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"), devices));

@@ -336,7 +336,7 @@ global define boolean Select(string name) ``{
 	];
 
 	/* Variable key -> not functional #16701 */
-	change(Provider, toupper(Type)+"SUPPORTED", "yes");
+	change(Provider, toupper(Type) + "SUPPORTED", "yes");
     }
 
     y2debug("Name=%1", Name);

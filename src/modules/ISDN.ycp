@@ -166,8 +166,7 @@ global define boolean Read() ``{
     string caption = _("Initializing ISDN card configuration");
     integer steps = 5;
 
-    /* FIXME */
-    integer sl = 0; //1000;
+    integer sl = 0; /* 1000; /* TESTING */
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
@@ -255,7 +254,8 @@ global define boolean Write(boolean start) ``{
     string caption = _("Saving ISDN configuration");
     integer steps = 10;
     string cmd = "";
-    integer sl = 0;
+
+    integer sl = 0; /* 1000; /* TESTING */
 
     if (start) {
 	steps = 12;

@@ -389,7 +389,7 @@ global define boolean IsHotplug(string type) ``{
  * @param type basic device type
  * @param hotplug hot plug type
  * @return real type
- * @example RealType("eth", "usb") -> "eth-usb-"
+ * @example RealType("eth", "usb") -> "eth-usb"
  */
 global define string RealType(string type, string hotplug) ``{
 
@@ -402,7 +402,7 @@ global define string RealType(string type, string hotplug) ``{
     if(hotplug == "" || hotplug == nil)
 	return type;
 
-    string realtype = type + "-" + hotplug; // FIXME + "-";
+    string realtype = type + "-" + hotplug;
     y2debug("realtype=%1", realtype);
     return realtype;
 }
