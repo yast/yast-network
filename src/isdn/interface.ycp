@@ -1,0 +1,284 @@
+/**
+ * File:
+ *   include/network/isdn/interface.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   ISDN network interface configuration dialog
+ *
+ * Authors:
+ *   Karsten Keil <kkeil@suse.de>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+textdomain "network";
+
+import "Wizard";
+import "ISDN";
+
+include "ui/common_popups.ycp";
+
+/**
+ * Dialog for ISDN interface selection
+ * @param symbol op operation
+ *		`hw  called after HW config
+ *		`add call from overview
+ * @return any user input
+ */
+
+global define symbol isdn_if_sel(symbol op) ``{
+
+    /* DIALOG TEXTS */
+
+    string caption = _("ISDN service selection");
+
+    // help text 1/3
+    string helptext =
+_("<p>For networking over ISDN here are two types of interfaces 
+<b>RawIP</b> and <b>SyncPPP</b>. In most cases you will use SyncPPP, it's
+the default for all common Internet providers</p>");
+
+    // helptext text 2/3
+    helptext = helptext +
+_("<p>If you like to switch between various Internet providers, you don't
+need a interface for each provider, you can simple add the provider to the
+same interface.</p>");
+
+    // helptext text 3/3
+    helptext = helptext +
+_("If you don't like to add a interface now, you can simple use the
+<b>Skip</b> button to not enter the interface and provider dialogs.");
+
+
+    /* DIALOG CONTENTS */
+    term network = `VBox();
+    network = add(network, `VSpacing(0.5));
+    network = add(network, `PushButton(`id(`AddSyncPPP), _("Add new &SyncPPP network interface")));
+    network = add(network, `PushButton(`id(`AddRawIP), _("Add new Raw&IP network interface")));
+    network = add(network, `PushButton(`id(`AddProvider), _("Add &Provider to existing interface")));
+    network = add(network, `VSpacing(0.5));
+
+    term contents =
+	`HVSquash(
+	    `Frame(_("Network services"),
+		`HBox(
+		    `HSpacing(0.5),
+		    network,
+		    `HSpacing(0.5)
+		)
+	    )
+	);
+
+    /* DIALOG PREPARE */
+    Wizard::SetContents(caption, contents, helptext, true, true);
+    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), _("S&kip")));
+
+    if (ISDN::CountIF() == 0) {
+	UI::ChangeWidget(`id(`AddProvider), `Enabled, false);
+    }
+
+    /* MAIN CYCLE */
+    symbol ret = nil;
+    while (true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if (UI::ReallyAbortPopup(true))
+		break;
+	    else
+		continue;
+	}
+	else if (ret == `back) {
+	    break;
+	}
+	else if (ret == `next) {
+	    /* check_* */
+	    break;
+	}
+	else if (ret == `AddSyncPPP) {
+	    if (op == `hw)
+		ISDN::Commit();
+	    ISDN::AddIf("syncppp");
+            Providers::AddEdit("", false);
+	    break;
+	}
+	else if (ret == `AddRawIP) {
+	    if (op == `hw)
+		ISDN::Commit();
+	    ISDN::AddIf("rawip");
+            Providers::AddEdit("", false);
+	    break;
+	}
+	else if (ret == `AddProvider) {
+	    if (op == `hw)
+		ISDN::Commit();
+	    ISDN::operation = `addprov;
+            Providers::AddEdit("", false);
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+    return ret;
+}
+
+/**
+ * Dialog for ISDN interface settings
+ * @return any user input
+ */
+
+global define symbol interface_dialog() ``{
+
+    /* PREPARE VARIABLES */
+    string msn = lookup(ISDN::interface, "MSN", "0");
+    string startmode = lookup(ISDN::interface, "STARTMODE", "onboot");
+    boolean syncppp = lookup(ISDN::interface, "PROTOCOL", "syncppp") == "syncppp";
+    boolean chargeHUP = lookup(ISDN::interface, "CHARGEHUP", "on") == "on";
+    boolean multilink = lookup(ISDN::interface, "MULTILINK", "no") == "yes";
+
+    string devstr = sformat("%1%2", syncppp ? "ippp" : "isdn",
+				ISDN::device);
+    /* DIALOG TEXTS */
+    string caption = sformat("%1 %2 interface %3", ISDN::operation == `editif ? "Edit" : "Add",
+			syncppp ? "syncppp" : "rawip", devstr);
+
+    // help text 1/4
+    string helptext =
+_("<p>My phone number --  As your own telephone number (MSN), put in your 
+telephone number (without area code) if your ISDN card is connected directly
+to the phone company-provided socket. If it is connected to a PBX, put in the
+MSN stored in the PBX (e.g., your phone extension or the last digit or digits
+of your phone extension) . If this fails, try using 0, which normally means
+the default MSN is actually used.</p>");
+
+    // help text 2/4
+    helptext = helptext +
+_("<p><b>Start Mode: </b><b>OnBoot</b> the driver is loaded during
+system boot. <b>Manual</b> the driver must be started with the
+<b>rcisdn start</b> command, only the user root can do this.
+<b>HotPlug </b> is a special case for PCMCIA and USB devices.</p>");
+
+    // help text 3/4
+    helptext = helptext +
+_("<p>If you select manual you have to start/stop the service manually by
+issuing the following commands (while logged in as 'root'):
+<tt>
+ <br> <b>start: </b>ifup ippp0
+ <br> <b>stop : </b>ifdown ippp0
+ <br>
+</tt>
+Note: ippp0 is an example</p>
+");
+
+    // help text 4/4
+    helptext = helptext +
+_("<p>Selecting <b>channel bundling</b> will setup a 128kBit connection 
+also known as <b>M</b>ultilink <b>PPP</b>. To bring up or down the second channel
+you have to use the following commands:
+<tt>
+ <br> isdnctrl addlink ippp0
+ <br> isdnctrl removelink ippp0
+ <br>
+</tt>
+You can also install the package <b>xibod</b>, this make this process automaticly, if
+here is a demand for more bandwidth, it add a channel, if the trafic goes down, it
+remove a channel.
+</p>");
+
+
+    /* DIALOG CONTENTS */
+    list provlist = [];
+    term prov = `VSpacing(0.1);
+    if (ISDN::operation  == `editif) {
+	provlist = Providers::GetProviders("_custom", syncppp ? "syncppp" : "rawip", ISDN::provider_file);
+	y2debug("provlist: %1", provlist);
+	prov = `Left(`ComboBox(`id(`prov), _("&Default Provider"), provlist));
+    }
+    term contents =
+	`VBox(
+	    `VSpacing(0.5),
+	    `Left(`TextEntry(`id(`msn), _("My &phone number"), msn)),
+	    `VSpacing(0.5),
+	    `HBox(
+		`VBox(
+		    `Left(`ComboBox(`id(`startmode), _("Start &Mode"),
+			[
+			    `item(`id("onboot"), _("OnBoot"), startmode == "onboot"),
+			    `item(`id("manual"), _("Manual"), startmode == "manual"),
+			    `item(`id("hotplug"), _("HotPlug"), startmode == "hotplug")
+			])),
+		    `VSpacing(0.5),
+		    prov,
+		    `VSpacing(0.5),
+		    `HBox(
+			`Left(`CheckBox(`id(`chargehup), _("Charge&HUP"), chargeHUP)),
+			`Left(`CheckBox(`id(`multilink), _("Ch&annel bundling"), multilink))
+		    )
+		)
+	    ),
+	    `VSpacing(0.5),
+	    `PushButton(`id(`detail), _("&Details"))
+	);
+
+
+    /* DIALOG PREPARE */
+    Wizard::SetContents(caption, contents, helptext, true, true);
+
+    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), NextButtonLabel()));
+
+    /* MAIN CYCLE */
+    symbol ret = nil;
+    while (true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if (UI::ReallyAbortPopup(true))
+		break;
+	    else
+		continue;
+	}
+	else if (ret == `back) {
+	    break;
+	}
+	else if (ret == `next || ret == `detail) {
+	    msn = UI::QueryWidget(`id(`msn), `Value);
+	    startmode = UI::QueryWidget(`id(`startmode), `Value);
+	    multilink = UI::QueryWidget(`id(`multilink), `Value);
+	    chargeHUP = UI::QueryWidget(`id(`chargehup), `Value);
+	    /* check_* */
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+    if (ret == `next || ret == `detail) {
+	/* UPDATE VARIABLES */
+        ISDN::interface = union(ISDN::interface, $[
+            "MSN"		: msn,
+            "STARTMODE"		: startmode,
+            "MULTILINK"		: multilink ? "yes" : "no",
+            "CHARGEHUP"		: chargeHUP ? "on" : "off",
+        ]);
+	if (ISDN::operation  == `editif)
+	    ISDN::provider_file = UI::QueryWidget(`id(`prov), `Value);
+    }
+    return ret;
+}
+
+}

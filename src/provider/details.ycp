@@ -36,8 +36,8 @@ global define symbol IPDetailsDialog(string type) ``{
     string Remote_IP = lookup(Providers::provider, "REMOTE_IPADDR", "");
 
     string encap = lookup(Providers::provider, "ENCAP", "syncppp");
-    boolean defaultroute = lookup(Providers::provider, "DEFAULTROUTE", false);
-    boolean modifyip = lookup(Providers::provider, "MODIFYIP", true);
+    boolean defaultroute = lookup(Providers::provider, "DEFAULTROUTE", "yes") == "yes";
+    boolean modifyip = lookup(Providers::provider, "MODIFYIP", "yes") == "yes";
 
     /* DIALOG TEXTS and  DIALOG CONTENTS */
 
@@ -131,23 +131,6 @@ waits for callback of the remote machine.");
     if(type == "isdn")
 	contents = `HSquash(`VBox(
 	    contents,
-	    `VSpacing(0.5),
-	    `HBox(
-		`HSpacing(0.5),
-		`Frame(_("Callback functions"),
-		    `RadioButtonGroup(`id(`callback), `HBox(
-			`HSpacing(0.5),
-			`VBox(
-			    `VSpacing(0.5),
-			    `Left(`RadioButton(`id("off"), _("Callbac&k Off"), ISDN::callback == "off")),
-			    `Left(`RadioButton(`id("in"), _("Callback &Server"), ISDN::callback == "in")),
-			    `Left(`RadioButton(`id("out"), _("Callback &Client"), ISDN::callback == "out")),
-			    `VSpacing(0.5)
-			)
-		    ))
-		),
-		`HSpacing(0.5)
-	    ),
 	    `VSpacing(0.5)
 	));
 
@@ -189,7 +172,6 @@ waits for callback of the remote machine.");
 	    Local_IP = UI::QueryWidget(`id(`IP_local), `Value);
 	    Remote_IP = UI::QueryWidget(`id(`IP_remote), `Value);
 	    defaultroute = UI::QueryWidget(`id(`defaultroute), `Value);
-	    //callback = UI::QueryWidget(`id(`callback), `Value);
 
 	    if(encap != "rawip")
 		modifyip = UI::QueryWidget(`id(`modifyip), `Value);
@@ -213,13 +195,10 @@ waits for callback of the remote machine.");
         Providers::provider = union(Providers::provider, $[
             "IPADDR"		: Local_IP,
             "REMOTE_IPADDR"	: Remote_IP,
-            "ENCAP"		: encap,
-            "DEFAULTROUTE"	: defaultroute,
-            "MODIFYIP"		: modifyip,
-            //"CALLBACK"		: callback,
+            "DEFAULTROUTE"	: defaultroute ? "yes" : "no",
+            "MODIFYIP"		: modifyip ? "yes" : "no",
         ]);
     }
-
     return ret;
 }
 

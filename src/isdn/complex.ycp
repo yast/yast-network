@@ -1,7 +1,7 @@
 /**
  * File:	include/network/isdn/complex.ycp
  * Package:	Configuration of network
- * Summary:	Summary, overview and IO dialogs for isdns configuration.
+ * Summary:	Summary and overview dialogs for ISDN configuration.
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
@@ -36,7 +36,6 @@ global define boolean Modified() ``{
  * @return always `next
  */
 global define symbol Commit() ``{
-    Providers::Commit();
     ISDN::Commit();
     return `next;
 }
@@ -48,7 +47,7 @@ global define symbol Commit() ``{
 global define symbol ReadDialog() ``{
 
     /* isdns read dialog help 1/2 */
-    string helptext = _("<P><B><BIG>Initializing ISDN cardss configuration
+    string helptext = _("<P><B><BIG>Initializing ISDN cards configuration
 </BIG></B><BR>Please wait for a while...<BR></P>");
 
     /* isdns read dialog help 2/2 */
@@ -82,6 +81,43 @@ An additional dialog will inform you whether it is safe to do so or not.</P>");
     ISDN::AbortFunction = ``{return PollAbort() && ReallyAbort();};
     boolean ret = ISDN::Write(true);
     return ret ? `next : `abort;
+}
+
+/**
+ * Ask to handle provider or interface
+ * in edit and delete functions
+ * 
+ * @param  string op  "edit" or "delete"   
+ * @return dialog result
+ */
+global define symbol Provider_or_IF(string op) ``{
+    symbol ret = nil;
+    string txt = sformat(_("Please select, which item do you like to %1."), op);
+    UI::OpenDialog(
+	`opt(`decorated),
+	`HBox(
+	    `HSpacing(1),
+	    `VBox(
+		`VSpacing(1),
+		`Label(txt),
+		`VSpacing(2),
+		`HBox(
+		    `PushButton(`id(`interface), _("&Interface")),
+		    `HSpacing(1),
+		    `PushButton(`id(`provider), `opt(`default), _("&Provider"))
+		),
+		`VSpacing(1)
+	    ),
+	    `HSpacing(1)
+	)
+    );
+    while(true) {
+	ret = UI::UserInput();
+	if ((ret == `interface) || (ret == `provider))
+	    break;
+    }
+    UI::CloseDialog();
+    return ret;
 }
 
 /**
@@ -263,28 +299,59 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
         }
         /* provider add */
         else if(ret == `Add) {
-            Providers::AddEdit("", false);
             break;
         }
         /* provider edit */
         else if(ret == `Edit) {
-            string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
-            Providers::AddEdit(dev, false);
-            break;
+	    ret = Provider_or_IF(_("edit"));
+	    if (ret == `provider) {
+		string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
+		Providers::AddEdit(dev, false);
+		ret = `Editprov;
+	    } else {
+		if (ISDN::SelectInterface(true)) {
+		    string ifstr = sformat("net%1", ISDN::device);
+		    ISDN::EditIf(ifstr);
+		    ret = `Editif;
+		} else
+		    continue;
+	    }
+	    break;
         }
         /* provider delete */
-        else if(ret == `Delete) {
-            string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
-            Providers::Delete(dev);
-            Providers::Commit();
-            overviewp = Providers::Overview();
-            UI::ChangeWidget(`id(`Table), `Items, overviewp);
-            if(size(overviewp) < 1) {
-                UI::ChangeWidget(`id(`Edit), `Enabled, false);
-                UI::ChangeWidget(`id(`Delete), `Enabled, false);
-            }
-            y2debug("overviewp=%1",overviewp);
-            continue;
+	else if(ret == `Delete) {
+	    ret = Provider_or_IF(_("delete"));
+	    if (ret == `provider) {
+		string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
+		string ifc = ISDN::GetInterface4Provider(dev);
+		if (ifc == "") {
+		    Providers::Delete(dev);
+		    Providers::Commit();
+		    overviewp = Providers::Overview();
+		    UI::ChangeWidget(`id(`Table), `Items, overviewp);
+		    if(size(overviewp) < 1) {
+			UI::ChangeWidget(`id(`Edit), `Enabled, false);
+			UI::ChangeWidget(`id(`Delete), `Enabled, false);
+		    }
+		    y2debug("overviewp=%1",overviewp);
+		} else {
+		    string txt = sformat(
+_("You try to delete a provider which
+is the default provider for interface
+%1. Please select first an other
+default provider for interface %1
+or delete the interface itself first.
+"), ifc, ifc);
+		    UI::MessagePopup(txt);
+		}
+	    } else {
+		if (ISDN::SelectInterface(true)) {
+		    string ifstr = sformat("net%1", ISDN::device);
+		    ISDN::Delete(ifstr);
+		    ISDN::Commit();
+		}
+	    }
+	    continue;
         }
         else if(ret == `next || ret == `back) {
             break;

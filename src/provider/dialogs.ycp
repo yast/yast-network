@@ -258,7 +258,7 @@ global define symbol ProviderDialog(string type) ``{
     string username = lookup(Providers::provider, "USERNAME", "");
     string password = lookup(Providers::provider, "PASSWORD", "");
     string phone = lookup(Providers::provider, "PHONE", "");
-    string encap = lookup(Providers::provider, "ENCAP", "syncppp");
+    string encap = lookup(Providers::provider, "ENCAP", "");
     boolean ask_pass = lookup(Providers::provider, "ASKPASSWORD", "no") == "yes";
     string infotext = getProviderInfoText(Providers::provider);
 
@@ -306,7 +306,9 @@ the password every time.</p>
     ));
 
     term rbgroup = `VSpacing(0.1);
-    if(type == "isdn")
+    if(type == "isdn") {
+	if (encap == "" && ISDN::operation == `addif)
+		encap = lookup(ISDN::interface, "PROTOCOL", "syncppp");
 	rbgroup = `Left(`Frame(_("Packet encapsulation"), `VBox(
 	    `VSpacing(0.4),
 	    `RadioButtonGroup(`id(`raw), `opt(`notify), `HBox(
@@ -318,14 +320,7 @@ the password every time.</p>
 	    )),
 	    `VSpacing(0.4)
 	)));
-
-    /*
-    term ip = `Frame(`id(`ip), _("IP address settings"), `HBox(
-	`TextEntry(`id(`Username), _("&Local IP address"), provUsername),
-	`HSpacing(0.5),
-	`TextEntry(`id(`passwd), _("&Remote IP address"), provPassword)
-    ));
-    */
+    }
 
     term contents = `VBox(`VSpacing(3), `HBox(
 	`HSpacing(4),
@@ -348,7 +343,6 @@ the password every time.</p>
 	    ),
 	    `VSpacing(1),
 	    rbgroup,
-	    //`Left(`CheckBox(`id(`raw), `opt(`notify), "Raw IP")),
 	    `VSpacing(1),
 	    auth
 	    //`VSpacing(0.5),
@@ -369,8 +363,13 @@ the password every time.</p>
     if(ask_pass)
 	UI::ChangeWidget(`id(`password), `Enabled, false);
 
-    if(type == "isdn" && encap == "rawip")
-	UI::ChangeWidget(`id(`auth), `Enabled, false);
+    if(type == "isdn" && encap == "rawip") {
+	// seems that disabling via frame is not possible
+	// UI::ChangeWidget(`id(`auth), `Enabled, false);
+	UI::ChangeWidget(`id(`askpass), `Enabled, false);
+	UI::ChangeWidget(`id(`username), `Enabled, false);
+	UI::ChangeWidget(`id(`password), `Enabled, false);
+    }
 
     /* MAIN CYCLE */
     any ret = nil;
@@ -388,11 +387,19 @@ the password every time.</p>
 	    break;
 	}
 	else if(ret == `syncppp) {
-	    UI::ChangeWidget(`id(`auth), `Enabled, true);
+	    // seems that disabling via frame is not possible
+	    // UI::ChangeWidget(`id(`auth), `Enabled, true);
+	    UI::ChangeWidget(`id(`askpass), `Enabled, true);
+	    UI::ChangeWidget(`id(`username), `Enabled, true);
+	    UI::ChangeWidget(`id(`password), `Enabled, !UI::QueryWidget(`id(`askpass), `Value));
 	    continue;
 	}
 	else if(ret == `rawip) {
-	    UI::ChangeWidget(`id(`auth), `Enabled, false);
+	    // seems that disabling via frame is not possible
+	    // UI::ChangeWidget(`id(`auth), `Enabled, false);
+	    UI::ChangeWidget(`id(`askpass), `Enabled, false);
+	    UI::ChangeWidget(`id(`username), `Enabled, false);
+	    UI::ChangeWidget(`id(`password), `Enabled, false);
 	    continue;
 	}
 	else if(ret == `info) {
@@ -412,9 +419,13 @@ the password every time.</p>
 	    username = UI::QueryWidget(`id(`username), `Value);
 	    password = UI::QueryWidget(`id(`password), `Value);
 	    ask_pass = UI::QueryWidget(`id(`askpass), `Value);
+	    boolean auth_chk = true;
 
-	    if(type == "isdn")
+	    if(type == "isdn") {
 		encap = UI::QueryWidget(`id(`syncppp), `Value) ? "syncppp" : "rawip";
+		if (encap == "rawip")
+			auth_chk = false;
+	    }
 
 	    if(name != lookup(Providers::provider, "PROVIDER", "") && !Providers::IsProviderUnique(name)) {
 		y2security("n(%1), p(%2)",name,lookup(Providers::provider, "PROVIDER", ""));
@@ -432,18 +443,18 @@ the password every time.</p>
 		UI::SetFocus(`id(`phone));
 		continue;
 	    }
-	    else if("" == username) {
+	    else if(auth_chk && "" == username) {
 		UI::MessagePopup(_("Enter the user name."));
 		UI::SetFocus(`id(`username));
 		continue;
 	    }
 	    /* password could be empty #16021
-	    else if(!ask_pass && "" == pass)
+	    else if(!ask_pass && auth_chk && "" == pass)
 	    {
 		UI::MessagePopup(_("Enter the password."));
 		UI::SetFocus(`id(`passwd));
 	    } */
-	    else if(filterchars(phone, "0123456789") != phone &&
+	    else if(filterchars(phone, "0123456789*#") != phone &&
 		    !UI::YesNoPopup(_("You have entered some characters that are not numbers in the phone field.\n\nContinue?")))
 	    {
 		UI::SetFocus(`id(`PhoneNumber));
@@ -465,11 +476,17 @@ the password every time.</p>
 	    "USERNAME"		: username,
 	    "PASSWORD"		: password,
 	    "PHONE"		: phone,
-	    "ENCAP"		: encap,
 	    "ASKPASSWORD"	: ask_pass ? "yes" : "no",
-	    "ISDNSUPPORTED"	: (type == "isdn" ? "yes" : "no"),
 	    "MODEMSUPPORTED"	: (type == "modem" ? "yes" : "no"),
 	]);
+	if(type == "isdn") {
+	    Providers::provider = union(Providers::provider, $[
+		"ENCAP"		: encap,
+		"ISDNSUPPORTED"	: "yes",
+	    ]);
+	    if(ISDN::operation == `addif)
+		ISDN::provider_file = shortname;
+	}
     }
 
     return ret;

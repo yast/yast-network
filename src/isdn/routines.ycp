@@ -105,7 +105,7 @@ global define map get_isdncard_by_type(list dev, integer i4ltyp, integer i4lsubt
 global define integer get_i4lsubtype(map card) ``{
     integer ret = -1;
 
-    ret = lookup(select(lookup(card, "drivers", []),
+    ret = lookup(select(lookup(card, "driver", []),
 		lookup(card, "sel_drv", 0), $[]), "subtype", -1);
     return(ret);
 }
@@ -118,7 +118,7 @@ global define integer get_i4lsubtype(map card) ``{
 global define integer get_i4ltype(map card) ``{
     integer ret = -1;
 
-    ret = lookup(select(lookup(card, "drivers", []),
+    ret = lookup(select(lookup(card, "driver", []),
 		lookup(card, "sel_drv", 0), $[]), "type", -1);
     return(ret);
 }
@@ -161,6 +161,40 @@ global define boolean display_testresult(integer result, string details) ``{
     	UI::MessagePopup (details);
     UI::CloseDialog();
     return true;
+};
+
+/**
+ * Creates a popup with a selection list
+ * @param title   - return code of the test 0 is OK
+ * @param lst  - list of items
+ * @return name of the selected item
+ */
+global define boolean select_fromlist_popup(string title, list lst) ``{
+    symbol ret = nil;
+
+    UI::OpenDialog(
+	`opt(`decorated),
+	`HBox(
+	    `HSpacing(1),
+	    `VBox(
+		`VSpacing(1),
+		`ComboBox(`id(`sel), `opt(`hstretch,`notify), title, lst),
+		`VSpacing(1),
+		`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
+		`VSpacing(1)
+	    ),
+	    `HSpacing(1)
+	)
+    );
+    UI::SetFocus(`id(`ok));
+    while(true) {
+	ret = UI::UserInput();
+	if (ret == `ok)
+	    break;
+    }
+    string sel = UI::QueryWidget(`id(`sel), `Value);
+    UI::CloseDialog();
+    return sel;
 };
 
 }

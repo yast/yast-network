@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Sun Jul 24 20:05:14 CEST 2002 - kkeil@suse.de
+
+- ISDN interface and multi provider setup
+- simple dialin server setup
+- D-channel protocol selection depends on HW database
+- cleanups
+- 2.6.9
+ 
+-------------------------------------------------------------------
 Wed Jul 24 20:05:14 CEST 2002 - msvec@suse.cz
 
 - fixed some error messages

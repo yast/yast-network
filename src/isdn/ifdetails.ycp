@@ -1,0 +1,176 @@
+/**
+ * File:
+ *   include/network/isdn/ifdetails.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   ISDN interface detail dialog
+ *
+ * Authors:
+ *   Karsten Keil <kkeil@suse.de>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+textdomain "network";
+
+import "Wizard";
+import "ISDN";
+
+include "ui/common_popups.ycp";
+
+/**
+ * Dialog for ISDN interface detail settings
+ * @return any user input
+ */
+
+global define symbol IFDetailDialog() ``{
+
+    /* PREPARE VARIABLES */
+    string remote_in = lookup(ISDN::interface, "REMOTE_IN", "");
+    string ipppd_opt = lookup(ISDN::interface, "IPPPD_OPTIONS", "");
+    boolean syncppp = lookup(ISDN::interface, "PROTOCOL", "syncppp") == "syncppp";
+    boolean secure = lookup(ISDN::interface, "SECURE", "yes") == "yes";
+    integer cbdel = tointeger(lookup(ISDN::interface, "CBDELAY", "2"));
+    string callback = lookup(ISDN::interface, "CALLBACK", "off");
+
+    /* DIALOG TEXTS */
+
+    string caption = _("ISDN detail settings");
+
+    // help text 1/7
+    string helptext =
+_("<p>The <b>Remote phone number list</b> list controls which remote sides are
+allowed to connect this interface.</p>");
+
+    // help text 2/7
+    helptext = helptext +
+_("<p>If you deselect the <b>Only listed numbers allowed</b> checkbox, you
+allow all caller id's.</p>");
+
+    // help text 3/7
+    helptext = helptext +
+_("<p>If <b>callback mode</b> is <b>off</b>,  calls  are handled normally without special 
+processing.</p>");
+
+    // help text 4/7
+    helptext = helptext +
+_("<p>If <b>callback mode</b> is <b>server</b>, after getting an incoming call, a callback 
+is triggered.</p>");
+
+    // help text 5/7
+    helptext = helptext +
+_("<p>If <b>callback mode</b> is <b>client</b>, the local system does the initial call then 
+waits for callback of the remote machine.</p>");
+
+    // help text 6/7
+    helptext = helptext +
+_("<p>If <b>Callback Delay</b> is the amount of seconds between the initial and the
+callback(server) or the hangup(client). It should be greater on the server as on
+the client.</p>");
+
+    // help text 7/7
+    if (syncppp) {
+	helptext = helptext +
+_("<p>In <b>Additional ipppd options</b> you can add extra options for ipppd
+for example +pap +chap for the dialin server authentification.</p>");
+    }
+
+    /* DIALOG CONTENTS */
+
+    term ipppd = `VSpacing();
+    if (syncppp)
+	ipppd = `TextEntry(`id(`ipppd_opt), _("&Additional ipppd options"), ipppd_opt);
+
+    term cbterm =
+	    `Frame(_("Callback functions"),
+		`VBox(
+		    `RadioButtonGroup(`id(`callback),`HBox(
+			`VBox(
+			    `Left(`RadioButton(`id("off"), _("Callback &Off"), callback == "off")),
+			    `Left(`RadioButton(`id("in"), _("Callback &Server"), callback == "in")),
+			    `Left(`RadioButton(`id("out"), _("Callback &Client"), callback == "out"))
+			)
+		    )),
+		    `VSpacing(0.5),
+		    `Left(`HSquash(
+			`IntField(`id(`cbdelay), _("Callback &Delay"), 0, 10, cbdel)
+		    ))
+		)
+	);
+
+    term contents =
+	`HVSquash(
+	    `VBox(
+		`TextEntry(`id(`remote_in), _("Remote &phone number list"), remote_in),
+		`CheckBox(`id(`secure), _("Only &listed numbers allowed"), secure),
+		`VSpacing(0.5),
+		cbterm,
+		`VSpacing(0.5),
+		ipppd
+	    )
+	);
+
+    /* DIALOG PREPARE */
+    Wizard::SetContents(caption, contents, helptext, true, true);
+
+    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), OKButtonLabel()));
+
+    /* MAIN CYCLE */
+    symbol ret = nil;
+    while (true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if (UI::ReallyAbortPopup(true))
+		break;
+	    else
+		continue;
+	}
+	else if (ret == `back) {
+	    break;
+	}
+	else if (ret == `next) {
+	    remote_in = UI::QueryWidget(`id(`remote_in), `Value);
+	    secure = UI::QueryWidget(`id(`secure), `Value);
+	    callback = UI::QueryWidget(`id(`callback), `CurrentButton);
+	    cbdel = UI::QueryWidget(`id(`cbdelay), `Value);
+	    if (syncppp) {
+		ipppd_opt = UI::QueryWidget(`id(`ipppd_opt), `Value);
+	    }
+	    /* check_* */
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+
+    /* UPDATE VARIABLES */
+    if(ret == `next) {
+        ISDN::interface = union(ISDN::interface, $[
+            "REMOTE_IN"		: remote_in,
+            "SECURE"		: secure ? "yes" : "no",
+	    "CALLBACK"		: callback,
+	    "CBDELAY"		: sformat("%1", cbdel),
+        ]);
+	if (syncppp) {
+	    ISDN::interface = union(ISDN::interface, $[
+        	"IPPPD_OPTIONS"	: ipppd_opt,
+	    ]);
+	}
+    }
+
+    return ret;
+}
+
+}

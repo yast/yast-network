@@ -46,7 +46,7 @@ include "network/routines.ycp";
  * "Username" :
  * "Password" :
  * "Phone" : the most important - phone number
- * "I4L_ENCAP" : encapsulation but who knows what it means
+ * "ENCAP" : encapsulation but who knows what it means
  */
 global map provider = $[];
 
@@ -244,27 +244,44 @@ global define list GetCountries() ``{
 /**
  * Filter providers based on the type
  * @param provs list of providers
- * @param type desired type "modem"|"isdn"|"dsl"
+ * @param type desired type "modem"|"isdn"|"rawip"|"syncppp"|"dsl"
  * @return list of type capable providers
  */
 define list FilterProviders(list provs, string type) ``{
     string supported = toupper(type) + "SUPPORTED";
+    boolean etst = false;
+    if (type == "rawip" || type == "syncppp") {
+	supported = "ISDNSUPPORTED";
+	etst = true;
+    }
     y2debug("supported=%1",supported);
 
     return filter(`i, provs, ``{
 	y2debug("i=%1", i);
-	if(is(i, string))
-	    return lookup(lookup(providers, i, $[]), supported, "no") == "yes";
+	if(is(i, string)) {
+	    map p = lookup(providers, i, $[]);
+	    if (lookup(p, supported, "no") == "yes")
+		if (etst)
+		    return lookup(p, "ENCAP", "_nodef") == type;
+		else
+		    return true;
+	    else
+		return false;
+	}
 	else if(SCR::Read(i + topath("."+supported)) == "yes")
-	    return true;
-	return false;
+	    if (etst)
+		return (SCR::Read(i + topath(".ENCAP")) == type);
+	    else
+		return true;
+	else
+	    return false;
     });
 }
 
 /**
  * Get providers from a group (country/other)
  * @param country we want providers from this country
- * @param type "all"|"isdn"|"modem"|"dsl"
+ * @param type "all"|"isdn"|"rawip"|"syncppp"|"modem"|"dsl"
  * @param preselect preselect this provider
  * @return list of items for SelectionBox
  */

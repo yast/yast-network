@@ -24,6 +24,9 @@ include "network/provider/connection.ycp";
 
 include "network/isdn/lowlevel.ycp";
 include "network/isdn/complex.ycp";
+include "network/isdn/interface.ycp";
+include "network/isdn/ip.ycp";
+include "network/isdn/ifdetails.ycp";
 
 /**
  * Whole configuration of network
@@ -97,10 +100,11 @@ global define symbol MainSequence() ``{
 	"configure"	: [ ``(OneISDNSequence("lowlevel_detected")), true ],
 	"other"		: [ ``(OneISDNSequence("other")), true ],
 	"add"		: [ ``(OneISDNSequence("other")), true ],
-	//"edit"		: [ ``(OneISDNSequence("edit")), true ],
 	"edit"		: ``(isdn_lowlevel(`edit)),
-	"Add"		: [ ``(OneProviderSequence("isdn",true)), true ],
-	"Edit"		: [ ``(OneProviderSequence("isdn",false)), true ],
+	"Add"		: [ ``(OneISDNSequence("selif_add")), true ],
+	"Editif"	: [ ``(OneISDNSequence("edit_if")), true ],
+	"Editprov"	: [ ``(OneProviderSequence("isdn",false)), true ],
+	"commit"	: ``(Commit()),
     ];
 
     map sequence = $[
@@ -118,7 +122,8 @@ global define symbol MainSequence() ``{
 	    `add	: "add",
 	    `edit	: "edit",
 	    `Add	: "Add",
-	    `Edit	: "Edit",
+	    `Editif	: "Editif",
+	    `Editprov	: "Editprov",
 	],
 	"other" : $[
 	    `abort	: `abort,
@@ -134,14 +139,21 @@ global define symbol MainSequence() ``{
 	],
 	"edit" : $[
 	    `abort	: `abort,
-	    `next	: "overview",
+	    `next	: "commit",
 	],
 	"Add" : $[
 	    `abort	: `abort,
 	    `next	: "overview",
 	],
-	"Edit" : $[
+	"Editif" : $[
 	    `abort	: `abort,
+	    `next	: "overview",
+	],
+	"Editprov" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+	"commit" : $[
 	    `next	: "overview",
 	],
     ];
@@ -159,54 +171,53 @@ global define symbol OneISDNSequence(string entry) ``{
 
     map aliases = $[
 	"lowlevel_detected"	: ``(isdn_lowlevel(`Detected)),
-	"lowlevel_detectedISA"	: ``(isdn_lowlevel(`DetectedISA)),
 	"other"			: ``(isdn_lowlevel(`other)),
-	"edit"			: ``(isdn_lowlevel(`edit)),
-	"providers"		: ``(ProvidersDialog("isdn")),
-	"provider"		: ``(ProviderDialog("isdn")),
-	"new_provider"		: ``(ProviderDialog("isdn")),
-	"connection"		: ``(ConnectionDialog("isdn")),
-	"ipdetails"		: ``(IPDetailsDialog("isdn")),
+	"selif_add"		: ``(isdn_if_sel(`add)),
+	"selif_hw"		: ``(isdn_if_sel(`hw)),
+	"add_if"		: [ ``(OneISDNIFSequence("add_if")), true ],
+	"edit_if"		: [ ``(OneISDNIFSequence("edit_if")), true ],
+	"addprovider"		: [ ``(OneProviderSequence("isdn",true)), true ],
 	"commit"		: [ ``(Commit()), true ],
     ];
 
     map sequence = $[
-	"ws_start" : entry,
+	"ws_start"	: entry,
 	"lowlevel_detected" : $[
-	    `next :  "providers",
-	    `abort : `abort
-	],
-	"lowlevel_detectedISA" : $[
-	    `next :  "providers",
-	    `abort : `abort
-	],
-	"edit" : $[
-	    `next :  "providers",
-	    `abort : `abort
+	    `next	: "selif_hw",
+	    `abort	: `abort
 	],
 	"other" : $[
-	    `next :  "providers",
-	    `abort : `abort
+	    `next	: "selif_hw",
+	    `abort	: `abort
 	],
-	"providers" : $[
-	    `next : "provider",
-	    `new  : "new_provider",
-	    `abort : `abort
+	"selif_hw" : $[
+	    `next	: "commit",
+	    `AddProvider: "addprovider",
+	    `AddSyncPPP	: "add_if",
+	    `AddRawIP	: "add_if",
+	    `abort	: `abort
 	],
-	"provider" : $[
-	    `next : "connection",
-	    `abort : `abort
+	"selif_add" : $[
+	    `next	: "commit",
+	    `AddProvider: "addprovider",
+	    `AddSyncPPP	: "add_if",
+	    `AddRawIP	: "add_if",
+	    `abort	: `abort
 	],
-	"connection" : $[
-	    `next : "ipdetails",
-	    `abort : `abort
+	"add_if" : $[
+	    `next	: "addprovider",
+	    `abort	: `abort
 	],
-	"ipdetails" : $[
-	    `next : "commit",
-	    `abort : `abort
+	"edit_if" : $[
+	    `next	: "commit",
+	    `abort	: `abort
+	],
+	"addprovider" : $[
+	    `next	: `next,
+	    `abort	: `abort
 	],
 	"commit" : $[
-	    `next   : `next,
+	    `next	: `next
 	],
     ];
 
@@ -214,5 +225,58 @@ global define symbol OneISDNSequence(string entry) ``{
 
 }
 
+/**
+ * One ISDN interface workflow
+ * @param entry sequence entry
+ * @return sequence result
+ */
+global define symbol OneISDNIFSequence(string entry) ``{
+
+    map aliases = $[
+	"add_if"		: ``(interface_dialog()),
+	"edit_if"		: ``(interface_dialog()),
+	"ip_add"		: ``(IPDialog()),
+	"ip_edit"		: ``(IPDialog()),
+	"detail_add"		: ``(IFDetailDialog()),
+	"detail_edit"		: ``(IFDetailDialog()),
+	"commit"		: [ ``(Commit()), true ],
+    ];
+
+    map sequence = $[
+	"ws_start"	: entry,
+	"add_if" : $[
+	    `next	: "ip_add",
+	    `detail	: "detail_add",
+	    `abort	: `abort
+	],
+	"edit_if" : $[
+	    `next	: "ip_edit",
+	    `detail	: "detail_edit",
+	    `abort	: `abort
+	],
+	"ip_add" : $[
+	    `next	: `next,
+	    `abort	: `abort
+	],
+	"detail_add" : $[
+	    `next	: "add_if",
+	    `abort	: `abort
+	],
+	"ip_edit" : $[
+	    `next	: "commit",
+	    `abort	: `abort
+	],
+	"detail_edit" : $[
+	    `next	: "edit_if",
+	    `abort	: `abort
+	],
+	"commit" : $[
+	    `next	: `next
+	],
+    ];
+
+    return WizardSequencer(aliases, sequence);
+
+}
 /* EOF */
 }

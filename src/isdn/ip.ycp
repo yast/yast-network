@@ -23,16 +23,14 @@ include "network/ip.ycp";
  * @return any user input
  */
 
-global define symbol isdn_ip() ``{
+global define symbol IPDialog() ``{
 
-    /* PREPARE VARIABLES */
 
-    string Local_IP = ISDN::localIP;
-    string Remote_IP = ISDN::remoteIP;
-
-    /* DIALOG TEXTS and  DIALOG CONTENTS */
+    /* DIALOG TEXTS */
 
     string caption = _("ISDN IP address settings");
+
+    /* FIXME: help texts, contents */
 
     // help text 1/3
     string helptext =
@@ -47,15 +45,50 @@ outgoing address is unknown until the moment the link is established.
 This is the default with most providers.
 </p>");
 
-    if (Local_IP == "InvalidIP") Local_IP = "";
-    if (Remote_IP == "InvalidIP") Remote_IP = "";
+    // help text 3/3
+    helptext = helptext +
+_("<p>Check the button for <b>Defaultroute</b> if you want that this
+interface get the default route. Note: only one interface can get the default
+route.</b>.</p>");
+
+    /* PREPARE VARIABLES */
+    string Local_IP = lookup(ISDN::interface, "IPADDR", "");
+    string Remote_IP = lookup(ISDN::interface, "REMOTE_IPADDR", "");
+    boolean syncppp = lookup(ISDN::interface, "PROTOCOL", "syncppp") == "syncppp";
+    boolean defaultroute = lookup(ISDN::interface, "DEFAULTROUTE", "yes") == "yes";
+    boolean dynip = lookup(ISDN::interface, "DYNAMICIP", "yes") == "yes";
+
+    /* DIALOG CONTENTS */
 
     term contents = nil;
 
-    if (ISDN::con_protocol == "rawip")
-    {
+    if(syncppp) {
 	contents =
 	    `HSquash(
+		`VBox(
+		    `Frame(_("IP address settings"),
+			`HBox(
+			    `HSpacing(),
+			    `VBox(
+				`VSpacing(),
+				`Left(`CheckBox(`id(`dynip), `opt(`notify), _("&Dynamic IP address"), dynip)),
+				`VSpacing(),
+				`Left(`TextEntry(`id(`IP_local), _("&Local IP address of your machine"), Local_IP)),
+                                `Left(`TextEntry(`id(`IP_remote), _("Re&mote IP address"), Remote_IP)),
+				`VSpacing()
+			    ),
+			    `HSpacing()
+			)
+		    ),
+		    `VSpacing(),
+		    `Left(`CheckBox(`id(`defaultroute), _("D&efaultroute"), defaultroute))
+		)
+	    );
+    }
+    else
+    {
+	contents =
+	    //`HSquash(
 		`VBox(
 		    `Frame(_("IP address settings"),
 			`HBox(
@@ -70,90 +103,57 @@ This is the default with most providers.
 			)
 		    ),
 		    `VSpacing(),
-		    `Left(`CheckBox(`id(`defaultroute), _("D&efaultroute"), ISDN::defaultroute))
-		)
-	    );
-    }
-    else
-    {
-        // help text 3/3
-	helptext = helptext +
-_("<p>Check the button for <b>Use peer DNS</b> if you want to change
-your domain name servers after the connection is up. (This replace your static
-DNS configuraton with obtained DNS server IP addresses) Today, almost all
-providers support <b>Use peer DNS</b>.</p>");
-	contents =
-	    `HSquash(
-		`VBox(
-		    `Frame(_("IP address settings"),
-			`HBox(
-			    `HSpacing(),
-			    `VBox(
-			    	`VSpacing(),
-				`Left(`CheckBox(`id(`dynamic_ip), `opt(`notify), _("&Dynamic IP address"), ISDN::dynamicIP)),
-				`VSpacing(),
-				`Left(`TextEntry(`id(`IP_local), _("&Local IP address of your machine"), Local_IP)),
-                                `Left(`TextEntry(`id(`IP_remote), _("Re&mote IP address"), Remote_IP)),
-				`VSpacing()
-			    ),
-			    `HSpacing()
-			)
-		    ),
-		    `VSpacing(),
-		    `Left(`CheckBox(`id(`defaultroute), `opt(`notify), _("D&efaultroute"), ISDN::defaultroute)),
-		    `VSpacing(),
-		    `Left(`CheckBox(`id(`peerdns), _("&Use peer DNS"), ISDN::usepeerDNS))
-		)
+		    `Left(`CheckBox(`id(`defaultroute), _("D&efaultroute"), defaultroute))
+		//)
 	    );
     }
 
+    y2debug("contents=%1",contents);
 
     /* DIALOG PREPARE */
     Wizard::SetContentsButtons(caption, contents, helptext,
-	    BackButtonLabel(), OKButtonLabel());
+	    BackButtonLabel(), NextButtonLabel());
 
-    if(ISDN::dynamicIP && ISDN::con_protocol != "rawip") {
-	UI::ChangeWidget (`id (`IP_local), `Enabled, false);
-	UI::ChangeWidget (`id (`IP_remote), `Enabled, false);
+    if(dynip && syncppp) {
+	UI::ChangeWidget(`id(`IP_local), `Enabled, false);
+	UI::ChangeWidget(`id(`IP_remote), `Enabled, false);
     }
 
     /* MAIN CYCLE */
     symbol ret = nil;
-    while (true) {
+    while(true) {
 	ret = UI::UserInput();
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel) {
-	    if (UI::ReallyAbortPopup(true))
+	    if(UI::ReallyAbortPopup(true))
 		break;
 	    else
 		continue;
-	} else if (ret == `dynamic_ip) {
-	    boolean dip = UI::QueryWidget (`id (`dynamic_ip), `Value);
-	    UI::ChangeWidget (`id (`IP_local), `Enabled, !dip);
-	    UI::ChangeWidget (`id (`IP_remote), `Enabled, !dip);
+	} else if(ret == `dynip) {
+	    boolean dip = UI::QueryWidget(`id(`dynip), `Value);
+	    UI::ChangeWidget(`id(`IP_local), `Enabled, !dip);
+	    UI::ChangeWidget(`id(`IP_remote), `Enabled, !dip);
+	    continue;
 	}
-	else if (ret == `back) {
+	/* back */
+	else if(ret == `back) {
 	    break;
 	}
-	else if (ret == `next) {
+	/* next */
+	else if(ret == `next) {
 	    Local_IP = UI::QueryWidget(`id(`IP_local), `Value);
 	    Remote_IP = UI::QueryWidget(`id(`IP_remote), `Value);
+	    defaultroute = UI::QueryWidget(`id(`defaultroute), `Value);
 
-	    if (!check_ip4(Local_IP) || !check_ip4(Remote_IP)) {
+	    if(syncppp)
+		dynip = UI::QueryWidget(`id(`dynip), `Value);
+
+	    if((!syncppp || !dynip) && (!check_ip4(Local_IP) || !check_ip4(Remote_IP))) {
 		UI::MessagePopup(_("You have to fill in Local and Remote IP addresses correctly"));
 		continue;
 	    }
-	    else
-	    {
-		break;
-	    }
-	}
-	else if (ret == `defaultroute)
-	{
-	    boolean dr = UI::QueryWidget(`id(`defaultroute), `Value);
-	    string button_label = dr ? OKButtonLabel() : NextButtonLabel();
-	    UI::ChangeWidget (`id (`next), `Label, button_label);
+	    break;
 	}
 	else {
 	    y2error("unexpected retcode: %1", ret);
@@ -164,25 +164,20 @@ providers support <b>Use peer DNS</b>.</p>");
 
     /* UPDATE VARIABLES */
 
-    if (ret == `next)
-    {
-	if (ISDN::con_protocol == "syncppp")
-	{
-	    ISDN::dynamicIP = UI::QueryWidget(`id(`dynamic_ip), `Value);
-	    ISDN::usepeerDNS = UI::QueryWidget(`id(`peerdns), `Value);
+    if(ret == `next) {
+        ISDN::interface = union(ISDN::interface, $[
+            "IPADDR"		: Local_IP,
+            "REMOTE_IPADDR"	: Remote_IP,
+            "DEFAULTROUTE"	: defaultroute ? "yes" : "no",
+        ]);
+	if (syncppp) {
+	    ISDN::interface = union(ISDN::interface, $[
+		"DYNAMICIP"	: dynip ? "yes" : "no",
+	    ]);
 	}
-	ISDN::defaultroute = UI::QueryWidget(`id(`defaultroute), `Value);
-	ISDN::localIP = UI::QueryWidget(`id(`IP_local), `Value);
-	ISDN::remoteIP = UI::QueryWidget(`id(`IP_remote), `Value);
     }
-
-    if (ret == `next && !ISDN::defaultroute)
-    {
-// Old code:	TmpConfiguration = add (TmpConfiguration, "Static_DNS", true);
-	return `next;
-    }
-
     return ret;
 }
+
 
 }
