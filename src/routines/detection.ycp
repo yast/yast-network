@@ -11,6 +11,60 @@
 
 textdomain "network";
 
+include "network/hardware.ycp";
+
+/**
+ * TODO:
+ * - load module if any and if not already loaded before
+ * - setup eth0 if not already set up
+ *
+ * - shutdown eth0 if set up before
+ * - unload module if any and if loaded
+ */
+
+global define boolean StartEthInterface() ``{
+    list Hardware = [];
+    ReadHardware("netcard");
+
+    y2debug("Hardware=%1", Hardware);
+    if(size(Hardware) < 1) return false;
+
+    /* Look for eth cards */
+    map card = $[];
+    maplist(map h, Hardware, ``{
+	if(h["type"]:"" == "eth") {
+	    if(card == $[]) card = h;
+	    else card = nil;
+	}
+    });
+
+    y2debug("card=%1", card);
+    card = Hardware[0]:$[];
+    y2debug("card=%1", card);
+    if(card == nil || card == $[]) return false;
+
+    /* Load the module */
+    module_loaded = card["module"]:"";
+    if(module_loaded != "") {
+	if(SCR::Execute(.target.bash, sformat("grep ^%1 /proc/modules >/dev/null", module_loaded)))
+	y2debug("Loading module %1 ...", module_loaded);
+	SCR::Execute(.target.bash, sformat("/sbin/modprobe %1 2>&1", module_loaded));
+    }
+
+    /* Setup the interface */
+    y2debug("Giving up interface %1 ...", 0);
+    SCR::Execute(.target.bash, sformat("/sbin/ifconfig eth%1 up 2>&1", 0));
+
+    return true;
+}
+
+global define boolean StopEthInterface() ``{
+
+    y2debug("Giving up interface %1 ...", 0);
+    SCR::Execute(.target.bash, sformat("/sbin/ifconfig eth%1 up 2>&1", 0));
+    if(module
+}
+
 /**
  * Load all network card modules
  * return true on success
