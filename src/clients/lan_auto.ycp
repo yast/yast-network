@@ -36,11 +36,13 @@ if(size(WFM::Args()) > 0 && is(WFM::Args(0), string))
 y2debug("func=%1", func);
 y2debug("param=%1", param);
 
+// Mode::SetTest("test");
+
 if (Mode::test ())
 {
     Mode::SetMode ("autoinstallation");
     param = $["dns":$["dhcp_hostname":false, "dhcp_resolv":false],
-    "interfaces":[$["bootproto":"dhcp", "device":"eth-id-00:0e:0c:08:36:7a",
+    "interfaces":[$["bootproto":"static", "device":"eth0", "ipaddr":"192.168.1.233",
     "startmode":"onboot"]], "routing":$["ip_forward":false]];
     func = "Import";
 }
@@ -58,33 +60,6 @@ map UpcaseCondSet (map ret, map m, string key) {
 }
 
 
-map<string, list> configured = $[];
-
-/**
- * Return next device index
- */
-define integer NextDevice(string type, list<map> hw)
-{
-
-    integer i = 0;
-    boolean selected = false;
-    integer next_index = -1;
-    foreach(map dev, hw, {
-            if (dev["type"]:"" == type
-                &&
-                !contains(configured[type]:[], i)
-                && !selected )
-            {
-                next_index = i;
-                list c= configured[type]:[];
-                c=add(c, i);
-                configured[type] = c;
-                selected = true;
-            }
-            });
-    return next_index;
-}
-
 /**
  * Convert data from autoyast to structure used by module.
  * @param input autoyast settings
@@ -93,101 +68,39 @@ define integer NextDevice(string type, list<map> hw)
 define map FromAY(map input)
 {
 
-    list<map> hw = [];
-    if (Mode::autoinst ())
-    {
-        hw = Lan::PrepareForAutoinst();
-    }
-    map devicemapping = $[];	// used for hwcfg
-    // similar transformation to NetworkDevices::Read???
     map<string,map> interfaces = listmap(map<string, string> interface,
             input["interfaces"]:[],
     {
-    map new_interface = $[];
+	// input: list of items $[ "device": "d", "foo": "f", "bar": "b"]
+	// output: map of items  "d": $["FOO": "f", "BAR": "b"]
+	map new_interface = $[];
 
-    string newk = nil;
-    interface =  mapmap(string k, string v, interface, ``{
-        newk = toupper(k);
-        return $[newk: v];
+	// uppercase map keys
+	string newk = nil;
+	interface =  mapmap(string k, string v, interface, ``{
+	    newk = toupper(k);
+	    return $[newk: v];
         });
 
-    foreach(string k, any v, interface , {
+	foreach(string k, any v, interface , {
 	    if (v != "" && k!="DEVICE") {
 		new_interface[k] = v;
 	    }
 	});
-        string configured_device = interface["DEVICE"]:"";
-        string new_device = "";	// will be combined with "_type"
-        boolean configured = false;
-        if ( Mode::autoinst ())
-        {
-	    // Try to match "device" to a piece of hw
-	    // Here done using "mac" only
-
-            // Check if device id is given
-            list devid = splitstring(configured_device, "-");
-            if (size(devid)> 1 )
-            {
-                string mac = devid[2]:"";
-                list avail = filter(map conf, hw, ``(conf["mac"]:"" == mac));
-                if (size(avail) > 0)
-                {
-                    new_device = devid[1]:"" + "-" +  devid[2]:"";
-                    new_interface["_type"] = avail[0, "type"]:"";
-                    configured = true;
-                }
-            }
-
-            // else create it
-            if (!configured)
-            {
-                integer device_idx = 0;
-                //device_idx = tointeger(NetworkDevices::device_num(configured_device));
-                device_idx = NextDevice(NetworkDevices::device_type(configured_device), hw);
-                if (device_idx == -1)
-                {
-                    // Device does not exist
-                    new_device = NetworkDevices::device_num(configured_device);
-                    new_interface["_type"] = NetworkDevices::device_type(configured_device);
-                } else {
-
-                    // Device_idx is the number from "device"
-                    // or the offset of the interface item.
-                    // In any case it is pure luck
-                    // if it matches the hardware index!!!
-                    Lan::SelectHW(device_idx);
-                    new_device = Lan::device;
-                    new_interface["_type"] = hw[device_idx, "type"]:"";
-                }
-            }
-            devicemapping[configured_device] = new_device;
-        }
-        else
-        {
-            new_device = configured_device;
-	    // no _type. it will be parsed in the next loop
-        }
+        string new_device = interface["DEVICE"]:"";
 	return $[ new_device : new_interface ];
     });
 
+    // split to a two level map like NetworkDevices
     map<string, map> devices = $[];
 
     foreach(string devname, map if_data, interfaces, {
 
-	string type = nil;
-	string id = nil;
-        if (Mode::autoinst ())
-        {
-            type = if_data["_type"]:"";
-	    id = devname;	// suspicious
-        } else {
-	    type = NetworkDevices::device_type (devname);
-	    id = NetworkDevices::device_num (devname);
-        }
+	string type = NetworkDevices::device_type (devname);
+	string id = NetworkDevices::device_num (devname);
 	map d = devices[type]:$[];
 	d[id] = if_data;
 	devices[type] = d;
-
     });
 
     map hwcfg = $[];
@@ -205,46 +118,8 @@ define map FromAY(map input)
                                 "MODULE_OPTIONS":options,
                                 "STARTMODE":start_mode
                                 ];
-            if (Mode::autoinst ())
-            {
-                device_name = devicemapping[device_name]:"";
-            }
 	    return $[device_name : module_data];
         });
-    }
-    // AAAARGH! arbitrary matching of devices with hardware!
-    if ( Mode::autoinst ())
-    {
-	map alias = $[];
-	map options = $[];
-        integer n = 0;
-	devices = mapmap(string type, map devsmap, devices, {
-	    list HW_type = filter(map dev, hw, {
-		return dev["type"]:"" == type;
-	    });
-
-	    y2milestone("hw from type %1 = %2", type, HW_type);
-
-	    map newmap = mapmap(string device_id, map devmap, (map<string,map>) devsmap, {
-
-		devmap["UNIQUE"] = HW_type[n, "unique"]:"";
-		string modname = HW_type[n, "module"]:"";
-		string options = HW_type[n, "options"]:"";
-                Lan::SelectHW(n);
-                string device = Lan::device;
-                if (!haskey(hwcfg, device))
-                {
-                    hwcfg=add(hwcfg, device, $["MODULE":modname,
-                        "MODULE_OPTIONS":options,
-                        "STARTMODE":"auto"]);
-                }
-
-		return $[device_id : devmap];
-
-	    });
-            n = n + 1;
-	    return $[type : newmap];
-	});
     }
 
 
@@ -270,6 +145,7 @@ define map FromAY(map input)
     y2milestone("input=%1", input);
     return input;
 }
+
 
 /**
  * Convert data from native network to autoyast for XML
@@ -360,8 +236,9 @@ else if (func == "Change") {
     ret = LanAutoSequence();
 }
 else if(func == "Import") {
-    map autoyast = FromAY(param);
-    ret = Lan::Import(autoyast);
+    map new = FromAY(param);
+    Lan::Import(new);
+    ret = true;
 }
 else if(func == "Read") {
     boolean progress_orig = Progress::set (false);
@@ -385,6 +262,8 @@ else if (func == "Export") {
 }
 else if (func == "Write") {
     boolean progress_orig = Progress::set (false);
+    Lan::PrepareForAutoinst();
+    Lan::Autoinstall();
     ret = Lan::WriteOnly();
     Progress::set (progress_orig);
 }
@@ -393,7 +272,6 @@ else {
     y2error("unknown function: %1", func);
     ret =  false;
 }
-
 
 y2debug("ret=%1", ret);
 y2milestone("Lan auto finished");

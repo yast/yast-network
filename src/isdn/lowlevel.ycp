@@ -210,13 +210,13 @@ define term Card_Parameter(map drv) ``{
 	    // CheckBox label
 	    contens = add(contens, `CheckBox(`id(`t1b), _("&T1B Version"), false));
 	}
-	list io  = drv["IO"]:[];
-	list irq = drv["IRQ"]:[];
-	list mem = drv["MEMBASE"]:[];
+	list<string> io  = drv["IO"]:[];
+	list<string> irq = drv["IRQ"]:[];
+	list<string> mem = drv["MEMBASE"]:[];
 	if ( 0 == (size(io) + size(irq) + size(mem)))
 	    return contens;
 	if (io != []) {
-	    integer default_io = tointeger(io[0]:0);
+	    integer default_io = tointeger(io[0]:"0");
 	    string cur_io = ISDN::hw_device["PARA_IO"]:"";
 	    if (cur_io != "")
 		default_io = tointeger(cur_io);
@@ -260,7 +260,7 @@ define term Card_Parameter(map drv) ``{
 		contens = add(contens, `ComboBox(`id(`IRQ),  _("IR&Q"), irql));
 	}
 	if (mem != []) {
-	    integer default_mem = tointeger(mem[0]:0);
+	    integer default_mem = tointeger(mem[0]:"0");
 	    string cur_memb = ISDN::hw_device["PARA_MEMBASE"]:"";
 	    if (cur_memb != "")
 		default_mem = tointeger(cur_memb);

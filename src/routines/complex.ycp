@@ -54,7 +54,7 @@ define string BuildDescription (string devtype, string devnum, map devmap,
  * @return [ configured, unconfigured ] if split, [ summary ] otherwise
  */
 define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, boolean split) {
-    y2milestone("Devs=%1", Devs);
+    y2milestone("Devs=%1", NetworkDevices::ConcealSecrets (Devs));
     y2milestone("Hardware=%1", Hardware);
     y2debug("split=%1", split);
 

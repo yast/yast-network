@@ -55,8 +55,8 @@ route.</p>
 ");
 
     /* PREPARE VARIABLES */
-    string Local_IP = ISDN::interface["IPADDR"]:"";
-    string Remote_IP = ISDN::interface["PTPADDR"]:"";
+    string Local_IP = ISDN::interface["IPADDR"]:"192.168.99.1";
+    string Remote_IP = ISDN::interface["PTPADDR"]:"192.168.99.2";
     boolean syncppp = ISDN::interface["PROTOCOL"]:"syncppp" == "syncppp";
     boolean defaultroute = ISDN::interface["DEFAULTROUTE"]:"yes" == "yes";
     boolean dynip = ISDN::interface["DYNAMICIP"]:"yes" == "yes";
@@ -126,11 +126,6 @@ route.</p>
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::NextButton());
 
-    if(dynip && syncppp) {
-	UI::ChangeWidget(`id(`IP_local), `Enabled, false);
-	UI::ChangeWidget(`id(`IP_remote), `Enabled, false);
-    }
-
     /* MAIN CYCLE */
     any ret = nil;
     while(true) {
@@ -144,8 +139,6 @@ route.</p>
 		continue;
 	} else if(ret == `dynip) {
 	    boolean dip = (boolean) UI::QueryWidget(`id(`dynip), `Value);
-	    UI::ChangeWidget(`id(`IP_local), `Enabled, !dip);
-	    UI::ChangeWidget(`id(`IP_remote), `Enabled, !dip);
 	    continue;
 	}
 	/* back */

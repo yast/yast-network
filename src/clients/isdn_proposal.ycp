@@ -72,7 +72,7 @@ else if(func == "Description") {
 }
 /* write the proposal */
 else if(func == "Write") {
-    ISDN::Write(false);
+    ISDN::Write (true);		// #74096, full init before internet test
 }
 /* unknown function */
 else {

@@ -128,7 +128,7 @@ global define boolean Start(string log) {
     }
 
     if(type == "isdn" && !capi_isdn) {
-	if(SCR::Execute(.target.bash, "/usr/sbin/isdnctrl dial " + device) != 0) {
+	if(SCR::Execute(.target.bash, "/sbin/isdnctrl dial " + device) != 0) {
 	    y2error("isdnctrl failed");
 	    return false;
 	}

@@ -1,4 +1,84 @@
 -------------------------------------------------------------------
+Tue Mar 22 09:56:21 CET 2005 - mvidner@suse.cz
+
+- isdnctrl was moved to /sbin (#74096).
+- 2.11.32
+
+-------------------------------------------------------------------
+Tue Mar 22 09:16:34 CET 2005 - mvidner@suse.cz
+
+- ISDN proposal: full init before internet test (#74096).
+- Sleep before drdsl to avoid some race.
+- 2.11.31
+
+-------------------------------------------------------------------
+Tue Mar 22 08:28:31 CET 2005 - mvidner@suse.cz
+
+- Fritz!Card DSL: drdsl must not use the -n switch (#74205).
+- 2.11.30
+
+-------------------------------------------------------------------
+Sat Mar 19 16:36:14 CET 2005 - nashif@suse.de
+
+- DSL: Offer Point to Point Tunneling Protocol again (#73043)
+- V 2.11.29
+
+-------------------------------------------------------------------
+Fri Mar 18 23:23:59 CET 2005 - nashif@suse.de
+
+- Do not set empty UNIQUE when autoinstalling  (#73922)
+
+-------------------------------------------------------------------
+Fri Mar 18 15:22:06 CET 2005 - mvidner@suse.cz
+
+- DSL: do not offer Point to Point Tunneling Protocol,
+  pptp.rpm was removed because we no longer have ppp_mppe.ko (#73043)
+- 2.11.27
+
+-------------------------------------------------------------------
+Thu Mar 17 13:01:46 CET 2005 - mvidner@suse.cz
+
+- Fixed autoinstallation by reintroducing uppercasing (#73595).
+- 2.11.26
+
+-------------------------------------------------------------------
+Mon Mar 14 17:14:50 CET 2005 - mvidner@suse.cz
+
+- Reload lwresd if resolv.conf changes (#72450).
+- Moved the single quote fix to NetworkDevices.ycp (#72164).
+- 2.11.25
+
+-------------------------------------------------------------------
+Fri Mar 11 16:25:44 CET 2005 - mvidner@suse.cz
+
+- Don't allow single quotes inside ifcfg-*:NAME (#72164).
+- Use NetworkDevices::ConcealSecrets not to log sensitive information
+  (#65741).
+- Multiple autoinstallation fixes by means of a rewrite (nashif)
+  * #65976 - autoyast does not write network configuration
+  correctly. Use proposal method to setup network devices
+  for autoyast and handle multiple interfaces correctly
+  * #60716 - autoyast detects myrinet as ethX
+  * #67405 - autoyast configures two interfaces
+  * #65353 - ability to provide static network information for autoyast
+- Added WLAN channels 13 and 14 to the default list (#67150).
+- Enable user control of newly added WLAN cards (#63767).
+- 2.11.24
+
+-------------------------------------------------------------------
+Tue Mar  8 15:22:21 CET 2005 - kkeil@suse.de
+
+- use valid default IPs for ISDN and not 0.0.0.0 (#43169, #56181)
+- 2.11.23
+
+-------------------------------------------------------------------
+Thu Mar  3 18:30:22 CET 2005 - kkeil@suse.de
+
+- fix ISDN ISA card setup (#67129)
+- /etc/init.d/isdn stop --> /etc/init.d/isdn unload
+- 2.11.22
+
+-------------------------------------------------------------------
 Wed Mar  2 10:27:32 CET 2005 - locilka@suse.cz
 
 - Merged proofed texts
