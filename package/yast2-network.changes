@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug 29 16:58:35 CEST 2003 - visnov@suse.de
+
+- CommandLine::Plain2Rich -> RichText::Plain2Rich
+
+-------------------------------------------------------------------
 Wed Aug 27 16:38:05 CEST 2003 - msvec@suse.cz
 
 - confirm hardware detection in manual mode (#26515)

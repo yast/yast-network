@@ -24,6 +24,7 @@ y2milestone("Lan module started");
 
 import "CommandLine";
 import "Lan";
+import "RichText";
 
 include "commandline/commandline.ycp";
 include "network/lan/wizards.ycp";
@@ -109,10 +110,10 @@ define void ListHandler(map options) ``{
     if(cf == false && uncf == false)
 	/* Headline */
 	summary = "\n" + _("Network Configuration Summary:") +
-	    CommandLine::Rich2Plain(select(Lan::Summary(false), 0, "")) + "\n";
+	    RichText::Rich2Plain(select(Lan::Summary(false), 0, "")) + "\n";
     else {
 	list l = Lan::Summary(true);
-	if(cf) summary = CommandLine::Rich2Plain(sformat("%1", l[0]:"")) + "\n";
+	if(cf) summary = RichText::Rich2Plain(sformat("%1", l[0]:"")) + "\n";
 	/* Headline */
 	if(uncf) summary = _("Available Devices:") + "\n" +
 	    sformat("%1", mergestring(maplist(term i, l[1]:"", ``("* " + select(i,1,"") + "\n")), ""));
