@@ -75,16 +75,8 @@ define boolean StartEthInterface() ``{
     if(size(Hardware) < 1) return false;
 
     /* Look for eth cards */
-    map card = $[];
-    maplist(map h, Hardware, ``{
-	if(h["type"]:"" == "eth") {
-	    if(card == $[]) card = h;
-	    else card = nil;
-	}
-    });
-
-    y2debug("card=%1", card);
-    card = Hardware[0]:$[];
+    list ethernet_cards = filter (map h, Hardware, ``(h["type"]:"" == "eth"));
+    map card = ethernet_cards[0]:nil;
     y2debug("card=%1", card);
     if(card == nil || card == $[]) return false;
 

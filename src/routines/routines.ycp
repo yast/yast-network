@@ -311,15 +311,14 @@ global define string device_type(string dev) ``{
  * @example device_num("eth1") -> "1"
  * @example device_num("lo") -> ""
  */
-global define integer device_num(string dev) ``{
+global define string device_num(string dev) ``{
     if(regexpmatch(dev, "[a-zA-Z-]*([0-9]+)") != true) return "";
     string ret = regexpsub(dev, "[a-zA-Z-]*([0-9]+)", "\\1");
     if(ret == nil) ret = "";
     return ret;
 
     //string num = regexpsub(dev, "^[a-zA-Z-]*([0-9]+).*$", "\\1");
-    string num = regexpsub(dev, "[a-zA-Z-]*([0-9]+)", "\\1");
-    return tointeger(num);
+    return regexpsub(dev, "[a-zA-Z-]*([0-9]+)", "\\1");
 }
 
 /**

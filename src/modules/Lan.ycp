@@ -612,8 +612,8 @@ global define boolean Commit() ``{
 	    change(newdev, "WIRELESS_KEY", wl_key);
 	    change(newdev, "WIRELESS_NICK", wl_nick);
 	}
-	else
-	    change(newdev, "WIRELESS", "no");
+//	else
+	    // FIXME: wlan change(newdev, "WIRELESS", "no");
 
 	if(Arch::s390) {
 	    /* s390 options */
