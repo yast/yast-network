@@ -38,7 +38,7 @@ Summary:	Network configuration
 # This fixes the files that were touched when #24842 was in effect.
 # #42990: shut up when no wlan files are there.
 shopt -s nullglob
-files=/etc/sysconfig/network/ifcfg-wlan*
+files=`echo /etc/sysconfig/network/ifcfg-wlan*`
 if [ -n "$files" ]; then
     /bin/chown root:root $files
     /bin/chmod 0600 $files
