@@ -37,6 +37,7 @@ define list<any> BuildSummary(list<map> Hardware, boolean split) {
     y2debug("split=%1", split);
 
     list uniques = [];
+    list uniques_old = [];
     list<string> configured = [];
     list<map> unconfigured = [];
 
@@ -45,11 +46,17 @@ define list<any> BuildSummary(list<map> Hardware, boolean split) {
 	maplist(string devnum, map devmap, (map<string,map>)devsmap, {
 
 	    /* main device summary */
-	    string hwname = CheckEmptyName(devtype, HardwareName(Hardware, devnum));
+	    string unq = devmap["UNIQUE"]:"";
+
+	    string hwname = HardwareName(Hardware, devnum);
+	    if(hwname == nil || hwname == "") hwname = HardwareName(Hardware, unq);
+	    hwname = CheckEmptyName(devtype, hwname);
+
 	    string status = DeviceStatus(devtype, devnum, devmap);
 
 	    configured = add(configured, Summary::Device(hwname, status));
 	    uniques = add(uniques, devnum);
+	    uniques_old = add(uniques_old, unq);
 
 	    /* aliases summary */
 	    map<string,map> aliasee = devmap["_aliases"]:$[];
@@ -65,14 +72,18 @@ define list<any> BuildSummary(list<map> Hardware, boolean split) {
     });
 
     y2debug("uniques(%1)", uniques);
+    y2debug("uniques_old(%1)", uniques_old);
+
     /* build a list of unconfigured devices */
     maplist(map h, Hardware, {
+	string unq = h["unique"]:"";
+
 	string busid = "bus-" + h["bus"]:"" + "-" + h["busid"]:"";
 	string mac = "id-" + h["mac"]:"";
 	string hwtype = h["type"]:"";
 	string hwname = CheckEmptyName(hwtype, h["name"]:"");
 	y2debug("busid=%1, mac=%2", busid, mac);
-	if(!contains(uniques, busid) && !contains(uniques, mac)) {
+	if(!contains(uniques, busid) && !contains(uniques, mac) && !contains(uniques_old, unq)) {
 	    if(split)
 		unconfigured = add(unconfigured, h);
 	    else
@@ -245,6 +256,8 @@ define string HardwareName(list<map> Hardware, string id) {
 	    if(hwname == "" && ("id-" + h["mac"]:"" == id))
 		hwname = h["name"]:"";
 	    if(hwname == "" && ("bus-" + h["bus"]:"" + "-" + h["busid"]:"" == id))
+		hwname = h["name"]:"";
+	    if(hwname == "" && (h["unique"]:"" == id))
 		hwname = h["name"]:"";
 	});
     y2milestone("hwname=%1", hwname);

@@ -40,6 +40,7 @@ import "Summary";
 
 
 global string name = "";
+global string unique = "";
 
 global string type = "";
 global string device = "";
@@ -398,6 +399,7 @@ global define boolean Import(map settings) {
     // FIXME: MOD Modules = (map) eval(settings["modules"]:$[]);
     NetworkConfig::Import(settings["config"]:$[]);
     NetworkDevices::Import("netcard", (map<string, map>) settings["devices"]:$[]);
+    NetworkModules::Import("netcard", (map<string, map>) settings["hwcfg"]:$[]);
     Routing::Import((map) eval(settings["routing"]:$[]));
 
     modified = true;
@@ -414,6 +416,7 @@ global define map Export() {
 	// FIXME: MOD "modules"	: Modules,
 	"config"	: NetworkConfig::Export(),
 	"devices"	: NetworkDevices::Export("netcard"),
+	"hwcfg"		: NetworkModules::Export("netcard"),
 	"routing"	: Routing::Export(),
     ];
 }
@@ -542,6 +545,7 @@ global define boolean Select(string dev) {
 
     /* general stuff */
     name = devmap["NAME"]:"";
+    unique = devmap["UNIQUE"]:"";
 
     /* address options */
     bootproto = devmap["BOOTPROTO"]:"static";
@@ -657,6 +661,9 @@ global define boolean Commit() {
 	}
 	newdev["REMOTE_IPADDR"] = remoteip;
 	newdev["MTU"] = mtu;
+
+	if(unique != "" && unique != nil)
+	    newdev["UNIQUE"] = unique;
 
 	if(type == "dummy") {
 	    y2debug("");

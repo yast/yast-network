@@ -1,8 +1,18 @@
 -------------------------------------------------------------------
+Mon Mar 29 17:11:33 CEST 2004 - msvec@suse.cz
+
+- fixed DSL configuration write (#36629)
+- device textentry now in address dialog (#36147)
+- fixed HW mapping for old-style ifcfg-files (#36910)
+- fixed missing translation (#37144)
+- 2.9.21
+
+-------------------------------------------------------------------
 Mon Mar 29 12:09:07 CEST 2004 - arvin@suse.de
 
 - implemented setup of nameserver during second stage of
   installation (bug #36957)
+- 2.9.20
 
 -------------------------------------------------------------------
 Fri Mar 26 12:29:25 CET 2004 - msvec@suse.cz

@@ -207,6 +207,7 @@ define list<map> ReadHardware(string hwtype) {
 	string controller = ControllerType(card);
 	one["name"] = DeviceName(card);
 	one["type"] = controller;
+	one["unique"] = card["unique_key"]:"";
 	one["num"] = num;
 
 	/* modem */

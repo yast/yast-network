@@ -98,6 +98,10 @@ the network configuration.</p>");
 	`HSpacing(0.5),
 	`Label(`opt(`outputField), device)
     );
+    if(Lan::operation == `add) {
+	/* TextEntry label */
+	label = `TextEntry(`id(`device), _("&Configuration Name"), device);
+    }
 
     /* Allow to edit the device (#17346) * /
     if(Lan::operation == `add)
@@ -228,7 +232,7 @@ completes the configuration.</p>");
     // if(Lan::alias != "" || type == "dummy") DetailsButton = `VSpacing(0);
 
     /* MenuButton label */
-    term MB = `MenuButton(`id(`mb), `opt(`hstretch), "&Advanced Settings", [
+    term MB = `MenuButton(`id(`mb), `opt(`hstretch), _("&Advanced..."), [
 	/* MenuButton item */
 	`item(`id(`hardware), _("H&ardware Details")),
 	/* MenuButton item */
@@ -373,6 +377,23 @@ completes the configuration.</p>");
 		    continue;
 		}
 	    }
+	    if(Lan::operation == `add) {
+		device = (string) UI::QueryWidget(`id(`device), `Value);
+		y2debug("device=%1", device);
+		if(NetworkDevices::Check(device)) {
+		    /* Popup text */
+		    Popup::Error(sformat(_("Configuration %1 already present"), device));
+		    UI::SetFocus(`id(`device));
+		    continue;
+		}
+		if(!regexpmatch(device_type(device), NetworkDevices::DeviceRegex["netcard"]:"")) {
+		    /* Popup text */
+		    Popup::Error(sformat(_("Unsupported network card type: %1"), device_type(device)));
+		    UI::SetFocus(`id(`device));
+		    continue;
+		}
+	    }
+
 	    break;
 	}
 	else {
@@ -386,6 +407,12 @@ completes the configuration.</p>");
     if(ret == `next || ret == `routing || ret == `hostname || ret == `hardware
 	    || ret == `dhclient || ret == `virtual || ret == `details ||
 	    ret == `hosts || ret == `proxy) {
+
+	if(Lan::operation == `add) {
+	    device = (string) UI::QueryWidget(`id(`device), `Value);
+	    Lan::device = device_num(device);
+	    Lan::type = device_type(device);
+	}
 
 	Lan::bootproto = bootproto;
 	Lan::ipaddr = (string) UI::QueryWidget(`id(`ipaddr), `Value);

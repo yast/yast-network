@@ -116,12 +116,17 @@ be appropriate for dial-on-demand connections.</p>");
     /* FIXME: #27137 */
     UpdateInterfaces();
     if(size(ifaces) < 1) {
+	NetworkDevices::Push();
 	if(Lan::Propose()) {
-	    Lan::Edit("eth0");
+	    UpdateInterfaces();
+	    string i = select((term) select((term) ifaces[0]:`id(), 0, `id()), 0, "");
+	    y2milestone("i=%1", i);
+	    Lan::Edit(i);
 	    Lan::bootproto = "";
 	    Lan::ipaddr = "";
 	    Lan::Commit();
 	}
+	NetworkDevices::Pop();
     }
 
     /* DSL dialog contents */
@@ -224,7 +229,9 @@ be appropriate for dial-on-demand connections.</p>");
 	}
 	else if(ret == `lan) {
 	    // WFM::CallFunction("lan_proposal", ["AskUser"]);
+	    NetworkDevices::Push();
 	    Call::Function("lan_proposal", ["AskUser"]);
+	    NetworkDevices::Pop();
 	    interface = (string) UI::QueryWidget(`id(`interface), `Value);
 	    UpdateInterfaces();
 	    UI::ReplaceWidget(`id(`rp), `ComboBox(`id(`interface), _("&Ethernet card"), ifaces));

@@ -91,7 +91,7 @@ define string HotplugRegex(list<string> devs) {
 /**
  * Predefined network device regular expressions
  */
-map<string,string> DeviceRegex = $[
+global map<string,string> DeviceRegex = $[
     /* device types */
     "netcard"	: CardRegex["netcard"]:"" + HotplugRegex(["eth", "tr", "wlan"]) + "|usb-usb|usb-usb-",
     "modem"	: CardRegex["modem"]:"",
@@ -111,6 +111,8 @@ map<integer,string> FastestTypes = $[
     3 : "modem",
     4 : "netcard"
 ];
+
+map stack = $[];
 
 /**
  * Read devices from files
@@ -448,7 +450,7 @@ global define string GetFreeDevice(string type) {
  * @param dev device identifier
  * @return true if device is present
  */
-define boolean Check(string dev) {
+global define boolean Check(string dev) {
 
     y2debug("Check(%1)", dev);
     string typ = device_type(dev);
@@ -878,6 +880,22 @@ global define boolean HasAliases(string name) {
     string a = alias_num(name);
 
     return a == "" && Devices[t, d, "_aliases"]:$[] != $[];
+}
+
+global define void Push() {
+    if(stack != $[]) y2error("Stack not empty: %1", stack);
+    stack["Name"] = Name;
+    stack["Current"] = Current;
+    stack["operation"] = operation;
+    y2milestone("PUSH: %1", stack);
+}
+
+global define void Pop() {
+    y2milestone("POP: %1", stack);
+    Name = stack["Name"]:"";
+    Current = stack["Current"]:$[];
+    operation = (symbol) stack["operation"]:nil;
+    stack = $[];
 }
 
 /* EOF */
