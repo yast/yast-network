@@ -1,0 +1,9 @@
+/**
+ * Author:	Martin Vidner <mvidner@suse.cz>
+ * Summary:	Just a redirection
+ * $Id$
+ */
+{
+    string target = "lan";
+    return WFM::CallFunction (target, WFM::Args ());
+}
