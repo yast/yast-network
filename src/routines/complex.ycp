@@ -596,6 +596,7 @@ global define term OverviewTableContents(string caption, term header, list conte
 	caption != ""? `Left(`Heading(caption)) : `VSpacing(0.0),
 	`Table(
 	    `id(first?`table:`Table),
+	    `opt(`notify),
 	    header,
 	    contents
 	),

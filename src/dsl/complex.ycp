@@ -252,11 +252,16 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	    break;
 	}
 	/* edit */
-	else if(ret == `edit) {
+	else if(ret == `edit || ret == `table) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+	    if(dev == nil) {
+		y2error("Empty device during Edit");
+		continue;
+	    }
 	    DSL::Edit(dev);
 	    Provider::Edit(Provider::Name);
 	    // Provider::AddEdit(Provider::provShortName, false);
+	    ret = `edit;
 	    break;
 	}
 	/* delete */
@@ -279,9 +284,14 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	    break;
 	}
 	/* provider edit */
-	else if(ret == `Edit) {
+	else if(ret == `Edit || ret == `Table) {
 	    string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
+	    if(dev == nil) {
+		y2error("Empty device during Edit");
+		continue;
+	    }
 	    Provider::Edit(dev);
+	    ret = `Edit;
 	    break;
 	}
 	/* provider delete */
