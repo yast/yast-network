@@ -27,7 +27,7 @@ include "network/summary.ycp";
  * @return true if data was modified
  */
 define boolean Modified() ``{
-    return Modem::Modified() || Provider::Modified();
+    return Modem::Modified() || Provider::Modified("modem");
 }
 
 /**

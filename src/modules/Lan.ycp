@@ -383,10 +383,10 @@ global define boolean WriteOnly()``{
  */
 global define boolean Import(map settings) ``{
 
-    NetworkDevices::Devices = (map<string, map>) eval(settings["devices"]:$[]);
-    Modules = (map) eval(settings["modules"]:$[]);
     DNS::Import((map) eval(settings["dns"]:$[]));
+    Modules = (map) eval(settings["modules"]:$[]);
     NetworkConfig::Import(settings["config"]:$[]);
+    NetworkDevices::Import("netcard", (map<string, map>) settings["devices"]:$[]);
     Routing::Import((map) eval(settings["routing"]:$[]));
 
     modified = true;
@@ -398,16 +398,13 @@ global define boolean Import(map settings) ``{
  * @return dumped settings (later acceptable by Import())
  */
 global define map Export() ``{
-
-    map ex = (map)eval($[
+    return $[
+	"dns"		: DNS::Export(),
 	"modules"	: Modules,
 	"config"	: NetworkConfig::Export(),
-	"dns"		: DNS::Export(),
+	"devices"	: NetworkDevices::Export("netcard"),
 	"routing"	: Routing::Export(),
-        "devices"       : NetworkDevices::Devices
-    ]);
-    return(ex);
-
+    ];
 }
 
 /**

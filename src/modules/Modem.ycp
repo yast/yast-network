@@ -170,7 +170,7 @@ global define boolean Read() ``{
  */
 global define boolean Write() ``{
 
-    if(!modified && !Provider::Modified()) return true;
+    if(!modified && !Provider::Modified("modem")) return true;
     y2milestone("Writing configuration");
 
     /* Write dialog caption */
@@ -382,8 +382,8 @@ global define boolean Commit() ``{
  * @return true on success
  */
 global define boolean Import(map settings) ``{
-    // FIXME: NI: Devices = (map) eval(settings["devices"]:$[]);
-    Provider::Import(settings["providers"]:$[]);
+    NetworkDevices::Import("modem", settings["devices"]:$[]);
+    Provider::Import("modem", settings["providers"]:$[]);
     return true;
 }
 
@@ -392,10 +392,10 @@ global define boolean Import(map settings) ``{
  * @return dumped settings (later acceptable by Import())
  */
 global define map Export() ``{
-    return (map) eval($[
-	// FIXME: NI: "devices" : Devices,
-	"providers" : Provider::Export(),
-    ]);
+    return $[
+	"devices"	: NetworkDevices::Export("modem"),
+	"providers"	: Provider::Export("modem"),
+    ];
 }
 
 /**

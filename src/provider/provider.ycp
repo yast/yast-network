@@ -11,7 +11,7 @@
 
 textdomain "network";
 
-// FIXME: NI import "ISDN";
+import "ISDN";
 import "Provider";
 import "Wizard";
 
@@ -510,8 +510,8 @@ at the end.</p>");
 	    Provider::Current = union(Provider::Current, $[
 		"ENCAP"		: encap,
 	    ]);
-	    // FIXME: NI if(ISDN::operation == `addif)
-		// FIXME: NI ISDN::provider_file = Provider::Name;
+	    if(ISDN::operation == `addif)
+		ISDN::provider_file = Provider::Name;
 	}
     }
 

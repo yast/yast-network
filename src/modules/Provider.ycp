@@ -82,11 +82,6 @@ list Deleted = [];
 symbol operation = nil;
 
 /**
- * Dirty bit
- */
-boolean modified = false;
-
-/**
  * True if providers are already read
  */
 boolean initialized = false;
@@ -99,18 +94,25 @@ string language = nil;
 /*------------------*/
 /* GLOBAL FUNCTIONS */
 
+define boolean CheckType(string type);
+define boolean CloneProvider();
+define map Filter(map providers, string type);
+global define string ProviderType();
+
 /**
  * Were the providers changed?
  * @return true if modified
  */
-global define boolean Modified(/* FIXME: string type */) ``{
-    return modified;
+global define boolean Modified(string type) ``{
+    if(!CheckType(type)) return false;
+    map OriginalProvs = Filter(OriginalProviders, type);
+    map Provs = Filter(Providers, type);
+    y2debug("OriginalProvs=%1", OriginalProvs);
+    y2debug("Provs=%1", Provs);
+    return Provs == OriginalProvs;
 }
 
 include "network/routines.ycp";
-
-global define string ProviderType();
-define boolean CloneProvider();
 
 /**
  * Read providers data (custom only) and country mappings
@@ -206,6 +208,18 @@ define map Filter(map providers, string type) ``{
 
 /**
  */
+define map FilterNOT(map providers, string type) ``{
+    if(type == nil || type == "" || type == "all")
+	return $[];
+
+    return filter(string k, map v, providers, ``{
+	y2debug("%1 %2",v["PROVIDER"]:"",v[toupper(type)+"SUPPORTED"]:"no");
+	return v[toupper(type)+"SUPPORTED"]:"no" == "no";
+    });
+}
+
+/**
+ */
 define boolean CheckType(string type) ``{
     y2debug(2, "type=%1", type);
     if(type != "all" && !contains(Supported, type)) {
@@ -293,20 +307,26 @@ global define boolean Write(string type) ``{
  * @param providers providers to be imported
  * @return true on success
  */
-global define map Import(map providers) ``{
+global define map Import(string type, map providers) ``{
+    if(!CheckType(type)) return $[];
+    map Provs = FilterNOT(Providers, type);
+    y2debug("Provs=%1", Provs);
+
     Name = "";
     Current = $[];
-    Providers = (map) eval(providers);
+    Providers = union(Provs, providers);
     OriginalProviders = nil;
-    modified = true;
 }
 
 /**
  * Export data
  * @return dumped settings (later acceptable by Import())
  */
-global define map Export() ``{
-    return (map) eval(Providers);
+global define map Export(string type) ``{
+    if(!CheckType(type)) return $[];
+    map Provs = Filter(Providers, type);
+    y2debug("Provs=%1", Provs);
+    return Provs;
 }
 
 /**
@@ -451,7 +471,6 @@ global define boolean Commit() ``{
     Name = "";
     Type = "";
     Current = $[];
-    modified = true;
     operation = nil;
     LastCountry = language;
     y2debug("LastCountry=%1", LastCountry);

@@ -15,10 +15,6 @@ textdomain "network";
 import "Arch";
 import "Map";
 
-/* NI: required wrt functions in routines.ycp */
-block<boolean> AbortFunction = nil;
-define boolean Modified() ``{ return true; }
-
 include "network/routines.ycp";
 
 define boolean Check(string dev);
@@ -47,7 +43,7 @@ global string hotplug = "";
  * Devices information
  * @see ReadDevices
  */
-global map<string,map> Devices = $[];
+map<string,map> Devices = $[];
 
 /**
  * Devices information
@@ -219,6 +215,21 @@ define map Filter(map devices, string devregex) ``{
 }
 
 /**
+ */
+define map FilterNOT(map devices, string devregex) ``{
+    if(devregex == nil || devregex == "")
+	return $[];
+
+    string regex = "^(" + DeviceRegex[devregex]:devregex + ")[0-9]*$";
+    y2debug("regex=%1", regex);
+    devices = filter(string file, string devmap, devices, ``{
+	return regexpmatch(file, regex) != true;
+    });
+    y2debug("devices=%1", devices);
+    return devices;
+}
+
+/**
  * Write devices to files
  * @param devregex regular expression for the device type
  * @return true if success
@@ -302,6 +313,41 @@ global define boolean Write(string devregex) ``{
     });
 
     return true;
+}
+
+/**
+ * Import data
+ * @param settings settings to be imported
+ * @return true on success
+ */
+global define boolean Import(string devregex, map<string,map> devices) {
+    map Devs = FilterNOT(Devices, devregex);
+    y2debug("Devs=%1", Devs);
+    Devices = (map<string,map>) union(Devs, devices);
+    OriginalDevices = nil;
+    return true;
+}
+
+/**
+ * Export data
+ * @return dumped settings (later acceptable by Import())
+ */
+global define map<string,map> Export(string devregex) {
+    map Devs = Filter(Devices, devregex);
+    y2debug("Devs=%1", Devs);
+    return (map<string,map>) Devs;
+}
+
+/**
+ * Were the providers changed?
+ * @return true if modified
+ */
+global define boolean Modified(string devregex) ``{
+    map Devs = Filter(Devices, devregex);
+    map OriginalDevs = Filter(OriginalDevices, devregex);
+    y2debug("OriginalDevs=%1", OriginalDevs);
+    y2debug("Devs=%1", Devs);
+    return Devs == OriginalDevs;
 }
 
 /**

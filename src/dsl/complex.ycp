@@ -24,9 +24,9 @@ include "network/summary.ycp";
 /**
  * Return a modification status
  * @return true if data was modified
- * FIXME: NI /
+ */
 define boolean Modified() ``{
-    return DSL::Modified() || Provider::Modified();
+    return DSL::Modified() || Provider::Modified("dsl");
 }
 
 /**

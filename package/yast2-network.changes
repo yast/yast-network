@@ -2,6 +2,7 @@
 Sat Feb  7 23:57:14 CET 2004 - msvec@suse.cz
 
 - ISDN compiles and seems to work
+- NVidia cards should be supported now (#25531)
 - 2.9.2
 
 -------------------------------------------------------------------

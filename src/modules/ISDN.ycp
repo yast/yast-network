@@ -258,7 +258,7 @@ global define boolean WriteOnly()``{
  */
 global define boolean Write(boolean start) ``{
 
-    if(!(modified_hw || modified_if || Provider::Modified())) return true;
+    if(!(modified_hw || modified_if || Provider::Modified("isdn"))) return true;
     y2milestone("Writing configuration");
 
     // title for ISDN writing current setup progress screen
@@ -350,7 +350,7 @@ global define boolean Write(boolean start) ``{
     if(Abort()) return false;
     // stage 6 in writing current ISDN setup
     ProgressNextStage(_("Writing providers"));
-    if (Provider::Modified())
+    if (Provider::Modified("isdn"))
 	Provider::Write("isdn");
     sleep(sl);
 
@@ -813,14 +813,14 @@ global define boolean Commit() ``{
 /**
  */
 global define boolean Import(map settings) ``{
-    Provider::Import(settings["_PROVIDERS"]:$[]);
+    Provider::Import("isdn", settings["_PROVIDERS"]:$[]);
     Devices = add(settings, "_PROVIDERS", nil);
 }
 
 /**
  */
 global define map Export() ``{
-    map PROVIDERS = Provider::Export();
+    map PROVIDERS = Provider::Export("isdn");
     return add(Devices, "_PROVIDERS", PROVIDERS);
 }
 

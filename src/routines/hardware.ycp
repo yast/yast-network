@@ -255,11 +255,7 @@ define list ReadHardware(string hwtype) ``{
 	}
 
 	y2debug("found device: %1", one);
-	/* Ignore nForce2 netcards (no driver yet: #25531) */
-	if(one["module"]:"" == "nvnet") {
-	    y2milestone("nForce2 found: skipping (driver not available)");
-	}
-	else if(controller != "") {
+	if(controller != "") {
 	    Hardware[size(Hardware)] = one;
 	    num = num + 1;
 	}

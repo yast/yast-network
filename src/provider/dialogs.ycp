@@ -13,7 +13,6 @@
 
 textdomain "network";
 
-// FIXME: NI import "ISDN";
 import "Provider";
 import "Wizard";
 
