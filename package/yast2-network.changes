@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Mar 10 17:42:31 CET 2003 - arvin@suse.de
+
+- better trigger for dial on demand connection during internet
+  connection test
+
+-------------------------------------------------------------------
 Fri Mar  7 15:04:39 CET 2003 - msvec@suse.de
 
 - restart smpppd after DSL and modem configuration (#24663)
