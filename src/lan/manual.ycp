@@ -308,7 +308,7 @@ global define symbol WirelessDialog() ``{
     string caption = _("Wireless network card configuration");
 
     /* Wireless dialog help 1/1 */
-    string helptext = _("<p>FIXME Helptext</p>");
+    string helptext = _("<p>FIXME Help text</p>");
 
     /* Wireless dialog contents */
     term contents = `HBox(

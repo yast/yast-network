@@ -66,14 +66,16 @@ internet connection is cheap since there are programs that periodically
 request data from the internet.</p>") +
 
     /* Connection dialog help 2/8 */
-_("<p>When <b>Modify DNS</b> is enabled the <i>name server</i> will be
-changed automatically when connected to the internet.</p>") +
+_("<p>When <b>Modify DNS</b> is enabled, the <i>name server</i> will be
+changed automatically when connected to the Internet.</p>
+") +
 
     /* Connection dialog help 3/8 */
 _("<p>The <b>Name servers</b> are required to convert host names
-<i>(e.g. www.suse.com)</i> to IP addresses (e.g. 213.95.15.200). You only
+<i>(e.g., www.suse.com)</i> to IP addresses (e.g., 213.95.15.200). You only
 need to specify the name servers if you enable <i>Dial on demand</i> or
-disable <b>DNS modification</b> when connected.</p>") +
+disable <b>DNS modification</b> when connected.</p>
+") +
 
     /* Connection dialog help 4/8 */
 _("<p><b>Stupid mode</b> help FIXME
@@ -85,8 +87,9 @@ connections. Choosing this option will make dial-up connections
 to the Internet safe from external attacks.</p>") +
 
     /* Connection dialog help 6/8 */
-_("<p>The <b>Idle timeout</b> specifies the time after which an idle
-connection will be shut down.</p>");
+_("<p>The <b>Idle time-out</b> specifies the time after which an idle
+connection will be shut down.</p>
+");
 
     if(type == "isdn")
 
@@ -108,7 +111,7 @@ _("<p><b>IP details</b> help FIXME
 	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == IdleSeconds)));
 
     /* Checkbox label */
-    term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("Activate fire&wall ..."), FirewallChecked));
+    term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("Activate fire&wall..."), FirewallChecked));
 
     term details = `VSpacing(0.1);
     //if(type == "isdn")

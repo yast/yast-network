@@ -29,7 +29,7 @@ include "network/provider/complex.ycp";
 global define symbol ProvidersSequence() ``{
 
     /* popup text */
-    string finished = _("Would you like to configure the mail now?");
+    string finished = _("Configure mail now?");
 
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
@@ -57,7 +57,7 @@ global define symbol ProvidersSequence() ``{
 	]
     ];
 
-    string caption = _("Providers configuration");
+    string caption = _("Provider configuration");
     term contents = `Label(_("Initializing ..."));
 
     Wizard::CreateDialog();
@@ -76,7 +76,7 @@ global define symbol ProvidersSequence() ``{
  * @return sequence result
  */
 global define symbol ProvidersAutoSequence() ``{
-    string caption = _("Providers configuration");
+    string caption = _("Provider configuration");
     term contents = `Label(_("Initializing ..."));
 
     Wizard::CreateDialog();

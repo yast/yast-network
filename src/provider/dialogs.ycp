@@ -116,7 +116,7 @@ global define symbol ProvidersDialog(string type) ``{
 located then choose one of the listed providers.</p>") +
 
     /* Providers dialog help 3/3 */
-    _("<p>Use the <b>New</b> button to add a provider not in the list.</p>");
+    _("<p>Use <b>New</b> to add a provider not in the list.</p>");
 
     string prev_country = "x";
     string country = (Providers::provShortName != nil && Providers::provShortName != "") ? "_custom" : nil;
@@ -270,8 +270,9 @@ global define symbol ProviderDialog(string type) ``{
 selected your provider from the  list, these values are provided.</p>") +
 
 	/* Provider dialog help 3/5 */
-	_("<p>Enter a <b>name</b> of the provider and a <b>phone number</b>
-to access your provider.</p>");
+	_("<p>Enter a <b>name</b> for the provider and a <b>phone number</b>
+to access your provider.</p>
+");
 
     if(type == "isdn")
 	/* Provider dialog help 2/5 */
@@ -281,12 +282,14 @@ Synchronous PPP.</p>");
 
 	/* Provider dialog help 4/5 */
 	helptext = helptext + _("<p>Enter the <b>user name</b> and the
-<b>password</b> to use for logging in (ask your provider if you are not sure).
-</p>") +
+<b>password</b> to use as the login (ask your provider if you are not sure).
+</p>
+") +
 
 	/* Provider dialog help 5/5 */
-	_("<p>Check the <b>Always ask</b> button to have it always ask for
-the password.</p>");
+	_("<p>Check <b>Always ask</b> to be asked for
+the password every time.</p>
+");
 
     term auth = `Frame(`id(`auth), _("Authorization"), `HBox(
 	`HSpacing(0.5),

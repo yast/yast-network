@@ -230,7 +230,8 @@ _("<p>Please select ISDN card from the list.</p>");
 	helptext = helptext +
 _("<p>If you have an old legacy ISA card, you can enter values for
 IO port or memory addresses and the used interrupt.
-For the correct values check with your technical manual or contact your salesman.</p>");
+For the correct values, check with your technical manual or contact your salesman.</p>
+");
 
         // helptext text 3/7
 	helptext = helptext +
@@ -255,9 +256,10 @@ more information.</p>");
 
 	// helptext text 6/7
 	helptext = helptext +
-_("<p><b>Areacode: </b> You should enter your local areacode for the ISDN
-line here, including the country prefix, for example 
-<tt><br>\"+49 911\"<br></tt></p>");
+_("<p><b>Area code: </b> Enter your local area code for the ISDN
+line here, including the country prefix, for example, 
+<tt><br>\"+49 911\"<br></tt></p>
+");
 
 	// helptext text 7/7
 	helptext = helptext +

@@ -137,7 +137,7 @@ $[
       "module" : "ac3200",
       "options" : "io=0x300 irq=10 mem=0xd0000",
     ],
-    $["name" : _("Apricot Xen-II on board ethernet"),
+    $["name" : _("Apricot Xen-II onboard ethernet"),
       "module" : "apricot",
       "options" : "io=0x300",
     ],
