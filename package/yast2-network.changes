@@ -3,6 +3,7 @@ Wed Jul 24 20:05:14 CEST 2002 - msvec@suse.cz
 
 - fixed some error messages
 - fix progress bar steps (#17180)
+- propose something only if there's nothing configured
 - 2.6.8
 
 -------------------------------------------------------------------

@@ -558,7 +558,10 @@ global define void Propose() ``{
     y2milestone("INSTALL_INF=%1", INSTALL_INF);
 
     /* Something is already configured -> do nothing */
-    if(size(CONFIG["eth"]:$[]) > 0 || size(CONFIG["tr"]:$[]) > 0) return;
+    if(size(CONFIG) > 0) {
+	y2milestone("Something already configured: don't propose");
+	return;
+    }
 
     if(INSTALL_INF == nil) INSTALL_INF = $[];
     AddEdit("");
