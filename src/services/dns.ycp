@@ -166,8 +166,7 @@ disabled during the connection.</p>");
 	/* Frame label */
 	`Frame(_("Host name and domain name"), `VBox(
 	    `HBox(
-		/* TextEntry label */
-		`TextEntry(`id(`host), _("&Host Name"), hostname),
+		`TextEntry(`id(`host), Label::HostName (), hostname),
 		`HSpacing (1),
 		/* TextEntry label */
 		`TextEntry(`id(`domain), _("&Domain Name"), domain)

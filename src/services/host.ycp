@@ -279,7 +279,7 @@ define term HostDialog(integer id, term entry, list forbidden) {
 	    /* TextEntry label */
 	    `TextEntry(`id(`host), _("&IP Address"), select(entry, 1, "")),
 	    /* TextEntry label */
-	    `TextEntry(`id(`name), _("&Host name"), select(entry, 2, "")),
+	    `TextEntry(`id(`name), Label::HostName (), select(entry, 2, "")),
 	    /* TextEntry label */
 	    `TextEntry(`id(`aliases), _("Hos&t Aliases"), select(entry, 3, ""))
 	    ),

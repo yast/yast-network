@@ -18,7 +18,6 @@ import "NetworkDevices";
 import "NetworkModules";
 import "Popup";
 import "Wizard";
-// Arch::s390 ()=true;
 
 include "network/summary.ycp";
 include "network/routines.ycp";
@@ -133,8 +132,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    /* Text entry label */
 	    `TextEntry(`id(`modul), _("&Module Name"), modul),
 	    `HSpacing(0.2),
-	    /* Text entry label */
-	    `TextEntry(`id(`options), _("Op&tions"), options)
+	    `TextEntry(`id(`options), Label::Options (), options)
 	),
 	`VSpacing(0.4),
 	CheckBoxes,
@@ -603,7 +601,7 @@ add them manually.</p>");
 
 	    `VSpacing(0.2),
 	    /* TextEntry label */
-	    `TextEntry(`id(`qeth_options), _("&Options"), Lan::qeth_options),
+	    `TextEntry(`id(`qeth_options), Label::Options (), Lan::qeth_options),
 	    `VSpacing(1)
 	    ), `HSpacing(2))),
 	`HSpacing(6)
@@ -620,7 +618,7 @@ add them manually.</p>");
 		`TextEntry(`id(`chan_mode), _("&Port Name"), Lan::chan_mode),
 		`VSpacing(1),
 		/* TextEntry label */
-		`TextEntry(`id(`qeth_options), _("&Options"), Lan::qeth_options),
+		`TextEntry(`id(`qeth_options), Label::Options (), Lan::qeth_options),
 		`VSpacing(1),
 		/* CheckBox label */
 		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA takeover")))
@@ -641,7 +639,7 @@ add them manually.</p>");
 	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
 		`VSpacing(1),
 		/* TextEntry label */
-		`TextEntry(`id(`qeth_options), _("&Options"), Lan::qeth_options),
+		`TextEntry(`id(`qeth_options), Label::Options (), Lan::qeth_options),
 		`VSpacing(1),
 		/* CheckBox label */
 		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA takeover")))

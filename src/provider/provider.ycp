@@ -232,8 +232,7 @@ at the end.</p>");
 	),
 	`HSpacing(0.5),
 	`VBox(
-	    /* TextEntry label */
-	    `Password(`id(`password), _("&Password"), password),
+	    `Password(`id(`password), Label::Password (), password),
 	    /* CheckBox label */
 	    `Left(`CheckBox(`id(`askpass), `opt(`notify), _("&Always Ask for Password"), ask_pass)),
 	    `VSpacing(0.2)
@@ -303,8 +302,7 @@ at the end.</p>");
 		),
 		`HSpacing(0.5),
 		`VBox(
-		    /* TextEntry label */
-		    `Password(`id(`password), _("&Password"), password),
+		    `Password(`id(`password), Label::Password (), password),
 		    /* CheckBox label */
 		    `Left(`CheckBox(`id(`askpass), `opt(`notify), _("&Always Ask for Password"), ask_pass)),
 		    `VSpacing(0.2)

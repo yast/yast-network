@@ -36,8 +36,7 @@ define boolean AskForPassword() {
     UI::OpenDialog(`VBox(
 	/* Heading text */
 	`Heading(_("Enter Provider Password")),
-	/* PasswordEntry label */
-	`Password(`id(`password), _("&Password:")),
+	`Password(`id(`password), Label::Password ()),
 	`HBox(
 	    `PushButton(`id(`ok), `opt(`default), Label::OKButton()),
 	    `PushButton(`id(`cancel), Label::CancelButton()))
