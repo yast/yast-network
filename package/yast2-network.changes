@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Aug 18 13:24:13 CEST 2004 - mvidner@suse.cz
+
+- Mark unplugged network cards in the list of unconfigured ones.
+- Fixed return type of LanSequence for CommandLine.
+- 2.10.8
+
+-------------------------------------------------------------------
 Tue Aug 17 15:02:09 CEST 2004 - mvidner@suse.cz
 
 - VNC: Using xorg-x11 instead of XFree86.
