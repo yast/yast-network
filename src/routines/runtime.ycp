@@ -18,6 +18,7 @@
 {
 
 textdomain "network";
+import "Runlevel";
 
 /**
  * Read status information
@@ -49,6 +50,19 @@ global define boolean StartNetwork() ``{
  */
 global define boolean StopNetwork() ``{
     return SCR::Execute(.target.bash, "/etc/init.d/network stop");
+}
+
+/**
+ * Setup smpppd(8)
+ * @return true if success
+ */
+global define boolean SetupSMPPPD() ``{
+    Runlevel::ServiceFinetune("smpppd", [ "2", "3", "5" ]);
+    if(Runlevel::ServiceStatus("smpppd") == 0)
+	Runlevel::RunInitScript("smpppd", "reload");
+    else
+	Runlevel::RunInitScript("smpppd", "start");
+    return true;
 }
 
 /* EOF */

@@ -29,6 +29,7 @@ import "Summary";
 include "network/config.ycp";
 include "network/hardware.ycp";
 include "network/routines.ycp";
+include "network/runtime.ycp";
 include "network/summary.ycp";
 include "network/ip.ycp";
 
@@ -185,6 +186,7 @@ global define boolean Write() ``{
     Progress::New(caption, " ", steps, [
         _("Write configuration"),
         _("Write provider information"),
+        _("Set up smpppd"),
     ], [], "");
 
     if(Abort()) return false;
@@ -195,6 +197,11 @@ global define boolean Write() ``{
     if(Abort()) return false;
     ProgressNextStage(_("Writing providers"));
     //WriteProviders();
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Setting up smpppd(8)"));
+    SetupSMPPPD();
     sleep(sl);
 
     if(Abort()) return false;
@@ -269,7 +276,7 @@ global define boolean AddEdit(string dev) ``{
 
     Speaker = devmap["INIT8"]:"ATM1" == "ATM1";
     Carrier = devmap["INIT9"]:"" == "";
-    PulseDial = devmap["DIALCOMMAND"]:"ATDP" == "ATDP";
+    PulseDial = devmap["DIALCOMMAND"]:"ATDT" == "ATDP";
 
     Device = devmap["MODEM_DEVICE"]:"/dev/modem";
     DialPrefix = devmap["DIALPREFIX"]:"";

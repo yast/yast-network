@@ -215,5 +215,13 @@ global define list Overview() ``{
     return BuildOverview("isdn");
 }
 
+/**
+ */
+define boolean Abort() ``{
+    if(AbortFunction != nil)
+        return eval(AbortFunction) == true;
+    return false;
+}
+
 /* EOF */
 }

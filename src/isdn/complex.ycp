@@ -192,7 +192,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 
     /* Header of table with installed cards */
     term contents = Wizard_hw::ConfiguredContent(
-	    `header(_("No."), _("Type"), _("Device"), /*_("Active"),*/ _("IP Address")/*, "PCMCIA", "Driver"*/),
+	    `header(_("No."), _("Type"), _("Device")/*, _("Active"), _("IP Address"), "PCMCIA", "Driver"*/),
 	    overview, nil, nil, nil, nil);
 
     contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);

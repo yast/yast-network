@@ -228,7 +228,10 @@ global define list BuildOverview(string type) ``{
 	string ip = lookup(v, "BOOTPROTO", "static");
 	if(ip == "" || ip == "static" || ip == "none") ip = lookup(v, "IPADDR", "");
 	else ip = toupper(ip);
-	return `item(`id(dev), k, DeviceType(type), dev, /*"active?",*/ ip/*, "?", "?"*/);
+	if(type == "eth" || type == "tr")
+	    return `item(`id(dev), k, DeviceType(type), dev, /*"active?",*/ ip/*, "?", "?"*/);
+	else
+	    return `item(`id(dev), k, DeviceType(type), dev /*, "active?", ip, "?", "?"*/);
     });
 
     y2debug("overview=%1",overview);

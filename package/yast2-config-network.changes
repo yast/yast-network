@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Feb  5 14:21:29 CET 2002 - msvec@suse.cz
+
+- fixed PPPD_OPTIONS writing
+- setup smpppd(8)
+- 2.5.13
+
+-------------------------------------------------------------------
 Fri Feb  1 16:22:06 CET 2002 - msvec@suse.cz
 
 - fixed CarrierDetect and SpeakerOn initstrings
