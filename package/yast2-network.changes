@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Aug 16 16:39:27 CEST 2004 - mvidner@suse.cz
+
+- Phone number checking relaxed from validchars to are-you-sure (#43723).
+- Added usb to CardRegex[netcard] (#43089).
+- 2.10.6
+
+-------------------------------------------------------------------
 Tue Aug 10 17:51:22 CEST 2004 - mvidner@suse.cz
 
 - VNC: Fixed status display and restarting xinetd,
