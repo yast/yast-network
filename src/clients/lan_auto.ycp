@@ -95,6 +95,8 @@ define map FromAY(map input) ``{
 	import "Arch";
 	if(!Arch::s390) Lan::ReadHardware("netcard");
 	list HW = Lan::GetHardware();
+	map alias = $[];
+	map options = $[];
 	devices = mapmap(string type, map devsmap, devices, ``{
 	    list HW_type = filter(`dev, HW, ``(dev["type"]:"" == type ));
 
@@ -104,13 +106,21 @@ define map FromAY(map input) ``{
 
 		devmap = add(devmap, "UNIQUE", HW_type[ tointeger(num) ,"unique"]:"" );
 		string device = sformat ("%1%2", type, num );
-		native_modules[device] = $[ "module": HW_type[ tointeger(num) ,"module"]:"", "options": HW_type[ tointeger(num) ,"options"]:"" ];
+		string modname = HW_type[ tointeger(num) ,"module"]:"";
+		alias[device] = modname;
+		// map tmpopt = $[modname: HW_type[ tointeger(num) ,"options"]:""];
+		options[modname] = HW_type[ tointeger(num) ,"options"]:"";
+
 		return([num, devmap]);
 
 	    });
 	    return ([ type, newmap ] );
 	});
+	native_modules["alias"] = alias;
+	native_modules["options"] = options;
+
     }
+
 
     input["devices"] = devices;
     input["modules"] = native_modules;
