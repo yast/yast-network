@@ -33,7 +33,7 @@ global define symbol TestStepsDialog() ``{
     ScreenName("installation-steps-dialog");
 
     /* Steps dialog caption */
-    string caption = _("Test Connection To The Internet");
+    string caption = _("Test Internet Connection");
 
     /* Steps dialog help 1/7 */
     string help = _("<p>FIXME
@@ -188,6 +188,7 @@ if(true) {
     Internet::FindFastest ();
     Wizard::CreateDialog();
     TestStepsDialog();
+    Internet::Start ();
     TestConnectionDialog();
 }
 

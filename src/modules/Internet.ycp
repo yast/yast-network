@@ -11,6 +11,9 @@
     module "Internet";
     textdomain "network";
 
+    import "Wizard";
+    include "ui/common_messages.ycp";
+
     /**
      *  lan, dsl, isdn, modem or empty
      */
@@ -37,6 +40,17 @@
     global boolean ask_password = false;
 
     /**
+     *  true if ask_password is true and the password has successfully been
+     *  asked for
+     */
+    boolean password_known = false;
+
+    /**
+     *  the password (only valid for dsl, isdn and modem)
+     */
+    string password = "";
+
+    /**
      *  somehow find the "fastest" configured internet connection
      */
     global define void FindFastest () ``{
@@ -46,5 +60,54 @@
 	provider_file = "tonline-dsl";
 	demand = false;
 	ask_password = false;
+    }
+
+    define boolean AskForPassword () ``{
+
+	UI::OpenDialog (`VBox (`Heading (_("Enter Provider Password")),
+			       `Password (`id(`password), _("&Password:")),
+			       `HBox (`PushButton (`id(`ok), `opt(`default),
+						   OKButtonLabel()),
+				      `PushButton (`id(`cancel),
+						   CancelButtonLabel()))));
+
+	UI::SetFocus (`id (`password));
+	symbol ret = UI::UserInput ();
+	UI::CloseDialog ();
+
+	if (ret == `ok)
+	{
+	    password_known = true;
+	    password = UI::QueryWidget (`id(`password), `Value);
+	    return true;
+	}
+	else
+	{
+	    password_known = false;
+	    password = "";
+	    return false;
+	}
+    }
+
+    global define boolean Start () ``{
+
+	if ((type == "dsl" || type == "isdn" || type == "modem") &&
+	    (ask_password && !password_known))
+	{
+	    if (!AskForPassword ())
+		return false;
+	}
+
+	// integer ret = SCR::Execute (.target.bash, "/sbin/ifup " + ifcfg_file);
+    }
+
+    global define boolean Status () ``{
+
+
+    }
+
+    global define boolean Stop () ``{
+
+
     }
 }
