@@ -83,7 +83,7 @@ particular vendors by selecting a vendor.</p>");
 
     integer vendor = cur_card["VendorRef"]:-1;
     integer card = cur_card["CardID"]:-1;
- 
+
     list vendors = maplist(`i, `v, ISDN::ISDNCDB["Vendors"]:$[], ``(`item(`id(i), v["name"]:"unknown", (i == vendor))));
     vendors = prepend(vendors, `item(`id(-1), _("All"), (-1 == vendor)));
 
@@ -94,7 +94,7 @@ particular vendors by selecting a vendor.</p>");
 	`VSpacing(0.5),
 	`HBox(
 	    /* Selection box label */
-	    `SelectionBox(`id(`vendor), `opt(`notify), _("Se&lect &vendor"), vendors),
+	    `SelectionBox(`id(`vendor), `opt(`notify), _("Select &vendor"), vendors),
 	    /* Selection box label */
 	    `ReplacePoint(`id(`rpc), `SelectionBox(`id(`cards), `opt(`notify), _("Se&lect ISDN card"), cards))
 	),

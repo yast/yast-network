@@ -9,74 +9,66 @@
 
 {
 
-    textdomain "network";
+textdomain "network";
 
-    import "Wizard";
-    import "Remote";
+import "Label";
+import "Remote";
+import "Wizard";
 
-    global define symbol RemoteMainDialog () ``{
+global define symbol RemoteMainDialog() ``{
 
-	ScreenName ("remote");
+    ScreenName("remote");
 
-	// caption for dialog "Remote Administration"
-	string caption = _("Remote Administration");
+    /* Ramote Administration dialog caption */
+    string caption = _("Remote Administration");
 
-	term allow_buttons =
-	    `RadioButtonGroup (
-			       `VBox (
-				      `Left(`RadioButton(`id(`allow),
-							 // a button label
-							 _("&Allow Remote Administration"),
-							 false)),
-				      `Left(`RadioButton(`id(`disallow),
-							 // a button lable
-							 _("&Do not allow Remote Administration"),
-							 false))
-				      )
-			       );
+    term allow_buttons = `RadioButtonGroup(`VBox(
+	/* RadioButton label */
+	`Left(`RadioButton(`id(`allow), _("&Allow Remote Administration"), false)),
+	/* RadioButton label */
+	`Left(`RadioButton(`id(`disallow), _("&Do not allow Remote Administration"), false))
+    ));
 
-	term contents =
-	    `VBox (
-		   `HBox (
-			  `HStretch (),
-			  allow_buttons,
-			  `HStretch ()
-			  )
-		   );
+    /* Ramote Administration dialog contents */
+    term contents = `VBox(`HBox(
+	`HStretch(),
+	allow_buttons,
+	`HStretch()
+    ));
 
-	// help text for dialog "Remote Administration"
-	string help = _("Here you can allow remote administration of the system.");
+    /* Ramote Administration dialog help */
+    string help = _("Here you can allow remote administration of the system.");
 
-	Wizard::SetContentsButtons (caption, contents, help,
-				    Label::BackButton(), Label::FinishButton());
+    Wizard::SetContentsButtons(caption, contents, help,
+	    Label::BackButton(), Label::FinishButton());
 
-	UI::ChangeWidget (`id(`allow), `Value, Remote::allow_administration);
-	UI::ChangeWidget (`id(`disallow), `Value, !Remote::allow_administration);
+    UI::ChangeWidget(`id(`allow), `Value, Remote::allow_administration);
+    UI::ChangeWidget(`id(`disallow), `Value, !Remote::allow_administration);
 
-	any ret = nil;
+    any ret = nil;
 
-	repeat {
+    repeat {
 
-	    ret = Wizard::UserInput();
+	ret = Wizard::UserInput();
 
-	    if (ret == `abort)
-	    {
-		break;
-	    }
-	    else if (ret == `help)
-	    {
-		Wizard::ShowHelp (help);
-	    }
-
-	} until ( ret == `next || ret == `back );
-
-	if (ret == `next)
+	if(ret == `abort)
 	{
-	    Remote::allow_administration = UI::QueryWidget (`id(`allow), `Value);
+	    break;
+	}
+	else if(ret == `help)
+	{
+	    Wizard::ShowHelp(help);
 	}
 
-	return ret;
+    } until( ret == `next || ret == `back );
+
+    if(ret == `next)
+    {
+	Remote::allow_administration = UI::QueryWidget(`id(`allow), `Value);
     }
+
+    return ret;
+}
 
 /* EOF */
 }
