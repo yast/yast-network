@@ -28,61 +28,61 @@ import "Progress";
      *
      */
 
-    integer protocol = 0;
+    global integer protocol = 0;
 
     /**
      *
      */
 
-    string moduleOptions = "";
+    global string moduleOptions = "";
 
     /**
      *
      */
 
-    string io = "";
+    global string io = "";
 
-    string irq = "";
+    global string irq = "";
 
-    string membase = "";
+    global string membase = "";
 
-    string io0 = "";
+    global string io0 = "";
 
-    string io1 = "";
+    global string io1 = "";
 
-    string io2 = "";
+    global string io2 = "";
 
-    string hisaxdebug = "";
+    global string hisaxdebug = "";
 
-    string eizmap = "";
+    global string eizmap = "";
 
-    string type = "";
+    global string type = "";
 
-    string subtype = "";
+    global string subtype = "";
 
-    string localMSN = "";
+    global string localMSN = "";
 
-    string dialMode = "";
+    global string dialMode = "";
 
-    string idleTime = "";
+    global string idleTime = "";
 
-    string chargeHUP = "";
+    global string chargeHUP = "off";
 
-    boolean startAtBoot = true;
+    global boolean startAtBoot = true;
 
-    boolean firewall = false;
+    global boolean firewall = false;
 
-    string encap = "";
+    global string encap = "syncppp";
 
-    string localIP = "";
+    global string localIP = "";
 
-    string remoteIP = "";
+    global string remoteIP = "";
 
-    boolean dynamicIP = false;
+    global boolean dynamicIP = false;
 
-    boolean dynamicDNS = false;
+    global boolean dynamicDNS = false;
 
-    string callback = "";
+    global string callback = "off";
 
 
 
