@@ -56,8 +56,8 @@ global define boolean Read() ``{
     Config = ReadConfig(.sysconfig.network.config);
     DHCP = ReadConfig(.sysconfig.network.dhcp);
 
-    Orig_Config = eval(Config);
-    Orig_DHCP = eval(DHCP);
+    Orig_Config = (map) eval(Config);
+    Orig_DHCP = (map) eval(DHCP);
 
     return true;
 }
@@ -84,8 +84,8 @@ global define boolean Write() ``{
  */
 global define boolean Import(map settings) ``{
 
-    Config = eval(settings["config"]:$[]);
-    DHCP = eval(settings["dhcp"]:$[]);
+    Config = (map) eval(settings["config"]:$[]);
+    DHCP = (map) eval(settings["dhcp"]:$[]);
 
     Orig_Config = nil;
     Orig_DHCP = nil;
@@ -99,7 +99,7 @@ global define boolean Import(map settings) ``{
  */
 global define map Export() ``{
 
-    return eval($[
+    return (map) eval($[
 	"config"	: Config,
 	"dhcp"		: DHCP,
     ]);

@@ -50,7 +50,7 @@ global define boolean Read() ``{
 
     /* Read /root/.curlrc */
     if(SCR::Read(.target.size, "/root/.curlrc") > 0)
-	user = SCR::Read(.root.curlrc.proxy-user);
+	user = (string) SCR::Read(.root.curlrc.proxy-user);
 
     if(user == nil) user = "";
 
