@@ -145,9 +145,9 @@ global symbol operation = nil;
  * @return true if modified
  */
 global define boolean Modified() ``{
-    y2debug("modified(hw,if)=%1,%2",modified_hw, modified_if);
+    y2debug("modified(hw,if)=%1,%2", modified_hw, modified_if);
     return (modified_hw || modified_if);
-};
+}
 
 /**
  * Read all ISDN settings from the SCR
@@ -162,11 +162,11 @@ global define boolean Read() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-        _("Detect devices"),
-        _("Read current device configuration"),
-        _("Read current connection setup"),
+	_("Detect devices"),
+	_("Read current device configuration"),
+	_("Read current connection setup"),
 	_("Read firewall settings"),
-        _("Read providers"),
+	_("Read providers"),
     ], [], "");
 
     CONFIG = $[];
@@ -692,12 +692,12 @@ global define list Summary(boolean split) ``{
 /**
  */
 global define list OverviewDev() ``{
-    return BuildOverview();
+    return filter(`i, BuildOverview(), ``(issubstring(select(select(i,0,nil),0,""),"contr")));
     //return BuildOverview("contr");
 }
 
 global define list OverviewIf() ``{
-    return BuildOverview();
+    return filter(`i, BuildOverview(), ``(issubstring(select(select(i,0,nil),0,""),"net")));
     //return BuildOverview("net");
 }
 

@@ -1,24 +1,18 @@
 # $Id$
 
-Done, but needs to be fixed:
-- differentiate between i(ppp)
-- two resolv.conf agents
-
 Bugs:
+- two resolv.conf agents
 - check and install required packages
-- dns: restart dhcp client
-- routing: restart routing
-- routing: remove Routing:modified
-- config: dhcp_devices() -> list (dhcp hostname)
-- config: devices(string type) -> list (dsl, network printers)
 - modem: start smpppd only if >0 devs
-- lan: read /etc/install.inf (map INSTALL)
+- lan: use /etc/install.inf
 - providers: add/edit/delete
 - check existence of the modem device
 - modem|dsl: info popup + run|stop kinternet, if DISPLAY and (not)running
 
 Enhancements:
 - dns: xauth agent </dev/null (and some more work)
+- dns: restart only DHCP devices
+- routing: restart only routing
 - dsl: more than one connection
 - dsl: vpivci heuristics to module (maybe also tonline mode)
 - dsl: set pppoe in dependence on the country (DE->E,GB->A,AT->A,CA->E)
@@ -26,7 +20,8 @@ Enhancements:
 - lan: dual port network cards
 - lan: compiled in kernel drivers
 - modem: pap|chap secrets writing
-- providers: -> CDB-NG
+- providers: choose default country intelligently
+- providers: -> HWDB-NG
 - base: edit without restart (reload)
 - base: use map instead of variables (-> fill all variables)
 - package: include all agents

@@ -229,7 +229,6 @@ state and may crash your machine.</p>");
     if (ret == `next || ret == `ipsettings || ret == `callbacksettings) {
 	ISDN::localMSN = UI::QueryWidget(`id(`localmsn), `Value);
 	ISDN::dialMode = UI::QueryWidget(`id(`dialmode), `Value);
-	ISDN::startAtBoot = UI::QueryWidget(`id(`starting_isdn), `Value);
 	ISDN::if_bootmode = UI::QueryWidget(`id(`startmode), `Value);
 	ISDN::multilink = UI::QueryWidget(`id(`multilink), `Value);
 	ISDN::idleTime = sformat("%1", UI::QueryWidget(`id(`idletime), `Value));

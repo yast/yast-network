@@ -49,13 +49,11 @@ global define symbol LanSequence() ``{
 
     map sequence = $[
 	"ws_start" : "read",
-	"read" :
-	$[
+	"read" : $[
 	    `abort	: `abort,
 	    `next	: "main"
 	],
-	"main" :
-	$[
+	"main" : $[
 	    `abort	: `abort,
 	    `next	: "write"
 	],
@@ -209,9 +207,11 @@ global define symbol AddressSequence() ``{
 	    `hostname	: "hostname",
 	],
 	"routing" : $[
+	    `abort	: `abort,
 	    `next	: "address",
 	],
 	"hostname" : $[
+	    `abort	: `abort,
 	    `next	: "address",
 	],
 	"commit" : $[

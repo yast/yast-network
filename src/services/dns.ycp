@@ -205,6 +205,12 @@ your changes and <b>finish</b> the network configuration.</p>");
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel) {
+	    if(DNSModified()) {
+		DNS::modified = true;
+		if(ReallyAbort()) break;
+		DNS::modified = false;
+		continue;
+	    }
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
@@ -298,27 +304,44 @@ your changes and <b>finish</b> the network configuration.</p>");
 
     if(ret == `next) {
 
-	DNS::hostname = UI::QueryWidget(`id(`host), `Value);
-	DNS::domain = UI::QueryWidget(`id(`domain), `Value);
+	if(CheckModified()) {
+	    DNS::hostname = UI::QueryWidget(`id(`host), `Value);
+	    DNS::domain = UI::QueryWidget(`id(`domain), `Value);
 
-	DNS::nameservers = filter(`n, [ ns1, ns2, ns3 ], ``(n != ""));
-	DNS::searchlist = filter(`s, [ s1, s2, s3 ], ``(s != ""));
+	    DNS::nameservers = filter(`n, [ ns1, ns2, ns3 ], ``(n != ""));
+	    DNS::searchlist = filter(`s, [ s1, s2, s3 ], ``(s != ""));
 
-	DNS::dhcp_hostname = UI::QueryWidget(`id(`dn), `Value);
-	DNS::dhcp_resolv = UI::QueryWidget(`id(`dr), `Value);
+	    DNS::dhcp_hostname = UI::QueryWidget(`id(`dn), `Value);
+	    DNS::dhcp_resolv = UI::QueryWidget(`id(`dr), `Value);
 
-	/* update modified flag */
-	if(hostname != DNS::hostname || domain != DNS::domain ||
-		nameservers != DNS::nameservers ||
-		searchlist != DNS::searchlist ||
-		dhcp_resolv != DNS::dhcp_resolv ||
-		dhcp_hostname != DNS::dhcp_hostname)
+	    /* update modified flag */
 	    DNS::modified = true;
+	}
 	else
 	    y2debug("not modified");
     }
 
     return ret;
+}
+
+/**
+ * Check if internal data differ from the dialog values
+ * @return true if differ
+ */
+global define boolean DNSModified() ``{
+
+    string hostname = UI::QueryWidget(`id(`host), `Value);
+    string domain = UI::QueryWidget(`id(`domain), `Value);
+
+    list nameservers = filter(`n, [ ns1, ns2, ns3 ], ``(n != ""));
+    list searchlist = filter(`s, [ s1, s2, s3 ], ``(s != ""));
+
+    boolean dhcp_hostname = UI::QueryWidget(`id(`dn), `Value);
+    boolean dhcp_resolv = UI::QueryWidget(`id(`dr), `Value);
+
+    return hostname != DNS::hostname || domain != DNS::domain ||
+	nameservers != DNS::nameservers || searchlist != DNS::searchlist ||
+	dhcp_resolv != DNS::dhcp_resolv || dhcp_hostname != DNS::dhcp_hostname;
 }
 
 /* EOF */

@@ -2,6 +2,25 @@
 
 include "testsuite.ycp";
 import "Lan";
+import "Progress";
+Progress::off();
+
+map READ = $[
+    "target" : $[
+	"size" : -1,
+    ],
+    "init" : $[
+	"scripts" : $[
+	    "exists" : true,
+	]
+    ],
+];
+
+DUMP("Read");
+TEST(``(Lan::Read()), [READ], nil);
+
+DUMP("Write");
+//TEST(``(Lan::Write()), [], nil);
 
 map lan_settings = $[
     "dns" : $[
@@ -36,9 +55,9 @@ map lan_settings = $[
 ];
 
 DUMP("Import");
-TEST (``(Lan::Import (lan_settings)), [], nil);
+TEST(``(Lan::Import(lan_settings)), [], nil);
 
 DUMP("Export");
-TEST (``(Lan::Export ()), [], nil);
+TEST(``(Lan::Export()), [], nil);
 
 }

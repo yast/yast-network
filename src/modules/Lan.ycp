@@ -88,6 +88,11 @@ list HARDWARE = [];
 list DELETED = [];
 
 /**
+ * /etc/install.inf data
+ */
+map INSTALL_INF = $[];
+
+/**
  * Data was modified?
  */
 boolean modified = false;
@@ -156,6 +161,8 @@ global define boolean Read() ``{
 
     if(Abort()) return false;
     ProgressNextStage(_("Reading installation information"));
+    if(SCR::Read(.target.size,"/etc/install.inf") > 0)
+	INSTALL_INF = SCR::Read(.etc.install_inf);
     //ReadInstallInf();
     sleep(sl);
 

@@ -55,6 +55,11 @@ global define boolean ReadHardware(string hwtype) ``{
 	return false;
     }
 
+    if(allcards == nil) {
+	y2error("hardware detection failure");
+	allcards = [];
+    }
+
     /* fill in the hardware data */
     maplist (`card, allcards, ``{
 	map one = $[];

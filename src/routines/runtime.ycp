@@ -45,6 +45,14 @@ global define boolean StartNetwork() ``{
 }
 
 /**
+ * Restart network
+ * @return true if success
+ */
+global define boolean RestartNetwork() ``{
+    return SCR::Execute(.target.bash, "/etc/init.d/network restart") == 0;
+}
+
+/**
  * Stop network
  * @return true if success
  */

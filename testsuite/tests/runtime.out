@@ -5,15 +5,20 @@ Execute	.target.bash "/sbin/SuSEconfig --quick --nonewpackage --module hostname"
 Return	true
 Execute	.target.bash "/sbin/SuSEconfig --quick --nonewpackage --module hostname" 1
 Return	false
+Dump	StopNetwork
+Execute	.target.bash "/etc/init.d/network stop" 0
+Return	true
+Execute	.target.bash "/etc/init.d/network stop" 1
+Return	false
 Dump	StartNetwork
 Execute	.target.bash "/etc/init.d/network start" 0
 Return	true
 Execute	.target.bash "/etc/init.d/network start" 1
 Return	false
-Dump	StopNetwork
-Execute	.target.bash "/etc/init.d/network stop" 0
+Dump	RestartNetwork
+Execute	.target.bash "/etc/init.d/network restart" 0
 Return	true
-Execute	.target.bash "/etc/init.d/network stop" 1
+Execute	.target.bash "/etc/init.d/network restart" 1
 Return	false
 Dump	SetupSMPPPD
 Read	.init.scripts.exists "smpppd" true

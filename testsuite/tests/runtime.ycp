@@ -15,13 +15,17 @@ DUMP("RunSuSEconfig");
 TEST(``(RunSuSEconfig()), [$[],$[],EXEC0], nil);
 TEST(``(RunSuSEconfig()), [$[],$[],EXEC1], nil);
 
+DUMP("StopNetwork");
+TEST(``(StopNetwork()), [$[],$[],EXEC0], nil);
+TEST(``(StopNetwork()), [$[],$[],EXEC1], nil);
+
 DUMP("StartNetwork");
 TEST(``(StartNetwork()), [$[],$[],EXEC0], nil);
 TEST(``(StartNetwork()), [$[],$[],EXEC1], nil);
 
-DUMP("StopNetwork");
-TEST(``(StopNetwork()), [$[],$[],EXEC0], nil);
-TEST(``(StopNetwork()), [$[],$[],EXEC1], nil);
+DUMP("RestartNetwork");
+TEST(``(RestartNetwork()), [$[],$[],EXEC0], nil);
+TEST(``(RestartNetwork()), [$[],$[],EXEC1], nil);
 
 DUMP("SetupSMPPPD");
 TEST(``(SetupSMPPPD()), [READ], nil);

@@ -1,3 +1,5 @@
+- added checking of error values to routing
+- fixed Abort confirmation in routing, dns (#14926)
 - IP forwarding support (#13053)
 - preliminary support for virtual network interfaces
 - allow * and & in Phone number, don't check pass emptiness (#16021)
