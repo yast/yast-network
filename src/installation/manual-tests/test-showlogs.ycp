@@ -1,0 +1,20 @@
+{
+    include "network/installation/dialogs.ycp";
+
+    string logdir = (string) SCR::Read (.target.tmpdir) + "/internet-test";
+    SCR::Execute (.target.mkdir, logdir);
+
+    list<map> logs = [];
+
+    logs = add (logs, $[ `menuname : "Download of Release Notes",
+			 `filename : "curl.log" ]);
+
+    string url = "http://www.suse.com/relnotes/i386/SUSE-LINUX/9.1/release-notes.rpm";
+
+    string cmd = "/usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + "tmp.rpm";
+    cmd = cmd + " > " + logdir + "/curl.log 2>&1";
+
+    integer ret = (integer) SCR::Execute (.target.bash, cmd);
+
+    ShowLogs (logs, logdir);
+}
