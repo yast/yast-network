@@ -5,6 +5,8 @@ Bugs:
 Enhancements:
 
 Documentation:
+- example dhcpcd-eth0.info
+- example intstall.inf's
 
 ##############################################################################
 

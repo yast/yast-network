@@ -1,7 +1,7 @@
 /**
  * File:	modules/Detection.ycp
  * Package:	Network configuration
- * Summary:	Detection routines
+ * Summary:	Network detection
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
@@ -21,10 +21,17 @@
  *
  * <p>
  * <h4>Used software:</h4><ul>
- *   <li>netprobe(8)
  *   <li>dhcpcd(8)
+ *   <li>netprobe(8) (currently not)
  * </ul>
  *
+ * <p>
+ * <h4>Usage:</h4><ul>
+ *   <li>Detection::Start() somewhere at the start of installation
+ * </ul><p>Later at the module:<ul>
+ *   <li>if(Detection::running) Detection::Stop();
+ *   <li>string gw = Detection::result["GATEWAY"]:"";
+ * </ul>
  *
  */
 
@@ -37,7 +44,15 @@ textdomain "network";
 import "Directory";
 include "network/hardware.ycp";
 
+/**
+ * Detection result
+ */
 global map result = $[];
+
+/**
+ * True, if detection is running
+ */
+global boolean running = false;
 
 string device = "eth0";
 string tmpdir = Directory::tmpdir;
@@ -45,7 +60,11 @@ string tmpdir = Directory::tmpdir;
 string detection_module = "";
 boolean detection_interface = false;
 
-global define boolean StartEthInterface() ``{
+/**
+ * Set up the first eth interface, if not already running
+ * @return true if success
+ */
+define boolean StartEthInterface() ``{
 
     y2milestone("Network detection prepare");
 
@@ -95,7 +114,11 @@ global define boolean StartEthInterface() ``{
     return true;
 }
 
-global define boolean StopEthInterface() ``{
+/**
+ * Shut down the eth interface, previously set up by StartEthInterface
+ * @return true if success
+ */
+define boolean StopEthInterface() ``{
 
     y2milestone("Network detection finish");
 
@@ -119,7 +142,7 @@ global define boolean StopEthInterface() ``{
  * Start detection
  * @return true if success
  */
-global define boolean StartDetection() ``{
+define boolean StartDetection() ``{
 
     /* Start DHCP detection */
     SCR::Execute(.target.bash, sformat("rm -f %1/dhcpcd-*", tmpdir));
@@ -132,11 +155,11 @@ global define boolean StartDetection() ``{
  * Finish detection
  * @return true if success
  */
-global define boolean FinishDetection() ``{
+define boolean StopDetection() ``{
 
     /* Read DHCP data */
     string info = sformat("%1/dhcpcd-%2.info", tmpdir, device);
-    info = "/var/lib/dhcpcd/dhcpcd-eth0.info";
+    // info = "/var/lib/dhcpcd/dhcpcd-eth0.info";
 
     path detpath = .detection.dhcp;
     string tmpfile = tmpdir + "/detection_dhcp.scr";
@@ -159,6 +182,36 @@ global define boolean FinishDetection() ``{
     SCR::Execute(.target.bash, sformat("kill $(cat %1/dhcpcd-%2.pid)", tmpdir, device));
 
     return true;
+}
+
+/**
+ * Start the detection
+ * @return true on success
+ */
+global define boolean Start() ``{
+    if(running == true) {
+	y2error("Detection already running");
+	return false;
+    }
+
+    if(StartEthInterface() && StartDetection()) {
+	running = true;
+	return true;
+    }
+    return false;
+}
+
+/**
+ * Stop the detection
+ * @return true on success
+ */
+global define boolean Stop() ``{
+    if(running != true) {
+	y2error("Detection not running");
+	return false;
+    }
+    running = false;
+    return StopEthInterface() && StopDetection();
 }
 
 /* EOF */

@@ -15,6 +15,7 @@
 module "DSL";
 textdomain "network";
 
+import "Detection";
 import "Lan";
 import "Firewall";
 import "Language";
@@ -149,6 +150,7 @@ global define boolean Read() ``{
     if(Abort()) return false;
     /* Progress step 1/5 */
     ProgressNextStage(_("Detecting DSL devices..."));
+    if(!Detection::running) Detection::Start();
     // FIXME: no DSL hardware yet ReadHardware("dsl");
     sleep(sl);
 
@@ -222,6 +224,9 @@ global define boolean Write() ``{
         /* Progress stage 7/7 */
         _("Run KInternet"),
     ], [], "");
+
+    /* Stop the detection */
+    if(Detection::running) Detection::Stop();
 
     if(Abort()) return false;
     /* Progress step 1/7 */
@@ -423,6 +428,26 @@ global define boolean Commit() ``{
 
     modified = true;
     operation = nil;
+    return true;
+}
+
+/**
+ * Propose a configuration
+ * @return true if something was proposed
+ */
+global define boolean Propose() ``{
+
+    y2milestone("Devices=%1", Devices);
+    y2milestone("Hardware=%1", Hardware);
+
+    /* Something is already configured -> do nothing */
+    if(size(Devices) > 0) {
+	y2milestone("Something already configured: don't propose.");
+	return false;
+    }
+
+    Add();
+
     return true;
 }
 

@@ -17,11 +17,13 @@ textdomain "network";
 
 import "Arch";
 import "DNS";
+import "Detection";
 import "Routing";
 import "Firewall";
 import "Progress";
 import "Summary";
 
+include "network/dns.ycp";
 include "network/complex.ycp";
 include "network/devices.ycp";
 include "network/hardware.ycp";
@@ -288,6 +290,9 @@ global define boolean Write() ``{
 	_("Run SuSEconfig"),
     ], [], "");
 
+    /* Stop the detection */
+    if(!write_only && Detection::running) Detection::Stop();
+
     if(Abort()) return false;
     /* Progress step 1/9 */
     ProgressNextStage(_("Deactivating local network services..."));
@@ -478,9 +483,9 @@ global define boolean Select(string dev) ``{
 
     /* address options */
     bootproto = devmap["BOOTPROTO"]:"static";
-    ipaddr = devmap["IPADDR"]:"";
+    ipaddr = devmap["IPADDR"]:(Detection::result["IPADDR"]:"");
     remoteip = devmap["REMOTE_IPADDR"]:"";
-    netmask = devmap["NETMASK"]:"";
+    netmask = devmap["NETMASK"]:(Detection::result["NETMASK"]:"255.255.255.0");
     mtu = devmap["MTU"]:"";
 
     /* wireless options */
@@ -722,13 +727,33 @@ global define boolean Propose() ``{
 	string ns = InstallInf["nameserver"]:"";
 	string hn = InstallInf["hostname"]:"";
 	string dn = InstallInf["domain"]:"";
+
+	/* try to get hostname from the network */
+	if(hn == "") {
+	    string command = "/usr/bin/getent hosts \"%1\" | sed \"s/^[0-9.: \t]\\+//g\"";
+	    map getent = SCR::Execute(.target.bash_output, sformat(command, ipaddr));
+	    string hnent = getent["stdout"]:"";
+	    y2debug("%1", hnent);
+	    hnent = select(splitstring(hnent, " "), 0, "");
+	    list hnsplit = split_fqhostname(hnent);
+	    hn = hnsplit[0]:hn;
+	    y2debug("%1", hn);
+	    hnent = hnsplit[1]:"";
+	    if(hnent != "" && hnent != nil)
+		dn = hnent;
+	    y2debug("hn=%1", hn);
+	    y2debug("dn=%1", dn);
+	}
+
+	/* commit the DNS setup */
 	if(ns != "" && ns != nil) {
 	    DNS::nameservers = [ ns ];
 	    DNS::modified = true;
 	}
-	if(hn != "" && hn != nil && dn != "" && dn != nil) {
+	if(hn != "" && hn != nil) {
+	    if(dn != "" && dn != nil)
+		DNS::domain = dn;
 	    DNS::hostname = hn;
-	    DNS::domain = dn;
 	    DNS::modified = true;
 	}
 

@@ -12,6 +12,8 @@
 module "DNS";
 textdomain "network";
 
+import "Detection";
+
 include "network/dns.ycp";
 include "network/routines.ycp";
 include "network/runtime.ycp";
@@ -84,6 +86,9 @@ global define boolean Read() ``{
 	    if(dom != nil && dom != "") searchlist = [ dom ];
 	}
     }
+    else {
+	/* FIXME: propose DNS from Detection */
+    }
 
     /* host name and domain */
     string fqhostname = "";
@@ -99,8 +104,8 @@ global define boolean Read() ``{
     }
     else {
 	/* default hostname and domain (if not in /etc/install.inf) */
-	hostname = install_inf["machinename"]:"linux";
-	domain = install_inf["domain"]:"local";
+	hostname = install_inf["machinename"]:(Detection::result["HOSTNAME"]:"linux");
+	domain = install_inf["domain"]:(Detection::result["DOMAIN"]:"local");
     }
 
     return true;

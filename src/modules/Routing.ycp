@@ -12,6 +12,8 @@
 module "Routing";
 textdomain "network";
 
+import "Detection";
+
 include "network/devices.ycp";
 include "network/routines.ycp";
 
@@ -76,6 +78,17 @@ global define boolean Read() ``{
 	devices = union(devices, maplist(string n, mapkeys(Devices[t]:$[]), ``(t+n)));
     });
     y2debug("devices=%1", devices);
+
+    if(routes == []) {
+	string gw = Detection::result["GATEWAY"]:"";
+	if(gw != "" && gw != nil)
+	    routes = [ $[
+		"destination"       : "default",
+		"gateway"           : gw,
+		"netmask"           : "-",
+		"device"            : "-"
+	    ] ];
+    }
 
     return true;
 }

@@ -39,6 +39,7 @@ if(func == "MakeProposal") {
 	DSL::Read();
 	BusyPopupClose();
     }
+    DSL::Propose();
     list sum = DSL::Summary(false);
     proposal = sum[0]:"";
     Progress::on();

@@ -34,7 +34,7 @@ global define boolean ReadHardware(string hwtype) ``{
 	"netcard" : .probe.netcard,
 	"modem" : .probe.modem,
 	"isdn" : .probe.isdn,
-	"dsl" : .probe.isdn,
+	"dsl" : .probe.dsl,
     ];
 
     /* read the corresponding hardware */

@@ -5,6 +5,7 @@ Fri Jun 20 14:24:48 CEST 2003 - msvec@suse.de
 - proxy: allow '\' in the username field (#27444)
 - dns: restart only dhcp services
 - several updates and bugfixes
+- minimal dhcp detection
 - 2.8.0
 
 -------------------------------------------------------------------
