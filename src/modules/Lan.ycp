@@ -18,6 +18,7 @@ textdomain "network";
 import "Arch";
 import "DNS";
 import "Detection";
+import "Mode";
 import "NetworkConfig";
 import "Routing";
 import "Firewall";
@@ -191,9 +192,9 @@ global define boolean Read() ``{
     ProgressNextStage(_("Detecting network devices..."));
     // if(!Arch::s390) /* FIXME: Temporary hack until the detection is functional */
 
-	// Dont read hardware data in config mode
-	if (!Mode::config)
-	    ReadHardware("netcard");
+    // Dont read hardware data in config mode
+    if (!Mode::config)
+	ReadHardware("netcard");
 
     /* ReadHardware(""); /* TESTING */
     sleep(sl);
