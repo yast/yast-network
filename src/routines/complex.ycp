@@ -330,8 +330,8 @@ define string DeviceStatus(string devtype, string devnum, map devmap) {
 		return sformat(_("Configured with address %1 (remote %2)"), addr, remip);
 	}
 	else
-	    /* Network card status (%1 is device, %2 is protocol) */
-	    return sformat(_("Configured as %1 with %2"), dev, toupper(proto));
+	    /* Network card status (%1 is protocol) */
+	    return sformat(_("Configured with %1"), toupper(proto));
 
 	/* FIXME: dropped interface name */
 	if(proto == "" || proto == "static" || proto == "none" || proto == nil) {
