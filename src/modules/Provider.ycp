@@ -138,6 +138,7 @@ global define boolean Read(string type) ``{
 	});
 	change(Providers, name, p);
     });
+    OriginalProviders = eval(Providers);
 
     /* Filter out the current type */
     /* Read all providers -- we need them for checking uniqueness
@@ -272,6 +273,7 @@ global define map Import(map providers) ``{
     Name = "";
     Provider = $[];
     Providers = eval(providers);
+    OriginalProviders = nil;
     modified = true;
 }
 

@@ -3,6 +3,7 @@ Fri Sep 19 21:32:39 CEST 2003 - msvec@suse.cz
 
 - fixed default baud rate value (#31442)
 - added more milestone calls to proposal clients
+- save the original providers for later comparison (#31322)
 - 2.8.40
 
 -------------------------------------------------------------------
