@@ -273,12 +273,11 @@ global define boolean Write() ``{
 global define boolean Import(map settings) ``{
     map interfaces = listmap(map interface, settings["interfaces"]:[],``{
 	string upcase = "bootproto broadcast ipaddr netmask network startmode";
-	string ignore = "UNIQUE";
 	map new_interface = mapmap(`k,`v, interface, ``{
 	    if (issubstring(upcase, k)) {
 		return([toupper(k),v]);
 	    }
-	    else if (!issubstring(ignore, k)) {
+	    else {
 		return([k,v]);
 	    }
 	});
