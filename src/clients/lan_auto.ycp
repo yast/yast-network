@@ -353,8 +353,8 @@ if(func == "Summary") {
     ret = select(Lan::Summary("summary"),0, "");
 }
 else if (func == "Reset") {
-    Lan::modified = false;
     Lan::Import($[]);
+    Lan::UnsetModified ();
     ret = $[];
 }
 else if (func == "Change") {

@@ -1165,7 +1165,13 @@ global define boolean GetModified () {
 global define void SetModified () {
     modified = true;
 }
-
+/**
+ * Function sets internal variable, which indicates, that any
+ * settings were modified, to "false"
+ */
+global define void UnsetModified () {
+    modified = true;
+}
 
 /* EOF */
 }
