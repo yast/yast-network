@@ -318,8 +318,8 @@ define symbol DSLSequence() ``{
  * @return sequence result
  */
 define symbol DSLAutoSequence() ``{
-    string caption = _("DSL configuration");
-    term contents = `Label(_("Initializing ..."));
+    string caption = _("DSL Configuration");
+    term contents = `Label(_("Initializing..."));
 
     Wizard::CreateDialog();
     Wizard::SetDesktopIcon("dsl");

@@ -46,11 +46,11 @@ string wep_key_help =
  _("<p>Choose among three <b>key input types</b> for your key.
 <br><b>Passphrase</b>: The key is generated from the phrase entered.
 <br><b>ASCII</b>: The ASCII values of the characters entered form the
-key. Enter five characters for 64-bit keys and six to thirteen
+key. Enter 5 characters for 64-bit keys and 6-13
 characters for 128-bit keys.
 <br><b>Hexadecimal</b>: Directly enter the hex codes of the key. Enter
-ten hex digits for 64-bit keys and twenty-six digits for 128-bit keys. You may
-use dashes ('-') to separate pairs of digits or groups of them (for
+10 hex digits for 64-bit keys and 26 digits for 128-bit keys. You may
+use hyphens ('-') to separate pairs of digits or groups of them (for
 example, '0a5f-41e6-48').
 </p>
 ");
@@ -173,20 +173,21 @@ for wireless networking.</p>") +
 
 	// Wireless dialog help
 _("<p>The <b>Operating Mode</b> depends on the network topology. The mode
-can be <b>Ad-hoc</b> (peer-to-peer network without an access point),
+can be <b>Ad-Hoc</b> (peer-to-peer network without an access point),
 <b>Managed</b> (network managed by an access point, sometimes also
 called <i>Infrastructure Mode</i>), or <b>Master</b> (the network card
 acts as an access point).</p>
 ") +
 
 	// Wireless dialog help
-_("<p>Set the <b>Network name (ESSID)</b>, which is used to identify
+_("<p>Set the <b>Network Name (ESSID)</b> used to identify
 cells that are part of the same virtual network. All stations in a
 wireless LAN need the same ESSID to communicate with each other. If
-you choose operation mode <b>Managed</b> and authentication mode isn't
-<b>WPA-PSK</b>, you can leave this field empty or set it to 'any'. In this
-case your WLAN card will associate to the accesspoint with the best
-signal strength around.</p>") +
+you choose operation mode <b>Managed</b> and the authentication mode 
+is not <b>WPA-PSK</b>, you can leave this field empty or set it to 'any'. In this
+case, your WLAN card associates with the access point with the best
+signal strength.</p>
+") +
 
 	// Wireless dialog help
 	// %1 is the product name, eg. SUSE Linux
@@ -210,8 +211,8 @@ WPA, but currently %1 does not support them.</p>
 
 	// Wireless dialog help
 _("<p>To use WEP, enter the
-WEP encryption <b>key</b> to use. It can have a <b>key
-length</b> of 64 or 128 bits (although 24 bits are dynamically
+WEP encryption key to use. It can have a key
+length of 64 or 128 bits (although 24 bits are dynamically
 generated, so you only need to enter 40 or 104 bits).</p>
 ") +
 
@@ -263,7 +264,7 @@ available options.</p>");
 		/* ComboBox label */
 		`ComboBox(`id(`mode), `opt(`hstretch), _("O&perating Mode"), [
 		    /* ComboBox item */
-		    `item(`id("Ad-hoc"), _("Ad-hoc"), mode == "Ad-hoc"),
+		    `item(`id("Ad-hoc"), _("Ad-Hoc"), mode == "Ad-hoc"),
 		    /* ComboBox item */
 		    `item(`id("Managed"), _("Managed"), mode == "Managed"),
 		    /* ComboBox item */
@@ -358,13 +359,13 @@ available options.</p>");
 		    (sz < 8 || sz > 63))
 		{
 		    UI::SetFocus(`id(`key));
-		    Popup::Error(_("The passphrase must have between eight and sixty-three characters (inclusively)."));
+		    Popup::Error(_("The passphrase must have between 8 and 63 characters (inclusively)."));
 		    continue;
 		}
 		else if (type == "hex" && !regexpmatch (key, "^[0-9A-Fa-f]{64}$"))
 		{
 		    UI::SetFocus(`id(`key));
-		    Popup::Error(_("The key must have sixty-four hexadecimal digits."));
+		    Popup::Error(_("The key must have 64 hexadecimal digits."));
 		    continue;
 		}
 	    }
@@ -392,8 +393,9 @@ available options.</p>");
 		    else if (ret != `keys)	// warning only
 		    {
 			/* Popup text */
-			string pop = _("Using no encryption is a security risk!
-Really continue?");
+			string pop = _("Using no encryption is a security risk.
+Really continue?
+");
 			if(!Popup::YesNo(pop)) {
 			    continue;
 			}
@@ -444,8 +446,9 @@ define any WirelessExpertDialog() ``{
     /* Wireless expert dialog help 2/5 */
     _("<p>To use your wireless LAN card in master or ad-hoc mode,
 set the <b>Channel</b> the card should use here. This is not needed
-for managed mode -- the card will hop through the channels searching for access
-points in that case.</p>") +
+for managed mode--the card will hop through the channels searching for access
+points in that case.</p>
+") +
 
     /* Wireless expert dialog help 3/5 */
 _("<p>In some rare cases, you may want to set a transmission
@@ -457,8 +460,9 @@ define the one to which to connect by entering its MAC address.</p>") +
 
     /* Wireless expert dialog help 5/5 */
 _("<p>You can <b>Use Power Management</b> to enable power saving mechanisms.
-This is generally a good idea, especially if you are a notebook user and may
-be disconnected from AC power.</p>");
+This is generally a good idea, especially if you are a laptop user and may
+be disconnected from AC power.</p>
+");
 
     string helpunused =
     /* Wireless expert dialog help 2b/5 */

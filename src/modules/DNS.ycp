@@ -273,16 +273,16 @@ global define string Summary() {
 
     if (has_dhcp && NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false)
 	/* Summary text */
-	summary = Summary::AddListItem(summary, _("Host Name: set by DHCP"));
+	summary = Summary::AddListItem(summary, _("Host Name: Set by DHCP"));
     else if(size(hostname) > 0)
 	/* Summary text */
 	summary = Summary::AddListItem(summary, sformat(_("Host Name: %1"), Hostname::MergeFQ(hostname, domain)));
 
     if (has_dhcp && NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false) {
 	/* Summary text */
-	summary = Summary::AddListItem(summary, _("Name Servers: set by DHCP"));
+	summary = Summary::AddListItem(summary, _("Name Servers: Set by DHCP"));
 	/* Summary text */
-	summary = Summary::AddListItem(summary, _("Search List: set by DHCP"));
+	summary = Summary::AddListItem(summary, _("Search List: Set by DHCP"));
     }
     else {
 	list<string> nslist = maplist(string ns, nameservers, {

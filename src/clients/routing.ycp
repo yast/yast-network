@@ -79,7 +79,7 @@ define void ListHandler(map options) {
  */
 map cmdline = $[
     /* Commandline help title */
-    "help"	: _("Routing configuration"),
+    "help"	: _("Routing Configuration"),
     "id"	: "routing",
     "guihandler": RoutingGUI,
     "initialize": Routing::Read,

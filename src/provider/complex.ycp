@@ -76,7 +76,7 @@ define any TypeDialog() {
 	    /* Selection box label */
 	    `SelectionBox(`id(`modules), _("&Available Provider Types:"), [
 		/* Selection box item */
-		`item(`id("modem"), _("Modem provider"), true),
+		`item(`id("modem"), _("Modem Provider"), true),
 		/* Selection box item */
 		`item(`id("isdn"), _("ISDN Provider")),
 		/* Selection box item */
@@ -145,7 +145,7 @@ define any SummaryDialog() {
     y2debug("unconfigured=%1", unconfigured);
 
     /* Frame label */
-    term contents = Wizard_hw::DetectedContent(_("Providers to configure"),
+    term contents = Wizard_hw::DetectedContent(_("Providers to Configure"),
 	    unconfigured, false, configured);
 
     Wizard::SetContentsButtons(caption, contents, HELPS["summary"]:"",
@@ -195,7 +195,7 @@ define any OverviewDialog() {
     ScreenName("provider-overview");
 
     /* Provider overview dialog help caption */
-    string caption = _("Providers configuration overview");
+    string caption = _("Provider Overview");
 
     list overview = Provider::Overview("all");
     y2debug("overview=%1",overview);

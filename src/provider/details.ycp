@@ -42,7 +42,7 @@ define any IPDetailsDialog() ``{
     /* DIALOG TEXTS and  DIALOG CONTENTS */
 
     /* IP details dialog caption */
-    string caption = _("IP address settings");
+    string caption = _("IP Address Settings");
 
     /* IP details dialog help 1/3 */
     string helptext = _("<p>Enter the IP addresses if you received fixed
@@ -58,10 +58,11 @@ This is the default with most providers.</p>");
     if(encap != "rawip")
 	helptext = helptext +
 	/* IP details dialog help 3/3 */
-_("<p>Check the button for <b>Use peer DNS</b> if you want to change
-your domain name servers after the connection is up. (This replace your static
-DNS configuraton with obtained DNS server IP addresses) Today, almost all
-providers support <b>Use peer DNS</b>.</p>");
+_("<p>Check <b>Use Peer DNS</b> to change
+your domain name servers after the connection is up. This replaces your static
+DNS configuraton with the obtained DNS server IP addresses. Today, almost all
+providers support <b>Use Peer DNS</b>.</p>
+");
 
     if(type == "isdn") {
 
@@ -78,7 +79,8 @@ is triggered.</p>");
     helptext = helptext +
     // helptext text 3/3
 _("If callback mode is client, the local system does the initial call then 
-waits for callback of the remote machine.");
+waits for callback from the remote machine.
+");
 
     }
 
@@ -94,15 +96,15 @@ single machines or subnetworks through this provider.</p>");
 	    //`HSquash(
 		`VBox(
 		    /* Frame label */
-		    `Frame(_("IP address settings"),
+		    `Frame(_("IP Address Settings"),
 			`HBox(
 			    `HSpacing(),
 			    `VBox(
 				`VSpacing(),
 				/* Text entry label */
-				`Left(`TextEntry(`id(`IP_local), _("&Local IP address of your machine"), Local_IP)),
+				`Left(`TextEntry(`id(`IP_local), _("&Local IP Address of Your Machine"), Local_IP)),
 				/* Text entry label */
-				`Left(`TextEntry(`id(`IP_remote), _("Re&mote IP address"), Remote_IP)),
+				`Left(`TextEntry(`id(`IP_remote), _("Re&mote IP Address"), Remote_IP)),
 				`VSpacing()
 			    ),
 			    `HSpacing()
@@ -120,18 +122,18 @@ single machines or subnetworks through this provider.</p>");
 	    `HSquash(
 		`VBox(
 		    /* Frame label */
-		    `Frame(_("IP address settings"),
+		    `Frame(_("IP Address Settings"),
 			`HBox(
 			    `HSpacing(),
 			    `VBox(
 				`VSpacing(),
 				/* Checkbox label */
-				`Left(`CheckBox(`id(`modifyip), `opt(`notify), _("&Dynamic IP address"), modifyip)),
+				`Left(`CheckBox(`id(`modifyip), `opt(`notify), _("&Dynamic IP Address"), modifyip)),
 				`VSpacing(),
 				/* Text entry label */
-				`Left(`TextEntry(`id(`IP_local), _("&Local IP address of your machine"), Local_IP)),
+				`Left(`TextEntry(`id(`IP_local), _("&Local IP Address of Your Machine"), Local_IP)),
 				/* Text entry label */
-                                `Left(`TextEntry(`id(`IP_remote), _("Re&mote IP address"), Remote_IP)),
+                                `Left(`TextEntry(`id(`IP_remote), _("Re&mote IP Address"), Remote_IP)),
 				`VSpacing()
 			    ),
 			    `HSpacing()
@@ -193,7 +195,7 @@ single machines or subnetworks through this provider.</p>");
 		modifyip = (boolean) UI::QueryWidget(`id(`modifyip), `Value);
 
 	    if((encap=="rawip" || !modifyip) && (!IP::Check4(Local_IP) || !IP::Check4(Remote_IP))) {
-		Popup::Message(_("You have to fill in Local and Remote IP addresses correctly"));
+		Popup::Message(_("Local and remote IP addresses must be completed correctly."));
 		continue;
 	    }
 	    break;

@@ -80,7 +80,7 @@ define any ProvidersDialog(boolean edit) {
 		    `HBox(
 			`HSpacing(3.4),
 			/* SelectionBox label */
-			`SelectionBox(`id(`countries), `opt(`notify), _("&Select a Country:"), Provider::GetCountries())
+			`SelectionBox(`id(`countries), `opt(`notify), _("C&ountry:"), Provider::GetCountries())
 		    )
 		)),
 		`HSpacing(),

@@ -318,8 +318,8 @@ define symbol ModemSequence() {
  * @return sequence result
  */
 define symbol ModemAutoSequence() {
-    string caption = _("Modem configuration");
-    term contents = `Label(_("Initializing ..."));
+    string caption = _("Modem Configuration");
+    term contents = `Label(_("Initializing..."));
 
     Wizard::CreateDialog();
     Wizard::SetDesktopIcon("modem");

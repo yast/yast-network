@@ -123,7 +123,7 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
     /* add headers */
     if(size(configured) > 0)
 	/* Summary text */
-	summary = Summary::AddHeader("", _("Already configured devices:")) + summary;
+	summary = Summary::AddHeader("", _("Already Configured Devices:")) + summary;
     else
 	/* Summary text */
 	summary = Summary::AddHeader("", _("Nothing is configured."));
@@ -171,7 +171,7 @@ define string CheckEmptyName(string devtype, string hwname) {
 	/* Device type label */
 	"ci"		: _("Common Link Access for Workstation (CLAW)"),
 	/* Device type label */
-	"contr"		: _("ISDN card"),
+	"contr"		: _("ISDN Card"),
 	/* Device type label */
 	"contr-pcmcia"	: _("PCMCIA ISDN Card"),
 	/* Device type label */
@@ -181,7 +181,7 @@ define string CheckEmptyName(string devtype, string hwname) {
 	/* Device type label */
 	"dsl"		: _("DSL Connection"),
 	/* Device type label */
-	"dummy"		: _("Dummy network device"),
+	"dummy"		: _("Dummy Network Device"),
 	/* Device type label */
 	"escon"		: _("Enterprise System Connector (ESCON)"),
 	/* Device type label */
@@ -201,7 +201,7 @@ define string CheckEmptyName(string devtype, string hwname) {
 	/* Device type label */
 	"hsi"		: _("Hipersockets Interface (HSI)"),
 	/* Device type label */
-	"ippp"		: _("ISDN connection"),
+	"ippp"		: _("ISDN Connection"),
 	/* Device type label */
 	"ippp-pcmcia"	: _("PCMCIA ISDN Connection"),
 	/* Device type label */
@@ -211,7 +211,7 @@ define string CheckEmptyName(string devtype, string hwname) {
 	/* Device type label */
 	"irda"		: _("Infrared Device"),
 	/* Device type label */
-	"isdn"		: _("ISDN connection"),
+	"isdn"		: _("ISDN Connection"),
 	/* Device type label */
 	"isdn-pcmcia"	: _("PCMCIA ISDN Connection"),
 	/* Device type label */
@@ -221,7 +221,7 @@ define string CheckEmptyName(string devtype, string hwname) {
 	/* Device type label */
 	"lcs"		: _("OSA LCS Network Card"),
 	/* Device type label */
-	"lo"		: _("Loopback device"),
+	"lo"		: _("Loopback Device"),
 	/* Device type label */
 	"modem"		: _("Modem"),
 	/* Device type label */
@@ -231,7 +231,7 @@ define string CheckEmptyName(string devtype, string hwname) {
 	/* Device type label */
 	"myri"		: _("Myrinet Network Card"),
 	/* Device type label */
-	"net"		: _("ISDN connection"),
+	"net"		: _("ISDN Connection"),
 	/* Device type label */
 	"plip"		: _("Parallel Line Connection"),
 	/* Device type label */
@@ -277,7 +277,7 @@ define string CheckEmptyName(string devtype, string hwname) {
 
     y2error("Unknown type: %1", devtype);
     /* Device type label */
-    return _("Unknown network device");
+    return _("Unknown Network Device");
 }
 
 /**
@@ -384,11 +384,11 @@ define string DeviceStatus(string devtype, string devnum, map devmap) {
 		return sformat(_("Configured."));
 	    else if(remip == "" || remip == nil)
 		/* Network card status (%1 is address) */
-		return sformat(_("Configured with Address %1."),
+		return sformat(_("Configured with address %1."),
 			       addr + String::OptParens (host));
 	    else
 		/* Network card status (%1 is address, %2 is address) */
-		return sformat(_("Configured with Address %1 (remote %2)."), addr, remip);
+		return sformat(_("Configured with address %1 (remote %2)."), addr, remip);
 	}
 	else
 	    /* Network card status (%1 is protocol) */

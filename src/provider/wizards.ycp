@@ -172,9 +172,9 @@ define symbol ProviderSequence() ``{
 define symbol ProviderAutoSequence() ``{
 
     /* Initial dialog caption */
-    string caption = _("Provider configuration");
+    string caption = _("Provider Configuration");
     /* Initial dialog contents */
-    term contents = `Label(_("Initializing ..."));
+    term contents = `Label(_("Initializing..."));
 
     Wizard::CreateDialog();
     Wizard::SetDesktopIcon("provider");

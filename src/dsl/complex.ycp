@@ -66,9 +66,10 @@ define symbol ReadDialog() {
 </BIG></B><BR>Please wait...<BR></P>");
 
     /* DSL read dialog help 2/2 */
-    helptext = helptext + _("<P><B><BIG>Aborting the initialization:
+    helptext = helptext + _("<P><B><BIG>Aborting the Initialization
 </BIG></B><BR>You can safely abort the configuration utility by pressing
-the <B>Abort</B> button now.</P>");
+<B>Abort</B> now.</P>
+");
 
     Wizard::RestoreHelp(helptext);
     DSL::AbortFunction = ``{return PollAbort();};
@@ -91,9 +92,10 @@ define symbol WriteDialog() {
 Please wait...<BR></P>");
 
     /* DSL write dialog help 2/2 */
-    helptext = helptext + _("<P><B><BIG>Aborting the saving:</BIG></B><BR>
-You can abort the saving by pressing the <B>Abort</B> button. An additional
-dialog will possibly inform you whether it is safe to do so or not.</P>");
+    helptext = helptext + _("<P><B><BIG>Aborting Saving</BIG></B><BR>
+You can abort the save process by pressing <B>Abort</B>. An additional
+dialog may inform you whether it is safe to do so.</P>
+");
 
     Wizard::RestoreHelp(helptext);
     DSL::AbortFunction = ``{return PollAbort() && ReallyAbort();};
@@ -110,7 +112,7 @@ define any SummaryDialog() {
     ScreenName("dsl-summary");
 
     /* DSL summary dialog caption */
-    string caption = _("DSL configuration");
+    string caption = _("DSL Configuration");
 
     /* DSL summary dialog help 1/3 */
     string helptext = _("<p><b><big>DSL Setup</big></b><br>
@@ -190,7 +192,7 @@ define any OverviewDialog() {
     ScreenName("dsl-overview");
 
     /* DSL overview dialog caption */
-    string caption = _("DSL configuration overview");
+    string caption = _("DSL Configuration Overview");
 
     /* DSL overview dialog help 1/3 */
     string helptext = _("<P><B><BIG>DSL Overview</BIG></B><BR>

@@ -28,22 +28,24 @@ define any IPDialog() ``{
     /* DIALOG TEXTS */
 
     // title for ISDN IP address dialog
-    string caption = _("ISDN IP address settings");
+    string caption = _("ISDN IP Address Settings");
 
     /* FIXME: help texts, contents */
 
     string helptext =
     // help text 1/3
-_("<p>Please fill in the IP addresses if you got an fixed IP address
-from your provider for syncppp or you use raw IP.</p>");
+_("<p>Enter the IP addresses if you received a fixed IP address
+from your provider for syncppp or you use raw IP.</p>
+");
 
     helptext = helptext +
     // help text 2/3
-_("<p>Check the button for <b>dynamic IP address</b> if your provider
-assign you one temporary address per connection. In this case the
+_("<p>Check <b>Dynamic IP Address</b> if your provider
+assigns you one temporary address per connection. In this case, the
 outgoing address is unknown until the moment the link is established.
 This is the default with most providers.
-</p>");
+</p>
+");
 
     helptext = helptext +
     // help text 3/3
@@ -68,18 +70,18 @@ route.</p>
 	    `HSquash(
 		`VBox(
 		    // Frame title for ISDN IP address settings
-		    `Frame(_("IP address settings"),
+		    `Frame(_("IP Address Settings"),
 			`HBox(
 			    `HSpacing(),
 			    `VBox(
 				`VSpacing(),
 				// CheckBox label
-				`Left(`CheckBox(`id(`dynip), `opt(`notify), _("&Dynamic IP address"), dynip)),
+				`Left(`CheckBox(`id(`dynip), `opt(`notify), _("&Dynamic IP Address"), dynip)),
 				`VSpacing(),
 				// TextEntry label
-				`Left(`TextEntry(`id(`IP_local), _("&Local IP address of your machine"), Local_IP)),
+				`Left(`TextEntry(`id(`IP_local), _("&Local IP Address of Your Machine"), Local_IP)),
 				// TextEntry label
-                                `Left(`TextEntry(`id(`IP_remote), _("Re&mote IP address"), Remote_IP)),
+                                `Left(`TextEntry(`id(`IP_remote), _("Re&mote IP Address"), Remote_IP)),
 				`VSpacing()
 			    ),
 			    `HSpacing()
@@ -87,7 +89,7 @@ route.</p>
 		    ),
 		    `VSpacing(),
 		    // CheckBox label
-		    `Left(`CheckBox(`id(`defaultroute), _("D&efaultroute"), defaultroute))
+		    `Left(`CheckBox(`id(`defaultroute), _("D&efault Route"), defaultroute))
 		)
 	    );
     }
@@ -97,15 +99,15 @@ route.</p>
 	    //`HSquash(
 		`VBox(
 		    // Frame title for ISDN IP address settings
-		    `Frame(_("IP address settings"),
+		    `Frame(_("IP Address Settings"),
 			`HBox(
 			    `HSpacing(),
 			    `VBox(
 				`VSpacing(),
 				// TextEntry label
-				`Left(`TextEntry(`id(`IP_local), _("&Local IP address of your machine"), Local_IP)),
+				`Left(`TextEntry(`id(`IP_local), _("&Local IP Address of Your Machine"), Local_IP)),
 				// TextEntry label
-				`Left(`TextEntry(`id(`IP_remote), _("Re&mote IP address"), Remote_IP)),
+				`Left(`TextEntry(`id(`IP_remote), _("Re&mote IP Address"), Remote_IP)),
 				`VSpacing()
 			    ),
 			    `HSpacing()
@@ -113,7 +115,7 @@ route.</p>
 		    ),
 		    `VSpacing(),
 		    // CheckBox label
-		    `Left(`CheckBox(`id(`defaultroute), _("D&efaultroute"), defaultroute))
+		    `Left(`CheckBox(`id(`defaultroute), _("D&efault Route"), defaultroute))
 		//)
 	    );
     }
@@ -161,7 +163,7 @@ route.</p>
 
 	    if((!syncppp || !dynip) && (!IP::Check4(Local_IP) || !IP::Check4(Remote_IP))) {
 		// Popup::Message if entries are incorrect
-		Popup::Message(_("You have to fill in Local and Remote IP addresses correctly"));
+		Popup::Message(_("Local and remote IP addresses must be completed correctly."));
 		continue;
 	    }
 	    break;

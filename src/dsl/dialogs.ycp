@@ -38,11 +38,12 @@ define any DSLDialog() {
 	["auto", "hotplug", "manual", "off", ]);
 
     /* DSL dialog caption */
-    string caption = _("DSL configuration");
+    string caption = _("DSL Configuration");
 
     /* DSL dialog help 1/7 */
     string helptext = _("<p>Here, set the most important settings
-for DSL connection.</p>") +
+for the DSL connection.</p>
+") +
 
     /* DSL dialog help 2/7 */
     _("<p>First, choose your <b>PPP mode</b>. This is either
@@ -56,9 +57,10 @@ ethernet card.</p>") +
 
     /* DSL dialog help 4/7 */
 _("<p>The <b>PPP Mode-Dependent Settings</b> are settings required to set up
-your DSL connection. The <b>VPI/VCI</b> makes sense only for <i>PPP over ATM</i>
-connections, <b>Ethernet card</b> is needed for <i>PPP over Ethernet</i>
-connections.</p>") +
+your DSL connection. <b>VPI/VCI</b> makes sense only for <i>PPP over ATM</i>
+connections, <b>Ethernet Card</b> is needed for <i>PPP over Ethernet</i>
+connections.</p>
+") +
 
     /* DSL dialog help 5/7 */
 _("<p><b>For PPPoATM, enter your VPI/VCI pair, for example, <i>0.38</i>
@@ -92,7 +94,7 @@ be appropriate for dial-on-demand connections.</p>") +
 	`item(`id("pptp"), _("Point to Point Tunneling Protocol"), pppmode == "pptp"),
     ];
     /* ComboBox label */
-    term pppwidget = `Left(`ComboBox(`id(`pppmode), `opt(`hstretch,`notify), _("PPP &mode"), pppmodes));
+    term pppwidget = `Left(`ComboBox(`id(`pppmode), `opt(`hstretch,`notify), _("PPP &Mode"), pppmodes));
 
     string vpivci = DSL::vpivci;
     string startmode = DSL::startmode;
@@ -159,9 +161,9 @@ be appropriate for dial-on-demand connections.</p>") +
 		`VSpacing(0.2),
 		`HBox(
 		    /* ComboBox label */
-		    `Left(`ReplacePoint(`id(`rp), `ComboBox(`id(`interface), _("&Ethernet card"), ifaces))),
+		    `Left(`ReplacePoint(`id(`rp), `ComboBox(`id(`interface), _("&Ethernet Card"), ifaces))),
 		    /* TextEntry label */
-		    // `TextEntry(`id(`interface), _("&Ethernet card"), interface),
+		    // `TextEntry(`id(`interface), _("&Ethernet Card"), interface),
 		    `HSpacing(1),
 		    `VBox(
 			`Label(""),
@@ -248,7 +250,7 @@ be appropriate for dial-on-demand connections.</p>") +
 	    NetworkDevices::Pop();
 	    interface = (string) UI::QueryWidget(`id(`interface), `Value);
 	    UpdateInterfaces();
-	    UI::ReplaceWidget(`id(`rp), `ComboBox(`id(`interface), _("&Ethernet card"), ifaces));
+	    UI::ReplaceWidget(`id(`rp), `ComboBox(`id(`interface), _("&Ethernet Card"), ifaces));
 	    continue;
 	}
 	else {

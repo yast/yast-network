@@ -34,22 +34,24 @@ define any AddressDialog() {
     ScreenName("lan-address");
 
     /* Address dialog caption */
-    string caption = _("Network address setup");
+    string caption = _("Network Address Setup");
 
     /* Address dialog help 1/8 */
     string help = _("<p>Configure your IP address.</p>") +
 
     /* Address dialog help 2/8 */
-    _("<p>You can select dynamic address assignment, if you have a
-<b>DHCP server</b> running on your local network.</p>") +
+    _("<p>You can select dynamic address assignment
+if you have a <b>DHCP server</b> running on your local network.</p>
+") +
 
     /* Address dialog help 3/8 */
     _("<p>Also select this if you do not have a static IP address assigned
 by the system administrator or your cable or DSL provider.</p>") +
 
     /* Address dialog help 4/8 */
-    _("<p>Network addresses will then be obtained <b>automatically</b>
-from the server.</p>") +
+    _("<p>Network addresses are then obtained
+<b>automatically</b> from the server.</p>
+") +
 
     /* Address dialog help 5/8 */
     _("<p>Clicking <b>Next</b> completes the configuration.</p>") +
@@ -83,7 +85,7 @@ the network configuration.</p>");
     if(false && Lan::device == "") {
 	y2error("Empty device");
 	/* Label text (Network device: unknown device) */
-	device = _("Unknown device");
+	device = _("Unknown Device");
     }
     else if(Lan::alias == "") {
 	device = NetworkDevices::device_name(NetworkDevices::RealType(Lan::type, Lan::hotplug), Lan::device);
@@ -104,7 +106,7 @@ the network configuration.</p>");
 
     term label = `HBox(
 	/* Label text */
-	`Label(_("Network device")),
+	`Label(_("Network Device")),
 	`HSpacing(0.5),
 	`Label(`opt(`outputField), device)
     );
@@ -137,21 +139,21 @@ the network configuration.</p>");
     Moved to lan/hardware.ycp */
 
     /* Frame label */
-    term frame1 = `Frame(_("Choose the setup method"),
+    term frame1 = `Frame(_("Setup Method"),
 	`RadioButtonGroup(`id(`rb), `HBox(`HSpacing(1),
 	    `VBox(
 		`VSpacing(0.5),
 		/* Radio button label */
-		`Left(`RadioButton(`id(`dhcp), `opt(`notify), _("A&utomatic address setup (via DHCP)"), bootproto == "dhcp")),
+		`Left(`RadioButton(`id(`dhcp), `opt(`notify), _("A&utomatic Address Setup (via DHCP)"), bootproto == "dhcp")),
 		`VSpacing(0.4),
 		/* Radio button label */
-		`Left(`RadioButton(`id(`static), `opt(`notify), _("S&tatic address setup"), bootproto == "static")),
+		`Left(`RadioButton(`id(`static), `opt(`notify), _("S&tatic Address Setup"), bootproto == "static")),
 		`HBox(
 		    /* Text entry label for IP address */
 		    `TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
 		    `HSpacing(2),
 		    /* Text entry label for network mask */
-		    `TextEntry(`id(`netmask), _("&Subnet mask"), netmask)
+		    `TextEntry(`id(`netmask), _("&Subnet Mask"), netmask)
 		),
 		`VSpacing(0.5)
 	    ),
@@ -165,8 +167,9 @@ the network configuration.</p>");
 
     if(!Arch::s390 ())
     /* Address dialog help 2/8 */
-    help = help + _("<p>You can select dynamic address assignment,
-if you have a <b>DHCP server</b> running on your local network.</p>") +
+    help = help + _("<p>You can select dynamic address assignment
+if you have a <b>DHCP server</b> running on your local network.</p>
+") +
 
     /* Address dialog help 3/8 */
 _("<p>Also select this if you do not have a static
@@ -174,8 +177,9 @@ IP address assigned by the system administrator or your cable or DSL provider.
 </p>") +
 
     /* Address dialog help 4/8 */
-_("<p>Network addresses will then be obtained
-<b>automatically</b> from the server.</p>") +
+_("<p>Network addresses are then obtained
+<b>automatically</b> from the server.</p>
+") +
 
     /* Address dialog help 5/8 */
 _("<p>Otherwise, network addresses must be assigned
@@ -215,7 +219,7 @@ completes the configuration.</p>");
 		`TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
 		`HSpacing(2),
 		/* Text entry label */
-		`TextEntry(`id(`netmask), _("&Subnet mask"), netmask)
+		`TextEntry(`id(`netmask), _("&Subnet Mask"), netmask)
 	    ),
 	    `VSpacing(0.5)
 	));
@@ -249,7 +253,7 @@ completes the configuration.</p>");
 
     list MB_backup = [
 	/* MenuButton item */
-	`item(`id(`hostname), _("&Host name and name server")),
+	`item(`id(`hostname), _("&Host Name and Name Server")),
 	/* MenuButton item */
 	`item(`id(`routing), _("R&outing")),
 	/* MenuButton item */
@@ -266,11 +270,11 @@ completes the configuration.</p>");
     term MB = `MenuButton(`id(`mb), `opt(`hstretch), _("&Advanced..."), MB_list);
 
     /* Frame label */
-    term frame2 = `Frame(_("Detailed settings"), `HBox(`HStretch(),
+    term frame2 = `Frame(_("Detailed Settings"), `HBox(`HStretch(),
 	`HSquash(`VBox(
 	    `VSpacing(0.4),
 	    /* Push button label */
-	    `PushButton(`id(`hostname), `opt(`hstretch), _("&Host name and name server")),
+	    `PushButton(`id(`hostname), `opt(`hstretch), _("&Host Name and Name Server")),
 	    /* Push button label */
 	    `PushButton(`id(`routing), `opt(`hstretch), _("R&outing")),
 	    MB,
@@ -373,7 +377,7 @@ completes the configuration.</p>");
 		string ipa = (string) UI::QueryWidget(`id(`ipaddr), `Value);
 		if(!IP::Check(ipa)) {
 		    /* Popup text */
-		    Popup::Error(_("The IP address is incorrect"));
+		    Popup::Error(_("The IP address is invalid."));
 		    UI::SetFocus(`id(`ipaddr));
 		    continue;
 		}
@@ -395,7 +399,7 @@ Really continue?
 		}
 		if(UI::WidgetExists(`id(`netmask)) && !Netmask::Check((string) UI::QueryWidget(`id(`netmask), `Value))) {
 		    /* Popup text */
-		    Popup::Error(_("The subnet mask is incorrect"));
+		    Popup::Error(_("The subnet mask is invalid."));
 		    UI::SetFocus(`id(`netmask));
 		    continue;
 		}
@@ -414,7 +418,7 @@ Really continue?
 		// FIXME obsolete?
 		if(!regexpmatch(NetworkDevices::device_type(device), NetworkDevices::DeviceRegex["netcard"]:"")) {
 		    /* Popup text */
-		    Popup::Error(sformat(_("Unsupported network card type: %1"), NetworkDevices::device_type(device)));
+		    Popup::Error(sformat(_("Unsupported network card type: %1."), NetworkDevices::device_type(device)));
 		    UI::SetFocus(`id(`dev));
 		    continue;
 		}

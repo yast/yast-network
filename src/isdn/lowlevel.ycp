@@ -380,7 +380,7 @@ define any isdn_lowlevel() ``{
 
     /* DIALOG TEXTS */
     // title for dialog
-    string caption = sformat(_("ISDN low-level configuration for %1%2"),
+    string caption = sformat(_("ISDN Low-Level Configuration for %1%2"),
 	ISDN::type, ISDN::device);
 
     widget_descr["STARTMODE"] = MakeStartmode (
@@ -398,16 +398,18 @@ For the correct values, check with your technical manual or contact your salesma
 
     helptext = helptext +
     // helptext text 2/7
-_("<p><b>Start Mode: </b><b>OnBoot</b> the driver is loaded during
-system boot. <b>Manual</b> the driver must be started with the
-<b>rcisdn start</b> command, only the user root can do this.
-<b>HotPlug </b> is a special case for PCMCIA and USB devices.</p>");
+_("<p><b>Start Mode: </b>  With <b>OnBoot</b>, the driver is loaded during
+system boot. For <b>Manual</b>, the driver must be started with the
+<b>rcisdn start</b> command. Only the user root can do this.
+<b>HotPlug</b> is a special case for PCMCIA and USB devices.</p>
+");
 
     if (1<size(DrvList))
 	helptext = helptext +
     // helptext text 3/7
-_("<p>For some isdncard exist multiple drivers,
-Please select one from the list.</p>");
+_("<p>Multiple drivers exist for your ISDN card.
+Select one from the list.</p>
+");
 
     helptext = helptext +
     // helptext text 4/7
@@ -422,7 +424,7 @@ line here, without a leading zero and without a country prefix.</p>
     helptext = helptext +
     // helptext text 6/7
 _("<p><b>Dial Prefix: </b> If you need a prefix to get an public line, 
-enter it here. This is only used on a internal S0 bus and most common one is \"0\".</p>
+enter it here. This is only used on a internal S0 bus and the most common one is \"0\".</p>
 ");
 
     helptext = helptext +
@@ -442,7 +444,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
     term ISDN_protocol =
 	`VSquash(
 	    // Frame title
-	    `Frame(_("Selection of ISDN protocol"),
+	    `Frame(_("ISDN Protocol"),
 		`RadioButtonGroup(`id(`protocol),
 		    `VBox(
 			// RadioButton label for ISDN protocols
@@ -450,7 +452,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 			// RadioButton label for ISDN protocols
 			`Left(`RadioButton(`id("1tr6"), _("1TR&6"), protocol == "1tr6")),
 			// RadioButton label for ISDN protocols
-			`Left(`RadioButton(`id("leased"), _("&Leased line"), protocol == "leased")),
+			`Left(`RadioButton(`id("leased"), _("&Leased Line"), protocol == "leased")),
 			// RadioButton label for ISDN protocols
 			`Left(`RadioButton(`id("ni1"), _("NI&1"), protocol == "ni1")),
 			`VStretch()
@@ -507,7 +509,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
     });
     countries = sort(term x, term y, (list<term>) countries, ``(x[1]:"" < y[1]:""));
     // other country in list
-    countries = add(countries, `item(`id("-1"), _("other"), ("-1" == ccode)));
+    countries = add(countries, `item(`id("-1"), _("Other"), ("-1" == ccode)));
     ccode = newcc;
 
     term ISDN_area = `VBox(
@@ -521,10 +523,10 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 	`VSpacing(0.4),
 	`HBox(
 	    // TextEntry label for phone network Areacode (german Vorwahl)
-	    `HWeight(25, `TextEntry(`id(`areacode), _("&Areacode"), areacode)),
+	    `HWeight(25, `TextEntry(`id(`areacode), _("&Area Code"), areacode)),
 	    // TextEntry label for phone number prefix to get a public line (german Amtsholziffer)
 	    `HSpacing(1),
-	    `HWeight(24, `TextEntry(`id(`dialprefix), _("&Dialprefix"), dialprefix))
+	    `HWeight(24, `TextEntry(`id(`dialprefix), _("&Dial Prefix"), dialprefix))
 	),
 	`VSpacing(0.4),
 	// CheckBox label
@@ -562,7 +564,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 	    `HBox(
 	    `HWeight(30, `VBox(
 		`Left(`Label(`id(`Vend), _("Vendor"))),
-		`Left(`Label(`id(`Card), _("ISDN card")))
+		`Left(`Label(`id(`Card), _("ISDN Card")))
 	    )),
 	    `HWeight(70, `VBox(
 		`Left(`Label(`id(`VendN), cur_vendor["name"]:"unknown")),

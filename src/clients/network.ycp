@@ -38,9 +38,9 @@ term contents = `HBox(
 	/* Selection box label */
 	`SelectionBox(`id(`modules), `opt(`notify), _("&Available Network Modules:"), [
 	    /* Selection box item */
-	    `item(`id("lan"), _("Network card"), true),
+	    `item(`id("lan"), _("Network Card"), true),
 	    /* Selection box item */
-	    `item(`id("isdn"), _("ISDN card")),
+	    `item(`id("isdn"), _("ISDN Card")),
 	    /* Selection box item */
 	    `item(`id("modem"), _("Modem")),
 	    /* Selection box item */

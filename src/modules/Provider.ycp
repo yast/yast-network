@@ -617,7 +617,7 @@ global define list Summary(string type, boolean split) {
 	summary = Summary::AddHeader("", _("Nothing is configured."));
     else
 	/* Summary text */
-	summary = Summary::AddHeader("", _("Already configured providers:"));
+	summary = Summary::AddHeader("", _("Configured Providers:"));
 
     list<string> provs = [];
     maplist(string name, map provmap, Provs, {
@@ -635,7 +635,7 @@ global define list Summary(string type, boolean split) {
 	summary,
 	[
 	    /* List item to providers summary */
-	    `item(`id("modem"), _("Modem provider"), true),
+	    `item(`id("modem"), _("Modem Provider"), true),
 	    /* List item to providers summary */
 	    `item(`id("isdn"), _("ISDN Provider")),
 	    /* List item to providers summary */

@@ -98,8 +98,9 @@ Internet connection test.</p>
 ") +
 
 	    /* help for dialog "Running Internet Connection Test" */
-	    _("<p>The test can be aborted by pressing the <b>Abort Test</b>
-button.</p>");
+	    _("<p>The test can be aborted by pressing
+<b>Abort Test</b>.</p>
+");
 
 	// In update mode there's no network setup, #50381
 	// Actually it depends on the control file, but it's only a help text
@@ -108,7 +109,8 @@ button.</p>");
 	    help = help +
 		/* help for dialog "Running Internet Connection Test" */
 		_("<p>If the test fails, return to the network configuration
-and correct the setting.</p>");
+and correct the settings.</p>
+");
 	}
 
 	/* fix checkycp complaints */

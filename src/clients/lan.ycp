@@ -37,7 +37,7 @@ include "network/lan/wizards.ycp";
  */
 map cmdline = $[
     /* Commandline help title */
-    "help"	: _("Network cards configuration"),
+    "help"	: _("Network Card Configuration"),
     "id"	: "lan",
     "guihandler": LanSequence,
     "initialize": Lan::Read,

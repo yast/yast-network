@@ -230,7 +230,7 @@ define list hwlist2items(list<map> l, integer selected) {
 	n = n + 1;
     });
     return items;
-    //return list2items(maplist(map h, l, { return h["name"]:_("Unknown device"); }), selected);
+    //return list2items(maplist(map h, l, { return h["name"]:_("Unknown Device"); }), selected);
 }
 
 /**
@@ -250,7 +250,7 @@ define symbol FinishPopup(boolean modified, string head, string text, string run
     string h = head;
     if(h == nil || h == "")
 	/* Popup headline */
-	h = _("Configuration has been successfully saved.");
+	h = _("Configuration Successfully Saved");
 
     map heads = $[
 	/* Popup headline */

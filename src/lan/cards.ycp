@@ -41,12 +41,12 @@ map NetworkCards = $[
     $[
     "module" : "orinoco",
     /* Network card name (wireless) */
-    "name" :  _("Lucent Orinoco, Prism II based and similar wireless cards"),
+    "name" :  _("Lucent Orinoco, Prism II based, and similar wireless cards"),
     ],
     $[
     "module" : "orinoco_cs",
     /* Network card name (wireless) */
-    "name" :  _("PCMCIA Lucent Orinoco, Prism II based and similar wireless cards"),
+    "name" :  _("PCMCIA Lucent Orinoco, Prism II based, and similar wireless cards"),
     ],
     $[
     "module" : "orinoco_pci",

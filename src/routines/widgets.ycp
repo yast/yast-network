@@ -25,9 +25,10 @@ map<string, map<string,any> > widget_descr = $[
 	"opt": [`notify],
 	"help":
 	// Details dialog help
-_("<p>Normally only the system administator may (de)activate a network
-interface. If you choose <b>User Controlled</b> ordinary user may
-(de)activate the interface via KInternet.</p>"),
+_("<p>Normally only the system administator is allowed to activate and 
+deactivate network interface. With <b>User Controlled</b>, an 
+ordinary user may control the interface with KInternet.</p>
+"),
 	],
 
     // #23315
@@ -74,21 +75,23 @@ via 'ifup' or 'kinternet' (See 'User Controlled' below)."),
 	],
     "ifplugd": $[
 	// Combo box option for Device Activation
-	"label": _("When Cable Is Plugged"),
+	"label": _("On Cable Connection"),
 	// help text for Device Activation
-	"help": _("<b>When Cable Is Plugged</b>:
-The interface will be watched, whether there is a physical
+	"help": _("<b>On Cable Connection</b>:
+The interface will be watched for whether there is a physical
 network connection. That means either the cable is connected or the
-wireless interface can connect to an access point."),
+wireless interface can connect to an access point.
+"),
 	],
     "hotplug": $[
 	// Combo box option for Device Activation
-	"label": _("When Device Is Hot Plugged"),
+	"label": _("On Hotplug"),
 	// help text for Device Activation
-	"help": _("<b>When Device Is Hot Plugged</b>:
-The interface will be set up as soon as it is available. This is
+	"help": _("With <b>On Hotplug</b>,
+the interface will be set up as soon as it is available. This is
 nearly the same as 'At Boot Time', but does not result in an error at
-boot time if the interface is not present."),
+boot time if the interface is not present.
+"),
 	],
     ];
 
@@ -96,13 +99,14 @@ map<string, any> MakeStartmode (list<string> ids) {
     map<string, any> ret = $[
 	"widget": `combobox,
 	// Combo box label
-	"label": _("&Device activation"),
+	"label": _("&Device Activation"),
 	"help":
 	// Device activation main help. The individual parts will be
 	// substituted as %1
-_("<p>With <b>Device Activation</b> you may choose when the network
-interface will be set up. Beside <b>At Boot Time</b> and <b>Never</b>
-there are: %1</p>"),
+_("<p>With <b>Device Activation</b>, choose when the network
+interface should be set up. <b>At Boot Time</b> starts it during system boot. <b>Never</b> does not start the device.
+%1</p>
+"),
 	];
     string helps = "";
     list items = maplist (string id, ids, {

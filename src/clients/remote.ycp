@@ -62,7 +62,7 @@ define void ListHandler(map options) {
  */
 map cmdline = $[
     /* Commandline help title */
-    "help"	: _("Remote configuration"),
+    "help"	: _("Remote Configuration"),
     "id"	: "remote",
     "guihandler": RemoteGUI,
     "initialize": Remote::Read,

@@ -140,10 +140,12 @@ define boolean display_testresult(integer result, string details) ``{
 
     if (result == 0) {
 	// ISDN HW test result (positiv)
-	msg = sformat(_("The test was successful"));
+	msg = sformat(_("The test was successful."));
     } else {
 	// ISDN HW test result (negativ)
-	msg = sformat(_("The test was not successful\n ReturnValue: %1"), result);
+	msg = sformat(_("The test was not successful.
+ ReturnValue: %1
+"), result);
     }
     UI::OpenDialog(
 	`opt(`decorated),

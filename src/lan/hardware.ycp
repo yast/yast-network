@@ -30,7 +30,7 @@ define any HardwareDialog() {
     ScreenName("lan-hardware");
 
     /* Manual dialog caption */
-    string caption = _("Manual network card configuration");
+    string caption = _("Manual Network Card Configuration");
 
     /* Manual dialog help 1/4 */
     string help = _("<p>Here, set up your networking device.
@@ -50,13 +50,15 @@ help = help + _("<p>Get a list of available network cards by pressing
 <b>Select from List</b>.</p>") +
 
     /* Manual dialog help 4/4 */
-_("<p>If you have a <b>PCMCIA</b> network card, click on the PCMCIA check
-box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
+_("<p>If you have a <b>PCMCIA</b> network card, select PCMCIA.
+If you have a <b>USB</b> network card, select USB.</p>
+");
 
     if(Arch::s390 ())
 	/* Manual dialog help 5/4 */
 	help = _("<p>Here, set up your networking device. The values will be
-written into <i>/etc/modprobe.conf</i> or <i>/etc/chandev.conf</i>.</p>") +
+written to <i>/etc/modprobe.conf</i> or <i>/etc/chandev.conf</i>.</p>
+") +
 
 	/* Manual dialog help 6/4 */
 _("<p>Options for the module should be written in the format specified
@@ -109,7 +111,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     /* Placeholders (translations) */
     term XBox = `HBox(
 	/* ComboBox label */
-	`ComboBox(`id(`hotplug), `opt(`notify), _("&Hot Plug Type"), []),
+	`ComboBox(`id(`hotplug), `opt(`notify), _("&Hotplug Type"), []),
 	/* CheckBox label */
 	`CheckBox(`id(`pci), `opt(`notify), _("P&CI"), hotplug == "pci"),
 	`HSpacing(1.5)
@@ -471,7 +473,7 @@ define any SelectionDialog() {
     list cards = hwlist2items(hwlist, 0);
 
     /* Manual selection caption */
-    string caption = _("Manual network card selection");
+    string caption = _("Manual Network Card Selection");
 
     /* Manual selection help */
     string helptext = _("<p>Select the network card to configure. Search
@@ -481,7 +483,7 @@ for a particular network card by entering the name in the search entry.</p>");
     term contents = `VBox(
 	`VSpacing(0.5),
 	/* Selection box label */
-	`ReplacePoint(`id(`rp), `SelectionBox(`id(`cards), _("Se&lect network card"), cards)),
+	`ReplacePoint(`id(`rp), `SelectionBox(`id(`cards), _("&Network Card"), cards)),
 	`VSpacing(0.5),
 	/* Text entry field */
 	`TextEntry(`id(`search), `opt(`notify), _("&Search")),
@@ -517,7 +519,7 @@ for a particular network card by entering the name in the search entry.</p>");
 	    cards = hwlist2items(hwlist, selected);
 
 	    /* Selection box title */
-	    UI::ReplaceWidget(`id(`rp), `SelectionBox(`id(`cards), _("Se&lect network card"), cards));
+	    UI::ReplaceWidget(`id(`rp), `SelectionBox(`id(`cards), _("&Network Card"), cards));
 	}
 	else if(ret == `back) {
 	    break;
@@ -572,7 +574,7 @@ define any S390Dialog() {
 		`TextEntry(`id(`qeth_options), Label::Options (), Lan::qeth_options),
 		`VSpacing(1),
 		/* CheckBox label */
-		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA takeover"))),
+		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA Takeover"))),
 		`VSpacing(1)
 		), `HSpacing(2))),
 	    `HSpacing(6)
@@ -580,8 +582,8 @@ define any S390Dialog() {
 	/* S/390 dialog help: QETH Port name */
 	helptext = _("<p>Enter the <b>Port Name</b> for this interface (case-sensitive).</p>") +
 	/* S/390 dialog help: QETH Options */
-	_("<p>Enter any additional <b>Options</b> for this interface (separated by blanks)</p>") +
-	_("<p>Select <b>Enable IPA takeover</b> if IP address takeover should be enabled for this interface.</p>");
+	_("<p>Enter any additional <b>Options</b> for this interface (separated by spacess).</p>") +
+	_("<p>Select <b>Enable IPA Takeover</b> if IP address takeover should be enabled for this interface.</p>");
     }
 
     if(Lan::type == "hsi") {
@@ -594,14 +596,14 @@ define any S390Dialog() {
 		`TextEntry(`id(`qeth_options), Label::Options (), Lan::qeth_options),
 		`VSpacing(1),
 		/* CheckBox label */
-		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA takeover"))),
+		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA Takeover"))),
 		`VSpacing(1)
 		), `HSpacing(2))),
 	    `HSpacing(6)
 	);
 	/* S/390 dialog help: QETH */
-	helptext = _("<p>Enter any additional <b>Options</b> for this interface (separated by blanks).</p>") +
-	_("<p>Select <b>Enable IPA takeover</b> if IP address takeover should be enabled for this interface.</p>");
+	helptext = _("<p>Enter any additional <b>Options</b> for this interface (separated by spaces).</p>") +
+	_("<p>Select <b>Enable IPA Takeover</b> if IP address takeover should be enabled for this interface.</p>");
     }
 
     if(Lan::type == "lcs") {

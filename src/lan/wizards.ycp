@@ -88,8 +88,8 @@ boolean LanSequence() {
  * @return sequence result
  */
 define symbol LanAutoSequence() ``{
-    string caption = _("Network cards configuration");
-    term contents = `Label(_("Initializing ..."));
+    string caption = _("Network Card Configuration");
+    term contents = `Label(_("Initializing..."));
 
     Wizard::CreateDialog();
     Wizard::SetDesktopIcon("lan");

@@ -40,10 +40,11 @@ has been temporarily modified by %1. You have two options:</p>") +
 
     /* Warning popup text 2/2 */
     _("<ol>
-<li>Modify the current (changed!) version of the file</li>
+<li>Modify the current (changed) version of the file.</li>
 <li>Press 'Accept' now and continue editing other (non-resolver) data. You
 could return to this dialog later when the above service has terminated.</li>
-</ol>");
+</ol>
+");
 
     /* has been modified by "unknown process" */
     text = sformat(text, size(process) > 1 ? process : _("unknown process"));
@@ -92,7 +93,7 @@ define any DNSMainDialog(boolean standalone) {
     if(Arch::s390 ()) has_dhcp = false;
 
     /* DNS dialog caption */
-    string caption = _("Host name and name server configuration");
+    string caption = _("Host Name and Name Server Configuration");
 
     /* DNS dialog help 1/5 */
     string help = _("<p>Insert the host name and domain name for your
@@ -169,7 +170,7 @@ disabled during the connection.</p>");
     /* DNS dialog contents */
     term contents = `HSquash(`VBox(
 	/* Frame label */
-	`Frame(_("Host name and domain name"), `VBox(
+	`Frame(_("Host Name and Domain Name"), `VBox(
 	    `HBox(
 		`TextEntry(`id(`host), Label::HostName (), hostname),
 		`HSpacing (1),
@@ -177,11 +178,11 @@ disabled during the connection.</p>");
 		`TextEntry(`id(`domain), _("&Domain Name"), domain)
 	    ),
 	    /* CheckBox label */
-	    `Left(`CheckBox(`id(`dn), _("&Change host name via DHCP")))
+	    `Left(`CheckBox(`id(`dn), _("&Change Host Name via DHCP")))
 	)),
 	`VSpacing(1),
 	/* Frame label */
-	`Frame(_("Name servers and domain search list"), `VBox(
+	`Frame(_("Name Servers and Domain Search List"), `VBox(
 	`HBox(
 	    `VBox(
 		/* TextEntry label */
@@ -202,7 +203,7 @@ disabled during the connection.</p>");
 	    )
 	),
 	/* CheckBox label */
-	`Left(`CheckBox(`id(`dr), `opt(`notify), _("&Update name servers and search list via DHCP")))
+	`Left(`CheckBox(`id(`dr), `opt(`notify), _("&Update Name Servers and Search List via DHCP")))
 	))
     ));
 
@@ -283,14 +284,14 @@ disabled during the connection.</p>");
 		if(!Hostname::Check((string) UI::QueryWidget(`id(`host), `Value))) {
 		    UI::SetFocus(`id(`host));
 		    /* Popup::Error text */
-		    Popup::Error (_("The host name is incorrect.") +
+		    Popup::Error (_("The host name is invalid.") +
 			"\n" + Hostname::ValidHost ());
 		    continue;
 		}
 		if(!Hostname::CheckDomain((string) UI::QueryWidget(`id(`domain), `Value))) {
 		    UI::SetFocus(`id(`domain));
 		    /* Popup::Error text */
-		    Popup::Error (_("The domain name is incorrect.") +
+		    Popup::Error (_("The domain name is invalid.") +
 			"\n" + Hostname::ValidDomain ());
 		    continue;
 		}
@@ -304,19 +305,19 @@ disabled during the connection.</p>");
 	    if(ns1 != "" && !IP::Check(ns1)) {
 		UI::SetFocus(`id(`ns1));
 		/* Popup::Error text */
-		Popup::Error(_("The primary name server is not correct."));
+		Popup::Error(_("The primary name server is invalid."));
 		continue;
 	    }
 	    if(ns2 != "" && !IP::Check(ns2)) {
 		UI::SetFocus(`id(`ns2));
 		/* Popup::Error text */
-		Popup::Error(_("The secondary name server is not correct."));
+		Popup::Error(_("The secondary name server is invalid."));
 		continue;
 	    }
 	    if(ns3 != "" && !IP::Check(ns3)) {
 		UI::SetFocus(`id(`ns3));
 		/* Popup::Error text */
-		Popup::Error(_("The tertiary name server is not correct."));
+		Popup::Error(_("The tertiary name server is invalid."));
 		continue;
 	    }
 
@@ -328,21 +329,21 @@ disabled during the connection.</p>");
 	    if(s1 != "" && !Hostname::CheckDomain(s1)) {
 		UI::SetFocus(`id(`s1));
 		/* Popup::Error text */
-		Popup::Error(_("The primary search domain is not correct.") +
+		Popup::Error(_("The primary search domain is invalid.") +
 			     "\n" + Hostname::ValidDomain ());
 		continue;
 	    }
 	    if(s2 != "" && !Hostname::CheckDomain(s2)) {
 		UI::SetFocus(`id(`s2));
 		/* Popup::Error text */
-		Popup::Error(_("The secondary search domain is not correct.") +
+		Popup::Error(_("The secondary search domain is invalid.") +
 			     "\n" + Hostname::ValidDomain ());
 		continue;
 	    }
 	    if(s3 != "" && !Hostname::CheckDomain(s3)) {
 		UI::SetFocus(`id(`s3));
 		/* Popup::Error text */
-		Popup::Error(_("The tertiary search domain is not correct.") +
+		Popup::Error(_("The tertiary search domain is invalid.") +
 			     "\n" + Hostname::ValidDomain ());
 		continue;
 	    }

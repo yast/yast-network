@@ -34,8 +34,9 @@ and click <b>Next</b>. Contact your provider if you have difficulties.</p>
 the <b>@</b>) with your AOL login. Then enter your password and click <b>Next</b>.
 If you are a new AOL customer and want to dial up for the first time, you need
 to enter your AOL PIN number once. If you have a Windows system, you can enter
-the PIN in the AOL dial-up software. If not, call the AOL hotline and request
-the AOL staff to enter the PIN number for you.</p>"),
+the PIN in the AOL dial-up software. If not, call the AOL hot line and request
+the AOL staff to enter the PIN number for you.</p>
+"),
 
     /* Custom provider text */
     "einsundeins-dsl" : _("<p>Access to Kamp 1&1 DSL.</p>") +

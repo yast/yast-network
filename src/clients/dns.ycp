@@ -85,7 +85,7 @@ define void ListHandler(map options) {
  */
 map cmdline = $[
     /* Commandline help title */
-    "help"	: _("DNS configuration"),
+    "help"	: _("DNS Configuration"),
     "id"	: "routing",
     "guihandler": DNSGUI,
     "initialize": DNS::Read,

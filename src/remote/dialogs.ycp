@@ -45,12 +45,12 @@ define symbol RemoteMainDialog() {
     /* Ramote Administration dialog help
        %1 and %2 are port numbers for vnc and vnchttp, eg. 5901, 5801 */
     string help = sformat (
-_("<p>If this feature is enabled, you will be able to
-administer this machine remotely from another machine. You can use a VNC
+_("<p>If this feature is enabled, you can
+administer this machine remotely from another machine. Use a VNC
 client, such as krdc (connect to <i>&lt;hostname&gt;:%1</i>), or
 a Java-capable web browser (connect to <i>http://&lt;hostname&gt;:%2/</i>).
-This form of remote administration is less secure than using ssh, which is
-enabled by default.</p>"), 5901, 5801);
+This form of remote administration is less secure than using SSH.</p>
+"), 5901, 5801);
 
     Wizard::SetContentsButtons(caption, contents, help,
 	    Label::BackButton(), Label::FinishButton());

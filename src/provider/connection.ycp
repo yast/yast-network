@@ -89,15 +89,17 @@ manually enter the DNS.</p>") +
     /* Connection dialog help 4/8 */
 _("<p><b>Name Servers</b> are required to convert host names
 (e.g., www.suse.com) to IP addresses (e.g., 213.95.15.200). You only
-need to specify the name servers if you enable <i>Dial on demand</i> or
-disable <b>DNS Modification</b> when connected.</p>");
+need to specify the name servers if you enable <i>dial on demand</i> or
+disable <b>DNS Modification</b> when connected.</p>
+");
 
     if (type == "modem")
 	helptext = helptext +
     /* Connection dialog help 5/8 */
-_("<p><b>Stupid Mode</b> disables the detection of any prompts from the dial-in
+_("<p><b>Stupid Mode</b> disables the detection of any prompts from the dial-up
 server. If the connection build-up is slow or does not work at all, try this
-option.</p>");
+option.</p>
+");
 
     helptext = helptext +
     /* Connection dialog help 6/8 */
@@ -108,7 +110,8 @@ to the Internet safe from external attacks.</p>") +
 
     /* Connection dialog help 7/8 */
 _("<p>The <b>Idle Time-Out</b> specifies the time after which an idle
-connection will be shut down (0 means an infinite idle time-out).</p>");
+connection will be shut down (0 means the connection will not time-out).</p>
+");
 
     // if(type == "isdn")
 
@@ -170,7 +173,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 		    /* Checkbox label */
 		    `Left(`CheckBox(`id(`demand), `opt(`notify), _("Dial on D&emand"), demand)),
 		    /* Checkbox label */
-		    `Left(`CheckBox(`id(`modifydns), `opt(`notify), _("&Modify DNS when Connected"), modifydns)),
+		    `Left(`CheckBox(`id(`modifydns), `opt(`notify), _("&Modify DNS When Connected"), modifydns)),
 		    /* Checkbox label */
 		    `Left(`CheckBox(`id(`autodns), `opt(`notify), _("&Automatically Retrieve DNS"), autodns))
 		 )
@@ -191,7 +194,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    FirewallCheckbox,
 	    `VSpacing(0.5),
 	    /* Combo box label */
-	    `Left(`ComboBox(`id(`idletime), `opt(`editable), _("I&dle Time-out (seconds)"), seconds)),
+	    `Left(`ComboBox(`id(`idletime), `opt(`editable), _("I&dle Time-Out (seconds)"), seconds)),
 	    `VSpacing(1),
 	    details
 	),
@@ -223,7 +226,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    /* check_* */
 	    if(UI::QueryWidget(`id(`idletime), `Value) == "") {
 		/* Popup text */
-		Popup::Error(_("You must set the idle seconds."));
+		Popup::Error(_("Set the idle time-out."));
 		UI::SetFocus(`id(`idletime));
 		continue;
 	    }
@@ -231,12 +234,12 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 		DNS1 = (string) UI::QueryWidget(`id(`DNS1), `Value);
 		DNS2 = (string) UI::QueryWidget(`id(`DNS2), `Value);
 		if(!(IP::Check4(DNS1))) {
-		    Popup::Error(_("The primary name server is not correct"));
+		    Popup::Error(_("The primary name server is invalid."));
 		    UI::SetFocus(`id(`DNS1));
 		    continue;
 		}
 		if(size(DNS2) > 0 && !IP::Check4(DNS2)) {
-		    Popup::Error(_("The secondary name server is not correct"));
+		    Popup::Error(_("The secondary name server is invlid."));
 		    UI::SetFocus(`id(`DNS2));
 		    continue;
 		}

@@ -81,7 +81,7 @@ define void ListHandler(map options) {
 map cmdline = $[
     /* Commandline help title */
     // configuration of hosts
-    "help"	: _("Host configuration"),
+    "help"	: _("Host Configuration"),
     "id"	: "host",
     "guihandler": HostGUI,
     "initialize": Host::Read,

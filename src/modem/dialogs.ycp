@@ -42,7 +42,7 @@ define symbol ModemDialog(boolean detected) {
     /* DIALOG TEXTS */
 
     /* Modem dialog caption */
-    string caption = _("Modem parameters");
+    string caption = _("Modem Parameters");
 
     /* Modem dialog help 1/5 */
     string helptext = _("<p>Enter all modem configuration values.</p>") +
@@ -53,14 +53,16 @@ ttyS1, etc., refer to serial ports and usually correspond to COM1, COM2, etc.,
 in DOS/Windows. ttyACM0 and ttyACM1 refer to USB ports.</p>") +
 
     /* Modem dialog help 3/5 */
-_("<p>If you are on a PBX, you probably need to enter a <b>Dial prefix</b>.
-Often, this is <i>9</i> or <i>0</i>.</p>") +
+_("<p>If you are on a PBX, you probably need to enter a <b>Dial Prefix</b>.
+Often, this is <i>9</i> or <i>0</i>.</p>
+") +
 
     /* Modem dialog help 4/5 */
-_("<p>Choose <b>Dial mode</b> according to your phone link. Most telephone
-companies use <i>tone dial</i> as the <b>Dial mode</b>. Check the additional
-check boxes to turn on your modem speaker (<i>Speaker on</i>) or for your
-modem to wait until it detects a dial tone (<i>Detect Dial tone</i>).</p>") +
+_("<p>Choose <b>Dial Mode</b> according to your phone link. Most telephone
+companies use <i>Tone Dial</i> as the <b>Dial Mode</b>. Check the additional
+check boxes to turn on your modem speaker (<i>Speaker On</i>) or for your
+modem to wait until it detects a dial tone (<i>Detect Dial Tone</i>).</p>
+") +
 
     /* Modem dialog help 5/5 */
 _("<p>Press <b>Details</b> to configure the baud rate and the modem 
@@ -73,13 +75,13 @@ initialization strings.</p>");
     if(detected == true)
 	DeviceTerm = `Left(`HBox(
         /* Label text */
-	    `Label(_("Modem device:")),
+	    `Label(_("Modem Device:")),
 	    `HSpacing(0.5),
 	    `Label(`opt(`outputField), Modem::Device)
 	));
     else
     /* ComboBox label */
-	DeviceTerm = `ComboBox(`id(`Device), `opt(`hstretch, `editable), _("Modem de&vice"), devices);
+	DeviceTerm = `ComboBox(`id(`Device), `opt(`hstretch, `editable), _("Modem De&vice"), devices);
 
     term contents = `HBox(
 	`HSpacing(6),
@@ -90,12 +92,12 @@ initialization strings.</p>");
 	    `HBox(
 		//`TextEntry(`id(`ModemName), _("&Modem name"), name),
         /* TextEntry label */
-		`TextEntry(`id(`DialPrefix), _("Dial prefi&x (if needed)"), Modem::DialPrefix)
+		`TextEntry(`id(`DialPrefix), _("Dial Prefi&x (if needed)"), Modem::DialPrefix)
 	    ),
 	    `VSpacing(0.8),
 	    `HBox(
         /* Frame label */
-		`Frame(_("Dial mode"),
+		`Frame(_("Dial Mode"),
 		    `VBox(
 			`VSpacing(0.3),
 			`HBox(
@@ -103,9 +105,9 @@ initialization strings.</p>");
 			    `RadioButtonGroup(`id(`DialMode),
 				`VBox(
                     /* RadioButton label */
-				    `Left(`RadioButton(`id(`Tone), _("&Tone dialing"), !Modem::PulseDial)),
+				    `Left(`RadioButton(`id(`Tone), _("&Tone Dialing"), !Modem::PulseDial)),
                     /* RadioButton label */
-				    `Left(`RadioButton(`id(`Pulse), _("&Pulse dialing"), Modem::PulseDial))
+				    `Left(`RadioButton(`id(`Pulse), _("&Pulse Dialing"), Modem::PulseDial))
 				)
 			    ),
 			    `HSpacing(0.3)
@@ -115,13 +117,13 @@ initialization strings.</p>");
 		),
 		`HSpacing(1),
         /* Frame label */
-		`Frame(_("Special settings"),
+		`Frame(_("Special Settings"),
 		    `HBox(
 			`HSpacing(0.3),
 			`VBox(
 			    `VSpacing(0.3),
                 /* Checkbox label */
-			    `Left(`CheckBox(`id(`Speaker), _("&Speaker on"), Modem::Speaker)),
+			    `Left(`CheckBox(`id(`Speaker), _("&Speaker On"), Modem::Speaker)),
                 /* Checkbox label */
 			    `Left(`CheckBox(`id(`CarrierDetect), _("D&etect Dial Tone"), Modem::Carrier)),
 			    `VSpacing(0.3)
@@ -211,15 +213,17 @@ define symbol ModemDetailsDialog() {
     /* DIALOG TEXTS */
 
     /* Modem datails dialog caption */
-    string caption = _("Modem parameter details");
+    string caption = _("Modem Parameter Details");
 
     /* Modem datails dialog help 1/2 */
-    string helptext = _("<p><b>Baud rate</b> is a transmission speed that tells
-how many bits per second your computer communicates with your modem.</p>") +
+    string helptext = _("<p><b>Baud Rate</b> is a transmission speed that tells
+how many bits per second your computer communicates with your modem.</p>
+") +
 
     /* Modem datails dialog help 2/2 */
-_("<p>All the relevant information about <b>init strings</b>
-should be in your modem manual.</p>") +
+_("<p>All the relevant information about <b>Init Strings</b>
+should be in your modem manual.</p>
+") +
 
 	CWM::MergeHelps (widgets);
 
@@ -234,10 +238,10 @@ should be in your modem manual.</p>") +
 	`HSpacing(6),
 	`VBox(
 	    /* Combo box label */
-	    `ComboBox(`id(`Baud), `opt(`hstretch, `editable), _("B&aud rate"), BaudRates),
+	    `ComboBox(`id(`Baud), `opt(`hstretch, `editable), _("B&aud Rate"), BaudRates),
 	    `VSpacing(0.5),
 		/* Frame label */
-		`Frame(_("Modem initialization strings"),
+		`Frame(_("Modem Initialization Strings"),
 		`HBox(
 		    `HSpacing(0.2),
 		    `VBox(

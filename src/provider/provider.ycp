@@ -40,7 +40,7 @@ define string ProviderInfoText() ``{
 
     if(hl != "")
 	/* Provider info (%1 is phone number) */
-	info = info + sformat(_("<p>Hotline: %1</p>"), hl);
+	info = info + sformat(_("<p>Hot Line: %1</p>"), hl);
 
 
     if(Provider::Current["DIALMESSAGE1"]:"" != "" || Provider::Current["DIALMESSAGE2"]:"" != "") {
@@ -52,8 +52,9 @@ define string ProviderInfoText() ``{
 	if(hp != "" && hl != "") {
 	    /* Provider info text */
 	    string it = _("<p>To register for <b>%1</b> and find the best
-dialing number, connect to the home page <b>%2</b> or call the hotline
-<b>%3</b>.</p>");
+dialing number, connect to the home page <b>%2</b> or call the hot line
+<b>%3</b>.</p>
+");
 
 	    info = info + sformat(it, Provider::Current["PROVIDER"]:"", hp, hl);
 	}
@@ -69,7 +70,8 @@ dialing number, connect to the home page <b>%2</b>.</p>");
 	if(hp == "" && hl != "") {
 	    /* Provider info text */
 	    string it = _("<p>To register for <b>%1</b> and find the best
-dialing number, call the hotline <b>%2</b>.</p>");
+dialing number, call the hot line <b>%2</b>.</p>
+");
 
 	    info = info + sformat(it, Provider::Current["PROVIDER"]:"", hl);
 	}
@@ -184,8 +186,9 @@ define void username2tonline() ``{
     string caption = _("Provider Parameters");
 
     /* Provider dialog help 1/5 */
-    string helptext = _("<p>Access to your Internet provider. If you have
-selected your provider from the  list, these values are provided.</p>") +
+    string helptext = _("<p>Configure access to your Internet provider. If you have
+selected your provider from the  list, these values are provided.</p>
+") +
 
     /* Provider dialog help 3/5 */
     _("<p>Enter a <b>Provider Name</b> for the provider and a <b>Phone Number</b>
@@ -392,7 +395,7 @@ at the end.</p>");
 	}
 	else if(ret == `info) {
 	    /* Popup text header*/
-	    Popup::LongText(_("Provider info"), `RichText(infotext), 43, 13);
+	    Popup::LongText(_("Provider Information"), `RichText(infotext), 43, 13);
 	    continue;
 	}
 	else if(ret == `askpass) {

@@ -54,7 +54,7 @@ define void AddHandler(map options) {
     string dev = options["device"]:"";
 
     /* Progress text */
-    CommandLine::Print(sformat(_("Adding device: %1"), dev));
+    CommandLine::Print(sformat(_("Adding Device: %1"), dev));
 
     if(!Lan::Add()) {
 	CommandLine::Print(Label::ErrorMsg());
@@ -80,7 +80,7 @@ define void DeleteHandler(map options) {
     string dev = options["device"]:"";
 
     /* Progress text */
-    CommandLine::Print(sformat(_("Deleting device: %1"), dev));
+    CommandLine::Print(sformat(_("Deleting Device: %1"), dev));
 
     if(Lan::Delete(dev) && Lan::Commit())
 	/* Progress result */

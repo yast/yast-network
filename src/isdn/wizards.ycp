@@ -139,9 +139,9 @@ define symbol ISDNSequence() ``{
  */
 define symbol ISDNAutoSequence() ``{
     // main srceen title
-    string caption = _("ISDN configuration");
+    string caption = _("ISDN Configuration");
     // static text
-    term contents = `Label(_("Initializing ..."));
+    term contents = `Label(_("Initializing..."));
 
     Wizard::CreateDialog();
     Wizard::SetDesktopIcon("isdn");

@@ -50,21 +50,24 @@ define any isdn_if_sel(symbol op) ``{
     if (ISDN::have_dsl)
 	helptext = helptext +
     // conditional help text 1/4
-_("<p>If you have a combined ISDN/DSL CAPI controller, configure your DSL
+_("<p>If you have a combined ISDN and DSL CAPI controller, configure your DSL
 connection via <b>Add DSL CAPI Interface</b>. You can also do this later
-in the DSL configuration dialog.</p>");
+in the DSL configuration dialog.</p>
+");
 
     helptext = helptext +
     // help text 1/4
 _("<p>For networking over ISDN, there are two types of interfaces:
-<b>RawIP</b> and <b>SyncPPP</b>. In most cases, you will use SyncPPP. It is
-the default for all common Internet providers.</p>");
+<b>RawIP</b> and <b>SyncPPP</b>. In most cases, use SyncPPP. It is
+the default for all common Internet providers.</p>
+");
 
     helptext = helptext +
     // helptext text 2/4
-_("<p>For switching between various Internet providers, an
+_("<p>To switch between various Internet providers, an
 interface for each provider is not required. Simply add multiple providers to the
-same interface.</p>");
+same interface.</p>
+");
 
     helptext = helptext +
     // helptext text 3/4
@@ -88,18 +91,18 @@ in the DSL configuration dialog.</p>");
 	network = add(network, `PushButton(`id(`AddDSLPPP),`opt(`hstretch), _("Add &DSL CAPI Interface")));
     // PushButton label to select the next Dialog
     if (!ISDN::only_dsl) {
-	network = add(network, `PushButton(`id(`AddSyncPPP),`opt(`hstretch), _("Add new &SyncPPP network interface")));
+	network = add(network, `PushButton(`id(`AddSyncPPP),`opt(`hstretch), _("Add New &SyncPPP Network Interface")));
 	// PushButton label to select the next Dialog
-	network = add(network, `PushButton(`id(`AddRawIP), `opt(`hstretch), _("Add new Raw&IP network interface")));
+	network = add(network, `PushButton(`id(`AddRawIP), `opt(`hstretch), _("Add New Raw&IP Network Interface")));
 	// PushButton label to select the next Dialog
-	network = add(network, `PushButton(`id(`AddProvider),`opt(`hstretch), _("Add &provider to existing interface")));
+	network = add(network, `PushButton(`id(`AddProvider),`opt(`hstretch), _("Add &Provider to Existing Interface")));
     }
     network = add(network, `VSpacing(0.5));
 
     term contents =
 	`HVSquash(
 	    // Frame title
-	    `Frame(_("Network services"),
+	    `Frame(_("Network Services"),
 		`HBox(
 		    `HSpacing(0.5),
 		    network,
@@ -249,8 +252,8 @@ Note: ippp0 is an example</p>");
 
     helptext = helptext +
     // help text 4/5
-_("<p>Selecting <b>channel bundling</b> will set up a 128-kBit connection
-also known as <b>M</b>ultilink <b>PPP</b>. To bring up or down the second channel,
+_("<p>Selecting <b>channel bundling</b> sets up a 128-kBit connection
+also known as Multilink PPP. To activate or deactivate the second channel,
 use the following commands:
 <tt>
  <br> isdnctrl addlink ippp0
@@ -258,9 +261,10 @@ use the following commands:
  <br>
 </tt>
 You can also install the package <b>xibod</b> to have this happen automatically. If
-there is a demand for more bandwidth, it will add a channel. If the traffic goes down, it will
-remove a channel.
-</p>");
+there is a demand for more bandwidth, it adds a channel. If the traffic goes down, it 
+removes a channel.
+</p>
+");
 
     helptext = helptext +
     // help text 5/5
@@ -310,7 +314,7 @@ and sets this interface as external.
         `VBox(
 	    `VSpacing(0.5),
 	    // TextEntry label
-	    `Left(`TextEntry(`id(`msn), _("My &phone number"), msn)),
+	    `Left(`TextEntry(`id(`msn), _("My &Phone Number"), msn)),
 	    `VSpacing(0.5),
 	    `HBox(
 		`VBox(
@@ -332,7 +336,7 @@ and sets this interface as external.
 			`Left(`CheckBox(`id(`chargehup), _("Charge&HUP"), chargeHUP)),
 		    `VSpacing(0.5),
 			// CheckBox label
-			`Left(`CheckBox(`id(`multilink), _("Ch&annel bundling"), multilink)),
+			`Left(`CheckBox(`id(`multilink), _("Ch&annel Bundling"), multilink)),
 		    `VSpacing(0.5),
 			// CheckBox label
 			FirewallCheckbox,

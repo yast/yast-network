@@ -60,12 +60,14 @@ define symbol ReadDialog() ``{
     ScreenName("lan-read");
 
     /* Network cards read dialog help 1/2 */
-    string help = _("<p><b><big>Initializing network card
-configuration</big></b><br>Please wait...<br></p>") +
+    string help = _("<p><b><big>Initializing Network Card
+Configuration</big></b><br>Please wait...<br></p>
+") +
 
     /* Network cards read dialog help 2/2 */
-_("<p><b><big>Aborting the initialization:</big></b><br>
-Safely abort the configuration utility by pressing <B>Abort</B> now.</p>");
+_("<p><b><big>Aborting the Initialization:</big></b><br>
+Safely abort the configuration utility by pressing <B>Abort</B> now.</p>
+");
 
     Wizard::RestoreHelp(help);
     Lan::AbortFunction = ``{return PollAbort();};
@@ -83,12 +85,14 @@ define symbol WriteDialog() ``{
     if(!Modified()) return `next;
 
     /* Network cards write dialog help 1/2 */
-    string help = _("<p><b><big>Saving network card
-configuration</big></b><br>Please wait...<br></p>") +
+    string help = _("<p><b><big>Saving Network Card
+Configuration</big></b><br>Please wait...<br></p>
+") +
 
     /* Network cards write dialog help 2/2 */
-_("<p><b><big>Aborting saving:</big></b><br>
-Abort saving by pressing <b>Abort</b>.</p>");
+_("<p><b><big>Aborting Saving:</big></b><br>
+Abort saving by pressing <b>Abort</b>.</p>
+");
 
     Wizard::RestoreHelp(help);
     Lan::AbortFunction = ``{return PollAbort() && ReallyAbort();};
@@ -105,17 +109,19 @@ define any SummaryDialog() ``{
     ScreenName("lan-summary");
 
     /* Network cards summary dialog caption */
-    string caption = _("Network cards configuration");
+    string caption = _("Network Card Configuration");
 
     /* Network cards summary dialog help 1/3 */
-    string help = _("<p><b><big>Network card setup</big></b><br>
-Configure your network card here.<br></p>") +
+    string help = _("<p><b><big>Network Card Setup</big></b><br>
+Configure your network card here.<br></p>
+") +
 
     /* Network cards summary dialog help 2/3 */
-_("<p><b><big>Adding a network card:</big></b><br>
+_("<p><b><big>Adding a Network Card:</big></b><br>
 Choose a network card from the list of detected network cards.
 If your network card was not autodetected, select <b>Other (not detected)</b>
-then press <b>Configure</b>.</p>") +
+then press <b>Configure</b>.</p>
+") +
 
     /* Network cards summary dialog help 3/3 */
 _("<p><b><big>Editing or Deleting:</big></b><br>
@@ -130,7 +136,7 @@ to change the configuration opens.</p>");
     y2debug("unconfigured=%1", unconfigured);
 
     /* Frame label */
-    term contents = Wizard_hw::DetectedContent(_("Network cards to configure"),
+    term contents = Wizard_hw::DetectedContent(_("Network Cards to Configure"),
 	    unconfigured, false, configured);
 
     Wizard::SetContentsButtons(caption, contents, help,
@@ -198,21 +204,24 @@ define any OverviewDialog() ``{
     ScreenName("lan-overview");
 
     /* Network cards overview dialog caption */
-    string caption = _("Network cards configuration overview");
+    string caption = _("Network Card Configuration Overview");
 
     /* Network cards overview dialog help 1/3 */
-    string help = _("<p><b><big>Network card overview</big></b><br>
+    string help = _("<p><b><big>Network Card Overview</big></b><br>
 Obtain an overview of installed network cards. Additionally,
-edit their configuration.<br></p>") +
+edit their configuration.<br></p>
+") +
 
     /* Network cards overview dialog help 2/3 */
-_("<p><b><big>Adding a network card:</big></b><br>
-Press <b>Add</b> to configure a new network card manually.</p>") +
+_("<p><b><big>Adding a Network Card:</big></b><br>
+Press <b>Add</b> to configure a new network card manually.</p>
+") +
 
     /* Network cards overview dialog help 3/3 */
-_("<p><b><big>Editing or deleting:</big></b><br>
+_("<p><b><big>Editing or Deleting:</big></b><br>
 Choose a network card to change or remove.
-Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
+Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
+");
 
     list overview = Lan::Overview();
     y2debug("overview=%1",overview);

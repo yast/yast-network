@@ -52,23 +52,27 @@ allowed to connect to this interface.</p>
 
     helptext = helptext +
     // help text 2/7
-_("<p>Deselect the <b>Only listed numbers allowed</b> check box
-to allow all caller ids.</p>");
+_("<p>Deselect <b>Only Listed Numbers Allowed</b> 
+to allow all caller IDs.</p>
+");
 
     helptext = helptext +
     // help text 3/7
-_("<p>If <b>callback mode</b> is <b>off</b>,  calls  are handled normally without special 
-processing.</p>");
+_("<p>If the callback mode is <b>off</b>,  calls  are handled normally without special 
+processing.</p>
+");
 
     helptext = helptext +
     // help text 4/7
-_("<p>If <b>callback mode</b> is <b>server</b>, after getting an incoming call, a callback 
-is triggered.</p>");
+_("<p>If the callback mode is <b>server</b>, after getting an incoming call, a callback 
+is triggered.</p>
+");
 
     helptext = helptext +
     // help text 5/7
-_("<p>If <b>callback mode</b> is <b>client</b>, the local system does the initial call then 
-waits for callback from the remote machine.</p>");
+_("<p>If the callback mode is <b>client</b>, the local system does the initial call then 
+waits for callback from the remote machine.</p>
+");
 
     helptext = helptext +
     // help text 6/7
@@ -80,8 +84,9 @@ the client.</p>
     if (syncppp) {
 	helptext = helptext +
     // help text 7/7
-_("<p>In <b>Additional ipppd options</b>, add extra options for ipppd,
-for example, +pap +chap for the dial-in server authentication.</p>");
+_("<p>In <b>Additional ipppd Options</b>, add extra options for ipppd,
+for example, +pap +chap for the dial-in server authentication.</p>
+");
     }
 
     /* DIALOG CONTENTS */
@@ -89,11 +94,11 @@ for example, +pap +chap for the dial-in server authentication.</p>");
     term ipppd = `VSpacing();
     if (syncppp)
 	// TextEntry label
-	ipppd = `TextEntry(`id(`ipppd_opt), _("&Additional ipppd options"), ipppd_opt);
+	ipppd = `TextEntry(`id(`ipppd_opt), _("&Additional ipppd Options"), ipppd_opt);
 
     term cbterm =
 	    // Frame title
-	    `Frame(_("Callback functions"),
+	    `Frame(_("Callback Functions"),
 		`VBox(
 		    `VSpacing(0.2),
 		    `RadioButtonGroup(`id(`callback),`HBox(
@@ -122,9 +127,9 @@ for example, +pap +chap for the dial-in server authentication.</p>");
         `HSpacing(2),
 	    `VBox(
 		// TextEntry label
-		`TextEntry(`id(`remote_in), _("Remote &phone number list"), remote_in),
+		`TextEntry(`id(`remote_in), _("Remote &Phone Number List"), remote_in),
 		// CheckBox label
-		`Left(`CheckBox(`id(`secure), _("Only &listed numbers allowed"), secure)),
+		`Left(`CheckBox(`id(`secure), _("Only &Listed Numbers Allowed"), secure)),
 		`VSpacing(0.5),
 		cbterm,
 		`VSpacing(0.5),

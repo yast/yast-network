@@ -105,7 +105,7 @@ include "network/runtime.ycp";
 global define boolean Read() {
 
     /* Read dialog caption */
-    string caption = _("Initializing modem configuration");
+    string caption = _("Initializing Modem Configuration");
     integer steps = 5;
 
     integer sl = 0; /* 1000; /* TESTING */
@@ -178,7 +178,7 @@ global define boolean Write() {
     y2milestone("Writing configuration");
 
     /* Write dialog caption */
-    string caption = _("Saving modem configuration");
+    string caption = _("Saving Modem Configuration");
     integer steps = 6;
 
     integer sl = 0; /* 1000; /* TESTING */

@@ -31,7 +31,8 @@ define void ProxyFinishPopup(boolean modified) ``{
 string text = _("Applications that support it, such as YaST2 Online Update,
 will use them immediately. Other applications will use them after a new login
 (lynx, wget). Some applications, like Mozilla, do not support these settings
-at all -- they use their own settings system.");
+at all--they use their own settings system.
+");
 
     FinishPopup(modified, "proxy", text, "", []);
 }
@@ -66,7 +67,8 @@ define any ProxyMainDialog(boolean standalone) ``{
 
     /* Proxy dialog help 2/5 */
     _("<p><b>HTTP Proxy URL</b> is the name of the proxy server for your access
-to the world wide web (WWW).</p>") +
+to the World Wide Web (WWW).</p>
+") +
 
     /* Proxy dialog help 2.5/5 */
     _("<p>Example: <i>http://proxy.example.com:3128/</i></p>") +
@@ -76,14 +78,16 @@ to the world wide web (WWW).</p>") +
 to the file transfer services (FTP).</p>") +
 
     /* Proxy dialog help 4/5 */
-    sformat (_("<p><b>No Proxy Domains</b> is a comma separated list of domains
-for which the requests should be done directly without caching,
-for example <i>%1</i>.</p>"),
+    sformat (_("<p><b>No Proxy Domains</b> is a comma-separated list of domains
+for which the requests should be made directly without caching,
+for example, <i>%1</i>.</p>
+"),
 	     "localhost, .intranet.example.com, www.example.com") +
 
     /* Proxy dialog help 5/5 */
-    _("<p>If you are using a proxy server with authorization, fill in
-<b>Proxy User Name</b> and <b>Proxy Password</b>.</p>");
+    _("<p>If you are using a proxy server with authorization, enter
+<b>Proxy User Name</b> and <b>Proxy Password</b>.</p>
+");
 
     /* Proxy dialog contents */
     term contents = `HBox(

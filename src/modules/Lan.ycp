@@ -183,7 +183,7 @@ include "network/runtime.ycp";
 global define boolean Read() {
 
     /* Read dialog caption */
-    string caption = _("Initializing network configuration");
+    string caption = _("Initializing Network Configuration");
     integer steps = 9;
 
     integer sl = 0; /* 1000; /* TESTING */
@@ -303,7 +303,7 @@ global define boolean Write() {
     }
 
     /* Write dialog caption */
-    string caption = _("Saving network configuration");
+    string caption = _("Saving Network Configuration");
     integer steps = 11;
 
     integer sl = 0; /* 1000; /* TESTING */

@@ -65,9 +65,10 @@ define symbol ReadDialog() {
 </BIG></B><BR>Please wait...<BR></P>");
 
     /* modems read dialog help 2/2 */
-    helptext = helptext + _("<P><B><BIG>Aborting the initialization:
+    helptext = helptext + _("<P><B><BIG>Aborting the Initialization
 </BIG></B><BR>You can safely abort the configuration utility by pressing
-the <B>Abort</B> button now.</P>");
+<B>Abort</B> now.</P>
+");
 
     Wizard::RestoreHelp(helptext);
     Modem::AbortFunction = ``{return PollAbort();};
@@ -90,9 +91,10 @@ define symbol WriteDialog() {
 Please wait...<BR></P>");
 
     /* modems write dialog help 2/2 */
-    helptext = helptext + _("<P><B><BIG>Aborting the saving:</BIG></B><BR>
-You can abort the saving by pressing the <B>Abort</B> button. An additional
-dialog will possibly inform you whether it is safe to do so or not.</P>");
+    helptext = helptext + _("<P><B><BIG>Aborting Saving</BIG></B><BR>
+You can abort the save process by pressing <B>Abort</B>. An additional
+dialog may inform you whether it is safe to do so.</P>
+");
 
     Wizard::RestoreHelp(helptext);
     Modem::AbortFunction = ``{return PollAbort() && ReallyAbort();};
@@ -109,7 +111,7 @@ define any SummaryDialog() {
     ScreenName("modem-summary");
 
     /* Modems summary dialog caption */
-    string caption = _("Modem configuration");
+    string caption = _("Modem Configuration");
 
     /* modems summary dialog help 1/3 */
     string helptext = _("<p><b><big>Modem Setup</big></b><br>
@@ -132,7 +134,7 @@ configuration.</p>");
 
     y2debug("unconfigured=%1",unconfigured);
     /* Frame label */
-    term contents = Wizard_hw::DetectedContent(_("Modems to configure"),
+    term contents = Wizard_hw::DetectedContent(_("Modems to Configure"),
 	    unconfigured, false, configured);
 
     Wizard::SetContentsButtons(caption, contents, helptext,
@@ -193,7 +195,7 @@ define any OverviewDialog() {
     ScreenName("modem-overview");
 
     /* Modems overview dialog caption */
-    string caption = _("Modem configuration overview");
+    string caption = _("Modem Configuration Overview");
 
     /* modems overview dialog help 1/3 */
     string helptext = _("<P><B><BIG>Modem Overview</BIG></B><BR>
@@ -201,8 +203,9 @@ Here, get an overview of installed modems. Additionally,
 edit their configuration.<BR></P>");
 
     /* modems overview dialog help 2/3 */
-    helptext = helptext + _("<P><B><BIG>Adding a modem:</BIG></B><BR>
-If you press <B>Add</B>, you can manually configure a modem.</P>");
+    helptext = helptext + _("<P><B><BIG>Adding a Modem:</BIG></B><BR>
+If you press <B>Add</B>, you can manually configure a modem.</P>
+");
 
     /* modems overview dialog help 3/3 */
     helptext = helptext + _("<P><B><BIG>Editing or Deleting:</BIG></B><BR>
