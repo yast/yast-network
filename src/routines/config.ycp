@@ -127,11 +127,13 @@ global define boolean WriteConfig() ``{
 	path p = topath(".network.section.\"" + sysconfig + "/ifcfg-" + d + "\"");
 	y2debug("deleting: %1", p);
 	SCR::Write(p, nil);
+	/* FIXME: delete modules.conf entry */
     });
 
     /* write all devices */
     maplist(`typ, `devsmap, CONFIG, ``{
 	maplist(`num, `devmap, devsmap, ``{
+	    /* write sysconfig */
 	    string dev = typ + num;
 	    string p = ".network.value.\"" + sysconfig + "/ifcfg-" + dev + "\".";
 	    SCR::Write(topath(p+"BOOTMODE"), "onboot");
@@ -150,14 +152,17 @@ global define boolean WriteConfig() ``{
 		SCR::Write(topath(p+"NETWORK"), nil);
 		SCR::Write(topath(p+"BROADCAST"), nil);
 	    }
-	    /* FIXME write other items */
+	    /* write modules.conf */
+	    if(modul != nil && modul != "")
+		SCR::Write(.modules.alias, modul, dev);
+	    if(options != nil && options != "")
+		SCR::Write(.modules.options, options, dev);
 	});
     });
 
     /* finish him */
     SCR::Write(.network, nil);
-
-    /* ... */
+    SCR::Write(.modules, nil);
 
     return true;
 }

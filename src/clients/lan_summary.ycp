@@ -1,0 +1,40 @@
+/**
+ * File:
+ *   clients/lan_summary.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   Network cards summary
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Main file for network card configuration.
+ * Uses all other files.
+ *
+ */
+
+{
+
+textdomain "network";
+
+/* The main () */
+y2milestone("Lan summary started");
+y2milestone("----------------------------------------");
+
+include "ui/summary.ycp";
+
+/* main ui function */
+//any ret = LanSequence();
+any ret = [];
+y2debug("ret == %1", ret);
+
+/* Finish */
+y2milestone("Lan summary finished");
+return summaryDevicesList(ret);
+
+}

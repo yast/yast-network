@@ -466,6 +466,8 @@ global define boolean Commit() ``{
 	    change(newdev, "NETMASK", netmask);
 	    change(newdev, "BROADCAST", compute_broadcast(ipaddr, netmask));
 	    change(newdev, "NETWORK", compute_network(ipaddr, netmask));
+	    change(newdev, "module", modul);
+	    change(newdev, "options", options);
 	}
 	if(operation == `add)
 	    ConfigAdd(type, device, newdev,true);

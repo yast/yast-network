@@ -90,6 +90,8 @@ your changes and <b>finish</b> the network configuration.</p>");
     s2 = select(searchlist, 1, "");
     s3 = select(searchlist, 2, "");
 
+    string space = " ";
+
     /* DNS dialog contents */
     term contents = `HSquash(`VBox(
 	`Frame(_("Host name and domain name"), `VBox(
@@ -108,15 +110,15 @@ your changes and <b>finish</b> the network configuration.</p>");
 	`HBox(
 	    // common label for more text entries
 	    `Frame(_("Na&me server list"), `VBox(
-		`TextEntry(`id(`ns1), " ", ns1),
-		`TextEntry(`id(`ns2), " ", ns2),
-		`TextEntry(`id(`ns3), " ", ns3)
+		`TextEntry(`id(`ns1), space, ns1),
+		`TextEntry(`id(`ns2), space, ns2),
+		`TextEntry(`id(`ns3), space, ns3)
 	    )),
 	    // common label for more text entries
 	    `Frame(_("Domain &search list"), `VBox(
-		`TextEntry(`id(`s1), " ", s1),
-		`TextEntry(`id(`s2), " ", s2),
-		`TextEntry(`id(`s3), " ", s3)
+		`TextEntry(`id(`s1), space, s1),
+		`TextEntry(`id(`s2), space, s2),
+		`TextEntry(`id(`s3), space, s3)
 	    ))
 	)
     ));
