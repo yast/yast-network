@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Aug  4 11:20:31 CEST 2003 - jsrain@suse.de
+
+- fixed testsuite
+
+-------------------------------------------------------------------
 Mon Aug 04 11:06:12 CEST 2003 - arvin@suse.de
 
 - fixed return value in inst_netprobe
