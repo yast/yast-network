@@ -223,7 +223,7 @@ global define boolean Stop() ``{
     running = false;
 
 y2milestone("IFCONFIG3: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
-    ret = StopDetection();
+    boolean ret = StopDetection();
     ret = StopEthInterface() && ret;
 
 y2milestone("IFCONFIG4: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));

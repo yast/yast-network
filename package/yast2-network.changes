@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Sep 10 18:00:14 CEST 2003 - msvec@suse.cz
+
+- fixed log erros possible affecting the detection (#30424)
+- 2.8.31
+
+-------------------------------------------------------------------
 Mon Sep  8 23:59:05 CEST 2003 - kkeil@suse.de
 
 - fix lost of firewall settings (#29103)
