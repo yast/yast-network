@@ -358,8 +358,9 @@ global define boolean Select(string dev) {
 	map pppmodes = $[
 	    // pptp removed because we no longer have ppp_mppe.ko, #73043
 	    // I leave related code in for the case it comes back
-//	    "AT" : "pptp",
-//	    "CZ" : "pptp",
+            // reenabled on request from aj@suse.de
+	    "AT" : "pptp",
+	    "CZ" : "pptp",
 	    "DE" : "pppoe",
 	    "GB" : "pppoatm",
 	    "CA" : "pppoe",
@@ -542,7 +543,7 @@ global define void SelectHW(integer which) {
 
 global list<string> Packages() {
     if(size(NetworkDevices::List("dsl")) < 1) return [];
-    return ["smpppd", "ppp", /* "pptp", */ "linux-atm-lib"];
+    return ["smpppd", "ppp",  "pptp", "linux-atm-lib"];
 }
 
 /**
