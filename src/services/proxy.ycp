@@ -160,17 +160,35 @@ should be done directly without caching.</p>") +
 		UI::SetFocus(`id(`user));
 		continue;
 	    }
-	    if(http != "" && !URL::Check(http)) {
-		/* Popup::Error text */
-		Popup::Error(_("HTTP proxy URL is invalid."));
-		UI::SetFocus(`id(`http));
-		continue;
+	    if(http != "") {
+		if(!URL::Check(http)) {
+		    /* Popup::Error text */
+		    Popup::Error(_("HTTP proxy URL is invalid."));
+		    UI::SetFocus(`id(`http));
+		    continue;
+		}
+		map urlmap = URL::Parse(http);
+		if(urlmap["scheme"]:"" == "") {
+		    /* Popup::Error text */
+		    Popup::Error(_("HTTP proxy URL must contain a scheme specification (http)."));
+		    UI::SetFocus(`id(`http));
+		    continue;
+		}
 	    }
-	    if(ftp != "" && !URL::Check(ftp)) {
-		/* Popup::Error text */
-		Popup::Error(_("FTP proxy URL is invalid."));
-		UI::SetFocus(`id(`ftp));
-		continue;
+	    if(ftp != "") {
+		if(!URL::Check(ftp)) {
+		    /* Popup::Error text */
+		    Popup::Error(_("FTP proxy URL is invalid."));
+		    UI::SetFocus(`id(`ftp));
+		    continue;
+		}
+		map urlmap = URL::Parse(ftp);
+		if(urlmap["scheme"]:"" == "") {
+		    /* Popup::Error text */
+		    Popup::Error(_("FTP proxy URL must contain a scheme specification (http)."));
+		    UI::SetFocus(`id(`ftp));
+		    continue;
+		}
 	    }
 	    break;
 	}

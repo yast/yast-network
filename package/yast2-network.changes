@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Sep  2 16:09:49 CEST 2003 - msvec@suse.de
+
+- proxy url must contain the scheme identifier (#29754)
+- 2.8.22
+
+-------------------------------------------------------------------
 Tue Sep 02 14:36:21 CEST 2003 - arvin@suse.de
 
 - better text for vnc remote administration (bug #29717)
