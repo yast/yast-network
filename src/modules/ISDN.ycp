@@ -733,6 +733,12 @@ global define boolean Commit() ``{
 	    global_ac = ac;
 	string dp = hw_device["DIALPREFIX"]:"";
 	global_dp = dp;
+	string sm = cfg["STARTMODE"]: "";
+	if (sm == "hotplug")
+	    global_sm = "hotplug";
+	if (sm == "manual" && global_sm == "onboot")
+	    global_sm = "manual";
+	
 	if(operation == `add)
 	    ConfigAddEdit(type, device, hw_device, true);
 	else
