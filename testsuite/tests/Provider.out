@@ -11,10 +11,6 @@ Read	.etc.install_inf.VNC nil
 Read	.etc.install_inf.UseSSH nil
 Read	.etc.install_inf.Locale nil
 Read	.etc.install_inf.InstMode nil
-Read	.target.size "/usr/X11R6/lib/sax/init.pl" nil
-Read	.probe.framebuffer nil
-Read	.probe.display []
-Read	.probe.bios_video nil
 Execute	.target.bash "/usr/lib/YaST2/bin/version" 0
 Read	.sysconfig.language.RC_LANG nil
 Log	Failed reading <.sysconfig.language.RC_LANG>
