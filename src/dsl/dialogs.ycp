@@ -101,6 +101,7 @@ be appropriate for dial-on-demand connections.</p>");
 	ifaces = union(ifaces, Lan::GetDevices("eth-usb"));
 	y2debug("ifaces=%1", ifaces);
 
+	/* FIXME Why is not the current interface added? */
 	if(false && /*interface != "" && */!contains(ifaces, interface))
 	    change(ifaces, interface);
 

@@ -139,9 +139,9 @@ disabled during the connection.</p>");
 	`Frame(_("Host name and domain name"), `VBox(
 	    `HBox(
 		/* TextEntry label */
-		`TextEntry(`id(`host), _("&Host name"), hostname),
+		`TextEntry(`id(`host), _("&Host Name"), hostname),
 		/* TextEntry label */
-		`TextEntry(`id(`domain), _("&Domain name"), domain)
+		`TextEntry(`id(`domain), _("&Domain Name"), domain)
 	    ),
 	    /* CheckBox label */
 	    `Left(`CheckBox(`id(`dn), _("&Change host name via DHCP")))
@@ -152,19 +152,19 @@ disabled during the connection.</p>");
 	`HBox(
 	    `VBox(
 		/* TextEntry label */
-		`TextEntry(`id(`ns1), _("Name server &1"), ns1),
+		`TextEntry(`id(`ns1), _("Name Server &1"), ns1),
 		/* TextEntry label */
-		`TextEntry(`id(`ns2), _("Name server &2"), ns2),
+		`TextEntry(`id(`ns2), _("Name Server &2"), ns2),
 		/* TextEntry label */
-		`TextEntry(`id(`ns3), _("Name server &3"), ns3)
+		`TextEntry(`id(`ns3), _("Name Server &3"), ns3)
 	    ),
 	    `VBox(
 		/* TextEntry label */
-		`TextEntry(`id(`s1), _("Doma&in search 1"), s1),
+		`TextEntry(`id(`s1), _("Doma&in Search 1"), s1),
 		/* TextEntry label */
-		`TextEntry(`id(`s2), _("Do&main search 2"), s2),
+		`TextEntry(`id(`s2), _("Do&main Search 2"), s2),
 		/* TextEntry label */
-		`TextEntry(`id(`s3), _("Dom&ain search 3"), s3)
+		`TextEntry(`id(`s3), _("Dom&ain Search 3"), s3)
 	    )
 	),
 	/* CheckBox label */

@@ -85,12 +85,12 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 	`VBox(
 	    `VStretch(),
 	    /* ComboBox label */
-	    `ComboBox(`id(`gw), `opt(`editable, `hstretch), _("Default &gateway"), [ defgw ]),
+	    `ComboBox(`id(`gw), `opt(`editable, `hstretch), _("Default &Gateway"), [ defgw ]),
 	    `VSpacing(1),
 	    /* Frame label */
-	    `Frame(_("Routing table"), `VBox(
+	    `Frame(_("Routing Table"), `VBox(
 		/* CheckBox label */
-		`Left(`CheckBox(`id(`expert), `opt(`notify), _("E&xpert configuration"))),
+		`Left(`CheckBox(`id(`expert), `opt(`notify), _("E&xpert Configuration"))),
 		`Table(`id(`table), `header(
 		    /* Table header 1/4 */
 		    _("Destination"),
@@ -108,7 +108,7 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 		`PushButton(`id(`delete), `opt(`disabled), _("De&lete"))))),
 	    `VSpacing(1),
 	    /* CheckBox label */
-	    `Left(`CheckBox(`id(`forward), _("Enable &IP forwarding"))),
+	    `Left(`CheckBox(`id(`forward), _("Enable &IP Forwarding"))),
 	    `VStretch()
 	),
 	`HSpacing(5)

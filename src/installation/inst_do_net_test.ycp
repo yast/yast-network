@@ -67,7 +67,7 @@ Internet Connection Test.</p>") +
 button.</p>") +
 
 	/* help for dialog "Running Internet Connection Test" */
-	_("<p>In case the test fails you can go back to the network configuration
+	_("<p>If the test fails, return to the network configuration
 and correct the setting.</p>");
 
 	/* Progress labels */

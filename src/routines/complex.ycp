@@ -135,49 +135,49 @@ global define boolean OtherDevices(list devs, string type) ``{
 
     if(type == "all" || type == "modem") {
 	/* SelectionBox item */
-        if(has_pcmcia) change(devs, `item(`id(`pcmcia_modem), _("PCMCIA modem")));
+        if(has_pcmcia) change(devs, `item(`id(`pcmcia_modem), _("PCMCIA Modem")));
 	/* SelectionBox item */
-        if(has_usb) change(devs, `item(`id(`usb_modem), _("USB modem")));
+        if(has_usb) change(devs, `item(`id(`usb_modem), _("USB Modem")));
 	/* SelectionBox item */
-	change(devs, `item(`id(`other_modem), _("Other modem (not detected)")));
+	change(devs, `item(`id(`other_modem), _("Other Modem (not detected)")));
     }
     if(type == "all" || type == "isdn") {
 	/* SelectionBox item */
-        if(has_pcmcia) change(devs, `item(`id(`pcmcia_isdn), _("PCMCIA ISDN card")));
+        if(has_pcmcia) change(devs, `item(`id(`pcmcia_isdn), _("PCMCIA ISDN Card")));
 	/* SelectionBox item */
-        if(has_usb) change(devs, `item(`id(`usb_isdn), _("USB ISDN card")));
+        if(has_usb) change(devs, `item(`id(`usb_isdn), _("USB ISDN Card")));
 	/* SelectionBox item */
-	change(devs, `item(`id(`other_isdn), _("Other ISDN card (not detected)")));
+	change(devs, `item(`id(`other_isdn), _("Other ISDN Card (not detected)")));
     }
     if(type == "all" || type == "netcard") {
 	/* offer only eth so far */
 	if(true) {
 	    /* SelectionBox item */
-	    if(has_pcmcia) change(devs, `item(`id(`pcmcia_eth), _("PCMCIA network card")));
+	    if(has_pcmcia) change(devs, `item(`id(`pcmcia_eth), _("PCMCIA Network Card")));
 	    /* SelectionBox item */
-	    if(has_usb) change(devs, `item(`id(`usb_eth), _("USB network card")));
+	    if(has_usb) change(devs, `item(`id(`usb_eth), _("USB Network Card")));
 	}
 	/* maybe also TR ... */
 	else {
 	    if(has_pcmcia) {
 		/* SelectionBox item */
-		change(devs, `item(`id(`pcmcia_eth), _("PCMCIA ethernet network card")));
+		change(devs, `item(`id(`pcmcia_eth), _("PCMCIA Ethernet Network Card")));
 		/* SelectionBox item */
-		change(devs, `item(`id(`pcmcia_tr), _("PCMCIA token-ring network card")));
+		change(devs, `item(`id(`pcmcia_tr), _("PCMCIA Token Ring Network Card")));
 	    }
 	    if(has_usb) {
 		/* SelectionBox item */
-		change(devs, `item(`id(`usb_eth), _("USB ethernet network card")));
+		change(devs, `item(`id(`usb_eth), _("USB Ethernet Network Card")));
 		/* SelectionBox item */
-		change(devs, `item(`id(`usb_tr), _("USB token-ring network card")));
+		change(devs, `item(`id(`usb_tr), _("USB Token Ring Network Card")));
 	    }
 	}
 	/* SelectionBox item */
-        change(devs, `item(`id(`other), _("Other network card (not detected)")));
+        change(devs, `item(`id(`other), _("Other Network Card (not detected)")));
     }
     if(type == "all" || type == "dummy") {
 	/* SelectionBox item */
-        change(devs, `item(`id(`dummy), _("Dummy device")));
+        change(devs, `item(`id(`dummy), _("Dummy Device")));
     }
     else {
         y2error("Unknown type: %1", devtype);

@@ -109,7 +109,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     /* Placeholders (translations) */
     term XBox = `HBox(
 	/* ComboBox label */
-	`ComboBox(`id(`hotplug), `opt(`notify), _("&Hot plug type"), []),
+	`ComboBox(`id(`hotplug), `opt(`notify), _("&Hot Plug Type"), []),
 	/* CheckBox label */
 	`CheckBox(`id(`pci), `opt(`notify), _("P&CI"), hotplug == "pci"),
 	`HSpacing(1.5)
