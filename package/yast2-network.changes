@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Feb 17 18:02:00 CET 2003 - kkeil@suse.de
+
+- reenable isdn in provider dialog (#23725)
+
+-------------------------------------------------------------------
 Mon Feb 17 14:40:49 CET 2003 - msvec@suse.de
 
 - don't read the lan devices in DSL proposal (#23569)
