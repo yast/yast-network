@@ -14,6 +14,7 @@ textdomain "network";
 /* The main () */
 y2milestone("----------------------------------------");
 y2milestone("Modem proposal started");
+y2milestone("Arguments: %1", WFM::Args());
 
 import "Modem";
 import "Progress";

@@ -3,19 +3,25 @@
  * Package:     Network configuration
  * Summary:     Proposal for Remote Administration
  * Authors:     Arvin Schnell <arvin@suse.de>
+ *		Michal Svec <msvec@suse.cz>
  *
  * $Id$
  */
 
 {
 
-    textdomain "network";
+textdomain "network";
 
-    import "Remote";
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("Remote proposal started");
+y2milestone("Arguments: %1", WFM::Args());
 
-    string func  = WFM::Args(0);
-    map    param = WFM::Args(1);
-    map    ret   = $[];
+import "Remote";
+
+string func = WFM::Args(0);
+map param = WFM::Args(1);
+map ret = $[];
 
     if ( func == "MakeProposal" )
     {
@@ -65,7 +71,11 @@
 	Remote::Write ();
     }
 
-    return ret;
+/* Finish */
+y2debug("ret=%1",ret);
+y2milestone("Remote proposal finished");
+y2milestone("----------------------------------------");
+return ret;
 
 /* EOF */
 }

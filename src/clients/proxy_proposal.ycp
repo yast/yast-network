@@ -3,6 +3,7 @@
  * Package:	Configuration of proxy
  * Summary:	Proposal function dispatcher.
  * Authors:	Martin Vidner <mvidner@suse.cz>
+ *		Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
@@ -17,6 +18,7 @@ textdomain "network";
 /* The main () */
 y2milestone("----------------------------------------");
 y2milestone("Proxy proposal started");
+y2milestone("Arguments: %1", WFM::Args());
 
 import "Proxy";
 import "Progress";
