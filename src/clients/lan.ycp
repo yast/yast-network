@@ -3,7 +3,7 @@
  *   clients/lan.ycp
  *
  * Package:
- *   Configuration of network cards
+ *   Configuration of network
  *
  * Summary:
  *   Network cards main file
@@ -21,7 +21,7 @@
 {
 
 /***
- * <h3>Configuration of network cards</h3>
+ * <h3>Configuration of network</h3>
  */
 
 textdomain "network";

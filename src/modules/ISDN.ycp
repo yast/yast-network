@@ -78,7 +78,7 @@ import "Progress";
 
     string remoteIP = "";
 
-    boolean dynamicIP = false:
+    boolean dynamicIP = false;
 
     boolean dynamicDNS = false;
 

@@ -1,0 +1,49 @@
+/**
+ * File:
+ *   clients/dns.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   Hostname and DNS client
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Main file for hostname and DNS configuration.
+ * Uses all other files.
+ *
+ */
+
+{
+
+textdomain "network";
+
+import "DNS";
+import "Wizard";
+
+/* The main () */
+y2milestone("DNS module started");
+y2milestone("----------------------------------------");
+
+include "network/services/dns.ycp";
+
+/* main ui function */
+
+DNS::Read();
+Wizard::CreateDialog();
+Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), OKButtonLabel()));
+any ret = DNSMainDialog();
+y2debug("ret == %1", ret);
+
+DNS::Write();
+UI::CloseDialog();
+
+/* Finish */
+y2milestone("DNS module finished");
+return ret;
+
+}

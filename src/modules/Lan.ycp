@@ -209,7 +209,7 @@ global define boolean Write() ``{
 
     if(Abort()) return false;
     ProgressNextStage(_("Writing hostname and DNS configuration"));
-    //DNS::Write();
+    DNS::Write();
     sleep(sl);
 
     if(Abort()) return false;

@@ -152,8 +152,5 @@ global define DNSMainDialog() ``{
     return ret;
 }
 
-//DNS::Read();
-//DNSMainDialog();
-
 /* EOF */
 }

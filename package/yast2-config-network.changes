@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Jan 15 13:53:10 CET 2002 - msvec@suse.cz
+
+- DNS and routing clients
+- DNS writing somehow functional
+- use /etc/HOSTNAME for hostname
+- 2.5.2
+
+-------------------------------------------------------------------
 Mon Jan 14 18:54:07 CET 2002 - msvec@suse.cz
 
 - preliminary DNS dialog

@@ -252,9 +252,5 @@ global define term RoutingEditDialog(integer id, term entry, list devs) ``{
     return route;
 }
 
-//Routing::Read();
-//RoutingMainDialog();
-
-
 /* EOF */
 }

@@ -78,7 +78,13 @@ global define boolean Read() ``{
 	nameservers = resolvlist;
 
     /* host name and domain */
-    string fqhostname = ""; //SCR::Read(.sysconfig.network.FQHOSTNAME);
+    string fqhostname = "";
+    if(SCR::Read(.target.size, "/etc/HOSTNAME") > 0) {
+	map hostmap = SCR::Execute(.target.bash_output, "cat /etc/HOSTNAME");
+	fqhostname = lookup(hostmap, "stdout", "");
+	fqhostname = substring(fqhostname, 0, findfirstof(fqhostname, "\n"));
+    }
+
     if(fqhostname != "") {
 	integer dot = findfirstof(fqhostname, ".");
 	if(dot != nil) {
@@ -109,7 +115,7 @@ global define boolean Write() ``{
 
     if(!dhcp_hostname) {
 	/* write hostname */
-	SCR::Write(.sysconfig.network.FQHOSTNAME, fqhostname);
+	SCR::Execute(.target.bash, "echo \"" + fqhostname + "\" >/etc/HOSTNAME");
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --quick --nonewpackage --module hostname");
     }
 
