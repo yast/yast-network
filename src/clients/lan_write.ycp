@@ -41,6 +41,8 @@ if(!is(WFM::Args(0), map)) {
 map settings = select(args, 0, $[]);
 y2milestone("Only writing... (%1)", settings);
 
+Lan::modified = true;
+
 Progress::off();
 Lan::Import(settings);
 boolean ret = Lan::WriteOnly();
