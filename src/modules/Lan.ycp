@@ -767,18 +767,6 @@ map <string, string> ifplugd_priorities = $[
     ];
 
 /**
- * For the NAME field, filter out characters that will case problems
- * for the shell or the ini agent. (#72164)
- * It should be done in more places but this field is most susceptible.
- * @param s a string
- * @return s with some characters removed, esp. the single quote
- */
-string ShellSafe (string s) {
-    s = filterchars (s, String::CGraph () + " ");
-    return deletechars (s, "'");
-}
-
-/**
  * Commit pending operation
  * @return true if success
  */
@@ -808,7 +796,7 @@ global define boolean Commit() {
 	    }
 	    newdev["USERCONTROL"] = usercontrol? "yes": "no";
 	    newdev["BOOTPROTO"] = bootproto;
-	    newdev["NAME"] = ShellSafe (description);
+	    newdev["NAME"] = description;
 	}
 
 	if(unique != "" && unique != nil)

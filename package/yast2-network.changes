@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Mar 14 15:38:40 CET 2005 - mvidner@suse.cz
+
+- Moved the single quote fix to NetworkDevices.ycp (#72164).
+
+-------------------------------------------------------------------
 Fri Mar 11 16:25:44 CET 2005 - mvidner@suse.cz
 
 - Don't allow single quotes inside ifcfg-*:NAME (#72164).
