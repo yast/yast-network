@@ -28,15 +28,24 @@ global define symbol ProxyMainDialog() ``{
     /* Proxy dialog caption */
     string caption = _("Proxy configuration");
 
-    /* Proxy dialog help 1/3 */
-    string help = _("<p></p>") +
-    _("<p></p>") +
-    _("<p></p>") +
-    _("<p></p>") +
-    _("<p></p>") +
-    _("<p></p>") +
-    _("<p></p>") +
-    _("<p></p>");
+    /* Proxy dialog help 1/5 */
+    string help = _("<p>Here, configure your Internet proxy (caching) settings.</p>") +
+
+    /* Proxy dialog help 2/5 */
+    _("<p><b>HTTP proxy</b> is the name of the proxy server for your access
+to the world wide web (WWW).</p>") +
+
+    /* Proxy dialog help 3/5 */
+    _("<p><b>FTP proxy</b> is the name of the proxy server for your access
+to the file transfer services (FTP).</p>") +
+
+    /* Proxy dialog help 4/5 */
+    _("<p><b>No proxy domains</b> is a list of domains for which the requests
+should be done directly without caching.</p>") +
+
+    /* Proxy dialog help 5/5 */
+    _("<p>If you are using a proxy server with authorization, fill in
+<b>Proxy user name</b> and <b>Proxy password</b>.</p>");
 
     /* Proxy dialog contents */
     term contents = `HBox(
