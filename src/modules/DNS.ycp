@@ -214,6 +214,8 @@ global define map Export() {
     map<string, any> expdns = $[];
     if (size(hostname)>0)
         expdns["hostname"] = hostname;
+    if (size(domain)>0)
+        expdns["domain"] = domain;
     if (size(nameservers)>0)
         expdns["nameservers"] = eval(nameservers);
     if (size(searchlist) >0)
