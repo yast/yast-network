@@ -1,0 +1,53 @@
+/**
+ * File:
+ *   include/networ/runtime.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   Runtime routines
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+/**
+ * Read status information
+ * @return true if success
+ */
+define boolean ReadStatus() ``{
+    return true;
+}
+
+/**
+ * Run SuSEconfig
+ * @return true if success
+ */
+define boolean RunSuSEconfig() ``{
+    return true;
+}
+
+/**
+ * Start network
+ * @return true if success
+ */
+global define boolean StartNetwork() ``{
+    return SCR::Execute(.target.bash, "/etc/init.d/network start");
+}
+
+/**
+ * Stop network
+ * @return true if success
+ */
+global define boolean StopNetwork() ``{
+    return SCR::Execute(.target.bash, "/etc/init.d/network stop");
+}
+
+/* EOF */
+}

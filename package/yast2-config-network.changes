@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Fri Jan 25 17:27:43 CET 2002 - msvec@suse.cz
+
+- fixed modules initialization and cleanup (#12905)
+- fix writing of kernel modules for manually added cards
+- autoinstallation support for routing, dns, modems and isdn
+- ISDN configuration UI (no reading or writing)
+- fixed modem shortcuts
+- use Summary module
+- 2.5.6
+
+-------------------------------------------------------------------
 Thu Jan 24 13:38:33 CET 2002 - msvec@suse.cz
 
 - modems configuration UI

@@ -21,18 +21,14 @@
 {
 
 module "Modem";
+textdomain "network";
 
-import "DNS";
-import "Routing";
-import "Progress";
 import "Summary";
 
 include "network/config.ycp";
 include "network/hardware.ycp";
 include "network/routines.ycp";
 include "network/ip.ycp";
-
-textdomain "network";
 
 global string Name = "xx";
 global string DialPrefix = "yy";

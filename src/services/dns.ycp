@@ -22,7 +22,6 @@ textdomain "network";
 import "DNS";
 import "Wizard";
 
-include "ui/wizard_dialog.ycp";
 include "ui/common_popups.ycp";
 
 /**

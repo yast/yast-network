@@ -25,6 +25,8 @@ textdomain "network";
  * @return true if success
  */
 global define boolean ReadHardware() ``{
+    HARDWARE = [];
+
     integer num = 0;
     list allcards = SCR::Read(.probe.netdev);
 

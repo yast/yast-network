@@ -1,6 +1,6 @@
 /**
  * File:
- *   clients/routing_auto.ycp
+ *   clients/modem_auto.ycp
  *
  * Package:
  *   Configuration of network
@@ -19,45 +19,42 @@
  */
 
 /**
- * @param first a map of routing settings
+ * @param first a map of modem settings
  * @return boolean success of operation
  * @example map mm = $[ "FAIL_DELAY" : "77" ];
- * @example map ret = CallModule("routing_auto", [ mm ]);
+ * @example map ret = CallModule("modem_auto", [ mm ]);
  */
 
 {
 
 textdomain "network";
 
-y2milestone("Routing auto started");
+y2milestone("Modem auto started");
 y2milestone("----------------------------------------");
 
-import "Routing";
-include "network/services/routing.ycp";
+import "Modem";
+include "network/modem/wizards.ycp";
 
 list args = Args();
-if(size(args) <= 0) {
+if( size(args) <= 0 ) {
     y2error("Did not get the settings, probably some mistake...");
     return false;
 }
-if(!is(Args(0), map)) {
-    y2error("Bad argument for routing_auto: %1", Args(0));
+if( !is( Args(0), map ) ) {
+    y2error("Bad argument for modem_auto: %1", Args(0));
     return false;
 }
 
 /* The settings are in the first argument */
 map settings = select(args, 0, $[]);
-y2milestone("Imported: %1", settings);
+y2debug("Imported: %1", settings);
 
-Routing::Import(settings);
-Wizard::CreateDialog();
-Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), FinishButtonLabel()));
-RoutingMainDialog();
-UI::CloseDialog();
-map ret = Routing::Export();
-y2milestone("Exported: %1", ret);
+Modem::Import(settings);
+ModemAutoSequence();
+map ret = Modem::Export();
+y2debug("Exported: %1", ret);
 
-y2milestone("Routing auto finished");
+y2milestone("Modem auto finished");
 return ret;
 
 }

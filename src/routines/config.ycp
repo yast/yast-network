@@ -30,6 +30,7 @@ include "network/routines.ycp";
  */
 global define boolean ReadConfig(string devregex) ``{
 
+    CONFIG = $[];
     string sysconfig = "/etc/sysconfig/network";
 
     list allfiles = SCR::Dir(.network.section);
@@ -163,6 +164,9 @@ global define boolean WriteConfig() ``{
     /* finish him */
     SCR::Write(.network, nil);
     SCR::Write(.modules, nil);
+
+    /* clean up variables */
+    DELETED = [];
 
     return true;
 }

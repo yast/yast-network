@@ -25,12 +25,15 @@ import "Wizard";
 
 include "wizard/sequencer.ycp";
 
-include "network/isdn/dialogs.ycp";
-/* include "network/isdn/"; */
-/* other dialogs ... */
+include "network/isdn/ip.ycp";
+include "network/isdn/complex.ycp";
+include "network/isdn/callback.ycp";
+include "network/isdn/lowlevel.ycp";
+include "network/isdn/connection.ycp";
+include "network/providers.ycp";
 
-include "network/services/dns.ycp";
-include "network/services/routing.ycp";
+//include "network/services/dns.ycp";
+//include "network/services/routing.ycp";
 
 /**
  * Whole configuration of network
@@ -67,7 +70,7 @@ global define symbol ISDNSequence() ``{
 
     Wizard::CreateDialog();
     Wizard::SetContentsButtons(caption, contents, "",
-				BackButtonLabel(), NextButtonLabel());
+	    BackButtonLabel(), NextButtonLabel());
 
     symbol ret = WizardSequencer(aliases, sequence);
 
@@ -86,7 +89,7 @@ global define symbol ISDNAutoSequence() ``{
 
     Wizard::CreateDialog();
     Wizard::SetContentsButtons(caption, contents, "",
-				BackButtonLabel(), NextButtonLabel());
+	    BackButtonLabel(), NextButtonLabel());
 
     symbol ret = MainSequence();
 
@@ -103,10 +106,10 @@ global define symbol MainSequence() ``{
     map aliases = $[
 	"summary"	: ``(SummaryDialog()),
 	"overview"	: ``(OverviewDialog()),
-	"configure"	: [ ``(AddressSequence()), true ],
-	"other"		: [ ``(ManualSequence()), true ],
-	"add"		: [ ``(ManualSequence()), true ],
-	"edit"		: [ ``(AddressSequence()), true ],
+	"configure"	: [ ``(OneISDNSequence(true)), true ],
+	"other"		: [ ``(OneISDNSequence(false)), true ],
+	"add"		: [ ``(OneISDNSequence(false)), true ],
+	"edit"		: [ ``(OneISDNSequence(false)), true ],
 	"commit"	: [ ``(Commit()), true ],
     ];
 
@@ -149,71 +152,71 @@ global define symbol MainSequence() ``{
     return WizardSequencer(aliases, sequence);
 }
 
-/**
- * Configuration sequence
- * @return sequence result
- */
-global define symbol ManualSequence() ``{
+global define symbol OneISDNSequence(boolean detected) ``{
 
     map aliases = $[
-	"manual"	: ``(ManualDialog()),
-	"list"		: ``(ManualSelection()),
-	"address"	: [ ``(AddressSequence()), true ],
+	"lowlevel_detected"	:   ``(isdn_lowlevel(`Detected)),
+	"lowlevel_detectedISA"	:   ``(isdn_lowlevel(`DetectedISA)),
+	"lowlevel"		:   ``(isdn_lowlevel(`other)),
+	"connection"		:   ``(isdn_connection()),
+	"ip"			:   ``(isdn_ip()),
+	"callback"		:   ``(isdn_callback()),
+	"providers"		:   ``(runProvidersDialog(true)),
+	"provider"		:   ``(runEditIsdnProviderDialog()),
+	"new_provider"		:   ``(runEditIsdnProviderDialog())
     ];
 
+    string entry = "provider";
+    if(detected)
+	entry = "lowlevel_detected";
+
+    /* FIXME: detected ISA unsupported */
+
     map sequence = $[
-	"ws_start"	: "manual",
-	"manual" : $[
-	    `abort	: `abort,
-	    `list	: "list",
-	    `next	: "address",
+	"ws_start" : entry,
+	"lowlevel_detected" : $[
+	    `next : "providers",
+	    `abort : `abort
 	],
-	"list" : $[
-	    `next	: "manual",
-	    `abort	: `abort,
+	"lowlevel_detectedISA" : $[
+	    `next : "providers",
+	    `abort : `abort
 	],
-	"address" : $[
-	    `abort	: `abort,
-	    `next	: `next,
+	"lowlevel" : $[
+	    `next : "providers",
+	    `abort : `abort
 	],
+	"providers" : $[
+	    `next : "provider",
+	    `new  : "new_provider",
+	    `abort : `abort
+	],
+	"provider" : $[
+	    `next : "connection",
+	    `abort : `abort
+	],
+	"new_provider": $[
+	    `next : "connection",
+	    `abort : `abort
+	],
+	"connection" : $[
+	    `ipsettings : "ip",
+	    `callbacksettings : "callback",
+	    `next : `next,
+	    `abort : `abort
+	],
+	"ip" : $[
+	    `next : "connection",
+	    `abort : `abort
+	],
+	"callback" : $[
+	    `next : "connection",
+	    `abort : `abort
+	]
     ];
 
     return WizardSequencer(aliases, sequence);
-}
 
-/**
- * Configuration sequence
- * @return sequence result
- */
-global define symbol AddressSequence() ``{
-
-    map aliases = $[
-	"address"	: ``(AddressDialog()),
-	"hostname"	: ``(DNSMainDialog()),
-	"routing"	: ``(RoutingMainDialog()),
-	"commit"	: [ ``(Commit()), true ],
-    ];
-
-    map sequence = $[
-	"ws_start"	: "address",
-	"address" : $[
-	    `abort	: `abort,
-	    `next	: "commit",
-	    `routing	: "routing",
-	    `hostname	: "hostname",
-	],
-	"routing" : $[
-	    `next	: "address",
-	],
-	"hostname" : $[
-	    `next	: "address",
-	],
-	"commit" : $[
-	    `next	: `next,
-	],
-    ];
-
-    return WizardSequencer(aliases, sequence);
 }
 
 /* EOF */

@@ -51,6 +51,27 @@ global define any mapvalue(map m, any k) ``{
 }
 
 /**
+ * Check if a map contains all needed keys
+ * @param m map to be checked
+ * @param keys needed keys
+ * @return true if map kontains all keys
+ */
+global define boolean mapcheckkeys(map m, list keys) ``{
+    if(m == nil || keys == nil)
+	return false;
+
+    boolean ret = true;
+    foreach(`k, keys, ``{
+	if(!haskey(m, k)) {
+	    y2error("Missing key: %1", k);
+	    ret = false;
+	}
+    });
+
+    return ret;
+}
+
+/**
  * Check for pending Abort press
  * @return true if pending abort
  */

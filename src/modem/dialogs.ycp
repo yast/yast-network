@@ -19,12 +19,10 @@
 
 textdomain "network";
 
-import "Wizard";
 import "Modem";
+import "Wizard";
 
-include "ui/wizard_dialog.ycp";
 include "ui/common_popups.ycp";
-include "wizard/sequencer.ycp";
 include "network/providers.ycp";
 
 /* DATA */
@@ -265,7 +263,7 @@ in your modem manual.</p>");
 	`HBox(
 	    `HSpacing(3),
 	    `VBox(
-		`ComboBox(`id(`Baud), `opt(`hstretch, `editable), _("Baud&Rate"), BaudRates),
+		`ComboBox(`id(`Baud), `opt(`hstretch, `editable), _("B&audRate"), BaudRates),
 		`VSpacing(),
 		    `Frame(_("Modem initialization strings"),
 		    `HBox(
@@ -419,7 +417,7 @@ attacks from the outside.</p>");
 		    `HSpacing (4),
                     `Frame(`id (`NameServers), _("Name servers"),
 			`VBox (
-			    `TextEntry (`id (`DNS1), _("&First"), DNS1),
+			    `TextEntry (`id (`DNS1), _("F&irst"), DNS1),
                             `TextEntry (`id (`DNS2), _("&Second"), DNS2)
                         )
                     )
@@ -536,7 +534,7 @@ global define symbol modem_connection_details() ``{
 		    `HSpacing(0.4),
 		    `VBox(
 			`VSpacing(0.4),
-			`Left(`CheckBox(`id(`AutoReconnect), _("&Reconnect when the connection is lost"),
+			`Left(`CheckBox(`id(`AutoReconnect), _("R&econnect when the connection is lost"),
 						AutoReconnect)),
 			`Left(`CheckBox(`id(`AutoDNS), _("&Modify DNS when connected"), AutoDNS)),
 			`Left(`ComboBox(`id(`IdleSeconds), `opt(`editable), _("&Disconnect after (seconds)"),

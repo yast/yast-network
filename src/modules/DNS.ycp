@@ -19,6 +19,7 @@
 
 module "DNS";
 textdomain "network";
+include "network/routines.ycp";
 
 global string hostname = ""; //blah";
 global string domain = ""; //blum.cz";
@@ -36,57 +37,42 @@ boolean has_dhcp = true;
  */
 string resolv_conf = "/etc/resolv.conf";
 
-
-
-
 /**
  * Get all the DNS configuration from a map.
  * When called by dns_auto (preparing autoinstallation data)
  * the map may be empty.
- * @param settings	
- * @return	success
+ * @param settings autoinstallation settings
+ * @return true if success
  */
-global define boolean Import (map settings) ``{
-    if (size (settings) == 0)
-    {	
+global define boolean Import(map settings) ``{
+    if(size(settings) == 0)
 	return false;
-    }
 
-    boolean missing = false;
-    foreach (`k, ["hostname", "dns_domain", "nameservers", "searchlist","dhcp_hostname"], ``{
-	if (! haskey (settings, k))
-	{
-	    y2error ("Missing at Import: '%1'.", k);
-	    missing = true;
-	}	
-    });
-    if (missing)
-    {
+    if(!mapcheckkeys(settings, ["hostname", "domain", "nameservers", "searchlist","dhcp_hostname"]))
 	return false;
-    }
 
-    dhcp_hostname = lookup (settings, "dhcp_hostname", false);
-    hostname = lookup (settings, "hostname", "");
-    nameservers = splitstring(lookup (settings, "nameservers", " "), " ");
-    domain = lookup (settings, "dns_domain", "");
-    searchlist = splitstring(lookup (settings, "searchlist", " "), " ");
-    
+    hostname = lookup(settings, "hostname", "");
+    domain = lookup(settings, "domain", "");
+    nameservers = lookup(settings, "nameservers", []);
+    searchlist = lookup(settings, "searchlist", []);
+    dhcp_hostname = lookup(settings, "dhcp_hostname", false);
+
     return true;
 }
 
 /**
  * Dump the DNS settings to a map, for autoinstallation use.
- * @return 
+ * @return autoinstallation settings
  */
-global define map Export () ``{
+global define map Export() ``{
     return $[
-	     "hostname": hostname,
-	     "nameservers": mergestring(nameservers, " "),
-	     "searchlist": mergestring(searchlist, " "),
-	     "dns_domain": domain,
-	     "dhcp_hostname": dhcp_hostname
+	"hostname"	: hostname,
+	"domain"	: domain,
+	"nameservers"	: nameservers,
+	"searchlist"	: searchlist,
+	"dhcp_hostname"	: dhcp_hostname
     ];
-}    
+}
 
 /**
  * Reads current DNS and hostname settings
@@ -111,7 +97,7 @@ global define boolean Read() ``{
     /* FIXME unused */
 
     /* FIXME
-    if (SCR (`Execute (.target.bash, "/sbin/modify_resolvconf check -q")) != 0) {
+    if(SCR(`Execute (.target.bash, "/sbin/modify_resolvconf check -q")) != 0) {
 	string process = SCR (`Read (.resolver.process));
 	symbol ui = ModifyResolvConfPopup (process);
 	if (ui == `modify)

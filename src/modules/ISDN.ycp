@@ -22,68 +22,152 @@
 
 module "ISDN";
 textdomain "network";
-import "Progress";
 
-    /**
-     *
-     */
+import "Summary";
 
-    global integer protocol = 0;
+include "network/config.ycp";
+include "network/hardware.ycp";
+include "network/routines.ycp";
+include "network/ip.ycp";
 
-    /**
-     *
-     */
+/*-------------*/
+/* GLOBAL DATA */
 
-    global string moduleOptions = "";
+/**
+ */
+global integer protocol = 0;
 
-    /**
-     *
-     */
+/**
+ */
+global string moduleOptions = "";
 
-    global string io = "";
+/**
+ */
+global string io = "";
 
-    global string irq = "";
+global string irq = "";
 
-    global string membase = "";
+global string membase = "";
 
-    global string io0 = "";
+global string io0 = "";
 
-    global string io1 = "";
+global string io1 = "";
 
-    global string io2 = "";
+global string io2 = "";
 
-    global string hisaxdebug = "";
+global string hisaxdebug = "";
 
-    global string eizmap = "";
+global string eizmap = "";
 
-    global string type = "";
+global string type = "";
 
-    global string subtype = "";
+global string subtype = "";
 
-    global string localMSN = "";
+global string localMSN = "";
 
-    global string dialMode = "";
+global string dialMode = "";
 
-    global string idleTime = "";
+global string idleTime = "";
 
-    global string chargeHUP = "off";
+global string chargeHUP = "off";
 
-    global boolean startAtBoot = true;
+global boolean startAtBoot = true;
 
-    global boolean firewall = false;
+global boolean firewall = false;
 
-    global string encap = "syncppp";
+global string encap = "syncppp";
 
-    global string localIP = "";
+global string localIP = "";
 
-    global string remoteIP = "";
+global string remoteIP = "";
 
-    global boolean dynamicIP = false;
+global boolean dynamicIP = false;
 
-    global boolean dynamicDNS = false;
+global boolean dynamicDNS = false;
 
-    global string callback = "off";
+global string callback = "off";
 
+/*--------------*/
+/* PRIVATE DATA */
+
+/**
+ * Config information
+ */
+map CONFIG = $[];
+
+/**
+ * Abort function
+ * return boolean return true if abort
+ */
+global block AbortFunction = nil;
+
+/**
+ * Data was modified?
+ */
+boolean modified = false;
+
+/**
+ * Which operation is pending?
+ */
+symbol operation = nil;
+
+/*------------------*/
+/* GLOBAL FUNCTIONS */
+
+/**
+ * Data was modified?
+ * @return true if modified
+ */
+global define boolean Modified() ``{
+    y2debug("modified=%1",modified);
+    return modified;
+};
+
+global define boolean Read() ``{
+    return true;
+}
+
+global define boolean Write() ``{
+    return true;
+}
+
+global define boolean Add() ``{
+    return true;
+}
+
+global define boolean Edit() ``{
+    return true;
+}
+
+global define boolean Delete() ``{
+    return true;
+}
+
+global define boolean Commit() ``{
+    return true;
+}
+
+global define boolean Import(map settings) ``{
+    CONFIG = settings;
+}
+
+global define map Export() ``{
+    return CONFIG;
+}
+
+/**
+ * Build a textual summary and a list of unconfigured cards
+ * @return summary of the current configuration
+ */
+global define list Summary() ``{
+    return [ [], "" ];
+}
+
+/**
+ */
+global define list Overview() ``{
+    return CreateOverview("isdn");
+}
 
 
 /* EOF */

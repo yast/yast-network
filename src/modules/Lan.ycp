@@ -26,13 +26,13 @@ textdomain "network";
 import "DNS";
 import "Routing";
 import "Progress";
+import "Summary";
 
 include "network/config.ycp";
 include "network/hardware.ycp";
 include "network/routines.ycp";
+include "network/runtime.ycp";
 include "network/ip.ycp";
-
-include "ui/summary.ycp";
 
 /*-------------*/
 /* GLOBAL DATA */
@@ -230,14 +230,6 @@ global define boolean Write() ``{
     return true;
 }
 
-global define boolean StopNetwork() ``{
-    return SCR::Execute(.target.bash, "/etc/init.d/network stop");
-}
-
-global define boolean StartNetwork() ``{
-    return SCR::Execute(.target.bash, "/etc/init.d/network start");
-}
-
 /**
  * Get all network settings from the first parameter
  * (for use by autoinstallation)
@@ -245,7 +237,7 @@ global define boolean StartNetwork() ``{
  * @return true on success
  */
 global define boolean Import(map settings) ``{
-    CONFIG = settings["interfaces"]:$[];
+    CONFIG = settings["config"]:$[];
     DNS::Import(settings["dns"]:$[]);
     Routing::Import(settings["routing"]:$[]);
 }
@@ -256,11 +248,11 @@ global define boolean Import(map settings) ``{
  * @return dumped settings (later acceptable by Import())
  */
 global define map Export() ``{
-    return ($[
-	      "interfaces":CONFIG,
-	      "dns":DNS::Export(),
-	      "routing":Routing::Export()
-    ]);
+    return $[
+	"config"  : CONFIG,
+	"dns"     : DNS::Export(),
+	"routing" : Routing::Export()
+    ];
 }
 
 /**
@@ -279,22 +271,22 @@ global define list Summary() ``{
 	string status = IsConfigured(ty, un);
 	y2debug("status(%1)=%2",status,d);
 	if(status != "")
-	    change(configured, summaryDevice(hwname, status));
+	    change(configured, Summary::Device(hwname, status));
 	else
 	    change(unconfigured, d);
     });
 
     list allhw = maplist(`d, HARDWARE, ``(lookup(d, "unique", nil)));
     maplist(`s, OtherConfigured(allhw), ``{
-	change(configured, summaryDevice(_("Unknown network card"), s));
+	change(configured, Summary::Device(_("Unknown network card"), s));
     });
 
     string summary = "";
     if(size(configured) > 0)
-	summary = summaryAddHeader("", _("Already configured network cards:")) +
-	    summaryDevicesList(configured);
+	summary = Summary::AddHeader("", _("Already configured network cards:")) +
+	    Summary::DevicesList(configured);
     else
-	summary = summaryAddHeader("", _("No configured network card."));
+	summary = Summary::AddHeader("", _("No configured network card."));
 
     integer selected = lookup(select(unconfigured, 0, $[]), "num", 0);
     list devs = hwlist2items(unconfigured, selected);
@@ -323,22 +315,6 @@ define boolean Abort() ``{
     if(AbortFunction != nil)
 	return eval(AbortFunction) == true;
     return false;
-}
-
-/**
- * Read status information
- * @return true if success
- */
-define boolean ReadStatus() ``{
-    return true;
-}
-
-/**
- * Run SuSEconfig
- * @return true if success
- */
-define boolean RunSuSEconfig() ``{
-    return true;
 }
 
 /**
@@ -472,9 +448,9 @@ global define boolean Commit() ``{
 	    change(newdev, "NETMASK", netmask);
 	    change(newdev, "BROADCAST", compute_broadcast(ipaddr, netmask));
 	    change(newdev, "NETWORK", compute_network(ipaddr, netmask));
-	    change(newdev, "module", modul);
-	    change(newdev, "options", options);
 	}
+	change(newdev, "module", modul);
+	change(newdev, "options", options);
 	if(operation == `add)
 	    ConfigAdd(type, device, newdev,true);
 	else

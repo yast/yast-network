@@ -27,11 +27,9 @@ include "wizard/sequencer.ycp";
 
 include "network/modem/dialogs.ycp";
 include "network/modem/complex.ycp";
-/* include "network/modem/"; */
-/* other dialogs ... */
 
-include "network/services/dns.ycp";
-include "network/services/routing.ycp";
+//include "network/services/dns.ycp";
+//include "network/services/routing.ycp";
 
 /**
  * Whole configuration of network
@@ -68,7 +66,7 @@ global define symbol ModemSequence() ``{
 
     Wizard::CreateDialog();
     Wizard::SetContentsButtons(caption, contents, "",
-				BackButtonLabel(), NextButtonLabel());
+	    BackButtonLabel(), NextButtonLabel());
 
     symbol ret = WizardSequencer(aliases, sequence);
 
@@ -87,7 +85,7 @@ global define symbol ModemAutoSequence() ``{
 
     Wizard::CreateDialog();
     Wizard::SetContentsButtons(caption, contents, "",
-				BackButtonLabel(), NextButtonLabel());
+	    BackButtonLabel(), NextButtonLabel());
 
     symbol ret = MainSequence();
 

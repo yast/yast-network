@@ -25,7 +25,6 @@ import "Routing";
 import "Wizard";
 
 include "ui/common_popups.ycp";
-include "ui/wizard_dialog.ycp";
 
 /**
  * Main routing dialog

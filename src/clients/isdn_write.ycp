@@ -1,6 +1,6 @@
 /**
  * File:
- *   clients/lan_write.ycp
+ *   clients/isdn_write.ycp
  *
  * Package:
  *   Configuration of network
@@ -28,10 +28,10 @@
 
 textdomain "network";
 
-y2milestone("Lan write started");
+y2milestone("ISDN write started");
 y2milestone("----------------------------------------");
 
-import "Lan";
+import "ISDN";
 import "Progress";
 
 list args = Args();
@@ -49,11 +49,11 @@ map settings = select(args, 0, $[]);
 y2milestone("Only writing... (%1)", settings);
 
 Progress::off();
-Lan::Import(settings);
-boolean ret = Lan::Write();
+ISDN::Import(settings);
+boolean ret = ISDN::Write();
 Progress::on();
 
-y2milestone("Lan write finished");
+y2milestone("ISDN write finished");
 return ret;
 
 }
