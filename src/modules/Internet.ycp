@@ -37,6 +37,7 @@ global string provider = "";
 global string password = "";
 global boolean demand = false;
 global boolean askpassword = nil;
+global boolean capi_adsl = false;
 global boolean capi_isdn = false;
 
 /**
@@ -50,6 +51,7 @@ define void Reset() {
     password = "";
     demand = false;
     askpassword = nil;
+    capi_adsl = false;
     capi_isdn = false;
 }
 
@@ -79,6 +81,7 @@ global define boolean FindFastest() {
 	demand = Provider::Current["DEMAND"]:"no" == "yes";
 	password = Provider::Current["PASSWORD"]:"";
 	askpassword = Provider::Current["ASKPASSWORD"]:"no" == "yes";
+	capi_adsl = Provider::Current["PPPMODE"]:"pppoe" == "capi-adsl";
 	capi_isdn = Provider::Current["PPPMODE"]:"ippp" == "capi-isdn";
     }
 
@@ -96,7 +99,7 @@ global define boolean FindFastest() {
  */
 global define boolean Start(string log) {
 
-    if(type == "isdn") {
+    if ((type == "dsl" && capi_adsl) || (type == "isdn")) {
 	if(SCR::Execute(.target.bash, "/etc/init.d/isdn status") != 0) {
 	    if(SCR::Execute(.target.bash, "/etc/init.d/isdn start") != 0) {
 		y2error("starting of isdn failed");

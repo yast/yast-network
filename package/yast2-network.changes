@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Apr 07 12:07:57 CEST 2004 - arvin@suse.de
+
+- start capi during Internet test also for capi based dsl
+  connections (bug #38540)
+
+-------------------------------------------------------------------
 Mon Apr  5 19:45:53 CEST 2004 - msvec@suse.cz
 
 - use BUSID when MAC=00:00:00:00:00:00 (partly #38392)
