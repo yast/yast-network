@@ -17,8 +17,10 @@ include "network/complex.ycp";
 include "network/devices.ycp";
 include "network/routines.ycp";
 
+
 // flag to remember if user wants to run internet test
 global boolean do_test = true;
+
 
 // flag to remember if you should be started
 global boolean do_you = false;
@@ -27,6 +29,7 @@ global string device = "";
 global string password = "";
 global boolean demand = false;
 global boolean askpassword = nil;
+
 
 /**
  * Devices in order from fastest to slowest
@@ -38,6 +41,7 @@ map FastestRegexps = $[
     4 : "modem|ppp",
 ];
 
+
 /**
  * Types in order from fastest to slowest
  * @see FastestRegexps
@@ -48,6 +52,7 @@ map FastestTypes = $[
     3 : "isdn",
     4 : "modem",
 ];
+
 
 /**
  * Return the fastest connection type
@@ -65,6 +70,7 @@ global define string FastestType(string dev) ``{
     });
     return type;
 }
+
 
 /**
  * Return the filename of the log for the fastest connection.
@@ -136,29 +142,56 @@ global define boolean Fastest() ``{
     return true;
 }
 
+
 /**
  * Start the fastest interface
  * @return true if successful started
  */
 global define boolean Start() ``{
 
+    string type = FastestType (device);
+
     if (type == "isdn")
     {
-	if (SCR::Execute (.target.bash, "/etc/init.d/isdn status") != 0)
-	{
-	    if (SCR::Execute (.target.bash, "/etc/init.d/isdn start") != 0)
-	    {
-		y2error ("starting of isdn failed");
-		return false;
-	    }
-	}
+ 	if (SCR::Execute (.target.bash, "/etc/init.d/isdn status") != 0)
+ 	{
+ 	    if (SCR::Execute (.target.bash, "/etc/init.d/isdn start") != 0)
+ 	    {
+ 		y2error ("starting of isdn failed");
+ 		return false;
+ 	    }
+ 	}
     }
 
     if (askpassword)
-	return SCR::Execute (.target.bash_input, "/sbin/ifup " + device, password) == 0;
+    {
+ 	if (SCR::Execute (.target.bash_input, "/sbin/ifup " + device, password) != 0)
+ 	{
+ 	    y2error ("ifup failed");
+ 	    return false;
+ 	}
+    }
     else
-	return SCR::Execute (.target.bash, "/sbin/ifup " + device) == 0;
+    {
+ 	if (SCR::Execute (.target.bash, "/sbin/ifup " + device) != 0)
+ 	{
+ 	    y2error ("ifup failed");
+ 	    return false;
+ 	}
+    }
+
+    if (type == "isdn")
+    {
+	if (SCR::Execute (.target.bash, "/usr/sbin/isdnctrl dial " + device) != 0)
+	{
+	    y2error ("isdnctrl failed");
+	    return false;
+	}
+    }
+
+    return true;
 }
+
 
 /**
  * Stop the fastest interface
@@ -168,12 +201,14 @@ global define boolean Stop() ``{
     return SCR::Execute(.target.bash, "/sbin/ifdown " + device) == 0;
 }
 
+
 /**
  * Status of the fastest interface
  * @return true if interface is up (which is not equal to connected)
  */
 global define boolean Status() ``{
-    return SCR::Execute(.target.bash, "/sbin/ifstatus " + device) == 0;
+    integer tmp1 = SCR::Execute(.target.bash, "/sbin/ifstatus " + device);
+    return tmp1 == 0 || tmp1 == 10;
 }
 
 
