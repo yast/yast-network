@@ -26,5 +26,5 @@ configure network.
 @YAST2DIR@/clients/network.ycp
 @YAST2DIR@/clients/network_*.ycp
 @YAST2DIR@/modules/Network.ycp
-@YAST2DIR@/menuentries/menuentry_network.ycp
+@YAST2DIR@/menuentries/menuentry_network.y2cc
 %doc @DOCDIR@
