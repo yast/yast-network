@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Feb  1 13:44:03 CET 2005 - mvidner@suse.cz
+
+- Help text fix: cannot correct network settings during an update
+  (#50381).
+
+-------------------------------------------------------------------
 Thu Jan 27 17:33:54 CET 2005 - mvidner@suse.cz
 
 - Use /etc/init.d/network reload (#31698).
