@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sun Sep 21 19:03:06 CEST 2003 - arvin@suse.de
+
+- run 'rcnetwork start' before online test during update
+  (bug #31466)
+
+-------------------------------------------------------------------
 Sun Sep 21 15:42:34 CEST 2003 - msvec@suse.cz
 
 - fixed default baud rate value (#31442)
