@@ -79,17 +79,17 @@ and correct the setting.</p>");
 	if (already_up)
 	{
 	    progress = `VBox(
-			     `Left(`Label (`id (`s2), "-   " + l2)),
-			     `Left(`Label (`id (`s3), "-   " + l3))
+			     `Left(`HBox (`Heading (`id (`s2), "-   "), `Label (l2))),
+			     `Left(`HBox (`Heading (`id (`s3), "-   "), `Label (l3)))
 			     );
 	}
 	else
 	{
 	    progress = `VBox(
-			     `Left(`Label (`id (`s1), "-   " + l1)),
-			     `Left(`Label (`id (`s2), "-   " + l2)),
-			     `Left(`Label (`id (`s3), "-   " + l3)),
-			     `Left(`Label (`id (`s4), "-   " + l4))
+			     `Left(`HBox (`Heading (`id (`s1), "-   "), `Label (l1))),
+			     `Left(`HBox (`Heading (`id (`s2), "-   "), `Label (l2))),
+			     `Left(`HBox (`Heading (`id (`s3), "-   "), `Label (l3))),
+			     `Left(`HBox (`Heading (`id (`s4), "-   "), `Label (l4)))
 			     );
 	}
 
