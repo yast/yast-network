@@ -340,8 +340,9 @@ at the end.</p>");
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    BackButtonLabel(), NextButtonLabel());
 
-    /* '*' and '#' are for GPRS connections #16021 */
-    ChangeWidgetIfExists(`id(`phone), `ValidChars, "0123456789*#");
+    /* '*' and '#' are for GPRS connections (#16021) */
+    /* ',' is for pausing dialing (#23678) */
+    ChangeWidgetIfExists(`id(`phone), `ValidChars, "0123456789*#,");
     ChangeWidgetIfExists(`id(`usercode), `ValidChars, "0123456789#");
     ChangeWidgetIfExists(`id(`lineid), `ValidChars, "0123456789");
     ChangeWidgetIfExists(`id(`t_onlineid), `ValidChars, "0123456789");
