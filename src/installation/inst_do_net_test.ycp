@@ -398,9 +398,8 @@ logs for details."));
 	if (test_stage == `finish)
 	    break;
 
-	sleep (500);
-	ret = UI::PollInput ();
-	if (ret == nil)
+	ret = UI::TimeoutUserInput (250);
+	if (ret == `timeout)
 	    continue;
 
 	if (ret == `abort_test)
