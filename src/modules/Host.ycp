@@ -120,12 +120,9 @@ global define boolean Write() ``{
  * @return true if success
  */
 global define boolean Import(map settings) ``{
-    if(size(settings) == 0)
-	return true;
-
     modified = true;
 
-    hosts = eval(settings["hosts"]:[]);
+    hosts = eval(settings["hosts"]:$[]);
     return true;
 }
 
