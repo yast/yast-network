@@ -37,7 +37,8 @@ global define symbol ISDNSequence() ``{
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
-	"write"	: [ ``( WriteDialog() ), true ]
+	"write"	: [ ``( WriteDialog() ), true ],
+	"finish": [ ``( Finished(ISDN::Modified(), FinishedMailText(), "mail", ["dialup"]) ), true ],
     ];
 
     map sequence = $[
@@ -52,7 +53,10 @@ global define symbol ISDNSequence() ``{
 	],
 	"write" : $[
 	    `abort	: `abort,
-	    `next	: `next
+	    `next	: "finish"
+	],
+	"finish" : $[
+	    `next	: `next,
 	]
     ];
     // main srceen title

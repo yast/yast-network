@@ -31,15 +31,12 @@ include "network/modem/complex.ycp";
  */
 global define symbol ModemSequence() ``{
 
-    /* Popup text */
-    string finished = _("Configure the mail now?");
-
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
 	"rpm"	: [ ``( Packages(["smpppd"]) ), true ],
 	"write"	: [ ``( WriteDialog() ), true ],
-	"finish": [ ``( Finished(Modem::Modified(), finished, "mail", ["dialup"]) ), true ],
+	"finish": [ ``( Finished(Modem::Modified(), FinishedMailText(), "mail", ["dialup"]) ), true ],
     ];
 
     map sequence = $[

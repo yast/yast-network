@@ -123,6 +123,11 @@ global define symbol Finished(boolean modified, string text, string run, list pa
     return `next;
 }
 
+global define string FinishedMailText() ``{
+    /* Popup text */
+    return _("Configure the mail now?");
+}
+
 /**
  * Check if required packages are installed and install them if they're not
  * @param packages list of required packages
