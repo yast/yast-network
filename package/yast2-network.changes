@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Wed Dec 22 10:31:03 CET 2004 - mvidner@suse.cz
+Wed Dec 22 11:27:38 CET 2004 - mvidner@suse.cz
 
+- Updated help for WLAN ESSID (#39458).
 - Warn when changing the interface type (#30890).
 - Describe valid host and domain names in error popups (#22802).
 - 2.11.10

@@ -158,10 +158,13 @@ acts as an access point).</p>
 ") +
 
 	// Wireless dialog help
-_("<p>Set the <b>Network Name (ESSID)</b> used to identify cells that are
-part of the same virtual network. As opposed to the NWID, which defines a
-single cell, the ESSID defines a group of cells, connected via repeaters or
-infrastructure, where the user may roam.</p>") +
+_("<p>Set the <b>Network name (ESSID)</b>, which is used to identify
+cells that are part of the same virtual network. All stations in a
+wireless LAN need the same ESSID to communicate with each other. If
+you choose operation mode <b>Managed</b> and authentication mode isn't
+<b>WPA-PSK</b>, you can leave this field empty or set it to 'any'. In this
+case your WLAN card will associate to the accesspoint with the best
+signal strength around.</p>") +
 
 	// Wireless dialog help
 	// %1 is the product name, eg. SUSE Linux
