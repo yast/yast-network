@@ -323,6 +323,11 @@ map NetworkCards = $[
       "module" : "rtl8139",
       "options" : "",
     ],
+    // # 48973
+    $["name" : "SGI IO9/IO10 Gigabit Ethernet (Copper)",
+      "module" : "tg3",
+      "options" : "",
+    ],
     $["name" : "SiS 900 PCI Fast Ethernet",
       "module" : "sis900",
       "options" : "",
