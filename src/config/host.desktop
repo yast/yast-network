@@ -14,7 +14,7 @@ X-SuSE-YaST-RootOnly=true
 X-SuSE-YaST-AutoInst=all
 X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
-X-SuSE-YaST-AutoinstResource=host
+X-SuSE-YaST-AutoInstResource=host
 
 Icon=hosts-editor
 Exec=/sbin/yast2 host 

@@ -14,7 +14,7 @@ X-SuSE-YaST-RootOnly=true
 X-SuSE-YaST-AutoInst=write
 X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
-X-SuSE-YaST-AutoinstResource=dns
+X-SuSE-YaST-AutoInstResource=dns
 
 Icon=dns
 Exec=/sbin/yast2 dns 

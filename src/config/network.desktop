@@ -14,7 +14,7 @@ X-SuSE-YaST-RootOnly=true
 X-SuSE-YaST-AutoInst=write
 X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
-X-SuSE-YaST-AutoinstResource=network
+X-SuSE-YaST-AutoInstResource=network
 
 Icon=network
 Exec=/sbin/yast2 network 
