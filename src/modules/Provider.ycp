@@ -107,9 +107,9 @@ global define boolean Modified(string type) ``{
     if(!CheckType(type)) return false;
     map OriginalProvs = Filter(OriginalProviders, type);
     map Provs = Filter(Providers, type);
-    y2debug("OriginalProvs=%1", OriginalProvs);
-    y2debug("Provs=%1", Provs);
-    return Provs == OriginalProvs;
+    y2milestone("OriginalProvs=%1", OriginalProvs);
+    y2milestone("Provs=%1", Provs);
+    return Provs != OriginalProvs;
 }
 
 include "network/routines.ycp";

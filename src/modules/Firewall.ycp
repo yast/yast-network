@@ -46,7 +46,7 @@ global define boolean Read() {
 
     devices = splitstring(devs, " ");
     y2debug("devices=%1", devices);
-    devices_init = eval(devices);
+    devices_init = (list<string>) eval(devices);
 
     return true;
 }
@@ -102,7 +102,7 @@ global define boolean Import(list<string> settings) {
     if(size(settings) == 0)
 	return true;
 
-    devices = eval(settings);
+    devices = (list<string>) eval(settings);
     return true;
 }
 

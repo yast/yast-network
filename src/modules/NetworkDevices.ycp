@@ -125,6 +125,7 @@ map FastestTypes = $[
  */
 global define boolean Read() ``{
 
+    // initialized = true; // FIXME
     if(initialized == true) return true;
 
     Devices = $[];

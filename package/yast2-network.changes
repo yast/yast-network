@@ -1,7 +1,8 @@
 -------------------------------------------------------------------
-Wed Feb 11 18:20:01 CET 2004 - msvec@suse.cz
+Mon Feb 16 19:21:25 CET 2004 - msvec@suse.cz
 
 - syntax fixes in the detection code
+- correct test for providers modification (#34419)
 - 2.9.4
 
 -------------------------------------------------------------------
