@@ -329,7 +329,10 @@ the logs for details.
 	    }
 	    else
 	    {
-		if (!Pkg::TargetInstall (tmp))
+		// FIXME use Pkg::TargetInstall (tmp) and see that callbacks
+		// are set appropriate
+
+		if (SCR::Execute (.target.bash, "/bin/rpm -U --replacepkgs " + tmp) != 0)
 		    y2error ("installing of release notes failed");
 	    }
 

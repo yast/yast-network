@@ -5,11 +5,6 @@ Thu Sep 18 11:40:00 CEST 2003 - arvin@suse.de
   (bug #31030)
 
 -------------------------------------------------------------------
-Wed Sep 17 21:26:28 CEST 2003 - arvin@suse.de
-
-- fixed installing of release notes in network test (bug #31204)
-
--------------------------------------------------------------------
 Wed Sep 17 10:07:39 CEST 2003 - arvin@suse.de
 
 - better helptext for vnc administration (bug #31085)
