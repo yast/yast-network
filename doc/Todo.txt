@@ -1,13 +1,14 @@
 # $Id$
 
 Bugs:
-- wireless -> msommer@suse.de
 - two resolv.conf agents
 - check and install required packages #14315
 - modem: start smpppd only if >0 devs
 - providers: add/edit/delete #16094
 - check existence of the modem device
 - modem|dsl: info popup + run|stop kinternet, if DISPLAY and (not)running (#14320)
+
+- install kinternet if KDE are present (kdelibs, kdebase?)
 
 2sort:
 - check already present default route (partially #11132)
@@ -18,7 +19,7 @@ Bugs:
 - virtual interfaces #6627
 - edit modules.conf #15062
 - dsl in installation settings #15160
-- install dhcpcd in lan (before start)
+- install dhcpcd in lan (before Write)
 - sigi&isdn: http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html
 - chmod 0700 ~/.wgetrc? asi neni potreba ...
 - use /etc/wgetrc?
@@ -48,7 +49,7 @@ DOC:
 - #13450 ???
 
 - check for yast2-mail presence
-- enh: speaker volume as combo
+- enh: speaker volume as combo (or better as slider)
 
 - autodetection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
     DetectionIP() { if detection_started; run ping; }
@@ -66,7 +67,6 @@ DOC:
 		      #10077 #12378 #15062 #9209 ...
 
 Enhancements:
-- ip: bits2netmask, netmask2bits
 - dns: xauth agent </dev/null (and some more work)
 - dns: restart only DHCP devices
 - routing: restart only routing

@@ -119,9 +119,8 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == IdleSeconds)));
 
     /* Checkbox label */
-    term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("Activate fire&wall..."), FirewallChecked));
+    term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("Activate fire&wall"), FirewallChecked));
     if(type == "isdn") FirewallCheckbox = `VSpacing(0);
-    // FIXME: "..." at the end of the message
 
     term StupidMode = `VSpacing(0.1);
     if (type == "modem")

@@ -41,7 +41,7 @@ global define boolean ReadHardware(string hwtype) ``{
     if(haskey(hwtypes, hwtype))
 	allcards = SCR::Read(lookup(hwtypes, hwtype, nil));
     else if(hwtype == "all" || hwtype == "" || hwtype == nil)
-	maplist(`v, mapvalues(hwtypes), ``{
+	maplist(path v, mapvalues(hwtypes), ``{
 	    allcards = merge(allcards, SCR::Read(v));
 	});
     else {
@@ -55,14 +55,14 @@ global define boolean ReadHardware(string hwtype) ``{
     }
 
     /* fill in the hardware data */
-    maplist (`card, allcards, ``{
+    maplist(map card, allcards, ``{
 	map one = $[];
 
 	/* common stuff */
 	string controller = ControllerType(card);
 	change(one, "name", DeviceName(card));
 	change(one, "type", controller);
-	change(one, "unique", lookup(card, "unique_key", ""));
+	change(one, "unique", card["unique_key"]:"");
 	change(one, "num", num);
 
 	/* modem */
@@ -101,11 +101,11 @@ global define boolean ReadHardware(string hwtype) ``{
 
 	    // #13571
 	    string hotplug = card["hotplug"]:"";
-	    if (hotplug == "pcmcia" || hotplug == "cardbus")
+	    if(hotplug == "pcmcia" || hotplug == "cardbus")
 	    {
 		controller = controller + "-pcmcia-";
 	    }
-	    else if (hotplug == "usb")
+	    else if(hotplug == "usb")
 	    {
 		controller = controller + "-usb-";
 	    }
@@ -166,8 +166,8 @@ global define void SelectHardware(integer which) ``{
 	options = sel["options"]:"";
 	// #13571
 	// How is this different from Lan::AddEdit?
-	pcmcia = issubstring (type, "pcmcia");
-	usb = issubstring (type, "usb");
+	pcmcia = issubstring(type, "pcmcia");
+	usb = issubstring(type, "usb");
     }
 
     return true;

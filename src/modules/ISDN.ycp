@@ -371,13 +371,13 @@ global define boolean Write(boolean start) ``{
 	if(Abort()) return false;
 	// stage 9 in writing current ISDN setup
 	ProgressNextStage(_("Setting up network services"));
-	SetupNetwork();
+	EnableNetwork();
 	sleep(sl);
 
 	if(Abort()) return false;
 	// stage 10 in writing current ISDN setup
 	ProgressNextStage(_("Setting up smpppd(8)"));
-	SetupSMPPPD();
+	EnableSMPPPD();
 	sleep(sl);
 
 	if(Abort()) return false;

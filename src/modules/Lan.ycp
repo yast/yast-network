@@ -306,7 +306,7 @@ global define boolean Write() ``{
     if(Abort()) return false;
     // stage 6 in writing current Lan setup
     ProgressNextStage(_("Setting up network services"));
-    SetupNetwork();
+    EnableNetwork();
     sleep(sl);
 
     if(Abort()) return false;

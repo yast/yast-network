@@ -217,13 +217,13 @@ global define boolean Write() ``{
     if(Abort()) return false;
     // stage 4 in writing current Modem setup
     ProgressNextStage(_("Setting up network services"));
-    SetupNetwork();
+    EnableNetwork();
     sleep(sl);
 
     if(Abort()) return false;
     // stage 5 in writing current Modem setup
     ProgressNextStage(_("Setting up smpppd(8)"));
-    SetupSMPPPD();
+    EnableSMPPPD();
     sleep(sl);
 
     if(Abort()) return false;

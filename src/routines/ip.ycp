@@ -24,7 +24,7 @@ global define boolean check_ip(string ip) ``{
 /**
  * @return describe a valid IPv4 address
  */
-global define string valid_ip4 () ``{
+global define string valid_ip4() ``{
     return
     //Translators: dot: "."
 _("A valid IP address consists of four integers
@@ -37,7 +37,7 @@ in the range 0-255 separated by dots.");
  * @return true if correct
  */
 global define boolean check_ip4(string ip) ``{
-    if (ip == nil || ip == "") return false;
+    if(ip == nil || ip == "") return false;
     string num = "(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])";
     string ipv4 = "^" + num + "(\\." + num + "){3}$";
     return regexpmatch(ip, ipv4);
@@ -50,7 +50,7 @@ global define boolean check_ip4(string ip) ``{
  */
 /*
 global defin boolean check_ip4_new(string ip) ``{
-    if (ip == nil || ip == "") return false;
+    if(ip == nil || ip == "") return false;
     string num0 = "(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9])";
     string num1 = "(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])";
     string ipv4 = "^" + num0 + "(\\." + num1 + "){3}$";
@@ -64,7 +64,7 @@ global defin boolean check_ip4_new(string ip) ``{
  * @return true if correct
  */
 global define boolean check_ip6(string ip) ``{
-    if (ip == nil || ip == "") return false;
+    if(ip == nil || ip == "") return false;
 
     //string num = "([1-9a-fA-F][0-9a-fA-F]*|0)";
     string num = "([0-9a-fA-F]{1,4})";
@@ -140,9 +140,8 @@ global define boolean check_netmask6(string netmask) ``{
  */
 global define integer ip2integer(string ip) ``{
     /* FIXME: check_ip4, also to compute_* */
-    /* if(size(l)!=4) return nil; */
-    list l = maplist (`e, splitstring (ip, "."), ``(tointeger (e)));
-    return select(l,3,0) + select(l,2,0)<<8 + select(l,1,0)<<16 + select(l,0,0)<<24;
+    list l = maplist(string e, splitstring(ip, "."), ``(tointeger(e)));
+    return l[3]:0 + l[2]:0<<8 + l[1]:0<<16 + l[0]:0<<24;
 }
 
 /**
@@ -151,20 +150,20 @@ global define integer ip2integer(string ip) ``{
  * @return ip address as string
  */
 global define string ip2string(integer ip) ``{
-    list l = maplist (`b, [0x1000000, 0x10000, 0x100, 0x1], ``((ip / b) & 0xff));
-    return sformat("%1.%2.%3.%4",select(l,0,0),select(l,1,0),select(l,2,0),select(l,3,0));
+    list l = maplist(integer b, [0x1000000, 0x10000, 0x100, 0x1], ``((ip / b) & 0xff));
+    return sformat("%1.%2.%3.%4", l[0]:0, l[1]:0, l[2]:0, l[3]:0);
 }
 
 /**
  * Converts IPv4 address from string to hex format
  * @param ip IP address as string in "ipv4" format
  * @return string representing IP in Hex
- * @example ip2hex ("192.168.1.1") -> "0xC0A80101"
- * @example ip2hex ("10.10.0.1") -> "0x0A0A0001"
+ * @example ip2hex("192.168.1.1") -> "0xC0A80101"
+ * @example ip2hex("10.10.0.1") -> "0x0A0A0001"
  */
 global define string ip2hex(string ip) ``{
-    string tmp = "00000000" + substring(toupper(tohexstring(ip2integer(ip))),2);
-    return substring (tmp, size (tmp) - 8);
+    string tmp = "00000000" + substring(toupper(tohexstring(ip2integer(ip))), 2);
+    return substring(tmp, size(tmp) - 8);
 }
 
 /**
@@ -222,7 +221,7 @@ global define integer netmask2bits(string netmask) ``{
 	"128":1, "192":2, "224":3, "240":4,
 	"248":5, "252":6, "254":7, "255":8,
     ];
-    maplist(`i, splitstring(netmask, "."), ``{ bits = bits + m[i]:0; });
+    maplist(string i, splitstring(netmask, "."), ``{ bits = bits + m[i]:0; });
     return bits;
 }
 

@@ -20,7 +20,7 @@ include "ui/common_popups.ycp";
  */
 global define list mapkeys(map m) ``{
     if(m==nil || m==$[]) return [];
-    return maplist(`var, `val, m, ``(var));
+    return maplist(any var, any val, m, ``(var));
 }
 
 /**
@@ -30,7 +30,7 @@ global define list mapkeys(map m) ``{
  */
 global define list mapvalues(map m) ``{
     if(m==nil || m==$[]) return [];
-    return maplist(`var, `val, m, ``(val));
+    return maplist(any var, any val, m, ``(val));
 }
 
 /**
@@ -41,7 +41,7 @@ global define list mapvalues(map m) ``{
  */
 global define any mapvalue(map m, any k) ``{
     if(m==nil || m==$[]) return nil;
-    return lookup(m, k, nil);
+    return m[k]:nil;
 }
 
 /**
@@ -55,7 +55,7 @@ global define boolean mapcheckkeys(map m, list keys) ``{
 	return false;
 
     boolean ret = true;
-    foreach(`k, keys, ``{
+    foreach(any k, keys, ``{
 	if(!haskey(m, k)) {
 	    y2error("Missing key: %1", k);
 	    ret = false;
@@ -130,7 +130,7 @@ global define string FinishedMailText() ``{
 
 /**
  * Check if required packages are installed and install them if they're not
- * @param packages list of required packages
+ * @param packages list of required packages (["rpm", "bash"])
  * @return `next if packages installation is successfull, `abort otherwise
  */
 global define symbol Packages(list packages) ``{
@@ -142,7 +142,7 @@ global define symbol Packages(list packages) ``{
 
     /* Popup text */
     string text = _("These packages need to be installed:") + "<p>";
-    maplist(`l, packages, ``{text = text + sformat("%1<br>",l);});
+    maplist(string l, packages, ``{ text = text + sformat("%1<br>",l); });
     y2debug("Installing packages: %1", text);
     boolean ret = InstallAndRemove(packages, [], text);
     return ret == true ? `next : `abort;
@@ -158,7 +158,7 @@ global define symbol Packages(list packages) ``{
 global define list list2items(list l, integer selected) ``{
     list items = [];
     integer n = 0;
-    foreach(`i, l, ``{
+    foreach(any i, l, ``{
 	change(items, `item(`id(n), i, n == selected));
 	n = n + 1;
     });
@@ -174,7 +174,7 @@ global define list list2items(list l, integer selected) ``{
 global define list hwlist2items(list l, integer selected) ``{
     list items = [];
     integer n = 0;
-    foreach(`i, l, ``{
+    foreach(any i, l, ``{
 	/* Table field (Unknown device) */
 	string hwname = lookup(i, "name", _("Unknown"));
 	integer num = lookup(i, "num", n);

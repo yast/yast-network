@@ -99,7 +99,7 @@ for more information about the network configuration.</p>");
 
     if(Lan::operation == `add)
 	label = `ComboBox(`id(`num), `opt(`hstretch),
-		_("Network device"),
+		_("N&etwork device"),
 		maplist(`d,Lan::FreeDevices(realtype),``(sformat("%1%2",type,d))));
 
     /* Frame label */
@@ -179,8 +179,7 @@ completes the configuration.</p>");
 		`VSpacing(0.5),
 		`HBox(
 		    /* Text entry label */
-		    // FIXME: Address -> address
-		    `TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
+		    `TextEntry(`id(`ipaddr), _("&IP address"), ipaddr),
 		    `HSpacing(2),
 		    /* Text entry label */
 		    `TextEntry(`id(`netmask), _("&Subnet mask"), netmask)
@@ -198,8 +197,7 @@ completes the configuration.</p>");
 		`VSpacing(0.5),
 		`HBox(
 		    /* Text entry label */
-		    `TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
-		    // FIXME: Address -> address
+		    `TextEntry(`id(`ipaddr), _("&IP address"), ipaddr),
 		    `HSpacing(2),
 		    /* Text entry label */
 		    `TextEntry(`id(`remoteip), _("R&emote IP address"), remoteip)

@@ -83,11 +83,12 @@ global define boolean StopNetwork() ``{
 }
 
 /**
- * Setup smpppd(8)
+ * Enable and start smpppd(8)
  * @return true if success
  */
-global define boolean SetupSMPPPD() ``{
-    Runlevel::ServiceFinetune("smpppd", [ "2", "3", "5" ]);
+global define boolean EnableSMPPPD() ``{
+    EnableService("smpppd");
+    // FIXME: move somewhere else
     if(Runlevel::ServiceStatus("smpppd") == 0)
 	Runlevel::RunInitScript("smpppd", "reload");
     else
@@ -96,32 +97,40 @@ global define boolean SetupSMPPPD() ``{
 }
 
 /**
- * Setup smpppd(8)
+ * Enable the network service
  * @return true if success
  */
-global define boolean SetupNetwork() ``{
-    Runlevel::ServiceFinetune("network", [ "2", "3", "5" ]);
-    return true;
+global define boolean EnableNetwork() ``{
+    return EnableService("network");
 }
 
 /**
- * Setup a service
+ * Enable service
+ * @param service service to be enabled
  * @return true if success
  */
-global define boolean SetupService(string service) ``{
+global define boolean EnableService(string service) ``{
     if(service == nil || service == "") {
 	y2error("Wrong service: %1", service);
 	return false;
     }
-    y2milestone("Setting up service %1", service);
-    Runlevel::ServiceFinetune(service, [ "2", "3", "5" ]);
-    /*
-    if(Runlevel::ServiceStatus("network") == 0)
-	Runlevel::RunInitScript("network", "reload");
-    else
-	Runlevel::RunInitScript("network", "start");
-    */
-    return true;
+    y2milestone("Enabling service %1", service);
+    /* return Runlevel::ServiceFinetune(service, [ "2", "3", "5" ]); */
+    return Runlevel::ServiceAdjust(service, "enable");
+}
+
+/**
+ * Disable service
+ * @param service service to be disabled
+ * @return true if success
+ */
+global define boolean DisableService(string service) ``{
+    if(service == nil || service == "") {
+	y2error("Wrong service: %1", service);
+	return false;
+    }
+    y2milestone("Disabling service %1", service);
+    return Runlevel::ServiceAdjust(service, "disable");
 }
 
 /* EOF */

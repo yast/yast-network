@@ -16,8 +16,8 @@ include "network/ip.ycp";
 /**
  * @return a description of a valid address (ip4 or name)
  */
-global define string valid_address () ``{
-    return valid_ip4 () + "\n" + valid_domainname ();
+global define string valid_address() ``{
+    return valid_ip4() + "\n" + valid_domainname();
 }
 
 /**
@@ -25,14 +25,14 @@ global define string valid_address () ``{
  * @param a an address
  * @return true if correct
  */
-global define boolean check_address (string a) ``{
-    return check_ip4 (a) || check_domainname (a);
+global define boolean check_address(string a) ``{
+    return check_ip4(a) || check_domainname(a);
 }
 
 /**
  * @return describe a valid domain name
  */
-global define string valid_domainname () ``{
+global define string valid_domainname() ``{
     return
     //Translators: dot: ".", hyphen: "-"
 _("A valid domain name consists of components separated by dots.
@@ -69,9 +69,9 @@ global define boolean check_fqhostname(string host) ``{
  */
 global define boolean check_domainname(string domain) ``{
     if(domain == nil || domain == "") return false;
-    list l = splitstring (domain, ".");
-    if(contains(maplist(`h, l, ``(check_hostname(h))), false)) return false;
-    return !regexpmatch (domain, "\\.[[:digit:]][^.]*$");
+    list l = splitstring(domain, ".");
+    if(contains(maplist(string h, l, ``(check_hostname(h))), false)) return false;
+    return !regexpmatch(domain, "\\.[[:digit:]][^.]*$");
 }
 
 /* EOF */
