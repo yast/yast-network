@@ -2,13 +2,15 @@
 # neededforbuild  autoconf automake ycpdoc yast2-testsuite dejagnu expect tcl yast2 yast2-base libycp liby2 libyui libscr yast2-core-wfm yast2-core-scr yast2-agent-system libycp-devel yast2-devtools yast2-lib-wizard yast2-lib-network yast2-config-runlevel
 
 @HEADER@
-Requires:	yast2 yast2-trans-network sysconfig
+Requires:	yast2 sysconfig
 Requires:	yast2-lib-wizard yast2-lib-sequencer yast2-lib-network
 Requires:	yast2-agent-ini yast2-agent-modules yast2-agent-any
 Requires:	yast2-config-runlevel yast2-db-country
 
 Provides:	y2c_lan y2c_dial yast2-config-adsl y2c_adsl
 Obsoletes:	y2c_lan y2c_dial yast2-config-adsl y2c_adsl
+Provides:	yast2-lib-network
+Obsoletes:	yast2-lib-network
 
 BuildArchitectures:	noarch
 

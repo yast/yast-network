@@ -19,11 +19,6 @@ include "network/routines.ycp";
 global list routes = [];
 
 /**
- * All routes read at the start
- */
-global list routes_init = [];
-
-/**
  * Data was modified?
  */
 global boolean modified = false;
@@ -32,6 +27,11 @@ global boolean modified = false;
  * Enable IP forwarding
  */
 global boolean forward = false;
+
+/**
+ * All routes read at the start
+ */
+list routes_init = [];
 
 /**
  * "routes" file location
@@ -119,7 +119,7 @@ global define boolean Import(map settings) ``{
 	return true;
 
     routes = settings["routes"]:[];
-    forward = settings["ip_forwarding"]:false;
+    forward = settings["ip_forward"]:false;
     modified = true;
     return true;
 }
@@ -129,9 +129,10 @@ global define boolean Import(map settings) ``{
  * @return autoinstallation settings
  */
 global define map Export() ``{
-    return ($["routes": eval(routes),
-	      "ip_forwarding": forward
-	    ]);
+    return $[
+	"routes": eval(routes),
+	"ip_forward": forward
+    ];
 }
 
 /* EOF */

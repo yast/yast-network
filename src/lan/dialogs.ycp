@@ -1,18 +1,10 @@
 /**
- * File:
- *   include/network/lan/dialogs.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Summary, overview and IO dialogs for network cards configuration.
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/lan/dialogs.ycp
+ * Package:	Configuration of network
+ * Summary:	Summary, overview and IO dialogs for network cards config
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
  */
 
 {
@@ -52,7 +44,16 @@ global define symbol Commit() ``{
  * @return `abort if aborted and `next otherwise
  */
 global define symbol ReadDialog() ``{
-    Wizard::RestoreHelp(ReadDialogHelp());
+
+    /* Network read dialog help 1/2 */
+    string help = _("<p><b><big>Initializing network card
+configuration</big></b><br>Please wait...<br></p>") +
+
+    /* Network read dialog help 2/2 */
+_("<p><b><big>Aborting the initialization:</big></b><br>
+Safely abort the configuration utility by pressing <B>Abort</B> now.</p>");
+
+    Wizard::RestoreHelp(help);
     Lan::AbortFunction = ``{return PollAbort();};
     boolean ret = Lan::Read();
     return ret ? `next : `abort;
@@ -64,7 +65,16 @@ global define symbol ReadDialog() ``{
  */
 global define symbol WriteDialog() ``{
     if(!Modified()) return `next;
-    Wizard::RestoreHelp(WriteDialogHelp());
+
+    /* Network write dialog help 1/2 */
+    string help = _("<p><b><big>Saving network card
+configuration</big></b><br>Please wait...<br></p>") +
+
+    /* Network write dialog help 2/2 */
+_("<p><b><big>Aborting saving:</big></b><br>
+Abort saving by pressing <b>Abort</b>.</p>");
+
+    Wizard::RestoreHelp(help);
     Lan::AbortFunction = ``{return PollAbort() && ReallyAbort();};
     boolean ret = Lan::Write();
     return ret ? `next : `abort;
@@ -78,6 +88,21 @@ global define symbol SummaryDialog() ``{
 
     string caption = _("Network cards configuration");
 
+    /* Network summary dialog help 1/3 */
+    string help = _("<p><b><big>Network card setup</big></b><br>
+Configure your network card here.<br></p>") +
+
+    /* Network summary dialog help 2/3 */
+_("<p><b><big>Adding a network card:</big></b><br>
+Choose a network card from the list of detected network cards.
+If your network card was not autodetected, select <b>Other (not detected)</b>
+then press <b>Configure</b>.</p>") +
+
+    /* Network summary dialog help 3/3 */
+_("<p><b><big>Editing or deleting:</big></b><br>
+If you press <b>Edit</b>, an additional dialog in which
+to change the configuration opens.</p>");
+
     list summary = Lan::Summary(true);
     list unconfigured = select(summary, 1, []);
     string configured = select(summary, 0, "");
@@ -86,7 +111,7 @@ global define symbol SummaryDialog() ``{
     term contents = Wizard_hw::DetectedContent(_("Network cards to configure"),
 	    unconfigured, false, configured);
 
-    Wizard::SetContentsButtons(caption, contents, SummaryDialogHelp(),
+    Wizard::SetContentsButtons(caption, contents, help,
 	    BackButtonLabel(), FinishButtonLabel());
 
     any ret = nil;
@@ -137,6 +162,20 @@ global define symbol OverviewDialog() ``{
 
     string caption = _("Network cards configuration overview");
 
+    /* Network overview dialog help 1/3 */
+    string help = _("<p><b><big>Network card overview</big></b><br>
+Obtain an overview of installed network cards. Additionally,
+edit their configuration.<br></p>") +
+
+    /* Network overview dialog help 2/3 */
+_("<p><b><big>Adding a network card:</big></b><br>
+Press <b>Add</b> to configure a new network card manually.</p>") +
+
+    /* Network overview dialog help 3/3 */
+_("<p><b><big>Editing or deleting:</big></b><br>
+Choose a network card to change or remove.
+Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
+
     list overview = Lan::Overview();
     y2debug("overview=%1",overview);
 
@@ -147,7 +186,7 @@ global define symbol OverviewDialog() ``{
 
     contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);
 
-    Wizard::SetContentsButtons(caption, contents, OverviewDialogHelp(),
+    Wizard::SetContentsButtons(caption, contents, help,
 	    BackButtonLabel(), FinishButtonLabel());
 
     if(size(overview) < 1) {

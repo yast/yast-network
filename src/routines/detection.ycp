@@ -1,0 +1,49 @@
+/**
+ * File:	include/network/detection.ycp
+ * Package:	Configuration of network
+ * Summary:	Runtime routines
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+/**
+ * Start detection
+ * @return true if success
+ */
+global define boolean StartDetection() ``{
+//global define boolean DetectionStart() ``{
+
+    /* configure eth0 */
+    // FIXME (only if not running!)
+
+    /* start DHCP detection */
+    SCR::Execute(.target.bash, "rm -f /var/tmp/dhcpcd-eth0.*");
+    SCR::Execute(.target.bash, "dhcpcd -Td -t 10 -NYRG -L /var/tmp eth0");
+
+    return true;
+}
+
+/**
+ * Finish detection
+ * @return true if success
+ */
+global define boolean FinishDetection() ``{
+//global define boolean DetectionFinish() ``{
+
+    /* finish DHCP detection */
+    SCR::Execute(.target.bash, "kill `cat /var/tmp/dhcpcd-$device.pid`");
+    // FIXME Read the data
+
+    /* shut down eth0 */
+    // FIXME (only if it was  not set up!)
+
+    return true;
+}
+
+/* EOF */
+}

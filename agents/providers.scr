@@ -25,7 +25,7 @@
 	    /* matching rules for sections */
 	    "sections"	: [
 		$[
-		    "begin" : [ "[ \t]*\\[Dialer[ \t]+(.*[^ \t])[ \t]*\\][ \t]*", "[Dialer %s]" ],
+		    "begin" : [ "[ \t]*\\[[ \t]*(.*[^ \t])[ \t]*\\][ \t]*", "[%s]" ],
 		],
 	    ],
 	    /* matching rules for values */

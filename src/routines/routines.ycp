@@ -1,18 +1,10 @@
 /**
- * File:
- *   include/network/routines.ycp
- *
- * Package:
- *   Configuration of network cards
- *
- * Summary:
- *   Miscellaneous routines
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/routines.ycp
+ * Package:	Configuration of network cards
+ * Summary:	Miscellaneous routines
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
  */
 
 {

@@ -1,15 +1,8 @@
 /**
- * File:
- *   include/network/config.ycp
- *
- * Package:
- *   Configuration of network cards
- *
- * Summary:
- *   Reading functions
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/config.ycp
+ * Package:	Configuration of network cards
+ * Summary:	Reading functions
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
@@ -220,6 +213,7 @@ global define boolean WriteConfig() ``{
 global define list GetFreeDevices(string type, integer num) ``{
     y2debug("CONFIG=%1",CONFIG);
     y2debug("type,num=%1,%2",type,num);
+    y2debug("--%1",lookup(CONFIG, type, $[]));
     list curdevs = mapkeys(lookup(CONFIG, type, $[]));
     list numdevs = maplist(`l, curdevs, ``(tointeger(l)));
     y2debug("curdevs=%1",curdevs);

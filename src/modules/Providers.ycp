@@ -70,11 +70,6 @@ map providers = $[];
 list countries = [];
 
 /**
- * Countries list
- */
-string language = "";
-
-/**
  * Export data
  * @return dumped settings (later acceptable by Import())
  */
@@ -204,20 +199,8 @@ global define boolean Read() ``{
     textdomain "network";
 
     /* local language heuristics */
-    language = Language::language;
-    y2debug("language=%1",language);
-    if(language == nil || language == "")
-	/* FIXME make default_language global */
-	language = Language::default_language;
-    else
-	language = "";
-    if(language != nil && language != "")
-	if(find(language, "@") != -1)
-	    language = select(splitstring(language, "@"), 0, "");
-    if(language != nil && language != "")
-	if(find(language, "_") != -1)
-	    language = select(splitstring(language, "_"), 1, "");
-    y2debug("language=%1",language);
+    string language = Language::GetLanguageCountry();
+    y2debug("language=%1", language);
 
     /* initialize the countries selection box */
     countries = [];
@@ -322,6 +305,7 @@ define list FilterProviders(list provs, string type) ``{
 global define list GetProviders(string country, string type, string preselect) ``{
     list provs = [];
 
+    y2debug("%1-%2-%3",country,type,preselect);
     /* Custom providers */
     if(country == "_custom") {
 	foreach(`k, `v, providers, ``{
@@ -337,13 +321,16 @@ global define list GetProviders(string country, string type, string preselect) `
 	});
     }
 
+    y2debug("provs=%1",provs);
     /* Filter only desired providers */
     if(type != "" && type != "all" && type != nil)
 	provs = FilterProviders(provs, type);
 
+    y2debug("provs=%1",provs);
     /* Sort and create divider (line) */
     provs = SortProviders(provs);
 
+    y2debug("provs=%1",provs);
     integer index = -1;
     return maplist(`i, provs, ``{
 	index = index + 1;
@@ -365,7 +352,7 @@ global define list GetProviders(string country, string type, string preselect) `
  */
 global define map GetProvider(any provider) ``{
     y2debug("provider=%1",provider);
-    if(is(provider, path)) {
+    if(provider != nil && is(provider, path)) {
 	string pr = sformat("%1", provider);
 	integer pos = findlastof(pr, ".");
 	if(pos != -1) {

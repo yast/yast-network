@@ -1,3 +1,8 @@
+- merged with y2l_network
+- allow IP settings for ISDN rawip connections (#16309)
+- always write ifcfg- file entries with '' (#16549)
+- removed dependence on -trans package
+- network card proposal
 - updated testsuite
 - common connection dialog
 - default language heuristics

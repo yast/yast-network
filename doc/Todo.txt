@@ -2,42 +2,66 @@
 
 Bugs:
 - two resolv.conf agents
-- check and install required packages
+- check and install required packages #14315
 - modem: start smpppd only if >0 devs
-- lan: use /etc/install.inf
-- providers: add/edit/delete
+- providers: add/edit/delete #16094
 - check existence of the modem device
 - modem|dsl: info popup + run|stop kinternet, if DISPLAY and (not)running
+
+2sort:
+- dsl: add/edit/delete #15301
+- check IP presence #9951
+- cable modems support? what is missing? [suse-network]
+- dummy module (for what is it useful? [suse-network] #15960
+- virtual interfaces #6627
+- edit modules.conf #15062
+- dsl in installation settings #15160
+
+- #10739 ???
+- #13450 ???
+
+- autodetection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
+    DetectionIP() { if detection_started; run ping; }
+
+- better Summary (take DNS, Routing):
+    Hostname: beholder.suse.cz
+    Name server: 10.20.0.1 (jmeno)
+    [nebo Name servers: 10.20.0.1, 10.20.1.16]
+    Gateway: 10.20.0.1 (jmeno)
+
+- ReadHardware vs. HardwareRead (Config, ...)
+
+- include public_html/network
 
 Enhancements:
 - dns: xauth agent </dev/null (and some more work)
 - dns: restart only DHCP devices
 - routing: restart only routing
+- dsl: ReadHardware("dsl") see #16539
 - dsl: more than one connection
+- dsl: ReplaceWidget(vpi|eth)
 - dsl: vpivci heuristics to module (maybe also tonline mode)
-- dsl: set pppoe in dependence on the country (DE->E,GB->A,AT->A,CA->E)
+- dsl: PPPMODE to dsl providers (pppoe|pppoatm|ppptp)
+- dsl: set PPPMODE in dependence on the country (DE->E,GB->A,AT->A,CA->E)
 - lan: use bootp reply for static configuration
-- lan: dual port network cards
+- lan: dual port network cards #10077, #12387 viz 2002-05.txt
 - lan: compiled in kernel drivers
 - modem: pap|chap secrets writing
-- providers: UIMODE="tonline"
-- providers: remove [Dialer ] from providers.rpm
-- providers: remove default_language
+- providers: UIMODE="tonline" #16291, #6244
 - providers: no-global-values
 - providers: ReallyAbort()
 - providers: preload the country providers (other upon request)
 - providers: -> HWDB-NG
+- providers: Czech Telecom DSL
 - base: edit without restart (reload)
 - base: use map instead of variables (-> fill all variables)
 - package: include all agents
-- package: require yast2-config-language
-- proposals (at least lan)
+- package: require yast2-language, yast2-mail, ...
 
 Future:
-- lan: wireless cards
+- lan: wireless cards #9209
 - lan: fddi
 - lan: arcnet
-- usb network
 - hippi et al (s390)
 - ui: local net (slcs)
 - ui: cable connection (plip, slip, usb)
@@ -52,3 +76,44 @@ Hardware:
 - pcmcia: ethernet card, TR card, ISDN card, modem
 - wireless network cards
 - fddi card
+
+Detection() {
+  CONFIG=$[];
+  ReadConfig("eth");
+  status(eth0) -> set up
+  netprobe();
+}
+
+DetectionStop() {
+  if set up -> stop(eth0)
+  killall netprobe
+  ReadDetection();
+}
+
+
+- make device optional in routes agent
+- DefaultDevice(ip)
+    check all PPP connections (REMOTEIP)
+    other devices
+      - take IP
+      - if(network(IP) == network(ip)) return x;
+- compare with old lan
+- where is this used?
+
+
+MODULESCONF:
+- see the "*ISDN*" paper
+
+MODULES=$[];	-> Lan.ycp
+DELETED=[];	-> Lan.ycp
+ReadModules();	->M
+WriteModules();	<-D,M
+Select: C,M -> global vars
+AddEdit: global vars -> C,M
+Delete: global vars -> C,M,D
+
+
+DSL Device:
+alias neco eth0
+touch ifcfg-eth0
+rcnetwork start

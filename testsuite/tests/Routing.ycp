@@ -20,7 +20,7 @@ Routing::routes = [ "r1", "r3" ];
 TEST(``(Routing::Write()), [READ], nil);
 
 DUMP("Import");
-TEST(``(Routing::Import($["routes":["r7", "r8"]])), [], nil);
+TEST(``(Routing::Import($["routes":["r7", "r8"], "ip_forward":true])), [], nil);
 
 DUMP("Export");
 TEST(``(Routing::Export()), [], nil);

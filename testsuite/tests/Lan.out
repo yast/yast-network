@@ -27,6 +27,4 @@ Read	.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS nil
 Return	true
 Dump	Write
 Dump	Import
-Return	true
 Dump	Export
-Return	$["dns":$["dhcp_hostname":false, "dhcp_resolv":false, "domain":"suse.com", "hostname":"nashif", "nameservers":["10.0.0.1"], "searchlist":["suse.com"]], "interfaces":[$["bootproto":"static", "broadcast":"10.10.1.255", "device":"eth0", "ipaddr":"10.10.1.1", "module":"", "netmask":"255.255.255.0", "network":"10.10.1.0", "options":"", "startmode":"onboot"]], "routing":$["ip_forwarding":false, "routes":[$["destination":"default", "device":"", "gateway":"10.10.0.8", "netmask":"0.0.0.0"]]]]

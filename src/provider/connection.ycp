@@ -237,6 +237,7 @@ global define symbol IPDetailsDialog() ``{
 }
 
 if(false) {
+Providers::provider = $["PROVIDER":"provider0"];
 Wizard::CreateDialog();
 ConnectionDialog("modem");
 ConnectionDialog("isdn");

@@ -1,18 +1,11 @@
 /**
- * File:
- *   include/network/isdn/dialogs.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   ISDN configuration dialogs
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/isdn/dialogs.ycp
+ * Package:	Configuration of network
+ * Summary:	ISDN configuration dialogs
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *		Karsten Keil <kkeil@suse.cz>
  *
  * $Id$
- *
  */
 
 {
@@ -116,13 +109,13 @@ providers support <b>Use peer DNS</b>.</p>");
 
 
     /* DIALOG PREPARE */
-    Wizard::SetContents(caption, contents, helptext, true, true);
-    if (ISDN::dynamicIP) {
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    BackButtonLabel(), OKButtonLabel());
+
+    if(ISDN::dynamicIP && ISDN::con_protocol != "rawip") {
 	UI::ChangeWidget (`id (`IP_local), `Enabled, false);
 	UI::ChangeWidget (`id (`IP_remote), `Enabled, false);
     }
-
-    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), OKButtonLabel()));
 
     /* MAIN CYCLE */
     symbol ret = nil;

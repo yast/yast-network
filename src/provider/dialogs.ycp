@@ -1,5 +1,5 @@
 /**
- * File:	include/network/routines/providers.ycp
+ * File:	include/network/providers/dialogs.ycp
  * Package:	Configuration of network
  * Summary:	Providers dialogs
  * Authors:	Dan Vesely <dan@suse.cz>
@@ -441,6 +441,7 @@ global define symbol runEditModemProviderDialog (boolean edit) ``{
     }
     return ret;
 }
+
 /**
  * ISDN parameters.
  * @return symbol for wizard sequencer (`next, `back, `abort)

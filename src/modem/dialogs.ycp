@@ -15,7 +15,6 @@ import "Modem";
 import "Wizard";
 
 include "ui/common_popups.ycp";
-//include "network/providers.ycp";
 include "network/routines.ycp";
 
 /**

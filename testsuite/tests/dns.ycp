@@ -1,0 +1,44 @@
+{
+
+include "testsuite.ycp";
+include "network/dns.ycp";
+
+DUMP("check_hostname");
+TEST(``(check_hostname(nil)), [], nil);
+TEST(``(check_hostname("")), [], nil);
+TEST(``(check_hostname("A_B87126")), [], nil);
+TEST(``(check_hostname("8abc")), [], nil);
+TEST(``(check_hostname("ahoj.joha")), [], nil);
+TEST(``(check_hostname("ahoj joha")), [], nil);
+TEST(``(check_hostname("ABC-012345678901234567890123456789012345678901234567890123456789")), [], nil);
+TEST(``(check_hostname("----------")), [], nil);
+TEST(``(check_hostname("ahoj")), [], nil);
+TEST(``(check_hostname("aHoJ")), [], nil);
+TEST(``(check_hostname("A-B87126")), [], nil);
+TEST(``(check_hostname("A0123456789")), [], nil);
+TEST(``(check_hostname("AB-012345678901234567890123456789012345678901234567890123456789")), [], nil);
+TEST(``(check_hostname("abc-")), [], nil);
+TEST(``(check_hostname("123")), [], nil);
+
+DUMP("check_fqhostname");
+TEST(``(check_fqhostname("www.blah.com")), [], nil);
+TEST(``(check_fqhostname("123.com")), [], nil);
+
+DUMP("check_domainname");
+TEST(``(check_domainname(nil)), [], nil);
+TEST(``(check_domainname("")), [], nil);
+TEST(``(check_domainname("ww.asda.")), [], nil);
+TEST(``(check_domainname(".asd.asd.com")), [], nil);
+TEST(``(check_domainname("www.a sd.com")), [], nil);
+TEST(``(check_domainname("----------")), [], nil);
+TEST(``(check_domainname("A.B")), [], nil);
+TEST(``(check_domainname("www.blah.com")), [], nil);
+TEST(``(check_domainname("as.cca.da3.cdd222.cd-2s.com")), [], nil);
+TEST(``(check_domainname("www.a-sd.com")), [], nil);
+TEST(``(check_domainname("asdf.2234-dsf.com")), [], nil);
+TEST(``(check_domainname("dsf.234")), [], nil);
+TEST(``(check_domainname("12-34.56-78.com")), [], nil);
+TEST(``(check_domainname("asd-.com")), [], nil);
+TEST(``(check_domainname("123.com")), [], nil);
+
+}

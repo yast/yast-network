@@ -1,15 +1,8 @@
 /**
- * File:
- *   clients/lan_auto.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Client for autoinstallation
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/lan_auto.ycp
+ * Package:	Configuration of network
+ * Summary:	Client for autoinstallation
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
@@ -36,11 +29,11 @@ import "Lan";
 include "network/lan/wizards.ycp";
 
 list args = Args();
-if( size(args) <= 0 ) {
+if(size(args) <= 0) {
     y2error("Did not get the settings, probably some mistake...");
     return false;
 }
-if( !is( Args(0), map ) ) {
+if(!is(Args(0), map)) {
     y2error("Bad argument for lan_auto: %1", Args(0));
     return false;
 }
@@ -92,5 +85,5 @@ repeat {
 
 return [ret, settings];
 
-}
 /* EOF */
+}

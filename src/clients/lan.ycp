@@ -1,21 +1,13 @@
 /**
- * File:
- *   clients/lan.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Network cards main file
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/lan.ycp
+ * Package:	Configuration of network
+ * Summary:	Network cards main file
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
  * Main file for network card configuration.
  * Uses all other files.
- *
  */
 
 {
@@ -55,4 +47,5 @@ y2debug("ret == %1", ret);
 y2milestone("Lan module finished");
 return ret;
 
+/* EOF */
 }

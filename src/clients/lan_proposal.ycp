@@ -1,18 +1,10 @@
 /**
- * File:
- *   clients/lan_proposal.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Lan configuration proposal
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/lan_proposal.ycp
+ * Package:	Configuration of network
+ * Summary:	Lan configuration proposal
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
  */
 
 {
@@ -42,6 +34,7 @@ if(func == "MakeProposal") {
 	Progress::off();
 	Lan::Read();
     }
+    Lan::Propose();
     list sum = Lan::Summary(false);
     proposal = select(sum, 0, "");
     Progress::on();

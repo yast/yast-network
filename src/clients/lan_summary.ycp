@@ -1,15 +1,8 @@
 /**
- * File:
- *   clients/lan_summary.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Network cards summary
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/lan_summary.ycp
+ * Package:	Configuration of network
+ * Summary:	Network cards summary
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
@@ -37,4 +30,5 @@ Progress::on();
 y2milestone("Lan summary finished");
 return ret;
 
+/* EOF */
 }

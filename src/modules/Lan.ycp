@@ -48,6 +48,7 @@ global string netmask = "";
 global integer device = -1;
 
 global boolean proposal_valid = false;
+global boolean write_only = false;
 
 /**
  * Abort function
@@ -178,11 +179,8 @@ global define boolean Read() ``{
  * @return true on success
  */
 global define boolean WriteOnly()``{
-       WriteConfig();
-       WriteModulesConf();
-       Routing::Write();
-       DNS::Write();
-       return true;
+       write_only = true;
+       return Write();
 }
 
 /**
@@ -214,7 +212,7 @@ global define boolean Write() ``{
 
     if(Abort()) return false;
     ProgressNextStage(_("Deactivating local network services"));
-    StopNetwork();
+    if(!write_only) StopNetwork();
     sleep(sl);
 
     if(Abort()) return false;
@@ -244,12 +242,12 @@ global define boolean Write() ``{
 
     if(Abort()) return false;
     ProgressNextStage(_("Running SuSEconfig"));
-    RunSuSEconfig();
+    if(!write_only) RunSuSEconfig();
     sleep(sl);
 
     if(Abort()) return false;
     ProgressNextStage(_("Activating local network services"));
-    StartNetwork();
+    if(!write_only) StartNetwork();
     sleep(sl);
 
     if(Abort()) return false;
@@ -290,7 +288,7 @@ global define boolean Import(map settings) ``{
 	}
     });
 
-    CONFIG=eval($["eth":eth,"tr":token]);
+    CONFIG = eval($["eth":eth, "tr":token]);
     DNS::Import(eval(settings["dns"]:$[]));
     Routing::Import(eval(settings["routing"]:$[]));
     return true;
@@ -307,10 +305,10 @@ global define map Export() ``{
     string upcase = "BOOTPROTO BROADCAST IPADDR NETMASK NETWORK STARTMODE";
     string ignore = "UNIQUE";
 
-    foreach(string device, map data, CONFIG, ``{	
-	list interfaces = maplist(string device_nr, map device_data, data, ``{	    
+    foreach(string device, map data, CONFIG, ``{
+	list interfaces = maplist(string device_nr, map device_data, data, ``{
 	    map new_device = $[];
-	    new_device = add(new_device,"device", device + device_nr);	    
+	    new_device = add(new_device,"device", device + device_nr);
 	    foreach(`k,`v, device_data, ``{
 		if (issubstring(upcase, k)) {
 		    new_device[tolower(k)] = v;
@@ -323,10 +321,11 @@ global define map Export() ``{
 	});
 	autoinst_cfg=union( autoinst_cfg, interfaces);
     });
+
     return eval($[
-	"interfaces":autoinst_cfg,
-	"dns":DNS::Export(),
-	"routing":Routing::Export()
+	"interfaces"	: autoinst_cfg,
+	"dns"		: DNS::Export(),
+	"routing"	: Routing::Export(),
     ]);
 }
 
@@ -503,6 +502,64 @@ global define boolean Commit() ``{
     modified = true;
     operation = nil;
     return true;
+}
+
+/**
+ * Propose a configuration
+ */
+global define void Propose() ``{
+
+    y2milestone("CONFIG=%1", CONFIG);
+    y2milestone("HARDWARE=%1", HARDWARE);
+    y2milestone("INSTALL_INF=%1", INSTALL_INF);
+
+    if(size(HARDWARE) < 1) return;
+
+    AddEdit("");
+    Select(0);
+
+    string ip = "";
+    /* if exists /etc/install.inf, use it for proposal */
+    if(INSTALL_INF != nil && INSTALL_INF != $[])
+	ip = INSTALL_INF["ip"]:"bootp";
+
+    if(ip != nil && ip != "" && ip != "bootp" && ip != "dhcp") {
+
+	/* propose address setup from /etc/install.inf */
+	bootproto = "static";
+	ipaddr = ip;
+	netmask = INSTALL_INF["netmask"]:"255.255.255.0";
+
+	/* propose default gateway from /etc/install.inf */
+	string gw = INSTALL_INF["gateway"]:"";
+	if(gw != "" && gw != nil) {
+	    Routing::routes = [ $[
+		"destination"       : "default",
+		"gateway"           : gw,
+		"netmask"           : "-",
+		"device"            : "-"
+	    ] ];
+	    Routing::modified = true;
+	}
+
+	/* propose DNS setup from /etc/install.inf */
+	string ns = INSTALL_INF["nameserver"]:"";
+	string mn = INSTALL_INF["machinename"]:"";
+	string dn = INSTALL_INF["domain"]:"";
+	if(ns != "") DNS::nameservers = [ ns ];
+	if(mn != "") DNS::hostname = mn;
+	if(dn != "") DNS::domain = dn;
+	DNS::modified = true;
+
+    }
+    else {
+	bootproto = "dhcp";
+	DNS::dhcp_hostname = true;
+	DNS::modified = true;
+    }
+
+    Commit();
+    y2milestone("CONFIG=%1", CONFIG);
 }
 
 /**

@@ -1,15 +1,8 @@
 /**
- * File:
- *   clients/lan_write.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Writing only client
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	clients/lan_write.ycp
+ * Package:	Configuration of network
+ * Summary:	Writing only client
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
@@ -39,7 +32,7 @@ if(size(args) <= 0) {
     y2error("NOT writing, probably some mistake...");
     return false;
 }
-if(!is(Args(0), map) ) {
+if(!is(Args(0), map)) {
     y2error("Bad argument for network write: %1", Args(0));
     return false;
 }
@@ -56,4 +49,5 @@ Progress::on();
 y2milestone("Lan write finished");
 return ret;
 
+/* EOF */
 }

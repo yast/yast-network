@@ -23,8 +23,8 @@ include "network/isdn/callback.ycp";
 include "network/isdn/lowlevel.ycp";
 include "network/isdn/connection.ycp";
 
+include "network/providers/dialogs.ycp";
 include "network/providers/connection.ycp";
-include "network/providers.ycp";
 
 /**
  * Whole configuration of network

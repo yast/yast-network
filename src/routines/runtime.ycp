@@ -1,18 +1,10 @@
 /**
- * File:
- *   include/network/runtime.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Runtime routines
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/runtime.ycp
+ * Package:	Configuration of network
+ * Summary:	Runtime routines
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
  */
 
 {

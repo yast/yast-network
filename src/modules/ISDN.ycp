@@ -66,10 +66,7 @@ global string hw_bootmode = "onboot";
 /* ISDN device database */
 global list ISDN_Devices = [];
 
-/*
- * connection data
- */
-
+/* connection data */
 global string  localMSN = "";
 global string  dialMode = "";
 global string  idleTime = "300";

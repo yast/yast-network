@@ -1,15 +1,8 @@
 /**
- * File:
- *   include/network/summary.ycp
- *
- * Package:
- *   Configuration of network cards
- *
- * Summary:
- *   Summary and overview functions
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/summary.ycp
+ * Package:	Configuration of network cards
+ * Summary:	Summary and overview functions
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
