@@ -1,95 +1,145 @@
 /**
- * File:	clients/lan_auto.ycp
+ * File:	clients/lan_proposal.ycp
  * Package:	Network configuration
- * Summary:	Client for autoinstallation
+ * Summary:	Lan configuration proposal
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
- * This is a client for autoinstallation. It takes its arguments,
- * goes through the configuration and return the setting.
- * Does not do any changes to the configuration.
- */
-
-/**
- * @param first a map of lan settings
- * @return boolean success of operation
- * @example map mm = $[ "FAIL_DELAY" : "77" ];
- * @example map ret = WFM::CallModule("lan_auto", [ mm ]);
  */
 
 {
 
 textdomain "network";
 
-y2milestone("----------------------------------------");
-y2milestone("Lan auto started");
-
 import "Lan";
 include "network/lan/wizards.ycp";
 
-list args = WFM::Args();
-if(size(args) <= 0) {
-    y2error("Did not get the settings, probably some mistake...");
-    return false;
-}
-if(!is(WFM::Args(0), map)) {
-    y2error("Bad argument for lan_auto: %1", WFM::Args(0));
-    return false;
+
+/**
+ * Convert data from autoyast to structure used by module.
+ * @param autoyast settings
+ * @return native network settings
+ */
+define map FromAY(map input) ``{
+
+
+    list upcase = [
+		   "bootproto",
+		   "broadcast",
+		   "ipaddr",
+		   "netmask",
+		   "network",
+		   "startmode",
+		   "dhclient_set_down_link",
+		   "wireless",
+		   "wireless_mode",
+		   "wireless_essid",
+		   "wireless_nwid",
+		   "wireless_key",
+		   "wireless_nick",
+		   "remote_ipaddr"
+    ];
+
+    map interfaces = listmap(map interface, input["interfaces"]:[], ``{
+	map new_interface = $[];
+	foreach(string k, string v, interface, ``{
+	    if (contains(upcase, k)) {
+		new_interface[toupper(k)] = v;
+	    }
+	    else if (v != "") {
+		new_interface[k] = v;
+	    }
+	});
+	return([interface["device"]:"unknown",new_interface]);
+    });
+
+    map devices = $[];
+    foreach(string device, map if_data, interfaces, ``{
+
+	integer pos = findfirstof( device, "0123456789");
+	string strtok =  substring(device, 0, pos);
+	string inttok = substring(device, pos);
+
+	map device = devices[strtok]:$[];
+	device=add(device, inttok, if_data);
+	devices[strtok] = device;
+
+    });
+	// FIXME: add aliasing support
+    input["devices"] = devices;
+    return input;
 }
 
-/* The settings are in the first argument */
-map settings = args[0]:$[];
-y2debug("Imported: %1", settings);
 
-Lan::Import(settings);
-define set_contents()
-    ``{
-    term contents =
-	`VBox(
-	      `VSpacing(1),
-	      `RichText( `id(`summary), select(Lan::Summary(false), 0 , "")),
-	      `VSpacing(0.5),
-	      `HBox(
-            // push button label
-		    `PushButton(`id(`configure), _("&Configure Network")),
-		    `HStretch(),
-            // push button label
-		    `PushButton(`id(`reset), _("&Reset Configuration"))
-		    ),
-	      `VSpacing(1)
-	      );
-    // caption of lan auto configuration
-    Wizard::SetContents(_("Network Configuration"),
-			contents, "", true, true);
+
+/**
+ * Convert data from native network to autoyast for XML
+ * @param native network settings
+ * @return autoyast network settings
+ */
+
+define map ToAY(map settings) ``{
+    list interfaces = [];
+    maplist(string device, map devsmap, settings["devices"]:$[], ``{
+	maplist(string num, map devmap, devsmap, ``{
+	    map newmap = $[];
+	    maplist(string key, string val, devmap, ``{
+			change(newmap, tolower(key), val);
+	    });
+	    change(newmap, "device", device + num);
+	    change(interfaces, newmap);
+	});
+    });
+	return $[
+		"interfaces": interfaces,
+		"dns"		: settings["dns"]:$[],
+		"routing"	: settings["routing"]:$[],
+		"modules"	: settings["modules"]:$[]
+	];
+
 }
-set_contents();
-any result = nil;
-any ret = nil;
-repeat {
-    ret = UI::UserInput();
-    if(ret == `configure)
-    {
-	result = LanAutoSequence();
-	if(result == `next || result == `finish)
-	{
-	    settings = Lan::Export();
-	}
-	Lan::Import(settings);
-	set_contents();
-    }
-    else if( ret == `reset)
-    {
-	settings= $[];
-	Lan::Import(settings);
-	set_contents();
-    }
-} until (ret == `back ||  ret == `abort ||  ret == `next || ret ==`key);
 
-y2milestone("Lan auto finished");
+
+
+/* The main () */
 y2milestone("----------------------------------------");
+y2milestone("Lan autoinst client started");
 
-return [ret, settings];
+string func = WFM::Args(0);
+map param = WFM::Args(1);
+
+/* create a  summary*/
+if(func == "Summary") {
+	map autoyast = FromAY(param);
+	Lan::Import(autoyast);
+    return ( select(Lan::Summary(false),0, ""));
+}
+else if (func == "Reset") {
+	Lan::Import($[]);
+	return $[];
+}
+else if (func == "Change") {
+	Lan::Import(FromAY(param));
+	any res = LanAutoSequence();
+	return res;
+}
+else if (func == "Result") {
+	map settings = Lan::Export();
+	map autoyast = ToAY(settings);
+	return(autoyast);
+}
+else if (func == "Write") {
+	Lan::Import(FromAY(param));
+	Lan::write_only = true;
+	return	Lan::Write();
+}
+/* unknown function */
+else {
+    y2error("unknown function: %1", func);
+	return false;
+}
+
+/* Finish */
 
 /* EOF */
 }
