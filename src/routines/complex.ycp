@@ -306,25 +306,25 @@ define string DeviceStatus(string devtype, string devnum, map devmap) {
 
 	if(nam == "" || nam == nil)
 	    /* Modem status (%1 is device) */
-	    return sformat(_("Configured as %1"), dev);
+	    return sformat(_("Configured as %1."), dev);
 	else
 	    /* Modem status (%1 is device, %2 is provider) */
-	    return sformat(_("Configured as %1 with provider %2"), dev, nam);
+	    return sformat(_("Configured as %1 with provider %2."), dev, nam);
     }
     /* ISDN card */
     else if(devtype == "isdn" || devtype == "contr") {
 	/* ISDN device status (%1 is device) */
-	return sformat(_("Configured as %1"), dev);
+	return sformat(_("Configured as %1."), dev);
     }
     /* ISDN stuff */
     else if(devtype == "net") {
 
 	string nam = ProviderName(devmap["PROVIDER"]:"");
-        /* Connection protocol (syncppp|rawip) */
+	/* Connection protocol (syncppp|rawip) */
 	string proto = devmap["PROTOCOL"]:"";
 
 	/* ISDN status (%1 is device, %2 is provider, %3 protocol) */
-	return sformat(_("Configured as %1 with provider %2 (protocol %3)"), dev, nam, proto);
+	return sformat(_("Configured as %1 with provider %2 (protocol %3)."), dev, nam, proto);
 
 	/* example: ISDN Connection to Arcor with syncppp on net0 */
 	// return sformat(_("to %1 with %2 on %3"), provider, proto, dev);
@@ -344,35 +344,38 @@ define string DeviceStatus(string devtype, string devnum, map devmap) {
 	    string remip = devmap["REMOTE_IPADDR"]:"";
 	    if(addr == "" || addr == nil)
 		/* Network card status */
-		return sformat(_("Configured"));
+		return sformat(_("Configured."));
 	    else if(remip == "" || remip == nil)
 		/* Network card status (%1 is address) */
-		return sformat(_("Configured with Address %1"), (host=="")?addr:(addr+" ("+host+")"));
+		return sformat(_("Configured with Address %1."), (host=="")?addr:(addr+" ("+host+")"));
 	    else
 		/* Network card status (%1 is address, %2 is address) */
-		return sformat(_("Configured with Address %1 (remote %2)"), addr, remip);
+		return sformat(_("Configured with Address %1 (remote %2)."), addr, remip);
 	}
 	else
 	    /* Network card status (%1 is protocol) */
-	    return sformat(_("Configured with %1"), toupper(proto));
+	    return sformat(_("Configured with %1."), toupper(proto));
 
+	// This is the old version of the above code, including the
+	// configuration name. But the name is long and cryptic so wen
+	// don't use it.
 	/* FIXME: dropped interface name */
 	if(proto == "" || proto == "static" || proto == "none" || proto == nil) {
 	    string addr = devmap["IPADDR"]:"";
 	    string remip = devmap["REMOTE_IPADDR"]:"";
 	    if(addr == "" || addr == nil)
 		/* Network card status (%1 is device) */
-		return sformat(_("Configured as %1"), dev);
+		return sformat(_("Configured as %1."), dev);
 	    else if(remip == "" || remip == nil)
 		/* Network card status (%1 is device, %2 is address) */
-		return sformat(_("Configured as %1 with address %2"), dev, addr);
+		return sformat(_("Configured as %1 with address %2."), dev, addr);
 	    else
 		/* Network card status (%1 is device, %2 is address, %3 is address) */
-		return sformat(_("Configured as %1 with address %2 (remote %3)"), dev, addr, remip);
+		return sformat(_("Configured as %1 with address %2 (remote %3)."), dev, addr, remip);
 	}
 	else
 	    /* Network card status (%1 is device, %2 is protocol) */
-	    return sformat(_("Configured as %1 with %2"), dev, toupper(proto));
+	    return sformat(_("Configured as %1 with %2."), dev, toupper(proto));
     }
 }
 
