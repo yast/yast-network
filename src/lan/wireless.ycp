@@ -395,7 +395,14 @@ Really continue?");
 	Lan::wl_essid = (string) UI::QueryWidget(`id(`essid), `Value);
 	Lan::wl_mode = mode;
 	Lan::wl_auth_mode = authmode;
-	Lan::wl_key[0] = ckey;
+	if (authmode == "psk")
+	{
+	    Lan::wl_wpa_psk = key;
+	}
+	else
+	{
+	    Lan::wl_key[0] = ckey;
+	}
     }
 
     return ret;
