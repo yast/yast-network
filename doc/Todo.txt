@@ -73,6 +73,8 @@ TO-SORT:
   remove 2 eth cards and add them in a different order won't work due to
   the kernel modules not being unloaded)
 
+- dialup: mail question only if new device was added
+
 - routing: summary: split gateway of the other routes
 - routing: summary: print other routes in nice form
 - routing: summary: print gateway hostname [Gateway: 10.20.0.1 (chimera.suse.cz)]

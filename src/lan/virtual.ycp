@@ -20,14 +20,11 @@ include "network/routines.ycp";
 
 /*
  * TODO:
- * - helps
- * - cleanup sources (drop host, ...)
- * - more items (REMOTE_IPADDR, ...)
- * - checking
- * - aliases to summary
- * - aliases to overview
- * - disallow already used IP addresses?
- * - disallow already used IP addresses in lan?
+ * - bug: where to put Edit, Add?
+ * - bug: aliases to overview (add,edit,delete)
+ * - enh: more items (REMOTE_IPADDR, ...)
+ * - enh: disallow already used IP addresses?
+ * - enh: disallow already used IP addresses in lan?
  */
 
 /*
@@ -67,11 +64,11 @@ global define symbol VirtualDialog(boolean standalone) ``{
     string caption = _("Virtual Aliases");
 
     /* Hosts dialog help 1/2 */
-    string help = _("<p>The hosts can be set up in this dialog.</p>") +
+    string help = _("<p>The virtual aliases can be set up in this dialog.</p>") +
 
     /* Hosts dialog help 2/2 */
-    _("<p>Fill in a host <b>IP address</b>, a <b>host name</b>, and optional
-<b>host aliases</b>, separated by spaces.</p>");
+    _("<p>Fill in an <b>Alias Name</b>, an <b>IP Address</b>, and
+<b>Netmask</b>.</p>");
 
     integer items = 0;
     integer max = 0;
@@ -255,7 +252,7 @@ global define term VirtualEditDialog(integer id, term entry, list forbidden) ``{
 	`HSpacing(1),
 	`VBox(
 	    /* TextEntry label */
-	    `TextEntry(`id(`name), _("&Name"), select(entry, 1, "")),
+	    `TextEntry(`id(`name), _("Alias &Name"), select(entry, 1, "")),
 	    /* TextEntry label */
 	    `TextEntry(`id(`ipaddr), _("&IP Address"), select(entry, 2, "")),
 	    /* TextEntry label */
@@ -268,9 +265,9 @@ global define term VirtualEditDialog(integer id, term entry, list forbidden) ``{
 	    )
 	));
 
-    // UI::ChangeWidget(`id(`host), `ValidChars, ValidCharsIP);
-    // UI::ChangeWidget(`id(`name), `ValidChars, ValidCharsFQHostname);
-    // UI::ChangeWidget(`id(`aliases), `ValidChars, ValidCharsFQHostname + " ");
+    UI::ChangeWidget(`id(`name), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    UI::ChangeWidget(`id(`ipaddr), `ValidChars, ValidCharsIP);
+    UI::ChangeWidget(`id(`netmask), `ValidChars, ValidCharsNetmask);
 
     if(entry == `empty())
 	UI::SetFocus(`id(`name));
@@ -293,7 +290,7 @@ global define term VirtualEditDialog(integer id, term entry, list forbidden) ``{
 	    UI::SetFocus(`id(`name));
 	    continue;
 	}
-	if(contains(forbidden,val)) {
+	if(contains(forbidden, val)) {
 	    /* Popup::Error text */
 	    Popup::Error(sformat(_("IP address %1 is already present."), val));
 	    UI::SetFocus(`id(`host));
@@ -302,18 +299,18 @@ global define term VirtualEditDialog(integer id, term entry, list forbidden) ``{
 	host = add(host, val);
 
 	val = UI::QueryWidget(`id(`ipaddr), `Value);
-	if(false && !check_fqhostname(val)) {
+	if(!check_ip(val)) {
 	    /* Popup::Error text */
-	    Popup::Error(_("Host name is invalid."));
+	    Popup::Error(_("The IP address is incorrect."));
 	    UI::SetFocus(`id(`ipaddr));
 	    continue;
 	}
 	host = add(host, val);
 
 	val = UI::QueryWidget(`id(`netmask), `Value);
-	if(false && !check_fqhostname(val)) {
+	if(!check_netmask(val)) {
 	    /* Popup::Error text */
-	    Popup::Error(_("Host name is invalid."));
+	    Popup::Error(_("The subnet mask is incorrect"));
 	    UI::SetFocus(`id(`netmask));
 	    continue;
 	}
