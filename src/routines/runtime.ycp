@@ -241,16 +241,12 @@ define boolean RunKInternet() {
     y2milestone("Text mode: %1", ncurses);
     if(ncurses == nil || ncurses == true) return true;
 
-    /* KDE installed? */
-    if(!Package::Installed("kdebase3")) {
-	y2milestone("KDE not installed");
-	return true;
-    }
+    // Don't test KDESU_USER, kdesu is used in GNOME too 8-|  #43556
 
-    /* KDE running? */
-    if((integer) SCR::Execute(.target.bash, "test \"$KDE_FULL_SESSION\" || test \"$KDESU_USER\"") != 0) {
-	y2milestone("KDE not running");
-	return true;
+    /* Can dcop run? */
+    if((integer) SCR::Execute(.target.bash, "dcop") != 0) {
+	y2milestone("Failed to run dcop. KDE not running?");
+	return false;
     }
 
     /* KInternet already running? */
