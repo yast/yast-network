@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Sep 28 16:54:01 CEST 2004 - mvidner@suse.cz
+
+- Do not run dhcpcd-test, it may trigger IP address change (#46214).
+- 2.10.26
+
+-------------------------------------------------------------------
 Mon Sep 27 16:11:47 CEST 2004 - mvidner@suse.cz
 
 - Lan: install packages reported by hwinfo, eg. firmware (#45960).

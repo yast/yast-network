@@ -72,6 +72,7 @@ boolean detection_interface = false;
 
 /**
  * Set up the first eth interface, if not already running
+ * WATCH OUT, this is the place where modules are loaded
  * @return true if success
  */
 define boolean StartEthInterface() {
@@ -144,7 +145,18 @@ define boolean StartDetection() {
 
     /* Start DHCP detection */
     SCR::Execute(.target.bash, sformat("/bin/rm -f %1/dhcpcd-*", tmpdir));
-    SCR::Execute(.target.bash, sformat("/usr/sbin/dhcpcd-test %1 > %2/dhcpcd-%1.info", device, tmpdir));
+
+    // #46214
+    if (true)
+    {
+	y2milestone ("dhcpcd-test skipped");
+    }
+    else
+    {
+	// Do not lose our lease just because of the test,
+	// pretend we are someone else. #46214#c18
+	SCR::Execute(.target.bash, sformat("/usr/sbin/dhcpcd-test %1 -I yast-detection-id > %2/dhcpcd-%1.info", device, tmpdir));
+    }
 
     y2milestone("Network detection start (end)");
     return true;
