@@ -2,32 +2,27 @@
 
 Bugs:
 
-#19910: builtin IBM cards?
-#21009: NFS & hostname?
-#23332: s390 devices support
-#24836: ssh installation?
-#24928: wlan|pcmcia switch
-#25106: ??
-#25432: provider & `immediate
-#25491: ??
-#25506: ??
-#25739: ??
-#13450: default gateway in first lan dialog
-#16131: IP-masquerading
-#17346: ethtool
 #17564: provider0
-#17631: ??
+#19910: builtin IBM cards?
+#22802: better message for broken fields (eg. domain)
+#23332: s390 devices numbering
+#23491: detect wlan cards
+#25491: IP address assigning
+#25506: yp configuration failed
+#25739: UNIQUE missing after nfs install
+
 #22739: ifcfg-usb-usb
-#22802: better message for broken fields (eg. domain) -- Checker
-#23491: ??
-#23977: ??
 #24000: edit dsl HW goes through provider again (default provider?)
+#24836: ssh installation (install.inf format)
 #24882: rename ifaces when deleted
+#24928: wlan|pcmcia switch
+#25432: provider & `immediate
 
 - dns: update /etc/hosts (#22825)
 
 - dsl: better proposal (#23662)
 - dsl: detect hardware (#24462)
+- dsl: empty ifcfg-ethX (#17631)
 
 - lan: temporary interface disable (#24926)
 - all: temporary interface disable
@@ -44,9 +39,13 @@ Bugs:
 
 - isdn: start mail after config (#18256)
 
+ISDN:
+- code cleanup (use yast2-network structure: Provider, devices, ...)
+- UI cleanup (http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html)
+
 ##############################################################################
 
-Implementation:
+TO-MERGE:
 
 #22825:
 SuSEconfig.hostname:
@@ -79,27 +78,7 @@ UpdateHosts("hostname", [IPADDRs]);
 
 ##############################################################################
 
-TOCHECK:
-
-- sigi&isdn: http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html
-
-- autodetection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
-    DetectionIP() { if detection_started; run ping; }
-
-- #16094:
-    Further enhancement: if the provider is not used by any other modem
-    as default or there are no modems at all, display a question wheather
-    user wants to delete also the provider.
-
-TOSORT:
-
-- wireless: missing "Master"|"Monitor" in the "Operating mode"
-
-- routing: other fields
-- routing: rename to Route
-
-- routing: list of available devices in expert dialog
-- routing: check already present default route (partially #11132)
+TO-SORT:
 
 - routing: summary: split gateway of the other routes
 - routing: summary: print other routes in nice form
@@ -113,17 +92,6 @@ TOSORT:
 - lan: install dhcpcd|sysconfig|... (before Write)
 - lan: install wireless-tools, hotplug, ... if needed (before Write)
 
-- lan: check IP presence (#9951)
-- lan: check link presence
-
-- host: scan for hosts on the local network [Add]
-- host: add (update) all hosts in the local network
-- host: show system hosts checkbox (like users have)
-
-- dialup: start smpppd only if >0 devs
-- dialup: info popup (configured + kinternet, cinternet)
-- dialup: run|stop kinternet, if DISPLAY and (not)running (#14320)
-
 - routines: -> FIREWALL=yes|no to each ifcfg-XXX #18840 (support for modems)
 
 ##############################################################################
@@ -132,15 +100,24 @@ Improvements:
 
 - dns: xauth agent </dev/null (and some more work)
 - dns: two resolv.conf scrconfs
+- lan: check IP presence (#9951)
+- lan: check link presence (see sysconfig.rpm how is it done)
 - lan: myrinet: check for driver presence [warning + info]
 - lan: remove writing of NETWORK (also BROADCAST?), probably not used
 - modem: check existence of the modem device in ModemDialog
 - routing: restart only routing
+- routing: check already present default route (partially #11132)
 - routines: check for yast2-mail presence
 - routines: support plip, slip, myri, ppp (serial cable, not modem)
 - routines: better kinternet handling (kdelibs, kdebase?)
+- dialup: start and setup smpppd only if >0 devs
+- dialup: info popup (configured + kinternet, cinternet)
+- dialup: run|stop kinternet, if DISPLAY and (not)running (#14320)
+- provider: offer to delete provider after device delete if not used (#16094)
 
 Enhancements:
+- detection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
+- lan: defaut gw in the first dialog (#13450)
 - modem: winmodems support (#25220, #15556)
 - lan: dual port network cards #10077, #12387 [see 2002-05.txt]
 - lan: compiled in kernel drivers
@@ -157,6 +134,14 @@ Enhancements:
 - hardware: cable connection (plip, slip, usb)
 - hardware: wireless connection (irda, bluetooth)
 - provider: use INS file (#25774)
+- feature: IP-masquerading (#16131), is already in the firewall
+- routing: default route without GW (#23977)
+- lan: use ethtool to map drivers to device names (#17346)
+- host: scan for hosts on the local network [Add]
+- host: add (update) all hosts in the local network
+- host: show system hosts checkbox (like users have)
+- routing: other fields (see routes(5))
+- routing: possibly rename to Route
 
 Documentation:
 - example dhcpcd-eth0.info

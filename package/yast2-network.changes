@@ -1,3 +1,6 @@
+-------------------------------------------------------------------
+Fri Jun 27 11:22:37 CEST 2003 - msvec@suse.de
+
 - fixed writing of modules.conf options (#26217)
 - check wireless key (#24839)
 - 2.8.1
