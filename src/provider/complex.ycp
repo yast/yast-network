@@ -46,7 +46,7 @@ global define symbol Commit() ``{
 global define symbol ReadDialog() ``{
 
     /* Providers read dialog help 1/2 */
-    string help = _("<p><b><big>Initializing network card
+    string help = _("<p><b><big>Initializing provider
 configuration</big></b><br>Please wait...<br></p>") +
 
     /* Providers read dialog help 2/2 */
@@ -67,7 +67,7 @@ global define symbol WriteDialog() ``{
     if(!Modified()) return `next;
 
     /* Providers write dialog help 1/2 */
-    string help = _("<p><b><big>Saving network card
+    string help = _("<p><b><big>Saving provider
 configuration</big></b><br>Please wait...<br></p>") +
 
     /* Providers write dialog help 2/2 */
@@ -87,16 +87,15 @@ Abort saving by pressing <b>Abort</b>.</p>");
 global define symbol SummaryDialog() ``{
 
     /* Providers summary dialog caption */
-    string caption = _("Network cards configuration");
+    string caption = _("Providers configuration");
 
     /* Providers summary dialog help 1/3 */
-    string help = _("<p><b><big>Network card setup</big></b><br>
-Configure your network card here.<br></p>") +
+    string help = _("<p><b><big>Provider setup</big></b><br>
+Configure your provider here.<br></p>") +
 
     /* Providers summary dialog help 2/3 */
-_("<p><b><big>Adding a network card:</big></b><br>
-Choose a network card from the list of detected network cards.
-If your network card was not autodetected, select <b>Other (not detected)</b>
+_("<p><b><big>Adding a provider:</big></b><br>
+Choose a provider from the list of available providers
 then press <b>Configure</b>.</p>") +
 
     /* Providers summary dialog help 3/3 */
@@ -107,8 +106,8 @@ to change the configuration opens.</p>");
     list summary = Providers::Summary(true);
     list unconfigured = select(summary, 1, []);
     string configured = select(summary, 0, "");
+    y2debug("unconfigured=%1", unconfigured);
 
-    y2debug("unconfigured=%1",unconfigured);
     /* Frame label */
     term contents = Wizard_hw::DetectedContent(_("Providers to configure"),
 	    unconfigured, false, configured);
@@ -166,17 +165,17 @@ global define symbol OverviewDialog() ``{
     string caption = _("Providers configuration overview");
 
     /* Providers overview dialog help 1/3 */
-    string help = _("<p><b><big>Network card overview</big></b><br>
-Obtain an overview of installed network cards. Additionally,
+    string help = _("<p><b><big>Providers overview</big></b><br>
+Obtain an overview of installed providers. Additionally,
 edit their configuration.<br></p>") +
 
     /* Providers overview dialog help 2/3 */
-_("<p><b><big>Adding a network card:</big></b><br>
-Press <b>Add</b> to configure a new network card manually.</p>") +
+_("<p><b><big>Adding a provider:</big></b><br>
+Press <b>Add</b> to configure a new provider manually.</p>") +
 
     /* Providers overview dialog help 3/3 */
 _("<p><b><big>Editing or deleting:</big></b><br>
-Choose a network card to change or remove.
+Choose a provider to change or remove.
 Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
 
     list overview = Providers::Overview();

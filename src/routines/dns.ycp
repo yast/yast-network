@@ -33,9 +33,9 @@ global define boolean check_address (string a) ``{
  * @return describe a valid domain name
  */
 global define string valid_domainname () ``{
+    return
     //Translators: dot: ".", hyphen: "-"
-    return _(
-"A valid domain name consists of components separated by dots.
+_("A valid domain name consists of components separated by dots.
 Each component contains letters, digits and hyphens.
 A hyphen may not start or end a component
 and the last component may not begin with a digit.");

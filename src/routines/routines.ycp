@@ -145,6 +145,7 @@ global define list hwlist2items(list l, integer selected) ``{
     list items = [];
     integer n = 0;
     foreach(`i, l, ``{
+	/* Table field (Unknown device) */
 	string hwname = lookup(i, "name", _("Unknown"));
 	integer num = lookup(i, "num", n);
 	change(items, `item(`id(num), hwname, num == selected));

@@ -77,12 +77,14 @@ for more information about the network configuration.</p>");
 	netmask = "255.255.255.0";
 
     if(Lan::device == -1)
+	/* Label text (Network device: unknown device) */
 	device = _("Unknown device");
     else
 	device = type + Lan::device;
 
     // Label for radio button group (dynamic/static ip address setup method)
     term label = `HBox(
+	/* Label text */
 	`Label(_("Network device")),
 	`HSpacing(0.5),
 	// Network device: [unknown]
@@ -180,11 +182,13 @@ for more information about the network configuration.</p>");
 	else if(ret == `next || ret == `routing || ret == `hostname) {
 	    if(UI::QueryWidget(`id(`rb), `CurrentButton) != `dynamic) {
 		if(!check_ip4(UI::QueryWidget(`id(`ipaddr), `Value))) {
+		    /* Popup text */
 		    UI::ErrorPopup(_("The IP address is incorrect"));
 		    UI::SetFocus(`id(`ipaddr));
 		    continue;
 		}
 		if(!check_netmask(UI::QueryWidget(`id(`netmask), `Value))) {
+		    /* Popup text */
 		    UI::ErrorPopup(_("The subnet mask is incorrect"));
 		    UI::SetFocus(`id(`netmask));
 		    continue;

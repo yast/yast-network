@@ -25,9 +25,9 @@ global define boolean check_ip(string ip) ``{
  * @return describe a valid IPv4 address
  */
 global define string valid_ip4 () ``{
+    return
     //Translators: dot: "."
-    return _(
-"A valid IP address consists of four integers
+_("A valid IP address consists of four integers
 in the range 0-255 separated by dots.");
 }
 

@@ -192,6 +192,7 @@ _("<p><b>IP details</b> help FIXME
 	else if(ret == `next || ret == `Details || ret == `IPDetails) {
 	    /* check_* */
 	    if(UI::QueryWidget(`id(`IdleSeconds), `Value) == "") {
+		/* Popup text */
 		UI::ErrorPopup(_("You must set the idle seconds."));
 		UI::SetFocus(`id(`IdleSeconds));
 		continue;
