@@ -1,11 +1,5 @@
 # $Id$
 
-Fixed:
-
-- [Hardware details]: wireless, eth numbers, dual port cards,
-                      edit modules.conf, better PCMCIA/USB
-		      #10077 #12378 #15062 #9209 ...
-
 Bugs:
 
 Enhancements:
@@ -18,8 +12,6 @@ TOCHECK:
 
 - Net-HOWTO
 - mail [patch] from bk@suse.de about s390 changes
-- check and install required packages #14315
-- provider: use routines/complex.ycp (BuildSumary, ...)
 - remove writing of NETWORK (also BROADCAST?)
 
 - sigi&isdn: http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html
@@ -36,8 +28,6 @@ TOCHECK:
 - autodetection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
     DetectionIP() { if detection_started; run ping; }
 
-- providers: add/edit/delete #16094
-
 #19851: warn before rcnetwork restart -> RestartNetwork() | StopNetwork();
   DISPLAY=
   :0.0		OK
@@ -48,8 +38,6 @@ TOCHECK:
   SSH_CLIENT	Warn
 
 TOSORT:
-
-- routines: modules: rmmod $deleted
 
 - lan: check for myrinet driver presence [warning + info]
 
@@ -62,8 +50,6 @@ TOSORT:
 - modem|isdn|lan|dsl: info popup during proposal
 
 - agents: two resolv.conf scrconfs
-
-- dsl: in installation settings #15160
 
 - routing: list of available devices in expert dialog
 - routing: check already present default route (partially #11132)

@@ -16,6 +16,7 @@ textdomain "network";
 
 import "DNS";
 import "Lan";
+import "Runlevel";
 import "Wizard";
 
 /* The main () */
@@ -43,7 +44,8 @@ y2debug("ret == %1", ret);
 
 if(ret == `next && DNS::modified) {
     DNS::Write();
-    RestartNetwork();
+    Runlevel::RunInitScript("network", "restart-all-dhcp-clients");
+    // RestartNetwork();
 }
 
 UI::CloseDialog();
