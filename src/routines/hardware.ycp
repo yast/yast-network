@@ -172,7 +172,7 @@ global define void SelectHardware(integer which) ``{
 	Init1 = sel["init1"]:"";
 	Init2 = sel["init2"]:"";
 	Device = sel["device_name"]:"";
-	BaudRate = sel["speed"]:"115200";
+	BaudRate = sel["speed"]:57600;
 	PPPDoptions = sel["pppd_options"]:"";
 	type = "ppp";
     }

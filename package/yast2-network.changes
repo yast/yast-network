@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Sep 19 21:32:39 CEST 2003 - msvec@suse.cz
+
+- fixed default baud rate value (#31442)
+- 2.8.40
+
+-------------------------------------------------------------------
 Thu Sep 18 11:40:00 CEST 2003 - arvin@suse.de
 
 - shut down temporary network before online test during update
