@@ -91,12 +91,10 @@ global define boolean ReadHardware(string hwtype) ``{
 	if(controller == "modem") {
 	    map resource = lookup(card, "resource", []);
 	    change(one, "device_name", lookup(card, "dev_name", ""));
+	    change(one, "speed", lookup(select(lookup(resource, "baud", []), 0, $[]), "speed", 57600));
 	    change(one, "init1", lookup(select(lookup(resource, "init_strings", []),0,$[]), "init1", ""));
 	    change(one, "init2", lookup(select(lookup(resource, "init_strings", []),0,$[]), "init2", ""));
 	    change(one, "pppd_options", lookup(select(lookup(resource, "pppd_option", []),0,$[]), "option", ""));
-	    string speed = lookup(select(lookup(resource, "baud", []), 0, $[]), "speed", "57600");
-	    if(speed == "") speed = "57600";
-	    change(one, "speed", tointeger(speed));
 	}
 	/* isdn card */
 	else if(controller == "isdn") {
