@@ -77,9 +77,9 @@ global define term Card_Parameter(integer cidx) ``{
 	    });
 	    if (!found) {
 		iol = add(iol, `item(`id(default_io), sformat("%1",tohexstring(default_io)), true));
-		contens = add(contens, `ComboBox(`id(`IOADR), `opt(`editable), _("I&O Address"), iol));
+		contens = add(contens, `ComboBox(`id(`IOADR), `opt(`editable), _("&IO Address"), iol));
 	    } else
-		contens = add(contens, `ComboBox(`id(`IOADR),  _("I&O Address"), iol));
+		contens = add(contens, `ComboBox(`id(`IOADR),  _("&IO Address"), iol));
 	}
 	list irq = lookup(para, "IRQ", []);
 	if (irq != []) {
@@ -100,9 +100,9 @@ global define term Card_Parameter(integer cidx) ``{
 	    });
 	    if (!found) {
 		irql = add(irql, `item(`id(default_irq), sformat("%1",default_irq), true));
-		contens = add(contens, `ComboBox(`id(`IRQ), `opt(`editable), _("&IRQ"), irql));
+		contens = add(contens, `ComboBox(`id(`IRQ), `opt(`editable), _("IR&Q"), irql));
 	    } else
-		contens = add(contens, `ComboBox(`id(`IRQ),  _("&IRQ"), irql));
+		contens = add(contens, `ComboBox(`id(`IRQ),  _("IR&Q"), irql));
 	}
 	list membase = lookup(para, "MEMBASE", []);
 	if (membase != []) {
@@ -130,7 +130,14 @@ global define term Card_Parameter(integer cidx) ``{
 	return contens;
 }
 
-
+/**
+ * Creates a Combobox with a description label to select a 
+ * driver from list drv. The label is the description of the
+ * current selected driver.
+ * @param list drv    list of available drivers for the card
+ * @param string desc description of the actual driver
+ * @return term of the created box
+ */
 global define term create_drv_term(list drv, string desc) ``{
     term ret = nil;
 
@@ -142,6 +149,18 @@ global define term create_drv_term(list drv, string desc) ``{
     return ret;
 }
 
+/**
+ * Main dialog to select a ISDN card and a driver.
+ * If needed HW parameter can be set
+ * Line parameter like AREACODE and DIALPREFIX can be entered.
+ * @param symbol Detected - 'detected - card is detected by hwinfo
+ *                          'other    - other, not detected cards
+ *                          'edit     - edit card settings for the card
+ *                                      defined by ISDN::para_type and
+ *                                      ISDN::para_subtype
+ *                          'add      - add a new card
+ * return dialog result
+ */
 
 global define symbol isdn_lowlevel(symbol Detected) ``{
     /* PREPARE VARIABLES */
@@ -162,8 +181,10 @@ global define symbol isdn_lowlevel(symbol Detected) ``{
     y2debug("DefaultTYPE : %1/%2", Default_TYPE, Default_SUBTYPE);
 
     if (Detected == `other || Detected == `add) {
-	Default_TYPE = 30; // first card in list
-	Default_SUBTYPE = 0; // first card in list
+	// select first card in list
+	map first_card = select(ISDN::ISDN_Devices, 1, $[]);
+	Default_TYPE = get_i4ltype(first_card);
+	Default_SUBTYPE = get_i4lsubtype(first_card);
     }
 
     map CurrentCard = get_isdncard_by_type(ISDN::ISDN_Devices, Default_TYPE, Default_SUBTYPE);
@@ -207,7 +228,7 @@ _("<p>Please select ISDN card from the list.</p>");
     }
 	// helptext text 2/7
 	helptext = helptext +
-_("<p>If you have an old legal ISA card, you can enter values for
+_("<p>If you have an old legacy ISA card, you can enter values for
 IO port or memory addresses and the used interrupt.
 For the correct values check with your technical manual or contact your salesman.</p>");
 
@@ -363,25 +384,20 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 	    if (DriverCnt >1) {
 		drvid = UI::QueryWidget(`id(`drvid), `CurrentItem);
 	    }
-	    if (Detected != `Detected) {
-		integer val = nil;
+	    integer val = nil;
 
-		val = UI::QueryWidget(`id(`IOADR), `Value);
-		if (val != nil)
-		    ISDN::para_io = sformat("%1", tohexstring(val));
-		val = UI::QueryWidget(`id(`IRQ), `Value);
-		if (val != nil)
-		    ISDN::para_irq = sformat("%1", val);
-		val = UI::QueryWidget(`id(`MEMBASE), `Value);
-		if (val != nil)
-		    ISDN::para_membase = sformat("%1", tohexstring(val));
+	    val = UI::QueryWidget(`id(`IOADR), `Value);
+	    if (val != nil)
+		ISDN::para_io = sformat("%1", tohexstring(val));
+	    val = UI::QueryWidget(`id(`IRQ), `Value);
+	    if (val != nil)
+		ISDN::para_irq = sformat("%1", val);
+	    val = UI::QueryWidget(`id(`MEMBASE), `Value);
+	    if (val != nil)
+		ISDN::para_membase = sformat("%1", tohexstring(val));
 
-		if (Detected != `DetectedISA) {
-		    // FIXME: read info from database		CurrentCardIndex = tointeger(UI::QueryWidget(`id(`Card), `CurrentItem));
-		    CurrentCard = select(ISDN::ISDN_Devices, CurrentCardIndex, $[]);
-		    CardDrivers = lookup(CurrentCard, "driver", []);
-		}
-	    }
+	    CurrentCard = select(ISDN::ISDN_Devices, CurrentCardIndex, $[]);
+	    CardDrivers = lookup(CurrentCard, "driver", []);
 	    ISDN::para_type	= sformat("%1", lookup(select(CardDrivers, CurrentDrvIndex, $[]), "type", "-1"));
 	    ISDN::para_subtype = sformat("%1", lookup(select(CardDrivers, CurrentDrvIndex, $[]), "subtype", "-1"));
 	    ISDN::name = sformat("%1", lookup(CurrentCard, "name", ISDN::name));
