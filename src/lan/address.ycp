@@ -112,6 +112,10 @@ the network configuration.</p>");
 //	label = `TextEntry(`id(`device), _("&Configuration Name"), device);
 	label = `HBox (
 	    `HSpacing(0.5),
+	    // The combo is a hack to allow changing misdetected
+	    // interface types. It will work in some cases, like
+	    // overriding eth to wlan but not in others where we woild
+	    // need to change the contents of the dialog. #30890.
 	    `ComboBox(`id(`dev), `opt(`hstretch, `notify),
 		      /* ComboBox label */
 		      _("&Device Type"), BuildTypesList(device_types, type)),
@@ -412,6 +416,17 @@ Really continue?
 		    Popup::Error(sformat(_("Unsupported network card type: %1"), NetworkDevices::device_type(device)));
 		    UI::SetFocus(`id(`dev));
 		    continue;
+		}
+		if (NetworkDevices::device_type (device) != Lan::type)
+		{
+		    UI::SetFocus(`id(`dev));
+		    if (!Popup::ContinueCancel (
+_("You have changed the interface type from the one
+that has been detected. This only makes sense
+if you know that the detection is wrong.")))
+		    {
+			continue; // continue means cancel here... ;-)
+		    }
 		}
 	    }
 
