@@ -84,7 +84,8 @@ and correct the setting.</p>");
 			     `Left(`Label (`id (`s3), "-   " + l3))
 			     );
 	}
-	else {
+	else
+	{
 	    progress = `VBox(
 			     `Left(`Label (`id (`s1), "-   " + l1)),
 			     `Left(`Label (`id (`s2), "-   " + l2)),
@@ -281,12 +282,13 @@ and correct the setting.</p>");
 		y2milestone ("called Stop");
 		if (!Internet::Stop ()) {
 		    set_result (`failure);
-		    return;
 		}
+		mark_label (4);
 	    }
-
-	    set_result (`success);
-	    mark_label (4);
+	    else
+	    {
+		set_result (`success);
+	    }
 	    return;
 	}
     }

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Feb 24 14:38:07 CET 2003 - arvin@suse.de
+
+- only access widget with id s4 if it exists (bug #23800)
+
+-------------------------------------------------------------------
 Fri Feb 21 15:20:06 CET 2003 - arvin@suse.de
 
 - better text for "abort installation" popup (bug #24019)
