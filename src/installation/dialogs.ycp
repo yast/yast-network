@@ -111,19 +111,19 @@ activate the test procedure."),
     /* the steps */
     term steps = `VBox();
     if(!already_up) {
-	/* Label text */
+	/* label text - one step of during network test */
 	steps = add(steps, `Left(`Label(_("- Connect to Internet"))));
     }
     if(true) {
-	/* Label text */
+	/* label text - one step of during network test */
 	steps = add(steps, `Left(`Label(_("- Download latest release notes"))));
     }
     if(!contains(Product::flags, "no_you")) {
-	/* Label text */
+	/* label text - one step of during network test */
 	steps = add(steps, `Left(`Label(_("- Check for latest updates"))));
     }
     if(!already_up) {
-	/* Label text */
+	/* label text - one step of during network test */
 	steps = add(steps, `Left(`Label(_("- Close connection"))));
     }
 
