@@ -74,6 +74,8 @@ define string DeviceType(string type) {
 	/* Device type label */
 	"lo"	: _("Loopback"),
 	/* Device type label */
+	"modem"	: _("Modem"),
+	/* Device type label */
 	"myri"	: _("Myrinet"),
 	/* Device type label */
 	"net"	: _("ISDN"),

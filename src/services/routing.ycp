@@ -20,7 +20,6 @@ import "Popup";
 import "Routing";
 import "Wizard";
 
-// include "network/devices.ycp";
 include "network/routines.ycp";
 
 define term RoutingEditDialog(integer id, term entry, list devs);

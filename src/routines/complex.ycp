@@ -410,7 +410,7 @@ define list BuildOverview(list<map> Hardware) {
 	    if(size(hwname) > 17) hwname = substring(hwname, 0, 16) + "...";
 
 	    /* Modem and DSL */
-	    if(type == "modem" || type == "ppp" || type == "dsl")
+	    if(type == "ppp" || type == "modem" || type == "dsl")
 		item = `item(`id(dev), dev, DeviceType(type), ProviderName(v["PROVIDER"]:""));
 	    /* ISDN stuff */
 	    else if (type == "contr") {

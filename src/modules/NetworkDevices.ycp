@@ -76,7 +76,7 @@ boolean initialized = false;
  */
 global map<string,string> CardRegex = $[
     "netcard"	: "arc|bnep|ci|ctc|dummy|escon|eth|fddi|hsi|qeth|lcs|iucv|myri|tr|wlan|xp ",
-    "modem"	: "ppp",
+    "modem"	: "ppp|modem",
     "isdn"	: "isdn|ippp",
     "dsl"	: "dsl",
     /* other: irlan|lo|plip|... */
@@ -764,11 +764,11 @@ global define boolean LocateProvider(string provider) {
  */
 global define boolean UpdateModemSymlink() {
     boolean ret = false;
-    if(contains(Map::Keys(Devices), "ppp")) {
-	list ml = Map::Keys(Devices["ppp"]:$[]);
+    if(contains(Map::Keys(Devices), "modem")) {
+	list ml = Map::Keys(Devices["modem"]:$[]);
 	string ms = ml[0]:"0";
-	// map mm = lookup(Devices["ppp"]:$[], ms, $[]);
-	map mm = Devices["ppp", ms]:$[];
+	// map mm = lookup(Devices["modem"]:$[], ms, $[]);
+	map mm = Devices["modem", ms]:$[];
 	string mdev = mm["MODEM_DEVICE"]:"";
 	if(mdev != "" && mdev != "/dev/modem") {
 	    string curlink = nil;

@@ -688,11 +688,11 @@ global define boolean LocateProvider(string provider) {
  */
 global define boolean UpdateModemSymlink() {
     boolean ret = false;
-    if(contains(Map::Keys(Modules), "ppp")) {
-	list ml = Map::Keys(Modules["ppp"]:$[]);
+    if(contains(Map::Keys(Modules), "modem")) {
+	list ml = Map::Keys(Modules["modem"]:$[]);
 	string ms = ml[0]:"0";
-	// map mm = lookup(Modules["ppp"]:$[], ms, $[]);
-	map mm = Modules["ppp", ms]:$[];
+	// map mm = lookup(Modules["modem"]:$[], ms, $[]);
+	map mm = Modules["modem", ms]:$[];
 	string mdev = mm["MODEM_DEVICE"]:"";
 	if(mdev != "" && mdev != "/dev/modem") {
 	    string curlink = nil;

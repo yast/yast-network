@@ -115,8 +115,6 @@ global define boolean Modified() {
     return modified;
 }
 
-// include "network/complex.ycp";
-// include "network/devices.ycp";
 include "network/hardware.ycp";
 include "network/routines.ycp";
 include "network/runtime.ycp";

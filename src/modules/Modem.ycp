@@ -277,7 +277,7 @@ global define boolean Select(string dev) {
 
     /* dev=="" -> Add */
     if(dev == "") {
-	type = "ppp";
+	type = "modem";
 	device = NetworkDevices::GetFreeDevice(type);
     }
     /* dev!="" -> Edit */
@@ -458,7 +458,7 @@ global define void SelectHW(integer which) {
     PPPDoptions = sel["pppd_options"]:"";
     Requires = sel["requires"]:[];
     unique = sel["unique"]:"";
-    type = "ppp";
+    type = "modem";
 }
 
 global list<string> Packages() {

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Aug  5 12:51:45 CEST 2004 - msvec@suse.cz
+
+- modem config files are now ifcfg-modem*
+- enabled preliminary Bluetooth support
+- 2.10.5
+
+-------------------------------------------------------------------
 Fri Jul 30 16:19:13 CEST 2004 - mvidner@suse.cz
 
 - Wireless: Added WPA-PSK.

@@ -328,7 +328,7 @@ define map SelectHardware(list Hardware, integer which) {
 	BaudRate = sel["speed"]:57600;
 	PPPDoptions = sel["pppd_options"]:"";
 	Requires = sel["requires"]:[];
-	type = "ppp";
+	type = "modem";
     }
     /* isdn card * /
     else if(type == "isdn") {
