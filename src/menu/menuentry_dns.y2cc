@@ -5,20 +5,20 @@
 ; $Id$
 ;
 
-[Y2Module network]
+[Y2Module dns]
 
 ; name of the entry, shown in y2cc
-Name = _("Expert network configuration")
+Name = _("Host name and DNS")
 
 ; "raw" group name to which this module belongs
 ; see /usr/lib/YaST2/etc/y2controlcentericons.y2cc for valid values
 Group = Net_advanced
 
 ; icon displayed in y2cc
-Icon = network.png
+Icon = dns.png
 
 ; *one* *short* descriptive line for y2cc
-Helptext = _("Configure your network")
+Helptext = _("Configure host name and DNS")
 
 ; arguments, seperated by space
 Arguments = 
@@ -31,8 +31,5 @@ Geometry =
 
 ; string to use for sorting instead of Name
 SortKey = 
-
-; which textdomain to use for translations (important!)
-Textdomain = network
 
 ; vim:syntax=dosini

@@ -1,0 +1,104 @@
+/**
+ * File:
+ *   include/network/routines.ycp
+ *
+ * Package:
+ *   Configuration of network cards
+ *
+ * Summary:
+ *   Miscellaneous routines
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+textdomain "network";
+
+/**
+ * Return all keys from the map
+ * @param m the map
+ * @return a list of all keys from the map
+ */
+global define list mapkeys(map m) ``{
+    if(m==nil || m==$[]) return [];
+    return maplist(`var, `val, m, ``(var));
+}
+
+/**
+ * Return all values from the map
+ * @param m the map
+ * @return a list of all values from the map
+ */
+global define list mapvalues(map m) ``{
+    if(m==nil || m==$[]) return [];
+    return maplist(`var, `val, m, ``(val));
+}
+
+/**
+ * Return value from a map for the given key, nil if not found
+ * @param m the map
+ * @param k the key
+ * @return the found value, nil if not found
+ */
+global define any mapvalue(map m, any k) ``{
+    if(m==nil || m==$[]) return nil;
+    return lookup(m, k, nil);
+}
+
+/**
+ * Check for pending Abort press
+ * @return true if pending abort
+ */
+global define boolean PollAbort() ``{
+    return UI::PollInput() == `abort;
+}
+
+/**
+ * If modified, ask for confirmation
+ * @return true if abort is confirmed
+ */
+global define boolean ReallyAbort() ``{
+    return !Modified() || UI::ReallyAbortPopup(true);
+}
+
+
+/**
+ * Create a list of items for UI from the given list
+ * @param l given list for conversion
+ * @param selected selected item (0 for the first)
+ * @return a list of items
+ * @example [ "x", "y" ] -&gt; [ `item(`id(0), "x"), `item(`id(1), "y") ]
+ */
+global define list list2items(list l, integer selected) ``{
+    list items = [];
+    integer n = 0;
+    foreach(`i, l, ``{
+	change(items, `item(`id(n), i, n == selected));
+	n = n + 1;
+    });
+    return items;
+}
+
+/**
+ * Create a list of items for UI from the given hardware list
+ * @param l given list for conversion
+ * @param selected selected item (0 for the first)
+ * @return a list of items
+ */
+global define list hwlist2items(list l, integer selected) ``{
+    list items = [];
+    integer n = 0;
+    foreach(`i, l, ``{
+	change(items, `item(`id(n), lookup(i, "name", _("Unknown")), n == selected));
+	n = n + 1;
+    });
+    return items;
+    //return list2items(maplist(`h, l, ``(lookup(h, "name", _("Unknown device")))), selected);
+}
+
+}

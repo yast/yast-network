@@ -1,4 +1,7 @@
 - complete rewrite (almost no old code left)
+- supports new /etc/sysconfig scheme
+- only dialog layouts are similar
+- uses modules and devtools
 - 2.5.0
 
 -------------------------------------------------------------------

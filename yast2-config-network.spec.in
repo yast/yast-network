@@ -2,7 +2,10 @@
 # neededforbuild  autoconf automake ycpdoc yast2-testsuite dejagnu expect tcl yast2-base libycp liby2 libyui libscr yast2-core-wfm yast2-core-scr yast2-agent-system libycp-devel yast2-devtools
 
 @HEADER@
-Requires:	yast2 yast2-trans-network yast2-lib-wizard yast2-lib-sequencer yast2-lib-network sysconfig
+Requires:	yast2 yast2-trans-network sysconfig
+Requires:	yast2-lib-wizard yast2-lib-sequencer yast2-lib-network
+Requires:	yast2-agent-ini yast2-agent-modules yast2-agent-any
+
 BuildArchitectures:	noarch
 
 Summary:	Configuration of network
@@ -21,10 +24,9 @@ configure network.
 
 %files
 %defattr(-,root,root)
-# %dir @YAST2DIR@/include/network
+%dir @YAST2DIR@/include/network
 @YAST2DIR@/include/network/*
-@YAST2DIR@/clients/network.ycp
-@YAST2DIR@/clients/network_*.ycp
-@YAST2DIR@/modules/Network.ycp
-@YAST2DIR@/menuentries/menuentry_network.y2cc
+@YAST2DIR@/clients/*.ycp
+@YAST2DIR@/modules/*.ycp
+@YAST2DIR@/menuentries/menuentry_*.y2cc
 %doc @DOCDIR@

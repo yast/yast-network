@@ -1,0 +1,109 @@
+/**
+ * File:
+ *   include/network/hardware.ycp
+ *
+ * Package:
+ *   Configuration of network cards
+ *
+ * Summary:
+ *   Hardware routines
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+textdomain "network";
+
+/**
+ * Read HW information
+ * @return true if success
+ */
+global define boolean ReadHardware() ``{
+    list allcards = SCR::Read(.probe.netdev);
+
+    maplist (`card, allcards, ``{
+	map one = $[];
+	change(one, "name", DeviceName(card));
+	list drivers = lookup(card, "drivers", []);
+	/* FIXME: error if no driver found */
+	map driver = select(drivers, 0, $[]);
+	list modules = select(lookup(driver, "modules", []), 0, []);
+	change(one, "module", select(modules, 0, ""));
+	change(one, "options", select(modules, 1, ""));
+	change(one, "unique", lookup(card, "unique_key", ""));
+	change(one, "type", ControllerType(card));
+	y2debug("found card: %1", one);
+	change(HARDWARE, one);
+    });
+
+    y2debug("HARDWARE=%1",HARDWARE);
+    return true;
+}
+
+/**
+ * Extract the device 'name'
+ * @param hwdevice hardware device
+ * @return name consisting of vendor and device name
+ */
+global define string DeviceName(map hwdevice) ``{
+    string delimiter = " "; // "\n";
+    string vendor = "";
+    string dev = "";
+
+    vendor = lookup(hwdevice, "sub_vendor", "");
+    dev = lookup(hwdevice, "sub_device", "");
+
+    if((vendor == "") || (dev == "")) {
+	vendor = lookup(hwdevice, "vendor", "");
+	dev = lookup(hwdevice, "device", "");
+    }
+
+    if(vendor != "")
+	return vendor + delimiter + dev;
+    else
+	return dev;
+};
+
+/**
+ * Simple convertor from subclass to controller type.
+ * @param hwdevice map with card info containing "subclass"
+ * @return short device name
+ * @example ControllerType("Ethernet Controller") -> "eth"
+ */
+global define string ControllerType(map hwdevice) ``{
+
+    if(lookup(hwdevice, "subclass", "") == "Modem") return "modem";
+    if(lookup(hwdevice, "subclass", "") == "ISDN") return "isdn";
+
+    integer subclass_id = lookup(hwdevice, "sub_class_id", -1);
+
+    /* Network controller */
+    if(lookup(hwdevice, "class_id", -1) == 2) {
+	if(subclass_id == 00) return "eth";
+	else if(subclass_id == 01) return "tr";
+	else if(subclass_id == 02) return "fddi";
+	else return "eth";  /* default */
+
+    }
+    /* Network Interface */
+    else if(lookup(hwdevice, "class_id", -1) == 0x107) {
+	if(subclass_id == 01) return "eth";
+	else if(subclass_id == 02) return "tr";
+	else if(subclass_id == 03) return "fddi";
+	else return "eth";  /* default */
+    }
+    else if(lookup(hwdevice, "class_id", -1) == 0x102)
+	return "modem";
+    else if(lookup(hwdevice, "class_id", -1) == 0x103)
+	return "isdn";
+
+    /* Nothing was found, default is eth */
+    return "eth";
+}
+
+}

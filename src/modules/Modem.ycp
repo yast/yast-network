@@ -1,0 +1,28 @@
+/**
+ * File:
+ *   modules/Modem.ycp
+ *
+ * Package:
+ *   Configuration of modem
+ *
+ * Summary:
+ *   Data for configuration of modem, input and output functions.
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Representation of the configuration of modem.
+ * Input and output routines.
+ *
+ */
+
+{
+
+module "Modem";
+textdomain "network";
+import "Progress";
+
+/* EOF */
+}

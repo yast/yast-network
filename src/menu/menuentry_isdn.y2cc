@@ -5,10 +5,10 @@
 ; $Id$
 ;
 
-[Y2Module modem]
+[Y2Module isdn]
 
 ; name of the entry, shown in y2cc
-Name = _("Modem configuration")
+Name = _("ISDN configuration")
 
 ; "raw" group name to which this module belongs
 ; see /usr/lib/YaST2/etc/y2controlcentericons.y2cc for valid values
@@ -18,7 +18,7 @@ Group = Network
 Icon = modem.png
 
 ; *one* *short* descriptive line for y2cc
-Helptext = _("Configure your modem")
+Helptext = _("Configure ISDN connection")
 
 ; arguments, seperated by space
 Arguments = 

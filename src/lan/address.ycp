@@ -1,0 +1,177 @@
+/**
+ * File:
+ *   include/network/lan/manual.ycp
+ *
+ * Package:
+ *   Configuration of network cards
+ *
+ * Summary:
+ *   Network card adresss configuration
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Dialogs definitions.
+ *
+ */
+
+{
+
+textdomain "network";
+
+import "Wizard";
+import "Lan";
+
+include "ui/common_popups.ycp";
+include "ui/common_messages.ycp";
+
+include "network/routines.ycp";
+include "network/ip.ycp";
+
+/**
+ * Dialog for setting up IP address
+ * @return dialog result
+ */
+global define symbol AddressDialog() ``{
+
+    string caption = _("Network address setup");
+    string helptext = _("Helptext");
+
+    string bootproto = Lan::bootproto;
+    string ipaddr = Lan::ipaddr;
+    string netmask = Lan::netmask;
+    string device = Lan::device;
+
+    if(bootproto == "" && ipaddr == "")
+	bootproto = "dhcp";
+
+    if(ipaddr == "" && netmask == "")
+	netmask = "255.255.255.0";
+
+    if(device == "")
+	device = _("Unknown device");
+
+    // Label for radio button group (dynamic/static ip address setup method)
+    term label = `HBox(
+	`Label(_("Network device")),
+	`HSpacing(0.5),
+	// Network device: [unknown]
+	`Label(`opt(`outputField), device)
+	//`ComboBox(`id(`num), `opt(`hstretch,`editable), "", [ "eth1" ])
+    );
+    //label = `ComboBox(`id(`num), `opt(`hstretch,`editable), _("Network device"), [ "eth1" ]);
+
+    /* Frame label */
+    term frame1 = `Frame(_("Choose the setup method"),
+	`HBox(`HSpacing(1),
+	    `VBox(
+		`VSpacing(0.5),
+		// Radio button label
+		`Left(`RadioButton(`id(`dynamic), `opt(`notify), _("A&utomatic address setup (via DHCP)"), bootproto != "static")),
+		`VSpacing(0.5),
+		// Radio button label
+		`Left(`RadioButton(`id(`static), `opt(`notify), _("S&tatic address setup"), bootproto == "static")),
+		`HBox(
+		    // Text entry label for IP address
+		    `TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
+		    `HSpacing(2),
+		    // Text entry label for network mask
+		    `TextEntry(`id(`netmask), _("&Subnet mask"), netmask)
+		),
+		`VSpacing(0.5)
+	    ),
+	`HSpacing(1))
+    );
+
+    /* Frame label */
+    term frame2 = `Frame(_("Detailed settings"), `HBox(`HStretch(),
+	`HSquash(`VBox(
+	    `VSpacing(0.5),
+	    // Push button label
+	    `PushButton(`id(`hostconf), `opt(`hstretch), _("&Host name and name server")),
+	    // Push button label
+	    `PushButton(`id(`routeconf), `opt(`hstretch), _("&Routing")),
+	    `VSpacing(0.5)
+	)),
+	`HStretch()
+    ));
+
+    term contents = `RadioButtonGroup(`id(`rb), `HSquash(`VBox(
+	`Left(label),
+	`VSpacing(1),
+	frame1,
+	`VSpacing(1),
+	frame2
+    )));
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    BackButtonLabel(), NextButtonLabel());
+
+    UI::ChangeWidget(`id(`ipaddr), `Enabled, bootproto=="static");
+    UI::ChangeWidget(`id(`netmask), `Enabled, bootproto=="static");
+    UI::ChangeWidget(`id(`dynamic), `Value, bootproto!="static");
+    UI::ChangeWidget(`id(`static), `Value, bootproto=="static");
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* static ip address */
+	else if(ret == `dynamic) {
+	    UI::ChangeWidget(`id(`ipaddr), `Enabled, false);
+	    UI::ChangeWidget(`id(`netmask), `Enabled, false);
+	    continue;
+	}
+	/* dynamic ip address via dhcp */
+	else if(ret == `static) {
+	    UI::ChangeWidget(`id(`ipaddr), `Enabled, true);
+	    UI::ChangeWidget(`id(`netmask), `Enabled, true);
+	    continue;
+	}
+	/* run route configuration */
+	else if(ret == `routeconf) {
+	    continue;
+	}
+	/* run hostname configuration */
+	else if(ret == `hostconf) {
+	    continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    /* FIXME: check_ip check_netmask */
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+
+    /* update the configuration */
+    if(ret == `next) {
+	Lan::ipaddr = UI::QueryWidget(`id(`ipaddr), `Value);
+	Lan::netmask = UI::QueryWidget(`id(`netmask), `Value);
+	//Lan::device = UI::QueryWidget(`id(`device), `Value);
+	if(UI::QueryWidget(`id(`rb), `CurrentButton) == `dynamic)
+	    Lan::bootproto = "dhcp";
+	else
+	    Lan::bootproto = "static";
+	Lan::UpdateConfig();
+    }
+
+    return ret;
+}
+
+/* EOF */
+}

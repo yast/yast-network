@@ -1,0 +1,148 @@
+/**
+ * File:
+ *   include/network/lan/helps.ycp
+ *
+ * Package:
+ *   Configuration of network cards
+ *
+ * Summary:
+ *   Help texts of all the dialogs.
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * The help texts.
+ *
+ */
+
+{
+
+textdomain "network";
+
+/**
+ * Help for the ReadDialog() dialog.
+ * @return The help text.
+ */
+global define string ReadDialogHelp() ``{
+
+    return
+
+// network read dialog help 1/2
+_("<P><B><BIG>Initializing network</BIG></B><BR>
+Please wait for a while...
+<BR></P>") +
+// network read dialog help 2/2
+_("<P><B><BIG>Aborting the initialization:</BIG></B><BR>
+You can safely abort the configuration utility by pressing the <B>Abort</B>
+button now.
+</P>");
+}
+
+/**
+ * Help for the WriteDialog() dialog.
+ * @return The help text.
+ */
+global define string WriteDialogHelp() ``{
+
+    return
+
+// network write dialog help 1/2
+_("<P><B><BIG>Saving network configuration</BIG></B><BR>
+Please wait for a while...
+<BR></P>") +
+// network write dialog help 2/2
+_("<P><B><BIG>Aborting the saving:</BIG></B><BR>
+You can abort the saving by pressing the <B>Abort</B> button.
+An additional dialog will inform you whether it is safe to do so or not.
+</P>");
+}
+
+/**
+ * Help for the DetectedDialog() dialog.
+ * @return The help text.
+ */
+global define string SummaryDialogHelp() ``{
+
+    return
+
+// network detected dialog help 1/3
+_("<P><B><BIG>Network setup</BIG></B><BR>
+Here you can configure your network.
+<BR></P>") +
+// network detected dialog help 2/3
+_("<P><B><BIG>Adding a network:</BIG></B><BR>
+Choose network from the list of the detected networks. If your network was
+not autodetected, use <B>Other (not detected)</B>. Then press
+<B>Configure</B>.
+</P>") +
+// network detected dialog help 3/3
+_("<P><B><BIG>Editing or deleting:</BIG></B><BR>
+If you press <B>Edit</B>, an additional dialog (where you
+can change the configuration) will open.
+</P>");
+}
+
+/**
+ * Help for the OverviewDialog() dialog.
+ * @return The help text.
+ */
+global define string OverviewDialogHelp() ``{
+
+    return
+
+// network overview dialog help 1/3
+_("<P><B><BIG>Network overview</BIG></B><BR>
+Here you can get an overview about installed networks. Additionally
+you can edit their configuration.
+<BR></P>") +
+// network overview dialog help 2/3
+_("<P><B><BIG>Adding a network:</BIG></B><BR>
+If you press <B>Add</B>, you can manually configure a network.
+</P>") +
+// network overview dialog help 3/3
+_("<P><B><BIG>Editing or deleting:</BIG></B><BR>
+Choose a network, whose configuration you want to change or remove.
+Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.
+</P>");
+
+}
+
+/**
+ * Help for the Configure1Dialog() dialog.
+ * @return The help text.
+ */
+global define string Configure1DialogHelp() ``{
+
+    return
+
+// network configure1 dialog help 1/2
+_("<P><B><BIG>Configure, part one</BIG></B><BR>
+Please press the <B>Next</B> button.
+<BR></P>") +
+// network configure1 dialog help 2/2
+_("<P><B><BIG>Selecting something:</BIG></B><BR>
+It is not possible, you must code it first :-)
+</P>");
+}
+
+/**
+ * Help for the Configure2Dialog() dialog.
+ * @return The help text.
+ */
+global define string Configure2DialogHelp() ``{
+
+    return
+
+// network configure1 dialog help 1/2
+_("<P><B><BIG>Configure, part two</BIG></B><BR>
+Please press the <B>Next</B> button.
+<BR></P>") +
+// network configure1 dialog help 2/2
+_("<P><B><BIG>Selecting something:</BIG></B><BR>
+It is not possible, you must code it first :-)
+</P>");
+}
+
+}

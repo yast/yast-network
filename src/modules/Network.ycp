@@ -1,0 +1,28 @@
+/**
+ * File:
+ *   modules/Network.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   Data for configuration of network, input and output functions.
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Representation of the configuration of network.
+ * Input and output routines.
+ *
+ */
+
+{
+
+module "Network";
+textdomain "network";
+import "Progress";
+
+/* EOF */
+}

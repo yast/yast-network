@@ -1,0 +1,192 @@
+/**
+ * File:
+ *   include/network/config.ycp
+ *
+ * Package:
+ *   Configuration of network cards
+ *
+ * Summary:
+ *   Reading functions
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * All config settings are stored in a global variable CONFIG.
+ *
+ */
+
+{
+
+textdomain "network";
+include "network/routines.ycp";
+
+/**
+ * Read CONFIG from files
+ * @param devregex regular expression for the device type
+ * @return true if sucess
+ * @example ReadConfig("eth|tr");
+ */
+global define boolean ReadConfig(string devregex) ``{
+
+    string sysconfig = "/etc/sysconfig/network";
+
+    list allfiles = SCR::Dir(.network.section);
+    list devices = filter(`file, allfiles, ``(!regexpmatch(file, "[\.~]")));
+    y2debug("devices=%1", devices);
+
+    if(devregex != nil && devregex != "") {
+	devices = filter(`file, devices, ``(regexpmatch(file, devregex)));
+	y2debug("devices=%1", devices);
+    }
+
+    list aliases = filter(`d, devices, ``(find(d, ":") != -1));
+    list maindevs = filter(`d, devices, ``(find(d, ":") == -1));
+    y2debug("maindevs=%1", maindevs);
+
+    /* read main devices */
+    maplist(`d, maindevs, ``{
+	string devtype = regexpsub(d, "^.*ifcfg-([a-z]+)[^a-z]*$", "\\1");
+	if(devtype == "lo") return;
+
+	string devnum = regexpsub(d, "^.*ifcfg-[a-z]+([0-9]+)", "\\1");
+	y2debug("devnum=%1",devnum);
+
+	map dev = lookup(CONFIG, devtype, $[]);
+	if(haskey(dev, devnum)) {
+	    y2error("device already present: %1", devnum);
+	    return;
+	}
+
+	string pth = ".network.value.\"" + sysconfig + "/ifcfg-"+devtype+devnum+"\"";
+	list values = SCR::Dir(topath(pth));
+	map config = listmap(`val, values, ``{
+	    string item = SCR::Read(topath(pth + "." + val));
+	    if(item!=nil) return [ val, item ];
+	});
+
+	change(dev, devnum, config);
+	change(CONFIG, devtype, dev);
+    });
+
+    y2debug("CONFIG=%1",CONFIG);
+
+    /* read aliases */
+    maplist(`d, aliases, ``{
+	string devtype = regexpsub(d, "^.*ifcfg-([a-z]+)[^a-z]*$", "\\1");
+	if(devtype == "lo") return;
+
+	string devnum = regexpsub(d, "^.*ifcfg-[a-z]+([0-9]+)", "\\1");
+	string aliasnum = regexpsub(d, "^.*ifcfg-[a-z]+[0-9]+:([0-9]+)[^0-9]*$", "\\1");
+	y2debug("devnum=%1(%2)",devnum,aliasnum);
+
+	map dev = lookup(CONFIG, devtype, $[]);
+	if(!haskey(dev, devnum)) {
+	    y2error("main device missing: %1", devnum);
+	    return;
+	}
+
+	map config = lookup(dev, devnum, $[]);
+	map aliases = lookup(config, "_aliases", $[]);
+	if(haskey(aliases, aliasnum)) {
+	    y2error("alias already present: %1", aliasnum);
+	    return;
+	}
+
+	string pth = ".network.value.\"" + sysconfig + "/ifcfg-"+devtype+devnum+":"+aliasnum+"\"";
+	list values = SCR::Dir(topath(pth));
+	map aliasconfig = listmap(`v, values, ``{
+	    string item = SCR::Read(topath(pth+"."+v));
+	    if(item!=nil) return [ v, item ];
+	});
+
+	change(aliases, aliasnum, aliasconfig);
+	change(config, "_aliases", aliases);
+	change(dev, devnum, config);
+	change(CONFIG, devtype, dev);
+    });
+
+    y2debug("CONFIG=%1",CONFIG);
+    return true;
+}
+
+/**
+ * Write CONFIG to files
+ * @return true if success
+ */
+global define boolean WriteConfig() ``{
+
+    y2debug("CONFIG=%1",CONFIG);
+
+    string sysconfig = "/etc/sysconfig/network";
+    /* ... */
+
+    return true;
+}
+
+/**
+ * Compute free devices
+ * @param type device type
+ * @param num how many free devices return
+ * @return num of free devices
+ * @example GetFreeDevices("eth", 2) -&gt; [ "eth1", "eth2" ]
+ */
+global define list GetFreeDevices(string type, integer num) ``{
+    y2debug("CONFIG=%1",CONFIG);
+    y2debug("type,num=%1,%2",type,num);
+    list curdevs = mapkeys(lookup(CONFIG, type, $[]));
+    list numdevs = maplist(`l, curdevs, ``(tointeger(l)));
+    y2debug("curdevs=%1",curdevs);
+    y2debug("numdevs=%1",numdevs);
+
+    integer i = 0;
+    integer count = 0;
+    list ret = [];
+
+    while(count < num) {
+	if(!contains(numdevs, i)) {
+	    change(ret, sformat("%1", i));
+	    count = count + 1;
+	}
+	i = i + 1;
+    }
+
+    y2debug("Free devices=%1",ret);
+    return ret;
+}
+
+/**
+ * Check if device is configured
+ * @param type device type
+ * @param unique device unique number
+ * @return device if configured, empty string if not
+ * @example IsConfigured("eth", "aazjka9yd") -&gt; "eth3"
+ */
+global define string IsConfigured(string type, string unique) ``{
+    map devmap = lookup(CONFIG, type, $[]);
+    map dev = filter(`k, `v, devmap, ``(lookup(v, "UNIQUE", "") == unique));
+    if(dev != nil && dev != $[]) {
+	string num = select(mapkeys(dev), 0, "");
+	if(num != "") return type + num;
+    }
+    return "";
+}
+
+/* FIXME
+
+include "devel/debug.ycp";
+map CONFIG = $[];
+
+ReadConfig("");
+y2debug("CONFIG=%1",CONFIG);
+DEBUG(CONFIG);
+
+CONFIG = $[];
+ReadConfig("eth|tr");
+y2debug("CONFIG=%1",CONFIG);
+DEBUG(CONFIG);
+
+*/
+
+}

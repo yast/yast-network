@@ -1,0 +1,43 @@
+/**
+ * File:
+ *   clients/lan.ycp
+ *
+ * Package:
+ *   Configuration of network cards
+ *
+ * Summary:
+ *   Network cards main file
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Main file for network card configuration.
+ * Uses all other files.
+ *
+ */
+
+{
+
+/***
+ * <h3>Configuration of network cards</h3>
+ */
+
+textdomain "network";
+
+/* The main () */
+y2milestone("Lan module started");
+y2milestone("----------------------------------------");
+
+include "network/lan/wizards.ycp";
+
+/* main ui function */
+any ret = LanSequence();
+y2debug("ret == %1", ret);
+
+/* Finish */
+y2milestone("Network module finished");
+return ret;
+
+}
