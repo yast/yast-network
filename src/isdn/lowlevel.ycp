@@ -1,0 +1,248 @@
+/**
+ * File:
+ *   include/network/isdn/lowlovel.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   ISDN configuration dialogs
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+textdomain "network";
+
+import "Wizard";
+import "ISDN";
+
+include "ui/common_popups.ycp";
+
+/**
+ * Dialog for ISDN Parameters
+ * @param Detected detected card
+ * @return any user input
+ */
+
+/* !!! undeclared variable Card !!! */
+/* test: none */
+/* revision: none */
+/* TODO: revise & test */
+
+global define symbol lowlevel(symbol Detected) ``{
+
+    /* PREPARE VARIABLES */
+
+    // FIXME: reading ISDN DB
+    list ISDN_devices = SCR(`Read(.probe.ihw_data));
+    integer id = -1;
+    integer CurrentCardIndex = nil;
+    integer Default_TYPE = tointeger(lookup(Card, "I4L_TYPE", lookup(select(ISDN_devices, 0, $[]), "type", 0)));	// FIXME: default value
+    integer Default_SUBTYPE = tointeger(lookup(Card, "I4L_SUBTYPE", lookup(select(ISDN_devices, 0, $[]), "subtype", 0)));	// FIXME: default value
+    list CardList = maplist(`e, ISDN_devices,
+    ``{
+	id = id + 1;
+	boolean Tmp = ((lookup(e, "type", 0) == Default_TYPE) &&		// FIXME: default value
+		 (lookup(e, "subtype", 0) == Default_SUBTYPE));			// FIXME: default value
+	if (Tmp) CurrentCardIndex = id;
+	return `item(`id(id), lookup(e, "name", "default"), Tmp);		// FIXME: default value
+    });
+
+
+    /* DIALOG TEXTS */
+
+    string caption = _("ISDN low-level configuration");
+    string helptext = "";
+
+    if (Detected != `Detected) {
+	// helptext text 1/4
+	helptext = helptext +
+_("<p>Please select ISDN card from the list.</p>");
+
+	// helptext text 2/4
+	helptext = helptext +
+_("<p>You can pass some extra option values to the kernel module.</p>");
+    }
+
+    if (Detected != `Detected || Detected == `DetectedISA) {
+	// helptext text 3/4
+	helptext = helptext + i
+_("<p>IO address, IRQ, and MemBase are card hardware attributes which usually 
+should be correctly detected for newer card models. If you have an older card 
+model, check with your technical manual or contact your salesman.</p>");
+    }
+
+    // helptext text 4/4
+    helptext = helptext +
+_("<p><b>ISDN protocol: </b>In most cases, the protocol is Euro-ISDN, 
+especially if your ISDN card is connected directly to the public ISDN 
+network. 1TR6 is only rarely used in older German private networks on 
+internal ports. In the United States, NI1 is usually used. Because it 
+is still experimental, contact the suse-isdn@suse.com mail list for 
+more information.</p>");
+
+    /* DIALOG CONTENTS */
+
+    term contents = nil;
+
+    term ISDN_protocol = 
+	`VSquash(
+	    `Frame(_("Selection of ISDN protocol"),
+		`RadioButtonGroup(`id(`protocol),
+		    `VBox(
+			`Left(`RadioButton(`id(2), _("&Euro-ISDN (EDSS1)"), ISDN::protocol == 2)),
+			`Left(`RadioButton(`id(1), _("1TR&6"), ISDN::protocol == 1)),
+			`Left(`RadioButton(`id(3), _("&Leased line"), ISDN::protocol == 3)),
+			`Left(`RadioButton(`id(4), _("NI&1"), ISDN::protocol == 4)),
+			`VStretch()
+		    )
+		)
+	    )
+	);
+
+    if (Detected == `Detected)
+    {
+	contents =
+	    `HBox(
+		`HSpacing(5),
+		ISDN_protocol,
+		`HSpacing(5)
+	    );
+    }
+    else
+    {
+	if (Detected == `DetectedISA)
+	{
+	    string Header = sformat(_("Options for '%1' card"), lookup(select(ISDN_devices, CurrentCardIndex, $[]), "name", "default"));	// FIXME: default value
+	    contents =
+		`HBox(
+		    `HSpacing(5),
+		    `VBox(
+			`VSquash(
+			    `Frame(
+				Header,
+				`HBox(
+				    `HSpacing(0.7),
+				    `VBox(
+					`VSpacing(0.2),
+//?????  WizardISDNParameters_Subroutine(CurrentCardIndex),		// FIXME: undefined function
+					`VSpacing(0.3)
+				    ),
+				    `HSpacing(0.7)
+				)
+			    )
+			),
+			`VSpacing(),
+			ISDN_protocol
+		    ),
+		   `HSpacing(5)
+		);
+	}
+	else
+	{
+	    contents =
+		`HBox(
+		    `HSpacing(5),
+		    `VBox(
+			`VSquash(
+			    `Frame(_("Select your ISDN card"),
+				`HBox(
+				    `HSpacing(),
+				    `VBox(
+					`HBox(
+					    `HWeight(1, `SelectionBox(`id(`Card), `opt(`notify), "",  CardList)),
+					    `HSpacing()//,
+// ???? `ReplacePoint(`id(`Repl),
+// `HSquash(WizardISDNParameters_Subroutine(CurrentCardIndex)))  // FIXME: undefined function
+					),
+					`TextEntry(`id(`options),
+					    _("ISDN module o&ptions (only needed in special cases)"), 
+					    ISDN::moduleOptions 
+				    ),
+				    `HSpacing()
+				)
+			    )
+			),
+			`VSpacing(0.3),
+			ISDN_protocol
+			),
+		   `HSpacing(5)
+		);
+	}
+    }
+
+    /* DIALOG PREPARE */
+    Wizard::SetContents(caption, contents, helptext, true, true);
+
+    /* MAIN CYCLE */
+    symbol ret = nil;
+    while (true)
+    {
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel)
+	{
+	    if (UI::ReallyAbortPopup(true))
+	    {
+		break;
+	    }
+	    continue;
+	}
+	if (ret == `Card) {
+	    Card = filter(`k, `v, Card, ``(k!="I4L_IO" && k!="I4L_IRQ" && k!="I4L_MEMBASE"));
+//	    UI::ReplaceWidget(`id(`Repl), WizardISDNParameters_Subroutine(UI::QueryWidget(`id(`Card), `CurrentItem)));
+// FIXME: undefined function
+	}
+	else if (ret == `back) {
+	    break;
+	}
+	else if (ret == `next) {
+	    /* check_* */
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+
+    /* UPDATE VARIABLES */
+
+    if (ret == `next) {
+	ISDN::protocol = sformat("%1", UI::QueryWidget(`id(`protocol), `CurrentButton));
+
+	if (Detected != `Detected) {
+	    ISDN::io		= UI::QueryWidget(`id(`IO), `Value);
+	    ISDN::irq		= UI::QueryWidget(`id(`IRQ), `Value);
+	    ISDN::membase	= UI::QueryWidget(`id(`MEMBASE), `Value);
+	    ISDN::io0		= "";
+	    ISDN::io1		= "";
+	    ISDN::io2		= "";
+	    ISDN::hisaxdebug	= "";
+	    ISDN::eazmap	= "";
+
+	    if (Detected != `DetectedISA) {
+
+		// FIXME: read info from database
+		map SelectedCard    = select(ISDN_devices, UI::QueryWidget(`id(`Card), `CurrentItem), $[]);
+		ISDN::type	    = sformat("%1", lookup(SelectedCard, "type", "default")); // FIXME: default value
+		ISDN::subtype	    = sformat("%1", lookup(SelectedCard, "subtype", "default")); // FIXME: default value
+		ISDN::moduleOptions = UI::QueryWidget(`id(`options), `Value); 
+
+// Old code:        ProviderISDN = add(ProviderISDN, "pcmcia", lookup (SelectedCard, "class", 0) == 4);	// FIXME: default value
+	    }
+	}
+    }
+
+    return ret;
+}
+
+}
