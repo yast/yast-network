@@ -149,7 +149,7 @@ global define boolean check_netmask6(string netmask) ``{
 global define integer ip2integer(string ip) ``{
     /* FIXME: check_ip4, also to compute_* */
     list l = maplist(string e, splitstring(ip, "."), ``(tointeger(e)));
-    return l[3]:0 + l[2]:0<<8 + l[1]:0<<16 + l[0]:0<<24;
+    return l[3]:0 + (l[2]:0<<8) + (l[1]:0<<16) + (l[0]:0<<24);
 }
 
 /**
