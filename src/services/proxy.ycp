@@ -101,8 +101,8 @@ should be done directly without caching.</p>") +
 	    /* Text entry label */
 	    `TextEntry(`id(`user), _("Proxy &user name"), user),
 	    `VSpacing(0.2),
-	    /* Text entry label */
-	    `TextEntry(`id(`pass), _("Proxy &password"), pass),
+	    /* Password entry label */
+	    `Password(`id(`pass), _("Proxy &password"), pass),
 	    `VSpacing(1)
 	    ), `HSpacing(2)))
 	),
