@@ -96,14 +96,16 @@ global define void ProgressNextStage(string title) ``{
  * @param modified true if there are any modified data
  * @param text text to be shown
  * @param run module to be run
+ * @param params parameters to pass to the module
  * @return always `next
  */
-global define symbol Finished(boolean modified, string text, string run) ``{
+global define symbol Finished(boolean modified, string text,
+       	      	     	      string run, list params) ``{
     if(!modified) return `next;
     /* popup headline */
     string head = _("Configuration has been successfully saved.");
     any ret = UI::YesNoHeadlinePopup(head, text);
-    if(ret == true) CallModule(run, []);
+    if(ret == true) CallModule(run, params);
     return `next;
 }
 

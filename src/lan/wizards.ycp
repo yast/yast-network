@@ -44,7 +44,7 @@ global define symbol LanSequence() ``{
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
 	"write"	: [ ``( WriteDialog() ), true ],
-	"finish" : [ ``( Finished(Lan::Modified(), finished, "mail") ), true ],
+	"finish" : [ ``( Finished(Lan::Modified(), finished, "mail", ["from_lan"]) ), true ],
     ];
 
     map sequence = $[
