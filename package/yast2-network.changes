@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Jul 29 09:04:28 CEST 2002 - msvec@suse.cz
+
+- fixed writing of additional providers (#17221)
+- possibility to enter infinite (0) idle timeout (#17218)
+- fixed caption, enabled defaultroute by default (#17219)
+- 2.6.10
+
+-------------------------------------------------------------------
 Sun Jul 24 20:05:14 CEST 2002 - kkeil@suse.de
 
 - ISDN interface and multi provider setup

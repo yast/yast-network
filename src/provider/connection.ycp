@@ -89,8 +89,7 @@ to the Internet safe from external attacks.</p>") +
 
     /* Connection dialog help 6/8 */
 _("<p>The <b>Idle time-out</b> specifies the time after which an idle
-connection will be shut down.</p>
-");
+connection will be shut down (0 means an infinite idle timeout).</p>");
 
     if(type == "isdn")
 
@@ -104,7 +103,7 @@ _("<p><b>IP details</b> help FIXME
 
     /* DIALOG CONTENTS */
 
-    list seconds = [ "30", "60", "90", "120", "150", "180", "240", "300", "360", "480", "600" ];
+    list seconds = [ "0", "30", "60", "90", "120", "150", "180", "240", "300", "360", "480", "600" ];
     if(!contains(seconds, IdleSeconds))
 	change(seconds, IdleSeconds);
 

@@ -41,7 +41,7 @@ global define symbol IPDetailsDialog(string type) ``{
 
     /* DIALOG TEXTS and  DIALOG CONTENTS */
 
-    string caption = _("ISDN IP address settings");
+    string caption = _("IP address settings");
 
     // help text 1/3
     string helptext =
@@ -56,6 +56,7 @@ outgoing address is unknown until the moment the link is established.
 This is the default with most providers.
 </p>");
 
+    if(false) // FIXME: not needed
     if(encap != "rawip")
         // help text 3/3
 	helptext = helptext +
@@ -63,6 +64,8 @@ _("<p>Check the button for <b>Use peer DNS</b> if you want to change
 your domain name servers after the connection is up. (This replace your static
 DNS configuraton with obtained DNS server IP addresses) Today, almost all
 providers support <b>Use peer DNS</b>.</p>");
+
+    if(type == "isdn") {
 
     helptext = helptext +
     // help text 1/3
@@ -79,6 +82,7 @@ is triggered.</p>");
 _("If callback mode is client, the local system does the initial call then 
 waits for callback of the remote machine.");
 
+    }
 
     term contents = nil;
 

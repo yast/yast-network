@@ -134,8 +134,10 @@ global define boolean Read(string type) ``{
     /* read custom providers */
     providers = $[];
     list dir = SCR::Dir(.sysconfig.network.providers.s);
-    // filter *~
+
+    /* filter away *~ */
     dir = filter(`file, dir, ``(!regexpmatch(file, "[\.~]")));
+
     foreach(`shortname, dir, ``{
 	path prov = add(.sysconfig.network.providers.v, shortname);
 	map p = listmap(`i, SCR::Dir(prov), ``{
@@ -457,8 +459,8 @@ global define map ReadProvider(any provider) ``{
 global define boolean AddEdit(any name, boolean clone) ``{
     operation = nil;
 
-    y2warning("name=%1",name);
-    y2warning("clone=%1",clone);
+    y2debug("name=%1",name);
+    y2debug("clone=%1",clone);
 
     /* edit existing */
     if(name != "") {
@@ -545,7 +547,7 @@ global define boolean Delete(string nam) ``{
  * Copy settings to Modem::something
  */
 global define boolean Commit() ``{
-    y2warning("Commit(%1)", operation);
+    y2debug("Commit(%1)", operation);
 
     if(operation == `add || operation == `edit) {
 	y2debug("providers=%1",providers);

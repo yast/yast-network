@@ -158,7 +158,6 @@ global define boolean Read() ``{
  */
 global define boolean Write() ``{
 
-    if(!modified) return true;
     y2milestone("Writing configuration");
 
     string caption = _("Saving modem configuration");
