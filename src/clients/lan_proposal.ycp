@@ -76,8 +76,10 @@ else if(func == "Description") {
 else if (func == "Write") {
     if (Arch::s390 || Mode::vnc || Mode::usessh)
 	Lan::WriteOnly();
-    else
+    else {
 	Lan::Write();
+	SCR::Execute(.target.bash_background, "test -f /usr/lib/YaST2/bin/listen_remote_ipp && /usr/lib/YaST2/bin/listen_remote_ipp 120");
+    }
 }
 /* unknown function */
 else {

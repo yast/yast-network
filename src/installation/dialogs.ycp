@@ -63,7 +63,7 @@ global define symbol TestStepsDialog() ``{
     string caption = _("Test Internet Connection");
 
     /* help for dialog "Test Internet Connection" */
-    string help = _("<p>Here you can validate the internet connection you just
+    string help = _("<p>Here, you can validate the Internet connection just
 configured. The test is entirely optional. A successful result will enable you
 to run the YaST Online Update.</p>");
 
@@ -72,13 +72,13 @@ to run the YaST Online Update.</p>");
 
     map labels = $[
 	/* Label text (keep lines max. 65 chars long) */
-	"dsl" : _("To validate your DSL Internet access we suggest to activate
+	"dsl" : _("To validate your DSL Internet access, activate
 the test procedure."),
 	/* Label text (keep lines max. 65 chars long) */
-	"isdn" : _("To validate your ISDN Internet access we suggest to activate
+	"isdn" : _("To validate your ISDN Internet access, activate
 the test procedure."),
 	/* Label text (keep lines max. 65 chars long) */
-	"modem" : _("To validate your Modem Internet access we suggest to activate
+	"modem" : _("To validate your modem Internet access, activate
 the test procedure."),
     ];
 
@@ -89,9 +89,9 @@ the test procedure."),
     term buttons = `VBox(
 	`VSpacing(1),
 	/* RadioButton label */
-	`Left(`RadioButton(`id(`yes), _("&Yes, test connection to the Internet"), Internet::do_test)),
+	`Left(`RadioButton(`id(`yes), _("&Yes, Test Connection to the Internet"), Internet::do_test)),
 	/* RadioButton label */
-	`Left(`RadioButton(`id(`no), _("N&o, skip this test"), !Internet::do_test)),
+	`Left(`RadioButton(`id(`no), _("N&o, Skip This test"), !Internet::do_test)),
 	`VSpacing(1)
     );
 
@@ -162,7 +162,7 @@ global define symbol TestConnectionDialog() ``{
     string caption = _("Running Internet Connection Test");
 
     /* help for dialog "Running Internet Connection Test" */
-    string help = _("<p>Here you can see the progress and the protocol of the
+    string help = _("<p>Here, you can see the progress and the log of the
 Internet Connection Test.</p>") +
 
     /* help for dialog "Running Internet Connection Test" */
@@ -171,9 +171,9 @@ Internet Connection Test.</p>") +
     /* Progress labels */
     term progress = `VBox(
 	/* Progress step 1/4 */
-	`Left(`Label(_("Connect to SuSE server via Internet..."))),
+	`Left(`Label(_("Connecting to SuSE server via Internet..."))),
 	/* Progress step 2/4 */
-	`Left(`Label(_("Download latest release notes..."))),
+	`Left(`Label(_("Downloading the latest release notes..."))),
 	/* Progress step 3/4 */
 	`Left(`Label(_("Checking for latest updates..."))),
 	/* Progress step 4/4 */
@@ -191,7 +191,7 @@ Internet Connection Test.</p>") +
 	`HBox(
 	    `HSpacing(1),
 	    /* Label of LogView showing protocol of internet test */
-	    `LogView(`id(`log), _("Test protocol:"), 5, 100),
+	    `LogView(`id(`log), _("Test Log:"), 5, 100),
 	    `HSpacing(1)
 	),
 	`VSpacing(1),
@@ -256,9 +256,9 @@ global define symbol AskYOUDialog() ``{
     term buttons = `VBox(
 	`VSpacing(1),
 	/* RadioButton label */
-	`Left(`RadioButton(`id(`yes), _("&Yes, run online update now"), Internet::do_you)),
+	`Left(`RadioButton(`id(`yes), _("&Yes, Run Online Update Now"), Internet::do_you)),
 	/* RadioButton label */
-	`Left(`RadioButton(`id(`no), _("N&o, skip update"), !Internet::do_you)),
+	`Left(`RadioButton(`id(`no), _("N&o, Skip Update"), !Internet::do_you)),
 	`VSpacing(1)
     );
 
@@ -271,8 +271,8 @@ global define symbol AskYOUDialog() ``{
 	    `Left(`Heading(_("Online Updates Available"))),
 	    `VSpacing(1),
 	    /* Label text */
-	    `Label(_("Do you want to download and install
-	    them via the YaST Online Update?")),
+	    `Label(_("Download and install
+them via the YaST Online Update?")),
 	    `RadioButtonGroup(`HBox(
 		`HSpacing(2),
 		buttons,

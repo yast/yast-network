@@ -116,7 +116,7 @@ If your network card was not autodetected, select <b>Other (not detected)</b>
 then press <b>Configure</b>.</p>") +
 
     /* Network cards summary dialog help 3/3 */
-_("<p><b><big>Editing or deleting:</big></b><br>
+_("<p><b><big>Editing or Deleting:</big></b><br>
 If you press <b>Change</b>, an additional dialog in which
 to change the configuration opens.</p>");
 
@@ -251,7 +251,10 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
 
 	    /* Popup text */
 	    string pop = sformat(_("All virtual aliases belonging to the interface %1
-will be deleted as well.\n\nDo you really want to continue?\n"), dev);
+will be deleted as well.
+
+Really continue?
+"), dev);
 	    if(Lan::HasAliases(dev) && UI::YesNoHeadlinePopup(WarningMsg(), pop) != true)
 		continue;
 

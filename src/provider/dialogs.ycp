@@ -72,7 +72,7 @@ global define symbol ProvidersDialog(boolean edit) ``{
 		`HWeight(1, `VBox(
 		    `RadioButtonGroup(`id(`radio), `VBox(
 			/* RadioButton label */
-			`RadioButton(`id(`custom), `opt(`hstretch, `notify), _("C&ustom providers"), country != nil),
+			`RadioButton(`id(`custom), `opt(`hstretch, `notify), _("C&ustom Providers"), country != nil),
 			`VSpacing(0.2),
 			/* RadioButton label */
 			`RadioButton(`id(`country), `opt(`hstretch, `notify), _("&Countries"), country == nil)
@@ -149,12 +149,12 @@ global define symbol ProvidersDialog(boolean edit) ``{
 
 	string info = Provider::Provider["HOMEPAGE"]:"";
 	/* Label text (param is URL) */
-	if(info != "") info = sformat(_("Home page: %1"), info);
+	if(info != "") info = sformat(_("Home Page: %1"), info);
 	UI::ChangeWidget(`id(`homepage), `Value, info);
 
 	info = Provider::Provider["HOTLINE"]:"";
 	/* Label text (param is phone) */
-	if(info != "") info = sformat(_("Hot line: %1"), info);
+	if(info != "") info = sformat(_("Hot Line: %1"), info);
 	UI::ChangeWidget(`id(`hotline), `Value, info);
     }
 

@@ -61,7 +61,7 @@ global define symbol ReadDialog() ``{
     ScreenName("dsl-read");
 
     /* DSL read dialog help 1/2 */
-    string helptext = _("<P><B><BIG>Initializing DSL configuration
+    string helptext = _("<P><B><BIG>Initializing DSL Configuration
 </BIG></B><BR>Please wait...<BR></P>");
 
     /* DSL read dialog help 2/2 */
@@ -86,7 +86,7 @@ global define symbol WriteDialog() ``{
     if(!Modified()) return `next;
 
     /* DSL write dialog help 1/2 */
-    string helptext = _("<P><B><BIG>Saving DSL configuration</BIG></B><BR>
+    string helptext = _("<P><B><BIG>Saving DSL Configuration</BIG></B><BR>
 Please wait...<BR></P>");
 
     /* DSL write dialog help 2/2 */
@@ -112,17 +112,17 @@ global define symbol SummaryDialog() ``{
     string caption = _("DSL configuration");
 
     /* DSL summary dialog help 1/3 */
-    string helptext = _("<p><b><big>DSL setup</big></b><br>
+    string helptext = _("<p><b><big>DSL Setup</big></b><br>
 Here, you can configure your DSL.<br></p>");
 
     /* DSL summary dialog help 2/3 */
-    helptext = helptext + _("<p><b><big>Adding a DSL device:</big></b><br>
-Choose a DSL device from the list of detected DSL devices. If your DSL device
+    helptext = helptext + _("<p><b><big>Adding a DSL Device:</big></b><br>
+Select a DSL device from the list of detected DSL devices. If your DSL device
 was not autodetected, use <b>Other (not detected)</b>. Then press
 <b>Configure</b>.</p>");
 
     /* DSL summary dialog help 3/3 */
-    helptext = helptext + _("<p><b><big>Editing or deleting:</big></b><br>
+    helptext = helptext + _("<p><b><big>Editing or Deleting:</big></b><br>
 If you press <b>Change</b>, an additional dialog opens in which to change the
 configuration.</p>");
 
@@ -132,7 +132,7 @@ configuration.</p>");
 
     y2debug("unconfigured=%1",unconfigured);
     /* Frame label */
-    term contents = Wizard_hw::DetectedContent(_("DSL devices to configure"),
+    term contents = Wizard_hw::DetectedContent(_("DSL Devices to Configure"),
 	    unconfigured, false, configured);
 
     Wizard::SetContentsButtons(caption, contents, helptext,
@@ -191,16 +191,16 @@ global define symbol OverviewDialog() ``{
     string caption = _("DSL configuration overview");
 
     /* DSL overview dialog help 1/3 */
-    string helptext = _("<P><B><BIG>DSL overview</BIG></B><BR>
+    string helptext = _("<P><B><BIG>DSL Overview</BIG></B><BR>
 Here, get an overview of installed DSL devices. Additionally,
 edit their configuration.<BR></P>");
 
     /* DSL overview dialog help 2/3 */
-    helptext = helptext + _("<P><B><BIG>Adding a DSL device:</BIG></B><BR>
+    helptext = helptext + _("<P><B><BIG>Adding a DSL Device:</BIG></B><BR>
 If you press <B>Add</B>, you can manually configure a DSL device.</P>");
 
     /* DSL overview dialog help 3/3 */
-    helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
+    helptext = helptext + _("<P><B><BIG>Editing or Deleting:</BIG></B><BR>
 Choose a DSL device for which to change or remove the configuration.
 Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 
@@ -211,7 +211,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 
     term contents = OverviewTableDouble(
 	/* Table label */
-	_("DSL devices"),
+	_("DSL Devices"),
 	/* Table header */
 	`header(/*_("No."), */_("Device"), _("Type"), _("Provider")),
 	overview,

@@ -74,7 +74,7 @@ global define symbol TypeDialog() ``{
     ScreenName("provider-type");
 
     /* Provider type dialog caption */
-    string caption = _("Provider type");
+    string caption = _("Provider Type");
 
     /* Provider type dialog contents */
     term contents = `HBox(
@@ -84,13 +84,13 @@ global define symbol TypeDialog() ``{
 	`VBox(
 	    `VSpacing(3),
 	    /* Selection box label */
-	    `SelectionBox(`id(`modules), _("&Available provider types:"), [
+	    `SelectionBox(`id(`modules), _("&Available Provider Types:"), [
 		/* Selection box item */
 		`item(`id("modem"), _("Modem provider"), true),
 		/* Selection box item */
-		`item(`id("isdn"), _("ISDN provider")),
+		`item(`id("isdn"), _("ISDN Provider")),
 		/* Selection box item */
-		`item(`id("dsl"), _("DSL provider"))
+		`item(`id("dsl"), _("DSL Provider"))
 	    ]),
 	    `VSpacing(3)
 	    ),
@@ -147,7 +147,7 @@ global define symbol SummaryDialog() ``{
     ScreenName("provider-summary");
 
     /* Provider summary dialog caption */
-    string caption = _("Provider configurations");
+    string caption = _("Provider Configuration");
 
     list summary = Provider::Summary(true);
     list unconfigured = select(summary, 1, []);
@@ -246,7 +246,7 @@ global define symbol OverviewDialog() ``{
 	    Provider::Edit(dev);
 	    if(Provider::CurrentType() == "") {
 		/* Popup text */
-		UI::ErrorPopup(_("Can't determine the provider type."));
+		UI::ErrorPopup(_("Cannot determine the provider type."));
 		continue;
 	    }
 	    break;

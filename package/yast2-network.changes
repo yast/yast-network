@@ -1,6 +1,11 @@
+-------------------------------------------------------------------
+Mon Feb 10 13:10:49 CET 2003 - msvec@suse.de
+
 - better hotplug devices support (#19478)
 - correct wlan kernel module names (#23491)
+- start cups server detection after write
 - installation bugfixes
+- proof read texts
 - 2.7.6
 
 -------------------------------------------------------------------

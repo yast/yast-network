@@ -50,24 +50,24 @@ computer. If you are not sure which mode to use, ask your provider.</p>") +
 ethernet card.</p>") +
 
     /* DSL dialog help 4/7 */
-_("<p>The <b>PPP mode dependent settings</b> are settings required to setup
+_("<p>The <b>PPP Mode-Dependent Settings</b> are settings required to set up
 your DSL connection. The <b>VPI/VCI</b> makes sense only for <i>PPP over ATM</i>
 connections, <b>Ethernet card</b> is needed for <i>PPP over Ethernet</i>
 connections.</p>") +
 
     /* DSL dialog help 5/7 */
-_("<p><b>For PPPoATM enter your VPI/VCI pair, for example <i>0.38</i>
-for British Telecom. If unsure ask your provider.</p>") +
+_("<p><b>For PPPoATM, enter your VPI/VCI pair, for example, <i>0.38</i>
+for British Telecom. If unsure, ask your provider.</p>") +
 
     /* DSL dialog help 6/7 */
-_("<p>For PPPoE enter the device of the ethernet card your dsl modem
-is connected to. If you did not setup your ethernet card yet you can
-proceed therewith by pressing <b>Configure network cards</b>.</p>") +
+_("<p>For PPPoE, enter the device of the ethernet card to which your DSL
+modem is connected. If you did not set up your ethernet card yet, do
+so by pressing <b>Configure Network Cards</b>.</p>") +
 
     /* DSL dialog help 7/7 */
-_("<p>The <b>Device activation</b> may either happen during boot or manually
+_("<p><b>Device activation</b> may either happen during boot or manually
 with tools like <b>ifup</b> or <b>kinternet</b>. An activation during boot may
-be appropriate for dial on demand connections.</p>");
+be appropriate for dial-on-demand connections.</p>");
 
     string pppmode = DSL::pppmode;
     if (pppmode == nil || pppmode == "")
@@ -120,12 +120,12 @@ be appropriate for dial on demand connections.</p>");
     term contents = `HBox(
 	`HSpacing(6),
 	/* Frame label */
-	`Frame(_("DSL connection settings"), `HBox(`HSpacing(2), `VBox(
+	`Frame(_("DSL Connection Settings"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(1),
 	    pppwidget,
 	    `VSpacing(1),
 	    /* Frame label */
-	    `Frame(_("PPP mode dependent settings"), `HBox(`HSpacing(2), `VBox(
+	    `Frame(_("PPP Mode-Dependent Settings"), `HBox(`HSpacing(2), `VBox(
 		`VSpacing(0.2),
 		/* TextEntry label */
 		`TextEntry(`id(`vpivci),  _("&VPI/VCI"), vpivci),
@@ -139,19 +139,19 @@ be appropriate for dial on demand connections.</p>");
 		    `VBox(
 			`Label(""),
 			/* PushButton label */
-			`PushButton(`id(`lan), _("&Configure network cards"))
+			`PushButton(`id(`lan), _("&Configure Network Cards"))
 		    )
 		)
 	    ), `HSpacing(2))),
 	    `VSpacing(1),
 	    /* ComboBox label */
-	    `Left(`ComboBox(`id(`startmode), _("&Device activation"), [
+	    `Left(`ComboBox(`id(`startmode), _("&Device Activation"), [
 		/* ComboBox item */
 		`item(`id("manual"), _("Manually"), startmode == "manual"),
 		/* ComboBox item */
-		`item(`id("onboot"), _("On boot"), startmode == "onboot"),
+		`item(`id("onboot"), _("On Boot"), startmode == "onboot"),
 		/* ComboBox item */
-		`item(`id("hotplug"), _("Hot plug"), startmode == "hotplug"),
+		`item(`id("hotplug"), _("Hot Plug"), startmode == "hotplug"),
 	    ])),
 	    `VSpacing(1)
 	    ), `HSpacing(2))),
@@ -183,7 +183,7 @@ be appropriate for dial on demand connections.</p>");
 	    vpivci = UI::QueryWidget(`id(`vpivci), `Value);
 	    if(pppmode == "pppoatm" && vpivci == "") {
 		/* Popup text */
-		UI::ErrorPopup(_("Please fill in the VPI/VCI."));
+		UI::ErrorPopup(_("Enter the VPI/VCI."));
 		UI::SetFocus(`id(`vpivci));
 		continue;
 	    }

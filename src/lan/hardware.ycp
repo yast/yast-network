@@ -139,7 +139,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    // FIXME maplist(integer d, Lan::FreeDevices(realtype), ``(sformat("%1", d)))));
 
     /* TextEntry label */
-    term MTUBox = `TextEntry(`id(`mtu), _("M&aximum transfer unit (MTU)"), mtu);
+    term MTUBox = `TextEntry(`id(`mtu), _("M&aximum Transfer Unit (MTU)"), mtu);
     MTUBox = `VSpacing(0);
     // FIXME: help missing
 
@@ -208,7 +208,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 			`HSpacing(0.9),
 			`VBox(
 			    /* Label text */
-			    `Left(`Label(_("Device type:"))),
+			    `Left(`Label(_("Device Type:"))),
 			    `VSpacing(0.2),
 			    `Left(`Label(`opt(`outputField), typ))
 			),
@@ -345,11 +345,14 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		if(devic != default_device) {
 		    y2warning("Default device: %1 -> %2", default_device, devic);
 		    /* Popup text */
-		    string pop = _("You changed the default device number.\n
+		    string pop = _("You changed the default device number.
+
 This possibility is only intended for systems with built-in network cards
-or cards with multiple interfaces. If you don't have such network card you
-would most probably get an unfunctional network configuration.\n
-Do you really want to continue?\n");
+or cards with multiple interfaces. If you do not have such network card,
+this would probably result in a nonfunctional network configuration.
+
+Really continue?
+");
 		    if(UI::YesNoHeadlinePopup(WarningMsg(), pop) == true) {
 			y2warning("Default device changed!");
 			break;
@@ -531,7 +534,7 @@ XXXX-XXXX-XXXX-XXXX or XXXXXXXX. You can also enter the key as an ASCII
 string by using the 's:' prefix.</p>") +
 
     /* Wireless dialog help 6/7 */
-_("<p>The <b>Nick name</b> means the station name. Most 802.11 products do
+_("<p>The <b>Nick Name</b> means the station name. Most 802.11 products
 define it, but only some diagnostic tools use it.</p>") +
 
     /* Wireless dialog help 7/7 */
@@ -622,7 +625,7 @@ global define symbol S390Dialog() ``{
     ScreenName("lan-hardware-s390");
 
     /* S/390 dialog caption */
-    string caption = _("S/390 network card configuration");
+    string caption = _("S/390 Network Card Configuration");
 
     /* S/390 dialog help 1/6 */
     string helptext = _("<p>Here, set the most important settings
@@ -653,19 +656,19 @@ add them manually.</p>");
     term contents = `HBox(
 	`HSpacing(6),
 	/* Frame label */
-	`Frame(_("S/390 device settings"), `HBox(`HSpacing(2), `VBox(
+	`Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(1),
 	    /* TextEntry label */
-	    `TextEntry(`id(`read_channel), _("R&ead channel"), Lan::read_channel),
+	    `TextEntry(`id(`read_channel), _("R&ead Channel"), Lan::read_channel),
 	    `VSpacing(0.2),
 	    /* TextEntry label */
-	    `TextEntry(`id(`write_channel), _("&Write channel"), Lan::write_channel),
+	    `TextEntry(`id(`write_channel), _("&Write Channel"), Lan::write_channel),
 	    `VSpacing(0.2),
 	    /* TextEntry label */
-	    `TextEntry(`id(`data_channel), _("&Data channel"), Lan::data_channel),
+	    `TextEntry(`id(`data_channel), _("&Data Channel"), Lan::data_channel),
 	    `VSpacing(0.2),
 	    /* TextEntry label */
-	    `TextEntry(`id(`portname), _("&Portname"), Lan::portname),
+	    `TextEntry(`id(`portname), _("&Port Name"), Lan::portname),
 	    `VSpacing(1)
 	    ), `HSpacing(2))),
 	`HSpacing(6)
