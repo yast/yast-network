@@ -52,7 +52,8 @@ global boolean Read() {
 
     y2milestone ("XDM: %1, DM_R_A: %2", xdm, dm_ra);
     y2milestone ("xinetd: %1, VNC: %2", xinetd, vnc);
-    return xdm && dm_ra && xinetd && vnc;
+    allow_administration = xdm && dm_ra && xinetd && vnc;
+    return true;
 }
 
 /**
