@@ -4,4 +4,4 @@
 # $Id$
 #
 
-SUBDIRS = menu clients modules routines lan services # modem isdn dsl
+SUBDIRS = menu clients modules routines lan services modem isdn # dsl
