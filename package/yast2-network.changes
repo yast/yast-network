@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Feb 14 12:30:53 CET 2003 - msvec@suse.de
+
+- fix homepage and hotline (#23600)
+- partially fix the status problem (#23593)
+- 2.7.8
+
+-------------------------------------------------------------------
 Tue Feb 11 17:25:32 CET 2003 - arvin@suse.de
 
 - fixed testsuite

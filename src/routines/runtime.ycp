@@ -146,9 +146,11 @@ global define boolean StartService(string service) ``{
     }
     any ret = nil;
     y2milestone("Starting service %1", service);
+    /*
     if(Runlevel::ServiceStatus(service) == 0)
 	ret = Runlevel::RunInitScript(service, "reload");
     else
+    */
 	ret = Runlevel::RunInitScript(service, "start");
     y2debug("ret=%1", ret);
     return ret == 0;

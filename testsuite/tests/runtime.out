@@ -32,12 +32,8 @@ Return	true
 Execute	.target.bash "/etc/init.d/network stop" $["TERM":"raw"] 1
 Return	false
 Dump	StartNetwork
-Read	.init.scripts.exists "network" true
-Execute	.target.bash "/etc/init.d/network status" $["TERM":"raw"] 0
-Execute	.target.bash "/etc/init.d/network reload" $["TERM":"raw"] 0
+Execute	.target.bash "/etc/init.d/network start" $["TERM":"raw"] 0
 Return	true
-Read	.init.scripts.exists "network" true
-Execute	.target.bash "/etc/init.d/network status" $["TERM":"raw"] 1
 Execute	.target.bash "/etc/init.d/network start" $["TERM":"raw"] 1
 Return	false
 Dump	RestartNetwork
@@ -51,9 +47,7 @@ Read	.init.scripts.exists "smpppd" true
 Read	.init.scripts.runlevel "smpppd" nil
 Read	.init.scripts.comment "smpppd" nil
 Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/smpppd" $["exit":0, "stderr":"", "stdout":""]
-Read	.init.scripts.exists "smpppd" true
-Execute	.target.bash "/etc/init.d/smpppd status" $["TERM":"raw"] 0
-Execute	.target.bash "/etc/init.d/smpppd reload" $["TERM":"raw"] 0
+Execute	.target.bash "/etc/init.d/smpppd start" $["TERM":"raw"] 0
 Return	true
 Read	.init.scripts.exists "smpppd" true
 Read	.init.scripts.exists "smpppd" true
@@ -61,8 +55,6 @@ Read	.init.scripts.runlevel "smpppd" nil
 Read	.init.scripts.comment "smpppd" nil
 Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/smpppd" $["exit":1, "stderr":"Dummy error message", "stdout":""]
 Log	Unable to enable service smpppd:
-Read	.init.scripts.exists "smpppd" true
-Execute	.target.bash "/etc/init.d/smpppd status" $["TERM":"raw"] 1
 Execute	.target.bash "/etc/init.d/smpppd start" $["TERM":"raw"] 1
 Return	false
 Dump	EnableService
@@ -91,12 +83,8 @@ Read	.init.scripts.runlevel "service" nil
 Read	.init.scripts.comment "service" nil
 Return	true
 Dump	StartService
-Read	.init.scripts.exists "service" true
-Execute	.target.bash "/etc/init.d/service status" $["TERM":"raw"] 0
-Execute	.target.bash "/etc/init.d/service reload" $["TERM":"raw"] 0
+Execute	.target.bash "/etc/init.d/service start" $["TERM":"raw"] 0
 Return	true
-Read	.init.scripts.exists "service" true
-Execute	.target.bash "/etc/init.d/service status" $["TERM":"raw"] 1
 Execute	.target.bash "/etc/init.d/service start" $["TERM":"raw"] 1
 Return	false
 Dump	StopService

@@ -29,8 +29,8 @@ global define string ProviderInfoText() ``{
     string info = "";
     string type = Provider::CurrentType();
 
-    string hp = Provider::Provider["HOTLINE"]:"";
-    string hl = Provider::Provider["HOMEPAGE"]:"";
+    string hp = Provider::Provider["HOMEPAGE"]:"";
+    string hl = Provider::Provider["HOTLINE"]:"";
 
     if(hp != "")
 	/* Provider info (%1 is URL) */
