@@ -88,7 +88,7 @@ the test procedure."),
 
     boolean already_up = false;
     if (!Mode::test)
-	Internet::Status ();
+	already_up = Internet::Status ();
 
 
     /* Radiobuttons */

@@ -39,9 +39,10 @@
 	return `next;
     }
 
+
     boolean already_up = false;
     if (!Mode::test)
-	Internet::Status ();
+	already_up = Internet::Status ();
 
 
     /* Progress step 1/4 */
