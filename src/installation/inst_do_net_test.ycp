@@ -64,10 +64,10 @@ Internet Connection Test.</p>") +
 
 	/* Progress labels */
 	term progress = `VBox(
-			      `Left(`Label (`id (`s1), "- " + l1)),
-			      `Left(`Label (`id (`s2), "- " + l2)),
-			      `Left(`Label (`id (`s3), "- " + l3)),
-			      `Left(`Label (`id (`s4), "- " + l4))
+			      `Left(`Label (`id (`s1), "-   " + l1)),
+			      `Left(`Label (`id (`s2), "-   " + l2)),
+			      `Left(`Label (`id (`s3), "-   " + l3)),
+			      `Left(`Label (`id (`s4), "-   " + l4))
 			      );
 
 	/* Test dialog contents */
@@ -119,6 +119,18 @@ Internet Connection Test.</p>") +
     }
 
 
+    define void mark_label (integer i) ``{
+	if (i == 1)
+	    UI::ChangeWidget (`id (`s1), `Value, UI::Glyph(`CheckMark) + " " + l1);
+	else if (i == 2)
+	    UI::ChangeWidget (`id (`s2), `Value, UI::Glyph(`CheckMark) + " " + l2);
+	else if (i == 3)
+	    UI::ChangeWidget (`id (`s3), `Value, UI::Glyph(`CheckMark) + " " + l3);
+	else if (i == 4)
+	    UI::ChangeWidget (`id (`s4), `Value, UI::Glyph(`CheckMark) + " " + l4);
+    }
+
+
     define void set_result (symbol result) ``{
 	set_stage (-1);
 	test_result = result;
@@ -156,6 +168,7 @@ Internet Connection Test.</p>") +
 	{
 	    if (Mode::test) {
 		set_stage (2);
+		mark_label (1);
 		return;
 	    }
 
@@ -167,6 +180,7 @@ Internet Connection Test.</p>") +
 	    if (Internet::Connected ()) {
 		y2milestone ("Connected ok");
 		set_stage (2);
+		mark_label (1);
 		return;
 	    }
 	}
@@ -176,6 +190,7 @@ Internet Connection Test.</p>") +
 	    // get release notes
 	    sleep (100);
 	    set_stage (3);
+	    mark_label (2);
 	    return;
 	}
 
@@ -184,6 +199,7 @@ Internet Connection Test.</p>") +
 	    // check for patches
 	    sleep (100);
 	    set_stage (4);
+	    mark_label (3);
 	    return;
 	}
 
@@ -191,6 +207,7 @@ Internet Connection Test.</p>") +
 	{
 	    if (Mode::test) {
 		set_result (`success);
+		mark_label (4);
 		return;
 	    }
 
@@ -201,6 +218,7 @@ Internet Connection Test.</p>") +
 	    }
 
 	    set_result (`success);
+	    mark_label (4);
 	    return;
 	}
 
