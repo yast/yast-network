@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
-Wed Sep  8 16:59:21 CEST 2004 - mvidner@suse.cz
+Thu Sep  9 10:56:28 CEST 2004 - mvidner@suse.cz
 
+- Do not write the VNC settings until the whole proposal
+  has been accepted (#44136).
 - LAN: STARTMODE="manual" if not specified but "auto"
   for new configurations (#44804).
 - Install ifplugd if needed (#44838).

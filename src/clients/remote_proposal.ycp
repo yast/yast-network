@@ -35,7 +35,8 @@ if(func == "MakeProposal") {
 }
 /* run the module */
 else if(func == "AskUser") {
-    symbol result = (symbol) WFM::CallFunction ("remote", []);
+    // single dialog, no need to Export/Import
+    symbol result = (symbol) RemoteMainDialog ();
     y2debug("result=%1", result);
     ret = $[ "workflow_sequence" : result ];
 }
