@@ -319,9 +319,6 @@ To register for <b>%1</b> and find the best dialing number, call the hotline
  * @return symbol for wizard sequencer (`next, `back, `abort, `new)
  */
 global define symbol runProvidersDialog (symbol type) ``{
-    // TODO removeme
-    y2error("running providers with %1 symbol", type);
-
     string caption = _("Select Internet Service Provider (ISP)");
 
     string helptext =
@@ -369,7 +366,7 @@ Use the <b>New</b> button to add a provider not in the list.
 	    `HSpacing()
 	);
 
-    Wizard::SetContents(caption, contents, getProvidersHelp (), true, true);
+    Wizard::SetContents(caption, contents, helptext, true, true);
     UI::ChangeWidget (`id (`next), `Label, NextButtonLabel ());
     symbol ret = `countries;
     while (`next != ret && `back != ret && `abort != ret && `new != ret)
@@ -480,6 +477,8 @@ global define symbol runEditModemProviderDialog (boolean edit) ``{
                             "Phone" : Modem::provPhone
                      ]);
 */
+    boolean ask_pass = Modem::provAskPassword;
+
     term contents =
 	`HBox (
 	    `HSpacing (4),
