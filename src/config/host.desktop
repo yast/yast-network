@@ -6,7 +6,7 @@ X-KDE-ModuleType=Library
 X-KDE-RootOnly=true
 X-KDE-HasReadOnlyMode=true
 X-KDE-Library=yast2
-X-KDE-FactoryName=host
+X-SuSE-YaST-Call=host
 
 X-SuSE-YaST-Group=Net_advanced
 X-SuSE-YaST-Argument=
