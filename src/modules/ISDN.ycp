@@ -129,6 +129,11 @@ map<string,map> Devices = $[];
 list<string> DeletedDevices = [];
 
 /**
+ * configured ISDN net devices
+ */
+list<string> NetDevs = [];
+
+/**
  * Abort function
  * return boolean return true if abort
  */
@@ -816,6 +821,28 @@ global define boolean Import(map settings) ``{
 global define map Export() ``{
     map PROVIDERS = Provider::Export("isdn");
     return add(Devices, "_PROVIDERS", PROVIDERS);
+}
+
+/**
+ * List of configured interface entries
+ * @return list<strings>
+ */
+global define list<string> NetDeviceList() ``{
+    map<string,map> typemap = (map<string,map>)Devices["net"]:$[];
+
+    NetDevs = [];
+    maplist(string num, map devmap, typemap, ``{
+	string prot = devmap["PROTOCOL"]:"";
+	string devnam = "";
+	if (prot == "syncppp")
+	   devnam = sformat("ippp%1", num);
+	else if (prot == "rawip")
+	   devnam = sformat("isdn%1", num);
+	else
+	   devnam = sformat("unkown%1", num);
+	NetDevs = add(NetDevs, devnam);
+    });
+    return NetDevs;
 }
 
 /**

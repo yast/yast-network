@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Sep 13 14:21:58 CEST 2004 - kkeil@suse.de
+
+- add ISDN:NetDeviceList() function for a list of configured
+  ISDN network interfaces (#44677)
+- manual is the default STARTMODE for ISDN interfaces
+
+-------------------------------------------------------------------
 Thu Sep  9 10:56:28 CEST 2004 - mvidner@suse.cz
 
 - Do not write the VNC settings until the whole proposal

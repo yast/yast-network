@@ -144,7 +144,7 @@ in the DSL configuration dialog.</p>");
 		"name"	    : ISDN::hw_device["NAME"]:"unknown",
 		"unique"    : ISDN::hw_device["UNIQUE"]: "",
 		"pppmode"   : "capi-adsl",
-		"startmode" : ISDN::hw_device["STARTMODE"]: ""
+		"startmode" : "manual"
 	    ];
 	    ret = Call::Function("dsl", [.capiadsl, dslpara]);
 	}
@@ -192,7 +192,7 @@ define any interface_dialog() ``{
 
     /* PREPARE VARIABLES */
     string msn = lookup(ISDN::interface, "MSN", "0");
-    string startmode = lookup(ISDN::interface, "STARTMODE", "onboot");
+    string startmode = lookup(ISDN::interface, "STARTMODE", "manual");
     boolean usercontrol = ISDN::interface["USERCONTROL"]:"no" == "yes";
     boolean syncppp = lookup(ISDN::interface, "PROTOCOL", "syncppp") == "syncppp";
     boolean chargeHUP = lookup(ISDN::interface, "CHARGEHUP", "on") == "on";
