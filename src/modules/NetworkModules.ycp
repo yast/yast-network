@@ -47,6 +47,8 @@ global string SCRIPTDOWN = "";
 global string CCW_CHAN_IDS = "";
 global string CCW_CHAN_MODE = "";
 global string CCW_CHAN_NUM = "";
+global string QETH_OPTIONS = "";
+global string QETH_IPA_TAKEOVER = "";
 
 /**
  * Current module information
@@ -238,6 +240,8 @@ global boolean AddM() {
     CCW_CHAN_IDS = "";
     CCW_CHAN_MODE = "";
     CCW_CHAN_NUM = "";
+    QETH_OPTIONS = "";
+    QETH_IPA_TAKEOVER = "";
 
     return true;
 }
@@ -260,6 +264,8 @@ global boolean SelectM(string name) {
     CCW_CHAN_IDS = Modules[name, "CCW_CHAN_IDS"]:"";
     CCW_CHAN_MODE = Modules[name, "CCW_CHAN_MODE"]:"";
     CCW_CHAN_NUM = Modules[name, "CCW_CHAN_NUM"]:"";
+    QETH_OPTIONS = Modules[name, "QETH_OPTIONS"]:"";
+    QETH_IPA_TAKEOVER = Modules[name, "QETH_IPA_TAKEOVER"]:"";
 
     y2milestone("Modules=%1", Modules);
     return true;
@@ -289,6 +295,10 @@ global boolean ChangeM(string name) {
 	Modules[name, "CCW_CHAN_IDS"] = CCW_CHAN_IDS;
 	Modules[name, "CCW_CHAN_MODE"] = CCW_CHAN_MODE;
 	Modules[name, "CCW_CHAN_NUM"] = CCW_CHAN_NUM;
+	if (QETH_OPTIONS != nil && QETH_OPTIONS != "")
+	    Modules[name, "QETH_OPTIONS"] = QETH_OPTIONS;
+	if (QETH_IPA_TAKEOVER != nil && QETH_IPA_TAKEOVER != "")
+	    Modules[name, "QETH_IPA_TAKEOVER"] = QETH_IPA_TAKEOVER;
     }
 
     y2milestone("Modules=%1", Modules);

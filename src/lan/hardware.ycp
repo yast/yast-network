@@ -600,6 +600,10 @@ add them manually.</p>");
 	    `VSpacing(0.2),
 	    /* TextEntry label */
 	    `TextEntry(`id(`portname), _("&Port Name"), Lan::portname),
+
+	    `VSpacing(0.2),
+	    /* TextEntry label */
+	    `TextEntry(`id(`qeth_options), _("&Options"), Lan::qeth_options),
 	    `VSpacing(1)
 	    ), `HSpacing(2))),
 	`HSpacing(6)
@@ -614,12 +618,39 @@ add them manually.</p>");
 		`VSpacing(1),
 		/* TextEntry label */
 		`TextEntry(`id(`chan_mode), _("&Port Name"), Lan::chan_mode),
-		`VSpacing(1)
+		`VSpacing(1),
+		/* TextEntry label */
+		`TextEntry(`id(`qeth_options), _("&Options"), Lan::qeth_options),
+		`VSpacing(1),
+		/* CheckBox label */
+		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA takeover")))
+		), `HSpacing(2))),
+	    `HSpacing(6)
+	);
+	/* S/390 dialog help: QETH Port name */
+	helptext = _("<p>Enter the <b>Port Name</b> for this interface (case-sensitive).</p>") +
+	/* S/390 dialog help: QETH Options */
+	_("<p>Enter any additional <b>Options</b> for this interface (separated by blanks)</p>") +
+	_("<p>Select <b>Enable IPA takeover</b> if IP address takeover should be enabled for this interface.<p>");
+    }
+
+    if(Lan::type == "hsi") {
+	contents = `HBox(
+	    `HSpacing(6),
+	    /* Frame label */
+	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
+		`VSpacing(1),
+		/* TextEntry label */
+		`TextEntry(`id(`qeth_options), _("&Options"), Lan::qeth_options),
+		`VSpacing(1),
+		/* CheckBox label */
+		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA takeover")))
 		), `HSpacing(2))),
 	    `HSpacing(6)
 	);
 	/* S/390 dialog help: QETH */
-	helptext = _("<p>Enter the <b>Port Name</b> for this interface (case-sensitive).</p>");
+	helptext = _("<p>Enter any additional <b>Options</b> for this interface (separated by blanks).</p>") +
+	_("<p>Select <b>Enable IPA takeover</b> if IP address takeover should be enabled for this interface.<p>");
     }
 
     if(Lan::type == "lcs") {
@@ -671,14 +702,14 @@ add them manually.</p>");
 	    /* Frame label */
 	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
 		`VSpacing(1),
-		/* TextEntry label */
-		`TextEntry(`id(`chan_mode), _("&Link Name"), ""),
+		/* TextEntry label, #42789 */
+		`TextEntry(`id(`chan_mode), _("&Peer Name"), ""),
 		`VSpacing(1)
 		), `HSpacing(2))),
 	    `HSpacing(6)
 	);
-	/* S/390 dialog help: IUCV */
-	helptext = _("<p>Enter the name of the <b>Link</b> partner,
+	/* S/390 dialog help: IUCV, #42789 */
+	helptext = _("<p>Enter the name of the IUCV peer,
 for example, the z/VM user name with which to connect (case-sensitive).</p>
 ");
     }
@@ -686,9 +717,17 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::NextButton());
 
-    if(Lan::type == "ctc") UI::ChangeWidget(`id(`chan_mode), `Value, Lan::chan_mode);
+    if(Lan::type == "ctc") 
+        UI::ChangeWidget(`id(`chan_mode), `Value, Lan::chan_mode);
 
-    UI::SetFocus(`id(`chan_mode));
+    if (Lan::type == "hsi" || Lan::type == "qeth")
+        UI::ChangeWidget(`id(`ipa_takeover), `Value, Lan::ipa_takeover);
+
+    if (Lan::type != "hsi")
+        UI::SetFocus(`id(`chan_mode));
+    else
+        UI::SetFocus(`id(`qeth_options));
+
     // FIXME: no spaces
     // UI::ChangeWidget(`id(`key), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_:;");
 
@@ -726,8 +765,13 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 	    Lan::nm_name = "iucv-id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
 	    Lan::device = "id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
 	}
-	else
-	    Lan::chan_mode = (string) UI::QueryWidget(`id(`chan_mode), `Value);
+	else if (Lan::type != "hsi")
+	       Lan::chan_mode = (string) UI::QueryWidget(`id(`chan_mode), `Value);
+	if(Lan::type == "qeth" || Lan::type == "hsi") {
+	    Lan::qeth_options = (string) UI::QueryWidget(`id(`qeth_options), `Value);
+	    Lan::ipa_takeover = (boolean) UI::QueryWidget(`id(`ipa_takeover), `Value);
+	}
+
     }
 
     return ret;

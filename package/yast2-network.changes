@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Oct 25 19:01:05 CEST 2004 - mvidner@suse.cz
+
+- Changed label: IUCV "link name/partner" to "peer name" (#42789).
+- Added qeth options and IP takeover to qeth and hsi (hare, #41570)
+
+-------------------------------------------------------------------
 Tue Oct 19 10:11:45 CEST 2004 - mvidner@suse.cz
 
 - Deleted an unused file that triggered a format string mismatch.

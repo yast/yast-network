@@ -175,7 +175,7 @@ define symbol NetworkCardSequence(string action) ``{
 
     /* CTC and QETH devices */
     if(Arch::s390 () && Lan::operation == `add && Lan::unique != "") {
-	if(Lan::type == "ctc" || Lan::type == "lcs" || Lan::type == "qeth" || Lan::type == "iucv") ws_start = "s390";
+	if (contains (["ctc", "lcs", "qeth", "hsi", "iucv"], Lan::type)) ws_start = "s390";
 	// else if(Lan::type == "iucv") ws_start = "hardware";
     }
 
