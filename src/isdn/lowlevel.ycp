@@ -35,7 +35,7 @@ include "ui/common_popups.ycp";
 /* revision: none */
 /* TODO: revise & test */
 
-global define symbol lowlevel(symbol Detected) ``{
+global define symbol isdn_lowlevel(symbol Detected) ``{
 
     /* PREPARE VARIABLES */
 
@@ -72,7 +72,7 @@ _("<p>You can pass some extra option values to the kernel module.</p>");
 
     if (Detected != `Detected || Detected == `DetectedISA) {
 	// helptext text 3/4
-	helptext = helptext + i
+	helptext = helptext +
 _("<p>IO address, IRQ, and MemBase are card hardware attributes which usually 
 should be correctly detected for newer card models. If you have an older card 
 model, check with your technical manual or contact your salesman.</p>");
@@ -173,6 +173,7 @@ more information.</p>");
 			ISDN_protocol
 			),
 		   `HSpacing(5)
+		    )
 		);
 	}
     }
