@@ -1,8 +1,10 @@
 -------------------------------------------------------------------
-Fri Jun 20 14:24:48 CEST 2003 - msvec@suse.de
+Thu Jun 26 10:00:50 CEST 2003 - msvec@suse.de
 
 - provider: recognize provider change in ncurses (#25432)
 - proxy: allow '\' in the username field (#27444)
+- lookup hostname during proposal (#21009)
+- sync help with widgets (#25106)
 - dns: restart only dhcp services
 - several updates and bugfixes
 - minimal dhcp detection

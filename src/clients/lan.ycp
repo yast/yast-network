@@ -22,16 +22,116 @@ textdomain "network";
 y2milestone("----------------------------------------");
 y2milestone("Lan module started");
 
+import "CommandLine";
+import "Lan";
+
+include "commandline/commandline.ycp";
 include "network/lan/wizards.ycp";
 
-/* main ui function */
-any ret = LanSequence();
-y2debug("ret == %1", ret);
+/**
+ * Command line definition
+ */
+map cmdline = $[
+    "help"	: "Network cards configuration",
+    "id"	: "lan",
+    "guihandler": ``(LanSequence()),
+    "initialize": ``(Lan::Read()),
+    "finish"	: ``(Lan::Write()),
+    "actions"	: $[
+	"list" : $[
+	    "help"	: "display configuration summary",
+	    "example"	: "lan list configured",
+	    "handler"	: ``(ListHandler())
+	],
+	"add" : $[
+	    "help"	: "add a network card",
+	    "handler"	: ``(AddHandler())
+	],
+	"delete" : $[
+	    "help"	: "delete a network card",
+	    "handler"	: ``(DeleteHandler())
+	]
+    ],
+    "options" : $[
+	"propose" : $[
+	    "help"	: "propose a configuration",
+	    "example"	: "lan add propose",
+	    "type"	: ""
+	],
+	"configured" : $[
+	    "help"	: "list only configured cards"
+	],
+	"unconfigured" : $[
+	    "help"	: "list only not configured cards"
+	],
+	"device" : $[
+	    "help"	: "device ID",
+	    "type"	: "string",
+	    "example"	: "lan add device=eth0"
+	],
+	"ip" : $[
+	    "help": "device address",
+	    "type": "ip"
+	],
+	"netmask" : $[
+	    "help": "network mask",
+	    "type": "netmask"
+	],
+    ],
+    "mappings" : $[
+	"list"	: [ "configured", "unconfigured" ],
+	"add"	: [ "device", "ip", "netmask" ],
+	"delete": [ "device" ],
+    ]
+];
+
+/** handler for action "list" */
+define void ListHandler(map options) ``{
+
+    boolean cf = false;
+    boolean uncf = false;
+    if(options["configured"]:nil != nil) cf = true;
+    if(options["unconfigured"]:nil != nil) uncf = true;
+
+    string summary = "";
+    if(cf == false && uncf == false)
+	/* Headline */
+	summary = "\n" + _("Network configuration summary:") +
+	    CommandLine::Rich2Plain(select(Lan::Summary(false), 0, "")) + "\n";
+    else {
+	list l = Lan::Summary(true);
+	if(cf) summary = CommandLine::Rich2Plain(sformat("%1", l[0]:"")) + "\n";
+	/* Headline */
+	if(uncf) summary = _("Available devices:") + "\n" +
+	    sformat("%1", mergestring(maplist(term i, l[1]:"", ``("* " + select(i,1,"") + "\n")), ""));
+	summary = "\n" + summary;
+    }
+
+    y2debug("%1", summary);
+    CommandLine::Print(summary);
+}
+
+/** handler for action "add" */
+define void AddHandler(map options) ``{
+    string dev = options["device"]:"";
+}
+
+/** handler for action "delete" */
+define void DeleteHandler(map options) ``{
+    string dev = options["device"]:"";
+    CommandLine::Print("Deleting: "+dev);
+
+    if(Lan::Delete(dev) && Lan::Commit())
+	CommandLine::Print("Success");
+    else
+	CommandLine::Print("Error");
+}
+
+CommandLineRun(cmdline);
 
 /* Finish */
 y2milestone("Lan module finished");
 y2milestone("----------------------------------------");
-return ret;
 
 /* EOF */
 }

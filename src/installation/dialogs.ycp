@@ -14,11 +14,10 @@ textdomain "network";
 
 import "Mode";
 import "Internet";
-import "Product";
-import "Wizard";
-
 import "Label";
 import "Popup";
+import "Product";
+import "Wizard";
 
 include "network/routines.ycp";
 

@@ -41,10 +41,12 @@ The values will be written into <i>/etc/modules.conf</i>.</p>") +
 _("<p><b>Options</b> for the module should be written in the format
 <i>option</i>=<i>value</i>. Each entry should be space separated,
 for example, <i>io=0x300 irq=5</i>. <b>Note:</b> If  two cards are configured
-with the same module name, options will be merged while saving.</p>") +
+with the same module name, options will be merged while saving.</p>");
+
+    if(!(Lan::operation == `edit || Lan::unique != "" || Arch::s390 == true))
 
     /* Manual dialog help 3/4 */
-_("<p>Get a list of available network cards by pressing
+help = help + _("<p>Get a list of available network cards by pressing
 <b>Select From List</b>.</p>") +
 
     /* Manual dialog help 4/4 */

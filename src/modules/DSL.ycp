@@ -53,6 +53,11 @@ global string interface = "";
 global string vpivci = "";
 
 /**
+ * DSL modem IP (used for PPTP)
+ */
+global string modemip = "10.0.0.138";
+
+/**
  * PPP mode: pppoe or pppoatm
  */
 global string pppmode = "pppoe";
@@ -320,6 +325,7 @@ global define boolean Select(string dev) ``{
 
     /* DSL settings */
     vpivci = devmap["VPIVCI"]:"";
+    modemip = devmap["MODEM_IP"]:"10.0.0.138";
     pppmode = devmap["PPPMODE"]:"";
     interface = devmap["DEVICE"]:"";
     PPPDoptions = devmap["PPPD_OPTIONS"]:"";
@@ -337,7 +343,7 @@ global define boolean Select(string dev) ``{
 	y2debug("language=%1", language);
 
 	map pppmodes = $[
-	    "AT" : "pppoatm",
+	    "AT" : "pptp",
 	    "CZ" : "pppoe",
 	    "DE" : "pppoe",
 	    "GB" : "pppoatm",
@@ -412,6 +418,7 @@ global define boolean Commit() ``{
 	];
 	change(newdev, "DEVICE", interface);
 	change(newdev, "VPIVCI", vpivci);
+	change(newdev, "MODEM_IP", modemip);
 
 	ChangeDevice(type, device, newdev, operation == `add);
     }

@@ -124,8 +124,9 @@ global define list BuildSummary(boolean split) ``{
     /* Label for not detected devices */
     change(devs, `item(`id(`other), _("Other (not detected)"), size(devs) == 0));
 
+    y2debug("summary=%1", summary);
+    y2debug("devs=%1", devs);
     return [ summary, devs ];
-
 }
 
 /**

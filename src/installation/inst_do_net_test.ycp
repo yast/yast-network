@@ -9,16 +9,16 @@
  */
 
 {
+
     textdomain "network";
 
+    import "Directory";
     import "Internet";
+    import "Label";
     import "Mode";
+    import "Popup";
     import "Product";
     import "Wizard";
-    import "Directory";
-
-    import "Label";
-    import "Popup";
 
     include "network/routines.ycp";
     include "network/installation/dialogs.ycp";
@@ -465,4 +465,6 @@ logs for details."));
     }
 
     return ret;
+
+/* EOF */
 }
