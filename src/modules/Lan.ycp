@@ -328,9 +328,23 @@ global define boolean Write() ``{
  */
 global define boolean Import(map settings) ``{
     map interfaces = listmap(map interface, settings["interfaces"]:[],``{
-	string upcase = "bootproto broadcast ipaddr netmask network startmode";
+	list upcase = [
+					  "bootproto",
+					  "broadcast",
+					  "ipaddr",
+					  "netmask",
+					  "network",
+					  "startmode",
+					  "dhclient_set_down_link",
+					  "wireless",
+					  "wireless_mode",
+					  "wireless_essid",
+					  "wireless_nwid",
+					  "wireless_key",
+					  "wireless_nick"
+					];
 	map new_interface = mapmap(`k,`v, interface, ``{
-	    if (issubstring(upcase, k)) {
+	    if (contains(upcase, k)) {
 		return([toupper(k),v]);
 	    }
 	    else {
@@ -363,19 +377,19 @@ global define boolean Import(map settings) ``{
  */
 global define map Export() ``{
     list autoinst_cfg = [];
-
-    string upcase = "BOOTPROTO BROADCAST IPADDR NETMASK NETWORK STARTMODE";
-    string ignore = "UNIQUE";
+    list upcase = [ "BOOTPROTO", "BROADCAST", "IPADDR", "NETMASK", "NETWORK", "STARTMODE", "DHCLIENT_SET_DOWN_LINK",
+					"WIRELESS", "WIRELESS_MODE", "WIRELESS_ESSID", "WIRELESS_NWID", "WIRELESS_KEY", "WIRELESS_NICK" ];
+    list ignore = [ "UNIQUE" ];
 
     foreach(string device, map data, CONFIG, ``{
 	list interfaces = maplist(string device_nr, map device_data, data, ``{
 	    map new_device = $[];
 	    new_device = add(new_device,"device", device + device_nr);
 	    foreach(`k,`v, device_data, ``{
-		if (issubstring(upcase, k)) {
+		if (contains(upcase, k)) {
 		    new_device[tolower(k)] = v;
 		}
-		else if (!issubstring(ignore, k)) {
+		else if (!contains(ignore, k)) {
 		    new_device[k] = v;
 		}
 	    });
