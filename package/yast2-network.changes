@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Sep  9 17:18:21 CEST 2002 - msvec@suse.cz
+
+- chmod a+r /etc/resolv.conf (#19188)
+- the package is not noarch any more (#19206)
+- 2.6.26
+
+-------------------------------------------------------------------
 Thu Sep  5 15:06:00 CEST 2002 - kkeil@suse.de
 
 - write FIREWALL=[yes|no] for isdn (additional fix for #18840)

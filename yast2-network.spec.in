@@ -13,8 +13,6 @@ Obsoletes:	yast2-trans-network yast2-trans-adsl
 Provides:	y2t_lan y2t_adsl y2t_dial
 Obsoletes:	y2t_lan y2t_adsl y2t_dial
 
-BuildArchitectures:	noarch
-
 Summary:	Configuration of network
 
 %description

@@ -193,11 +193,14 @@ global define boolean Write() ``{
 	    SCR::Write(.etc.resolv_conf.domain, "");
 	else
 	    SCR::Write(.etc.resolv_conf.domain, domain);
-	SCR::Write(.etc.resolv_conf, nil);
 
 	/* write only an original header */
 	if(resolv_conf_force == true)
 	    SCR::Write(.etc.resolv_conf.write_header, true);
+
+	/* flush the cache */
+	SCR::Write(.etc.resolv_conf, nil);
+	SCR::Execute(.target.bash, "/bin/chmod a+r /etc/resolv.conf");
 
     }
 
