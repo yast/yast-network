@@ -328,7 +328,7 @@ global define boolean IsHostLocal (string check_host) {
     // IPv6 address
     else if (IP::Check6 (check_host))
     {
-	// TODO make it similar to IPv4 after other code adapted to IPv6
+	y2debug ("TODO make it similar to IPv4 after other code adapted to IPv6");
     }
     // short host name
     else if (findfirstof (check_host, ".") == nil)

@@ -247,6 +247,7 @@ global define string Summary() {
     if(Routes != []) {
 	/* Summary text */
 	// summary = add(summary, Summary::Device(sformat(_("Routes: %1"), Routes), ""));
+	y2debug ("not adding Routes to summary");
     }
 
     if(size(summary) < 1) return "";
