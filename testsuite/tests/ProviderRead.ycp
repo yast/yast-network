@@ -6,11 +6,16 @@
     map R = $[
 	"custom_providers" : $[
 	    "s" : $[
-		"first" : $[ "a" : "a", ],
-		"second" :$[ "b" : "b", ],
-		"third" : $[ "c" : "c", ],
+		"first" : $[ "PROVIDER" : "first one", ],
+		"second" :$[ "PROVIDER" : "second one", ],
+		"third" : $[ "PROVIDER" : "third one", ],
+	    ],
+	    "v" : $[
+		"first" : $[ "PROVIDER" : "first one", ],
+		"second": $[ "PROVIDER" : "second one", ],
+		"third" : $[ "PROVIDER" : "third one", ],
 	    ]
-	]
+	],
 	];
 
     TEST (``(Providers::Read ()), [R, $[], $[] ], nil);

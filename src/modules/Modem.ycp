@@ -55,20 +55,7 @@ global string DialPrefix = "";
 global string PPPDoptions = "";
 
 /* provider settings */
-global boolean DialOnDemand = false;
-global string DNS1 = "";
-global string DNS2 = "";
-
-global boolean AutoDNS = true;
-global string IdleSeconds = "300";
-
-global string provName = "";
 global string provShortName = "";
-global boolean provAskPassword = false;
-
-global string provUsername = "";
-global string provPassword = "";
-global string provPhone = "";
 
 /* obsolete stuff */
 // global string DefaultModem = "";
@@ -115,9 +102,6 @@ boolean modified = false;
  * Which operation is pending?
  */
 symbol operation = nil;
-
-/* FIXME */
-map WriteOneProvider = $[];
 
 /*------------------*/
 /* GLOBAL FUNCTIONS */
@@ -290,20 +274,7 @@ global define boolean AddEdit(string dev) ``{
     PPPDoptions = devmap["PPPD_OPTIONS"]:"";
 
     /* provider settings */
-    DialOnDemand = devmap["DEMAND"]:"no" == "yes";
-    DNS1 = devmap["DNS1"]:"";
-    DNS2 = devmap["DNS2"]:"";
-
-    AutoDNS = devmap["AUTODNS"]:"yes" == "yes";
-    IdleSeconds = devmap["IDLETIME"]:"0";
-
-    provPhone = devmap["PHONE"]:"";
-    provUsername = devmap["USERNAME"]:"";
-    provPassword = devmap["PASSWORD"]:"";
-
-    provName = devmap["PRODUCT"]:"";
     provShortName = devmap["PROVIDER"]:"";
-    provAskPassword = devmap[""]:"no" == "yes";
 
     //IsDefault = true;
     //DefaultModem = "";
@@ -364,24 +335,6 @@ global define boolean Commit() ``{
 	    ConfigAdd(type, device, newdev, true);
 	else
 	    ConfigAdd(type, device, newdev, false);
-
-	/* FIXME: provider settings */
-	WriteOneProvider["DEMAND"] = DialOnDemand;
-	WriteOneProvider["DNS1"] = DNS1;
-	WriteOneProvider["DNS2"] = DNS2;
-
-	WriteOneProvider["AUTODNS"] = AutoDNS;
-	WriteOneProvider["IDLETIME"] = IdleSeconds;
-
-	WriteOneProvider["PHONE"] = provPhone;
-	WriteOneProvider["USERNAME"] = provUsername;
-	WriteOneProvider["PASSWORD"] = provPassword;
-
-	WriteOneProvider["PRODUCT"] = provName;
-	WriteOneProvider["PROVIDER"] = provShortName;
-	WriteOneProvider["ASKPASSWORD"] = provAskPassword;
-	/* FIXME */
-
     }
     else if(operation == `delete) {
 	ConfigDelete(type, device);
@@ -398,11 +351,13 @@ global define boolean Commit() ``{
 }
 
 global define boolean Import(map settings) ``{
-    CONFIG = settings;
+    Providers::Import (lookup (settings, "PROVIDERS", $[]));
+    CONFIG = add (settings, "PROVIDERS", nil);
 }
 
 global define map Export() ``{
-    return CONFIG;
+    map PROVIDERS = Providers::Export ();
+    return add (CONFIG, "PROVIDERS", PROVIDERS);
 }
 
 /**

@@ -110,13 +110,13 @@ global define string getProviderInfoText (map prov) ``{
 	InfoText = sformat (_("<p>%1Home page: %2</p>"), InfoText, hp);
     if (hl != "")
 	InfoText = sformat (_("<p>%1Hotline: %2</p>"), InfoText, hl);
-    if (lookup (Providers::modem, "DialMessage1", "") !="" || lookup (Providers::modem, "DialMessage2", "") != "")
+    if (lookup (Providers::provider, "DialMessage1", "") !="" || lookup (Providers::provider, "DialMessage2", "") != "")
 	InfoText = sformat("%1<p>%2%3</p>",
 			    InfoText,
-			    lookup (Providers::modem, "DialMessage1", ""),
-			    lookup (Providers::modem, "DialMessage2", "")
+			    lookup (Providers::provider, "DialMessage1", ""),
+			    lookup (Providers::provider, "DialMessage2", "")
 		    );
-    else if (lookup (Providers::modem, "Phone", "") == "")
+    else if (lookup (Providers::provider, "Phone", "") == "")
     {
 	if (hp != "" && hl != "")
 	{
@@ -125,7 +125,7 @@ _("<p>
 To register for <b>%1</b> and find the best dialing number, connect to the 
 home page <b>%2</b> or call the hotline <b>%3</b>.
 </p>");
-	    InfoText = sformat(it, lookup (Providers::modem, "Provider", ""), hp, hl);
+	    InfoText = sformat(it, lookup (Providers::provider, "Provider", ""), hp, hl);
 	}
 
 	if (hp != "" && hl == "")
@@ -135,7 +135,7 @@ _("<p>
 To register for <b>%1</b> and find the best dialing number, connect to the 
 home page <b>%2</b>.
 </p>");
-	    InfoText = sformat(it, lookup (Providers::modem, "Provider", ""), hp);
+	    InfoText = sformat(it, lookup (Providers::provider, "Provider", ""), hp);
 	}
 	if (hp == "" && hl != "")
 	{
@@ -144,7 +144,7 @@ _("<p>
 To register for <b>%1</b> and find the best dialing number, call the hotline 
 <b>%2</b>.
 </p>");
-	    InfoText = sformat(it, lookup (Providers::modem, "Provider", ""), hl);
+	    InfoText = sformat(it, lookup (Providers::provider, "Provider", ""), hl);
 	}
     }
     return InfoText;
@@ -259,15 +259,15 @@ Use the <b>New</b> button to add a provider not in the list.
     }
     if (`next == ret)
     {
-	// do not do union with the old Providers::modem here because we
+	// do not do union with the old Providers::provider here because we
 	// take completly new provider here.
-	Providers::provider = provider;
-	Providers::modem = Providers::getProvider (provider);
-	Providers::editProvider ();
+	Providers::provider = Providers::getProvider (provider);
+	Providers::editProvider (provider);
     }
     else if (`new == ret)
     {
-	Provider::provider = nil;
+	Providers::provider = $[];
+	Providers::editProvider (nil);
     }
     return ret;
 }
@@ -279,59 +279,39 @@ Use the <b>New</b> button to add a provider not in the list.
 global define symbol runEditModemProviderDialog (boolean edit) ``{
     string caption = _("Set parameters for Internet connection");
 
-    string InfoText= getProviderInfoText ( Providers::modem );
+    string InfoText= getProviderInfoText ( Providers::provider );
 
     // fillup 'Modem' provider variables
-    Modem::provName = lookup(Providers::modem, "Provider", "");
-    Modem::provShortName = lookup(Providers::modem, "YaST2 Section", "");
-
-    if (lookup(Providers::modem, "Username", "") != "" && Modem::provUsername == "")
-    {
-	Modem::provUsername = lookup(Providers::modem, "Username", "");
-    }
-
-    if (lookup(Providers::modem, "Password", "") != "" && Modem::provPassword == "")
-    {
-	Modem::provPassword = lookup(Providers::modem, "Password", "");
-    }
-
-    Modem::provAskPassword = lookup(Providers::modem, "Ask Password", "0") == "1";
-    Modem::provPhone = lookup(Providers::modem, "Phone", "");
-
-/*		    $[
-		            "Provider" : Modem::provName,
-                            "YaST2 Section" : Modem::provShortName,
-                            "Username" : Modem::provUsername,
-                            "Password" : Modem::provPassword,
-                            "Ask Password" : Modem::provAskPassword ? "1" : "0",
-                            "Phone" : Modem::provPhone
-                     ]);
-*/
-    boolean ask_pass = Modem::provAskPassword;
+    string provName = lookup(Providers::provider, "Provider", "");
+    string provShortName = lookup(Providers::provider, "ShortName", "");
+    string provUsername = lookup(Providers::provider, "Username", "");
+    string provPassword = lookup(Providers::provider, "Password", "");
+    boolean ask_pass = lookup(Providers::provider, "Ask Password", "0") == "1";
+    string provPhone = lookup(Providers::provider, "Phone", "");
 
     term contents =
 	`HBox (
 	    `HSpacing (4),
 	    `VBox (
-		`TextEntry(`id(`ShortName), _("Name for &dialing"), Modem::provShortName),
-		`TextEntry(`id(`Section), _("&Connection Name"), Modem::provName),
+		`TextEntry(`id(`ShortName), _("Name for &dialing"), provShortName),
+		`TextEntry(`id(`Section), _("&Connection Name"), provName),
 		`VSquash(
 		    `HBox(
 			`TextEntry(`id(`PhoneNumber),
 			    _("P&hone number"),
-			    filterchars (Modem::provPhone, "0123456789")
+			    filterchars (provPhone, "0123456789")
 			),
 			`Bottom(`PushButton(`id(`info), `opt(`disabled), _("&Info")))
 		    )
 		),
-		`TextEntry(`id(`Username), _("&User name"), Modem::provUsername),
+		`TextEntry(`id(`Username), _("&User name"), provUsername),
 		`VSpacing(0.5),
 		`Frame(_("Request for password"),
 		    `HBox(
 			`HSpacing(),
 			`VBox(
-			       `Left(`CheckBox(`id(`askpass), `opt(`notify), _("&Always ask me"), Modem::provAskPassword)),
-			       `Password(`id(`passwd), _("&Password"), Modem::provPassword)
+			       `Left(`CheckBox(`id(`askpass), `opt(`notify), _("&Always ask me"), ask_pass)),
+			       `Password(`id(`passwd), _("&Password"), provPassword)
 			),
 			`HSpacing()
 		    )
@@ -383,12 +363,12 @@ global define symbol runEditModemProviderDialog (boolean edit) ``{
 		UI::MessagePopup (_("Name for dialing must not contain spaces."));
 		UI::SetFocus (`id (`ShortName));
 	    }
-	    else if (shortname != lookup (Providers::modem, "YaST2 Section", "") && !Providers::IsSectionUnique (shortname))
+	    else if (shortname != lookup (Providers::provider, "ShortName", "") && !Providers::IsSectionUnique (shortname))
 	    {
 		UI::MessagePopup (_("Name %1 already exists."), shortname);
 		UI::SetFocus (`id (`ShortName));
 	    }
-	    else if (name != lookup (Providers::modem, "Provider", "") && !Providers::IsProviderUnique (name))
+	    else if (name != lookup (Providers::provider, "Provider", "") && !Providers::IsProviderUnique (name))
 	    {
 		UI::MessagePopup (_("Connection Name %1 already exists."), name);
 		UI::SetFocus (`id (`Section));
@@ -422,9 +402,9 @@ global define symbol runEditModemProviderDialog (boolean edit) ``{
 		ret = `next;
 
 	    if(ret == `next) {
-		Providers::modem = union(Providers::modem,
+		Providers::provider = union(Providers::provider,
 			$[	"Provider" : name,
-			    "YaST2 Section" : shortname,
+			    "ShortName" : shortname,
 			    "Username" : us,
 			    "Password" : pass,
 			    "Ask Password" : ask_pass ? "1" : "0",
@@ -432,7 +412,6 @@ global define symbol runEditModemProviderDialog (boolean edit) ``{
 			    "Phone" : phone,
 			]
 		    );
-		Providers::Add ();
 	    }
 	}
     }
@@ -446,7 +425,7 @@ global define symbol runEditIsdnProviderDialog () ``{
     string caption = _("Set parameters for Internet connection");
 
     string I4L_ENCAP = "syncppp";
-    string InfoText = getProviderInfoText (Providers::modem);
+    string InfoText = getProviderInfoText (Providers::provider);
     term contents =
 	`VBox(
 	    `VSpacing(1),
@@ -478,22 +457,22 @@ global define symbol runEditIsdnProviderDialog () ``{
 			)
 		    ),
 		    `TextEntry(`id(`Section), _("&Connection Name"),
-			lookup (Providers::modem, "YaST2 Section", "")
+			lookup (Providers::provider, "ShortName", "")
 		    ),
 		    `VSpacing(0.3),
 		    `VSquash(
 			`HBox(
 			    `TextEntry(`id(`PhoneNumber),
 				_("&Phone number"),
-				filterchars (lookup (Providers::modem, "Phone", ""), "0123456789")
+				filterchars (lookup (Providers::provider, "Phone", ""), "0123456789")
 			    ),
 			    `Bottom(`PushButton(`id(`Info), `opt(`disabled), _("&Info")))
 			)
 		    ),
 		    `VSpacing(0.3),
-		    `TextEntry(`id(`Username), _("&User name"), lookup (Providers::modem, "Username", "")),
+		    `TextEntry(`id(`Username), _("&User name"), lookup (Providers::provider, "Username", "")),
 		    `VSpacing(0.3),
-		    `Password(`id(`Passwd), _("Pa&ssword"), lookup (Providers::modem, "Password", ""))
+		    `Password(`id(`Passwd), _("Pa&ssword"), lookup (Providers::provider, "Password", ""))
 		),
 		`HSpacing(4)
 	    ),
@@ -532,7 +511,7 @@ global define symbol runEditIsdnProviderDialog () ``{
 	    string us = UI::QueryWidget (`id (`Username), `Value);
 	    string pass = UI::QueryWidget (`id (`Passwd), `Value);
 	    boolean i4l_encap = UI::QueryWidget (`id (`syncppp), `Value); //true: "syncppp", false: "rawip"
-	    if (name != lookup (Providers::modem, "Provider", "") && !wvdialIsProviderUnique (name))
+	    if (name != lookup (Providers::provider, "Provider", "") && !wvdialIsProviderUnique (name))
 	    {
 		UI::MessagePopup (_("Connection Name %1 already exists."), name);
 		UI::SetFocus (`id (`Section));
@@ -569,9 +548,9 @@ global define symbol runEditIsdnProviderDialog () ``{
 		/*
 		 * Settings to save: (FIXME)
 		 */
-		Providers::modem = union (Providers::modem, $[
+		Providers::provider = union (Providers::provider, $[
 		     "Provider": name,
-		     //"YaST2 Section" is missing in this dialog, is it necessary to have?
+		     //"ShortName" is missing in this dialog, is it necessary to have?
 		     "Username" : us,  // May be unused. May we save it anyway?
 		     "Password" : pass,// May be unused. May we save it anyway?
 		     "Phone" : phone,

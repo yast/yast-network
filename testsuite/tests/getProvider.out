@@ -1,4 +1,4 @@
 Dir	.path.to.provider: []
-Return	$["YaST2 Section":"provider"]
+Return	$["ShortName":"provider"]
 Dir	.path.to."provi der": []
-Return	$["YaST2 Section":"provi der"]
+Return	$["ShortName":"provi der"]

@@ -345,13 +345,13 @@ should be in your modem manual.</p>
 global define symbol modem_connection() ``{
 
     /* PREPARE VARIABLES */
-    string Provider = Modem::provName;
+    string Provider = lookup (Providers::provider, "Provider", "");
     //boolean IsDefault = Modem::IsDefault;
-    boolean DialOnDemand = Modem::DialOnDemand;
+    boolean DialOnDemand = lookup (Providers::provider, "DEMAND", "no") == "yes"; //FIXME: other values than yes???
 
     //string DefaultModem = Modem::DefaultModem;
-    string DNS1 = Modem::DNS1;
-    string DNS2 = Modem::DNS2;
+    string DNS1 = lookup (Providers::provider, "DNS1", "");
+    string DNS2 = lookup (Providers::provider, "DNS2", "");
 
     list DefaultModemList = [ ];
 
@@ -477,10 +477,12 @@ external attacks.</p>
 
     /* UPDATE VARIABLES */
     if (ret == `next || ret == `Details) {
+	Providers::provider = union (Providers::provider, $[
+		"DNS1" : UI::QueryWidget (`id (`DNS1), `Value),
+		"DNS2" : UI::QueryWidget (`id (`DNS2), `Value),
+		"DEMAND" : UI::QueryWidget(`id(`DialOnDemand), `Value) ? "yes" : "no",
+		]);
         //Modem::DefaultModem = UI::QueryWidget(`id(`DefaultModem), `Value);
-	Modem::DNS1 = UI::QueryWidget(`id(`DNS1), `Value);
-	Modem::DNS2 = UI::QueryWidget(`id(`DNS2), `Value);
-	Modem::DialOnDemand = UI::QueryWidget(`id(`DialOnDemand), `Value);
 	//Modem::IsDefault = UI::QueryWidget(`id(`IsDefault), `Value);
 	Modem::Firewall = UI::QueryWidget(`id(`Firewall), `Value);
     }
@@ -500,8 +502,8 @@ global define symbol modem_connection_details() ``{
 
     /* PREPARE VARIABLES */
 
-    boolean AutoDNS = Modem::AutoDNS;
-    string IdleSeconds = Modem::IdleSeconds;
+    boolean AutoDNS = lookup (Providers::provider, "AUTODNS", "no") == "yes";
+    string IdleSeconds = lookup (Providers::provider, "IDLETIME", "");
 
     list seconds = [ "30", "60", "90", "120", "150", "180", "240", "300", "360", "480", "600" ];
 
@@ -572,8 +574,10 @@ global define symbol modem_connection_details() ``{
 
     /* UPDATE VARIABLES */
     if (ret == `next) {
-	Modem::AutoDNS = UI::QueryWidget(`id(`AutoDNS), `Value);
-	Modem::IdleSeconds = UI::QueryWidget(`id(`IdleSeconds), `Value);
+	Providers::provider = union (Providers::provider, $[
+		"AUTODNS" : UI::QueryWidget(`id(`AutoDNS), `Value) ? "yes" : "no",
+		"IDLETIME" : UI::QueryWidget(`id(`IdleSeconds), `Value),
+		]);
     }
 
     return ret;

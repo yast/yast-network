@@ -20,6 +20,7 @@
 textdomain "network";
 
 import "Modem";
+import "Providers";
 
 import "Wizard";
 import "Wizard_hw";
@@ -33,7 +34,7 @@ include "network/routines.ycp";
  * @return true if data was modified
  */
 global define boolean Modified() ``{
-    return Modem::Modified();
+    return Modem::Modified() || Providers::Modified ();
 }
 
 /**
@@ -41,6 +42,7 @@ global define boolean Modified() ``{
  * @return always `next
  */
 global define symbol Commit() ``{
+    Providers::Commit ();
     Modem::Commit();
     return `next;
 }

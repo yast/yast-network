@@ -27,40 +27,128 @@ import "Modem";
 import "ISDN";
 import "DSL";
 
+
 /**
  * Modem we are currently working with.
  * Members for dialup - phone provider:
  * "DialMessage1" :
  * "DialMessage2" :
  * "Provider" : nice name of provider
- * "YaST2 Section" : short name of provider (name of the section in *.wvdial.conf)
+ * "ShortName" : short name of provider (name of the section in *.wvdial.conf)
  * "Username" :
  * "Password" :
  * "Ask Password" : 0 or 1
  * "Phone" : the most important - phone number
+ * "DNS1" : first dns
+ * "DNS2" : second dns
  *
  * Members for isdn provider:
  * "DialMessage1" :
  * "DialMessage2" :
  * "Provider" : nice name of provider
- * "YaST2 Section" : short name of provider (name of the section in *.wvdial.conf)
+ * "ShortName" : short name of provider (name of the section in *.wvdial.conf)
  * "Username" :
  * "Password" :
  * "Phone" : the most important - phone number
  * "I4L_ENCAP" : encapsulation but who knows what it means
  */
-global map modem = $[];
+global map provider = $[];
 
 /**
- * Currently selected provider. path or string
+ * Dirty bit
  */
-global any provider = nil;
+boolean dirty = false;
+
 
 /**
  * Custom providers.
  */
 map providers = $[];
 
+/**
+ * Map for translation sysconfig style provider to /usr/share/providers
+ * style
+ */
+map sysconfig2share = $[
+    "PROVIDER"		: "Provider",
+    "PRODUCT"		: "Product",
+    "HOMEPAGE"		: "Homepage",
+    "PHONE"		: "Phone",
+    "USERNAME"		: "Username",
+    "PASSWORD"		: "Password",
+    "LINEID"		: "LINEID",
+    "USERCODE"		: "USERCODE",
+    "TONLINEID"		: "TONLINEID",
+    "ASKPASSWORD"	: "Ask Password",
+    "DNS1"		: "DNS1",
+    "DNS2"		: "DNS2",
+    "STUPIDMODE"	: "Stupid Mode",
+    "COMPUSERVE"	: "Compuserve",
+    "DIALMESSAGE1"	: "DialMessage1",
+    "DIALMESSAGE2"	: "DialMessage2",
+    "AUTODNS"		: "AUTODNS",
+    "AUTORECONNECT"	: "AUTORECONNECT",
+    "IDLETIME"		: "IDLETIME",
+    "DEMAND"		: "DEMAND",
+    "PRIORITY"		: "Priority",
+    "MODEMSUPPORTED"	: "Modem supported",
+    "ISDNSUPPORTED"	: "ISDN supported",
+    "DSLSUPPORTED"	: "DSLSUPPORTED",
+    "COUNTRY"		: "Country",
+];
+
+/**
+ * Map for translation /usr/share/providers
+ * style to sysconfig style provider
+ */
+map share2sysconfig = $[
+    "Provider"		: "PROVIDER"		,
+    "Product"		: "PRODUCT"		,
+    "Homepage"		: "HOMEPAGE"		,
+    "Phone"		: "PHONE"		,
+    "Username"		: "USERNAME"		,
+    "Password"		: "PASSWORD"		,
+    "LINEID"		: "LINEID"		,
+    "USERCODE"		: "USERCODE"		,
+    "TONLINEID"		: "TONLINEID"		,
+    "Ask Password"	: "ASKPASSWORD"		,
+    "DNS1"		: "DNS1"		,
+    "DNS2"		: "DNS2"		,
+    "Stupid Mode"	: "STUPIDMODE"		,
+    "Compuserve"	: "COMPUSERVE"		,
+    "DialMessage1"	: "DIALMESSAGE1"	,
+    "DialMessage2"	: "DIALMESSAGE2"	,
+    "AUTODNS"		: "AUTODNS"		,
+    "AUTORECONNECT"	: "AUTORECONNECT"	,
+    "IDLETIME"		: "IDLETIME"		,
+    "DEMAND"		: "DEMAND"		,
+    "Priority"		: "PRIORITY"		,
+    "Modem supported"	: "MODEMSUPPORTED"	,
+    "ISDN supported"	: "ISDNSUPPORTED"	,
+    "DSLSUPPORTED"	: "DSLSUPPORTED"	,
+    "Country"		: "COUNTRY"		,
+];
+
+/**
+ * Export data
+ */
+global define map Export () ``{
+    return providers;
+}
+/**
+ * Import data
+ */
+global define map Import (map in) ``{
+    providers = in;
+    provider = $[];
+    dirty = true;
+}
+/**
+ * were the providers changed?
+ */
+global define boolean Modified () ``{
+    return dirty;
+}
 /**
  * Most probably it means to check if section name in wvdial.conf is
  * unque.
@@ -80,14 +168,15 @@ global define boolean IsProviderUnique (string name) ``{
 
 /**
  * Prepare for editation of currently selected provider.
- * Check/change its name (YaST2 Section) and nice-name
+ * Check/change its name (ShortName) and nice-name
  * (Provider) to unused.
+ * @param prov_id provider to edit
  */
-global define void editProvider () ``{
-    if (is (provider, string)) //User chose provider from "Other" -- edit it.
+global define void editProvider (any prov_id) ``{
+    if (is (prov_id, string)) //User chose provider from "Other" -- edit it.
 	return ;
     integer suffix = 0;
-    string name = lookup (modem, "YaST2 Section", "");
+    string name = lookup (provider, "ShortName", "");
     string gen = name;
     list forbidden = maplist (`k, `v, providers, ``( k ));
     while (contains (forbidden, gen))
@@ -95,9 +184,9 @@ global define void editProvider () ``{
 	suffix = suffix + 1;
 	gen = sformat ("%1%2", name, suffix);
     }
-    modem = add (modem, "YaST2 Section", gen);
+    provider = add (provider, "ShortName", gen);
 
-    name = lookup (modem, "Provider", "");
+    name = lookup (provider, "Provider", "");
     gen = name;
     suffix = 0;
     forbidden = maplist (`k, `v, providers, ``( lookup (v, "Provider", "")));
@@ -106,24 +195,50 @@ global define void editProvider () ``{
 	suffix = suffix + 1;
 	gen = sformat ("%1 (%2)", name, suffix);
     }
-    modem = add (modem, "Provider", gen);
+    provider = add (provider, "Provider", gen);
+    // initialize provider with new values
+    provider = union ($[
+	    "AUTODNS" : "yes",
+	    "IDLETIME" : "0",
+	    "DEMAND" : "no",
+	    "DNS1" : "",
+	    "DNS2" : "", ],
+	    provider);
 }
 
 /**
  * Add currently edited provider to the map of custom providers.
  * Copy settings to Modem::something
  */
-global define void Add () ``{
-    providers = add (providers, lookup (modem, "YaST2 Section", ""), modem);
-
-    Modem::provShortName = lookup (modem, "YaST2 Section", "");
-    Modem::provName = lookup (modem, "Provider", Modem::provShortName);
-    Modem::provAskPassword = (lookup (modem, "Ask Password", "1") == 1);
-
-    Modem::provUsername = lookup (modem, "Username", "");
-    Modem::provPassword = lookup (modem, "Password", "");
-    Modem::provPhone = lookup (modem, "Phone", "");
+global define void Commit () ``{
+    dirty = true;
+    providers = add (providers, lookup (provider, "ShortName", ""), provider);
+    Modem::provShortName = lookup (provider, "ShortName", "");
 }
+
+/**
+ * Unfortunatelly we have different file format for providers in
+ * /usr/share/providers/ and in /etc/sysconfig/network/providers
+ * @param prov provider map in sysconfig format
+ * @return provider map in share format
+ */
+define map ProviderToShare (map prov) ``{
+    return mapmap (`k, `v, prov, ``{
+	return [ lookup (sysconfig2share, k, nil), v ];
+    });
+}
+/**
+ * Unfortunatelly we have different file format for providers in
+ * /usr/share/providers/ and in /etc/sysconfig/network/providers
+ * @param prov provider map in share format
+ * @return provider map in sysconfig format
+ */
+define map ProviderToSysconfig (map prov) ``{
+    return mapmap (`k, `v, prov, ``{
+	return [ lookup (share2sysconfig, k, nil), v ];
+    });
+}
+
 /**
  * Read all custom providers
  */
@@ -132,26 +247,26 @@ global define void Read () ``{
     // custom providers
     list dir = SCR::Dir (.custom_providers.s);
     foreach (`i, dir, ``{
-	list l = SCR::Dir (add (.custom_providers.s, i));
-	foreach (`j, l, ``{
-	    providers = add (providers, j, getProvider (add ( add (.custom_providers.v, i), j)));
-	});
+	map p = ProviderToShare (getProvider (add (.custom_providers.v, i)));
+	integer slash = findlastof (i, "/");
+	string shortname = nil == slash ? i : substring (i, slash + 1);
+	p = add (p, "ShortName", shortname);
+	providers = add (providers, shortname, p);
     });
 }
 
 /**
- * Save custom providers into /etc/sysconfig/modem/providers.conf.
+ * Save custom providers into /etc/sysconfig/network/providers/
  * To change placement of the file of custom providers, edit it here
  * and in providers.scr!!!!!
  */
 global define void Write () ``{
     foreach (`key, `value, providers, ``{
-	string sname = lookup (value, "YaST2 Section", "other");
+	string sname = lookup (value, "ShortName", "other");
 	sname = filterchars (sname, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.");
-	path base = add (add (.custom_providers.v, sformat ("/etc/sysconfig/network/providers/%1", sname)), key);
-	foreach (`k, `v, value, ``{
-	    if ("YaST2 Section" != k)
-		SCR::Write (add (base, k), v);
+	path base = add (.custom_providers.v, sformat ("/etc/sysconfig/network/providers/%1", sname));
+	foreach (`k, `v, ProviderToSysconfig (value), ``{
+	    SCR::Write (add (base, k), v);
 	});
     });
 }
@@ -242,7 +357,7 @@ global define list getProviders (string country, symbol type, string preselect) 
 
 /**
  * Read all provider keys from ini file to map.
- * Adds also key "YaST2 Section" : "section_name";
+ * Adds also key "ShortName" : "section_name";
  * @param provs list of providers
  * @return provider map
  */
@@ -261,7 +376,7 @@ global define map getProvider (any provider) ``{
 	list l = SCR::Dir (provider);
 	return add (listmap (`i, l, ``{
 	    return [ i, SCR::Read ( add (provider, i)) ];
-	}), "YaST2 Section", pr);
+	}), "ShortName", pr);
     }
     return lookup (providers, provider, $[]);
 }

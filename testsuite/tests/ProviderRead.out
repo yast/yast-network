@@ -1,8 +1,8 @@
 Dir	.custom_providers.s: ["first", "second", "third"]
-Dir	.custom_providers.s."first": ["a"]
-Dir	.custom_providers.v."first"."a": []
-Dir	.custom_providers.s."second": ["b"]
-Dir	.custom_providers.v."second"."b": []
-Dir	.custom_providers.s."third": ["c"]
-Dir	.custom_providers.v."third"."c": []
+Dir	.custom_providers.v."first": ["PROVIDER"]
+Read	.custom_providers.v."first"."PROVIDER" "first one"
+Dir	.custom_providers.v."second": ["PROVIDER"]
+Read	.custom_providers.v."second"."PROVIDER" "second one"
+Dir	.custom_providers.v."third": ["PROVIDER"]
+Read	.custom_providers.v."third"."PROVIDER" "third one"
 Return	nil
