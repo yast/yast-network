@@ -27,11 +27,11 @@ import "NetworkConfig";
 import "NetworkDevices";
 import "NetworkModules";
 import "Routing";
-import "Firewall";
 import "Progress";
 import "Service";
 import "String";
 import "Summary";
+import "SuSEFirewallInterfaces";
 
 include "network/runtime.ycp";
 
@@ -262,7 +262,9 @@ global define boolean Read() {
     if(Abort()) return false;
     /* Progress step 8/9 */
     ProgressNextStage(_("Reading firewall settings..."));
-    Firewall::Read();
+    Progress::off ();
+    SuSEFirewallInterfaces::Read ();
+    Progress::on ();
     sleep(sl);
 
     if(Abort()) return false;
@@ -386,7 +388,9 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 8 */
     ProgressNextStage(_("Writing firewall settings..."));
-    Firewall::Write();
+    Progress::off ();
+    SuSEFirewallInterfaces::Write ();
+    Progress::on ();
     sleep(sl);
 
     if(Abort()) return false;

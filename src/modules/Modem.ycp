@@ -15,7 +15,6 @@
 module "Modem";
 textdomain "network";
 
-import "Firewall";
 import "Language";
 import "NetworkDevices";
 import "Provider";
@@ -23,6 +22,7 @@ import "Progress";
 import "Routing";
 import "Service";
 import "Summary";
+import "SuSEFirewallInterfaces";
 
 /* general stuff */
 global string name = "";
@@ -140,7 +140,9 @@ global define boolean Read() {
     if(Abort()) return false;
     /* Progress step 3/4 */
     ProgressNextStage(_("Reading firewall settings..."));
-    Firewall::Read();
+    Progress::off ();
+    SuSEFirewallInterfaces::Read ();
+    Progress::on ();
     sleep(sl);
 
     if(Abort()) return false;
@@ -208,7 +210,9 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 2/6 */
     ProgressNextStage(_("Writing firewall settings..."));
-    Firewall::Write();
+    Progress::off ();
+    SuSEFirewallInterfaces::Write ();
+    Progress::on ();
     sleep(sl);
 
     if(Abort()) return false;

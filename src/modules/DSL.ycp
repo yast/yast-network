@@ -17,12 +17,12 @@ textdomain "network";
 
 import "Detection";
 import "Lan";
-import "Firewall";
 import "Language";
 import "NetworkDevices";
 import "Provider";
 import "Progress";
 import "Summary";
+import "SuSEFirewallInterfaces";
 
 /* general stuff */
 global string name = "";
@@ -166,7 +166,9 @@ global define boolean Read() {
     if(Abort()) return false;
     /* Progress step 3/5 */
     ProgressNextStage(_("Reading firewall configuration..."));
-    Firewall::Read();
+    Progress::off ();
+    SuSEFirewallInterfaces::Read ();
+    Progress::on ();
     sleep(sl);
 
     if(Abort()) return false;
@@ -253,7 +255,9 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 3/7 */
     ProgressNextStage(_("Writing firewall settings..."));
-    Firewall::Write();
+    Progress::off ();
+    SuSEFirewallInterfaces::Write ();
+    Progress::on ();
     sleep(sl);
 
     if(Abort()) return false;

@@ -16,10 +16,10 @@
 module "ISDN";
 textdomain "network";
 
-import "Firewall";
 import "Provider";
 import "Progress";
 import "Summary";
+import "SuSEFirewallInterfaces";
 
 /*-------------*/
 /* GLOBAL DATA */
@@ -224,7 +224,9 @@ global define boolean Read() ``{
     if(Abort()) return false;
     // stage 4 in reading current ISDN setup
     ProgressNextStage(_("Reading firewall settings"));
-    Firewall::Read();
+    Progress::off ();
+    SuSEFirewallInterfaces::Read ();
+    Progress::on ();
     sleep(sl);
 
     if(Abort()) return false;
@@ -356,7 +358,9 @@ global define boolean Write(boolean start) ``{
     if(Abort()) return false;
     // stage 5 in writing current ISDN setup
     ProgressNextStage(_("Writing firewall settings"));
-    Firewall::Write();
+    Progress::off ();
+    SuSEFirewallInterfaces::Write ();
+    Progress::on ();
     sleep(sl);
 
     if(Abort()) return false;
@@ -797,7 +801,7 @@ global define boolean Commit() ``{
 		devnam = sformat("isdn%1", device);
 	    else
 		devnam = sformat("unknown%1", device);
-	    Firewall::Change(devnam, false);
+	    SuSEFirewallInterfaces::ProtectByFirewall (devnam, false);
 	}
 	DeleteDevice(type, device);
 

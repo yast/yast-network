@@ -21,11 +21,11 @@ textdomain "network";
 
 import "Call";
 import "CWM";
-import "Firewall";
 import "ISDN";
 import "Label";
 import "Popup";
 import "Provider";
+import "SuSEFirewallInterfaces";
 import "Wizard";
 
 include "network/dsl/dialogs.ycp";
@@ -206,7 +206,7 @@ define any interface_dialog() ``{
     if (efwi == false)
 	ExternalFwInterface = false;
     if (ISDN::operation  == `editif && efwi == nil) {
-	ExternalFwInterface = Firewall::Query(devstr);
+	ExternalFwInterface = SuSEFirewallInterfaces::IsProtectedByFirewall (devstr);
     }
     if (efwi != nil)
 	ISDN::interface = remove(ISDN::interface, "efwi");
@@ -409,7 +409,7 @@ and sets this interface as external.
 
 	firewall = (boolean) UI::QueryWidget(`id(`Firewall), `Value);
 	ExternalFwInterface = (boolean) UI::QueryWidget(`id(`FirewallExt), `Value);
-	Firewall::Change(devstr, ExternalFwInterface);
+	SuSEFirewallInterfaces::ProtectByFirewall (devstr, ExternalFwInterface);
 
 	/* UPDATE VARIABLES */
 	ISDN::interface = union(ISDN::interface, $[

@@ -1,7 +1,8 @@
 # Makefile.am for network/src/modules
 # $Id$
 
-module_DATA = $(wildcard *.ycp)
+module_DATA = $(wildcard *.ycp) \
+	SuSEFirewallInterfaces.pm
 EXTRA_DIST = $(module_DATA)
 
 NetworkDevices.ybc: Provider.ybc

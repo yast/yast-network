@@ -12,13 +12,13 @@
 textdomain "network";
 
 import "DSL";
-import "Firewall";
 import "Modem";
 import "IP";
 import "ISDN";
 import "Label";
 import "Popup";
 import "Provider";
+import "SuSEFirewallInterfaces";
 import "Wizard";
 
 include "network/routines.ycp";
@@ -63,7 +63,7 @@ define any ConnectionDialog() {
     }
 
     y2debug("device %1", device);
-    boolean FirewallChecked = Firewall::Query(device);
+    boolean FirewallChecked = SuSEFirewallInterfaces::IsProtectedByFirewall (device);
     y2debug("FirewallChecked=%1", FirewallChecked);
 
     /* DIALOG TEXTS */
@@ -291,7 +291,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    /* Update /etc/sysconfig/firewall */
 	    if(FirewallChecked != UI::QueryWidget(`id(`Firewall), `Value)) {
 		FirewallChecked = (boolean) UI::QueryWidget(`id(`Firewall), `Value);
-		Firewall::Change(device, FirewallChecked);
+		SuSEFirewallInterfaces::ProtectByFirewall (device, FirewallChecked);
 	    }
 
 	    /* Also store it in ifcfg-file for possible dynamic use */
