@@ -22,6 +22,7 @@ include "network/lan/address.ycp";
 include "network/lan/complex.ycp";
 include "network/lan/dhcp.ycp";
 include "network/lan/hardware.ycp";
+include "network/lan/virtual.ycp";
 include "network/services/dns.ycp";
 include "network/services/routing.ycp";
 
@@ -226,6 +227,7 @@ global define symbol AddressSequence() ``{
     map aliases = $[
 	"address"	: ``(AddressDialog()),
 	"dhcp"		: ``(DHCPDialog()),
+	"virtual"	: ``(VirtualDialog(false)),
 	"hostname"	: ``(DNSMainDialog(false)),
 	"routing"	: ``(RoutingMainDialog(false)),
 	"commit"	: [ ``(Commit()), true ],
@@ -239,9 +241,14 @@ global define symbol AddressSequence() ``{
 	    `dhclient	: "dhcp",
 	    `routing	: "routing",
 	    `hostname	: "hostname",
+	    `virtual	: "virtual",
 	    `hardware	: `hardware,
 	],
 	"dhcp" : $[
+	    `abort	: `abort,
+	    `next	: "address",
+	],
+	"virtual" : $[
 	    `abort	: `abort,
 	    `next	: "address",
 	],

@@ -30,7 +30,7 @@ include "network/runtime.ycp";
  * @return true if data was modified
  */
 global define boolean Modified() ``{
-    return Routing::modified;
+    return Routing::Modified();
 }
 
 Routing::Read();
@@ -40,7 +40,7 @@ Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), Labe
 any ret = RoutingMainDialog(true);
 y2debug("ret == %1", ret);
 
-if(ret == `next && Routing::modified) {
+if(ret == `next && Routing::Modified()) {
     Routing::Write();
     RestartNetwork();
 }

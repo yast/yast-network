@@ -12,8 +12,6 @@ Dir	.network.section: []
 Return	true
 Dump	Routing::routes ["r1", "r2"]
 Dump	Write
-Write	.sysconfig.sysctl.IP_FORWARD "yes" true
-Execute	.target.bash "echo 1 > /proc/sys/net/ipv4/ip_forward" 0
 Return	true
 Write	.sysconfig.sysctl.IP_FORWARD "yes" true
 Execute	.target.bash "echo 1 > /proc/sys/net/ipv4/ip_forward" 0

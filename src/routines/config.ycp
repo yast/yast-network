@@ -1,0 +1,89 @@
+/**
+ * File:	include/network/config.ycp
+ * Package:	Network configuration
+ * Summary:	Config files manipulation functions
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+/**
+ * Read sysconfig file
+ * @param config sysconfig file SCR path
+ * @return sysconfig file contents
+ */
+global define map ReadConfig(path config) ``{
+
+    y2debug("config=%1", config);
+    if(config == nil) return $[];
+    map ret = $[];
+
+    list vars = SCR::Dir(config);
+    if(vars == nil) vars = [];
+    maplist(string var, vars, ``{
+	path varpath = add(config, var);
+	string comment = SCR::Read(add(varpath, "comment"));
+	if(regexpmatch(comment, "^.*## Type:[ \t]*([a-z]*).*$"))
+	    comment = regexpsub(comment, "^.*## Type:[ \t]*([a-z]*).*$", "\\1");
+
+	string val = SCR::Read(varpath);
+	y2debug("%1[%2]=%3", var, comment, val);
+
+	if(val != nil) {
+	    if(comment == "yesno") {
+		ret[var] = ( val == "yes" );
+	    }
+	    else if(comment == "integer") {
+		if(val != "") ret[var] = tointeger(val);
+	    }
+	    else
+		ret[var] = val;
+	}
+    });
+    if(ret == nil) ret = $[];
+    y2debug("ret=%1", ret);
+    return ret;
+}
+
+/**
+ * Write sysconfig file
+ * @param config sysconfig file SCR path
+ * @param data sysconfig file contents
+ * @return true if success
+ */
+global define boolean WriteConfig(path config, map data) ``{
+
+    y2debug("config=%1", config);
+    y2debug("data=%1", data);
+
+    if(config == nil || data == nil) return false;
+
+    list vars = SCR::Dir(config);
+    if(vars == nil) vars = [];
+
+    boolean changed = false;
+    maplist(string var, any val, data, ``{
+	string oldval = SCR::Read(add(config, var));
+
+	string newval = "";
+	if(is(val, boolean)) newval = val ? "yes" : "no";
+	else newval = sformat("%1", val);
+
+	if(oldval == nil || oldval != newval) {
+	    SCR::Write(add(config, var), newval);
+	    changed = true;
+	}
+    });
+    if(changed == true)
+	SCR::Write(config, nil);
+
+    y2debug("changed=%1", changed);
+    return true;
+}
+
+/* EOF */
+}

@@ -889,7 +889,7 @@ global define boolean SelectInterface(boolean auto) ``{
     // popup title to select a interface for an edit/delete operation
     id = select_fromlist_popup(_("&Select Interface"), ifl);
     return SelIf(id);
-};
+}
 
 global define string GetInterface4Provider(string prov) ``{
     string ifn = "";

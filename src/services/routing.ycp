@@ -47,12 +47,13 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
     integer max = 0;
     integer items = 0;
     list table_items = [];
+    list table_items_orig = [];
     boolean expert = false;
     string defgw = "";
     string defgwdev = "";
 
-    boolean forward = Routing::forward;
-    list route_conf = Routing::routes;
+    boolean forward = Routing::Forward;
+    list route_conf = Routing::Routes;
 
     /* make ui items from the routes list */
     term item = nil;
@@ -71,6 +72,7 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 	    items = items + 1;
 	}
     });
+    table_items_orig = eval(table_items);
 
     y2debug("table_items=%1", table_items);
     y2debug("items=%1", items);
@@ -139,13 +141,10 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 	/* abort? */
 	if(ret == `abort || ret == `cancel) {
 	    /* handle the changed dialog values */
-	    if(RoutingModified(defgw)) {
-		Routing::modified = true;
-		if(ReallyAbort()) break;
-		Routing::modified = false;
-		continue;
-	    }
-	    if(ReallyAbort()) break;
+	    boolean modified = (table_items_orig != table_items ||
+		    forward != UI::QueryWidget(`id(`forward), `Value) ||
+		    defgw != UI::QueryWidget(`id(`gw), `Value));
+	    if(ReallyAbortCond(modified)) break;
 	    else continue;
 	}
 	/* expert mode */
@@ -172,7 +171,6 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 
 	    item = RoutingEditDialog(cur, item, devs);
 	    if(item == nil) continue;
-	    else Routing::modified = true;
 
 	    table_items = maplist(term e, table_items, ``{
 		if(cur == select(select(e, 0, []), 0, -1))
@@ -187,7 +185,6 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 	else if(ret == `add) {
 	    term item = RoutingEditDialog(max, `empty(), devs);
 	    if(item == nil) continue;
-	    else Routing::modified = true;
 
 	    change(table_items, item);
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
@@ -202,7 +199,6 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
 	    table_items = filter(`e, table_items, ``(cur != select(select(e, 0, []), 0, nil)));
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
-	    Routing::modified = true;
 	    continue;
 	}
 	else if(ret == `back) {
@@ -222,7 +218,7 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 	    y2error("Unexpected retcode: %1", ret);
 	    continue;
 	}
-    };
+    }
 
     /* update routes from widgets */
     if(ret == `next) {
@@ -249,15 +245,8 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 
     }
 
-    if(Routing::routes != route_conf) {
-	Routing::routes = route_conf;
-	Routing::modified = true;
-    }
-
-    if(Routing::forward != forward) {
-	Routing::forward = forward;
-	Routing::modified = true;
-    }
+    Routing::Routes = route_conf;
+    Routing::Forward = forward;
 
     y2debug("table_items=%1",table_items);
     y2debug("route_conf=%1",route_conf);
@@ -352,10 +341,9 @@ global define term RoutingEditDialog(integer id, term entry, list devs) ``{
  * @return true if differ
  */
 global define boolean RoutingModified(string defgw) ``{
-
     boolean forward = UI::QueryWidget(`id(`forward), `Value);
     string defg = UI::QueryWidget(`id(`gw), `Value);
-    return forward != Routing::forward || defg != defgw;
+    return forward != Routing::Forward || defg != defgw;
 }
 
 /* EOF */

@@ -19,7 +19,7 @@
  * Read/Sets the values defined in <tt>/etc/sysconfig/network/dhcp</tt>
  * in an easy manner.
  */
-.sysconfig.dhcp
+.sysconfig.network.dhcp
 
 `ag_ini(
     SysConfigFile("/etc/sysconfig/network/dhcp")

@@ -1,61 +1,70 @@
 /**
- * File:	include/network/services/host.ycp
+ * File:	include/network/lan/virtual.ycp
  * Module:	Network configuration
- * Summary:	Hosts configuration dialogs
+ * Summary:	Multiple addresses dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
- * Hosts configuration dialogs
  */
 
 {
 
 textdomain "network";
 
-import "Host";
+import "Lan";
 import "Label";
 import "Popup";
 import "Wizard";
 
-include "network/ip.ycp";
-include "network/dns.ycp";
 include "network/routines.ycp";
 
-/**
+/*
+ * TODO:
+ * - helps
+ * - cleanup sources (drop host, ...)
+ * - more items (REMOTE_IPADDR, ...)
+ * - checking
+ * - aliases to summary
+ * - aliases to overview
+ * - disallow already used IP addresses?
+ * - disallow already used IP addresses in lan?
+ */
+
+/*
  * Check if given host is system and present warning in this case.
  * @param host host to be checked
  * @param delete true if the host will be deleted
  * @return true if continue
- */
+ * /
 global define boolean HostSystemPopup(string host, boolean delete) ``{
 
     if(!contains(Host::GetSystemHosts(), host)) return true;
 
-    /* Warning popup text 1/2 */
+    /* Warning popup text 1/2 * /
     string text = sformat(_("The host %1 is a system host.") + "\n", host);
 
     if(delete)
-	/* Warning popup text 2/2 */
+	/* Warning popup text 2/2 * /
 	text = text + _("Really delete it?");
     else
-	/* Warning popup text 2/2 */
+	/* Warning popup text 2/2 * /
 	text = text + _("Really change it?");
 
     return Popup::AnyQuestion("", text, Label::YesButton(), Label::NoButton(), `focus_no);
 }
+*/
 
 /**
- * Main hosts dialog
+ * Main aliases dialog
  * @param standalone true if not run from another ycp client
  * @return dialog result
  */
-global define symbol HostsMainDialog(boolean standalone) ``{
+global define symbol VirtualDialog(boolean standalone) ``{
 
-    ScreenName("host");
+    ScreenName("lan-virtual");
 
     /* Hosts dialog caption */
-    string caption = _("Host Configuration");
+    string caption = _("Virtual Aliases");
 
     /* Hosts dialog help 1/2 */
     string help = _("<p>The hosts can be set up in this dialog.</p>") +
@@ -68,15 +77,11 @@ global define symbol HostsMainDialog(boolean standalone) ``{
     integer max = 0;
     list table_items = [];
 
-    /* make ui items from the hosts list */
-    maplist(string host, string names, Host::hosts, ``{
-	if(size(names) < 1) {
-	    y2error("Invalid host: %1, (%2)", host, names);
-	    return;
-	}
-	string name = names[0]:"";
-	string aliases = mergestring(remove(names, 0), " ");
-	term item = `item(`id(items), host, name, aliases);
+    /* make ui items from the aliases list */
+    maplist(string alias, map data, Lan::aliases, ``{
+	string ipaddr = data["IPADDR"]:"";
+	string netmask = data["NETMASK"]:"";
+	term item = `item(`id(items), alias, ipaddr, netmask);
 	change(table_items, item);
 	items = items + 1;
     });
@@ -91,15 +96,15 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	`VBox(
 	    `VSpacing(2),
 	    /* Frame label */
-	    `Frame(_("Current Hosts"), `HBox(`HSpacing(3), `VBox(
+	    `Frame(_("Virtual Aliases"), `HBox(`HSpacing(3), `VBox(
 		`VSpacing(1),
 		`Table(`id(`table), `header(
                     /* Table header label */
+                    _("Alias Name"),
+                    /* Table header label */
                     _("IP Address"),
                     /* Table header label */
-                    _("Host Names"),
-                    /* Table header label */
-                    _("Host Aliases")), []),
+                    _("Netmask")), []),
 		`HBox(
 		    /* PushButton label */
 		    `PushButton(`id(`add), _("Ad&d")),
@@ -137,7 +142,7 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
-	/* edit host */
+	/* edit alias */
 	else if(ret == `edit) {
 	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
 	    list cur_item = filter(term e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
@@ -148,12 +153,12 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	    term item = cur_item[0]:nil;
 	    list forbidden = maplist(term e, table_items, ``(select(e, 1, "")));
 	    forbidden = filter(string h, forbidden, ``(h != select(item, 1, "")));
+	    forbidden = [];
 
-	    if(!HostSystemPopup(select(item, 1, ""), false)) continue;
-	    item = HostDialog(cur, item, forbidden);
+	    // if(!HostSystemPopup(select(item, 1, ""), false)) continue;
+	    item = VirtualEditDialog(cur, item, forbidden);
 
 	    if(item == nil) continue;
-	    else Host::modified = true;
 
 	    table_items = maplist(term e, table_items, ``{
 		if(cur == select(select(e, 0, []), 0, -1))
@@ -164,12 +169,11 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	    UI::ChangeWidget(`id(`table), `CurrentItem, cur);
 	    continue;
 	}
-	/* add host */
+	/* add alias */
 	else if(ret == `add) {
 	    list forbidden = maplist(term e, table_items, ``(select(e, 1, "")));
-	    term item = HostDialog(max, `empty(), forbidden);
+	    term item = VirtualEditDialog(max, `empty(), forbidden);
 	    if(item == nil) continue;
-	    else Host::modified = true;
 
 	    change(table_items, item);
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
@@ -178,7 +182,7 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	    max = max + 1;
 	    continue;
 	}
-	/* delete host */
+	/* delete alias */
 	else if(ret == `delete) {
 	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
 	    list cur_item = filter(term e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
@@ -187,20 +191,19 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	    y2debug("cur_item=%1", cur_item);
 
 	    term item = cur_item[0]:nil;
-	    if(!HostSystemPopup(select(item, 1, ""), true)) continue;
+	    // if(!HostSystemPopup(select(item, 1, ""), true)) continue;
 
 	    table_items = filter(term e, table_items, ``{
 		string ip = select(e, 1, "");
 		if(cur == select(select(e, 0, []), 0, nil)) {
-		    if(ip != "" && ip != nil)
-			change(Host::Deleted, ip);
+		    // if(ip != "" && ip != nil)
+			// change(Host::Deleted, ip);
 		    return false;
 		}
 		return true;
 	    });
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
 	    items = size(table_items);
-	    Host::modified = true;
 	    continue;
 	}
 	else if(ret == `back) {
@@ -216,32 +219,33 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	}
     }
 
-    /* update hosts from widgets */
+    /* update aliases from widgets */
     if(ret == `next) {
-	Host::hosts = listmap(term e, table_items, ``(
-	    [
-		select(e, 1, ""),
-		prepend(splitstring(select(e, 3, ""), " "), select(e, 2, ""))
-	    ]
-	));
+	Lan::aliases = $[];
+	maplist(term e, table_items, ``{
+	    map alias = $[];
+	    change(alias, "IPADDR", select(e, 2, ""));
+	    change(alias, "NETMASK", select(e, 3, ""));
+	    change(Lan::aliases, select(e, 1, ""), alias);
+	});
     }
 
     y2debug("table_items=%1", table_items);
-    y2debug("hosts=%1", Host::hosts);
+    y2debug("aliases=%1", Lan::aliases);
 
     return ret;
 }
 
 /**
- * Host edit dialog
+ * Alias edit dialog
  * @param id id of the edited host
  * @param entry edited entry
  * @param forbidden already used IP addresses
  * @return host or nil, if canceled
  */
-global define term HostDialog(integer id, term entry, list forbidden) ``{
+global define term VirtualEditDialog(integer id, term entry, list forbidden) ``{
 
-    ScreenName("host-edit");
+    ScreenName("lan-virtual-edit");
 
     y2debug("id=%1", id);
     y2debug("entry=%1", entry);
@@ -251,11 +255,11 @@ global define term HostDialog(integer id, term entry, list forbidden) ``{
 	`HSpacing(1),
 	`VBox(
 	    /* TextEntry label */
-	    `TextEntry(`id(`host), _("&IP Address"), select(entry, 1, "")),
+	    `TextEntry(`id(`name), _("&Name"), select(entry, 1, "")),
 	    /* TextEntry label */
-	    `TextEntry(`id(`name), _("&Host name"), select(entry, 2, "")),
+	    `TextEntry(`id(`ipaddr), _("&IP Address"), select(entry, 2, "")),
 	    /* TextEntry label */
-	    `TextEntry(`id(`aliases), _("Hos&t Aliases"), select(entry, 3, ""))
+	    `TextEntry(`id(`netmask), _("Net&mask"), select(entry, 3, ""))
 	    ),
 	`HSpacing(1),
 	`HBox(
@@ -264,14 +268,14 @@ global define term HostDialog(integer id, term entry, list forbidden) ``{
 	    )
 	));
 
-    UI::ChangeWidget(`id(`host), `ValidChars, ValidCharsIP);
-    UI::ChangeWidget(`id(`name), `ValidChars, ValidCharsFQHostname);
-    UI::ChangeWidget(`id(`aliases), `ValidChars, ValidCharsFQHostname + " ");
+    // UI::ChangeWidget(`id(`host), `ValidChars, ValidCharsIP);
+    // UI::ChangeWidget(`id(`name), `ValidChars, ValidCharsFQHostname);
+    // UI::ChangeWidget(`id(`aliases), `ValidChars, ValidCharsFQHostname + " ");
 
     if(entry == `empty())
-	UI::SetFocus(`id(`host));
+	UI::SetFocus(`id(`name));
     else
-	UI::SetFocus(`id(`aliases));
+	UI::SetFocus(`id(`ipaddr));
 
     any ret = nil;
     term host = nil;
@@ -282,11 +286,11 @@ global define term HostDialog(integer id, term entry, list forbidden) ``{
 	if(ret != `ok) break;
 
 	host = `item(`id(id));
-	string val = UI::QueryWidget(`id(`host), `Value);
-	if(!check_ip(val)) {
+	string val = UI::QueryWidget(`id(`name), `Value);
+	if(false && !check_ip(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("The IP address is invalid."));
-	    UI::SetFocus(`id(`host));
+	    UI::SetFocus(`id(`name));
 	    continue;
 	}
 	if(contains(forbidden,val)) {
@@ -297,27 +301,24 @@ global define term HostDialog(integer id, term entry, list forbidden) ``{
 	}
 	host = add(host, val);
 
-	val = UI::QueryWidget(`id(`name), `Value);
-	if(!check_fqhostname(val)) {
+	val = UI::QueryWidget(`id(`ipaddr), `Value);
+	if(false && !check_fqhostname(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("Host name is invalid."));
-	    UI::SetFocus(`id(`name));
+	    UI::SetFocus(`id(`ipaddr));
 	    continue;
 	}
 	host = add(host, val);
 
-	val = UI::QueryWidget(`id(`aliases), `Value);
-	if(val != "") {
-	    list vals = splitstring(val, " ");
-	    vals = filter(string ho, vals, ``(ho != "" && !check_fqhostname(ho)));
-	    if(size(vals) > 0) {
-		/* Popup::Error text */
-		Popup::Error(sformat(_("Alias name \"%1\" is invalid."), vals[0]:""));
-		UI::SetFocus(`id(`aliases));
-		continue;
-	    }
+	val = UI::QueryWidget(`id(`netmask), `Value);
+	if(false && !check_fqhostname(val)) {
+	    /* Popup::Error text */
+	    Popup::Error(_("Host name is invalid."));
+	    UI::SetFocus(`id(`netmask));
+	    continue;
 	}
 	host = add(host, val);
+
 	break;
     }
 
@@ -325,6 +326,15 @@ global define term HostDialog(integer id, term entry, list forbidden) ``{
     if(ret != `ok) return nil;
     return host;
 }
+
+/* FIXME
+include "devel/debug.ycp";
+
+Wizard::CreateDialog();
+Lan::Read();
+Lan::Select("eth1");
+VirtualDialog(true);
+*/
 
 /* EOF */
 }

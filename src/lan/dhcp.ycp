@@ -12,7 +12,7 @@
 textdomain "network";
 
 import "Label";
-import "Lan";
+import "NetworkConfig";
 import "Popup";
 import "Wizard";
 
@@ -43,7 +43,16 @@ networks.</p>") +
 the hardware address of the network interface. It must be different for each
 DHCP client on a single network. Therefore, specify a unique free-form
 identifier here if you have several (virtual) machines using the same
-network interface and thus the same hardware address.</p>");
+network interface and thus the same hardware address.</p>") +
+
+    /* DHCP dialog help 4/8 */
+    _("<p>
+<b>Host Name to Send</b> ...
+</p>");
+
+    boolean dhclient_broadcast = false;
+    if(issubstring(NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"]:"", "-B"))
+	dhclient_broadcast = true;
 
     /* S/390 dialog contents */
     term contents = `HBox(
@@ -52,13 +61,13 @@ network interface and thus the same hardware address.</p>");
 	`Frame(_("DHCP Client Options"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(1),
 	    /* CheckBox label */
-	    `Left(`CheckBox(`id(`broadcast), _("Request Broad&cast Response"), Lan::dhclient_broadcast == true)),
-	    // `VSpacing(0.2),
-	    /* CheckBox label */
-	    // `Left(`CheckBox(`id(`setbc), `opt(`notify), _("&Set DHCP Client Identifier"), Lan::dhclient_id != "")),
+	    `Left(`CheckBox(`id(`broadcast), _("Request Broad&cast Response"), dhclient_broadcast == true)),
 	    `VSpacing(0.5),
 	    /* TextEntry label */
-	    `Left(`TextEntry(`id(`dhid), _("DHCP Client &Identifier"), Lan::dhclient_id)),
+	    `Left(`TextEntry(`id(`clientid), _("DHCP Client &Identifier"), NetworkConfig::DHCP["DHCLIENT_CLIENT_ID"]:"")),
+	    `VSpacing(0.5),
+	    /* TextEntry label */
+	    `Left(`TextEntry(`id(`hostname), _("&Host Name to Send"), NetworkConfig::DHCP["DHCLIENT_HOSTNAME_OPTION"]:"AUTO")),
 	    `VSpacing(1)
 	    ), `HSpacing(2))),
 	`HSpacing(6)
@@ -77,19 +86,12 @@ network interface and thus the same hardware address.</p>");
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
-	/* set broadcast * /
-	else if(ret == `setbc) {
-	    boolean setbc = UI::QueryWidget(`id(`setbc), `Value);
-	    UI::ChangeWidget(`id(`dhid), `Enabled, setbc);
-	    continue;
-	}
 	/* back */
 	else if(ret == `back) {
 	    break;
 	}
-	/* next|routing|hostname|hardware */
 	else if(ret == `next) {
-	    /* FIXME check* */
+	    /* check* */
 	    break;
 	}
 	else {
@@ -101,8 +103,19 @@ network interface and thus the same hardware address.</p>");
 
     /* update the configuration */
     if(ret == `next) {
-	Lan::dhclient_broadcast = UI::QueryWidget(`id(`broadcast), `Value) == true;
-	Lan::dhclient_id = UI::QueryWidget(`id(`dhid), `Value);
+	NetworkConfig::DHCP["DHCLIENT_CLIENT_ID"] = UI::QueryWidget(`id(`clientid), `Value);
+	NetworkConfig::DHCP["DHCLIENT_HOSTNAME_OPTION"] = UI::QueryWidget(`id(`hostname), `Value);
+	dhclient_broadcast = UI::QueryWidget(`id(`broadcast), `Value) == true;
+
+	/* DHCP data */
+	string options = NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"]:"";
+	if(options == nil) options = "";
+	if(dhclient_broadcast && !issubstring(options, "-B")) {
+	    NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"] = options + " -B";
+	}
+	else if(!dhclient_broadcast && issubstring(options, "-B")) {
+	    NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"] = regexpsub(options, "(.*)-B(.*)", "\\1\\2");
+	}
     }
 
     return ret;

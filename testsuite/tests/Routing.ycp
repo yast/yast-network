@@ -17,12 +17,12 @@ import "Routing";
 
 DUMP("Read");
 TEST(``(Routing::Read()), [READ], nil);
-DUMP(sformat("Routing::routes %1",Routing::routes));
+DUMP(sformat("Routing::routes %1",Routing::Routes));
 
 DUMP("Write");
-Routing::modified = true;
+// Routing::Forward = true;
 TEST(``(Routing::Write()), [READ], nil);
-Routing::routes = [ "r1", "r3" ];
+Routing::Routes = [ "r1", "r3" ];
 TEST(``(Routing::Write()), [READ], nil);
 
 DUMP("Import");

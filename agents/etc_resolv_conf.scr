@@ -1,22 +1,22 @@
 /**
- * File:	resolv_conf.scr
+ * File:	etc_resolv_conf.scr
  * Summary:	Agent for reading/writing /etc/resolv.conf
  * Author:	Michal Svec <msvec@suse.cz>
  * Access:	read / write
  *
  * See:
  *   resolv.conf(5)
- *   source/y2scr/ag_resolver/doc/resolveragent.txt
+ *   source/core/agent-resolver/doc/resolveragent.txt
  *   http://w3.suse.de/~poeml/resolv.conf-modification-howto.txt
  *
  * Example:
- *   Read(.resolver.domain)
+ *   Read(.etc.resolv_conf.domain)
  *   ("suse.de")
  **
- *   Read(.resolver.nameserver)
+ *   Read(.etc.resolv_conf.nameserver)
  *   (["10.10.0.1", "10.10.10.1", "10.10.11.1"])
  **
- *   Write(.resolver.domain, "suse.de")
+ *   Write(.etc.resolv_conf.domain, "suse.de")
  *   (true)
  *
  * $Id$
@@ -28,7 +28,7 @@
  * as subpaths, the respective values can be read/written.</p>
  *
  * <p>Info paths can be read/written using "modified", "backup", "process",
- * "process_id", "script" and "info" as subpaths of .resolver.</p>
+ * "process_id", "script" and "info" as subpaths of .etc.resolv_conf.</p>
  *
  * <p>For more information see the agent's own documentation.</p>
  */

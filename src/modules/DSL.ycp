@@ -124,7 +124,7 @@ symbol operation = nil;
 global define boolean Modified() ``{
     y2debug("modified=%1",modified);
     return modified;
-};
+}
 
 /**
  * Read all network settings from the SCR

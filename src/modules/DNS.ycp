@@ -13,6 +13,7 @@ module "DNS";
 textdomain "network";
 
 import "Detection";
+import "NetworkConfig";
 
 include "network/dns.ycp";
 include "network/routines.ycp";
@@ -22,8 +23,6 @@ global string hostname = "";
 global string domain = "";
 global list nameservers = [];
 global list searchlist = [];
-global boolean dhcp_hostname = false;
-global boolean dhcp_resolv = false;
 global string resolv_conf_process = "";
 global boolean resolv_conf_force = false;
 
@@ -43,19 +42,7 @@ string resolv_conf = "/etc/resolv.conf";
  */
 global define boolean Read() ``{
 
-    /* set hostname via dhcp? */
-    string dhcp = "";
-    dhcp = SCR::Read(.sysconfig.dhcp.DHCLIENT_SET_HOSTNAME);
-    if(dhcp == nil) dhcp = "";
-    y2debug("dhcp=%1",dhcp);
-    dhcp_hostname = (tolower(dhcp) == "yes") ? true : false;
-
-    /* set hostname via dhcp? */
-    dhcp = "";
-    dhcp = SCR::Read(.sysconfig.dhcp.DHCLIENT_MODIFY_RESOLV_CONF);
-    if(dhcp == nil) dhcp = "";
-    y2debug("dhcp=%1",dhcp);
-    dhcp_resolv = (tolower(dhcp) == "yes") ? true : false;
+    NetworkConfig::Read();
 
     /* install.inf from linuxrc */
     map install_inf = $[];
@@ -117,6 +104,8 @@ global define boolean Read() ``{
  */
 global define boolean Write() ``{
 
+    NetworkConfig::Write();
+
     if(!modified) return true;
     y2milestone("Writing configuration");
 
@@ -124,13 +113,8 @@ global define boolean Write() ``{
     string fqhostname = hostname;
     if(domain != "") fqhostname = fqhostname + "." + domain;
 
-    /* set hostname via dhcp? */
-    SCR::Write(.sysconfig.dhcp.DHCLIENT_SET_HOSTNAME, dhcp_hostname?"yes":"no");
-    SCR::Write(.sysconfig.dhcp.DHCLIENT_MODIFY_RESOLV_CONF, dhcp_resolv?"yes":"no");
-    SCR::Write(.sysconfig.dhcp, nil);
-
     /* Allow to set hostname even if it's modified by DHCP (#bug)
-    if(!dhcp_hostname) { */
+    if(NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false != true) { */
 
 	/* remember the X authorization key */
 	string xauth_key = SCR::Read(.xauth.key);
@@ -189,8 +173,6 @@ global define boolean Import(map settings) ``{
     domain = settings["domain"]:"";
     nameservers = eval(settings["nameservers"]:[]);
     searchlist = eval(settings["searchlist"]:[]);
-    dhcp_hostname = settings["dhcp_hostname"]:false;
-    dhcp_resolv = settings["dhcp_resolv"]:false;
     modified = true;
     return true;
 }
@@ -205,8 +187,6 @@ global define map Export() ``{
 	"domain"	: domain,
 	"nameservers"	: eval(nameservers),
 	"searchlist"	: eval(searchlist),
-	"dhcp_hostname"	: dhcp_hostname,
-	"dhcp_resolv"	: dhcp_resolv,
     ];
 }
 
@@ -218,7 +198,7 @@ global define string Summary() ``{
 
     string summary = "<p>";
 
-    if(dhcp_hostname == true)
+    if(NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false == true)
 	/* Summary text */
 	summary = summary + _("Host Name: set by DHCP");
     else
@@ -228,7 +208,7 @@ global define string Summary() ``{
 
     summary = summary + "<p>";
 
-    if(dhcp_resolv == true) {
+    if(NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false == true) {
 	/* Summary text */
 	summary = summary + _("Name Servers: set by DHCP") + "<br>";
 	/* Summary text */

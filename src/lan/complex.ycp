@@ -13,6 +13,7 @@ textdomain "network";
 
 import "Lan";
 import "DNS";
+import "NetworkConfig";
 import "Routing";
 
 import "Wizard";
@@ -29,7 +30,8 @@ include "network/complex.ycp";
  * @return true if data was modified
  */
 global define boolean Modified() ``{
-    return Lan::Modified() || DNS::modified || Routing::modified;
+    return Lan::Modified() || DNS::modified || Routing::Modified() ||
+	NetworkConfig::Modified();
 }
 
 /**

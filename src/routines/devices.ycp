@@ -84,11 +84,11 @@ global define boolean ReadDevices(string devregex) ``{
 		config[val] = item;
 	    /* Local */
 	    else {
-		map aliases = config["_aliases"]:$[];
-		map suf = aliases[s]:$[];
+		map _aliases = config["_aliases"]:$[];
+		map suf = _aliases[s]:$[];
 		suf[v] = item;
-		aliases[s] = suf;
-		config["_aliases"] = aliases;
+		_aliases[s] = suf;
+		config["_aliases"] = _aliases;
 	    }
 	    y2milestone("config=%1", config);
 	});

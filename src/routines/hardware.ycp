@@ -193,7 +193,7 @@ global define string DeviceName(map hwdevice) ``{
 	return vendor + delimiter + dev;
     else
 	return dev;
-};
+}
 
 /**
  * Simple convertor from subclass to controller type.

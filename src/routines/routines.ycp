@@ -128,6 +128,15 @@ global define boolean ReallyAbort() ``{
 }
 
 /**
+ * If modified, ask for confirmation
+ * @param modified true if modified
+ * @return true if abort is confirmed
+ */
+global define boolean ReallyAbortCond(boolean modified) ``{
+    return (!modified && !Modified()) || Popup::ReallyAbort(true);
+}
+
+/**
  * Set screen shot name
  * @param name screenshot name
  */

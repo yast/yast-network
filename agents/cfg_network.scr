@@ -5,13 +5,13 @@
  * Access:	read / write
  *
  * Example:
- *   Dir(.sysconfig.network)
+ *   Dir(.sysconfig.network.config)
  *   (["CHECK_FOR_MASTER", ...])
  **
- *   Read(.sysconfig.network.CHECK_FOR_MASTER)
+ *   Read(.sysconfig.network.config.CHECK_FOR_MASTER)
  *   ("yes")
  **
- *   Write(.sysconfig.network.CHECK_FOR_MASTER, "no")
+ *   Write(.sysconfig.network.config.CHECK_FOR_MASTER, "no")
  *   (true)
  *
  * $Id$

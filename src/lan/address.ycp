@@ -210,6 +210,10 @@ completes the configuration.</p>");
     if(Lan::operation == `add && Lan::unique == "")
 	HardwareButton = `VSpacing(0);
 
+    /* Push button label */
+    term VirtualButton = `PushButton(`id(`virtual), `opt(`hstretch), _("&Virtual aliases"));
+    VirtualButton = `VSpacing(0);
+
     /* Frame label */
     term frame2 = `Frame(_("Detailed settings"), `HBox(`HStretch(),
 	`HSquash(`VBox(
@@ -221,6 +225,7 @@ completes the configuration.</p>");
 	    /* Push button label */
 	    `PushButton(`id(`dhclient), `opt(`hstretch), _("DHCP &client options")),
 	    HardwareButton,
+	    VirtualButton,
 	    /* FIXME: wlan
 	    Lan::wireless?
 		`PushButton(`id(`wire), `opt(`hstretch), _("Wireless &settings"))
@@ -283,7 +288,8 @@ completes the configuration.</p>");
 	    break;
 	}
 	/* next|routing|hostname|hardware */
-	else if(ret == `next || ret == `routing || ret == `hostname || ret == `hardware || ret == `dhclient) {
+	else if(ret == `next || ret == `routing || ret == `hostname ||
+		ret == `hardware || ret == `dhclient || ret == `virtual) {
 
 	    y2debug("bootproto=%1", bootproto);
 	    if(UI::WidgetExists(`id(`rb))) {
@@ -326,7 +332,8 @@ completes the configuration.</p>");
     }
 
     /* update the configuration */
-    if(ret == `next || ret == `routing || ret == `hostname || ret == `hardware || ret == `dhclient) {
+    if(ret == `next || ret == `routing || ret == `hostname || ret == `hardware
+	    || ret == `dhclient || ret == `virtual) {
 
 	Lan::bootproto = bootproto;
 	Lan::ipaddr = UI::QueryWidget(`id(`ipaddr), `Value);

@@ -49,8 +49,8 @@ global define boolean ReadModules(string devregex) ``{
     y2debug("regex=%1", regex);
 
     /* Read aliases */
-    list aliases = SCR::Dir(.modules.alias);
-    maplist(string al, aliases, ``{
+    list allaliases = SCR::Dir(.modules.alias);
+    maplist(string al, allaliases, ``{
 	if(regexpmatch(al, regex)) {
 	    string modul = SCR::Read(add(.modules.alias, al));
 	    if(modul != nil)

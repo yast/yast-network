@@ -27,15 +27,14 @@ Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-pcmcia" nil
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-usb" nil
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-tr-pcmcia" nil
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-tr-usb" nil
-Read	.sysconfig.network.config.WAIT_FOR_INTERFACES nil
-Read	.sysconfig.dhcp.DHCLIENT_CLIENT_ID nil
-Read	.sysconfig.dhcp.DHCLIENT_ADDITIONAL_OPTIONS nil
+Dir	.sysconfig.network.config: []
+Dir	.sysconfig.network.dhcp: []
 Read	.target.size "/etc/sysconfig/network/routes" 1
 Read	.routes nil
 Read	.sysconfig.sysctl.IP_FORWARD nil
 Dir	.network.section: []
-Read	.sysconfig.dhcp.DHCLIENT_SET_HOSTNAME nil
-Read	.sysconfig.dhcp.DHCLIENT_MODIFY_RESOLV_CONF nil
+Dir	.sysconfig.network.config: []
+Dir	.sysconfig.network.dhcp: []
 Read	.target.size "/etc/install.inf" 1
 Read	.etc.install_inf nil
 Execute	.target.bash "/sbin/modify_resolvconf check -q < /dev/null" 0

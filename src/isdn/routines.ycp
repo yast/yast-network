@@ -13,7 +13,7 @@
  *
  * $Id$
  *
- * 
+ *
  *
  */
 
@@ -171,7 +171,7 @@ global define boolean display_testresult(integer result, string details) ``{
     	Popup::Message (details);
     UI::CloseDialog();
     return true;
-};
+}
 
 /**
  * Creates a popup with a selection list
@@ -205,6 +205,6 @@ global define boolean select_fromlist_popup(string title, list lst) ``{
     string sel = UI::QueryWidget(`id(`sel), `Value);
     UI::CloseDialog();
     return sel;
-};
+}
 
 }

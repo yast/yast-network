@@ -14,6 +14,7 @@ textdomain "network";
 import "Arch";
 import "DNS";
 import "Lan";
+import "NetworkConfig";
 import "Wizard";
 
 include "network/dns.ycp";
@@ -83,8 +84,8 @@ global define symbol DNSMainDialog(boolean standalone) ``{
     string domain = DNS::domain;
     list nameservers = DNS::nameservers;
     list searchlist = DNS::searchlist;
-    boolean dhcp_hostname = DNS::dhcp_hostname;
-    boolean dhcp_resolv = DNS::dhcp_resolv;
+    boolean dhcp_hostname = NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false;
+    boolean dhcp_resolv = NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false;
 
     boolean has_dhcp = (Lan::bootproto == "dhcp") || Lan::AnyDHCPDevice();
     if(Arch::s390) has_dhcp = false;
@@ -325,8 +326,8 @@ disabled during the connection.</p>");
 	    DNS::nameservers = filter(`n, [ ns1, ns2, ns3 ], ``(n != ""));
 	    DNS::searchlist = filter(`s, [ s1, s2, s3 ], ``(s != ""));
 
-	    DNS::dhcp_hostname = UI::QueryWidget(`id(`dn), `Value);
-	    DNS::dhcp_resolv = UI::QueryWidget(`id(`dr), `Value);
+	    NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = UI::QueryWidget(`id(`dn), `Value);
+	    NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"] = UI::QueryWidget(`id(`dr), `Value);
 
 	    /* update modified flag */
 	    DNS::modified = true;
@@ -355,7 +356,8 @@ global define boolean DNSModified() ``{
 
     return hostname != DNS::hostname || domain != DNS::domain ||
 	nameservers != DNS::nameservers || searchlist != DNS::searchlist ||
-	dhcp_resolv != DNS::dhcp_resolv || dhcp_hostname != DNS::dhcp_hostname;
+	dhcp_resolv != NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false ||
+	dhcp_hostname != NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false;
 }
 
 /* EOF */

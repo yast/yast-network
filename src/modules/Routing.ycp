@@ -20,17 +20,12 @@ include "network/routines.ycp";
 /**
  * All routes
  */
-global list routes = [];
-
-/**
- * Data was modified?
- */
-global boolean modified = false;
+global list Routes = [];
 
 /**
  * Enable IP forwarding
  */
-global boolean forward = false;
+global boolean Forward = false;
 
 /**
  * List of available devices
@@ -40,12 +35,23 @@ list devices = [];
 /**
  * All routes read at the start
  */
-list routes_init = [];
+list Orig_Routes = nil;
+boolean Orig_Forward = nil;
 
 /**
  * "routes" file location
  */
 string routes_file = "/etc/sysconfig/network/routes";
+
+/**
+ * Data was modified?
+ * @return true if modified
+ */
+global define boolean Modified() ``{
+    boolean ret = (Routes != Orig_Routes || Forward != Orig_Forward);
+    y2debug("ret=%1", ret);
+    return ret;
+}
 
 /**
  * Read routing settings
@@ -55,17 +61,20 @@ global define boolean Read() ``{
 
     /* read route.conf */
     if(SCR::Read(.target.size, routes_file) > 0)
-	routes = SCR::Read(.routes);
+	Routes = SCR::Read(.routes);
     else
-	routes = [];
-
-    /* save routes to check for changes later */
-    routes_init = routes;
-    y2debug("routes=%1", routes);
+	Routes = [];
 
     /* enabled IP forwarding */
     if(SCR::Read(.sysconfig.sysctl.IP_FORWARD) == "yes")
-	forward = true;
+	Forward = true;
+
+    y2debug("Routes=%1", Routes);
+    y2debug("Forward=%1", Forward);
+
+    /* save routes to check for changes later */
+    Orig_Routes = eval(Routes);
+    Orig_Forward = eval(Forward);
 
     /* read available devices */
     map Devices = $[];
@@ -79,10 +88,10 @@ global define boolean Read() ``{
     });
     y2debug("devices=%1", devices);
 
-    if(routes == []) {
+    if(Routes == []) {
 	string gw = Detection::result["GATEWAY"]:"";
 	if(gw != "" && gw != nil)
-	    routes = [ $[
+	    Routes = [ $[
 		"destination"       : "default",
 		"gateway"           : gw,
 		"netmask"           : "-",
@@ -99,22 +108,16 @@ global define boolean Read() ``{
  */
 global define boolean Write() ``{
 
-    if(!modified) return true;
+    if(!Modified()) return true;
     y2milestone("Writing configuration");
 
-    if(forward) {
+    if(Forward) {
 	SCR::Write(.sysconfig.sysctl.IP_FORWARD, "yes");
 	SCR::Execute(.target.bash, "echo 1 > /proc/sys/net/ipv4/ip_forward");
     }
     else {
 	SCR::Write(.sysconfig.sysctl.IP_FORWARD, "no");
 	SCR::Execute(.target.bash, "echo 0 > /proc/sys/net/ipv4/ip_forward");
-    }
-
-    /* Check if there is anything to do */
-    if(routes_init == routes) {
-	y2debug("Routes not modified");
-	return true;
     }
 
     /* at first stop the running routes */
@@ -127,17 +130,16 @@ global define boolean Write() ``{
 	SCR::Execute(.target.bash, "/bin/cp "+routes_file+" "+routes_file+".YaST2save");
 
     any ret = false;
-    if(routes == [])
+    if(Routes == [])
 	/* workaround bug [#4476] */
 	ret = SCR::Write(.target.string, routes_file, "");
     else
 	/* update the routes config */
-	ret = SCR::Write(.routes, routes);
+	ret = SCR::Write(.routes, Routes);
 
     /* and finally set up the new routes */
     // FIXME SCR::Execute(.target.bash, "/etc/init.d/route start");
 
-    modified = false;
     return ret == true;
 }
 
@@ -153,10 +155,12 @@ global define boolean Import(map settings) ``{
     if(size(settings) == 0)
 	return true;
 
-    modified = true;
+    Routes = eval(settings["routes"]:[]);
+    Forward = settings["ip_forward"]:false;
 
-    routes = eval(settings["routes"]:[]);
-    forward = settings["ip_forward"]:false;
+    Orig_Routes = nil;
+    Orig_Forward = nil;
+
     return true;
 }
 
@@ -166,8 +170,8 @@ global define boolean Import(map settings) ``{
  */
 global define map Export() ``{
     return $[
-	"routes": eval(routes),
-	"ip_forward": forward
+	"routes": eval(Routes),
+	"ip_forward": Forward
     ];
 }
 
@@ -179,16 +183,16 @@ global define string Summary() ``{
 
     string summary = "";
 
-    if(forward == true)
+    if(Forward == true)
 	/* Summary text */
 	summary = summary + _("IP Forwarding: on");
     else
 	/* Summary text */
 	summary = summary + _("IP Forwarding: off");
 
-    if(routes != []) {
+    if(Routes != []) {
 	/* Summary text */
-	summary = summary + "<p>" + sformat(_("Routes: %1"), sformat("<br>%1", routes));
+	summary = summary + "<p>" + sformat(_("Routes: %1"), sformat("<br>%1", Routes));
     }
 
     return summary;
@@ -208,7 +212,7 @@ global define list GetDevices() ``{
  */
 global define string GetGateway() ``{
     string defgw = "";
-    maplist(map r, routes, ``{
+    maplist(map r, Routes, ``{
 	if(r["destination"]:"" == "default")
 	    defgw = r["gateway"]:"";
     });

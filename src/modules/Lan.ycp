@@ -18,6 +18,7 @@ textdomain "network";
 import "Arch";
 import "DNS";
 import "Detection";
+import "NetworkConfig";
 import "Routing";
 import "Firewall";
 import "Progress";
@@ -37,9 +38,15 @@ include "network/runtime.ycp";
 /* GLOBAL DATA */
 
 /**
+ * Current device information (FIXME: placeholder)
+ */
+global map Device = $[];
+
+/**
  * Current module information
  */
 global map Module = $[];
+
 
 global string name = "";
 global string unique = "";
@@ -73,15 +80,13 @@ global string write_channel = "";
 global string data_channel = "";
 global string portname = "";
 
-/* global options */
-global integer wait_for_interfaces = nil;
+/* aliases */
+global map aliases = $[];
 
 /* propose options */
 global boolean proposal_valid = false;
 global boolean write_only = false;
 
-global boolean dhclient_broadcast = false;
-global string dhclient_id = "";
 
 /**
  * Abort function
@@ -146,7 +151,7 @@ global symbol operation = nil;
 global define boolean Modified() ``{
     y2debug("modified=%1",modified);
     return modified;
-};
+}
 
 /**
  * Read all network settings from the SCR
@@ -167,9 +172,9 @@ global define boolean Read() ``{
 	/* Progress stage 2/9 */
 	_("Read /etc/modules.conf"),
 	/* Progress stage 3/9 */
-	_("Read current configuration"),
+	_("Read devices configuration"),
 	/* Progress stage 4/9 */
-	_("Read DHCP configuration"),
+	_("Read network configuration"),
 	/* Progress stage 5/9 */
 	_("Read routing configuration"),
 	/* Progress stage 6/9 */
@@ -199,25 +204,16 @@ global define boolean Read() ``{
 
     if(Abort()) return false;
     /* Progress step 3/9 */
-    ProgressNextStage(_("Reading current configuration..."));
+    ProgressNextStage(_("Reading devices configuration..."));
+    /* ReadDevices(""); /* TESTING */
     ReadDevices(NetworkDeviceRegex);
     CleanHotplugSymlink();
-    /* ReadDevices(""); /* TESTING */
     sleep(sl);
 
     if(Abort()) return false;
     /* Progress step 4/9 */
-    ProgressNextStage(_("Reading DHCP configuration..."));
-    /* Read network config data */
-    string wait = SCR::Read(.sysconfig.network.config.WAIT_FOR_INTERFACES);
-    if(wait != "" && wait != nil) wait_for_interfaces = tointeger(wait);
-    /* Read dhcp config data */
-    dhclient_id = SCR::Read(.sysconfig.dhcp.DHCLIENT_CLIENT_ID);
-    if(dhclient_id == nil) dhclient_id = "";
-    wait = SCR::Read(.sysconfig.dhcp.DHCLIENT_ADDITIONAL_OPTIONS);
-    if(wait != nil && issubstring(wait, "-B")) dhclient_broadcast = true;
-    y2milestone("id=%1", dhclient_id);
-    y2milestone("bc=%1", dhclient_broadcast);
+    ProgressNextStage(_("Reading network configuration..."));
+    NetworkConfig::Read();
     sleep(sl);
 
     if(Abort()) return false;
@@ -291,9 +287,9 @@ global define boolean Write() ``{
 	/* Progress stage 2/10 */
 	_("Write drivers information"),
 	/* Progress stage 3/10 */
-	_("Write configuration"),
+	_("Write devices configuration"),
 	/* Progress stage 4/10 */
-	_("Write DHCP configuration"),
+	_("Write network configuration"),
 	/* Progress stage 5/10 */
 	_("Write routing configuration"),
 	/* Progress stage 6/10 */
@@ -325,33 +321,14 @@ global define boolean Write() ``{
 
     if(Abort()) return false;
     /* Progress step 3/10 */
-    ProgressNextStage(_("Writing configuration..."));
+    ProgressNextStage(_("Writing devices configuration..."));
     WriteDevices();
     sleep(sl);
 
     if(Abort()) return false;
     /* Progress step 4/10 */
-    ProgressNextStage(_("Writing DHCP configuration..."));
-    /* Write network config data */
-    if(wait_for_interfaces != nil) {
-	SCR::Write(.sysconfig.network.config.WAIT_FOR_INTERFACES, sformat("%1",wait_for_interfaces));
-	SCR::Write(.sysoncfig.network.config, nil);
-    }
-    /*  Write dhcp config data */
-    if(dhclient_id != nil)
-	SCR::Write(.sysconfig.dhcp.DHCLIENT_CLIENT_ID, dhclient_id);
-    string options = SCR::Read(.sysconfig.dhcp.DHCLIENT_ADDITIONAL_OPTIONS);
-    if(options != nil) {
-	if(dhclient_broadcast && !issubstring(options, "-B")) {
-	    SCR::Write(.sysconfig.dhcp.DHCLIENT_ADDITIONAL_OPTIONS, options + " -B");
-	}
-	else if(!dhclient_broadcast && issubstring(options, "-B")) {
-	    SCR::Write(.sysconfig.dhcp.DHCLIENT_ADDITIONAL_OPTIONS, regexpsub(options, "(.*)-B(.*)", "\\1\\2"));
-	}
-    }
-    SCR::Write(.sysoncfig.dhcp, nil);
-    y2milestone("id=%1", dhclient_id);
-    y2milestone("bc=%1 (%2)", dhclient_broadcast, options);
+    ProgressNextStage(_("Writing network configuration..."));
+    NetworkConfig::Write();
     sleep(sl);
 
     if(Abort()) return false;
@@ -407,13 +384,11 @@ global define boolean Write() ``{
  */
 global define boolean Import(map settings) ``{
 
-    DNS::Import(eval(settings["dns"]:$[]));
-    Routing::Import(eval(settings["routing"]:$[]));
     Devices = eval(settings["devices"]:$[]);
     Modules = eval(settings["modules"]:$[]);
-
-    map Global = settings["global"]:$[];
-    wait_for_interfaces = Global["wait_for_interfaces"]:nil;
+    DNS::Import(eval(settings["dns"]:$[]));
+    NetworkConfig::Import(settings["config"]:$[]);
+    Routing::Import(eval(settings["routing"]:$[]));
 
     modified = true;
     return true;
@@ -426,13 +401,11 @@ global define boolean Import(map settings) ``{
 global define map Export() ``{
 
     return eval($[
-	"dns"		: DNS::Export(),
-	"routing"	: Routing::Export(),
 	"devices"	: Devices,
 	"modules"	: Modules,
-	"global"	: $[
-	    "wait_for_interfaces" : wait_for_interfaces,
-	]
+	"config"	: NetworkConfig::Export(),
+	"dns"		: DNS::Export(),
+	"routing"	: Routing::Export(),
     ]);
 
 }
@@ -538,6 +511,8 @@ global define boolean Select(string dev) ``{
     write_channel = devmap["WRITE_CHANNEL"]:"";
     data_channel = devmap["DATA_CHANNEL"]:"";
     portname = devmap["PORTNAME"]:"";
+
+    aliases = eval(devmap["_aliases"]:$[]);
 
     hotplug = "";
     if(issubstring(type, "pcmcia"))
@@ -649,12 +624,14 @@ global define boolean Commit() ``{
 	}
 
 	if(type == "ctc" || type == "escon")
-	    if(wait_for_interfaces == nil || wait_for_interfaces < 40)
-		wait_for_interfaces = 40;
+	    if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 40)
+		NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 40;
 
 	if(type == "hsi" || Module["module"]:"" == "qeth")
-	    if(wait_for_interfaces == nil || wait_for_interfaces < 15)
-		wait_for_interfaces = 15;
+	    if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 15)
+		NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 15;
+
+	change(newdev, "_aliases", eval(aliases));
 
 	ChangeDevice2(device_name(RealType(type, hotplug), device), newdev, operation == `add);
     }
@@ -744,13 +721,12 @@ global define boolean Propose() ``{
 	/* propose default gateway from /etc/install.inf */
 	string gw = InstallInf["gateway"]:"";
 	if(gw != "" && gw != nil) {
-	    Routing::routes = [ $[
+	    Routing::Routes = [ $[
 		"destination"       : "default",
 		"gateway"           : gw,
 		"netmask"           : "-",
 		"device"            : "-"
 	    ] ];
-	    Routing::modified = true;
 	}
 
 	/* propose DNS setup from /etc/install.inf */
@@ -802,8 +778,7 @@ global define boolean Propose() ``{
 	    y2debug("DHCP proposal");
 	    ipaddr = "";
 	    bootproto = "dhcp";
-	    DNS::dhcp_hostname = true;
-	    DNS::modified = true;
+	    NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = true;
 	}
 
     }

@@ -91,7 +91,6 @@ TO-SORT:
 
 Improvements:
 
-- dns: xauth agent </dev/null (and some more work)
 - dns: two resolv.conf scrconfs
 - lan: check IP presence (#9951)
 - lan: check link presence (see sysconfig.rpm how is it done)
