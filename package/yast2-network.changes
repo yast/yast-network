@@ -1,7 +1,15 @@
 -------------------------------------------------------------------
+Mon Sep  8 23:59:05 CEST 2003 - kkeil@suse.de
+
+- fix lost of firewall settings (#29103)
+- do not start smpppd and kinternet if no isdn interface was
+  configured (#18831)
+- run drdsl if a new DSL-ISDN card was configured (#30294)
+
+-------------------------------------------------------------------
 Mon Sep  8 23:19:44 CEST 2003 - msvec@suse.cz
 
-- hardware detection emulation for AVM DSL cards (#)
+- hardware detection emulation for AVM DSL cards (#30294)
 - 2.8.30
 
 -------------------------------------------------------------------
