@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Sep 15 09:32:05 CEST 2003 - kkeil@suse.de
+
+- fix handling of BACK key, better default focus (#30104)
+- fix none translated driver descriptions (#30857)
+- 2.8.34
+
+-------------------------------------------------------------------
 Fri Sep 12 13:34:42 CEST 2003 - msvec@suse.cz
 
 - added more logging to simplify further bugfixing
