@@ -197,6 +197,17 @@ global define symbol interface_dialog() ``{
     boolean chargeHUP = lookup(ISDN::interface, "CHARGEHUP", "on") == "on";
     boolean multilink = lookup(ISDN::interface, "MULTILINK", "no") == "yes";
     boolean firewall = lookup(ISDN::interface, "FIREWALL", "yes") == "yes";
+    string fwqm = lookup(ISDN::interface, "fwqm", "");
+    boolean FirewallQuickmode = true;
+
+    if (fwqm == "no")
+	FirewallQuickmode = false;
+    if (ISDN::operation  == `editif && fwqm == "") {
+	FirewallQuickmode = Firewall::Query(devstr);
+    }
+    if (fwqm != "")
+	ISDN::interface = remove(ISDN::interface, "fwqm");
+    y2debug("FirewallQuickmode=%1",FirewallQuickmode);
 
     string devstr = sformat("%1%2", syncppp ? "ippp" : "isdn",
 				ISDN::device);
@@ -205,7 +216,7 @@ global define symbol interface_dialog() ``{
 			syncppp ? "syncppp" : "rawip", devstr);
 
     string helptext =
-    // help text 1/4
+    // help text 1/5
 _("<p>My phone number --  As your own telephone number (MSN), put in your 
 telephone number (without area code) if your ISDN card is connected directly
 to the phone company-provided socket. If it is connected to a PBX, put in the
@@ -214,14 +225,14 @@ of your phone extension) . If this fails, try using 0, which normally means
 the default MSN is actually used.</p>");
 
     helptext = helptext +
-    // help text 2/4
+    // help text 2/5
 _("<p><b>Start Mode: </b><b>OnBoot</b> the driver is loaded during
 system boot. <b>Manual</b> the driver must be started with the
 <b>rcisdn start</b> command, only the user root can do this.
 <b>HotPlug </b> is a special case for PCMCIA and USB devices.</p>");
 
     helptext = helptext +
-    // help text 3/4
+    // help text 3/5
 _("<p>If you select manual you have to start/stop the service manually by
 issuing the following commands (while logged in as 'root'):
 <tt>
@@ -233,7 +244,7 @@ Note: ippp0 is an example</p>
 ");
 
     helptext = helptext +
-    // help text 4/4
+    // help text 4/5
 _("<p>Selecting <b>channel bundling</b> will set up a 128-kBit connection
 also known as <b>M</b>ultilink <b>PPP</b>. To bring up or down the second channel,
 use the following commands:
@@ -245,6 +256,14 @@ use the following commands:
 You can also install the package <b>xibod</b> to have this happen automatically. If
 there is a demand for more bandwidth, it will add a channel. If the traffic goes down, it will
 remove a channel.
+</p>");
+
+    helptext = helptext +
+    // help text 5/5
+_("<p>Selecting <b>Firewall</b> will restart the firewall, if a connection is established.
+<b>Firewall QuickMode</b> enable a simple firewall with only few options for this interface.
+If you have configured your own firewall in /etc/sysconfig/SuSEfirewall2 you should uncheck
+this box.
 </p>");
 
 
@@ -260,12 +279,6 @@ remove a channel.
     }
 
     y2debug("device %1", devstr);
-
-    boolean FirewallQuickmode = true;  // default is true
-    if (ISDN::operation  == `editif) {
-	FirewallQuickmode = Firewall::Query(devstr);
-    }
-    y2debug("FirewallQuickmode=%1",FirewallQuickmode);
 
     /* CheckBox label */
     term FirewallCheckbox = `HBox(
@@ -373,13 +386,15 @@ remove a channel.
 	Firewall::Change(devstr, FirewallQuickmode);
 
 	/* UPDATE VARIABLES */
-        ISDN::interface = union(ISDN::interface, $[
-            "MSN"		: msn,
-            "STARTMODE"		: startmode,
-            "MULTILINK"		: multilink ? "yes" : "no",
-            "CHARGEHUP"		: chargeHUP ? "on" : "off",
+	ISDN::interface = union(ISDN::interface, $[
+	    "MSN"		: msn,
+	    "STARTMODE"		: startmode,
+	    "MULTILINK"		: multilink ? "yes" : "no",
+	    "CHARGEHUP"		: chargeHUP ? "on" : "off",
 	    "FIREWALL"		: firewall ? "yes" : "no",
-        ]);
+	]);
+	if (ret == `detail) //temporary
+	    ISDN::interface = add(ISDN::interface, "fwqm", FirewallQuickmode ? "yes" : "no");
 	if (ISDN::operation  == `editif)
 	    ISDN::provider_file = UI::QueryWidget(`id(`prov), `Value);
 
