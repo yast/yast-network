@@ -242,6 +242,8 @@ global define string ControllerType(map hwdevice) ``{
 	else if(subclass_id == 6) return "qeth";
 	else if(subclass_id == 7) return "escon";
 	else if(subclass_id == 8) return "myri";
+	else if(subclass_id == 9) return "wlan";
+	else if(subclass_id == 0x82) return "wlan";
 	else if(subclass_id == 0x80) {
 	    /* Nothing was found, default is eth */
 	    y2error("Unknown network controller type: %1", hwdevice);
@@ -267,6 +269,7 @@ global define string ControllerType(map hwdevice) ``{
 	else if(subclass_id == 7) return "qeth";
 	else if(subclass_id == 8) return "escon";
 	else if(subclass_id == 9) return "myri";
+	else if(subclass_id == 10) return "wlan";
 	else if(subclass_id == 0x80) {
 	    /* Nothing was found, default is eth */
 	    y2error("Unknown network interface type: %1", hwdevice);

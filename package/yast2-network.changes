@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Sep  1 16:55:12 CEST 2003 - msvec@suse.cz
+
+- properly support detected wlan devices (#29506)
+- 2.8.19
+
+-------------------------------------------------------------------
 Thu Aug 28 15:35:34 CEST 2003 - msvec@suse.cz
 
 - don't shut down network interface during detection (#29452)

@@ -1,106 +1,114 @@
 /**
- * Module:	inst_netsetup.ycp
- *
+ * File:	clients/inst_netsetup.ycp
+ * Package:	Network configuration
+ * Summary:	Setup network in continue mode if required
  * Authors:	Arvin Schnell <arvin@suse.de>
  *
- * Purpose:	setup network in continue mode if required
+ * $Id$
  */
+
 {
-    symbol mode = WFM::Args (2);
+
+import "Arch";
+import "Mode";
+
+symbol mode = WFM::Args (2);
 
 
-    string netdevice = SCR::Read (.etc.install_inf.Netdevice);
-    if (netdevice == nil) netdevice = "eth0";
+string netdevice = SCR::Read (.etc.install_inf.Netdevice);
+if (netdevice == nil) netdevice = "eth0";
 
-    string netconfig = SCR::Read (.etc.install_inf.NetConfig);
-    if (netconfig == nil) netconfig = "static";
-    if (netconfig == "dhcp") netconfig = "static"; // FIXME
+string netconfig = SCR::Read (.etc.install_inf.NetConfig);
+if (netconfig == nil) netconfig = "static";
+if (netconfig == "dhcp") netconfig = "static"; // FIXME
 
-    string ipaddr = SCR::Read (.etc.install_inf.IP);
-    if (ipaddr == nil) ipaddr = "";
+string ipaddr = SCR::Read (.etc.install_inf.IP);
+if (ipaddr == nil) ipaddr = "";
 
-    string netmask = SCR::Read (.etc.install_inf.Netmask);
-    if (netmask == nil) netmask = "";
+string netmask = SCR::Read (.etc.install_inf.Netmask);
+if (netmask == nil) netmask = "";
 
-    string gateway = SCR::Read (.etc.install_inf.Gateway);
-    if (gateway == nil) gateway = "";
+string gateway = SCR::Read (.etc.install_inf.Gateway);
+if (gateway == nil) gateway = "";
 
 
-    if (mode == `up)
+if (mode == `up)
+{
+    if (!Mode::test && !Arch::s390)
     {
-	if (!Mode::test && !Arch::s390)
+	SCR::Execute (.target.bash, "/sbin/ifconfig lo 127.0.0.1 up");
+
+	if ((Mode::boot == "nfs") || (Mode::boot == "http") ||
+	    (Mode::boot == "smb") || (Mode::boot == "ftp"))
 	{
-	    SCR::Execute (.target.bash, "/sbin/ifconfig lo 127.0.0.1 up");
-
-	    if ((Mode::boot == "nfs") || (Mode::boot == "http") ||
-		(Mode::boot == "smb") || (Mode::boot == "ftp"))
+	    if (netconfig == "static")
 	    {
-		if (netconfig == "static")
-		{
-		    string ifconfig = "/sbin/ifconfig " + netdevice + " up " + ipaddr;
-		    if (netmask != "")
-			ifconfig = ifconfig + " netmask " + netmask;
-		    SCR::Execute (.target.bash, ifconfig);
+		string ifconfig = "/sbin/ifconfig " + netdevice + " up " + ipaddr;
+		if (netmask != "")
+		    ifconfig = ifconfig + " netmask " + netmask;
+		SCR::Execute (.target.bash, ifconfig);
 
-		    if (gateway != "")
-		    {
-			string route = "/sbin/route add default gw " + gateway;
-			SCR::Execute (.target.bash, route);
-		    }
-		}
-		else if (netconfig == "dhcp")
+		if (gateway != "")
 		{
-		    // FIXME
-		}
-		else
-		{
-		    y2error ("unknown netconfig %1", netconfig);
+		    string route = "/sbin/route add default gw " + gateway;
+		    SCR::Execute (.target.bash, route);
 		}
 	    }
-	}
-
-	if (Mode::boot == "nfs")
-	{
-	    SCR::Execute (.target.bash, "/sbin/rcportmap start");
-	}
-    }
-
-
-    if (mode == `dn)
-    {
-	if (Mode::boot == "nfs")
-	{
-	    SCR::Execute (.target.bash, "/sbin/rcportmap stop");
-	}
-
-	if (!Mode::test && !Arch::s390)
-	{
-	    if ((Mode::boot == "nfs") || (Mode::boot == "http") ||
-		(Mode::boot == "smb") || (Mode::boot == "ftp"))
+	    else if (netconfig == "dhcp")
 	    {
-		if (netconfig == "static")
-		{
-		    if (gateway != "")
-		    {
-			string route = "/sbin/route del default gw " + gateway;
-			SCR::Execute (.target.bash, route);
-		    }
-
-		    string ifconfig = "/sbin/ifconfig " + netdevice + " down";
-		    SCR::Execute (.target.bash, ifconfig);
-		}
-		else if (netconfig == "dhcp")
-		{
-		    // FIXME
-		}
-		else
-		{
-		    y2error ("unknown netconfig %1", netconfig);
-		}
+		// FIXME
+	    }
+	    else
+	    {
+		y2error ("unknown netconfig %1", netconfig);
 	    }
 	}
     }
 
+    if (Mode::boot == "nfs")
+    {
+	SCR::Execute (.target.bash, "/sbin/rcportmap start");
+    }
+}
 
-    return `auto;
+
+if (mode == `dn)
+{
+    if (Mode::boot == "nfs")
+    {
+	SCR::Execute (.target.bash, "/sbin/rcportmap stop");
+    }
+
+    if (!Mode::test && !Arch::s390)
+    {
+	if ((Mode::boot == "nfs") || (Mode::boot == "http") ||
+	    (Mode::boot == "smb") || (Mode::boot == "ftp"))
+	{
+	    if (netconfig == "static")
+	    {
+		if (gateway != "")
+		{
+		    string route = "/sbin/route del default gw " + gateway;
+		    SCR::Execute (.target.bash, route);
+		}
+
+		string ifconfig = "/sbin/ifconfig " + netdevice + " down";
+		SCR::Execute (.target.bash, ifconfig);
+	    }
+	    else if (netconfig == "dhcp")
+	    {
+		// FIXME
+	    }
+	    else
+	    {
+		y2error ("unknown netconfig %1", netconfig);
+	    }
+	}
+    }
+}
+
+
+return `auto;
+
+/* EOF */
 }

@@ -23,6 +23,7 @@ y2milestone("----------------------------------------");
 y2milestone("Lan module started");
 
 import "CommandLine";
+import "Label";
 import "Lan";
 import "RichText";
 
@@ -146,7 +147,7 @@ define void DeleteHandler(map options) ``{
 	CommandLine::Print(_("Success"));
     else
 	/* Progress result */
-	CommandLine::Print(_("Error"));
+	CommandLine::Print(Label::ErrorMsg());
 }
 
 CommandLineRun(cmdline);
