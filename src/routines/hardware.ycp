@@ -324,6 +324,8 @@ map FindHardware (list Hardware, integer which) {
 
 /**
  * Select the given hardware item
+ * SelectHardware is a "virtual method", that is named SelectHW in "subclasses"
+ * like Lan and Modem.
  * @param sel item to be chosen
  */
 map SelectHardwareMap (map sel) {
@@ -331,6 +333,15 @@ map SelectHardwareMap (map sel) {
     name = sel["name"]:"";
     type = sel["type"]:"eth";
     hotplug = sel["hotplug"]:"";
+
+    unique = sel["unique"]:"";
+    Requires = sel["requires"]:[];
+    // #44977: Requires now contain the appropriate kernel packages
+    // but they are handled differently due to multiple kernel flavors
+    // (see Package::InstallKernel)
+    // Leave only those not starting with "kernel".
+    Requires = filter (string r, Requires, ``( find (r, "kernel") != 0 ));
+    y2milestone ("requires=%1", Requires);
 
     // FIXME: devname
     hotplug = "";

@@ -1,8 +1,9 @@
 -------------------------------------------------------------------
-Mon Jan 17 09:44:11 CET 2005 - mvidner@suse.cz
+Mon Jan 17 09:45:40 CET 2005 - mvidner@suse.cz
 
 - Added DSL card detection.
 - Recognize USB Host-to-Host link detected by hwinfo (#22739).
+- Moved common things from SelectHW to SelectHardware.
 
 -------------------------------------------------------------------
 Fri Jan 14 13:04:50 CET 2005 - mvidner@suse.cz

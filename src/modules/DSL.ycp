@@ -33,6 +33,8 @@ global string unique = "";
 global string startmode = "manual";
 global boolean usercontrol = false;
 global string hotplug = "";
+// FIXME so far does nothing, add code like in Lan and Modem
+global list<string> Requires = [];
 
 /**
  * Special Capi-ADSL mode -- different presets for the first device.

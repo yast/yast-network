@@ -32,6 +32,7 @@ global string device = "";
 global string unique = "";
 global string startmode = "manual";
 global boolean usercontrol = false;
+global list<string> Requires = [];
 
 /**
  * Hotplug type ("" if not hot pluggable)
@@ -52,9 +53,6 @@ global string Device = "/dev/modem";
 global string DialPrefix = "";
 global string DialPrefixRx = "";
 global string PPPDoptions = "";
-
-global list<string> Requires = [];
-global list<string> Drivers = [];
 
 /* something already proposed? */
 global boolean proposal_valid = false;
@@ -464,13 +462,6 @@ global define void SelectHW(integer which) {
     Device = sel["device_name"]:"";
     BaudRate = sel["speed"]:57600;
     PPPDoptions = sel["pppd_options"]:"";
-    Requires = sel["requires"]:[];
-    // #44977: Requires now contain the appropriate kernel packages
-    // but they are handled differently due to multiple kernel flavors
-    // (see Package::InstallKernel)
-    // Leave only those not starting with "kernel".
-    Requires = filter (string r, Requires, ``( find (r, "kernel") != 0 ));
-    unique = sel["unique"]:"";
     type = "modem";
 }
 

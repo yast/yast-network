@@ -57,6 +57,8 @@ global string alias = "";
  */
 global string hotplug = "";
 
+global list<string> Requires = [];
+
 /* address options */
 global string bootproto = "static";
 global string ipaddr = "";
@@ -121,8 +123,6 @@ map hw = $[];
 /* NetworkModules:: name */
 global string nm_name = "";
 global string nm_name_old = nil;
-
-global list<string> Requires = [];
 
 /**
  * Abort function
@@ -495,15 +495,6 @@ global define map Export() {
  */
 void SelectHWMap (map hw) {
     SelectHardwareMap (hw);
-    unique = hw["unique"]:"";
-
-    Requires = hw["requires"]:[];
-    // #44977: Requires now contain the appropriate kernel packages
-    // but they are handled differently due to multiple kernel flavors
-    // (see Package::InstallKernel)
-    // Leave only those not starting with "kernel".
-    Requires = filter (string r, Requires, ``( find (r, "kernel") != 0 ));
-    y2milestone ("requires=%1", Requires);
 
     if(hotplug == "") {
 	// FIXME: MOD Module["module"] = hw["module"]:"";

@@ -46,11 +46,15 @@ import "Directory";
 import "Package";
 import "String";
 
+// yuck, FIXME
+// this is here just because network/hardware.ycp references it
+// because of detection and module loading (StartEthInterface)
 /* general stuff */
 global string name = "";
 global string type = "";
 global string unique = "";
 global string hotplug = "";
+global list<string> Requires = [];
 
 include "network/hardware.ycp";
 

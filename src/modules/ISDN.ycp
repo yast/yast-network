@@ -163,6 +163,7 @@ string name = "";
 string unique = "";
 string hotplug = "";
 string alias = "";
+global list<string> Requires = []; // because of hardware.ycp
 
 include "network/devices.ycp";
 include "network/hardware.ycp";
