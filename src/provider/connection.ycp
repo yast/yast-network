@@ -254,6 +254,10 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    Providers::provider = union(Providers::provider, $[
 		"STUPIDMODE" : UI::QueryWidget(`id(`stupidmode), `Value) ? "yes" : "no"
 	    ]);
+	if (type == "isdn")
+	    Providers::provider = union(Providers::provider, $[
+		"FIREWALL" : UI::QueryWidget(`id(`Firewall), `Value) ? "yes" : "no"
+	    ]);
 	/* update firewall info */
 	if(FirewallChecked != UI::QueryWidget(`id(`Firewall), `Value)) {
 	    FirewallChecked = UI::QueryWidget(`id(`Firewall), `Value);
