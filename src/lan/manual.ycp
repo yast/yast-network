@@ -44,13 +44,15 @@ The values will be written into <i>/etc/modules.conf</i>.</p>")
         +
     /* Manual dialog help 2/3 */
     _("<p>Options for the module should be written in the format
-<i>option</i>=<i>value</i> and each entry should be space separated,
-e.g. <i>io=220 irq=5</i>. <b>Note:</b> If  two cards are configured
-with the same module name, options will be merged while saving.</p>")
+<i>option</i>=<i>value</i>. Each entry should be space separated,
+for example, <i>io=220 irq=5</i>. <b>Note:</b> If  two cards are configured
+with the same module name, options will be merged while saving.</p>
+")
         +
     /* Manual dialog help 3/3 */
-    _("<p>You can get a list of available network cards by pressing the
-<b>List</b> button.</p>");
+    _("<p>Get a list of available network cards 
+by pressing <b>List</b>.</p>
+");
 
     string modul = Lan::modul;
     string options = Lan::options;
@@ -89,7 +91,7 @@ with the same module name, options will be merged while saving.</p>")
 	    `Frame(_("&Kernel module"), `VBox(
 		`VSpacing(0.2),
 		// text entry label
-		`TextEntry(`id(`modul), _("Name of the &module"), modul),
+		`TextEntry(`id(`modul), _("&Module name"), modul),
 		`VSpacing(0.2),
 		// textentry label
 		`TextEntry(`id(`options), _("Op&tions"), options),
@@ -179,7 +181,7 @@ global define symbol ManualSelection() ``{
     map db = SCR::Read(.target.yast2, "netcards.ycp");
     if(db == nil) {
 	/* Error popup */
-	UI::MessagePopup(_("Network cards database not found."));
+	UI::MessagePopup(_("Network card database not found."));
 	return `cancel;
     }
 

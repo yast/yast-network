@@ -37,10 +37,11 @@ global define symbol RoutingMainDialog() ``{
 
     /* Routing dialog help */
     string help = _("<p>The routing can be set up in this dialog. The
-    default route matches every possible destination, but poorly, so that
-    if any other entry exists that matches the required address it will be
+    default route matches every possible destination, but poorly. 
+    If any other entry exists that matches the required address, it will be
     used instead of the default route. The idea of the default route is
-    simply to enable you to say \"and everything else should go here\".</p>");
+    simply to enable you to say \"and everything else should go here\".</p>
+");
 
     integer max = 0;
     integer items = 0;
@@ -82,7 +83,7 @@ global define symbol RoutingMainDialog() ``{
 	`Frame(_("Routing table"),
 	    `VBox(
 		`Left(`CheckBox(`id(`expert), `opt(`notify), _("E&xpert configuration"))),
-		`Table(`id(`table), `header(_("Destination"), _("Dummy/Gateway"), _("Netmask"), _("Device")), []),
+		`Table(`id(`table), `header(_("Destination"), _("Dummy or Gateway"), _("Netmask"), _("Device")), []),
 		`HBox(`PushButton(`id(`add), _("Ad&d")),
 		    `PushButton(`id(`edit), `opt(`disabled), _("&Edit")),
 		    `PushButton(`id(`delete), `opt(`disabled), _("De&lete"))))),
@@ -214,7 +215,7 @@ global define term RoutingEditDialog(integer id, term entry, list devs) ``{
 	`HSpacing(1),
 	`VBox(
 	    `TextEntry(`id(`destination), _("&Destination"), select(entry, 1, "")),
-	    `TextEntry(`id(`gateway), _("Dummy/&Gateway"), select(entry, 2, "")),
+	    `TextEntry(`id(`gateway), _("Dummy or &Gateway"), select(entry, 2, "")),
 	    `TextEntry(`id(`netmask), _("&Netmask"), select(entry, 3, "")),
 	    `ComboBox(`id(`device), `opt(`editable, `hstretch), _("De&vice (optional)"), devs)
 	    ),

@@ -110,9 +110,10 @@ Then press <B>Configure</B>.
 
     /* modems summary dialog help 3/3 */
     helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
-If you press <B>Edit</B>, an additional dialog (where you
-can change the configuration) will open.
-</P>");
+If you press <B>Edit</B>, an additional dialog in which
+to change the configuration opens.
+</P>
+");
 
     list summary = Modem::Summary(true);
     list unconfigured = select(summary, 1, []);

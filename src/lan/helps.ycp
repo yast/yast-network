@@ -31,13 +31,15 @@ global define string ReadDialogHelp() ``{
 
 // network read dialog help 1/2
 _("<P><B><BIG>Initializing network configuration</BIG></B><BR>
-Please wait for a while...
-<BR></P>") +
+Please wait...
+<BR></P>
+") +
 // network read dialog help 2/2
 _("<P><B><BIG>Aborting the initialization:</BIG></B><BR>
-You can safely abort the configuration utility by pressing the <B>Abort</B>
-button now.
-</P>");
+Safely abort the configuration utility by <B>Abort</B>
+now.
+</P>
+");
 }
 
 /**
@@ -50,13 +52,15 @@ global define string WriteDialogHelp() ``{
 
 // network write dialog help 1/2
 _("<P><B><BIG>Saving network configuration</BIG></B><BR>
-Please wait for a while...
-<BR></P>") +
+Please wait...
+<BR></P>
+") +
 // network write dialog help 2/2
-_("<P><B><BIG>Aborting the saving:</BIG></B><BR>
-You can abort the saving by pressing the <B>Abort</B> button.
-An additional dialog will inform you whether it is safe to do so or not.
-</P>");
+_("<P><B><BIG>Aborting saving:</BIG></B><BR>
+Abort saving by pressing <B>Abort</B>.
+An additional dialog will inform you whether it is safe to do so.
+</P>
+");
 }
 
 /**
@@ -69,19 +73,22 @@ global define string SummaryDialogHelp() ``{
 
 // network detected dialog help 1/3
 _("<P><B><BIG>Network card setup</BIG></B><BR>
-Here you can configure your network card.
-<BR></P>") +
+Configure your network card here. 
+<BR></P>
+") +
 // network detected dialog help 2/3
 _("<P><B><BIG>Adding a network card:</BIG></B><BR>
-Choose a network card from the list of the detected network cards.
-If your network card was not autodetected, use <B>Other (not detected)</B>.
-Then press <B>Configure</B>.
-</P>") +
+Choose a network card from the list of detected network cards.
+If your network card was not autodetected, select <B>Other (not detected)</B>
+then press <B>Configure</B>.
+</P>
+") +
 // network detected dialog help 3/3
 _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
-If you press <B>Edit</B>, an additional dialog (where you
-can change the configuration) will open.
-</P>");
+If you press <B>Edit</B>, an additional dialog in which
+to change the configuration opens.
+</P>
+");
 }
 
 /**
@@ -93,19 +100,22 @@ global define string OverviewDialogHelp() ``{
     return
 
 // network overview dialog help 1/3
-_("<P><B><BIG>Network cards overview</BIG></B><BR>
-Here you can get an overview about installed network cards. Additionally
-you can edit their configuration.
-<BR></P>") +
+_("<P><B><BIG>Network card overview</BIG></B><BR>
+Obtain an overview of installed network cards. Additionally,
+edit their configuration.
+<BR></P>
+") +
 // network overview dialog help 2/3
 _("<P><B><BIG>Adding a network card:</BIG></B><BR>
-If you press <B>Add</B>, you can manually configure a network card.
-</P>") +
+Press <B>Add</B> to manually configure a new network card.
+</P>
+") +
 // network overview dialog help 3/3
 _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
-Choose a network card, whose configuration you want to change or remove.
-Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.
-</P>");
+Choose a network card to change or remove.
+Then press <B>Edit</B> or <B>Delete</B> as desired.
+</P>
+");
 
 }
 

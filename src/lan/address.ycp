@@ -40,40 +40,45 @@ global define symbol AddressDialog() ``{
     string caption = _("Network address setup");
 
     /* Address dialog help 1/9 */
-    string helptext = _("<p>This dialog allows you to configure your IP
-address.</p>");
+    string helptext = _("<p>Configure your IP
+address.</p>
+");
 
     /* Address dialog help 2/9 */
     helptext = helptext + _("<p>You can select dynamic address assignment,
 if you have a <b>DHCP server</b> running on your local network.</p>");
 
     /* Address dialog help 3/9 */
-    helptext = helptext + _("<p>You also should select this if you do not
-have a static IP address assigned to you by your cable or DSL provider.</p>");
+    helptext = helptext + _("<p>Also select this if you do not have a static
+IP address assigned by system administrator or your cable or DSL provider.</p>
+");
 
     /* Address dialog help 4/9 */
     helptext = helptext + _("<p>Network addresses will then be obtained
 <b>automatically</b> from the server.</p>");
 
     /* Address dialog help 5/9 */
-    helptext = helptext + _("<p>Configuration will be finished by clicking
-the <b>Next</b> button.</p>");
+    helptext = helptext + _("<p>Clicking <b>Next</b> 
+completes the configuration.</p>
+");
 
     /* Address dialog help 6/9 */
-    helptext = helptext + _("<p>Otherwise, you must assign the network
-addresses <b>manually</b>.</p>");
+    helptext = helptext + _("<p>Otherwise,  network addresses must be assigned <b>manually</b>.</p>
+");
 
     /* Address dialog help 7/9 */
     helptext = helptext + _("<p>Enter the IP address (e.g., 192.168.100.99) for
-your computer, the network mask (usually 255.255.255.0) and, optionally, the
-default gateway IP address.</p>");
+your computer, the network mask (usually 255.255.255.0), and, optionally, the
+default gateway IP address.</p>
+");
 
     /* Address dialog help 8/9 */
     helptext = helptext + _("<p>The name server setup dialog follows.</p>");
 
     /* Address dialog help 9/9 */
-    helptext = helptext + _("<p>Please contact your <b>network
-administrator</b> for more information about the network configuration.</p>");
+    helptext = helptext + _("<p>Contact your <b>network
+administrator</b> for more information about the network configuration.</p>
+");
 
     string bootproto = Lan::bootproto;
     string ipaddr = Lan::ipaddr;

@@ -73,12 +73,13 @@ global define symbol modem_params(symbol Type) ``{
     string caption = _("Modem parameters");
 
     // help text 1/6
-    string helptext = _("<p>Please enter all modem configuration values.</p>");
+    string helptext = _("<p>Enter all modem configuration values.</p>");
     // help text 2/6
     helptext = helptext +
-_("<P>The field <b>Device</b> says to which port your modem is attached
-(ttyS0, ttyS1, etc., refers to serial ports and usually corresponds to 
-COM1, COM2, etc., in DOS/Windows. ttyACM0, ttyACM1 refers to USB ports)</p>");
+_("<P><b>Device</b> specifies to which port your modem is connected.
+ttyS0, ttyS1, etc., refer to serial ports and usually correspond to 
+COM1, COM2, etc., in DOS/Windows. ttyACM0 and ttyACM1 refer to USB ports.</p>
+");
 
     // help text 3/6
     helptext = helptext +
@@ -86,21 +87,24 @@ _("<p><b>Modem name</b> is an arbitrary string to identify your modem.</p>");
 
     // help text 4/6
     helptext = helptext +
-_("<P>If you are on a PBX, you probably have to enter a <B>Dial prefix</B>.
-Often this is <I>9</I>.</P>");
+_("<P>If you are on a PBX, you probably need to enter a <B>Dial prefix</B>.
+Often, this is <I>9</I>.</P>
+");
 
     // help text 5/6
     helptext = helptext +
 _("<p>Choose <b>Dial mode</b> according to your phone link. Most telephone
 companies use <I>tone dial</I> as the <B>Dial mode</B>. Check the additional
-check boxes if you want to turn on your modem speaker (<i>Speaker on</i>)
-and if you want your modem to wait until it detects dial tone (<i>Detect Dial
-tone</i>).</p>");
+check boxes to turn on your modem speaker (<i>Speaker on</i>)
+or for your modem to wait until it detects a dial tone (<i>Detect Dial
+tone</i>).</p>
+");
 
     // help text 6/6
     helptext = helptext +
-_("<p>By pressing <b>Details</b>, configure the Baud Rate and the Modem 
-Initialization strings.</p>");
+_("<p>Press <b>Details</b> to configure the baud rate and the modem 
+initialization strings.</p>
+");
 
 
     /* DIALOG CONTENTS */
@@ -192,7 +196,7 @@ Initialization strings.</p>");
 	    */
 
 	    if (false/*!IsModemNameUniq(name)*/) {		// FIXME: function IsModemNameUniq(name)
-		UI::MessagePopup(_("This modem name already exist"));
+		UI::MessagePopup(_("This modem name already exists"));
 		continue;
 	    }
 
@@ -244,7 +248,7 @@ global define symbol modem_details() ``{
 
     /* DIALOG TEXTS */
 
-    string caption = _("Modem parameters details");
+    string caption = _("Modem parameter details");
 
     //help text 1/2
     string helptext =
@@ -253,8 +257,9 @@ second your computer communicates with your modem.</p>");
 
     //help text 2/2
     helptext = helptext +
-_("<p>You should find all the relevant information about <b>init strings</b>
-in your modem manual.</p>");
+_("<p>All the relevant information about <b>init strings</b>
+should be in your modem manual.</p>
+");
 
 
     /* DIALOG CONTENTS */
@@ -382,13 +387,15 @@ provider.</p>");
     // help text 2/3
     helptext = helptext +
 _("<p>If you plan to use more than one provider, you can set one as <b>default</b>.
-(This one will be used if you do not explicitly use another.)</p>");
+It will be used if you do not explicitly use another.</p>
+");
 
     // help text 3/3
     helptext = helptext +
 _("<p>Selecting <b>activate firewall</b> will block all incoming connections.
 Choosing this option will make dial-up connections to the Internet safe from 
-attacks from the outside.</p>");
+external attacks.</p>
+");
 
     string caption = _("Connection parameters");
 
@@ -411,7 +418,7 @@ attacks from the outside.</p>");
 			`Left(`CheckBox(`id(`IsDefault),
 			    _("Set this provider as default for the program `&wvdial'"), IsDefault)),
                         FirewallCheckbox,
-                        `Left(`CheckBox (`id(`DialOnDemand), `opt (`notify), _("Dial on d&emand"), DialOnDemand))
+                        `Left(`CheckBox (`id(`DialOnDemand), `opt (`notify), _("Dial-on-d&emand"), DialOnDemand))
                      )
                 ),
 		`VSpacing(0.2),
@@ -521,8 +528,8 @@ global define symbol modem_connection_details() ``{
 
     /* DIALOG TEXTS */
 
-    string caption = _("Connection parameters details");
-    string helptext = _("<p>Check the buttons for reestablishing connection and modifying DNS according to your wish.</p>");
+    string caption = _("Connection parameter details");
+    string helptext = _("<p>Check the buttons for reestablishing the connection and modifying DNS as best suits your needs.</p>");
 
     /* DIALOG CONTENTS */
 
@@ -576,7 +583,7 @@ global define symbol modem_connection_details() ``{
 
 	    if (IdleSeconds == "")
 	    {
-		UI::MessagePopup(_("You have to set idle seconds field"));
+		UI::MessagePopup(_("You must set the idle seconds."));
 		continue;
 	    }
 	    else
