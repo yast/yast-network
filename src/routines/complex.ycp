@@ -25,8 +25,8 @@ global string NetworkCardRegex = "arc|ci|ctc|escon|eth|fddi|hsi|iucv|myri|tr";
 /**
  * Regular expression for all network device types
  */
-global string NetworkDeviceRegex = "eth-pcmcia-|eth-usb-|tr-pcmia-|tr-usb-|"
-    + NetworkCardRegex;
+global string NetworkDeviceRegex = "eth-pcmcia|eth-pcmcia-|eth-usb|eth-usb-|" +
+    "tr-pcmcia|tr-pcmia-|tr-usb|tr-usb-|" + NetworkCardRegex;
 
 /**
  * Regular expression for all ISDN card types

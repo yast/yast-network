@@ -47,7 +47,9 @@ Read	.init.scripts.exists "smpppd" true
 Read	.init.scripts.runlevel "smpppd" nil
 Read	.init.scripts.comment "smpppd" nil
 Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/smpppd" $["exit":0, "stderr":"", "stdout":""]
-Execute	.target.bash "/etc/init.d/smpppd restart" $["TERM":"raw"] 0
+Read	.init.scripts.exists "smpppd" true
+Execute	.target.bash "/etc/init.d/smpppd status" $["TERM":"raw"] 0
+Execute	.target.bash "/etc/init.d/smpppd reload" $["TERM":"raw"] 0
 Return	true
 Read	.init.scripts.exists "smpppd" true
 Read	.init.scripts.exists "smpppd" true
@@ -55,7 +57,9 @@ Read	.init.scripts.runlevel "smpppd" nil
 Read	.init.scripts.comment "smpppd" nil
 Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/smpppd" $["exit":1, "stderr":"Dummy error message", "stdout":""]
 Log	Unable to enable service smpppd:
-Execute	.target.bash "/etc/init.d/smpppd restart" $["TERM":"raw"] 1
+Read	.init.scripts.exists "smpppd" true
+Execute	.target.bash "/etc/init.d/smpppd status" $["TERM":"raw"] 1
+Execute	.target.bash "/etc/init.d/smpppd start" $["TERM":"raw"] 1
 Return	false
 Dump	EnableService
 Read	.init.scripts.exists "service" true

@@ -93,11 +93,8 @@ Read	.network.value."eth7".STARTMODE "manual"
 Dir	.network.value."eth8": ["IPADDR", "STARTMODE"]
 Read	.network.value."eth8".IPADDR "1.2.3.4"
 Read	.network.value."eth8".STARTMODE "manual"
-Dir	.network.value."eth5:5": ["BOOTPROTO", "STARTMODE"]
-Read	.network.value."eth5:5".BOOTPROTO "dhcp"
-Read	.network.value."eth5:5".STARTMODE "manual"
 Return	true
-Dump	eth=$["eth":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual", "_aliases":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]]], "6":$["BOOTPROTO":"static", "IPADDR":"1.2.3.4", "STARTMODE":"manual"], "7":$["STARTMODE":"manual"], "8":$["IPADDR":"1.2.3.4", "STARTMODE":"manual"]]]
+Dump	eth=$["eth":$["5":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"], "6":$["BOOTPROTO":"static", "IPADDR":"1.2.3.4", "STARTMODE":"manual"], "7":$["STARTMODE":"manual"], "8":$["IPADDR":"1.2.3.4", "STARTMODE":"manual"]]]
 Dir	.network.section: ["arc5", "atm5", "ci5", "ctc5", "dummy5", "escon5", "eth-pcmcia", "eth-usb", "eth5", "eth5:5", "eth6", "eth7", "eth8", "fddi5", "hippi5", "hsi5", "ippp5", "iucv5", "lo", "lo:5", "myri5", "ppp5", "tr.bak5", "tr5"]
 Dir	.network.value."ppp5": ["BOOTPROTO", "STARTMODE"]
 Read	.network.value."ppp5".BOOTPROTO "dhcp"

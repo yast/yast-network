@@ -195,7 +195,9 @@ global define boolean Read() ``{
     if(Abort()) return false;
     /* Progress step 3/8 */
     ProgressNextStage(_("Reading current configuration..."));
+    y2milestone("NetworkDeviceRegex=%1", NetworkDeviceRegex);
     ReadDevices(NetworkDeviceRegex);
+    y2milestone("NetworkDeviceRegex=%1", NetworkDeviceRegex);
     CleanHotplugSymlink();
     // ReadDevices("");
     sleep(sl);

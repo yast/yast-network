@@ -1,3 +1,7 @@
+-------------------------------------------------------------------
+Tue Mar 11 11:08:09 CET 2003 - msvec@suse.de
+
+- fixed reading of unknown devices (#24972)
 - reload smpppd after DSL config (#24663)
 - 2.7.31
 

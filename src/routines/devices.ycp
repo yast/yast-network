@@ -35,7 +35,9 @@ global define boolean ReadDevices(string devregex) ``{
     y2debug("devices=%1", devices);
 
     if(devregex != nil && devregex != "") {
-	devices = filter(string file, devices, ``(regexpmatch(file, "^" + devregex + "([0-9]|$)")));
+	string regex = "^(" + devregex + ")[0-9]*$";
+	y2debug("regex=%1", regex);
+	devices = filter(string file, devices, ``(regexpmatch(file, regex)));
 	y2debug("devices=%1", devices);
     }
 

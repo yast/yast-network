@@ -95,10 +95,10 @@ global define boolean EnableSMPPPD() ``{
     boolean ret = true;
     ret = EnableService("smpppd") && ret;
 
-    if(Runlevel::ServiceStatus(service) == 0)
-	ret = Runlevel::RunInitScript(service, "reload") && ret;
+    if(Runlevel::ServiceStatus("smpppd") == 0)
+	ret = (Runlevel::RunInitScript("smpppd", "reload") == 0) && ret;
     else
-	ret = Runlevel::RunInitScript(service, "start") && ret;
+	ret = (Runlevel::RunInitScript("smpppd", "start") == 0) && ret;
     y2debug("ret=%1", ret);
 
     return ret;
