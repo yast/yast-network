@@ -71,6 +71,16 @@ _("<p>FIXME
     string interface = DSL::interface;
     list ifaces = [];
 
+    ifaces = Lan::GetDevices("eth");
+    if(size(ifaces) < 1) {
+	if(Lan::Propose()) {
+	    Lan::Edit("eth0");
+	    Lan::bootproto = "";
+	    Lan::ipaddr = "";
+	    Lan::Commit();
+	}
+    }
+
     /**
      */
     define void UpdateInterfaces() ``{

@@ -691,7 +691,7 @@ global define boolean Commit() ``{
 /**
  * Propose a configuration
  */
-global define void Propose() ``{
+global define boolean Propose() ``{
 
     y2milestone("Devices=%1", Devices);
     y2milestone("Hardware=%1", Hardware);
@@ -700,7 +700,7 @@ global define void Propose() ``{
     /* Something is already configured -> do nothing */
     if(size(Devices) > 0) {
 	y2milestone("Something already configured: don't propose.");
-	return;
+	return false;
     }
 
     Add();
@@ -727,11 +727,21 @@ global define void Propose() ``{
     }
     /* Nothing detected -> use InstallInf */
     else if(size(InstallInf) > 0) {
+
+	if(!haskey(InstallInf, "module")) {
+	    y2debug("No hardware, no install.inf module -> no proposal.");
+	    return false;
+	}
+
 	Module["module"] = InstallInf["module"]:"";
 	Module["options"] = InstallInf["options"]:"";
 
 	type = InstallInf["type"]:"eth";
 	device = GetFreeDevice(type);
+    }
+    else {
+	y2debug("No hardware, no install.inf -> no proposal.");
+	return false;
     }
 
     ipaddr = InstallInf["ipaddr"]:"";
@@ -779,6 +789,7 @@ global define void Propose() ``{
 
     Commit();
     y2milestone("Devices=%1", Devices);
+    return true;
 }
 
 /**
