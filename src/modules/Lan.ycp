@@ -1027,7 +1027,7 @@ define map FindMatchingDevice(map interface) {
 	// go thru all devices, check whether there's one that does
 	// not have a configuration yet
 	// and has the same type as the current profile item
-	foreach (map h, Hardware {
+	foreach (map h, Hardware, {
             y2milestone("Checking for device=%1", h);
             SelectHWMap(h);
             string _device_name = NetworkDevices::device_name(NetworkDevices::RealType(type, hotplug), device);
