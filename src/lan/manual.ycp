@@ -388,6 +388,8 @@ available options.</p>");
 
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    BackButtonLabel(), OKButtonLabel());
+    // FIXME: provide a better check and an error message, #17546
+    UI::ChangeWidget (`id (`key), `ValidChars, "0123456789abcdefABCDEF-:s");
 
     any ret = nil;
     while(true) {
