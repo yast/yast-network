@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu Sep  4 10:21:23 CEST 2003 - msvec@suse.cz
+
+- use dhcpcd-test script for testing of DHCP (#29945)
+- changed DSL default for CZ to PPtP
+- fixed proxy help text (#29948)
+- fixed Myrinet subclass ID
+- 2.8.25
+
+-------------------------------------------------------------------
 Thu Sep 04 11:39:02 CEST 2003 - arvin@suse.de
 
 - fixed encoding of logs in internet test (bug #29500)

@@ -29,7 +29,10 @@
 {
 
 textdomain "network";
+
 import "Arch";
+import "String";
+
 include "network/routines.ycp";
 
 /**
@@ -163,22 +166,29 @@ global define boolean ChangeModule(string name, boolean check) ``{
 
     string m = Module["module"]:"";
     string o = Module["options"]:"";
+    y2debug("%1,%2", m, o);
+
+    m = String::CutBlanks(m);
+    o = String::CutBlanks(o);
+    y2debug("%1,%2", m, o);
 
     map alias = Modules["alias"]:$[];
-    alias[name]=m;
+    alias[name] = m;
     Modules["alias"] = alias;
 
     map m_orig = string2map(Modules["options", m]: "");
     map m_new = string2map(o);
     maplist(string mo, string op, m_new, ``{
-	if(haskey(m_orig, mo)) m_orig[mo] = sformat("%1,%2", op, m_orig[mo]:"");
+	if(haskey(m_orig, mo)) {
+	    if(m_orig[mo]:"" != op)
+		m_orig[mo] = sformat("%1,%2", op, m_orig[mo]:"");
+	}
 	else m_orig[mo] = op;
     });
 
     map options = Modules["options"]:$[];
     options[m] = map2string(m_orig);
     Modules["options"] = options;
-
 
     y2debug("Modules=%1", Modules);
     return true;

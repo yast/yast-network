@@ -11,6 +11,7 @@
 
 textdomain "network";
 
+import "String";
 import "Popup";
 import "Progress";
 
@@ -78,7 +79,7 @@ global define string map2string(map m) ``{
     maplist(string var, string val, m, ``{
 	ret = ret + sformat(" %1=%2", var, val);
     });
-    return ret;
+    return String::CutBlanks(ret);
 }
 
 /**

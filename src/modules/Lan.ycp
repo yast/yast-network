@@ -171,7 +171,7 @@ global define boolean Read() ``{
 	/* Progress stage 2/9 */
 	_("Read /etc/modules.conf"),
 	/* Progress stage 3/9 - multiple devices may be present, really plural*/
-	_("Read devices configuration"),
+	_("Read device configuration"),
 	/* Progress stage 4/9 */
 	_("Read network configuration"),
 	/* Progress stage 5/9 */
@@ -203,7 +203,7 @@ global define boolean Read() ``{
 
     if(Abort()) return false;
     /* Progress step 3/9 - multiple devices may be present, really plural*/
-    ProgressNextStage(_("Reading devices configuration..."));
+    ProgressNextStage(_("Reading device configuration..."));
     /* ReadDevices(""); /* TESTING */
     ReadDevices(NetworkDeviceRegex);
     CleanHotplugSymlink();

@@ -138,8 +138,8 @@ define boolean StopEthInterface() ``{
 define boolean StartDetection() ``{
 
     /* Start DHCP detection */
-    SCR::Execute(.target.bash, sformat("rm -f %1/dhcpcd-*", tmpdir));
-    SCR::Execute(.target.bash, sformat("dhcpcd -Td -t 10 -NYRG -L %1 %2", tmpdir, device));
+    SCR::Execute(.target.bash, sformat("/bin/rm -f %1/dhcpcd-*", tmpdir));
+    SCR::Execute(.target.bash, sformat("/usr/sbin/dhcpcd-test %1 > %2/dhcpcd-%1.info", device, tmpdir));
 
     return true;
 }
