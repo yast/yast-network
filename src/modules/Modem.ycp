@@ -38,6 +38,7 @@ global string type = "";
 global integer device = -1;
 global string unique = "";
 
+/* modem settings */
 global string Init1 = "ATZ";
 global string Init2 = "AT Q0 V1 E1 S0=0 &C1 &D2 +FCLASS=0";
 global string Init3 = "";
@@ -59,6 +60,14 @@ global string DNS2 = "";
 global boolean AutoDNS = true;
 global string IdleSeconds = "300";
 
+global string provName = "";
+global string provShortName = "";
+global boolean provAskPassword = false;
+
+global string provUsername = "";
+global string provPassword = "";
+global string provPhone = "";
+
 /* obsolete stuff */
 // global string DefaultModem = "";
 // global boolean IsDefault = true;
@@ -66,20 +75,6 @@ global string IdleSeconds = "300";
 
 /* other stuff */
 global boolean Firewall = false;
-
-/********************************************/
-/* Dane, hod prosim ty veci z provideru sem
- * -- asi to bude minimalne toto: */
-
-global string provUsername = "";
-global string provPassword = "";
-global string provPhone = "";
-
-global string provName = "";
-global string provShortName = "";
-global boolean provAskPassword = false;
-
-/* ... */
 
 /*--------------*/
 /* PRIVATE DATA */
@@ -118,6 +113,9 @@ boolean modified = false;
  * Which operation is pending?
  */
 symbol operation = nil;
+
+/* FIXME */
+map WriteOneProvider = $[];
 
 /*------------------*/
 /* GLOBAL FUNCTIONS */
@@ -195,7 +193,7 @@ global define boolean Write() ``{
     sleep(sl);
 
     if(Abort()) return false;
-    ProgressNextStage(_("Writing /etc/modules.conf"));
+    ProgressNextStage(_("Writing providers"));
     //WriteProviders();
     sleep(sl);
 
@@ -230,119 +228,82 @@ global define void SelectHW(integer which) ``{
 }
 
 /**
+ * Add a new modem or edit existing (prepare before Commit)
  * @return true if success
  */
-global define boolean Add() ``{
-
-    /* general stuff */
-    name = "";
-    type = "ppp";
-    device = select(GetFreeDevices(type,1), 0, -1);
-    unique = "";
-
-    /* ... */
-    Init1 = "ATZ";
-    Init2 = "AT Q0 V1 E1 S0=0 &C1 &D2 +FCLASS=0";
-    Init3 = "";
-    BaudRate = 57600;
-
-    Device = "/dev/modem";
-    DialPrefix = "";
-    PPPDoptions = "";
-
-    PulseDial = true;
-    Speaker = true;
-    Carrier = true;
-
-    /* provider settings */
-    provUsername = "";
-    provPassword = "";
-    provPhone = "";
-
-    provName = "";
-    provShortName = "";
-    provAskPassword = false;
-
-    DialOnDemand = false;
-    DNS1 = "";
-    DNS2 = "";
-
-    //IsDefault = true;
-    //DefaultModem = "";
-    //Provider = "";
-    AutoDNS = true;
-    IdleSeconds = "300";
-
-    /* other stuff */
-    Firewall = false;
-
-    operation = `add;
-    return true;
-}
-
-/**
- * @return true if success
- */
-global define boolean Edit(string dev) ``{
+global define boolean AddEdit(string dev) ``{
     operation = nil;
-    string typ = device_type(dev);
-    integer num = device_num(dev);
-    string n = sformat("%1",num);
+    map devmap = $[];
 
-    map typemap = lookup(CONFIG, typ, $[]);
-    if(!haskey(typemap, n)) {
-        y2error("Key not found: %1", dev);
-        return false;
+    /* dev=="" -> Add */
+    if(dev == "") {
+	type = "ppp";
+	device = select(GetFreeDevices(type,1), 0, -1);
     }
-    map devmap = lookup(typemap, n, $[]);
+    /* dev!="" -> Edit */
+    else {
+	string typ = device_type(dev);
+	integer num = device_num(dev);
+	string n = sformat("%1",num);
+
+	map typemap = lookup(CONFIG, typ, $[]);
+	if(!haskey(typemap, n)) {
+	    y2error("Key not found: %1", dev);
+	    return false;
+	}
+	devmap = lookup(typemap, n, $[]);
+
+	type = typ;
+	device = num;
+    }
 
     /* general stuff */
-    type = typ;
-    device = num;
+    name = devmap["NAME"]:"";
     unique = devmap["UNIQUE"]:"";
 
-    /* ... */
-    Init1 = devmap["INIT1"]:"";
-    Init2 = devmap["INIT2"]:"";
+    /* modem settings */
+    Init1 = devmap["INIT1"]:"ATZ";
+    Init2 = devmap["INIT2"]:"AT Q0 V1 E1 S0=0 &C1 &D2 +FCLASS=0";
     Init3 = devmap["INIT3"]:"";
     BaudRate = devmap["SPEED"]:57600;
 
-    Speaker = devmap["INIT8"]:"ATM0" == "ATM0";
-    Carrier = devmap["INIT9"]:"ATX3" == "ATX3";
+    Speaker = devmap["INIT8"]:"ATM1" == "ATM1";
+    Carrier = devmap["INIT9"]:"" == "";
     PulseDial = devmap["DIALCOMMAND"]:"ATDP" == "ATDP";
 
     Device = devmap["MODEM_DEVICE"]:"/dev/modem";
     DialPrefix = devmap["DIALPREFIX"]:"";
     PPPDoptions = devmap["PPPD_OPTIONS"]:"";
 
-    /* FIXME provider settings */
-    provUsername = "";
-    provPassword = "";
-    provPhone = "";
+    /* provider settings */
+    DialOnDemand = devmap["DEMAND"]:"no" == "yes";
+    DNS1 = devmap["DNS1"]:"";
+    DNS2 = devmap["DNS2"]:"";
 
-    provName = "";
+    AutoDNS = devmap["AUTODNS"]:"yes" == "yes";
+    IdleSeconds = devmap["IDLETIME"]:"0";
+
+    provPhone = devmap["PHONE"]:"";
+    provUsername = devmap["USERNAME"]:"";
+    provPassword = devmap["PASSWORD"]:"";
+
+    provName = devmap["PRODUCT"]:"";
     provShortName = devmap["PROVIDER"]:"";
-    provAskPassword = false;
+    provAskPassword = devmap[""]:"no" == "yes";
 
-    DialOnDemand = false;
     //IsDefault = true;
     //DefaultModem = "";
     //Provider = devmap["PROVIDER"]:"";
 
-    DNS1 = "";
-    DNS2 = "";
-
-    AutoDNS = true;
-    IdleSeconds = "0";
-
     /* other stuff */
-    Firewall = false;
+    Firewall = devmap["FIREWALL"]:"no" == "yes";
 
     operation = `edit;
     return true;
 }
 
 /**
+ * Delete a modem (prepare before Commit)
  * @return true if success
  */
 global define boolean Delete(string dev) ``{
@@ -363,6 +324,7 @@ global define boolean Delete(string dev) ``{
 }
 
 /**
+ * Commit the pending operation
  * @return true if success
  */
 global define boolean Commit() ``{
@@ -375,8 +337,8 @@ global define boolean Commit() ``{
 	    "INIT1"	: Init1,
 	    "INIT2"	: Init2,
 	    "SPEED"	: BaudRate,
-	    "INIT8"	: Carrier ? "ATX3" : "",
-	    "INIT9"	: Speaker ? "ATM0" : "ATM1",
+	    "INIT8"	: Carrier ? "" : "ATX3",
+	    "INIT9"	: Speaker ? "ATM1" : "ATM0",
 	    "DIALCOMMAND"	: PulseDial ? "ATDP" : "ATDT",
 	    "MODEM_DEVICE"	: Device,
 	    "DIALPREFIX"	: DialPrefix,
@@ -388,6 +350,24 @@ global define boolean Commit() ``{
 	    ConfigAdd(type, device, newdev, true);
 	else
 	    ConfigAdd(type, device, newdev, false);
+
+	/* FIXME: provider settings */
+	WriteOneProvider["DEMAND"] = DialOnDemand;
+	WriteOneProvider["DNS1"] = DNS1;
+	WriteOneProvider["DNS2"] = DNS2;
+
+	WriteOneProvider["AUTODNS"] = AutoDNS;
+	WriteOneProvider["IDLETIME"] = IdleSeconds;
+
+	WriteOneProvider["PHONE"] = provPhone;
+	WriteOneProvider["USERNAME"] = provUsername;
+	WriteOneProvider["PASSWORD"] = provPassword;
+
+	WriteOneProvider["PRODUCT"] = provName;
+	WriteOneProvider["PROVIDER"] = provShortName;
+	WriteOneProvider["ASKPASSWORD"] = provAskPassword;
+	/* FIXME */
+
     }
     else if(operation == `delete) {
 	ConfigDelete(type, device);

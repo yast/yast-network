@@ -143,7 +143,7 @@ to change the configuration opens.
 	}
 	/* configure the selected card */
 	else if(ret == `configure_button) {
-	    Modem::Add();
+	    Modem::AddEdit("");
 	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
 	    if(selected == `other) {
 		ret = `other;
@@ -218,14 +218,14 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 	}
 	/* add */
 	else if(ret == `add_button) {
-	    Modem::Add();
+	    Modem::AddEdit("");
 	    ret = `add;
 	    break;
 	}
 	/* edit */
 	else if(ret == `edit_button) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-	    Modem::Edit(dev);
+	    Modem::AddEdit(dev);
 	    ret = `edit;
 	    break;
 	}

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Feb  1 16:22:06 CET 2002 - msvec@suse.cz
+
+- fixed CarrierDetect and SpeakerOn initstrings
+- some more minor modem fixes
+- 2.5.12
+
+-------------------------------------------------------------------
 Wed Jan 30 17:10:06 CET 2002 - msvec@suse.cz
 
 - added preliminary dsl dialogs
