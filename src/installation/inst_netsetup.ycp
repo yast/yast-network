@@ -115,13 +115,19 @@ if (mode == `up)
 
 		if (nameserver != "")
 		{
-		    string domain_opt = domain == ""? "": "--domain " + domain + " ";
-		    SCR::Execute (.target.bash, "/sbin/modify_resolvconf modify " +
-				  "--service yast2 --process y2base " +
-				  "--text 'yast2 needs a nameserver' " +
-				  // #42758
-				  domain_opt +
-				  "--nameservers " + nameserver);
+		    string rc_fn = "/etc/resolv.conf";
+		    // don't overwrite it during update
+		    if (SCR::Read (.target.size, rc_fn) < 1)
+		    {
+			string rc =
+			    "# yast2 needs a nameserver (inst_netsetup)\n" +
+			    "nameserver " + nameserver + "\n";
+			if (domain != "")
+			{
+			    rc = rc + "domain " + domain + "\n";
+			}
+			SCR::Write (.target.string, rc_fn, rc);
+		    }
 		}
 	    }
 	    else if (netconfig == "dhcp")
@@ -145,49 +151,10 @@ if (mode == `up)
 }
 
 
+// (better do it in the control file, but I don't know which package it is in)
 if (mode == `dn)
 {
-    if (Mode::boot == "nfs")
-    {
-	// disable all sources
-	Pkg::SourceFinishAll ();
-
-	SCR::Execute (.target.bash, "/sbin/rcportmap stop");
-    }
-
-    if (do_network_setup ())
-    {
-	if ((Mode::boot == "nfs") || (Mode::boot == "http") ||
-	    (Mode::boot == "smb") || (Mode::boot == "ftp"))
-	{
-	    if (netconfig == "static")
-	    {
-		if (nameserver != "")
-		{
-		    SCR::Execute (.target.bash, "/sbin/modify_resolvconf restore " +
-				  "--service yast2");
-		}
-
-		if (gateway != "")
-		{
-		    string route = "/sbin/route del default gw " + gateway;
-		    SCR::Execute (.target.bash, route);
-		}
-
-		string ifconfig = "/sbin/ifconfig " + netdevice + " down";
-		SCR::Execute (.target.bash, ifconfig);
-	    }
-	    else if (netconfig == "dhcp")
-	    {
-		// FIXME
-		y2milestone ("DHCP UNUSED");
-	    }
-	    else
-	    {
-		y2error ("unknown netconfig %1", netconfig);
-	    }
-	}
-    }
+    y2debug ("disable 'down' action, #45317");
 }
 
 
