@@ -214,10 +214,10 @@ global define symbol dsl_dlg(boolean adsl) ``{
     {
 	helptext =
 _("<p>
-This module is only used for providers using PPPoE. In the U.S., some
-providers use PPTP, so you only need to configure your ethernet card
-in the \"Network/Base\" module within YaST2. If you are not sure, ask your 
-provider.
+This module is only relevant for providers using PPPoE.
+In the US, some providers use PPTP, so you only need to configure
+your ethernet card in the Network/Base module in YaST2.
+If you are not sure, ask your provider.
 </p>") +
 
 _("<p>
@@ -230,25 +230,25 @@ _("<p>
 </p>") +
 
 _("<p>
-Enter the device of your ethernet card, e.g., <i>eth0</i>. If you have 
-two cards, it could also be <i>eth1</i>.
+Enter the device of your ethernet card, for example, <i>eth0</i>.
+If you have two cards, it could also be <i>eth1</i>.
 </p>") +
     // helptext  main dialog ADSL
     // Translators: You might choose not to translate 'idletime', but it's up to you...
 _("<p>
-The <i>idle time</i> is the time after which the connection is disconnected if
-no data is being transferred.
+The <i>idle time</i> is the time after which the connection
+terminates if no data has been transferred.
 </p>") +
 
 _("<p>
-Selecting <i>activate firewall</i> will block all incoming connections. Choosing 
-this option will make dial-up connections to the Internet safe from external 
-attacks.
+Selecting <i>activate firewall</i> will block all incoming connections.
+Choosing this option will make dial-up Internet connections more secure
+against external attacks.
 </p>") +
 
 _("<p>
-<i>Dial on demand</i> means that a DSL connection will be made automatically 
-if data is demanded. To use this, specify at least one <i>name server</i>. 
+<i>Dial-on-demand</i> means that a DSL connection will be made automatically
+if data has been requested. To use it, specify at least one <i>name server</i>.
 </p>");
 
     }
@@ -257,9 +257,8 @@ if data is demanded. To use this, specify at least one <i>name server</i>.
 	helptext =
 _("<p>
 This module is ONLY used for the <b>GERMAN T-Online T-DSL</b> service.
-For example, in the U.S., DSL connections are NOT configured in this dialog.
-You only need to configure your ethernet card in the \"Network/Base\" module 
-in YaST2.
+For example, in the US, DSL connections are NOT configured in this dialog.
+Configure your ethernet card in the \"Network/Base\" module in YaST2.
 </p>") +
 
 _("<p>
@@ -273,8 +272,9 @@ Second, enter your registration data. Enter your <i>Line ID</i>
 <i>password</i>.
 </p>") +
 
-_("<p>Enter the device of your ethernet card, e.g., <i>eth0</i>. If you have 
-two cards, it could also be <i>eth1</i>.
+_("<p>
+Enter the device of your ethernet card, for example, <i>eth0</i>.
+If you have two cards, it could also be <i>eth1</i>.
 </p>") +
 
 _("<p>
@@ -282,14 +282,15 @@ The <i>idle time</i> is the time after which the connection is disconnected,
 if no data is being transferred.
 </p>") +
 
-_("<p>Selecting <i>activate firewall</i> will block all incoming connections.
-Choosing this option will make dial-up connections to the Internet safe from 
-external attacks.
+_("<p>
+Selecting <i>activate firewall</i> will block all incoming connections.
+Choosing this option will make dial-up Internet connections more secure
+against external attacks.
 </p>") +
 
-_("<p><i>Dial on demand</i> means that a T-DSL connection will be made 
-automatically, if data is requested. To use this, specify at least one 
-<i>name server.</i>
+_("<p>
+<i>Dial-on-demand</i> means that a T-DSL connection will be made automatically
+if data is requested. To use this, specify at least one <i>name server.</i>
 </p>");
 
     }
@@ -407,7 +408,7 @@ automatically, if data is requested. To use this, specify at least one
 	    }
 	    if (tointeger(UI::QueryWidget(`id(`idletime), `Value)) == nil)
 	    {
-		error = error + _("The idle time  may only contain decimal digits.");
+		error = error + _("The idle time may only contain decimal digits.");
 	    }
 
 	    // TODO: passwd & username
