@@ -27,16 +27,13 @@ global list nameservers = []; //"ns1", "ns2"];
 global list searchlist = []; //"s1", "s2"];
 global boolean dhcp_hostname = false;
 global boolean dhcp_resolv = false;
+global string resolv_conf_process = "";
+global boolean resolv_conf_force = false;
 
 /**
  * Data was modified?
  */
 global boolean modified = false;
-
-/**
- * Is any device configured with DHCP?
- */
-boolean has_dhcp = true;
 
 /**
  * "routes" file location
@@ -107,24 +104,9 @@ global define boolean Read() ``{
     if(SCR::Read(.target.size, "/etc/install.inf") != -1)
 	install_inf = SCR(`Read(.etc.install_inf));
 
-    /* any dhcp device? */
-    has_dhcp = true;
-    /* FIXME unused */
-
-    /* FIXME
-    if(SCR(`Execute (.target.bash, "/sbin/modify_resolvconf check -q")) != 0) {
-	string process = SCR (`Read (.etc.resolv_conf.process));
-	symbol ui = ModifyResolvConfPopup (process);
-	if (ui == `modify)
-	{
-	    modify_header = true;
-	}
-	else if (ui == `keep)
-	{
-	    keep_original = true;
-	}
-    }
-    */
+    /* check for externally modified resolv.conf */
+    if(SCR::Execute(.target.bash, "/sbin/modify_resolvconf check -q") != 0)
+	resolv_conf_process = SCR::Read(.etc.resolv_conf.process);
 
     /* only read /etc/resolv.conf if present */
     if(SCR::Read(.target.size, resolv_conf) > 0) {
@@ -208,15 +190,24 @@ global define boolean Write() ``{
     if(SCR::Read(.target.size, resolv_conf) < 0)
 	SCR::Write(.target.string, resolv_conf, "");
 
-    /* update /etc/resolv.conf */
-    SCR::Write(.etc.resolv_conf.search, searchlist);
-    SCR::Write(.etc.resolv_conf.nameserver, nameservers);
-    /* update domain in /etc/resolv.conf */
-    if(size(searchlist) > 0)
-	SCR::Write(.etc.resolv_conf.domain, "");
-    else
-	SCR::Write(.etc.resolv_conf.domain, domain);
-    SCR::Write(.etc.resolv_conf, nil);
+    /* either no process or force update */
+    if(resolv_conf_process == "" || resolv_conf_force == true) {
+
+	/* update /etc/resolv.conf */
+	SCR::Write(.etc.resolv_conf.search, searchlist);
+	SCR::Write(.etc.resolv_conf.nameserver, nameservers);
+	/* update domain in /etc/resolv.conf */
+	if(size(searchlist) > 0)
+	    SCR::Write(.etc.resolv_conf.domain, "");
+	else
+	    SCR::Write(.etc.resolv_conf.domain, domain);
+	SCR::Write(.etc.resolv_conf, nil);
+
+	/* write only an original header */
+	if(resolv_conf_force == true)
+	    SCR::Write(.etc.resolv_conf.write_header, true);
+
+    }
 
     return true;
 }

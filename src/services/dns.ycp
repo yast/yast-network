@@ -28,6 +28,51 @@ include "network/ip.ycp";
 include "network/routines.ycp";
 
 /**
+ * If there's running a process modifying resolv.conf,
+ * present a wanrning popup and return the result.
+ * @return true if resolv.conf should be modified
+ * (ie. no process running, or user decided to do so)
+ */
+global define boolean ModifyResolvConfPopup() ``{
+
+    string process = DNS::resolv_conf_process;
+    if(process == "") return true;
+
+    /* warning popup text 1/2 */
+    string text = _("<p>The resolver configuration file (/etc/resolv.conf)
+has been temporarily modified by %1. You have two options:</p>");
+
+    /* warning popup text 2/2 */
+    text = text + _("<ol>
+<li>Modify the current (changed!) version of the file</li>
+<li>Press 'Accept' now and continue editing other (non resolver) data. You
+could return to this dialog later, when the above service has terminated.</li>
+</ol>");
+
+    /* has been modified by "unknown process" */
+    text = sformat(text, size(process) > 1 ? process : _("unknown process"));
+
+    UI::OpenDialog(`opt(`decorated), `VBox(
+	`HSpacing(60),
+	`HBox(
+	    `VSpacing(8),
+	    `RichText(text)
+	),
+	`HBox(
+	    `PushButton(`id(`accept), `opt(`default), _("&Accept")),
+	    `HSpacing(2),
+	    `PushButton(`id(`modify), _("&Modify"))
+	)
+    ));
+
+    any ret = UI::UserInput();
+    UI::CloseDialog();
+
+    DNS::resolv_conf_force = (ret == `modify);
+    return DNS::resolv_conf_force;
+}
+
+/**
  * Dialog for querying DNS & hostname info
  * @return user input
  */
@@ -139,6 +184,16 @@ your changes and <b>finish</b> the network configuration.</p>");
     UI::ChangeWidget(`id(`ns1), `ValidChars, "0123456789.");
     UI::ChangeWidget(`id(`ns2), `ValidChars, "0123456789.");
     UI::ChangeWidget(`id(`ns3), `ValidChars, "0123456789.");
+
+    if(ModifyResolvConfPopup() != true) {
+	UI::ChangeWidget(`id(`dr), `Enabled, false);
+	UI::ChangeWidget(`id(`s1), `Enabled, false);
+	UI::ChangeWidget(`id(`s2), `Enabled, false);
+	UI::ChangeWidget(`id(`s3), `Enabled, false);
+	UI::ChangeWidget(`id(`ns1), `Enabled, false);
+	UI::ChangeWidget(`id(`ns2), `Enabled, false);
+	UI::ChangeWidget(`id(`ns3), `Enabled, false);
+    }
 
     // ugly hack for ISDN call (#6020)
     //if(ok_label) UI::ChangeWidget(`id(`next), `Label, _("&OK")));
