@@ -58,7 +58,7 @@ to send the current host name. Leave empty not to send a host name.</p>");
     if(issubstring(NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"]:"", "-B"))
 	dhclient_broadcast = true;
 
-    /* S/390 dialog contents */
+    /* Details dialog contents */
     term contents = `HBox(
 	`HSpacing(6),
 	/* Frame label */
