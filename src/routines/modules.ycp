@@ -176,7 +176,7 @@ global define boolean ChangeModule(string name, boolean check) ``{
     });
 
     map options = Modules["options"]:$[];
-    options[m] = $[m: map2string(m_orig)];
+    options[m] = map2string(m_orig);
     Modules["options"] = options;
 
 
