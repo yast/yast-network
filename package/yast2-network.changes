@@ -9,7 +9,7 @@ Mon Mar 15 17:52:04 CET 2004 - msvec@suse.cz
 - proper focus in proxy (#35614)
 - fixed deleting of modem and DSL devices
 - fixed testsuite
-- 2.9.11
+- 2.9.12
 
 -------------------------------------------------------------------
 Wed Mar 10 11:07:35 CET 2004 - msvec@suse.cz
