@@ -203,5 +203,276 @@ global define symbol OverviewDialog() ``{
     return ret;
 }
 
+global define symbol dsl_dlg(boolean adsl) ``{
+
+    /* DIALOG TEXTS */
+    string caption = _("Configuration for DSL");
+
+    string helptext = "";
+
+    if (adsl)
+    {
+	helptext =
+_("<p>
+This module is only used for providers using PPPoE. In the U.S., some
+providers use PPTP, so you only need to configure your ethernet card
+in the \"Network/Base\" module within YaST2. If you are not sure, ask your 
+provider.
+</p>") +
+
+_("<p>
+<b>First</b>, configure your ethernet card.
+</p>") +
+
+_("<p>
+<b>Second</b>, enter your access data. You will be asked for your 
+<i>user name</i> and <i>password</i>.
+</p>") +
+
+_("<p>
+Enter the device of your ethernet card, e.g., <i>eth0</i>. If you have 
+two cards, it could also be <i>eth1</i>.
+</p>") +
+    // helptext  main dialog ADSL
+    // Translators: You might choose not to translate 'idletime', but it's up to you...
+_("<p>
+The <i>idle time</i> is the time after which the connection is disconnected if
+no data is being transferred.
+</p>") +
+
+_("<p>
+Selecting <i>activate firewall</i> will block all incoming connections. Choosing 
+this option will make dial-up connections to the Internet safe from external 
+attacks.
+</p>") +
+
+_("<p>
+<i>Dial on demand</i> means that a DSL connection will be made automatically 
+if data is demanded. To use this, specify at least one <i>name server</i>. 
+</p>");
+
+    }
+    else
+    {
+	helptext =
+_("<p>
+This module is ONLY used for the <b>GERMAN T-Online T-DSL</b> service.
+For example, in the U.S., DSL connections are NOT configured in this dialog.
+You only need to configure your ethernet card in the \"Network/Base\" module 
+in YaST2.
+</p>") +
+
+_("<p>
+First, configure your ethernet card.
+</p>") +
+
+_("<p>
+Second, enter your registration data. Enter your <i>Line ID</i> 
+(Anschlusskennung), e.g., 00056780362, the <i>T-Online ID</i>, e.g., 
+870008594732, the <i>user code</i> (Mitbenutzernummer), typically 0001, and your
+<i>password</i>.
+</p>") +
+
+_("<p>Enter the device of your ethernet card, e.g., <i>eth0</i>. If you have 
+two cards, it could also be <i>eth1</i>.
+</p>") +
+
+_("<p>
+The <i>idle time</i> is the time after which the connection is disconnected,
+if no data is being transferred.
+</p>") +
+
+_("<p>Selecting <i>activate firewall</i> will block all incoming connections.
+Choosing this option will make dial-up connections to the Internet safe from 
+external attacks.
+</p>") +
+
+_("<p><i>Dial on demand</i> means that a T-DSL connection will be made 
+automatically, if data is requested. To use this, specify at least one 
+<i>name server.</i>
+</p>");
+
+    }
+
+    /* DIALOG CONTENTS */
+
+    term subcontents = nil;
+
+    if (adsl)
+    {
+	subcontents =
+	    `VBox(
+		`TextEntry(`id(`user), _("&User"), DSL::username),
+                `VSpacing( 0.5 ),
+                `TextEntry(`id(`password),  _("&Password"), DSL::password)
+	    );
+    }
+    else
+    {
+	subcontents =
+	    `VBox(
+		`HBox(
+		    `TextEntry(`id(`lineid), _("&Line ID"), DSL::lineid),
+		    `HSpacing(1),
+		    `TextEntry(`id(`t_onlineid), _("&T-Online ID"), DSL::t_onlineid)
+		),
+		`VSpacing( 0.5 ),
+		`HBox(
+		    `TextEntry(`id(`user), _("&User"), DSL::username),
+		    `HSpacing(1),
+		    `TextEntry(`id(`password),  _("&Password"), DSL::password)
+		)
+	    );
+    }
+
+    term contents =
+	`HSquash(
+	    `VBox(
+		`VSpacing( 1 ),
+		subcontents,
+                `VSpacing( 2 ),
+                `HBox(
+		    `TextEntry(`id(`interface),  _("&Ethernet card"), DSL::interface),
+                    `HSpacing( 4 ),
+                    `TextEntry(`id(`idletime), _("&Idle time"), sformat("%1", DSL::idletime))
+                ),
+                `VSpacing( 1 ),
+                `Left(`CheckBox(`id(`firewall),
+			sformat(_("&Activate %1"), "firewall"), DSL::firewall)),
+                `Left(`CheckBox(`id(`dialondemand),`opt(`notify), _("Dial &on demand"), DSL::dialondemand)),
+                `HBox(
+		    `TextEntry(`id(`dns1), _("Name Server &1"), DSL::dns1),
+                    `HSpacing( 4 ),
+                    `TextEntry(`id(`dns2),  _("Name Server &2"), DSL::dns2)
+                ),
+                `VSpacing( 1 )
+	    )
+	);
+
+    /* DIALOG PREPARE */
+
+    Wizard::SetContents(caption, contents, helptext, true, true);
+
+    UI::ChangeWidget(`id(`dns1), `Enabled, DSL::dialondemand);
+    UI::ChangeWidget(`id(`dns2), `Enabled, DSL::dialondemand);
+
+    UI::ChangeWidget(`id(`hex_digits), `ValidChars, "0123456789" );
+
+    if (!adsl)
+    {
+
+    }
+    /* MAIN CYCLE */
+    any ret = nil;
+    while(true) {
+
+        ret = UI::UserInput();
+
+	/* abort? */
+        if (ret == `abort || ret == `cancel) {
+            if(ReallyAbort()) break;
+            else continue;
+        }
+        else if (ret == `back) {
+            break;
+        }
+	else if (ret == `dialondemand)
+	{
+	    boolean val = UI::QueryWidget(`id(`dialondemand), `Value);
+	    UI::ChangeWidget(`id(`dns1), `Enabled, val);
+	    UI::ChangeWidget(`id(`dns2), `Enabled, val);
+	}
+        else if (ret == `next) {
+            /* check_* */
+	    string dns1 = UI::QueryWidget(`id(`dns1), `Value);
+	    string dns2 = UI::QueryWidget(`id(`dns2), `Value);
+
+	    string error = "";
+
+	    boolean dialondemand = UI::QueryWidget(`id(`dialondemand), `Value);
+	    if (dialondemand)
+	    {
+		if (dns1 == "" && dns2 == "")
+		{
+		    error = _("To use dial on demand, specify a least Name Server 1\n");
+		}
+		else if (dns1 != "" && !checkIP(dns1))
+		{
+		    error = error + _("Name Server 1 does not contain a valid IP address.");
+		}
+		else if (snd2 != "" && !checkIP(dns2))
+		{
+		    error = error + _("Name Server 2 does not contain a valid IP address.");
+		}
+	    }
+	    if (tointeger(UI::QueryWidget(`id(`idletime), `Value)) == nil)
+	    {
+		error = error + _("The idle time  may only contain decimal digits.");
+	    }
+
+	    // TODO: passwd & username
+
+	    if (error != "")
+	    {
+		UI::MessagePopup(error);
+		continue;
+	    }
+
+            break;
+        }
+        else {
+            y2error("unexpected retcode: %1", ret);
+            continue;
+        }
+
+    }
+
+    /* UPDATE VARIABLES */
+
+    if (ret == `next)
+    {
+	DSL::username = UI::QueryWidget(`id(`user), `Value);
+	DSL::password = UI::QueryWidget(`id(`password), `Value);
+	DSL::interface = UI::QueryWidget(`id(`interface), `Value);
+	DSL::idletime = tointeger(UI::QueryWidget(`id(`idletime), `Value));
+	DSL::firewall = UI::QueryWidget(`id(`firewall), `Value);
+	DSL::dialondemand = UI::QueryWidget(`id(`dialondemand), `Value);
+
+	if(DSL::dialondemand)
+	{
+	    DSL::dns1 = tolower(UI::QueryWidget(`id(`dns1), `Value));
+	    DSL::dns2 = tolower(UI::QueryWidget(`id(`dns2), `Value));
+	}
+	else
+	{
+	    DSL::dns1 = "";
+	    DSL::dns2 = "";
+	}
+
+	if (!adsl)
+	{
+	    DSL::t_onlineid = UI::QueryWidget(`id(t_onlineid), `Value);
+	    DSL::lineid = UI::QueryWidget(`id(lineid), `Value);
+	}
+	else
+	{
+	    DSL::t_onlineid = "";
+	    DSL::lineid = "";
+	}
+    }
+
+    return ret;
+}
+
+global define adsl_dlg() ``{
+    return dsl_dlg(true);
+}
+
+global define tdsl_dlg() ``{
+    return dsl_dlg(false);
+}
+
 /* EOF */
 }
+
+
