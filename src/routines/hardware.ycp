@@ -330,7 +330,7 @@ map FindHardware (list Hardware, integer which) {
  */
 map SelectHardwareMap (map sel) {
     /* common stuff */
-    name = sel["name"]:"";
+    description = sel["name"]:"";
     type = sel["type"]:"eth";
     hotplug = sel["hotplug"]:"";
 

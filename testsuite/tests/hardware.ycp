@@ -6,7 +6,7 @@ include "testsuite.ycp";
 
 TESTSUITE_INIT([], nil);
 
-string name = "";
+string description = "";
 string type = "";
 string unique = "";
 string hotplug = "";

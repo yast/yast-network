@@ -536,7 +536,7 @@ for a particular network card by entering the name in the search entry.</p>");
 	selected = (integer) UI::QueryWidget(`id(`cards), `CurrentItem);
 	if(selected == nil) selected = 0;
 	map card = hwlist[selected]:$[];
-	Lan::name = card["name"]:"";
+	Lan::description = card["name"]:"";
 
 	NetworkModules::Alias /* FIXME: MOD Lan::Module["module"] */ = card["module"]:"";
 	NetworkModules::Options /* FIXME: MOD Lan::Module["options"] */ = card["options"]:"";

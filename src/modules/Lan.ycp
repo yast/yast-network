@@ -45,7 +45,7 @@ include "network/runtime.ycp";
 // FIXME: MOD global map Module = $[];
 
 
-global string name = "";
+global string description = "";
 global string unique = "";
 
 global string type = "";
@@ -619,7 +619,7 @@ global define boolean Select(string dev) {
     }
 
     /* general stuff */
-    name = devmap["NAME"]:"";
+    description = BuildDescription (type, device, devmap, Hardware);
     unique = devmap["UNIQUE"]:"";
 
     /* address options */
@@ -688,11 +688,11 @@ global define boolean Select(string dev) {
     chan_mode = NetworkModules::CCW_CHAN_MODE;
 
     if (NetworkModules::QETH_IPA_TAKEOVER == nil ||
-        NetworkModules::QETH_IPA_TAKEOVER == "" ||
-        NetworkModules::QETH_IPA_TAKEOVER == "0")
+	NetworkModules::QETH_IPA_TAKEOVER == "" ||
+	NetworkModules::QETH_IPA_TAKEOVER == "0")
 	ipa_takeover = false;
     else
-        ipa_takeover = true;
+	ipa_takeover = true;
 
     if(bootproto == "none") bootproto = "static";
 
@@ -772,6 +772,7 @@ global define boolean Commit() {
 	    }
 	    newdev["USERCONTROL"] = usercontrol? "yes": "no";
 	    newdev["BOOTPROTO"] = bootproto;
+	    newdev["NAME"] = description;
 	}
 
 	if(unique != "" && unique != nil)

@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
-Wed Feb  2 18:05:34 CET 2005 - mvidner@suse.cz
+Fri Feb  4 17:32:35 CET 2005 - mvidner@suse.cz
 
+- Introduced ifcfg:NAME, user's name for the interface,
+  initialized from the hardware description. No widget yet.
 - Added firewall zone selection to network card details dialog,
   jump to it if the interface is not in any zone. 
   Add new network cards to the external zone if the firewall 
@@ -8,6 +10,7 @@ Wed Feb  2 18:05:34 CET 2005 - mvidner@suse.cz
 - For WLAN interfaces, wireless-tools.rpm is needed (#49880).
 - Help text fix: cannot correct network settings during an update
   (#50381).
+- 2.11.16
 
 -------------------------------------------------------------------
 Thu Jan 27 17:33:54 CET 2005 - mvidner@suse.cz

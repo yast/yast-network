@@ -159,7 +159,7 @@ global define boolean Modified() ``{
     return (modified_hw || modified_if);
 }
 
-string name = "";
+string description = "";
 string unique = "";
 string hotplug = "";
 string alias = "";
@@ -632,6 +632,7 @@ void set_hwparameters (map hw) {
  * @param which item to be chosen
  */
 // FIXME: -> routines/hardware.ycp (?)
+// sel["name"] for the interface
 global define void SelectHW(integer which) ``{
     map sel = $[];
 
@@ -745,6 +746,7 @@ global define boolean SelIf(string item) ``{
     interface = typemap[num]:$[];
     /* interface settings */
     interface = set_ifparameters (interface);
+    interface["NAME"] = BuildDescription (typ, num, interface, Hardware);
     device = num;
     type = typ;
     return true;

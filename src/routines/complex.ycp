@@ -15,6 +15,7 @@ textdomain "network";
 import "Detection";
 import "NetworkDevices";
 import "Popup";
+import "String";
 import "Summary";
 
 include "network/routines.ycp";
@@ -23,6 +24,29 @@ include "network/summary.ycp";
 define string CheckEmptyName(string devtype, string hwname);
 define string DeviceStatus(string devtype, string devnum, map devmap);
 define string HardwareName(list<map> Hardware, string unq);
+
+/**
+ * Used for initializing the description variable (ifcfg[NAME])
+ * The code is mostly moved from BuildSummaryDevs
+ * Take the NAME field from ifcfg
+ * If empty, identify the hardware and use its data
+ */
+define string BuildDescription (string devtype, string devnum, map devmap,
+				list<map> Hardware) {
+    string descr = devmap["NAME"]:"";
+    if (descr != "")
+    {
+	return descr;
+    }
+    descr = HardwareName (Hardware, devnum);
+    if (descr != "")
+    {
+	return descr;
+    }
+    descr = HardwareName (Hardware, devmap["UNIQUE"]:"");
+    descr = CheckEmptyName (devtype, descr);
+    return descr;
+}
 
 /**
  * Build textual summary
@@ -44,15 +68,11 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 	maplist(string devnum, map devmap, (map<string,map>)devsmap, {
 
 	    /* main device summary */
+	    string descr = BuildDescription (devtype, devnum, devmap, Hardware);
 	    string unq = devmap["UNIQUE"]:"";
-
-	    string hwname = HardwareName(Hardware, devnum);
-	    if(hwname == nil || hwname == "") hwname = HardwareName(Hardware, unq);
-	    hwname = CheckEmptyName(devtype, hwname);
-
 	    string status = DeviceStatus(devtype, devnum, devmap);
 
-	    configured = add(configured, Summary::Device(hwname, status));
+	    configured = add(configured, Summary::Device(descr, status));
 	    uniques = add(uniques, devnum);
 	    uniques_old = add(uniques_old, unq);
 
@@ -63,9 +83,9 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 		    /* Table item */
 		    // this is what used to be Virtual Interface
 		    // (eth0:1)
-		    hwname = _("Additional Address");
+		    descr = _("Additional Address");
 		    status = DeviceStatus(devtype, devnum /* FIXME: devname + sformat(":%1", aid)*/, amap);
-		    configured = add(configured, Summary::Device(hwname, status));
+		    configured = add(configured, Summary::Device(descr, status));
 		});
 
 	});
@@ -261,18 +281,6 @@ define string CheckEmptyName(string devtype, string hwname) {
 }
 
 /**
- * iface["ip"]:"" + Optional(" (%1)", iface["name"]:"")
- * "bus-" + h["bus"]:"" + Optional ("-%1", h["busid"]:"")
- */
-string Optional (string format, string what) {
-    if (what == "" || what == nil)
-    {
-	return "";
-    }
-    return sformat (format, what);
-}
-
-/**
  * Return a human readable hardware name for device with given id
  * @param Hardware hardware map
  * @param id id-..., bus-...-..., or unique
@@ -285,7 +293,7 @@ define string HardwareName(list<map> Hardware, string id) {
 	foreach (map h, Hardware, {
 	    list<string> have = [
 		"id-" + h["mac"]:"",
-		"bus-" + h["bus"]:"" + Optional ("-%1", h["busid"]:""),
+		"bus-" + h["bus"]:"" + String::OptFormat("-%1", h["busid"]:""),
 		h["unique"]:"",
 		];
 	    y2debug ("what: %1, have: %2", id, have);
@@ -376,7 +384,8 @@ define string DeviceStatus(string devtype, string devnum, map devmap) {
 		return sformat(_("Configured."));
 	    else if(remip == "" || remip == nil)
 		/* Network card status (%1 is address) */
-		return sformat(_("Configured with Address %1."), (host=="")?addr:(addr+" ("+host+")"));
+		return sformat(_("Configured with Address %1."),
+			       addr + String::OptParens (host));
 	    else
 		/* Network card status (%1 is address, %2 is address) */
 		return sformat(_("Configured with Address %1 (remote %2)."), addr, remip);
@@ -434,12 +443,8 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 	    string dev = NetworkDevices::device_name(type, k);
 	    string ip = DeviceProtocol(v);
 
-	    string unq = v["UNIQUE"]:"";
-	    string hwname = HardwareName(Hardware, k);
-	    if(hwname == nil || hwname == "") hwname = HardwareName(Hardware, unq);
-	    hwname = CheckEmptyName(type, hwname);
-
-	    if(size(hwname) > 17) hwname = substring(hwname, 0, 16) + "...";
+	    string descr = BuildDescription (type, k, v, Hardware);
+	    if(size(descr) > 17) descr = substring(descr, 0, 16) + "...";
 
 	    /* Modem and DSL */
 	    if(type == "ppp" || type == "modem" || type == "dsl")
@@ -462,7 +467,7 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 		if(!regexpmatch(type, NetworkAllRegex))
 		    y2error("Unknown type: %1", type);
 		*/
-		item = `item(`id(dev), hwname, dev /*DeviceType(type)*/, /*"active?",*/ ip/*, "?", "?"*/);
+		item = `item(`id(dev), descr, dev /*DeviceType(type)*/, /*"active?",*/ ip/*, "?", "?"*/);
 	    }
 	    overview = add(overview, item);
 
@@ -470,7 +475,6 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 	    map<string,map> aliasee = v["_aliases"]:$[];
 	    if(aliasee != $[])
 		maplist(string aid, map amap, aliasee, {
-		    //hwname = CheckEmptyName(devtype, HardwareName(unq));
 		    string adev = NetworkDevices::alias_name(type, k, aid);
 		    ip = DeviceProtocol(amap);
 		    item = `item(`id(adev), DeviceType(adev), adev, ip);

@@ -50,7 +50,7 @@ import "String";
 // this is here just because network/hardware.ycp references it
 // because of detection and module loading (StartEthInterface)
 /* general stuff */
-global string name = "";
+global string description = "";
 global string type = "";
 global string unique = "";
 global string hotplug = "";

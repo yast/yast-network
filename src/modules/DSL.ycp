@@ -26,7 +26,7 @@ import "SuSEFirewall4Network";
 include "network/complex.ycp";
 
 /* general stuff */
-global string name = "";
+global string description = "";
 global string type = "";
 global string device = "";
 global string unique = "";
@@ -329,7 +329,7 @@ global define boolean Select(string dev) {
     }
 
     /* general stuff */
-    name = devmap["NAME"]:"";
+    description = BuildDescription (type, device, devmap, Hardware);
     unique = devmap["UNIQUE"]:"";
     startmode = devmap["STARTMODE"]:"manual";
     usercontrol = devmap["USERCONTROL"]:"no" == "yes";
@@ -413,6 +413,7 @@ global define boolean Commit() {
 	    "USERCONTROL": usercontrol? "yes": "no",
 	    "BOOTPROTO"	: "none",
 	    "UNIQUE"	: unique,
+	    "NAME"	: description,
 	    "PPPMODE"		: pppmode,
 	    "PROVIDER"		: Provider::Name,
 	    // "PROVIDER_NAME"	: Provider::Current["PROVIDER"]:"",

@@ -72,7 +72,7 @@ any DNSGUI() {
 define void ListHandler(map options) {
 
     string summary = "";
-    /* Headline */
+    /* Command line output Headline */
     summary = "\n" + _("DNS Configuration Summary:") + "\n\n" +
 	RichText::Rich2Plain(DNS::Summary()) + "\n";
 
