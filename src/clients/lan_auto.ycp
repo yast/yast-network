@@ -12,6 +12,8 @@
 textdomain "network";
 
 import "Lan";
+import "Progress";
+import "Mode";
 include "network/lan/wizards.ycp";
 
 y2milestone("----------------------------------------");
@@ -67,13 +69,34 @@ define map FromAY(map input) ``{
 	devices[strtok] = device;
 
     });
-	map native_modules = listmap(map mod, input["modules"]:[], ``{
-		string dev = mod["device"]:"";
-		remove(mod, "device");
-		return([dev, mod]);
-	});
+    map native_modules = $[];
 
-	// FIXME: add aliasing support
+    if (size(input["modules"]:[]) > 0) {
+	native_modules = listmap(map mod, input["modules"]:[], ``{
+	    string dev = mod["device"]:"";
+	    remove(mod, "device");
+	    return([dev, mod]);
+	});
+    }
+    else if (size(input["modules"]:[]) == 0 && Mode::autoinst)
+    {
+	import "Arch";
+	if(!Arch::s390) Lan::ReadHardware("netcard");
+	list HW = Lan::GetHardware();
+	devices = mapmap(string type, map devsmap, devices, ``{
+	    list HW_type = filter(`dev, HW, ``(dev["type"]:"" == type ));
+	    y2debug("hw from type %1 = %2", type, HW_type);
+	    map newmap = mapmap(string num, map devmap, devsmap, ``{
+		devmap = add(devmap, "UNIQUE", HW_type[ tointeger(num) ,"unique"]:"" );
+		string device = sformat ("%1%2", type, num );
+		native_modules[device] = $[ "module": HW_type[ tointeger(num) ,"module"]:"", "options": HW_type[ tointeger(num) ,"options"]:"" ];
+		return([num, devmap]);
+	    });
+	    return ([ type, newmap ] );
+	});
+    }
+
+    // FIXME: add aliasing support
     input["devices"] = devices;
     input["modules"] = native_modules;
     return input;
@@ -84,13 +107,14 @@ define map FromAY(map input) ``{
  * @param settings native network settings
  * @return autoyast network settings
  */
-define map ToAY(map settings) ``{
+define map ToAY (map settings) ``{
     list interfaces = [];
     foreach(string device, map devsmap, settings["devices"]:$[], ``{
 	foreach(string num, map devmap, devsmap, ``{
 	    map newmap = $[];
 	    foreach(string key, string val, devmap, ``{
-			change(newmap, tolower(key), val);
+			if ( size(val) > 0 )
+				change(newmap, tolower(key), val);
 	    });
 	    change(newmap, "device", device + num);
 	    change(interfaces, newmap);
@@ -112,6 +136,8 @@ define map ToAY(map settings) ``{
 		"modules"	: modules
 	];
 }
+
+
 
 any ret = nil;
 string func = "";
@@ -142,7 +168,6 @@ else if(func == "Import") {
     ret = Lan::Import(autoyast);
 }
 else if(func == "Read") {
-	import "Progress";
 	Progress::off();
 	ret = Lan::Read();
 	Progress::on();
@@ -153,7 +178,6 @@ else if (func == "Export") {
     ret = autoyast;
 }
 else if (func == "Write") {
-    import "Progress";
     Progress::off();
     Lan::write_only = true;
     ret = Lan::Write();
