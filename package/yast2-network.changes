@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Feb  8 14:46:26 CET 2005 - mvidner@suse.cz
+
+- Warn when selecting a device without a module (#29296).
+
+-------------------------------------------------------------------
 Mon Feb  7 17:35:47 CET 2005 - mvidner@suse.cz
 
 - Merged proofread texts.

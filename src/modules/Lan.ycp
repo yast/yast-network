@@ -939,10 +939,10 @@ global define boolean Propose() {
 
     Add();
 
+    map tosel = nil;
+
     /* Some HW found -> use it for proposal */
     if(size(Hardware) > 0) {
-
-	map tosel = nil;
 
 	/* Select the one from install.inf with the same MAC */
 	string hwaddr = InstallInf["hwaddr"]:"";
@@ -976,16 +976,13 @@ global define boolean Propose() {
 			      && y2milestone("Using driver: %1", h) == nil
 			      ));
 	}
+    }
 
-	/* No active driver or no card with a driver -> select the first */
-	if(tosel == nil) {
-	    y2milestone("No card with a driver found, selecting the first one");
-	    tosel = Hardware[0]:$[];
-	}
-
-	y2debug("Hardware=%1", Hardware);
-	y2milestone("tosel=%1", tosel);
-
+    y2debug("Hardware=%1", Hardware);
+    y2milestone("tosel=%1", tosel);
+    // do not select a card without a driver, #29296
+    if (tosel != nil)
+    {
 	SelectHWMap(tosel);
     }
     /* Nothing detected -> use InstallInf */

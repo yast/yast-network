@@ -14,6 +14,7 @@ textdomain "network";
 import "Lan";
 import "DNS";
 import "NetworkConfig";
+import "NetworkModules";
 import "Routing";
 
 import "Wizard";
@@ -166,6 +167,16 @@ to change the configuration opens.</p>");
 	    }
 	    else if(is(selected, integer)) {
 		Lan::SelectHW((integer) selected);
+		// warn if selecting a card without a driver, #29296
+		// TODO also for DSL...
+		if (NetworkModules::Alias == "")
+		{
+		    if (!Popup::ContinueCancel (_("The device does not have a driver module.
+It may be a bug or the driver is built in the kernel.")))
+		    {
+			continue; // means cancel
+		    }
+		}
 		// this is one of 3 places to install packages :-(
 		// - kernel modules (InstallKernel): before loaded
 		// - smpppd & kinternet: before net start
