@@ -57,6 +57,7 @@ fi
 @clientdir@/*.ycp
 @moduledir@/*.ycp
 @moduledir@/*.ybc
+@moduledir@/*.pm
 @desktopdir@/*.desktop
 @scrconfdir@/*.scr
 %doc @docdir@
