@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Mar 14 15:30:05 CET 2003 - arvin@suse.de
+
+- preferable test dial up connection during internet test (bug
+  #25264)
+
+-------------------------------------------------------------------
 Fri Mar 14 13:40:29 CET 2003 - msvec@suse.de
 
 - change permissions of files containing wireless keys (#24842)

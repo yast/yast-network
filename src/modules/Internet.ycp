@@ -33,25 +33,28 @@ global boolean askpassword = nil;
 
 
 /**
- * Devices in order from fastest to slowest
+ * Devices in order from fastest to slowest.
+ *
+ * Though real network devices are faster than the others we preferable
+ * want to test dialup connection.
  */
 map FastestRegexps = $[
-    1 : NetworkDeviceRegex,
-    2 : "dsl",
-    3 : ISDNDeviceRegex,
-    4 : "modem|ppp",
+    1 : "dsl",
+    2 : ISDNDeviceRegex,
+    3 : "modem|ppp",
+    4 : NetworkDeviceRegex
 ];
 
 
 /**
- * Types in order from fastest to slowest
+ * Types in order from fastest to slowest.
  * @see FastestRegexps
  */
 map FastestTypes = $[
-    1 : "netcard",
-    2 : "dsl",
-    3 : "isdn",
-    4 : "modem",
+    1 : "dsl",
+    2 : "isdn",
+    3 : "modem",
+    4 : "netcard"
 ];
 
 
