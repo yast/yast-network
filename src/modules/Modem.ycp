@@ -88,7 +88,7 @@ list DeletedDevices = [];
  * Abort function
  * return boolean return true if abort
  */
-global block AbortFunction = nil;
+global block<boolean> AbortFunction = nil;
 
 /**
  * Data was modified?
@@ -277,12 +277,12 @@ global define boolean Select(string dev) ``{
 	string typ = device_type(dev);
 	string num = device_num(dev);
 
-	map typemap = lookup(Devices, typ, $[]);
+	map typemap = Devices[typ]:$[];
 	if(!haskey(typemap, num)) {
 	    y2error("Key not found: %1", dev);
 	    return false;
 	}
-	devmap = lookup(typemap, num, $[]);
+	devmap = typemap[num]:$[];
 
 	type = typ;
 	device = num;

@@ -259,7 +259,7 @@ global define boolean ReadHardware(string hwtype) ``{
 	    y2milestone("nForce2 found: skipping (driver not available)");
 	}
 	else if(controller != "") {
-	    change(Hardware, one);
+	    Hardware[size(Hardware)] = one;
 	    num = num + 1;
 	}
 	else {

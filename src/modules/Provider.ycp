@@ -441,7 +441,7 @@ global define boolean Commit() ``{
 	    return false;
 	}
 	Providers = remove(Providers, Name);
-	change(Deleted, Name);
+	Deleted[size(Deleted)] = Name;
     }
     else {
 	y2error("Unknown operation: %1 (%2)", operation, Name);
@@ -731,7 +731,7 @@ global define list GetProviders(string type, string country, string preselect) `
     /* Custom providers */
     if(country == "_custom") {
 	foreach(string k, map v, Providers, ``{
-	    change(provs, k);
+	    provs[size(provs)] =  k;
 	});
     }
     /* Providers from given country */

@@ -34,14 +34,14 @@ global define boolean ReadISDNConfig(string devregex) ``{
 
     string sysconfig = "/etc/sysconfig/isdn";
 
-    list devices = SCR::Dir(.isdn.section);
-    devices = filter(`file, devices, ``(!regexpmatch(file, "[\.~]")));
-    devices = filter(`file, devices, ``(regexpmatch(file, "^.*/isdn/cfg-.*")));
+    list<string> devices = (list<string>) SCR::Dir(.isdn.section);
+    devices = filter(string file, devices, ``(!regexpmatch(file, "[\.~]")));
+    devices = filter(string file, devices, ``(regexpmatch(file, "^.*/isdn/cfg-.*")));
 
     if(devregex != nil && devregex != "") {
-	devices = filter(`file, devices, ``(regexpmatch(file, devregex)));
+	devices = filter(string file, devices, ``(regexpmatch(file, devregex)));
     }
-    maplist(`d, devices, ``{
+    maplist(string d, devices, ``{
 	string devtype = regexpsub(d, "^.*/cfg-([a-z]+)[^a-z]*$", "\\1");
 	if (devtype == nil)
 	    return;
@@ -50,16 +50,16 @@ global define boolean ReadISDNConfig(string devregex) ``{
 	    return;
 	y2debug("devtype=%1 devnum=%2", devtype, devnum);
 
-	map dev = lookup(Devices, devtype, $[]);
+	map dev = Devices[devtype]:$[];
 	if(haskey(dev, devnum)) {
 	    y2error("device already present: %1", devnum);
 	    return;
 	}
 
 	string pth = ".isdn.value.\"" + sysconfig + "/cfg-"+devtype+devnum+"\"";
-	list values = SCR::Dir(topath(pth));
-	map config = listmap(`val, values, ``{
-	    string item = SCR::Read(topath(pth + "." + val));
+	list<string> values = (list<string>) SCR::Dir(topath(pth));
+	map config = listmap(string val, values, ``{
+	    string item = (string) SCR::Read(topath(pth + "." + val));
 	    if(item!=nil) return [ val, item ];
 	});
 
@@ -81,16 +81,16 @@ global define boolean WriteISDNConfig(string isdntyp) ``{
     string sysconfig = "/etc/sysconfig/isdn";
 
     /* remove deleted devices */
-    list devs = filter(`x, DeletedDevices, ``(regexpmatch(x, isdntyp)));
-    maplist(`d, devs, ``{
+    list<string> devs = (list<string>) filter(string x, DeletedDevices, ``(regexpmatch(x, isdntyp)));
+    maplist(string d, devs, ``{
 	path p = topath(".isdn.section.\"" + sysconfig + "/cfg-" + d + "\"");
 	y2debug("deleting: %1", p);
 	SCR::Write(p, nil);
     });
 
     /* write all devices */
-    maplist(`typ, `devsmap, Devices, ``{
-	maplist(`num, `devmap, devsmap, ``{
+    maplist(string typ, map devsmap, Devices, ``{
+	maplist(string num, map devmap, devsmap, ``{
 	    /* write sysconfig */
 	    if (typ != isdntyp)
 	        return;
@@ -98,11 +98,11 @@ global define boolean WriteISDNConfig(string isdntyp) ``{
 	    string p = ".isdn.value.\"" + sysconfig + "/cfg-" + dev + "\".";
 
 	    /* write all keys to config */
-	    maplist(`k, Map::Keys(devmap), ``{
+	    maplist(string k, Map::Keys(devmap), ``{
 		if(k == "module" || k == "options") return;
-		SCR::Write(topath(p+k), lookup(devmap, k, ""));
+		SCR::Write(topath(p+k), devmap[k]:"");
 	    });
-	    string unq = lookup(devmap, "UNIQUE", "");
+	    string unq = devmap["UNIQUE"]:"";
 	    if(unq != "")
 		SCR::Write(.probe.status.configured, unq, `yes);
 	});
@@ -112,7 +112,7 @@ global define boolean WriteISDNConfig(string isdntyp) ``{
     SCR::Write(.isdn, nil);
 
     /* clean up variables */
-    devs = filter(`x, DeletedDevices, ``(!regexpmatch(x, isdntyp)));
+    devs = filter(string x, DeletedDevices, ``(!regexpmatch(x, isdntyp)));
     y2debug("DeletedDevices: %1 devs: %2", DeletedDevices, devs);
     DeletedDevices = devs;
 
@@ -128,17 +128,17 @@ global define boolean WriteOneISDNConfig(string contr) ``{
     y2debug("Devices=%1",Devices);
     string sysconfig = "/etc/sysconfig/isdn";
 
-    maplist(`typ, `devsmap, Devices, ``{
-	maplist(`num, `devmap, devsmap, ``{
+    maplist(string typ, map devsmap, Devices, ``{
+	maplist(string num, map devmap, devsmap, ``{
 	    string dev = typ + num;
 	    if (contr != dev)
 		return;
 	    string p = ".isdn.value.\"" + sysconfig + "/cfg-" + dev + "\".";
 
 	    /* write all keys to config */
-	    maplist(`k, Map::Keys(devmap), ``{
+	    maplist(string k, Map::Keys(devmap), ``{
 		if(k == "module" || k == "options") return;
-		SCR::Write(topath(p+k), lookup(devmap, k, ""));
+		SCR::Write(topath(p+k), devmap[k]:"");
 	    });
 	});
     });

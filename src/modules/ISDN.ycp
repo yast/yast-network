@@ -140,7 +140,7 @@ list DeletedDevices = [];
  * Abort function
  * return boolean return true if abort
  */
-global block AbortFunction = nil;
+global block<boolean> AbortFunction = nil;
 
 /**
  * Data was modified?
@@ -455,14 +455,14 @@ global define boolean TestDev(string dev) ``{
     cmd = sformat("/etc/init.d/network stop -o type=isdn");
     out = SCR::Execute(.target.bash_output, cmd);
     details = details + cmd + "\n";
-    details = details + lookup(out, "stdout", "");
-    details = details + lookup(out, "stderr", "");
+    details = details + out["stdout"]:"";
+    details = details + out["stderr"]:"";
     details = details + "\n";
     cmd = sformat("/etc/init.d/network stop -o type=ippp");
     out = SCR::Execute(.target.bash_output, cmd);
     details = details + cmd + "\n";
-    details = details + lookup(out, "stdout", "");
-    details = details + lookup(out, "stderr", "");
+    details = details + out["stdout"]:"";
+    details = details + out["stderr"]:"";
     details = details + "\n";
     sleep(sl);
 
@@ -472,8 +472,8 @@ global define boolean TestDev(string dev) ``{
     cmd = sformat("/etc/init.d/isdn stop");
     out = SCR::Execute(.target.bash_output, cmd);
     details = details + cmd + "\n";
-    details = details + lookup(out, "stdout", "");
-    details = details + lookup(out, "stderr", "");
+    details = details + out["stdout"]:"";
+    details = details + out["stderr"]:"";
     details = details + "\n";
     sleep(sl);
 
@@ -483,10 +483,10 @@ global define boolean TestDev(string dev) ``{
     cmd = sformat("/etc/init.d/isdn start %1 -o all", dev);
     out = SCR::Execute(.target.bash_output, cmd);
     details = details + cmd + "\n";
-    details = details + lookup(out, "stdout", "");
-    details = details + lookup(out, "stderr", "");
+    details = details + out["stdout"]:"";
+    details = details + out["stderr"]:"";
     details = details + "\n";
-    result = lookup(out, "exit", 1);
+    result = out["exit"]:1;
     sleep(sl);
 
     if(Abort()) return false;
@@ -495,8 +495,8 @@ global define boolean TestDev(string dev) ``{
     cmd = sformat("/etc/init.d/isdn stop");
     out = SCR::Execute(.target.bash_output, cmd);
     details = details + cmd + "\n";
-    details = details + lookup(out, "stdout", "");
-    details = details + lookup(out, "stderr", "");
+    details = details + out["stdout"]:"";
+    details = details + out["stderr"]:"";
     details = details + "\n";
     sleep(sl);
 
@@ -521,18 +521,18 @@ global define set_cardparameter(map cfg) ``{
     string ac = cfg["AREACODE"]: global_ac;
     if (ac != "" && global_ac == "")
 	global_ac = ac;
-    change(cfg, "AREACODE", ac);
+    cfg["AREACODE"] = ac;
     string dp = cfg["DIALPREFIX"]: global_dp;
     if (dp != "" && global_dp == "")
 	global_dp = dp;
     if (dp != "")
-	change(cfg, "DIALPREFIX", dp);
+	cfg["DIALPREFIX"] = dp;
     string sm = cfg["STARTMODE"]: "onboot";
     if (sm == "hotplug")
         global_sm = "hotplug";
     if (sm == "")
 	sm = "onboot";
-    change(cfg, "STARTMODE", sm);
+    cfg["STARTMODE"] = sm;
 }
 
 /**
@@ -547,7 +547,7 @@ global define set_ifparameter(map cfg) ``{
         global_sm = sm;
     if (sm == "")
 	sm = "onboot";
-    change(cfg, "STARTMODE", sm);
+    cfg["STARTMODE"] = sm;
     provider_file = cfg["PROVIDER"]: "";
 }
 
@@ -559,10 +559,10 @@ global define set_ifparameter(map cfg) ``{
  */
 global define set_hwparameter(map hw) ``{
     // Fixme parameter lookup for ISA hardware
-    change(hw_device, "PARA_TYPE", sformat("%1", get_i4ltype(hw)));
-    change(hw_device, "PARA_SUBTYPE", sformat("%1", get_i4lsubtype(hw)));
-    change(hw_device, "NAME", sformat("%1", lookup(hw, "name", "unknown")));
-    change(hw_device, "UNIQUE", lookup(hw, "unique", ""));
+    hw_device["PARA_TYPE"] = sformat("%1", get_i4ltype(hw));
+    hw_device["PARA_SUBTYPE"] = sformat("%1", get_i4lsubtype(hw));
+    hw_device["NAME"] = sformat("%1", lookup(hw, "name", "unknown"));
+    hw_device["UNIQUE"] = hw["unique"]:"";
 }
 
 /**
@@ -574,7 +574,7 @@ global define void SelectHW(integer which) ``{
     map sel = $[];
 
     if(which != nil)
-	sel = select(Hardware, which, $[]);
+	sel = Hardware[which]:$[];
 
     if(which > size(Hardware) || which < 0)
 	y2error("Item not found in Hardware: %1 (%2)", which, size(Hardware));
@@ -610,12 +610,12 @@ global define boolean Edit(string dev) ``{
     string typ = device_type(dev);
     string num = device_num(dev);
 
-    map typemap = lookup(Devices, typ, $[]);
+    map typemap = Devices[typ]:$[];
     if(!haskey(typemap, num)) {
 	y2error("Key not found: %1", dev);
 	return false;
     }
-    hw_device = lookup(typemap, num, $[]);
+    hw_device = typemap[num]:$[];
 
     y2debug("Hardware: %1", Hardware);
 
@@ -637,13 +637,13 @@ global define boolean Delete(string item) ``{
     string typ = device_type(item);
     string num = device_num(item);
 
-    map typemap = lookup(Devices, typ, $[]);
+    map typemap = Devices[typ]:$[];
     if(!haskey(typemap, num)) {
 	y2error("Key not found: %1", item);
 	return false;
     }
     if (type == "net")
-	interface = lookup(typemap, num, $[]);
+	interface = typemap[num]:$[];
     type = typ;
     device = num;
     operation = `delete;
@@ -661,7 +661,7 @@ global define boolean AddIf(string proto) ``{
     device = GetFreeDevice(type);
     interface = $[];
     set_ifparameter(interface);
-    change(interface, "PROTOCOL", proto);
+    interface["PROTOCOL"] = proto;
     operation = `addif;
     return true;
 }
@@ -675,12 +675,12 @@ global define boolean EditIf(string item) ``{
     string typ = device_type(item);
     string num = device_num(item);
 
-    map typemap = lookup(Devices, typ, $[]);
+    map typemap = Devices[typ]:$[];
     if(!haskey(typemap, num)) {
 	y2error("Key not found: %1", item);
 	return false;
     }
-    interface = lookup(typemap, num, $[]);
+    interface = typemap[num]:$[];
     /* interface settings */
     set_ifparameter(interface);
     device = num;
@@ -698,12 +698,12 @@ global define boolean SelIf(string item) ``{
     string typ = device_type(item);
     string num = device_num(item);
 
-    map typemap = lookup(Devices, typ, $[]);
+    map typemap = Devices[typ]:$[];
     if(!haskey(typemap, num)) {
 	y2error("Key not found: %1", item);
 	return false;
     }
-    interface = lookup(typemap, num, $[]);
+    interface = typemap[num]:$[];
     set_ifparameter(interface);
     device = num;
     type = typ;
@@ -730,7 +730,7 @@ global define boolean Commit() ``{
     }
     if (operation == `edit || operation == `editif || operation == `addproc) {
 
-	map typemap = lookup(Devices, type, $[]);
+	map typemap = Devices[type]:$[];
 	y2debug("typemap %1", typemap);
 	if(!haskey(typemap, n)) {
 	    y2error("Key not found: %1", device);
@@ -756,7 +756,7 @@ global define boolean Commit() ``{
 
     } else if (operation == `addif || operation == `editif) {
 
-	change(interface, "PROVIDER", provider_file);
+	interface["PROVIDER"] = provider_file;
 	if(operation == `addif)
 	    Provider::Commit();
 	ChangeDevice(type, device, interface, operation == `addif);
@@ -766,7 +766,7 @@ global define boolean Commit() ``{
 
 	Provider::Commit();
 	/* [msvec] Why is interface changed after changing provider? */
-	change(interface, "PROVIDER", provider_file);
+	interface["PROVIDER"]:provider_file;
 	ChangeDevice(type, device, interface, operation == `addprov);
 	modified_if = true;
 
@@ -805,7 +805,7 @@ global define boolean Commit() ``{
 /**
  */
 global define boolean Import(map settings) ``{
-    Provider::Import(lookup(settings, "_PROVIDERS", $[]));
+    Provider::Import(settings["_PROVIDERS"]:$[]);
     Devices = add(settings, "_PROVIDERS", nil);
 }
 
@@ -827,12 +827,12 @@ global define list Summary(boolean split) ``{
 /**
  */
 global define list OverviewDev() ``{
-    return filter(`i, BuildOverview(), ``(issubstring(select(select(i,0,nil),0,""),"contr")));
+    return filter(list i, BuildOverview(), ``(issubstring(i[0, 0]:"","contr")));
     //return BuildOverview("contr");
 }
 
 global define list OverviewIf() ``{
-    return filter(`i, BuildOverview(), ``(issubstring(select(select(i,0,nil),0,""),"net")));
+    return filter(list i, BuildOverview(), ``(issubstring(i[0, 0]:"","net")));
     //return BuildOverview("net");
 }
 
@@ -841,7 +841,7 @@ global define list OverviewIf() ``{
  * @return count
  */
 global define integer CountIF() ``{
-    map typemap = lookup(Devices, "net", $[]);
+    map typemap = Devices["net"]:$[];
 
     return size(typemap);
 }
@@ -854,7 +854,7 @@ global define integer CountIF() ``{
 global define boolean PrepareInterface() ``{
     if ((device > -1) && (type == "net"))
 	return true;
-    map typemap = lookup(Devices, "net", $[]);
+    map typemap = Devices["net"]:$[];
     if (0 == size(typemap))
 	return false;
     string id = "";
@@ -874,7 +874,7 @@ global define boolean PrepareInterface() ``{
  */
 global define boolean SelectInterface(boolean auto) ``{
 
-    map typemap = lookup(Devices, "net", $[]);
+    map typemap = Devices["net"]:$[];
     string id = "";
     integer s = size(typemap);
 
@@ -891,7 +891,7 @@ global define boolean SelectInterface(boolean auto) ``{
     }
 
     list ifl = maplist(`num, `devmap, typemap, ``{
-	string p = lookup(devmap, "PROTOCOL", "");
+	string p = devmap["PROTOCOL"]:"";
 	string devid = sformat("net%1", num);
 	string devnam = "";
 	if (p == "syncppp")
@@ -910,11 +910,11 @@ global define boolean SelectInterface(boolean auto) ``{
 
 global define string GetInterface4Provider(string prov) ``{
     string ifn = "";
-    map typemap = lookup(Devices, "net", $[]);
+    map typemap = Devices["net"]:$[];
 
     maplist(`num, `devmap, typemap, ``{
-	if (prov == lookup(devmap, "PROVIDER", "")) {
-	    if ("syncppp" == lookup(devmap, "PROTOCOL", ""))
+	if (prov == devmap["PROVIDER"]:"") {
+	    if ("syncppp" == devmap["PROTOCOL"]:"")
 		ifn = sformat("ippp%1",num);
 	    else
 		ifn = sformat("isdn%1",num);

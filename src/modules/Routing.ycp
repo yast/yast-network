@@ -74,8 +74,8 @@ global define boolean Read() ``{
     y2debug("Forward=%1", Forward);
 
     /* save routes to check for changes later */
-    Orig_Routes = eval(Routes);
-    Orig_Forward = eval(Forward);
+    Orig_Routes = (list) eval(Routes);
+    Orig_Forward = (boolean) eval(Forward);
 
     /* read available devices */
     map Devices = $[];
@@ -156,7 +156,7 @@ global define boolean Import(map settings) ``{
     if(size(settings) == 0)
 	return true;
 
-    Routes = eval(settings["routes"]:[]);
+    Routes = (list) eval(settings["routes"]:[]);
     Forward = settings["ip_forward"]:false;
 
     Orig_Routes = nil;

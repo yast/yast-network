@@ -105,7 +105,7 @@ list DeletedDevices = [];
  * Abort function
  * return boolean return true if abort
  */
-global block AbortFunction = nil;
+global block<boolean> AbortFunction = nil;
 
 /**
  * Data was modified?
@@ -196,7 +196,7 @@ global define boolean Read() ``{
     sleep(sl);
 
     // FIXME: HW
-    list pppoe = SCR::Read(.probe.pppoe);
+    list pppoe = (list) SCR::Read(.probe.pppoe);
     // FIXME: testing pppoe = [ $["a" : "b"] ];
     if(pppoe != nil && size(pppoe) > 0) HWDetected = true;
 
@@ -319,12 +319,12 @@ global define boolean Select(string dev) ``{
 	string typ = device_type(dev);
 	string num = device_num(dev);
 
-	map typemap = lookup(Devices, typ, $[]);
+	map typemap = Devices[typ]:$[];
 	if(!haskey(typemap, num)) {
 	    y2error("Key not found: %1", dev);
 	    return false;
 	}
-	devmap = lookup(typemap, num, $[]);
+	devmap = typemap[num]:$[];
 
 	type = typ;
 	device = num;
@@ -425,9 +425,9 @@ global define boolean Commit() ``{
 	    // "PROVIDER_NAME"	: Provider::Current["PROVIDER"]:"",
 	    "PPPD_OPTIONS"	: PPPDoptions,
 	];
-	change(newdev, "DEVICE", interface);
-	change(newdev, "VPIVCI", vpivci);
-	change(newdev, "MODEM_IP", modemip);
+	newdev["DEVICE"] = interface;
+	newdev["VPIVCI"] = vpivci;
+	newdev["MODEM_IP"] = modemip;
 
 	ChangeDevice(type, device, newdev, operation == `add);
     }

@@ -460,8 +460,8 @@ global define list FreeDevices(string type) ``{
  */
 global define list FreeAliases(string type, integer num) ``{
     y2debug("Devices=%1", Devices);
-    map Devices = lookup(Devices[type]:$[], sformat("%1",num), $[]);
-    y2debug("Devices=%1", Devices);
+    map Devices_1 = Devices[type, sformat("%1",num)]:$[];
+    y2debug("Devices=%1", Devices_1);
     return GetFreeDevices("_aliases", 10);
 }
 
@@ -489,9 +489,9 @@ global define boolean Select(string dev) ``{
 	    y2error("Device not found: %1", dev);
 	    return false;
 	}
-	devmap = lookup(Devices[type]:$[], device, $[]);
+	devmap = Devices[type, device]:$[];
 	if(alias != "")
-	    devmap = lookup(devmap["_aliases"]:$[], alias, $[]);
+	    devmap = devmap["_aliases", alias]:$[];
     }
 
     /* general stuff */
@@ -595,13 +595,13 @@ global define boolean Commit() ``{
 	];
 	//if(bootproto == "static") {
 	if(ipaddr != "") {
-	    change(newdev, "IPADDR", ipaddr);
-	    change(newdev, "NETMASK", netmask);
-	    change(newdev, "BROADCAST", IP::ComputeBroadcast(ipaddr, netmask));
-	    change(newdev, "NETWORK", IP::ComputeNetwork(ipaddr, netmask));
+	    newdev["IPADDR"] = ipaddr;
+	    newdev["NETMASK"] = netmask;
+	    newdev["BROADCAST"] = IP::ComputeBroadcast(ipaddr, netmask);
+	    newdev["NETWORK"] = IP::ComputeNetwork(ipaddr, netmask);
 	}
-	change(newdev, "REMOTE_IPADDR", remoteip);
-	change(newdev, "MTU", mtu);
+	newdev["REMOTE_IPADDR"] = remoteip;
+	newdev["MTU"] = mtu;
 
 	if(type == "dummy") {
 	    /* 2.4 */
@@ -612,30 +612,30 @@ global define boolean Commit() ``{
 	}
 
 	if(hotplug == "") {
-	    change(newdev, "STARTMODE", "onboot");
+	    newdev["STARTMODE"] = "onboot";
 	    if(alias == "")
 		ChangeModule(device_name(type, device), operation == `add);
 	}
 	else
-	    change(newdev, "STARTMODE", "hotplug");
+	    newdev["STARTMODE"] = "hotplug";
 
 	if(hotplug == "pcmcia")
-	    change(newdev, "DHCLIENT_SET_DOWN_LINK", "yes");
+	    newdev["DHCLIENT_SET_DOWN_LINK"] = "yes";
 
 	if(type == "wlan") {
-	    change(newdev, "WIRELESS_MODE", wl_mode);
-	    change(newdev, "WIRELESS_ESSID", wl_essid);
-	    change(newdev, "WIRELESS_NWID", wl_nwid);
-	    change(newdev, "WIRELESS_KEY", wl_key);
-	    change(newdev, "WIRELESS_NICK", wl_nick);
+	    newdev["WIRELESS_MODE"] = wl_mode;
+	    newdev["WIRELESS_ESSID"] = wl_essid;
+	    newdev["WIRELESS_NWID"] = wl_nwid;
+	    newdev["WIRELESS_KEY"] = wl_key;
+	    newdev["WIRELESS_NICK"] = wl_nick;
 	}
 
 	if(Arch::s390) {
 	    /* s390 options */
-	    change(newdev, "READ_CHANNEL", read_channel);
-	    change(newdev, "WRITE_CHANNEL", write_channel);
-	    change(newdev, "DATA_CHANNEL", data_channel);
-	    change(newdev, "PORTNAME", portname);
+	    newdev["READ_CHANNEL"] = read_channel;
+	    newdev["WRITE_CHANNEL"] = write_channel;
+	    newdev["DATA_CHANNEL"] = data_channel;
+	    newdev["PORTNAME"] = portname;
 	}
 
 	if(type == "ctc" || type == "escon")
@@ -854,7 +854,7 @@ global define boolean HasAliases(string dev) ``{
 	return false;
     }
     return alias == "" &&
-	lookup(lookup(Devices[type]:$[], device, $[]), "_aliases", $[]) != $[];
+	Devices[type, device, "_aliases"]:$[] != $[];
 }
 
 /**
@@ -869,12 +869,12 @@ global define list GetDevices(string type) ``{
     list ret = [];
     if(type == "all") {
 	maplist(string t, map d, Devices, ``{
-	    maplist(string n, Map::Keys(d), ``(change(ret, device_name(t,n))));
+	    maplist(string n, Map::Keys(d), ``{ret[size(ret)] = device_name(t,n);});
 	});
     }
     else {
 	map d = Devices[type]:$[];
-	maplist(string n, Map::Keys(d), ``(change(ret, device_name(type,n))));
+	maplist(string n, Map::Keys(d), ``{ret[size(ret)] = device_name(type,n);});
     }
 
     y2debug("ret=%1", ret);
