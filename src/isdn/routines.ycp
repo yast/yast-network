@@ -61,15 +61,15 @@ global define boolean card_has_type(map card, integer i4ltyp, integer i4lsubtyp)
 
 /**
  * Return the matching driver for i4ltyp and i4l subtype
- * @param dev       - list of all cards
+ * @param cdb       - cdb ISDN db
  * @param i4ltyp    - the I4L TYPE
  * @param i4lsubtyp - the I4L SUBTYPE
  * @return map of matching driver info
  */
-global define map get_isdndriver_by_type(list dev, integer i4ltyp, integer i4lsubtyp) ``{
+global define map get_isdndriver_by_type(map cdb, integer i4ltyp, integer i4lsubtyp) ``{
     map ret =  $[];
 
-    maplist(`c, dev,
+    maplist(`i, `c, cdb["Cards"]:$[],
     ``{
 	maplist(`d, lookup(c, "driver", []),
 	``{
@@ -82,15 +82,15 @@ global define map get_isdndriver_by_type(list dev, integer i4ltyp, integer i4lsu
 
 /**
  * Return the matching card for i4ltyp and i4l subtype
- * @param dev       - list of all cards
+ * @param cdb       - cdb ISDN db
  * @param i4ltyp    - the I4L TYPE
  * @param i4lsubtyp - the I4L SUBTYPE
  * @return map of matching card info
  */
-global define map get_isdncard_by_type(list dev, integer i4ltyp, integer i4lsubtyp) ``{
+global define map get_isdncard_by_type(map cdb, integer i4ltyp, integer i4lsubtyp) ``{
     map ret =  $[];
 
-    maplist(`c, dev,
+    maplist(`i, `c, cdb["Cards"]:$[],
     ``{
 	if (card_has_type(c, i4ltyp, i4lsubtyp))
 	    ret = c;

@@ -67,8 +67,8 @@ global string global_ac = "";
 // global start mode
 global string global_sm = "";
 
-/* ISDN device database */
-global list ISDN_Devices = [];
+/* ISDN database based on CDB */
+global map ISDNCDB = $[];
 
 
 /**
@@ -102,6 +102,7 @@ global string device = "";
  * Flag for Fritz!DSL configuration
  */
 global boolean have_dsl = false;
+global boolean only_dsl = false;
 
 /**
  * Which operation is pending?

@@ -71,6 +71,15 @@ _("<p>To avoid adding an interface now, use
 <b>Skip</b> not to enter the interface and provider dialogs.</p>");
 
 
+    if (ISDN::only_dsl)
+	helptext = 
+    // conditional help text 1/1
+_("<p>You have a DSL CAPI controller, configure your DSL
+connection via <b>Add DSL CAPI Interface</b>. You can also do this later
+in the DSL configuration dialog.</p>
+");
+
+
     /* DIALOG CONTENTS */
     term network = `VBox();
     network = add(network, `VSpacing(0.5));
@@ -78,11 +87,13 @@ _("<p>To avoid adding an interface now, use
 	// PushButton label to select the next Dialog
 	network = add(network, `PushButton(`id(`AddDSLPPP),`opt(`hstretch), _("Add &DSL CAPI Interface")));
     // PushButton label to select the next Dialog
-    network = add(network, `PushButton(`id(`AddSyncPPP),`opt(`hstretch), _("Add new &SyncPPP network interface")));
-    // PushButton label to select the next Dialog
-    network = add(network, `PushButton(`id(`AddRawIP), `opt(`hstretch), _("Add new Raw&IP network interface")));
-    // PushButton label to select the next Dialog
-    network = add(network, `PushButton(`id(`AddProvider),`opt(`hstretch), _("Add &provider to existing interface")));
+    if (!ISDN::only_dsl) {
+	network = add(network, `PushButton(`id(`AddSyncPPP),`opt(`hstretch), _("Add new &SyncPPP network interface")));
+	// PushButton label to select the next Dialog
+	network = add(network, `PushButton(`id(`AddRawIP), `opt(`hstretch), _("Add new Raw&IP network interface")));
+	// PushButton label to select the next Dialog
+	network = add(network, `PushButton(`id(`AddProvider),`opt(`hstretch), _("Add &provider to existing interface")));
+    }
     network = add(network, `VSpacing(0.5));
 
     term contents =
@@ -178,6 +189,7 @@ global define symbol interface_dialog() ``{
     boolean syncppp = lookup(ISDN::interface, "PROTOCOL", "syncppp") == "syncppp";
     boolean chargeHUP = lookup(ISDN::interface, "CHARGEHUP", "on") == "on";
     boolean multilink = lookup(ISDN::interface, "MULTILINK", "no") == "yes";
+    boolean firewall = lookup(ISDN::interface, "FIREWALL", "yes") == "yes";
 
     string devstr = sformat("%1%2", syncppp ? "ippp" : "isdn",
 				ISDN::device);
@@ -242,14 +254,18 @@ remove a channel.
 
     y2debug("device %1", devstr);
 
-    boolean FirewallChecked = true;  // default is true
+    boolean FirewallQuickmode = true;  // default is true
     if (ISDN::operation  == `editif) {
-	FirewallChecked = Firewall::Query(devstr);
+	FirewallQuickmode = Firewall::Query(devstr);
     }
-    y2debug("FirewallChecked=%1",FirewallChecked);
+    y2debug("FirewallQuickmode=%1",FirewallQuickmode);
 
     /* CheckBox label */
-    term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("Activate fire&wall..."), FirewallChecked));
+    term FirewallCheckbox = `HBox(
+	`Left(`CheckBox(`id(`Firewall), _("Activate fire&wall..."), firewall)),
+	`Left(`CheckBox(`id(`FirewallQuick), _("Firewall &QuickMode"), FirewallQuickmode)),
+	`HSpacing(10)
+    );
 
     term contents =
     `Top(
@@ -345,8 +361,9 @@ remove a channel.
         /* update firewall info */
 	/* Better update allways, maybe somebody changed it */
 
-	FirewallChecked = UI::QueryWidget(`id(`Firewall), `Value);
-	Firewall::Change(devstr, FirewallChecked);
+	firewall = UI::QueryWidget(`id(`Firewall), `Value);
+	FirewallQuickmode = UI::QueryWidget(`id(`FirewallQuick), `Value);
+	Firewall::Change(devstr, FirewallQuickmode);
 
 	/* UPDATE VARIABLES */
         ISDN::interface = union(ISDN::interface, $[
@@ -354,7 +371,7 @@ remove a channel.
             "STARTMODE"		: startmode,
             "MULTILINK"		: multilink ? "yes" : "no",
             "CHARGEHUP"		: chargeHUP ? "on" : "off",
-	    "FIREWALL"		: FirewallChecked ? "yes" : "no",
+	    "FIREWALL"		: firewall ? "yes" : "no",
         ]);
 	if (ISDN::operation  == `editif)
 	    ISDN::provider_file = UI::QueryWidget(`id(`prov), `Value);

@@ -27,131 +27,278 @@ import "Wizard";
 include "network/isdn/routines.ycp";
 
 /**
- * Dialog for ISDN Parameters
- * @param Detected detected card
- * @return any user input
+ * Helper to create a SelectionBox item list
+ * of ISDN cards for a specific vendor
+ * @param integer vendor  - vendor id if -1 all vendors
+ * @param integer defcard - default card, if -1 first card
  */
-global define term Card_Parameter(integer cidx) ``{
-	term  contens = `VBox();
-	string startm = lookup(ISDN::hw_device, "STARTMODE", "onboot");
-	map   cur_card = select(ISDN::ISDN_Devices, cidx, nil);
-	integer i = 0;
-	integer typ = -1;
+
+global define list ISDNCards4Vendor(integer vendor, integer defcard) ``{
+    list cards = maplist(`i, `c, ISDN::ISDNCDB["Cards"]:$[], ``(c));
+    boolean first = (defcard == -1);
+    string n_id = "";
+
+    if (vendor == -1) {
+	cards = sort(`x, `y, cards, ``(x["VendorRef"]:-1 <= y["VendorRef"]:-1));
+	n_id = "longname";
+    } else {
+	cards = filter(`c, cards, ``(c["VendorRef"]:-1 == vendor));
+	n_id = "name";
+    }
+    list itemlist = maplist(`c, cards, ``{
+	boolean sel = false;
+
+	if (first) {
+		defcard = -2;
+		sel = true;
+		first = false;
+	} else
+		sel = (defcard == c["CardID"]:-1);
+	return `item(`id(c["CardID"]:-1), c[n_id]:"unknown", sel);
+    });
+    return itemlist;
+}
+
+/**
+ * Dialog to select a Card from the database
+ * return dialog result
+ */
+
+global define symbol SelectISDNCard() ``{
+    ScreenName("isdn-hardware-selection");
+
+    /* Manual selection caption */
+    string caption = _("Manual ISDN card selection");
+
+    /* Manual selection help */
+    string helptext = _("<p>Select the ISDN card to configure. Filter cards for 
+particular vendors by selecting a vendor.</p>");
+
+    if (ISDN::ISDNCDB == $[])
+	    ISDN::ISDNCDB = SCR(`Read(.probe.cdb_isdn));
+
+    integer typ = tointeger(lookup(ISDN::hw_device, "PARA_TYPE", "-1"));
+    integer subtyp = tointeger(lookup(ISDN::hw_device, "PARA_SUBTYPE", "-1"));
+    map cur_card = get_isdncard_by_type(ISDN::ISDNCDB, typ, subtyp);
+
+    integer vendor = cur_card["VendorRef"]:-1;
+    integer card = cur_card["CardID"]:-1;
+ 
+    list vendors = maplist(`i, `v, ISDN::ISDNCDB["Vendors"]:$[], ``(`item(`id(i), v["name"]:"unknown", (i == vendor))));
+    vendors = prepend(vendors, `item(`id(-1), _("All"), (-1 == vendor)));
+
+    list cards = ISDNCards4Vendor(vendor, card);
+
+    /* Manual selection contents */
+    term contents = `VBox(
+	`VSpacing(0.5),
+	`HBox(
+	    /* Selection box label */
+	    `SelectionBox(`id(`vendor), `opt(`notify), _("Se&lect &vendor"), vendors),
+	    /* Selection box label */
+	    `ReplacePoint(`id(`rpc), `SelectionBox(`id(`cards), `opt(`notify), _("Se&lect ISDN card"), cards))
+	),
+	`VSpacing(0.5),
+	/* Text entry field */
+	`TextEntry(`id(`search), `opt(`notify), _("&Search")),
+	`VSpacing(0.5)
+    );
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    Label::BackButton(), Label::OKButton());
+
+    UI::SetFocus(`id(`vendor));
+
+    any ret = nil;
+    while(true) {
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel)
+	{
+	    if (Popup::ReallyAbort(true))
+		break;
+	    continue;
+	} 
+	else if(ret == `search) {
+
+	    string entry = UI::QueryWidget(`id(`search), `Value);
+
+	    if (size(entry) == 0)
+		continue;
+
+	    list l = filter(`e, cards, ``(tolower(substring(select(e, 1, ""), 0, size(entry))) == tolower(entry)));
+	    if(size(l) > 0) {
+		card = select(select(select(l, 0, []), 0, []), 0, 0);
+		UI::ChangeWidget(`id(`cards), `CurrentItem, card);
+		UI::ReplaceWidget(`id(`rp), `SelectionBox(`id(`cards), _("Se&lect ISDN card"), cards));
+		continue;
+	    } 
+	    map m = filter(`i, `c, ISDN::ISDNCDB["Cards"]:$[], ``(tolower(substring(c["longname"]:"", 0, size(entry))) == tolower(entry)));
+	    if(size(m) == 0)
+		m = filter(`i, `c, ISDN::ISDNCDB["Cards"]:$[], ``(0 <= find(tolower(c["longname"]:""), tolower(entry))));
+	    if(size(m) == 0)
+		continue;
+	    l = maplist(`i, `c, m, ``(c));
+	    m = select(l, 0, []);
+
+	    card = m["CardID"]:-1;
+	    vendor = m["VendorRef"]:-1;
+	    cards = ISDNCards4Vendor(vendor, card);
+	    /* Selection box title */
+	    UI::ChangeWidget(`id(`vendor), `CurrentItem, vendor);
+	    UI::ReplaceWidget(`id(`rpc), `SelectionBox(`id(`cards), _("Se&lect ISDN card"), cards));
+	    card = UI::QueryWidget(`id(`cards), `CurrentItem);
+	}
+	else if(ret == `vendor) {
+	    integer v = UI::QueryWidget(`id(`vendor), `CurrentItem);
+	    card = UI::QueryWidget(`id(`cards), `CurrentItem);
+	    if (v == vendor)
+		continue;
+	    if (vendor != -1 && v != -1)
+		card = -1;
+	    vendor = v;
+	    cards = ISDNCards4Vendor(vendor, card);
+	    UI::ReplaceWidget(`id(`rpc), `SelectionBox(`id(`cards), _("Se&lect ISDN card"), cards));
+	    card = UI::QueryWidget(`id(`cards), `CurrentItem);
+	}
+	else if(ret == `cards) {
+	    card = UI::QueryWidget(`id(`cards), `CurrentItem);
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    break;
+	}
+	else {
+	    y2error("Unexpected return code: %1", ret);
+	    continue;
+	}
+    }
+
+    if(ret == `next) {
+	card = UI::QueryWidget(`id(`cards), `CurrentItem);
+	cur_card = lookup(ISDN::ISDNCDB["Cards"]:$[], card, $[]);
+	ISDN::hw_device = union(ISDN::hw_device, $[
+	    "PARA_TYPE"		: sformat("%1", get_i4ltype(cur_card)),
+	    "PARA_SUBTYPE"	: sformat("%1", get_i4lsubtype(cur_card)),
+	    "NAME"		: sformat("%1", lookup(cur_card, "name", "unknown"))
+	]);
+    }
+
+    return ret;
+}
+
+/**
+ * Dialog for ISDN Parameters
+ * @param map drv      driver data
+ * @return term with dialog data
+ */
+global define term Card_Parameter(map drv) ``{
+	term  contens = `HBox();
+	integer typ = tointeger(lookup(ISDN::hw_device, "PARA_TYPE", "-1"));
 	boolean found = false;
 
-	if (cur_card == nil)
+	if (card == nil || drv == nil)
 	    return contens;
-	y2debug("cur_card %1",cur_card);
-	typ = get_i4ltype(cur_card);
-	y2debug("typ : %1", typ);
-	i = lookup(cur_card, "class", 0);
-	if ((i == 4) || (i==8)) /* PCMCIA, USB */
-		startm = "hotplug";
-	contens = add(contens,
-	    // ComboBox label
-	    `Bottom(`ComboBox(`id(`startmode), _("&Start Mode"),
-	    [
-		// ComboBox items
-		`item(`id("onboot"), _("OnBoot"), startm == "onboot"),
-		`item(`id("manual"), _("Manual"), startm == "manual"),
-		`item(`id("hotplug"), _("HotPlug"), startm == "hotplug")
-	    ])));
+
 	if (typ == 8005) { /* AVM T1 */
 	    // CheckBox label
 	    contens = add(contens, `CheckBox(`id(`t1b), _("&T1B Version"), false));
 	}
-	if ((i != 3) && (i != 6) && (i != 7))
+	list io  = lookup(drv, "IO", []);
+	list irq = lookup(drv, "IRQ", []);
+	list mem = lookup(drv, "MEMBASE", []);
+	if ( 0 == (size(io) + size(irq) + size(mem)))
 	    return contens;
-	/* only legal ISA parport and serial devices */
-	map para = lookup(cur_card, "parameter", nil);
-	if (para == nil)
-	    return contens;
-	contens = add(contens, `VSpacing(1));
-	// static label for HW parameter
-	contens = add(contens, `Label(_("Parameter")));
-	list io = lookup(para, "IO", []);
 	if (io != []) {
-	    i = -1;
-	    integer default_io = select(io, 0, 0);
+	    integer default_io = tointeger(select(io, 0, 0));
 	    string cur_io = lookup(ISDN::hw_device, "PARA_IO", "");
 	    if (cur_io != "")
 	    	default_io = tointeger(cur_io);
 	    list iol = [];
 	    found = false;
 	    maplist(`v, io, ``{
-	        i = i + 1;
-	    	if (i == 0)
-	    	    return;
-	    	boolean tmp = (v == default_io); 
+	    	boolean tmp = (tointeger(v) == default_io); 
 	    	if (tmp)
 	    		found = true;
-	    	iol = add(iol, `item(`id(v), sformat("%1",tohexstring(v)), tmp));
+	    	iol = add(iol, `item(`id(v), v, tmp));
 	    });
-	    if (!found) {
-		iol = add(iol, `item(`id(default_io), sformat("%1",tohexstring(default_io)), true));
+	    if (!found || 2>size(io)) {
+		if (!found)
+		    iol = add(iol, `item(`id(tohexstring(default_io)), tohexstring(default_io), true));
 		// ComboBox label
 		contens = add(contens, `ComboBox(`id(`IOADR), `opt(`editable), _("&IO Address"), iol));
 	    } else
 		// ComboBox label
 		contens = add(contens, `ComboBox(`id(`IOADR),  _("&IO Address"), iol));
 	}
-	list irq = lookup(para, "IRQ", []);
 	if (irq != []) {
-	    i = -1;
-	    integer default_irq = select(irq, 0, 0);
+	    integer default_irq = tointeger(select(irq, 2, "5"));
 	    string cur_irq = lookup(ISDN::hw_device, "PARA_IRQ", "");
 	    if (cur_irq != "")
 	    	default_irq = tointeger(cur_irq);
 	    list irql = [];
 	    found = false;
 	    maplist(`v, irq, ``{
-	        i = i + 1;
-	    	if (i == 0)
-	    	    return;
-	    	boolean tmp = (v == default_irq); 
+	    	boolean tmp = (tointeger(v) == default_irq); 
 	    	if (tmp)
 	    		found = true;
-	    	irql = add(irql, `item(`id(v), sformat("%1",v), tmp));
+	    	irql = add(irql, `item(`id(v), v, tmp));
 	    });
-	    if (!found) {
-		irql = add(irql, `item(`id(default_irq), sformat("%1",default_irq), true));
+	    if (!found || 2>size(irq)) {
+		if (!found)
+		    irql = add(irql, `item(`id(sformat("%1",default_irq)), sformat("%1",default_irq), true));
 		// ComboBox label
 		contens = add(contens, `ComboBox(`id(`IRQ), `opt(`editable), _("IR&Q"), irql));
 	    } else
 		// ComboBox label
 		contens = add(contens, `ComboBox(`id(`IRQ),  _("IR&Q"), irql));
 	}
-	list membase = lookup(para, "MEMBASE", []);
-	if (membase != []) {
-	    i = -1;
-	    integer default_mem = select(membase, 0, 0);
+	if (mem != []) {
+	    integer default_mem = tointeger(select(mem, 0, 0));
 	    string cur_memb = lookup(ISDN::hw_device, "PARA_MEMBASE", "");
 	    if (cur_memb != "")
 	    	default_mem = tointeger(cur_memb);
 	    list meml = [];
 	    found = false;
-	    maplist(`v, membase, ``{
-	        i = i + 1;
-	    	if (i == 0)
-	    	    return;
-	    	boolean tmp = (v == default_mem); 
+	    maplist(`v, mem, ``{
+	    	boolean tmp = (tointeger(v) == default_mem); 
 	    	if (tmp)
 	    		found = true;
-	    	meml = add(meml, `item(`id(v), sformat("%1",tohexstring(v)), tmp));
+	    	meml = add(meml, `item(`id(v), v, tmp));
 	    });
-	    if (!found) {
-		meml = add(meml, `item(`id(default_mem), sformat("%1",tohexstring(default_mem)), true));
+	    if (!found || 2>size(mem)) {
+		if (!found)
+		    meml = add(meml, `item(`id(tohexstring(default_mem)), tohexstring(default_mem), true));
 		// ComboBox label
 		contens = add(contens, `ComboBox(`id(`MEMBASE), `opt(`editable), _("&Membase"), meml));
 	    } else
 		// ComboBox label
 		contens = add(contens, `ComboBox(`id(`MEMBASE),  _("&Membase"), meml));
 	}
-	return contens;
+	// static label for HW parameter
+	return `HBox(
+	    `HWeight(30, `Left(`Label(_("Parameter")))),
+	    `HWeight(70, `Left(contens))
+	);
 }
 
 /**
- * Creates a Combobox with a description label to select a 
+ * Helper enables protocols depending on driver
+ * @param map drv   driver data
+ */
+global define void EnableProtocols(map drv) ``{
+    list protocol = drv["protocol"]:[];
+    UI::ChangeWidget(`id("1tr6"), `Enabled, contains(protocol, "1TR6"));
+    UI::ChangeWidget(`id("euro"), `Enabled, contains(protocol, "DSS1"));
+    UI::ChangeWidget(`id("ni1"), `Enabled, contains(protocol, "NI1"));
+    UI::ChangeWidget(`id("leased"), `Enabled, contains(protocol, "LEASED"));
+}
+
+/**
+ * Helper creates a Combobox with a description label to select a 
  * driver from list drv. The label is the description of the
  * current selected driver.
  * @param list drv    list of available drivers for the card
@@ -163,54 +310,38 @@ global define term create_drv_term(list drv, string desc) ``{
 
     ret = `HBox(
 	// ComboBox label to select a driver
-	`HWeight( 24,`ComboBox(`id(`DrvBox), `opt(`hstretch,`notify), _("Dri&ver"), drv)),
+	`HWeight( 29,`ComboBox(`id(`DrvBox), `opt(`hstretch,`notify), _("Dri&ver"), drv)),
 	`HSpacing(1),
-	`HWeight( 75,`Label(`id(`DrvDesc), desc))
+	`HWeight( 70,`Label(`id(`DrvDesc), desc))
     );
     return ret;
 }
 
 /**
- * Main dialog to select a ISDN card and a driver.
+ * Main dialog to select a driver and setup the ISDN parameter
  * If needed HW parameter can be set
  * Line parameter like AREACODE and DIALPREFIX can be entered.
- * @param symbol Detected - 'detected - card is detected by hwinfo
- *                          'other    - other, not detected cards
- *                          'edit     - edit card settings for the card
- *                                      defined by ISDN::hw_device
- *                          'add      - add a new card
  * return dialog result
  */
 
-global define symbol isdn_lowlevel(symbol Detected) ``{
+global define symbol isdn_lowlevel() ``{
     /* PREPARE VARIABLES */
 
-    integer id = -1;
-    integer drvid = -1;
-    integer CurrentCardIndex = nil;
-    integer CurrentDrvIndex = nil;
-    integer DriverCnt = nil;
-    integer Default_TYPE = tointeger(lookup(ISDN::hw_device, "PARA_TYPE", "-1"));
-    integer Default_SUBTYPE = tointeger(lookup(ISDN::hw_device, "PARA_SUBTYPE", "-1"));
-    integer feature = 0;
+    if (ISDN::ISDNCDB == $[])
+	    ISDN::ISDNCDB = SCR(`Read(.probe.cdb_isdn));
+    y2debug("ISDN::ISDNCDB %1", ISDN::ISDNCDB);
+
+    integer CurrentDrvIndex = -1;
     boolean t1b = false;
     string  CardName = "";
     string  protocol = lookup(ISDN::hw_device, "PROTOCOL", "euro");
     string  areacode = lookup(ISDN::hw_device, "AREACODE", "");
     string  dialprefix = lookup(ISDN::hw_device, "DIALPREFIX", "");
+    boolean isdnlog = lookup(ISDN::hw_device, "ISDNLOG_START", "yes") == "yes";
+    string  startmode = lookup(ISDN::hw_device, "STARTMODE", "onboot");
 
-    ISDN::ISDN_Devices = SCR(`Read(.probe.ihw_data));
-    y2debug("ISDN::ISDN_Devices %1", ISDN::ISDN_Devices);
-    y2debug("ISDN Detected %1", Detected);
-    y2debug("DefaultTYPE : %1/%2", Default_TYPE, Default_SUBTYPE);
-
-    if (Detected == `other || Detected == `add) {
-	// select first card in list
-	map first_card = select(ISDN::ISDN_Devices, 0, $[]);
-	Default_TYPE = get_i4ltype(first_card);
-	Default_SUBTYPE = get_i4lsubtype(first_card);
-    }
-    y2debug("DefaultTYPE : %1/%2", Default_TYPE, Default_SUBTYPE);
+    integer Default_TYPE = tointeger(lookup(ISDN::hw_device, "PARA_TYPE", "-1"));
+    integer Default_SUBTYPE = tointeger(lookup(ISDN::hw_device, "PARA_SUBTYPE", "-1"));
     /* Special Handling AVM T1 */
     if (Default_TYPE == 8005) {
 	if (Default_SUBTYPE == 1) {
@@ -222,90 +353,84 @@ global define symbol isdn_lowlevel(symbol Detected) ``{
 	}
     }
 
-    map CurrentCard = get_isdncard_by_type(ISDN::ISDN_Devices, Default_TYPE, Default_SUBTYPE);
+    map cur_card = get_isdncard_by_type(ISDN::ISDNCDB, Default_TYPE, Default_SUBTYPE);
+    map cur_vendor = lookup(ISDN::ISDNCDB["Vendors"]:$[], cur_card["VendorRef"]:-1, $[]);
 
-    y2debug("CurrentCard %1", CurrentCard);
+    y2debug("DefaultTYPE : %1/%2", Default_TYPE, Default_SUBTYPE);
 
-    list CardList = maplist(`e, ISDN::ISDN_Devices,
-    ``{
-	id = id + 1;
-	boolean Tmp = card_has_type(e, Default_TYPE, Default_SUBTYPE);
-	if (Tmp) {
-	   CurrentCardIndex = id;
-	   CardName = lookup(e, "name", "default");
-	}
-	return `item(`id(id), lookup(e, "name", "default"), Tmp);		// FIXME: default value
-    });
-
-    y2debug("CardList %1", CardList);
-
-    list CardDrivers = lookup(CurrentCard, "driver", []);
-    DriverCnt = size(CardDrivers);
+    list CardDrivers = lookup(cur_card, "driver", []);
+    integer DriverCnt = size(CardDrivers);
+    integer id = -1;
     list DrvList = maplist(`d, CardDrivers, 
     ``{
-	drvid = drvid + 1;
+	id = id + 1;
 	boolean Tmp = driver_has_type(d, Default_TYPE, Default_SUBTYPE);
-	if (Tmp) CurrentDrvIndex = drvid;
-	return `item(`id(drvid), lookup(d, "name", "default"), Tmp);		// FIXME: default value
+	if (Tmp) CurrentDrvIndex = id;
+	return `item(`id(id), lookup(d, "name", "unknown"), Tmp);
     });
     
-    y2debug("CurrentCardIndex %1 CurrentDrvIndex %2", CurrentCardIndex, CurrentDrvIndex);
+    y2debug("CurrentDrvIndex %1", CurrentDrvIndex);
     y2debug("DrvList %1", DrvList);
     /* DIALOG TEXTS */
+    if (contains(lookup(select(CardDrivers, CurrentDrvIndex, $[]), "features", ""), "DSLONLY")) {
+	ISDN::only_dsl = true;
+	ISDN::have_dsl = true;
+	ISDN::hw_device = union(ISDN::hw_device, $[
+	    "NAME"		: sformat("%1", lookup(cur_card, "longname", "unknown")),
+	    "DRIVER"		: sformat("%1", lookup(select(CardDrivers, CurrentDrvIndex, $[]), "mod_name", "unknown")),
+	    "STARTMODE"		: "onboot",
+	    "ISDNLOG_START"	: "no",
+	]);
+	return(`next);
+    }
 
     // title for dialog
     string caption = sformat(_("ISDN low-level configuration for %1%2"),
     	ISDN::type, ISDN::device);
+
     string helptext = "";
 
-    if (Detected != `Detected && ISDN::operation != `edit) {
+    if(!contains(["PCI", "PCMCIA", "USB"], cur_card["bus"]:""))
 	helptext = helptext +
-	// helptext text 1/7
-_("<p>Please select ISDN card from the list.</p>");
-    }
-	helptext = helptext +
-	// helptext text 2/7
+    // helptext text 1/7
 _("<p>If you have an old legacy ISA card, you can enter values for
 IO port or memory addresses and the used interrupt.
 For the correct values, check with your technical manual or contact your salesman.</p>
 ");
 
-	helptext = helptext +
-    // helptext text 3/7
+    helptext = helptext +
+    // helptext text 2/7
 _("<p><b>Start Mode: </b><b>OnBoot</b> the driver is loaded during
 system boot. <b>Manual</b> the driver must be started with the
 <b>rcisdn start</b> command, only the user root can do this.
 <b>HotPlug </b> is a special case for PCMCIA and USB devices.</p>");
 
+    if (1<size(DrvList))
 	helptext = helptext +
-	// helptext text 4/7
+    // helptext text 3/7
 _("<p>For some isdncard exist multiple drivers,
 Please select one from the list.</p>");
 
-	helptext = helptext +
-	// helptext text 5/7
-_("<p><b>ISDN protocol: </b>In most cases, the protocol is Euro-ISDN, 
-especially if your ISDN card is connected directly to the public ISDN 
-network. 1TR6 is only rarely used in older German private networks on 
-internal ports. In the United States, NI1 is usually used. Because it 
-is still experimental, contact the suse-isdn@suse.com mail list for 
-more information.</p>");
+    helptext = helptext +
+    // helptext text 4/7
+_("<p><b>ISDN protocol: </b>In most cases, the protocol is Euro-ISDN.</p>");
 
-	helptext = helptext +
-	// helptext text 6/7
+    helptext = helptext +
+    // helptext text 5/7
 _("<p><b>Area code: </b> Enter your local area code for the ISDN
-line here, including the country prefix, for example, 
-<tt><br>\"+49 911\"<br></tt></p>
+line here, without a leading zero and without a country prefix.</p>
 ");
 
-	helptext = helptext +
-	// helptext text 7/7
+    helptext = helptext +
+    // helptext text 6/7
 _("<p><b>Dial Prefix: </b> If you need a prefix to get an public line, you
-can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
+can enter it here. Only used on a internal S0 bus, most common is \"0\".</p>");
+
+    helptext = helptext +
+    // helptext text 7/7
+_("<p>If you don't want to log all your ISDN trafic uncheck <b>Start isdnlog</b>.</p>");
 
     /* DIALOG CONTENTS */
-
-    term contents = nil;
 
     term ISDN_protocol = 
 	`VSquash(
@@ -327,58 +452,114 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 	    )
 	);
 
-    term ISDN_line = `VBox(
+    map CountryCodes = $[
+	// Contry name
+	"+43"	: _("Austria"),
+	// Contry name
+	"+49"	: _("Germany"),
+	// Contry name
+	"+352"   : _("Luxemburg"),
+	// Contry name
+	"+31"   : _("Netherland"),
+	// Contry name
+	"+47"   : _("Norway"),
+	// Contry name
+	"+48"	: _("Poland"),
+	// Contry name
+	"+42"   : _("Slovakia"),
+	// Contry name
+	"+41"	: _("Switzerland")
+    ];
+
+    string ccode = "";
+    string newcc = "+49"; // default ???
+
+    if (areacode != "") {
+	list c = splitstring(areacode, " ");
+	if (2 >= size(c)) {
+	    newcc = select(c, 0, "");
+	    areacode = select(c, 1, "");
+	} else if (1 == size(c)) {
+	    if ("+" == substring(areacode, 0, 1)) {
+		newcc = areacode;
+		areacode = "";
+	    }
+	}
+    }
+    if (!haskey(CountryCodes, newcc))
+	ccode = "-1";
+    else
+	ccode = newcc;
+
+    list countries = maplist(`i, `n, CountryCodes, ``{
+	return(`item(`id(i), n, (i == ccode)));
+    });
+    countries = sort(`x, `y, countries, ``(select(x,1,"") <= select(y,1,"")));
+    // other country in list
+    countries = add(countries, `item(`id("-1"), _("other"), ("-1" == ccode)));
+    ccode = newcc;
+
+    term ISDN_area = `VBox(
+	`HBox(
+	    // ComboBoxlabel for country list 
+	    `HWeight( 26, `ComboBox(`id(`Country), `opt(`notify), _("&Country"), countries)),
+	    // TextEntry label for phone network Areacode (german Vorwahl)
+	    `HWeight( 24, `TextEntry(`id(`CCode), _("Co&de"), ccode))
+	),
 	// TextEntry label for phone network Areacode (german Vorwahl)
-	`TextEntry(`id(`areacode), _("&Areacode"), areacode),
-        // TextEntry label for phone number prefix to get a public line (german Amtsholziffer)
-	`TextEntry(`id(`dialprefix), _("&Dialprefix"), dialprefix)
+	`TextEntry(`id(`areacode), _("&Areacode"), areacode)
     );
 
     string desc = lookup(select(CardDrivers, CurrentDrvIndex, $[]), "description", "default");
     term ISDN_driver = create_drv_term(DrvList, desc);
-    term ISDN_card = nil;
-    if (Detected == `Detected || ISDN::operation == `edit) {
-	// frame title
-        ISDN_card = `VSquash(`Frame(_("ISDN card"),
+
+    // frame title
+    term ISDN_card = `Frame(_("ISDN card info"),`VBox(
 	    `HBox(
-        `HSpacing(0.5),
-        `Top(`VBox(
-         `Label(""),
-         `HBox(
-		 `HWeight(1, `Label(`id(`CardN), `opt(`outputField), CardName)))
-        )),
-		`HSpacing(),
-		`ReplacePoint(`id(`ParaR), Card_Parameter(CurrentCardIndex)),
-        `HSpacing(0.5)
-	    )
-	));
-    } else {
-	// frame title
-        ISDN_card = `Frame(_("ISDN cards"),
-	    `HBox(
-        `HSpacing(0.5),
-		// SelectionBox label
-		`HWeight(1, `SelectionBox(`id(`Card), `opt(`notify), _("Select your ISDN &card"),  CardList)),
-		`HSpacing(),
-		`ReplacePoint(`id(`ParaR), Card_Parameter(CurrentCardIndex)),
-        `HSpacing(0.5)
-	    )
-	);
-    }
-    contents =
+	    `HWeight(30, `VBox(
+		`Left(`Label(`id(`Vend), _("Vendor"))),
+		`Left(`Label(`id(`Card), _("ISDN card")))
+	    )),
+	    `HWeight(70, `VBox(
+		`Left(`Label(`id(`VendN), cur_vendor["name"]:"unknown")),
+		`Left(`Label(`id(`CardN), cur_card["name"]:"unknown"))
+	    ))
+	),
+	Card_Parameter(select(CardDrivers, CurrentDrvIndex, $[]))
+    ));
+
+    if (cur_card["bus"]:"" == "USB" || cur_card["bus"]:"" == "PCMCIA")
+	startmode = "hotplug";
+
+    term contents =
 	`Top(`VBox(
 	    `VSpacing(1.5),
-         ISDN_card,
+	    ISDN_card,
 	    `VSpacing(0.2),
 	    `ReplacePoint(`id(`DrvRpl), ISDN_driver),
 	    `VSpacing(0.2),
 	    `HBox(
-		ISDN_protocol,
-		`HSpacing(1),
-		ISDN_line
+		`HWeight(49, ISDN_protocol),
+		`HSpacing(2),
+		`HWeight(49, ISDN_area)
+	    ),
+	    `HBox(
+		// ComboBox label
+		`HWeight(30, `ComboBox(`id(`startmode), _("&Start Mode"),
+		    [
+			// ComboBox items
+			`item(`id("onboot"), _("OnBoot"), startmode == "onboot"),
+			`item(`id("manual"), _("Manual"), startmode == "manual"),
+			`item(`id("hotplug"), _("HotPlug"), startmode == "hotplug")
+		    ]
+		)),
+		// TextEntry label for phone number prefix to get a public line (german Amtsholziffer)
+		`HWeight(35, `TextEntry(`id(`dialprefix), _("&Dialprefix"), dialprefix)),
+		// CheckBox label
+		`HWeight(35, `CheckBox(`id(`ilog), _("Start &isdnlog"), isdnlog))
 	    ),
 	    `VSpacing(1.5)
-	));
+    ));
 
     /* DIALOG PREPARE */
     Wizard::SetContentsButtons(caption, contents, helptext,
@@ -387,11 +568,10 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
     if (1>=size(DrvList))
 	UI::ChangeWidget(`id(`DrvBox), `Enabled, false);
 
-    feature = lookup(select(CardDrivers, CurrentDrvIndex, $[]), "features", 0);
-    UI::ChangeWidget(`id("1tr6"), `Enabled, (feature & 0x01)==0x01);
-    UI::ChangeWidget(`id("euro"), `Enabled, (feature & 0x02)==0x02);
-    UI::ChangeWidget(`id("ni1"), `Enabled, (feature & 0x04)==0x04);
-    UI::ChangeWidget(`id("leased"), `Enabled, (feature & 0x08)==0x08);
+    UI::ChangeWidget(`id(`CCode), `Enabled, !haskey(CountryCodes, ccode));
+
+    EnableProtocols(select(CardDrivers, CurrentDrvIndex, $[]));
+
     /* Special Handling AVM T1 */
     if (Default_TYPE == 8005)
 	UI::ChangeWidget(`id(`t1b), `Value, t1b);
@@ -406,81 +586,65 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 	if(ret == `abort || ret == `cancel)
 	{
 	    if (Popup::ReallyAbort(true))
-	    {
 		break;
-	    }
 	    continue;
-	}
-	if (ret == `DrvBox) {
-	    drvid = tointeger(UI::QueryWidget(`id(`DrvBox), `Value));
-	    if (drvid != CurrentDrvIndex) {
+	} else if (ret == `DrvBox) {
+	    id = tointeger(UI::QueryWidget(`id(`DrvBox), `Value));
+	    if (id != CurrentDrvIndex) {
 		desc = lookup(select(CardDrivers, drvid, $[]), "description", "default");
-		CurrentDrvIndex = drvid;
+		CurrentDrvIndex = id;
 		UI::ChangeWidget(`id(`DrvDesc), `Value, desc);
-		feature = lookup(select(CardDrivers, CurrentDrvIndex, $[]), "features", 0);
-		UI::ChangeWidget(`id("1tr6"), `Enabled, (feature & 0x01)==0x01);
-		UI::ChangeWidget(`id("euro"), `Enabled, (feature & 0x02)==0x02);
-		UI::ChangeWidget(`id("ni1"), `Enabled, (feature & 0x04)==0x04);
-		UI::ChangeWidget(`id("leased"), `Enabled, (feature & 0x08)==0x08);
+		EnableProtocols(select(CardDrivers, CurrentDrvIndex, $[]));
 	    }
-	} else if (ret == `Card) {
-	    CurrentCardIndex = tointeger(UI::QueryWidget(`id(`Card), `CurrentItem));
-	    CurrentCard = select(ISDN::ISDN_Devices, CurrentCardIndex, $[]);
-	    CardDrivers = lookup(CurrentCard, "driver", []);
-	    drvid = -1;
-	    CurrentDrvIndex = 0;
-	    DrvList = maplist(`d, CardDrivers, ``{
-		drvid = drvid + 1;
-		return `item(`id(drvid), lookup(d, "name", "default"),
-		    CurrentDrvIndex==drvid);		// FIXME: default value
-	    });
-	    CardName = lookup(CurrentCard, "name", "default"); // FIXME: default value
-
-	    desc = lookup(select(CardDrivers, CurrentDrvIndex, $[]), "description", "default");
-	    ISDN_driver = create_drv_term(DrvList, desc);
-	    UI::ReplaceWidget(`id(`DrvRpl), ISDN_driver);
-	    if (1<size(DrvList))
-		UI::ChangeWidget (`id (`DrvBox), `Enabled, true);
-	    else
-		UI::ChangeWidget (`id (`DrvBox), `Enabled, false);
-	    UI::ReplaceWidget(`id(`ParaR), Card_Parameter(CurrentCardIndex));
-	    feature = lookup(select(CardDrivers, CurrentDrvIndex, $[]), "features", 0);
-	    UI::ChangeWidget(`id("1tr6"), `Enabled, (feature & 0x01)==0x01);
-	    UI::ChangeWidget(`id("euro"), `Enabled, (feature & 0x02)==0x02);
-	    UI::ChangeWidget(`id("ni1"), `Enabled, (feature & 0x04)==0x04);
-	    UI::ChangeWidget(`id("leased"), `Enabled, (feature & 0x08)==0x08);
+	}
+	else if (ret == `Country) {
+	    newcc = UI::QueryWidget(`id(`Country), `Value);
+	    if (newcc == ccode)
+		continue;
+	    if (haskey(CountryCodes, newcc)) {
+		ccode = newcc;
+		UI::ChangeWidget(`id(`CCode), `Enabled, false);
+	    } else {
+		ccode = "";
+		UI::ChangeWidget(`id(`CCode), `Enabled, true);
+		UI::ChangeWidget(`id(`ilog), `Value, false);
+	    }
+	    UI::ChangeWidget(`id(`CCode), `Value, ccode);
 	}
 	else if (ret == `back) {
 	    break;
 	}
 	else if (ret == `next) {
 	    protocol = UI::QueryWidget(`id(`protocol), `CurrentButton);
+	    ccode = UI::QueryWidget(`id(`CCode), `Value);
 	    areacode = UI::QueryWidget(`id(`areacode), `Value);
 	    dialprefix = UI::QueryWidget(`id(`dialprefix), `Value);
+	    isdnlog = UI::QueryWidget(`id(`ilog), `Value);
 
 	    y2debug("proto: %1", protocol);
 
 	    if (DriverCnt >1) {
-		drvid = UI::QueryWidget(`id(`drvid), `CurrentItem);
+		CurrentDrvIndex = tointeger(UI::QueryWidget(`id(`DrvBox), `Value));
 	    }
-	    integer val = nil;
+	    string val = nil;
 
-	    val = UI::QueryWidget(`id(`IOADR), `Value);
-	    if (val != nil)
-		change(ISDN::hw_device, "PARA_IO", sformat("%1", tohexstring(val)));
-	    val = UI::QueryWidget(`id(`IRQ), `Value);
-	    if (val != nil)
-		change(ISDN::hw_device, "PARA_IRQ", sformat("%1", val));
-	    val = UI::QueryWidget(`id(`MEMBASE), `Value);
-	    if (val != nil)
-		change(ISDN::hw_device, "PARA_MEMBASE", sformat("%1", tohexstring(val)));
+	    if(UI::WidgetExists(`id(`IOADR))) {
+		val = UI::QueryWidget(`id(`IOADR), `Value);
+		change(ISDN::hw_device, "PARA_IO", val);
+	    }
+	    if(UI::WidgetExists(`id(`IRQ))) {
+		val = UI::QueryWidget(`id(`IRQ), `Value);
+		change(ISDN::hw_device, "PARA_IRQ", val);
+	    }
+	    if(UI::WidgetExists(`id(`MEMBASE))) {
+		val = UI::QueryWidget(`id(`MEMBASE), `Value);
+		change(ISDN::hw_device, "PARA_MEMBASE", val);
+	    }
 
-	    CurrentCard = select(ISDN::ISDN_Devices, CurrentCardIndex, $[]);
-	    change(CurrentCard, "sel_drv", CurrentDrvIndex);
-	    y2debug("CurrentCard %1", CurrentCard);
-	    CardDrivers = lookup(CurrentCard, "driver", []);
-	    Default_TYPE = get_i4ltype(CurrentCard);
-	    Default_SUBTYPE = get_i4lsubtype(CurrentCard);
+	    change(cur_card, "sel_drv", CurrentDrvIndex);
+
+	    Default_TYPE = get_i4ltype(cur_card);
+	    Default_SUBTYPE = get_i4lsubtype(cur_card);
 	    /* Special Handling AVM T1 */
 	    if (Default_TYPE == 8005) {
 		if (UI::QueryWidget(`id(`t1b), `Value))
@@ -489,21 +653,19 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 	    ISDN::hw_device = union(ISDN::hw_device, $[
 		"PARA_TYPE"	: sformat("%1", Default_TYPE),
 		"PARA_SUBTYPE"	: sformat("%1", Default_SUBTYPE),
-		"NAME"		: sformat("%1", lookup(CurrentCard, "name", "unknown")),
+		"NAME"		: sformat("%1", lookup(cur_card, "longname", "unknown")),
 		"DRIVER"	: sformat("%1", lookup(select(CardDrivers, CurrentDrvIndex, $[]), "mod_name", "unknown")),
 		"STARTMODE"	: UI::QueryWidget(`id(`startmode), `Value),
 		"PROTOCOL"	: protocol,
-		"AREACODE"	: areacode,
+		"AREACODE"	: ccode + " " + areacode,
 		"DIALPREFIX"	: dialprefix,
+		"ISDNLOG_START"	: isdnlog ? "yes" : "no",
 	    ]);
 	    // check and maybe install missing packages
 	    list pkgs = [];
 
 // FIXME workaround: not needed if yast2-core is udated to deliver need_pkg as list
-	    if (is(lookup(select(CardDrivers, CurrentDrvIndex, $[]), "need_pkg", []), string))
-		pkgs = splitstring (lookup(select(CardDrivers, CurrentDrvIndex, $[]), "need_pkg", ""), ",");
-	    else
-		pkgs = lookup(select(CardDrivers, CurrentDrvIndex, $[]), "need_pkg", []);
+	    pkgs = lookup(select(CardDrivers, CurrentDrvIndex, $[]), "need_pkg", []);
 	    y2debug("pkgs: %1", pkgs);
 	    if (pkgs != nil && pkgs!=[]) {
 		symbol retp = Packages(pkgs);
@@ -511,10 +673,14 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 // TODO warning message if packages are not installed
 	    } 
 	    // if it is a DSL capable card
-	    feature = lookup(CurrentCard, "features", 0);
-	    if ((feature & 0x4) == 0x4)
+	    if (contains(lookup(select(CardDrivers, CurrentDrvIndex, $[]), "features", ""), "DSL"))
 		ISDN::have_dsl = true;
-	    if ((Default_TYPE == 8002) || (Default_TYPE == 8003)) {
+	    else
+		ISDN::have_dsl = false;
+	    if (!contains(lookup(select(CardDrivers, CurrentDrvIndex, $[]), "features", ""), "DSLONLY"))
+		ISDN::only_dsl = false;
+
+	    if ((Default_TYPE == 8002) || (Default_TYPE == 8003) || (Default_TYPE == 8004)) {
 // multiline Popup::YesNo text
 		if (! Popup::YesNo (_(" WARNING !!!\n
 You have selected an binary only driver.

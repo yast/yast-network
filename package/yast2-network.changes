@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Aug 25 15:10:14 CEST 2003 - kkeil@suse.de
+
+- new hardware dialog for ISDN based on CDB data
+- firewall has now 2 checkboxes
+
+-------------------------------------------------------------------
 Thu Aug 21 11:00:14 CEST 2003 - msvec@suse.de
 
 - suppress error message if pcmcia is not installed (#29195)
