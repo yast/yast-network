@@ -302,6 +302,7 @@ global define boolean Write(boolean start) ``{
 	    _("Write providers"),
         // step 7/7
 	    _("Run SuSEconfig"),
+	    ], [], "");
     }
     if(Abort()) return false;
     // stage 1 in writing current ISDN setup
