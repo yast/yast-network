@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Fri Feb 11 14:25:16 CET 2005 - mvidner@suse.cz
+Fri Feb 11 15:34:56 CET 2005 - mvidner@suse.cz
 
+- Propose network config also when there's ifcfg-usb (#50164).
 - Do not log provider data, they contain passwords (#50741).
 - Fixed selecting an ISDN card manually (#50725).
 - Do not propose a dynamic address if the product (OES) says

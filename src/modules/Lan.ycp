@@ -931,7 +931,10 @@ global define boolean Propose() {
     y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);
 
     /* Something is already configured -> do nothing */
-    list devs = NetworkDevices::List("netcard");
+    list<string> devs = NetworkDevices::List("netcard");
+    // workaround for #50164:
+    // better do it in ND::List, when we know what we can expect from HAL
+    devs = filter (string d, devs, ``( d != "usb" && d != "pcmcia"));
     if(size(devs) > 0) {
 	y2milestone("Something already configured: don't propose.");
 	y2milestone("devs=%1", devs);
