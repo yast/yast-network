@@ -524,7 +524,7 @@ the channel, select the desired value.</p>
 
     if(ret == `next) {
 	Lan::wl_channel = (string) UI::QueryWidget(`id(`channel), `Value);
-	Lan::wl_frequency = (string) UI::QueryWidget(`id(`frequency), `Value);
+//	Lan::wl_frequency = (string) UI::QueryWidget(`id(`frequency), `Value);
 	Lan::wl_bitrate = (string) UI::QueryWidget(`id(`bitrate), `Value);
 	Lan::wl_accesspoint = (string) UI::QueryWidget(`id(`accesspoint), `Value);
 	Lan::wl_power = (boolean) UI::QueryWidget(`id(`power), `Value) == true;
