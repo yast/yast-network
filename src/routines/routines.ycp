@@ -202,7 +202,7 @@ define list list2items(list l, integer selected) {
  * @param selected selected item (0 for the first)
  * @return a list of items
  */
-define list hwlist2items(list l, integer selected) {
+define list hwlist2items(list<map> l, integer selected) {
     list items = [];
     integer n = 0;
     foreach(map i, l, {

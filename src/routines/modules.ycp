@@ -53,7 +53,7 @@ define boolean ReadModules(string devregex) {
     y2debug("regex=%1", regex);
 
     /* Read aliases */
-    list allaliases = SCR::Dir(.modules.alias);
+    list<string> allaliases = (list<string>)SCR::Dir(.modules.alias);
     maplist(string al, allaliases, {
 	if(regexpmatch(al, regex)) {
 	    string modul = (string) SCR::Read(add(.modules.alias, al));
@@ -63,7 +63,7 @@ define boolean ReadModules(string devregex) {
     });
 
     /* Read options */
-    list opts = SCR::Dir(.modules.options);
+    list<string> opts = (list<string>)SCR::Dir(.modules.options);
     maplist(string al, opts, {
 	map optsmap = (map) SCR::Read(add(.modules.options, al));
 	if(optsmap != nil)
@@ -197,8 +197,8 @@ define boolean ChangeModule(string name, boolean check) {
     else {
 	if(m == "" || m == nil || m == "dummy") m = name;
 
-	map m_orig = Map::FromString(Modules["options", m]: "");
-	map m_new = Map::FromString(o);
+	map<string,string> m_orig = (map<string,string>)Map::FromString(Modules["options", m]: "");
+	map<string,string> m_new = (map<string,string>)Map::FromString(o);
 	y2debug("M=%1", Modules["options", m]: "");
 	y2debug("o=%1", o);
 	y2debug("m_orig=%1", m_orig);

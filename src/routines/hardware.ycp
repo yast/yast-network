@@ -145,8 +145,8 @@ define string ControllerType(map hwdevice) {
  * @param hwtype type of devices to read (netcard|modem|isdn)
  * @return true if success
  */
-define list ReadHardware(string hwtype) {
-    list Hardware = [];
+define list<map> ReadHardware(string hwtype) {
+    list<map> Hardware = [];
 
     y2debug("hwtype=%1", hwtype);
 
@@ -184,7 +184,7 @@ define list ReadHardware(string hwtype) {
     if(haskey(hwtypes, hwtype))
 	allcards = (list) SCR::Read(hwtypes[hwtype]:nil);
     else if(hwtype == "all" || hwtype == "" || hwtype == nil)
-	maplist(path v, Map::Values(hwtypes), {
+	maplist(path v, (list<path>) Map::Values(hwtypes), {
 	    allcards = merge(allcards, (list) SCR::Read(v));
 	});
     else {
@@ -199,7 +199,7 @@ define list ReadHardware(string hwtype) {
     }
 
     /* fill in the hardware data */
-    maplist(map card, allcards, {
+    maplist(map card, (list<map>) allcards, {
 	map one = $[];
 
 	/* common stuff */

@@ -36,8 +36,8 @@ global define boolean ReadDevices(string devregex) ``{
 	    "BROADCAST", "SCOPE", "LABEL", "IP_OPTIONS" ];
 
     /* preparation */
-    list allfiles = SCR::Dir(.network.section);
-    list devices = filter(string file, allfiles, ``(!regexpmatch(file, "[\.~]")));
+    list<string> allfiles = (list<string>)SCR::Dir(.network.section);
+    list<string> devices = filter(string file, allfiles, ``(!regexpmatch(file, "[\.~]")));
     y2debug("devices=%1", devices);
 
     devices = filter(string d, devices, ``(regexpmatch(d, "[a-z][a-z-]*[0-9]*")));
@@ -66,7 +66,7 @@ global define boolean ReadDevices(string devregex) ``{
 	}
 
 	string pth = ".network.value.\"" + device_name(devtype, devnum) + "\"";
-	list values = SCR::Dir(topath(pth));
+	list<string> values = (list<string>)SCR::Dir(topath(pth));
 
 	map config = $[];
 	maplist(string val, values, ``{
@@ -123,21 +123,21 @@ global define boolean WriteDevices() ``{
     DeletedDevices = [];
 
     /* Devices with chmod=0600 */
-    list chmod = [];
+    list<string> chmod = [];
 
     /* write all devices */
     maplist(string typ, map devsmap, Devices, ``{
-	maplist(string num, map devmap, devsmap, ``{
+	maplist(string num, map devmap, (map<string,map>)devsmap, ``{
 	    /* write sysconfig */
 	    string dev = device_name(typ, num);
 	    string p = ".network.value.\"" + dev + "\".";
 
 	    /* write all keys to config */
-	    maplist(string k, Map::Keys(devmap), ``{
+	    maplist(string k, (list<string>)Map::Keys(devmap), ``{
 		/* Write aliases */
 		if(k == "_aliases") {
 		    maplist(string anum, map amap, devmap[k]:$[], ``{
-			maplist(string ak, string av, amap, ``{
+			maplist(string ak, string av, (map<string,string>)amap, ``{
 			    string akk = ak + "_" + anum;
 			    SCR::Write(topath(p + akk), av);
 			});
@@ -399,7 +399,7 @@ global define boolean CheckDevice(string dev) ``{
 global define list LocateDevices(string key, string val) ``{
     list ret = [];
     maplist(string typ, map devsmap, Devices, ``{
-	maplist(string num, map devmap, devsmap, ``{
+	maplist(string num, map devmap, (map<string,map>)devsmap, ``{
 	    if(devmap[key]:"" == val) ret = add(ret, typ+num);
 	});
     });
@@ -440,7 +440,7 @@ global define boolean UpdateModemSymlink() ``{
  */
 global define boolean CleanHotplugSymlink() ``{
 
-    list types = [ "eth-pcmcia", "eth-usb", "tr-pcmcia", "tr-usb" ];
+    list<string> types = [ "eth-pcmcia", "eth-usb", "tr-pcmcia", "tr-usb" ];
     maplist(string t, types, ``{
 	string link = "/etc/sysconfig/network/ifcfg-" + t;
 	y2debug("link=%1", link);

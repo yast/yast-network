@@ -114,13 +114,13 @@ global boolean skip = false;
  * Hardware information
  * @see ReadHardware
  */
-list Hardware = [];
+list<map> Hardware = [];
 
 /**
  * Config information
  * @see ReadDevices
  */
-map Devices = $[];
+map<string,map> Devices = $[];
 
 /**
  * deleted devices
@@ -162,7 +162,7 @@ include "network/hardware.ycp";
 include "network/routines.ycp";
 include "network/runtime.ycp";
 
-map Devs = $[];
+map<string,map> Devs = $[];
 include "network/complex.ycp";
 
 include "network/isdn/config.ycp";
@@ -268,7 +268,7 @@ global define boolean Write(boolean start) ``{
     integer sl = 0; /* 1000; /* TESTING */
 
     integer steps = 7;
-    list plist = [];
+    list<string> plist = [];
     boolean haveISDNif = ($[] != Devices["net"]:$[]);
 
     // steps for the ISDN writing current setup progress screen with start
@@ -814,7 +814,7 @@ global define boolean Commit() ``{
  */
 global define boolean Import(map settings) ``{
     Provider::Import("isdn", settings["_PROVIDERS"]:$[]);
-    Devices = add(settings, "_PROVIDERS", nil);
+    Devices = (map<string,map>)add(settings, "_PROVIDERS", nil);
 }
 
 /**
@@ -837,13 +837,13 @@ global define list Summary(boolean split) ``{
  */
 global define list OverviewDev() ``{
     Devs = Devices;
-    return filter(list i, BuildOverview(), ``(issubstring(i[0, 0]:"","contr")));
+    return filter(list i, (list<list>)BuildOverview(), ``(issubstring(i[0, 0]:"","contr")));
     //return BuildOverview("contr");
 }
 
 global define list OverviewIf() ``{
     Devs = Devices;
-    return filter(list i, BuildOverview(), ``(issubstring(i[0, 0]:"","net")));
+    return filter(list i, (list<list>)BuildOverview(), ``(issubstring(i[0, 0]:"","net")));
     //return BuildOverview("net");
 }
 
@@ -865,7 +865,7 @@ global define integer CountIF() ``{
 global define boolean PrepareInterface() ``{
     if ((tointeger(device) > -1) && (type == "net"))
 	return true;
-    map typemap = Devices["net"]:$[];
+    map<string,map> typemap = (map<string,map>)Devices["net"]:$[];
     if (0 == size(typemap))
 	return false;
     string id = "";
@@ -885,7 +885,7 @@ global define boolean PrepareInterface() ``{
  */
 global define boolean SelectInterface(boolean auto) ``{
 
-    map typemap = Devices["net"]:$[];
+    map<string,map> typemap = (map<string,map>)Devices["net"]:$[];
     string id = "";
     integer s = size(typemap);
 
@@ -921,7 +921,7 @@ global define boolean SelectInterface(boolean auto) ``{
 
 global define string GetInterface4Provider(string prov) ``{
     string ifn = "";
-    map typemap = Devices["net"]:$[];
+    map<string,map> typemap = (map<string,map>)Devices["net"]:$[];
 
     maplist(string num, map devmap, typemap, ``{
 	if (prov == devmap["PROVIDER"]:"") {

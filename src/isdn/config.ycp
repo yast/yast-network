@@ -90,7 +90,7 @@ global define boolean WriteISDNConfig(string isdntyp) ``{
 
     /* write all devices */
     maplist(string typ, map devsmap, Devices, ``{
-	maplist(string num, map devmap, devsmap, ``{
+	maplist(string num, map devmap, (map<string,map>)devsmap, ``{
 	    /* write sysconfig */
 	    if (typ != isdntyp)
 	        return;
@@ -98,7 +98,7 @@ global define boolean WriteISDNConfig(string isdntyp) ``{
 	    string p = ".isdn.value.\"" + sysconfig + "/cfg-" + dev + "\".";
 
 	    /* write all keys to config */
-	    maplist(string k, Map::Keys(devmap), ``{
+	    maplist(string k, (list<string>)Map::Keys(devmap), ``{
 		if(k == "module" || k == "options") return;
 		SCR::Write(topath(p+k), devmap[k]:"");
 	    });
@@ -131,14 +131,14 @@ global define boolean WriteOneISDNConfig(string contr) ``{
     string sysconfig = "/etc/sysconfig/isdn";
 
     maplist(string typ, map devsmap, Devices, ``{
-	maplist(string num, map devmap, devsmap, ``{
+	maplist(string num, map devmap, (map<string,map>)devsmap, ``{
 	    string dev = typ + num;
 	    if (contr != dev)
 		return;
 	    string p = ".isdn.value.\"" + sysconfig + "/cfg-" + dev + "\".";
 
 	    /* write all keys to config */
-	    maplist(string k, Map::Keys(devmap), ``{
+	    maplist(string k, (list<string>)Map::Keys(devmap), ``{
 		if(k == "module" || k == "options") return;
 		SCR::Write(topath(p+k), devmap[k]:"");
 	    });

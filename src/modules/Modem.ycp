@@ -61,7 +61,7 @@ global boolean proposal_valid = false;
  * Hardware information
  * @see ReadHardware
  */
-list Hardware = [];
+list<map> Hardware = [];
 
 /**
  * Abort function
@@ -341,7 +341,7 @@ global define boolean Delete(string name) {
 global define boolean Commit() {
     y2debug("Commit(%1)",operation);
     if(operation == `add || operation == `edit) {
-	map newdev = $[
+	map<string,any> newdev = $[
 	    "STARTMODE"	: startmode,
 	    "BOOTPROTO"	: "none",
 	    "UNIQUE"	: unique,

@@ -58,7 +58,7 @@ global define boolean Write() {
 
     /* En- or disable vnc10 and vnchttpd10 in xinetd.d/vnc
      * note: we make use of the "alias problem" */
-    list xinetd = (list) SCR::Read(.etc.xinetd_conf.services);
+    list<map> xinetd = (list<map>) SCR::Read(.etc.xinetd_conf.services);
     foreach(map m, xinetd, {
 	string s = m["service"]:"";
 	if (s == "vnc10" || s == "vnchttpd10") {

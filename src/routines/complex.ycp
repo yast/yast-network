@@ -23,26 +23,26 @@ include "network/summary.ycp";
 
 define string CheckEmptyName(string devtype, string hwname);
 define string DeviceStatus(string devtype, string devnum, map devmap);
-define string HardwareName(list Hardware, string unq);
+define string HardwareName(list<map> Hardware, string unq);
 
 /**
  * Build textual summary
  * @param split split configured and unconfigured?
  * @return [ configured, unconfigured ] if split, [ summary ] otherwise
  */
-define list BuildSummary(list Hardware, boolean split) {
+define list<any> BuildSummary(list<map> Hardware, boolean split) {
 
     y2debug("Devs=%1", Devs);
     y2debug("Hardware=%1", Hardware);
     y2debug("split=%1", split);
 
     list uniques = [];
-    list configured = [];
-    list unconfigured = [];
+    list<string> configured = [];
+    list<map> unconfigured = [];
 
     /* build a list of configured devices */
     maplist(string devtype, map devsmap, Devs, {
-	maplist(string devnum, map devmap, devsmap, {
+	maplist(string devnum, map devmap, (map<string,map>)devsmap, {
 
 	    /* main device summary */
 	    string unq = devmap["UNIQUE"]:"";
@@ -53,7 +53,7 @@ define list BuildSummary(list Hardware, boolean split) {
 	    uniques = add(uniques, unq);
 
 	    /* aliases summary */
-	    map aliasee = devmap["_aliases"]:$[];
+	    map<string,map> aliasee = devmap["_aliases"]:$[];
 	    if(aliasee != $[])
 		maplist(string aid, map amap, aliasee, {
 		    /* Table item */
@@ -236,7 +236,7 @@ define string CheckEmptyName(string devtype, string hwname) {
  * @param unq unique number
  * @return hardware name
  */
-define string HardwareName(list Hardware, string unq) {
+define string HardwareName(list<map> Hardware, string unq) {
     string hwname = "";
     if(unq != "")
 	maplist(map h, Hardware, {
@@ -352,7 +352,7 @@ define list BuildOverview() {
     list overview = [];
 
     maplist(string type, map devmap, Devs, {
-	maplist(string k, map v, devmap, {
+	maplist(string k, map v, (map<string,map>)devmap, {
 	    term item = nil;
 	    string dev = device_name(type, k);
 	    string ip = DeviceProtocol(v);
@@ -383,7 +383,7 @@ define list BuildOverview() {
 	    overview = add(overview, item);
 
 	    /* aliases summary */
-	    map aliasee = v["_aliases"]:$[];
+	    map<string,map> aliasee = v["_aliases"]:$[];
 	    if(aliasee != $[])
 		maplist(string aid, map amap, aliasee, {
 		    //hwname = CheckEmptyName(devtype, HardwareName(unq));

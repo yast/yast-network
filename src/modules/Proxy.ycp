@@ -156,7 +156,7 @@ global define map Export() {
  */
 global define string Summary() {
 
-    list ret = [];
+    list<string> ret = [];
 
     /* Summary text */
     if(!enabled) ret = [ Summary::Device(_("Proxy is disabled."), "") ];

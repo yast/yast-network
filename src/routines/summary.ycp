@@ -107,7 +107,7 @@ define string DeviceType(string type) {
  * @param cur current type
  * @return Table items
  */
-define list BuildTypesList(list types, string cur) {
+define list<term> BuildTypesList(list<string> types, string cur) {
     return maplist(string t, types, {
 	return `item(`id(t), DeviceType(t), t == cur);
     });
