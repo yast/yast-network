@@ -422,7 +422,7 @@ global define void SelectHW(integer which) {
 	y2debug("");
     }
     else
-	y2debug("HOTPLUG(%1) -> ignoring modprobe.conf", hotplug);
+	y2milestone("HOTPLUG(%1) -> ignoring modprobe.conf", hotplug);
 
     string mac = hw["mac"]:"";
     string busid = hw["busid"]:"";
@@ -438,9 +438,10 @@ global define void SelectHW(integer which) {
 	device = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
     /* dummy */
     else
-	y2debug("No detailed HW info: %1", device);
+	y2milestone("No detailed HW info: %1", device);
 
     y2security("hw=%1", hw);
+    y2milestone("device=%1", device);
 }
 
 /**

@@ -1,3 +1,5 @@
+// testedfiles: Provider.ycp
+
 {
 
 include "testsuite.ycp";
