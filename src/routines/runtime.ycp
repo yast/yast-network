@@ -10,6 +10,7 @@
 {
 
 import "Arch";
+import "Desktop";
 import "Mode";
 import "NetworkDevices";
 import "Package";
@@ -222,23 +223,18 @@ define boolean RunKInternet() {
     y2milestone("Text mode: %1", ncurses);
     if(ncurses == nil || ncurses == true) return true;
 
-    // Don't test KDESU_USER, kdesu is used in GNOME too 8-|  #43556
+    string kdepath = "/opt/kde3/bin/";
 
-    /* Can dcop run? */
-    if((integer) SCR::Execute(.target.bash, "dcop") != 0) {
-	y2milestone("Failed to run dcop. KDE not running?");
-	return false;
-    }
-
-    /* KInternet already running? */
-    if((integer) SCR::Execute(.target.bash, "dcop | grep '^kinternet'") == 0) {
-	y2milestone("KInternet already running");
+    // Is it installed?
+    string kinternet = kdepath + "kinternet";
+    if ((integer) SCR::Read (.target.size, kinternet) < 0)
+    {
+	y2milestone ("%1 does not exist", kinternet);
 	return true;
     }
 
-    y2milestone("Running KInternet ...");
-    return SCR::Execute(.target.bash_background, "[ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu --nonewdcop -u $USER -- kinternet --quiet") == 0;
-    // return SCR::Execute(.target.bash, "{ [ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu -u $USER -- kinternet --quiet; } >/dev/null 2>&1 &") == 0;
+    // run it by creating a file in /var/lib/Desktop
+    Desktop::RunViaDesktop ("kinternet");
 }
 
 /* EOF */
