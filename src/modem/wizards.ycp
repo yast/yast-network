@@ -36,7 +36,7 @@ global define symbol ModemSequence() ``{
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
 	"write"	: [ ``( WriteDialog() ), true ],
-	"finish" : [ ``( Finished(Modem::Modified(), finished, "mail", ["from_modem"]) ), true ],
+	"finish" : [ ``( Finished(Modem::Modified(), finished, "mail", ["dialup"]) ), true ],
     ];
 
     map sequence = $[
