@@ -41,6 +41,9 @@ if (hwaddr == nil) hwaddr = "";
 string nameserver = (string) SCR::Read (.etc.install_inf.Nameserver);
 if (nameserver == nil) nameserver = "";
 
+string domain = (string) SCR::Read (.etc.install_inf.Domain);
+if (domain == nil) domain = "";
+
 y2milestone("Original netdevice: %1 (%2)", netdevice, hwaddr);
 
 if(hwaddr != nil && hwaddr != "") {
@@ -112,9 +115,12 @@ if (mode == `up)
 
 		if (nameserver != "")
 		{
+		    string domain_opt = domain == ""? "": "--domain " + domain + " ";
 		    SCR::Execute (.target.bash, "/sbin/modify_resolvconf modify " +
 				  "--service yast2 --process y2base " +
 				  "--text 'yast2 needs a nameserver' " +
+				  // #42758
+				  domain_opt +
 				  "--nameservers " + nameserver);
 		}
 	    }
