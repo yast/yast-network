@@ -94,15 +94,6 @@ Return	2
 Return	2
 Return	1
 Return	
-Dump	alias_num
-Return	1
-Return	20
-Return	3
-Return	0
-Return	432
-Return	2
-Return	2
-Return	1
 Dump	device_name
 Return	eth0
 Return	eth1
@@ -111,14 +102,6 @@ Return	tr-pcmcia-1
 Return	ippp2
 Return	ppp2
 Return	lo
-Dump	alias_name
-Return	eth0:5
-Return	eth1:4
-Return	eth-pcmcia-0:1
-Return	tr-pcmcia-1:1
-Return	ippp2:0
-Return	ppp2:0
-Return	lo:7
 Dump	quote
 Return	
 Return	
