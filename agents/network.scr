@@ -19,7 +19,7 @@
 .network
 
 `ag_ini(
-    IniAgent( [ "/etc/sysconfig/network/ifcfg-*" ],
+    SCR::IniAgent( [ "/etc/sysconfig/network/ifcfg-*" ],
 	$[
 	    /* values at the top level, allow comments after value */
 	    "options"	: [ "global_values", "comments_last" ],

@@ -22,5 +22,5 @@
 .sysconfig.dhcp
 
 `ag_ini(
-    SysConfigFile("/etc/sysconfig/network/dhcp")
+    SCR::SysConfigFile("/etc/sysconfig/network/dhcp")
 )

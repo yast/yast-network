@@ -41,7 +41,7 @@
 .routes
 
 `ag_anyagent(
-    Description(
+   SCR::AnyAgent (
 	``(File("/etc/sysconfig/network/routes")),	// real file name
 	"#\n",						// comment
 	false,						// read-only?

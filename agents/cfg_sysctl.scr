@@ -22,5 +22,5 @@
 .sysconfig.sysctl
 
 `ag_ini(
-    SysConfigFile("/etc/sysconfig/sysctl")
+    SCR::SysConfigFile("/etc/sysconfig/sysctl")
 )

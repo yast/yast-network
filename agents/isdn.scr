@@ -1,7 +1,7 @@
 .isdn
 
 `ag_ini(
-    IniAgent( [ "/etc/sysconfig/isdn/*" ],
+    SCR::IniAgent( [ "/etc/sysconfig/isdn/*" ],
 	$[
 	    /* values at the top level, allow comments after value */
 	    "options"	: [ "global_values", "comments_last" ],

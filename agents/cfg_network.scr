@@ -22,5 +22,5 @@
 .sysconfig.network.config
 
 `ag_ini(
-    SysConfigFile("/etc/sysconfig/network/config")
+    SCR::SysConfigFile("/etc/sysconfig/network/config")
 )
