@@ -226,7 +226,7 @@ global define string Summary() {
     string summary = "";
 
     string gw = GetGateway();
-    string gwhost = ResolveIP(gw);
+    string gwhost = Detection::ResolveIP(gw);
     if(gwhost != "") gw = gw + " (" + gwhost + ")";
 
     if(gw != "") {

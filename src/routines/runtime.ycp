@@ -11,11 +11,11 @@
 
 import "Arch";
 import "Desktop";
+import "ISDN";
 import "Mode";
 import "NetworkDevices";
 import "Package";
 import "Service";
-import "String";
 
 textdomain "network";
 
@@ -106,22 +106,6 @@ boolean HasLink() {
 }
 
 /**
- * Resolve IP to host name
- * @param ip given IP address
- * @return resolved host
- */
-string ResolveIP(string ip) {
-    string command = "/usr/bin/getent hosts \"%1\" | sed \"s/^[0-9.: \t]\\+//g\"";
-    map getent = (map) SCR::Execute(.target.bash_output, sformat(command, ip));
-    string hnent = getent["stdout"]:"";
-    y2debug("%1", hnent);
-    hnent = select(splitstring(hnent, " \t\n"), 0, "");
-    if(hnent == nil) hnent = "";
-    y2debug("'%1'", hnent);
-    return String::CutBlanks(hnent);
-}
-
-/**
  * Start network
  * @return true if success
  */
@@ -134,7 +118,12 @@ define boolean StartNetwork() {
  * @return true if success
  */
 define boolean RestartNetwork() {
-    return Service::Restart("network");
+    // Workaround for bug #46055:
+    // Go to the directory which is hopefully not mounted over the
+    // network so that yast survives network restart.
+    y2milestone("Restarting service %1", "network");
+    string cmd = "cd /; /etc/init.d/network restart";
+    return SCR::Execute (.target.bash, cmd) == 0;
 }
 
 /**
@@ -142,7 +131,10 @@ define boolean RestartNetwork() {
  * @return true if success
  */
 define boolean StopNetwork() {
-    return Service::Stop("network");
+    // Workaround for bug #46055:
+    y2milestone("Stopping service %1", "network");
+    string cmd = "cd /; /etc/init.d/network stop";
+    return SCR::Execute (.target.bash, cmd) == 0;
 }
 
 /**
@@ -150,24 +142,28 @@ define boolean StopNetwork() {
  * @return true if success
  */
 define boolean EnableNetwork() {
-    return Service::Enable("network");
+    // Workaround for bug #46055:
+    y2milestone("Enabling service %1", "network");
+    string cmd = "cd /; /sbin/insserv -d /etc/init.d/network";
+    return SCR::Execute (.target.bash, cmd) == 0;
 }
 
 /**
  * Are there interfaces controlled by smpppd and kinternet?
- * They are the dialup ones and ones with USERCONTROL=yes
+ * They are the ones with USERCONTROL=yes (#44303)
  * @return true/false
  */
 boolean HaveDialupLikeInterfaces () {
-    list devs = NetworkDevices::List ("dialup");
-    y2milestone ("dialup interfaces: %1", devs);
+    list <string> devs = NetworkDevices::Locate ("USERCONTROL", "yes");
+    y2milestone ("user controlled interfaces: %1", devs);
     if (devs != [])
     {
 	return true;
     }
 
-    devs = NetworkDevices::Locate ("USERCONTROL", "yes");
-    y2milestone ("user controlled interfaces: %1", devs);
+    devs = ISDN::Locate ("USERCONTROL", "yes");
+    y2milestone ("user controlled ISDN interfaces: %1", devs);
+
     return devs != [];
 }
 

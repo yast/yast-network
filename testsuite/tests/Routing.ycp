@@ -10,11 +10,32 @@ map READ = $[
 	"tmpdir" : "/tmp",
     ],
     "routes" : [$["1":"r1"], $["2":"r2"]],
-    "sysconfig" : $[ "sysctl" : $[ "IP_FORWARD" : "yes" ]],
     "probe" : $[ "system" : [] ],
+    "product" : $[
+        "features" : $[
+            "USE_DESKTOP_SCHEDULER" : "0",
+            "ENABLE_AUTOLOGIN" : "0",
+            "EVMS_CONFIG" : "0",
+            "IO_SCHEDULER" : "cfg",
+            "UI_MODE" : "expert",
+        ],
+    ],
+    "sysconfig": $[
+        "language" : $[
+            "RC_LANG" : "",
+            "DEFAULT_LANGUAGE" : "",
+	    "ROOT_USES_LANG" : "no",
+        ],
+	"console" : $[
+	    "CONSOLE_ENCODING" : "UTF-8",
+	],
+	"sysctl" : $[ "IP_FORWARD" : "yes" ],
+    ],
 ];
 
-TESTSUITE_INIT([READ], nil);
+map EXEC = $["target": $["bash_output": $[] ] ];
+
+TESTSUITE_INIT([READ, $[], EXEC], nil);
 import "Routing";
 
 DUMP("Read");

@@ -44,6 +44,7 @@ textdomain "network";
 
 import "Directory";
 import "Package";
+import "String";
 
 /* general stuff */
 global string name = "";
@@ -272,6 +273,25 @@ global boolean DuplicateIP (string ip) {
     });
 
     return ifc != nil;
+}
+
+// this function is moved here just to kee it out of the tangle of
+// includes which will be torn apart in the next release. dependency
+// hell.
+/**
+ * Resolve IP to host name
+ * @param ip given IP address
+ * @return resolved host
+ */
+global string ResolveIP(string ip) {
+    string command = "/usr/bin/getent hosts \"%1\" | sed \"s/^[0-9.: \t]\\+//g\"";
+    map getent = (map) SCR::Execute(.target.bash_output, sformat(command, ip));
+    string hnent = getent["stdout"]:"";
+    y2debug("%1", hnent);
+    hnent = select(splitstring(hnent, " \t\n"), 0, "");
+    if(hnent == nil) hnent = "";
+    y2debug("'%1'", hnent);
+    return String::CutBlanks(hnent);
 }
 
 /* EOF */

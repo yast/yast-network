@@ -14,6 +14,14 @@ map READ = $[
 	    "HTTP_PROXY" : "h",
 	    "FTP_PROXY" : "f",
 	],
+        "language" : $[
+            "RC_LANG" : "",
+            "DEFAULT_LANGUAGE" : "",
+	    "ROOT_USES_LANG" : "no",
+        ],
+	"console" : $[
+	    "CONSOLE_ENCODING" : "UTF-8",
+	],
     ],
     "probe" : $[
 	"system" : [],
@@ -22,9 +30,20 @@ map READ = $[
 	"size" : 1,
 	"tmpdir" : "/tmp",
     ],
+    "product" : $[
+        "features" : $[
+            "USE_DESKTOP_SCHEDULER" : "0",
+            "ENABLE_AUTOLOGIN" : "0",
+            "EVMS_CONFIG" : "0",
+            "IO_SCHEDULER" : "cfg",
+            "UI_MODE" : "expert",
+        ],
+    ],
 ];
 
-TESTSUITE_INIT([READ], nil);
+map EXEC = $["target": $["bash_output": $[] ] ];
+
+TESTSUITE_INIT([READ, $[], EXEC], nil);
 
 import "Proxy";
 import "Progress";

@@ -5,9 +5,12 @@ module_DATA = $(wildcard *.ycp) \
 	SuSEFirewallInterfaces.pm
 EXTRA_DIST = $(module_DATA)
 
-NetworkDevices.ybc: Provider.ybc
+DNS.ybc: ISDN.ybc
+ISDN.ybc: Detection.ybc NetworkDevices.ybc
+NetworkDevices.ybc: Provider.ybc Detection.ybc
 Firewall.ybc: NetworkDevices.ybc DNS.ybc
-Proxy.ybc: NetworkDevices.ybc
+Proxy.ybc: NetworkDevices.ybc ISDN.ybc
+Routing.ybc: ISDN.ybc
 
 YCPCFLAGS =
 

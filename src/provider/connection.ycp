@@ -293,11 +293,6 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 		FirewallChecked = (boolean) UI::QueryWidget(`id(`Firewall), `Value);
 		SuSEFirewallInterfaces::ProtectByFirewall (device, FirewallChecked);
 	    }
-
-	    /* Also store it in ifcfg-file for possible dynamic use */
-	    Provider::Current = union(Provider::Current, $[
-		"FIREWALL" : (boolean) UI::QueryWidget(`id(`Firewall), `Value) ? "yes" : "no"
-	    ]);
 	}
     }
 

@@ -69,7 +69,7 @@ global map ISDNCDB = $[];
  * REMOTE_ADDR    remote IP address
  * DEFAULTROUTE   default route yes/no
  * DYNAMICIP      dynamic IP assignment yes/no
- * PROTOCOL       encapsulation "rawip" | "syncip"
+ * PROTOCOL       encapsulation "rawip" | "syncppp"
  * MSN            own phone number
  * CHARGEHUP      try to hangup on idle just before next charge
  * CALLBACK       callback mode
@@ -163,17 +163,47 @@ string unique = "";
 string hotplug = "";
 string alias = "";
 
-// include "network/complex.ycp";
 include "network/devices.ycp";
 include "network/hardware.ycp";
 include "network/routines.ycp";
-include "network/runtime.ycp";
 
 map<string,map> Devs = $[];
 include "network/complex.ycp";
 
 include "network/isdn/config.ycp";
 include "network/isdn/routines.ycp";
+
+/**
+ * @return name of interface
+ */
+string IfaceName (string num, map iface) {
+    string protocol = iface["PROTOCOL"]:"";
+    map format = $[
+	"syncppp": "ippp%1",
+	"rawip": "isdn%1",
+	];
+    return sformat (format[protocol]:"unknown%1", num);
+}
+
+/**
+ * Locate interfaces of the given key and value
+ * @param key interface key
+ * @param val interface value
+ * @return list of devices with key=val
+ */
+global list<string> Locate (string key, string val) {
+    map<string,map> netdevs = (map<string,map>) Devices["net"]:$[];
+    list<string> ret = [];
+    foreach (string num, map dev, netdevs, {
+	if (dev[key]:"" == val)
+	{
+	    ret = add (ret, IfaceName (num, dev));
+	}
+    });
+    return ret;
+}
+
+include "network/runtime.ycp";
 
 /**
  * Read all ISDN settings from the SCR
@@ -853,6 +883,7 @@ global define list<string> NetDeviceList() ``{
 	NetDevs = add(NetDevs, devnam);
     });
     return NetDevs;
+    // better: return maplist (string num, map devmap, typemap, ``( IfaceName (num, devmap) ));
 }
 
 /**

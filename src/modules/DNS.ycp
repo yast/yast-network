@@ -281,7 +281,7 @@ global define string Summary() {
     }
     else {
 	list<string> nslist = maplist(string ns, nameservers, {
-	    string nss = ResolveIP(ns);
+	    string nss = Detection::ResolveIP(ns);
 	    return (nss == "") ? ns : (ns + " (" + nss + ")");
 	});
 

@@ -15,11 +15,11 @@
 
 textdomain "network";
 
+import "Detection";
 import "Popup";
 import "Summary";
 
 include "network/routines.ycp";
-include "network/runtime.ycp";
 include "network/summary.ycp";
 
 define string CheckEmptyName(string devtype, string hwname);
@@ -362,7 +362,7 @@ define string DeviceStatus(string devtype, string devnum, map devmap) {
 
 	if(proto == "" || proto == "static" || proto == "none" || proto == nil) {
 	    string addr = devmap["IPADDR"]:"";
-	    string host = ResolveIP(addr);
+	    string host = Detection::ResolveIP (addr);
 	    string remip = devmap["REMOTE_IPADDR"]:"";
 	    if(addr == "" || addr == nil)
 		/* Network card status */

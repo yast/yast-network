@@ -239,8 +239,10 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
     }
 
     /* Add at least one hostname/ip */
-    if(size(ips) < 1) {
+    // but do not overload localhost (#46715)
+    if (size(ips) < 1 && nick != "localhost") {
 	y2milestone("No IP found, adding dummy 127.0.0.2");
+	// TODO #42102
 	hosts["127.0.0.2"] = [ newhn + " " + nick ];
 	y2milestone("Hosts: %1", hosts);
 	return true;
