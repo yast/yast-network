@@ -16,10 +16,9 @@ textdomain "network";
  * @return true if success
  */
 global define boolean StartDetection() ``{
-//global define boolean DetectionStart() ``{
 
     /* configure eth0 */
-    // FIXME (only if not running!)
+    // FIXME (only if not already running!)
 
     /* start DHCP detection */
     // FIXME: use .target.tmpdir
@@ -34,14 +33,13 @@ global define boolean StartDetection() ``{
  * @return true if success
  */
 global define boolean FinishDetection() ``{
-//global define boolean DetectionFinish() ``{
 
     /* finish DHCP detection */
     SCR::Execute(.target.bash, "kill `cat /var/tmp/dhcpcd-$device.pid`");
     // FIXME Read the data
 
     /* shut down eth0 */
-    // FIXME (only if it was  not set up!)
+    // FIXME (only if it was not already set up!)
 
     return true;
 }

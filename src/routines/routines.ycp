@@ -253,15 +253,15 @@ global define list list2items(list l, integer selected) ``{
 global define list hwlist2items(list l, integer selected) ``{
     list items = [];
     integer n = 0;
-    foreach(any i, l, ``{
+    foreach(map i, l, ``{
 	/* Table field (Unknown device) */
-	string hwname = lookup(i, "name", _("Unknown"));
-	integer num = lookup(i, "num", n);
+	string hwname = i["name"]:_("Unknown");
+	integer num = i["num"]:n;
 	change(items, `item(`id(num), hwname, num == selected));
 	n = n + 1;
     });
     return items;
-    //return list2items(maplist(`h, l, ``(lookup(h, "name", _("Unknown device")))), selected);
+    //return list2items(maplist(map h, l, ``(h["name"]:_("Unknown device"))), selected);
 }
 
 /**

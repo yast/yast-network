@@ -36,7 +36,16 @@ Read	.etc.resolv_conf.search ["suse.cz", "suse.de"]
 Read	.target.size "/etc/HOSTNAME" 1
 Read	.target.string "/etc/HOSTNAME" "Blah\n"
 Read	.target.size "/etc/install.inf" 1
-Read	.etc.install_inf nil
+Read	.etc.install_inf."IP" nil
+Read	.etc.install_inf."Netmask" nil
+Read	.etc.install_inf."NetConfig" nil
+Read	.etc.install_inf."netdevice" nil
+Read	.etc.install_inf."Gateway" nil
+Read	.etc.install_inf."Nameserver" nil
+Read	.etc.install_inf."Machinename" nil
+Read	.etc.install_inf."Domainname" nil
+Read	.etc.install_inf."Alias" nil
+Read	.etc.install_inf."Options" nil
 Read	.target.size "/etc/sysconfig/personal-firewall" 1
 Read	.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS nil
 Return	true

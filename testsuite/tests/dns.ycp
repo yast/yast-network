@@ -46,4 +46,9 @@ TEST(``(check_domainname("123.com")), [], nil);
 TEST(``(check_domainname("4com")), [], nil);
 TEST(``(check_domainname("doncom")), [], nil);
 
+DUMP("split_fqhostname");
+TEST(``(split_fqhostname("ftp.suse.cz")), [], nil);
+TEST(``(split_fqhostname("123.com")), [], nil);
+TEST(``(split_fqhostname("beholder")), [], nil);
+
 }

@@ -121,7 +121,7 @@ global define boolean Import(map settings) ``{
 
     modified = true;
 
-    routes = settings["routes"]:[];
+    routes = eval(settings["routes"]:[]);
     forward = settings["ip_forward"]:false;
     return true;
 }

@@ -30,13 +30,13 @@ include "ui/common_messages.ycp";
  */
 global define any dividerHack(list provs, any prev) ``{
     integer p = -1;
-    find(`e, provs, ``{
+    find(term e, provs, ``{
 	p = p + 1;
 	any id = select(select(e, 0, `id("x")), 0, "x");
 	return id == prev;
     });
     integer i = -1;
-    find(`e, provs, ``{
+    find(term e, provs, ``{
 	i = i + 1;
 	any id = select(select(e, 0, `id("x")), 0, "x");
 	return id == ."--";

@@ -118,8 +118,7 @@ global define boolean Import(map settings) ``{
 
     modified = true;
 
-    hosts = settings["hosts"]:[];
-    forward = settings["ip_forward"]:false;
+    hosts = eval(settings["hosts"]:[]);
     return true;
 }
 
@@ -130,7 +129,6 @@ global define boolean Import(map settings) ``{
 global define map Export() ``{
     return $[
 	"hosts": eval(hosts),
-	"ip_forward": forward
     ];
 }
 

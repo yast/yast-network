@@ -655,7 +655,7 @@ global define list GetProviders(string country, string preselect) ``{
     y2debug("%1-%2", country, preselect);
     /* Custom providers */
     if(country == "_custom") {
-	foreach(`k, `v, Providers, ``{
+	foreach(string k, map v, Providers, ``{
 	    change(provs, k);
 	});
     }
@@ -663,7 +663,7 @@ global define list GetProviders(string country, string preselect) ``{
     else {
 	list dir = SCR::Dir(add(.providers.s, country));
 	path base = add(.providers.v, country);
-	provs = maplist(`i, dir, ``{
+	provs = maplist(string i, dir, ``{
 	    return add(base, i);
 	});
     }
@@ -679,7 +679,8 @@ global define list GetProviders(string country, string preselect) ``{
 
     y2debug("provs=%1",provs);
     integer index = -1;
-    return maplist(`i, provs, ``{
+    /* i is either string or path */
+    return maplist(any i, provs, ``{
 	index = index + 1;
 	if(is(i, string))
 	    return `item(`id(i), lookup(Providers[i]:$[], "PROVIDER", i), index == 0 || preselect == i);
@@ -703,7 +704,7 @@ global define list GetProviders(string country, string preselect) ``{
  * @return sorted list of providers
  */
 define list SortProviders(list provs) ``{
-    list pre = sort(maplist(`i, add(provs, "--"), ``{
+    list pre = sort(maplist(any i, add(provs, "--"), ``{
 	if("--" == i)
 	    return "9                                  .\"--\"";
 	if(is(i, string))
@@ -722,7 +723,7 @@ define list SortProviders(list provs) ``{
     }));
     if(".\"--\"" == substring(pre[0]:"", 35))
 	pre = remove(pre, 0);
-    return maplist(`i, pre, ``{
+    return maplist(string i, pre, ``{
 	if("x" == substring(i, 0, 1))
 	    return substring(i, 35);
 	return topath(substring(i, 35));

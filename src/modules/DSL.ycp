@@ -73,7 +73,7 @@ global boolean proposal_valid = false;
  * Hardware information
  * @see ReadHardware
  */
-list HARDWARE = [];
+list Hardware = [];
 
 /**
  * Devices information

@@ -21,8 +21,10 @@ include "network/routines.ycp";
 y2milestone("----------------------------------------");
 y2milestone("Lan proposal started");
 
-string func = WFM::Args(0);
-map param = WFM::Args(1);
+list args = WFM::Args();
+
+string func = args[0]:"";
+map param = args[1]:$[];
 map ret = $[];
 
 /* create a textual proposal */

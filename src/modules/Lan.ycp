@@ -25,6 +25,7 @@ import "Summary";
 include "network/complex.ycp";
 include "network/devices.ycp";
 include "network/hardware.ycp";
+include "network/install.ycp";
 include "network/ip.ycp";
 include "network/modules.ycp";
 include "network/routines.ycp";
@@ -88,7 +89,7 @@ global block AbortFunction = nil;
  * Hardware information
  * @see ReadHardware
  */
-list HARDWARE = [];
+list Hardware = [];
 
 /**
  * Devices information
@@ -115,7 +116,7 @@ list DeletedModules = [];
 /**
  * /etc/install.inf data
  */
-map INSTALL_INF = $[];
+map InstallInf = $[];
 
 /**
  * Data was modified?
@@ -176,9 +177,9 @@ global define boolean Read() ``{
     if(Abort()) return false;
     /* Progress stage 1/8 */
     ProgressNextStage(_("Detecting network devices"));
-    if(!Arch::s390) /* FIXME: Temporary hack until the detection is functional */
-	ReadHardware("netcard");
-	//ReadHardware("");
+    // if(!Arch::s390) /* FIXME: Temporary hack until the detection is functional */
+    ReadHardware("netcard");
+    // ReadHardware("");
     sleep(sl);
 
     if(Abort()) return false;
@@ -213,10 +214,7 @@ global define boolean Read() ``{
     if(Abort()) return false;
     /* Progress stage 6/8 */
     ProgressNextStage(_("Reading installation information"));
-    if(SCR::Read(.target.size,"/etc/install.inf") > 0)
-	INSTALL_INF = SCR::Read(.etc.install_inf);
-    if(INSTALL_INF == nil) INSTALL_INF = $[];
-    //ReadInstallInf();
+    ReadInstallInf();
     sleep(sl);
 
     if(Abort()) return false;
@@ -375,7 +373,7 @@ global define boolean Import(map settings) ``{
     /* This is broken: it ignores aliases, different HW types, ... * /
 
     map interfaces = listmap(map interface, settings["interfaces"]:[],``{
-	map new_interface = mapmap(`k,`v, interface, ``{
+	map new_interface = mapmap(string k, string v, interface, ``{
 	    if (contains(upcase, k)) {
 		return([toupper(k),v]);
 	    }
@@ -530,7 +528,7 @@ global define boolean Select(string dev) ``{
     unique = devmap["UNIQUE"]:"";
 
     /* address options */
-    bootproto = devmap["BOOTPROTO"]:"";
+    bootproto = devmap["BOOTPROTO"]:"static";
     ipaddr = devmap["IPADDR"]:"";
     remoteip = devmap["REMOTE_IPADDR"]:"";
     netmask = devmap["NETMASK"]:"";
@@ -696,25 +694,24 @@ global define boolean Commit() ``{
 global define void Propose() ``{
 
     y2milestone("Devices=%1", Devices);
-    y2milestone("HARDWARE=%1", HARDWARE);
-    y2milestone("INSTALL_INF=%1", INSTALL_INF);
+    y2milestone("Hardware=%1", Hardware);
+    y2milestone("InstallInf=%1", InstallInf);
 
     /* Something is already configured -> do nothing */
     if(size(Devices) > 0) {
-	y2milestone("Something already configured: don't propose");
+	y2milestone("Something already configured: don't propose.");
 	return;
     }
 
-    if(INSTALL_INF == nil) INSTALL_INF = $[];
-    AddEdit("");
+    Add();
 
     /* Some HW found -> use it for proposal */
-    if(size(HARDWARE) > 0) {
+    if(size(Hardware) > 0) {
 
 	/* Select the first active */
 	integer i = 0;
 	integer tosel = -1;
-	maplist(`h, HARDWARE, ``{
+	maplist(map h, Hardware, ``{
 	    if(h["active"]:false == true)
 		if(tosel == -1) tosel = i;
 	    i = i + 1;
@@ -723,36 +720,31 @@ global define void Propose() ``{
 	/* No active driver -> use the first */
 	if(tosel == -1) tosel = 0;
 
-	y2debug("HARDWARE=%1",HARDWARE);
-	y2debug("tosel=%1",tosel);
+	y2debug("Hardware=%1", Hardware);
+	y2debug("tosel=%1", tosel);
 
-	Select(tosel);
+	SelectHW(tosel);
     }
-    /* Nothing detected -> use INSTALL_INF */
-    else {
-	return;
-	/* FIXME placeholder for s390 and others without autodetected HW
-	Select(nil);
-	modul = INSTALL_INF["Alias"]:"";
-	options = INSTALL_INF["Options"]:"";
-	type = INSTALL_INF["xxx"]:"eth";
+    /* Nothing detected -> use InstallInf */
+    else if(size(InstallInf) > 0) {
+	Module["module"] = InstallInf["module"]:"";
+	Module["options"] = InstallInf["options"]:"";
+
+	type = InstallInf["type"]:"eth";
 	device = GetFreeDevice(type);
-	*/
     }
 
-    string netconfig = SCR::Read(.etc.install_inf.NetConfig);
-    string ip = SCR::Read(.etc.install_inf.IP);
-    if (netconfig == "static" && ip != nil && ip != "") {
+    ipaddr = InstallInf["ipaddr"]:"";
+    bootproto = InstallInf["bootproto"]:"static";
+    if(bootproto == "static" && ipaddr != "" && ipaddr != nil) {
 
 	/* propose address setup from /etc/install.inf */
-	bootproto = "static";
-	ipaddr = ip;
-	netmask = SCR::Read(.etc.install_inf.Netmask);
+	netmask = InstallInf["netmask"]:"";
 	if(netmask == nil || netmask == "")
 	    netmask = "255.255.255.0";
 
 	/* propose default gateway from /etc/install.inf */
-	string gw = SCR::Read(.etc.install_inf.Gateway);
+	string gw = InstallInf["gateway"]:"";
 	if(gw != "" && gw != nil) {
 	    Routing::routes = [ $[
 		"destination"       : "default",
@@ -764,19 +756,23 @@ global define void Propose() ``{
 	}
 
 	/* propose DNS setup from /etc/install.inf */
-	string ns = SCR::Read(.etc.install_inf.Nameserver);
-	string mn = SCR::Read(.etc.install_inf.Machinename);
-	string dn = SCR::Read(.etc.install_inf.Domainname);
-	if(ns != "" && ns != nil) DNS::nameservers = [ ns ];
-	if(mn != "" && dn != "" && dn != nil && mn != nil) {
-	    DNS::hostname = mn;
-	    DNS::domain = dn;
+	string ns = InstallInf["nameserver"]:"";
+	string hn = InstallInf["hostname"]:"";
+	string dn = InstallInf["domain"]:"";
+	if(ns != "" && ns != nil) {
+	    DNS::nameservers = [ ns ];
+	    DNS::modified = true;
 	}
-	DNS::modified = true;
+	if(hn != "" && hn != nil && dn != "" && dn != nil) {
+	    DNS::hostname = hn;
+	    DNS::domain = dn;
+	    DNS::modified = true;
+	}
 
     }
     else {
-	bootproto = "dhcp";	// or bootproto = netconfig?
+	ipaddr = "";
+	bootproto = "dhcp"; // support also bootp?
 	DNS::dhcp_hostname = true;
 	DNS::modified = true;
     }
@@ -794,9 +790,33 @@ global define void Propose() ``{
 global define boolean AnyDHCPDevice() ``{
     list devs = LocateDevices("BOOTPROTO", "dhcp");
     // The current is type+device
-    devs = filter (string dev, devs, ``( dev != type + device ));
+    devs = filter(string dev, devs, ``( dev != type + device ));
     if(size(devs) > 0) return true;
     return false;
+}
+
+/**
+ * Get devices of the given type
+ * @param type devices type
+ * @return list of found devices
+ */
+global define list GetDevices(string type) ``{
+
+    if(type == nil || type == "") return [];
+
+    list ret = [];
+    if(type == "all") {
+	maplist(string t, map d, Devices, ``{
+	    maplist(string n, mapkeys(d), ``(change(ret, t+n)));
+	});
+    }
+    else {
+	map d = Devices[type]:$[];
+	maplist(string n, mapkeys(d), ``(change(ret, type+n)));
+    }
+
+    y2debug("ret=%1", ret);
+    return ret;
 }
 
 /* EOF */

@@ -28,7 +28,7 @@ global define symbol DSLSequence() ``{
 
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
-	"main"	:   ``( MainSequence() ),
+	"main"	:   ``( DSLMainSequence() ),
 	"rpm"	: [ ``( Packages(["smpppd"]) ), true ],
 	"write"	: [ ``( WriteDialog() ), true ],
 	"finish": [ ``( FinishDialog() ), true ],
@@ -83,7 +83,7 @@ global define symbol DSLAutoSequence() ``{
     Wizard::SetContentsButtons(caption, contents, "",
 	    BackButtonLabel(), NextButtonLabel());
 
-    symbol ret = MainSequence();
+    symbol ret = DSLMainSequence();
 
     UI::CloseDialog();
     return ret;
@@ -93,7 +93,7 @@ global define symbol DSLAutoSequence() ``{
  * Main workflow of the DSL configuration
  * @return sequence result
  */
-global define symbol MainSequence() ``{
+global define symbol DSLMainSequence() ``{
 
     map aliases = $[
 	"summary"	: ``(SummaryDialog()),

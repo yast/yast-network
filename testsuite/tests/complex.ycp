@@ -1,0 +1,12 @@
+{
+
+include "testsuite.ycp";
+include "network/complex.ycp";
+
+list Hardware = [ $["unique":"1234", "name":"hwtest"] ];
+
+DUMP("HardwareName");
+TEST(``(HardwareName("")), [], nil);
+TEST(``(HardwareName("1234")), [], nil);
+
+}

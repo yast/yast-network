@@ -117,7 +117,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
     if(!contains(seconds, idletime))
 	change(seconds, idletime);
 
-    seconds = maplist(`e, seconds,
+    seconds = maplist(string e, seconds,
 	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == idletime)));
 
     /* Checkbox label */
@@ -246,13 +246,13 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
     /* UPDATE VARIABLES */
 
     if(ret == `next || ret == `Details || ret == `IPDetails) {
-	demand = UI::QueryWidget(`id(`demand), `Value) ? "yes" : "no";
-	modifydns = UI::QueryWidget(`id(`modifydns), `Value) ? "yes" : "no";
+	demand = UI::QueryWidget(`id(`demand), `Value);
+	modifydns = UI::QueryWidget(`id(`modifydns), `Value);
 
 	/* update provider info */
 	Provider::Provider = union(Provider::Provider, $[
-	    "DEMAND" : demand,
-	    "MODIFYDNS" : modifydns,
+	    "DEMAND" : demand ? "yes" : "no",
+	    "MODIFYDNS" : modifydns ? "yes" : "no",
 	    "IDLETIME" : UI::QueryWidget(`id(`idletime), `Value),
 	    "MODEMSUPPORTED" : type == "modem" ? "yes" : "no",
 	    "ISDNSUPPORTED" : type == "isdn" ? "yes" : "no",

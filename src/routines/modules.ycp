@@ -116,7 +116,7 @@ global define boolean WriteModules() ``{
 		    /* merge module options */
 		    if(typ == "iucv") {
 			map curopts = SCR::Read(.modules.options, "netiucv");
-			maplist(`k, `v, opts_map, ``{
+			maplist(string k, string v, opts_map, ``{
 			    if(haskey(curopts, k))
 				change(curopts, k, curopts[k]:"" + ":" + v);
 			    else

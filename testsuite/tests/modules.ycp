@@ -1,0 +1,12 @@
+{
+
+include "testsuite.ycp";
+include "network/modules.ycp";
+
+map Module = $[];
+
+DUMP("AddModule");
+TEST(``(AddModule("eth")), [], nil);
+DUMP(Module);
+
+}

@@ -1,0 +1,24 @@
+{
+
+include "testsuite.ycp";
+include "network/install.ycp";
+
+map READ = $[
+    "etc" : $[ "install_inf" : $[ "NetConfig" : "bootp" ]],
+];
+
+map InstallInf = $[];
+
+// DUMP("ReadInstallInf");
+// TEST(``(ReadInstallInf()), [], nil);
+
+InstallInf = $[];
+path install_inf = .etc.install_inf;
+
+DUMP("ReadInstallInfItem");
+TEST(``(ReadInstallInfItem("bootproto", "NetConfig")), [READ], nil);
+DUMP(InstallInf);
+TEST(``(ReadInstallInfItem("ipaddr", "IP")), [READ], nil);
+DUMP(InstallInf);
+
+}

@@ -1,0 +1,3 @@
+Dump	AddModule
+Return	true
+Dump	$["module":"", "options":""]

@@ -152,7 +152,7 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	    if(item == nil) continue;
 	    else Host::modified = true;
 
-	    table_items = maplist(`e, table_items, ``{
+	    table_items = maplist(term e, table_items, ``{
 		if(cur == select(select(e, 0, []), 0, -1))
 		    return item;
 		return e;

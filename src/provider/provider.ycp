@@ -81,11 +81,19 @@ dialing number, call the hotline <b>%2</b>.</p>");
  *
  * It's concatenation of LineID (10 digits), T-OnlineID (10 digits,
  * if less, then with appended '#', the user code (4 digits) and
- * finally of the string "@t-online.de".
+ * finally of the string "@t-online.de" if the type is "dsl".
+ *
+ * T-Online Business DSL is created as
+ * t-online-com/<12 character (real) username>@t-online-com.de
  */
 global define void tonline2username() ``{
-    username = lineid + t_onlineid + (size(t_onlineid) < 12? "#":"" ) +
-	usercode + "@t-online.de";
+    if(uimode == "T-Online DSL Business")
+	username = "t-online-com/" + username + "@t-online-com.de";
+    else {
+	username = lineid + t_onlineid + (size(t_onlineid) < 12? "#":"" ) +
+	    usercode + (uimode == "T-Online DSL" ? "@t-online.de" : "");
+    }
+
     y2debug("T-Online: [%1,%2,%3] -> %4", lineid, t_onlineid, usercode, username);
 }
 
@@ -99,30 +107,45 @@ global define void username2tonline() ``{
     lineid = "";
     t_onlineid = "";
 
+    y2debug("user=%1",user);
     if(user != "") {
-	if(issubstring(user, "@t-online.de"))
-	    user = regexpsub(user, "^(.*)@t-online.de$", "\\1");
-	y2debug("user=%1",user);
 
-	if(issubstring(user, "#")) {
-	    usercode = regexpsub(user, "^.*#(.*)$", "\\1");
-	    user = regexpsub(user, "^(.*)#.*$", "\\1");
+	if(uimode == "T-Online DSL Business") {
+	    if(regexpmatch(user, "@t-online-com\.de$"))
+		user = regexpsub(user, "^(.*)@t-online-com\.de$", "\\1");
+	    y2debug("user=%1",user);
+
+	    if(regexpmatch(user, "^t-online-com/"))
+		user = regexpsub(user, "^t-online-com/(.*)$", "\\1");
+	    y2debug("user=%1",user);
+	    username = user;
 	}
 	else {
-	    if(size(user) > 3) {
-		usercode = regexpsub(user, "^.*(....)$", "\\1");
-		user = regexpsub(user, "^(.*)....$", "\\1");
-	    }
-	}
-	if(usercode == "") usercode = "0001";
+	    if(regexpmatch(user, "@t-online\.de$"))
+		user = regexpsub(user, "^(.*)@t-online\.de$", "\\1");
+	    y2debug("user=%1",user);
 
-	y2debug("user=%1",user);
-	if(size(user) > 12) {
-	    lineid = regexpsub(user, "^(.{12}).*$", "\\1");
-	    t_onlineid = regexpsub(user, "^.{12}(.*)$", "\\1");
+	    if(issubstring(user, "#")) {
+		usercode = regexpsub(user, "^.*#(.*)$", "\\1");
+		user = regexpsub(user, "^(.*)#.*$", "\\1");
+	    }
+	    else {
+		if(size(user) > 3) {
+		    usercode = regexpsub(user, "^.*(....)$", "\\1");
+		    user = regexpsub(user, "^(.*)....$", "\\1");
+		}
+	    }
+	    if(usercode == "") usercode = "0001";
+
+	    y2debug("user=%1",user);
+	    if(size(user) > 12) {
+		lineid = regexpsub(user, "^(.{12}).*$", "\\1");
+		t_onlineid = regexpsub(user, "^.{12}(.*)$", "\\1");
+	    }
+	    else
+		lineid = user;
 	}
-	else
-	    lineid = user;
+
     }
     y2debug("T-Online: %1 -> [%2,%3,%4]", username, lineid, t_onlineid, usercode);
 }
@@ -150,7 +173,7 @@ global define symbol ProviderDialog() ``{
     string t_onlineid = "";
     string usercode = "";
 
-    if(uimode == "T-Online")
+    if(issubstring(uimode, "T-Online"))
 	username2tonline();
 
     /* Provider dialog caption */
@@ -235,7 +258,8 @@ the password every time.</p>");
     );
 
     /* Provider specific UI mode */
-    if(uimode == "T-Online") {
+    // if(issubstring(uimode, "T-Online"))
+    if(uimode == "T-Online" || uimode == "T-Online DSL") {
 	y2debug("Using uimode=%1", uimode);
 
 	auth = `Frame(`id(`auth), _("Authorization"), `VBox(
@@ -373,7 +397,8 @@ the password every time.</p>");
 			auth_chk = false;
 	    }
 
-	    if(uimode == "T-Online") {
+	    // if(issubstring(uimode, "T-Online"))
+	    if(uimode == "T-Online" || uimode == "T-Online DSL") {
 
 		lineid = UI::QueryWidget(`id(`lineid), `Value);
 		t_onlineid = UI::QueryWidget(`id(`t_onlineid), `Value);
@@ -400,6 +425,8 @@ the password every time.</p>");
 
 		tonline2username();
 	    }
+	    else if(uimode == "T-Online DSL Business")
+		tonline2username();
 
 	    if(name != Provider::Provider["PROVIDER"]:"" && !Provider::IsUnique(name)) {
 		y2debug("n(%1), p(%2)",name,lookup(Provider::Provider, "PROVIDER", ""));

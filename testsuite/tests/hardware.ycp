@@ -1,0 +1,11 @@
+{
+
+include "testsuite.ycp";
+include "network/hardware.ycp";
+
+DUMP("DeviceName");
+TEST(``(DeviceName($[])), [], nil);
+TEST(``(DeviceName($["model":"hwmodel"])), [], nil);
+TEST(``(DeviceName($["sub_vendor":"hwvendor", "sub_device":"hwdevice"])), [], nil);
+
+}

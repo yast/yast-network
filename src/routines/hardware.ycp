@@ -6,7 +6,7 @@
  *
  * $Id$
  *
- * All hardware settings are stored in a global variable HARDWARE.
+ * All hardware settings are stored in a global variable Hardware.
  *
  * If you want to add a new HW type, you have to do the following steps:
  * - add the type to ReadHardware
@@ -24,7 +24,7 @@ textdomain "network";
  * @return true if success
  */
 global define boolean ReadHardware(string hwtype) ``{
-    HARDWARE = [];
+    Hardware = [];
 
     integer num = 0;
     list paths = [];
@@ -109,11 +109,11 @@ global define boolean ReadHardware(string hwtype) ``{
 	}
 
 	y2debug("found device: %1", one);
-	change(HARDWARE, one);
+	change(Hardware, one);
 	num = num + 1;
     });
 
-    y2debug("HARDWARE=%1",HARDWARE);
+    y2debug("Hardware=%1", Hardware);
     return true;
 }
 
@@ -125,10 +125,10 @@ global define void SelectHardware(integer which) ``{
     map sel = $[];
 
     if(which != nil) {
-	sel = HARDWARE[which]:$[];
+	sel = Hardware[which]:$[];
 
-	if(which > size(HARDWARE) || which < 0)
-	    y2error("Item not found in HARDWARE: %1 (%2)", which, size(HARDWARE));
+	if(which > size(Hardware) || which < 0)
+	    y2error("Item not found in Hardware: %1 (%2)", which, size(Hardware));
     }
 
     /* common stuff */

@@ -38,3 +38,7 @@ Return	true
 Return	true
 Return	true
 Return	true
+Dump	split_fqhostname
+Return	["ftp", "suse.cz"]
+Return	["123", "com"]
+Return	["beholder"]

@@ -1,0 +1,90 @@
+/**
+ * File:	include/network/install.ycp
+ * Package:	Network configuration
+ * Summary:	Installation routines
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * All install.inf settings are stored in a global variable InstallInf.
+ */
+
+{
+
+textdomain "network";
+
+include "network/dns.ycp";
+include "network/routines.ycp";
+
+/**
+ * Read install.inf from the correct location
+ * @return true on success
+ */
+global define boolean ReadInstallInf() ``{
+
+    InstallInf = $[];
+
+    /* Detect install.inf location */
+    path install_inf = nil;
+    if(SCR::Read(.target.size,"/etc/install.inf") > 0) {
+	install_inf = .etc.install_inf;
+	InstallInf["installation"] = "yes";
+    }
+    else if(SCR::Read(.target.size,"/var/lib/YaST2/install.inf") > 0)
+	install_inf = .var.lib.YaST2.install_inf;
+    else
+	return false;
+
+    /* Read install.inf items */
+    ReadInstallInfItem("ipaddr", "IP");
+    ReadInstallInfItem("netmask", "Netmask");
+    ReadInstallInfItem("bootproto", "NetConfig");
+    ReadInstallInfItem("netdevice", "netdevice");
+    ReadInstallInfItem("gateway", "Gateway");
+    ReadInstallInfItem("nameserver", "Nameserver");
+    ReadInstallInfItem("hostname", "Machinename");
+    ReadInstallInfItem("domain", "Domainname");
+    ReadInstallInfItem("module", "Alias");
+    ReadInstallInfItem("options", "Options");
+
+    /* Split network device */
+    string netdevice = InstallInf["netdevice"]:"";
+    if(netdevice != "") {
+	string type = device_type(netdevice);
+	if(type != nil && type != "")
+	    change(InstallInf, "type", type);
+	InstallInf = remove(InstallInf, "netdevice");
+    }
+
+    /* Split FQ hostname */
+    string domain = InstallInf["domain"]:"";
+    string hostname = InstallInf["hostname"]:"";
+    if(hostname != "") {
+	list split = split_fqhostname(hostname);
+	InstallInf["hostname"] = split[0]:hostname;
+	if(domain == "")
+	    InstallInf["hostname"] = split[1]:"";
+    }
+
+    // FIXME: alias = eth0 tulip
+    // FIXME: options = ne io=0x200
+
+    return true;
+}
+
+/**
+ * Read one install.inf item
+ * @param item InstallInf map key
+ * @param var install.inf SCR variable
+ * @return true on success
+ */
+global define boolean ReadInstallInfItem(string item, string var) ``{
+    if(item == nil || item == "" || var == nil || var == "") return false;
+    string val = SCR::Read(add(install_inf, var));
+    if(val == nil) return false;
+    if(val != "") InstallInf[item] = val;
+    return true;
+}
+
+/* EOF */
+}

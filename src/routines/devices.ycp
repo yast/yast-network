@@ -60,7 +60,7 @@ global define boolean ReadDevices(string devregex) ``{
 
 	string pth = ".network.value.\"" + devtype + devnum + "\"";
 	list values = SCR::Dir(topath(pth));
-	map config = listmap(`val, values, ``{
+	map config = listmap(string val, values, ``{
 	    string item = SCR::Read(topath(pth + "." + val));
 	    if(item!=nil) return [ val, item ];
 	});
@@ -97,7 +97,7 @@ global define boolean ReadDevices(string devregex) ``{
 
 	string pth = ".network.value.\"" + devtype + devnum + ":" + aliasnum + "\"";
 	list values = SCR::Dir(topath(pth));
-	map aliasconfig = listmap(`v, values, ``{
+	map aliasconfig = listmap(string v, values, ``{
 	    string item = SCR::Read(topath(pth+"."+v));
 	    if(item!=nil) return [ v, item ];
 	});

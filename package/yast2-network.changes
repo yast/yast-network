@@ -18,6 +18,7 @@ WIP, not yet functional!
   - editing of hardware settings (#15062, #10077, #12378)
   - remove kernel module after delete
   - warning if device number changed (#21288)
+  - propose also if install.inf present but no hardware found
 
 - providers:
   - UI mode (#6244, #16291)

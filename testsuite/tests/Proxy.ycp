@@ -1,0 +1,74 @@
+{
+
+include "testsuite.ycp";
+
+map READ = $[
+    "root" : $[
+	"curlrc" : $[
+	    "proxy-user" : "user:pass",
+	],
+    ],
+    "sysconfig" : $[
+	"proxy" : $[
+	    "HTTP_PROXY" : "h",
+	    "FTP_PROXY" : "f",
+	],
+    ],
+    "probe" : $[
+	"system" : [],
+    ],
+];
+
+TESTSUITE_INIT([READ], nil);
+
+import "Proxy";
+import "Progress";
+Progress::off();
+
+DUMP("Read");
+TEST(``(Proxy::Read()), [READ], nil);
+
+DUMP("Write");
+//TEST(``(Proxy::Write()), [], nil);
+
+map lan_settings = $[
+    "dns" : $[
+	"dhcp_hostname"	: false,
+	"domain"	: "suse.com",
+	"hostname"	: "nashif",
+	"nameservers"	: ["10.0.0.1"],
+	"searchlist"	: ["suse.com"]
+    ],
+    "interfaces" : [
+	$[
+	    "STARTMODE"	: "onboot",
+	    "BOOTPROTO"	: "static",
+	    "BROADCAST"	: "10.10.1.255",
+	    "IPADDR"	: "10.10.1.1",
+	    "NETMASK"	: "255.255.255.0",
+	    "NETWORK"	: "10.10.1.0",
+	    "UNIQUE"	: "",
+	    "device"	: "eth0",
+	    "module"	: "",
+	    "options"	: ""
+	]
+    ],
+    "routing" : $[
+	 "routes":[
+	    $[
+		"destination"	: "default",
+		"device"	: "",
+		"gateway"	: "10.10.0.8",
+		"netmask"	: "0.0.0.0"
+	    ]],
+	 "ip_forwarding":false
+    ]
+];
+
+DUMP("Import");
+//TEST(``(Proxy::Import(lan_settings)), [], nil);
+
+DUMP("Export");
+TEST(``(Proxy::Export()), [], nil);
+
+}

@@ -11,13 +11,15 @@
 
 module "DNS";
 textdomain "network";
+
+include "network/dns.ycp";
 include "network/routines.ycp";
 include "network/runtime.ycp";
 
-global string hostname = ""; //blah";
-global string domain = ""; //blum.cz";
-global list nameservers = []; //"ns1", "ns2"];
-global list searchlist = []; //"s1", "s2"];
+global string hostname = "";
+global string domain = "";
+global list nameservers = [];
+global list searchlist = [];
 global boolean dhcp_hostname = false;
 global boolean dhcp_resolv = false;
 global string resolv_conf_process = "";
@@ -55,8 +57,8 @@ global define boolean Read() ``{
 
     /* install.inf from linuxrc */
     map install_inf = $[];
-    if(SCR::Read(.target.size, "/etc/install.inf") != -1)
-	install_inf = SCR(`Read(.etc.install_inf));
+    if(SCR::Read(.target.size, "/etc/install.inf") > 0)
+	install_inf = SCR::Read(.etc.install_inf);
 
     /* check for externally modified resolv.conf */
     if(SCR::Execute(.target.bash, "/sbin/modify_resolvconf check -q < /dev/null") != 0)
@@ -91,13 +93,9 @@ global define boolean Read() ``{
     }
 
     if(fqhostname != "") {
-	integer dot = findfirstof(fqhostname, ".");
-	if(dot != nil) {
-	    hostname = substring(fqhostname, 0, dot);
-	    domain = substring(fqhostname, dot+1);
-	}
-	else
-	    hostname = fqhostname;
+	list split = split_fqhostname(fqhostname);
+	hostname = split[0]:"";
+	domain = split[1]:"";
     }
     else {
 	/* default hostname and domain (if not in /etc/install.inf) */
@@ -184,8 +182,8 @@ global define boolean Import(map settings) ``{
 
     hostname = settings["hostname"]:"";
     domain = settings["domain"]:"";
-    nameservers = settings["nameservers"]:[];
-    searchlist = settings["searchlist"]:[];
+    nameservers = eval(settings["nameservers"]:[]);
+    searchlist = eval(settings["searchlist"]:[]);
     dhcp_hostname = settings["dhcp_hostname"]:false;
     dhcp_resolv = settings["dhcp_resolv"]:false;
     modified = true;
@@ -200,8 +198,8 @@ global define map Export() ``{
     return $[
 	"hostname"	: hostname,
 	"domain"	: domain,
-	"nameservers"	: nameservers,
-	"searchlist"	: searchlist,
+	"nameservers"	: eval(nameservers),
+	"searchlist"	: eval(searchlist),
 	"dhcp_hostname"	: dhcp_hostname,
 	"dhcp_resolv"	: dhcp_resolv,
     ];

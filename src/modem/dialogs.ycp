@@ -28,7 +28,7 @@ global define symbol ModemDialog(boolean detected) ``{
 
     /* FIXME make the Connection dialog optional in the provider dialog */
 
-    list devices = maplist(`e, toset([ Modem::Device, "/dev/modem",
+    list devices = maplist(string e, toset([ Modem::Device, "/dev/modem",
 		"/dev/ttyS0", "/dev/ttyS1", "/dev/ttyS2", "/dev/ttyS3",
 		"/dev/ttyACM0", "/dev/ttyACM1", "/dev/ttyACM2", "/dev/ttyACM3" ]),
 	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == Modem::Device)));
@@ -210,7 +210,7 @@ should be in your modem manual.</p>");
 
     /* DIALOG CONTENTS */
 
-    list BaudRates = maplist(`e, toset([1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, BaudRate]),
+    list BaudRates = maplist(string e, toset([1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, BaudRate]),
 	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == BaudRate)));
 
     term contents = `HBox(

@@ -12,7 +12,7 @@
 textdomain "network";
 
 import "DSL";
-import "DSLDevice";
+import "Call";
 import "Firewall";
 import "Wizard";
 
@@ -66,28 +66,29 @@ _("<p>FIXME
     /* ComboBox label */
     term pppwidget = `Left(`ComboBox(`id(`pppmode), `opt(`hstretch,`notify), _("PPP &mode"), pppmodes));
 
-    string startmode = DSL::startmode;
-    string interface = DSL::interface; // FIXME == "" ? DSLDevice::device : DSL::interface;
     string vpivci = DSL::vpivci;
+    string startmode = DSL::startmode;
+    string interface = DSL::interface;
+    list ifaces = [];
 
-    /* DSL dialog contents * /
-    FIXME: remove
-    term contents = `HBox(
-	`HSpacing(8),
-	/* Frame label * /
-	`Frame(_("DSL connection settings"), `HBox(`HSpacing(2), `VBox(
-	    `VSpacing(1),
-	    pppwidget,
-	    `VSpacing(1),
-	    `ReplacePoint(`id(`rp), `VSpacing(1)),
-	    `VSpacing(1)
-	    ), `HSpacing(2))),
-	`HSpacing(8)
-    );
+    /**
+     */
+    define void UpdateInterfaces() ``{
+	ifaces = Lan::GetDevices("eth");
+	if(false && /*interface != "" && */!contains(ifaces, interface))
+	    change(ifaces, interface);
+
+	y2debug("ifaces=%1", ifaces);
+	ifaces = maplist(string e, ifaces,
+	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == interface)));
+	y2debug("ifaces=%1", ifaces);
+    }
+
+    UpdateInterfaces();
 
     /* DSL dialog contents */
     term contents = `HBox(
-	`HSpacing(8),
+	`HSpacing(6),
 	/* Frame label */
 	`Frame(_("DSL connection settings"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(1),
@@ -97,12 +98,17 @@ _("<p>FIXME
 		`VSpacing(0.2),
 		`TextEntry(`id(`vpivci),  _("&VPI/VCI"), vpivci),
 		`VSpacing(0.2),
-		`VBox(
+		`HBox(
+		    /* ComboBox label */
+		    `Left(`ReplacePoint(`id(`rp), `ComboBox(`id(`interface), _("&Ethernet card"), ifaces))),
 		    /* TextEntry label */
-		    `TextEntry(`id(`interface), _("&Ethernet card"), interface),
-		    `VSpacing(0.1),
-		    /* PushButton label */
-		    `PushButton(`id(`lan), _("&Configure network cards"))
+		    // `TextEntry(`id(`interface), _("&Ethernet card"), interface),
+		    `HSpacing(1),
+		    `VBox(
+			`Label(""),
+			/* PushButton label */
+			`PushButton(`id(`lan), _("&Configure network cards"))
+		    )
 		)
 	    ), `HSpacing(2))),
 	    `VSpacing(1),
@@ -112,7 +118,7 @@ _("<p>FIXME
 	    ])),
 	    `VSpacing(1)
 	    ), `HSpacing(2))),
-	`HSpacing(8)
+	`HSpacing(6)
     );
 
     Wizard::SetContentsButtons(caption, contents, helptext,
@@ -121,42 +127,6 @@ _("<p>FIXME
     UI::ChangeWidget(`id(`vpivci), `Enabled, pppmode == "pppoatm");
     UI::ChangeWidget(`id(`interface), `Enabled, pppmode == "pppoe");
     UI::ChangeWidget(`id(`lan), `Enabled, pppmode == "pppoe");
-
-    /**
-     * Update widget containing PPP protocol dependent settings
-     */
-    define void UpdateCustomWidget() ``{
-	/* TextEntry label */
-	term vpibox = `TextEntry(`id(`vpivci),  _("&VPI/VCI"), vpivci);
-	/* TextEntry label */
-	term ethbox = `TextEntry(`id(`interface), _("&Ethernet card"), interface);
-	ethbox = `Left(`HBox(
-	    /* TextEntry label */
-	    `TextEntry(`id(`interface), _("&Ethernet card"), interface),
-	    `HSpacing(0.5),
-	    `VBox(
-		`Label(""),
-		/* PushButton label */
-		`PushButton(`id(`lan), `opt(`disabled), _("&Configure network cards"))
-	    )
-	));
-	ethbox = `VBox(
-	    /* TextEntry label */
-	    `TextEntry(`id(`interface), _("&Ethernet card"), interface),
-	    `VSpacing(0.5),
-	    /* PushButton label */
-	    `PushButton(`id(`lan), `opt(`disabled), _("&Configure network cards"))
-	);
-
-	if(pppmode == "pppoe")
-	    UI::ReplaceWidget(`id(`rp), ethbox);
-	else if(pppmode == "pppoatm")
-	    UI::ReplaceWidget(`id(`rp), vpibox);
-	else
-	    UI::ReplaceWidget(`id(`rp), `VSpacing(1));
-    }
-
-    // FIXME: remove: UpdateCustomWidget();
 
     any ret = nil;
     while(true) {
@@ -170,17 +140,37 @@ _("<p>FIXME
 	    break;
 	}
 	else if(ret == `next) {
+	    /* check_* */
+	    pppmode = UI::QueryWidget(`id(`pppmode), `Value);
+	    interface = UI::QueryWidget(`id(`interface), `Value);
+	    vpivci = UI::QueryWidget(`id(`vpivci), `Value);
+	    if(pppmode == "pppoatm" && vpivci == "") {
+		/* Popup text */
+		UI::ErrorPopup(_("Please fill in the VPI/VCI."));
+		UI::SetFocus(`id(`vpivci));
+		continue;
+	    }
+	    if(pppmode == "pppoe" && interface == "") {
+		/* Popup text */
+		UI::ErrorPopup(_("At least one ethernet interface must be configured."));
+		UI::SetFocus(`id(`lan));
+		continue;
+	    }
 	    break;
 	}
 	else if(ret == `pppmode) {
 	    pppmode = UI::QueryWidget(`id(`pppmode), `Value);
-	    // FIXME: remove: UpdateCustomWidget();
 	    UI::ChangeWidget(`id(`vpivci), `Enabled, pppmode == "pppoatm");
 	    UI::ChangeWidget(`id(`interface), `Enabled, pppmode == "pppoe");
 	    UI::ChangeWidget(`id(`lan), `Enabled, pppmode == "pppoe");
 	    continue;
 	}
 	else if(ret == `lan) {
+	    // WFM::CallFunction("lan_proposal", ["AskUser"]);
+	    Call::Function("lan_proposal", ["AskUser"]);
+	    interface = UI::QueryWidget(`id(`interface), `Value);
+	    UpdateInterfaces();
+	    UI::ReplaceWidget(`id(`rp), `ComboBox(`id(`interface), _("&Ethernet card"), ifaces));
 	    continue;
 	}
 	else {
@@ -428,7 +418,7 @@ automatically if data is requested. To use this, specify at least one
 		Interface),
 	    `HSpacing(3),
 	    `ComboBox(`id(`idletime), `opt(`editable), _("&Idle time"),
-		maplist(`e, seconds, ``(`item(`id(e), e, e == idle))))
+		maplist(string e, seconds, ``(`item(`id(e), e, e == idle))))
 	),
 	`VSpacing(1),
     /* CheckBox label */

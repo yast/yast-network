@@ -91,5 +91,35 @@ global define boolean check_domainname(string domain) ``{
     return !regexpmatch(domain, "\\.[[:digit:]][^.]*$");
 }
 
+/**
+ * Split FQ hostname to hostname and domain name
+ * @param fqhostname FQ hostname
+ * @return list of hostname and domain name
+ * @example split_fqhostname("ftp.suse.cz") -> ["ftp", "suse.cz"]
+ * @example split_fqhostname("ftp") -> ["ftp"]
+ */
+global define list split_fqhostname(string fqhostname) ``{
+    if(fqhostname == "" || fqhostname == nil) {
+	y2error("Bad FQ hostname: %1", fqhostname);
+	return [];
+    }
+
+    string hn = "";
+    string dn = "";
+
+    integer dot = findfirstof(fqhostname, ".");
+    if(dot != nil) {
+	hn = substring(fqhostname, 0, dot);
+	dn = substring(fqhostname, dot+1);
+	return [ hn, dn ];
+    }
+    else {
+	hn = fqhostname;
+	return [ hn ];
+    }
+
+    return [ hn, dn ];
+}
+
 /* EOF */
 }
