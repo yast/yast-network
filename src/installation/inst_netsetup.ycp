@@ -35,8 +35,13 @@ if (netmask == nil) netmask = "";
 string gateway = (string) SCR::Read (.etc.install_inf.Gateway);
 if (gateway == nil) gateway = "";
 
+string hwaddr = (string) SCR::Read (.etc.install_inf.HWAddr);
+if (hwaddr == nil) hwaddr = "";
+
 
 define void load_modules () {
+    y2milestone("Loaded Modules: %1", SCR::Read(.target.string, "/proc/modules"));
+
     list<string> install_aliases = SCR::Dir (.etc.install_inf_alias);
     foreach (string alias, install_aliases, {
 	string target = (string) SCR::Read (add (.etc.install_inf_alias, alias));

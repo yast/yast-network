@@ -62,6 +62,7 @@ define boolean ReadInstallInf() {
     ReadInstallInfItem(install_inf, "domain", "Domainname");
     ReadInstallInfItem(install_inf, "module", "Alias");
     ReadInstallInfItem(install_inf, "options", "Options");
+    // ReadInstallInfItem(install_inf, "hwaddr", "HWAddr");
 
     /* Split network device */
     string netdevice = InstallInf["netdevice"]:"";
