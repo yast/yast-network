@@ -15,6 +15,7 @@ import "Detection";
 
 y2milestone("----------------------------------------");
 y2milestone("Lan netprobe module started");
+y2milestone("Args: %1", WFM::Args());
 
 if(!Detection::running) Detection::Start();
 

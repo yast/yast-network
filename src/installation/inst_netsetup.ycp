@@ -16,29 +16,31 @@ symbol mode = (symbol)WFM::Args (2);
 
 y2milestone("----------------------------------------");
 y2milestone("Lan netsetup module started");
+y2milestone("Args: %1", WFM::Args());
 
 
-string netdevice = (string)SCR::Read (.etc.install_inf.Netdevice);
+string netdevice = (string) SCR::Read (.etc.install_inf.Netdevice);
 if (netdevice == nil) netdevice = "eth0";
 
-string netconfig = (string)SCR::Read (.etc.install_inf.NetConfig);
+string netconfig = (string) SCR::Read (.etc.install_inf.NetConfig);
 if (netconfig == nil) netconfig = "static";
 if (netconfig == "dhcp") netconfig = "static"; // FIXME
 
-string ipaddr = (string)SCR::Read (.etc.install_inf.IP);
+string ipaddr = (string) SCR::Read (.etc.install_inf.IP);
 if (ipaddr == nil) ipaddr = "";
 
-string netmask = (string)SCR::Read (.etc.install_inf.Netmask);
+string netmask = (string) SCR::Read (.etc.install_inf.Netmask);
 if (netmask == nil) netmask = "";
 
-string gateway = (string)SCR::Read (.etc.install_inf.Gateway);
+string gateway = (string) SCR::Read (.etc.install_inf.Gateway);
 if (gateway == nil) gateway = "";
 
 
-define void load_modules () ``{
-    list<string> install_aliases = (list<string>)SCR::Dir (.etc.install_inf_alias);
-    foreach (string alias, install_aliases, ``{
-	string target = (string)SCR::Read (add (.etc.install_inf_alias, alias));
+define void load_modules () {
+    list<string> install_aliases = SCR::Dir (.etc.install_inf_alias);
+    foreach (string alias, install_aliases, {
+	string target = (string) SCR::Read (add (.etc.install_inf_alias, alias));
+	y2milestone("Loading module: %1", target);
 	SCR::Execute (.target.modprobe, target, "");
     });
 };
@@ -60,12 +62,14 @@ if (mode == `up)
 		string ifconfig = "/sbin/ifconfig " + netdevice + " up " + ipaddr;
 		if (netmask != "")
 		    ifconfig = ifconfig + " netmask " + netmask;
+		y2milestone("Setting up device: %1", ifconfig);
 		SCR::Execute (.target.bash, ifconfig);
 
 		if (gateway != "")
 		{
 		    string route = "/sbin/route add default gw " + gateway;
 		    SCR::Execute (.target.bash, route);
+		    y2milestone("Setting up route: %1", route);
 		}
 	    }
 	    else if (netconfig == "dhcp")
