@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Sep  3 13:16:28 CEST 2004 - mvidner@suse.cz
+
+- Deleted a redundant copy of DuplicateIP and fixed the other one.
+- Call hwup for hwcfg-static* instead of rccoldplug (#44626).
+- Don't write hwcfg files for bus-(pcmcia|usb) devices (#42421).
+
+-------------------------------------------------------------------
 Thu Sep  2 16:54:07 CEST 2004 - msvec@suse.cz
 
 - write alias label and fixed alias editing (#42412)

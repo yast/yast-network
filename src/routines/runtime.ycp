@@ -92,25 +92,6 @@ boolean RunningLocal() {
 }
 
 /**
- * Duplicate IP detection
- * @param ip tested IP address
- * @return true if duplicate found
- * @see arping(8), ip(8)
- */
-boolean DuplicateIP(string ip) {
-    string command = "ip l l|grep BROADCAST|grep -v NOARP|cut -d: -f2|tr '\n' ' '";
-    string ifs = (string) lookup((map) SCR::Execute(.target.bash_output, command), "stdout", "");
-    ifs = String::CutBlanks(ifs);
-
-    foreach(string ifname, splitstring(ifs, " "), {
-	command = "arping -qD -c2 -w3 -I" + ifname + " " + ip;
-	if(SCR::Execute(.target.bash, command) == 1) return true;
-    });
-
-    return false;
-}
-
-/**
  * Link detection
  * @return true if link found
  * @see ethtool(8)

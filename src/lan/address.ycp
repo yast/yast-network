@@ -23,7 +23,6 @@ import "Routing";
 import "Wizard";
 
 include "network/routines.ycp";
-include "network/runtime.ycp";
 include "network/summary.ycp";
 
 /**
@@ -399,7 +398,7 @@ completes the configuration.</p>");
 		    UI::SetFocus(`id(`ipaddr));
 		    continue;
 		}
-		if(DuplicateIP(ipa)) {
+		if (Detection::DuplicateIP (ipa)) {
 		    /* Popup text */
 		    string pop = _("Duplicate IP address detected.
 Really continue?

@@ -231,10 +231,24 @@ y2milestone("IFCONFIG4: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig")
     return ret;
 }
 
-global define boolean DuplicateIP(string ip) {
-    string interface = "eth0";
-    string command = sformat("arping -q -c 2 -w 3 -D -I %1 %2", interface, ip);
-    return SCR::Execute(.target.bash, command) == 0;
+/**
+ * Duplicate IP detection
+ * @param ip tested IP address
+ * @return true if duplicate found
+ * @see arping(8), ip(8)
+ */
+global boolean DuplicateIP (string ip) {
+    string command = "LC_ALL=C ip link show|grep BROADCAST|grep -v NOARP|cut -d: -f2";
+    string ifs = (string) lookup((map) SCR::Execute(.target.bash_output, command), "stdout", "");
+    list<string> ifsl = filter (string i, splitstring (ifs, " \t\n"), ``( i != ""));
+
+    // find the interface that detects the dup
+    string ifc = find (string ifname, ifsl, {
+	command = "arping -qD -c2 -w3 -I" + ifname + " " + ip;
+	return SCR::Execute(.target.bash, command) != 0;
+    });
+
+    return ifc != nil;
 }
 
 /* EOF */
