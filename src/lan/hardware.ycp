@@ -28,6 +28,8 @@ include "network/routines.ycp";
  */
 global define symbol HardwareDialog() ``{
 
+    ScreenName("lan-hardware");
+
     /* Manual dialog caption */
     string caption = _("Manual network card configuration");
 
@@ -64,12 +66,12 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     string type = Lan::type;
     string realtype = RealType(type, hotplug);
 
-    string device = "";
-
-    if(Lan::device == -1)
-	device = _("Unknown device");
-    else
-	device = sformat("%1", Lan::device);
+    string device = Lan::device;
+    if(device == "") {
+	y2error("Shouldn't happen -- device is empty. Assuming eth.");
+	device = "eth";
+    }
+    string default_device = device;
 
     /* satisfy check_ycp -- don't translate these strings */
     string PCMCIA = "&PCMCIA";
@@ -286,6 +288,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
 	    list devices = [];
 	    devices = maplist(integer d, Lan::FreeDevices(realtype), ``(sformat("%1",d)));
+	    default_device = select(devices, 0, "");
 	    /* Combobox label */
 	    UI::ReplaceWidget(`id(`rnum), `ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"), devices));
 
@@ -316,9 +319,9 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	else if(ret == `next || ret == `list || ret == `wire) {
 	    /* FIXME: check_* */
 	    if(UI::WidgetExists(`id(`num))) {
-		integer devic = tointeger(UI::QueryWidget(`id(`num), `Value));
-		if(devic != Lan::device) {
-		    y2warning("Default device: %1 -> %2", Lan::device, devic);
+		string devic = UI::QueryWidget(`id(`num), `Value);
+		if(devic != default_device) {
+		    y2warning("Default device: %1 -> %2", default_device, devic);
 		    /* Popup text */
 		    string pop = _("You changed the default device number.\n
 This possibility is only intended for systems with built-in network cards
@@ -345,7 +348,7 @@ Do you really want to continue?\n");
 	Lan::Module["options"] = UI::QueryWidget(`id(`options), `Value);
 
 	if(UI::WidgetExists(`id(`num)))
-	    Lan::device = tointeger(UI::QueryWidget(`id(`num), `Value));
+	    Lan::device = UI::QueryWidget(`id(`num), `Value);
 
 	if(UI::WidgetExists(`id(`wireless)))
 	    Lan::wireless = UI::QueryWidget(`id(`wireless), `Value);
@@ -379,6 +382,8 @@ Do you really want to continue?\n");
  * @return dialog result
  */
 global define symbol SelectionDialog() ``{
+
+    ScreenName("lan-hardware-selection");
 
     string type = Lan::type;
     if(Lan::wireless) type = "wireless";
@@ -466,6 +471,8 @@ for a particular network card by entering the name in the search entry.</p>");
  * @return dialog result
  */
 global define symbol WirelessDialog() ``{
+
+    ScreenName("lan-hardware-wireless");
 
     /* Wireless dialog caption */
     string caption = _("Wireless network card configuration");
@@ -586,6 +593,8 @@ available options.</p>");
  * @return dialog result
  */
 global define symbol S390Dialog() ``{
+
+    ScreenName("lan-hardware-s390");
 
     /* S/390 dialog caption */
     string caption = _("S/390 network card configuration");

@@ -27,6 +27,8 @@ include "network/routines.ycp";
  */
 global define symbol RoutingMainDialog(boolean standalone) ``{
 
+    ScreenName("routing");
+
     /* Routing dialog caption */
     string caption = _("Routing configuration");
 
@@ -268,6 +270,8 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
  * @return route or nil, if canceled
  */
 global define term RoutingEditDialog(integer id, term entry, list devs) ``{
+
+    ScreenName("routing-edit");
 
     UI::OpenDialog(`opt(`decorated),`VBox(
 	`HSpacing(1),

@@ -24,6 +24,8 @@ include "ui/common_popups.ycp";
  */
 global define symbol IPDetailsDialog() ``{
 
+    ScreenName("provider-details");
+
     /* PREPARE VARIABLES */
 
     string type = Provider::CurrentType();

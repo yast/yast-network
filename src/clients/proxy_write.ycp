@@ -19,6 +19,8 @@
 
 {
 
+textdomain "network";
+
 y2milestone("----------------------------------------");
 y2milestone("Proxy write started");
 
@@ -37,7 +39,6 @@ if(!is(WFM::Args(0), map)) {
 /* The settings are in the first argument */
 map settings = args[0]:$[];
 y2milestone("Only writing... (%1)", settings);
-
 
 Proxy::Import(settings);
 boolean ret = Proxy::Write();

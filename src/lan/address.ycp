@@ -27,6 +27,8 @@ include "network/ip.ycp";
  */
 global define symbol AddressDialog() ``{
 
+    ScreenName("lan-address");
+
     /* Address dialog caption */
     string caption = _("Network address setup");
 
@@ -73,11 +75,16 @@ the network configuration.</p>");
     if(ipaddr == "" && netmask == "")
 	netmask = "255.255.255.0";
 
-    if(Lan::device == -1)
+    if(Lan::device == "")
 	/* Label text (Network device: unknown device) */
 	device = _("Unknown device");
     else
 	device = RealType(Lan::type, Lan::hotplug) + Lan::device;
+
+    if(Lan::alias != "") {
+	device = device + ":" + Lan::alias;
+	bootproto = "static";
+    }
 
     term label = `HBox(
 	/* Label text */
@@ -98,7 +105,7 @@ the network configuration.</p>");
 
     /* Frame label */
     term frame1 = `Frame(_("Choose the setup method"),
-	`HBox(`HSpacing(1),
+	`RadioButtonGroup(`id(`rb), `HBox(`HSpacing(1),
 	    `VBox(
 		`VSpacing(0.5),
 		/* Radio button label */
@@ -115,7 +122,7 @@ the network configuration.</p>");
 		),
 		`VSpacing(0.5)
 	    ),
-	`HSpacing(1))
+	`HSpacing(1)))
     );
 
     if(Arch::s390) {
@@ -164,8 +171,8 @@ completes the configuration.</p>");
     /* s390 help hackery */
     }
 
-    /* S/390 Hipersockets */
-    if(type == "hsi" || Arch::s390)
+    /* S/390 Hipersockets or virtual alias */
+    if(type == "hsi" || Arch::s390 || Lan::alias != "")
 
 	/* Frame label */
 	frame1 = `Frame(_("Static address setup"),
@@ -223,13 +230,13 @@ completes the configuration.</p>");
     ));
 
     /* Address dialog help */
-    term contents = `RadioButtonGroup(`id(`rb), `HSquash(`VBox(
+    term contents = `HSquash(`VBox(
 	`Left(label),
 	`VSpacing(1),
 	frame1,
 	`VSpacing(1),
 	frame2
-    )));
+    ));
 
     Wizard::SetContentsButtons(caption, contents, help,
 	    BackButtonLabel(), NextButtonLabel());
@@ -276,7 +283,19 @@ completes the configuration.</p>");
 	}
 	/* FIXME: better hostname and routing workflow */
 	else if(ret == `next || ret == `routing || ret == `hostname || ret == `hardware) {
-	    if(UI::QueryWidget(`id(`rb), `CurrentButton) == `static) {
+
+	    y2debug("bootproto=%1", bootproto);
+	    if(UI::WidgetExists(`id(`rb))) {
+		if(UI::QueryWidget(`id(`rb), `CurrentButton) == `dhcp)
+		    bootproto = "dhcp";
+		else if(UI::QueryWidget(`id(`rb), `CurrentButton) == `static)
+		    bootproto = "static";
+		else
+		    bootproto = "";
+	    }
+
+	    y2debug("bootproto=%1", bootproto);
+	    if(bootproto == "static") {
 		if(!check_ip4(UI::QueryWidget(`id(`ipaddr), `Value))) {
 		    /* Popup text */
 		    UI::ErrorPopup(_("The IP address is incorrect"));
@@ -299,7 +318,7 @@ completes the configuration.</p>");
 	    break;
 	}
 	else {
-	    y2error("unexpected retcode: %1", ret);
+	    y2error("Unexpected retcode: %1", ret);
 	    continue;
 	}
 
@@ -307,26 +326,18 @@ completes the configuration.</p>");
 
     /* update the configuration */
     if(ret == `next || ret == `routing || ret == `hostname || ret == `hardware) {
+
+	Lan::bootproto = bootproto;
 	Lan::ipaddr = UI::QueryWidget(`id(`ipaddr), `Value);
 
-	if(UI::WidgetExists(`id(`netmask)))
-	    Lan::netmask = UI::QueryWidget(`id(`netmask), `Value);
+	Lan::netmask = QueryWidgetIfExists(`id(`netmask), `Value, Lan::netmask);
+	Lan::remoteip = QueryWidgetIfExists(`id(`remoteip), `Value, Lan::remoteip);
 
-	if(UI::WidgetExists(`id(`rb))) {
-	    if(UI::QueryWidget(`id(`rb), `CurrentButton) == `dhcp)
-		Lan::bootproto = "dhcp";
-	    else if(UI::QueryWidget(`id(`rb), `CurrentButton) == `dhcp)
-		Lan::bootproto = "static";
-	    else
-		Lan::bootproto = "";
-	}
-
-	if(UI::WidgetExists(`id(`remoteip)))
-	    Lan::remoteip = UI::QueryWidget(`id(`remoteip), `Value);
-
+	// not used any more
 	if(UI::WidgetExists(`id(`num))) {
-	    y2milestone("num=%1", device_num(UI::QueryWidget(`id(`num), `Value)));
-	    Lan::device = device_num(UI::QueryWidget(`id(`num), `Value));
+	    string uidev = sformat("%1", UI::QueryWidget(`id(`num), `Value));
+	    y2milestone("num=%1", device_num(uidev));
+	    Lan::device = device_num(uidev);
 	}
     }
 

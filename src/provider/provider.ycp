@@ -156,6 +156,8 @@ global define void username2tonline() ``{
  */
 global define symbol ProviderDialog() ``{
 
+    ScreenName("provider-dialog");
+
     string type = Provider::CurrentType();
 
     string name = Provider::Provider["PROVIDER"]:"";

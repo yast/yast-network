@@ -96,7 +96,7 @@ global string  provider_file = "";
 
 // current item
 global string  type = "";
-global integer device = -1;
+global string device = "";
 
 /**
  * Flag for Fritz!DSL configuration
@@ -632,10 +632,10 @@ global define boolean Edit(string dev) ``{
 global define boolean Delete(string item) ``{
     operation = nil;
     string typ = device_type(item);
-    integer num = device_num(item);
+    string num = device_num(item);
 
     map typemap = lookup(Devices, typ, $[]);
-    if(!haskey(typemap, sformat("%1",num))) {
+    if(!haskey(typemap, num)) {
 	y2error("Key not found: %1", item);
 	return false;
     }

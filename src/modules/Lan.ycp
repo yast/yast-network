@@ -53,7 +53,8 @@ global string bootproto = "static";
 global string ipaddr = "";
 global string remoteip = "";
 global string netmask = "";
-global integer device = -1;
+global string device = "";
+global string alias = "";
 
 /* wireless options */
 global boolean wireless = false;
@@ -193,7 +194,7 @@ global define boolean Read() ``{
     /* Progress stage 3/8 */
     ProgressNextStage(_("Reading current configuration"));
     ReadDevices(NetworkDeviceRegex);
-    //ReadDevices("");
+    // ReadDevices("");
     sleep(sl);
 
     string wait = SCR::Read(.sysconfig.network.config.WAIT_FOR_INTERFACES);
@@ -502,25 +503,21 @@ global define boolean Select(string dev) ``{
 
     /* dev=="" -> Add */
     if(dev == "") {
-        type = "eth";
-        device = GetFreeDevice(type);
+	type = "eth";
+	device = GetFreeDevice(type);
 	AddModule(type);
+	/* FIXME */
+	alias = "";
     }
     /* dev!="" -> Edit */
     else {
-        string typ = device_type(dev);
-        integer num = device_num(dev);
-        string n = sformat("%1",num);
-
-        map typemap = lookup(Devices, typ, $[]);
-        if(!haskey(typemap, n)) {
-            y2error("Key not found: %1", dev);
-            return false;
-        }
-        devmap = lookup(typemap, n, $[]);
-
-        type = typ;
-        device = num;
+	if(!CheckDevice(dev)) {
+	    y2error("Device not found: %1", dev);
+	    return false;
+	}
+	devmap = lookup(Devices[type]:$[], device, $[]);
+	if(alias != "")
+	    devmap = lookup(devmap["_aliases"]:$[], alias, $[]);
     }
 
     /* general stuff */
@@ -580,36 +577,27 @@ global define boolean Add() ``{
 
 /**
  * Edit the given device
- * @param name device to edit
+ * @param dev device to edit
  * @return true if success
  */
-global define boolean Edit(any name) ``{
+global define boolean Edit(string dev) ``{
     operation = nil;
-    if(Select(name) != true) return false;
+    if(Select(dev) != true) return false;
     operation = `edit;
     return true;
 }
 
 /**
  * Delete the given device
- * @param name device to delete
+ * @param dev device to delete
  * @return true if success
  */
-global define boolean Delete(string name) ``{
+global define boolean Delete(string dev) ``{
     operation = nil;
-
-    y2debug("Delete(%1)", name);
-    string typ = device_type(name);
-    integer num = device_num(name);
-
-    map typemap = Devices[typ]:$[];
-    if(!haskey(typemap, sformat("%1",num))) {
-	y2error("Key not found: %1", name);
+    if(!CheckDevice(dev)) {
+	y2error("Device not found: %1", dev);
 	return false;
     }
-
-    type = typ;
-    device = num;
     operation = `delete;
     return true;
 }
@@ -619,7 +607,7 @@ global define boolean Delete(string name) ``{
  * @return true if success
  */
 global define boolean Commit() ``{
-    y2debug("Commit(%1)",operation);
+    y2debug("Commit(%1)", operation);
 
     if(operation == `add || operation == `edit) {
 	map newdev = $[
@@ -672,11 +660,18 @@ global define boolean Commit() ``{
 	    if(wait_for_interfaces == nil || wait_for_interfaces < 15)
 		wait_for_interfaces = 15;
 
-	ChangeDevice(RealType(type, hotplug), device, newdev, operation == `add);
+	if(alias == "")
+	    ChangeDevice2(RealType(type, hotplug)+device, newdev, operation == `add);
+	else
+	    ChangeDevice2(RealType(type, hotplug)+device+":"+alias, newdev, operation == `add);
     }
     else if(operation == `delete) {
-	DeleteModule(type+device);
-	DeleteDevice(type, device);
+	if(alias == "") {
+	    if(hotplug == "") DeleteModule(type+device);
+	    DeleteDevice2(type+device);
+	}
+	else
+	    DeleteDevice2(type+device+":"+alias);
     }
     else {
 	y2error("Unknown operation: %1", operation);
@@ -690,6 +685,7 @@ global define boolean Commit() ``{
 
 /**
  * Propose a configuration
+ * @return true if something was proposed
  */
 global define boolean Propose() ``{
 
@@ -802,8 +798,21 @@ global define boolean AnyDHCPDevice() ``{
     list devs = LocateDevices("BOOTPROTO", "dhcp");
     // The current is type+device
     devs = filter(string dev, devs, ``( dev != type + device ));
-    if(size(devs) > 0) return true;
-    return false;
+    return size(devs) > 0;
+}
+
+/**
+ * Check if the given device has any virtual alias.
+ * @param dev device to be checked
+ * @return true if there are some aliases
+ */
+global define boolean HasAliases(string dev) ``{
+    if(!CheckDevice(dev)) {
+	y2error("Device not found: %1", dev);
+	return false;
+    }
+    return alias == "" &&
+	lookup(lookup(Devices[type]:$[], device, $[]), "_aliases", $[]) != $[];
 }
 
 /**

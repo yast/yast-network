@@ -27,6 +27,8 @@ include "network/routines.ycp";
  */
 global define symbol ConnectionDialog() ``{
 
+    ScreenName("provider-connection");
+
     string type = Provider::CurrentType();
 
     /* PREPARE VARIABLES */

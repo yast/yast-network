@@ -55,6 +55,8 @@ global define symbol FinishDialog() ``{
  */
 global define symbol ReadDialog() ``{
 
+    ScreenName("lan-read");
+
     /* Network cards read dialog help 1/2 */
     string help = _("<p><b><big>Initializing network card
 configuration</big></b><br>Please wait...<br></p>") +
@@ -74,6 +76,8 @@ Safely abort the configuration utility by pressing <B>Abort</B> now.</p>");
  * @return `abort if aborted and `next otherwise
  */
 global define symbol WriteDialog() ``{
+    ScreenName("lan-write");
+
     if(!Modified()) return `next;
 
     /* Network cards write dialog help 1/2 */
@@ -96,6 +100,8 @@ Abort saving by pressing <b>Abort</b>.</p>");
  */
 global define symbol SummaryDialog() ``{
 
+    ScreenName("lan-summary");
+
     /* Network cards summary dialog caption */
     string caption = _("Network cards configuration");
 
@@ -111,15 +117,17 @@ then press <b>Configure</b>.</p>") +
 
     /* Network cards summary dialog help 3/3 */
 _("<p><b><big>Editing or deleting:</big></b><br>
-If you press <b>Edit</b>, an additional dialog in which
+If you press <b>Change</b>, an additional dialog in which
 to change the configuration opens.</p>");
 
     list summary = Lan::Summary(true);
     list unconfigured = select(summary, 1, []);
     string configured = select(summary, 0, "");
 
-    y2debug("configured=%1",configured);
-    y2debug("unconfigured=%1",unconfigured);
+    // change(unconfigured, `item(`id(`alias), _("Virtual alias")));
+
+    y2debug("configured=%1", configured);
+    y2debug("unconfigured=%1", unconfigured);
 
     /* Frame label */
     term contents = Wizard_hw::DetectedContent(_("Network cards to configure"),
@@ -150,9 +158,13 @@ to change the configuration opens.</p>");
 	    if(selected == `other) {
 		ret = `other;
 	    }
-	    else {
+	    else if(is(selected, integer)) {
 		Lan::SelectHW(selected);
 		ret = `configure;
+	    }
+	    else {
+		y2error("Unexpected selection code: %1", selected);
+		continue;
 	    }
 	    break;
 	}
@@ -160,7 +172,7 @@ to change the configuration opens.</p>");
 	    break;
 	}
 	else {
-	    y2error("unexpected retcode: %1", ret);
+	    y2error("Unexpected retcode: %1", ret);
 	    continue;
 	}
     }
@@ -173,6 +185,8 @@ to change the configuration opens.</p>");
  * @return dialog result
  */
 global define symbol OverviewDialog() ``{
+
+    ScreenName("lan-overview");
 
     /* Network cards overview dialog caption */
     string caption = _("Network cards configuration overview");
@@ -234,6 +248,13 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
 	/* delete */
 	else if(ret == `delete) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
+
+	    /* Popup text */
+	    string pop = sformat(_("All virtual aliases belonging to the interface %1
+will be deleted as well.\n\nDo you really want to continue?\n"), dev);
+	    if(Lan::HasAliases(dev) && UI::YesNoHeadlinePopup(WarningMsg(), pop) != true)
+		continue;
+
 	    Lan::Delete(dev);
 	    Lan::Commit();
 	    overview = Lan::Overview();

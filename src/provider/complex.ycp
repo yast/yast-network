@@ -45,6 +45,7 @@ global define symbol CommitProvider() ``{
  * @return `abort if aborted and `next otherwise
  */
 global define symbol ReadDialog() ``{
+    ScreenName("provider-read");
     Wizard::RestoreHelp(HELPS["read"]:"");
     Provider::AbortFunction = ``{return PollAbort();};
     boolean ret = Provider::Read("all");
@@ -56,6 +57,7 @@ global define symbol ReadDialog() ``{
  * @return `abort if aborted and `next otherwise
  */
 global define symbol WriteDialog() ``{
+    ScreenName("provider-write");
     if(!Modified()) return `next;
     Wizard::RestoreHelp(HELPS["write"]:"");
     Provider::AbortFunction = ``{return PollAbort() && ReallyAbort();};
@@ -68,6 +70,8 @@ global define symbol WriteDialog() ``{
  * @return `abort if aborted and `next otherwise
  */
 global define symbol TypeDialog() ``{
+
+    ScreenName("provider-type");
 
     /* Provider type dialog caption */
     string caption = _("Provider type");
@@ -140,6 +144,8 @@ global define symbol TypeDialog() ``{
  */
 global define symbol SummaryDialog() ``{
 
+    ScreenName("provider-summary");
+
     /* Provider summary dialog caption */
     string caption = _("Provider configurations");
 
@@ -194,6 +200,8 @@ global define symbol SummaryDialog() ``{
  * @return dialog result
  */
 global define symbol OverviewDialog() ``{
+
+    ScreenName("provider-overview");
 
     /* Provider overview dialog help caption */
     string caption = _("Providers configuration overview");

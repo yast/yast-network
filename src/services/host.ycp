@@ -52,6 +52,8 @@ global define boolean HostSystemPopup(string host, boolean delete) ``{
  */
 global define symbol HostsMainDialog(boolean standalone) ``{
 
+    ScreenName("host");
+
     /* Hosts dialog caption */
     string caption = _("Hosts configuration");
 
@@ -237,6 +239,8 @@ global define symbol HostsMainDialog(boolean standalone) ``{
  * @return host or nil, if canceled
  */
 global define term HostDialog(integer id, term entry, list forbidden) ``{
+
+    ScreenName("host-edit");
 
     y2debug("id=%1", id);
     y2debug("entry=%1", entry);

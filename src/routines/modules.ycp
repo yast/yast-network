@@ -76,10 +76,9 @@ global define boolean WriteModules() ``{
     /* Remove deleted modules */
     maplist(string d, DeletedModules, ``{
 	y2debug("deleting: %1", p);
-	/* Delete only alias, keep options */
 	SCR::Write(add(.modules.alias, d), nil);
+	SCR::Write(add(.modules.options, d), nil);
 	SCR::Execute(.target.bash, sformat("/sbin/rmmod %1 2>&1", d));
-	// SCR::Write(add(.modules.options, d), nil);
     });
     DeletedModules = [];
 
@@ -154,7 +153,7 @@ global define boolean ChangeModule(string name, boolean check) ``{
     y2debug("Modules=%1", Modules);
 
     if(check && haskey(Modules, name)) {
-	y2warning("Key already present: %1", name);
+	y2warning("Module already present: %1", name);
 	/* Change it always and report only warning: return false; */
     }
 
@@ -183,9 +182,7 @@ global define boolean DeleteModule(string name) ``{
 	return false;
     }
 
-    map modmap = Modules[name]:$[];
-    modmap = remove(modmap, "options");
-    change(Modules, name, modmap);
+    Modules = remove(Modules, name);
     change(DeletedModules, name);
 
     y2debug("Modules=%1", Modules);

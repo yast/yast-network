@@ -30,6 +30,8 @@ include "network/routines.ycp";
  */
 global define symbol DSLDialog() ``{
 
+    ScreenName("dsl-dialog");
+
     /* DSL dialog caption */
     string caption = _("DSL configuration");
 

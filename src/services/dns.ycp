@@ -76,6 +76,8 @@ could return to this dialog later when the above service has terminated.</li>
  */
 global define symbol DNSMainDialog(boolean standalone) ``{
 
+    ScreenName("dns");
+
     string hostname = DNS::hostname;
     string domain = DNS::domain;
     list nameservers = DNS::nameservers;

@@ -58,6 +58,8 @@ global define symbol FinishDialog() ``{
  */
 global define symbol ReadDialog() ``{
 
+    ScreenName("dsl-read");
+
     /* DSL read dialog help 1/2 */
     string helptext = _("<P><B><BIG>Initializing DSL configuration
 </BIG></B><BR>Please wait...<BR></P>
@@ -79,6 +81,9 @@ the <B>Abort</B> button now.</P>");
  * @return `abort if aborted and `next otherwise
  */
 global define symbol WriteDialog() ``{
+
+    ScreenName("dsl-write");
+
     if(!Modified()) return `next;
 
     /* DSL write dialog help 1/2 */
@@ -103,25 +108,25 @@ dialog will possibly inform you whether it is safe to do so or not.</P>");
  */
 global define symbol SummaryDialog() ``{
 
+    ScreenName("dsl-summary");
+
     /* DSL summary dialog caption */
     string caption = _("DSL configuration");
 
     /* DSL summary dialog help 1/3 */
-    string helptext = _("<P><B><BIG>DSL setup</BIG></B><BR>
-Here, you can configure your DSL.<BR></P>
-");
+    string helptext = _("<p><b><big>DSL setup</big></b><br>
+Here, you can configure your DSL.<br></p>");
 
     /* DSL summary dialog help 2/3 */
-    helptext = helptext + _("<P><B><BIG>Adding a DSL device:</BIG></B><BR>
+    helptext = helptext + _("<p><b><big>Adding a DSL device:</big></b><br>
 Choose a DSL device from the list of detected DSL devices. If your DSL device
-was not autodetected, use <B>Other (not detected)</B>. Then press
-<B>Configure</B>.</P>");
+was not autodetected, use <b>Other (not detected)</b>. Then press
+<b>Configure</b>.</p>");
 
     /* DSL summary dialog help 3/3 */
-    helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
-If you press <B>Edit</B>, an additional dialog opens in which to change the
-configuration.</P>
-");
+    helptext = helptext + _("<p><b><big>Editing or deleting:</big></b><br>
+If you press <b>Change</b>, an additional dialog opens in which to change the
+configuration.</p>");
 
     list summary = DSL::Summary(true);
     list unconfigured = select(summary, 1, []);
@@ -181,6 +186,8 @@ configuration.</P>
  * @return dialog result
  */
 global define symbol OverviewDialog() ``{
+
+    ScreenName("dsl-overview");
 
     /* DSL overview dialog caption */
     string caption = _("DSL configuration overview");

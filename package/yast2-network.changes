@@ -20,6 +20,7 @@ WIP, not yet functional!
   - remove kernel module after delete
   - warning if device number changed (#21288)
   - propose also if install.inf present but no hardware found
+  - preliminary virtual aliases support (only edit|delete so far)
 
 - providers:
   - UI mode (#6244, #16291)

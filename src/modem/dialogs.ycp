@@ -24,6 +24,8 @@ include "network/routines.ycp";
  */
 global define symbol ModemDialog(boolean detected) ``{
 
+    ScreenName("modem-dialog");
+
     /* PREPARE VARIABLES */
 
     /* FIXME make the Connection dialog optional in the provider dialog */
@@ -186,6 +188,8 @@ initialization strings.</p>");
  * @return dialog result
  */
 global define symbol ModemDetailsDialog() ``{
+
+    ScreenName("modem-details");
 
     /* PREPARE VARIABLES */
     integer BaudRate = Modem::BaudRate;

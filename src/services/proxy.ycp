@@ -45,6 +45,8 @@ all (they use they own settings system, like mozilla).");
  */
 global define symbol ProxyMainDialog(boolean standalone) ``{
 
+    ScreenName("proxy");
+
     boolean enabled = Proxy::enabled;
     string http = Proxy::http;
     string ftp = Proxy::ftp;

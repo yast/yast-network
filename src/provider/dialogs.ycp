@@ -52,6 +52,8 @@ global define any dividerHack(list provs, any prev) ``{
  */
 global define symbol ProvidersDialog(boolean edit) ``{
 
+    ScreenName("provider-list");
+
     /* Provider dialog caption */
     string caption = _("Select Internet Service Provider (ISP)");
 

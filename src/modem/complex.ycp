@@ -58,6 +58,8 @@ global define symbol FinishDialog() ``{
  */
 global define symbol ReadDialog() ``{
 
+    ScreenName("modem-read");
+
     /* modems read dialog help 1/2 */
     string helptext = _("<P><B><BIG>Initializing modem configuration
 </BIG></B><BR>Please wait...<BR></P>
@@ -79,6 +81,9 @@ the <B>Abort</B> button now.</P>");
  * @return `abort if aborted and `next otherwise
  */
 global define symbol WriteDialog() ``{
+
+    ScreenName("modem-write");
+
     if(!Modified()) return `next;
 
     /* modems write dialog help 1/2 */
@@ -103,26 +108,25 @@ dialog will possibly inform you whether it is safe to do so or not.</P>");
  */
 global define symbol SummaryDialog() ``{
 
+    ScreenName("modem-summary");
+
     /* Modems summary dialog caption */
     string caption = _("Modem configuration");
 
     /* modems summary dialog help 1/3 */
-    string helptext = _("<P><B><BIG>Modem setup</BIG></B><BR>
-Here, you can configure your modem.<BR></P>
-");
+    string helptext = _("<p><b><big>Modem setup</big></b><br>
+Here, you can configure your modem.<br></p>");
 
     /* modems summary dialog help 2/3 */
-    helptext = helptext + _("<P><B><BIG>Adding a modem:</BIG></B><BR>
+    helptext = helptext + _("<p><b><big>Adding a modem:</big></b><br>
 Choose a modem from the list of detected modems. If your modem was not
-autodetected, use <B>Other (not detected)</B>. Then press <B>Configure</B>.
-</P>
-");
+autodetected, use <b>Other (not detected)</b>. Then press <b>Configure</b>.
+</p>");
 
     /* modems summary dialog help 3/3 */
-    helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
-If you press <B>Edit</B>, an additional dialog opens in which to change the
-configuration.</P>
-");
+    helptext = helptext + _("<p><b><big>Editing or deleting:</big></b><br>
+If you press <b>Change</b>, an additional dialog opens in which to change the
+configuration.</p>");
 
     list summary = Modem::Summary(true);
     list unconfigured = select(summary, 1, []);
@@ -182,6 +186,8 @@ configuration.</P>
  * @return dialog result
  */
 global define symbol OverviewDialog() ``{
+
+    ScreenName("modem-overview");
 
     /* Modems overview dialog caption */
     string caption = _("Modem configuration overview");
