@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Mar  3 18:30:22 CET 2005 - kkeil@suse.de
+
+- fix ISDN ISA card setup (#67129)
+- /etc/init.d/isdn stop --> /etc/init.d/isdn unload
+
+-------------------------------------------------------------------
 Wed Mar  2 10:27:32 CET 2005 - locilka@suse.cz
 
 - Merged proofed texts
