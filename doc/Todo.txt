@@ -136,6 +136,7 @@ Enhancements:
 - routing: possibly rename to Route
 - lan: temporary interface disable (#24926)
 - all: temporary interface disable
+- dsl: flat rate (#27840)
 
 Documentation:
 - example dhcpcd-eth0.info
