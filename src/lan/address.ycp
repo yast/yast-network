@@ -20,6 +20,7 @@ import "Netmask";
 import "NetworkDevices";
 import "Popup";
 import "Routing";
+import "SuSEFirewall4Network";
 import "Wizard";
 
 include "network/summary.ycp";
@@ -426,6 +427,31 @@ that has been detected. This only makes sense
 if you know that the detection is wrong.")))
 		    {
 			continue; // continue means cancel here... ;-)
+		    }
+		}
+
+		// If firewall is active and interface in no zone, nothing
+		// gets through (#47309) so add it to the external zone
+		if ((ret == `next || ret == `details) &&
+		    SuSEFirewall4Network::IsOn ())
+		{
+		    SuSEFirewall4Network::ProtectByFirewall (device, "EXT", true);
+		}
+	    }
+	    else // not add
+	    {
+		// If firewall is active and interface in no zone, nothing
+		// gets through (#47309) so warn and redirect to details
+		if (ret == `next &&
+		    SuSEFirewall4Network::IsOn () &&
+		    SuSEFirewall4Network::GetZoneOfInterface (device) == "")
+		{
+		    if (Popup::YesNoHeadline (Label::WarningMsg (),
+_("Firewall is active but this interface is not
+in any zone so all its traffic would be blocked.
+Assign zone now?")))
+		    {
+			ret = `details;
 		    }
 		}
 	    }

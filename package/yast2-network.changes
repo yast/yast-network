@@ -1,6 +1,10 @@
 -------------------------------------------------------------------
-Tue Feb  1 14:47:37 CET 2005 - mvidner@suse.cz
+Wed Feb  2 17:32:40 CET 2005 - mvidner@suse.cz
 
+- Added firewall zone selection to network card details dialog,
+  jump to it if the interface is not in any zone. 
+  Add new network cards to the external zone if the firewall 
+  is already enabled (#47309).
 - For WLAN interfaces, wireless-tools.rpm is needed (#49880).
 - Help text fix: cannot correct network settings during an update
   (#50381).

@@ -39,14 +39,30 @@
     }
 
     /**
+     * @return boolean whether enabled and started
+     */
+    global boolean IsOn () {
+	return
+	    SuSEFirewall::GetEnableService () &&
+	    SuSEFirewall::GetStartService ();
+    }
+
+    /**
      * Function returns list of items for combo box with all known
      * firewall zones.
+     * There's also an item for "" (no zone or fw off).
      *
      * @return	list <term> of combo box items
      */
     global define list<term> FirewallZonesComboBoxItems () {
 	list <term> list_items = [];
 	boolean protected_from_internal = SuSEFirewall::GetProtectFromInternalZone();
+	string nozone = IsOn ()?
+	    // item in combo box Firewall Zone
+	    _("No Zone, All Traffic Blocked"):
+	    // item in combo box Firewall Zone
+	    _("Firewall Disabled");
+	list_items = add (list_items, `item (`id (""), nozone));
 
 	// Listing all known zones
 	foreach (string zone_shortname, SuSEFirewall::GetKnownFirewallZones(), {
@@ -74,8 +90,6 @@
      * @return	boolean if it is protected
      */
     global define boolean IsProtectedByFirewall (string interface) {
-	boolean is_started	= SuSEFirewall::GetStartService();
-	boolean is_enabled	= SuSEFirewall::GetEnableService();
 	string interface_zone	= SuSEFirewall::GetZoneOfInterface(interface);
 
 	// interface is mentioned in uprotected zone
@@ -84,19 +98,25 @@
 	}
 
 	// firewall must be running and enabled, interface must be in any zone
-	return (is_started && is_enabled && interface_zone!=nil);
+	return (IsOn () && interface_zone!=nil);
     }
 
     /**
-     * Function returns the firewall zone of interface, nil if no zone includes
+     * Function returns the firewall zone of interface, "" if no zone includes
      * the interface. Error is reported when interface is found in multiple
      * firewall zones, then the first appearance is returned.
+     * If firewall is off, "" is returned.
      *
      * @param	string interface
      * @return	string zone
      */
     global define string GetZoneOfInterface (string interface) {
-	return SuSEFirewall::GetZoneOfInterface(interface);
+	if (!IsOn ())
+	{
+	    return "";
+	}
+	string zoi = SuSEFirewall::GetZoneOfInterface (interface);
+	return (zoi == nil)? "": zoi;
     }
 
     /**
