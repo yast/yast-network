@@ -13,6 +13,7 @@ textdomain "network";
 
 import "Arch";
 import "Lan";
+import "Routing";
 import "Wizard";
 
 include "ui/common_popups.ycp";

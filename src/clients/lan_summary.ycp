@@ -15,6 +15,7 @@
 
 textdomain "network";
 import "Lan";
+import "Progress";
 
 /* The main () */
 y2milestone("----------------------------------------");

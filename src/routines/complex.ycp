@@ -15,7 +15,9 @@
 
 textdomain "network";
 
+import "Popup";
 import "Summary";
+
 include "network/routines.ycp";
 
 /**

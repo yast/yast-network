@@ -14,6 +14,7 @@ textdomain "network";
 import "DSL";
 import "Call";
 import "Firewall";
+import "Lan";
 import "Wizard";
 
 include "ui/common_messages.ycp";

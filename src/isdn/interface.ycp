@@ -19,10 +19,11 @@
 
 textdomain "network";
 
-import "Firewall";
-import "Wizard";
-import "ISDN";
 import "Call";
+import "Firewall";
+import "ISDN";
+import "Provider";
+import "Wizard";
 
 include "ui/common_popups.ycp";
 include "network/dsl/dialogs.ycp";

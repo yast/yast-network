@@ -11,6 +11,7 @@
 
 textdomain "network";
 
+import "Lan";
 import "Wizard";
 
 include "wizard/sequencer.ycp";

@@ -11,8 +11,9 @@
 
 textdomain "network";
 
-import "Lan";
 import "Arch";
+import "Lan";
+import "Mode";
 import "Progress";
 
 include "network/routines.ycp";

@@ -15,6 +15,7 @@
 textdomain "network";
 
 import "Modem";
+import "Progress";
 import "Summary";
 
 /* The main () */

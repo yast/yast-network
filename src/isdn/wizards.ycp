@@ -11,6 +11,7 @@
 
 textdomain "network";
 
+import "ISDN";
 import "Wizard";
 
 include "wizard/sequencer.ycp";

@@ -12,6 +12,7 @@
 textdomain "network";
 
 import "Popup";
+import "Progress";
 
 /**
  * Return all keys from the map
