@@ -42,20 +42,20 @@
 
 `ag_anyagent(
     `Description(
-	``(File("/etc/sysconfig/network/routes")),	// real file name
+	(`File("/etc/sysconfig/network/routes")),	// real file name
 	"#\n",						// comment
 	false,						// read-only?
-	``(List(
-	    Tuple(
-		`destination(String("^ \t\n")),
-		Whitespace(),
-		`gateway(String("^ \t\n")),
-		Whitespace(),
-		`netmask(String("^ \t\n")),
-		Optional(Whitespace()),
-		Optional(`device(String("^ \t\n"))),
-		Optional(Whitespace()),
-		Optional(`extrapara(String("^\n")))
+	(`List(
+	    `Tuple(
+		`destination(`String("^ \t\n")),
+		`Whitespace(),
+		`gateway(`String("^ \t\n")),
+		`Whitespace(),
+		`netmask(`String("^ \t\n")),
+		`Optional(`Whitespace()),
+		`Optional(`device(`String("^ \t\n"))),
+		`Optional(`Whitespace()),
+		`Optional(`extrapara(`String("^\n")))
 	    ),
 	"\n"
 	))

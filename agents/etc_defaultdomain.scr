@@ -16,9 +16,9 @@
 
 `ag_anyagent(
     `Description(
-	``(File("/etc/defaultdomain")),	// real file name
+	(`File("/etc/defaultdomain")),	// real file name
 	"",				// comment
 	false,				// read-only?
-	``(Or(String("^\n"), ""))	// just a string, may be empty
+	(`Or(`String("^\n"), ""))	// just a string, may be empty
     )
 )
