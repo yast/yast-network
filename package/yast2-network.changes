@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Sep 23 15:47:33 CEST 2003 - msvec@suse.cz
+
+- ignore partially activated interfaces during Detection (#29452)
+- 2.8.43
+
+-------------------------------------------------------------------
 Mon Sep 22 09:50:11 CEST 2003 - msvec@suse.cz
 
 - install required packages for winmodems (#31443, #31471)
