@@ -28,7 +28,7 @@ Dir	.network.section: ["dsl0", "eth0"]
 Dir	.network.value."dsl0": []
 Dir	.network.value."eth0": []
 Return	true
-Dump	eth0
+Dump	dsl0
 Dir	.network.section: ["eth1", "tr0"]
 Dir	.network.value."eth1": []
 Dir	.network.value."tr0": []
@@ -38,7 +38,7 @@ Dir	.network.section: ["dsl0", "tr0"]
 Dir	.network.value."dsl0": []
 Dir	.network.value."tr0": []
 Return	true
-Dump	tr0
+Dump	dsl0
 Dir	.network.section: ["dsl0", "ppp0"]
 Dir	.network.value."dsl0": []
 Dir	.network.value."ppp0": []
@@ -48,7 +48,7 @@ Dir	.network.section: ["ppp0", "tr1"]
 Dir	.network.value."ppp0": []
 Dir	.network.value."tr1": []
 Return	true
-Dump	tr1
+Dump	ppp0
 Dir	.network.section: ["ppp0"]
 Dir	.network.value."ppp0": []
 Return	true
@@ -57,7 +57,7 @@ Dir	.network.section: ["ippp0", "tr1"]
 Dir	.network.value."ippp0": []
 Dir	.network.value."tr1": []
 Return	true
-Dump	tr1
+Dump	ippp0
 Dir	.network.section: ["ippp0", "ppp0"]
 Dir	.network.value."ippp0": []
 Dir	.network.value."ppp0": []
