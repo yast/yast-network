@@ -556,58 +556,9 @@ define any S390Dialog() {
     /* S/390 dialog caption */
     string caption = _("S/390 Network Card Configuration");
 
-    /* S/390 dialog help 1/6 */
-    string helptext = _("<p>Here, set the most important settings
-for S/390 networking.</p>") +
+    string helptext = "";
+    term contents = `Empty ();
 
-    /* S/390 dialog help 2/6 */
-_("<p>The <b>Read channel</b>
-...</p>") +
-
-    /* S/390 dialog help 3/6 */
-_("<p>The <b>Write channel</b>
-...</p>") +
-
-    /* S/390 dialog help 4/6 */
-_("<p>The <b>Data channel</b>
-...</p>") +
-
-    /* S/390 dialog help 5/6 */
-_("<p>The <b>Port name</b>
-...</p>") +
-
-    /* S/390 dialog help 6/6 */
-_("<p>These values will be written to the interface configuration file
-'ifcfg-*' in '/etc/sysconfig/network'. If you need additional settings,
-add them manually.</p>");
-
-    /* S/390 dialog contents */
-    term contents = `HBox(
-	`HSpacing(6),
-	/* Frame label */
-	`Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
-	    `VSpacing(1),
-	    /* TextEntry label */
-	    `TextEntry(`id(`read_channel), _("R&ead Channel"), Lan::read_channel),
-	    `VSpacing(0.2),
-	    /* TextEntry label */
-	    `TextEntry(`id(`write_channel), _("&Write Channel"), Lan::write_channel),
-	    `VSpacing(0.2),
-	    /* TextEntry label */
-	    `TextEntry(`id(`data_channel), _("&Data Channel"), Lan::data_channel),
-	    `VSpacing(0.2),
-	    /* TextEntry label */
-	    `TextEntry(`id(`portname), _("&Port Name"), Lan::portname),
-
-	    `VSpacing(0.2),
-	    /* TextEntry label */
-	    `TextEntry(`id(`qeth_options), Label::Options (), Lan::qeth_options),
-	    `VSpacing(1)
-	    ), `HSpacing(2))),
-	`HSpacing(6)
-    );
-
-    /* S/390 dialog contents */
     if(Lan::type == "qeth") {
 	contents = `HBox(
 	    `HSpacing(6),
@@ -755,12 +706,6 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
     }
 
     if(ret == `next) {
-	/*
-	Lan::read_channel = (string) UI::QueryWidget(`id(`read_channel), `Value);
-	Lan::write_channel = (string) UI::QueryWidget(`id(`write_channel), `Value);
-	Lan::data_channel = (string) UI::QueryWidget(`id(`data_channel), `Value);
-	Lan::portname = (string) UI::QueryWidget(`id(`portname), `Value);
-	*/
 	if(Lan::type == "iucv") {
 	    Lan::nm_name = "iucv-id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
 	    Lan::device = "id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
