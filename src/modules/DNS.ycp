@@ -127,7 +127,7 @@ global define boolean Write() {
     list<string> ips = maplist(string dev, devs, {
 	return NetworkDevices::GetValue(dev, "IPADDR");
     });
-    Host::Update(fqhostname, oldhostname, ips);
+    Host::Update(oldhostname, fqhostname, ips);
     Host::Write();
 
     NetworkConfig::Write();
