@@ -28,7 +28,7 @@ global boolean write_only = false;
  */
 global boolean modified = false;
 
-global boolean enabled = true;
+global boolean enabled = false;
 global string http = "";
 global string ftp = "";
 global string no = "";
