@@ -1,21 +1,23 @@
 {
 
 include "testsuite.ycp";
-import "Providers";
 
 map READ = $[
-    "sysconfig" : $[ "network" : $[ "providers" : $[
-	"s" : $[
-	    "first" : $[ "PROVIDER" : "first one", ],
-	    "second" :$[ "PROVIDER" : "second one", ],
-	    "third" : $[ "PROVIDER" : "third one", ],
-	],
-	"v" : $[
-	    "first" : $[ "PROVIDER" : "first one", ],
-	    "second": $[ "PROVIDER" : "second one", ],
-	    "third" : $[ "PROVIDER" : "third one", ],
-	]
-    ]]],
+    "sysconfig" : $[
+	"network" : $[ "providers" : $[
+	    "s" : $[
+		"first" : $[ "PROVIDER" : "first one", ],
+		"second" :$[ "PROVIDER" : "second one", ],
+		"third" : $[ "PROVIDER" : "third one", ],
+	    ],
+	    "v" : $[
+		"first" : $[ "PROVIDER" : "first one", ],
+		"second": $[ "PROVIDER" : "second one", ],
+		"third" : $[ "PROVIDER" : "third one", ],
+	    ]
+	]],
+	"language" : $[ "DEFAULT_LANGUAGE" : "" ],
+    ],
     "providers" : $[
 	"s" : $[
 	    "CZ" : nil,
@@ -30,14 +32,18 @@ map READ = $[
 	"yast2" : $[
 	    "CZ" : "Czech",
 	],
+	"symlink" : nil,
     ],
 ];
+
+TESTSUITE_INIT([READ],nil);
+import "Providers";
 
 DUMP("Read");
 TEST(``(Providers::Read()), [READ], nil);
 
 DUMP("GetProvider");
-TEST(``(Providers::ReadProvider(.path.to.provider)), [], nil);
-TEST(``(Providers::ReadProvider(.path.to."provi der")), [], nil);
+TEST(``(Providers::ReadProvider(.path.to.provider)), [READ], nil);
+TEST(``(Providers::ReadProvider(.path.to."provi der")), [READ], nil);
 
 }

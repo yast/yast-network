@@ -4,5 +4,5 @@
 # $Id$
 #
 
-agent_DATA = $(wildcard *.scr)
-EXTRA_DIST = $(agent_DATA)
+scrconf_DATA = $(wildcard *.scr)
+EXTRA_DIST = $(scrconf_DATA)
