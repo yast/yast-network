@@ -154,6 +154,7 @@ global define symbol ManualSequence() ``{
 	"manual"	: ``(ManualDialog()),
 	"list"		: ``(ManualSelection()),
 	"wire"		: ``(WirelessDialog()),
+	"s390"		: ``(S390Dialog()),
 	"address"	: [ ``(AddressSequence()), true ],
     ];
 
@@ -163,10 +164,15 @@ global define symbol ManualSequence() ``{
 	    `abort	: `abort,
 	    `list	: "list",
 	    `wire	: "wire",
+	    `s390	: "s390",
 	    `next	: "address",
 	],
 	"wire" : $[
 	    `next	: "manual",
+	    `abort	: `abort,
+	],
+	"s390" : $[
+	    `next	: "address",
 	    `abort	: `abort,
 	],
 	"list" : $[

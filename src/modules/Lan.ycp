@@ -15,6 +15,7 @@
 module "Lan";
 textdomain "network";
 
+import "Arch";
 import "DNS";
 import "Routing";
 import "Firewall";
@@ -55,6 +56,12 @@ global string wl_essid = "";
 global string wl_nwid = "";
 global string wl_key = "";
 global string wl_nick = "";
+
+/* s390 options */
+global string read_channel = "";
+global string write_channel = "";
+global string data_channel = "";
+global string portname = "";
 
 /* global options */
 global integer wait_for_interfaces = nil;
@@ -153,7 +160,7 @@ global define boolean Read() ``{
     // stage 1 in reading current Lan setup
     ProgressNextStage(_("Detecting network cards"));
     //ReadHardware("");
-    ReadHardware("netcard");
+    if(!Arch::s390) ReadHardware("netcard");
     sleep(sl);
 
     if(Abort()) return false;
@@ -519,6 +526,12 @@ global define boolean AddEdit(string dev) ``{
     wl_key = devmap["WIRELESS_KEY"]:"";
     wl_nick = devmap["WIRELESS_NICK"]:"";
 
+    /* s/390 options */
+    read_channel = devmap["READ_CHANNEL"]:"";
+    write_channel = devmap["WRITE_CHANNEL"]:"";
+    data_channel = devmap["DATA_CHANNEL"]:"";
+    portname = devmap["PORTNAME"]:"";
+
     pcmcia = false;
     usb = false;
     if(issubstring(type, "pcmcia"))
@@ -594,6 +607,14 @@ global define boolean Commit() ``{
 	}
 	else
 	    change(newdev, "WIRELESS", "no");
+
+	if(Arch::s390) {
+	    /* s390 options */
+	    change(newdev, "READ_CHANNEL", read_channel);
+	    change(newdev, "WRITE_CHANNEL", write_channel);
+	    change(newdev, "DATA_CHANNEL", data_channel);
+	    change(newdev, "PORTNAME", portname);
+	}
 
 	if(type == "ctc" || type == "escon")
 	    if(wait_for_interfaces == nil || wait_for_interfaces < 40)

@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Thu Aug 22 16:50:54 CEST 2002 - msvec@suse.cz
+Fri Aug 23 14:46:29 CEST 2002 - msvec@suse.cz
 
+- new screen for s390 hsi devices
 - enable defaultroute editing again (#17498)
 - partial fix for the hostname problems (#17741)
 - preliminary support for s390 devices
