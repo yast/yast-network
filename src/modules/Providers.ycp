@@ -1,22 +1,14 @@
 /**
- * File:
- *   modules/Providers.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Providers dialogs
- *
- * Authors:
- *   Dan Vesely <dan@suse.cz>
- *   Petr Blahos <pblahos@suse.cz>
- *   Michal Svec <msvec@suse.cz>
+ * File:	modules/Providers.ycp
+ * Package:	Configuration of network
+ * Summary:	Providers dialogs
+ * Authors:	Dan Vesely <dan@suse.cz>
+ *		Petr Blahos <pblahos@suse.cz>
+ *		Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
  * Dialogs and functions for Providers.
- *
  */
 
 {
@@ -78,14 +70,14 @@ map country_names = $[];
 /**
  * Export data
  */
-global define map Export () ``{
+global define map Export() ``{
     return providers;
 }
 
 /**
  * Import data
  */
-global define map Import (map in) ``{
+global define map Import(map in) ``{
     providers = in;
     provider = $[];
     dirty = true;
@@ -94,7 +86,7 @@ global define map Import (map in) ``{
 /**
  * were the providers changed?
  */
-global define boolean Modified () ``{
+global define boolean Modified() ``{
     return dirty;
 }
 
@@ -171,17 +163,19 @@ global define void Commit () ``{
  * Read providers data
  * @return true if success
  */
-global define boolean Read () ``{
+global define boolean Read() ``{
+
+    boolean ret = true;
 
     /* read custom providers */
     providers = $[];
-    list dir = SCR::Dir(.custom_providers.s);
-    foreach (`i, dir, ``{
-	map p = getProvider (add (.custom_providers.v, i));
-	integer slash = findlastof (i, "/");
-	string shortname = nil == slash ? i : substring (i, slash + 1);
-	p = add (p, "ShortName", shortname);
-	providers = add (providers, shortname, p);
+    list dir = SCR::Dir(.sysconfig.network.providers.s);
+    foreach(`i, dir, ``{
+	map p = getProvider(add(.sysconfig.network.providers.v, i));
+	integer slash = findlastof(i, "/");
+	string shortname = nil == slash ? i : substring(i, slash + 1);
+	p = add(p, "ShortName", shortname);
+	providers = add(providers, shortname, p);
     });
 
     /* read countries */
@@ -190,13 +184,13 @@ global define boolean Read () ``{
 	//Report:Error(_("Country database not found"));
 	y2error("Country database not found");
 	country_names = $[];
-	return false;
+	ret = false;
     }
     textdomain "country_db";
     country_names = eval(country_names);
     textdomain "network";
 
-    return true;
+    return ret;
 }
 
 /**
@@ -204,13 +198,13 @@ global define boolean Read () ``{
  * @param prov provider map
  * @return new provider map with all entries
  */
-define map completeProvider (map prov) ``{
-    if (!haskey (prov, "MODEMSUPPORTED"))
-	prov = add (prov, "MODEMSUPPORTED", "yes");
-    if (!haskey (prov, "ISDNSUPPORTED"))
-	prov = add (prov, "ISDNSUPPORTED", "no");
-    if (!haskey (prov, "DSLSUPPORTED"))
-	prov = add (prov, "DSLSUPPORTED", "no");
+define map completeProvider(map prov) ``{
+    if(!haskey(prov, "MODEMSUPPORTED"))
+	prov = add(prov, "MODEMSUPPORTED", "yes");
+    if(!haskey(prov, "ISDNSUPPORTED"))
+	prov = add(prov, "ISDNSUPPORTED", "no");
+    if(!haskey(prov, "DSLSUPPORTED"))
+	prov = add(prov, "DSLSUPPORTED", "no");
     return prov;
 }
 
@@ -219,30 +213,35 @@ define map completeProvider (map prov) ``{
  * To change placement of the file of custom providers, edit it here
  * and in providers.scr!!!!!
  */
-global define void Write () ``{
-    foreach (`key, `value, providers, ``{
-	string sname = lookup (value, "ShortName", "other");
-	sname = filterchars (sname, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.");
-	path base = add (.custom_providers.v, sformat ("/etc/sysconfig/network/providers/%1", sname));
-	foreach (`k, `v, completeProvider (value), ``{
+global define boolean Write() ``{
+
+    boolean ret = true;
+
+    /* write custom providers */
+    foreach(`key, `value, providers, ``{
+	string sname = lookup(value, "ShortName", "other");
+	sname = filterchars(sname, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.");
+	path base = add(.sysconfig.network.providers.v, sformat("/etc/sysconfig/network/providers/%1", sname));
+	foreach(`k, `v, completeProvider(value), ``{
 	    // adjust some values
-	    if ("ASKPASSWORD" == k || "STUPIDMODE" == k || "COMPUSERVE" == k || "ISDNSUPPORTED" == k || "DSLSUPPORTED" == k || "MODEMSUPPORTED" == k)
+	    if("ASKPASSWORD" == k || "STUPIDMODE" == k || "COMPUSERVE" == k || "ISDNSUPPORTED" == k || "DSLSUPPORTED" == k || "MODEMSUPPORTED" == k)
 	    {
-		if ("0" == v)		v = "no";
-		else if ("1" == v)	v = "yes";
-		else if ("no" != v && "yes" !=v)
-		    v = (-1 != find (v, "no") ? "no" : "yes");
+		if("0" == v)		v = "no";
+		else if("1" == v)	v = "yes";
+		else if("no" != v && "yes" !=v)
+		    v = (-1 != find(v, "no") ? "no" : "yes");
 	    }
-	    if ("ShortName" != k)
-		SCR::Write (add (base, k), v);
+	    if("ShortName" != k)
+		SCR::Write(add(base, k), v);
 	});
     });
-    SCR::Write (.custom_providers, nil);
-    foreach (`key, `value, providers, ``{
-	string sname = lookup (value, "ShortName", "other");
-	SCR::Execute (.target.bash, "/bin/chown root:root /etc/sysconfig/network/providers/" + sname);
-	SCR::Execute (.target.bash, "/bin/chmod 0600 /etc/sysconfig/network/providers/" + sname);
-    });
+    SCR::Write(.sysconfig.network.providers, nil);
+
+    /* change the rights (provider can contain password #13353  */
+    SCR::Execute(.target.bash, "/bin/chown -R root:root /etc/sysconfig/network/providers");
+    SCR::Execute(.target.bash, "/bin/chmod -R 0600 /etc/sysconfig/network/providers");
+
+    return ret;
 }
 
 /**
@@ -253,7 +252,7 @@ global define list getCountries() ``{
     list out = [];
     list countries = SCR::Dir(.providers.s);
     integer index = -1;
-    out = maplist (`i, countries, ``{
+    out = maplist(`i, countries, ``{
 	    index = index + 1;
 	    return `item(`id(i), country_names[i]:i, index == 0);
     });
@@ -276,6 +275,7 @@ define list filterDSL (list provs) ``{
 	return false;
     });
 }
+
 /**
  * Lets only modem providers "go in"
  * @param provs list of providers
@@ -292,6 +292,7 @@ define list filterModem (list provs) ``{
 	return true;
     });
 }
+
 /**
  * Lets only isdn capable providers "go in"
  * @param provs list of providers

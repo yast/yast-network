@@ -1,20 +1,12 @@
 /**
- * File:
- *   include/network/routines/providers.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Providers dialogs
- *
- * Authors:
- *   Dan Vesely <dan@suse.cz>
- *   Petr Blahos <pblahos@suse.cz>
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/routines/providers.ycp
+ * Package:	Configuration of network
+ * Summary:	Providers dialogs
+ * Authors:	Dan Vesely <dan@suse.cz>
+ *		Petr Blahos <pblahos@suse.cz>
+ *		Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
  */
 
 {
@@ -32,15 +24,11 @@ include "ui/common_messages.ycp";
 
 /***
  * TODO/FIXME:
- * implement wvdialIs*Unique
- * add saveCustomProviders to Write ()
- * fix getting and saving settings in runEditIsdnProviderDialog
- * there must be a function ReallyAbort that tests dirty bit and
- *    possibly shows dialog.
- * select by default the local country
+ * - implement wvdialIs*Unique
+ * - fix getting and saving settings in runEditIsdnProviderDialog
  */
 
-global define ReallyAbort () ``{
+global define ReallyAbort() ``{
     return UI::ReallyAbortPopup(true);
 }
 
@@ -153,7 +141,11 @@ To register for <b>%1</b> and find the best dialing number, call the hotline
 }
 
 
-global define any dividerHack (list provs, any prev) ``{
+/**
+ * Huh, what is this function doing?
+ * FIXME
+ */
+global define any dividerHack(list provs, any prev) ``{
     integer p = -1;
     find (`e, provs, ``{
 	p = p + 1;

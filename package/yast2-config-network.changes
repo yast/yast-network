@@ -1,3 +1,7 @@
+- always save providers with values enclosed in '' (#16069)
+- use config files
+- 2.6.2
+
 -------------------------------------------------------------------
 Wed May 15 20:30:32 CEST 2002 - msvec@suse.cz
 

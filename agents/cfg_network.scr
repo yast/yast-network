@@ -6,12 +6,12 @@
  *
  * Example:
  *   Dir(.sysconfig.network)
- *   (["FQHOSTNAME", ...])
+ *   (["CHECK_FOR_MASTER", ...])
  **
- *   Read(.sysconfig.network.FQHOSTNAME)
+ *   Read(.sysconfig.network.CHECK_FOR_MASTER)
  *   ("yes")
  **
- *   Write(.sysconfig.network.FQHOSTNAME, "no")
+ *   Write(.sysconfig.network.CHECK_FOR_MASTER, "no")
  *   (true)
  *
  * $Id$
@@ -19,7 +19,7 @@
  * Read/Sets the values defined in <tt>/etc/sysconfig/network/config</tt>
  * in an easy manner.
  */
-.sysconfig.network
+.sysconfig.network.config
 
 `ag_ini(
     SysConfigFile("/etc/sysconfig/network/config")
