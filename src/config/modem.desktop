@@ -1,0 +1,46 @@
+[Desktop Entry]
+Type=Application
+Categories=Qt;X-SuSE-YaST-Network;
+
+X-KDE-ModuleType=Library
+X-KDE-RootOnly=true
+X-KDE-HasReadOnlyMode=true
+X-KDE-Library=yast2
+X-KDE-FactoryName=modem
+
+X-SuSE-YaST-Group=Network
+X-SuSE-YaST-Argument=
+X-SuSE-YaST-RootOnly=true
+X-SuSE-YaST-AutoInst=write
+X-SuSE-YaST-Geometry=
+X-SuSE-YaST-SortKey=
+X-SuSE-YaST-AutoinstResource=modem
+
+Icon=modem
+Exec=/sbin/yast2 modem 
+
+Name=Modem
+GenericName=Configure modem
+GenericName[cs]=Konfigurovat modem
+GenericName[de]=Konfiguration des Modems
+Name[es]=Módem
+GenericName[es]=Configurar módem
+GenericName[hu]=A modem beállítása
+GenericName[it]=Configurazione modem
+Name[ko]=모뎀
+GenericName[ko]=모뎀 설정
+GenericName[nl]=Configureer modem
+GenericName[pt]=Configurar modem
+GenericName[sk]=Konfigurácia modemu
+GenericName[sv]=Ställ in modem
+Name[bg]=Модем
+GenericName[bg]=Настройка на модем
+GenericName[da]=Indstil modem
+GenericName[el]=Ρυθμίστε το modem
+GenericName[fr]=Configurer le modem
+Name[ja]=モデム
+GenericName[ja]=モデムを設定する
+Name[lt]=Modemas
+GenericName[lt]=Konfigūruoti modemą
+GenericName[sl]=Nastavite modem
+GenericName[tr]=Modemi yapılandır
