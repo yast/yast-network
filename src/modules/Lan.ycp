@@ -457,8 +457,8 @@ global define list FreeAliases(string type, integer num) ``{
 }
 
 /**
- * Add a new device or edit existing (prepare before Commit)
- * @param dev device to edit
+ * Add a new device or edit an existing one (prepare before Commit)
+ * @param dev device to edit, "" means to add one
  * @return true if success
  */
 global define boolean AddEdit(string dev) ``{
@@ -637,8 +637,9 @@ global define void Propose() ``{
 	*/
     }
 
+    string netconfig = SCR::Read(.etc.install_inf.NetConfig);
     string ip = SCR::Read(.etc.install_inf.IP);
-    if(ip != nil && ip != "" && ip != "bootp" && ip != "dhcp") {
+    if (netconfig == "static" && ip != nil && ip != "") {
 
 	/* propose address setup from /etc/install.inf */
 	bootproto = "static";
@@ -672,7 +673,7 @@ global define void Propose() ``{
 
     }
     else {
-	bootproto = "dhcp";
+	bootproto = "dhcp";	// or bootproto = netconfig?
 	DNS::dhcp_hostname = true;
 	DNS::modified = true;
     }
