@@ -58,7 +58,10 @@ global define symbol ProvidersDialog(boolean edit) ``{
     string caption = _("Select Internet Service Provider (ISP)");
 
     string prev_country = "x";
-    string country = (Provider::Name != nil && Provider::Name != "") ? "_custom" : nil;
+    // #23994, don't select custom providers if there are none.
+    // Provider::Name is "provider0" so the former check did not work.
+    // GetProviders may be an overkill, feel free to optimize.
+    string country = (Provider::GetProviders ("_custom", Provider::Name) != []) ? "_custom" : nil;
     any provider = nil;
 
     list provs = [];
