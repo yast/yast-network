@@ -21,14 +21,15 @@ import "Providers";
 import "Progress";
 import "Summary";
 
+include "network/complex.ycp";
 include "network/config.ycp";
-include "network/isdn/config.ycp";
 include "network/hardware.ycp";
-include "network/routines.ycp";
-include "network/isdn/routines.ycp";
-include "network/summary.ycp";
 include "network/ip.ycp";
+include "network/routines.ycp";
 include "network/runtime.ycp";
+
+include "network/isdn/config.ycp";
+include "network/isdn/routines.ycp";
 
 /*-------------*/
 /* GLOBAL DATA */

@@ -170,6 +170,14 @@ administrator</b> for more information about the network configuration.</p>
 	    UI::ChangeWidget(`id(`netmask), `Enabled, true);
 	    continue;
 	}
+	/* netmask from bits to IP mapping */
+	else if(ret == `netmask) {
+	    string nm = UI::QueryWidget(`id(`netmask), `Value);
+	    if(regexpmatch(nm, "^[0-9]+$"))
+		UI::ChangeWidget(`id(`netmask), `Value, bits2netmask(tointeger(nm)));
+	    continue;
+	}
+	/* back */
 	else if(ret == `back) {
 	    break;
 	}

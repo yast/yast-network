@@ -136,4 +136,24 @@ TEST(``(compute_broadcast("127.0.0.1","255.0.0.0")), [], nil);
 TEST(``(compute_broadcast("192.168.110.23","255.255.255.0")), [], nil);
 TEST(``(compute_broadcast("10.20.1.29","255.255.240.0")), [], nil);
 
+DUMP("netmask2bits");
+TEST(``(netmask2bits("255.255.255.255")), [], nil);
+TEST(``(netmask2bits("255.255.255.240")), [], nil);
+TEST(``(netmask2bits("255.255.255.224")), [], nil);
+TEST(``(netmask2bits("255.255.255.0")), [], nil);
+TEST(``(netmask2bits("255.255.240.0")), [], nil);
+TEST(``(netmask2bits("255.240.0.0")), [], nil);
+TEST(``(netmask2bits("240.0.0.0")), [], nil);
+TEST(``(netmask2bits("0.0.0.0")), [], nil);
+
+DUMP("bits2netmask");
+TEST(``(bits2netmask(32)), [], nil);
+TEST(``(bits2netmask(27)), [], nil);
+TEST(``(bits2netmask(28)), [], nil);
+TEST(``(bits2netmask(24)), [], nil);
+TEST(``(bits2netmask(20)), [], nil);
+TEST(``(bits2netmask(12)), [], nil);
+TEST(``(bits2netmask(4)), [], nil);
+TEST(``(bits2netmask(0)), [], nil);
+
 }

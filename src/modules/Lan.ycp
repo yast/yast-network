@@ -21,12 +21,12 @@ import "Firewall";
 import "Progress";
 import "Summary";
 
+include "network/complex.ycp";
 include "network/config.ycp";
 include "network/hardware.ycp";
-include "network/routines.ycp";
-include "network/summary.ycp";
-include "network/runtime.ycp";
 include "network/ip.ycp";
+include "network/routines.ycp";
+include "network/runtime.ycp";
 
 /*-------------*/
 /* GLOBAL DATA */
@@ -380,6 +380,19 @@ define boolean Abort() ``{
 global define list FreeDevices(string type) ``{
     y2debug("CONFIG=%1",CONFIG);
     return GetFreeDevices(type, 10);
+}
+
+/**
+ * Return 10 free aliases
+ * @param type device type
+ * @param num device number
+ * @return list of 10 free devices
+ */
+global define list FreeAliases(string type, integer num) ``{
+    y2debug("CONFIG=%1",CONFIG);
+    map CONFIG = lookup(lookup(CONFIG, type, $[]), sformat("%1",num), $[]);
+    y2debug("CONFIG=%1",CONFIG);
+    return GetFreeDevices("_aliases", 10);
 }
 
 /**

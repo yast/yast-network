@@ -37,7 +37,7 @@ DUMP("Read");
 TEST(``(Providers::Read()), [READ], nil);
 
 DUMP("GetProvider");
-TEST(``(Providers::GetProvider(.path.to.provider)), [], nil);
-TEST(``(Providers::GetProvider(.path.to."provi der")), [], nil);
+TEST(``(Providers::ReadProvider(.path.to.provider)), [], nil);
+TEST(``(Providers::ReadProvider(.path.to."provi der")), [], nil);
 
 }

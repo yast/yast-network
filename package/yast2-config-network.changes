@@ -1,3 +1,4 @@
+- netmask bits function and testsuite
 - new providers dialogs
 - added stupid mode checkbox (#16330)
 - IP6 checking

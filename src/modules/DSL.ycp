@@ -18,9 +18,9 @@ textdomain "network";
 import "Progress";
 import "Firewall";
 
+include "network/complex.ycp";
 include "network/config.ycp";
 include "network/runtime.ycp";
-include "network/summary.ycp";
 
 /**
  * DSL network interface
