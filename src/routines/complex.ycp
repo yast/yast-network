@@ -254,6 +254,18 @@ define string CheckEmptyName(string devtype, string hwname) {
 }
 
 /**
+ * iface["ip"]:"" + Optional(" (%1)", iface["name"]:"")
+ * "bus-" + h["bus"]:"" + Optional ("-%1", h["busid"]:"")
+ */
+string Optional (string format, string what) {
+    if (what == "" || what == nil)
+    {
+	return "";
+    }
+    return sformat (format, what);
+}
+
+/**
  * Return a human readable hardware name for device with given id
  * @param Hardware hardware map
  * @param id id-..., bus-...-..., or unique
@@ -264,11 +276,15 @@ define string HardwareName(list<map> Hardware, string id) {
     if(id != "")
     {
 	foreach (map h, Hardware, {
-	    if (id == "id-" + h["mac"]:"" ||
-		id == "bus-" + h["bus"]:"" + "-" + h["busid"]:"" ||
-		id == h["unique"]:"")
+	    list<string> have = [
+		"id-" + h["mac"]:"",
+		"bus-" + h["bus"]:"" + Optional ("-%1", h["busid"]:""),
+		h["unique"]:"",
+		];
+	    y2debug ("what: %1, have: %2", id, have);
+	    if (contains (have, id))
 	    {
-		hwname = h["name"]:"" + " (" + id + ")";
+		hwname = h["name"]:"";
 		break;
 	    }
 	});
