@@ -1,0 +1,178 @@
+/**
+ * File:	include/network/installation/dialogs.ycp
+ * Package:	Network configuration
+ * Summary:	Configuration dialogs for installation
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "DSL";
+import "ISDN";
+import "Lan";
+import "Modem";
+import "Wizard";
+
+include "ui/common_messages.ycp";
+include "ui/common_popups.ycp";
+
+include "network/routines.ycp";
+
+/**
+ * Connection steps dialog
+ * @return dialog result
+ */
+global define symbol TestStepsDialog() ``{
+
+    ScreenName("installation-steps-dialog");
+
+    /* Steps dialog caption */
+    string caption = _("Test connection to the Internet");
+
+    /* Steps dialog help 1/7 */
+    string help = _("<p>FIXME
+</p>");
+
+    boolean test = true;
+
+    /* Steps dialog contents */
+    term contents = `HBox(
+	`HSpacing(6),
+	`VBox(
+	    /* Label text (keep lines max. 65 chars long) */
+	    `Left(`Label(_("To validate your Internet access we suggest to
+activate the test procedure."))),
+	    `VSpacing(1),
+	    /* Frame label */
+	    `Frame(_("Please select:"), `RadioButtonGroup(`id(`rb), `HBox(`HSpacing(2), `VBox(
+		`VSpacing(1),
+		/* Heading text */
+		`Left(`Heading(_("Following steps will be done during the test:"))),
+		`VSpacing(1),
+		/* Label text */
+		`Left(`Label(_("1] Connect to SuSE server via Internet"))),
+		/* Label text */
+		`Left(`Label(_("2] Check for latest updates"))),
+		/* Label text */
+		`Left(`Label(_("3] Download latest release notes"))),
+		/* Label text */
+		`Left(`Label(_("4] Close connection"))),
+		`VSpacing(1),
+		/* RadioButton label */
+		`Left(`RadioButton(`id(`yes), _("&Yes, test connection to the Internet"), test)),
+		/* RadioButton label */
+		`Left(`RadioButton(`id(`no), _("N&o, skip this test"), !test)),
+		`VSpacing(1)
+	    ), `HSpacing(2))))
+	),
+	`HSpacing(6)
+    );
+
+    Wizard::SetContentsButtons(caption, contents, help,
+	    BackButtonLabel(), NextButtonLabel());
+
+    any ret = nil;
+    while(true) {
+	ret = UI::UserInput();
+
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    /* check_* */
+	    break;
+	}
+	else {
+	    y2error("Unexpected return code: %1", ret);
+	    continue;
+	}
+    }
+
+    if(ret == `next) {
+	test = UI::QueryWidget(`id(`rb), `CurrentButton) == `yes;
+	y2debug("test=%1", test);
+    }
+
+    return ret;
+}
+
+/**
+ * Connection test dialog
+ * @return dialog result
+ */
+global define symbol TestConnectionDialog() ``{
+
+    ScreenName("installation-test-dialog");
+
+    /* Test dialog caption */
+    string caption = _("Running connection test");
+
+    /* Test dialog help 1/7 */
+    string help = _("<p>FIXME
+</p>");
+
+    /* Test dialog contents */
+    term contents = `VBox(
+	/* Frame label */
+	`Label(_("Test sequence information")),
+	/* Frame label */
+	`Label(_("Test protocol")),
+	/* Frame label */
+	`Label(_("Results")),
+	/* Progress step 1/4 */
+	`Label(_("Connect to the Internet")),
+	/* Progress step 1/4 */
+	`Label(_("Check for latest updates")),
+	/* Progress step 1/4 */
+	`Label(_("Get latest release notes")),
+	/* Progress step 1/4 */
+	`Label(_("Close connection"))
+    );
+
+    Wizard::SetContentsButtons(caption, contents, help,
+	    BackButtonLabel(), NextButtonLabel());
+
+    any ret = nil;
+    while(true) {
+	ret = UI::UserInput();
+
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    /* check_* */
+	    break;
+	}
+	else {
+	    y2error("Unexpected return code: %1", ret);
+	    continue;
+	}
+    }
+
+    if(ret == `next) {
+	// FIXME
+    }
+
+    return ret;
+}
+
+if(true) {
+    Wizard::CreateDialog();
+    TestStepsDialog();
+    TestConnectionDialog();
+}
+
+/* EOF */
+}
