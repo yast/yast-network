@@ -68,7 +68,7 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 
     integer items = 0;
     integer max = 0;
-    list table_items = [];
+    list<term> table_items = [];
 
     y2debug("hosts=%1", Host::hosts);
     /* make ui items from the hosts list */
@@ -145,7 +145,7 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	/* edit host */
 	else if(ret == `edit || ret == `table) {
 	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
-	    list cur_item = filter(term e, table_items, ``{
+	    list<term> cur_item = filter(term e, table_items, ``{
 		return cur == select(select(e, 0, []), 0, nil);
 	    });
 
@@ -188,7 +188,7 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	/* delete host */
 	else if(ret == `delete) {
 	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
-	    list cur_item = filter(term e, table_items, ``{
+	    list<term> cur_item = filter(term e, table_items, ``{
 		return cur == select(select(e, 0, []), 0, nil);
 	    });
 
