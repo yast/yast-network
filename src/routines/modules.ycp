@@ -164,7 +164,9 @@ global define boolean ChangeModule(string name, boolean check) ``{
     string m = Module["module"]:"";
     string o = Module["options"]:"";
 
-    Modules["alias", name] = m;
+    map alias = Modules["alias"]:$[];
+    alias[name]=m;
+    Modules["alias"] = alias;
 
     map m_orig = string2map(Modules["options", m]: "");
     map m_new = string2map(o);
@@ -173,7 +175,10 @@ global define boolean ChangeModule(string name, boolean check) ``{
 	else m_orig[mo] = op;
     });
 
-    Modules["options", m] = map2string(m_orig);
+    map options = Modules["options"]:$[];
+    options[m] = $[m: map2string(m_orig)];
+    Modules["options"] = options;
+
 
     y2debug("Modules=%1", Modules);
     return true;
