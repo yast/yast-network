@@ -142,8 +142,11 @@ global define boolean Fastest() ``{
  * @return true if successful started
  */
 global define boolean Start() ``{
-    // FIXME: use password and askpassword
-    return SCR::Execute(.target.bash, "/sbin/ifup " + device) == 0;
+
+    if (askpassword == "yes")
+	return SCR::Execute (.target.bash_input, "/sbin/ifup " + device, password) == 0;
+    else
+	return SCR::Execute (.target.bash, "/sbin/ifup " + device) == 0;
 }
 
 /**
