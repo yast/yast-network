@@ -24,5 +24,67 @@ module "ISDN";
 textdomain "network";
 import "Progress";
 
+    /**
+     *
+     */
+
+    integer protocol = 0;
+
+    /**
+     *
+     */
+
+    string moduleOptions = "";
+
+    /**
+     *
+     */
+
+    string io = "";
+
+    string irq = "";
+
+    string membase = "";
+
+    string io0 = "";
+
+    string io1 = "";
+
+    string io2 = "";
+
+    string hisaxdebug = "";
+
+    string eizmap = "";
+
+    string type = "";
+
+    string subtype = "";
+
+    string localMSN = "";
+
+    string dialMode = "";
+
+    string idleTime = "";
+
+    string chargeHUP = "";
+
+    boolean startAtBoot = true;
+
+    boolean firewall = false;
+
+    string encap = "";
+
+    string localIP = "";
+
+    string remoteIP = "";
+
+    boolean dynamicIP = false:
+
+    boolean dynamicDNS = false;
+
+    string callback = "";
+
+
+
 /* EOF */
 }
