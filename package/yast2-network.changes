@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Aug 08 10:49:05 CEST 2003 - arvin@suse.de
+
+- variable handling of release notes url
+- added desktop files
+
+-------------------------------------------------------------------
 Mon Aug  4 11:20:31 CEST 2003 - jsrain@suse.de
 
 - fixed testsuite
