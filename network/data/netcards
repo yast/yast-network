@@ -1,0 +1,147 @@
+#!/usr/bin/perl
+
+#
+# Converts NetCardDlg.cc (yast1) to yast2 syntax
+#
+
+my $usage = "\nnetcatds -f <filename>\n";
+
+my $filename  = "";
+
+foreach $arg (@ARGV) {
+    
+    if ($arg eq "-f") {
+        shift @ARGV;
+        $filename = shift @ARGV;
+    }
+    else {
+        die "Wrong argument" . $usage;
+    }
+}
+
+$filename ne "" || die "File not defined" . $usage;
+
+open (FILE, $filename) || die "Can't open datafile: $!";
+
+
+my $card_desc = 0;
+my $module    = 0;
+my $options   = 0;
+
+my %archs = ("OPTION_ALPHA"     => "axp",
+             "OPTION_MACINTOSH" => "macintosh",
+             "OPTION_RS6000"    => "rs6000",
+             "OPTION_POWERPC"   => "ppc",
+             "OPTION_SPARC"     => "sparc",
+             "OPTION_ITANIUM"   => "itanium",
+             "OPTION_ISERIES"   => "iseries",
+             "OPTION_S390"      => "s390",
+             "OPTION_I386"      => "i386");
+
+my %types = ("Eth"   => "eth",
+             "Tr"    => "tr",
+             "Arc"   => "arc",
+             "Air"   => "air",
+             "Fddi"  => "fddi",
+             "Hippi" => "hippi",
+             "Ctc"   => "ctc",
+             "Escon" => "escon",
+             "Iucv"  => "iucv",
+             "Ci"    => "ci");
+
+print "
+// \$Id\$
+// copyied from yast1 NetCardDlg.cc
+// stored in form:
+// \$[<class_name> : list] where class_name is:
+//";
+my $bcouter = keys %types;
+foreach $t (keys %types) {
+    print "\"$types{$t}\"";
+    $bcounter = $bcounter - 1;
+    if ($bcounter) {
+        print ", ";
+    }
+}
+print "
+// and the list contains maps in format:
+// \"name\"   ... <string> that contains user readable name of the card
+// \"module\" ... <map>    with module info : \"name\" (string) and \"options\" (map)
+// \"architecture\" <list> with list of architectures, possibilities:
+//";
+
+my $bcouter = keys %archs;
+foreach $t (keys %archs) {
+    print "\"$archs{$t}\"";
+    $bcounter = $bcounter - 1;
+    if ($bcounter) {
+        print ", ";
+    }
+}
+print "\n\$[\n";
+
+while (<FILE>) {
+    if ($_ =~ /CardDesc Card(.+)_.+\[\] \=/) {
+        $card_desc = 1;
+        print "  \"$types{$1}\" : [\n";
+    }
+
+    if ($card_desc > 0) {
+        if ($_ =~ /\{ \"(.+)\"\,/) {
+            print "    \$[\"name\" : \"$1\",\n";
+            $module = 1;
+        }
+        elsif ($module && $_ =~ /\"(.+)\"\,/) {
+            print "      \"module\" : \"$1\",\n";
+            $module  = 0;
+            $options = 1;
+        }
+        elsif ($options && $_ =~ /\"(.*)\"\,/) {
+            print "      \"options\" : \"$1\",\n";
+            print "    ],\n";
+            $options = 0;
+        }
+#        elsif ($options && $_ =~ /\"(.*)\"\,/) {
+#            my @options_arg = split (/ /, $1);
+#            print "                 \"options\" : \$[";
+#            my $bcounter = @options_arg;
+#            foreach $o_arg (@options_arg) {
+#                my @key = split (/=/, $o_arg);
+#                print "\"$key[0]\" : \"$key[1]\"";
+#                $bcounter = $bcounter - 1;
+#                if ($bcounter) {
+#                    print ", ";
+#                }
+#            }
+#            print "]],\n";
+#            $options = 0;
+#        }
+#        # excluding architecture
+#        elsif ($_ =~ /OPTION_EXC_ARCH\((.+)\) \}\,/) {
+#            print "      \"architecture\" : [";
+#            my $bcounter = keys %archs;
+#            #$bcounter = $bcounter - 1;
+#            foreach $a (keys %archs) {
+#                if ($1 ne $a) {
+#                    print "$archs{$a}";
+#                }
+#                $bcounter = $bcounter - 1;
+#                if ($1 ne $a && $bcounter) {
+#                    print ", ";
+#                }
+#            }
+#            print "]\n    ],\n";
+#        }
+#        # architecture
+#        elsif ($_ =~ /OPTION_ARCH\((.+)\) \}\,/) {
+#            print "      \"architecture\" : [$archs{$1}]";
+#            print "\n    ],\n";
+#        }
+        elsif ($_ =~ /\}\;/) {
+            $card_desc = 0;
+            print "  ],\n";            
+        }
+    }
+}
+
+print "]\n";

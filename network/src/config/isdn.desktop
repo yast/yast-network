@@ -1,0 +1,44 @@
+[Desktop Entry]
+Type=Application
+Categories=Qt;X-SuSE-YaST;X-SuSE-YaST-Network;
+
+X-KDE-ModuleType=Library
+X-KDE-RootOnly=true
+X-KDE-HasReadOnlyMode=true
+X-KDE-Library=yast2
+X-SuSE-YaST-Call=isdn
+
+X-SuSE-YaST-Group=Network
+X-SuSE-YaST-Argument=
+X-SuSE-YaST-RootOnly=true
+X-SuSE-YaST-AutoInst=write
+X-SuSE-YaST-Geometry=
+X-SuSE-YaST-SortKey=
+X-SuSE-YaST-AutoInstResource=isdn
+
+Icon=modem
+Exec=/sbin/yast2 isdn 
+
+Name=ISDN
+GenericName=Configure ISDN connection
+GenericName[cs]=Konfigurovat ISDN spojení
+GenericName[de]=Konfiguration der ISDN-Verbindung
+Name[es]=RDSI
+GenericName[es]=Configurar conexión RDSI
+GenericName[hu]=ISDN beállítása
+GenericName[it]=Configurazione connessione ISDN
+GenericName[ko]=ISDN 연결설정
+GenericName[nl]=Configureer ISDN verbinding
+Name[pt]=RDSI (ISDN)
+GenericName[pt]=Configurar conexão RDSI (ISDN)
+GenericName[sk]=Konfigurácia pripojenia ISDN
+GenericName[sv]=Ställ in ISDN-anslutning
+GenericName[bg]=Настройка на ISDN връзка
+GenericName[da]=Indstil ISDN-tilslutning
+GenericName[el]=Ρύθμιση σύνδεσης ISDN
+Name[fr]=ISDN (RNIS)
+GenericName[fr]=Configurer la connexion ISDN (RNIS)
+GenericName[ja]=ISDN 接続を設定する
+GenericName[lt]=Konfigūruoti ISDN ryšį
+GenericName[sl]=Nastavitev ISDN povezave
+GenericName[tr]=ISDN bağlantısını yapılandır

@@ -1,0 +1,556 @@
+/**
+ * File:	modules/DSL.ycp
+ * Package:	Network configuration
+ * Summary:	DSL data
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Representation of the configuration of DSL.
+ * Input and output routines.
+ */
+
+{
+
+module "DSL";
+textdomain "network";
+
+import "Confirm";
+import "Detection";
+import "Lan";
+import "NetworkDevices";
+import "Provider";
+import "Progress";
+import "Summary";
+import "SuSEFirewall4Network";
+
+include "network/complex.ycp";
+
+/* general stuff */
+global string description = "";
+global string type = "";
+global string device = "";
+global string unique = "";
+global string startmode = "manual";
+global boolean usercontrol = false;
+global string hotplug = "";
+// FIXME so far does nothing, add code like in Lan and Modem
+global list<string> Requires = [];
+
+/**
+ * Special Capi-ADSL mode -- different presets for the first device.
+ * Used for ISDN-DSL combined hardware.
+ */
+global map capiadsl = nil;
+
+/**
+ * Ethernet network interface
+ */
+global string interface = "";
+
+/**
+ * VPI/VCI
+ */
+global string vpivci = "";
+
+/**
+ * DSL modem IP (used for PPTP)
+ */
+global string modemip = "10.0.0.138";
+
+/**
+ * PPP mode: pppoe or pppoatm
+ */
+global string pppmode = "pppoe";
+
+string PPPDoptions = "";
+
+/* Provider settings */
+/* authorization settings */
+global string username = "";
+global string password = "";
+
+/* connection settings */
+global integer idletime = 300;
+global boolean dialondemand = false;
+global string dns1 = "";
+global string dns2 = "";
+
+/* something already proposed? */
+global boolean proposal_valid = false;
+
+/*--------------*/
+/* PRIVATE DATA */
+
+/**
+ * Hardware information
+ * @see ReadHardware
+ */
+list<map> Hardware = [];
+
+// FIXME: HW
+boolean HWDetected = false;
+
+/**
+ * Abort function
+ * return boolean return true if abort
+ */
+global block<boolean> AbortFunction = nil;
+
+/**
+ * Data was modified?
+ */
+boolean modified = false;
+
+/**
+ * Which operation is pending?
+ */
+symbol operation = nil;
+
+/*------------------*/
+/* GLOBAL FUNCTIONS */
+
+/**
+ * Data was modified?
+ * @return true if modified
+ */
+global define boolean Modified() {
+    y2debug("modified=%1",modified);
+    return modified;
+}
+
+include "network/hardware.ycp";
+include "network/routines.ycp";
+include "network/runtime.ycp";
+
+/**
+ * Read all network settings from the SCR
+ * @return true on success
+ */
+global define boolean Read() {
+
+    /* Read dialog caption */
+    string caption = _("Initializing DSL Configuration");
+    integer steps = 5;
+
+    integer sl = 0; /* 1000; /* TESTING */
+    sleep(sl);
+
+    Progress::New(caption, " ", steps, [
+	/* Progress stage 1/5 */
+	_("Detect DSL devices"),
+	/* Progress stage 2/5 */
+	_("Read current configuration"),
+	/* Progress stage 3/5 */
+	_("Read firewall configuration"),
+	/* Progress stage 4/5 */
+	_("Read providers"),
+	/* Progress stage 5/5 */
+	_("Read network card configuration"),
+    ], [], "");
+
+    if(Abort()) return false;
+    /* Progress step 1/5 */
+    ProgressNextStage(_("Detecting DSL devices..."));
+    if(!Detection::running) Detection::Start();
+    Hardware = ReadHardware("dsl");
+
+    /* In case of capiadsl we can emulate the detection with the parameters
+     * from ISDN. Advantage: we can setup the dialog items correctly.
+     */
+    if(capiadsl != nil) Hardware = add(Hardware, capiadsl);
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Progress step 2/5 */
+    ProgressNextStage(_("Reading current configuration..."));
+    NetworkDevices::Read();
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Progress step 3/5 */
+    ProgressNextStage(_("Reading firewall configuration..."));
+    boolean progress_orig = Progress::set (false);
+    SuSEFirewall4Network::Read ();
+    Progress::set (progress_orig);
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Progress step 4/5 */
+    ProgressNextStage(_("Reading providers..."));
+    Provider::Read();
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Progress step 5/5 */
+    ProgressNextStage(_("Reading network card configuration..."));
+    if(!proposal_valid) {
+	boolean progress_orig = Progress::set (false);
+	Lan::Read();
+	Progress::set (progress_orig);
+    }
+    sleep(sl);
+
+    // Confirmation: label text (detecting hardware: xxx)
+    if (Confirm::Detection (_("PPPoE DSL Devices")))
+    {
+	// it doesn't do anything except looking whether probe.pppoe is empty
+	// FIXME: HW
+	list pppoe = (list) SCR::Read(.probe.pppoe);
+	// FIXME: testing pppoe = [ $["a" : "b"] ];
+	if(pppoe != nil && size(pppoe) > 0) HWDetected = true;
+    }
+
+    if(Abort()) return false;
+    /* Final progress step */
+    ProgressNextStage(_("Finished"));
+    sleep(sl);
+
+    if(Abort()) return false;
+    modified = false;
+    return true;
+}
+
+/**
+ * Update the SCR according to network settings
+ * @return true on success
+ */
+global define boolean Write() {
+
+    if(!modified && !Provider::Modified("dsl")) return true;
+    y2milestone("Writing configuration");
+
+    /* Write dialog caption */
+    string caption = _("Saving DSL Configuration");
+    integer steps = 7;
+
+    integer sl = 0; /* 1000; /* TESTING */
+    sleep(sl);
+
+    Progress::New(caption, " ", steps, [
+	/* Progress stage 1/7 */
+	_("Write configuration"),
+	/* Progress stage 2/7 */
+	_("Write network card configuration"),
+	/* Progress stage 3/7 */
+	_("Write firewall settings"),
+	/* Progress stage 4/7 */
+	_("Write providers"),
+	/* Progress stage 5/7 */
+	_("Set up network services"),
+	/* Progress stage 6/7 */
+	_("Set up smpppd"),
+	/* Progress stage 7/7 */
+	_("Run KInternet"),
+    ], [], "");
+
+    /* Stop the detection */
+    if(Detection::running) Detection::Stop();
+
+    if(Abort()) return false;
+    /* Progress step 1/7 */
+    ProgressNextStage(_("Writing configuration..."));
+    NetworkDevices::Write("dsl");
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Progress step 2/7 */
+    ProgressNextStage(_("Writing network card configuration..."));
+    boolean progress_orig = Progress::set (false);
+    Lan::Write();
+    Progress::set (progress_orig);
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Progress step 3/7 */
+    ProgressNextStage(_("Writing firewall settings..."));
+    progress_orig = Progress::set (false);
+    SuSEFirewall4Network::Write ();
+    Progress::set (progress_orig);
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Progress step 4/7 */
+    ProgressNextStage(_("Writing providers..."));
+    Provider::Write("dsl");
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Progress step 5/7 */
+    ProgressNextStage(_("Setting up network services..."));
+    EnableNetwork();
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Progress step 6/7 */
+    ProgressNextStage(_("Setting up smpppd(8)..."));
+    SetupSMPPPD();
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Progress step 7/7 */
+    ProgressNextStage(_("Running KInternet..."));
+    RunKInternet();
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Final progress step */
+    ProgressNextStage(_("Finished"));
+    sleep(sl);
+
+    if(Abort()) return false;
+    return true;
+}
+
+/**
+ * Select the given device
+ * @param dev device to select ("" for new device, default values)
+ * @return true if success
+ */
+global define boolean Select(string dev) {
+
+    y2debug("dev=%1", dev);
+    // defaults for a new device
+    map devmap = $[
+	"STARTMODE": "manual",	// see also #44804
+	"USERCONTROL": "yes",
+	];
+
+    /* dev=="" -> Add */
+    if(dev == "") {
+	type = "dsl";
+	device = NetworkDevices::GetFreeDevice(type);
+    }
+    /* dev!="" -> Edit */
+    else {
+	string typ = NetworkDevices::device_type(dev);
+	string num = NetworkDevices::device_num(dev);
+
+	NetworkDevices::Edit(dev);
+	devmap = NetworkDevices::Current;
+
+	type = typ;
+	device = num;
+	operation = `edit;
+    }
+
+    /* general stuff */
+    description = BuildDescription (type, device, devmap, Hardware);
+    unique = devmap["UNIQUE"]:"";
+    startmode = devmap["STARTMODE"]:"manual";
+    usercontrol = devmap["USERCONTROL"]:"no" == "yes";
+
+    /* DSL settings */
+    vpivci = devmap["VPIVCI"]:"";
+    modemip = devmap["MODEM_IP"]:"10.0.0.138";
+    pppmode = devmap["PPPMODE"]:"";
+    interface = devmap["DEVICE"]:"";
+    PPPDoptions = devmap["PPPD_OPTIONS"]:"";
+
+    /* provider settings */
+    Provider::Name = devmap["PROVIDER"]:"";
+
+    /* ppp mode heuristics */
+    if(pppmode == nil || pppmode == "") {
+	string country = Provider::GetCountry ();
+	y2debug("country=%1", country);
+
+	map pppmodes = $[
+	    "AT" : "pptp",
+	    "CZ" : "pptp",
+	    "DE" : "pppoe",
+	    "GB" : "pppoatm",
+	    "CA" : "pppoe",
+	];
+	pppmode = pppmodes[country]:"pppoe";
+    }
+
+    return true;
+}
+
+/**
+ * Add a new device
+ * @return true if success
+ */
+global define boolean Add() {
+    operation = nil;
+    if(Select("") != true) return false;
+    NetworkDevices::Add();
+    operation = `add;
+    return true;
+}
+
+/**
+ * Edit the given device
+ * @param name device to edit
+ * @return true if success
+ */
+global define boolean Edit(string name) {
+    operation = nil;
+    if(Select(name) != true) return false;
+    NetworkDevices::Edit(name);
+    operation = `edit;
+    return true;
+}
+
+/**
+ * Delete the given device
+ * @param name device to delete
+ * @return true if success
+ */
+global define boolean Delete(string name) {
+    operation = nil;
+    if(Select(name) != true) return false;
+    NetworkDevices::Delete(name);
+    operation = `delete;
+    return true;
+}
+
+/**
+ * Commit the pending operation
+ * @return true if success
+ */
+global define boolean Commit() {
+    y2debug("Commit(%1)",operation);
+
+    if(operation == `add || operation == `edit) {
+	map<string,any> newdev = $[
+	    "STARTMODE"	: startmode,
+	    "USERCONTROL": usercontrol? "yes": "no",
+	    "BOOTPROTO"	: "none",
+	    "UNIQUE"	: unique,
+	    "NAME"	: description,
+	    "PPPMODE"		: pppmode,
+	    "PROVIDER"		: Provider::Name,
+	    // "PROVIDER_NAME"	: Provider::Current["PROVIDER"]:"",
+	    "PPPD_OPTIONS"	: PPPDoptions,
+	];
+	newdev["DEVICE"] = interface;
+	newdev["VPIVCI"] = vpivci;
+	newdev["MODEM_IP"] = modemip;
+
+	NetworkDevices::Name = NetworkDevices::device_name(type, device);
+	NetworkDevices::Current = newdev;
+	NetworkDevices::Commit();
+    }
+    else if(operation == `delete) {
+	NetworkDevices::Commit();
+    }
+    else {
+	y2error("Unknown operation: %1", operation);
+	return false;
+    }
+
+    modified = true;
+    operation = nil;
+    return true;
+}
+
+/**
+ * Propose a configuration
+ * @return true if something was proposed
+ */
+global define boolean Propose() {
+
+    y2milestone("Hardware=%1", Hardware);
+
+    /*
+    y2milestone("Devices=%1", Devices);
+
+    /* Something is already configured -> do nothing * /
+    if(size(Devices) > 0) {
+	y2milestone("Something already configured: don't propose.");
+	return false;
+    }
+    */
+
+    Add();
+
+    return true;
+}
+
+/**
+ * Import data
+ * @param settings settings to be imported
+ * @return true on success
+ */
+global define boolean Import(map settings) {
+    NetworkDevices::Import("dsl", settings["devices"]:$[]);
+    Provider::Import("dsl", settings["providers"]:$[]);
+    return true;
+}
+
+/**
+ * Export data
+ * @return dumped settings (later acceptable by Import())
+ */
+global define map Export() {
+    return $[
+	"devices"	: NetworkDevices::Export("dsl"),
+	"providers"	: Provider::Export("dsl"),
+    ];
+}
+
+/**
+ * Create a textual summary and a list of unconfigured devices
+ * @param split split configured and unconfigured?
+ * @return summary of the current configuration
+ */
+global define list Summary(boolean split) {
+
+    list sum = BuildSummary("dsl", Hardware, split);
+    if(HWDetected != true) return sum;
+
+    string hwdet = Summary::DevicesList( [
+	"<li>" +
+	/* Summary label */
+	_("Unknown (PPPoE-style) DSL Device Detected") +
+	"</li>"
+    ]);
+    // FIXME: HW
+
+    y2milestone("hwdet=%1", HWDetected);
+    y2milestone("sum=%1", sum);
+    if(sum[0]:"" == Summary::DevicesList([]))
+	sum[0] = hwdet;
+    else
+	sum[0] = sum[0]:"" + hwdet;
+
+    return sum;
+}
+
+/**
+ * Create an overview table with all configured devices
+ * @return table items
+ */
+global define list Overview() {
+    return BuildOverview("dsl", Hardware);
+}
+
+/**
+ * Select the hardware component
+ * @param which index of the component
+ */
+global define void SelectHW(integer which) {
+    map sel = SelectHardware(Hardware, which);
+
+    pppmode = sel["pppmode"]:"capi-adsl";
+    startmode = sel["startmode"]:"manual";
+}
+
+global list<string> Packages() {
+    if(size(NetworkDevices::List("dsl")) < 1) return [];
+    return ["smpppd", "ppp", "pptp", "linux-atm-lib"];
+}
+
+/**
+ * Return true if the device is used by any DSL connection
+ * @param device device to be tested
+ * @return true if yes
+ */
+global define boolean UsesDevice(string device) {
+    return size(NetworkDevices::Locate("DEVICE", device)) > 0;
+}
+
+/* EOF */
+}

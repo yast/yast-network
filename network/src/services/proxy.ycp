@@ -1,0 +1,258 @@
+/**
+ * File:	include/network/services/proxy.ycp
+ * Package:	Network configuration
+ * Summary:	Proxy configuration
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Hostname";
+import "Label";
+import "Mode";
+import "Popup";
+import "Proxy";
+import "URL";
+import "Wizard";
+
+include "network/routines.ycp";
+
+/**
+ * Display popup at the end of the proxy configuration
+ * @param modified true if proxy settings have been modified
+ */
+define void ProxyFinishPopup(boolean modified) ``{
+
+    /* Popup text */
+string text = _("Applications that support it, such as YaST2 Online Update,
+use them immediately. Other applications use them after a new login
+(lynx, wget). Some applications, like Mozilla, do not support these settings
+at all--they use their own settings system.
+");
+
+    FinishPopup(modified, "proxy", text, "", []);
+}
+
+/**
+ * Proxy dialog
+ * @param standalone true if not run from another ycp client
+ * @return dialog result
+ */
+define any ProxyMainDialog(boolean standalone) ``{
+
+    ScreenName("proxy");
+
+    boolean enabled = Proxy::enabled;
+    string http = Proxy::http;
+    string ftp = Proxy::ftp;
+    string no = Proxy::no;
+    string user = Proxy::user;
+    string pass = Proxy::pass;
+
+    /* String to pre-filled into the proxy server field */
+    string prefill = "http://";
+
+    if(http == "") http = prefill;
+    if(ftp == "") ftp = prefill;
+
+    /* Proxy dialog caption */
+    string caption = _("Proxy Configuration");
+
+    /* Proxy dialog help 1/5 */
+    string help = _("<p>Here, configure your Internet proxy (caching) settings.</p>") +
+
+    /* Proxy dialog help 2/5 */
+    _("<p><b>HTTP Proxy URL</b> is the name of the proxy server for your access
+to the World Wide Web (WWW).</p>
+") +
+
+    /* Proxy dialog help 2.5/5 */
+    _("<p>Example: <i>http://proxy.example.com:3128/</i></p>") +
+
+    /* Proxy dialog help 3/5 */
+    _("<p><b>FTP Proxy URL</b> is the name of the proxy server for your access
+to the file transfer services (FTP).</p>") +
+
+    /* Proxy dialog help 4/5 */
+    sformat (_("<p><b>No Proxy Domains</b> is a comma-separated list of domains
+for which the requests should be made directly without caching,
+for example, <i>%1</i>.</p>
+"),
+	     "localhost, .intranet.example.com, www.example.com") +
+
+    /* Proxy dialog help 5/5 */
+    _("<p>If you are using a proxy server with authorization, enter
+<b>Proxy User Name</b> and <b>Proxy Password</b>.</p>
+");
+
+    /* Proxy dialog contents */
+    term contents = `HBox(
+	`HSpacing(6),
+	`VBox(
+	/* CheckBox entry label */
+	`Left(`CheckBox(`id(`enabled), `opt(`notify), _("&Enable Proxy"), enabled)),
+	`VSpacing(1),
+	/* Frame label */
+	`Frame(`id(`frame), _("Proxy Settings"), `HBox(`HSpacing(2), `VBox(
+	    `VSpacing(1),
+	    /* Text entry label */
+	    `TextEntry(`id(`http), _("&HTTP Proxy URL"), http),
+	    `VSpacing(0.2),
+	    /* Text entry label */
+	    `TextEntry(`id(`ftp), _("F&TP Proxy URL"), ftp),
+	    `VSpacing(0.2),
+	    /* Text entry label */
+	    // domains without proxying
+	    `TextEntry(`id(`no), _("No Proxy &Domains"), no),
+	    `VSpacing(0.2),
+	    /* Text entry label */
+	    `TextEntry(`id(`user), _("Proxy &User Name"), user),
+	    `VSpacing(0.2),
+	    /* Password entry label */
+	    `Password(`id(`pass), _("Proxy &Password"), pass),
+	    `VSpacing(1)
+	    ), `HSpacing(2)))
+	),
+	`HSpacing(6)
+    );
+
+    if(standalone == true)
+	Wizard::SetContentsButtons(caption, contents, help,
+		Label::BackButton(), Label::FinishButton());
+    else
+	Wizard::SetContentsButtons(caption, contents, help,
+		Label::BackButton(), Label::OKButton());
+
+    string ValidCharsUsername = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:_-/\\";
+    UI::ChangeWidget(`id(`http), `ValidChars, URL::ValidChars);
+    UI::ChangeWidget(`id(`ftp), `ValidChars, URL::ValidChars);
+    UI::ChangeWidget(`id(`no), `ValidChars, Hostname::ValidCharsDomain + " ,");
+    UI::ChangeWidget(`id(`user), `ValidChars, ValidCharsUsername);
+    UI::ChangeWidget(`id(`frame), `Enabled, enabled);
+
+    if(enabled == true) UI::SetFocus(`id(`http));
+    else UI::SetFocus(`id(`enabled));
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel || ret == `back) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	if(ret == `enabled) {
+	    enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
+	    UI::ChangeWidget(`id(`frame), `Enabled, enabled);
+	    continue;
+	}
+	/* next */
+	else if(ret == `next) {
+
+	    enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
+	    if(enabled == false) break;
+
+	    http = (string) UI::QueryWidget(`id(`http), `Value);
+	    ftp = (string) UI::QueryWidget(`id(`ftp), `Value);
+	    user = (string) UI::QueryWidget(`id(`user), `Value);
+	    pass = (string) UI::QueryWidget(`id(`pass), `Value);
+
+	    /* check_* */
+	    if(user == "" && pass != "") {
+		/* Popup::Error text */
+		Popup::Error(_("You cannot enter a password and leave the user name empty."));
+		UI::SetFocus(`id(`user));
+		continue;
+	    }
+	    if(http != "" && http != prefill) {
+		if(!URL::Check(http)) {
+		    /* Popup::Error text */
+		    Popup::Error(_("HTTP proxy URL is invalid."));
+		    UI::SetFocus(`id(`http));
+		    continue;
+		}
+		map urlmap = URL::Parse(http);
+		if(urlmap["scheme"]:"" == "") {
+		    /* Popup::Error text */
+		    Popup::Error(_("HTTP proxy URL must contain a scheme specification (http)."));
+		    UI::SetFocus(`id(`http));
+		    continue;
+		}
+	    }
+	    if(ftp != "" && ftp != prefill) {
+		if(!URL::Check(ftp)) {
+		    /* Popup::Error text */
+		    Popup::Error(_("FTP proxy URL is invalid."));
+		    UI::SetFocus(`id(`ftp));
+		    continue;
+		}
+		map urlmap = URL::Parse(ftp);
+		if(urlmap["scheme"]:"" == "") {
+		    /* Popup::Error text */
+		    Popup::Error(_("FTP proxy URL must contain a scheme specification (http)."));
+		    UI::SetFocus(`id(`ftp));
+		    continue;
+		}
+	    }
+	    break;
+	}
+	/* back */
+	else if(ret == `back) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    if(ret == `next) {
+
+	enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
+	if(enabled) {
+	    http = (string) UI::QueryWidget(`id(`http), `Value);
+	    ftp = (string) UI::QueryWidget(`id(`ftp), `Value);
+	    no = (string) UI::QueryWidget(`id(`no), `Value);
+	    list<string> no_list = splitstring (no, " ,");
+	    no_list = filter (string no_i, no_list, ``( no_i != "") );
+	    no = mergestring (no_list, ", ");
+	    user = (string) UI::QueryWidget(`id(`user), `Value);
+	    pass = (string) UI::QueryWidget(`id(`pass), `Value);
+
+	    if(http == prefill) http = "";
+	    if(ftp == prefill) ftp = "";
+	}
+
+	if(Proxy::http == http && Proxy::ftp == ftp && Proxy::no == no &&
+		Proxy::user == user && Proxy::pass == pass &&
+		Proxy::enabled == enabled) {
+
+	    y2debug("not modified");
+	    return ret;
+	}
+
+	Proxy::enabled = enabled;
+	if(enabled) {
+	    Proxy::http = http;
+	    Proxy::ftp = ftp;
+	    Proxy::no = no;
+	    Proxy::user = user;
+	    Proxy::pass = pass;
+	}
+
+	Proxy::modified = true;
+	if (!Mode::config ())
+		ProxyFinishPopup(true);
+    }
+
+    return ret;
+}
+
+/* EOF */
+}

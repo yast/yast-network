@@ -1,0 +1,301 @@
+/**
+ * File:	include/network/routines.ycp
+ * Package:	Network configuration
+ * Summary:	Miscellaneous routines
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Call";
+import "Popup";
+import "Progress";
+import "String";
+
+/**
+ * Abort function
+ * @return blah blah lahjk
+ */
+define boolean Abort() {
+    import "Mode";
+    if(Mode::commandline ()) return false;
+    return UI::PollInput() == `abort;
+
+    /* FIXME: NI
+    if(AbortFunction != nil)
+	return eval(AbortFunction) == true;
+    */
+    return false;
+}
+
+/**
+ * Check for pending Abort press
+ * @return true if pending abort
+ */
+define boolean PollAbort() {
+    return UI::PollInput() == `abort;
+}
+
+/**
+ * If modified, ask for confirmation
+ * @return true if abort is confirmed
+ */
+define boolean ReallyAbort() {
+    return Popup::ReallyAbort(true);
+
+    /* FIXME: NI
+    return !Modified() || Popup::ReallyAbort(true);
+    */
+}
+
+/**
+ * If modified, ask for confirmation
+ * @param modified true if modified
+ * @return true if abort is confirmed
+ */
+define boolean ReallyAbortCond(boolean modified) {
+    return (!modified) || Popup::ReallyAbort(true);
+
+    /* FIXME: NI
+    return (!modified && !Modified()) || Popup::ReallyAbort(true);
+    */
+}
+
+/**
+ * Set screen shot name
+ * @param name screenshot name
+ */
+define void ScreenName(string name) {
+    if(name != "" && name != nil)
+	UI::SetModulename(/* "network/" + */ name);
+}
+
+/**
+ * Progress::NextStage and Progress::Title combined into one function
+ * @param title progressbar title
+ */
+define void ProgressNextStage(string title) {
+    Progress::NextStage();
+    Progress::Title(title);
+}
+
+/**
+ * Change UI widget only if it exists
+ * @param id widget id
+ * @param param widget parameter
+ * @param value widget parameter value
+ */
+define void ChangeWidgetIfExists(term id, symbol param, any value) {
+    if(UI::WidgetExists(id))
+	UI::ChangeWidget(id, param, value);
+    else
+	y2debug("Not changing: %1", id);
+}
+
+/**
+ * Query UI widget only if it exists
+ * @param id widget id
+ * @param param widget parameter
+ * @param value previous parameter value
+ * @return widget value if exists, previous value otherwise
+ */
+define any QueryWidgetIfExists(term id, symbol param, any value) {
+    if(UI::WidgetExists(id))
+	return UI::QueryWidget(id, param);
+    y2debug("Not changing: %1", id);
+    return value;
+}
+
+/**
+ * Check if required packages are installed and install them if they're not
+ * @param packages list of required packages (["rpm", "bash"])
+ * @return `next if packages installation is successfull, `abort otherwise
+ */
+define symbol PackagesInstall(list<string> packages) {
+    if(size(packages) < 1) return `next;
+    y2debug("Checking packages: %1", packages);
+
+    import "Require";
+    if(Require::AreAllPackagesInstalled(packages)) return `next;
+
+    /* Popup text */
+    string text = _("These packages need to be installed:") + "<p>";
+    foreach(string l, packages, { text = text + sformat("%1<br>",l); });
+    y2debug("Installing packages: %1", text);
+
+    boolean ret = false;
+    while(true) {
+	ret = Require::RequireAndConflict(packages, [], text);
+	if(ret == true) break;
+
+	if(ret == false && Require::AreAllPackagesInstalled(packages)) {
+	    ret = true;
+	    break;
+	}
+
+	/* Popup text */
+	if(!Popup::YesNo(_("The required packages are not installed.
+The configuration will be aborted.
+
+Try again?
+") + "
+"))
+	    break;
+    }
+
+    return ret == true ? `next : `abort;
+}
+
+/**
+ * Create comment for changed file
+ * @param modul YaST2 module changing the file
+ * @return comment
+ * @example ChangedComment("lan") -> # Changed by YaST2 module lan 1.1.2000"
+ */
+define string ChangedComment(string modul) {
+    string ret = "\n# Changed by YaST2";
+    if(modul != nil && modul != "") ret = ret + " module " + modul;
+    map out = (map)SCR::Execute(.target.bash_output, "/bin/date '+%x'");
+    string date = out["stdout"]:"";
+    if(date != "") ret = ret + " " + date;
+    return ret;
+}
+
+/**
+ * Show busy popup (for proposal)
+ * @param message label to be shown
+ */
+define void BusyPopup(string message) {
+    UI::BusyCursor();
+    UI::OpenDialog(`VBox(`Label(message)));
+}
+
+/**
+ * Close busy popup
+ * @see BusyPopup
+ */
+define void BusyPopupClose() {
+    UI::CloseDialog();
+}
+
+/**
+ * Create a list of items for UI from the given list
+ * @param l given list for conversion
+ * @param selected selected item (0 for the first)
+ * @return a list of items
+ * @example [ "x", "y" ] -&gt; [ `item(`id(0), "x"), `item(`id(1), "y") ]
+ */
+define list list2items(list l, integer selected) {
+    list items = [];
+    integer n = 0;
+    foreach(any i, l, {
+	items = add(items, `item(`id(n), i, n == selected));
+	n = n + 1;
+    });
+    return items;
+}
+
+/**
+ * Create a list of items for UI from the given hardware list.
+ *
+ * This list is used when selecting <ol>
+ * <li> detected unconfigured cards,
+ * there we want to see the link status </li>
+ * <li> undetected cards manually. there is no link status there
+ * and it won't be displayed. all is ok. </li>
+ * </ol>
+ * @param l given list for conversion
+ * @param selected selected item (0 for the first)
+ * @return a list of items
+ */
+define list hwlist2items(list<map> l, integer selected) {
+    // Translators: Appended after a network card name to indicate that
+    // there is no carrier, no link to the network, the cable is not
+    // plugged in. Preferably a short string.
+    string nolink = _("unplugged");
+
+    list items = [];
+    integer n = 0;
+    foreach(map i, l, {
+	/* Table field (Unknown device) */
+	string hwname = i["name"]:_("Unknown");
+	string label = hwname + (i["link"]:nil == false ?
+				 sformat (" (%1)", nolink) : "");
+	integer num = i["num"]:n;
+	items = add(items, `item(`id(num), hwname, num == selected));
+	n = n + 1;
+    });
+    return items;
+    //return list2items(maplist(map h, l, { return h["name"]:_("Unknown Device"); }), selected);
+}
+
+/**
+ * Display the finished popup and possibly run another module.
+ * If not modified, don't do anything.
+ * @param modified true if there are any modified data
+ * @param head headline to be shown
+ * @param text text to be shown
+ * @param run module to be run
+ * @param params parameters to pass to the module
+ * @return always `next
+ */
+define symbol FinishPopup(boolean modified, string head, string text, string run, list params) {
+
+    if(!modified) return `next;
+
+    string h = head;
+    if(h == nil || h == "")
+	/* Popup headline */
+	h = _("Configuration Successfully Saved");
+
+    map heads = $[
+	/* Popup headline */
+	"dns"		: _("DNS Configuration Successfully Saved"),
+	/* Popup headline */
+	"dsl"		: _("DSL Configuration Successfully Saved"),
+	/* Popup headline */
+	"host"		: _("Hosts Configuration Successfully Saved"),
+	/* Popup headline */
+	"isdn"		: _("ISDN Configuration Successfully Saved"),
+	/* Popup headline */
+	"lan"		: _("Network Card Configuration Successfully Saved"),
+	/* Popup headline */
+	"modem"		: _("Modem Configuration Successfully Saved"),
+	/* Popup headline */
+	"proxy"		: _("Proxy Configuration Successfully Saved"),
+	/* Popup headline */
+	"provider"	: _("Provider Configuration Successfully Saved"),
+	/* Popup headline */
+	"routing"	: _("Routing Configuration Successfully Saved"),
+    ];
+    h = heads[head]:h;
+
+    string t = text;
+    map texts = $[
+	/* Popup text */
+	"mail"	: _("Configure mail now?"),
+    ];
+    if(t == "")
+	t = texts[run]:text;
+    if(t == "")
+	/* Popup text */
+	t = sformat(_("Run configuration of %1?"), run);
+
+    any ret = nil;
+    if(run != "") {
+	ret = Popup::YesNoHeadline(h, t);
+	/* FIXME: check for the module presence */
+	if(ret == true) Call::Function(run, params);
+    }
+    else
+	ret = Popup::AnyMessage(h, t);
+
+    return `next;
+}
+
+/* EOF */
+}

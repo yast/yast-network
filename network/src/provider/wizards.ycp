@@ -1,0 +1,191 @@
+/**
+ * File:	include/network/provider/wizards.ycp
+ * Package:	Network configuration
+ * Summary:	Provider configuration wizards
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Wizards definitions.
+ */
+
+{
+
+textdomain "network";
+
+import "Label";
+import "Sequencer";
+import "Wizard";
+
+include "network/provider/complex.ycp";
+include "network/provider/connection.ycp";
+include "network/provider/details.ycp";
+include "network/provider/dialogs.ycp";
+include "network/provider/provider.ycp";
+
+/**
+ * Workflow of the configuration of one modem
+ * @param country true if country list should be shown
+ * @return sequence result
+ */
+define symbol OneProviderSequence(boolean country) ``{
+
+    map aliases = $[
+	"providers"		: ``(ProvidersDialog(false)),
+	"provider"		: ``(ProviderDialog()),
+	"new_provider"		: ``(ProviderDialog()),
+	"connection"		: ``(ConnectionDialog()),
+	"ipdetails"		: ``(IPDetailsDialog()),
+	"commit"		: [ ``(CommitProvider()), true ],
+    ];
+
+    string entry = "provider";
+    if(country) entry = "providers";
+
+    map sequence = $[
+	"ws_start" : entry,
+	"providers" : $[
+	    `next   : "provider",
+	    `new    : "new_provider",
+	    `abort  : `abort
+	],
+	"provider" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"new_provider" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"connection" : $[
+	    `IPDetails	: "ipdetails",
+	    `next   : "commit",
+	    `abort  : `abort
+	],
+	"ipdetails" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"commit" : $[
+	    `next   : `next,
+	],
+    ];
+
+    return Sequencer::Run(aliases, sequence);
+}
+
+/**
+ * Main workflow of the modem configuration
+ * @return sequence result
+ */
+define symbol MainSequence() ``{
+
+    map aliases = $[
+	"summary"	: ``(SummaryDialog()),
+	"overview"	: ``(OverviewDialog()),
+	"type"		: ``(TypeDialog()),
+	"add"		: [ ``(OneProviderSequence(true)), true ],
+	"edit"		: [ ``(OneProviderSequence(false)), true ],
+	"configure"	: [ ``(OneProviderSequence(true)), true ],
+    ];
+
+    map sequence = $[
+	"ws_start" : "summary",
+	"summary" : $[
+	    `abort	: `abort,
+	    `next	: `next,
+	    `configure	: "configure",
+	    `overview	: "overview"
+	],
+	"overview" : $[
+	    `abort	: `abort,
+	    `next	: `next,
+	    `add	: "type",
+	    `edit	: "edit",
+	],
+	"configure" : $[
+	    `abort	: `abort,
+	    `next	: "summary",
+	],
+	"type" : $[
+	    `abort	: `abort,
+	    `next	: "add",
+	],
+	"add" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+	"edit" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+    ];
+
+    return Sequencer::Run(aliases, sequence);
+}
+
+/**
+ * Whole configuration of modems
+ * @return sequence result
+ */
+define symbol ProviderSequence() ``{
+
+    /* Popup text */
+    string finished = _("Configure mail now?");
+
+    map aliases = $[
+	"read"	: [ ``( ReadDialog() ), true ],
+	"main"	:   ``( MainSequence() ),
+	"write"	: [ ``( WriteDialog() ), true ],
+    ];
+
+    map sequence = $[
+	"ws_start" : "read",
+	"read" : $[
+	    `abort	: `abort,
+	    `next	: "main"
+	],
+	"main" : $[
+	    `abort	: `abort,
+	    `next	: "write"
+	],
+	"write" : $[
+	    `abort	: `abort,
+	    `next	: `next,
+	],
+    ];
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("provider");
+
+    symbol ret = Sequencer::Run(aliases, sequence);
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/**
+ * Whole configuration of modems but without reading and writing.
+ * For use with autoinstallation.
+ * @return sequence result
+ */
+define symbol ProviderAutoSequence() ``{
+
+    /* Initial dialog caption */
+    string caption = _("Provider Configuration");
+    /* Initial dialog contents */
+    term contents = `Label(_("Initializing..."));
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("provider");
+    Wizard::SetContentsButtons(caption, contents, "",
+	    Label::BackButton(), Label::NextButton());
+
+    symbol ret = MainSequence();
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/* EOF */
+}

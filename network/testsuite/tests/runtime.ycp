@@ -1,0 +1,93 @@
+{
+
+// testedfiles: runtime.ycp Testsuite.ycp
+
+include "testsuite.ycp";
+
+map READ = $[
+    "init" : $[
+	"scripts" : $[ "exists" : true ]
+    ],
+    "probe" : $[
+	"system" : [],
+    ],
+    "product" : $[
+        "features" : $[
+            "USE_DESKTOP_SCHEDULER" : "0",
+            "ENABLE_AUTOLOGIN" : "0",
+            "EVMS_CONFIG" : "0",
+            "IO_SCHEDULER" : "cfg",
+            "UI_MODE" : "expert",
+        ],
+    ],
+    "sysconfig": $[
+        "language" : $[
+            "RC_LANG" : "",
+            "DEFAULT_LANGUAGE" : "",
+	    "ROOT_USES_LANG" : "no",
+        ],
+	"console" : $[
+	    "CONSOLE_ENCODING" : "UTF-8",
+	],
+    ],
+    "target" : $[
+	"size" : 1,
+    ],
+];
+
+map EXEC = $["target": $["bash_output": $[] ] ];
+
+TESTSUITE_INIT([READ, $[], EXEC], nil);
+include "network/runtime.ycp";
+
+map EXEC0 = $[
+    "target" : $[
+	"bash" : 0,
+	"bash_background" : 0,
+	"bash_output" : $[
+	    "exit"	: 0,
+	    "stdout"	: "",
+	    "stderr"	: "",
+	],
+    ],
+];
+
+map EXEC1 = $[
+    "target" : $[
+	"bash" : 1,
+	"bash_background" : 1,
+	"bash_output" : $[
+	    "exit"	: 1,
+	    "stdout"	: "",
+	    "stderr"	: "Dummy error message",
+	],
+    ],
+];
+
+DUMP("ReadStatus");
+TEST(``(ReadStatus()), [], nil);
+
+DUMP("RunSuSEconfig");
+TEST(``(RunSuSEconfig()), [$[],$[],EXEC0], nil);
+TEST(``(RunSuSEconfig()), [$[],$[],EXEC1], nil);
+
+DUMP("RunSuSEconfigModule");
+TEST(``(RunSuSEconfigModule("postfix")), [$[],$[],EXEC0], nil);
+TEST(``(RunSuSEconfigModule("postfix")), [$[],$[],EXEC1], nil);
+
+import "NetworkDevices";
+NetworkDevices::Devices = $[ "dsl" : $[ "0" : $[] ]];
+
+DUMP("RunKInternet");
+TEST(``(RunKInternet()), [READ,$[],EXEC0], nil);
+TEST(``(RunKInternet()), [READ,$[],EXEC1], nil);
+
+DUMP("StopNetwork");
+TEST(``(StopNetwork()), [READ,$[],EXEC0], nil);
+TEST(``(StopNetwork()), [READ,$[],EXEC1], nil);
+
+DUMP("SetupSMPPPD");
+TEST(``(SetupSMPPPD()), [READ,$[],EXEC0], nil);
+TEST(``(SetupSMPPPD()), [READ,$[],EXEC1], nil);
+
+}

@@ -1,0 +1,313 @@
+/**
+ * File:	include/network/provider/connection.ycp
+ * Package:	Network configuration
+ * Summary:	Connection configuration dialogs
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "DSL";
+import "IP";
+import "ISDN";
+import "Label";
+import "NetworkDevices";
+import "Modem";
+import "Popup";
+import "Provider";
+import "SuSEFirewall4Network";
+import "Wizard";
+
+/**
+ * Connection dialog
+ * @return dialog result
+ */
+define any ConnectionDialog() {
+
+    ScreenName("provider-connection");
+
+    string type = Provider::Type;
+
+    /* PREPARE VARIABLES */
+    string Provider = Provider::Current["PROVIDER"]:"";
+
+    boolean demand = Provider::Current["DEMAND"]:"no" == "yes";
+    boolean stupidmode = Provider::Current["STUPIDMODE"]:"no" == "yes";
+
+    boolean modifydns = Provider::Current["MODIFYDNS"]:"yes" == "yes";
+    boolean autodns = Provider::Current["AUTODNS"]:"yes" == "yes";
+
+    string DNS1 = Provider::Current["DNS1"]:"";
+    string DNS2 = Provider::Current["DNS2"]:"";
+
+    string idletime = Provider::Current["IDLETIME"]:"300";
+
+    string device = nil;
+    if(type == "modem") device = NetworkDevices::device_name(Modem::type, Modem::device);
+    else if(type == "dsl") device = NetworkDevices::device_name(DSL::type, DSL::device);
+    else if(type == "isdn") {
+	// FIXME: #18840
+	if(ISDN::type == "net")
+	    device = NetworkDevices::device_name("ippp", ISDN::device);
+	else
+	    device = NetworkDevices::device_name(ISDN::type, ISDN::device);
+    }
+    else {
+	y2error("Unknown type: %1", type);
+	return nil;
+    }
+
+    y2debug("device %1", device);
+    boolean FirewallChecked = SuSEFirewall4Network::IsProtectedByFirewall (device);
+    y2debug("FirewallChecked=%1", FirewallChecked);
+
+    /* DIALOG TEXTS */
+
+    /* Connection dialog caption */
+    string caption = _("Connection Parameters");
+
+    /* Connection dialog help 1/8 */
+    string helptext = _("<p><b>Dial on Demand</b> means that the Internet
+connection will be established automatically when data from the Internet is
+requested. To use this feature, specify at least one <i>name server</i>. Use
+this feature only if your Internet connection is inexpensive, because there are
+programs that periodically request data from the Internet.</p>") +
+
+    /* Connection dialog help 2/8 */
+_("<p>When <b>Modify DNS</b> is enabled, the <i>name server</i> will be
+changed automatically when connected to the Internet.</p>") +
+
+    /* Connection dialog help 3/8 */
+_("<p>If the provider does not transmit its domain name server (DNS)
+after connecting, disable <b>Automatically Retrieve DNS</b> and
+manually enter the DNS.</p>") +
+
+    /* Connection dialog help 4/8 */
+_("<p><b>Name Servers</b> are required to convert host names
+(e.g., www.suse.com) to IP addresses (e.g., 213.95.15.200). You only
+need to specify the name servers if you enable <i>dial on demand</i> or
+disable <b>DNS Modification</b> when connected.</p>
+");
+
+    if (type == "modem")
+	helptext = helptext +
+    /* Connection dialog help 5/8 */
+_("<p><b>Stupid Mode</b> disables the detection of any prompts from the dial-up
+server. If the connection build-up is slow or does not work at all, try this
+option.</p>
+");
+
+    helptext = helptext +
+    /* Connection dialog help 6/8 */
+_("<p>Selecting <b>External Firewall Interface</b> activates the firewall
+and sets this interface as external.
+Choosing this option makes dial-up connections
+to the Internet safe from external attacks.</p>") +
+
+    /* Connection dialog help 7/8 */
+_("<p>The <b>Idle Time-Out</b> specifies the time after which an idle
+connection will be shut down (0 means the connection will not time-out).</p>
+");
+
+    // if(type == "isdn")
+
+	/* FIXME Connection dialog help 7/8 */
+	// helptext = helptext + _("<p><b>Connection details</b> help FIXME</p>") +
+
+	/* FIXME Connection dialog help 8/8 */
+	// _("<p><b>IP details</b> help FIXME</p>");
+
+    /* DIALOG CONTENTS */
+
+    list seconds = [ "0", "30", "60", "90", "120", "150", "180", "240", "300", "360", "480", "600" ];
+    if(!contains(seconds, idletime))
+	seconds = add(seconds, idletime);
+
+    seconds = maplist(string e, (list<string>) seconds, {
+	return `item(`id(sformat("%1", e)), sformat("%1", e), e == idletime);
+    });
+
+    /* Checkbox label */
+    // this is an external interface protected by the firewall
+    term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("External Fire&wall Interface"), FirewallChecked));
+    if(type == "isdn") FirewallCheckbox = `VSpacing(0);
+
+    term StupidMode = `VSpacing(0.1);
+    if (type == "modem")
+	/* Checkbox label */
+	StupidMode = `Left(`CheckBox(`id(`stupidmode), _("S&tupid Mode"), stupidmode));
+
+    term details = `VSpacing(0.1);
+    // FIXME if(type == "isdn")
+    if(false)
+	details = `HBox(
+	    /* Push button label */
+	    `PushButton(`id(`Details), _("&Connection Details")),
+	    `HSpacing(0.5),
+	    /* Push button label */
+	    `PushButton(`id(`IPDetails), _("I&P Details"))
+	);
+    if(type != "isdn")
+	details = `HBox(
+	    /* Push button label */
+	    `PushButton(`id(`IPDetails), _("I&P Details"))
+	);
+
+    term contents = `HBox(
+	`HSpacing(6),
+	`VBox(
+	    `VSpacing(0.5),
+	    `Left(`HBox(
+		/* Label */
+		`Label(_("Provider:")),
+		`HSpacing(0.5),
+		`Label(`opt(`outputField), Provider)
+	    )),
+	    `VSpacing(0.5),
+	    `HBox(
+		`VBox(
+		    /* Checkbox label */
+		    `Left(`CheckBox(`id(`demand), `opt(`notify), _("Dial on D&emand"), demand)),
+		    /* Checkbox label */
+		    `Left(`CheckBox(`id(`modifydns), `opt(`notify), _("&Modify DNS When Connected"), modifydns)),
+		    /* Checkbox label */
+		    `Left(`CheckBox(`id(`autodns), `opt(`notify), _("&Automatically Retrieve DNS"), autodns))
+		 )
+	    ),
+	    `VSpacing(1),
+	    /* Frame label */
+	    `Frame(`id(`nameservers), _("Name Servers"),
+		`HBox(
+		    /* Text entry label */
+		    `TextEntry(`id(`DNS1), _("F&irst"), DNS1),
+		    `HSpacing(0.5),
+		    /* Text entry label */
+		    `TextEntry(`id(`DNS2), _("&Second"), DNS2)
+		)
+	    ),
+	    `VSpacing(1),
+	    StupidMode,
+	    FirewallCheckbox,
+	    `VSpacing(0.5),
+	    /* Combo box label */
+	    `Left(`ComboBox(`id(`idletime), `opt(`editable), _("I&dle Time-Out (seconds)"), seconds)),
+	    `VSpacing(1),
+	    details
+	),
+	`HSpacing(6)
+    );
+
+    /* DIALOG PREPARE */
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    Label::BackButton(), Label::NextButton());
+
+    UI::ChangeWidget(`id(`nameservers), `Enabled, modifydns && (demand || !autodns));
+
+    /* MAIN CYCLE */
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next || ret == `Details || ret == `IPDetails) {
+	    /* check_* */
+	    if(UI::QueryWidget(`id(`idletime), `Value) == "") {
+		/* Popup text */
+		Popup::Error(_("Set the idle time-out."));
+		UI::SetFocus(`id(`idletime));
+		continue;
+	    }
+	    if(modifydns && (demand || !autodns)) {
+		DNS1 = (string) UI::QueryWidget(`id(`DNS1), `Value);
+		DNS2 = (string) UI::QueryWidget(`id(`DNS2), `Value);
+		if(!(IP::Check4(DNS1))) {
+		    Popup::Error(_("The primary name server is invalid."));
+		    UI::SetFocus(`id(`DNS1));
+		    continue;
+		}
+		if(size(DNS2) > 0 && !IP::Check4(DNS2)) {
+		    Popup::Error(_("The secondary name server is invalid."));
+		    UI::SetFocus(`id(`DNS2));
+		    continue;
+		}
+	    }
+	    break;
+	}
+	else if(ret == `demand || ret == `modifydns || ret == `autodns) {
+	    demand = (boolean) UI::QueryWidget(`id(`demand), `Value);
+	    modifydns = (boolean) UI::QueryWidget(`id(`modifydns), `Value);
+	    autodns = (boolean) UI::QueryWidget(`id(`autodns), `Value);
+	    UI::ChangeWidget(`id(`nameservers), `Enabled, modifydns && (demand || !autodns));
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    /* UPDATE VARIABLES */
+
+    if(ret == `next || ret == `Details || ret == `IPDetails) {
+	demand = (boolean) UI::QueryWidget(`id(`demand), `Value);
+	modifydns = (boolean) UI::QueryWidget(`id(`modifydns), `Value);
+	autodns = (boolean) UI::QueryWidget(`id(`autodns), `Value);
+
+	/* update provider info */
+	Provider::Current = union(Provider::Current, $[
+	    "DEMAND" : demand ? "yes" : "no",
+	    "MODIFYDNS" : modifydns ? "yes" : "no",
+	    "AUTODNS" : autodns ? "yes" : "no",
+	    "IDLETIME" : UI::QueryWidget(`id(`idletime), `Value),
+	    "MODEMSUPPORTED" : type == "modem" ? "yes" : "no",
+	    "ISDNSUPPORTED" : type == "isdn" ? "yes" : "no",
+	    "DSLSUPPORTED" : type == "dsl" ? "yes" : "no"
+	]);
+	if (modifydns && (demand || !autodns))
+	    Provider::Current = union(Provider::Current, $[
+		"DNS1" : UI::QueryWidget(`id(`DNS1), `Value),
+		"DNS2" : UI::QueryWidget(`id(`DNS2), `Value),
+	    ]);
+
+	/* update provider type-specific info */
+	if (type == "modem")
+	    Provider::Current = union(Provider::Current, $[
+		"STUPIDMODE" : (boolean) UI::QueryWidget(`id(`stupidmode), `Value) ? "yes" : "no"
+	    ]);
+
+	/* update firewall info */
+	if(UI::WidgetExists(`id(`Firewall))) {
+
+	    /* Update /etc/sysconfig/firewall */
+	    if(FirewallChecked != UI::QueryWidget(`id(`Firewall), `Value)) {
+		FirewallChecked = (boolean) UI::QueryWidget(`id(`Firewall), `Value);
+		SuSEFirewall4Network::ProtectByFirewall (device, "EXT", FirewallChecked);
+	    }
+	}
+    }
+
+    return ret;
+}
+
+/**
+ * Connection details dialog
+ * @return dialog result
+ */
+define symbol ConnectionDetailsDialog() {
+    return `abort;
+}
+
+/* EOF */
+}

@@ -1,0 +1,354 @@
+/**
+ * File:	modules/DNS.ycp
+ * Package:	Network configuration
+ * Summary:	Hostname and DNS data
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Manages resolv.conf and (fully qualified) host name, also
+ * respecting DHCP.
+ */
+
+{
+
+module "DNS";
+textdomain "network";
+
+import "Detection";
+import "Host";
+import "Hostname";
+import "IP";
+import "NetworkConfig";
+import "NetworkDevices";
+
+// include "network/routines.ycp";
+include "network/runtime.ycp";
+
+/**
+ * Short Host Name
+ */
+global string hostname = "";
+
+/**
+ * Domain Name (not including the host part)
+ */
+global string domain = "";
+
+global list<string> nameservers = [];
+global list<string> searchlist = [];
+/**
+ * Name of program that has claimed resolv.conf
+ */
+global string resolv_conf_process = "";
+global boolean resolv_conf_force = false;
+
+string oldhostname = "";
+global list<string> oldhostnames = [];
+
+/**
+ * Data was modified?
+ */
+global boolean modified = false;
+
+/**
+ * resolver config file location
+ */
+string resolv_conf = "/etc/resolv.conf";
+
+/**
+ * True if DNS is already read
+ */
+boolean initialized = false;
+
+/**
+ * Reads current DNS and hostname settings
+ * Includes Host,NetworkConfig::Read
+ * @return true if success
+ */
+global define boolean Read() {
+
+    if(initialized == true) return true;
+
+    Host::Read();
+    NetworkConfig::Read();
+
+    /* install.inf from linuxrc */
+    map install_inf = $[];
+    if(SCR::Read(.target.size, "/etc/install.inf") > 0)
+	install_inf = (map) SCR::Read(.etc.install_inf);
+
+    /* check for externally modified resolv.conf */
+    if(SCR::Execute(.target.bash, "/sbin/modify_resolvconf check -q < /dev/null") != 0)
+	resolv_conf_process = (string) SCR::Read(.etc.resolv_conf.process);
+    else
+    {
+	resolv_conf_process = "";
+    }
+
+    /* only read /etc/resolv.conf if present */
+    if(SCR::Read(.target.size, resolv_conf) > 0) {
+
+	/* name servers */
+	list<string> resolvlist = (list<string>) SCR::Read(.etc.resolv_conf.nameserver);
+	if(resolvlist == nil) {
+	    if(size(install_inf["nameserver"]:"") > 0)
+		nameservers = add(nameservers, install_inf["nameserver"]:"");
+	}
+	else
+	    nameservers = resolvlist;
+
+	/* search list */
+	resolvlist = (list<string>) SCR::Read(.etc.resolv_conf.search);
+	if(resolvlist != nil) searchlist = resolvlist;
+	if(size(searchlist) < 1) {
+	    string dom = (string) SCR::Read(.etc.resolv_conf.domain);
+	    if(dom != nil && dom != "") searchlist = [ dom ];
+	}
+    }
+    else {
+	/* FIXME: propose DNS from Detection */
+	nameservers = [];
+	searchlist = [];
+    }
+
+    /* host name and domain */
+    string fqhostname = "";
+    if(SCR::Read(.target.size, "/etc/HOSTNAME") > 0) {
+	fqhostname = (string) SCR::Read(.target.string, "/etc/HOSTNAME");
+	fqhostname = substring(fqhostname, 0, findfirstof(fqhostname, "\n"));
+	oldhostname = fqhostname;
+    }
+
+    if(fqhostname != "") {
+	list split = Hostname::SplitFQ(fqhostname);
+	hostname = split[0]:"";
+	domain = split[1]:"";
+    }
+    else {
+	/* default hostname and domain (if not in /etc/install.inf) */
+	hostname = install_inf["machinename"]:(Detection::result["HOSTNAME"]:"linux");
+	domain = install_inf["domain"]:(Detection::result["DOMAIN"]:"site");
+    }
+
+    y2milestone("nameservers=%1", nameservers);
+    y2milestone("searchlist=%1", searchlist);
+    y2milestone("hostname=%1", hostname);
+    y2milestone("domain=%1", domain);
+
+    initialized = true;
+    return true;
+}
+
+/**
+ * Write new DNS and hostname settings
+ * Includes Host,NetworkConfig::Write
+ * @return true if success
+ */
+global define boolean Write() {
+
+    /* build FQ hostname */
+    string fqhostname = Hostname::MergeFQ(hostname, domain);
+
+// FIXME whrere was NetworkDevices::Read called?
+    /* Update /etc/hosts */
+    // Take static network addresses.
+    // Watch out, there may be an unused IPADDR for a DHCP interface, #49055
+    list<string> devs =
+	NetworkDevices::Locate ("BOOTPROTO", "static") +
+	NetworkDevices::Locate ("BOOTPROTO", ""); // static is the default
+    list<string> ips = maplist(string dev, devs, {
+	return NetworkDevices::GetValue(dev, "IPADDR");
+    });
+    Host::Update(oldhostname, fqhostname, ips);
+    Host::Write();
+    oldhostname = fqhostname;	// #49634
+
+    NetworkConfig::Write();
+
+    y2milestone("Writing configuration");
+    if(!modified) {
+	y2milestone("No changes to DNS -> nothing to write");
+	return true;
+    }
+
+    y2milestone("nameservers=%1", nameservers);
+    y2milestone("searchlist=%1", searchlist);
+    y2milestone("hostname=%1", hostname);
+    y2milestone("domain=%1", domain);
+
+    /* Allow to set hostname even if it's modified by DHCP (#13427)
+    if(NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false != true) { */
+
+	/* remember the X authorization key */
+	string xauth_key = (string) SCR::Read(.xauth.key);
+
+	/* change the hostname */
+	SCR::Execute(.target.bash, "/bin/hostname " + hostname);
+
+	/* write hostname */
+	SCR::Write(.target.string, "/etc/HOSTNAME", fqhostname + "\n");
+
+	/* Finish him */
+	RunSuSEconfig();
+
+	/* update X authorization */
+	SCR::Write(.xauth.key, xauth_key);
+
+    if(SCR::Read(.target.size, resolv_conf) < 0)
+	SCR::Write(.target.string, resolv_conf, "");
+
+    /* either no process or force update */
+    if(resolv_conf_process == "" || resolv_conf_force == true) {
+
+	/* update /etc/resolv.conf */
+	SCR::Write(.etc.resolv_conf.search, searchlist);
+	SCR::Write(.etc.resolv_conf.nameserver, nameservers);
+	/* update domain in /etc/resolv.conf */
+	if(size(searchlist) > 0)
+	    SCR::Write(.etc.resolv_conf.domain, "");
+	else
+	    SCR::Write(.etc.resolv_conf.domain, domain);
+
+	/* write only an original header */
+	if(resolv_conf_force == true &&
+		(NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false == true)) {
+	    SCR::Write(.etc.resolv_conf.write_header, true);
+	}
+
+	/* flush the cache */
+	SCR::Write(.etc.resolv_conf, nil);
+	SCR::Execute(.target.bash, "/bin/chmod a+r /etc/resolv.conf");
+
+    }
+
+    modified = false;
+    return true;
+}
+
+/**
+ * Get all the DNS configuration from a map.
+ * When called by dns_auto (preparing autoinstallation data)
+ * the map may be empty.
+ * @param settings autoinstallation settings
+ * @return true if success
+ */
+global define boolean Import(map settings) {
+    hostname = settings["hostname"]:"";
+    domain = settings["domain"]:"";
+    nameservers = (list<string>) eval(settings["nameservers"]:[]);
+    searchlist = (list<string>) eval(settings["searchlist"]:[]);
+    modified = true;
+    initialized = true;
+    return true;
+}
+
+/**
+ * Dump the DNS settings to a map, for autoinstallation use.
+ * @return autoinstallation settings
+ */
+global define map Export() {
+    map<string, any> expdns = $[];
+    if (size(hostname)>0)
+        expdns["hostname"] = hostname;
+    if (size(domain)>0)
+        expdns["domain"] = domain;
+    if (size(nameservers)>0)
+        expdns["nameservers"] = eval(nameservers);
+    if (size(searchlist) >0)
+        expdns["searchlist"] = eval(searchlist);
+    return expdns;
+}
+
+/**
+ * Create DNS text summary
+ * @return summary text
+ */
+global define string Summary() {
+
+    import "Summary";
+    string summary = "";
+
+    boolean has_dhcp = size (NetworkDevices::Locate ("BOOTPROTO", "dhcp")) > 0;
+
+    if (has_dhcp && NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false)
+	/* Summary text */
+	summary = Summary::AddListItem(summary, _("Host Name: Set by DHCP"));
+    else if(size(hostname) > 0)
+	/* Summary text */
+	summary = Summary::AddListItem(summary, sformat(_("Host Name: %1"), Hostname::MergeFQ(hostname, domain)));
+
+    if (has_dhcp && NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false) {
+	/* Summary text */
+	summary = Summary::AddListItem(summary, _("Name Servers: Set by DHCP"));
+	/* Summary text */
+	summary = Summary::AddListItem(summary, _("Search List: Set by DHCP"));
+    }
+    else {
+	list<string> nslist = maplist(string ns, nameservers, {
+	    string nss = Detection::ResolveIP(ns);
+	    return (nss == "") ? ns : (ns + " (" + nss + ")");
+	});
+
+	if(size(nslist) > 0)
+	    /* Summary text */
+	    summary = Summary::AddListItem(summary, sformat(_("Name Servers: %1"), mergestring(nslist, ", ")));
+	if(size(searchlist) > 0)
+	    /* Summary text */
+	    summary = Summary::AddListItem(summary, sformat(_("Search List: %1"), mergestring(searchlist, ", ")));
+    }
+
+    if(size(summary) < 1) return "";
+    return "<ul>" + summary + "</ul>";
+}
+
+/**
+ * Check if host name or IP address is local computer
+ * Used to determine if LDAP server is local (and it should be checked if
+ *  required schemes are included
+ * Calls Read () function before querying any data
+ * @param check_host string host name or IP address to check
+ * @return boolean true if host name is local host
+ */
+global define boolean IsHostLocal (string check_host) {
+    Read ();
+    /* FIXME: May not work properly in following situations:
+	- multiple addresses per interface
+        - aliases in /etc/hosts
+	- host name or IP address is set through DHCP
+	- IPADDR=IP/24
+    */
+
+    // loopback interface
+    if (check_host == "127.0.0.1" || check_host == "::1")
+	return true;
+    // localhost host name
+    if (check_host == "localhost" || check_host == "localhost.localdomain")
+	return true;
+
+    // IPv4 address
+    if (IP::Check4 (check_host))
+    {
+	NetworkDevices::Read ();
+	return 0 != size (NetworkDevices::Locate ("IPADDR", check_host));
+    }
+    // IPv6 address
+    else if (IP::Check6 (check_host))
+    {
+	y2debug ("TODO make it similar to IPv4 after other code adapted to IPv6");
+    }
+    // short host name
+    else if (findfirstof (check_host, ".") == nil)
+    {
+	return tolower (check_host) == tolower (hostname);
+    }
+    // fully qualified host name
+    else
+    {
+	return tolower (check_host) == tolower (hostname + "." + domain);
+    }
+    return false;
+}
+
+/* EOF */
+}

@@ -1,0 +1,72 @@
+/**
+ * File:	clients/proxy.ycp
+ * Package:	Network configuration
+ * Summary:	Proxy client
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Main file for proxy configuration.
+ * Uses all other files.
+ */
+
+{
+
+textdomain "network";
+
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("Proxy module started");
+
+import "Label";
+import "Proxy";
+import "Wizard";
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+define boolean Modified() {
+    return Proxy::modified;
+}
+
+include "network/runtime.ycp";
+include "network/services/proxy.ycp";
+
+/* is this proposal or not? */
+boolean propose = false;
+list args = WFM::Args();
+if(size(args) > 0) {
+    if(is(WFM::Args(0), path) && WFM::Args(0) == .propose) {
+	y2milestone("Using PROPOSE mode");
+	propose = true;
+    }
+    else
+	y2error("Bad argument for proxy: %1",WFM::Args(0));
+}
+
+if (!propose) {
+    Proxy::Read();
+}
+
+Wizard::CreateDialog();
+Wizard::SetDesktopIcon("proxy");
+Wizard::SetNextButton(`next, Label::FinishButton() );
+
+/* main ui function */
+any ret = ProxyMainDialog(true);
+y2debug("ret == %1", ret);
+
+if(!propose && ret == `next && Proxy::modified) {
+    Proxy::Write();
+}
+
+UI::CloseDialog();
+
+/* Finish */
+y2milestone("Proxy module finished");
+y2milestone("----------------------------------------");
+return ret;
+
+/* EOF */
+}

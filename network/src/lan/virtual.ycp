@@ -1,0 +1,336 @@
+/**
+ * File:	include/network/lan/virtual.ycp
+ * Module:	Network configuration
+ * Summary:	Multiple addresses dialogs
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "IP";
+import "Label";
+import "Lan";
+import "Netmask";
+import "Popup";
+import "Wizard";
+
+include "network/routines.ycp";
+
+/*
+ * TODO:
+ * - bug: where to put Edit, Add?
+ * - bug: aliases to overview (add,edit,delete)
+ * - enh: more items (REMOTE_IPADDR, ...)
+ * - enh: disallow already used IP addresses?
+ * - enh: disallow already used IP addresses in lan?
+ */
+
+/*
+ * Check if given host is system and present warning in this case.
+ * @param host host to be checked
+ * @param delete true if the host will be deleted
+ * @return true if continue
+ * /
+defin boolean AliasSystemPopup(string host, boolean delete) {
+
+    if(!contains(Host::GetSystemHosts(), host)) return true;
+
+    /* Warning popup text 1/2 * /
+    string text = sformat(_("The host %1 is a system host.") + "\n", host);
+
+    if(delete)
+	/* Warning popup text 2/2 * /
+	text = text + _("Really delete it?");
+    else
+	/* Warning popup text 2/2 * /
+	text = text + _("Really change it?");
+
+    return Popup::AnyQuestion("", text, Label::YesButton(), Label::NoButton(), `focus_no);
+}
+*/
+
+define term VirtualEditDialog(integer id, term entry, list forbidden);
+
+/**
+ * Main aliases dialog
+ * @param standalone true if not run from another ycp client
+ * @return dialog result
+ */
+define any VirtualDialog(boolean standalone) {
+
+    ScreenName("lan-virtual");
+
+    /* Aliases dialog caption */
+    string caption = _("Additional Addresses");
+
+    /* Aliases dialog help 1/2 */
+    string help = _("<p>Configure additional addresses of an interface (its aliases) in this dialog.</p>") +
+
+    /* Aliases dialog help 2/2 */
+    _("<p>Enter an <b>Alias Name</b>, an <b>IP Address</b>, and
+the <b>Netmask</b>.</p>");
+
+    integer items = 0;
+    integer max = 0;
+    list<term> table_items = [];
+
+    /* make ui items from the aliases list */
+    maplist(string alias, map data, (map<string,map>) Lan::aliases, {
+	string ipaddr = data["IPADDR"]:"";
+	string netmask = data["NETMASK"]:"";
+	term item = `item(`id(items), alias, ipaddr, netmask);
+	table_items = add(table_items, item);
+	items = items + 1;
+    });
+
+    y2debug("table_items=%1", table_items);
+    y2debug("items=%1", items);
+    max = items;
+
+    /* Aliases dialog contents */
+    term contents = `HBox(
+	`HSpacing(5),
+	`VBox(
+	    `VSpacing(2),
+	    /* Frame label */
+	    `Frame(_("Additional Addresses"), `HBox(`HSpacing(3), `VBox(
+		`VSpacing(1),
+		`Table(`id(`table), `opt(`notify), `header(
+                    /* Table header label */
+                    _("Alias Name"),
+                    /* Table header label */
+                    _("IP Address"),
+                    /* Table header label */
+                    _("Netmask")), []),
+		`HBox(
+		    /* PushButton label */
+		    `PushButton(`id(`add), _("Ad&d")),
+		    /* PushButton label */
+		    `PushButton(`id(`edit), `opt(`disabled), _("&Edit")),
+		    /* PushButton label */
+		    `PushButton(`id(`delete), `opt(`disabled), _("De&lete"))),
+		`VSpacing(1)
+		), `HSpacing(3))),
+	    `VSpacing(2)
+	),
+	`HSpacing(5)
+    );
+
+    if(standalone == true)
+	Wizard::SetContentsButtons(caption, contents, help,
+		Label::BackButton(), Label::FinishButton());
+    else
+	Wizard::SetContentsButtons(caption, contents, help,
+		Label::BackButton(), Label::OKButton());
+
+    UI::ChangeWidget(`id(`table), `Items, table_items);
+    if(items > 0) UI::SetFocus(`id(`table));
+
+    any ret = nil;
+    while(true) {
+
+	UI::ChangeWidget(`id(`edit), `Enabled, items > 0);
+	UI::ChangeWidget(`id(`delete), `Enabled, items > 0);
+
+	ret = UI::UserInput();
+	y2milestone("ret=%1", ret);
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* edit alias */
+	else if(ret == `edit || ret == `table) {
+	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
+	    list<term> cur_item = filter(term e, table_items, { return cur == e[0, 0]:nil; });
+
+	    y2debug("cur=%1", cur);
+	    y2debug("cur_item=%1", cur_item);
+
+	    term item = cur_item[0]:nil;
+	    list forbidden = maplist(term e, table_items, { return e[1]:""; });
+	    forbidden = filter(string h, (list<string>) forbidden, {
+		return h != item[1]:"";
+	    });
+	    forbidden = [];
+
+	    // if(!HostSystemPopup(item[1]:"", false)) continue;
+	    item = VirtualEditDialog(cur, item, forbidden);
+	    y2debug("item=%1", item);
+	    if(item == nil) continue;
+
+	    table_items = maplist(term e, table_items, {
+		if(cur == e[0, 0]:-1)
+		    return item;
+		return e;
+	    });
+	    UI::ChangeWidget(`id(`table), `Items, table_items);
+	    UI::ChangeWidget(`id(`table), `CurrentItem, cur);
+	    continue;
+	}
+	/* add alias */
+	else if(ret == `add) {
+	    list forbidden = maplist(term e, table_items, { return e[1]:""; });
+	    term item = VirtualEditDialog(max, `empty(), forbidden);
+	    y2debug("item=%1", item);
+	    if(item == nil) continue;
+
+	    table_items = add(table_items, item);
+	    UI::ChangeWidget(`id(`table), `Items, table_items);
+	    UI::ChangeWidget(`id(`table), `CurrentItem, max);
+	    items = items + 1;
+	    max = max + 1;
+	    continue;
+	}
+	/* delete alias */
+	else if(ret == `delete) {
+	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
+	    list<term> cur_item = filter(term e, table_items, { return cur == e[0, 0]:nil; });
+
+	    y2debug("cur=%1", cur);
+	    y2debug("cur_item=%1", cur_item);
+	    y2debug("table_items=%1", table_items);
+
+	    table_items = filter(term e, table_items, {
+		return cur != e[0, 0]:nil;
+	    });
+	    UI::ChangeWidget(`id(`table), `Items, table_items);
+	    items = size(table_items);
+	    continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    /* check_ */
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    /* update aliases from widgets */
+    if(ret == `next) {
+	map aliases_to_delete = Lan::aliases; // #48191
+	Lan::aliases = $[];
+	maplist(term e, table_items, {
+	    map alias = $[];
+	    alias["IPADDR"] = e[2]:"";
+	    alias["NETMASK"] = e[3]:"";
+	    Lan::aliases[e[1]:""] = alias;
+	    aliases_to_delete[e[1]:""] = nil;
+	});
+	foreach (string a, any v, (map <string, any>)aliases_to_delete, {
+	    if (v != nil)
+	    {
+		NetworkDevices::DeleteAlias (NetworkDevices::Name, a);
+	    }
+	});
+    }
+
+    y2debug("table_items=%1", table_items);
+    y2debug("aliases=%1", Lan::aliases);
+
+    return ret;
+}
+
+/**
+ * Alias edit dialog
+ * @param id id of the edited host
+ * @param entry edited entry
+ * @param forbidden already used IP addresses
+ * @return host or nil, if canceled
+ */
+define term VirtualEditDialog(integer id, term entry, list forbidden) {
+
+    ScreenName("lan-virtual-edit");
+
+    y2debug("id=%1", id);
+    y2debug("entry=%1", entry);
+    y2debug("forbidden=%1", forbidden);
+
+    UI::OpenDialog(`opt(`decorated),`VBox(
+	`HSpacing(1),
+	`VBox(
+	    /* TextEntry label */
+	    `TextEntry(`id(`name), _("Alias &Name"), entry[1]:""),
+	    /* TextEntry label */
+	    `TextEntry(`id(`ipaddr), _("&IP Address"), entry[2]:""),
+	    /* TextEntry label */
+	    `TextEntry(`id(`netmask), _("Net&mask"), entry[3]:"")
+	    ),
+	`HSpacing(1),
+	`HBox(
+	    `PushButton(`id(`ok), `opt(`default), Label::OKButton()),
+	    `PushButton(`id(`cancel), Label::CancelButton())
+	    )
+	));
+
+    UI::ChangeWidget(`id(`name), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    UI::ChangeWidget(`id(`ipaddr), `ValidChars, IP::ValidChars);
+    UI::ChangeWidget(`id(`netmask), `ValidChars, Netmask::ValidChars);
+
+    if(entry == `empty())
+	UI::SetFocus(`id(`name));
+    else
+	UI::SetFocus(`id(`ipaddr));
+
+    any ret = nil;
+    term host = nil;
+
+    while(true) {
+	host = nil;
+	ret = UI::UserInput();
+	if(ret != `ok) break;
+
+	host = `item(`id(id));
+	string val = (string) UI::QueryWidget(`id(`name), `Value);
+	if(false && !IP::Check(val)) {
+	    /* Popup::Error text */
+	    Popup::Error(_("The IP address is invalid."));
+	    UI::SetFocus(`id(`name));
+	    continue;
+	}
+	if(contains(forbidden, val)) {
+	    /* Popup::Error text */
+	    Popup::Error(sformat(_("IP address %1 is already present."), val));
+	    UI::SetFocus(`id(`host));
+	    continue;
+	}
+	host = add(host, val);
+
+	val = (string) UI::QueryWidget(`id(`ipaddr), `Value);
+	if(!IP::Check(val)) {
+	    /* Popup::Error text */
+	    Popup::Error(_("The IP address is invalid."));
+	    UI::SetFocus(`id(`ipaddr));
+	    continue;
+	}
+	host = add(host, val);
+
+	val = (string) UI::QueryWidget(`id(`netmask), `Value);
+	if(!Netmask::Check(val)) {
+	    /* Popup::Error text */
+	    Popup::Error(_("The subnet mask is invalid."));
+	    UI::SetFocus(`id(`netmask));
+	    continue;
+	}
+	host = add(host, val);
+
+	break;
+    }
+
+    UI::CloseDialog();
+    if(ret != `ok) return nil;
+    return host;
+}
+
+/* EOF */
+}

@@ -1,0 +1,348 @@
+/**
+ * File:	include/network/isdn/wizards.ycp
+ * Package:	Configuration of network
+ * Summary:	ISDN configuration wizards
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "ISDN";
+import "Label";
+import "Provider";
+import "Sequencer";
+import "Wizard";
+
+include "network/routines.ycp";
+
+include "network/isdn/lowlevel.ycp";
+include "network/isdn/complex.ycp";
+include "network/isdn/interface.ycp";
+include "network/isdn/ip.ycp";
+include "network/isdn/ifdetails.ycp";
+
+// include "network/provider/wizards.ycp";
+include "network/provider/details.ycp";
+include "network/provider/dialogs.ycp";
+include "network/provider/connection.ycp";
+include "network/provider/provider.ycp";
+
+define symbol ISDNSequence();
+define symbol ISDNAutoSequence();
+define symbol MainSequence();
+define symbol OneISDNSequence(string entry);
+define symbol OneISDNIFSequence(string entry);
+
+// FIXME: duplicated from provider/wizards.ycp
+
+define symbol CommitProvider() ``{
+    Provider::Commit();
+    return `next;
+}
+
+define symbol OneProviderSequence(boolean country) ``{
+
+    map aliases = $[
+	"providers"		: ``(ProvidersDialog(false)),
+	"provider"		: ``(ProviderDialog()),
+	"new_provider"		: ``(ProviderDialog()),
+	"connection"		: ``(ConnectionDialog()),
+	"ipdetails"		: ``(IPDetailsDialog()),
+	"commit"		: [ ``(CommitProvider()), true ],
+    ];
+
+    string entry = "provider";
+    if(country) entry = "providers";
+
+    map sequence = $[
+	"ws_start" : entry,
+	"providers" : $[
+	    `next   : "provider",
+	    `new    : "new_provider",
+	    `abort  : `abort
+	],
+	"provider" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"new_provider" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"connection" : $[
+	    `IPDetails	: "ipdetails",
+	    `next   : "commit",
+	    `abort  : `abort
+	],
+	"ipdetails" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"commit" : $[
+	    `next   : `next,
+	],
+    ];
+
+    return Sequencer::Run(aliases, sequence);
+}
+
+/**
+ * Whole configuration of network
+ * @return sequence result
+ */
+define symbol ISDNSequence() ``{
+
+    map aliases = $[
+	"read"	: [ ``( ReadDialog() ), true ],
+	"main"	:   ``( MainSequence() ),
+	"write"	: [ ``( WriteDialog() ), true ],
+//	"finish": [ ``( Finished(ISDN::Modified(), FinishedMailText(), "mail", ["dialup"]) ), true ],
+    ];
+
+    map sequence = $[
+	"ws_start" : "read",
+	"read" : $[
+	    `abort	: `abort,
+	    `next	: "main"
+	],
+	"main" : $[
+	    `abort	: `abort,
+	    `next	: "write"
+	],
+	"write" : $[
+	    `abort	: `abort,
+	    `next	: `next,
+//	    `next	: "finish"
+	],
+//	"finish" : $[
+//	    `next	: `next,
+//	]
+    ];
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("isdn");
+
+    symbol ret = Sequencer::Run(aliases, sequence);
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/**
+ * Whole configuration of network but without reading and writing.
+ * For use with autoinstallation.
+ * @return sequence result
+ */
+define symbol ISDNAutoSequence() ``{
+    // main srceen title
+    string caption = _("ISDN Configuration");
+    // static text
+    term contents = `Label(_("Initializing..."));
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("isdn");
+    Wizard::SetContentsButtons(caption, contents, "",
+	    Label::BackButton(), Label::NextButton());
+
+    symbol ret = MainSequence();
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/**
+ * Main workflow of the network configuration
+ * @return sequence result
+ */
+define symbol MainSequence() ``{
+
+    map aliases = $[
+	"summary"	: ``(SummaryDialog()),
+	"overview"	: ``(OverviewDialog()),
+	"configure"	: [ ``(OneISDNSequence("lowlevel")), true ],
+	"other"		: [ ``(OneISDNSequence("other")), true ],
+	"add"		: [ ``(OneISDNSequence("other")), true ],
+	"edit"		: ``(isdn_lowlevel()),
+	"Add"		: [ ``(OneISDNSequence("selif_add")), true ],
+	"Editif"	: [ ``(OneISDNSequence("edit_if")), true ],
+	"Editprov"	: [ ``(OneProviderSequence(false)), true ],
+	"commit"	: ``(Commit()),
+    ];
+
+    map sequence = $[
+	"ws_start" : "summary",
+	"summary" : $[
+	    `abort	: `abort,
+	    `next	: `next,
+	    `configure	: "configure",
+	    `other	: "other",
+	    `overview	: "overview"
+	],
+	"overview" : $[
+	    `abort	: `abort,
+	    `next	: `next,
+	    `add	: "add",
+	    `edit	: "edit",
+	    `Add	: "Add",
+	    `Editif	: "Editif",
+	    `Editprov	: "Editprov",
+	],
+	"other" : $[
+	    `abort	: `abort,
+	    `next	: "summary",
+	],
+	"configure" : $[
+	    `abort	: `abort,
+	    `next	: "summary",
+	],
+	"add" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+	"edit" : $[
+	    `abort	: `abort,
+	    `next	: "commit",
+	],
+	"Add" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+	"Editif" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+	"Editprov" : $[
+	    `abort	: `abort,
+	    `next	: "commit",
+	],
+	"commit" : $[
+	    `next	: "overview",
+	],
+    ];
+
+    return Sequencer::Run(aliases, sequence);
+}
+
+
+/**
+ * One ISDN card workflow
+ * @param entry sequence entry
+ * @return sequence result
+ */
+define symbol OneISDNSequence(string entry) ``{
+
+    map aliases = $[
+	"lowlevel"	: ``(isdn_lowlevel()),
+	"other"		: ``(SelectISDNCard()),
+	"selif_add"	: ``(isdn_if_sel(`add)),
+	"selif_hw"	: ``(isdn_if_sel(`hw)),
+	"add_if"	: [ ``(OneISDNIFSequence("add_if")), true ],
+	"edit_if"	: [ ``(OneISDNIFSequence("edit_if")), true ],
+	"addprovider"	: [ ``(OneProviderSequence(true)), true ],
+	"commit"	: [ ``(Commit()), true ],
+    ];
+
+    map sequence = $[
+	"ws_start"	: entry,
+	"lowlevel" : $[
+	    `next	: "selif_hw",
+	    `abort	: `abort
+	],
+	"other" : $[
+	    `next	: "lowlevel",
+	    `abort	: `abort
+	],
+	"selif_hw" : $[
+	    `next	: "commit",
+	    `AddProvider: "addprovider",
+	    `AddSyncPPP	: "add_if",
+	    `AddRawIP	: "add_if",
+	    `abort	: `abort
+	],
+	"selif_add" : $[
+	    `next	: "commit",
+	    `AddProvider: "addprovider",
+	    `AddSyncPPP	: "add_if",
+	    `AddRawIP	: "add_if",
+	    `abort	: `abort
+	],
+	"add_if" : $[
+	    `next	: "addprovider",
+	    `abort	: `abort
+	],
+	"edit_if" : $[
+	    `next	: "commit",
+	    `abort	: `abort
+	],
+	"addprovider" : $[
+	    `next	: "commit",
+	    `abort	: `abort
+	],
+	"commit" : $[
+	    `next	: `next
+	],
+    ];
+
+    return Sequencer::Run(aliases, sequence);
+
+}
+
+/**
+ * One ISDN interface workflow
+ * @param entry sequence entry
+ * @return sequence result
+ */
+define symbol OneISDNIFSequence(string entry) ``{
+
+    map aliases = $[
+	"add_if"		: ``(interface_dialog()),
+	"edit_if"		: ``(interface_dialog()),
+	"ip_add"		: ``(IPDialog()),
+	"ip_edit"		: ``(IPDialog()),
+	"detail_add"		: ``(IFDetailDialog()),
+	"detail_edit"		: ``(IFDetailDialog()),
+	"commit"		: [ ``(Commit()), true ],
+    ];
+
+    map sequence = $[
+	"ws_start"	: entry,
+	"add_if" : $[
+	    `next	: "ip_add",
+	    `detail	: "detail_add",
+	    `abort	: `abort
+	],
+	"edit_if" : $[
+	    `next	: "ip_edit",
+	    `detail	: "detail_edit",
+	    `abort	: `abort
+	],
+	"ip_add" : $[
+	    `next	: `next,
+	    `abort	: `abort
+	],
+	"detail_add" : $[
+	    `next	: "add_if",
+	    `abort	: `abort
+	],
+	"ip_edit" : $[
+	    `next	: "commit",
+	    `abort	: `abort
+	],
+	"detail_edit" : $[
+	    `next	: "edit_if",
+	    `abort	: `abort
+	],
+	"commit" : $[
+	    `next	: `next
+	],
+    ];
+
+    return Sequencer::Run(aliases, sequence);
+
+}
+/* EOF */
+}

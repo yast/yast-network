@@ -1,0 +1,341 @@
+/**
+ * File:	include/network/dsl/complex.ycp
+ * Package:	Network configuration
+ * Summary:	Summary, overview and IO dialogs for DSL configuration.
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "DSL";
+import "Label";
+import "NetworkDevices";
+import "Popup";
+import "Provider";
+import "Wizard";
+import "Wizard_hw";
+
+include "network/routines.ycp";
+include "network/summary.ycp";
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+define boolean Modified() {
+    return DSL::Modified() || Provider::Modified("dsl");
+}
+
+/**
+ * Commit changes to internal structures
+ * @param what what everything should be commited ("modem"|"provider"|"all")
+ * @return always `next
+ */
+define symbol Commit(string what) {
+    if(what == "" || what == "all" || what == "dsl")
+	DSL::Commit();
+    if(what == "" || what == "all" || what == "provider")
+	Provider::Commit();
+    return `next;
+}
+
+/**
+ * Display finished popup
+ * @return dialog result
+ */
+define symbol FinishDialog() {
+    /* In this case, we have been called from ISDN: we are not finished yet */
+    if(DSL::capiadsl != nil) return `next;
+    return FinishPopup(Modified(), "dsl", "", "mail", ["permanent"]);
+}
+
+/**
+ * Read settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol ReadDialog() {
+
+    ScreenName("dsl-read");
+
+    /* DSL read dialog help 1/2 */
+    string helptext = _("<P><B><BIG>Initializing DSL Configuration
+</BIG></B><BR>Please wait...<BR></P>");
+
+    /* DSL read dialog help 2/2 */
+    helptext = helptext + _("<P><B><BIG>Aborting the Initialization
+</BIG></B><BR>You can safely abort the configuration utility by pressing
+<B>Abort</B> now.</P>
+");
+
+    Wizard::RestoreHelp(helptext);
+    DSL::AbortFunction = ``{return PollAbort();};
+    boolean ret = DSL::Read();
+    return ret ? `next : `abort;
+}
+
+/**
+ * Write settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol WriteDialog() {
+
+    ScreenName("dsl-write");
+
+    if(!Modified()) return `next;
+
+    /* DSL write dialog help 1/2 */
+    string helptext = _("<P><B><BIG>Saving DSL Configuration</BIG></B><BR>
+Please wait...<BR></P>");
+
+    /* DSL write dialog help 2/2 */
+    helptext = helptext + _("<P><B><BIG>Aborting Saving</BIG></B><BR>
+You can abort the save process by pressing <B>Abort</B>. An additional
+dialog may inform you whether it is safe to do so.</P>
+");
+
+    Wizard::RestoreHelp(helptext);
+    DSL::AbortFunction = ``{return PollAbort() && ReallyAbort();};
+    boolean ret = DSL::Write();
+    return ret ? `next : `abort;
+}
+
+/**
+ * Main dialog
+ * @return dialog result
+ */
+define any SummaryDialog() {
+
+    ScreenName("dsl-summary");
+
+    /* DSL summary dialog caption */
+    string caption = _("DSL Configuration");
+
+    /* DSL summary dialog help 1/3 */
+    string helptext = _("<p><b><big>DSL Setup</big></b><br>
+Here, you can configure your DSL.<br></p>");
+
+    /* DSL summary dialog help 2/3 */
+    helptext = helptext + _("<p><b><big>Adding a DSL Device:</big></b><br>
+Select a DSL device from the list of detected DSL devices. If your DSL device
+was not autodetected, use <b>Other (not detected)</b>. Then press
+<b>Configure</b>.</p>");
+
+    /* DSL summary dialog help 3/3 */
+    helptext = helptext + _("<p><b><big>Editing or Deleting:</big></b><br>
+If you press <b>Change</b>, an additional dialog opens in which to change the
+configuration.</p>");
+
+    list summary = DSL::Summary(true);
+    list unconfigured = summary[1]:[];
+    string configured = summary[0]:"";
+
+    y2debug("unconfigured=%1", unconfigured);
+    /* Frame label */
+    term contents = Wizard_hw::DetectedContent(_("DSL Devices to Configure"),
+	    unconfigured, false, configured);
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    Label::BackButton(), Label::FinishButton());
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+	y2debug("ret=%1", ret);
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel || ret == `back) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* overview dialog */
+	else if(ret == `edit_button) {
+	    ret = `overview;
+	    break;
+	}
+	/* configure the selected card */
+	else if(ret == `configure_button || ret == `detected_selbox) {
+	    DSL::Add();
+	    Provider::Add("dsl");
+	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
+	    if(selected == `other) {
+		ret = `other;
+	    }
+	    else {
+		DSL::SelectHW((integer) selected);
+		ret = `configure;
+	    }
+	    break;
+	}
+	else if(ret == `next) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    return ret;
+}
+
+/**
+ * Overview dialog
+ * @return dialog result
+ */
+define any OverviewDialog() {
+
+    ScreenName("dsl-overview");
+
+    /* DSL overview dialog caption */
+    string caption = _("DSL Configuration Overview");
+
+    /* DSL overview dialog help 1/3 */
+    string helptext = _("<P><B><BIG>DSL Overview</BIG></B><BR>
+Here, get an overview of installed DSL devices. Additionally,
+edit their configuration.<BR></P>");
+
+    /* DSL overview dialog help 2/3 */
+    helptext = helptext + _("<P><B><BIG>Adding a DSL Device:</BIG></B><BR>
+If you press <B>Add</B>, you can manually configure a DSL device.</P>");
+
+    /* DSL overview dialog help 3/3 */
+    helptext = helptext + _("<P><B><BIG>Editing or Deleting:</BIG></B><BR>
+Choose a DSL device for which to change or remove the configuration.
+Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
+
+    list overview = DSL::Overview();
+    list overviewp = Provider::Overview("dsl");
+    y2debug("overview=%1",overview);
+    y2debug("overviewp=%1",overviewp);
+
+    term contents = OverviewTableDouble(
+	/* Table label */
+	_("DSL Devices"),
+	/* Table header */
+	`header(/*_("No."), */_("Device"), _("Type"), _("Provider")),
+	overview,
+	/* Table label */
+	_("Providers"),
+	/* Table header */
+	`header(_("Name"), _("Provider") /*, not for DSL: _("Phone") */),
+	overviewp
+    );
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    Label::BackButton(), Label::FinishButton());
+
+    if(size(overview) < 1) {
+	UI::ChangeWidget(`id(`edit), `Enabled, false);
+	UI::ChangeWidget(`id(`delete), `Enabled, false);
+    }
+
+    if(size(overviewp) < 1) {
+	UI::ChangeWidget(`id(`Edit), `Enabled, false);
+	UI::ChangeWidget(`id(`Delete), `Enabled, false);
+    }
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* add */
+	else if(ret == `add) {
+	    DSL::Add();
+	    Provider::Add("dsl");
+	    break;
+	}
+	/* edit */
+	else if(ret == `edit || ret == `table) {
+	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+	    if(dev == nil) {
+		y2error("Empty device during Edit");
+		continue;
+	    }
+	    DSL::Edit(dev);
+	    Provider::Edit(Provider::Name);
+	    ret = `edit;
+	    break;
+	}
+	/* delete */
+	else if(ret == `delete) {
+	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+	    DSL::Delete(dev);
+	    DSL::Commit();
+	    overview = DSL::Overview();
+	    UI::ChangeWidget(`id(`table), `Items, overview);
+	    if(size(overview) < 1) {
+		UI::ChangeWidget(`id(`edit), `Enabled, false);
+		UI::ChangeWidget(`id(`delete), `Enabled, false);
+	    }
+	    y2debug("overview=%1",overview);
+	    continue;
+	}
+	/* provider add */
+	else if(ret == `Add) {
+	    Provider::Add("dsl");
+	    break;
+	}
+	/* provider edit */
+	else if(ret == `Edit || ret == `Table) {
+	    string dev = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
+	    if(dev == nil) {
+		y2error("Empty device during Edit");
+		continue;
+	    }
+	    Provider::Edit(dev);
+	    ret = `Edit;
+	    break;
+	}
+	/* provider delete */
+	else if(ret == `Delete) {
+	    string dev = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
+
+	    /* Check if the provider is not used (#17497) */
+	    if(NetworkDevices::LocateProvider(dev)) {
+		y2debug("Provider used: %1", dev);
+
+		/* Popup text */
+		Popup::Error(sformat(_("The provider %1 is in use."), dev));
+		continue;
+
+		/* Popup text */
+		string pop = sformat(_("The provider %1 is in use. Really delete it?"), dev);
+		if(!Popup::YesNo(pop)) continue;
+	    }
+
+	    Provider::Delete(dev);
+	    Provider::Commit();
+	    overviewp = Provider::Overview("dsl");
+	    UI::ChangeWidget(`id(`Table), `Items, overviewp);
+	    if(size(overviewp) < 1) {
+		UI::ChangeWidget(`id(`Edit), `Enabled, false);
+		UI::ChangeWidget(`id(`Delete), `Enabled, false);
+	    }
+	    y2debug("overviewp=%1",overviewp);
+	    continue;
+	}
+	else if(ret == `next || ret == `back) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    return ret;
+}
+
+/* EOF */
+}

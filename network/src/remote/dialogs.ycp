@@ -1,0 +1,87 @@
+/**
+ * File:	remote/dialogs.ycp
+ * Module:	Network configuration
+ * Summary:	Dialog for Remote Administration
+ * Authors:	Arvin Schnell <arvin@suse.de>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Label";
+import "Remote";
+import "Wizard";
+
+include "network/routines.ycp";
+
+/**
+ * Remote administration dialog
+ * @return dialog result
+ */
+define symbol RemoteMainDialog() {
+
+    ScreenName("remote");
+
+    /* Ramote Administration dialog caption */
+    string caption = _("Remote Administration");
+
+    term allow_buttons = `RadioButtonGroup(`VBox(
+	/* RadioButton label */
+	`Left(`RadioButton(`id(`allow), _("&Allow Remote Administration"), false)),
+	/* RadioButton label */
+	`Left(`RadioButton(`id(`disallow), _("&Do Not Allow Remote Administration"), false))
+    ));
+
+    /* Ramote Administration dialog contents */
+    term contents = `VBox(`HBox(
+	`HStretch(),
+	allow_buttons,
+	`HStretch()
+    ));
+
+    /* Ramote Administration dialog help
+       %1 and %2 are port numbers for vnc and vnchttp, eg. 5901, 5801 */
+    string help = sformat (
+_("<p>If this feature is enabled, you can
+administer this machine remotely from another machine. Use a VNC
+client, such as krdc (connect to <i>&lt;hostname&gt;:%1</i>), or
+a Java-capable web browser (connect to <i>http://&lt;hostname&gt;:%2/</i>).
+This form of remote administration is less secure than using SSH.</p>
+"), 5901, 5801);
+
+    Wizard::SetContentsButtons(caption, contents, help,
+	    Label::BackButton(), Label::FinishButton());
+
+    UI::ChangeWidget(`id(`allow), `Value, Remote::allow_administration);
+    UI::ChangeWidget(`id(`disallow), `Value, !Remote::allow_administration);
+
+    any ret = nil;
+
+    repeat {
+
+	ret = Wizard::UserInput();
+
+	if(ret == `abort)
+	{
+	    break;
+	}
+	else if(ret == `help)
+	{
+	    Wizard::ShowHelp(help);
+	}
+
+    } until( ret == `next || ret == `back );
+
+    if(ret == `next)
+    {
+	Remote::allow_administration = (boolean) UI::QueryWidget(`id(`allow), `Value);
+    }
+
+    return (symbol) ret;
+}
+
+/* EOF */
+}
