@@ -1,7 +1,9 @@
 -------------------------------------------------------------------
-Fri Mar  7 14:20:53 CET 2003 - msvec@suse.de
+Fri Mar  7 15:04:39 CET 2003 - msvec@suse.de
 
-- restart smpppd after DSL and modem configuration
+- restart smpppd after DSL and modem configuration (#24663)
+- change permissions of files containing wireless keys (#24842)
+- drop valid chars check of the wireless key (#24839)
 - 2.7.29
 
 -------------------------------------------------------------------

@@ -585,7 +585,7 @@ available options.</p>");
 	    BackButtonLabel(), OKButtonLabel());
 
     // FIXME: provide a better check and an error message, #17546
-    UI::ChangeWidget(`id(`key), `ValidChars, "0123456789abcdefABCDEF-:s");
+    // removed #24839 UI::ChangeWidget(`id(`key), `ValidChars, "0123456789abcdefABCDEF-:s");
 
     any ret = nil;
     while(true) {

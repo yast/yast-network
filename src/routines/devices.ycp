@@ -157,6 +157,15 @@ global define boolean WriteDevices() ``{
 	    // FIXME: move it somewhere else: hardware
 	    string unq = devmap["UNIQUE"]:"";
 	    if(unq != "") SCR::Write(.probe.status.configured, unq, `yes);
+
+	    /* 0600 if contains encryption key (#24842) */
+	    string key = devmap["WIRELESS_KEY"]:"";
+	    string file = "/etc/sysconfig/network/ifcfg-" + dev;
+	    y2debug("Permission change: %1, %2", key != "", file);
+	    if(key != "") {
+		y2debug("CHANGED");
+		SCR::Execute(.target.bash, "/bin/chmod 0600 " + file);
+	    }
 	});
     });
 
