@@ -47,7 +47,7 @@ global string hotplug = "";
  * Devices information
  * @see ReadDevices
  */
-map<string,map> Devices = $[];
+global map<string,map> Devices = $[];
 
 /**
  * Devices information

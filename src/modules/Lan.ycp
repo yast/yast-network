@@ -383,7 +383,7 @@ global define boolean WriteOnly()``{
  */
 global define boolean Import(map settings) ``{
 
-    // FIXME: NI Devices = (map) eval(settings["devices"]:$[]);
+    NetworkDevices::Devices = (map<string, map>) eval(settings["devices"]:$[]);
     Modules = (map) eval(settings["modules"]:$[]);
     DNS::Import((map) eval(settings["dns"]:$[]));
     NetworkConfig::Import(settings["config"]:$[]);
@@ -399,13 +399,14 @@ global define boolean Import(map settings) ``{
  */
 global define map Export() ``{
 
-    return (map) eval($[
-// FIXME: NI	"devices"	: Devices,
+    map ex = (map)eval($[
 	"modules"	: Modules,
 	"config"	: NetworkConfig::Export(),
 	"dns"		: DNS::Export(),
 	"routing"	: Routing::Export(),
+        "devices"       : NetworkDevices::Devices
     ]);
+    return(ex);
 
 }
 
