@@ -36,8 +36,8 @@ if(func == "MakeProposal") {
 	Proxy::proposal_valid = true;
 	Progress::off();
 	Proxy::Read();
+	Proxy::enabled = false;
     }
-    Proxy::enabled = false;
     proposal = Proxy::Summary();
     Progress::on();
 
