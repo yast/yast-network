@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Dec 14 15:25:09 CET 2004 - mvidner@suse.cz
+
+- Resolver: if the search list is empty, prefill the domain (#49094).
+
+-------------------------------------------------------------------
 Thu Dec  9 17:44:03 CET 2004 - mvidner@suse.cz
 
 - IPs for /etc/hosts: watch out for BOOTPROTO=dhcp and nonempty

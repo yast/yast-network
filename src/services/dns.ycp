@@ -160,6 +160,11 @@ disabled during the connection.</p>");
     s1 = searchlist[0]:"";
     s2 = searchlist[1]:"";
     s3 = searchlist[2]:"";
+    // #49094: populate the search list
+    if (s1 == "" && s2 == "" && s3 == "" && !dhcp_resolv)
+    {
+	s1 = domain;
+    }
 
     /* DNS dialog contents */
     term contents = `HSquash(`VBox(
