@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 23 13:12:48 CET 2004 - mvidner@suse.cz
+
+- fixed enabling VNC administration (#31004, #36748)
+- 2.9.18
+
+-------------------------------------------------------------------
 Mon Mar 22 15:29:42 CET 2004 - msvec@suse.cz
 
 - preliminary XPNet devices support (#35867)

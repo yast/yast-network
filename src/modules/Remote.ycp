@@ -56,12 +56,12 @@ global define boolean Write() {
     SCR::Write(.sysconfig.displaymanager, nil);
     // FIXME: SUSEconfig missing if not in installation
 
-    /* En- or disable vnc10 and vnchttpd10 in xinetd.d/vnc
-     */
+    // Enable/disable vnc1 and vnchttpd1 in xinetd.d/vnc
+    // If the port is changed, change also the help in remote/dialogs.ycp
     list<map> xinetd = (list<map>) SCR::Read(.etc.xinetd_conf.services);
     xinetd = maplist (map m, xinetd, {
 	string s = m["service"]:"";
-	if (s == "vnc10" || s == "vnchttpd10") {
+	if (s == "vnc1" || s == "vnchttpd1") {
 	    m["changed"] = true;
 	    m["enabled"] = allow_administration;
 	}
