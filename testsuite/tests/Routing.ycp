@@ -6,6 +6,7 @@ import "Routing";
 map READ = $[
     "target" : $[ "size" : 1 ],
     "routes" : ["r1", "r2"],
+    "sysconfig" : $[ "sysctl" : $[ "IP_FORWARD" : "yes" ]],
 ];
 
 DUMP("Read");

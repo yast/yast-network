@@ -1,10 +1,15 @@
 Dump	Read
 Read	.target.size "/etc/sysconfig/network/routes" 1
 Read	.routes ["r1", "r2"]
+Read	.sysconfig.sysctl.IP_FORWARD "yes"
 Return	true
 Dump	Routing::routes ["r1", "r2"]
 Dump	Write
+Write	.sysconfig.sysctl.IP_FORWARD "yes" true
+Execute	.target.bash "echo 1 > /proc/sys/net/ipv4/ip_forward" 0
 Return	true
+Write	.sysconfig.sysctl.IP_FORWARD "yes" true
+Execute	.target.bash "echo 1 > /proc/sys/net/ipv4/ip_forward" 0
 Read	.target.size "/etc/sysconfig/network/routes" 1
 Execute	.target.bash "/bin/cp /etc/sysconfig/network/routes /etc/sysconfig/network/routes.YaST2save" 0
 Write	.routes ["r1", "r3"] true

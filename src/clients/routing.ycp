@@ -36,7 +36,7 @@ include "network/services/routing.ycp";
  * @return true if data was modified
  */
 global define boolean Modified() ``{
-    return true;
+    return Routing::modified;
 }
 
 /* main ui function */

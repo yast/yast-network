@@ -37,21 +37,24 @@ global define symbol RoutingMainDialog() ``{
     /* Routing dialog caption */
     string caption = _("Routing configuration");
 
-    /* Routing dialog help */
-    string help = _("<p>The routing can be set up in this dialog. The
-    default route matches every possible destination, but poorly. 
-    If any other entry exists that matches the required address, it will be
-    used instead of the default route. The idea of the default route is
-    simply to enable you to say \"and everything else should go here\".</p>");
+    /* Routing dialog help 1/2 */
+    string help = _("<p>The routing can be set up in this dialog.
+The <b>default route</b> matches every possible destination, but poorly. 
+If any other entry exists that matches the required address, it will be
+used instead of the default route. The idea of the default route is simply
+to enable you to say \"and everything else should go here\".</p>") +
+
+    /* Routing dialog help 2/2 */
+_("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 
     integer max = 0;
     integer items = 0;
     list table_items = [];
     boolean expert = false;
-
     string defgw = "";
     string defgwdev = "";
 
+    boolean forward = Routing::forward;
     list route_conf = Routing::routes;
 
     /* make ui items from the routes list */
@@ -78,26 +81,30 @@ global define symbol RoutingMainDialog() ``{
     y2debug("items=%1",items);
 
     /* Routing dialog contents */
-    term contents = `HBox(`HSpacing(5),`VBox(`VStretch(),
-	//`Left(`CheckBox(`id(`enabled), _("Enable IP &forwarding"))),
-	//`VSpacing(1),
-	`ComboBox(`id(`gw), `opt(`editable, `hstretch), _("Default &gateway"), [ defgw ]),
-	`VSpacing(1),
-	`Frame(_("Routing table"),
-	    `VBox(
+    term contents = `HBox(
+	`HSpacing(5),
+	`VBox(
+	    `VStretch(),
+	    `ComboBox(`id(`gw), `opt(`editable, `hstretch), _("Default &gateway"), [ defgw ]),
+	    `VSpacing(1),
+	    `Frame(_("Routing table"), `VBox(
 		`Left(`CheckBox(`id(`expert), `opt(`notify), _("E&xpert configuration"))),
 		`Table(`id(`table), `header(_("Destination"), _("Dummy or Gateway"), _("Netmask"), _("Device")), []),
 		`HBox(`PushButton(`id(`add), _("Ad&d")),
 		    `PushButton(`id(`edit), `opt(`disabled), _("&Edit")),
 		    `PushButton(`id(`delete), `opt(`disabled), _("De&lete"))))),
-	`VStretch()),
-	`HSpacing(5));
+	    `VSpacing(1),
+	    `Left(`CheckBox(`id(`forward), _("Enable &IP forwarding"))),
+	    `VStretch()
+	),
+	`HSpacing(5)
+    );
 
     Wizard::SetContents(caption,contents,help,true,true);
 
     UI::ChangeWidget(`id(`gw), `ValidChars, "0123456789.");
-
     UI::ChangeWidget(`id(`table), `Items, table_items);
+    UI::ChangeWidget(`id(`forward), `Value, forward);
     UI::ChangeWidget(`id(`table), `Enabled, expert);
     UI::ChangeWidget(`id(`add), `Enabled, expert);
     UI::SetFocus(`id(`gw));
@@ -202,6 +209,7 @@ global define symbol RoutingMainDialog() ``{
 	    defgwdev = "-"; // FIXME: find correct device
 
 	defgw = UI::QueryWidget(`id(`gw), `Value);
+	forward = UI::QueryWidget(`id(`forward), `Value);
 
 	if(defgw != "")
 	    change(route_conf, $[
@@ -214,9 +222,15 @@ global define symbol RoutingMainDialog() ``{
     }
 
     if(Routing::routes != route_conf) {
-	Routing::modified = true;
 	Routing::routes = route_conf;
+	Routing::modified = true;
     }
+
+    if(Routing::forward != forward) {
+	Routing::forward = forward;
+	Routing::modified = true;
+    }
+
     y2debug("table_items=%1",table_items);
     y2debug("route_conf=%1",route_conf);
 

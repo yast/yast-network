@@ -37,6 +37,11 @@ global list routes_init = [];
 global boolean modified = false;
 
 /**
+ * Enable IP forwarding
+ */
+global boolean forward = false;
+
+/**
  * "routes" file location
  */
 string routes_file = "/etc/sysconfig/network/routes";
@@ -54,6 +59,10 @@ global define boolean Read() ``{
     /* save routes to check for changes later */
     routes_init = routes;
 
+    /* enabled IP forwarding */
+    if(SCR::Read(.sysconfig.sysctl.IP_FORWARD) == "yes")
+	forward = true;
+
     y2debug("routes=%1", routes);
     return true;
 }
@@ -66,6 +75,15 @@ global define boolean Write() ``{
 
     if(!modified) return true;
     y2milestone("Writing configuration");
+
+    if(forward) {
+	SCR::Write(.sysconfig.sysctl.IP_FORWARD, "yes");
+	SCR::Execute(.target.bash, "echo 1 > /proc/sys/net/ipv4/ip_forward");
+    }
+    else {
+	SCR::Write(.sysconfig.sysctl.IP_FORWARD, "no");
+	SCR::Execute(.target.bash, "echo 0 > /proc/sys/net/ipv4/ip_forward");
+    }
 
     /* Check if there is anything to do */
     if(routes_init == routes) {
