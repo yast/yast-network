@@ -18,6 +18,7 @@ import "Lan";
 import "Progress";
 import "Mode";
 include "network/lan/wizards.ycp";
+include "network/install.ycp";
 
 /**
  * Convert data from autoyast to structure used by module.
@@ -26,11 +27,13 @@ include "network/lan/wizards.ycp";
  */
 define map FromAY(map input) ``{
 	// Used netdevice during installation
-	Lan::ReadInstallInf();
-	string netdevice = Lan::InstallInf["netdevice"]:"eth0";
+	map InstallInf = $[];
+	ReadInstallInf();
+	string netdevice = InstallInf["netdevice"]:"eth0";
 
     list upcase = [
 		   "bootproto",
+		   "mtu",
 		   "broadcast",
 		   "ipaddr",
 		   "netmask",
