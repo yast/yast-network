@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Jul 30 16:19:13 CEST 2004 - mvidner@suse.cz
+
+- Wireless: Added WPA-PSK.
+- LAN: Use editable combo instead of textentry for Configuration name
+  (not filled with useful data yet).
+- Adjusted testsuite for removal of Mode::live_evil.
+- 2.10.4
+
+-------------------------------------------------------------------
 Thu Jul 29 16:44:09 CEST 2004 - mvidner@suse.cz
 
 - Added Dial prefix regular expression for modem ifcfgs (#23315).
