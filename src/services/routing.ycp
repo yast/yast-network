@@ -17,7 +17,9 @@ import "Routing";
 import "Wizard";
 
 include "ui/common_popups.ycp";
+
 include "network/ip.ycp";
+include "network/devices.ycp";
 include "network/routines.ycp";
 
 /**
@@ -73,6 +75,17 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
     y2debug("table_items=%1", table_items);
     y2debug("items=%1", items);
     max = items;
+
+    map Devices = $[];
+    ReadDevices("");
+    y2debug("Devices=%1", Devices);
+    list types = mapkeys(Devices);
+    y2debug("types=%1", types);
+    list devs = [];
+    maplist(string t, types, ``{
+	devs = union(devs, maplist(string n, mapkeys(Devices[t]:$[]), ``(t+n)));
+    });
+    y2debug("devs=%1", devs);
 
     /* Routing dialog contents */
     term contents = `HBox(
@@ -159,12 +172,11 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 	    y2debug("cur_item=%1", cur_item);
 
 	    term item = cur_item[0]:nil;
-	    /* FIXME: fill in available devices */
-	    list devs = [];
 	    /* add at least the current device, if not, device is lost */
 	    string dev = select(item, 4, "");
-	    if (dev != "")
-		devs = add(devs, `item(`id(dev), dev, true));
+	    if (dev != "" && !contains(devs, dev))
+		devs = add(devs, dev);
+	    devs = sort(devs);
 
 	    item = RoutingEditDialog(cur, item, devs);
 	    if(item == nil) continue;
@@ -181,8 +193,7 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 	}
 	/* add route */
 	else if(ret == `add) {
-	    /* FIXME: fill in available devices */
-	    term item = RoutingEditDialog(max, `empty(), []);
+	    term item = RoutingEditDialog(max, `empty(), devs);
 	    if(item == nil) continue;
 	    else Routing::modified = true;
 
@@ -292,6 +303,8 @@ global define term RoutingEditDialog(integer id, term entry, list devs) ``{
 	)
     ));
 
+    if(select(entry, 4, "") != "")
+	UI::ChangeWidget(`id(`device), `Value, select(entry, 4, ""));
     UI::ChangeWidget(`id(`destination), `ValidChars, ValidCharsIP4);
     UI::ChangeWidget(`id(`gateway), `ValidChars, ValidCharsIP4);
     UI::ChangeWidget(`id(`netmask), `ValidChars, ValidCharsNetmask4);
