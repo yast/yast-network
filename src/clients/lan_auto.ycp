@@ -147,7 +147,7 @@ else if(func == "Read") {
 	ret = Lan::Read();
 	Progress::on();
 }
-else if (func == "Result") {
+else if (func == "Export") {
     map settings = Lan::Export();
     map autoyast = ToAY(settings);
     ret = autoyast;
