@@ -18,6 +18,7 @@ include "network/routines.ycp";
 include "network/runtime.ycp";
 
 global boolean proposal_valid = false;
+global boolean write_only = false;
 
 /**
  * Data was modified?
@@ -30,6 +31,7 @@ global string ftp = "";
 global string no = "";
 global string user = "";
 global string pass = "";
+
 
 /**
  * Read settings
