@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Sep 18 11:40:00 CEST 2003 - arvin@suse.de
+
+- shut down temporary network before online test during update
+  (bug #31030)
+
+-------------------------------------------------------------------
 Wed Sep 17 21:26:28 CEST 2003 - arvin@suse.de
 
 - fixed installing of release notes in network test (bug #31204)

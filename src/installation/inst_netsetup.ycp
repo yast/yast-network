@@ -92,6 +92,9 @@ if (mode == `dn)
 {
     if (Mode::boot == "nfs")
     {
+	// disable all sources
+	Pkg::SourceFinishAll ();
+
 	SCR::Execute (.target.bash, "/sbin/rcportmap stop");
     }
 
