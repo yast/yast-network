@@ -246,7 +246,7 @@ global define void ShowLogs (list logs, string logdir) ``{
 				 `ComboBox (`id (`selector),
 					    `opt (`notify, `hstretch),
 					    // label for combobox to select a log
-					    _("Select Log:"), menunames),
+					    _("&Select Log:"), menunames),
 				 `HStretch ()
 				 ),
 			  `HBox (
