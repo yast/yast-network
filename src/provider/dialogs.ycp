@@ -274,6 +274,12 @@ global define symbol ProviderDialog(string type) ``{
     boolean ask_pass = lookup(Providers::provider, "ASKPASSWORD", "no") == "yes";
     string infotext = getProviderInfoText(Providers::provider);
 
+    boolean tonline = false;
+    if (name == "T-Online") {
+        username = "";
+        tonline = true;
+    }
+
     /* Provider dialog caption */
     string caption = _("Set parameters for the Internet connection");
 
@@ -377,6 +383,12 @@ the password every time.</p>
 
     /* '*' and '#' are for GPRS connections #16021 */
     UI::ChangeWidget(`id(`phone), `ValidChars, "0123456789*#" );
+
+    // trying to fix bugs: #16756, #6244
+    if (tonline) {
+        // the name should be generated some way
+        UI::ChangeWidget(`id(`username), `ValidChars, "0123456789#" );
+    }
 
     if(infotext != nil && infotext != "")
 	UI::ChangeWidget(`id(`info), `Enabled, true);
