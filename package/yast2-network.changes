@@ -32,6 +32,7 @@ WIP, not yet functional!
   - display info popup at the end of configuration
   - use /root/.curlrc for storing proxy user and password (#21431)
   - added minimal input constraints (#18791)
+  - allow to turn on|off with a checkbox
 
 - routing:
   - fixed crash (#21334)

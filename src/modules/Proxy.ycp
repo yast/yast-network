@@ -20,6 +20,7 @@ include "network/runtime.ycp";
  */
 global boolean modified = false;
 
+global boolean enabled = true;
 global string http = "";
 global string ftp = "";
 global string no = "";
@@ -39,6 +40,7 @@ global define boolean Read() ``{
     if(ftp == nil) ftp = "";
     no = SCR::Read(.sysconfig.proxy.NO_PROXY);
     if(no == nil) no = "";
+    enabled = SCR::Read(.sysconfig.proxy.PROXY_ENABLED) != "no";
 
     /* Read /root/.curlrc */
     user = SCR::Read(.root.curlrc.proxy-user);
@@ -72,6 +74,7 @@ global define boolean Write() ``{
     y2milestone("Writing configuration");
 
     /* Update /etc/sysconfig/proxy */
+    SCR::Write(.sysconfig.proxy.PROXY_ENABLED, enabled?"yes":"no");
     SCR::Write(.sysconfig.proxy.HTTP_PROXY, http);
     SCR::Write(.sysconfig.proxy.FTP_PROXY, ftp);
     SCR::Write(.sysconfig.proxy.NO_PROXY, no);
@@ -112,9 +115,10 @@ global define boolean Import(map settings) ``{
     if(size(settings) == 0)
 	return true;
 
+    enabled = settings["enabled"]:true;
     http = settings["http_proxy"]:"";
     ftp = settings["ftp_proxy"]:"";
-    no = settings["no_proxy"]:"";
+    no = settings["no_proxy"]:"localhost";
     user = settings["proxy_user"]:"";
     pass = settings["proxy_password"]:"";
 
@@ -128,6 +132,7 @@ global define boolean Import(map settings) ``{
  */
 global define map Export() ``{
     map settings = $[
+	"enabled"	: enabled,
 	"http_proxy"	: http,
 	"ftp_proxy"	: ftp,
 	"no_proxy"	: no,

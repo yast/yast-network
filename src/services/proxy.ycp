@@ -45,6 +45,7 @@ all (they use they own settings system, like mozilla).");
  */
 global define symbol ProxyMainDialog(boolean standalone) ``{
 
+    boolean enabled = Proxy::enabled;
     string http = Proxy::http;
     string ftp = Proxy::ftp;
     string no = Proxy::no;
@@ -79,8 +80,12 @@ should be done directly without caching.</p>") +
     /* Proxy dialog contents */
     term contents = `HBox(
 	`HSpacing(6),
+	`VBox(
+	/* CheckBox entry label */
+	`Left(`CheckBox(`id(`enabled), `opt(`notify), _("&Enable proxy"), enabled)),
+	`VSpacing(1),
 	/* Frame label */
-	`Frame(_("Proxy settings"), `HBox(`HSpacing(2), `VBox(
+	`Frame(`id(`frame), _("Proxy settings"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(1),
 	    /* Text entry label */
 	    `TextEntry(`id(`http), _("&HTTP proxy"), http),
@@ -97,7 +102,8 @@ should be done directly without caching.</p>") +
 	    /* Text entry label */
 	    `TextEntry(`id(`pass), _("Proxy &password"), pass),
 	    `VSpacing(1)
-	    ), `HSpacing(2))),
+	    ), `HSpacing(2)))
+	),
 	`HSpacing(6)
     );
 
@@ -113,6 +119,7 @@ should be done directly without caching.</p>") +
     UI::ChangeWidget(`id(`ftp), `ValidChars, ValidCharsUrl);
     UI::ChangeWidget(`id(`no), `ValidChars, ValidCharsDomain + " ,");
     UI::ChangeWidget(`id(`user), `ValidChars, ValidCharsUsername);
+    UI::ChangeWidget(`id(`frame), `Enabled, enabled);
     UI::SetFocus(`id(`http));
 
     any ret = nil;
@@ -125,11 +132,19 @@ should be done directly without caching.</p>") +
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
+	if(ret == `enabled) {
+	    enabled = UI::QueryWidget(`id(`enabled), `Value);
+	    UI::ChangeWidget(`id(`frame), `Enabled, enabled);
+	    continue;
+	}
 	/* next */
 	else if(ret == `next) {
 
+	    enabled = UI::QueryWidget(`id(`enabled), `Value);
 	    user = UI::QueryWidget(`id(`user), `Value);
 	    pass = UI::QueryWidget(`id(`pass), `Value);
+
+	    if(enabled == false) break;
 
 	    /* check_* */
 	    if(user == "" && pass != "") {
@@ -152,24 +167,30 @@ should be done directly without caching.</p>") +
 
     if(ret == `next) {
 
-	http = UI::QueryWidget(`id(`http), `Value);
-	ftp = UI::QueryWidget(`id(`ftp), `Value);
-	no = UI::QueryWidget(`id(`no), `Value);
-	user = UI::QueryWidget(`id(`user), `Value);
-	pass = UI::QueryWidget(`id(`pass), `Value);
+	enabled = UI::QueryWidget(`id(`enabled), `Value);
+	if(enabled) {
+	    http = UI::QueryWidget(`id(`http), `Value);
+	    ftp = UI::QueryWidget(`id(`ftp), `Value);
+	    no = UI::QueryWidget(`id(`no), `Value);
+	    user = UI::QueryWidget(`id(`user), `Value);
+	    pass = UI::QueryWidget(`id(`pass), `Value);
+	}
 
 	if(Proxy::http == http && Proxy::ftp == ftp && Proxy::no == no &&
-		Proxy::user == user && Proxy::pass == pass) {
+		Proxy::user == user && Proxy::pass == pass && Proxy::enabled == enabled) {
 
 	    y2debug("not modified");
 	    return ret;
 	}
 
-	Proxy::http = http;
-	Proxy::ftp = ftp;
-	Proxy::no = no;
-	Proxy::user = user;
-	Proxy::pass = pass;
+	Proxy::enabled = enabled;
+	if(enabled) {
+	    Proxy::http = http;
+	    Proxy::ftp = ftp;
+	    Proxy::no = no;
+	    Proxy::user = user;
+	    Proxy::pass = pass;
+	}
 
 	Proxy::modified = true;
 	ProxyFinishPopup(true);
