@@ -150,6 +150,7 @@ and correct the setting.</p>");
 
 
     define void set_result (symbol result) ``{
+	update_log ();
 	set_stage (-1);
 	test_result = result;
 	if (test_result == `success) {
