@@ -12,33 +12,33 @@
 import "Arch";
 import "Mode";
 
-symbol mode = WFM::Args (2);
+symbol mode = (symbol)WFM::Args (2);
 
 y2milestone("----------------------------------------");
 y2milestone("Lan netsetup module started");
 
 
-string netdevice = SCR::Read (.etc.install_inf.Netdevice);
+string netdevice = (string)SCR::Read (.etc.install_inf.Netdevice);
 if (netdevice == nil) netdevice = "eth0";
 
-string netconfig = SCR::Read (.etc.install_inf.NetConfig);
+string netconfig = (string)SCR::Read (.etc.install_inf.NetConfig);
 if (netconfig == nil) netconfig = "static";
 if (netconfig == "dhcp") netconfig = "static"; // FIXME
 
-string ipaddr = SCR::Read (.etc.install_inf.IP);
+string ipaddr = (string)SCR::Read (.etc.install_inf.IP);
 if (ipaddr == nil) ipaddr = "";
 
-string netmask = SCR::Read (.etc.install_inf.Netmask);
+string netmask = (string)SCR::Read (.etc.install_inf.Netmask);
 if (netmask == nil) netmask = "";
 
-string gateway = SCR::Read (.etc.install_inf.Gateway);
+string gateway = (string)SCR::Read (.etc.install_inf.Gateway);
 if (gateway == nil) gateway = "";
 
 
 define void load_modules () ``{
-    list(string) install_aliases = SCR::Dir (.etc.install_inf_alias);
+    list<string> install_aliases = (list<string>)SCR::Dir (.etc.install_inf_alias);
     foreach (string alias, install_aliases, ``{
-	string target = SCR::Read (add (.etc.install_inf_alias, alias));
+	string target = (string)SCR::Read (add (.etc.install_inf_alias, alias));
 	SCR::Execute (.target.modprobe, target, "");
     });
 };
