@@ -22,5 +22,5 @@
 .sysconfig.dslprovider
 
 `ag_ini(
-    SCR::SysConfigFile("/etc/sysconfig/network/providers/dsl-provider0")
+    SysConfigFile("/etc/sysconfig/network/providers/dsl-provider0")
 )

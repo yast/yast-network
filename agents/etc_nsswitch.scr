@@ -19,7 +19,7 @@
 .etc.nsswitch_conf
 
 `ag_ini(
-    SCR::IniAgent( "/etc/nsswitch.conf",
+    IniAgent( "/etc/nsswitch.conf",
 	$[
 	    "options" : [ "ignore_case", "global_values", "flat" ],
 	    "comments" : [ "^#.*", "^[ \t]*$", ],

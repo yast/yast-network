@@ -35,5 +35,5 @@
 .etc.resolv_conf
 
 `ag_resolver(
-    SCR::ResolverAgent("/etc/resolv.conf")
+    ResolverAgent("/etc/resolv.conf")
 )

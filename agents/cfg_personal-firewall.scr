@@ -22,5 +22,5 @@
 .sysconfig.personal-firewall
 
 `ag_ini(
-    SCR::SysConfigFile("/etc/sysconfig/personal-firewall")
+    SysConfigFile("/etc/sysconfig/personal-firewall")
 )
