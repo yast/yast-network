@@ -254,7 +254,7 @@ global define term CreateUserDataTerm(
 		`TextEntry(`id(`lineid), _("&Line ID"), lineid),
 		`HSpacing(1),
 		/* TextEntry label */
-		`TextEntry(`id(`t_onlineid), _("&T-Online ID"), t_onlineid)
+		`TextEntry(`id(`t_onlineid), _("&T-Online Number"), t_onlineid)
 	    ),
 	    `VSpacing( 0.5 ),
 	    `HBox(
@@ -281,9 +281,9 @@ global define term CreateUserDataTerm(
 
 /**
  * General DSL dialog
- * In case of T-Online, the username is 12 digit Line ID, 12 digit T-Online ID,
+ * In case of T-Online, the username is 12 digit Line ID, 12 digit T-Online No,
  * 4 digit user code and a string "@t-online.de"
- * @param tonline if split username -> Line ID, T-Online ID and username
+ * @param tonline if split username -> Line ID, T-Online No and username
  * @param subdialog if this dialog was called from an other module with
  *                     presetted parameter
  * @return dialog result
@@ -340,7 +340,7 @@ sure which mode to use, ask your provider.</p>") +
 	/* DSL dialog help 4/8 (T-Online) */
 	helptext = helptext + _("<p>Second, enter your registration data.
 Enter your <i>Line ID</i> (Anschlusskennung), e.g., 00056780362,
-the <i>T-Online ID</i>, e.g. 870008594732, the <i>user code</i>
+the <i>T-Online Number</i>, e.g. 870008594732, the <i>user code</i>
 (Mitbenutzernummer), typically 0001, and your <i>password</i>.</p>");
 
     else
@@ -586,7 +586,7 @@ automatically if data is requested. To use this, specify at least one
 		}
 		if(UI::QueryWidget(`id(`t_onlineid), `Value) == "") {
 		    /* MessagePopup text */
-		    UI::MessagePopup(_("T-Online ID cannot be empty."));
+		    UI::MessagePopup(_("T-Online Number cannot be empty."));
 		    UI::SetFocus(`id(`t_onlineid));
 		    continue;
 		}

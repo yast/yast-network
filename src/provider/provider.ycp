@@ -77,9 +77,9 @@ dialing number, call the hotline <b>%2</b>.</p>");
 }
 
 /**
- * Create T-Online username from LineID, T-OnlineID and UserCode
+ * Create T-Online username from LineID, T-OnlineNo and UserCode
  *
- * It's concatenation of LineID (10 digits), T-OnlineID (10 digits,
+ * It's concatenation of LineID (12 digits), T-OnlineNo (12 digits,
  * if less, then with appended '#', the user code (4 digits) and
  * finally of the string "@t-online.de" if the type is "dsl".
  *
@@ -98,7 +98,7 @@ global define void tonline2username() ``{
 }
 
 /**
- * Split username to LineID, T-OnlineID and UserCode
+ * Split username to LineID, T-OnlineNo and UserCode
  * @see tonline2username
  */
 global define void username2tonline() ``{
@@ -414,7 +414,7 @@ the password every time.</p>");
 		}
 		if(t_onlineid == "") {
 		    /* MessagePopup text */
-		    UI::MessagePopup(_("Enter the T-Online ID."));
+		    UI::MessagePopup(_("Enter the T-Online Number."));
 		    UI::SetFocus(`id(`t_onlineid));
 		    continue;
 		}
