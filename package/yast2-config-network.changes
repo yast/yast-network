@@ -1,3 +1,7 @@
+- Always saves (MODEM|ISDN|DSL)SUPPORTED 
+- Name of country for custom providers changed Other --> Custom
+- 2.5.16
+
 -------------------------------------------------------------------
 Tue Feb 12 17:57:06 CET 2002 - msvec@suse.cz
 

@@ -223,9 +223,13 @@ global define void Commit () ``{
  * @return provider map in share format
  */
 define map ProviderToShare (map prov) ``{
-    return mapmap (`k, `v, prov, ``{
+    map out = mapmap (`k, `v, prov, ``{
 	return [ lookup (sysconfig2share, k, nil), v ];
     });
+    out = add (out, "Modem supported", lookup (prov, "MODEMSUPPORTED", "yes") == "yes" ? "1" : "0");
+    out = add (out, "ISDN supported", lookup (prov, "ISDNSUPPORTED", "no") == "yes" ? "1" : "0");
+    out = add (out, "DSL supported", lookup (prov, "DSLSUPPORTED", "no") == "yes" ? "1" : "0");
+    return out;
 }
 /**
  * Unfortunatelly we have different file format for providers in
@@ -234,9 +238,13 @@ define map ProviderToShare (map prov) ``{
  * @return provider map in sysconfig format
  */
 define map ProviderToSysconfig (map prov) ``{
-    return mapmap (`k, `v, prov, ``{
+    map out = mapmap (`k, `v, prov, ``{
 	return [ lookup (share2sysconfig, k, nil), v ];
     });
+    out = add (out, "MODEMSUPPORTED", lookup (prov, "Modem supported", "1") == "1" ? "yes" : "no");
+    out = add (out, "ISDNSUPPORTED", lookup (prov, "ISDN supported", "0") == "1" ? "yes" : "no");
+    out = add (out, "DSLSUPPORTED", lookup (prov, "DSL supported", "0") == "1" ? "yes" : "no");
+    return out;
 }
 
 /**
@@ -291,7 +299,7 @@ global define list getCountries (string preselect) ``{
 	    return `item (`id (i), lookup (table, i, i), 0 == index || i == preselect);
     });
     if (0 != size (providers))
-	out = add (out, `item (`id ("_custom"), _("Other"), "_custom" == preselect));
+	out = add (out, `item (`id ("_custom"), _("Custom"), "_custom" == preselect));
     return out;
 }
 
