@@ -40,6 +40,9 @@
     }
 
 
+    boolean we_have_patches = false;
+
+
     boolean already_up = false;
     if (!Mode::test)
 	already_up = Internet::Status ();
@@ -225,18 +228,22 @@ Internet Connection Test.</p>") +
 
 	if (test_stage == 3)
 	{
-	    // check for patches
-	    sleep (100);
+	    // check for updates
 
-	    if (already_up)
+	    integer ret = SCR::Execute (.target.bash, "/usr/bin/online_update -q");
+	    y2milestone ("online_update -q returned %1", ret);
+
+	    if (ret == -1)			// some failure
 	    {
-		set_result (`success);
+		Report::Message (_("Checking for latest updates failed."));
 	    }
-	    else
+	    else if (ret == 1 || ret == 2)	// there are patches
 	    {
-		set_stage (4);
-		mark_label (3);
+		we_have_patches = true;
 	    }
+
+	    set_stage (4);
+	    mark_label (3);
 	    return;
 	}
 
@@ -248,11 +255,14 @@ Internet Connection Test.</p>") +
 		return;
 	    }
 
-	    // stop connection
-	    y2milestone ("called Stop");
-	    if (!Internet::Stop ()) {
-		set_result (`failure);
-		return;
+	    if (!already_up)
+	    {
+		// stop connection
+		y2milestone ("called Stop");
+		if (!Internet::Stop ()) {
+		    set_result (`failure);
+		    return;
+		}
 	    }
 
 	    set_result (`success);
@@ -313,9 +323,12 @@ Internet Connection Test.</p>") +
 	}
     }
 
-    if (ret == `next && test_result == `success) // FIXME
+    if (ret == `next)
     {
-	AskYOUDialog();
+	Internet::do_you = false;
+
+	if (we_have_patches)
+	    AskYOUDialog();
     }
 
     return ret;
