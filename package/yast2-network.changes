@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Sep 29 10:52:33 CEST 2004 - arvin@suse.de
+
+- disable ugly hack of bug #42177 since 9.2 is a box product
+
+-------------------------------------------------------------------
 Tue Sep 28 16:54:01 CEST 2004 - mvidner@suse.cz
 
 - Do not run dhcpcd-test, it may trigger IP address change (#46214).
