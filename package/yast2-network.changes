@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Mar 13 13:20:03 CET 2003 - msvec@suse.de
+
+- allow to set autodetected NICs as WLAN (#25234)
+- 2.7.33
+
+-------------------------------------------------------------------
 Wed Mar 12 13:52:42 CET 2003 - msvec@suse.de
 
 - get around CallFunction scope problems (#25116)

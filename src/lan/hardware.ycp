@@ -223,8 +223,19 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		`VSpacing(0.4),
 		MTUBox,
 		`VSpacing(0.4),
+		`HBox(
+		    `HStretch(),
+		    `HSpacing(0.5),
+		    /* CheckBox label */
+		    `CheckBox(`id(`wireless), `opt(`notify), _("&Wireless device"), wireless),
+		    `HSpacing(1.5),
+		    /* Pushbutton label */
+		    `PushButton(`id(`wire), _("Wireless &settings")),
+		    `HSpacing(0.5),
+		    `HStretch()
+		),
 		/* Pushbutton label */
-		`PushButton(`id(`wire), _("Wireless &settings")),
+		// #25234 `PushButton(`id(`wire), _("Wireless &settings")),
 		// FIXME: show only in the case of wireless device
 		`VSpacing(0.5)
 		),
