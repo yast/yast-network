@@ -20,3 +20,10 @@ Read	.target.tmpdir "/tmp"
 Dump	AddModule
 Return	true
 Dump	$["module":"", "options":""]
+Dump	ChangeModule
+Return	true
+Dump	$["options":$["dummy2":"-o=dummy2"]]
+Return	true
+Dump	$["options":$["dummy2":"-o=dummy2"]]
+Return	true
+Dump	$[]

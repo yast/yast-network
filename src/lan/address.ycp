@@ -248,6 +248,9 @@ completes the configuration.</p>");
     ChangeWidgetIfExists(`id(`dhcp), `Value, bootproto == "dhcp");
     ChangeWidgetIfExists(`id(`static), `Value, bootproto == "static");
 
+    if(bootproto == "static" && ipaddr == "")
+	UI::SetFocus(`id(`ipaddr));
+
     any ret = nil;
     while(true) {
 

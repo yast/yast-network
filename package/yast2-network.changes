@@ -1,8 +1,8 @@
 -------------------------------------------------------------------
-Mon Oct 20 16:42:40 CEST 2003 - msvec@suse.cz
+Tue Oct 21 14:04:29 CEST 2003 - msvec@suse.cz
 
+- dummy device support (#15960)
 - preliminary USB Network support (#22739)
-- preliminary dummy device support (#15960)
 - replace obsolete require calls (#31673)
 - allow to select a different card (#32450)
 - prefill "http://" in proxy fields (#31269)

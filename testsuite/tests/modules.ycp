@@ -4,18 +4,28 @@ include "testsuite.ycp";
 
 map READ = $[
     "probe" : $[ "system" : [], ],
-    "target" : $[
-	"tmpdir" : "/tmp",
-    ],
+    "target" : $[ "tmpdir" : "/tmp", ],
 ];
 
 TESTSUITE_INIT([READ], nil);
 include "network/modules.ycp";
 
 map Module = $[];
+map Modules = $[];
 
 DUMP("AddModule");
 TEST(``(AddModule("eth")), [], nil);
 DUMP(Module);
+
+DUMP("ChangeModule");
+Module = $[ "options" : "-o=dummy2" ];
+TEST(``(ChangeModule("dummy2", true)), [], nil);
+DUMP(Modules);
+Module = $[ "options" : "-o=dummy2" ];
+TEST(``(ChangeModule("dummy2", true)), [], nil);
+DUMP(Modules);
+Module = $[];
+TEST(``(ChangeModule("dummy2", true)), [], nil);
+DUMP(Modules);
 
 }

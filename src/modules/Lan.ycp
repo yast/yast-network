@@ -599,6 +599,11 @@ global define boolean Commit() ``{
 	change(newdev, "REMOTE_IPADDR", remoteip);
 	change(newdev, "MTU", mtu);
 
+	if(type == "dummy") {
+	    Module["module"] = "dummy";
+	    Module["options"] = sformat("-o=dummy%1", device);
+	}
+
 	if(hotplug == "") {
 	    change(newdev, "STARTMODE", "onboot");
 	    ChangeModule(device_name(type, device), operation == `add);

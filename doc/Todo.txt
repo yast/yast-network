@@ -8,7 +8,6 @@ Bugs:
 
 in-progress:
 - [snwint] ifcfg-usb-usb: detected devices (manual adding done, detected missing) (#22739)
-- dummy: >1 devices, check: [suse-network] and [DUMMY] (#15960)
 
 Improvements:
 - dns: two resolv.conf scrconfs

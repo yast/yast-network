@@ -156,6 +156,7 @@ global define boolean WriteModules() ``{
  * @return true if success
  */
 global define boolean ChangeModule(string name, boolean check) ``{
+    y2debug("name=%1", name);
     y2debug("Module=%1", Module);
     y2debug("Modules=%1", Modules);
 
@@ -172,23 +173,41 @@ global define boolean ChangeModule(string name, boolean check) ``{
     o = String::CutBlanks(o);
     y2debug("%1,%2", m, o);
 
-    map alias = Modules["alias"]:$[];
-    alias[name] = m;
-    Modules["alias"] = alias;
+    if(m == "" || m == nil) {
+	if(haskey(Modules, "alias"))
+	    Modules = remove(Modules, "alias");
+    }
+    else {
+	map alias = Modules["alias"]:$[];
+	alias[name] = m;
+	Modules["alias"] = alias;
+    }
 
-    map m_orig = string2map(Modules["options", m]: "");
-    map m_new = string2map(o);
-    maplist(string mo, string op, m_new, ``{
-	if(haskey(m_orig, mo)) {
-	    if(m_orig[mo]:"" != op)
-		m_orig[mo] = sformat("%1,%2", op, m_orig[mo]:"");
-	}
-	else m_orig[mo] = op;
-    });
+    if(o == "" || o == nil) {
+	if(haskey(Modules, "options"))
+	    Modules = remove(Modules, "options");
+    }
+    else {
+	if(m == "" || m == nil || m == "dummy") m = name;
 
-    map options = Modules["options"]:$[];
-    options[m] = map2string(m_orig);
-    Modules["options"] = options;
+	map m_orig = string2map(Modules["options", m]: "");
+	map m_new = string2map(o);
+	y2debug("M=%1", Modules["options", m]: "");
+	y2debug("o=%1", o);
+	y2debug("m_orig=%1", m_orig);
+	y2debug("m_new=%1", m_new);
+	maplist(string mo, string op, m_new, ``{
+	    if(haskey(m_orig, mo)) {
+		if(m_orig[mo]:"" != op)
+		    m_orig[mo] = sformat("%1,%2", op, m_orig[mo]:"");
+	    }
+	    else m_orig[mo] = op;
+	});
+
+	map options = Modules["options"]:$[];
+	options[m] = map2string(m_orig);
+	Modules["options"] = options;
+    }
 
     y2debug("Modules=%1", Modules);
     return true;
