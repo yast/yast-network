@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Fri Mar 11 15:48:21 CET 2005 - mvidner@suse.cz
+Fri Mar 11 16:25:44 CET 2005 - mvidner@suse.cz
 
+- Don't allow single quotes inside ifcfg-*:NAME (#72164).
 - Use NetworkDevices::ConcealSecrets not to log sensitive information
   (#65741).
 - Multiple autoinstallation fixes by means of a rewrite (nashif)
@@ -12,6 +13,7 @@ Fri Mar 11 15:48:21 CET 2005 - mvidner@suse.cz
   * #65353 - ability to provide static network information for autoyast
 - Added WLAN channels 13 and 14 to the default list (#67150).
 - Enable user control of newly added WLAN cards (#63767).
+- 2.11.24
 
 -------------------------------------------------------------------
 Tue Mar  8 15:22:21 CET 2005 - kkeil@suse.de
