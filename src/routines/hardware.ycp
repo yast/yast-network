@@ -242,7 +242,12 @@ global define string ControllerType(map hwdevice) ``{
 	if(subclass_id == 00) return "eth";
 	else if(subclass_id == 01) return "tr";
 	else if(subclass_id == 02) return "fddi";
-	else if(subclass_id == 128) {
+	else if(subclass_id == 03) return "ctc";
+	else if(subclass_id == 04) return "iucv";
+	else if(subclass_id == 05) return "hsi";
+	else if(subclass_id == 06) return "qeth";
+	else if(subclass_id == 07) return "escon";
+	else if(subclass_id == 0x80) {
 	    /* Nothing was found, default is eth */
 	    y2error("Unknown network controller type: %1", hwdevice);
 	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
@@ -257,13 +262,22 @@ global define string ControllerType(map hwdevice) ``{
     }
     /* Network Interface */
     else if(lookup(hwdevice, "class_id", -1) == 0x107) {
-	if(subclass_id == 00) return "lo";
-	else if(subclass_id == 01) return "eth";
-	else if(subclass_id == 02) return "tr";
-	else if(subclass_id == 03) return "fddi";
-	else if(subclass_id == 70) return "escon";
-	else if(subclass_id == 80) return "unknown";
-	else if(subclass_id == 81) return "sit";
+	if(subclass_id == 0) return "lo";
+	else if(subclass_id == 1) return "eth";
+	else if(subclass_id == 2) return "tr";
+	else if(subclass_id == 3) return "fddi";
+	else if(subclass_id == 4) return "ctc";
+	else if(subclass_id == 5) return "iucv";
+	else if(subclass_id == 6) return "hsi";
+	else if(subclass_id == 7) return "qeth";
+	else if(subclass_id == 8) return "escon";
+	else if(subclass_id == 0x80) {
+	    /* Nothing was found, default is eth */
+	    y2error("Unknown network interface type: %1", hwdevice);
+	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
+	    return "eth";
+	}
+	else if(subclass_id == 0x81) return "sit";
 	else {
 	    /* Nothing was found, default is eth */
 	    y2error("Unknown network interface type: %1", hwdevice);

@@ -42,7 +42,13 @@ global define symbol ConnectionDialog(string type) ``{
 
     string device = nil;
     if(type == "modem") device = device_name(Modem::type, Modem::device);
-    else if(type == "isdn") device = device_name(ISDN::type, ISDN::device);
+    else if(type == "isdn") {
+	/* FIXME: #18840 */
+	if(ISDN::type == "net")
+	    device = device_name("ippp", ISDN::device);
+	else
+	    device = device_name(ISDN::type, ISDN::device);
+    }
     else if(type == "dsl") device = "ppp0"; // device_name(DSL::type, DSL::device);
     else {
 	y2error("Unknown type: %1", type);

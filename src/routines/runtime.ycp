@@ -27,6 +27,7 @@ global define boolean ReadStatus() ``{
  * @return true if success
  */
 global define boolean RunSuSEconfig() ``{
+    y2milestone("Running SuSEconfig ...");
     SCR::Execute(.target.bash, "/sbin/SuSEconfig --module hostname");
     SCR::Execute(.target.bash, "/sbin/SuSEconfig --module apache 2>/dev/null");
     SCR::Execute(.target.bash, "/sbin/SuSEconfig --module sendmail 2>/dev/null");
@@ -35,10 +36,24 @@ global define boolean RunSuSEconfig() ``{
 }
 
 /**
+ * Run one SuSEconfig module
+ * @return true if success
+ */
+global define boolean RunSuSEconfigModule(string modul) ``{
+    if(modul == nil || modul == "") {
+	y2error("Wrong SuSEconfig module: %1", modul);
+	return false;
+    }
+    y2milestone("Running SuSEconfig module %1", modul);
+    return SCR::Execute(.target.bash, sformat("/sbin/SuSEconfig --module %1", modul)) == 0;
+}
+
+/**
  * Run KInternet
  * @return true if success
  */
 global define boolean RunKInternet() ``{
+    y2milestone("Running KInternet ...");
     return SCR::Execute(.target.bash, "{ [ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu -u $USER -- kinternet -quiet; } >/dev/null 2>&1 &") == 0;
 }
 

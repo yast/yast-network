@@ -124,7 +124,8 @@ global define boolean Write() ``{
     SCR::Write(.sysconfig.dslprovider.DNS2, dns2);
     SCR::Write(.sysconfig.dslprovider, nil);
 
-    /* setup smpppd */
+    /* setup network and smpppd */
+    SetupNetwork();
     SetupSMPPPD();
 
     Firewall::Write();

@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Sep  4 12:10:30 CEST 2002 - msvec@suse.cz
+
+- write the correct ISDN device for the firewall (#18840)
+- regenerate profiles by SuSEconfig after proxy data change (#18791)
+- set up the network service also for modems and DSL (#18770)
+- added the s390 network devices types
+- 2.6.24
+
+-------------------------------------------------------------------
 Mon Sep  2 13:52:33 CEST 2002 - msvec@suse.cz
 
 - proxy example help text (#18721)
