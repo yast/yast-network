@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 16 12:35:26 CET 2004 - msvec@suse.cz
+
+- better device selection for installation (#35624)
+- 2.9.13
+
+-------------------------------------------------------------------
 Mon Mar 15 17:52:04 CET 2004 - msvec@suse.cz
 
 - use MAC address as a primary identification (#35731)
@@ -7,7 +13,7 @@ Mon Mar 15 17:52:04 CET 2004 - msvec@suse.cz
 - write hostname to /etc/hosts (#22825)
 - dropped unused desktop entries (#35618)
 - proper focus in proxy (#35614)
-- fixed deleting of modem and DSL devices
+- fixed deleting of modem and DSL devices (#36079)
 - fixed testsuite
 - 2.9.12
 

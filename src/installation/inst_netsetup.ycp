@@ -38,6 +38,17 @@ if (gateway == nil) gateway = "";
 string hwaddr = (string) SCR::Read (.etc.install_inf.HWAddr);
 if (hwaddr == nil) hwaddr = "";
 
+y2milestone("Original netdevice: %1", netdevice);
+string command = sformat("/sbin/ifconfig | grep -i \"HWaddr *%1\" | cut -d\" \" -f1", hwaddr);
+
+map output = (map) SCR::Execute(.target.bash_output, command, $["LC_MESSAGES":"C"]);
+y2milestone("Output: %1", output);
+if(output != nil) {
+    string newdevice = output["stdout"]:"";
+    newdevice = select(splitstring(newdevice, "\n"), 0, "");
+    if(newdevice != "" && newdevice != nil) netdevice = newdevice;
+    y2milestone("Updated netdevice: %1 (%2)", netdevice, newdevice);
+}
 
 define void load_modules () {
     y2milestone("Loaded Modules: %1", SCR::Read(.target.string, "/proc/modules"));
