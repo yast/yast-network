@@ -10,75 +10,75 @@
 
 {
 
-    textdomain "network";
+textdomain "network";
 
-    import "Directory";
-    import "Internet";
-    import "Label";
-    import "Mode";
-    import "Popup";
-    import "Product";
-    import "Wizard";
+import "Directory";
+import "Internet";
+import "Label";
+import "Mode";
+import "Popup";
+import "Product";
+import "Wizard";
 
 /* NI: required wrt functions in routines.ycp */
 block<boolean> AbortFunction = nil;
 define boolean Modified() ``{ return true; }
 
-    include "network/routines.ycp";
-    include "network/installation/dialogs.ycp";
+include "network/routines.ycp";
+include "network/installation/dialogs.ycp";
 
 
-    /* Called backwards */
-    if(WFM::Args(2) == true)
-	return `auto;
+/* Called backwards */
+if(WFM::Args(2) == true)
+    return `auto;
 
-    if(!Internet::do_test)
-	return `auto;
+if(!Internet::do_test)
+    return `auto;
 
-    /* Nothing to test */
-    if(!Internet::FindFastest())
-	return `auto;
+/* Nothing to test */
+if(!Internet::FindFastest())
+    return `auto;
 
 
-    boolean we_have_patches = false;
+boolean we_have_patches = false;
 
-    boolean already_up = false;
+boolean already_up = false;
 
-    symbol test_stage = `open;
-    symbol test_result = `success;
+symbol test_stage = `open;
+symbol test_result = `success;
 
-    // list of all log files to show
-    list logs = [];
+// list of all log files to show
+list logs = [];
 
-    // dir of log files
+// dir of log files
 string logdir = (string) SCR::Read (.target.tmpdir) + "/internet-test";
 
 
-    if(!Mode::test)
-	already_up = Internet::Status();
+if(!Mode::test)
+    already_up = Internet::Status();
 
 
-    /* Progress step 1/4 */
-    string l1 = _("Connecting to Internet...");
-    /* Progress step 2/4 */
-    string l2 = _("Downloading the latest release notes...");
-    /* Progress step 3/4 */
-    string l3 = _("Checking for latest updates...");
-    /* Progress step 4/4 */
-    string l4 = _("Closing connection...");
+/* Progress step 1/4 */
+string l1 = _("Connecting to Internet...");
+/* Progress step 2/4 */
+string l2 = _("Downloading the latest release notes...");
+/* Progress step 3/4 */
+string l3 = _("Checking for latest updates...");
+/* Progress step 4/4 */
+string l4 = _("Closing connection...");
 
 
-    /**
-     * Return current language with .UTF-8 appended.
-     * FIXME: there must be a better way!
-     */
-    define string GetLanguageUTF8 () ``{
-	string tmp = WFM::GetLanguage ();
-	integer pos = findfirstof (tmp, "@.");
-	if (pos != nil)
-	    tmp = substring (tmp, 0, pos);
-	return tmp + ".UTF-8";
-    };
+/**
+ * Return current language with .UTF-8 appended.
+ * FIXME: there must be a better way!
+ */
+define string GetLanguageUTF8 () ``{
+    string tmp = WFM::GetLanguage ();
+    integer pos = findfirstof (tmp, "@.");
+    if (pos != nil)
+	tmp = substring (tmp, 0, pos);
+    return tmp + ".UTF-8";
+};
 
 
     /**

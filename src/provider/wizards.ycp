@@ -68,7 +68,7 @@ define symbol OneProviderSequence(boolean country) ``{
 	    `abort  : `abort
 	],
 	"commit" : $[
-	    `next	: `next,
+	    `next   : `next,
 	],
     ];
 
@@ -152,7 +152,7 @@ define symbol ProviderSequence() ``{
 	],
 	"write" : $[
 	    `abort	: `abort,
-	    `next   : `next,
+	    `next	: `next,
 	],
     ];
 

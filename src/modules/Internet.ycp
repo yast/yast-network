@@ -63,9 +63,9 @@ define void Reset() ``{
  * Find the fastest connection to the Internet
  * @return true if a "good" connection was found
  */
-global define boolean FindFastest () ``{
+global define boolean FindFastest() ``{
 
-    Reset ();
+    Reset();
 
     NetworkDevices::Read();
     device = NetworkDevices::Fastest();

@@ -41,7 +41,7 @@ if(size(args) > 0) {
 	if(DSL::capiadsl == nil) DSL::capiadsl = $[];
     }
     else
-        y2error("Bad argument for modem: %1",WFM::Args(0));
+        y2error("Bad argument for modem: %1", WFM::Args(0));
 }
 
 /* main ui function */

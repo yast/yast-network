@@ -130,7 +130,7 @@ configuration.</p>");
     list unconfigured = (list) select(summary, 1, []);
     string configured = (string) select(summary, 0, "");
 
-    y2debug("unconfigured=%1",unconfigured);
+    y2debug("unconfigured=%1", unconfigured);
     /* Frame label */
     term contents = Wizard_hw::DetectedContent(_("DSL Devices to Configure"),
 	    unconfigured, false, configured);
