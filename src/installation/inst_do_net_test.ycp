@@ -346,10 +346,10 @@ and correct the setting.</p>");
 
     if (ret == `next)
     {
-	Internet::do_you = false;
-
 	if (we_have_patches)
 	    AskYOUDialog();
+	else
+	    Internet::do_you = false;
     }
 
     return ret;

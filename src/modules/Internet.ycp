@@ -20,8 +20,8 @@ include "network/routines.ycp";
 // flag to remember if user wants to run internet test
 global boolean do_test = true;
 
-// flag to remember if user wants to run you
-global boolean do_you = true;
+// flag to remember if you should be started
+global boolean do_you = false;
 
 global string device = "";
 global string password = "";

@@ -186,9 +186,9 @@ global define symbol AskYOUDialog() ``{
     term buttons = `VBox(
 	`VSpacing(1),
 	/* RadioButton label */
-	`Left(`RadioButton(`id(`yes), _("&Yes, Run Online Update Now"), Internet::do_you)),
+	`Left(`RadioButton(`id(`yes), _("&Yes, Run Online Update Now"), true)),
 	/* RadioButton label */
-	`Left(`RadioButton(`id(`no), _("N&o, Skip Update"), !Internet::do_you)),
+	`Left(`RadioButton(`id(`no), _("N&o, Skip Update"), false)),
 	`VSpacing(1)
     );
 
