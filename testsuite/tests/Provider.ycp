@@ -45,7 +45,11 @@ map READ = $[
     ],
 ];
 
-TESTSUITE_INIT([READ],nil);
+map EXEC = $[
+    "target" : $[ "bash_output" : $[] ],
+];
+
+TESTSUITE_INIT([READ, $[], EXEC],nil);
 import "Provider";
 
 DUMP("Read");

@@ -55,6 +55,7 @@ string resolv_conf = "/etc/resolv.conf";
  */
 global define boolean Read() {
 
+    Host::Read();
     NetworkConfig::Read();
 
     /* install.inf from linuxrc */
@@ -118,6 +119,17 @@ global define boolean Read() {
  */
 global define boolean Write() {
 
+    /* build FQ hostname */
+    string fqhostname = Hostname::MergeFQ(hostname, domain);
+
+    /* Update /etc/hosts */
+    list<string> devs = NetworkDevices::LocateNOT("IPADDR", "");
+    list<string> ips = maplist(string dev, devs, {
+	return NetworkDevices::GetValue(dev, "IPADDR");
+    });
+    Host::Update(fqhostname, oldhostname, ips);
+    Host::Write();
+
     NetworkConfig::Write();
 
     y2milestone("Writing configuration");
@@ -125,9 +137,6 @@ global define boolean Write() {
 	y2milestone("No changes to DNS -> nothing to write");
 	return true;
     }
-
-    /* build FQ hostname */
-    string fqhostname = Hostname::MergeFQ(hostname, domain);
 
     /* Allow to set hostname even if it's modified by DHCP (#bug)
     if(NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false != true) { */
@@ -140,13 +149,6 @@ global define boolean Write() {
 
 	/* write hostname */
 	SCR::Write(.target.string, "/etc/HOSTNAME", fqhostname + "\n");
-
-	/* Update /etc/hosts */
-	list<string> devs = NetworkDevices::LocateNOT("IPADDR", "");
-	list<string> ips = maplist(string dev, devs, {
-	    return NetworkDevices::GetValue(dev, "IPADDR");
-	});
-	Host::Update(fqhostname, oldhostname, ips);
 
 	/* Finish him */
 	RunSuSEconfig();

@@ -2,6 +2,7 @@
 Tue Mar 16 15:09:36 CET 2004 - msvec@suse.cz
 
 - offer possibility to change configuration name (#36147)
+- properly write hostname to /etc/hosts (#22825)
 - fixed kernel module selection
 - 2.9.14
 

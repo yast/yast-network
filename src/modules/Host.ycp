@@ -46,12 +46,15 @@ string hosts_file = "/etc/hosts";
  */
 global boolean write_only = false;
 
+boolean initialized = false;
 
 /**
  * Read hosts settings
  * @return true if success
  */
 global define boolean Read() {
+
+    if(initialized == true) return true;
 
     /* read route.conf */
     if(SCR::Read(.target.size, hosts_file) > 0) {
@@ -69,6 +72,7 @@ global define boolean Read() {
     hosts_init = hosts;
 
     y2debug("hosts=%1", hosts);
+    initialized = true;
     return true;
 }
 
@@ -78,8 +82,11 @@ global define boolean Read() {
  */
 global define boolean Write() {
 
-    if(!modified) return true;
     y2milestone("Writing configuration");
+    if(!modified) {
+	y2milestone("No changes to Host -> nothing to write");
+	return true;
+    }
 
     /* Check if there is anything to do */
     if(hosts_init == hosts) {
@@ -157,13 +164,18 @@ global define list GetSystemHosts() {
  * Update hosts according to the current hostname
  * @param hostname current hostname
  * @param domain current domain name
- * @param ips localhost IP addresses
+ * @param iplist localhost IP addresses
  * @return true if success
  */
-global define boolean Update(string oldhn, string newhn, list<string> ips) {
+global define boolean Update(string oldhn, string newhn, list<string> iplist) {
+
+    list<string> ips = filter(string ip, iplist, {
+	return ip != "127.0.0.1";
+    });
 
     y2milestone("Hosts: %1", hosts);
     y2milestone("Updating /etc/hosts: %1 -> %2: %3", oldhn, newhn, ips);
+    modified = true;
 
     string nick = select(Hostname::SplitFQ(newhn), 0, "");
     string oldnick = select(Hostname::SplitFQ(oldhn), 0, "");
@@ -184,7 +196,7 @@ global define boolean Update(string oldhn, string newhn, list<string> ips) {
 
     /* Remove old hostname from hosts */
     if(haskey(hosts, oldhostip)) {
-	y2debug("Deleteing: %1", oldhostip);
+	y2debug("Deleting: %1", oldhostip);
 	Deleted = add(Deleted, oldhostip);
 	hosts = remove(hosts, oldhostip);
     }

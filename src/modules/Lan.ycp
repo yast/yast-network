@@ -18,6 +18,7 @@ textdomain "network";
 import "Arch";
 import "DNS";
 import "Detection";
+import "Host";
 import "IP";
 import "Map";
 import "Mode";
@@ -228,6 +229,7 @@ global define boolean Read() {
     /* Progress step 6/9 */
     ProgressNextStage(_("Reading host name and DNS configuration..."));
     DNS::Read();
+    Host::Read();
     sleep(sl);
 
     if(Abort()) return false;
@@ -339,6 +341,7 @@ global define boolean Write() {
     /* Progress step 6/10 */
     ProgressNextStage(_("Writing host name and DNS configuration..."));
     DNS::Write();
+    Host::Write();
     sleep(sl);
 
     if(Abort()) return false;
