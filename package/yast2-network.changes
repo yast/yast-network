@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Nov 10 16:27:03 CET 2004 - mvidner@suse.cz
+
+- Install wpa_supplicant when a device uses WPA-PSK (#47809).
+
+-------------------------------------------------------------------
 Wed Nov 10 10:51:52 CET 2004 - mvidner@suse.cz
 
 - Moved NetworkDevices from yast2-network to yast2.

@@ -1161,6 +1161,11 @@ global list<string> Packages () {
     {
 	pkgs = add (pkgs, "ifplugd");
     }
+    // #47809
+    if (NetworkDevices::Locate ("WIRELESS_AUTH_MODE", "psk") != [])
+    {
+	pkgs = add (pkgs, "wpa_supplicant");
+    }
     return pkgs;
 }
 

@@ -196,7 +196,7 @@ wep_key_help +
 _("<p>To use WPA-PSK, enter the preshared key. This
 key is used for authentication and encryption keys are generated from
 it. These are not vulnerable to known attacks against WEP keys, but
-dictionary attacks are still possible. Do not use a word that is 
+dictionary attacks are still possible. Do not use a word that is
 easy to guess as the passphrase.</p>
 ") +
 
