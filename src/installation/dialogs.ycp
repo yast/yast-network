@@ -3,6 +3,7 @@
  * Package:	Network configuration
  * Summary:	Configuration dialogs for installation
  * Authors:	Michal Svec <msvec@suse.cz>
+ *		Arvin Schnell <arvin@suse.de>
  *
  * $Id$
  */
@@ -71,19 +72,19 @@ global define symbol TestStepsDialog() ``{
 </p>");
 
     /* Label text (keep lines max. 65 chars long) */
-    string label = _("To validate your Internet access we suggest to
-activate the test procedure.");
+    string label = _("To validate your Internet access we suggest to activate
+the test procedure.");
 
     map labels = $[
 	/* Label text (keep lines max. 65 chars long) */
-	"dsl" : _("To validate your DSL Internet access we suggest to
-activate the test procedure."),
+	"dsl" : _("To validate your DSL Internet access we suggest to activate
+the test procedure."),
 	/* Label text (keep lines max. 65 chars long) */
-	"isdn" : _("To validate your ISDN Internet access we suggest to
-activate the test procedure."),
+	"isdn" : _("To validate your ISDN Internet access we suggest to activate
+the test procedure."),
 	/* Label text (keep lines max. 65 chars long) */
-	"modem" : _("To validate your Modem Internet access we suggest to
-activate the test procedure."),
+	"modem" : _("To validate your Modem Internet access we suggest to activate
+the test procedure."),
     ];
 
     string type = device_type(Internet::device);
@@ -91,39 +92,52 @@ activate the test procedure."),
 
     boolean test = true;
 
-    /* Steps dialog contents */
-    term contents = `HBox(
-	`HSpacing(6),
-	`VBox(
-	    `Left(`Label(label)),
-	    `VSpacing(1),
-	    /* Frame label */
-	    `Frame(_("Please select:"), `RadioButtonGroup(`id(`rb), `HBox(`HSpacing(2), `VBox(
-		`VSpacing(1),
-		/* Heading text */
-		`Left(`Heading(_("Following steps will be done during the test:"))),
-		`VSpacing(1),
-		/* Label text */
-		`Left(`Label(_("- Connect to SuSE server via Internet"))),
-		/* Label text */
-		`Left(`Label(_("- Check for latest updates"))),
-		/* Label text */
-		`Left(`Label(_("- Download latest release notes"))),
-		/* Label text */
-		`Left(`Label(_("- Close connection"))),
-		`VSpacing(1),
-		/* RadioButton label */
-		`Left(`RadioButton(`id(`yes), _("&Yes, test connection to the Internet"), test)),
-		/* RadioButton label */
-		`Left(`RadioButton(`id(`no), _("N&o, skip this test"), !test)),
-		`VSpacing(1)
-	    ), `HSpacing(2))))
-	),
-	`HSpacing(6)
-    );
+    /* Radiobuttons */
+    term buttons = `VBox (
+			  `VSpacing(1),
+			  /* RadioButton label */
+			  `Left(`RadioButton(`id(`yes),
+					     _("&Yes, test connection to the Internet"), test)),
+			  /* RadioButton label */
+			  `Left(`RadioButton(`id(`no),
+					     _("N&o, skip this test"), !test)),
+			  `VSpacing(1)
+			  );
 
-    Wizard::SetContentsButtons(caption, contents, help,
-	    BackButtonLabel(), NextButtonLabel());
+    /* Steps dialog contents */
+    term contents = `HBox (
+			   `HSpacing(5),
+			   `VBox (
+				  `Left(`Label(label)),
+				  `VSpacing(1),
+				  /* Heading text */
+				  `Left(`Heading(_("The following steps will be performed:"))),
+				  `VSpacing(1),
+				  /* Label text */
+				  `Left(`Label(_("- Connect to SuSE server via Internet"))),
+				  /* Label text */
+				  `Left(`Label(_("- Download latest release notes"))),
+				  /* Label text */
+				  `Left(`Label(_("- Check for latest updates"))),
+				  /* Label text */
+				  `Left(`Label(_("- Close connection"))),
+				  `VSpacing(2),
+				  /* Frame label */
+				  `Frame(_("Please select:"),
+					 `RadioButtonGroup(`id(`rb),
+							   `HBox(`HSpacing(2),
+								 buttons,
+								 `HSpacing(2)
+								 )
+							   )
+					 ),
+				  `VSpacing(1)
+				  ),
+			   `HSpacing(5)
+			   );
+
+    Wizard::SetContentsButtons (caption, contents, help,
+				BackButtonLabel(), NextButtonLabel());
 
     any ret = nil;
     while(true) {
@@ -169,26 +183,51 @@ global define symbol TestConnectionDialog() ``{
     string help = _("<p>FIXME
 </p>");
 
-    /* Test dialog contents */
-    term contents = `VBox(
-	/* Frame label */
-	`Label(_("Test sequence information")),
-	/* Frame label */
-	`Label(_("Test protocol")),
-	/* Frame label */
-	`Label(_("Results")),
-	/* Progress step 1/4 */
-	`Label(_("Connect to the Internet")),
-	/* Progress step 1/4 */
-	`Label(_("Check for latest updates")),
-	/* Progress step 1/4 */
-	`Label(_("Get latest release notes")),
-	/* Progress step 1/4 */
-	`Label(_("Close connection"))
-    );
+    /* Progress labels */
+    term progress = `VBox (
+			   /* Progress step 1/4 */
+			   `Left(`Label(_("Connect to the Internet"))),
+			   /* Progress step 2/4 */
+			   `Left(`Label(_("Download latest release notes"))),
+			   /* Progress step 3/4 */
+			   `Left(`Label(_("Check for latest updates"))),
+			   /* Progress step 4/4 */
+			   `Left(`Label(_("Close connection")))
+			   );
 
-    Wizard::SetContentsButtons(caption, contents, help,
-	    BackButtonLabel(), NextButtonLabel());
+    /* Test dialog contents */
+    term contents = `VBox (
+			   `VSpacing(1),
+			   `VBox (`HVCenter( `HSquash (progress))),
+			   `VSpacing(1),
+			   /* Push Button to abort internet test */
+			   `PushButton (_("Abort Test")),
+			   `VSpacing(1),
+			   `HBox(`HSpacing(1),
+				 /* Label of LogView showing protocol of internet test */
+				 `LogView (`id(`log), _("Test protocol:"), 5, 100),
+				 `HSpacing(1)
+				 ),
+			   `VSpacing(1),
+			   `HBox(`HSpacing(1),
+				 /* Label for result of internet test */
+				 `Label(_("Result:")),
+				 `HSpacing(2),
+				 `Label (`id(`res), `opt(`outputField, `hstretch), ""),
+				 `HSpacing(1)
+				 ),
+			   `VSpacing(2),
+			   `VStretch()
+			   );
+
+    Wizard::SetContentsButtons (caption, contents, help,
+				BackButtonLabel(), NextButtonLabel());
+
+    /* Possible result of internet test */
+    UI::ChangeWidget (`id(`res), `Value, _("Success"));
+
+    /* Possible result of internet test */
+    UI::ChangeWidget (`id(`res), `Value, _("Failure"));
 
     any ret = nil;
     while(true) {
