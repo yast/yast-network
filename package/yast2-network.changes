@@ -4,6 +4,13 @@ Fri Jul 23 12:38:40 CEST 2004 - mvidner@suse.cz
 - Fixed configuration of s390 LCS devices (#42886).
 
 -------------------------------------------------------------------
+Tue Jul 20 21:36:30 CEST 2004 - msvec@suse.cz
+
+- improved DNS and Routing summaries
+- duplicate IP address detection (#9951)
+- fixed coldplugged HW (#40587)
+
+-------------------------------------------------------------------
 Wed Jul 14 13:00:02 CEST 2004 - mvidner@suse.cz
 
 - Shut up when there are no wlan files to fix (#42990).

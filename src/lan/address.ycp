@@ -23,6 +23,7 @@ import "Routing";
 import "Wizard";
 
 include "network/routines.ycp";
+include "network/runtime.ycp";
 
 /**
  * Dialog for setting up IP address
@@ -370,11 +371,22 @@ completes the configuration.</p>");
 
 	    y2debug("bootproto=%1", bootproto);
 	    if(bootproto == "static") {
-		if(!IP::Check((string) UI::QueryWidget(`id(`ipaddr), `Value))) {
+		string ipa = (string) UI::QueryWidget(`id(`ipaddr), `Value);
+		if(!IP::Check(ipa)) {
 		    /* Popup text */
 		    Popup::Error(_("The IP address is incorrect"));
 		    UI::SetFocus(`id(`ipaddr));
 		    continue;
+		}
+		if(DuplicateIP(ipa)) {
+		    /* Popup text */
+		    string pop = _("Duplicate IP address detected.
+Really continue?
+");
+		    if(Popup::YesNoHeadline(Label::WarningMsg(), pop) != true) {
+			UI::SetFocus(`id(`ipaddr));
+			continue;
+		    }
 		}
 		if(UI::WidgetExists(`id(`remoteip)) && !IP::Check((string) UI::QueryWidget(`id(`remoteip), `Value))) {
 		    /* Popup text */

@@ -19,6 +19,7 @@ import "Popup";
 import "Summary";
 
 include "network/routines.ycp";
+include "network/runtime.ycp";
 include "network/summary.ycp";
 
 define string CheckEmptyName(string devtype, string hwname);
@@ -337,13 +338,14 @@ define string DeviceStatus(string devtype, string devnum, map devmap) {
 
 	if(proto == "" || proto == "static" || proto == "none" || proto == nil) {
 	    string addr = devmap["IPADDR"]:"";
+	    string host = ResolveIP(addr);
 	    string remip = devmap["REMOTE_IPADDR"]:"";
 	    if(addr == "" || addr == nil)
 		/* Network card status */
 		return sformat(_("Configured"));
 	    else if(remip == "" || remip == nil)
 		/* Network card status (%1 is address) */
-		return sformat(_("Configured with Address %1"), addr);
+		return sformat(_("Configured with Address %1"), (host=="")?addr:(addr+" ("+host+")"));
 	    else
 		/* Network card status (%1 is address, %2 is address) */
 		return sformat(_("Configured with Address %1 (remote %2)"), addr, remip);

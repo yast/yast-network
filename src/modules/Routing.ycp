@@ -19,6 +19,8 @@ import "Detection";
 import "NetworkDevices";
 import "Map";
 
+include "network/runtime.ycp";
+
 /**
  * All routes
  * list <map <string, string> >:
@@ -178,29 +180,6 @@ global define map Export() {
 }
 
 /**
- * Create routing text summary
- * @return summary text
- */
-global define string Summary() {
-
-    string summary = "";
-
-    if(Forward == true)
-	/* Summary text */
-	summary = summary + _("IP Forwarding: on");
-    else
-	/* Summary text */
-	summary = summary + _("IP Forwarding: off");
-
-    if(Routes != []) {
-	/* Summary text */
-	summary = summary + "<p>" + sformat(_("Routes: %1"), sformat("<br>%1", Routes));
-    }
-
-    return summary;
-}
-
-/**
  * Get the current devices list
  * @return devices list
  */
@@ -233,6 +212,41 @@ global define boolean SetDevices(list devs) {
     }
     devices = devs;
     return true;
+}
+
+/**
+ * Create routing text summary
+ * @return summary text
+ */
+global define string Summary() {
+
+    if(size(Routes) < 1) return "";
+
+    import "Summary";
+    list<string> summary = [];
+
+    string gw = GetGateway();
+    string gwhost = ResolveIP(gw);
+    if(gwhost != "") gw = gw + " (" + gwhost + ")";
+
+    if(gw != "") {
+	/* Summary text */
+	summary = add(summary, Summary::Device(sformat(_("Gateway: %1"), gw), ""));
+    }
+
+    if(Forward == true)
+	/* Summary text */
+	summary = add(summary, Summary::Device(_("IP Forwarding: on"), ""));
+    else
+	/* Summary text */
+	summary = add(summary, Summary::Device(_("IP Forwarding: off"), ""));
+
+    if(Routes != []) {
+	/* Summary text */
+	// summary = add(summary, Summary::Device(sformat(_("Routes: %1"), Routes), ""));
+    }
+
+    return Summary::DevicesList(summary);
 }
 
 /* EOF */

@@ -5,7 +5,7 @@ module_DATA = $(wildcard *.ycp)
 EXTRA_DIST = $(module_DATA)
 
 NetworkDevices.ybc: Provider.ybc
-Firewall.ybc: NetworkDevices.ybc
+Firewall.ybc: NetworkDevices.ybc DNS.ybc
 Proxy.ybc: NetworkDevices.ybc
 
 YCPCFLAGS =

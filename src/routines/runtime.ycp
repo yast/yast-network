@@ -14,6 +14,7 @@ import "Mode";
 import "NetworkDevices";
 import "Package";
 import "Service";
+import "String";
 
 textdomain "network";
 
@@ -49,6 +50,89 @@ define boolean RunSuSEconfigModule(string modul) {
     }
     y2milestone("Running SuSEconfig module %1", modul);
     return SCR::Execute(.target.bash, sformat("/sbin/SuSEconfig --module %1", modul)) == 0;
+}
+
+/**
+ * Check if running on a local system or over a network
+ * @return true if running on a local system
+ * /
+boolean RunningLocal() {
+    import "DNS";
+    import "Hostname";
+
+    string domain = DNS::domain;
+    string hostname = DNS::hostname;
+    string fqhostname = Hostname::MergeFQ(hostname, domain);
+    string display = lookup((map) SCR::Execute(.target.bash_output, "echo $DISPLAY"), "output", nil);
+    string ssh_client = lookup((map) SCR::Execute(.target.bash_output, "echo $SSH_CLIENT"), "output", nil);
+
+    y2milestone("display=%1", display);
+    y2milestone("ssh_client=%1", ssh_client);
+    y2milestone("fqhostname=%1", fqhostname);
+
+    /* $SSH_CLIENT:
+     * if(not set)	local
+     * else		REMOTE
+     * /
+    if(ssh_client != "" && ssh_client != nil) return false;
+
+    /* $DISPLAY:
+     *			local
+     * :0.0		local
+     * localhost:0.0	local
+     * beholder:0.0	local
+     * wyvern:11.0	REMOTE
+     * /
+    if(display != "" && display != nil) {
+        string dhost = splitstring(display, ":")[0]:"";
+	if(dhost != "" && dhost != nil && dhost != "localhost" &&
+	    dhost != hostname && dhost != fqhostname) return false;
+    }
+    return true;
+}
+
+/**
+ * Duplicate IP detection
+ * @param ip tested IP address
+ * @return true if duplicate found
+ * @see arping(8), ip(8)
+ */
+boolean DuplicateIP(string ip) {
+    string command = "ip l l|grep BROADCAST|grep -v NOARP|cut -d: -f2|tr '\n' ' '";
+    string ifs = (string) lookup((map) SCR::Execute(.target.bash_output, command), "stdout", "");
+    ifs = String::CutBlanks(ifs);
+
+    foreach(string ifname, splitstring(ifs, " "), {
+	command = "arping -qD -c2 -w3 -I" + ifname + " " + ip;
+	if(SCR::Execute(.target.bash, command) == 1) return true;
+    });
+
+    return false;
+}
+
+/**
+ * Link detection
+ * @return true if link found
+ * @see ip(8)
+ */
+boolean HasLink() {
+    return true;
+}
+
+/**
+ * Resolve IP to host name
+ * @param ip given IP address
+ * @return resolved host
+ */
+string ResolveIP(string ip) {
+    string command = "/usr/bin/getent hosts \"%1\" | sed \"s/^[0-9.: \t]\\+//g\"";
+    map getent = (map) SCR::Execute(.target.bash_output, sformat(command, ip));
+    string hnent = getent["stdout"]:"";
+    y2debug("%1", hnent);
+    hnent = select(splitstring(hnent, " "), 0, "");
+    if(hnent == nil) hnent = "";
+    y2debug("'%1'", hnent);
+    return String::CutBlanks(hnent);
 }
 
 /**

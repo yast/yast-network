@@ -28,7 +28,10 @@ import "NetworkModules";
 import "Routing";
 import "Firewall";
 import "Progress";
+import "Service";
 import "Summary";
+
+include "network/runtime.ycp";
 
 /*-------------*/
 /* GLOBAL DATA */
@@ -390,7 +393,7 @@ global define boolean Write() {
     /* Progress step 9/10 */
     ProgressNextStage(_("Activating network services..."));
     if(!write_only) {
-	if(Arch::s390) Service::Start("coldplug");
+	Service::Start("coldplug");
 	StartNetwork();
     }
     sleep(sl);
@@ -510,7 +513,10 @@ global define void SelectHW(integer which) {
  * @return summary of the current configuration
  */
 global define list Summary(boolean split) {
-    return NetworkDevices::Summary("netcard", Hardware, split);
+    list sum = NetworkDevices::Summary("netcard", Hardware, split);
+    /* Testing improved summary */
+    sum[0] = sum[0]:"" + "<br>" + DNS::Summary() + "<br>" + Routing::Summary();
+    return sum;
 }
 
 /**
@@ -1007,11 +1013,8 @@ global define boolean Propose() {
 
 	/* try to get hostname from the network */
 	if(hn == "") {
-	    string command = "/usr/bin/getent hosts \"%1\" | sed \"s/^[0-9.: \t]\\+//g\"";
-	    map getent = (map) SCR::Execute(.target.bash_output, sformat(command, ipaddr));
-	    string hnent = getent["stdout"]:"";
+	    string hnent = ResolveIP(ipaddr);
 	    y2debug("%1", hnent);
-	    hnent = select(splitstring(hnent, " "), 0, "");
 	    list hnsplit = Hostname::SplitFQ(hnent);
 	    hn = hnsplit[0]:hn;
 	    y2debug("%1", hn);
