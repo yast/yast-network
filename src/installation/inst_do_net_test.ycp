@@ -165,7 +165,7 @@ Internet Connection Test.</p>") +
 
     define void handle_stage () ``{
 
-	if (test_stage == 0)
+	if (test_stage == 0)		// open connection
 	{
 	    if (Mode::test) {
 		set_stage (1);
@@ -194,7 +194,7 @@ Internet Connection Test.</p>") +
 	    return;
 	}
 
-	if (test_stage == 1)
+	if (test_stage == 1)		// wait until really connected
 	{
 	    if (Mode::test) {
 		set_stage (2);
@@ -217,25 +217,32 @@ Internet Connection Test.</p>") +
 	    }
 	}
 
-	if (test_stage == 2)
+	if (test_stage == 2)		// download release notes
 	{
-	    // get release notes
+	    // FIXME
 	    sleep (100);
+
+	    if (false)
+	    {
+		// popup to inform user about the failure
+		Report::Message (_("Download of latest release notes failed."));
+	    }
+
 	    set_stage (3);
 	    mark_label (2);
 	    return;
 	}
 
-	if (test_stage == 3)
+	if (test_stage == 3)		// check for updates
 	{
-	    // check for updates
-
+	    // proxy settings are read from /root/.curlrc
 	    integer ret = SCR::Execute (.target.bash, "/usr/bin/online_update -q");
 	    y2milestone ("online_update -q returned %1", ret);
 
 	    if (ret == -1)			// some failure
 	    {
-		Report::Message (_("Checking for latest updates failed."));
+		// popup to inform user about the failure
+		Report::Message (_("Check for latest updates failed."));
 	    }
 	    else if (ret == 1 || ret == 2)	// there are patches
 	    {
@@ -247,7 +254,7 @@ Internet Connection Test.</p>") +
 	    return;
 	}
 
-	if (test_stage == 4)
+	if (test_stage == 4)		// close connection
 	{
 	    if (Mode::test) {
 		set_result (`success);
