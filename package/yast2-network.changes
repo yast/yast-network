@@ -1,5 +1,8 @@
+-------------------------------------------------------------------
+Mon Mar  3 17:08:14 CET 2003 - msvec@suse.de
+
 - proofread texts
-- better proxy proposal
+- better proxy proposal summary
 - default proxy proposal to disabled (#24277)
 - translated double clicks to edit (#23997)
 - don't read Routing in modem proposal (#24114)
