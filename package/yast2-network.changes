@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Sep 20 16:38:00 CEST 2004 - kkeil@suse.de
+
+- do only install addon packages if proposal was accepted (#45314)
+- 2.10.20
+
+-------------------------------------------------------------------
 Mon Sep 20 16:19:58 CEST 2004 - mvidner@suse.cz
 
 - Do not write hwcfg for PC Cards (#42421).

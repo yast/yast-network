@@ -97,6 +97,7 @@ global string device = "";
 global boolean have_dsl = false;
 global boolean only_dsl = false;
 global boolean DRDSLrun = false;
+global list installpackages = [];
 
 /**
  * Which operation is pending?
@@ -263,6 +264,11 @@ global define boolean WriteOnly()``{
  * if start is true, load drivers and interfaces
  */
 global define boolean Write(boolean start) ``{
+
+    if (installpackages != nil && installpackages != [""]) {
+	symbol retp = PackagesInstall((list<string>) installpackages);
+	y2debug("Packages returns %1", retp);
+    }
 
     if(!(modified_hw || modified_if || Provider::Modified("isdn"))) return true;
     y2milestone("Writing configuration");
@@ -560,7 +566,7 @@ map set_cardparameters (map cfg) {
  *
  */
 map set_ifparameters (map cfg) {
-    string sm = cfg["STARTMODE"]: global_sm;
+    string sm = cfg["STARTMODE"]: "manual";
     if (global_sm == "")
         global_sm = sm;
     if (sm == "")

@@ -707,12 +707,9 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 	    }
 	    if (pkgs == [""])
 		y2warning("no package list for %1", lookup(cur_card, "longname","unknown"));
-
-
-	    if (pkgs != nil && pkgs != [] && pkgs != [""]) {
-		symbol retp = PackagesInstall((list<string>) pkgs);
-		y2debug("Packages returns %1", retp);
-	    }
+	    else
+		ISDN::installpackages = merge(ISDN::installpackages, pkgs);
+ 
 	    // if it is a DSL capable card
 	    if (contains(lookup((map) select(CardDrivers, CurrentDrvIndex, $[]), "features", []), "DSL")) {
 		ISDN::have_dsl = true;
