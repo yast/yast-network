@@ -126,7 +126,9 @@ should be done directly without caching.</p>") +
     UI::ChangeWidget(`id(`no), `ValidChars, Hostname::ValidCharsDomain + " ,");
     UI::ChangeWidget(`id(`user), `ValidChars, ValidCharsUsername);
     UI::ChangeWidget(`id(`frame), `Enabled, enabled);
-    UI::SetFocus(`id(`http));
+
+    if(enabled == true) UI::SetFocus(`id(`http));
+    else UI::SetFocus(`id(`enabled));
 
     any ret = nil;
     while(true) {
