@@ -110,24 +110,28 @@ global define boolean Write() ``{
 /**
  * Get all the Routing configuration from a map.
  * When called by routing_auto (preparing autoinstallation data)
- * the list may be empty.
+ * the map may be empty.
  * @param settings autoinstallation settings
  * @return true if success
  */
-global define boolean Import(list settings) ``{
+global define boolean Import(map settings) ``{
     if(size(settings) == 0)
 	return true;
 
-    routes = eval(settings);
+    routes = settings["routes"]:[];
+    forward = settings["ip_forwarding"]:false;
+    modified = true;
     return true;
 }
 
 /**
- * Dump the Routing settings to a list, for autoinstallation use.
+ * Dump the Routing settings to a map, for autoinstallation use.
  * @return autoinstallation settings
  */
-global define list Export() ``{
-    return eval(routes);
+global define map Export() ``{
+    return ($["routes": eval(routes),
+	      "ip_forwarding": forward
+	    ]);
 }
 
 /* EOF */
