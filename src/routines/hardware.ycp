@@ -230,10 +230,10 @@ define list<map> ReadHardware(string hwtype) {
 	    one["device_name"] = card["dev_name"]:"";
 	    one["drivers"] = card["drivers"]:[];
 	    one["requires"] = card["requires"]:[];
-	    one["speed"] = lookup((map) select(lookup(resource, "baud", []), 0, $[]), "speed", 57600);
-	    one["init1"] = lookup((map) select(lookup(resource, "init_strings", []),0,$[]), "init1", "");
-	    one["init2"] = lookup((map) select(lookup(resource, "init_strings", []),0,$[]), "init2", "");
-	    one["pppd_options"] = lookup((map) select(lookup(resource, "pppd_option", []),0,$[]), "option", "");
+	    one["speed"] = resource["baud", 0, "speed"]:57600;
+	    one["init1"] = resource["init_strings", 0, "init1"]:"";
+	    one["init2"] = resource["init_strings", 0, "init2"]:"";
+	    one["pppd_options"] = resource["pppd_option", 0, "option"]:"";
 	}
 	/* isdn card */
 	else if(controller == "isdn") {
@@ -242,8 +242,8 @@ define list<map> ReadHardware(string hwtype) {
 	    one["drivers"] = drivers;
 	    one["sel_drv"] = 0;
 	    one["bus"] = card["bus"]:"";
-	    one["io"] = lookup((map) select(lookup(resource, "io", []),0, $[]), "start", 0);
-	    one["irq"] = lookup((map) select(lookup(resource, "irq", []), 0, $[]), "irq", 0);
+	    one["io"] = resource["io", 0, "start"]:0;
+	    one["irq"] = resource["irq", 0, "irq"]:0;
 	}
 	/* dsl card */
 	else if(controller == "dsl") {
@@ -256,7 +256,7 @@ define list<map> ReadHardware(string hwtype) {
 	    if(size(drivers) < 0) y2error("Not enough drivers");
 	    map driver = drivers[0]:$[];
 	    one["active"] = driver["active"]:false;
-	    list modules = (list) select((list) (driver["modules"]:[]), 0, []);
+	    list modules = driver["modules", 0]:[];
 	    one["module"] = modules[0]:"";
 	    one["options"] = modules[1]:"";
 
@@ -274,11 +274,8 @@ define list<map> ReadHardware(string hwtype) {
 	    else if(bus == "USB") bus = "usb";
 	    one["bus"] = bus;
 
-	    string busid = card["sysfs_bus_id"]:"";
-	    one["busid"] = busid;
-
-	    string mac = lookup((map) select(resource["hwaddr"]:[], 0, $[]), "addr", "");
-	    one["mac"] = mac;
+	    one["busid"] = card["sysfs_bus_id"]:"";
+	    one["mac"] = resource["hwaddr", 0, "addr"]:"";
 	}
 
 	y2debug("found device: %1", one);
