@@ -324,7 +324,7 @@ global define boolean Select(string dev) ``{
 
 	map pppmodes = $[
 	    "AT" : "pppoatm",
-	    "CZ" : "pppoe", // FIXME
+	    "CZ" : "pppoe",
 	    "DE" : "pppoe",
 	    "GB" : "pppoatm",
 	    "CA" : "pppoe",

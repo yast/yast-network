@@ -1,3 +1,8 @@
+Read	.probe.architecture nil
+Read	.probe.has_apm nil
+Read	.probe.has_pcmcia nil
+Read	.probe.has_smp nil
+Read	.probe.system []
 Dump	AddModule
 Return	true
 Dump	$["module":"", "options":""]

@@ -1,6 +1,12 @@
 {
 
 include "testsuite.ycp";
+
+map READ = $[
+    "probe" : $[ "system" : [], ],
+];
+
+TESTSUITE_INIT([READ], nil);
 include "network/modules.ycp";
 
 map Module = $[];
