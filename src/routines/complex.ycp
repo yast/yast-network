@@ -236,6 +236,18 @@ global define string HardwareName(string unq) ``{
     return hwname;
 }
 
+global define string ProviderName(string provider) ``{
+    import "Provider";
+
+    if(provider == nil || provider == "")
+	return "";
+
+    Provider::Select(provider);
+    string name = Provider::Provider["PROVIDER"]:provider;
+    if(name == nil || name == "") return provider;
+    return name;
+}
+
 /**
  * Return the textual device status
  * @param devtype device type
@@ -248,16 +260,15 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
 
     /* Modem and DSL */
     if(devtype == "ppp" || devtype == "modem" || devtype == "dsl") {
-	string prov = devmap["PROVIDER_NAME"]:"";
-	if(prov == "" || prov == nil)
-	    prov = devmap["PROVIDER"]:"";
 
-	if(prov == "" || prov == nil)
+	string name = ProviderName(devmap["PROVIDER"]:"");
+
+	if(name == "" || name == nil)
 	    // modem status (%1 is the device type and number)
 	    return sformat(_("Configured as %1"), dev);
 	else
 	    // modem status (%1 is the device type and number, %2 is provider)
-	    return sformat(_("Configured as %1 with provider %2"), dev, prov);
+	    return sformat(_("Configured as %1 with provider %2"), dev, name);
     }
     /* ISDN stuff */
     else if(devtype == "contr")
@@ -405,15 +416,15 @@ global define string DeviceProtocol(map devmap) ``{
 global define list BuildOverview() ``{
     list overview = [];
 
-    maplist(`type, `devmap, Devices, ``{
-	maplist(`k, `v, devmap, ``{
+    maplist(string type, map devmap, Devices, ``{
+	maplist(string k, map v, devmap, ``{
 	    term item = nil;
 	    string dev = sformat("%1%2", type, k);
 	    string ip = DeviceProtocol(v);
 
 	    /* Modem and DSL */
 	    if(type == "modem" || type == "ppp" || type == "dsl")
-		item = `item(`id(dev), dev, DeviceType(type), v["PROVIDER_NAME"]:"");
+		item = `item(`id(dev), dev, DeviceType(type), ProviderName(v["PROVIDER"]:""));
 	    /* ISDN stuff */
 	    else if (type == "contr") {
 		string cname = lookup(v, "NAME", "unknown");

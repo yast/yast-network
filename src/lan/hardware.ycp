@@ -124,7 +124,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     term DeviceNumberBox = `ReplacePoint(`id(`rnum),
 	/* Combobox label */
 	`ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"),
-	    maplist(`d,Lan::FreeDevices(realtype),``(sformat("%1",d)))));
+	    maplist(`d, Lan::FreeDevices(realtype), ``(sformat("%1", d)))));
 
     /* Manual dialog contents */
     term contents = `HBox(
@@ -315,6 +315,22 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	} */
 	else if(ret == `next || ret == `list || ret == `wire) {
 	    /* FIXME: check_* */
+	    if(UI::WidgetExists(`id(`num))) {
+		integer devic = tointeger(UI::QueryWidget(`id(`num), `Value));
+		if(devic != Lan::device) {
+		    y2warning("Default device: %1 -> %2", Lan::device, devic);
+		    string pop = _("You changed the default device number.\n
+This possibility is only intended for systems with built-in network cards
+or cards with multiple interfaces. If you don't have such network card you
+would most probably get an unfunctional network configuration.\n
+Do you really want to continue?\n");
+		    if(UI::YesNoHeadlinePopup(WarningMsg(), pop) == true) {
+			y2warning("CHANGED!");
+			break;
+		    }
+		    else continue;
+		}
+	    }
 	    break;
 	}
 	else {

@@ -313,6 +313,9 @@ global define boolean SelectSystem(path name) ``{
  */
 global define boolean Select(string name) ``{
 
+    Name = "";
+    Provider = $[];
+
     y2debug("name=%1", name);
     if(name != "" && !haskey(Providers, name)) {
 	y2error("No such provider: %1", name);

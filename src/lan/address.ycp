@@ -103,7 +103,7 @@ the network configuration.</p>");
 		`VSpacing(0.5),
 		/* Radio button label */
 		`Left(`RadioButton(`id(`dhcp), `opt(`notify), _("A&utomatic address setup (via DHCP)"), bootproto == "dhcp")),
-		`VSpacing(0.5),
+		`VSpacing(0.4),
 		/* Radio button label */
 		`Left(`RadioButton(`id(`static), `opt(`notify), _("S&tatic address setup"), bootproto == "static")),
 		`HBox(
@@ -207,7 +207,7 @@ completes the configuration.</p>");
     /* Frame label */
     term frame2 = `Frame(_("Detailed settings"), `HBox(`HStretch(),
 	`HSquash(`VBox(
-	    `VSpacing(0.5),
+	    `VSpacing(0.4),
 	    /* Push button label */
 	    `PushButton(`id(`hostname), `opt(`hstretch), _("&Host name and name server")),
 	    /* Push button label */
@@ -217,7 +217,7 @@ completes the configuration.</p>");
 	    Lan::wireless?
 		`PushButton(`id(`wire), `opt(`hstretch), _("Wireless &settings"))
 		:`VSpacing(0), */
-	    `VSpacing(0.5)
+	    `VSpacing(0.4)
 	)),
 	`HStretch()
     ));
