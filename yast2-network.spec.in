@@ -38,6 +38,7 @@ rm @configdir@/modem.y2cc
 @clientdir@/*.ycp
 @moduledir@/*.ycp
 @configdir@/*.y2cc
+@desktopdir@/*.desktop
 # @configdir@/lan.y2cc
 # %ifnarch s390 s390x
 # @configdir@/dsl.y2cc
