@@ -29,7 +29,7 @@ include "network/routines.ycp";
  * @return true if resolv.conf should be modified
  * (ie. no process running, or user decided to do so)
  */
-define boolean ModifyResolvConfPopup() ``{
+define boolean ModifyResolvConfPopup() {
 
     string process = DNS::resolv_conf_process;
     if(process == nil || process == "") return true;
@@ -75,7 +75,7 @@ could return to this dialog later when the above service has terminated.</li>
  * @param standalone true if not run from another ycp client
  * @return user input
  */
-define any DNSMainDialog(boolean standalone) ``{
+define any DNSMainDialog(boolean standalone) {
 
     ScreenName("dns");
 
@@ -130,7 +130,7 @@ disabled during the connection.</p>");
      * Check if internal data differ from the dialog values
      * @return true if differ
      */
-    define boolean DNSModified() ``{
+    define boolean DNSModified() {
 
 	string hostname = (string) UI::QueryWidget(`id(`host), `Value);
 	string domain = (string) UI::QueryWidget(`id(`domain), `Value);

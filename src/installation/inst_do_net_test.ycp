@@ -20,10 +20,6 @@ import "Popup";
 import "Product";
 import "Wizard";
 
-/* NI: required wrt functions in routines.ycp */
-block<boolean> AbortFunction = nil;
-define boolean Modified() ``{ return true; }
-
 include "network/routines.ycp";
 include "network/installation/dialogs.ycp";
 
@@ -72,7 +68,7 @@ string l4 = _("Closing connection...");
  * Return current language with .UTF-8 appended.
  * FIXME: there must be a better way!
  */
-define string GetLanguageUTF8 () ``{
+define string GetLanguageUTF8 () {
     string tmp = WFM::GetLanguage ();
     integer pos = findfirstof (tmp, "@.");
     if (pos != nil)
@@ -84,7 +80,7 @@ define string GetLanguageUTF8 () ``{
     /**
      * Create the dialog contents
      */
-    define void make_dialog() ``{
+    define void make_dialog() {
 
 	/* Test dialog caption */
 	string caption = _("Running Internet Connection Test");
@@ -143,7 +139,7 @@ and correct the setting.</p>");
     }
 
 
-    define void mark_label(integer i, symbol s) ``{
+    define void mark_label(integer i, symbol s) {
 
 	string glyph = s == `arrow ? UI::Glyph(`BulletArrowRight) : UI::Glyph(`CheckMark);
 
@@ -158,7 +154,7 @@ and correct the setting.</p>");
     }
 
 
-    define void show_result() ``{
+    define void show_result() {
 	if(test_result == `success) {
 	    /* result of internet test */
 	    UI::ChangeWidget(`id(`res), `Value, _("Success"));
@@ -169,7 +165,7 @@ and correct the setting.</p>");
     }
 
 
-    define void copy_logs1 () ``{
+    define void copy_logs1 () {
 
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Kernel Network Interfaces"),
@@ -192,7 +188,7 @@ and correct the setting.</p>");
     }
 
 
-    define void copy_logs2 () ``{
+    define void copy_logs2 () {
 
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Kernel Messages"),
@@ -211,7 +207,7 @@ and correct the setting.</p>");
     }
 
 
-    define void handle_stage() ``{
+    define void handle_stage() {
 
 	if (test_stage == `open)		// open connection
 	{

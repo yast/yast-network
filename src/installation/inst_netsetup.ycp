@@ -12,7 +12,7 @@
 import "Arch";
 import "Mode";
 
-symbol mode = (symbol)WFM::Args (2);
+symbol mode = (symbol) WFM::Args (2);
 
 y2milestone("----------------------------------------");
 y2milestone("Lan netsetup module started");
@@ -43,7 +43,7 @@ define void load_modules () {
 	y2milestone("Loading module: %1", target);
 	SCR::Execute (.target.modprobe, target, "");
     });
-};
+}
 
 
 if (mode == `up)
