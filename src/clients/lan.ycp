@@ -46,11 +46,13 @@ map cmdline = $[
 	    "example"	: "lan list configured",
 	    "handler"	: ``(ListHandler())
 	],
+	/* FIXME
 	"add" : $[
-	    /* Commandline command help */
+	    /* Commandline command help * /
 	    "help"	: _("Add a network card"),
 	    "handler"	: ``(AddHandler())
 	],
+	*/
 	"delete" : $[
 	    /* Commandline command help */
 	    "help"	: _("Delete a network card"),
@@ -91,7 +93,7 @@ map cmdline = $[
     ],
     "mappings" : $[
 	"list"	: [ "configured", "unconfigured" ],
-	"add"	: [ "device", "ip", "netmask" ],
+	// FIXME: "add"	: [ "device", "ip", "netmask" ],
 	"delete": [ "device" ],
     ]
 ];
@@ -136,12 +138,15 @@ define void AddHandler(map options) ``{
  */
 define void DeleteHandler(map options) ``{
     string dev = options["device"]:"";
-    CommandLine::Print("Deleting: "+dev);
+    /* Progress text */
+    CommandLine::Print(sformat(_("Deleting device: %1"), dev));
 
     if(Lan::Delete(dev) && Lan::Commit())
-	CommandLine::Print("Success");
+	/* Progress result */
+	CommandLine::Print(_("Success"));
     else
-	CommandLine::Print("Error");
+	/* Progress result */
+	CommandLine::Print(_("Error"));
 }
 
 CommandLineRun(cmdline);
