@@ -26,5 +26,12 @@
 	return `next;
     }
 
-    return TestConnectionDialog ();
+    symbol ret = TestConnectionDialog ();
+
+    if (ret == `next)
+    {
+	AskYOUDialog ();
+    }
+
+    return ret;
 }

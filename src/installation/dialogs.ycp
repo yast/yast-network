@@ -96,9 +96,9 @@ the test procedure."),
     term buttons = `VBox (
 			  `VSpacing(1),
 			  /* RadioButton label */
-			  `Left(`RadioButton(`id(`yes), _("&Yes, Test Connection to the Internet"), test)),
+			  `Left(`RadioButton(`id(`yes), _("&Yes, test connection to the Internet"), test)),
 			  /* RadioButton label */
-			  `Left(`RadioButton(`id(`no), _("N&o, Skip This Test"), !test)),
+			  `Left(`RadioButton(`id(`no), _("N&o, skip this test"), !test)),
 			  `VSpacing(1)
 			  );
 
@@ -257,6 +257,55 @@ global define symbol TestConnectionDialog() ``{
     }
 
     return ret;
+}
+
+
+/**
+ * Connection test dialog
+ * @return dialog result
+ */
+global define symbol AskYOUDialog() ``{
+
+    ScreenName("installation-test-dialog");
+
+    /* Radiobuttons */
+    term buttons = `VBox (
+			  `VSpacing(1),
+			  /* RadioButton label */
+			  `Left(`RadioButton(`id(`yes), _("&Yes, run online update now"), true)),
+			  /* RadioButton label */
+			  `Left(`RadioButton(`id(`no), _("N&o, skip update"), false)),
+			  `VSpacing(1)
+			  );
+
+    /* Dialog Content */
+    term content =
+	`HBox (
+	       `HSpacing (1),
+	       `VBox (
+		      `VSpacing (1),
+		      // Dialog Headline
+		      `Left (`Heading (_("Online Updates Available"))),
+		      `VSpacing (1),
+		      // Label
+		      `Label (_("Do you want to download and install
+them via the YaST Online Update?")),
+		      `RadioButtonGroup(
+					`HBox(
+					      `HSpacing(2),
+					      buttons,
+					      `HSpacing(2)
+					      )
+					),
+		      `HBox (`PushButton (`opt(`default), OKButtonLabel())),
+		      `VSpacing (0.5)
+		      ),
+	       `HSpacing (1)
+	       );
+
+    UI::OpenDialog (content);
+    UI::UserInput ();
+    UI::CloseDialog ();
 }
 
 /* EOF */
