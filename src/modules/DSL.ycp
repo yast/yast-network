@@ -539,5 +539,10 @@ global define boolean UsesDevice(string device) ``{
     return size(LocateDevices("DEVICE", device)) > 0;
 }
 
+global define boolean LocateProvider(string provider) ``{
+    list devs = LocateDevices("PROVIDER", provider);
+    return size(devs) > 0;
+}
+
 /* EOF */
 }

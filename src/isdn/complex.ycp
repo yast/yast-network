@@ -190,7 +190,7 @@ can change the configuration and setup dialup connections) will open.
 	    break;
 	}
 	/* configure the selected card */
-	else if(ret == `configure_button) {
+	else if(ret == `configure_button || ret == `detected_selbox) {
 	    ISDN::Add();
 	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
 	    if(selected == `other) {

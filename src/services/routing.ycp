@@ -93,7 +93,7 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 	    `Frame(_("Routing Table"), `VBox(
 		/* CheckBox label */
 		`Left(`CheckBox(`id(`expert), `opt(`notify), _("E&xpert Configuration"))),
-		`Table(`id(`table), `header(
+		`Table(`id(`table), `opt(`notify), `header(
 		    /* Table header 1/4 */
 		    _("Destination"),
 		    /* Table header 2/4 */
@@ -155,7 +155,7 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
 	    continue;
 	}
 	/* edit route */
-	else if(ret == `edit) {
+	else if(ret == `edit || ret == `table) {
 	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
 	    list cur_item = filter(`e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
 

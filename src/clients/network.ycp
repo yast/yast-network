@@ -38,7 +38,7 @@ term contents = `HBox(
     `VBox(
 	`VSpacing(3),
 	/* Selection box label */
-	`SelectionBox(`id(`modules), _("&Available Network Modules:"), [
+	`SelectionBox(`id(`modules), `opt(`notify), _("&Available Network Modules:"), [
 	    /* Selection box item */
 	    `item(`id("lan"), _("Network card"), true),
 	    /* Selection box item */
@@ -72,8 +72,9 @@ while(true) {
 	break;
     }
     /* next */
-    else if(ret == `next) {
+    else if(ret == `next || ret == `modules) {
 	/* check_* */
+	ret = `next;
 	break;
     }
     /* back */

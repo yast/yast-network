@@ -155,7 +155,7 @@ configuration.</p>");
 	    break;
 	}
 	/* configure the selected card */
-	else if(ret == `configure_button) {
+	else if(ret == `configure_button || ret == `detected_selbox) {
 	    Modem::Add();
 	    Provider::Add("modem");
 	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
@@ -321,6 +321,19 @@ Delete it as well?
 		    }
 		    */
 		}
+	    }
+
+	    /* Check if the provider is not used (#17497) */
+	    if(Modem::LocateProvider(dev)) {
+		y2debug("Provider used: %1", dev);
+
+		/* Popup text */
+		Popup::Error(sformat(_("The provider %1 is in use"), dev));
+		continue;
+
+		/* Popup text */
+		string pop = sformat(_("The provider %1 is in use, do you really want to delete it?"), dev);
+		if(!Popup::YesNo(pop)) continue;
 	    }
 
 	    /* Delete the provider */

@@ -76,7 +76,7 @@ global define string map2string(map m) ``{
     if(m == nil) return nil;
 
     string ret = "";
-    maplist(string var, string val, m, ``{
+    foreach(string var, string val, m, ``{
 	ret = ret + sformat(" %1=%2", var, val);
     });
     return String::CutBlanks(ret);
@@ -87,11 +87,11 @@ global define string map2string(map m) ``{
  * @param s string to be converted
  * @return converted string
  */
-global define string string2map(string s) ``{
+global define map string2map(string s) ``{
     if(s == nil) return nil;
 
     map ret = $[];
-    maplist(string vals, splitstring(s, " "), ``{
+    foreach(string vals, splitstring(s, " "), ``{
 	list val = splitstring(vals, "=");
 	if(size(val) < 1 || val[0]:"" == "") return;
 	if(size(val) > 1)
@@ -196,7 +196,7 @@ global define symbol Packages(list packages) ``{
 
     /* Popup text */
     string text = _("These packages need to be installed:") + "<p>";
-    maplist(string l, packages, ``{ text = text + sformat("%1<br>",l); });
+    foreach(string l, packages, ``{ text = text + sformat("%1<br>",l); });
     y2debug("Installing packages: %1", text);
 
     boolean ret = false;

@@ -6,6 +6,7 @@ Tue Oct 21 14:04:29 CEST 2003 - msvec@suse.cz
 - replace obsolete require calls (#31673)
 - allow to select a different card (#32450)
 - prefill "http://" in proxy fields (#31269)
+- don't allow to delete a provider which is used (#17497)
 - automatic DNS support (#27955)
 - 2.9.0
 

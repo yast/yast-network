@@ -448,5 +448,10 @@ global define void SelectHW(integer which) ``{
     SelectHardware(which);
 }
 
+global define boolean LocateProvider(string provider) ``{
+    list devs = LocateDevices("PROVIDER", provider);
+    return size(devs) > 0;
+}
+
 /* EOF */
 }

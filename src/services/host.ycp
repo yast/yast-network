@@ -93,7 +93,7 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	    /* Frame label */
 	    `Frame(_("Current Hosts"), `HBox(`HSpacing(3), `VBox(
 		`VSpacing(1),
-		`Table(`id(`table), `header(
+		`Table(`id(`table), `opt(`notify), `header(
                     /* Table header label */
                     _("IP Address"),
                     /* Table header label */
@@ -138,7 +138,7 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	    else continue;
 	}
 	/* edit host */
-	else if(ret == `edit) {
+	else if(ret == `edit || ret == `table) {
 	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
 	    list cur_item = filter(term e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
 

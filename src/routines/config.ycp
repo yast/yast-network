@@ -26,11 +26,11 @@ global define map ReadConfig(path config) ``{
     if(vars == nil) vars = [];
     maplist(string var, vars, ``{
 	path varpath = add(config, var);
-	string comment = SCR::Read(add(varpath, "comment"));
+	string comment = (string)SCR::Read(add(varpath, "comment"));
 	if(regexpmatch(comment, "^.*## Type:[ \t]*([a-z]*).*$"))
 	    comment = regexpsub(comment, "^.*## Type:[ \t]*([a-z]*).*$", "\\1");
 
-	string val = SCR::Read(varpath);
+	string val = (string)SCR::Read(varpath);
 	y2debug("%1[%2]=%3", var, comment, val);
 
 	if(val != nil) {
@@ -67,10 +67,10 @@ global define boolean WriteConfig(path config, map data) ``{
 
     boolean changed = false;
     maplist(string var, any val, data, ``{
-	string oldval = SCR::Read(add(config, var));
+	string oldval = (string)SCR::Read(add(config, var));
 
 	string newval = "";
-	if(is(val, boolean)) newval = val ? "yes" : "no";
+	if(is(val, boolean)) newval = ((boolean)val) ? "yes" : "no";
 	else newval = sformat("%1", val);
 
 	if(oldval == nil || oldval != newval) {
