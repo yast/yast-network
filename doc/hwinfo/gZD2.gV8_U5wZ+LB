@@ -1,0 +1,25 @@
+[General]
+UniqueID=gZD2.gV8_U5wZ+LB
+HWClass=isdn adapter
+Model=Dynalink 6692 PCI
+
+[Status]
+Configured=no
+Available=unknown
+Needed=no
+
+[Hardware]
+Bus=0x4
+Slot=0xb
+BaseClass=0x103
+VendorID=0675
+DeviceID=1702
+SubVendorID=1050
+SubDeviceID=6692
+DeviceName=IS64PH ISDN Adapter
+VendorName=Dynalink
+SubVendorName=Winbond Electronics Corp
+Res.Memory=0xcfffd000,0x0,1,3,1
+Res.IO=0xcc00,0x100,1,3
+Res.Interrupts=10,216,1
+
