@@ -24,6 +24,7 @@ import "Wizard";
 
 include "network/routines.ycp";
 include "network/runtime.ycp";
+include "network/summary.ycp";
 
 /**
  * Dialog for setting up IP address
@@ -93,6 +94,15 @@ the network configuration.</p>");
 	bootproto = "static";
     }
 
+    // FIXME duplicated in hardware.ycp
+    list<string> device_types = [ "arc", /* "bnep" ,*/ "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan" ];
+
+    if(Arch::s390)
+	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv", "qeth", "lcs" ];
+
+    if(Arch::ia64)
+	device_types = add(device_types, "xp");
+
     term label = `HBox(
 	/* Label text */
 	`Label(_("Network device")),
@@ -101,7 +111,16 @@ the network configuration.</p>");
     );
     if(Lan::operation == `add) {
 	/* TextEntry label */
-	label = `TextEntry(`id(`device), _("&Configuration Name"), device);
+//	label = `TextEntry(`id(`device), _("&Configuration Name"), device);
+	label = `HBox (
+	    `HSpacing(0.5),
+	    `ComboBox(`id(`dev), `opt(`hstretch, `notify),
+		      /* ComboBox label */
+		      _("&Device Type"), BuildTypesList(device_types, type)),
+		    `HSpacing(1.5),
+	    `ComboBox (`id(`num), `opt(`editable, `hstretch), _("&Configuration Name"), [Lan::device]),
+		    `HSpacing(0.5)
+	    );
     }
 
     /* Allow to edit the device (#17346) * /
@@ -288,6 +307,8 @@ completes the configuration.</p>");
 
     /* Address dialog help */
     term contents = `HSquash(`VBox(
+//	`Left (`TextEntry (`id (`persistent), _("&Persistent name"), "BAR")),
+//	`VSpacing(0.4),
 	`Left(label),
 	`VSpacing(1),
 	frame1,
@@ -402,18 +423,21 @@ Really continue?
 		}
 	    }
 	    if(Lan::operation == `add) {
-		device = (string) UI::QueryWidget(`id(`device), `Value);
+		device = device_name (
+		    (string) UI::QueryWidget(`id(`dev), `Value),
+		    (string) UI::QueryWidget(`id(`num), `Value));
 		y2debug("device=%1", device);
 		if(NetworkDevices::Check(device)) {
 		    /* Popup text */
 		    Popup::Error(sformat(_("Configuration %1 already present."), device));
-		    UI::SetFocus(`id(`device));
+		    UI::SetFocus(`id(`dev));
 		    continue;
 		}
+		// FIXME obsolete?
 		if(!regexpmatch(device_type(device), NetworkDevices::DeviceRegex["netcard"]:"")) {
 		    /* Popup text */
 		    Popup::Error(sformat(_("Unsupported network card type: %1"), device_type(device)));
-		    UI::SetFocus(`id(`device));
+		    UI::SetFocus(`id(`dev));
 		    continue;
 		}
 	    }
@@ -433,7 +457,9 @@ Really continue?
 	    ret == `hosts || ret == `proxy || ret == `s390) {
 
 	if(Lan::operation == `add) {
-	    device = (string) UI::QueryWidget(`id(`device), `Value);
+	    device = device_name (
+		(string) UI::QueryWidget(`id(`dev), `Value),
+		(string) UI::QueryWidget(`id(`num), `Value));
 	    Lan::device = device_num(device);
 	    Lan::type = device_type(device);
 	}
@@ -443,13 +469,6 @@ Really continue?
 
 	Lan::netmask = (string) QueryWidgetIfExists(`id(`netmask), `Value, Lan::netmask);
 	Lan::remoteip = (string) QueryWidgetIfExists(`id(`remoteip), `Value, Lan::remoteip);
-
-	// not used any more
-	if(UI::WidgetExists(`id(`num))) {
-	    string uidev = sformat("%1", UI::QueryWidget(`id(`num), `Value));
-	    y2milestone("num=%1", device_num(uidev));
-	    Lan::device = device_num(uidev);
-	}
     }
 
     // proceed with WLAN settings if appropriate, #42420

@@ -34,10 +34,9 @@ define any HardwareDialog() {
     /* Manual dialog caption */
     string caption = _("Manual network card configuration");
 
-    //FIXME: hwcfg-
     /* Manual dialog help 1/4 */
     string help = _("<p>Here, set up your networking device.
-The values will be written into <i>/etc/modprobe.conf</i>.</p>") +
+The values will be written into <i>/etc/sysconfig/hardware/hwcfg-*</i>.</p>") +
 
     /* Manual dialog help 2/4 */
 _("<p><b>Options</b> for the module should be written in the format
@@ -81,6 +80,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     string default_device = Lan::device;
     string hwcfg = Lan::nm_name;
 
+    // FIXME duplicated in address.ycp
     list<string> device_types = [ "arc", /* "bnep" ,*/ "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan" ];
 
     if(Arch::s390)
@@ -143,7 +143,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
     term DeviceNumberBox = `ReplacePoint(`id(`rnum),
 	/* TextEntry label */
-	`TextEntry(`id(`num), `opt(`hstretch), _("&Configuration Name"), Lan::device));
+	`ComboBox (`id(`num), `opt(`editable, `hstretch), _("&Configuration Name"), [Lan::device]));
 
     /* TextEntry label */
     term MTUBox = `TextEntry(`id(`mtu), _("M&aximum Transfer Unit (MTU)"), mtu);
