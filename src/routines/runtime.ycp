@@ -84,7 +84,7 @@ boolean RunningLocal() {
      * wyvern:11.0	REMOTE
      * /
     if(display != "" && display != nil) {
-        string dhost = splitstring(display, ":")[0]:"";
+	string dhost = splitstring(display, ":")[0]:"";
 	if(dhost != "" && dhost != nil && dhost != "localhost" &&
 	    dhost != hostname && dhost != fqhostname) return false;
     }
