@@ -81,6 +81,81 @@ global define symbol ISDNDSLSequence(string pppm, string interf) ``{
 }
 
 /**
+ * Helper function to create the user data frame
+ * @param string username  current username
+ * @param string password  current password
+ * @param boolean tonline if t-online account
+ * @return term data
+ */
+global define symbol CreateUserDataTerm(
+			string username,
+			string password,
+			boolean tonline) ``{
+    term udt = nil;
+
+    if(tonline) {
+	string user = username;
+	string name = "0001";
+	string lineid = "";
+	string t_onlineid = "";
+
+	if(user != "") {
+	    if(issubstring(user, "@t-online.de"))
+		user = regexpsub(user, "^(.*)@t-online.de$", "\\1");
+	    y2debug("user=%1",user);
+
+	    if(issubstring(user, "#")) {
+		name = regexpsub(user, "^.*#(.*)$", "\\1");
+		user = regexpsub(user, "^(.*)#.*$", "\\1");
+	    }
+	    else {
+		if(size(user) > 3) {
+		    name = regexpsub(user, "^.*(....)$", "\\1");
+		    user = regexpsub(user, "^(.*)....$", "\\1");
+		}
+	    }
+	    if(name == "") name = "0001";
+
+	    y2debug("user=%1",user);
+	    if(size(user) > 12) {
+		lineid = regexpsub(user, "^(.{12}).*$", "\\1");
+		t_onlineid = regexpsub(user, "^.{12}(.*)$", "\\1");
+	    }
+	    else
+		lineid = user;
+	}
+	udt = `VBox(
+	    `HBox(
+        /* TextEntry label */
+		`TextEntry(`id(`lineid), _("&Line ID"), lineid),
+		`HSpacing(1),
+        /* TextEntry label */
+		`TextEntry(`id(`t_onlineid), _("&T-Online ID"), t_onlineid)
+	    ),
+	    `VSpacing( 0.5 ),
+	    `HBox(
+        /* TextEntry label */
+		`TextEntry(`id(`user), _("&User code"), name),
+		`HSpacing(1),
+        /* Password entry label */
+		`Password(`id(`password),  _("&Password"), password)
+	    )
+	);
+    }
+    else {
+	// frame title
+	udt = `VBox(
+        /* TextEntry label */
+	    `TextEntry(`id(`user), _("&User"), username),
+	    `VSpacing( 0.5 ),
+        /* Password entry label */
+	    `Password(`id(`password), _("&Password"), password)
+	);
+   }
+   return(udt);
+}
+
+/**
  * General DSL dialog
  * In case of T-Online, the username is 12 digit Line ID, 12 digit T-Online ID,
  * 4 digit user code and a string "@t-online.de"
@@ -99,8 +174,7 @@ global define symbol DSLDialog(boolean tonline, boolean subdialog) ``{
     if(tonline == nil) {
 	string user = DSL::username;
 	if(user == "") {
-	    /* Initial popup text */
-	    tdsl = (UI::YesNoPopup(_("Are you using T-Online as DSL Provider?")) == true);
+	    tdsl = false;
 	}
 	else
 	    tdsl = issubstring(user, "t-online");
@@ -180,8 +254,6 @@ automatically if data is requested. To use this, specify at least one
 
     /* DSL dialog contents */
 
-    term subcontents = nil;
-
     string dns1 = DSL::dns1;
     string dns2 = DSL::dns2;
     string idle = sformat("%1",DSL::idletime);
@@ -193,71 +265,6 @@ automatically if data is requested. To use this, specify at least one
 
     if (pppmode == nil || pppmode == "")
 	pppmode = "pppoe";
-
-    if(tdsl) {
-	string user = DSL::username;
-	string name = "0001";
-	string lineid = "";
-	string t_onlineid = "";
-
-	if(user != "") {
-	    if(issubstring(user, "@t-online.de"))
-		user = regexpsub(user, "^(.*)@t-online.de$", "\\1");
-	    y2debug("user=%1",user);
-
-	    if(issubstring(user, "#")) {
-		name = regexpsub(user, "^.*#(.*)$", "\\1");
-		user = regexpsub(user, "^(.*)#.*$", "\\1");
-	    }
-	    else {
-		if(size(user) > 3) {
-		    name = regexpsub(user, "^.*(....)$", "\\1");
-		    user = regexpsub(user, "^(.*)....$", "\\1");
-		}
-	    }
-	    if(name == "") name = "0001";
-
-	    y2debug("user=%1",user);
-	    if(size(user) > 12) {
-		lineid = regexpsub(user, "^(.{12}).*$", "\\1");
-		t_onlineid = regexpsub(user, "^.{12}(.*)$", "\\1");
-	    }
-	    else
-		lineid = user;
-	}
-
-	if(dns1 == "" && dns2 == "") {
-	    dns1 = "217.5.115.7";
-	    dns2 = "194.25.2.129";
-	}
-
-	subcontents = `VBox(
-	    `HBox(
-        /* TextEntry label */
-		`TextEntry(`id(`lineid), _("&Line ID"), lineid),
-		`HSpacing(1),
-        /* TextEntry label */
-		`TextEntry(`id(`t_onlineid), _("&T-Online ID"), t_onlineid)
-	    ),
-	    `VSpacing( 0.5 ),
-	    `HBox(
-        /* TextEntry label */
-		`TextEntry(`id(`user), _("&User code"), name),
-		`HSpacing(1),
-        /* Password entry label */
-		`Password(`id(`password),  _("&Password"), DSL::password)
-	    )
-	);
-    }
-    else {
-	subcontents = `VBox(
-        /* TextEntry label */
-	    `TextEntry(`id(`user), _("&User"), DSL::username),
-	    `VSpacing( 0.5 ),
-        /* Password entry label */
-	    `Password(`id(`password), _("&Password"), DSL::password)
-	);
-    }
 
     list pppmodes = [
     /* ComboBox item */
@@ -275,10 +282,23 @@ automatically if data is requested. To use this, specify at least one
 
     boolean FirewallChecked = Firewall::Query("ppp0");
 
+    boolean dod = DSL::dialondemand;
+
+    if (tdsl && dod) {
+	if(dns1 == "" && dns2 == "") {
+	    dns1 = "217.5.115.7";
+	    dns2 = "194.25.2.129";
+	}
+    }
+
     term contents = `HSquash(`VBox(
+//	`VSpacing(1),
+	/* CheckBox label */
+	`Left(`CheckBox(`id(`ton),`opt(`notify), _("T-Online a&ccount"), tdsl)),
+	`ReplacePoint(`id(`udt),
+	    CreateUserDataTerm(DSL::username, DSL::password, tdsl)
+	),
 	`VSpacing(1),
-	subcontents,
-	`VSpacing(2),
 	pppwidget,
 	`VSpacing(1),
 	`HBox(
@@ -293,7 +313,7 @@ automatically if data is requested. To use this, specify at least one
 	`Left(`CheckBox(`id(`firewall), _("&Activate firewall"), FirewallChecked)),
 	//`VSpacing(1),
     /* CheckBox label */
-	`Left(`CheckBox(`id(`dialondemand),`opt(`notify), _("Dial &on demand"), DSL::dialondemand)),
+	`Left(`CheckBox(`id(`dialondemand),`opt(`notify), _("Dial &on demand"), dod)),
 	`HBox(
         /* TextEntry label */
 	    `TextEntry(`id(`dns1), _("Name server &1"), dns1),
@@ -349,10 +369,50 @@ automatically if data is requested. To use this, specify at least one
         else if(ret == `back) {
             break;
         }
+	else if(ret == `ton) {
+	    boolean newtdsl = UI::QueryWidget(`id(`ton), `Value);
+	    string username = "";
+	    if (tdsl) {
+		string lineid = UI::QueryWidget(`id(`lineid), `Value);
+		string tonlineid = UI::QueryWidget(`id(`t_onlineid), `Value);
+		string name = UI::QueryWidget(`id(`user), `Value);
+		username = lineid + tonlineid;
+		if(size(tonlineid) < 12)
+		    username = username + "#";
+		username = username + name + "@t-online.de";
+	    }
+	    else {
+		username = UI::QueryWidget(`id(`user), `Value);
+	    }
+	    string password = UI::QueryWidget(`id(`password), `Value);
+	    tdsl = newtdsl;
+	    UI::ReplaceWidget(`id(`udt), CreateUserDataTerm(username, password, tdsl));
+	    if (dod && tdsl) {
+		dns1 = tolower(UI::QueryWidget(`id(`dns1), `Value));
+		dns2 = tolower(UI::QueryWidget(`id(`dns2), `Value));
+		if(dns1 == "" && dns2 == "") {
+		    dns1 = "217.5.115.7";
+		    dns2 = "194.25.2.129";
+		    UI::ChangeWidget(`id(`dns1), `Value, dns1);
+		    UI::ChangeWidget(`id(`dns2), `Value, dns2);
+		}
+	    }
+	    continue;
+	}
 	else if(ret == `dialondemand) {
-	    boolean val = UI::QueryWidget(`id(`dialondemand), `Value);
-	    UI::ChangeWidget(`id(`dns1), `Enabled, val);
-	    UI::ChangeWidget(`id(`dns2), `Enabled, val);
+	    dod = UI::QueryWidget(`id(`dialondemand), `Value);
+	    UI::ChangeWidget(`id(`dns1), `Enabled, dod);
+	    UI::ChangeWidget(`id(`dns2), `Enabled, dod);
+	    if (dod && tdsl) {
+		dns1 = tolower(UI::QueryWidget(`id(`dns1), `Value));
+		dns2 = tolower(UI::QueryWidget(`id(`dns2), `Value));
+		if(dns1 == "" && dns2 == "") {
+		    dns1 = "217.5.115.7";
+		    dns2 = "194.25.2.129";
+		    UI::ChangeWidget(`id(`dns1), `Value, dns1);
+		    UI::ChangeWidget(`id(`dns2), `Value, dns2);
+		}
+	    }
 	    continue;
 	}
 	else if(ret == `pppmode) {
