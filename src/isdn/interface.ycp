@@ -130,21 +130,21 @@ _("<p>To avoid adding an interface now, use
 	    if (op == `hw)
 		ISDN::Commit();
 	    ISDN::AddIf("syncppp");
-            Provider::AddEdit("", false);
+            Provider::Add("isdn");
 	    break;
 	}
 	else if (ret == `AddRawIP) {
 	    if (op == `hw)
 		ISDN::Commit();
 	    ISDN::AddIf("rawip");
-            Provider::AddEdit("", false);
+            Provider::Add("isdn");
 	    break;
 	}
 	else if (ret == `AddProvider) {
 	    if (op == `hw)
 		ISDN::Commit();
 	    ISDN::operation = `addprov;
-            Provider::AddEdit("", false);
+            Provider::Add("isdn");
 	    break;
 	}
 	else {
@@ -229,12 +229,14 @@ remove a channel.
     /* DIALOG CONTENTS */
     list provlist = [];
     term prov = `VSpacing(0.1);
-    if (ISDN::operation  == `editif) {
-	provlist = Provider::GetProvider("_custom", syncppp ? "syncppp" : "rawip", ISDN::provider_file);
+    if(ISDN::operation  == `editif) {
+	Provider::Select("");
+	provlist = Provider::GetProviders("_custom", ISDN::provider_file);
 	y2debug("provlist: %1", provlist);
-	// ComboBox label
+	/* ComboBox label */
 	prov = `Left(`ComboBox(`id(`prov), _("D&efault Provider"), provlist));
     }
+
     y2debug("device %1", devstr);
     boolean FirewallChecked = Firewall::Query(devstr);
     y2debug("FirewallChecked=%1",FirewallChecked);

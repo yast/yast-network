@@ -45,6 +45,7 @@ global define symbol ConnectionDialog() ``{
 
     string device = nil;
     if(type == "modem") device = "ppp"; //device_name(Modem::type, Modem::device);
+    else if(type == "dsl") device = "ppp"; // FIXME device_name(DSL::type, DSL::device);
     else if(type == "isdn") {
 	/* FIXME: #18840 */
 	if(ISDN::type == "net")
@@ -52,8 +53,6 @@ global define symbol ConnectionDialog() ``{
 	else
 	    device = device_name(ISDN::type, ISDN::device);
     }
-    // FIXME device_name(DSL::type, DSL::device);
-    else if(type == "dsl") device = "ppp";
     else {
 	y2error("Unknown type: %1", type);
 	return nil;
@@ -61,7 +60,7 @@ global define symbol ConnectionDialog() ``{
 
     y2debug("device %1", device);
     boolean FirewallChecked = Firewall::Query(device);
-    y2debug("FirewallChecked=%1",FirewallChecked);
+    y2debug("FirewallChecked=%1", FirewallChecked);
 
     /* DIALOG TEXTS */
 
@@ -271,15 +270,20 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    Provider::Provider = union(Provider::Provider, $[
 		"STUPIDMODE" : UI::QueryWidget(`id(`stupidmode), `Value) ? "yes" : "no"
 	    ]);
-	if (type == "isdn")
+
+	/* update firewall info */
+	if(UI::WidgetExists(`id(`Firewall))) {
+
+	    /* Update /etc/sysconfig/firewall */
+	    if(FirewallChecked != UI::QueryWidget(`id(`Firewall), `Value)) {
+		FirewallChecked = UI::QueryWidget(`id(`Firewall), `Value);
+		Firewall::Change(device, FirewallChecked);
+	    }
+
+	    /* Also store it in ifcfg-file for possible dynamic use */
 	    Provider::Provider = union(Provider::Provider, $[
 		"FIREWALL" : UI::QueryWidget(`id(`Firewall), `Value) ? "yes" : "no"
 	    ]);
-
-	/* update firewall info */
-	if(FirewallChecked != UI::QueryWidget(`id(`Firewall), `Value)) {
-	    FirewallChecked = UI::QueryWidget(`id(`Firewall), `Value);
-	    Firewall::Change(device, FirewallChecked);
 	}
     }
 

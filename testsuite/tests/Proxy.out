@@ -7,9 +7,10 @@ Dump	Read
 Read	.sysconfig.proxy.HTTP_PROXY "h"
 Read	.sysconfig.proxy.FTP_PROXY "f"
 Read	.sysconfig.proxy.NO_PROXY nil
+Read	.sysconfig.proxy.PROXY_ENABLED nil
 Read	.root.curlrc.proxy-user "user:pass"
 Return	true
 Dump	Write
 Dump	Import
 Dump	Export
-Return	$["ftp_proxy":"f", "http_proxy":"h", "no_proxy":"", "proxy_password":"pass", "proxy_user":"user"]
+Return	$["enabled":true, "ftp_proxy":"f", "http_proxy":"h", "no_proxy":"", "proxy_password":"pass", "proxy_user":"user"]

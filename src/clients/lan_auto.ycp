@@ -14,14 +14,12 @@ textdomain "network";
 import "Lan";
 include "network/lan/wizards.ycp";
 
-
 /**
  * Convert data from autoyast to structure used by module.
  * @param autoyast settings
  * @return native network settings
  */
 define map FromAY(map input) ``{
-
 
     list upcase = [
 		   "bootproto",
@@ -70,8 +68,6 @@ define map FromAY(map input) ``{
     return input;
 }
 
-
-
 /**
  * Convert data from native network to autoyast for XML
  * @param native network settings
@@ -96,10 +92,7 @@ define map ToAY(map settings) ``{
 		"routing"	: settings["routing"]:$[],
 		"modules"	: settings["modules"]:$[]
 	];
-
 }
-
-
 
 /* The main () */
 y2milestone("----------------------------------------");
@@ -108,38 +101,35 @@ y2milestone("Lan autoinst client started");
 string func = WFM::Args(0);
 map param = WFM::Args(1);
 
-/* create a  summary*/
 if(func == "Summary") {
-	map autoyast = FromAY(param);
-	Lan::Import(autoyast);
-    return ( select(Lan::Summary(false),0, ""));
+    map autoyast = FromAY(param);
+    Lan::Import(autoyast);
+    return select(Lan::Summary(false),0, "");
 }
 else if (func == "Reset") {
-	Lan::Import($[]);
-	return $[];
+    Lan::Import($[]);
+    return $[];
 }
 else if (func == "Change") {
-	Lan::Import(FromAY(param));
-	any res = LanAutoSequence();
-	return res;
+    Lan::Import(FromAY(param));
+    any res = LanAutoSequence();
+    return res;
 }
 else if (func == "Result") {
-	map settings = Lan::Export();
-	map autoyast = ToAY(settings);
-	return(autoyast);
+    map settings = Lan::Export();
+    map autoyast = ToAY(settings);
+    return autoyast;
 }
 else if (func == "Write") {
-	Lan::Import(FromAY(param));
-	Lan::write_only = true;
-	return	Lan::Write();
+    Lan::Import(FromAY(param));
+    Lan::write_only = true;
+    return Lan::Write();
 }
 /* unknown function */
 else {
     y2error("unknown function: %1", func);
-	return false;
+    return false;
 }
-
-/* Finish */
 
 /* EOF */
 }

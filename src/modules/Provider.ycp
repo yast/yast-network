@@ -591,10 +591,12 @@ global define boolean IsUnique(string name) ``{
  */
 global define string CurrentType() ``{
     y2debug("Type=%1", Type);
+    y2debug("GlobalType=%1", GlobalType);
     if(Type != "") return Type;
     list supp = filter(string t, Supported, ``(Provider[toupper(t+"SUPPORTED")]:"no" == "yes"));
     y2debug("supp=%1", supp);
     if(size(supp) < 1) {
+	if(GlobalType != "all") return GlobalType;
 	y2error("None supported type: %1", Provider);
 	return "";
     }

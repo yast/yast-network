@@ -394,7 +394,7 @@ the password every time.</p>");
 
 	    boolean auth_chk = true;
 	    if(type == "isdn") {
-		encap = UI::QueryWidget(`id(`syncppp), `Value) ? "syncppp" : "rawip";
+		encap = UI::QueryWidget(`id(`encap), `Value);
 		if (encap == "rawip")
 			auth_chk = false;
 	    }

@@ -574,7 +574,7 @@ global define void SelectHW(integer which) ``{
 	y2error("Item not found in Hardware: %1 (%2)", which, size(Hardware));
 
     type = "contr";
-    device = select(GetFreeDevices(type ,1), 0, -1);
+    device = GetFreeDevice(type);
     hw_device = $[];
     set_cardparameter(hw_device);
     set_hwparameter(sel);
@@ -588,9 +588,7 @@ global define void SelectHW(integer which) ``{
  */
 global define boolean Add() ``{
     type = "contr";
-    device = select(GetFreeDevices(type, 1), 0, -1);
-    if (device<0)
-        return false;
+    device = GetFreeDevice(type);
     hw_device = $[];
     set_cardparameter(hw_device);
     operation = `add;
@@ -604,15 +602,14 @@ global define boolean Add() ``{
  */
 global define boolean Edit(string dev) ``{
     string typ = device_type(dev);
-    integer num = device_num(dev);
-    string n = sformat("%1",num);
+    string num = device_num(dev);
 
     map typemap = lookup(Devices, typ, $[]);
-    if(!haskey(typemap, n)) {
+    if(!haskey(typemap, num)) {
 	y2error("Key not found: %1", dev);
 	return false;
     }
-    hw_device = lookup(typemap, n, $[]);
+    hw_device = lookup(typemap, num, $[]);
 
     y2debug("Hardware: %1", Hardware);
 
@@ -654,9 +651,7 @@ global define boolean Delete(string item) ``{
  */
 global define boolean AddIf(string proto) ``{
     type = "net";
-    device = select(GetFreeDevices(type, 1), 0, -1);
-    if (device<0)
-        return false;
+    device = GetFreeDevice(type);
     interface = $[];
     set_ifparameter(interface);
     change(interface, "PROTOCOL", proto);
@@ -671,15 +666,14 @@ global define boolean AddIf(string proto) ``{
  */
 global define boolean EditIf(string item) ``{
     string typ = device_type(item);
-    integer num = device_num(item);
-    string n = sformat("%1",num);
+    string num = device_num(item);
 
     map typemap = lookup(Devices, typ, $[]);
-    if(!haskey(typemap, n)) {
+    if(!haskey(typemap, num)) {
 	y2error("Key not found: %1", item);
 	return false;
     }
-    interface = lookup(typemap, n, $[]);
+    interface = lookup(typemap, num, $[]);
     /* interface settings */
     set_ifparameter(interface);
     device = num;
@@ -695,15 +689,14 @@ global define boolean EditIf(string item) ``{
  */
 global define boolean SelIf(string item) ``{
     string typ = device_type(item);
-    integer num = device_num(item);
-    string n = sformat("%1",num);
+    string num = device_num(item);
 
     map typemap = lookup(Devices, typ, $[]);
-    if(!haskey(typemap, n)) {
+    if(!haskey(typemap, num)) {
 	y2error("Key not found: %1", item);
 	return false;
     }
-    interface = lookup(typemap, n, $[]);
+    interface = lookup(typemap, num, $[]);
     set_ifparameter(interface);
     device = num;
     type = typ;
@@ -765,6 +758,7 @@ global define boolean Commit() ``{
     } else if(operation == `addprov || operation == `editprov) {
 
 	Provider::Commit();
+	/* [msvec] Why is interface changed after changing provider? */
 	change(interface, "PROVIDER", provider_file);
 	ChangeDevice(type, device, interface, operation == `addprov);
 	modified_if = true;

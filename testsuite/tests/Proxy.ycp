@@ -10,6 +10,7 @@ map READ = $[
     ],
     "sysconfig" : $[
 	"proxy" : $[
+	    "PROXY_ENABLED" : nil,
 	    "HTTP_PROXY" : "h",
 	    "FTP_PROXY" : "f",
 	],

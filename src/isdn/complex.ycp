@@ -86,8 +86,8 @@ An additional dialog will inform you whether it is safe to do so or not.</P>");
 /**
  * Ask to handle provider or interface
  * in edit and delete functions
- * 
- * @param  string op  "edit" or "delete"   
+ *
+ * @param  string op  "edit" or "delete"
  * @return dialog result
  */
 global define symbol Provider_or_IF(string op) ``{
