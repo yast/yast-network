@@ -352,6 +352,7 @@ global define boolean Import(map settings) ``{
     CONFIG = eval($["eth":eth, "tr":token]);
     DNS::Import(eval(settings["dns"]:$[]));
     Routing::Import(eval(settings["routing"]:$[]));
+	modified = true;
     return true;
 }
 
