@@ -1,98 +1,17 @@
 # $Id$
 
 Bugs:
-
-#17564: provider0
-#19910: builtin IBM cards?
-#22802: better message for broken fields (eg. domain)
-#23332: s390 devices numbering
-#23491: detect wlan cards
-#25491: IP address assigning
-#25506: yp configuration failed
-#25739: UNIQUE missing after nfs install
-
-#22739: ifcfg-usb-usb
-#24000: edit dsl HW goes through provider again (default provider?)
-#24836: ssh installation (install.inf format)
-#24882: rename ifaces when deleted
-#24928: wlan|pcmcia switch
-#25432: provider & `immediate
-
-- dns: update /etc/hosts (#22825)
-
-- dsl: better proposal (#23662)
-- dsl: detect hardware (#24462)
-- dsl: empty ifcfg-ethX (#17631)
-
-- dummy: dummy device adding (#15960) for what is it useful? [suse-network]
-- alias: virtual interfaces (#6627)
-
-ISDN:
-- code cleanup (use yast2-network structure: Provider, devices, ...)
-- UI cleanup (http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html)
-- isdn: start mail after config (#18256)
-
-##############################################################################
-
-TO-MERGE:
-
-#22825:
-SuSEconfig.hostname:
-- /var/adm/SuSEconfig/oldhostentry:
-notebook.suse.cz
-1.2.3.4
-- add "127.0.0.1 localhost" if missing
-- grep [IPADDRs] frrom sysconfig/network/ifcfg-*
-- read HOSTNAME from /etc/HOSTNAME
-- for all [IPADDRs] if IPADDR <> 127.0.0.1 || 0.0.0.0:
-- add "$IPADDR $HOSTNAME $NICKNAME" for the first item
-- add "$IPADDR $HOSTNAME" for other IPADDRs
-- if [IPADDRs] == [] add "127.0.0.2 $HOSTNAME $NICKNAME"
-
-- remove BEAUTIFY_ETC_HOSTS [comments at top, sort; implement in yast2?]
-- remove CHECK_ETC_HOSTS
-
-UpdateHosts("hostname", [IPADDRs]);
-
-- see Host::Update()
-
-#19851: warn before rcnetwork restart -> RestartNetwork() | StopNetwork();
-  DISPLAY=
-  :0.0		OK
-  localhost:0.0	OK
-  beholder:0.0	OK
-  wyvern:11.0	Warn
-
-  SSH_CLIENT	Warn
-
-##############################################################################
-
-TO-SORT:
-
-- all: use rcnetwork reload (but probably only in some cases, things like
-  remove 2 eth cards and add them in a different order won't work due to
-  the kernel modules not being unloaded)
-
-- dialup: mail question only if new device was added
-
-- routing: summary: split gateway of the other routes
-- routing: summary: print other routes in nice form
-- routing: summary: print gateway hostname [Gateway: 10.20.0.1 (chimera.suse.cz)]
-
-- dns: summary: print ns and sl in nice form
-- dns: summary: print ns hostname [Name server: 10.20.0.1 (chimera.suse.cz)]
-- dns: summary: differentiate between 1 and more ns
-    [Name servers: 10.20.0.1 (chimera.suse.cz), 10.20.1.16 (yeti.suse.cz)]
-
-- lan: install dhcpcd|sysconfig|... (before Write)
-- lan: install wireless-tools, hotplug, ... if needed (before Write)
-
-- routines: -> FIREWALL=yes|no to each ifcfg-XXX #18840 (support for modems)
-
-##############################################################################
+- dialup: don't always start smpppd and KInternet (#26382)
+- dialup: don't run KInternet in ncurses (#27891)
+- dialup: run KInternet according to the number of connections (#29475)
+- lan: UNIQUE missing after nfs install (#25739)
+- provider: provider & `immediate (#25432)
+- provider: provider0 (#17564)
+- provider: wrong providers handling (installation: conflicting types) (#31508)
+- all: required packages not installed during installation (#31536)
+- isdn: cleanup [ISDN]
 
 Improvements:
-
 - dns: two resolv.conf scrconfs
 - lan: check IP presence (#9951)
 - lan: check link presence (see sysconfig.rpm how is it done)
@@ -110,6 +29,17 @@ Improvements:
 - provider: offer to delete provider after device delete if not used (#16094)
 - provider: warn if deleting default provider for modem|isdn|dsl (#17497)
 - provider: delete default route if removed (#10739)
+- lan: warn before the network restart (#27137, #19851) [WARN]
+- dns: better "DNS and Hostname" and "Hosts" titles (#29722)
+- lan: more cards of the same type (see also #31441) (#31535)
+- lan: netcards without a driver (what to do on s390?, warn?) (#29296)
+- lan: builtin IBM cards? (#19910)
+- dns: better message for broken fields (eg. domain) (#22802)
+- lan: s390 devices numbering (#23332)
+- lan: detect wlan cards (#23491)
+- lan: yp configuration failed (#25506)
+- lan: ssh installation (install.inf format) (#24836)
+- all: don't always ask for the mail config (#31472)
 
 Enhancements:
 - proxy: use immediately (#23728)
@@ -123,7 +53,6 @@ Enhancements:
 - providers: no-global-values
 - providers: preload the country providers (other upon request)
 - providers: -> HWDB-NG
-- providers: Czech Telecom DSL
 - all: edit without restart (reload)
 - device: use map instead of variables (-> fill all variables)
 - package: include all agents (ag_xauth, ag_resolver, ag_hostnames, ...)
@@ -142,6 +71,31 @@ Enhancements:
 - lan: temporary interface disable (#24926)
 - all: temporary interface disable
 - dsl: flat rate (#27840)
+- ifcfg-usb-usb (#22739)
+- better network UI [sigi] (#29721)
+- support custom provider from INS file (#27955)
+- improve modules.conf options merging (maybe obsolete with 2.6) (#29995)
+- make DHCP options iface-local (questionable) (#30476)
+- propose "http://" for the proxy strings (#31269)
+- IP address assigning (#25491)
+- edit dsl HW goes through provider again (default provider?) (#24000)
+- renumber (rename) ifaces when deleted (#24882)
+- wlan|pcmcia switch (#24928)
+- allow to change the netcard type (for a broken detection) (#30890)
+- skip detect check box (general yast2 feature) (#31478)
+- installation: better network configuration (inst_netcfg, create_interfaces)
+- dns: update /etc/hosts (#22825)
+- dsl: better proposal (#23662)
+- dsl: detect hardware (#24462)
+- dsl: empty ifcfg-ethX (#17631)
+- dummy: dummy device adding (#15960) [suse-network] [DUMMY]
+- alias: virtual interfaces (#6627) [ALIASES]
+- dns: replace SuSEconfig.hostname [HOSTNAME]
+- dialup: mail question only if new device was added
+- lan: install dhcpcd|sysconfig|... (before Write)
+- lan: install wireless-tools, hotplug, ... if needed (before Write)
+- IPv6 support (tunnels)
+- wireless improvements (waiting for jg@suse.de)
 
 Documentation:
 - example dhcpcd-eth0.info
@@ -152,6 +106,65 @@ Documentation:
 - UIMODE: link to autodocs
 - doc: adding network device mini-howto: grep for "escon" for example
 - doc: include public_html/network, dia, ...
+
+##############################################################################
+
+ISDN:
+- code cleanup (use yast2-network structure: Provider, devices, ...)
+- UI cleanup (http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html)
+- isdn: start mail after config (#18256)
+
+HOSTNAME:
+- replace SuSEconfig.hostname (#22825)
+- /var/adm/SuSEconfig/oldhostentry:
+notebook.suse.cz
+1.2.3.4
+- add "127.0.0.1 localhost" if missing
+- grep [IPADDRs] frrom sysconfig/network/ifcfg-*
+- read HOSTNAME from /etc/HOSTNAME
+- for all [IPADDRs] if IPADDR <> 127.0.0.1 || 0.0.0.0:
+- add "$IPADDR $HOSTNAME $NICKNAME" for the first item
+- add "$IPADDR $HOSTNAME" for other IPADDRs
+- if [IPADDRs] == [] add "127.0.0.2 $HOSTNAME $NICKNAME"
+
+- remove BEAUTIFY_ETC_HOSTS [comments at top, sort; implement in yast2?]
+- remove CHECK_ETC_HOSTS
+
+UpdateHosts("hostname", [IPADDRs]);
+
+- see Host::Update()
+
+WARN:
+- #19851, #27137
+- warn before rcnetwork restart -> RestartNetwork() | StopNetwork();
+  DISPLAY=
+  :0.0		OK
+  localhost:0.0	OK
+  beholder:0.0	OK
+  wyvern:11.0	Warn
+
+  SSH_CLIENT	Warn
+
+##############################################################################
+
+TO-SORT:
+
+- all: use rcnetwork reload (but probably only in some cases, things like
+  remove 2 eth cards and add them in a different order won't work due to
+  the kernel modules not being unloaded)
+
+- routing: summary: split gateway of the other routes
+- routing: summary: print other routes in nice form
+- routing: summary: print gateway hostname [Gateway: 10.20.0.1 (chimera.suse.cz)]
+
+- dns: summary: print ns and sl in nice form
+- dns: summary: print ns hostname [Name server: 10.20.0.1 (chimera.suse.cz)]
+- dns: summary: differentiate between 1 and more ns
+    [Name servers: 10.20.0.1 (chimera.suse.cz), 10.20.1.16 (yeti.suse.cz)]
+
+- routines: -> FIREWALL=yes|no to each ifcfg-XXX #18840 (support for modems)
+
+##############################################################################
 
 ##############################################################################
 
