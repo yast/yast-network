@@ -643,7 +643,7 @@ global define boolean AddIf(string proto) ``{
     device = select(GetFreeDevices(type, 1), 0, -1);
     if (device<0)
         return false;
-    interface = [];
+    interface = $[];
     set_ifparameter(interface);
     change(interface, "PROTOCOL", proto);
     operation = `addif;
