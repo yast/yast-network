@@ -209,7 +209,8 @@ global define void SetModified () {
 }
 
 /**
- * Function returns an environment usable for curl.
+ * Function returns an environment usable for curl.  The proxy user/password
+ * are read from /root/.curlrc.
  */
 global define map <string, string> GetEnvironment ()
 {

@@ -226,10 +226,9 @@ and correct the setting.</p>");
 	filename = (string) SCR::Read (.target.tmpdir) + substring (url, pos);
 
 	string cmd = "/usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + filename;
-	cmd = cmd + "> " + logdir + "/curl.log 2>&1";
+	cmd = cmd + " > " + logdir + "/curl.log 2>&1";
 
 	map env = Proxy::GetEnvironment ();
-	// proxy user/password are read from /root/.curlrc
 
 	env["LANG"] = GetLanguageUTF8 ();
 
