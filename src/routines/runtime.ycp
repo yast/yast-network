@@ -130,28 +130,40 @@ define boolean RunKInternet() {
     y2milestone("dialup devices: %1", devs);
 
     /* Any dialup devices? */
-    if(size(devs) < 1) return true;
+    if(size(devs) < 1) {
+	y2milestone("No dialup devices");
+	return true;
+    }
 
     /* Installation? */
-    if(!Mode::normal) return true;
+    if(!Mode::normal) {
+	y2milestone("No normal mode");
+	return true;
+    }
 
     /* Text mode? */
     map ui = UI::GetDisplayInfo();
     boolean ncurses = (boolean) ui["TextMode"]:nil;
-    y2debug("ncurses=%1", ncurses);
+    y2milestone("Text mode: %1", ncurses);
     if(ncurses == nil || ncurses == true) return true;
 
-    /* KDE installed? * FIXME /
-    if(!Package::Installed("kdebase3")) return true;
-
-    /* KDE running? * FIXME /
-    if((integer) SCR::Execute(.target.bash, "ps x|grep kdeinit") != 0)
+    /* KDE installed? */
+    if(!Package::Installed("kdebase3")) {
+	y2milestone("KDE not installed");
 	return true;
+    }
 
-    /* KInternet already running? * FIXME /
-    if((integer) SCR::Execute(.target.bash, "ps x|grep 'kinternet$'") == 0)
+    /* KDE running? */
+    if((integer) SCR::Execute(.target.bash, "test \"$KDE_FULL_SESSION\"") != 0) {
+	y2milestone("KDE not running");
 	return true;
-    */
+    }
+
+    /* KInternet already running? */
+    if((integer) SCR::Execute(.target.bash, "dcop | grep '^kinternet'") == 0) {
+	y2milestone("KInternet already running");
+	return true;
+    }
 
     y2milestone("Running KInternet ...");
     return SCR::Execute(.target.bash_background, "[ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu --nonewdcop -u $USER -- kinternet --quiet") == 0;

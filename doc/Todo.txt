@@ -1,7 +1,7 @@
 # $Id$
 
 Bugs:
-- [KInternet] handling
+- KInternet: better helptext (configured + kinternet, cinternet)
 - provider: wrong providers handling (installation: conflicting types) (#31508)
 - all: required packages not installed during installation (#31536)
 - isdn: cleanup [ISDN]
@@ -97,15 +97,6 @@ Documentation:
 - doc: include public_html/network, dia, ...
 
 ##############################################################################
-
-KInternet:
-+ dialup: don't always start smpppd and KInternet (#26382)
-- dialup: don't run KInternet in ncurses (#27891) [better: fix message]
-+ dialup: run KInternet according to the number of connections (#29475)
-- routines: better kinternet handling (kdelibs, kdebase?)
-+ dialup: start and setup smpppd only if >0 devs
-- dialup: info popup (configured + kinternet, cinternet) [better: help text]
-+ dialup: run|stop kinternet, if DISPLAY and (not)running (#14320)
 
 ISDN:
 - code cleanup (use yast2-network structure: Provider, devices, ...)
