@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Aug 12 18:02:51 CEST 2002 - mvidner@suse.cz
+
+- Proxy: fix writing (#17623)
+- Routing: use a transparent icon (#16868).
+- 2.6.15
+
+-------------------------------------------------------------------
 Sun Aug 11 22:14:15 CEST 2002 - mvidner@suse.cz
 
 - Make "yast2 network" invoke "yast2 lan" (#17570).
