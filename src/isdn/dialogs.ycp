@@ -38,7 +38,7 @@ include "browser.ycp";
 
 //Old code: map TmpConfiguration=$[];
 
-global define isdn_sequence(string entry_point) ``{
+global define symbol isdn_sequence(string entry_point) ``{
     map aliases = $[
 	"lowlevel_detected"	:   ``(isdn_lowlevel(`Detected)),
 	"lowlevel_detectedISA"	:   ``(isdn_lowlevel(`DetectedISA)),

@@ -10,11 +10,13 @@ VERSION = $(shell cat $(srcdir)/VERSION)
 RPMNAME = $(shell cat $(srcdir)/RPMNAME)
 SUBDIRS_FILE		= $(shell test -e $(srcdir)/SUBDIRS      && echo $(srcdir)/SUBDIRS)
 Y2TEXTDOMAIN_FILE	= $(shell test -e $(srcdir)/Y2TEXTDOMAIN && echo $(srcdir)/Y2TEXTDOMAIN)
+ACINCLUDE_FILE		= $(shell test -e $(srcdir)/acinclude.m4 && echo $(srcdir)/acinclude.m4)
 DEVTOOLS_DIR = $(if $(findstring yast2-devtools,$(RPMNAME)),$(srcdir),/usr/share/YaST2/devtools)
 
 EXTRA_DIST = \
 	VERSION RPMNAME MAINTAINER \
-	$(SUBDIRS_FILE) $(Y2TEXTDOMAIN_FILE) $(RPMNAME).spec.in
+	$(SUBDIRS_FILE) $(Y2TEXTDOMAIN_FILE) $(ACINCLUDE_FILE) \
+	$(RPMNAME).spec.in
 
 extra_COPYRIGHT_files = \
 	README COPYING COPYRIGHT.english COPYRIGHT.french COPYRIGHT.german

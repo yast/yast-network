@@ -29,6 +29,18 @@ include "ui/common_popups.ycp";
 
 // Old code: map TmpConfiguration=$[];
 
+global define symbol modem_sequence() ``{
+    map aliases = $[
+	"params"		: ``(modem_params()),
+	"details"		: ``(modem_details()),
+	"providers"		: ``(runProvidersDialog(false)),
+	"provider"		: ``(runEditModemProviderDialog (true)),
+	"new_provider"		: ``(runEditModemProviderDialog (false)),
+	"connection"		: ``(modem_connection()),
+	"connection_details"	: ``(modem_connection_details())
+    ];
+}
+
 
 /* DIALOG */
 
@@ -38,7 +50,7 @@ include "ui/common_popups.ycp";
  * @return symbol user input
  */
 
-global define symbol Dialog1(symbol Type) ``{
+global define symbol modem_params(symbol Type) ``{
 
     /* PREPARE VARIABLES */
 
@@ -79,19 +91,32 @@ global define symbol Dialog1(symbol Type) ``{
     // help text 1/6
     string helptext = _("<p>Please enter all modem configuration values.</p>");
     // help text 2/6
-    helptext = helptext + _("<P>The field <b>Device</b> says to which port your modem is attached (ttyS0, ttyS1, etc., refers to serial
-ports and usually corresponds to COM1, COM2, etc., in DOS/Windows. ttyACM0, ttyACM1 refers to USB ports)</p>");
+    helptext = helptext +
+_("<P>The field <b>Device</b> says to which port your modem is attached
+(ttyS0, ttyS1, etc., refers to serial ports and usually corresponds to 
+COM1, COM2, etc., in DOS/Windows. ttyACM0, ttyACM1 refers to USB ports)</p>");
+
     // help text 3/6
-    helptext = helptext + _("<p><b>Modem name</b> is an arbitrary string to identify your modem.</p>");
+    helptext = helptext +
+_("<p><b>Modem name</b> is an arbitrary string to identify your modem.</p>");
+
     // help text 4/6
-    helptext = helptext + _("<P>If you are on a PBX, you probably have to enter a <B>Dial prefix</B>. Often this is <I>9</I>.</P>");
+    helptext = helptext +
+_("<P>If you are on a PBX, you probably have to enter a <B>Dial prefix</B>.
+Often this is <I>9</I>.</P>");
+
     // help text 5/6
-    helptext = helptext + _("<p>Choose <b>Dial mode</b> according to your phone link.
-Most telephone companies use <I>tone dial</I> as the <B>Dial mode</B>. Check the additional check boxes if you want
-to turn on your modem speaker (<i>Speaker on</i>) and if you want your modem to wait until it detects dial tone (<i>Detect Dial tone</i>).</p>
-");
+    helptext = helptext +
+_("<p>Choose <b>Dial mode</b> according to your phone link. Most telephone
+companies use <I>tone dial</I> as the <B>Dial mode</B>. Check the additional
+check boxes if you want to turn on your modem speaker (<i>Speaker on</i>)
+and if you want your modem to wait until it detects dial tone (<i>Detect Dial
+tone</i>).</p>");
+
     // help text 6/6
-    helptext = helptext + _("<p>By pressing <b>Details</b>, configure the Baud Rate and the Modem Initialization strings.</p>");
+    helptext = helptext +
+_("<p>By pressing <b>Details</b>, configure the Baud Rate and the Modem 
+Initialization strings.</p>");
 
 
     /* DIALOG CONTENTS */
@@ -100,45 +125,53 @@ to turn on your modem speaker (<i>Speaker on</i>) and if you want your modem to 
     if (Type == `Detected)
 	DeviceTerm = `Label(`opt(`outputField), Device);
 
-    term contents = `HSquash(`VBox(
-				    `VSpacing(),
-				    DeviceTerm,
-				    `VSpacing(0.5),
-				    `HBox(
-					  `TextEntry(`id(`ModemName), _("&Modem name"), Name),
-					  `TextEntry(`id(`DialPrefix), _("Dial prefi&x (if needed)"), DialPrefix)),
-				    `VSpacing(0.8),
-				    `HBox(
-					 `Frame(_("Dial mode"),
-						`VBox(
-						      `VSpacing(0.3),
-						      `HBox(
-							    `HSpacing(0.3),
-							    `RadioButtonGroup(`id(`DialMode),
-									      `VBox(
-										    `Left(`RadioButton(`id(`Tone),
-												       _("&Tone dialing"),
-												       !PulseDial)),
-										    `Left(`RadioButton(`id(`Pulse),
-												       _("&Pulse dialing"),
-												       PulseDial)))),
-							    `HSpacing(0.3)),
-						      `VSpacing(0.3))),
-					 `HSpacing(1),
-					 `Frame(_("Special settings"),
-						`HBox(
-						      `HSpacing(0.3),
-						      `VBox(
-							    `VSpacing(0.3),
-							    `Left(`CheckBox(`id(`Speaker), _("&Speaker on"),
-									    !Speaker)),
-							    `Left(`CheckBox(`id(`CarrierDetect), _("D&etect Dial Tone"),
-									    !Carrier)),
-							    `VSpacing(0.3)),
-						      `HSpacing(0.3)))),
-				    `VStretch(),
-				    `PushButton(`id(`Details), _("&Details")),
-				    `VSpacing()));
+    term contents =
+	`HSquash(
+	    `VBox(
+		`VSpacing(),
+		DeviceTerm,
+		`VSpacing(0.5),
+		`HBox(
+		    `TextEntry(`id(`ModemName), _("&Modem name"), Name),
+		    `TextEntry(`id(`DialPrefix), _("Dial prefi&x (if needed)"), DialPrefix)
+		),
+		`VSpacing(0.8),
+		`HBox(
+		    `Frame(_("Dial mode"),
+			`VBox(
+			    `VSpacing(0.3),
+			    `HBox(
+			        `HSpacing(0.3),
+				`RadioButtonGroup(`id(`DialMode),
+				    `VBox(
+					`Left(`RadioButton(`id(`Tone), _("&Tone dialing"), !PulseDial)),
+					`Left(`RadioButton(`id(`Pulse), _("&Pulse dialing"), PulseDial))
+				    )
+				),
+				`HSpacing(0.3)
+			    ),
+			    `VSpacing(0.3)
+			)
+		    ),
+		    `HSpacing(1),
+		    `Frame(_("Special settings"),
+			`HBox(
+			    `HSpacing(0.3),
+			    `VBox(
+			        `VSpacing(0.3),
+			        `Left(`CheckBox(`id(`Speaker), _("&Speaker on"), !Speaker)),
+				`Left(`CheckBox(`id(`CarrierDetect), _("D&etect Dial Tone"), !Carrier)),
+				`VSpacing(0.3)
+			    ),
+			    `HSpacing(0.3)
+			)
+		    )
+		),
+		`VStretch(),
+		`PushButton(`id(`Details), _("&Details")),
+		`VSpacing()
+	    )
+	);
 
     /* DIALOG PREPARE */
 
@@ -214,7 +247,7 @@ to turn on your modem speaker (<i>Speaker on</i>) and if you want your modem to 
  * @return any user input
  */
 
-global define symbol Dialog2()
+global define symbol modem_details()
 ``{
 
     /* PREPARE VARIABLES */
@@ -229,33 +262,42 @@ global define symbol Dialog2()
     string caption = _("Modem parameters details");
 
     //help text 1/2
-    string helptext = _("<p>The item BaudRate is a transmission speed that tells how
-many bits per second your computer communicates with your modem.</p>
-");
+    string helptext =
+_("<p>The item BaudRate is a transmission speed that tells how many bits per 
+second your computer communicates with your modem.</p>");
+
     //help text 2/2
-    helptext = helptext + _("<p>You should find all the relevant information about <b>init strings</b> in your modem manual.</p>");
+    helptext = helptext +
+_("<p>You should find all the relevant information about <b>init strings</b>
+in your modem manual.</p>");
 
 
     /* DIALOG CONTENTS */
 
     list BaudRates = maplist(`e, toset(add([1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200], BaudRate)),
 			 ``(`item(`id(sformat("%1", e)), sformat("%1", e), e==BaudRate)));
-    term contents = `HBox(
-		      `HSpacing(3),
-		      `VBox(
-			    `ComboBox(`id(`Baud), `opt(`hstretch, `editable), _("Baud&Rate"), BaudRates),
-			    `VSpacing(),
-			    `Frame(_("Modem initialization strings"),
-				   `HBox(
-					 `HSpacing(),
-					 `VBox(
-					       `TextEntry(`id(`Init1), _("Init &1"), Init1),
-					       `TextEntry(`id(`Init2), _("Init &2"), Init2),
-					       `TextEntry(`id(`Init3), _("Init &3"), Init3),
-					       `VSpacing(0.5)),
-					 `HSpacing())),
-			    `VSpacing(3)),
-		      `HSpacing(3));
+    term contents =
+	`HBox(
+	    `HSpacing(3),
+	    `VBox(
+		`ComboBox(`id(`Baud), `opt(`hstretch, `editable), _("Baud&Rate"), BaudRates),
+		`VSpacing(),
+		    `Frame(_("Modem initialization strings"),
+		    `HBox(
+			`HSpacing(),
+			`VBox(
+			    `TextEntry(`id(`Init1), _("Init &1"), Init1),
+			    `TextEntry(`id(`Init2), _("Init &2"), Init2),
+			    `TextEntry(`id(`Init3), _("Init &3"), Init3),
+			    `VSpacing(0.5)
+			),
+			`HSpacing()
+		    )
+		),
+		`VSpacing(3)
+	    ),
+	    `HSpacing(3)
+	);
 
 
     /* DIALOG PREPARE */
@@ -318,7 +360,7 @@ many bits per second your computer communicates with your modem.</p>
  * @return symbol user input
  */
 
-global define symbol Dialog3() ``{
+global define symbol unused___modem_provider() ``{
 
     /* PREPARE VARIABLES */
     string Provider = Modem::Provider;
@@ -348,52 +390,59 @@ global define symbol Dialog3() ``{
     /* DIALOG TEXTS */
 
     // help text 1/3
-    string helptext = _("<p>If you have more than one modem, you can set one as the default for this provider.</p>");
+    string helptext =
+_("<p>If you have more than one modem, you can set one as the default for this
+provider.</p>");
+
     // help text 2/3
-    helptext = helptext + _("<p>If you plan to use more than one provider, you can set one as <b>default</b>.
-(This one will be used if you do not explicitly use another.)</p>
-");
+    helptext = helptext +
+_("<p>If you plan to use more than one provider, you can set one as <b>default</b>.
+(This one will be used if you do not explicitly use another.)</p>");
+
     // help text 3/3
-    helptext = helptext + _("<p>Selecting <b>activate firewall</b> will block all incoming
-connections. Choosing this option will make dial-up connections to
-the Internet safe from attacks from the outside.</p>
-");
+    helptext = helptext +
+_("<p>Selecting <b>activate firewall</b> will block all incoming connections.
+Choosing this option will make dial-up connections to the Internet safe from 
+attacks from the outside.</p>");
+
     string caption = _("Connection parameters");
 
     /* DIALOG CONTENTS */
 
     term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), sformat(_("A&ctivate %1..."), "firewall"), FirewallChecked));
 
-    term contents = `HBox(
-		      `HSpacing(6),
-		      `VBox(
-			    `Left(`HSquash(`Label(_("Profile for selected provider:")))),
-			    `Label(`opt(`outputField), Provider),
-			    `VSpacing(0.2),
-			    `ComboBox(`id(`DefaultModem), `opt(`hstretch),  _("Default modem for this &provider"),
-				      DefaultModemList),
-			    `VSpacing(0.2),
-                            `HBox (
-                                `VBox (
-                                    `Left(`CheckBox(`id(`IsDefault),
-                                                    _("Set this provider as default for the program `&wvdial'"), IsDefault)),
-                                    FirewallCheckbox,
-                                    `Left(`CheckBox (`id(`DialOnDemand), `opt (`notify),
-                                                     _("Dial on d&emand"), DialOnDemand))
-                                    )
-                                ),
-			    `VSpacing(0.2),
-
-                            `HBox(
-                                `HSpacing (4),
-                                `Frame(`id (`NameServers), _("Name servers"),
-                                       `VBox (
-                                           `TextEntry (`id (`DNS1), _("&First"), DNS1),
-                                           `TextEntry (`id (`DNS2), _("&Second"), DNS2)
-                                           )
-                                    )),
-			    `Bottom(`PushButton(`id(`Details), _("&Details")))),
-		      `HSpacing(6));
+    term contents =
+	`HBox(
+	    `HSpacing(6),
+	    `VBox(
+		`Left(`HSquash(`Label(_("Profile for selected provider:")))),
+		`Label(`opt(`outputField), Provider),
+		`VSpacing(0.2),
+		`ComboBox(`id(`DefaultModem), `opt(`hstretch),
+			    _("Default modem for this &provider"), DefaultModemList),
+		`VSpacing(0.2),
+                `HBox(
+		    `VBox(
+			`Left(`CheckBox(`id(`IsDefault),
+			    _("Set this provider as default for the program `&wvdial'"), IsDefault)),
+                        FirewallCheckbox,
+                        `Left(`CheckBox (`id(`DialOnDemand), `opt (`notify), _("Dial on d&emand"), DialOnDemand))
+                     )
+                ),
+		`VSpacing(0.2),
+                `HBox(
+		    `HSpacing (4),
+                    `Frame(`id (`NameServers), _("Name servers"),
+			`VBox (
+			    `TextEntry (`id (`DNS1), _("&First"), DNS1),
+                            `TextEntry (`id (`DNS2), _("&Second"), DNS2)
+                        )
+                    )
+		),
+		`Bottom(`PushButton(`id(`Details), _("&Details")))
+	    ),
+	    `HSpacing(6)
+	);
     /* DIALOG PREPARE */
     Wizard::SetContents(caption, contents, helptext, true, true);
 
@@ -493,25 +542,27 @@ global define symbol Dialog4() ``{
 
     /* DIALOG CONTENTS */
 
-    term contents = `HBox(
-		      `HSpacing(6),
-		      `Frame(_("Other settings"),
-		       `HBox(
-			     `HSpacing(0.4),
-			     `VBox(
-				   `VSpacing(0.4),
-				   `Left(`CheckBox(`id(`AutoReconnect),
-						   _("&Reconnect when the connection is lost"),
-						   AutoReconnect)),
-				   `Left(`CheckBox(`id(`AutoDNS), _("&Modify DNS when connected"),
-						   AutoDNS)),
-				   `Left(`ComboBox(`id(`IdleSeconds), `opt(`editable),
-								   _("&Disconnect after (seconds)"),
+    term contents =
+	`HBox(
+	    `HSpacing(6),
+	    `Frame(_("Other settings"),
+		`HBox(
+		    `HSpacing(0.4),
+		    `VBox(
+			`VSpacing(0.4),
+			`Left(`CheckBox(`id(`AutoReconnect), _("&Reconnect when the connection is lost"),
+						AutoReconnect)),
+			`Left(`CheckBox(`id(`AutoDNS), _("&Modify DNS when connected"), AutoDNS)),
+			`Left(`ComboBox(`id(`IdleSeconds), `opt(`editable), _("&Disconnect after (seconds)"),
 						   maplist(`e, seconds,
 							   ``(`item(`id(e), e, e == IdleSeconds))))),
-				   `VSpacing(0.4)),
-			     `HSpacing(0.4))),
-		      `HSpacing(6));
+			`VSpacing(0.4)
+		    ),
+		    `HSpacing(0.4)
+		)
+	    ),
+	    `HSpacing(6)
+	);
 
     /* DIALOG PREPARE */
     Wizard::SetContents(caption, contents, helptext, true, true);

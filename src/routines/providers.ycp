@@ -1,0 +1,634 @@
+
+{
+    import "Wizard";
+    include "ui/common_popups.ycp";
+    include "ui/common_messages.ycp";
+
+    include "browser.ycp";
+
+    /***
+     * TODO/FIXME:
+     * replace user_settings by something meaningful
+     * replace modem_providers_to_write by something meaningful
+     * implement wvdialIs*Unique
+     * add saveCustomProviders to Write ()
+     * fix getting and saving settings in runEditIsdnProviderDialog
+     * there must be a function ReallyAbort that tests dirty bit and
+     *    possibly shows dialog.
+     */
+
+    define ReallyAbort () ``{
+	return true;
+    }
+
+    /**
+     * FIXME: This will be probably map Modems::modem
+     */
+    global map user_settings = $[];
+    /**
+     * FIXME: change to Modems::new_providers?
+     */
+    global map modem_providers_to_write = $[];
+
+    /**
+     * FIXME: clearify semantics and then implement.
+     * Most probably it means to check if section name in wvdial.conf is
+     * unque.
+     */
+    global define boolean wvdialIsSectionUnique (string name) ``{
+	return true;
+    }
+    /**
+     * FIXME: clearify semantics and then implement.
+     * Most probably it means to check if provider name in wvdial.conf is
+     * unque.
+     */
+    global define boolean wvdialIsProviderUnique (string name) ``{
+	return true;
+    }
+
+    ////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////
+    ///// H E L P     T E X T S ////////////////////////////
+    ////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////
+    /**
+     * Get help text for modem or isdn provider editation.
+     * @param modem true for modem, false for isdn
+     * return help text
+     */
+    global define getEditProviderHelp (boolean modem) ``{
+	// help text 1/4
+	string ht = _("<p>Access to your Internet provider. If you have selected your provider from the  list, these values are provided.</p>");
+	if (!modem)
+	    ht = ht +
+	    // help text 2/4
+	    _("<p>Please select the type of packet encapsulation. <b>RawIP</b> means that MAC headers are stripped off. <b>SyncPPP</b> stands for Synchronous PPP.</p>");
+	// help text 3/4
+	ht = ht + _("<p>Please enter a <b>name</b> of the connection  and a <b>phone number</b> to access your provider.</p>") +
+        // help text 4/4
+        _("<p>Enter the <b>user name</b> and the <b>password</b> that will be used for logging in (ask your provider if you are not sure).</p>");
+	if (modem)
+	    ht = ht + _("<p>Check the <b>Ask</b> button to have it always ask for the password.</p>");
+	return ht;
+    }
+    /**
+     * help text for runProvidersDialog
+     * @return help text
+     */
+    global define string getProvidersHelp () ``{
+        // help text 1/3
+        return _("<p>Please select the appropriate <b>provider</b>.</p>") +
+        // help text 2/3
+        _("<p>Choose the country or region where you are located then choose one of the listed providers.</p>") +
+        // help text 3/3
+        _("<p>Use the <b>New</b> button to add a provider not in the list.</p>");
+    }
+    ////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////
+    ///// W R I T E   F U N C T I O N //////////////////////
+    ////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////
+    /**
+     * Save custom providers into /etc/sysconfig/modem/providers.conf.
+     * To change placement of the file of custom providers, edit it here
+     * and in providers.scr!!!!!
+     * FIXME: this should go into Write ()
+     */
+    global define void saveCustomProviders (map provider) ``{
+	foreach (`key, `value, modem_providers_to_write, ``{
+	    path base = add (.providers.v."/etc/sysconfig/modem/providers.conf", key);
+	    foreach (`k, `v, value, ``{
+		if ("YaST2 Section" != k)
+		    SCR::Write (add (base, k), v);
+	    });
+	});
+    }
+    ////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////
+    ///// D I A L O G S   A N D   O T H E R S //////////////
+    ////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////
+    /**
+     * Read all provider keys from ini file to map.
+     * Adds also key "YaST2 Section" : "section_name";
+     * @param country country of the providers
+     * @param provs list of providers
+     * @return provider map
+     */
+    global define map getProvider (string country, string provider) ``{
+	path base = add (add (.providers.v, country), provider);
+	list l = SCR::Dir (base);
+	return add (listmap (`i, l, ``{
+	    return [ i, SCR::Read (add (base, i)) ];
+	}), "YaST2 Section", provider);
+    }
+    /**
+     * Returns only those providers which support ISDN.
+     * @param country country of the providers
+     * @param provs list of providers
+     * @return list of isdn capable providers
+     */
+    global define list filterIsdn (string country, list provs) ``{
+	path base = add (.providers.v, country);
+	return filter (`i, provs, ``{
+	    string isdn_sup = SCR::Read (add (add (base, i), "ISDN supported"));
+	    if (nil == isdn_sup)
+		isdn_sup = "0";
+	    return "1" == isdn_sup;
+	});
+    }
+    /**
+     * Sorts providers alphabeticly (non-case-sensitivly) and by priority.
+     * In the first step, priority and name of each provider is obtained.
+     * List of strings built from these values is created. Item lists are:
+     * "<1-character-priority><34-characters-provider-name><provider-identifier>"
+     * This list is sorted, result is correctly sorted, by priority and
+     * alphabeticly. I did not use builtin sort with sort code because it
+     * uses bubble sort -- it was bloody slow.
+     * @param country country of the providers
+     * @param provs list of providers
+     * @return sorted list of providers
+     */
+    global define list sortProviders (string country, list provs) ``{
+	path base = add (.providers.v, country);
+	list pre = sort (maplist (`i, add (provs, "--"), ``{
+	    if ("--" == i)
+	    {
+		return "9                                  --";
+	    }
+	    path sec = add (base, i);
+	    string tmp = SCR::Read (add (sec, "Priority"));
+	    if (nil == tmp)
+		tmp = "-1";
+	    integer p = 8 - tointeger (tmp);
+	    if (p < 0 || p > 9)
+		y2error ("======= wrong priority, you must change the algorithm!!! %1 =======", tmp);
+	    tmp = tolower (SCR::Read (add (sec, "Provider"))) + "                                   ";
+	    tmp = sformat ("%1", p) + tmp;
+	    return substring (tmp, 0, 35) + i;
+	}));
+	if ("--" == substring (select (pre, 0), 35))
+	    pre = remove (pre, 0);
+	return maplist (`i, pre, ``(substring (i, 35)));
+    }
+    /**
+     * Get item list of provider countries for selection box. Note that
+     * country name <--> provider file mapping is defined here.
+     * @param provs provider files
+     * @param preselect item to preselect
+     * @return list of countries for selection box.
+     *		Items are: `item (`id ("file_full_path"), "Nice name"),
+     */
+    global define list getProvidersCountryList (list provs,string preselect) ``{
+	map table = $[
+	    "/usr/share/providers/CZ.wvdial.conf" : _("Czech Republic"),
+	    "/usr/share/providers/DE.wvdial.conf" : _("Germany"),
+	    "/usr/share/providers/UK.wvdial.conf" : _("UK"),
+	    "/usr/share/providers/US.wvdial.conf" : _("USA"),
+	    "/etc/sysconfig/modem/providers.conf" : _("Other"),
+	    ];
+	integer i = -1;
+	/* uncomment this and comment the following to have Other providers separated by ----------
+	list out = [];
+	foreach (`e, provs, ``{
+	    i = i + 1;
+	    if ("/etc/sysconfig/modem/providers.conf" == e)
+		out = add (out, `item (`id ("--"), "----------------"));
+	    out = add (out, `item (`id (e), lookup (table, e, e), 0 == i || preselect == e));
+	});
+	return out;*/
+	return maplist (`e, provs, ``{
+	    i = i + 1;
+	    return `item (`id (e), lookup (table, e, e), 0 == i || preselect == e);
+	});
+    }
+    /**
+     * Get item list of providers for selection box.
+     * @param country country of the providers
+     * @param provs list of providers
+     * @param preselect preselect this item
+     * @return list of providers for selection box.
+     *      Items are: `item (`id ("prov_ident"), "Name")
+     */
+    global define list getProvidersList (string country, list provs, string preselect) ``{
+	path base = add (.providers.v, country);
+	integer i = -1;
+	string n = "";
+	return maplist (`e, provs, ``{
+	    i = i + 1;
+	    if ("--" == e)
+		return `item (`id (e), "----------------");
+	    n = SCR::Read (add (add (base, e), "Provider"));
+	    return `item (`id (e), nil == n ? e : n, 0 == i || preselect == e);
+	});
+    }
+    /**
+     * Build provider info text.
+     * @param prov provider settings
+     * @return provider info text
+     */
+    global define string getProviderInfoText (map prov) ``{
+	string InfoText = "";
+	string hp = lookup (prov, "Homepage", "");
+	string hl = lookup (prov, "Hotline", "");
+        if (hp != "")
+	    InfoText = sformat (_("<p>%1Home page: %2</p>"), InfoText, hp);
+        if (hl != "")
+	    InfoText = sformat (_("<p>%1Hotline: %2</p>"), InfoText, hl);
+        if (lookup (user_settings, "DialMessage1", "") !="" || lookup (user_settings, "DialMessage2", "") != "")
+            InfoText = sformat("%1<p>%2%3</p>", InfoText, lookup (user_settings, "DialMessage1", ""), lookup (user_settings, "DialMessage2", ""));
+        else if (lookup (user_settings, "Phone", "") == "")
+	{
+            if (hp != "" && hl != "")
+                InfoText = sformat(_("<p>To register for <b>%1</b> and find the best dialing number, connect to the home page <b>%2</b> or call the hotline <b>%3</b>.</p>"), lookup (user_settings, "Provider", ""), hp, hl);
+            if (hp != "" && hl == "")
+                InfoText = sformat(_("<p>To register for <b>%1</b> and find the best dialing number, connect to the home page <b>%2</b>.</p>"), lookup (user_settings, "Provider", ""), hp);
+            if (hp == "" && hl != "")
+                InfoText = sformat(_("<p>To register for <b>%1</b> and find the best dialing number, call the hotline <b>%2</b>.</p>"), lookup (user_settings, "Provider", ""), hl);
+        }
+	return InfoText;
+    }
+
+    /**
+     * Providers dialog.
+     * @param isdn show only isdn capable providers?
+     * @return symbol for wizard sequencer (`next, `back, `abort, `new)
+     */
+    global define symbol runProvidersDialog (boolean isdn) ``{
+	list countries = SCR::Dir (.providers.s);
+	list provs = [];
+
+	string country = "";
+	string provider = "";
+
+
+        term contents=`HBox(
+            `HSpacing(),
+            `VBox(`HBox(
+                `HWeight (1, `SelectionBox(`id(`countries), `opt(`notify), _("&Country"),
+                              getProvidersCountryList (countries, ""))),
+                `HSpacing(),
+                `HWeight (1, `ReplacePoint(`id(`providers_rep),
+				`VSpacing (1)))),
+                  `Left(`Label(`id(`homepage), `opt(`hstretch), "")),
+                  `Left(`Label(`id(`hotline), `opt(`hstretch),  "")),
+                  `PushButton(`id(`new), _("Ne&w"))),
+            `HSpacing());
+
+	Wizard::SetContents(_("Select Internet Service Provider (ISP)"), contents, getProvidersHelp (), true, true);
+	UI::ChangeWidget (`id (`next), `Label, NextButtonLabel ());
+	symbol ret = `countries;
+	while (`next != ret && `back != ret && `abort != ret && `new != ret)
+	{
+	    if (`countries == ret)
+	    {
+		//string prev = country;
+		country = UI::QueryWidget (`id (`countries), `CurrentItem);
+		/* uncomment this if you want to separate countries from Other
+		if ("--" == country)
+		{
+		    if (prev == "/etc/sysconfig/modem/providers.conf")
+		    {
+			integer i = -1;
+			find (`e, countries, ``{ i = i + 1; return e == "/etc/sysconfig/modem/providers.conf"; });
+			country = select (countries, i - 1);
+		    }
+		    else
+			country = "/etc/sysconfig/modem/providers.conf";
+		    UI::ChangeWidget (`id (`countries), `CurrentItem, country);
+		}*/
+		provs = SCR::Dir (add (.providers.s, country));
+		if (isdn)
+		    provs = filterIsdn (country, provs);
+		provs = sortProviders (country, provs);
+		UI::ReplaceWidget (`id (`providers_rep), `SelectionBox (`id (`providers), `opt (`notify), _("&Provider"),
+			    getProvidersList (country, provs, provider)));
+		ret = `providers;
+	    }
+	    if (`providers == ret)
+	    {
+		string prev = provider;
+		provider = UI::QueryWidget (`id (`providers), `CurrentItem);
+		if ("--" == provider)
+		{
+		    integer p = -1;
+		    find (`e, provs, ``{ p = p + 1; return e == prev; });
+		    integer i = -1;
+		    find (`e, provs, ``{ i = i + 1; return e == "--"; });
+		    provider = select (provs, p < i ? i + 1 : i - 1);
+		    UI::ChangeWidget (`id (`providers), `CurrentItem, provider);
+		}
+		string tmp = SCR::Read (add (add (add (.providers.v, country), provider), "Homepage"));
+		tmp = ((nil == tmp || "" == tmp) ? "" : sformat (_("Home Page: %1"), tmp));
+		UI::ChangeWidget (`id (`homepage), `Value, tmp);
+		tmp = SCR::Read (add (add (add (.providers.v, country), provider), "Hotline"));
+		tmp = ((nil == tmp || "" == tmp) ? "" : sformat (_("Hot Line: %1"), tmp));
+		UI::ChangeWidget (`id (`hotline), `Value, tmp);
+	    }
+	    ret = UI::UserInput ();
+
+	    if (`abort == ret || `cancel == ret)
+	    {
+		ret = ReallyAbort () ? `abort : nil;
+	    }
+	}
+	if (`next == ret)
+	{
+	    // do not do union with the old user_settings here because we
+	    // take completly new provider here.
+	    user_settings = getProvider (country, provider);
+	}
+	return ret;
+    }
+    /**
+     * Edit modem provider/create new provider.
+     * @param edit add new provider or edit an existing?
+     * @return symbol for wizard sequencer (`next, `back, `abort)
+     */
+    global define symbol runEditModemProviderDialog (boolean edit) ``{
+	if (!edit)
+	    user_settings = $[];
+        string InfoText= getProviderInfoText (user_settings);
+	boolean ask_pass = ("1" == lookup (user_settings, "Ask Password", "0"));
+	term contents = `HBox (
+	    `HSpacing (4),
+	    `VBox (
+		`TextEntry(`id(`ShortName), _("Name for &dialing"), lookup (user_settings, "YaST2 Section", "")),
+		`TextEntry(`id(`Section), _("&Connection Name"), lookup (user_settings, "Provider", "")),
+		`VSquash(`HBox(`TextEntry(`id(`PhoneNumber), _("P&hone number"), filterchars (lookup (user_settings, "Phone", ""), "0123456789")),
+			       `Bottom(`PushButton(`id(`info), `opt(`disabled), _("&Info"))))),
+		`TextEntry(`id(`Username), _("&User name"), lookup (user_settings, "Username", "")),
+		`VSpacing(0.5),
+		`Frame(_("Request for password"),
+		       `HBox(
+			   `HSpacing(),
+			   `VBox(
+				   `Left(`CheckBox(`id(`askpass), `opt(`notify), _("&Always ask me"), ask_pass)),
+				   `Password(`id(`passwd), _("&Password"), lookup (user_settings, "Password",""))
+				),
+			    `HSpacing()
+			)
+		       )
+		),
+	    `HSpacing(4));
+
+	Wizard::SetContents(_("Set parameters for Internet connection"), contents, getEditProviderHelp (true), true, true);
+	UI::ChangeWidget (`id (`next), `Label, NextButtonLabel ());
+	if (nil != InfoText && "" != InfoText)
+	{
+	    UI::ChangeWidget (`id (`info), `Enabled, true);
+	}
+	if (ask_pass)
+	{
+	    UI::ChangeWidget (`id (`passwd), `Enabled, true);
+	}
+
+	symbol ret = nil;
+	while (`next != ret && `back != ret && `abort != ret)
+	{
+	    ret = UI::UserInput ();
+	    if (`info == ret)
+	    {
+		UI::LongTextPopup (_("Provider info"), `RichText (InfoText), 43, 13);
+	    }
+	    else if (`askpass == ret)
+	    {
+		UI (``(ChangeWidget (`id (`passwd), `Enabled, !UI::QueryWidget (`id (`askpass), `Value))));
+	    }
+	    else if (`abort == ret || `cancel == ret)
+	    {
+		ret = ReallyAbort () ? `abort : nil;
+	    }
+	    else if (`next == ret)
+	    {	// validate data
+		ret = nil;
+		string name = UI::QueryWidget (`id (`Section), `Value);
+		string shortname = UI::QueryWidget (`id (`ShortName), `Value);
+		string phone = UI::QueryWidget (`id (`PhoneNumber), `Value);
+		string us = UI::QueryWidget (`id (`Username), `Value);
+		string pass = UI::QueryWidget (`id (`passwd), `Value);
+		ask_pass = UI::QueryWidget (`id (`askpass), `Value);
+		if ("" == shortname)
+		    UI (``{ MessagePopup (_("Name for dialing must not be empty.")); SetFocus (`id (`ShortName));});
+		else if (nil != findfirstof (shortname, " \t"))
+		{
+		    UI::MessagePopup (_("Name for dialing must not contain spaces."));
+		    UI::SetFocus (`id (`ShortName));
+		}
+		else if (shortname != lookup (user_settings, "YaST2 Section", "") && !wvdialIsSectionUnique (shortname))
+		{
+		    UI::MessagePopup (_("Name %1 already exists."), shortname);
+		    UI::SetFocus (`id (`ShortName));
+		}
+		else if (name != lookup (user_settings, "Provider", "") && !wvdialIsProviderUnique (name))
+		{
+		    UI::MessagePopup (_("Connection Name %1 already exists."), name);
+		    UI::SetFocus (`id (`Section));
+		}
+		if (name == "")
+		{
+		    UI::MessagePopup (_("You have to fill connection name."));
+		    UI::SetFocus (`id (`Section));
+		}
+		else if ("" == phone)
+		{
+		    UI::MessagePopup (_("You have to fill phone number."));
+		    UI::SetFocus (`id (`PhoneNumber));
+		}
+		else if ("" == us)
+		{
+		    UI::MessagePopup (_("You have to fill user name."));
+		    UI::SetFocus (`id (`Username));
+		}
+		else if (!ask_pass && "" == pass)
+		{
+		    UI::MessagePopup (_("You have to fill password."));
+		    UI::SetFocus (`id (`passwd));
+		}
+		else if (filterchars (phone, "0123456789") != phone &&
+			!UI::YesNoPopup (_("You have entered some characters that are not numbers in the phone field.\n\nContinue?")))
+		{
+		    UI::SetFocus (`id (`PhoneNumber));
+		}
+		else
+		    ret = `next;
+		if (`next == ret)
+		{
+		    user_settings = union (user_settings,
+			    $[	"Provider" : name,
+				"YaST2 Section" : shortname,
+				"Username" : us,
+				"Password" : pass,
+				"Ask Password" : ask_pass ? "1" : "0",
+				"Password" : pass,
+				"Phone" : phone,
+			    ]
+			);
+		    if (!edit)
+		    {
+			modem_providers_to_write = add (modem_providers_to_write, name, user_settings);
+		    }
+		}
+	    }
+	}
+	return ret;
+    }
+    /**
+     * ISDN parameters.
+     * @return symbol for wizard sequencer (`next, `back, `abort)
+     */
+    global define symbol runEditIsdnProviderDialog () ``{
+	string I4L_ENCAP = "syncppp";
+	string InfoText = getProviderInfoText (user_settings);
+	term contents = `VBox(
+                `VSpacing(1),
+                `HBox(
+                    `HSpacing(4),
+                    `VBox(
+                        `HVSquash(`Frame(_("ISDN type"),
+                                         `RadioButtonGroup(`id(`Encapsulation),
+                                                           `HBox(`HSpacing(0.1),
+                                                                 `VBox(
+                                                                     `VSpacing(0.1),
+                                                                     `Left(`RadioButton(`id(`syncppp),
+                                                                                        `opt(`notify),
+                                                                                        _("ISDN S&yncPPP"),
+                                                                                        I4L_ENCAP=="syncppp")),
+                                                                     `Left(`RadioButton(`id(`rawip),
+                                                                                        `opt(`notify),
+                                                                                        _("ISDN &RawIP"),
+                                                                                        I4L_ENCAP!="syncppp")),
+                                                                     `VSpacing(0.1)),
+                                                                 `HSpacing(0.1))))),
+                        `TextEntry(`id(`Section), _("&Connection Name"), lookup (user_settings, "YaST2 Section", "")),
+                        `VSpacing(0.3),
+                        `VSquash(`HBox(`TextEntry(`id(`PhoneNumber), _("&Phone number"), filterchars (lookup (user_settings, "Phone", ""), "0123456789")),
+                                       `Bottom(`PushButton(`id(`Info), `opt(`disabled), _("&Info"))
+                                                        ))),
+                        `VSpacing(0.3),
+                        `TextEntry(`id(`Username), _("&User name"), lookup (user_settings, "Username", "")),
+                        `VSpacing(0.3),
+                        `Password(`id(`Passwd), _("Pass&word"), lookup (user_settings, "Password", ""))),
+                    `HSpacing(4)),
+                `VSpacing(2));
+
+	Wizard::SetContents(_("Set parameters for Internet connection"), contents, getEditProviderHelp (false), true, true);
+	UI::ChangeWidget (`id (`next), `Label, NextButtonLabel ());
+	if (nil != InfoText && "" != InfoText)
+	{
+	    UI::ChangeWidget (`id (`Info), `Enabled, true);
+	}
+	if ("rawip" == I4L_ENCAP)
+	{
+	    UI (``{ ChangeWidget (`id (`Username), `Enabled, false);
+		    ChangeWidget (`id (`Passwd), `Enabled, false); });
+	}
+	symbol ret = nil;
+	while (`next != ret && `back != ret && `abort != ret)
+	{
+	    ret = UI::UserInput ();
+	    if (`Info == ret)
+	    {
+		UI::LongTextPopup (_("Provider info"), `RichText (InfoText), 43, 13);
+	    }
+	    else if (`syncppp == ret || `rawip == ret)
+	    {
+		UI (``{ ChangeWidget (`id (`Username), `Enabled, QueryWidget (`id (`syncppp), `Value));
+			ChangeWidget (`id (`Passwd),   `Enabled, QueryWidget (`id (`syncppp), `Value)); });
+	    }
+	    else if (`next == ret)
+	    {	// validate data
+		ret = nil;
+		string name = UI::QueryWidget (`id (`Section), `Value);
+		string phone = UI::QueryWidget (`id (`PhoneNumber), `Value);
+		string us = UI::QueryWidget (`id (`Username), `Value);
+		string pass = UI::QueryWidget (`id (`Passwd), `Value);
+		boolean i4l_encap = UI::QueryWidget (`id (`syncppp), `Value); //true: "syncppp", false: "rawip"
+		if (name != lookup (user_settings, "Provider", "") && !wvdialIsProviderUnique (name))
+		{
+		    UI::MessagePopup (_("Connection Name %1 already exists."), name);
+		    UI::SetFocus (`id (`Section));
+		}
+		if (name == "")
+		{
+		    UI::MessagePopup (_("You have to fill connection name."));
+		    UI::SetFocus (`id (`Section));
+		}
+		else if ("" == phone)
+		{
+		    UI::MessagePopup (_("You have to fill phone number."));
+		    UI::SetFocus (`id (`PhoneNumber));
+		}
+		else if (i4l_encap && "" == us)
+		{
+		    UI::MessagePopup (_("You have to fill user name."));
+		    UI::SetFocus (`id (`Username));
+		}
+		else if (i4l_encap && "" == pass)
+		{
+		    UI::MessagePopup (_("You have to fill password."));
+		    UI::SetFocus (`id (`Passwd));
+		}
+		else if (filterchars (phone, "0123456789") != phone &&
+			!UI::YesNoPopup (_("You have entered some characters that are not numbers in the phone field.\n\nContinue?")))
+		{
+		    UI::SetFocus (`id (`PhoneNumber));
+		}
+		else
+		    ret = `next;
+		if (`next == ret)
+		{
+		    /*
+		     * Settings to save: (FIXME)
+		     */
+		    user_settings = union (user_settings, $[
+			 "Provider": name,
+			 //"YaST2 Section" is missing in this dialog, is it necessary to have?
+			 "Username" : us,  // May be unused. May we save it anyway?
+			 "Password" : pass,// May be unused. May we save it anyway?
+			 "Phone" : phone,
+			 "I4L_ENCAP" : i4l_encap ? "syncppp" : "rawip",
+			 //Provider ISDN::netdev = i4l_encap ? "ippp" : "isdn", //original isdn sets this too.
+			]);
+		}
+	    }
+	    else if (`abort == ret || `cancel == ret)
+	    {
+		ret = ReallyAbort () ? `abort : nil;
+	    }
+	}
+
+	return ret;
+    }
+
+//    Wizard::CreateDialog ();
+
+    /*
+     * List of providers.
+     */
+//    runProvidersDialog (false);
+//    runProvidersDialog (true);
+
+    /*
+     * Add new provider for modem.
+     */
+//    runEditModemProviderDialog (false);
+    /*
+     * Edit modem provider.
+     */
+//    runEditModemProviderDialog (true);
+
+    /*
+     * Edit ISDN provider.
+     */
+//    runEditIsdnProviderDialog ();
+
+//    UI::CloseDialog ();
+}

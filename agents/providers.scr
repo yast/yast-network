@@ -1,0 +1,40 @@
+/**
+ * File:	providers.scr
+ * Summary:	SCR agent for dialup providers
+ * Author:	Petr Blahos <pblahos@suse.cz>
+ * Access:	Read
+ * See:		yast2-config-network package
+ *
+ * General syntax:
+ *	# comment
+ *	[Section name]
+ *	Key = value
+ *	Another key = another value
+ *
+ * $Id$
+ *
+ * <p>Reads dialup providers from files
+ * /usr/share/providers/*.wvdial.conf.</p>
+ *
+ * FIXME: fix name of custom provider: file /etc/sysconfig/modem/providers.conf
+ */
+.providers
+
+`ag_ini(
+  IniAgent( [ "/usr/share/providers/*.wvdial.conf", "/etc/sysconfig/modem/providers.conf" ],
+    $[
+      "options" : [ ],
+      "comments": [ "^[ \t]*#.*", "^[ \t]*$" ],
+      "sections" : [
+        $[
+        "begin" : [ "[ \t]*\\[Dialer[ \t]+(.*[^ \t])[ \t]*\\][ \t]*", "[Dialer %s]" ],
+        ],
+      ],
+      "params" : [
+        $[
+        "match" : [ "^[ \t]*([^=]*[^ \t=])[ \t]*=[ \t]*(.*[^ \t]|)[ \t]*$" , "%s = %s"],
+      ],
+    ],
+    ]
+  )
+)
