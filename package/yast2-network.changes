@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 22 08:28:31 CET 2005 - mvidner@suse.cz
+
+- Fritz!Card DSL: drdsl must not use the -n switch (#74205).
+- 2.11.30
+
+-------------------------------------------------------------------
 Sat Mar 19 16:36:14 CET 2005 - nashif@suse.de
 
 - DSL: Offer Point to Point Tunneling Protocol again (#73043)

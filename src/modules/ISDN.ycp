@@ -464,7 +464,7 @@ global define boolean Write(boolean start) ``{
 	if (DRDSLrun) {
 	    // step 9 in writing current ISDN setup
 	    ProgressNextStage(_("Running drdsl (could take over a minute)..."));
-	    cmd = sformat("/usr/sbin/drdsl -q -n");
+	    cmd = sformat("/usr/sbin/drdsl -q");
 	    SCR::Execute(.target.bash, cmd);
 	    sleep(sl);
 	}
