@@ -55,7 +55,7 @@ global define boolean Read() ``{
     if(SCR::Read(.target.size, hosts_file) > 0) {
 	list hostlist = SCR::Dir(.etc.hosts);
 	hosts = listmap(string host, hostlist, ``{
-	    string name = SCR::Read(topath(sformat(".etc.hosts.\"%1\"", host)));
+	    string name = (string) SCR::Read(topath(sformat(".etc.hosts.\"%1\"", host)));
 	    list names = filter(string s, splitstring(name, "[ \t]"), ``(s != nil && s != ""));
 	    return [ host, names ];
 	});
@@ -163,7 +163,7 @@ global define boolean Update(string hostname, string domain, list ips) ``{
     string oldhostip = "";
 
     /* Read oldhostname entry */
-    list oldhost = splitstring(SCR::Read(.var.adm.SuSEconfig.oldhostentry), "\n");
+    list oldhost = splitstring((string) SCR::Read(.var.adm.SuSEconfig.oldhostentry), "\n");
     if(size(oldhost) > 0)
 	oldhostname = oldhost[0]:"";
     if(size(oldhost) > 1)

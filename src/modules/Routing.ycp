@@ -62,7 +62,7 @@ global define boolean Read() ``{
 
     /* read route.conf */
     if(SCR::Read(.target.size, routes_file) > 0)
-	Routes = SCR::Read(.routes);
+	Routes = (list) SCR::Read(.routes);
     else
 	Routes = [];
 

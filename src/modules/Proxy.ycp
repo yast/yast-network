@@ -40,13 +40,13 @@ global string pass = "";
 global define boolean Read() ``{
 
     /* Read /etc/sysconfig/proxy */
-    http = SCR::Read(.sysconfig.proxy.HTTP_PROXY);
+    http = (string) SCR::Read(.sysconfig.proxy.HTTP_PROXY);
     if(http == nil) http = "";
-    ftp = SCR::Read(.sysconfig.proxy.FTP_PROXY);
+    ftp = (string) SCR::Read(.sysconfig.proxy.FTP_PROXY);
     if(ftp == nil) ftp = "";
-    no = SCR::Read(.sysconfig.proxy.NO_PROXY);
+    no = (string) SCR::Read(.sysconfig.proxy.NO_PROXY);
     if(no == nil) no = "";
-    enabled = SCR::Read(.sysconfig.proxy.PROXY_ENABLED) != "no";
+    enabled = (string) SCR::Read(.sysconfig.proxy.PROXY_ENABLED) != "no";
 
     /* Read /root/.curlrc */
     if(SCR::Read(.target.size, "/root/.curlrc") > 0)

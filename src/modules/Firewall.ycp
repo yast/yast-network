@@ -31,7 +31,7 @@ global define boolean Read() ``{
     /* read firewalled devices */
     string devs = "";
     if(SCR::Read(.target.size, "/etc/sysconfig/personal-firewall") > 0)
-	devs = SCR::Read(.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS);
+	devs = (string) SCR::Read(.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS);
     y2debug("devs=%1", devs);
     if(devs == nil) return false;
     if(devs == "") return true;
