@@ -14,7 +14,6 @@ textdomain "network";
 import "Call";
 import "CWM";
 import "DSL";
-import "Firewall";
 import "IP";
 import "Label";
 import "Lan";
