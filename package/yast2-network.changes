@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Mar  2 10:27:32 CET 2005 - locilka@suse.cz
+
+- Merged proofed texts
+- 2.11.21
+
+-------------------------------------------------------------------
 Thu Feb 24 14:37:16 CET 2005 - mvidner@suse.cz
 
 - Allow WEP keys of lengths that the card supports (#60011).

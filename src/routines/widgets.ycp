@@ -25,8 +25,8 @@ map<string, map<string,any> > widget_descr = $[
 	"opt": [`notify],
 	"help":
 	// Details dialog help
-_("<p>Normally only the system administator is allowed to activate and 
-deactivate network interface. With <b>User Controlled</b>, an 
+_("<p>Normally only the system administrator is allowed to activate and 
+deactivate a network interface. With <b>User Controlled</b>, an 
 ordinary user may control the interface with KInternet.</p>
 "),
 	],
@@ -78,7 +78,7 @@ via 'ifup' or 'kinternet' (See 'User Controlled' below)."),
 	"label": _("On Cable Connection"),
 	// help text for Device Activation
 	"help": _("<b>On Cable Connection</b>:
-The interface will be watched for whether there is a physical
+The interface is watched for whether there is a physical
 network connection. That means either the cable is connected or the
 wireless interface can connect to an access point.
 "),
@@ -88,7 +88,7 @@ wireless interface can connect to an access point.
 	"label": _("On Hotplug"),
 	// help text for Device Activation
 	"help": _("With <b>On Hotplug</b>,
-the interface will be set up as soon as it is available. This is
+the interface is set up as soon as it is available. This is
 nearly the same as 'At Boot Time', but does not result in an error at
 boot time if the interface is not present.
 "),
