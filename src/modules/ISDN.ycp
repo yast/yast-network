@@ -278,35 +278,30 @@ global define boolean Write(boolean start) ``{
         // step 8/11
 	    _("Start ISDN subsystem"),
         // step 9/11
-	    _("Start ISDN networking"),
-        // step 10/11
 	    _("Set up smpppd"),
+        // step 10/11
+	    _("Start ISDN networking"),
         // step 11/11
 	    _("Run kinternet"),
 	    ], [], "");
     } else {
-	steps = 9;
+	steps = 7;
 	Progress::New(caption, " ", steps, [
 	    // steps for the ISDN writing current setup progress screen without start
-        // step 1/9
+        // step 1/7
 	    _("Stop ISDN networking"),
-        // step 2/9
+        // step 2/7
 	    _("Stop ISDN subsystem"),
-        // step 3/9
+        // step 3/7
 	    _("Write controller configuration"),
-        // step 4/9
+        // step 4/7
 	    _("Write interface configuration"),
-        // step 5/9
+        // step 5/7
 	    _("Write Firewall"),
-        // step 6/9
+        // step 6/7
 	    _("Write providers"),
-        // step 7/9
+        // step 7/7
 	    _("Run SuSEconfig"),
-        // step 8/9
-	    _("Set up smpppd"),
-        // step 9/9
-	    _("Run kinternet"),
-	    ], [], "");
     }
     if(Abort()) return false;
     // stage 1 in writing current ISDN setup
@@ -372,6 +367,12 @@ global define boolean Write(boolean start) ``{
 
 	if(Abort()) return false;
 	// stage 9 in writing current ISDN setup
+	ProgressNextStage(_("Setting up smpppd(8)"));
+	SetupSMPPPD();
+	sleep(sl);
+
+	if(Abort()) return false;
+	// stage 10 in writing current ISDN setup
 	ProgressNextStage(_("Load ISDN network"));
 	cmd = sformat("/etc/init.d/network start -o type=isdn");
 	SCR::Execute(.target.bash, cmd);
@@ -379,19 +380,13 @@ global define boolean Write(boolean start) ``{
 	SCR::Execute(.target.bash, cmd);
 	modified_if = false;
 	sleep(sl);
+
+	if(Abort()) return false;
+	// stage 11 in writing current ISDN setup
+	ProgressNextStage(_("Running kinternet"));
+	RunKInternet();
+	sleep(sl);
     }
-
-    if(Abort()) return false;
-    // stage 10 in writing current ISDN setup
-    ProgressNextStage(_("Setting up smpppd(8)"));
-    SetupSMPPPD();
-    sleep(sl);
-
-    if(Abort()) return false;
-    // stage 11 in writing current ISDN setup
-    ProgressNextStage(_("Running kinternet"));
-    RunKInternet();
-    sleep(sl);
 
     if(Abort()) return false;
     // last stage in writing current ISDN setup
