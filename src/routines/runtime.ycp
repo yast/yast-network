@@ -93,7 +93,7 @@ global define boolean StopNetwork() ``{
 global define boolean EnableSMPPPD() ``{
     boolean ret = true;
     ret = EnableService("smpppd") && ret;
-    ret = StartService("smpppd") && ret;
+    ret = RestartService("smpppd") && ret;
     return ret;
 }
 

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Mar  7 14:20:53 CET 2003 - msvec@suse.de
+
+- restart smpppd after DSL and modem configuration
+- 2.7.29
+
+-------------------------------------------------------------------
 Thu Mar 06 12:15:17 CET 2003 - arvin@suse.de
 
 - better result in internet connection test (bug #24734)
