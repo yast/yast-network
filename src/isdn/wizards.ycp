@@ -1,12 +1,10 @@
 /**
  * File:	include/network/isdn/wizards.ycp
  * Package:	Configuration of network
- * Summary:	User interface functions for isdn configuration.
+ * Summary:	ISDN configuration wizards
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
- * Wizards definitions.
  */
 
 {
@@ -16,6 +14,8 @@ textdomain "network";
 import "Wizard";
 
 include "wizard/sequencer.ycp";
+
+include "network/routines.ycp";
 
 include "network/isdn/ip.ycp";
 include "network/isdn/complex.ycp";

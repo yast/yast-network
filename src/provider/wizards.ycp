@@ -1,7 +1,7 @@
 /**
- * File:	include/network/modem/wizards.ycp
+ * File:	include/network/providers/wizards.ycp
  * Package:	Configuration of network
- * Summary:	Modem configuration wizards
+ * Summary:	Providers configuration wizards
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
@@ -17,20 +17,16 @@ import "Wizard";
 
 include "wizard/sequencer.ycp";
 
-include "network/routines.ycp";
-
-include "network/modem/dialogs.ycp";
-include "network/modem/complex.ycp";
-
 include "network/providers/details.ycp";
 include "network/providers/dialogs.ycp";
 include "network/providers/connection.ycp";
+include "network/providers/complex.ycp";
 
 /**
  * Whole configuration of modems
  * @return sequence result
  */
-global define symbol ModemSequence() ``{
+global define symbol ProvidersSequence() ``{
 
     /* popup text */
     string finished = _("Would you like to configure the mail now?");
@@ -39,7 +35,7 @@ global define symbol ModemSequence() ``{
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
 	"write"	: [ ``( WriteDialog() ), true ],
-	"finish": [ ``( Finished(Modem::Modified(), finished, "mail", ["dialup"]) ), true ],
+	"finish": [ ``( Finished(Providers::Modified(), finished, "mail", ["dialup"]) ), true ],
     ];
 
     map sequence = $[
@@ -61,7 +57,7 @@ global define symbol ModemSequence() ``{
 	]
     ];
 
-    string caption = _("Modem configuration");
+    string caption = _("Providers configuration");
     term contents = `Label(_("Initializing ..."));
 
     Wizard::CreateDialog();
@@ -79,8 +75,8 @@ global define symbol ModemSequence() ``{
  * For use with autoinstallation.
  * @return sequence result
  */
-global define symbol ModemAutoSequence() ``{
-    string caption = _("Modem configuration");
+global define symbol ProvidersAutoSequence() ``{
+    string caption = _("Providers configuration");
     term contents = `Label(_("Initializing ..."));
 
     Wizard::CreateDialog();
@@ -102,10 +98,10 @@ global define symbol MainSequence() ``{
     map aliases = $[
 	"summary"	: ``(SummaryDialog()),
 	"overview"	: ``(OverviewDialog()),
-	"configure"	: [ ``(OneModemSequence(true)), true ],
-	"other"		: [ ``(OneModemSequence(false)), true ],
-	"add"		: [ ``(OneModemSequence(false)), true ],
-	"edit"		: [ ``(OneModemSequence(false)), true ],
+	"configure"	: [ ``(OneProviderSequence(true)), true ],
+	"other"		: [ ``(OneProviderSequence(true)), true ],
+	"add"		: [ ``(OneProviderSequence(true)), true ],
+	"edit"		: [ ``(OneProviderSequence(false)), true ],
     ];
 
     map sequence = $[
@@ -146,16 +142,12 @@ global define symbol MainSequence() ``{
 
 /**
  * Workflow of the configuration of one modem
- * @param detected true if modem was detected (more entries otherwise)
+ * @param country true if country list should be shown
  * @return sequence result
  */
-global define symbol OneModemSequence(boolean detected) ``{
+global define symbol OneProviderSequence(boolean country) ``{
 
     map aliases = $[
-	"parameters_detected"	: ``(ModemDialog(true)),
-	"parameters"		: ``(ModemDialog(false)),
-	"details"		: ``(ModemDetailsDialog()),
-	"details_detected"	: ``(ModemDetailsDialog()),
 	"providers"		: ``(ProvidersDialog("modem")),
 	"provider"		: ``(ProviderDialog("modem")),
 	"new_provider"		: ``(ProviderDialog("modem")),
@@ -164,29 +156,11 @@ global define symbol OneModemSequence(boolean detected) ``{
 	"commit"		: [ ``(Commit()), true ],
     ];
 
-    string entry = "parameters";
-    if(detected) entry = "parameters_detected";
+    string entry = "provider";
+    if(country) entry = "providers";
 
     map sequence = $[
 	"ws_start" : entry,
-	"parameters": $[
-	    `next   : "providers",
-	    `Details: "details",
-	    `abort  : `abort
-	],
-	"parameters_detected" : $[
-	    `next   : "providers",
-	    `Details: "details_detected",
-	    `abort  : `abort
-	],
-	"details"   : $[
-	    `next   : "parameters",
-	    `abort  : `abort
-	],
-	"details_detected" : $[
-	    `next   : "parameters_detected",
-	    `abort  : `abort
-	],
 	"providers" : $[
 	    `next   : "provider",
 	    `new    : "new_provider",

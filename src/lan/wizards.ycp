@@ -1,7 +1,7 @@
 /**
  * File:	include/network/lan/wizards.ycp
  * Package:	Configuration of network
- * Summary:	Network cards configuration wizards.
+ * Summary:	Network cards configuration wizards
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
@@ -16,6 +16,7 @@ textdomain "network";
 import "Wizard";
 
 include "wizard/sequencer.ycp";
+
 include "network/routines.ycp";
 include "network/lan/manual.ycp";
 include "network/lan/address.ycp";

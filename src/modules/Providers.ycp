@@ -71,6 +71,11 @@ map providers = $[];
  */
 list countries = [];
 
+list DELETED = [];
+symbol operation = nil;
+string name = "";
+global block AbortFunction = nil;
+
 /**
  * Export data
  * @return dumped settings (later acceptable by Import())
@@ -119,65 +124,6 @@ global define boolean IsProviderUnique(string name) ``{
 }
 
 /**
- * Prepare for editation of currently selected provider.
- * Check/change its name (ShortName) and nice-name (Provider) to unused.
- * @param new true if create new provider, false if edit existing
- */
-global define void editProvider(boolean new) ``{
-
-    /* generate unique ShortName */
-    integer suffix = 0;
-    string name = lookup(provider, "ShortName", "");
-    string gen = name;
-    if(gen == "") {
-	gen = "provider0";
-	name = "provider";
-    }
-
-    list forbidden = mapkeys(providers);
-    while(contains(forbidden, gen)) {
-	suffix = suffix + 1;
-	gen = sformat("%1%2", name, suffix);
-    }
-    provider = add(provider, "ShortName", gen);
-
-    if(new) return;
-
-    /* generate unique name */
-    name = lookup(provider, "PROVIDER", "");
-    gen = name;
-
-    suffix = 0;
-    forbidden = maplist(`k, `v, providers, ``(v["PROVIDER"]:""));
-    while(contains(forbidden, gen)) {
-	suffix = suffix + 1;
-	gen = sformat("%1 (%2)", name, suffix);
-    }
-    provider = add(provider, "PROVIDER", gen);
-
-    // initialize provider with new values
-    provider = union($[
-	"MODIFYDNS" : "yes",
-	"IDLETIME" : "300",
-	"DEMAND" : "no",
-	"DNS1" : "",
-	"DNS2" : "",
-    ], provider);
-
-}
-
-/**
- * Add currently edited provider to the map of custom providers.
- * Copy settings to Modem::something
- */
-global define void Commit() ``{
-    providers = add(providers, lookup(provider, "ShortName", ""), provider);
-    provShortName = lookup(provider, "ShortName", "");
-    provLongName = lookup(provider, "PROVIDER", "");
-    modified = true;
-}
-
-/**
  * Read providers data (custom only) and country mappings
  * @return true if success
  */
@@ -189,9 +135,9 @@ global define boolean Read() ``{
     providers = $[];
     list dir = SCR::Dir(.sysconfig.network.providers.s);
     foreach(`shortname, dir, ``{
-	path provider = add(.sysconfig.network.providers.v, shortname);
-	map p = listmap(`i, SCR::Dir(provider), ``{
-	    return [ i, SCR::Read(add(provider, i)) ];
+	path prov = add(.sysconfig.network.providers.v, shortname);
+	map p = listmap(`i, SCR::Dir(prov), ``{
+	    return [ i, SCR::Read(add(prov, i)) ];
 	});
 	change(p, "ShortName", shortname);
 	change(providers, shortname, p);
@@ -362,7 +308,7 @@ global define list GetProviders(string country, string type, string preselect) `
  * @param provider which provider to get
  * @return provider map
  */
-global define map GetProvider(any provider) ``{
+global define map ReadProvider(any provider) ``{
     y2debug("provider=%1",provider);
     if(provider != nil && is(provider, path)) {
 	string pr = sformat("%1", provider);
@@ -418,6 +364,209 @@ define list SortProviders(list provs) ``{
 	    return substring(i, 35);
 	return topath(substring(i, 35));
     });
+}
+
+/**
+ * Prepare for editation of currently selected provider.
+ * Check/change its name (ShortName) and nice-name (Provider) to unused.
+ * @param new true if create new provider, false if edit existing
+ * /
+global define void editProvider(boolean new) ``{
+
+    /* generate unique ShortName * /
+    integer suffix = 0;
+    string name = lookup(provider, "ShortName", "");
+    string gen = name;
+    if(gen == "") {
+	gen = "provider0";
+	name = "provider";
+    }
+
+    list forbidden = mapkeys(providers);
+    while(contains(forbidden, gen)) {
+	suffix = suffix + 1;
+	gen = sformat("%1%2", name, suffix);
+    }
+    provider = add(provider, "ShortName", gen);
+
+    if(new) return;
+
+    /* generate unique name * /
+    name = lookup(provider, "PROVIDER", "");
+    gen = name;
+
+    suffix = 0;
+    forbidden = maplist(`k, `v, providers, ``(v["PROVIDER"]:""));
+    while(contains(forbidden, gen)) {
+	suffix = suffix + 1;
+	gen = sformat("%1 (%2)", name, suffix);
+    }
+    provider = add(provider, "PROVIDER", gen);
+
+    // initialize provider with new values
+    provider = union($[
+	"MODIFYDNS" : "yes",
+	"IDLETIME" : "300",
+	"DEMAND" : "no",
+	"DNS1" : "",
+	"DNS2" : "",
+    ], provider);
+
+}
+*/
+
+global define boolean AddEdit(string name, boolean clone) ``{
+    operation = nil;
+
+    y2debug("name=%1",name);
+    y2debug("clone=%1",clone);
+
+    if(name != "") {
+
+	if(clone)
+	    provider = ReadProvider(topath(name));
+	else
+	    provider = ReadProvider(name);
+
+	string name = lookup(provider, "PROVIDER", "");
+	string gen = name;
+
+	if(clone) {
+	    /* generate unique name */
+	    integer suffix = 0;
+	    list forbidden = maplist(`k, `v, providers, ``(v["PROVIDER"]:""));
+	    while(contains(forbidden, gen)) {
+		suffix = suffix + 1;
+		gen = sformat("%1 (%2)", name, suffix);
+	    }
+	}
+
+	provider = add(provider, "PROVIDER", gen);
+
+	// initialize provider with new values
+	provider = union($[
+	    "MODIFYDNS" : "yes",
+	    "IDLETIME" : "300",
+	    "DEMAND" : "no",
+	    "DNS1" : "",
+	    "DNS2" : "",
+	], provider);
+
+    }
+
+    if(name == "" || clone) {
+
+	if(name == "")
+	    provider = $[];
+	/* else is filled in the above if() */
+
+	/* generate unique ShortName */
+	integer suffix = 0;
+	string name = lookup(provider, "ShortName", "");
+	string gen = name;
+	if(gen == "") {
+	    gen = "provider0";
+	    name = "provider";
+	}
+
+	list forbidden = mapkeys(providers);
+	while(contains(forbidden, gen)) {
+	    suffix = suffix + 1;
+	    gen = sformat("%1%2", name, suffix);
+	}
+	provider = add(provider, "ShortName", gen);
+
+    }
+
+    /* name=="" -> Add */
+    if(name == "")
+	operation = `add;
+    /* name!="" -> Edit */
+    else
+	operation = `edit;
+
+    return true;
+}
+
+global define boolean Delete(string nam) ``{
+    operation = nil;
+
+    if(!haskey(providers, nam)) {
+	y2error("Key not found: %1", nam);
+	return false;
+    }
+
+    name = nam;
+    operation = `delete;
+    return true;
+}
+
+/**
+ * Add currently edited provider to the map of custom providers.
+ * Copy settings to Modem::something
+ */
+global define boolean Commit() ``{
+    y2debug("Commit(%1)", operation);
+
+    if(operation == `add || operation == `edit) {
+	y2debug("providers=%1",providers);
+	change(providers, provider["ShortName"]:"", provider);
+	provShortName = lookup(provider, "ShortName", "");
+	provLongName = lookup(provider, "PROVIDER", "");
+	y2debug("providers=%1",providers);
+    }
+    else if(operation == `delete) {
+	if(!haskey(providers, name)) {
+	    y2error("Key not found: %1", name);
+	    return false;
+	}
+
+	providers = remove(providers, name);
+	change(DELETED, name);
+    }
+    else {
+	providers = add(providers, lookup(provider, "ShortName", ""), provider);
+	provShortName = lookup(provider, "ShortName", "");
+	provLongName = lookup(provider, "PROVIDER", "");
+	y2error("Unknown operation: %1", operation);
+	return false;
+    }
+
+    modified = true;
+    operation = nil;
+    return true;
+}
+
+global define list Overview() ``{
+    list overview = [];
+
+    y2debug("providers=%1",providers);
+    maplist(`name, `provmap, providers, ``{
+	change(overview, `item(`id(name), name, provmap["PROVIDER"]:""));
+    });
+    y2debug("providers=%1",providers);
+    return overview;
+}
+
+global define list Summary(boolean split) ``{
+
+    string summary = "";
+    if(size(providers) < 1)
+	summary = Summary::AddHeader("", _("Nothing is configured."));
+    else
+	summary = Summary::AddHeader("", _("Already configured providers:"));
+
+    list provs = [];
+    maplist(`name, `provmap, providers, ``{
+	string descr = sformat(_("Configured as %1"), name);
+	change(provs, Summary::Device(provmap["PROVIDER"]:"", descr));
+    });
+    summary = Summary::DevicesList(provs);
+
+    return [
+	summary,
+	[ `item(`id(`other), _("Modem provider"), true) ]
+    ];
 }
 
 /* EOF */

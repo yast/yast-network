@@ -187,7 +187,7 @@ located then choose one of the listed providers.</p>") +
 	    provider = dividerHack(provs, prev);
 	    UI::ChangeWidget(`id(`providers), `CurrentItem, provider);
 	}
-	map p = Providers::GetProvider(provider);
+	map p = Providers::ReadProvider(provider);
 	string tmp = lookup(p, "HOMEPAGE", nil);
 	tmp = ((nil == tmp || "" == tmp) ? "" : sformat(_("Home Page: %1"), tmp));
 	UI::ChangeWidget(`id(`homepage), `Value, tmp);
@@ -231,12 +231,14 @@ located then choose one of the listed providers.</p>") +
     /* next */
     if(ret == `next || ret == `new) {
 	if(ret == `new || provider == nil) {
-	    Providers::provider = $[];
-	    Providers::editProvider(true);
+	    Providers::AddEdit("", false);
+	    //Providers::provider = $[];
+	    //Providers::editProvider(true);
 	}
 	else {
-	    Providers::provider = Providers::GetProvider(provider);
-	    Providers::editProvider(false);
+	    Providers::AddEdit(sformat("%1",provider), true);
+	    //Providers::provider = Providers::GetProvider(provider);
+	    //Providers::editProvider(false);
 	}
     }
 
@@ -410,26 +412,23 @@ the password.</p>");
 	    if(type == "isdn")
 		encap = UI::QueryWidget(`id(`syncppp), `Value) ? "syncppp" : "rawip";
 
-	    if(name != lookup(Providers::provider, "PROVIDER", "") && !Providers::IsProviderUnique(name))
-	    {
+	    if(name != lookup(Providers::provider, "PROVIDER", "") && !Providers::IsProviderUnique(name)) {
+		y2security("n(%1), p(%2)",name,lookup(Providers::provider, "PROVIDER", ""));
 		UI::MessagePopup(sformat(_("Connection Name %1 already exists."), name));
 		UI::SetFocus(`id(`name));
 		continue;
 	    }
-	    else if(name == "")
-	    {
+	    else if(name == "") {
 		UI::MessagePopup(_("Enter the connection name."));
 		UI::SetFocus(`id(`name));
 		continue;
 	    }
-	    else if("" == phone)
-	    {
+	    else if("" == phone) {
 		UI::MessagePopup(_("Enter the phone number."));
 		UI::SetFocus(`id(`phone));
 		continue;
 	    }
-	    else if("" == username)
-	    {
+	    else if("" == username) {
 		UI::MessagePopup(_("Enter the user name."));
 		UI::SetFocus(`id(`username));
 		continue;

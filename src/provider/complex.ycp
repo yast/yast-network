@@ -1,7 +1,7 @@
 /**
- * File:	include/network/lan/dialogs.ycp
+ * File:	include/network/providers/complex.ycp
  * Package:	Configuration of network
- * Summary:	Summary, overview and IO dialogs for network cards config
+ * Summary:	Complex providers dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
@@ -11,7 +11,7 @@
 
 textdomain "network";
 
-import "Lan";
+import "Providers";
 
 import "Wizard";
 import "Wizard_hw";
@@ -27,7 +27,7 @@ include "network/lan/helps.ycp";
  * @return true if data was modified
  */
 global define boolean Modified() ``{
-    return Lan::Modified() || DNS::modified || Routing::modified;
+    return Providers::Modified();
 }
 
 /**
@@ -35,7 +35,7 @@ global define boolean Modified() ``{
  * @return always `next
  */
 global define symbol Commit() ``{
-    Lan::Commit();
+    Providers::Commit();
     return `next;
 }
 
@@ -54,8 +54,8 @@ _("<p><b><big>Aborting the initialization:</big></b><br>
 Safely abort the configuration utility by pressing <B>Abort</B> now.</p>");
 
     Wizard::RestoreHelp(help);
-    Lan::AbortFunction = ``{return PollAbort();};
-    boolean ret = Lan::Read();
+    Providers::AbortFunction = ``{return PollAbort();};
+    boolean ret = Providers::Read();
     return ret ? `next : `abort;
 }
 
@@ -75,8 +75,8 @@ _("<p><b><big>Aborting saving:</big></b><br>
 Abort saving by pressing <b>Abort</b>.</p>");
 
     Wizard::RestoreHelp(help);
-    Lan::AbortFunction = ``{return PollAbort() && ReallyAbort();};
-    boolean ret = Lan::Write();
+    Providers::AbortFunction = ``{return PollAbort() && ReallyAbort();};
+    boolean ret = Providers::Write();
     return ret ? `next : `abort;
 }
 
@@ -103,12 +103,12 @@ _("<p><b><big>Editing or deleting:</big></b><br>
 If you press <b>Edit</b>, an additional dialog in which
 to change the configuration opens.</p>");
 
-    list summary = Lan::Summary(true);
+    list summary = Providers::Summary(true);
     list unconfigured = select(summary, 1, []);
     string configured = select(summary, 0, "");
 
     y2debug("unconfigured=%1",unconfigured);
-    term contents = Wizard_hw::DetectedContent(_("Network cards to configure"),
+    term contents = Wizard_hw::DetectedContent(_("Providers to configure"),
 	    unconfigured, false, configured);
 
     Wizard::SetContentsButtons(caption, contents, help,
@@ -131,13 +131,13 @@ to change the configuration opens.</p>");
 	}
 	/* configure the selected card */
 	else if(ret == `configure_button) {
-	    Lan::AddEdit("");
+	    Providers::AddEdit("", false);
 	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
 	    if(selected == `other) {
 		ret = `other;
 	    }
 	    else {
-		Lan::Select(selected);
+		Providers::Select(selected);
 		ret = `configure;
 	    }
 	    break;
@@ -176,12 +176,12 @@ _("<p><b><big>Editing or deleting:</big></b><br>
 Choose a network card to change or remove.
 Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
 
-    list overview = Lan::Overview();
+    list overview = Providers::Overview();
     y2debug("overview=%1",overview);
 
     /* Header of table with installed cards */
     term contents = Wizard_hw::ConfiguredContent(
-	    `header(_("No."), _("Type"), _("Device"), /*_("Active"),*/ _("IP Address")/*, "PCMCIA", "Driver"*/),
+	    `header(_("Name"), _("Provider") /*_("Active"),*/ /*_("IP Address")*//*, "PCMCIA", "Driver"*/),
 	    overview, nil, nil, nil, nil);
 
     contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);
@@ -206,23 +206,23 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
 	}
 	/* add */
 	else if(ret == `add_button) {
-	    Lan::AddEdit("");
+	    Providers::AddEdit("", false);
 	    ret = `add;
 	    break;
 	}
 	/* edit */
 	else if(ret == `edit_button) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-	    Lan::AddEdit(dev);
+	    Providers::AddEdit(dev, false);
 	    ret = `edit;
 	    break;
 	}
 	/* delete */
 	else if(ret == `delete_button) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-	    Lan::Delete(dev);
-	    Lan::Commit();
-	    overview = Lan::Overview();
+	    Providers::Delete(dev);
+	    Providers::Commit();
+	    overview = Providers::Overview();
 	    UI::ChangeWidget(`id(`table), `Items, overview);
 	    if(size(overview) < 1) {
 		UI::ChangeWidget(`id(`edit_button), `Enabled, false);
@@ -241,6 +241,12 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
     }
 
     return ret;
+}
+
+if(false) {
+Wizard::CreateDialog();
+Providers::Read();
+OverviewDialog();
 }
 
 /* EOF */

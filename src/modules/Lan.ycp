@@ -113,7 +113,7 @@ global define boolean Read() ``{
     integer steps = 8;
 
     /* FIXME */
-    integer sl = 1000; //1000;
+    integer sl = 0; //1000;
     sleep(sl);
 
     Progress::New(caption, " ", steps, [

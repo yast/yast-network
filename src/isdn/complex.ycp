@@ -1,18 +1,10 @@
 /**
- * File:
- *   include/network/isdn/complex.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Summary, overview and IO dialogs for isdns configuration.
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/isdn/complex.ycp
+ * Package:	Configuration of network
+ * Summary:	Summary, overview and IO dialogs for isdns configuration.
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
  */
 
 {
@@ -96,6 +88,7 @@ An additional dialog will inform you whether it is safe to do so or not.</P>");
  */
 global define symbol SummaryDialog() ``{
 
+    /* ISDN summary dialog caption */
     string caption = _("ISDN cards configuration");
 
     /* isdns summary dialog help 1/3 */
@@ -173,6 +166,7 @@ can change the configuration and setup dialup connections) will open.
  */
 global define symbol OverviewDialog() ``{
 
+    /* ISDN overview dialog caption */
     string caption = _("ISDN cards configuration overview");
 
     string helptext = /* isdns overview dialog help 1/5 */
@@ -342,4 +336,3 @@ services at the moment.
 
 /* EOF */
 }
-

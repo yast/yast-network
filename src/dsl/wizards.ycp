@@ -1,20 +1,10 @@
 /**
- * File:
- *   include/network/dsl/wizards.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   User interface functions for dsl configuration.
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/dsl/wizards.ycp
+ * Package:	Configuration of network
+ * Summary:	DSL configuration wizards
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
- * Wizards definitions.
- *
  */
 
 {
@@ -25,12 +15,11 @@ import "Wizard";
 
 include "wizard/sequencer.ycp";
 
-include "network/dsl/dialogs.ycp";
-/* include "network/dsl/"; */
-/* other dialogs ... */
+include "network/routines.ycp";
 
-include "network/services/dns.ycp";
-include "network/services/routing.ycp";
+include "network/dsl/dialogs.ycp";
+include "network/dsl/complex.ycp";
+//include "network/providers/.ycp";
 
 /**
  * Whole configuration of network
@@ -38,28 +27,33 @@ include "network/services/routing.ycp";
  */
 global define symbol DSLSequence() ``{
 
+    /* popup text */
+    string finished = _("Would you like to configure the mail now?");
+
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
-	"write"	: [ ``( WriteDialog() ), true ]
+	"write"	: [ ``( WriteDialog() ), true ],
+	"finish" : [ ``( Finished(DSL::Modified(), finished, "mail", ["permanent"]) ), true ],
     ];
 
     map sequence = $[
 	"ws_start" : "read",
-	"read" :
-	$[
+	"read" : $[
 	    `abort	: `abort,
 	    `next	: "main"
 	],
-	"main" :
-	$[
+	"main" : $[
 	    `abort	: `abort,
 	    `next	: "write"
 	],
 	"write" : $[
 	    `abort	: `abort,
 	    `next	: `next
-	]
+	],
+        "finish" : $[
+	    `next       : `next,
+	],
     ];
 
     string caption = _("DSL configuration");

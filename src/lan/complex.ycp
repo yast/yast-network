@@ -1,7 +1,7 @@
 /**
- * File:	include/network/modem/complex.ycp
+ * File:	include/network/lan/dialogs.ycp
  * Package:	Configuration of network
- * Summary:	Summary, overview and IO dialogs for modems configuration.
+ * Summary:	Summary, overview and IO dialogs for network cards config
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
@@ -11,22 +11,23 @@
 
 textdomain "network";
 
-import "Modem";
-import "Providers";
+import "Lan";
 
 import "Wizard";
 import "Wizard_hw";
 
 include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
+
 include "network/routines.ycp";
+include "network/lan/helps.ycp";
 
 /**
  * Return a modification status
  * @return true if data was modified
  */
 global define boolean Modified() ``{
-    return Modem::Modified() || Providers::Modified();
+    return Lan::Modified() || DNS::modified || Routing::modified;
 }
 
 /**
@@ -34,8 +35,7 @@ global define boolean Modified() ``{
  * @return always `next
  */
 global define symbol Commit() ``{
-    Providers::Commit();
-    Modem::Commit();
+    Lan::Commit();
     return `next;
 }
 
@@ -45,19 +45,17 @@ global define symbol Commit() ``{
  */
 global define symbol ReadDialog() ``{
 
-    /* modems read dialog help 1/2 */
-    string helptext = _("<P><B><BIG>Initializing modem configuration
-</BIG></B><BR>Please wait...<BR></P>
-");
+    /* Network read dialog help 1/2 */
+    string help = _("<p><b><big>Initializing network card
+configuration</big></b><br>Please wait...<br></p>") +
 
-    /* modems read dialog help 2/2 */
-    helptext = helptext + _("<P><B><BIG>Aborting the initialization:
-</BIG></B><BR>You can safely abort the configuration utility by pressing
-the <B>Abort</B> button now.</P>");
+    /* Network read dialog help 2/2 */
+_("<p><b><big>Aborting the initialization:</big></b><br>
+Safely abort the configuration utility by pressing <B>Abort</B> now.</p>");
 
-    Wizard::RestoreHelp(helptext);
-    Modem::AbortFunction = ``{return PollAbort();};
-    boolean ret = Modem::Read();
+    Wizard::RestoreHelp(help);
+    Lan::AbortFunction = ``{return PollAbort();};
+    boolean ret = Lan::Read();
     return ret ? `next : `abort;
 }
 
@@ -68,19 +66,17 @@ the <B>Abort</B> button now.</P>");
 global define symbol WriteDialog() ``{
     if(!Modified()) return `next;
 
-    /* modems write dialog help 1/2 */
-    string helptext = _("<P><B><BIG>Saving modem configuration</BIG></B><BR>
-Please wait...<BR></P>
-");
+    /* Network write dialog help 1/2 */
+    string help = _("<p><b><big>Saving network card
+configuration</big></b><br>Please wait...<br></p>") +
 
-    /* modems write dialog help 2/2 */
-    helptext = helptext + _("<P><B><BIG>Aborting the saving:</BIG></B><BR>
-You can abort the saving by pressing the <B>Abort</B> button. An additional
-dialog will possibly inform you whether it is safe to do so or not.</P>");
+    /* Network write dialog help 2/2 */
+_("<p><b><big>Aborting saving:</big></b><br>
+Abort saving by pressing <b>Abort</b>.</p>");
 
-    Wizard::RestoreHelp(helptext);
-    Modem::AbortFunction = ``{return PollAbort() && ReallyAbort();};
-    boolean ret = Modem::Write();
+    Wizard::RestoreHelp(help);
+    Lan::AbortFunction = ``{return PollAbort() && ReallyAbort();};
+    boolean ret = Lan::Write();
     return ret ? `next : `abort;
 }
 
@@ -90,37 +86,34 @@ dialog will possibly inform you whether it is safe to do so or not.</P>");
  */
 global define symbol SummaryDialog() ``{
 
-    /* Modems summary dialog caption */
-    string caption = _("Modem configuration");
+    /* Network summary dialog caption */
+    string caption = _("Network cards configuration");
 
-    /* modems summary dialog help 1/3 */
-    string helptext = _("<P><B><BIG>Modem setup</BIG></B><BR>
-Here, you can configure your modem.<BR></P>
-");
+    /* Network summary dialog help 1/3 */
+    string help = _("<p><b><big>Network card setup</big></b><br>
+Configure your network card here.<br></p>") +
 
-    /* modems summary dialog help 2/3 */
-    helptext = helptext + _("<P><B><BIG>Adding a modem:</BIG></B><BR>
-Choose a modem from the list of detected modems. If your modem was not
-autodetected, use <B>Other (not detected)</B>. Then press <B>Configure</B>.
-</P>
-");
+    /* Network summary dialog help 2/3 */
+_("<p><b><big>Adding a network card:</big></b><br>
+Choose a network card from the list of detected network cards.
+If your network card was not autodetected, select <b>Other (not detected)</b>
+then press <b>Configure</b>.</p>") +
 
-    /* modems summary dialog help 3/3 */
-    helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
-If you press <B>Edit</B>, an additional dialog opens in which to change the
-configuration.</P>
-");
+    /* Network summary dialog help 3/3 */
+_("<p><b><big>Editing or deleting:</big></b><br>
+If you press <b>Edit</b>, an additional dialog in which
+to change the configuration opens.</p>");
 
-    list summary = Modem::Summary(true);
+    list summary = Lan::Summary(true);
     list unconfigured = select(summary, 1, []);
     string configured = select(summary, 0, "");
 
     y2debug("unconfigured=%1",unconfigured);
     /* Frame label */
-    term contents = Wizard_hw::DetectedContent(_("Modems to configure"),
+    term contents = Wizard_hw::DetectedContent(_("Network cards to configure"),
 	    unconfigured, false, configured);
 
-    Wizard::SetContentsButtons(caption, contents, helptext,
+    Wizard::SetContentsButtons(caption, contents, help,
 	    BackButtonLabel(), FinishButtonLabel());
 
     any ret = nil;
@@ -140,13 +133,13 @@ configuration.</P>
 	}
 	/* configure the selected card */
 	else if(ret == `configure_button) {
-	    Modem::AddEdit("");
+	    Lan::AddEdit("");
 	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
 	    if(selected == `other) {
 		ret = `other;
 	    }
 	    else {
-		Modem::Select(selected);
+		Lan::Select(selected);
 		ret = `configure;
 	    }
 	    break;
@@ -169,36 +162,34 @@ configuration.</P>
  */
 global define symbol OverviewDialog() ``{
 
-    /* Modems overview dialog caption */
-    string caption = _("Modem configuration overview");
+    /* Network overview dialog caption */
+    string caption = _("Network cards configuration overview");
 
-    /* modems overview dialog help 1/3 */
-    string helptext = _("<P><B><BIG>Modem overview</BIG></B><BR>
-Here, get an overview of installed modems. Additionally,
-edit their configuration.<BR></P>
-");
+    /* Network overview dialog help 1/3 */
+    string help = _("<p><b><big>Network card overview</big></b><br>
+Obtain an overview of installed network cards. Additionally,
+edit their configuration.<br></p>") +
 
-    /* modems overview dialog help 2/3 */
-    helptext = helptext + _("<P><B><BIG>Adding a modem:</BIG></B><BR>
-If you press <B>Add</B>, you can manually configure a modem.</P>");
+    /* Network overview dialog help 2/3 */
+_("<p><b><big>Adding a network card:</big></b><br>
+Press <b>Add</b> to configure a new network card manually.</p>") +
 
-    /* modems overview dialog help 3/3 */
-    helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
-Choose a modem for which to change or remove the configuration.
-Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
-");
+    /* Network overview dialog help 3/3 */
+_("<p><b><big>Editing or deleting:</big></b><br>
+Choose a network card to change or remove.
+Then press <b>Edit</b> or <b>Delete</b> as desired.</p>");
 
-    list overview = Modem::Overview();
+    list overview = Lan::Overview();
     y2debug("overview=%1",overview);
 
     /* Header of table with installed cards */
     term contents = Wizard_hw::ConfiguredContent(
-	    `header(_("No."), _("Type"), _("Device"), _("Provider")),
+	    `header(_("No."), _("Type"), _("Device"), /*_("Active"),*/ _("IP Address")/*, "PCMCIA", "Driver"*/),
 	    overview, nil, nil, nil, nil);
 
     contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);
 
-    Wizard::SetContentsButtons(caption, contents, helptext,
+    Wizard::SetContentsButtons(caption, contents, help,
 	    BackButtonLabel(), FinishButtonLabel());
 
     if(size(overview) < 1) {
@@ -218,23 +209,23 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
 	}
 	/* add */
 	else if(ret == `add_button) {
-	    Modem::AddEdit("");
+	    Lan::AddEdit("");
 	    ret = `add;
 	    break;
 	}
 	/* edit */
 	else if(ret == `edit_button) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-	    Modem::AddEdit(dev);
+	    Lan::AddEdit(dev);
 	    ret = `edit;
 	    break;
 	}
 	/* delete */
 	else if(ret == `delete_button) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-	    Modem::Delete(dev);
-	    Modem::Commit();
-	    overview = Modem::Overview();
+	    Lan::Delete(dev);
+	    Lan::Commit();
+	    overview = Lan::Overview();
 	    UI::ChangeWidget(`id(`table), `Items, overview);
 	    if(size(overview) < 1) {
 		UI::ChangeWidget(`id(`edit_button), `Enabled, false);

@@ -39,6 +39,7 @@ if(size(args) > 0) {
 }
 
 /* main ui function */
+//any ret = DSLSequence();
 any ret = DSLSequence(tonline);
 y2debug("ret == %1", ret);
 

@@ -20,6 +20,7 @@ import "Firewall";
 
 include "network/config.ycp";
 include "network/runtime.ycp";
+include "network/summary.ycp";
 
 /**
  * DSL network interface
@@ -47,6 +48,9 @@ global string dns2 = "";
  */
 map CONFIG = $[];
 list DELETED = [];
+
+list HARDWARE = [];
+global block AbortFunction = nil;
 
 /**
  * Read the DSL settings
@@ -125,6 +129,14 @@ global define boolean Write() ``{
 
     Firewall::Write();
     return true;
+}
+
+global define list Overview() ``{
+    return BuildOverview();
+}
+
+global define list Summary(boolean split) ``{
+    return BuildSummary(split);
 }
 
 /* EOF */

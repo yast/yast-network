@@ -1,18 +1,10 @@
 /**
- * File:
- *   include/network/dsl/complex.ycp
- *
- * Package:
- *   Configuration of network
- *
- * Summary:
- *   Summary, overview and IO dialogs for DSL configuration.
- *
- * Authors:
- *   Michal Svec <msvec@suse.cz>
+ * File:	include/network/dsl/complex.ycp
+ * Package:	Configuration of network
+ * Summary:	Summary, overview and IO dialogs for DSL configuration.
+ * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
- *
  */
 
 {
@@ -51,7 +43,7 @@ global define symbol Commit() ``{
  * @return `abort if aborted and `next otherwise
  */
 global define symbol ReadDialog() ``{
-    Wizard::RestoreHelp(ReadDialogHelp());
+    Wizard::RestoreHelp("");
     DSL::AbortFunction = ``{return PollAbort();};
     boolean ret = DSL::Read();
     return ret ? `next : `abort;
@@ -63,7 +55,7 @@ global define symbol ReadDialog() ``{
  */
 global define symbol WriteDialog() ``{
     if(!Modified()) return `next;
-    Wizard::RestoreHelp(WriteDialogHelp());
+    Wizard::RestoreHelp("");
     DSL::AbortFunction = ``{return PollAbort() && ReallyAbort();};
     boolean ret = DSL::Write();
     return ret ? `next : `abort;
@@ -75,17 +67,19 @@ global define symbol WriteDialog() ``{
  */
 global define symbol SummaryDialog() ``{
 
+    /* DSL summary dialog caption */
     string caption = _("DSL configuration");
 
-    list summary = DSL::Summary();
-    list unconfigured = select(summary, 0, []);
-    string configured = select(summary, 1, "");
+    list summary = DSL::Summary(true);
+    list unconfigured = select(summary, 1, []);
+    string configured = select(summary, 0, "");
 
     y2debug("unconfigured=%1",unconfigured);
-    term contents = Wizard_hw::DetectedContent(_("Network cards to configure"),
+    /* Frame label */
+    term contents = Wizard_hw::DetectedContent(_("DSL cards to configure"),
 	    unconfigured, false, configured);
 
-    Wizard::SetContentsButtons(caption, contents, SummaryDialogHelp(),
+    Wizard::SetContentsButtons(caption, contents, "",
 	    BackButtonLabel(), FinishButtonLabel());
 
     any ret = nil;
@@ -134,6 +128,7 @@ global define symbol SummaryDialog() ``{
  */
 global define symbol OverviewDialog() ``{
 
+    /* DSL overview dialog caption */
     string caption = _("DSL configuration overview");
 
     list overview = DSL::Overview();
@@ -146,7 +141,7 @@ global define symbol OverviewDialog() ``{
 
     contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);
 
-    Wizard::SetContentsButtons(caption, contents, OverviewDialogHelp(),
+    Wizard::SetContentsButtons(caption, contents, "",
 	    BackButtonLabel(), FinishButtonLabel());
 
     if(size(overview) < 1) {

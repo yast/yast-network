@@ -1,0 +1,48 @@
+/**
+ * File:	clients/providers.ycp
+ * Package:	Configuration of network
+ * Summary:	Providers main file
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Main file for network card configuration.
+ * Uses all other files.
+ */
+
+{
+
+textdomain "network";
+
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("Providers module started");
+
+include "network/providers/wizards.ycp";
+
+/* is this proposal or not? */
+boolean propose = false;
+list args = Args();
+if(size(args) > 0) {
+    if(is(Args(0), path) && Args(0) == .propose) {
+	y2milestone("Using PROPOSE mode");
+	propose = true;
+    }
+    else
+	y2error("Bad argument for providers: %1",Args(0));
+}
+
+/* main ui function */
+any ret = nil;
+
+if(propose) ret = ProvidersAutoSequence();
+else ret = ProvidersSequence();
+y2debug("ret == %1", ret);
+
+/* Finish */
+y2milestone("Providers module finished");
+y2milestone("----------------------------------------");
+return ret;
+
+/* EOF */
+}

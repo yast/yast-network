@@ -34,6 +34,10 @@ Bugs:
 
 - include public_html/network
 
+- [Hardware details]: wireless, eth numbers, dual port cards,
+                      edit modules.conf, better PCMCIA/USB
+		      #10077 #12378 #15062 #9209 ...
+
 Enhancements:
 - ip: bits2netmask, netmask2bits
 - dns: xauth agent </dev/null (and some more work)
@@ -103,7 +107,7 @@ DetectionStop() {
 - where is this used?
 
 
-MODULESCONF:
+MODULES:
 - see the "*ISDN*" paper
 
 MODULES=$[];	-> Lan.ycp
