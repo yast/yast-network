@@ -16,8 +16,32 @@ y2milestone("Lan autoinst client started");
 
 import "Lan";
 import "Progress";
+import "Arch";
 import "Mode";
 include "network/lan/wizards.ycp";
+
+any ret = nil;
+string func = "";
+map param = $[];
+
+/* Check arguments */
+if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
+    func = (string) WFM::Args(0);
+    if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
+	param = (map) WFM::Args(1);
+}
+y2debug("func=%1", func);
+y2debug("param=%1", param);
+Mode::test = false;
+
+if (Mode::test)
+{
+    Mode::autoinst = true;
+    param = $["dns":$["dhcp_hostname":false, "dhcp_resolv":false],
+    "interfaces":[$["bootproto":"dhcp", "device":"eth0",
+    "startmode":"onboot"]], "routing":$["ip_forward":false]];
+    func = "Import";
+}
 
 /**
  * Convert data from autoyast to structure used by module.
@@ -25,11 +49,11 @@ include "network/lan/wizards.ycp";
  * @return native network settings
  */
 define map FromAY(map input) {
-	// Used netdevice during installation
-	map InstallInf = $[];
-	include "network/install.ycp";
-	ReadInstallInf();
-	string netdevice = InstallInf["netdevice"]:"eth0";
+    // Used netdevice during installation
+    map InstallInf = $[];
+    include "network/install.ycp";
+    ReadInstallInf();
+    string netdevice = InstallInf["netdevice"]:"eth0";
 
     list upcase = [
 		   "bootproto",
@@ -49,7 +73,14 @@ define map FromAY(map input) {
 		   "remote_ipaddr"
     ];
 
-    map<string,map> interfaces = listmap(map<string,string> interface, input["interfaces"]:[], {
+    integer dn = 0;
+    list<map> hw = [];
+    if (Mode::autoinst)
+        hw = Lan::PrepareForAutoinst();
+    map devicemapping = $[];
+    map<string,map> interfaces = listmap(map<string,string> interface,
+            input["interfaces"]:[],
+    {
 	map new_interface = $[];
 	foreach(string k, string v, interface, {
 	    if (contains(upcase, k)) {
@@ -59,102 +90,125 @@ define map FromAY(map input) {
 		new_interface[k] = v;
 	    }
 	});
-	return $[ interface["device"]:netdevice : new_interface ];
+        string configured_device = interface["device"]:"";
+        string device = "";
+        if (  Mode::autoinst )
+        {
+            Lan::SelectHW(dn);
+            device = Lan::device;
+            new_interface["_type"] = hw[dn, "type"]:"";
+            devicemapping[configured_device] = device;
+        }
+        else
+        {
+            device = configured_device;
+        }
+        dn = dn + 1;
+	return $[ device : new_interface ];
     });
 
     map devices = $[];
-    foreach(string device, map if_data, interfaces, {
 
-	integer pos = findfirstof( device, "0123456789");
-	string strtok =  substring(device, 0, pos);
-	string inttok = substring(device, pos);
+    foreach(string devname, map if_data, interfaces, {
 
-	map device = devices[strtok]:$[];
-	device=add(device, inttok, if_data);
-	devices[strtok] = device;
+        if (!Mode::autoinst)
+        {
+	    integer pos = findfirstof( devname, "0123456789");
+	    string strtok =  substring(devname, 0, pos);
+	    string inttok = substring(devname, pos);
+	    map d = devices[strtok]:$[];
+	    d=add(d, inttok, if_data);
+	    devices[strtok] = d;
+        } else {
+            string t = if_data["_type"]:"";
+	    map d = devices[t]:$[];
+	    d=add(d, devname, if_data);
+            devices[t] = d;
+        }
 
     });
-    map native_modules = $[];
+    map hwcfg = $[];
 
-    if (size(input["modules"]:[]) > 0) {
-	map tmp_modules = listmap(map mod, input["modules"]:[], {
-	    string dev = mod["device"]:"";
-	    return $[dev : mod["module"]:""];
-	});
-	native_modules["alias"] = tmp_modules;
-	tmp_modules = listmap(map mod, input["modules"]:[], {
-        string options = mod["options"]:"";
-        string module_name = mod["module"]:"";
-		return $[module_name : options];
-    });
-	native_modules["options"] = tmp_modules;
-
-    }
-    else if (size(input["modules"]:[]) == 0 && Mode::autoinst)
+    if (size(input["modules"]:[]) > 0)
     {
-	import "Arch";
-	list<map> HW = [];
-	if(!Arch::s390) {
-	    string name = "";
-	    string unique = "";
-	    string type = "";
-	    string hotplug = "";
-	    include "network/hardware.ycp";
-	    HW = ReadHardware("netcard");
-	}
+        // "hwcfg":$["bus-pci-0000:02:05.0":$["MODULE":"sk98lin",
+        // "MODULE_OPTIONS":"", "STARTMODE":"auto"]]
+	hwcfg = listmap(map mod, input["modules"]:[], {
+            string options = mod["options"]:"";
+            string module_name = mod["module"]:"";
+            string start_mode= mod["startmode"]:"auto";
+            string device_name= mod["device"]:"";
+
+            map module_data = $["MODULE":module_name,
+                                "MODULE_OPTIONS":options,
+                                "STARTMODE":start_mode
+                                ];
+            if (Mode::autoinst)
+            {
+                device_name = devicemapping[device_name]:"";
+            }
+	    return $[device_name : module_data];
+        });
+    }
+    if ( Mode::autoinst)
+    {
 	map alias = $[];
 	map options = $[];
+        integer n = 0;
 	devices = mapmap(string type, map devsmap, (map<string,map>) devices, {
-	    list HW_type = filter(map dev, HW, {
+	    list HW_type = filter(map dev, hw, {
 		return dev["type"]:"" == type;
 	    });
 
-	    y2debug("hw from type %1 = %2", type, HW_type);
+	    y2milestone("hw from type %1 = %2", type, HW_type);
 
-	    map newmap = mapmap(string num, map devmap, (map<string,map>) devsmap, {
+	    map newmap = mapmap(string device_id, map devmap, (map<string,map>) devsmap, {
 
-		integer nnum = tointeger(num);
-		devmap["UNIQUE"] = HW_type[nnum, "unique"]:"";
-		string device = sformat ("%1%2", type, num );
-		string modname = HW_type[nnum, "module"]:"";
-		alias[device] = modname;
-		// map tmpopt = $[modname: HW_type[ tointeger(num) ,"options"]:""];
-		options[modname] = HW_type[nnum, "options"]:"";
+		devmap["UNIQUE"] = HW_type[n, "unique"]:"";
+		string modname = HW_type[n, "module"]:"";
+		string options = HW_type[n, "options"]:"";
+                Lan::SelectHW(dn);
+                string device = Lan::device;
+                if (!haskey(hwcfg, device))
+                {
+                    hwcfg=add(hwcfg, device, $["MODULE":modname,
+                        "MODULE_OPTIONS":options,
+                        "STARTMODE":"auto"]);
+                }
 
-		return $[num : devmap];
+		return $[device_id : devmap];
 
 	    });
+            n = n + 1;
 	    return $[type : newmap];
 	});
-	native_modules["alias"] = alias;
-	native_modules["options"] = options;
-
     }
 
 
     input["devices"] = devices;
-    input["modules"] = native_modules;
-	map dhcpopts =  input["dhcp_options"]:$[];
+    input["hwcfg"] = hwcfg;
+    map dhcpopts =  input["dhcp_options"]:$[];
 
-	map dns = input["dns"]:$[];
-	map dhcp = $[];
+    map dns = input["dns"]:$[];
+    map dhcp = $[];
 
-	if (haskey(dns, "dhcp_hostname"))
+    if (haskey(dns, "dhcp_hostname"))
         dhcp["DHCLIENT_SET_HOSTNAME"] = dns["dhcp_hostname"]:false;
-	if (haskey(dns, "dhcp_resolv"))
-		dhcp["DHCLIENT_MODIFY_RESOLV_CONF"] = dns["dhcp_resolv"]:false;
+    if (haskey(dns, "dhcp_resolv"))
+        dhcp["DHCLIENT_MODIFY_RESOLV_CONF"] = dns["dhcp_resolv"]:false;
 
-	if (haskey(dhcpopts, "dhclient_client_id"))
-	    dhcp["DHCLIENT_CLIENT_ID"] = dhcpopts["dhclient_client_id"]:"";
+    if (haskey(dhcpopts, "dhclient_client_id"))
+        dhcp["DHCLIENT_CLIENT_ID"] = dhcpopts["dhclient_client_id"]:"";
     if (haskey(dhcpopts, "dhclient_additional_options"))
-	    dhcp["DHCLIENT_ADDITIONAL_OPTIONS"] = dhcpopts["dhclient_additional_options"]:"";
+        dhcp["DHCLIENT_ADDITIONAL_OPTIONS"] = dhcpopts["dhclient_additional_options"]:"";
     if (haskey(dhcpopts, "dhclient_hostname_option"))
-	    dhcp["DHCLIENT_HOSTNAME_OPTION"] = dhcpopts["dhclient_hostname_option"]:"AUTO";
+        dhcp["DHCLIENT_HOSTNAME_OPTION"] = dhcpopts["dhclient_hostname_option"]:"AUTO";
 
-	map config = $[];
-	config["dhcp"] = dhcp;
-	input["config"] = config;
+    map config = $[];
+    config["dhcp"] = dhcp;
+    input["config"] = config;
 
+    y2milestone("input=%1", input);
     return input;
 }
 
@@ -230,19 +284,6 @@ define map ToAY (map settings) {
 
 }
 
-
-any ret = nil;
-string func = "";
-map param = $[];
-
-/* Check arguments */
-if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
-    func = (string) WFM::Args(0);
-    if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
-	param = (map) WFM::Args(1);
-}
-y2debug("func=%1", func);
-y2debug("param=%1", param);
 
 
 if(func == "Summary") {

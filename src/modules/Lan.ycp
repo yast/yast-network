@@ -964,5 +964,12 @@ global define boolean HasAliases(string dev) {
     return NetworkDevices::HasAliases(dev);
 }
 
+
+global define list<map> PrepareForAutoinst() {
+    Hardware = ReadHardware("netcard");
+    y2milestone("hw=%1", Hardware);
+    return Hardware;
+}
+
 /* EOF */
 }
