@@ -103,7 +103,7 @@ Internet Connection Test.</p>") +
 
 
     /**
-     *  Update the log in TestConnectionDialog.
+     *  Update the log.
      */
     define void update_log () ``{
 	string file = Internet::FastestLogFile (Internet::device);
@@ -135,10 +135,10 @@ Internet Connection Test.</p>") +
 	set_stage (-1);
 	test_result = result;
 	if (test_result == `success) {
-	    /* Possible result of internet test */
+	    /* result of internet test */
 	    UI::ChangeWidget(`id(`res), `Value, _("Success"));
 	} else {
-	    /* Possible result of internet test */
+	    /* result of internet test */
 	    UI::ChangeWidget(`id(`res), `Value, _("Failure"));
 	}
 	UI::ChangeWidget (`id (`abort_test), `Enabled, false);
@@ -154,11 +154,16 @@ Internet Connection Test.</p>") +
 		return;
 	    }
 
+	    // start the connection
 	    y2milestone ("called Start");
 	    if (!Internet::Start ()) {
 		set_result (`failure);
 		return;
 	    }
+
+	    // ping anything (www.suse.com) to trigger dod connections
+	    SCR::Execute (.target.bash_background,
+			  "/bin/ping -c 1 213.95.15.200");
 
 	    set_stage (1);
 	    return;
@@ -172,11 +177,13 @@ Internet Connection Test.</p>") +
 		return;
 	    }
 
+	    // status must be up
 	    if (!Internet::Status ()) {
 		set_result (`failure);
 		return;
 	    }
 
+	    // and we must be connected
 	    if (Internet::Connected ()) {
 		y2milestone ("Connected ok");
 		set_stage (2);
@@ -211,6 +218,7 @@ Internet Connection Test.</p>") +
 		return;
 	    }
 
+	    // stop connection
 	    y2milestone ("called Stop");
 	    if (!Internet::Stop ()) {
 		set_result (`failure);
@@ -221,7 +229,6 @@ Internet Connection Test.</p>") +
 	    mark_label (4);
 	    return;
 	}
-
     }
 
 
@@ -258,8 +265,8 @@ Internet Connection Test.</p>") +
 	    }
 	    continue;
 	}
-	else if(ret == `abort || ret == `cancel) {
-	    if(UI::ReallyAbortPopup(false))
+	else if (ret == `abort || ret == `cancel) {
+	    if (UI::ReallyAbortPopup(false))
 	    {
 		Internet::Stop ();
 		set_result (`failure);
@@ -267,11 +274,7 @@ Internet Connection Test.</p>") +
 	    }
 	    continue;
 	}
-	else if(ret == `back) {
-	    break;
-	}
-	else if(ret == `next) {
-	    /* check_* */
+	else if (ret == `back || (ret == `next) {
 	    break;
 	}
 	else {
