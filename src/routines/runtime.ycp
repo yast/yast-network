@@ -91,9 +91,16 @@ global define boolean StopNetwork() ``{
  * @return true if success
  */
 global define boolean EnableSMPPPD() ``{
+
     boolean ret = true;
     ret = EnableService("smpppd") && ret;
-    ret = RestartService("smpppd") && ret;
+
+    if(Runlevel::ServiceStatus(service) == 0)
+	ret = Runlevel::RunInitScript(service, "reload") && ret;
+    else
+	ret = Runlevel::RunInitScript(service, "start") && ret;
+    y2debug("ret=%1", ret);
+
     return ret;
 }
 
