@@ -391,7 +391,6 @@ the logs for details.
 
 	    mark_label(3, `arrow);
 
-	    // proxy settings are read from /root/.curlrc
 	    string cmd = "/usr/bin/online_update -q -V";
 	    // ugly hack (see bug #42177)
 	    // string cmd = "/bin/false";
