@@ -24,21 +24,86 @@ import "Modem";
 
 include "ui/wizard_dialog.ycp";
 include "ui/common_popups.ycp";
+include "wizard/sequencer.ycp";
+include "network/providers.ycp";
 
 /* DATA */
 
 // Old code: map TmpConfiguration=$[];
 
-global define symbol modem_sequence() ``{
+/**
+ * sequence for modem setup
+ * @param entrypoint can be one of 'params_etected' / 'params'
+ * @return symbol [`next, `abort, `back]
+ */
+
+global define symbol modem_sequence(string entrypoint) ``{
     map aliases = $[
-	"params"		: ``(modem_params()),
+	"params_detected"	: ``(modem_params(`Detected)),
+	"params"		: ``(modem_params(`other)),
 	"details"		: ``(modem_details()),
+	"details_detected"	: ``(modem_details()),
 	"providers"		: ``(runProvidersDialog(false)),
 	"provider"		: ``(runEditModemProviderDialog (true)),
 	"new_provider"		: ``(runEditModemProviderDialog (false)),
 	"connection"		: ``(modem_connection()),
 	"connection_details"	: ``(modem_connection_details())
     ];
+
+    map sequence = $[
+	"ws_start" : entrypoint,
+	"params":
+	$[
+	    `next   : "providers",
+            `Details: "details",
+            `abort  : `abort
+	],
+	"params_detected" :
+	$[
+	    `next   : "providers",
+	    `Details: "details_detected",
+	    `abort  : `abort
+	],
+	"details"   :
+	$[
+	    `next   : "params",
+	    `abort  : `abort
+	],
+	"details_detected" :
+	$[
+	    `next   : "params_detected",
+	    `abort  : `abort
+	],
+	"providers" :
+	$[
+	    `next   : "provider",
+	    `new    : "new_provider",
+	    `abort  : `abort
+	],
+	"provider" :
+	$[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"new_provider" :
+	$[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"connection" :
+	$[
+	    `next   : `next,
+	    `Details: "connection_details",
+	    `abort  : `abort
+	],
+	"connection_details" :
+	$[
+	    `next   : "connection",
+	    `abort  : `abort
+	]
+    ];
+
+    return WizardSequencer(aliases, sequence);
 }
 
 
@@ -57,9 +122,6 @@ global define symbol modem_params(symbol Type) ``{
     string Name = Modem::Name;
     string DialPrefix = Modem::DialPrefix;
     string Device = Modem::Device;
-    boolean PulseDial = Modem::PulseDial;
-    boolean Speaker = Modem::Speaker;
-    boolean Carrier = Modem::Carrier;
 
     list Devices = maplist(`e, toset(add([
 		    "/dev/modem", "/dev/ttyS0", "/dev/ttyS1", "/dev/ttyS2","/dev/ttyS3",
@@ -144,8 +206,8 @@ Initialization strings.</p>");
 			        `HSpacing(0.3),
 				`RadioButtonGroup(`id(`DialMode),
 				    `VBox(
-					`Left(`RadioButton(`id(`Tone), _("&Tone dialing"), !PulseDial)),
-					`Left(`RadioButton(`id(`Pulse), _("&Pulse dialing"), PulseDial))
+					`Left(`RadioButton(`id(`Tone), _("&Tone dialing"), !Modem::PulseDial)),
+					`Left(`RadioButton(`id(`Pulse), _("&Pulse dialing"), Modem::PulseDial))
 				    )
 				),
 				`HSpacing(0.3)
@@ -159,8 +221,8 @@ Initialization strings.</p>");
 			    `HSpacing(0.3),
 			    `VBox(
 			        `VSpacing(0.3),
-			        `Left(`CheckBox(`id(`Speaker), _("&Speaker on"), !Speaker)),
-				`Left(`CheckBox(`id(`CarrierDetect), _("D&etect Dial Tone"), !Carrier)),
+			        `Left(`CheckBox(`id(`Speaker), _("&Speaker on"), Modem::Speaker)),
+				`Left(`CheckBox(`id(`CarrierDetect), _("D&etect Dial Tone"), Modem::Carrier)),
 				`VSpacing(0.3)
 			    ),
 			    `HSpacing(0.3)
@@ -176,7 +238,7 @@ Initialization strings.</p>");
     /* DIALOG PREPARE */
 
     Wizard::SetContents(caption, contents, helptext, true, true);
-
+    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), NextButtonLabel()));
 
     /* MAIN CYCLE */
 
@@ -195,7 +257,7 @@ Initialization strings.</p>");
 	else if(ret == `back) {
 	    break;
 	}
-	else if(ret == `next) {
+	else if(ret == `next || ret == `Details) {
 
 	    Name = UI::QueryWidget(`id(`ModemName), `Value);
 
@@ -360,7 +422,7 @@ in your modem manual.</p>");
  * @return symbol user input
  */
 
-global define symbol unused___modem_provider() ``{
+global define symbol modem_connection() ``{
 
     /* PREPARE VARIABLES */
     string Provider = Modem::Provider;
@@ -445,6 +507,7 @@ attacks from the outside.</p>");
 	);
     /* DIALOG PREPARE */
     Wizard::SetContents(caption, contents, helptext, true, true);
+    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), NextButtonLabel()));
 
     UI::ChangeWidget(`id (`NameServers), `Enabled, DialOnDemand);
     UI::ChangeWidget(`id (`DNS1), `Enabled, DialOnDemand);
@@ -466,7 +529,7 @@ attacks from the outside.</p>");
 	else if (ret == `back) {
 	    break;
 	}
-	else if (ret == `next) {
+	else if (ret == `next || ret == `Details) {
 
 	    /*
 	    if (DialOnDemand && !(checkIP (DNS1) && (size (DNS2) == 0 || checkIP (DNS2))))
@@ -518,7 +581,7 @@ attacks from the outside.</p>");
  * @return symbol user input
  */
 
-global define symbol Dialog4() ``{
+global define symbol modem_connection_details() ``{
 
     /* PREPARE VARIABLES */
 
@@ -566,6 +629,7 @@ global define symbol Dialog4() ``{
 
     /* DIALOG PREPARE */
     Wizard::SetContents(caption, contents, helptext, true, true);
+    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), OKButtonLabel()));
 
     /* MAIN CYCLE */
     symbol ret = nil;
@@ -609,8 +673,8 @@ global define symbol Dialog4() ``{
 
     /* UPDATE VARIABLES */
     if (ret == `next) {
-	Modem::AutoReconnect = UI::QueryWidget(`id(`AutoReconnect), `Value) ? "1" : "0";
-	Modem::AutoDNS = UI::QueryWidget(`id(`AutoDNS), `Value) ? "1" : "0";
+	Modem::AutoReconnect = UI::QueryWidget(`id(`AutoReconnect), `Value);
+	Modem::AutoDNS = UI::QueryWidget(`id(`AutoDNS), `Value);
 	Modem::IdleSeconds = UI::QueryWidget(`id(`IdleSeconds), `Value);
     }
 
@@ -619,14 +683,14 @@ global define symbol Dialog4() ``{
 
 
 /* DIALOGS TESTING */
-Wizard::CreateDialog();
+//Wizard::CreateDialog();
 
-Dialog1(`Detected);
-Dialog2();
-Dialog3();
-Dialog4();
+//Dialog1(`Detected);
+//Dialog2();
+//Dialog3();
+//Dialog4();
 
-UI::CloseDialog();
+//UI::CloseDialog();
 
 /* EOF */
 }

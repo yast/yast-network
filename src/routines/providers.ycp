@@ -17,8 +17,8 @@
      *    possibly shows dialog.
      */
 
-    define ReallyAbort () ``{
-	return true;
+    global define ReallyAbort () ``{
+	return UI::ReallyAbortPopup(true);
     }
 
     /**
@@ -404,7 +404,7 @@
 	    }
 	    else if (`abort == ret || `cancel == ret)
 	    {
-		ret = ReallyAbort () ? `abort : nil;
+		ret = UI::ReallyAbort () ? `abort : nil;
 	    }
 	    else if (`next == ret)
 	    {	// validate data
@@ -601,7 +601,7 @@
 	    }
 	    else if (`abort == ret || `cancel == ret)
 	    {
-		ret = ReallyAbort () ? `abort : nil;
+		ret = UI::ReallyAbort () ? `abort : nil;
 	    }
 	}
 
