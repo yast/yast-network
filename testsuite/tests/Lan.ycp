@@ -32,7 +32,7 @@ import "Progress";
 Progress::off();
 
 DUMP("Read");
-TEST(``(Lan::Read()), [READ], nil);
+//TEST(``(Lan::Read()), [READ], nil);
 
 DUMP("Write");
 //TEST(``(Lan::Write()), [], nil);

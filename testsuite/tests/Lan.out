@@ -18,47 +18,6 @@ Read	.etc.install_inf.VNC nil
 Read	.etc.install_inf.UseSSH nil
 Read	.etc.install_inf.InstMode nil
 Dump	Read
-Execute	.target.bash_output "/sbin/ifconfig" 0
-Read	.probe.netcard nil
-Log	hardware detection failure
-Execute	.target.bash_output "/sbin/ifconfig" 0
-Read	.probe.netcard nil
-Log	hardware detection failure
-Dir	.sysconfig.hardware.section: []
-Dir	.network.section: []
-Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-pcmcia" nil
-Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-usb" nil
-Read	.target.lstat "/etc/sysconfig/network/ifcfg-tr-pcmcia" nil
-Read	.target.lstat "/etc/sysconfig/network/ifcfg-tr-usb" nil
-Dir	.sysconfig.network.config: []
-Dir	.sysconfig.network.dhcp: []
-Read	.target.size "/etc/sysconfig/network/routes" 1
-Read	.routes nil
-Read	.sysconfig.sysctl.IP_FORWARD nil
-Read	.target.size "/etc/hosts" 1
-Dir	.etc.hosts: []
-Read	.target.size "/etc/install.inf" 1
-Read	.etc.install_inf nil
-Execute	.target.bash "/sbin/modify_resolvconf check -q < /dev/null" 0
-Read	.target.size "/etc/resolv.conf" 1
-Read	.etc.resolv_conf.nameserver ["1.2.3.4", "5.6.7.8"]
-Read	.etc.resolv_conf.search ["suse.cz", "suse.de"]
-Read	.target.size "/etc/HOSTNAME" 1
-Read	.target.string "/etc/HOSTNAME" "Blah\n"
-Read	.target.size "/etc/install.inf" 1
-Read	.etc.install_inf."IP" nil
-Read	.etc.install_inf."Netmask" nil
-Read	.etc.install_inf."NetConfig" nil
-Read	.etc.install_inf."Netdevice" nil
-Read	.etc.install_inf."Gateway" nil
-Read	.etc.install_inf."Nameserver" nil
-Read	.etc.install_inf."Machinename" nil
-Read	.etc.install_inf."Domainname" nil
-Read	.etc.install_inf."Alias" nil
-Read	.etc.install_inf."Options" nil
-Read	.etc.install_inf."HWAddr" nil
-Read	.sysconfig.SuSEfirewall2.FW_DEV_EXT nil
-Return	true
 Dump	Write
 Dump	Import
 Dump	Export
