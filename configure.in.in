@@ -1,4 +1,4 @@
-## configure.in.in for network
+## YCP module configure.in.in
 
 ## Initialize
 @YAST2-INIT-COMMON@

@@ -4,7 +4,7 @@
 # $Id$
 #
 
-includedir = $(YAST2DIR)/include/network/isdn
-include_DATA = $(wildcard *.ycp)
+yincludedir = $(YAST2DIR)/include/network/isdn
+yinclude_DATA = $(wildcard *.ycp)
 
-EXTRA_DIST = $(include_DATA)
+EXTRA_DIST = $(yinclude_DATA)
