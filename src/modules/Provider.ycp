@@ -108,9 +108,8 @@ global define boolean Modified(string type) {
     if(!CheckType(type)) return false;
     map OriginalProvs = Filter(OriginalProviders, type);
     map Provs = Filter(Providers, type);
-    y2milestone("OriginalProvs=%1", OriginalProvs);
-    y2milestone("Provs=%1", Provs);
-    return Provs != OriginalProvs;
+    boolean diff = Provs != OriginalProvs;
+    return diff;
 }
 
 /**

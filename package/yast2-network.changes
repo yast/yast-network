@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Fri Feb 11 13:36:09 CET 2005 - mvidner@suse.cz
+Fri Feb 11 14:25:16 CET 2005 - mvidner@suse.cz
 
+- Do not log provider data, they contain passwords (#50741).
 - Fixed selecting an ISDN card manually (#50725).
 - Do not propose a dynamic address if the product (OES) says
   force_static_ip (#50524).
