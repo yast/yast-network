@@ -97,6 +97,17 @@ global define boolean ReadHardware(string hwtype) ``{
 	    list modules = select(lookup(driver, "modules", []), 0, []);
 	    change(one, "module", select(modules, 0, ""));
 	    change(one, "options", select(modules, 1, ""));
+	    // #13571
+	    string hotplug = card["hotplug"]:"";
+	    if (hotplug == "pcmcia" || hotplug == "cardbus")
+	    {
+		controller = controller + "-pcmcia-";
+	    }
+	    else if (hotplug == "usb")
+	    {
+		controller = controller + "-usb-";
+	    }
+	    change(one, "type", controller);
 	}
 
 	y2debug("found device: %1", one);
@@ -151,6 +162,10 @@ global define void SelectHardware(integer which) ``{
     else {
 	modul = sel["module"]:"";
 	options = sel["options"]:"";
+	// #13571
+	// How is this different from Lan::AddEdit?
+	pcmcia = issubstring (type, "pcmcia");
+	usb = issubstring (type, "usb");
     }
 
     return true;
