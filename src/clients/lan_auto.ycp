@@ -38,7 +38,7 @@ y2debug("param=%1", param);
 
 if (Mode::test ())
 {
-    Mode::autoinst () = true;
+    Mode::SetMode ("autoinstallation");
     param = $["dns":$["dhcp_hostname":false, "dhcp_resolv":false],
     "interfaces":[$["bootproto":"dhcp", "device":"eth-id-00:0e:0c:08:36:7a",
     "startmode":"onboot"]], "routing":$["ip_forward":false]];
