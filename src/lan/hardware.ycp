@@ -319,6 +319,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		integer devic = tointeger(UI::QueryWidget(`id(`num), `Value));
 		if(devic != Lan::device) {
 		    y2warning("Default device: %1 -> %2", Lan::device, devic);
+		    /* Popup text */
 		    string pop = _("You changed the default device number.\n
 This possibility is only intended for systems with built-in network cards
 or cards with multiple interfaces. If you don't have such network card you

@@ -32,14 +32,14 @@ global define symbol ConnectionDialog() ``{
     /* PREPARE VARIABLES */
     string Provider = lookup(Provider::Provider, "PROVIDER", "");
 
-    boolean DialOnDemand = lookup(Provider::Provider, "DEMAND", "no") == "yes";
-    boolean AutoDNS = lookup(Provider::Provider, "MODIFYDNS", "yes") == "yes";
+    boolean demand = lookup(Provider::Provider, "DEMAND", "no") == "yes";
+    boolean modifydns = lookup(Provider::Provider, "MODIFYDNS", "yes") == "yes";
     boolean stupidmode = lookup(Provider::Provider, "STUPIDMODE", "no") == "yes";
 
     string DNS1 = lookup(Provider::Provider, "DNS1", "");
     string DNS2 = lookup(Provider::Provider, "DNS2", "");
 
-    string IdleSeconds = lookup(Provider::Provider, "IDLETIME", "300");
+    string idletime = lookup(Provider::Provider, "IDLETIME", "300");
 
     string device = nil;
     if(type == "modem") device = "ppp"; //device_name(Modem::type, Modem::device);
@@ -50,7 +50,8 @@ global define symbol ConnectionDialog() ``{
 	else
 	    device = device_name(ISDN::type, ISDN::device);
     }
-    else if(type == "dsl") device = "ppp0"; // device_name(DSL::type, DSL::device);
+    // FIXME device_name(DSL::type, DSL::device);
+    else if(type == "dsl") device = "ppp";
     else {
 	y2error("Unknown type: %1", type);
 	return nil;
@@ -113,11 +114,11 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
     /* DIALOG CONTENTS */
 
     list seconds = [ "0", "30", "60", "90", "120", "150", "180", "240", "300", "360", "480", "600" ];
-    if(!contains(seconds, IdleSeconds))
-	change(seconds, IdleSeconds);
+    if(!contains(seconds, idletime))
+	change(seconds, idletime);
 
     seconds = maplist(`e, seconds,
-	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == IdleSeconds)));
+	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == idletime)));
 
     /* Checkbox label */
     term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("Activate fire&wall"), FirewallChecked));
@@ -129,7 +130,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	StupidMode = `Left(`CheckBox(`id(`stupidmode), _("S&tupid mode"), stupidmode));
 
     term details = `VSpacing(0.1);
-    //if(type == "isdn")
+    // FIXME if(type == "isdn")
     if(false)
 	details = `HBox(
 	    /* Push button label */
@@ -158,14 +159,14 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    `HBox(
 		`VBox(
 		    /* Checkbox label */
-		    `Left(`CheckBox(`id(`DialOnDemand), `opt(`notify), _("Dial on d&emand"), DialOnDemand)),
+		    `Left(`CheckBox(`id(`demand), `opt(`notify), _("Dial on d&emand"), demand)),
 		    /* Checkbox label */
-		    `Left(`CheckBox(`id(`AutoDNS), `opt(`notify), _("&Modify DNS when connected"), AutoDNS))
+		    `Left(`CheckBox(`id(`modifydns), `opt(`notify), _("&Modify DNS when connected"), modifydns))
 		 )
 	    ),
 	    `VSpacing(1),
 	    /* Frame label */
-	    `Frame(`id(`NameServers), _("Name servers"),
+	    `Frame(`id(`nameservers), _("Name servers"),
 		`HBox(
 		    /* Text entry label */
 		    `TextEntry(`id(`DNS1), _("F&irst"), DNS1),
@@ -179,7 +180,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    FirewallCheckbox,
 	    `VSpacing(0.5),
 	    /* Combo box label */
-	    `Left(`ComboBox(`id(`IdleSeconds), `opt(`editable), _("I&dle timeout (seconds)"), seconds)),
+	    `Left(`ComboBox(`id(`idletime), `opt(`editable), _("I&dle timeout (seconds)"), seconds)),
 	    `VSpacing(1),
 	    details
 	),
@@ -191,7 +192,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    BackButtonLabel(), NextButtonLabel());
 
-    UI::ChangeWidget(`id(`NameServers), `Enabled, DialOnDemand || !AutoDNS);
+    UI::ChangeWidget(`id(`nameservers), `Enabled, demand && modifydns);
 
     /* MAIN CYCLE */
     any ret = nil;
@@ -209,27 +210,32 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	}
 	else if(ret == `next || ret == `Details || ret == `IPDetails) {
 	    /* check_* */
-	    if(UI::QueryWidget(`id(`IdleSeconds), `Value) == "") {
+	    if(UI::QueryWidget(`id(`idletime), `Value) == "") {
 		/* Popup text */
 		UI::ErrorPopup(_("You must set the idle seconds."));
-		UI::SetFocus(`id(`IdleSeconds));
+		UI::SetFocus(`id(`idletime));
 		continue;
 	    }
-
-	    /* FIXME
-	    if(DialOnDemand && !(check_ip4(DNS1) && (size(DNS2) == 0 || check_ip4(DNS2))))
-	    {
-		UI::ErrorPopup(_("Wrong IP address!"));
-		continue;
+	    if(demand && modifydns) {
+		DNS1 = UI::QueryWidget(`id(`DNS1), `Value);
+		DNS2 = UI::QueryWidget(`id(`DNS2), `Value);
+		if(!(check_ip4(DNS1))) {
+		    UI::ErrorPopup(_("The primary name server is not correct"));
+		    UI::SetFocus(`id(`DNS1));
+		    continue;
+		}
+		if(size(DNS2) != "" && check_ip4(DNS2)) {
+		    UI::ErrorPopup(_("The secondary name server is not correct"));
+		    UI::SetFocus(`id(`DNS2));
+		    continue;
+		}
 	    }
-	    */
-
 	    break;
 	}
-	else if(ret == `DialOnDemand || ret == `AutoDNS) {
-	    DialOnDemand = UI::QueryWidget(`id(`DialOnDemand), `Value);
-	    AutoDNS = UI::QueryWidget(`id(`AutoDNS), `Value);
-	    UI::ChangeWidget(`id(`NameServers), `Enabled, DialOnDemand || !AutoDNS);
+	else if(ret == `demand || ret == `modifydns) {
+	    demand = UI::QueryWidget(`id(`demand), `Value);
+	    modifydns = UI::QueryWidget(`id(`modifydns), `Value);
+	    UI::ChangeWidget(`id(`nameservers), `Enabled, demand && modifydns);
 	}
 	else {
 	    y2error("unexpected retcode: %1", ret);
@@ -240,17 +246,25 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
     /* UPDATE VARIABLES */
 
     if(ret == `next || ret == `Details || ret == `IPDetails) {
+	demand = UI::QueryWidget(`id(`demand), `Value) ? "yes" : "no",
+	modifydns = UI::QueryWidget(`id(`modifydns), `Value) ? "yes" : "no",
+
 	/* update provider info */
 	Provider::Provider = union(Provider::Provider, $[
-	    "DNS1" : UI::QueryWidget(`id(`DNS1), `Value),
-	    "DNS2" : UI::QueryWidget(`id(`DNS2), `Value),
-	    "DEMAND" : UI::QueryWidget(`id(`DialOnDemand), `Value) ? "yes" : "no",
-	    "MODIFYDNS" : UI::QueryWidget(`id(`AutoDNS), `Value) ? "yes" : "no",
-	    "IDLETIME" : UI::QueryWidget(`id(`IdleSeconds), `Value),
+	    "DEMAND" : demand,
+	    "MODIFYDNS" : modifydns,
+	    "IDLETIME" : UI::QueryWidget(`id(`idletime), `Value),
 	    "MODEMSUPPORTED" : type == "modem" ? "yes" : "no",
 	    "ISDNSUPPORTED" : type == "isdn" ? "yes" : "no",
 	    "DSLSUPPORTED" : type == "dsl" ? "yes" : "no"
 	]);
+	if (demand && modifydns)
+	    Provider::Provider = union(Provider::Provider, $[
+		"DNS1" : UI::QueryWidget(`id(`DNS1), `Value),
+		"DNS2" : UI::QueryWidget(`id(`DNS2), `Value),
+	    ]);
+
+	/* update provider type-specific info */
 	if (type == "modem")
 	    Provider::Provider = union(Provider::Provider, $[
 		"STUPIDMODE" : UI::QueryWidget(`id(`stupidmode), `Value) ? "yes" : "no"
@@ -259,6 +273,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    Provider::Provider = union(Provider::Provider, $[
 		"FIREWALL" : UI::QueryWidget(`id(`Firewall), `Value) ? "yes" : "no"
 	    ]);
+
 	/* update firewall info */
 	if(FirewallChecked != UI::QueryWidget(`id(`Firewall), `Value)) {
 	    FirewallChecked = UI::QueryWidget(`id(`Firewall), `Value);

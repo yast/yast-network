@@ -19,8 +19,11 @@ WIP, not yet functional!
   - warning if device number changed (#21288)
 
 - providers:
-  - new providers handling (#17496, #18356)
   - UI mode (#6244, #16291)
+  - new providers handling (#17496, #18356)
+  - correctly handle the providers with unknown type
+  - correctly handle the nameservers requirement
+  - check the name servers IP addresses
 
 - proxy:
   - display info popup at the end of configuration

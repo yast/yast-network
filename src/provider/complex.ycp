@@ -236,6 +236,11 @@ global define symbol OverviewDialog() ``{
 	else if(ret == `edit) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
 	    Provider::Edit(dev);
+	    if(Provider::CurrentType() == "") {
+		/* Popup text */
+		UI::ErrorPopup(_("Can't determine the provider type."));
+		continue;
+	    }
 	    break;
 	}
 	/* delete */
