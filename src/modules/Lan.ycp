@@ -307,15 +307,16 @@ global define map Export() ``{
     string upcase = "BOOTPROTO BROADCAST IPADDR NETMASK NETWORK STARTMODE";
     string ignore = "UNIQUE";
 
-    foreach(string device, map data, CONFIG, ``{
-	list interfaces = maplist(string device_nr, map device_data, data, ``{
-	    device_data = add(device_data,"device", device + device_nr);
-	    map new_device = mapmap(`k,`v, device_data, ``{
+    foreach(string device, map data, CONFIG, ``{	
+	list interfaces = maplist(string device_nr, map device_data, data, ``{	    
+	    map new_device = $[];
+	    new_device = add(new_device,"device", device + device_nr);	    
+	    foreach(`k,`v, device_data, ``{
 		if (issubstring(upcase, k)) {
-		    return([tolower(k),v]);
+		    new_device[tolower(k)] = v;
 		}
 		else if (!issubstring(ignore, k)) {
-		    return([k,v]);
+		    new_device[k] = v;
 		}
 	    });
 	    return(new_device);
