@@ -551,6 +551,7 @@ global define void Propose() ``{
     y2milestone("INSTALL_INF=%1", INSTALL_INF);
 
     if(size(HARDWARE) < 1) return;
+    if(size(CONFIG["eth"]:$[]) > 0 || size(CONFIG["tr"]:$[]) > 0) return;
 
     AddEdit("");
     Select(0);
