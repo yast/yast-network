@@ -125,7 +125,7 @@ global define boolean WriteDevices() ``{
     maplist(string typ, map devsmap, Devices, ``{
 	maplist(string num, map devmap, devsmap, ``{
 	    /* write sysconfig */
-	    string dev = typ + num;
+	    string dev = device_name(typ, num);
 	    string p = ".network.value.\"" + dev + "\".";
 
 	    /* write all keys to config */

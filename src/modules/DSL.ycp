@@ -496,15 +496,18 @@ global define map Export() ``{
 global define list Summary(boolean split) ``{
 
     list sum = BuildSummary(split);
+    if(HWDetected != true) return sum;
 
+    /* Summary label */
+    string hwdet = Summary::DevicesList(["<li>" + _("DSL Hardware Detected") + "</li>"]);
     // FIXME: HW
-    string hwdet = "";
-    if(HWDetected == true)
-	/* Summary label */
-	hwdet = _("DSL Hardware Detected");
 
     y2milestone("hwdet=%1", HWDetected);
-    sum[0] = sum[0]:"" + hwdet;
+    y2milestone("sum=%1", sum);
+    if(sum[0]:"" == Summary::DevicesList([]))
+	sum[0] = hwdet;
+    else
+	sum[0] = sum[0]:"" + hwdet;
 
     return sum;
 }

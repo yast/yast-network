@@ -2,6 +2,10 @@
 Thu Aug 21 11:00:14 CEST 2003 - msvec@suse.de
 
 - suppress error message if pcmcia is not installed (#29195)
+- propose empty lan config in case DSL pppoe is detected (#23662)
+- load modules before detection takes place (#24462)
+- fixed more pcmcia devices naming (#28314)
+- DSL PPTP support (#18407)
 - 2.8.13
 
 -------------------------------------------------------------------
