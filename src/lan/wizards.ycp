@@ -38,9 +38,9 @@ define symbol HardwareSequence();
 
 /**
  * Whole configuration of network
- * @return sequence result
+ * @return successfully finished
  */
-define symbol LanSequence() ``{
+boolean LanSequence() {
 
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
@@ -74,7 +74,7 @@ define symbol LanSequence() ``{
     symbol ret = Sequencer::Run(aliases, sequence);
 
     UI::CloseDialog();
-    return ret;
+    return ret == `next;
 }
 
 /**
