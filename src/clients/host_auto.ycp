@@ -64,7 +64,7 @@ else if (func == "Reset") {
 /* Change configuration (run AutoSequence) */
 else if (func == "Change") {
     Wizard::CreateDialog();
-    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), Label::FinishButton()));
+    Wizard::SetNextButton(`next, Label::FinishButton() );
     ret = HostsMainDialog(false);
     Wizard::CloseDialog();
 }

@@ -37,7 +37,7 @@ Routing::Read();
 
 Wizard::CreateDialog();
 Wizard::SetDesktopIcon("routing");
-Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), Label::FinishButton()));
+Wizard::SetNextButton(`next, Label::FinishButton() );
 
 /* main ui function */
 any ret = RoutingMainDialog(true);

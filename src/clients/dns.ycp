@@ -39,7 +39,8 @@ Wizard::CreateDialog();
 Wizard::SetDesktopIcon("dns");
 DNS::Read();
 Lan::Read();
-Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), Label::FinishButton()));
+
+Wizard::SetNextButton(`next, Label::FinishButton() );
 
 /* main ui function */
 any ret = DNSMainDialog(true);

@@ -109,8 +109,8 @@ in the DSL configuration dialog.</p>");
     /* DIALOG PREPARE */
     Wizard::SetContents(caption, contents, helptext, true, true);
     // PushButton label to not enter any sub dialogs
-    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), _("S&kip")));
-
+    Wizard::SetNextButton (`next, _("S&kip") );
+    
     if (ISDN::CountIF() == 0) {
 	UI::ChangeWidget(`id(`AddProvider), `Enabled, false);
     }
