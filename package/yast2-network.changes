@@ -10,10 +10,17 @@ Thu Aug 15 19:16:35 CEST 2002 - jsuchome@suse.cz
   change).
 
 -------------------------------------------------------------------
+Thu Aug 15 11:53:35 CEST 2002 - mvidner@suse.cz
+
+- ISDN: saving interface/provider although not configured fixed (jsuchome).
+- Restrict valid characters for the wireless encryption key (#17546).
+- Disable DHCP related widgets when switching to static config (#17391).
+
+-------------------------------------------------------------------
 Wed Aug 14 12:16:49 CEST 2002 - mvidner@suse.cz
 
 - Installation proposal: differentiate between static and dhcp
-  network settings provided by linuxrc (#16741).
+  network settings provided by linuxrc (#16471).
 - Exclude DSL, ISDN and modem control center entries
   on s390 and s390x (#17675).
 - Merged proofread texts for the second translation round.
