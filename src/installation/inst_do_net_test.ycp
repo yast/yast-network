@@ -15,6 +15,7 @@
     import "Mode";
     import "Wizard";
     import "Internet";
+    import "Product";
 
     include "ui/common_messages.ycp";
     include "ui/common_popups.ycp";
@@ -78,23 +79,16 @@ and correct the setting.</p>");
 	string dash = "-   ";
 
 	/* Progress labels */
-	term progress = nil;
-	if (already_up)
-	{
-	    progress = `VBox(
-			     `Left(`HBox (`Heading (`id (`s2), dash), `Label (l2))),
-			     `Left(`HBox (`Heading (`id (`s3), dash), `Label (l3)))
-			     );
-	}
-	else
-	{
-	    progress = `VBox(
-			     `Left(`HBox (`Heading (`id (`s1), dash), `Label (l1))),
-			     `Left(`HBox (`Heading (`id (`s2), dash), `Label (l2))),
-			     `Left(`HBox (`Heading (`id (`s3), dash), `Label (l3))),
-			     `Left(`HBox (`Heading (`id (`s4), dash), `Label (l4)))
-			     );
-	}
+	term progress = `VBox ();
+
+	if (!already_up)
+	    progress = add (progress, `Left(`HBox (`Heading (`id (`s1), "-   "), `Label (l1))));
+	if (true)
+	    progress = add (progress, `Left(`HBox (`Heading (`id (`s2), "-   "), `Label (l2))));
+	if (!contains (Product::flags, "no_you"))
+	    progress = add (progress, `Left(`HBox (`Heading (`id (`s3), "-   "), `Label (l3))));
+	if (!already_up)
+	    progress = add (progress, `Left(`HBox (`Heading (`id (`s4), "-   "), `Label (l4))));
 
 	progress = add (progress, `VStretch());
 
@@ -253,6 +247,12 @@ and correct the setting.</p>");
 
 	if (test_stage == 3)		// check for updates
 	{
+	    if (contains (Product::flags, "no_you"))
+	    {
+		set_stage (4);
+		return;
+	    }
+
 	    mark_label (3, `arrow);
 
 	    // proxy settings are read from /root/.curlrc

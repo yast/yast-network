@@ -14,6 +14,7 @@ textdomain "network";
 
 import "Wizard";
 import "Internet";
+import "Product";
 
 include "ui/common_messages.ycp";
 include "ui/common_popups.ycp";
@@ -67,8 +68,11 @@ global define symbol TestStepsDialog() ``{
 
     /* help for dialog "Test Internet Connection" */
     string help = _("<p>Here, you can validate the Internet connection just
-configured. The test is entirely optional. A successful result will enable you
-to run the YaST Online Update.</p>");
+configured. The test is entirely optional.</p>");
+
+    /* help for dialog "Test Internet Connection" */
+    help = help + _("A successful result will enable you to run the YaST
+Online Update.</p>");
 
     /* Label text (keep lines max. 65 chars long) */
     string label = _("To validate your Internet access, activate the test procedure.");
@@ -105,28 +109,22 @@ the test procedure."),
     );
 
     /* the steps */
-    term steps = nil;
-    if (already_up)
-    {
-	steps = `VBox (
-		       /* Label text */
-		       `Left(`Label(_("- Download latest release notes"))),
-		       /* Label text */
-		       `Left(`Label(_("- Check for latest updates")))
-		       );
+    term steps = `VBox ();
+    if (!already_up) {
+	/* Label text */
+	steps = add (steps, `Left(`Label(_("- Connect to SuSE server via Internet"))));
     }
-    else
-    {
-	steps = `VBox (
-		       /* Label text */
-		       `Left(`Label(_("- Connect to SuSE server via Internet"))),
-		       /* Label text */
-		       `Left(`Label(_("- Download latest release notes"))),
-		       /* Label text */
-		       `Left(`Label(_("- Check for latest updates"))),
-		       /* Label text */
-		       `Left(`Label(_("- Close connection")))
-		       );
+    if (true) {
+	/* Label text */
+	steps = add (steps, `Left(`Label(_("- Download latest release notes"))));
+    }
+    if (!contains (Product::flags, "no_you")) {
+	/* Label text */
+	steps = add (steps, `Left(`Label(_("- Check for latest updates"))));
+    }
+    if (!already_up) {
+	/* Label text */
+	steps = add (steps, `Left(`Label(_("- Close connection"))));
     }
 
     /* Steps dialog contents */

@@ -7,6 +7,11 @@
 - 2.8.0
 
 -------------------------------------------------------------------
+Tue May 27 12:40:53 CEST 2003 - arvin@suse.de
+
+- handle no_you switch in content file
+
+-------------------------------------------------------------------
 Wed Mar 19 13:13:25 CET 2003 - arvin@suse.de
 
 - reinitialize some values in Internet module
