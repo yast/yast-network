@@ -21,6 +21,7 @@ include "ui/common_popups.ycp";
 include "network/ip.ycp";
 include "network/runtime.ycp";
 
+include "network/routines.ycp";
 /**
  * Temporary DSL sequence (only showing one dialog)
  * @param tdsl true in case T-Online DSL is configured
@@ -33,7 +34,7 @@ global define symbol DSLSequence(boolean tdsl) ``{
     symbol ret = DSLDialog(tdsl);
     if(ret == `next)
     {
-	if(Packages(["smpppd"]) == true) {
+	if(Packages(["smpppd"]) == `next) {
 	    DSLDevice::Write ();
 	    DSL::Write();
 
