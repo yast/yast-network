@@ -220,6 +220,9 @@ and correct the setting.</p>");
 				     `filename : "ifup.log",
 				     `prio : 16 ]);
 		if(!Internet::Start(logdir + "/ifup.log")) {
+		    // popup to inform user about the failure
+		    UI::MessagePopup(_("Connecting to Internet failed. View
+logs for details."));
 		    test_stage = `finish;
 		    test_result = `failure;
 		    return;
@@ -240,6 +243,9 @@ and correct the setting.</p>");
 
 	    // status must be up
 	    if(!Internet::Status()) {
+		// popup to inform user about the failure
+		UI::MessagePopup(_("Connecting to Internet failed. View
+logs for details."));
 		test_stage = `finish;
 		test_result = `failure;
 		return;
@@ -286,7 +292,8 @@ and correct the setting.</p>");
 	    if(ret != 0)
 	    {
 		// popup to inform user about the failure
-		UI::MessagePopup(_("Download of latest release notes failed."));
+		UI::MessagePopup(_("Download of latest release notes failed. View
+logs for details."));
 		test_result = `failure;
 	    }
 	    else
@@ -326,7 +333,8 @@ and correct the setting.</p>");
 	    else if(ret != 0)
 	    {
 		// popup to inform user about the failure
-		UI::MessagePopup(_("Check for latest updates failed."));
+		UI::MessagePopup(_("Check for latest updates failed. View
+logs for details."));
 		test_result = `failure;
 	    }
 
