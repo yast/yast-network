@@ -100,7 +100,7 @@ should be done directly without caching.</p>") +
 	    `TextEntry(`id(`ftp), _("F&TP Proxy URL"), ftp),
 	    `VSpacing(0.2),
 	    /* Text entry label */
-	    `TextEntry(`id(`no), _("N&o Proxy Domains"), no),
+	    `TextEntry(`id(`no), _("No Proxy &Domains"), no),
 	    `VSpacing(0.2),
 	    /* Text entry label */
 	    `TextEntry(`id(`user), _("Proxy &User Name"), user),

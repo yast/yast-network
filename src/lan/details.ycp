@@ -47,7 +47,7 @@ define any DetailsDialog() {
 	/* ComboBox item (device start mode) */
 	`item(`id("onboot"), _("At Boot Time"), startmode == "onboot"),
 	/* ComboBox item (device start mode) */
-	`item(`id("hotplug"), _("Started When Hot-Plugged"), startmode == "hotplug"),
+	`item(`id("hotplug"), _("When Hot-Plugged"), startmode == "hotplug"),
 	/* ComboBox item (device start mode) */
 	`item(`id("manual"), _("Manually"), startmode == "manual"),
 	/* ComboBox item (device start mode) */

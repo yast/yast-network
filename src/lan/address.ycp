@@ -223,6 +223,33 @@ completes the configuration.</p>");
     term DHCPButton = `PushButton(`id(`dhclient), `opt(`hstretch), _("DHCP &Client Options"));
     if(Lan::alias != "" || type == "dummy") DHCPButton = `VSpacing(0);
 
+    /* Push button label */
+    term DetailsButton = `PushButton(`id(`details), `opt(`hstretch), _("&Detailed Settings"));
+    // if(Lan::alias != "" || type == "dummy") DetailsButton = `VSpacing(0);
+
+    /* MenuButton label */
+    term MB = `MenuButton(`id(`mb), `opt(`hstretch), "&Advanced Settings", [
+	/* MenuButton item */
+	`item(`id(`hardware), _("H&ardware Details")),
+	/* MenuButton item */
+	`item(`id(`dhclient), _("DHCP &Client Options")),
+	/* MenuButton item */
+	`item(`id(`details), _("&Detailed Settings")),
+	/* MenuButton item */
+	`item(`id(`virtual), _("&Virtual Aliases")),
+    ]);
+
+    list MB_backup = [
+	/* MenuButton item */
+	`item(`id(`hostname), _("&Host name and name server")),
+	/* MenuButton item */
+	`item(`id(`routing), _("R&outing")),
+	/* MenuButton item */
+	`item(`id(`hosts), _("Host&s")),
+	/* MenuButton item */
+	`item(`id(`proxy), _("&Proxy")),
+    ];
+
     /* Frame label */
     term frame2 = `Frame(_("Detailed settings"), `HBox(`HStretch(),
 	`HSquash(`VBox(
@@ -231,9 +258,13 @@ completes the configuration.</p>");
 	    `PushButton(`id(`hostname), `opt(`hstretch), _("&Host name and name server")),
 	    /* Push button label */
 	    `PushButton(`id(`routing), `opt(`hstretch), _("R&outing")),
+	    /*
 	    DHCPButton,
 	    HardwareButton,
 	    VirtualButton,
+	    DetailsButton,
+	    */
+	    MB,
 	    `VSpacing(0.4)
 	)),
 	`HStretch()
@@ -247,6 +278,18 @@ completes the configuration.</p>");
 	`VSpacing(1),
 	frame2
     ));
+
+    /* Address dialog help * /
+    term contents = `HSquash(`VBox(
+	`Left(label),
+	`VSpacing(1),
+	frame1,
+//	`VSpacing(1),
+//	frame2,
+	`VSpacing(0.4),
+	MB
+    ));
+    */
 
     Wizard::SetContentsButtons(caption, contents, help,
 	    Label::BackButton(), Label::NextButton());
@@ -296,7 +339,8 @@ completes the configuration.</p>");
 	}
 	/* next|routing|hostname|hardware */
 	else if(ret == `next || ret == `routing || ret == `hostname ||
-		ret == `hardware || ret == `dhclient || ret == `virtual) {
+		ret == `hardware || ret == `dhclient || ret == `virtual ||
+		ret == `details || ret == `hosts || ret == `proxy) {
 
 	    y2debug("bootproto=%1", bootproto);
 	    if(UI::WidgetExists(`id(`rb))) {
@@ -340,7 +384,8 @@ completes the configuration.</p>");
 
     /* update the configuration */
     if(ret == `next || ret == `routing || ret == `hostname || ret == `hardware
-	    || ret == `dhclient || ret == `virtual) {
+	    || ret == `dhclient || ret == `virtual || ret == `details ||
+	    ret == `hosts || ret == `proxy) {
 
 	Lan::bootproto = bootproto;
 	Lan::ipaddr = (string) UI::QueryWidget(`id(`ipaddr), `Value);
