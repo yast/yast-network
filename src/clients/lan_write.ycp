@@ -49,8 +49,8 @@ map settings = select(args, 0, $[]);
 y2milestone("Only writing... (%1)", settings);
 
 Progress::off();
-Network::Import(settings);
-boolean ret = Network::Write();
+Lan::Import(settings);
+boolean ret = Lan::Write();
 Progress::on();
 
 y2milestone("Lan write finished");

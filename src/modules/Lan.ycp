@@ -245,7 +245,9 @@ global define boolean StartNetwork() ``{
  * @return true on success
  */
 global define boolean Import(map settings) ``{
-    CONFIG = settings;
+    CONFIG = settings["interfaces"]:$[];
+    DNS::Import(settings["dns"]:$[]);
+    Routing::Import(settings["routing"]:$[]);
 }
 
 /**
@@ -254,7 +256,11 @@ global define boolean Import(map settings) ``{
  * @return dumped settings (later acceptable by Import())
  */
 global define map Export() ``{
-    return CONFIG;
+    return ($[
+	      "interfaces":CONFIG,
+	      "dns":DNS::Export(),
+	      "routing":Routing::Export()
+    ]);
 }
 
 /**

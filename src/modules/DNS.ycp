@@ -36,6 +36,58 @@ boolean has_dhcp = true;
  */
 string resolv_conf = "/etc/resolv.conf";
 
+
+
+
+/**
+ * Get all the DNS configuration from a map.
+ * When called by dns_auto (preparing autoinstallation data)
+ * the map may be empty.
+ * @param settings	
+ * @return	success
+ */
+global define boolean Import (map settings) ``{
+    if (size (settings) == 0)
+    {	
+	return false;
+    }
+
+    boolean missing = false;
+    foreach (`k, ["hostname", "dns_domain", "nameservers", "searchlist","dhcp_hostname"], ``{
+	if (! haskey (settings, k))
+	{
+	    y2error ("Missing at Import: '%1'.", k);
+	    missing = true;
+	}	
+    });
+    if (missing)
+    {
+	return false;
+    }
+
+    dhcp_hostname = lookup (settings, "dhcp_hostname", false);
+    hostname = lookup (settings, "hostname", "");
+    nameservers = splitstring(lookup (settings, "nameservers", " "), " ");
+    domain = lookup (settings, "dns_domain", "");
+    searchlist = splitstring(lookup (settings, "searchlist", " "), " ");
+    
+    return true;
+}
+
+/**
+ * Dump the DNS settings to a map, for autoinstallation use.
+ * @return 
+ */
+global define map Export () ``{
+    return $[
+	     "hostname": hostname,
+	     "nameservers": mergestring(nameservers, " "),
+	     "searchlist": mergestring(searchlist, " "),
+	     "dns_domain": domain,
+	     "dhcp_hostname": dhcp_hostname
+    ];
+}    
+
 /**
  * Reads current DNS and hostname settings
  * @return true if success

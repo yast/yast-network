@@ -87,5 +87,48 @@ global define boolean Write() ``{
     return ret == true;
 }
 
+/**
+ * Get all the DNS configuration from a map.
+ * When called by dns_auto (preparing autoinstallation data)
+ * the map may be empty.
+ * @param settings	
+ * @return	success
+ */
+global define boolean Import (map settings) ``{
+    if (size (settings) == 0)
+    {	
+	return false;
+    }
+
+    boolean missing = false;
+    foreach (`k, ["routing"], ``{
+	if (! haskey (settings, k))
+	{
+	    y2error ("Missing at Import: '%1'.", k);
+	    missing = true;
+	}	
+    });
+    if (missing)
+    {
+	return false;
+    }
+
+    routes = settings["routing"]:[];
+    return true;
+}
+
+
+
+/**
+ * Dump the DNS settings to a map, for autoinstallation use.
+ * @return 
+ */
+global define map Export () ``{
+    return $[
+	     "routing":routes
+    ];
+}
+
+
 /* EOF */
 }
