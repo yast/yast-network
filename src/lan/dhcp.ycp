@@ -50,11 +50,10 @@ network interface and thus the same hardware address.</p>") +
     _("<p>The <b>Host Name to Send</b> specifies a string used for the
 host name option field when dhcpcd sends DHCP messages. Some DHCP servers
 will update nameserver entries according to this host name (dynamic DNS).
-Also, some DHCP servers require the
-<b>Host Name to Send</b> option field to contain a specific string
-in the DHCP messages from clients.
-Leave <i>AUTO</i> to send current host name.
-Leave empty not to send a host name.</p>");
+
+Also, some DHCP servers require the <b>Host Name to Send</b> option field to
+contain a specific string in the DHCP messages from clients. Leave <i>AUTO</i>
+to send current host name. Leave empty not to send a host name.</p>");
 
     boolean dhclient_broadcast = false;
     if(issubstring(NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"]:"", "-B"))
