@@ -19,6 +19,8 @@ Bugs:
 - edit modules.conf #15062
 - dsl in installation settings #15160
 - install dhcpcd in lan (before start)
+- chmod 0700 ~/.wgetrc? asi neni potreba ...
+- sigi&isdn: http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html
 
 Adding network device mini-howto: grep for "escon" for example.
 

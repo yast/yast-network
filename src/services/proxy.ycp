@@ -35,6 +35,9 @@ global define symbol ProxyMainDialog() ``{
     _("<p><b>HTTP proxy</b> is the name of the proxy server for your access
 to the world wide web (WWW).</p>") +
 
+    /* Proxy dialog help 2.5/5 */
+    _("<p>Example: <i>http://proxy.provider.com:3128</i></p>") +
+
     /* Proxy dialog help 3/5 */
     _("<p><b>FTP proxy</b> is the name of the proxy server for your access
 to the file transfer services (FTP).</p>") +

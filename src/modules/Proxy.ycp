@@ -76,11 +76,12 @@ global define boolean Import(map settings) ``{
     if(size(settings) == 0)
 	return true;
 
-	http = settings["http_proxy"]:"";
-	ftp = settings["ftp_proxy"]:"";
-	no = settings["no_proxy"]:"";
-	user = settings["proxy_user"]:"";
-	pass = settings["proxy_password"]:"";
+    http = settings["http_proxy"]:"";
+    ftp = settings["ftp_proxy"]:"";
+    no = settings["no_proxy"]:"";
+    user = settings["proxy_user"]:"";
+    pass = settings["proxy_password"]:"";
+
     modified = true;
     return true;
 }
@@ -90,12 +91,13 @@ global define boolean Import(map settings) ``{
  * @return autoinstallation settings
  */
 global define map Export() ``{
-	map settings = $["http_proxy": http,
-					"ftp_proxy": ftp,
-					"no_proxy": no,
-					"proxy_user": user,
-					"proxy_password": pass
-					];
+    map settings = $[
+	"http_proxy"	: http,
+	"ftp_proxy"	: ftp,
+	"no_proxy"	: no,
+	"proxy_user"	: user,
+	"proxy_password": pass,
+    ];
     return settings;
 }
 
