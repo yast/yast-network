@@ -21,6 +21,7 @@ include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
 
 include "network/routines.ycp";
+include "network/complex.ycp";
 
 /**
  * Return a modification status
