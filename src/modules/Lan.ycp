@@ -370,36 +370,6 @@ global define boolean Import(map settings) ``{
 
     modified = true;
     return true;
-
-    /* This is broken: it ignores aliases, different HW types, ... * /
-
-    map interfaces = listmap(map interface, settings["interfaces"]:[],``{
-	map new_interface = mapmap(string k, string v, interface, ``{
-	    if (contains(upcase, k)) {
-		return([toupper(k),v]);
-	    }
-	    else {
-		return([k,v]);
-	    }
-	});
-	return([interface["device"]:"unknown",new_interface]);
-    });
-    map eth = $[];
-    map token = $[];
-    foreach(string device, map if_data, interfaces, ``{
-	if (issubstring(device, "eth")) {
-	    eth=add(eth,substring(device,3), if_data);
-	} else if (issubstring(device, "tr")) {
-	    token=add(token,substring(device,2), if_data);
-	}
-    });
-
-    Devices = eval($["eth":eth, "tr":token]);
-    DNS::Import(eval(settings["dns"]:$[]));
-    Routing::Import(eval(settings["routing"]:$[]));
-    modified = true;
-    return true;
-    */
 }
 
 /**
@@ -418,26 +388,6 @@ global define map Export() ``{
 	]
     ]);
 
-    /* This is broken: it ignores aliases, different HW types, ... * /
-
-    list interfaces = [];
-    maplist(string device, map devsmap, Devices, ``{
-	maplist(string num, map devmap, devsmap, ``{
-	    map newmap = $[];
-	    maplist(string key, string val, devmap, ``{
-		change(newmap, tolower(key), val);
-	    });
-	    change(newmap, "device", device+num);
-	    change(interfaces, newmap);
-	});
-    });
-
-    return eval($[
-	"dns"		: DNS::Export(),
-	"routing"	: Routing::Export(),
-	"interfaces"	: interfaces,
-    ]);
-    */
 }
 
 /**
