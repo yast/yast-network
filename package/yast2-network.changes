@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Sun Apr  4 06:14:25 CEST 2004 - nashif@suse.de
+
+- create network config files using mac or pci ids when 
+  auto-installing (#37186)
+- fixed module parsing due to change in data structure in 
+  auto-install mode
+
+-------------------------------------------------------------------
 Fri Apr  2 19:39:05 CEST 2004 - msvec@suse.cz
 
 - further smartlink-softmodems fixes (#37335)
