@@ -56,3 +56,4 @@ Name[sl]=DNS in ime gostitelja
 GenericName[sl]=Nastavitev imena računalnika in DNS-ja
 Name[tr]=DNS ve ana makine adı
 GenericName[tr]=Ana makine adını ve DNS'i yapılandır
+X-KDE-SubstituteUID=true
