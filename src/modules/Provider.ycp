@@ -334,7 +334,7 @@ global define boolean Select(string name) ``{
     }
 
     Name = name;
-    Current = eval(Providers[Name]:$[]);
+    Current = (map) eval(Providers[Name]:$[]);
     Type = CurrentType();
 
     if(Current == $[]) {
@@ -570,7 +570,7 @@ global define list Summary(boolean split) ``{
 	if(phone != "" && phone != nil)
 	    /* Summary text description (%1 is provider name) */
 	    descr = sformat(_("Configured as %1 (phone %2)"), name, phone);
-	provs[Summary::Device(provmap["PROVIDER"]:"")] = descr;
+	provs = add(provs, Summary::Device(provmap["PROVIDER"]:"", descr));
     });
     summary = Summary::DevicesList(provs);
 
