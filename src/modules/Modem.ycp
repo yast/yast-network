@@ -15,7 +15,6 @@
 module "Modem";
 textdomain "network";
 
-import "Language";
 import "NetworkDevices";
 import "Provider";
 import "Progress";
@@ -234,7 +233,7 @@ global define boolean Write() {
 
 	Service::Stop("slmodemd");
 
-	string country = Language::GetLanguageCountry();
+	string country = Provider::GetCountry ();
 	map keys = (map) eval(SCR::Read(.target.yast2, "modem-t35-keys.ycp"));
 	country = keys[country]:"";
 

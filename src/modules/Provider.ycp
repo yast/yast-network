@@ -19,7 +19,6 @@
 module "Provider";
 textdomain "network";
 
-import "Language";
 import "Map";
 import "String";
 import "Summary";
@@ -88,9 +87,9 @@ symbol operation = nil;
 boolean initialized = false;
 
 /**
- * Country language
+ * Country
  */
-string language = nil;
+string country = nil;
 
 /*------------------*/
 /* GLOBAL FUNCTIONS */
@@ -99,6 +98,7 @@ define boolean CheckType(string type);
 define boolean CloneProvider();
 define map Filter(map<string,map> providers, string type);
 global define string ProviderType();
+global string GetCountry();
 
 /**
  * Were the providers changed?
@@ -156,9 +156,9 @@ global define boolean Read() {
     country_names = (map) eval(country_names);
     textdomain "network";
 
-    /* Local language heuristics */
-    language = Language::GetLanguageCountry();
-    LastCountry = language;
+    /* Country heuristics */
+    country = GetCountry ();
+    LastCountry = country;
     y2debug("LastCountry=%1", LastCountry);
 
     /* Initialize the countries selection box */
@@ -194,6 +194,14 @@ global define boolean Read() {
 
     initialized = true;
     return ret;
+}
+
+/**
+ * This is a single point of dependence on the Language module of yast2-country
+ */
+global string GetCountry () {
+    import "Language";
+    return Language::GetLanguageCountry();
 }
 
 /**
@@ -411,7 +419,7 @@ global define boolean Add(string type) {
     Type = type;
     if(Select("") != true) return false;
     if(CloneProvider() != true) return false;
-    LastCountry = language;
+    LastCountry = country;
     operation = `add;
     return true;
 }
@@ -478,7 +486,7 @@ global define boolean Commit() {
     Type = "";
     Current = $[];
     operation = nil;
-    LastCountry = language;
+    LastCountry = country;
     y2debug("LastCountry=%1", LastCountry);
     return true;
 }

@@ -17,7 +17,6 @@ textdomain "network";
 
 import "Detection";
 import "Lan";
-import "Language";
 import "NetworkDevices";
 import "Provider";
 import "Progress";
@@ -343,8 +342,8 @@ global define boolean Select(string dev) {
 
     /* ppp mode heuristics */
     if(pppmode == nil || pppmode == "") {
-	string language = Language::GetLanguageCountry();
-	y2debug("language=%1", language);
+	string country = Provider::GetCountry ();
+	y2debug("country=%1", country);
 
 	map pppmodes = $[
 	    "AT" : "pptp",
@@ -353,7 +352,7 @@ global define boolean Select(string dev) {
 	    "GB" : "pppoatm",
 	    "CA" : "pppoe",
 	];
-	pppmode = pppmodes[language]:"pppoe";
+	pppmode = pppmodes[country]:"pppoe";
     }
 
     return true;
