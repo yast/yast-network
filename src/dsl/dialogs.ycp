@@ -56,16 +56,18 @@ connections, <b>Ethernet card</b> is needed for <i>PPP over Ethernet</i>
 connections.</p>") +
 
     /* DSL dialog help 5/7 */
-_("<p><b>VPI/VCI</b> pair (e.g. 0.38)
-</p>") +
+_("<p><b>For PPPoATM enter your VPI/VCI pair, for example <i>0.38</i>
+for British Telecom. If unsure ask your provider.</p>") +
 
     /* DSL dialog help 6/7 */
-_("<p><b>Ethernet card</b> <b>Configure network cards</b> FIXME
-</p>") +
+_("<p>For PPPoE enter the device of the ethernet card your dsl modem
+is connected to. If you did not setup your ethernet card yet you can
+proceed therewith by pressing <b>Configure network cards</b>.</p>") +
 
     /* DSL dialog help 7/7 */
-_("<p><b>Device activation</b> FIXME
-</p>");
+_("<p>The <b>Device activation</b> may either happen during boot or manually
+with tools like <b>ifup</b> or <b>kinternet</b>. An activation during boot may
+be appropriate for dial on demand connections.</p>");
 
     string pppmode = DSL::pppmode;
     if (pppmode == nil || pppmode == "")
@@ -141,7 +143,7 @@ _("<p><b>Device activation</b> FIXME
 	    ), `HSpacing(2))),
 	    `VSpacing(1),
 	    `Left(`ComboBox(`id(`startmode), _("&Device activation"), [
-		`item(`id("manual"), _("Manualy"), startmode == "manual"),
+		`item(`id("manual"), _("Manually"), startmode == "manual"),
 		`item(`id("onboot"), _("On boot"), startmode == "onboot"),
 	    ])),
 	    `VSpacing(1)

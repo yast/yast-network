@@ -77,15 +77,13 @@ request data from the internet.</p>") +
 
     /* Connection dialog help 2/8 */
 _("<p>When <b>Modify DNS</b> is enabled, the <i>name server</i> will be
-changed automatically when connected to the Internet.</p>
-") +
+changed automatically when connected to the Internet.</p>") +
 
     /* Connection dialog help 3/8 */
 _("<p>The <b>Name servers</b> are required to convert host names
 <i>(e.g., www.suse.com)</i> to IP addresses (e.g., 213.95.15.200). You only
 need to specify the name servers if you enable <i>Dial on demand</i> or
-disable <b>DNS modification</b> when connected.</p>
-");
+disable <b>DNS modification</b> when connected.</p>");
 
     if (type == "modem")
 	helptext = helptext +
