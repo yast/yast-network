@@ -1304,6 +1304,15 @@ global define boolean Autoinstall() {
 		return false;
 	    }
 
+	    // The uppercasing is also done in lan_auto::FromAY
+	    // but the output goes to "devices" whereas here
+	    // we use "interfaces". FIXME.
+            string newk = nil;
+            interface =  mapmap(string k, string v, interface, ``{
+                    newk = toupper(k);
+                    return $[newk: v];
+                    });
+
 
             // Set interface variables
             SetDeviceVars(interface);

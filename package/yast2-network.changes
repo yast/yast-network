@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Mar 17 13:01:46 CET 2005 - mvidner@suse.cz
+
+- Fixed autoinstallation by reintroducing uppercasing (#73595).
+
+-------------------------------------------------------------------
 Mon Mar 14 17:14:50 CET 2005 - mvidner@suse.cz
 
 - Reload lwresd if resolv.conf changes (#72450).
