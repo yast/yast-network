@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Mar 04 21:35:11 CET 2003 - arvin@suse.de
+
+- fixed testsuite
+
+-------------------------------------------------------------------
 Tue Mar 04 18:35:40 CET 2003 - arvin@suse.de
 
 - redesigned "Internet Connection Test" dialogue (bug #23775)
