@@ -273,7 +273,7 @@ disabled during the connection.</p>");
 	}
 	else if(ret == `next) {
 
-	    if(!dhcp_hostname) {
+	    if(!has_dhcp || !dhcp_hostname) {
 		/* check host name and domain */
 		if(!Hostname::Check((string) UI::QueryWidget(`id(`host), `Value))) {
 		    /* Popup::Error text */
