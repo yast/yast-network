@@ -15,7 +15,7 @@ Name = _("Host Names")
 Group = Net_advanced
 
 ; icon displayed in y2cc
-Icon = host.png
+Icon = hosts-editor.png
 
 ; *one* *short* descriptive line for y2cc
 Helptext = _("Configure Host Names")
