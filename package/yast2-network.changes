@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Aug 21 11:00:14 CEST 2003 - msvec@suse.de
+
+- suppress error message if pcmcia is not installed (#29195)
+- 2.8.13
+
+-------------------------------------------------------------------
 Wed Aug 20 16:28:43 CEST 2003 - jsuchome@suse.de
 
 - removed redundant "initialization dialog" (#28779)
