@@ -146,7 +146,7 @@ connection will be shut down (0 means an infinite idle timeout).</p>");
 	    `Frame(`id(`NameServers), _("Name servers"),
 		`HBox(
 		    /* Text entry label */
-		    `TextEntry(`id(`DNS1), _("&First"), DNS1),
+		    `TextEntry(`id(`DNS1), _("F&irst"), DNS1),
 		    `HSpacing(0.5),
 		    /* Text entry label */
 		    `TextEntry(`id(`DNS2), _("&Second"), DNS2)
