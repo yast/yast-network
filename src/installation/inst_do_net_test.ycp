@@ -34,11 +34,6 @@
     if(!Internet::Fastest())
 	return `auto;
 
-    if(!AskForPassword()) {
-	y2error("Password required");
-	return `next;
-    }
-
 
     boolean we_have_patches = false;
 
@@ -183,6 +178,12 @@ and correct the setting.</p>");
 	    }
 	    else
 	    {
+		if (!AskForPassword ()) {
+		    y2error("Password required");
+		    set_result (`failure);
+		    return;
+		}
+
 		// start the connection
 		y2milestone ("called Start");
 		if (!Internet::Start ()) {

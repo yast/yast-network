@@ -143,7 +143,7 @@ global define boolean Fastest() ``{
  */
 global define boolean Start() ``{
 
-    if (askpassword == "yes")
+    if (askpassword)
 	return SCR::Execute (.target.bash_input, "/sbin/ifup " + device, password) == 0;
     else
 	return SCR::Execute (.target.bash, "/sbin/ifup " + device) == 0;

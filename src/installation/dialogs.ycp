@@ -26,8 +26,11 @@ include "network/routines.ycp";
  */
 global define boolean AskForPassword() ``{
 
-    if(Internet::askpassword == nil) return true;
-    if(Internet::askpassword == false) return true;
+    if (Internet::askpassword == nil)
+	return true;
+
+    if (Internet::askpassword == false)
+	return true;
 
     UI::OpenDialog(`VBox(
 	/* Heading text */
@@ -40,15 +43,15 @@ global define boolean AskForPassword() ``{
     ));
 
     UI::SetFocus(`id(`password));
+
     symbol ret = UI::UserInput();
+
+    if (ret == `ok)
+	Internet::password = UI::QueryWidget(`id(`password), `Value);
+
     UI::CloseDialog();
 
-    if(ret == `ok) {
-	Internet::password = UI::QueryWidget(`id(`password), `Value);
-	return true;
-    }
-
-    return false;
+    return ret == `ok;
 }
 
 /**
