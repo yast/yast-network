@@ -5,8 +5,20 @@ include "network/runtime.ycp";
 
 map READ = $[ "init" : $[ "scripts" : $[ "exists" : true ]]];
 
-map EXEC0 = $[ "target" : $[ "bash" : 0 ]];
-map EXEC1 = $[ "target" : $[ "bash" : 1 ]];
+map EXEC0 = $[ "target" : $[ "bash" : 0,
+			     "bash_output": $[ "exit": 0,
+					       "stdout": "",
+					       "stderr": "",
+					       ],
+			     ],
+		   ];
+map EXEC1 = $[ "target" : $[ "bash" : 1,
+			     "bash_output": $[ "exit": 1,
+					       "stdout": "",
+					       "stderr": "Dummy error message",
+					       ],
+			     ],
+		   ];
 
 DUMP("ReadStatus");
 TEST(``(ReadStatus()), [], nil);
@@ -28,6 +40,7 @@ TEST(``(RestartNetwork()), [$[],$[],EXEC0], nil);
 TEST(``(RestartNetwork()), [$[],$[],EXEC1], nil);
 
 DUMP("SetupSMPPPD");
-TEST(``(SetupSMPPPD()), [READ], nil);
+TEST(``(SetupSMPPPD()), [READ,$[],EXEC0], nil);
+TEST(``(SetupSMPPPD()), [READ,$[],EXEC1], nil);
 
 }
