@@ -20,7 +20,7 @@
 .etc.hosts
 
 `ag_ini(
-    IniAgent( "/etc/hosts",
+    `IniAgent( "/etc/hosts",
 	$[
 	    "options"	: [ "global_values", "flat" ],
 	    "comments"	: [ "^#.*", "^[ \t]*$" ],

@@ -60,59 +60,6 @@ global define boolean RunKInternet() ``{
 }
 
 /**
- * Start network
- * @return true if success
- */
-global define boolean StartNetwork() ``{
-    boolean ret = true;
-    if(Arch::s390) ret = StartService("chandev");
-    ret = StartService("network") && ret;
-    return ret;
-}
-
-/**
- * Restart network
- * @return true if success
- */
-global define boolean RestartNetwork() ``{
-    return RestartService("network");
-}
-
-/**
- * Stop network
- * @return true if success
- */
-global define boolean StopNetwork() ``{
-    return StopService("network");
-}
-
-/**
- * Enable and start smpppd(8)
- * @return true if success
- */
-global define boolean EnableSMPPPD() ``{
-
-    boolean ret = true;
-    ret = EnableService("smpppd") && ret;
-
-    if(Runlevel::ServiceStatus("smpppd") == 0)
-	ret = (Runlevel::RunInitScript("smpppd", "reload") == 0) && ret;
-    else
-	ret = (Runlevel::RunInitScript("smpppd", "start") == 0) && ret;
-    y2debug("ret=%1", ret);
-
-    return ret;
-}
-
-/**
- * Enable the network service
- * @return true if success
- */
-global define boolean EnableNetwork() ``{
-    return EnableService("network");
-}
-
-/**
  * Enable service
  * @param service service to be enabled
  * @return true if success
@@ -195,6 +142,59 @@ global define boolean StopService(string service) ``{
     ret = Runlevel::RunInitScript(service, "stop");
     y2debug("ret=%1", ret);
     return ret == 0;
+}
+
+/**
+ * Start network
+ * @return true if success
+ */
+global define boolean StartNetwork() ``{
+    boolean ret = true;
+    if(Arch::s390) ret = StartService("chandev");
+    ret = StartService("network") && ret;
+    return ret;
+}
+
+/**
+ * Restart network
+ * @return true if success
+ */
+global define boolean RestartNetwork() ``{
+    return RestartService("network");
+}
+
+/**
+ * Stop network
+ * @return true if success
+ */
+global define boolean StopNetwork() ``{
+    return StopService("network");
+}
+
+/**
+ * Enable and start smpppd(8)
+ * @return true if success
+ */
+global define boolean EnableSMPPPD() ``{
+
+    boolean ret = true;
+    ret = EnableService("smpppd") && ret;
+
+    if(Runlevel::ServiceStatus("smpppd") == 0)
+	ret = (Runlevel::RunInitScript("smpppd", "reload") == 0) && ret;
+    else
+	ret = (Runlevel::RunInitScript("smpppd", "start") == 0) && ret;
+    y2debug("ret=%1", ret);
+
+    return ret;
+}
+
+/**
+ * Enable the network service
+ * @return true if success
+ */
+global define boolean EnableNetwork() ``{
+    return EnableService("network");
 }
 
 /* EOF */

@@ -143,7 +143,7 @@ Try again?
 global define string ChangedComment(string modul) ``{
     string ret = "\n# Changed by YaST2";
     if(modul != nil && modul != "") ret = ret + " module " + modul;
-    string date = lookup(SCR::Execute(.target.bash_output, "/bin/date '+%x'"), "stdout", "");
+    string date = lookup((map)SCR::Execute(.target.bash_output, "/bin/date '+%x'"), "stdout", "");
     if(date != "") ret = ret + " " + date;
     return ret;
 }
@@ -245,6 +245,17 @@ global define string alias_num(string dev) ``{
 }
 
 /**
+ * Test hotplugability of a device
+ * @param type device type
+ * @return true if hotpluggable
+ */
+global define boolean IsHotplug(string type) ``{
+    if(type == "" || type == nil) return false;
+    if(regexpmatch(type, "(pcmcia|usb|pci)$")) return true;
+    return false;
+}
+
+/**
  * Create a device name from its type and number
  * @param typ device type
  * @param num device number
@@ -287,17 +298,6 @@ global define string alias_name(string typ, string num, string anum) ``{
 	return nil;
     }
     return sformat("%1%2:%3", typ, num, anum);
-}
-
-/**
- * Test hotplugability of a device
- * @param type device type
- * @return true if hotpluggable
- */
-global define boolean IsHotplug(string type) ``{
-    if(type == "" || type == nil) return false;
-    if(regexpmatch(type, "(pcmcia|usb|pci)$")) return true;
-    return false;
 }
 
 /**

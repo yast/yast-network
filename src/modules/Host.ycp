@@ -12,7 +12,6 @@
 module "Host";
 textdomain "network";
 import "Summary";
-include "network/routines.ycp";
 
 /**
  * All hosts
@@ -57,7 +56,7 @@ global define boolean Read() ``{
 	hosts = listmap(string host, hostlist, ``{
 	    string name = (string) SCR::Read(topath(sformat(".etc.hosts.\"%1\"", host)));
 	    list names = filter(string s, splitstring(name, "[ \t]"), ``(s != nil && s != ""));
-	    return [ host, names ];
+	    return $[ host: names ];
 	});
     }
 
@@ -122,7 +121,7 @@ global define boolean Write() ``{
 global define boolean Import(map settings) ``{
     modified = true;
 
-    hosts = eval(settings["hosts"]:$[]);
+    hosts = (map) eval(settings["hosts"]:$[]);
     return true;
 }
 
@@ -170,7 +169,7 @@ global define boolean Update(string hostname, string domain, list ips) ``{
 	oldhostip = oldhost[1]:"";
 
     /* Remove old hostname from hosts */
-    if(contains(hosts, oldhostip))
+    if(haskey(hosts, oldhostip))
 	hosts = remove(hosts, oldhostip);
 
     /* Add at least one hostname/ip */
@@ -183,7 +182,7 @@ global define boolean Update(string hostname, string domain, list ips) ``{
     boolean nickadded = false;
     maplist(string ip, ips, ``{
 	/* Only add if not present yet */
-	if(contains(hosts, ip)) return;
+	if(haskey(hosts, ip)) return;
 
 	string name = fqhostname;
 	/* Add nick for the first one */
@@ -199,6 +198,7 @@ global define boolean Update(string hostname, string domain, list ips) ``{
 
     return true;
 }
+
 /**
  * Create host summary
  * @return summary text
@@ -206,12 +206,12 @@ global define boolean Update(string hostname, string domain, list ips) ``{
 global define string Summary() ``{
 
 	string summary = "";
-	if (hosts == $[] )
-		return Summary::NotConfigured();
+	if(hosts == $[] )
+	    return Summary::NotConfigured();
 
 	summary = Summary::OpenList(summary);
-	foreach(`k, `v, hosts, ``{
-		summary = Summary::AddListItem(summary, k + " - " + mergestring(v, " ") );
+	foreach(string k, list v, hosts, ``{
+	    summary = Summary::AddListItem(summary, k + " - " + mergestring(v, " ") );
 	});
 	summary = Summary::CloseList(summary);
 	return summary;

@@ -15,7 +15,7 @@
 .etc.defaultdomain
 
 `ag_anyagent(
-    Description(
+    `Description(
 	``(File("/etc/defaultdomain")),	// real file name
 	"",				// comment
 	false,				// read-only?

@@ -20,7 +20,7 @@
 .root.wgetrc
 
 `ag_ini(
-    IniAgent( "/root/.wgetrc",
+    `IniAgent( "/root/.wgetrc",
 	$[
 	    "options" : [ "ignore_case", "global_values", "flat" ],
 	    "comments" : [ "^#.*", "^[ \t]*$", ],

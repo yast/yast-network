@@ -21,8 +21,8 @@ import "Progress";
 
 include "network/routines.ycp";
 
-string func = WFM::Args(0);
-map param = WFM::Args(1);
+string func = (string) WFM::Args(0);
+map param = (map) WFM::Args(1);
 map ret = $[];
 
 /* create a textual proposal */
@@ -54,13 +54,11 @@ if(func == "MakeProposal") {
 /* run the module */
 else if(func == "AskUser") {
     map stored = DSL::Export();
-    symbol seq = WFM::CallFunction(`dsl(.propose));
-    if(seq != `next) DSL::Import(stored);
-    y2debug("stored=%1",stored);
-    y2debug("seq=%1",seq);
-    ret = $[
-	"workflow_sequence" : seq
-    ];
+    symbol result = WFM::CallFunction("dsl", [.propose]);
+    if(result != `next) DSL::Import(stored);
+    y2debug("stored=%1", stored);
+    y2debug("result=%1", result);
+    ret = $[ "workflow_sequence" : result ];
 }
 /* create titles */
 else if(func == "Description") {

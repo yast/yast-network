@@ -20,7 +20,7 @@
 .root.curlrc
 
 `ag_ini(
-    IniAgent( "/root/.curlrc",
+    `IniAgent( "/root/.curlrc",
 	$[
 	    "options" : [ "ignore_case", "global_values", "flat" ],
 	    "comments" : [ "^#.*", "^[ \t]*$", ],

@@ -75,10 +75,10 @@ default.</p>");
 
     if(ret == `next)
     {
-	Remote::allow_administration = UI::QueryWidget(`id(`allow), `Value);
+	Remote::allow_administration = (boolean) UI::QueryWidget(`id(`allow), `Value);
     }
 
-    return ret;
+    return (symbol) ret;
 }
 
 /* EOF */

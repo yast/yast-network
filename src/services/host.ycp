@@ -22,6 +22,8 @@ import "Wizard";
 
 include "network/routines.ycp";
 
+global define term HostDialog(integer id, term entry, list forbidden);
+
 /**
  * Check if given host is system and present warning in this case.
  * @param host host to be checked
@@ -68,16 +70,18 @@ global define symbol HostsMainDialog(boolean standalone) ``{
     integer max = 0;
     list table_items = [];
 
+    y2debug("hosts=%1", Host::hosts);
     /* make ui items from the hosts list */
-    maplist(string host, string names, Host::hosts, ``{
+    maplist(string host, list<string> names, Host::hosts, ``{
 	if(size(names) < 1) {
 	    y2error("Invalid host: %1, (%2)", host, names);
 	    return;
 	}
 	string name = names[0]:"";
+	list x = remove (names, 0);
 	string aliases = mergestring(remove(names, 0), " ");
 	term item = `item(`id(items), host, name, aliases);
-	change(table_items, item);
+	table_items = add(table_items, item);
 	items = items + 1;
     });
 
@@ -131,6 +135,7 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	UI::ChangeWidget(`id(`delete), `Enabled, items > 0);
 
 	ret = UI::UserInput();
+	y2debug("ret=%1", ret);
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel) {
@@ -139,8 +144,10 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	}
 	/* edit host */
 	else if(ret == `edit || ret == `table) {
-	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
-	    list cur_item = filter(term e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
+	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
+	    list cur_item = filter(term e, table_items, ``{
+		return cur == select(select(e, 0, []), 0, nil);
+	    });
 
 	    y2debug("cur=%1", cur);
 	    y2debug("cur_item=%1", cur_item);
@@ -171,7 +178,7 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	    if(item == nil) continue;
 	    else Host::modified = true;
 
-	    change(table_items, item);
+	    table_items = add(table_items, item);
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
 	    UI::ChangeWidget(`id(`table), `CurrentItem, max);
 	    items = items + 1;
@@ -180,8 +187,10 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	}
 	/* delete host */
 	else if(ret == `delete) {
-	    integer cur = UI::QueryWidget(`id(`table), `CurrentItem);
-	    list cur_item = filter(term e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
+	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
+	    list cur_item = filter(term e, table_items, ``{
+		return cur == select(select(e, 0, []), 0, nil);
+	    });
 
 	    y2debug("cur=%1", cur);
 	    y2debug("cur_item=%1", cur_item);
@@ -193,7 +202,7 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 		string ip = select(e, 1, "");
 		if(cur == select(select(e, 0, []), 0, nil)) {
 		    if(ip != "" && ip != nil)
-			change(Host::Deleted, ip);
+			Host::Deleted = add(Host::Deleted, ip);
 		    return false;
 		}
 		return true;
@@ -218,18 +227,18 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 
     /* update hosts from widgets */
     if(ret == `next) {
-	Host::hosts = listmap(term e, table_items, ``(
-	    [
-		select(e, 1, ""),
+	Host::hosts = listmap(term e, table_items, ``{
+	    string key = select(e, 1, "");
+	    return $[ key:
 		prepend(splitstring(select(e, 3, ""), " "), select(e, 2, ""))
-	    ]
-	));
+	    ];
+	});
     }
 
     y2debug("table_items=%1", table_items);
     y2debug("hosts=%1", Host::hosts);
 
-    return ret;
+    return (symbol) ret;
 }
 
 /**
@@ -282,7 +291,7 @@ global define term HostDialog(integer id, term entry, list forbidden) ``{
 	if(ret != `ok) break;
 
 	host = `item(`id(id));
-	string val = UI::QueryWidget(`id(`host), `Value);
+	string val = (string) UI::QueryWidget(`id(`host), `Value);
 	if(!IP::Check(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("The IP address is invalid."));
@@ -297,7 +306,7 @@ global define term HostDialog(integer id, term entry, list forbidden) ``{
 	}
 	host = add(host, val);
 
-	val = UI::QueryWidget(`id(`name), `Value);
+	val = (string) UI::QueryWidget(`id(`name), `Value);
 	if(!Hostname::CheckFQ(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("Host name is invalid."));
@@ -306,7 +315,7 @@ global define term HostDialog(integer id, term entry, list forbidden) ``{
 	}
 	host = add(host, val);
 
-	val = UI::QueryWidget(`id(`aliases), `Value);
+	val = (string) UI::QueryWidget(`id(`aliases), `Value);
 	if(val != "") {
 	    list vals = splitstring(val, " ");
 	    vals = filter(string ho, vals, ``(ho != "" && !Hostname::CheckFQ(ho)));

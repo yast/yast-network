@@ -17,7 +17,7 @@
 .sysconfig.network.providers
 
 `ag_ini(
-    IniAgent( [ "/etc/sysconfig/network/providers/*" ],
+    `IniAgent( [ "/etc/sysconfig/network/providers/*" ],
 	$[
 	    /* toplevel values */
 	    "options" : [ "global_values", "comments_last" ],

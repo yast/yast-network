@@ -41,7 +41,7 @@
 .routes
 
 `ag_anyagent(
-    Description(
+    `Description(
 	``(File("/etc/sysconfig/network/routes")),	// real file name
 	"#\n",						// comment
 	false,						// read-only?

@@ -173,7 +173,7 @@ define boolean StopDetection() ``{
 	y2debug("keys=%1", keys);
 
 	maplist(string k, keys, ``{
-	    string v = SCR::Read(add(detpath, k));
+	    string v = (string) SCR::Read(add(detpath, k));
 	    y2debug("%1=%2", k, v);
 	    /* FIXME: duplicate keys (make list? add with suffix1, etc? ...? */
 	    change(result, k, v);

@@ -22,8 +22,8 @@ import "Host";
 import "Label";
 import "Wizard";
 
-include "network/services/host.ycp";
-include "network/runtime.ycp";
+/* NI: required wrt functions in routines.ycp */
+block<boolean> AbortFunction = nil;
 
 /**
  * Return a modification status
@@ -32,6 +32,9 @@ include "network/runtime.ycp";
 global define boolean Modified() ``{
     return Host::modified;
 }
+
+include "network/services/host.ycp";
+include "network/runtime.ycp";
 
 Host::Read();
 Wizard::CreateDialog();

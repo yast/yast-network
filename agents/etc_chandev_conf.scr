@@ -19,7 +19,7 @@
 .etc.chandev_conf
 
 `ag_ini(
-    IniAgent( "/etc/chandev.conf",
+    `IniAgent( "/etc/chandev.conf",
 	$[
 	    "options"	: [ "global_values", "flat" ],
 	    "comments"	: [ "^#.*", "^[ \t]*$" ],

@@ -13,14 +13,19 @@ module "Firewall";
 textdomain "network";
 
 import "Runlevel";
-include "network/routines.ycp";
-include "network/runtime.ycp";
 
 /**
  * Firewalled devices
  */
 list devices = [];
 list devices_init = [];
+
+/* NI: required wrt functions in routines.ycp */
+block<boolean> AbortFunction = nil;
+define boolean Modified() ``{ return true; }
+
+include "network/routines.ycp";
+include "network/runtime.ycp";
 
 /**
  * Read firewall settings
@@ -38,7 +43,7 @@ global define boolean Read() ``{
 
     devices = splitstring(devs, " ");
     y2debug("devices=%1", devices);
-    devices_init = eval(devices);
+    devices_init = (list) eval(devices);
 
     return true;
 }
@@ -94,7 +99,7 @@ global define boolean Import(list settings) ``{
     if(size(settings) == 0)
 	return true;
 
-    devices = eval(settings);
+    devices = (list) eval(settings);
     return true;
 }
 
@@ -103,7 +108,21 @@ global define boolean Import(list settings) ``{
  * @return autoinstallation settings
  */
 global define list Export() ``{
-    return eval(devices);
+    return (list) eval(devices);
+}
+
+/**
+ * Convert real device to the firewall device specification
+ * @param device real device
+ * @return firewall device
+ */
+define string device2fw(string device) ``{
+    if(device == nil || device == "") {
+	y2error("wrong device identification: %1", device);
+	return nil;
+    }
+    if(device_type(device) == "ppp") return "modem";
+    else return device;
 }
 
 /**
@@ -144,20 +163,6 @@ global define boolean Query(string device) ``{
     string dev = device2fw(device);
     if(dev == nil || dev == "") return false;
     return contains(devices, dev);
-}
-
-/**
- * Convert real device to the firewall device specification
- * @param device real device
- * @return firewall device
- */
-define string device2fw(string device) ``{
-    if(device == nil || device == "") {
-	y2error("wrong device identification: %1", device);
-	return nil;
-    }
-    if(device_type(device) == "ppp") return "modem";
-    else return device;
 }
 
 /* EOF */

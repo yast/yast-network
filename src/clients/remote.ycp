@@ -14,6 +14,10 @@ textdomain "network";
 import "Label";
 import "Wizard";
 
+/* NI: required wrt functions in routines.ycp */
+block<boolean> AbortFunction = nil;
+define boolean Modified() ``{ return true; }
+
 include "network/remote/dialogs.ycp";
 
 Wizard::CreateDialog();

@@ -22,5 +22,5 @@
 .sysconfig.proxy
 
 `ag_ini(
-    SysConfigFile("/etc/sysconfig/proxy")
+    `SysConfigFile("/etc/sysconfig/proxy")
 )

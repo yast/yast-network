@@ -19,8 +19,6 @@ import "Map";
 import "String";
 import "Summary";
 
-include "network/routines.ycp";
-
 /*------------------*/
 /* GLOBAL VARIABLES */
 
@@ -28,7 +26,7 @@ include "network/routines.ycp";
  * Abort function
  * return boolean return true if abort
  */
-global block AbortFunction = nil;
+global block<boolean> AbortFunction = nil;
 
 /**
  * Current provider name
@@ -99,6 +97,11 @@ global define boolean Modified() ``{
     return modified;
 }
 
+include "network/routines.ycp";
+
+global define string CurrentType();
+define boolean CloneProvider();
+
 /**
  * Read providers data (custom only) and country mappings
  * @param type providers the module is working with ("all"|"modem"|"isdn"|"dsl")
@@ -133,14 +136,13 @@ global define boolean Read(string type) ``{
     foreach(string name, dir, ``{
 	path prov = add(.sysconfig.network.providers.v, name);
 	map p = listmap(string i, SCR::Dir(prov), ``{
-	    list ii = [];
-	    change(ii, i);
-	    change(ii, String::UnQuote(SCR::Read(add(prov, i))));
+	    map ii = $[];
+	    change(ii, i, String::UnQuote((string) SCR::Read(add(prov, i))));
 	    return ii;
 	});
 	change(Providers, name, p);
     });
-    OriginalProviders = eval(Providers);
+    OriginalProviders = (map) eval(Providers);
 
     /* Filter out the current type */
     /* Read all providers -- we need them for checking uniqueness
@@ -153,7 +155,7 @@ global define boolean Read(string type) ``{
     */
 
     /* Read countries */
-    map country_names = SCR::Read(.target.yast2, "country.ycp");
+    map country_names = (map) SCR::Read(.target.yast2, "country.ycp");
     if(country_names == nil) {
 	//Report:Error(_("Country database not found"));
 	y2error("Country database not found");
@@ -161,7 +163,7 @@ global define boolean Read(string type) ``{
 	ret = false;
     }
     textdomain "country";
-    country_names = eval(country_names);
+    country_names = (map) eval(country_names);
     textdomain "network";
 
     /* Local language heuristics */
@@ -274,7 +276,7 @@ global define boolean Write() ``{
 global define map Import(map providers) ``{
     Name = "";
     Provider = $[];
-    Providers = eval(providers);
+    Providers = (map) eval(providers);
     OriginalProviders = nil;
     modified = true;
 }
@@ -284,7 +286,7 @@ global define map Import(map providers) ``{
  * @return dumped settings (later acceptable by Import())
  */
 global define map Export() ``{
-    return eval(Providers);
+    return (map) eval(Providers);
 }
 
 /**
@@ -306,7 +308,7 @@ global define boolean SelectSystem(path name) ``{
 
     list values = SCR::Dir(name);
     Provider = listmap(string value, values, ``{
-	return [ value, SCR::Read(add(name, value)) ];
+	return $[ value: SCR::Read(add(name, value)) ];
     });
 
     y2debug("Name=%1", Name);
@@ -375,7 +377,7 @@ global define boolean Add(string type) ``{
  * @param name provider to edit
  * @return true if success
  */
-global define boolean Edit(any name) ``{
+global define boolean Edit(string name) ``{
     operation = nil;
     Type = "";
     if(Select(name) != true) return false;
@@ -561,7 +563,7 @@ global define list Summary(boolean split) ``{
 	summary = Summary::AddHeader("", _("Already configured providers:"));
 
     list provs = [];
-    maplist(string name, string provmap, Providers, ``{
+    maplist(string name, map provmap, Providers, ``{
 	/* Summary text description (%1 is provider name) */
 	string descr = sformat(_("Configured as %1"), name);
 	string phone = provmap["PHONE"]:"";
@@ -599,7 +601,7 @@ global define list GetCountries() ``{
  * @return true if OK
  */
 global define boolean IsUnique(string name) ``{
-    list forbidden = maplist(string k, string v, Providers, ``(v["PROVIDER"]:""));
+    list forbidden = maplist(string k, map v, Providers, ``(v["PROVIDER"]:""));
     return !contains(forbidden, name);
 }
 
@@ -641,7 +643,7 @@ define list FilterProviders(list provs, string type) ``{
     }
     y2debug("supported=%1", supported);
 
-    return filter(`i, provs, ``{
+    return filter(any i, provs, ``{
 	y2debug("i=%1", i);
 	if(is(i, string)) {
 	    map p = Providers[i]:$[];
@@ -653,13 +655,51 @@ define list FilterProviders(list provs, string type) ``{
 	    else
 		return false;
 	}
-	else if(SCR::Read(i + topath("."+supported)) == "yes")
+	else if(SCR::Read((path)i + topath("."+supported)) == "yes")
 	    if (etst)
-		return (SCR::Read(i + topath(".ENCAP")) == type);
+		return (SCR::Read((path)i + topath(".ENCAP")) == type);
 	    else
 		return true;
 	else
 	    return false;
+    });
+}
+
+/**
+ * Sorts providers alphabeticly (non-case-sensitivly) and by priority.
+ * In the first step, priority and name of each provider is obtained.
+ * List of strings built from these values is created. Item lists are:
+ * "<1-character-priority><34-characters-provider-name><provider-identifier>"
+ * This list is sorted, result is correctly sorted, by priority and
+ * alphabeticly. I did not use builtin sort with sort code because it
+ * uses bubble sort -- it was bloody slow.
+ * @param provs list of providers
+ * @return sorted list of providers
+ */
+define list SortProviders(list provs) ``{
+    list pre = sort(maplist(any i, add(provs, "--"), ``{
+	if("--" == i)
+	    return "9                                  .\"--\"";
+	if(is(i, string))
+	    return "x                                  " + (string) i;
+	else {
+	    string tmp = (string) SCR::Read((path)i + .PRIORITY);
+	    if(nil == tmp)
+		tmp = "-1";
+	    integer p = 8 - tointeger(tmp);
+	    if(p < 0 || p > 9)
+		y2error("Wrong priority (%1), you must change the algorithm! [%2]", p, tmp);
+	    tmp = tolower((string) SCR::Read((path)i + .PROVIDER)) + "                                   ";
+	    tmp = sformat("%1", p) + tmp;
+	    return sformat("%1%2", substring(tmp, 0, 35), i);
+	}
+    }));
+    if(".\"--\"" == substring(pre[0]:"", 35))
+	pre = remove(pre, 0);
+    return maplist(string i, pre, ``{
+	if("x" == substring(i, 0, 1))
+	    return (any) substring(i, 35);
+	return (any) topath(substring(i, 35));
     });
 }
 
@@ -708,45 +748,7 @@ global define list GetProviders(string country, string preselect) ``{
 	    if(."--" == i)
 		return `item(`id(i), "----------------");
 	    else
-		return `item(`id(i), SCR::Read(i + .PROVIDER), 0 == index);
-    });
-}
-
-/**
- * Sorts providers alphabeticly (non-case-sensitivly) and by priority.
- * In the first step, priority and name of each provider is obtained.
- * List of strings built from these values is created. Item lists are:
- * "<1-character-priority><34-characters-provider-name><provider-identifier>"
- * This list is sorted, result is correctly sorted, by priority and
- * alphabeticly. I did not use builtin sort with sort code because it
- * uses bubble sort -- it was bloody slow.
- * @param provs list of providers
- * @return sorted list of providers
- */
-define list SortProviders(list provs) ``{
-    list pre = sort(maplist(any i, add(provs, "--"), ``{
-	if("--" == i)
-	    return "9                                  .\"--\"";
-	if(is(i, string))
-	    return "x                                  " + i;
-	else {
-	    string tmp = SCR::Read(i + .PRIORITY);
-	    if(nil == tmp)
-		tmp = "-1";
-	    integer p = 8 - tointeger(tmp);
-	    if(p < 0 || p > 9)
-		y2error("Wrong priority (%1), you must change the algorithm! [%2]", p, tmp);
-	    tmp = tolower(SCR::Read(i + .PROVIDER)) + "                                   ";
-	    tmp = sformat("%1", p) + tmp;
-	    return sformat("%1%2", substring(tmp, 0, 35), i);
-	}
-    }));
-    if(".\"--\"" == substring(pre[0]:"", 35))
-	pre = remove(pre, 0);
-    return maplist(string i, pre, ``{
-	if("x" == substring(i, 0, 1))
-	    return substring(i, 35);
-	return topath(substring(i, 35));
+		return `item(`id(i), SCR::Read((path) i + .PROVIDER), 0 == index);
     });
 }
 

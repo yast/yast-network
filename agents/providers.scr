@@ -17,7 +17,7 @@
 .providers
 
 `ag_ini(
-    IniAgent( [ "/usr/share/providers/*.conf",  ],
+    `IniAgent( [ "/usr/share/providers/*.conf",  ],
 	$[
 	    /* read-only */
 	    "options"	: [ "read_only" ],

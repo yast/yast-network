@@ -26,7 +26,7 @@ TESTSUITE_INIT([R],nil);
 
 import "Firewall";
 
-define FWTEST(list devs, term op) ``{
+define list FWTEST(list devs, term op) ``{
     Firewall::devices = devs;
     eval(op);
     return Firewall::devices;
