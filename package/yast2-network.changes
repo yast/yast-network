@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Sep 12 12:27:35 CEST 2003 - arvin@suse.de
+
+- fixed loading of modules for network setup during 2nd stage
+  installation (bug #29945)
+
+-------------------------------------------------------------------
 Wed Sep 10 18:00:14 CEST 2003 - msvec@suse.cz
 
 - fixed log erros possible affecting the detection (#30424)

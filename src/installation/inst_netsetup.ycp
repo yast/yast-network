@@ -35,6 +35,15 @@ string gateway = SCR::Read (.etc.install_inf.Gateway);
 if (gateway == nil) gateway = "";
 
 
+define void load_modules () ``{
+    list(string) install_aliases = SCR::Dir (.etc.install_inf_alias);
+    foreach (string alias, install_aliases, ``{
+	string target = SCR::Read (add (.etc.install_inf_alias, alias));
+	SCR::Execute (.target.modprobe, target, "");
+    });
+};
+
+
 if (mode == `up)
 {
     if (!Mode::test && !Arch::s390)
@@ -46,6 +55,8 @@ if (mode == `up)
 	{
 	    if (netconfig == "static")
 	    {
+		load_modules ();
+
 		string ifconfig = "/sbin/ifconfig " + netdevice + " up " + ipaddr;
 		if (netmask != "")
 		    ifconfig = ifconfig + " netmask " + netmask;
