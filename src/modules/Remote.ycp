@@ -52,6 +52,8 @@ global define boolean Write() ``{
     // set DISPLAYMANAGER_REMOTE_ACCESS in sysconfig/displaymanager
     SCR::Write(.sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS,
 		allow_administration ? "yes" : "no");
+    SCR::Write(.sysconfig.displaymanager.DISPLAYMANAGER_ROOT_LOGIN_REMOTE,
+		allow_administration ? "yes" : "no");
     SCR::Write(.sysconfig.displaymanager, nil);
 
     // en- or disable vnc10 and vnchttpd10 in xinetd.d/vnc

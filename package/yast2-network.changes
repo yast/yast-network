@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Sep 15 18:06:56 CEST 2003 - adrian@suse.de
+
+- allow also remote root login in remote admin mode
+- 2.8.35
+
+-------------------------------------------------------------------
 Mon Sep 15 09:32:05 CEST 2003 - kkeil@suse.de
 
 - fix handling of BACK key, better default focus (#30104)
