@@ -205,7 +205,9 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
         // proto: connection protocol (syncppp | rawip)
 	string proto    = lookup(devmap, "PROTOCOL", "unknown protocol");
 	// provider: name of the provider
-	string provider = lookup(devmap, "PROVIDER", "unknown");
+	string sn = lookup(devmap, "PROVIDER", "unknown____");
+	map p = Providers::ReadProvider(sn);
+	string provider = lookup(p, "PROVIDER", _("Unknown provider"));
 	// example: ISDN Connection to Arcor with syncppp on net0
 	return sformat(_("to %1 with %2 on %3"), provider, proto, dev);
     }
