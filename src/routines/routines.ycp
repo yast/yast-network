@@ -188,8 +188,9 @@ global define symbol Packages(list packages) ``{
     maplist(string l, packages, ``{ text = text + sformat("%1<br>",l); });
     y2debug("Installing packages: %1", text);
 
+    boolean ret = false;
     while(true) {
-	boolean ret = InstallAndRemove(packages, [], text);
+	ret = InstallAndRemove(packages, [], text);
 	if(ret == true) break;
 
 	if(ret == false && AreAllPackagesInstalled(packages)) {
