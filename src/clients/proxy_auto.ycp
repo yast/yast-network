@@ -68,6 +68,10 @@ else if (func == "Change") {
     ret = ProxyMainDialog(true);
     UI::CloseDialog();
 }
+/* return required package list */
+else if (func == "Packages") {
+    ret = $[];
+}
 /* Import configuration */
 else if (func == "Import") {
     ret = Proxy::Import(param);
