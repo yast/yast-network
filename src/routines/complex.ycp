@@ -254,21 +254,25 @@ define string CheckEmptyName(string devtype, string hwname) {
 }
 
 /**
- * Return a hardware name for devices with given unique number
- * @param unq unique number
+ * Return a human readable hardware name for device with given id
+ * @param Hardware hardware map
+ * @param id id-..., bus-...-..., or unique
  * @return hardware name
  */
 define string HardwareName(list<map> Hardware, string id) {
     string hwname = "";
     if(id != "")
-	maplist(map h, Hardware, {
-	    if(hwname == "" && ("id-" + h["mac"]:"" == id))
-		hwname = h["name"]:"";
-	    if(hwname == "" && ("bus-" + h["bus"]:"" + "-" + h["busid"]:"" == id))
-		hwname = h["name"]:"";
-	    if(hwname == "" && (h["unique"]:"" == id))
-		hwname = h["name"]:"";
+    {
+	foreach (map h, Hardware, {
+	    if (id == "id-" + h["mac"]:"" ||
+		id == "bus-" + h["bus"]:"" + "-" + h["busid"]:"" ||
+		id == h["unique"]:"")
+	    {
+		hwname = h["name"]:"" + " (" + id + ")";
+		break;
+	    }
 	});
+    }
     y2milestone("hwname=%1", hwname);
     return hwname;
 }
