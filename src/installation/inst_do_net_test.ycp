@@ -179,7 +179,7 @@ and correct the setting.</p>");
 
 	    if (already_up)
 	    {
-		set_stage (3);
+		set_stage (2);
 	    }
 	    else
 	    {
