@@ -593,7 +593,6 @@ global define list FreeAliases(string type, integer num) {
  */
 void SetDeviceVars(map devmap) {
 
-    unique = devmap["UNIQUE"]:"";
 
     /* address options */
     bootproto = devmap["BOOTPROTO"]:"static";
@@ -682,6 +681,7 @@ global define boolean Select(string dev) {
     /* general stuff */
     description = BuildDescription (type, device, devmap, Hardware);
 
+    unique = devmap["UNIQUE"]:"";
     SetDeviceVars(devmap);
 
 
