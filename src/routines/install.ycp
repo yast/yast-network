@@ -30,8 +30,10 @@ global define boolean ReadInstallInf() ``{
 	install_inf = .etc.install_inf;
 	InstallInf["installation"] = "yes";
     }
+    /* FIXME
     else if(SCR::Read(.target.size,"/var/lib/YaST2/install.inf") > 0)
 	install_inf = .var.lib.YaST2.install_inf;
+    */
     else
 	return false;
 
