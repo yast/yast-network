@@ -68,7 +68,12 @@
 Internet Connection Test.</p>") +
 
 	/* help for dialog "Running Internet Connection Test" */
-	_("<p>The test can be aborted by pressing the <b>Abort Test</b> button.</p>");
+	_("<p>The test can be aborted by pressing the <b>Abort Test</b>
+button.</p>") +
+
+	/* help for dialog "Running Internet Connection Test" */
+	_("<p>In case the test fails you can go back to the network configuration
+and correct the setting.</p>");
 
 	/* Progress labels */
 	term progress = nil;
