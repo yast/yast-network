@@ -17,12 +17,15 @@ import "Runlevel";
 /**
  * Firewalled devices
  */
-list devices = [];
-list devices_init = [];
+list<string> devices = [];
+list<string> devices_init = [];
 
 /* NI: required wrt functions in routines.ycp */
 block<boolean> AbortFunction = nil;
-define boolean Modified() ``{ return true; }
+boolean Modified()
+{
+   return true;
+}
 
 include "network/routines.ycp";
 include "network/runtime.ycp";
@@ -31,7 +34,7 @@ include "network/runtime.ycp";
  * Read firewall settings
  * @return true if success
  */
-global define boolean Read() ``{
+global define boolean Read() {
 
     /* read firewalled devices */
     string devs = "";
@@ -43,7 +46,7 @@ global define boolean Read() ``{
 
     devices = splitstring(devs, " ");
     y2debug("devices=%1", devices);
-    devices_init = (list) eval(devices);
+    devices_init = eval(devices);
 
     return true;
 }
@@ -52,7 +55,7 @@ global define boolean Read() ``{
  * Write firewall settings and apply changes
  * @return true if success
  */
-global define boolean Write() ``{
+global define boolean Write() {
 
     /* Check if there is anything to do */
     if(devices_init == devices) {
@@ -63,10 +66,10 @@ global define boolean Write() ``{
     /* Update sysconfig */
     string devs = "";
     y2debug("devices=%1", devices);
-    devices = filter(`v, devices, ``(v != "no"));
-    devices = filter(`v, devices, ``(v != "nothing"));
+    devices = filter(string v, devices, { return (v != "no"); });
+    devices = filter(string v, devices, { return (v != "nothing"); });
     y2debug("devices=%1", devices);
-    if(size(devices) > 0) devs = mergestring((list<string>) devices, " ");
+    if(size(devices) > 0) devs = mergestring(devices, " ");
     SCR::Write(.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS, devs);
     SCR::Write(.sysconfig.personal-firewall, nil);
 
@@ -95,11 +98,11 @@ global define boolean Write() ``{
  * @param settings autoinstallation settings
  * @return true if success
  */
-global define boolean Import(list settings) ``{
+global define boolean Import(list<string> settings) {
     if(size(settings) == 0)
 	return true;
 
-    devices = (list) eval(settings);
+    devices = eval(settings);
     return true;
 }
 
@@ -107,7 +110,7 @@ global define boolean Import(list settings) ``{
  * Dump the firewall settings to a list, for autoinstallation use.
  * @return autoinstallation settings
  */
-global define list Export() ``{
+global define list Export() {
     return (list) eval(devices);
 }
 
@@ -116,7 +119,7 @@ global define list Export() ``{
  * @param device real device
  * @return firewall device
  */
-define string device2fw(string device) ``{
+define string device2fw(string device) {
     if(device == nil || device == "") {
 	y2error("wrong device identification: %1", device);
 	return nil;
@@ -131,7 +134,7 @@ define string device2fw(string device) ``{
  * @param fw true for firewalled device
  * @return true if sucess
  */
-global define boolean Change(string device, boolean fw) ``{
+global define boolean Change(string device, boolean fw) {
     y2debug("Change(%1,%2)", device, fw);
     string dev = device2fw(device);
     if(dev == nil || dev == "" || fw == nil) return false;
@@ -148,7 +151,7 @@ global define boolean Change(string device, boolean fw) ``{
 	    y2error("device not found: %1", device);
 	    return false;
 	}
-	devices = filter(`l, devices, ``(l!=dev));
+	devices = filter(string l, devices, { return (l != dev); });
     }
     y2debug("devices=%1", devices);
     return true;
@@ -159,7 +162,7 @@ global define boolean Change(string device, boolean fw) ``{
  * @param device given device
  * @return true if firewalled
  */
-global define boolean Query(string device) ``{
+global define boolean Query(string device) {
     string dev = device2fw(device);
     if(dev == nil || dev == "") return false;
     return contains(devices, dev);
