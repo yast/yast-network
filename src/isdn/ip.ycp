@@ -1,7 +1,7 @@
 /**
- * File:	include/network/isdn/dialogs.ycp
+ * File:	include/network/isdn/ip.ycp
  * Package:	Configuration of network
- * Summary:	ISDN configuration dialogs
+ * Summary:	ISDN configuration IP addresses dialog
  * Authors:	Michal Svec <msvec@suse.cz>
  *		Karsten Keil <kkeil@suse.cz>
  *
@@ -22,7 +22,6 @@ include "network/ip.ycp";
  * Dialog for ISDN IP settings
  * @return any user input
  */
-
 global define symbol IPDialog() ``{
 
 
@@ -53,7 +52,7 @@ route.</b>.</p>");
 
     /* PREPARE VARIABLES */
     string Local_IP = lookup(ISDN::interface, "IPADDR", "");
-    string Remote_IP = lookup(ISDN::interface, "REMOTE_IPADDR", "");
+    string Remote_IP = lookup(ISDN::interface, "PTPADDR", "");
     boolean syncppp = lookup(ISDN::interface, "PROTOCOL", "syncppp") == "syncppp";
     boolean defaultroute = lookup(ISDN::interface, "DEFAULTROUTE", "yes") == "yes";
     boolean dynip = lookup(ISDN::interface, "DYNAMICIP", "yes") == "yes";
@@ -167,7 +166,7 @@ route.</b>.</p>");
     if(ret == `next) {
         ISDN::interface = union(ISDN::interface, $[
             "IPADDR"		: Local_IP,
-            "REMOTE_IPADDR"	: Remote_IP,
+            "PTPADDR"		: Remote_IP,
             "DEFAULTROUTE"	: defaultroute ? "yes" : "no",
         ]);
 	if (syncppp) {
