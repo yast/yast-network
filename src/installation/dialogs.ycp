@@ -201,7 +201,7 @@ global define symbol TestConnectionDialog() ``{
 			   `VBox (`HVCenter( `HSquash (progress))),
 			   `VSpacing(1),
 			   /* Push Button to abort internet test */
-			   `PushButton (_("Abort Test")),
+			   `PushButton (_("&Abort Test")),
 			   `VSpacing(1),
 			   `HBox(`HSpacing(1),
 				 /* Label of LogView showing protocol of internet test */
