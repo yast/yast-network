@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
 Wed Feb 18 12:25:19 CET 2004 - msvec@suse.cz
 
+- correct module name for Apple gmac (#34687)
 - fixed network proposal creation
 - fixed writing of kernel modules
 - resurrected virtual aliases support

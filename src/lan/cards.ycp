@@ -99,7 +99,7 @@ map NetworkCards = $[
     ],
     /* Network card name */
     $["name" : _("Apple onboard Ethernet gmac"),
-      "module" : "gmac",
+      "module" : "sungem",
       "options" : "",
     ],
     $["name" : "3Com 3c501",
