@@ -1,3 +1,10 @@
+- Fixed format of files /etc/sysconfig/network/providers/* and added
+  missing fields.
+- Provider stuff removed from Modem. Fixed "communication" with
+  module Modem
+- Added functions Export/Import into Providers
+- 2.5.15
+
 -------------------------------------------------------------------
 Mon Feb 11 14:29:38 CET 2002 - pblahos@suse.cz
 
