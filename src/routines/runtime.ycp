@@ -29,6 +29,14 @@ global define boolean RunSuSEconfig() ``{
 }
 
 /**
+ * Run KInternet
+ * @return true if success
+ */
+global define boolean RunKInternet() ``{
+    return SCR::Execute(.target.bash, "{ [ \"$USER\" ] && [ \"$DISPLAY\" ] && kdesu -u $USER -- kinternet -quiet; } >/dev/null 2>&1 &") == 0;
+}
+
+/**
  * Start network
  * @return true if success
  */

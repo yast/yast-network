@@ -161,7 +161,7 @@ global define boolean Write() ``{
     y2milestone("Writing configuration");
 
     string caption = _("Saving modem configuration");
-    integer steps = 4;
+    integer steps = 5;
 
     /* FIXME */
     integer sl = 0; //1000;
@@ -172,6 +172,7 @@ global define boolean Write() ``{
         _("Write firewall settings"),
         _("Write providers"),
         _("Set up smpppd"),
+        _("Run kinternet"),
     ], [], "");
 
     if(Abort()) return false;
@@ -192,6 +193,11 @@ global define boolean Write() ``{
     if(Abort()) return false;
     ProgressNextStage(_("Setting up smpppd(8)"));
     SetupSMPPPD();
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Running kinternet"));
+    RunKInternet();
     sleep(sl);
 
     if(Abort()) return false;

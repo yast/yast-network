@@ -200,6 +200,7 @@ global define boolean Write() ``{
 	y2debug("deleting: %1", p);
 	SCR::Write(p, nil);
     });
+    DELETED = [];
 
     /* write custom providers */
     foreach(`key, `value, providers, ``{

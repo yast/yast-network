@@ -1,6 +1,5 @@
--------------------------------------------------------------------
-Mon Jul 29 09:04:28 CEST 2002 - msvec@suse.cz
-
+- remove deleted providers after Delete (#16094)
+- start kinternet after modem and isdn config (#14320)
 - fixed writing of additional providers (#17221)
 - possibility to enter infinite (0) idle timeout (#17218)
 - fixed caption, enabled defaultroute by default (#17219)

@@ -19,6 +19,11 @@ Bugs:
 - edit modules.conf #15062
 - dsl in installation settings #15160
 
+- #16094:
+    Further enhancement: if the provider is not used by any other modem
+    as default or there are no modems at all, display a question wheather
+    user wants to delete also the provider.
+
 - #10739 ???
 - #13450 ???
 
