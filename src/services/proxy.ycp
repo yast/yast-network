@@ -88,6 +88,7 @@ should be done directly without caching.</p>") +
 	/* next */
 	else if(ret == `next) {
 	    /* check_* */
+	    // FIXME!
 	    break;
 	}
 	/* back */
@@ -106,6 +107,9 @@ should be done directly without caching.</p>") +
 	Proxy::no = UI::QueryWidget(`id(`no), `Value);
 	Proxy::user = UI::QueryWidget(`id(`user), `Value);
 	Proxy::pass = UI::QueryWidget(`id(`pass), `Value);
+	// #17623
+	// FIXME: only set it when a value has changed
+	Proxy::modified = true;
     }
 
     return ret;
