@@ -79,7 +79,7 @@ else if (func == "Write") {
     if (PackagesInstall (Lan::Packages ()) != `next)
     {
 	// popup already shown
-        y2error("Packages installation failure, not saving");
+	y2error("Packages installation failure, not saving");
     }
     else if (Arch::s390 || Mode::vnc || Mode::usessh )
 	Lan::WriteOnly();
