@@ -79,9 +79,9 @@ be appropriate for dial on demand connections.</p>");
 	/* ComboBox item */
 	`item(`id("pppoatm"), _("PPP over ATM"), pppmode == "pppoatm"),
 	/* ComboBox item */
-	// `item(`id("ppptp"), _("PPP tunelling protocol"), pppmode == "ppptp"),
+	`item(`id("capi-adsl"), _("CAPI for ADSL"), pppmode == "capi-adsl"),
 	/* ComboBox item */
-	// `item(`id("capi-adsl"), _("CAPI for ADSL"), pppmode == "capi-adsl"),
+	// `item(`id("ppptp"), _("PPP tunelling protocol"), pppmode == "ppptp"),
     ];
     /* ComboBox label */
     term pppwidget = `Left(`ComboBox(`id(`pppmode), `opt(`hstretch,`notify), _("PPP &mode"), pppmodes));
