@@ -24,11 +24,11 @@ dhcpcd-$IFC.info (dynamic ini)
 .sysconfig.sysctl.IP_FORWARD
  # proxy
 .sysconfig.proxy
-
-# other:
  # isdn deprecated
 .isdn.section (ini - read, write, delete)
 .isdn.value."/etc/sysconfig/isdn/cfg-$devtype$devnum".*
+
+# other:
  # isdn hardware
 Read(.probe.cdb_isdn)
  # dns
