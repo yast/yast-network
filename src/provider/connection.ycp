@@ -48,8 +48,8 @@ define any ConnectionDialog() {
     string idletime = lookup(Provider::Current, "IDLETIME", "300");
 
     string device = nil;
-    if(type == "modem") device = "ppp"; //device_name(Modem::type, Modem::device);
-    else if(type == "dsl") device = "ppp"; // FIXME device_name(DSL::type, DSL::device);
+    if(type == "modem") device = device_name(Modem::type, Modem::device);
+    else if(type == "dsl") device = device_name(DSL::type, DSL::device);
     else if(type == "isdn") {
 	// FIXME: #18840
 	if(ISDN::type == "net")
