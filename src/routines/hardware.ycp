@@ -126,8 +126,13 @@ global define boolean ReadHardware(string hwtype) ``{
 	}
 
 	y2debug("found device: %1", one);
-	change(Hardware, one);
-	num = num + 1;
+	if(one["module"]:"" == "nvnet") {
+	    y2milestone("nForce2 found: skipping (driver not available)");
+	}
+	else {
+	    change(Hardware, one);
+	    num = num + 1;
+	}
     });
 
     y2debug("Hardware=%1", Hardware);
