@@ -207,5 +207,24 @@ global define boolean GetModified () {
 global define void SetModified () {
     modified = true;
 }
+
+/**
+ * Function returns an environment usable for curl.
+ */
+global define map <string, string> GetEnvironment ()
+{
+    if (!enabled)
+	return $[];
+
+    if (!modified)
+	Read ();
+
+    return $[
+	     "http_proxy"	: http,
+	     "FTP_PROXY"	: ftp,
+	     "NO_PROXY"		: no
+    ];
+}
+
 /* EOF */
 }

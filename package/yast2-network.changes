@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Sep 23 16:36:59 CEST 2004 - arvin@suse.de
+
+- set proxy for downloading of release notes (bug #35370)
+
+-------------------------------------------------------------------
 Wed Sep 22 16:10:02 CEST 2004 - arvin@suse.de
 
 - check signature of release notes (bug #45647)

@@ -20,6 +20,7 @@ import "Popup";
 import "Product";
 import "Wizard";
 import "PackageCallbacks";
+import "Proxy";
 
 include "network/routines.ycp";
 include "network/installation/dialogs.ycp";
@@ -211,6 +212,39 @@ and correct the setting.</p>");
     }
 
 
+    define boolean download_release_notes (string& filename)
+    {
+	string url = Product::relnotesurl;
+
+	integer pos = findlastof (url, "/");
+	if (pos == nil)
+	{
+	    y2error ("broken url for release notes: %s", url);
+	    return false;
+	}
+
+	filename = (string) SCR::Read (.target.tmpdir) + substring (url, pos);
+
+	string cmd = "/usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + filename;
+	cmd = cmd + "> " + logdir + "/curl.log 2>&1";
+
+	map env = Proxy::GetEnvironment ();
+	// proxy user/password are read from /root/.curlrc
+
+	env["LANG"] = GetLanguageUTF8 ();
+
+	integer ret = (integer) SCR::Execute (.target.bash, cmd, env);
+
+	y2milestone ("curl command returned %1", ret);
+
+	// label of combobox where the log is selected
+	logs = add (logs, $[ `menuname : _("Download of Release Notes"),
+			     `filename : "curl.log" ]);
+
+	return ret == 0;
+    }
+
+
     define boolean install_release_notes (string filename)
     {
 	boolean ret1 = Pkg::RpmChecksig (filename);
@@ -327,40 +361,20 @@ the logs for details.
 	{
 	    mark_label(2, `arrow);
 
-	    string url = Product::relnotesurl;
+	    string filename = "";
 
-	    integer pos = findlastof (url, "/");
-	    if (pos == nil)
-	    {
-		y2error ("broken url for release notes: %s", url);
-		test_stage = `patches;
-		return;
-	    }
-
-	    string tmp = (string) SCR::Read(.target.tmpdir) + substring (url, pos);
-
-	    // proxy settings are read from /root/.curlrc
-	    string cmd = "/usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + tmp;
-	    cmd = cmd + "> " + logdir + "/curl.log 2>&1";
-	    integer ret = (integer) SCR::Execute (.target.bash, cmd,
-					$["LANG" : GetLanguageUTF8 ()]);
-	    y2milestone("curl command returned %1", ret);
-
-	    // label of combobox where the log is selected
-	    logs = add (logs, $[ `menuname : _("Download of Release Notes"),
-				 `filename : "curl.log" ]);
-
-	    if (ret != 0)
+	    if (!download_release_notes (filename))
 	    {
 		// popup to inform user about the failure
 		Popup::Message(_("Download of latest release notes failed. View
 the logs for details.
 "));
+		test_stage = `patches;
 		test_result = `failure;
 	    }
 	    else
 	    {
-		install_release_notes (tmp);
+		install_release_notes (filename);
 	    }
 
 	    test_stage = `patches;
