@@ -225,6 +225,7 @@ global define boolean Connected() ``{
 
     if (type == "isdn") {
 	// FIXME
+	return SCR::Execute (.target.bash, "/usr/bin/grep -q pppd /etc/resolv.conf") == 0;
     }
 
     return true;
