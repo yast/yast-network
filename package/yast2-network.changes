@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Feb 27 10:49:00 CET 2003 - kkeil@suse.de
+
+- fix FIREWALL handling in ISDN (#24089)
+
+-------------------------------------------------------------------
 Wed Feb 26 16:19:34 CET 2003 - arvin@suse.de
 
 - fixed result field of internet test (bug #24354)

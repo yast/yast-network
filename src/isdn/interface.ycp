@@ -239,7 +239,11 @@ remove a channel.
     }
 
     y2debug("device %1", devstr);
-    boolean FirewallChecked = Firewall::Query(devstr);
+
+    boolean FirewallChecked = true;  // default is true
+    if (ISDN::operation  == `editif) {
+	FirewallChecked = Firewall::Query(devstr);
+    }
     y2debug("FirewallChecked=%1",FirewallChecked);
 
     /* CheckBox label */
@@ -335,22 +339,23 @@ remove a channel.
 
     }
     if (ret == `next || ret == `detail) {
+
+        /* update firewall info */
+	/* Better update allways, maybe somebody changed it */
+
+	FirewallChecked = UI::QueryWidget(`id(`Firewall), `Value);
+	Firewall::Change(devstr, FirewallChecked);
+
 	/* UPDATE VARIABLES */
         ISDN::interface = union(ISDN::interface, $[
             "MSN"		: msn,
             "STARTMODE"		: startmode,
             "MULTILINK"		: multilink ? "yes" : "no",
             "CHARGEHUP"		: chargeHUP ? "on" : "off",
+	    "FIREWALL"		: FirewallChecked ? "yes" : "no",
         ]);
 	if (ISDN::operation  == `editif)
 	    ISDN::provider_file = UI::QueryWidget(`id(`prov), `Value);
-
-        /* update firewall info */
-        if(FirewallChecked != UI::QueryWidget(`id(`Firewall), `Value)) {
-            FirewallChecked = UI::QueryWidget(`id(`Firewall), `Value);
-            Firewall::Change(devstr, FirewallChecked);
-	}
-
 
     }
     return ret;
