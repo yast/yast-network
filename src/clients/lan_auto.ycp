@@ -16,7 +16,7 @@ include "network/lan/wizards.ycp";
 
 /**
  * Convert data from autoyast to structure used by module.
- * @param autoyast settings
+ * @param input autoyast settings
  * @return native network settings
  */
 define map FromAY(map input) ``{
@@ -70,10 +70,9 @@ define map FromAY(map input) ``{
 
 /**
  * Convert data from native network to autoyast for XML
- * @param native network settings
+ * @param settings native network settings
  * @return autoyast network settings
  */
-
 define map ToAY(map settings) ``{
     list interfaces = [];
     maplist(string device, map devsmap, settings["devices"]:$[], ``{

@@ -2,6 +2,7 @@ Dump	Read
 Read	.target.size "/etc/sysconfig/network/routes" 1
 Read	.routes ["r1", "r2"]
 Read	.sysconfig.sysctl.IP_FORWARD "yes"
+Dir	.network.section: []
 Return	true
 Dump	Routing::routes ["r1", "r2"]
 Dump	Write

@@ -25,6 +25,7 @@ Read	.sysconfig.network.config.WAIT_FOR_INTERFACES nil
 Read	.target.size "/etc/sysconfig/network/routes" 1
 Read	.routes nil
 Read	.sysconfig.sysctl.IP_FORWARD nil
+Dir	.network.section: []
 Read	.sysconfig.dhcp.DHCLIENT_SET_HOSTNAME nil
 Read	.sysconfig.dhcp.DHCLIENT_MODIFY_RESOLV_CONF nil
 Read	.target.size "/etc/install.inf" 1

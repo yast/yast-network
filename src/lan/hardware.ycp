@@ -62,6 +62,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
     string hotplug = Lan::hotplug;
     boolean wireless = Lan::wireless;
+    string mtu = Lan::mtu;
 
     string type = Lan::type;
     string realtype = RealType(type, hotplug);
@@ -128,6 +129,11 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	`ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"),
 	    maplist(integer d, Lan::FreeDevices(realtype), ``(sformat("%1", d)))));
 
+    /* TextEntry label */
+    term MTUBox = `TextEntry(`id(`mtu), _("M&aximum transfer unit (MTU)"), mtu);
+    MTUBox = `VSpacing(0);
+    // FIXME: help missing
+
     /* Manual dialog contents */
     term contents = `HBox(
 	`HSpacing(2),
@@ -167,6 +173,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    `VSpacing(0.5),
 	    KernelBox,
 	    `VSpacing(0.4),
+	    MTUBox,
+	    `VSpacing(0.4),
 	    /* Pushbutton label */
 	    `PushButton(`id(`list), _("Select from &list")),
 	    `VSpacing(0.5)
@@ -204,6 +212,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		`VSpacing(1.5),
 		KernelBox,
 		`VSpacing(0.4),
+		MTUBox,
+		`VSpacing(0.4),
 		/* Pushbutton label */
 		`PushButton(`id(`wire), _("Wireless &settings")),
 		// FIXME: show only in the case of wireless device
@@ -228,6 +238,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		)),
 		`VSpacing(1.5),
 		KernelBox,
+		`VSpacing(0.4),
+		MTUBox,
 		`VSpacing(0.4),
 		/* Pushbutton label */
 		`PushButton(`id(`wire), _("Wireless &settings")),
@@ -346,6 +358,9 @@ Do you really want to continue?\n");
     if(ret == `next || ret == `list || ret == `wire) {
 	Lan::Module["module"] = UI::QueryWidget(`id(`modul), `Value);
 	Lan::Module["options"] = UI::QueryWidget(`id(`options), `Value);
+
+	if(UI::WidgetExists(`id(`mtu)))
+	    Lan::mtu = UI::QueryWidget(`id(`mtu), `Value);
 
 	if(UI::WidgetExists(`id(`num)))
 	    Lan::device = UI::QueryWidget(`id(`num), `Value);

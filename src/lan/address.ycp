@@ -341,6 +341,9 @@ completes the configuration.</p>");
 	}
     }
 
+    if(ret == `routing)
+	Routing::SetDevices(Lan::GetDevices("all"));
+
     return ret;
 }
 

@@ -43,6 +43,9 @@ global string name = "";
 global string unique = "";
 global string type = "";
 
+global string device = "";
+global string alias = "";
+
 /**
  * Hotplug type ("" if not hot pluggable)
  */
@@ -53,8 +56,7 @@ global string bootproto = "static";
 global string ipaddr = "";
 global string remoteip = "";
 global string netmask = "";
-global string device = "";
-global string alias = "";
+global string mtu = "";
 
 /* wireless options */
 global boolean wireless = false;
@@ -479,6 +481,7 @@ global define boolean Select(string dev) ``{
     ipaddr = devmap["IPADDR"]:"";
     remoteip = devmap["REMOTE_IPADDR"]:"";
     netmask = devmap["NETMASK"]:"";
+    mtu = devmap["MTU"]:"";
 
     /* wireless options */
     wireless = devmap["WIRELESS"]:"no" == "yes";
@@ -572,6 +575,7 @@ global define boolean Commit() ``{
 	    change(newdev, "NETWORK", compute_network(ipaddr, netmask));
 	}
 	change(newdev, "REMOTE_IPADDR", remoteip);
+	change(newdev, "MTU", mtu);
 
 	if(hotplug == "") {
 	    change(newdev, "STARTMODE", "onboot");

@@ -76,15 +76,7 @@ _("<p>Enable the <b>IP forwarding</b> if the system is a router.</p>");
     y2debug("items=%1", items);
     max = items;
 
-    map Devices = $[];
-    ReadDevices("");
-    y2debug("Devices=%1", Devices);
-    list types = mapkeys(Devices);
-    y2debug("types=%1", types);
-    list devs = [];
-    maplist(string t, types, ``{
-	devs = union(devs, maplist(string n, mapkeys(Devices[t]:$[]), ``(t+n)));
-    });
+    list devs = Routing::GetDevices();
     y2debug("devs=%1", devs);
 
     /* Routing dialog contents */

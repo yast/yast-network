@@ -38,6 +38,15 @@ TOCHECK:
 
 - providers: add/edit/delete #16094
 
+#19851: warn before rcnetwork restart -> RestartNetwork() | StopNetwork();
+  DISPLAY=
+  :0.0		OK
+  localhost:0.0	OK
+  beholder:0.0	OK
+  wyvern:11.0	Warn
+
+  SSH_CLIENT	Warn
+
 TOSORT:
 
 - routines: modules: rmmod $deleted
