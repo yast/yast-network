@@ -169,9 +169,9 @@ global define string Summary() {
 	/* Summary text */
 	ret = [ Summary::Device(_("Proxy is enabled."), "" +
 	/* Summary text */
-	(http != "" ? sformat(_("HTTP Proxy: %1") + "<br>", http):"" ) +
+	(http != "" ? sformat(_("HTTP Proxy: %1"), http) + "<br>" : "" ) +
 	/* Summary text */
-	(ftp != "" ? sformat(_("FTP Proxy: %1") + "<br>", ftp):"" ) +
+	(ftp != "" ? sformat(_("FTP Proxy: %1"), ftp) + "<br>" : "" ) +
 
 	"" )];
 
