@@ -1,0 +1,201 @@
+/**
+ * File:
+ *   include/network/lan/dialogs.ycp
+ *
+ * Package:
+ *   Configuration of network cards
+ *
+ * Summary:
+ *   Summary, overview and IO dialogs
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+textdomain "network";
+
+import "Lan";
+import "Wizard";
+import "Wizard_hw";
+
+include "ui/common_popups.ycp";
+include "ui/common_messages.ycp";
+
+include "network/routines.ycp";
+include "network/lan/helps.ycp";
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+global define boolean Modified() ``{
+    return Lan::Modified();
+}
+
+/**
+ * Commit changes to internal structures
+ * @return always `next
+ */
+global define symbol Commit() ``{
+    Lan::Commit();
+    return `next;
+}
+
+/**
+ * Read settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+global define symbol ReadDialog() ``{
+    Wizard::RestoreHelp(ReadDialogHelp());
+    Lan::AbortFunction = ``{return PollAbort();};
+    boolean ret = Lan::Read();
+    return ret ? `next : `abort;
+}
+
+/**
+ * Write settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+global define symbol WriteDialog() ``{
+    if(!Modified()) return `next;
+    Wizard::RestoreHelp(WriteDialogHelp());
+    Lan::AbortFunction = ``{return PollAbort() && ReallyAbort();};
+    boolean ret = Lan::Write();
+    return ret ? `next : `abort;
+}
+
+/**
+ * Delete dialog
+ * @return dialog result
+ */
+global define symbol DeleteDialog() ``{
+    return `next;
+}
+
+/**
+ * Main dialog
+ * @return dialog result
+ */
+global define symbol SummaryDialog() ``{
+
+    string caption = _("Network cards configuration");
+
+    list summary = Lan::Summary();
+    list unconfigured = select(summary, 0, []);
+    string configured = select(summary, 1, "");
+
+    y2debug("unconfigured=%1",unconfigured);
+    term contents = Wizard_hw::DetectedContent(_("Network cards to configure"),
+	    unconfigured, false, configured);
+
+    Wizard::SetContentsButtons(caption, contents, SummaryDialogHelp(),
+	    BackButtonLabel(), FinishButtonLabel());
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* overview dialog */
+	else if(ret == `edit_button) {
+	    ret = `overview;
+	    break;
+	}
+	/* configure the selected card */
+	else if(ret == `configure_button) {
+	    Lan::Add();
+	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
+	    if(selected == `other) {
+		ret = `other;
+	    }
+	    else {
+		Lan::SelectHW(selected);
+		ret = `configure;
+	    }
+	    break;
+	}
+	else if(ret == `next || ret == `back) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    return ret;
+}
+
+/**
+ * Overview dialog
+ * @return dialog result
+ */
+global define symbol OverviewDialog() ``{
+
+    string caption = _("Network cards configuration overview");
+
+    /* Header of table with installed cards */
+    term contents = Wizard_hw::ConfiguredContent(
+	    `header(_("No."), _("Type"), _("Device"), _("Active"), _("IP Address"), "PCMCIA", "Driver"),
+	    [ `item(`id(0),0,"Ethernet","eth0","Active", "10.20.30.40", "No", "tulip"),
+	    `item(`id(1),1,"Token-Ring","tr1","-", "10.20.30.40", "No", "tulip")],
+	    nil, nil, nil, nil);
+
+    contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);
+
+
+    Wizard::SetContentsButtons(caption, contents, OverviewDialogHelp(),
+	    BackButtonLabel(), FinishButtonLabel());
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* add */
+	else if(ret == `add_button) {
+	    Lan::Add();
+	    ret = `add;
+	    break;
+	}
+	/* edit */
+	else if(ret == `edit_button) {
+	    Lan::Edit();
+	    ret = `edit;
+	    break;
+	}
+	/* delete */
+	else if(ret == `delete_button) {
+	    Lan::Delete();
+	    ret = `delete;
+	    break;
+	}
+	else if(ret == `next || ret == `back) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    return ret;
+}
+
+/* EOF */
+}

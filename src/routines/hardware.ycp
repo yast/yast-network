@@ -13,6 +13,7 @@
  *
  * $Id$
  *
+ * All hardware settings are stored in a global variable HARDWARE.
  */
 
 {
@@ -24,6 +25,7 @@ textdomain "network";
  * @return true if success
  */
 global define boolean ReadHardware() ``{
+    integer num = 0;
     list allcards = SCR::Read(.probe.netdev);
 
     maplist (`card, allcards, ``{
@@ -37,8 +39,10 @@ global define boolean ReadHardware() ``{
 	change(one, "options", select(modules, 1, ""));
 	change(one, "unique", lookup(card, "unique_key", ""));
 	change(one, "type", ControllerType(card));
+	change(one, "num", num);
 	y2debug("found card: %1", one);
 	change(HARDWARE, one);
+	num = num + 1;
     });
 
     y2debug("HARDWARE=%1",HARDWARE);

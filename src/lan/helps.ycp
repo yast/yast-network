@@ -30,7 +30,7 @@ global define string ReadDialogHelp() ``{
     return
 
 // network read dialog help 1/2
-_("<P><B><BIG>Initializing network</BIG></B><BR>
+_("<P><B><BIG>Initializing network configuration</BIG></B><BR>
 Please wait for a while...
 <BR></P>") +
 // network read dialog help 2/2
@@ -68,14 +68,14 @@ global define string SummaryDialogHelp() ``{
     return
 
 // network detected dialog help 1/3
-_("<P><B><BIG>Network setup</BIG></B><BR>
-Here you can configure your network.
+_("<P><B><BIG>Network card setup</BIG></B><BR>
+Here you can configure your network card.
 <BR></P>") +
 // network detected dialog help 2/3
-_("<P><B><BIG>Adding a network:</BIG></B><BR>
-Choose network from the list of the detected networks. If your network was
-not autodetected, use <B>Other (not detected)</B>. Then press
-<B>Configure</B>.
+_("<P><B><BIG>Adding a network card:</BIG></B><BR>
+Choose a network card from the list of the detected network cards.
+If your network card was not autodetected, use <B>Other (not detected)</B>.
+Then press <B>Configure</B>.
 </P>") +
 // network detected dialog help 3/3
 _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
@@ -93,56 +93,20 @@ global define string OverviewDialogHelp() ``{
     return
 
 // network overview dialog help 1/3
-_("<P><B><BIG>Network overview</BIG></B><BR>
-Here you can get an overview about installed networks. Additionally
+_("<P><B><BIG>Network cards overview</BIG></B><BR>
+Here you can get an overview about installed network cards. Additionally
 you can edit their configuration.
 <BR></P>") +
 // network overview dialog help 2/3
-_("<P><B><BIG>Adding a network:</BIG></B><BR>
-If you press <B>Add</B>, you can manually configure a network.
+_("<P><B><BIG>Adding a network card:</BIG></B><BR>
+If you press <B>Add</B>, you can manually configure a network card.
 </P>") +
 // network overview dialog help 3/3
 _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
-Choose a network, whose configuration you want to change or remove.
+Choose a network card, whose configuration you want to change or remove.
 Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.
 </P>");
 
-}
-
-/**
- * Help for the Configure1Dialog() dialog.
- * @return The help text.
- */
-global define string Configure1DialogHelp() ``{
-
-    return
-
-// network configure1 dialog help 1/2
-_("<P><B><BIG>Configure, part one</BIG></B><BR>
-Please press the <B>Next</B> button.
-<BR></P>") +
-// network configure1 dialog help 2/2
-_("<P><B><BIG>Selecting something:</BIG></B><BR>
-It is not possible, you must code it first :-)
-</P>");
-}
-
-/**
- * Help for the Configure2Dialog() dialog.
- * @return The help text.
- */
-global define string Configure2DialogHelp() ``{
-
-    return
-
-// network configure1 dialog help 1/2
-_("<P><B><BIG>Configure, part two</BIG></B><BR>
-Please press the <B>Next</B> button.
-<BR></P>") +
-// network configure1 dialog help 2/2
-_("<P><B><BIG>Selecting something:</BIG></B><BR>
-It is not possible, you must code it first :-)
-</P>");
 }
 
 }

@@ -27,6 +27,7 @@ import "Progress";
 include "network/config.ycp";
 include "network/hardware.ycp";
 include "network/routines.ycp";
+include "network/ip.ycp";
 
 include "ui/summary.ycp";
 
@@ -43,16 +44,16 @@ global string type = "";
 global boolean pcmcia = false;
 
 /* address options */
-global string bootproto = "";
+global string bootproto = "static";
 global string ipaddr = "";
 global string netmask = "";
-global string device = "";
+global integer device = -1;
 
 /**
  * Abort function
  * return boolean return true if abort
  */
-global term AbortFunction = nil;
+global block AbortFunction = nil;
 
 /*--------------*/
 /* PRIVATE DATA */
@@ -77,6 +78,8 @@ map CONFIG = $[];
  * Data was modified?
  */
 boolean modified = false;
+
+symbol operation = nil;
 
 /*------------------*/
 /* GLOBAL FUNCTIONS */
@@ -181,13 +184,13 @@ global define boolean Write() ``{
  * @return true on success
  */
 global define boolean Import(map settings) ``{
-    return true;
+    return false;
 }
 
 /**
  * Dump the network settings to a single map
  * (for use by autoinstallation)
- * @return dumped settings (later acceptable by Import ())
+ * @return dumped settings (later acceptable by Import())
  */
 global define map Export() ``{
     return $[];
@@ -209,9 +212,14 @@ global define list Summary() ``{
 	string status = IsConfigured(ty, un);
 	y2debug("status(%1)=%2",status,d);
 	if(status != "")
-	    change(configured, summaryDevice(hwname, "Configured as " + status));
+	    change(configured, summaryDevice(hwname, status));
 	else
 	    change(unconfigured, d);
+    });
+
+    list allhw = maplist(`d, HARDWARE, ``(lookup(d, "unique", nil)));
+    maplist(`s, OtherConfigured(allhw), ``{
+	change(configured, summaryDevice(_("Unknown network card"), s));
     });
 
     string summary = "";
@@ -221,8 +229,12 @@ global define list Summary() ``{
     else
 	summary = summaryAddHeader("", _("No configured network card."));
 
-    list devs = hwlist2items(unconfigured, 0);
-    change(devs, `item(`id(`other), _("Other (not detected)")));
+    integer selected = lookup(select(unconfigured, 0, $[]), "num", 0);
+    list devs = hwlist2items(unconfigured, selected);
+    if(size(devs)==0)
+	change(devs, `item(`id(`other), _("Other (not detected)"), true));
+    else
+	change(devs, `item(`id(`other), _("Other (not detected)")));
 
     return [ devs, summary ];
 }
@@ -256,33 +268,127 @@ define boolean RunSuSEconfig() ``{
     return true;
 }
 
+/**
+ * Return 10 free devices
+ * @param type device type
+ * @return list of 10 free devices
+ */
 global define list FreeDevices(string type) ``{
     y2debug("CONFIG=%1",CONFIG);
     return GetFreeDevices(type, 10);
 }
 
+/**
+ * Check if the given device is configured and return
+ * the corresponding device
+ * @param type device type
+ * @return device if configured, empty string if not
+ */
 global define string Configured(string type, string unique) ``{
     return IsConfigured(type, unique);
 }
 
+/**
+ * Select the given hardware item or clean up structures
+ * @param which item to be chosen
+ */
 global define void SelectHW(integer which) ``{
-    map sel = select(HARDWARE, which, $[]);
+    map sel = $[];
 
-    if(which > size(HARDWARE))
+    if(which != nil)
+	sel = select(HARDWARE, which, $[]);
+
+    if(which > size(HARDWARE) || which < 0)
 	y2error("Item not found in HARDWARE: %1 (%2)", which, size(HARDWARE));
 
     name = lookup(sel, "name", "");
     unique = lookup(sel, "unique", "");
     modul = lookup(sel, "module", "");
     options = lookup(sel, "options", "");
+    unique = lookup(sel, "unique", "");
     type = lookup(sel, "type", "eth");
-    device = "eth" + select(GetFreeDevices(type,1), 0, "");
-
-    if(device == "eth") device = _("Unknown device");
+    device = select(GetFreeDevices(type,1), 0, -1);
 }
 
-global define UpdateConfig() ``{
-    /* FIXME add global variables to CONFIG */
+/**
+ */
+global define Add() ``{
+
+    /* kernel options */
+    name = "";
+    modul = "";
+    options = "";
+    unique = "";
+    type = "eth";
+
+    pcmcia = false;
+
+    /* address options */
+    bootproto = "static";
+    ipaddr = "";
+    netmask = "";
+    device = select(GetFreeDevices(type,1), 0, -1);
+
+    operation = `add;
+}
+
+/**
+ */
+global define Edit(string typ, integer dev) ``{
+// OR: global define Edit(string dev) ``{
+    operation = nil;
+
+    map typemap = lookup(CONFIG, typ, $[]);
+    if(!haskey(typemap, dev)) {
+	y2error("Key not found: %1", dev);
+	return;
+    }
+    map devmap = lookup(typemap, dev, $[]);
+
+    /* address options */
+    bootproto = lookup(devmap, "BOOTPROTO", "");
+    ipaddr = lookup(devmap, "IPADDR", "");
+    netmask = lookup(devmap, "NETMASK", "");
+    device = dev;
+    type = typ;
+
+    operation = `edit;
+}
+
+/**
+ */
+global define Delete() ``{
+    operation = `delete;
+}
+
+/**
+ */
+global define Commit() ``{
+    if(operation == `add || operation == `edit) {
+	map newdev = $[
+	    "BOOTMODE"	: "onboot",
+	    "BOOTPROTO"	: bootproto,
+	    "UNIQUE"	: unique,
+	];
+	if(bootproto == "static") {
+	    change(newdev, "IPADDR", ipaddr);
+	    change(newdev, "NETMASK", netmask);
+	    change(newdev, "BROADCAST", compute_broadcast(ipaddr, netmask));
+	    change(newdev, "NETWORK", compute_network(ipaddr, netmask));
+	}
+	if(operation == `add)
+	    ConfigAdd(type, device, newdev);
+	//else
+	    //ConfigUpdate(type, device, newdev);
+    }
+    else if(operation == `delete) {
+	ConfigDelete(type, device);
+    }
+    else {
+	y2error("Unknown operation: %1", operation);
+	return;
+    }
+
     modified = true;
 }
 

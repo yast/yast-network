@@ -22,20 +22,12 @@
 textdomain "network";
 
 import "Wizard";
-import "Wizard_hw";
-import "Progress";
-import "Lan";
 
-include "ui/common_popups.ycp";
-include "ui/common_messages.ycp";
 include "wizard/sequencer.ycp";
-
-include "network/routines.ycp";
 
 include "network/lan/manual.ycp";
 include "network/lan/address.ycp";
-//include "network/lan/summary.ycp";
-include "network/lan/helps.ycp"; // remove
+include "network/lan/dialogs.ycp";
 
 /**
  * Whole configuration of network
@@ -106,13 +98,14 @@ global define symbol LanAutoSequence() ``{
 global define symbol MainSequence() ``{
 
     map aliases = $[
-	"summary"	: ``( SummaryDialog() ),
-	"overview"	: ``( OverviewDialog() ),
-	"configure"	: ``(AddressDialog()),
-	"other"		: [ ``( ManualSequence() ), true ],
-	"add"		: [ ``( ManualSequence() ), true ],
-	"edit"		: ``(AddressDialog()),
-	"delete"	: ``(DeleteDialog())
+	"summary"	: ``(SummaryDialog()),
+	"overview"	: ``(OverviewDialog()),
+	"configure"	: [ ``(AddressSequence()), true ],
+	"other"		: [ ``(ManualSequence()), true ],
+	"add"		: [ ``(ManualSequence()), true ],
+	"edit"		: [ ``(AddressSequence()), true ],
+	"delete"	: ``(DeleteDialog()),
+	"commit"	: [ ``(Commit()), true ],
     ];
 
     map sequence = $[
@@ -122,7 +115,7 @@ global define symbol MainSequence() ``{
 	    `next	: `next,
 	    `configure	: "configure",
 	    `other	: "other",
-	    `edit	: "overview"
+	    `overview	: "overview"
 	],
 	"overview" : $[
 	    `abort	: `abort,
@@ -137,6 +130,9 @@ global define symbol MainSequence() ``{
 	],
 	"configure" : $[
 	    `abort	: `abort,
+	    `next	: "summary",
+	],
+	"commit" : $[
 	    `next	: "summary",
 	],
 	"add" : $[
@@ -165,7 +161,8 @@ global define symbol ManualSequence() ``{
     map aliases = $[
 	"manual"	: ``(ManualDialog()),
 	"address"	: ``(AddressDialog()),
-	"list"		: ``(ManualSelection())
+	"list"		: ``(ManualSelection()),
+	"commit"	: [ ``(Commit()), true ],
     ];
 
     map sequence = $[
@@ -176,11 +173,14 @@ global define symbol ManualSequence() ``{
 	    `next	: "address",
 	],
 	"list" : $[
-	    `ok		: "manual",
+	    `next	: "manual",
 	    `abort	: `abort,
 	],
 	"address" : $[
 	    `abort	: `abort,
+	    `next	: "commit",
+	],
+	"commit" : $[
 	    `next	: `next,
 	],
     ];
@@ -189,159 +189,28 @@ global define symbol ManualSequence() ``{
 }
 
 /**
- * Return a modification status
- * @return true if data was modified
+ * Configuration sequence
+ * @return sequence result
  */
-global define boolean Modified() ``{
-    return Lan::Modified();
-}
+global define symbol AddressSequence() ``{
 
-/**
- * Read settings dialog
- * @return `abort if aborted and `next otherwise
- */
-global define symbol ReadDialog() ``{
-    Wizard::RestoreHelp(ReadDialogHelp());
-    //Lan::AbortFunction = ``(PollAbort());
-    boolean ret = Lan::Read();
-    return ret ? `next : `abort;
-}
+    map aliases = $[
+	"address"	: ``(AddressDialog()),
+	"commit"	: [ ``(Commit()), true ],
+    ];
 
-/**
- * Write settings dialog
- * @return `abort if aborted and `next otherwise
- */
-global define symbol WriteDialog() ``{
-    Wizard::RestoreHelp(WriteDialogHelp());
-    //Lan::AbortFunction = ``(PollAbort());
-    boolean ret = Lan::Write();
-    return ret ? `next : `abort;
-}
+    map sequence = $[
+	"ws_start"	: "address",
+	"address" : $[
+	    `abort	: `abort,
+	    `next	: "commit",
+	],
+	"commit" : $[
+	    `next	: `next,
+	],
+    ];
 
-/**
- * Main dialog
- * @return dialog result
- */
-global define symbol SummaryDialog() ``{
-
-    string caption = _("Network cards configuration");
-
-    list summary = Lan::Summary();
-    list configured = select(summary, 0, "");
-    string unconfigured = select(summary, 1, []);
-
-    term contents = Wizard_hw::DetectedContent(_("Network cards to configure"),
-	    configured, false, unconfigured);
-
-    Wizard::SetContentsButtons(caption, contents, SummaryDialogHelp(),
-	    BackButtonLabel(), FinishButtonLabel());
-
-    any ret = nil;
-    while(true) {
-
-	ret = UI::UserInput();
-
-	/* abort? */
-	if(ret == `abort || ret == `cancel) {
-	    if(ReallyAbort()) break;
-	    else continue;
-	}
-	/* summary dialog */
-	else if(ret == `edit_button) {
-	    ret = `edit;
-	    break;
-	}
-	/* configure the selected card */
-	else if(ret == `configure_button) {
-	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
-	    if(selected == `other) {
-		Lan::SelectHW(-1);
-		ret = `other;
-	    }
-	    else {
-		Lan::SelectHW(selected);
-		ret = `configure;
-		//ret = `other;
-	    }
-	    break;
-	}
-	else if(ret == `next || ret == `back) {
-	    break;
-	}
-	else {
-	    y2error("unexpected retcode: %1", ret);
-	    continue;
-	}
-    }
-
-    return ret;
-}
-
-/**
- * Delete dialog
- * @return dialog result
- */
-global define symbol DeleteDialog() ``{
-    return `next;
-}
-
-/**
- * Overview dialog
- * @return dialog result
- */
-global define symbol OverviewDialog() ``{
-
-    string caption = _("Network cards configuration overview");
-
-    // TODO FIXME: real data for the table
-    term contents =
-	// For translators: Header of the table with installed cards
-	Wizard_hw::ConfiguredContent( `header ( _("Number"),
-	// For translators: Header of the table with installed cards
-						 _("Lan blah")),
-						 [],
-						 nil, nil, nil, nil );
-    contents = Wizard_hw::SpacingAround( contents, 1.5, 1.5, 1.0, 1.0 );
-
-
-    Wizard::SetContentsButtons(caption, contents, OverviewDialogHelp(),
-	    BackButtonLabel(), FinishButtonLabel());
-
-    any ret = nil;
-    while(true) {
-
-	ret = UI::UserInput();
-
-	/* abort? */
-	if(ret == `abort || ret == `cancel) {
-	    if(ReallyAbort()) break;
-	    else continue;
-	}
-	/* add */
-	else if(ret == `add_button) {
-	    ret = `add;
-	    break;
-	}
-	/* edit */
-	else if(ret == `edit_button) {
-	    ret = `edit;
-	    break;
-	}
-	/* delete */
-	else if(ret == `delete_button) {
-	    ret = `delete;
-	    break;
-	}
-	else if(ret == `next || ret == `back) {
-	    break;
-	}
-	else {
-	    y2error("unexpected retcode: %1", ret);
-	    continue;
-	}
-    }
-
-    return ret;
+    return WizardSequencer(aliases, sequence);
 }
 
 /* EOF */

@@ -55,7 +55,12 @@ with the same module name, options will be merged while saving.</p>")
     string options = Lan::options;
     boolean pcmcia = Lan::pcmcia;
     string type = Lan::type;
-    string device = Lan::device;
+    string device = "";
+
+    if(Lan::device == -1)
+	device = _("Unknown device");
+    else
+	device = sformat("%1",Lan::device);
 
     /* satisfy check_ycp -- don't translate this string */
     string PCMCIA = "&PCMCIA";
@@ -73,7 +78,7 @@ with the same module name, options will be merged while saving.</p>")
 		    `ReplacePoint(`id(`rnum),
 			// combo box label
 			`ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"),
-			    Lan::FreeDevices(type)))
+			    maplist(`d,Lan::FreeDevices(type),``(sformat("%1",d)))))
 		),
 		`VSpacing(0.2)
 	    )),
@@ -102,7 +107,7 @@ with the same module name, options will be merged while saving.</p>")
     UI::ChangeWidget(`id(`modul), `Enabled, !pcmcia);
     UI::ChangeWidget(`id(`options), `Enabled, !pcmcia);
     UI::ChangeWidget(`id(`list), `Enabled, !pcmcia);
-    UI::ChangeWidget(`id(`dev), `Value, device);
+    UI::ChangeWidget(`id(`num), `Value, device);
     UI::SetFocus(`id(`next));
 
     any ret = nil;
@@ -116,37 +121,15 @@ with the same module name, options will be merged while saving.</p>")
 	}
 	/* select from the list */
 	else if(ret == `list) {
-	    string class = "Ethernet"; /* default */
-	    type = UI::QueryWidget(`id(`dev), `Value);
-	    if(type == "tr") class = "Token-Ring";
-	    map man = ManualSelection(class, 0);
-	    /* FIXME: use sequencer */
-	    symbol tmpret = lookup(man, "ui", `back);
-	    if(tmpret == `abort || tmpret == `cancel) {
-		ret = tmpret;
-		break;
-	    }
-
-	    //Wizard::SetContents(caption,contents,help,true,true);
-	    Wizard::SetContentsButtons(caption, contents, help,
-		    BackButtonLabel(), NextButtonLabel());
-
-	    if(tmpret == `next) {
-		UI::ChangeWidget(`id(`modul), `Value, lookup(lookup(lookup(man, "return", $[]), "module", $[]), "name", ""));
-		UI::ChangeWidget(`id(`options), `Value, mergestring(maplist(`k, `v, lookup(lookup(lookup(man, "return", $[]), "module", $[]), "options", $[]), ``(sformat("%1=%2", k, v))), " "));
-	    }
-	    UI::ChangeWidget(`id(`pcmcia), `Value, pcmcia);
-	    UI::ChangeWidget(`id(`modul), `Enabled, !pcmcia);
-	    UI::ChangeWidget(`id(`options), `Enabled, !pcmcia);
-	    UI::ChangeWidget(`id(`dev), `Value, type);
-	    UI::SetFocus(`id(`next));
-	    continue;
+	    Lan::type = type;
+	    Lan::device = tointeger(UI::QueryWidget(`id(`num), `Value));
+	    break;
 	}
 	/* change device type */
 	else if(ret == `dev) {
 	    list devices = [];
 	    type = UI::QueryWidget(`id(`dev), `Value);
-	    devices = Lan::FreeDevices(type);
+	    devices = maplist(`d,Lan::FreeDevices(type),``(sformat("%1",d)));
 	    UI::ReplaceWidget(`id(`rnum),`ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"), devices));
 	    continue;
 	}
@@ -167,17 +150,16 @@ with the same module name, options will be merged while saving.</p>")
 	}
 	else {
 	    y2error("Unexpected return code: %1", ret);
-	    break;
+	    continue;
 	}
     };
 
     if(ret == `next) {
 	Lan::modul = UI::QueryWidget(`id(`modul), `Value);
 	Lan::options = UI::QueryWidget(`id(`options), `Value);
-	Lan::pcmcia = UI::QueryWidget(`id(`pcmcia), `Value);
-	Lan::type = type;
+	Lan::device = tointeger(UI::QueryWidget(`id(`num), `Value));
 	Lan::pcmcia = pcmcia;
-	Lan::device = type + UI::QueryWidget(`id(`num), `Value);
+	Lan::type = type;
     }
 
     return ret;
@@ -185,11 +167,12 @@ with the same module name, options will be merged while saving.</p>")
 
 /**
  * Call back for a manual selection from the list
- * @param class Ethernet or Token-Ring
- * @param s last selected card
- * @return map map with card info
+ * @return dialog result
  */
-global define map ManualSelection(string class, integer s) ``{
+global define symbol ManualSelection() ``{
+
+    string type = Lan::type;
+    integer selected = 0;
 
     map db = SCR::Read(.target.yast2, "netcards.ycp");
     if(db == nil) {
@@ -198,13 +181,8 @@ global define map ManualSelection(string class, integer s) ``{
 	return `cancel;
     }
 
-    list cards = hwlist2items(lookup(db, class, []), 0);
-
-    term contents = `VBox(
-	// selection box label
-	`ReplacePoint(`id(`rp), `SelectionBox(`id(`cards), _("Se&lect network card"), cards)),
-	// text entry field
-	`TextEntry(`id(`search), `opt(`notify), _("Sea&rch")));
+    list hwlist = lookup(db, type, []);
+    list cards = hwlist2items(hwlist, 0);
 
     /* dialog caption */
     string caption = _("Manual network card selection");
@@ -213,35 +191,24 @@ global define map ManualSelection(string class, integer s) ``{
     string helptext = _("<p>Select the network card to configure. Search
 for a particular network card by entering the name in the search entry.</p>");
 
-    /* standalone dialog
-    UI::OpenDialog(`opt(`decorated, `defaultsize), `VBox(
-	// dialog title
-	`ReplacePoint(`id(`rp), `SelectionBox(`id(`cards), `opt(`notify), _("Se&lect network card"), cards)),
-	// text entry label
-	`TextEntry(`id(`search), `opt(`notify), _("Sea&rch")),
-	`HBox(
-	    // ok - button label
-	    `PushButton(`id(`next), `opt(`default), OKButtonLabel()),
-	    // cancel - button label
-	    `PushButton(`id(`close), CancelButtonLabel())
-    )));
-    */
+    term contents = `VBox(
+	/* Selection box label */
+	`ReplacePoint(`id(`rp), `SelectionBox(`id(`cards), _("Se&lect network card"), cards)),
+	/* Text entry field */
+	`TextEntry(`id(`search), `opt(`notify), _("&Search"))
+    );
 
-    Wizard::SetContentsButtons(caption, contents, helptext, BackButtonLabel(), OKButtonLabel());
-
-    integer selected = s;
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    BackButtonLabel(), OKButtonLabel());
 
     any ret = nil;
     while(true) {
-
 	ret = UI::UserInput();
 
+	/* abort? */
 	if(ret == `abort || ret == `cancel) {
 	    if(ReallyAbort()) break;
 	    else continue;
-	}
-	if(ret == `back || ret == `next) {
-	    break;
 	}
 	else if(ret == `search) {
 
@@ -253,27 +220,33 @@ for a particular network card by entering the name in the search entry.</p>");
 	    if(size(l) > 0) selected = select(select(select(l, 0, []), 0, []), 0, 0);
 
 	    cards = [];
-	    cards = hwlist2items(lookup(db, class, []), selected);
+	    cards = hwlist2items(hwlist, selected);
 
 	    /* Selection box title */
 	    UI::ReplaceWidget(`id(`rp), `SelectionBox(`id(`cards), `opt(`notify), _("Se&lect network card"), cards));
 	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    /* FIXME: check_* */
+	    break;
+	}
 	else {
 	    y2error("Unexpected return code: %1", ret);
-	    break;
+	    continue;
 	}
     };
 
-    map result = $[];
     if(ret == `next) {
 	selected = UI::QueryWidget(`id(`cards), `CurrentItem);
-	result = add(result, "return", select(lookup(db, class, []), selected, nil));
+	map card = select(hwlist, selected, $[]);
+	Lan::name = lookup(card, "name", "");
+	Lan::modul = lookup(card, "module", "");
+	Lan::options = lookup(card, "options", "");
     }
 
-    /* UI::CloseDialog(); */
-
-    result = add(result, "ui", ret);
-    return result;
+    return ret;
 }
 
 /* EOF */

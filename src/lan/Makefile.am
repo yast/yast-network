@@ -10,6 +10,7 @@ include_DATA =			\
 	address.ycp		\
 	manual.ycp		\
 	helps.ycp		\
+	dialogs.ycp		\
 	wizards.ycp
 
 EXTRA_DIST = $(include_DATA)

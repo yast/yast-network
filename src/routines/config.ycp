@@ -146,7 +146,7 @@ global define list GetFreeDevices(string type, integer num) ``{
 
     while(count < num) {
 	if(!contains(numdevs, i)) {
-	    change(ret, sformat("%1", i));
+	    change(ret, i); //sformat("%1", i));
 	    count = count + 1;
 	}
 	i = i + 1;
@@ -164,13 +164,75 @@ global define list GetFreeDevices(string type, integer num) ``{
  * @example IsConfigured("eth", "aazjka9yd") -&gt; "eth3"
  */
 global define string IsConfigured(string type, string unique) ``{
+
     map devmap = lookup(CONFIG, type, $[]);
-    map dev = filter(`k, `v, devmap, ``(lookup(v, "UNIQUE", "") == unique));
-    if(dev != nil && dev != $[]) {
-	string num = select(mapkeys(dev), 0, "");
-	if(num != "") return type + num;
+    map dev = filter(`k, `v, devmap, ``{
+	//y2debug("UN(%1,%2) = %3,%4",lookup(v, "UNIQUE", ""),unique,k,v);
+	return lookup(v, "UNIQUE", "") == unique;
+    });
+
+    if(dev == nil && dev == $[])
+	return "";
+
+    string n = select(mapkeys(dev), 0, "");
+    if(n == "") return "";
+
+    map onedev = lookup(dev, n, $[]);
+    string proto = lookup(onedev, "BOOTPROTO", "static");
+
+    return ProtoStatus(type+n, proto, lookup(onedev, "IPADDR", ""));
+}
+
+/**
+ * FIXME -> Lan?
+ */
+global define string ProtoStatus(string device, string proto, string addr) ``{
+    if(proto == "" || proto == "static")
+	return sformat(_("Configured as %1 with address %2"), device, addr);
+    else
+	return sformat(_("Configured as %1 with %2"), device, proto);
+}
+
+/**
+ */
+global define OtherConfigured(list uniques) ``{
+    list ret = [];
+    maplist(`type, `devs, CONFIG, ``{
+	y2debug("type=%1",type);
+	maplist(`dev, `devmap, devs, ``{
+	    if(!contains(uniques, lookup(devmap, "UNIQUE", ""))) {
+		string proto = lookup(devmap, "BOOTPROTO", "static");
+		string ipadd = lookup(devmap, "IPADDR", "");
+		change(ret, ProtoStatus(type+dev,proto,ipadd));
+	    }
+	    else
+		y2debug("type+dev=%1+%2",type,dev);
+	});
+    });
+    return ret;
+}
+
+/**
+ */
+global define boolean ConfigAdd(string type, integer device, map newdev) ``{
+    y2debug("CONFIG=%1",CONFIG);
+    map devmap = lookup(CONFIG, type, $[]);
+    string dev = sformat("%1",device);
+
+    if(haskey(devmap, dev)) {
+	y2error("Key already present: %1(%2)", dev, type);
+	return false;
     }
-    return "";
+    change(devmap, dev, newdev);
+    change(CONFIG, type, devmap);
+    y2debug("CONFIG=%1",CONFIG);
+}
+
+/**
+ */
+global define boolean ConfigDelete(string type, integer device) ``{
+    y2debug("CONFIG=%1",CONFIG);
+    y2debug("CONFIG=%1",CONFIG);
 }
 
 /* FIXME

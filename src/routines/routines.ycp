@@ -94,11 +94,14 @@ global define list hwlist2items(list l, integer selected) ``{
     list items = [];
     integer n = 0;
     foreach(`i, l, ``{
-	change(items, `item(`id(n), lookup(i, "name", _("Unknown")), n == selected));
+	string hwname = lookup(i, "name", _("Unknown"));
+	integer num = lookup(i, "num", n);
+	change(items, `item(`id(num), hwname, num == selected));
 	n = n + 1;
     });
     return items;
     //return list2items(maplist(`h, l, ``(lookup(h, "name", _("Unknown device")))), selected);
 }
 
+/* EOF */
 }

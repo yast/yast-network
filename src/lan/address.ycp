@@ -42,16 +42,19 @@ global define symbol AddressDialog() ``{
     string bootproto = Lan::bootproto;
     string ipaddr = Lan::ipaddr;
     string netmask = Lan::netmask;
-    string device = Lan::device;
+    string type = Lan::type;
+    string device = "";
 
-    if(bootproto == "" && ipaddr == "")
+    if(bootproto == "static" && ipaddr == "")
 	bootproto = "dhcp";
 
     if(ipaddr == "" && netmask == "")
 	netmask = "255.255.255.0";
 
-    if(device == "")
+    if(Lan::device == -1)
 	device = _("Unknown device");
+    else
+	device = type + Lan::device;
 
     // Label for radio button group (dynamic/static ip address setup method)
     term label = `HBox(
@@ -92,7 +95,7 @@ global define symbol AddressDialog() ``{
 	    // Push button label
 	    `PushButton(`id(`hostconf), `opt(`hstretch), _("&Host name and name server")),
 	    // Push button label
-	    `PushButton(`id(`routeconf), `opt(`hstretch), _("&Routing")),
+	    `PushButton(`id(`routeconf), `opt(`hstretch), _("R&outing")),
 	    `VSpacing(0.5)
 	)),
 	`HStretch()
@@ -162,12 +165,10 @@ global define symbol AddressDialog() ``{
     if(ret == `next) {
 	Lan::ipaddr = UI::QueryWidget(`id(`ipaddr), `Value);
 	Lan::netmask = UI::QueryWidget(`id(`netmask), `Value);
-	//Lan::device = UI::QueryWidget(`id(`device), `Value);
 	if(UI::QueryWidget(`id(`rb), `CurrentButton) == `dynamic)
 	    Lan::bootproto = "dhcp";
 	else
 	    Lan::bootproto = "static";
-	Lan::UpdateConfig();
     }
 
     return ret;
