@@ -152,6 +152,7 @@ global define boolean Modified() ``{
  * @return true on success
  */
 global define boolean Read() ``{
+    // title for ISDN reading current setup progress screen
     string caption = _("Initializing ISDN card configuration");
     integer steps = 5;
 
@@ -159,6 +160,7 @@ global define boolean Read() ``{
     integer sl = 0; //1000;
     sleep(sl);
 
+    // steps for the ISDN reading current setup progress screen
     Progress::New(caption, " ", steps, [
 	_("Detect devices"),
 	_("Read current device configuration"),
@@ -170,31 +172,37 @@ global define boolean Read() ``{
     CONFIG = $[];
 
     if(Abort()) return false;
+    // stage 1 in reading current ISDN setup
     ProgressNextStage(_("Detecting ISDN cards"));
     ReadHardware("isdn");
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 2 in reading current ISDN setup
     ProgressNextStage(_("Reading current device configuration"));
     ReadISDNConfig("cfg-contr");
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 3 in reading current ISDN setup
     ProgressNextStage(_("Reading current connection setup"));
     ReadISDNConfig("cfg-net");
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 4 in reading current ISDN setup
     ProgressNextStage(_("Reading firewall settings"));
     Firewall::Read();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 5 in reading current ISDN setup
     ProgressNextStage(_("Reading providers"));
     Providers::Read("isdn");
     sleep(sl);
 
     if(Abort()) return false;
+    // last stage in reading current ISDN setup
     ProgressNextStage(_("Finished"));
     sleep(sl);
 
@@ -228,12 +236,14 @@ global define boolean Write(boolean start) ``{
     if(!(modified_hw || modified_if || Providers::Modified())) return true;
     y2milestone("Writing configuration");
 
+    // title for ISDN writing current setup progress screen
     string caption = _("Saving ISDN configuration");
     integer steps = 10;
     string cmd = "";
     integer sl = 0;
 
     if (start) {
+	// steps for the ISDN writing current setup progress screen with start
 	Progress::New(caption, " ", steps, [
 	    _("Stop ISDN networking"),
 	    _("Stop ISDN subsystem"),
@@ -250,6 +260,7 @@ global define boolean Write(boolean start) ``{
 	steps = 11;
     } else {
 	Progress::New(caption, " ", steps, [
+	    // steps for the ISDN writing current setup progress screen without start
 	    _("Stop ISDN networking"),
 	    _("Stop ISDN subsystem"),
 	    _("Write controller configuration"),
@@ -263,6 +274,7 @@ global define boolean Write(boolean start) ``{
 	steps = 9;
     }
     if(Abort()) return false;
+    // stage 1 in writing current ISDN setup
     ProgressNextStage(_("Stop ISDN networking"));
     cmd = sformat("/etc/init.d/network stop -o type=isdn");
     SCR::Execute(.target.bash, cmd);
@@ -271,6 +283,7 @@ global define boolean Write(boolean start) ``{
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 2 in writing current ISDN setup
     ProgressNextStage(_("Stop ISDN subsystem"));
     if (modified_hw) {
 	cmd = sformat("/etc/init.d/isdn stop");
@@ -279,29 +292,33 @@ global define boolean Write(boolean start) ``{
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 3 in writing current ISDN setup
     ProgressNextStage(_("Writing controller configuration"));
     if (modified_hw)
 	WriteISDNConfig("contr");
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 4 in writing current ISDN setup
     ProgressNextStage(_("Writing interface configuration"));
     WriteISDNConfig("net");
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 5 in writing current ISDN setup
     ProgressNextStage(_("Writing firewall settings"));
     Firewall::Write();
     sleep(sl);
 
     if(Abort()) return false;
-
+    // stage 6 in writing current ISDN setup
     ProgressNextStage(_("Writing providers"));
     if (Providers::Modified())
 	Providers::Write();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 7 in writing current ISDN setup
     ProgressNextStage(_("Running SuSEconfig"));
     SCR::Execute(.target.bash, "/sbin/SuSEconfig --module isdn");
     sleep(sl);
@@ -309,6 +326,7 @@ global define boolean Write(boolean start) ``{
     if(Abort()) return false;
 
     if (start) {
+	// stage 8 in writing current ISDN setup
 	ProgressNextStage(_("Load ISDN driver"));
 	if (modified_hw) {
 	    cmd = sformat("/etc/init.d/isdn start -o all");
@@ -318,6 +336,7 @@ global define boolean Write(boolean start) ``{
 	sleep(sl);
 
 	if(Abort()) return false;
+	// stage 9 in writing current ISDN setup
 	ProgressNextStage(_("Load ISDN network"));
 	cmd = sformat("/etc/init.d/network start -o type=isdn");
 	SCR::Execute(.target.bash, cmd);
@@ -328,16 +347,19 @@ global define boolean Write(boolean start) ``{
     }
 
     if(Abort()) return false;
+    // stage 10 in writing current ISDN setup
     ProgressNextStage(_("Setting up smpppd(8)"));
     SetupSMPPPD();
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 11 in writing current ISDN setup
     ProgressNextStage(_("Running kinternet"));
     RunKInternet();
     sleep(sl);
 
     if(Abort()) return false;
+    // last stage in writing current ISDN setup
     ProgressNextStage(_("Finished"));
     sleep(sl);
 
@@ -351,6 +373,7 @@ global define boolean Write(boolean start) ``{
  */
 global define boolean TestDev(string dev) ``{
 
+    // title for ISDN testing current setup progress screen
     string caption = sformat(_("Testing ISDN configuration %1"), dev);
     string cmd = "";
     string details = "";
@@ -361,6 +384,7 @@ global define boolean TestDev(string dev) ``{
     integer sl = 500; //1000;
     sleep(sl);
 
+    // steps for the ISDN testing current setup progress screen
     Progress::New(caption, " ", steps, [
 	_("Write controller configuration"),
 	_("Stop ISDN network"),
@@ -370,11 +394,13 @@ global define boolean TestDev(string dev) ``{
     ], [], "");
 
     if(Abort()) return false;
+    // stage 1 in testing current ISDN setup
     ProgressNextStage(_("Writing controller configuration"));
     WriteOneISDNConfig(dev);
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 2 in testing current ISDN setup
     ProgressNextStage(_("Stop ISDN network"));
     cmd = sformat("/etc/init.d/network stop -o type=isdn");
     out = SCR::Execute(.target.bash_output, cmd);
@@ -391,6 +417,7 @@ global define boolean TestDev(string dev) ``{
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 3 in testing current ISDN setup
     ProgressNextStage(_("Unload ISDN driver"));
     cmd = sformat("/etc/init.d/isdn stop");
     out = SCR::Execute(.target.bash_output, cmd);
@@ -401,6 +428,7 @@ global define boolean TestDev(string dev) ``{
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 4 in testing current ISDN setup
     ProgressNextStage(_("Load controller"));
     cmd = sformat("/etc/init.d/isdn start %1 -o all", dev);
     out = SCR::Execute(.target.bash_output, cmd);
@@ -412,6 +440,7 @@ global define boolean TestDev(string dev) ``{
     sleep(sl);
 
     if(Abort()) return false;
+    // stage 5 in testing current ISDN setup
     ProgressNextStage(_("Unload controller"));
     cmd = sformat("/etc/init.d/isdn stop");
     out = SCR::Execute(.target.bash_output, cmd);
@@ -422,6 +451,7 @@ global define boolean TestDev(string dev) ``{
     sleep(sl);
 
     if(Abort()) return false;
+    // last stage in testing current ISDN setup
     ProgressNextStage(_("Finished"));
     sleep(sl);
 
@@ -642,7 +672,7 @@ global define boolean SelIf(string item) ``{
  * @return true if the current item was found
  */
 global define boolean Commit() ``{
-    y2warning("Commit(%1) dev:%2%3",operation,type,device);
+    y2debug("Commit(%1) dev:%2%3",operation,type,device);
     string n = sformat("%1", device);
 
     if (operation == nil)
@@ -798,6 +828,7 @@ global define boolean SelectInterface(boolean auto) ``{
 	return `item(`id(devid), devnam, (tointeger(num) == device));
     });
     y2debug("ifl=%1", ifl);
+    // popup title to select a interface for an edit/delete operation
     id = select_fromlist_popup(_("&Select Interface"), ifl);
     return SelIf(id);
 };

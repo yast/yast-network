@@ -134,8 +134,10 @@ global define boolean display_testresult(integer result, string details) ``{
     string msg = "";
 
     if (result == 0) {
+	// ISDN HW test result (positiv)
 	msg = sformat(_("The test was successful"));
     } else {
+	// ISDN HW test result (negativ)
 	msg = sformat(_("The test was not successful\n ReturnValue: %1"), result);
     }
     UI::OpenDialog(
@@ -148,6 +150,7 @@ global define boolean display_testresult(integer result, string details) ``{
 		`VSpacing(1),
 		`HBox(
 		    `PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
+		    // Button label for details about the HW test
 		    `PushButton(`id(`detail), _("&Details"))
 		),
 		`VSpacing(1)

@@ -27,6 +27,7 @@ global define symbol IPDialog() ``{
 
     /* DIALOG TEXTS */
 
+    // title for ISDN IP address dialog
     string caption = _("ISDN IP address settings");
 
     /* FIXME: help texts, contents */
@@ -65,14 +66,18 @@ route.</b>.</p>");
 	contents =
 	    `HSquash(
 		`VBox(
+		    // Frame title for ISDN IP address settings
 		    `Frame(_("IP address settings"),
 			`HBox(
 			    `HSpacing(),
 			    `VBox(
 				`VSpacing(),
+				// CheckBox label
 				`Left(`CheckBox(`id(`dynip), `opt(`notify), _("&Dynamic IP address"), dynip)),
 				`VSpacing(),
+				// TextEntry label
 				`Left(`TextEntry(`id(`IP_local), _("&Local IP address of your machine"), Local_IP)),
+				// TextEntry label
                                 `Left(`TextEntry(`id(`IP_remote), _("Re&mote IP address"), Remote_IP)),
 				`VSpacing()
 			    ),
@@ -80,6 +85,7 @@ route.</b>.</p>");
 			)
 		    ),
 		    `VSpacing(),
+		    // CheckBox label
 		    `Left(`CheckBox(`id(`defaultroute), _("D&efaultroute"), defaultroute))
 		)
 	    );
@@ -89,12 +95,15 @@ route.</b>.</p>");
 	contents =
 	    //`HSquash(
 		`VBox(
+		    // Frame title for ISDN IP address settings
 		    `Frame(_("IP address settings"),
 			`HBox(
 			    `HSpacing(),
 			    `VBox(
 				`VSpacing(),
+				// TextEntry label
 				`Left(`TextEntry(`id(`IP_local), _("&Local IP address of your machine"), Local_IP)),
+				// TextEntry label
 				`Left(`TextEntry(`id(`IP_remote), _("Re&mote IP address"), Remote_IP)),
 				`VSpacing()
 			    ),
@@ -102,6 +111,7 @@ route.</b>.</p>");
 			)
 		    ),
 		    `VSpacing(),
+		    // CheckBox label
 		    `Left(`CheckBox(`id(`defaultroute), _("D&efaultroute"), defaultroute))
 		//)
 	    );
@@ -149,6 +159,7 @@ route.</b>.</p>");
 		dynip = UI::QueryWidget(`id(`dynip), `Value);
 
 	    if((!syncppp || !dynip) && (!check_ip4(Local_IP) || !check_ip4(Remote_IP))) {
+		// MessagePopup if entries are incorrect
 		UI::MessagePopup(_("You have to fill in Local and Remote IP addresses correctly"));
 		continue;
 	    }

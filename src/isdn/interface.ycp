@@ -36,6 +36,7 @@ global define symbol isdn_if_sel(symbol op) ``{
 
     /* DIALOG TEXTS */
 
+    // title of ISDN service selection dialog
     string caption = _("ISDN service selection");
 
     // help text 1/3
@@ -59,6 +60,7 @@ _("If you don't like to add a interface now, you can simple use the
     /* DIALOG CONTENTS */
     term network = `VBox();
     network = add(network, `VSpacing(0.5));
+    // PushButton labels to select the next Dialog
     network = add(network, `PushButton(`id(`AddSyncPPP), _("Add new &SyncPPP network interface")));
     network = add(network, `PushButton(`id(`AddRawIP), _("Add new Raw&IP network interface")));
     network = add(network, `PushButton(`id(`AddProvider), _("Add &Provider to existing interface")));
@@ -66,6 +68,7 @@ _("If you don't like to add a interface now, you can simple use the
 
     term contents =
 	`HVSquash(
+	    // Frame title
 	    `Frame(_("Network services"),
 		`HBox(
 		    `HSpacing(0.5),
@@ -77,6 +80,7 @@ _("If you don't like to add a interface now, you can simple use the
 
     /* DIALOG PREPARE */
     Wizard::SetContents(caption, contents, helptext, true, true);
+    // PushButton label to not enter any sub dialogs
     Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), _("S&kip")));
 
     if (ISDN::CountIF() == 0) {
@@ -203,17 +207,21 @@ remove a channel.
     if (ISDN::operation  == `editif) {
 	provlist = Providers::GetProviders("_custom", syncppp ? "syncppp" : "rawip", ISDN::provider_file);
 	y2debug("provlist: %1", provlist);
+	// ComboBox label
 	prov = `Left(`ComboBox(`id(`prov), _("&Default Provider"), provlist));
     }
     term contents =
 	`VBox(
 	    `VSpacing(0.5),
+	    // TextEntry label
 	    `Left(`TextEntry(`id(`msn), _("My &phone number"), msn)),
 	    `VSpacing(0.5),
 	    `HBox(
 		`VBox(
+		    // ComboBox label
 		    `Left(`ComboBox(`id(`startmode), _("Start &Mode"),
 			[
+			    // ComboBox items
 			    `item(`id("onboot"), _("OnBoot"), startmode == "onboot"),
 			    `item(`id("manual"), _("Manual"), startmode == "manual"),
 			    `item(`id("hotplug"), _("HotPlug"), startmode == "hotplug")
@@ -222,12 +230,15 @@ remove a channel.
 		    prov,
 		    `VSpacing(0.5),
 		    `HBox(
+			// CheckBox label
 			`Left(`CheckBox(`id(`chargehup), _("Charge&HUP"), chargeHUP)),
+			// CheckBox label
 			`Left(`CheckBox(`id(`multilink), _("Ch&annel bundling"), multilink))
 		    )
 		)
 	    ),
 	    `VSpacing(0.5),
+	    // PushButton label
 	    `PushButton(`id(`detail), _("&Details"))
 	);
 

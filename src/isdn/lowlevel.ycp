@@ -44,8 +44,10 @@ global define term Card_Parameter(integer cidx) ``{
 	if ((i == 4) || (i==8)) /* PCMCIA, USB */
 		startm = "hotplug";
 	contens = add(contens, 
+	    // ComboBox label
 	    `ComboBox(`id(`startmode), _("&Start Mode"),
 	    [
+		// ComboBox items
 		`item(`id("onboot"), _("OnBoot"), startm == "onboot"),
 		`item(`id("manual"), _("Manual"), startm == "manual"),
 		`item(`id("hotplug"), _("HotPlug"), startm == "hotplug")
@@ -57,6 +59,7 @@ global define term Card_Parameter(integer cidx) ``{
 	if (para == nil)
 	    return contens;
 	contens = add(contens, `VSpacing(1));
+	// static label for HW parameter
 	contens = add(contens, `Label(_("Parameter")));
 	list io = lookup(para, "IO", []);
 	if (io != []) {
@@ -78,8 +81,10 @@ global define term Card_Parameter(integer cidx) ``{
 	    });
 	    if (!found) {
 		iol = add(iol, `item(`id(default_io), sformat("%1",tohexstring(default_io)), true));
+		// ComboBox label
 		contens = add(contens, `ComboBox(`id(`IOADR), `opt(`editable), _("&IO Address"), iol));
 	    } else
+		// ComboBox label
 		contens = add(contens, `ComboBox(`id(`IOADR),  _("&IO Address"), iol));
 	}
 	list irq = lookup(para, "IRQ", []);
@@ -102,8 +107,10 @@ global define term Card_Parameter(integer cidx) ``{
 	    });
 	    if (!found) {
 		irql = add(irql, `item(`id(default_irq), sformat("%1",default_irq), true));
+		// ComboBox label
 		contens = add(contens, `ComboBox(`id(`IRQ), `opt(`editable), _("IR&Q"), irql));
 	    } else
+		// ComboBox label
 		contens = add(contens, `ComboBox(`id(`IRQ),  _("IR&Q"), irql));
 	}
 	list membase = lookup(para, "MEMBASE", []);
@@ -126,8 +133,10 @@ global define term Card_Parameter(integer cidx) ``{
 	    });
 	    if (!found) {
 		meml = add(meml, `item(`id(default_mem), sformat("%1",tohexstring(default_mem)), true));
+		// ComboBox label
 		contens = add(contens, `ComboBox(`id(`MEMBASE), `opt(`editable), _("&Membase"), meml));
 	    } else
+		// ComboBox label
 		contens = add(contens, `ComboBox(`id(`MEMBASE),  _("&Membase"), meml));
 	}
 	return contens;
@@ -145,6 +154,7 @@ global define term create_drv_term(list drv, string desc) ``{
     term ret = nil;
 
     ret = `HBox(
+	// ComboBox label to select a driver
 	`HWeight( 24,`ComboBox(`id(`DrvBox), `opt(`hstretch,`notify), _("Dri&ver"), drv)),
 	`HSpacing(1),
 	`HWeight( 75,`Label(`id(`DrvDesc), desc))
@@ -224,6 +234,7 @@ global define symbol isdn_lowlevel(symbol Detected) ``{
     y2debug("DrvList %1", DrvList);
     /* DIALOG TEXTS */
 
+    // title for dialog
     string caption = sformat(_("ISDN low-level configuration for %1%2"),
     	ISDN::type, ISDN::device);
     string helptext = "";
@@ -279,9 +290,11 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 
     term ISDN_protocol = 
 	`VSquash(
+	    // Frame title
 	    `Frame(_("Selection of ISDN protocol"),
 		`RadioButtonGroup(`id(`protocol),
 		    `VBox(
+			// RadioButton labels for ISDN protocols
 			`Left(`RadioButton(`id("euro"), _("&Euro-ISDN (EDSS1)"), protocol == "euro")),
 			`Left(`RadioButton(`id("1tr6"), _("1TR&6"), protocol == "1tr6")),
 			`Left(`RadioButton(`id("leased"), _("&Leased line"), protocol == "leased")),
@@ -293,7 +306,9 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 	);
 
     term ISDN_line = `VBox(
+	// TextEntry label for phone network Areacode (german Vorwahl)
 	`TextEntry(`id(`areacode), _("&Areacode"), areacode),
+        // TextEntry label for phone number prefix to get a public line (german Amtsholziffer)
 	`TextEntry(`id(`dialprefix), _("&Dialprefix"), dialprefix)
     );
 
@@ -301,6 +316,7 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
     term ISDN_driver = create_drv_term(DrvList, desc);
     term ISDN_card = nil;
     if (Detected == `Detected || ISDN::operation == `edit) {
+	// frame title
         ISDN_card = `Frame(_("ISDN card"),
 	    `HBox(
 		`HWeight(1, `Label(`id(`CardN), CardName)),
@@ -309,8 +325,10 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 	    )
 	);
     } else {
+	// frame title
         ISDN_card = `Frame(_("ISDN cards"),
 	    `HBox(
+		// SelectionBox label
 		`HWeight(1, `SelectionBox(`id(`Card), `opt(`notify), _("Select your ISDN &card"),  CardList)),
 		`HSpacing(),
 		`ReplacePoint(`id(`ParaR), Card_Parameter(CurrentCardIndex))
@@ -438,6 +456,7 @@ can enter it here. Often used on a internal S0 bus, most common is \"0\"</p>");
 		"DIALPREFIX"	: dialprefix,
 	    ]);
 	    if ((Default_TYPE == 8002) || (Default_TYPE == 8003)) {
+// multiline YesNoPopup text
 		if (! UI::YesNoPopup (_(" WARNING !!!\n
 You have selected an binary only driver.
 This driver will provide you additional features

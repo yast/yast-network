@@ -92,7 +92,9 @@ An additional dialog will inform you whether it is safe to do so or not.</P>");
  */
 global define symbol Provider_or_IF(string op) ``{
     symbol ret = nil;
-    string txt = sformat(_("Please select, which item do you like to %1."), op);
+    // popup text to select between Interface or Provider for edit or delete 
+    string txt = sformat(_("Please select, which item do you like to %1."),
+		op == "edit" ? _("edit") : _("delete"));
     UI::OpenDialog(
 	`opt(`decorated),
 	`HBox(
@@ -102,8 +104,10 @@ global define symbol Provider_or_IF(string op) ``{
 		`Label(txt),
 		`VSpacing(2),
 		`HBox(
+		    // PushButton label
 		    `PushButton(`id(`interface), _("&Interface")),
 		    `HSpacing(1),
+		    // PushButton label
 		    `PushButton(`id(`provider), `opt(`default), _("&Provider"))
 		),
 		`VSpacing(1)
@@ -127,6 +131,7 @@ global define symbol Provider_or_IF(string op) ``{
 global define symbol SummaryDialog() ``{
 
     /* ISDN summary dialog caption */
+    // dialog title
     string caption = _("ISDN cards configuration");
 
     /* isdns summary dialog help 1/3 */
@@ -152,6 +157,7 @@ can change the configuration and setup dialup connections) will open.
     string configured = select(summary, 0, "");
 
     y2debug("unconfigured=%1",unconfigured);
+    // table title for detected ISDN cards
     term contents = Wizard_hw::DetectedContent(_("ISDN cards to configure"),
 	    unconfigured, false, configured);
 
@@ -205,6 +211,7 @@ can change the configuration and setup dialup connections) will open.
 global define symbol OverviewDialog() ``{
 
     /* ISDN overview dialog caption */
+    // dialog title
     string caption = _("ISDN configuration overview");
 
     string helptext = /* isdns overview dialog help 1/5 */
@@ -303,7 +310,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
         }
         /* provider edit */
         else if(ret == `Edit) {
-	    ret = Provider_or_IF(_("edit"));
+	    ret = Provider_or_IF("edit");
 	    if (ret == `provider) {
 		string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
 		Providers::AddEdit(dev, false);
@@ -321,7 +328,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
         }
         /* provider delete */
 	else if(ret == `Delete) {
-	    ret = Provider_or_IF(_("delete"));
+	    ret = Provider_or_IF("delete");
 	    if (ret == `provider) {
 		string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
 		string ifc = ISDN::GetInterface4Provider(dev);
@@ -336,11 +343,12 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 		    }
 		    y2debug("overviewp=%1",overviewp);
 		} else {
+// MessagePopup text
 		    string txt = sformat(
 _("You try to delete a provider which
 is the default provider for interface
 %1. Please select first an other
-default provider for interface %1
+default provider for interface %2
 or delete the interface itself first.
 "), ifc, ifc);
 		    UI::MessagePopup(txt);

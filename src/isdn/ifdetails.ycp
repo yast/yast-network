@@ -41,6 +41,7 @@ global define symbol IFDetailDialog() ``{
 
     /* DIALOG TEXTS */
 
+    // title of ISDN interface detail screen
     string caption = _("ISDN detail settings");
 
     // help text 1/7
@@ -85,13 +86,16 @@ for example +pap +chap for the dialin server authentification.</p>");
 
     term ipppd = `VSpacing();
     if (syncppp)
+	// TextEntry label
 	ipppd = `TextEntry(`id(`ipppd_opt), _("&Additional ipppd options"), ipppd_opt);
 
     term cbterm =
+	    // Frame title
 	    `Frame(_("Callback functions"),
 		`VBox(
 		    `RadioButtonGroup(`id(`callback),`HBox(
 			`VBox(
+			    // RadioButtons for callback modes
 			    `Left(`RadioButton(`id("off"), _("Callback &Off"), callback == "off")),
 			    `Left(`RadioButton(`id("in"), _("Callback &Server"), callback == "in")),
 			    `Left(`RadioButton(`id("out"), _("Callback &Client"), callback == "out"))
@@ -99,6 +103,7 @@ for example +pap +chap for the dialin server authentification.</p>");
 		    )),
 		    `VSpacing(0.5),
 		    `Left(`HSquash(
+			// IntField label
 			`IntField(`id(`cbdelay), _("Callback &Delay"), 0, 10, cbdel)
 		    ))
 		)
@@ -107,7 +112,9 @@ for example +pap +chap for the dialin server authentification.</p>");
     term contents =
 	`HVSquash(
 	    `VBox(
+		// TextEntry label
 		`TextEntry(`id(`remote_in), _("Remote &phone number list"), remote_in),
+		// CheckBox label
 		`CheckBox(`id(`secure), _("Only &listed numbers allowed"), secure),
 		`VSpacing(0.5),
 		cbterm,
