@@ -134,14 +134,14 @@ global define boolean Read() ``{
 
     if(Abort()) return false;
     ProgressNextStage(_("Detecting network cards"));
-    ReadHardware("");
-    //ReadHardware("netcard");
+    //ReadHardware("");
+    ReadHardware("netcard");
     sleep(sl);
 
     if(Abort()) return false;
     ProgressNextStage(_("Reading current configuration"));
-    ReadConfig("");
-    //ReadConfig("eth|eth-pcmcia-|eth-usb-|tr|tr-pcmcia-|tr-usb-");
+    //ReadConfig("");
+    ReadConfig("eth|eth-pcmcia-|eth-usb-|tr|tr-pcmcia-|tr-usb-");
     sleep(sl);
 
     if(Abort()) return false;
