@@ -76,6 +76,7 @@ global define boolean ReadModules(string devregex) ``{
  */
 global define boolean WriteModules() ``{
 
+    boolean arcnet = false;
     y2debug("Modules=%1", Modules);
 
     /* Remove deleted modules */
@@ -91,9 +92,11 @@ global define boolean WriteModules() ``{
 
     /* Write aliases */
     maplist(string m, string a, Modules["alias"]:$[], ``{
-	if(a != nil && a != "")
+	if(a != nil && a != "") {
 	    // y2milestone("%1 %2", add(.modules.alias, m), a);
 	    SCR::Write(add(.modules.alias, m), a);
+	    if(regexpmatch(a, "^arc")) arcnet = true;
+	}
     });
 
     /* Write options */
@@ -102,6 +105,10 @@ global define boolean WriteModules() ``{
 	    // y2milestone("%1 %2", add(.modules.options, m), string2map(o));
 	    SCR::Write(add(.modules.options, m), string2map(o));
     });
+
+    /* Preload ARCNet modules (#26858) */
+    if(arcnet)
+	SCR::Write(.modules.above.arcnet, "rfc1201 rfc1051 arc-rawmode");
 
     /* FIXME: s390 modules hack */
     if(false) {

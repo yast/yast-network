@@ -1,9 +1,11 @@
 -------------------------------------------------------------------
-Fri Jul  4 17:28:43 CEST 2003 - msvec@suse.cz
+Thu Jul 10 15:09:00 CEST 2003 - msvec@suse.de
 
 - proxy: better helps (#24803)
 - proxy: input checking (#18791)
 - lan: coordinate proposal with dsl (#17631)
+- add additional arcnet modules (#26858)
+- updated testsuite
 - 2.8.2
 
 -------------------------------------------------------------------

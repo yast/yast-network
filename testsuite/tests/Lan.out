@@ -16,7 +16,6 @@ Read	.etc.install_inf.Console nil
 Read	.etc.install_inf.Braille nil
 Read	.etc.install_inf.VNC nil
 Read	.etc.install_inf.UseSSH nil
-Read	.etc.install_inf.Locale nil
 Read	.etc.install_inf.InstMode nil
 Dump	Read
 Read	.probe.netcard nil
@@ -47,7 +46,7 @@ Read	.target.size "/etc/install.inf" 1
 Read	.etc.install_inf."IP" nil
 Read	.etc.install_inf."Netmask" nil
 Read	.etc.install_inf."NetConfig" nil
-Read	.etc.install_inf."netdevice" nil
+Read	.etc.install_inf."Netdevice" nil
 Read	.etc.install_inf."Gateway" nil
 Read	.etc.install_inf."Nameserver" nil
 Read	.etc.install_inf."Machinename" nil

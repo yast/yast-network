@@ -11,7 +11,6 @@ Read	.etc.install_inf.Console nil
 Read	.etc.install_inf.Braille nil
 Read	.etc.install_inf.VNC nil
 Read	.etc.install_inf.UseSSH nil
-Read	.etc.install_inf.Locale nil
 Read	.etc.install_inf.InstMode nil
 Read	.target.tmpdir "/tmp"
 Execute	.target.bash "/usr/lib/YaST2/bin/version" 0
