@@ -713,10 +713,17 @@ global define boolean SelIf(string item) ``{
  */
 global define boolean Commit() ``{
     y2debug("Commit(%1) dev:%2%3",operation,type,device);
+	y2debug("skip %1", skip);
     string n = sformat("%1", device);
 
     if (operation == nil)
 	return true;
+
+    if (skip && operation != `add && operation != `edit && operation != `delete)
+    {
+        skip = false;
+        return true;
+    }
     if (operation == `edit || operation == `editif || operation == `addproc) {
 	map typemap = lookup(CONFIG, type, $[]);
 	y2debug("typemap %1", typemap);
