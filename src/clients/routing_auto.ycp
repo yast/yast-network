@@ -40,22 +40,22 @@ if(size(args) <= 0) {
     y2error("Did not get the settings, probably some mistake...");
     return false;
 }
-if(!is(Args(0), map)) {
+if(!is(Args(0), list)) {
     y2error("Bad argument for routing_auto: %1", Args(0));
     return false;
 }
 
 /* The settings are in the first argument */
-map settings = select(args, 0, $[]);
-y2milestone("Imported: %1", settings);
+list settings = select(args, 0, []);
+y2debug("Imported: %1", settings);
 
 Routing::Import(settings);
 Wizard::CreateDialog();
 Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), FinishButtonLabel()));
 RoutingMainDialog();
 UI::CloseDialog();
-map ret = Routing::Export();
-y2milestone("Exported: %1", ret);
+list ret = Routing::Export();
+y2debug("Exported: %1", ret);
 
 y2milestone("Routing auto finished");
 return ret;

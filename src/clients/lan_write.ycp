@@ -50,7 +50,7 @@ y2milestone("Only writing... (%1)", settings);
 
 Progress::off();
 Lan::Import(settings);
-boolean ret = Lan::Write();
+boolean ret = Lan::WriteOnly();
 Progress::on();
 
 y2milestone("Lan write finished");

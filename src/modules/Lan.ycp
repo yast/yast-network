@@ -165,6 +165,19 @@ global define boolean Read() ``{
 }
 
 /**
+ * Only write configuration without starting any init scripts and SuSEconfig
+ * @return true on success
+ */ 
+
+global define boolean WriteOnly()``{
+       WriteConfig();
+       WriteModulesConf();
+       Routing::Write();
+       DNS::Write();
+       return true;
+}
+
+/**
  * Update the SCR according to network settings
  * @return true on success
  */
@@ -237,9 +250,23 @@ global define boolean Write() ``{
  * @return true on success
  */
 global define boolean Import(map settings) ``{
-    CONFIG = settings["config"]:$[];
+    map interfaces = listmap(map interface, settings["interfaces"]:[],``{
+	return([interface["device"]:"unknown",interface]);
+    });
+    map eth = $[];
+    map token = $[];
+    foreach(string device, map if_data, interfaces, ``{
+	if (issubstring(device, "eth")) {
+	    eth=add(eth,substring(device,3), if_data);
+	} else if (issubstring(device, "tr")) {
+	    token=add(token,substring(device,2), if_data);
+	}	    	    
+    });
+    
+    CONFIG=$["eth":eth,"tr":token];    
     DNS::Import(settings["dns"]:$[]);
-    Routing::Import(settings["routing"]:$[]);
+    Routing::Import(settings);
+    return true;
 }
 
 /**
@@ -248,11 +275,20 @@ global define boolean Import(map settings) ``{
  * @return dumped settings (later acceptable by Import())
  */
 global define map Export() ``{
-    return $[
-	"config"  : CONFIG,
-	"dns"     : DNS::Export(),
-	"routing" : Routing::Export()
-    ];
+    list autoinst_cfg = [];
+    foreach(string device, map data, CONFIG, ``{
+	list interfaces = maplist(string device_nr, map device_data, data, ``{
+	    device_data = add(device_data,"device", device + device_nr);
+	    return(device_data);
+	});
+	autoinst_cfg=union( autoinst_cfg, interfaces);	
+    });
+    return ($[
+	      "interfaces":autoinst_cfg,
+	      "dns":DNS::Export(),
+	      "routing":Routing::Export()
+    ]);
+    return true;
 }
 
 /**
