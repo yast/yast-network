@@ -49,7 +49,7 @@ any RemoteGUI() {
 define void ListHandler(map options) {
 
     string summary = "";
-    /* Headline */
+    /* Command line output Headline */
     summary = "\n" + _("Remote Configuration Summary:") + "\n\n" +
 	RichText::Rich2Plain(Remote::Summary()) + "\n";
 

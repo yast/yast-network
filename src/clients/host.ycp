@@ -66,7 +66,7 @@ any HostGUI() {
 define void ListHandler(map options) {
 
     string summary = "";
-    /* Headline */
+    /* Command line output Headline */
     // configuration of hosts
     summary = "\n" + _("Host Configuration Summary:") + "\n\n" +
 	RichText::Rich2Plain(Host::Summary()) + "\n";

@@ -391,7 +391,7 @@ at the end.</p>");
 	    continue;
 	}
 	else if(ret == `info) {
-	    /* Popup text */
+	    /* Popup text header*/
 	    Popup::LongText(_("Provider info"), `RichText(infotext), 43, 13);
 	    continue;
 	}

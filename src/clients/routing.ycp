@@ -66,7 +66,7 @@ any RoutingGUI() {
 define void ListHandler(map options) {
 
     string summary = "";
-    /* Headline */
+    /* Command line output Headline */
     summary = "\n" + _("Routing Configuration Summary:") + "\n\n" +
 	RichText::Rich2Plain(Routing::Summary()) + "\n";
 
