@@ -279,8 +279,7 @@ logs for details."));
 	{
 	    mark_label(2, `arrow);
 
-	    // FIXME: get from content file
-	    string url = "http://www.suse.com/relnotes/sl_83/release-notes.rpm";
+	    string url = Product::relnotesurl;
 
 	    integer pos = findlastof (url, "/");
 	    if (pos == nil)
