@@ -99,7 +99,7 @@ the <b>Netmask</b>.</p>");
 	    /* Frame label */
 	    `Frame(_("Virtual Aliases"), `HBox(`HSpacing(3), `VBox(
 		`VSpacing(1),
-		`Table(`id(`table), `header(
+		`Table(`id(`table), `opt(`notify), `header(
                     /* Table header label */
                     _("Alias Name"),
                     /* Table header label */
@@ -137,6 +137,7 @@ the <b>Netmask</b>.</p>");
 	UI::ChangeWidget(`id(`delete), `Enabled, items > 0);
 
 	ret = UI::UserInput();
+	y2milestone("ret=%1", ret);
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel) {
@@ -144,15 +145,15 @@ the <b>Netmask</b>.</p>");
 	    else continue;
 	}
 	/* edit alias */
-	else if(ret == `edit) {
+	else if(ret == `edit || ret == `table) {
 	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
-	    list<term> cur_item = filter(term e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
+	    list<term> cur_item = filter(term e, table_items, { return cur == select(select(e, 0, `empty()), 0, nil); });
 
 	    y2debug("cur=%1", cur);
 	    y2debug("cur_item=%1", cur_item);
 
 	    term item = cur_item[0]:nil;
-	    list forbidden = maplist(term e, table_items, ``(e[1]:""));
+	    list forbidden = maplist(term e, table_items, { return e[1]:""; });
 	    forbidden = filter(string h, (list<string>) forbidden, {
 		return h != item[1]:"";
 	    });
@@ -160,11 +161,11 @@ the <b>Netmask</b>.</p>");
 
 	    // if(!HostSystemPopup(item[1]:"", false)) continue;
 	    item = VirtualEditDialog(cur, item, forbidden);
-
+	    y2debug("item=%1", item);
 	    if(item == nil) continue;
 
 	    table_items = maplist(term e, table_items, {
-		if(cur == select(select(e, 0, []), 0, -1))
+		if(cur == select(select(e, 0, `empty()), 0, -1))
 		    return item;
 		return e;
 	    });
@@ -174,8 +175,9 @@ the <b>Netmask</b>.</p>");
 	}
 	/* add alias */
 	else if(ret == `add) {
-	    list forbidden = maplist(term e, table_items, ``(e[1]:""));
+	    list forbidden = maplist(term e, table_items, { return e[1]:""; });
 	    term item = VirtualEditDialog(max, `empty(), forbidden);
+	    y2debug("item=%1", item);
 	    if(item == nil) continue;
 
 	    table_items = add(table_items, item);
@@ -188,7 +190,7 @@ the <b>Netmask</b>.</p>");
 	/* delete alias */
 	else if(ret == `delete) {
 	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
-	    list<term> cur_item = filter(term e, table_items, ``(cur == select(select(e, 0, []), 0, nil)));
+	    list<term> cur_item = filter(term e, table_items, { return cur == select(select(e, 0, `empty()), 0, nil); });
 
 	    y2debug("cur=%1", cur);
 	    y2debug("cur_item=%1", cur_item);

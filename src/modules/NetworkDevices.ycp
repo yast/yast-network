@@ -318,10 +318,23 @@ global define boolean Write(string devregex) {
 		/* Write aliases */
 		if(k == "_aliases") {
 		    maplist(string anum, map<string,string> amap, devmap[k]:$[], {
+			// Normally defaulting the label would be done
+			// when creating the map, not here when
+			// writing, but we create it in 2 ways so it's
+			// better here. Actually it does not work because
+			// the edit dialog nukes LABEL :-(
+			boolean seen_label = false;
+
 			maplist(string ak, string av, amap, {
 			    string akk = ak + "_" + anum;
 			    SCR::Write(topath(p + akk), av);
+			    seen_label = seen_label || ak == "LABEL";
 			});
+
+			if (!seen_label)
+			{
+			    SCR::Write(topath(p + ("LABEL_" + anum)), anum);
+			}
 		    });
 		}
 		/* Write regular keys */
