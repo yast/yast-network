@@ -137,7 +137,7 @@ global define string DeviceStatus(string devtype, string devnum, map devmap) ``{
 	string proto = lookup(devmap, "BOOTPROTO", "static");
 	string addr = lookup(devmap, "IPADDR", "");
 
-	if(proto == "" || proto == "static")
+	if(proto == "" || proto == "static" || proto == "none")
 	    return sformat(_("Configured as %1 with address %2"), dev, addr);
 	else
 	    return sformat(_("Configured as %1 with %2"), dev, toupper(proto));
@@ -210,8 +210,8 @@ global define string DeviceType(string type) ``{
     if(type == "eth") return "Ethernet";
     if(type == "tr") return "Token-Ring";
     if(type == "fddi") return "FDDI";
-    if(type == "modem") return "Modem";
     if(type == "isdn") return "ISDN";
+    if(type == "ppp") return "Modem";
     return type;
 }
 
@@ -220,13 +220,13 @@ global define string DeviceType(string type) ``{
  * @param type type of devices in the table
  * @return table items
  */
-global define list CreateOverview(string type) ``{
+global define list BuildOverview(string type) ``{
     map devmap = lookup(CONFIG, type, $[]);
 
     list overview = maplist(`k, `v, devmap, ``{
 	string dev = sformat("%1%2", type, k);
 	string ip = lookup(v, "BOOTPROTO", "static");
-	if(ip == "" || ip == "static") ip = lookup(v, "IPADDR", "");
+	if(ip == "" || ip == "static" || ip == "none") ip = lookup(v, "IPADDR", "");
 	else ip = toupper(ip);
 	return `item(`id(dev), k, DeviceType(type), dev, /*"active?",*/ ip/*, "?", "?"*/);
     });

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jan 29 20:36:39 CET 2002 - msvec@suse.cz
+
+- reading progress for modems and isdn
+- modems writing and configuration partly done
+- 2.5.10
+
+-------------------------------------------------------------------
 Tue Jan 29 15:35:09 CET 2002 - msvec@suse.cz
 
 - network cards summary done

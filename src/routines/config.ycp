@@ -137,27 +137,21 @@ global define boolean WriteConfig() ``{
 	    /* write sysconfig */
 	    string dev = typ + num;
 	    string p = ".network.value.\"" + sysconfig + "/ifcfg-" + dev + "\".";
-	    SCR::Write(topath(p+"BOOTMODE"), "onboot");
-	    SCR::Write(topath(p+"UNIQUE"), lookup(devmap, "UNIQUE", ""));
-	    string proto = lookup(devmap, "BOOTPROTO", "static");
-	    SCR::Write(topath(p+"BOOTPROTO"), proto);
-	    if(proto == "" || proto == "static") {
-		SCR::Write(topath(p+"IPADDR"), lookup(devmap, "IPADDR", ""));
-		SCR::Write(topath(p+"NETMASK"), lookup(devmap, "NETMASK", ""));
-		SCR::Write(topath(p+"NETWORK"), lookup(devmap, "NETWORK", ""));
-		SCR::Write(topath(p+"BROADCAST"), lookup(devmap, "BROADCAST", ""));
-	    }
-	    else {
-		SCR::Write(topath(p+"IPADDR"), nil);
-		SCR::Write(topath(p+"NETMASK"), nil);
-		SCR::Write(topath(p+"NETWORK"), nil);
-		SCR::Write(topath(p+"BROADCAST"), nil);
-	    }
+
+	    /* write all keys to config */
+	    maplist(`k, mapkeys(devmap), ``{
+		if(k == "module" || k == "options") return;
+		SCR::Write(topath(p+k), lookup(devmap, k, ""));
+	    });
+
 	    /* write modules.conf */
-	    if(modul != nil && modul != "")
-		SCR::Write(.modules.alias, modul, dev);
-	    if(options != nil && options != "")
-		SCR::Write(.modules.options, options, dev);
+	    string mod = lookup(devmap, "module", "");
+	    string opts = lookup(devmap, "options", "");
+
+	    if(mod != nil && mod != "")
+		SCR::Write(.modules.alias, mod, dev);
+	    if(opts != nil && opts != "")
+		SCR::Write(.modules.options, opts, dev);
 	});
     });
 

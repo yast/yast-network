@@ -23,6 +23,7 @@
 module "ISDN";
 textdomain "network";
 
+import "Progress";
 import "Summary";
 
 include "network/config.ycp";
@@ -133,9 +134,42 @@ global define boolean Modified() ``{
     return modified;
 };
 
+/**
+ * Read all network settings from the SCR
+ * @return true on success
+ */
 global define boolean Read() ``{
+    string caption = _("Initializing ISDN card configuration");
+    integer steps = 2;
+
+    /* FIXME */
+    integer sl = 0; //1000;
+    sleep(sl);
+
+    Progress::New(caption, " ", steps, [
+        _("Detect devices"),
+        _("Read current configuration"),
+        //_("Read routing configuration"),
+        //_("Read hostname and DNS configuration"),
+        //_("Read installation information"),
+        //_("Detect current status"),
+    ], [], "");
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Detecting ISDN cards"));
     ReadHardware("isdn");
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Reading current configuration"));
     ReadConfig("isdn");
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Finished"));
+    sleep(sl);
+
+    if(Abort()) return false;
     return true;
 }
 
@@ -178,9 +212,8 @@ global define list Summary(boolean split) ``{
 /**
  */
 global define list Overview() ``{
-    return CreateOverview("isdn");
+    return BuildOverview("isdn");
 }
-
 
 /* EOF */
 }

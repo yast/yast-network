@@ -21,6 +21,7 @@
 
 textdomain "network";
 
+import "Modem";
 import "Wizard";
 
 include "ui/common_popups.ycp";
@@ -480,9 +481,12 @@ global define symbol runEditModemProviderDialog (boolean edit) ``{
 	    }
 	    else
 		ret = `next;
-	    if (`next == ret)
-	    {
-		user_settings = union (user_settings,
+
+	    if(ret == `next) {
+		Modem::Provider = name;
+		/* ... */
+
+		user_settings = union(user_settings,
 			$[	"Provider" : name,
 			    "YaST2 Section" : shortname,
 			    "Username" : us,
@@ -492,6 +496,7 @@ global define symbol runEditModemProviderDialog (boolean edit) ``{
 			    "Phone" : phone,
 			]
 		    );
+
 		if (!edit)
 		{
 		    modem_providers_to_write = add (modem_providers_to_write, name, user_settings);

@@ -305,7 +305,7 @@ global define list Summary(boolean split) ``{
  * @return table items
  */
 global define list Overview() ``{
-    return merge(CreateOverview("eth"), CreateOverview("tr"));
+    return merge(BuildOverview("eth"), BuildOverview("tr"));
 }
 
 /*-------------------*/
@@ -359,11 +359,11 @@ global define void SelectHW(integer which) ``{
 
     name = lookup(sel, "name", "");
     unique = lookup(sel, "unique", "");
-    modul = lookup(sel, "module", "");
-    options = lookup(sel, "options", "");
-    unique = lookup(sel, "unique", "");
     type = lookup(sel, "type", "eth");
     device = select(GetFreeDevices(type,1), 0, -1);
+
+    modul = lookup(sel, "module", "");
+    options = lookup(sel, "options", "");
 }
 
 /**
@@ -371,20 +371,21 @@ global define void SelectHW(integer which) ``{
  */
 global define boolean Add() ``{
 
-    /* kernel options */
+    /* general stuff */
     name = "";
+    type = "eth";
+    device = select(GetFreeDevices(type,1), 0, -1);
+    unique = "";
+
+    /* kernel options */
     modul = "";
     options = "";
-    unique = "";
-    type = "eth";
-
     pcmcia = false;
 
     /* address options */
     bootproto = "static";
     ipaddr = "";
     netmask = "";
-    device = select(GetFreeDevices(type,1), 0, -1);
 
     operation = `add;
     return true;
@@ -413,6 +414,8 @@ global define boolean Edit(string dev) ``{
     unique = lookup(devmap, "UNIQUE", "");
     device = num;
     type = typ;
+
+    if(bootproto == "" || bootproto == "none") bootproto = "static";
 
     operation = `edit;
     return true;
@@ -459,9 +462,9 @@ global define boolean Commit() ``{
 	change(newdev, "module", modul);
 	change(newdev, "options", options);
 	if(operation == `add)
-	    ConfigAdd(type, device, newdev,true);
+	    ConfigAdd(type, device, newdev, true);
 	else
-	    ConfigAdd(type, device, newdev,false);
+	    ConfigAdd(type, device, newdev, false);
     }
     else if(operation == `delete) {
 	ConfigDelete(type, device);

@@ -17,6 +17,8 @@
 
 {
 
+textdomain "network";
+
 /**
  * Read status information
  * @return true if success

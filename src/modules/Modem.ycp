@@ -23,6 +23,7 @@
 module "Modem";
 textdomain "network";
 
+import "Progress";
 import "Summary";
 
 include "network/config.ycp";
@@ -31,29 +32,47 @@ include "network/routines.ycp";
 include "network/summary.ycp";
 include "network/ip.ycp";
 
-global string Name = "xx";
-global string DialPrefix = "yy";
-global string Device = "zz";
+/* general stuff */
+global string name = "";
+global string type = "";
+global integer device = -1;
+global string unique = "";
+
+global string Init1 = "";
+global string Init2 = "";
+global string Init3 = "";
+global integer BaudRate = 115200;
+
 global boolean PulseDial = true;
-global boolean Speaker = true;
 global boolean Carrier = true;
+global boolean Speaker = true;
 
-global string Init1 = "aa";
-global string Init2 = "bb";
-global string Init3 = "cc";
-global integer BaudRate = 12345;
+global string Device = "";
+global string DialPrefix = "";
+global string Provider = "";
 
-global string Provider = "dd";
+/* provider settings */
 global boolean IsDefault = true;
 global boolean DialOnDemand = true;
-global string DefaultModem = "ee";
-global string DNS1 = "ff";
-global string DNS2 = "gg";
-global boolean Firewall = true;
+global string DefaultModem = "";
+global string DNS1 = "";
+global string DNS2 = "";
 
 global boolean AutoReconnect = true;
 global boolean AutoDNS = true;
-global string IdleSeconds = "hh";
+global string IdleSeconds = "0";
+
+/* other stuff */
+global boolean Firewall = false;
+
+/********************************************/
+/* Dane, hod prosim ty veci z provideru sem
+ * -- asi to bude minimalne toto: */
+
+string Username = "";
+string Password = "";
+string Phone = "";
+/* ... */
 
 /*--------------*/
 /* PRIVATE DATA */
@@ -71,6 +90,11 @@ map CONFIG = $[];
  * ]
  */
 list HARDWARE = [];
+
+/**
+ * Deleted devices
+ */
+list DELETED = [];
 
 /**
  * Abort function
@@ -100,29 +124,254 @@ global define boolean Modified() ``{
     return modified;
 };
 
+/**
+ * Read all network settings from the SCR
+ * @return true on success
+ */
 global define boolean Read() ``{
-    ReadHardware("modem");
+
+    string caption = _("Initializing modem configuration");
+    integer steps = 2;
+
+    /* FIXME */
+    integer sl = 0; //1000;
+    sleep(sl);
+
+    Progress::New(caption, " ", steps, [
+        _("Detect devices"),
+        _("Read current configuration"),
+        //_("Read routing configuration"),
+        //_("Read hostname and DNS configuration"),
+        //_("Read installation information"),
+        //_("Detect current status"),
+    ], [], "");
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Detecting modems"));
+    ReadHardware("ppp");
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Reading current configuration"));
     ReadConfig("ppp");
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Finished"));
+    sleep(sl);
+
+    if(Abort()) return false;
     return true;
 }
 
+/**
+ * Update the SCR according to network settings
+ * @return true on success
+ */
 global define boolean Write() ``{
+
+    string caption = _("Saving network configuration");
+    integer steps = 2;
+
+    /* FIXME */
+    integer sl = 0; //1000;
+    sleep(sl);
+
+    Progress::New(caption, " ", steps, [
+        _("Write configuration"),
+        _("Write provider information"),
+    ], [], "");
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Writing configuration"));
+    WriteConfig();
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Writing /etc/modules.conf"));
+    //WriteProviders();
+    sleep(sl);
+
+    if(Abort()) return false;
     return true;
 }
 
+/**
+ * Select the given hardware item or clean up structures
+ * @param which item to be chosen
+ */
+// FIXME: -> routines/hardware.ycp (?)
+global define void SelectHW(integer which) ``{
+    map sel = $[];
+
+    if(which != nil)
+	sel = select(HARDWARE, which, $[]);
+
+    if(which > size(HARDWARE) || which < 0)
+	y2error("Item not found in HARDWARE: %1 (%2)", which, size(HARDWARE));
+
+    name = lookup(sel, "name", "");
+    unique = lookup(sel, "unique", "");
+    type = lookup(sel, "type", "eth");
+    device = select(GetFreeDevices(type,1), 0, -1);
+
+    BaudRate = sel["speed"]:"115200";
+    Device = sel["device_name"]:"";
+    Init1 = sel["init1"]:"";
+    Init2 = sel["init2"]:"";
+}
+
+/**
+ * @return true if success
+ */
 global define boolean Add() ``{
+
+    /* general stuff */
+    name = "";
+    type = "ppp";
+    device = select(GetFreeDevices(type,1), 0, -1);
+    unique = "";
+
+    /* ... */
+    DialPrefix = "";
+    Device = "";
+    PulseDial = true;
+    Speaker = true;
+    Carrier = true;
+
+    Init1 = "";
+    Init2 = "";
+    Init3 = "";
+    BaudRate = 115200;
+
+    Provider = "";
+    IsDefault = true;
+    DialOnDemand = true;
+    DefaultModem = "";
+    DNS1 = "";
+    DNS2 = "";
+    Firewall = false;
+
+    AutoReconnect = true;
+    AutoDNS = true;
+    IdleSeconds = "0";
+
+    operation = `add;
     return true;
 }
 
-global define boolean Edit() ``{
+/**
+ * @return true if success
+ */
+global define boolean Edit(string dev) ``{
+    operation = nil;
+    string typ = device_type(dev);
+    integer num = device_num(dev);
+    string n = sformat("%1",num);
+
+    map typemap = lookup(CONFIG, typ, $[]);
+    if(!haskey(typemap, n)) {
+        y2error("Key not found: %1", dev);
+        return false;
+    }
+    map devmap = lookup(typemap, n, $[]);
+
+    /* general stuff */
+    type = typ;
+    device = num;
+    unique = devmap["UNIQUE"]:"";
+
+    /* ... */
+    Init1 = devmap["INIT1"]:"";
+    Init2 = devmap["INIT2"]:"";
+    Init3 = devmap["INIT3"]:"";
+    BaudRate = devmap["SPEED"]:115200;
+
+    PulseDial = devmap["PULSE_DIALING"]:true;
+    Carrier = devmap["DETECT_CARRIER"]:true;
+    Speaker = devmap["SPEAKER_ON"]:true;
+
+    Device = devmap["MODEM_DEVICE"]:"";
+    DialPrefix = devmap["DIAL_PREFIX"]:"";
+
+    Provider = devmap["PROVIDER"]:"";
+
+    /* FIXME provider settings */
+    DialOnDemand = false;
+    DefaultModem = "";
+    IsDefault = true;
+
+    DNS1 = "";
+    DNS2 = "";
+
+    AutoReconnect = true;
+    AutoDNS = true;
+    IdleSeconds = "0";
+
+    /* other stuff */
+    Firewall = false;
+
+    operation = `edit;
     return true;
 }
 
-global define boolean Delete() ``{
+/**
+ * @return true if success
+ */
+global define boolean Delete(string dev) ``{
+    operation = nil;
+    string typ = device_type(dev);
+    integer num = device_num(dev);
+
+    map typemap = lookup(CONFIG, typ, $[]);
+    if(!haskey(typemap, sformat("%1",num))) {
+        y2error("Key not found: %1", dev);
+        return false;
+    }
+
+    type = typ;
+    device = num;
+    operation = `delete;
     return true;
 }
 
+/**
+ * @return true if success
+ */
 global define boolean Commit() ``{
+    y2debug("Commit(%1)",operation);
+    if(operation == `add || operation == `edit) {
+	map newdev = $[
+	    "BOOTMODE"	: "off",
+	    "BOOTPROTO"	: "none",
+	    "UNIQUE"	: unique,
+	    "INIT1"	: Init1,
+	    "INIT2"	: Init2,
+	    "SPEED"	: BaudRate,
+	    "PULSE_DIALING"	: PulseDial ? "yes" : "no",
+	    "DETECT_CARRIER"	: Carrier ? "yes" : "no",
+	    "SPEAKER_ON"	: Speaker ? "yes" : "no",
+	    "MODEM_DEVICE"	: Device,
+	    "DIAL_PREFIX"	: DialPrefix,
+	    "PROVIDER"		: Provider,
+	];
+
+	if(operation == `add)
+	    ConfigAdd(type, device, newdev, true);
+	else
+	    ConfigAdd(type, device, newdev, false);
+    }
+    else if(operation == `delete) {
+	ConfigDelete(type, device);
+	change(DELETED, type+device);
+    }
+    else {
+	y2error("Unknown operation: %1", operation);
+	return false;
+    }
+
+    modified = true;
+    operation = nil;
     return true;
 }
 
@@ -145,7 +394,15 @@ global define list Summary(boolean split) ``{
 /**
  */
 global define list Overview() ``{
-    return CreateOverview("ppp");
+    return BuildOverview("ppp");
+}
+
+/**
+ */
+define boolean Abort() ``{
+    if(AbortFunction != nil)
+        return eval(AbortFunction) == true;
+    return false;
 }
 
 /* EOF */

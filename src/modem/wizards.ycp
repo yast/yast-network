@@ -160,6 +160,7 @@ global define symbol OneModemSequence(boolean detected) ``{
 	"new_provider"		: ``(runEditModemProviderDialog(false)),
 	"connection"		: ``(modem_connection()),
 	"connection_details"	: ``(modem_connection_details()),
+	"commit"		: [ ``(Commit()), true ],
     ];
 
     string entry = "parameters";
@@ -199,14 +200,17 @@ global define symbol OneModemSequence(boolean detected) ``{
 	    `abort  : `abort
 	],
 	"connection" : $[
-	    `next   : `next,
 	    `Details: "connection_details",
+	    `next   : "commit",
 	    `abort  : `abort
 	],
 	"connection_details" : $[
 	    `next   : "connection",
 	    `abort  : `abort
-	]
+	],
+	"commit" : $[
+	    `next   : `next,
+	],
     ];
 
     return WizardSequencer(aliases, sequence);

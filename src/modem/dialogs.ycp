@@ -41,7 +41,7 @@ global define symbol modem_params(symbol Type) ``{
 
     /* PREPARE VARIABLES */
 
-    string Name = Modem::Name;
+    string name = Modem::name;
     string DialPrefix = Modem::DialPrefix;
     string Device = Modem::Device;
 
@@ -54,7 +54,7 @@ global define symbol modem_params(symbol Type) ``{
 /* Old code:
     map Modem = lookup(TmpConfiguration, "Modem", $[]);
     map Provider = lookup(TmpConfiguration, "Provider", $[]);
-    string Name = lookup(Modem, "YaST2 Section", "random_name" /*GenerateRandomModemName() );		// FIXME: function GenerateRandomModemName()
+    string name = lookup(Modem, "YaST2 Section", "random_name" /*GenerateRandomModemName() );		// FIXME: function GenerateRandomModemName()
     string DialPrefix = lookup(Modem, "Dial Prefix", "");
     string Device = lookup(Modem, "Modem", "/dev/modem");
     boolean PulseDial = (filterchars(lookup(Modem, "Dial Command", ""), "P") == "P");
@@ -116,7 +116,7 @@ Initialization strings.</p>");
 		DeviceTerm,
 		`VSpacing(0.5),
 		`HBox(
-		    `TextEntry(`id(`ModemName), _("&Modem name"), Name),
+		    `TextEntry(`id(`ModemName), _("&Modem name"), name),
 		    `TextEntry(`id(`DialPrefix), _("Dial prefi&x (if needed)"), DialPrefix)
 		),
 		`VSpacing(0.8),
@@ -181,15 +181,17 @@ Initialization strings.</p>");
 	}
 	else if(ret == `next || ret == `Details) {
 
-	    Name = UI::QueryWidget(`id(`ModemName), `Value);
+	    name = UI::QueryWidget(`id(`ModemName), `Value);
 
-	    if (Name == "" || findfirstof(Name, " \t") != nil) {
-		UI::MessagePopup(_("Modem Name cannot contains spaces"));
+	    /*
+	    if (name == "" || findfirstof(name, " \t") != nil) {
+		UI::MessagePopup(_("Modem name cannot contains spaces"));
 		ret = nil;
 		continue;
 	    }
+	    */
 
-	    if (false/*!IsModemNameUniq(Name)*/) {		// FIXME: function IsModemNameUniq(Name)
+	    if (false/*!IsModemNameUniq(name)*/) {		// FIXME: function IsModemNameUniq(name)
 		UI::MessagePopup(_("This modem name already exist"));
 		continue;
 	    }
@@ -207,7 +209,7 @@ Initialization strings.</p>");
 
     if (ret == `next || ret == `Details)
     {
-	  Modem::Name = UI::QueryWidget(`id(`ModemName), `Value);
+	  Modem::name = UI::QueryWidget(`id(`ModemName), `Value);
 	  Modem::DialPrefix = UI::QueryWidget(`id(`DialPrefix), `Value);
 
 	  if (Type != `Detected)
@@ -510,8 +512,6 @@ global define symbol modem_connection_details() ``{
     boolean AutoDNS = Modem::AutoDNS;
     string IdleSeconds = Modem::IdleSeconds;
 
-    string help = _("<p>Check the buttons for reestablishing connection and modifying DNS according to your wish.</p>");
-
     list seconds = [ "30", "60", "90", "120", "150", "180", "240", "300", "360", "480", "600" ];
 
     if (!contains(seconds, IdleSeconds))
@@ -522,7 +522,7 @@ global define symbol modem_connection_details() ``{
     /* DIALOG TEXTS */
 
     string caption = _("Connection parameters details");
-    string helptext = _("...");
+    string helptext = _("<p>Check the buttons for reestablishing connection and modifying DNS according to your wish.</p>");
 
     /* DIALOG CONTENTS */
 

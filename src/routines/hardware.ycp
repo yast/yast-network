@@ -33,9 +33,9 @@ global define boolean ReadHardware(string hwtype) ``{
     list allcards = [];
 
     map hwtypes = $[
+	"netcard" : .probe.netdev,
 	"isdn" : .probe.isdn,
-	"modem" : .probe.modem,
-	"netcard" : .probe.netdev
+	"ppp" : .probe.modem,
     ];
 
     /* read the corresponding hardware */
@@ -60,9 +60,9 @@ global define boolean ReadHardware(string hwtype) ``{
 	change(one, "num", num);
 
 	/* modem */
-	if(controller == "modem") {
+	if(controller == "ppp") {
 	    map resource = lookup(card, "resource", []);
-	    change(one, "dev_name", lookup(card, "dev_name", ""));
+	    change(one, "device_name", lookup(card, "dev_name", ""));
 	    change(one, "speed", lookup(select(lookup(resource, "baud", []), 0, $[]), "speed", ""));
 	    change(one, "init1", lookup(select(lookup(resource, "init_strings", []),0,$[]), "init1", ""));
 	    change(one, "init2", lookup(select(lookup(resource, "init_strings", []),0,$[]), "init2", ""));
@@ -132,7 +132,7 @@ global define string DeviceName(map hwdevice) ``{
  */
 global define string ControllerType(map hwdevice) ``{
 
-    if(lookup(hwdevice, "subclass", "") == "Modem") return "modem";
+    if(lookup(hwdevice, "subclass", "") == "Modem") return "ppp";
     if(lookup(hwdevice, "subclass", "") == "ISDN") return "isdn";
 
     integer subclass_id = lookup(hwdevice, "sub_class_id", -1);
@@ -153,7 +153,7 @@ global define string ControllerType(map hwdevice) ``{
 	else return "eth";  /* default */
     }
     else if(lookup(hwdevice, "class_id", -1) == 0x102)
-	return "modem";
+	return "ppp";
     else if(lookup(hwdevice, "class_id", -1) == 0x103)
 	return "isdn";
 
