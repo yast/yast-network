@@ -353,7 +353,9 @@ the logs for details.
 	    mark_label(3, `arrow);
 
 	    // proxy settings are read from /root/.curlrc
-	    string cmd = "/usr/bin/online_update -q -V";
+	    // string cmd = "/usr/bin/online_update -q -V";
+	    // ugly hack (see bug #42177)
+	    string cmd = "/bin/false";
 	    cmd = cmd + "> " + logdir + "/you.log 2>&1";
 	    integer ret = (integer) SCR::Execute (.target.bash, cmd,
 					$["LANG" : GetLanguageUTF8 ()]);

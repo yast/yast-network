@@ -187,6 +187,8 @@ define string CheckEmptyName(string devtype, string hwname) {
 	/* Device type label */
 	"iucv"		: _("Inter User Communication Vehicle (IUCV)"),
 	/* Device type label */
+	"lcs"		: _("LCS"),
+	/* Device type label */
 	"lo"		: _("Loopback device"),
 	/* Device type label */
 	"modem"		: _("Modem"),
@@ -206,6 +208,8 @@ define string CheckEmptyName(string devtype, string hwname) {
 	"ppp-pcmcia"	: _("PCMCIA Modem"),
 	/* Device type label */
 	"ppp-usb"	: _("USB Modem"),
+	/* Device type label */
+	"qeth"		: _("OSA-Express / QDIO Device (QETH)"),
 	/* Device type label */
 	"sit"		: _("IPv6-in-IPv4 Encapsulation Device"),
 	/* Device type label */
@@ -339,10 +343,10 @@ define string DeviceStatus(string devtype, string devnum, map devmap) {
 		return sformat(_("Configured"));
 	    else if(remip == "" || remip == nil)
 		/* Network card status (%1 is address) */
-		return sformat(_("Configured with address %1"), addr);
+		return sformat(_("Configured with Address %1"), addr);
 	    else
 		/* Network card status (%1 is address, %2 is address) */
-		return sformat(_("Configured with address %1 (remote %2)"), addr, remip);
+		return sformat(_("Configured with Address %1 (remote %2)"), addr, remip);
 	}
 	else
 	    /* Network card status (%1 is protocol) */
@@ -433,7 +437,7 @@ define list BuildOverview(list<map> Hardware) {
 		    //hwname = CheckEmptyName(devtype, HardwareName(unq));
 		    string adev = alias_name(type, k, aid);
 		    ip = DeviceProtocol(amap);
-		    item = `item(`id(adev), adev, DeviceType(adev), ip);
+		    item = `item(`id(adev), DeviceType(adev), adev, ip);
 		    overview = add(overview, item);
 		});
 

@@ -11,8 +11,9 @@
 
 textdomain "network";
 
-import "Label";
 import "ISDN";
+import "Label";
+import "Provider";
 import "Sequencer";
 import "Wizard";
 

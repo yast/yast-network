@@ -11,6 +11,8 @@
 
 textdomain "network";
 
+import "Arch";
+// Arch::s390 = true;
 import "Label";
 import "Lan";
 import "Sequencer";
@@ -163,10 +165,17 @@ define symbol NetworkCardSequence(string action) ``{
     map aliases = $[
 	"hardware"	: ``(HardwareSequence()),
 	"address"	: ``(AddressSequence()),
+	"s390"		: ``(S390Dialog()),
     ];
 
     string ws_start = "hardware";
     if(action == "edit") ws_start = "address";
+
+    /* CTC and QETH devices */
+    if(Arch::s390 && Lan::operation == `add && Lan::unique != "") {
+	if(Lan::type == "ctc" || Lan::type == "qeth" || Lan::type == "iucv") ws_start = "s390";
+	// else if(Lan::type == "iucv") ws_start = "hardware";
+    }
 
     map sequence = $[
 	"ws_start" : ws_start,
@@ -178,6 +187,10 @@ define symbol NetworkCardSequence(string action) ``{
 	    `abort	: `abort,
 	    `hardware	: "hardware",
 	    `next	: `next,
+	],
+	"s390" : $[
+	    `abort	: `abort,
+	    `next	: "address",
 	],
     ];
 
@@ -250,6 +263,7 @@ define symbol AddressSequence() ``{
 	"virtual"	: ``(VirtualDialog(false)),
 	"hostname"	: ``(DNSMainDialog(false)),
 	"routing"	: ``(RoutingMainDialog(false)),
+	"s390"		: ``(S390Dialog()),
 	"commit"	: [ ``(Commit()), true ],
     ];
 
@@ -265,7 +279,12 @@ define symbol AddressSequence() ``{
 	    `routing	: "routing",
 	    `hostname	: "hostname",
 	    `virtual	: "virtual",
+	    `s390	: "s390",
 	    `hardware	: `hardware,
+	],
+	"s390" : $[
+	    `abort	: `abort,
+	    `next	: "address",
 	],
 	"dhcp" : $[
 	    `abort	: `abort,

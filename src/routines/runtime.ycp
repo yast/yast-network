@@ -56,10 +56,7 @@ define boolean RunSuSEconfigModule(string modul) {
  * @return true if success
  */
 define boolean StartNetwork() {
-    boolean ret = true;
-    if(Arch::s390) ret = Service::Start("chandev");
-    ret = Service::Start("network") && ret;
-    return ret;
+    return Service::Start("network");
 }
 
 /**

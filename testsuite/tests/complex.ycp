@@ -1,5 +1,7 @@
 {
 
+// testedfiles: complex.ycp
+
 include "testsuite.ycp";
 
 map Devs = $[];

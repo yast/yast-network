@@ -370,6 +370,7 @@ global define boolean Commit() {
 	    "UNIQUE"	: unique,
 	    "INIT1"	: Init1,
 	    "INIT2"	: Init2,
+	    "INIT3"	: Init3,
 	    "SPEED"	: sformat("%1", BaudRate),
 	    "INIT8"	: Speaker ? "ATM1" : "ATM0",
 	    "INIT9"	: Carrier ? "" : "ATX3",

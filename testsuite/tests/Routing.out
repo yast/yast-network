@@ -1,28 +1,7 @@
-Read	.target.tmpdir "/tmp"
-Read	.target.size "/etc/install.inf" 1
-Read	.etc.install_inf.Sourcemounted nil
-Read	.etc.install_inf.AutoYaST nil
-Read	.etc.install_inf.Repair nil
-Read	.etc.install_inf.Demo nil
-Read	.etc.install_inf.Textmode nil
-Read	.etc.install_inf.Manual nil
-Read	.target.string "/proc/cmdline" nil
-Read	.etc.install_inf.Console nil
-Read	.etc.install_inf.Braille nil
-Read	.etc.install_inf.VNC nil
-Read	.etc.install_inf.UseSSH nil
-Read	.etc.install_inf.InstMode nil
-Read	.probe.architecture nil
-Read	.probe.has_apm nil
-Read	.probe.has_pcmcia nil
-Read	.probe.is_uml nil
-Read	.probe.has_smp nil
-Read	.probe.system []
 Dump	Read
 Read	.target.size "/etc/sysconfig/network/routes" 1
 Read	.routes [$["1":"r1"], $["2":"r2"]]
 Read	.sysconfig.sysctl.IP_FORWARD "yes"
-Dir	.network.section: []
 Return	true
 Dump	Routing::routes [$["1":"r1"], $["2":"r2"]]
 Dump	Write

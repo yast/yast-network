@@ -12,6 +12,7 @@
 textdomain "network";
 
 import "Label";
+import "Lan";
 import "NetworkConfig";
 import "Popup";
 import "Wizard";
@@ -33,7 +34,7 @@ define any DetailsDialog() {
     string help = _("<p>Configure the detailed network card settings here.</p>") +
 
     /* Details dialog help 2/8 */
-    _("<p>You can set the maximum transfer unit (<b>MTU</b>) of an interface</p>") +
+    _("<p>You can set the maximum transfer unit (<b>MTU</b>) of an interface.</p>") +
 
     /* Details dialog help 3/8 */
 _("<p><b>Device Activation</b> may either happen during boot or manually

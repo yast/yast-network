@@ -1,7 +1,7 @@
 /**
  * File:	modules/Internet.ycp
  * Package:	Network configuration
- * Summary:	Internet data
+ * Summary:	Internet connection and YOU during the installation
  * Authors:	Michal Svec <msvec@suse.cz>
  *		Arvin Schnell <arvin@suse.de>
  *
@@ -100,6 +100,7 @@ global define boolean FindFastest() {
 global define boolean Start(string log) {
 
     if ((type == "dsl" && capi_adsl) || (type == "isdn")) {
+	// TODO use Service::
 	if(SCR::Execute(.target.bash, "/etc/init.d/isdn status") != 0) {
 	    if(SCR::Execute(.target.bash, "/etc/init.d/isdn start") != 0) {
 		y2error("starting of isdn failed");

@@ -192,18 +192,10 @@ the <b>Netmask</b>.</p>");
 
 	    y2debug("cur=%1", cur);
 	    y2debug("cur_item=%1", cur_item);
-
-	    term item = cur_item[0]:nil;
-	    // if(!HostSystemPopup(item[1]:"", true)) continue;
+	    y2debug("table_items=%1", table_items);
 
 	    table_items = filter(term e, table_items, {
-		string ip = e[1]:"";
-		if(cur == select(select(e, 0, []), 0, nil)) {
-		    // if(ip != "" && ip != nil)
-			// Host::Deleted = add(Host::Deleted, ip);
-		    return false;
-		}
-		return true;
+		return cur != select(select(e, 0, `empty()), 0, nil);
 	    });
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
 	    items = size(table_items);

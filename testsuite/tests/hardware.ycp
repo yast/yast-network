@@ -1,6 +1,10 @@
 {
 
+// testedfiles: hardware.ycp
+
 include "testsuite.ycp";
+
+TESTSUITE_INIT([], nil);
 
 string name = "";
 string type = "";

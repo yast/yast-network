@@ -5,6 +5,11 @@
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
+ *
+ * Uses SuSEfirewall2.rpm. Only operates on
+ * .sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS.
+ * See also the standalone module yast2-firewall.rpm, SuSEFirewall2.ycp
+ * to which we eventually should migrate.
  */
 
 {
@@ -109,6 +114,8 @@ global define list Export() {
 
 /**
  * Convert real device to the firewall device specification
+ * The firewall was one of the first to feel the pain of changing
+ * interface names so it uses "modem" for pppX.
  * @param device real device
  * @return firewall device
  */

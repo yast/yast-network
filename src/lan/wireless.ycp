@@ -18,6 +18,25 @@ import "Wizard";
 
 include "network/routines.ycp";
 
+// key input type buttons
+term type_w = `RadioButtonGroup (
+    `id (`type_g),
+    `VBox (
+	// Translators: input type for a wireless key
+	// radio button group label
+	`Left (`Label (_("Key Input Type"))),
+	`Left (`HBox (
+		   // Translators: input type for a wireless key
+		   `RadioButton (`id ("passphrase"), _("Passphrase")),
+		   `HSpacing (1),
+		   // Translators: input type for a wireless key
+		   `RadioButton (`id ("ascii"), _("ASCII")),
+		   `HSpacing (1),
+		   // Translators: input type for a wireless key
+		   // (Hexadecimal)
+		   `RadioButton (`id ("hex"), _("Hexadecimal"))))
+	)
+    );
 
 // shared between WirelessDialog and WirelessKeyPopup
 // this is suited to the button-switched key typing
@@ -26,13 +45,59 @@ string wep_key_help =
  _("<p>Choose among three <b>key input types</b> for your key.
 <br><b>Passphrase</b>: The key is generated from the phrase entered.
 <br><b>ASCII</b>: The ASCII values of the characters entered form the
-key. You must enter five characters for 64-bit keys and six to thirteen
+key. Enter five characters for 64-bit keys and six to thirteen
 characters for 128-bit keys.
-<br><b>Hexadecimal</b>: Directly enter the hex codes of the key. You must enter
+<br><b>Hexadecimal</b>: Directly enter the hex codes of the key. Enter
 ten hex digits for 64-bit keys and 26 digits for 128-bit keys. You may
 use dashes ('-') to separate pairs of digits or groups of them (for
-example '0a5f-41e6-48').
-</p>");
+example, '0a5f-41e6-48').
+</p>
+");
+
+/**
+ * Compose a typed key into a single-string representation
+ * @param type "passphrase", "ascii", "hex"
+ * @param key
+ * @return prefixed key
+ */
+define string ComposeKey (string type, string key) ``{
+// prefixes for key types
+map <string, string> prefix = $[
+    "ascii": "s:",
+    "passphrase": "h:",
+    "hex": "",
+    ];
+
+    // empty key - don't prepend a type (#40431)
+    if (key == "")
+    {
+	return "";
+    }
+    else
+    {
+	return (prefix[type]:"?:") + key;
+    }
+}
+
+define map<string, string> ParseKey (string tkey) ``{
+    if (substring (tkey, 0, 2) == "s:") 
+    {
+	return $[ "key": substring (tkey, 2), "type": "ascii", ];
+    }
+    else if (substring (tkey, 0, 2) == "h:") 
+    {
+	return $[ "key": substring (tkey, 2), "type": "passphrase", ];
+    }
+    // make passphrase the default key type, #40431
+    else if (tkey == "")
+    {
+	return $[ "key": tkey, "type": "passphrase", ];
+    }
+    else
+    {
+	return $[ "key": tkey, "type": "hex", ];
+    }
+}
 
 /**
  * Is the entered key valid?
@@ -40,6 +105,11 @@ example '0a5f-41e6-48').
  * (or better adjust the length?)
  */
 define boolean CheckWirelessKey (string key) ``{
+    if (key == nil)
+    {
+	return false;
+    }
+
     if (regexpmatch (key, "^s:.{5}$") && true /* 64b */ ||
 	regexpmatch (key, "^s:.{6,13}$") && true /* 128b */)
     {
@@ -79,6 +149,8 @@ define any WirelessDialog() ``{
     string helptext = _("<p>Here, set the most important settings
 for wireless networking.</p>") +
 
+	// TODO for next translation,
+	// restrict to Ad-hoc, Managed and Master only
     /* Wireless dialog help 2/7 */
 _("<p>The <b>Operating Mode</b> depends on the network topology. The mode
 can be <b>Ad-hoc</b> (peer-to-peer network without an access point),
@@ -88,16 +160,14 @@ synchronization master or acts as an access point), <b>Repeater</b>
 (the node forwards packets on the air), <b>Secondary</b> (the node acts
 as a backup master or repeater), or <b>Auto</b>.</p>") +
 
+	// TODO for next translation
+	// remove reference to NWID
     /* Wireless dialog help 3/7 */
 _("<p>Set the <b>Network Name (ESSID)</b> used to identify cells that are
 part of the same virtual network. As opposed to the NWID, which defines a
 single cell, the ESSID defines a group of cells, connected via repeaters or
 infrastructure, where the user may roam.</p>") +
 
-    /* Wireless dialog help 4/7 */
-_("<p>As all adjacent wireless networks share the same medium, the <b>Network
-Identifier (NWID)</b> is used to differentiate them (create logical colocated
-networks) and identify nodes belonging to the same cell.</p>") +
 
     /* Wireless dialog help 5/7 */
 _("<p>WEP (Wired Equivalent Privacy) is a system to encrypt wireless
@@ -108,25 +178,20 @@ WEP is not safe as there are attack methods known to work,
 but it helps to improve security. To use WEP, enter the
 WEP encryption <b>key</b> to use. It can have a <b>key
 length</b> of 64 or 128 bits (although 24 bits are dynamically
-generated, so you only need to enter 40 resp. 104 bits).</p>") +
+generated, so you only need to enter 40 or 104 bits).</p>
+") +
 
 wep_key_help +
-       
-    /* Wireless dialog help 5/7 */
-	// FIXME remove when the radiobuttons work
-_("<p>To set the current <b>Encryption Key</b>, enter the key in hex digits as
-XXXX-XXXX-XXXX-XXXX or XXXXXXXX. You can also enter the key as an ASCII
-string by using the 's:' prefix.</p>") +
-
-    /* Wireless dialog help 6/7 */
-_("<p>The <b>Nick Name</b> means the station name. Most 802.11 products
-define it, but only some diagnostic tools use it.</p>") +
 
     /* Wireless dialog help 7/7 */
 _("<p>These values will be written to the interface configuration file
 'ifcfg-*' in '/etc/sysconfig/network'. If you need additional settings,
 add them manually. Refer to the file 'wireless' in the same directory for all
 available options.</p>");
+
+    map<string, string> wkey = ParseKey (Lan::wl_key[0]:"");
+    string key = wkey["key"]:"";
+    string type = wkey["type"]:"";
 
     /* PushButton label */
     term multikeys = `PushButton(`id(`keys), _("&Multiple Keys"));
@@ -147,27 +212,19 @@ available options.</p>");
 		    /* ComboBox item */
 		    `item(`id("Managed"), _("Managed"), Lan::wl_mode == "Managed"),
 		    /* ComboBox item */
-		    `item(`id("Repeater"), _("Repeater"), Lan::wl_mode == "Repeater"),
-		    /* ComboBox item */
-		    `item(`id("Secondary"), _("Secondary"), Lan::wl_mode == "Secondary"),
-		    /* ComboBox item */
-		    `item(`id("Automatic"), _("Automatic"), Lan::wl_mode == "Auto")
+		    `item(`id("Master"), _("Master"), Lan::wl_mode == "Master")
 		 ]),
 		`VSpacing(0.2),
 		/* Text entry label */
 		`TextEntry(`id(`essid), _("Ne&twork Name (ESSID)"), Lan::wl_essid),
 		`VSpacing(0.2),
-		/* Text entry label */
-		`TextEntry(`id(`nwid), _("Network &Identifier (NWID)"), Lan::wl_nwid),
+		type_w,
 		`VSpacing(0.2),
 		/* Text entry label */
-		`TextEntry(`id(`key), _("&Encryption Key"), Lan::wl_key[0]:""),
-		`VSpacing(0.2),
-		/* Text entry label */
-		`TextEntry(`id(`nick), _("Nic&k Name"), Lan::wl_nick),
+		`TextEntry(`id(`key), _("&Encryption Key"), key),
 		`VSpacing(1)
 		), `HSpacing(2))),
-	    `VSpacing(0.5),
+	    `VSpacing(1),
 	    `HBox(
 		/* PushButton label */
 		`PushButton(`id(`expert), _("E&xpert Settings")),
@@ -183,7 +240,9 @@ available options.</p>");
 	    Label::BackButton(), Label::OKButton());
 
     // UI::ChangeWidget(`id(`keys), `Enabled, false);
+    UI::ChangeWidget (`id (`type_g), `CurrentButton, type);
 
+    string ckey = nil;
     any ret = nil;
     while(true) {
 	ret = UI::UserInput();
@@ -205,13 +264,12 @@ available options.</p>");
 		continue;
 	    }
 
-	    /* Key is either:
-	     *   s:AAAAA (5 ascii chars or more) or
-	     *   XXXX-XXXX-XX or XXXXXXXXXX (10 or more hex digits)
-	     */
-	    string key = (string) UI::QueryWidget(`id(`key), `Value);
-	    if(key != "") {
-		if (!CheckWirelessKey (key))
+	    key = (string) UI::QueryWidget (`id (`key), `Value);
+	    type = (string) UI::QueryWidget (`id (`type_g), `CurrentButton);
+	    ckey = ComposeKey (type, key);
+	    if (ckey != "") {
+		// TODO validate also according to key length
+		if (!CheckWirelessKey (ckey))
 		{
 		    UI::SetFocus(`id(`key));
 		    /* Popup text */
@@ -238,10 +296,8 @@ Really continue?");
 
     if(ret == `next || ret == `expert || ret == `keys) {
 	Lan::wl_essid = (string) UI::QueryWidget(`id(`essid), `Value);
-	Lan::wl_nick = (string) UI::QueryWidget(`id(`nick), `Value);
-	Lan::wl_nwid = (string) UI::QueryWidget(`id(`nwid), `Value);
 	Lan::wl_mode = (string) UI::QueryWidget(`id(`mode), `Value);
-	Lan::wl_key[0] = (string) UI::QueryWidget(`id(`key), `Value);
+	Lan::wl_key[0] = ckey;
     }
 
     return ret;
@@ -283,8 +339,9 @@ be disconnected from AC power.</p>");
 
     string helpunused =
     /* Wireless expert dialog help 2b/5 */
-    _("<p>If you would prefer to specify the <b>Frequency</b> instead of
-the channel, do this by selecting the desired value.</p>");
+    _("<p>To specify the <b>Frequency</b> instead of
+the channel, select the desired value.</p>
+");
 
     /* Combobox label */
     term freq = `ComboBox(`id(`frequency), `opt(`hstretch), _("&Frequency"), [
@@ -378,52 +435,10 @@ the channel, do this by selecting the desired value.</p>");
 define string WirelessKeyPopup (string tkey) ``{
     ScreenName("lan-hardware-wireless-key");
 
-//    string key = wkey["key"]:"";
-//    string type = wkey["type"]:"";
+    map<string, string> wkey = ParseKey (tkey);
+    string key = wkey["key"]:"";
+    string type = wkey["type"]:"";
 
-    string key = "";
-    string type = "";
-    if (substring (tkey, 0, 2) == "s:") 
-    {
-	key = substring (tkey, 2);
-	type = "ascii";
-    }
-    else if (substring (tkey, 0, 2) == "h:") 
-    {
-	key = substring (tkey, 2);
-	type = "passphrase";
-    }
-    else
-    {
-	key = tkey;
-	type = "hex";
-    }
-
-    map <string, string> prefix = $[
-	"ascii": "s:",
-	"passphrase": "h:",
-	"hex": "",
-	];
-
-    // Translators: input type for a wireless key
-    // radio button group label
-    term type_l = `Left (`Label (_("Key Input Type")));
-    term type_w = `RadioButtonGroup (
-	`id (`type_g),
-	`VBox (
-	    type_l,
-	    `Left (`HBox (
-		       // Translators: input type for a wireless key
-		       `RadioButton (`id (`passphrase), _("Passphrase"), type == "passphrase"),
-		       // Translators: input type for a wireless key
-		       `RadioButton (`id (`ascii), _("ASCII"), type == "ascii"),
-		       // Translators: input type for a wireless key
-		       // (Hexadecimal)
-		       `RadioButton (`id (`hex), _("Hexadecimal"), type == "hex"))),
-	    `VSpacing(0.5))
-	);
-
-	
     term contents =
     `HBox(
 	`HSpacing(1),
@@ -431,7 +446,8 @@ define string WirelessKeyPopup (string tkey) ``{
 	    `VSpacing(0.2),
 	    // Translators: popup dialog heading
 	    `Heading (_("Enter Encryption Key")),
-	    type_w,
+	    type_w, // common with the main dialog
+	    `VSpacing(0.5),
 	    // Translators: text entry label
 	    `Left (`TextEntry (`id (`key), _("&Key"), key)),
 	    `VSpacing(0.2),
@@ -448,9 +464,11 @@ define string WirelessKeyPopup (string tkey) ``{
 	);
 
     UI::OpenDialog (`opt(`decorated), contents);
+    UI::ChangeWidget (`id (`type_g), `CurrentButton, type);
     UI::SetFocus (`id (`key));
 
     any ret = nil;
+    string ckey = nil;
     while (true)
     {
 	ret = UI::UserInput ();
@@ -467,10 +485,10 @@ define string WirelessKeyPopup (string tkey) ``{
 	else if (ret == `ok)
 	{
 	    key = (string) UI::QueryWidget (`id (`key), `Value);
-	    // convert symbol to string, unquoted
-	    type = "" + (symbol) UI::QueryWidget (`id (`type_g), `CurrentButton);
+	    type = (string) UI::QueryWidget (`id (`type_g), `CurrentButton);
+	    ckey = ComposeKey (type, key);
 	    // TODO validate also according to key length
-	    if (CheckWirelessKey ((prefix[type]:"") + key))
+	    if (CheckWirelessKey (ckey))
 	    {
 		break;
 	    }
@@ -486,14 +504,11 @@ define string WirelessKeyPopup (string tkey) ``{
 
     if (ret == `ok)
     {
-//	wkey["key"] = key;
-//	wkey["type"] = type;
-	tkey = (prefix[type]:"") + key;
+	tkey = ckey;
     }
 
     UI::CloseDialog ();
 
-//    return wkey;
     return tkey;
 }
 
@@ -586,7 +601,8 @@ key authentication, use the <b>Open</b> mode.</p>");
 		`Table(`id(`table), `opt(`notify),
 		       `header(
 			   /* Table header label */
-			   _("Nr."),
+			   // Abbreviation of Number
+			   _("No."),
 			   /* Table header label */
 			   _("Key"),
 			   /* Table header label */
@@ -629,8 +645,8 @@ key authentication, use the <b>Open</b> mode.</p>");
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
-	else if(ret == `edit || ret == `delete) {
-	    keys[current] = (ret == `edit) ? WirelessKeyPopup (keys[current]:"") : "";
+	else if(ret == `table || ret == `edit || ret == `delete) {
+	    keys[current] = (ret != `delete) ? WirelessKeyPopup (keys[current]:"") : "";
 	    default = FindGoodDefault (keys, default);
 	    UI::ChangeWidget (`id (`table), `Items, WirelessKeysItems (keys, default));
 	}
@@ -642,6 +658,9 @@ key authentication, use the <b>Open</b> mode.</p>");
 	    authmode = (string) UI::QueryWidget (`id (`authmode), `Value);
 	    length = (string) UI::QueryWidget (`id (`length), `Value);
 	    // no validation necessary (?)
+	    break;
+	}
+	else if(ret == `back) {
 	    break;
 	}
 	else {

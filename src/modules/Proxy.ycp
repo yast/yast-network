@@ -5,6 +5,9 @@
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
+ *
+ * Configures FTP and HTTP proxies via sysconfig & SuSEconfig
+ * and /root/.curlrc (for YOU)
  */
 
 {

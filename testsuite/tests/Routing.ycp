@@ -1,5 +1,7 @@
 {
 
+// testedfiles: Routing.ycp
+
 include "testsuite.ycp";
 
 map READ = $[

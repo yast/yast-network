@@ -21,7 +21,7 @@ y2milestone("Provider module started");
 import "Provider";
 
 define boolean Modified() {
-    return Provider::Modified("");
+    return Provider::Modified("all");
 }
 
 include "network/provider/wizards.ycp";

@@ -47,9 +47,11 @@ any ret = DNSMainDialog(true);
 y2debug("ret == %1", ret);
 
 if(ret == `next && DNS::modified) {
+    // #38834
+    Service::RunInitScript("network", "stop-all-dhcp-clients");
     DNS::Write();
-    Service::RunInitScript("network", "restart-all-dhcp-clients");
-    // RestartNetwork();
+    // #41303
+    Service::RunInitScript("network", "start");
 }
 
 UI::CloseDialog();

@@ -77,7 +77,9 @@ define map FromAY(map input) {
     integer dn = 0;
     list<map> hw = [];
     if (Mode::autoinst)
+    {
         hw = Lan::PrepareForAutoinst();
+    }
     map devicemapping = $[];
     map<string,map> interfaces = listmap(map<string,string> interface,
             input["interfaces"]:[],
@@ -94,23 +96,43 @@ define map FromAY(map input) {
         string configured_device = interface["device"]:"";
         string device = "";
         boolean configured = false;
-        if ( Mode::autoinst )
+        if ( Mode::autoinst)
         {
+            // Check if device id is given
             list devid = splitstring(configured_device, "-");
             if (size(devid)> 0 )
             {
                 string mac = devid[2]:"";
                 list avail = filter(map conf, hw, ``(conf["mac"]:"" == mac));
-                if (size(avail) > 0) {
+                if (size(avail) > 0)
+                {
                     device = devid[1]:"" + "-" +  devid[2]:"";
                     new_interface["_type"] = avail[0, "type"]:"";
                     configured = true;
                 }
             }
-            if (!configured) {
-                Lan::SelectHW(dn);
+            // else create it
+            if (!configured)
+            {
+	        integer pos = findfirstof( configured_device, "0123456789");
+                string inttok = "";
+                if (pos!=nil)
+	            inttok = substring(configured_device, pos);
+                else
+                    inttok = "";
+
+                integer device_idx = 0;
+                if (inttok != "" && deletechars(inttok, "0123456789") == "")
+                {
+                    device_idx = tointeger(inttok);
+                }
+                else
+                {
+                    device_idx = dn;
+                }
+                Lan::SelectHW(device_idx);
                 device = Lan::device;
-                new_interface["_type"] = hw[dn, "type"]:"";
+                new_interface["_type"] = hw[device_idx, "type"]:"";
             }
             devicemapping[configured_device] = device;
         }
@@ -128,16 +150,34 @@ define map FromAY(map input) {
 
         if (!Mode::autoinst)
         {
-	    integer pos = findfirstof( devname, "0123456789");
-	    string strtok =  substring(devname, 0, pos);
-	    string inttok = substring(devname, pos);
-	    map d = devices[strtok]:$[];
-	    d=add(d, inttok, if_data);
-	    devices[strtok] = d;
+            if (issubstring(devname, "-"))
+            {
+                list<string> devtok = splitstring(devname, "-");
+                if (size(devtok) > 0 )
+                {
+                    string strtok =devtok[0]:"";
+                    string inttok =devtok[size(devtok)-1]:"";
+	            map d = devices[strtok]:$[];
+	            d = add(d, inttok, if_data);
+	            devices[strtok] = d;
+                }
+                else {
+                    y2error("Error creating device name");
+                }
+            }
+            else
+            {
+	        integer pos = findfirstof( devname, "0123456789");
+	        string strtok =  substring(devname, 0, pos);
+	        string inttok = substring(devname, pos);
+	        map d = devices[strtok]:$[];
+	        d = add(d, inttok, if_data);
+	        devices[strtok] = d;
+            }
         } else {
             string t = if_data["_type"]:"";
 	    map d = devices[t]:$[];
-	    d=add(d, devname, if_data);
+	    d = add(d, devname, if_data);
             devices[t] = d;
         }
 
@@ -251,13 +291,12 @@ define map ToAY (map settings) {
                     y2debug("val: %1", val);
                     }
                     });
-                if (deletechars(num, "0123456789")
-                        == "")
+                if (deletechars(num, "0123456789") == "")
                     newmap["device"] = device + num;
                 else
                     newmap["device"] = device + "-" + num;
                 interfaces = add(interfaces, newmap);
-                });
+            });
             });
 
     // Modules

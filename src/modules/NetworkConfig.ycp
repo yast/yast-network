@@ -8,6 +8,7 @@
  *
  * Representation of the configuration of network cards.
  * Input and output routines.
+ * A simple container for /etc/sysconfig/network/{config,dhcp}
  */
 
 {
@@ -84,7 +85,7 @@ global define boolean Write() {
 
     y2milestone("Writing configuration");
     if(!Modified()) {
-	y2milestone("No changes to DNS -> nothing to write");
+	y2milestone("No changes to NetworkConfig -> nothing to write");
 	return true;
     }
 

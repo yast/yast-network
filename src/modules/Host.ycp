@@ -1,7 +1,7 @@
-/**OB
+/**
  * File:	modules/Host.ycp
  * Package:	Network configuration
- * Summary:	Hosts data
+ * Summary:	Hosts data (/etc/hosts)
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
@@ -18,6 +18,9 @@ import "Summary";
 
 /**
  * All hosts
+ * See hosts(5)
+ * keys: IPs, (But #35671 suggests that repeating IPs is valid)
+ * values: names, the first one is the canonical one
  */
 global map<string, list<string> > hosts = $[];
 
@@ -56,7 +59,7 @@ global define boolean Read() {
 
     if(initialized == true) return true;
 
-    /* read route.conf */
+    /* read /etc/hosts */
     if(SCR::Read(.target.size, hosts_file) > 0) {
 	list<string> hostlist = SCR::Dir(.etc.hosts);
 	hosts = listmap(string host, hostlist, {
@@ -123,6 +126,7 @@ global define boolean Write() {
 	ret = true;
     }
 
+    SCR::Write(.etc.hosts, nil);
     return ret == true;
 }
 
@@ -163,6 +167,7 @@ global define list GetSystemHosts() {
 
 /**
  * Update hosts according to the current hostname
+ * (only one hostname, assigned to all IPs)
  * @param hostname current hostname
  * @param domain current domain name
  * @param iplist localhost IP addresses
@@ -245,14 +250,14 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
 	/* Omit some IP addresses */
 	if(ip == "" || ip == nil || ip == "127.0.0.1" || ip == "127.0.0.2") return;
 
-	string name = newhn;
+	list<string> name = [ newhn ];
 	/* Add nick for the first one */
 	if(!nickadded) {
 	    nickadded = true;
-	    name = name + " " + nick;
+	    name = add (name, nick);
 	}
 
-	hosts[ip] = [ name ];
+	hosts[ip] = name;
 
     });
 

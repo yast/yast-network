@@ -11,7 +11,9 @@
 
 textdomain "network";
 
+import "DSL";
 import "Label";
+import "Provider";
 import "Sequencer";
 import "Wizard";
 

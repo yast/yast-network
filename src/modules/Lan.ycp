@@ -81,6 +81,7 @@ global string read_channel = "";
 global string write_channel = "";
 global string data_channel = "";
 global string portname = "";
+global string chan_mode = "0";
 
 /* aliases */
 global map aliases = $[];
@@ -157,6 +158,20 @@ include "network/install.ycp";
 // FIXME: MOD include "network/modules.ycp";
 include "network/routines.ycp";
 include "network/runtime.ycp";
+
+// FIXME: use the one from String.ycp
+global define string PadZerosTmp(string text, integer length) {
+    if(text == nil) text = "";
+
+    integer rest = length - size(text);
+    string pad = "";
+    while(rest > 0) {
+	pad = pad + "0";
+	rest = rest - 1;
+    }
+
+    return pad + text;
+}
 
 /**
  * Read all network settings from the SCR
@@ -312,6 +327,14 @@ global define boolean Write() {
 	_("Run SuSEconfig"),
     ], [], "");
 
+    // Temporary fix: #42248
+    Progress::New(caption, " ", 1, [
+	_("Write network configuration"),
+    ], [], "");
+
+    ProgressNextStage(_("Writing network configuration..."));
+    Progress::off();
+
     if(Abort()) return false;
     /* Progress step 1/10 */
     ProgressNextStage(_("Deactivating local network services..."));
@@ -366,7 +389,10 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 9/10 */
     ProgressNextStage(_("Activating network services..."));
-    if(!write_only) StartNetwork();
+    if(!write_only) {
+	if(Arch::s390) Service::Start("coldplug");
+	StartNetwork();
+    }
     sleep(sl);
 
     if(Abort()) return false;
@@ -374,6 +400,9 @@ global define boolean Write() {
     ProgressNextStage(_("Running SuSEconfig..."));
     if(!write_only) RunSuSEconfig();
     sleep(sl);
+
+    // Temporary fix: #42248
+    Progress::on();
 
     if(Abort()) return false;
     /* Final progress step */
@@ -448,15 +477,19 @@ global define void SelectHW(integer which) {
 
     if(busid != nil && busid != "") {
 	nm_name = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
+	if(Arch::s390) nm_name = type + "-" + nm_name;
     }
     else {
 	y2error("No HW info found: %1", hw);
 	// nm_name = "";
     }
 
-    /* eth, tr */
-    if(mac != nil && mac != "" && mac != "00:00:00:00:00:00")
+    /* eth, tr, not on s390 (#38819) */
+    if(!Arch::s390 && mac != nil && mac != "" && mac != "00:00:00:00:00:00")
 	device = "id-" + hw["mac"]:"";
+    /* iucv already filled in from lan/hardware.ycp (#42212) */
+    else if(type == "iucv")
+	y2debug("IUCV: %1", device);
     /* other devs */
     else if(busid != nil && busid != "")
 	device = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
@@ -616,6 +649,8 @@ global define boolean Select(string dev) {
 	NetworkModules::AddM();
     }
 
+    chan_mode = NetworkModules::CCW_CHAN_MODE;
+
     if(bootproto == "none") bootproto = "static";
 
     return true;
@@ -667,9 +702,8 @@ global define boolean Commit() {
     y2debug("Commit(%1)", operation);
 
     if(operation == `add || operation == `edit) {
-	map<string,any> newdev = $[
-	    "BOOTPROTO"	: bootproto,
-	];
+	map<string,any> newdev = $[];
+
 	//if(bootproto == "static") {
 	if(ipaddr != "") {
 	    newdev["IPADDR"] = ipaddr;
@@ -679,8 +713,11 @@ global define boolean Commit() {
 	}
 	newdev["REMOTE_IPADDR"] = remoteip;
 
-	newdev["MTU"] = mtu;
-	newdev["STARTMODE"] = startmode;
+	if(alias == "") {
+	    newdev["MTU"] = mtu;
+	    newdev["STARTMODE"] = startmode;
+	    newdev["BOOTPROTO"] = bootproto;
+	}
 
 	if(unique != "" && unique != nil)
 	    newdev["UNIQUE"] = unique;
@@ -706,6 +743,49 @@ global define boolean Commit() {
 		    NetworkModules::DeleteM(nm_name_old);
 		    nm_name_old = nil;
 		}
+
+		if(Arch::s390) {
+		    // handle HSI like qeth, #40692#c15
+		    string type2 = (type == "hsi" || type == "eth")? "qeth": type;
+		    if(type2 == "iucv") {
+			NetworkModules::SCRIPTUP = "hwup-iucv";
+		    }
+		    else {
+			NetworkModules::SCRIPTUP = "hwup-ccw";
+			NetworkModules::SCRIPTUP_ccw = "hwup-ccw";
+			NetworkModules::SCRIPTDOWN = "hwdown-ccw";
+			NetworkModules::SCRIPTUP_ccwgroup = "hwup-" + type2;
+		    }
+
+		    integer devid = 0;
+		    string devstr = "";
+
+		    y2milestone("nm_name=%1", nm_name);
+		    string s390chanid = "[0-9]+\\.[0-9]+\\.";
+		    if(regexpmatch(nm_name, s390chanid)) {
+			devid = tointeger("0x" + regexpsub(nm_name, s390chanid + "(.*)", "\\1"));
+			devstr = regexpsub(nm_name, ".*[^0-9](" + s390chanid + ").*", "\\1");
+		    }
+
+		    y2milestone("devid=%1(%2)", devid, devstr);
+		    if(devid == nil) devid = 0;
+		    string devid0 = PadZerosTmp(regexpsub(tohexstring(devid), "0x(.*)", "\\1"), 4);
+		    string devid1 = PadZerosTmp(regexpsub(tohexstring(devid+1), "0x(.*)", "\\1"), 4);
+		    string devid2 = PadZerosTmp(regexpsub(tohexstring(devid+2), "0x(.*)", "\\1"), 4);
+
+		    if(type2 == "ctc") {
+			NetworkModules::CCW_CHAN_IDS = sformat("%1%2 %1%3", devstr, devid0, devid1);
+			NetworkModules::CCW_CHAN_MODE = chan_mode;
+			NetworkModules::CCW_CHAN_NUM = "2";
+		    }
+		    else if(type2 == "qeth") {
+			NetworkModules::CCW_CHAN_IDS = sformat("%1%2 %1%3 %1%4", devstr, devid0, devid1, devid2);
+			NetworkModules::CCW_CHAN_MODE = chan_mode;
+			NetworkModules::CCW_CHAN_NUM = "3";
+		    }
+
+		}
+
 		NetworkModules::ChangeM(nm_name);
 	    }
 	}
@@ -735,14 +815,6 @@ global define boolean Commit() {
 	    newdev["WIRELESS_BITRATE"] = wl_bitrate;
 	    newdev["WIRELESS_AP"] = wl_accesspoint;
 	    newdev["WIRELESS_POWER"] = wl_power ? "yes" : "no";
-	}
-
-	if(Arch::s390) {
-	    /* s390 options */
-	    newdev["READ_CHANNEL"] = read_channel;
-	    newdev["WRITE_CHANNEL"] = write_channel;
-	    newdev["DATA_CHANNEL"] = data_channel;
-	    newdev["PORTNAME"] = portname;
 	}
 
 	if(nm_name != nil && nm_name != "")
@@ -818,18 +890,47 @@ global define boolean Propose() {
     /* Some HW found -> use it for proposal */
     if(size(Hardware) > 0) {
 
-	/* Select the first active */
 	integer i = 0;
 	integer tosel = -1;
-	maplist(map h, Hardware, {
-	    if(h["active"]:false == true)
-		if(tosel == -1) tosel = i;
-	    i = i + 1;
-	});
+
+	/* Select the one from install.inf with the same MAC */
+	string hwaddr = InstallInf["hwaddr"]:"";
+	if(hwaddr != nil && hwaddr != "") {
+	    i = 0;
+	    maplist(map h, Hardware, {
+		if(h["mac"]:"" == hwaddr)
+		    if(tosel == -1) tosel = i;
+		i = i + 1;
+	    });
+	}
+
+	/* Select the one from install.inf with the same module */
+	if(tosel == -1) {
+	    string infmodule = InstallInf["module"]:"";
+	    if(infmodule != nil && infmodule != "") {
+		i = 0;
+		maplist(map h, Hardware, {
+		    if(h["module"]:"" == infmodule)
+			if(tosel == -1) tosel = i;
+		    i = i + 1;
+		});
+	    }
+	}
+
+	/* No install.inf driver -> select the first active */
+	if(tosel == -1) {
+	    i = 0;
+	    maplist(map h, Hardware, {
+		if(h["active"]:false == true)
+		    if(tosel == -1) tosel = i;
+		i = i + 1;
+	    });
+	}
 
 	/* No active driver -> select the first with a driver */
 	if(tosel == -1) {
 	    y2milestone("No active driver found, trying further.");
+	    i = 0;
 	    maplist(map h, Hardware, {
 		if(h["module"]:"" != "")
 		    if(tosel == -1) {
@@ -847,7 +948,7 @@ global define boolean Propose() {
 	}
 
 	y2debug("Hardware=%1", Hardware);
-	y2debug("tosel=%1", tosel);
+	y2milestone("tosel=%1", tosel);
 
 	SelectHW(tosel);
     }

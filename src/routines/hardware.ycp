@@ -18,8 +18,15 @@
 
 textdomain "network";
 
+import "Arch";
 import "Confirm";
 import "Map";
+
+define string DistinguishedName(string name, map hwdevice) {
+    if(hwdevice["sysfs_bus_id"]:"" != "")
+	return sformat("%1 (%2)", name, hwdevice["sysfs_bus_id"]:"");
+    return name;
+}
 
 /**
  * Extract the device 'name'
@@ -68,13 +75,18 @@ define string ControllerType(map hwdevice) {
 	if(subclass_id == 0) return "eth";
 	else if(subclass_id == 1) return "tr";
 	else if(subclass_id == 2) return "fddi";
-	else if(subclass_id == 3) return "ctc";
-	else if(subclass_id == 4) return "iucv";
-	else if(subclass_id == 5) return "hsi";
-	else if(subclass_id == 6) return "qeth";
-	else if(subclass_id == 7) return "escon";
+	else if(subclass_id == 3) return "atm";
+	else if(subclass_id == 4) return "isdn";
 	else if(subclass_id == 0x81) return "myri";
 	else if(subclass_id == 0x82) return "wlan";
+	else if(subclass_id == 0x83) return "xp";
+	else if(subclass_id == 0x86) return "qeth";
+	else if(subclass_id == 0x87) return "hsi";
+	else if(subclass_id == 0x88) return "ctc";
+	else if(subclass_id == 0x89) return "qeth";
+	else if(subclass_id == 0x8E) return "ficon";
+	else if(subclass_id == 0x8F) return "escon";
+	else if(subclass_id == 0x90) return "iucv";
 	else if(subclass_id == 0x80) {
 	    /* Nothing was found */
 	    y2error("Unknown network controller type: %1", hwdevice);
@@ -210,6 +222,9 @@ define list<map> ReadHardware(string hwtype) {
 	one["unique"] = card["unique_key"]:"";
 	one["num"] = num;
 
+	/* Temporary solution for s390: #40587 */
+	if(Arch::s390) one["name"] = DistinguishedName(one["name"]:"", card);
+
 	/* modem */
 	if(controller == "modem") {
 	    one["device_name"] = card["dev_name"]:"";
@@ -254,7 +269,7 @@ define list<map> ReadHardware(string hwtype) {
 		one["hotplug"] = "usb";
 
 	    /* store the BUS type */
-	    string bus = card["bus"]:"";
+	    string bus = card["bus_hwcfg"]:(card["bus"]:"");
 	    if(bus == "PCI") bus = "pci";
 	    else if(bus == "USB") bus = "usb";
 	    one["bus"] = bus;

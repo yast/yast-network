@@ -6,6 +6,8 @@
  *
  * $Id$
  *
+ * <p>Detects network settings, using dhcp or sniffing network traffic</p>
+ *
  * <h3>Detection process:</h3>
  * <h4>Initial stage:</h4><ul>
  *   <li>hardware detection
@@ -22,7 +24,7 @@
  * <p>
  * <h4>Used software:</h4><ul>
  *   <li>dhcpcd(8)
- *   <li>netprobe(8) (currently not)
+ *   <li>netprobe(8) (currently not, originally by Caldera, license unclear)
  * </ul>
  *
  * <p>
@@ -52,6 +54,7 @@ include "network/hardware.ycp";
 
 /**
  * Detection result
+ * (in dhcpcd-<i>interface</i>.info format)
  */
 global map result = $[];
 

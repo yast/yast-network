@@ -239,9 +239,9 @@ map NetworkCards = $[
       "module" : "hp",
       "options" : "io=0x300",
     ],
-    $["name" : "IBM lcs module",
+    $["name" : "IBM OSA LCS",
       "module" : "lcs",
-      "options" : "noauto=1 devno_portno_pairs=0xfc20,1",
+      "options" : "",
     ],
     /* Network card name */
     $["name" : _("ICL EtherTeam 16i/32 (experimental)"),
@@ -389,9 +389,9 @@ map NetworkCards = $[
       "options" : "",
     ],
     /* Network card name */
-    $["name" : _("IBM network cards with lcs kernel module"),
+    $["name" : _("IBM OSA Token Ring"),
       "module" : "lcs",
-      "options" : "noauto=1 devno_portno_pairs=0xfc20,1",
+      "options" : "",
     ],
     $["name" : "SysKonnect Token Ring",
       "module" : "sktr",
@@ -467,6 +467,14 @@ map NetworkCards = $[
     /* Network subsystem name */
     $["name" : _("Hippersockets (HSI) network"),
       "module" : "qeth",
+      "options" : "",
+    ],
+  ],
+
+  "lcs" : [
+    /* Network subsystem name */
+    $["name" : _("IBM OSA LCS"),
+      "module" : "lcs",
       "options" : "",
     ],
   ],

@@ -12,6 +12,8 @@
 textdomain "network";
 
 import "Label";
+import "Modem";
+import "Provider";
 import "Sequencer";
 import "Wizard";
 

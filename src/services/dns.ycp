@@ -67,6 +67,8 @@ could return to this dialog later when the above service has terminated.</li>
     UI::CloseDialog();
 
     DNS::resolv_conf_force = (ret == `modify);
+    y2milestone ("resolv.conf modified by: %1, force: %2",
+		 process, DNS::resolv_conf_force);
     return DNS::resolv_conf_force;
 }
 
@@ -132,6 +134,10 @@ disabled during the connection.</p>");
      */
     define boolean DNSModified() {
 
+	/* FIXME:
+	 * - the result is ignored ATM (ReallAbort is always true)
+	 * - n* and s* changes seem to be ignored
+	 */
 	string hostname = (string) UI::QueryWidget(`id(`host), `Value);
 	string domain = (string) UI::QueryWidget(`id(`domain), `Value);
 
@@ -146,7 +152,6 @@ disabled during the connection.</p>");
 	    dhcp_resolv != NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false ||
 	    dhcp_hostname != NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false;
     }
-
 
     ns1 = select(nameservers, 0, "");
     ns2 = select(nameservers, 1, "");
@@ -163,6 +168,7 @@ disabled during the connection.</p>");
 	    `HBox(
 		/* TextEntry label */
 		`TextEntry(`id(`host), _("&Host Name"), hostname),
+		`HSpacing (1),
 		/* TextEntry label */
 		`TextEntry(`id(`domain), _("&Domain Name"), domain)
 	    ),
@@ -181,6 +187,7 @@ disabled during the connection.</p>");
 		/* TextEntry label */
 		`TextEntry(`id(`ns3), _("Name Server &3"), ns3)
 	    ),
+	    `HSpacing (1),
 	    `VBox(
 		/* TextEntry label */
 		`TextEntry(`id(`s1), _("Doma&in Search 1"), s1),
@@ -345,8 +352,15 @@ disabled during the connection.</p>");
 	    DNS::hostname = (string) UI::QueryWidget(`id(`host), `Value);
 	    DNS::domain = (string) UI::QueryWidget(`id(`domain), `Value);
 
+	    /* resolv.conf(5): 3 nameservers are the limit */
 	    DNS::nameservers = filter(string n, [ ns1, ns2, ns3 ], ``(n != ""));
-	    DNS::searchlist = filter(string s, [ s1, s2, s3 ], ``(s != ""));
+
+	    /* resolv.conf(5): 256 search characters at max */
+	    /* FIXME: we have screen space for only 3 (#40012) */
+	    DNS::searchlist[0] = s1;
+	    DNS::searchlist[1] = s2;
+	    DNS::searchlist[2] = s3;
+	    DNS::searchlist = filter(string s, DNS::searchlist, ``(s != ""));
 
 	    NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = (boolean) UI::QueryWidget(`id(`dn), `Value);
 	    NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"] = (boolean) UI::QueryWidget(`id(`dr), `Value);

@@ -30,6 +30,11 @@ define boolean ReadInstallInfItem(path install_inf, string item, string var) {
     return true;
 }
 
+define string DeleteFirstWord (string s) {
+    string ret = regexpsub (s, "^[^ ]* +(.*)", "\\1");
+    return (ret == nil)? s: ret;
+}
+
 /**
  * Read install.inf from the correct location
  * @return true on success
@@ -62,7 +67,7 @@ define boolean ReadInstallInf() {
     ReadInstallInfItem(install_inf, "domain", "Domainname");
     ReadInstallInfItem(install_inf, "module", "Alias");
     ReadInstallInfItem(install_inf, "options", "Options");
-    // ReadInstallInfItem(install_inf, "hwaddr", "HWAddr");
+    ReadInstallInfItem(install_inf, "hwaddr", "HWAddr");
 
     /* Split network device */
     string netdevice = InstallInf["netdevice"]:"";
@@ -80,11 +85,23 @@ define boolean ReadInstallInf() {
 	list split = Hostname::SplitFQ(hostname);
 	InstallInf["hostname"] = split[0]:hostname;
 	if(domain == "")
-	    InstallInf["hostname"] = split[1]:"";
+	    InstallInf["domain"] = split[1]:"";
     }
 
     // FIXME: alias = eth0 tulip
     // FIXME: options = ne io=0x200
+
+    // #42203: correctly parse module and options for proposal
+    // "eth0 qeth" -> "qeth"
+    // FIXME: this only works for a single module
+    string mod = InstallInf["module"]:"";
+    if (mod != "") {
+	InstallInf["module"] = DeleteFirstWord (mod);
+    }
+    string options = InstallInf["options"]:"";
+    if (options != "") {
+	InstallInf["options"] = DeleteFirstWord (options);
+    }
 
     y2milestone("InstallInf(%1)", InstallInf);
     return true;

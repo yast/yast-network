@@ -14,6 +14,7 @@ textdomain "network";
 import "Arch";
 import "Label";
 import "Lan";
+import "NetworkDevices";
 import "NetworkModules";
 import "Popup";
 import "Wizard";
@@ -82,7 +83,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     list<string> device_types = [ "arc", /* FIXME */ "dummy", "eth", "fddi", "myri", "tr", /* FIXME */ "usb", "wlan" ];
 
     if(Arch::s390)
-	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv" ];
+	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv", "qeth", "lcs" ];
 
     if(Arch::ia64)
 	device_types = add(device_types, "xp");
@@ -466,7 +467,6 @@ Really continue?
 
 	if(UI::WidgetExists(`id(`dev))) {
 	    type = (string) UI::QueryWidget(`id(`dev), `Value);
-	    if(type == "qeth") type = "eth";
 	    Lan::type = type;
 	}
 
@@ -629,10 +629,75 @@ add them manually.</p>");
 	`HSpacing(6)
     );
 
+    /* S/390 dialog contents */
+    if(Lan::type == "qeth") {
+	contents = `HBox(
+	    `HSpacing(6),
+	    /* Frame label */
+	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
+		`VSpacing(1),
+		/* TextEntry label */
+		`TextEntry(`id(`chan_mode), _("&Port Name"), Lan::chan_mode),
+		`VSpacing(1)
+		), `HSpacing(2))),
+	    `HSpacing(6)
+	);
+	/* S/390 dialog help: QETH */
+	helptext = _("<p>Enter the <b>Port Name</b> for this interface (case sensitive).</p>");
+    }
+
+    list ctcitems = [
+	/* ComboBox item: CTC device protocol */
+	`item(`id("0"), _("Compatibility mode")),
+	/* ComboBox item: CTC device protocol */
+	`item(`id("1"), _("Extended mode")),
+	/* ComboBox item: CTC device protocol */
+	`item(`id("2"), _("CTC-based tty (Linux to Linux connections)")),
+	/* ComboBox item: CTC device protocol */
+	`item(`id("3"), _("Compatibility mode with OS/390 and z/OS")),
+    ];
+
+    if(Lan::type == "ctc") {
+	contents = `HBox(
+	    `HSpacing(6),
+	    /* Frame label */
+	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
+		`VSpacing(1),
+		/* TextEntry label */
+		`ComboBox(`id(`chan_mode), _("&Protocol"), ctcitems),
+		`VSpacing(1)
+		), `HSpacing(2))),
+	    `HSpacing(6)
+	);
+	/* S/390 dialog help: CTC */
+	helptext = _("<p>Choose the <b>Protocol</b> for this interface.</p>");
+    }
+
+    if(Lan::type == "iucv") {
+	contents = `HBox(
+	    `HSpacing(6),
+	    /* Frame label */
+	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
+		`VSpacing(1),
+		/* TextEntry label */
+		`TextEntry(`id(`chan_mode), _("&Link Name"), ""),
+		`VSpacing(1)
+		), `HSpacing(2))),
+	    `HSpacing(6)
+	);
+	/* S/390 dialog help: IUCV */
+	helptext = _("<p>Enter the name of the <b>Link</b> partner,
+e.g. the z/VM username you want to connect with (case sensitive).</p>");
+    }
+
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::NextButton());
 
-    // UI::ChangeWidget(`id(`key), `ValidChars, "0123456789abcdefABCDEF-:s");
+    if(Lan::type == "ctc") UI::ChangeWidget(`id(`chan_mode), `Value, Lan::chan_mode);
+
+    UI::SetFocus(`id(`chan_mode));
+    // FIXME: no spaces
+    // UI::ChangeWidget(`id(`key), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_:;");
 
     any ret = nil;
     while(true) {
@@ -658,10 +723,18 @@ add them manually.</p>");
     }
 
     if(ret == `next) {
+	/*
 	Lan::read_channel = (string) UI::QueryWidget(`id(`read_channel), `Value);
 	Lan::write_channel = (string) UI::QueryWidget(`id(`write_channel), `Value);
 	Lan::data_channel = (string) UI::QueryWidget(`id(`data_channel), `Value);
 	Lan::portname = (string) UI::QueryWidget(`id(`portname), `Value);
+	*/
+	if(Lan::type == "iucv") {
+	    Lan::nm_name = "iucv-id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
+	    Lan::device = "id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
+	}
+	else
+	    Lan::chan_mode = (string) UI::QueryWidget(`id(`chan_mode), `Value);
     }
 
     return ret;

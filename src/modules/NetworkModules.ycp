@@ -1,10 +1,19 @@
 /**
  * File:	modules/NetworkModules.ycp
  * Package:	Network configuration
- * Summary:	Modules manipulation functions
+ * Summary:	Hardware config manipulation (/etc/sysconfig/hardware/hwcfg-*)
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
+ *
+ * The new sysconfig naming is interface (eg. eth0) vs. device
+ * (eg. NE2000 card), but historically yast has called them device
+ * vs. module.
+ *
+ * This module is a big mess because originally it was intended to
+ * have similar structure to NetworkDevices, with config files
+ * categorized in two levels [type, id], but now there is just one
+ * level. Lots of code is just copied and unused.
  */
 
 {
@@ -24,8 +33,20 @@ include "network/routines.ycp";
  */
 /* global */ string Name = "";
 
+/**
+ * Alias means Driver here (think of modules.conf)
+ */
 global string Alias = "";
 global string Options = "";
+
+/* S/390 stuff */
+global string SCRIPTUP = "";
+global string SCRIPTUP_ccw = "";
+global string SCRIPTUP_ccwgroup = "";
+global string SCRIPTDOWN = "";
+global string CCW_CHAN_IDS = "";
+global string CCW_CHAN_MODE = "";
+global string CCW_CHAN_NUM = "";
 
 /**
  * Current module information
@@ -103,7 +124,7 @@ global define boolean Read() {
 	    string item = (string) SCR::Read(topath(pth + "." + val));
 	    if(item == nil) return;
 	    config[val] = item;
-	    y2milestone("config=%1", config);
+	    y2debug("config=%1", config);
 	});
 
 	Modules[d] = config;
@@ -206,8 +227,18 @@ global define boolean Write(string devregex) {
 }
 
 global boolean AddM() {
+
     Alias = "";
     Options = "";
+
+    SCRIPTUP = "";
+    SCRIPTUP_ccw = "";
+    SCRIPTUP_ccwgroup = "";
+    SCRIPTDOWN = "";
+    CCW_CHAN_IDS = "";
+    CCW_CHAN_MODE = "";
+    CCW_CHAN_NUM = "";
+
     return true;
 }
 
@@ -217,9 +248,19 @@ global boolean SelectM(string name) {
 	return false;
     }
 
+    Name = name;
+
     Alias = Modules[name, "MODULE"]:"";
     Options = Modules[name, "MODULE_OPTIONS"]:"";
-    Name = name;
+
+    SCRIPTUP = Modules[name, "SCRIPTUP"]:"";
+    SCRIPTUP_ccw = Modules[name, "SCRIPTUP_ccw"]:"";
+    SCRIPTUP_ccwgroup = Modules[name, "SCRIPTUP_ccwgroup"]:"";
+    SCRIPTDOWN = Modules[name, "SCRIPTDOWN"]:"";
+    CCW_CHAN_IDS = Modules[name, "CCW_CHAN_IDS"]:"";
+    CCW_CHAN_MODE = Modules[name, "CCW_CHAN_MODE"]:"";
+    CCW_CHAN_NUM = Modules[name, "CCW_CHAN_NUM"]:"";
+
     y2milestone("Modules=%1", Modules);
     return true;
 }
@@ -235,6 +276,17 @@ global boolean ChangeM(string name) {
     Modules[name, "MODULE"] = Alias;
     Modules[name, "MODULE_OPTIONS"] = Options;
     Modules[name, "STARTMODE"] = "auto";
+
+    if(Arch::s390) {
+	Modules[name, "SCRIPTUP"] = SCRIPTUP;
+	Modules[name, "SCRIPTUP_ccw"] = SCRIPTUP_ccw;
+	Modules[name, "SCRIPTUP_ccwgroup"] = SCRIPTUP_ccwgroup;
+	Modules[name, "SCRIPTDOWN"] = SCRIPTDOWN;
+	Modules[name, "CCW_CHAN_IDS"] = CCW_CHAN_IDS;
+	Modules[name, "CCW_CHAN_MODE"] = CCW_CHAN_MODE;
+	Modules[name, "CCW_CHAN_NUM"] = CCW_CHAN_NUM;
+    }
+
     y2milestone("Modules=%1", Modules);
     return true;
 }

@@ -12,15 +12,19 @@
 textdomain "network";
 
 import "Label";
+import "Remote";
 import "Wizard";
 
 include "network/remote/dialogs.ycp";
+
+Remote::Read();
 
 Wizard::CreateDialog();
 Wizard::SetDesktopIcon("remote");
 Wizard::SetNextButton(`next, Label::FinishButton() );
 
 any ret = RemoteMainDialog();
+if(ret == `next) Remote::Write();
 
 UI::CloseDialog();
 

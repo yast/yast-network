@@ -1,14 +1,216 @@
 -------------------------------------------------------------------
-Fri Apr 16 15:24:50 CEST 2004 - mvidner@suse.cz
+Mon Jun 28 14:56:16 CEST 2004 - msvec@suse.cz
+
+- don't show writing progress (#42248)
+- use by-id naming for IUCV devices (#42212)
+- after update fix possibly wrong permissions (#24842)
+- updated s390 card list (hare)
+- 2.9.57
+
+-------------------------------------------------------------------
+Wed Jun 23 11:06:18 CEST 2004 - msvec@suse.cz
+
+- QETH devices detection changed (mvidner, #41461)
+- fixed setting host and domain name when Machinename has FQDN (#42242).
+- preliminary support for LCS devices (s390)
+- 2.9.56
+
+-------------------------------------------------------------------
+Fri Jun 18 15:41:02 CEST 2004 - mvidner@suse.cz
+
+- Correctly parse module and options to fix proposal when
+  MAC addresses are unknown (#42203).
+- 2.9.55
+
+-------------------------------------------------------------------
+Fri Jun 18 11:32:51 CEST 2004 - arvin@suse.de
+
+- fake check for online patches (bug #42177)
+- 2.9.54
+
+-------------------------------------------------------------------
+Thu Jun 17 16:32:03 CEST 2004 - mvidner@suse.cz
+
+- Make the ifcfg file unreadable (chmod 600) if _any_ of the wireless
+  keys is specified (#24842).
+- 2.9.53
+
+-------------------------------------------------------------------
+Wed Jun 16 17:51:29 CEST 2004 - mvidner@suse.cz
+
+- Fixed changing the host name during the installation
+  after the network has already been set up (#42102).
+- 2.9.52
+
+-------------------------------------------------------------------
+Wed Jun 16 14:31:10 CEST 2004 - mvidner@suse.cz
+
+- Fixed an untranslated heading in ISDN setup (#42089).
+- 2.9.51
+
+-------------------------------------------------------------------
+Thu Jun 10 18:08:04 CEST 2004 - mvidner@suse.cz
+
+- VNC: Fixed hanging when starting KDM (#41611).
+- VNC: Tell the user if he must restart xdm (#40458).
+- 2.9.50
+
+-------------------------------------------------------------------
+Fri Jun  4 14:34:51 CEST 2004 - msvec@suse.cz
+
+- fixed coldplugged HW on s390 (#40587)
+- fixed QETH params writing (#41461)
+- fixed IUCV detection (#41525)
+- 2.9.49
+
+-------------------------------------------------------------------
+Fri May 28 12:20:15 CEST 2004 - mvidner@suse.cz
+
+- Require kdebase3 or fvwm2 instead of windowmanager
+  to make VNC work (#40155).
+- 2.9.48
+
+-------------------------------------------------------------------
+Thu May 27 16:50:32 CEST 2004 - mvidner@suse.cz
+
+- Resolver: fixed restarting DHCP clients (#41303).
+- 2.9.47
+
+-------------------------------------------------------------------
+Thu May 27 06:19:13 CEST 2004 - nashif@suse.de
+
+- Fixed bug where autoyast config for network does not select
+  correct interface (#41065)
+- Parse autoyast data correctly to show configured devices with
+  ids (mac/pci bus)
+
+-------------------------------------------------------------------
+Mon May 24 10:55:09 CEST 2004 - mvidner@suse.cz
+
+- Fixed /etc/inittab broken by last fix of VNC administration (#40458).
+- 2.9.46
+
+-------------------------------------------------------------------
+Wed May 19 17:40:54 CEST 2004 - mvidner@suse.cz
+
+- Another fix of hwcfg-{hsi,qeth}-* (#40692#c15)
+- 2.9.45
+
+-------------------------------------------------------------------
+Fri May 21 02:43:12 CEST 2004 - nashif@suse.de
+
+- return right device name when cloning with autoyast.
+
+-------------------------------------------------------------------
+Tue May 18 15:01:31 CEST 2004 - msvec@suse.cz
+
+- proper CTC devices support (#40692)
+- show busid for s390 netcards (#40587)
+- fixed virtual aliases deleting (#40597)
+- don't use by-MAC identification on s390 (#38819)
+- network proposal by MAC (#40088, #40096)
+- improved remote administration (#40458)
+- 2.4.44
+
+-------------------------------------------------------------------
+Fri May 14 14:21:29 CEST 2004 - mvidner@suse.cz
+
+- fixed committing isdn providers (#39110)
+- 2.9.43
+
+-------------------------------------------------------------------
+Fri May 14 11:17:52 CEST 2004 - msvec@suse.cz
+
+- further s390 improvements (#39456)
+- 2.9.42
+
+-------------------------------------------------------------------
+Thu May 13 17:29:59 CEST 2004 - mvidner@suse.cz
+
+- fixed switching resolv.conf from DHCP to static config (#38834)
+- 2.9.41
+
+-------------------------------------------------------------------
+Thu May 13 15:45:51 CEST 2004 - mvidner@suse.cz
+
+- fixed saving empty WEP keys (#40431)
+- 2.9.40
+
+-------------------------------------------------------------------
+Wed May 12 15:09:15 CEST 2004 - msvec@suse.cz
+
+- added custom s390 dialogs (#39456)
+- preserve additional DNS searches (#40012)
+- make WLAN Master mode functional (#40431)
+- propose install.inf netcard if defined (#40088, #39130)
+- use bus_hwcfg hwinfo BUS identification field (#39456)
+- drop UML hardware detection hack, it works now (#39945)
+- save the 3rd modem init string (#40191)
+- drop obsolete s390 chandev stuff
+- 2.9.39
+
+-------------------------------------------------------------------
+Tue May  4 10:07:02 CEST 2004 - mvidner@suse.cz
+
+- merged proofread messages
+- 2.9.38
+
+-------------------------------------------------------------------
+Thu Apr 29 17:52:14 CEST 2004 - msvec@suse.cz
+
+- "detect" undetectable UML network device (#39521)
+- resurrected virtual aliases support (#39657)
+- updated list of hwinfo controllers (#39456)
+- fixed parallel build and updated testsuite
+- 2.9.37
+
+-------------------------------------------------------------------
+Tue Apr 27 13:32:49 CEST 2004 - mvidner@suse.cz
+
+- reduced operation modes to managed, ad-hoc and master
+- removed NWID and nickname (all #39458 c3)
+- 2.9.36
+
+-------------------------------------------------------------------
+Mon Apr 26 12:46:16 CEST 2004 - msvec@suse.cz
+
+- XPNet detection support (#35867)
+- 2.9.35
+
+-------------------------------------------------------------------
+Wed Apr 21 17:30:55 CEST 2004 - mvidner@suse.cz
+
+- Added comments to base modules
+
+-------------------------------------------------------------------
+Mon Apr 19 16:58:21 CEST 2004 - mvidner@suse.cz
+
+- WEP: choose key type also in the main dialog (#35857 c19)
+       fixed the Back button
+       abbreviated Number as No.
+- 2.9.34
+
+-------------------------------------------------------------------
+Mon Apr 19 10:34:46 CEST 2004 - mvidner@suse.cz
 
 - added a dialog for multiple WEP keys (#35857)
-- 2.9.32
+- proofread some more messages
+- inst_net_setup: ignore HWaddr if empty
+- export forgotten domain (#38770)
+- 2.9.33
 
 -------------------------------------------------------------------
 Wed Apr 07 12:07:57 CEST 2004 - arvin@suse.de
 
 - start capi during Internet test also for capi based dsl
   connections (bug #38540)
+
+-------------------------------------------------------------------
+Tue Apr  6 11:04:01 CEST 2004 - msvec@suse.cz
+
+- use ifconfig -a to get interfaces (#38330)
+- fixed update of /etc/hosts (#38439)
+- 2.9.31
 
 -------------------------------------------------------------------
 Mon Apr  5 19:45:53 CEST 2004 - msvec@suse.cz

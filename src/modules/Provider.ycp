@@ -7,6 +7,11 @@
  *		Michal Svec <msvec@suse.cz>
  *
  * $Id$
+ *
+ * Used by Modem, ISDN, DSL.
+ * The provider data is grouped by country. There are predefined ones
+ * (providers.rpm) and custom ones (/etc/sysconfig/network/providers,
+ * represented here as country = "_custom")
  */
 
 {
@@ -29,6 +34,7 @@ global string Name = "";
 
 /**
  * Current provider
+ * structure depends on Type. See providers.rpm
  */
 global map Current = $[];
 
@@ -52,6 +58,7 @@ list<string> Supported = [ "modem", "isdn", "dsl" ];
 
 /**
  * Custom providers
+ * (system ones are too many and thus read on demand)
  */
 map<string,map> Providers = $[];
 
@@ -129,6 +136,7 @@ global define boolean Read() {
 	path prov = add(.sysconfig.network.providers.v, name);
 	map p = listmap(string i, SCR::Dir(prov), {
 	    map ii = $[];
+	    // TODO: quoting should be improved everywhere
 	    ii[i] = String::UnQuote((string) SCR::Read(add(prov, i)));
 	    return ii;
 	});

@@ -34,6 +34,11 @@ Summary:	Network configuration
 
 @CLEAN@
 
+# temporary hack (#24842)
+%post
+/bin/chown -f root:root /etc/sysconfig/network/ifcfg-wlan* || true
+/bin/chmod -f 0600 /etc/sysconfig/network/ifcfg-wlan* || true
+
 %files
 %defattr(-,root,root)
 @ybindir@/*

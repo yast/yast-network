@@ -1,10 +1,14 @@
 /**
  * File:	modules/NetworkDevices.ycp
  * Package:	Network configuration
- * Summary:	Device manipulation functions
+ * Summary:	Interface manipulation (/etc/sysconfig/network/ifcfg-*)
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
+ *
+ * The new sysconfig naming is interface (eg. eth0) vs. device
+ * (eg. NE2000 card), but historically yast has called them device
+ * vs. module.
  */
 
 {
@@ -20,6 +24,9 @@ include "network/routines.ycp";
 /**
  * Current device identifier
  * @example eth0, eth1:blah, lo, ...
+ * Add, Edit and Delete copy the requested device info (via Select)
+ * to Name and Current,
+ * Commit puts it back
  */
 global string Name = "";
 
@@ -30,14 +37,21 @@ global string Name = "";
 global map<string,any> Current = $[];
 
 /**
- * Devices information
- * @see ReadDevices
+ * Interface information:
+ * Devices[string type, string id] is a map with the contents of
+ * ifcfg-<i>type</i>-<i>id</i>. Separating type from id is useful because
+ * the type determines the fields of the interface file.
+ * Multiple addresses for an interface are nested maps
+ * [type, id, "_aliases", aid]
+ * (Aliases currently do not work because ":" has changed its meaning
+ * in ifcfg file names and it clashes with yast's internal use of it)
+ * @see Read
  */
 map<string,map> Devices = $[];
 
 /**
  * Devices information
- * @see ReadDevices
+ * @see Read
  */
 map<string,map> OriginalDevices = $[];
 
@@ -61,7 +75,7 @@ boolean initialized = false;
  * Predefined network card regular expressions
  */
 global map<string,string> CardRegex = $[
-    "netcard"	: "arc|ci|ctc|dummy|escon|eth|fddi|hsi|iucv|myri|tr|wlan|xp",
+    "netcard"	: "arc|ci|ctc|dummy|escon|eth|fddi|hsi|qeth|lcs|iucv|myri|tr|wlan|xp ",
     "modem"	: "ppp",
     "isdn"	: "isdn|ippp",
     "dsl"	: "dsl",
@@ -112,6 +126,9 @@ map<integer,string> FastestTypes = $[
     4 : "netcard"
 ];
 
+/**
+ * @see Push
+ */
 map stack = $[];
 
 /**
@@ -300,10 +317,16 @@ global define boolean Write(string devregex) {
 	    */
 
 	    /* 0600 if contains encryption key (#24842) */
-	    string key = devmap["WIRELESS_KEY"]:"";
+	    boolean has_key =
+		// the unnumbered one should be empty but just in case
+		devmap["WIRELESS_KEY"]:"" != "" ||
+		devmap["WIRELESS_KEY_0"]:"" != "" ||
+		devmap["WIRELESS_KEY_1"]:"" != "" ||
+		devmap["WIRELESS_KEY_2"]:"" != "" ||
+		devmap["WIRELESS_KEY_3"]:"" != "";
 	    string file = "/etc/sysconfig/network/ifcfg-" + dev;
-	    y2debug("Permission change: %1, %2", key != "", file);
-	    if(key != "") {
+	    y2debug("Permission change: %1, %2", has_key, file);
+	    if(has_key) {
 		y2debug("CHANGED");
 		chmod = add(chmod, file);
 	    }
@@ -503,6 +526,7 @@ global define boolean Select(string name) {
 
     Name = name;
     // FIXME NI: Current = Devices[device_type(Name), device_num(Name)]:$[];
+    // may be fixed already. or not: #39236
     string t = device_type(Name);
     Current = Devices[t, device_num(Name)]:$[];
     string a = alias_num(Name);
@@ -698,7 +722,7 @@ global define list<string> Locate(string key, string val) {
  * Locate devices of the given type and value
  * @param key device key
  * @param val device value
- * @return list of devices with key=val
+ * @return list of devices with key!=val
  */
 global define list<string> LocateNOT(string key, string val) {
     list<string> ret = [];
@@ -882,6 +906,10 @@ global define boolean HasAliases(string name) {
     return a == "" && Devices[t, d, "_aliases"]:$[] != $[];
 }
 
+/**
+ * DSL needs to save its config while the underlying network card is
+ * being configured.
+ */
 global define void Push() {
     if(stack != $[]) y2error("Stack not empty: %1", stack);
     stack["Name"] = Name;

@@ -1,10 +1,13 @@
 /**
  * File:	modules/Routing.ycp
  * Package:	Network configuration
- * Summary:	Routing data
+ * Summary:	Routing data (/etc/sysconfig/network/routes)
  * Authors:	Michal Svec <msvec@suse.cz>
  *
  * $Id$
+ *
+ * See routes(5)
+ * Does not work with interface-specific routes yet (ifroute-lo...)
  */
 
 {
@@ -18,11 +21,14 @@ import "Map";
 
 /**
  * All routes
+ * list <map <string, string> >:
+ * keys: destination, gateway, netmask, [device, [extrapara]]
  */
 global list<map> Routes = [];
 
 /**
  * Enable IP forwarding
+ * .sysconfig.sysctl.IP_FORWARD
  */
 global boolean Forward = false;
 
@@ -54,6 +60,7 @@ global define boolean Modified() {
 
 /**
  * Read routing settings
+ * If no routes, sets a default gateway from Detection
  * @return true if success
  */
 global define boolean Read() {
@@ -116,6 +123,8 @@ global define boolean Write() {
 
     /* at first stop the running routes */
     // FIXME SCR::Execute(.target.bash, "/etc/init.d/route stop");
+    // sysconfig does not support restarting routes only,
+    // so we let our caller do it together with other things
 
     /* create if not exists, otherwise backup */
     if(SCR::Read(.target.size, routes_file) < 0)
@@ -146,8 +155,6 @@ global define boolean Write() {
  * @return true if success
  */
 global define boolean Import(map settings) {
-    if(size(settings) == 0)
-	return true;
 
     Routes = (list<map>) eval(settings["routes"]:[]);
     Forward = settings["ip_forward"]:false;

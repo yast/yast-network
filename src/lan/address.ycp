@@ -84,11 +84,11 @@ the network configuration.</p>");
 	/* Label text (Network device: unknown device) */
 	device = _("Unknown device");
     }
-    else
+    else if(Lan::alias == "") {
 	device = device_name(RealType(Lan::type, Lan::hotplug), Lan::device);
-
-    if(Lan::alias != "") {
-	device = device + ":" + Lan::alias;
+    }
+    else {
+	device = alias_name(RealType(Lan::type, Lan::hotplug), Lan::device, Lan::alias);
 	bootproto = "static";
     }
 
@@ -231,15 +231,16 @@ completes the configuration.</p>");
     term DetailsButton = `PushButton(`id(`details), `opt(`hstretch), _("&Detailed Settings"));
     // if(Lan::alias != "" || type == "dummy") DetailsButton = `VSpacing(0);
 
-    /* MenuButton label */
-    term MB = `MenuButton(`id(`mb), `opt(`hstretch), _("&Advanced..."), [
+    list MB_list = [
 	/* MenuButton item */
 	`item(`id(`hardware), _("H&ardware Details")),
 	/* MenuButton item */
 	`item(`id(`dhclient), _("DHCP &Client Options")),
 	/* MenuButton item */
 	`item(`id(`details), _("&Detailed Settings")),
-    ]);
+	/* MenuButton item */
+	`item(`id(`virtual), _("&Virtual Aliases")),
+    ];
 
     list MB_backup = [
 	/* MenuButton item */
@@ -253,6 +254,13 @@ completes the configuration.</p>");
 	/* MenuButton item */
 	`item(`id(`proxy), _("&Proxy")),
     ];
+
+    /* MenuButton item */
+    if(Arch::s390 && (Lan::type == "qeth" || Lan::type == "ctc"))
+	MB_list = add(MB_list, `item(`id(`s390), _("&S/390")));
+
+    /* MenuButton label */
+    term MB = `MenuButton(`id(`mb), `opt(`hstretch), _("&Advanced..."), MB_list);
 
     /* Frame label */
     term frame2 = `Frame(_("Detailed settings"), `HBox(`HStretch(),
@@ -273,6 +281,9 @@ completes the configuration.</p>");
 	)),
 	`HStretch()
     ));
+
+    if(Lan::alias != "")
+	frame2 = `VSpacing(0);
 
     /* Address dialog help */
     term contents = `HSquash(`VBox(
@@ -344,7 +355,8 @@ completes the configuration.</p>");
 	/* next|routing|hostname|hardware */
 	else if(ret == `next || ret == `routing || ret == `hostname ||
 		ret == `hardware || ret == `dhclient || ret == `virtual ||
-		ret == `details || ret == `hosts || ret == `proxy) {
+		ret == `details || ret == `hosts || ret == `proxy ||
+		ret == `s390) {
 
 	    y2debug("bootproto=%1", bootproto);
 	    if(UI::WidgetExists(`id(`rb))) {
@@ -406,7 +418,7 @@ completes the configuration.</p>");
     /* update the configuration */
     if(ret == `next || ret == `routing || ret == `hostname || ret == `hardware
 	    || ret == `dhclient || ret == `virtual || ret == `details ||
-	    ret == `hosts || ret == `proxy) {
+	    ret == `hosts || ret == `proxy || ret == `s390) {
 
 	if(Lan::operation == `add) {
 	    device = (string) UI::QueryWidget(`id(`device), `Value);

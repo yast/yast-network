@@ -57,6 +57,7 @@ Read	.etc.install_inf."Machinename" nil
 Read	.etc.install_inf."Domainname" nil
 Read	.etc.install_inf."Alias" nil
 Read	.etc.install_inf."Options" nil
+Read	.etc.install_inf."HWAddr" nil
 Read	.target.size "/etc/sysconfig/personal-firewall" 1
 Read	.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS nil
 Return	true

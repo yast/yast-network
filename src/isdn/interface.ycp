@@ -209,8 +209,12 @@ define any interface_dialog() ``{
     y2debug("FirewallQuickmode=%1",FirewallQuickmode);
 
     /* DIALOG TEXTS */
-    string caption = sformat("%1 %2 interface %3", ISDN::operation == `editif ? "Edit" : "Add",
-			syncppp ? "syncppp" : "rawip", devstr);
+    string fcaption = ISDN::operation == `editif ?
+	// dialog caption, %1: SyncPPP or RawIP, %2: interface name, eg. ppp0
+	_("Edit %1 interface %2") :
+	// dialog caption, %1: SyncPPP or RawIP, %2: interface name, eg. ppp0
+	_("Add %1 interface %2");
+    string caption = sformat(fcaption, syncppp ? "SyncPPP" : "RawIP", devstr);
 
     string helptext =
     // help text 1/5

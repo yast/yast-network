@@ -17,6 +17,7 @@ y2milestone("Modem proposal started");
 y2milestone("Arguments: %1", WFM::Args());
 
 import "Modem";
+import "Popup";
 import "Progress";
 
 include "network/routines.ycp";
