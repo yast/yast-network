@@ -57,7 +57,7 @@ define list BuildSummary(list Hardware, boolean split) ``{
 	    if(aliasee != $[])
 		maplist(string aid, map amap, aliasee, ``{
 		    /* Table item */
-		    hwname = _("Virtual network interface");
+		    hwname = _("Virtual Interface");
 		    status = DeviceStatus(devtype, devnum + sformat(":%1", aid), amap);
 		    configured = add(configured, Summary::Device(hwname, status));
 		});

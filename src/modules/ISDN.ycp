@@ -869,7 +869,7 @@ global define boolean PrepareInterface() ``{
     if (0 == size(typemap))
 	return false;
     string id = "";
-    maplist(`num, `devmap, typemap, ``{
+    maplist(string num, map devmap, typemap, ``{
 	id = sformat("net%1", num);
     });
     return SelIf(id);
@@ -895,7 +895,7 @@ global define boolean SelectInterface(boolean auto) ``{
     if (s == 0)
 	return(false);
     if (auto && (s == 1)) {
-	maplist(`num, `devmap, typemap, ``{
+	maplist(string num, map devmap, typemap, ``{
 	    id = sformat("net%1", num);
 	});
 	return SelIf(id);

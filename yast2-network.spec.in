@@ -1,5 +1,5 @@
 @HEADER-COMMENT@
-# neededforbuild yast2-devel-packages yast2-country yast2-installation yast2-x11 yast2-packager
+# neededforbuild yast2-devel-packages yast2-country yast2-installation
 
 @HEADER@
 Requires:	yast2 sysconfig yast2-country yast2-inetd
@@ -25,9 +25,6 @@ Summary:	Network configuration
 
 @INSTALL@
 %ifarch s390 s390x
-# /bin/rm -f @configdir@/dsl.y2cc
-# /bin/rm -f @configdir@/isdn.y2cc
-# /bin/rm -f @configdir@/modem.y2cc
 /bin/rm -f @desktopdir@/dsl.desktop
 /bin/rm -f @desktopdir@/isdn.desktop
 /bin/rm -f @desktopdir@/modem.desktop

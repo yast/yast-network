@@ -6,7 +6,7 @@
  *
  * $Id$
  *
- * All modules.conf settings are stored in a global variable Modules.
+ * All modprobe.conf settings are stored in a global variable Modules.
  * Deleted modules are in the global list DeletedModules.
  *
  * <pre>

@@ -314,13 +314,13 @@ define map SelectHardware(list Hardware, integer which) ``{
     }
     /* treat the rest as a network card * /
     else {
-	/* don't make modules.conf entries for hotpluggable HW (29547) * /
+	/* don't make modprobe.conf entries for hotpluggable HW (29547) * /
 	if(hotplug == "") {
 	    Module["module"] = sel["module"]:"";
 	    Module["options"] = sel["options"]:"";
 	}
 	else
-	    y2debug("HOTPLUG(%1) -> ignoring modules.conf", hotplug);
+	    y2debug("HOTPLUG(%1) -> ignoring modprobe.conf", hotplug);
     }
 
     device = GetFreeDevice(RealType(type, hotplug));

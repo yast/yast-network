@@ -82,7 +82,7 @@ global define boolean Read() ``{
 
     /* read available devices */
     NetworkDevices::Read();
-    devices = NetworkDevices::List();
+    devices = NetworkDevices::List("");
 
     if(Routes == []) {
 	string gw = Detection::result["GATEWAY"]:"";

@@ -34,7 +34,7 @@ define any HardwareDialog() ``{
 
     /* Manual dialog help 1/4 */
     string help = _("<p>Here, set up your networking device.
-The values will be written into <i>/etc/modules.conf</i>.</p>") +
+The values will be written into <i>/etc/modprobe.conf</i>.</p>") +
 
     /* Manual dialog help 2/4 */
 _("<p><b>Options</b> for the module should be written in the format
@@ -55,7 +55,7 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
     if(Arch::s390)
 	/* Manual dialog help 5/4 */
 	help = _("<p>Here, set up your networking device. The values will be
-written into <i>/etc/modules.conf</i> or <i>/etc/chandev.conf</i>.</p>") +
+written into <i>/etc/modprobe.conf</i> or <i>/etc/chandev.conf</i>.</p>") +
 
 	/* Manual dialog help 6/4 */
 _("<p>Options for the module should be written in the format specified

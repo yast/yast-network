@@ -35,7 +35,7 @@ include "network/routines.ycp";
  * @param delete true if the host will be deleted
  * @return true if continue
  * /
-defin boolean HostSystemPopup(string host, boolean delete) ``{
+defin boolean AliasSystemPopup(string host, boolean delete) ``{
 
     if(!contains(Host::GetSystemHosts(), host)) return true;
 
@@ -64,13 +64,13 @@ define any VirtualDialog(boolean standalone) ``{
 
     ScreenName("lan-virtual");
 
-    /* Hosts dialog caption */
+    /* Aliases dialog caption */
     string caption = _("Virtual Aliases");
 
-    /* Hosts dialog help 1/2 */
+    /* Aliases dialog help 1/2 */
     string help = _("<p>Configure virtual aliases in this dialog.</p>") +
 
-    /* Hosts dialog help 2/2 */
+    /* Aliases dialog help 2/2 */
     _("<p>Enter an <b>Alias Name</b>, an <b>IP Address</b>, and
 the <b>Netmask</b>.</p>");
 
@@ -91,7 +91,7 @@ the <b>Netmask</b>.</p>");
     y2debug("items=%1", items);
     max = items;
 
-    /* Hosts dialog contents */
+    /* Aliases dialog contents */
     term contents = `HBox(
 	`HSpacing(5),
 	`VBox(
@@ -327,15 +327,6 @@ define term VirtualEditDialog(integer id, term entry, list forbidden) ``{
     if(ret != `ok) return nil;
     return host;
 }
-
-/* FIXME
-include "devel/debug.ycp";
-
-Wizard::CreateDialog();
-Lan::Read();
-Lan::Select("eth1");
-VirtualDialog(true);
-*/
 
 /* EOF */
 }

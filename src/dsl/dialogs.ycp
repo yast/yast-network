@@ -95,11 +95,11 @@ be appropriate for dial-on-demand connections.</p>");
     /**
      */
     define void UpdateInterfaces() ``{
-	ifaces = NetworkDevices::GetDevices("eth");
+	ifaces = NetworkDevices::List("eth");
 	y2debug("ifaces=%1", ifaces);
-	ifaces = union(ifaces, NetworkDevices::GetDevices("eth-pcmcia"));
+	ifaces = union(ifaces, NetworkDevices:::List("eth-pcmcia"));
 	y2debug("ifaces=%1", ifaces);
-	ifaces = union(ifaces, NetworkDevices::GetDevices("eth-usb"));
+	ifaces = union(ifaces, NetworkDevices:::List("eth-usb"));
 	y2debug("ifaces=%1", ifaces);
 
 	/* FIXME Why is not the current interface added? */

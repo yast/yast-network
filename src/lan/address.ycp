@@ -28,7 +28,7 @@ include "network/routines.ycp";
  * Dialog for setting up IP address
  * @return dialog result
  */
-define any AddressDialog() ``{
+define any AddressDialog() {
 
     ScreenName("lan-address");
 
@@ -211,16 +211,17 @@ completes the configuration.</p>");
 
     /* Push button label */
     term HardwareButton = `PushButton(`id(`hardware), `opt(`hstretch), _("H&ardware Details"));
-    if(type == "dummy" || (Lan::operation == `add && Lan::unique == ""))
+    if(Lan::alias != "" || type == "dummy" || (Lan::operation == `add && Lan::unique == ""))
 	HardwareButton = `VSpacing(0);
 
     /* Push button label */
     term VirtualButton = `PushButton(`id(`virtual), `opt(`hstretch), _("&Virtual Aliases"));
-    VirtualButton = `VSpacing(0);
+    if(Lan::alias != "" || Lan::hotplug != "" /* !regexpmatch(type, NetworkDevices::CardRegex["netcard"]:"") */)
+	VirtualButton = `VSpacing(0);
 
     /* Push button label */
     term DHCPButton = `PushButton(`id(`dhclient), `opt(`hstretch), _("DHCP &Client Options"));
-    if(type == "dummy") DHCPButton = `VSpacing(0);
+    if(Lan::alias != "" || type == "dummy") DHCPButton = `VSpacing(0);
 
     /* Frame label */
     term frame2 = `Frame(_("Detailed settings"), `HBox(`HStretch(),
@@ -255,7 +256,7 @@ completes the configuration.</p>");
     ChangeWidgetIfExists(`id(`dhcp), `Value, bootproto == "dhcp");
     ChangeWidgetIfExists(`id(`static), `Value, bootproto == "static");
 
-    if(bootproto == "static" && ipaddr == "")
+    if(bootproto == "static" /* && ipaddr == "" */)
 	UI::SetFocus(`id(`ipaddr));
 
     any ret = nil;
@@ -356,7 +357,7 @@ completes the configuration.</p>");
     }
 
     if(ret == `routing)
-	Routing::SetDevices(NetworkDevices::GetDevices("all"));
+	Routing::SetDevices(NetworkDevices::List(""));
 
     return ret;
 }

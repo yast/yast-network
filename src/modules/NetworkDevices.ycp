@@ -17,27 +17,17 @@ import "Map";
 
 include "network/routines.ycp";
 
-define boolean Check(string dev);
+/**
+ * Current device identifier
+ * @example eth0, eth1:blah, lo, ...
+ */
+global string Name = "";
 
 /**
  * Current device information
+ * @example $["BOOTPROTO":"dhcp", "STARTMODE":"onboot"]
  */
 global map Current = $[];
-global string Name = "";
-
-global string name = "";
-global string unique = "";
-
-/*
-string type = "";
-string device = "";
-string alias = "";
-*/
-
-/**
- * Hotplug type ("" if not hot pluggable)
- */
-global string hotplug = "";
 
 /**
  * Devices information
@@ -88,10 +78,10 @@ list HotplugTypes = [ "pcmcia", "usb"/*, "pci" */];
 /**
  * Create a list of hot-pluggable device names for the given devices
  */
-define string HotplugRegex(list<string> devs) ``{
+define string HotplugRegex(list<string> devs) {
     string ret = "";
-    foreach(string dev, devs, ``{
-	foreach(string hot, HotplugTypes, ``{
+    foreach(string dev, devs, {
+	foreach(string hot, HotplugTypes, {
 	    ret = ret + "|" + dev + "-" + hot + "|" + dev + "-" + hot + "-";
 	});
     });
@@ -123,7 +113,7 @@ map FastestTypes = $[
  * Read devices from files
  * @return true if sucess
  */
-global define boolean Read() ``{
+global define boolean Read() {
 
     // initialized = true; // FIXME
     if(initialized == true) return true;
@@ -137,14 +127,18 @@ global define boolean Read() ``{
     /* preparation */
     list allfiles = SCR::Dir(.network.section);
     if(allfiles == nil) allfiles = [];
-    list devices = filter(string file, allfiles, ``(!regexpmatch(file, "[\.~]")));
+    list devices = filter(string file, allfiles, {
+	return !regexpmatch(file, "[\.~]");
+    });
     y2debug("devices=%1", devices);
 
-    devices = filter(string d, devices, ``(regexpmatch(d, "[a-z][a-z-]*[0-9]*")));
+    devices = filter(string d, devices, {
+	return regexpmatch(d, "[a-z][a-z-]*[0-9]*");
+    });
     y2debug("devices=%1", devices);
 
     /* Read devices */
-    maplist(string d, devices, ``{
+    maplist(string d, devices, {
 	string devtype = device_type(d);
 
 	string devnum = "";
@@ -163,7 +157,7 @@ global define boolean Read() ``{
 	y2debug("values=%1", values);
 
 	map config = $[];
-	maplist(string val, values, ``{
+	maplist(string val, values, {
 	    string item = (string) SCR::Read(topath(pth + "." + val));
 	    if(item == nil) return;
 	    /* No underscore '_' -> global */
@@ -202,13 +196,13 @@ global define boolean Read() ``{
 
 /**
  */
-define map Filter(map devices, string devregex) ``{
+define map Filter(map devices, string devregex) {
     if(devices == nil || devregex == nil || devregex == "")
 	return devices;
 
     string regex = "^(" + DeviceRegex[devregex]:devregex + ")[0-9]*$";
     y2debug("regex=%1", regex);
-    devices = filter(string file, string devmap, devices, ``{
+    devices = filter(string file, string devmap, devices, {
 	return regexpmatch(file, regex) == true;
     });
     y2debug("devices=%1", devices);
@@ -217,13 +211,13 @@ define map Filter(map devices, string devregex) ``{
 
 /**
  */
-define map FilterNOT(map devices, string devregex) ``{
+define map FilterNOT(map devices, string devregex) {
     if(devices == nil || devregex == nil || devregex == "")
 	return $[];
 
     string regex = "^(" + DeviceRegex[devregex]:devregex + ")[0-9]*$";
     y2debug("regex=%1", regex);
-    devices = filter(string file, string devmap, devices, ``{
+    devices = filter(string file, string devmap, devices, {
 	return regexpmatch(file, regex) != true;
     });
     y2debug("devices=%1", devices);
@@ -236,7 +230,7 @@ define map FilterNOT(map devices, string devregex) ``{
  * @return true if success
  * @example NetworkDevice::Write("eth|tr");
  */
-global define boolean Write(string devregex) ``{
+global define boolean Write(string devregex) {
 
     y2debug("Devices=%1", Devices);
 
@@ -252,31 +246,31 @@ global define boolean Write(string devregex) ``{
     }
 
     /* remove deleted devices */
-    foreach(string d, Deleted, ``{
+    foreach(string d, Deleted, {
 	if(!haskey(OriginalDevs, d)) return;
 	/* delete config file */
 	path p = topath(".network.section.\"" + d + "\"");
 	y2debug("deleting: %1", p);
 	SCR::Write(p, nil);
     });
-    Deleted = filter(string dev, Deleted, ``(haskey(OriginalDevs, dev)));
+    Deleted = filter(string dev, Deleted, { return haskey(OriginalDevs, dev); });
 
     /* Devices with chmod=0600 */
     list chmod = [];
 
     /* write all devices */
-    maplist(string typ, map devsmap, Devs, ``{
-	maplist(string num, map devmap, devsmap, ``{
+    maplist(string typ, map devsmap, Devs, {
+	maplist(string num, map devmap, devsmap, {
 	    /* write sysconfig */
 	    string dev = device_name(typ, num);
 	    string p = ".network.value.\"" + dev + "\".";
 
 	    /* write all keys to config */
-	    maplist(string k, Map::Keys(devmap), ``{
+	    maplist(string k, Map::Keys(devmap), {
 		/* Write aliases */
 		if(k == "_aliases") {
-		    maplist(string anum, map amap, devmap[k]:$[], ``{
-			maplist(string ak, string av, amap, ``{
+		    maplist(string anum, map amap, devmap[k]:$[], {
+			maplist(string ak, string av, amap, {
 			    string akk = ak + "_" + anum;
 			    SCR::Write(topath(p + akk), av);
 			});
@@ -308,7 +302,7 @@ global define boolean Write(string devregex) ``{
 
     /* CHMOD */
     y2debug("chmod=%1", chmod);
-    maplist(string file, chmod, ``{
+    maplist(string file, chmod, {
 	y2debug("changing: %1", file);
 	SCR::Execute(.target.bash, "/bin/chmod 0600 " + file);
     });
@@ -340,10 +334,10 @@ global define map<string,map> Export(string devregex) {
 }
 
 /**
- * Were the providers changed?
+ * Were the devices changed?
  * @return true if modified
  */
-global define boolean Modified(string devregex) ``{
+global define boolean Modified(string devregex) {
     map Devs = Filter(Devices, devregex);
     map OriginalDevs = Filter(OriginalDevices, devregex);
     y2debug("OriginalDevs=%1", OriginalDevs);
@@ -358,7 +352,7 @@ global define boolean Modified(string devregex) ``{
  * @return num of free devices
  * @example GetFreeDevices("eth", 2) -&gt; [ 1, 2 ]
  */
-global define list GetFreeDevices(string type, integer num) ``{
+global define list GetFreeDevices(string type, integer num) {
     y2debug("Devices=%1", Devices);
     y2debug("type,num=%1,%2", type, num);
     y2debug("Devices[%1]=%2", type, Devices[type]:$[]);
@@ -397,7 +391,7 @@ global define list GetFreeDevices(string type, integer num) ``{
  * @return free device
  * @example GetFreeDevice("eth") -&gt; "1"
  */
-global define string GetFreeDevice(string type) ``{
+global define string GetFreeDevice(string type) {
     y2debug("type=%1", type);
     string ret = (string) select(GetFreeDevices(type, 1), 0, nil);
     if(ret == nil) y2error("Free device location error: %1", ret);
@@ -406,11 +400,51 @@ global define string GetFreeDevice(string type) ``{
 }
 
 /**
+ * Check presence of the device (alias)
+ * @param dev device identifier
+ * @return true if device is present
+ */
+define boolean Check(string dev) {
+
+    y2debug("Check(%1)", dev);
+    string typ = device_type(dev);
+    string num = device_num(dev);
+    string anum = alias_num(dev);
+    y2milestone("Check(%1,%2,%3)", typ, num, anum);
+
+    if(!haskey(Devices, typ))
+	return false;
+
+    map devsmap = Devices[typ]:$[];
+    if(!haskey(devsmap, num))
+	return false;
+
+    /* FIXME NI: not needed?
+    Name = dev;
+    Current = (map) eval(devsmap[num]:$[]);
+    */
+
+    if(anum != "") {
+	map devmap = devsmap[num]:$[];
+	map amap = devmap["_aliases"]:$[];
+	if(!haskey(amap, anum))
+	    return false;
+	/* FIXME NI: not needed?
+	Current = (map) eval(amap[anum]:$[]);
+	alias = anum;
+	*/
+    }
+
+    y2debug("Check passed");
+    return true;
+}
+
+/**
  * Select the given device
  * @param device to select ("" for new device, default values)
  * @return true if success
  */
-global define boolean Select(string name) ``{
+global define boolean Select(string name) {
 
     Name = "";
     Current = $[];
@@ -425,9 +459,11 @@ global define boolean Select(string name) ``{
     // FIXME NI: Current = Devices[device_type(Name), device_num(Name)]:$[];
     string t = device_type(Name);
     Current = Devices[t, device_num(Name)]:$[];
+    string a = alias_num(Name);
+    if(a != nil && a != "") Current = Current["_aliases", a]:$[];
 
     if(Current == $[]) {
-	/* Default provider map */
+	/* Default device map */
 	Current = $[
 	    /* FIXME: remaining items */
 	];
@@ -440,52 +476,10 @@ global define boolean Select(string name) ``{
 }
 
 /**
- * Check presence of device (alias) and fill in type|device|alias variables.
- * @param dev device identifier
- * @return true if device is present
- */
-define boolean Check(string dev) ``{
-
-    y2debug("Check(%1)", dev);
-    string typ = device_type(dev);
-    string num = device_num(dev);
-    string anum = alias_num(dev);
-    y2debug("Check(%1,%2,%3)", typ, num, anum);
-
-    if(!haskey(Devices, typ))
-	return false;
-
-    map devsmap = Devices[typ]:$[];
-    if(!haskey(devsmap, num))
-	return false;
-
-    Name = dev;
-    Current = (map) eval(devsmap[num]:$[]);
-
-    /*
-    type = typ;
-    device = num;
-    alias = "";
-
-    if(anum != "") {
-	map devmap = devsmap[num]:$[];
-	map amap = devmap["_aliases"]:$[];
-	if(!haskey(amap, anum))
-	    return false;
-	Current = (map) eval(amap[anum]:$[]);
-	alias = anum;
-    }
-
-    y2debug("Check(%1,%2,%3)", type, device, alias);
-    */
-    return true;
-}
-
-/**
  * Add a new device
  * @return true if success
  */
-global define boolean Add() ``{
+global define boolean Add() {
     operation = nil;
     if(Select("") != true) return false;
     operation = `add;
@@ -497,7 +491,7 @@ global define boolean Add() ``{
  * @param dev device to edit
  * @return true if success
  */
-global define boolean Edit(string name) ``{
+global define boolean Edit(string name) {
     operation = nil;
     if(Select(name) != true) return false;
     operation = `edit;
@@ -509,13 +503,9 @@ global define boolean Edit(string name) ``{
  * @param dev device to delete
  * @return true if success
  */
-global define boolean Delete(string name) ``{
+global define boolean Delete(string name) {
     operation = nil;
-    if(!Check(name)) {
-	y2error("Device not found: %1", name);
-	return false;
-    }
-    Name = name;
+    if(Select(name) != true) return false;
     operation = `delete;
     return true;
 }
@@ -527,7 +517,7 @@ global define boolean Delete(string name) ``{
  * @param check if check if device already exists
  * @return true if success
  */
-define boolean Change2(string name, map newdev, boolean check) ``{
+define boolean Change2(string name, map newdev, boolean check) {
     y2debug("Change(%1,%2,%3)", name, newdev, check);
     y2debug("Devices=%1", Devices);
 
@@ -545,12 +535,13 @@ define boolean Change2(string name, map newdev, boolean check) ``{
     map devmap = devsmap[d]:$[];
     map amap = devmap["_aliases"]:$[];
 
-    if(a != "")
+    if(a != "") {
 	amap[a] = newdev;
+	devmap["_aliases"] = amap;
+    }
     else
 	devmap = newdev;
 
-    devmap["_aliases"] = amap;
     devsmap[d] = devmap;
     Devices[t] = devsmap;
 
@@ -558,7 +549,7 @@ define boolean Change2(string name, map newdev, boolean check) ``{
     return true;
 }
 
-define boolean Delete2(string name) ``{
+define boolean Delete2(string name) {
 
     if(!Check(name)) {
 	y2error("Device not found: %1", name);
@@ -590,7 +581,7 @@ define boolean Delete2(string name) ``{
     return true;
 }
 
-global define boolean Commit() ``{
+global define boolean Commit() {
     y2debug("Name=%1", Name);
     y2debug("Current=%1", Current);
     y2debug("Devices=%1", Devices);
@@ -625,10 +616,10 @@ global define boolean Commit() ``{
  * @param val device value
  * @return list of devices with key=val
  */
-global define list Locate(string key, string val) ``{
+global define list Locate(string key, string val) {
     list ret = [];
-    maplist(string typ, map devsmap, Devices, ``{
-	maplist(string num, map devmap, devsmap, ``{
+    maplist(string typ, map devsmap, Devices, {
+	maplist(string num, map devmap, devsmap, {
 	    if(devmap[key]:"" == val) ret = add(ret, typ+num);
 	});
     });
@@ -637,24 +628,10 @@ global define list Locate(string key, string val) ``{
 }
 
 /**
- * List available devices
- */
-global define list List() ``{
-    list ret = [];
-    foreach(string type, Map::Keys(Devices), ``{
-	foreach(string dev, Map::Keys(Devices[type]:$[]), ``{
-	    ret[size(ret)] = device_name(type, dev);
-	});
-    });
-    y2debug("ret=%1", ret);
-    return ret;
-}
-
-/**
  * Update /dev/modem symlink
  * @return true if success
  */
-global define boolean UpdateModemSymlink() ``{
+global define boolean UpdateModemSymlink() {
     boolean ret = false;
     if(contains(Map::Keys(Devices), "ppp")) {
 	list ml = Map::Keys(Devices["ppp"]:$[]);
@@ -681,10 +658,10 @@ global define boolean UpdateModemSymlink() ``{
  * usually ifcfg-eth-pcmcia -> ifcfg-eth-pcmcia-0.
  * @return true if success
  */
-global define boolean CleanHotplugSymlink() ``{
+global define boolean CleanHotplugSymlink() {
 
     list types = [ "eth-pcmcia", "eth-usb", "tr-pcmcia", "tr-usb" ];
-    maplist(string t, types, ``{
+    maplist(string t, types, {
 	string link = "/etc/sysconfig/network/ifcfg-" + t;
 	y2debug("link=%1", link);
 	if(lookup((map)SCR::Read(.target.lstat, link), "islink", false) == true) {
@@ -705,16 +682,50 @@ global define boolean CleanHotplugSymlink() ``{
 }
 
 /**
+ * Get devices of the given type
+ * @param type devices type ("" for all)
+ * @return list of found devices
+ */
+global define list List(string devregex) {
+
+    list ret = [];
+    if(devregex == "" || devregex == nil) {
+	maplist(string t, map d, Devices, {
+	    maplist(string n, Map::Keys(d), {
+		ret[size(ret)] = device_name(t,n);
+	    });
+	});
+    }
+    else {
+	string regex = "^(" + DeviceRegex[devregex]:devregex + ")[0-9]*$";
+	maplist(string t, map d, Devices, {
+	    if(regexpmatch(t, regex)) {
+		maplist(string n, Map::Keys(d), {
+		    ret[size(ret)] = device_name(t,n);
+		});
+	    }
+	});
+	/*
+	map d = Devices[type]:$[];
+	maplist(string n, Map::Keys(d), {ret[size(ret)] = device_name(type,n);});
+	*/
+    }
+
+    y2debug("ret=%1", ret);
+    return ret;
+}
+
+/**
  * Find the fastest available device
  */
-global define string Fastest() ``{
+global define string Fastest() {
 
     string ret = "";
-    list devices = List();
+    list devices = List("");
 
     /* Find the fastest device */
-    foreach(integer num, string type, FastestTypes, ``{
-	foreach(string dev, devices, ``{
+    foreach(integer num, string type, FastestTypes, {
+	foreach(string dev, devices, {
 	    if(ret == "" && regexpmatch(dev, "^" + DeviceRegex[type]:"" + "[0-9]*$"))
 		ret = dev;
 	});
@@ -726,7 +737,7 @@ global define string Fastest() ``{
 
 global define string FastestType(string name) {
     string ret = "";
-    maplist(string typ, string regex, DeviceRegex, ``{
+    maplist(string typ, string regex, DeviceRegex, {
 	if (ret == "" && regexpmatch(name, "^" + regex + "[0-9]*$"))
 	ret = typ;
     });
@@ -736,38 +747,38 @@ global define string FastestType(string name) {
 map Devs = $[];
 include "network/complex.ycp";
 
-global define list Summary(string devregex, list Hardware, boolean split) ``{
+global define list Summary(string devregex, list Hardware, boolean split) {
     Devs = Filter(Devices, devregex);
     return BuildSummary(Hardware, split);
 }
 
-global define list Overview(string devregex) ``{
+global define list Overview(string devregex) {
     Devs = Filter(Devices, devregex);
     return BuildOverview();
 }
 
+global define list OverviewAliases(string devregex) {
+    Devs = Current["_aliases"]:$[];
+    return BuildOverview();
+}
+
 /**
- * Get devices of the given type
- * @param type devices type
- * @return list of found devices
+ * Check if the given device has any virtual alias.
+ * @param dev device to be checked
+ * @return true if there are some aliases
  */
-global define list GetDevices(string type) ``{
+global define boolean HasAliases(string name) {
 
-    if(type == nil || type == "") return [];
-
-    list ret = [];
-    if(type == "all") {
-	maplist(string t, map d, Devices, ``{
-	    maplist(string n, Map::Keys(d), ``{ret[size(ret)] = device_name(t,n);});
-	});
-    }
-    else {
-	map d = Devices[type]:$[];
-	maplist(string n, Map::Keys(d), ``{ret[size(ret)] = device_name(type,n);});
+    if(!Check(name)) {
+	y2error("Device not found: %1", name);
+	return false;
     }
 
-    y2debug("ret=%1", ret);
-    return ret;
+    string t = device_type(name);
+    string d = device_num(name);
+    string a = alias_num(name);
+
+    return a == "" && Devices[t, d, "_aliases"]:$[] != $[];
 }
 
 /* EOF */

@@ -219,7 +219,7 @@ define term Card_Parameter(map drv) ``{
 		default_io = tointeger(cur_io);
 	    list iol = [];
 	    found = false;
-	    maplist(`v, io, ``{
+	    maplist(string v, io, ``{
 		boolean tmp = (tointeger(v) == default_io);
 		if (tmp)
 			found = true;
@@ -238,14 +238,14 @@ define term Card_Parameter(map drv) ``{
 	    integer default_irq = tointeger(select(irq, 2, "5"));
 	    string cur_irq = lookup(ISDN::hw_device, "PARA_IRQ", "");
 	    if (cur_irq != "")
-	    	default_irq = tointeger(cur_irq);
+		default_irq = tointeger(cur_irq);
 	    list irql = [];
 	    found = false;
-	    maplist(`v, irq, ``{
-	    	boolean tmp = (tointeger(v) == default_irq); 
-	    	if (tmp)
-	    		found = true;
-	    	irql = add(irql, `item(`id(v), v, tmp));
+	    maplist(string v, irq, ``{
+		boolean tmp = (tointeger(v) == default_irq);
+		if (tmp)
+			found = true;
+		irql = add(irql, `item(`id(v), v, tmp));
 	    });
 	    if (!found || 2>size(irq)) {
 		if (!found)
@@ -260,14 +260,14 @@ define term Card_Parameter(map drv) ``{
 	    integer default_mem = tointeger(select(mem, 0, 0));
 	    string cur_memb = lookup(ISDN::hw_device, "PARA_MEMBASE", "");
 	    if (cur_memb != "")
-	    	default_mem = tointeger(cur_memb);
+		default_mem = tointeger(cur_memb);
 	    list meml = [];
 	    found = false;
-	    maplist(`v, mem, ``{
-	    	boolean tmp = (tointeger(v) == default_mem); 
-	    	if (tmp)
-	    		found = true;
-	    	meml = add(meml, `item(`id(v), v, tmp));
+	    maplist(string v, mem, ``{
+		boolean tmp = (tointeger(v) == default_mem);
+		if (tmp)
+			found = true;
+		meml = add(meml, `item(`id(v), v, tmp));
 	    });
 	    if (!found || 2>size(mem)) {
 		if (!found)
@@ -298,7 +298,7 @@ define void EnableProtocols(map drv) ``{
 }
 
 /**
- * Helper creates a Combobox with a description label to select a 
+ * Helper creates a Combobox with a description label to select a
  * driver from list drv. The label is the description of the
  * current selected driver.
  * @param list drv    list of available drivers for the card
@@ -700,7 +700,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 
 	    pkgs = lookup((map) select(CardDrivers, CurrentDrvIndex, $[]), "need_pkg", []);
 	    if (pkgs != nil && pkgs != [] && !isdnlog) {
-		pkgs = filter(`p, pkgs, ``(p != "i4l-isdnlog"));
+		pkgs = filter(string p, pkgs, ``(p != "i4l-isdnlog"));
 	    }
 	    if (pkgs == [""])
 		y2warning("no package list for %1", lookup(cur_card, "longname","unknown"));

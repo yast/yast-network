@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Feb 18 12:25:19 CET 2004 - msvec@suse.cz
+
+- fixed network proposal creation
+- fixed writing of kernel modules
+- resurrected virtual aliases support
+- reduced neededforbuild
+- 2.9.5
+
+-------------------------------------------------------------------
 Mon Feb 16 19:21:25 CET 2004 - msvec@suse.cz
 
 - syntax fixes in the detection code

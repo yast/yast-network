@@ -198,3 +198,13 @@ Read	.target.lstat "/dev/modem" $["islink":true]
 Read	.target.symlink "/dev/modem" "/dev/ttyS2"
 Execute	.target.symlink "/dev/ttyS1" "/dev/modem" 0
 Return	true
+Dump	NetworkDevices::List
+Return	[]
+Return	[]
+Return	["lo"]
+Return	[]
+Return	["eth0"]
+Return	["eth0", "lo"]
+Return	[]
+Return	["eth0", "tr1"]
+Return	["eth0", "tr1"]

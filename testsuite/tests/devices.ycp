@@ -117,4 +117,18 @@ TEST(``(NetworkDevices::UpdateModemSymlink()), [READ], nil);
 READ=$["target":$["lstat":$["islink":true], "symlink":"/dev/ttyS2"]];
 TEST(``(NetworkDevices::UpdateModemSymlink()), [READ], nil);
 
+DUMP("NetworkDevices::List");
+NetworkDevices::Devices=$["lo":$["":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]]];
+TEST(``(NetworkDevices::List("modem")), [], nil);
+TEST(``(NetworkDevices::List("netcard")), [], nil);
+TEST(``(NetworkDevices::List("")), [], nil);
+NetworkDevices::Devices=$["lo":$["":$["BOOTPROTO":"dhcp", "STARTMODE":"manual"]], "eth":$["0":$["BOOTPROTO":"DHCP", "STARTMODE":"manual"]]];
+TEST(``(NetworkDevices::List("modem")), [], nil);
+TEST(``(NetworkDevices::List("netcard")), [], nil);
+TEST(``(NetworkDevices::List("")), [], nil);
+NetworkDevices::Devices=$[ "eth" : $[ "0" : $[ "BOOTPROTO" : "static" ]], "tr" : $["1" : $[ "BOOTPROTO" : "dhcp"]]];
+TEST(``(NetworkDevices::List("modem")), [], nil);
+TEST(``(NetworkDevices::List("netcard")), [], nil);
+TEST(``(NetworkDevices::List("")), [], nil);
+
 }

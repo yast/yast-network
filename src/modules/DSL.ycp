@@ -519,6 +519,9 @@ global define list Overview() ``{
  */
 global define void SelectHW(integer which) ``{
     map sel = SelectHardware(Hardware, which);
+
+    pppmode = sel["pppmode"]:"capi-adsl";
+    startmode = sel["startmode"]:"manual";
 }
 
 /**
