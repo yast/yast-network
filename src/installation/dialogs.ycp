@@ -106,7 +106,7 @@ activate the test procedure."),
 	/* RadioButton label */
 	`Left(`RadioButton(`id(`yes), _("&Yes, Test Connection to the Internet"), Internet::do_test)),
 	/* RadioButton label */
-	`Left(`RadioButton(`id(`no), _("N&o, Skip This test"), !Internet::do_test)),
+	`Left(`RadioButton(`id(`no), _("N&o, Skip this Test"), !Internet::do_test)),
 	`VSpacing(1)
     );
 
