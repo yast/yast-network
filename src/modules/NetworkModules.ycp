@@ -68,7 +68,7 @@ global define boolean Read() {
     Modules = $[];
 
     /* preparation */
-    list<string> allfiles = (list<string>) SCR::Dir(.sysconfig.hardware.section);
+    list<string> allfiles = SCR::Dir(.sysconfig.hardware.section);
     if(allfiles == nil) allfiles = [];
     list<string> modules = filter(string file, allfiles, {
 	return !regexpmatch(file, "[~]");
@@ -92,7 +92,7 @@ global define boolean Read() {
 
 	string pth = ".sysconfig.hardware.value.\"" + d + "\"";
 	y2debug("pth=%1", pth);
-	list<string> values = (list<string>) SCR::Dir(topath(pth));
+	list<string> values = SCR::Dir(topath(pth));
 	y2debug("values=%1", values);
 
 	map config = $[];

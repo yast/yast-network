@@ -36,7 +36,7 @@ global define boolean ReadDevices(string devregex) ``{
 	    "BROADCAST", "SCOPE", "LABEL", "IP_OPTIONS" ];
 
     /* preparation */
-    list<string> allfiles = (list<string>)SCR::Dir(.network.section);
+    list<string> allfiles = SCR::Dir(.network.section);
     list<string> devices = filter(string file, allfiles, ``(!regexpmatch(file, "[\.~]")));
     y2debug("devices=%1", devices);
 
@@ -66,7 +66,7 @@ global define boolean ReadDevices(string devregex) ``{
 	}
 
 	string pth = ".network.value.\"" + device_name(devtype, devnum) + "\"";
-	list<string> values = (list<string>)SCR::Dir(topath(pth));
+	list<string> values = SCR::Dir(topath(pth));
 
 	map config = $[];
 	maplist(string val, values, ``{

@@ -17,6 +17,7 @@ import "Wizard";
 
 include "network/routines.ycp";
 include "network/provider/helps.ycp";
+include "network/provider/texts.ycp";
 
 import "Popup";
 import "Label";
@@ -225,7 +226,7 @@ at the end.</p>");
 	`HSpacing(0.5),
 	`VBox(
 	    /* TextEntry label */
-	    `TextEntry(`id(`username), _("&User name"), username),
+	    `TextEntry(`id(`username), _("&User Name"), username),
 	    `Label(""),
 	    `VSpacing(0.2)
 	),

@@ -53,7 +53,7 @@ define boolean ReadModules(string devregex) {
     y2debug("regex=%1", regex);
 
     /* Read aliases */
-    list<string> allaliases = (list<string>)SCR::Dir(.modules.alias);
+    list<string> allaliases = SCR::Dir(.modules.alias);
     maplist(string al, allaliases, {
 	if(regexpmatch(al, regex)) {
 	    string modul = (string) SCR::Read(add(.modules.alias, al));
@@ -63,7 +63,7 @@ define boolean ReadModules(string devregex) {
     });
 
     /* Read options */
-    list<string> opts = (list<string>)SCR::Dir(.modules.options);
+    list<string> opts = SCR::Dir(.modules.options);
     maplist(string al, opts, {
 	map optsmap = (map) SCR::Read(add(.modules.options, al));
 	if(optsmap != nil)

@@ -117,7 +117,7 @@ global define boolean Read() {
 
     /* Read custom providers */
     Providers = $[];
-    list<string> dir = (list<string>) SCR::Dir(.sysconfig.network.providers.s);
+    list<string> dir = SCR::Dir(.sysconfig.network.providers.s);
 
     /* Filter away backups (files with ~) */
     dir = filter(string file, dir, {
@@ -127,7 +127,7 @@ global define boolean Read() {
     /* Fill the Providers map */
     foreach(string name, dir, {
 	path prov = add(.sysconfig.network.providers.v, name);
-	map p = listmap(string i, (list<string>) SCR::Dir(prov), {
+	map p = listmap(string i, SCR::Dir(prov), {
 	    map ii = $[];
 	    ii[i] = String::UnQuote((string) SCR::Read(add(prov, i)));
 	    return ii;
@@ -156,7 +156,7 @@ global define boolean Read() {
     /* Initialize the countries selection box */
     Countries = [];
     integer index = -1;
-    Countries = (list<string>) SCR::Dir(.providers.s);
+    Countries = SCR::Dir(.providers.s);
     if(Countries == nil) Countries = [];
     y2debug("Countries=%1", Countries);
     if(!contains(Countries, LastCountry)) LastCountry = "CZ";
@@ -344,7 +344,7 @@ global define boolean SelectSystem(path name) {
     if("\"" == substring(Name, 0, 1))
 	Name = substring(Name, 1, size(Name) - 2);
 
-    list<string> values = (list<string>) SCR::Dir(name);
+    list<string> values = SCR::Dir(name);
     Current = listmap(string value, values, {
 	return $[ value: SCR::Read(add(name, value)) ];
     });
@@ -759,7 +759,7 @@ global define list GetProviders(string type, string country, string preselect) {
     }
     /* Providers from given country */
     else {
-	list<string> dir = (list<string>) SCR::Dir(add(.providers.s, country));
+	list<string> dir = SCR::Dir(add(.providers.s, country));
 	path base = add(.providers.v, country);
 	provs = maplist(string i, dir, {
 	    return add(base, i);

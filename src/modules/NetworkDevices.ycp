@@ -128,7 +128,7 @@ global define boolean Read() {
 	    "BROADCAST", "SCOPE", "LABEL", "IP_OPTIONS" ];
 
     /* preparation */
-    list<string> allfiles = (list<string>) SCR::Dir(.network.section);
+    list<string> allfiles = SCR::Dir(.network.section);
     if(allfiles == nil) allfiles = [];
     list<string> devices = filter(string file, allfiles, {
 	return !regexpmatch(file, "[~]");
@@ -159,7 +159,7 @@ global define boolean Read() {
 
 	string pth = ".network.value.\"" + device_name(devtype, devnum) + "\"";
 	y2debug("pth=%1", pth);
-	list<string> values = (list<string>) SCR::Dir(topath(pth));
+	list<string> values = SCR::Dir(topath(pth));
 	y2debug("values=%1", values);
 
 	map config = $[];

@@ -166,7 +166,7 @@ define boolean StopDetection() {
 	SCR::Write(.target.string, tmpfile, scrfile);
 	SCR::RegisterAgent(detpath, tmpfile);
 
-	list<string> keys = (list<string>) SCR::Dir(detpath);
+	list<string> keys = SCR::Dir(detpath);
 	y2debug("keys=%1", keys);
 
 	maplist(string k, keys, {

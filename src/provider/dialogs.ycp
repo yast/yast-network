@@ -13,14 +13,13 @@
 
 textdomain "network";
 
+import "Label";
+import "Popup";
 import "Provider";
 import "Wizard";
 
 include "network/routines.ycp";
 include "network/provider/helps.ycp";
-
-import "Popup";
-import "Label";
 
 /**
  * The SelectionBox "----" divider hack

@@ -22,7 +22,7 @@ global define map ReadConfig(path config) {
     if(config == nil) return $[];
     map ret = $[];
 
-    list<string> vars = (list<string>) SCR::Dir(config);
+    list<string> vars = SCR::Dir(config);
     if(vars == nil) vars = [];
     maplist(string var, vars, {
 	path varpath = add(config, var);
@@ -62,7 +62,7 @@ global define boolean WriteConfig(path config, map data) {
 
     if(config == nil || data == nil) return false;
 
-    list<string> vars = (list<string>) SCR::Dir(config);
+    list<string> vars = SCR::Dir(config);
     if(vars == nil) vars = [];
 
     boolean changed = false;

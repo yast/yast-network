@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Mar 17 10:56:50 CET 2004 - msvec@suse.cz
+
+- added custom provider texts from msommer
+- 2.9.15
+
+-------------------------------------------------------------------
 Tue Mar 16 15:09:36 CET 2004 - msvec@suse.cz
 
 - offer possibility to change configuration name (#36147)
