@@ -12,7 +12,8 @@ Bugs:
 
 - name resolving doesn't work without /etc/resolv.conf (ResolveIP, ag_hostnames)
 
-- cleanup device naming mess, NetworkModules
+- cleanup ifcfg and hwcfg naming
+- cleanup NetworkModules
 - fix (or delete) all FIXMEs
 
 in-progress:
