@@ -10,6 +10,7 @@ string name = "";
 string type = "";
 string unique = "";
 string hotplug = "";
+list<string> Requires = [];
 include "network/hardware.ycp";
 
 DUMP("DeviceName");
