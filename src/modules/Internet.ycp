@@ -76,14 +76,14 @@ global define string FastestType(string dev) ``{
 }
 
 /**
- * Return the filename of the log for the fastest connection.
+ * Return the filename of the log for the fastest connection. Empty
+ * if no usefull log exists.
  */
 global define string FastestLogFile(string dev) ``{
-    string file = "/var/log/messages";
     string type = FastestType(dev);
-    if(type == "dsl" || type == "modem")
-	file = "/var/log/smpppd/ifcfg-" + dev + ".log";
-    return file;
+    if (type == "dsl" || type == "modem")
+	return "/var/log/smpppd/ifcfg-" + dev + ".log";
+    return "";
 }
 
 /**
@@ -114,18 +114,9 @@ global define boolean Fastest() ``{
     });
     y2milestone("fastest=%1", device);
 
-    /* No fallback since there are devices that should not be tested (lo) */
-    if(device == "") return false;
-
-    /* Handle DSL PPPoE ethernet cards */
-    if(device == "eth0" && contains(devices, "dsl0")) {
-	map ethmap = Devices[device_type("eth0"), device_num("eth0")]:$[];
-	map dslmap = Devices[device_type("dsl0"), device_num("dsl0")]:$[];
-	/* Only DSL cards with correct device */
-	if(dslmap["DEVICE"]:"" == "eth0") {
-	    device = "dsl0";
-	}
-    }
+    /* No fallback since there are devices that must not be tested (e.g. lo) */
+    if(device == "")
+	return false;
 
     map devmap = Devices[device_type(device), device_num(device)]:$[];
     y2debug("devmap=%1", devmap);
@@ -148,11 +139,12 @@ global define boolean Fastest() ``{
     return true;
 }
 
+
 /**
  * Start the fastest interface
  * @return true if successful started
  */
-global define boolean Start() ``{
+global define boolean Start(string logfile) ``{
 
     string type = FastestType(device);
 
@@ -165,14 +157,19 @@ global define boolean Start() ``{
 	}
     }
 
-    if(askpassword == true) {
-	if(SCR::Execute(.target.bash_input, "/sbin/ifup " + device, password) != 0) {
+    string cmd = "/sbin/ifup " + device;
+    cmd = cmd + "> " + logfile + " 2>&1";
+
+    if(askpassword == true)
+    {
+	if (SCR::Execute(.target.bash_input, cmd, password) != 0) {
 	    y2error("ifup failed");
 	    return false;
 	}
     }
-    else {
-	if(SCR::Execute(.target.bash, "/sbin/ifup " + device) != 0) {
+    else
+    {
+	if (SCR::Execute(.target.bash, cmd) != 0) {
 	    y2error("ifup failed");
 	    return false;
 	}
@@ -188,13 +185,18 @@ global define boolean Start() ``{
     return true;
 }
 
+
 /**
  * Stop the fastest interface
  * @return true if successful stopped
  */
-global define boolean Stop() ``{
-    return SCR::Execute(.target.bash, "/sbin/ifdown " + device) == 0;
+global define boolean Stop(string logfile) ``{
+    string cmd = "/sbin/ifdown " + device;
+    cmd = cmd + "> " + logfile + " 2>&1";
+    integer ret = SCR::Execute(.target.bash, cmd);
+    return ret == 0;
 }
+
 
 /**
  * Status of the fastest interface
@@ -204,6 +206,7 @@ global define boolean Status() ``{
     integer ret = SCR::Execute(.target.bash, "/sbin/ifstatus " + device);
     return ret == 0 || ret == 10;
 }
+
 
 /**
  * Test if the interface is connected
@@ -228,6 +231,7 @@ global define boolean Connected() ``{
     return true;
 }
 
+
 /**
  * Set dial-on-demand
  * @param demand true if dial-on-demand should be set
@@ -240,5 +244,4 @@ global define void SetDemand(boolean demand) ``{
     SCR::Write(.sysconfig.network.providers, nil);
 }
 
-/* EOF */
 }

@@ -10,348 +10,391 @@
 
 {
 
-textdomain "network";
+    textdomain "network";
 
-import "Internet";
-import "Mode";
-import "Product";
-import "Wizard";
+    import "Internet";
+    import "Mode";
+    import "Product";
+    import "Wizard";
 
-include "ui/common_messages.ycp";
-include "ui/common_popups.ycp";
+    include "ui/common_messages.ycp";
+    include "ui/common_popups.ycp";
 
-include "network/routines.ycp";
-include "network/installation/dialogs.ycp";
-
-
-/* Called backwards */
-if(WFM::Args(2) == true)
-    return `auto;
-
-if(!Internet::do_test)
-    return `auto;
-
-/* Nothing to test */
-if(!Internet::Fastest())
-    return `auto;
+    include "network/routines.ycp";
+    include "network/installation/dialogs.ycp";
 
 
-boolean we_have_patches = false;
+    /* Called backwards */
+    if(WFM::Args(2) == true)
+	return `auto;
 
-boolean already_up = false;
+    if(!Internet::do_test)
+	return `auto;
 
-integer test_stage = 0;
-symbol test_result = `success;
-
-
-if(!Mode::test)
-    already_up = Internet::Status();
-
-
-/* Progress step 1/4 */
-string l1 = _("Connecting to SuSE server via Internet...");
-/* Progress step 2/4 */
-string l2 = _("Downloading the latest release notes...");
-/* Progress step 3/4 */
-string l3 = _("Checking for latest updates...");
-/* Progress step 4/4 */
-string l4 = _("Closing connection...");
+    /* Nothing to test */
+    if(!Internet::Fastest())
+	return `auto;
 
 
-define void make_dialog() ``{
+    boolean we_have_patches = false;
 
-    /* Test dialog caption */
-    string caption = _("Running Internet Connection Test");
+    boolean already_up = false;
 
-    /* help for dialog "Running Internet Connection Test" */
-    string help = _("<p>Here, you can see the progress of the
+    integer test_stage = 0;
+    symbol test_result = `success;
+
+    // list of all log files to show
+    list logs = [];
+
+    // dir of log files
+    string logdir = SCR::Read (.target.tmpdir) + "/internet-test";
+
+
+    if(!Mode::test)
+	already_up = Internet::Status();
+
+
+    /* Progress step 1/4 */
+    string l1 = _("Connecting to SuSE server via Internet...");
+    /* Progress step 2/4 */
+    string l2 = _("Downloading the latest release notes...");
+    /* Progress step 3/4 */
+    string l3 = _("Checking for latest updates...");
+    /* Progress step 4/4 */
+    string l4 = _("Closing connection...");
+
+
+    define void make_dialog() ``{
+
+	/* Test dialog caption */
+	string caption = _("Running Internet Connection Test");
+
+	/* help for dialog "Running Internet Connection Test" */
+	string help = _("<p>Here, you can see the progress of the
 Internet Connection Test.</p>") +
 
-    /* help for dialog "Running Internet Connection Test" */
-    _("<p>The test can be aborted by pressing the <b>Abort Test</b>
+	    /* help for dialog "Running Internet Connection Test" */
+	    _("<p>The test can be aborted by pressing the <b>Abort Test</b>
 button.</p>") +
 
-    /* help for dialog "Running Internet Connection Test" */
-    _("<p>If the test fails, return to the network configuration
+	    /* help for dialog "Running Internet Connection Test" */
+	    _("<p>If the test fails, return to the network configuration
 and correct the setting.</p>");
 
-    /* fix checkycp complaints */
-    string dash = "-   ";
+	/* fix checkycp complaints */
+	string dash = "-   ";
 
-    /* Progress labels */
-    term progress = `VBox();
+	/* Progress labels */
+	term progress = `VBox();
 
-    if(!already_up)
-	progress = add(progress, `Left(`HBox(`Heading(`id(`s1), dash), `Label(l1))));
-    if(true)
-	progress = add(progress, `Left(`HBox(`Heading(`id(`s2), dash), `Label(l2))));
-    if(!contains(Product::flags, "no_you"))
-	progress = add(progress, `Left(`HBox(`Heading(`id(`s3), dash), `Label(l3))));
-    if(!already_up)
-	progress = add(progress, `Left(`HBox(`Heading(`id(`s4), dash), `Label(l4))));
+	if(!already_up)
+	    progress = add(progress, `Left(`HBox(`Heading(`id(`s1), dash), `Label(l1))));
+	if(true)
+	    progress = add(progress, `Left(`HBox(`Heading(`id(`s2), dash), `Label(l2))));
+	if(!contains(Product::flags, "no_you"))
+	    progress = add(progress, `Left(`HBox(`Heading(`id(`s3), dash), `Label(l3))));
+	if(!already_up)
+	    progress = add(progress, `Left(`HBox(`Heading(`id(`s4), dash), `Label(l4))));
 
-    progress = add(progress, `VStretch());
+	progress = add(progress, `VStretch());
 
-    progress = add(progress, `HBox(
-	/* Label for result of internet test */
-	`Label(_("Result:")),
-	`HSpacing(2),
-	`Label(`id(`res), `opt(`outputField, `hstretch), "")
-    ));
+	progress = add(progress, `HBox(
+				       /* Label for result of internet test */
+				       `Label(_("Result:")),
+				       `HSpacing(2),
+				       `Label(`id(`res), `opt(`outputField, `hstretch), "")
+				       ));
 
-    /* Test dialog contents */
-    term contents = `VBox(
-	`VStretch(),
-	`VBox(`HVCenter(`HSquash(progress))),
-	`VStretch(),
-	/* Push Button to abort internet test */
-	`PushButton(`id(`abort_test), _("&Abort Test")),
-	`VSpacing(1),
-	/* Push Button to see log of internet test */
-	`PushButton(`id(`view_log), `opt(`disabled), _("&View Log...")),
-	`VStretch()
-    );
+	/* Test dialog contents */
+	term contents = `VBox(
+			      `VStretch(),
+			      `VBox(`HVCenter(`HSquash(progress))),
+			      `VStretch(),
+			      /* Push Button to abort internet test */
+			      `PushButton(`id(`abort_test), _("&Abort Test")),
+			      `VSpacing(1),
+			      /* Push Button to see logs of internet test */
+			      `PushButton(`id(`view_log), `opt(`disabled), _("&View Logs...")),
+			      `VStretch()
+			      );
 
-    Wizard::SetContents(caption, contents, help, true, true);
-}
-
-
-define void set_stage(integer stage) ``{
-    test_stage = stage;
-}
-
-define void mark_label(integer i, symbol s) ``{
-
-    string glyph = s == `arrow ? UI::Glyph(`BulletArrowRight) : UI::Glyph(`CheckMark);
-
-    if(i == 1)
-	UI::ChangeWidget(`id(`s1), `Value, glyph);
-    else if(i == 2)
-	UI::ChangeWidget(`id(`s2), `Value, glyph);
-    else if(i == 3)
-	UI::ChangeWidget(`id(`s3), `Value, glyph);
-    else if(i == 4)
-	UI::ChangeWidget(`id(`s4), `Value, glyph);
-}
-
-
-define void show_result() ``{
-    set_stage(-1);
-    if(test_result == `success) {
-	/* result of internet test */
-	UI::ChangeWidget(`id(`res), `Value, _("Success"));
-    } else {
-	/* result of internet test */
-	UI::ChangeWidget(`id(`res), `Value, _("Failure"));
+	Wizard::SetContents(caption, contents, help, true, true);
     }
-    UI::ChangeWidget(`id(`abort_test), `Enabled, false);
-    UI::ChangeWidget(`id(`view_log), `Enabled, true);
-}
 
 
-define void handle_stage() ``{
+    define void set_stage(integer stage) ``{
+	test_stage = stage;
+    }
 
-    if(test_stage == 0)		// open connection
-    {
-	if(Mode::test) {
-	    mark_label(1, `arrow);
-	    set_stage(1);
+
+    define void mark_label(integer i, symbol s) ``{
+
+	string glyph = s == `arrow ? UI::Glyph(`BulletArrowRight) : UI::Glyph(`CheckMark);
+
+	if(i == 1)
+	    UI::ChangeWidget(`id(`s1), `Value, glyph);
+	else if(i == 2)
+	    UI::ChangeWidget(`id(`s2), `Value, glyph);
+	else if(i == 3)
+	    UI::ChangeWidget(`id(`s3), `Value, glyph);
+	else if(i == 4)
+	    UI::ChangeWidget(`id(`s4), `Value, glyph);
+    }
+
+
+    define void show_result() ``{
+	set_stage(-1);
+	if(test_result == `success) {
+	    /* result of internet test */
+	    UI::ChangeWidget(`id(`res), `Value, _("Success"));
+	} else {
+	    /* result of internet test */
+	    UI::ChangeWidget(`id(`res), `Value, _("Failure"));
+	}
+	UI::ChangeWidget(`id(`abort_test), `Enabled, false);
+	UI::ChangeWidget(`id(`view_log), `Enabled, true);
+    }
+
+
+    define void handle_stage() ``{
+
+	if(test_stage == 0)		// open connection
+	{
+	    if(Mode::test) {
+		mark_label(1, `arrow);
+		set_stage(1);
+		return;
+	    }
+
+	    if(already_up)
+	    {
+		set_stage(2);
+	    }
+	    else
+	    {
+		mark_label(1, `arrow);
+
+		if(!AskForPassword()) {
+		    y2error("Password required");
+		    test_result = `failure;
+		    show_result();
+		    return;
+		}
+
+		// start the connection
+		y2milestone("called Start");
+		logs = add (logs, $[ `menuname : _("ifup"), `filename : "ifup.log" ]);
+		if(!Internet::Start(logdir + "/ifup.log")) {
+		    test_result = `failure;
+		    show_result();
+		    return;
+		}
+
+		set_stage(1);
+	    }
 	    return;
 	}
 
-	if(already_up)
+	if(test_stage == 1)		// wait until really connected
 	{
-	    set_stage(2);
-	}
-	else
-	{
-	    mark_label(1, `arrow);
+	    if(Mode::test) {
+		set_stage(2);
+		mark_label(1, `check);
+		return;
+	    }
 
-	    if(!AskForPassword()) {
-		y2error("Password required");
+	    // status must be up
+	    if(!Internet::Status()) {
 		test_result = `failure;
 		show_result();
 		return;
 	    }
 
-	    // start the connection
-	    y2milestone("called Start");
-	    if(!Internet::Start()) {
-		test_result = `failure;
-		show_result();
+	    // and we must be connected
+	    if(Internet::Connected())
+	    {
+		y2milestone("Connected ok");
+		set_stage(2);
+		mark_label(1, `check);
+
+		logs = add (logs, $[ `menuname : _("ifconfig"), `filename : "ifconfig.log" ]);
+		SCR::Execute (.target.bash, "/sbin/ifconfig > " + logdir + "/ifconfig.log");
+
+		logs = add (logs, $[ `menuname : _("route"), `filename : "route.log" ]);
+		SCR::Execute (.target.bash, "/sbin/route -n > " + logdir + "/route.log");
+
+		logs = add (logs, $[ `menuname : _("resolv"), `filename : "resolv.conf" ]);
+		SCR::Execute (.target.bash, "/bin/cp /etc/resolv.conf " + logdir + "/resolv.conf");
+
 		return;
 	    }
 
-	    set_stage(1);
-	}
-	return;
-    }
-
-    if(test_stage == 1)		// wait until really connected
-    {
-	if(Mode::test) {
-	    set_stage(2);
-	    mark_label(1, `check);
+	    // ping anything (www.suse.com) to trigger dod connections
+	    SCR::Execute(.target.bash_background,
+			 "/bin/ping -c 1 -w 1 213.95.15.200");
 	    return;
 	}
 
-	// status must be up
-	if(!Internet::Status()) {
-	    test_result = `failure;
-	    show_result();
+	if(test_stage == 2)		// download release notes
+	{
+	    mark_label(2, `arrow);
+
+	    string tmp = SCR::Read(.target.tmpdir) + "/release-notes.rpm";
+	    string url = "http://www.suse.com/relnotes/sl_82/release-notes.rpm";
+
+	    // proxy settings are read from /root/.curlrc
+	    string cmd = "/usr/bin/curl -f -m 300 " + url + " -o " + tmp;
+	    cmd = cmd + "> " + logdir + "/curl.log 2>&1";
+	    integer ret = SCR::Execute(.target.bash, cmd);
+	    y2milestone("curl command returned %1", ret);
+
+	    logs = add (logs, $[ `menuname : _("curl"), `filename : "curl.log", `prio : 2 ]);
+
+	    if(ret != 0)
+	    {
+		// popup to inform user about the failure
+		UI::MessagePopup(_("Download of latest release notes failed."));
+		test_result = `failure;
+	    }
+	    else
+	    {
+		SCR::Execute(.target.bash, "/bin/rpm -U --force " + tmp);
+	    }
+
+	    set_stage(3);
+	    mark_label(2, `check);
 	    return;
 	}
 
-	// and we must be connected
-	if(Internet::Connected()) {
-	    y2milestone("Connected ok");
-	    set_stage(2);
-	    mark_label(1, `check);
-	    return;
-	}
-
-	// ping anything (www.suse.com) to trigger dod connections
-	SCR::Execute(.target.bash_background,
-		      "/bin/ping -c 1 -w 1 213.95.15.200");
-
-    }
-
-    if(test_stage == 2)		// download release notes
-    {
-	mark_label(2, `arrow);
-
-	string tmp = SCR::Read(.target.tmpdir) + "/release-notes.rpm";
-	string url = "http://www.suse.com/relnotes/sl_82/release-notes.rpm";
-
-	// proxy settings are read from /root/.curlrc
-	string cmd = "/usr/bin/curl -s -S -f -m 300 " + url + " -o " + tmp;
-	integer ret = SCR::Execute(.target.bash, cmd);
-	y2milestone("curl command returned %1", ret);
-
-	if(ret != 0)
+	if(test_stage == 3)		// check for updates
 	{
-	    // popup to inform user about the failure
-	    UI::MessagePopup(_("Download of latest release notes failed."));
-	    test_result = `failure;
-	}
-	else
-	{
-	    SCR::Execute(.target.bash, "/bin/rpm -U --force " + tmp);
-	}
+	    if(contains(Product::flags, "no_you"))
+	    {
+		set_stage(4);
+		return;
+	    }
 
-	set_stage(3);
-	mark_label(2, `check);
-	return;
-    }
+	    mark_label(3, `arrow);
 
-    if(test_stage == 3)		// check for updates
-    {
-	if(contains(Product::flags, "no_you"))
-	{
+	    // proxy settings are read from /root/.curlrc
+	    string cmd = "/usr/bin/online_update -q";
+	    cmd = cmd + "> " + logdir + "/you.log 2>&1";
+	    integer ret = SCR::Execute(.target.bash, cmd);
+	    y2milestone("online_update command returned %1", ret);
+
+	    logs = add (logs, $[ `menuname : _("you"), `filename : "you.log", `prio : 1 ]);
+
+	    if(ret == 1 || ret == 2)	// there are patches
+	    {
+		we_have_patches = true;
+	    }
+	    else if(ret != 0)
+	    {
+		// popup to inform user about the failure
+		UI::MessagePopup(_("Check for latest updates failed."));
+		test_result = `failure;
+	    }
+
 	    set_stage(4);
+	    mark_label(3, `check);
 	    return;
 	}
 
-	mark_label(3, `arrow);
-
-	// proxy settings are read from /root/.curlrc
-	integer ret = SCR::Execute(.target.bash, "/usr/bin/online_update -q");
-	y2milestone("online_update command returned %1", ret);
-
-	if(ret == 1 || ret == 2)	// there are patches
+	if(test_stage == 4)		// close connection
 	{
-	    we_have_patches = true;
-	}
-	else if(ret != 0)
-	{
-	    // popup to inform user about the failure
-	    UI::MessagePopup(_("Check for latest updates failed."));
-	    test_result = `failure;
-	}
+	    if(Mode::test) {
+		mark_label(4, `arrow);
+		show_result();
+		mark_label(4, `check);
+		return;
+	    }
 
-	set_stage(4);
-	mark_label(3, `check);
-	return;
+	    if(!already_up) {
+		mark_label(4, `arrow);
+
+		/* Stop connection */
+		y2milestone("Connection: stop");
+		logs = add (logs, $[ `menuname : _("ifdown"), `filename : "ifdown.log" ]);
+		if(!Internet::Stop(logdir + "/ifdown.log"))
+		    test_result = `failure;
+		mark_label(4, `check);
+	    }
+
+	    show_result();
+
+	    return;
+	}
     }
 
-    if(test_stage == 4)		// close connection
+
+    make_dialog();
+
+
+    // Create logdir
+    if (!SCR::Execute (.target.mkdir, logdir))
+	y2error ("can't create logdir");
+
+
+    any ret = nil;
+    while(true)
     {
-	if(Mode::test) {
-	    mark_label(4, `arrow);
-	    show_result();
-	    mark_label(4, `check);
-	    return;
-	}
+	handle_stage();
 
-	if(!already_up) {
-	    mark_label(4, `arrow);
-
-	    /* Stop connection */
-	    y2milestone("Connection: stop");
-	    if(!Internet::Stop()) test_result = `failure;
-	    mark_label(4, `check);
-	}
-
-	show_result();
-
-	return;
-    }
-}
-
-
-make_dialog();
-
-any ret = nil;
-while(true) {
-    handle_stage();
-
-    if(test_stage != -1) {
-	sleep(500);
-	ret = UI::PollInput();
-	if(ret == nil) continue;
-    }
-    else
-	ret = UI::UserInput();
-
-    if(ret == `abort_test) {
 	if(test_stage != -1) {
-	    Internet::Stop();
-	    test_result = `failure;
-	    show_result();
+	    sleep(500);
+	    ret = UI::PollInput();
+	    if(ret == nil) continue;
 	}
-	continue;
-    }
-    else if(ret == `view_log) {
-	string file = Internet::FastestLogFile(Internet::device);
-	/* Title of Popup with Log */
-	ShowFilePopup(_("Internet Connection Test Log:"), file);
-    }
-    else if(ret == `abort || ret == `cancel) {
-	if(CallFunction(`inst_confirm_abort(`incomplete))) {
+	else
+	    ret = UI::UserInput();
+
+	if(ret == `abort_test) {
 	    if(test_stage != -1) {
 		Internet::Stop();
+		test_result = `failure;
+		show_result();
 	    }
+	    continue;
+	}
+	else if(ret == `view_log) {
+
+	    // FIXME
+	    logs = add (logs, $[ `menuname : _("messages"), `filename : "messages" ]);
+	    SCR::Execute (.target.bash, "/bin/cp /var/log/messages " + logdir + "/messages");
+
+	    // FIXME
+	    string tmp7 = Internet::FastestLogFile (Internet::device);
+	    if (tmp7 != "") {
+		logs = add (logs, $[ `menuname : _("smpppd"), `filename : "smpppd.log" ]);
+		SCR::Execute (.target.bash, "/bin/cp " + tmp7 + " " + logdir + "/smpppd.log");
+	    }
+
+	    ShowLogs (logs, logdir);
+	}
+	else if(ret == `abort || ret == `cancel) {
+	    if(CallFunction(`inst_confirm_abort(`incomplete))) {
+		if(test_stage != -1) {
+		    Internet::Stop();
+		}
+		break;
+	    }
+	    continue;
+	}
+	else if(ret == `back || ret == `next) {
 	    break;
 	}
-	continue;
+	else {
+	    y2error("Unexpected return code: %1", ret);
+	    continue;
+	}
     }
-    else if(ret == `back || ret == `next) {
-	break;
+
+    if(ret == `next) {
+	if(we_have_patches)
+	    AskYOUDialog();
+	else
+	    Internet::do_you = false;
     }
-    else {
-	y2error("Unexpected return code: %1", ret);
-	continue;
-    }
-}
 
-if(ret == `next) {
-    if(we_have_patches)
-	AskYOUDialog();
-    else
-	Internet::do_you = false;
-}
-
-return ret;
-
-/* EOF */
+    return ret;
 }

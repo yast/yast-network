@@ -222,5 +222,73 @@ global define symbol AskYOUDialog() ``{
     UI::CloseDialog ();
 }
 
+
+/**
+ *  Show several log files.
+ */
+global define void ShowLogs (list logs, string logdir) ``{
+
+    ScreenName ("installation-show-logs");
+
+    logs = sort (`x, `y, logs, ``{ return x[`prio]:0 <= y[`prio]:0; });
+
+    list menunames = [];
+    foreach (`v, logs, ``{
+	menunames = add (menunames, v[`menuname]:"none");
+    });
+
+    term content = `VBox (
+			  // heading for popup with logs
+			  `Left (`Heading (_("Internet Connection Test Logs:"))),
+			  `HSpacing (70),
+			  `HBox (
+				 `HSpacing (1.0),
+				 `ComboBox (`id (`selector),
+					    `opt (`notify, `hstretch),
+					    // label for combobox to select a log
+					    _("Select Log:"), menunames),
+				 `HStretch ()
+				 ),
+			  `HBox (
+				 `VSpacing (18),
+				 `HSpacing (0.5),
+				 `RichText (`id (`log), ""),
+				 `HSpacing (0.5)
+				 ),
+			  `PushButton (`id(`ok), UI::OKButtonLabel ())
+			  );
+
+    UI::OpenDialog (content);
+
+    map tmp1 = logs[0]:$[];
+    string filename = tmp1[`filename]:"none";
+
+    while (true)
+    {
+	// read file and fill logview
+	string tmp2 = SCR::Read (.target.string, logdir + "/" + filename);
+	if (tmp2 == nil) tmp2 = "file not found";
+	UI::ChangeWidget (`id(`log), `Value, "<pre>" + tmp2 + "</pre>");
+
+	symbol ret = UI::UserInput ();
+
+	if (ret == `ok)
+	{
+	    break;
+	}
+	else if (ret == `selector)
+	{
+	    string menuname = UI::QueryWidget (`id (`selector), `Value);
+
+	    foreach (`v, logs, ``{
+		if (v[`menuname]:"none" == menuname)
+		    filename = v[`filename]:"none";
+	    });
+	}
+    }
+
+    UI::CloseDialog ();
+}
+
 /* EOF */
 }
