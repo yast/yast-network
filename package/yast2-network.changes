@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Aug 19 09:58:06 CEST 2004 - mvidner@suse.cz
+
+- Wireless: better input checking, updated help texts.
+- 2.10.9
+
+-------------------------------------------------------------------
 Wed Aug 18 13:24:13 CEST 2004 - mvidner@suse.cz
 
 - Mark unplugged network cards in the list of unconfigured ones.
