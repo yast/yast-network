@@ -437,6 +437,8 @@ the logs for details.
 	    break;
 
 	ret = UI::TimeoutUserInput (250);
+	UI::NormalCursor ();
+
 	if (ret == `timeout)
 	    continue;
 
@@ -450,6 +452,8 @@ the logs for details.
 
 	y2error ("Unexpected return code: %1", ret);
     }
+
+    UI::BusyCursor ();
 
     SCR::Execute (.target.bash, "/bin/logger END OF YAST2 INTERNET TEST");
 

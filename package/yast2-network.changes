@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Mar 18 18:47:01 CET 2004 - arvin@suse.de
+
+- avoid flickering mouse cursor during Internet test (bug #36442)
+
+-------------------------------------------------------------------
 Wed Mar 17 10:56:50 CET 2004 - msvec@suse.cz
 
 - added custom provider texts from msommer
@@ -41,7 +46,7 @@ Wed Mar 10 11:07:35 CET 2004 - msvec@suse.cz
 Wed Mar 10 01:49:30 CET 2004 - sh@suse.de
 
 - Migration to new wizard
-- V 2.9.9 
+- V 2.9.9
 
 -------------------------------------------------------------------
 Tue Mar  9 14:31:28 CET 2004 - msvec@suse.cz
@@ -153,7 +158,7 @@ Mon Sep 22 09:50:11 CEST 2003 - msvec@suse.cz
 -------------------------------------------------------------------
 Sun Sep 21 22:03:22 CEST 2003 - kkeil@suse.de
 
-- fix start of kinternet,option must be --quiet not -quiet (#31322) 
+- fix start of kinternet,option must be --quiet not -quiet (#31322)
 
 -------------------------------------------------------------------
 Sun Sep 21 19:03:06 CEST 2003 - arvin@suse.de
