@@ -170,7 +170,7 @@ global define boolean ChangeModule(string name, boolean check) ``{
     map m_new = string2map(o);
     maplist(string mo, string op, m_new, ``{
 	if(haskey(m_orig, mo)) m_orig[mo] = sformat("%1,%2", op, m_orig[mo]:"");
-	else m_orig[m] = op;
+	else m_orig[mo] = op;
     });
 
     Modules["options", m] = map2string(m_orig);
