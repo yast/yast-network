@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Aug 27 16:38:05 CEST 2003 - msvec@suse.cz
+
+- confirm hardware detection in manual mode (#26515)
+- 2.8.15
+
+-------------------------------------------------------------------
 Mon Aug 25 15:10:14 CEST 2003 - kkeil@suse.de
 
 - new hardware dialog for ISDN based on CDB data
