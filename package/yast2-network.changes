@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Sep 20 16:08:08 CEST 2004 - mvidner@suse.cz
+
+- Do not write hwcfg for PC Cards (#42421).
+- 2.10.19
+
+-------------------------------------------------------------------
 Fri Sep 17 13:00:01 CEST 2004 - mvidner@suse.cz
 
 - Do not (mis)configure WLAN cards automatically (#44951).

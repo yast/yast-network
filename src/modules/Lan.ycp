@@ -500,8 +500,9 @@ void SelectHWMap (map hw) {
 	if(Arch::s390) nm_name = type + "-" + nm_name;
     }
     else {
-	y2error("No HW info found: %1", hw);
-	// nm_name = "";
+	// #42421
+	y2milestone ("No bus id info found, skipping hwcfg: %1", hw);
+	nm_name = "";
     }
 
     /* eth, tr, not on s390 (#38819) */
@@ -835,15 +836,8 @@ global define boolean Commit() {
 
 		}
 
-		// #42421, 36147#c19: do not write a hwcfg file
-		if (device == "bus-pcmcia" || device == "bus-usb")
-		{
-		    nm_name = "";
-		}
-		else
-		{
-		    NetworkModules::ChangeM(nm_name);
-		}
+		// If "", no hwcfg is created. See also #42421.
+		NetworkModules::ChangeM(nm_name);
 	    }
 	}
 
