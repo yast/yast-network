@@ -398,8 +398,6 @@ define symbol FinishPopup(boolean modified, string head, string text, string run
     string t = text;
     map texts = $[
 	/* Popup text */
-	"mail"	: _("Configure the mail now?"),
-	/* Popup text */
 	"mail"	: _("Configure mail now?"),
     ];
     if(t == "")

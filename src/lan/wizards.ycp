@@ -42,9 +42,6 @@ define symbol HardwareSequence();
  */
 define symbol LanSequence() ``{
 
-    /* Popup text */
-    string finished = _("Configure the mail now?");
-
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
 	"main"	:   ``( MainSequence() ),
