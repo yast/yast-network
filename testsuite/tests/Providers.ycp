@@ -40,7 +40,7 @@ TESTSUITE_INIT([READ],nil);
 import "Providers";
 
 DUMP("Read");
-TEST(``(Providers::Read()), [READ], nil);
+TEST(``(Providers::Read("all")), [READ], nil);
 
 DUMP("GetProvider");
 TEST(``(Providers::ReadProvider(.path.to.provider)), [READ], nil);

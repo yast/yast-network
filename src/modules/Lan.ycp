@@ -47,6 +47,15 @@ global string ipaddr = "";
 global string netmask = "";
 global integer device = -1;
 
+/* wireless options */
+global boolean wireless = false;
+global string wl_mode = "";
+global string wl_essid = "";
+global string wl_nwid = "";
+global string wl_key = "";
+global string wl_nick = "";
+
+/* FIXME */
 global boolean proposal_valid = false;
 global boolean write_only = false;
 
@@ -363,16 +372,6 @@ global define list Overview() ``{
 /* PRIVATE FUNCTIONS */
 
 /**
- * Abort function
- * @return blah blah lahjk
- */
-define boolean Abort() ``{
-    if(AbortFunction != nil)
-	return eval(AbortFunction) == true;
-    return false;
-}
-
-/**
  * Return 10 free devices
  * @param type device type
  * @return list of 10 free devices
@@ -441,6 +440,14 @@ global define boolean AddEdit(string dev) ``{
     modul = devmap["module"]:"";
     options = devmap["options"]:"";
 
+    /* wireless options */
+    wireless = devmap["WIRELESS"]:"no" == "yes";
+    wl_mode = devmap["WIRELESS_MODE"]:"";
+    wl_essid = devmap["WIRELESS_ESSID"]:"";
+    wl_nwid = devmap["WIRELESS_NWID"]:"";
+    wl_key = devmap["WIRELESS_KEY"]:"";
+    wl_nick = devmap["WIRELESS_NICK"]:"";
+
     pcmcia = false;
     usb = false;
     if(issubstring(type, "pcmcia"))
@@ -503,6 +510,18 @@ global define boolean Commit() ``{
 	    change(newdev, "DHCLIENT_SET_DOWN_LINK", "yes");
 	change(newdev, "module", modul);
 	change(newdev, "options", options);
+
+	if(wireless) {
+	    change(newdev, "WIRELESS", "yes");
+	    change(newdev, "WIRELESS_MODE", wl_mode);
+	    change(newdev, "WIRELESS_ESSID", wl_essid);
+	    change(newdev, "WIRELESS_NWID", wl_nwid);
+	    change(newdev, "WIRELESS_KEY", wl_key);
+	    change(newdev, "WIRELESS_NICK", wl_nick);
+	}
+	else
+	    change(newdev, "WIRELESS", "no");
+
 	if(operation == `add)
 	    ConfigAddEdit(type, device, newdev, true);
 	else

@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
-Mon Jul  8 16:08:51 CEST 2002 - msvec@suse.cz
+Wed Jul 10 20:12:34 CEST 2002 - msvec@suse.cz
 
+- wireless network cards support (#9209)
+- run also SuSEconfigs for apache, sendmail and postfix (#16710)
 - remove netcard modules after delete (#16797)
 - correct IP details dialog
 - fixed providers filter

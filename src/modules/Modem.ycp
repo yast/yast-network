@@ -357,14 +357,6 @@ global define list Overview() ``{
 
 /**
  */
-define boolean Abort() ``{
-    if(AbortFunction != nil)
-        return eval(AbortFunction) == true;
-    return false;
-}
-
-/**
- */
 global define void Select(integer which) ``{
     SelectHardware(which);
 }

@@ -153,6 +153,7 @@ global define symbol ManualSequence() ``{
     map aliases = $[
 	"manual"	: ``(ManualDialog()),
 	"list"		: ``(ManualSelection()),
+	"wire"		: ``(WirelessDialog()),
 	"address"	: [ ``(AddressSequence()), true ],
     ];
 
@@ -161,7 +162,12 @@ global define symbol ManualSequence() ``{
 	"manual" : $[
 	    `abort	: `abort,
 	    `list	: "list",
+	    `wire	: "wire",
 	    `next	: "address",
+	],
+	"wire" : $[
+	    `next	: "manual",
+	    `abort	: `abort,
 	],
 	"list" : $[
 	    `next	: "manual",

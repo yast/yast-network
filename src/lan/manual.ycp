@@ -50,8 +50,11 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 
     string modul = Lan::modul;
     string options = Lan::options;
+
+    boolean wireless = Lan::wireless;
     boolean pcmcia = Lan::pcmcia;
     boolean usb = Lan::usb;
+
     string type = Lan::type;
     string realtype = type;
     string device = "";
@@ -64,7 +67,7 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
     if(pcmcia) realtype = type + "-pcmcia-";
     else if(usb) realtype = type + "-usb-";
 
-    /* satisfy check_ycp -- don't translate this string */
+    /* satisfy check_ycp -- don't translate these strings */
     string PCMCIA = "&PCMCIA";
     string USB = "&USB";
 
@@ -73,41 +76,60 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 	`HSpacing(2),
 	// frame label
 	`VBox(
+	    `VSpacing(0.5),
 	    `Frame(_("Network &interface"),`VBox(
 		`VSpacing(0.2),
 		`HBox(
+		    `HSpacing(0.5),
 		    // combo box label
 		    `ComboBox(`id(`dev), `opt(`hstretch, `notify), _("Network &device"),
 			[`item(`id("eth"), "Ethernet", type == "eth"), `item(`id("tr"), "Token-Ring", type == "tr")]),
+		    `HSpacing(1.5),
 		    `ReplacePoint(`id(`rnum),
 			// combo box label
 			`ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"),
-			    maplist(`d,Lan::FreeDevices(realtype),``(sformat("%1",d)))))
+			    maplist(`d,Lan::FreeDevices(realtype),``(sformat("%1",d))))),
+		    `HSpacing(0.5)
 		),
 		`VSpacing(0.2)
 	    )),
-	    `VSpacing(),
+	    `VSpacing(0.5),
+	    `Frame(_("Wireless support"),`VBox(
+	    `VSpacing(0.4),
+	    `HBox(
+		`HStretch(),
+		`HSpacing(0.5),
+		`CheckBox(`id(`wireless), `opt(`notify), _("&Wireless device"), wireless),
+		`HSpacing(1.5),
+		`PushButton(`id(`wire), _("Wireless &settings")),
+		`HSpacing(0.5),
+		`HStretch()
+	    ),
+	    `VSpacing(0.4)
+	    )),
+	    `VSpacing(0.5),
 	    // frame label
-	    `Frame(_("&Kernel module"), `VBox(
-		`VSpacing(0.2),
+	    `Frame(_("&Kernel module"), `HBox(`HSpacing(0.5), `VBox(
+		`VSpacing(0.4),
 		// text entry label
 		`TextEntry(`id(`modul), _("&Module name"), modul),
 		`VSpacing(0.2),
 		// textentry label
 		`TextEntry(`id(`options), _("Op&tions"), options),
-		`VSpacing(0.2),
+		`VSpacing(0.4),
 		`HBox(
-		    `HSpacing(0.2),
+		    `HSpacing(1.5),
 		    `CheckBox(`id(`pcmcia), `opt(`notify), PCMCIA, pcmcia),
-		    `HSpacing(0.2),
+		    `HSpacing(1.5),
 		    `CheckBox(`id(`usb), `opt(`notify), USB, usb),
-		    `HSpacing(0.2)
+		    `HSpacing(1.5)
 		),
-		`VSpacing(0.2)
-	    )),
-	    `VSpacing(2),
+		`VSpacing(0.4)
+	    ),`HSpacing(0.5))),
+	    `VSpacing(0.4),
 	    // button label
-	    `PushButton(`id(`list), _("Select from &list"))
+	    `PushButton(`id(`list), _("Select from &list")),
+	    `VSpacing(0.5)
 	    ),
 	`HSpacing(2));
 
@@ -117,6 +139,7 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
     UI::ChangeWidget(`id(`modul), `Enabled, !(pcmcia||usb));
     UI::ChangeWidget(`id(`options), `Enabled, !(pcmcia||usb));
     UI::ChangeWidget(`id(`list), `Enabled, !(pcmcia||usb));
+    UI::ChangeWidget(`id(`wire), `Enabled, wireless);
     UI::ChangeWidget(`id(`num), `Value, device);
     UI::SetFocus(`id(`next));
 
@@ -129,12 +152,6 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
-	/* select from the list */
-	else if(ret == `list) {
-	    Lan::type = type;
-	    Lan::device = tointeger(UI::QueryWidget(`id(`num), `Value));
-	    break;
-	}
 	/* change device type or pcmcia/usb card? */
 	else if(ret == `pcmcia || ret == `usb || ret == `dev) {
 	    if(ret == `pcmcia || ret == `usb) {
@@ -143,10 +160,8 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 		UI::ChangeWidget(`id(`modul), `Enabled, !(pcmcia||usb));
 		UI::ChangeWidget(`id(`options), `Enabled, !(pcmcia||usb));
 		UI::ChangeWidget(`id(`list), `Enabled, !(pcmcia||usb));
-		if(ret == `pcmcia)
-		    UI::ChangeWidget(`id(`usb), `Enabled, !pcmcia);
-		if(ret == `usb)
-		    UI::ChangeWidget(`id(`pcmcia), `Enabled, !usb);
+		UI::ChangeWidget(`id(`usb), `Enabled, !pcmcia);
+		UI::ChangeWidget(`id(`pcmcia), `Enabled, !usb);
 	    }
 	    type = UI::QueryWidget(`id(`dev), `Value);
 	    if(pcmcia) realtype = type + "-pcmcia-";
@@ -158,10 +173,21 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 	    UI::ReplaceWidget(`id(`rnum),`ComboBox(`id(`num), `opt(`hstretch), _("D&evice number"), devices));
 	    continue;
 	}
+	else if(ret == `wireless) {
+	    wireless = UI::QueryWidget(`id(`wireless), `Value);
+	    UI::ChangeWidget(`id(`wire), `Enabled, wireless);
+	    continue;
+	}
 	else if(ret == `back) {
 	    break;
 	}
-	else if(ret == `next) {
+	/* select from the list *//*
+	else if(ret == `list) {
+	    Lan::type = type;
+	    Lan::device = tointeger(UI::QueryWidget(`id(`num), `Value));
+	    break;
+	} */
+	else if(ret == `next || ret == `list || ret == `wire) {
 	    /* FIXME: check_* */
 	    break;
 	}
@@ -171,10 +197,11 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 	}
     };
 
-    if(ret == `next) {
+    if(ret == `next || ret == `list || ret == `wire) {
 	Lan::modul = UI::QueryWidget(`id(`modul), `Value);
 	Lan::options = UI::QueryWidget(`id(`options), `Value);
 	Lan::device = tointeger(UI::QueryWidget(`id(`num), `Value));
+	Lan::wireless = UI::QueryWidget(`id(`wireless), `Value);
 	Lan::pcmcia = UI::QueryWidget(`id(`pcmcia), `Value);
 	Lan::usb = UI::QueryWidget(`id(`usb), `Value);
 	type = UI::QueryWidget(`id(`dev), `Value);
@@ -193,16 +220,13 @@ box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 global define symbol ManualSelection() ``{
 
     string type = Lan::type;
+    if(Lan::wireless) type = "wireless";
     integer selected = 0;
 
-    map db = SCR::Read(.target.yast2, "netcards.ycp");
-    if(db == nil) {
-	/* Error popup */
-	UI::MessagePopup(_("Network card database not found."));
-	return `cancel;
-    }
+    /* map NetworkCards */
+    include "network/lan/cards.ycp";
 
-    list hwlist = lookup(db, type, []);
+    list hwlist = lookup(NetworkCards, type, []);
     list cards = hwlist2items(hwlist, 0);
 
     /* Manual selection caption */
@@ -214,10 +238,13 @@ for a particular network card by entering the name in the search entry.</p>");
 
     /* Manual selection contents */
     term contents = `VBox(
+	`VSpacing(0.5),
 	/* Selection box label */
 	`ReplacePoint(`id(`rp), `SelectionBox(`id(`cards), _("Se&lect network card"), cards)),
+	`VSpacing(0.5),
 	/* Text entry field */
-	`TextEntry(`id(`search), `opt(`notify), _("&Search"))
+	`TextEntry(`id(`search), `opt(`notify), _("&Search")),
+	`VSpacing(0.5)
     );
 
     Wizard::SetContentsButtons(caption, contents, helptext,
@@ -270,6 +297,83 @@ for a particular network card by entering the name in the search entry.</p>");
 
     return ret;
 }
+
+/**
+ * Wireless devices configuration dialog
+ * @return dialog result
+ */
+global define symbol WirelessDialog() ``{
+
+    /* Wireless dialog caption */
+    string caption = _("Wireless network card configuration");
+
+    /* Wireless dialog help 1/1 */
+    string helptext = _("<p>FIXME Helptext</p>");
+
+    /* Wireless dialog contents */
+    term contents = `HBox(
+	`HSpacing(6),
+	`Frame(_("Wireless device settings"), `HBox(`HSpacing(2), `VBox(
+	    `VSpacing(1),
+	    /* Combobox label */
+	    `ComboBox(`id(`mode), `opt(`hstretch, `notify), _("O&perating mode"), [
+		`item(`id("Ad-hoc"), _("Ad-hoc"), Lan::wl_mode == "Ad-hoc"),
+		`item(`id("Managed"), _("Managed"), Lan::wl_mode == "Managed"),
+		`item(`id("Repeater"), _("Repeater"), Lan::wl_mode == "Repeater"),
+		`item(`id("Secondary"), _("Secondary"), Lan::wl_mode == "Secondary"),
+		`item(`id("Automatic"), _("Automatic"), Lan::wl_mode == "Auto")
+	     ]),
+	    `VSpacing(0.2),
+	    /* Text entry label */
+	    `TextEntry(`id(`essid), _("Ne&twork name (ESSID)"), Lan::wl_essid),
+	    `VSpacing(0.2),
+	    /* Text entry label */
+	    `TextEntry(`id(`nwid), _("Network &identifier (NWID)"), Lan::wl_nwid),
+	    `VSpacing(0.2),
+	    /* Text entry label */
+	    `TextEntry(`id(`key), _("&Encryption key"), Lan::wl_key),
+	    `VSpacing(0.2),
+	    /* Text entry label */
+	    `TextEntry(`id(`nick), _("Nic&k name"), Lan::wl_nick),
+	    `VSpacing(1)
+	    ), `HSpacing(2))),
+	`HSpacing(6)
+    );
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    BackButtonLabel(), OKButtonLabel());
+
+    any ret = nil;
+    while(true) {
+	ret = UI::UserInput();
+
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    break;
+	}
+	else {
+	    y2error("Unexpected return code: %1", ret);
+	    continue;
+	}
+    };
+
+    if(ret == `next) {
+	    Lan::wl_essid = UI::QueryWidget(`id(`essid), `Value);
+	    Lan::wl_nick = UI::QueryWidget(`id(`nick), `Value);
+	    Lan::wl_nwid = UI::QueryWidget(`id(`nwid), `Value);
+	    Lan::wl_mode = UI::QueryWidget(`id(`mode), `Value);
+	    Lan::wl_key = UI::QueryWidget(`id(`key), `Value);
+    }
+
+    return ret;
+}
+
 
 /* EOF */
 }

@@ -1,6 +1,7 @@
 # $Id$
 
 Bugs:
+- wireless -> msommer@suse.de
 - two resolv.conf agents
 - check and install required packages #14315
 - modem: start smpppd only if >0 devs
@@ -20,6 +21,8 @@ Bugs:
 
 - #10739 ???
 - #13450 ???
+
+- check for yast2-mail presence
 
 - autodetection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
     DetectionIP() { if detection_started; run ping; }
@@ -63,7 +66,6 @@ Enhancements:
 - package: require yast2-language, yast2-mail, ...
 
 Future:
-- lan: wireless cards #9209
 - lan: fddi
 - lan: arcnet
 - hippi et al (s390)

@@ -171,6 +171,9 @@ global define boolean Write() ``{
 	/* write hostname */
 	SCR::Write(.target.string, "/etc/HOSTNAME", fqhostname + "\n");
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module hostname");
+	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module apache 2>/dev/null");
+	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module sendmail 2>/dev/null");
+	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module postfix 2>/dev/null");
 
 	/* update X authorization */
 	SCR::Write(.xauth.key, xauth_key);

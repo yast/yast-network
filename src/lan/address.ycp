@@ -32,9 +32,7 @@ global define symbol AddressDialog() ``{
     string caption = _("Network address setup");
 
     /* Address dialog help 1/8 */
-    string helptext = _("<p>Configure your IP
-address.</p>
-");
+    string helptext = _("<p>Configure your IP address.</p>");
 
     /* Address dialog help 2/8 */
     helptext = helptext + _("<p>You can select dynamic address assignment,
@@ -42,8 +40,8 @@ if you have a <b>DHCP server</b> running on your local network.</p>");
 
     /* Address dialog help 3/8 */
     helptext = helptext + _("<p>Also select this if you do not have a static
-IP address assigned by the system administrator or your cable or DSL provider.</p>
-");
+IP address assigned by the system administrator or your cable or DSL provider.
+</p>");
 
     /* Address dialog help 4/8 */
     helptext = helptext + _("<p>Network addresses will then be obtained
@@ -51,23 +49,20 @@ IP address assigned by the system administrator or your cable or DSL provider.</
 
     /* Address dialog help 5/8 */
     helptext = helptext + _("<p>Clicking <b>Next</b> 
-completes the configuration.</p>
-");
+completes the configuration.</p>");
 
     /* Address dialog help 6/8 */
-    helptext = helptext + _("<p>Otherwise,  network addresses must be assigned <b>manually</b>.</p>
-");
+    helptext = helptext + _("<p>Otherwise,  network addresses must be assigned
+<b>manually</b>.</p>");
 
     /* Address dialog help 7/8 */
     helptext = helptext + _("<p>Enter the IP address (e.g., 192.168.100.99) for
 your computer, the network mask (usually 255.255.255.0), and, optionally, the
-default gateway IP address.</p>
-");
+default gateway IP address.</p>");
 
     /* Address dialog help 8/8 */
-    helptext = helptext + _("<p>Contact your <b>network
-administrator</b> for more information about the network configuration.</p>
-");
+    helptext = helptext + _("<p>Contact your <b>network administrator</b>
+for more information about the network configuration.</p>");
 
     string bootproto = Lan::bootproto;
     string ipaddr = Lan::ipaddr;

@@ -693,13 +693,5 @@ global define list OverviewIf() ``{
     //return BuildOverview("net");
 }
 
-/**
- */
-define boolean Abort() ``{
-    if(AbortFunction != nil)
-        return eval(AbortFunction) == true;
-    return false;
-}
-
 /* EOF */
 }

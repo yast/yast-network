@@ -66,6 +66,16 @@ global define boolean mapcheckkeys(map m, list keys) ``{
 }
 
 /**
+ * Abort function
+ * @return blah blah lahjk
+ */
+global define boolean Abort() ``{
+    if(AbortFunction != nil)
+	return eval(AbortFunction) == true;
+    return false;
+}
+
+/**
  * Check for pending Abort press
  * @return true if pending abort
  */
