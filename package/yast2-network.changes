@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Sun Aug 31 14:57:34 CEST 2003 - arvin@suse.de
+
+- use Popup::ConfirmAbort
+
+-------------------------------------------------------------------
 Sat Aug 30 22:47:56 CEST 2003 - arvin@suse.de
 
 - moved reactivation of network here (bug #29561)

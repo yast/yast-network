@@ -459,7 +459,7 @@ the logs for details.
 
 	if (ret == `abort || ret == `cancel)
 	{
-	    if (CallFunction (`inst_confirm_abort (`incomplete)))
+	    if (Popup::ConfirmAbort (`incomplete))
 		break;
 	    continue;
 	}

@@ -155,14 +155,18 @@ activate the test procedure."),
 
     any ret = nil;
 
-    while(true) {
+    while(true)
+    {
 	ret = UI::UserInput();
 
-	if(ret == `abort || ret == `cancel) {
-	    if(CallFunction(`inst_confirm_abort(`incomplete))) break;
+	if (ret == `abort || ret == `cancel)
+	{
+	    if (Popup::ConfirmAbort (`incomplete))
+		break;
 	    continue;
 	}
-	else if (ret == `next || ret == `back) {
+	else if (ret == `next || ret == `back)
+	{
 	    break;
 	}
 	y2error("Unexpected return code: %1", ret);
