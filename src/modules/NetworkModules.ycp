@@ -780,7 +780,7 @@ global define list List(string devregex) {
 global boolean HwUp () {
     boolean ok = true;
     foreach (string hwcfg_name, any v, Modules, {
-	if (regexpmatch (hwcfg_name, "^static")
+	if (regexpmatch (hwcfg_name, "^static"))
 	{
 	    ok = SCR::Execute (.target.bash, "hwup "+ hwcfg_name) == 0 && ok;
 	}
