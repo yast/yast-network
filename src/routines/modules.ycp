@@ -11,8 +11,8 @@
  *
  * <pre>
  * map Modules = $[
- *     "eth0" : [ "alias" : "tulip", "options" : "io=0x220 irq=7" ],
- *     "eth1" : [ "alias" : "off" ],
+ *     "eth0" : [ "module" : "tulip", "options" : "io=0x220 irq=7" ],
+ *     "eth1" : [ "module" : "off" ],
  *     ...
  * ];
  *
@@ -35,8 +35,31 @@ include "network/routines.ycp";
 global define boolean ReadModules(string devregex) ``{
 
     Modules = $[];
+    string regex = "^(" + devregex + ")[0-9]*$";
+    y2debug("regex=%1", regex);
 
-    /* FIXME */
+    /* Read aliases */
+    list aliases = SCR::Dir(.modules.alias);
+    maplist(string al, aliases, ``{
+	if(regexpmatch(al, regex)) {
+	    string modul = SCR::Read(add(.modules.alias, al));
+	    if(modul == nil) modul = "";
+	    change(Modules, al, $["module" : modul]);
+	}
+    });
+
+    /* Read options */
+    list opts = SCR::Dir(.modules.options);
+    maplist(string al, opts, ``{
+	if(regexpmatch(al, regex)) {
+	    map optsmap = SCR::Read(add(.modules.options, al));
+	    if(optsmap != nil) {
+		map oldopts = Modules[al]:$[];
+		change(oldopts, "options", map2string(optsmap));
+		change(Modules, al, oldopts);
+	    }
+	}
+    });
 
     y2debug("Modules=%1", Modules);
     return true;
@@ -52,9 +75,10 @@ global define boolean WriteModules() ``{
 
     /* Remove deleted modules */
     maplist(string d, DeletedModules, ``{
-	/* delete config file */
 	y2debug("deleting: %1", p);
-	/* FIXME */
+	/* Delete only alias, keep options */
+	SCR::Write(add(.modules.alias, d), nil);
+	// SCR::Write(add(.modules.options, d), nil);
     });
     DeletedModules = [];
 
@@ -69,46 +93,51 @@ global define boolean WriteModules() ``{
 
 /**
  * Update Modules map
- * @param type module type
- * @param module module number
- * @param newdev new module map
+ * @param name device name
  * @param check if check if module already exists
  * @return true if success
  */
-global define boolean ChangeModule(string type, integer modul, map newdev, boolean check) ``{
+global define boolean ChangeModule(string name, boolean check) ``{
+    y2debug("Module=%1", Module);
     y2debug("Modules=%1", Modules);
-    map devmap = Modules[type]:$[];
-    string dev = sformat("%1", modul);
 
-    if(check && haskey(devmap, dev)) {
-	y2error("Key already present: %1(%2)", dev, type);
-	return false;
+    if(check && haskey(Modules, name)) {
+	y2warning("Key already present: %1", name);
+	/* Change it always and report only warning: return false; */
     }
-    change(devmap, dev, newdev);
-    change(Modules, type, devmap);
+
+    map modmap = $[];
+    maplist(string dir, string val, Module, ``{
+	if(val != nil && val != "") change(modmap, dir, val);
+    });
+    y2debug("%1 -> %2", name, modmap);
+    change(Modules, name, modmap);
+
     y2debug("Modules=%1", Modules);
     return true;
 }
 
 /**
  * Delete a module from Modules map
- * @param type module type
- * @param module module number
+ * @param name device name
  * @return true if success
  */
-global define boolean DeleteModule(string type, integer modul) ``{
+global define boolean DeleteModule(string name) ``{
     y2debug("Modules=%1", Modules);
-    map devmap = Modules[type]:$[];
-    string dev = sformat("%1", modul);
+    y2debug("DeletedModules=%1", DeletedModules);
 
-    if(!haskey(devmap, dev)) {
-	y2error("Key not found: %1(%2)", dev, type);
+    if(!haskey(Modules, name)) {
+	y2error("Module not found: %1", name);
 	return false;
     }
-    //remove(devmap, dev);
-    devmap = remove(devmap, dev);
-    change(Modules, type, devmap);
+
+    map modmap = Modules[name]:$[];
+    modmap = remove(modmap, "options");
+    change(Modules, name, modmap);
+    change(DeletedModules, name);
+
     y2debug("Modules=%1", Modules);
+    y2debug("DeletedModules=%1", DeletedModules);
     return true;
 }
 
@@ -127,6 +156,47 @@ global define list LocateModules(string key, string val) ``{
     });
 
     return ret;
+}
+
+/**
+ * Add a new kernel module
+ * @param type added module type
+ * @return true on success
+ */
+global define boolean AddModule(string type) ``{
+
+    y2debug("Add(%1)", type);
+    if(type == nil) {
+	y2error("Invalid type: %1", type);
+	return false;
+    }
+
+    /* FIXME: type dependent heuristics */
+
+    Module["module"] = "";
+    Module["options"] = "";
+    return true;
+}
+
+/**
+ * Select the given kernel module and fill internal variables
+ * @param name module name
+ * @return true on success
+ */
+global define boolean SelectModule(string name) ``{
+
+    y2debug("Select(%1)", name);
+    if(name != "" && !haskey(Modules, name)) {
+	y2error("Invalid module: %1", name);
+	return false;
+    }
+
+    Module["module"] = Modules[name, "module"]:"";
+    Module["options"] = Modules[name, "options"]:"";
+    y2debug("Select(module) = ", Module["module"]:"");
+    y2debug("Select(options) = ", Module["options"]:"");
+
+    return true;
 }
 
 /* EOF */

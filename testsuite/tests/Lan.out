@@ -18,6 +18,8 @@ Read	.etc.install_inf.InstMode nil
 Dump	Read
 Read	.probe.netcard nil
 Log	hardware detection failure
+Dir	.modules.alias: []
+Dir	.modules.options: []
 Dir	.network.section: []
 Read	.sysconfig.network.config.WAIT_FOR_INTERFACES nil
 Read	.target.size "/etc/sysconfig/network/routes" 1

@@ -26,21 +26,30 @@ include "network/complex.ycp";
 include "network/devices.ycp";
 include "network/hardware.ycp";
 include "network/ip.ycp";
+include "network/modules.ycp";
 include "network/routines.ycp";
 include "network/runtime.ycp";
 
 /*-------------*/
 /* GLOBAL DATA */
 
+/**
+ * Current module information
+ */
+global map Module = $[];
+
 /* kernel options */
 global string name = "";
-global string modul = "";
-global string options = "";
+// global string modul = "";
+// global string options = "";
 global string unique = "";
 global string type = "";
 
-global boolean pcmcia = false;
-global boolean usb = false;
+/**
+ * Hotplug type ("" if not hot pluggable)
+ */
+global string hotplug = "";
+
 
 /* address options */
 global string bootproto = "static";
@@ -87,7 +96,7 @@ list HARDWARE = [];
 
 /**
  * Devices information
- * @see ReaDevices
+ * @see ReadDevices
  */
 map Devices = $[];
 
@@ -95,6 +104,17 @@ map Devices = $[];
  * Deleted devices
  */
 list DeletedDevices = [];
+
+/**
+ * Modules information
+ * @see ReadModules
+ */
+map Modules = $[];
+
+/**
+ * Deleted modules
+ */
+list DeletedModules = [];
 
 /**
  * /etc/install.inf data
@@ -105,6 +125,16 @@ map INSTALL_INF = $[];
  * Data was modified?
  */
 boolean modified = false;
+
+/**
+ * Network modules regex
+ */
+string network_modules = "eth|tr|ctc|hsi|escon|iucv|ci|fddi|arc|myri";
+
+/**
+ * Network devices regex
+ */
+string network_devices = network_modules + "|eth-pcmcia-|eth-usb-|tr-pcmia-|tr-usb-";
 
 /**
  * Which operation is pending?
@@ -158,42 +188,44 @@ global define boolean Read() ``{
     ], [], "");
 
     if(Abort()) return false;
-    // stage 1 in reading current Lan setup
+    /* Progress stage 1/8 */
     ProgressNextStage(_("Detecting network cards"));
-    //ReadHardware("");
-    if(!Arch::s390) ReadHardware("netcard");
+    if(!Arch::s390) /* FIXME: Temporary hack until the detection is functional */
+	ReadHardware("netcard");
+	//ReadHardware("");
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 2 in reading current Lan setup
+    /* Progress stage 2/8 */
     ProgressNextStage(_("Reading /etc/modules.conf"));
-    ReadModules();
+    ReadModules(network_modules);
+    // ReadModules("");
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 3 in reading current Lan setup
+    /* Progress stage 3/8 */
     ProgressNextStage(_("Reading current configuration"));
+    ReadDevices(network_devices);
     //ReadDevices("");
-    ReadDevices("eth|eth-pcmcia-|eth-usb-|tr|tr-pcmcia-|tr-usb-|ctc|hsi|escon|iucv|ci|fddi|arc|myri");
     sleep(sl);
 
     string wait = SCR::Read(.sysconfig.network.config.WAIT_FOR_INTERFACES);
     if(wait != "" && wait != nil) wait_for_interfaces = tointeger(wait);
 
     if(Abort()) return false;
-    // stage 4 in reading current Lan setup
+    /* Progress stage 4/8 */
     ProgressNextStage(_("Reading routing configuration"));
     Routing::Read();
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 5 in reading current Lan setup
+    /* Progress stage 5/8 */
     ProgressNextStage(_("Reading host name and DNS configuration"));
     DNS::Read();
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 6 in reading current Lan setup
+    /* Progress stage 6/8 */
     ProgressNextStage(_("Reading installation information"));
     if(SCR::Read(.target.size,"/etc/install.inf") > 0)
 	INSTALL_INF = SCR::Read(.etc.install_inf);
@@ -202,13 +234,13 @@ global define boolean Read() ``{
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 7 in reading current Lan setup
+    /* Progress stage 7/8 */
     ProgressNextStage(_("Reading firewall settings"));
     Firewall::Read();
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 8 in reading current Lan setup
+    /* Progress stage 8/8 */
     ProgressNextStage(_("Detecting current status"));
     ReadStatus();
     sleep(sl);
@@ -337,9 +369,8 @@ global define boolean Write() ``{
 }
 
 /**
- * Get all network settings from the first parameter
- * (for use by autoinstallation)
- * @param settings a map of settings to be imported.
+ * Import data
+ * @param settings settings to be imported
  * @return true on success
  */
 global define boolean Import(map settings) ``{
@@ -388,8 +419,7 @@ global define boolean Import(map settings) ``{
 }
 
 /**
- * Dump the network settings to a single map
- * (for use by autoinstallation)
+ * Export data
  * @return dumped settings (later acceptable by Import())
  */
 global define map Export() ``{
@@ -474,7 +504,6 @@ global define list FreeAliases(string type, integer num) ``{
     return GetFreeDevices("_aliases", 10);
 }
 
-
 /**
  * Select the given device
  * @param dev device to select ("" for new device, default values)
@@ -489,7 +518,7 @@ global define boolean Select(string dev) ``{
     if(dev == "") {
         type = "eth";
         device = GetFreeDevice(type);
-	operation = `add;
+	AddModule(type);
     }
     /* dev!="" -> Edit */
     else {
@@ -506,7 +535,6 @@ global define boolean Select(string dev) ``{
 
         type = typ;
         device = num;
-	operation = `edit;
     }
 
     /* general stuff */
@@ -518,10 +546,6 @@ global define boolean Select(string dev) ``{
     ipaddr = devmap["IPADDR"]:"";
     remoteip = devmap["REMOTE_IPADDR"]:"";
     netmask = devmap["NETMASK"]:"";
-
-    /* kernel options */
-    modul = devmap["module"]:"";
-    options = devmap["options"]:"";
 
     /* wireless options */
     wireless = devmap["WIRELESS"]:"no" == "yes";
@@ -537,12 +561,20 @@ global define boolean Select(string dev) ``{
     data_channel = devmap["DATA_CHANNEL"]:"";
     portname = devmap["PORTNAME"]:"";
 
-    pcmcia = false;
-    usb = false;
+    hotplug = "";
     if(issubstring(type, "pcmcia"))
-	pcmcia = true;
+	hotplug = "pcmcia";
     else if(issubstring(type, "usb"))
-	usb = true;
+	hotplug = "usb";
+
+    y2debug("type=%1", type);
+    if(issubstring(type, "-"))
+	type = regexpsub(type, "([^-]+)-.*$", "\\1");
+    y2debug("type=%1", type);
+
+    /* kernel options */
+    if(hotplug == "")
+	SelectModule(dev);
 
     if(bootproto == "" || bootproto == "none") bootproto = "static";
 
@@ -616,15 +648,16 @@ global define boolean Commit() ``{
 	    change(newdev, "NETWORK", compute_network(ipaddr, netmask));
 	}
 	change(newdev, "REMOTE_IPADDR", remoteip);
-	if(pcmcia||usb)
-	    change(newdev, "STARTMODE", "hotplug");
-	else
-	    change(newdev, "STARTMODE", "onboot");
-	if(pcmcia)
-	    change(newdev, "DHCLIENT_SET_DOWN_LINK", "yes");
 
-	change(newdev, "module", modul);
-	change(newdev, "options", options);
+	if(hotplug == "") {
+	    change(newdev, "STARTMODE", "onboot");
+	    ChangeModule(type+device, operation == `add);
+	}
+	else
+	    change(newdev, "STARTMODE", "hotplug");
+
+	if(hotplug == "pcmcia")
+	    change(newdev, "DHCLIENT_SET_DOWN_LINK", "yes");
 
 	if(wireless) {
 	    change(newdev, "WIRELESS", "yes");
@@ -649,14 +682,11 @@ global define boolean Commit() ``{
 	    if(wait_for_interfaces == nil || wait_for_interfaces < 40)
 		wait_for_interfaces = 40;
 
-	if(type == "hsi" || modul == "qeth")
+	if(type == "hsi" || Module["module"]:"" == "qeth")
 	    if(wait_for_interfaces == nil || wait_for_interfaces < 15)
 		wait_for_interfaces = 15;
 
-	if(operation == `add)
-	    ConfigAddEdit(type, device, newdev, true);
-	else
-	    ConfigAddEdit(type, device, newdev, false);
+	ChangeDevice(RealType(type, hotplug), device, newdev, operation == `add);
     }
     else if(operation == `delete) {
 	DeleteDevice(type, device);

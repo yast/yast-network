@@ -36,7 +36,7 @@ Routing::Read();
 Wizard::CreateDialog();
 Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), FinishButtonLabel()));
 /* main ui function */
-any ret = RoutingMainDialog();
+any ret = RoutingMainDialog(true);
 y2debug("ret == %1", ret);
 
 if(ret == `next && Routing::modified) {

@@ -311,7 +311,7 @@ global define string DeviceType(string type) ``{
 	/* Device type label */
 	"hippi"	: _("HIPPI"),
 	/* Device type label */
-	"hsi"	: _("HSI"),
+	"hsi"	: _("Hipersockets"),
 	/* Device type label */
 	"ippp"	: _("ISDN"),
 	/* Device type label */
@@ -346,6 +346,16 @@ global define string DeviceType(string type) ``{
 
     y2error("Unknown type: %1", type);
     return type;
+}
+
+/**
+ * Create list of Table items
+ * @param types list of types
+ * @param cur current type
+ * @return Table items
+ */
+global define list BuildTypesList(list types, string cur) ``{
+    return maplist(string t, types, ``(`item(`id(t), DeviceType(t), t == cur)));
 }
 
 /**

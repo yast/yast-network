@@ -12,7 +12,7 @@
 textdomain "network";
 
 import "Modem";
-import "Providers";
+import "Provider";
 
 import "Wizard";
 import "Wizard_hw";
@@ -28,16 +28,19 @@ include "network/complex.ycp";
  * @return true if data was modified
  */
 global define boolean Modified() ``{
-    return Modem::Modified() || Providers::Modified();
+    return Modem::Modified() || Provider::Modified();
 }
 
 /**
  * Commit changes to internal structures
+ * @param what what everything should be commited ("modem"|"provider"|"all")
  * @return always `next
  */
-global define symbol Commit() ``{
-    Providers::Commit();
-    Modem::Commit();
+global define symbol Commit(string what) ``{
+    if(what == "" || what == "all" || what == "modem")
+	Modem::Commit();
+    if(what == "" || what == "all" || what == "provider")
+	Provider::Commit();
     return `next;
 }
 
@@ -142,13 +145,13 @@ configuration.</P>
 	}
 	/* configure the selected card */
 	else if(ret == `configure_button) {
-	    Modem::AddEdit("");
+	    Modem::Add();
 	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
 	    if(selected == `other) {
 		ret = `other;
 	    }
 	    else {
-		Modem::Select(selected);
+		Modem::SelectHW(selected);
 		ret = `configure;
 	    }
 	    break;
@@ -191,7 +194,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
 ");
 
     list overview = Modem::Overview();
-    list overviewp = Providers::Overview();
+    list overviewp = Provider::Overview();
     y2debug("overview=%1",overview);
     y2debug("overviewp=%1",overviewp);
 
@@ -204,7 +207,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
 	/* Table label */
 	_("Providers"),
 	/* Table header */
-	`header(_("Name"), _("Provider")),
+	`header(_("Name"), _("Provider"), _("Phone")),
 	overviewp
     );
 
@@ -233,14 +236,16 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
 	}
 	/* add */
 	else if(ret == `add) {
-	    Modem::AddEdit("");
+	    Modem::Add();
+	    Provider::Add("modem");
 	    break;
 	}
 	/* edit */
 	else if(ret == `edit) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-	    Modem::AddEdit(dev);
-	    // Providers::AddEdit(Providers::provShortName, false);
+	    Modem::Edit(dev);
+	    Provider::Edit(Provider::Name);
+	    // Provider::AddEdit(Provider::provShortName, false);
 	    break;
 	}
 	/* delete */
@@ -259,21 +264,21 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
 	}
 	/* provider add */
 	else if(ret == `Add) {
-	    Providers::AddEdit("", false);
+	    Provider::Add("modem");
 	    break;
 	}
 	/* provider edit */
 	else if(ret == `Edit) {
 	    string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
-	    Providers::AddEdit(dev, false);
+	    Provider::Edit(dev);
 	    break;
 	}
 	/* provider delete */
 	else if(ret == `Delete) {
 	    string dev = UI::QueryWidget(`id(`Table), `CurrentItem);
-	    Providers::Delete(dev);
-	    Providers::Commit();
-	    overviewp = Providers::Overview();
+	    Provider::Delete(dev);
+	    Provider::Commit();
+	    overviewp = Provider::Overview();
 	    UI::ChangeWidget(`id(`Table), `Items, overviewp);
 	    if(size(overviewp) < 1) {
 		UI::ChangeWidget(`id(`Edit), `Enabled, false);

@@ -1,6 +1,6 @@
 /**
  * File:	clients/proxy_write.ycp
- * Package:	Network configurat`ion
+ * Package:	Network configuration
  * Summary:	Writing only client
  * Authors:	Michal Svec <msvec@suse.cz>
  *

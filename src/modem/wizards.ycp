@@ -103,12 +103,12 @@ global define symbol MainSequence() ``{
     map aliases = $[
 	"summary"	: ``(SummaryDialog()),
 	"overview"	: ``(OverviewDialog()),
-	"configure"	: [ ``(OneModemSequence(true)), true ],
-	"other"		: [ ``(OneModemSequence(false)), true ],
-	"add"		: [ ``(OneModemSequence(false)), true ],
+	"configure"	: [ ``(OneModemProviderSequence(true)), true ],
+	"other"		: [ ``(OneModemProviderSequence(false)), true ],
+	"add"		: [ ``(OneModemProviderSequence(false)), true ],
 	"edit"		: [ ``(OneModemSequence(false)), true ],
-	"Add"		: [ ``(OneProviderSequence("modem",true)), true ],
-	"Edit"		: [ ``(OneProviderSequence("modem",false)), true ],
+	"Add"		: [ ``(OneProviderSequence(true)), true ],
+	"Edit"		: [ ``(OneProviderSequence(false)), true ],
     ];
 
     map sequence = $[
@@ -162,7 +162,7 @@ global define symbol MainSequence() ``{
  * @param detected true if modem was detected (more entries otherwise)
  * @return sequence result
  */
-global define symbol OneModemSequence(boolean detected) ``{
+global define symbol OneModemProviderSequence(boolean detected) ``{
 
     map aliases = $[
 	"parameters_detected"	: ``(ModemDialog(true)),
@@ -174,7 +174,7 @@ global define symbol OneModemSequence(boolean detected) ``{
 	"new_provider"		: ``(ProviderDialog("modem")),
 	"connection"		: ``(ConnectionDialog("modem")),
 	"ipdetails"		: ``(IPDetailsDialog("modem")),
-	"commit"		: [ ``(Commit()), true ],
+	"commit"		: [ ``(Commit("")), true ],
     ];
 
     string entry = "parameters";
@@ -220,6 +220,52 @@ global define symbol OneModemSequence(boolean detected) ``{
 	],
 	"ipdetails" : $[
 	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"commit" : $[
+	    `next   : `next,
+	],
+    ];
+
+    return WizardSequencer(aliases, sequence);
+}
+
+/**
+ * Workflow of the configuration of one modem
+ * @param detected true if modem was detected (more entries otherwise)
+ * @return sequence result
+ */
+global define symbol OneModemSequence(boolean detected) ``{
+
+    map aliases = $[
+	"parameters_detected"	: ``(ModemDialog(true)),
+	"parameters"		: ``(ModemDialog(false)),
+	"details"		: ``(ModemDetailsDialog()),
+	"details_detected"	: ``(ModemDetailsDialog()),
+	"commit"		: [ ``(Commit("modem")), true ],
+    ];
+
+    string entry = "parameters";
+    if(detected) entry = "parameters_detected";
+
+    map sequence = $[
+	"ws_start" : entry,
+	"parameters": $[
+	    `next   : "commit",
+	    `Details: "details",
+	    `abort  : `abort
+	],
+	"parameters_detected" : $[
+	    `next   : "commit",
+	    `Details: "details_detected",
+	    `abort  : `abort
+	],
+	"details"   : $[
+	    `next   : "parameters",
+	    `abort  : `abort
+	],
+	"details_detected" : $[
+	    `next   : "parameters_detected",
 	    `abort  : `abort
 	],
 	"commit" : $[

@@ -212,12 +212,5 @@ waits for callback of the remote machine.");
     return ret;
 }
 
-if(false) {
-Provider::Provider = $["PROVIDER":"AICOM, Havlickuv Brod"];
-Wizard::CreateDialog();
-IPDetailsDialog("modem");
-IPDetailsDialog("isdn");
-}
-
 /* EOF */
 }

@@ -164,7 +164,7 @@ global define symbol OneProviderSequence(boolean country) ``{
 	"new_provider"		: ``(ProviderDialog(type)),
 	"connection"		: ``(ConnectionDialog(type)),
 	"ipdetails"		: ``(IPDetailsDialog(type)),
-	"commit"		: [ ``(Commit()), true ],
+	"commit"		: [ ``(CommitProvider()), true ],
     ];
 
     string entry = "provider";

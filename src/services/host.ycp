@@ -35,9 +35,10 @@ Do you really want to change it?"), host));
 
 /**
  * Main hosts dialog
+ * @param standalone true if not run from another ycp client
  * @return dialog result
  */
-global define symbol HostsMainDialog() ``{
+global define symbol HostsMainDialog(boolean standalone) ``{
 
     /* Hosts dialog caption */
     string caption = _("Hosts configuration");
@@ -64,7 +65,6 @@ global define symbol HostsMainDialog() ``{
 	change(table_items, item);
 	items = items + 1;
     });
-    // items = items - 1;
 
     y2debug("table_items=%1", table_items);
     y2debug("items=%1", items);
@@ -99,7 +99,12 @@ global define symbol HostsMainDialog() ``{
 	`HSpacing(5)
     );
 
-    Wizard::SetContents(caption,contents,help,true,true);
+    if(standalone == true)
+	Wizard::SetContentsButtons(caption, contents, help,
+		BackButtonLabel(), FinishButtonLabel());
+    else
+	Wizard::SetContentsButtons(caption, contents, help,
+		BackButtonLabel(), OKButtonLabel());
 
     UI::ChangeWidget(`id(`table), `Items, table_items);
     UI::ChangeWidget(`id(`edit), `Enabled, items > 0);

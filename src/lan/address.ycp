@@ -31,7 +31,7 @@ global define symbol AddressDialog() ``{
     string caption = _("Network address setup");
 
     /* Address dialog help 1/8 */
-    string helptext = _("<p>Configure your IP address.</p>") +
+    string help = _("<p>Configure your IP address.</p>") +
 
     /* Address dialog help 2/8 */
 _("<p>You can select dynamic address assignment,
@@ -82,25 +82,24 @@ for more information about the network configuration.</p>");
 	/* Label text (Network device: unknown device) */
 	device = _("Unknown device");
     else
-	device = type + Lan::device;
+	device = RealType(Lan::type, Lan::hotplug) + Lan::device;
 
     term label = `HBox(
 	/* Label text */
 	`Label(_("Network device")),
 	`HSpacing(0.5),
-	// Network device: [unknown]
 	`Label(`opt(`outputField), device)
-	//`ComboBox(`id(`num), `opt(`hstretch,`editable), "", [ "eth1" ])
     );
 
-    string realtype = type;
-    if(Lan::pcmcia) realtype = type + "-pcmcia-";
-    else if(Lan::usb) realtype = type + "-usb-";
-
+    /* Allow to edit the device (#17346) * /
     if(Lan::operation == `add)
 	label = `ComboBox(`id(`num), `opt(`hstretch),
 		_("N&etwork device"),
-		maplist(`d,Lan::FreeDevices(realtype),``(sformat("%1%2",type,d))));
+		maplist(integer d, Lan::FreeDevices(RealType), ``(
+		    sformat("%1%2",type,d)
+		)));
+
+    Moved to lan/hardware.ycp */
 
     /* Frame label */
     term frame1 = `Frame(_("Choose the setup method"),
@@ -127,11 +126,11 @@ for more information about the network configuration.</p>");
     if(Arch::s390) {
 
     /* Address dialog help 1/8 */
-    helptext = _("<p>Configure your IP address.</p>");
+    help = _("<p>Configure your IP address.</p>");
 
     if(!Arch::s390)
     /* Address dialog help 2/8 */
-    helptext = helptext + _("<p>You can select dynamic address assignment,
+    help = help + _("<p>You can select dynamic address assignment,
 if you have a <b>DHCP server</b> running on your local network.</p>") +
 
     /* Address dialog help 3/8 */
@@ -149,18 +148,18 @@ _("<p>Otherwise, network addresses must be assigned
 
     if(type == "ctc" || type == "escon" || type == "iucv")
     /* Address dialog help 6/8 */
-helptext = helptext + _("<p>Enter the <b>IP address</b> (e.g., 192.168.100.99)
+help = help + _("<p>Enter the <b>IP address</b> (e.g., 192.168.100.99)
 for your computer and the <b>remote IP address</b> (e.g., 192.168.100.254)
 of your peer.</p>");
 
     else
     /* Address dialog help 6/8 */
-    helptext = helptext + _("<p>Enter the IP address (e.g., 192.168.100.99) for
+    help = help + _("<p>Enter the IP address (e.g., 192.168.100.99) for
 your computer, the network mask (usually 255.255.255.0), and, optionally, the
 default gateway IP address.</p>");
 
     /* Address dialog help 7/8 */
-    helptext = helptext + _("<p>Contact your <b>network administrator</b>
+    help = help + _("<p>Contact your <b>network administrator</b>
 for more information about the network configuration.</p>") +
 
     /* Address dialog help 8/8 */
@@ -205,6 +204,11 @@ completes the configuration.</p>");
 		`VSpacing(0.5)
 	    ));
 
+    /* Push button label */
+    term HardwareButton = `PushButton(`id(`hardware), `opt(`hstretch), _("H&ardware details"));
+    if(Lan::operation == `add && Lan::unique == "")
+	HardwareButton = `VSpacing(0);
+
     /* Frame label */
     term frame2 = `Frame(_("Detailed settings"), `HBox(`HStretch(),
 	`HSquash(`VBox(
@@ -213,9 +217,11 @@ completes the configuration.</p>");
 	    `PushButton(`id(`hostname), `opt(`hstretch), _("&Host name and name server")),
 	    /* Push button label */
 	    `PushButton(`id(`routing), `opt(`hstretch), _("R&outing")),
+	    HardwareButton,
+	    /*
 	    Lan::wireless?
 		`PushButton(`id(`wire), `opt(`hstretch), _("Wireless &settings"))
-		:`VSpacing(0),
+		:`VSpacing(0), */
 	    `VSpacing(0.5)
 	)),
 	`HStretch()
@@ -230,7 +236,7 @@ completes the configuration.</p>");
 	frame2
     )));
 
-    Wizard::SetContentsButtons(caption, contents, helptext,
+    Wizard::SetContentsButtons(caption, contents, help,
 	    BackButtonLabel(), NextButtonLabel());
 
     UI::ChangeWidget(`id(`ipaddr), `Enabled, bootproto=="static");
@@ -274,7 +280,7 @@ completes the configuration.</p>");
 	    break;
 	}
 	/* FIXME: better hostname and routing workflow */
-	else if(ret == `next || ret == `routing || ret == `hostname || ret == `wire) {
+	else if(ret == `next || ret == `routing || ret == `hostname || ret == `hardware) {
 	    if(UI::QueryWidget(`id(`rb), `CurrentButton) != `dynamic) {
 		if(!check_ip4(UI::QueryWidget(`id(`ipaddr), `Value))) {
 		    /* Popup text */
@@ -305,7 +311,7 @@ completes the configuration.</p>");
     }
 
     /* update the configuration */
-    if(ret == `next || ret == `routing || ret == `hostname || ret == `wire) {
+    if(ret == `next || ret == `routing || ret == `hostname || ret == `hardware) {
 	Lan::ipaddr = UI::QueryWidget(`id(`ipaddr), `Value);
 
 	if(UI::WidgetExists(`id(`netmask)))

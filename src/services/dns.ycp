@@ -34,10 +34,10 @@ global define boolean ModifyResolvConfPopup() ``{
 
     /* warning popup text 1/2 */
     string text = _("<p>The resolver configuration file (/etc/resolv.conf)
-has been temporarily modified by %1. You have two options:</p>");
+has been temporarily modified by %1. You have two options:</p>") +
 
     /* warning popup text 2/2 */
-    text = text + _("<ol>
+    _("<ol>
 <li>Modify the current (changed!) version of the file</li>
 <li>Press 'Accept' now and continue editing other (non resolver) data. You
 could return to this dialog later when the above service has terminated.</li>
@@ -53,10 +53,10 @@ could return to this dialog later when the above service has terminated.</li>
 	    `RichText(text)
 	),
 	`HBox(
-        // button label
+	    /* PushButton label */
 	    `PushButton(`id(`accept), `opt(`default), _("&Accept")),
 	    `HSpacing(2),
-        // button label
+	    /* PushButton label */
 	    `PushButton(`id(`modify), _("&Modify"))
 	)
     ));
@@ -70,9 +70,10 @@ could return to this dialog later when the above service has terminated.</li>
 
 /**
  * Dialog for querying DNS & hostname info
+ * @param standalone true if not run from another ycp client
  * @return user input
  */
-global define symbol DNSMainDialog() ``{
+global define symbol DNSMainDialog(boolean standalone) ``{
 
     string hostname = DNS::hostname;
     string domain = DNS::domain;
@@ -87,36 +88,29 @@ global define symbol DNSMainDialog() ``{
     /* DNS dialog caption */
     string caption = _("Host name and name server configuration");
 
-    /* DNS dialog helptext 1/6 */
-    string helptext = _("<p>Insert the host name and domain name for your
-computer. Name server list and domain search list are optional.</p>");
+    /* DNS dialog help 1/5 */
+    string help = _("<p>Insert the host name and domain name for your
+computer. Name server list and domain search list are optional.</p>") +
 
-    /* DNS dialog helptext 2/6 */
-    helptext = helptext + _("<p>A name server is a computer that translates
-host names into IP addresses. This value must be entered as an
-<b>IP address</b> (e.g., 10.10.0.1), not as a host name.</p>");
+    /* DNS dialog help 2/5 */
+    _("<p>A name server is a computer that translates host names into
+IP addresses. This value must be entered as an <b>IP address</b>
+(e.g., 10.10.0.1), not as a host name.</p>") +
 
-    /* DNS dialog helptext 3/6 */
-    helptext = helptext + _("<p>Search domain is the domain name where host
-name searching starts. The primary search domain is usually the same as the
-<b>domain name</b> of your computer (e.g., suse.de). There may be additional
-search domains (e.g., suse.com).</p>");
+    /* DNS dialog help 3/5 */
+    _("<p>Search domain is the domain name where host name searching starts.
+The primary search domain is usually the same as the <b>domain name</b> of
+your computer (e.g., suse.de). There may be additional search domains
+(e.g., suse.com).</p>") +
 
-    /* DNS dialog helptext 4/6 */
-    helptext = helptext + _("<p>If you are using DHCP to get an IP address,
-check whether to get a host name via DHCP or to set name servers and searched
-domains via DHCP.</p>");
+    /* DNS dialog help 4/5 */
+    _("<p>If you are using DHCP to get an IP address, check whether to get
+a host name via DHCP or to set name servers and searched domains via DHCP.</p>") +
 
-    /* DNS dialog helptext 5/6 */
-    helptext = helptext + _("<p>If you plan to use a dial-up Internet
-connection and have set up your connection to use dynamic DNS assignment,
-these values will be temporarily disabled during the connection.</p>");
-
-    /* DNS dialog helptext 6/6 */
-    /* FIXME: button label
-    helptext = helptext + _("<p>Select the <b>Finish</b> button to <b>save</b>
-your changes and <b>finish</b> the network configuration.</p>");
-    */
+    /* DNS dialog help 5/5 */
+    _("<p>If you plan to use a dial-up Internet connection and have set up your
+connection to use dynamic DNS assignment, these values will be temporarily
+disabled during the connection.</p>");
 
     /* domain search */
     string s1 = "";
@@ -138,44 +132,49 @@ your changes and <b>finish</b> the network configuration.</p>");
 
     /* DNS dialog contents */
     term contents = `HSquash(`VBox(
-    // frame label
+	/* Frame label */
 	`Frame(_("Host name and domain name"), `VBox(
 	    `HBox(
-		// text entry label
+		/* TextEntry label */
 		`TextEntry(`id(`host), _("&Host name"), hostname),
-		// text entry label
+		/* TextEntry label */
 		`TextEntry(`id(`domain), _("&Domain name"), domain)
 	    ),
-        // check box label
+	    /* CheckBox label */
 	    `Left(`CheckBox(`id(`dn), _("&Change host name via DHCP")))
 	)),
 	`VSpacing(1),
-    // frame label
+	/* Frame label */
 	`Frame(_("Name servers and domain search list"), `VBox(
 	`HBox(
 	    `VBox(
-		// text entry label
+		/* TextEntry label */
 		`TextEntry(`id(`ns1), _("Name server &1"), ns1),
-		// text entry label
+		/* TextEntry label */
 		`TextEntry(`id(`ns2), _("Name server &2"), ns2),
-		// text entry label
+		/* TextEntry label */
 		`TextEntry(`id(`ns3), _("Name server &3"), ns3)
 	    ),
 	    `VBox(
-		// text entry label
+		/* TextEntry label */
 		`TextEntry(`id(`s1), _("D&omain search 1"), s1),
-		// text entry label
+		/* TextEntry label */
 		`TextEntry(`id(`s2), _("Do&main search 2"), s2),
-		// text entry label
+		/* TextEntry label */
 		`TextEntry(`id(`s3), _("Dom&ain search 3"), s3)
 	    )
 	),
-    // check box label
+	/* CheckBox label */
 	`Left(`CheckBox(`id(`dr), `opt(`notify), _("&Update name servers and search list via DHCP")))
 	))
     ));
 
-    Wizard::SetContents(caption, contents, helptext, true, true);
+    if(standalone == true)
+	Wizard::SetContentsButtons(caption, contents, help,
+		BackButtonLabel(), FinishButtonLabel());
+    else
+	Wizard::SetContentsButtons(caption, contents, help,
+		BackButtonLabel(), OKButtonLabel());
 
     UI::ChangeWidget(`id(`dn), `Enabled, has_dhcp);
     UI::ChangeWidget(`id(`dr), `Enabled, has_dhcp);
@@ -246,13 +245,13 @@ your changes and <b>finish</b> the network configuration.</p>");
 	    if(!dhcp_hostname) {
 		/* check host name and domain */
 		if(!check_hostname(UI::QueryWidget(`id(`host), `Value))) {
-            // ErrorPopup text
+		    /* ErrorPopup text */
 		    UI::ErrorPopup(_("The host name is incorrect"));
 		    UI::SetFocus(`id(`host));
 		    continue;
 		}
 		if(!check_domainname(UI::QueryWidget(`id(`domain), `Value))) {
-            // ErrorPopup text
+		    /* ErrorPopup text */
 		    UI::ErrorPopup(_("The domain name is incorrect"));
 		    UI::SetFocus(`id(`domain));
 		    continue;
@@ -265,19 +264,19 @@ your changes and <b>finish</b> the network configuration.</p>");
 	    ns3 = tolower(UI::QueryWidget(`id(`ns3), `Value));
 
 	    if(ns1 != "" && !check_ip4(ns1)) {
-        // ErrorPopup text
+		/* ErrorPopup text */
 		UI::ErrorPopup(_("The primary name server is not correct"));
 		UI::SetFocus(`id(`ns1));
 		continue;
 	    }
 	    if(ns2 != "" && !check_ip4(ns2)) {
-        // ErrorPopup text
+		/* ErrorPopup text */
 		UI::ErrorPopup(_("The secondary name server is not correct"));
 		UI::SetFocus(`id(`ns2));
 		continue;
 	    }
 	    if(ns3 != "" && !check_ip4(ns3)) {
-        // ErrorPopup text
+		/* ErrorPopup text */
 		UI::ErrorPopup(_("The tertiary name server is not correct"));
 		UI::SetFocus(`id(`ns3));
 		continue;
@@ -289,19 +288,19 @@ your changes and <b>finish</b> the network configuration.</p>");
 	    s3 = tolower(UI::QueryWidget(`id(`s3), `Value));
 
 	    if(s1 != "" && !check_domainname(s1)) {
-        // ErrorPopup text
+		/* ErrorPopup text */
 		UI::ErrorPopup(_("The primary search domain is not correct"));
 		UI::SetFocus(`id(`s1));
 		continue;
 	    }
 	    if(s2 != "" && !check_domainname(s2)) {
-        // ErrorPopup text
+		/* ErrorPopup text */
 		UI::ErrorPopup(_("The secondary search domain is not correct"));
 		UI::SetFocus(`id(`s2));
 		continue;
 	    }
 	    if(s3 != "" && !check_domainname(s3)) {
-        // ErrorPopup text
+		/* ErrorPopup text */
 		UI::ErrorPopup(_("The tertiary search domain is not correct"));
 		UI::SetFocus(`id(`s3));
 		continue;

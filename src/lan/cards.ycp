@@ -6,16 +6,20 @@
  *
  * $Id$
  *
- * Copyied from yast1 NetCardDlg.cc
+ * Originally copyied from yast1 NetCardDlg.cc.
  *
- * stored in form:
- * $[<class_name> : list] where class_name is:
- * "fddi", "tr", "arc", "ci", "hippi", "eth", "escon", "iucv", "ctc", "air",
- * and the list contains maps in format:
- * "name"   ... <string> that contains user readable name of the card
- * "module" ... <map>    with module info : "name" (string) and "options" (map)
- * "architecture" <list> with list of architectures, possibilities:
- * "macintosh", "s390", "itanium", "rs6000", "axp", "i386", "iseries", "ppc", "sparc",
+ * General syntax:
+ * $[ <type> : <list> ]
+ *
+ * <type> is the network device type name, for example:
+ *   "fddi", "tr", "arc", "ci", "hippi", "eth", "escon", "iucv", "ctc", "air"
+ *
+ * <list> contains maps in format:
+ *   "name"		<string>	user readable name of the card
+ *   "module"		<string>	kernel module name
+ *   "options"		<string>	kernel module options
+ *   "architecture"	<list>		allowed architectures:
+ *     "s390", "axp", "i386", "ix86", "x86_64", "ia64", "ppc", "sparc", ...
  */
 
 {
@@ -27,73 +31,73 @@ textdomain "network";
  */
 global map NetworkCards = $[
 
-"wireless": [
+  "wireless": [
 
-$[
-"module" : "airo_cs.o",
-// Network card name (wireless)
-"name" :  _("Cisco/Aironet 802.11 wireless ISA/PCI and PCMCIA ethernet cards")
-],
-$[
-"module" : "orinoco.o",
-// Network card name (wireless)
-"name" :  _("Lucent Orinoco, Prism II based and similar wireless cards")
-],
-$[
-"module" : "orinoco_cs.o",
-// Network card name (wireless)
-"name" :  _("PCMCIA Lucent Orinoco, Prism II based and similar wireless cards")
-],
-$[
-"module" : "orinoco_pci.o",
-// Network card name (wireless)
-"name" :  _("Wireless LAN cards using direct PCI interface")
-],
-$[
-"module" : "orinoco_plx.o",
-// Network card name (wireless)
-"name" :  _("Wireless LAN cards using the PLX9052 PCI bridge")
-],
-$[
-"module" : "p80211.o",
-// Network card name (wireless)
-"name" : _("Wireless device using kernel module p80211.o")
-],
-$[
-"module" : "prism2_cs.o",
-// Network card name (wireless)
-"name" : _("Wireless device using kernel module prism2_cs.o")
-],
-$[
-"module" : "prism2_pci.o",
-// Network card name (wireless)
-"name" : _("Wireless device using kernel module prism2_pci.o")
-],
-$[
-"module" : "prism2_plx.o",
-// Network card name (wireless)
-"name" : _("Wireless device using kernel module prism2_plx.o")
-],
-$[
-"module" : "prism2_usb.o",
-// Network card name (wireless)
-"name" : _("Wireless device using kernel module prism2_usb.o")
-],
+    $[
+    "module" : "airo_cs.o",
+    /* Network card name (wireless) */
+    "name" :  _("Cisco/Aironet 802.11 wireless ISA/PCI and PCMCIA ethernet cards"),
+    ],
+    $[
+    "module" : "orinoco.o",
+    /* Network card name (wireless) */
+    "name" :  _("Lucent Orinoco, Prism II based and similar wireless cards"),
+    ],
+    $[
+    "module" : "orinoco_cs.o",
+    /* Network card name (wireless) */
+    "name" :  _("PCMCIA Lucent Orinoco, Prism II based and similar wireless cards"),
+    ],
+    $[
+    "module" : "orinoco_pci.o",
+    /* Network card name (wireless) */
+    "name" :  _("Wireless LAN cards using direct PCI interface"),
+    ],
+    $[
+    "module" : "orinoco_plx.o",
+    /* Network card name (wireless) */
+    "name" :  _("Wireless LAN cards using the PLX9052 PCI bridge"),
+    ],
+    $[
+    "module" : "p80211.o",
+    /* Network card name (wireless) */
+    "name" : _("Wireless device using kernel module p80211.o"),
+    ],
+    $[
+    "module" : "prism2_cs.o",
+    /* Network card name (wireless) */
+    "name" : _("Wireless device using kernel module prism2_cs.o"),
+    ],
+    $[
+    "module" : "prism2_pci.o",
+    /* Network card name (wireless) */
+    "name" : _("Wireless device using kernel module prism2_pci.o"),
+    ],
+    $[
+    "module" : "prism2_plx.o",
+    /* Network card name (wireless) */
+    "name" : _("Wireless device using kernel module prism2_plx.o"),
+    ],
+    $[
+    "module" : "prism2_usb.o",
+    /* Network card name (wireless) */
+    "name" : _("Wireless device using kernel module prism2_usb.o"),
+    ],
 
-],
+  ],
 
   "eth" : [
-    // Network card name
+    /* Network card name */
     $["name" : _("Apple onboard Ethernet mace"),
       "module" : "mace",
       "options" : "",
     ],
-    // Network card name
+    /* Network card name */
     $["name" : _("Apple onboard Ethernet bmac"),
       "module" : "bmac",
       "options" : "",
     ],
-    // Network card name
+    /* Network card name */
     $["name" : _("Apple onboard Ethernet gmac"),
       "module" : "gmac",
       "options" : "",
@@ -126,7 +130,8 @@ $[
       "module" : "3c59x",
       "options" : "",
     ],
-    $["name" : "3Com 3c90x/3c980 B/C series",
+    /* Network card name */
+    $["name" : _("3Com 3c90x/3c980 B/C series"),
       "module" : "3c90x",
       "options" : "",
     ],
@@ -150,12 +155,12 @@ $[
       "module" : "ac3200",
       "options" : "io=0x300 irq=10 mem=0xd0000",
     ],
-    // Network card name
+    /* Network card name */
     $["name" : _("Apricot Xen-II onboard ethernet"),
       "module" : "apricot",
       "options" : "io=0x300",
     ],
-    // Network card name
+    /* Network card name */
     $["name" : _("AT-LAN-TEC/RealTek pocket adapter"),
       "module" : "atp",
       "options" : "",
@@ -180,12 +185,12 @@ $[
       "module" : "cs89x0",
       "options" : "",
     ],
-    // Network card name
+    /* Network card name */
     $["name" : _("D-Link DE600 pocket adapter"),
       "module" : "de600",
       "options" : "",
     ],
-    // Network card name
+    /* Network card name */
     $["name" : _("D-Link DE620 pocket adapter"),
       "module" : "de620",
       "options" : "io=0x378 irq=7 bnc=1",
@@ -234,11 +239,12 @@ $[
       "module" : "hp",
       "options" : "io=0x300",
     ],
-    $["name" : "IBM lcs modul",
+    $["name" : "IBM lcs module",
       "module" : "lcs",
       "options" : "noauto=1 devno_portno_pairs=0xfc20,1",
     ],
-    $["name" : "ICL EtherTeam 16i/32 (experimental)",
+    /* Network card name */
+    $["name" : _("ICL EtherTeam 16i/32 (experimental)"),
       "module" : "eth16i",
       "options" : "io=0x2a0",
     ],
@@ -254,7 +260,8 @@ $[
       "module" : "eepro100",
       "options" : "",
     ],
-    $["name" : "Intel PRO/100 / EtherExpress PRO/100 (alternate driver)",
+    /* Network card name */
+    $["name" : _("Intel PRO/100 / EtherExpress PRO/100 (alternate driver)"),
       "module" : "e100",
       "options" : "",
     ],
@@ -361,22 +368,27 @@ $[
       "options" : "",
     ],
   ],
-  "iseries" : [
-    $["name" : "iSeries Virtual Network",
+
+  "s390" : [
+    /* Network card name */
+    $["name" : _("iSeries Virtual Network"),
       "module" : "veth",
       "options" : "",
     ],
   ],
+
   "tr" : [
-    $["name" : "IBM Tropic chipset token ring",
+    /* Network card name */
+    $["name" : _("IBM Tropic chipset token ring"),
       "module" : "ibmtr",
       "options" : "io=0xa20",
     ],
-    $["name" : "IBM Olympic chipset PCI Token Ring",
+    /* Network card name */
+    $["name" : _("IBM Olympic chipset PCI Token Ring"),
       "module" : "olympic",
       "options" : "",
     ],
-    // Network card name
+    /* Network card name */
     $["name" : _("IBM network cards with lcs kernel module"),
       "module" : "lcs",
       "options" : "noauto=1 devno_portno_pairs=0xfc20,1",
@@ -386,54 +398,63 @@ $[
       "options" : "",
     ],
   ],
+
   "arc" : [
     $["name" : "ARCnet",
       "module" : "arcnet",
       "options" : "io=0x300",
     ],
   ],
+
   "air" : [
     $["name" : "Airport",
       "module" : "airport",
       "options" : "network_name=",
     ],
   ],
+
   "fddi" : [
     $["name" : "SysKonnect FDDI (SK-55xx/SK-58xx)",
       "module" : "skfp",
       "options" : "",
     ],
   ],
+
   "hippi" : [
     $["name" : "Essential RoadRunner HIPPI",
       "module" : "rrunner",
       "options" : "",
     ],
   ],
+
   "ctc" : [
     $["name" : "CTC Network",
       "module" : "ctc",
       "options" : "",
     ],
   ],
+
   "hsi" : [
     $["name" : "HSI Network",
       "module" : "qeth",
       "options" : "",
     ],
   ],
+
   "escon" : [
     $["name" : "ESCON Network",
       "module" : "ctc",
       "options" : "",
     ],
   ],
+
   "iucv" : [
     $["name" : "IUCV Network",
       "module" : "netiucv",
       "options" : "",
     ],
   ],
+
   "ci" : [
     $["name" : "CI7000 Network",
       "module" : "c7000",

@@ -35,7 +35,7 @@ global define boolean Modified() ``{
  * Commit changes to internal structures
  * @return always `next
  */
-global define symbol Commit() ``{
+global define symbol CommitProvider() ``{
     Provider::Commit();
     return `next;
 }
@@ -213,6 +213,8 @@ global define symbol OverviewDialog() ``{
 	UI::ChangeWidget(`id(`edit), `Enabled, false);
 	UI::ChangeWidget(`id(`delete), `Enabled, false);
     }
+    else
+	UI::SetFocus(`id(`table));
 
     any ret = nil;
     while(true) {
@@ -258,12 +260,6 @@ global define symbol OverviewDialog() ``{
     }
 
     return ret;
-}
-
-if(false) {
-Wizard::CreateDialog();
-Provider::Read();
-OverviewDialog();
 }
 
 /* EOF */

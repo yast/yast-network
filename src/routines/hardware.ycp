@@ -99,17 +99,13 @@ global define boolean ReadHardware(string hwtype) ``{
 	    change(one, "module", select(modules, 0, ""));
 	    change(one, "options", select(modules, 1, ""));
 
-	    // #13571
+	    /* FIXME: this should be also done for modems and others */
+	    /* FIXME: #13571 */
 	    string hotplug = card["hotplug"]:"";
 	    if(hotplug == "pcmcia" || hotplug == "cardbus")
-	    {
-		controller = controller + "-pcmcia-";
-	    }
+		change(one, "hotplug", "pcmcia");
 	    else if(hotplug == "usb")
-	    {
-		controller = controller + "-usb-";
-	    }
-	    change(one, "type", controller);
+		change(one, "hotplug", "usb");
 	}
 
 	y2debug("found device: %1", one);
@@ -122,24 +118,26 @@ global define boolean ReadHardware(string hwtype) ``{
 }
 
 /**
- * Select the given hardware item or clean up structures
+ * Select the given hardware item or clean up structures (item == nil)
  * @param which item to be chosen
  */
 global define void SelectHardware(integer which) ``{
     map sel = $[];
 
     if(which != nil) {
-	sel = select(HARDWARE, which, $[]);
+	sel = HARDWARE[which]:$[];
 
 	if(which > size(HARDWARE) || which < 0)
 	    y2error("Item not found in HARDWARE: %1 (%2)", which, size(HARDWARE));
     }
 
     /* common stuff */
-    name = lookup(sel, "name", "");
-    unique = lookup(sel, "unique", "");
-    type = lookup(sel, "type", "eth");
-    device = GetFreeDevice(type);
+    name = sel["name"]:"";
+    unique = sel["unique"]:"";
+    type = sel["type"]:"eth";
+
+    hotplug = sel["hotplug"]:"";
+    device = GetFreeDevice(RealType(type, hotplug));
 
     /* modem */
     if(type == "modem") {
@@ -162,38 +160,11 @@ global define void SelectHardware(integer which) ``{
     }
     /* treat the rest as a network card */
     else {
-	modul = sel["module"]:"";
-	options = sel["options"]:"";
-	// #13571
-	// How is this different from Lan::AddEdit?
-	pcmcia = issubstring(type, "pcmcia");
-	usb = issubstring(type, "usb");
+	Module["module"] = sel["module"]:"";
+	Module["options"] = sel["options"]:"";
     }
 
     return true;
-}
-
-/**
- * Read /etc/modules.conf
- * @return true if success
- */
-global define boolean ReadModules() ``{
-    return false;
-}
-
-/**
- * Write /etc/modules.conf
- * @return true if success
- */
-global define boolean WriteModules() ``{
-    return false;
-}
-
-/**
- * Select the given modules.conf entry or clean up structures
- * @param which item to be chosen
- */
-global define void SelectModules(integer which) ``{
 }
 
 /**

@@ -21,9 +21,10 @@ include "network/routines.ycp";
 
 /**
  * Proxy dialog
+ * @param standalone true if not run from another ycp client
  * @return dialog result
  */
-global define symbol ProxyMainDialog() ``{
+global define symbol ProxyMainDialog(boolean standalone) ``{
 
     /* Proxy dialog caption */
     string caption = _("Proxy configuration");
@@ -75,8 +76,12 @@ should be done directly without caching.</p>") +
 	`HSpacing(6)
     );
 
-    Wizard::SetContentsButtons(caption, contents, help,
-	    BackButtonLabel(), FinishButtonLabel());
+    if(standalone == true)
+	Wizard::SetContentsButtons(caption, contents, help,
+		BackButtonLabel(), FinishButtonLabel());
+    else
+	Wizard::SetContentsButtons(caption, contents, help,
+		BackButtonLabel(), OKButtonLabel());
 
     any ret = nil;
     while(true) {

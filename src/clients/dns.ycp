@@ -38,7 +38,7 @@ DNS::Read();
 Lan::Read();
 Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), FinishButtonLabel()));
 /* main ui function */
-any ret = DNSMainDialog();
+any ret = DNSMainDialog(true);
 y2debug("ret == %1", ret);
 
 if(ret == `next && DNS::modified) {

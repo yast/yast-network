@@ -16,14 +16,13 @@ module "Modem";
 textdomain "network";
 
 import "Firewall";
-import "Providers";
+import "Provider";
 import "Progress";
 import "Summary";
 
 include "network/complex.ycp";
-include "network/config.ycp";
+include "network/devices.ycp";
 include "network/hardware.ycp";
-include "network/ip.ycp";
 include "network/routines.ycp";
 include "network/runtime.ycp";
 
@@ -65,15 +64,15 @@ global boolean proposal_valid = false;
 list HARDWARE = [];
 
 /**
- * Config information
- * @see ReadConfig
+ * Devices information
+ * @see ReadDevices
  */
-map CONFIG = $[];
+map Devices = $[];
 
 /**
  * Deleted devices
  */
-list DELETED = [];
+list DeletedDevices = [];
 
 /**
  * Abort function
@@ -109,7 +108,7 @@ global define boolean Modified() ``{
  */
 global define boolean Read() ``{
 
-    // title for Modem reading current setup progress screen
+    /* Read dialog caption */
     string caption = _("Initializing modem configuration");
     integer steps = 4;
 
@@ -118,43 +117,42 @@ global define boolean Read() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-        // progress steps for the Modem reading current setup progress screen
-        // progress step 1/4
+        /* Progress step 1/4 */
         _("Detect devices"),
-        // progress step 2/4
+        /* Progress step 2/4 */
         _("Read current configuration"),
-        // progress step 3/4
-	    _("Read firewall settings"),
-        // progress step 4/4
+        /* Progress step 3/4 */
+	_("Read firewall settings"),
+        /* Progress step 4/4 */
         _("Read providers"),
     ], [], "");
 
     if(Abort()) return false;
-    // stage 1 in reading current Modem setup
+    /* Progress stage 1/4 */
     ProgressNextStage(_("Detecting modems"));
     ReadHardware("modem");
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 2 in reading current Modem setup
+    /* Progress stage 2/4 */
     ProgressNextStage(_("Reading current configuration"));
-    ReadConfig("ppp");
+    ReadDevices("ppp");
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 3 in reading current Modem setup
+    /* Progress stage 3/4 */
     ProgressNextStage(_("Reading firewall settings"));
     Firewall::Read();
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 4 in reading current Modem setup
+    /* Progress stage 4/4 */
     ProgressNextStage(_("Reading providers"));
-    Providers::Read("modem");
+    Provider::Read();
     sleep(sl);
 
     if(Abort()) return false;
-    // last stage in reading current Modem setup
+    /* Final progress stage */
     ProgressNextStage(_("Finished"));
     sleep(sl);
 
@@ -169,10 +167,10 @@ global define boolean Read() ``{
  */
 global define boolean Write() ``{
 
-    if(!modified && !Providers::Modified()) return true;
+    if(!modified && !Provider::Modified()) return true;
     y2milestone("Writing configuration");
 
-    // title for Modem writing current setup progress screen
+    /* Write dialog caption */
     string caption = _("Saving modem configuration");
     integer steps = 6;
 
@@ -181,56 +179,60 @@ global define boolean Write() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-        // progress steps for the Modem writing current setup progress screen
-        // progress step 1/5
+        /* Progress step 1/6 */
         _("Write configuration"),
-        // progress step 2/5
+        /* Progress step 2/6 */
         _("Write firewall settings"),
-        // progress step 3/5
+        /* Progress step 3/6 */
         _("Write providers"),
-        // progress step 5/6
+        /* Progress step 4/6 */
         _("Set up network services"),
-        // progress step 4/5
+        /* Progress step 5/5 */
         _("Set up smpppd"),
-        // progress step 6/6
+        /* Progress step 6/6 */
         _("Run KInternet"),
     ], [], "");
 
     if(Abort()) return false;
-    // stage 1 in writing current Modem setup
+    /* Progress stage 1/6 */
     ProgressNextStage(_("Writing configuration"));
-    WriteConfig();
+    WriteDevices();
     UpdateModemSymlink();
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 2 in writing current Modem setup
+    /* Progress stage 2/6 */
     ProgressNextStage(_("Writing firewall settings"));
     Firewall::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 3 in writing current Modem setup
+    /* Progress stage 3/6 */
     ProgressNextStage(_("Writing providers"));
-    Providers::Write();
+    Provider::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 4 in writing current Modem setup
+    /* Progress stage 4/6 */
     ProgressNextStage(_("Setting up network services"));
     EnableNetwork();
     sleep(sl);
 
     if(Abort()) return false;
-    // stage 5 in writing current Modem setup
+    /* Progress stage 5/6 */
     ProgressNextStage(_("Setting up smpppd(8)"));
     EnableSMPPPD();
     sleep(sl);
 
     if(Abort()) return false;
-    // last stage in writing current Modem setup
+    /* Progress stage 6/6 */
     ProgressNextStage(_("Running KInternet"));
     RunKInternet();
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Final progress stage */
+    ProgressNextStage(_("Finished"));
     sleep(sl);
 
     if(Abort()) return false;
@@ -238,18 +240,19 @@ global define boolean Write() ``{
 }
 
 /**
- * Add a new modem or edit existing (prepare before Commit)
+ * Select the given device
+ * @param dev device to select ("" for new device, default values)
  * @return true if success
  */
-global define boolean AddEdit(string dev) ``{
-    operation = nil;
+global define boolean Select(string dev) ``{
+
+    y2debug("dev=%1", dev);
     map devmap = $[];
 
     /* dev=="" -> Add */
     if(dev == "") {
 	type = "ppp";
 	device = GetFreeDevice(type);
-	operation = `add;
     }
     /* dev!="" -> Edit */
     else {
@@ -257,7 +260,7 @@ global define boolean AddEdit(string dev) ``{
 	integer num = device_num(dev);
 	string n = sformat("%1",num);
 
-	map typemap = lookup(CONFIG, typ, $[]);
+	map typemap = lookup(Devices, typ, $[]);
 	if(!haskey(typemap, n)) {
 	    y2error("Key not found: %1", dev);
 	    return false;
@@ -290,27 +293,48 @@ global define boolean AddEdit(string dev) ``{
     PPPDoptions = devmap["PPPD_OPTIONS"]:"";
 
     /* provider settings */
-    Providers::provShortName = devmap["PROVIDER"]:"";
-
-    //IsDefault = true;
-    //DefaultModem = "";
-    //Provider = devmap["PROVIDER"]:"";
+    Provider::Name = devmap["PROVIDER"]:"";
 
     return true;
 }
 
 /**
- * Delete a modem (prepare before Commit)
+ * Add a new device
  * @return true if success
  */
-global define boolean Delete(string dev) ``{
+global define boolean Add() ``{
     operation = nil;
-    string typ = device_type(dev);
-    integer num = device_num(dev);
+    if(Select("") != true) return false;
+    operation = `add;
+    return true;
+}
 
-    map typemap = lookup(CONFIG, typ, $[]);
+/**
+ * Edit the given device
+ * @param name device to edit
+ * @return true if success
+ */
+global define boolean Edit(any name) ``{
+    operation = nil;
+    if(Select(name) != true) return false;
+    operation = `edit;
+    return true;
+}
+
+
+/**
+ * Delete the given device
+ * @param name device to delete
+ * @return true if success
+ */
+global define boolean Delete(string name) ``{
+    operation = nil;
+    string typ = device_type(name);
+    integer num = device_num(name);
+
+    map typemap = Devices[typ]:$[];
     if(!haskey(typemap, sformat("%1",num))) {
-        y2error("Key not found: %1", dev);
+        y2error("Key not found: %1", name);
         return false;
     }
 
@@ -339,19 +363,16 @@ global define boolean Commit() ``{
 	    "DIALCOMMAND"	: PulseDial ? "ATDP" : "ATDT",
 	    "MODEM_DEVICE"	: Device,
 	    "DIALPREFIX"	: DialPrefix,
-	    "PROVIDER"		: Providers::provShortName,
-	    "PROVIDER_NAME"	: Providers::provLongName,
+	    "PROVIDER"		: Provider::Name,
+	    "PROVIDER_NAME"	: Provider::Provider["PROVIDER"]:"",
 	    "PPPD_OPTIONS"	: PPPDoptions,
 	];
 
-	if(operation == `add)
-	    ConfigAddEdit(type, device, newdev, true);
-	else
-	    ConfigAddEdit(type, device, newdev, false);
+	ChangeDevice(type, device, newdev, operation == `add);
     }
     else if(operation == `delete) {
-	ConfigDelete(type, device);
-	change(DELETED, type+device);
+	DeleteDevice(type, device);
+	change(DeletedDevices, type+device);
     }
     else {
 	y2error("Unknown operation: %1", operation);
@@ -364,19 +385,25 @@ global define boolean Commit() ``{
 }
 
 /**
+ * Import data
+ * @param settings settings to be imported
+ * @return true on success
  */
 global define boolean Import(map settings) ``{
-    Providers::Import(lookup(settings, "_PROVIDERS", $[]));
-    map blah = remove(settings, "_PROVIDERS");
-    CONFIG = eval(blah);
+    Devices = eval(settings["devices"]:$[]);
+    Provider::Import(settings["providers"]:$[]);
+    return true;
 }
 
 /**
+ * Export data
+ * @return dumped settings (later acceptable by Import())
  */
 global define map Export() ``{
-    map PROVIDERS = Providers::Export();
-    map blah = add(CONFIG, "_PROVIDERS", PROVIDERS);
-    return eval(blah);
+    return eval($[
+	"devices" : Devices,
+	"providers" : Provider::Export(),
+    ]);
 }
 
 /**
@@ -397,8 +424,10 @@ global define list Overview() ``{
 }
 
 /**
+ * Select the hardware component
+ * @param which index of the component
  */
-global define void Select(integer which) ``{
+global define void SelectHW(integer which) ``{
     SelectHardware(which);
 }
 

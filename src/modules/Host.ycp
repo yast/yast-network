@@ -145,6 +145,13 @@ global define list GetSystemHosts() ``{
     ];
 }
 
+/**
+ * Update hosts according to the current hostname
+ * @param hostname current hostname
+ * @param domain current domain name
+ * @param ips localhost IP addresses
+ * @return true if success
+ */
 global define boolean Update(string hostname, string domain, list ips) ``{
 
     string fqhostname = hostname;

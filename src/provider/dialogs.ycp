@@ -539,21 +539,5 @@ the password every time.</p>
     return ret;
 }
 
-if(false) {
-    Wizard::CreateDialog();
-    Provider::Read();
-    Provider::Name = "contactel_praha";
-    ProviderDialog("modem");
-    //ProviderDialog("dsl");
-}
-if(false) {
-    Wizard::CreateDialog();
-    Provider::Read();
-    Provider::Name = "provider0";
-    Provider::Provider = $[ "ENCAP":"rawip"];
-    ProviderDialog("modem");
-    ProviderDialog("isdn");
-}
-
 /* EOF */
 }

@@ -18,29 +18,25 @@ textdomain "network";
 y2milestone("----------------------------------------");
 y2milestone("DSL module started");
 
-//include "network/dsl/wizards.ycp";
-include "network/dsl/dialogs.ycp";
+include "network/dsl/wizards.ycp";
 
-/* T-DSL configuration? */
-boolean tonline = nil;
-
+/* is this proposal or not? */
+boolean propose = false;
 list args = WFM::Args();
 if(size(args) > 0) {
-    if(is(WFM::Args(0), path) && WFM::Args(0) == .tonline) {
-	y2milestone("Using T-Online mode");
-	tonline = true;
-    }
-    else if(is(WFM::Args(0), path) && WFM::Args(0) == .standard) {
-	y2milestone("Using standard mode");
-	tonline = false;
+    if(is(WFM::Args(0), path) && WFM::Args(0) == .propose) {
+        y2milestone("Using PROPOSE mode");
+        propose = true;
     }
     else
-	y2error("Bad argument for dsl: %1",WFM::Args(0));
+        y2error("Bad argument for modem: %1",WFM::Args(0));
 }
 
 /* main ui function */
-//any ret = DSLSequence();
-any ret = DSLSequence(tonline);
+any ret = nil;
+
+if(propose) ret = DSLAutoSequence();
+else ret = DSLSequence();
 y2debug("ret == %1", ret);
 
 /* Finish */

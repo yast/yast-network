@@ -66,6 +66,41 @@ global define boolean mapcheckkeys(map m, list keys) ``{
 }
 
 /**
+ * Convert options map $[var:val, ...] to string "var=val ..."
+ * @param m map to be converted
+ * @return converted map
+ */
+global define string map2string(map m) ``{
+    if(m == nil) return nil;
+
+    string ret = "";
+    maplist(string var, string val, m, ``{
+	ret = ret + sformat(" %1=%2", var, val);
+    });
+    return ret;
+}
+
+/**
+ * Convert string "var=val ..." to map $[val:var, ...]
+ * @param s string to be converted
+ * @return converted string
+ */
+global define string string2map(string s) ``{
+    if(s == nil) return nil;
+
+    map ret = $[];
+    maplist(string vals, splitstring(s, " "), ``{
+	list val = splitstring(vals, "=");
+	if(size(val) < 1 || val[0]:"" == "") return;
+	if(size(val) > 1)
+	    change(ret, val[0]:"", val[1]:"");
+	else
+	    change(ret, val[0]:"", "");
+    });
+    return ret;
+}
+
+/**
  * Abort function
  * @return blah blah lahjk
  */
@@ -109,6 +144,8 @@ global define void ProgressNextStage(string title) ``{
 global define void ChangeWidgetIfExists(term id, symbol param, any value) ``{
     if(UI::WidgetExists(id))
 	UI::ChangeWidget(id, param, value);
+    else
+	y2debug("Not changing: %1", id);
 }
 
 /**
@@ -122,7 +159,7 @@ global define void ChangeWidgetIfExists(term id, symbol param, any value) ``{
  */
 global define symbol Finished(boolean modified, string text, string run, list params) ``{
     if(!modified) return `next;
-    /* popup headline */
+    /* Popup headline */
     string head = _("Configuration has been successfully saved.");
     any ret = UI::YesNoHeadlinePopup(head, text);
     if(ret == true) CallModule(run, params);
@@ -285,6 +322,29 @@ global define string alias_name(string typ, integer num, integer anum) ``{
 	return nil;
     }
     return sformat("%1%2:%3", typ, num, anum);
+}
+
+/**
+ * Return real type of the device (incl. PCMCIA, USB, ...)
+ * @param type basic device type
+ * @param hotplug hot plug type
+ * @return real type
+ * @example RealType("eth", "usb") -> "eth-usb-"
+ */
+global define string RealType(string type, string hotplug) ``{
+
+    y2debug("type=%1", type);
+    if(type == "" || type == nil) {
+	y2error("Wrong type: %1", type);
+	return "eth";
+    }
+
+    if(hotplug == "" || hotplug == nil)
+	return type;
+
+    string realtype = type + "-" + hotplug + "-";
+    y2debug("realtype=%1", realtype);
+    return realtype;
 }
 
 /* EOF */

@@ -1,7 +1,8 @@
 WIP, not yet functional!
 
-- new devices manipulation
+- editing of hardware settings (#15062)
 - new hosts manipulation and editor
+- new devices manipulation
 - new providers handling
 - 2.7.0
 

@@ -16,9 +16,9 @@ import "Wizard";
 include "wizard/sequencer.ycp";
 
 include "network/routines.ycp";
-include "network/lan/manual.ycp";
 include "network/lan/address.ycp";
 include "network/lan/complex.ycp";
+include "network/lan/hardware.ycp";
 include "network/services/dns.ycp";
 include "network/services/routing.ycp";
 
@@ -98,10 +98,10 @@ global define symbol MainSequence() ``{
     map aliases = $[
 	"summary"	: ``(SummaryDialog()),
 	"overview"	: ``(OverviewDialog()),
-	"configure"	: [ ``(AddressSequence()), true ],
-	"other"		: [ ``(ManualSequence()), true ],
-	"add"		: [ ``(ManualSequence()), true ],
-	"edit"		: [ ``(AddressSequence()), true ],
+	"configure"	: [ ``(NetworkCardSequence("edit")), true ],
+	"other"		: [ ``(NetworkCardSequence("add")), true ],
+	"add"		: [ ``(NetworkCardSequence("add")), true ],
+	"edit"		: [ ``(NetworkCardSequence("edit")), true ],
 	"commit"	: [ ``(Commit()), true ],
     ];
 
@@ -146,42 +146,68 @@ global define symbol MainSequence() ``{
 
 /**
  * Configuration sequence
+ * @param action which workflow ("add"|"edit")
  * @return sequence result
  */
-global define symbol ManualSequence() ``{
+global define symbol NetworkCardSequence(string action) ``{
 
     map aliases = $[
-	"manual"	: ``(ManualDialog()),
-	"list"		: ``(ManualSelection()),
+	"hardware"	: ``(HardwareSequence()),
+	"address"	: ``(AddressSequence()),
+    ];
+
+    string ws_start = "hardware";
+    if(action == "edit") ws_start = "address";
+
+    map sequence = $[
+	"ws_start" : ws_start,
+	"hardware" : $[
+	    `abort	: `abort,
+	    `next	: "address",
+	],
+	"address" : $[
+	    `abort	: `abort,
+	    `hardware	: "hardware",
+	    `next	: `next,
+	],
+    ];
+
+    return WizardSequencer(aliases, sequence);
+}
+
+/**
+ * Configuration sequence
+ * @return sequence result
+ */
+global define symbol HardwareSequence() ``{
+
+    map aliases = $[
+	"hardware"	: ``(HardwareDialog()),
+	"list"		: ``(SelectionDialog()),
 	"wire"		: ``(WirelessDialog()),
 	"s390"		: ``(S390Dialog()),
-	"address"	: [ ``(AddressSequence()), true ],
     ];
 
     map sequence = $[
-	"ws_start"	: "manual",
-	"manual" : $[
+	"ws_start"	: "hardware",
+	"hardware" : $[
 	    `abort	: `abort,
 	    `list	: "list",
 	    `wire	: "wire",
 	    `s390	: "s390",
-	    `next	: "address",
+	    `next	: `next,
 	],
 	"wire" : $[
-	    `next	: "manual",
+	    `next	: "hardware",
 	    `abort	: `abort,
 	],
 	"s390" : $[
-	    `next	: "address",
+	    `next	: "hardware",
 	    `abort	: `abort,
 	],
 	"list" : $[
-	    `next	: "manual",
+	    `next	: "hardware",
 	    `abort	: `abort,
-	],
-	"address" : $[
-	    `abort	: `abort,
-	    `next	: `next,
 	],
     ];
 
@@ -196,9 +222,8 @@ global define symbol AddressSequence() ``{
 
     map aliases = $[
 	"address"	: ``(AddressDialog()),
-	"hostname"	: ``(DNSMainDialog()),
-	"routing"	: ``(RoutingMainDialog()),
-	"wire"		: ``(WirelessDialog()),
+	"hostname"	: ``(DNSMainDialog(false)),
+	"routing"	: ``(RoutingMainDialog(false)),
 	"commit"	: [ ``(Commit()), true ],
     ];
 
@@ -209,17 +234,13 @@ global define symbol AddressSequence() ``{
 	    `next	: "commit",
 	    `routing	: "routing",
 	    `hostname	: "hostname",
-	    `wire	: "wire",
+	    `hardware	: `hardware,
 	],
 	"routing" : $[
 	    `abort	: `abort,
 	    `next	: "address",
 	],
 	"hostname" : $[
-	    `abort	: `abort,
-	    `next	: "address",
-	],
-	"wire" : $[
 	    `abort	: `abort,
 	    `next	: "address",
 	],

@@ -275,13 +275,5 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 global define symbol ConnectionDetailsDialog() ``{
 }
 
-if(false) {
-Provider::Provider = $["PROVIDER":"AICOM, Havlickuv Brod"];
-Wizard::CreateDialog();
-//ConnectionDialog("modem");
-ConnectionDialog("isdn");
-//ConnectionDialog("dsl");
-}
-
 /* EOF */
 }
