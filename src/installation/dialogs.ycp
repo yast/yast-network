@@ -17,6 +17,7 @@ import "Internet";
 import "Label";
 import "Popup";
 import "Product";
+import "String";
 import "Wizard";
 
 include "network/routines.ycp";

@@ -621,7 +621,8 @@ add them manually.</p>");
 		`TextEntry(`id(`qeth_options), Label::Options (), Lan::qeth_options),
 		`VSpacing(1),
 		/* CheckBox label */
-		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA takeover")))
+		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA takeover"))),
+		`VSpacing(1)
 		), `HSpacing(2))),
 	    `HSpacing(6)
 	);
@@ -629,7 +630,7 @@ add them manually.</p>");
 	helptext = _("<p>Enter the <b>Port Name</b> for this interface (case-sensitive).</p>") +
 	/* S/390 dialog help: QETH Options */
 	_("<p>Enter any additional <b>Options</b> for this interface (separated by blanks)</p>") +
-	_("<p>Select <b>Enable IPA takeover</b> if IP address takeover should be enabled for this interface.<p>");
+	_("<p>Select <b>Enable IPA takeover</b> if IP address takeover should be enabled for this interface.</p>");
     }
 
     if(Lan::type == "hsi") {
@@ -642,13 +643,14 @@ add them manually.</p>");
 		`TextEntry(`id(`qeth_options), Label::Options (), Lan::qeth_options),
 		`VSpacing(1),
 		/* CheckBox label */
-		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA takeover")))
+		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA takeover"))),
+		`VSpacing(1)
 		), `HSpacing(2))),
 	    `HSpacing(6)
 	);
 	/* S/390 dialog help: QETH */
 	helptext = _("<p>Enter any additional <b>Options</b> for this interface (separated by blanks).</p>") +
-	_("<p>Select <b>Enable IPA takeover</b> if IP address takeover should be enabled for this interface.<p>");
+	_("<p>Select <b>Enable IPA takeover</b> if IP address takeover should be enabled for this interface.</p>");
     }
 
     if(Lan::type == "lcs") {

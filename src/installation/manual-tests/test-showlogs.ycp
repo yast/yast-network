@@ -1,3 +1,5 @@
+// Author: Arvin Schnell <arvin@suse.de>
+// $Id$
 {
     include "network/installation/dialogs.ycp";
 

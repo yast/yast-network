@@ -18,6 +18,7 @@ y2milestone("Remote proposal started");
 y2milestone("Arguments: %1", WFM::Args());
 
 import "Remote";
+import "Wizard";
 include "network/remote/dialogs.ycp";
 
 string func = (string) WFM::Args(0);
