@@ -34,8 +34,8 @@ Summary:	Network routines for installation
 
 %files
 %defattr(-,root,root)
-%dir @yncludedir@/network
-@yncludedir@/network/*
+@ybindir@/*
+@yncludedir@/network
 @clientdir@/*.ycp
 @moduledir@/*.ycp
 @configdir@/lan.y2cc

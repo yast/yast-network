@@ -15,6 +15,7 @@
     import "Mode";
     import "Product";
     import "Wizard";
+    import "Directory";
 
     include "ui/common_messages.ycp";
     include "ui/common_popups.ycp";
@@ -173,7 +174,7 @@ and correct the setting.</p>");
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Kernel Messages"),
 			     `filename : "messages" ]);
-	SCR::Execute (.target.bash, "/bin/cp /var/log/messages " +
+	SCR::Execute (.target.bash, Directory::ybindir + "/cut-messages > " +
 		      logdir + "/messages");
 
 	if (Internet::logfile != "") {
