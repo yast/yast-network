@@ -340,8 +340,10 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    }
 	    else if (type == "dummy") // #44582
 	    {
+		hwcfg = (string) UI::QueryWidget (`id (`hwcfg), `Value);
+
 		modul = "dummy";
-		options = "";
+		options = sformat ("-o dummy-%1", hwcfg);
 		UI::ChangeWidget(`id(`modul), `Value, modul);
 		UI::ChangeWidget(`id(`options), `Value, options);
 	    }
@@ -361,13 +363,13 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    /* FIXME: check_* */
 
 	    if(UI::WidgetExists(`id(`hwcfg))) {
-		string nm = (string) UI::QueryWidget(`id(`hwcfg), `Value);
-		if(Lan::operation == `add || nm != Lan::nm_name) {
-		    if(contains(NetworkModules::ListM(""), nm)) {
+		hwcfg = (string) UI::QueryWidget (`id (`hwcfg), `Value);
+		if (Lan::operation == `add || hwcfg != Lan::nm_name) {
+		    if (contains (NetworkModules::ListM(""), hwcfg)) {
+			UI::SetFocus (`id (`hwcfg));
 			/* Popup text */
 			Popup::Error(sformat(_("Hardware configuration %1 already exists.
-Choose a different one."), nm));
-			UI::SetFocus(`id(`hwcfg));
+Choose a different one."), hwcfg));
 			continue;
 		    }
 		}
