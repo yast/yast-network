@@ -143,6 +143,18 @@ global define boolean Fastest() ``{
  */
 global define boolean Start() ``{
 
+    if (type == "isdn")
+    {
+	if (SCR::Execute (.target.bash, "/etc/init.d/isdn status") != 0)
+	{
+	    if (SCR::Execute (.target.bash, "/etc/init.d/isdn start") != 0)
+	    {
+		y2error ("starting of isdn failed");
+		return false;
+	    }
+	}
+    }
+
     if (askpassword)
 	return SCR::Execute (.target.bash_input, "/sbin/ifup " + device, password) == 0;
     else
