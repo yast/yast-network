@@ -505,12 +505,13 @@ global define symbol WirelessDialog() ``{
 for wireless networking.</p>") +
 
     /* Wireless dialog help 2/7 */
-_("<p>The <b>Operating Mode</b> depends on the network topology. The mode can
-be Ad-hoc (network composed of only one cell without an access point), Managed
-(network composed of many cells with roaming or an access point), Master
-(the node is the synchronization master or acts as an access point), Repeater
-(the node forward packets on the air), Secondary (the node acts as a backup
-master or repeater), or Auto.</p>") +
+_("<p>The <b>Operating Mode</b> depends on the network topology. The mode
+can be <b>Ad-hoc</b> (peer-to-peer network without an access point),
+<b>Managed</b> (network managed by an access point, sometimes also
+called <i>Infrastructure Mode</i>), <b>Master</b> (the node is the
+synchronization master or acts as an access point), <b>Repeater</b>
+(the node forwards packets on the air), <b>Secondary</b> (the node acts
+as a backup master or repeater), or <b>Auto</b>.</p>") +
 
     /* Wireless dialog help 3/7 */
 _("<p>Set the <b>Network Name (ESSID)</b> used to identify cells that are
