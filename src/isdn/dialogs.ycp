@@ -1,0 +1,677 @@
+/**
+ * File:
+ *   include/network/isdn/dialogs.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   ISDN configuration dialogs
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+textdomain "network";
+
+import "Wizard";
+import "ISDN.ycp";
+
+include "ui/wizard_dialog.ycp";
+include "ui/common_popups.ycp";
+
+/* DATA */
+
+//Old code: map TmpConfiguration=$[];
+
+
+/* DIALOG */
+
+/**
+ * Dialog for ISDN Parameters
+ * @param Detected detected card
+ * @return any user input
+ */
+
+global define symbol Dialog1(symbol Detected) ``{
+
+    /* PREPARE VARIABLES */
+    integer I4L_PROTOCOL = ISDN::Protocol;		// FIXME: default value
+    string I4L_MODUL_OPTIONS = ISDN::ModulOptions;
+
+    // FIXME: reading ISDN DB
+    list ISDN_devices = SCR(`Read(.probe.ihw_data));
+    integer id = -1;
+    integer CurrentCardIndex = nil;
+    integer Default_TYPE = tointeger(lookup(Card, "I4L_TYPE", lookup(select(ISDN_devices, 0, $[]), "type", 0)));	// FIXME: default value
+    integer Default_SUBTYPE = tointeger(lookup(Card, "I4L_SUBTYPE", lookup(select(ISDN_devices, 0, $[]), "subtype", 0)));	// FIXME: default value
+    list CardList = maplist(`e, ISDN_devices,
+    ``{
+	id = id + 1;
+	boolean Tmp = ((lookup(e, "type", 0) == Default_TYPE) &&		// FIXME: default value
+		 (lookup(e, "subtype", 0) == Default_SUBTYPE));			// FIXME: default value
+	if (Tmp) CurrentCardIndex = id;
+	return `item(`id(id), lookup(e, "name", "default"), Tmp);		// FIXME: default value
+    });
+
+
+    /* DIALOG TEXTS */
+
+    string caption = _("ISDN low-level configuration");
+    string helptext = "";
+
+    if (Detected != `Detected) {
+	// helptext text 1/4
+	helptext = helptext + _("<p>Please select ISDN card from the list.</p>");
+
+	// helptext text 2/4
+	helptext = helptext + _("<p>You can pass some extra option values to the kernel module.</p>");
+    }
+
+    if (Detected != `Detected || Detected == `DetectedISA) {
+	// helptext text 3/4
+	helptext = helptext + _("<p>IO address, IRQ, and MemBase are card hardware attributes which usually should be
+correctly detected for newer card models. If you have an older card model, check with your technical manual
+or contact your salesman.</p>");
+    }
+
+    // helptext text 4/4
+    helptext = helptext + _("<p><b>ISDN protocol: </b>In most cases, the protocol is Euro-ISDN, especially
+if your ISDN card is connected directly to the public ISDN network.
+1TR6 is only rarely used in older German private networks on internal ports.
+In the United States, NI1 is usually used. Because it is still experimental, 
+contact the suse-isdn@suse.com mail list
+for more information.</p>
+");
+
+    /* DIALOG CONTENTS */
+
+    term contents = nil;
+
+    term ISDN_protocol = `VSquash(`Frame(_("Selection of ISDN protocol"),
+					 `RadioButtonGroup(`id(`protocol),
+							   `VBox(
+								   `Left(`RadioButton(`id(2),
+										      _("&Euro-ISDN (EDSS1)"),
+										      I4L_PROTOCOL == 2)),
+								   `Left(`RadioButton(`id(1), _("1TR&6"), I4L_PROTOCOL == 1)),
+								   `Left(`RadioButton(`id(3), _("&Leased line"),
+										      I4L_PROTOCOL == 3)),
+								   `Left(`RadioButton(`id(4), _("NI&1"), I4L_PROTOCOL == 4)),
+								   `VStretch()))));
+
+    if (Detected == `Detected)
+    {
+	contents = `HBox(`HSpacing(5),
+		   ISDN_protocol,
+		   `HSpacing(5)
+		   );
+    }
+    else
+    {
+	if (Detected == `DetectedISA)
+	{
+	    string Header = sformat(_("Options for '%1' card"), lookup(select(ISDN_devices, CurrentCardIndex, $[]), "name", "default"));	// FIXME: default value
+	    contents = `HBox(`HSpacing(5),
+		   `VBox(
+			 `VSquash(`Frame(Header,
+					 `HBox(
+					       `HSpacing(0.7),
+					       `VBox(
+						     `VSpacing(0.2),
+//						     WizardISDNParameters_Subroutine(CurrentCardIndex),		// FIXME: undefined function
+						     `VSpacing(0.3)),
+					       `HSpacing(0.7)))),
+
+			 `VSpacing(),
+			 ISDN_protocol
+			 ),
+		   `HSpacing(5));
+	}
+	else
+	{
+	    contents = `HBox(`HSpacing(5),
+		   `VBox(
+			 `VSquash(`Frame(_("Select your ISDN card"),
+					 `HBox(`HSpacing(),
+					 `VBox(`HBox(
+						     `HWeight(1, `SelectionBox(`id(`Card), `opt(`notify), "",  CardList)),
+						     `HSpacing()//,
+//						     `ReplacePoint(`id(`Repl),
+//								    `HSquash(WizardISDNParameters_Subroutine(CurrentCardIndex)))  // FIXME: undefined function
+						),
+					       `TextEntry(`id(`options),
+							  _("ISDN module o&ptions (only needed in special cases)"), I4L_MODUL_OPTIONS)),
+					       `HSpacing()))),
+			 `VSpacing(0.3),
+			 ISDN_protocol
+			 ),
+		   `HSpacing(5));
+	}
+    }
+
+    /* DIALOG PREPARE */
+    Wizard::SetContents(caption, contents, helptext, true, true);
+
+    /* MAIN CYCLE */
+    symbol ret = nil;
+    while (true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if (UI::ReallyAbortPopup(true))
+		break;
+	    else
+		continue;
+	}
+	if (ret == `Card) {
+	    Card = filter(`k, `v, Card, ``(k!="I4L_IO" && k!="I4L_IRQ" && k!="I4L_MEMBASE"));
+//	    UI::ReplaceWidget(`id(`Repl), WizardISDNParameters_Subroutine(UI::QueryWidget(`id(`Card), `CurrentItem)));	// FIXME: undefined function
+	}
+	else if (ret == `back) {
+	    break;
+	}
+	else if (ret == `next) {
+	    /* check_* */
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+
+    /* UPDATE VARIABLES */
+
+  if (ret == `next) {
+    ISDN::I4L_PROTOCOL = sformat("%1", UI::QueryWidget(`id(`protocol), `CurrentButton));
+
+    if (Detected != `Detected) {
+      ISDN::I4L_IO = UI::QueryWidget(`id(`IO), `Value);
+      ISDN::I4L_IRQ = UI::QueryWidget(`id(`IRQ), `Value);
+      ISDN::I4L_MEMBASE = UI::QueryWidget(`id(`MEMBASE), `Value);
+      ISDN::I4L_IO0 = "";
+      ISDN::I4L_IO1 = "";
+      ISDN::I4L_IO2 = "";
+      ISDN::I4L_HISAXDEBUG = "";
+      ISDN::I4L_EAZMAP = "";
+
+      if (Detected != `DetectedISA) {
+
+	// FIXME: read info from database
+	map SelectedCard = select(ISDN_devices, UI::QueryWidget(`id(`Card), `CurrentItem), $[]);
+	ISDN::I4L_TYPE = sformat("%1", lookup(SelectedCard, "type", "default"));		// FIXME: default value
+	ISDN::I4L_SUBTYPE = sformat("%1", lookup(SelectedCard, "subtype", "default"));		// FIXME: default value
+	ISDN::ModulOptions = I4L_MODUL_OPTIONS;
+
+// Old code:        ProviderISDN = add(ProviderISDN, "pcmcia", lookup (SelectedCard, "class", 0) == 4);	// FIXME: default value
+      }
+    }
+  }
+
+    return ret;
+}
+
+
+
+
+/* DIALOG */
+
+/**
+ * Dialog for ISDN Provider
+ * @return any user input
+ */
+
+global define symbol Dialog2() ``{
+
+    /* PREPARE VARIABLES */
+
+    string I4L_LOCALMSN = ISDN::LocalMSN;
+    string I4L_DIALMODE = ISDN::DialMode;
+    string I4L_IDLETIME = ISDN::IdleTime;
+    string I4L_CHARGEHUP = ISDN::ChargeHUP;
+    boolean Starting_ISDN = ISDN::StartAtBoot;
+
+    boolean FirewallChecked = ISDN::Firewall;
+    string I4L_ENCAP = ISDN::Encap;
+
+/* Old code:
+    map Address = lookup(ProviderISDN, "address", $[]);
+    map IfConf = $[]; // DecodeIfConf(lookup(Address, "ifconf", ""));  FIXME: undefined function DecodeIfConf
+*/
+
+    string Local_IP = ISDN::Local_IP;
+    string Remote_IP = ISDN::Remote_IP;
+
+/*    boolean Dynamic_IP = lookup(IfConf, "Dynamic_IP", false);
+    string NetDev = lookup(ProviderISDN, "netdev", "");
+
+    if (Local_IP == "InvalidIP" || Remote_IP == "InvalidIP") {
+	if (I4L_ENCAP == "syncppp") {
+	integer Number = tointeger(substring(lookup(ProviderISDN, "netdev", ""), 4));
+	Local_IP = sformat("192.168.%1.1", Number);
+	Remote_IP = sformat("192.168.%1.99", Number);
+	Address = EncodeIfConf(Local_IP, Remote_IP, Dynamic_IP);
+	ProviderISDN = add(ProviderISDN, "address", Address);
+	TmpConfiguration = add(TmpConfiguration, "ProviderISDN", ProviderISDN);
+	}
+    }
+*/
+    /* DIALOG TEXTS */
+
+    string caption = _("ISDN connection parameters");
+    string helptext = "";
+
+    // help text 1/7
+  helptext = helptext + _("<p>My phone number --  As your own telephone number (MSN),
+put in your telephone number (without area code) if your ISDN card is connected
+directly to the phone company-provided socket. If it is connected to a PBX,
+put in the MSN stored in the PBX (e.g., your phone extension or
+the last digit or digits of your phone extension) . If this fails, try
+using 0, which normally means the default MSN is actually used.</p>
+");
+
+  // help text 2/7
+  helptext = helptext + _("<p><b>Dial mode -- Off</b> means no connections at all are possible.</p>");
+
+  // help text 3/7
+  helptext = helptext + _("<p><b>Manual</b> -- only outgoing connections made manually are possible.
+Incoming connections can be made. Incoming callback connections are not possible.
+If you select <b>Manually</b> in the dial mode, you can build or
+close a connection using the tools <b>kimon</b> or <b>kinternet</b>
+or, as user root, with the commands
+         <br>isdnctrl dial ippp0  <br>isdnctrl hangup ippp0</p>
+");
+
+  // help text 4/7
+  helptext = helptext + _("<p><b>Automatic</b> -- when necessary, a connection will be made
+automatically. This is also the only mode where incoming callback calls will succeed
+(connections that you call back).  It will also hang up after the specified hup-timeout.</p>
+");
+
+  // help text 5/7
+  helptext = helptext + _("<p>Automatic hang-up -- you can set that
+  the line will be hung up automatically after 'IDLE timeout'. The checkbox Chargehup tells that the line stays connected
+  after 'IDLE timeout' until immediately before the next counting pulse
+  (this only works if your ISDN provider transmits the charge-info during and after the connection)</p>
+");
+
+  // help text 5/7
+  helptext = helptext + _("<p>If you want the ISDN service to be initialized
+on start-up, press the corresponding button. If not,
+you will have to start the service manually by issuing the
+following commands (while logged in as 'root'):
+<tt>
+ <br> rci4l_hardware start
+ <br> rci4l start
+ <br> rcroute start
+ <br>  to start ISDN.</tt></p>
+");
+
+  // help text 5/7
+  helptext = helptext + _("<p>Selecting <b>activate firewall</b> will block all incoming
+connections. Choosing this option will make dial-up connections to
+the Internet safe from attacks from the outside.</p>
+");
+
+    /* DIALOG CONTENTS */
+
+  textdomain "general";
+  term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), sformat(_("Activate %1"), "fire&wall"), FirewallChecked));
+  textdomain "network";
+
+  integer idle = 0;
+
+  if (I4L_IDLETIME != "off")
+  {
+      idle = tointeger(I4L_IDLETIME);
+  }
+
+  term contents = `HBox(
+		      `HSpacing(7),
+		      `VBox(
+			    `HBox(
+				  `TextEntry(`id(`localmsn), _("&My phone number"), I4L_LOCALMSN),
+				  `ComboBox(`id(`dialmode), _("&Dial mode"),
+					    [
+					     `item(`id("auto"), _("Automatic"), I4L_DIALMODE == "auto"),
+					     `item(`id("manual"), _("Manual"), I4L_DIALMODE == "manual"),
+					     `item(`id("off"), _("Off"), I4L_DIALMODE == "off")])),
+			    `VSpacing(0.5),
+			    `Frame(_("Automatic hang-up"),
+				   `HBox(
+					 `HSpacing(),
+					 `HBox(
+					       `VBox(`Left(`HSquash(`IntField(`id(`idletime), _("&IDLE timeout"), 0, 100000,
+									      idle))),
+						     `VSpacing(0.4)),
+					       `Left(`CheckBox(`id(`chargehup), _("Charge&HUP"), I4L_CHARGEHUP == "on"))),
+					 `HSpacing())),
+			    `Left(`CheckBox(`id(`starting_isdn), _("&Start ISDN during system boot"), Starting_ISDN)),
+			    FirewallCheckbox,
+			    `VSpacing(0.3),
+			    `PushButton(`id(`ipsettings), _("IP se&ttings")),
+			    `PushButton(`id(`callbacksettings), _("&Callback settings"))),
+		      `HSpacing(7));
+
+    /* DIALOG PREPARE */
+    Wizard::SetContents(caption, contents, helptext, true, true);
+
+    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), ((I4L_ENCAP == "rawip") ? OKButtonLabel() : FinishButtonLabel())));
+
+
+    /* MAIN CYCLE */
+    symbol ret = nil;
+    while (true) {
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if (UI::ReallyAbortPopup(true))
+		break;
+	    else
+		continue;
+	}
+	else if (ret == `back) {
+	    break;
+	}
+	else if (ret == `next) {
+	    if (!checkIP(Local_IP) || !checkIP(Remote_IP)) {
+		UI::MessagePopup(_("You have to fill in Local and Remote IP addresses correctly"));
+		continue;
+	    }
+	    else
+	    {
+		break;
+	    }
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+
+    /* UPDATE VARIABLES */
+
+    if (ret == `next || ret == `ipsettings || ret == `callbacksettings) {
+	ISDN::LocalMSN = UI::QueryWidget(`id(`localmsn), `Value);
+	ISDN::DialMode = UI::QueryWidget(`id(`dialmode), `Value);
+	ISDN::StartAtBoot = UI::QueryWidget(`id(`starting_isdn), `Value);
+	ISDN::IdleTime = sformat("%1", UI::QueryWidget(`id(`idletime), `Value));
+
+	ISDN::Firewall = UI::QueryWidget(`id(`Firewall), `Value);
+
+	if (UI::QueryWidget(`id(`chargehup), `Value))
+	{
+	  ISDN::ChargeHUP = "on";
+	}
+	else
+	{
+	  ISDN::ChargeHUP = "off";
+	}
+    }
+
+    if (ret == `next && I4L_ENCAP == "rawip")
+    {
+	return `routedns;
+    }
+
+    return ret;
+}
+
+
+
+/* DIALOG */
+
+/**
+ * Dialog for ISDN IP settings
+ * @return any user input
+ */
+
+global define symbol Dialog3() ``{
+
+    /* PREPARE VARIABLES */
+
+    string Local_IP = ISDN::Local_IP;
+    string Remote_IP = ISDN::Remote_IP;
+    boolean Dynamic_IP = ISDN::Dynamic_IP;
+    boolean Dynamic_DNS = ISDN::Dynamic_DNS;
+    string I4L_ENCAP = ISDN::Encap;
+
+    /* DIALOG TEXTS and  DIALOG CONTENTS */
+
+    string caption = _("ISDN IP address settings");
+
+    // help text 1/3
+    string helptext = _("<p>Please fill in the IP addresses. If you have syncppp connection,
+normally keep the preselected values 192.168.x.99 and 192.168.x.1.
+In the case of rawip, obtain these numbers from your provider.
+If you have a local ethernet, check that the IP adresses
+are not in the same subnet as your local ethernet. </p>
+");
+
+    // help text 2/3
+    helptext = helptext + _("<p>Check the button for <b>dynamic IP address</b> if you plan to use
+diald (demand dialing daemon), where the outgoing address is unknown at the moment the link is going up.</p>");
+
+    if (Local_IP == "InvalidIP") Local_IP = "";
+    if (Remote_IP == "InvalidIP") Remote_IP = "";
+
+    term contents = nil;
+
+    if (lookup(lookup(ProviderISDN, "extra", $[]), "I4L_ENCAP", "default") == "rawip")		// FIXME: default value
+    {
+	contents = `HSquash(`VBox(
+			    `Frame(_("IP address settings"),
+				   `HBox(
+					 `HSpacing(),
+					 `VBox(
+					       `VSpacing(),
+					       `Left(`TextEntry(`id(`IP_local), _("&Local IP address of your machine"),
+								Local_IP)),
+					       `Left(`TextEntry(`id(`IP_remote), _("&Remote IP address"), Remote_IP)),
+					       `VSpacing()),
+					 `HSpacing())),
+			    `Left(`CheckBox(`id(`dynamic_ip), _("&Dynamic IP address"), Dynamic_IP))));
+    }
+    else
+    {
+        // help text 3/3
+	helptext = helptext + _("<p>Check the button for <b>dynamic DNS assignment</b>
+if you want to change your domain name servers after the connection is up. (This replace your static DNS
+configuraton with obtained DNS server IP addresses) Today, almost all providers
+use <b>Dynamic DNS assignment</b>.</p>
+");
+	contents = `HSquash(`VBox(
+			    `Frame(_("IP address settings"),
+				   `HBox(
+					 `HSpacing(),
+					 `VBox(
+                                             `Left(`TextEntry(`id(`IP_local), _("&Local IP address of your machine"),
+								Local_IP)),
+                                             `Left(`TextEntry(`id(`IP_remote), _("&Remote IP address"), Remote_IP)),
+					       `VSpacing()),
+					 `HSpacing())),
+			    `VSpacing(),
+			    `Left(`CheckBox(`id(`dynamic_ip), _("&Dynamic IP address"), Dynamic_IP)),
+			    `VSpacing(),
+			    `Left(`CheckBox(`id(`dynamic_dns), `opt(`notify), _("Dynamic DN&S assignment"), Dynamic_DNS))));
+    }
+
+
+    /* DIALOG PREPARE */
+    Wizard::SetContents(caption, contents, helptext, true, true);
+
+    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), OKButtonLabel()));
+
+    /* MAIN CYCLE */
+    symbol ret = nil;
+    while (true) {
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if (UI::ReallyAbortPopup(true))
+		break;
+	    else
+		continue;
+	}
+	else if (ret == `back) {
+	    break;
+	}
+	else if (ret == `next) {
+	    Local_IP = UI::QueryWidget(`id(`IP_local), `Value);
+	    Remote_IP = UI::QueryWidget(`id(`IP_remote), `Value);
+
+	    if (!checkIP(Local_IP) || !checkIP(Remote_IP)) {
+		UI::MessagePopup(_("You have to fill in Local and Remote IP addresses correctly"));
+		continue;
+	    }
+	    else
+	    {
+		break;
+	    }
+	}
+	else if (ret == `dynamic_dns)
+	{
+	    Dynamic_DNS = UI::QueryWidget(`id(`dynamic_dns), `Value);
+	    string button_label = Dynamic_DNS ? Wizard::OKButtonLabel : Wizard::NextButtonLabel();
+	    UI::ChangeWidget (`id (`next), `Label, button_label);
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+
+    /* UPDATE VARIABLES */
+
+    if (ret == `next)
+    {
+	ISDN::Dynamic_IP = UI::QueryWidget(`id(`dynamic_ip), `Value);
+
+	if (ISDN::Encap == "syncppp")
+	{
+	    ISDN::Dynamic_DNS = UI::QueryWidget(`id(`dynamic_dns), `Value);
+	}
+
+	ISDN::Local_IP = UI::QueryWidget(`id(`IP_local), `Value);
+	ISDN::Remote_IP = UI::QueryWidget(`id(`IP_remote), `Value);
+    }
+
+    if (ret == `next && ISDN::Dynamic_DNS == "0")
+    {
+// Old code:	TmpConfiguration = add (TmpConfiguration, "Static_DNS", true);
+	return `staticdns;
+    }
+
+    return ret;
+}
+
+
+
+/* DIALOG */
+
+/**
+ * Dialog for ISDN callback settings
+ * @return any user input
+ */
+
+global define symbol Dialog4() ``{
+
+    /* PREPARE VARIABLES */
+    string I4L_CALLBACK = ISDN::Callback;
+
+    /* DIALOG TEXTS */
+
+    string caption = _("ISDN callback settings");
+
+    // help text 1/3
+    string helptext = _("<p>If callback mode is off,  calls  are handled normally without special processing.</p>");
+
+    // helptext text 2/3
+    helptext = helptext + _("<p>If callback mode is server, after getting an incoming call, a callback is triggered.</p>");
+
+    // helptext text 3/3
+    helptext = helptext + _("If callback mode is client, the local system does the initial call then waits for callback of the remote machine.");
+
+
+    /* DIALOG CONTENTS */
+
+    term contents = `HVSquash(`Frame(_("Callback functions"),
+				 `RadioButtonGroup(`id(`callback),
+						   `HBox(
+							 `HSpacing(0.5),
+							 `VBox(
+							       `Left(`RadioButton(`id("off"), _("Callbac&k Off"),
+										  I4L_CALLBACK == "off")),
+							       `Left(`RadioButton(`id("in"),
+										  _("Callback &Server"),
+										  I4L_CALLBACK == "in")),
+							       `Left(`RadioButton(`id("out"),
+									_("Callback &Client"),
+										  I4L_CALLBACK == "out")))))));
+    /* DIALOG PREPARE */
+    Wizard::SetContents(caption, contents, helptext, true, true);
+
+    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), OKButtonLabel()));
+
+    /* MAIN CYCLE */
+    symbol ret = nil;
+    while (true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if (UI::ReallyAbortPopup(true))
+		break;
+	    else
+		continue;
+	}
+	else if (ret == `back) {
+	    break;
+	}
+	else if (ret == `next) {
+	    /* check_* */
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+
+    /* UPDATE VARIABLES */
+    if (ret == `next) {
+	ISDN::Callback = UI::QueryWidget(`id(`callback), `CurrentButton);
+    }
+
+    return ret;
+}
+
+/* DIALOG TESTING */
+Wizard::CreateDialog();
+
+Dialog1(`Detected);
+Dialog1(`DetectedISA);
+Dialog1(`something_different);
+Dialog2();
+Dialog3();
+Dialog4();
+
+UI::CloseDialog();
+
+/* EOF */
+}

@@ -1,0 +1,583 @@
+/**
+ * File:
+ *   include/network/modem/dialogs.ycp
+ *
+ * Package:
+ *   Configuration of network
+ *
+ * Summary:
+ *   Modem configuration dialogs
+ *
+ * Authors:
+ *   Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+textdomain "network";
+
+import "Wizard";
+import "Modem";
+
+include "ui/wizard_dialog.ycp";
+include "ui/common_popups.ycp";
+
+/* DATA */
+
+// Old code: map TmpConfiguration=$[];
+
+
+/* DIALOG */
+
+/**
+ * Dialog for Modem parameters
+ * @param Type detected or not
+ * @return symbol user input
+ */
+
+global define symbol Dialog1(symbol Type) ``{
+
+    /* PREPARE VARIABLES */
+
+    string Name = Modem::Name;
+    string DialPrefix = Modem::DialPrefix;
+    string Device = Modem::Device;
+    boolean PulseDial = Modem::PulseDial;
+    boolean Speaker = Modem::Speaker;
+    boolean Carrier = Modem::Carrier;
+
+    list Devices = maplist(`e, toset(add([
+		    "/dev/modem", "/dev/ttyS0", "/dev/ttyS1", "/dev/ttyS2","/dev/ttyS3",
+		    "/dev/ttyACM0", "/dev/ttyACM1", "/dev/ttyACM2", "/dev/ttyACM3"], Device)),
+	    ``(`item(`id(e), e, e == Device)));
+
+
+/* Old code:
+    map Modem = lookup(TmpConfiguration, "Modem", $[]);
+    map Provider = lookup(TmpConfiguration, "Provider", $[]);
+    string Name = lookup(Modem, "YaST2 Section", "random_name" /*GenerateRandomModemName() );		// FIXME: function GenerateRandomModemName()
+    string DialPrefix = lookup(Modem, "Dial Prefix", "");
+    string Device = lookup(Modem, "Modem", "/dev/modem");
+    boolean PulseDial = (filterchars(lookup(Modem, "Dial Command", ""), "P") == "P");
+    boolean Speaker = (lookup(Modem, "Init8","") == "ATM0");
+    boolean Carrier = (lookup(Modem, "Init9","") == "ATX3");
+
+    list Devices = maplist(`e, toset(add([
+		    "/dev/modem", "/dev/ttyS0", "/dev/ttyS1", "/dev/ttyS2","/dev/ttyS3",
+		    "/dev/ttyACM0", "/dev/ttyACM1", "/dev/ttyACM2", "/dev/ttyACM3"], Device)),
+	    ``(`item(`id(e), e, e == Device)));
+*/
+
+
+    /* DIALOG TEXTS */
+
+    string caption = _("Modem parameters");
+
+    // help text 1/6
+    string helptext = _("<p>Please enter all modem configuration values.</p>");
+    // help text 2/6
+    helptext = helptext + _("<P>The field <b>Device</b> says to which port your modem is attached (ttyS0, ttyS1, etc., refers to serial
+ports and usually corresponds to COM1, COM2, etc., in DOS/Windows. ttyACM0, ttyACM1 refers to USB ports)</p>");
+    // help text 3/6
+    helptext = helptext + _("<p><b>Modem name</b> is an arbitrary string to identify your modem.</p>");
+    // help text 4/6
+    helptext = helptext + _("<P>If you are on a PBX, you probably have to enter a <B>Dial prefix</B>. Often this is <I>9</I>.</P>");
+    // help text 5/6
+    helptext = helptext + _("<p>Choose <b>Dial mode</b> according to your phone link.
+Most telephone companies use <I>tone dial</I> as the <B>Dial mode</B>. Check the additional check boxes if you want
+to turn on your modem speaker (<i>Speaker on</i>) and if you want your modem to wait until it detects dial tone (<i>Detect Dial tone</i>).</p>
+");
+    // help text 6/6
+    helptext = helptext + _("<p>By pressing <b>Details</b>, configure the Baud Rate and the Modem Initialization strings.</p>");
+
+
+    /* DIALOG CONTENTS */
+
+    term DeviceTerm = `ComboBox(`id(`Device), `opt(`hstretch, `editable), _("De&vice"), Devices);
+    if (Type == `Detected)
+	DeviceTerm = `Label(`opt(`outputField), Device);
+
+    term contents = `HSquash(`VBox(
+				    `VSpacing(),
+				    DeviceTerm,
+				    `VSpacing(0.5),
+				    `HBox(
+					  `TextEntry(`id(`ModemName), _("&Modem name"), Name),
+					  `TextEntry(`id(`DialPrefix), _("Dial prefi&x (if needed)"), DialPrefix)),
+				    `VSpacing(0.8),
+				    `HBox(
+					 `Frame(_("Dial mode"),
+						`VBox(
+						      `VSpacing(0.3),
+						      `HBox(
+							    `HSpacing(0.3),
+							    `RadioButtonGroup(`id(`DialMode),
+									      `VBox(
+										    `Left(`RadioButton(`id(`Tone),
+												       _("&Tone dialing"),
+												       !PulseDial)),
+										    `Left(`RadioButton(`id(`Pulse),
+												       _("&Pulse dialing"),
+												       PulseDial)))),
+							    `HSpacing(0.3)),
+						      `VSpacing(0.3))),
+					 `HSpacing(1),
+					 `Frame(_("Special settings"),
+						`HBox(
+						      `HSpacing(0.3),
+						      `VBox(
+							    `VSpacing(0.3),
+							    `Left(`CheckBox(`id(`Speaker), _("&Speaker on"),
+									    !Speaker)),
+							    `Left(`CheckBox(`id(`CarrierDetect), _("D&etect Dial Tone"),
+									    !Carrier)),
+							    `VSpacing(0.3)),
+						      `HSpacing(0.3)))),
+				    `VStretch(),
+				    `PushButton(`id(`Details), _("&Details")),
+				    `VSpacing()));
+
+    /* DIALOG PREPARE */
+
+    Wizard::SetContents(caption, contents, helptext, true, true);
+
+
+    /* MAIN CYCLE */
+
+    symbol ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(UI::ReallyAbortPopup(true))
+		break;
+	    else
+		continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+
+	    Name = UI::QueryWidget(`id(`ModemName), `Value);
+
+	    if (Name == "" || findfirstof(Name, " \t") != nil) {
+		UI::MessagePopup(_("Modem Name cannot contains spaces"));
+		ret = nil;
+		continue;
+	    }
+
+	    if (false/*!IsModemNameUniq(Name)*/) {		// FIXME: function IsModemNameUniq(Name)
+		UI::MessagePopup(_("This modem name already exist"));
+		continue;
+	    }
+
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+
+    /* UPDATE VARIABLES */
+
+    if (ret == `next || ret == `Details)
+    {
+	  Modem::Name = UI::QueryWidget(`id(`ModemName), `Value);
+	  Modem::DialPrefix = UI::QueryWidget(`id(`DialPrefix), `Value);
+
+	  if (Type != `Detected)
+	  {
+	    Modem::Device = UI::QueryWidget(`id(`Device), `Value);
+	  }
+
+	  Modem::PulseDial = UI::QueryWidget(`id(`Pulse), `Value);
+	  Modem::Speaker = UI::QueryWidget(`id(`Speaker), `Value);
+	  Modem::Carrier = UI::QueryWidget(`id(`CarrierDetect), `Value);
+    }
+
+    return ret;
+}
+
+
+/* DIALOG */
+
+/**
+ * Dialog for modem parameters details
+ * @return any user input
+ */
+
+global define symbol Dialog2()
+``{
+
+    /* PREPARE VARIABLES */
+    integer BaudRate = Modem::BaudRate;
+    string Init1 = Modem::Init1;
+    string Init2 = Modem::Init2;
+    string Init3 = Modem::Init3;
+
+
+    /* DIALOG TEXTS */
+
+    string caption = _("Modem parameters details");
+
+    //help text 1/2
+    string helptext = _("<p>The item BaudRate is a transmission speed that tells how
+many bits per second your computer communicates with your modem.</p>
+");
+    //help text 2/2
+    helptext = helptext + _("<p>You should find all the relevant information about <b>init strings</b> in your modem manual.</p>");
+
+
+    /* DIALOG CONTENTS */
+
+    list BaudRates = maplist(`e, toset(add([1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200], BaudRate)),
+			 ``(`item(`id(sformat("%1", e)), sformat("%1", e), e==BaudRate)));
+    term contents = `HBox(
+		      `HSpacing(3),
+		      `VBox(
+			    `ComboBox(`id(`Baud), `opt(`hstretch, `editable), _("Baud&Rate"), BaudRates),
+			    `VSpacing(),
+			    `Frame(_("Modem initialization strings"),
+				   `HBox(
+					 `HSpacing(),
+					 `VBox(
+					       `TextEntry(`id(`Init1), _("Init &1"), Init1),
+					       `TextEntry(`id(`Init2), _("Init &2"), Init2),
+					       `TextEntry(`id(`Init3), _("Init &3"), Init3),
+					       `VSpacing(0.5)),
+					 `HSpacing())),
+			    `VSpacing(3)),
+		      `HSpacing(3));
+
+
+    /* DIALOG PREPARE */
+
+    Wizard::SetContents(caption, contents, helptext, true, true);
+
+    Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), OKButtonLabel()));
+
+    /* MAIN CYCLE */
+
+    symbol ret = nil;
+    while (true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if (ret == `abort || ret == `cancel)
+	{
+	    if(UI::ReallyAbortPopup(true))
+		break;
+	    else
+		continue;
+	}
+	else if (ret == `back)
+	{
+	    break;
+	}
+	else if (ret == `next)
+	{
+	    /* check_* */
+	    break;
+	}
+	else
+	{
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+
+    if (ret == `next) {
+	Modem::BaudRate = tointeger(UI::QueryWidget(`id(`Baud), `Value));
+	Modem::Init1 = UI::QueryWidget(`id(`Init1), `Value);
+	Modem::Init2 = UI::QueryWidget(`id(`Init2), `Value);
+	Modem::Init3 = UI::QueryWidget(`id(`Init3), `Value);
+    }
+
+    return ret;
+}
+
+
+
+// FIXME: are followning dialogs for modem or provider configuration??
+
+
+/* DIALOG */
+
+/**
+ * Dialog for provider parameters
+ * @return symbol user input
+ */
+
+global define symbol Dialog3() ``{
+
+    /* PREPARE VARIABLES */
+    string Provider = Modem::Provider;
+    boolean IsDefault = Modem::IsDefault;
+    boolean DialOnDemand = Modem::DialOnDemand;
+
+    string DefaultModem = Modem::DefaultModem;
+    string DNS1 = Modem::DNS1;
+    string DNS2 = Modem::DNS2;
+
+    list DefaultModemList = [ ];
+
+// FIXME: list of modems
+/* Old code:
+    list Tmp = lookup(lookup($[] // Old code: configuration //, "modems", $[]), "hwmodems", []);
+    if (DefaultModem != "") Tmp=add(Tmp, $["YaST2 Section": DefaultModem]);
+    list DefaultModemList = toset(maplist(`e, Tmp, ``{
+	string s = lookup(e, "YaST2 Section", nil);		// FIXME: default value ???
+	return `item(`id(s), s, s == DefaultModem);
+    }));
+*/
+
+    boolean FirewallChecked = Modem::Firewall;
+
+
+
+    /* DIALOG TEXTS */
+
+    // help text 1/3
+    string helptext = _("<p>If you have more than one modem, you can set one as the default for this provider.</p>");
+    // help text 2/3
+    helptext = helptext + _("<p>If you plan to use more than one provider, you can set one as <b>default</b>.
+(This one will be used if you do not explicitly use another.)</p>
+");
+    // help text 3/3
+    helptext = helptext + _("<p>Selecting <b>activate firewall</b> will block all incoming
+connections. Choosing this option will make dial-up connections to
+the Internet safe from attacks from the outside.</p>
+");
+    string caption = _("Connection parameters");
+
+    /* DIALOG CONTENTS */
+
+    textdomain "general";
+    term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), sformat(_("A&ctivate %1..."), "firewall"), FirewallChecked));
+    textdomain "lan";
+
+    term contents = `HBox(
+		      `HSpacing(6),
+		      `VBox(
+			    `Left(`HSquash(`Label(_("Profile for selected provider:")))),
+			    `Label(`opt(`outputField), Provider),
+			    `VSpacing(0.2),
+			    `ComboBox(`id(`DefaultModem), `opt(`hstretch),  _("Default modem for this &provider"),
+				      DefaultModemList),
+			    `VSpacing(0.2),
+                            `HBox (
+                                `VBox (
+                                    `Left(`CheckBox(`id(`IsDefault),
+                                                    _("Set this provider as default for the program `&wvdial'"), IsDefault)),
+                                    FirewallCheckbox,
+                                    `Left(`CheckBox (`id(`DialOnDemand), `opt (`notify),
+                                                     _("Dial on d&emand"), DialOnDemand))
+                                    )
+                                ),
+			    `VSpacing(0.2),
+
+                            `HBox(
+                                `HSpacing (4),
+                                `Frame(`id (`NameServers), _("Name servers"),
+                                       `VBox (
+                                           `TextEntry (`id (`DNS1), _("&First"), DNS1),
+                                           `TextEntry (`id (`DNS2), _("&Second"), DNS2)
+                                           )
+                                    )),
+			    `Bottom(`PushButton(`id(`Details), _("&Details")))),
+		      `HSpacing(6));
+    /* DIALOG PREPARE */
+    Wizard::SetContents(caption, contents, helptext, true, true);
+
+    UI::ChangeWidget(`id (`NameServers), `Enabled, DialOnDemand);
+    UI::ChangeWidget(`id (`DNS1), `Enabled, DialOnDemand);
+    UI::ChangeWidget(`id (`DNS2), `Enabled, DialOnDemand);
+
+    /* MAIN CYCLE */
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if (ret == `abort || ret == `cancel) {
+	    if(UI::ReallyAbortPopup(true))
+		break;
+	    else
+		continue;
+	}
+	else if (ret == `back) {
+	    break;
+	}
+	else if (ret == `next) {
+
+	    /*
+	    if (DialOnDemand && !(checkIP (DNS1) && (size (DNS2) == 0 || checkIP (DNS2))))
+	    {
+		UI::ErrorPopup(_("Wrong IP address!"));
+		continue;
+	    }
+	    */
+
+	    break;
+	}
+	else if (ret == `DialOnDemand)
+	{
+	    DialOnDemand = UI::QueryWidget(`id(`DialOnDemand), `Value);
+	    UI::ChangeWidget(`id(`NameServers), `Enabled, DialOnDemand);
+	    UI::ChangeWidget(`id(`DNS1), `Enabled, DialOnDemand);
+	    UI::ChangeWidget(`id(`DNS2), `Enabled, DialOnDemand);
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+
+    /* UPDATE VARIABLES */
+    if (ret == `next || ret == `Details) {
+        Modem::DefaultModem = UI::QueryWidget(`id(`DefaultModem), `Value);
+	Modem::DNS1 = UI::QueryWidget(`id(`DNS1), `Value);
+	Modem::DNS2 = UI::QueryWidget(`id(`DNS2), `Value);
+	Modem::DialOnDemand = UI::QueryWidget(`id(`DialOnDemand), `Value);
+	Modem::IsDefault = UI::QueryWidget(`id(`IsDefault), `Value);
+	Modem::Firewall = UI::QueryWidget(`id(`Firewall), `Value);
+    }
+
+
+/*  if (ret==`next && lookup(Provider, "Auto DNS", "1")!="1")
+    return `dns;*/
+
+    return ret;
+}
+
+
+
+/* DIALOG */
+
+/**
+ * Dialog with details for provider
+ * @return symbol user input
+ */
+
+global define symbol Dialog4() ``{
+
+    /* PREPARE VARIABLES */
+
+    boolean AutoReconnect = Modem::AutoReconnect;
+    boolean AutoDNS = Modem::AutoDNS;
+    string IdleSeconds = Modem::IdleSeconds;
+
+    string help = _("<p>Check the buttons for reestablishing connection and modifying DNS according to your wish.</p>");
+
+    list seconds = [ "30", "60", "90", "120", "150", "180", "240", "300", "360", "480", "600" ];
+
+    if (!contains(seconds, IdleSeconds))
+    {
+	seconds = add(seconds, IdleSeconds);
+    }
+
+    /* DIALOG TEXTS */
+
+    string caption = _("Connection parameters details");
+    string helptext = _("...");
+
+    /* DIALOG CONTENTS */
+
+    term contents = `HBox(
+		      `HSpacing(6),
+		      `Frame(_("Other settings"),
+		       `HBox(
+			     `HSpacing(0.4),
+			     `VBox(
+				   `VSpacing(0.4),
+				   `Left(`CheckBox(`id(`AutoReconnect),
+						   _("&Reconnect when the connection is lost"),
+						   AutoReconnect)),
+				   `Left(`CheckBox(`id(`AutoDNS), _("&Modify DNS when connected"),
+						   AutoDNS)),
+				   `Left(`ComboBox(`id(`IdleSeconds), `opt(`editable),
+								   _("&Disconnect after (seconds)"),
+						   maplist(`e, seconds,
+							   ``(`item(`id(e), e, e == IdleSeconds))))),
+				   `VSpacing(0.4)),
+			     `HSpacing(0.4))),
+		      `HSpacing(6));
+
+    /* DIALOG PREPARE */
+    Wizard::SetContents(caption, contents, helptext, true, true);
+
+    /* MAIN CYCLE */
+    symbol ret = nil;
+    while (true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if (ret == `abort || ret == `cancel)
+	{
+	    if (UI::ReallyAbortPopup(true))
+		break;
+	    else
+		continue;
+	}
+	else if (ret == `back)
+	{
+	    break;
+	}
+	else if (ret == `next)
+	{
+	    IdleSeconds = UI::QueryWidget(`id(`IdleSeconds), `Value);
+
+	    if (IdleSeconds == "")
+	    {
+		UI::MessagePopup(_("You have to set idle seconds field"));
+		continue;
+	    }
+	    else
+	    {
+		break;
+	    }
+	}
+	else
+	{
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+
+    /* UPDATE VARIABLES */
+    if (ret == `next) {
+	Modem::AutoReconnect = UI::QueryWidget(`id(`AutoReconnect), `Value) ? "1" : "0";
+	Modem::AutoDNS = UI::QueryWidget(`id(`AutoDNS), `Value) ? "1" : "0";
+	Modem::IdleSeconds = UI::QueryWidget(`id(`IdleSeconds), `Value);
+    }
+
+    return ret;
+}
+
+
+/* DIALOGS TESTING */
+Wizard::CreateDialog();
+
+Dialog1(`Detected);
+Dialog2();
+Dialog3();
+Dialog4();
+
+UI::CloseDialog();
+
+/* EOF */
+}
