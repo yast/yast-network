@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Sep  8 16:42:53 CEST 2004 - mvidner@suse.cz
+
+- LAN: STARTMODE="manual" if not specified but "auto"
+  for new configurations (#44804).
+- 2.10.16
+
+-------------------------------------------------------------------
 Mon Sep  6 17:29:58 CEST 2004 - mvidner@suse.cz
 
 - Added STARTMODE=ifplugd.

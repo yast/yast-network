@@ -582,11 +582,14 @@ global define list FreeAliases(string type, integer num) {
 global define boolean Select(string dev) {
 
     y2debug("dev=%1", dev);
-    map devmap  = $[];
+    // defaults for a new device
+    map devmap = $[
+	"STARTMODE": "auto",
+	"NETMASK": (Detection::result["NETMASK"]:"255.255.255.0"), // #31369
+	];
 
     /* dev=="" -> Add */
     if(dev == "") {
-
 	type = "eth";
 	device = NetworkDevices::GetFreeDevice(type);
 
@@ -619,9 +622,9 @@ global define boolean Select(string dev) {
 
     /* address options */
     bootproto = devmap["BOOTPROTO"]:"static";
-    ipaddr = devmap["IPADDR"]:""; // FIXME: #31369 (Detection::result["IPADDR"]:"");
+    ipaddr = devmap["IPADDR"]:"";
     remoteip = devmap["REMOTE_IPADDR"]:"";
-    netmask = devmap["NETMASK"]:(Detection::result["NETMASK"]:"255.255.255.0");
+    netmask = devmap["NETMASK"]:"";
 
     mtu = devmap["MTU"]:"";
     startmode = devmap["STARTMODE"]:"manual";

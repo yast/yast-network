@@ -299,6 +299,7 @@ global define boolean Select(string dev) {
     y2debug("dev=%1", dev);
     // defaults for a new device
     map devmap = $[
+	"STARTMODE": "manual",	// see also #44804
 	"USERCONTROL": "yes",
 	];
 
