@@ -673,7 +673,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 	    y2debug("proto: %1", protocol);
 
 	    if (DriverCnt >1) {
-		CurrentDrvIndex = tointeger((string) UI::QueryWidget(`id(`DrvBox), `Value));
+		CurrentDrvIndex = (integer) UI::QueryWidget(`id(`DrvBox), `Value);
 	    }
 	    cur_card["sel_drv"] = CurrentDrvIndex;
 	    Default_TYPE = get_i4ltype(cur_card);

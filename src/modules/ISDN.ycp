@@ -765,18 +765,12 @@ global define boolean Commit() ``{
     } else if (operation == `addif || operation == `editif) {
 
 	interface["PROVIDER"] = provider_file;
-	if(operation == `addif)
-	    Provider::Commit();
 	ChangeDevice(type, device, interface, operation == `addif);
 	modified_if = true;
 
-    } else if(operation == `addprov || operation == `editprov) {
+    // } else if(operation == `addprov || operation == `editprov) {
 
-	Provider::Commit();
-	/* [msvec] Why is interface changed after changing provider? */
-	interface["PROVIDER"] = provider_file;
-	ChangeDevice(type, device, interface, operation == `addprov);
-	modified_if = true;
+	// handled in Provider module
 
     } else if(operation == `testdev) {
 
@@ -837,13 +831,13 @@ global define list Summary(boolean split) ``{
  */
 global define list OverviewDev() ``{
     Devs = Devices;
-    return filter(list i, (list<list>)BuildOverview(), ``(issubstring(i[0, 0]:"","contr")));
+    return filter(term i, (list<term>)BuildOverview(), ``(issubstring(i[0, 0]:"","contr")));
     //return BuildOverview("contr");
 }
 
 global define list OverviewIf() ``{
     Devs = Devices;
-    return filter(list i, (list<list>)BuildOverview(), ``(issubstring(i[0, 0]:"","net")));
+    return filter(term i, (list<term>)BuildOverview(), ``(issubstring(i[0, 0]:"","net")));
     //return BuildOverview("net");
 }
 

@@ -338,12 +338,13 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
         else if(ret == `Edit || ret == `Table) {
 	    ret = Provider_or_IF("edit");
 	    if (ret == `provider) {
-		string dev = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
-		if(dev == nil) {
+		string prov = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
+		if(prov == nil) {
 		    y2error("Empty device during Edit");
 		    continue;
 		}
-		Provider::Edit(dev);
+		ISDN::type = "net";
+		Provider::Edit(prov);
 		ISDN::operation = `editprov;
 		ret = `Editprov;
 	    } else {
