@@ -1,0 +1,61 @@
+/**
+ * File:	routes.scr
+ * Summary:	Agent for /etc/sysconfig/network/routes
+ * Author:	Michal Svec <msvec@suse.cz>
+ * Access:	read / write
+ * See:		sysconfig package
+ *
+ * General syntax:
+ *     10.10.0.0	0.0.0.0		255.255.0.0	eth0
+ *     default		10.10.0.8	0.0.0.0		eth0
+ *     ...
+ *
+ *   Read(.routes)
+ *   -> [
+ *     $[
+ *	"destination":"10.10.0.0",
+ *      "device":"eth0",
+ *      "gateway":"0.0.0.0",
+ *      "netmask":"255.255.0.0"
+ *    ],
+ *    $[
+ *	"destination":"default",
+ *	"gateway":"10.10.0.8"
+ *    ],
+ *  ...
+ *  ]
+ *
+ * $Id$
+ *
+ * <p>Reads/writes <tt>/etc/sysconfig/network/routes</tt>. For more details
+ * see its own documentation.</p>
+ *
+ * Returns/Takes a <b>list of maps</b>. Each map (list-entry) corresponds
+ * with one entry in the file. Keys for the maps are: "destination", "gateway",
+ * "netmask", "device"
+ *
+ * <p><b>Warning!</b> The additional parameters to route are not supported
+ * by this agent (for details see routes(5)).
+ *
+ */
+.routes
+
+`ag_anyagent(
+	Description (
+	    ``(File("/etc/sysconfig/network/routes")),	// real file name
+	    "#\n",				// comment
+	    false,				// read-only?
+	    ``(List(
+		    Tuple(
+			`destination(String("^ \t\n")),
+			Whitespace(),
+			`gateway(String("^ \t\n")),
+			Whitespace(),
+			`netmask(String("^ \t\n")),
+			Whitespace(),
+			`device(String("^ \t\n"))
+		    ),
+		    "\n"
+	    ))
+	)
+)

@@ -20,6 +20,7 @@
 textdomain "network";
 
 import "Lan";
+
 import "Wizard";
 import "Wizard_hw";
 

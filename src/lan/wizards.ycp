@@ -29,6 +29,9 @@ include "network/lan/manual.ycp";
 include "network/lan/address.ycp";
 include "network/lan/dialogs.ycp";
 
+include "network/services/dns.ycp";
+include "network/services/routing.ycp";
+
 /**
  * Whole configuration of network
  * @return sequence result
@@ -154,9 +157,8 @@ global define symbol ManualSequence() ``{
 
     map aliases = $[
 	"manual"	: ``(ManualDialog()),
-	"address"	: ``(AddressDialog()),
 	"list"		: ``(ManualSelection()),
-	"commit"	: [ ``(Commit()), true ],
+	"address"	: [ ``(AddressSequence()), true ],
     ];
 
     map sequence = $[
@@ -172,9 +174,6 @@ global define symbol ManualSequence() ``{
 	],
 	"address" : $[
 	    `abort	: `abort,
-	    `next	: "commit",
-	],
-	"commit" : $[
 	    `next	: `next,
 	],
     ];
@@ -190,6 +189,8 @@ global define symbol AddressSequence() ``{
 
     map aliases = $[
 	"address"	: ``(AddressDialog()),
+	"hostname"	: ``(DNSMainDialog()),
+	"routing"	: ``(RoutingMainDialog()),
 	"commit"	: [ ``(Commit()), true ],
     ];
 
@@ -198,6 +199,14 @@ global define symbol AddressSequence() ``{
 	"address" : $[
 	    `abort	: `abort,
 	    `next	: "commit",
+	    `routing	: "routing",
+	    `hostname	: "hostname",
+	],
+	"routing" : $[
+	    `next	: "address",
+	],
+	"hostname" : $[
+	    `next	: "address",
 	],
 	"commit" : $[
 	    `next	: `next,

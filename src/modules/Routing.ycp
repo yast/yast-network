@@ -17,12 +17,13 @@
 
 {
 
+module "Routing";
 textdomain "network";
 
 /**
  * All routes
  */
-global list route_conf = [];
+global list routes = [];
 
 /**
  * Read routing settings
@@ -31,10 +32,10 @@ global list route_conf = [];
 global define boolean Read() ``{
 
     /* read route.conf */
-    if(SCR::Read(.target.size,"/etc/route.conf") != -1)
-	route_conf = SCR::Read(.tmp.route_conf);
+    if(SCR::Read(.target.size, "/etc/route.conf") != -1)
+	routes = SCR::Read(.routes);
 
-    y2debug("route_conf=%1",route_conf);
+    y2debug("route_conf=%1", routes);
     return true;
 }
 
@@ -45,25 +46,25 @@ global define boolean Read() ``{
 global define boolean Write() ``{
 
     /* at first stop the running routes */
-    SCR::Execute(.target.bash, "/etc/init.d/route stop");
+    //SCR::Execute(.target.bash, "/etc/init.d/route stop");
 
     /* create if not exists, otherwise backup */
-    if(SCR::Read(.target.size,"/etc/route.conf") == -1)
+    if(SCR::Read(.target.size, "/etc/route.conf") == -1)
 	SCR::Execute(.target.bash, "/bin/touch /etc/route.conf");
     else
 	SCR::Execute(.target.bash, "/bin/cp /etc/route.conf /etc/route.conf.YaST2save");
 
     /* workaround bug [#4476] */
-    if(route_list == []) {
+    if(routes == []) {
 	SCR::Execute(.target.bash, "/bin/cp /dev/null /etc/route.conf");
 	return true;
     }
 
     /* update the route.conf */
-    any ret = SCR::Write(.tmp.route_conf, route_conf);
+    any ret = SCR::Write(.routes, routes);
 
     /* and finally set up the new routes */
-    SCR::Execute(.target.bash, "/etc/init.d/route start");
+    //SCR::Execute(.target.bash, "/etc/init.d/route start");
 
     return ret == true;
 }

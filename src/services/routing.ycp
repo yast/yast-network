@@ -29,10 +29,9 @@ include "ui/wizard_dialog.ycp";
 
 /**
  * Main routing dialog
- * @param settings routing map
  * @return symbol dialog result
  */
-global define symbol RoutingMainDialog(map settings) ``{
+global define symbol RoutingMainDialog() ``{
 
     string caption = _("Routing configuration");
 
@@ -50,7 +49,7 @@ global define symbol RoutingMainDialog(map settings) ``{
     string defgw = "";
     string defgwdev = "";
 
-    list route_conf = Routing::route_conf;
+    list route_conf = Routing::routes;
 
     /* make ui items from the routes list */
     term item = nil;
@@ -89,7 +88,7 @@ global define symbol RoutingMainDialog(map settings) ``{
 	`VStretch()),
 	`HSpacing(5));
 
-    Wizard::CreateDialog();
+    //Wizard::CreateDialog();
     Wizard::SetContents(caption,contents,help,true,true);
 
     UI::ChangeWidget(`id(`table), `Items, table_items);
@@ -198,11 +197,11 @@ global define symbol RoutingMainDialog(map settings) ``{
 
     }
 
-    Routing::route_conf = route_conf;
+    Routing::routes = route_conf;
     y2debug("table_items=%1",table_items);
     y2debug("route_conf=%1",route_conf);
 
-    UI::CloseDialog();
+    //UI::CloseDialog();
     return ret;
 }
 
@@ -238,13 +237,13 @@ global define term RoutingEditDialog(integer id, term entry, list devs) ``{
 	route = `item(`id(id));
 	string val = UI::QueryWidget(`id(`destination), `Value);
 	// FIXME if(check_*(val)) error(); continue;
-	change(route, val);
+	route = add(route, val);
 	val = UI::QueryWidget(`id(`gateway), `Value);
-	change(route, val);
+	route = add(route, val);
 	val = UI::QueryWidget(`id(`netmask), `Value);
-	change(route, val);
+	route = add(route, val);
 	val = UI::QueryWidget(`id(`device), `Value);
-	change(route, val);
+	route = add(route, val);
 	break;
     }
 
@@ -252,6 +251,10 @@ global define term RoutingEditDialog(integer id, term entry, list devs) ``{
     if(ret != `ok) return nil;
     return route;
 }
+
+//Routing::Read();
+//RoutingMainDialog();
+
 
 /* EOF */
 }

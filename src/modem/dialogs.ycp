@@ -362,9 +362,7 @@ the Internet safe from attacks from the outside.</p>
 
     /* DIALOG CONTENTS */
 
-    textdomain "general";
     term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), sformat(_("A&ctivate %1..."), "firewall"), FirewallChecked));
-    textdomain "lan";
 
     term contents = `HBox(
 		      `HSpacing(6),

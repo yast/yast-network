@@ -150,6 +150,7 @@ global define boolean WriteConfig() ``{
 		SCR::Write(topath(p+"NETWORK"), nil);
 		SCR::Write(topath(p+"BROADCAST"), nil);
 	    }
+	    /* FIXME write other items */
 	});
     });
 
@@ -226,8 +227,7 @@ global define string ProtoStatus(string device, string proto, string addr) ``{
     if(proto == "" || proto == "static")
 	return sformat(_("Configured as %1 with address %2"), device, addr);
     else
-	return sformat(_("Configured as %1 with %2"), device, proto);
-    /* toupper */
+	return sformat(_("Configured as %1 with %2"), device, toupper(proto));
 }
 
 /**
@@ -321,7 +321,7 @@ global define list CreateOverview(string type) ``{
 	string dev = sformat("%1%2", type, k);
 	string ip = lookup(v, "BOOTPROTO", "static");
 	if(ip == "" || ip == "static") ip = lookup(v, "IPADDR", "");
-	/* toupper */
+	else ip = toupper(ip);
 	return `item(`id(dev), k, DeviceType(type), dev, /*"active?",*/ ip/*, "?", "?"*/);
     });
 

@@ -17,7 +17,7 @@
 
 {
 
-textdomain "lan";
+textdomain "network";
 
 import "DNS";
 import "Wizard";
@@ -151,6 +151,9 @@ global define DNSMainDialog() ``{
 
     return ret;
 }
+
+//DNS::Read();
+//DNSMainDialog();
 
 /* EOF */
 }

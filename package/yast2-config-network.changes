@@ -1,4 +1,11 @@
+-------------------------------------------------------------------
+Mon Jan 14 18:54:07 CET 2002 - msvec@suse.cz
+
+- preliminary DNS dialog
+- routing configuration functional
+- use toupper, merge and remove builtins
 - preliminary version of modem and ISDN dialogs
+- added agents for routing and DNS
 - 2.5.1
 
 -------------------------------------------------------------------

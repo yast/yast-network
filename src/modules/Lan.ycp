@@ -22,6 +22,9 @@
 
 module "Lan";
 textdomain "network";
+
+import "DNS";
+import "Routing";
 import "Progress";
 
 include "network/config.ycp";
@@ -84,6 +87,9 @@ list DELETED = [];
  */
 boolean modified = false;
 
+/**
+ * Which operation is pending?
+ */
 symbol operation = nil;
 
 /*------------------*/
@@ -105,7 +111,7 @@ global define boolean Modified() ``{
 global define boolean Read() ``{
 
     string caption = _("Initializing network configuration");
-    integer steps = 4;
+    integer steps = 6;
 
     /* FIXME */
     integer sl = 0; //1000;
@@ -114,6 +120,8 @@ global define boolean Read() ``{
     Progress::New(caption, " ", steps, [
 	_("Detect devices"),
 	_("Read current configuration"),
+	_("Read routing configuration"),
+	_("Read hostname and DNS configuration"),
 	_("Read installation information"),
 	_("Detect current status"),
     ], [], "");
@@ -126,6 +134,16 @@ global define boolean Read() ``{
     if(Abort()) return false;
     ProgressNextStage(_("Reading current configuration"));
     ReadConfig("eth|tr");
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Reading routing configuration"));
+    Routing::Read();
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Reading hostname and DNS configuration"));
+    DNS::Read();
     sleep(sl);
 
     if(Abort()) return false;
@@ -153,7 +171,7 @@ global define boolean Read() ``{
 global define boolean Write() ``{
 
     string caption = _("Saving network configuration");
-    integer steps = 5;
+    integer steps = 7;
 
     /* FIXME */
     integer sl = 1000;
@@ -163,13 +181,15 @@ global define boolean Write() ``{
 	_("Stop network"),
 	_("Write configuration"),
 	_("Write drivers information"),
+	_("Write routing configuration"),
+	_("Write hostname and DNS configuration"),
 	_("Run SuSEconfig"),
 	_("Start network"),
     ], [], "");
 
     if(Abort()) return false;
     ProgressNextStage(_("Stopping network"));
-    //StopNetwork();
+    StopNetwork();
     sleep(sl);
 
     if(Abort()) return false;
@@ -183,13 +203,23 @@ global define boolean Write() ``{
     sleep(sl);
 
     if(Abort()) return false;
+    ProgressNextStage(_("Writing routing configuration"));
+    Routing::Write();
+    sleep(sl);
+
+    if(Abort()) return false;
+    ProgressNextStage(_("Writing hostname and DNS configuration"));
+    //DNS::Write();
+    sleep(sl);
+
+    if(Abort()) return false;
     ProgressNextStage(_("Running SuSEconfig"));
     RunSuSEconfig();
     sleep(sl);
 
     if(Abort()) return false;
     ProgressNextStage(_("Starting network"));
-    //StartNetwork();
+    StartNetwork();
     sleep(sl);
 
     if(Abort()) return false;
@@ -198,6 +228,14 @@ global define boolean Write() ``{
 
     if(Abort()) return false;
     return true;
+}
+
+global define boolean StopNetwork() ``{
+    return SCR::Execute(.target.bash, "/etc/init.d/network stop");
+}
+
+global define boolean StartNetwork() ``{
+    return SCR::Execute(.target.bash, "/etc/init.d/network start");
 }
 
 /**
@@ -265,7 +303,7 @@ global define list Summary() ``{
 /**
  */
 global define list Overview() ``{
-    return union(CreateOverview("eth"), CreateOverview("tr"));
+    return merge(CreateOverview("eth"), CreateOverview("tr"));
 }
 
 /*-------------------*/

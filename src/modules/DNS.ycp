@@ -17,12 +17,13 @@
 
 {
 
+module "DNS";
 textdomain "network";
 
 global string hostname = ""; //blah";
 global string domain = ""; //blum.cz";
-global list nameservers = []; //"ns1","ns2"];
-global list searchlist = []; //"s1","s2"];
+global list nameservers = []; //"ns1", "ns2"];
+global list searchlist = []; //"s1", "s2"];
 global boolean dhcp_hostname = false;
 
 boolean has_dhcp = true;
@@ -34,13 +35,15 @@ boolean has_dhcp = true;
 global define boolean Read() ``{
 
     /* set hostname via dhcp? */
-    dhcp_hostname = false;
-    if(tolower(SCR::Read(.rc.dhcpcd.DHCLIENT_SET_HOSTNAME)) == "yes")
-	dhcp_hostname = true;
+    string dhcp = "";
+    dhcp = SCR::Read(.sysconfig.dhcp.DHCLIENT_SET_HOSTNAME);
+    if(dhcp == nil) dhcp = "";
+    y2debug("dhcp=%1",dhcp);
+    dhcp_hostname = (tolower(dhcp) == "yes") ? true : false;
 
     /* install.inf from linuxrc */
     map install_inf = $[];
-    if(SCR::Read(.target.size,"/etc/install.inf") != -1)
+    if(SCR::Read(.target.size, "/etc/install.inf") != -1)
 	install_inf = SCR(`Read(.etc.install_inf));
 
     /* any dhcp device? */
@@ -63,10 +66,10 @@ global define boolean Read() ``{
     */
 
     /* name servers and search list */
-    list resolvlist = SCR::Read(.resolver.search);
+    list resolvlist = SCR::Read(.etc.resolv_conf.search);
     if(resolvlist != nil) searchlist = resolvlist;
 
-    resolvlist = SCR::Read(.resolver.nameserver);
+    resolvlist = SCR::Read(.etc.resolv_conf.nameserver);
     if(resolvlist == nil) {
 	if(size(lookup(install_inf, "nameserver", "")) > 0)
 	    change(nameserver, (lookup(install_inf, "nameserver", "")));
@@ -75,12 +78,12 @@ global define boolean Read() ``{
 	nameservers = resolvlist;
 
     /* host name and domain */
-    string fqhostname = SCR::Read(.rc.system.FQHOSTNAME);
+    string fqhostname = ""; //SCR::Read(.sysconfig.network.FQHOSTNAME);
     if(fqhostname != "") {
 	integer dot = findfirstof(fqhostname, ".");
 	if(dot != nil) {
-	    hostname = substring(fqhostname,0,dot);
-	    domain = substring(fqhostname,dot+1);
+	    hostname = substring(fqhostname, 0, dot);
+	    domain = substring(fqhostname, dot+1);
 	}
 	else
 	    hostname = fqhostname;
@@ -90,12 +93,31 @@ global define boolean Read() ``{
 	hostname = lookup(install_inf, "machinename", "linux");
 	domain = lookup(install_inf, "domain", "local");
     }
+
+    return true;
 }
 
 /**
  */
-global define Write() ``{
-    return false;
+global define boolean Write() ``{
+
+    string fqhostname = hostname;
+    if(domain != "") fqhostname = fqhostname + "." + domain;
+
+    /* set hostname via dhcp? */
+    SCR::Write(.sysconfig.dhcp.DHCLIENT_SET_HOSTNAME, dhcp_hostname?"yes":"no");
+
+    if(!dhcp_hostname) {
+	/* write hostname */
+	SCR::Write(.sysconfig.network.FQHOSTNAME, fqhostname);
+	SCR::Execute(.target.bash, "/sbin/SuSEconfig --quick --nonewpackage --module hostname");
+    }
+
+    SCR::Write(.etc.resolv_conf.search, searchlist);
+    SCR::Write(.etc.resolv_conf.nameserver, nameservers);
+    SCR::Write(.etc.resolv_conf, nil);
+
+    return true;
 }
 
 /* EOF */

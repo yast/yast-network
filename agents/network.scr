@@ -1,6 +1,6 @@
 /**
  * File:	network.scr
- * Summary:	SCR agent for /etc/sysconfig/network/ifcfg-*
+ * Summary:	Agent for /etc/sysconfig/network/ifcfg-*
  * Author:	Michal Svec <msvec@suse.cz>
  * Access:	read / write
  * See:		sysconfig package
