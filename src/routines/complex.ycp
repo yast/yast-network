@@ -30,7 +30,7 @@ define string HardwareName(list Hardware, string unq);
  * @param split split configured and unconfigured?
  * @return [ configured, unconfigured ] if split, [ summary ] otherwise
  */
-define list BuildSummary(list Hardware, boolean split) ``{
+define list BuildSummary(list Hardware, boolean split) {
 
     y2debug("Devs=%1", Devs);
     y2debug("Hardware=%1", Hardware);
@@ -41,8 +41,8 @@ define list BuildSummary(list Hardware, boolean split) ``{
     list unconfigured = [];
 
     /* build a list of configured devices */
-    maplist(string devtype, map devsmap, Devs, ``{
-	maplist(string devnum, map devmap, devsmap, ``{
+    maplist(string devtype, map devsmap, Devs, {
+	maplist(string devnum, map devmap, devsmap, {
 
 	    /* main device summary */
 	    string unq = devmap["UNIQUE"]:"";
@@ -55,7 +55,7 @@ define list BuildSummary(list Hardware, boolean split) ``{
 	    /* aliases summary */
 	    map aliasee = devmap["_aliases"]:$[];
 	    if(aliasee != $[])
-		maplist(string aid, map amap, aliasee, ``{
+		maplist(string aid, map amap, aliasee, {
 		    /* Table item */
 		    hwname = _("Virtual Interface");
 		    status = DeviceStatus(devtype, devnum + sformat(":%1", aid), amap);
@@ -67,7 +67,7 @@ define list BuildSummary(list Hardware, boolean split) ``{
 
     y2debug("uniques(%1)", uniques);
     /* build a list of unconfigured devices */
-    maplist(map h, Hardware, ``{
+    maplist(map h, Hardware, {
 	string unq = h["unique"]:"";
 	string hwtype = h["type"]:"";
 	string hwname = CheckEmptyName(hwtype, h["name"]:"");
@@ -117,7 +117,7 @@ define list BuildSummary(list Hardware, boolean split) ``{
  * @param hwname device name
  * @return hwname if not empty, "Unknown device" otherwise
  */
-define string CheckEmptyName(string devtype, string hwname) ``{
+define string CheckEmptyName(string devtype, string hwname) {
     if(hwname != nil && hwname != "") return hwname;
 
     map device_names = $[
@@ -236,10 +236,10 @@ define string CheckEmptyName(string devtype, string hwname) ``{
  * @param unq unique number
  * @return hardware name
  */
-define string HardwareName(list Hardware, string unq) ``{
+define string HardwareName(list Hardware, string unq) {
     string hwname = "";
     if(unq != "")
-	maplist(map h, Hardware, ``{
+	maplist(map h, Hardware, {
 	    if(h["unique"]:"" == unq)
 		hwname = h["name"]:"";
 	});
@@ -252,7 +252,7 @@ define string HardwareName(list Hardware, string unq) ``{
  * @return provider name
  * @example ProviderName("tonline") -> "T-Online"
  */
-define string ProviderName(string provider) ``{
+define string ProviderName(string provider) {
     import "Provider";
 
     if(provider == nil || provider == "")
@@ -271,7 +271,7 @@ define string ProviderName(string provider) ``{
  * @param devmap map with devices settings
  * @return text wth device status
  */
-define string DeviceStatus(string devtype, string devnum, map devmap) ``{
+define string DeviceStatus(string devtype, string devnum, map devmap) {
     string dev = device_name(devtype, devnum);
 
     /* Modem and DSL */
@@ -336,7 +336,7 @@ define string DeviceStatus(string devtype, string devnum, map devmap) ``{
  * @param devmap device map
  * @return textual device protocol
  */
-define string DeviceProtocol(map devmap) ``{
+define string DeviceProtocol(map devmap) {
     string ip = devmap["BOOTPROTO"]:"static";
     if(ip == nil || ip == "" || ip == "static" || ip == "none")
 	ip = devmap["IPADDR"]:"";
@@ -348,11 +348,11 @@ define string DeviceProtocol(map devmap) ``{
  * Create overview table contents
  * @return table items
  */
-define list BuildOverview() ``{
+define list BuildOverview() {
     list overview = [];
 
-    maplist(string type, map devmap, Devs, ``{
-	maplist(string k, map v, devmap, ``{
+    maplist(string type, map devmap, Devs, {
+	maplist(string k, map v, devmap, {
 	    term item = nil;
 	    string dev = device_name(type, k);
 	    string ip = DeviceProtocol(v);
@@ -385,7 +385,7 @@ define list BuildOverview() ``{
 	    /* aliases summary */
 	    map aliasee = v["_aliases"]:$[];
 	    if(aliasee != $[])
-		maplist(string aid, map amap, aliasee, ``{
+		maplist(string aid, map amap, aliasee, {
 		    //hwname = CheckEmptyName(devtype, HardwareName(unq));
 		    string adev = sformat("%1:%2", dev, aid);
 		    ip = DeviceProtocol(amap);

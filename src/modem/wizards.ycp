@@ -170,21 +170,20 @@ define symbol MainSequence() {
 	// "edit"		: [ ``(OneModemSequence(false)), true ],
 	"Add"		: [ ``(OneProviderSequence(true)), true ],
 	"Edit"		: [ ``(OneProviderSequence(false)), true ],
-	"packages"	: [ ``( Packages(["smpppd"]) ), true ],
     ];
 
     map sequence = $[
 	"ws_start" : "summary",
 	"summary" : $[
 	    `abort	: `abort,
-	    `next	: "packages",
+	    `next	: `next,
 	    `configure	: "configure",
 	    `other	: "other",
 	    `overview	: "overview"
 	],
 	"overview" : $[
 	    `abort	: `abort,
-	    `next	: "packages",
+	    `next	: `next,
 	    `add	: "add",
 	    `edit	: "edit",
 	    `Add	: "Add",
@@ -213,10 +212,6 @@ define symbol MainSequence() {
 	"Edit" : $[
 	    `abort	: `abort,
 	    `next	: "overview",
-	],
-	"packages" : $[
-	    `abort	: `abort,
-	    `next	: `next,
 	],
     ];
 
@@ -278,7 +273,7 @@ define symbol ModemSequence() {
     map aliases = $[
 	"read"		: [ ``( ReadDialog() ), true ],
 	"main"		:   ``( MainSequence() ),
-	"packages"	: [ ``( Packages(["smpppd"]) ), true ],
+	"packages"	: [ ``( PackagesInstall(Modem::Packages()) ), true ],
 	"write"		: [ ``( WriteDialog() ), true ],
 	"finish"	: [ ``( FinishDialog() ), true ],
     ];
@@ -291,7 +286,7 @@ define symbol ModemSequence() {
 	],
 	"main" : $[
 	    `abort	: `abort,
-	    `next	: "write", // "packages"
+	    `next	: "packages",
 	],
 	"packages" : $[
 	    `abort	: `abort,

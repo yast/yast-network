@@ -71,7 +71,14 @@ else if(func == "Description") {
 }
 /* write the proposal */
 else if(func == "Write") {
-    Modem::Write();
+    if(PackagesInstall(Modem::Packages()) != `next) {
+	/* Popup text */
+	Popup::Error("Required packages installation failed.
+Modem configuration cannot be saved.");
+	y2error("Packages installation failure, not saving");
+    }
+    else
+	Modem::Write();
 }
 /* unknown function */
 else {

@@ -18,6 +18,12 @@ textdomain "network";
 y2milestone("----------------------------------------");
 y2milestone("Provider module started");
 
+import "Provider";
+
+define boolean Modified() {
+    return Provider::Modified("");
+}
+
 include "network/provider/wizards.ycp";
 
 /* is this proposal or not? */

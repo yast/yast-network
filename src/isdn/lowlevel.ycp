@@ -707,7 +707,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 
 
 	    if (pkgs != nil && pkgs != [] && pkgs != [""]) {
-		symbol retp = Packages((list<string>) pkgs);
+		symbol retp = PackagesInstall((list<string>) pkgs);
 		y2debug("Packages returns %1", retp);
 	    }
 	    // if it is a DSL capable card

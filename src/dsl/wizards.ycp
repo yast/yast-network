@@ -271,11 +271,11 @@ define symbol OneDSLSequence(boolean detected) ``{
 define symbol DSLSequence() ``{
 
     map aliases = $[
-	"read"	: [ ``( ReadDialog() ), true ],
-	"main"	:   ``( DSLMainSequence() ),
-	"rpm"	: [ ``( Packages(["smpppd", "ppp", "pptp", "linux-atm-lib"]) ), true ],
-	"write"	: [ ``( WriteDialog() ), true ],
-	"finish": [ ``( FinishDialog() ), true ],
+	"read"		: [ ``( ReadDialog() ), true ],
+	"main"		:   ``( DSLMainSequence() ),
+	"packages"	: [ ``( PackagesInstall(DSL::Packages()) ), true ],
+	"write"		: [ ``( WriteDialog() ), true ],
+	"finish"	: [ ``( FinishDialog() ), true ],
     ];
 
     map sequence = $[
@@ -286,9 +286,9 @@ define symbol DSLSequence() ``{
 	],
 	"main" : $[
 	    `abort	: `abort,
-	    `next	: "rpm"
+	    `next	: "packages"
 	],
-	"rpm" : $[
+	"packages" : $[
 	    `abort	: `abort,
 	    `next	: "write"
 	],

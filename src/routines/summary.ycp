@@ -26,7 +26,7 @@ textdomain "network";
  * @return textual form of device type
  * @example DeviceType("eth") -> "Ethernet"
  */
-define string DeviceType(string type) ``{
+define string DeviceType(string type) {
 
     if(issubstring(type, ":"))
 	/* Device type label */
@@ -107,8 +107,10 @@ define string DeviceType(string type) ``{
  * @param cur current type
  * @return Table items
  */
-define list BuildTypesList(list types, string cur) ``{
-    return maplist(string t, types, ``(`item(`id(t), DeviceType(t), t == cur)));
+define list BuildTypesList(list types, string cur) {
+    return maplist(string t, types, {
+	return `item(`id(t), DeviceType(t), t == cur);
+    });
 }
 
 /**
@@ -119,7 +121,7 @@ define list BuildTypesList(list types, string cur) ``{
  * @param first table is first of the two tables
  * @return table widget
  */
-define term OverviewTableContents(string caption, term header, list contents, boolean first) ``{
+define term OverviewTableContents(string caption, term header, list contents, boolean first) {
 
     term addbutton = nil;
     term editbutton = nil;
@@ -168,7 +170,7 @@ define term OverviewTableContents(string caption, term header, list contents, bo
  * @param contents table contents
  * @return table widget
  */
-define term OverviewTable(term header, list contents) ``{
+define term OverviewTable(term header, list contents) {
     return `VBox(
 	`VSpacing(0.5),
 	OverviewTableContents("", header, contents, true)
@@ -185,7 +187,7 @@ define term OverviewTable(term header, list contents) ``{
  * @param contents2 second table contents
  * @return table widget
  */
-define term OverviewTableDouble(string caption1, term header1, list contents1, string caption2, term header2, list contents2) ``{
+define term OverviewTableDouble(string caption1, term header1, list contents1, string caption2, term header2, list contents2) {
 
     return `VBox(
 	`VSpacing(0.5),

@@ -669,7 +669,7 @@ global define boolean Commit() {
 
 	if(alias == "") {
 	    newdev["_aliases"] = aliases;
-	    y2security("%1", aliases);
+	    y2milestone("%1", aliases);
 	    NetworkDevices::Name = device_name(RealType(type, hotplug), device);
 	}
 	else

@@ -72,7 +72,14 @@ else if(func == "Description") {
 }
 /* write the proposal */
 else if(func == "Write") {
-    DSL::Write();
+    if(PackagesInstall(DSL::Packages()) != `next) {
+	/* Popup text */
+	Popup::Error("Required packages installation failed.
+DSL configuration cannot be saved.");
+	y2error("Packages installation failure, not saving");
+    }
+    else
+	DSL::Write();
 }
 /* unknown function */
 else {

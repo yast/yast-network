@@ -42,7 +42,7 @@ include "network/routines.ycp";
  * @return true if sucess
  * @example ReadModules("eth|tr");
  */
-define boolean ReadModules(string devregex) ``{
+define boolean ReadModules(string devregex) {
 
     Modules = $[
 	"alias" : $[],
@@ -54,7 +54,7 @@ define boolean ReadModules(string devregex) ``{
 
     /* Read aliases */
     list allaliases = SCR::Dir(.modules.alias);
-    maplist(string al, allaliases, ``{
+    maplist(string al, allaliases, {
 	if(regexpmatch(al, regex)) {
 	    string modul = (string) SCR::Read(add(.modules.alias, al));
 	    if(modul != nil)
@@ -64,7 +64,7 @@ define boolean ReadModules(string devregex) ``{
 
     /* Read options */
     list opts = SCR::Dir(.modules.options);
-    maplist(string al, opts, ``{
+    maplist(string al, opts, {
 	map optsmap = (map) SCR::Read(add(.modules.options, al));
 	if(optsmap != nil)
 	    Modules["options", al] = Map::ToString(optsmap);
@@ -78,13 +78,13 @@ define boolean ReadModules(string devregex) ``{
  * Write Modules to files
  * @return true if success
  */
-define boolean WriteModules() ``{
+define boolean WriteModules() {
 
     boolean arcnet = false;
     y2debug("Modules=%1", Modules);
 
     /* Remove deleted modules */
-    maplist(string d, DeletedModules, ``{
+    maplist(string d, DeletedModules, {
 	y2debug("deleting: %1", d);
 	SCR::Write(add(.modules.alias, d), nil);
 	/* Keep options:
@@ -95,7 +95,7 @@ define boolean WriteModules() ``{
     DeletedModules = [];
 
     /* Write aliases */
-    maplist(string m, string a, Modules["alias"]:$[], ``{
+    maplist(string m, string a, Modules["alias"]:$[], {
 	if(a != nil && a != "") {
 	    // y2milestone("%1 %2", add(.modules.alias, m), a);
 	    SCR::Write(add(.modules.alias, m), a);
@@ -104,7 +104,7 @@ define boolean WriteModules() ``{
     });
 
     /* Write options */
-    maplist(string m, string o, Modules["options"]:$[], ``{
+    maplist(string m, string o, Modules["options"]:$[], {
 	if(o != nil && o != "")
 	    // y2milestone("%1 %2", add(.modules.options, m), Map::FromString(o));
 	    SCR::Write(add(.modules.options, m), Map::FromString(o));
@@ -130,7 +130,7 @@ define boolean WriteModules() ``{
 		/* merge module options *
 		if(typ == "iucv") {
 		    map curopts = SCR::Read(.modules.options, "netiucv");
-		    maplist(string k, string v, opts_map, ``{
+		    maplist(string k, string v, opts_map, {
 			if(haskey(curopts, k))
 			    curopts[k] = curopts[k]:"" + ":" + v;
 			else
@@ -162,7 +162,7 @@ define boolean WriteModules() ``{
  * @param check if check if module already exists
  * @return true if success
  */
-define boolean ChangeModule(string name, boolean check) ``{
+define boolean ChangeModule(string name, boolean check) {
     y2debug("name=%1", name);
     y2debug("Module=%1", Module);
     y2debug("Modules=%1", Modules);
@@ -203,7 +203,7 @@ define boolean ChangeModule(string name, boolean check) ``{
 	y2debug("o=%1", o);
 	y2debug("m_orig=%1", m_orig);
 	y2debug("m_new=%1", m_new);
-	maplist(string mo, string op, m_new, ``{
+	maplist(string mo, string op, m_new, {
 	    if(haskey(m_orig, mo)) {
 		if(m_orig[mo]:"" != op)
 		    m_orig[mo] = sformat("%1,%2", op, m_orig[mo]:"");
@@ -225,7 +225,7 @@ define boolean ChangeModule(string name, boolean check) ``{
  * @param name device name
  * @return true if success
  */
-define boolean DeleteModule(string name) ``{
+define boolean DeleteModule(string name) {
     y2debug("Modules=%1", Modules);
     y2debug("DeletedModules=%1", DeletedModules);
 
@@ -247,7 +247,7 @@ define boolean DeleteModule(string name) ``{
  * @param type added module type
  * @return true on success
  */
-define boolean AddModule(string type) ``{
+define boolean AddModule(string type) {
 
     Module["module"] = "";
     Module["options"] = "";
@@ -270,7 +270,7 @@ define boolean AddModule(string type) ``{
  * @param name module name
  * @return true on success
  */
-define boolean SelectModule(string name) ``{
+define boolean SelectModule(string name) {
 
     Module["module"] = "";
     Module["options"] = "";

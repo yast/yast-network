@@ -22,7 +22,7 @@ include "network/routines.ycp";
  * @param var install.inf SCR variable
  * @return true on success
  */
-define boolean ReadInstallInfItem(path install_inf, string item, string var) ``{
+define boolean ReadInstallInfItem(path install_inf, string item, string var) {
     if(item == nil || item == "" || var == nil || var == "") return false;
     string val = (string) SCR::Read(add(install_inf, var));
     if(val == nil) return false;
@@ -34,7 +34,7 @@ define boolean ReadInstallInfItem(path install_inf, string item, string var) ``{
  * Read install.inf from the correct location
  * @return true on success
  */
-define boolean ReadInstallInf() ``{
+define boolean ReadInstallInf() {
 
     InstallInf = $[];
 

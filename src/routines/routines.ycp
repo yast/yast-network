@@ -20,7 +20,7 @@ import "String";
  * Abort function
  * @return blah blah lahjk
  */
-define boolean Abort() ``{
+define boolean Abort() {
     return UI::PollInput() == `abort;
 
     /* FIXME: NI
@@ -34,7 +34,7 @@ define boolean Abort() ``{
  * Check for pending Abort press
  * @return true if pending abort
  */
-define boolean PollAbort() ``{
+define boolean PollAbort() {
     return UI::PollInput() == `abort;
 }
 
@@ -42,7 +42,7 @@ define boolean PollAbort() ``{
  * If modified, ask for confirmation
  * @return true if abort is confirmed
  */
-define boolean ReallyAbort() ``{
+define boolean ReallyAbort() {
     return Popup::ReallyAbort(true);
 
     /* FIXME: NI
@@ -55,7 +55,7 @@ define boolean ReallyAbort() ``{
  * @param modified true if modified
  * @return true if abort is confirmed
  */
-define boolean ReallyAbortCond(boolean modified) ``{
+define boolean ReallyAbortCond(boolean modified) {
     return (!modified) || Popup::ReallyAbort(true);
 
     /* FIXME: NI
@@ -67,7 +67,7 @@ define boolean ReallyAbortCond(boolean modified) ``{
  * Set screen shot name
  * @param name screenshot name
  */
-define void ScreenName(string name) ``{
+define void ScreenName(string name) {
     if(name != "" && name != nil)
 	UI::SetModulename(/* "network/" + */ name);
 }
@@ -76,7 +76,7 @@ define void ScreenName(string name) ``{
  * Progress::NextStage and Progress::Title combined into one function
  * @param title progressbar title
  */
-define void ProgressNextStage(string title) ``{
+define void ProgressNextStage(string title) {
     Progress::NextStage();
     Progress::Title(title);
 }
@@ -87,7 +87,7 @@ define void ProgressNextStage(string title) ``{
  * @param param widget parameter
  * @param value widget parameter value
  */
-define void ChangeWidgetIfExists(term id, symbol param, any value) ``{
+define void ChangeWidgetIfExists(term id, symbol param, any value) {
     if(UI::WidgetExists(id))
 	UI::ChangeWidget(id, param, value);
     else
@@ -101,7 +101,7 @@ define void ChangeWidgetIfExists(term id, symbol param, any value) ``{
  * @param value previous parameter value
  * @return widget value if exists, previous value otherwise
  */
-define any QueryWidgetIfExists(term id, symbol param, any value) ``{
+define any QueryWidgetIfExists(term id, symbol param, any value) {
     if(UI::WidgetExists(id))
 	return UI::QueryWidget(id, param);
     y2debug("Not changing: %1", id);
@@ -113,7 +113,7 @@ define any QueryWidgetIfExists(term id, symbol param, any value) ``{
  * @param packages list of required packages (["rpm", "bash"])
  * @return `next if packages installation is successfull, `abort otherwise
  */
-define symbol Packages(list<string> packages) ``{
+define symbol PackagesInstall(list<string> packages) {
     if(size(packages) < 1) return `next;
     y2debug("Checking packages: %1", packages);
 
@@ -122,7 +122,7 @@ define symbol Packages(list<string> packages) ``{
 
     /* Popup text */
     string text = _("These packages need to be installed:") + "<p>";
-    foreach(string l, packages, ``{ text = text + sformat("%1<br>",l); });
+    foreach(string l, packages, { text = text + sformat("%1<br>",l); });
     y2debug("Installing packages: %1", text);
 
     boolean ret = false;
@@ -140,7 +140,8 @@ define symbol Packages(list<string> packages) ``{
 The configuration will be aborted.
 
 Try again?
-")))
+") + "
+"))
 	    break;
     }
 
@@ -153,7 +154,7 @@ Try again?
  * @return comment
  * @example ChangedComment("lan") -> # Changed by YaST2 module lan 1.1.2000"
  */
-define string ChangedComment(string modul) ``{
+define string ChangedComment(string modul) {
     string ret = "\n# Changed by YaST2";
     if(modul != nil && modul != "") ret = ret + " module " + modul;
     string date = lookup((map)SCR::Execute(.target.bash_output, "/bin/date '+%x'"), "stdout", "");
@@ -165,7 +166,7 @@ define string ChangedComment(string modul) ``{
  * Show busy popup (for proposal)
  * @param message label to bw shown
  */
-define void BusyPopup(string message) ``{
+define void BusyPopup(string message) {
     UI::BusyCursor();
     UI::OpenDialog(`VBox(`Label(message)));
 }
@@ -174,7 +175,7 @@ define void BusyPopup(string message) ``{
  * Close busy popup
  * @see BusyPopup
  */
-define void BusyPopupClose() ``{
+define void BusyPopupClose() {
     UI::CloseDialog();
 }
 
@@ -185,10 +186,10 @@ define void BusyPopupClose() ``{
  * @return a list of items
  * @example [ "x", "y" ] -&gt; [ `item(`id(0), "x"), `item(`id(1), "y") ]
  */
-define list list2items(list l, integer selected) ``{
+define list list2items(list l, integer selected) {
     list items = [];
     integer n = 0;
-    foreach(any i, l, ``{
+    foreach(any i, l, {
 	items = add(items, `item(`id(n), i, n == selected));
 	n = n + 1;
     });
@@ -201,10 +202,10 @@ define list list2items(list l, integer selected) ``{
  * @param selected selected item (0 for the first)
  * @return a list of items
  */
-define list hwlist2items(list l, integer selected) ``{
+define list hwlist2items(list l, integer selected) {
     list items = [];
     integer n = 0;
-    foreach(map i, l, ``{
+    foreach(map i, l, {
 	/* Table field (Unknown device) */
 	string hwname = i["name"]:_("Unknown");
 	integer num = i["num"]:n;
@@ -212,7 +213,7 @@ define list hwlist2items(list l, integer selected) ``{
 	n = n + 1;
     });
     return items;
-    //return list2items(maplist(map h, l, ``(h["name"]:_("Unknown device"))), selected);
+    //return list2items(maplist(map h, l, { return h["name"]:_("Unknown device"); }), selected);
 }
 
 /**
@@ -222,7 +223,7 @@ define list hwlist2items(list l, integer selected) ``{
  * @example device_type("eth1") -> "eth"
  * @example device_type("eth-pcmcia-0") -> "eth-pcmcia"
  */
-define string device_type(string dev) ``{
+define string device_type(string dev) {
     if(regexpmatch(dev, "^([a-zA-Z-]*[a-zA-Z])[^a-zA-Z]*") != true) return "";
     string ret = regexpsub(dev, "^([a-zA-Z-]*[a-zA-Z])[^a-zA-Z]*", "\\1");
     if(ret == nil) ret = "";
@@ -236,7 +237,7 @@ define string device_type(string dev) ``{
  * @example device_num("eth1") -> "1"
  * @example device_num("lo") -> ""
  */
-define string device_num(string dev) ``{
+define string device_num(string dev) {
     if(regexpmatch(dev, "[a-zA-Z-]*([0-9]+)") != true) return "";
     string ret = regexpsub(dev, "[a-zA-Z-]*([0-9]+)", "\\1");
     if(ret == nil) ret = "";
@@ -250,7 +251,7 @@ define string device_num(string dev) ``{
  * @example alias_num("eth1:2") -> "2"
  * @example alias_num("eth1:blah") -> "blah"
  */
-define string alias_num(string dev) ``{
+define string alias_num(string dev) {
     if(regexpmatch(dev, "[a-zA-Z-]*[0-9]*:([a-zA-Z0-9_-]+)") != true) return "";
     string ret = regexpsub(dev, "[a-zA-Z-]*[0-9]*:([a-zA-Z0-9_-]+)", "\\1");
     if(ret == nil) ret = "";
@@ -262,7 +263,7 @@ define string alias_num(string dev) ``{
  * @param type device type
  * @return true if hotpluggable
  */
-define boolean IsHotplug(string type) ``{
+define boolean IsHotplug(string type) {
     if(type == "" || type == nil) return false;
     if(regexpmatch(type, "(pcmcia|usb|pci)$")) return true;
     return false;
@@ -276,7 +277,7 @@ define boolean IsHotplug(string type) ``{
  * @example device_name("eth", "1") -> "eth1"
  * @example device_name("lo", "") -> "lo"
  */
-define string device_name(string typ, string num) ``{
+define string device_name(string typ, string num) {
     if(typ == nil || typ == "") {
 	y2error("wrong type: %1", typ);
 	return nil;
@@ -297,7 +298,7 @@ define string device_name(string typ, string num) ``{
  * @return alias name
  * @example alias_name("eth", "1", "2") -> "eth1:2"
  */
-define string alias_name(string typ, string num, string anum) ``{
+define string alias_name(string typ, string num, string anum) {
     if(typ == nil || typ == "") {
 	y2error("wrong type: %1", typ);
 	return nil;
@@ -320,7 +321,7 @@ define string alias_name(string typ, string num, string anum) ``{
  * @return real type
  * @example RealType("eth", "usb") -> "eth-usb"
  */
-define string RealType(string type, string hotplug) ``{
+define string RealType(string type, string hotplug) {
 
     y2debug("type=%1", type);
     if(type == "" || type == nil) {
@@ -346,7 +347,7 @@ define string RealType(string type, string hotplug) ``{
  * @param params parameters to pass to the module
  * @return always `next
  */
-define symbol FinishPopup(boolean modified, string head, string text, string run, list params) ``{
+define symbol FinishPopup(boolean modified, string head, string text, string run, list params) {
 
     if(!modified) return `next;
 

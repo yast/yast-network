@@ -165,7 +165,7 @@ configuration.</p>");
 	    else {
 		Modem::SelectHW((integer) selected);
 		if(Modem::Requires != [] && Modem::Requires != nil) {
-		    if(Packages(Modem::Requires) != `next)
+		    if(PackagesInstall(Modem::Requires) != `next)
 			continue;
 		}
 		ret = `configure;
