@@ -1,13 +1,8 @@
 -------------------------------------------------------------------
-Thu Jul 31 11:08:19 CEST 2003 - jsrain@suse.de
-
-- added sensible descriptions of wlan-usb and wlan-pcmcia devices
-  to LAN summary
-
--------------------------------------------------------------------
-Wed Jul 30 18:28:41 CEST 2003 - msvec@suse.de
+Fri Aug  1 12:49:15 CEST 2003 - msvec@suse.de
 
 - drop yast2-network-instsys package
+- added inst_netprobe installation client
 - don't expose password in plain text (#27459)
 - change wireless devices to wlan* (#28048)
 - basic more IPs support

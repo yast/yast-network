@@ -767,6 +767,7 @@ global define boolean Propose() ``{
     else {
 	/* Propose static config in case of DSL hardware is found */
 	list pppoe = SCR::Read(.probe.pppoe);
+	// FIXME: testing pppoe = [ $["a" : "b"] ];
 	map pppoedev = pppoe[0]:$[];
 	y2debug("pppoe=%1", pppoe);
 	if(pppoe != nil && size(pppoe) > 0) {

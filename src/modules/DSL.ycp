@@ -87,6 +87,9 @@ global boolean proposal_valid = false;
  */
 list Hardware = [];
 
+// FIXME: HW
+boolean HWDetected = false;
+
 /**
  * Devices information
  * @see ReadDevices
@@ -186,6 +189,11 @@ global define boolean Read() ``{
 	Progress::on();
     }
     sleep(sl);
+
+    // FIXME: HW
+    list pppoe = SCR::Read(.probe.pppoe);
+    // FIXME: testing pppoe = [ $["a" : "b"] ];
+    if(pppoe != nil && size(pppoe) > 0) HWDetected = true;
 
     if(Abort()) return false;
     /* Final progress step */
@@ -486,7 +494,19 @@ global define map Export() ``{
  * @return summary of the current configuration
  */
 global define list Summary(boolean split) ``{
-    return BuildSummary(split);
+
+    list sum = BuildSummary(split);
+
+    // FIXME: HW
+    string hwdet = "";
+    if(HWDetected == true)
+	/* Summary label */
+	hwdet = _("DSL Hardware Detected");
+
+    y2milestone("hwdet=%1", HWDetected);
+    sum[0] = sum[0]:"" + hwdet;
+
+    return sum;
 }
 
 /**

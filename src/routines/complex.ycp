@@ -308,10 +308,12 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 	"vmnet"		: _("VMWare Network Device"),
 	/* Device type label */
 	"wlan"		: _("Wireless Network Card"),
-	"wlan-pcmcia"	: _("Wireless Network Card"),
-	"wlan-pcmcia-"	: _("Wireless Network Card"),
-	"wlan-usb"	: _("Wireless Network Card"),
-	"wlan-usb-"	: _("Wireless Network Card"),
+	/* Device type label */
+	"wlan-pcmcia"	: _("PCMCIA Wireless Network Card"),
+	"wlan-pcmcia-"	: _("PCMCIA Wireless Network Card"),
+	/* Device type label */
+	"wlan-usb"	: _("USB Wireless Network Card"),
+	"wlan-usb-"	: _("USB Wireless Network Card"),
 
 
     ];

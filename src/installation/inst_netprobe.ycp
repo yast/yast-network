@@ -1,0 +1,19 @@
+/**
+ * File:	clients/inst_netprobe
+ * Package:	Network configuration
+ * Summary:	Start the network detection
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Detection";
+
+if(!Detection::running) Detection::Start();
+
+/* EOF */
+}

@@ -32,7 +32,7 @@ if(func == "MakeProposal") {
     boolean force_reset = param["force_reset"]:false;
 
     if(force_reset || !DSL::proposal_valid) {
-        DSL::proposal_valid = true;
+	DSL::proposal_valid = true;
 	Progress::off();
 	/* Popup text */
 	BusyPopup(_("Detecting DSL devices..."));
