@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Aug 19 14:07:47 CEST 2002 - mvidner@suse.cz
+
+- Now cardbus cards are detected, so use eth-pcmcia-0
+  and STARTMODE=hotplug (#13571).
+
+-------------------------------------------------------------------
 Fri Aug 16 18:48:13 CEST 2002 - jsuchome@suse.cz
 
 - Providers: Added simple check for user name for T-Online provider
