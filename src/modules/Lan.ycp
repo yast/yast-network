@@ -341,6 +341,7 @@ global define boolean Write() ``{
     /* Progress step 8/9 */
     ProgressNextStage(_("Activating network services..."));
     if(!write_only) StartNetwork();
+    if(!write_only) RestartService("pcmcia");
     sleep(sl);
 
     if(Abort()) return false;
