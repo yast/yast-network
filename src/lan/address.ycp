@@ -460,9 +460,9 @@ if you know that the detection is wrong.")))
 		    SuSEFirewall4Network::GetZoneOfInterface (device) == "")
 		{
 		    if (Popup::YesNoHeadline (Label::WarningMsg (),
-_("Firewall is active but this interface is not
-in any zone so all its traffic would be blocked.
-Assign zone now?")))
+_("The firewall is active, but this interface is not
+in any zone. All its traffic would be blocked.
+Assign it to a zone now?")))
 		    {
 			ret = `details;
 		    }

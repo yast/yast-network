@@ -147,7 +147,7 @@ Configure your ISDN card here.
 
     /* isdns summary dialog help 2/3 */
     helptext = helptext + _("<P><B><BIG>Adding an ISDN Card:</BIG></B><BR>
-Choose an ISDN card from the list of the detected ISDN cards.
+Choose an ISDN card from the list of detected ISDN cards.
 If your ISDN card was not autodetected, use <B>Other (not detected)</B>.
 Then press <B>Configure</B>.
 </P>

@@ -29,7 +29,7 @@ define void ProxyFinishPopup(boolean modified) ``{
 
     /* Popup text */
 string text = _("Applications that support it, such as YaST2 Online Update,
-will use them immediately. Other applications will use them after a new login
+use them immediately. Other applications use them after a new login
 (lynx, wget). Some applications, like Mozilla, do not support these settings
 at all--they use their own settings system.
 ");

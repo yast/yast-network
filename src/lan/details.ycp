@@ -47,10 +47,11 @@ define any DetailsDialog() {
 
 	// Details dialog help
 	_("<p>Select the <b>Firewall Zone</b> to put the interface in. If you
-select a zone, the firewall will be enabled. Otherwise, it depends on
-whether there are other firewalled interfaces. If yes, the firewall
+select a zone, the firewall will be enabled. If you do not and other 
+firewalled interfaces exist, the firewall
 will stay enabled but all traffic will be blocked for this
-interface. If no, the firewall will be disabled.</p>");
+interface. If you do not select a zone and no others exist, 
+the firewall will be disabled.</p>");
 
     string interface = NetworkDevices::device_name (Lan::type, Lan::device);
     string mtu = Lan::mtu;

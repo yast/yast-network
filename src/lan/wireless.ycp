@@ -502,7 +502,7 @@ _("<p>In an environment with multiple <b>Access Points</b>, you may want to
 define the one to which to connect by entering its MAC address.</p>") +
 
     /* Wireless expert dialog help 5/5 */
-_("<p>You can <b>Use Power Management</b> to enable power saving mechanisms.
+_("<p><b>Use Power Management</b> enables power saving mechanisms.
 This is generally a good idea, especially if you are a laptop user and may
 be disconnected from AC power.</p>
 ");

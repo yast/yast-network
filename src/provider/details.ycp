@@ -59,7 +59,7 @@ This is the default with most providers.</p>");
 	helptext = helptext +
 	/* IP details dialog help 3/3 */
 _("<p>Check <b>Use Peer DNS</b> to change
-your domain name servers after the connection is up. This replaces your static
+your domain name servers after the connection is made. This replaces your static
 DNS configuraton with the obtained DNS server IP addresses. Today, almost all
 providers support <b>Use Peer DNS</b>.</p>
 ");

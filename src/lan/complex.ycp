@@ -172,7 +172,7 @@ to change the configuration opens.</p>");
 		if (NetworkModules::Alias == "")
 		{
 		    if (!Popup::ContinueCancel (_("The device does not have a driver module.
-It may be a bug or the driver is built in the kernel.")))
+The driver may be built in the kernel.")))
 		    {
 			continue; // means cancel
 		    }
