@@ -169,6 +169,7 @@ global define boolean Read() ``{
  */
 global define boolean Write() ``{
 
+    if(!modified) return true;
     y2milestone("Writing configuration");
 
     // title for Modem writing current setup progress screen
