@@ -15,7 +15,7 @@ Name = _("Routing")
 Group = Net_advanced
 
 ; icon displayed in y2cc
-Icon = route.png
+Icon = routing.png
 
 ; *one* *short* descriptive line for y2cc
 Helptext = _("Configure routing")
