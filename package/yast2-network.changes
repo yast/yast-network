@@ -1,7 +1,9 @@
 -------------------------------------------------------------------
-Mon Sep  6 17:27:57 CEST 2004 - mvidner@suse.cz
+Mon Sep  6 17:29:58 CEST 2004 - mvidner@suse.cz
 
+- Added STARTMODE=ifplugd.
 - Prepare for installing kernel RPMs (#44394).
+- 2.10.15
 
 -------------------------------------------------------------------
 Fri Sep  3 14:48:06 CEST 2004 - mvidner@suse.cz
