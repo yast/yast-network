@@ -90,7 +90,7 @@ define boolean WriteModules() {
 	/* Keep options:
 	 * SCR::Write(add(.modules.options, d), nil);
 	 */
-	SCR::Execute(.target.bash, sformat("/sbin/rmmod %1 2>&1", d));
+	// #36478: SCR::Execute(.target.bash, sformat("/sbin/rmmod %1 2>&1", d));
     });
     DeletedModules = [];
 

@@ -65,8 +65,9 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     string modul = NetworkModules::Alias; // FIXME: MOD Lan::Module["module"]:"";
     string options = NetworkModules::Options; // FIXME: MOD Lan::Module["options"]:"";
 
-    string hotplug = Lan::hotplug;
     string mtu = Lan::mtu;
+    string hotplug = Lan::hotplug;
+    y2milestone("hotplug=%1", Lan::hotplug);
 
     string type = Lan::type;
     if(type == "") {
@@ -75,12 +76,22 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     }
     string realtype = RealType(type, hotplug);
     string device = Lan::device;
-    string default_device = Lan::nm_name;
+    string default_device = Lan::device;
+    string hwcfg = Lan::nm_name;
 
     list<string> device_types = [ "arc", /* FIXME */ "dummy", "eth", "fddi", "myri", "tr", /* FIXME */ "usb", "wlan" ];
 
     if(Arch::s390)
 	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv" ];
+
+//    if(Arch::ia64)
+	device_types = add(device_types, "xp");
+
+    if(issubstring(device, "bus-pcmcia"))
+	hotplug = "pcmcia";
+    else if(issubstring(device, "bus-usb"))
+	hotplug = "usb";
+    y2milestone("hotplug=%1", Lan::hotplug);
 
     /*
     if(Arch::s390) {
@@ -140,10 +151,14 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     term KernelBox = `Frame(_("&Kernel Module"), `HBox(`HSpacing(0.5), `VBox(
 	`VSpacing(0.4),
 	/* Text entry label */
-	`TextEntry(`id(`modul), _("&Module Name"), modul),
-	`VSpacing(0.2),
-	/* Text entry label */
-	`TextEntry(`id(`options), _("Op&tions"), options),
+	`TextEntry(`id(`hwcfg), _("&Hardware Configuration Name"), hwcfg),
+	`HBox(
+	    /* Text entry label */
+	    `TextEntry(`id(`modul), _("&Module Name"), modul),
+	    `HSpacing(0.2),
+	    /* Text entry label */
+	    `TextEntry(`id(`options), _("Op&tions"), options)
+	),
 	`VSpacing(0.4),
 	CheckBoxes,
 	`VSpacing(0.4)
@@ -154,7 +169,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
     term DeviceNumberBox = `ReplacePoint(`id(`rnum),
 	/* TextEntry label */
-	`TextEntry(`id(`num), `opt(`hstretch), _("&Configuration Name"), Lan::nm_name));
+	`TextEntry(`id(`num), `opt(`hstretch), _("&Configuration Name"), Lan::device));
 
     /* TextEntry label */
     term MTUBox = `TextEntry(`id(`mtu), _("M&aximum Transfer Unit (MTU)"), mtu);
@@ -256,7 +271,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 			/* Label text */
 			`HWeight(1, `Right(`Label(_("Hardware Name")))),
 			`HSpacing(0.5),
-			`HWeight(1, `Left(`Label(`opt(`outputField), Lan::nm_name)))
+			`HWeight(1, `Left(`Label(`opt(`outputField), hwcfg)))
 		    )
 		)))),
 		`VSpacing(1.5),
@@ -282,6 +297,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     UI::ChangeWidget(`id(`modul), `Enabled, hotplug == "" && type != "dummy");
     UI::ChangeWidget(`id(`options), `Enabled, hotplug == "" && type != "dummy");
     ChangeWidgetIfExists(`id(`list), `Enabled, hotplug == "" && type != "dummy");
+    ChangeWidgetIfExists(`id(`hwcfg), `Enabled, hotplug == "" && type != "dummy");
     ChangeWidgetIfExists(`id(`usb), `Enabled, (hotplug == "usb" || hotplug == "") && type != "dummy");
     ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hotplug == "pcmcia" || hotplug == "") && type != "dummy");
     ChangeWidgetIfExists(`id(`wire), `Enabled, type == "wlan");
@@ -324,6 +340,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    UI::ChangeWidget(`id(`modul), `Enabled, hotplug == "" && type != "dummy");
 	    UI::ChangeWidget(`id(`options), `Enabled, hotplug == "" && type != "dummy");
 	    ChangeWidgetIfExists(`id(`list), `Enabled, hotplug == "" && type != "dummy");
+	    ChangeWidgetIfExists(`id(`hwcfg), `Enabled, hotplug == "" && type != "dummy");
 	    ChangeWidgetIfExists(`id(`usb), `Enabled, (hotplug == "usb" || hotplug == "") && type != "dummy");
 	    ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hotplug == "pcmcia" || hotplug == "") && type != "dummy");
 	    ChangeWidgetIfExists(`id(`wire), `Enabled, type == "wlan");
@@ -333,11 +350,24 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    /* TextEntry label */
 	    // UI::ReplaceWidget(`id(`rnum), `TextEntry(`id(`num), `opt(`hstretch), _("&Configuration Name"), Lan::nm_name));
 
+	    if(hotplug == "usb")
+		device = "bus-usb";
+	    else if(hotplug == "pcmcia")
+		device = "bus-pcmcia";
+	    else
+		device = NetworkDevices::GetFreeDevice(realtype);
+
+	    UI::ChangeWidget(`id(`num), `Value, device);
+
 	    if(Arch::s390) {
 		if(type == "tr" || type == "eth") modul = "lcs";
 		if(type == "hsi" || type == "qeth") modul = "qeth";
 		if(type == "ctc" || type == "escon") modul = "ctc";
 		if(type == "iucv") modul = "netiucv";
+		UI::ChangeWidget(`id(`modul), `Value, modul);
+	    }
+	    if(type == "xp") {
+		modul = "xpnet";
 		UI::ChangeWidget(`id(`modul), `Value, modul);
 	    }
 
@@ -354,9 +384,36 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	} */
 	else if(ret == `next || ret == `list || ret == `wire) {
 	    /* FIXME: check_* */
+
+	    if(UI::WidgetExists(`id(`hwcfg))) {
+		string nm = (string) UI::QueryWidget(`id(`hwcfg), `Value);
+		if(Lan::operation == `add || nm != Lan::nm_name) {
+		    if(contains(NetworkModules::ListM(""), nm)) {
+			/* Popup text */
+			Popup::Error(sformat(_("Hardware configuration %1 already exists.
+Please choose a different one."), nm));
+			UI::SetFocus(`id(`hwcfg));
+			continue;
+		    }
+		}
+	    }
+
+	    if(Lan::operation == `add && UI::WidgetExists(`id(`num))) {
+		string nm = (string) UI::QueryWidget(`id(`num), `Value);
+		if(Lan::operation == `add || (device != Lan::device && type != Lan::type)) {
+		    if(contains(NetworkDevices::List(""), device_name(type, nm))) {
+			/* Popup text */
+			Popup::Error(sformat(_("Configuration name %1 (%2) already exists.
+Please choose a different one."), nm, device_name(type, nm)));
+			UI::SetFocus(`id(`num));
+			continue;
+		    }
+		}
+	    }
+
 	    if(UI::WidgetExists(`id(`num))) {
 		string devic = (string) UI::QueryWidget(`id(`num), `Value);
-		if(devic != default_device) {
+		if(false /* devic != default_device */) {
 		    y2warning("Default device: %1 -> %2", default_device, devic);
 		    /* Popup text */
 		    string pop = _("You changed the default device number.
@@ -386,6 +443,11 @@ Really continue?
 	NetworkModules::Alias /* FIXME: MOD Lan::Module["module"] */ = (string) UI::QueryWidget(`id(`modul), `Value);
 	NetworkModules::Options /* FIXME: MOD Lan::Module["options"] */ = (string) UI::QueryWidget(`id(`options), `Value);
 
+	if(UI::WidgetExists(`id(`hwcfg))) {
+	    Lan::nm_name_old = Lan::nm_name;
+	    Lan::nm_name = (string) UI::QueryWidget(`id(`hwcfg), `Value);
+	}
+
 	if(UI::WidgetExists(`id(`mtu)))
 	    Lan::mtu = (string) UI::QueryWidget(`id(`mtu), `Value);
 
@@ -400,6 +462,7 @@ Really continue?
 	    else
 		Lan::hotplug = "";
 	}
+	Lan::hotplug = "";
 
 	if(UI::WidgetExists(`id(`dev))) {
 	    type = (string) UI::QueryWidget(`id(`dev), `Value);

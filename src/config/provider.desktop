@@ -17,7 +17,7 @@ X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=provider
 
 Icon=modem
-Exec=/sbin/yast2 host 
+Exec=/sbin/yast2 provider
 
 Name=Providers
 GenericName=Configure providers

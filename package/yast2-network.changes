@@ -1,7 +1,20 @@
 -------------------------------------------------------------------
+Mon Mar 22 15:29:42 CET 2004 - msvec@suse.cz
+
+- preliminary XPNet devices support (#35867)
+- correct providers desktop entry (#36633)
+- never rmmod kernel modules (#36478)
+- further improve the naming (#36147)
+- possibility to change proposed names (#36147)
+- simplified summary output (#35647)
+- properly removed old hostname from /etc/hosts
+- 2.9.17
+
+-------------------------------------------------------------------
 Thu Mar 18 18:47:01 CET 2004 - arvin@suse.de
 
 - avoid flickering mouse cursor during Internet test (bug #36442)
+- 2.9.16
 
 -------------------------------------------------------------------
 Wed Mar 17 10:56:50 CET 2004 - msvec@suse.cz

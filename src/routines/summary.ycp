@@ -89,6 +89,8 @@ define string DeviceType(string type) {
 	"vmnet"	: _("VMWare"),
 	/* Device type label */
 	"wlan"	: _("Wireless"),
+	/* Device type label */
+	"xp"	: _("XPNET"),
     ];
 
     if(haskey(device_types, type))

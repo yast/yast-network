@@ -30,7 +30,7 @@ Summary:	Network configuration
 /bin/rm -f @desktopdir@/modem.desktop
 %endif
 /bin/rm -f @desktopdir@/network.desktop
-/bin/rm -f @desktopdir@/providers.desktop
+/bin/rm -f @desktopdir@/provider.desktop
 
 @CLEAN@
 

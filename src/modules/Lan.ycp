@@ -88,6 +88,7 @@ map hw = $[];
 
 /* NetworkModules:: name */
 global string nm_name = "";
+global string nm_name_old = nil;
 
 /**
  * Abort function
@@ -440,7 +441,7 @@ global define void SelectHW(integer which) {
 	nm_name = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
     }
     else {
-	y2error("No HW info found: %1", device);
+	y2error("No HW info found: %1", hw);
 	// nm_name = "";
     }
 
@@ -518,8 +519,7 @@ global define boolean Select(string dev) {
 
 	// FIXME: MOD AddModule(type);
 	NetworkModules::AddM();
-
-	nm_name = sformat("unknown-%1", device);
+	nm_name = NetworkModules::GetFreeName("static-");
 
 	/* FIXME: alias: how to prefill new alias? */
 	alias = "";
@@ -572,10 +572,12 @@ global define boolean Select(string dev) {
     aliases = devmap["_aliases"]:$[];
 
     hotplug = "";
-    if(issubstring(type, "pcmcia"))
+    /*
+    if(issubstring(device, "bus-pcmcia"))
 	hotplug = "pcmcia";
-    else if(issubstring(type, "usb"))
+    else if(issubstring(device, "bus-usb"))
 	hotplug = "usb";
+    */
 
     y2debug("type=%1", type);
     if(issubstring(type, "-"))
@@ -669,6 +671,14 @@ global define boolean Commit() {
 	    newdev["STARTMODE"] = "onboot";
 	    if(alias == "") {
 		// FIXME: MOD ChangeModule(device_name(type, device), operation == `add);
+		y2milestone("HWCFG name %1 (%2)", nm_name, nm_name_old);
+		if(nm_name != nil && nm_name != "" && operation == `edit &&
+			nm_name_old != nil && nm_name_old != "" &&
+			nm_name != nm_name_old) {
+		    y2milestone("HWCFG name change (%1) -> deleting old (%2)", nm_name, nm_name_old);
+		    NetworkModules::DeleteM(nm_name_old);
+		    nm_name_old = nil;
+		}
 		NetworkModules::ChangeM(nm_name);
 	    }
 	}
@@ -742,6 +752,7 @@ global define boolean Commit() {
 	return false;
     }
 
+    nm_name_old = nil;
     modified = true;
     operation = nil;
     return true;

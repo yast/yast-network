@@ -185,7 +185,9 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
 
     /* Read oldhostname entry */
     list oldhost = [];
-    string ohentry = (string) SCR::Read(.target.string, "/var/adm/SuSEconfig/oldhostentry");
+    string ohentry = nil;
+    if(SCR::Read(.target.size, "/var/adm/SuSEconfig/oldhostentry") > 0)
+	ohentry = (string) SCR::Read(.target.string, "/var/adm/SuSEconfig/oldhostentry");
     if(ohentry != nil) oldhost = splitstring(ohentry, "\n");
 
     if(size(oldhost) > 0)
@@ -207,6 +209,8 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
     hosts = filter(string ip, list<string> hs, hosts, {
 	if(size(hs) < 1) return false;
 	if(contains(hs, oldhn) || contains(hs, oldnick)) {
+	    y2debug("Deleting: %1", ip);
+	    Deleted = add(Deleted, ip);
 	    oldhnlist = hs;
 	    return false;
 	}

@@ -216,6 +216,8 @@ define string CheckEmptyName(string devtype, string hwname) {
 	"wlan-pcmcia"	: _("PCMCIA Wireless Network Card"),
 	/* Device type label */
 	"wlan-usb"	: _("USB Wireless Network Card"),
+	/* Device type label */
+	"xp"		: _("XP Network"),
     ];
 
     if(haskey(device_names, devtype))
@@ -409,7 +411,7 @@ define list BuildOverview() {
 	    if(aliasee != $[])
 		maplist(string aid, map amap, aliasee, {
 		    //hwname = CheckEmptyName(devtype, HardwareName(unq));
-		    string adev = sformat("%1:%2", dev, aid);
+		    string adev = alias_name(type, k, aid);
 		    ip = DeviceProtocol(amap);
 		    item = `item(`id(adev), adev, DeviceType(adev), ip);
 		    overview = add(overview, item);

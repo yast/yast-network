@@ -120,8 +120,8 @@ define boolean StopEthInterface() {
     detection_interface = false;
 
     foreach(string mod, detection_modules, {
-	y2milestone("Removing module %1 ...", mod);
-	SCR::Execute(.target.bash, sformat("/sbin/rmmod %1 2>&1", mod));
+	y2milestone("NOT removing module %1 ...", mod);
+	// #36478 SCR::Execute(.target.bash, sformat("/sbin/rmmod %1 2>&1", mod));
     });
 
     y2milestone("Network detection finish (end)");
