@@ -268,7 +268,7 @@ global define boolean Write() ``{
  */
 global define boolean Import(map settings) ``{
     map interfaces = listmap(map interface, settings["interfaces"]:[],``{
-	string upcase = "BOOTPROTO BROADCAST IPADDR NETMASK NETWORK STARTMODE";
+	string upcase = "bootproto broadcast ipaddr netmask network startmode";
 	string ignore = "UNIQUE";
 	map new_interface = mapmap(`k,`v, interface, ``{
 	    if (issubstring(upcase, k)) {
@@ -292,7 +292,7 @@ global define boolean Import(map settings) ``{
 
     CONFIG=eval($["eth":eth,"tr":token]);
     DNS::Import(eval(settings["dns"]:$[]));
-    Routing::Import(eval(settings["routing"]:[]));
+    Routing::Import(eval(settings["routing"]:$[]));
     return true;
 }
 
