@@ -657,6 +657,9 @@ global define boolean Propose() ``{
     y2milestone("Hardware=%1", Hardware);
     y2milestone("InstallInf=%1", InstallInf);
 
+    y2milestone("NetworkConfig::Config=%1", NetworkConfig::Config);
+    y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);
+
     /* Something is already configured -> do nothing */
     if(size(Devices) > 0) {
 	y2milestone("Something already configured: don't propose.");
@@ -709,7 +712,7 @@ global define boolean Propose() ``{
     y2debug("ipaddr,bootproto=%1,%2", ipaddr, bootproto);
     if(bootproto == "static" && ipaddr != "" && ipaddr != nil) {
 
-	y2debug("static proposal");
+	y2milestone("static proposal");
 
 	/* propose address setup from /etc/install.inf */
 	netmask = InstallInf["netmask"]:"";
@@ -769,12 +772,12 @@ global define boolean Propose() ``{
 	map pppoedev = pppoe[0]:$[];
 	y2debug("pppoe=%1", pppoe);
 	if(pppoe != nil && size(pppoe) > 0) {
-	    y2debug("DSL proposal");
+	    y2milestone("DSL proposal");
 	    ipaddr = "";
 	    bootproto = "static";
 	}
 	else {
-	    y2debug("DHCP proposal");
+	    y2milestone("DHCP proposal");
 	    ipaddr = "";
 	    bootproto = "dhcp";
 	    NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = true;
@@ -783,7 +786,11 @@ global define boolean Propose() ``{
     }
 
     Commit();
+
     y2milestone("Devices=%1", Devices);
+    y2milestone("NetworkConfig::Config=%1", NetworkConfig::Config);
+    y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);
+
     return true;
 }
 

@@ -83,6 +83,8 @@ if (mode == `up)
     {
 	SCR::Execute (.target.bash, "/sbin/rcportmap start");
     }
+
+    y2milestone("IFCONFIGA: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
 }
 
 
