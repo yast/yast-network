@@ -1,43 +1,39 @@
 /**
  * File:
- *   clients/lan.ycp
+ *   clients/dsl.ycp
  *
  * Package:
  *   Configuration of network
  *
  * Summary:
- *   Network cards main file
+ *   DSL main file
  *
  * Authors:
  *   Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
- * Main file for network card configuration.
+ * Main file for DSL configuration.
  * Uses all other files.
  *
  */
 
 {
 
-/***
- * <h3>Configuration of network</h3>
- */
-
 textdomain "network";
 
 /* The main () */
-y2milestone("Lan module started");
+y2milestone("DSL module started");
 y2milestone("----------------------------------------");
 
-include "network/lan/wizards.ycp";
+include "network/dsl/wizards.ycp";
 
 /* main ui function */
-any ret = LanSequence();
+any ret = DSLSequence();
 y2debug("ret == %1", ret);
 
 /* Finish */
-y2milestone("Lan module finished");
+y2milestone("DSL module finished");
 return ret;
 
 }

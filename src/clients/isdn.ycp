@@ -1,19 +1,19 @@
 /**
  * File:
- *   clients/lan.ycp
+ *   clients/isdn.ycp
  *
  * Package:
  *   Configuration of network
  *
  * Summary:
- *   Network cards main file
+ *   ISDN main file
  *
  * Authors:
  *   Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
- * Main file for network card configuration.
+ * Main file for ISDN configuration.
  * Uses all other files.
  *
  */
@@ -27,17 +27,17 @@
 textdomain "network";
 
 /* The main () */
-y2milestone("Lan module started");
+y2milestone("ISDN module started");
 y2milestone("----------------------------------------");
 
-include "network/lan/wizards.ycp";
+include "network/isdn/wizards.ycp";
 
 /* main ui function */
-any ret = LanSequence();
+any ret = ISDNSequence();
 y2debug("ret == %1", ret);
 
 /* Finish */
-y2milestone("Lan module finished");
+y2milestone("ISDN module finished");
 return ret;
 
 }

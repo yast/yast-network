@@ -35,7 +35,7 @@ include "network/services/dns.ycp";
 
 DNS::Read();
 Wizard::CreateDialog();
-Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), OKButtonLabel()));
+Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), FinishButtonLabel()));
 any ret = DNSMainDialog();
 y2debug("ret == %1", ret);
 
@@ -46,4 +46,5 @@ UI::CloseDialog();
 y2milestone("DNS module finished");
 return ret;
 
+/* EOF */
 }

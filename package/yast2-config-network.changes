@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Jan 16 20:41:36 CET 2002 - msvec@suse.cz
+
+- preliminary clients and for modem, ISDN and DSL
+- interaction of search and domain in resolv.conf
+- correct use of /etc/sysconfig/network/routes
+- added some help texts
+- 2.5.3 
+
+-------------------------------------------------------------------
 Tue Jan 15 13:53:10 CET 2002 - msvec@suse.cz
 
 - DNS and routing clients

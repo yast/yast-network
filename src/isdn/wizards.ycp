@@ -1,12 +1,12 @@
 /**
  * File:
- *   include/network/lan/wizards.ycp
+ *   include/network/isdn/wizards.ycp
  *
  * Package:
  *   Configuration of network
  *
  * Summary:
- *   Network cards configuration wizards.
+ *   User interface functions for isdn configuration.
  *
  * Authors:
  *   Michal Svec <msvec@suse.cz>
@@ -25,9 +25,9 @@ import "Wizard";
 
 include "wizard/sequencer.ycp";
 
-include "network/lan/manual.ycp";
-include "network/lan/address.ycp";
-include "network/lan/dialogs.ycp";
+include "network/isdn/dialogs.ycp";
+/* include "network/isdn/"; */
+/* other dialogs ... */
 
 include "network/services/dns.ycp";
 include "network/services/routing.ycp";
@@ -36,7 +36,7 @@ include "network/services/routing.ycp";
  * Whole configuration of network
  * @return sequence result
  */
-global define symbol LanSequence() ``{
+global define symbol ISDNSequence() ``{
 
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
@@ -62,7 +62,7 @@ global define symbol LanSequence() ``{
 	]
     ];
 
-    string caption = _("Network cards configuration");
+    string caption = _("ISDN configuration");
     term contents = `Label(_("Initializing ..."));
 
     Wizard::CreateDialog();
@@ -80,8 +80,8 @@ global define symbol LanSequence() ``{
  * For use with autoinstallation.
  * @return sequence result
  */
-global define symbol LanAutoSequence() ``{
-    string caption = _("Network cards configuration");
+global define symbol ISDNAutoSequence() ``{
+    string caption = _("ISDN configuration");
     term contents = `Label(_("Initializing ..."));
 
     Wizard::CreateDialog();

@@ -39,16 +39,45 @@ global define DNSMainDialog() ``{
 
     boolean has_dhcp = true;
 
-    // main dialog label
+    /* DNS dialog caption */
     string caption = _("Host name and name server configuration");
-    string helptext = _("HelptextDNS");
 
-    // domain search
+    /* DNS dialog helptext 1/6 */
+    string helptext = _("<p>Insert the host name and domain name for your
+computer. Name server list and domain search list are optional.</p>");
+
+    /* DNS dialog helptext 2/6 */
+    helptext = helptext + _("<p>A name server is a computer that translates
+host names into IP addresses. This value must be entered as an
+<b>IP address</b> (e.g., 10.10.0.1), not as a host name.</p>");
+
+    /* DNS dialog helptext 3/6 */
+    helptext = helptext + _("<p>Search domain is the domain name where host
+name searching starts. The primary search domain is usually the same as the
+<b>domain name</b> of your computer (e.g., suse.de). There may be additional
+search domains (e.g., suse.com).</p>");
+
+    /* DNS dialog helptext 4/6 */
+    helptext = helptext + _("<p>If you are using DHCP to get an IP address,
+check whether to get a host name via DHCP or leave it unchanged.</p>");
+
+    /* DNS dialog helptext 5/6 */
+    helptext = helptext + _("<p>If you plan to use a dial-up Internet
+connection and have set up your connection to use dynamic DNS assignment,
+these values will be temporally disabled during the connection.</p>");
+
+    /* DNS dialog helptext 6/6 */
+    /* FIXME: button label
+    helptext = helptext + _("<p>Select the <b>Finish</b> button to <b>save</b>
+your changes and <b>finish</b> the network configuration.</p>");
+    */
+
+    /* domain search */
     string s1 = "";
     string s2 = "";
     string s3 = "";
 
-    // name servers
+    /* name servers */
     string ns1 = "";
     string ns2 = "";
     string ns3 = "";
@@ -61,6 +90,7 @@ global define DNSMainDialog() ``{
     s2 = select(searchlist, 1, "");
     s3 = select(searchlist, 2, "");
 
+    /* DNS dialog contents */
     term contents = `HSquash(`VBox(
 	`Frame(_("Host name and domain name"), `VBox(
 	    `HBox(

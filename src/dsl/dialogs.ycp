@@ -1,12 +1,12 @@
 /**
  * File:
- *   include/network/lan/dialogs.ycp
+ *   include/network/dsl/dialogs.ycp
  *
  * Package:
  *   Configuration of network
  *
  * Summary:
- *   Summary, overview and IO dialogs for network cards configuration.
+ *   Summary, overview and IO dialogs for DSL configuration.
  *
  * Authors:
  *   Michal Svec <msvec@suse.cz>
@@ -19,7 +19,7 @@
 
 textdomain "network";
 
-import "Lan";
+import "DSL";
 
 import "Wizard";
 import "Wizard_hw";
@@ -28,14 +28,13 @@ include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
 
 include "network/routines.ycp";
-include "network/lan/helps.ycp";
 
 /**
  * Return a modification status
  * @return true if data was modified
  */
 global define boolean Modified() ``{
-    return Lan::Modified();
+    return DSL::Modified();
 }
 
 /**
@@ -43,7 +42,7 @@ global define boolean Modified() ``{
  * @return always `next
  */
 global define symbol Commit() ``{
-    Lan::Commit();
+    DSL::Commit();
     return `next;
 }
 
@@ -53,8 +52,8 @@ global define symbol Commit() ``{
  */
 global define symbol ReadDialog() ``{
     Wizard::RestoreHelp(ReadDialogHelp());
-    Lan::AbortFunction = ``{return PollAbort();};
-    boolean ret = Lan::Read();
+    DSL::AbortFunction = ``{return PollAbort();};
+    boolean ret = DSL::Read();
     return ret ? `next : `abort;
 }
 
@@ -65,8 +64,8 @@ global define symbol ReadDialog() ``{
 global define symbol WriteDialog() ``{
     if(!Modified()) return `next;
     Wizard::RestoreHelp(WriteDialogHelp());
-    Lan::AbortFunction = ``{return PollAbort() && ReallyAbort();};
-    boolean ret = Lan::Write();
+    DSL::AbortFunction = ``{return PollAbort() && ReallyAbort();};
+    boolean ret = DSL::Write();
     return ret ? `next : `abort;
 }
 
@@ -76,9 +75,9 @@ global define symbol WriteDialog() ``{
  */
 global define symbol SummaryDialog() ``{
 
-    string caption = _("Network cards configuration");
+    string caption = _("DSL configuration");
 
-    list summary = Lan::Summary();
+    list summary = DSL::Summary();
     list unconfigured = select(summary, 0, []);
     string configured = select(summary, 1, "");
 
@@ -106,13 +105,13 @@ global define symbol SummaryDialog() ``{
 	}
 	/* configure the selected card */
 	else if(ret == `configure_button) {
-	    Lan::Add();
+	    DSL::Add();
 	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
 	    if(selected == `other) {
 		ret = `other;
 	    }
 	    else {
-		Lan::SelectHW(selected);
+		DSL::SelectHW(selected);
 		ret = `configure;
 	    }
 	    break;
@@ -135,9 +134,9 @@ global define symbol SummaryDialog() ``{
  */
 global define symbol OverviewDialog() ``{
 
-    string caption = _("Network cards configuration overview");
+    string caption = _("DSL configuration overview");
 
-    list overview = Lan::Overview();
+    list overview = DSL::Overview();
     y2debug("overview=%1",overview);
 
     /* Header of table with installed cards */
@@ -167,23 +166,23 @@ global define symbol OverviewDialog() ``{
 	}
 	/* add */
 	else if(ret == `add_button) {
-	    Lan::Add();
+	    DSL::Add();
 	    ret = `add;
 	    break;
 	}
 	/* edit */
 	else if(ret == `edit_button) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-	    Lan::Edit(dev);
+	    DSL::Edit(dev);
 	    ret = `edit;
 	    break;
 	}
 	/* delete */
 	else if(ret == `delete_button) {
 	    string dev = UI::QueryWidget(`id(`table), `CurrentItem);
-	    Lan::Delete(dev);
-	    Lan::Commit();
-	    overview = Lan::Overview();
+	    DSL::Delete(dev);
+	    DSL::Commit();
+	    overview = DSL::Overview();
 	    UI::ChangeWidget(`id(`table), `Items, overview);
 	    if(size(overview) < 1) {
 		UI::ChangeWidget(`id(`edit_button), `Enabled, false);

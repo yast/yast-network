@@ -26,10 +26,13 @@ global list nameservers = []; //"ns1", "ns2"];
 global list searchlist = []; //"s1", "s2"];
 global boolean dhcp_hostname = false;
 
+/**
+ * Is any device configured with DHCP?
+ */
 boolean has_dhcp = true;
 
 /**
- * Reads current DNS and hostname configuration status
+ * Reads current DNS and hostname settings
  * @return true if success
  */
 global define boolean Read() ``{
@@ -48,9 +51,9 @@ global define boolean Read() ``{
 
     /* any dhcp device? */
     has_dhcp = true;
-    //has_dhcp = (size(filter (`e, devs, ``(SCR(`Read(topath(sformat(".rc.system.IFCONFIG%1", e)))) == "dhcpclient"))) > 0);
+    /* FIXME unused */
 
-    /*
+    /* FIXME
     if (SCR (`Execute (.target.bash, "/sbin/modify_resolvconf check -q")) != 0) {
 	string process = SCR (`Read (.resolver.process));
 	symbol ui = ModifyResolvConfPopup (process);
@@ -65,11 +68,8 @@ global define boolean Read() ``{
     }
     */
 
-    /* name servers and search list */
-    list resolvlist = SCR::Read(.etc.resolv_conf.search);
-    if(resolvlist != nil) searchlist = resolvlist;
-
-    resolvlist = SCR::Read(.etc.resolv_conf.nameserver);
+    /* name servers */
+    list resolvlist = SCR::Read(.etc.resolv_conf.nameserver);
     if(resolvlist == nil) {
 	if(size(lookup(install_inf, "nameserver", "")) > 0)
 	    change(nameserver, (lookup(install_inf, "nameserver", "")));
@@ -77,11 +77,18 @@ global define boolean Read() ``{
     else
 	nameservers = resolvlist;
 
+    /* search list */
+    resolvlist = SCR::Read(.etc.resolv_conf.search);
+    if(resolvlist != nil) searchlist = resolvlist;
+    if(size(searchlist) < 1) {
+	string dom = SCR::Read(.etc.resolv_conf.domain);
+	if(dom != nil && dom != "") searchlist = [ dom ];
+    }
+
     /* host name and domain */
     string fqhostname = "";
     if(SCR::Read(.target.size, "/etc/HOSTNAME") > 0) {
-	map hostmap = SCR::Execute(.target.bash_output, "cat /etc/HOSTNAME");
-	fqhostname = lookup(hostmap, "stdout", "");
+	fqhostname = SCR::Read(.target.string, "/etc/HOSTNAME");
 	fqhostname = substring(fqhostname, 0, findfirstof(fqhostname, "\n"));
     }
 
@@ -95,7 +102,7 @@ global define boolean Read() ``{
 	    hostname = fqhostname;
     }
     else {
-	/* default hostname and domain (if not in install.inf) */
+	/* default hostname and domain (if not in /etc/install.inf) */
 	hostname = lookup(install_inf, "machinename", "linux");
 	domain = lookup(install_inf, "domain", "local");
     }
@@ -104,9 +111,12 @@ global define boolean Read() ``{
 }
 
 /**
+ * Write new DNS and hostname settings
+ * @return true if success
  */
 global define boolean Write() ``{
 
+    /* build FQ hostname */
     string fqhostname = hostname;
     if(domain != "") fqhostname = fqhostname + "." + domain;
 
@@ -114,14 +124,31 @@ global define boolean Write() ``{
     SCR::Write(.sysconfig.dhcp.DHCLIENT_SET_HOSTNAME, dhcp_hostname?"yes":"no");
 
     if(!dhcp_hostname) {
+	/* remember the X authorization key */
+	string xauth_key = SCR::Read(.xauth.key);
+
+	/* change the hostname */
+	SCR::Execute(.target.bash, "/bin/hostname " + fqhostname);
+
+	/* update X authorization */
+	SCR::Write(.xauth.key, xauth_key);
+
 	/* write hostname */
-	SCR::Execute(.target.bash, "echo \"" + fqhostname + "\" >/etc/HOSTNAME");
+	SCR::Write(.target.string, "/etc/HOSTNAME", fqhostname + "\n");
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --quick --nonewpackage --module hostname");
+
     }
 
+    /* update /etc/resolv.conf */
     SCR::Write(.etc.resolv_conf.search, searchlist);
     SCR::Write(.etc.resolv_conf.nameserver, nameservers);
     SCR::Write(.etc.resolv_conf, nil);
+
+    /* update domain in /etc/resolv.conf */
+    if(size(searchlist) > 0)
+	SCR::Write(.resolver.domain, "");
+    else
+	SCR::Write(.resolver.domain, domain);
 
     return true;
 }

@@ -1,43 +1,39 @@
 /**
  * File:
- *   clients/lan.ycp
+ *   clients/modem.ycp
  *
  * Package:
  *   Configuration of network
  *
  * Summary:
- *   Network cards main file
+ *   Modems main file
  *
  * Authors:
  *   Michal Svec <msvec@suse.cz>
  *
  * $Id$
  *
- * Main file for network card configuration.
+ * Main file for modem configuration.
  * Uses all other files.
  *
  */
 
 {
 
-/***
- * <h3>Configuration of network</h3>
- */
-
 textdomain "network";
 
 /* The main () */
-y2milestone("Lan module started");
+y2milestone("Modem module started");
 y2milestone("----------------------------------------");
 
-include "network/lan/wizards.ycp";
+include "network/modem/wizards.ycp";
 
 /* main ui function */
-any ret = LanSequence();
+any ret = ModemSequence();
 y2debug("ret == %1", ret);
 
 /* Finish */
-y2milestone("Lan module finished");
+y2milestone("Modem module finished");
 return ret;
 
 }

@@ -26,16 +26,29 @@ textdomain "network";
 global list routes = [];
 
 /**
+ * All routes read at the start
+ */
+global list routes_init = [];
+
+/**
+ * "routes" file location
+ */
+string routes_file = "/etc/sysconfig/network/routes";
+
+/**
  * Read routing settings
  * @return true if success
  */
 global define boolean Read() ``{
 
     /* read route.conf */
-    if(SCR::Read(.target.size, "/etc/route.conf") != -1)
+    if(SCR::Read(.target.size, routes_file) > 0)
 	routes = SCR::Read(.routes);
 
-    y2debug("route_conf=%1", routes);
+    /* save routes to check for changes later */
+    routes_init = routes;
+
+    y2debug("routes=%1", routes);
     return true;
 }
 
@@ -45,26 +58,31 @@ global define boolean Read() ``{
  */
 global define boolean Write() ``{
 
-    /* at first stop the running routes */
-    //SCR::Execute(.target.bash, "/etc/init.d/route stop");
-
-    /* create if not exists, otherwise backup */
-    if(SCR::Read(.target.size, "/etc/route.conf") == -1)
-	SCR::Execute(.target.bash, "/bin/touch /etc/route.conf");
-    else
-	SCR::Execute(.target.bash, "/bin/cp /etc/route.conf /etc/route.conf.YaST2save");
-
-    /* workaround bug [#4476] */
-    if(routes == []) {
-	SCR::Execute(.target.bash, "/bin/cp /dev/null /etc/route.conf");
+    /* Check if there is anything to do */
+    if(routes_init == routes) {
+	y2debug("Routes not modified");
 	return true;
     }
 
-    /* update the route.conf */
-    any ret = SCR::Write(.routes, routes);
+    /* at first stop the running routes */
+    // FIXME SCR::Execute(.target.bash, "/etc/init.d/route stop");
+
+    /* create if not exists, otherwise backup */
+    if(SCR::Read(.target.size, routes_file) < 0)
+	SCR::Write(.target.string, routes_file, "");
+    else
+	SCR::Execute(.target.bash, "/bin/cp "+routes_file+" "+routes_file+".YaST2save");
+
+    any ret = false;
+    if(routes == [])
+	/* workaround bug [#4476] */
+	ret = SCR::Write(.target.string, routes_file, "");
+    else
+	/* update the routes config */
+	ret = SCR::Write(.routes, routes);
 
     /* and finally set up the new routes */
-    //SCR::Execute(.target.bash, "/etc/init.d/route start");
+    // FIXME SCR::Execute(.target.bash, "/etc/init.d/route start");
 
     return ret == true;
 }

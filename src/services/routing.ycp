@@ -33,8 +33,10 @@ include "ui/wizard_dialog.ycp";
  */
 global define symbol RoutingMainDialog() ``{
 
+    /* Routing dialog caption */
     string caption = _("Routing configuration");
 
+    /* Routing dialog help */
     string help = _("<p>The routing can be set up in this dialog. The
     default route matches every possible destination, but poorly, so that
     if any other entry exists that matches the required address it will be
@@ -74,7 +76,7 @@ global define symbol RoutingMainDialog() ``{
     y2debug("table_items=%1",table_items);
     y2debug("items=%1",items);
 
-    /* contents of the main dialog */
+    /* Routing dialog contents */
     term contents = `HBox(`HSpacing(5),`VBox(`VStretch(),
 	`ComboBox(`id(`gw), `opt(`editable, `hstretch), _("Default &gateway"), [ defgw ]),
 	`VSpacing(1),
@@ -88,7 +90,6 @@ global define symbol RoutingMainDialog() ``{
 	`VStretch()),
 	`HSpacing(5));
 
-    //Wizard::CreateDialog();
     Wizard::SetContents(caption,contents,help,true,true);
 
     UI::ChangeWidget(`id(`table), `Items, table_items);
@@ -102,8 +103,6 @@ global define symbol RoutingMainDialog() ``{
      * check_*
      * devices
      * current item should stay the same
-     * settings read
-     * settings update
      */
     while(true) {
 	UI::ChangeWidget(`id(`edit), `Enabled, expert && (items>0));
@@ -201,7 +200,6 @@ global define symbol RoutingMainDialog() ``{
     y2debug("table_items=%1",table_items);
     y2debug("route_conf=%1",route_conf);
 
-    //UI::CloseDialog();
     return ret;
 }
 

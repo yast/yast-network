@@ -3,7 +3,7 @@
  *   include/network/lan/manual.ycp
  *
  * Package:
- *   Configuration of network cards
+ *   Configuration of network
  *
  * Summary:
  *   Manual network card configuration
@@ -35,19 +35,20 @@ include "network/routines.ycp";
  */
 global define symbol ManualDialog() ``{
 
+    /* Manual dialog caption */
     string caption = _("Manual network card configuration");
 
-    /* help for manual dialog 1/3 */
+    /* Manual dialog help 1/3 */
     string help = _("<p>Here, set up your networking device.
 The values will be written into <i>/etc/modules.conf</i>.</p>")
         +
-    /* help for manual dialog 2/3 */
+    /* Manual dialog help 2/3 */
     _("<p>Options for the module should be written in the format
 <i>option</i>=<i>value</i> and each entry should be space separated,
 e.g. <i>io=220 irq=5</i>. <b>Note:</b> If  two cards are configured
 with the same module name, options will be merged while saving.</p>")
         +
-    /* help for manual dialog 3/3 */
+    /* Manual dialog help 3/3 */
     _("<p>You can get a list of available network cards by pressing the
 <b>List</b> button.</p>");
 
@@ -65,6 +66,7 @@ with the same module name, options will be merged while saving.</p>")
     /* satisfy check_ycp -- don't translate this string */
     string PCMCIA = "&PCMCIA";
 
+    /* Manual dialog contents */
     term contents = `HBox(
 	`HSpacing(2),
 	// frame label
@@ -184,13 +186,14 @@ global define symbol ManualSelection() ``{
     list hwlist = lookup(db, type, []);
     list cards = hwlist2items(hwlist, 0);
 
-    /* dialog caption */
+    /* Manual selection caption */
     string caption = _("Manual network card selection");
 
-    /* diolog help text */
+    /* Manual selection help */
     string helptext = _("<p>Select the network card to configure. Search
 for a particular network card by entering the name in the search entry.</p>");
 
+    /* Manual selection contents */
     term contents = `VBox(
 	/* Selection box label */
 	`ReplacePoint(`id(`rp), `SelectionBox(`id(`cards), _("Se&lect network card"), cards)),

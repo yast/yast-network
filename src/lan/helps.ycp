@@ -3,10 +3,10 @@
  *   include/network/lan/helps.ycp
  *
  * Package:
- *   Configuration of network cards
+ *   Configuration of network
  *
  * Summary:
- *   Help texts of all the dialogs.
+ *   Help texts of all the network cards dialogs.
  *
  * Authors:
  *   Michal Svec <msvec@suse.cz>
