@@ -246,8 +246,8 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
     /* UPDATE VARIABLES */
 
     if(ret == `next || ret == `Details || ret == `IPDetails) {
-	demand = UI::QueryWidget(`id(`demand), `Value) ? "yes" : "no",
-	modifydns = UI::QueryWidget(`id(`modifydns), `Value) ? "yes" : "no",
+	demand = UI::QueryWidget(`id(`demand), `Value) ? "yes" : "no";
+	modifydns = UI::QueryWidget(`id(`modifydns), `Value) ? "yes" : "no";
 
 	/* update provider info */
 	Provider::Provider = union(Provider::Provider, $[

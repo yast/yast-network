@@ -2,6 +2,7 @@ WIP, not yet functional!
 
 - dsl:
   - add/edit/delete (#15301, #17217, #19855)
+  - enable to change the device start mode (#14315)
 
 - general:
   - new hosts manipulation and editor (#20970)

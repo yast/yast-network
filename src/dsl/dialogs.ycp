@@ -61,11 +61,12 @@ _("<p>FIXME
 	/* ComboBox item */
 	// `item(`id("ppptp"), _("PPP tunelling protocol"), pppmode == "ppptp"),
 	/* ComboBox item */
-	`item(`id("capi-adsl"), _("CAPI for ADSL"), pppmode == "capi-adsl"),
+	// `item(`id("capi-adsl"), _("CAPI for ADSL"), pppmode == "capi-adsl"),
     ];
     /* ComboBox label */
     term pppwidget = `Left(`ComboBox(`id(`pppmode), `opt(`hstretch,`notify), _("PPP &mode"), pppmodes));
 
+    string startmode = DSL::startmode;
     string interface = DSL::interface; // FIXME == "" ? DSLDevice::device : DSL::interface;
     string vpivci = DSL::vpivci;
 
@@ -104,6 +105,11 @@ _("<p>FIXME
 		    `PushButton(`id(`lan), _("&Configure network cards"))
 		)
 	    ), `HSpacing(2))),
+	    `VSpacing(1),
+	    `Left(`ComboBox(`id(`startmode), _("&Device activation"), [
+		`item(`id("manual"), _("Manualy"), startmode == "manual"),
+		`item(`id("onboot"), _("On boot"), startmode == "onboot"),
+	    ])),
 	    `VSpacing(1)
 	    ), `HSpacing(2))),
 	`HSpacing(8)
@@ -190,6 +196,7 @@ _("<p>FIXME
 	    DSL::interface = UI::QueryWidget(`id(`interface), `Value);
 	else if(pppmode == "pppoatm")
 	    DSL::vpivci = UI::QueryWidget(`id(`vpivci), `Value);
+	DSL::startmode = UI::QueryWidget(`id(`startmode), `Value);
     }
 
     return ret;
