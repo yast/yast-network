@@ -22,6 +22,7 @@ map<string, map<string,any> > widget_descr = $[
 	/* CheckBox label */
 	// is the interface administrable by users (as opposed to root)
 	"label": _("&User Controlled"),
+	"opt": [`notify],
 	"help":
 	// Details dialog help
 _("<p>When <b>User Controlled</b> is enabled, ordinary users can

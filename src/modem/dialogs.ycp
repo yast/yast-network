@@ -274,10 +274,12 @@ should be in your modem manual.</p>") +
 
     /* MAIN CYCLE */
 
-    symbol ret = nil;
+    any ret = nil;
     while(true) {
+	usercontrol = (boolean) UI::QueryWidget (`id ("USERCONTROL"), `Value);
+	UI::ChangeWidget (`id ("DIALPREFIXREGEX"), `Enabled, usercontrol);
 
-	ret = (symbol) UI::UserInput();
+	ret = UI::UserInput();
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel) {
@@ -291,7 +293,8 @@ should be in your modem manual.</p>") +
 	    /* check_* */
 	    break;
 	}
-	else {
+	else if(ret != "USERCONTROL")
+	{
 	    y2error("unexpected retcode: %1", ret);
 	    continue;
 	}
@@ -305,11 +308,14 @@ should be in your modem manual.</p>") +
 	Modem::Init1 = (string) UI::QueryWidget(`id(`Init1), `Value);
 	Modem::Init2 = (string) UI::QueryWidget(`id(`Init2), `Value);
 	Modem::Init3 = (string) UI::QueryWidget(`id(`Init3), `Value);
-	Modem::usercontrol = (boolean) UI::QueryWidget (`id ("USERCONTROL"), `Value);
-	Modem::DialPrefixRx = (string) UI::QueryWidget (`id ("DIALPREFIXREGEX"), `Value);
+	Modem::usercontrol = usercontrol;
+	if (usercontrol)
+	{
+	    Modem::DialPrefixRx = (string) UI::QueryWidget (`id ("DIALPREFIXREGEX"), `Value);
+	}
     }
 
-    return ret;
+    return (symbol) ret;
 }
 
 /* EOF */

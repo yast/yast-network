@@ -1,7 +1,8 @@
 -------------------------------------------------------------------
-Fri Aug 20 13:26:47 CEST 2004 - mvidner@suse.cz
+Mon Aug 23 10:19:29 CEST 2004 - mvidner@suse.cz
 
 - Enable USERCONTROL for new modem, DSL and ISDN interfaces (#43945).
+- Dial Prefix Regex is enabled only for user controlled modems (#43945).
 
 -------------------------------------------------------------------
 Thu Aug 19 09:58:06 CEST 2004 - mvidner@suse.cz
