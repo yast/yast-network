@@ -211,12 +211,14 @@ global define boolean Import(map settings) {
  * @return autoinstallation settings
  */
 global define map Export() {
-    return $[
-	"hostname"	: hostname,
-	"domain"	: domain,
-	"nameservers"	: eval(nameservers),
-	"searchlist"	: eval(searchlist),
-    ];
+    map<string, any> expdns = $[];
+    if (size(hostname)>0)
+        expdns["hostname"] = hostname;
+    if (size(nameservers)>0)
+        expdns["nameservers"] = eval(nameservers);
+    if (size(searchlist) >0)
+        expdns["searchlist"] = eval(searchlist);
+    return expdns;
 }
 
 /**

@@ -163,10 +163,11 @@ global define boolean Import(map settings) {
  * @return autoinstallation settings
  */
 global define map Export() {
-    return $[
-	"routes": eval(Routes),
-	"ip_forward": Forward
-    ];
+    map<string, any> exproute = $[];
+    if (size(eval(Routes))> 0)
+        exproute["routes"] = eval(Routes);
+    exproute["ip_forward"] = Forward;
+    return exproute;
 }
 
 /**
