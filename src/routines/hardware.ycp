@@ -104,7 +104,7 @@ global define boolean ReadHardware(string hwtype) ``{
 	    string hp = card["hotplug"]:"";
 	    if(hp == "pcmcia" || hp == "cardbus")
 		change(one, "hotplug", "pcmcia");
-	    else if(hotplug == "usb")
+	    else if(hp == "usb")
 		change(one, "hotplug", "usb");
 	}
 
