@@ -67,9 +67,28 @@ define void load_modules () {
 }
 
 
+/**
+ *  Keep this function in sync with the create_interface code
+ *  in inst_finish.
+ */
+define boolean do_network_setup ()
+{
+    if (Mode::test)
+	return false;
+
+    if (Arch::s390)
+	return false;
+
+    if (Mode::vnc || Mode::usessh)
+	return false;
+
+    return true;
+}
+
+
 if (mode == `up)
 {
-    if (!Mode::test && !Arch::s390)
+    if (do_network_setup ())
     {
 	SCR::Execute (.target.bash, "/sbin/ifconfig lo 127.0.0.1 up");
 
@@ -132,7 +151,7 @@ if (mode == `dn)
 	SCR::Execute (.target.bash, "/sbin/rcportmap stop");
     }
 
-    if (!Mode::test && !Arch::s390)
+    if (do_network_setup ())
     {
 	if ((Mode::boot == "nfs") || (Mode::boot == "http") ||
 	    (Mode::boot == "smb") || (Mode::boot == "ftp"))

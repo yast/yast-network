@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Apr 05 18:56:53 CEST 2004 - arvin@suse.de
+
+- don't setup and shutdown network if it has already been setup
+  before yast is started (bug #38354)
+
+-------------------------------------------------------------------
 Mon Apr  5 17:31:35 CEST 2004 - msvec@suse.cz
 
 - workaround bad german routing.desktop translation (#36936)
@@ -8,9 +14,9 @@ Mon Apr  5 17:31:35 CEST 2004 - msvec@suse.cz
 -------------------------------------------------------------------
 Sun Apr  4 06:14:25 CEST 2004 - nashif@suse.de
 
-- create network config files using mac or pci ids when 
+- create network config files using mac or pci ids when
   auto-installing (#37186)
-- fixed module parsing due to change in data structure in 
+- fixed module parsing due to change in data structure in
   auto-install mode
 - 2.9.26
 
