@@ -1,6 +1,15 @@
 -------------------------------------------------------------------
-Fri Mar 11 13:58:19 CET 2005 - mvidner@suse.cz
+Fri Mar 11 15:48:21 CET 2005 - mvidner@suse.cz
 
+- Use NetworkDevices::ConcealSecrets not to log sensitive information
+  (#65741).
+- Multiple autoinstallation fixes by means of a rewrite (nashif)
+  * #65976 - autoyast does not write network configuration
+  correctly. Use proposal method to setup network devices
+  for autoyast and handle multiple interfaces correctly
+  * #60716 - autoyast detects myrinet as ethX
+  * #67405 - autoyast configures two interfaces
+  * #65353 - ability to provide static network information for autoyast
 - Added WLAN channels 13 and 14 to the default list (#67150).
 - Enable user control of newly added WLAN cards (#63767).
 
