@@ -1,49 +1,52 @@
+-------------------------------------------------------------------
+Mon Jan 20 18:35:31 CET 2003 - msvec@suse.de
+
 - providers: quote variables (they are enclosed in 's) (#22776)
 - routing: fill in available devices (#21122)
-- bugfixes
+- other bugfixes
 - 2.7.1
 
 -------------------------------------------------------------------
 Wed Jan  8 14:54:45 CET 2003 - msvec@suse.de
 
 - dsl:
-  - add/edit/delete (#15301, #17217, #19855)
-  - enable to change the device start mode (#14315)
-  - propose the network card config if none found
+  o add/edit/delete (#15301, #17217, #19855)
+  o enable to change the device start mode (#14315)
+  o propose the network card config if none found
 
 - general:
-  - new hosts manipulation and editor (#20970)
-  - display info popup during proposal detection
-  - new devices manipulation
+  o new hosts manipulation and editor (#20970)
+  o display info popup during proposal detection
+  o new devices manipulation
 
 - hardware:
-  - ARCnet support
-  - FDDI support
-  - preliminary MyriNet support (#21129)
+  o ARCnet support
+  o FDDI support
+  o preliminary MyriNet support (#21129)
 
 - lan:
-  - editing of hardware settings (#15062, #10077, #12378)
-  - remove kernel module after delete
-  - warning if device number changed (#21288)
-  - propose also if install.inf present but no hardware found
-  - preliminary virtual aliases support (only edit|delete so far)
+  o editing of hardware settings (#15062, #10077, #12378)
+  o remove kernel module after delete
+  o warning if device number changed (#21288)
+  o propose also if install.inf present but no hardware found
+  o preliminary virtual aliases support (only edit|delete so far)
 
 - providers:
-  - UI mode (#6244, #16291, #21499)
-  - new providers handling (#17496, #18356)
-  - correctly handle the providers with unknown type
-  - correctly handle the nameservers requirement
-  - check the name servers IP addresses
+  o UI mode (#6244, #16291, #21499)
+  o new providers handling (#17496, #18356)
+  o correctly handle the providers with unknown type
+  o correctly handle the nameservers requirement
+  o check the name servers IP addresses
 
 - proxy:
-  - display info popup at the end of configuration
-  - use /root/.curlrc for storing proxy user and password (#21431)
-  - added minimal input constraints (#18791)
-  - allow to turn on|off with a checkbox
+  o display info popup at the end of configuration
+  o use /root/.curlrc for storing proxy user and password (#21431)
+  o added minimal input constraints (#18791)
+  o allow to turn on|off with a checkbox
 
 - routing:
-  - fixed crash (#21334)
-  - minor GUI clenup and fixes
+  o fixed crash (#21334)
+  o minor GUI clenup and fixes
 
 - 2.7.0
 

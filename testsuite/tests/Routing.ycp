@@ -1,13 +1,16 @@
 {
 
 include "testsuite.ycp";
-import "Routing";
 
 map READ = $[
     "target" : $[ "size" : 1 ],
     "routes" : ["r1", "r2"],
     "sysconfig" : $[ "sysctl" : $[ "IP_FORWARD" : "yes" ]],
+    "probe" : $[ "system" : [] ],
 ];
+
+TESTSUITE_INIT([READ], nil);
+import "Routing";
 
 DUMP("Read");
 TEST(``(Routing::Read()), [READ], nil);
