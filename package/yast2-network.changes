@@ -1,8 +1,10 @@
 -------------------------------------------------------------------
-Thu Feb 27 14:29:16 CET 2003 - mvidner@suse.de
+Thu Feb 27 15:34:32 CET 2003 - mvidner@suse.de
 
 - Sometimes package installation wrongly returned abort (#24316).
 - Don't select custom providers if there are none (#23994).
+- Fixed disabling the USB and PCMCIA checkboxes (#24332).
+- 2.7.21
 
 -------------------------------------------------------------------
 Thu Feb 27 11:39:15 CET 2003 - arvin@suse.de
