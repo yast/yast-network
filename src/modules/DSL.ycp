@@ -175,7 +175,7 @@ global define boolean Read() ``{
     /* Progress step 5/5 */
     ProgressNextStage(_("Reading network card configuration..."));
     Progress::off();
-    Lan::Read();
+    if(!proposal_valid) Lan::Read();
     Progress::on();
     sleep(sl);
 

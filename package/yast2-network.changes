@@ -1,3 +1,7 @@
+-------------------------------------------------------------------
+Mon Feb 17 14:40:49 CET 2003 - msvec@suse.de
+
+- don't read the lan devices in DSL proposal (#23569)
 - allow comma in phone number (#23678)
 - 2.7.9
 

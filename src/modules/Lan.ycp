@@ -697,7 +697,10 @@ global define boolean Propose() ``{
 
     ipaddr = InstallInf["ipaddr"]:"";
     bootproto = InstallInf["bootproto"]:"static";
+    y2debug("ipaddr,bootproto=%1,%2", ipaddr, bootproto);
     if(bootproto == "static" && ipaddr != "" && ipaddr != nil) {
+
+	y2debug("static proposal");
 
 	/* propose address setup from /etc/install.inf */
 	netmask = InstallInf["netmask"]:"";
@@ -732,6 +735,7 @@ global define boolean Propose() ``{
 
     }
     else {
+	y2debug("DHCP proposal");
 	ipaddr = "";
 	bootproto = "dhcp"; // support also bootp?
 	DNS::dhcp_hostname = true;

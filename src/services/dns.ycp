@@ -160,7 +160,7 @@ disabled during the connection.</p>");
 	    ),
 	    `VBox(
 		/* TextEntry label */
-		`TextEntry(`id(`s1), _("D&omain search 1"), s1),
+		`TextEntry(`id(`s1), _("Doma&in search 1"), s1),
 		/* TextEntry label */
 		`TextEntry(`id(`s2), _("Do&main search 2"), s2),
 		/* TextEntry label */

@@ -69,6 +69,7 @@ global define boolean ReadInstallInf() ``{
     // FIXME: alias = eth0 tulip
     // FIXME: options = ne io=0x200
 
+    y2milestone("InstallInf(%1)", InstallInf);
     return true;
 }
 
