@@ -165,59 +165,59 @@ define map FromAY(map input) {
  */
 define map ToAY (map settings) {
     list interfaces = [];
-    list discard = ["UNIQUE"];
+    list discard = ["UNIQUE", "_nm_name"];
     foreach(string device, map devsmap, settings["devices"]:$[], {
-	foreach(string num, map devmap, (map<string,map>) devsmap, {
-	    map<string, any> newmap = $[];
-	    foreach(string key, any val, (map<string,any>) devmap, {
-			y2milestone("Adding: %1=%2", key, val);
-                        if (key!="_aliases")
-                        {
-                        if ( size((string)val) > 0 && ( !contains(discard, key) && !contains(discard, tolower(key))))
-                            newmap[tolower(key)] = (string)val;
-                        }
-                        else
-                        {
-                            // FIXME: handle aliases
-                            y2debug("val: %1", val);
-                        }
-	    });
-	    newmap["device"] = device + num;
-	    interfaces = add(interfaces, newmap);
-	});
-    });
+            foreach(string num, map devmap, (map<string,map>) devsmap, {
+                map<string, any> newmap = $[];
+                foreach(string key, any val, (map<string,any>) devmap, {
+                    y2milestone("Adding: %1=%2", key, val);
+                    if (key!="_aliases")
+                    {
+                    if ( size((string)val) > 0 && ( !contains(discard, key) && !contains(discard, tolower(key))))
+                    newmap[tolower(key)] = (string)val;
+                    }
+                    else
+                    {
+                    // FIXME: handle aliases
+                    y2debug("val: %1", val);
+                    }
+                    });
+                newmap["device"] = device + num;
+                interfaces = add(interfaces, newmap);
+                });
+            });
 
-	// Modules
+    // Modules
 
     list modules = [];
     foreach(string device, string mod, settings["modules", "alias"]:$[], {
-	    map newmap = $[];
-	    newmap["device"] =  device;
-	    newmap["module"] =  mod;
-		newmap["options"] = settings["modules", "options", mod]:"";
-	    modules = add(modules, newmap);
-    });
+            map newmap = $[];
+            newmap["device"] =  device;
+            newmap["module"] =  mod;
+            newmap["options"] = settings["modules", "options", mod]:"";
+            modules = add(modules, newmap);
+            });
 
-	map config = settings["config"]:$[];
-	map dhcp = config["dhcp"]:$[];
-	boolean dhcp_resolv = dhcp["DHCLIENT_MODIFY_RESOLV_CONF"]:false;
-	boolean dhcp_hostname = dhcp["DHCLIENT_SET_HOSTNAME"]:false;
-	map dns = settings["dns"]:$[];
-	dns["dhcp_hostname"] = dhcp_hostname;
-	dns["dhcp_resolv"] = dhcp_resolv;
-	map dhcpopts = $[];
-	if (haskey(dhcp, "DHCLIENT_HOSTNAME_OPTION"))
-		dhcpopts["dhclient_hostname_option"] = dhcp["DHCLIENT_HOSTNAME_OPTION"]:"AUTO";
-	if (haskey(dhcp, "DHCLIENT_ADDITIONAL_OPTIONS"))
+    map config = settings["config"]:$[];
+    map dhcp = config["dhcp"]:$[];
+    boolean dhcp_resolv = dhcp["DHCLIENT_MODIFY_RESOLV_CONF"]:false;
+    boolean dhcp_hostname = dhcp["DHCLIENT_SET_HOSTNAME"]:false;
+    map dns = settings["dns"]:$[];
+    dns["dhcp_hostname"] = dhcp_hostname;
+    dns["dhcp_resolv"] = dhcp_resolv;
+    map dhcpopts = $[];
+    if (haskey(dhcp, "DHCLIENT_HOSTNAME_OPTION"))
+        dhcpopts["dhclient_hostname_option"] = dhcp["DHCLIENT_HOSTNAME_OPTION"]:"AUTO";
+    if (haskey(dhcp, "DHCLIENT_ADDITIONAL_OPTIONS"))
         dhcpopts["dhclient_additional_options"] = dhcp["DHCLIENT_ADDITIONAL_OPTIONS"]:"";
-	if (haskey(dhcp, "DHCLIENT_CLIENT_ID"))
+    if (haskey(dhcp, "DHCLIENT_CLIENT_ID"))
         dhcpopts["dhclient_client_id"] = dhcp["DHCLIENT_CLIENT_ID"]:"";
 
 
-	map ret = $[];
-	if (size(modules) > 0 )
-		ret["modules"] = modules;
-	if (size(dns) > 0 )
+    map ret = $[];
+    if (size(modules) > 0 )
+        ret["modules"] = modules;
+    if (size(dns) > 0 )
         ret["dns"] = dns;
     if (size(dhcpopts) > 0 )
         ret["dhcp_options"] = dhcpopts;
@@ -226,7 +226,7 @@ define map ToAY (map settings) {
     if (size(interfaces) > 0 )
         ret["interfaces"] = interfaces;
 
-	return (ret);
+    return (ret);
 
 }
 
