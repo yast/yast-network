@@ -475,6 +475,11 @@ global define void SelectHW(integer which) ``{
     SelectHardware(which);
 }
 
+/**
+ * Return true if the device is used by any DSL connection
+ * @param device device to be tested
+ * @return true if yes
+ */
 global define boolean UsesDevice(string device) ``{
     return size(LocateDevices("DEVICE", device)) > 0;
 }

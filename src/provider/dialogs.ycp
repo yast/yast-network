@@ -180,6 +180,7 @@ global define symbol ProvidersDialog(boolean edit) ``{
 	}
 	/* next */
 	else if(ret == `next || ret == `new) {
+	    UpdateProvider(ret);
 	    break;
 	}
 	/* custom providers */

@@ -1,3 +1,6 @@
+- provider:
+  o recognize provider change in ncurses (#25432)
+
 - dns:
   o restart only dhcp services
 
