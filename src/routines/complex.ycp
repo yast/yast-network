@@ -344,7 +344,7 @@ global define string ProviderName(string provider) ``{
 	return "";
 
     Provider::Select(provider);
-    string nam = Provider::Provider["PROVIDER"]:provider;
+    string nam = Provider::Current["PROVIDER"]:provider;
     if(nam == nil || nam == "") return provider;
     return nam;
 }

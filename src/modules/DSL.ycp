@@ -422,7 +422,7 @@ global define boolean Commit() ``{
 	    "UNIQUE"	: unique,
 	    "PPPMODE"		: pppmode,
 	    "PROVIDER"		: Provider::Name,
-	    // "PROVIDER_NAME"	: Provider::Provider["PROVIDER"]:"",
+	    // "PROVIDER_NAME"	: Provider::Current["PROVIDER"]:"",
 	    "PPPD_OPTIONS"	: PPPDoptions,
 	];
 	change(newdev, "DEVICE", interface);

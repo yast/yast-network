@@ -150,12 +150,12 @@ global define symbol ProvidersDialog(boolean edit) ``{
 	    /* System provider -> SelectSystem */
 	    Provider::SelectSystem(provider);
 
-	string info = Provider::Provider["HOMEPAGE"]:"";
+	string info = Provider::Current["HOMEPAGE"]:"";
 	/* Label text (param is URL) */
 	if(info != "") info = sformat(_("Home Page: %1"), info);
 	UI::ChangeWidget(`id(`homepage), `Value, info);
 
-	info = Provider::Provider["HOTLINE"]:"";
+	info = Provider::Current["HOTLINE"]:"";
 	/* Label text (param is phone) */
 	if(info != "") info = sformat(_("Hot Line: %1"), info);
 	UI::ChangeWidget(`id(`hotline), `Value, info);

@@ -304,7 +304,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 
 	    /* Check default route for remote IP (#10739) */
 	    if(Provider::Select(dev)) {
-		string ip = Provider::Provider["IPADDR"]:"";
+		string ip = Provider::Current["IPADDR"]:"";
 		string defgw = Routing::GetGateway();
 		y2debug("ip=%1", ip);
 		y2debug("defgw=%1", defgw);

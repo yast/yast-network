@@ -32,12 +32,12 @@ global define symbol IPDetailsDialog() ``{
     string type = Provider::CurrentType();
 
     /* FIXME: help texts, contents */
-    string Local_IP = Provider::Provider["IPADDR"]:"";
-    string Remote_IP = Provider::Provider["REMOTE_IPADDR"]:"";
+    string Local_IP = Provider::Current["IPADDR"]:"";
+    string Remote_IP = Provider::Current["REMOTE_IPADDR"]:"";
 
-    string encap = Provider::Provider["ENCAP"]:"syncppp";
-    boolean defaultroute = Provider::Provider["DEFAULTROUTE"]:"yes" == "yes";
-    boolean modifyip = Provider::Provider["MODIFYIP"]:"yes" == "yes";
+    string encap = Provider::Current["ENCAP"]:"syncppp";
+    boolean defaultroute = Provider::Current["DEFAULTROUTE"]:"yes" == "yes";
+    boolean modifyip = Provider::Current["MODIFYIP"]:"yes" == "yes";
 
     /* DIALOG TEXTS and  DIALOG CONTENTS */
 
@@ -208,7 +208,7 @@ single machines or subnetworks through this provider.</p>");
     /* UPDATE VARIABLES */
 
     if(ret == `next) {
-        Provider::Provider = union(Provider::Provider, $[
+        Provider::Current = union(Provider::Current, $[
             "IPADDR"		: Local_IP,
             "REMOTE_IPADDR"	: Remote_IP,
             "DEFAULTROUTE"	: defaultroute ? "yes" : "no",

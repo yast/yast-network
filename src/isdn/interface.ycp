@@ -175,7 +175,7 @@ in the DSL configuration dialog.</p>
 
     }
     if (ret == `next) {
-        y2debug("Provider::Provider=%1", Provider::Provider);
+        y2debug("Provider::Current=%1", Provider::Current);
         y2debug("ISDN::interface=%1", ISDN::interface);
         ISDN::skip = true;
     }

@@ -36,7 +36,7 @@ global string Name = "";
 /**
  * Current provider
  */
-global map Provider = $[];
+global map Current = $[];
 
 /*-----------------*/
 /* LOCAL VARIABLES */
@@ -137,10 +137,10 @@ global define boolean Read(string type) ``{
 	path prov = add(.sysconfig.network.providers.v, name);
 	map p = listmap(string i, SCR::Dir(prov), ``{
 	    map ii = $[];
-	    change(ii, i, String::UnQuote((string) SCR::Read(add(prov, i))));
+	    ii[i] = String::UnQuote((string) SCR::Read(add(prov, i)));
 	    return ii;
 	});
-	change(Providers, name, p);
+	Providers[name] = p;
     });
     OriginalProviders = (map) eval(Providers);
 
@@ -233,11 +233,11 @@ global define boolean Write() ``{
 
 	/* Ensure all neccesary items are present */
 	if(!haskey(provider, "MODEMSUPPORTED"))
-	    change(provider, "MODEMSUPPORTED", "yes");
+	    provider["MODEMSUPPORTED"] = "yes";
 	if(!haskey(provider, "ISDNSUPPORTED"))
-	    change(provider, "ISDNSUPPORTED", "no");
+	    provider["ISDNSUPPORTED"] = "no";
 	if(!haskey(provider, "DSLSUPPORTED"))
-	    change(provider, "DSLSUPPORTED", "no");
+	    provider["DSLSUPPORTED"] = "no";
 
 	/* Write all values */
 	foreach(string k, string v, provider, ``{
@@ -275,7 +275,7 @@ global define boolean Write() ``{
  */
 global define map Import(map providers) ``{
     Name = "";
-    Provider = $[];
+    Current = $[];
     Providers = (map) eval(providers);
     OriginalProviders = nil;
     modified = true;
@@ -307,12 +307,12 @@ global define boolean SelectSystem(path name) ``{
 	Name = substring(Name, 1, size(Name) - 2);
 
     list values = SCR::Dir(name);
-    Provider = listmap(string value, values, ``{
+    Current = listmap(string value, values, ``{
 	return $[ value: SCR::Read(add(name, value)) ];
     });
 
     y2debug("Name=%1", Name);
-    y2debug("Provider=%1", Provider);
+    y2debug("Current=%1", Current);
 
     return true;
 }
@@ -325,7 +325,7 @@ global define boolean SelectSystem(path name) ``{
 global define boolean Select(string name) ``{
 
     Name = "";
-    Provider = $[];
+    Current = $[];
 
     y2debug("name=%1", name);
     if(name != "" && !haskey(Providers, name)) {
@@ -334,22 +334,22 @@ global define boolean Select(string name) ``{
     }
 
     Name = name;
-    Provider = eval(Providers[Name]:$[]);
+    Current = eval(Providers[Name]:$[]);
     Type = CurrentType();
 
-    if(Provider == $[]) {
+    if(Current == $[]) {
 	/* Default provider map */
-	Provider = $[
+	Current = $[
 	    /* FIXME: remaining items */
 	];
 
 	/* Variable key -> not functional #16701 */
-	change(Provider, toupper(Type) + "SUPPORTED", "yes");
+	Current[toupper(Type) + "SUPPORTED"] = "yes";
     }
 
     y2debug("Name=%1", Name);
     y2debug("Type=%1", Type);
-    y2debug("Provider=%1", Provider);
+    y2debug("Current=%1", Current);
 
     return true;
 }
@@ -413,7 +413,7 @@ global define boolean Commit() ``{
 
     if(operation == `add || operation == `edit) {
 	y2debug("Providers=%1", Providers);
-	change(Providers, Name, Provider);
+	Providers[Name] = Current;
 	y2debug("Providers=%1", Providers);
     }
     else if(operation == `delete) {
@@ -431,7 +431,7 @@ global define boolean Commit() ``{
 
     Name = "";
     Type = "";
-    Provider = $[];
+    Current = $[];
     modified = true;
     operation = nil;
     return true;
@@ -469,7 +469,7 @@ global define boolean CloneSystem(path name) ``{
  */
 define boolean CloneProvider() ``{
 
-    string fullname = Provider["PROVIDER"]:"";
+    string fullname = Current["PROVIDER"]:"";
     y2debug("fullname=%1", fullname);
 
     /* Split possible (1) from the end */
@@ -478,7 +478,7 @@ define boolean CloneProvider() ``{
 	y2debug("fullname=%1", fullname);
     }
 
-    /* Generate unique full name (Provider["PROVIDER"]) */
+    /* Generate unique full name (Current["PROVIDER"]) */
     integer suffix = 0;
     string gen = fullname;
     list forbidden = maplist(string k, map v, Providers, ``(v["PROVIDER"]:""));
@@ -486,7 +486,7 @@ define boolean CloneProvider() ``{
 	suffix = suffix + 1;
 	gen = sformat("%1 (%2)", fullname, suffix);
     }
-    Provider["PROVIDER"] = gen;
+    Current["PROVIDER"] = gen;
     y2debug("fullname=%1", gen);
 
     /* Generate unique Name */
@@ -570,7 +570,7 @@ global define list Summary(boolean split) ``{
 	if(phone != "" && phone != nil)
 	    /* Summary text description (%1 is provider name) */
 	    descr = sformat(_("Configured as %1 (phone %2)"), name, phone);
-	change(provs, Summary::Device(provmap["PROVIDER"]:"", descr));
+	provs[Summary::Device(provmap["PROVIDER"]:"")] = descr;
     });
     summary = Summary::DevicesList(provs);
 
@@ -613,11 +613,11 @@ global define string CurrentType() ``{
     y2debug("Type=%1", Type);
     y2debug("GlobalType=%1", GlobalType);
     if(Type != "") return Type;
-    list supp = filter(string t, Supported, ``(Provider[toupper(t+"SUPPORTED")]:"no" == "yes"));
+    list supp = filter(string t, Supported, ``(Current[toupper(t+"SUPPORTED")]:"no" == "yes"));
     y2debug("supp=%1", supp);
     if(size(supp) < 1) {
 	if(GlobalType != "all") return GlobalType;
-	y2error("None supported type: %1", Provider);
+	y2error("None supported type: %1", Current);
 	return "";
     }
     return supp[0]:"";

@@ -29,8 +29,8 @@ global define string ProviderInfoText() ``{
     string info = "";
     string type = Provider::CurrentType();
 
-    string hp = Provider::Provider["HOMEPAGE"]:"";
-    string hl = Provider::Provider["HOTLINE"]:"";
+    string hp = Provider::Current["HOMEPAGE"]:"";
+    string hl = Provider::Current["HOTLINE"]:"";
 
     if(hp != "")
 	/* Provider info (%1 is URL) */
@@ -41,19 +41,19 @@ global define string ProviderInfoText() ``{
 	info = info + sformat(_("<p>Hotline: %1</p>"), hl);
 
 
-    if(Provider::Provider["DIALMESSAGE1"]:"" != "" || Provider::Provider["DIALMESSAGE2"]:"" != "") {
+    if(Provider::Current["DIALMESSAGE1"]:"" != "" || Provider::Current["DIALMESSAGE2"]:"" != "") {
 	info = info + sformat("<p>%1%2</p>",
-		Provider::Provider["DIALMESSAGE1"]:"",
-		Provider::Provider["DIALMESSAGE2"]:"");
+		Provider::Current["DIALMESSAGE1"]:"",
+		Provider::Current["DIALMESSAGE2"]:"");
     }
-    else if(Provider::Provider["PHONE"]:"" == "" && type != "dsl") {
+    else if(Provider::Current["PHONE"]:"" == "" && type != "dsl") {
 	if(hp != "" && hl != "") {
 	    /* Provider info text */
 	    string it = _("<p>To register for <b>%1</b> and find the best
 dialing number, connect to the home page <b>%2</b> or call the hotline
 <b>%3</b>.</p>");
 
-	    info = info + sformat(it, Provider::Provider["PROVIDER"]:"", hp, hl);
+	    info = info + sformat(it, Provider::Current["PROVIDER"]:"", hp, hl);
 	}
 
 	if(hp != "" && hl == "") {
@@ -61,7 +61,7 @@ dialing number, connect to the home page <b>%2</b> or call the hotline
 	    string it = _("<p>To register for <b>%1</b> and find the best
 dialing number, connect to the home page <b>%2</b>.</p>");
 
-	    info = info + sformat(it, Provider::Provider["PROVIDER"]:"", hp);
+	    info = info + sformat(it, Provider::Current["PROVIDER"]:"", hp);
 	}
 
 	if(hp == "" && hl != "") {
@@ -69,7 +69,7 @@ dialing number, connect to the home page <b>%2</b>.</p>");
 	    string it = _("<p>To register for <b>%1</b> and find the best
 dialing number, call the hotline <b>%2</b>.</p>");
 
-	    info = info + sformat(it, Provider::Provider["PROVIDER"]:"", hl);
+	    info = info + sformat(it, Provider::Current["PROVIDER"]:"", hl);
 	}
     }
 
@@ -160,16 +160,16 @@ global define symbol ProviderDialog() ``{
 
     string type = Provider::CurrentType();
 
-    string name = Provider::Provider["PROVIDER"]:"";
-    string phone = Provider::Provider["PHONE"]:"";
-    string encap = Provider::Provider["ENCAP"]:"";
+    string name = Provider::Current["PROVIDER"]:"";
+    string phone = Provider::Current["PHONE"]:"";
+    string encap = Provider::Current["ENCAP"]:"";
     string infotext = ProviderInfoText();
 
-    string username = Provider::Provider["USERNAME"]:"";
-    string password = Provider::Provider["PASSWORD"]:"";
-    boolean ask_pass = Provider::Provider["ASKPASSWORD"]:"no" == "yes";
+    string username = Provider::Current["USERNAME"]:"";
+    string password = Provider::Current["PASSWORD"]:"";
+    boolean ask_pass = Provider::Current["ASKPASSWORD"]:"no" == "yes";
 
-    string uimode = Provider::Provider["UIMODE"]:"";
+    string uimode = Provider::Current["UIMODE"]:"";
 
     string lineid = "";
     string t_onlineid = "";
@@ -447,8 +447,8 @@ at the end.</p>");
 	    else if(uimode == "T-Online DSL Business")
 		tonline2username();
 
-	    if(name != Provider::Provider["PROVIDER"]:"" && !Provider::IsUnique(name)) {
-		y2debug("n(%1), p(%2)",name,lookup(Provider::Provider, "PROVIDER", ""));
+	    if(name != Provider::Current["PROVIDER"]:"" && !Provider::IsUnique(name)) {
+		y2debug("n(%1), p(%2)",name,lookup(Provider::Current, "PROVIDER", ""));
 		/* Popup::Message text */
 		Popup::Message(sformat(_("Provider name %1 already exists."), name));
 		UI::SetFocus(`id(`name));
@@ -495,7 +495,7 @@ at the end.</p>");
     }
 
     if(ret == `next) {
-	Provider::Provider = union(Provider::Provider, $[
+	Provider::Current = union(Provider::Current, $[
 	    "PROVIDER"		: name,
 	    "USERNAME"		: username,
 	    "PASSWORD"		: ask_pass? "" : password,
@@ -506,7 +506,7 @@ at the end.</p>");
 	    "DSLSUPPORTED"	: (type == "dsl" ? "yes" : "no"),
 	]);
 	if(type == "isdn") { /* FIXME: ISDN ??? */
-	    Provider::Provider = union(Provider::Provider, $[
+	    Provider::Current = union(Provider::Current, $[
 		"ENCAP"		: encap,
 	    ]);
 	    if(ISDN::operation == `addif)

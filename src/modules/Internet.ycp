@@ -130,10 +130,10 @@ global define boolean FindFastest () ``{
 	import "Provider";
 	Provider::Read("all");
 	Provider::Select(provider);
-	demand = Provider::Provider["DEMAND"]:"no" == "yes";
-	password = Provider::Provider["PASSWORD"]:"";
-	askpassword = Provider::Provider["ASKPASSWORD"]:"no" == "yes";
-	capi_isdn = Provider::Provider["PPPMODE"]:"ippp" == "capi-isdn";
+	demand = Provider::Current["DEMAND"]:"no" == "yes";
+	password = Provider::Current["PASSWORD"]:"";
+	askpassword = Provider::Current["ASKPASSWORD"]:"no" == "yes";
+	capi_isdn = Provider::Current["PPPMODE"]:"ippp" == "capi-isdn";
     }
 
     /* Set logfile */
