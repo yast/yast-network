@@ -207,6 +207,9 @@ completes the configuration.</p>");
 	    `PushButton(`id(`hostname), `opt(`hstretch), _("&Host name and name server")),
 	    /* Push button label */
 	    `PushButton(`id(`routing), `opt(`hstretch), _("R&outing")),
+	    Lan::wireless?
+		`PushButton(`id(`wire), `opt(`hstretch), _("Wireless &settings"))
+		:`VSpacing(0),
 	    `VSpacing(0.5)
 	)),
 	`HStretch()
@@ -265,7 +268,7 @@ completes the configuration.</p>");
 	    break;
 	}
 	/* FIXME: better hostname and routing workflow */
-	else if(ret == `next || ret == `routing || ret == `hostname) {
+	else if(ret == `next || ret == `routing || ret == `hostname || ret == `wire) {
 	    if(UI::QueryWidget(`id(`rb), `CurrentButton) != `dynamic) {
 		if(!check_ip4(UI::QueryWidget(`id(`ipaddr), `Value))) {
 		    /* Popup text */
@@ -296,7 +299,7 @@ completes the configuration.</p>");
     }
 
     /* update the configuration */
-    if(ret == `next || ret == `routing || ret == `hostname) {
+    if(ret == `next || ret == `routing || ret == `hostname || ret == `wire) {
 	Lan::ipaddr = UI::QueryWidget(`id(`ipaddr), `Value);
 
 	if(UI::WidgetExists(`id(`netmask)))

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Aug 27 15:18:23 CEST 2002 - msvec@suse.cz
+
+- provide/obsolete old translation packages
+- possibility to edit wireless settings (#9209)
+- 2.6.21
+
+-------------------------------------------------------------------
 Fri Aug 23 14:46:29 CEST 2002 - msvec@suse.cz
 
 - new screen for s390 hsi devices

@@ -198,6 +198,7 @@ global define symbol AddressSequence() ``{
 	"address"	: ``(AddressDialog()),
 	"hostname"	: ``(DNSMainDialog()),
 	"routing"	: ``(RoutingMainDialog()),
+	"wire"		: ``(WirelessDialog()),
 	"commit"	: [ ``(Commit()), true ],
     ];
 
@@ -208,12 +209,17 @@ global define symbol AddressSequence() ``{
 	    `next	: "commit",
 	    `routing	: "routing",
 	    `hostname	: "hostname",
+	    `wire	: "wire",
 	],
 	"routing" : $[
 	    `abort	: `abort,
 	    `next	: "address",
 	],
 	"hostname" : $[
+	    `abort	: `abort,
+	    `next	: "address",
+	],
+	"wire" : $[
 	    `abort	: `abort,
 	    `next	: "address",
 	],
