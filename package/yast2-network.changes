@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jan  3 17:44:10 CET 2005 - mvidner@suse.cz
+
+- Keep logs from internet connection test (#46285).
+
+-------------------------------------------------------------------
 Wed Dec 22 11:27:38 CET 2004 - mvidner@suse.cz
 
 - Updated help for WLAN ESSID (#39458).

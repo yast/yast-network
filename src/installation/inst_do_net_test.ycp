@@ -49,7 +49,9 @@ symbol test_result = `success;
 list<map> logs = [];
 
 // dir of log files
-string logdir = (string) SCR::Read (.target.tmpdir) + "/internet-test";
+// Formerly it was under tmpdir and thus got erased automatically.
+// Now we want to keep it (#46285), so let's put it under logdir.
+string logdir = Directory::logdir + "/internet-test";
 
 
 if(!Mode::test ())
