@@ -6,10 +6,10 @@ module_DATA = $(wildcard *.ycp) \
 EXTRA_DIST = $(module_DATA)
 
 DNS.ybc: ISDN.ybc
-ISDN.ybc: Detection.ybc NetworkDevices.ybc
+ISDN.ybc: Detection.ybc
 NetworkDevices.ybc: Provider.ybc Detection.ybc
-Firewall.ybc: NetworkDevices.ybc DNS.ybc
-Proxy.ybc: NetworkDevices.ybc ISDN.ybc
+Firewall.ybc: DNS.ybc
+Proxy.ybc: ISDN.ybc
 Routing.ybc: ISDN.ybc
 
 YCPCFLAGS =

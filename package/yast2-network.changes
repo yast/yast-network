@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Nov 10 10:51:52 CET 2004 - mvidner@suse.cz
+
+- Moved NetworkDevices from yast2-network to yast2.
+- 2.11.6
+
+-------------------------------------------------------------------
 Thu Nov  4 10:52:12 CET 2004 - mvidner@suse.cz
 
 - Fixed errors found by stricter type checking.
