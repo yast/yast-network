@@ -202,7 +202,7 @@ global define boolean Read() ``{
 /**
  */
 define map Filter(map devices, string devregex) ``{
-    if(devregex == nil || devregex == "")
+    if(devices == nil || devregex == nil || devregex == "")
 	return devices;
 
     string regex = "^(" + DeviceRegex[devregex]:devregex + ")[0-9]*$";
@@ -217,7 +217,7 @@ define map Filter(map devices, string devregex) ``{
 /**
  */
 define map FilterNOT(map devices, string devregex) ``{
-    if(devregex == nil || devregex == "")
+    if(devices == nil || devregex == nil || devregex == "")
 	return $[];
 
     string regex = "^(" + DeviceRegex[devregex]:devregex + ")[0-9]*$";
@@ -241,12 +241,12 @@ global define boolean Write(string devregex) ``{
 
     map Devs = Filter(Devices, devregex);
     map OriginalDevs = Filter(OriginalDevices, devregex);
-    y2debug("OriginalDevs=%1", OriginalDevs);
-    y2debug("Devs=%1", Devs);
+    y2milestone("OriginalDevs=%1", OriginalDevs);
+    y2milestone("Devs=%1", Devs);
 
     /* Check for changes */
     if(Devs == OriginalDevs) {
-	y2debug("No changes to %1 devices -> nothing to write", devregex);
+	y2milestone("No changes to %1 devices -> nothing to write", devregex);
 	return true;
     }
 

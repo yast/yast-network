@@ -71,6 +71,7 @@ if (mode == `up)
 	    else if (netconfig == "dhcp")
 	    {
 		// FIXME
+		y2milestone ("DHCP UNUSED");
 	    }
 	    else
 	    {
@@ -117,6 +118,7 @@ if (mode == `dn)
 	    else if (netconfig == "dhcp")
 	    {
 		// FIXME
+		y2milestone ("DHCP UNUSED");
 	    }
 	    else
 	    {

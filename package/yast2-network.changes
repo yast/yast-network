@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Feb 11 18:20:01 CET 2004 - msvec@suse.cz
+
+- syntax fixes in the detection code
+- 2.9.4
+
+-------------------------------------------------------------------
 Tue Feb 10 08:41:53 CET 2004 - msvec@suse.cz
 
 - typo in shellcommand (may affect #29452, #33049)

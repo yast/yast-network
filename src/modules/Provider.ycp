@@ -197,7 +197,7 @@ global define boolean Read() ``{
 /**
  */
 define map Filter(map providers, string type) ``{
-    if(type == nil || type == "" || type == "all")
+    if(providers == nil || type == nil || type == "" || type == "all")
 	return providers;
 
     return filter(string k, map v, providers, ``{
@@ -209,7 +209,7 @@ define map Filter(map providers, string type) ``{
 /**
  */
 define map FilterNOT(map providers, string type) ``{
-    if(type == nil || type == "" || type == "all")
+    if(providers == nil || type == nil || type == "" || type == "all")
 	return $[];
 
     return filter(string k, map v, providers, ``{

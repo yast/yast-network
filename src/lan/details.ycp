@@ -22,7 +22,7 @@ include "network/routines.ycp";
  * Dialog for DHCP client options
  * @return dialog result
  */
-global define any DetailsDialog() ``{
+define any DetailsDialog() ``{
 
 ScreenName("lan-details");
 
@@ -100,23 +100,8 @@ while(true) {
 
 /* update the configuration */
 if(ret == `next) {
-    /*
-    NetworkConfig::DHCP["DHCLIENT_CLIENT_ID"] = UI::QueryWidget(`id(`clientid), `Value);
-    NetworkConfig::DHCP["DHCLIENT_HOSTNAME_OPTION"] = UI::QueryWidget(`id(`hostname), `Value);
-    dhclient_broadcast = UI::QueryWidget(`id(`broadcast), `Value) == true;
-    */
-
-    /* DHCP data */
-    /*
-    string options = NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"]:"";
-    if(options == nil) options = "";
-    if(dhclient_broadcast && !issubstring(options, "-B")) {
-	NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"] = options + " -B";
-    }
-    else if(!dhclient_broadcast && issubstring(options, "-B")) {
-	NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"] = regexpsub(options, "(.*)-B(.*)", "\\1\\2");
-    }
-    */
+    startmode = (string) UI::QueryWidget(`id(`startmode), `Value);
+    mtu = (string) UI::QueryWidget(`id(`mtu), `Value);
 }
 
 return ret;

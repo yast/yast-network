@@ -170,7 +170,7 @@ define boolean StopDetection() ``{
 
 	path detpath = .detection.dhcp;
 	string tmpfile = tmpdir + "/detection_dhcp.scr";
-	string scrfile = sformat("%1\n\n`ag_ini(SysConfigFile(\"%2\"))\n", detpath, info);
+	string scrfile = sformat("%1\n\n`ag_ini(`SysConfigFile(\"%2\"))\n", detpath, info);
 	SCR::Write(.target.string, tmpfile, scrfile);
 	SCR::RegisterAgent(detpath, tmpfile);
 
