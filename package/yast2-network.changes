@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sun Aug 11 22:14:15 CEST 2002 - mvidner@suse.cz
+
+- Make "yast2 network" invoke "yast2 lan" (#17570).
+- Testsuite adapted to Runlevel changes due to #17608.
+
+-------------------------------------------------------------------
 Fri Aug  9 00:11:13 EDT 2002 - nashif@suse.de
 
 - lower case of wireless/pcmcia options
