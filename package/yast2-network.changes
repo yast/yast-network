@@ -1,7 +1,8 @@
 -------------------------------------------------------------------
-Mon Feb 14 12:47:27 CET 2005 - mvidner@suse.cz
+Thu Feb 17 17:48:15 CET 2005 - mvidner@suse.cz
 
-- set modified to false when Resetting
+- Provider help texts now match the dialog (#51001).
+- Set modified to false when resetting in autoyast.
 
 -------------------------------------------------------------------
 Fri Feb 11 17:24:05 CET 2005 - mvidner@suse.cz

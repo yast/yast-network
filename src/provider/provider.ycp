@@ -190,9 +190,14 @@ define void username2tonline() ``{
 selected your provider from the  list, these values are provided.</p>
 ") +
 
-    /* Provider dialog help 3/5 */
+	(type == "dsl" ?
+    /* Provider dialog help 1.5/5: DSL, thus no phone number */
+    _("<p>Enter a <b>Provider Name</b> for the provider.</p>")
+	 :
+    /* Provider dialog help 1.5/5 */
     _("<p>Enter a <b>Provider Name</b> for the provider and a <b>Phone Number</b>
-to access your provider.</p>");
+to access your provider.</p>")
+	    );
 
     if(type == "isdn") /* FIXME: ISDN ??? */
 	/* Provider dialog help 2/5 */
@@ -222,7 +227,7 @@ with the <i>t-online-com/</i> at the start and with <i>@t-online-com.de</i>
 at the end.</p>");
 
     /* Provider dialog help 5/5 */
-    helptext = helptext + _("<p>Check <b>Always Ask</b> to be asked for the password every time.</p>");
+    helptext = helptext + _("<p>Check <b>Always Ask for Password</b> to be asked for the password every time.</p>");
 
     /* Frame label */
     term auth = `Frame(`id(`auth), _("Authorization"), `HBox(
