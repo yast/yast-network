@@ -96,11 +96,11 @@ for example +pap +chap for the dialin server authentification.</p>");
 		    `RadioButtonGroup(`id(`callback),`HBox(
 			`VBox(
 			    // RadioButton for callback modes
-			    `Left(`RadioButton(`id("off"), _("Callback &Off"), callback == "off")),
+			    `Left(`RadioButton(`id(`off), `opt(`notify), _("Callback Of&f"), callback == "off")),
 			    // RadioButton for callback modes
-			    `Left(`RadioButton(`id("in"), _("Callback &Server"), callback == "in")),
+			    `Left(`RadioButton(`id(`in), `opt(`notify), _("Callback &Server"), callback == "in")),
 			    // RadioButton for callback modes
-			    `Left(`RadioButton(`id("out"), _("Callback &Client"), callback == "out"))
+			    `Left(`RadioButton(`id(`out),`opt(`notify), _("Callback &Client"), callback == "out"))
 			)
 		    )),
 		    `VSpacing(0.5),
@@ -130,6 +130,9 @@ for example +pap +chap for the dialin server authentification.</p>");
 
     Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default), OKButtonLabel()));
 
+    if (callback== "off")
+        UI::ChangeWidget(`id(`cbdelay), `Enabled, false);
+
     /* MAIN CYCLE */
     symbol ret = nil;
     while (true) {
@@ -146,10 +149,22 @@ for example +pap +chap for the dialin server authentification.</p>");
 	else if (ret == `back) {
 	    break;
 	}
+	else if (ret == `off) {
+	    callback = "off";
+	    UI::ChangeWidget(`id(`cbdelay), `Enabled, false);
+	}
+	else if (ret == `in) {
+	    callback = "in";
+	    UI::ChangeWidget(`id(`cbdelay), `Enabled, true);
+	}
+	else if (ret == `out) {
+	    callback = "out";
+	    UI::ChangeWidget(`id(`cbdelay), `Enabled, true);
+	}
 	else if (ret == `next) {
 	    remote_in = UI::QueryWidget(`id(`remote_in), `Value);
 	    secure = UI::QueryWidget(`id(`secure), `Value);
-	    callback = UI::QueryWidget(`id(`callback), `CurrentButton);
+//	    callback = UI::QueryWidget(`id(`callback), `CurrentButton);
 	    cbdel = UI::QueryWidget(`id(`cbdelay), `Value);
 	    if (syncppp) {
 		ipppd_opt = UI::QueryWidget(`id(`ipppd_opt), `Value);
