@@ -82,8 +82,11 @@ global define boolean Read() ``{
  */
 global define boolean Write() ``{
 
-    if(!modified) return true;
     y2milestone("Writing configuration");
+    if(!modified) {
+	y2milestone("No changes to proxy configuration -> nothing to write");
+	return true;
+    }
 
     /* Update /etc/sysconfig/proxy */
     SCR::Write(.sysconfig.proxy.PROXY_ENABLED, enabled?"yes":"no");

@@ -18,21 +18,32 @@ textdomain "network";
 include "network/config.ycp";
 
 /**
+ * Basic network settings (/etc/sysconfig/network/config)
+ */
+global map Config = $[];
+
+/**
  * DHCP settings (/etc/sysconfig/network/dhcp)
  */
 global map DHCP = $[];
 
 /**
- * Basic network settings (/etc/sysconfig/network/config)
+ * Basic network settings
  */
-global map Config = $[];
-
-/* Original data */
 map Orig_Config = nil;
+
+/**
+ * DHCP settings
+ */
 map Orig_DHCP = nil;
 
 /*--------------*/
 /* PRIVATE DATA */
+
+/**
+ * True if data are already read
+ */
+boolean initialized = false;
 
 /*------------------*/
 /* GLOBAL FUNCTIONS */
@@ -53,12 +64,15 @@ global define boolean Modified() ``{
  */
 global define boolean Read() ``{
 
+    if(initialized == true) return true;
+
     Config = ReadConfig(.sysconfig.network.config);
     DHCP = ReadConfig(.sysconfig.network.dhcp);
 
     Orig_Config = (map) eval(Config);
     Orig_DHCP = (map) eval(DHCP);
 
+    initialized = true;
     return true;
 }
 
@@ -68,8 +82,11 @@ global define boolean Read() ``{
  */
 global define boolean Write() ``{
 
-    if(!Modified()) return true;
     y2milestone("Writing configuration");
+    if(!Modified()) {
+	y2milestone("No changes to DNS -> nothing to write");
+	return true;
+    }
 
     WriteConfig(.sysconfig.network.dhcp, DHCP);
     WriteConfig(.sysconfig.network.config, Config);

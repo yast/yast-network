@@ -232,6 +232,7 @@ define map FilterNOT(map devices, string devregex) {
  */
 global define boolean Write(string devregex) {
 
+    y2milestone("Writing configuration");
     y2debug("Devices=%1", Devices);
 
     map Devs = Filter(Devices, devregex);
@@ -608,7 +609,6 @@ global define boolean Commit() {
 
     return true;
 }
-
 
 /**
  * Locate devices of the given type and value

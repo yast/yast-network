@@ -236,6 +236,8 @@ define boolean CheckType(string type) ``{
  */
 global define boolean Write(string type) ``{
 
+    y2milestone("Writing configuration");
+
     boolean ret = true;
     if(!CheckType(type)) return false;
 
@@ -246,7 +248,7 @@ global define boolean Write(string type) ``{
 
     /* Check for changes */
     if(Provs == OriginalProvs) {
-	y2debug("No changes to %1 providers -> nothing to write", type);
+	y2milestone("No changes to %1 providers -> nothing to write", type);
 	return true;
     }
 

@@ -1,17 +1,14 @@
 -------------------------------------------------------------------
-Thu Feb 19 13:23:53 CET 2004 - mvidner@suse.cz
-
-- changed sort to use "<" instead of "<=" because of the switch to std::sort
-
--------------------------------------------------------------------
-Wed Feb 18 12:25:19 CET 2004 - msvec@suse.cz
+Mon Feb 23 14:09:52 CET 2004 - msvec@suse.cz
 
 - reduced neededforbuild
 - fixed network proposal creation
 - fixed writing of kernel modules
 - resurrected virtual aliases support
 - correct module name for Apple gmac (#34687)
+- sort now uses < because of the switch to std::sort <mvidner>
 - use Sequencer and Service modules
+- added more milestones
 - 2.9.5
 
 -------------------------------------------------------------------

@@ -104,8 +104,11 @@ global define boolean Read() ``{
  */
 global define boolean Write() ``{
 
-    if(!Modified()) return true;
     y2milestone("Writing configuration");
+    if(!Modified()) {
+	y2milestone("No changes to routing -> nothing to write");
+	return true;
+    }
 
     if(Forward) {
 	SCR::Write(.sysconfig.sysctl.IP_FORWARD, "yes");

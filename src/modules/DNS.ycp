@@ -110,8 +110,11 @@ global define boolean Write() ``{
 
     NetworkConfig::Write();
 
-    if(!modified) return true;
     y2milestone("Writing configuration");
+    if(!modified) {
+	y2milestone("No changes to DNS -> nothing to write");
+	return true;
+    }
 
     /* build FQ hostname */
     string fqhostname = hostname;
