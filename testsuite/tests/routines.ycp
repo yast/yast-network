@@ -134,4 +134,18 @@ TEST(``(alias_name("ippp","2","0")), [], nil);
 TEST(``(alias_name("ppp","2","0")), [], nil);
 TEST(``(alias_name("lo", "", "7")), [], nil);
 
+DUMP("quote");
+TEST(``(quote(nil)), [], nil);
+TEST(``(quote("")), [], nil);
+TEST(``(quote("a")), [], nil);
+TEST(``(quote("a'b")), [], nil);
+TEST(``(quote("a'b'c")), [], nil);
+
+DUMP("unquote");
+TEST(``(unquote(nil)), [], nil);
+TEST(``(unquote("")), [], nil);
+TEST(``(unquote("a")), [], nil);
+TEST(``(unquote("a'\\''b")), [], nil);
+TEST(``(unquote("a'\\''b'\\''c")), [], nil);
+
 }

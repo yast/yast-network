@@ -131,7 +131,7 @@ global define boolean Read(string type) ``{
 	map p = listmap(string i, SCR::Dir(prov), ``{
 	    list ii = [];
 	    change(ii, i);
-	    change(ii, SCR::Read(add(prov, i)));
+	    change(ii, unquote(SCR::Read(add(prov, i))));
 	    return ii;
 	});
 	change(Providers, name, p);
@@ -246,7 +246,7 @@ global define boolean Write() ``{
 	    }
 
 	    /* Do the write */
-	    SCR::Write(add(base, k), v);
+	    SCR::Write(add(base, k), quote(v));
 	});
     });
 

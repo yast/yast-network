@@ -1,3 +1,4 @@
+- providers: quote variables (they are enclosed in 's) (#22776)
 - routing: fill in available devices (#21122)
 - 2.7.1
 

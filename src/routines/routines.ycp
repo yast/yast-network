@@ -389,5 +389,32 @@ global define string RealType(string type, string hotplug) ``{
     return realtype;
 }
 
+/**
+ * Quote a string with 's
+ * @param var unquoted string
+ * @return quoted string
+ * @example quote("a'b") -> "a'\''b"
+ */
+global define string quote(string var) ``{
+    if(var == nil || var == "") return "";
+    return mergestring(splitstring(var, "'"), "'\\''");
+}
+
+/**
+ * Unquote a string with 's (quoted with quote)
+ * @param var quoted string
+ * @return unquoted string
+ * @see quote
+ */
+global define string unquote(string var) ``{
+    if(var == nil || var == "") return "";
+    y2debug("var=%1", var);
+    while(regexpmatch(var, "'\\\\''")) {
+	var = regexpsub(var, "(.*)'\\\\''(.*)", "\\1'\\2");
+	y2debug("var=%1", var);
+    }
+    return var;
+}
+
 /* EOF */
 }

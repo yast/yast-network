@@ -118,3 +118,15 @@ Return	tr-pcmcia-1:1
 Return	ippp2:0
 Return	ppp2:0
 Return	lo:7
+Dump	quote
+Return	
+Return	
+Return	a
+Return	a'\''b
+Return	a'\''b'\''c
+Dump	unquote
+Return	
+Return	
+Return	a
+Return	a'b
+Return	a'b'c
