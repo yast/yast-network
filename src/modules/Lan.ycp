@@ -92,6 +92,13 @@ global string wl_bitrate = "";
 global string wl_accesspoint = "";
 global boolean wl_power = true;
 
+// Card Features from hwinfo
+// if not provided, we use the default full list
+global list<string> wl_auth_modes = nil;
+global list<string> wl_channels = nil;
+global list<string> wl_bitrates = nil;
+list<string> nilliststring = nil; // to save some casting
+
 /* s390 options */
 global string read_channel = "";
 global string write_channel = "";
@@ -507,6 +514,10 @@ void SelectHWMap (map hw) {
     else
 	y2milestone("HOTPLUG(%1) -> ignoring modprobe.conf", hotplug);
 
+    // Wireless Card Features
+    wl_auth_modes = hw["wl_auth_modes"]:nilliststring;
+    wl_channels = hw["wl_channels"]:nilliststring;
+    wl_bitrates = hw["wl_bitrates"]:nilliststring;
     string mac = hw["mac"]:"";
     string busid = hw["busid"]:"";
 

@@ -260,6 +260,12 @@ define list<map> ReadHardware(string hwtype) {
 	    one["module"] = modules[0]:"";
 	    one["options"] = modules[1]:"";
 
+	    // Wireless Card Features
+	    // TODO adjust to reality
+	    one["wl_auth_modes"] = card["wl_auth_modes"]:nil;
+	    one["wl_channels"] = card["wl_channels"]:nil;
+	    one["wl_bitrates"] = card["wl_bitrates"]:nil;
+
 	    /* FIXME: this should be also done for modems and others */
 	    /* FIXME: #13571 */
 	    string hp = card["hotplug"]:"";

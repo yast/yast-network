@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Mon Jan  3 17:44:10 CET 2005 - mvidner@suse.cz
+Fri Jan  7 16:49:40 CET 2005 - mvidner@suse.cz
 
+- UI for Wireless card feature enquiry.
 - Keep logs from internet connection test (#46285).
 
 -------------------------------------------------------------------

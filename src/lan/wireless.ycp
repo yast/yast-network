@@ -13,6 +13,7 @@ textdomain "network";
 
 import "Label";
 import "Lan";
+import "Map";
 import "Popup";
 import "Wizard";
 
@@ -135,6 +136,27 @@ define boolean CheckWirelessKey (string key) ``{
 }
 
 /**
+ * Make a list of ComboBox items for authentication mode.
+ */
+list<term> AuthModeItems (list<string> authmodes) {
+    map <string, string> names = $[
+	// Wireless authentication modes:
+	/* ComboBox item */
+	"open": _("Open"),
+	/* ComboBox item */
+	"sharedkey": _("Shared Key"),
+	/* ComboBox item */
+	// Ask me what it means, I don't know yet
+	"psk": _("WPA-PSK"),
+	];
+    if (authmodes == nil)
+    {
+	authmodes = (list<string>)Map::Keys (names);
+    }
+    return maplist (string am, authmodes, ``( `item (`id (am), names[am]:am) ));
+}
+
+/**
  * Wireless devices configuration dialog
  * @return dialog result
  */
@@ -253,15 +275,8 @@ available options.</p>");
 		`VSpacing(0.2),
 		`Left (`ComboBox (`id (`authmode), `opt (`hstretch, `notify),
 				  /* ComboBox label */
-				  _("&Authentication Mode"), [
-		    /* ComboBox item */
-		    `item (`id ("open"), _("Open")),
-		    /* ComboBox item */
-		    `item (`id ("sharedkey"), _("Shared Key")),
-		    /* ComboBox item */
-		    // Ask me what it means, I don't know yet
-		    `item (`id ("psk"), _("WPA-PSK")),
-		])),
+				  _("&Authentication Mode"),
+				  AuthModeItems (Lan::wl_auth_modes))),
 		`VSpacing(0.2),
 		type_w,
 		`VSpacing(0.2),
@@ -459,12 +474,20 @@ the channel, select the desired value.</p>
      ]);
 
     list channels = [ "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" ];
+    if (Lan::wl_channels != nil)
+    {
+	channels = Lan::wl_channels;
+    }
     if(Lan::wl_channel != "" && !contains(channels, Lan::wl_channel))
 	channels = prepend(channels, Lan::wl_channel);
     /* Combobox item */
     channels = prepend(channels, `item(`id(""), _("Automatic")));
 
     list bitrates = [ "54", "48", "36", "24", "18", "12", "11", "9", "6", "5.5", "2", "1" ];
+    if (Lan::wl_bitrates != nil)
+    {
+	bitrates = Lan::wl_bitrates;
+    }
     if(Lan::wl_bitrate != "" && !contains(bitrates, Lan::wl_bitrate))
 	bitrates = prepend(bitrates, Lan::wl_bitrate);
     /* Combobox item */
