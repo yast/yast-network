@@ -67,13 +67,13 @@ global define symbol TestStepsDialog() ``{
     /* Steps dialog caption */
     string caption = _("Test Internet Connection");
 
-    /* Steps dialog help 1/7 */
-    string help = _("<p>FIXME
-</p>");
+    /* help for dialog "Test Internet Connection" */
+    string help = _("<p>Here you can validate the internet connection you just
+configured. The test is entirely optional. A successful result will enable you
+to run the YaST Online Update.</p>");
 
     /* Label text (keep lines max. 65 chars long) */
-    string label = _("To validate your Internet access,
-activate the test procedure.");
+    string label = _("To validate your Internet access, activate the test procedure.");
 
     map labels = $[
 	/* Label text (keep lines max. 65 chars long) */
@@ -179,16 +179,20 @@ global define symbol TestConnectionDialog() ``{
     /* Test dialog caption */
     string caption = _("Running Internet Connection Test");
 
-    /* Test dialog help 1/7 */
-    string help = _("<p>FIXME
-</p>");
+    /* help for dialog "Running Internet Connection Test" */
+    string help = _("<p>Here you can see the progress and the protocol of the
+Internet Connection Test.</p>")
+
+    /* help for dialog "Running Internet Connection Test" */
+	+ _("<p>The test can be aborted by pressing the <b>Abort Test</b>
+	button.</p>");
 
     /* Progress labels */
     term progress = `VBox (
 			   /* Progress step 1/4 */
-			   `Left(`Label(_("Connecting to the Internet..."))),
+			   `Left(`Label(_("Connect to SuSE server via Internet..."))),
 			   /* Progress step 2/4 */
-			   `Left(`Label(_("Download latest release notes"))),
+			   `Left(`Label(_("Download latest release notes..."))),
 			   /* Progress step 3/4 */
 			   `Left(`Label(_("Checking for latest updates..."))),
 			   /* Progress step 4/4 */
