@@ -141,6 +141,10 @@ global define boolean Fastest() ``{
 	demand = Provider::Provider["DEMAND"]:"no" == "yes";
 	password = Provider::Provider["PASSWORD"]:"";
 	askpassword = Provider::Provider["ASKPASSWORD"]:"no" == "yes";
+    } else {
+	demand = false;
+	password = "";
+	askpassword = nil;
     }
 
     return true;
@@ -167,7 +171,7 @@ global define boolean Start() ``{
  	}
     }
 
-    if (askpassword)
+    if (askpassword != nil && askpassword)
     {
  	if (SCR::Execute (.target.bash_input, "/sbin/ifup " + device, password) != 0)
  	{

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Mar 19 13:13:25 CET 2003 - arvin@suse.de
+
+- reinitialize some values in Internet module
+
+-------------------------------------------------------------------
 Fri Mar 14 15:30:05 CET 2003 - arvin@suse.de
 
 - preferable test dial up connection during internet test (bug
