@@ -67,8 +67,15 @@ define map FromAY(map input) ``{
 	devices[strtok] = device;
 
     });
+	map native_modules = listmap(map mod, input["modules"]:[], ``{
+		string dev = mod["device"]:"";
+		remove(mod, "device");
+		return([dev, mod]);
+	});
+
 	// FIXME: add aliasing support
     input["devices"] = devices;
+    input["modules"] = native_modules;
     return input;
 }
 
@@ -79,21 +86,30 @@ define map FromAY(map input) ``{
  */
 define map ToAY(map settings) ``{
     list interfaces = [];
-    maplist(string device, map devsmap, settings["devices"]:$[], ``{
-	maplist(string num, map devmap, devsmap, ``{
+    foreach(string device, map devsmap, settings["devices"]:$[], ``{
+	foreach(string num, map devmap, devsmap, ``{
 	    map newmap = $[];
-	    maplist(string key, string val, devmap, ``{
+	    foreach(string key, string val, devmap, ``{
 			change(newmap, tolower(key), val);
 	    });
 	    change(newmap, "device", device + num);
 	    change(interfaces, newmap);
 	});
     });
+    list modules = [];
+    foreach(string device, map modmap, settings["modules"]:$[], ``{
+	    map newmap = $[];
+	    foreach(string key, string val, modmap, ``{
+			change(newmap, tolower(key), val);
+	    });
+	    change(newmap, "device", device);
+	    change(modules, newmap);
+    });
 	return $[
 		"interfaces": interfaces,
 		"dns"		: settings["dns"]:$[],
 		"routing"	: settings["routing"]:$[],
-		"modules"	: settings["modules"]:$[]
+		"modules"	: modules
 	];
 }
 
