@@ -568,9 +568,9 @@ global define list Summary(boolean split) ``{
 	    /* List item to providers summary */
 	    `item(`id("modem"), _("Modem provider"), true),
 	    /* List item to providers summary */
-	    `item(`id("isdn"), _("ISDN provider")),
+	    `item(`id("isdn"), _("ISDN Provider")),
 	    /* List item to providers summary */
-	    `item(`id("dsl"), _("DSL provider")),
+	    `item(`id("dsl"), _("DSL Provider")),
 	]
     ];
 }

@@ -215,25 +215,25 @@ global define string Summary() ``{
 
     if(dhcp_hostname == true)
 	/* Summary text */
-	summary = summary + _("Hostname: set by DHCP");
+	summary = summary + _("Host Name: set by DHCP");
     else
 	/* Summary text */
-	summary = summary + sformat(_("Hostname: %1"), hostname) +
+	summary = summary + sformat(_("Host Name: %1"), hostname) +
 	    (domain != ""? "." + domain : "");
 
     summary = summary + "<p>";
 
     if(dhcp_resolv == true) {
 	/* Summary text */
-	summary = summary + _("Name servers: set by DHCP") + "<br>";
+	summary = summary + _("Name Servers: set by DHCP") + "<br>";
 	/* Summary text */
-	summary = summary + _("Search list: set by DHCP");
+	summary = summary + _("Search List: set by DHCP");
     }
     else {
 	/* Summary text */
-	summary = summary + sformat(_("Name servers: %1"), nameservers) + "<p>";
+	summary = summary + sformat(_("Name Servers: %1"), nameservers) + "<p>";
 	/* Summary text */
-	summary = summary + sformat(_("Search list: %1"), searchlist);
+	summary = summary + sformat(_("Search List: %1"), searchlist);
     }
 
     return summary;

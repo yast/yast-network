@@ -35,7 +35,7 @@ if(func == "MakeProposal") {
         DSL::proposal_valid = true;
 	Progress::off();
 	/* Popup text */
-	BusyPopup(_("Detecting DSL devices ..."));
+	BusyPopup(_("Detecting DSL devices..."));
 	DSL::Read();
 	BusyPopupClose();
     }
@@ -64,9 +64,9 @@ else if(func == "AskUser") {
 else if(func == "Description") {
     ret = $[
 	/* RichText label */
-	"rich_text_title" : _("DSL connections"),
+	"rich_text_title" : _("DSL Connections"),
 	/* Menu label */
-	"menu_title" : _("&DSL connections"),
+	"menu_title" : _("&DSL Connections"),
 	"id" : "dsl",
     ];
 }

@@ -159,42 +159,42 @@ global define boolean Read() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-	/* Progress step 1/8 */
+	/* Progress stage 1/8 */
 	_("Detect network devices"),
-	/* Progress step 2/8 */
+	/* Progress stage 2/8 */
 	_("Read /etc/modules.conf"),
-	/* Progress step 3/8 */
+	/* Progress stage 3/8 */
 	_("Read current configuration"),
-	/* Progress step 4/8 */
+	/* Progress stage 4/8 */
 	_("Read routing configuration"),
-	/* Progress step 5/8 */
+	/* Progress stage 5/8 */
 	_("Read host name and DNS configuration"),
-	/* Progress step 6/8 */
+	/* Progress stage 6/8 */
 	_("Read installation information"),
-	/* Progress step 7/8 */
+	/* Progress stage 7/8 */
 	_("Read firewall settings"),
-	/* Progress step 8/8 */
+	/* Progress stage 8/8 */
 	_("Detect current status"),
     ], [], "");
 
     if(Abort()) return false;
-    /* Progress stage 1/8 */
-    ProgressNextStage(_("Detecting network devices"));
+    /* Progress step 1/8 */
+    ProgressNextStage(_("Detecting network devices..."));
     // if(!Arch::s390) /* FIXME: Temporary hack until the detection is functional */
     ReadHardware("netcard");
     // ReadHardware("");
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 2/8 */
-    ProgressNextStage(_("Reading /etc/modules.conf"));
+    /* Progress step 2/8 */
+    ProgressNextStage(_("Reading /etc/modules.conf..."));
     ReadModules(NetworkCardRegex);
     // ReadModules("");
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 3/8 */
-    ProgressNextStage(_("Reading current configuration"));
+    /* Progress step 3/8 */
+    ProgressNextStage(_("Reading current configuration..."));
     ReadDevices(NetworkDeviceRegex);
     // ReadDevices("");
     sleep(sl);
@@ -203,37 +203,37 @@ global define boolean Read() ``{
     if(wait != "" && wait != nil) wait_for_interfaces = tointeger(wait);
 
     if(Abort()) return false;
-    /* Progress stage 4/8 */
-    ProgressNextStage(_("Reading routing configuration"));
+    /* Progress step 4/8 */
+    ProgressNextStage(_("Reading routing configuration..."));
     Routing::Read();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 5/8 */
-    ProgressNextStage(_("Reading host name and DNS configuration"));
+    /* Progress step 5/8 */
+    ProgressNextStage(_("Reading host name and DNS configuration..."));
     DNS::Read();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 6/8 */
-    ProgressNextStage(_("Reading installation information"));
+    /* Progress step 6/8 */
+    ProgressNextStage(_("Reading installation information..."));
     ReadInstallInf();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 7/8 */
-    ProgressNextStage(_("Reading firewall settings"));
+    /* Progress step 7/8 */
+    ProgressNextStage(_("Reading firewall settings..."));
     Firewall::Read();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 8/8 */
-    ProgressNextStage(_("Detecting current status"));
+    /* Progress step 8/8 */
+    ProgressNextStage(_("Detecting current status..."));
     ReadStatus();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Final progress stage */
+    /* Final progress step */
     ProgressNextStage(_("Finished"));
     sleep(sl);
 
@@ -269,41 +269,41 @@ global define boolean Write() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-	/* Progress step 1/9 */
+	/* Progress stage 1/9 */
 	_("Deactivate local network services"),
-	/* Progress step 2/9 */
+	/* Progress stage 2/9 */
 	_("Write drivers information"),
-	/* Progress step 3/9 */
+	/* Progress stage 3/9 */
 	_("Write configuration"),
-	/* Progress step 4/9 */
+	/* Progress stage 4/9 */
 	_("Write routing configuration"),
-	/* Progress step 5/9 */
+	/* Progress stage 5/9 */
 	_("Write host name and DNS configuration"),
-	/* Progress step 6/9 */
+	/* Progress stage 6/9 */
 	_("Set up network services"),
-	/* Progress step 7/9 */
+	/* Progress stage 7/9 */
 	_("Write firewall settings"),
-	/* Progress step 8/9 */
+	/* Progress stage 8/9 */
 	_("Activate network services"),
-	/* Progress step 9/9 */
+	/* Progress stage 9/9 */
 	_("Run SuSEconfig"),
     ], [], "");
 
     if(Abort()) return false;
-    /* Progress stage 1/9 */
-    ProgressNextStage(_("Deactivating local network services"));
+    /* Progress step 1/9 */
+    ProgressNextStage(_("Deactivating local network services..."));
     if(!write_only) StopNetwork();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 2/9 */
-    ProgressNextStage(_("Writing /etc/modules.conf"));
+    /* Progress step 2/9 */
+    ProgressNextStage(_("Writing /etc/modules.conf..."));
     WriteModules();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 3/9 */
-    ProgressNextStage(_("Writing configuration"));
+    /* Progress step 3/9 */
+    ProgressNextStage(_("Writing configuration..."));
     WriteDevices();
     sleep(sl);
 
@@ -311,43 +311,43 @@ global define boolean Write() ``{
 	SCR::Write(.sysconfig.network.config.WAIT_FOR_INTERFACES, sformat("%1",wait_for_interfaces));
 
     if(Abort()) return false;
-    /* Progress stage 4/9 */
-    ProgressNextStage(_("Writing routing configuration"));
+    /* Progress step 4/9 */
+    ProgressNextStage(_("Writing routing configuration..."));
     Routing::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 5/9 */
-    ProgressNextStage(_("Writing host name and DNS configuration"));
+    /* Progress step 5/9 */
+    ProgressNextStage(_("Writing host name and DNS configuration..."));
     DNS::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 6/9 */
-    ProgressNextStage(_("Setting up network services"));
+    /* Progress step 6/9 */
+    ProgressNextStage(_("Setting up network services..."));
     EnableNetwork();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 7/9 */
-    ProgressNextStage(_("Writing firewall settings"));
+    /* Progress step 7/9 */
+    ProgressNextStage(_("Writing firewall settings..."));
     Firewall::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 8/9 */
-    ProgressNextStage(_("Activating network services"));
+    /* Progress step 8/9 */
+    ProgressNextStage(_("Activating network services..."));
     if(!write_only) StartNetwork();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 9/9 */
-    ProgressNextStage(_("Running SuSEconfig"));
+    /* Progress step 9/9 */
+    ProgressNextStage(_("Running SuSEconfig..."));
     if(!write_only) RunSuSEconfig();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Final progress stage */
+    /* Final progress step */
     ProgressNextStage(_("Finished"));
     sleep(sl);
 

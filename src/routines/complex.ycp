@@ -122,91 +122,91 @@ global define string CheckEmptyName(string devtype, string hwname) ``{
 
     map device_names = $[
 	/* Device type label */
-	"arc"		: _("ARCnet network card"),
+	"arc"		: _("ARCnet Network Card"),
 	/* Device type label */
 	"atm"		: _("Asynchronous Transfer Mode (ATM)"),
 	/* Device type label */
-	"ci"		: _("Common link access for workstation (CLAW)"),
+	"ci"		: _("Common Link Access for Workstation (CLAW)"),
 	/* Device type label */
 	"contr"		: _("ISDN card"),
 	/* Device type label */
-	"contr-pcmcia-"	: _("PCMCIA ISDN card"),
+	"contr-pcmcia-"	: _("PCMCIA ISDN Card"),
 	/* Device type label */
-	"contr-usb-"	: _("USB ISDN card"),
+	"contr-usb-"	: _("USB ISDN Card"),
 	/* Device type label */
-	"ctc"		: _("Channel to channel interface (CTC)"),
+	"ctc"		: _("Channel to Channel Interface (CTC)"),
 	/* Device type label */
-	"dsl"		: _("DSL connection"),
+	"dsl"		: _("DSL Connection"),
 	/* Device type label */
 	"dummy"		: _("Dummy network device"),
 	/* Device type label */
-	"escon"		: _("Enteprise system connector (ESCON)"),
+	"escon"		: _("Enterprise System Connector (ESCON)"),
 	/* Device type label */
-	"eth"		: _("Ethernet network card"),
+	"eth"		: _("Ethernet Network Card"),
 	/* Device type label */
-	"eth-pcmcia-"	: _("PCMCIA Ethernet network card"),
+	"eth-pcmcia-"	: _("PCMCIA Ethernet Network Card"),
 	/* Device type label */
-	"eth-usb-"	: _("USB Ethernet network card"),
+	"eth-usb-"	: _("USB Ethernet Network Card"),
 	/* Device type label */
-	"fddi"		: _("FDDI network card"),
+	"fddi"		: _("FDDI Network Card"),
 	/* Device type label */
-	"fddi-pcmcia-"	: _("PCMCIA FDDI network card"),
+	"fddi-pcmcia-"	: _("PCMCIA FDDI Network Card"),
 	/* Device type label */
-	"fddi-usb-"	: _("USB FDDI network card"),
+	"fddi-usb-"	: _("USB FDDI Network Card"),
 	/* Device type label */
 	"hippi"		: _("HIgh Performance Parallel Interface (HIPPI)"),
 	/* Device type label */
-	"hsi"		: _("Hipersockets interface (HSI)"),
+	"hsi"		: _("Hipersockets Interface (HSI)"),
 	/* Device type label */
 	"ippp"		: _("ISDN connection"),
 	/* Device type label */
-	"ippp-pcmcia-"	: _("PCMCIA ISDN connection"),
+	"ippp-pcmcia-"	: _("PCMCIA ISDN Connection"),
 	/* Device type label */
-	"ippp-usb-"	: _("USB ISDN connection"),
+	"ippp-usb-"	: _("USB ISDN Connection"),
 	/* Device type label */
-	"irlan"		: _("Infra-red network device"),
+	"irlan"		: _("Infrared Network Device"),
 	/* Device type label */
-	"irda"		: _("Infra-red device"),
+	"irda"		: _("Infrared Device"),
 	/* Device type label */
 	"isdn"		: _("ISDN connection"),
 	/* Device type label */
-	"isdn-pcmcia-"	: _("PCMCIA ISDN connection"),
+	"isdn-pcmcia-"	: _("PCMCIA ISDN Connection"),
 	/* Device type label */
-	"isdn-usb-"	: _("USB ISDN connection"),
+	"isdn-usb-"	: _("USB ISDN Connection"),
 	/* Device type label */
-	"iucv"		: _("Inter user communication vehicle (IUCV)"),
+	"iucv"		: _("Inter User Communication Vehicle (IUCV)"),
 	/* Device type label */
 	"lo"		: _("Loopback device"),
 	/* Device type label */
 	"modem"		: _("Modem"),
 	/* Device type label */
-	"modem-pcmcia-"	: _("PCMCIA modem"),
+	"modem-pcmcia-"	: _("PCMCIA Modem"),
 	/* Device type label */
-	"modem-usb-"	: _("USB modem"),
+	"modem-usb-"	: _("USB Modem"),
 	/* Device type label */
-	"myri"		: _("Myrinet network card"),
+	"myri"		: _("Myrinet Network Card"),
 	/* Device type label */
 	"net"		: _("ISDN connection"),
 	/* Device type label */
-	"plip"		: _("Parallel line connection"),
+	"plip"		: _("Parallel Line Connection"),
 	/* Device type label */
 	"ppp"		: _("Modem"),
 	/* Device type label */
-	"ppp-pcmcia-"	: _("PCMCIA modem"),
+	"ppp-pcmcia-"	: _("PCMCIA Modem"),
 	/* Device type label */
-	"ppp-usb-"	: _("USB modem"),
+	"ppp-usb-"	: _("USB Modem"),
 	/* Device type label */
-	"sit"		: _("IPv6-in-IPv4 encapsulation device"),
+	"sit"		: _("IPv6-in-IPv4 Encapsulation Device"),
 	/* Device type label */
-	"slip"		: _("Serial line connection"),
+	"slip"		: _("Serial Line Connection"),
 	/* Device type label */
-	"tr"		: _("Token Ring network card"),
+	"tr"		: _("Token Ring Network Card"),
 	/* Device type label */
-	"tr-pcmcia-"	: _("PCMCIA Token Ring network card"),
+	"tr-pcmcia-"	: _("PCMCIA Token Ring Network Card"),
 	/* Device type label */
-	"tr-usb-"	: _("USB Token Ring network card"),
+	"tr-usb-"	: _("USB Token Ring Network Card"),
 	/* Device type label */
-	"vmnet"		: _("VMWare network device"),
+	"vmnet"		: _("VMWare Network Device"),
     ];
 
     if(haskey(device_names, devtype))
@@ -369,13 +369,13 @@ global define string DeviceType(string type) ``{
 	/* Device type label */
 	"net"	: _("ISDN"),
 	/* Device type label */
-	"plip"	: _("Parallel line"),
+	"plip"	: _("Parallel Line"),
 	/* Device type label */
 	"ppp"	: _("Modem"),
 	/* Device type label */
 	"sit"	: _("IPv6-in-IPv4"),
 	/* Device type label */
-	"slip"	: _("Serial line"),
+	"slip"	: _("Serial Line"),
 	/* Device type label */
 	"tr"	: _("Token Ring"),
 	/* Device type label */
@@ -616,23 +616,23 @@ global define symbol FinishPopup(boolean modified, string head, string text, str
 
     map heads = $[
 	/* Popup headline */
-	"dns"	: _("DNS configuration has been successfully saved."),
+	"dns"	: _("DNS Configuration Successfully Saved"),
 	/* Popup headline */
-	"dsl"	: _("DSL configuration has been successfully saved."),
+	"dsl"	: _("DSL Configuration Successfully Saved"),
 	/* Popup headline */
-	"host"	: _("Hosts configuration has been successfully saved."),
+	"host"	: _("Hosts Configuration Successfully Saved"),
 	/* Popup headline */
-	"isdn"	: _("ISDN configuration has been successfully saved."),
+	"isdn"	: _("ISDN Configuration Successfully Saved"),
 	/* Popup headline */
-	"lan"	: _("Network card configuration has been successfully saved."),
+	"lan"	: _("Network Card Configuration Successfully Saved"),
 	/* Popup headline */
-	"modem"	: _("Modem configuration has been successfully saved."),
+	"modem"	: _("Modem Configuration Successfully Saved"),
 	/* Popup headline */
-	"proxy"	: _("Proxy configuration has been successfully saved."),
+	"proxy"	: _("Proxy Configuration Successfully Saved"),
 	/* Popup headline */
-	"provider"	: _("Provider configuration has been successfully saved."),
+	"provider"	: _("Provider Configuration Successfully Saved"),
 	/* Popup headline */
-	"routing"	: _("Routing configuration has been successfully saved."),
+	"routing"	: _("Routing Configuration Successfully Saved"),
     ];
     h = heads[head]:h;
 
@@ -641,7 +641,7 @@ global define symbol FinishPopup(boolean modified, string head, string text, str
 	/* Popup text */
 	"mail"	: _("Configure the mail now?"),
 	/* Popup text */
-	"mail"	: _("Would you like to configure the mail now?"),
+	"mail"	: _("Configure mail now?"),
     ];
     if(t == "")
 	t = texts[run]:text;

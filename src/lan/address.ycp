@@ -150,8 +150,8 @@ _("<p>Otherwise, network addresses must be assigned
 
     if(type == "ctc" || type == "escon" || type == "iucv")
     /* Address dialog help 6/8 */
-help = help + _("<p>Enter the <b>IP address</b> (e.g., 192.168.100.99)
-for your computer and the <b>remote IP address</b> (e.g., 192.168.100.254)
+help = help + _("<p>Enter the <b>IP Address</b> (e.g., 192.168.100.99)
+for your computer and the <b>Remote IP Address</b> (e.g., 192.168.100.254)
 of your peer.</p>");
 
     else
@@ -175,12 +175,12 @@ completes the configuration.</p>");
     if(type == "hsi" || Arch::s390 || Lan::alias != "")
 
 	/* Frame label */
-	frame1 = `Frame(_("Static address setup"),
+	frame1 = `Frame(_("Static Address Setup"),
 	    `VBox(
 		`VSpacing(0.5),
 		`HBox(
 		    /* Text entry label */
-		    `TextEntry(`id(`ipaddr), _("&IP address"), ipaddr),
+		    `TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
 		    `HSpacing(2),
 		    /* Text entry label */
 		    `TextEntry(`id(`netmask), _("&Subnet mask"), netmask)
@@ -193,21 +193,21 @@ completes the configuration.</p>");
     if(type == "ctc" || type == "escon" || type == "iucv")
 
 	/* Frame label */
-	frame1 = `Frame(_("Static address setup"),
+	frame1 = `Frame(_("Static Address Setup"),
 	    `VBox(
 		`VSpacing(0.5),
 		`HBox(
 		    /* Text entry label */
-		    `TextEntry(`id(`ipaddr), _("&IP address"), ipaddr),
+		    `TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
 		    `HSpacing(2),
 		    /* Text entry label */
-		    `TextEntry(`id(`remoteip), _("R&emote IP address"), remoteip)
+		    `TextEntry(`id(`remoteip), _("R&emote IP Address"), remoteip)
 		),
 		`VSpacing(0.5)
 	    ));
 
     /* Push button label */
-    term HardwareButton = `PushButton(`id(`hardware), `opt(`hstretch), _("H&ardware details"));
+    term HardwareButton = `PushButton(`id(`hardware), `opt(`hstretch), _("H&ardware Details"));
     if(Lan::operation == `add && Lan::unique == "")
 	HardwareButton = `VSpacing(0);
 
@@ -304,7 +304,7 @@ completes the configuration.</p>");
 		}
 		if(UI::WidgetExists(`id(`remoteip)) && !check_ip4(UI::QueryWidget(`id(`remoteip), `Value))) {
 		    /* Popup text */
-		    UI::ErrorPopup(_("The remote IP address is incorrect"));
+		    UI::ErrorPopup(_("The remote IP address is invalid."));
 		    UI::SetFocus(`id(`remoteip));
 		    continue;
 		}

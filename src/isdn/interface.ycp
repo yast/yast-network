@@ -46,9 +46,10 @@ global define symbol isdn_if_sel(symbol op) ``{
     if (ISDN::have_dsl)
 	helptext = helptext +
     // conditional help text 1/4
-_("<p>If you have a combined ISDN/DSL CAPI controller you can config your DSL
-connection via the <b>Add DSL CAPI interface</b> button. You can also do this later
-in the DSL configuration dialog.</p>");
+_("<p>If you have a combined ISDN/DSL CAPI controller, configure your DSL
+connection via <b>Add DSL CAPI Interface</b>. You can also do this later
+in the DSL configuration dialog.</p>
+");
 
     helptext = helptext +
     // help text 1/4
@@ -73,7 +74,7 @@ _("<p>To avoid adding an interface now, use
     network = add(network, `VSpacing(0.5));
     if (ISDN::have_dsl)
 	// PushButton label to select the next Dialog
-	network = add(network, `PushButton(`id(`AddDSLPPP),`opt(`hstretch), _("Add &DSL CAPI interface")));
+	network = add(network, `PushButton(`id(`AddDSLPPP),`opt(`hstretch), _("Add &DSL CAPI Interface")));
     // PushButton label to select the next Dialog
     network = add(network, `PushButton(`id(`AddSyncPPP),`opt(`hstretch), _("Add new &SyncPPP network interface")));
     // PushButton label to select the next Dialog
@@ -248,7 +249,7 @@ remove a channel.
 	`VBox(
 	    `VSpacing(1.5),
         // Frame title
-        `Frame(_("Connection settings"),
+        `Frame(_("Connection Settings"),
         `HBox(
         `HSpacing(1),
         `VBox(

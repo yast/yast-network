@@ -46,8 +46,9 @@ global define symbol IFDetailDialog() ``{
 
     string helptext =
     // help text 1/7
-_("<p>The <b>Remote phone number list</b> controls which remote machines are
-allowed to connect to this interface.</p>");
+_("<p>The <b>Remote Phone Number List</b> controls which remote machines are
+allowed to connect to this interface.</p>
+");
 
     helptext = helptext +
     // help text 2/7
@@ -71,9 +72,10 @@ waits for callback from the remote machine.</p>");
 
     helptext = helptext +
     // help text 6/7
-_("<p><b>Callback Delay</b> is the amount of seconds between the initial call and the
-callback (server) or the hangup (client). It should be greater on the server than on
-the client.</p>");
+_("<p><b>Callback Delay</b> is the number of seconds between the initial call and the
+callback (server) or the hang-up (client). It should be greater on the server than on
+the client.</p>
+");
 
     if (syncppp) {
 	helptext = helptext +

@@ -23,7 +23,7 @@ y2milestone("Network module started");
 include "network/routines.ycp";
 
 /* Network dialog caption */
-string caption = _("Network configuration");
+string caption = _("Network Configuration");
 
 /* Network dialog help */
 string help = _("<p>Choose one of the available network modules to configure
@@ -37,7 +37,7 @@ term contents = `HBox(
     `VBox(
 	`VSpacing(3),
 	/* Selection box label */
-	`SelectionBox(`id(`modules), _("&Available network modules:"), [
+	`SelectionBox(`id(`modules), _("&Available Network Modules:"), [
 	    /* Selection box item */
 	    `item(`id("lan"), _("Network card"), true),
 	    /* Selection box item */
@@ -45,7 +45,7 @@ term contents = `HBox(
 	    /* Selection box item */
 	    `item(`id("modem"), _("Modem")),
 	    /* Selection box item */
-	    `item(`id("dsl"), _("DSL connection"))
+	    `item(`id("dsl"), _("DSL Connection"))
 	]),
 	`VSpacing(3)
 	),

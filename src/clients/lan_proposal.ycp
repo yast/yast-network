@@ -38,7 +38,7 @@ if(func == "MakeProposal") {
 	Lan::proposal_valid = true;
 	Progress::off();
 	/* Popup text */
-	BusyPopup(_("Detecting network cards ..."));
+	BusyPopup(_("Detecting network cards..."));
 	Lan::Read();
 	BusyPopupClose();
     }

@@ -62,8 +62,7 @@ global define symbol ReadDialog() ``{
 
     /* DSL read dialog help 1/2 */
     string helptext = _("<P><B><BIG>Initializing DSL configuration
-</BIG></B><BR>Please wait...<BR></P>
-");
+</BIG></B><BR>Please wait...<BR></P>");
 
     /* DSL read dialog help 2/2 */
     helptext = helptext + _("<P><B><BIG>Aborting the initialization:
@@ -88,8 +87,7 @@ global define symbol WriteDialog() ``{
 
     /* DSL write dialog help 1/2 */
     string helptext = _("<P><B><BIG>Saving DSL configuration</BIG></B><BR>
-Please wait...<BR></P>
-");
+Please wait...<BR></P>");
 
     /* DSL write dialog help 2/2 */
     helptext = helptext + _("<P><B><BIG>Aborting the saving:</BIG></B><BR>
@@ -195,8 +193,7 @@ global define symbol OverviewDialog() ``{
     /* DSL overview dialog help 1/3 */
     string helptext = _("<P><B><BIG>DSL overview</BIG></B><BR>
 Here, get an overview of installed DSL devices. Additionally,
-edit their configuration.<BR></P>
-");
+edit their configuration.<BR></P>");
 
     /* DSL overview dialog help 2/3 */
     helptext = helptext + _("<P><B><BIG>Adding a DSL device:</BIG></B><BR>
@@ -205,8 +202,7 @@ If you press <B>Add</B>, you can manually configure a DSL device.</P>");
     /* DSL overview dialog help 3/3 */
     helptext = helptext + _("<P><B><BIG>Editing or deleting:</BIG></B><BR>
 Choose a DSL device for which to change or remove the configuration.
-Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
-");
+Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 
     list overview = DSL::Overview();
     list overviewp = Provider::Overview();

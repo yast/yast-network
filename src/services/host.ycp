@@ -37,10 +37,10 @@ global define boolean HostSystemPopup(string host, boolean delete) ``{
 
     if(delete)
 	/* Warning popup text 2/2 */
-	text = text + _("Do you really want to delete it?");
+	text = text + _("Really delete it?");
     else
 	/* Warning popup text 2/2 */
-	text = text + _("Do you really want to change it?");
+	text = text + _("Really change it?");
 
     return UI::AnyQuestionPopup("", text, YesButtonLabel(), NoButtonLabel(), `focus_no);
 }
@@ -55,13 +55,13 @@ global define symbol HostsMainDialog(boolean standalone) ``{
     ScreenName("host");
 
     /* Hosts dialog caption */
-    string caption = _("Hosts configuration");
+    string caption = _("Host Configuration");
 
     /* Hosts dialog help 1/1 */
     string help = _("<p>The hosts can be set up in this dialog.</p>") +
 
-    _("<p>Fill in a host <b>IP address</b>, a <b>host name</b> and optional
-<b>host aliases</b>, divided by space.</p>");
+    _("<p>Fill in a host <b>IP address</b>, a <b>host name</b>, and optional
+<b>host aliases</b>, separated by spaces.</p>");
 
     integer items = 0;
     integer max = 0;
@@ -90,15 +90,15 @@ global define symbol HostsMainDialog(boolean standalone) ``{
 	`VBox(
 	    `VSpacing(2),
 	    /* Frame label */
-	    `Frame(_("Current hosts"), `HBox(`HSpacing(3), `VBox(
+	    `Frame(_("Current Hosts"), `HBox(`HSpacing(3), `VBox(
 		`VSpacing(1),
 		`Table(`id(`table), `header(
                     /* Table header label */
-                    _("IP address"),
+                    _("IP Address"),
                     /* Table header label */
-                    _("Host names"),
+                    _("Host Names"),
                     /* Table header label */
-                    _("Host aliases")), []),
+                    _("Host Aliases")), []),
 		`HBox(
 		    /* PushButton label */
 		    `PushButton(`id(`add), _("Ad&d")),
@@ -250,11 +250,11 @@ global define term HostDialog(integer id, term entry, list forbidden) ``{
 	`HSpacing(1),
 	`VBox(
 	    /* TextEntry label */
-	    `TextEntry(`id(`host), _("&IP address"), select(entry, 1, "")),
+	    `TextEntry(`id(`host), _("&IP Address"), select(entry, 1, "")),
 	    /* TextEntry label */
 	    `TextEntry(`id(`name), _("&Host name"), select(entry, 2, "")),
 	    /* TextEntry label */
-	    `TextEntry(`id(`aliases), _("Hos&t aliases"), select(entry, 3, ""))
+	    `TextEntry(`id(`aliases), _("Hos&t Aliases"), select(entry, 3, ""))
 	    ),
 	`HSpacing(1),
 	`HBox(
@@ -284,13 +284,13 @@ global define term HostDialog(integer id, term entry, list forbidden) ``{
 	string val = UI::QueryWidget(`id(`host), `Value);
 	if(!check_ip(val)) {
 	    /* ErrorPopup text */
-	    UI::ErrorPopup(_("IP address is incorrect"));
+	    UI::ErrorPopup(_("The IP address is invalid."));
 	    UI::SetFocus(`id(`host));
 	    continue;
 	}
 	if(contains(forbidden,val)) {
 	    /* ErrorPopup text */
-	    UI::ErrorPopup(sformat(_("IP address %1 is already present"), val));
+	    UI::ErrorPopup(sformat(_("IP address %1 is already present."), val));
 	    UI::SetFocus(`id(`host));
 	    continue;
 	}
@@ -299,7 +299,7 @@ global define term HostDialog(integer id, term entry, list forbidden) ``{
 	val = UI::QueryWidget(`id(`name), `Value);
 	if(!check_fqhostname(val)) {
 	    /* ErrorPopup text */
-	    UI::ErrorPopup(_("Host name is incorrect"));
+	    UI::ErrorPopup(_("Host name is invalid."));
 	    UI::SetFocus(`id(`name));
 	    continue;
 	}
@@ -311,7 +311,7 @@ global define term HostDialog(integer id, term entry, list forbidden) ``{
 	    vals = filter(string ho, vals, ``(ho != "" && !check_fqhostname(ho)));
 	    if(size(vals) > 0) {
 		/* ErrorPopup text */
-		UI::ErrorPopup(sformat(_("Alias name \"%1\" is incorrect"), vals[0]:""));
+		UI::ErrorPopup(sformat(_("Alias name \"%1\" is invalid."), vals[0]:""));
 		UI::SetFocus(`id(`aliases));
 		continue;
 	    }

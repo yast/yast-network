@@ -29,11 +29,11 @@ include "ui/common_messages.ycp";
 global define void ProxyFinishPopup(boolean modified) ``{
 
     /* Popup text */
-string text = _("Applications which support it (like YaST2 Online Update)
-could use them immediately, other applications will use
-them only if run from newly started terminal (lynx, wget)
-and some applications don't support these settings at
-all (they use they own settings system, like mozilla).");
+string text = _("Applications that support it (like YaST2 Online Update)
+could use them immediately.  Other applications will use
+them only if run from a newly-started terminal (lynx, wget).
+Some applications do not support these settings at
+all -- they use their own settings system, like Mozilla.");
 
     FinishPopup(modified, "proxy", text, "", []);
 }
@@ -55,7 +55,7 @@ global define symbol ProxyMainDialog(boolean standalone) ``{
     string pass = Proxy::pass;
 
     /* Proxy dialog caption */
-    string caption = _("Proxy configuration");
+    string caption = _("Proxy Configuration");
 
     /* Proxy dialog help 1/5 */
     string help = _("<p>Here, configure your Internet proxy (caching) settings.</p>") +
@@ -84,7 +84,7 @@ should be done directly without caching.</p>") +
 	`HSpacing(6),
 	`VBox(
 	/* CheckBox entry label */
-	`Left(`CheckBox(`id(`enabled), `opt(`notify), _("&Enable proxy"), enabled)),
+	`Left(`CheckBox(`id(`enabled), `opt(`notify), _("&Enable Proxy"), enabled)),
 	`VSpacing(1),
 	/* Frame label */
 	`Frame(`id(`frame), _("Proxy settings"), `HBox(`HSpacing(2), `VBox(
@@ -151,7 +151,7 @@ should be done directly without caching.</p>") +
 	    /* check_* */
 	    if(user == "" && pass != "") {
 		/* ErrorPopup text */
-		UI::ErrorPopup(_("You can't fill in the password and leave the user name empty."));
+		UI::ErrorPopup(_("You cannot enter a password and leave the user name empty."));
 		UI::SetFocus(`id(`user));
 		continue;
 	    }

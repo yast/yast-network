@@ -35,7 +35,7 @@ if(func == "MakeProposal") {
         ISDN::proposal_valid = true;
 	Progress::off();
 	/* Popup text */
-	BusyPopup(_("Detecting ISDN cards ..."));
+	BusyPopup(_("Detecting ISDN cards..."));
 	ISDN::Read();
 	BusyPopupClose();
     }

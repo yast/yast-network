@@ -121,7 +121,7 @@ global define boolean Modified() ``{
 global define boolean Read() ``{
 
     /* Read dialog caption */
-    string caption = _("Initializing DSL configuration");
+    string caption = _("Initializing DSL Configuration");
     integer steps = 5;
 
     /* FIXME */
@@ -129,52 +129,52 @@ global define boolean Read() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-        /* Progress step 1/5 */
+        /* Progress stage 1/5 */
         _("Detect DSL devices"),
-        /* Progress step 2/5 */
+        /* Progress stage 2/5 */
         _("Read current configuration"),
-        /* Progress step 3/5 */
+        /* Progress stage 3/5 */
 	_("Read firewall configuration"),
-        /* Progress step 4/5 */
+        /* Progress stage 4/5 */
         _("Read providers"),
-        /* Progress step 5/5 */
-        _("Read network cards configuration"),
+        /* Progress stage 5/5 */
+        _("Read network card configuration"),
     ], [], "");
 
     if(Abort()) return false;
-    /* Progress stage 1/5 */
-    ProgressNextStage(_("Detecting DSL devices"));
+    /* Progress step 1/5 */
+    ProgressNextStage(_("Detecting DSL devices..."));
     // FIXME: no DSL hardware yet ReadHardware("dsl");
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 2/5 */
-    ProgressNextStage(_("Reading current configuration"));
+    /* Progress step 2/5 */
+    ProgressNextStage(_("Reading current configuration..."));
     ReadDevices("dsl");
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 3/5 */
-    ProgressNextStage(_("Reading firewall configuration"));
+    /* Progress step 3/5 */
+    ProgressNextStage(_("Reading firewall configuration..."));
     Firewall::Read();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 4/5 */
-    ProgressNextStage(_("Reading providers"));
+    /* Progress step 4/5 */
+    ProgressNextStage(_("Reading providers..."));
     Provider::Read("dsl");
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 5/5 */
-    ProgressNextStage(_("Reading network cards configuration"));
+    /* Progress step 5/5 */
+    ProgressNextStage(_("Reading network card configuration..."));
     Progress::off();
     Lan::Read();
     Progress::on();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Final progress stage */
+    /* Final progress step */
     ProgressNextStage(_("Finished"));
     sleep(sl);
 
@@ -193,7 +193,7 @@ global define boolean Write() ``{
     y2milestone("Writing configuration");
 
     /* Write dialog caption */
-    string caption = _("Saving DSL configuration");
+    string caption = _("Saving DSL Configuration");
     integer steps = 7;
 
     /* FIXME */
@@ -201,68 +201,68 @@ global define boolean Write() ``{
     sleep(sl);
 
     Progress::New(caption, " ", steps, [
-        /* Progress step 1/7 */
+        /* Progress stage 1/7 */
         _("Write configuration"),
-        /* Progress step 2/7 */
-        _("Write network cards configuration"),
-        /* Progress step 3/7 */
+        /* Progress stage 2/7 */
+        _("Write network card configuration"),
+        /* Progress stage 3/7 */
         _("Write firewall settings"),
-        /* Progress step 4/7 */
+        /* Progress stage 4/7 */
         _("Write providers"),
-        /* Progress step 5/7 */
+        /* Progress stage 5/7 */
         _("Set up network services"),
-        /* Progress step 6/7 */
+        /* Progress stage 6/7 */
         _("Set up smpppd"),
-        /* Progress step 7/7 */
+        /* Progress stage 7/7 */
         _("Run KInternet"),
     ], [], "");
 
     if(Abort()) return false;
-    /* Progress stage 1/7 */
-    ProgressNextStage(_("Writing configuration"));
+    /* Progress step 1/7 */
+    ProgressNextStage(_("Writing configuration..."));
     WriteDevices();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 2/7 */
-    ProgressNextStage(_("Writing network cards configuration"));
+    /* Progress step 2/7 */
+    ProgressNextStage(_("Writing network card configuration..."));
     Progress::off();
     Lan::Write();
     Progress::on();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 3/7 */
-    ProgressNextStage(_("Writing firewall settings"));
+    /* Progress step 3/7 */
+    ProgressNextStage(_("Writing firewall settings..."));
     Firewall::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 4/7 */
-    ProgressNextStage(_("Writing providers"));
+    /* Progress step 4/7 */
+    ProgressNextStage(_("Writing providers..."));
     Provider::Write();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 5/7 */
-    ProgressNextStage(_("Setting up network services"));
+    /* Progress step 5/7 */
+    ProgressNextStage(_("Setting up network services..."));
     EnableNetwork();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 6/7 */
-    ProgressNextStage(_("Setting up smpppd(8)"));
+    /* Progress step 6/7 */
+    ProgressNextStage(_("Setting up smpppd(8)..."));
     EnableSMPPPD();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Progress stage 7/7 */
-    ProgressNextStage(_("Running KInternet"));
+    /* Progress step 7/7 */
+    ProgressNextStage(_("Running KInternet..."));
     RunKInternet();
     sleep(sl);
 
     if(Abort()) return false;
-    /* Final progress stage */
+    /* Final progress step */
     ProgressNextStage(_("Finished"));
     sleep(sl);
 

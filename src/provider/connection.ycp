@@ -99,7 +99,7 @@ connections. Choosing this option will make dial-up connections
 to the Internet safe from external attacks.</p>") +
 
     /* Connection dialog help 6/8 */
-_("<p>The <b>Idle timeout</b> specifies the time after which an idle
+_("<p>The <b>Idle Time-Out</b> specifies the time after which an idle
 connection will be shut down (0 means an infinite idle time-out).</p>");
 
     // if(type == "isdn")
@@ -120,7 +120,7 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    ``(`item(`id(sformat("%1", e)), sformat("%1", e), e == idletime)));
 
     /* Checkbox label */
-    term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("Activate fire&wall"), FirewallChecked));
+    term FirewallCheckbox = `Left(`CheckBox(`id(`Firewall), _("Activate Fire&wall"), FirewallChecked));
     if(type == "isdn") FirewallCheckbox = `VSpacing(0);
 
     term StupidMode = `VSpacing(0.1);
@@ -136,12 +136,12 @@ connection will be shut down (0 means an infinite idle time-out).</p>");
 	    `PushButton(`id(`Details), _("&Connection details")),
 	    `HSpacing(0.5),
 	    /* Push button label */
-	    `PushButton(`id(`IPDetails), _("I&P details"))
+	    `PushButton(`id(`IPDetails), _("I&P Details"))
 	);
     if(type != "isdn")
 	details = `HBox(
 	    /* Push button label */
-	    `PushButton(`id(`IPDetails), _("I&P details"))
+	    `PushButton(`id(`IPDetails), _("I&P Details"))
 	);
 
     term contents = `HBox(

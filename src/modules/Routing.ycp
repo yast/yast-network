@@ -166,10 +166,10 @@ global define string Summary() ``{
 
     if(forward == true)
 	/* Summary text */
-	summary = summary + _("IP forwarding: on");
+	summary = summary + _("IP Forwarding: on");
     else
 	/* Summary text */
-	summary = summary + _("IP forwarding: off");
+	summary = summary + _("IP Forwarding: off");
 
     if(routes != []) {
 	/* Summary text */

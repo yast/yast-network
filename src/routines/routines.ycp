@@ -197,8 +197,11 @@ global define symbol Packages(list packages) ``{
 	    break;
 	}
 
-	if(!UI::YesNoPopup(_("The required packages are not installed,
-the configuration will be aborted.\n\nDo you want to try again?\n")))
+	if(!UI::YesNoPopup(_("The required packages are not installed.
+The configuration will be aborted.
+
+Try again?
+")))
 	    break;
     }
 

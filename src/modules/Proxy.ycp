@@ -155,16 +155,16 @@ global define string Summary() ``{
 	/* Summary text */
 	_("Proxy is enabled.") + "\n<p>" +
 	/* Summary text */
-	sformat(_("HTTP proxy: %1"), http) + "\n<br>" +
+	sformat(_("HTTP Proxy: %1"), http) + "\n<br>" +
 	/* Summary text */
-	sformat(_("FTP proxy: %1"), ftp) + "\n<br>" +
+	sformat(_("FTP Proxy: %1"), ftp) + "\n<br>" +
 	/* Summary text */
-	sformat(_("No proxy domains: %1"), no) + "\n<br>" +
+	sformat(_("No Proxy Domains: %1"), no) + "\n<br>" +
 	"<p>" + ( user == "" ?
 	    /* Summary text */
 	    _("Proxy user name is not set.") :
 	    /* Summary text */
-	    sformat(_("Proxy user name: %1"), user)) +
+	    sformat(_("Proxy User Name: %1"), user)) +
 	"<br>" + ( pass == "" ?
 	    /* Summary text */
 	    _("Proxy password is not set.") :

@@ -18,7 +18,7 @@ Group = Net_advanced
 Icon = provider.png
 
 ; *one* *short* descriptive line for y2cc
-Helptext = _("Configure providers")
+Helptext = _("Configure Providers")
 
 ; arguments, seperated by space
 Arguments = 

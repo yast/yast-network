@@ -72,8 +72,8 @@ global define symbol TestStepsDialog() ``{
 </p>");
 
     /* Label text (keep lines max. 65 chars long) */
-    string label = _("To validate your Internet access we suggest to activate
-the test procedure.");
+    string label = _("To validate your Internet access,
+activate the test procedure.");
 
     map labels = $[
 	/* Label text (keep lines max. 65 chars long) */
@@ -97,10 +97,10 @@ the test procedure."),
 			  `VSpacing(1),
 			  /* RadioButton label */
 			  `Left(`RadioButton(`id(`yes),
-					     _("&Yes, test connection to the Internet"), test)),
+					     _("&Yes, Test Connection to the Internet"), test)),
 			  /* RadioButton label */
 			  `Left(`RadioButton(`id(`no),
-					     _("N&o, skip this test"), !test)),
+					     _("N&o, Skip This Test"), !test)),
 			  `VSpacing(1)
 			  );
 
@@ -123,7 +123,7 @@ the test procedure."),
 				  `Left(`Label(_("- Close connection"))),
 				  `VSpacing(2),
 				  /* Frame label */
-				  `Frame(_("Please select:"),
+				  `Frame(_("Select:"),
 					 `RadioButtonGroup(`id(`rb),
 							   `HBox(`HSpacing(2),
 								 buttons,
@@ -186,13 +186,13 @@ global define symbol TestConnectionDialog() ``{
     /* Progress labels */
     term progress = `VBox (
 			   /* Progress step 1/4 */
-			   `Left(`Label(_("Connect to the Internet"))),
+			   `Left(`Label(_("Connecting to the Internet..."))),
 			   /* Progress step 2/4 */
 			   `Left(`Label(_("Download latest release notes"))),
 			   /* Progress step 3/4 */
-			   `Left(`Label(_("Check for latest updates"))),
+			   `Left(`Label(_("Checking for latest updates..."))),
 			   /* Progress step 4/4 */
-			   `Left(`Label(_("Close connection")))
+			   `Left(`Label(_("Closing connection...")))
 			   );
 
     /* Test dialog contents */
