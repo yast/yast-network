@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb  7 17:35:47 CET 2005 - mvidner@suse.cz
+
+- Merged proofread texts.
+- 2.11.17
+
+-------------------------------------------------------------------
 Fri Feb  4 17:32:35 CET 2005 - mvidner@suse.cz
 
 - Introduced ifcfg:NAME, user's name for the interface,
