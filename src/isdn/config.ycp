@@ -86,12 +86,16 @@ global define boolean WriteISDNConfig(string isdntyp) ``{
 	SCR::Write(p, nil);
     });
 
+    if (isdntyp == "contr")
+	hw_device_cnt = 0;
     /* write all devices */
     maplist(`typ, `devsmap, Devices, ``{
 	maplist(`num, `devmap, devsmap, ``{
 	    /* write sysconfig */
 	    if (typ != isdntyp)
 	        return;
+	    if (isdntyp == "contr")
+		hw_device_cnt = hw_device_cnt + 1;
 	    string dev = typ + num;
 	    string p = ".isdn.value.\"" + sysconfig + "/cfg-" + dev + "\".";
 

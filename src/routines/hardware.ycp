@@ -175,8 +175,9 @@ global define void SelectHardware(integer which) ``{
     }
     /* dsl card */
     else if(type == "dsl") {
-	y2error("dsl not ready yet");
 	/* FIXME: DSL HW */
+	pppmode = sel["pppmode"]:"";
+	startmode = sel["startmode"]:"manual";
     }
     /* treat the rest as a network card */
     else {

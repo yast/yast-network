@@ -138,7 +138,14 @@ in the DSL configuration dialog.</p>
 	    break;
 	}
 	else if (ret == `AddDSLPPP) {
-	    ret = Call::Function("dsl", [.capiadsl]);
+	    map dslpara = $[
+		"type"      : "dsl",
+		"name"	    : ISDN::hw_device["NAME"]:"unknown",
+		"unique"    : ISDN::hw_device["UNIQUE"]: "",
+		"pppmode"   : "capi-adsl",
+		"startmode" : ISDN::hw_device["STARTMODE"]: ""
+	    ];
+	    ret = Call::Function("dsl", [.capiadsl, dslpara]);
 	}
 	else if (ret == `AddSyncPPP) {
 	    if (op == `hw)

@@ -41,6 +41,7 @@ global string startmode = "manual";
  * Used for ISDN-DSL combined hardware.
  */
 global boolean capiadsl = false;
+global map capiadsl_hw = $[];
 
 /**
  * Ethernet network interface
@@ -160,6 +161,14 @@ global define boolean Read() ``{
     ProgressNextStage(_("Detecting DSL devices..."));
     if(!Detection::running) Detection::Start();
     // FIXME: no DSL hardware yet ReadHardware("dsl");
+    if (capiadsl) {
+	/*  
+	 *  in case of capiadsl we can emulate the detection with the
+	 *  parameters from ISDN
+         *  Advantage, we can setup the dialog items correctly
+         */
+	Hardware = add(Hardware, capiadsl_hw);
+    }
     sleep(sl);
 
     if(Abort()) return false;
@@ -341,10 +350,6 @@ global define boolean Select(string dev) ``{
     /* provider settings */
     Provider::Name = devmap["PROVIDER"]:"";
 
-    /* Capi-ADSL mode */
-    if(dev == "" && capiadsl)
-	pppmode = "capi-adsl";
-
     /* ppp mode heuristics */
     if(pppmode == nil || pppmode == "") {
 	string language = Language::GetLanguageCountry();
@@ -437,9 +442,6 @@ global define boolean Commit() ``{
 	y2error("Unknown operation: %1", operation);
 	return false;
     }
-
-    /* Capi-ADSL mode */
-    if(capiadsl) capiadsl = false;
 
     modified = true;
     operation = nil;

@@ -32,6 +32,7 @@ if(size(args) > 0) {
     else if(is(WFM::Args(0), path) && WFM::Args(0) == .capiadsl) {
         y2milestone("Using CAPI-ADSL mode");
 	DSL::capiadsl = true;
+	DSL::capiadsl_hw = WFM::Args(1);
     }
     else
         y2error("Bad argument for modem: %1",WFM::Args(0));

@@ -59,6 +59,8 @@ global boolean proposal_valid = false;
  */
 
 global map hw_device = $[];
+// count of hw_devices
+global integer hw_device_cnt = 0;
 
 // global dialprefix default value for current
 global string global_dp="";
@@ -99,10 +101,11 @@ global string  type = "";
 global string device = "";
 
 /**
- * Flag for Fritz!DSL configuration
+ * Flag for Fritz!card DSL configuration
  */
 global boolean have_dsl = false;
 global boolean only_dsl = false;
+global boolean DRDSLrun = false;
 
 /**
  * Which operation is pending?
@@ -196,6 +199,7 @@ global define boolean Read() ``{
     // stage 2 in reading current ISDN setup
     ProgressNextStage(_("Reading current device configuration"));
     ReadISDNConfig("cfg-contr");
+    hw_device_cnt = size(hw_device);
     sleep(sl);
 
     if(Abort()) return false;
@@ -253,60 +257,49 @@ global define boolean Write(boolean start) ``{
 
     // title for ISDN writing current setup progress screen
     string caption = _("Saving ISDN configuration");
-    integer steps = 10;
     string cmd = "";
 
     integer sl = 0; /* 1000; /* TESTING */
 
+    integer steps = 7;
+    list plist = [];
+	
+    // steps for the ISDN writing current setup progress screen with start
+    // step 1/13
+    plist = add(plist, _("Stop ISDN networking"));
+    // step 2/13
+    plist = add(plist, _("Stop ISDN subsystem"));
+    // step 3/13
+    plist = add(plist, _("Write controller configuration"));
+    // step 4/13
+    plist = add(plist, _("Write interface configuration"));
+    // step 5/13
+    plist = add(plist, _("Write Firewall"));
+    // step 6/13
+    plist = add(plist, _("Write providers"));
+    // step 7/13
+    plist = add(plist, _("Run SuSEconfig"));
     if (start) {
 	steps = 12;
-	Progress::New(caption, " ", steps, [
-	    // steps for the ISDN writing current setup progress screen with start
-        // step 1/11
-	    _("Stop ISDN networking"),
-        // step 2/11
-	    _("Stop ISDN subsystem"),
-        // step 3/11
-	    _("Write controller configuration"),
-        // step 4/11
-	    _("Write interface configuration"),
-        // step 5/11
-	    _("Write Firewall"),
-        // step 6/11
-	    _("Write providers"),
-        // step 7/11
-	    _("Run SuSEconfig"),
-        // step 8/11
-	    _("Start ISDN subsystem"),
-	// step 9/11
-	    _("Set up network services"),
-        // step 10/11
-	    _("Set up smpppd"),
-        // step 11/11
-	    _("Start ISDN networking"),
-        // step 12/11
-	    _("Run kinternet"),
-	    ], [], "");
-    } else {
-	steps = 7;
-	Progress::New(caption, " ", steps, [
-	    // steps for the ISDN writing current setup progress screen without start
-        // step 1/7
-	    _("Stop ISDN networking"),
-        // step 2/7
-	    _("Stop ISDN subsystem"),
-        // step 3/7
-	    _("Write controller configuration"),
-        // step 4/7
-	    _("Write interface configuration"),
-        // step 5/7
-	    _("Write Firewall"),
-        // step 6/7
-	    _("Write providers"),
-        // step 7/7
-	    _("Run SuSEconfig"),
-	    ], [], "");
+        // step 8/13
+	plist = add(plist, _("Start ISDN subsystem"));
+
+	if (DRDSLrun) {
+	    // step 9/13
+	    plist = add(plist, _("Running drdsl (could take over a minute)"));
+	    steps = 13;
+	}
+	// step 11/13
+	plist = add(plist, _("Set up network services"));
+        // step 11/13
+	plist = add(plist, _("Set up smpppd"));
+        // step 12/13
+	plist = add(plist, _("Start ISDN networking"));
+        // step 13/13
+	plist = add(plist, _("Run kinternet"));
     }
+
+    Progress::New(caption, " ", steps, plist, [], "");
     if(Abort()) return false;
     // stage 1 in writing current ISDN setup
     ProgressNextStage(_("Stop ISDN networking"));
@@ -359,7 +352,7 @@ global define boolean Write(boolean start) ``{
 
     if(Abort()) return false;
 
-    if (start) {
+    if (start && hw_device_cnt > 0) {
 	// stage 8 in writing current ISDN setup
 	ProgressNextStage(_("Load ISDN driver"));
 	if (modified_hw) {
@@ -370,19 +363,28 @@ global define boolean Write(boolean start) ``{
 	sleep(sl);
 
 	if(Abort()) return false;
-	// stage 9 in writing current ISDN setup
+	if (DRDSLrun) {
+	    // stage 9 in writing current ISDN setup
+	    ProgressNextStage(_("Running drdsl (could take over a minute)"));
+	    cmd = sformat("/usr/sbin/drdsl -q -n");
+	    SCR::Execute(.target.bash, cmd);
+	    sleep(sl);
+	}
+
+	if(Abort()) return false;
+	// stage 10 in writing current ISDN setup
 	ProgressNextStage(_("Setting up network services"));
 	EnableNetwork();
 	sleep(sl);
 
 	if(Abort()) return false;
-	// stage 10 in writing current ISDN setup
+	// stage 11 in writing current ISDN setup
 	ProgressNextStage(_("Setting up smpppd(8)"));
 	EnableSMPPPD();
 	sleep(sl);
 
 	if(Abort()) return false;
-	// stage 11 in writing current ISDN setup
+	// stage 12 in writing current ISDN setup
 	ProgressNextStage(_("Load ISDN network"));
 	cmd = sformat("/etc/init.d/network start -o type=isdn");
 	SCR::Execute(.target.bash, cmd);
@@ -392,7 +394,7 @@ global define boolean Write(boolean start) ``{
 	sleep(sl);
 
 	if(Abort()) return false;
-	// stage 12 in writing current ISDN setup
+	// stage 13 in writing current ISDN setup
 	ProgressNextStage(_("Running kinternet"));
 	RunKInternet();
 	sleep(sl);

@@ -371,19 +371,13 @@ global define symbol isdn_lowlevel() ``{
     
     y2debug("CurrentDrvIndex %1", CurrentDrvIndex);
     y2debug("DrvList %1", DrvList);
-    /* DIALOG TEXTS */
-    if (contains(lookup(select(CardDrivers, CurrentDrvIndex, $[]), "features", ""), "DSLONLY")) {
-	ISDN::only_dsl = true;
-	ISDN::have_dsl = true;
-	ISDN::hw_device = union(ISDN::hw_device, $[
-	    "NAME"		: sformat("%1", lookup(cur_card, "longname", "unknown")),
-	    "DRIVER"		: sformat("%1", lookup(select(CardDrivers, CurrentDrvIndex, $[]), "mod_name", "unknown")),
-	    "STARTMODE"		: "onboot",
-	    "ISDNLOG_START"	: "no",
-	]);
-	return(`next);
-    }
 
+    if (contains(lookup(select(CardDrivers, CurrentDrvIndex, $[]), "features", []), "DSLONLY"))
+	ISDN::only_dsl = true;
+    else
+	ISDN::only_dsl = false;
+
+    /* DIALOG TEXTS */
     // title for dialog
     string caption = sformat(_("ISDN low-level configuration for %1%2"),
     	ISDN::type, ISDN::device);
@@ -503,12 +497,22 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
     term ISDN_area = `VBox(
 	`HBox(
 	    // ComboBoxlabel for country list 
-	    `HWeight( 26, `ComboBox(`id(`Country), `opt(`notify), _("&Country"), countries)),
+	    `HWeight(25, `ComboBox(`id(`Country), `opt(`notify), _("&Country"), countries)),
+	    `HSpacing(1),
 	    // TextEntry label for phone network Areacode (german Vorwahl)
-	    `HWeight( 24, `TextEntry(`id(`CCode), _("Co&de"), ccode))
+	    `HWeight(24, `TextEntry(`id(`CCode), _("Co&de"), ccode))
 	),
-	// TextEntry label for phone network Areacode (german Vorwahl)
-	`TextEntry(`id(`areacode), _("&Areacode"), areacode)
+	`VSpacing(0.4),
+	`HBox(
+	    // TextEntry label for phone network Areacode (german Vorwahl)
+	    `HWeight(25, `TextEntry(`id(`areacode), _("&Areacode"), areacode)),
+	    // TextEntry label for phone number prefix to get a public line (german Amtsholziffer)
+	    `HSpacing(1),
+	    `HWeight(24, `TextEntry(`id(`dialprefix), _("&Dialprefix"), dialprefix))
+	),
+	`VSpacing(0.4),
+	// CheckBox label
+	`Left(`CheckBox(`id(`ilog), _("Start &ISDN Log"), isdnlog))
     );
 
     string desc = lookup(select(CardDrivers, CurrentDrvIndex, $[]), "description", "default");
@@ -532,32 +536,33 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
     if (cur_card["bus"]:"" == "USB" || cur_card["bus"]:"" == "PCMCIA")
 	startmode = "hotplug";
 
+    if (ISDN::only_dsl) {
+	ISDN_protocol = `HSpacing(44);
+	ISDN_area = `HSpacing(54);
+    }
     term contents =
 	`Top(`VBox(
 	    `VSpacing(1.5),
 	    ISDN_card,
 	    `VSpacing(0.2),
 	    `ReplacePoint(`id(`DrvRpl), ISDN_driver),
-	    `VSpacing(0.2),
+	    `VSpacing(1.5),
 	    `HBox(
-		`HWeight(49, ISDN_protocol),
+		`HWeight(44, ISDN_protocol),
 		`HSpacing(2),
-		`HWeight(49, ISDN_area)
+		`HWeight(54, ISDN_area)
 	    ),
-	    `HBox(
+	    `VSpacing(1.5),
+	    `Left(
 		// ComboBox label
-		`HWeight(30, `ComboBox(`id(`startmode), _("&Start Mode"),
+		`ComboBox(`id(`startmode), _("&Start Mode"),
 		    [
 			// ComboBox items
 			`item(`id("onboot"), _("OnBoot"), startmode == "onboot"),
 			`item(`id("manual"), _("Manual"), startmode == "manual"),
 			`item(`id("hotplug"), _("HotPlug"), startmode == "hotplug")
 		    ]
-		)),
-		// TextEntry label for phone number prefix to get a public line (german Amtsholziffer)
-		`HWeight(35, `TextEntry(`id(`dialprefix), _("&Dialprefix"), dialprefix)),
-		// CheckBox label
-		`HWeight(35, `CheckBox(`id(`ilog), _("Start &ISDN Log"), isdnlog))
+		)
 	    ),
 	    `VSpacing(1.5)
     ));
@@ -571,7 +576,8 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 
     UI::ChangeWidget(`id(`CCode), `Enabled, !haskey(CountryCodes, ccode));
 
-    EnableProtocols(select(CardDrivers, CurrentDrvIndex, $[]));
+    if (!ISDN::only_dsl)
+	EnableProtocols(select(CardDrivers, CurrentDrvIndex, $[]));
 
     /* Special Handling AVM T1 */
     if (Default_TYPE == 8005)
@@ -616,34 +622,37 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 	    break;
 	}
 	else if (ret == `next) {
-	    protocol = UI::QueryWidget(`id(`protocol), `CurrentButton);
-	    ccode = UI::QueryWidget(`id(`CCode), `Value);
-	    areacode = UI::QueryWidget(`id(`areacode), `Value);
-	    dialprefix = UI::QueryWidget(`id(`dialprefix), `Value);
-	    isdnlog = UI::QueryWidget(`id(`ilog), `Value);
+	    if (ISDN::only_dsl) {
+		isdnlog = false;
+	    } else {
+		protocol = UI::QueryWidget(`id(`protocol), `CurrentButton);
+		ccode = UI::QueryWidget(`id(`CCode), `Value);
+		areacode = UI::QueryWidget(`id(`areacode), `Value);
+		dialprefix = UI::QueryWidget(`id(`dialprefix), `Value);
+		isdnlog = UI::QueryWidget(`id(`ilog), `Value);
+
+		string val = nil;
+
+		if(UI::WidgetExists(`id(`IOADR))) {
+		    val = UI::QueryWidget(`id(`IOADR), `Value);
+		    change(ISDN::hw_device, "PARA_IO", val);
+		}
+		if(UI::WidgetExists(`id(`IRQ))) {
+		    val = UI::QueryWidget(`id(`IRQ), `Value);
+		    change(ISDN::hw_device, "PARA_IRQ", val);
+		}
+		if(UI::WidgetExists(`id(`MEMBASE))) {
+		    val = UI::QueryWidget(`id(`MEMBASE), `Value);
+		    change(ISDN::hw_device, "PARA_MEMBASE", val);
+		}
+	    }
 
 	    y2debug("proto: %1", protocol);
 
 	    if (DriverCnt >1) {
 		CurrentDrvIndex = tointeger(UI::QueryWidget(`id(`DrvBox), `Value));
 	    }
-	    string val = nil;
-
-	    if(UI::WidgetExists(`id(`IOADR))) {
-		val = UI::QueryWidget(`id(`IOADR), `Value);
-		change(ISDN::hw_device, "PARA_IO", val);
-	    }
-	    if(UI::WidgetExists(`id(`IRQ))) {
-		val = UI::QueryWidget(`id(`IRQ), `Value);
-		change(ISDN::hw_device, "PARA_IRQ", val);
-	    }
-	    if(UI::WidgetExists(`id(`MEMBASE))) {
-		val = UI::QueryWidget(`id(`MEMBASE), `Value);
-		change(ISDN::hw_device, "PARA_MEMBASE", val);
-	    }
-
 	    change(cur_card, "sel_drv", CurrentDrvIndex);
-
 	    Default_TYPE = get_i4ltype(cur_card);
 	    Default_SUBTYPE = get_i4lsubtype(cur_card);
 	    /* Special Handling AVM T1 */
@@ -665,20 +674,31 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 	    // check and maybe install missing packages
 	    list pkgs = [];
 
-// FIXME workaround: not needed if yast2-core is udated to deliver need_pkg as list
 	    pkgs = lookup(select(CardDrivers, CurrentDrvIndex, $[]), "need_pkg", []);
-	    y2debug("pkgs: %1", pkgs);
-	    if (pkgs != nil && pkgs!=[]) {
+	    if (pkgs != nil && pkgs != [] && !isdnlog) {
+		pkgs = filter(`p, pkgs, ``(p != "i4l-isdnlog"));
+	    }
+	    if (pkgs == [""])
+		y2warning("no package list for %1", lookup(cur_card, "longname","unknown"));
+
+
+	    if (pkgs != nil && pkgs != [] && pkgs != [""]) {
 		symbol retp = Packages(pkgs);
 		y2debug("Packages returns %1", retp);
-// TODO warning message if packages are not installed
 	    } 
 	    // if it is a DSL capable card
-	    if (contains(lookup(select(CardDrivers, CurrentDrvIndex, $[]), "features", ""), "DSL"))
+	    if (contains(lookup(select(CardDrivers, CurrentDrvIndex, $[]), "features", []), "DSL")) {
 		ISDN::have_dsl = true;
-	    else
+		// only one time needed
+		ISDN::DRDSLrun = true;
+	    } else
 		ISDN::have_dsl = false;
-	    if (!contains(lookup(select(CardDrivers, CurrentDrvIndex, $[]), "features", ""), "DSLONLY"))
+	    if (contains(lookup(select(CardDrivers, CurrentDrvIndex, $[]), "features", []), "DSLONLY")) {
+		ISDN::have_dsl = true;
+		// only one time needed
+		ISDN::DRDSLrun = true;
+		ISDN::only_dsl = true;
+	    } else
 		ISDN::only_dsl = false;
 
 	    if ((Default_TYPE == 8002) || (Default_TYPE == 8003) || (Default_TYPE == 8004)) {
@@ -688,8 +708,8 @@ You have selected an binary only driver.
 This driver will provide you additional features
 like analog modulation, full CAPI 2.0 and Fax G3
 support for this card.
-This driver works only on single CPU systems with
-i386 architectur. 
+This driver works only on systems with i386 
+architectur. 
 Please understand that SuSE Linux AG can't check
 the source code of this driver, so we cannot do
 any debuging if here are problems in the system.
