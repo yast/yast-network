@@ -32,49 +32,59 @@ include "network/lan/wizards.ycp";
  * Command line definition
  */
 map cmdline = $[
-    "help"	: "Network cards configuration",
+    /* Commandline help title */
+    "help"	: _("Network cards configuration"),
     "id"	: "lan",
     "guihandler": ``(LanSequence()),
     "initialize": ``(Lan::Read()),
     "finish"	: ``(Lan::Write()),
     "actions"	: $[
 	"list" : $[
-	    "help"	: "display configuration summary",
+	    /* Commandline command help */
+	    "help"	: _("Display configuration summary"),
 	    "example"	: "lan list configured",
 	    "handler"	: ``(ListHandler())
 	],
 	"add" : $[
-	    "help"	: "add a network card",
+	    /* Commandline command help */
+	    "help"	: _("Add a network card"),
 	    "handler"	: ``(AddHandler())
 	],
 	"delete" : $[
-	    "help"	: "delete a network card",
+	    /* Commandline command help */
+	    "help"	: _("Delete a network card"),
 	    "handler"	: ``(DeleteHandler())
 	]
     ],
     "options" : $[
 	"propose" : $[
-	    "help"	: "propose a configuration",
+	    /* Commandline option help */
+	    "help"	: _("Propose a configuration"),
 	    "example"	: "lan add propose",
 	    "type"	: ""
 	],
 	"configured" : $[
-	    "help"	: "list only configured cards"
+	    /* Commandline option help */
+	    "help"	: _("List only configured cards")
 	],
 	"unconfigured" : $[
-	    "help"	: "list only not configured cards"
+	    /* Commandline option help */
+	    "help"	: _("List only unconfigured cards")
 	],
 	"device" : $[
-	    "help"	: "device ID",
+	    /* Commandline option help */
+	    "help"	: _("Device identifier"),
 	    "type"	: "string",
 	    "example"	: "lan add device=eth0"
 	],
 	"ip" : $[
-	    "help": "device address",
+	    /* Commandline option help */
+	    "help": _("Device IP address"),
 	    "type": "ip"
 	],
 	"netmask" : $[
-	    "help": "network mask",
+	    /* Commandline option help */
+	    "help": _("Network mask"),
 	    "type": "netmask"
 	],
     ],
