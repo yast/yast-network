@@ -1,6 +1,7 @@
 Read	.probe.architecture nil
 Read	.probe.has_apm nil
 Read	.probe.has_pcmcia nil
+Read	.probe.is_uml nil
 Read	.probe.has_smp nil
 Read	.probe.system []
 Read	.target.tmpdir "/tmp"
