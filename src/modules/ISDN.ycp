@@ -675,6 +675,7 @@ global define boolean AddIf(string proto) ``{
     device = GetFreeDevice(type);
     interface = $[
 	"PROTOCOL": proto,
+	"USERCONTROL": "yes",
 	];
     interface = set_ifparameters (interface);
     operation = `addif;

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug 20 13:26:47 CEST 2004 - mvidner@suse.cz
+
+- Enable USERCONTROL for new modem, DSL and ISDN interfaces (#43945).
+
+-------------------------------------------------------------------
 Thu Aug 19 09:58:06 CEST 2004 - mvidner@suse.cz
 
 - Wireless: better input checking, updated help texts.

@@ -297,7 +297,10 @@ global define boolean Write() {
 global define boolean Select(string dev) {
 
     y2debug("dev=%1", dev);
-    map devmap = $[];
+    // defaults for a new device
+    map devmap = $[
+	"USERCONTROL": "yes",
+	];
 
     /* dev=="" -> Add */
     if(dev == "") {
