@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Jul  4 17:28:43 CEST 2003 - msvec@suse.cz
+
+- lan: coordinate IP proposal according to DSL presence
+- proxy: better helps (#24803)
+- proxy: input checking (#18791)
+- 2.8.2
+
+-------------------------------------------------------------------
 Fri Jun 27 11:22:37 CEST 2003 - msvec@suse.de
 
 - fixed writing of modules.conf options (#26217)

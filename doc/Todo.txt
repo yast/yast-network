@@ -24,24 +24,13 @@ Bugs:
 - dsl: detect hardware (#24462)
 - dsl: empty ifcfg-ethX (#17631)
 
-- lan: temporary interface disable (#24926)
-- all: temporary interface disable
-
-- proxy: better helps for proxy (#24803)
-- proxy: proxy: input checking (#18791)
-- proxy: use immediately (#23728)
-
-- provider: warn if deleting default provider for modem|isdn|dsl (#17497)
-- provider: delete default route if removed (#10739)
-
 - dummy: dummy device adding (#15960) for what is it useful? [suse-network]
 - alias: virtual interfaces (#6627)
-
-- isdn: start mail after config (#18256)
 
 ISDN:
 - code cleanup (use yast2-network structure: Provider, devices, ...)
 - UI cleanup (http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html)
+- isdn: start mail after config (#18256)
 
 ##############################################################################
 
@@ -114,8 +103,11 @@ Improvements:
 - dialup: info popup (configured + kinternet, cinternet)
 - dialup: run|stop kinternet, if DISPLAY and (not)running (#14320)
 - provider: offer to delete provider after device delete if not used (#16094)
+- provider: warn if deleting default provider for modem|isdn|dsl (#17497)
+- provider: delete default route if removed (#10739)
 
 Enhancements:
+- proxy: use immediately (#23728)
 - detection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
 - lan: defaut gw in the first dialog (#13450)
 - modem: winmodems support (#25220, #15556)
@@ -142,6 +134,8 @@ Enhancements:
 - host: show system hosts checkbox (like users have)
 - routing: other fields (see routes(5))
 - routing: possibly rename to Route
+- lan: temporary interface disable (#24926)
+- all: temporary interface disable
 
 Documentation:
 - example dhcpcd-eth0.info

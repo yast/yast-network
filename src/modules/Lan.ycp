@@ -759,11 +759,23 @@ global define boolean Propose() ``{
 
     }
     else {
-	y2debug("DHCP proposal");
-	ipaddr = "";
-	bootproto = "dhcp"; // support also bootp?
-	DNS::dhcp_hostname = true;
-	DNS::modified = true;
+	/* Propose static config in case of DSL hardware is found */
+	list pppoe = SCR::Read(.probe.pppoe);
+	map pppoedev = pppoe[0]:$[];
+	y2debug("pppoe=%1", pppoe);
+	if(pppoe != nil && size(pppoe) > 0) {
+	    y2debug("DSL proposal");
+	    ipaddr = "";
+	    bootproto = "static";
+	}
+	else {
+	    y2debug("DHCP proposal");
+	    ipaddr = "";
+	    bootproto = "dhcp";
+	    DNS::dhcp_hostname = true;
+	    DNS::modified = true;
+	}
+
     }
 
     Commit();

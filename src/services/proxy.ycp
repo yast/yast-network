@@ -12,6 +12,7 @@
 textdomain "network";
 
 import "Proxy";
+import "URL";
 import "Wizard";
 
 include "network/dns.ycp";
@@ -60,14 +61,14 @@ global define symbol ProxyMainDialog(boolean standalone) ``{
     string help = _("<p>Here, configure your Internet proxy (caching) settings.</p>") +
 
     /* Proxy dialog help 2/5 */
-    _("<p><b>HTTP proxy</b> is the name of the proxy server for your access
+    _("<p><b>HTTP proxy URL</b> is the name of the proxy server for your access
 to the world wide web (WWW).</p>") +
 
     /* Proxy dialog help 2.5/5 */
     _("<p>Example: <i>http://proxy.provider.com:3128</i></p>") +
 
     /* Proxy dialog help 3/5 */
-    _("<p><b>FTP proxy</b> is the name of the proxy server for your access
+    _("<p><b>FTP proxy URL</b> is the name of the proxy server for your access
 to the file transfer services (FTP).</p>") +
 
     /* Proxy dialog help 4/5 */
@@ -89,10 +90,10 @@ should be done directly without caching.</p>") +
 	`Frame(`id(`frame), _("Proxy settings"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(1),
 	    /* Text entry label */
-	    `TextEntry(`id(`http), _("&HTTP proxy"), http),
+	    `TextEntry(`id(`http), _("&HTTP proxy URL"), http),
 	    `VSpacing(0.2),
 	    /* Text entry label */
-	    `TextEntry(`id(`ftp), _("F&TP proxy"), ftp),
+	    `TextEntry(`id(`ftp), _("F&TP proxy URL"), ftp),
 	    `VSpacing(0.2),
 	    /* Text entry label */
 	    `TextEntry(`id(`no), _("N&o proxy domains"), no),
@@ -141,6 +142,8 @@ should be done directly without caching.</p>") +
 	/* next */
 	else if(ret == `next) {
 
+	    http = UI::QueryWidget(`id(`http), `Value);
+	    ftp = UI::QueryWidget(`id(`ftp), `Value);
 	    enabled = UI::QueryWidget(`id(`enabled), `Value);
 	    user = UI::QueryWidget(`id(`user), `Value);
 	    pass = UI::QueryWidget(`id(`pass), `Value);
@@ -152,6 +155,18 @@ should be done directly without caching.</p>") +
 		/* Popup::Error text */
 		Popup::Error(_("You cannot enter a password and leave the user name empty."));
 		UI::SetFocus(`id(`user));
+		continue;
+	    }
+	    if(http != "" && !URL::Check(http)) {
+		/* Popup::Error text */
+		Popup::Error(_("HTTP proxy URL is incorrect"));
+		UI::SetFocus(`id(`http));
+		continue;
+	    }
+	    if(ftp != "" && !URL::Check(ftp)) {
+		/* Popup::Error text */
+		Popup::Error(_("FTP proxy URL is incorrect"));
+		UI::SetFocus(`id(`ftp));
 		continue;
 	    }
 	    break;
