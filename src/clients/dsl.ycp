@@ -32,7 +32,7 @@ if(size(args) > 0) {
     else if(is(WFM::Args(0), path) && WFM::Args(0) == .capiadsl) {
         y2milestone("Using CAPI-ADSL mode");
 	DSL::capiadsl = nil;
-	if(size(args > 1)) DSL::capiadsl = WFM::Args(1);
+	if(size(args) > 1) DSL::capiadsl = WFM::Args(1);
 	if(DSL::capiadsl == nil) DSL::capiadsl = $[];
     }
     else
