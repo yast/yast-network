@@ -89,25 +89,25 @@ and correct the setting.</p>");
 			     );
 	}
 
+	progress = add (progress, `VStretch());
+
+	progress = add (progress, `HBox(
+					/* Label for result of internet test */
+					`Label(_("Result:")),
+					`HSpacing(2),
+					`Label(`id(`res), `opt(`outputField, `hstretch), "")
+					));
+
 	/* Test dialog contents */
 	term contents = `VBox(
-			      `VSpacing(1),
+			      `VStretch(),
 			      `VBox(`HVCenter(`HSquash(progress))),
-			      `VSpacing(1),
-			      `HBox(
-				    `HSpacing(1),
-				    /* Label for result of internet test */
-				    `Label(_("Result:")),
-				    `HSpacing(2),
-				    `Label(`id(`res), `opt(`outputField, `hstretch), ""),
-				    `HSpacing(1)
-				    ),
-			      `VSpacing(1),
+			      `VStretch(),
 			      /* Push Button to abort internet test */
 			      `PushButton(`id (`abort_test), _("&Abort Test")),
 			      `VSpacing(1),
 			      /* Push Button to see log of internet test */
-			      `PushButton(`id (`view_log), `opt(`disabled), _("&View Log")),
+			      `PushButton(`id (`view_log), `opt(`disabled), _("&View Log...")),
 			      `VStretch()
 			      );
 
