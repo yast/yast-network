@@ -239,14 +239,14 @@ Internet Connection Test.</p>") +
 	    integer ret = SCR::Execute (.target.bash, "/usr/bin/online_update -q");
 	    y2milestone ("online_update -q returned %1", ret);
 
-	    if (ret == -1)			// some failure
+	    if (ret == 1 || ret == 2)	// there are patches
+	    {
+		we_have_patches = true;
+	    }
+	    else if (ret != 0)
 	    {
 		// popup to inform user about the failure
 		Report::Message (_("Check for latest updates failed."));
-	    }
-	    else if (ret == 1 || ret == 2)	// there are patches
-	    {
-		we_have_patches = true;
 	    }
 
 	    set_stage (4);
