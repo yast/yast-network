@@ -114,9 +114,6 @@ global define boolean Write() ``{
  * @return true if success
  */
 global define boolean Import(map settings) ``{
-    if(size(settings) == 0)
-	return true;
-
     enabled = settings["enabled"]:true;
     http = settings["http_proxy"]:"";
     ftp = settings["ftp_proxy"]:"";
