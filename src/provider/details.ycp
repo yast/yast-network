@@ -128,20 +128,27 @@ waits for callback of the remote machine.");
 	    );
     }
 
-    contents = `VBox(contents,`VSpacing(0.5),
-	`HSquash(
-	    `Frame(_("Callback functions"),
-		`RadioButtonGroup(`id(`callback),
-		    `HBox(
+    if(type == "isdn")
+	contents = `HSquash(`VBox(
+	    contents,
+	    `VSpacing(0.5),
+	    `HBox(
+		`HSpacing(0.5),
+		`Frame(_("Callback functions"),
+		    `RadioButtonGroup(`id(`callback), `HBox(
 			`HSpacing(0.5),
 			`VBox(
+			    `VSpacing(0.5),
 			    `Left(`RadioButton(`id("off"), _("Callbac&k Off"), ISDN::callback == "off")),
 			    `Left(`RadioButton(`id("in"), _("Callback &Server"), ISDN::callback == "in")),
-			    `Left(`RadioButton(`id("out"), _("Callback &Client"), ISDN::callback == "out"))
+			    `Left(`RadioButton(`id("out"), _("Callback &Client"), ISDN::callback == "out")),
+			    `VSpacing(0.5)
 			)
-		    )
-		)
-	    )
+		    ))
+		),
+		`HSpacing(0.5)
+	    ),
+	    `VSpacing(0.5)
 	));
 
     /* DIALOG PREPARE */
@@ -216,6 +223,7 @@ waits for callback of the remote machine.");
 if(false) {
 Providers::provider = $["PROVIDER":"AICOM, Havlickuv Brod"];
 Wizard::CreateDialog();
+IPDetailsDialog("modem");
 IPDetailsDialog("isdn");
 }
 

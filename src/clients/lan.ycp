@@ -33,7 +33,7 @@ if(size(args) > 0) {
 	propose = true;
     }
     else
-	y2error("Bad argument for lan: %1",Args(0));
+	y2error("Bad argument for lan: %1", Args(0));
 }
 
 /* main ui function */

@@ -25,6 +25,7 @@ global define boolean ReadConfig(string devregex) ``{
 
     CONFIG = $[];
 
+    /* preparation */
     list allfiles = SCR::Dir(.network.section);
     list devices = filter(`file, allfiles, ``(!regexpmatch(file, "[\.~]")));
     y2debug("devices=%1", devices);
@@ -126,6 +127,8 @@ global define boolean WriteConfig() ``{
 	/* delete modules.conf entry */
 	SCR::Write(.modules.alias, nil, d);
 	SCR::Write(.modules.options, nil, d);
+	y2debug("Removing: %1", d);
+	SCR::Execute(.target.bash, "/sbin/rmmod " + d);
     });
     DELETED = [];
 

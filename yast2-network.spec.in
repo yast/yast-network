@@ -1,6 +1,5 @@
 @HEADER-COMMENT@
-
-# neededforbuild  yast2-country yast2-devel-packages yast2-installation yast2-runlevel yast2-x11
+# neededforbuild yast2-devel-packages yast2-runlevel yast2-country yast2-installation yast2-x11
 
 @HEADER@
 Requires:	yast2 sysconfig yast2-runlevel yast2-country

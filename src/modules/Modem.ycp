@@ -140,7 +140,7 @@ global define boolean Read() ``{
 
     if(Abort()) return false;
     ProgressNextStage(_("Reading providers"));
-    Providers::Read();
+    Providers::Read("modem");
     sleep(sl);
 
     if(Abort()) return false;

@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Jul  8 16:08:51 CEST 2002 - msvec@suse.cz
+
+- remove netcard modules after delete (#16797)
+- correct IP details dialog
+- fixed providers filter
+- 2.6.4
+
+-------------------------------------------------------------------
 Thu Jul 04 20:48:09 CEST 2002 - arvin@suse.de
 
 - moved non binary files to /usr/share/YaST2

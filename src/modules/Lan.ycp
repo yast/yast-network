@@ -207,8 +207,8 @@ global define boolean Write() ``{
 
     Progress::New(caption, " ", steps, [
 	_("Deactivate local network services"),
-	_("Write configuration"),
 	_("Write drivers information"),
+	_("Write configuration"),
 	_("Write routing configuration"),
 	_("Write host name and DNS configuration"),
 	_("Write firewall settings"),
@@ -222,13 +222,13 @@ global define boolean Write() ``{
     sleep(sl);
 
     if(Abort()) return false;
-    ProgressNextStage(_("Writing configuration"));
-    WriteConfig();
+    ProgressNextStage(_("Writing /etc/modules.conf"));
+    WriteModules();
     sleep(sl);
 
     if(Abort()) return false;
-    ProgressNextStage(_("Writing /etc/modules.conf"));
-    WriteModules();
+    ProgressNextStage(_("Writing configuration"));
+    WriteConfig();
     sleep(sl);
 
     if(Abort()) return false;
