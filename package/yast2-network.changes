@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Feb 21 10:56:54 CET 2003 - arvin@suse.de
+
+- fixed Provider handling in Internet module (bug #23991)
+
+-------------------------------------------------------------------
 Thu Feb 20 15:40:20 CET 2003 - arvin@suse.de
 
 - really download release notes

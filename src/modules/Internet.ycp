@@ -125,13 +125,13 @@ global define boolean Fastest() ``{
 
     /* Lookup the provider values */
     string provider = devmap["PROVIDER"]:"";
-    if(provider != "") {
-	import "Providers";
-	Providers::Read("all");
-	Providers::Select(provider);
-	demand = Providers::Provider["DEMAND"]:"no" == "yes";
-	password = Providers::Provider["PASSWORD"]:"";
-	askpassword = Providers::Provider["ASKPASSWORD"]:"no" == "yes";
+    if (provider != "") {
+	import "Provider";
+	Provider::Read("all");
+	Provider::Select(provider);
+	demand = Provider::Provider["DEMAND"]:"no" == "yes";
+	password = Provider::Provider["PASSWORD"]:"";
+	askpassword = Provider::Provider["ASKPASSWORD"]:"no" == "yes";
     }
 
     return true;
