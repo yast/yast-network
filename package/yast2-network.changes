@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Mar  9 17:10:47 CET 2005 - mvidner@suse.cz
+
+- Enable user control of newly added WLAN cards (#63767).
+
+-------------------------------------------------------------------
 Tue Mar  8 15:22:21 CET 2005 - kkeil@suse.de
 
 - use valid default IPs for ISDN and not 0.0.0.0 (#43169, #56181)

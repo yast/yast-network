@@ -239,6 +239,7 @@ define symbol HardwareSequence() ``{
 define symbol AddressSequence() ``{
 
     map aliases = $[
+	"changedefaults": [ ``(ChangeDefaults()), true ],
 	"address"	: ``(AddressDialog()),
 	"dhcp"		: ``(DHCPDialog()),
 	"details"	: ``(DetailsDialog()),
@@ -255,7 +256,10 @@ define symbol AddressSequence() ``{
     ];
 
     map sequence = $[
-	"ws_start"	: "address",
+	"ws_start"	: "changedefaults",
+	"changedefaults" : $[
+	    `next	: "address",
+	],
 	"address" : $[
 	    `abort	: `abort,
 	    `next	: "commit",
