@@ -19,6 +19,7 @@ import "Progress";
 import "Arch";
 import "Mode";
 include "network/lan/wizards.ycp";
+include "network/routines.ycp";
 
 any ret = nil;
 string func = "";
@@ -45,42 +46,50 @@ if (Mode::test)
 }
 
 /**
+ * If there's key in m, upcase key and assign the value to ret
+ * @return ret
+ */
+map UpcaseCondSet (map ret, map m, string key) {
+    if (haskey (m, key))
+    {
+	ret[toupper (key)] = m[key]:nil;
+    }
+    return ret;
+}
+
+/**
  * Convert data from autoyast to structure used by module.
  * @param input autoyast settings
  * @return native network settings
  */
 define map FromAY(map input) {
-    // Used netdevice during installation
-    map InstallInf = $[];
-    include "network/install.ycp";
-    ReadInstallInf();
-    string netdevice = InstallInf["netdevice"]:"eth0";
-
     list upcase = [
 		   "bootproto",
-		   "mtu",
 		   "broadcast",
+		   "dhclient_set_down_link",
 		   "ipaddr",
+		   "mtu",
 		   "netmask",
 		   "network",
+		   "remote_ipaddr",
 		   "startmode",
-		   "dhclient_set_down_link",
-		   "wireless",
-		   "wireless_mode",
+		   "wireless",	// useless?
 		   "wireless_essid",
-		   "wireless_nwid",
 		   "wireless_key",
+		   "wireless_mode",
 		   "wireless_nick",
-		   "remote_ipaddr"
+		   "wireless_nwid",
+		   // missing: wireless_{bitrate,channel,frequency,power}
     ];
 
-    integer dn = 0;
+    integer dn = 0;		// device number
     list<map> hw = [];
     if (Mode::autoinst)
     {
         hw = Lan::PrepareForAutoinst();
     }
-    map devicemapping = $[];
+    map devicemapping = $[];	// used for hwcfg
+    // similar transformation to NetworkDevices::Read???
     map<string,map> interfaces = listmap(map<string,string> interface,
             input["interfaces"]:[],
     {
@@ -94,10 +103,13 @@ define map FromAY(map input) {
 	    }
 	});
         string configured_device = interface["device"]:"";
-        string device = "";
+        string device = ""; 	// will be combined with "_type"
         boolean configured = false;
         if ( Mode::autoinst)
         {
+	    // Try to match "device" to a piece of hw
+	    // Here done using "mac" only
+
             // Check if device id is given
             list devid = splitstring(configured_device, "-");
             if (size(devid)> 0 )
@@ -111,6 +123,7 @@ define map FromAY(map input) {
                     configured = true;
                 }
             }
+
             // else create it
             if (!configured)
             {
@@ -124,12 +137,17 @@ define map FromAY(map input) {
                 integer device_idx = 0;
                 if (inttok != "" && deletechars(inttok, "0123456789") == "")
                 {
+		    // configured_device =~ /^[^0-9]*([0-9]+)$/
                     device_idx = tointeger(inttok);
                 }
                 else
                 {
                     device_idx = dn;
                 }
+		// Device_idx is the number from "device"
+		// or the offset of the interface item.
+		// In any case it is pure luck
+		// if it matches the hardware index!!!
                 Lan::SelectHW(device_idx);
                 device = Lan::device;
                 new_interface["_type"] = hw[device_idx, "type"]:"";
@@ -139,51 +157,33 @@ define map FromAY(map input) {
         else
         {
             device = configured_device;
+	    // no _type. it will be parsed in the next loop
         }
         dn = dn + 1;
 	return $[ device : new_interface ];
     });
 
-    map devices = $[];
+    map<string, map> devices = $[];
 
     foreach(string devname, map if_data, interfaces, {
 
+	string type = nil;
+	string id = nil;
         if (!Mode::autoinst)
         {
-            if (issubstring(devname, "-"))
-            {
-                list<string> devtok = splitstring(devname, "-");
-                if (size(devtok) > 0 )
-                {
-                    string strtok =devtok[0]:"";
-                    string inttok =devtok[size(devtok)-1]:"";
-	            map d = devices[strtok]:$[];
-	            d = add(d, inttok, if_data);
-	            devices[strtok] = d;
-                }
-                else {
-                    y2error("Error creating device name");
-                }
-            }
-            else
-            {
-	        integer pos = findfirstof( devname, "0123456789");
-	        string strtok =  substring(devname, 0, pos);
-	        string inttok = substring(devname, pos);
-	        map d = devices[strtok]:$[];
-	        d = add(d, inttok, if_data);
-	        devices[strtok] = d;
-            }
+	    type = device_type (devname);
+	    id = device_num (devname);
         } else {
-            string t = if_data["_type"]:"";
-	    map d = devices[t]:$[];
-	    d = add(d, devname, if_data);
-            devices[t] = d;
+            type = if_data["_type"]:"";
+	    id = devname;	// suspicious
         }
+	map d = devices[type]:$[];
+	d[id] = if_data;
+	devices[type] = d;
 
     });
-    map hwcfg = $[];
 
+    map hwcfg = $[];
     if (size(input["modules"]:[]) > 0)
     {
         // "hwcfg":$["bus-pci-0000:02:05.0":$["MODULE":"sk98lin",
@@ -205,12 +205,13 @@ define map FromAY(map input) {
 	    return $[device_name : module_data];
         });
     }
+    // AAAARGH! arbitrary matching of devices with hardware!
     if ( Mode::autoinst)
     {
 	map alias = $[];
 	map options = $[];
         integer n = 0;
-	devices = mapmap(string type, map devsmap, (map<string,map>) devices, {
+	devices = mapmap(string type, map devsmap, devices, {
 	    list HW_type = filter(map dev, hw, {
 		return dev["type"]:"" == type;
 	    });
@@ -242,26 +243,22 @@ define map FromAY(map input) {
 
     input["devices"] = devices;
     input["hwcfg"] = hwcfg;
-    map dhcpopts =  input["dhcp_options"]:$[];
 
-    map dns = input["dns"]:$[];
+    // DHCP:: config: some of it is in the DNS part of the profile
     map dhcp = $[];
+    map dhcpopts =  input["dhcp_options"]:$[];
+    map dns = input["dns"]:$[];
 
     if (haskey(dns, "dhcp_hostname"))
         dhcp["DHCLIENT_SET_HOSTNAME"] = dns["dhcp_hostname"]:false;
     if (haskey(dns, "dhcp_resolv"))
         dhcp["DHCLIENT_MODIFY_RESOLV_CONF"] = dns["dhcp_resolv"]:false;
 
-    if (haskey(dhcpopts, "dhclient_client_id"))
-        dhcp["DHCLIENT_CLIENT_ID"] = dhcpopts["dhclient_client_id"]:"";
-    if (haskey(dhcpopts, "dhclient_additional_options"))
-        dhcp["DHCLIENT_ADDITIONAL_OPTIONS"] = dhcpopts["dhclient_additional_options"]:"";
-    if (haskey(dhcpopts, "dhclient_hostname_option"))
-        dhcp["DHCLIENT_HOSTNAME_OPTION"] = dhcpopts["dhclient_hostname_option"]:"AUTO";
+    dhcp = UpcaseCondSet (dhcp, dhcpopts, "dhclient_client_id");
+    dhcp = UpcaseCondSet (dhcp, dhcpopts, "dhclient_additional_options");
+    dhcp = UpcaseCondSet (dhcp, dhcpopts, "dhclient_hostname_option");
 
-    map config = $[];
-    config["dhcp"] = dhcp;
-    input["config"] = config;
+    input["config"] = $[ "dhcp": dhcp ];
 
     y2milestone("input=%1", input);
     return input;
