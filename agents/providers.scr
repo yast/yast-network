@@ -21,7 +21,7 @@
 .providers
 
 `ag_ini(
-  IniAgent( [ "/usr/share/providers/*.wvdial.conf", "/etc/sysconfig/modem/providers.conf" ],
+  IniAgent( [ "/usr/share/providers/*.wvdial.conf", "/etc/sysconfig/network/providers/*" ],
     $[
       "options" : [ ],
       "comments": [ "^[ \t]*#.*", "^[ \t]*$" ],
