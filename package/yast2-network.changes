@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Wed Aug 14 12:16:49 CEST 2002 - mvidner@suse.cz
+
+- Installation proposal: differentiate between static and dhcp
+  network settings provided by linuxrc (#16741).
+- Exclude DSL, ISDN and modem control center entries
+  on s390 and s390x (#17675).
+- Merged proofread texts for the second translation round.
+- 2.6.17
+
+-------------------------------------------------------------------
 Tue Aug 13 21:58:14 CEST 2002 - kkeil@suse.de
 
 - add support for Fritz!DSL
