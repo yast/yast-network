@@ -4,8 +4,8 @@
 @HEADER@
 # yast2-core >= 2.10.6: carrier detection
 Requires:	yast2-core >= 2.10.6
-# yast2 >= 2.11.9: NetworkDevices::DeleteAlias
-Requires:	yast2 >= 2.11.9
+# yast2 >= 2.11.12: Hostname::ValidHost
+Requires:	yast2 >= 2.11.12
 Requires:	sysconfig yast2-country yast2-inetd yast2-packager
 Requires:	yast2-firewall
 PreReq:		/bin/rm

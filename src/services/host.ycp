@@ -325,9 +325,10 @@ define term HostDialog(integer id, term entry, list forbidden) {
 
 	val = (string) UI::QueryWidget(`id(`name), `Value);
 	if(!Hostname::CheckFQ(val)) {
-	    /* Popup::Error text */
-	    Popup::Error(_("Host name is invalid."));
 	    UI::SetFocus(`id(`name));
+	    /* Popup::Error text */
+	    Popup::Error(_("Host name is invalid.") +
+			 "\n" + Hostname::ValidFQ ());
 	    continue;
 	}
 	host = add(host, val);
@@ -339,9 +340,10 @@ define term HostDialog(integer id, term entry, list forbidden) {
 		return ho != "" && !Hostname::CheckFQ(ho);
 	    });
 	    if(size(vals) > 0) {
-		/* Popup::Error text */
-		Popup::Error(sformat(_("Alias name \"%1\" is invalid."), vals[0]:""));
 		UI::SetFocus(`id(`aliases));
+		/* Popup::Error text */
+		Popup::Error(sformat(_("Alias name \"%1\" is invalid.") +
+			     "\n" + Hostname::ValidFQ (), vals[0]:""));
 		continue;
 	    }
 	}

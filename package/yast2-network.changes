@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Dec 21 17:23:16 CET 2004 - mvidner@suse.cz
+
+- Describe valid host and domain names in error popups (#22802).
+- 2.11.10
+
+-------------------------------------------------------------------
 Wed Dec 15 17:27:36 CET 2004 - mvidner@suse.cz
 
 - fixed build

@@ -281,15 +281,17 @@ disabled during the connection.</p>");
 	    if(!has_dhcp || !dhcp_hostname) {
 		/* check host name and domain */
 		if(!Hostname::Check((string) UI::QueryWidget(`id(`host), `Value))) {
-		    /* Popup::Error text */
-		    Popup::Error(_("The host name is incorrect"));
 		    UI::SetFocus(`id(`host));
+		    /* Popup::Error text */
+		    Popup::Error (_("The host name is incorrect.") +
+			"\n" + Hostname::ValidHost ());
 		    continue;
 		}
 		if(!Hostname::CheckDomain((string) UI::QueryWidget(`id(`domain), `Value))) {
-		    /* Popup::Error text */
-		    Popup::Error(_("The domain name is incorrect"));
 		    UI::SetFocus(`id(`domain));
+		    /* Popup::Error text */
+		    Popup::Error (_("The domain name is incorrect.") +
+			"\n" + Hostname::ValidDomain ());
 		    continue;
 		}
 	    }
@@ -300,21 +302,21 @@ disabled during the connection.</p>");
 	    ns3 = tolower((string) UI::QueryWidget(`id(`ns3), `Value));
 
 	    if(ns1 != "" && !IP::Check(ns1)) {
-		/* Popup::Error text */
-		Popup::Error(_("The primary name server is not correct"));
 		UI::SetFocus(`id(`ns1));
+		/* Popup::Error text */
+		Popup::Error(_("The primary name server is not correct."));
 		continue;
 	    }
 	    if(ns2 != "" && !IP::Check(ns2)) {
-		/* Popup::Error text */
-		Popup::Error(_("The secondary name server is not correct"));
 		UI::SetFocus(`id(`ns2));
+		/* Popup::Error text */
+		Popup::Error(_("The secondary name server is not correct."));
 		continue;
 	    }
 	    if(ns3 != "" && !IP::Check(ns3)) {
-		/* Popup::Error text */
-		Popup::Error(_("The tertiary name server is not correct"));
 		UI::SetFocus(`id(`ns3));
+		/* Popup::Error text */
+		Popup::Error(_("The tertiary name server is not correct."));
 		continue;
 	    }
 
@@ -324,21 +326,24 @@ disabled during the connection.</p>");
 	    s3 = tolower((string) UI::QueryWidget(`id(`s3), `Value));
 
 	    if(s1 != "" && !Hostname::CheckDomain(s1)) {
-		/* Popup::Error text */
-		Popup::Error(_("The primary search domain is not correct"));
 		UI::SetFocus(`id(`s1));
+		/* Popup::Error text */
+		Popup::Error(_("The primary search domain is not correct.") +
+			     "\n" + Hostname::ValidDomain ());
 		continue;
 	    }
 	    if(s2 != "" && !Hostname::CheckDomain(s2)) {
-		/* Popup::Error text */
-		Popup::Error(_("The secondary search domain is not correct"));
 		UI::SetFocus(`id(`s2));
+		/* Popup::Error text */
+		Popup::Error(_("The secondary search domain is not correct.") +
+			     "\n" + Hostname::ValidDomain ());
 		continue;
 	    }
 	    if(s3 != "" && !Hostname::CheckDomain(s3)) {
-		/* Popup::Error text */
-		Popup::Error(_("The tertiary search domain is not correct"));
 		UI::SetFocus(`id(`s3));
+		/* Popup::Error text */
+		Popup::Error(_("The tertiary search domain is not correct.") +
+			     "\n" + Hostname::ValidDomain ());
 		continue;
 	    }
 
