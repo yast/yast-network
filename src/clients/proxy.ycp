@@ -32,14 +32,28 @@ global define boolean Modified() ``{
     return Proxy::modified;
 }
 
-Proxy::Read();
+/* is this proposal or not? */
+boolean propose = false;
+list args = WFM::Args();
+if(size(args) > 0) {
+    if(is(WFM::Args(0), path) && WFM::Args(0) == .propose) {
+	y2milestone("Using PROPOSE mode");
+	propose = true;
+    }
+    else
+	y2error("Bad argument for proxy: %1",WFM::Args(0));
+}
+
+if (!propose) {
+    Proxy::Read();
+}
 Wizard::CreateDialog();
 Wizard::ReplaceNextButton(`PushButton(`id(`next), `opt(`default, `key_F10), FinishButtonLabel()));
 /* main ui function */
 any ret = ProxyMainDialog(true);
 y2debug("ret == %1", ret);
 
-if(ret == `next && Proxy::modified) {
+if(!propose && ret == `next && Proxy::modified) {
     Proxy::Write();
 }
 

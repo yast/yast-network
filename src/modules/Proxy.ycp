@@ -15,6 +15,8 @@ textdomain "network";
 include "network/routines.ycp";
 include "network/runtime.ycp";
 
+global boolean proposal_valid = false;
+
 /**
  * Data was modified?
  */
