@@ -1,8 +1,10 @@
 -------------------------------------------------------------------
-Thu Feb 17 17:48:15 CET 2005 - mvidner@suse.cz
+Mon Feb 21 13:36:17 CET 2005 - mvidner@suse.cz
 
-- Provider help texts now match the dialog (#51001).
+- Confirm also detection of PPPoE DSL (Novell #66056).
+- Provider help texts now match the dialog (Novell #66001).
 - Set modified to false when resetting in autoyast.
+- 2.11.19
 
 -------------------------------------------------------------------
 Fri Feb 11 17:24:05 CET 2005 - mvidner@suse.cz

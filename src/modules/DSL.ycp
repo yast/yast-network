@@ -15,6 +15,7 @@
 module "DSL";
 textdomain "network";
 
+import "Confirm";
 import "Detection";
 import "Lan";
 import "NetworkDevices";
@@ -190,10 +191,15 @@ global define boolean Read() {
     }
     sleep(sl);
 
-    // FIXME: HW
-    list pppoe = (list) SCR::Read(.probe.pppoe);
-    // FIXME: testing pppoe = [ $["a" : "b"] ];
-    if(pppoe != nil && size(pppoe) > 0) HWDetected = true;
+    // Confirmation: label text (detecting hardware: xxx)
+    if (Confirm::Detection (_("PPPoE DSL Devices")))
+    {
+	// it doesn't do anything except looking whether probe.pppoe is empty
+	// FIXME: HW
+	list pppoe = (list) SCR::Read(.probe.pppoe);
+	// FIXME: testing pppoe = [ $["a" : "b"] ];
+	if(pppoe != nil && size(pppoe) > 0) HWDetected = true;
+    }
 
     if(Abort()) return false;
     /* Final progress step */
@@ -498,7 +504,7 @@ global define list Summary(boolean split) {
     string hwdet = Summary::DevicesList( [
 	"<li>" +
 	/* Summary label */
-	_("Unknown (PPPOE-style) DSL Device Detected") +
+	_("Unknown (PPPoE-style) DSL Device Detected") +
 	"</li>"
     ]);
     // FIXME: HW
