@@ -200,7 +200,7 @@ define term Card_Parameter(map drv) ``{
 	integer typ = tointeger(lookup(ISDN::hw_device, "PARA_TYPE", "-1"));
 	boolean found = false;
 
-	if (/* FIXME: where this variable should be? card == nil || */ drv == nil)
+	if (drv == nil)
 	    return contens;
 
 	if (typ == 8005) { /* AVM T1 */
@@ -367,7 +367,6 @@ define any isdn_lowlevel() ``{
 	if (Tmp) CurrentDrvIndex = id;
 	return `item(`id(id), lookup(d, "name", "unknown"), Tmp);
     });
-
     y2debug("CurrentDrvIndex %1", CurrentDrvIndex);
     y2debug("DrvList %1", DrvList);
 
@@ -488,7 +487,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
     list countries = maplist(string i, string n, (map<string,string>) CountryCodes, ``{
 	return(`item(`id(i), n, (i == ccode)));
     });
-    countries = sort(list x, list y, (list<list>) countries, ``(select(x,1,"") < select(y,1,"")));
+    countries = sort(term x, term y, (list<term>) countries, ``(select(x,1,"") < select(y,1,"")));
     // other country in list
     countries = add(countries, `item(`id("-1"), _("other"), ("-1" == ccode)));
     ccode = newcc;
