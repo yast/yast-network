@@ -10,6 +10,7 @@
 Thu Jun 12 16:09:06 CEST 2003 - arvin@suse.de
 
 - show several log files after internet test (bug #25057)
+- better interface of Internet module
 
 -------------------------------------------------------------------
 Tue May 27 12:40:53 CEST 2003 - arvin@suse.de

@@ -9,7 +9,6 @@ map READ = $[
 TESTSUITE_INIT([READ], nil);
 import "Internet";
 
-
 DUMP("Fastest");
 READ = $[
     "network" : $[
@@ -17,40 +16,53 @@ READ = $[
 	"value" : $[ "dsl0" :$["DEVICE":"eth0"], "eth0":$[] ],
     ]
 ];
-TEST(``(Internet::Fastest()), [READ], nil);
+TEST(``(Internet::FindFastest()), [READ], nil);
 DUMP(Internet::device);
-READ = $[ "network" : $[ "section" : $[ "dsl0":$[], "eth0":$[] ]]];
-TEST(``(Internet::Fastest()), [READ], nil);
-DUMP(Internet::device);
-READ = $[ "network" : $[ "section" : $[ "eth1":$[], "tr0":$[] ]]];
-TEST(``(Internet::Fastest()), [READ], nil);
-DUMP(Internet::device);
-READ = $[ "network" : $[ "section" : $[ "dsl0":$[], "tr0":$[] ]]];
-TEST(``(Internet::Fastest()), [READ], nil);
-DUMP(Internet::device);
-READ = $[ "network" : $[ "section" : $[ "dsl0":$[], "ppp0":$[] ]]];
-TEST(``(Internet::Fastest()), [READ], nil);
-DUMP(Internet::device);
-READ = $[ "network" : $[ "section" : $[ "ppp0":$[], "tr1":$[] ]]];
-TEST(``(Internet::Fastest()), [READ], nil);
-DUMP(Internet::device);
-READ = $[ "network" : $[ "section" : $[ "ppp0":$[] ]]];
-TEST(``(Internet::Fastest()), [READ], nil);
-DUMP(Internet::device);
-READ = $[ "network" : $[ "section" : $[ "ippp0":$[], "tr1":$[] ]]];
-TEST(``(Internet::Fastest()), [READ], nil);
-DUMP(Internet::device);
-READ = $[ "network" : $[ "section" : $[ "ippp0":$[], "ppp0":$[] ]]];
-TEST(``(Internet::Fastest()), [READ], nil);
-DUMP(Internet::device);
-READ = $[ "network" : $[ "section" : $[]]];
-TEST(``(Internet::Fastest()), [READ], nil);
-DUMP(Internet::device);
+DUMP(Internet::type);
 
-DUMP("FastestType");
-TEST(``(Internet::FastestType("ippp")), [], nil);
-TEST(``(Internet::FastestType("dsl")), [], nil);
-TEST(``(Internet::FastestType("ppp")), [], nil);
-TEST(``(Internet::FastestType("eth")), [], nil);
+READ = $[ "network" : $[ "section" : $[ "dsl0":$[], "eth0":$[] ]]];
+TEST(``(Internet::FindFastest()), [READ], nil);
+DUMP(Internet::device);
+DUMP(Internet::type);
+
+READ = $[ "network" : $[ "section" : $[ "eth1":$[], "tr0":$[] ]]];
+TEST(``(Internet::FindFastest()), [READ], nil);
+DUMP(Internet::device);
+DUMP(Internet::type);
+
+READ = $[ "network" : $[ "section" : $[ "dsl0":$[], "tr0":$[] ]]];
+TEST(``(Internet::FindFastest()), [READ], nil);
+DUMP(Internet::device);
+DUMP(Internet::type);
+
+READ = $[ "network" : $[ "section" : $[ "dsl0":$[], "ppp0":$[] ]]];
+TEST(``(Internet::FindFastest()), [READ], nil);
+DUMP(Internet::device);
+DUMP(Internet::type);
+
+READ = $[ "network" : $[ "section" : $[ "ppp0":$[], "tr1":$[] ]]];
+TEST(``(Internet::FindFastest()), [READ], nil);
+DUMP(Internet::device);
+DUMP(Internet::type);
+
+READ = $[ "network" : $[ "section" : $[ "ppp0":$[] ]]];
+TEST(``(Internet::FindFastest()), [READ], nil);
+DUMP(Internet::device);
+DUMP(Internet::type);
+
+READ = $[ "network" : $[ "section" : $[ "ippp0":$[], "tr1":$[] ]]];
+TEST(``(Internet::FindFastest()), [READ], nil);
+DUMP(Internet::device);
+DUMP(Internet::type);
+
+READ = $[ "network" : $[ "section" : $[ "ippp0":$[], "ppp0":$[] ]]];
+TEST(``(Internet::FindFastest()), [READ], nil);
+DUMP(Internet::device);
+DUMP(Internet::type);
+
+READ = $[ "network" : $[ "section" : $[]]];
+TEST(``(Internet::FindFastest()), [READ], nil);
+DUMP(Internet::device);
+DUMP(Internet::type);
 
 }

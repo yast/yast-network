@@ -18,7 +18,7 @@ include "network/routines.ycp";
 include "network/installation/dialogs.ycp";
 
 /* Nothing to test */
-if(!Internet::Fastest())
+if(!Internet::FindFastest())
     return `auto;
 
 return TestStepsDialog();

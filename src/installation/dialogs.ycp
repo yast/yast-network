@@ -93,8 +93,8 @@ activate the test procedure."),
 activate the test procedure."),
     ];
 
-    string type = Internet::FastestType(Internet::device);
-    if(haskey(labels, type)) label = labels[type]:"";
+    if(haskey(labels, Internet::type))
+	label = labels[Internet::type]:"";
 
     boolean already_up = false;
     if(!Mode::test) already_up = Internet::Status();

@@ -29,10 +29,13 @@ global boolean do_you = false;
 
 
 global string device = "";
+global string type = "";
+global string logfile = "";
 global string provider = "";
 global string password = "";
 global boolean demand = false;
 global boolean askpassword = nil;
+
 
 /**
  * Devices in order from fastest to slowest.
@@ -47,6 +50,7 @@ map FastestRegexps = $[
     4 : NetworkDeviceRegex
 ];
 
+
 /**
  * Types in order from fastest to slowest.
  * @see FastestRegexps
@@ -58,39 +62,19 @@ map FastestTypes = $[
     4 : "netcard"
 ];
 
-/**
- * Return the fastest connection type
- * @param dev device name
- * @return device type
- * @see FastestTypes
- * @example FastestType("ippp") -> "isdn"
- * @example FastestType("ppp") -> "modem"
- */
-global define string FastestType(string dev) ``{
-    string type = "";
-    maplist(integer num, string regex, FastestRegexps, ``{
-	if(type == "" && regexpmatch(dev, "^" + regex + "[0-9]*$"))
-	    type = FastestTypes[num]:"";
-    });
-    return type;
-}
-
-/**
- * Return the filename of the log for the fastest connection. Empty
- * if no usefull log exists.
- */
-global define string FastestLogFile(string dev) ``{
-    string type = FastestType(dev);
-    if (type == "dsl" || type == "modem")
-	return "/var/log/smpppd/ifcfg-" + dev + ".log";
-    return "";
-}
 
 /**
  * Find the fastest connection to the Internet
- * @return device with the fastest connection
+ * @return true if a "good" connection was found
  */
-global define boolean Fastest() ``{
+global define boolean FindFastest () ``{
+
+    /* Reset Values */
+    device = "";
+    type = "";
+    logfile = "";
+    demand = false;
+    askpassword = nil;
 
     /* Read available devcies */
     map Devices = $[];
@@ -105,7 +89,6 @@ global define boolean Fastest() ``{
     y2debug("devices=%1", devices);
 
     /* Find the fastest device */
-    device = "";
     maplist(integer num, string regex, FastestRegexps, ``{
 	maplist(string dev, devices, ``{
 	    if(device == "" && regexpmatch(dev, "^" + regex + "[0-9]*$"))
@@ -115,13 +98,23 @@ global define boolean Fastest() ``{
     y2milestone("fastest=%1", device);
 
     /* No fallback since there are devices that must not be tested (e.g. lo) */
-    if(device == "")
+    if (device == "")
 	return false;
 
+    /* Set type */
+    maplist(integer num, string regex, FastestRegexps, ``{
+	if (type == "" && regexpmatch(device, "^" + regex + "[0-9]*$"))
+	    type = FastestTypes[num]:"";
+    });
+
+    /* Set logfile */
+    if (type == "dsl" || type == "modem")
+	logfile = "/var/log/smpppd/ifcfg-" + device + ".log";
+
+    /* Lookup the provider values */
     map devmap = Devices[device_type(device), device_num(device)]:$[];
     y2debug("devmap=%1", devmap);
 
-    /* Lookup the provider values */
     provider = devmap["PROVIDER"]:"";
     if(provider != "") {
 	import "Provider";
@@ -145,8 +138,6 @@ global define boolean Fastest() ``{
  * @return true if successful started
  */
 global define boolean Start(string logfile) ``{
-
-    string type = FastestType(device);
 
     if(type == "isdn") {
 	if(SCR::Execute(.target.bash, "/etc/init.d/isdn status") != 0) {
@@ -213,8 +204,6 @@ global define boolean Status() ``{
  * @return true if connected
  */
 global define boolean Connected() ``{
-
-    string type = FastestType(device);
 
     if(type == "dsl" || type == "modem") {
 	string tmp1 = SCR::Read(.target.string, "/var/lib/smpppd/ifcfg-" +

@@ -32,7 +32,7 @@
 	return `auto;
 
     /* Nothing to test */
-    if(!Internet::Fastest())
+    if(!Internet::FindFastest())
 	return `auto;
 
 
@@ -363,10 +363,10 @@ and correct the setting.</p>");
 	    SCR::Execute (.target.bash, "/bin/cp /var/log/messages " + logdir + "/messages");
 
 	    // FIXME
-	    string tmp7 = Internet::FastestLogFile (Internet::device);
-	    if (tmp7 != "") {
+	    if (Internet::logfile != "") {
 		logs = add (logs, $[ `menuname : _("smpppd"), `filename : "smpppd.log" ]);
-		SCR::Execute (.target.bash, "/bin/cp " + tmp7 + " " + logdir + "/smpppd.log");
+		SCR::Execute (.target.bash, "/bin/cp " + Internet::logfile + " " +
+			      logdir + "/smpppd.log");
 	    }
 
 	    ShowLogs (logs, logdir);
