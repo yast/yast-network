@@ -58,6 +58,7 @@ if(func == "Summary") {
 }
 /* Reset configuration */
 else if (func == "Reset") {
+    Host::modified = false;
     Host::Import($[]);
     ret = $[];
 }

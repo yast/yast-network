@@ -421,7 +421,8 @@ global define boolean Write() {
     sleep(sl);
 
     // Temporary fix: #42248
-    Progress::on();
+    // ... and do not activate it autoinst mode...
+    if(!write_only) Progress::on();
 
     if(Abort()) return false;
     /* Final progress step */
