@@ -1,8 +1,9 @@
 -------------------------------------------------------------------
-Wed Sep  8 16:42:53 CEST 2004 - mvidner@suse.cz
+Wed Sep  8 16:59:21 CEST 2004 - mvidner@suse.cz
 
 - LAN: STARTMODE="manual" if not specified but "auto"
   for new configurations (#44804).
+- Install ifplugd if needed (#44838).
 - There's no dhcp detection process to kill (#44557).
 - 2.10.16
 

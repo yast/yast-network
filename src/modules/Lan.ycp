@@ -1137,11 +1137,16 @@ global define list<map> PrepareForAutoinst() {
  * @return list of packages needed when writing the config
  */
 global list<string> Packages () {
-    if (NetworkDevices::Locate ("USERCONTROL", "yes") == [])
+    list<string> pkgs = [];
+    if (NetworkDevices::Locate ("USERCONTROL", "yes") != [])
     {
-	return [];
+	pkgs = add (pkgs, "smpppd");
     }
-    return ["smpppd"];
+    if (NetworkDevices::Locate ("STARTMODE", "ifplugd") != [])
+    {
+	pkgs = add (pkgs, "ifplugd");
+    }
+    return pkgs;
 }
 
 /**
