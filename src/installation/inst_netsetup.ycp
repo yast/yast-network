@@ -78,7 +78,7 @@ define void load_modules () {
  */
 define boolean do_network_setup ()
 {
-    if (Mode::test || Arch::s390 || Mode::vnc || Mode::usessh) {
+    if (Mode::test || Arch::s390 () || Mode::vnc || Mode::usessh) {
 	y2milestone("NOT doing the basic network setup");
 	return false;
     }

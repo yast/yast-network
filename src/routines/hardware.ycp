@@ -224,7 +224,7 @@ define list<map> ReadHardware(string hwtype) {
 	one["num"] = num;
 
 	/* Temporary solution for s390: #40587 */
-	if(Arch::s390) one["name"] = DistinguishedName(one["name"]:"", card);
+	if(Arch::s390 ()) one["name"] = DistinguishedName(one["name"]:"", card);
 
 	/* modem */
 	if(controller == "modem") {

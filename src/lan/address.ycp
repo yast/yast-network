@@ -73,7 +73,7 @@ the network configuration.</p>");
     string type = Lan::type;
     string device = "";
 
-    if(!Arch::s390 && type != "dummy" && bootproto == "static" && ipaddr == "")
+    if(!Arch::s390 () && type != "dummy" && bootproto == "static" && ipaddr == "")
 	bootproto = "dhcp";
 
     if(ipaddr == "" && netmask == "") {
@@ -96,10 +96,10 @@ the network configuration.</p>");
     // FIXME duplicated in hardware.ycp
     list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan" ];
 
-    if(Arch::s390)
+    if(Arch::s390 ())
 	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv", "qeth", "lcs" ];
 
-    if(Arch::ia64)
+    if(Arch::ia64 ())
 	device_types = add(device_types, "xp");
 
     term label = `HBox(
@@ -154,12 +154,12 @@ the network configuration.</p>");
 	`HSpacing(1)))
     );
 
-    if(Arch::s390) {
+    if(Arch::s390 ()) {
 
     /* Address dialog help 1/8 */
     help = _("<p>Configure your IP address.</p>");
 
-    if(!Arch::s390)
+    if(!Arch::s390 ())
     /* Address dialog help 2/8 */
     help = help + _("<p>You can select dynamic address assignment,
 if you have a <b>DHCP server</b> running on your local network.</p>") +
@@ -201,7 +201,7 @@ completes the configuration.</p>");
     }
 
     /* No DHCP Setup */
-    if(type == "dummy" || type == "hsi" || Lan::alias != "" || Arch::s390)
+    if(type == "dummy" || type == "hsi" || Lan::alias != "" || Arch::s390 ())
 
 	/* Frame label */
 	frame1 = `Frame(_("Static Address Setup"), `VBox(
@@ -255,7 +255,7 @@ completes the configuration.</p>");
     ];
 
     /* MenuButton item */
-    if(Arch::s390 && (Lan::type == "qeth" || Lan::type == "ctc" || Lan::type == "lcs"))
+    if(Arch::s390 () && (Lan::type == "qeth" || Lan::type == "ctc" || Lan::type == "lcs"))
 	MB_list = add(MB_list, `item(`id(`s390), _("&S/390")));
 
     /* MenuButton label */

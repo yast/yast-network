@@ -281,7 +281,7 @@ global boolean ChangeM(string name) {
     Modules[name, "MODULE_OPTIONS"] = Options;
     Modules[name, "STARTMODE"] = "auto";
 
-    if(Arch::s390) {
+    if(Arch::s390 ()) {
 	Modules[name, "SCRIPTUP"] = SCRIPTUP;
 	Modules[name, "SCRIPTUP_ccw"] = SCRIPTUP_ccw;
 	Modules[name, "SCRIPTUP_ccwgroup"] = SCRIPTUP_ccwgroup;

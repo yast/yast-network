@@ -211,7 +211,7 @@ global define boolean Read() {
     if(Abort()) return false;
     /* Progress step 1/9 */
     ProgressNextStage(_("Detecting network devices..."));
-    // if(!Arch::s390) /* FIXME: Temporary hack until the detection is functional */
+    // if(!Arch::s390 ()) /* FIXME: Temporary hack until the detection is functional */
 
     // Dont read hardware data in config mode
     if(!Mode::config) {
@@ -511,7 +511,7 @@ void SelectHWMap (map hw) {
 
     if(busid != nil && busid != "") {
 	nm_name = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
-	if(Arch::s390) nm_name = type + "-" + nm_name;
+	if(Arch::s390 ()) nm_name = type + "-" + nm_name;
     }
     else {
 	// #42421
@@ -520,7 +520,7 @@ void SelectHWMap (map hw) {
     }
 
     /* eth, tr, not on s390 (#38819) */
-    if(!Arch::s390 && mac != nil && mac != "" && mac != "00:00:00:00:00:00")
+    if(!Arch::s390 () && mac != nil && mac != "" && mac != "00:00:00:00:00:00")
 	device = "id-" + hw["mac"]:"";
     /* iucv already filled in from lan/hardware.ycp (#42212) */
     else if(type == "iucv")
@@ -805,7 +805,7 @@ global define boolean Commit() {
 		    nm_name_old = nil;
 		}
 
-		if(Arch::s390) {
+		if(Arch::s390 ()) {
 		    // handle HSI like qeth, #40692#c15
 		    string type2 = (type == "hsi")? "qeth": type;
 		    // handle tr like lcs

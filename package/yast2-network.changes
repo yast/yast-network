@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Oct 11 16:25:46 CEST 2004 - jsrain@suse.cz
+
+- adapted to new Arch:: interface
+
+-------------------------------------------------------------------
 Thu Oct 07 16:41:15 CEST 2004 - arvin@suse.de
 
 - protect special characters when displaying logs from Internet

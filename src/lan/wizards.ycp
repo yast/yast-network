@@ -12,7 +12,7 @@
 textdomain "network";
 
 import "Arch";
-// Arch::s390 = true;
+// Arch::s390 () = true;
 import "Label";
 import "Lan";
 import "Sequencer";
@@ -174,7 +174,7 @@ define symbol NetworkCardSequence(string action) ``{
     if(action == "edit") ws_start = "address";
 
     /* CTC and QETH devices */
-    if(Arch::s390 && Lan::operation == `add && Lan::unique != "") {
+    if(Arch::s390 () && Lan::operation == `add && Lan::unique != "") {
 	if(Lan::type == "ctc" || Lan::type == "lcs" || Lan::type == "qeth" || Lan::type == "iucv") ws_start = "s390";
 	// else if(Lan::type == "iucv") ws_start = "hardware";
     }

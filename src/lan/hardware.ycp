@@ -18,7 +18,7 @@ import "NetworkDevices";
 import "NetworkModules";
 import "Popup";
 import "Wizard";
-// Arch::s390=true;
+// Arch::s390 ()=true;
 
 include "network/summary.ycp";
 include "network/routines.ycp";
@@ -45,7 +45,7 @@ _("<p><b>Options</b> for the module should be written in the format
 for example, <i>io=0x300 irq=5</i>. <b>Note:</b> If  two cards are configured
 with the same module name, options will be merged while saving.</p>");
 
-    if(!(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 == true))
+    if(!(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 () == true))
 
     /* Manual dialog help 3/4 */
 help = help + _("<p>Get a list of available network cards by pressing
@@ -55,7 +55,7 @@ help = help + _("<p>Get a list of available network cards by pressing
 _("<p>If you have a <b>PCMCIA</b> network card, click on the PCMCIA check
 box, if you have an <b>USB</b> network card, click on the check box USB.</p>");
 
-    if(Arch::s390)
+    if(Arch::s390 ())
 	/* Manual dialog help 5/4 */
 	help = _("<p>Here, set up your networking device. The values will be
 written into <i>/etc/modprobe.conf</i> or <i>/etc/chandev.conf</i>.</p>") +
@@ -86,10 +86,10 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     // FIXME duplicated in address.ycp
     list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan" ];
 
-    if(Arch::s390)
+    if(Arch::s390 ())
 	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv", "qeth", "lcs" ];
 
-    if(Arch::ia64)
+    if(Arch::ia64 ())
 	device_types = add(device_types, "xp");
 
     if(issubstring(device, "bus-pcmcia"))
@@ -121,7 +121,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     term ListButton = `PushButton(`id(`list), _("Select from &List"));
 
     /* Disable PCMCIA and USB checkboxex on Edit and s390 */
-    if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 == true)
+    if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 () == true)
 	CheckBoxes = `VSpacing(0);
 
     /* Frame label */
@@ -327,7 +327,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
 	    UI::ChangeWidget(`id(`num), `Value, device);
 
-	    if(Arch::s390) {
+	    if(Arch::s390 ()) {
 		if(type == "tr" || type == "lcs") modul = "lcs";
 		if(type == "hsi" || type == "qeth") modul = "qeth";
 		if(type == "ctc" || type == "escon") modul = "ctc";

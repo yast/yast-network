@@ -124,7 +124,7 @@ define boolean WriteModules() {
 	/* write module options *
 	if(size(opts_map) > 0) {
 	    /* write module options normally *
-	    if(!Arch::s390)
+	    if(!Arch::s390 ())
 		SCR::Write(.modules.options, opts_map, dev);
 	    else {
 		/* merge module options *
