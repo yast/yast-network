@@ -40,6 +40,12 @@ map hosts_init = $[];
 string hosts_file = "/etc/hosts";
 
 /**
+ * Only write configuration
+ */
+global boolean write_only = false;
+
+
+/**
  * Read hosts settings
  * @return true if success
  */
