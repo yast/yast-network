@@ -49,9 +49,11 @@ Write	.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS "eth0 ippp1" 
 Write	.sysconfig.personal-firewall nil true
 Read	.init.scripts.exists "network" true
 Read	.init.scripts.exists "network" true
+Read	.init.scripts.exists "network" true
 Read	.init.scripts.runlevel "network" nil
 Read	.init.scripts.comment "network" nil
 Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/network" $["exit":0]
+Read	.init.scripts.exists "SuSEfirewall2_init" true
 Read	.init.scripts.exists "SuSEfirewall2_init" true
 Read	.init.scripts.exists "SuSEfirewall2_init" true
 Read	.init.scripts.runlevel "SuSEfirewall2_init" nil
@@ -59,9 +61,11 @@ Read	.init.scripts.comment "SuSEfirewall2_init" nil
 Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/SuSEfirewall2_init" $["exit":0]
 Read	.init.scripts.exists "SuSEfirewall2_setup" true
 Read	.init.scripts.exists "SuSEfirewall2_setup" true
+Read	.init.scripts.exists "SuSEfirewall2_setup" true
 Read	.init.scripts.runlevel "SuSEfirewall2_setup" nil
 Read	.init.scripts.comment "SuSEfirewall2_setup" nil
 Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/SuSEfirewall2_setup" $["exit":0]
+Read	.init.scripts.exists "SuSEfirewall2_final" true
 Read	.init.scripts.exists "SuSEfirewall2_final" true
 Read	.init.scripts.exists "SuSEfirewall2_final" true
 Read	.init.scripts.runlevel "SuSEfirewall2_final" nil
@@ -73,9 +77,11 @@ Write	.sysconfig.personal-firewall.REJECT_ALL_INCOMING_CONNECTIONS "ippp1" true
 Write	.sysconfig.personal-firewall nil true
 Read	.init.scripts.exists "network" true
 Read	.init.scripts.exists "network" true
+Read	.init.scripts.exists "network" true
 Read	.init.scripts.runlevel "network" nil
 Read	.init.scripts.comment "network" nil
 Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/network" $["exit":0]
+Read	.init.scripts.exists "SuSEfirewall2_init" true
 Read	.init.scripts.exists "SuSEfirewall2_init" true
 Read	.init.scripts.exists "SuSEfirewall2_init" true
 Read	.init.scripts.runlevel "SuSEfirewall2_init" nil
@@ -83,9 +89,11 @@ Read	.init.scripts.comment "SuSEfirewall2_init" nil
 Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/SuSEfirewall2_init" $["exit":0]
 Read	.init.scripts.exists "SuSEfirewall2_setup" true
 Read	.init.scripts.exists "SuSEfirewall2_setup" true
+Read	.init.scripts.exists "SuSEfirewall2_setup" true
 Read	.init.scripts.runlevel "SuSEfirewall2_setup" nil
 Read	.init.scripts.comment "SuSEfirewall2_setup" nil
 Execute	.target.bash_output "/sbin/insserv -d /etc/init.d/SuSEfirewall2_setup" $["exit":0]
+Read	.init.scripts.exists "SuSEfirewall2_final" true
 Read	.init.scripts.exists "SuSEfirewall2_final" true
 Read	.init.scripts.exists "SuSEfirewall2_final" true
 Read	.init.scripts.runlevel "SuSEfirewall2_final" nil

@@ -99,7 +99,7 @@ define boolean EnableSMPPPD() ``{
     if(Service::Status("smpppd") == 0)
 	ret = Service::Reload("smpppd") && ret;
     else
-	ret = Service::Restart("smpppd") && ret;
+	ret = Service::Start("smpppd") && ret;
     y2debug("ret=%1", ret);
 
     return ret;

@@ -69,24 +69,4 @@ DUMP("EnableSMPPPD");
 TEST(``(EnableSMPPPD()), [READ,$[],EXEC0], nil);
 TEST(``(EnableSMPPPD()), [READ,$[],EXEC1], nil);
 
-DUMP("EnableService");
-TEST(``(EnableService("service")), [READ,$[],EXEC0], nil);
-TEST(``(EnableService("service")), [READ,$[],EXEC1], nil);
-
-DUMP("DisableService");
-TEST(``(DisableService("service")), [READ,$[],EXEC0], nil);
-TEST(``(DisableService("service")), [READ,$[],EXEC1], nil);
-
-DUMP("StartService");
-TEST(``(StartService("service")), [READ,$[],EXEC0], nil);
-TEST(``(StartService("service")), [READ,$[],EXEC1], nil);
-
-DUMP("StopService");
-TEST(``(StopService("service")), [READ,$[],EXEC0], nil);
-TEST(``(StopService("service")), [READ,$[],EXEC1], nil);
-
-DUMP("RestartService");
-TEST(``(RestartService("service")), [READ,$[],EXEC0], nil);
-TEST(``(RestartService("service")), [READ,$[],EXEC1], nil);
-
 }
