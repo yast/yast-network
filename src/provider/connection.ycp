@@ -56,7 +56,7 @@ global define symbol ConnectionDialog(string type) ``{
     /* Connection dialog caption */
     string caption = _("Connection parameters");
 
-    /* Connection dialog help 1/5 */
+    /* Connection dialog help 1/7 */
     string helptext = _("<p><b>Dial on demand</b> means that the
 internet connection will be established automatically when data from
 the internet are requested. To use this feature you must specify at
@@ -64,32 +64,32 @@ least one <i>name server</i>. Please use this feature only if your
 internet connection is cheap since there are programs that periodically
 request data from the internet.</p>") +
 
-    /* Connection dialog help 2/5 */
+    /* Connection dialog help 2/7 */
 _("<p>When <b>Modify DNS</b> is enabled the <i>name server</i> will be
 changed automatically when connected to the internet.</p>") +
 
-    /* Connection dialog help 3/5 */
+    /* Connection dialog help 3/7 */
 _("<p>The <b>Name servers</b> are required to convert host names
 <i>(e.g. www.suse.com)</i> to IP addresses (e.g. 213.95.15.200). You only
 need to specify the name servers if you enable <i>Dial on demand</i> or
 disable <b>DNS modification</b> when connected.</p>") +
 
-    /* Connection dialog help 4/5 */
+    /* Connection dialog help 4/7 */
 _("<p>Selecting <b>Activate firewall</b> will block all incoming
 connections. Choosing this option will make dial-up connections
 to the Internet safe from external attacks.</p>") +
 
-    /* Connection dialog help 5/5 */
+    /* Connection dialog help 5/7 */
 _("<p>The <b>Idle timeout</b> specifies the time after which an idle
 connection will be shut down.</p>");
 
     if(type == "isdn")
 
-	/* FIXME Connection dialog help 6/5 */
+	/* FIXME Connection dialog help 6/6 */
 	helptext = helptext + _("<p><b>Connection details</b> help FIXME
 </p>") +
 
-	/* FIXME Connection dialog help 7/5 */
+	/* FIXME Connection dialog help 7/7 */
 _("<p><b>IP details</b> help FIXME
 </p>");
 
@@ -105,9 +105,12 @@ _("<p><b>IP details</b> help FIXME
 	`HSpacing(6),
 	`VBox(
 	    `VSpacing(0.2),
-	    /* Label */
-	    `Left(`HSquash(`Label(_("Profile for selected provider:")))),
-	    `Left(`Label(`opt(`outputField), Provider)),
+	    `Left(`HBox(
+		/* Label */
+		`Label(_("Provider:")),
+		`HSpacing(0.5),
+		`Label(`opt(`outputField), Provider)
+	    )),
 	    `VSpacing(1),
 	    `HBox(
 		`VBox(
@@ -237,11 +240,11 @@ global define symbol IPDetailsDialog() ``{
 }
 
 if(false) {
-Providers::provider = $["PROVIDER":"provider0"];
+Providers::provider = $["PROVIDER":"AICOM, Havlickuv Brod"];
 Wizard::CreateDialog();
 ConnectionDialog("modem");
-ConnectionDialog("isdn");
-ConnectionDialog("dsl");
+//ConnectionDialog("isdn");
+//ConnectionDialog("dsl");
 }
 
 /* EOF */
