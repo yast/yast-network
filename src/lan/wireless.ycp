@@ -698,9 +698,9 @@ define string WirelessKeyPopup (string tkey, list<integer> lengths) ``{
 /**
  * Generate items for the keys table
  */
-define list<term> WirelessKeysItems (list<string> keys, integer default) ``{
+define list<term> WirelessKeysItems (list<string> keys, integer defaultk) ``{
     return maplist (integer i, [0, 1, 2, 3],
-		    ``( `item (`id (i), i, keys[i]:"", (i==default)? "*":"") )
+		    ``( `item (`id (i), i, keys[i]:"", (i==defaultk)? "*":"") )
 	);
 }
 
@@ -708,17 +708,17 @@ define list<term> WirelessKeysItems (list<string> keys, integer default) ``{
  * In case the current default key is empty, find a nonempty one
  * or the first one.
  */
-define integer FindGoodDefault (list<string> keys, integer default) ``{
-    if (keys[default]:"" != "")
+define integer FindGoodDefault (list<string> keys, integer defaultk) ``{
+    if (keys[defaultk]:"" != "")
     {
-	return default;
+	return defaultk;
     }
-    default = find (integer i, [0, 1, 2, 3], ``( keys[i]:"" != "" ));
-    if (default == nil)
+    defaultk = find (integer i, [0, 1, 2, 3], ``( keys[i]:"" != "" ));
+    if (defaultk == nil)
     {
-	default = 0;
+	defaultk = 0;
     }
-    return default;
+    return defaultk;
 }
 
 /**
@@ -756,7 +756,7 @@ value to 64.</p>") +
 	ui_key_lengths = add (ui_key_lengths, length);
     }
     list<string> keys = Lan::wl_key;
-    integer default = FindGoodDefault (keys, Lan::wl_default_key);
+    integer defaultk = FindGoodDefault (keys, Lan::wl_default_key);
 
     /* Wireless keys dialog contents */
     term contents = `HBox(
@@ -778,7 +778,7 @@ value to 64.</p>") +
 			   _("Key"),
 			   /* Table header label */
 			   `Center (_("Default"))),
-		       WirelessKeysItems (keys, default)),
+		       WirelessKeysItems (keys, defaultk)),
 		`HBox(
 		    /* PushButton label */
 		    `PushButton(`id(`edit), Label::EditButton()),
@@ -819,12 +819,12 @@ value to 64.</p>") +
 	}
 	else if(ret == `table || ret == `edit || ret == `delete) {
 	    keys[current] = (ret != `delete) ? WirelessKeyPopup (keys[current]:"", [rlength]) : "";
-	    default = FindGoodDefault (keys, default);
-	    UI::ChangeWidget (`id (`table), `Items, WirelessKeysItems (keys, default));
+	    defaultk = FindGoodDefault (keys, defaultk);
+	    UI::ChangeWidget (`id (`table), `Items, WirelessKeysItems (keys, defaultk));
 	}
 	else if(ret == `default) {
-	    default = FindGoodDefault (keys, current);
-	    UI::ChangeWidget (`id (`table), `Items, WirelessKeysItems (keys, default));
+	    defaultk = FindGoodDefault (keys, current);
+	    UI::ChangeWidget (`id (`table), `Items, WirelessKeysItems (keys, defaultk));
 	}
 	else if(ret == `next || ret == `back) {
 	    break;
@@ -838,7 +838,7 @@ value to 64.</p>") +
     if(ret == `next) {
 	Lan::wl_key_length = length;
 	Lan::wl_key = keys;
-	Lan::wl_default_key = default;
+	Lan::wl_default_key = defaultk;
     }
 
     return ret;

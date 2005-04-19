@@ -2,6 +2,7 @@
 Tue Apr 19 17:24:12 CEST 2005 - mvidner@suse.cz
 
 - Adapted to ProductFeatures changes
+- Do not use "default" as an identifier.
 - 2.12.1
 
 -------------------------------------------------------------------
