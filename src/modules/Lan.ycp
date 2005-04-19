@@ -1226,7 +1226,7 @@ global define boolean Propose() {
 	else {
 	    // Open Enterprise Server does not like DHCP (#50524).
 	    // In that case, we cannot propose.
-	    if (ProductFeatures::force_static_ip)
+	    if (ProductFeatures::GetBooleanFeature ("network", "force_static_ip"))
 	    {
 		y2milestone ("Static config forced but no info available -> no proposal.");
 		return false;

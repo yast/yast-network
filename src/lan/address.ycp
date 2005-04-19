@@ -57,7 +57,7 @@ define any AddressDialog() {
     /* Address dialog help 1/8 */
     string help = _("<p>Configure your IP address.</p>") +
 
-	(ProductFeatures::force_static_ip ?
+	(ProductFeatures::GetBooleanFeature ("network", "force_static_ip") ?
 
     /* Address dialog help 2-6/8: static address preferred */
     _("<p>DHCP configuration is not recommended for this product.

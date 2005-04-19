@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Apr 19 17:24:12 CEST 2005 - mvidner@suse.cz
+
+- Adapted to ProductFeatures changes
+- 2.12.1
+
+-------------------------------------------------------------------
 Fri Apr  1 10:45:14 CEST 2005 - mvidner@suse.cz
 
 - Fixed detection of WPA-PSK support (#74496).
