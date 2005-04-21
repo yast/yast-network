@@ -16,7 +16,7 @@ X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=network
 
-Icon=network
+Icon=yast-network
 Exec=/sbin/yast2 network 
 
 Name=Expert Network Configuration

@@ -16,7 +16,7 @@ X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=modem
 
-Icon=modem
+Icon=yast-modem
 Exec=/sbin/yast2 modem 
 
 Name=Modem

@@ -16,7 +16,7 @@ X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=dns
 
-Icon=dns
+Icon=yast-dns
 Exec=/sbin/yast2 dns 
 
 Name=DNS and Host Name

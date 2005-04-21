@@ -16,7 +16,7 @@ X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=remote
 
-Icon=remote
+Icon=yast-remote
 Exec=/sbin/yast2 remote 
 
 Name=Remote Administration

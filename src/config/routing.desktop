@@ -16,7 +16,7 @@ X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=routing
 
-Icon=routing
+Icon=yast-routing
 Exec=/sbin/yast2 routing 
 
 Name=Routing

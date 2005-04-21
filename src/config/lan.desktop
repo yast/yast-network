@@ -17,7 +17,7 @@ X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=networking
 X-SuSE-YaST-AutoInstClonable=true
 
-Icon=network
+Icon=yast-lan
 Exec=/sbin/yast2 lan 
 
 Name=Network Card

@@ -16,7 +16,7 @@ X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=
 
-Icon=proxy
+Icon=yast-proxy
 Exec=/sbin/yast2 proxy 
 
 Name=Proxy
