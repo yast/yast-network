@@ -18,6 +18,8 @@ import "Label";
 import "Mode";
 import "Package";
 import "Service";
+import "SuSEFirewall";
+import "Progress";
 
 /**
  * Allow remote administration
@@ -53,6 +55,11 @@ global boolean Read() {
     y2milestone ("XDM: %1, DM_R_A: %2", xdm, dm_ra);
     y2milestone ("xinetd: %1, VNC: %2", xinetd, vnc);
     allow_administration = xdm && dm_ra && xinetd && vnc;
+
+    boolean current_progress = Progress::set(false);
+    SuSEFirewall::Read();
+    Progress::set(current_progress);
+
     return true;
 }
 
@@ -61,6 +68,9 @@ global boolean Read() {
  * @return true on success
  */
 global boolean Write() {
+    boolean current_progress = Progress::set(false);
+    SuSEFirewall::Write();
+    Progress::set(current_progress);
 
     if(allow_administration) {
 	/* Install require packages */

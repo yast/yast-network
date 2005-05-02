@@ -14,6 +14,7 @@ textdomain "network";
 import "Label";
 import "Remote";
 import "Wizard";
+import "CWMFirewallInterfaces";
 
 include "network/routines.ycp";
 
@@ -28,21 +29,23 @@ define symbol RemoteMainDialog() {
     /* Ramote Administration dialog caption */
     string caption = _("Remote Administration");
 
-    term allow_buttons = `RadioButtonGroup(`VBox(
-	/* RadioButton label */
-	`Left(`RadioButton(`id(`allow), _("&Allow Remote Administration"), false)),
-	/* RadioButton label */
-	`Left(`RadioButton(`id(`disallow), _("&Do Not Allow Remote Administration"), false))
-    ));
+    term allow_buttons = `RadioButtonGroup(
+	`VBox (
+	    /* RadioButton label */
+	    `Left(`RadioButton(`id(`allow), _("&Allow Remote Administration"), false)),
+	    /* RadioButton label */
+	    `Left(`RadioButton(`id(`disallow), _("&Do Not Allow Remote Administration"), false))
+	)
+    );
 
-    /* Ramote Administration dialog contents */
-    term contents = `VBox(`HBox(
-	`HStretch(),
-	allow_buttons,
-	`HStretch()
-    ));
+    map<string,any> firewall_widget = CWMFirewallInterfaces::CreateOpenFirewallWidget ($[
+	"services" : [ "vnc" ],
+	"display_details" : true,
+    ]);
+    term firewall_layout = firewall_widget["custom_widget"]:`VBox ();
+    string firewall_help = firewall_widget["help"]:"";
 
-    /* Ramote Administration dialog help
+    /* Remote Administration dialog help
        %1 and %2 are port numbers for vnc and vnchttp, eg. 5901, 5801 */
     string help = sformat (
 _("<p>If this feature is enabled, you can
@@ -50,7 +53,26 @@ administer this machine remotely from another machine. Use a VNC
 client, such as krdc (connect to <i>&lt;hostname&gt;:%1</i>), or
 a Java-capable web browser (connect to <i>http://&lt;hostname&gt;:%2/</i>).
 This form of remote administration is less secure than using SSH.</p>
-"), 5901, 5801);
+"), 5901, 5801) + firewall_help;
+
+    /* Remote Administration dialog contents */
+    term contents = `HBox(
+	`HStretch(),
+	`VBox (
+	    `Frame (
+		/* Dialog frame title */
+		_("Remote Administration Settings"),
+		allow_buttons
+	    ),
+	    `VSpacing (1),
+	    `Frame (
+		/* Dialog frame title */
+		_("Firewall Settings"),
+		firewall_layout
+	    )
+	),
+	`HStretch()
+    );
 
     Wizard::SetContentsButtons(caption, contents, help,
 	    Label::BackButton(), Label::FinishButton());
@@ -58,11 +80,16 @@ This form of remote administration is less secure than using SSH.</p>
     UI::ChangeWidget(`id(`allow), `Value, Remote::allow_administration);
     UI::ChangeWidget(`id(`disallow), `Value, !Remote::allow_administration);
 
+    CWMFirewallInterfaces::OpenFirewallInit (firewall_widget, "");
+
     any ret = nil;
+    map event = nil;
 
     repeat {
+	event = UI::WaitForEvent ();
+	ret = event["ID"]:nil;
 
-	ret = Wizard::UserInput();
+	CWMFirewallInterfaces::OpenFirewallHandle (firewall_widget, "", event);
 
 	if(ret == `abort)
 	{
@@ -77,6 +104,7 @@ This form of remote administration is less secure than using SSH.</p>
 
     if(ret == `next)
     {
+	CWMFirewallInterfaces::OpenFirewallStore (firewall_widget, "", event);
 	Remote::allow_administration = (boolean) UI::QueryWidget(`id(`allow), `Value);
     }
 
