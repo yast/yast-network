@@ -2,6 +2,7 @@
 Mon May  2 13:17:38 CEST 2005 - locilka@suse.cz
 
 - Added Firewall support into the Remote Administration settings
+- Added full Command Line support for Remote Administration
 
 -------------------------------------------------------------------
 Tue Apr 19 17:24:12 CEST 2005 - mvidner@suse.cz

@@ -19,6 +19,7 @@ y2milestone("Remote module started");
 import "Label";
 import "Remote";
 import "Wizard";
+import "Report";
 
 import "CommandLine";
 import "RichText";
@@ -59,6 +60,26 @@ define boolean ListHandler(map<string, string> options) {
 }
 
 /**
+ * Handler for action "allow"
+ * @param options action options
+ */
+define boolean SetRAHandler (map<string, string> options) {
+    string allow_ra = tolower(options["set"]:"");
+
+    if (allow_ra != "yes" && allow_ra != "no") {
+	/* Command line error message */
+	Report::Error(_("Please set 'yes' to allow the remote administration
+or 'no' to disallow it."));
+	return false;
+    }
+
+    y2milestone("Setting AllowRemoteAdministration to '%1'", allow_ra);
+    Remote::allow_administration = (allow_ra == "yes" ? true : false);
+
+    return true;
+}
+
+/**
  * Command line definition
  */
 map cmdline = $[
@@ -67,13 +88,32 @@ map cmdline = $[
     "id"	: "remote",
     "guihandler": RemoteGUI,
     "initialize": Remote::Read,
-    "finish"	: Remote::Write, // FIXME
+    "finish"	: Remote::Write,
     "actions"	: $[
 	"list" : $[
 	    /* Commandline command help */
 	    "help"	: _("Display configuration summary"),
 	    "handler"	: ListHandler,
 	],
+	"allow" : $[
+	    /* Commandline command help */
+	    "help"	: _("Allow remote access"),
+	    "handler"	: SetRAHandler,
+	    "example"	: [
+		"allow set=yes",
+		"allow set=no",
+	    ],
+	],
+    ],
+    "options" : $[
+	"set" : $[
+	    /* Commandline command help */
+	    "help" : _("Set 'yes' to allow or 'no' to disallow the remote administration"),
+	    "type" : "string",
+	]
+    ],
+    "mappings" : $[
+	"allow" : [ "set" ],
     ],
 ];
 
