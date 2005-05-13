@@ -67,12 +67,15 @@ define any VirtualDialog(boolean standalone) {
     /* Aliases dialog caption */
     string caption = _("Additional Addresses");
 
-    /* Aliases dialog help 1/2 */
+    /* Aliases dialog help 1/3 */
     string help = _("<p>Configure additional addresses of an interface (its aliases) in this dialog.</p>") +
 
-    /* Aliases dialog help 2/2 */
+    /* Aliases dialog help 2/3 */
     _("<p>Enter an <b>Alias Name</b>, an <b>IP Address</b>, and
-the <b>Netmask</b>.</p>");
+the <b>Netmask</b>.</p>") +
+
+    /* Aliases dialog help 3/3, #83766 */
+    _("<p>Do not include the interface name in the alias name. For example, enter <b>foo</b> instead of <b>eth0:foo</b>.</p>");
 
     integer items = 0;
     integer max = 0;

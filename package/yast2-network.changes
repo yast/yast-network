@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri May 13 13:00:12 CEST 2005 - mvidner@suse.cz
+
+- Added help text about the alias name format (#83766).
+
+-------------------------------------------------------------------
 Mon May  2 13:17:38 CEST 2005 - locilka@suse.cz
 
 - Added Firewall support into the Remote Administration settings
