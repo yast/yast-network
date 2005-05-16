@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Fri May 13 13:00:12 CEST 2005 - mvidner@suse.cz
+Mon May 16 12:33:05 CEST 2005 - mvidner@suse.cz
 
+- Removed an obsolete Requires: yast2-firewall.
 - Added help text about the alias name format (#83766).
 
 -------------------------------------------------------------------

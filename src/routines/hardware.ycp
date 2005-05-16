@@ -91,7 +91,7 @@ define string ControllerType(map hwdevice) {
 	else if(subclass_id == 0x80) {
 	    /* Nothing was found */
 	    y2error("Unknown network controller type: %1", hwdevice);
-	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
+	    y2error("It's probably missing in hwinfo (NOT src/hd/hd.h:sc_net_if)");
 	    return "";
 	}
 	else {
@@ -118,7 +118,14 @@ define string ControllerType(map hwdevice) {
 
     }
     /* Network Interface */
+	// check the CVS history and then kill this code!
+	// 0x107 is the output of hwinfo --network
+	// which lists the INTERFACES
+	// but we are inteested in hwinfo --netcard
+	// Just make sure that hwinfo or ag_probe
+	// indeed does not pass this to us
     else if(hwdevice["class_id"]:-1 == 0x107) {
+	y2milestone ("CLASS 0x107"); // this should happen rarely
 	if(subclass_id == 0) return "lo";
 	else if(subclass_id == 1) return "eth";
 	else if(subclass_id == 2) return "tr";
@@ -130,6 +137,8 @@ define string ControllerType(map hwdevice) {
 	else if(subclass_id == 8) return "escon";
 	else if(subclass_id == 9) return "myri";
 	else if(subclass_id == 10) return "wlan";
+	else if(subclass_id == 11) return "xp";
+	else if(subclass_id == 12) return "usb";
 	else if(subclass_id == 0x80) {
 	    /* Nothing was found */
 	    y2error("Unknown network interface type: %1", hwdevice);

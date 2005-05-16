@@ -7,7 +7,6 @@ Requires:	yast2-core >= 2.10.6
 # yast2 >= 2.12.2: new ProductFeatures interface
 Requires:	yast2 >= 2.12.2
 Requires:	sysconfig yast2-country yast2-inetd yast2-packager
-Requires:	yast2-firewall
 PreReq:		/bin/rm
 
 Provides:	y2c_lan y2c_dial yast2-config-adsl y2c_adsl
