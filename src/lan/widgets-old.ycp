@@ -1,0 +1,110 @@
+// This file is used because of MakeStartmode
+/**
+ * File:        include/network/widgets.ycp
+ * Package:     Network configuration
+ * Summary:     Widgets for CWM
+ * Authors:     Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id: widgets.ycp 22117 2005-03-02 09:29:22Z locilka $
+ */
+
+{
+
+textdomain "network";
+
+// Gradually all yast2-network UI will be converted to CWM
+// for easier maintenance.
+// This is just a start.
+
+map<string, map<string,any> > widget_descr_old = $[
+
+    // #23315
+    "DIALPREFIXREGEX": $[
+	"widget": `textentry,
+	// TextEntry label
+	"label": _("&Dial Prefix Regular Expression"),
+	"help":
+	// dial prefix regex help
+_("<p>When <b>Dial Prefix Regular Expression</b> is set, users can
+change the dial prefix in KInternet provided that it matches the expression.
+A recommended value is <tt>[09]?</tt>, allowing <tt>0</tt>, <tt>9</tt>,
+and the empty prefix. If the expression is empty, users are not allowed
+to change the prefix.</p>
+"),
+	],
+
+    ];
+
+/**
+ * This is the data for widget_descr["STARTMODE"].
+ * It is separated because the list of items depends on the device type
+ * and will be substituted dynamically.
+ * Helps are rich text, but not paragraphs.
+ */
+map<string, map<string, string> > startmode_items = $[
+    // onboot, on and boot are aliases for auto
+    // See NetworkDevices::CanonicalizeStartmode
+    "auto": $[
+	// Combo box option for Device Activation
+	"label": _("At Boot Time"),
+	"help": "",	    // is a part of the static help text
+	],
+    "off": $[
+	"label": _("Never"),
+	"help": "",	    // is a part of the static help text
+	],
+    "manual": $[
+	// Combo box option for Device Activation
+	"label": _("Manually"),
+	// help text for Device Activation
+	"help": _("<b>Manually</b>: You control the interface manually
+via 'ifup' or 'kinternet' (See 'User Controlled' below)."),
+	],
+    "ifplugd": $[
+	// Combo box option for Device Activation
+	"label": _("On Cable Connection"),
+	// help text for Device Activation
+	"help": _("<b>On Cable Connection</b>:
+The interface is watched for whether there is a physical
+network connection. That means either the cable is connected or the
+wireless interface can connect to an access point.
+"),
+	],
+    "hotplug": $[
+	// Combo box option for Device Activation
+	"label": _("On Hotplug"),
+	// help text for Device Activation
+	"help": _("With <b>On Hotplug</b>,
+the interface is set up as soon as it is available. This is
+nearly the same as 'At Boot Time', but does not result in an error at
+boot time if the interface is not present.
+"),
+	],
+    ];
+
+map<string, any> MakeStartmode (list<string> ids) {
+    map<string, any> ret = $[
+	"widget": `combobox,
+	// Combo box label
+	"label": _("&Device Activation"),
+	"help":
+	// Device activation main help. The individual parts will be
+	// substituted as %1
+_("<p>With <b>Device Activation</b>, choose when the network
+interface should be set up. <b>At Boot Time</b> starts it during system boot. <b>Never</b> does not start the device.
+%1</p>
+"),
+	];
+    string helps = "";
+    list items = maplist (string id, ids, {
+	helps = helps + " " + startmode_items[id, "help"]:"";
+	return [id, startmode_items[id, "label"]:""];
+    });
+
+    ret["help"] = sformat (ret["help"]:"%1", helps);
+    ret["items"] = items;
+    return ret;
+}
+
+/* EOF */
+}
