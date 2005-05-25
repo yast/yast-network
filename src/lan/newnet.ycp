@@ -1,0 +1,99 @@
+{				// -*- c++ -*-
+textdomain "network";
+map<string, map<string,any> > widget_descr = $[
+
+    "NDLABEL": $[
+	"widget": `label,
+	/* Label text */
+	"label": _("Network Device"),
+	],
+
+    "DEVICETYPE": $[
+	"widget": `combobox,
+	/* ComboBox label */
+	"label": _("&Device Type"),
+	"opt": [`hstretch, `notify],
+	],
+
+    "CNAME": $[
+	"widget": `combobox,
+	/* ComboBox label */
+	"label": _("&Configuration Name"),
+	"opt": [`hstretch, `editable],
+	],
+
+    "DHCP": $[
+	"widget": `radiobutton,
+	/* Radio button label */
+	"label": _("A&utomatic Address Setup (via DHCP)"),
+	"opt": [`notify],
+	],
+
+    "STATIC": $[
+	"widget": `radiobutton,
+	/* Radio button label */
+	"label": _("S&tatic Address Setup"),
+	"opt": [`notify],
+	],
+
+    "IPADDR": $[
+	"widget": `textentry,
+	/* Text entry label for IP address */
+	"label": _("&IP Address"),
+	],
+
+    "NETMASK": $[
+	"widget": `textentry,
+	/* Text entry label for network mask */
+	"label": _("&Subnet Mask"),
+	],
+
+    "REMOTEIP": $[
+	"widget": `textentry,
+	/* Text entry label */
+	"label": _("R&emote IP Address"),
+	],
+/*
+    "": $[
+	"widget": `,
+	"label": _(""),
+	],
+*/
+    ];
+
+import "CWM";
+import "Label";
+import "Wizard";
+
+Wizard::CreateDialog ();
+
+/*
+term contents = `VBox (
+    "IPADDR",
+    "NETMASK"
+    );
+*/
+/*
+term contents = `HSquash (`VBox (
+    "IPADDR",
+    "NETMASK"
+    ));
+*/
+term contents = `Frame (_("Static Address Setup"), `VBox (
+    "IPADDR",
+    "NETMASK"
+    ));
+
+any ret = CWM::ShowAndRun (
+    $[
+	"widget_names": ["IPADDR", "NETMASK"],
+	"widget_descr": widget_descr,
+	"contents": contents,
+	"caption": _("CAPTION"),
+        "back_button" : Label::BackButton (),
+        "next_button" : Label::OKButton (),
+	]);
+y2milestone ("ShowAndRun: %1", ret);
+
+Wizard::CloseDialog ();
+}
