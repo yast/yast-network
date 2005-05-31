@@ -228,6 +228,16 @@ disabled during the connection.</p>");
     UI::ChangeWidget(`id(`ns2), `ValidChars, IP::ValidChars);
     UI::ChangeWidget(`id(`ns3), `ValidChars, IP::ValidChars);
 
+    if(has_dhcp)
+    {
+ 	UI::ChangeWidget(`id(`ns1), `Enabled, !dhcp_resolv);
+	UI::ChangeWidget(`id(`ns2), `Enabled, !dhcp_resolv);
+	UI::ChangeWidget(`id(`ns3), `Enabled, !dhcp_resolv);
+	UI::ChangeWidget(`id(`s1), `Enabled, !dhcp_resolv);
+	UI::ChangeWidget(`id(`s2), `Enabled, !dhcp_resolv);
+	UI::ChangeWidget(`id(`s3), `Enabled, !dhcp_resolv);
+    }
+
     if(ModifyResolvConfPopup() != true) {
 	UI::ChangeWidget(`id(`dr), `Enabled, false);
 	UI::ChangeWidget(`id(`s1), `Enabled, false);
@@ -258,9 +268,10 @@ disabled during the connection.</p>");
 	}
 	/* hostname via dhcp */
 	else if(ret == `dn) {
-	    dhcp_hostname = (boolean) UI::QueryWidget(`id(`dn), `Value);
-	    UI::ChangeWidget(`id(`host), `Enabled, !dhcp_hostname);
-	    UI::ChangeWidget(`id(`domain), `Enabled, !dhcp_hostname);
+	    // Do nothing (the widget doesnt have notify anyway)
+	    // In particular do not disable the host and domain name widgets,
+	    // setting of FQDN should be possible even if DHCP overrides it.
+	    // N#28427, N#63423.
 	    continue;
 	}
 	/* resolv.conf via dhcp */
@@ -279,16 +290,25 @@ disabled during the connection.</p>");
 	}
 	else if(ret == `next) {
 
-	    if(!has_dhcp || !dhcp_hostname) {
-		/* check host name and domain */
-		if(!Hostname::Check((string) UI::QueryWidget(`id(`host), `Value))) {
+	    /* check host name and domain */
+	    string hostname = (string) UI::QueryWidget(`id(`host), `Value);
+	    string domainname = (string) UI::QueryWidget(`id(`domain), `Value);
+	    dhcp_hostname = (boolean) UI::QueryWidget(`id(`dn), `Value);
+	    boolean dhn = has_dhcp && dhcp_hostname;
+	    // If the names are set by dhcp, the user may enter backup values
+	    // here - N#28427. That is, host and domain name are optional then.
+	    // For static config, they are mandatory.
+	    if(!dhn || hostname != "") {
+		if (!Hostname::Check(hostname)) {
 		    UI::SetFocus(`id(`host));
 		    /* Popup::Error text */
 		    Popup::Error (_("The host name is invalid.") +
 			"\n" + Hostname::ValidHost ());
 		    continue;
 		}
-		if(!Hostname::CheckDomain((string) UI::QueryWidget(`id(`domain), `Value))) {
+	    }
+	    if(!dhn || domainname != "") {
+		if(!Hostname::CheckDomain(domainname)) {
 		    UI::SetFocus(`id(`domain));
 		    /* Popup::Error text */
 		    Popup::Error (_("The domain name is invalid.") +

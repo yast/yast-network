@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue May 31 18:15:30 CEST 2005 - mvidner@suse.cz
+
+- Properly enable/disable widgets and validate input
+  in the DNS dialog (#28427, #63423).
+
+-------------------------------------------------------------------
 Mon May 16 12:33:05 CEST 2005 - mvidner@suse.cz
 
 - Removed an obsolete Requires: yast2-firewall.
