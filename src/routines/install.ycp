@@ -107,5 +107,25 @@ define boolean ReadInstallInf() {
     return true;
 }
 
+
+/**
+ * Read module options from /etc/install.inf
+ * @param module_name Module name
+ * @return module options, empty string if none
+ */
+string InstallModuleOptions(string module_name) {
+    if(SCR::Read(.target.size,"/etc/install.inf") > 0) {
+        list<string> modules =  SCR::Dir(.etc.install_inf_options);
+        y2milestone("Module with options in /etc/install.inf: %1", modules);
+        if(contains(modules, module_name)) {
+            any options = SCR::Read (add (.etc.install_inf_options, module_name));
+            if (options!=nil && options != "")
+                return (string)options;
+        }
+    }
+    return "";
+}
+
+
 /* EOF */
 }

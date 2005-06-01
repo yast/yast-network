@@ -70,8 +70,14 @@ define void load_modules () {
     list<string> install_aliases = SCR::Dir (.etc.install_inf_alias);
     foreach (string alias, install_aliases, {
 	string target = (string) SCR::Read (add (.etc.install_inf_alias, alias));
-	y2milestone("Loading module: %1", target);
-	SCR::Execute (.target.modprobe, target, "");
+	string module_options = "";
+	any options = SCR::Read (add (.etc.install_inf_options, target));
+	if (options!=nil && options != "") {
+	    module_options = (string)options;
+	}
+
+	y2milestone("Loading module: %1 (options: %2)", target, module_options);
+	SCR::Execute (.target.modprobe, target, module_options);
     });
 }
 

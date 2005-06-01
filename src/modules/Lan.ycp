@@ -1133,6 +1133,13 @@ global define boolean Propose() {
     // do not select a card without a driver, #29296
     if (tosel != nil)
     {
+        // L3 bug: 75720
+        // Setup module options available from /etc/install.inf
+        string _options = InstallModuleOptions(tosel["module"]:"");
+        if (_options != "" && _options!=nil) {
+            tosel["options"] = _options;
+        }
+
 	SelectHWMap(tosel);
     }
     /* Nothing detected -> use InstallInf */
