@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
-Tue May 31 18:15:30 CEST 2005 - mvidner@suse.cz
+Wed Jun  1 11:39:34 CEST 2005 - mvidner@suse.cz
 
+- For force_static_ip, also change the default in the address dialog
+  (#65524).
 - Properly enable/disable widgets and validate input
   in the DNS dialog (#28427, #63423).
 

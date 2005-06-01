@@ -51,13 +51,15 @@ define any AddressDialog() {
 
     ScreenName("lan-address");
 
+    boolean force_static_ip = ProductFeatures::GetBooleanFeature ("network", "force_static_ip");
+
     /* Address dialog caption */
     string caption = _("Network Address Setup");
 
     /* Address dialog help 1/8 */
     string help = _("<p>Configure your IP address.</p>") +
 
-	(ProductFeatures::GetBooleanFeature ("network", "force_static_ip") ?
+	(force_static_ip ?
 
     /* Address dialog help 2-6/8: static address preferred */
     _("<p>DHCP configuration is not recommended for this product.
@@ -103,6 +105,12 @@ the network configuration.</p>");
 
     if(!Arch::s390 () && type != "dummy" && bootproto == "static" && ipaddr == "")
 	bootproto = "dhcp";
+
+    // #65524
+    if (Lan::operation == `add && force_static_ip)
+    {
+	bootproto = "static";
+    }
 
     if(ipaddr == "" && netmask == "") {
 	netmask = "255.255.255.0";
