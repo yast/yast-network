@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
 Wed Jun  1 15:27:01 CEST 2005 - mvidner@suse.cz
 
+- Do not load a NIC driver if one is already loaded (#59794#c31).
 - Use network module options supplied by user during 
   boot (install.inf) when installing and proposing (#75720).
 - For force_static_ip, also change the default in the address dialog

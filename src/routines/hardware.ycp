@@ -266,7 +266,13 @@ define list<map> ReadHardware(string hwtype) {
 	}
 	/* treat the rest as a network card */
 	else if(controller != "") {
+	    // drivers:
+	    // Although normally there is only one module
+	    // (one=$[active:, module:, options:,...]), the generic
+	    // situation is: one or more driver variants (exclusive),
+	    // each having one or more modules (one[drivers])
 	    list drivers = card["drivers"]:[];
+	    one["drivers"] = drivers;
 	    if(size(drivers) < 0) y2error("Not enough drivers");
 	    map driver = drivers[0]:$[];
 	    one["active"] = driver["active"]:false;

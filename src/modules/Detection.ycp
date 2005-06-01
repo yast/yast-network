@@ -90,10 +90,23 @@ define boolean StartEthInterface() {
     if(size(Hardware) < 1) return false;
 
     map <string, boolean> needed_modules = listmap (map h, Hardware, {
-	return $[ (h["module"]:"") : true ];
+	// Formerly we simply modprobed the first module of the first
+	// driver, if it was not already loaded.  But if the user
+	// configured the card to use the second driver and unloads it
+	// and wants to load the first, it will not work because the
+	// first driver is already loaded but not bound to the device
+	// (the second one took it). N#59794#c31
+	// We will only load a driver if there's no driver for the card active.
+	map active_driver = find (map d, (list<map>)h["drivers"]:[],
+				  ``( d["active"]:false ));
+	return $[ (h["module"]:"") : (active_driver == nil) ];
+
+	// TODO 1: choose which driver to load
+	// (2: load all its modules: no cards use multiple modules)
+	// (3: either modprobe or insmod: ISA history)
     });
-    needed_modules = filter (string m, boolean foo, needed_modules, {
-	return m != nil && m != "" &&
+    needed_modules = filter (string m, boolean load, needed_modules, {
+	return load && m != nil && m != "" &&
 	  SCR::Execute (.target.bash, sformat ("grep ^%1 /proc/modules", m)) != 0;
     });
     detection_modules = maplist (string m, boolean a, needed_modules, ``( m ));
