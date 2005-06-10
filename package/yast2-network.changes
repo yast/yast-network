@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jun 10 14:42:04 CEST 2005 - mvidner@suse.cz
+
+- WiFi: allow setting the channel only in Master and Ad-hoc modes
+  (#88530)
+
+-------------------------------------------------------------------
 Wed Jun  1 15:27:01 CEST 2005 - mvidner@suse.cz
 
 - Do not load a NIC driver if one is already loaded (#59794#c31).

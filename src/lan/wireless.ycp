@@ -578,6 +578,9 @@ the channel, select the desired value.</p>
 
     UI::ChangeWidget(`id(`bitrate), `Value, Lan::wl_bitrate);
     UI::ChangeWidget(`id(`channel), `Value, Lan::wl_channel);
+    // #88530
+    boolean channel_changeable = contains (["Ad-hoc", "Master"], Lan::wl_mode);
+    UI::ChangeWidget (`id (`channel), `Enabled, channel_changeable);
 
     any ret = nil;
     while(true) {
