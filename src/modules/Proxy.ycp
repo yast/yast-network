@@ -34,6 +34,7 @@ global string ftp = "";
 global string no = "";
 global string user = "";
 global string pass = "";
+global string https = "";
 
 
 /**
@@ -49,6 +50,8 @@ global define boolean Read() {
     if(ftp == nil) ftp = "";
     no = (string) SCR::Read(.sysconfig.proxy.NO_PROXY);
     if(no == nil) no = "";
+    https = (string) SCR::Read(.sysconfig.proxy.HTTPS_PROXY);
+    if(https == nil) https = "";
     enabled = (string) SCR::Read(.sysconfig.proxy.PROXY_ENABLED) != "no";
 
     /* Read /root/.curlrc */
@@ -92,6 +95,7 @@ global define boolean Write() {
     SCR::Write(.sysconfig.proxy.HTTP_PROXY, http);
     SCR::Write(.sysconfig.proxy.FTP_PROXY, ftp);
     SCR::Write(.sysconfig.proxy.NO_PROXY, no);
+    SCR::Write(.sysconfig.proxy.HTTPS_PROXY, https);
     SCR::Write(.sysconfig.proxy, nil);
 
     /* Update /root/.curlrc */
@@ -132,6 +136,7 @@ global define boolean Import(map settings) {
     no = settings["no_proxy"]:"localhost";
     user = settings["proxy_user"]:"";
     pass = settings["proxy_password"]:"";
+    https = settings["https_proxy"]:"";
 
     modified = true;
     return true;
@@ -149,6 +154,7 @@ global define map Export() {
 	"no_proxy"	: no,
 	"proxy_user"	: user,
 	"proxy_password": pass,
+        "https_proxy"   : https,
     ];
     return settings;
 }
@@ -170,6 +176,8 @@ global define string Summary() {
 	ret = [ Summary::Device(_("Proxy is enabled."), "" +
 	/* Summary text */
 	(http != "" ? sformat(_("HTTP Proxy: %1"), http) + "<br>" : "" ) +
+        /* Summary text */
+        (http != "" ? sformat(_("HTTPS Proxy: %1"), https) + "<br>" : "" ) +
 	/* Summary text */
 	(ftp != "" ? sformat(_("FTP Proxy: %1"), ftp) + "<br>" : "" ) +
 
@@ -222,6 +230,7 @@ global define map <string, string> GetEnvironment ()
 
     return $[
 	     "http_proxy"	: http,
+	     "HTTPS_PROXY"	: https,
 	     "FTP_PROXY"	: ftp,
 	     "NO_PROXY"		: no
     ];

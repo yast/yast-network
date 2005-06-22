@@ -18,6 +18,7 @@ textdomain "network";
 y2milestone("----------------------------------------");
 y2milestone("Proxy module started");
 
+import "CommandLine";
 import "Label";
 import "Proxy";
 import "Wizard";
@@ -30,38 +31,136 @@ define boolean Modified() {
     return Proxy::modified;
 }
 
-include "network/runtime.ycp";
-include "network/services/proxy.ycp";
+any ProxyGUI() {
+    include "network/runtime.ycp";
+    include "network/services/proxy.ycp";
 
-/* is this proposal or not? */
-boolean propose = false;
-list args = WFM::Args();
-if(size(args) > 0) {
-    if(is(WFM::Args(0), path) && WFM::Args(0) == .propose) {
-	y2milestone("Using PROPOSE mode");
-	propose = true;
-    }
-    else
-	y2error("Bad argument for proxy: %1",WFM::Args(0));
+    Proxy::Read ();
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("proxy");
+    Wizard::SetNextButton(`next, Label::FinishButton() );
+
+    /* main ui function */
+    any ret = ProxyMainDialog(true);
+    y2debug("ret == %1", ret);
+    
+    if (ret == `next && Modified ())
+	Proxy::Write();
+    
+    UI::CloseDialog();
+
+    return ret;
 }
 
-if (!propose) {
-    Proxy::Read();
+boolean EnableHandler (map<string, string> options)
+{
+    Proxy::enabled = true;
+    Proxy::modified = true;
+    return true;
 }
 
-Wizard::CreateDialog();
-Wizard::SetDesktopIcon("proxy");
-Wizard::SetNextButton(`next, Label::FinishButton() );
-
-/* main ui function */
-any ret = ProxyMainDialog(true);
-y2debug("ret == %1", ret);
-
-if(!propose && ret == `next && Proxy::modified) {
-    Proxy::Write();
+boolean DisableHandler (map<string, string> options)
+{
+    Proxy::enabled = false;
+    Proxy::modified = true;
+    return true;
 }
 
-UI::CloseDialog();
+boolean SetHandler(map<string, string> options)
+{
+    // FIXME
+    return true;
+}
+
+boolean AuthHandler(map<string, string> options)
+{
+    // FIXME
+    return true;
+}
+
+boolean SummaryHandler (map<string, string> options)
+{
+    // FIXME
+    return true;
+}
+
+map cmdline = $[
+    /* Commandline help title */
+    "help"      : _("Proxy Configuration"),
+    "id"        : "proxy",
+    "guihandler": ProxyGUI,
+    "initialize": Proxy::Read,
+    "finish"    : Proxy::Write,
+    "actions"   : $[
+	"enable" : $[
+	    /* command-line help */
+	    "help" : _("Enable proxy settings"),
+	    "handler" : EnableHandler,
+	],
+	"disable" : $[
+	    /* command-line help */
+	    "help" : _("Disable proxy settings"),
+	    "handler" : DisableHandler,
+	],
+	"set" : $[
+	    /* command-line help */
+	    "help" : _("Change the current proxy settings"),
+	    "handler" : SetHandler,
+	],
+	"authentication" : $[
+	    /* command-line help */
+	    "help" : _("Set the authentication for proxy"),
+	    "handler" : AuthHandler,
+	],
+	"summary" : $[
+	    /* command-line help */
+	    "help" : _("Show the summary of the current settings"),
+	    "handler" : SummaryHandler,
+	],
+    ],
+    "options" : $[
+	"http": $[
+	    /* command-line option help */
+	    "help" : _("Set HTTP proxy"),
+	    "type" : "string",
+	],
+	"https" : $[
+	    /* command-line option help */
+	    "help" : _("Set HTTPS proxy"),
+	    "type" : "string",
+	],
+	"ftp" : $[
+	    /* command-line option help */
+	    "help" : _("Set FTP proxy"),
+	    "type" : "string",
+	],
+	"noproxy" : $[
+	    /* command-line option help */
+	    "help" : _("Set domains for not using the proxy settings"),
+	    "type" : "string",
+	],
+	"username" : $[
+	    /* command-line option help */
+	    "help" : _("The username to be used for proxy authentication"),
+	    "type" : "string",
+	],
+	"password" : $[
+	    /* command-line option help */
+	    "help" : _("The password to be used for proxy authentication"),
+	    "type" : "string",
+	],
+    ],
+    "mappings" : $[
+	"enable" : [],
+	"disable" : [],
+	"summary" : [],
+	"set" : [ "http", "https", "ftp", "noproxy" ],
+	"authentication" : [ "username", "password" ],
+    ],
+];
+
+any ret = CommandLine::Run(cmdline);
 
 /* Finish */
 y2milestone("Proxy module finished");

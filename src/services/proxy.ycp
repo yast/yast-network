@@ -48,6 +48,7 @@ define any ProxyMainDialog(boolean standalone) ``{
 
     boolean enabled = Proxy::enabled;
     string http = Proxy::http;
+    string https = Proxy::https;
     string ftp = Proxy::ftp;
     string no = Proxy::no;
     string user = Proxy::user;
@@ -62,29 +63,36 @@ define any ProxyMainDialog(boolean standalone) ``{
     /* Proxy dialog caption */
     string caption = _("Proxy Configuration");
 
-    /* Proxy dialog help 1/5 */
+    /* Proxy dialog help 1/6 */
     string help = _("<p>Here, configure your Internet proxy (caching) settings.</p>") +
 
-    /* Proxy dialog help 2/5 */
+    /* Proxy dialog help 2/6 */
     _("<p><b>HTTP Proxy URL</b> is the name of the proxy server for your access
 to the World Wide Web (WWW).</p>
 ") +
 
-    /* Proxy dialog help 2.5/5 */
-    _("<p>Example: <i>http://proxy.example.com:3128/</i></p>") +
+    /* Proxy dialog help 3/6 */
+    _("<p><b>HTTPS Proxy URL</b> is the name of the proxy server for your secured access
+to the World Wide Web (WWW).</p>
+") +
 
-    /* Proxy dialog help 3/5 */
+
+    /* Proxy dialog help 3.5/6 */
+    _("<p>Example: <i>https://proxy.example.com:3128/</i></p>") +
+
+    /* Proxy dialog help 4/6 */
+
     _("<p><b>FTP Proxy URL</b> is the name of the proxy server for your access
 to the file transfer services (FTP).</p>") +
 
-    /* Proxy dialog help 4/5 */
+    /* Proxy dialog help 5/6 */
     sformat (_("<p><b>No Proxy Domains</b> is a comma-separated list of domains
 for which the requests should be made directly without caching,
 for example, <i>%1</i>.</p>
 "),
 	     "localhost, .intranet.example.com, www.example.com") +
 
-    /* Proxy dialog help 5/5 */
+    /* Proxy dialog help 6/6 */
     _("<p>If you are using a proxy server with authorization, enter
 <b>Proxy User Name</b> and <b>Proxy Password</b>.</p>
 ");
@@ -98,10 +106,12 @@ for example, <i>%1</i>.</p>
 	`VSpacing(1),
 	/* Frame label */
 	`Frame(`id(`frame), _("Proxy Settings"), `HBox(`HSpacing(2), `VBox(
-	    `VSpacing(1),
+	    `VSpacing(0.5),
 	    /* Text entry label */
 	    `TextEntry(`id(`http), _("&HTTP Proxy URL"), http),
 	    `VSpacing(0.2),
+            `TextEntry(`id(`https), _("&HTTPS Proxy URL"), http),
+            `VSpacing(0.2),
 	    /* Text entry label */
 	    `TextEntry(`id(`ftp), _("F&TP Proxy URL"), ftp),
 	    `VSpacing(0.2),
@@ -129,6 +139,7 @@ for example, <i>%1</i>.</p>
 
     string ValidCharsUsername = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:_-/\\";
     UI::ChangeWidget(`id(`http), `ValidChars, URL::ValidChars);
+    UI::ChangeWidget(`id(`https), `ValidChars, URL::ValidChars);
     UI::ChangeWidget(`id(`ftp), `ValidChars, URL::ValidChars);
     UI::ChangeWidget(`id(`no), `ValidChars, Hostname::ValidCharsDomain + " ,");
     UI::ChangeWidget(`id(`user), `ValidChars, ValidCharsUsername);
@@ -162,6 +173,7 @@ for example, <i>%1</i>.</p>
 	    ftp = (string) UI::QueryWidget(`id(`ftp), `Value);
 	    user = (string) UI::QueryWidget(`id(`user), `Value);
 	    pass = (string) UI::QueryWidget(`id(`pass), `Value);
+	    https = (string) UI::QueryWidget(`id(`https), `Value);
 
 	    /* check_* */
 	    if(user == "" && pass != "") {
@@ -185,6 +197,22 @@ for example, <i>%1</i>.</p>
 		    continue;
 		}
 	    }
+            if(https != "" && https != prefill) {
+                if(!URL::Check(https)) {
+                    /* Popup::Error text */
+                    Popup::Error(_("HTTPS proxy URL is invalid."));
+                    UI::SetFocus(`id(`https));
+                    continue;
+                }
+                map urlmap = URL::Parse(https);
+                if(urlmap["scheme"]:"" == "") {
+                    /* Popup::Error text */
+                    Popup::Error(_("HTTPS proxy URL must contain a scheme specifi
+cation (https)."));
+                    UI::SetFocus(`id(`https));
+                    continue;
+                }
+            }
 	    if(ftp != "" && ftp != prefill) {
 		if(!URL::Check(ftp)) {
 		    /* Popup::Error text */
@@ -217,6 +245,7 @@ for example, <i>%1</i>.</p>
 	enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
 	if(enabled) {
 	    http = (string) UI::QueryWidget(`id(`http), `Value);
+	    https = (string) UI::QueryWidget(`id(`https), `Value);
 	    ftp = (string) UI::QueryWidget(`id(`ftp), `Value);
 	    no = (string) UI::QueryWidget(`id(`no), `Value);
 	    list<string> no_list = splitstring (no, " ,");
@@ -226,10 +255,12 @@ for example, <i>%1</i>.</p>
 	    pass = (string) UI::QueryWidget(`id(`pass), `Value);
 
 	    if(http == prefill) http = "";
+	    if(https == prefill) https = "";
 	    if(ftp == prefill) ftp = "";
 	}
 
 	if(Proxy::http == http && Proxy::ftp == ftp && Proxy::no == no &&
+		Proxy::https == https &&
 		Proxy::user == user && Proxy::pass == pass &&
 		Proxy::enabled == enabled) {
 
@@ -240,6 +271,7 @@ for example, <i>%1</i>.</p>
 	Proxy::enabled = enabled;
 	if(enabled) {
 	    Proxy::http = http;
+	    Proxy::https = https;
 	    Proxy::ftp = ftp;
 	    Proxy::no = no;
 	    Proxy::user = user;

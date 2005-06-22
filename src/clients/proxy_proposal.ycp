@@ -20,8 +20,10 @@ y2milestone("----------------------------------------");
 y2milestone("Proxy proposal started");
 y2milestone("Arguments: %1", WFM::Args());
 
+import "Label";
 import "Proxy";
 import "Progress";
+import "Wizard";
 
 string func = (string) WFM::Args(0);
 map param = (map) WFM::Args(1);
@@ -50,8 +52,20 @@ if(func == "MakeProposal") {
 }
 /* run the module */
 else if(func == "AskUser") {
+
+    include "network/services/proxy.ycp";
+
     map stored = Proxy::Export();
-    symbol result =(symbol) WFM::CallFunction("proxy", [.propose]);
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("proxy");
+    Wizard::SetNextButton(`next, Label::FinishButton() );
+
+    /* main ui function */
+    symbol result =(symbol) ProxyMainDialog(true);
+    
+    UI::CloseDialog();
+
     if(result != `next) Proxy::Import(stored);
     y2debug("stored=%1", stored);
     y2debug("result=%1", result);
