@@ -12,6 +12,7 @@ map READ = $[
 	"proxy" : $[
 	    "PROXY_ENABLED" : nil,
 	    "HTTP_PROXY" : "h",
+	    "HTTPS_PROXY" : "h",
 	    "FTP_PROXY" : "f",
 	],
         "language" : $[
