@@ -30,11 +30,11 @@ global boolean modified = false;
 
 global boolean enabled = false;
 global string http = "";
+global string https = "";
 global string ftp = "";
 global string no = "";
 global string user = "";
 global string pass = "";
-global string https = "";
 
 
 /**
@@ -46,12 +46,12 @@ global define boolean Read() {
     /* Read /etc/sysconfig/proxy */
     http = (string) SCR::Read(.sysconfig.proxy.HTTP_PROXY);
     if(http == nil) http = "";
+    https = (string) SCR::Read(.sysconfig.proxy.HTTPS_PROXY);
+    if(https == nil) https = "";
     ftp = (string) SCR::Read(.sysconfig.proxy.FTP_PROXY);
     if(ftp == nil) ftp = "";
     no = (string) SCR::Read(.sysconfig.proxy.NO_PROXY);
     if(no == nil) no = "";
-    https = (string) SCR::Read(.sysconfig.proxy.HTTPS_PROXY);
-    if(https == nil) https = "";
     enabled = (string) SCR::Read(.sysconfig.proxy.PROXY_ENABLED) != "no";
 
     /* Read /root/.curlrc */
@@ -93,9 +93,9 @@ global define boolean Write() {
     /* Update /etc/sysconfig/proxy */
     SCR::Write(.sysconfig.proxy.PROXY_ENABLED, enabled?"yes":"no");
     SCR::Write(.sysconfig.proxy.HTTP_PROXY, http);
+    SCR::Write(.sysconfig.proxy.HTTPS_PROXY, https);
     SCR::Write(.sysconfig.proxy.FTP_PROXY, ftp);
     SCR::Write(.sysconfig.proxy.NO_PROXY, no);
-    SCR::Write(.sysconfig.proxy.HTTPS_PROXY, https);
     SCR::Write(.sysconfig.proxy, nil);
 
     /* Update /root/.curlrc */
@@ -132,11 +132,11 @@ global define boolean Write() {
 global define boolean Import(map settings) {
     enabled = settings["enabled"]:false;
     http = settings["http_proxy"]:"";
+    https = settings["https_proxy"]:"";
     ftp = settings["ftp_proxy"]:"";
     no = settings["no_proxy"]:"localhost";
     user = settings["proxy_user"]:"";
     pass = settings["proxy_password"]:"";
-    https = settings["https_proxy"]:"";
 
     modified = true;
     return true;
@@ -150,11 +150,11 @@ global define map Export() {
     map settings = $[
 	"enabled"	: enabled,
 	"http_proxy"	: http,
+        "https_proxy"   : https,
 	"ftp_proxy"	: ftp,
 	"no_proxy"	: no,
 	"proxy_user"	: user,
 	"proxy_password": pass,
-        "https_proxy"   : https,
     ];
     return settings;
 }

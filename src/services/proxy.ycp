@@ -170,10 +170,10 @@ for example, <i>%1</i>.</p>
 	    if(enabled == false) break;
 
 	    http = (string) UI::QueryWidget(`id(`http), `Value);
+	    https = (string) UI::QueryWidget(`id(`https), `Value);
 	    ftp = (string) UI::QueryWidget(`id(`ftp), `Value);
 	    user = (string) UI::QueryWidget(`id(`user), `Value);
 	    pass = (string) UI::QueryWidget(`id(`pass), `Value);
-	    https = (string) UI::QueryWidget(`id(`https), `Value);
 
 	    /* check_* */
 	    if(user == "" && pass != "") {

@@ -7,7 +7,7 @@ Thu Jun 23 12:08:59 CEST 2005 - mvidner@suse.cz
 Wed Jun 22 08:46:14 CEST 2005 - visnov@suse.cz
 
 - HTTPS_PROXY support
-- proxy command line support 
+- Partial proxy command line support 
 
 -------------------------------------------------------------------
 Fri Jun 10 14:42:04 CEST 2005 - mvidner@suse.cz
