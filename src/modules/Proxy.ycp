@@ -177,7 +177,7 @@ global define string Summary() {
 	/* Summary text */
 	(http != "" ? sformat(_("HTTP Proxy: %1"), http) + "<br>" : "" ) +
         /* Summary text */
-        (http != "" ? sformat(_("HTTPS Proxy: %1"), https) + "<br>" : "" ) +
+        (https != "" ? sformat(_("HTTPS Proxy: %1"), https) + "<br>" : "" ) +
 	/* Summary text */
 	(ftp != "" ? sformat(_("FTP Proxy: %1"), ftp) + "<br>" : "" ) +
 

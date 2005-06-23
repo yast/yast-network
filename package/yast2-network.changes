@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Jun 23 12:08:59 CEST 2005 - mvidner@suse.cz
+
+- Fixed and beautified HTTPS_PROXY.
+
+-------------------------------------------------------------------
 Wed Jun 22 08:46:14 CEST 2005 - visnov@suse.cz
 
 - HTTPS_PROXY support

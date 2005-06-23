@@ -58,6 +58,7 @@ define any ProxyMainDialog(boolean standalone) ``{
     string prefill = "http://";
 
     if(http == "") http = prefill;
+    if(https == "") https = prefill;
     if(ftp == "") ftp = prefill;
 
     /* Proxy dialog caption */
@@ -76,9 +77,8 @@ to the World Wide Web (WWW).</p>
 to the World Wide Web (WWW).</p>
 ") +
 
-
     /* Proxy dialog help 3.5/6 */
-    _("<p>Example: <i>https://proxy.example.com:3128/</i></p>") +
+    _("<p>Example: <i>http://proxy.example.com:3128/</i></p>") +
 
     /* Proxy dialog help 4/6 */
 
@@ -110,7 +110,7 @@ for example, <i>%1</i>.</p>
 	    /* Text entry label */
 	    `TextEntry(`id(`http), _("&HTTP Proxy URL"), http),
 	    `VSpacing(0.2),
-            `TextEntry(`id(`https), _("&HTTPS Proxy URL"), http),
+            `TextEntry(`id(`https), _("HTTP&S Proxy URL"), https),
             `VSpacing(0.2),
 	    /* Text entry label */
 	    `TextEntry(`id(`ftp), _("F&TP Proxy URL"), ftp),
@@ -207,8 +207,7 @@ for example, <i>%1</i>.</p>
                 map urlmap = URL::Parse(https);
                 if(urlmap["scheme"]:"" == "") {
                     /* Popup::Error text */
-                    Popup::Error(_("HTTPS proxy URL must contain a scheme specifi
-cation (https)."));
+                    Popup::Error(_("HTTPS proxy URL must contain a scheme specification (http)."));
                     UI::SetFocus(`id(`https));
                     continue;
                 }
