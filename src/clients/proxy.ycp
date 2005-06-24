@@ -69,19 +69,64 @@ boolean DisableHandler (map<string, string> options)
 
 boolean SetHandler(map<string, string> options)
 {
-    // FIXME
+    boolean clear = haskey (options, "clear");
+
+    // TODO: maybe we should validate the values
+    foreach (string option, string value, options, {
+	switch (option) {
+	    case "http" :
+		y2milestone ("Setting HTTP proxy to '%1'", clear ? "" : option);
+		Proxy::http = clear ? "" : value;
+		Proxy::modified = true;
+		break;
+	    case "https" :
+		y2milestone ("Setting HTTPS proxy to '%1'", clear ? "" : option);
+		Proxy::https = clear ? "" : value;
+		Proxy::modified = true;
+		break;
+	    case "ftp" :
+		y2milestone ("Setting FTP proxy to '%1'", clear ? "" : option);
+		Proxy::ftp = clear ? "" : value;
+		Proxy::modified = true;
+		break;
+	    case "noproxy" :
+		y2milestone ("Setting NO proxy to '%1'", clear ? "" : option);
+		Proxy::no = clear ? "" : value;
+		Proxy::modified = true;
+		break;
+	}
+    });
+
     return true;
 }
 
 boolean AuthHandler(map<string, string> options)
 {
-    // FIXME
+    if ( haskey (options, "clear") ) {
+	Proxy::user = "";
+	Proxy::pass = "";
+    }
+    else
+    {
+	Proxy::user = options["username"]:"";
+	Proxy::pass = options["password"]:nil;
+	
+	if (Proxy::pass == nil)
+	{
+	    // ask the user
+	    
+	    // translators: command line prompt for entering a password
+	    Proxy::pass = CommandLine::PasswordInput (_("Password:"));
+	}
+    }
     return true;
 }
 
 boolean SummaryHandler (map<string, string> options)
 {
-    // FIXME
+    import "RichText";
+
+    CommandLine::Print (RichText::Rich2Plain (Proxy::Summary ()));
     return true;
 }
 
@@ -135,6 +180,10 @@ map cmdline = $[
 	    "help" : _("Set FTP proxy"),
 	    "type" : "string",
 	],
+	"clear" : $[
+	    /* command-line option help */
+	    "help" : _("Clear all options listed"),
+	],
 	"noproxy" : $[
 	    /* command-line option help */
 	    "help" : _("Set domains for not using the proxy settings"),
@@ -155,8 +204,8 @@ map cmdline = $[
 	"enable" : [],
 	"disable" : [],
 	"summary" : [],
-	"set" : [ "http", "https", "ftp", "noproxy" ],
-	"authentication" : [ "username", "password" ],
+	"set" : [ "http", "https", "ftp", "noproxy", "clear" ],
+	"authentication" : [ "username", "password", "clear" ],
     ],
 ];
 
