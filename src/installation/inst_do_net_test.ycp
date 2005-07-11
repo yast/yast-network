@@ -253,6 +253,31 @@ and correct the settings.</p>
     }
 
 
+    define integer wait_for_test ()
+    {
+	while ( (boolean)SCR::Read(.background.output_open) )
+	{
+	    sleep (100);
+	    
+	    any ret = UI::PollInput ();
+	    
+	    if (ret == `abort || ret == `abort_test)
+	    {
+		// Abort pressed by the user
+		y2milestone ("Test aborted by user");
+		SCR::Execute (.background.kill);
+		return -1;
+	    }
+	}
+	
+	// check the exit code of the test
+	integer res = (integer)SCR::Read(.background.status);
+	
+	y2milestone ("Command returned: %1", res);
+	
+	return res;
+    }
+
     define boolean download_release_notes (string& filename)
     {
 	string url = Product::relnotesurl;
@@ -273,9 +298,10 @@ and correct the settings.</p>
 
 	env["LANG"] = GetLanguageUTF8 ();
 
-	integer ret = (integer) SCR::Execute (.target.bash, cmd, env);
-
-	y2milestone ("curl command returned %1", ret);
+	y2milestone ("curl command: %1", cmd);
+	
+	SCR::Execute(.background.run, cmd, env);
+	integer ret = wait_for_test ();
 
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Download of Release Notes"),
@@ -440,10 +466,14 @@ the logs for details.
 	    // ugly hack (see bug #42177)
 	    // string cmd = "/bin/false";
 	    cmd = cmd + "> " + logdir + "/you.log 2>&1";
-	    integer ret = (integer) SCR::Execute (.target.bash, cmd,
-					$["LANG" : GetLanguageUTF8 ()]);
-	    y2milestone("online_update command returned %1", ret);
 
+	    y2milestone ("online_update command: %1", cmd);
+	
+
+	    SCR::Execute(.background.run, cmd,
+					$["LANG" : GetLanguageUTF8 ()]);
+    	    integer ret = wait_for_test ();
+	    
 	    // label of combobox where the log is selected
 	    logs = add (logs, $[ `menuname : _("Check for Patches"),
 				 `filename : "you.log" ]);
