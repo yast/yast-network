@@ -143,6 +143,94 @@ global define boolean Import(map settings) {
 }
 
 /**
+ * Runs tests of the HTTP and FTP proxy
+ *
+ * @param string http_proxy	such as "http://cache.example.com:3128"
+ * @param string https_proxy	such as "http://cache.example.com:3128"
+ * @param string ftp_proxy	such as "http://cache.example.com:3128"
+ * @param string proxy_user	such as "proxy-username"
+ * @param string proxy_password	such as "proxy-password"
+ *
+ * @return map <string, map <string, any> > with results of the test
+ * @struct return = $[
+ *	"HTTP" : $[
+ *		"exit" : _exit_code,
+ *		"stdout" : _stdout,
+ *		"stderr" : _stderr,
+ *	],
+ *	"HTTPS" : $[
+ *		"exit" : _exit_code,
+ *		"stdout" : _stdout,
+ *		"stderr" : _stderr,
+ *	],
+ *	"FTP" : $[
+ *		"exit" : _exit_code,
+ *		"stdout" : _stdout,
+ *		"stderr" : _stderr,
+ *	],
+ * ]
+ */
+global define map <string, map <string, any> > RunTestProxy (string http_proxy, string https_proxy, string ftp_proxy, string proxy_user, string proxy_password) {
+    // /usr/bin/curl --verbose
+    // --proxy http://server_name:port_number
+    // --proxy-user user:password
+    // --url http://www.novell.com or ftp://ftp.novell.com | suggested for HTTP or FTP test
+    // --url https://secure-www.novell.com --insecure
+    map <string, map <string, any> > ret = $[];
+
+    boolean test_http = ((http_proxy != "" && http_proxy != "http://") ? true:false);
+    boolean test_https = ((https_proxy != "" && https_proxy != "http://") ? true:false);
+    boolean test_ftp  = ((ftp_proxy  != "" && ftp_proxy  != "http://") ? true:false);
+
+    http_proxy		= mergestring (splitstring(http_proxy, "\""), "\\\"");
+    https_proxy		= mergestring (splitstring(https_proxy, "\""), "\\\"");
+    ftp_proxy		= mergestring (splitstring(ftp_proxy, "\""), "\\\"");
+    proxy_user		= mergestring (splitstring(proxy_user, "\""), "\\\"");
+    proxy_password	= mergestring (splitstring(proxy_password, "\""), "\\\"");
+
+    string user_pass = (proxy_user != "" ?
+	" --proxy-user " + proxy_user + (proxy_password != "" ?
+	    ":"+proxy_password
+	    :
+	    "")
+	:
+	"");
+
+    // %1 = http or ftp proxy, %2 = user:password if any, %3 = URL
+    string command = "curl --verbose --proxy %1 %2 --url %3";
+    string http_command = sformat(command, http_proxy, user_pass, "http://www.novell.com");
+    // adding option --insecure to accept the certificate without asking
+    string https_command = sformat(command, https_proxy, user_pass, "https://secure-www.novell.com --insecure");
+    string ftp_command  = sformat(command, ftp_proxy,  user_pass, "ftp://ftp.novell.com");
+
+    y2milestone("Running HTTP_PROXY test...");
+    if (test_http) {
+	ret["HTTP"] = (map <string, any>) SCR::Execute(.target.bash_output, http_command);
+    } else {
+	ret["HTTP"] = $["exit":0, "stderr":"", "stdout":""];
+    }
+    y2milestone("Done.");
+
+    y2milestone("Running HTTPS_PROXY test...");
+    if (test_http) {
+	ret["HTTPS"] = (map <string, any>) SCR::Execute(.target.bash_output, https_command);
+    } else {
+	ret["HTTPS"] = $["exit":0, "stderr":"", "stdout":""];
+    }
+    y2milestone("Done.");
+
+    y2milestone("Running FTP_PROXY test...");
+    if (test_ftp) {
+	ret["FTP"]  = (map <string, any>) SCR::Execute(.target.bash_output, ftp_command);
+    } else {
+	ret["FTP"] = $["exit":0, "stderr":"", "stdout":""];
+    }
+    y2milestone("Done.");
+
+    return ret;
+}
+
+/**
  * Dump the Routing settings to a map, for autoinstallation use.
  * @return autoinstallation settings
  */

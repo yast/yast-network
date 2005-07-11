@@ -37,6 +37,235 @@ at all--they use their own settings system.
     FinishPopup(modified, "proxy", text, "", []);
 }
 
+boolean enabled = false;
+string http = "";
+string https = "";
+string ftp = "";
+string no = "";
+string user = "";
+string pass = "";
+
+// from OnlineUpdateDialogs.ycp
+/**
+ * Function opens the generic error dialog including the
+ * message with the [Details >>] button. It handles pressing
+ * the button itself.
+ *
+ * @param string message with the short error message
+ * @param string details with all of the error details
+ */
+define void ErrorPopupGeneric( string message, string details ) {
+    // Informative label
+    if ( size( details ) == 0 ) details = _("No details available.");
+    
+    // A push button
+    string detailsStringOn = _("&Details <<");
+    // A push button
+    string detailsStringOff = _("&Details >>");
+    
+    term detailsButton = `PushButton( `id( `details ), detailsStringOff );
+    
+    // Popup message headline
+    string heading = _("Error");
+    
+    term buttons = `HBox(
+	detailsButton,
+	`PushButton( `id( `ok ), Label::OKButton() )
+    );
+
+    UI::OpenDialog( `opt( `decorated ),
+	`VBox(
+	    `HBox( `HSpacing( 0.5 ), `Left( `Heading( heading ) ) ),
+	    `VSpacing( 0.2 ),
+	    `Left(`Label( message )),
+	    `ReplacePoint( `id( `rp ), `Empty() ),
+	    buttons
+	)
+    );
+
+    any ret = nil;
+    boolean showDetails = false;
+
+     while( ret != `ok ) {
+        ret = UI::UserInput();
+
+	if ( ret == `details ) {
+	    if ( showDetails ) {
+		UI::ReplaceWidget( `id( `rp ), `Empty() );
+		UI::ChangeWidget( `id( `details ), `Label, detailsStringOff );
+	    } else {
+		UI::ReplaceWidget( `id( `rp ), `HBox( `HSpacing( 0.5 ),
+		    `HWeight( 1, `RichText(`opt(`plainText), details ) ),
+		    `HSpacing( 0.5 ) )
+		);
+		UI::ChangeWidget( `id( `details ), `Label, detailsStringOn );
+	    }
+	    showDetails = !showDetails;
+	}
+     }
+     
+     UI::CloseDialog();
+}
+
+/* Known return codes - good proxy response */
+list <string> return_codes_good = [
+    "200", // OK
+    "201", // Created
+    "202", // Accepted
+    "203", // Non-Authorative Information
+    "204", // No Content
+    "205", // Reset Content
+    "206", // Partial Content
+
+    "300", // Multiple Choices
+    "301", // Moved Permanently
+    "302", // Moved Temporarily
+    "303", // See Other
+    "304", // Not Modified
+    "305", // Use Proxy
+];
+
+/* Known return codes - bad proxy response */
+list <string> return_codes_bad = [
+    // Proxy Errors
+    "400", // Bad Request
+    "401", // Authorization Required
+    "402", // Payment Required (not used yet)
+    "403", // Forbidden
+    "404", // Not Found
+    "405", // Method Not Allowed
+    "406", // Not Acceptable (encoding)
+    "407", // Proxy Authentication Required
+    "408", // Request Timed Out
+    "409", // Conflicting Request
+    "410", // Gone
+    "411", // Content Length Required
+    "412", // Precondition Failed
+    "413", // Request Entity Too Long
+    "414", // Request URI Too Long
+    "415", // Unsupported Media Type
+
+    // Server Errors
+    "500", // Internal Server Error
+    "501", // Not Implemented
+    "502", // Bad Gateway
+    "503", // Service Unavailable
+    "504", // Gateway Timeout
+    "505", // HTTP Version Not Supported
+];
+
+/**
+ * Function checks the proxy-return code.
+ *
+ * @param string test_type HTTP, HTTPS or FTP
+ * @param string proxy_ret_stderr such as "HTTP/1.0 403 Forbidden"
+ * @return boolean true if the proxy response is a good one
+ */
+define boolean TestProxyReturnCode (string test_type, string proxy_ret_stderr) {
+    string proxy_retcode = "";
+    // getting the return code string from the stderr
+    foreach (string proxy_stderr, splitstring(proxy_ret_stderr, "\r?\n"), {
+	if (regexpmatch(proxy_stderr, "HTTP/[0-9\.]+ [0-9]+")) {
+	    proxy_retcode = regexpsub(proxy_stderr, ".*(HTTP.*)", "\\1");
+	}
+    });
+
+    y2milestone("Proxy %1 test: %2", test_type, proxy_retcode);
+
+    // The default error code, replaced with the current error code got from proxy if any code found
+    string retcode = _("Unknown Error Code");
+    foreach(string ret_code_part, splitstring(proxy_retcode, " "), {
+	if (regexpmatch(ret_code_part, "^[0-9]+$") && size(ret_code_part)>=3) {
+	    retcode = ret_code_part;
+	}
+    });
+
+    // known good return code
+    if (contains(return_codes_good, retcode)) {
+	return true;
+    // known bad return code
+    } else if (contains(return_codes_bad, retcode)) {
+	// Error message,
+	//	%1 is a string "HTTP", "HTTPS" or "FTP"
+	//	%2 is an error string such as "HTTP/1.0 403 Forbidden"
+	ErrorPopupGeneric(sformat(_("An error occured during the %1 proxy test.
+Proxy return code: %2."), test_type, proxy_retcode), proxy_ret_stderr);
+	return false;
+
+    } else {
+	// Unknown return code,
+	//	%1 is the string HTTP, "HTTPS" or FTP,
+	//	%2 is an error string such as "HTTP/1.0 403 Forbidden"
+	ErrorPopupGeneric(sformat(_("Unknown error occured during the %1 proxy test.
+Proxy return code: %2."), test_type, proxy_retcode), proxy_ret_stderr);
+    }
+}
+
+/**
+ * Function test the current HTTP and FTP proxy settings.
+ * It currently ignores the "No Proxy" value.
+ *
+ * @return boolean true if successful
+ */
+define boolean TestProxySettings () {
+    if (enabled) {
+	UI::OpenDialog(
+	    // An informative popup label diring the proxy testings
+	    `Left(`Label(_("Testing the current proxy settings...")))
+	);
+	map <string, map <string, any> > ret = Proxy::RunTestProxy (http, https, ftp, user, pass);
+	UI::CloseDialog();
+
+	// curl error
+	if ((integer) ret["HTTP","exit"]:1 != 0) {
+	    // TRANSLATORS: Error popup message
+	    ErrorPopupGeneric(_("An error occured during the HTTP proxy test."), ret["HTTP","stderr"]:"");
+	    UI::SetFocus(`id(`http));
+	    return false;
+	} else {
+	    // curl works - proxy error
+	    if (! TestProxyReturnCode("HTTP", ret["HTTP","stderr"]:"")) {
+		UI::SetFocus(`id(`http));
+		return false;
+	    }
+	}
+
+	// curl error
+	if ((integer) ret["HTTPS","exit"]:1 != 0) {
+	    // TRANSLATORS: Error popup message
+	    ErrorPopupGeneric(_("An error occured during the HTTPS proxy test."), ret["HTTPS","stderr"]:"");
+	    UI::SetFocus(`id(`https));
+	    return false;
+	} else {
+	    // curl works - proxy error
+	    if (! TestProxyReturnCode("HTTPS", ret["HTTPS","stderr"]:"")) {
+		UI::SetFocus(`id(`https));
+		return false;
+	    }
+	}
+
+	// curl error
+	if ((integer) ret["FTP","exit"]:1 != 0) {
+	    // TRANSLATORS: Error popup message
+	    ErrorPopupGeneric(_("An error occured during the FTP proxy test."), ret["FTP","stderr"]:"");
+	    UI::SetFocus(`id(`ftp));
+	    return false;
+	} else {
+	    // curl works - proxy error
+	    if (! TestProxyReturnCode("FTP", ret["FTP","stderr"]:"")) {
+		UI::SetFocus(`id(`ftp));
+		return false;
+	    }
+	}
+
+	// Popup message
+	Popup::Message(_("Proxy settings work correctly."));
+    } else {
+	// Actually it doesn't make sense to test the proxy settings when proxy is off
+	return true;
+    }
+}
+
 /**
  * Proxy dialog
  * @param standalone true if not run from another ycp client
@@ -44,15 +273,15 @@ at all--they use their own settings system.
  */
 define any ProxyMainDialog(boolean standalone) ``{
 
-    ScreenName("proxy");
+    enabled = Proxy::enabled;
+    http = Proxy::http;
+    https = Proxy::https;
+    ftp = Proxy::ftp;
+    no = Proxy::no;
+    user = Proxy::user;
+    pass = Proxy::pass;
 
-    boolean enabled = Proxy::enabled;
-    string http = Proxy::http;
-    string https = Proxy::https;
-    string ftp = Proxy::ftp;
-    string no = Proxy::no;
-    string user = Proxy::user;
-    string pass = Proxy::pass;
+    ScreenName("proxy");
 
     /* String to pre-filled into the proxy server field */
     string prefill = "http://";
@@ -64,37 +293,42 @@ define any ProxyMainDialog(boolean standalone) ``{
     /* Proxy dialog caption */
     string caption = _("Proxy Configuration");
 
-    /* Proxy dialog help 1/6 */
+    /* Proxy dialog help 1/7 */
     string help = _("<p>Here, configure your Internet proxy (caching) settings.</p>") +
 
-    /* Proxy dialog help 2/6 */
+    /* Proxy dialog help 2/7 */
     _("<p><b>HTTP Proxy URL</b> is the name of the proxy server for your access
 to the World Wide Web (WWW).</p>
 ") +
 
-    /* Proxy dialog help 3/6 */
+    /* Proxy dialog help 3/7 */
     _("<p><b>HTTPS Proxy URL</b> is the name of the proxy server for your secured access
 to the World Wide Web (WWW).</p>
 ") +
 
-    /* Proxy dialog help 3.5/6 */
+    /* Proxy dialog help 3.5/7 */
     _("<p>Example: <i>http://proxy.example.com:3128/</i></p>") +
 
-    /* Proxy dialog help 4/6 */
+    /* Proxy dialog help 4/7 */
 
     _("<p><b>FTP Proxy URL</b> is the name of the proxy server for your access
 to the file transfer services (FTP).</p>") +
 
-    /* Proxy dialog help 5/6 */
+    /* Proxy dialog help 5/7 */
     sformat (_("<p><b>No Proxy Domains</b> is a comma-separated list of domains
 for which the requests should be made directly without caching,
 for example, <i>%1</i>.</p>
 "),
 	     "localhost, .intranet.example.com, www.example.com") +
 
-    /* Proxy dialog help 6/6 */
+    /* Proxy dialog help 6/7 */
     _("<p>If you are using a proxy server with authorization, enter
 <b>Proxy User Name</b> and <b>Proxy Password</b>.</p>
+") +
+
+    /* Proxy dialog help 7/7 */
+    _("<p>Press the <b>Test Proxy Settings</b> button to test
+the current configuration for HTTP, HTTPS and FTP proxy.</p>
 ");
 
     /* Proxy dialog contents */
@@ -125,7 +359,10 @@ for example, <i>%1</i>.</p>
 	    /* Password entry label */
 	    `Password(`id(`pass), _("Proxy &Password"), pass),
 	    `VSpacing(1)
-	    ), `HSpacing(2)))
+	    ), `HSpacing(2))),
+	    `VSpacing(1),
+	    /* Test Proxy Settings - push button */
+	    `PushButton(`id("test_proxy"), _("Test Pr&oxy Settings"))
 	),
 	`HSpacing(6)
     );
@@ -144,6 +381,7 @@ for example, <i>%1</i>.</p>
     UI::ChangeWidget(`id(`no), `ValidChars, Hostname::ValidCharsDomain + " ,");
     UI::ChangeWidget(`id(`user), `ValidChars, ValidCharsUsername);
     UI::ChangeWidget(`id(`frame), `Enabled, enabled);
+    UI::ChangeWidget(`id("test_proxy"), `Enabled, enabled);
 
     if(enabled == true) UI::SetFocus(`id(`http));
     else UI::SetFocus(`id(`enabled));
@@ -161,19 +399,29 @@ for example, <i>%1</i>.</p>
 	if(ret == `enabled) {
 	    enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
 	    UI::ChangeWidget(`id(`frame), `Enabled, enabled);
+	    UI::ChangeWidget(`id("test_proxy"), `Enabled, enabled);
 	    continue;
 	}
 	/* next */
-	else if(ret == `next) {
+	else if (ret == `next || ret == "test_proxy") {
 
+	    http    = (string)  UI::QueryWidget(`id(`http), `Value);
+	    https   = (string)  UI::QueryWidget(`id(`https), `Value);
+	    ftp     = (string)  UI::QueryWidget(`id(`ftp), `Value);
+	    user    = (string)  UI::QueryWidget(`id(`user), `Value);
+	    pass    = (string)  UI::QueryWidget(`id(`pass), `Value);
 	    enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
-	    if(enabled == false) break;
 
-	    http = (string) UI::QueryWidget(`id(`http), `Value);
-	    https = (string) UI::QueryWidget(`id(`https), `Value);
-	    ftp = (string) UI::QueryWidget(`id(`ftp), `Value);
-	    user = (string) UI::QueryWidget(`id(`user), `Value);
-	    pass = (string) UI::QueryWidget(`id(`pass), `Value);
+	    no = (string) UI::QueryWidget(`id(`no), `Value);
+	    list<string> no_list = splitstring (no, " ,");
+	    no_list = filter (string no_i, no_list, ``( no_i != "") );
+	    no = mergestring (no_list, ", ");
+
+	    if(http == prefill) http = "";
+	    if(https == prefill) https = "";
+	    if(ftp == prefill) ftp = "";
+
+	    if(enabled == false) break;
 
 	    /* check_* */
 	    if(user == "" && pass != "") {
@@ -227,7 +475,12 @@ for example, <i>%1</i>.</p>
 		    continue;
 		}
 	    }
-	    break;
+
+	    if (ret == `next) {
+		break;
+	    } else if (ret == "test_proxy") {
+		TestProxySettings();
+	    }
 	}
 	/* back */
 	else if(ret == `back) {
@@ -240,22 +493,8 @@ for example, <i>%1</i>.</p>
     }
 
     if(ret == `next) {
-
-	enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
 	if(enabled) {
-	    http = (string) UI::QueryWidget(`id(`http), `Value);
-	    https = (string) UI::QueryWidget(`id(`https), `Value);
-	    ftp = (string) UI::QueryWidget(`id(`ftp), `Value);
-	    no = (string) UI::QueryWidget(`id(`no), `Value);
-	    list<string> no_list = splitstring (no, " ,");
-	    no_list = filter (string no_i, no_list, ``( no_i != "") );
-	    no = mergestring (no_list, ", ");
-	    user = (string) UI::QueryWidget(`id(`user), `Value);
-	    pass = (string) UI::QueryWidget(`id(`pass), `Value);
 
-	    if(http == prefill) http = "";
-	    if(https == prefill) https = "";
-	    if(ftp == prefill) ftp = "";
 	}
 
 	if(Proxy::http == http && Proxy::ftp == ftp && Proxy::no == no &&

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jul 11 16:09:53 CEST 2005 - locilka@suse.cz
+
+- Added "Test Proxy Settings" functionality
+
+-------------------------------------------------------------------
 Thu Jun 23 12:08:59 CEST 2005 - mvidner@suse.cz
 
 - Fixed and beautified HTTPS_PROXY.
