@@ -44,6 +44,7 @@ for example, <i>io=0x300 irq=5</i>. <b>Note:</b> If  two cards are configured
 with the same module name, options will be merged while saving.</p>");
 
     if(!(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 () == true))
+    {
 
     /* Manual dialog help 3/4 */
 help = help + _("<p>Get a list of available network cards by pressing
@@ -53,8 +54,11 @@ help = help + _("<p>Get a list of available network cards by pressing
 _("<p>If you have a <b>PCMCIA</b> network card, select PCMCIA.
 If you have a <b>USB</b> network card, select USB.</p>
 ");
-
+    } 
+ 
     if(Arch::s390 ())
+    {
+	// overwrite help
 	/* Manual dialog help 5/4 */
 	help = _("<p>Here, set up your networking device. The values will be
 written to <i>/etc/modprobe.conf</i> or <i>/etc/chandev.conf</i>.</p>
@@ -63,11 +67,11 @@ written to <i>/etc/modprobe.conf</i> or <i>/etc/chandev.conf</i>.</p>
 	/* Manual dialog help 6/4 */
 _("<p>Options for the module should be written in the format specified
 in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
+    }
 
     string modul = NetworkModules::Alias; // FIXME: MOD Lan::Module["module"]:"";
     string options = NetworkModules::Options; // FIXME: MOD Lan::Module["options"]:"";
 
-    string mtu = Lan::mtu;
     string hotplug = Lan::hotplug;
     y2milestone("hotplug=%1", Lan::hotplug);
 
@@ -146,11 +150,6 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     term DeviceNumberBox = `ReplacePoint(`id(`rnum),
 	/* TextEntry label */
 	`ComboBox (`id(`num), `opt(`editable, `hstretch), _("&Configuration Name"), [device]));
-
-    /* TextEntry label */
-    term MTUBox = `TextEntry(`id(`mtu), _("M&aximum Transfer Unit (MTU)"), mtu);
-    MTUBox = `VSpacing(0);
-    // FIXME: help missing
 
     /* Manual dialog contents */
     term TypeNameWidgets = 
@@ -237,8 +236,6 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    TypeNameWidgets,
 	    `VSpacing(1.5),
 	    KernelBox,
-	    `VSpacing(0.4),
-	    MTUBox,
 	    `VSpacing(1.5),
 	    ButtonBox,
 	    `VSpacing(0.5)
@@ -424,9 +421,6 @@ Really continue?
 	    Lan::nm_name_old = Lan::nm_name;
 	    Lan::nm_name = (string) UI::QueryWidget(`id(`hwcfg), `Value);
 	}
-
-	if(UI::WidgetExists(`id(`mtu)))
-	    Lan::mtu = (string) UI::QueryWidget(`id(`mtu), `Value);
 
 	if(UI::WidgetExists(`id(`num)))
 	    Lan::device = (string) UI::QueryWidget(`id(`num), `Value);
