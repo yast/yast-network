@@ -1,7 +1,8 @@
 -------------------------------------------------------------------
-Mon Jul 11 16:09:53 CEST 2005 - locilka@suse.cz
+Mon Jul 11 17:25:01 CEST 2005 - mvidner@suse.cz
 
-- Added "Test Proxy Settings" functionality
+- Added "Test Proxy Settings" functionality (locilka, #55861).
+- 2.12.2
 
 -------------------------------------------------------------------
 Thu Jun 23 12:08:59 CEST 2005 - mvidner@suse.cz
@@ -11,7 +12,7 @@ Thu Jun 23 12:08:59 CEST 2005 - mvidner@suse.cz
 -------------------------------------------------------------------
 Wed Jun 22 08:46:14 CEST 2005 - visnov@suse.cz
 
-- HTTPS_PROXY support
+- HTTPS_PROXY support (#67357)
 - Proxy command line support 
 
 -------------------------------------------------------------------
