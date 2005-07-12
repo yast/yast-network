@@ -217,44 +217,50 @@ define boolean TestProxySettings () {
 	UI::CloseDialog();
 
 	// curl error
-	if ((integer) ret["HTTP","exit"]:1 != 0) {
-	    // TRANSLATORS: Error popup message
-	    ErrorPopupGeneric(_("An error occured during the HTTP proxy test."), ret["HTTP","stderr"]:"");
-	    UI::SetFocus(`id(`http));
-	    return false;
-	} else {
-	    // curl works - proxy error
-	    if (! TestProxyReturnCode("HTTP", ret["HTTP","stderr"]:"")) {
+	if (ret["HTTP","tested"]:true == true) {
+	    if ((integer) ret["HTTP","exit"]:1 != 0) {
+		// TRANSLATORS: Error popup message
+		ErrorPopupGeneric(_("An error occured during the HTTP proxy test."), ret["HTTP","stderr"]:"");
 		UI::SetFocus(`id(`http));
 		return false;
+	    } else {
+		// curl works - proxy error
+		if (! TestProxyReturnCode("HTTP", ret["HTTP","stderr"]:"")) {
+		    UI::SetFocus(`id(`http));
+		    return false;
+		}
 	    }
 	}
 
-	// curl error
-	if ((integer) ret["HTTPS","exit"]:1 != 0) {
-	    // TRANSLATORS: Error popup message
-	    ErrorPopupGeneric(_("An error occured during the HTTPS proxy test."), ret["HTTPS","stderr"]:"");
-	    UI::SetFocus(`id(`https));
-	    return false;
-	} else {
-	    // curl works - proxy error
-	    if (! TestProxyReturnCode("HTTPS", ret["HTTPS","stderr"]:"")) {
+	if (ret["HTTPS","tested"]:true == true) {
+	    // curl error
+	    if ((integer) ret["HTTPS","exit"]:1 != 0) {
+		// TRANSLATORS: Error popup message
+		ErrorPopupGeneric(_("An error occured during the HTTPS proxy test."), ret["HTTPS","stderr"]:"");
 		UI::SetFocus(`id(`https));
 		return false;
+	    } else {
+		// curl works - proxy error
+		if (! TestProxyReturnCode("HTTPS", ret["HTTPS","stderr"]:"")) {
+		    UI::SetFocus(`id(`https));
+		    return false;
+		}
 	    }
 	}
 
-	// curl error
-	if ((integer) ret["FTP","exit"]:1 != 0) {
-	    // TRANSLATORS: Error popup message
-	    ErrorPopupGeneric(_("An error occured during the FTP proxy test."), ret["FTP","stderr"]:"");
-	    UI::SetFocus(`id(`ftp));
-	    return false;
-	} else {
-	    // curl works - proxy error
-	    if (! TestProxyReturnCode("FTP", ret["FTP","stderr"]:"")) {
+	if (ret["FTP","tested"]:true == true) {
+	    // curl error
+	    if ((integer) ret["FTP","exit"]:1 != 0) {
+		// TRANSLATORS: Error popup message
+		ErrorPopupGeneric(_("An error occured during the FTP proxy test."), ret["FTP","stderr"]:"");
 		UI::SetFocus(`id(`ftp));
 		return false;
+	    } else {
+		// curl works - proxy error
+		if (! TestProxyReturnCode("FTP", ret["FTP","stderr"]:"")) {
+		    UI::SetFocus(`id(`ftp));
+		    return false;
+		}
 	    }
 	}
 

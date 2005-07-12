@@ -205,25 +205,31 @@ global define map <string, map <string, any> > RunTestProxy (string http_proxy, 
 
     y2milestone("Running HTTP_PROXY test...");
     if (test_http) {
+	y2milestone("Testing HTTP proxy %1", http_proxy);
 	ret["HTTP"] = (map <string, any>) SCR::Execute(.target.bash_output, http_command);
     } else {
-	ret["HTTP"] = $["exit":0, "stderr":"", "stdout":""];
+	y2milestone("Skipping HTTP Proxy test, no proxy used.");
+	ret["HTTP"] = $["exit":0, "stderr":"", "stdout":"", "tested":false];
     }
     y2milestone("Done.");
 
     y2milestone("Running HTTPS_PROXY test...");
-    if (test_http) {
+    if (test_https) {
+	y2milestone("Testing HTTPS proxy %1", https_proxy);
 	ret["HTTPS"] = (map <string, any>) SCR::Execute(.target.bash_output, https_command);
     } else {
-	ret["HTTPS"] = $["exit":0, "stderr":"", "stdout":""];
+	y2milestone("Skipping HTTPS Proxy test, no proxy used.");
+	ret["HTTPS"] = $["exit":0, "stderr":"", "stdout":"", "tested":false];
     }
     y2milestone("Done.");
 
     y2milestone("Running FTP_PROXY test...");
     if (test_ftp) {
+	y2milestone("Testing FTP proxy %1", ftp_proxy);
 	ret["FTP"]  = (map <string, any>) SCR::Execute(.target.bash_output, ftp_command);
     } else {
-	ret["FTP"] = $["exit":0, "stderr":"", "stdout":""];
+	y2milestone("Skipping FTP Proxy test, no proxy used.");
+	ret["FTP"] = $["exit":0, "stderr":"", "stdout":"", "tested":false];
     }
     y2milestone("Done.");
 
