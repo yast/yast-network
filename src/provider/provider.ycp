@@ -98,6 +98,14 @@ define any ProviderDialog() ``{
     string username = Provider::Current["USERNAME"]:"";
     string password = Provider::Current["PASSWORD"]:"";
     boolean ask_pass = Provider::Current["ASKPASSWORD"]:"no" == "yes";
+    // #59836: T-Online forbids the users to store unencrypted passwords,
+    // so let's not encourage it.
+    // We don't simply change the default for ASKPASSWORD to yes because
+    // that would ruin the universal accounts like Raz:Dva
+    if (username == "" && password == "")
+    {
+	ask_pass = true;
+    }
 
     string uimode = Provider::Current["UIMODE"]:"";
 
@@ -226,8 +234,15 @@ to use as the login (ask your provider if unsure).</p>");
 with the <i>t-online-com/</i> at the start and with <i>@t-online-com.de</i>
 at the end.</p>");
 
+    // #59836
     /* Provider dialog help 5/5 */
-    helptext = helptext + _("<p>Check <b>Always Ask for Password</b> to be asked for the password every time.</p>");
+    helptext = helptext + _("<p>Check <b>Always Ask for Password</b> to be asked for the password every time.
+Please note that your
+internet service provider might not allow that passwords are saved on
+disk. If you enter the password here it is saved in clear text on disk
+(although readable by root only).
+</p>");
+
 
     /* Frame label */
     term auth = `Frame(`id(`auth), _("Authorization"), `HBox(

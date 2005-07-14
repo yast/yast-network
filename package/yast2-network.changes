@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Jul 14 15:40:58 CEST 2005 - mvidner@suse.cz
+
+- Do not default to storing ISP passwords on disk (#59836).
+
+-------------------------------------------------------------------
 Mon Jul 11 18:22:05 CEST 2005 - mvidner@suse.cz
 
 - Fixed aborting the network test during the installation (YOU and
