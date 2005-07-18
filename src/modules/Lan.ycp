@@ -1069,8 +1069,7 @@ define map FindMatchingDevice(map interface) {
         }
 
         /* No install.inf driver -> select the first active */
-        // but not wlan, #44951
-	// find H["active"] == true && H["type"] != "wlan"
+	// find H["active"] == true
         if (tosel == nil) {
             tosel = find (map h, Hardware, ``(
                         h["active"]:false
@@ -1080,12 +1079,11 @@ define map FindMatchingDevice(map interface) {
         }
 
         /* No active driver -> select the first with a driver */
-	// find H["module"] != "" && H["type"] != "wlan"
+	// find H["module"] != ""
         if (tosel == nil) {
             y2milestone("No active driver found, trying further.");
             tosel = find (map h, Hardware, ``(
                         h["module"]:"" != ""
-                        && h["type"]:"" != "wlan"
                         && y2milestone("Using driver: %1", h) == nil
                         ));
             y2milestone("Rule: first with driver");
