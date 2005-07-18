@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jul 18 13:34:13 CEST 2005 - mvidner@suse.cz
+
+- Removed an obsolete workaround for bug 65164.
+
+-------------------------------------------------------------------
 Thu Jul 14 15:40:58 CEST 2005 - mvidner@suse.cz
 
 - Do not default to storing ISP passwords on disk (#59836).
