@@ -98,9 +98,6 @@ global list<string> wl_bitrates = nil;
 list<string> nilliststring = nil; // to save some casting
 
 /* s390 options */
-global string read_channel = "";
-global string write_channel = "";
-global string data_channel = "";
 global string portname = "";
 global string chan_mode = "0";
 global string qeth_options = "";
@@ -626,9 +623,6 @@ void SetDeviceVars(map devmap) {
     wl_power = devmap["WIRELESS_POWER"]:"yes" == "yes";
 
     /* s/390 options */
-    read_channel = devmap["READ_CHANNEL"]:"";
-    write_channel = devmap["WRITE_CHANNEL"]:"";
-    data_channel = devmap["DATA_CHANNEL"]:"";
     portname = devmap["PORTNAME"]:"";
     
     aliases = devmap["_aliases"]:$[];
