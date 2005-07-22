@@ -27,19 +27,9 @@ import "Wizard";
 include "network/summary.ycp";
 
 /**
- * Precedes AddressDialog.
- * #63767:
- * Usercontrol needs to be on for new wlan cards. But we only know that it
- * is wlan at this point, not yet in Lan::Select or so. And it cannot
- * be done in AddressDialog itself because there the user may want to
- * change the value in a subdialog.
+ * obsoleted by GetDefaultsForHW
  */
 symbol ChangeDefaults () {
-    if (Lan::type == "wlan" && Lan::operation == `add)
-    {
-	y2milestone ("Adding wlan, usercontrol is on");
-	Lan::usercontrol = true;
-    }
     return `next;
 }
 

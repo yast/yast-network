@@ -192,6 +192,7 @@ The driver may be built in the kernel.")))
 		y2error("Unexpected selection code: %1", selected);
 		continue;
 	    }
+	    Lan::SetDefaultsForHW ();
 	    break;
 	}
 	else if(ret == `next) {

@@ -62,6 +62,7 @@ global string hotplug = "";
 global list<string> Requires = [];
 
 /* address options */
+/** boot protocol: BOOTPROTO */
 global string bootproto = "static";
 global string ipaddr = "";
 global string remoteip = "";
@@ -106,6 +107,7 @@ global list<string> wl_bitrates = nil;
 list<string> nilliststring = nil; // to save some casting
 
 /* s390 options */
+// portname is in ifcfg, others are in hwcfg
 global string portname = "";
 global string chan_mode = "0";
 global string qeth_options = "";
@@ -497,9 +499,11 @@ void SelectHWMap (map hw) {
     wl_enc_modes = hw["wl_enc_modes"]:nilliststring;
     wl_channels = hw["wl_channels"]:nilliststring;
     wl_bitrates = hw["wl_bitrates"]:nilliststring;
+
     string mac = hw["mac"]:"";
     string busid = hw["busid"]:"";
 
+    // name of hwcfg
     if(busid != nil && busid != "") {
 	nm_name = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
 	if(Arch::s390 ()) nm_name = type + "-" + nm_name;
@@ -510,6 +514,7 @@ void SelectHWMap (map hw) {
 	nm_name = "";
     }
 
+    // name of ifcfg
     /* eth, tr, not on s390 (#38819) */
     if(!Arch::s390 () && mac != nil && mac != "" && mac != "00:00:00:00:00:00")
 	device = "id-" + hw["mac"]:"";
@@ -591,53 +596,124 @@ global define list FreeAliases(string type, integer num) {
 }
 
 
+define map GetDefaultsForHW () {
+    map ret = $[];
+    if (type == "wlan")
+    {
+	ret = union (
+	    ret, $[
+		"USERCONTROL": "yes", // #63767
+		]);
+    }
+    
+}
+
+/**
+ * must be in sync with @ref GetDefaultsForHW
+ */
+global define void SetDefaultsForHW () {
+    if (type == "wlan")
+    {
+	usercontrol = true;
+    }
+}
+
+map<string, string> SysconfigDefaults = $[
+    "BOOTPROTO": "static",
+    "IPADDR": "",
+    "REMOTE_IPADDR": "",
+    "NETMASK": "",
+    "MTU": "",
+    "STARTMODE": "manual",
+    "USERCONTROL": "no",
+    "WIRELESS_MODE": "Managed",
+    "WIRELESS_ESSID": "",
+    "WIRELESS_NWID": "",
+    "WIRELESS_AUTH_MODE": "open",
+    "WIRELESS_WPA_PSK": "",
+    "WIRELESS_KEY_LENGTH": "128",
+    "WIRELESS_KEY": "",
+    "WIRELESS_KEY_0": "",
+    "WIRELESS_KEY_1": "",
+    "WIRELESS_KEY_2": "",
+    "WIRELESS_KEY_3": "",
+    "WIRELESS_DEFAULT_KEY": "0",
+    "WIRELESS_NICK": "",
+    "WIRELESS_WPA_IDENTITY": "",
+    "WIRELESS_WPA_PASSWORD": "",
+    "WIRELESS_CLIENT_CERT": "",
+    "WIRELESS_CA_CERT": "",
+    "WIRELESS_CHANNEL": "",
+    "WIRELESS_FREQUENCY": "",
+    "WIRELESS_BITRATE": "auto",
+    "WIRELESS_AP": "",
+    "WIRELESS_POWER": "yes",
+    "PORTNAME": "", 
+    // aliases = devmap["_aliases"]:$[]; // ?
+    ];
+
+string GetDeviceVar (map primary, map fallback, string key) {
+    string ret = (string) primary[key]:fallback[key]:nil;
+    if (ret == nil)
+    {
+	y2internal ("%1 does not have a default defined", key);
+    }
+    return ret;
+}
+
 /**
  * Set various device variables
  * @param devmap map with variables
  * @return void
  */
-void SetDeviceVars(map devmap) {
-
+void SetDeviceVars(map devmap, map defaults) {
+    // the defaults here are what sysconfig defaults to
+    // (as opposed to what a new interface gets, see Select)
 
     /* address options */
-    bootproto = devmap["BOOTPROTO"]:"static";
-    ipaddr = devmap["IPADDR"]:"";
-    remoteip = devmap["REMOTE_IPADDR"]:"";
-    netmask = devmap["NETMASK"]:"";
+    bootproto = GetDeviceVar (devmap, defaults, "BOOTPROTO");
+    ipaddr = GetDeviceVar (devmap, defaults, "IPADDR");
+    remoteip = GetDeviceVar (devmap, defaults, "REMOTE_IPADDR");
+    netmask = GetDeviceVar (devmap, defaults, "NETMASK");
 
-    mtu = devmap["MTU"]:"";
-    startmode = devmap["STARTMODE"]:"manual";
-    usercontrol = devmap["USERCONTROL"]:"no" == "yes";
+    mtu = GetDeviceVar (devmap, defaults, "MTU");
+    startmode = GetDeviceVar (devmap, defaults, "STARTMODE");
+    usercontrol = GetDeviceVar (devmap, defaults, "USERCONTROL") == "yes";
 
     /* wireless options */
-    wl_mode = devmap["WIRELESS_MODE"]:"Managed";
-    wl_essid = devmap["WIRELESS_ESSID"]:"";
-    wl_nwid = devmap["WIRELESS_NWID"]:"";
-    wl_auth_mode = devmap["WIRELESS_AUTH_MODE"]:"open";
-    wl_wpa_psk = devmap["WIRELESS_WPA_PSK"]:"";
-    wl_key_length = devmap["WIRELESS_KEY_LENGTH"]:"128";
+    wl_mode = GetDeviceVar (devmap, defaults, "WIRELESS_MODE");
+    wl_essid = GetDeviceVar (devmap, defaults, "WIRELESS_ESSID");
+    wl_nwid = GetDeviceVar (devmap, defaults, "WIRELESS_NWID");
+    wl_auth_mode = GetDeviceVar (devmap, defaults, "WIRELESS_AUTH_MODE");
+    wl_wpa_psk = GetDeviceVar (devmap, defaults, "WIRELESS_WPA_PSK");
+    wl_key_length = GetDeviceVar (devmap, defaults, "WIRELESS_KEY_LENGTH");
     wl_key = []; // ensure exactly 4 entries
-    wl_key[0] = devmap["WIRELESS_KEY_0"]:devmap["WIRELESS_KEY"]:"";
-    wl_key[1] = devmap["WIRELESS_KEY_1"]:"";
-    wl_key[2] = devmap["WIRELESS_KEY_2"]:"";
-    wl_key[3] = devmap["WIRELESS_KEY_3"]:"";
-    wl_default_key = tointeger (devmap["WIRELESS_DEFAULT_KEY"]:"0");
-    wl_nick = devmap["WIRELESS_NICK"]:"";
+    wl_key[0] = GetDeviceVar (devmap, defaults, "WIRELESS_KEY_0");
+    if (wl_key[0]:"" == "")
+    {
+	wl_key[0] = GetDeviceVar (devmap, defaults, "WIRELESS_KEY");
+    }
+    wl_key[1] = GetDeviceVar (devmap, defaults, "WIRELESS_KEY_1");
+    wl_key[2] = GetDeviceVar (devmap, defaults, "WIRELESS_KEY_2");
+    wl_key[3] = GetDeviceVar (devmap, defaults, "WIRELESS_KEY_3");
+
+    wl_default_key = tointeger (GetDeviceVar (devmap, defaults, "WIRELESS_DEFAULT_KEY"));
+    wl_nick = GetDeviceVar (devmap, defaults, "WIRELESS_NICK");
 
     wl_wpa_eap = $[];
-    wl_wpa_eap["WPA_EAP_IDENTITY"] = devmap["WIRELESS_WPA_IDENTITY"]:"";
-    wl_wpa_eap["WPA_EAP_PASSWORD"] = devmap["WIRELESS_WPA_PASSWORD"]:"";
-    wl_wpa_eap["WPA_EAP_CLIENT_CERT"] = devmap["WIRELESS_CLIENT_CERT"]:"";
-    wl_wpa_eap["WPA_EAP_CA_CERT"] = devmap["WIRELESS_CA_CERT"]:"";
+    wl_wpa_eap["WPA_EAP_IDENTITY"] = GetDeviceVar (devmap, defaults, "WIRELESS_WPA_IDENTITY");
+    wl_wpa_eap["WPA_EAP_PASSWORD"] = GetDeviceVar (devmap, defaults, "WIRELESS_WPA_PASSWORD");
+    wl_wpa_eap["WPA_EAP_CLIENT_CERT"] = GetDeviceVar (devmap, defaults, "WIRELESS_CLIENT_CERT");
+    wl_wpa_eap["WPA_EAP_CA_CERT"] = GetDeviceVar (devmap, defaults, "WIRELESS_CA_CERT");
 
-    wl_channel = devmap["WIRELESS_CHANNEL"]:"";
-    wl_frequency = devmap["WIRELESS_FREQUENCY"]:"";
-    wl_bitrate = devmap["WIRELESS_BITRATE"]:"auto";
-    wl_accesspoint = devmap["WIRELESS_AP"]:"";
-    wl_power = devmap["WIRELESS_POWER"]:"yes" == "yes";
+    wl_channel = GetDeviceVar (devmap, defaults, "WIRELESS_CHANNEL");
+    wl_frequency = GetDeviceVar (devmap, defaults, "WIRELESS_FREQUENCY");
+    wl_bitrate = GetDeviceVar (devmap, defaults, "WIRELESS_BITRATE");
+    wl_accesspoint = GetDeviceVar (devmap, defaults, "WIRELESS_AP");
+    wl_power = GetDeviceVar (devmap, defaults, "WIRELESS_POWER") == "yes";
 
     /* s/390 options */
-    portname = devmap["PORTNAME"]:"";
+    portname = GetDeviceVar (devmap, defaults, "PORTNAME");
     
     aliases = devmap["_aliases"]:$[];
 
@@ -690,7 +766,7 @@ global define boolean Select(string dev) {
     description = BuildDescription (type, device, devmap, Hardware);
 
     unique = devmap["UNIQUE"]:"";
-    SetDeviceVars(devmap);
+    SetDeviceVars(devmap, SysconfigDefaults);
 
 
     hotplug = "";
@@ -1085,23 +1161,20 @@ define map FindMatchingDevice(map interface) {
         }
 
         /* No install.inf driver -> select the first active */
-        // but not wlan, #44951
-	// find H["active"] == true && H["type"] != "wlan"
+	// find H["active"] == true
         if (tosel == nil) {
             tosel = find (map h, Hardware, ``(
                         h["active"]:false
-                        && h["type"]:"" != "wlan"
                         ));
             y2milestone("Rule: first active");
         }
 
         /* No active driver -> select the first with a driver */
-	// find H["module"] != "" && H["type"] != "wlan"
+	// find H["module"] != ""
         if (tosel == nil) {
             y2milestone("No active driver found, trying further.");
             tosel = find (map h, Hardware, ``(
                         h["module"]:"" != ""
-                        && h["type"]:"" != "wlan"
                         && y2milestone("Using driver: %1", h) == nil
                         ));
             y2milestone("Rule: first with driver");
@@ -1176,6 +1249,13 @@ global define boolean Propose() {
 	y2milestone("No hardware, no install.inf -> no proposal.");
 	return false;
     }
+
+// here we know the hardware and could fill the interface defaults for it,
+// like for wifi usercontrol and for eth|wifi ifplugd.
+// This is proposal. also need to do it with
+// - add from ui: detected and undetected
+// - autoyast
+    SetDefaultsForHW ();
 
     ipaddr = InstallInf["ipaddr"]:"";
     bootproto = InstallInf["bootproto"]:"static";
@@ -1334,9 +1414,11 @@ global define boolean Autoinstall() {
                     });
 
 
+	    map defaults = union (SysconfigDefaults, GetDefaultsForHW ());
+
             // Set interface variables
-            SetDeviceVars(interface);
-	    
+	    SetDeviceVars(interface, defaults);
+
 	    y2debug("ipaddr,bootproto=%1,%2", ipaddr, bootproto);
             if(bootproto == "static" && ipaddr != "" && ipaddr != nil) 
             {
