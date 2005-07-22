@@ -11,9 +11,12 @@
 
 textdomain "network";
 
+import "CWM";
+import "FileUtils";
 import "Label";
 import "Lan";
 import "Map";
+import "Message";
 import "Popup";
 import "Wizard";
 
@@ -186,8 +189,10 @@ list<term> AuthModeItems (list<string> authmodes) {
 	/* ComboBox item */
 	// Ask me what it means, I don't know yet
 	"wpa-psk": _("WPA-PSK"),
+	/* ComboBox item */
+	"wpa-eap": _("WPA-EAP"),
 	];
-    map <string, string> ids = $["wpa-psk": "psk"];
+    map <string, string> ids = $["wpa-psk": "psk", "wpa-eap": "eap"];
     if (authmodes == nil)
     {
 	authmodes = (list<string>)Map::Keys (names);
@@ -227,15 +232,14 @@ acts as an access point).</p>
 _("<p>Set the <b>Network Name (ESSID)</b> used to identify
 cells that are part of the same virtual network. All stations in a
 wireless LAN need the same ESSID to communicate with each other. If
-you choose operation mode <b>Managed</b> and the authentication mode 
-is not <b>WPA-PSK</b>, you can leave this field empty or set it to 'any'. In this
+you choose operation mode <b>Managed</b> and no <b>WPA</b> authentication mode,
+you can leave this field empty or set it to 'any'. In this
 case, your WLAN card associates with the access point with the best
 signal strength.</p>
 ") +
 
 	// Wireless dialog help
-	// %1 is the product name, eg. SUSE Linux
-sformat (_("<p>In some networks, you need to set an <b>Authentication Mode</b>.
+_("<p>In some networks, you need to set an <b>Authentication Mode</b>.
 It depends on the protection technology used, WEP or WPA. <b>WEP</b>
 (Wired Equivalent Privacy) is a system to encrypt wireless network
 traffic with an optional authentication based on the encryption
@@ -247,11 +251,10 @@ potential attacker to break into your network. Unless you have
 specific needs for shared key authentication, use the <b>Open</b>
 mode. As WEP has been proven insecure, <b>WPA</b> (Wi-Fi Protected Access)
 was defined to close its security holes, but not every hardware supports
-WPA. If you want to use WPA, select <b>WPA-PSK</b> as the
+WPA. If you want to use WPA, select <b>WPA-PSK</b> or <b>WPA-EAP</b>as the
 authentication mode. This is only possible in operation mode
-<b>Managed</b>. There are other authentication modes used with
-WPA, but currently %1 does not support them.</p>
-"), "&product;") +
+<b>Managed</b>.</p>
+") +
 
 	// Wireless dialog help
 _("<p>To use WEP, enter the
@@ -264,11 +267,17 @@ are dynamically generated, so you only need to enter 40 to 232 bits.</p>
 wep_key_help +
 
 	// Wireless dialog help
-_("<p>To use WPA-PSK, enter the preshared key. This
+_("<p>To use WPA-PSK (sometimes referred to as WPA Home),
+enter the preshared key. This
 key is used for authentication and encryption keys are generated from
 it. These are not vulnerable to known attacks against WEP keys, but
 dictionary attacks are still possible. Do not use a word that is
 easy to guess as the passphrase.</p>
+") +
+
+	// Wireless dialog help
+_("<p>To use WPA-EAP (sometimes referred to as WPA Enterprise),
+enter some additional parameters in the next dialog.</p>
 ") +
 
 	// Wireless dialog help
@@ -280,6 +289,8 @@ available options.</p>");
     string mode = Lan::wl_mode;
     string essid = Lan::wl_essid;
     string authmode = Lan::wl_auth_mode;
+    // wpa or wep?
+    boolean authmode_wpa = authmode == "psk" || authmode == "eap"; // shortcut
     string key = nil;
     string type = nil;
     if (authmode == "psk")
@@ -287,18 +298,18 @@ available options.</p>");
 	key = Lan::wl_wpa_psk;
 	type = (size (key) == 64)? "hex": "passphrase";
     }
-    else
+    else if (authmode != "eap")
     {
 	map<string, string> wkey = ParseWepKey (Lan::wl_key[Lan::wl_default_key]:"");
 	key = wkey["key"]:"";
 	type = wkey["type"]:"";
     }
+    else
+    {
+	key = "";		// and type is not used
+    }
 
     list<integer> key_lengths = ParseKeyLengths (Lan::wl_enc_modes);
-
-    /* PushButton label */
-    term multikeys = `PushButton(`id(`keys), _("&Multiple Keys"));
-    // multikeys = `VSpacing(0);
 
     /* Wireless dialog contents */
     term contents = `HBox(
@@ -321,10 +332,10 @@ available options.</p>");
 		/* Text entry label */
 		`TextEntry(`id(`essid), _("Ne&twork Name (ESSID)"), essid),
 		`VSpacing(0.2),
-		`Left (`ComboBox (`id (`authmode), `opt (`hstretch, `notify),
+		`ComboBox (`id (`authmode), `opt (`hstretch, `notify),
 				  /* ComboBox label */
 				  _("&Authentication Mode"),
-				  AuthModeItems (Lan::wl_auth_modes))),
+				  AuthModeItems (Lan::wl_auth_modes)),
 		`VSpacing(0.2),
 		type_w,
 		`VSpacing(0.2),
@@ -337,7 +348,8 @@ available options.</p>");
 		/* PushButton label */
 		`PushButton(`id(`expert), _("E&xpert Settings")),
 		`HSpacing(0.5),
-		multikeys
+		/* PushButton label, keys for WEP encryption */
+		`PushButton (`id(`keys), _("&WEP Keys"))
 	     ),
 	    `VSpacing(0.5)
 	),
@@ -347,22 +359,29 @@ available options.</p>");
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::NextButton());
 
-    UI::ChangeWidget (`id (`type_g), `CurrentButton, type);
     UI::ChangeWidget (`id (`authmode), `Value, authmode);
+    if (authmode != "eap")
+    {
+	UI::ChangeWidget (`id (`type_g), `CurrentButton, type);
+    }
 
     string ckey = nil;
     any ret = nil;
     while(true) {
-	if (authmode == "psk" /* or eap */)
+	if (authmode_wpa)
 	{
 	    UI::ChangeWidget (`id (`mode), `Value, "Managed");
 	}
+	UI::ChangeWidget (`id (`type_g), `Enabled, authmode != "eap");
+	UI::ChangeWidget (`id (`key),    `Enabled, authmode != "eap");
+	UI::ChangeWidget (`id (`keys), `Enabled, !authmode_wpa);
+
 	UI::ChangeWidget (`id ("ascii"), `Enabled, authmode != "psk");
-	UI::ChangeWidget (`id (`keys), `Enabled, authmode != "psk");
 
 	ret = UI::UserInput();
 
 	authmode = (string) UI::QueryWidget (`id (`authmode), `Value);
+	authmode_wpa = authmode == "psk" || authmode == "eap"; // shortcut
 
 	if(ret == `abort || ret == `cancel) {
 	    if(ReallyAbort()) break;
@@ -375,7 +394,7 @@ available options.</p>");
 
 	    mode = (string) UI::QueryWidget (`id (`mode), `Value);
 	    // WPA-PSK and WPA-EAP are only allowed for Managed mode
-	    if ((authmode == "psk" /* or eap */) && mode != "Managed")
+	    if (authmode_wpa && mode != "Managed")
 	    {
 		UI::SetFocus (`id (`mode));
 		/* Popup text */
@@ -383,11 +402,12 @@ available options.</p>");
 		continue;
 	    }
 	    essid = (string) UI::QueryWidget (`id (`essid), `Value);
-	    if (essid == "" && authmode == "psk")
+	    if (essid == "" && (mode != "Managed" || authmode_wpa))
 	    {
 		UI::SetFocus (`id (`essid));
 		/* Popup text */
-		Popup::Error (_("Specify the network name for this authentication mode."));
+		/* modes: combination of operation and authentication */
+		Popup::Error (_("Specify the network name for this mode."));
 		continue;
 	    }
 	    if (size(essid) > 32) {
@@ -418,7 +438,7 @@ available options.</p>");
 		    continue;
 		}
 	    }
-	    else
+	    else if (!authmode_wpa)
 	    {
 		ckey = ComposeWepKey (type, key);
 		if (ckey != "") {
@@ -467,12 +487,16 @@ Really continue?
 	{
 	    Lan::wl_wpa_psk = key;
 	}
-	else
+	else if (!authmode_wpa)
 	{
 	    Lan::wl_key[Lan::wl_default_key] = ckey;
 	}
     }
 
+    if (ret == `next && authmode == "eap")
+    {
+	ret = `eap;		// continue by the WPA-EAP dialog
+    }
     return ret;
 }
 
@@ -845,6 +869,243 @@ value to 64.</p>") +
     }
 
     return ret;
+}
+
+// -------------------- WPA EAP --------------------
+
+/**
+ * function to initialize widgets
+ * @param key widget id
+ */
+define void InitializeWidget (string key) {
+    // the "" serves instead of a default constructor for wl_wpa_eap
+    UI::ChangeWidget (`id (key), `Value, Lan::wl_wpa_eap[key]:"");
+}
+
+/**
+ * function to store data from widget
+ * @param key widget id
+ * @param event ?
+ */
+define void StoreWidget (string key, map event) {
+     Lan::wl_wpa_eap[key] = UI::QueryWidget (`id (key), `Value);
+}
+
+/**
+ * Called when one of the two file browser buttons is pressed
+ * @param key widget id
+ * @param event ?
+ * @return nil so that the dialog does not exit
+ */
+define symbol HandleFileBrowse (string key, map event) {
+    y2milestone ("key: %1, event: %2", key, event);
+    // only process our own events
+    if (event["ID"]:nil != key)
+    {
+	return nil;
+    }
+  
+    /* convert to the text entry widget we belong to */
+    map attached_to = $[
+	"WPA_EAP_CLIENT_CERT_BROWSE": "WPA_EAP_CLIENT_CERT",
+	"WPA_EAP_CA_CERT_BROWSE":     "WPA_EAP_CA_CERT",
+	];
+    key = attached_to[key]:"";
+
+    /* get the file and its directory if already entered*/
+    string file = (string) UI::QueryWidget (`id (key), `Value);
+    integer slashpos = findlastof (file, "/");
+    string defaultd = ".";	// "/etc/cert";
+    string dir = slashpos == nil ? defaultd : substring (file, 0, slashpos);
+
+    // file browser dialog headline
+    file = UI::AskForExistingFile (dir, "*", _("Choose a Certificate"));
+
+    if (file != nil) {
+	// fill the value
+	UI::ChangeWidget (`id (key), `Value, file);
+    }
+    return nil;
+}
+
+/**
+ * Called to validate that the file entered exists
+ * @param key widget id
+ * @param event ?
+ * @return ok?
+ */
+define boolean ValidateFileExists (string key, map event) {
+    string file = (string) UI::QueryWidget (`id (key), `Value);
+
+    if (file == "")
+    {
+	return true;		// validated in ValidateWpaEap
+    }
+
+    if (FileUtils::Exists (file))
+    {
+	return true;
+    }
+    else
+    {
+	UI::SetFocus (`id (key));
+	Popup::Error (Message::CannotOpenFile (file));
+	return false;
+    }
+}
+
+/**
+ * Called to validate that the whole dialog makes sense together
+ * @param key widget id
+ * @param event ?
+ * @return ok?
+ */
+define boolean ValidateWpaEap (string key, map event) {
+    map tmp = listmap (string key, [
+			   "WPA_EAP_IDENTITY",
+			   //"WPA_EAP_PASSWORD",
+			   "WPA_EAP_CLIENT_CERT",
+			   ],
+		       ``( $[ key: UI::QueryWidget (`id (key), `Value) ] ));
+
+    if (tmp["WPA_EAP_CLIENT_CERT"]:"" == "" && tmp["WPA_EAP_IDENTITY"]:"" =="")
+    {
+	UI::SetFocus (`id ("WPA_EAP_IDENTITY"));
+	// error popup text
+	Popup::Error (_("Enter either the identity and password
+or the client certificate."));
+	return false;
+    }
+    else
+    {
+	return true;
+    }
+}
+
+map<string, map<string,any> > wpa_eap_widget_descr = $[
+    // the four WPA_EAP_* widgets come together, so the helps are
+    // dipersed a bit
+    "WPA_EAP_IDENTITY": $[
+	"widget": `textentry,
+	// text entry label
+	"label": _("&Identity"),
+	"opt": [],
+	"help": _(
+"<p>WPA-EAP uses a RADIUS server to authenticate users. There
+are different methods in EAP to connect to the server and
+peform the authentication, namely TLS, TTLS, and PEAP.</p>
+<p>In case of TTLS and PEAP you need to enter your <b>Identity</b>
+and <b>Password</b> as configured on the server.</p>"),
+	],
+    "WPA_EAP_PASSWORD": $[
+	"widget": `textentry,	// or password?
+	// text entry label
+	"label": _("&Password"),
+	"opt": [],
+	"no_help": true,
+	],
+    "WPA_EAP_CLIENT_CERT": $[
+	"widget": `textentry,
+	// text entry label
+	"label": _("&Client Certificate"),
+	"opt": [],
+	"help": _(
+"<p>TLS uses a <b>Client Certificate</b> instead of a username and
+password combination.</p>"),
+	"validate_type": `function,
+	"validate_function": ValidateFileExists,
+	],
+    "WPA_EAP_CA_CERT": $[
+	"widget": `textentry,
+	// text entry label
+	// aka certificate of the CA (certification authority)
+	"label": _("&Server Certificate"),
+	"opt": [],
+	"help": _(
+"<p>To increase security it is recommended to configure
+a <b>Server Certificate</b>. It is used
+to validate the server's authenticity.</p>"),
+	"validate_type": `function,
+	"validate_function": ValidateFileExists,
+	],
+    "WPA_EAP_CLIENT_CERT_BROWSE": $[
+	"widget": `push_button,	// FIXME queries value on Next :(
+	"label": "...",
+	"opt": [],		// autoshortcut?
+	"no_help": true,
+	"handle": HandleFileBrowse,
+	],
+    "WPA_EAP_CA_CERT_BROWSE": $[
+	"widget": `push_button,
+	"label": "...",
+	"opt": [],
+	"no_help": true,
+	"handle": HandleFileBrowse,
+	],
+    "WPA_EAP_DUMMY": $[
+	"widget": `empty,	// FIXME No widget with `id( "WPA_EAP_DUMMY" )
+	"no_help": true,
+	"validate_type": `function,
+	"validate_function": ValidateWpaEap,
+	],
+    ];
+
+/**
+ * Lays out a text entry and a push button, with proper alignment
+ */
+define term AddButton (string id, string button_id) {
+    return `HBox (id, button_id);
+    // needs new CWM
+    return (
+	`VSquash (		// only for old UI?
+	    `HBox (
+		id, `Bottom (button_id)
+		)
+	    )
+	);
+}
+
+/**
+ * Settings for WPA-EAP
+ * @return dialog result
+ */
+define any WirelessWpaEapDialog () {
+    term contents = `VBox (
+	`HBox (
+	    "WPA_EAP_IDENTITY",
+	    `HSpacing (1),
+	    "WPA_EAP_PASSWORD"
+	    ),
+	AddButton ("WPA_EAP_CLIENT_CERT", "WPA_EAP_CLIENT_CERT_BROWSE"),
+	AddButton ("WPA_EAP_CA_CERT",     "WPA_EAP_CA_CERT_BROWSE"),
+	"WPA_EAP_DUMMY"
+	);
+
+    map functions = $[
+	"init" : InitializeWidget,
+	"store" : StoreWidget,
+	`abort: ReallyAbort, 	// undocumented, FIXME
+    ];
+
+    return CWM::ShowAndRun (
+	$[
+	    "widget_names": [	// TODO StringsOfTerm
+		"WPA_EAP_IDENTITY",
+		"WPA_EAP_PASSWORD",
+		"WPA_EAP_CLIENT_CERT",
+		"WPA_EAP_CLIENT_CERT_BROWSE",
+		"WPA_EAP_CA_CERT",
+		"WPA_EAP_CA_CERT_BROWSE",
+		"WPA_EAP_DUMMY",
+		],
+	    "widget_descr": wpa_eap_widget_descr,
+	    "contents": contents,
+	    // dialog caption
+	    "caption": _("WPA-EAP"),
+	    "back_button" : Label::BackButton (),
+	    "next_button" : Label::OKButton (),
+	    "fallback_functions" : functions,
+	    ]);
 }
 
 /* EOF */

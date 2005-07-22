@@ -252,6 +252,7 @@ define symbol AddressSequence() ``{
 	"wire"		: ``(WirelessDialog()),
 	"expert"	: ``(WirelessExpertDialog()),
 	"keys"		: ``(WirelessKeysDialog()),
+	"eap"		: ``(WirelessWpaEapDialog()),
 	"commit"	: [ ``(Commit()), true ],
     ];
 
@@ -310,6 +311,7 @@ define symbol AddressSequence() ``{
 	    `next	: "commit",
 	    `expert	: "expert",
 	    `keys	: "keys",
+	    `eap	: "eap",
 	    `abort	: `abort,
 	],
 	"expert" : $[
@@ -318,6 +320,10 @@ define symbol AddressSequence() ``{
 	],
 	"keys" : $[
 	    `next	: "wire",
+	    `abort	: `abort,
+	],
+	"eap" : $[
+	    `next	: "commit",
 	    `abort	: `abort,
 	],
 	"commit" : $[

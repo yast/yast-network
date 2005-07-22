@@ -47,7 +47,7 @@ to change the prefix.</p>
 	],
 
     "NDLABEL": $[
-	"widget": `label,
+	"widget": `label,	// TODO: add it to CWM, don't check shortcut
 	/* Label text */
 	"label": _("Network Device"),
 	"help": _("H"),

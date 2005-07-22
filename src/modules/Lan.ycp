@@ -82,7 +82,15 @@ global string wl_key_length = "";
 global list<string> wl_key = [];
 global integer wl_default_key = 0;
 global string wl_nick = "";
-
+/**
+ * wl_wpa_eap aggregates the settings in a map for easier CWM access.
+ * @struct wpa_eap
+ * WPA_EAP_IDENTITY: string
+ * WPA_EAP_PASSWORD: string
+ * WPA_EAP_CLIENT_CERT: string (file name)
+ * WPA_EAP_CA_CERT: string (file name)
+ */
+global map<string, any> wl_wpa_eap = $[];
 global string wl_channel = "";
 global string wl_frequency = "";
 global string wl_bitrate = "";
@@ -616,6 +624,12 @@ void SetDeviceVars(map devmap) {
     wl_default_key = tointeger (devmap["WIRELESS_DEFAULT_KEY"]:"0");
     wl_nick = devmap["WIRELESS_NICK"]:"";
 
+    wl_wpa_eap = $[];
+    wl_wpa_eap["WPA_EAP_IDENTITY"] = devmap["WIRELESS_WPA_IDENTITY"]:"";
+    wl_wpa_eap["WPA_EAP_PASSWORD"] = devmap["WIRELESS_WPA_PASSWORD"]:"";
+    wl_wpa_eap["WPA_EAP_CLIENT_CERT"] = devmap["WIRELESS_CLIENT_CERT"]:"";
+    wl_wpa_eap["WPA_EAP_CA_CERT"] = devmap["WIRELESS_CA_CERT"]:"";
+
     wl_channel = devmap["WIRELESS_CHANNEL"]:"";
     wl_frequency = devmap["WIRELESS_FREQUENCY"]:"";
     wl_bitrate = devmap["WIRELESS_BITRATE"]:"auto";
@@ -879,6 +893,14 @@ global define boolean Commit() {
 	    newdev["WIRELESS_KEY_3"] = wl_key[3]:"";
 	    newdev["WIRELESS_DEFAULT_KEY"] = tostring (wl_default_key);
 	    newdev["WIRELESS_NICK"] = wl_nick;
+
+	    if (wl_wpa_eap != $[])
+	    {
+		newdev["WIRELESS_WPA_IDENTITY"] = wl_wpa_eap["WPA_EAP_IDENTITY"]:"";
+		newdev["WIRELESS_WPA_PASSWORD"] = wl_wpa_eap["WPA_EAP_PASSWORD"]:"";
+		newdev["WIRELESS_CLIENT_CERT"] = wl_wpa_eap["WPA_EAP_CLIENT_CERT"]:"";
+		newdev["WIRELESS_CA_CERT"] = wl_wpa_eap["WPA_EAP_CA_CERT"]:"";
+	    }
 
 	    newdev["WIRELESS_CHANNEL"] = wl_channel;
 	    newdev["WIRELESS_FREQUENCY"] = wl_frequency;
@@ -1388,7 +1410,8 @@ global list<string> Packages () {
 	pkgs = add (pkgs, "wireless-tools");
     }
     // #47809
-    if (NetworkDevices::Locate ("WIRELESS_AUTH_MODE", "psk") != [])
+    if (NetworkDevices::Locate ("WIRELESS_AUTH_MODE", "psk") != [] ||
+	NetworkDevices::Locate ("WIRELESS_AUTH_MODE", "eap") != [])
     {
 	pkgs = add (pkgs, "wpa_supplicant");
     }
