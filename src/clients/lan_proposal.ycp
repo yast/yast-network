@@ -51,14 +51,25 @@ if(func == "MakeProposal") {
 
     ret = $[
 	"preformatted_proposal" : proposal,
-	"warning_level" : warning_level,
-	"warning" : warning,
+	"warning_level" : warning_level, // TODO `warning
+	"warning" : warning,	// TODO WiFi but no encryption
+	"links" : ["lan--wifi-encryption"],
     ];
 }
 /* run the module */
 else if(func == "AskUser") {
     map stored = Lan::Export();
-    symbol seq = LanAutoSequence();
+
+    any chosen_id = param["chosen_id"]:nil;
+    symbol seq = nil;
+    if (chosen_id == "lan--wifi-encryption")
+    {
+    }
+    else
+    {
+	seq = LanAutoSequence();
+    }
+
     if(seq != `next) Lan::Import(stored);
     ret = $[
 	"workflow_sequence" : seq
