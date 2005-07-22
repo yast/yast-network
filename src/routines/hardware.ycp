@@ -317,6 +317,26 @@ define list<map> ReadHardware(string hwtype) {
 	}
     });
 
+    /* if there is wlan, put it to the front of the list */
+    // that's because we want it proposed and currently only one card
+    // can be proposed
+    boolean found = false;
+    integer i = 0;
+    foreach (map h, Hardware, {
+	if (h["type"]:"" == "wlan")
+	{
+	    found = true;
+	    break;
+	}
+	i = i + 1;
+    });
+    if (found)
+    {
+	map temp = Hardware[0]:$[];
+	Hardware[0] = Hardware[i]:$[];
+	Hardware[i] = temp;
+    }
+
     y2debug("Hardware=%1", Hardware);
     return Hardware;
 }
