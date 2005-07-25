@@ -501,7 +501,7 @@ global define map Export() {
  */
 global define list Summary(boolean split) {
 
-    list sum = BuildSummary("dsl", Hardware, split);
+    list sum = BuildSummary("dsl", Hardware, split, false);
     if(HWDetected != true) return sum;
 
     string hwdet = Summary::DevicesList( [

@@ -547,13 +547,14 @@ global define void SelectHW(integer which) {
 /**
  * Create a textual summary and a list of unconfigured devices
  * @param mode "split": split configured and unconfigured?<br />
- *             "summary": add resolver and routing symmary
+ *             "summary": add resolver and routing symmary,
+ *		"proposal": for proposal, add links for direct config
  * @return summary of the current configuration
  */
 global define list Summary(string mode) {
     boolean split = (mode == "split");
 
-    list sum = BuildSummary("netcard", Hardware, split);
+    list sum = BuildSummary("netcard", Hardware, split, mode == "proposal");
 
     /* Testing improved summary */
     if(mode == "summary")

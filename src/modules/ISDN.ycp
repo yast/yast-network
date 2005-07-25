@@ -945,7 +945,7 @@ global define list<string> NetDeviceList() ``{
  * @return summary of the current configuration
  */
 global define list Summary(boolean split) ``{
-    return BuildSummaryDevs (Devices, Hardware, split);
+    return BuildSummaryDevs (Devices, Hardware, split, false);
 }
 
 /**

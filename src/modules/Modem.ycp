@@ -440,7 +440,7 @@ global define map Export() {
  * @return summary of the current configuration
  */
 global define list Summary(boolean split) {
-    return BuildSummary("modem", Hardware, split);
+    return BuildSummary("modem", Hardware, split, false);
 }
 
 /**

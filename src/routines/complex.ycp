@@ -13,6 +13,7 @@
 textdomain "network";
 
 import "Detection";
+import "HTML";
 import "NetworkDevices";
 import "Popup";
 import "String";
@@ -48,12 +49,18 @@ define string BuildDescription (string devtype, string devnum, map devmap,
     return descr;
 }
 
+// TODO move to HTML.ycp
+define string Hyperlink (string href, string text) {
+    return sformat ("<a href=\"%1\">%2</a>", href, text);
+}
+
 /**
  * Build textual summary
  * @param split split configured and unconfigured?
- * @return [ configured, unconfigured ] if split, [ summary ] otherwise
+ * @param link  add a link to configure the device (only if !split)
+ * @return [ configured, unconfigured ] if split, [ summary, links ] otherwise
  */
-define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, boolean split) {
+define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, boolean split, boolean link) {
     y2milestone("Devs=%1", NetworkDevices::ConcealSecrets (Devs));
     y2milestone("Hardware=%1", Hardware);
     y2debug("split=%1", split);
@@ -62,6 +69,7 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
     list uniques_old = [];
     list<string> configured = [];
     list<map> unconfigured = [];
+    list<string> links = [];
 
     /* build a list of configured devices */
     maplist(string devtype, map devsmap, Devs, {
@@ -71,6 +79,22 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 	    string descr = BuildDescription (devtype, devnum, devmap, Hardware);
 	    string unq = devmap["UNIQUE"]:"";
 	    string status = DeviceStatus(devtype, devnum, devmap);
+	    if (link)
+	    {
+		if (devtype == "wlan" &&
+		    devmap["WIRELESS_AUTH_MODE"]:"" == "open" &&
+		    devmap["WIRELESS_KEY_0"]:"" == "")
+		{
+		    string dev = NetworkDevices::device_name(devtype, devnum);
+		    string href = "lan--wifi-encryption-" + dev;
+		    // interface summary: WiFi without encryption
+		    string warning = HTML::Colorize (_("Warning: no encryption is used."), "red");
+		    status = status + " " + warning + " " +
+			// Hyperlink: Change the configuration of an interface
+			Hyperlink (href, _("Change."));
+		    links = add (links, href);
+		}
+	    }
 
 	    configured = add(configured, Summary::Device(descr, status));
 	    uniques = add(uniques, devnum);
@@ -118,7 +142,7 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
     string summary = Summary::DevicesList(configured);
 
     /* if not split -> summary is finished */
-    if(!split) return [ summary ];
+    if(!split) return [ summary, links ];
 
     /* add headers */
     if(size(configured) > 0)
@@ -145,11 +169,12 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 /**
  * Build textual summary
  * @param split split configured and unconfigured?
- * @return [ configured, unconfigured ] if split, [ summary ] otherwise
+ * @param link  add a link to configure the device (only if !split)
+ * @return [ configured, unconfigured ] if split, [ summary, links ] otherwise
  */
-define list<any> BuildSummary(string devregex, list<map> Hardware, boolean split) {
+define list<any> BuildSummary(string devregex, list<map> Hardware, boolean split, boolean link) {
     map <string, map> Devs = NetworkDevices::FilterDevices (devregex);
-    return BuildSummaryDevs (Devs, Hardware, split);
+    return BuildSummaryDevs (Devs, Hardware, split, link);
 }
 
 /**

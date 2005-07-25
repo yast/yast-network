@@ -19,6 +19,7 @@ y2milestone("Arguments: %1", WFM::Args());
 import "Arch";
 import "Lan";
 import "Linuxrc";
+import "Popup";
 import "Progress";
 
 include "network/lan/wizards.ycp";
@@ -46,24 +47,27 @@ if(func == "MakeProposal") {
 	Progress::set (progress_orig);
 	BusyPopupClose();
     }
-    list sum = Lan::Summary("summary");
+    list sum = Lan::Summary("proposal");
     proposal = sum[0]:"";
 
     ret = $[
 	"preformatted_proposal" : proposal,
 	"warning_level" : warning_level, // TODO `warning
 	"warning" : warning,	// TODO WiFi but no encryption
-	"links" : ["lan--wifi-encryption"],
+	"links" : sum[1]:[],
     ];
 }
 /* run the module */
 else if(func == "AskUser") {
     map stored = Lan::Export();
 
-    any chosen_id = param["chosen_id"]:nil;
+    string chosen_id = param["chosen_id"]:"";
     symbol seq = nil;
-    if (chosen_id == "lan--wifi-encryption")
+    list<string> match = regexptokenize (chosen_id, "^lan--wifi-encryption-(.*)");
+    if (match != nil && match != [])
     {
+	string dev = match[0]:"";
+	Popup::Error (sformat ("Sorry, not completed yet (%1)", dev));
     }
     else
     {

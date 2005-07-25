@@ -33,7 +33,7 @@ include "network/services/routing.ycp";
 
 define symbol NetworkCardSequence(string action);
 define symbol MainSequence();
-define symbol AddressSequence();
+define symbol AddressSequence(string which);
 define symbol HardwareSequence();
 
 /**
@@ -166,7 +166,7 @@ define symbol NetworkCardSequence(string action) ``{
 
     map aliases = $[
 	"hardware"	: ``(HardwareSequence()),
-	"address"	: ``(AddressSequence()),
+	"address"	: ``(AddressSequence("")),
 	"s390"		: ``(S390Dialog()),
     ];
 
@@ -234,9 +234,10 @@ define symbol HardwareSequence() ``{
 
 /**
  * Configuration sequence
+ * @param which: if "wire", go directly to wifi setup
  * @return sequence result
  */
-define symbol AddressSequence() ``{
+define symbol AddressSequence(string which) ``{
 
     map aliases = $[
 	"changedefaults": [ ``(ChangeDefaults()), true ],
@@ -256,8 +257,9 @@ define symbol AddressSequence() ``{
 	"commit"	: [ ``(Commit()), true ],
     ];
 
+    string ws_start = which == "wire"? "wire": "changedefaults";
     map sequence = $[
-	"ws_start"	: "changedefaults",
+	"ws_start"	: ws_start,
 	"changedefaults" : $[
 	    `next	: "address",
 	],

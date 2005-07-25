@@ -1,7 +1,14 @@
 -------------------------------------------------------------------
+Mon Jul 25 17:46:10 CEST 2005 - mvidner@suse.cz
+
+- Warn in the proposal about unencrypted WiFi,
+  have a direct link to change it (unimplemented) (F2103).
+- 2.12.6
+
+-------------------------------------------------------------------
 Fri Jul 22 20:44:38 CEST 2005 - mvidner@suse.cz
 
-- Prefer WiFi for the proposal.
+- Prefer WiFi for the proposal (F2103).
 - 2.12.5
 
 -------------------------------------------------------------------
