@@ -20,7 +20,7 @@ Icon=yast-isdn
 Exec=/sbin/yast2 isdn 
 
 Name=ISDN
-GenericName=Configure ISDN connection
+GenericName=Configure an ISDN connection
 GenericName[cs]=Konfigurovat ISDN spojení
 GenericName[de]=Konfiguration der ISDN-Verbindung
 Name[es]=RDSI

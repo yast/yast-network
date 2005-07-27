@@ -19,8 +19,8 @@ X-SuSE-YaST-AutoInstResource=host
 Icon=yast-host
 Exec=/sbin/yast2 host 
 
-Name=Host Names
-GenericName=Configure host names
+Name=Hostnames
+GenericName=Assign hostnames and aliases to IP addresses
 Name[cs]=Jména počítačů
 GenericName[cs]=Konfigurovat jména počítačů
 Name[de]=Hostnamen

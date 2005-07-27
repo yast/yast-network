@@ -21,7 +21,7 @@ Icon=yast-lan
 Exec=/sbin/yast2 lan 
 
 Name=Network Card
-GenericName=Configure network card
+GenericName=Configure network cards
 Name[cs]=Síťová karta
 GenericName[cs]=Konfigurovat síťovou kartu
 Name[de]=Netzwerkkarte

@@ -20,5 +20,5 @@ Icon=yast-remote
 Exec=/sbin/yast2 remote 
 
 Name=Remote Administration
-GenericName=Setup remote administration
+GenericName=Set up remote administration
 X-KDE-SubstituteUID=true

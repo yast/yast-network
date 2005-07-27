@@ -20,7 +20,7 @@ Icon=yast-modem
 Exec=/sbin/yast2 modem 
 
 Name=Modem
-GenericName=Configure modem
+GenericName=Configure a modem
 GenericName[cs]=Konfigurovat modem
 GenericName[de]=Konfiguration des Modems
 Name[es]=Módem

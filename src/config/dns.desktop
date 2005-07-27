@@ -19,8 +19,8 @@ X-SuSE-YaST-AutoInstResource=dns
 Icon=yast-dns
 Exec=/sbin/yast2 dns 
 
-Name=DNS and Host Name
-GenericName=Configure host name and DNS
+Name=DNS and Hostname
+GenericName=Configure hostname and name servers
 Name[cs]=DNS a jméno počítače
 GenericName[cs]=Konfigurovat jméno počítače a DNS
 Name[de]=DNS- und Hostname

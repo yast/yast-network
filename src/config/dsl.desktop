@@ -20,7 +20,7 @@ Icon=yast-dsl
 Exec=/sbin/yast2 dsl 
 
 Name=DSL
-GenericName=Configure DSL connection
+GenericName=Configure a DSL connection
 GenericName[cs]=Konfigurovat DSL spojení
 GenericName[de]=Konfiguration der DSL-Verbindung
 Name[es]=ADSL

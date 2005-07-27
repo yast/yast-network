@@ -20,7 +20,7 @@ Icon=yast-proxy
 Exec=/sbin/yast2 proxy 
 
 Name=Proxy
-GenericName=Configure proxy
+GenericName=Configure a proxy
 GenericName[cs]=Konfigurovat proxy
 GenericName[de]=Proxy konfigurieren
 GenericName[es]=Configurar proxy
