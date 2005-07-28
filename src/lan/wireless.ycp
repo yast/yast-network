@@ -233,7 +233,7 @@ _("<p>Set the <b>Network Name (ESSID)</b> used to identify
 cells that are part of the same virtual network. All stations in a
 wireless LAN need the same ESSID to communicate with each other. If
 you choose operation mode <b>Managed</b> and no <b>WPA</b> authentication mode,
-you can leave this field empty or set it to 'any'. In this
+you can leave this field empty or set it to <tt>any</tt>. In this
 case, your WLAN card associates with the access point with the best
 signal strength.</p>
 ") +
@@ -249,7 +249,7 @@ use WEP encryption. Some networks may require WEP <b>Shared Key</b>
 authentication. NOTE: Shared key authentication makes it easier for a
 potential attacker to break into your network. Unless you have
 specific needs for shared key authentication, use the <b>Open</b>
-mode. As WEP has been proven insecure, <b>WPA</b> (Wi-Fi Protected Access)
+mode. Because WEP has been proven insecure, <b>WPA</b> (Wi-Fi Protected Access)
 was defined to close its security holes, but not every hardware supports
 WPA. If you want to use WPA, select <b>WPA-PSK</b> or <b>WPA-EAP</b>as the
 authentication mode. This is only possible in operation mode
@@ -990,12 +990,12 @@ map<string, map<string,any> > wpa_eap_widget_descr = $[
 	// text entry label
 	"label": _("&Identity"),
 	"opt": [],
-	"help": _(
-"<p>WPA-EAP uses a RADIUS server to authenticate users. There
+	"help": _("<p>WPA-EAP uses a RADIUS server to authenticate users. There
 are different methods in EAP to connect to the server and
-peform the authentication, namely TLS, TTLS, and PEAP.</p>
-<p>In case of TTLS and PEAP you need to enter your <b>Identity</b>
-and <b>Password</b> as configured on the server.</p>"),
+perform the authentication, namely TLS, TTLS, and PEAP.</p>
+<p>For TTLS and PEAP, enter your <b>Identity</b>
+and <b>Password</b> as configured on the server.</p>
+"),
 	],
     "WPA_EAP_PASSWORD": $[
 	"widget": `textentry,	// or password?
@@ -1009,8 +1009,7 @@ and <b>Password</b> as configured on the server.</p>"),
 	// text entry label
 	"label": _("&Client Certificate"),
 	"opt": [],
-	"help": _(
-"<p>TLS uses a <b>Client Certificate</b> instead of a username and
+	"help": _("<p>TLS uses a <b>Client Certificate</b> instead of a username and
 password combination.</p>"),
 	"validate_type": `function,
 	"validate_function": ValidateFileExists,
@@ -1021,10 +1020,10 @@ password combination.</p>"),
 	// aka certificate of the CA (certification authority)
 	"label": _("&Server Certificate"),
 	"opt": [],
-	"help": _(
-"<p>To increase security it is recommended to configure
+	"help": _("<p>To increase security, it is recommended to configure
 a <b>Server Certificate</b>. It is used
-to validate the server's authenticity.</p>"),
+to validate the server's authenticity.</p>
+"),
 	"validate_type": `function,
 	"validate_function": ValidateFileExists,
 	],

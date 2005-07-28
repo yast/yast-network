@@ -188,16 +188,18 @@ define boolean TestProxyReturnCode (string test_type, string proxy_ret_stderr) {
 	// Error message,
 	//	%1 is a string "HTTP", "HTTPS" or "FTP"
 	//	%2 is an error string such as "HTTP/1.0 403 Forbidden"
-	ErrorPopupGeneric(sformat(_("An error occured during the %1 proxy test.
-Proxy return code: %2."), test_type, proxy_retcode), proxy_ret_stderr);
+	ErrorPopupGeneric(sformat(_("An error occurred during the %1 proxy test.
+Proxy return code: %2.
+"), test_type, proxy_retcode), proxy_ret_stderr);
 	return false;
 
     } else {
 	// Unknown return code,
 	//	%1 is the string HTTP, "HTTPS" or FTP,
 	//	%2 is an error string such as "HTTP/1.0 403 Forbidden"
-	ErrorPopupGeneric(sformat(_("Unknown error occured during the %1 proxy test.
-Proxy return code: %2."), test_type, proxy_retcode), proxy_ret_stderr);
+	ErrorPopupGeneric(sformat(_("An unknown error occurred during the %1 proxy test.
+Proxy return code: %2.
+"), test_type, proxy_retcode), proxy_ret_stderr);
     }
 }
 
@@ -220,7 +222,7 @@ define boolean TestProxySettings () {
 	if (ret["HTTP","tested"]:true == true) {
 	    if ((integer) ret["HTTP","exit"]:1 != 0) {
 		// TRANSLATORS: Error popup message
-		ErrorPopupGeneric(_("An error occured during the HTTP proxy test."), ret["HTTP","stderr"]:"");
+		ErrorPopupGeneric(_("An error occurred during the HTTP proxy test."), ret["HTTP","stderr"]:"");
 		UI::SetFocus(`id(`http));
 		return false;
 	    } else {
@@ -236,7 +238,7 @@ define boolean TestProxySettings () {
 	    // curl error
 	    if ((integer) ret["HTTPS","exit"]:1 != 0) {
 		// TRANSLATORS: Error popup message
-		ErrorPopupGeneric(_("An error occured during the HTTPS proxy test."), ret["HTTPS","stderr"]:"");
+		ErrorPopupGeneric(_("An error occurred during the HTTPS proxy test."), ret["HTTPS","stderr"]:"");
 		UI::SetFocus(`id(`https));
 		return false;
 	    } else {
@@ -252,7 +254,7 @@ define boolean TestProxySettings () {
 	    // curl error
 	    if ((integer) ret["FTP","exit"]:1 != 0) {
 		// TRANSLATORS: Error popup message
-		ErrorPopupGeneric(_("An error occured during the FTP proxy test."), ret["FTP","stderr"]:"");
+		ErrorPopupGeneric(_("An error occurred during the FTP proxy test."), ret["FTP","stderr"]:"");
 		UI::SetFocus(`id(`ftp));
 		return false;
 	    } else {
@@ -333,8 +335,8 @@ for example, <i>%1</i>.</p>
 ") +
 
     /* Proxy dialog help 7/7 */
-    _("<p>Press the <b>Test Proxy Settings</b> button to test
-the current configuration for HTTP, HTTPS and FTP proxy.</p>
+    _("<p>Press <b>Test Proxy Settings</b> to test
+the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 ");
 
     /* Proxy dialog contents */

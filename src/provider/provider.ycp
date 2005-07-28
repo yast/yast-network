@@ -237,11 +237,12 @@ at the end.</p>");
     // #59836
     /* Provider dialog help 5/5 */
     helptext = helptext + _("<p>Check <b>Always Ask for Password</b> to be asked for the password every time.
-Please note that your
-internet service provider might not allow that passwords are saved on
-disk. If you enter the password here it is saved in clear text on disk
-(although readable by root only).
-</p>");
+Your
+Internet service provider might not allow passwords to be saved on
+disk. If you enter the password, here it is saved in clear text on disk
+(readable by root only).
+</p>
+");
 
 
     /* Frame label */
