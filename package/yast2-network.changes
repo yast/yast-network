@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Aug  4 12:18:07 CEST 2005 - mvidner@suse.cz
+
+- Do not mix up the unconfigured cards (#98852).
+
+-------------------------------------------------------------------
 Thu Jul 28 12:31:56 CEST 2005 - jsuchome@suse.cz
 
 - updated desktop files
