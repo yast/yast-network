@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Aug  5 13:02:57 CEST 2005 - mvidner@suse.cz
+
+- Unified the configured and unconfigured lists (F5630, with visnov).
+- 2.12.8
+
+-------------------------------------------------------------------
 Thu Aug  4 12:18:07 CEST 2005 - mvidner@suse.cz
 
 - Do not mix up the unconfigured cards (#98852).

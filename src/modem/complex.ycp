@@ -11,6 +11,7 @@
 
 textdomain "network";
 
+import "CWMTab";
 import "Label";
 import "Modem";
 import "NetworkDevices";
@@ -18,6 +19,7 @@ import "Popup";
 import "Provider";
 import "Routing";
 import "Wizard";
+import "WizardHW";
 import "Wizard_hw";
 
 include "network/routines.ycp";
@@ -102,89 +104,175 @@ dialog may inform you whether it is safe to do so.</P>
     return ret ? `next : `abort;
 }
 
-/**
- * Main dialog
- * @return dialog result
- */
-define any SummaryDialog() {
 
-    ScreenName("modem-summary");
+string selected_tab = "devices";
 
-    /* Modems summary dialog caption */
-    string caption = _("Modem Configuration");
+void InitDevices (string widget_id)
+{
+    list<map<string,any> > overview = (list<map<string,any> >)Modem::Overview();
+    overview = overview + Modem::Unconfigured ();
+    
+    y2milestone ("Init Modem devices: %1", overview);
+    WizardHW::SetContents (overview);
+    
+    if (size(overview) > 0) 
+	WizardHW::SetSelectedItem (overview[0,"id"]:"");
 
-    /* modems summary dialog help 1/3 */
-    string helptext = _("<p><b><big>Modem Setup</big></b><br>
-Here, you can configure your modem.<br></p>");
+    WizardHW::SetRichDescription (overview[0,"rich_descr"]:"");
+}
 
-    /* modems summary dialog help 2/3 */
-    helptext = helptext + _("<p><b><big>Adding a Modem:</big></b><br>
-Choose a modem from the list of detected modems. If your modem was not
-autodetected, use <b>Other (not detected)</b>. Then press <b>Configure</b>.
-</p>");
+string RichTextDevices (string id)
+{
+    // TODO: optimize
+    list<map<string,any> > overview = (list<map<string,any> >)Modem::Overview();
+    overview = overview + Modem::Unconfigured ();
+    
+    map<string,any> entry = find (map<string,any> dev, overview
+	, ``(dev["id"]:nil == id) );
+    
+    return entry["rich_descr"]:id;
+}
 
-    /* modems summary dialog help 3/3 */
-    helptext = helptext + _("<p><b><big>Editing or Deleting:</big></b><br>
-If you press <b>Change</b>, an additional dialog opens in which to change the
-configuration.</p>");
-
-    list summary = Modem::Summary(true);
-    list unconfigured = summary[1]:[];
-    string configured = summary[0]:"";
-
-    y2debug("unconfigured=%1",unconfigured);
-    /* Frame label */
-    term contents = Wizard_hw::DetectedContent(_("Modems to Configure"),
-	    unconfigured, false, configured);
-
-    Wizard::SetContentsButtons(caption, contents, helptext,
-	    Label::BackButton(), Label::FinishButton());
-
-    any ret = nil;
-    while(true) {
-
-	ret = UI::UserInput();
-	y2debug("ret=%1", ret);
-
-	/* abort? */
-	if(ret == `abort || ret == `cancel || ret == `back) {
-	    if(ReallyAbort()) break;
-	    else continue;
+symbol HandleDevices (string widget_id, map event)
+{
+    any ret = event["ID"]:nil;
+    
+    y2security ("Event: %1", event);
+    
+    if (event["EventReason"]:nil == "SelectionChanged")
+    {
+	WizardHW::SetRichDescription ( RichTextDevices ( WizardHW::SelectedItem ()));
+	return nil;
+    }
+    
+    /* add */
+    if(ret == `add) {
+	Modem::Add();
+	Provider::Add("modem");
+	selected_tab = "devices";
+	return `add;
+    }
+    /* edit */
+    else if(ret == `edit) {
+	string dev = WizardHW::SelectedItem ();
+	if(dev == nil) {
+	    y2error("Empty device during Edit");
+	    return nil;
 	}
-	/* overview dialog */
-	else if(ret == `edit_button) {
-	    ret = `overview;
-	    break;
-	}
-	/* configure the selected card */
-	else if(ret == `configure_button || ret == `detected_selbox) {
-	    Modem::Add();
-	    Provider::Add("modem");
-	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
-	    if(selected == `other) {
-		ret = `other;
+	if (substring (dev, 0, 1) == "-") // unconfigured
+	{
+	    integer i = tointeger (substring (dev, 1));
+	    Modem::Add ();
+	    Provider::Add ("modem");
+	    Modem::SelectHW (i);
+
+            if(Modem::Requires != [] && Modem::Requires != nil) {
+		if(PackagesInstall(Modem::Requires) != `next)
+		    return nil;
 	    }
-	    else {
-		Modem::SelectHW((integer) selected);
-		if(Modem::Requires != [] && Modem::Requires != nil) {
-		    if(PackagesInstall(Modem::Requires) != `next)
-			continue;
-		}
-		ret = `configure;
-	    }
-	    break;
 	}
-	else if(ret == `next) {
-	    break;
+	else		// configured
+	{
+	    Modem::Edit(dev);
+	    Provider::Edit(Provider::Name);
 	}
-	else {
-	    y2error("unexpected retcode: %1", ret);
-	    continue;
-	}
+	selected_tab = "devices";
+	return `edit;
+    }
+    /* delete */
+    else if(ret == `delete) {
+	string dev = WizardHW::SelectedItem ();
+	if (substring (dev, 0, 1) == "-") // unconfigured
+	    return nil;
+
+	Modem::Delete(dev);
+	Modem::Commit();
+	InitDevices("devices");
+	return nil;
+    }
+    
+    return nil;
+}
+
+void InitProviders (string widget_id)
+{
+    list<map<string,any> > overview = 
+	(list<map<string,any> >)Provider::Overview("modem");
+    
+    y2milestone ("Init modem devices: %1", overview);
+    WizardHW::SetContents (overview);
+    
+    if (size(overview) > 0) 
+	WizardHW::SetSelectedItem (overview[0,"id"]:"");
+
+    WizardHW::SetRichDescription (overview[0,"rich_descr"]:"");
+}
+
+string RichTextProviders (string id)
+{
+    // TODO: optimize
+    list<map<string,any> > overview = 
+	(list<map<string,any> >)Provider::Overview("modem");
+    
+    map<string,any> entry = find (map<string,any> dev, overview
+	, ``(dev["id"]:nil == id) );
+    
+    return entry["rich_descr"]:id;
+}
+
+symbol HandleProviders (string widget_id, map event)
+{
+    any ret = event["ID"]:nil;
+    
+    if (event["EventReason"]:nil == "SelectionChanged")
+    {
+	WizardHW::SetRichDescription ( RichTextProviders ( WizardHW::SelectedItem ()));
+	return nil;
     }
 
-    return ret;
+    /* provider add */
+    if(ret == `add) {
+	Provider::Add("modem");
+	selected_tab = "providers";
+	return `Add;
+    }
+    /* provider edit */
+    else if(ret == `edit || ret == `Table) {
+	string dev = WizardHW::SelectedItem ();
+	if(dev == nil) {
+	    y2error("Empty device during Edit");
+	    return nil;
+	}
+	Provider::Edit(dev);
+	selected_tab = "providers";
+	return `Edit;
+    }
+    /* provider delete */
+    else if(ret == `delete) {
+	string dev = WizardHW::SelectedItem ();
+
+	/* Check if the provider is not used (#17497) */
+	if(NetworkDevices::LocateProvider(dev)) {
+	    y2debug("Provider used: %1", dev);
+
+	    /* Popup text */
+	    Popup::Error(sformat(_("The provider %1 is in use."), dev));
+	    return nil;
+
+		/* Popup text */
+	    string pop = sformat(_("The provider %1 is in use. Really delete it?"), dev);
+	    if(!Popup::YesNo(pop)) return nil;
+	}
+
+	Provider::Delete(dev);
+	Provider::Commit();
+	InitProviders("providers");
+	return nil;
+    }
+	
+    return nil;
 }
+
 
 /**
  * Overview dialog
@@ -217,149 +305,54 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
     y2debug("overview=%1",overview);
     y2debug("overviewp=%1",overviewp);
 
-    term contents = OverviewTableDouble(
-	/* Table label */
-	_("Modems"),
-	/* Table header */
-	`header(/*_("No."), */_("Device"), _("Type"), _("Provider")),
-	overview,
-	/* Table label */
-	_("Providers"),
-	/* Table header */
-	`header(_("Name"), _("Provider"), _("Phone")),
-	overviewp
-    );
+   // use CWMTab for connections and providers
+    map<string, map<string, any> > widget_descr = $[
+        "devices" : WizardHW::CreateWidget (
+            [_("Device"), _("Type"), _("Provider")], [] ),
+        "providers" : WizardHW::CreateWidget (
+            [_("Name"), _("Provider"), _("Phone")], [] ),
+    ];
 
-    Wizard::SetContentsButtons(caption, contents, helptext,
-	    Label::BackButton(), Label::FinishButton());
+    widget_descr["devices", "init"] = InitDevices;
+    widget_descr["devices", "handle"] = HandleDevices;
+    widget_descr["devices", "help"] = " ";
+    widget_descr["providers", "init"] = InitProviders;
+    widget_descr["providers", "handle"] = HandleProviders;
+    widget_descr["providers", "help"] = " ";
 
-    if(size(overview) < 1) {
-	UI::ChangeWidget(`id(`edit), `Enabled, false);
-	UI::ChangeWidget(`id(`delete), `Enabled, false);
-    }
+   widget_descr["tab"] = CWMTab::CreateWidget(
+        $[
+            "tab_order": ["devices", "providers"],
+            "tabs": $[
+                "devices": $[
+                    // tab header
+                    "header" : _("Modem Devices"),
+                    "contents": `VBox(`VSpacing(1)
+                        , `HBox( `HSpacing(1), "devices", `HSpacing(1) )
+                        , `VSpacing (1) ),
+                    "widget_names": ["devices"]
+                ],
+                "providers": $[
+                    // tab header
+                    "header" : _("Providers"),
+                    "contents": `VBox(`VSpacing(1)
+                        , `HBox( `HSpacing(1), "providers", `HSpacing(1) )
+                        , `VSpacing (1) ),
+                    "widget_names": ["providers"]
+                ]],
+            "widget_descr": widget_descr,
+            "initial_tab" : selected_tab,
+           "tab_help" : helptext,
+        ]);
 
-    if(size(overviewp) < 1) {
-	UI::ChangeWidget(`id(`Edit), `Enabled, false);
-	UI::ChangeWidget(`id(`Delete), `Enabled, false);
-    }
+    // shut up CWM
+    widget_descr["tab", "help"] = " ";
 
-    any ret = nil;
-    while(true) {
+    // FIXME: reallyabort
 
-	ret = UI::UserInput();
-
-	/* abort? */
-	if(ret == `abort || ret == `cancel) {
-	    if(ReallyAbort()) break;
-	    else continue;
-	}
-	/* add */
-	else if(ret == `add) {
-	    Modem::Add();
-	    Provider::Add("modem");
-	    break;
-	}
-	/* edit */
-	else if(ret == `edit || ret == `table) {
-	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
-	    if(dev == nil) {
-		y2error("Empty device during Edit");
-		continue;
-	    }
-	    Modem::Edit(dev);
-	    Provider::Edit(Provider::Name);
-	    ret = `edit;
-	    break;
-	}
-	/* delete */
-	else if(ret == `delete) {
-	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
-	    Modem::Delete(dev);
-	    Modem::Commit();
-	    overview = Modem::Overview();
-	    UI::ChangeWidget(`id(`table), `Items, overview);
-	    if(size(overview) < 1) {
-		UI::ChangeWidget(`id(`edit), `Enabled, false);
-		UI::ChangeWidget(`id(`delete), `Enabled, false);
-	    }
-	    y2debug("overview=%1",overview);
-	    continue;
-	}
-	/* provider add */
-	else if(ret == `Add) {
-	    Provider::Add("modem");
-	    break;
-	}
-	/* provider edit */
-	else if(ret == `Edit || ret == `Table) {
-	    string dev = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
-	    if(dev == nil) {
-		y2error("Empty device during Edit");
-		continue;
-	    }
-	    Provider::Edit(dev);
-	    ret = `Edit;
-	    break;
-	}
-	/* provider delete */
-	else if(ret == `Delete) {
-	    string dev = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
-
-	    /* Check default route for remote IP (#10739) */
-	    if(Provider::Select(dev)) {
-		string ip = Provider::Current["IPADDR"]:"";
-		string defgw = Routing::GetGateway();
-		y2debug("ip=%1", ip);
-		y2debug("defgw=%1", defgw);
-		if(ip != "" && ip != nil && ip == defgw) {
-		    y2debug("Deleting default gateway");
-		    /* Popup text */
-		    string pop = _("The default route was set to the deleted provider.
-Delete it as well?
-");
-		    /*
-		    if(Popup::YesNo(pop)) {
-			// XXX DeleteGateway();
-		    }
-		    */
-		}
-	    }
-
-	    /* Check if the provider is not used (#17497) */
-	    if(NetworkDevices::LocateProvider(dev)) {
-		y2debug("Provider used: %1", dev);
-
-		/* Popup text */
-		Popup::Error(sformat(_("The provider %1 is in use."), dev));
-		continue;
-
-		/* Popup text */
-		string pop = sformat(_("The provider %1 is in use. Really delete it?"), dev);
-		if(!Popup::YesNo(pop)) continue;
-	    }
-
-	    /* Delete the provider */
-	    Provider::Delete(dev);
-	    Provider::Commit();
-	    overviewp = Provider::Overview("modem");
-	    UI::ChangeWidget(`id(`Table), `Items, overviewp);
-	    if(size(overviewp) < 1) {
-		UI::ChangeWidget(`id(`Edit), `Enabled, false);
-		UI::ChangeWidget(`id(`Delete), `Enabled, false);
-	    }
-	    y2debug("overviewp=%1",overviewp);
-	    continue;
-	}
-	else if(ret == `next || ret == `back) {
-	    break;
-	}
-	else {
-	    y2error("unexpected retcode: %1", ret);
-	    continue;
-	}
-    }
-
-    return ret;
+    return CWM::ShowAndRunOrig (["tab"], widget_descr
+        ,`VBox("tab"), caption,
+        Label::BackButton(), Label::FinishButton(), $[]);
 }
 
 /* EOF */

@@ -81,31 +81,19 @@ define symbol OneProviderSequence(boolean country) ``{
 define symbol MainSequence() ``{
 
     map aliases = $[
-	"summary"	: ``(SummaryDialog()),
 	"overview"	: ``(OverviewDialog()),
 	"type"		: ``(TypeDialog()),
 	"add"		: [ ``(OneProviderSequence(true)), true ],
 	"edit"		: [ ``(OneProviderSequence(false)), true ],
-	"configure"	: [ ``(OneProviderSequence(true)), true ],
     ];
 
     map sequence = $[
-	"ws_start" : "summary",
-	"summary" : $[
-	    `abort	: `abort,
-	    `next	: `next,
-	    `configure	: "configure",
-	    `overview	: "overview"
-	],
+	"ws_start" : "overview",
 	"overview" : $[
 	    `abort	: `abort,
 	    `next	: `next,
 	    `add	: "type",
 	    `edit	: "edit",
-	],
-	"configure" : $[
-	    `abort	: `abort,
-	    `next	: "summary",
 	],
 	"type" : $[
 	    `abort	: `abort,

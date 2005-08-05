@@ -18,6 +18,7 @@ import "NetworkDevices";
 import "Popup";
 import "String";
 import "Summary";
+import "WizardHW";
 
 include "network/routines.ycp";
 include "network/summary.ycp";
@@ -468,18 +469,30 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 	    string ip = DeviceProtocol(v);
 
 	    string descr = BuildDescription (type, k, v, Hardware);
-	    if(size(descr) > 17) descr = substring(descr, 0, 16) + "...";
+	    // if(size(descr) > 17) descr = substring(descr, 0, 16) + "...";
 
 	    /* Modem and DSL */
 	    if(type == "ppp" || type == "modem" || type == "dsl")
-		item = `item(`id(dev), dev, DeviceType(type), ProviderName(v["PROVIDER"]:""));
+	    {
+		// create the rich text description
+		string rich = HTML::Bold (descr) 
+		    + "<br>" + HTML::List ( [
+			sformat(_("Device name: %1"), dev),
+			sformat(_("Mode: %1"), v["PPPMODE"]:_("Unknown")),
+			v["STARTMODE"]:"" == "auto" ? _("Started automatically at boot") :
+			    _("Started manually"),
+		    ]);
+		item = `item(`id(dev), dev, DeviceType(type), ProviderName(v["PROVIDER"]:""), rich);
+	    }
 	    /* ISDN stuff */
 	    else if (type == "contr") {
+		// FIXME: richtext
 		string cname = v["NAME"]:"unknown";
 		item = `item(`id(dev), dev, DeviceType(type), cname /*, "active?", ip, "?", "?"*/);
 	    }
 	    /* ISDN stuff */
 	    else if (type == "net") {
+		// FIXME: richtext
 		string cname = v["PROVIDER"]:"unknown";
 		string rip   = v["PTPADDR"]:"none";
 		string proto = v["PROTOCOL"]:"unknown";
@@ -491,7 +504,19 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 		if(!regexpmatch(type, NetworkAllRegex))
 		    y2error("Unknown type: %1", type);
 		*/
-		item = `item(`id(dev), descr, dev /*DeviceType(type)*/, /*"active?",*/ ip/*, "?", "?"*/);
+		
+		// create the rich text description
+		string rich = HTML::Bold (descr) 
+		    + "<br>" + HTML::List ( [
+			sformat(_("Device name: %1"), dev),
+			ip == "DHCP" ? _("IP address assigned using DHCP") :
+			    sformat(_("IP address: %1, subnet mask %2")
+				, ip, v["NETMASK"]:""),
+			v["STARTMODE"]:"" == "auto" ? _("Started automatically at boot") :
+			    _("Started manually"),
+		    ]);
+		
+		item = `item(`id(dev), descr, ip, rich);
 	    }
 	    overview = add(overview, item);
 
@@ -519,6 +544,44 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 define list BuildOverview(string devregex, list<map> Hardware) {
     map <string, map> Devs = NetworkDevices::FilterDevices (devregex);
     return BuildOverviewDevs (Devs, Hardware);
+}
+
+/**
+ * @param class netcard modem dsl isdn
+ */
+define list<map<string,any> > BuildUnconfigured (string class, list<map> Hardware) {
+    boolean split = true;
+    boolean proposal = false;
+    list sum = BuildSummary(class, Hardware, split, proposal);
+    // unconfigured devices
+    list<term> res = sum[1]:[`item(`id(`other))];
+    // filter out the item for adding an unknown one
+    res = filter (term card, res, ``( card[0,0]:nil != `other ));
+    // translators: this device has not been configured yet
+    string nc = _("Not configured");
+    return maplist( term card, (list<term>)res, { 
+	integer i = card[0,0]:-1;
+	// configured cards are identified by the string after ifcfg-,
+	// unconfigured ones by "-%1" where %1 is the index in hardware list
+	string id = sformat ("-%1", i);
+	string name = card[1]:"";
+	list desc = [];
+	if (class == "netcard")
+	    desc = [name, nc]; // descr, /* dev, */ ip
+	else if (class == "modem" || class == "dsl")
+	    desc = [name, DeviceType (class), nc];
+	else if (class == "isdn")
+	    desc = [nc, DeviceType (class), name];
+	else
+	    y2internal (1, "invalid class %1", class);
+	string rich = WizardHW::CreateRichTextDescription (name, WizardHW::UnconfiguredDevice ());
+	return $[ 
+	    "id":id,
+	    "table_descr":desc,
+	    "rich_descr": rich,
+	]; 
+	}
+    );
 }
 
 /* EOF */

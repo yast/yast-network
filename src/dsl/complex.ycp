@@ -11,12 +11,14 @@
 
 textdomain "network";
 
+import "CWMTab";
 import "DSL";
 import "Label";
 import "NetworkDevices";
 import "Popup";
 import "Provider";
 import "Wizard";
+import "WizardHW";
 import "Wizard_hw";
 
 include "network/routines.ycp";
@@ -103,84 +105,167 @@ dialog may inform you whether it is safe to do so.</P>
     return ret ? `next : `abort;
 }
 
-/**
- * Main dialog
- * @return dialog result
- */
-define any SummaryDialog() {
+string selected_tab = "devices";
 
-    ScreenName("dsl-summary");
+void InitDevices (string widget_id)
+{
+    list<map<string,any> > overview = (list<map<string,any> >)DSL::Overview();
+    overview = overview + DSL::Unconfigured ();
+    
+    y2milestone ("Init DSL devices: %1", overview);
+    WizardHW::SetContents (overview);
+    
+    if (size(overview) > 0) 
+	WizardHW::SetSelectedItem (overview[0,"id"]:"");
 
-    /* DSL summary dialog caption */
-    string caption = _("DSL Configuration");
+    WizardHW::SetRichDescription (overview[0,"rich_descr"]:"");
+}
 
-    /* DSL summary dialog help 1/3 */
-    string helptext = _("<p><b><big>DSL Setup</big></b><br>
-Here, you can configure your DSL.<br></p>");
+string RichTextDevices (string id)
+{
+    // TODO: optimize
+    list<map<string,any> > overview = (list<map<string,any> >)DSL::Overview();
+    overview = overview + DSL::Unconfigured ();
+    
+    map<string,any> entry = find (map<string,any> dev, overview
+	, ``(dev["id"]:nil == id) );
+    
+    return entry["rich_descr"]:id;
+}
 
-    /* DSL summary dialog help 2/3 */
-    helptext = helptext + _("<p><b><big>Adding a DSL Device:</big></b><br>
-Select a DSL device from the list of detected DSL devices. If your DSL device
-was not autodetected, use <b>Other (not detected)</b>. Then press
-<b>Configure</b>.</p>");
-
-    /* DSL summary dialog help 3/3 */
-    helptext = helptext + _("<p><b><big>Editing or Deleting:</big></b><br>
-If you press <b>Change</b>, an additional dialog opens in which to change the
-configuration.</p>");
-
-    list summary = DSL::Summary(true);
-    list unconfigured = summary[1]:[];
-    string configured = summary[0]:"";
-
-    y2debug("unconfigured=%1", unconfigured);
-    /* Frame label */
-    term contents = Wizard_hw::DetectedContent(_("DSL Devices to Configure"),
-	    unconfigured, false, configured);
-
-    Wizard::SetContentsButtons(caption, contents, helptext,
-	    Label::BackButton(), Label::FinishButton());
-
-    any ret = nil;
-    while(true) {
-
-	ret = UI::UserInput();
-	y2debug("ret=%1", ret);
-
-	/* abort? */
-	if(ret == `abort || ret == `cancel || ret == `back) {
-	    if(ReallyAbort()) break;
-	    else continue;
+symbol HandleDevices (string widget_id, map event)
+{
+    any ret = event["ID"]:nil;
+    
+    y2security ("Event: %1", event);
+    
+    if (event["EventReason"]:nil == "SelectionChanged")
+    {
+	WizardHW::SetRichDescription ( RichTextDevices ( WizardHW::SelectedItem ()));
+	return nil;
+    }
+    
+    /* add */
+    if(ret == `add) {
+	DSL::Add();
+	Provider::Add("dsl");
+	selected_tab = "devices";
+	return `add;
+    }
+    /* edit */
+    else if(ret == `edit) {
+	string dev = WizardHW::SelectedItem ();
+	if(dev == nil) {
+	    y2error("Empty device during Edit");
+	    return nil;
 	}
-	/* overview dialog */
-	else if(ret == `edit_button) {
-	    ret = `overview;
-	    break;
+	if (substring (dev, 0, 1) == "-") // unconfigured
+	{
+	    integer i = tointeger (substring (dev, 1));
+	    DSL::Add ();
+	    Provider::Add ("dsl");
+	    DSL::SelectHW (i);
 	}
-	/* configure the selected card */
-	else if(ret == `configure_button || ret == `detected_selbox) {
-	    DSL::Add();
-	    Provider::Add("dsl");
-	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
-	    if(selected == `other) {
-		ret = `other;
-	    }
-	    else {
-		DSL::SelectHW((integer) selected);
-		ret = `configure;
-	    }
-	    break;
+	else		// configured
+	{
+	    DSL::Edit(dev);
+	    Provider::Edit(Provider::Name);
 	}
-	else if(ret == `next) {
-	    break;
-	}
-	else {
-	    y2error("unexpected retcode: %1", ret);
-	    continue;
-	}
+	selected_tab = "devices";
+	return `edit;
+    }
+    /* delete */
+    else if(ret == `delete) {
+	string dev = WizardHW::SelectedItem ();
+	if (substring (dev, 0, 1) == "-") // unconfigured
+	    return nil;
+
+	DSL::Delete(dev);
+	DSL::Commit();
+	InitDevices("devices");
+	return nil;
+    }
+    
+    return nil;
+}
+
+void InitProviders (string widget_id)
+{
+    list<map<string,any> > overview = 
+	(list<map<string,any> >)Provider::Overview("dsl");
+    
+    y2milestone ("Init DSL devices: %1", overview);
+    WizardHW::SetContents (overview);
+    
+    if (size(overview) > 0) 
+	WizardHW::SetSelectedItem (overview[0,"id"]:"");
+
+    WizardHW::SetRichDescription (overview[0,"rich_descr"]:"");
+}
+
+string RichTextProviders (string id)
+{
+    // TODO: optimize
+    list<map<string,any> > overview = 
+	(list<map<string,any> >)Provider::Overview("dsl");
+    
+    map<string,any> entry = find (map<string,any> dev, overview
+	, ``(dev["id"]:nil == id) );
+    
+    return entry["rich_descr"]:id;
+}
+
+symbol HandleProviders (string widget_id, map event)
+{
+    any ret = event["ID"]:nil;
+    
+    if (event["EventReason"]:nil == "SelectionChanged")
+    {
+	WizardHW::SetRichDescription ( RichTextProviders ( WizardHW::SelectedItem ()));
+	return nil;
     }
 
-    return ret;
+    /* provider add */
+    if(ret == `add) {
+	Provider::Add("dsl");
+	selected_tab = "providers";
+	return `Add;
+    }
+    /* provider edit */
+    else if(ret == `edit || ret == `Table) {
+	string dev = WizardHW::SelectedItem ();
+	if(dev == nil) {
+	    y2error("Empty device during Edit");
+	    return nil;
+	}
+	Provider::Edit(dev);
+	selected_tab = "providers";
+	return `Edit;
+    }
+    /* provider delete */
+    else if(ret == `delete) {
+	string dev = WizardHW::SelectedItem ();
+
+	/* Check if the provider is not used (#17497) */
+	if(NetworkDevices::LocateProvider(dev)) {
+	    y2debug("Provider used: %1", dev);
+
+	    /* Popup text */
+	    Popup::Error(sformat(_("The provider %1 is in use."), dev));
+	    return nil;
+
+		/* Popup text */
+	    string pop = sformat(_("The provider %1 is in use. Really delete it?"), dev);
+	    if(!Popup::YesNo(pop)) return nil;
+	}
+
+	Provider::Delete(dev);
+	Provider::Commit();
+	InitProviders("providers");
+	return nil;
+    }
+	
+    return nil;
 }
 
 /**
@@ -213,128 +298,54 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
     y2debug("overview=%1",overview);
     y2debug("overviewp=%1",overviewp);
 
-    term contents = OverviewTableDouble(
-	/* Table label */
-	_("DSL Devices"),
-	/* Table header */
-	`header(/*_("No."), */_("Device"), _("Type"), _("Provider")),
-	overview,
-	/* Table label */
-	_("Providers"),
-	/* Table header */
-	`header(_("Name"), _("Provider") /*, not for DSL: _("Phone") */),
-	overviewp
-    );
+    // use CWMTab for connections and providers
+    map<string, map<string, any> > widget_descr = $[
+	"devices" : WizardHW::CreateWidget (
+	    [_("Device"), _("Type"), _("Provider")], [] ),
+	"providers" : WizardHW::CreateWidget (
+	    [_("Name"), _("Provider")], [] ),
+    ];
 
-    Wizard::SetContentsButtons(caption, contents, helptext,
-	    Label::BackButton(), Label::FinishButton());
+    widget_descr["devices", "init"] = InitDevices;
+    widget_descr["devices", "handle"] = HandleDevices;
+    widget_descr["devices", "help"] = " ";
+    widget_descr["providers", "init"] = InitProviders;
+    widget_descr["providers", "handle"] = HandleProviders;    
+    widget_descr["providers", "help"] = " ";
+    
+    widget_descr["tab"] = CWMTab::CreateWidget(
+	$[
+    	    "tab_order": ["devices", "providers"],
+    	    "tabs": $[
+		"devices": $[
+    		    // tab header
+    		    "header" : _("DSL Devices"),
+    		    "contents": `VBox(`VSpacing(1)
+			, `HBox( `HSpacing(1), "devices", `HSpacing(1) )
+			, `VSpacing (1) ),
+    		    "widget_names": ["devices"]
+		],
+		"providers": $[
+    		    // tab header
+    		    "header" : _("Providers"),
+    		    "contents": `VBox(`VSpacing(1)
+			, `HBox( `HSpacing(1), "providers", `HSpacing(1) )
+			, `VSpacing (1) ),
+    		    "widget_names": ["providers"]
+		]],
+    	    "widget_descr": widget_descr,
+    	    "initial_tab" : selected_tab,
+	    "tab_help" : helptext,
+	]);
 
-    if(size(overview) < 1) {
-	UI::ChangeWidget(`id(`edit), `Enabled, false);
-	UI::ChangeWidget(`id(`delete), `Enabled, false);
-    }
-
-    if(size(overviewp) < 1) {
-	UI::ChangeWidget(`id(`Edit), `Enabled, false);
-	UI::ChangeWidget(`id(`Delete), `Enabled, false);
-    }
-
-    any ret = nil;
-    while(true) {
-
-	ret = UI::UserInput();
-
-	/* abort? */
-	if(ret == `abort || ret == `cancel) {
-	    if(ReallyAbort()) break;
-	    else continue;
-	}
-	/* add */
-	else if(ret == `add) {
-	    DSL::Add();
-	    Provider::Add("dsl");
-	    break;
-	}
-	/* edit */
-	else if(ret == `edit || ret == `table) {
-	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
-	    if(dev == nil) {
-		y2error("Empty device during Edit");
-		continue;
-	    }
-	    DSL::Edit(dev);
-	    Provider::Edit(Provider::Name);
-	    ret = `edit;
-	    break;
-	}
-	/* delete */
-	else if(ret == `delete) {
-	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
-	    DSL::Delete(dev);
-	    DSL::Commit();
-	    overview = DSL::Overview();
-	    UI::ChangeWidget(`id(`table), `Items, overview);
-	    if(size(overview) < 1) {
-		UI::ChangeWidget(`id(`edit), `Enabled, false);
-		UI::ChangeWidget(`id(`delete), `Enabled, false);
-	    }
-	    y2debug("overview=%1",overview);
-	    continue;
-	}
-	/* provider add */
-	else if(ret == `Add) {
-	    Provider::Add("dsl");
-	    break;
-	}
-	/* provider edit */
-	else if(ret == `Edit || ret == `Table) {
-	    string dev = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
-	    if(dev == nil) {
-		y2error("Empty device during Edit");
-		continue;
-	    }
-	    Provider::Edit(dev);
-	    ret = `Edit;
-	    break;
-	}
-	/* provider delete */
-	else if(ret == `Delete) {
-	    string dev = (string) UI::QueryWidget(`id(`Table), `CurrentItem);
-
-	    /* Check if the provider is not used (#17497) */
-	    if(NetworkDevices::LocateProvider(dev)) {
-		y2debug("Provider used: %1", dev);
-
-		/* Popup text */
-		Popup::Error(sformat(_("The provider %1 is in use."), dev));
-		continue;
-
-		/* Popup text */
-		string pop = sformat(_("The provider %1 is in use. Really delete it?"), dev);
-		if(!Popup::YesNo(pop)) continue;
-	    }
-
-	    Provider::Delete(dev);
-	    Provider::Commit();
-	    overviewp = Provider::Overview("dsl");
-	    UI::ChangeWidget(`id(`Table), `Items, overviewp);
-	    if(size(overviewp) < 1) {
-		UI::ChangeWidget(`id(`Edit), `Enabled, false);
-		UI::ChangeWidget(`id(`Delete), `Enabled, false);
-	    }
-	    y2debug("overviewp=%1",overviewp);
-	    continue;
-	}
-	else if(ret == `next || ret == `back) {
-	    break;
-	}
-	else {
-	    y2error("unexpected retcode: %1", ret);
-	    continue;
-	}
-    }
-
-    return ret;
+    // shut up CWM
+    widget_descr["tab", "help"] = " ";
+    
+    // FIXME: reallyabort
+     
+    return CWM::ShowAndRunOrig (["tab"], widget_descr 
+	,`VBox("tab"), caption,
+	    Label::BackButton(), Label::FinishButton(), $[]);
 }
 
 /* EOF */

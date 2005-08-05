@@ -109,9 +109,7 @@ define symbol LanAutoSequence() ``{
 define symbol MainSequence() ``{
 
     map aliases = $[
-	"summary"	: ``(SummaryDialog()),
 	"overview"	: ``(OverviewDialog()),
-	"configure"	: [ ``(NetworkCardSequence("edit")), true ],
 	"other"		: [ ``(NetworkCardSequence("add")), true ],
 	"add"		: [ ``(NetworkCardSequence("add")), true ],
 	"edit"		: [ ``(NetworkCardSequence("edit")), true ],
@@ -119,14 +117,7 @@ define symbol MainSequence() ``{
     ];
 
     map sequence = $[
-	"ws_start" : "summary",
-	"summary" : $[
-	    `abort	: `abort,
-	    `next	: `next,
-	    `configure	: "configure",
-	    `other	: "other",
-	    `overview	: "overview"
-	],
+	"ws_start" : "overview",
 	"overview" : $[
 	    `abort	: `abort,
 	    `next	: `next,
@@ -135,14 +126,10 @@ define symbol MainSequence() ``{
 	],
 	"other" : $[
 	    `abort	: `abort,
-	    `next	: "summary",
-	],
-	"configure" : $[
-	    `abort	: `abort,
-	    `next	: "summary",
+	    `next	: "overview",
 	],
 	"commit" : $[
-	    `next	: "summary",
+	    `next	: "overview",
 	],
 	"add" : $[
 	    `abort	: `abort,

@@ -951,12 +951,37 @@ global define list Summary(boolean split) ``{
 /**
  */
 global define list OverviewDev() ``{
-    return filter(term i, (list<term>)BuildOverviewDevs (Devices, Hardware), ``(issubstring(i[0, 0]:"","contr")));
+    list res = filter(term i, (list<term>)BuildOverviewDevs (Devices, Hardware), ``(issubstring(i[0, 0]:"","contr")));
+    return maplist( term card, (list<term>)res, {
+        string id = card[0,0]:"";
+        list desc = [ card[1]:"", card[2]:"", card[3]:""];
+        return $[
+            "id":id,
+            "rich_descr": card[4]: (desc[1]:_("Unknown")),
+            "table_descr":desc
+        ];
+        });
+	
     //return BuildOverview("contr");
 }
 
+global define list<map<string,any> > UnconfiguredDev () {
+    return BuildUnconfigured ("isdn", Hardware);
+}
+
 global define list OverviewIf() ``{
-    return filter(term i, (list<term>)BuildOverviewDevs (Devices, Hardware), ``(issubstring(i[0, 0]:"","net")));
+    list res = filter(term i, (list<term>)BuildOverviewDevs (Devices, Hardware), ``(issubstring(i[0, 0]:"","net")));
+
+    return maplist( term card, (list<term>)res, {
+        string id = card[0,0]:"";
+        list desc = [ card[1]:"", card[2]:"", card[3]:""];
+        return $[
+            "id":id,
+            "rich_descr": card[4]: (desc[1]:_("Unknown")),
+            "table_descr":desc
+        ];
+        });
+
     //return BuildOverview("net");
 }
 

@@ -19,6 +19,7 @@
 module "Provider";
 textdomain "network";
 
+import "HTML";
 import "Map";
 import "String";
 import "Summary";
@@ -589,9 +590,26 @@ global define list Overview(string type) {
     list overview = [];
     maplist(string name, map provmap, Provs, {
 	y2debug("provider(%1): %2", name, provmap);
-	// overview = add(overview, `item(`id(name), name, provmap["PROVIDER"]:"", provmap["PHONE"]:"", provmap["MODEMSUPPORTED"]:"no", provmap["ISDNSUPPORTED"]:"no", provmap["DSLSUPPORTED"]:"no"));
-	term it = `item(`id(name), name, provmap["PROVIDER"]:"");
-	if(type != "dsl") it = add(it, provmap["PHONE"]:"");
+	map it = $[ 
+	    "id" : name,
+	    "table_descr" : [name, provmap["PROVIDER"]:""]
+	];
+	
+	if(type != "dsl") 
+	    it["table_descr"] = add(it["table_descr"]:[], provmap["PHONE"]:"");
+	
+	// build the rich text:
+	string rich = HTML::Bold (
+		// translators: Header of a rich text description for a provider
+		// %1 is the provider name, %2 is the homepage
+		sformat ( "%1 (%2)", provmap["PROVIDER"]:"", provmap["HOMEPAGE"]:_("No homepage"))) 
+	    + "<br>" + HTML::List ( [
+		sformat (_("Product name: %1"), provmap["PRODUCT"]:_("Unknown")),
+		sformat (_("User name: %1"), provmap["USERNAME"]:""),
+	    ] );
+
+	it["rich_descr"] = rich;
+	
 	overview = add(overview, it);
     });
     y2debug("overview=%1", overview);

@@ -448,7 +448,20 @@ global define list Summary(boolean split) {
  * @return table items
  */
 global define list Overview() {
-    return BuildOverview("modem", Hardware);
+    list res = BuildOverview("modem", Hardware);
+    return maplist( term card, (list<term>)res, {
+        string id = card[0,0]:"";
+        list desc = [ card[1]:"", card[2]:"", card[3]:""];
+        return $[
+            "id":id,
+            "rich_descr": card[4]: (desc[1]:_("Unknown")),
+            "table_descr":desc
+        ];
+        });
+}
+
+global define list<map<string,any> > Unconfigured () {
+    return BuildUnconfigured ("modem", Hardware);
 }
 
 /**

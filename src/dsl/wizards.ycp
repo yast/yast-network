@@ -163,10 +163,7 @@ define symbol OneDSLProviderSequence(boolean detected, boolean edit) ``{
 define symbol DSLMainSequence() ``{
 
     map aliases = $[
-	"summary"	: ``(SummaryDialog()),
 	"overview"	: ``(OverviewDialog()),
-	"configure"	: [ ``(OneDSLProviderSequence(true,  false)), true ],
-	"other"		: [ ``(OneDSLProviderSequence(false, false)), true ],
 	"add"		: [ ``(OneDSLProviderSequence(false, false)), true ],
 	"edit"		: [ ``(OneDSLProviderSequence(false, true)), true ],
 	// "edit"		: [ ``(OneDSLSequence(false)), true ],
@@ -175,14 +172,7 @@ define symbol DSLMainSequence() ``{
     ];
 
     map sequence = $[
-	"ws_start" : "summary",
-	"summary" : $[
-	    `abort	: `abort,
-	    `next	: `next,
-	    `configure	: "configure",
-	    `other	: "other",
-	    `overview	: "overview"
-	],
+	"ws_start" : "overview",
 	"overview" : $[
 	    `abort	: `abort,
 	    `next	: `next,
@@ -190,14 +180,6 @@ define symbol DSLMainSequence() ``{
 	    `edit	: "edit",
 	    `Add	: "Add",
 	    `Edit	: "Edit",
-	],
-	"other" : $[
-	    `abort	: `abort,
-	    `next	: "summary",
-	],
-	"configure" : $[
-	    `abort	: `abort,
-	    `next	: "summary",
 	],
 	"add" : $[
 	    `abort	: `abort,

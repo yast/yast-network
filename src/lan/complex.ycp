@@ -19,6 +19,7 @@ import "Routing";
 
 import "Wizard";
 import "Wizard_hw";
+import "WizardHW";
 
 import "Popup";
 import "Label";
@@ -102,112 +103,6 @@ Abort saving by pressing <b>Abort</b>.</p>
 }
 
 /**
- * Main dialog
- * @return dialog result
- */
-define any SummaryDialog() ``{
-
-    ScreenName("lan-summary");
-
-    /* Network cards summary dialog caption */
-    string caption = _("Network Card Configuration");
-
-    /* Network cards summary dialog help 1/3 */
-    string help = _("<p><b><big>Network Card Setup</big></b><br>
-Configure your network card here.<br></p>
-") +
-
-    /* Network cards summary dialog help 2/3 */
-_("<p><b><big>Adding a Network Card:</big></b><br>
-Choose a network card from the list of detected network cards.
-If your network card was not autodetected, select <b>Other (not detected)</b>
-then press <b>Configure</b>.</p>
-") +
-
-    /* Network cards summary dialog help 3/3 */
-_("<p><b><big>Editing or Deleting:</big></b><br>
-If you press <b>Change</b>, an additional dialog in which
-to change the configuration opens.</p>");
-
-    list summary = Lan::Summary("split");
-    list unconfigured = summary[1]:[];
-    string configured = summary[0]:"";
-
-    y2debug("configured=%1", configured);
-    y2debug("unconfigured=%1", unconfigured);
-
-    /* Frame label */
-    term contents = Wizard_hw::DetectedContent(_("Network Cards to Configure"),
-	    unconfigured, false, configured);
-
-    Wizard::SetContentsButtons(caption, contents, help,
-	    Label::BackButton(), Label::FinishButton());
-
-    any ret = nil;
-    while(true) {
-
-	ret = UI::UserInput();
-
-	/* abort? */
-	if(ret == `abort || ret == `cancel || ret == `back) {
-	    if(ReallyAbort()) break;
-	    else continue;
-	}
-	/* overview dialog */
-	else if(ret == `edit_button) {
-	    ret = `overview;
-	    break;
-	}
-	/* configure the selected card */
-	else if(ret == `configure_button || ret == `detected_selbox) {
-	    Lan::Add();
-	    any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
-	    if(selected == `other) {
-		ret = `other;
-	    }
-	    else if(is(selected, integer)) {
-		Lan::SelectHW((integer) selected);
-		// warn if selecting a card without a driver, #29296
-		// TODO also for DSL...
-		if (NetworkModules::Alias == "")
-		{
-		    if (!Popup::ContinueCancel (_("The device does not have a driver module.
-The driver may be built in the kernel.")))
-		    {
-			continue; // means cancel
-		    }
-		}
-		// this is one of 3 places to install packages :-(
-		// - kernel modules (InstallKernel): before loaded
-		// - smpppd & kinternet: before net start
-		// - wlan firmware: here, just because it is copied from modems
-		//   #45960
-		if(Lan::Requires != [] && Lan::Requires != nil) {
-		    if(PackagesInstall(Lan::Requires) != `next)
-			continue;
-		}
-		ret = `configure;
-	    }
-	    else {
-		y2error("Unexpected selection code: %1", selected);
-		continue;
-	    }
-	    Lan::SetDefaultsForHW ();
-	    break;
-	}
-	else if(ret == `next) {
-	    break;
-	}
-	else {
-	    y2error("Unexpected retcode: %1", ret);
-	    continue;
-	}
-    }
-
-    return ret;
-}
-
-/**
  * Overview dialog
  * @return dialog result
  */
@@ -235,54 +130,83 @@ Choose a network card to change or remove.
 Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
 ");
 
-    list overview = Lan::Overview();
+    list<map<string,any> > overview = (list<map<string,any> >)Lan::Overview();
+    overview = overview + Lan::Unconfigured ();
     y2debug("overview=%1",overview);
+    
+    // FIXME: for now, rework the data for the new WizardHW
 
-    term contents = OverviewTable(
-	/* Table header */
-	`header(/*_("No."), */ _("Name"), _("Device"), /* _("Type"), */ _("IP Address")),
-	overview
-    );
+    WizardHW::CreateHWDialog (caption, help
+	, [_("Name"), _("IP Address")]
+	, [] );
 
-    Wizard::SetContentsButtons(caption, contents, help,
-	    Label::BackButton(), Label::FinishButton());
+    WizardHW::SetContents (overview);
 
-    if(size(overview) < 1) {
-	UI::ChangeWidget(`id(`edit), `Enabled, false);
-	UI::ChangeWidget(`id(`delete), `Enabled, false);
-    }
-    else
-	UI::SetFocus(`id(`table));
-
-    any ret = nil;
+    map ret = nil;
     while(true) {
 
-	ret = UI::UserInput();
+	ret = WizardHW::UserInput();
 
 	/* abort? */
-	if(ret == `abort || ret == `cancel) {
+	if(ret["event"]:nil == `abort || ret["event"]:nil == `cancel) {
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
 	/* add */
-	else if(ret == `add) {
+	else if(ret["event"]:nil == `add) {
 	    Lan::Add();
 	    break;
 	}
 	/* edit */
-	else if(ret == `edit || ret == `table) {
-	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+	else if(ret["event"]:nil == `edit || ret["event"]:nil == `table) {
+	    string dev = ret["selected"]:"";
 	    if(dev == nil) {
 		y2error("Empty device during Edit");
 		continue;
 	    }
-	    Lan::Edit(dev);
-	    ret = `edit;
+
+	    if (substring (dev, 0, 1) == "-") // unconfigured
+	    {
+		integer i = tointeger (substring (dev, 1));
+
+		Lan::Add ();
+		Lan::SelectHW (i);
+		Lan::SetDefaultsForHW ();
+
+		// warn if selecting a card without a driver, #29296
+		// TODO also for DSL...
+		if (NetworkModules::Alias == "")
+		{
+		    if (!Popup::ContinueCancel (_("The device does not have a driver module.
+The driver may be built in the kernel.")))
+		    {
+			continue; // means cancel
+		    }
+		}
+		// this is one of 3 places to install packages :-(
+		// - kernel modules (InstallKernel): before loaded
+		// - smpppd & kinternet: before net start
+		// - wlan firmware: here, just because it is copied from modems
+		//   #45960
+		if(Lan::Requires != [] && Lan::Requires != nil) {
+		    if(PackagesInstall(Lan::Requires) != `next)
+			continue;
+		}
+	    }
+	    else		// configured
+	    {
+		Lan::Edit(dev);
+	    }
+
+	    ret = $["event": `edit];
 	    break;
 	}
 	/* delete */
-	else if(ret == `delete) {
-	    string dev = (string) UI::QueryWidget(`id(`table), `CurrentItem);
+	else if(ret["event"]:nil == `delete) {
+	    string dev = ret["selected"]:"";
+
+	    if (substring (dev, 0, 1) == "-") // unconfigured
+		continue;
 
 	    /* Popup text */
 	    string pop = sformat(_("All additional addresses belonging to the interface %1
@@ -295,8 +219,9 @@ Really continue?
 
 	    Lan::Delete(dev);
 	    Lan::Commit();
-	    overview = Lan::Overview();
-	    UI::ChangeWidget(`id(`table), `Items, overview);
+	    overview = (list<map<string,any> >)Lan::Overview();
+	    overview = overview + Lan::Unconfigured ();
+	    WizardHW::SetContents(overview);
 	    if(size(overview) < 1) {
 		UI::ChangeWidget(`id(`edit), `Enabled, false);
 		UI::ChangeWidget(`id(`delete), `Enabled, false);
@@ -304,7 +229,7 @@ Really continue?
 	    y2debug("overview=%1",overview);
 	    continue;
 	}
-	else if(ret == `next || ret == `back) {
+	else if(ret["event"]:nil == `next || ret["event"]:nil == `back) {
 	    break;
 	}
 	else {
@@ -313,7 +238,7 @@ Really continue?
 	}
     }
 
-    return ret;
+    return ret["event"]:nil;
 }
 
 /* EOF */
