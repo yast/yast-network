@@ -1,7 +1,9 @@
 -------------------------------------------------------------------
-Tue Aug  9 16:17:42 CEST 2005 - mvidner@suse.cz
+Tue Aug  9 20:08:15 CEST 2005 - mvidner@suse.cz
 
+- Made the proposal link to change WiFi work (F2103).
 - Again fixed selecting the wrong card to edit (#98852, #102945).
+- 2.12.9
 
 -------------------------------------------------------------------
 Fri Aug  5 13:02:57 CEST 2005 - mvidner@suse.cz

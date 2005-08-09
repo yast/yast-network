@@ -66,8 +66,12 @@ else if(func == "AskUser") {
     list<string> match = regexptokenize (chosen_id, "^lan--wifi-encryption-(.*)");
     if (match != nil && match != [])
     {
+	y2milestone ("%1", chosen_id);
 	string dev = match[0]:"";
-	Popup::Error (sformat ("Sorry, not completed yet (%1)", dev));
+	// unescape colons
+	dev = mergestring (splitstring (dev, "/"), ":");
+	Lan::Edit (dev);
+	seq = AddressSequence ("wire");
     }
     else
     {

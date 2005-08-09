@@ -87,6 +87,8 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 		    devmap["WIRELESS_KEY_0"]:"" == "")
 		{
 		    string dev = NetworkDevices::device_name(devtype, devnum);
+		    // avoid colons
+		    dev = mergestring (splitstring (dev, ":"), "/");
 		    string href = "lan--wifi-encryption-" + dev;
 		    // interface summary: WiFi without encryption
 		    string warning = HTML::Colorize (_("Warning: no encryption is used."), "red");
