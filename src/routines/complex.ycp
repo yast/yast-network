@@ -154,7 +154,8 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 	summary = Summary::AddHeader("", _("Nothing is configured."));
 
     /* create a table of unconfigured devices */
-    list devs = hwlist2items(unconfigured, 0);
+    integer selected = unconfigured[0, "num"]:-1;
+    list devs = hwlist2items(unconfigured, selected);
 
     // FIXME OtherDevices(devs, type);
 

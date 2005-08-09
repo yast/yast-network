@@ -230,6 +230,10 @@ define list<map> ReadHardware(string hwtype) {
 	one["type"] = controller;
 	one["unique"] = card["unique_key"]:"";
 	one["requires"] = card["requires"]:[];
+	// Each card remembers its position in the list of _all_ cards.
+	// It is used when selecting the card from the list of _unconfigured_
+	// ones (which may be smaller). #102945.
+	one["num"] = num;
 
 	/* Temporary solution for s390: #40587 */
 	if(Arch::s390 ()) one["name"] = DistinguishedName(one["name"]:"", card);
@@ -334,6 +338,9 @@ define list<map> ReadHardware(string hwtype) {
 	map temp = Hardware[0]:$[];
 	Hardware[0] = Hardware[i]:$[];
 	Hardware[i] = temp;
+	// adjust mapping: #98852, #102945
+	Hardware[0, "num"] = 0;
+	Hardware[i, "num"] = i;
     }
 
     y2debug("Hardware=%1", Hardware);

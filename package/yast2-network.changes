@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Aug  9 16:17:42 CEST 2005 - mvidner@suse.cz
+
+- Again fixed selecting the wrong card to edit (#98852, #102945).
+
+-------------------------------------------------------------------
 Fri Aug  5 13:02:57 CEST 2005 - mvidner@suse.cz
 
 - Unified the configured and unconfigured lists (F5630, with visnov).

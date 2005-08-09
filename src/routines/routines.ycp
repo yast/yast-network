@@ -225,7 +225,8 @@ define list hwlist2items(list<map> l, integer selected) {
 	string hwname = i["name"]:_("Unknown");
 	string label = hwname + (i["link"]:nil == false ?
 				 sformat (" (%1)", nolink) : "");
-	items = add(items, `item(`id(n), hwname, n == selected));
+	integer num = i["num"]:n; // num for detected, n for manual
+	items = add(items, `item(`id(num), hwname, num == selected));
 	n = n + 1;
     });
     return items;
