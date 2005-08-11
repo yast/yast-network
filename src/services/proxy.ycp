@@ -65,8 +65,7 @@ define void ErrorPopupGeneric( string message, string details ) {
     
     term detailsButton = `PushButton( `id( `details ), detailsStringOff );
     
-    // Popup message headline
-    string heading = _("Error");
+    string heading = Label::ErrorMsg ();
     
     term buttons = `HBox(
 	detailsButton,

@@ -1,5 +1,9 @@
-{				// -*- c++ -*-
-// $Id$
+/**
+ * Author:	Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ */
+{
 textdomain "network";
 // has the definition of widget_descr and widget helper functions
 include "network/widgets.ycp";

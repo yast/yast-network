@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Aug 11 16:28:11 CEST 2005 - mvidner@suse.cz
+
+- Added missing imports (check_ycp).
+
+-------------------------------------------------------------------
 Tue Aug  9 20:08:15 CEST 2005 - mvidner@suse.cz
 
 - Made the proposal link to change WiFi work (F2103).

@@ -19,6 +19,7 @@ import "Progress";
 import "Arch";
 import "Mode";
 import "Map";
+import "NetworkDevices";
 include "network/lan/wizards.ycp";
 include "network/routines.ycp";
 

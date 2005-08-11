@@ -15,6 +15,7 @@ import "IP";
 import "Label";
 import "Lan";
 import "Netmask";
+import "NetworkDevices";
 import "Popup";
 import "Wizard";
 
