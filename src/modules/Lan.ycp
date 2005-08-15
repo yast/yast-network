@@ -875,13 +875,13 @@ global define boolean Commit() {
     if(operation == `add || operation == `edit) {
 	map<string,any> newdev = $[];
 
-	//if(bootproto == "static") {
-	if(ipaddr != "") {
-	    newdev["IPADDR"] = ipaddr;
-	    newdev["NETMASK"] = netmask;
-	    newdev["BROADCAST"] = IP::ComputeBroadcast(ipaddr, netmask);
-	    newdev["NETWORK"] = IP::ComputeNetwork(ipaddr, netmask);
-	}
+	// #104494 - always write IPADDR+NETMASK, even empty
+	newdev["IPADDR"] = ipaddr;
+	newdev["NETMASK"] = netmask;
+	// #50955 omit computable fields
+	newdev["BROADCAST"] = "";
+	newdev["NETWORK"] = "";
+
 	newdev["REMOTE_IPADDR"] = remoteip;
 
 	if(alias == "") {
