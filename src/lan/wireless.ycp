@@ -232,7 +232,7 @@ acts as an access point).</p>
 _("<p>Set the <b>Network Name (ESSID)</b> used to identify
 cells that are part of the same virtual network. All stations in a
 wireless LAN need the same ESSID to communicate with each other. If
-you choose operation mode <b>Managed</b> and no <b>WPA</b> authentication mode,
+you choose the operation mode <b>Managed</b> and no <b>WPA</b> authentication mode,
 you can leave this field empty or set it to <tt>any</tt>. In this
 case, your WLAN card associates with the access point with the best
 signal strength.</p>
@@ -250,9 +250,9 @@ authentication. NOTE: Shared key authentication makes it easier for a
 potential attacker to break into your network. Unless you have
 specific needs for shared key authentication, use the <b>Open</b>
 mode. Because WEP has been proven insecure, <b>WPA</b> (Wi-Fi Protected Access)
-was defined to close its security holes, but not every hardware supports
-WPA. If you want to use WPA, select <b>WPA-PSK</b> or <b>WPA-EAP</b>as the
-authentication mode. This is only possible in operation mode
+was defined to close its security holes, but not all hardware supports
+WPA. If you want to use WPA, select <b>WPA-PSK</b> or <b>WPA-EAP</b> as the
+authentication mode. This is only possible in the operation mode
 <b>Managed</b>.</p>
 ") +
 

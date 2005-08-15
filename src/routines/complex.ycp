@@ -480,7 +480,7 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 		// create the rich text description
 		string rich = HTML::Bold (descr) 
 		    + "<br>" + HTML::List ( [
-			sformat(_("Device name: %1"), dev),
+			sformat(_("Device Name: %1"), dev),
 			sformat(_("Mode: %1"), v["PPPMODE"]:_("Unknown")),
 			v["STARTMODE"]:"" == "auto" ? _("Started automatically at boot") :
 			    _("Started manually"),
@@ -511,7 +511,7 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 		// create the rich text description
 		string rich = HTML::Bold (descr) 
 		    + "<br>" + HTML::List ( [
-			sformat(_("Device name: %1"), dev),
+			sformat(_("Device Name: %1"), dev),
 			ip == "DHCP" ? _("IP address assigned using DHCP") :
 			    sformat(_("IP address: %1, subnet mask %2")
 				, ip, v["NETMASK"]:""),

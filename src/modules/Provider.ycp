@@ -602,10 +602,10 @@ global define list Overview(string type) {
 	string rich = HTML::Bold (
 		// translators: Header of a rich text description for a provider
 		// %1 is the provider name, %2 is the homepage
-		sformat ( "%1 (%2)", provmap["PROVIDER"]:"", provmap["HOMEPAGE"]:_("No homepage"))) 
+		sformat ( "%1 (%2)", provmap["PROVIDER"]:"", provmap["HOMEPAGE"]:_("No home page"))) 
 	    + "<br>" + HTML::List ( [
-		sformat (_("Product name: %1"), provmap["PRODUCT"]:_("Unknown")),
-		sformat (_("User name: %1"), provmap["USERNAME"]:""),
+		sformat (_("Product Name: %1"), provmap["PRODUCT"]:_("Unknown")),
+		sformat (_("Username: %1"), provmap["USERNAME"]:""),
 	    ] );
 
 	it["rich_descr"] = rich;

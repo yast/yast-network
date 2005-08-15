@@ -239,7 +239,7 @@ at the end.</p>");
     helptext = helptext + _("<p>Check <b>Always Ask for Password</b> to be asked for the password every time.
 Your
 Internet service provider might not allow passwords to be saved on
-disk. If you enter the password, here it is saved in clear text on disk
+disk. If you enter the password here, it is saved in clear text on disk
 (readable by root only).
 </p>
 ");
