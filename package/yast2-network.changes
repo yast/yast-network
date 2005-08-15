@@ -2,7 +2,9 @@
 Mon Aug 15 16:23:26 CEST 2005 - mvidner@suse.cz
 
 - Clear the static address if using DHCP (#104494).
+- Enable the ISDN init script (#104590).
 - Merged proofread texts.
+- 2.12.10
 
 -------------------------------------------------------------------
 Thu Aug 11 16:28:11 CEST 2005 - mvidner@suse.cz

@@ -510,6 +510,8 @@ global define boolean Write(boolean start) ``{
 
     if(Abort()) return false;
     // last step in writing current ISDN setup
+    cmd = sformat("/sbin/insserv isdn"); // #104590
+    SCR::Execute(.target.bash, cmd);
     ProgressNextStage(_("Finished"));
     sleep(sl);
 
