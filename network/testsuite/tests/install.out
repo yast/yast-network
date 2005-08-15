@@ -1,7 +1,0 @@
-Dump	ReadInstallInfItem
-Read	.etc.install_inf."NetConfig" "bootp"
-Return	true
-Dump	$["bootproto":"bootp"]
-Read	.etc.install_inf."IP" nil
-Return	false
-Dump	$["bootproto":"bootp"]
