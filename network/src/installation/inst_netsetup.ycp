@@ -1,0 +1,177 @@
+/**
+ * File:	clients/inst_netsetup.ycp
+ * Package:	Network configuration
+ * Summary:	Setup network in continue mode if required
+ * Authors:	Arvin Schnell <arvin@suse.de>
+ *
+ * $Id$
+ */
+
+{
+
+import "Arch";
+import "Installation";
+import "Linuxrc";
+import "Mode";
+import "String";
+
+//symbol mode = (symbol) WFM::Args (2);
+symbol mode = `up;
+
+y2milestone("----------------------------------------");
+y2milestone("Lan netsetup module started");
+y2milestone("Args: %1", WFM::Args());
+
+
+string netdevice = (string) SCR::Read (.etc.install_inf.Netdevice);
+if (netdevice == nil) netdevice = "eth0";
+
+string netconfig = (string) SCR::Read (.etc.install_inf.NetConfig);
+if (netconfig == nil) netconfig = "static";
+if (netconfig == "dhcp") netconfig = "static"; // FIXME
+
+string ipaddr = (string) SCR::Read (.etc.install_inf.IP);
+if (ipaddr == nil) ipaddr = "";
+
+string netmask = (string) SCR::Read (.etc.install_inf.Netmask);
+if (netmask == nil) netmask = "";
+
+string gateway = (string) SCR::Read (.etc.install_inf.Gateway);
+if (gateway == nil) gateway = "";
+
+string hwaddr = (string) SCR::Read (.etc.install_inf.HWAddr);
+if (hwaddr == nil) hwaddr = "";
+
+string nameserver = (string) SCR::Read (.etc.install_inf.Nameserver);
+if (nameserver == nil) nameserver = "";
+
+string domain = (string) SCR::Read (.etc.install_inf.Domain);
+if (domain == nil) domain = "";
+
+y2milestone("Original netdevice: %1 (%2)", netdevice, hwaddr);
+
+if(hwaddr != nil && hwaddr != "") {
+    string command = sformat("/sbin/ifconfig -a | grep -i \"HWaddr *%1\" | cut -d\" \" -f1", hwaddr);
+    y2milestone("IFCONFIG0: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
+
+    map output = (map) SCR::Execute(.target.bash_output, command, $["LC_MESSAGES":"C"]);
+    y2milestone("Output: %1", output);
+    if(output != nil) {
+	string newdevice = output["stdout"]:"";
+	newdevice = String::FirstChunk (newdevice, "\n");
+	if(newdevice != "" && newdevice != nil) netdevice = newdevice;
+	y2milestone("Updated netdevice: %1 (%2)", netdevice, newdevice);
+    }
+}
+
+define void load_modules () {
+    y2milestone("Loaded Modules: %1", SCR::Read(.target.string, "/proc/modules"));
+
+    list<string> install_aliases = SCR::Dir (.etc.install_inf_alias);
+    foreach (string alias, install_aliases, {
+	string target = (string) SCR::Read (add (.etc.install_inf_alias, alias));
+	string module_options = "";
+	any options = SCR::Read (add (.etc.install_inf_options, target));
+	if (options!=nil && options != "") {
+	    module_options = (string)options;
+	}
+
+	y2milestone("Loading module: %1 (options: %2)", target, module_options);
+	SCR::Execute (.target.modprobe, target, module_options);
+    });
+}
+
+
+/**
+ *  Keep this function in sync with the create_interface code
+ *  in inst_finish.
+ */
+define boolean do_network_setup ()
+{
+    if (Mode::test () || Arch::s390 () || Linuxrc::vnc () || Linuxrc::usessh ()) {
+	y2milestone("NOT doing the basic network setup");
+	return false;
+    }
+
+    return true;
+}
+
+
+if (mode == `up)
+{
+    if (do_network_setup ())
+    {
+	SCR::Execute (.target.bash, "/sbin/ifconfig lo 127.0.0.1 up");
+
+	if ((Installation::boot () == "nfs") || (Installation::boot () == "http") ||
+	    (Installation::boot () == "smb") || (Installation::boot () == "ftp"))
+	{
+	    if (netconfig == "static")
+	    {
+		load_modules ();
+
+		string ifconfig = "/sbin/ifconfig " + netdevice + " up " + ipaddr;
+		if (netmask != "")
+		    ifconfig = ifconfig + " netmask " + netmask;
+		y2milestone("Setting up device: %1", ifconfig);
+		SCR::Execute (.target.bash, ifconfig);
+
+		if (gateway != "")
+		{
+		    string route = "/sbin/route add default gw " + gateway;
+		    SCR::Execute (.target.bash, route);
+		    y2milestone("Setting up route: %1", route);
+		}
+
+		if (nameserver != "")
+		{
+		    string rc_fn = "/etc/resolv.conf";
+		    // don't overwrite it during update
+		    if (SCR::Read (.target.size, rc_fn) < 1)
+		    {
+			string rc =
+			    "# yast2 needs a nameserver (inst_netsetup)\n" +
+			    "nameserver " + nameserver + "\n";
+			if (domain != "")
+			{
+			    rc = rc + "domain " + domain + "\n";
+			}
+			SCR::Write (.target.string, rc_fn, rc);
+		    }
+		}
+	    }
+	    else if (netconfig == "dhcp")
+	    {
+		// FIXME
+		y2milestone ("DHCP UNUSED");
+	    }
+	    else
+	    {
+		y2error ("unknown netconfig %1", netconfig);
+	    }
+	}
+    }
+
+    if (Installation::boot () == "nfs")
+    {
+	SCR::Execute (.target.bash, "/sbin/rcportmap start");
+    }
+
+    y2milestone("IFCONFIGA: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
+}
+
+
+// (better do it in the control file, but I don't know which package it is in)
+if (mode == `dn)
+{
+    y2debug ("disable 'down' action, #45317");
+}
+
+
+y2milestone("Lan netsetup module finished");
+y2milestone("----------------------------------------");
+
+return `auto;
+
+/* EOF */
+}

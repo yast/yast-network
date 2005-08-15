@@ -1,0 +1,412 @@
+/**
+ * File:	include/network/isdn/complex.ycp
+ * Package:	Configuration of network
+ * Summary:	Summary and overview dialogs for ISDN configuration.
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "CWM";
+import "CWMTab";
+import "ISDN";
+import "Label";
+import "Popup";
+import "Provider";
+import "Wizard";
+import "WizardHW";
+import "Wizard_hw";
+
+include "network/routines.ycp";
+include "network/summary.ycp";
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+define boolean Modified() ``{
+    return ISDN::Modified() || Provider::Modified("isdn");
+}
+
+/**
+ * Commit changes to internal structures
+ * @return always `next
+ */
+define symbol Commit() ``{
+    ISDN::Commit();
+    return `next;
+}
+
+/**
+ * Read settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol ReadDialog() ``{
+
+    /* isdns read dialog help 1/2 */
+    string helptext = _("<P><B><BIG>Initializing ISDN Card Configuration
+</BIG></B><BR>Please wait...<BR></P>
+");
+
+    /* isdns read dialog help 2/2 */
+    helptext = helptext + _("<P><B><BIG>Aborting the Initialization
+</BIG></B><BR>You can safely abort the configuration utility by pressing
+<B>Abort</B> now.</P>
+");
+
+    Wizard::RestoreHelp(helptext);
+    ISDN::AbortFunction = ``{return PollAbort();};
+    boolean ret = ISDN::Read();
+    return ret ? `next : `abort;
+}
+
+/**
+ * Write settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol WriteDialog() ``{
+    if(!Modified()) return `next;
+
+    /* isdns write dialog help 1/2 */
+    string helptext = _("<P><B><BIG>Saving ISDN Card Configuration
+</BIG></B><BR>Please wait...<BR></P>
+");
+
+    /* isdns write dialog help 2/2 */
+    helptext = helptext + _("<P><B><BIG>Aborting Saving:</BIG></B><BR>
+You can abort the save procedure by pressing <B>Abort</B>.
+An additional dialog informs you whether it is safe to do so.</P>
+");
+
+    Wizard::RestoreHelp(helptext);
+    ISDN::AbortFunction = ``{return PollAbort() && ReallyAbort();};
+    boolean ret = ISDN::Write(true);
+    return ret ? `next : `abort;
+}
+
+/**
+ * Ask to handle provider or interface
+ * in edit and delete functions
+ *
+ * @param  string op  "edit" or "delete"
+ * @return dialog result
+ */
+define any Provider_or_IF(string op) ``{
+    any ret = nil;
+    // popup text to select between Interface or Provider for edit or delete 1/2
+    string txt = op == "edit" ?
+       // popup text to select between Interface or Provider
+       _("Select the item to edit.") :
+       // popup text to select between Interface or Provider
+       _("Select the item to delete.");
+    UI::OpenDialog(
+	`opt(`decorated),
+	`HBox(
+	    `HSpacing(1),
+	    `VBox(
+		`VSpacing(1),
+		`Label(txt),
+		`VSpacing(2),
+		`HBox(
+		    // PushButton label
+		    `PushButton(`id(`interface), _("&Interface")),
+		    `HSpacing(1),
+		    // PushButton label
+		    `PushButton(`id(`provider), `opt(`default), _("&Provider"))
+		),
+		`VSpacing(1)
+	    ),
+	    `HSpacing(1)
+	)
+    );
+    while(true) {
+	ret = UI::UserInput();
+	if ((ret == `interface) || (ret == `provider))
+	    break;
+    }
+    UI::CloseDialog();
+    return ret;
+}
+
+string selected_tab = "devices";
+
+void InitDevices (string widget_id)
+{
+    list<map<string,any> > overview = (list<map<string,any> >)ISDN::OverviewDev();
+    overview = overview + ISDN::UnconfiguredDev ();
+    
+    y2milestone ("Init ISDN devices: %1", overview);
+    WizardHW::SetContents (overview);
+    
+    if (size(overview) > 0) 
+	WizardHW::SetSelectedItem (overview[0,"id"]:"");
+
+    WizardHW::SetRichDescription (overview[0,"rich_descr"]:"");
+}
+
+string RichTextDevices (string id)
+{
+    // TODO: optimize
+    list<map<string,any> > overview = (list<map<string,any> >)ISDN::OverviewDev();
+    overview = overview + ISDN::UnconfiguredDev ();
+    
+    map<string,any> entry = find (map<string,any> dev, overview
+	, ``(dev["id"]:nil == id) );
+    
+    return entry["rich_descr"]:id;
+}
+
+symbol HandleDevices (string widget_id, map event)
+{
+    any ret = event["ID"]:nil;
+    
+    y2security ("Event: %1", event);
+    
+    if (event["EventReason"]:nil == "SelectionChanged")
+    {
+	WizardHW::SetRichDescription ( RichTextDevices ( WizardHW::SelectedItem ()));
+	return nil;
+    }
+    
+    /* add */
+    if(ret == `add) {
+	ISDN::Add();
+	selected_tab = "devices";
+	return `add;
+    }
+    /* edit */
+    else if(ret == `edit) {
+	string dev = WizardHW::SelectedItem ();
+	if(dev == nil) {
+	    y2error("Empty device during Edit");
+	    return nil;
+	}
+	if (substring (dev, 0, 1) == "-") // unconfigured
+	{
+	    integer i = tointeger (substring (dev, 1));
+	    ISDN::Add ();
+	    ISDN::SelectHW (i);
+	}
+	else		// configured
+	{
+	    ISDN::Edit(dev);
+	}
+	selected_tab = "devices";
+	return `edit;
+    }
+    /* delete */
+    else if(ret == `delete) {
+	string dev = WizardHW::SelectedItem ();
+	if (substring (dev, 0, 1) == "-") // unconfigured
+	    return nil;
+
+	ISDN::Delete(dev);
+	ISDN::Commit();
+	InitDevices("devices");
+	return nil;
+    }
+    
+    return nil;
+}
+
+void InitProviders (string widget_id)
+{
+    list<map<string,any> > overview = 
+	(list<map<string,any> >)Provider::Overview("isdn");
+    
+    y2milestone ("Init ISDN devices: %1", overview);
+    WizardHW::SetContents (overview);
+    
+    if (size(overview) > 0) 
+	WizardHW::SetSelectedItem (overview[0,"id"]:"");
+
+    WizardHW::SetRichDescription (overview[0,"rich_descr"]:"");
+}
+
+string RichTextProviders (string id)
+{
+    // TODO: optimize
+    list<map<string,any> > overview = 
+	(list<map<string,any> >)Provider::Overview("isdn");
+    
+    map<string,any> entry = find (map<string,any> dev, overview
+	, ``(dev["id"]:nil == id) );
+    
+    return entry["rich_descr"]:id;
+}
+
+symbol HandleProviders (string widget_id, map event)
+{
+    any ret = event["ID"]:nil;
+    
+    if (event["EventReason"]:nil == "SelectionChanged")
+    {
+	WizardHW::SetRichDescription ( RichTextProviders ( WizardHW::SelectedItem ()));
+	return nil;
+    }
+
+    /* provider add */
+    if(ret == `add) {
+	Provider::Add("isdn");
+	selected_tab = "providers";
+	return `Add;
+    }
+    /* provider edit */
+    else if(ret == `Edit || ret == `Table) {
+	ret = Provider_or_IF("edit");
+	if (ret == `provider) {
+	    string prov = WizardHW::SelectedItem ();
+	    if(prov == nil) {
+		y2error("Empty device during Edit");
+		return nil;
+	    }
+	    ISDN::type = "net";
+	    Provider::Edit(prov);
+	    ISDN::operation = `editprov;
+	    ret = `Editprov;
+	} else {
+	    if (ISDN::SelectInterface(true)) {
+		string ifstr = sformat("net%1", ISDN::device);
+		ISDN::EditIf(ifstr);
+		ret = `Editif;
+	    } else
+		return nil;
+	    selected_tab = "providers";
+	    return `Edit;
+        }
+    }
+    /* provider delete */
+    else if(ret == `delete) {
+	ret = Provider_or_IF("delete");
+	if (ret == `provider) {
+	    string dev = WizardHW::SelectedItem ();
+	    string ifc = ISDN::GetInterface4Provider(dev);
+	    if (ifc == "") {
+		Provider::Delete(dev);
+		Provider::Commit();
+	    } else {
+		string txt = sformat(
+// Popup::Message text
+_("You tried to delete a provider that
+is the default provider for interface
+%1. First select another
+default provider for interface %2
+or delete the interface itself.
+"), ifc, ifc);
+		Popup::Message(txt);
+	    }
+	} else {
+	    if (ISDN::SelectInterface(true)) {
+		string ifstr = sformat("net%1", ISDN::device);
+		ISDN::Delete(ifstr);
+		ISDN::Commit();
+	    }
+	}
+	InitProviders("providers");
+	return nil;
+    }
+	
+    return nil;
+}
+
+
+/**
+ * Overview dialog
+ * @return dialog result
+ */
+define any OverviewDialog() ``{
+
+    /* ISDN overview dialog caption */
+    // dialog title
+    string caption = _("ISDN Configuration Overview");
+
+    string helptext = /* isdns overview dialog help 1/5 */
+    _("<P><B><BIG>ISDN Card Overview</BIG></B><BR>
+Here, get an overview of installed ISDN cards and connection setups.
+Additionally you can edit their configurations.<BR></P>
+");
+
+    /* isdns overview dialog help 2/5 */
+    helptext = helptext + _("<P><B><BIG>Adding an ISDN Card:</BIG></B><BR>
+Press <B>Add</B> to configure an ISDN card manually.</P>
+");
+
+    /* isdns overview dialog help 3/5 */
+    helptext = helptext + _("<P><B><BIG>Test an ISDN Card Setup:</BIG></B><BR>
+If you press <B>Test</B>, the system tries to load the driver for the
+selected card.</P>
+");
+
+    /* isdns overview dialog help 4/5 */
+    helptext = helptext + _("<P><B><BIG>Adding an ISDN Connection:</BIG></B><BR>
+If you press <B>Add</B>, you can configure an ISDN dial-up connection.</P>
+");
+
+    /* isdns overview dialog help 5/5 */
+    helptext = helptext + _("<P><B><BIG>Editing or Deleting:</BIG></B><BR>
+Choose an ISDN card or connection to change or remove.
+Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
+");
+
+    list overview = ISDN::OverviewDev();
+    list overviewp = Provider::Overview("isdn");
+    //list overviewif = ISDN::OverviewIf();
+    y2debug("overview=%1",overview);
+    y2debug("overviewp=%1",overviewp);
+
+   // use CWMTab for connections and providers
+    map<string, map<string, any> > widget_descr = $[
+        "devices" : WizardHW::CreateWidget (
+            [_("Device"), _("Type"), _("Hardware")], [] ),
+        "providers" : WizardHW::CreateWidget (
+            [_("Name"), _("Provider"), _("Phone")], [] ),
+    ];
+
+    widget_descr["devices", "init"] = InitDevices;
+    widget_descr["devices", "handle"] = HandleDevices;
+    widget_descr["devices", "help"] = " ";
+    widget_descr["providers", "init"] = InitProviders;
+    widget_descr["providers", "handle"] = HandleProviders;
+    widget_descr["providers", "help"] = " ";
+		       
+   widget_descr["tab"] = CWMTab::CreateWidget(
+        $[
+            "tab_order": ["devices", "providers"],
+            "tabs": $[
+                "devices": $[
+                    // tab header
+                    "header" : _("ISDN Devices"),
+                    "contents": `VBox(`VSpacing(1)
+                        , `HBox( `HSpacing(1), "devices", `HSpacing(1) )
+                        , `VSpacing (1) ),
+                    "widget_names": ["devices"]
+                ],
+                "providers": $[
+                    // tab header
+                    "header" : _("Providers"),
+                    "contents": `VBox(`VSpacing(1)
+                        , `HBox( `HSpacing(1), "providers", `HSpacing(1) )
+                        , `VSpacing (1) ),
+                    "widget_names": ["providers"]
+                ]],
+            "widget_descr": widget_descr,
+            "initial_tab" : selected_tab,
+            "tab_help" : helptext,
+        ]);
+
+    // shut up CWM
+    widget_descr["tab", "help"] = " ";
+
+    // FIXME: reallyabort
+
+    return CWM::ShowAndRunOrig (["tab"], widget_descr
+        ,`VBox("tab"), caption,
+            Label::BackButton(), Label::FinishButton(), $[]);
+}
+
+/* EOF */
+}

@@ -1,0 +1,26 @@
+/**
+ * File:	cfg_dhcp.scr
+ * Summary:	Agent for reading/writing /etc/sysconfig/network/dhcp
+ * Author:	Michal Svec <msvec@suse.cz>
+ * Access:	read / write
+ *
+ * Example:
+ *   Dir(.sysconfig.dhcp)
+ *   (["DHCLIENT_SET_HOSTNAME", ...])
+ **
+ *   Read(.sysconfig.dhcp.DHCLIENT_SET_HOSTNAME)
+ *   ("yes")
+ **
+ *   Write(.sysconfig.dhcp.DHCLIENT_SET_HOSTNAME, "no")
+ *   (true)
+ *
+ * $Id$
+ *
+ * Read/Sets the values defined in <tt>/etc/sysconfig/network/dhcp</tt>
+ * in an easy manner.
+ */
+.sysconfig.network.dhcp
+
+`ag_ini(
+    `SysConfigFile("/etc/sysconfig/network/dhcp")
+)

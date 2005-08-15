@@ -1,0 +1,193 @@
+/**
+ * File:	modules/Internet.ycp
+ * Package:	Network configuration
+ * Summary:	Internet connection and YOU during the installation
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *		Arvin Schnell <arvin@suse.de>
+ *
+ * $Id$
+ */
+
+{
+
+module "Internet";
+textdomain "network";
+
+import "Map";
+import "NetworkDevices";
+import "Service";
+
+/**
+ * Flag to remember if user wants to run internet test
+ */
+global boolean do_test = true;
+
+/**
+ * Flag to remember if you should be started
+ */
+global boolean do_you = false;
+
+
+/**
+ * Values for selected connection.
+ */
+global string device = "";
+global string type = "";
+global string logfile = "";
+global string provider = "";
+global string password = "";
+global boolean demand = false;
+global boolean askpassword = nil;
+global boolean capi_adsl = false;
+global boolean capi_isdn = false;
+
+/**
+ * Reset values.
+ */
+define void Reset() {
+    device = "";
+    type = "";
+    logfile = "";
+    provider = "";
+    password = "";
+    demand = false;
+    askpassword = nil;
+    capi_adsl = false;
+    capi_isdn = false;
+}
+
+/**
+ * Find the fastest connection to the Internet
+ * @return true if a "good" connection was found
+ */
+global define boolean FindFastest() {
+
+    Reset();
+
+    NetworkDevices::Read();
+    device = NetworkDevices::Fastest();
+    y2milestone("fastest=%1", device);
+
+    /* No fallback since there are devices that must not be tested (e.g. lo) */
+    if(device == "") return false;
+
+    NetworkDevices::Select(device);
+    type = NetworkDevices::FastestType(device);
+
+    provider = NetworkDevices::Current["PROVIDER"]:"";
+    if (provider != "") {
+	import "Provider";
+	Provider::Read();
+	Provider::Select(provider);
+	demand = Provider::Current["DEMAND"]:"no" == "yes";
+	password = Provider::Current["PASSWORD"]:"";
+	askpassword = Provider::Current["ASKPASSWORD"]:"no" == "yes";
+	capi_adsl = Provider::Current["PPPMODE"]:"pppoe" == "capi-adsl";
+	capi_isdn = Provider::Current["PPPMODE"]:"ippp" == "capi-isdn";
+    }
+
+    /* Set logfile */
+    if (type == "dsl" || type == "modem" || (type == "isdn" && capi_isdn))
+	logfile = "/var/log/smpppd/ifcfg-" + device + ".log";
+
+    return true;
+}
+
+/**
+ * Start the fastest interface
+ * @param log file for the commands output
+ * @return true if successful started
+ */
+global define boolean Start(string log) {
+
+    if ((type == "dsl" && capi_adsl) || (type == "isdn")) {
+	if (Service::Status ("isdn") != 0) {
+	    if (! Service::Start ("isdn")) {
+		return false;
+	    }
+	}
+    }
+
+    string cmd = "/sbin/ifup " + device;
+    if (log != "")
+	cmd = cmd + "> " + log + " 2>&1";
+
+    if(askpassword == true)
+    {
+	if (SCR::Execute(.target.bash_input, cmd, password) != 0) {
+	    y2error("ifup failed");
+	    return false;
+	}
+    }
+    else
+    {
+	if (SCR::Execute(.target.bash, cmd) != 0) {
+	    y2error("ifup failed");
+	    return false;
+	}
+    }
+
+    if(type == "isdn" && !capi_isdn) {
+	if(SCR::Execute(.target.bash, "/sbin/isdnctrl dial " + device) != 0) {
+	    y2error("isdnctrl failed");
+	    return false;
+	}
+    }
+
+    return true;
+}
+
+/**
+ * Stop the fastest interface
+ * @param log file for the commands output
+ * @return true if successful stopped
+ */
+global define boolean Stop(string log) {
+    string cmd = "/sbin/ifdown " + device;
+    if(log != "") cmd = cmd + "> " + log + " 2>&1";
+    integer ret = (integer) SCR::Execute(.target.bash, cmd);
+    return ret == 0;
+}
+
+/**
+ * Status of the fastest interface
+ * @return true if interface is up (which is not equal to connected)
+ */
+global define boolean Status() {
+    integer ret = (integer) SCR::Execute(.target.bash, "/sbin/ifstatus " + device);
+    return ret == 0 || ret == 10;
+}
+
+/**
+ * Test if the interface is connected
+ * @return true if connected
+ */
+global define boolean Connected() {
+
+    if(type == "dsl" || type == "modem" || (type == "isdn" && capi_isdn)) {
+	string tmp1 = (string) SCR::Read(.target.string, "/var/lib/smpppd/ifcfg-" + device + ".info");
+	list tmp2 = splitstring(tmp1, "\n");
+	return contains(tmp2, "status: connected");
+    }
+
+    if(type == "isdn" && !capi_isdn) {
+	return SCR::Execute(.target.bash, "/usr/bin/grep -q pppd /etc/resolv.conf") == 0;
+    }
+
+    return true;
+}
+
+/**
+ * Set dial-on-demand
+ * @param demand true if dial-on-demand should be set
+ */
+global define void SetDemand(boolean demand) {
+    path pp = .sysconfig.network.providers.v;
+    pp = add(pp, provider);
+    pp = add(pp, "DEMAND");
+    SCR::Write(pp, (demand == true) ? "yes" : "no");
+    SCR::Write(.sysconfig.network.providers, nil);
+}
+
+/* EOF */
+}

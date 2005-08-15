@@ -1,0 +1,1111 @@
+/**
+ * File:	include/network/lan/wireless.ycp
+ * Package:	Network configuration
+ * Summary:	Wireless dialogs
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "CWM";
+import "FileUtils";
+import "Label";
+import "Lan";
+import "Map";
+import "Message";
+import "Popup";
+import "Wizard";
+
+include "network/routines.ycp";
+
+// key input type buttons
+term type_w = `RadioButtonGroup (
+    `id (`type_g),
+    `VBox (
+	// Translators: input type for a wireless key
+	// radio button group label
+	`Left (`Label (_("Key Input Type"))),
+	`Left (`HBox (
+		   // Translators: input type for a wireless key
+		   `RadioButton (`id ("passphrase"), _("&Passphrase")),
+		   `HSpacing (1),
+		   // Translators: input type for a wireless key
+		   `RadioButton (`id ("ascii"), _("&ASCII")),
+		   `HSpacing (1),
+		   // Translators: input type for a wireless key
+		   // (Hexadecimal)
+		   `RadioButton (`id ("hex"), _("&Hexadecimal"))))
+	)
+    );
+
+// shared between WirelessDialog and WirelessKeyPopup
+// this is suited to the button-switched key typing
+// Translators: dialog help
+string wep_key_help =
+ _("<p>Choose among three <b>key input types</b> for your key.
+<br><b>Passphrase</b>: The key is generated from the phrase entered.
+<br><b>ASCII</b>: The ASCII values of the characters entered form the
+key. Enter 5 characters for 64-bit keys, up to 13
+characters for 128-bit keys, up to 16 characters for 156-bit keys, and
+up to 29 characters for 256-bit keys.
+<br><b>Hexadecimal</b>: Directly enter the hex codes of the key. Enter
+10 hex digits for 64-bit keys, 26 digits for 128-bit keys, 32 digits
+for 156-bit keys, and 58 digits for 256-bit keys. You can
+use hyphens ('-') to separate pairs or groups of digits, for example,
+'0a5f-41e6-48'.
+</p>
+");
+
+/**
+ * Compose a typed key into a single-string representation
+ * @param type "passphrase", "ascii", "hex"
+ * @param key
+ * @return prefixed key
+ */
+define string ComposeWepKey (string type, string key) ``{
+// prefixes for key types
+map <string, string> prefix = $[
+    "ascii": "s:",
+    "passphrase": "h:",
+    "hex": "",
+    ];
+
+    // empty key - don't prepend a type (#40431)
+    if (key == "")
+    {
+	return "";
+    }
+    else
+    {
+	return (prefix[type]:"?:") + key;
+    }
+}
+
+define map<string, string> ParseWepKey (string tkey) ``{
+    if (substring (tkey, 0, 2) == "s:")
+    {
+	return $[ "key": substring (tkey, 2), "type": "ascii", ];
+    }
+    else if (substring (tkey, 0, 2) == "h:")
+    {
+	return $[ "key": substring (tkey, 2), "type": "passphrase", ];
+    }
+    // make passphrase the default key type, #40431
+    else if (tkey == "")
+    {
+	return $[ "key": tkey, "type": "passphrase", ];
+    }
+    else
+    {
+	return $[ "key": tkey, "type": "hex", ];
+    }
+}
+
+/**
+ * Is the entered key valid?
+ * TODO: check according to the selected key length
+ * (or better adjust the length?)
+ * @param lengths allowed real key lengths
+ */
+define boolean CheckWirelessKey (string key,  list<integer> lengths) {
+    if (key == nil)
+    {
+	return false;
+    }
+
+    if (regexpmatch (key, "^s:.{5}$")    && contains (lengths, 40) ||
+	regexpmatch (key, "^s:.{6,13}$") && contains (lengths, 104))
+    {
+	return true;
+    }
+
+    if (regexpmatch (key, "^[0-9A-Fa-f-]*$"))
+    {
+	key = deletechars (key, "-");
+	integer actual_bits = size (key) * 4; // 4 bits per hex digit
+	if (contains (lengths, actual_bits))
+	{
+	    return true;
+	}
+	y2milestone ("Key length: actual %1, allowed %2", actual_bits, lengths);
+    }
+
+    if (regexpmatch (key, "^h:"))
+    {
+	return true;
+    }
+
+    return false;
+}
+
+
+/**
+ * Takes the WEP items from the list and returns the key lengths as integers
+ * Like the input, uses the real length which is 24 bits shorter
+ * than the marketing one.
+ * If the input is nil, return the default set of key lengths.
+ * @param enc_modes a subset of WEP40, WEP104, WEP128, WEP232, TKIP, CCMP
+ * @return list of real key lengths
+ */
+list<integer> ParseKeyLengths (list<string> enc_modes) {
+    if (enc_modes == nil)
+    {
+	return [40, 104];
+    }
+
+    list<integer> lengths = [];
+    foreach (string em, enc_modes, {
+	if (substring (em, 0, 3) == "WEP")
+	{
+	    lengths = add (lengths, tointeger (substring (em, 3)));
+	}
+    });
+
+    if (lengths == [])
+    {
+	y2warning ("empty set of key lengths");
+    }
+    return lengths;
+}
+
+/**
+ * Make a list of ComboBox items for authentication mode.
+ * We must translate WPA-PSK: it is "wpa-psk" in hwinfo but "psk" in syconfig
+ * (#74496).
+ * @param authmodes allowed modes as returned by hwinfo. nil == don't know.
+ * @return combo box items
+ */
+list<term> AuthModeItems (list<string> authmodes) {
+    map <string, string> names = $[
+	// Wireless authentication modes:
+	/* ComboBox item */
+	"open": _("Open"),
+	/* ComboBox item */
+	"sharedkey": _("Shared Key"),
+	/* ComboBox item */
+	// Ask me what it means, I don't know yet
+	"wpa-psk": _("WPA-PSK"),
+	/* ComboBox item */
+	"wpa-eap": _("WPA-EAP"),
+	];
+    map <string, string> ids = $["wpa-psk": "psk", "wpa-eap": "eap"];
+    if (authmodes == nil)
+    {
+	authmodes = (list<string>)Map::Keys (names);
+    }
+    else
+    {
+	// keep only those that we know how to handle
+	authmodes = filter (string am, authmodes, ``( haskey (names, am) ));
+    }
+    return maplist (string am, authmodes, ``( `item (`id (ids[am]:am), names[am]:am) ));
+}
+
+/**
+ * Wireless devices configuration dialog
+ * @return dialog result
+ */
+define any WirelessDialog() ``{
+
+    ScreenName("lan-hardware-wireless");
+
+    /* Wireless dialog caption */
+    string caption = _("Wireless Network Card Configuration");
+
+    // Wireless dialog help
+    string helptext = _("<p>Here, set the most important settings
+for wireless networking.</p>") +
+
+	// Wireless dialog help
+_("<p>The <b>Operating Mode</b> depends on the network topology. The mode
+can be <b>Ad-Hoc</b> (peer-to-peer network without an access point),
+<b>Managed</b> (network managed by an access point, sometimes also
+called <i>Infrastructure Mode</i>), or <b>Master</b> (the network card
+acts as an access point).</p>
+") +
+
+	// Wireless dialog help
+_("<p>Set the <b>Network Name (ESSID)</b> used to identify
+cells that are part of the same virtual network. All stations in a
+wireless LAN need the same ESSID to communicate with each other. If
+you choose the operation mode <b>Managed</b> and no <b>WPA</b> authentication mode,
+you can leave this field empty or set it to <tt>any</tt>. In this
+case, your WLAN card associates with the access point with the best
+signal strength.</p>
+") +
+
+	// Wireless dialog help
+_("<p>In some networks, you need to set an <b>Authentication Mode</b>.
+It depends on the protection technology used, WEP or WPA. <b>WEP</b>
+(Wired Equivalent Privacy) is a system to encrypt wireless network
+traffic with an optional authentication based on the encryption
+key used. In most cases where WEP is used, <b>Open</b> mode (no
+authentication at all) is fine. This does not mean that you cannot
+use WEP encryption. Some networks may require WEP <b>Shared Key</b>
+authentication. NOTE: Shared key authentication makes it easier for a
+potential attacker to break into your network. Unless you have
+specific needs for shared key authentication, use the <b>Open</b>
+mode. Because WEP has been proven insecure, <b>WPA</b> (Wi-Fi Protected Access)
+was defined to close its security holes, but not all hardware supports
+WPA. If you want to use WPA, select <b>WPA-PSK</b> or <b>WPA-EAP</b> as the
+authentication mode. This is only possible in the operation mode
+<b>Managed</b>.</p>
+") +
+
+	// Wireless dialog help
+_("<p>To use WEP, enter the
+WEP encryption key to use. It can have a key
+length of 64, 128, 156, or 256 bits, but not all sizes are
+supported by all devices. Of these keys, 24 bits
+are dynamically generated, so you only need to enter 40 to 232 bits.</p>
+") +
+
+wep_key_help +
+
+	// Wireless dialog help
+_("<p>To use WPA-PSK (sometimes referred to as WPA Home),
+enter the preshared key. This
+key is used for authentication and encryption keys are generated from
+it. These are not vulnerable to known attacks against WEP keys, but
+dictionary attacks are still possible. Do not use a word that is
+easy to guess as the passphrase.</p>
+") +
+
+	// Wireless dialog help
+_("<p>To use WPA-EAP (sometimes referred to as WPA Enterprise),
+enter some additional parameters in the next dialog.</p>
+") +
+
+	// Wireless dialog help
+_("<p>These values will be written to the interface configuration file
+'ifcfg-*' in '/etc/sysconfig/network'. If you need additional settings,
+add them manually. Refer to the file 'wireless' in the same directory for all
+available options.</p>");
+
+    string mode = Lan::wl_mode;
+    string essid = Lan::wl_essid;
+    string authmode = Lan::wl_auth_mode;
+    // wpa or wep?
+    boolean authmode_wpa = authmode == "psk" || authmode == "eap"; // shortcut
+    string key = nil;
+    string type = nil;
+    if (authmode == "psk")
+    {
+	key = Lan::wl_wpa_psk;
+	type = (size (key) == 64)? "hex": "passphrase";
+    }
+    else if (authmode != "eap")
+    {
+	map<string, string> wkey = ParseWepKey (Lan::wl_key[Lan::wl_default_key]:"");
+	key = wkey["key"]:"";
+	type = wkey["type"]:"";
+    }
+    else
+    {
+	key = "";		// and type is not used
+    }
+
+    list<integer> key_lengths = ParseKeyLengths (Lan::wl_enc_modes);
+
+    /* Wireless dialog contents */
+    term contents = `HBox(
+	`HSpacing(4),
+	`VBox(
+	    `VSpacing(0.5),
+	    /* Frame label */
+	    `Frame(_("Wireless Device Settings"), `HBox(`HSpacing(2), `VBox(
+		`VSpacing(0.5),
+		/* ComboBox label */
+		`ComboBox(`id(`mode), `opt(`hstretch), _("O&perating Mode"), [
+		    /* ComboBox item */
+		    `item(`id("Ad-hoc"), _("Ad-Hoc"), mode == "Ad-hoc"),
+		    /* ComboBox item */
+		    `item(`id("Managed"), _("Managed"), mode == "Managed"),
+		    /* ComboBox item */
+		    `item(`id("Master"), _("Master"), mode == "Master")
+		 ]),
+		`VSpacing(0.2),
+		/* Text entry label */
+		`TextEntry(`id(`essid), _("Ne&twork Name (ESSID)"), essid),
+		`VSpacing(0.2),
+		`ComboBox (`id (`authmode), `opt (`hstretch, `notify),
+				  /* ComboBox label */
+				  _("&Authentication Mode"),
+				  AuthModeItems (Lan::wl_auth_modes)),
+		`VSpacing(0.2),
+		type_w,
+		`VSpacing(0.2),
+		/* Text entry label */
+		`TextEntry(`id(`key), _("&Encryption Key"), key),
+		`VSpacing(0.5)
+		), `HSpacing(2))),
+	    `VSpacing(0.5),
+	    `HBox(
+		/* PushButton label */
+		`PushButton(`id(`expert), _("E&xpert Settings")),
+		`HSpacing(0.5),
+		/* PushButton label, keys for WEP encryption */
+		`PushButton (`id(`keys), _("&WEP Keys"))
+	     ),
+	    `VSpacing(0.5)
+	),
+	`HSpacing(4)
+    );
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    Label::BackButton(), Label::NextButton());
+
+    UI::ChangeWidget (`id (`authmode), `Value, authmode);
+    if (authmode != "eap")
+    {
+	UI::ChangeWidget (`id (`type_g), `CurrentButton, type);
+    }
+
+    string ckey = nil;
+    any ret = nil;
+    while(true) {
+	if (authmode_wpa)
+	{
+	    UI::ChangeWidget (`id (`mode), `Value, "Managed");
+	}
+	UI::ChangeWidget (`id (`type_g), `Enabled, authmode != "eap");
+	UI::ChangeWidget (`id (`key),    `Enabled, authmode != "eap");
+	UI::ChangeWidget (`id (`keys), `Enabled, !authmode_wpa);
+
+	UI::ChangeWidget (`id ("ascii"), `Enabled, authmode != "psk");
+
+	ret = UI::UserInput();
+
+	authmode = (string) UI::QueryWidget (`id (`authmode), `Value);
+	authmode_wpa = authmode == "psk" || authmode == "eap"; // shortcut
+
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next || ret == `expert || ret == `keys) {
+
+	    mode = (string) UI::QueryWidget (`id (`mode), `Value);
+	    // WPA-PSK and WPA-EAP are only allowed for Managed mode
+	    if (authmode_wpa && mode != "Managed")
+	    {
+		UI::SetFocus (`id (`mode));
+		/* Popup text */
+		Popup::Error (_("WPA authentication mode is only possible in managed operating mode."));
+		continue;
+	    }
+	    essid = (string) UI::QueryWidget (`id (`essid), `Value);
+	    if (essid == "" && (mode != "Managed" || authmode_wpa))
+	    {
+		UI::SetFocus (`id (`essid));
+		/* Popup text */
+		/* modes: combination of operation and authentication */
+		Popup::Error (_("Specify the network name for this mode."));
+		continue;
+	    }
+	    if (size(essid) > 32) {
+		UI::SetFocus (`id (`essid));
+		/* Popup text */
+		Popup::Error(_("The network name must be shorter than 32 characters."));
+		continue;
+	    }
+
+	    key = (string) UI::QueryWidget (`id (`key), `Value);
+	    type = (string) UI::QueryWidget (`id (`type_g), `CurrentButton);
+	    if (authmode == "psk")
+	    {
+		integer sz = size (key);
+		if (type == "passphrase" &&
+		    (sz < 8 || sz > 63))
+		{
+		    UI::SetFocus(`id(`key));
+		    // Error popup
+		    Popup::Error(_("The passphrase must have between 8 and 63 characters (inclusively)."));
+		    continue;
+		}
+		else if (type == "hex" && !regexpmatch (key, "^[0-9A-Fa-f]{64}$"))
+		{
+		    UI::SetFocus(`id(`key));
+		    // Error popup
+		    Popup::Error(sformat (_("The key must have %1 hexadecimal digits."), 64));
+		    continue;
+		}
+	    }
+	    else if (!authmode_wpa)
+	    {
+		ckey = ComposeWepKey (type, key);
+		if (ckey != "") {
+		    if (!CheckWirelessKey (ckey, key_lengths))
+		    {
+			UI::SetFocus(`id(`key));
+			/* Popup text */
+			Popup::Error(_("The encryption key is invalid."));
+			continue;
+		    }
+		}
+		else {
+		    UI::SetFocus(`id(`key));
+		    if (authmode == "sharedkey") // error
+		    {
+			/* Popup text */
+			Popup::Error (_("The encryption key must be specified for this authentication mode."));
+			continue;
+		    }
+		    else if (ret != `keys)	// warning only
+		    {
+			/* Popup text */
+			string pop = _("Using no encryption is a security risk.
+Really continue?
+");
+			if(!Popup::YesNo(pop)) {
+			    continue;
+			}
+		    }
+		}
+	    }
+	    break;
+	}
+	else if (ret != `authmode)
+	{
+	    y2error("Unexpected return code: %1", ret);
+	    continue;
+	}
+    }
+
+    if(ret == `next || ret == `expert || ret == `keys) {
+	Lan::wl_essid = (string) UI::QueryWidget(`id(`essid), `Value);
+	Lan::wl_mode = mode;
+	Lan::wl_auth_mode = authmode;
+	if (authmode == "psk")
+	{
+	    Lan::wl_wpa_psk = key;
+	}
+	else if (!authmode_wpa)
+	{
+	    Lan::wl_key[Lan::wl_default_key] = ckey;
+	}
+    }
+
+    if (ret == `next && authmode == "eap")
+    {
+	ret = `eap;		// continue by the WPA-EAP dialog
+    }
+    return ret;
+}
+
+/**
+ * Wireless expert configuration dialog
+ * @return dialog result
+ */
+define any WirelessExpertDialog() ``{
+
+    ScreenName("lan-hardware-wireless-expert");
+
+    /* Wireless expert dialog caption */
+    string caption = _("Wireless Expert Settings");
+
+    /* Wireless expert dialog help 1/5 */
+    string helptext = _("<p>Here, set additional configuration parameters
+(rarely needed).</p>") +
+
+    /* Wireless expert dialog help 2/5 */
+    _("<p>To use your wireless LAN card in master or ad-hoc mode,
+set the <b>Channel</b> the card should use here. This is not needed
+for managed mode--the card will hop through the channels searching for access
+points in that case.</p>
+") +
+
+    /* Wireless expert dialog help 3/5 */
+_("<p>In some rare cases, you may want to set a transmission
+<b>Bit Rate</b> explicitly. The default is to go as fast as possible.</p>") +
+
+    /* Wireless expert dialog help 4/5 */
+_("<p>In an environment with multiple <b>Access Points</b>, you may want to
+define the one to which to connect by entering its MAC address.</p>") +
+
+    /* Wireless expert dialog help 5/5 */
+_("<p><b>Use Power Management</b> enables power saving mechanisms.
+This is generally a good idea, especially if you are a laptop user and may
+be disconnected from AC power.</p>
+");
+
+    string helpunused =
+    /* Wireless expert dialog help 2b/5 */
+    _("<p>To specify the <b>Frequency</b> instead of
+the channel, select the desired value.</p>
+");
+
+    /* Combobox label */
+    term freq = `ComboBox(`id(`frequency), `opt(`hstretch), _("&Frequency"), [
+	/* Combobox item */
+	`item(`id("Automatic"), _("Automatic"), Lan::wl_frequency == ""),
+	`item(`id("Automatic"), "FIXME: ASK jg@suse.de", Lan::wl_frequency != ""),
+     ]);
+
+    list channels = [ "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", ];
+    if (Lan::wl_channels != nil)
+    {
+	channels = Lan::wl_channels;
+    }
+    if(Lan::wl_channel != "" && !contains(channels, Lan::wl_channel))
+	channels = prepend(channels, Lan::wl_channel);
+    /* Combobox item */
+    channels = prepend(channels, `item(`id(""), _("Automatic")));
+
+    list bitrates = [ "54", "48", "36", "24", "18", "12", "11", "9", "6", "5.5", "2", "1" ];
+    if (Lan::wl_bitrates != nil)
+    {
+	bitrates = Lan::wl_bitrates;
+    }
+    if(Lan::wl_bitrate != "" && !contains(bitrates, Lan::wl_bitrate))
+	bitrates = prepend(bitrates, Lan::wl_bitrate);
+    /* Combobox item */
+    bitrates = prepend(bitrates, `item(`id(""), _("Automatic")));
+
+    list b = [];
+
+    /* Wireless expert dialog contents */
+    term contents = `HBox(
+	`HSpacing(4),
+	`VBox(
+	    `VSpacing(0.5),
+	    /* Frame label */
+	    `Frame(_("Wireless Expert Settings"), `HBox(`HSpacing(2), `VBox(
+		`VSpacing(1),
+		/* Combobox label */
+		`ComboBox(`id(`channel), `opt(`hstretch), _("&Channel"), channels),
+		`VSpacing(0.2),
+		/* Combobox label */
+		`ComboBox(`id(`bitrate), `opt(`hstretch), _("B&it Rate"), bitrates),
+		`VSpacing(0.2),
+		/* Text entry label */
+		`TextEntry(`id(`accesspoint), _("&Access Point"), Lan::wl_accesspoint),
+		`VSpacing(0.2),
+		/* CheckBox label */
+		`Left(`CheckBox(`id(`power), _("Use &Power Management"), Lan::wl_power == true)),
+		`VSpacing(1)
+		), `HSpacing(2))),
+	    `VSpacing(0.5)
+	),
+	`HSpacing(4)
+    );
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    Label::BackButton(), Label::OKButton());
+
+    UI::ChangeWidget(`id(`bitrate), `Value, Lan::wl_bitrate);
+    UI::ChangeWidget(`id(`channel), `Value, Lan::wl_channel);
+    // #88530
+    boolean channel_changeable = contains (["Ad-hoc", "Master"], Lan::wl_mode);
+    UI::ChangeWidget (`id (`channel), `Enabled, channel_changeable);
+
+    any ret = nil;
+    while(true) {
+	ret = UI::UserInput();
+
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    /* Check */
+	    break;
+	}
+	else {
+	    y2error("Unexpected return code: %1", ret);
+	    continue;
+	}
+    }
+
+    if(ret == `next) {
+	Lan::wl_channel = (string) UI::QueryWidget(`id(`channel), `Value);
+//	Lan::wl_frequency = (string) UI::QueryWidget(`id(`frequency), `Value);
+	Lan::wl_bitrate = (string) UI::QueryWidget(`id(`bitrate), `Value);
+	Lan::wl_accesspoint = (string) UI::QueryWidget(`id(`accesspoint), `Value);
+	Lan::wl_power = (boolean) UI::QueryWidget(`id(`power), `Value) == true;
+    }
+
+    return ret;
+}
+
+/**
+ * Used to add or edit a key
+ * @param tkey has s: for ascii or h: for passphrase
+ * @param lengths allowed real key lengths
+ */
+define string WirelessKeyPopup (string tkey, list<integer> lengths) ``{
+    ScreenName("lan-hardware-wireless-key");
+
+    map<string, string> wkey = ParseWepKey (tkey);
+    string key = wkey["key"]:"";
+    string type = wkey["type"]:"";
+
+    term contents =
+    `HBox(
+	`HSpacing(1),
+	`VBox(
+	    `VSpacing(0.2),
+	    // Translators: popup dialog heading
+	    `Heading (_("Enter Encryption Key")),
+	    type_w, // common with the main dialog
+	    `VSpacing(0.5),
+	    // Translators: text entry label
+	    `Left (`TextEntry (`id (`key), _("&Key"), key)),
+	    `VSpacing(0.2),
+	    `HBox (`PushButton (`id (`ok), `opt (`default, `key_F10),
+				Label::OKButton ()),
+		   `PushButton (`id (`cancel), `opt (`key_F9),
+				Label::CancelButton ()),
+		   `PushButton (`id (`help), `opt (`key_F1),
+				Label::HelpButton ())
+		),
+	    `VSpacing(0.2)
+	    ),
+	`HSpacing(1)
+	);
+
+    UI::OpenDialog (`opt(`decorated), contents);
+    UI::ChangeWidget (`id (`type_g), `CurrentButton, type);
+    UI::SetFocus (`id (`key));
+
+    any ret = nil;
+    string ckey = nil;
+    while (true)
+    {
+	ret = UI::UserInput ();
+
+	if (ret == `help)
+	{
+	    // Translators: popup title
+	    Popup::LongText (_("Help"), `RichText (wep_key_help), 50, 18);
+	}
+	else if (ret == `cancel)
+	{
+	    break;
+	}
+	else if (ret == `ok)
+	{
+	    key = (string) UI::QueryWidget (`id (`key), `Value);
+	    type = (string) UI::QueryWidget (`id (`type_g), `CurrentButton);
+	    ckey = ComposeWepKey (type, key);
+	    if (CheckWirelessKey (ckey, lengths))
+	    {
+		break;
+	    }
+	    UI::SetFocus(`id(`key));
+	    /* Popup text */
+	    Popup::Error(_("The encryption key is invalid."));
+	}
+	else
+	{
+	    y2error("Unexpected return code: %1", ret);
+	}
+    }
+
+    if (ret == `ok)
+    {
+	tkey = ckey;
+    }
+
+    UI::CloseDialog ();
+
+    return tkey;
+}
+
+/**
+ * Generate items for the keys table
+ */
+define list<term> WirelessKeysItems (list<string> keys, integer defaultk) ``{
+    return maplist (integer i, [0, 1, 2, 3],
+		    ``( `item (`id (i), i, keys[i]:"", (i==defaultk)? "*":"") )
+	);
+}
+
+/**
+ * In case the current default key is empty, find a nonempty one
+ * or the first one.
+ */
+define integer FindGoodDefault (list<string> keys, integer defaultk) ``{
+    if (keys[defaultk]:"" != "")
+    {
+	return defaultk;
+    }
+    defaultk = find (integer i, [0, 1, 2, 3], ``( keys[i]:"" != "" ));
+    if (defaultk == nil)
+    {
+	defaultk = 0;
+    }
+    return defaultk;
+}
+
+/**
+ * Wireless expert configuration dialog
+ * @return dialog result
+ */
+define any WirelessKeysDialog() ``{
+
+    ScreenName("lan-hardware-wireless-keys");
+
+    /* Wireless keys dialog caption */
+    string caption = _("Wireless Keys");
+
+    /* Wireless keys dialog help 1/3 */
+    string helptext = _("<p>In this dialog, define your WEP keys used
+to encrypt your data before it is transmitted. You can have up to four keys,
+although only one key is used to encrypt the data. This is the default key.
+The other keys can be used to decrypt data. Usually you have only
+one key.</p>") +
+
+    /* Wireless keys dialog help 2/3 */
+    _("<p><b>Key Length</b> defines the bit length of your WEP keys.
+Possible are 64 and 128 bit, sometimes also referred to as 40 and 104 bit.
+Some older hardware might not be able to handle 128 bit keys, so if your
+wireless LAN connection does not establish, you may need to set this
+value to 64.</p>") +
+    "";
+
+    string length = Lan::wl_key_length;
+    list<string> ui_key_lengths = maplist (integer kl,
+					   ParseKeyLengths (Lan::wl_enc_modes),
+					   ``( tostring (kl + 24) ));
+    if (!contains (ui_key_lengths, length))
+    {
+	ui_key_lengths = add (ui_key_lengths, length);
+    }
+    list<string> keys = Lan::wl_key;
+    integer defaultk = FindGoodDefault (keys, Lan::wl_default_key);
+
+    /* Wireless keys dialog contents */
+    term contents = `HBox(
+	`HSpacing(5),
+	`VBox(
+	    `VSpacing(1),
+	    /* Frame label */
+	    `Frame(_("WEP Keys"), `HBox(`HSpacing(3), `VBox(
+		`VSpacing(1),
+		/* ComboBox label */
+		`Left(`ComboBox(`id(`length), _("&Key Length"), ui_key_lengths)),
+		`VSpacing(1),
+		`Table(`id(`table), `opt(`notify),
+		       `header(
+			   /* Table header label */
+			   // Abbreviation of Number
+			   _("No."),
+			   /* Table header label */
+			   _("Key"),
+			   /* Table header label */
+			   `Center (_("Default"))),
+		       WirelessKeysItems (keys, defaultk)),
+		`HBox(
+		    /* PushButton label */
+		    `PushButton(`id(`edit), Label::EditButton()),
+		    /* PushButton label */
+		    `PushButton(`id(`delete), Label::DeleteButton()),
+		    /* PushButton label */
+		    `PushButton(`id(`default), _("&Set as Default"))),
+		`VSpacing(1)
+		), `HSpacing(3))),
+	    `VSpacing(1)
+	),
+	`HSpacing(5)
+    );
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    Label::BackButton(), Label::OKButton());
+
+    UI::ChangeWidget (`id (`length), `Value, length);
+
+    integer current = (integer) UI::QueryWidget (`id (`table), `CurrentItem);
+
+    any ret = nil;
+    while(true) {
+	foreach (symbol btn, [`edit, `delete, `default], ``{
+	    UI::ChangeWidget (`id (btn), `Enabled, current != nil);
+	});
+
+	UI::SetFocus (`id (`table));
+	ret = UI::UserInput();
+
+	current = (integer) UI::QueryWidget (`id (`table), `CurrentItem);
+	length = (string) UI::QueryWidget (`id (`length), `Value);
+	integer rlength = tointeger (length) - 24;
+
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	else if(ret == `table || ret == `edit || ret == `delete) {
+	    keys[current] = (ret != `delete) ? WirelessKeyPopup (keys[current]:"", [rlength]) : "";
+	    defaultk = FindGoodDefault (keys, defaultk);
+	    UI::ChangeWidget (`id (`table), `Items, WirelessKeysItems (keys, defaultk));
+	}
+	else if(ret == `default) {
+	    defaultk = FindGoodDefault (keys, current);
+	    UI::ChangeWidget (`id (`table), `Items, WirelessKeysItems (keys, defaultk));
+	}
+	else if(ret == `next || ret == `back) {
+	    break;
+	}
+	else {
+	    y2error("Unexpected return code: %1", ret);
+	    continue;
+	}
+    }
+
+    if(ret == `next) {
+	Lan::wl_key_length = length;
+	Lan::wl_key = keys;
+	Lan::wl_default_key = defaultk;
+    }
+
+    return ret;
+}
+
+// -------------------- WPA EAP --------------------
+
+/**
+ * function to initialize widgets
+ * @param key widget id
+ */
+define void InitializeWidget (string key) {
+    // the "" serves instead of a default constructor for wl_wpa_eap
+    UI::ChangeWidget (`id (key), `Value, Lan::wl_wpa_eap[key]:"");
+}
+
+/**
+ * function to store data from widget
+ * @param key widget id
+ * @param event ?
+ */
+define void StoreWidget (string key, map event) {
+     Lan::wl_wpa_eap[key] = UI::QueryWidget (`id (key), `Value);
+}
+
+/**
+ * Called when one of the two file browser buttons is pressed
+ * @param key widget id
+ * @param event ?
+ * @return nil so that the dialog does not exit
+ */
+define symbol HandleFileBrowse (string key, map event) {
+    y2milestone ("key: %1, event: %2", key, event);
+    // only process our own events
+    if (event["ID"]:nil != key)
+    {
+	return nil;
+    }
+  
+    /* convert to the text entry widget we belong to */
+    map attached_to = $[
+	"WPA_EAP_CLIENT_CERT_BROWSE": "WPA_EAP_CLIENT_CERT",
+	"WPA_EAP_CA_CERT_BROWSE":     "WPA_EAP_CA_CERT",
+	];
+    key = attached_to[key]:"";
+
+    /* get the file and its directory if already entered*/
+    string file = (string) UI::QueryWidget (`id (key), `Value);
+    integer slashpos = findlastof (file, "/");
+    string defaultd = ".";	// "/etc/cert";
+    string dir = slashpos == nil ? defaultd : substring (file, 0, slashpos);
+
+    // file browser dialog headline
+    file = UI::AskForExistingFile (dir, "*", _("Choose a Certificate"));
+
+    if (file != nil) {
+	// fill the value
+	UI::ChangeWidget (`id (key), `Value, file);
+    }
+    return nil;
+}
+
+/**
+ * Called to validate that the file entered exists
+ * @param key widget id
+ * @param event ?
+ * @return ok?
+ */
+define boolean ValidateFileExists (string key, map event) {
+    string file = (string) UI::QueryWidget (`id (key), `Value);
+
+    if (file == "")
+    {
+	return true;		// validated in ValidateWpaEap
+    }
+
+    if (FileUtils::Exists (file))
+    {
+	return true;
+    }
+    else
+    {
+	UI::SetFocus (`id (key));
+	Popup::Error (Message::CannotOpenFile (file));
+	return false;
+    }
+}
+
+/**
+ * Called to validate that the whole dialog makes sense together
+ * @param key widget id
+ * @param event ?
+ * @return ok?
+ */
+define boolean ValidateWpaEap (string key, map event) {
+    map tmp = listmap (string key, [
+			   "WPA_EAP_IDENTITY",
+			   //"WPA_EAP_PASSWORD",
+			   "WPA_EAP_CLIENT_CERT",
+			   ],
+		       ``( $[ key: UI::QueryWidget (`id (key), `Value) ] ));
+
+    if (tmp["WPA_EAP_CLIENT_CERT"]:"" == "" && tmp["WPA_EAP_IDENTITY"]:"" =="")
+    {
+	UI::SetFocus (`id ("WPA_EAP_IDENTITY"));
+	// error popup text
+	Popup::Error (_("Enter either the identity and password
+or the client certificate."));
+	return false;
+    }
+    else
+    {
+	return true;
+    }
+}
+
+map<string, map<string,any> > wpa_eap_widget_descr = $[
+    // the four WPA_EAP_* widgets come together, so the helps are
+    // dipersed a bit
+    "WPA_EAP_IDENTITY": $[
+	"widget": `textentry,
+	// text entry label
+	"label": _("&Identity"),
+	"opt": [],
+	"help": _("<p>WPA-EAP uses a RADIUS server to authenticate users. There
+are different methods in EAP to connect to the server and
+perform the authentication, namely TLS, TTLS, and PEAP.</p>
+<p>For TTLS and PEAP, enter your <b>Identity</b>
+and <b>Password</b> as configured on the server.</p>
+"),
+	],
+    "WPA_EAP_PASSWORD": $[
+	"widget": `textentry,	// or password?
+	// text entry label
+	"label": _("&Password"),
+	"opt": [],
+	"no_help": true,
+	],
+    "WPA_EAP_CLIENT_CERT": $[
+	"widget": `textentry,
+	// text entry label
+	"label": _("&Client Certificate"),
+	"opt": [],
+	"help": _("<p>TLS uses a <b>Client Certificate</b> instead of a username and
+password combination.</p>"),
+	"validate_type": `function,
+	"validate_function": ValidateFileExists,
+	],
+    "WPA_EAP_CA_CERT": $[
+	"widget": `textentry,
+	// text entry label
+	// aka certificate of the CA (certification authority)
+	"label": _("&Server Certificate"),
+	"opt": [],
+	"help": _("<p>To increase security, it is recommended to configure
+a <b>Server Certificate</b>. It is used
+to validate the server's authenticity.</p>
+"),
+	"validate_type": `function,
+	"validate_function": ValidateFileExists,
+	],
+    "WPA_EAP_CLIENT_CERT_BROWSE": $[
+	"widget": `push_button,	// FIXME queries value on Next :(
+	"label": "...",
+	"opt": [],		// autoshortcut?
+	"no_help": true,
+	"handle": HandleFileBrowse,
+	],
+    "WPA_EAP_CA_CERT_BROWSE": $[
+	"widget": `push_button,
+	"label": "...",
+	"opt": [],
+	"no_help": true,
+	"handle": HandleFileBrowse,
+	],
+    "WPA_EAP_DUMMY": $[
+	"widget": `empty,	// FIXME No widget with `id( "WPA_EAP_DUMMY" )
+	"no_help": true,
+	"validate_type": `function,
+	"validate_function": ValidateWpaEap,
+	],
+    ];
+
+/**
+ * Lays out a text entry and a push button, with proper alignment
+ */
+define term AddButton (string id, string button_id) {
+    return `HBox (id, button_id);
+    // needs new CWM
+    return (
+	`VSquash (		// only for old UI?
+	    `HBox (
+		id, `Bottom (button_id)
+		)
+	    )
+	);
+}
+
+/**
+ * Settings for WPA-EAP
+ * @return dialog result
+ */
+define any WirelessWpaEapDialog () {
+    term contents = `VBox (
+	`HBox (
+	    "WPA_EAP_IDENTITY",
+	    `HSpacing (1),
+	    "WPA_EAP_PASSWORD"
+	    ),
+	AddButton ("WPA_EAP_CLIENT_CERT", "WPA_EAP_CLIENT_CERT_BROWSE"),
+	AddButton ("WPA_EAP_CA_CERT",     "WPA_EAP_CA_CERT_BROWSE"),
+	"WPA_EAP_DUMMY"
+	);
+
+    map functions = $[
+	"init" : InitializeWidget,
+	"store" : StoreWidget,
+	`abort: ReallyAbort, 	// undocumented, FIXME
+    ];
+
+    return CWM::ShowAndRun (
+	$[
+	    "widget_names": [	// TODO StringsOfTerm
+		"WPA_EAP_IDENTITY",
+		"WPA_EAP_PASSWORD",
+		"WPA_EAP_CLIENT_CERT",
+		"WPA_EAP_CLIENT_CERT_BROWSE",
+		"WPA_EAP_CA_CERT",
+		"WPA_EAP_CA_CERT_BROWSE",
+		"WPA_EAP_DUMMY",
+		],
+	    "widget_descr": wpa_eap_widget_descr,
+	    "contents": contents,
+	    // dialog caption
+	    "caption": _("WPA-EAP"),
+	    "back_button" : Label::BackButton (),
+	    "next_button" : Label::OKButton (),
+	    "fallback_functions" : functions,
+	    ]);
+}
+
+/* EOF */
+}

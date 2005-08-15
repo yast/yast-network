@@ -1,0 +1,62 @@
+[Desktop Entry]
+Type=Application
+Categories=Qt;X-SuSE-YaST;X-SuSE-YaST-Network;
+
+X-KDE-ModuleType=Library
+X-KDE-RootOnly=true
+X-KDE-HasReadOnlyMode=true
+X-KDE-Library=yast2
+X-SuSE-YaST-Call=lan
+
+X-SuSE-YaST-Group=Network
+X-SuSE-YaST-Argument=
+X-SuSE-YaST-RootOnly=true
+X-SuSE-YaST-AutoInst=all
+X-SuSE-YaST-Geometry=
+X-SuSE-YaST-SortKey=
+X-SuSE-YaST-AutoInstResource=networking
+X-SuSE-YaST-AutoInstClonable=true
+
+Icon=yast-lan
+Exec=/sbin/yast2 lan 
+
+Name=Network Card
+GenericName=Configure network cards
+Name[cs]=Síťová karta
+GenericName[cs]=Konfigurovat síťovou kartu
+Name[de]=Netzwerkkarte
+GenericName[de]=Konfiguration der Netzwerkkarte
+Name[en]=Network Card
+Name[es]=Tarjeta de red
+GenericName[es]=Configurar tarjeta de red
+Name[hu]=Hálózati kártya
+GenericName[hu]=Hálózati kártya beállítása
+Name[it]=Scheda di rete 
+GenericName[it]=Configurazione scheda di rete
+Name[ko]=네트워크 카드
+GenericName[ko]=네트워크 카드 설정
+Name[nl]=Netwerkkaart
+GenericName[nl]=Configureer netwerkkaart
+Name[pt]=Placa de rede
+GenericName[pt]=Configurar placa de rede
+Name[sk]=Sieťová karta
+GenericName[sk]=Konfigurácia sieťovej karty
+Name[sv]=Nätverkskort
+GenericName[sv]=Ställ in nätverkskort
+Name[bg]=Мрежова карта
+GenericName[bg]=Настройка на мрежова карта
+Name[da]=Netværkskort (NIC)
+GenericName[da]=Indstil netværkskort
+Name[el]=Κάρτα δικτύου
+GenericName[el]=Ρυθμίστε την κάρτα δικτύου
+Name[fr]=Carte réseau
+GenericName[fr]=Configurer la carte réseau.
+Name[ja]=ネットワーク・カード
+GenericName[ja]=ネットワーク・カードを設定する
+Name[lt]=Tinklo plokštė
+GenericName[lt]=Konfigūruoti tinklo plokštę
+Name[sl]=Omrežna kartica
+GenericName[sl]=Nastavite omrežno kartico
+Name[tr]=Ağ kartı
+GenericName[tr]=Ağ kartını yapılandır
+X-KDE-SubstituteUID=true

@@ -1,0 +1,245 @@
+/**
+ * File:	include/network/lan/dialogs.ycp
+ * Package:	Network configuration
+ * Summary:	Summary, overview and IO dialogs for network cards config
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Lan";
+import "DNS";
+import "NetworkConfig";
+import "NetworkModules";
+import "Routing";
+
+import "Wizard";
+import "Wizard_hw";
+import "WizardHW";
+
+import "Popup";
+import "Label";
+
+include "network/routines.ycp";
+include "network/summary.ycp";
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+define boolean Modified() ``{
+    return Lan::Modified() || DNS::modified || Routing::Modified() ||
+	NetworkConfig::Modified();
+}
+
+/**
+ * Commit changes to internal structures
+ * @return always `next
+ */
+define symbol Commit() ``{
+    Lan::Commit();
+    return `next;
+}
+
+/**
+ * Display finished popup
+ * @return dialog result
+ */
+define symbol FinishDialog() ``{
+    return FinishPopup(Modified(), "lan", "", "mail", ["permanent"]);
+}
+
+/**
+ * Read settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol ReadDialog() ``{
+
+    ScreenName("lan-read");
+
+    /* Network cards read dialog help 1/2 */
+    string help = _("<p><b><big>Initializing Network Card
+Configuration</big></b><br>Please wait...<br></p>
+") +
+
+    /* Network cards read dialog help 2/2 */
+_("<p><b><big>Aborting the Initialization:</big></b><br>
+Safely abort the configuration utility by pressing <B>Abort</B> now.</p>
+");
+
+    Wizard::RestoreHelp(help);
+    Lan::AbortFunction = ``{return PollAbort();};
+    boolean ret = Lan::Read();
+    return ret ? `next : `abort;
+}
+
+/**
+ * Write settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol WriteDialog() ``{
+    ScreenName("lan-write");
+
+    if(!Modified()) return `next;
+
+    /* Network cards write dialog help 1/2 */
+    string help = _("<p><b><big>Saving Network Card
+Configuration</big></b><br>Please wait...<br></p>
+") +
+
+    /* Network cards write dialog help 2/2 */
+_("<p><b><big>Aborting Saving:</big></b><br>
+Abort saving by pressing <b>Abort</b>.</p>
+");
+
+    Wizard::RestoreHelp(help);
+    Lan::AbortFunction = ``{return PollAbort() && ReallyAbort();};
+    boolean ret = Lan::Write();
+    return ret ? `next : `abort;
+}
+
+/**
+ * Overview dialog
+ * @return dialog result
+ */
+define any OverviewDialog() ``{
+
+    ScreenName("lan-overview");
+
+    /* Network cards overview dialog caption */
+    string caption = _("Network Card Configuration Overview");
+
+    /* Network cards overview dialog help 1/3 */
+    string help = _("<p><b><big>Network Card Overview</big></b><br>
+Obtain an overview of installed network cards. Additionally,
+edit their configuration.<br></p>
+") +
+
+    /* Network cards overview dialog help 2/3 */
+_("<p><b><big>Adding a Network Card:</big></b><br>
+Press <b>Add</b> to configure a new network card manually.</p>
+") +
+
+    /* Network cards overview dialog help 3/3 */
+_("<p><b><big>Editing or Deleting:</big></b><br>
+Choose a network card to change or remove.
+Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
+");
+
+    list<map<string,any> > overview = (list<map<string,any> >)Lan::Overview();
+    overview = overview + Lan::Unconfigured ();
+    y2debug("overview=%1",overview);
+    
+    // FIXME: for now, rework the data for the new WizardHW
+
+    WizardHW::CreateHWDialog (caption, help
+	, [_("Name"), _("IP Address")]
+	, [] );
+
+    WizardHW::SetContents (overview);
+
+    map ret = nil;
+    while(true) {
+
+	ret = WizardHW::UserInput();
+
+	/* abort? */
+	if(ret["event"]:nil == `abort || ret["event"]:nil == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* add */
+	else if(ret["event"]:nil == `add) {
+	    Lan::Add();
+	    break;
+	}
+	/* edit */
+	else if(ret["event"]:nil == `edit || ret["event"]:nil == `table) {
+	    string dev = ret["selected"]:"";
+	    if(dev == nil) {
+		y2error("Empty device during Edit");
+		continue;
+	    }
+
+	    if (substring (dev, 0, 1) == "-") // unconfigured
+	    {
+		integer i = tointeger (substring (dev, 1));
+
+		Lan::Add ();
+		Lan::SelectHW (i);
+		Lan::SetDefaultsForHW ();
+
+		// warn if selecting a card without a driver, #29296
+		// TODO also for DSL...
+		if (NetworkModules::Alias == "")
+		{
+		    if (!Popup::ContinueCancel (_("The device does not have a driver module.
+The driver may be built in the kernel.")))
+		    {
+			continue; // means cancel
+		    }
+		}
+		// this is one of 3 places to install packages :-(
+		// - kernel modules (InstallKernel): before loaded
+		// - smpppd & kinternet: before net start
+		// - wlan firmware: here, just because it is copied from modems
+		//   #45960
+		if(Lan::Requires != [] && Lan::Requires != nil) {
+		    if(PackagesInstall(Lan::Requires) != `next)
+			continue;
+		}
+	    }
+	    else		// configured
+	    {
+		Lan::Edit(dev);
+	    }
+
+	    ret = $["event": `edit];
+	    break;
+	}
+	/* delete */
+	else if(ret["event"]:nil == `delete) {
+	    string dev = ret["selected"]:"";
+
+	    if (substring (dev, 0, 1) == "-") // unconfigured
+		continue;
+
+	    /* Popup text */
+	    string pop = sformat(_("All additional addresses belonging to the interface %1
+will be deleted as well.
+
+Really continue?
+"), dev);
+	    if(Lan::HasAliases(dev) && Popup::YesNoHeadline(Label::WarningMsg(), pop) != true)
+		continue;
+
+	    Lan::Delete(dev);
+	    Lan::Commit();
+	    overview = (list<map<string,any> >)Lan::Overview();
+	    overview = overview + Lan::Unconfigured ();
+	    WizardHW::SetContents(overview);
+	    if(size(overview) < 1) {
+		UI::ChangeWidget(`id(`edit), `Enabled, false);
+		UI::ChangeWidget(`id(`delete), `Enabled, false);
+	    }
+	    y2debug("overview=%1",overview);
+	    continue;
+	}
+	else if(ret["event"]:nil == `next || ret["event"]:nil == `back) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    return ret["event"]:nil;
+}
+
+/* EOF */
+}
