@@ -507,10 +507,18 @@ Assign it to a zone now?")))
 	}
 
 	Lan::bootproto = bootproto;
-	Lan::ipaddr = (string) UI::QueryWidget(`id(`ipaddr), `Value);
-
-	Lan::netmask = (string) QueryWidgetIfExists(`id(`netmask), `Value, Lan::netmask);
-	Lan::remoteip = (string) QueryWidgetIfExists(`id(`remoteip), `Value, Lan::remoteip);
+	if (bootproto == "static") // #104494
+	{
+	    Lan::ipaddr = (string) UI::QueryWidget(`id(`ipaddr), `Value);
+	    Lan::netmask = (string) QueryWidgetIfExists(`id(`netmask), `Value, Lan::netmask);
+	    Lan::remoteip = (string) QueryWidgetIfExists(`id(`remoteip), `Value, Lan::remoteip);
+	}
+	else
+	{
+	    Lan::ipaddr = "";
+	    Lan::netmask = "";
+	    Lan::remoteip = "";
+	}
     }
 
     // proceed with WLAN settings if appropriate, #42420
