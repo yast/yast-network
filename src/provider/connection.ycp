@@ -60,9 +60,23 @@ define any ConnectionDialog() {
 	y2error("Unknown type: %1", type);
 	return nil;
     }
-
     y2debug("device %1", device);
-    boolean FirewallChecked = SuSEFirewall4Network::IsProtectedByFirewall (device);
+
+    boolean adding = false;
+    if (type == "modem")
+	adding = Modem::Adding ();
+    else if (type == "dsl")
+	adding = DSL::Adding ();
+
+    boolean FirewallChecked = false;
+    if (adding)	// #66478
+    {
+	FirewallChecked = true;
+    }
+    else
+    {
+	FirewallChecked = SuSEFirewall4Network::IsProtectedByFirewall (device);
+    }
     y2debug("FirewallChecked=%1", FirewallChecked);
 
     /* DIALOG TEXTS */

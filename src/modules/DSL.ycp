@@ -569,5 +569,14 @@ global define boolean UsesDevice(string device) {
     return size(NetworkDevices::Locate("DEVICE", device)) > 0;
 }
 
+/**
+ * Used to see whether we are in the process of adding a new interface
+ * or editing an existing one.
+ * @return adding?
+ */
+global boolean Adding () {
+    return operation == `add;
+}
+
 /* EOF */
 }
