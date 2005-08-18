@@ -16,6 +16,7 @@ import "Label";
 import "Mode";
 import "Popup";
 import "Proxy";
+import "String";
 import "URL";
 import "Wizard";
 
@@ -381,7 +382,9 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 	Wizard::SetContentsButtons(caption, contents, help,
 		Label::BackButton(), Label::OKButton());
 
-    string ValidCharsUsername = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:_-/\\";
+    // #103841, relaxed. now avoiding only quotes
+    // was CAlnum() + ".:_-/\\"
+    string ValidCharsUsername = deletechars (String::CGraph (), "'\"");
     UI::ChangeWidget(`id(`http), `ValidChars, URL::ValidChars);
     UI::ChangeWidget(`id(`https), `ValidChars, URL::ValidChars);
     UI::ChangeWidget(`id(`ftp), `ValidChars, URL::ValidChars);
