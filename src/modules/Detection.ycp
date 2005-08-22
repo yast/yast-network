@@ -117,9 +117,13 @@ define boolean StartEthInterface() {
     });
 
 
+    // DEBUG
+    // the following ifconfig may have produced german output
+    y2milestone ("Locale: %1", SCR::Execute (.target.bash_output, "/usr/bin/locale"));
+
     /* Setup the interface */
     detection_interface=false;
-    if(SCR::Execute(.target.bash, sformat("/sbin/ifconfig %1 2>&1 | grep 'inet6\\? addr'", device), $["LC_MESSAGES":"C"]) != 0) {
+    if(SCR::Execute(.target.bash, sformat("/sbin/ifconfig %1 2>&1 | grep 'inet6\\? addr'", device), $["LC_ALL":"C"]) != 0) {
 	y2milestone("Setting up interface %1 ...", device);
 	SCR::Execute(.target.bash, sformat("/sbin/ifconfig %1 up 2>&1", device));
 	detection_interface=true;

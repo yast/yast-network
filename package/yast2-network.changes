@@ -1,7 +1,8 @@
 -------------------------------------------------------------------
-Mon Aug 22 16:43:30 CEST 2005 - mvidner@suse.cz
+Mon Aug 22 17:02:30 CEST 2005 - mvidner@suse.cz
 
 - Don't use rcnetwork reload if it is not running (#106040).
+- Don't stop network unnecessarily (Detection stuff, #106040).
 - 2.12.12
 
 -------------------------------------------------------------------
