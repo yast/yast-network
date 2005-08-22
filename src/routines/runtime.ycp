@@ -110,13 +110,19 @@ boolean HasLink() {
  * @return true if success
  */
 define boolean ReloadOrStartNetwork() {
-    // Workaround for bug #46055:
-    // Go to the directory which is hopefully not mounted over the
-    // network so that yast survives network restart.
-    y2milestone("Reloading service %1", "network");
-    // rcnetwork reload works even if it was not running
-    string cmd = "cd /; /etc/init.d/network reload";
-    return SCR::Execute (.target.bash, cmd) == 0;
+    if (Service::Status ("network") == 0)
+    {
+	// Workaround for bug #46055:
+	// Go to the / directory which is hopefully not mounted over the
+	// network so that yast survives network restart.
+	y2milestone("Reloading service %1", "network");
+	string cmd = "cd /; /etc/init.d/network reload";
+	return SCR::Execute (.target.bash, cmd) == 0;
+    }
+    else
+    {
+	return Service::Start ("network");
+    }
 }
 
 /**

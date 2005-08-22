@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Aug 22 16:43:30 CEST 2005 - mvidner@suse.cz
+
+- Don't use rcnetwork reload if it is not running (#106040).
+- 2.12.12
+
+-------------------------------------------------------------------
 Thu Aug 18 16:49:13 CEST 2005 - mvidner@suse.cz
 
 - More valid characters for proxy user name (#103841).
