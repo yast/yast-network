@@ -71,7 +71,14 @@ else if(func == "AskUser") {
 	// unescape colons
 	dev = mergestring (splitstring (dev, "/"), ":");
 	Lan::Edit (dev);
+
+	// #113196: must create new dialog for proposal clients
+	Wizard::CreateDialog ();
+	Wizard::SetDesktopIcon ("lan");
+
 	seq = AddressSequence ("wire");
+
+	Wizard::CloseDialog ();
     }
     else
     {
