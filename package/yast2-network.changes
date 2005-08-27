@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Sat Aug 27 11:38:30 CEST 2005 - mvidner@suse.cz
+Sat Aug 27 16:04:02 CEST 2005 - mvidner@suse.cz
 
+- Fixed editing ISDN providers (#104122).
 - Network settings would not be written if the wifi link was used in
   the proposal (#113196).
 

@@ -256,7 +256,8 @@ symbol HandleProviders (string widget_id, map event)
 	return `Add;
     }
     /* provider edit */
-    else if(ret == `Edit || ret == `Table) {
+    else if(ret == `edit || ret == `Table) {
+	symbol which = nil;
 	ret = Provider_or_IF("edit");
 	if (ret == `provider) {
 	    string prov = WizardHW::SelectedItem ();
@@ -267,17 +268,17 @@ symbol HandleProviders (string widget_id, map event)
 	    ISDN::type = "net";
 	    Provider::Edit(prov);
 	    ISDN::operation = `editprov;
-	    ret = `Editprov;
+	    which = `Editprov;
 	} else {
 	    if (ISDN::SelectInterface(true)) {
 		string ifstr = sformat("net%1", ISDN::device);
 		ISDN::EditIf(ifstr);
-		ret = `Editif;
+		which = `Editif;
 	    } else
 		return nil;
-	    selected_tab = "providers";
-	    return `Edit;
         }
+	selected_tab = "providers";
+	return which;
     }
     /* provider delete */
     else if(ret == `delete) {
