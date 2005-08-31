@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Aug 31 12:51:37 CEST 2005 - locilka@suse.cz
+
+- Fixing bug #113223, Fetching release notes in the installation
+  did not use PROXY settings. Testing proxy timed out after a very
+  long time.
+- 2.12.13
+
+-------------------------------------------------------------------
 Sat Aug 27 16:04:02 CEST 2005 - mvidner@suse.cz
 
 - Fixed editing ISDN providers (#104122).

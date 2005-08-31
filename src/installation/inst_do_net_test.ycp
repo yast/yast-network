@@ -291,16 +291,16 @@ and correct the settings.</p>
 
 	filename = (string) SCR::Read (.target.tmpdir) + substring (url, pos);
 
-	string cmd = "/usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + filename;
+	// .background agent is unable to use ENV variables
+	string cmd = ". /etc/sysconfig/proxy; /usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + filename;
 	cmd = cmd + " > " + logdir + "/curl.log 2>&1";
 
-	map env = Proxy::GetEnvironment ();
-
-	env["LANG"] = GetLanguageUTF8 ();
+	// map env = Proxy::GetEnvironment ();
+	// env["LANG"] = GetLanguageUTF8 ();
 
 	y2milestone ("curl command: %1", cmd);
 	
-	SCR::Execute(.background.run, cmd, env);
+	SCR::Execute(.background.run, cmd);
 	integer ret = wait_for_test ();
 
 	// label of combobox where the log is selected

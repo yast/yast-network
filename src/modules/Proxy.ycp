@@ -196,12 +196,14 @@ global define map <string, map <string, any> > RunTestProxy (string http_proxy, 
 	:
 	"");
 
+    // timeout for the connection
+    integer timeout_sec = 90;
     // %1 = http or ftp proxy, %2 = user:password if any, %3 = URL
-    string command = "curl --verbose --proxy %1 %2 --url %3";
-    string http_command = sformat(command, http_proxy, user_pass, "http://www.novell.com");
+    string command = "curl --verbose --proxy %1 %2 --connect-timeout %3 --url %4";
+    string http_command = sformat(command, http_proxy, user_pass, timeout_sec, "http://www.novell.com");
     // adding option --insecure to accept the certificate without asking
-    string https_command = sformat(command, https_proxy, user_pass, "https://secure-www.novell.com --insecure");
-    string ftp_command  = sformat(command, ftp_proxy,  user_pass, "ftp://ftp.novell.com");
+    string https_command = sformat(command, https_proxy, user_pass, timeout_sec, "https://secure-www.novell.com --insecure");
+    string ftp_command  = sformat(command, ftp_proxy,  user_pass, timeout_sec, "ftp://ftp.novell.com");
 
     y2milestone("Running HTTP_PROXY test...");
     if (test_http) {
