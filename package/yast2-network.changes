@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Sep  1 16:00:26 CEST 2005 - mvidner@suse.cz
+
+- Do not show ISDN controllers both as configured and unconfigured
+  (#103073).
+- Fix acivating network after backing out and configuring again
+  (#113101).
+
+-------------------------------------------------------------------
 Wed Aug 31 12:51:37 CEST 2005 - locilka@suse.cz
 
 - Fixing bug #113223, Fetching release notes in the installation

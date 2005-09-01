@@ -550,12 +550,14 @@ define list BuildOverview(string devregex, list<map> Hardware) {
 }
 
 /**
- * @param class netcard modem dsl isdn
+ * Convert the output of BuildSummary for inclusion in the unified device list.
+ * Called by BuildUnconfigured and BuildUnconfiguredDevs.
+ * @param sum output of BuildSumary
+ * @param class netcard modem dsl, isdn too;
+ * determines how to arrange output, yuck
+ * @return [ $[id, table_descr, rich descr] ]
  */
-define list<map<string,any> > BuildUnconfigured (string class, list<map> Hardware) {
-    boolean split = true;
-    boolean proposal = false;
-    list sum = BuildSummary(class, Hardware, split, proposal);
+define list<map<string,any> > BuildUnconfiguredCommon (list sum, string class) {
     // unconfigured devices
     list<term> res = sum[1]:[`item(`id(`other))];
     // filter out the item for adding an unknown one
@@ -587,5 +589,30 @@ define list<map<string,any> > BuildUnconfigured (string class, list<map> Hardwar
     );
 }
 
+/**
+ * @param Devs configured devices
+ * @param class netcard modem dsl, isdn too
+ * @param Hardware the detected hardware
+ * @return [ $[id, table_descr, rich descr] ]
+ */
+define list<map<string,any> > BuildUnconfiguredDevs (map<string,map> Devs, string class, list<map> Hardware) {
+    boolean split = true;
+    boolean proposal = false;
+    list sum = BuildSummaryDevs (Devs, Hardware, split, proposal);
+    return BuildUnconfiguredCommon (sum, class);
+}
+
+/**
+ * @param class netcard modem dsl. not isdn because it does not use
+ * NetworkDevices (#103073)
+ * @param Hardware the detected hardware
+ * @return [ $[id, table_descr, rich descr] ]
+ */
+define list<map<string,any> > BuildUnconfigured (string class, list<map> Hardware) {
+    boolean split = true;
+    boolean proposal = false;
+    list sum = BuildSummary (class, Hardware, split, proposal);
+    return BuildUnconfiguredCommon (sum, class);
+}
 /* EOF */
 }

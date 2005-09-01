@@ -968,7 +968,7 @@ global define list OverviewDev() ``{
 }
 
 global define list<map<string,any> > UnconfiguredDev () {
-    return BuildUnconfigured ("isdn", Hardware);
+    return BuildUnconfiguredDevs (Devices, "isdn", Hardware);
 }
 
 global define list OverviewIf() ``{
