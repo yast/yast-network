@@ -182,6 +182,10 @@ define map FilterNOT(map<string,map> modules, string devregex) {
  */
 define list MapMinus (map left, map right) {
     list ret = [];
+    if (left == nil)
+	left = $[];
+    if (right == nil)
+	right = $[];
     foreach (any lkey, any lval, left, {
 	if (!haskey (right, lkey) || lval != right[lkey]:nil)
 	{
