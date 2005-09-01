@@ -1,0 +1,320 @@
+/**
+ * File:	modules/Detection.ycp
+ * Package:	Network configuration
+ * Summary:	Network detection
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * <p>Detects network settings, using dhcp or sniffing network traffic</p>
+ *
+ * <h3>Detection process:</h3>
+ * <h4>Initial stage:</h4><ul>
+ *   <li>hardware detection
+ *   <li>load kernel modules (if not already active *1)
+ *   <li>set up interface (if not already set up *2)
+ *   <li>run detection
+ * </ul>
+ * <h4>Final stage:</h4><ul>
+ *   <li>read detection data
+ *   <li>shut down interfaces (if set up before, see *2)
+ *   <li>remove kernel modules (if loaded before, see *1)
+ * </ul>
+ *
+ * <p>
+ * <h4>Used software:</h4><ul>
+ *   <li>dhcpcd(8)
+ *   <li>netprobe(8) (currently not, originally by Caldera, license unclear)
+ * </ul>
+ *
+ * <p>
+ * <h4>Usage:</h4><ul>
+ *   <li>Detection::Start() somewhere at the start of installation
+ * </ul><p>Later at the module:<ul>
+ *   <li>if(Detection::running) Detection::Stop();
+ *   <li>string gw = Detection::result["GATEWAY"]:"";
+ * </ul>
+ *
+ */
+
+{
+
+module "Detection";
+textdomain "network";
+
+import "Directory";
+import "Package";
+import "String";
+
+// yuck, FIXME
+// this is here just because network/hardware.ycp references it
+// because of detection and module loading (StartEthInterface)
+/* general stuff */
+global string description = "";
+global string type = "";
+global string unique = "";
+global string hotplug = "";
+global list<string> Requires = [];
+
+include "network/hardware.ycp";
+
+/**
+ * Detection result
+ * (in dhcpcd-<i>interface</i>.info format)
+ */
+global map result = $[];
+
+/**
+ * True, if detection is running
+ */
+global boolean running = false;
+
+string device = "eth0";
+string tmpdir = Directory::tmpdir;
+
+list<string> detection_modules = [];
+boolean detection_interface = false;
+
+/**
+ * Set up the first eth interface, if not already running
+ * WATCH OUT, this is the place where modules are loaded
+ * @return true if success
+ */
+define boolean StartEthInterface() {
+
+    y2milestone("Network detection prepare");
+
+    list<map> Hardware = ReadHardware("netcard");
+
+    y2debug("Hardware=%1", Hardware);
+    if(size(Hardware) < 1) return false;
+
+    map <string, boolean> needed_modules = listmap (map h, Hardware, {
+	// Formerly we simply modprobed the first module of the first
+	// driver, if it was not already loaded.  But if the user
+	// configured the card to use the second driver and unloads it
+	// and wants to load the first, it will not work because the
+	// first driver is already loaded but not bound to the device
+	// (the second one took it). N#59794#c31
+	// We will only load a driver if there's no driver for the card active.
+	map active_driver = find (map d, (list<map>)h["drivers"]:[],
+				  ``( d["active"]:false ));
+	return $[ (h["module"]:"") : (active_driver == nil) ];
+
+	// TODO 1: choose which driver to load
+	// (2: load all its modules: no cards use multiple modules)
+	// (3: either modprobe or insmod: ISA history)
+    });
+    needed_modules = filter (string m, boolean load, needed_modules, {
+	return load && m != nil && m != "" &&
+	  SCR::Execute (.target.bash, sformat ("grep ^%1 /proc/modules", m)) != 0;
+    });
+    detection_modules = maplist (string m, boolean a, needed_modules, ``( m ));
+    Package::InstallKernel (maplist (string m, detection_modules, ``(m+".ko")));
+    foreach (string mod, detection_modules, {
+	y2milestone("Loading module: %1", mod);
+	SCR::Execute (.target.bash, sformat ("/sbin/modprobe %1 2>&1", mod));
+    });
+
+
+    // DEBUG
+    // the following ifconfig may have produced german output
+    y2milestone ("Locale: %1", SCR::Execute (.target.bash_output, "/usr/bin/locale"));
+
+    /* Setup the interface */
+    detection_interface=false;
+    if(SCR::Execute(.target.bash, sformat("/sbin/ifconfig %1 2>&1 | grep 'inet6\\? addr'", device), $["LC_ALL":"C"]) != 0) {
+	y2milestone("Setting up interface %1 ...", device);
+	SCR::Execute(.target.bash, sformat("/sbin/ifconfig %1 up 2>&1", device));
+	detection_interface=true;
+    }
+    y2debug("detection_interface=%1", detection_interface);
+
+    y2milestone("Network detection prepare (end)");
+    return true;
+}
+
+/**
+ * Shut down the eth interface, previously set up by StartEthInterface
+ * @return true if success
+ */
+define boolean StopEthInterface() {
+
+    y2milestone("Network detection finish");
+
+    if(detection_interface) {
+	y2milestone("Shut down interface %1 ...", device);
+	SCR::Execute(.target.bash, sformat("/sbin/ifconfig %1 down 2>&1", device));
+    }
+    detection_interface = false;
+
+    foreach(string mod, detection_modules, {
+	y2milestone("NOT removing module %1 ...", mod);
+	// #36478 SCR::Execute(.target.bash, sformat("/sbin/rmmod %1 2>&1", mod));
+    });
+
+    y2milestone("Network detection finish (end)");
+    return true;
+}
+
+/**
+ * Start detection
+ * @return true if success
+ */
+define boolean StartDetection() {
+
+    y2milestone("Network detection start");
+
+    /* Start DHCP detection */
+    SCR::Execute(.target.bash, sformat("/bin/rm -f %1/dhcpcd-*", tmpdir));
+
+    // #46214
+    if (true)
+    {
+	y2milestone ("dhcpcd-test skipped");
+    }
+    else
+    {
+	// Do not lose our lease just because of the test,
+	// pretend we are someone else. #46214#c18
+	SCR::Execute(.target.bash, sformat("/usr/sbin/dhcpcd-test %1 -I yast-detection-id > %2/dhcpcd-%1.info", device, tmpdir));
+    }
+
+    y2milestone("Network detection start (end)");
+    return true;
+}
+
+/**
+ * Finish detection
+ * @return true if success
+ */
+define boolean StopDetection() {
+
+    y2milestone("Network detection stop");
+
+    result = $[];
+
+    /* Read DHCP data */
+    string info = sformat("%1/dhcpcd-%2.info", tmpdir, device);
+    // info = "/var/lib/dhcpcd/dhcpcd-eth0.info";
+
+    if(SCR::Read(.target.size, info) > 0) {
+
+	path detpath = .detection.dhcp;
+	string tmpfile = tmpdir + "/detection_dhcp.scr";
+	string scrfile = sformat("%1\n\n`ag_ini(`SysConfigFile(\"%2\"))\n", detpath, info);
+	SCR::Write(.target.string, tmpfile, scrfile);
+	SCR::RegisterAgent(detpath, tmpfile);
+
+	list<string> keys = SCR::Dir(detpath);
+	y2debug("keys=%1", keys);
+
+	maplist(string k, keys, {
+	    string v = (string) SCR::Read(add(detpath, k));
+	    y2debug("%1=%2", k, v);
+	    /* FIXME: duplicate keys (make list? add with suffix1, etc? ...? */
+	    result[k] = v;
+	});
+	SCR::UnregisterAgent(detpath);
+
+    }
+
+    /* Finish DHCP detection */
+    // nothing, #44557
+
+    y2milestone("Network detection stop (end)");
+    return true;
+}
+
+/**
+ * Start the detection
+ * @return true on success
+ */
+global define boolean Start() {
+    if(running == true) {
+	y2error("Detection already running");
+	return false;
+    }
+
+y2milestone("IFCONFIG1: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
+    boolean ret = false;
+    if(StartEthInterface() && StartDetection()) {
+	running = true;
+	ret = true;
+    }
+
+y2milestone("IFCONFIG2: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
+    y2milestone("Detection start result: %1", ret);
+    return ret;
+}
+
+/**
+ * Stop the detection
+ * @return true on success
+ */
+global define boolean Stop() {
+    if(running != true) {
+	y2error("Detection not running");
+	return false;
+    }
+    running = false;
+
+y2milestone("IFCONFIG3: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
+    boolean ret = StopDetection();
+    ret = StopEthInterface() && ret;
+
+y2milestone("IFCONFIG4: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
+    y2milestone("Detection stop result: %1", ret);
+    return ret;
+}
+
+/**
+ * Duplicate IP detection
+ * @param ip tested IP address
+ * @return true if duplicate found
+ * @see arping(8), ip(8)
+ */
+global boolean DuplicateIP (string ip) {
+    string command = "LC_ALL=C ip link show|grep BROADCAST|grep -v NOARP|cut -d: -f2";
+    map exe = (map) SCR::Execute (.target.bash_output, command);
+    string ifs = exe["stdout"]:"";
+    list<string> ifsl = filter (string i, splitstring (ifs, " \t\n"), ``( i != ""));
+
+    // #45169: must only probe the interface being set up
+    // but I don't know which one it is :-(
+    // so pretend there are no dups if we have more interfaces
+    if (size (ifsl) > 1)
+    {
+	return false;
+    }
+
+    // find the interface that detects the dup
+    string ifc = find (string ifname, ifsl, {
+	command = "arping -qD -c2 -w3 -I" + ifname + " " + ip;
+	return SCR::Execute(.target.bash, command) != 0;
+    });
+
+    return ifc != nil;
+}
+
+// this function is moved here just to kee it out of the tangle of
+// includes which will be torn apart in the next release. dependency
+// hell.
+/**
+ * Resolve IP to host name
+ * @param ip given IP address
+ * @return resolved host
+ */
+global string ResolveIP(string ip) {
+    string command = "/usr/bin/getent hosts \"%1\" | sed \"s/^[0-9.: \t]\\+//g\"";
+    map getent = (map) SCR::Execute(.target.bash_output, sformat(command, ip));
+    string hnent = getent["stdout"]:"";
+    y2debug("%1", hnent);
+    hnent = String::FirstChunk (hnent, " \t\n");
+    if(hnent == nil) hnent = "";
+    y2debug("'%1'", hnent);
+    return String::CutBlanks(hnent);
+}
+
+/* EOF */
+}
