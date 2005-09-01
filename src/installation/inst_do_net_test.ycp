@@ -292,7 +292,7 @@ and correct the settings.</p>
 	filename = (string) SCR::Read (.target.tmpdir) + substring (url, pos);
 
 	// .background agent is unable to use ENV variables
-	string cmd = ". /etc/sysconfig/proxy; /usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + filename;
+	string cmd = ". /etc/sysconfig/proxy; http_proxy=${HTTP_PROXY} /usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + filename;
 	cmd = cmd + " > " + logdir + "/curl.log 2>&1";
 
 	// map env = Proxy::GetEnvironment ();
