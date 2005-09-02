@@ -1,10 +1,11 @@
 -------------------------------------------------------------------
-Thu Sep  1 16:00:26 CEST 2005 - mvidner@suse.cz
+Fri Sep  2 11:06:13 CEST 2005 - mvidner@suse.cz
 
 - Do not show ISDN controllers both as configured and unconfigured
   (#103073).
 - Fix acivating network after backing out and configuring again
   (#113101).
+- 2.12.14
 
 -------------------------------------------------------------------
 Wed Aug 31 12:51:37 CEST 2005 - locilka@suse.cz
