@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Sep 09 12:06:54 CEST 2005 - arvin@suse.de
+
+- run SuSEconfig gdm after remote control changes (bug #115901)
+- 2.12.15
+
+-------------------------------------------------------------------
 Fri Sep  2 11:06:13 CEST 2005 - mvidner@suse.cz
 
 - Do not show ISDN controllers both as configured and unconfigured
@@ -130,7 +136,7 @@ Thu Jun 23 12:08:59 CEST 2005 - mvidner@suse.cz
 Wed Jun 22 08:46:14 CEST 2005 - visnov@suse.cz
 
 - HTTPS_PROXY support (#67357)
-- Proxy command line support 
+- Proxy command line support
 
 -------------------------------------------------------------------
 Fri Jun 10 14:42:04 CEST 2005 - mvidner@suse.cz
@@ -142,7 +148,7 @@ Fri Jun 10 14:42:04 CEST 2005 - mvidner@suse.cz
 Wed Jun  1 15:27:01 CEST 2005 - mvidner@suse.cz
 
 - Do not load a NIC driver if one is already loaded (#59794#c31).
-- Use network module options supplied by user during 
+- Use network module options supplied by user during
   boot (install.inf) when installing and proposing (#75720).
 - For force_static_ip, also change the default in the address dialog
   (#65524).
@@ -302,8 +308,8 @@ Fri Feb  4 17:32:35 CET 2005 - mvidner@suse.cz
 - Introduced ifcfg:NAME, user's name for the interface,
   initialized from the hardware description. No widget yet.
 - Added firewall zone selection to network card details dialog,
-  jump to it if the interface is not in any zone. 
-  Add new network cards to the external zone if the firewall 
+  jump to it if the interface is not in any zone.
+  Add new network cards to the external zone if the firewall
   is already enabled (#47309, #50333).
 - For WLAN interfaces, wireless-tools.rpm is needed (#49880).
 - Help text fix: cannot correct network settings during an update
@@ -338,7 +344,7 @@ Mon Jan 24 21:19:34 CET 2005 - nashif@suse.de
 -------------------------------------------------------------------
 Mon Jan 24 19:34:52 CET 2005 - nashif@suse.de
 
-- Hardcode argument of inst_netsetup, currently argument `up is not 
+- Hardcode argument of inst_netsetup, currently argument `up is not
   needed because the client does only `up and no `down anymore
 
 -------------------------------------------------------------------

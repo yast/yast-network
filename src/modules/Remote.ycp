@@ -124,6 +124,7 @@ global boolean Write() {
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module xdm");
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kde3");
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kdm3");
+	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module gdm");
 
 	boolean dm_was_running = Service::Status("xdm") == 0;
 	if(allow_administration) {
