@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Sep 26 13:17:26 CEST 2005 - mvidner@suse.cz
+
+- Make ifplugd the default startmode for NICs (#115448).
+- If a NIC is configured with no address, say so (#116092).
+- 2.13.0
+
+-------------------------------------------------------------------
 Fri Sep 09 12:06:54 CEST 2005 - arvin@suse.de
 
 - run SuSEconfig gdm after remote control changes (bug #115901)

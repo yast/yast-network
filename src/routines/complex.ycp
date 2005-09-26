@@ -465,6 +465,14 @@ define string DeviceProtocol(map devmap) {
 define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
     list overview = [];
 
+    map startmode_descrs = $[
+	// summary description of STARTMODE=auto
+	"auto": _("Started automatically at boot"),
+	// summary description of STARTMODE=hotplug
+	"hotplug": _("Started automatically at boot"),
+	// summary description of STARTMODE=ifplugd
+	"ifplugd": _("Started automatically on cable connection"),
+	];
     maplist(string type, map devmap, Devs, {
 	maplist(string k, map v, (map<string,map>)devmap, {
 	    term item = nil;
@@ -474,6 +482,8 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 	    string descr = BuildDescription (type, k, v, Hardware);
 	    // if(size(descr) > 17) descr = substring(descr, 0, 16) + "...";
 
+	    string startmode_descr = startmode_descrs[v["STARTMODE"]:""]:_("Started manually");
+
 	    /* Modem and DSL */
 	    if(type == "ppp" || type == "modem" || type == "dsl")
 	    {
@@ -482,8 +492,7 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 		    + "<br>" + HTML::List ( [
 			sformat(_("Device Name: %1"), dev),
 			sformat(_("Mode: %1"), v["PPPMODE"]:_("Unknown")),
-			v["STARTMODE"]:"" == "auto" ? _("Started automatically at boot") :
-			    _("Started manually"),
+			startmode_descr,
 		    ]);
 		item = `item(`id(dev), dev, DeviceType(type), ProviderName(v["PROVIDER"]:""), rich);
 	    }
@@ -515,8 +524,7 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 			ip == "DHCP" ? _("IP address assigned using DHCP") :
 			    sformat(_("IP address: %1, subnet mask %2")
 				, ip, v["NETMASK"]:""),
-			v["STARTMODE"]:"" == "auto" ? _("Started automatically at boot") :
-			    _("Started manually"),
+			startmode_descr,
 		    ]);
 		
 		item = `item(`id(dev), descr, ip, rich);

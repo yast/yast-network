@@ -745,7 +745,7 @@ global define boolean Select(string dev) {
     y2debug("dev=%1", dev);
     // defaults for a new device
     map devmap = $[
-	"STARTMODE": "auto",
+	"STARTMODE": "ifplugd",	// #115448
 	"NETMASK": (Detection::result["NETMASK"]:"255.255.255.0"), // #31369
 	];
 
@@ -860,6 +860,8 @@ global define boolean Delete(string name) {
     return true;
 }
 
+// ifplugd sometimes does not work for wifi
+// so wired needs higher priority to override it
 map <string, string> ifplugd_priorities = $[
     "eth": "20",
     "wlan": "10",
@@ -1332,7 +1334,7 @@ global define boolean Propose() {
 	list pppoe = (list) SCR::Read(.probe.pppoe);
 	// FIXME: testing pppoe = [ $["a" : "b"] ];
 	map pppoedev = pppoe[0]:$[];
-	y2debug("pppoe=%1", pppoe);
+	y2milestone ("pppoe=%1", pppoe);
 	if(pppoe != nil && size(pppoe) > 0) {
 	    y2milestone("DSL proposal");
 	    ipaddr = "";
