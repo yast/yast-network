@@ -409,7 +409,7 @@ define string DeviceStatus(string devtype, string devnum, map devmap) {
 	    string remip = devmap["REMOTE_IPADDR"]:"";
 	    if(addr == "" || addr == nil)
 		/* Network card status */
-		return sformat(_("Configured."));
+		return sformat(_("Configured without an address."));
 	    else if(remip == "" || remip == nil)
 		/* Network card status (%1 is address) */
 		return sformat(_("Configured with address %1."),
