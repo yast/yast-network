@@ -1232,17 +1232,39 @@ global define boolean Propose() {
         
 
     y2debug("Hardware=%1", Hardware);
-    y2milestone("tosel=%1", tosel);
+    y2milestone ("Selected HW w/o  install.inf patches: %1", tosel);
+
     // do not select a card without a driver, #29296
     if (tosel != nil)
     {
+	// L3 N#81533
+	// Autoyast takes network config from install.inf, has
+	// problem with hardware that has a choice of drivers:
+	// Module A is used even though install.inf says module B.
+	// It is because we selected the _hardware_ and then took
+	// the first module.
+	// Future: select hardware+driver together
+	// CODE 9 fix: for the selected hardware, patch in the driver
+
+	// We cannot simply _create_ tosel from install.inf data because
+	// SelectHW relies on the detected info (eg. busid) from hwinfo
+	// which is not in install.inf
+
+	if (InstallInf["module"]:"" != "")
+	{
+	    y2milestone ("Using driver module from install.inf");
+	    tosel["module"] = InstallInf["module"]:"";
+	}
+
         // L3 bug: 75720
         // Setup module options available from /etc/install.inf
         string _options = InstallModuleOptions(tosel["module"]:"");
         if (_options != "" && _options!=nil) {
+	    y2milestone ("Using driver options from install.inf");
             tosel["options"] = _options;
         }
 
+	y2milestone ("Selected HW with install.inf patches: %1", tosel);
 	SelectHWMap(tosel);
     }
     /* Nothing detected -> use InstallInf */

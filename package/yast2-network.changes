@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Sep 27 09:05:01 CEST 2005 - mvidner@suse.cz
+
+- When proposing LAN config (also in autoyast in some cases), use the
+  module from install.inf, not the first one of several options (like
+  tg3/bcm5700). #81533.
+
+-------------------------------------------------------------------
 Mon Sep 26 13:17:26 CEST 2005 - mvidner@suse.cz
 
 - Make ifplugd the default startmode for NICs (#115448).
