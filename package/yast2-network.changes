@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
-Fri Sep 30 13:30:34 CEST 2005 - mvidner@suse.cz
+Fri Sep 30 13:37:19 CEST 2005 - mvidner@suse.cz
 
+- Fixed disabling IPA takeover (#85438#c32).
+- Fixed setting QETH options to empty (#90454).
 - Changed the default MTU for LCS eth and tr to 1492 (#81815,
   #93798).
 - Added the possibility to turn on the Layer 2 option

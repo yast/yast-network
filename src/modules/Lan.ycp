@@ -1005,10 +1005,8 @@ global define boolean Commit() {
 			NetworkModules::CCW_CHAN_MODE = chan_mode;
 			NetworkModules::CCW_CHAN_NUM = "3";
 			NetworkModules::QETH_OPTIONS = qeth_options;
-			if (ipa_takeover)
-			    NetworkModules::QETH_IPA_TAKEOVER = "1";
-			if (qeth_layer2)
-			    NetworkModules::QETH_LAYER2_SUPPORT = "1";
+			NetworkModules::QETH_IPA_TAKEOVER = ipa_takeover? "1": "0";
+			NetworkModules::QETH_LAYER2_SUPPORT = qeth_layer2? "1": "0";
 		    }
 
 		}
