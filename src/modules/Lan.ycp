@@ -637,6 +637,9 @@ global define list FreeAliases(string type, integer num) {
 }
 
 
+/**
+ * must be in sync with @ref SetDefaultsForHW
+ */
 define map GetDefaultsForHW () {
     map ret = $[];
     if (type == "wlan")
@@ -646,7 +649,19 @@ define map GetDefaultsForHW () {
 		"USERCONTROL": "yes", // #63767
 		]);
     }
-    
+    // LCS eth interfaces on s390 need the MTU of 1492. #81815.
+    // TODO: lcs, or eth?
+    // will eth not get mapped to lcs?
+    // Apparently both LCS eth and LCS tr are represented as "lcs"
+    // but it does not hurt to change the default also for tr
+    // #93798: limit to s390 to minimize regressions. Probably it could
+    // be also done by only testing for lcs and not eth but that
+    // would need more testing.
+    else if (Arch::s390 () && contains (["lcs", "eth"], type))
+    {
+	y2milestone ("Adding LCS: setting MTU");
+	ret = add (ret, "MTU", "1492");
+    }
 }
 
 /**
@@ -657,6 +672,10 @@ global define void SetDefaultsForHW () {
     {
 	usercontrol = true;
     }
+    else if (Arch::s390 () && contains (["lcs", "eth"], type))
+    {
+	mtu = "1492";
+    }    
 }
 
 map<string, string> SysconfigDefaults = $[
