@@ -98,6 +98,12 @@ define any DNSMainDialog(boolean standalone) {
     string help = _("<p>Insert the host name and domain name for your
 computer. Name server list and domain search list are optional.</p>") +
 
+	// #91202
+	(standalone? "":
+	 /* DNS dialog help 1.5/5 */
+	 _("<p>Note that the host name is global, that is, it applies to all
+interfaces, not just this one.</p>")) +
+
     /* DNS dialog help 2/5 */
     _("<p>A name server is a computer that translates host names into
 IP addresses. This value must be entered as an <b>IP address</b>
@@ -166,10 +172,16 @@ disabled during the connection.</p>");
 	s1 = domain;
     }
 
+    string hnlabel = standalone?
+	/* Frame label */
+	_("Host Name and Domain Name"):
+	/* Frame label, emphasizing that the names are global,
+	   not specific to one address */
+	_("Host Name and Domain Name (Global)");
+
     /* DNS dialog contents */
     term contents = `HSquash(`VBox(
-	/* Frame label */
-	`Frame(_("Host Name and Domain Name"), `VBox(
+	`Frame(hnlabel, `VBox(
 	    `HBox(
 		`TextEntry(`id(`host), Label::HostName (), hostname),
 		`HSpacing (1),
