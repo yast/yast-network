@@ -374,7 +374,7 @@ map NetworkCards = $[
     ],
   ],
 
-  "s390" : [
+  "veth" : [
     /* Network card name */
     $["name" : _("iSeries Virtual Network"),
       "module" : "veth",
@@ -470,7 +470,7 @@ map NetworkCards = $[
 
   "hsi" : [
     /* Network subsystem name */
-    $["name" : _("Hippersockets (HSI) network"),
+    $["name" : _("Hipersockets (HSI) network"),
       "module" : "qeth",
       "options" : "",
     ],
@@ -491,6 +491,14 @@ map NetworkCards = $[
       "options" : "",
     ],
   ],
+
+  "ficon" : [
+    /* Network subsystem name */
+    $["name" : _("Fiberchannel System Connector (FICON) network"),
+      "module" : "ctc",
+      "options" : "",
+     ],
+   ],
 
   "iucv" : [
     /* Network subsystem name */

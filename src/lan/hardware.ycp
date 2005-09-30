@@ -91,7 +91,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan" ];
 
     if(Arch::s390 ())
-	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv", "qeth", "lcs" ];
+	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "ficon", "iucv", "qeth", "lcs" ];
 
     if(Arch::ia64 ())
 	device_types = add(device_types, "xp");
@@ -325,10 +325,11 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    UI::ChangeWidget(`id(`num), `Value, device);
 
 	    if(Arch::s390 ()) {
-		if(type == "tr" || type == "lcs") modul = "lcs";
-		if(type == "hsi" || type == "qeth") modul = "qeth";
-		if(type == "ctc" || type == "escon") modul = "ctc";
-		if(type == "iucv") modul = "netiucv";
+		string drvtype = Lan::DriverType (type);
+		if (contains (["lcs", "qeth", "ctc"], drvtype))
+		    modul = drvtype;
+		else if (drvtype == "iucv")
+		    modul = "netiucv";
 		UI::ChangeWidget(`id(`modul), `Value, modul);
 	    }
 	    if(type == "xp") {
@@ -443,9 +444,6 @@ Really continue?
 	y2milestone("type=%1",type);
     }
 
-    /* s390 screen not used #19542
-    if(ret == `next && Lan::type == "hsi") ret = `s390;
-    */
     return ret;
 }
 
@@ -552,6 +550,8 @@ define any S390Dialog() {
     /* S/390 dialog caption */
     string caption = _("S/390 Network Card Configuration");
 
+    string drvtype = Lan::DriverType (Lan::type);
+
     string helptext = "";
     term contents = `Empty ();
 
@@ -600,7 +600,7 @@ define any S390Dialog() {
 	_("<p>Select <b>Enable IPA Takeover</b> if IP address takeover should be enabled for this interface.</p>");
     }
 
-    if(Lan::type == "lcs") {
+    if(drvtype == "lcs") {
 	contents = `HBox(
 	    `HSpacing(6),
 	    /* Frame label */
@@ -627,7 +627,7 @@ define any S390Dialog() {
 	`item(`id("3"), _("Compatibility Mode with OS/390 and z/OS")),
     ];
 
-    if(Lan::type == "ctc") {
+    if(drvtype == "ctc") {
 	contents = `HBox(
 	    `HSpacing(6),
 	    /* Frame label */
@@ -643,7 +643,7 @@ define any S390Dialog() {
 	helptext = _("<p>Choose the <b>Protocol</b> for this interface.</p>");
     }
 
-    if(Lan::type == "iucv") {
+    if(drvtype == "iucv") {
 	contents = `HBox(
 	    `HSpacing(6),
 	    /* Frame label */
@@ -664,10 +664,10 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::NextButton());
 
-    if(Lan::type == "ctc") 
+    if (drvtype == "ctc") 
         UI::ChangeWidget(`id(`chan_mode), `Value, Lan::chan_mode);
 
-    if (Lan::type == "hsi" || Lan::type == "qeth")
+    if (drvtype == "qeth")
         UI::ChangeWidget(`id(`ipa_takeover), `Value, Lan::ipa_takeover);
 
     if (Lan::type != "hsi")

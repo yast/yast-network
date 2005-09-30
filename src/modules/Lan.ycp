@@ -187,6 +187,27 @@ include "network/routines.ycp";
 include "network/runtime.ycp";
 
 /**
+ * For s390 hwinfo gives us a multitude of types but some are handled
+ * the same, mostly acording to the driver which is used. So let's group
+ * them under the name Driver Type.
+ * @param type a type, as in Lan::type
+ * @return driver type, like formerly type2 for s390
+ */
+global define string DriverType (string type) {
+    string drvtype = type;
+    // handle HSI like qeth, S#40692#c15
+    if (type == "hsi")
+	drvtype = "qeth";
+    // Should eth occur on s390?
+    else if (type == "tr" || type == "eth")
+	drvtype = "lcs";
+    // N#82891
+    else if (type == "escon" || type == "ficon")
+	drvtype = "ctc";
+    return drvtype;
+}
+
+/**
  * Read all network settings from the SCR
  * @return true on success
  */
@@ -916,11 +937,7 @@ global define boolean Commit() {
 		}
 
 		if(Arch::s390 ()) {
-		    // handle HSI like qeth, #40692#c15
-		    string type2 = (type == "hsi")? "qeth": type;
-		    // handle tr like lcs
-		    if (type == "tr" || type == "eth")
-			type2 = "lcs";
+ 		    string type2 = DriverType (type);
 		    if(type2 == "iucv") {
 			NetworkModules::SCRIPTUP = "hwup-iucv";
 		    }
@@ -1005,12 +1022,12 @@ global define boolean Commit() {
 	if(nm_name != nil && nm_name != "")
 	    newdev["_nm_name"] = nm_name;
 
-	if(type == "ctc" || type == "escon")
+	if(DriverType (type) == "ctc")
 	    if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 40)
 		NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 40;
 
 	/* FIXME: MOD
-	if(type == "hsi" || type == "qeth")
+	if(DriverType (type) == "qeth")
 	    if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 15)
 		NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 15;
 	*/

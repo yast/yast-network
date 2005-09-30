@@ -91,6 +91,7 @@ the network configuration.</p>");
     string remoteip = Lan::remoteip;
     string netmask = Lan::netmask;
     string type = Lan::type;
+    string drvtype = Lan::DriverType (type);
     string device = "";
 
     if(!Arch::s390 () && type != "dummy" && bootproto == "static" && ipaddr == "")
@@ -209,7 +210,8 @@ _("<p>Network addresses are then obtained
 _("<p>Otherwise, network addresses must be assigned
 <b>manually</b>.</p>");
 
-    if(type == "ctc" || type == "escon" || type == "iucv")
+    // point to point
+    if (drvtype == "ctc" || drvtype == "iucv")
     /* Address dialog help 6/8 */
 help = help + _("<p>Enter the <b>IP Address</b> (e.g., 192.168.100.99)
 for your computer and the <b>Remote IP Address</b> (e.g., 192.168.100.254)
@@ -248,8 +250,8 @@ completes the configuration.</p>");
 	    `VSpacing(0.5)
 	));
 
-    /* PPP devices */
-    if(type == "ctc" || type == "escon" || type == "iucv")
+    /* point to point devices */
+    if (drvtype == "ctc" || drvtype == "iucv")
 
 	/* Frame label */
 	frame1 = `Frame(_("Static Address Setup"), `VBox(
@@ -286,8 +288,10 @@ completes the configuration.</p>");
 	`item(`id(`proxy), _("&Proxy")),
     ];
 
+    // Allow changing s390 options, except for iucv, where the option
+    // is in the name of the hwcfg file. Haven't figured it out yet.
     /* MenuButton item */
-    if(Arch::s390 () && (Lan::type == "qeth" || Lan::type == "ctc" || Lan::type == "lcs"))
+    if(Arch::s390 () && drvtype != "iucv")
 	MB_list = add(MB_list, `item(`id(`s390), _("&S/390")));
 
     /* MenuButton label */

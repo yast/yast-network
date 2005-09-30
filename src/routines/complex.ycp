@@ -225,6 +225,8 @@ define string CheckEmptyName(string devtype, string hwname) {
 	/* Device type label */
 	"fddi-usb"	: _("USB FDDI Network Card"),
 	/* Device type label */
+	"ficon"		: _("Fiberchannel System Connector (FICON)"),
+	/* Device type label */
 	"hippi"		: _("HIgh Performance Parallel Interface (HIPPI)"),
 	/* Device type label */
 	"hsi"		: _("Hipersockets Interface (HSI)"),
