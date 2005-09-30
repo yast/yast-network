@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
 Fri Sep 30 13:37:19 CEST 2005 - mvidner@suse.cz
 
+- Enabled DHCP on S/390s (#87336, with hare).
 - Fixed disabling IPA takeover (#85438#c32).
 - Fixed setting QETH options to empty (#90454).
 - Changed the default MTU for LCS eth and tr to 1492 (#81815,

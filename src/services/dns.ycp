@@ -90,7 +90,6 @@ define any DNSMainDialog(boolean standalone) {
     boolean dhcp_resolv = NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false;
 
     boolean has_dhcp = (Lan::bootproto == "dhcp") || Lan::AnyDHCPDevice();
-    if(Arch::s390 ()) has_dhcp = false;
 
     /* DNS dialog caption */
     string caption = _("Host Name and Name Server Configuration");

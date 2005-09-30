@@ -92,9 +92,11 @@ the network configuration.</p>");
     string netmask = Lan::netmask;
     string type = Lan::type;
     string drvtype = Lan::DriverType (type);
+    boolean is_ptp = drvtype == "ctc" || drvtype == "iucv";
+    boolean no_dhcp = is_ptp || type == "dummy" || Lan::alias != "";
     string device = "";
 
-    if(!Arch::s390 () && type != "dummy" && bootproto == "static" && ipaddr == "")
+    if(bootproto == "static" && ipaddr == "" && !no_dhcp)
 	bootproto = "dhcp";
 
     // #65524
@@ -117,7 +119,6 @@ the network configuration.</p>");
     }
     else {
 	device = NetworkDevices::alias_name(NetworkDevices::RealType(Lan::type, Lan::hotplug), Lan::device, Lan::alias);
-	bootproto = "static";
     }
 
     // FIXME duplicated in hardware.ycp
@@ -163,9 +164,63 @@ the network configuration.</p>");
 
     Moved to lan/hardware.ycp */
 
-    /* Frame label */
-    term frame1 = `Frame(_("Setup Method"),
-	`RadioButtonGroup(`id(`rb), `HBox(`HSpacing(1),
+    term addrframe = nil;
+
+    /* point to point devices */
+    // address + peer
+    if (is_ptp) {
+
+	/* Address dialog help 1/8 */
+	help = _("<p>Configure your IP address.</p>") +
+
+	    /* Address dialog help 6/8 */
+_("<p>Enter the <b>IP Address</b> (e.g., 192.168.100.99)
+for your computer and the <b>Remote IP Address</b> (e.g., 192.168.100.254)
+of your peer.</p>") +
+
+	    /* Address dialog help 7/8 */
+_("<p>Contact your <b>network administrator</b>
+for more information about the network configuration.</p>") +
+
+	    /* Address dialog help 8/8 */
+_("<p>Clicking <b>Next</b>
+completes the configuration.</p>");
+
+	/* Frame label */
+	addrframe = `Frame(_("Static Address Setup"), `VBox(
+	    `VSpacing(0.5),
+	    `HBox(
+		/* Text entry label */
+		`TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
+		`HSpacing(2),
+		/* Text entry label */
+		`TextEntry(`id(`remoteip), _("R&emote IP Address"), remoteip)
+	    ),
+	    `VSpacing(0.5)
+	));
+
+    }
+    // no dhcp: address + mask
+    else if (no_dhcp) {
+	/* Frame label */
+	addrframe = `Frame(_("Static Address Setup"), `VBox(
+	    `VSpacing(0.5),
+	    `HBox(
+		/* Text entry label */
+		`TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
+		`HSpacing(2),
+		/* Text entry label */
+		`TextEntry(`id(`netmask), _("&Subnet Mask"), netmask)
+	    ),
+	    `VSpacing(0.5)
+	));
+
+    }
+    // dhcp possible
+    else {
+	/* Frame label */
+	addrframe = `Frame(_("Setup Method"),
+	    `RadioButtonGroup(`id(`rb), `HBox(`HSpacing(1),
 	    `VBox(
 		`VSpacing(0.5),
 		/* Radio button label */
@@ -183,89 +238,10 @@ the network configuration.</p>");
 		`VSpacing(0.5)
 	    ),
 	`HSpacing(1)))
-    );
-
-    if(Arch::s390 ()) {
-
-    /* Address dialog help 1/8 */
-    help = _("<p>Configure your IP address.</p>");
-
-    if(!Arch::s390 ())
-    /* Address dialog help 2/8 */
-    help = help + _("<p>You can select dynamic address assignment
-if you have a <b>DHCP server</b> running on your local network.</p>
-") +
-
-    /* Address dialog help 3/8 */
-_("<p>Also select this if you do not have a static
-IP address assigned by the system administrator or your cable or DSL provider.
-</p>") +
-
-    /* Address dialog help 4/8 */
-_("<p>Network addresses are then obtained
-<b>automatically</b> from the server.</p>
-") +
-
-    /* Address dialog help 5/8 */
-_("<p>Otherwise, network addresses must be assigned
-<b>manually</b>.</p>");
-
-    // point to point
-    if (drvtype == "ctc" || drvtype == "iucv")
-    /* Address dialog help 6/8 */
-help = help + _("<p>Enter the <b>IP Address</b> (e.g., 192.168.100.99)
-for your computer and the <b>Remote IP Address</b> (e.g., 192.168.100.254)
-of your peer.</p>");
-
-    else
-    /* Address dialog help 6/8 */
-    help = help + _("<p>Enter the IP address (e.g., 192.168.100.99) for
-your computer, the network mask (usually 255.255.255.0), and, optionally, the
-default gateway IP address.</p>");
-
-    /* Address dialog help 7/8 */
-    help = help + _("<p>Contact your <b>network administrator</b>
-for more information about the network configuration.</p>") +
-
-    /* Address dialog help 8/8 */
-_("<p>Clicking <b>Next</b>
-completes the configuration.</p>");
-
-    /* s390 help hackery */
+	    );
     }
 
-    /* No DHCP Setup */
-    if(type == "dummy" || type == "hsi" || Lan::alias != "" || Arch::s390 ())
-
-	/* Frame label */
-	frame1 = `Frame(_("Static Address Setup"), `VBox(
-	    `VSpacing(0.5),
-	    `HBox(
-		/* Text entry label */
-		`TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
-		`HSpacing(2),
-		/* Text entry label */
-		`TextEntry(`id(`netmask), _("&Subnet Mask"), netmask)
-	    ),
-	    `VSpacing(0.5)
-	));
-
-    /* point to point devices */
-    if (drvtype == "ctc" || drvtype == "iucv")
-
-	/* Frame label */
-	frame1 = `Frame(_("Static Address Setup"), `VBox(
-	    `VSpacing(0.5),
-	    `HBox(
-		/* Text entry label */
-		`TextEntry(`id(`ipaddr), _("&IP Address"), ipaddr),
-		`HSpacing(2),
-		/* Text entry label */
-		`TextEntry(`id(`remoteip), _("R&emote IP Address"), remoteip)
-	    ),
-	    `VSpacing(0.5)
-	));
-
+    // TODO apply conditions from SLES9 (eg. no_dhcp)
     list MB_list = [
 	/* MenuButton item */
 	`item(`id(`hardware), _("H&ardware Details")),
@@ -275,17 +251,6 @@ completes the configuration.</p>");
 	`item(`id(`details), _("&Detailed Settings")),
 	/* MenuButton item */
 	`item(`id(`virtual), _("Addi&tional Addresses")),
-    ];
-
-    list MB_backup = [
-	/* MenuButton item */
-	`item(`id(`hostname), _("&Host Name and Name Server")),
-	/* MenuButton item */
-	`item(`id(`routing), _("R&outing")),
-	/* MenuButton item */
-	`item(`id(`hosts), _("Host&s")),
-	/* MenuButton item */
-	`item(`id(`proxy), _("&Proxy")),
     ];
 
     // Allow changing s390 options, except for iucv, where the option
@@ -314,28 +279,15 @@ completes the configuration.</p>");
     if(Lan::alias != "")
 	frame2 = `VSpacing(0);
 
-    /* Address dialog help */
     term contents = `HSquash(`VBox(
 //	`Left (`TextEntry (`id (`persistent), _("&Persistent name"), "BAR")),
 //	`VSpacing(0.4),
 	`Left(label),
 	`VSpacing(1),
-	frame1,
+	addrframe,
 	`VSpacing(1),
 	frame2
     ));
-
-    /* Address dialog help * /
-    term contents = `HSquash(`VBox(
-	`Left(label),
-	`VSpacing(1),
-	frame1,
-//	`VSpacing(1),
-//	frame2,
-	`VSpacing(0.4),
-	MB
-    ));
-    */
 
     Wizard::SetContentsButtons(caption, contents, help,
 	    Label::BackButton(), Label::NextButton());
