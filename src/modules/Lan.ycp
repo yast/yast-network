@@ -112,6 +112,11 @@ global string portname = "";
 global string chan_mode = "0";
 global string qeth_options = "";
 global boolean ipa_takeover = false;
+// #84148
+// 26bdd00.pdf
+// Ch 7: qeth device driver for OSA-Express (QDIO) and HiperSockets
+// MAC address handling for IPv4 with the layer2 option
+global boolean qeth_layer2 = false;
 
 /* aliases */
 global map aliases = $[];
@@ -838,6 +843,13 @@ global define boolean Select(string dev) {
     else
 	ipa_takeover = true;
 
+    if (NetworkModules::QETH_LAYER2_SUPPORT == nil ||
+	NetworkModules::QETH_LAYER2_SUPPORT == "" ||
+	NetworkModules::QETH_LAYER2_SUPPORT == "0")
+	qeth_layer2 = false;
+    else
+	qeth_layer2 = true;
+
     if(bootproto == "none") bootproto = "static";
 
     return true;
@@ -976,6 +988,8 @@ global define boolean Commit() {
 			NetworkModules::QETH_OPTIONS = qeth_options;
 			if (ipa_takeover)
 			    NetworkModules::QETH_IPA_TAKEOVER = "1";
+			if (qeth_layer2)
+			    NetworkModules::QETH_LAYER2_SUPPORT = "1";
 		    }
 
 		}

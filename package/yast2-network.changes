@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
 Fri Sep 30 12:30:12 CEST 2005 - mvidner@suse.cz
 
+- Added the possibility to turn on the Layer 2 option
+  for qeth and hsi (hare, #84148, #85438#c32).
 - Fixed the configuration of ESCON and FICON (#82891).
 - When proposing LAN config (also in autoyast in some cases), use the
   module from install.inf, not the first one of several options (like

@@ -48,6 +48,7 @@ global string CCW_CHAN_MODE = "";
 global string CCW_CHAN_NUM = "";
 global string QETH_OPTIONS = "";
 global string QETH_IPA_TAKEOVER = "";
+global string QETH_LAYER2_SUPPORT = "";
 
 /**
  * Current module information
@@ -280,6 +281,7 @@ global boolean AddM() {
     CCW_CHAN_NUM = "";
     QETH_OPTIONS = "";
     QETH_IPA_TAKEOVER = "";
+    QETH_LAYER2_SUPPORT = "";
 
     return true;
 }
@@ -304,6 +306,7 @@ global boolean SelectM(string name) {
     CCW_CHAN_NUM = Modules[name, "CCW_CHAN_NUM"]:"";
     QETH_OPTIONS = Modules[name, "QETH_OPTIONS"]:"";
     QETH_IPA_TAKEOVER = Modules[name, "QETH_IPA_TAKEOVER"]:"";
+    QETH_LAYER2_SUPPORT = Modules[name, "QETH_LAYER2_SUPPORT"]:"";
 
     y2milestone("Modules=%1", Modules);
     return true;
@@ -337,6 +340,8 @@ global boolean ChangeM(string name) {
 	    Modules[name, "QETH_OPTIONS"] = QETH_OPTIONS;
 	if (QETH_IPA_TAKEOVER != nil && QETH_IPA_TAKEOVER != "")
 	    Modules[name, "QETH_IPA_TAKEOVER"] = QETH_IPA_TAKEOVER;
+	if (QETH_LAYER2_SUPPORT != nil && QETH_LAYER2_SUPPORT != "")
+	    Modules[name, "QETH_LAYER2_SUPPORT"] = QETH_LAYER2_SUPPORT;
     }
 
     y2milestone("Modules=%1", Modules);

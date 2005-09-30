@@ -569,6 +569,9 @@ define any S390Dialog() {
 		`VSpacing(1),
 		/* CheckBox label */
 		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA Takeover"))),
+		`VSpacing(1),
+		/* CheckBox label */
+		`Left(`CheckBox(`id(`qeth_layer2), _("Enable &Layer 2 support"))),
 		`VSpacing(1)
 		), `HSpacing(2))),
 	    `HSpacing(6)
@@ -577,7 +580,8 @@ define any S390Dialog() {
 	helptext = _("<p>Enter the <b>Port Name</b> for this interface (case-sensitive).</p>") +
 	/* S/390 dialog help: QETH Options */
 	_("<p>Enter any additional <b>Options</b> for this interface (separated by spacess).</p>") +
-	_("<p>Select <b>Enable IPA Takeover</b> if IP address takeover should be enabled for this interface.</p>");
+	_("<p>Select <b>Enable IPA takeover</b> if IP address takeover should be enabled for this interface.</p>") +
+	_("<p>Select <b>Enable Layer 2 Support</b> if this card has been configured with Layer 2 support</p>");
     }
 
     if(Lan::type == "hsi") {
@@ -591,13 +595,17 @@ define any S390Dialog() {
 		`VSpacing(1),
 		/* CheckBox label */
 		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA Takeover"))),
+		`VSpacing(1),
+		/* CheckBox label */
+		`Left(`CheckBox(`id(`qeth_layer2),_("Enable &Layer 2 support"))),
 		`VSpacing(1)
 		), `HSpacing(2))),
 	    `HSpacing(6)
 	);
 	/* S/390 dialog help: QETH */
 	helptext = _("<p>Enter any additional <b>Options</b> for this interface (separated by spaces).</p>") +
-	_("<p>Select <b>Enable IPA Takeover</b> if IP address takeover should be enabled for this interface.</p>");
+	_("<p>Select <b>Enable IPA takeover</b> if IP address takeover should be enabled for this interface.</p>") +
+	_("<p>Select <b>Enable Layer 2 support</b> if this card has been configured with Layer 2 support.</p>");
     }
 
     if(drvtype == "lcs") {
@@ -668,7 +676,10 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
         UI::ChangeWidget(`id(`chan_mode), `Value, Lan::chan_mode);
 
     if (drvtype == "qeth")
+    {
         UI::ChangeWidget(`id(`ipa_takeover), `Value, Lan::ipa_takeover);
+	UI::ChangeWidget(`id(`qeth_layer2), `Value, Lan::qeth_layer2);
+    }
 
     if (Lan::type != "hsi")
         UI::SetFocus(`id(`chan_mode));
@@ -711,6 +722,7 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 	if(Lan::type == "qeth" || Lan::type == "hsi") {
 	    Lan::qeth_options = (string) UI::QueryWidget(`id(`qeth_options), `Value);
 	    Lan::ipa_takeover = (boolean) UI::QueryWidget(`id(`ipa_takeover), `Value);
+	    Lan::qeth_layer2 = (boolean) UI::QueryWidget(`id(`qeth_layer2), `Value);
 	}
 
     }
