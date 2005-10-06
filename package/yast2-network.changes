@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Thu Oct  6 15:29:26 CEST 2005 - mvidner@suse.cz
+Thu Oct  6 15:30:37 CEST 2005 - mvidner@suse.cz
 
+- Added a widget for Layer 2 MAC address (#98958, with hare).
 - Honor BrokenModules from install.inf (#97540).
 
 -------------------------------------------------------------------

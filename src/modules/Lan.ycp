@@ -117,6 +117,7 @@ global boolean ipa_takeover = false;
 // Ch 7: qeth device driver for OSA-Express (QDIO) and HiperSockets
 // MAC address handling for IPv4 with the layer2 option
 global boolean qeth_layer2 = false;
+global string qeth_macaddress = "00:00:00:00:00:00";
 
 /* aliases */
 global map aliases = $[];
@@ -869,6 +870,14 @@ global define boolean Select(string dev) {
     else
 	qeth_layer2 = true;
 
+    /* We always have to set the MAC Address for qeth Layer2 support */
+    if (qeth_layer2 ) {
+        if (NetworkModules::QETH_MACADDRESS != nil &&
+	    NetworkModules::QETH_MACADDRESS != "" &&
+	    NetworkModules::QETH_MACADDRESS != "0")
+	    qeth_macaddress = NetworkModules::QETH_MACADDRESS;
+    }
+
     if(bootproto == "none") bootproto = "static";
 
     return true;
@@ -1007,6 +1016,9 @@ global define boolean Commit() {
 			NetworkModules::QETH_OPTIONS = qeth_options;
 			NetworkModules::QETH_IPA_TAKEOVER = ipa_takeover? "1": "0";
 			NetworkModules::QETH_LAYER2_SUPPORT = qeth_layer2? "1": "0";
+			if (qeth_layer2) {
+			    NetworkModules::QETH_MACADDRESS = qeth_macaddress;
+			}
 		    }
 
 		}

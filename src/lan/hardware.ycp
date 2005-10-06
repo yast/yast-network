@@ -270,6 +270,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    if(ReallyAbort()) break;
 	    else continue;
 	}
+
 	/* change device type or pcmcia/usb card? */
 	else if(ret == `pcmcia || ret == `usb || ret == `dev) {
 
@@ -326,6 +327,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
 	    if(Arch::s390 ()) {
 		string drvtype = Lan::DriverType (type);
+
 		if (contains (["lcs", "qeth", "ctc"], drvtype))
 		    modul = drvtype;
 		else if (drvtype == "iucv")
@@ -571,7 +573,9 @@ define any S390Dialog() {
 		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA Takeover"))),
 		`VSpacing(1),
 		/* CheckBox label */
-		`Left(`CheckBox(`id(`qeth_layer2), _("Enable &Layer 2 support"))),
+		`Left(`CheckBox(`id(`qeth_layer2), `opt(`notify), _("Enable &Layer 2 support"))),
+		/* TextEntry label */
+		`TextEntry(`id(`qeth_macaddress), _("Layer2 &MAC Address"), Lan::qeth_macaddress),
 		`VSpacing(1)
 		), `HSpacing(2))),
 	    `HSpacing(6)
@@ -581,7 +585,8 @@ define any S390Dialog() {
 	/* S/390 dialog help: QETH Options */
 	_("<p>Enter any additional <b>Options</b> for this interface (separated by spacess).</p>") +
 	_("<p>Select <b>Enable IPA takeover</b> if IP address takeover should be enabled for this interface.</p>") +
-	_("<p>Select <b>Enable Layer 2 Support</b> if this card has been configured with Layer 2 support</p>");
+	_("<p>Select <b>Enable Layer 2 Support</b> if this card has been configured with Layer 2 support.</p>") +
+	_("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been configured with Layer 2 support.</p>");
     }
 
     if(Lan::type == "hsi") {
@@ -597,7 +602,9 @@ define any S390Dialog() {
 		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA Takeover"))),
 		`VSpacing(1),
 		/* CheckBox label */
-		`Left(`CheckBox(`id(`qeth_layer2),_("Enable &Layer 2 support"))),
+		`Left(`CheckBox(`id(`qeth_layer2), `opt(`notify), _("Enable &Layer 2 support"))),
+		/* TextEntry label */
+		`TextEntry(`id(`qeth_macaddress), _("Layer2 &MAC Address"), Lan::qeth_macaddress)
 		`VSpacing(1)
 		), `HSpacing(2))),
 	    `HSpacing(6)
@@ -605,7 +612,8 @@ define any S390Dialog() {
 	/* S/390 dialog help: QETH */
 	helptext = _("<p>Enter any additional <b>Options</b> for this interface (separated by spaces).</p>") +
 	_("<p>Select <b>Enable IPA takeover</b> if IP address takeover should be enabled for this interface.</p>") +
-	_("<p>Select <b>Enable Layer 2 support</b> if this card has been configured with Layer 2 support.</p>");
+	_("<p>Select <b>Enable Layer 2 support</b> if this card has been configured with Layer 2 support.</p>") +
+	_("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been configured with Layer 2 support.</p>");
     }
 
     if(drvtype == "lcs") {
@@ -679,6 +687,7 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
     {
         UI::ChangeWidget(`id(`ipa_takeover), `Value, Lan::ipa_takeover);
 	UI::ChangeWidget(`id(`qeth_layer2), `Value, Lan::qeth_layer2);
+	UI::ChangeWidget(`id(`qeth_macaddress), `ValidChars, ":0123456789abcdefABCDEF");
     }
 
     if (Lan::type != "hsi")
@@ -691,6 +700,11 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 
     any ret = nil;
     while(true) {
+	if (drvtype == "qeth") {
+	    boolean mac_enabled = (boolean) UI::QueryWidget(`id(`qeth_layer2),`Value);
+	    UI::ChangeWidget(`id(`qeth_macaddress), `Enabled, mac_enabled);
+	}
+
 	ret = UI::UserInput();
 
 	if(ret == `abort || ret == `cancel) {
@@ -703,7 +717,7 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 	else if(ret == `next) {
 	    break;
 	}
-	else if(ret == `mode) {
+	else if(ret == `qeth_layer2) {
 	    continue;
 	}
 	else {
@@ -723,6 +737,7 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 	    Lan::qeth_options = (string) UI::QueryWidget(`id(`qeth_options), `Value);
 	    Lan::ipa_takeover = (boolean) UI::QueryWidget(`id(`ipa_takeover), `Value);
 	    Lan::qeth_layer2 = (boolean) UI::QueryWidget(`id(`qeth_layer2), `Value);
+	    Lan::qeth_macaddress = (string) UI::QueryWidget(`id(`qeth_macaddress), `Value);
 	}
 
     }
