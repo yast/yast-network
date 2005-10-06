@@ -219,6 +219,11 @@ define list<map> ReadHardware(string hwtype) {
 	allcards = [];
     }
 
+    // #97540
+    string bms = (string)SCR::Read (.etc.install_inf.BrokenModules);
+    if (bms == nil) bms = "";
+    list<string> broken_modules = splitstring (bms, " ");
+
     /* fill in the hardware data */
     maplist(map card, (list<map>) allcards, {
 	map one = $[];
@@ -226,6 +231,7 @@ define list<map> ReadHardware(string hwtype) {
 	/* common stuff */
 	map resource = card["resource"]:$[];
 	string controller = ControllerType(card);
+	boolean card_ok = controller != "";
 	one["name"] = DeviceName(card);
 	one["type"] = controller;
 	one["unique"] = card["unique_key"]:"";
@@ -274,14 +280,34 @@ define list<map> ReadHardware(string hwtype) {
 	    // (one=$[active:, module:, options:,...]), the generic
 	    // situation is: one or more driver variants (exclusive),
 	    // each having one or more modules (one[drivers])
-	    list drivers = card["drivers"]:[];
-	    one["drivers"] = drivers;
-	    if(size(drivers) < 0) y2error("Not enough drivers");
-	    map driver = drivers[0]:$[];
-	    one["active"] = driver["active"]:false;
-	    list modules = driver["modules", 0]:[];
-	    one["module"] = modules[0]:"";
-	    one["options"] = modules[1]:"";
+
+	    // only drivers that are not marked as broken (#97540)
+	    list drivers = filter (map d, (list<map>) card["drivers"]:[], {
+		// ignoring more modules per driver...
+		list module0 = d["modules", 0]:[]; // [module, options]
+		boolean brk = contains (broken_modules, module0[0]:"");
+		if (brk)
+		{
+		    y2milestone ("In BrokenModules, skipping: %1", module0);
+		}
+		return !brk;
+	    });
+	    
+	    if (drivers == [])
+	    {
+		y2milestone ("All drivers are marked as broken");
+		card_ok = false;
+	    }
+	    else
+	    {
+		one["drivers"] = drivers;
+
+		map driver = drivers[0]:$[];
+		one["active"] = driver["active"]:false;
+		list module0 = driver["modules", 0]:[]; // [module, options]
+		one["module"] = module0[0]:"";
+		one["options"] = module0[1]:"";
+	    }
 
 	    /* FIXME: this should be also done for modems and others */
 	    /* FIXME: #13571 */
@@ -311,12 +337,12 @@ define list<map> ReadHardware(string hwtype) {
 	}
 
 	y2debug("found device: %1", one);
-	if(controller != "") {
+	if (card_ok) {
 	    Hardware[size(Hardware)] = one;
 	    num = num + 1;
 	}
 	else {
-	    y2error("Unknown controller: %1", card);
+	    y2milestone ("Filtering out: %1", card);
 	}
     });
 

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Oct  6 15:29:26 CEST 2005 - mvidner@suse.cz
+
+- Honor BrokenModules from install.inf (#97540).
+
+-------------------------------------------------------------------
 Fri Sep 30 13:37:19 CEST 2005 - mvidner@suse.cz
 
 - Enabled DHCP on S/390s (#87336, with hare).
