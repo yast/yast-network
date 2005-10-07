@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Fri Oct  7 11:14:01 CEST 2005 - mvidner@suse.cz
+Fri Oct  7 14:06:05 CEST 2005 - mvidner@suse.cz
 
+- Autoyast: support interface matching by vio bus id (#119592).
 - Autoyast: do not ignore networking/dns if networking/interfaces is
   empty (#117484).
 - Added a widget for Layer 2 MAC address (#98958, with hare).

@@ -321,6 +321,7 @@ define list<map> ReadHardware(string hwtype) {
 	    string bus = card["bus_hwcfg"]:(card["bus"]:"");
 	    if(bus == "PCI") bus = "pci";
 	    else if(bus == "USB") bus = "usb";
+	    else if(bus == "Virtual IO") bus = "vio";
 	    one["bus"] = bus;
 
 	    one["busid"] = card["sysfs_bus_id"]:"";

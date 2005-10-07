@@ -1151,10 +1151,10 @@ define map FindMatchingDevice(map interface) {
 	// - H iterates over Hardware
 	// - patterns are shell-like
 
+        list device_id = splitstring(interface["device"]:"", "-");
         /* code for eth-id-00:80:c8:f6:48:4c configurations */
 	// *-id-$ID => find H["mac"] == $ID
-        list device_id = splitstring(interface["device"]:"", "-");
-        if (size(device_id)> 1 && issubstring(interface["device"]:"", "id"))
+        if (size(device_id)> 1 && device_id[1]:"" == "id")
         {
             string hwaddr = device_id[2]:"";
             if(hwaddr != nil && hwaddr != "") {
@@ -1163,16 +1163,17 @@ define map FindMatchingDevice(map interface) {
             y2milestone("Rule: matching mac in device name");
         }
         /* code for eth-bus-pci-0000:00:0d.0 configurations */
-	// *-bus-pci-$ID => find H["bus"] == "pci" & H["busid"] == $ID
-        else if ((size(device_id)> 1 &&
-                    issubstring(interface["device"]:"", "bus-pci")))
+        /* code for eth-bus-vio-30000001 configurations */
+	// *-bus-$BUS-$ID => find H["bus"] == $BUS & H["busid"] == $ID
+        else if (size(device_id)> 2 && device_id[1]:"" == "bus")
         {
+	    string bus = device_id[2]:"";
             string busid = device_id[3]:"";
-            if(busid != nil && busid != "") {
+            if(bus != nil && bus != "" && busid != nil && busid != "") {
                 tosel = find (map h, Hardware, ``( h["busid"]:"" == busid
-                            && h["bus"]:"" == "pci" ));
+                            && h["bus"]:"" == bus ));
             }	
-            y2milestone("Rule: matching pci id in device name");
+            y2milestone("Rule: matching bus id in device name");
         }
 
         /* code for module configuration */
