@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
-Thu Oct  6 15:30:37 CEST 2005 - mvidner@suse.cz
+Fri Oct  7 11:14:01 CEST 2005 - mvidner@suse.cz
 
+- Autoyast: do not ignore networking/dns if networking/interfaces is
+  empty (#117484).
 - Added a widget for Layer 2 MAC address (#98958, with hare).
 - Honor BrokenModules from install.inf (#97540).
 

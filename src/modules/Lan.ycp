@@ -1262,10 +1262,10 @@ define map FindMatchingDevice(map interface) {
 }
 
 /**
- * Propose a configuration
+ * Propose interface configuration
  * @return true if something was proposed
  */
-global define boolean Propose() {
+global define boolean ProposeInterfaces () {
 
     y2milestone("Hardware=%1", Hardware);
     y2milestone("InstallInf=%1", InstallInf);
@@ -1367,7 +1367,47 @@ global define boolean Propose() {
 	netmask = InstallInf["netmask"]:"";
 	if(netmask == nil || netmask == "")
 	    netmask = "255.255.255.0";
+    }
+    else {
+	/* Propose static config in case of DSL hardware is found */
+	list pppoe = (list) SCR::Read(.probe.pppoe);
+	// FIXME: testing pppoe = [ $["a" : "b"] ];
+	map pppoedev = pppoe[0]:$[];
+	y2milestone ("pppoe=%1", pppoe);
+	if(pppoe != nil && size(pppoe) > 0) {
+	    y2milestone("DSL proposal");
+	    ipaddr = "";
+	    bootproto = "static";
+	}
+	else {
+	    // Open Enterprise Server does not like DHCP (#50524).
+	    // In that case, we cannot propose.
+	    if (ProductFeatures::GetBooleanFeature ("network", "force_static_ip"))
+	    {
+		y2milestone ("Static config forced but no info available -> no proposal.");
+		return false;
+	    }
+	    y2milestone("DHCP proposal");
+	    ipaddr = "";
+	    bootproto = "dhcp";
+	    NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = true;
+	}
+    }
 
+    Commit();
+
+    y2milestone("NetworkConfig::Config=%1", NetworkConfig::Config);
+    y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);
+
+    return true;
+}
+
+/**
+ * Propose configuration for routing and resolver
+ * @return true if something was proposed
+ */
+global define boolean ProposeRoutesAndResolver () {
+    if(bootproto == "static" && ipaddr != "" && ipaddr != nil) {
 	/* propose default gateway from /etc/install.inf */
 	string gw = InstallInf["gateway"]:"";
 	if(gw != "" && gw != nil) {
@@ -1409,41 +1449,18 @@ global define boolean Propose() {
 	    DNS::hostname = hn;
 	    DNS::modified = true;
 	}
-
     }
-    else {
-	/* Propose static config in case of DSL hardware is found */
-	list pppoe = (list) SCR::Read(.probe.pppoe);
-	// FIXME: testing pppoe = [ $["a" : "b"] ];
-	map pppoedev = pppoe[0]:$[];
-	y2milestone ("pppoe=%1", pppoe);
-	if(pppoe != nil && size(pppoe) > 0) {
-	    y2milestone("DSL proposal");
-	    ipaddr = "";
-	    bootproto = "static";
-	}
-	else {
-	    // Open Enterprise Server does not like DHCP (#50524).
-	    // In that case, we cannot propose.
-	    if (ProductFeatures::GetBooleanFeature ("network", "force_static_ip"))
-	    {
-		y2milestone ("Static config forced but no info available -> no proposal.");
-		return false;
-	    }
-	    y2milestone("DHCP proposal");
-	    ipaddr = "";
-	    bootproto = "dhcp";
-	    NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = true;
-	}
-
-    }
-
-    Commit();
-
-    y2milestone("NetworkConfig::Config=%1", NetworkConfig::Config);
-    y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);
-
     return true;
+}
+
+/**
+ * Propose a configuration
+ * @return true if something was proposed
+ */
+global define boolean Propose() {
+    return
+	ProposeInterfaces () &&
+	ProposeRoutesAndResolver ();
 }
 
 /**
@@ -1533,8 +1550,8 @@ global define boolean Autoinstall() {
     } 
     else 
     {
-        y2milestone("no interface configuration, taking everything from install.inf");
-        Propose();
+        y2milestone ("no interface configuration, taking it from install.inf");
+        ProposeInterfaces ();
     }
 
     return true;
