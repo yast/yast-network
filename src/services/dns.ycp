@@ -101,7 +101,7 @@ computer. Name server list and domain search list are optional.</p>") +
 	// #91202
 	(standalone? "":
 	 /* DNS dialog help 1.5/5 */
-	 _("<p>Note that the host name is global, that is, it applies to all
+	 _("<p>Note that the hostname is global--it applies to all
 interfaces, not just this one.</p>")) +
 
     /* DNS dialog help 2/5 */

@@ -458,14 +458,14 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
             if(https != "" && https != prefill) {
                 if(!URL::Check(https)) {
                     /* Popup::Error text */
-                    Popup::Error(_("HTTPS proxy URL is invalid."));
+                    Popup::Error(_("The HTTPS proxy URL is invalid."));
                     UI::SetFocus(`id(`https));
                     continue;
                 }
                 map urlmap = URL::Parse(https);
                 if(urlmap["scheme"]:"" == "") {
                     /* Popup::Error text */
-                    Popup::Error(_("HTTPS proxy URL must contain a scheme specification (http)."));
+                    Popup::Error(_("The HTTPS proxy URL must contain a scheme specification (http)."));
                     UI::SetFocus(`id(`https));
                     continue;
                 }

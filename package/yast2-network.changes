@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Oct 13 10:47:47 CEST 2005 - mvidner@suse.cz
+
+- Merged messages proofread for SLES9 SP2.
+
+-------------------------------------------------------------------
 Fri Oct  7 14:06:05 CEST 2005 - mvidner@suse.cz
 
 - Autoyast: support interface matching by vio bus id (#119592).

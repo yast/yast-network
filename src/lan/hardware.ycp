@@ -573,7 +573,7 @@ define any S390Dialog() {
 		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA Takeover"))),
 		`VSpacing(1),
 		/* CheckBox label */
-		`Left(`CheckBox(`id(`qeth_layer2), `opt(`notify), _("Enable &Layer 2 support"))),
+		`Left(`CheckBox(`id(`qeth_layer2), `opt(`notify), _("Enable &Layer 2 Support"))),
 		/* TextEntry label */
 		`TextEntry(`id(`qeth_macaddress), _("Layer2 &MAC Address"), Lan::qeth_macaddress),
 		`VSpacing(1)
@@ -584,7 +584,7 @@ define any S390Dialog() {
 	helptext = _("<p>Enter the <b>Port Name</b> for this interface (case-sensitive).</p>") +
 	/* S/390 dialog help: QETH Options */
 	_("<p>Enter any additional <b>Options</b> for this interface (separated by spacess).</p>") +
-	_("<p>Select <b>Enable IPA takeover</b> if IP address takeover should be enabled for this interface.</p>") +
+	_("<p>Select <b>Enable IPA Takeover</b> if IP address takeover should be enabled for this interface.</p>") +
 	_("<p>Select <b>Enable Layer 2 Support</b> if this card has been configured with Layer 2 support.</p>") +
 	_("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been configured with Layer 2 support.</p>");
     }
@@ -602,7 +602,7 @@ define any S390Dialog() {
 		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA Takeover"))),
 		`VSpacing(1),
 		/* CheckBox label */
-		`Left(`CheckBox(`id(`qeth_layer2), `opt(`notify), _("Enable &Layer 2 support"))),
+		`Left(`CheckBox(`id(`qeth_layer2), `opt(`notify), _("Enable &Layer 2 Support"))),
 		/* TextEntry label */
 		`TextEntry(`id(`qeth_macaddress), _("Layer2 &MAC Address"), Lan::qeth_macaddress)
 		`VSpacing(1)
@@ -611,8 +611,8 @@ define any S390Dialog() {
 	);
 	/* S/390 dialog help: QETH */
 	helptext = _("<p>Enter any additional <b>Options</b> for this interface (separated by spaces).</p>") +
-	_("<p>Select <b>Enable IPA takeover</b> if IP address takeover should be enabled for this interface.</p>") +
-	_("<p>Select <b>Enable Layer 2 support</b> if this card has been configured with Layer 2 support.</p>") +
+	_("<p>Select <b>Enable IPA Takeover</b> if IP address takeover should be enabled for this interface.</p>") +
+	_("<p>Select <b>Enable Layer 2 Support</b> if this card has been configured with Layer 2 support.</p>") +
 	_("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been configured with Layer 2 support.</p>");
     }
 
