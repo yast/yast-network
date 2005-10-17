@@ -604,7 +604,7 @@ define any S390Dialog() {
 		/* CheckBox label */
 		`Left(`CheckBox(`id(`qeth_layer2), `opt(`notify), _("Enable &Layer 2 Support"))),
 		/* TextEntry label */
-		`TextEntry(`id(`qeth_macaddress), _("Layer2 &MAC Address"), Lan::qeth_macaddress)
+		`TextEntry(`id(`qeth_macaddress), _("Layer2 &MAC Address"), Lan::qeth_macaddress),
 		`VSpacing(1)
 		), `HSpacing(2))),
 	    `HSpacing(6)
