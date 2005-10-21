@@ -1,8 +1,9 @@
 -------------------------------------------------------------------
-Fri Oct 21 11:17:59 CEST 2005 - mvidner@suse.cz
+Fri Oct 21 11:24:17 CEST 2005 - mvidner@suse.cz
 
+- Added a widget for hwcfg:LCS_LANCMD_TIMEOUT (#98958#c23, hare).
 - Use ifcfg:LLADDR instead of hwcfg:QETH_MACADDRESS for Layer 2
-  (#98958#c12).
+  (#98958#c12, hare).
 - 2.13.3
 
 -------------------------------------------------------------------

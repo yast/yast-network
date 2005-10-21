@@ -49,6 +49,7 @@ global string CCW_CHAN_NUM = "";
 global string QETH_OPTIONS = "";
 global string QETH_IPA_TAKEOVER = "";
 global string QETH_LAYER2_SUPPORT = "";
+global string LCS_LANCMD_TIMEOUT = "";
 
 /**
  * Current module information
@@ -282,6 +283,7 @@ global boolean AddM() {
     QETH_OPTIONS = "";
     QETH_IPA_TAKEOVER = "";
     QETH_LAYER2_SUPPORT = "";
+    LCS_LANCMD_TIMEOUT = "";
 
     return true;
 }
@@ -307,6 +309,7 @@ global boolean SelectM(string name) {
     QETH_OPTIONS = Modules[name, "QETH_OPTIONS"]:"";
     QETH_IPA_TAKEOVER = Modules[name, "QETH_IPA_TAKEOVER"]:"";
     QETH_LAYER2_SUPPORT = Modules[name, "QETH_LAYER2_SUPPORT"]:"";
+    LCS_LANCMD_TIMEOUT = Modules[name, "LCS_LANCMD_TIMEOUT"]:"";
 
     y2milestone("Modules=%1", Modules);
     return true;
@@ -339,6 +342,7 @@ global boolean ChangeM(string name) {
 	Modules[name, "QETH_OPTIONS"] = QETH_OPTIONS;
 	Modules[name, "QETH_IPA_TAKEOVER"] = QETH_IPA_TAKEOVER;
 	Modules[name, "QETH_LAYER2_SUPPORT"] = QETH_LAYER2_SUPPORT;
+	Modules[name, "LCS_LANCMD_TIMEOUT"] = LCS_LANCMD_TIMEOUT;
     }
 
     y2milestone("Modules=%1", Modules);
