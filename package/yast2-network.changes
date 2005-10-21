@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Oct 21 11:17:59 CEST 2005 - mvidner@suse.cz
+
+- Use ifcfg:LLADDR instead of hwcfg:QETH_MACADDRESS for Layer 2
+  (#98958#c12).
+- 2.13.3
+
+-------------------------------------------------------------------
 Thu Oct 13 10:47:47 CEST 2005 - mvidner@suse.cz
 
 - Merged messages proofread for SLES9 SP2.
