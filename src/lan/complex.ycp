@@ -103,6 +103,38 @@ Abort saving by pressing <b>Abort</b>.</p>
 }
 
 /**
+ * Start configuring a new interface (`add or `managed).
+ * Also install needed packages.
+ * @return whether to proceed with editing and commiting the config
+ */
+define boolean AddInterface (integer hwid) {
+    Lan::Add ();
+    Lan::SelectHW (hwid);
+    Lan::SetDefaultsForHW ();
+
+    // warn if selecting a card without a driver, #29296
+    // TODO also for DSL...
+    if (NetworkModules::Alias == "")
+    {
+	if (!Popup::ContinueCancel (_("The device does not have a driver module.
+The driver may be built in the kernel.")))
+	{
+	    return false;
+	}
+    }
+    // this is one of 3 places to install packages :-(
+    // - kernel modules (InstallKernel): before loaded
+    // - smpppd & kinternet: before net start
+    // - wlan firmware: here, just because it is copied from modems
+    //   #45960
+    if(Lan::Requires != [] && Lan::Requires != nil) {
+	if(PackagesInstall(Lan::Requires) != `next)
+	    return false;
+    }
+    return true;
+}
+
+/**
  * Overview dialog
  * @return dialog result
  */
@@ -113,37 +145,52 @@ define any OverviewDialog() ``{
     /* Network cards overview dialog caption */
     string caption = _("Network Card Configuration Overview");
 
-    /* Network cards overview dialog help 1/3 */
+    /* Network cards overview dialog help 1/4 */
     string help = _("<p><b><big>Network Card Overview</big></b><br>
 Obtain an overview of installed network cards. Additionally,
 edit their configuration.<br></p>
 ") +
 
-    /* Network cards overview dialog help 2/3 */
+    /* Network cards overview dialog help 2/4 */
 _("<p><b><big>Adding a Network Card:</big></b><br>
 Press <b>Add</b> to configure a new network card manually.</p>
 ") +
 
-    /* Network cards overview dialog help 3/3 */
+    /* Network cards overview dialog help 3/4 */
 _("<p><b><big>Editing or Deleting:</big></b><br>
 Choose a network card to change or remove.
 Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
+") +
+
+    /* Network cards overview dialog help 4/4 */
+	// NetworkManager and ifup are programs
+_("<p>Use <b>Managed by NetworkManager</b> to have a desktop applet
+take care about the interface. <tt>ifup</tt> will not touch it.</p>
 ");
 
-    list<map<string,any> > overview = (list<map<string,any> >)Lan::Overview();
-    overview = overview + Lan::Unconfigured ();
-    y2debug("overview=%1",overview);
-    
+    list<list> more_buttons = [
+	// Button label
+	// NetworkManager is a program name
+	[`managed, _("Managed by NetworkManager")],
+	];
+
     // FIXME: for now, rework the data for the new WizardHW
 
     WizardHW::CreateHWDialog (caption, help
 	, [_("Name"), _("IP Address")]
-	, [] );
+	, more_buttons );
 
-    WizardHW::SetContents (overview);
-
+    boolean repaint = true;
     map ret = nil;
     while(true) {
+	if (repaint)
+	{
+	    list<map<string,any> > overview = (list<map<string,any> >)Lan::Overview();
+	    overview = overview + Lan::Unconfigured ();
+	    y2debug("overview=%1",overview);
+	    WizardHW::SetContents (overview);
+	    repaint = false;
+	}
 
 	ret = WizardHW::UserInput();
 
@@ -168,38 +215,57 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
 	    if (substring (dev, 0, 1) == "-") // unconfigured
 	    {
 		integer i = tointeger (substring (dev, 1));
-
-		Lan::Add ();
-		Lan::SelectHW (i);
-		Lan::SetDefaultsForHW ();
-
-		// warn if selecting a card without a driver, #29296
-		// TODO also for DSL...
-		if (NetworkModules::Alias == "")
+		if (! AddInterface (i))
 		{
-		    if (!Popup::ContinueCancel (_("The device does not have a driver module.
-The driver may be built in the kernel.")))
+		    continue;
+		}
+	    }
+	    else		// configured
+	    {
+		Lan::Edit(dev);
+		if (Lan::startmode == "managed")
+		{
+		    // Continue-Cancel popup
+		    if (!Popup::ContinueCancel (_("If you edit the settings for this interface here,
+it will be ignored by NetworkManager.")))
 		    {
 			continue; // means cancel
 		    }
+		    //
+		    // TODO move the defaults to GetDefaultsForHW
+		    Lan::startmode = "ifplugd";
 		}
-		// this is one of 3 places to install packages :-(
-		// - kernel modules (InstallKernel): before loaded
-		// - smpppd & kinternet: before net start
-		// - wlan firmware: here, just because it is copied from modems
-		//   #45960
-		if(Lan::Requires != [] && Lan::Requires != nil) {
-		    if(PackagesInstall(Lan::Requires) != `next)
-			continue;
+
+	    }
+
+	    ret = $["event": `edit];
+	    break;
+	}
+	/* managed */
+	else if(ret["event"]:nil == `managed) {
+	    string dev = ret["selected"]:"";
+	    if(dev == nil) {
+		y2error("Empty device during Edit");
+		continue;
+	    }
+
+	    if (substring (dev, 0, 1) == "-") // unconfigured
+	    {
+		integer i = tointeger (substring (dev, 1));
+		if (! AddInterface (i))
+		{
+		    continue;
 		}
 	    }
 	    else		// configured
 	    {
 		Lan::Edit(dev);
 	    }
-
-	    ret = $["event": `edit];
-	    break;
+	    Lan::startmode = "managed";
+	    Lan::nm_name = "";	// no hwcfg
+	    Lan::Commit ();
+	    repaint = true;
+	    continue;
 	}
 	/* delete */
 	else if(ret["event"]:nil == `delete) {
@@ -219,14 +285,7 @@ Really continue?
 
 	    Lan::Delete(dev);
 	    Lan::Commit();
-	    overview = (list<map<string,any> >)Lan::Overview();
-	    overview = overview + Lan::Unconfigured ();
-	    WizardHW::SetContents(overview);
-	    if(size(overview) < 1) {
-		UI::ChangeWidget(`id(`edit), `Enabled, false);
-		UI::ChangeWidget(`id(`delete), `Enabled, false);
-	    }
-	    y2debug("overview=%1",overview);
+	    repaint = true;
 	    continue;
 	}
 	else if(ret["event"]:nil == `next || ret["event"]:nil == `back) {

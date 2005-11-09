@@ -449,10 +449,16 @@ define string DeviceStatus(string devtype, string devnum, map devmap) {
 
 /**
  * Return the device protocol or IP address in case of static config
+ * Or indicate that NetworkManager takes over.
  * @param devmap device map
  * @return textual device protocol
  */
 define string DeviceProtocol(map devmap) {
+    if (devmap["STARTMODE"]:"" == "managed")
+    {
+	// Abbreviation for "The interface is Managed by NetworkManager" 
+	return _("Managed");
+    }
     string ip = devmap["BOOTPROTO"]:"static";
     if(ip == nil || ip == "" || ip == "static" || ip == "none")
 	ip = devmap["IPADDR"]:"";
@@ -462,6 +468,9 @@ define string DeviceProtocol(map devmap) {
 
 /**
  * Create overview table contents
+ * (weird interface to accomodate transition from Wizard_hw to WizardHW)
+ * List of terms
+ * `item (`id (id), ...)
  * @return table items
  */
 define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
@@ -474,6 +483,8 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 	"hotplug": _("Started automatically at boot"),
 	// summary description of STARTMODE=ifplugd
 	"ifplugd": _("Started automatically on cable connection"),
+	// summary description of STARTMODE=managed
+	"managed": _("Managed by NetworkManager"),
 	];
     maplist(string type, map devmap, Devs, {
 	maplist(string k, map v, (map<string,map>)devmap, {
@@ -519,15 +530,20 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 		    y2error("Unknown type: %1", type);
 		*/
 		
-		// create the rich text description
-		string rich = HTML::Bold (descr) 
-		    + "<br>" + HTML::List ( [
-			sformat(_("Device Name: %1"), dev),
+		list<string> bullets =  [
+		    sformat(_("Device Name: %1"), dev),
+		    startmode_descr,
+		    ];
+		if (v["STARTMODE"]:"" != "managed")
+		{
+		    bullets = bullets + [
 			ip == "DHCP" ? _("IP address assigned using DHCP") :
-			    sformat(_("IP address: %1, subnet mask %2")
+			sformat(_("IP address: %1, subnet mask %2")
 				, ip, v["NETMASK"]:""),
-			startmode_descr,
-		    ]);
+			];
+		}
+		// create the rich text description
+		string rich = HTML::Bold (descr) +"<br>"+ HTML::List (bullets);
 		
 		item = `item(`id(dev), descr, ip, rich);
 	    }

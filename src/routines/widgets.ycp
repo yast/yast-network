@@ -232,6 +232,15 @@ map<string, map<string, string> > startmode_items = $[
 	"label": _("Never"),
 	"help": "",	    // is a part of the static help text
 	],
+    "managed": $[
+	// Combo box option for Device Activation
+	// DO NOT TRANSLATE NetworkManager, it is a program name
+	"label": _("By NetworkManager"),
+	// help text for Device Activation
+	// DO NOT TRANSLATE NetworkManager, it is a program name
+	"help": _("<b>By NetworkManager</b>: a desktop applet
+controls the interface. There is no need to set it up in YaST."),
+	],
     "manual": $[
 	// Combo box option for Device Activation
 	"label": _("Manually"),

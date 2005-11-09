@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Nov  9 17:34:43 CET 2005 - mvidner@suse.cz
+
+- lan: Added ifcfg:STARTMODE=managed for NetworkManager.
+- 2.13.4
+
+-------------------------------------------------------------------
 Fri Oct 21 11:24:17 CEST 2005 - mvidner@suse.cz
 
 - Added a widget for hwcfg:LCS_LANCMD_TIMEOUT (#98958#c23, hare).

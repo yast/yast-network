@@ -31,7 +31,7 @@ define any DetailsDialog() {
     ScreenName("lan-details");
 
     widget_descr["STARTMODE"] = MakeStartmode (
-	["auto", "ifplugd", "hotplug", "manual", "off", ]);
+	["auto", "ifplugd", "hotplug", "manual", "managed", "off", ]);
 
     /* Details dialog caption */
     string caption = _("Detailed Network Card Settings");
