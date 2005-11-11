@@ -226,8 +226,11 @@ take care about the interface. <tt>ifup</tt> will not touch it.</p>
 		if (Lan::startmode == "managed")
 		{
 		    // Continue-Cancel popup
-		    if (!Popup::ContinueCancel (_("If you edit the settings for this interface here,
-it will be ignored by NetworkManager.")))
+		    if (!Popup::ContinueCancel (_("The interface is currently set to be managed 
+by the NetworkManager applet.
+
+If you edit the settings for this interface here,
+the interface will not be managed by NetworkManager anymore.")))
 		    {
 			continue; // means cancel
 		    }
