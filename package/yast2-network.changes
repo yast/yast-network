@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Nov 15 19:16:12 CET 2005 - mvidner@suse.cz
+
+- Rewrote AddressDialog to CWM (preparing to attack bug #44721).
+  For the time being, the wizard sequencer interface is the same
+  and the look almost the same.
+- 2.13.5
+
+-------------------------------------------------------------------
 Wed Nov  9 17:34:43 CET 2005 - mvidner@suse.cz
 
 - lan: Added ifcfg:STARTMODE=managed for NetworkManager.

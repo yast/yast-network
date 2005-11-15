@@ -46,49 +46,6 @@ to change the prefix.</p>
 "),
 	],
 
-    "NDLABEL": $[
-	"widget": `label,	// TODO: add it to CWM, don't check shortcut
-	/* Label text */
-	"label": _("Network Device"),
-	"help": _("H"),
-	],
-
-    "DEVICETYPE": $[
-	"widget": `combobox,
-	/* ComboBox label */
-	"label": _("&Device Type"),
-	"opt": [`hstretch, `notify],
-	"help": _("H"),
-	],
-
-    "CNAME": $[
-	"widget": `combobox,
-	/* ComboBox label */
-	"label": _("&Configuration Name"),
-	"opt": [`hstretch, `editable],
-	"help": _("H"),
-	],
-
-    "IPADDR": $[
-	"widget": `textentry,
-	/* Text entry label for IP address */
-	"label": _("&IP Address"),
-	"help": _("H"),
-	],
-
-    "NETMASK": $[
-	"widget": `textentry,
-	/* Text entry label for network mask */
-	"label": _("&Subnet Mask"),
-	"help": _("H"),
-	],
-
-    "REMOTEIP": $[
-	"widget": `textentry,
-	/* Text entry label */
-	"label": _("R&emote IP Address"),
-	"help": _("H"),
-	],
     "FWZONE": $[
 	"widget": `combobox,
 	// Combo Box label
@@ -103,6 +60,7 @@ the firewall will be disabled.</p>"),
 	],
     "MANDATORY": $[
 	"widget": `checkbox,
+	// check box label
 	"label": _("&Mandatory interface"),
 	"opt": [],
 	"help": _("<p>TODO: <b>Mandatory Interface</b> specifies whether the network service will report failure if the interface fails to start at boot time.</p>"),
@@ -123,12 +81,6 @@ the firewall will be disabled.</p>"),
 	// widget, does not need to contain its name (the translator comment
 	// needs to, though)
 	],
-    "GATEWAY": $[
-	"widget": `textentry,
-	"label": _("Default &Gateway"),
-	"opt": [],
-	"help": _("<p><b>Default Gateway</b> TODO: the original help is bad</p>"),
-	],
     // obsoleted by BOOTPROTO_*
     "BOOTPROTO": $[
 	"widget": `radio_buttons,
@@ -142,55 +94,6 @@ the firewall will be disabled.</p>"),
 	    ],
 	"opt": [],
 	"help": _("<p>H</p>"),
-	],
-    "BOOTPROTO_dhcp": $[
-	"widget": `radio_button,
-	// radio button label
-	"label": _("A&utomatic Address Setup (via DHCP)"),
-	"opt": [],
-	"help": _("<p>H</p>"),
-	],
-    "BOOTPROTO_static": $[
-	"widget": `radio_button,
-	// radio button label
-	"label": _("S&tatic Address Setup"),
-	"opt": [],
-	"help": _("<p>H</p>"),
-	],
-
-    "BOOTPROTO_dhcp_autoip": $[
-	"widget": `radio_button,
-	/* Radio button label */
-	"label": _("A&utomatic Address Setup (via DHCP+AUTOIP)"),
-	"opt": [`notify],
-	"help": _("H"),
-	],
-
-    "BOOTPROTO_autoip": $[
-	"widget": `radio_button,
-	/* Radio button label */
-	"label": _("A&utomatic Address Setup (via AUTOIP)"),
-	"opt": [`notify],
-	"help": _("H"),
-	],
-    "BOOTPROTO_noaddr": $[
-	"widget": `radio_button,
-	/* Radio button label */
-	"label": _("&Without an address"),
-	"opt": [`notify],
-	"help": _("without an IPv4 address, this is useful when the interface is used for pppoe"),
-	],
-    "DHCP_ADVANCED": $[
-	"widget": `push_button,
-	"label": _("DH&CP Options"),
-	"opt": [],
-	"help": _("<p>H</p>"),	// no help?
-	],
-    "ADDITIONAL_ADDRESSES": $[
-	"widget": `push_button,
-	"label": _("Addi&tional Addresses"),
-	"opt": [],
-	"help": _("<p>H</p>"),	// no help?
 	],
 /*
     "": $[
