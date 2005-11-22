@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov 22 14:56:34 CET 2005 - mvidner@suse.cz
+
+- Allowed more than 3 search domains (#55012, F120075) in the resolver
+  dialog by using a multi line edit instead of 3 text entries.  Also
+  fixed checking whether something has changed in the dialog.
+
+-------------------------------------------------------------------
 Tue Nov 15 19:16:12 CET 2005 - mvidner@suse.cz
 
 - Rewrote AddressDialog to CWM (preparing to attack bug #44721).

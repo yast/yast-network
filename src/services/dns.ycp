@@ -74,6 +74,68 @@ could return to this dialog later when the above service has terminated.</li>
 }
 
 /**
+ * @return initial settings for this dialog in one map, from DNS::
+ */
+define map InitSettings () {
+    return $[
+	"hostname": DNS::hostname,
+	"domain": DNS::domain,
+	"nameservers": DNS::nameservers, // 3?
+	"searchlist": DNS::searchlist,
+	"dhcp_hostname": NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false,
+	"dhcp_resolv": NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false,
+	];
+}
+
+/**
+ * @param settings map of settings to be stored to DNS::
+ */
+define void StoreSettings (map settings) {
+    DNS::hostname = settings["hostname"]:"";
+    DNS::domain = settings["domain"]:"";
+    DNS::nameservers = settings["nameservers"]:[];
+    DNS::searchlist = settings["searchlist"]:[];
+    NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = settings["dhcp_hostname"]:false;
+    NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"] = settings["dhcp_resolv"]:false;
+}
+
+/**
+ * @return settings for this dialog, queried from the widgets
+ */
+define map QueryWidgets () {
+    // idea: QueryWidgets - returns a map with the widget values
+    string ns1 = tolower((string) UI::QueryWidget(`id(`ns1), `Value));
+    string ns2 = tolower((string) UI::QueryWidget(`id(`ns2), `Value));
+    string ns3 = tolower((string) UI::QueryWidget(`id(`ns3), `Value));
+    list nameservers = filter (string s, [ns1, ns2, ns3], ``(s != ""));
+
+    string searchstring = tolower((string) UI::QueryWidget(`id(`ss), `Value));
+    list searchlist = filter (string s, splitstring (searchstring, " ,\n"),
+			      ``(s != ""));
+
+    map query = $[
+	"hostname": UI::QueryWidget (`id (`host), `Value),
+	"domain": UI::QueryWidget (`id (`domain), `Value),
+	"nameservers": nameservers,
+	"searchlist": searchlist,
+	"dhcp_hostname": UI::QueryWidget (`id (`dn), `Value),
+	"dhcp_resolv": UI::QueryWidget (`id (`dr), `Value),
+	];
+    return query;
+}
+
+/**
+ * Apply UI::ChangeWidget to all `ns[123]
+ * @param prop widget property
+ * @param value property value
+ */ 
+define void ChangeNsWidgets (symbol prop, any value) {
+    UI::ChangeWidget (`id (`ns1), prop, value);
+    UI::ChangeWidget (`id (`ns2), prop, value);
+    UI::ChangeWidget (`id (`ns3), prop, value);
+}
+
+/**
  * Dialog for querying DNS & hostname info
  * @param standalone true if not run from another ycp client
  * @return user input
@@ -81,15 +143,6 @@ could return to this dialog later when the above service has terminated.</li>
 define any DNSMainDialog(boolean standalone) {
 
     ScreenName("dns");
-
-    string hostname = DNS::hostname;
-    string domain = DNS::domain;
-    list<string> nameservers = DNS::nameservers;
-    list<string> searchlist = DNS::searchlist;
-    boolean dhcp_hostname = NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false;
-    boolean dhcp_resolv = NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false;
-
-    boolean has_dhcp = (Lan::bootproto == "dhcp") || Lan::AnyDHCPDevice();
 
     /* DNS dialog caption */
     string caption = _("Host Name and Name Server Configuration");
@@ -124,52 +177,18 @@ a host name via DHCP or to set name servers and searched domains via DHCP.</p>")
 connection to use dynamic DNS assignment, these values will be temporarily
 disabled during the connection.</p>");
 
+    boolean has_dhcp = (Lan::bootproto == "dhcp") || Lan::AnyDHCPDevice();
+
+    map settings = InitSettings ();
+    boolean modified = false;
+    boolean dhcp_resolv = settings["dhcp_resolv"]:false;
+
     /* domain search */
-    string s1 = "";
-    string s2 = "";
-    string s3 = "";
-
-    /* name servers */
-    string ns1 = "";
-    string ns2 = "";
-    string ns3 = "";
-
-    /**
-     * Check if internal data differ from the dialog values
-     * @return true if differ
-     */
-    define boolean DNSModified() {
-
-	/* FIXME:
-	 * - the result is ignored ATM (ReallAbort is always true)
-	 * - n* and s* changes seem to be ignored
-	 */
-	string hostname = (string) UI::QueryWidget(`id(`host), `Value);
-	string domain = (string) UI::QueryWidget(`id(`domain), `Value);
-
-	list nameservers = filter(string n, [ ns1, ns2, ns3 ], ``(n != ""));
-	list searchlist = filter(string s, [ s1, s2, s3 ], ``(s != ""));
-
-	boolean dhcp_hostname = (boolean) UI::QueryWidget(`id(`dn), `Value);
-	boolean dhcp_resolv = (boolean) UI::QueryWidget(`id(`dr), `Value);
-
-	return hostname != DNS::hostname || domain != DNS::domain ||
-	    nameservers != DNS::nameservers || searchlist != DNS::searchlist ||
-	    dhcp_resolv != NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false ||
-	    dhcp_hostname != NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false;
-    }
-
-    ns1 = nameservers[0]:"";
-    ns2 = nameservers[1]:"";
-    ns3 = nameservers[2]:"";
-
-    s1 = searchlist[0]:"";
-    s2 = searchlist[1]:"";
-    s3 = searchlist[2]:"";
+    string searchstring = mergestring (settings["searchlist"]:[], "\n");
     // #49094: populate the search list
-    if (s1 == "" && s2 == "" && s3 == "" && !dhcp_resolv)
+    if (searchstring == "" && !settings["dhcp_resolv"]:false)
     {
-	s1 = domain;
+	searchstring = settings["domain"]:"";
     }
 
     string hnlabel = standalone?
@@ -183,10 +202,10 @@ disabled during the connection.</p>");
     term contents = `HSquash(`VBox(
 	`Frame(hnlabel, `VBox(
 	    `HBox(
-		`TextEntry(`id(`host), Label::HostName (), hostname),
+		`TextEntry(`id(`host), Label::HostName (), settings["hostname"]:""),
 		`HSpacing (1),
 		/* TextEntry label */
-		`TextEntry(`id(`domain), _("&Domain Name"), domain)
+		`TextEntry(`id(`domain), _("&Domain Name"), settings["domain"]:"")
 	    ),
 	    /* CheckBox label */
 	    `Left(`CheckBox(`id(`dn), _("&Change Host Name via DHCP")))
@@ -194,25 +213,21 @@ disabled during the connection.</p>");
 	`VSpacing(1),
 	/* Frame label */
 	`Frame(_("Name Servers and Domain Search List"), `VBox(
-	`HBox(
-	    `VBox(
+	`VSquash ( `HBox(
+	    `HWeight (1, `VBox(
 		/* TextEntry label */
-		`TextEntry(`id(`ns1), _("Name Server &1"), ns1),
+		`TextEntry(`id(`ns1), _("Name Server &1"), settings["nameservers", 0]:""),
 		/* TextEntry label */
-		`TextEntry(`id(`ns2), _("Name Server &2"), ns2),
+		`TextEntry(`id(`ns2), _("Name Server &2"), settings["nameservers", 1]:""),
 		/* TextEntry label */
-		`TextEntry(`id(`ns3), _("Name Server &3"), ns3)
-	    ),
+		`TextEntry(`id(`ns3), _("Name Server &3"), settings["nameservers", 2]:"")
+	    )),
 	    `HSpacing (1),
-	    `VBox(
+	    `HWeight (1, `VBox(
 		/* TextEntry label */
-		`TextEntry(`id(`s1), _("Doma&in Search 1"), s1),
-		/* TextEntry label */
-		`TextEntry(`id(`s2), _("Do&main Search 2"), s2),
-		/* TextEntry label */
-		`TextEntry(`id(`s3), _("Dom&ain Search 3"), s3)
-	    )
-	),
+		`MultiLineEdit (`id (`ss), _("Do&main Search"), searchstring)
+	    ))
+	)),
 	/* CheckBox label */
 	`Left(`CheckBox(`id(`dr), `opt(`notify), _("&Update Name Servers and Search List via DHCP")))
 	))
@@ -227,36 +242,27 @@ disabled during the connection.</p>");
 
     UI::ChangeWidget(`id(`dn), `Enabled, has_dhcp);
     UI::ChangeWidget(`id(`dr), `Enabled, has_dhcp);
-    if(has_dhcp) UI::ChangeWidget(`id(`dn), `Value, dhcp_hostname);
-    if(has_dhcp) UI::ChangeWidget(`id(`dr), `Value, dhcp_resolv);
+    if (has_dhcp)
+    {
+	UI::ChangeWidget(`id(`dn), `Value, settings["dhcp_hostname"]:false);
+	UI::ChangeWidget(`id(`dr), `Value, settings["dhcp_resolv"]:false);
+    }
 
     UI::ChangeWidget(`id(`host), `ValidChars, Hostname::ValidChars);
     UI::ChangeWidget(`id(`domain), `ValidChars, Hostname::ValidCharsDomain);
-    UI::ChangeWidget(`id(`s1), `ValidChars, Hostname::ValidCharsFQ);
-    UI::ChangeWidget(`id(`s2), `ValidChars, Hostname::ValidCharsFQ);
-    UI::ChangeWidget(`id(`s3), `ValidChars, Hostname::ValidCharsFQ);
-    UI::ChangeWidget(`id(`ns1), `ValidChars, IP::ValidChars);
-    UI::ChangeWidget(`id(`ns2), `ValidChars, IP::ValidChars);
-    UI::ChangeWidget(`id(`ns3), `ValidChars, IP::ValidChars);
+    ChangeNsWidgets (`ValidChars, IP::ValidChars);
+    UI::ChangeWidget(`id(`ss), `ValidChars, Hostname::ValidCharsFQ); // TODO \n?
 
     if(has_dhcp)
     {
- 	UI::ChangeWidget(`id(`ns1), `Enabled, !dhcp_resolv);
-	UI::ChangeWidget(`id(`ns2), `Enabled, !dhcp_resolv);
-	UI::ChangeWidget(`id(`ns3), `Enabled, !dhcp_resolv);
-	UI::ChangeWidget(`id(`s1), `Enabled, !dhcp_resolv);
-	UI::ChangeWidget(`id(`s2), `Enabled, !dhcp_resolv);
-	UI::ChangeWidget(`id(`s3), `Enabled, !dhcp_resolv);
+	ChangeNsWidgets (`Enabled, !dhcp_resolv);
+	UI::ChangeWidget(`id(`ss), `Enabled, !dhcp_resolv);
     }
 
     if(ModifyResolvConfPopup() != true) {
 	UI::ChangeWidget(`id(`dr), `Enabled, false);
-	UI::ChangeWidget(`id(`s1), `Enabled, false);
-	UI::ChangeWidget(`id(`s2), `Enabled, false);
-	UI::ChangeWidget(`id(`s3), `Enabled, false);
-	UI::ChangeWidget(`id(`ns1), `Enabled, false);
-	UI::ChangeWidget(`id(`ns2), `Enabled, false);
-	UI::ChangeWidget(`id(`ns3), `Enabled, false);
+	ChangeNsWidgets (`Enabled, false);
+	UI::ChangeWidget(`id(`ss), `Enabled, false);
     }
 
     UI::SetFocus (`id (`host));
@@ -265,20 +271,24 @@ disabled during the connection.</p>");
     while(true) {
 
 	ret = UI::UserInput();
-
-	/* abort? */
-	if(ret == `abort || ret == `cancel) {
-	    if(DNSModified()) {
-		DNS::modified = true;
-		if(ReallyAbort()) break;
-		DNS::modified = false;
-		continue;
-	    }
-	    if(ReallyAbort()) break;
-	    else continue;
+	if (ret == `cancel)
+	{
+	    ret = `abort;
 	}
+
+	/* going to exit: query, check whether modified */
+	if (ret == `abort || ret == `next) {
+	    map oldsettings = InitSettings ();
+	    settings = QueryWidgets ();
+	    modified = settings != oldsettings;
+	    y2milestone ("olddns: %1", oldsettings);
+	    y2milestone ("newdns: %1", settings);
+	    y2milestone ("modified: %1", modified);
+	}
+
+
 	/* hostname via dhcp */
-	else if(ret == `dn) {
+	if (ret == `dn) {
 	    // Do nothing (the widget doesnt have notify anyway)
 	    // In particular do not disable the host and domain name widgets,
 	    // setting of FQDN should be possible even if DHCP overrides it.
@@ -288,29 +298,29 @@ disabled during the connection.</p>");
 	/* resolv.conf via dhcp */
 	else if(ret == `dr) {
 	    dhcp_resolv = (boolean) UI::QueryWidget(`id(`dr), `Value);
-	    UI::ChangeWidget(`id(`ns1), `Enabled, !dhcp_resolv);
-	    UI::ChangeWidget(`id(`ns2), `Enabled, !dhcp_resolv);
-	    UI::ChangeWidget(`id(`ns3), `Enabled, !dhcp_resolv);
-	    UI::ChangeWidget(`id(`s1), `Enabled, !dhcp_resolv);
-	    UI::ChangeWidget(`id(`s2), `Enabled, !dhcp_resolv);
-	    UI::ChangeWidget(`id(`s3), `Enabled, !dhcp_resolv);
+	    ChangeNsWidgets (`Enabled, !dhcp_resolv);
+	    UI::ChangeWidget(`id(`ss), `Enabled, !dhcp_resolv);
 	    continue;
 	}
 	else if(ret == `back) {
 	    break;
 	}
+	else if (ret == `abort)
+	{
+	    if (ReallyAbortCond (modified))
+	    {
+		break;
+	    }
+	    else continue;
+	}
 	else if(ret == `next) {
-
 	    /* check host name and domain */
-	    string hostname = (string) UI::QueryWidget(`id(`host), `Value);
-	    string domainname = (string) UI::QueryWidget(`id(`domain), `Value);
-	    dhcp_hostname = (boolean) UI::QueryWidget(`id(`dn), `Value);
-	    boolean dhn = has_dhcp && dhcp_hostname;
+	    boolean dhn = has_dhcp && settings["dhcp_hostname"]:false;
 	    // If the names are set by dhcp, the user may enter backup values
 	    // here - N#28427. That is, host and domain name are optional then.
 	    // For static config, they are mandatory.
-	    if(!dhn || hostname != "") {
-		if (!Hostname::Check(hostname)) {
+	    if(!dhn || settings["hostname"]:"" != "") {
+		if (!Hostname::Check (settings["hostname"]:"")) {
 		    UI::SetFocus(`id(`host));
 		    /* Popup::Error text */
 		    Popup::Error (_("The host name is invalid.") +
@@ -318,8 +328,8 @@ disabled during the connection.</p>");
 		    continue;
 		}
 	    }
-	    if(!dhn || domainname != "") {
-		if(!Hostname::CheckDomain(domainname)) {
+	    if(!dhn || settings["domain"]:"" != "") {
+		if(!Hostname::CheckDomain (settings["domain"]:"")) {
 		    UI::SetFocus(`id(`domain));
 		    /* Popup::Error text */
 		    Popup::Error (_("The domain name is invalid.") +
@@ -329,23 +339,19 @@ disabled during the connection.</p>");
 	    }
 
 	    /* check nameservers */
-	    ns1 = tolower((string) UI::QueryWidget(`id(`ns1), `Value));
-	    ns2 = tolower((string) UI::QueryWidget(`id(`ns2), `Value));
-	    ns3 = tolower((string) UI::QueryWidget(`id(`ns3), `Value));
-
-	    if(ns1 != "" && !IP::Check(ns1)) {
+	    if(settings["nameservers", 0]:"" != "" && !IP::Check(settings["nameservers", 0]:"")) {
 		UI::SetFocus(`id(`ns1));
 		/* Popup::Error text */
 		Popup::Error(_("The primary name server is invalid."));
 		continue;
 	    }
-	    if(ns2 != "" && !IP::Check(ns2)) {
+	    if(settings["nameservers", 1]:"" != "" && !IP::Check(settings["nameservers", 1]:"")) {
 		UI::SetFocus(`id(`ns2));
 		/* Popup::Error text */
 		Popup::Error(_("The secondary name server is invalid."));
 		continue;
 	    }
-	    if(ns3 != "" && !IP::Check(ns3)) {
+	    if(settings["nameservers", 2]:"" != "" && !IP::Check(settings["nameservers", 2]:"")) {
 		UI::SetFocus(`id(`ns3));
 		/* Popup::Error text */
 		Popup::Error(_("The tertiary name server is invalid."));
@@ -353,29 +359,27 @@ disabled during the connection.</p>");
 	    }
 
 	    /* check search domains */
-	    s1 = tolower((string) UI::QueryWidget(`id(`s1), `Value));
-	    s2 = tolower((string) UI::QueryWidget(`id(`s2), `Value));
-	    s3 = tolower((string) UI::QueryWidget(`id(`s3), `Value));
-
-	    if(s1 != "" && !Hostname::CheckDomain(s1)) {
-		UI::SetFocus(`id(`s1));
+	    if (size (mergestring (settings["searchlist"]:[], " ")) > 256)
+	    {
+		UI::SetFocus (`id (`ss));
 		/* Popup::Error text */
-		Popup::Error(_("The primary search domain is invalid.") +
-			     "\n" + Hostname::ValidDomain ());
+		Popup::Error(sformat (_("The search list can have at most %1 characters."), 256));
 		continue;
 	    }
-	    if(s2 != "" && !Hostname::CheckDomain(s2)) {
-		UI::SetFocus(`id(`s2));
-		/* Popup::Error text */
-		Popup::Error(_("The secondary search domain is invalid.") +
-			     "\n" + Hostname::ValidDomain ());
-		continue;
-	    }
-	    if(s3 != "" && !Hostname::CheckDomain(s3)) {
-		UI::SetFocus(`id(`s3));
-		/* Popup::Error text */
-		Popup::Error(_("The tertiary search domain is invalid.") +
-			     "\n" + Hostname::ValidDomain ());
+	    string bad = find (string s, settings["searchlist"]:[], {
+		if (! Hostname::CheckDomain (s)) {
+		    UI::SetFocus (`id (`ss));
+		    /* Popup::Error text */
+		    Popup::Error(
+			sformat (_("The search domain '%1' is invalid."), s) +
+			"\n" + Hostname::ValidDomain ()
+			);
+		    return true;
+		}
+		return false;
+	    });
+	    if (bad != nil)
+	    {
 		continue;
 	    }
 
@@ -389,25 +393,8 @@ disabled during the connection.</p>");
     }
 
     if(ret == `next) {
-
-	if(DNSModified()) {
-
-	    DNS::hostname = (string) UI::QueryWidget(`id(`host), `Value);
-	    DNS::domain = (string) UI::QueryWidget(`id(`domain), `Value);
-
-	    /* resolv.conf(5): 3 nameservers are the limit */
-	    DNS::nameservers = filter(string n, [ ns1, ns2, ns3 ], ``(n != ""));
-
-	    /* resolv.conf(5): 256 search characters at max */
-	    /* FIXME: we have screen space for only 3 (#40012) */
-	    DNS::searchlist[0] = s1;
-	    DNS::searchlist[1] = s2;
-	    DNS::searchlist[2] = s3;
-	    DNS::searchlist = filter(string s, DNS::searchlist, ``(s != ""));
-
-	    NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = (boolean) UI::QueryWidget(`id(`dn), `Value);
-	    NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"] = (boolean) UI::QueryWidget(`id(`dr), `Value);
-
+	if (settings != InitSettings ()) {
+	    StoreSettings (settings);
 	    /* update modified flag */
 	    DNS::modified = true;
 	}
