@@ -36,8 +36,8 @@ if(!Internet::do_test)
     return `auto;
 
 /* Nothing to test */
-if(!Internet::FindFastest())
-    return `auto;
+//if(!Internet::FindFastest())
+//    return `auto;
 
 
 boolean we_have_patches = false;

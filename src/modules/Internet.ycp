@@ -57,6 +57,30 @@ define void Reset() {
 }
 
 /**
+ *  Set device from argument as default network device 
+ */
+global define void SetDevice(string dev){
+    device=dev;
+    NetworkDevices::Select(device);
+    type = NetworkDevices::FastestType(device);
+   provider = NetworkDevices::Current["PROVIDER"]:"";
+    if (provider != "") {
+        import "Provider";
+        Provider::Read();
+        Provider::Select(provider);
+        demand = Provider::Current["DEMAND"]:"no" == "yes";
+        password = Provider::Current["PASSWORD"]:"";
+        askpassword = Provider::Current["ASKPASSWORD"]:"no" == "yes";
+        capi_adsl = Provider::Current["PPPMODE"]:"pppoe" == "capi-adsl";
+        capi_isdn = Provider::Current["PPPMODE"]:"ippp" == "capi-isdn";
+    }
+
+    /* Set logfile */
+    if (type == "dsl" || type == "modem" || (type == "isdn" && capi_isdn))
+        logfile = "/var/log/smpppd/ifcfg-" + device + ".log";
+
+}
+/**
  * Find the fastest connection to the Internet
  * @return true if a "good" connection was found
  */
@@ -71,25 +95,7 @@ global define boolean FindFastest() {
     /* No fallback since there are devices that must not be tested (e.g. lo) */
     if(device == "") return false;
 
-    NetworkDevices::Select(device);
-    type = NetworkDevices::FastestType(device);
-
-    provider = NetworkDevices::Current["PROVIDER"]:"";
-    if (provider != "") {
-	import "Provider";
-	Provider::Read();
-	Provider::Select(provider);
-	demand = Provider::Current["DEMAND"]:"no" == "yes";
-	password = Provider::Current["PASSWORD"]:"";
-	askpassword = Provider::Current["ASKPASSWORD"]:"no" == "yes";
-	capi_adsl = Provider::Current["PPPMODE"]:"pppoe" == "capi-adsl";
-	capi_isdn = Provider::Current["PPPMODE"]:"ippp" == "capi-isdn";
-    }
-
-    /* Set logfile */
-    if (type == "dsl" || type == "modem" || (type == "isdn" && capi_isdn))
-	logfile = "/var/log/smpppd/ifcfg-" + device + ".log";
-
+    SetDevice(device);
     return true;
 }
 

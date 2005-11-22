@@ -19,7 +19,6 @@ import "Popup";
 import "Product";
 import "String";
 import "Wizard";
-
 include "network/routines.ycp";
 
 /**
@@ -98,11 +97,13 @@ activate the test procedure."),
     boolean already_up = false;
     if(!Mode::test ()) already_up = Internet::Status();
 
+    string connection_text = _("&Yes, Test Connection to the Internet via ");
+
     /* Radiobuttons */
     term buttons = `VBox(
 	`VSpacing(1),
 	/* RadioButton label */
-	`Left(`RadioButton(`id(`yes), _("&Yes, Test Connection to the Internet"), Internet::do_test)),
+	`Left(`ReplacePoint(`id(`rp), `RadioButton(`id(`yes), connection_text +"'"+ Internet::device +"'", Internet::do_test))),
 	/* RadioButton label */
 	`Left(`RadioButton(`id(`no), _("N&o, Skip This Test"), !Internet::do_test)),
 	`VSpacing(1)
@@ -126,7 +127,7 @@ activate the test procedure."),
 	/* label text - one step of during network test */
 	steps = add(steps, `Left(`Label(_("- Close connection"))));
     }
-
+	Internet::FindFastest();
     /* Steps dialog contents */
     term contents = `HBox(
 	`HSpacing(5),
@@ -142,6 +143,7 @@ activate the test procedure."),
 	    `Frame(_("Select:"), `RadioButtonGroup(`id(`rb), `HBox(
 		`HSpacing(2),
 		buttons,
+		`PushButton(`id(`net_expert), _("Change Device")),
 		`HSpacing(2)
 	    ))),
 	    `VSpacing(1)
@@ -156,6 +158,23 @@ activate the test procedure."),
     while(true)
     {
 	ret = UI::UserInput();
+
+	if (ret == `net_expert)
+	 {
+	import "NetworkDevices";
+	import "NetworkPopup";
+
+	list<string> items=[];
+	y2milestone("network devices list %1", NetworkDevices::List(""));
+	foreach(string dev,NetworkDevices::List(""),{
+            if (dev != "lo") items = add(items, dev);
+	});
+	string via_device = String::CutBlanks(NetworkPopup::ChooseItem(_("Network Device Select"), items, Internet::device));
+	Internet::SetDevice( via_device );
+	  UI::ReplaceWidget(`id(`rp), `RadioButton(`id(`yes), connection_text +"'"+ Internet::device + "'", Internet::do_test));
+	y2milestone("selected network device :%1", via_device);
+	 continue;
+	 }
 
 	if (ret == `abort || ret == `cancel)
 	{
