@@ -7,6 +7,12 @@ Wed Nov 23 18:22:33 CET 2005 - mvidner@suse.cz
   fixed checking whether something has changed in the dialog.
 
 -------------------------------------------------------------------
+Tue Nov 22 09:26:21 CET 2005 - mzugec@suse.cz
+
+- feature #100095 - select network interface for testing internet
+  connection
+
+-------------------------------------------------------------------
 Tue Nov 15 19:16:12 CET 2005 - mvidner@suse.cz
 
 - Rewrote AddressDialog to CWM (preparing to attack bug #44721).
