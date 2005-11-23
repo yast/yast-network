@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Tue Nov 22 14:56:34 CET 2005 - mvidner@suse.cz
+Wed Nov 23 18:22:33 CET 2005 - mvidner@suse.cz
 
+- Moved the NIC details dialog to a tab in the address dialog.
 - Allowed more than 3 search domains (#55012, F120075) in the resolver
   dialog by using a multi line edit instead of 3 text entries.  Also
   fixed checking whether something has changed in the dialog.

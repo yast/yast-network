@@ -185,7 +185,6 @@ symbol HandleButton (string key, map event) {
 
 	"HARDWARE": `hardware,
 	"DHCP_ADVANCED": `dhclient,
-	"DETAILS": `details,
 	"ADDITIONAL_ADDRESSES": `virtual,
 	"S390": `s390,
 	];
@@ -371,12 +370,39 @@ the network configuration.</p>"),
 	"init": InitDialog,
 	"store": StoreDialog,
 	],
+    "FWZONE": $[
+	"widget": `combobox,
+	// Combo Box label
+	"label": _("Firewall &Zone"),
+	"opt": [],
+	"help":
+_("<p>Select the <b>Firewall Zone</b> to put the interface in. If you
+select a zone, the firewall will be enabled. If you do not and other 
+firewalled interfaces exist, the firewall
+will stay enabled but all traffic will be blocked for this
+interface. If you do not select a zone and no others exist, 
+the firewall will be disabled.</p>"),
+	"items": SuSEFirewall4Network::FirewallZonesComboBoxItems (),
+	],
+    "MANDATORY": $[
+	"widget": `checkbox,
+	// check box label
+	"label": _("&Mandatory interface"),
+	"opt": [],
+	"help": _("<p>TODO: <b>Mandatory Interface</b> specifies whether the network service will report failure if the interface fails to start at boot time.</p>"),
+	],
+    "MTU": $[
+	"widget": `textentry,
+	// textentry label, Maximum Transfer Unit
+	"label": _("&MTU"), 
+	"help": _("<p>You can set the maximum transfer unit (<b>MTU</b>) of an interface.</p>"),
+	],
     "IFCFGTYPE": $[
 	"widget": `combobox,
 	/* ComboBox label */
 	"label": _("&Device Type"),
 	"opt": [`hstretch, `notify],
-	"help": _("FIXME, help IFCFGTYPE<br>"),
+	"help": "",
 	// "items" will be filled in the dialog itself
 	"handle": HandleIfcfg,
 	"validate_type": `function,
@@ -388,7 +414,7 @@ the network configuration.</p>"),
 	/* ComboBox label */
 	"label": _("&Configuration Name"),
 	"opt": [`hstretch, `editable],
-	"help": _("FIXME, help IFCFGID<br>"),
+	"help": "",
 	"valid_chars": NetworkDevices::ValidCharsIfcfg (),
 	"handle": HandleIfcfg,
 	],
@@ -439,7 +465,7 @@ by the system administrator or your cable or DSL provider.</p>") +
 	/* Radio button label */
 	"label": _("A&utomatic Address Setup (via DHCP+AUTOIP)"),
 	"opt": [`notify],
-	"help": _("FIXME, help BOOTPROTO_dhcp_autoip<br>"),
+	"help": ("FIXME, help BOOTPROTO_dhcp_autoip<br>"),
 	"init": InitNull,
 	"store": StoreNull,
 	],
@@ -449,7 +475,7 @@ by the system administrator or your cable or DSL provider.</p>") +
 	/* Radio button label */
 	"label": _("A&utomatic Address Setup (via AUTOIP)"),
 	"opt": [`notify],
-	"help": _("FIXME, help BOOTPROTO_autoip<br>"),
+	"help": ("FIXME, help BOOTPROTO_autoip<br>"),
 	"init": InitNull,
 	"store": StoreNull,
 	],
@@ -516,7 +542,7 @@ IP address.</p>"),
 	// menu button label
 	"label": _("&Advanced..."),
 	"opt": [`hstretch],
-	"help": _("FIXME, help ADVANCED_MB<br>"),
+	"help": "",
 	// "items" will be filled in the dialog itself
 	"init": InitNull,
 	"store": StoreNull,
@@ -528,7 +554,7 @@ IP address.</p>"),
 	// push button label
 	"label": _("DH&CP Options"),
 	"opt": [],
-	"help": _("<p>H</p>"),	// no help?
+	"help": "",
 	"init": InitNull,
 	"store": StoreNull,
 	"handle": HandleButton,
@@ -538,7 +564,7 @@ IP address.</p>"),
 	// push button label
 	"label": _("Addi&tional Addresses"),
 	"opt": [],
-	"help": _("<p>H</p>"),	// no help?
+	"help": "",
 	"init": InitNull,
 	"store": StoreNull,
 	"handle": HandleButton,
@@ -548,28 +574,18 @@ IP address.</p>"),
 	// push button label
 	"label": _("H&ardware Details"),
 	"opt": [],
-	"help": _("<p>H</p>"),	// no help?
+	"help": "",
 	"init": InitNull,
 	"store": StoreNull,
 	"handle": HandleButton,
 	],
     // leftovers
-    "DETAILS": $[
-	"widget": `push_button,
-	// push button label
-	"label": _("&Detailed Settings"),
-	"opt": [],
-	"help": _("<p>H</p>"),	// no help?
-	"init": InitNull,
-	"store": StoreNull,
-	"handle": HandleButton,
-	],
     "S390": $[
 	"widget": `push_button,
 	// push button label
 	"label": _("&S/390"),
 	"opt": [],
-	"help": _("<p>H</p>"),	// no help?
+	"help": "",
 	"init": InitNull,
 	"store": StoreNull,
 	"handle": HandleButton,
@@ -579,7 +595,7 @@ IP address.</p>"),
 	// push button label
 	"label": _("&Host Name and Name Server"),
 	"opt": [`hstretch],
-	"help": _("FIXME, help HOSTNAME_B<br>"),
+	"help": "",
 	"init": InitNull,
 	"store": StoreNull,
 	"handle": HandleButton,
@@ -589,7 +605,7 @@ IP address.</p>"),
 	// push button label
 	"label": _("R&outing"),
 	"opt": [`hstretch],
-	"help": _("FIXME, help ROUTING<br>"),
+	"help": "",
 	"init": InitNull,
 	"store": StoreNull,
 	"handle": HandleButton,
@@ -607,26 +623,17 @@ list< list<string> > BuildTypesListCWM (list<string> types) {
 }
 
 /**
- * Layout helper
- * @param m right and left margin
- * @param contents contents to wrap
- * @return contents in hbox with margins on the sides
- */
-term HMargins (float m, term contents) {
-    return `HBox (`HSpacing (m), contents, `HSpacing (m));
-}
-
-/**
  * Wrap contents to a box so that the tabs have the same size
  * @param contents the tab contents
  * @return wrapped contents
  */
 term CommonBox (term contents) {
     return `HBox (
-	`VSpacing (15),
+	//`VSpacing (15),
+	`VStretch (),
 	`HSquash (
 	    `VBox (
-		`HSpacing (40),
+		`HSpacing (42 + 4.2),
 		contents
 		)
 	    )
@@ -641,9 +648,17 @@ define any AddressDialog() {
 
     ScreenName("lan-address");
 
-    boolean force_static_ip = ProductFeatures::GetBooleanFeature ("network", "force_static_ip");
+    settings = $[
+	// general tab:
+	"STARTMODE": Lan::startmode,
+	"USERCONTROL": Lan::usercontrol,
+	// problems when renaming the interface?
+	"FWZONE": SuSEFirewall4Network::GetZoneOfInterface (
+	    NetworkDevices::device_name (Lan::type, Lan::device)
+	    ),
+	"MTU": Lan::mtu,
 
-    settings= $[
+	// address tab:
 	"BOOTPROTO": Lan::bootproto,
 	"IPADDR": Lan::ipaddr,
 	"NETMASK": Lan::netmask,
@@ -652,6 +667,39 @@ define any AddressDialog() {
 	"IFCFGTYPE": Lan::type,
 	"IFCFGID": Lan::device,
 	];
+
+
+    term general_contents = `MarginBox (1, 0,
+	`VBox (
+ 	    `Frame(
+		// Frame label
+		// common settings for interfaces
+		_("Common Network Interface Settings"),
+		`MarginBox (1, 0,
+		    `VBox(
+			// TODO:
+			// "IFNAME", "BINDTOHW", "MANDATORY",
+			`Left ("STARTMODE"),
+			`VSpacing(0.5),
+			`Left ("USERCONTROL"),
+			`VSpacing(0.5),
+			`Left ("FWZONE")
+			))
+		),
+	    `VSpacing (2),
+ 	    `Frame(
+		// Frame label
+		// detailed settings for interfaces
+		_("Detailed Network Interace Settings"),
+		`MarginBox (1, 0,
+		    `VBox(
+			`Left ("MTU")
+			))
+		)
+	    )
+	);
+
+
     string drvtype = Lan::DriverType (settings["IFCFGTYPE"]:"");
 
     boolean is_ptp = drvtype == "ctc" || drvtype == "iucv";
@@ -661,6 +709,7 @@ define any AddressDialog() {
     if(settings["BOOTPROTO"]:"" == "static" && settings["IPADDR"]:"" == "" && !no_dhcp)
 	settings["BOOTPROTO"] = "dhcp"; 
 
+    boolean force_static_ip = ProductFeatures::GetBooleanFeature ("network", "force_static_ip");
     // #65524
     if (Lan::operation == `add && force_static_ip)
     {
@@ -687,7 +736,7 @@ Components of this product might not work with DHCP.</p>");
     }
 
     wd["STARTMODE"] = MakeStartmode (
-	["auto", "ifplugd", "hotplug", "manual", "off", ]);
+	["auto", "ifplugd", "hotplug", "manual", "managed", "off", ]);
 
     wd["IFCFGTYPE", "items"] = BuildTypesListCWM (device_types);
     wd["IFCFGID", "items"] = [[settings["IFCFGID"]:"",
@@ -715,7 +764,6 @@ Components of this product might not work with DHCP.</p>");
     list<string> mb_items = [
 	"HARDWARE",
 	"DHCP_ADVANCED",
-	"DETAILS",
 	"ADDITIONAL_ADDRESSES",
 	];
     // Allow changing s390 options, except for iucv, where the option
@@ -730,7 +778,9 @@ Components of this product might not work with DHCP.</p>");
     });
 
     /* Frame label */
-    term frame2 = `Frame(_("Detailed Settings"), `HBox(`HStretch(),
+    term frame2 = `MarginBox (
+	1, 0,
+	`Frame(_("Detailed Settings"), `HBox(`HStretch(),
 	`HSquash(`VBox(
 	    `VSpacing(0.4),
 	    "HOSTNAME_B",
@@ -739,14 +789,10 @@ Components of this product might not work with DHCP.</p>");
 	    `VSpacing(0.4)
 	)),
 	`HStretch()
-    ));
+    )));
 
     if(Lan::alias != "")
 	frame2 = `VSpacing(0);
-
-
-    term general_contents = `VBox ("IFNAME", "BINDTOHW", "STARTMODE",
-				   "MANDATORY", "USERCONTROL", "FWZONE");
 
     term address_p2p_contents =
 	`Frame (
@@ -762,7 +808,7 @@ Components of this product might not work with DHCP.</p>");
 	    `VBox (
 		"IPADDR",
 		"NETMASK",
-		// TODO now widget, add logic
+		// TODO new widget, add logic
 		//"GATEWAY"
 		`Empty ()
 		)
@@ -771,8 +817,7 @@ Components of this product might not work with DHCP.</p>");
     term address_dhcp_contents = `VBox (
 	`RadioButtonGroup (
 	    `id ("BOOTPROTO"),	// CWM must not expand `id
-	    HMargins (
-		1, 
+	    `MarginBox (1, 0,
 		`VBox (
 		    `Left ("BOOTPROTO_dhcp"), // TODO: widget attribute align: left
 		    `Left ("BOOTPROTO_static"),
@@ -805,41 +850,37 @@ Components of this product might not work with DHCP.</p>");
     wd = (map<string, map<string,any> >) union (wd, $[
 	"tab" : CWMTab::CreateWidget (
 	    $[
-//		"tab_order" : ["t1", "t2", "t3", "t4"],
-		// for compatibility, just the original one
-		"tab_order" : ["t2"],
+		"tab_order" : ["t_general", "t_addr"],
 		"tabs" : $[
-                    "t1" : $[
-                        "header" : _("General"),
+                    "t_general" : $[
+                        "header" : _("&General"),
                         "contents" : CommonBox (general_contents),
 			// FIXME we have helps per widget and for the whole
 			// tab set but not for one tab
-			"help": _("General help"),
+			"help": _("<p>Configure the detailed network card settings here.</p>"),
                     ],
-                    "t2" : $[
+                    "t_addr" : $[
 			// FIXME: here it does not complain about missing
 			// shortcuts
-                        "header" : _("Address"),
+                        "header" : _("&Address"),
                         "contents" : CommonBox (address_contents),
 			// Address tab help
 			"help": _("<p>Configure your IP address.</p>"),
                     ],
                     "t3" : $[
-                        "header" : _("Wireless"),
+                        "header" : _("&Wireless"),
                         "contents" : CommonBox (`Empty ()),
                         "widget_names" : [],
                     ],
                     "t4" : $[
-                        "header" : _("DNS"),
+                        "header" : _("&DNS"),
                         "contents" : CommonBox (`Empty ()),
                         "widget_names" : [],
                     ],
                 ],
 		"initial_tab" : "t2",
 		"widget_descr" : wd,
-		// FIXME cwm
-		"help" : _("FIXME, unused help for tabwidget<br>"),
-		"tab_help" : _("FIXME, help for tabwidget<br>"),
+		"tab_help" : "",
 		"fallback_functions" : functions,
             ])
         ]);
@@ -864,10 +905,19 @@ Components of this product might not work with DHCP.</p>");
  
     if (ret != `back && ret != `abort)
     {
+	string ifcfgname = NetworkDevices::device_name (
+	    settings["IFCFGTYPE"]:"",
+	    settings["IFCFGID"]:"");
+
+	// general tab
+	Lan::startmode = settings["STARTMODE"]:"";
+	Lan::usercontrol = settings["USERCONTROL"]:false;
+	string zone = settings["FWZONE"]:"";
+	SuSEFirewall4Network::ProtectByFirewall (ifcfgname, zone, zone != "");
+	Lan::mtu = settings["MTU"]:"";
+
+	// address tab
 	if(Lan::operation == `add) {
-	    string ifcfgname = NetworkDevices::device_name (
-		settings["IFCFGTYPE"]:"",
-		settings["IFCFGID"]:"");
 	    Lan::device = NetworkDevices::device_num(ifcfgname);
 	    Lan::type = NetworkDevices::device_type(ifcfgname);
 	}

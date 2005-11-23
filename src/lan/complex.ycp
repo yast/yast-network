@@ -165,7 +165,8 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
     /* Network cards overview dialog help 4/4 */
 	// NetworkManager and ifup are programs
 _("<p>Use <b>Managed by NetworkManager</b> to have a desktop applet
-take care about the interface. <tt>ifup</tt> will not touch it.</p>
+take care about the interface. <tt>ifup</tt> will not touch it.
+To revert that setting, press <b>Edit</b>.</p>
 ");
 
     list<list> more_buttons = [

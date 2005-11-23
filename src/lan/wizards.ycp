@@ -22,7 +22,6 @@ include "network/routines.ycp";
 include "network/lan/address.ycp";
 include "network/lan/complex.ycp";
 include "network/lan/dhcp.ycp";
-include "network/lan/details.ycp";
 include "network/lan/hardware.ycp";
 include "network/lan/virtual.ycp";
 include "network/lan/wireless.ycp";
@@ -229,7 +228,6 @@ define symbol AddressSequence(string which) ``{
 	"changedefaults": [ ``(ChangeDefaults()), true ],
 	"address"	: ``(AddressDialog()),
 	"dhcp"		: ``(DHCPDialog()),
-	"details"	: ``(DetailsDialog()),
 	"hosts"		: ``(HostsMainDialog(false)),
 	"proxy"		: ``(ProxyMainDialog(false)),
 	"virtual"	: ``(VirtualDialog(false)),
@@ -253,7 +251,6 @@ define symbol AddressSequence(string which) ``{
 	    `abort	: `abort,
 	    `next	: "commit",
 	    `wire	: "wire",
-	    `details	: "details",
 	    `dhclient	: "dhcp",
 	    `hosts	: "hosts",
 	    `proxy	: "proxy",
@@ -268,10 +265,6 @@ define symbol AddressSequence(string which) ``{
 	    `next	: "address",
 	],
 	"dhcp" : $[
-	    `abort	: `abort,
-	    `next	: "address",
-	],
-	"details" : $[
 	    `abort	: `abort,
 	    `next	: "address",
 	],

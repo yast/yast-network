@@ -46,25 +46,6 @@ to change the prefix.</p>
 "),
 	],
 
-    "FWZONE": $[
-	"widget": `combobox,
-	// Combo Box label
-	"label": _("Firewall &Zone"),
-	"opt": [],
-	"help": _("<p>Select the <b>Firewall Zone</b> to put the interface in. If you
-select a zone, the firewall will be enabled. If you do not and other 
-firewalled interfaces exist, the firewall
-will stay enabled but all traffic will be blocked for this
-interface. If you do not select a zone and no others exist, 
-the firewall will be disabled.</p>"),
-	],
-    "MANDATORY": $[
-	"widget": `checkbox,
-	// check box label
-	"label": _("&Mandatory interface"),
-	"opt": [],
-	"help": _("<p>TODO: <b>Mandatory Interface</b> specifies whether the network service will report failure if the interface fails to start at boot time.</p>"),
-	],
     "IFNAME": $[
 	"widget": `textentry,
 	"label": _("&Name of interface"),
