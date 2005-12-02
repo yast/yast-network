@@ -370,11 +370,37 @@ the network configuration.</p>"),
 	"init": InitDialog,
 	"store": StoreDialog,
 	],
+
+    "IFNAME": $[
+	"widget": `textentry,
+	"label": _("&Name of Interface"),
+	"opt": [`hstretch],
+	"help": _("<p>TODO kind of vague!</p>"),
+	],
+    "BINDTOHW": $[
+	"widget": `combobox,
+	"label": _("&Binding Characteristic"),
+	"opt": [`hstretch],
+	// IDEA: "help" is the traditional detached help, has to include
+	// widget name; "tooltip" or "toolhelp" is visually bound to the
+	// widget, does not need to contain its name (the translator comment
+	// needs to, though)
+	"help": _("<p>FIXME better help! Which hardware to bind to</p>"),
+	// FIXME FAKE: get real values dynamically
+	"items": [
+	    // synchronize keys with ... whatever
+	    ["mac", _("MAC address: 00:00:de:ad:po:rk")],
+	    ["bus", _("Bus path: pci-0000:01:09.0")],
+	    ["vpid", _("Product ID: 1022-2000")],
+	    ["vpsid", _("Product sub-ID: 1022-2000-1259-2700")],
+	    ],
+	],
+
     "FWZONE": $[
 	"widget": `combobox,
 	// Combo Box label
 	"label": _("Firewall &Zone"),
-	"opt": [],
+	"opt": [`hstretch],
 	"help":
 _("<p>Select the <b>Firewall Zone</b> to put the interface in. If you
 select a zone, the firewall will be enabled. If you do not and other 
@@ -387,14 +413,15 @@ the firewall will be disabled.</p>"),
     "MANDATORY": $[
 	"widget": `checkbox,
 	// check box label
-	"label": _("&Mandatory interface"),
+	"label": _("&Mandatory Interface"),
 	"opt": [],
 	"help": _("<p>TODO: <b>Mandatory Interface</b> specifies whether the network service will report failure if the interface fails to start at boot time.</p>"),
 	],
     "MTU": $[
 	"widget": `textentry,
 	// textentry label, Maximum Transfer Unit
-	"label": _("&MTU"), 
+	"label": _("&MTU"),
+	"opt": [`hstretch],
 	"help": _("<p>You can set the maximum transfer unit (<b>MTU</b>) of an interface.</p>"),
 	],
     "IFCFGTYPE": $[
@@ -633,7 +660,7 @@ term CommonBox (term contents) {
 	`VStretch (),
 	`HSquash (
 	    `VBox (
-		`HSpacing (42 + 4.2),
+		`HSpacing (48),
 		contents
 		)
 	    )
@@ -648,14 +675,15 @@ define any AddressDialog() {
 
     ScreenName("lan-address");
 
+    string ifname = NetworkDevices::device_name (Lan::type, Lan::device);
     settings = $[
 	// general tab:
+//	"IFNAME": ifname,
+//	"BINDTOHW": "mac",	// FIXME
 	"STARTMODE": Lan::startmode,
 	"USERCONTROL": Lan::usercontrol,
 	// problems when renaming the interface?
-	"FWZONE": SuSEFirewall4Network::GetZoneOfInterface (
-	    NetworkDevices::device_name (Lan::type, Lan::device)
-	    ),
+	"FWZONE": SuSEFirewall4Network::GetZoneOfInterface (ifname),
 	"MTU": Lan::mtu,
 
 	// address tab:
@@ -678,22 +706,27 @@ define any AddressDialog() {
 		`MarginBox (1, 0,
 		    `VBox(
 			// TODO:
-			// "IFNAME", "BINDTOHW", "MANDATORY",
-			`Left ("STARTMODE"),
-			`VSpacing(0.5),
-			`Left ("USERCONTROL"),
-			`VSpacing(0.5),
-			`Left ("FWZONE")
+			// "MANDATORY",
+			// HWeight (1, ...) is a kludge for `opt (`hstretch)
+//			(`HWeight(1, "IFNAME")),
+//			`VSpacing(0.4),
+			(`HWeight(1, "FWZONE")),
+			`VSpacing(0.4),
+			`Left (`HWeight(1, "STARTMODE")),
+			`VSpacing(0.4),
+			`Left ("USERCONTROL")
 			))
 		),
-	    `VSpacing (2),
+	    `VSpacing (1),
  	    `Frame(
 		// Frame label
 		// detailed settings for interfaces
 		_("Detailed Network Interace Settings"),
 		`MarginBox (1, 0,
 		    `VBox(
-			`Left ("MTU")
+//			 (`HWeight(1, "BINDTOHW")),
+//			`VSpacing(0.4),
+			 (`HWeight(1, "MTU"))
 			))
 		)
 	    )
@@ -833,9 +866,7 @@ Components of this product might not work with DHCP.</p>");
 
     term address_contents = `HSquash(`VBox(
 	`Left(label),
-	`VSpacing(1),
 	just_address_contents,
-	`VSpacing(1),
 	frame2,
 	"_DIALOG"
     ));
@@ -878,7 +909,7 @@ Components of this product might not work with DHCP.</p>");
                         "widget_names" : [],
                     ],
                 ],
-		"initial_tab" : "t2",
+		"initial_tab" : "t_addr",
 		"widget_descr" : wd,
 		"tab_help" : "",
 		"fallback_functions" : functions,

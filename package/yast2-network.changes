@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Dec  2 11:17:09 CET 2005 - mvidner@suse.cz
+
+- Address dialog:
+   Fixed displaying the initial tab.
+   Adjusted spacing to fit to 80x24.
+   Prepared some widgets for interface renaming.
+
+-------------------------------------------------------------------
 Wed Nov 23 18:22:33 CET 2005 - mvidner@suse.cz
 
 - Moved the NIC details dialog to a tab in the address dialog.
