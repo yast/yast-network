@@ -39,9 +39,9 @@ global void Read () {
 
 void Chkconfig (string script, boolean enabled) {
     // force disabling of network because many scripts want it
-    string cmd = "chkconfig -f " + script " " + enabled? "on": "off";
+    string cmd = "chkconfig -f " + script + " " + (enabled? "on": "off");
     y2milestone ("%1", cmd);
-    SCR::Execute (cmd);
+    SCR::Execute (.target.bash, cmd);
 }
 
 /**
