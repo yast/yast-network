@@ -64,9 +64,6 @@ map EXEC1 = $[
     ],
 ];
 
-DUMP("ReadStatus");
-TEST(``(ReadStatus()), [], nil);
-
 DUMP("RunSuSEconfig");
 TEST(``(RunSuSEconfig()), [$[],$[],EXEC0], nil);
 TEST(``(RunSuSEconfig()), [$[],$[],EXEC1], nil);
@@ -81,10 +78,6 @@ NetworkDevices::Devices = $[ "dsl" : $[ "0" : $[] ]];
 DUMP("RunKInternet");
 TEST(``(RunKInternet()), [READ,$[],EXEC0], nil);
 TEST(``(RunKInternet()), [READ,$[],EXEC1], nil);
-
-DUMP("StopNetwork");
-TEST(``(StopNetwork()), [READ,$[],EXEC0], nil);
-TEST(``(StopNetwork()), [READ,$[],EXEC1], nil);
 
 DUMP("SetupSMPPPD");
 TEST(``(SetupSMPPPD()), [READ,$[],EXEC0], nil);

@@ -26,6 +26,8 @@ import "Mode";
 import "NetworkConfig";
 import "NetworkDevices";
 import "NetworkModules";
+import "NetworkService";
+import "Package";
 import "ProductFeatures";
 import "Routing";
 import "Progress";
@@ -313,7 +315,7 @@ global define boolean Read() {
     if(Abort()) return false;
     /* Progress step 9/9 */
     ProgressNextStage(_("Detecting current status..."));
-    ReadStatus();
+    NetworkService::Read ();
     sleep(sl);
 
     if(Abort()) return false;
@@ -409,7 +411,7 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 7 */
     ProgressNextStage(_("Setting up network services..."));
-    EnableNetwork();
+    NetworkService::EnableDisable ();
     sleep(sl);
 
     if(Abort()) return false;
@@ -425,7 +427,7 @@ global define boolean Write() {
     ProgressNextStage(_("Activating network services..."));
     if(!write_only) {
 	NetworkModules::HwUp ();
-	ReloadOrStartNetwork();
+	NetworkService::StartStop ();
     }
     sleep(sl);
 
@@ -581,9 +583,38 @@ global define void SelectHW(integer which) {
  * @return summary of the current configuration
  */
 global define list Summary(string mode) {
+
     boolean split = (mode == "split");
 
     list sum = BuildSummary("netcard", Hardware, split, mode == "proposal");
+
+    // the NM should be common to all networking interfaces
+    // (BuildSummaryDevs) but modems etc are not ready yet
+    if (NetworkService::Managed && mode == "proposal")
+    {
+	sum = [];
+    }
+    if (mode == "proposal")
+    {
+	string status = nil;
+	string href = nil;
+	if (NetworkService::Managed)
+	{
+	    href = "lan--nm-disable";
+	    status = _("NetworkManager is enabled.")  + " " +
+		// Hyperlink: disable NetworkManager
+		Hyperlink (href, _("Disable."));
+	}
+	else
+	{
+	    href = "lan--nm-enable";
+	    status = _("NetworkManager is disabled.") + " " +
+		// Hyperlink: enable NetworkManager
+		Hyperlink (href, _("Enable."));
+	}
+	sum[0] = "<p>" + status + "</p>" + sum[0]:"";
+	sum[1] = add (sum[1]:[], href);
+    }
 
     /* Testing improved summary */
     if(mode == "summary")
@@ -1274,6 +1305,17 @@ global define boolean ProposeInterfaces () {
 
     y2milestone("NetworkConfig::Config=%1", NetworkConfig::Config);
     y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);
+
+    boolean nm_default = ProductFeatures::GetBooleanFeature ("network", "network_manager_is_default");
+    boolean nm_installed = Package::Installed ("NetworkManager");
+    y2milestone ("NetworkManager wanted: %1, installed: %2", nm_default, nm_installed);
+    NetworkService::Managed = nm_default && nm_installed;
+
+    if (NetworkService::Managed)
+    {
+	y2milestone ("NM proposal");
+	return true;
+    }
 
     /* Something is already configured -> do nothing */
     list<string> devs = NetworkDevices::List("netcard");

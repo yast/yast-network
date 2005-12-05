@@ -20,14 +20,6 @@ import "Service";
 textdomain "network";
 
 /**
- * Read status information
- * @return true if success
- */
-define boolean ReadStatus() {
-    return true;
-}
-
-/**
  * Run SuSEconfig
  * @return true if success
  */
@@ -123,17 +115,6 @@ define boolean ReloadOrStartNetwork() {
     {
 	return Service::Start ("network");
     }
-}
-
-/**
- * Stop network
- * @return true if success
- */
-define boolean StopNetwork() {
-    // Workaround for bug #46055:
-    y2milestone("Stopping service %1", "network");
-    string cmd = "cd /; /etc/init.d/network stop";
-    return SCR::Execute (.target.bash, cmd) == 0;
 }
 
 /**

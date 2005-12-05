@@ -19,6 +19,7 @@ y2milestone("Arguments: %1", WFM::Args());
 import "Arch";
 import "Lan";
 import "Linuxrc";
+import "NetworkService";
 import "Popup";
 import "Progress";
 
@@ -79,6 +80,16 @@ else if(func == "AskUser") {
 	seq = AddressSequence ("wire");
 
 	Wizard::CloseDialog ();
+    }
+    else if (chosen_id == "lan--nm-enable")
+    {
+	NetworkService::Managed = true;
+	Lan::SetModified ();
+    }
+    else if (chosen_id == "lan--nm-disable")
+    {
+	NetworkService::Managed = false;
+	Lan::SetModified ();
     }
     else
     {

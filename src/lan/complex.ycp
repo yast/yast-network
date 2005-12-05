@@ -15,6 +15,7 @@ import "Lan";
 import "DNS";
 import "NetworkConfig";
 import "NetworkModules";
+import "NetworkService";
 import "Routing";
 
 import "Wizard";
@@ -165,14 +166,17 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
     /* Network cards overview dialog help 4/4 */
 	// NetworkManager and ifup are programs
 _("<p>Use <b>Managed by NetworkManager</b> to have a desktop applet
-take care about the interface. <tt>ifup</tt> will not touch it.
-To revert that setting, press <b>Edit</b>.</p>
+take care about all interfaces.</p>
 ");
 
     list<list> more_buttons = [
 	// Button label
 	// NetworkManager is a program name
-	[`managed, _("Managed by NetworkManager")],
+	[`global_managed, _("Managed by NetworkManager")],
+	// Button label
+	// NetworkManager is a program name
+// `managed was for single interfaces
+//	[`managed, _("Managed by NetworkManager")],	
 	];
 
     // FIXME: for now, rework the data for the new WizardHW
@@ -190,6 +194,15 @@ To revert that setting, press <b>Edit</b>.</p>
 	    overview = overview + Lan::Unconfigured ();
 	    y2debug("overview=%1",overview);
 	    WizardHW::SetContents (overview);
+	    if (NetworkService::Managed)
+	    {
+		foreach (symbol s, [`add, `edit, `delete, `_hw_items], {
+		    UI::ChangeWidget (`id (s), `Enabled, false);
+		});
+	    }
+	    foreach (symbol s, [`add, `_hw_items], {
+		UI::ChangeWidget (`id (s), `Enabled, ! NetworkService::Managed);
+	    });
 	    repaint = false;
 	}
 
@@ -227,7 +240,7 @@ To revert that setting, press <b>Edit</b>.</p>
 		if (Lan::startmode == "managed")
 		{
 		    // Continue-Cancel popup
-		    if (!Popup::ContinueCancel (_("The interface is currently set to be managed 
+		    if (!Popup::ContinueCancel (_("The interface is currently set to be managed
 by the NetworkManager applet.
 
 If you edit the settings for this interface here,
@@ -245,7 +258,13 @@ the interface will not be managed by NetworkManager anymore.")))
 	    ret = $["event": `edit];
 	    break;
 	}
-	/* managed */
+	/* managed - global */
+	else if(ret["event"]:nil == `global_managed) {
+	    NetworkService::Managed = ! NetworkService::Managed;
+	    Lan::SetModified ();
+	    repaint = true;
+	}
+	/* managed - per ifcfg */
 	else if(ret["event"]:nil == `managed) {
 	    string dev = ret["selected"]:"";
 	    if(dev == nil) {

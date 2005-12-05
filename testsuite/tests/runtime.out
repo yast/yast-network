@@ -1,5 +1,3 @@
-Dump	ReadStatus
-Return	true
 Dump	RunSuSEconfig
 Execute	.target.bash "/sbin/SuSEconfig --module apache 2>/dev/null" 0
 Execute	.target.bash "/sbin/SuSEconfig --module sendmail 2>/dev/null" 0
@@ -17,11 +15,6 @@ Return	false
 Dump	RunKInternet
 Return	true
 Return	true
-Dump	StopNetwork
-Execute	.target.bash "cd /; /etc/init.d/network stop" 0
-Return	true
-Execute	.target.bash "cd /; /etc/init.d/network stop" 1
-Return	false
 Dump	SetupSMPPPD
 Return	true
 Return	false
