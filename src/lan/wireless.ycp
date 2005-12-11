@@ -892,6 +892,32 @@ define void StoreWidget (string key, map event) {
 }
 
 /**
+ * Event handler for EAP mode:
+ * enable or disable appropriate widgets
+ * @param key	the widget receiving the event
+ * @param event	the event being handled
+ * @return nil so that the dialog loops on
+ */
+define symbol HandleEapMode (string key, map event) {
+//    my2debug ("HSI", sformat ("k: %1 e: %2", key, event));
+    boolean tls = UI::QueryWidget (`id (key), `Value) == "tls";
+    foreach (string id, ["WPA_EAP_PASSWORD",
+			 "WPA_EAP_ANONID",
+			 ], {
+	UI::ChangeWidget (`id (id), `Enabled, !tls);
+    });
+    foreach (string id, ["WPA_EAP_CLIENT_CERT",
+			 "WPA_EAP_CLIENT_CERT_BROWSE",
+			 "WPA_EAP_CLIENT_KEY",
+			 "WPA_EAP_CLIENT_KEY_BROWSE",
+			 "WPA_EAP_CLIENT_KEY_PASSWORD",
+			 ], {
+	UI::ChangeWidget (`id (id), `Enabled, tls);
+    });
+    return nil;
+}
+
+/**
  * Called when one of the two file browser buttons is pressed
  * @param key widget id
  * @param event ?
@@ -908,6 +934,7 @@ define symbol HandleFileBrowse (string key, map event) {
     /* convert to the text entry widget we belong to */
     map attached_to = $[
 	"WPA_EAP_CLIENT_CERT_BROWSE": "WPA_EAP_CLIENT_CERT",
+	"WPA_EAP_CLIENT_KEY_BROWSE":  "WPA_EAP_CLIENT_KEY",
 	"WPA_EAP_CA_CERT_BROWSE":     "WPA_EAP_CA_CERT",
 	];
     key = attached_to[key]:"";
@@ -983,6 +1010,22 @@ or the client certificate."));
 }
 
 map<string, map<string,any> > wpa_eap_widget_descr = $[
+    "WPA_EAP_MODE": $[
+	"widget": `combobox,
+	// combo box label
+	"label": _("EAP &Mode"),
+	"opt": [`notify],
+	"items": [
+	    // combo box item, one of WPA EAP modes
+	    ["ttls", _("TTLS")],
+	    // combo box item, one of WPA EAP modes
+	    ["peap", _("PEAP")],
+	    // combo box item, one of WPA EAP modes
+	    ["tls", _("TLS")],
+	    ],
+	"help": nil,
+	"handle": HandleEapMode,
+	],
     // the four WPA_EAP_* widgets come together, so the helps are
     // dipersed a bit
     "WPA_EAP_IDENTITY": $[
@@ -996,6 +1039,13 @@ perform the authentication, namely TLS, TTLS, and PEAP.</p>
 <p>For TTLS and PEAP, enter your <b>Identity</b>
 and <b>Password</b> as configured on the server.</p>
 "),
+	],
+    "WPA_EAP_ANONID": $[
+	"widget": `textentry,
+	// text entry label
+	"label": _("&Anonymous Identity"),
+	"opt": [],
+	"help": nil,
 	],
     "WPA_EAP_PASSWORD": $[
 	"widget": `textentry,	// or password?
@@ -1014,6 +1064,22 @@ password combination.</p>"),
 	"validate_type": `function,
 	"validate_function": ValidateFileExists,
 	],
+    "WPA_EAP_CLIENT_KEY": $[
+	"widget": `textentry,
+	// text entry label
+	"label": _("Client &Key"),
+	"opt": [],
+	"help": nil,
+	"validate_type": `function,
+	"validate_function": ValidateFileExists,
+	],
+    "WPA_EAP_CLIENT_KEY_PASSWORD": $[
+	"widget": `textentry,	// or password?
+	// text entry label
+	"label": _("Client Key Pass&word"),
+	"opt": [],
+	"no_help": true,
+	],
     "WPA_EAP_CA_CERT": $[
 	"widget": `textentry,
 	// text entry label
@@ -1031,6 +1097,13 @@ to validate the server's authenticity.</p>
 	"widget": `push_button,	// FIXME queries value on Next :(
 	"label": "...",
 	"opt": [],		// autoshortcut?
+	"no_help": true,
+	"handle": HandleFileBrowse,
+	],
+    "WPA_EAP_CLIENT_KEY_BROWSE": $[
+	"widget": `push_button,
+	"label": "...",
+	"opt": [],
 	"no_help": true,
 	"handle": HandleFileBrowse,
 	],
@@ -1053,7 +1126,7 @@ to validate the server's authenticity.</p>
  * Lays out a text entry and a push button, with proper alignment
  */
 define term AddButton (string id, string button_id) {
-    return `HBox (id, button_id);
+//    return `HBox (id, button_id);
     // needs new CWM
     return (
 	`VSquash (		// only for old UI?
@@ -1070,12 +1143,19 @@ define term AddButton (string id, string button_id) {
  */
 define any WirelessWpaEapDialog () {
     term contents = `VBox (
+	"WPA_EAP_MODE",
 	`HBox (
 	    "WPA_EAP_IDENTITY",
 	    `HSpacing (1),
 	    "WPA_EAP_PASSWORD"
 	    ),
+	"WPA_EAP_ANONID",
 	AddButton ("WPA_EAP_CLIENT_CERT", "WPA_EAP_CLIENT_CERT_BROWSE"),
+	`HBox (
+	    AddButton ("WPA_EAP_CLIENT_KEY",  "WPA_EAP_CLIENT_KEY_BROWSE"),
+	    `HSpacing (1),
+	    "WPA_EAP_CLIENT_KEY_PASSWORD"
+	    ),
 	AddButton ("WPA_EAP_CA_CERT",     "WPA_EAP_CA_CERT_BROWSE"),
 	"WPA_EAP_DUMMY"
 	);
@@ -1088,15 +1168,6 @@ define any WirelessWpaEapDialog () {
 
     return CWM::ShowAndRun (
 	$[
-	    "widget_names": [	// TODO StringsOfTerm
-		"WPA_EAP_IDENTITY",
-		"WPA_EAP_PASSWORD",
-		"WPA_EAP_CLIENT_CERT",
-		"WPA_EAP_CLIENT_CERT_BROWSE",
-		"WPA_EAP_CA_CERT",
-		"WPA_EAP_CA_CERT_BROWSE",
-		"WPA_EAP_DUMMY",
-		],
 	    "widget_descr": wpa_eap_widget_descr,
 	    "contents": contents,
 	    // dialog caption

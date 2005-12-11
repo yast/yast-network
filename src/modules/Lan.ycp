@@ -88,9 +88,13 @@ global string wl_nick = "";
 /**
  * wl_wpa_eap aggregates the settings in a map for easier CWM access.
  * @struct wpa_eap
+ * WPA_EAP_MODE: string ("ttls" "peap" or "tls")
  * WPA_EAP_IDENTITY: string
- * WPA_EAP_PASSWORD: string
- * WPA_EAP_CLIENT_CERT: string (file name)
+ * WPA_EAP_PASSWORD: string (for ttls and peap)
+ * WPA_EAP_ANONID: string (for ttls and peap)
+ * WPA_EAP_CLIENT_CERT: string (for tls, file name)
+ * WPA_EAP_CLIENT_KEY: string (for tls, file name)
+ * WPA_EAP_CLIENT_KEY_PASSWORD: string (for tls)
  * WPA_EAP_CA_CERT: string (file name)
  */
 global map<string, any> wl_wpa_eap = $[];
@@ -795,9 +799,13 @@ void SetDeviceVars(map devmap, map defaults) {
     wl_nick = GetDeviceVar (devmap, defaults, "WIRELESS_NICK");
 
     wl_wpa_eap = $[];
+    wl_wpa_eap["WPA_EAP_MODE"] = GetDeviceVar (devmap, defaults, "WIRELESS_EAP_MODE");
     wl_wpa_eap["WPA_EAP_IDENTITY"] = GetDeviceVar (devmap, defaults, "WIRELESS_WPA_IDENTITY");
     wl_wpa_eap["WPA_EAP_PASSWORD"] = GetDeviceVar (devmap, defaults, "WIRELESS_WPA_PASSWORD");
+    wl_wpa_eap["WPA_EAP_ANONID"] = GetDeviceVar (devmap, defaults, "WIRELESS_WPA_ANONID");
     wl_wpa_eap["WPA_EAP_CLIENT_CERT"] = GetDeviceVar (devmap, defaults, "WIRELESS_CLIENT_CERT");
+    wl_wpa_eap["WPA_EAP_CLIENT_KEY"] = GetDeviceVar (devmap, defaults, "WIRELESS_CLIENT_KEY");
+    wl_wpa_eap["WPA_EAP_CLIENT_KEY_PASSWORD"] = GetDeviceVar (devmap, defaults, "WIRELESS_CLIENT_KEY_PASSWORD");
     wl_wpa_eap["WPA_EAP_CA_CERT"] = GetDeviceVar (devmap, defaults, "WIRELESS_CA_CERT");
 
     wl_channel = GetDeviceVar (devmap, defaults, "WIRELESS_CHANNEL");
@@ -1081,9 +1089,13 @@ global define boolean Commit() {
 
 	    if (wl_wpa_eap != $[])
 	    {
+		newdev["WIRELESS_EAP_MODE"] = wl_wpa_eap["WPA_EAP_MODE"]:"";
 		newdev["WIRELESS_WPA_IDENTITY"] = wl_wpa_eap["WPA_EAP_IDENTITY"]:"";
 		newdev["WIRELESS_WPA_PASSWORD"] = wl_wpa_eap["WPA_EAP_PASSWORD"]:"";
+		newdev["WIRELESS_WPA_ANONID"] = wl_wpa_eap["WPA_EAP_ANONID"]:"";
 		newdev["WIRELESS_CLIENT_CERT"] = wl_wpa_eap["WPA_EAP_CLIENT_CERT"]:"";
+		newdev["WIRELESS_CLIENT_KEY"] = wl_wpa_eap["WPA_EAP_CLIENT_KEY"]:"";
+		newdev["WIRELESS_CLIENT_KEY_PASSWORD"] = wl_wpa_eap["WPA_EAP_CLIENT_KEY_PASSWORD"]:"";
 		newdev["WIRELESS_CA_CERT"] = wl_wpa_eap["WPA_EAP_CA_CERT"]:"";
 	    }
 

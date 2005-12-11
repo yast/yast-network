@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Sun Dec 11 21:34:29 CET 2005 - mvidner@suse.cz
+
+- Enhanced the WPA EAP dialog (F300381): added a mode switch,
+  anonymous identity, client key and password.
+- 2.13.7
+
+-------------------------------------------------------------------
 Mon Dec  5 15:42:20 CET 2005 - mvidner@suse.cz
 
 - Added a global switch for NetworkManager. Either rcnetwork or
