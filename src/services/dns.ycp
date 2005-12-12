@@ -110,7 +110,7 @@ define map QueryWidgets () {
     list nameservers = filter (string s, [ns1, ns2, ns3], ``(s != ""));
 
     string searchstring = tolower((string) UI::QueryWidget(`id(`ss), `Value));
-    list searchlist = filter (string s, splitstring (searchstring, " ,\n"),
+    list searchlist = filter (string s, splitstring (searchstring, " ,\n\t"),
 			      ``(s != ""));
 
     map query = $[
@@ -166,7 +166,7 @@ IP addresses. This value must be entered as an <b>IP address</b>
     _("<p>Search domain is the domain name where host name searching starts.
 The primary search domain is usually the same as the <b>domain name</b> of
 your computer (e.g., suse.de). There may be additional search domains
-(e.g., suse.com).</p>") +
+(e.g., suse.com). Separate the domains with commas or white space.</p>") +
 
     /* DNS dialog help 4/5 */
     _("<p>If you are using DHCP to get an IP address, check whether to get
@@ -359,6 +359,13 @@ disabled during the connection.</p>");
 	    }
 
 	    /* check search domains */
+	    if (size (settings["searchlist"]:[]) > 6)
+	    {
+		UI::SetFocus (`id (`ss));
+		/* Popup::Error text */
+		Popup::Error(sformat (_("The search list can have at most %1 domains."), 6));
+		continue;
+	    }
 	    if (size (mergestring (settings["searchlist"]:[], " ")) > 256)
 	    {
 		UI::SetFocus (`id (`ss));

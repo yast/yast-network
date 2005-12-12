@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Sun Dec 11 21:34:29 CET 2005 - mvidner@suse.cz
+Mon Dec 12 16:13:09 CET 2005 - mvidner@suse.cz
 
+- Domain search: limit input to 6 domains, help with syntax (#138017).
 - Enhanced the WPA EAP dialog (F300381): added a mode switch,
   anonymous identity, client key and password.
 - 2.13.7
