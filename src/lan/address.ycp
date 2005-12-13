@@ -721,7 +721,7 @@ define any AddressDialog() {
  	    `Frame(
 		// Frame label
 		// detailed settings for interfaces
-		_("Detailed Network Interace Settings"),
+		_("Detailed Network Interface Settings"),
 		`MarginBox (1, 0,
 		    `VBox(
 //			 (`HWeight(1, "BINDTOHW")),
