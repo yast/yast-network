@@ -170,9 +170,12 @@ activate the test procedure."),
             if (dev != "lo") items = add(items, dev);
 	});
 	string via_device = String::CutBlanks(NetworkPopup::ChooseItem(_("Network Device Select"), items, Internet::device));
-	Internet::SetDevice( via_device );
+	if (via_device != "")
+	 {
+	  Internet::SetDevice( via_device );
 	  UI::ReplaceWidget(`id(`rp), `RadioButton(`id(`yes), sformat(connection_text, Internet::device), Internet::do_test));
-	y2milestone("selected network device :%1", via_device);
+	  y2milestone("selected network device :%1", via_device);
+	 }
 	 continue;
 	 }
 

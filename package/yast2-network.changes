@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Dec 13 10:29:33 CET 2005 - mvidner@suse.cz
+
+- Internet test: when cancelling changing of a device, nothing was
+  selected (#138219, mzugec)
+- 2.13.8
+
+-------------------------------------------------------------------
 Mon Dec 12 16:13:09 CET 2005 - mvidner@suse.cz
 
 - Domain search: limit input to 6 domains, help with syntax (#138017).
