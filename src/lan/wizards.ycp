@@ -238,6 +238,7 @@ define symbol AddressSequence(string which) ``{
 	"expert"	: ``(WirelessExpertDialog()),
 	"keys"		: ``(WirelessKeysDialog()),
 	"eap"		: ``(WirelessWpaEapDialog()),
+	"eap-details"	: ``(WirelessWpaEapDetailsDialog()),
 	"commit"	: [ ``(Commit()), true ],
     ];
 
@@ -305,6 +306,11 @@ define symbol AddressSequence(string which) ``{
 	],
 	"eap" : $[
 	    `next	: "commit",
+	    `details	: "eap-details",
+	    `abort	: `abort,
+	],
+	"eap-details" : $[
+	    `next	: "eap",
 	    `abort	: `abort,
 	],
 	"commit" : $[

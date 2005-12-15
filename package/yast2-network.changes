@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Dec 15 18:14:40 CET 2005 - mvidner@suse.cz
+
+- Added the WPA EAP Details dialog, with EAP authentication method and
+  PEAP version (F300381).
+- 2.13.9
+
+-------------------------------------------------------------------
 Tue Dec 13 10:29:33 CET 2005 - mvidner@suse.cz
 
 - Internet test: when cancelling changing of a device, nothing was

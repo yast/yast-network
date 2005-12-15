@@ -879,7 +879,9 @@ value to 64.</p>") +
  */
 define void InitializeWidget (string key) {
     // the "" serves instead of a default constructor for wl_wpa_eap
-    UI::ChangeWidget (`id (key), `Value, Lan::wl_wpa_eap[key]:"");
+    any value = Lan::wl_wpa_eap[key]:"";
+    my2debug ("AW", sformat ("init k: %1, v: %2", key, value));
+    UI::ChangeWidget (`id (key), ValueProp (key), value);
 }
 
 /**
@@ -888,7 +890,9 @@ define void InitializeWidget (string key) {
  * @param event ?
  */
 define void StoreWidget (string key, map event) {
-     Lan::wl_wpa_eap[key] = UI::QueryWidget (`id (key), `Value);
+    any value = UI::QueryWidget (`id (key), ValueProp (key));
+    my2debug ("AW", sformat ("store k: %1, v: %2, e: %3", key, value, event));
+    Lan::wl_wpa_eap[key] = value;
 }
 
 /**
@@ -903,6 +907,7 @@ define symbol HandleEapMode (string key, map event) {
     boolean tls = UI::QueryWidget (`id (key), `Value) == "tls";
     foreach (string id, ["WPA_EAP_PASSWORD",
 			 "WPA_EAP_ANONID",
+			 "DETAILS_B",
 			 ], {
 	UI::ChangeWidget (`id (id), `Enabled, !tls);
     });
@@ -929,19 +934,30 @@ define void InitEapMode (string key) {
 }
 
 /**
+ * function to initialize widgets
+ * @param key widget id
+ */
+define void InitPeapVersion (string key) {
+    // inherited
+    InitializeWidget (key);
+    // enable/disable
+    string mode = Lan::wl_wpa_eap["WPA_EAP_MODE"]:"";
+    UI::ChangeWidget (`id (key), `Enabled, mode == "peap");
+}
+
+/**
  * Called when one of the two file browser buttons is pressed
  * @param key widget id
  * @param event ?
  * @return nil so that the dialog does not exit
  */
 define symbol HandleFileBrowse (string key, map event) {
-    y2milestone ("key: %1, event: %2", key, event);
     // only process our own events
     if (event["ID"]:nil != key)
     {
 	return nil;
     }
-  
+
     /* convert to the text entry widget we belong to */
     map attached_to = $[
 	"WPA_EAP_CLIENT_CERT_BROWSE": "WPA_EAP_CLIENT_CERT",
@@ -963,6 +979,18 @@ define symbol HandleFileBrowse (string key, map event) {
 	// fill the value
 	UI::ChangeWidget (`id (key), `Value, file);
     }
+    return nil;
+}
+
+/**
+ * Remap the buttons to their Wizard Sequencer values
+ * @param key	the widget receiving the event
+ * @param event	the event being handled
+ * @return nil so that the dialog loops on
+ */
+define symbol HandleDetails (string key, map event) {
+    if (event["ID"]:nil == "DETAILS_B")
+	return `details;
     return nil;
 }
 
@@ -1019,6 +1047,7 @@ or the client certificate."));
 	return true;
     }
 }
+
 
 map<string, map<string,any> > wpa_eap_widget_descr = $[
     "WPA_EAP_MODE": $[
@@ -1111,32 +1140,78 @@ to validate the server's authenticity.</p>
 	"validate_function": ValidateFileExists,
 	],
     "WPA_EAP_CLIENT_CERT_BROWSE": $[
-	"widget": `push_button,	// FIXME queries value on Next :(
+	"widget": `push_button,
 	"label": "...",
-	"opt": [],		// autoshortcut?
+	"opt": [`autoShortcut],
 	"help": "",
+	"init": InitNull,
+	"store": StoreNull,
 	"handle": HandleFileBrowse,
 	],
     "WPA_EAP_CLIENT_KEY_BROWSE": $[
 	"widget": `push_button,
 	"label": "...",
-	"opt": [],
+	"opt": [`autoShortcut],
 	"help": "",
+	"init": InitNull,
+	"store": StoreNull,
 	"handle": HandleFileBrowse,
 	],
     "WPA_EAP_CA_CERT_BROWSE": $[
 	"widget": `push_button,
 	"label": "...",
-	"opt": [],
+	"opt": [`autoShortcut],
 	"help": "",
+	"init": InitNull,
+	"store": StoreNull,
 	"handle": HandleFileBrowse,
 	],
+    "DETAILS_B": $[
+	"widget": `push_button,
+	// push button label
+	"label": _("&Details"),
+	"opt": [],
+	"help": "",
+	"init": InitNull,
+	"store": StoreNull,
+	"handle": HandleDetails,
+	],
     "WPA_EAP_DUMMY": $[
-	"widget": `empty,	// FIXME No widget with `id( "WPA_EAP_DUMMY" )
+	"widget": `empty,
 	"help": _("If you do not know your ID and password or you do not have
 any certificate or key files, contact your System Administration."),
+	"init": InitNull,
+	"store": StoreNull,
 	"validate_type": `function,
 	"validate_function": ValidateWpaEap,
+	],
+    // Details dialog
+    "WPA_EAP_AUTH": $[
+	"widget": `combobox,
+	// combo box label
+	"label": _("&Authentication Method"),
+	"help":
+_("<p>Here you can configure the inner authentication (also known as phase 2)
+method. By default, all methods are allowed. If you want to restrict the
+allowed methods or in case you have encountered difficulties regarding
+authentication, choose your inner authentication method.</p>
+"),
+	],
+    "WPA_EAP_PEAP_VERSION": $[
+	"widget": `radio_buttons,
+	// radio button group label
+	"label": _("&PEAP Version"),
+	"help":
+_("<p>In case you are using PEAP, you can also force the use of a specific PEAP
+implementation (version 0 or 1). Normally this should not be necessary.</p>
+"),
+	"items": [
+	    // radio button: any version of PEAP
+	    ["", _("&Any")],
+	    ["0", "&0"],
+	    ["1", "&1"],
+	    ],
+	"init": InitPeapVersion,
 	],
     ];
 
@@ -1175,13 +1250,15 @@ define any WirelessWpaEapDialog () {
 	    "WPA_EAP_CLIENT_KEY_PASSWORD"
 	    ),
 	AddButton ("WPA_EAP_CA_CERT",     "WPA_EAP_CA_CERT_BROWSE"),
+	`VSpacing (1),
+	`Right ("DETAILS_B"),
 	"WPA_EAP_DUMMY"
 	);
 
     map functions = $[
 	"init" : InitializeWidget,
 	"store" : StoreWidget,
-	`abort: ReallyAbort, 	// undocumented, FIXME
+	`abort: ReallyAbort,	// undocumented, FIXME
     ];
 
     return CWM::ShowAndRun (
@@ -1190,6 +1267,61 @@ define any WirelessWpaEapDialog () {
 	    "contents": contents,
 	    // dialog caption
 	    "caption": _("WPA-EAP"),
+	    "back_button" : Label::BackButton (),
+	    "next_button" : Label::NextButton (),
+	    "fallback_functions" : functions,
+	    ]);
+}
+
+/**
+ * Detailed settings for WPA-EAP
+ * @return dialog result
+ */
+define any WirelessWpaEapDetailsDialog () {
+    term contents = `HSquash (`VBox (
+	"WPA_EAP_AUTH",
+	`VSpacing (1),
+	"WPA_EAP_PEAP_VERSION"
+	));
+
+    map functions = $[
+	"init" : InitializeWidget,
+	"store" : StoreWidget,
+	`abort: ReallyAbort,
+    ];
+
+    map<string, string> auth_names = $[
+	// combo box item, any of EAP authentication methods
+	"": _("Any"),
+	// combo box item, an EAP authentication method
+	"md5": _("MD5"),
+	// combo box item, an EAP authentication method
+	"gtc": _("GTC"),
+	// combo box item, an EAP authentication method
+	"chap": _("CHAP"),
+	// combo box item, an EAP authentication method
+	"pap": _("PAP"),
+	// combo box item, an EAP authentication method
+	"mschap1": _("MSCHAPv1"),
+	// combo box item, an EAP authentication method
+	"mschap2": _("MSCHAPv2"),
+	];
+    map<string, list<string> > auth_items = $[
+	"ttls": ["", "md5", "gtc", "chap", "pap", "mschap1", "mschap2"],
+	"peap": ["", "md5", "gtc", "mschap2"],
+	];
+    string mode = Lan::wl_wpa_eap["WPA_EAP_MODE"]:"";
+
+    map<string, map<string,any> > wd = wpa_eap_widget_descr;
+    wd["WPA_EAP_AUTH", "items"] = maplist (string i, auth_items[mode]:[],
+					   ``( [i, auth_names[i]:""] ));
+
+    return CWM::ShowAndRun (
+	$[
+	    "widget_descr": wd,
+	    "contents": contents,
+	    // dialog caption
+	    "caption": _("WPA-EAP Details"),
 	    "back_button" : Label::BackButton (),
 	    "next_button" : Label::OKButton (),
 	    "fallback_functions" : functions,
