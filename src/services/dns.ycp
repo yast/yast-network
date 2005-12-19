@@ -165,8 +165,9 @@ IP addresses. This value must be entered as an <b>IP address</b>
     /* DNS dialog help 3/5 */
     _("<p>Search domain is the domain name where host name searching starts.
 The primary search domain is usually the same as the <b>domain name</b> of
-your computer (e.g., suse.de). There may be additional search domains
-(e.g., suse.com). Separate the domains with commas or white space.</p>") +
+your computer (for example, suse.de). There may be additional search domains
+(such as suse.com). Separate the domains with commas or white space.</p>
+") +
 
     /* DNS dialog help 4/5 */
     _("<p>If you are using DHCP to get an IP address, check whether to get
@@ -196,7 +197,7 @@ disabled during the connection.</p>");
 	_("Host Name and Domain Name"):
 	/* Frame label, emphasizing that the names are global,
 	   not specific to one address */
-	_("Host Name and Domain Name (Global)");
+	_("Hostname and Domain Name (Global)");
 
     /* DNS dialog contents */
     term contents = `HSquash(`VBox(

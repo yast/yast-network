@@ -470,7 +470,7 @@ map NetworkCards = $[
 
   "hsi" : [
     /* Network subsystem name */
-    $["name" : _("Hipersockets (HSI) network"),
+    $["name" : _("Hipersockets (HSI) Network"),
       "module" : "qeth",
       "options" : "",
     ],
@@ -494,7 +494,7 @@ map NetworkCards = $[
 
   "ficon" : [
     /* Network subsystem name */
-    $["name" : _("Fiberchannel System Connector (FICON) network"),
+    $["name" : _("Fiberchannel System Connector (FICON) Network"),
       "module" : "ctc",
       "options" : "",
      ],

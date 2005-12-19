@@ -389,10 +389,14 @@ the network configuration.</p>"),
 	// FIXME FAKE: get real values dynamically
 	"items": [
 	    // synchronize keys with ... whatever
-	    ["mac", _("MAC address: 00:00:de:ad:po:rk")],
-	    ["bus", _("Bus path: pci-0000:01:09.0")],
-	    ["vpid", _("Product ID: 1022-2000")],
-	    ["vpsid", _("Product sub-ID: 1022-2000-1259-2700")],
+	    // combo box item. %1 is like "00:de:ad:po:rk:00"
+	    ["mac", sformat (_("MAC Address: %1"), "00:de:ad:po:rk:00")],
+	    // combo box item. %1 is like "pci-0000:01:09.0"
+	    ["bus", sformat (_("Bus Path: %1"), "pci-0000:01:09.0")],
+	    // combo box item. %1 is like "1022-2000"
+	    ["vpid", sformat (_("Product ID: %1"), "1022-2000")],
+	    // combo box item. %1 is like "1022-2000-1259-2700"
+	    ["vpsid", sformat (_("Product Sub-ID: %1"), "1022-2000-1259-2700")],
 	    ],
 	],
 
@@ -415,7 +419,7 @@ the firewall will be disabled.</p>"),
 	// check box label
 	"label": _("&Mandatory Interface"),
 	"opt": [],
-	"help": _("<p>TODO: <b>Mandatory Interface</b> specifies whether the network service will report failure if the interface fails to start at boot time.</p>"),
+	"help": _("<p><b>Mandatory Interface</b> specifies whether the network service will report failure if the interface fails to start at boot time.</p>"),
 	],
     "MTU": $[
 	"widget": `textentry,
@@ -774,6 +778,7 @@ Components of this product might not work with DHCP.</p>");
     wd["IFCFGTYPE", "items"] = BuildTypesListCWM (device_types);
     wd["IFCFGID", "items"] = [[settings["IFCFGID"]:"",
 			       settings["IFCFGID"]:""]];
+//    wd["BINDTOHW", "items"] = ...;
     term label = `HBox (
 	    `HSpacing(0.5),
 	    // The combo is a hack to allow changing misdetected

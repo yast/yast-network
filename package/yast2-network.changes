@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Dec 19 17:36:16 CET 2005 - mvidner@suse.cz
+
+- Moved NetworkService from yast2-network.rpm to yast2.rpm
+  so that the firewall proposal can use it (#139402).
+- Merged proofread texts (many changes: do not end summary lines with
+  periods).
+- 2.13.10
+
+-------------------------------------------------------------------
 Thu Dec 15 18:14:40 CET 2005 - mvidner@suse.cz
 
 - Added the WPA EAP Details dialog, with EAP authentication method and

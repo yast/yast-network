@@ -1105,8 +1105,9 @@ If you have special requirements to set the username used as
 	"help": _("<p>TLS uses a <b>Client Certificate</b> instead of a username and
 password combination for authentication. It uses a public and private key pair
 to encrypt negotiation communication, therefore you will additionally need
-a <b>Client Key</b> file which contains your private key, and
-the apropriate <b>Client Key Password</b> for that file.</p>"),
+a <b>Client Key</b> file that contains your private key and
+the appropriate <b>Client Key Password</b> for that file.</p>
+"),
 	"validate_type": `function,
 	"validate_function": ValidateFileExists,
 	],
@@ -1179,7 +1180,8 @@ to validate the server's authenticity.</p>
     "WPA_EAP_DUMMY": $[
 	"widget": `empty,
 	"help": _("If you do not know your ID and password or you do not have
-any certificate or key files, contact your System Administration."),
+any certificate or key files, contact your system administrator.
+"),
 	"init": InitNull,
 	"store": StoreNull,
 	"validate_type": `function,

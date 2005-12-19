@@ -585,8 +585,8 @@ define any S390Dialog() {
 	/* S/390 dialog help: QETH Options */
 	_("<p>Enter any additional <b>Options</b> for this interface (separated by spacess).</p>") +
 	_("<p>Select <b>Enable IPA Takeover</b> if IP address takeover should be enabled for this interface.</p>") +
-	_("<p>Select <b>Enable Layer 2 Support</b> if this card has been configured with Layer 2 support.</p>") +
-	_("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been configured with Layer 2 support.</p>");
+	_("<p>Select <b>Enable Layer 2 Support</b> if this card has been configured with layer 2 support.</p>") +
+	_("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been configured with layer 2 support.</p>");
     }
 
     if(Lan::type == "hsi") {
@@ -612,8 +612,8 @@ define any S390Dialog() {
 	/* S/390 dialog help: QETH */
 	helptext = _("<p>Enter any additional <b>Options</b> for this interface (separated by spaces).</p>") +
 	_("<p>Select <b>Enable IPA Takeover</b> if IP address takeover should be enabled for this interface.</p>") +
-	_("<p>Select <b>Enable Layer 2 Support</b> if this card has been configured with Layer 2 support.</p>") +
-	_("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been configured with Layer 2 support.</p>");
+	_("<p>Select <b>Enable Layer 2 Support</b> if this card has been configured with layer 2 support.</p>") +
+	_("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been configured with layer 2 support.</p>");
     }
 
     if(drvtype == "lcs") {
@@ -626,13 +626,13 @@ define any S390Dialog() {
 		`TextEntry(`id(`chan_mode), _("&Port Number"), Lan::chan_mode),
 		`VSpacing(1),
 		/* TextEntry label */
-		`TextEntry(`id(`lcs_timeout), _("&LANCMD timeout"), Lan::lcs_timeout)
+		`TextEntry(`id(`lcs_timeout), _("&LANCMD Time-Out"), Lan::lcs_timeout)
 		), `HSpacing(2))),
 	    `HSpacing(6)
 	);
 	/* S/390 dialog help: LCS */
 	helptext = _("<p>Choose the <b>Port Number</b> for this interface.</p>") +
-	           _("<p>Specify the <b>LANCMD timeout</b> for this interface.</p>");
+	           _("<p>Specify the <b>LANCMD Time-Out</b> for this interface.</p>");
     }
 
     list ctcitems = [

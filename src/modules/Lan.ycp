@@ -607,14 +607,14 @@ global define list Summary(string mode) {
 	if (NetworkService::Managed)
 	{
 	    href = "lan--nm-disable";
-	    status = _("NetworkManager is enabled.")  + " " +
+	    status = _("NetworkManager is enabled")  + " " +
 		// Hyperlink: disable NetworkManager
 		Hyperlink (href, _("Disable."));
 	}
 	else
 	{
 	    href = "lan--nm-enable";
-	    status = _("NetworkManager is disabled.") + " " +
+	    status = _("NetworkManager is disabled") + " " +
 		// Hyperlink: enable NetworkManager
 		Hyperlink (href, _("Enable."));
 	}

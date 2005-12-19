@@ -166,7 +166,7 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
     /* Network cards overview dialog help 4/4 */
 	// NetworkManager and ifup are programs
 _("<p>Use <b>Managed by NetworkManager</b> to have a desktop applet
-take care about all interfaces.</p>
+manage connections for all interfaces.</p>
 ");
 
     list<list> more_buttons = [
@@ -244,7 +244,8 @@ take care about all interfaces.</p>
 by the NetworkManager applet.
 
 If you edit the settings for this interface here,
-the interface will not be managed by NetworkManager anymore.")))
+the interface will no longer be managed by NetworkManager.
+")))
 		    {
 			continue; // means cancel
 		    }
