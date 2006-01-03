@@ -1,0 +1,13 @@
+// Author: Michal Zugec
+// $Id$
+
+// this file is for development only
+// running this file starts the internet test dialogs
+{
+ include "./dialogs.ycp";
+
+ Wizard::CreateDialog();
+ if (WFM::CallFunction ("inst_ask_net_test.ycp") == `next)
+     WFM::CallFunction ("inst_do_net_test.ycp");
+ Wizard::CloseDialog();
+}

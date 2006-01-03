@@ -97,13 +97,15 @@ activate the test procedure."),
     boolean already_up = false;
     if(!Mode::test ()) already_up = Internet::Status();
 	/* Label text - selected network device to network test */
-    string connection_text = _("&Yes, Test Connection to the Internet via '%1'");
+    string connection_text = _("&Yes, Test Connection to the Internet\nvia '%1'");
 
     /* Radiobuttons */
     term buttons = `VBox(
 	`VSpacing(1),
 	/* RadioButton label */
 	`Left(`ReplacePoint(`id(`rp), `RadioButton(`id(`yes), sformat(connection_text, Internet::device) , Internet::do_test))),
+	// push button label
+	`Right(`PushButton(`id(`net_expert), _("Change Device"))),
 	/* RadioButton label */
 	`Left(`RadioButton(`id(`no), _("N&o, Skip This Test"), !Internet::do_test)),
 	`VSpacing(1)
@@ -143,7 +145,6 @@ activate the test procedure."),
 	    `Frame(_("Select:"), `RadioButtonGroup(`id(`rb), `HBox(
 		`HSpacing(2),
 		buttons,
-		`PushButton(`id(`net_expert), _("Change Device")),
 		`HSpacing(2)
 	    ))),
 	    `VSpacing(1)
@@ -167,7 +168,7 @@ activate the test procedure."),
 	list<string> items=[];
 	y2milestone("network devices list %1", NetworkDevices::List(""));
 	foreach(string dev,NetworkDevices::List(""),{
-            if (dev != "lo") items = add(items, dev);
+	    if (dev != "lo") items = add(items, dev);
 	});
 	string via_device = String::CutBlanks(NetworkPopup::ChooseItem(_("Network Device Select"), items, Internet::device));
 	if (via_device != "")

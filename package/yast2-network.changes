@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jan  3 10:51:00 CET 2006 - mvidner@suse.cz
+
+- Made the Internet connection test dialog fit to text console (#140950).
+
+-------------------------------------------------------------------
 Mon Dec 19 17:36:16 CET 2005 - mvidner@suse.cz
 
 - Moved NetworkService from yast2-network.rpm to yast2.rpm
