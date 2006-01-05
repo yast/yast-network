@@ -23,6 +23,7 @@ import "NetworkService";
 import "Popup";
 
 include "network/routines.ycp";
+include "network/widgets.ycp";
 
 /**
  * If we know that there are no interfaces with DHCP, we can disable
@@ -202,22 +203,6 @@ define boolean ValidateDomain (string key, map event) {
 }
 
 /**
- * Validator for IP adresses, no_popup
- * used for NAMESERVER_[123]
- * @param key	the widget being validated
- * @param event	the event being handled
- * @return whether valid
- */
-define boolean ValidateIP (string key, map event) {
-    string value = (string) UI::QueryWidget (`id (key), `Value);
-    if (value != "")
-    {
-	return IP::Check (value);
-    }
-    return true;
-}
-
-/**
  * Validator for the search list
  * @param key	the widget being validated
  * @param event	the event being handled
@@ -257,7 +242,7 @@ define boolean ValidateSearchList (string key, map event) {
     return true;
 }
 
-map<string, map<string,any> > widget_descr = $[
+map<string, map<string,any> > widget_descr_dns = $[
 
     "HOSTNAME": $[
 	"widget": `textentry,
@@ -393,6 +378,7 @@ define symbol HostnameDialog () {
 	))
 	);
 
+    map<string, map<string,any> > widget_descr = widget_descr_dns;
     symbol ret = CWM::ShowAndRun (
 	$[
 	    "widget_descr": widget_descr,

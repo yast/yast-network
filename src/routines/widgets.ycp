@@ -15,6 +15,23 @@ textdomain "network";
 // for easier maintenance.
 // This is just a start.
 
+import "IP";
+
+/**
+ * Validator for IP adresses, no_popup
+ * @param key	the widget being validated
+ * @param event	the event being handled
+ * @return whether valid
+ */
+define boolean ValidateIP (string key, map event) {
+    string value = (string) UI::QueryWidget (`id (key), `Value);
+    if (value != "")
+    {
+	return IP::Check (value);
+    }
+    return true;
+}
+
 map<string, map<string,any> > widget_descr = $[
 
     "USERCONTROL": $[

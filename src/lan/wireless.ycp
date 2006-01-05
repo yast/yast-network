@@ -1145,8 +1145,8 @@ to validate the server's authenticity.</p>
 	"label": "...",
 	"opt": [`autoShortcut],
 	"help": "",
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	"handle": HandleFileBrowse,
 	],
     "WPA_EAP_CLIENT_KEY_BROWSE": $[
@@ -1154,8 +1154,8 @@ to validate the server's authenticity.</p>
 	"label": "...",
 	"opt": [`autoShortcut],
 	"help": "",
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	"handle": HandleFileBrowse,
 	],
     "WPA_EAP_CA_CERT_BROWSE": $[
@@ -1163,8 +1163,8 @@ to validate the server's authenticity.</p>
 	"label": "...",
 	"opt": [`autoShortcut],
 	"help": "",
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	"handle": HandleFileBrowse,
 	],
     "DETAILS_B": $[
@@ -1173,8 +1173,8 @@ to validate the server's authenticity.</p>
 	"label": _("&Details"),
 	"opt": [],
 	"help": "",
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	"handle": HandleDetails,
 	],
     "WPA_EAP_DUMMY": $[
@@ -1182,8 +1182,8 @@ to validate the server's authenticity.</p>
 	"help": _("If you do not know your ID and password or you do not have
 any certificate or key files, contact your system administrator.
 "),
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	"validate_type": `function,
 	"validate_function": ValidateWpaEap,
 	],
