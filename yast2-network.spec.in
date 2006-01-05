@@ -4,8 +4,8 @@
 @HEADER@
 # yast2-core >= 2.10.6: carrier detection
 Requires:	yast2-core >= 2.10.6
-# yast2 >= 2.13.13: `MarginBox in CWM
-Requires:	yast2 >= 2.13.10
+# yast2 >= 2.13.18: CWM::InitNull
+Requires:	yast2 >= 2.13.18
 Requires:	sysconfig yast2-country yast2-inetd yast2-packager
 PreReq:		/bin/rm
 

@@ -89,27 +89,6 @@ void StoreAddrWidget (string key, map event) {
 }
 
 /**
- * Do-nothing Replacement for a widget initialization function.
- * Used for push buttons.
- * @param key id of the widget
- */
-void InitNull (string key) {
-    my2debug ("NULLW", "init");
-    return;
-}
-
-/**
- * Do-nothing Replacement for a widget storing function.
- * Used for push buttons.
- * @param key	id of the widget
- * @param event	the event being handled
- */
-void StoreNull (string key, map event) {
-    my2debug ("NULLW", "store");
-    return;
-}
-
-/**
  * Initialize a RadioButtonGroup
  * Group called FOO has buttons FOO_bar FOO_qux and values bar qux
  * @param key id of the widget
@@ -463,8 +442,8 @@ the firewall will be disabled.</p>"),
 	// radio button label
 	"label": _("A&utomatic Address Setup (via DHCP)"),
 	"opt": [`notify],
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	"help":
 	/* Address dialog help 2-6/8: dynamic address preferred */
 	/* Address dialog help 2/8 */
@@ -487,8 +466,8 @@ by the system administrator or your cable or DSL provider.</p>") +
 	"label": _("S&tatic Address Setup"),
 	"opt": [`notify],
 	"help": "",		// merged with BOOTPROTO_dhcp
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	],
 
     "BOOTPROTO_dhcp_autoip": $[
@@ -497,8 +476,8 @@ by the system administrator or your cable or DSL provider.</p>") +
 	"label": _("A&utomatic Address Setup (via DHCP+AUTOIP)"),
 	"opt": [`notify],
 	"help": ("FIXME, help BOOTPROTO_dhcp_autoip<br>"),
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	],
 
     "BOOTPROTO_autoip": $[
@@ -507,8 +486,8 @@ by the system administrator or your cable or DSL provider.</p>") +
 	"label": _("A&utomatic Address Setup (via AUTOIP)"),
 	"opt": [`notify],
 	"help": ("FIXME, help BOOTPROTO_autoip<br>"),
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	],
     "BOOTPROTO_noaddr": $[
 	"widget": `radio_button,
@@ -516,8 +495,8 @@ by the system administrator or your cable or DSL provider.</p>") +
 	"label": _("&Without an address"),
 	"opt": [`notify],
 	"help": _("without an IPv4 address, this is useful when the interface is used for pppoe"),
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	],
 
     "IPADDR": $[
@@ -529,7 +508,7 @@ by the system administrator or your cable or DSL provider.</p>") +
 	"validate_type": `function_no_popup,
 	"validate_function": ValidateIP,
 	// validation error popup
-	"validate_help": _("The IP address is invalid."), // TODO describe a valid one
+	"validate_help": _("The IP address is invalid.")+ "\n" + IP::Valid4 (),
 	],
 
     "REMOTEIP": $[
@@ -542,7 +521,7 @@ of your peer.</p>"),
 	"validate_type": `function_no_popup,
 	"validate_function": ValidateIP,
 	// validation error popup
-	"validate_help": _("The remote IP address is invalid."), // TODO describe a valid one
+	"validate_help": _("The remote IP address is invalid.") + "\n" + IP::Valid4 (),
 	],
 
     "NETMASK": $[
@@ -575,8 +554,8 @@ IP address.</p>"),
 	"opt": [`hstretch],
 	"help": "",
 	// "items" will be filled in the dialog itself
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	"handle": HandleButton,
 	],
 
@@ -586,8 +565,8 @@ IP address.</p>"),
 	"label": _("DH&CP Options"),
 	"opt": [],
 	"help": "",
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	"handle": HandleButton,
 	],
     "ADDITIONAL_ADDRESSES": $[
@@ -596,8 +575,8 @@ IP address.</p>"),
 	"label": _("Addi&tional Addresses"),
 	"opt": [],
 	"help": "",
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	"handle": HandleButton,
 	],
     "HARDWARE": $[
@@ -606,8 +585,8 @@ IP address.</p>"),
 	"label": _("H&ardware Details"),
 	"opt": [],
 	"help": "",
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	"handle": HandleButton,
 	],
     // leftovers
@@ -617,8 +596,8 @@ IP address.</p>"),
 	"label": _("&S/390"),
 	"opt": [],
 	"help": "",
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	"handle": HandleButton,
 	],
     "HOSTNAME_B": $[
@@ -627,8 +606,8 @@ IP address.</p>"),
 	"label": _("&Host Name and Name Server"),
 	"opt": [`hstretch],
 	"help": "",
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	"handle": HandleButton,
 	],
     "ROUTING": $[
@@ -637,8 +616,8 @@ IP address.</p>"),
 	"label": _("R&outing"),
 	"opt": [`hstretch],
 	"help": "",
-	"init": InitNull,
-	"store": StoreNull,
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
 	"handle": HandleButton,
 	],
     ];
