@@ -116,11 +116,13 @@ define any QueryWidgetIfExists(term id, symbol param, any value) {
  * @return `next if packages installation is successfull, `abort otherwise
  */
 define symbol PackagesInstall(list<string> packages) {
-    if(size(packages) < 1) return `next;
+    if (packages == [])
+	return `next;
     y2debug("Checking packages: %1", packages);
 
-    import "Require";
-    if(Require::AreAllPackagesInstalled(packages)) return `next;
+    import "Package";
+    if (Package::InstalledAll (packages))
+	return `next;
 
     /* Popup text */
     string text = _("These packages need to be installed:") + "<p>";
@@ -129,10 +131,10 @@ define symbol PackagesInstall(list<string> packages) {
 
     boolean ret = false;
     while(true) {
-	ret = Require::RequireAndConflict(packages, [], text);
+	ret = Package::InstallAll (packages);
 	if(ret == true) break;
 
-	if(ret == false && Require::AreAllPackagesInstalled(packages)) {
+	if(ret == false && Package::InstalledAll (packages)) {
 	    ret = true;
 	    break;
 	}

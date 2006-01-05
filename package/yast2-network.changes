@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Tue Jan  3 10:51:00 CET 2006 - mvidner@suse.cz
+Thu Jan  5 11:29:34 CET 2006 - mvidner@suse.cz
 
+- Replaced Require by Package.
 - Made the Internet connection test dialog fit to text console (#140950).
 
 -------------------------------------------------------------------
