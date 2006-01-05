@@ -1,8 +1,11 @@
 -------------------------------------------------------------------
-Thu Jan  5 11:29:34 CET 2006 - mvidner@suse.cz
+Thu Jan  5 16:39:09 CET 2006 - mvidner@suse.cz
 
+- SLES: Ask for the host name, before the root password dialog (#62165, F4126).
 - Replaced Require by Package.
 - Made the Internet connection test dialog fit to text console (#140950).
+- Replaced "host name" by "hostname" according to the style guide.
+- 2.13.11
 
 -------------------------------------------------------------------
 Mon Dec 19 17:36:16 CET 2005 - mvidner@suse.cz
