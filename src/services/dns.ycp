@@ -271,7 +271,7 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
 	"validate_type": `function_no_popup,
 	"validate_function": ValidateHostname,
 	// validation error popup
-	"validate_help": _("The host name is invalid.") + "\n" + Hostname::ValidHost (),
+	"validate_help": _("The hostname is invalid.") + "\n" + Hostname::ValidHost (),
 	],
     "RESOLVER_INTRO": $[
 	"widget": `empty,
@@ -307,11 +307,11 @@ interfaces, not just this one.</p>"),
     "DHCP_HOSTNAME": $[
 	"widget": `checkbox,
 	/* checkbox label */
-	"label": _("&Change Host Name via DHCP"),
+	"label": _("&Change Hostname via DHCP"),
 	"opt": [],
 	// help
 	"help": _("<p>If you are using DHCP to get an IP address, check whether to get
-a host name via DHCP.
+a hostname via DHCP.
 But avoid it when you connect to different networks that might each
 assign a different hostname, because changing the hostname at run time
 confuses the graphical desktop.</p>"),
@@ -342,11 +342,11 @@ confuses the graphical desktop.</p>"),
 	"help": _("<p>Enter the name servers and domain search list for resolving host
 names. Usually they can be obtained by DHCP.</p>") +
 	// resolver dialog help
-	_("<p>A name server is a computer that translates host names into
+	_("<p>A name server is a computer that translates hostnames into
 IP addresses. This value must be entered as an <b>IP address</b>
-(e.g., 192.168.0.42), not as a host name.</p>") +
+(e.g., 192.168.0.42), not as a hostname.</p>") +
 	// resolver dialog help
-	_("<p>Search domain is the domain name where host name searching starts.
+	_("<p>Search domain is the domain name where hostname searching starts.
 The primary search domain is usually the same as the <b>domain name</b> of
 your computer (for example, suse.de). There may be additional search domains
 (such as suse.com). Separate the domains with commas or white space.</p>
@@ -383,7 +383,7 @@ define symbol HostnameDialog () {
     ];
     term contents = `HSquash (
 	/* Frame label */
-	`Frame(_("Host Name and Domain Name"), `VBox(
+	`Frame(_("Hostname and Domain Name"), `VBox(
 	    `HBox(
 		"HOSTNAME",
 		`HSpacing (1),
@@ -398,7 +398,7 @@ define symbol HostnameDialog () {
 	    "widget_descr": widget_descr,
 	    "contents": contents,
 	    // dialog caption
-	    "caption": _("Host Name and Domain Name"),
+	    "caption": _("Hostname and Domain Name"),
 	    "back_button" : Label::BackButton (),
 	    "next_button" : Label::NextButton (),
 	    "fallback_functions" : functions,
@@ -472,7 +472,7 @@ define any DNSMainDialog(boolean standalone) {
     ScreenName("dns");
 
     /* DNS dialog caption */
-    string caption = _("Host Name and Name Server Configuration");
+    string caption = _("Hostname and Name Server Configuration");
 
     has_dhcp = NetworkService::IsManaged () ||
 	Lan::bootproto == "dhcp" || Lan::AnyDHCPDevice ();
@@ -481,7 +481,7 @@ define any DNSMainDialog(boolean standalone) {
 
     string hnlabel = standalone?
 	/* Frame label */
-	_("Host Name and Domain Name"):
+	_("Hostname and Domain Name"):
 	/* Frame label, emphasizing that the names are global,
 	   not specific to one address */
 	_("Hostname and Domain Name (Global)");

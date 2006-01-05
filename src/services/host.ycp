@@ -63,7 +63,7 @@ define symbol HostsMainDialog(boolean standalone) {
     string help = _("<p>The hosts can be set up in this dialog.</p>") +
 
     /* Hosts dialog help 2/2 */
-    _("<p>Enter a host <b>IP Address</b>, a <b>Host Name</b>, and optional
+    _("<p>Enter a host <b>IP Address</b>, a <b>Hostname</b>, and optional
 <b>Host Aliases</b>, separated by spaces.</p>
 ");
 
@@ -102,7 +102,7 @@ define symbol HostsMainDialog(boolean standalone) {
                     /* Table header label */
                     _("IP Address"),
                     /* Table header label */
-                    _("Host Names"),
+                    _("Hostnames"),
                     /* Table header label */
                     _("Host Aliases")), []),
 		`HBox(
@@ -327,7 +327,7 @@ define term HostDialog(integer id, term entry, list forbidden) {
 	if(!Hostname::CheckFQ(val)) {
 	    UI::SetFocus(`id(`name));
 	    /* Popup::Error text */
-	    Popup::Error(_("Host name is invalid.") +
+	    Popup::Error(_("The hostname is invalid.") +
 			 "\n" + Hostname::ValidFQ ());
 	    continue;
 	}

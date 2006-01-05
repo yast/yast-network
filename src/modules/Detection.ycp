@@ -301,7 +301,7 @@ global boolean DuplicateIP (string ip) {
 // includes which will be torn apart in the next release. dependency
 // hell.
 /**
- * Resolve IP to host name
+ * Resolve IP to hostname
  * @param ip given IP address
  * @return resolved host
  */

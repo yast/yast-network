@@ -101,7 +101,7 @@ after connecting, disable <b>Automatically Retrieve DNS</b> and
 manually enter the DNS.</p>") +
 
     /* Connection dialog help 4/8 */
-_("<p><b>Name Servers</b> are required to convert host names
+_("<p><b>Name Servers</b> are required to convert hostnames
 (e.g., www.suse.com) to IP addresses (e.g., 213.95.15.200). You only
 need to specify the name servers if you enable <i>dial on demand</i> or
 disable <b>DNS Modification</b> when connected.</p>

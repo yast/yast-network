@@ -248,7 +248,7 @@ global define boolean Read() {
 	/* Progress stage 5/9 */
 	_("Read routing configuration"),
 	/* Progress stage 6/9 */
-	_("Read host name and DNS configuration"),
+	_("Read hostname and DNS configuration"),
 	/* Progress stage 7/9 */
 	_("Read installation information"),
 	/* Progress stage 8/9 */
@@ -299,7 +299,7 @@ global define boolean Read() {
 
     if(Abort()) return false;
     /* Progress step 6/9 */
-    ProgressNextStage(_("Reading host name and DNS configuration..."));
+    ProgressNextStage(_("Reading hostname and DNS configuration..."));
     DNS::Read();
     Host::Read();
     sleep(sl);
@@ -366,7 +366,7 @@ global define boolean Write() {
 	/* Progress stage 5 */
 	_("Write routing configuration"),
 	/* Progress stage 6 */
-	_("Write host name and DNS configuration"),
+	_("Write hostname and DNS configuration"),
 	/* Progress stage 7 */
 	_("Set up network services"),
 	/* Progress stage 8 */
@@ -409,7 +409,7 @@ global define boolean Write() {
 
     if(Abort()) return false;
     /* Progress step 6 */
-    ProgressNextStage(_("Writing host name and DNS configuration..."));
+    ProgressNextStage(_("Writing hostname and DNS configuration..."));
     DNS::Write();
     Host::Write();
     sleep(sl);

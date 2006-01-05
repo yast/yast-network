@@ -603,7 +603,7 @@ IP address.</p>"),
     "HOSTNAME_B": $[
 	"widget": `push_button,
 	// push button label
-	"label": _("&Host Name and Name Server"),
+	"label": _("&Hostname and Name Server"),
 	"opt": [`hstretch],
 	"help": "",
 	"init": CWM::InitNull,

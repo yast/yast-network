@@ -227,7 +227,7 @@ and correct the settings.</p>
 		      $["LANG" : GetLanguageUTF8 ()]);
 
 	// label of combobox where the log is selected
-	logs = add (logs, $[ `menuname : _("Host Name Lookup"),
+	logs = add (logs, $[ `menuname : _("Hostname Lookup"),
 			     `filename : "resolv.conf" ]);
 	SCR::Execute (.target.bash, "/bin/cp /etc/resolv.conf " +
 		      logdir + "/resolv.conf");
