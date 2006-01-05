@@ -1,0 +1,39 @@
+/**
+ * File:	clients/inst_hostname.ycp
+ * Package:	Network configuration
+ * Summary:	Mandatory hostname configuration
+ * Authors:	Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "DNS";
+import "GetInstArgs";
+
+include "network/services/dns.ycp";
+
+
+/* Called backwards */
+//if(GetInstArgs::going_back())
+//   return `auto;
+
+DNS::Read ();			// handles NetworkConfig too
+
+// TODO: policy for proposing a hostname, probably in a client
+// preceding this one
+
+symbol ret = HostnameDialog ();
+
+if (ret == `next)
+{
+    DNS::Write ();		// handles NetworkConfig too
+}
+
+return ret;
+
+/* EOF */
+}
