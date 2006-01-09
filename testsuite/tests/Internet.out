@@ -54,6 +54,13 @@ Return	true
 Dump	ippp0
 Dump	isdn
 Dir	.network.section: []
+Execute	.target.bash_output "ip -oneline link list | sed -e 's/^[0-9]*: \\([^:]*\\).*/\\1/' | grep -v 'lo\\|sit0'" $["exit":0, "stderr":"", "stdout":""]
 Return	false
 Dump	
 Dump	
+Dir	.network.section: []
+Execute	.target.bash_output "ip -oneline link list | sed -e 's/^[0-9]*: \\([^:]*\\).*/\\1/' | grep -v 'lo\\|sit0'" $["exit":0, "stderr":"", "stdout":"eth0\nppp0\n"]
+Log	No such device: eth0
+Return	true
+Dump	eth0
+Dump	netcard
