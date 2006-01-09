@@ -356,6 +356,10 @@ disabled during the connection.</p>"),
 	],
     ];
 
+define boolean ReallyAbortInst () {
+    return Popup::ConfirmAbort (`incomplete);
+}
+
 define symbol HostnameDialog () {
     has_dhcp = true;
 
@@ -364,7 +368,7 @@ define symbol HostnameDialog () {
     map functions = $[
 	"init" : InitHnWidget,
 	"store" : StoreHnWidget,
-	`abort : ReallyAbort,
+	`abort : ReallyAbortInst,
     ];
     term contents = `HSquash (
 	/* Frame label */
