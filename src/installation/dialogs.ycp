@@ -105,7 +105,7 @@ activate the test procedure."),
 	/* RadioButton label */
 	`Left(`ReplacePoint(`id(`rp), `RadioButton(`id(`yes), sformat(connection_text, Internet::device) , Internet::do_test))),
 	// push button label
-	`Right(`PushButton(`id(`net_expert), _("Change Device"))),
+	`Right(`PushButton(`id(`net_expert), _("&Change Device"))),
 	/* RadioButton label */
 	`Left(`RadioButton(`id(`no), _("N&o, Skip This Test"), !Internet::do_test)),
 	`VSpacing(1)
@@ -129,7 +129,7 @@ activate the test procedure."),
 	/* label text - one step of during network test */
 	steps = add(steps, `Left(`Label(_("- Close connection"))));
     }
-	Internet::FindFastest();
+
     /* Steps dialog contents */
     term contents = `HBox(
 	`HSpacing(5),
@@ -161,36 +161,42 @@ activate the test procedure."),
 	ret = UI::UserInput();
 
 	if (ret == `net_expert)
-	 {
-	import "NetworkDevices";
-	import "NetworkPopup";
+	{
+	    import "NetworkDevices";
+	    import "NetworkPopup";
+//	    import "NetworkService";
 
-	list<string> items=[];
-	y2milestone("network devices list %1", NetworkDevices::List(""));
-	foreach(string dev,NetworkDevices::List(""),{
-	    if (dev != "lo") items = add(items, dev);
-	});
-	string via_device = String::CutBlanks(NetworkPopup::ChooseItem(_("Network Device Select"), items, Internet::device));
-	if (via_device != "")
-	 {
-	  Internet::SetDevice( via_device );
-	  UI::ReplaceWidget(`id(`rp), `RadioButton(`id(`yes), sformat(connection_text, Internet::device), Internet::do_test));
-	  y2milestone("selected network device :%1", via_device);
-	 }
-	 continue;
-	 }
+	    list<string> items = NetworkDevices::List("");
+//	    if (NetworkService::IsManaged ())
+	    if (items == [])
+	    {
+		items = Internet::GetDevices ();
+	    }
+	    items = filter (string i, items, ``( i != "lo" ));
+	    y2milestone("network devices list %1", items);
 
-	if (ret == `abort || ret == `cancel)
+	    // popup dialog title
+	    string via_device = NetworkPopup::ChooseItem(_("Network Device Select"), items, Internet::device);
+	    if (via_device != "")
+	    {
+		Internet::SetDevice( via_device );
+		UI::ReplaceWidget(`id(`rp), `RadioButton(`id(`yes), sformat(connection_text, Internet::device), Internet::do_test));
+		y2milestone("selected network device :%1", via_device);
+	    }
+	}
+	else if (ret == `abort || ret == `cancel)
 	{
 	    if (Popup::ConfirmAbort (`incomplete))
 		break;
-	    continue;
 	}
 	else if (ret == `next || ret == `back)
 	{
 	    break;
 	}
-	y2error("Unexpected return code: %1", ret);
+	else
+	{
+	    y2error("Unexpected return code: %1", ret);
+	}
     }
 
     Internet::do_test = UI::QueryWidget(`id(`rb), `CurrentButton) == `yes;

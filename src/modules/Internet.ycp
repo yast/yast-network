@@ -15,6 +15,7 @@ textdomain "network";
 
 import "Map";
 import "NetworkDevices";
+import "NetworkService";
 import "Service";
 
 /**
@@ -27,6 +28,10 @@ global boolean do_test = true;
  */
 global boolean do_you = false;
 
+/**
+ * cache for GetDevices
+ */
+list<string> devices = nil;
 
 /**
  * Values for selected connection.
@@ -80,6 +85,25 @@ global define void SetDevice(string dev){
         logfile = "/var/log/smpppd/ifcfg-" + device + ".log";
 
 }
+
+/**
+ * Used if NetworkDevices cannot find anything (usually because NM runs)
+ * Calls ip
+ * @return eg. ["eth0", "eth1"]
+ */
+global define list<string> GetDevices () {
+    if (devices == nil)
+    {
+	string command = "ip -oneline link list | sed -e 's/^[0-9]*: \\([^:]*\\).*/\\1/' | grep -v 'lo\\|sit0'";
+	map out = (map) SCR::Execute (.target.bash_output, command);
+	devices = filter (string i,
+			  splitstring (out["stdout"]:"", "\n"),
+			  ``( i != "" ));
+	devices = filter (string i, devices, ``( i != "lo" && i != "sit0" ));
+    }
+    return devices;
+}
+
 /**
  * Find the fastest connection to the Internet
  * @return true if a "good" connection was found
@@ -90,6 +114,11 @@ global define boolean FindFastest() {
 
     NetworkDevices::Read();
     device = NetworkDevices::Fastest();
+    if (device == "")
+    {
+	device = select (GetDevices (), 0, "");
+    }
+
     y2milestone("fastest=%1", device);
 
     /* No fallback since there are devices that must not be tested (e.g. lo) */
@@ -115,22 +144,31 @@ global define boolean Start(string log) {
     }
 
     string cmd = "/sbin/ifup " + device;
+    if (NetworkService::IsManaged ())
+    {
+	string d_nm =  "org.freedesktop.NetworkManager";
+	string s_nm = "/org/freedesktop/NetworkManager";
+	// dbus-send [options] object interface.method arguments...
+	cmd = sformat ("dbus_send --system --dest=%1 %2 %1.setActiveDevice objpath:'%2/Devices/%3'", d_nm, s_nm, device);
+    }
+
     if (log != "")
 	cmd = cmd + "> " + log + " 2>&1";
 
+    any ret = nil;
     if(askpassword == true)
     {
-	if (SCR::Execute(.target.bash_input, cmd, password) != 0) {
-	    y2error("ifup failed");
-	    return false;
-	}
+	ret = SCR::Execute (.target.bash_input, cmd, password);
     }
     else
     {
-	if (SCR::Execute(.target.bash, cmd) != 0) {
-	    y2error("ifup failed");
-	    return false;
-	}
+	ret = SCR::Execute(.target.bash, cmd);
+    }
+    if (ret != 0) {
+	y2error(NetworkService::IsManaged ()?
+		"NM.setActiveDevice failed":
+		"ifup failed");
+	return false;
     }
 
     if(type == "isdn" && !capi_isdn) {
@@ -149,6 +187,7 @@ global define boolean Start(string log) {
  * @return true if successful stopped
  */
 global define boolean Stop(string log) {
+    // should also work for NM
     string cmd = "/sbin/ifdown " + device;
     if(log != "") cmd = cmd + "> " + log + " 2>&1";
     integer ret = (integer) SCR::Execute(.target.bash, cmd);

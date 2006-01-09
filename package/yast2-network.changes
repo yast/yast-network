@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jan  9 16:54:04 CET 2006 - mvidner@suse.cz
+
+- Fixed internet connection test with NetworkManager (#138507).
+- inst_hostname: Use the installation-style abort popup.
+- 2.13.12
+
+-------------------------------------------------------------------
 Thu Jan  5 16:39:09 CET 2006 - mvidner@suse.cz
 
 - SLES: Ask for the host name, before the root password dialog (#62165, F4126).
