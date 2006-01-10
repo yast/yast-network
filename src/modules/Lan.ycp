@@ -702,6 +702,7 @@ define map GetDefaultsForHW () {
 	y2milestone ("Adding LCS: setting MTU");
 	ret = add (ret, "MTU", "1492");
     }
+    return ret;
 }
 
 /**
