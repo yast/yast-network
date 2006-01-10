@@ -1,7 +1,9 @@
 -------------------------------------------------------------------
-Tue Jan 10 13:20:53 CET 2006 - mvidner@suse.cz
+Tue Jan 10 16:49:42 CET 2006 - mvidner@suse.cz
 
+- Really write hostname in the new dialog (#142292).
 - Lan::GetDefaultsForHW (used by autoyast) works again.
+- 2.13.13
 
 -------------------------------------------------------------------
 Mon Jan  9 16:54:04 CET 2006 - mvidner@suse.cz

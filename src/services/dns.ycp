@@ -102,6 +102,8 @@ define void StoreSettings (map settings) {
     DNS::searchlist = NonEmpty (searchlist);
     NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = settings["DHCP_HOSTNAME"]:false;
     NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"] = settings["DHCP_RESOLV"]:false;
+    /* update modified flag */
+    DNS::modified = true;
 }
 
 /**
@@ -534,8 +536,6 @@ define any DNSMainDialog(boolean standalone) {
     if (ret == `next)
     {
 	StoreSettings (hn_settings);
-	/* update modified flag */
-	DNS::modified = true;
     }
 
     return ret;
