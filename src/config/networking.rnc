@@ -82,8 +82,15 @@ netmask = element netmask { text }
 network = element network { text }
 networking =
   element networking {
-    dhcp_options?, dns?, interfaces, modules?, routing?
+    dhcp_options? &
+    dns? &
+    interfaces &
+    modules? &
+    routing? &
+    managed?
   }
+managed =
+  element managed { BOOLEAN }
 dhcp_options =
   element dhcp_options {
     dhclient_additional_options?,

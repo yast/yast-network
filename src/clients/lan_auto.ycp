@@ -208,6 +208,7 @@ define map ToAY (map settings) {
 
 
     map ret = $[];
+    ret["managed"] = settings["managed"]:false;
     if (size(modules) > 0 )
         ret["modules"] = modules;
     if (size(dns) > 0 )

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jan 12 19:31:28 CET 2006 - mvidner@suse.cz
+
+- Added networking/managed for autoyast.
+- 2.13.14
+
+-------------------------------------------------------------------
 Thu Jan 12 15:52:52 CET 2006 - locilka@suse.cz
 
 - Fixed/Enhanced Remote Administration (#135605)
@@ -10,7 +16,7 @@ Thu Jan 12 15:52:52 CET 2006 - locilka@suse.cz
 -------------------------------------------------------------------
 Thu Jan 12 10:35:33 CET 2006 - mvidner@suse.cz
 
-- Fixed a typo in the device-activating dbus-send.
+- Fixed a typo in the device-activating dbus-send (#142782).
 
 -------------------------------------------------------------------
 Tue Jan 10 16:49:42 CET 2006 - mvidner@suse.cz

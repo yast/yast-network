@@ -495,6 +495,7 @@ global define boolean Import(map settings) {
     NetworkConfig::Import(settings["config"]:$[]);
     DNS::Import((map) eval(settings["dns"]:$[]));
     Routing::Import((map) eval(settings["routing"]:$[]));
+    NetworkService::Managed = settings["managed"]:false;
 
     modified = true;
     return true;
@@ -512,6 +513,7 @@ global define map Export() {
 	"devices"	: NetworkDevices::Export("netcard"),
 	"hwcfg"		: NetworkModules::Export("netcard"),
 	"routing"	: Routing::Export(),
+	"managed"	: NetworkService::IsManaged (),
     ];
 }
 
