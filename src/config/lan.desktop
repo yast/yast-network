@@ -16,6 +16,7 @@ X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=networking
 X-SuSE-YaST-AutoInstClonable=true
+X-SuSE-YaST-AutoInstSchema=networking.rnc
 
 Icon=yast-lan
 Exec=/sbin/yast2 lan 

@@ -2,4 +2,8 @@
 # $Id$
 
 desktop_DATA = $(wildcard *.desktop)
-EXTRA_DIST = $(desktop_DATA)
+
+rncdir =  $(schemadir)/autoyast/rnc
+rnc_DATA = networking.rnc
+
+EXTRA_DIST = $(desktop_DATA) $(rnc_DATA)
