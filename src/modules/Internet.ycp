@@ -149,7 +149,7 @@ global define boolean Start(string log) {
 	string d_nm =  "org.freedesktop.NetworkManager";
 	string s_nm = "/org/freedesktop/NetworkManager";
 	// dbus-send [options] object interface.method arguments...
-	cmd = sformat ("dbus_send --system --dest=%1 %2 %1.setActiveDevice objpath:'%2/Devices/%3'", d_nm, s_nm, device);
+	cmd = sformat ("dbus-send --system --dest=%1 %2 %1.setActiveDevice objpath:'%2/Devices/%3'", d_nm, s_nm, device);
     }
 
     if (log != "")
