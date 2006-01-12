@@ -20,6 +20,7 @@ import "Package";
 import "Service";
 import "SuSEFirewall";
 import "Progress";
+import "Linuxrc";
 
 /**
  * Allow remote administration
@@ -27,10 +28,32 @@ import "Progress";
 global boolean allow_administration = false;
 
 /**
+ * Remote administration has been already proposed
+ * Only force-reset can change it
+ */
+boolean already_proposed = false;
+
+/**
  * Reset all module data.
  */
 global void Reset() {
-    allow_administration = false;
+    already_proposed = true;
+
+    // Bugzilla #135605 - enabling Remote Administration when installing using VNC
+    if (Linuxrc::vnc()) {
+	allow_administration = true;
+    } else {
+	allow_administration = false;
+    }
+    y2milestone("Remote Administration was proposed as: %1", (allow_administration ? "enabled":"disabled"));
+}
+
+/**
+ * Function proposes a configuration
+ * But only if it hasn't been proposed already
+ */
+global void Propose() {
+    if (!already_proposed) Reset();
 }
 
 /**
@@ -61,6 +84,15 @@ global boolean Read() {
     Progress::set(current_progress);
 
     return true;
+}
+
+/**
+ * Function creates automatic X configuration by calling sax2
+ */
+void CreateSaxAutomaticConfiguration() {
+    string command = "TERM=raw /usr/sbin/sax2 -r -a | /usr/bin/grep -v '\\r$'";
+    y2milestone("Creating automatic Xconfiguration: %1", command);
+    y2milestone("SaX2 returned: %1", SCR::Execute(.target.bash_output, command));
 }
 
 /**
@@ -96,6 +128,13 @@ global boolean Write() {
 	if(!Service::Enable("xdm")) {
 	    y2error("Enabling of xdm failed");
 	    return false;
+	}
+	
+	// Bugzilla #135605 - creating xorg.conf based on the sax2 automatic configuration
+	// It is a special case when the installation runs in VNC
+	//     - Xconfiguration in the hardware proposal is disabled
+	if (Mode::installation() && Linuxrc::vnc()) {
+	    CreateSaxAutomaticConfiguration();
 	}
     }
 

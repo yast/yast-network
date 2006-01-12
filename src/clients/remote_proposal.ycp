@@ -33,6 +33,7 @@ if(func == "MakeProposal") {
     boolean force_reset = param["force_reset"]:false;
 
     if(force_reset) Remote::Reset();
+    else	    Remote::Propose();
     ret = $[ "raw_proposal" : [ Remote::Summary() ] ];
 }
 /* run the module */

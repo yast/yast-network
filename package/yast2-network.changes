@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu Jan 12 15:52:52 CET 2006 - locilka@suse.cz
+
+- Fixed/Enhanced Remote Administration (#135605)
+  If the installation is running in VNC, Remote Administration is
+  enabled by default and a new xorg.conf is written by SaX2 because
+  XServer configuration is disabled in the hardware proposal in this
+  case.
+
+-------------------------------------------------------------------
 Thu Jan 12 10:35:33 CET 2006 - mvidner@suse.cz
 
 - Fixed a typo in the device-activating dbus-send.
