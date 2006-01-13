@@ -104,6 +104,50 @@ Abort saving by pressing <b>Abort</b>.</p>
 }
 
 /**
+ * Dialog to choose whether to use NetworkManager or not
+ */
+define symbol ManagedDialog () {
+    map<string, map<string,any> > wd = $[
+	"MANAGED": $[
+	    "widget": `radio_buttons,
+	    // radio button group label, method of setup
+	    "label": _("Network Setup Method"),
+	    "items": [
+		// radio button label
+		// the user can control the network with the NetworkManager
+		// program
+		["managed", _("&User Controlled with NetworkManager")],
+		// radio button label
+		["ifup", _("BLAH old method")],
+		],
+	    "opt": [],
+	    "help": _("<p>FIXME</p>"),
+	    ],
+	];
+
+    term contents = `VBox (
+	"MANAGED"
+	);
+
+    map functions = $[
+	`abort : ReallyAbort,
+    ];
+
+    any ret = CWM::ShowAndRun (
+	$[
+	    "widget_descr": wd,
+	    "contents": contents,
+	    /* Address dialog caption */
+	    "caption": _("Network Setup Method"),
+	    "back_button" : Label::BackButton (),
+	    "next_button" : Label::NextButton (),
+	    "fallback_functions" : functions,
+	    ]);
+    // if ... `managed : `next
+    return (symbol) ret;
+}
+
+/**
  * Start configuring a new interface (`add or `managed).
  * Also install needed packages.
  * @return whether to proceed with editing and commiting the config

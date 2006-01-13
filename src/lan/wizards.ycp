@@ -108,27 +108,24 @@ define symbol LanAutoSequence() ``{
 define symbol MainSequence() ``{
 
     map aliases = $[
+	"managed"	: ``(ManagedDialog ()),
 	"overview"	: ``(OverviewDialog()),
-	"other"		: [ ``(NetworkCardSequence("add")), true ],
 	"add"		: [ ``(NetworkCardSequence("add")), true ],
 	"edit"		: [ ``(NetworkCardSequence("edit")), true ],
-	"commit"	: [ ``(Commit()), true ],
     ];
 
     map sequence = $[
 	"ws_start" : "overview",
+	"managed" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	    `managed	: `next,
+	    ],
 	"overview" : $[
 	    `abort	: `abort,
 	    `next	: `next,
 	    `add	: "add",
 	    `edit	: "edit",
-	],
-	"other" : $[
-	    `abort	: `abort,
-	    `next	: "overview",
-	],
-	"commit" : $[
-	    `next	: "overview",
 	],
 	"add" : $[
 	    `abort	: `abort,
