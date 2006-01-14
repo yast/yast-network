@@ -104,6 +104,28 @@ Abort saving by pressing <b>Abort</b>.</p>
 }
 
 /**
+ * Initialize the NetworkManager widget
+ * @param key id of the widget
+ */
+define void ManagedInit (string key) {
+    string value = NetworkService::IsManaged ()? "managed": "ifup";
+    UI::ChangeWidget (`id (key), `CurrentButton, value);
+}
+
+/**
+ * Store the NetworkManager widget
+ * @param key	id of the widget
+ * @param event	the event being handled
+ */
+define void ManagedStore (string key, map event) {
+    string value_g = (string) UI::QueryWidget (`id (key), `CurrentButton);
+    boolean value = value_g == "managed";
+    if (NetworkService::IsManaged () != value)
+	Lan::SetModified ();
+    NetworkService::Managed = value;
+}
+
+/**
  * Dialog to choose whether to use NetworkManager or not
  */
 define symbol ManagedDialog () {
@@ -118,15 +140,30 @@ define symbol ManagedDialog () {
 		// program
 		["managed", _("&User Controlled with NetworkManager")],
 		// radio button label
-		["ifup", _("BLAH old method")],
+		// ifup is a program name
+		["ifup", _("&Traditional Method with ifup")],
 		],
 	    "opt": [],
-	    "help": _("<p>FIXME</p>"),
+	    "help":
+	    /* Network setup method help */
+	    // NetworkManager and ifup are programs
+_("<p>Use <b>NetworkManager</b> to have a desktop applet
+manage connections for all interfaces. It is well suited
+to switching among wired and multiple wireless networks.</p>
+") +
+	    /* Network setup method help */
+	    // NetworkManager and ifup are programs
+_("<p>Use the <b>traditional method with <tt>ifup</tt></b>
+if you do not run a desktop environment (GNOME or KDE)
+or need to use multiple interfaces at once.</p>
+"),
+	    "init": ManagedInit,
+	    "store": ManagedStore,
 	    ],
 	];
 
     term contents = `VBox (
-	"MANAGED"
+	`HSquash ("MANAGED")
 	);
 
     map functions = $[
@@ -143,8 +180,7 @@ define symbol ManagedDialog () {
 	    "next_button" : Label::NextButton (),
 	    "fallback_functions" : functions,
 	    ]);
-    // if ... `managed : `next
-    return (symbol) ret;
+    return NetworkService::IsManaged ()? `managed : `next;
 }
 
 /**
@@ -205,29 +241,25 @@ Press <b>Add</b> to configure a new network card manually.</p>
 _("<p><b><big>Editing or Deleting:</big></b><br>
 Choose a network card to change or remove.
 Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
-") +
-
-    /* Network cards overview dialog help 4/4 */
-	// NetworkManager and ifup are programs
-_("<p>Use <b>Managed by NetworkManager</b> to have a desktop applet
-manage connections for all interfaces.</p>
 ");
 
+    // unused
     list<list> more_buttons = [
 	// Button label
 	// NetworkManager is a program name
-	[`global_managed, _("Managed by NetworkManager")],
+	[`global_managed, _("&Managed by NetworkManager")],
 	// Button label
 	// NetworkManager is a program name
 // `managed was for single interfaces
-//	[`managed, _("Managed by NetworkManager")],	
+//	[`managed, _("&Managed by NetworkManager")],	
 	];
 
     // FIXME: for now, rework the data for the new WizardHW
 
     WizardHW::CreateHWDialog (caption, help
 	, [_("Name"), _("IP Address")]
-	, more_buttons );
+	, [] );
+    Wizard::EnableBackButton (); // ManagedDialog
 
     boolean repaint = true;
     map ret = nil;

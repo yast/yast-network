@@ -115,7 +115,7 @@ define symbol MainSequence() ``{
     ];
 
     map sequence = $[
-	"ws_start" : "overview",
+	"ws_start" : "managed",
 	"managed" : $[
 	    `abort	: `abort,
 	    `next	: "overview",
