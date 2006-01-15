@@ -28,7 +28,7 @@ include "network/routines.ycp";
  * Read Devices from files
  * @param devregex regular expression for the device type
  * @return true if sucess
- * @example ReadConfig("eth|tr");
+ * @example ReadISDNConfig("eth|tr");
  */
 global define boolean ReadISDNConfig(string devregex) ``{
 
