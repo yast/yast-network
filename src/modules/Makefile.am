@@ -9,9 +9,9 @@ YCPCFLAGS =
 idirs := lan isdn modem dsl installation provider remote services
 nidirs = $(foreach idir, $(idirs), network/$(idir))
 network:
-	ln -snf ../routines $@
+	test -L $@ || ln -snf ../routines $@
 ${nidirs}: network/%: network
-	ln -snf ../$* $@
+	test -L $@ || ln -snf ../$* $@
 
 ycpchook = network ${nidirs}
 
