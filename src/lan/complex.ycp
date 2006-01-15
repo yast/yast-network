@@ -122,7 +122,7 @@ define void ManagedStore (string key, map event) {
     boolean value = value_g == "managed";
     if (NetworkService::IsManaged () != value)
 	Lan::SetModified ();
-    NetworkService::Managed = value;
+    NetworkService::SetManaged (value);
 }
 
 /**
@@ -270,14 +270,14 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
 	    overview = overview + Lan::Unconfigured ();
 	    y2debug("overview=%1",overview);
 	    WizardHW::SetContents (overview);
-	    if (NetworkService::Managed)
+	    if (NetworkService::IsManaged ())
 	    {
 		foreach (symbol s, [`add, `edit, `delete, `_hw_items], {
 		    UI::ChangeWidget (`id (s), `Enabled, false);
 		});
 	    }
 	    foreach (symbol s, [`add, `_hw_items], {
-		UI::ChangeWidget (`id (s), `Enabled, ! NetworkService::Managed);
+		UI::ChangeWidget (`id (s), `Enabled, ! NetworkService::IsManaged ());
 	    });
 	    repaint = false;
 	}
@@ -337,7 +337,7 @@ the interface will no longer be managed by NetworkManager.
 	}
 	/* managed - global */
 	else if(ret["event"]:nil == `global_managed) {
-	    NetworkService::Managed = ! NetworkService::Managed;
+	    NetworkService::SetManaged (! NetworkService::IsManaged ());
 	    Lan::SetModified ();
 	    repaint = true;
 	}

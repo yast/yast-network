@@ -83,12 +83,12 @@ else if(func == "AskUser") {
     }
     else if (chosen_id == "lan--nm-enable")
     {
-	NetworkService::Managed = true;
+	NetworkService::SetManaged (true);
 	Lan::SetModified ();
     }
     else if (chosen_id == "lan--nm-disable")
     {
-	NetworkService::Managed = false;
+	NetworkService::SetManaged (false);
 	Lan::SetModified ();
     }
     else

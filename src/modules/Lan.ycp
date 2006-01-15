@@ -495,7 +495,7 @@ global define boolean Import(map settings) {
     NetworkConfig::Import(settings["config"]:$[]);
     DNS::Import((map) eval(settings["dns"]:$[]));
     Routing::Import((map) eval(settings["routing"]:$[]));
-    NetworkService::Managed = settings["managed"]:false;
+    NetworkService::SetManaged (settings["managed"]:false);
 
     modified = true;
     return true;
@@ -598,7 +598,7 @@ global define list Summary(string mode) {
 
     // the NM should be common to all networking interfaces
     // (BuildSummaryDevs) but modems etc are not ready yet
-    if (NetworkService::Managed && mode == "proposal")
+    if (mode == "proposal" && NetworkService::IsManaged ())
     {
 	sum = [];
     }
@@ -606,7 +606,7 @@ global define list Summary(string mode) {
     {
 	string status = nil;
 	string href = nil;
-	if (NetworkService::Managed)
+	if (NetworkService::IsManaged ())
 	{
 	    href = "lan--nm-disable";
 	    status = _("NetworkManager is enabled")  + " " +
@@ -1340,9 +1340,9 @@ global define boolean ProposeInterfaces () {
     boolean nm_default = ProductFeatures::GetBooleanFeature ("network", "network_manager_is_default");
     boolean nm_installed = Package::Installed ("NetworkManager");
     y2milestone ("NetworkManager wanted: %1, installed: %2", nm_default, nm_installed);
-    NetworkService::Managed = nm_default && nm_installed;
+    NetworkService::SetManaged (nm_default && nm_installed);
 
-    if (NetworkService::Managed)
+    if (NetworkService::IsManaged ())
     {
 	y2milestone ("NM proposal");
 	return true;

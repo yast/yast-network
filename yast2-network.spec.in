@@ -2,10 +2,10 @@
 # neededforbuild yast2-devel-packages yast2-country yast2-installation
 
 @HEADER@
-# yast2-core >= 2.10.6: carrier detection
+# carrier detection
 Requires:	yast2-core >= 2.10.6
-# yast2 >= 2.13.18: CWM::InitNull
-Requires:	yast2 >= 2.13.18
+# NetworkService::SetManaged
+Requires:	yast2 >= 2.13.24
 Requires:	sysconfig yast2-country yast2-inetd yast2-packager
 PreReq:		/bin/rm
 
