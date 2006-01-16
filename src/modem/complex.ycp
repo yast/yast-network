@@ -16,6 +16,7 @@ import "CWMTab";
 import "Label";
 import "Modem";
 import "NetworkDevices";
+import "NetworkService";
 import "Popup";
 import "Provider";
 import "Routing";
@@ -76,6 +77,18 @@ define symbol ReadDialog() {
     Wizard::RestoreHelp(helptext);
     Modem::AbortFunction = ``{return PollAbort();};
     boolean ret = Modem::Read();
+    
+    // TODO move to Read, but then display only in interactive mode.
+    // Or warn only when adding a provider.
+    if (NetworkService::IsManaged ())
+    {
+	// warning message when modem module starts up and NM is on
+	string warning = _("NetworkManager is enabled. Some features, such as
+multiple providers for one modem, will not work.
+You may want to use kinternet instead.");
+	Popup::LongWarning (warning);
+    }
+
     return ret ? `next : `abort;
 }
 

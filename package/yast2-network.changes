@@ -1,7 +1,12 @@
 -------------------------------------------------------------------
-Mon Jan 16 10:32:36 CET 2006 - mvidner@suse.cz
+Mon Jan 16 16:26:09 CET 2006 - mvidner@suse.cz
 
+- Warn when configuring modems and NetworkManager is enabled.
+- Disabled entering the apostrophe to ESSID since the agent does not
+  quote it (#118157).
 - Use a separate dialog for switching between NetworkManager and ifup.
+  Format the NetworkManager part of the proposal like the firewall one.
+  (#141025).
 - Use /etc/sysconfig/network/config:NETWORKMANAGER
   instead of rcnetworkmanager (#135595).
 - Internet test: fixed cancelling of device selection that got broken
