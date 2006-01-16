@@ -177,7 +177,7 @@ activate the test procedure."),
 
 	    // popup dialog title
 	    string via_device = NetworkPopup::ChooseItem(_("Network Device Select"), items, Internet::device);
-	    if (via_device != "")
+	    if (via_device != nil)
 	    {
 		Internet::SetDevice( via_device );
 		UI::ReplaceWidget(`id(`rp), `RadioButton(`id(`yes), sformat(connection_text, Internet::device), Internet::do_test));
