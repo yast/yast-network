@@ -63,7 +63,7 @@ else if(func == "AskUser") {
     map stored = Lan::Export();
 
     string chosen_id = param["chosen_id"]:"";
-    symbol seq = nil;
+    symbol seq = `next;
     list<string> match = regexptokenize (chosen_id, "^lan--wifi-encryption-(.*)");
     if (match != nil && match != [])
     {
