@@ -606,21 +606,25 @@ global define list Summary(string mode) {
     {
 	string status = nil;
 	string href = nil;
+	string unused = nil;	// keep old translated strings just in case
 	if (NetworkService::IsManaged ())
 	{
 	    href = "lan--nm-disable";
-	    status = _("NetworkManager is enabled")  + " " +
-		// Hyperlink: disable NetworkManager
-		Hyperlink (href, _("Disable."));
+	    
+	    status = sformat (_("NetworkManager is <a href='%1'>enabled</a>"),
+			      href);
+	    // Hyperlink: disable NetworkManager
+	    unused = _("Disable.");
 	}
 	else
 	{
 	    href = "lan--nm-enable";
-	    status = _("NetworkManager is disabled") + " " +
-		// Hyperlink: enable NetworkManager
-		Hyperlink (href, _("Enable."));
+	    status = sformat (_("NetworkManager is <a href='%1'>disabled</a>"),
+			      href);
+	    // Hyperlink: enable NetworkManager
+	    unused = _("Enable.");
 	}
-	sum[0] = "<p>" + status + "</p>" + sum[0]:"";
+	sum[0] = "<ul>" + status + "</ul>" + sum[0]:"";
 	sum[1] = add (sum[1]:[], href);
     }
 
