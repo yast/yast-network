@@ -18,6 +18,7 @@ import "Lan";
 import "Map";
 import "Message";
 import "Popup";
+import "String";
 import "Wizard";
 
 include "network/routines.ycp";
@@ -358,6 +359,10 @@ available options.</p>");
 
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::NextButton());
+
+    // workaround for #118157
+    string no_apos = deletechars (String::CPrint (), "'");
+    UI::ChangeWidget (`id (`essid), `ValidChars, no_apos);
 
     UI::ChangeWidget (`id (`authmode), `Value, authmode);
     if (authmode != "eap")
