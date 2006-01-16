@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
-Mon Jan 16 16:26:09 CET 2006 - mvidner@suse.cz
+Mon Jan 16 17:01:33 CET 2006 - mvidner@suse.cz
 
+- Prefer the string product feature network/network_manager (always,
+  laptop, never) over boolean network/network_manager_is_default.
 - Warn when configuring modems and NetworkManager is enabled.
 - Disabled entering the apostrophe to ESSID since the agent does not
   quote it (#118157).

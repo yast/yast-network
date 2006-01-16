@@ -1330,6 +1330,39 @@ define map FindMatchingDevice(map interface) {
 }
 
 /**
+ * Uses product info and is subject to installed packages.
+ * @return Should NM be enabled?
+ */ 
+define boolean UseNetworkManager () {
+    boolean nm_default = false;
+    string nm_feature = ProductFeatures::GetStringFeature ("network", "network_manager");
+    if (nm_feature == "")
+    {
+	// compatibility: use the boolean feature
+	// (defaults to false)
+	nm_default = ProductFeatures::GetBooleanFeature ("network", "network_manager_is_default");
+    }
+    else if (nm_feature == "always")
+    {
+	nm_default = true;
+    }
+    else if (nm_feature == "laptop")
+    {
+	// TODO: ask for HAL data, it is supposed to be better
+	nm_default = SCR::Read (.probe.has_pcmcia) == true; // any -> bool
+	y2milestone ("Is a laptop: %1", nm_default);
+    }
+    else // nm_feature == "never"
+    {
+	nm_default = false;
+    }
+
+    boolean nm_installed = Package::Installed ("NetworkManager");
+    y2milestone ("NetworkManager wanted: %1, installed: %2", nm_default, nm_installed);
+    return nm_default && nm_installed;
+}
+
+/**
  * Propose interface configuration
  * @return true if something was proposed
  */
@@ -1341,10 +1374,7 @@ global define boolean ProposeInterfaces () {
     y2milestone("NetworkConfig::Config=%1", NetworkConfig::Config);
     y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);
 
-    boolean nm_default = ProductFeatures::GetBooleanFeature ("network", "network_manager_is_default");
-    boolean nm_installed = Package::Installed ("NetworkManager");
-    y2milestone ("NetworkManager wanted: %1, installed: %2", nm_default, nm_installed);
-    NetworkService::SetManaged (nm_default && nm_installed);
+    NetworkService::SetManaged (UseNetworkManager ());
 
     if (NetworkService::IsManaged ())
     {
