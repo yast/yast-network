@@ -1,6 +1,10 @@
 -------------------------------------------------------------------
-Mon Jan 16 17:01:33 CET 2006 - mvidner@suse.cz
+Mon Jan 16 17:18:09 CET 2006 - mvidner@suse.cz
 
+- Use /etc/sysconfig/network/config:NETWORKMANAGER instead of
+  rcnetworkmanager (#135595).
+- Sleep 15 seconds after telling NetworkManager to activate an
+  interface for internet test.
 - Prefer the string product feature network/network_manager (always,
   laptop, never) over boolean network/network_manager_is_default.
 - Warn when configuring modems and NetworkManager is enabled.
@@ -9,10 +13,9 @@ Mon Jan 16 17:01:33 CET 2006 - mvidner@suse.cz
 - Use a separate dialog for switching between NetworkManager and ifup.
   Format the NetworkManager part of the proposal like the firewall one.
   (#141025).
-- Use /etc/sysconfig/network/config:NETWORKMANAGER
-  instead of rcnetworkmanager (#135595).
 - Internet test: fixed cancelling of device selection that got broken
   again (#143182).
+- 2.13.15
 
 -------------------------------------------------------------------
 Thu Jan 12 19:31:28 CET 2006 - mvidner@suse.cz
