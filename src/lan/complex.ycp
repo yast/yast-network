@@ -170,7 +170,7 @@ or need to use multiple interfaces at once.</p>
 	`abort : ReallyAbort,
     ];
 
-    any ret = CWM::ShowAndRun (
+    symbol ret = (symbol) CWM::ShowAndRun (
 	$[
 	    "widget_descr": wd,
 	    "contents": contents,
@@ -180,7 +180,11 @@ or need to use multiple interfaces at once.</p>
 	    "next_button" : Label::NextButton (),
 	    "fallback_functions" : functions,
 	    ]);
-    return NetworkService::IsManaged ()? `managed : `next;
+    if (ret == `next && NetworkService::IsManaged ())
+    {
+	ret = `managed;
+    }
+    return ret;
 }
 
 /**

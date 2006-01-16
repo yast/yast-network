@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Jan 16 10:32:36 CET 2006 - mvidner@suse.cz
+
+- Use a separate dialog for switching between NetworkManager and ifup.
+- Use /etc/sysconfig/network/config:NETWORKMANAGER
+  instead of rcnetworkmanager (#135595).
+- Internet test: fixed cancelling of device selection that got broken
+  again (#143182).
+
+-------------------------------------------------------------------
 Thu Jan 12 19:31:28 CET 2006 - mvidner@suse.cz
 
 - Added networking/managed for autoyast.
