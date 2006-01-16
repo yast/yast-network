@@ -1,3 +1,4 @@
+Read	.target.tmpdir "/tmp"
 Dump	Fastest
 Dir	.network.section: ["dsl0", "eth0"]
 Dir	.network.value."dsl0": ["DEVICE"]
