@@ -596,43 +596,40 @@ global define list Summary(string mode) {
 
     list sum = BuildSummary("netcard", Hardware, split, mode == "proposal");
 
-    // the NM should be common to all networking interfaces
-    // (BuildSummaryDevs) but modems etc are not ready yet
-    if (mode == "proposal" && NetworkService::IsManaged ())
-    {
-	sum = [];
-    }
-    if (mode == "proposal")
-    {
-	string status = nil;
-	string href = nil;
-	string unused = nil;	// keep old translated strings just in case
-	if (NetworkService::IsManaged ())
-	{
-	    href = "lan--nm-disable";
-	    
-	    status = sformat (_("NetworkManager is <a href='%1'>enabled</a>"),
-			      href);
-	    // Hyperlink: disable NetworkManager
-	    unused = _("Disable.");
-	}
-	else
-	{
-	    href = "lan--nm-enable";
-	    status = sformat (_("NetworkManager is <a href='%1'>disabled</a>"),
-			      href);
-	    // Hyperlink: enable NetworkManager
-	    unused = _("Enable.");
-	}
-	sum[0] = "<ul>" + status + "</ul>" + sum[0]:"";
-	sum[1] = add (sum[1]:[], href);
-    }
-
     /* Testing improved summary */
     if(mode == "summary")
 	sum[0] = sum[0]:"" + DNS::Summary() + Routing::Summary();
 
     return sum;
+}
+
+/**
+ * Create a textual summary for the NetworkManager proposal
+ * @return [rich text, links]
+ */
+global define list SummaryNM () {
+    string status = nil;
+    string href = nil;
+    string link = nil;
+    if (NetworkService::IsManaged ())
+    {
+	href = "lan--nm-disable";
+	// network mode: the interfaces are controlled by the user
+	status = _("User Controlled Interfaces via NetworkManager Applet");
+	// disable NetworkManager applet
+	link = Hyperlink (href, _("Disable"));
+    }
+    else
+    {
+	href = "lan--nm-enable";
+	// network mode
+	status = _("Traditional Method without NetworkManager Applet");
+	// enable NetworkManager applet
+	link = Hyperlink (href, _("Enable"));
+    }
+    string descr = sformat ("<ul><li>%1 (%2)</li></ul>", status, link);
+    list<string> links = [ href ];
+    return [descr, links];
 }
 
 /**

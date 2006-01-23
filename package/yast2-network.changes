@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jan 23 13:28:34 CET 2006 - mvidner@suse.cz
+
+- Added networkmanager_proposal to the network proposal.
+  Now NM has a separate heading and comes first.
+- 2.13.16
+
+-------------------------------------------------------------------
 Mon Jan 16 17:18:09 CET 2006 - mvidner@suse.cz
 
 - Use /etc/sysconfig/network/config:NETWORKMANAGER instead of
