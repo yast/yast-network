@@ -1375,6 +1375,7 @@ global define boolean ProposeInterfaces () {
 
     if (NetworkService::IsManaged ())
     {
+	modified = true;	// #144139 workaround
 	y2milestone ("NM proposal");
 	return true;
     }

@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Mon Jan 23 13:28:34 CET 2006 - mvidner@suse.cz
+Mon Jan 23 17:11:41 CET 2006 - mvidner@suse.cz
 
+- For NetworkManager, don't forget to write the network/config setting (#144139).
 - Added networkmanager_proposal to the network proposal.
   Now NM has a separate heading and comes first.
 - 2.13.16
