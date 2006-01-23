@@ -514,6 +514,7 @@ define any DNSMainDialog(boolean standalone) {
 	`abort : ReallyAbort,
     ];
 
+    map<string, map<string,any> > widget_descr = widget_descr_dns;
     widget_descr["NAMESERVER_2"] = widget_descr["NAMESERVER_1"]:$[];
     widget_descr["NAMESERVER_3"] = widget_descr["NAMESERVER_1"]:$[];
     // text entry label

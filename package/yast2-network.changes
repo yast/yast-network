@@ -1,9 +1,11 @@
 -------------------------------------------------------------------
-Mon Jan 23 17:11:41 CET 2006 - mvidner@suse.cz
+Mon Jan 23 17:13:59 CET 2006 - mvidner@suse.cz
 
 - For NetworkManager, don't forget to write the network/config setting (#144139).
 - Added networkmanager_proposal to the network proposal.
   Now NM has a separate heading and comes first.
+- Fixed the standalone hostname and name server dialog which looked
+  quite psychedelic lately.
 - 2.13.16
 
 -------------------------------------------------------------------
