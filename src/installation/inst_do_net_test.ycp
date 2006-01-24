@@ -349,7 +349,7 @@ and correct the settings.</p>
 
 	    if(already_up)
 	    {
-		test_stage = `copy;
+		test_stage = `wait; // not `copy. NM takes its time. #145153
 	    }
 	    else
 	    {

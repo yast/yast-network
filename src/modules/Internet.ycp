@@ -180,17 +180,6 @@ global define boolean Start(string log) {
 	}
     }
 
-    if (NetworkService::IsManaged ())
-    {
-	// Busy popup, %1 is interface name like eth0
-	BusyPopup (sformat (_("Waiting for %1"), device));
-	// HACK: we have to wait until the interface comes up (or fails)
-	// - dbus message filter
-	// - grep ip addr list $device
-	sleep (15000);
-	BusyPopupClose ();
-    }
-
     return true;
 }
 
@@ -232,7 +221,10 @@ global define boolean Connected() {
 	return SCR::Execute(.target.bash, "/usr/bin/grep -q pppd /etc/resolv.conf") == 0;
     }
 
-    return true;
+    // NM: we have to wait until the interface comes up (or fails)
+    // - dbus message filter
+    // - grep ip addr list $device
+    return SCR::Execute(.target.bash, "ip -oneline addr list | grep 'scope global' >&2") == 0;
 }
 
 /**

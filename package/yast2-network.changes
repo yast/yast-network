@@ -1,9 +1,14 @@
 -------------------------------------------------------------------
-Tue Jan 24 09:38:53 CET 2006 - mvidner@suse.cz
+Tue Jan 24 15:48:43 CET 2006 - mvidner@suse.cz
 
+- Internet test: another try at waiting for managed interfaces (#145153).
+- Prefer /etc/install.inf to /etc/HOSTNAME when determinining the
+  hostname (#144687).
+- Install NetworkManager.rpm if needed.
 - Changed the values of WIRELESS_WPA_MODE and WIRELESS_EAP_AUTH
   (mostly just uppercased) on jg's request.
 - Merged proofread messages.
+- 2.13.17
 
 -------------------------------------------------------------------
 Mon Jan 23 17:13:59 CET 2006 - mvidner@suse.cz
