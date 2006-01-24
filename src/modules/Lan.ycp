@@ -1720,6 +1720,10 @@ global list<string> Packages () {
     {
 	pkgs = add (pkgs, "wpa_supplicant");
     }
+    if (NetworkService::IsManaged ())
+    {
+	pkgs = add (pkgs, "NetworkManager");
+    }
     return pkgs;
 }
 
