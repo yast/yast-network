@@ -409,6 +409,13 @@ the logs for details.
 	    if(Internet::Connected())
 	    {
 		y2milestone("Connected ok");
+
+		// even after we get an address, the test can fail. #145153
+		// so before we have the dbus event filter, let's try this
+		SCR::Execute (.target.bash, "ip route list >&2");
+		sleep (5000);
+		SCR::Execute (.target.bash, "ip route list >&2");
+
 		test_stage = `copy;
 		mark_label(1, `check);
 		return;

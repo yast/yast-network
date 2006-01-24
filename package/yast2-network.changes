@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jan 24 16:39:31 CET 2006 - mvidner@suse.cz
+
+- Internet test: even after getting an address, sleep 5 (#145153c7).
+- 2.13.18
+
+-------------------------------------------------------------------
 Tue Jan 24 15:48:43 CET 2006 - mvidner@suse.cz
 
 - Internet test: another try at waiting for managed interfaces (#145153).
