@@ -44,8 +44,8 @@ global list<string> searchlist = [];
 global string resolv_conf_process = "";
 global boolean resolv_conf_force = false;
 
+// fully qualified
 string oldhostname = "";
-global list<string> oldhostnames = [];
 
 /**
  * Data was modified?
@@ -114,23 +114,37 @@ global define boolean Read() {
     }
 
     /* hostname and domain */
-    string fqhostname = "";
-    if(SCR::Read(.target.size, "/etc/HOSTNAME") > 0) {
-	fqhostname = (string) SCR::Read(.target.string, "/etc/HOSTNAME");
-	fqhostname = substring(fqhostname, 0, findfirstof(fqhostname, "\n"));
-	oldhostname = fqhostname;
+    // prefer /etc/install.inf
+    // (because HOSTNAME comes with netcfg.rpm already, #144687)
+    hostname = install_inf["machinename"]:"";
+    domain = install_inf["domain"]:"";
+    // /etc/HOSTNAME
+    // the usual location
+    if (hostname == "")
+    {
+	if (SCR::Read (.target.size, "/etc/HOSTNAME") > 0)
+	{
+	    string fqhostname = "";
+	    fqhostname = (string) SCR::Read (.target.string, "/etc/HOSTNAME");
+	    fqhostname = substring(fqhostname, 0, findfirstof(fqhostname, "\n"));
+	    list<string> split = Hostname::SplitFQ (fqhostname);
+	    hostname = split[0]:"";
+	    domain = split[1]:"";
+	}
     }
-
-    if(fqhostname != "") {
-	list split = Hostname::SplitFQ(fqhostname);
-	hostname = split[0]:"";
-	domain = split[1]:"";
+    // detection
+    if (hostname == "")
+    {
+	hostname = Detection::result["HOSTNAME"]:"";
+	domain = Detection::result["DOMAIN"]:"";
     }
-    else {
-	/* default hostname and domain (if not in /etc/install.inf) */
-	hostname = install_inf["machinename"]:(Detection::result["HOSTNAME"]:"linux");
-	domain = install_inf["domain"]:(Detection::result["DOMAIN"]:"site");
+    // last resort
+    if (hostname == "")
+    {
+	hostname = "linux";
+	domain = "site";
     }
+    oldhostname = Hostname::MergeFQ (hostname, domain);
 
     y2milestone("nameservers=%1", nameservers);
     y2milestone("searchlist=%1", searchlist);
