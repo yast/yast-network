@@ -6,7 +6,7 @@ Tue Jan 24 15:48:43 CET 2006 - mvidner@suse.cz
   hostname (#144687).
 - Install NetworkManager.rpm if needed.
 - Changed the values of WIRELESS_WPA_MODE and WIRELESS_EAP_AUTH
-  (mostly just uppercased) on jg's request.
+  (mostly just uppercased) (#145196).
 - Merged proofread messages.
 - 2.13.17
 
