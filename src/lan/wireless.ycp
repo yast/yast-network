@@ -909,7 +909,7 @@ define void StoreWidget (string key, map event) {
  */
 define symbol HandleEapMode (string key, map event) {
 //    my2debug ("HSI", sformat ("k: %1 e: %2", key, event));
-    boolean tls = UI::QueryWidget (`id (key), `Value) == "tls";
+    boolean tls = UI::QueryWidget (`id (key), `Value) == "TLS";
     foreach (string id, ["WPA_EAP_PASSWORD",
 			 "WPA_EAP_ANONID",
 			 "DETAILS_B",
@@ -1062,11 +1062,11 @@ map<string, map<string,any> > wpa_eap_widget_descr = $[
 	"opt": [`notify],
 	"items": [
 	    // combo box item, one of WPA EAP modes
-	    ["ttls", _("TTLS")],
+	    ["TTLS", _("TTLS")],
 	    // combo box item, one of WPA EAP modes
-	    ["peap", _("PEAP")],
+	    ["PEAP", _("PEAP")],
 	    // combo box item, one of WPA EAP modes
-	    ["tls", _("TLS")],
+	    ["TLS", _("TLS")],
 	    ],
 	"help": _("<p>WPA-EAP uses a RADIUS server to authenticate users. There
 are different methods in EAP to connect to the server and
@@ -1301,21 +1301,21 @@ define any WirelessWpaEapDetailsDialog () {
 	// combo box item, any of EAP authentication methods
 	"": _("Any"),
 	// combo box item, an EAP authentication method
-	"md5": _("MD5"),
+	"MD5": _("MD5"),
 	// combo box item, an EAP authentication method
-	"gtc": _("GTC"),
+	"GTC": _("GTC"),
 	// combo box item, an EAP authentication method
-	"chap": _("CHAP"),
+	"CHAP": _("CHAP"),
 	// combo box item, an EAP authentication method
-	"pap": _("PAP"),
+	"PAP": _("PAP"),
 	// combo box item, an EAP authentication method
-	"mschap1": _("MSCHAPv1"),
+	"MSCHAP": _("MSCHAPv1"),
 	// combo box item, an EAP authentication method
-	"mschap2": _("MSCHAPv2"),
+	"MSCHAPV2": _("MSCHAPv2"),
 	];
     map<string, list<string> > auth_items = $[
-	"ttls": ["", "md5", "gtc", "chap", "pap", "mschap1", "mschap2"],
-	"peap": ["", "md5", "gtc", "mschap2"],
+	"TTLS": ["", "MD5", "GTC", "CHAP", "PAP", "MSCHAP", "MSCHAPV2"],
+	"PEAP": ["", "MD5", "GTC", "MSCHAPV2"],
 	];
     string mode = Lan::wl_wpa_eap["WPA_EAP_MODE"]:"";
 

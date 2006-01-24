@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
-Tue Jan 24 09:08:33 CET 2006 - mvidner@suse.cz
+Tue Jan 24 09:38:53 CET 2006 - mvidner@suse.cz
 
+- Changed the values of WIRELESS_WPA_MODE and WIRELESS_EAP_AUTH
+  (mostly just uppercased) on jg's request.
 - Merged proofread messages.
 
 -------------------------------------------------------------------
