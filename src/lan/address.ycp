@@ -397,7 +397,7 @@ the firewall will be disabled.</p>"),
 	// check box label
 	"label": _("&Mandatory Interface"),
 	"opt": [],
-	"help": _("<p><b>Mandatory Interface</b> specifies whether the network service will report failure if the interface fails to start at boot time.</p>"),
+	"help": _("<p><b>Mandatory Interface</b> specifies whether the network service reports failure if the interface fails to start at boot time.</p>"),
 	],
     "MTU": $[
 	"widget": `textentry,

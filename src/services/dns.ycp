@@ -299,9 +299,10 @@ interfaces, not just this one.</p>"),
 	// help
 	"help": _("<p>If you are using DHCP to get an IP address, check whether to get
 a hostname via DHCP.
-But avoid it when you connect to different networks that might each
-assign a different hostname, because changing the hostname at run time
-confuses the graphical desktop.</p>"),
+Avoid this when you connect to different networks that might each
+assign a different hostname, because changing the hostname at runtime
+confuses the graphical desktop.</p>
+"),
 	"handle": HandleDhcpHostname,
 	],
 
@@ -326,15 +327,17 @@ confuses the graphical desktop.</p>"),
 	"label": _("Do&main Search"),
 	"opt": [],
 	// all help for resolver goes here for now
-	"help": _("<p>Enter the name servers and domain search list for resolving host
-names. Usually they can be obtained by DHCP.</p>") +
+	"help": _("<p>Enter the name servers and domain search list for resolving 
+hostnames. Usually they can be obtained by DHCP.</p>
+") +
 	// resolver dialog help
 	_("<p>A name server is a computer that translates hostnames into
 IP addresses. This value must be entered as an <b>IP address</b>
-(e.g., 192.168.0.42), not as a hostname.</p>") +
+(for example, 192.168.0.42), not as a hostname.</p>
+") +
 	// resolver dialog help
 	_("<p>Search domain is the domain name where hostname searching starts.
-The primary search domain is usually the same as the <b>domain name</b> of
+The primary search domain is usually the same as the domain name of
 your computer (for example, suse.de). There may be additional search domains
 (such as suse.com). Separate the domains with commas or white space.</p>
 ") +

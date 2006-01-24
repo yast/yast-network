@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jan 24 09:08:33 CET 2006 - mvidner@suse.cz
+
+- Merged proofread messages.
+
+-------------------------------------------------------------------
 Mon Jan 23 17:13:59 CET 2006 - mvidner@suse.cz
 
 - For NetworkManager, don't forget to write the network/config setting (#144139).

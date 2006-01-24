@@ -148,12 +148,12 @@ define symbol ManagedDialog () {
 	    /* Network setup method help */
 	    // NetworkManager and ifup are programs
 _("<p>Use <b>NetworkManager</b> to have a desktop applet
-manage connections for all interfaces. It is well suited
+manage connections for all interfaces. It is well-suited
 to switching among wired and multiple wireless networks.</p>
 ") +
 	    /* Network setup method help */
 	    // NetworkManager and ifup are programs
-_("<p>Use the <b>traditional method with <tt>ifup</tt></b>
+_("<p>Use the <b>Traditional Method with <tt>ifup</tt></b>
 if you do not run a desktop environment (GNOME or KDE)
 or need to use multiple interfaces at once.</p>
 "),

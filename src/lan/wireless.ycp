@@ -1209,7 +1209,7 @@ authentication, choose your inner authentication method.</p>
 	// radio button group label
 	"label": _("&PEAP Version"),
 	"help":
-_("<p>In case you are using PEAP, you can also force the use of a specific PEAP
+_("<p>If you are using PEAP, you can also force the use of a specific PEAP
 implementation (version 0 or 1). Normally this should not be necessary.</p>
 "),
 	"items": [
