@@ -78,7 +78,7 @@ else if(func == "Description") {
 	"rich_text_title" : _("Network Mode"),
 	/* Menu label */
 	"menu_title" : _("Network Mo&de"),
-	"id" : "lan",
+	"id" : "networkmode",
     ];
 }
 /* write the proposal */

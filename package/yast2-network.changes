@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Jan 25 09:30:15 CET 2006 - visnov@suse.cz
+
+- Network Mode proposal client must have different id than Lan client
+- 2.13.19 
+
+-------------------------------------------------------------------
 Tue Jan 24 16:39:31 CET 2006 - mvidner@suse.cz
 
 - Internet test: even after getting an address, sleep 5 (#145153c7).
