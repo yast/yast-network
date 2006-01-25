@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jan 25 10:29:34 CET 2006 - mvidner@suse.cz
+
+- Proposal: when NetworkManager is turned off, do not ask about it
+  again when entering network card configuration.
+- 2.13.20
+
+-------------------------------------------------------------------
 Wed Jan 25 09:30:15 CET 2006 - visnov@suse.cz
 
 - Network Mode proposal client must have different id than Lan client

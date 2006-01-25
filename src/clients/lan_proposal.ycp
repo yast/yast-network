@@ -82,7 +82,7 @@ else if(func == "AskUser") {
     }
     else
     {
-	seq = LanAutoSequence();
+	seq = LanAutoSequence ("proposal");
     }
 
     if(seq != `next) Lan::Import(stored);

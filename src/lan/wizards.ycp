@@ -31,7 +31,7 @@ include "network/services/proxy.ycp";
 include "network/services/routing.ycp";
 
 define symbol NetworkCardSequence(string action);
-define symbol MainSequence();
+define symbol MainSequence(string mode);
 define symbol AddressSequence(string which);
 define symbol HardwareSequence();
 
@@ -43,7 +43,7 @@ boolean LanSequence() {
 
     map aliases = $[
 	"read"	: [ ``( ReadDialog() ), true ],
-	"main"	:   ``( MainSequence() ),
+	"main"	:   ``( MainSequence("") ),
 	"packages"	: [ ``( PackagesInstall(Lan::Packages()) ), true ],
 	"write"	: [ ``( WriteDialog() ), true ],
 	"finish": [ ``( FinishDialog() ), true ],
@@ -83,10 +83,11 @@ boolean LanSequence() {
 
 /**
  * Whole configuration of network but without reading and writing.
- * For use with autoinstallation.
+ * For use with autoinstallation and proposal
+ * @param mode if "proposal", NM dialog may be skipped
  * @return sequence result
  */
-define symbol LanAutoSequence() ``{
+define symbol LanAutoSequence (string mode) ``{
     string caption = _("Network Card Configuration");
     term contents = `Label(_("Initializing..."));
 
@@ -95,7 +96,7 @@ define symbol LanAutoSequence() ``{
     Wizard::SetContentsButtons(caption, contents, "",
 				Label::BackButton(), Label::NextButton());
 
-    symbol ret = MainSequence();
+    symbol ret = MainSequence (mode);
 
     UI::CloseDialog();
     return ret;
@@ -103,9 +104,10 @@ define symbol LanAutoSequence() ``{
 
 /**
  * Main workflow of the network configuration
+ * @param mode if "proposal", NM dialog may be skipped
  * @return sequence result
  */
-define symbol MainSequence() ``{
+define symbol MainSequence (string mode) ``{
 
     map aliases = $[
 	"managed"	: ``(ManagedDialog ()),
@@ -114,8 +116,17 @@ define symbol MainSequence() ``{
 	"edit"		: [ ``(NetworkCardSequence("edit")), true ],
     ];
 
+    string start = "managed";
+    // the NM decision is already present in the proposal.
+    // if NM is enabled, we present it anyway
+    // to give a possiblity to switch back
+    // but if NM is disabled, we proceed to interface overview
+    if (mode == "proposal" && !NetworkService::IsManaged ())
+    {
+	start = "overview";
+    }
     map sequence = $[
-	"ws_start" : "managed",
+	"ws_start" : start,
 	"managed" : $[
 	    `abort	: `abort,
 	    `next	: "overview",

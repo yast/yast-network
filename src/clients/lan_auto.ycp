@@ -235,7 +235,7 @@ else if (func == "Reset") {
     ret = $[];
 }
 else if (func == "Change") {
-    ret = LanAutoSequence();
+    ret = LanAutoSequence("");
 }
 else if(func == "Import") {
     map new = FromAY(param);
