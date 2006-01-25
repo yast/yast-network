@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Wed Jan 25 10:29:34 CET 2006 - mvidner@suse.cz
+Wed Jan 25 18:25:57 CET 2006 - mvidner@suse.cz
 
+- Use "formfactor" from .probe.system to detect a laptop (#145485).
 - Proposal: when NetworkManager is turned off, do not ask about it
   again when entering network card configuration.
 - 2.13.20

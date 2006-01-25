@@ -1326,6 +1326,23 @@ define map FindMatchingDevice(map interface) {
     return tosel;
 }
 
+
+define boolean IsLaptop () {
+    boolean ret = nil;
+    map system = (map) SCR::Read (.probe.system);
+    string formfactor = system["formfactor"]:"";
+    y2milestone ("Form factor: %1", formfactor);
+    if (formfactor != "")	// only since hwinfo-12.0
+    {
+	ret = formfactor == "laptop";
+    }
+    else
+    {
+	ret = SCR::Read (.probe.has_pcmcia) == true; // any -> bool
+    }
+    return ret;
+}
+
 /**
  * Uses product info and is subject to installed packages.
  * @return Should NM be enabled?
@@ -1345,8 +1362,7 @@ define boolean UseNetworkManager () {
     }
     else if (nm_feature == "laptop")
     {
-	// TODO: ask for HAL data, it is supposed to be better
-	nm_default = SCR::Read (.probe.has_pcmcia) == true; // any -> bool
+	nm_default = IsLaptop ();
 	y2milestone ("Is a laptop: %1", nm_default);
     }
     else // nm_feature == "never"
