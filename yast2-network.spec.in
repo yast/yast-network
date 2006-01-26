@@ -1,7 +1,7 @@
 @HEADER-COMMENT@
-# neededforbuild yast2-devel-packages yast2-country yast2-installation
 
 @HEADER@
+BuildRequires:	yast2-country yast2-devel-packages yast2-installation
 # carrier detection
 Requires:	yast2-core >= 2.10.6
 # NetworkService::SetManaged
