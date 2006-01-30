@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Mon Jan 30 14:10:56 CET 2006 - mvidner@suse.cz
+Mon Jan 30 17:30:59 CET 2006 - mvidner@suse.cz
 
+- Fixed editing of resolver settings for static setups (#146162).
 - Fixed changing the interface for the internet test if NM is used (#146167).
 - 2.13.20
 

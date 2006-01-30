@@ -162,6 +162,7 @@ define symbol HandleDhcpResolv (string key, map event) {
  */
 define symbol HandleResolverData (string key, map event) {
     boolean dhcp_resolv = (boolean) UI::QueryWidget (`id ("DHCP_RESOLV"), `Value);
+    dhcp_resolv = dhcp_resolv && has_dhcp; // #146162
     boolean enabled = resolver_modifiable && (!dhcp_resolv);
     UI::ChangeWidget (`id (key), `Enabled, enabled);
     return nil;
