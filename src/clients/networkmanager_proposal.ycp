@@ -54,18 +54,17 @@ else if(func == "AskUser") {
     if (chosen_id == "lan--nm-enable")
     {
 	NetworkService::SetManaged (true);
-	Lan::SetModified ();
     }
     else if (chosen_id == "lan--nm-disable")
     {
 	NetworkService::SetManaged (false);
-	Lan::SetModified ();
     }
     else
     {
 	NetworkService::SetManaged (! NetworkService::IsManaged ());
-	Lan::SetModified ();
     }
+    Lan::proposal_valid = false; // repropose
+    Lan::SetModified ();
 
     ret = $[
 	"workflow_sequence" : seq

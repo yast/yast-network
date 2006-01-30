@@ -134,6 +134,7 @@ global map aliases = $[];
 
 /* propose options */
 global boolean proposal_valid = false;
+boolean nm_proposal_valid = false;
 boolean write_only = false;
 
 /* current selected HW */
@@ -1376,6 +1377,26 @@ define boolean UseNetworkManager () {
 }
 
 /**
+ * Create minimal ifcfgs for the case when NetworkManager is used:
+ * NM does not need them but yast2-firewall and SuSEfirewall2 do
+ * Avoid existing ifcfg from network installation
+ */
+define void ProposeNMInterfaces () {
+    y2milestone ("Minimal ifcfgs for NM");
+    foreach (map hwitem, Hardware, {
+	Add ();
+
+	SelectHWMap (hwitem);
+	SetDefaultsForHW ();
+	ipaddr = "";
+	bootproto = "dhcp";
+	// will say "Device already present" for existing because of Add,
+	// which is what we want
+	Commit ();
+    });
+}
+
+/**
  * Propose interface configuration
  * @return true if something was proposed
  */
@@ -1387,10 +1408,16 @@ global define boolean ProposeInterfaces () {
     y2milestone("NetworkConfig::Config=%1", NetworkConfig::Config);
     y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);
 
-    NetworkService::SetManaged (UseNetworkManager ());
+    if (! nm_proposal_valid)
+    {
+	NetworkService::SetManaged (UseNetworkManager ());
+	nm_proposal_valid = true;
+    }
 
     if (NetworkService::IsManaged ())
     {
+	ProposeNMInterfaces ();
+
 	modified = true;	// #144139 workaround
 	y2milestone ("NM proposal");
 	return true;
