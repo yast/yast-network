@@ -4,6 +4,7 @@ Mon Jan 30 17:36:35 CET 2006 - mvidner@suse.cz
 - For NetworkManager, propose basic ifcfgs because of firewall.
 - Fixed editing of resolver settings for static setups (#146162).
 - Fixed changing the interface for the internet test if NM is used (#146167).
+- Use BuildRequires
 - 2.13.20
 
 -------------------------------------------------------------------
