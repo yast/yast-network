@@ -1,10 +1,15 @@
 -------------------------------------------------------------------
+Mon Jan 30 14:10:56 CET 2006 - mvidner@suse.cz
+
+- Fixed changing the interface for the internet test if NM is used (#146167).
+- 2.13.20
+
+-------------------------------------------------------------------
 Wed Jan 25 18:25:57 CET 2006 - mvidner@suse.cz
 
 - Use "formfactor" from .probe.system to detect a laptop (#145485).
 - Proposal: when NetworkManager is turned off, do not ask about it
   again when entering network card configuration.
-- 2.13.20
 
 -------------------------------------------------------------------
 Wed Jan 25 09:30:15 CET 2006 - visnov@suse.cz

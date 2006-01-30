@@ -164,12 +164,11 @@ activate the test procedure."),
 	{
 	    import "NetworkDevices";
 	    import "NetworkPopup";
-//	    import "NetworkService";
 
 	    list<string> items = NetworkDevices::List("");
-//	    if (NetworkService::IsManaged ())
-	    if (items == [])
+	    if (items == [] || items == ["lo"])	// #146167
 	    {
+		// no interesting ifcfgs, ask ip
 		items = Internet::GetDevices ();
 	    }
 	    items = filter (string i, items, ``( i != "lo" ));
