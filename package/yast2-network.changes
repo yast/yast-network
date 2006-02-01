@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Feb  1 17:42:54 CET 2006 - mvidner@suse.cz
+
+- Fixed the formfactor laptop detection.
+
+-------------------------------------------------------------------
 Mon Jan 30 17:36:35 CET 2006 - mvidner@suse.cz
 
 - For NetworkManager, propose basic ifcfgs because of firewall.

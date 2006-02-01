@@ -1330,8 +1330,8 @@ define map FindMatchingDevice(map interface) {
 
 define boolean IsLaptop () {
     boolean ret = nil;
-    map system = (map) SCR::Read (.probe.system);
-    string formfactor = system["formfactor"]:"";
+    list<map> system = (list<map>) SCR::Read (.probe.system);
+    string formfactor = system[0, "formfactor"]:"";
     y2milestone ("Form factor: %1", formfactor);
     if (formfactor != "")	// only since hwinfo-12.0
     {
