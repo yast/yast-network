@@ -225,10 +225,23 @@ global define string DriverType (string type) {
 }
 
 /**
+ * Lan::Read (`cache) will do nothing if initialized already.
+ */
+boolean initialized = false;
+/**
  * Read all network settings from the SCR
+ * @param cache:
+ *  `cache=use cached data,
+ *  `nocache=reread from disk (for reproposal); TODO pass to submodules
  * @return true on success
  */
-global define boolean Read() {
+global define boolean Read (symbol cache) {
+
+    if (cache == `cache && initialized)
+    {
+	y2milestone ("Using cached data");
+	return true;
+    }
 
     /* Read dialog caption */
     string caption = _("Initializing Network Configuration");
@@ -332,7 +345,16 @@ global define boolean Read() {
 
     if(Abort()) return false;
     modified = false;
+    initialized = true;
     return true;
+}
+
+/**
+ * (a specialization used when a parameterless function is needed)
+ * @return Read(`cache)
+ */
+global boolean ReadWithCache () {
+    return Read (`cache);
 }
 
 /**

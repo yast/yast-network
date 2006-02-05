@@ -128,6 +128,7 @@ include "network/runtime.ycp";
  * @return true on success
  */
 global define boolean Read() {
+    symbol cache = `cache;
 
     /* Read dialog caption */
     string caption = _("Initializing DSL Configuration");
@@ -186,7 +187,7 @@ global define boolean Read() {
     ProgressNextStage(_("Reading network card configuration..."));
     if(!proposal_valid) {
 	boolean progress_orig = Progress::set (false);
-	Lan::Read();
+	Lan::Read (cache);
 	Progress::set (progress_orig);
     }
     sleep(sl);

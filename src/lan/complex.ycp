@@ -74,7 +74,7 @@ Safely abort the configuration utility by pressing <B>Abort</B> now.</p>
 
     Wizard::RestoreHelp(help);
     Lan::AbortFunction = ``{return PollAbort();};
-    boolean ret = Lan::Read();
+    boolean ret = Lan::Read (`cache);
     return ret ? `next : `abort;
 }
 

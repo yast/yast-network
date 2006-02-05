@@ -40,7 +40,7 @@ map cmdline = $[
     "help"	: _("Network Card Configuration"),
     "id"	: "lan",
     "guihandler": LanSequence,
-    "initialize": Lan::Read,
+    "initialize": Lan::ReadWithCache,
     "finish"	: Lan::Write,
     "actions"	: $[
 	"list" : $[

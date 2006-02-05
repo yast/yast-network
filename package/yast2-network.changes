@@ -1,3 +1,6 @@
+- Distinguish cached and full Lan::Read so that the dirty bit is
+  not reset when reproposing because of NM change. #147270
+
 -------------------------------------------------------------------
 Wed Feb  1 17:42:54 CET 2006 - mvidner@suse.cz
 

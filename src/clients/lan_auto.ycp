@@ -244,7 +244,7 @@ else if(func == "Import") {
 }
 else if(func == "Read") {
     boolean progress_orig = Progress::set (false);
-    ret = Lan::Read();
+    ret = Lan::Read (`cache);
     Progress::set (progress_orig);
 }
 else if (func == "Packages") {

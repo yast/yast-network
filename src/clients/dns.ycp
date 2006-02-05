@@ -45,7 +45,7 @@ any DNSGUI() {
     Wizard::CreateDialog();
     Wizard::SetDesktopIcon("dns");
     DNS::Read();
-    Lan::Read();
+    Lan::Read(`cache);
 
     Wizard::SetNextButton(`next, Label::FinishButton() );
 
