@@ -1,5 +1,10 @@
+-------------------------------------------------------------------
+Sun Feb  5 17:59:56 CET 2006 - mvidner@suse.cz
+
+- Hide the dialup firewall checkbox when there is no device yet (#146388).
 - Distinguish cached and full Lan::Read so that the dirty bit is
   not reset when reproposing because of NM change. #147270
+- 2.13.21
 
 -------------------------------------------------------------------
 Wed Feb  1 17:42:54 CET 2006 - mvidner@suse.cz
