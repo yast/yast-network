@@ -110,8 +110,10 @@ else if (func == "Write") {
 	y2error("Packages installation failure, not saving");
     }
     else if (Arch::s390 () || Linuxrc::vnc () || Linuxrc::usessh () )
+    {
 	y2milestone ("write only");
 	Lan::WriteOnly();
+    }
     else {
 	Lan::Write();
 	// With a little help from my friends:
