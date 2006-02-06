@@ -2,123 +2,87 @@ default namespace = "http://www.suse.com/1.0/yast2ns"
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 namespace config = "http://www.suse.com/1.0/configns"
 
-remote_ipaddr = element remote_ipaddr { text }
-bootproto = element bootproto { text }
-broadcast = element broadcast { text }
-destination = element destination { text }
-device = element device { text }
-dhclient_set_down_link = element dhclient_set_down_link { text }
-dhcp_hostname =
-  element dhcp_hostname { BOOLEAN }
-dhcp_resolv =
-  element dhcp_resolv { BOOLEAN }
-y2_dns =
-  dhcp_hostname
-  | dhcp_resolv
-  | domain
-  | hostname
-  | nameservers
-  | searchlist
-dns = element dns { y2_dns* }
-domain = element domain { text }
-gateway = element gateway { text }
-hostname = element hostname { text }
-y2_laninterface =
-  remote_ipaddr
-  | bootproto
-  | broadcast
-  | device
-  | dhclient_set_down_link
-  | ipaddr
-  | mtu
-  | ethtool_options
-  | name
-  | netmask
-  | network
-  | startmode
-  | wireless
-  | wireless_auth_mode
-  | wireless_essid
-  | wireless_key
-  | wireless_key_0
-  | wireless_key_1
-  | wireless_key_2
-  | wireless_key_3
-  | wireless_key_length
-  | wireless_mode
-  | wireless_nick
-  | wireless_nwid
-  | wireless_bitrate
-  | wireless_channel
-  | wireless_frequency
-  | wireless_power
-  | ifplugd_priority
-  | usercontrol
-interface = element interface { y2_laninterface* }
+## networking
+networking =
+  element networking {
+    managed? &
+    interfaces &
+    modules? &
+    dhcp_options? &
+    routing? &
+    dns?
+  }
+
+managed =
+  element managed { BOOLEAN }
+
+#
+# INTERFACES
+#
+
 interfaces =
   element interfaces {
     LIST,
     interface+
   }
-ip_forward =
-  element ip_forward { BOOLEAN }
+
+interface =
+  element interface {
+    element device { text }? &	#overloaded
+    element name { text }? &
+
+    bootproto? &
+    startmode? &
+    ifplugd_priority? &
+    usercontrol? &
+
+    # address
+    ipaddr? &
+    remote_ipaddr? &
+    element netmask { text }? &	#overloaded
+    broadcast? &
+    network? &
+
+    # link
+    mtu? &
+    ethtool_options? &
+
+    wireless? &
+    wifi_settings? &
+
+    dhclient_set_down_link?
+  }
+
+remote_ipaddr = element remote_ipaddr { text }
+bootproto = element bootproto { text }
+broadcast = element broadcast { text }
+dhclient_set_down_link = element dhclient_set_down_link { text }
 ipaddr = element ipaddr { text }
 usercontrol = element usercontrol { text }
 mtu = element mtu { text }
 ethtool_options = element ethtool_options { text }
 ifplugd_priority = element ifplugd_priority { text }
-module = element module { text }
-modules =
-  element modules {
-    LIST,
-    module_entry+
-  }
-module_entry = element module_entry { device, module?, options? }
-nameserver = element nameserver { text }
-nameservers =
-  element nameservers {
-    LIST,
-    nameserver+
-  }
-netmask = element netmask { text }
 network = element network { text }
-networking =
-  element networking {
-    dhcp_options? &
-    dns? &
-    interfaces &
-    modules? &
-    routing? &
-    managed?
-  }
-managed =
-  element managed { BOOLEAN }
-dhcp_options =
-  element dhcp_options {
-    dhclient_additional_options?,
-    dhclient_client_id?,
-    dhclient_hostname_option?
-  }
-dhclient_additional_options =
-  element dhclient_additional_options { text }
-dhclient_client_id = element dhclient_client_id { text }
-dhclient_hostname_option = element dhclient_hostname_option { text }
-# <!ELEMENT options (#PCDATA)> : redefined
-route = element route { destination, device, gateway, netmask }
-routes =
-  element routes {
-    LIST,
-    route+
-  }
-routing = element routing { ip_forward?, routes? }
-search = element search { text }
-searchlist =
-  element searchlist {
-    LIST,
-    search+
-  }
 startmode = element startmode { text }
-wireless = element wireless { text }
+wireless = element wireless { text } #?
+
+wifi_settings = (
+  wireless_auth_mode? &
+  wireless_essid? &
+  wireless_key? &
+  wireless_key_0? &
+  wireless_key_1? &
+  wireless_key_2? &
+  wireless_key_3? &
+  wireless_key_length? &
+  wireless_mode? &
+  wireless_nick? &
+  wireless_nwid? &
+  wireless_bitrate? &
+  wireless_channel? &
+  wireless_frequency? &
+  wireless_power?
+)
 wireless_essid = element wireless_essid { text }
 wireless_key = element wireless_key { text }
 wireless_key_1 = element wireless_key_1 { text }
@@ -134,3 +98,90 @@ wireless_bitrate = element wireless_bitrate { text }
 wireless_channel = element wireless_channel { text }
 wireless_frequency = element wireless_frequency { text }
 wireless_power = element wireless_power { text }
+
+#
+# MODULES
+#
+
+modules =
+  element modules {
+    LIST,
+    module_entry+
+  }
+module_entry =
+  element module_entry {
+    element device { text } &	# overloaded
+    element module { text }? &	# likely overloaded
+    element options { text }? 	# overloaded
+  }
+
+#
+# DHCP_OPTIONS
+#
+
+dhcp_options =
+  element dhcp_options {
+    dhclient_additional_options? &
+    dhclient_client_id? &
+    dhclient_hostname_option?
+  }
+dhclient_additional_options = element dhclient_additional_options { text }
+dhclient_client_id = element dhclient_client_id { text }
+dhclient_hostname_option = element dhclient_hostname_option { text }
+
+#
+# ROUTING
+#
+
+routing =
+  element routing {
+    ip_forward? &
+    routes?
+  }
+
+ip_forward = element ip_forward { BOOLEAN }
+
+routes =
+  element routes {
+    LIST,
+    route+
+  }
+route =
+  element route {
+    destination &
+    element netmask { text } &	#overloaded
+    element device { text } &	#overloaded
+    gateway
+  }
+destination = element destination { text }
+gateway = element gateway { text }
+
+
+#
+# DNS (fqdn + resolver)
+#
+dns =
+  element dns {
+    dhcp_hostname ? &
+    dhcp_resolv ? &
+    hostname ? &
+    domain ? &
+    nameservers ? &
+    searchlist ?
+  }
+dhcp_hostname = element dhcp_hostname { BOOLEAN }
+dhcp_resolv = element dhcp_resolv { BOOLEAN }
+hostname = element hostname { text }
+domain = element domain { text }
+nameservers =
+  element nameservers {
+    LIST,
+    nameserver+
+  }
+nameserver = element nameserver { text }
+searchlist =
+  element searchlist {
+    LIST,
+    search+
+  }
+search = element search { text }
