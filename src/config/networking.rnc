@@ -31,6 +31,7 @@ y2_laninterface =
   | dhclient_set_down_link
   | ipaddr
   | mtu
+  | ethtool_options
   | name
   | netmask
   | network
@@ -64,6 +65,7 @@ ip_forward =
 ipaddr = element ipaddr { text }
 usercontrol = element usercontrol { text }
 mtu = element mtu { text }
+ethtool_options = element ethtool_options { text }
 ifplugd_priority = element ifplugd_priority { text }
 module = element module { text }
 modules =
