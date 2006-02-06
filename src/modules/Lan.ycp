@@ -73,6 +73,7 @@ global string netmask = "";
 global string startmode = "auto";
 global boolean usercontrol = false;
 global string mtu = "";
+global string ethtool_options = "";
 
 /* wireless options */
 global string wl_mode = "";
@@ -751,6 +752,8 @@ map<string, string> SysconfigDefaults = $[
     "REMOTE_IPADDR": "",
     "NETMASK": "",
     "MTU": "",
+    "ETHTOOL_OPTIONS": "",
+    "NAME": "",
     "STARTMODE": "manual",
     "USERCONTROL": "no",
     "WIRELESS_MODE": "Managed",
@@ -814,8 +817,10 @@ void SetDeviceVars(map devmap, map defaults) {
     netmask = GetDeviceVar (devmap, defaults, "NETMASK");
 
     mtu = GetDeviceVar (devmap, defaults, "MTU");
+    ethtool_options = GetDeviceVar (devmap, defaults, "ETHTOOL_OPTIONS");
     startmode = GetDeviceVar (devmap, defaults, "STARTMODE");
     usercontrol = GetDeviceVar (devmap, defaults, "USERCONTROL") == "yes";
+    description = GetDeviceVar (devmap, defaults, "NAME");
 
     /* wireless options */
     wl_mode = GetDeviceVar (devmap, defaults, "WIRELESS_MODE");
@@ -1029,6 +1034,7 @@ global define boolean Commit() {
 
 	if(alias == "") {
 	    newdev["MTU"] = mtu;
+	    newdev["ETHTOOL_OPTIONS"] = ethtool_options;
 	    newdev["STARTMODE"] = startmode;
 	    // it is not in Select yet because we don't have a widget for it
 	    if (startmode == "ifplugd")
