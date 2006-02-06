@@ -63,8 +63,7 @@ define boolean ReadInstallInf() {
     ReadInstallInfItem(install_inf, "netdevice", "Netdevice");
     ReadInstallInfItem(install_inf, "gateway", "Gateway");
     ReadInstallInfItem(install_inf, "nameserver", "Nameserver");
-    ReadInstallInfItem(install_inf, "hostname", "Machinename");
-    ReadInstallInfItem(install_inf, "domain", "Domainname");
+    ReadInstallInfItem(install_inf, "hostname", "Hostname");
     ReadInstallInfItem(install_inf, "module", "Alias");
     ReadInstallInfItem(install_inf, "options", "Options");
     ReadInstallInfItem(install_inf, "hwaddr", "HWAddr");
@@ -79,13 +78,11 @@ define boolean ReadInstallInf() {
     }
 
     /* Split FQ hostname */
-    string domain = InstallInf["domain"]:"";
     string hostname = InstallInf["hostname"]:"";
-    if(hostname != "") {
+    if(hostname != "" && !IP::Check (hostname)) {
 	list split = Hostname::SplitFQ(hostname);
 	InstallInf["hostname"] = split[0]:hostname;
-	if(domain == "")
-	    InstallInf["domain"] = split[1]:"";
+	InstallInf["domain"] = split[1]:"";
     }
 
     // FIXME: alias = eth0 tulip

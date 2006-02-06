@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Feb  6 11:06:42 CET 2006 - mvidner@suse.cz
+
+- Use Hostname instead of Machinename from install.inf (#144687)
+
+-------------------------------------------------------------------
 Sun Feb  5 17:59:56 CET 2006 - mvidner@suse.cz
 
 - Hide the dialup firewall checkbox when there is no device yet (#146388).
