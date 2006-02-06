@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
-Mon Feb  6 11:06:42 CET 2006 - mvidner@suse.cz
+Mon Feb  6 14:12:08 CET 2006 - mvidner@suse.cz
 
+- Added ETHTOOL_OPTIONS (so far for autoyast only, uses also
+  install.inf) (#145041).
 - Use Hostname instead of Machinename from install.inf (#144687)
 
 -------------------------------------------------------------------

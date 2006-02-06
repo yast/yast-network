@@ -1534,6 +1534,9 @@ global define boolean ProposeInterfaces () {
 // - autoyast
     SetDefaultsForHW ();
 
+    // #145041
+    ethtool_options = InstallInf["ethtool_options"]:"";
+
     ipaddr = InstallInf["ipaddr"]:"";
     bootproto = InstallInf["bootproto"]:"static";
     y2debug("ipaddr,bootproto=%1,%2", ipaddr, bootproto);
