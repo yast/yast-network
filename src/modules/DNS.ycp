@@ -117,7 +117,7 @@ global define boolean Read() {
     /* hostname and domain */
     // prefer /etc/install.inf
     // (because HOSTNAME comes with netcfg.rpm already, #144687)
-    string fqhostname = install_inf["Hostname"]; // Machinename never existed??
+    string fqhostname = install_inf["Hostname"]:""; // Machinename never existed??
     // if the name is actually an IP only, we discard it too
     if (IP::Check (fqhostname))
     {

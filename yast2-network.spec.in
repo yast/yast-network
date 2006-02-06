@@ -1,7 +1,14 @@
 @HEADER-COMMENT@
 
 @HEADER@
-BuildRequires:	yast2-country yast2-devel-packages yast2-installation
+# should be required by devtools
+BuildRequires: pkgconfig perl-XML-Writer
+BuildRequires: update-desktop-files
+BuildRequires: yast2-devtools yast2-testsuite yast2
+# yast2-devel-packages should be obsoleted by the above in this
+# case, but update-desktop-files fails
+BuildRequires: yast2-devel-packages
+BuildRequires: yast2-country yast2-installation
 # carrier detection
 Requires:	yast2-core >= 2.10.6
 # NetworkService::SetManaged

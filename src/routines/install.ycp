@@ -14,6 +14,7 @@
 textdomain "network";
 
 import "Hostname";
+import "IP";
 import "NetworkDevices";
 
 /**
