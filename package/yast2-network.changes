@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Feb  7 11:33:04 CET 2006 - mvidner@suse.cz
+
+- Skip the internet test when there are no interfaces (#148005).
+
+-------------------------------------------------------------------
 Mon Feb  6 14:12:08 CET 2006 - mvidner@suse.cz
 
 - Added ETHTOOL_OPTIONS (so far for autoyast only, uses also

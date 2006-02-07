@@ -29,7 +29,10 @@ if (Mode::update ())
 
 /* Nothing to test */
 if(!Internet::FindFastest())
+{
+    Internet::do_test = false;
     return `auto;
+}
 
 return TestStepsDialog();
 
