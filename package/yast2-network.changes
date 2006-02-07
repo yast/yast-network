@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Feb  7 20:27:26 CET 2006 - mvidner@suse.cz
+
+- Don't disable important widgets if NetworkManager is enabled (#148485).
+- 2.13.24
+
+-------------------------------------------------------------------
 Tue Feb  7 17:35:18 CET 2006 - mvidner@suse.cz
 
 - Allow to configure the network cards even if NetworkManager is

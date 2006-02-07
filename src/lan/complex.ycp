@@ -275,15 +275,6 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
 	    overview = overview + Lan::Unconfigured ();
 	    y2debug("overview=%1",overview);
 	    WizardHW::SetContents (overview);
-	    if (NetworkService::IsManaged ())
-	    {
-		foreach (symbol s, [`add, `edit, `delete, `_hw_items], {
-		    UI::ChangeWidget (`id (s), `Enabled, false);
-		});
-	    }
-	    foreach (symbol s, [`add, `_hw_items], {
-		UI::ChangeWidget (`id (s), `Enabled, ! NetworkService::IsManaged ());
-	    });
 	    repaint = false;
 	}
 
