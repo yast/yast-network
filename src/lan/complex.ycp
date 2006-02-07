@@ -180,7 +180,8 @@ or need to use multiple interfaces at once.</p>
 	    "next_button" : Label::NextButton (),
 	    "fallback_functions" : functions,
 	    ]);
-    if (ret == `next && NetworkService::IsManaged ())
+    // #148485: always show the device overview
+    if (false && ret == `next && NetworkService::IsManaged ())
     {
 	ret = `managed;
     }

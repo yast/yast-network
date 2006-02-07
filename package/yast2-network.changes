@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
-Tue Feb  7 11:33:04 CET 2006 - mvidner@suse.cz
+Tue Feb  7 17:35:18 CET 2006 - mvidner@suse.cz
 
+- Allow to configure the network cards even if NetworkManager is
+  enabled (#148485).
 - Skip the internet test when there are no interfaces (#148005).
 
 -------------------------------------------------------------------

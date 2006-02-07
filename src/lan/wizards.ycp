@@ -118,10 +118,8 @@ define symbol MainSequence (string mode) ``{
 
     string start = "managed";
     // the NM decision is already present in the proposal.
-    // if NM is enabled, we present it anyway
-    // to give a possiblity to switch back
-    // but if NM is disabled, we proceed to interface overview
-    if (mode == "proposal" && !NetworkService::IsManaged ())
+    // see also #148485
+    if (mode == "proposal")
     {
 	start = "overview";
     }
@@ -130,7 +128,7 @@ define symbol MainSequence (string mode) ``{
 	"managed" : $[
 	    `abort	: `abort,
 	    `next	: "overview",
-	    `managed	: `next,
+	    `managed	: `next, // unused
 	    ],
 	"overview" : $[
 	    `abort	: `abort,
