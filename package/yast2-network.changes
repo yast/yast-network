@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Feb 17 14:43:09 CET 2006 - mvidner@suse.cz
+
+- Changed the warning for the binary-only AVM driver (#151148).
+
+-------------------------------------------------------------------
 Tue Feb  7 20:27:26 CET 2006 - mvidner@suse.cz
 
 - Don't disable important widgets if NetworkManager is enabled (#148485).
