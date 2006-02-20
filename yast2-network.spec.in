@@ -5,14 +5,11 @@
 BuildRequires: pkgconfig perl-XML-Writer
 BuildRequires: update-desktop-files
 BuildRequires: yast2-devtools yast2-testsuite yast2
-# yast2-devel-packages should be obsoleted by the above in this
-# case, but update-desktop-files fails
-BuildRequires: yast2-devel-packages
 BuildRequires: yast2-country yast2-installation
 # carrier detection
 Requires:	yast2-core >= 2.10.6
-# NetworkService::SetManaged
-Requires:	yast2 >= 2.13.24
+# Arch::is_laptop
+Requires:	yast2 >= 2.13.31
 Requires:	sysconfig yast2-country yast2-inetd yast2-packager
 PreReq:		/bin/rm
 

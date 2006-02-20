@@ -1,7 +1,12 @@
 -------------------------------------------------------------------
-Fri Feb 17 14:43:09 CET 2006 - mvidner@suse.cz
+Mon Feb 20 16:23:04 CET 2006 - mvidner@suse.cz
 
+- Using the DHCP hostname:
+  hostname dialog proposes it on non-laptops
+  network proposal must not override earlier user choice (#152029)
+  function moved to Arch (#151813)
 - Changed the warning for the binary-only AVM driver (#151148).
+- 2.13.25
 
 -------------------------------------------------------------------
 Tue Feb  7 20:27:26 CET 2006 - mvidner@suse.cz

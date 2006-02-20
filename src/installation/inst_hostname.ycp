@@ -11,8 +11,10 @@
 
 textdomain "network";
 
+import "Arch";
 import "DNS";
 import "GetInstArgs";
+import "NetworkConfig";
 
 include "network/services/dns.ycp";
 
@@ -23,8 +25,9 @@ include "network/services/dns.ycp";
 
 DNS::Read ();			// handles NetworkConfig too
 
-// TODO: policy for proposing a hostname, probably in a client
-// preceding this one
+// propose settings
+NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = ! Arch::is_laptop ();
+// TODO: policy for proposing a hostname
 
 symbol ret = HostnameDialog ();
 

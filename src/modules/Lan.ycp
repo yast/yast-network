@@ -1356,22 +1356,6 @@ define map FindMatchingDevice(map interface) {
 }
 
 
-define boolean IsLaptop () {
-    boolean ret = nil;
-    list<map> system = (list<map>) SCR::Read (.probe.system);
-    string formfactor = system[0, "formfactor"]:"";
-    y2milestone ("Form factor: %1", formfactor);
-    if (formfactor != "")	// only since hwinfo-12.0
-    {
-	ret = formfactor == "laptop";
-    }
-    else
-    {
-	ret = SCR::Read (.probe.has_pcmcia) == true; // any -> bool
-    }
-    return ret;
-}
-
 /**
  * Uses product info and is subject to installed packages.
  * @return Should NM be enabled?
@@ -1391,7 +1375,7 @@ define boolean UseNetworkManager () {
     }
     else if (nm_feature == "laptop")
     {
-	nm_default = IsLaptop ();
+	nm_default = Arch::is_laptop ();
 	y2milestone ("Is a laptop: %1", nm_default);
     }
     else // nm_feature == "never"
@@ -1571,7 +1555,6 @@ global define boolean ProposeInterfaces () {
 	    y2milestone("DHCP proposal");
 	    ipaddr = "";
 	    bootproto = "dhcp";
-	    NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = true;
 	}
     }
 
