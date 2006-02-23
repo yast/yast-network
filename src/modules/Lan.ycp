@@ -1106,6 +1106,10 @@ global define boolean Commit() {
 			if (qeth_layer2 && qeth_macaddress != "00:00:00:00:00:00") {
 			    newdev["LLADDR"] = qeth_macaddress;
 			}
+			else {
+			    // #151196: layer 3 otherwise fails
+			    newdev["LLADDR"] = "";
+			}
 		    }
 
 		}

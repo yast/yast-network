@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Feb 23 09:22:33 CET 2006 - mvidner@suse.cz
+
+- When switching from Layer 2 to Layer 3, LLADDR must be emptied (#151196).
+
+-------------------------------------------------------------------
 Mon Feb 20 16:23:04 CET 2006 - mvidner@suse.cz
 
 - Using the DHCP hostname:
