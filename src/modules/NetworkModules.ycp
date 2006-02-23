@@ -258,8 +258,10 @@ global define boolean Write(string devregex) {
     SCR::Write(.sysconfig.hardware, nil);
 
     /* modules which have to be brought up
-       because they have been added or changed */
-    list toup = MapMinus (Mods, OriginalMods);
+       All of them, because downing a hwcfg unloads the module but
+       it but it might be needed by another interface
+       with an unchanged hwcfg - #136298 */
+    list toup = Map::Keys (Mods);
     foreach (string up, (list<string>)toup, {
 	y2milestone ("hwup %1", up);
 	SCR::Execute (.target.bash, "/sbin/hwup " + up);
@@ -517,6 +519,7 @@ global define list List(string devregex) {
 
 /**
  * Call HwUp for hardware that is not handled by hotplug (#44626)
+ * Probably obsoleted by the code in Write
  */
 global boolean HwUp () {
     boolean ok = true;

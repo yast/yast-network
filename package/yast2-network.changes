@@ -1,6 +1,9 @@
 -------------------------------------------------------------------
-Thu Feb 23 10:50:17 CET 2006 - mvidner@suse.cz
+Thu Feb 23 18:10:28 CET 2006 - mvidner@suse.cz
 
+- Hwup all hwcfgs, not just the changed ones, so that we get back
+  modules that were unloaded because of deconfigured devices but are
+  still needed (#136298).
 - Autoyast: Allow matching by MAC, bus id and module for second and
   subsequent interfaces (#119592#c9), improved not to break when
   specifying two devices with the same module (#146965).
