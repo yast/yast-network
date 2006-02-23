@@ -1,6 +1,9 @@
 -------------------------------------------------------------------
-Thu Feb 23 09:22:33 CET 2006 - mvidner@suse.cz
+Thu Feb 23 10:50:17 CET 2006 - mvidner@suse.cz
 
+- Autoyast: Allow matching by MAC, bus id and module for second and
+  subsequent interfaces (#119592#c9), improved not to break when
+  specifying two devices with the same module (#146965).
 - When switching from Layer 2 to Layer 3, LLADDR must be emptied (#151196).
 
 -------------------------------------------------------------------

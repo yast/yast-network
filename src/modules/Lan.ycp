@@ -1237,6 +1237,11 @@ define map GetModuleForInterface(string ay_device ,
  */
 define map FindMatchingDevice(map interface) {
     map tosel = nil;
+    // Minimal changes to code to fix both #119592 and #146965
+    // Alternatively we could try to ensure that we never match a
+    // device that got already matched
+    boolean matched_by_module = false;
+
     list<string> devs = NetworkDevices::List("netcard");
     y2milestone("Configured devices: %1", devs );
 
@@ -1283,6 +1288,10 @@ define map FindMatchingDevice(map interface) {
             if(aymodule != nil && aymodule["module"]:"" != "") {
                 tosel = find (map h, Hardware, ``( h["module"]:"" == aymodule["module"]:"" ));
             }
+	    if (tosel != nil)
+	    {
+		matched_by_module = true;
+	    }
             y2milestone("Rule: matching module configuration");
         }
     }
@@ -1291,22 +1300,27 @@ define map FindMatchingDevice(map interface) {
     // a second (third,...) one
     if (size(devs) > 0 )
     {
-	// go thru all devices, check whether there's one that does
-	// not have a configuration yet
-	// and has the same type as the current profile item
-	foreach (map h, Hardware, {
-            y2milestone("Checking for device=%1", h);
-            SelectHWMap(h);
-            string _device_name = NetworkDevices::device_name(NetworkDevices::RealType(type, hotplug), device);
-            if (!NetworkDevices::Check(_device_name) &&
-                type == NetworkDevices::device_type(interface["device"]:"")
-                )
-            {
-                y2milestone("Selected: %1", h );
-                tosel = h;
-                break;
-            }
-        });
+        // #119592, #146965: this used to be unconditional, overwriting the
+        // results of the above matching.	
+	if (matched_by_module || tosel == nil)
+	{
+	    // go thru all devices, check whether there's one that does
+	    // not have a configuration yet
+	    // and has the same type as the current profile item
+	    foreach (map h, Hardware, {
+		y2milestone("Checking for device=%1", h);
+		SelectHWMap(h);
+		string _device_name = NetworkDevices::device_name(NetworkDevices::RealType(type, hotplug), device);
+		if (!NetworkDevices::Check(_device_name) &&
+		    type == NetworkDevices::device_type(interface["device"]:"")
+		    )
+		{
+		    y2milestone("Selected: %1", h );
+		    tosel = h;
+		    break;
+		}
+	    });
+	}
         if (tosel == nil )
         {
             y2error("Nothing found");
