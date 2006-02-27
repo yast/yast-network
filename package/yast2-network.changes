@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb 27 15:03:27 CET 2006 - mvidner@suse.cz
+
+- XenU: do not filter out the network device (#153235).
+- 2.13.27
+
+-------------------------------------------------------------------
 Thu Feb 23 18:10:28 CET 2006 - mvidner@suse.cz
 
 - Hwup all hwcfgs, not just the changed ones, so that we get back

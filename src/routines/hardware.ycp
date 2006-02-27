@@ -295,8 +295,10 @@ define list<map> ReadHardware(string hwtype) {
 	    
 	    if (drivers == [])
 	    {
-		y2milestone ("All drivers are marked as broken");
-		card_ok = false;
+		y2milestone ("No good drivers found");
+		// #153235
+		// fail, unless we are in xen (it has the driver built in)
+		card_ok = Arch::is_xenU ();
 	    }
 	    else
 	    {
