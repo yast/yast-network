@@ -86,6 +86,11 @@ define boolean ReadInstallInf() {
 	InstallInf["hostname"] = split[0]:hostname;
 	InstallInf["domain"] = split[1]:"";
     }
+    else
+    {
+	// do not have numeric hostname, #152218
+	InstallInf["hostname"] = "";
+    }
 
     // FIXME: alias = eth0 tulip
     // FIXME: options = ne io=0x200

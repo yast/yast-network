@@ -33,6 +33,8 @@ symbol ret = HostnameDialog ();
 
 if (ret == `next)
 {
+    // do not let Lan override us, #152218
+    DNS::proposal_valid = true;
     DNS::Write ();		// handles NetworkConfig too
 }
 

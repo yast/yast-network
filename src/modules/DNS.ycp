@@ -27,6 +27,11 @@ import "Service";
 include "network/runtime.ycp";
 
 /**
+ * Should the hostname be proposed? #152218
+ */
+global boolean proposal_valid = false;
+
+/**
  * Short Hostname
  */
 global string hostname = "";
@@ -115,6 +120,8 @@ global define boolean Read() {
     }
 
     /* hostname and domain */
+    // all this is much too intelligent and belongs rather to the proposal
+
     // prefer /etc/install.inf
     // (because HOSTNAME comes with netcfg.rpm already, #144687)
     string fqhostname = install_inf["Hostname"]:""; // Machinename never existed??

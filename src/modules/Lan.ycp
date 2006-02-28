@@ -1585,6 +1585,46 @@ global define boolean ProposeInterfaces () {
 }
 
 /**
+ * Propose the hostname
+ * See also DNS::Read
+ * @return true if something was proposed
+ */
+define boolean ProposeHostname () {
+    if (DNS::proposal_valid)
+    {
+	// the standalone hostname dialog did the job already
+	return false;
+    }
+
+    /* propose resolver setup from /etc/install.inf */
+    string hn = InstallInf["hostname"]:"";
+    string dn = InstallInf["domain"]:"";
+
+    /* try to get hostname from the network */
+    if(hn == "") {
+	string hnent = Detection::ResolveIP(ipaddr);
+	y2debug("%1", hnent);
+	list hnsplit = Hostname::SplitFQ(hnent);
+	hn = hnsplit[0]:hn;
+	y2debug("%1", hn);
+	hnent = hnsplit[1]:"";
+	if(hnent != "" && hnent != nil)
+	    dn = hnent;
+	y2debug("hn=%1", hn);
+	y2debug("dn=%1", dn);
+    }
+
+    if(hn != "" && hn != nil) {
+	if(dn != "" && dn != nil)
+	    DNS::domain = dn;
+	DNS::hostname = hn;
+	DNS::modified = true;
+    }
+
+    return true;    
+}
+
+/**
  * Propose configuration for routing and resolver
  * @return true if something was proposed
  */
@@ -1601,34 +1641,12 @@ global define boolean ProposeRoutesAndResolver () {
 	    ] ];
 	}
 
-	/* propose DNS setup from /etc/install.inf */
-	string ns = InstallInf["nameserver"]:"";
-	string hn = InstallInf["hostname"]:"";
-	string dn = InstallInf["domain"]:"";
-
-	/* try to get hostname from the network */
-	if(hn == "") {
-	    string hnent = Detection::ResolveIP(ipaddr);
-	    y2debug("%1", hnent);
-	    list hnsplit = Hostname::SplitFQ(hnent);
-	    hn = hnsplit[0]:hn;
-	    y2debug("%1", hn);
-	    hnent = hnsplit[1]:"";
-	    if(hnent != "" && hnent != nil)
-		dn = hnent;
-	    y2debug("hn=%1", hn);
-	    y2debug("dn=%1", dn);
-	}
+	ProposeHostname ();
 
 	/* commit the DNS setup */
+	string ns = InstallInf["nameserver"]:"";
 	if(ns != "" && ns != nil) {
 	    DNS::nameservers = [ ns ];
-	    DNS::modified = true;
-	}
-	if(hn != "" && hn != nil) {
-	    if(dn != "" && dn != nil)
-		DNS::domain = dn;
-	    DNS::hostname = hn;
 	    DNS::modified = true;
 	}
     }
