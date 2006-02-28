@@ -2,6 +2,7 @@
 Tue Feb 28 11:43:18 CET 2006 - mvidner@suse.cz
 
 - Do not use the IP for the hostname (#152218).
+- 2.13.28
 
 -------------------------------------------------------------------
 Mon Feb 27 15:03:27 CET 2006 - mvidner@suse.cz
