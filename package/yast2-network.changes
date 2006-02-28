@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Feb 28 17:17:54 CET 2006 - mvidner@suse.cz
+
+- Do not allow the USB speed to enter the provider file (#148893).
+
+-------------------------------------------------------------------
 Tue Feb 28 11:43:18 CET 2006 - mvidner@suse.cz
 
 - Do not use the IP for the hostname (#152218).

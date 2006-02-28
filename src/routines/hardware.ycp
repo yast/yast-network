@@ -248,7 +248,15 @@ define list<map> ReadHardware(string hwtype) {
 	if(controller == "modem") {
 	    one["device_name"] = card["dev_name"]:"";
 	    one["drivers"] = card["drivers"]:[];
-	    one["speed"] = resource["baud", 0, "speed"]:57600;
+	    integer speed = resource["baud", 0, "speed"]:57600;
+	    // :-) have to check .probe and libhd if this confusion is
+	    // really necessary. maybe a pppd bug too? #148893
+	    if (speed == 12000000)
+	    {
+		speed = 57600;
+		y2milestone ("Driving faster than light is prohibited on this planet.");
+	    }
+	    one["speed"] = speed;
 	    one["init1"] = resource["init_strings", 0, "init1"]:"";
 	    one["init2"] = resource["init_strings", 0, "init2"]:"";
 	    one["pppd_options"] = resource["pppd_option", 0, "option"]:"";
