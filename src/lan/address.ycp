@@ -390,7 +390,6 @@ firewalled interfaces exist, the firewall
 will stay enabled but all traffic will be blocked for this
 interface. If you do not select a zone and no others exist, 
 the firewall will be disabled.</p>"),
-	"items": SuSEFirewall4Network::FirewallZonesComboBoxItems (),
 	],
     "MANDATORY": $[
 	"widget": `checkbox,
@@ -757,6 +756,8 @@ Components of this product might not work with DHCP.</p>");
     wd["IFCFGID", "items"] = [[settings["IFCFGID"]:"",
 			       settings["IFCFGID"]:""]];
 //    wd["BINDTOHW", "items"] = ...;
+    wd["FWZONE", "items"] = SuSEFirewall4Network::FirewallZonesComboBoxItems();
+
     term label = `HBox (
 	    `HSpacing(0.5),
 	    // The combo is a hack to allow changing misdetected
