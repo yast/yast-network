@@ -66,13 +66,11 @@ if(!Mode::test ())
     already_up = Internet::Status();
 
 
-/* Progress step 1/4 */
+/* Progress step 1/3 */
 string l1 = _("Connecting to Internet...");
-/* Progress step 2/4 */
+/* Progress step 2/3 */
 string l2 = _("Downloading the latest release notes...");
-/* Progress step 3/4 */
-string l3 = _("Checking for latest updates...");
-/* Progress step 4/4 */
+/* Progress step 3/3 */
 string l4 = _("Closing connection...");
 
 
@@ -129,8 +127,6 @@ and correct the settings.</p>
 	    progress = add(progress, `Left(`HBox(`Heading(`id(`s1), dash), `Label(l1))));
 	if(true)
 	    progress = add(progress, `Left(`HBox(`Heading(`id(`s2), dash), `Label(l2))));
-	if(Product::run_you)
-	    progress = add(progress, `Left(`HBox(`Heading(`id(`s3), dash), `Label(l3))));
 	if(!already_up)
 	    progress = add(progress, `Left(`HBox(`Heading(`id(`s4), dash), `Label(l4))));
 
@@ -440,7 +436,7 @@ the logs for details.
 		Popup::Message(_("Download of latest release notes failed. View
 the logs for details.
 "));
-		test_stage = `patches;
+		test_stage = `close;
 		test_result = `failure;
 		mark_label(2, `dash);
 	    }
@@ -623,6 +619,7 @@ the logs for details.
     }
 
 
+/* Removed due to integration of suse_register
     if (ret == `next)
     {
 	if (we_have_patches)
@@ -630,7 +627,7 @@ the logs for details.
 	else
 	    Internet::do_you = false;
     }
-
+*/
     return (symbol) ret;
 
 /* EOF */
