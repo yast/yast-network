@@ -450,7 +450,8 @@ the logs for details.
 		mark_label(2, `check);
 	    }
 
-	    test_stage = `patches;
+	    // we don't check for patches anymore
+	    test_stage = `close;
 	    return;
 	}
 
