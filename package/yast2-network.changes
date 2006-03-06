@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Mar  2 11:29:17 CET 2006 - mvidner@suse.cz
+
+- Autoyast: use linuxrc data for routing, resolver and hostname if
+  not specified in the profile (#153426, improving the #117484 fix).
+- 2.13.30
+
+-------------------------------------------------------------------
 Thu Mar  2 10:12:25 CET 2006 - visnov@suse.cz
 
 - don't check available updates in internet connection test
