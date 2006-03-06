@@ -1735,12 +1735,12 @@ global define boolean Autoinstall() {
 	y2milestone ("gateway from install.inf");
 	Routing::ReadFromGateway (InstallInf["gateway"]:"");
     }
-    if (autoinstall_settings["nameservers"]:[] == [])
+    if (autoinstall_settings["dns", "nameservers"]:[] == [])
     {
 	y2milestone ("nameserver from install.inf");
 	DNS::ReadNameserver (InstallInf["nameserver"]:"");
     }
-    if (autoinstall_settings["hostname"]:"" == "")
+    if (autoinstall_settings["dns", "hostname"]:"" == "")
     {
 	ProposeHostname ();
     }
