@@ -6,7 +6,7 @@ SUBDIRS = autodocs # files hwinfo
 
 htmldir = $(docdir)
 
-doc_DATA = 
+doc_DATA = autoinst
 html_DATA = todo.html $(wildcard *.html)
 
 todo.html: Todo.txt
