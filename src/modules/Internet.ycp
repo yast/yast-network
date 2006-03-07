@@ -26,6 +26,11 @@ include "network/routines.ycp";
 global boolean do_test = true;
 
 /**
+ * Flag to remember if user wants to run suse register
+ */
+global boolean suse_register = true;
+
+/**
  * Flag to remember if you should be started
  */
 global boolean do_you = false;

@@ -32,8 +32,14 @@ if(GetInstArgs::going_back())
    return `auto;
 
 if(!Internet::do_test)
+{
+    // no internet test - no suse register
+    // suse register then only informs about its existence
+    Internet::suse_register = false;
     return `auto;
+}
 
+Internet::suse_register = true;
 
 boolean we_have_patches = false;
 
@@ -619,15 +625,18 @@ the logs for details.
     }
 
 
-/* Removed due to integration of suse_register
     if (ret == `next)
     {
 	if (we_have_patches)
-	    AskYOUDialog ();
+	{
+        Internet::do_you = true;
+        // Removed due to integration of suse_register
+        // AskYOUDialog ();
+    }
 	else
 	    Internet::do_you = false;
     }
-*/
+
     return (symbol) ret;
 
 /* EOF */
