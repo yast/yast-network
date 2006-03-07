@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Mar  8 00:56:01 CET 2006 - jsrain@suse.de
+
+- reverted changes between 2.13.29 and 2.13.31
+- 2.13.33
+
+-------------------------------------------------------------------
 Tue Mar  7 22:54:38 CET 2006 - jdsn@suse.de
 
 - added global variable for suse register 

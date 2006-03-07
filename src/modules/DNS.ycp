@@ -57,36 +57,6 @@ string oldhostname = "";
  */
 global boolean modified = false;
 
-
-/**
- * Use the parameter, coming usually from install.inf, if it is defined.
- * Used when there is nothing better.
- * @param ns ip of the nameserver
- * @return true if success
- */
-global define boolean ReadNameserver (string ns) {
-    if (ns == "" || ns == nil)
-	return false;
-    nameservers = [ ns ];
-    modified = true;
-    return true;
-}
-
-/**
- * Use this host and domain name, if they are defined
- * @param hn hostname
- * @param dn domain name
- * @return true if the hostname has been assigned
- */
-global define boolean ReadHostDomain (string hn, string dn) {
-    if (hn == "" || hn == nil || dn == nil)
-	return false;
-    hostname = hn;
-    domain = dn;
-    modified = true;
-    return true;
-}
-
 /**
  * resolver config file location
  */
@@ -113,7 +83,6 @@ global define boolean Read() {
     map install_inf = $[];
     if(SCR::Read(.target.size, "/etc/install.inf") > 0)
 	install_inf = (map) SCR::Read(.etc.install_inf);
-    // bogus?!
     y2milestone ("install.inf: %1", install_inf);
 
     /* check for externally modified resolv.conf */
@@ -130,7 +99,8 @@ global define boolean Read() {
 	/* name servers */
 	list<string> resolvlist = (list<string>) SCR::Read(.etc.resolv_conf.nameserver);
 	if(resolvlist == nil) {
-	    ReadNameserver (install_inf["Nameserver"]:"");
+	    if(size(install_inf["Nameserver"]:"") > 0)
+		nameservers = add(nameservers, install_inf["Nameserver"]:"");
 	}
 	else
 	    nameservers = resolvlist;

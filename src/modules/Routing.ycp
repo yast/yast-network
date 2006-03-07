@@ -61,24 +61,6 @@ global define boolean Modified() {
 }
 
 /**
- * Set the routes to contain only the default route, if it is defined.
- * Used when there is nothing better.
- * @param gw ip of the default gateway
- * @return true if success
- */
-global define boolean ReadFromGateway (string gw) {
-    if (gw == "" || gw == nil)
-	return false;
-    Routes = [ $[
-		   "destination"       : "default",
-		   "gateway"           : gw,
-		   "netmask"           : "-",
-		   "device"            : "-"
-		   ] ];
-    return true;
-}
-
-/**
  * Read routing settings
  * If no routes, sets a default gateway from Detection
  * @return true if success
@@ -107,7 +89,14 @@ global define boolean Read() {
     devices = NetworkDevices::List("");
 
     if(Routes == []) {
-	ReadFromGateway (Detection::result["GATEWAY"]:"");
+	string gw = Detection::result["GATEWAY"]:"";
+	if(gw != "" && gw != nil)
+	    Routes = [ $[
+		"destination"       : "default",
+		"gateway"           : gw,
+		"netmask"           : "-",
+		"device"            : "-"
+	    ] ];
     }
 
     return true;
