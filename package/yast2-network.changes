@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar  7 14:37:48 CET 2006 - mvidner@suse.cz
+
+- Load network modules before determining the interface used for the
+  installation source (#116537).
+- 2.13.31
+
+-------------------------------------------------------------------
 Thu Mar  2 11:29:17 CET 2006 - mvidner@suse.cz
 
 - Autoyast: use linuxrc data for routing, resolver and hostname if
