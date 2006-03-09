@@ -746,6 +746,10 @@ global define void SetDefaultsForHW () {
     }    
 }
 
+/**
+ * the defaults here are what sysconfig defaults to
+ * (as opposed to what a new interface gets, in @ref Select)
+ */
 map<string, string> SysconfigDefaults = $[
     "BOOTPROTO": "static",
     "IPADDR": "",
@@ -807,9 +811,6 @@ string GetDeviceVar (map primary, map fallback, string key) {
  * @return void
  */
 void SetDeviceVars(map devmap, map defaults) {
-    // the defaults here are what sysconfig defaults to
-    // (as opposed to what a new interface gets, see Select)
-
     /* address options */
     bootproto = GetDeviceVar (devmap, defaults, "BOOTPROTO");
     ipaddr = GetDeviceVar (devmap, defaults, "IPADDR");
@@ -876,14 +877,21 @@ void SetDeviceVars(map devmap, map defaults) {
 global define boolean Select(string dev) {
 
     y2debug("dev=%1", dev);
-    // defaults for a new device
-    map devmap = $[
-	"STARTMODE": "ifplugd",	// #115448
-	"NETMASK": (Detection::result["NETMASK"]:"255.255.255.0"), // #31369
-	];
-
+    map devmap = $[];
     /* dev=="" -> Add */
     if(dev == "") {
+	// defaults for a new device
+	devmap = $[
+	    "STARTMODE": "auto",	// #115448, #156388
+	    "NETMASK": (Detection::result["NETMASK"]:"255.255.255.0"), // #31369
+	    ];
+	string product_startmode = ProductFeatures::GetStringFeature ("network", "startmode");
+	if (contains (["auto", "ifplugd"], product_startmode))
+	{
+	    y2milestone ("Product startmode: %1", product_startmode);
+	    devmap["STARTMODE"] = product_startmode;
+	}
+
 	type = "eth";
 	device = NetworkDevices::GetFreeDevice(type);
 

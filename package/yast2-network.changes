@@ -1,9 +1,12 @@
 -------------------------------------------------------------------
-Thu Mar  9 13:47:47 CET 2006 - mvidner@suse.cz
+Thu Mar  9 17:17:56 CET 2006 - mvidner@suse.cz
 
+- Take the default STARTMODE from the product control file,
+  allowing not to have ifplugd get in the way on SLES (#156388).
 - Merged proofread texts.
 - Reapplied the changes between 2.13.29 and 2.13.31 (discarding
   2.13.33) as they were unrelated to #156054.
+- 2.13.34
 
 -------------------------------------------------------------------
 Wed Mar  8 00:56:01 CET 2006 - jsrain@suse.de
