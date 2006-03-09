@@ -1596,29 +1596,16 @@ define boolean ProposeHostname () {
 	return false;
     }
 
-    /* propose resolver setup from /etc/install.inf */
-    string hn = InstallInf["hostname"]:"";
-    string dn = InstallInf["domain"]:"";
-
-    /* try to get hostname from the network */
-    if(hn == "") {
+    y2milestone ("hostname from install.inf");
+    if (! DNS::ReadHostDomain (InstallInf["hostname"]:"",
+			       InstallInf["domain"]:""))
+    {
+	y2milestone ("hostname from dns");
+	/* try to get hostname from the network */
 	string hnent = Detection::ResolveIP(ipaddr);
-	y2debug("%1", hnent);
 	list hnsplit = Hostname::SplitFQ(hnent);
-	hn = hnsplit[0]:hn;
-	y2debug("%1", hn);
-	hnent = hnsplit[1]:"";
-	if(hnent != "" && hnent != nil)
-	    dn = hnent;
-	y2debug("hn=%1", hn);
-	y2debug("dn=%1", dn);
-    }
 
-    if(hn != "" && hn != nil) {
-	if(dn != "" && dn != nil)
-	    DNS::domain = dn;
-	DNS::hostname = hn;
-	DNS::modified = true;
+	DNS::ReadHostDomain (hnsplit[0]:"", hnsplit[1]:"");
     }
 
     return true;    
@@ -1631,24 +1618,11 @@ define boolean ProposeHostname () {
 global define boolean ProposeRoutesAndResolver () {
     if(bootproto == "static" && ipaddr != "" && ipaddr != nil) {
 	/* propose default gateway from /etc/install.inf */
-	string gw = InstallInf["gateway"]:"";
-	if(gw != "" && gw != nil) {
-	    Routing::Routes = [ $[
-		"destination"       : "default",
-		"gateway"           : gw,
-		"netmask"           : "-",
-		"device"            : "-"
-	    ] ];
-	}
+	Routing::ReadFromGateway (InstallInf["gateway"]:"");
 
+	/* propose DNS setup from /etc/install.inf */
+	DNS::ReadNameserver (InstallInf["nameserver"]:"");
 	ProposeHostname ();
-
-	/* commit the DNS setup */
-	string ns = InstallInf["nameserver"]:"";
-	if(ns != "" && ns != nil) {
-	    DNS::nameservers = [ ns ];
-	    DNS::modified = true;
-	}
     }
     return true;
 }
@@ -1752,6 +1726,23 @@ global define boolean Autoinstall() {
     {
         y2milestone ("no interface configuration, taking it from install.inf");
         ProposeInterfaces ();
+    }
+
+    // #153426 - using ProposeInterfaces instead of Propose omitted these
+    // if they are nonempty, Import has already taken care of them.
+    if (autoinstall_settings["routing", "routes"]:[] == [])
+    {
+	y2milestone ("gateway from install.inf");
+	Routing::ReadFromGateway (InstallInf["gateway"]:"");
+    }
+    if (autoinstall_settings["dns", "nameservers"]:[] == [])
+    {
+	y2milestone ("nameserver from install.inf");
+	DNS::ReadNameserver (InstallInf["nameserver"]:"");
+    }
+    if (autoinstall_settings["dns", "hostname"]:"" == "")
+    {
+	ProposeHostname ();
     }
 
     return true;

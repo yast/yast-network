@@ -26,37 +26,47 @@ y2milestone("Lan netsetup module started");
 y2milestone("Args: %1", WFM::Args());
 
 
-string netdevice = (string) SCR::Read (.etc.install_inf.Netdevice);
-if (netdevice == nil) netdevice = "eth0";
+/**
+ * @param key install.inf key (case sensitive)
+ * @return value or ""
+ */ 
+define string InstallInf (string key) {
+    string val = Linuxrc::InstallInf (key);
+    return (val == nil)? "": val;
+}
 
-string netconfig = (string) SCR::Read (.etc.install_inf.NetConfig);
-if (netconfig == nil) netconfig = "static";
+string netdevice = InstallInf ("Netdevice");
+if (netdevice == "") netdevice = "eth0";
+
+string netconfig = InstallInf ("NetConfig");
+if (netconfig == "") netconfig = "static";
 if (netconfig == "dhcp") netconfig = "static"; // FIXME
 
-string ipaddr = (string) SCR::Read (.etc.install_inf.IP);
-if (ipaddr == nil) ipaddr = "";
+string ipaddr = InstallInf ("IP");
+string netmask = InstallInf ("Netmask");
+string gateway = InstallInf ("Gateway");
+string hwaddr = InstallInf ("HWAddr");
+string nameserver = InstallInf ("Nameserver");
+string domain = InstallInf ("Domain");
 
-string netmask = (string) SCR::Read (.etc.install_inf.Netmask);
-if (netmask == nil) netmask = "";
-
-string gateway = (string) SCR::Read (.etc.install_inf.Gateway);
-if (gateway == nil) gateway = "";
-
-string hwaddr = (string) SCR::Read (.etc.install_inf.HWAddr);
-if (hwaddr == nil) hwaddr = "";
-
-string nameserver = (string) SCR::Read (.etc.install_inf.Nameserver);
-if (nameserver == nil) nameserver = "";
-
-string domain = (string) SCR::Read (.etc.install_inf.Domain);
-if (domain == nil) domain = "";
+/**
+ * Log the current interface setup
+ * @param tag an arbitrary tag to identify the caller
+ */
+define void ShowIfconfig (string tag) {
+    // stderr is put to the log more nicely
+    any retcode = SCR::Execute (.target.bash, "/sbin/ip addr >&2");
+    y2milestone ("%1: %2", tag, retcode);
+}
 
 y2milestone("Original netdevice: %1 (%2)", netdevice, hwaddr);
 
-if(hwaddr != nil && hwaddr != "") {
+/**
+ * Use the MAC address to find which interface to set up.
+ */
+define void UpdateNetdevice () {
+    ShowIfconfig ("installation interface");
     string command = sformat("/sbin/ifconfig -a | grep -i \"HWaddr *%1\" | cut -d\" \" -f1", hwaddr);
-    y2milestone("IFCONFIG0: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
-
     map output = (map) SCR::Execute(.target.bash_output, command, $["LC_MESSAGES":"C"]);
     y2milestone("Output: %1", output);
     if(output != nil) {
@@ -112,6 +122,11 @@ if (mode == `up)
 	    if (netconfig == "static")
 	    {
 		load_modules ();
+		if (hwaddr != "")
+		{
+		    // do it only after loading the modules, #116537
+		    UpdateNetdevice ();
+		}
 
 		string ifconfig = "/sbin/ifconfig " + netdevice + " up " + ipaddr;
 		if (netmask != "")
@@ -160,7 +175,7 @@ if (mode == `up)
 	SCR::Execute (.target.bash, "/sbin/rcportmap start");
     }
 
-    y2milestone("IFCONFIGA: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
+    ShowIfconfig ("set up done");
 }
 
 
