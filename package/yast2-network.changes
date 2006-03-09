@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Thu Mar  9 13:42:17 CET 2006 - mvidner@suse.cz
+Thu Mar  9 13:47:47 CET 2006 - mvidner@suse.cz
 
+- Merged proofread texts.
 - Reapplied the changes between 2.13.29 and 2.13.31 (discarding
   2.13.33) as they were unrelated to #156054.
 

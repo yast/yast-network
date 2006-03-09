@@ -639,7 +639,7 @@ global define list SummaryNM () {
     {
 	href = "lan--nm-disable";
 	// network mode: the interfaces are controlled by the user
-	status = _("User Controlled Interfaces via NetworkManager Applet");
+	status = _("User-Controlled Interfaces with the NetworkManager Applet");
 	// disable NetworkManager applet
 	link = Hyperlink (href, _("Disable NetworkManager"));
     }
@@ -647,7 +647,7 @@ global define list SummaryNM () {
     {
 	href = "lan--nm-enable";
 	// network mode
-	status = _("Traditional Method without NetworkManager Applet");
+	status = _("Traditional Method without the NetworkManager Applet");
 	// enable NetworkManager applet
 	link = Hyperlink (href, _("Enable NetworkManager"));
     }
