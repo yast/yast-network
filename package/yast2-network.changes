@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Mar 10 17:26:14 CET 2006 - mvidner@suse.cz
+
+- Instead of linux, use a randomized hostname like linux-09az (#157107).
+- 2.13.35
+
+-------------------------------------------------------------------
 Thu Mar  9 17:17:56 CET 2006 - mvidner@suse.cz
 
 - Take the default STARTMODE from the product control file,

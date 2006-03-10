@@ -15,6 +15,7 @@ import "Arch";
 import "DNS";
 import "GetInstArgs";
 import "NetworkConfig";
+import "String";
 
 include "network/services/dns.ycp";
 
@@ -24,6 +25,12 @@ include "network/services/dns.ycp";
 //   return `auto;
 
 DNS::Read ();			// handles NetworkConfig too
+
+if (DNS::hostname == "linux")
+{ 
+    srandom ();
+    DNS::hostname = "linux-" + String::Random (4); // #157107
+}
 
 // propose settings
 NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = ! Arch::is_laptop ();

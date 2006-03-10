@@ -8,8 +8,8 @@ BuildRequires: yast2-devtools yast2-testsuite yast2
 BuildRequires: yast2-country yast2-installation
 # carrier detection
 Requires:	yast2-core >= 2.10.6
-# Arch::is_xenU
-Requires:	yast2 >= 2.13.33
+# String::Random
+Requires:	yast2 >= 2.13.34
 Requires:	sysconfig yast2-country yast2-inetd yast2-packager
 PreReq:		/bin/rm
 
