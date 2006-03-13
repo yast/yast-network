@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Mar 13 13:08:09 CET 2006 - locilka@suse.cz
+
+- Partly fixing bug #157342, raw is not known termtype
+  using ansi-mono instead
+
+-------------------------------------------------------------------
 Fri Mar 10 17:26:14 CET 2006 - mvidner@suse.cz
 
 - Instead of linux, use a randomized hostname like linux-09az (#157107).
