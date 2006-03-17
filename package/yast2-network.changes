@@ -1,8 +1,9 @@
 -------------------------------------------------------------------
 Mon Mar 13 13:08:09 CET 2006 - locilka@suse.cz
 
-- Partly fixing bug #157342, raw is not known termtype
-  using ansi-mono instead
+- Partly fixing bug #157342, 'raw' is not known termtype
+  using 'dumb' instead
+- 2.13.36
 
 -------------------------------------------------------------------
 Fri Mar 10 17:26:14 CET 2006 - mvidner@suse.cz

@@ -91,7 +91,7 @@ global boolean Read() {
  * see bugs #135605, #157342
  */
 void CreateSaxAutomaticConfiguration() {
-    string command = "TERM=ansi-mono /usr/sbin/sax2 -r -a | /usr/bin/grep -v '\\r$'";
+    string command = "TERM=dumb /usr/sbin/sax2 -r -a | /usr/bin/grep -v '\\r$'";
     y2milestone("Creating automatic Xconfiguration: %1", command);
     y2milestone("SaX2 returned: %1", SCR::Execute(.target.bash_output, command));
 }
