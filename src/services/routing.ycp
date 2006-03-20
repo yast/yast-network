@@ -70,7 +70,8 @@ _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>");
 		    r["destination"]:"",
 		    r["gateway"]:"",
 		    r["netmask"]:"",
-		    r["device"]:"");
+		    r["device"]:"",
+		    r["extrapara"]:"");
 	    table_items = add(table_items, item);
 	    items = items + 1;
 	}
@@ -235,6 +236,7 @@ _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>");
 		"gateway"     : e[2]:"",
 		"netmask"     : e[3]:"",
 		"device"      : e[4]:"",
+		"extrapara"   : e[5]:"",
 	    ];
 	});
 

@@ -1,8 +1,10 @@
 -------------------------------------------------------------------
-Mon Mar 20 11:08:20 CET 2006 - mvidner@suse.cz
+Mon Mar 20 13:46:11 CET 2006 - mvidner@suse.cz
 
 - Do not always enable the firewall when adding a new interface
   (#152650).
+- Preserve route options when editing (#159359).
+- 2.13.37
 
 -------------------------------------------------------------------
 Mon Mar 13 13:08:09 CET 2006 - locilka@suse.cz
