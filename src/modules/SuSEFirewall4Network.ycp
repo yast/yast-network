@@ -52,17 +52,17 @@
      * firewall zones.
      * There's also an item for "" (no zone or fw off).
      *
-     * @return	list <term> of combo box items
+     * @return	item list for CWM
      */
-    global define list<term> FirewallZonesComboBoxItems () {
-	list <term> list_items = [];
+    global define list< list<string> > FirewallZonesComboBoxItems () {
+	list< list<string> > list_items = [];
 	boolean protected_from_internal = SuSEFirewall::GetProtectFromInternalZone();
 	string nozone = IsOn ()?
 	    // item in combo box Firewall Zone
 	    _("No Zone, All Traffic Blocked"):
 	    // item in combo box Firewall Zone
 	    _("Firewall Disabled");
-	list_items = add (list_items, `item (`id (""), nozone));
+	list_items = add (list_items, ["", nozone]);
 
 	// Listing all known zones
 	foreach (string zone_shortname, SuSEFirewall::GetKnownFirewallZones(), {
@@ -75,7 +75,7 @@
 		    :
 		    ""
 		);
-	    list_items = add (list_items, `item(`id(zone_shortname), zone_name));
+	    list_items = add (list_items, [zone_shortname, zone_name]);
 	});
 
 	return list_items;
@@ -155,6 +155,14 @@
 	}
 
 	return true;
+    }
+
+    /**
+     * @return Whether the UI should warn about interfaces
+     * that are not in any zone
+     */
+    global define boolean UnconfiguredIsBlocked () {
+	return ! SuSEFirewall::IsAnyNetworkInterfaceSupported ();
     }
 
 /* EOF */

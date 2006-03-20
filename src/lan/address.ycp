@@ -254,34 +254,31 @@ void InitDialog (string key) {
 }
 
 /**
- * Event handler for the whole dialog.
- * Reroute next to details in special cases
- * @param key	the widget receiving the event
+ * If the traffic would be blocked, ask the user
+ * if he wants to change it
  * @param event	the event being handled
- * @return nil to loop on, otherwise symbol to return
+ * @return change it?
  */
-symbol HandleDialog (string key, map event) {
+boolean NeedToAssignFwZone (map event) {
     any ret = event["ID"]:nil;
-    if (Lan::operation != `add && ret == `next)	// `add: see StoreDialog
+    if (ret == `next)
     {
 	// If firewall is active and interface in no zone, nothing
-	// gets through (#47309) so warn and redirect to details
+	// gets through (#62309) so warn and redirect to details
 	string type = (string) UI::QueryWidget (`id ("IFCFGTYPE"), `Value);
 	string id = (string) UI::QueryWidget (`id ("IFCFGID"), `Value);
 	string name = NetworkDevices::device_name (type, id);
 	if (SuSEFirewall4Network::IsOn () &&
-	    SuSEFirewall4Network::GetZoneOfInterface (name) == "")
+	    SuSEFirewall4Network::GetZoneOfInterface (name) == "" &&
+	    SuSEFirewall4Network::UnconfiguredIsBlocked ())
 	{
-	    if (Popup::YesNoHeadline (Label::WarningMsg (),
+	    return Popup::YesNoHeadline (Label::WarningMsg (),
 _("The firewall is active, but this interface is not
 in any zone. All its traffic would be blocked.
-Assign it to a zone now?")))
-	    {
-		return `details;
-	    }
+Assign it to a zone now?"));
 	}
     }
-    return nil;
+    return false;
 }
 
 /**
@@ -309,6 +306,11 @@ Really continue?
 	    }
 	}
     }
+    if (NeedToAssignFwZone (event))
+    {
+	UI::FakeUserInput ($["ID": "t_general"]);
+	return false;
+    }
     return true;
 }
 
@@ -318,20 +320,7 @@ Really continue?
  * @param event	the event being handled
  */
 void StoreDialog (string key, map event) {
-    if (Lan::operation == `add)
-    {
-	any ret = event["ID"]:nil;
-	// If firewall is active and interface in no zone, nothing
-	// gets through (#47309) so add it to the external zone
-	if ((ret == `next || ret == `details) &&
-	    SuSEFirewall4Network::IsOn ())
-	{
-	    string type = (string) UI::QueryWidget (`id ("IFCFGTYPE"), `Value);
-	    string id = (string) UI::QueryWidget (`id ("IFCFGID"), `Value);
-	    string name = NetworkDevices::device_name (type, id);
-	    SuSEFirewall4Network::ProtectByFirewall (name, "EXT", true);
-	}
-    }
+    return;
 }
 
 map<string, map<string,any> > widget_descr_local = $[
@@ -657,6 +646,19 @@ define any AddressDialog() {
     ScreenName("lan-address");
 
     string ifname = NetworkDevices::device_name (Lan::type, Lan::device);
+    string fwzone = SuSEFirewall4Network::GetZoneOfInterface (ifname);
+
+    // If firewall is active and interface in no zone, nothing
+    // gets through (#62309) so add it to the external zone
+    if (fwzone == "" &&
+	Lan::operation == `add &&
+	SuSEFirewall4Network::IsOn () &&
+	SuSEFirewall4Network::UnconfiguredIsBlocked ())
+    {
+	fwzone = "EXT";
+	y2milestone ("Defaulting to EXT");
+    }
+
     settings = $[
 	// general tab:
 //	"IFNAME": ifname,
@@ -664,7 +666,7 @@ define any AddressDialog() {
 	"STARTMODE": Lan::startmode,
 	"USERCONTROL": Lan::usercontrol,
 	// problems when renaming the interface?
-	"FWZONE": SuSEFirewall4Network::GetZoneOfInterface (ifname),
+	"FWZONE": fwzone,
 	"MTU": Lan::mtu,
 
 	// address tab:
