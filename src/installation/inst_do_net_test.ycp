@@ -346,8 +346,8 @@ and correct the settings.</p>
 	    if (!ret1) {
 		y2error ("checksig of release notes failed");
 		// popup error message
-		Report::Error(_("Cannot install downloaded release notes,
-checking the RPM signature failed."));
+		Report::Error(_("Cannot install downloaded release notes.
+RPM signature check failed."));
 		test_ret = false;
 		// next loop
 		return;
@@ -358,9 +358,9 @@ checking the RPM signature failed."));
 	    PackageCallbacks::EnableAsterixPackage (old2);
 
 	    if (!ret2) {
+		y2error ("installation release notes failed.");
 		// popup error message
-		Report::Error(_("Installing of downloaded release notes failed."));
-		y2error ("installing of release notes failed");
+		Report::Error(_("Installation of downloaded release notes failed."));
 		test_ret = false;
 		// next loop
 		return;
