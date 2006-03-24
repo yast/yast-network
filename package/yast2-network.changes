@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Mar 24 15:10:33 CET 2006 - locilka@suse.cz
+
+- Download all release notes for all installed products (add-ons)
+  during the internet test (#160563).
+- Inform user when checking or installing downloaded RPM fails
+  (#160562).
+- 2.13.38
+
+-------------------------------------------------------------------
 Mon Mar 20 13:46:11 CET 2006 - mvidner@suse.cz
 
 - Do not always enable the firewall when adding a new interface

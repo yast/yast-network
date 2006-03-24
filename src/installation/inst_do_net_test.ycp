@@ -22,6 +22,7 @@ import "Wizard";
 import "PackageCallbacks";
 import "Proxy";
 import "GetInstArgs";
+import "Report";
 
 include "network/routines.ycp";
 include "network/installation/dialogs.ycp";
@@ -275,64 +276,99 @@ and correct the settings.</p>
 	return res;
     }
 
-    define boolean download_release_notes (string& filename)
-    {
-	string url = Product::relnotesurl;
+    // File names of downloaded release notes
+    list <string> release_notes_filenames = [];
 
-	integer pos = findlastof (url, "/");
-	if (pos == nil)
-	{
-	    y2error ("broken url for release notes: %1", url);
+    /**
+     * Download all release notes mentioned in Product::relnotesurl_all
+     */
+    define boolean download_release_notes () {
+	// Fallback - for debugging
+	if (Product::relnotesurl_all == nil || Product::relnotesurl_all == []) {
+	    y2error("Product::relnotesurl_all = %1", Product::relnotesurl_all);
 	    return false;
 	}
 
-	filename = (string) SCR::Read (.target.tmpdir) + substring (url, pos);
+	// Even if some of downloads fails, try all of them
+	boolean test_ret = true;
 
-	// .background agent is unable to use ENV variables
-	string cmd = ". /etc/sysconfig/proxy; http_proxy=${HTTP_PROXY} /usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + filename;
-	cmd = cmd + " > " + logdir + "/curl.log 2>&1";
+	integer relnotes_counter = 0;
+	Product::relnotesurl_all = toset(Product::relnotesurl_all);
+	foreach (string url, Product::relnotesurl_all, {
+	    integer pos = findlastof (url, "/") + 1;
+	    if (pos == nil) {
+		y2error ("broken url for release notes: %1", url);
+		test_ret = false;
+	    }
 
-	// map env = Proxy::GetEnvironment ();
-	// env["LANG"] = GetLanguageUTF8 ();
+	    relnotes_counter = relnotes_counter + 1;
+	    // Where we want to store the downloaded release notes
+	    string filename = sformat("%1/%2-%3",
+		(string) SCR::Read (.target.tmpdir),
+		relnotes_counter,
+		substring (url, pos)
+	    );
 
-	y2milestone ("curl command: %1", cmd);
-	
-	SCR::Execute(.background.run, cmd);
-	integer ret = wait_for_test ();
+	    // .background agent is unable to use ENV variables
+	    string cmd = ". /etc/sysconfig/proxy; http_proxy=${HTTP_PROXY} /usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + filename;
+	    cmd = cmd + " > " + logdir + "/curl.log 2>&1";
 
-	// label of combobox where the log is selected
-	logs = add (logs, $[ `menuname : _("Download of Release Notes"),
+	    // map env = Proxy::GetEnvironment ();
+	    // env["LANG"] = GetLanguageUTF8 ();
+
+	    y2milestone ("Downloading release notes: %1", cmd);
+	    SCR::Execute(.background.run, cmd);
+	    integer ret = wait_for_test ();
+	    if (ret == 0) {
+		release_notes_filenames = add (release_notes_filenames, filename);
+		y2milestone("Successful");
+	    } else {
+		y2error("Downloading failed");
+		test_ret = false;
+	    }
+
+	    // label of combobox where the log is selected
+	    logs = add (logs, $[ `menuname : _("Download of Release Notes"),
 			     `filename : "curl.log" ]);
 
-	return ret == 0;
+	});
+	
+	return test_ret;
     }
 
 
-    define boolean install_release_notes (string filename)
-    {
-	boolean ret1 = Pkg::RpmChecksig (filename);
+    define boolean install_release_notes () {
+	boolean test_ret = true;
 
-	if (!ret1)
-	{
-	    // FIXME: show popup
-	    y2error ("checksig of release notes failed");
-	    return false;
-	}
+	foreach (string filename, release_notes_filenames, {
+	    boolean ret1 = Pkg::RpmChecksig (filename);
 
-	boolean old2 = PackageCallbacks::EnableAsterixPackage (false);
-	boolean ret2 = Pkg::TargetInstall (filename);
-	PackageCallbacks::EnableAsterixPackage (old2);
+	    if (!ret1) {
+		y2error ("checksig of release notes failed");
+		// popup error message
+		Report::Error(_("Cannot install downloaded release notes,
+checking the RPM signature failed."));
+		test_ret = false;
+		// next loop
+		return;
+	    }
 
-	if (!ret2)
-	{
-	    // FIXME: show popup
-	    y2error ("installing of release notes failed");
-	    return false;
-	}
+	    boolean old2 = PackageCallbacks::EnableAsterixPackage (false);
+	    boolean ret2 = Pkg::TargetInstall (filename);
+	    PackageCallbacks::EnableAsterixPackage (old2);
 
-	return true;
+	    if (!ret2) {
+		// popup error message
+		Report::Error(_("Installing of downloaded release notes failed."));
+		y2error ("installing of release notes failed");
+		test_ret = false;
+		// next loop
+		return;
+	    }
+	});
+
+	return test_ret;
     }
-
 
     define void handle_stage ()
     {
@@ -434,9 +470,7 @@ the logs for details.
 	{
 	    mark_label(2, `arrow);
 
-	    string filename = "";
-
-	    if (!download_release_notes (filename))
+	    if (!download_release_notes ())
 	    {
 		// popup to inform user about the failure
 		Popup::Message(_("Download of latest release notes failed. View
@@ -448,7 +482,7 @@ the logs for details.
 	    }
 	    else
 	    {
-		install_release_notes (filename);
+		install_release_notes ();
 		mark_label(2, `check);
 	    }
 
