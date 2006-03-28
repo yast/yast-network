@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 28 15:56:22 CEST 2006 - locilka@suse.cz
+
+- Every single fetching of release notes has its own log (#161251).
+- 2.13.39
+
+-------------------------------------------------------------------
 Fri Mar 24 16:46:02 CET 2006 - locilka@suse.cz
 
 - Merged proofread texts.

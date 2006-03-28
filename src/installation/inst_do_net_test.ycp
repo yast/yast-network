@@ -308,10 +308,12 @@ and correct the settings.</p>
 		relnotes_counter,
 		substring (url, pos)
 	    );
+	    // Where to store the curl log
+	    string log_filename = sformat("curl_%1.log", relnotes_counter);
 
 	    // .background agent is unable to use ENV variables
 	    string cmd = ". /etc/sysconfig/proxy; http_proxy=${HTTP_PROXY} /usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + filename;
-	    cmd = cmd + " > " + logdir + "/curl.log 2>&1";
+	    cmd = cmd + " > " + logdir + "/" + log_filename + " 2>&1";
 
 	    // map env = Proxy::GetEnvironment ();
 	    // env["LANG"] = GetLanguageUTF8 ();
@@ -329,7 +331,7 @@ and correct the settings.</p>
 
 	    // label of combobox where the log is selected
 	    logs = add (logs, $[ `menuname : _("Download of Release Notes"),
-			     `filename : "curl.log" ]);
+			     `filename : log_filename ]);
 
 	});
 	
