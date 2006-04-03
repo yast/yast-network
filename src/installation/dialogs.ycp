@@ -266,9 +266,13 @@ define void ShowLogs(list<map> logs, string logdir) {
 	return x[`prio]:0 > y[`prio]:0;
     });
 
-    list menunames = [];
+    list <term> menunames = [];
+    integer item_counter = 0;
+    map <integer, string> file_index = $[];
     maplist(map v, logs, {
-	menunames = add(menunames, v[`menuname]:"none");
+	item_counter = item_counter + 1;
+	file_index[item_counter] = v[`filename]:"none";
+	menunames = add(menunames, `item(`id(item_counter), v[`menuname]:"none"));
     });
 
     term content = `VBox(
@@ -293,12 +297,12 @@ define void ShowLogs(list<map> logs, string logdir) {
 
     UI::OpenDialog(content);
 
-    map tmp1 = logs[0]:$[];
-    string filename = tmp1[`filename]:"none";
+    string filename = file_index[1]:"none";
 
     while(true)
     {
 	/* Read file and fill logview */
+	y2milestone("Opening file: %1", logdir + "/" + filename);
 	string tmp2 = (string) SCR::Read(.target.string, logdir + "/" + filename);
 	if(tmp2 == nil) tmp2 = "file not found";
 	UI::ChangeWidget(`id(`log), `Value, "<pre>" +
@@ -312,12 +316,9 @@ define void ShowLogs(list<map> logs, string logdir) {
 	}
 	else if(ret == `selector)
 	{
-	    string menuname = (string) UI::QueryWidget(`id(`selector), `Value);
+	    integer selected_menu_item = (integer) UI::QueryWidget(`id(`selector), `Value);
 
-	    maplist(map v, logs, {
-		if(v[`menuname]:"none" == menuname)
-		    filename = v[`filename]:"none";
-	    });
+	    filename = file_index[selected_menu_item]:"none";
 	}
     }
 

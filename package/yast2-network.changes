@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Apr  3 15:37:05 CEST 2006 - locilka@suse.cz
+
+- Fixing log viewer to be able to show more log files with the same
+  label (such as Release Notes) (#162175).
+- 2.13.40
+
+-------------------------------------------------------------------
 Tue Mar 28 15:56:22 CEST 2006 - locilka@suse.cz
 
 - Every single fetching of release notes has its own log (#161251).
