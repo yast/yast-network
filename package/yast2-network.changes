@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Apr  3 16:55:10 CEST 2006 - mvidner@suse.cz
+
+- Fixed determining the installation network device by using the C
+  locale properly (#116537c47).
+- 2.13.41
+
+-------------------------------------------------------------------
 Mon Apr  3 15:37:05 CEST 2006 - locilka@suse.cz
 
 - Fixing log viewer to be able to show more log files with the same

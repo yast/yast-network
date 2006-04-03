@@ -49,13 +49,18 @@ string hwaddr = InstallInf ("HWAddr");
 string nameserver = InstallInf ("Nameserver");
 string domain = InstallInf ("Domain");
 
+// LC_MESSAGES is useless if LC_ALL overrides it, #116537c47
+map<string, string> c_locale = $["LANGUAGE": "", "LC_ALL": "C"];
+
 /**
  * Log the current interface setup
  * @param tag an arbitrary tag to identify the caller
  */
 define void ShowIfconfig (string tag) {
     // stderr is put to the log more nicely
-    any retcode = SCR::Execute (.target.bash, "/sbin/ip addr >&2");
+    any retcode = SCR::Execute (.target.bash, "/sbin/ip addr >&2", c_locale);
+    y2milestone ("%1: %2", tag, retcode);
+    retcode = SCR::Execute (.target.bash, "/sbin/ifconfig -a >&2", c_locale);
     y2milestone ("%1: %2", tag, retcode);
 }
 
@@ -66,13 +71,25 @@ y2milestone("Original netdevice: %1 (%2)", netdevice, hwaddr);
  */
 define void UpdateNetdevice () {
     ShowIfconfig ("installation interface");
+    sleep (5000);  // similar to netwait 5, some cards need to wake up
+    ShowIfconfig ("installation interface after waiting");
     string command = sformat("/sbin/ifconfig -a | grep -i \"HWaddr *%1\" | cut -d\" \" -f1", hwaddr);
-    map output = (map) SCR::Execute(.target.bash_output, command, $["LC_MESSAGES":"C"]);
+    map output = (map) SCR::Execute(.target.bash_output, command, c_locale);
     y2milestone("Output: %1", output);
     if(output != nil) {
 	string newdevice = output["stdout"]:"";
 	newdevice = String::FirstChunk (newdevice, "\n");
-	if(newdevice != "" && newdevice != nil) netdevice = newdevice;
+	if(newdevice != "" && newdevice != nil)
+	    netdevice = newdevice;
+	else			// just in case
+	{
+	    command = sformat ("/sbin/ip -family link -oneline addr | sed -n -e '/%1/I{s/^[0-9]*: \\([^:]*\\).*/\\1/;p;}'", hwaddr);
+	    output = (map) SCR::Execute(.target.bash_output, command, c_locale);
+	    y2milestone("Output: %1", output);
+	    newdevice = String::FirstChunk (output["stdout"]:"", "\n");
+	    if(newdevice != "" && newdevice != nil)
+		netdevice = newdevice;
+	}
 	y2milestone("Updated netdevice: %1 (%2)", netdevice, newdevice);
     }
 }
