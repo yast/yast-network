@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Apr  5 10:51:55 CEST 2006 - mvidner@suse.cz
+
+- Disable the back button in inst_hostname (jsuchome, #157125).
+
+-------------------------------------------------------------------
 Mon Apr  3 16:55:10 CEST 2006 - mvidner@suse.cz
 
 - Fixed determining the installation network device by using the C

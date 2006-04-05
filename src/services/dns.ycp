@@ -14,6 +14,7 @@ textdomain "network";
 
 import "CWM";
 import "DNS";
+import "GetInstArgs";
 import "Hostname";
 import "IP";
 import "Label";
@@ -398,6 +399,7 @@ define symbol HostnameDialog () {
 	    "back_button" : Label::BackButton (),
 	    "next_button" : Label::NextButton (),
 	    "fallback_functions" : functions,
+	    "disable_buttons" : GetInstArgs::enable_back() ? []: ["back_button"]
 	]);
 
     if (ret == `next)
