@@ -663,12 +663,14 @@ the logs for details.
 
     if (ret == `next)
     {
+	Internet::suse_register = test_result == `success;
+
 	if (we_have_patches)
 	{
-        Internet::do_you = true;
-        // Removed due to integration of suse_register
-        // AskYOUDialog ();
-    }
+	    Internet::do_you = true;
+	    // Removed due to integration of suse_register
+	    // AskYOUDialog ();
+	}
 	else
 	    Internet::do_you = false;
     }
