@@ -1,8 +1,9 @@
 -------------------------------------------------------------------
-Wed Apr  5 19:03:23 CEST 2006 - mvidner@suse.cz
+Thu Apr  6 19:48:45 CEST 2006 - mvidner@suse.cz
 
 - Disable suse_register if the internet test fails (#164042).
 - Disable the back button in inst_hostname (jsuchome, #157125).
+- 2.13.42
 
 -------------------------------------------------------------------
 Mon Apr  3 16:55:10 CEST 2006 - mvidner@suse.cz
