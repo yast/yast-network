@@ -3,6 +3,9 @@ Fri Apr  7 11:13:25 CEST 2006 - locilka@suse.cz
 
 - Adding more error messages into log when some bash command fails
   during the internet test (#162628).
+- Check the installed version of release-notes against the
+  downloaded one during the internet test. Skip installation of
+  release-notes in case of the same version (#164388).
 - 2.13.43
 
 -------------------------------------------------------------------

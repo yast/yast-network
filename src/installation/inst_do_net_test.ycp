@@ -290,6 +290,9 @@ and correct the settings.</p>
 
     // File names of downloaded release notes
     list <string> release_notes_filenames = [];
+    
+    // RPM names of downloaded release notes
+    map <string, string> release_notes_rpms = $[];
 
     /**
      * Download all release notes mentioned in Product::relnotesurl_all
@@ -320,6 +323,10 @@ and correct the settings.</p>
 		relnotes_counter,
 		substring (url, pos)
 	    );
+	    // Package name
+	    release_notes_rpms[filename] = substring (url, pos);
+	    release_notes_rpms[filename] = regexpsub(release_notes_rpms[filename]:"\.rpm", "(.*)\.rpm", "\\1");
+	    
 	    // Where to store the curl log
 	    string log_filename = sformat("curl_%1.log", relnotes_counter);
 
@@ -350,6 +357,37 @@ and correct the settings.</p>
 	return test_ret;
     }
 
+    /**
+     * Function checks whether the downloaded and installed versions are different
+     */
+    boolean AreRPMVersionsDifferent(string rpm_name, string disk_file) {
+	string query_format = "%{NAME}-%{VERSION}-%{RELEASE}";
+	
+	// Checking the installed version of RPM
+	map cmd_installed_rpm_version = (map) SCR::Execute(.target.bash_output,
+	    sformat("/bin/rpm -q --queryformat \"%1\" %2", query_format, rpm_name)
+	);
+	if (cmd_installed_rpm_version["exit"]:-1 != 0) {
+	    y2warning("Cannot check the installed RPM version: %1 -> %2", disk_file, cmd_installed_rpm_version);
+	    return true;
+	}
+	string installed_rpm_version = cmd_installed_rpm_version["stdout"]:"undefined-i";
+	y2milestone("Installed version: '%1'", installed_rpm_version);
+	
+	// Checking the downloaded version of RPM
+	map cmd_downloaded_rpm_version = (map) SCR::Execute(.target.bash_output,
+	    sformat("/bin/rpm -qp --queryformat \"%1\" %2", query_format, disk_file)
+	);
+	if (cmd_downloaded_rpm_version["exit"]:-1 != 0) {
+	    y2warning("Cannot check the downloaded RPM version: %1 -> %2", disk_file, cmd_downloaded_rpm_version);
+	    return true;
+	}
+	string downloaded_rpm_version = cmd_downloaded_rpm_version["stdout"]:"undefined-d";
+	y2milestone("Downloaded version: '%1'", downloaded_rpm_version);
+	
+	// The same versions -> false
+	return (installed_rpm_version != downloaded_rpm_version);
+    }
 
     define boolean install_release_notes () {
 	boolean test_ret = true;
@@ -366,7 +404,16 @@ RPM signature check failed."));
 		// next loop
 		return;
 	    }
-
+	    
+	    // Checking whether installed/new rpm versions are different (#164388)
+	    string rpm_name = release_notes_rpms[filename]:"";
+	    if (AreRPMVersionsDifferent(rpm_name, filename)) {
+		y2milestone("RPM versions are different");
+	    } else {
+		y2milestone("RPM versions are not different, skipping...");
+		return;
+	    }
+	    
 	    boolean old2 = PackageCallbacks::EnableAsterixPackage (false);
 	    boolean ret2 = Pkg::TargetInstall (filename);
 	    PackageCallbacks::EnableAsterixPackage (old2);
