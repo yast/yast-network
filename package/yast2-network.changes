@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Apr  7 11:13:25 CEST 2006 - locilka@suse.cz
+
+- Adding more error messages into log when some bash command fails
+  during the internet test (#162628).
+- 2.13.43
+
+-------------------------------------------------------------------
 Thu Apr  6 19:48:45 CEST 2006 - mvidner@suse.cz
 
 - Disable suse_register if the internet test fails (#164042).

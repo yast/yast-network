@@ -211,42 +211,54 @@ and correct the settings.</p>
 
     define void copy_logs1 ()
     {
+	integer ret_command = nil;
+	string  run_command = nil;
+    
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Kernel Network Interfaces"),
 			     `filename : "ifconfig.log" ]);
-	SCR::Execute (.target.bash, "/sbin/ifconfig > " +
-		      logdir + "/ifconfig.log",
+	run_command = "/sbin/ifconfig > " + logdir + "/ifconfig.log";
+	ret_command = (integer) SCR::Execute (.target.bash, run_command,
 		      $["LANG" : GetLanguageUTF8 ()]);
+	if (ret_command != 0) y2error("Command '%1' failed -> %2", run_command, ret_command);
 
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Kernel Routing Table"),
 			     `filename : "route.log" ]);
-	SCR::Execute (.target.bash, "/sbin/route -n > " + logdir + "/route.log",
+	run_command = "/sbin/route -n > " + logdir + "/route.log";
+	ret_command = (integer) SCR::Execute (.target.bash, run_command,
 		      $["LANG" : GetLanguageUTF8 ()]);
+	if (ret_command != 0) y2error("Command '%1' failed -> %2", run_command, ret_command);
 
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Hostname Lookup"),
 			     `filename : "resolv.conf" ]);
-	SCR::Execute (.target.bash, "/bin/cp /etc/resolv.conf " +
-		      logdir + "/resolv.conf");
+	run_command = "/bin/cp /etc/resolv.conf " + logdir + "/resolv.conf";
+	ret_command = (integer) SCR::Execute (.target.bash, run_command);
+	if (ret_command != 0) y2error("Command '%1' failed -> %2", run_command, ret_command);
     }
 
 
     define void copy_logs2 ()
     {
+	integer ret_command = nil;
+	string  run_command = nil;
+
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Kernel Messages"),
 			     `filename : "messages" ]);
-	SCR::Execute (.target.bash, Directory::ybindir + "/cut-messages > " +
-		      logdir + "/messages");
+	run_command = Directory::ybindir + "/cut-messages > " + logdir + "/messages";
+	ret_command = (integer) SCR::Execute (.target.bash, run_command);
+	if (ret_command != 0) y2error("Command '%1' failed -> %2", run_command, ret_command);
 
 	if (Internet::logfile != "") {
 	    // label of combobox where the log is selected
 	    logs = add (logs, $[ `menuname : _("PPP Daemon"),
 				 `filename : "smpppd.log",
 				 `prio : 20 ]);
-	    SCR::Execute (.target.bash, "/bin/cp " + Internet::logfile + " " +
-			  logdir + "/smpppd.log");
+	    run_command = "/bin/cp " + Internet::logfile + " " + logdir + "/smpppd.log";
+	    ret_command = (integer) SCR::Execute (.target.bash, run_command);
+	    if (ret_command != 0) y2error("Command '%1' failed -> %2", run_command, ret_command);
 	}
     }
 
