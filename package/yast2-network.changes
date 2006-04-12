@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Apr 12 13:23:40 CEST 2006 - mvidner@suse.cz
+
+- Enable ifplugd by default only on laptops (#164816).
+
+-------------------------------------------------------------------
 Wed Apr 12 09:21:09 CEST 2006 - locilka@suse.cz
 
 - Prevent from downloading 'undefined' release notes (#165314).

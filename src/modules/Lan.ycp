@@ -889,6 +889,12 @@ global define boolean Select(string dev) {
 	if (contains (["auto", "ifplugd"], product_startmode))
 	{
 	    y2milestone ("Product startmode: %1", product_startmode);
+	    if (product_startmode == "ifplugd" && ! Arch::is_laptop ())
+	    {
+		// #164816
+		y2milestone ("Not a laptop, will not prefer ifplugd");
+		product_startmode = "auto";
+	    }
 	    devmap["STARTMODE"] = product_startmode;
 	}
 
