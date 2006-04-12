@@ -310,6 +310,12 @@ and correct the settings.</p>
 	integer relnotes_counter = 0;
 	Product::relnotesurl_all = toset(Product::relnotesurl_all);
 	foreach (string url, Product::relnotesurl_all, {
+	    // protect from wrong 
+	    if (url == nil || url == "") {
+		y2warning("Skipping relnotesurl '%1'", url);
+		return;
+	    }
+
 	    integer pos = findlastof (url, "/") + 1;
 	    if (pos == nil) {
 		y2error ("broken url for release notes: %1", url);
