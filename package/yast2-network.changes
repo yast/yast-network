@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Apr 21 10:00:06 CEST 2006 - locilka@suse.cz
+
+- Prevent from installing older release notes during the internet
+  test. It would fail with useless error message and confuse user.
+  This change enhances behavior of #164388 and fixes (#167985).
+- 2.13.46
+
+-------------------------------------------------------------------
 Wed Apr 12 13:23:40 CEST 2006 - mvidner@suse.cz
 
 - Enable ifplugd by default only on laptops (#164816).

@@ -364,10 +364,47 @@ and correct the settings.</p>
     }
 
     /**
+     * Function checks two versions of installed rpm and decides whether the second one is
+     * newer than the first one. This function ignores non-numerical values in versions
+     *
+     * @param string first version
+     * @param string second version
+     * @return boolean true if the second one is newer than the first one
+     */
+    boolean IsDownloadedVersionNewer (string installed_rpm_version, string downloaded_rpm_version) {
+	list <string> installed_rpm_version_l = filter(string one_item, splitstring(installed_rpm_version, "-\."), {
+	    return regexpmatch(one_item, "^[0123456789]+$");
+	});
+	list <string> downloaded_rpm_version_l = filter(string one_item, splitstring(downloaded_rpm_version, "-\."), {
+	    return regexpmatch(one_item, "^[0123456789]+$");
+	});
+	
+	y2milestone("Evaluating installed %1 and downloaded %2 versions", installed_rpm_version_l, downloaded_rpm_version_l);
+	
+	integer installed_version_item = nil;
+	integer downloaded_version_item = nil;
+	
+	boolean downloaded_version_is_newer = false;
+	integer loop_counter = 0;
+	foreach (string i_item, installed_rpm_version_l, {
+	    installed_version_item  = tointeger(i_item);
+	    downloaded_version_item = tointeger(downloaded_rpm_version_l[loop_counter]:"0");
+	    if (downloaded_version_item > installed_version_item) {
+		downloaded_version_is_newer = true;
+		break;
+	    }
+	    loop_counter = loop_counter + 1;
+	});
+	
+	y2milestone("%1 > %2 -> %3", downloaded_rpm_version, installed_rpm_version, downloaded_version_is_newer);
+	return downloaded_version_is_newer;
+    }
+
+    /**
      * Function checks whether the downloaded and installed versions are different
      */
-    boolean AreRPMVersionsDifferent(string rpm_name, string disk_file) {
-	string query_format = "%{NAME}-%{VERSION}-%{RELEASE}";
+    boolean IsDownloadedRPMInstallable(string rpm_name, string disk_file) {
+	string query_format = "%{NAME}-%{VERSION}";
 	
 	// Checking the installed version of RPM
 	map cmd_installed_rpm_version = (map) SCR::Execute(.target.bash_output,
@@ -391,8 +428,8 @@ and correct the settings.</p>
 	string downloaded_rpm_version = cmd_downloaded_rpm_version["stdout"]:"undefined-d";
 	y2milestone("Downloaded version: '%1'", downloaded_rpm_version);
 	
-	// The same versions -> false
-	return (installed_rpm_version != downloaded_rpm_version);
+	// The same or older versions -> false
+	return IsDownloadedVersionNewer(installed_rpm_version, downloaded_rpm_version);
     }
 
     define boolean install_release_notes () {
@@ -412,11 +449,12 @@ RPM signature check failed."));
 	    }
 	    
 	    // Checking whether installed/new rpm versions are different (#164388)
+	    // Checking whether the downloaded one is newer (#167985)
 	    string rpm_name = release_notes_rpms[filename]:"";
-	    if (AreRPMVersionsDifferent(rpm_name, filename)) {
-		y2milestone("RPM versions are different");
+	    if (IsDownloadedRPMInstallable(rpm_name, filename)) {
+		y2milestone("Downloaded version is newer, let's install it...");
 	    } else {
-		y2milestone("RPM versions are not different, skipping...");
+		y2milestone("Downloaded version is the same of older, skipping...");
 		return;
 	    }
 	    
