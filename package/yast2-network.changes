@@ -7,6 +7,17 @@ Fri Apr 21 10:00:06 CEST 2006 - locilka@suse.cz
 - 2.13.46
 
 -------------------------------------------------------------------
+Thu Apr 20 18:29:40 CEST 2006 - sreeves@suse.de
+
+- Fixes were made in gnome-menus so rolling back these redundant changes.
+
+-------------------------------------------------------------------
+Wed Apr 19 17:39:51 CEST 2006 - sreeves@suse.de
+
+- Fix for 152681 - add "yast2 modem" and "yast2 dsl" to CC
+  Fix for 152999 - add "yast2 lan" to CC
+
+-------------------------------------------------------------------
 Wed Apr 12 13:23:40 CEST 2006 - mvidner@suse.cz
 
 - Enable ifplugd by default only on laptops (#164816).
