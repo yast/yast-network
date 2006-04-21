@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Apr 21 12:12:14 CEST 2006 - locilka@suse.cz
+
+- Added missing changes between 2.13.45 and 2.13.46
+- 2.13.47
+
+-------------------------------------------------------------------
 Fri Apr 21 10:00:06 CEST 2006 - locilka@suse.cz
 
 - Prevent from installing older release notes during the internet
