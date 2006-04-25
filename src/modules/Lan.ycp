@@ -48,7 +48,15 @@ include "network/runtime.ycp";
 // FIXME: MOD global map Module = $[];
 
 
+// used at autoinstallation time
 global map autoinstall_settings = $[];
+
+/**
+ * autoinstallation: if true, write_only is disabled and the network settings
+ * are applied at once, like during the normal installation. #128810, #168806
+ */
+boolean start_immediately = false;
+
 global string description = "";
 global string unique = "";
 
@@ -497,7 +505,7 @@ global define boolean Write() {
  * @return true on success
  */
 global define boolean WriteOnly() {
-    write_only = true;
+    write_only = !start_immediately;
     return Write();
 }
 
@@ -520,6 +528,7 @@ global define boolean Import(map settings) {
     DNS::Import((map) eval(settings["dns"]:$[]));
     Routing::Import((map) eval(settings["routing"]:$[]));
     NetworkService::SetManaged (settings["managed"]:false);
+    start_immediately = settings["start_immediately"]:false;
 
     modified = true;
     return true;
@@ -538,6 +547,7 @@ global define map Export() {
 	"hwcfg"		: NetworkModules::Export("netcard"),
 	"routing"	: Routing::Export(),
 	"managed"	: NetworkService::IsManaged (),
+	"start_immediately": start_immediately,
     ];
 }
 

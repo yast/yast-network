@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Apr 25 11:11:05 CEST 2006 - mvidner@suse.cz
+
+- Added an autoyast option to apply the network settings immediately
+  so that suse_register or OES can use them (#128810, #168806).
+- 2.13.48
+
+-------------------------------------------------------------------
 Fri Apr 21 12:12:14 CEST 2006 - locilka@suse.cz
 
 - Added missing changes between 2.13.45 and 2.13.46
