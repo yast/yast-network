@@ -207,6 +207,7 @@ global define boolean Stop(string log) {
  */
 global define boolean Status() {
     integer ret = (integer) SCR::Execute(.target.bash, "/sbin/ifstatus " + device);
+    y2milestone ("ifstatus %1: %2", device, ret);
     return ret == 0 || ret == 10;
 }
 
