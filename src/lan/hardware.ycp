@@ -737,7 +737,8 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 
     if(ret == `next) {
 	if(Lan::type == "iucv") {
-	    Lan::nm_name = "iucv-id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
+	    // #176330, must be static
+	    Lan::nm_name = "static-iucv-id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
 	    Lan::device = "id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
 	}
 	else if (Lan::type != "hsi")

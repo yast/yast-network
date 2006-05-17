@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed May 17 17:30:35 CEST 2006 - mvidner@suse.cz
+
+- For iucv, create static hwcfgs, like hwcfg-static-iucv-id-$ID
+  (#176330).
+- 2.13.49
+
+-------------------------------------------------------------------
 Tue Apr 25 11:11:05 CEST 2006 - mvidner@suse.cz
 
 - Added an autoyast option to apply the network settings immediately
