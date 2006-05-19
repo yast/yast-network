@@ -17,6 +17,7 @@ module "ISDN";
 textdomain "network";
 
 import "NetworkDevices";
+import "NetworkService";
 import "Provider";
 import "Progress";
 import "Summary";
@@ -285,6 +286,7 @@ global define boolean Read() ``{
     // step 2 in reading current ISDN setup
     ProgressNextStage(_("Reading current device configuration..."));
     ReadISDNConfig("cfg-contr");
+    NetworkService::Read ();
     sleep(sl);
 
     if(Abort()) return false;
@@ -383,7 +385,7 @@ global define boolean Write(boolean start) ``{
 	    steps = 9;
 	}
 	if (haveISDNif) {
-	    steps = steps + 4;
+	    steps = steps + 5;
 	    // stage 11/13
 	    plist = add(plist, _("Set up network services"));
             // stage 11/13
@@ -392,6 +394,8 @@ global define boolean Write(boolean start) ``{
 	    plist = add(plist, _("Start ISDN networking"));
             // stage 13/13
 	    plist = add(plist, _("Run KInternet"));
+	    /* Progress stage 9 */
+	    plist = add(plist, _("Activate network services"));
 	}
     }
 
@@ -481,7 +485,7 @@ global define boolean Write(boolean start) ``{
 	    if(Abort()) return false;
 	    // step 10 in writing current ISDN setup
 	    ProgressNextStage(_("Setting up network services..."));
-	    EnableNetwork();
+	    NetworkService::EnableDisable ();
 	    sleep(sl);
 
 	    if(Abort()) return false;
@@ -505,6 +509,17 @@ global define boolean Write(boolean start) ``{
 	    ProgressNextStage(_("Running KInternet..."));
 	    RunKInternet();
 	    sleep(sl);
+
+	    if(Abort()) return false;
+	    /* Progress step 9 */
+	    ProgressNextStage(_("Activating network services..."));
+	    const boolean write_only = false;
+	    if(!write_only) {
+//		NetworkModules::HwUp (); // this is needed too
+		NetworkService::StartStop ();
+	    }
+	    sleep(sl);
+
 	}
     }
 

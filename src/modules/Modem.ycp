@@ -16,6 +16,7 @@ module "Modem";
 textdomain "network";
 
 import "NetworkDevices";
+import "NetworkService";
 import "Provider";
 import "Progress";
 import "Routing";
@@ -82,6 +83,8 @@ boolean modified = false;
  */
 symbol operation = nil;
 
+const boolean write_only = false;
+
 /*------------------*/
 /* GLOBAL FUNCTIONS */
 
@@ -134,6 +137,7 @@ global define boolean Read() {
     /* Progress step 2/4 */
     ProgressNextStage(_("Reading current configuration..."));
     NetworkDevices::Read();
+    NetworkService::Read ();
     sleep(sl);
 
     if(Abort()) return false;
@@ -179,7 +183,7 @@ global define boolean Write() {
 
     /* Write dialog caption */
     string caption = _("Saving Modem Configuration");
-    integer steps = 6;
+    integer steps = 7;
 
     integer sl = 0; /* 1000; /* TESTING */
     sleep(sl);
@@ -197,6 +201,8 @@ global define boolean Write() {
 	_("Set up smpppd"),
 	/* Progress stage 6/6 */
 	_("Run KInternet"),
+	/* Progress stage 9 */
+	_("Activate network services"),
     ], [], "");
 
     if(Abort()) return false;
@@ -223,7 +229,7 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 4/6 */
     ProgressNextStage(_("Setting up network services..."));
-    EnableNetwork();
+    NetworkService::EnableDisable ();
     sleep(sl);
 
     /* Setup SL modem */
@@ -257,6 +263,15 @@ global define boolean Write() {
     /* Progress step 6/6 */
     ProgressNextStage(_("Running KInternet..."));
     RunKInternet();
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Progress step 9 */
+    ProgressNextStage(_("Activating network services..."));
+    if(!write_only) {
+//	NetworkModules::HwUp (); // this is needed too
+	NetworkService::StartStop ();
+    }
     sleep(sl);
 
     if(Abort()) return false;

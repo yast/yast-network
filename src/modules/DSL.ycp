@@ -19,6 +19,7 @@ import "Confirm";
 import "Detection";
 import "Lan";
 import "NetworkDevices";
+import "NetworkService";
 import "Provider";
 import "Progress";
 import "Summary";
@@ -107,6 +108,8 @@ boolean modified = false;
  */
 symbol operation = nil;
 
+const boolean write_only = false;
+
 /*------------------*/
 /* GLOBAL FUNCTIONS */
 
@@ -166,6 +169,7 @@ global define boolean Read() {
     /* Progress step 2/5 */
     ProgressNextStage(_("Reading current configuration..."));
     NetworkDevices::Read();
+    NetworkService::Read ();
     sleep(sl);
 
     if(Abort()) return false;
@@ -223,7 +227,7 @@ global define boolean Write() {
 
     /* Write dialog caption */
     string caption = _("Saving DSL Configuration");
-    integer steps = 7;
+    integer steps = 8;
 
     integer sl = 0; /* 1000; /* TESTING */
     sleep(sl);
@@ -243,6 +247,8 @@ global define boolean Write() {
 	_("Set up smpppd"),
 	/* Progress stage 7/7 */
 	_("Run KInternet"),
+	/* Progress stage 9 */
+	_("Activate network services"),
     ], [], "");
 
     /* Stop the detection */
@@ -279,7 +285,7 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 5/7 */
     ProgressNextStage(_("Setting up network services..."));
-    EnableNetwork();
+    NetworkService::EnableDisable ();
     sleep(sl);
 
     if(Abort()) return false;
@@ -292,6 +298,15 @@ global define boolean Write() {
     /* Progress step 7/7 */
     ProgressNextStage(_("Running KInternet..."));
     RunKInternet();
+    sleep(sl);
+
+    if(Abort()) return false;
+    /* Progress step 9 */
+    ProgressNextStage(_("Activating network services..."));
+    if(!write_only) {
+//	NetworkModules::HwUp (); // this is needed too
+	NetworkService::StartStop ();
+    }
     sleep(sl);
 
     if(Abort()) return false;
