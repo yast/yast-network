@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri May 19 15:21:54 CEST 2006 - mvidner@suse.cz
+
+- Tell NetworkManager when writing the dialup settings by calling
+  rcnetwork reload (#162959).
+- 2.13.50
+
+-------------------------------------------------------------------
 Wed May 17 17:30:35 CEST 2006 - mvidner@suse.cz
 
 - For iucv, create static hwcfgs, like hwcfg-static-iucv-id-$ID
