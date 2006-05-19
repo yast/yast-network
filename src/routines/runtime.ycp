@@ -98,37 +98,6 @@ boolean HasLink() {
 }
 
 /**
- * Reload network configuration. If it was not running, start it instead
- * @return true if success
- */
-define boolean ReloadOrStartNetwork() {
-    if (Service::Status ("network") == 0)
-    {
-	// Workaround for bug #46055:
-	// Go to the / directory which is hopefully not mounted over the
-	// network so that yast survives network restart.
-	y2milestone("Reloading service %1", "network");
-	string cmd = "cd /; /etc/init.d/network reload";
-	return SCR::Execute (.target.bash, cmd) == 0;
-    }
-    else
-    {
-	return Service::Start ("network");
-    }
-}
-
-/**
- * Enable the network service
- * @return true if success
- */
-define boolean EnableNetwork() {
-    // Workaround for bug #46055:
-    y2milestone("Enabling service %1", "network");
-    string cmd = "cd /; /sbin/insserv -d /etc/init.d/network";
-    return SCR::Execute (.target.bash, cmd) == 0;
-}
-
-/**
  * Are there interfaces controlled by smpppd and kinternet?
  * They are the ones with USERCONTROL=yes (#44303)
  * @return true/false

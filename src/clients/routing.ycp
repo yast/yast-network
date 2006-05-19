@@ -24,6 +24,7 @@ import "Wizard";
 
 import "CommandLine";
 import "RichText";
+import "NetworkService";
 
 /**
  * Return a modification status
@@ -33,7 +34,6 @@ define boolean Modified() {
     return Routing::Modified();
 }
 
-include "network/runtime.ycp";
 include "network/services/routing.ycp";
 
 /**
@@ -52,7 +52,7 @@ any RoutingGUI() {
 
     if(ret == `next && Routing::Modified()) {
 	Routing::Write();
-	ReloadOrStartNetwork();
+	NetworkService::StartStop ();
     }
 
     UI::CloseDialog();
