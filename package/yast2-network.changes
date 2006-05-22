@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon May 22 13:43:42 CEST 2006 - mvidner@suse.cz
+
+- Set STARTMODE=nfsroot for proposed interface if on iSCSI root (#176804).
+- 2.13.51
+
+-------------------------------------------------------------------
 Fri May 19 15:21:54 CEST 2006 - mvidner@suse.cz
 
 - Tell NetworkManager when writing the dialup settings by calling

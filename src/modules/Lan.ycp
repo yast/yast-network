@@ -27,6 +27,7 @@ import "NetworkConfig";
 import "NetworkDevices";
 import "NetworkModules";
 import "NetworkService";
+import "NetworkStorage";
 import "Package";
 import "ProductFeatures";
 import "Routing";
@@ -1562,6 +1563,13 @@ global define boolean ProposeInterfaces () {
 
     // #145041
     ethtool_options = InstallInf["ethtool_options"]:"";
+
+    // #176804
+    if (NetworkStorage::RootIsOnNetwork ())
+    {
+	startmode = "nfsroot";
+	y2milestone ("startmode nfsroot");
+    }
 
     ipaddr = InstallInf["ipaddr"]:"";
     bootproto = InstallInf["bootproto"]:"static";
