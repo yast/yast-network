@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon May 29 17:27:48 CEST 2006 - mvidner@suse.cz
+
+- Disable editing interfaces if we see a Xen bridge (#178848).
+- 2.13.52
+
+-------------------------------------------------------------------
 Mon May 22 13:43:42 CEST 2006 - mvidner@suse.cz
 
 - Set STARTMODE=nfsroot for proposed interface if on iSCSI root (#176804).

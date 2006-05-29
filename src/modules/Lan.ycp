@@ -1873,5 +1873,16 @@ global define void UnsetModified () {
     modified = false;
 }
 
+/**
+ * Xen bridging confuses us (#178848)
+ * @return whether xenbr* exists
+ */
+global define boolean HaveXenBridge () {
+    string cmd = "brctl show | grep '^xenbr'";
+    boolean have_br = SCR::Execute (.target.bash, cmd) == 0;
+    y2milestone ("Have Xen bridge: %1", have_br);
+    return have_br;
+}
+
 /* EOF */
 }

@@ -75,6 +75,23 @@ Safely abort the configuration utility by pressing <B>Abort</B> now.</p>
     Wizard::RestoreHelp(help);
     Lan::AbortFunction = ``{return PollAbort();};
     boolean ret = Lan::Read (`cache);
+
+    boolean xenbr = Lan::HaveXenBridge ();
+    if (xenbr)
+    {
+	if (! Popup::ContinueCancel (
+		sformat (
+		    // continue-cancel popup, #178848
+		    // %1 is a (long) path to a README file
+_("A Xen network bridge was detected.
+Due to the renaming of network interfaces by the bridge script,
+network interfaces should not be configured or restarted.
+See %1 for details."), "/usr/share/doc/packages/xen/README.SuSE")))
+	{
+	    ret = false;
+	}
+    }
+
     return ret ? `next : `abort;
 }
 
@@ -266,6 +283,7 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
 	, [] );
     Wizard::EnableBackButton (); // ManagedDialog
 
+    boolean xenbr = Lan::HaveXenBridge ();
     boolean repaint = true;
     map ret = nil;
     while(true) {
@@ -275,6 +293,14 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
 	    overview = overview + Lan::Unconfigured ();
 	    y2debug("overview=%1",overview);
 	    WizardHW::SetContents (overview);
+	    if (xenbr)
+	    {
+		// #178848
+		foreach (symbol b, [`add, `edit, `delete], {
+		    UI::ChangeWidget (`id (b), `Enabled, false);
+		});
+	    }
+
 	    repaint = false;
 	}
 
