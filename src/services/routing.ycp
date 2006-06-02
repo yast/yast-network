@@ -105,7 +105,7 @@ _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>");
 		    /* Table header 3/4 */
 		    _("Netmask"),
 		    /* Table header 4/4 */
-		    ("Device"),
+		    _("Device"),
 		    /* Table header 5/4 */
 		    // FIXME
 		    deletechars (Label::Options (), "&")

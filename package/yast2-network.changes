@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jun  2 10:32:56 CEST 2006 - mvidner@suse.cz
+
+- Added a missing translation marker to the routing table (#179906).
+
+-------------------------------------------------------------------
 Fri Jun  2 09:31:36 CEST 2006 - locilka@suse.cz
 
 - At least one release-notes downloaded results in the successful
