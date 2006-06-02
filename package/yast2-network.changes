@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jun  2 09:31:36 CEST 2006 - locilka@suse.cz
+
+- At least one release-notes downloaded results in the successful
+  internet test (#181094).
+- 2.13.53
+
+-------------------------------------------------------------------
 Mon May 29 17:27:48 CEST 2006 - mvidner@suse.cz
 
 - Disable editing interfaces if we see a Xen bridge (#178848).

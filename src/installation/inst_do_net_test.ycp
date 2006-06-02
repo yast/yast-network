@@ -296,21 +296,26 @@ and correct the settings.</p>
 
     /**
      * Download all release notes mentioned in Product::relnotesurl_all
+     *
+     * @return true when successful
      */
     define boolean download_release_notes () {
-	// Fallback - for debugging
+	// Fallback for situation that mustn't exist
 	if (Product::relnotesurl_all == nil || Product::relnotesurl_all == []) {
-	    y2error("Product::relnotesurl_all = %1", Product::relnotesurl_all);
-	    return false;
+	    y2internal("Product::relnotesurl_all = %1", Product::relnotesurl_all);
+	    return true;
 	}
 
-	// Even if some of downloads fails, try all of them
-	boolean test_ret = true;
+	// At least one release notes downloaded means success
+	// but the default is false in case of some release-notes
+	// available for download
+	// @see Bug #181094
+	boolean test_ret = false;
 
 	integer relnotes_counter = 0;
 	Product::relnotesurl_all = toset(Product::relnotesurl_all);
 	foreach (string url, Product::relnotesurl_all, {
-	    // protect from wrong 
+	    // protect from wrong urls
 	    if (url == nil || url == "") {
 		y2warning("Skipping relnotesurl '%1'", url);
 		return;
@@ -319,7 +324,7 @@ and correct the settings.</p>
 	    integer pos = findlastof (url, "/") + 1;
 	    if (pos == nil) {
 		y2error ("broken url for release notes: %1", url);
-		test_ret = false;
+		return;
 	    }
 
 	    relnotes_counter = relnotes_counter + 1;
@@ -349,9 +354,10 @@ and correct the settings.</p>
 	    if (ret == 0) {
 		release_notes_filenames = add (release_notes_filenames, filename);
 		y2milestone("Successful");
+		// At least one successfully installed -> internet test succeeded
+		test_ret = true;
 	    } else {
 		y2error("Downloading failed");
-		test_ret = false;
 	    }
 
 	    // label of combobox where the log is selected
