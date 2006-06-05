@@ -348,7 +348,7 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 	`VSpacing(1),
 	/* Frame label */
 	`Frame(`id(`frame), _("Proxy Settings"), `HBox(`HSpacing(2), `VBox(
-	    `VSpacing(0.5),
+	    `VSpacing(0.2),
 	    /* Text entry label */
 	    `TextEntry(`id(`http), _("&HTTP Proxy URL"), http),
 	    `VSpacing(0.2),
@@ -366,7 +366,7 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 	    `VSpacing(0.2),
 	    /* Password entry label */
 	    `Password(`id(`pass), _("Proxy &Password"), pass),
-	    `VSpacing(1)
+	    `VSpacing(0.4)
 	    ), `HSpacing(2))),
 	    `VSpacing(1),
 	    /* Test Proxy Settings - push button */
