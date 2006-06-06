@@ -739,6 +739,8 @@ the logs for details.
     Wizard::EnableBackButton();
     Wizard::DisableAbortButton();
     Wizard::EnableNextButton();
+    // #105811, it lost focus when it was disabled
+    Wizard::SetFocusToNextButton();
     UI::ChangeWidget(`id(`abort_test), `Enabled, false);
     UI::ChangeWidget(`id(`view_log), `Enabled, true);
 
