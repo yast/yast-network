@@ -1,7 +1,10 @@
 -------------------------------------------------------------------
-Tue Jun  6 15:25:03 CEST 2006 - mvidner@suse.cz
+Thu Jun  8 15:06:41 CEST 2006 - mvidner@suse.cz
 
+- Do not report a duplicate IP address if the interface is not up
+  (#182473).
 - After the internet test, set focus to Next (#105811).
+- 2.13.55
 
 -------------------------------------------------------------------
 Mon Jun  5 09:27:12 CEST 2006 - mvidner@suse.cz

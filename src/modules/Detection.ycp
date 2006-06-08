@@ -286,8 +286,10 @@ global boolean DuplicateIP (string ip) {
 
     // find the interface that detects the dup
     string ifc = find (string ifname, ifsl, {
-	command = "arping -qD -c2 -w3 -I" + ifname + " " + ip;
-	return SCR::Execute(.target.bash, command) != 0;
+	// no need to be quiet, diagnostics is good
+	command = "arping  -D -c2 -w3 -I" + ifname + " " + ip;
+	// 0 no dup, 1 dup, 2 other error (eg. ifc not up, #182473)
+	return SCR::Execute(.target.bash, command) == 1;
     });
 
     return ifc != nil;
