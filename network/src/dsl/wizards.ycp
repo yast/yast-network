@@ -1,0 +1,318 @@
+/**
+ * File:	include/network/dsl/wizards.ycp
+ * Package:	Network configuration
+ * Summary:	DSL configuration wizards
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "DSL";
+import "Label";
+import "Provider";
+import "Sequencer";
+import "Wizard";
+
+include "network/routines.ycp";
+
+include "network/provider/connection.ycp";
+include "network/provider/details.ycp";
+include "network/provider/dialogs.ycp";
+include "network/provider/provider.ycp";
+
+// FIXME: NI include "network/provider/wizards.ycp";
+
+include "network/dsl/dialogs.ycp";
+include "network/dsl/complex.ycp";
+
+// FIXME: duplicated from provider/wizards.ycp
+
+define symbol CommitProvider() ``{
+    Provider::Commit();
+    return `next;
+}
+
+define symbol OneProviderSequence(boolean country) ``{
+
+    map aliases = $[
+	"providers"		: ``(ProvidersDialog(false)),
+	"provider"		: ``(ProviderDialog()),
+	"new_provider"		: ``(ProviderDialog()),
+	"connection"		: ``(ConnectionDialog()),
+	"ipdetails"		: ``(IPDetailsDialog()),
+	"commit"		: [ ``(CommitProvider()), true ],
+    ];
+
+    string entry = "provider";
+    if(country) entry = "providers";
+
+    map sequence = $[
+	"ws_start" : entry,
+	"providers" : $[
+	    `next   : "provider",
+	    `new    : "new_provider",
+	    `abort  : `abort
+	],
+	"provider" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"new_provider" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"connection" : $[
+	    `IPDetails	: "ipdetails",
+	    `next   : "commit",
+	    `abort  : `abort
+	],
+	"ipdetails" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"commit" : $[
+	    `next   : `next,
+	],
+    ];
+
+    return Sequencer::Run(aliases, sequence);
+}
+
+/**
+ * Workflow of the configuration of one DSL
+ * @param detected true if DSL was detected (more entries otherwise)
+ * @param edit true in case of edit sequence
+ * @return sequence result
+ */
+define symbol OneDSLProviderSequence(boolean detected, boolean edit) ``{
+
+    map aliases = $[
+	"parameters_detected"	: ``(DSLDialog()),
+	"parameters"		: ``(DSLDialog()),
+// FIXME: not used?	"details"		: ``(DSLDetailsDialog()),
+// FIXME: not used?	"details_detected"	: ``(DSLDetailsDialog()),
+	"providers"		: ``(ProvidersDialog(edit)),
+	"provider"		: ``(ProviderDialog()),
+	"new_provider"		: ``(ProviderDialog()),
+	"connection"		: ``(ConnectionDialog()),
+	"ipdetails"		: ``(IPDetailsDialog()),
+	"commit"		: [ ``(Commit("")), true ],
+    ];
+
+    string entry = "parameters";
+    if(detected) entry = "parameters_detected";
+
+    map sequence = $[
+	"ws_start" : entry,
+	"parameters": $[
+	    `next   : "providers",
+	    // FIXME: not used? `Details: "details",
+	    `abort  : `abort
+	],
+	"parameters_detected" : $[
+	    `next   : "providers",
+	    // FIXME: not used? `Details: "details_detected",
+	    `abort  : `abort
+	],
+	// FIXME: not used? "details"   : $[
+	    // FIXME: not used? `next   : "parameters",
+	    // FIXME: not used? `abort  : `abort
+	// FIXME: not used? ],
+	// FIXME: not used? "details_detected" : $[
+	    // FIXME: not used? `next   : "parameters_detected",
+	    // FIXME: not used? `abort  : `abort
+	// FIXME: not used? ],
+	"providers" : $[
+	    `next   : "provider",
+	    `new    : "new_provider",
+	    `abort  : `abort
+	],
+	"provider" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"new_provider" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"connection" : $[
+	    `IPDetails   : "ipdetails",
+	    `next   : "commit",
+	    `abort  : `abort
+	],
+	"ipdetails" : $[
+	    `next   : "connection",
+	    `abort  : `abort
+	],
+	"commit" : $[
+	    `next   : `next,
+	],
+    ];
+
+    return Sequencer::Run(aliases, sequence);
+}
+
+/**
+ * Main workflow of the DSL configuration
+ * @return sequence result
+ */
+define symbol DSLMainSequence() ``{
+
+    map aliases = $[
+	"overview"	: ``(OverviewDialog()),
+	"add"		: [ ``(OneDSLProviderSequence(false, false)), true ],
+	"edit"		: [ ``(OneDSLProviderSequence(false, true)), true ],
+	// "edit"		: [ ``(OneDSLSequence(false)), true ],
+	"Add"		: [ ``(OneProviderSequence(true)), true ],
+	"Edit"		: [ ``(OneProviderSequence(false)), true ],
+    ];
+
+    map sequence = $[
+	"ws_start" : "overview",
+	"overview" : $[
+	    `abort	: `abort,
+	    `next	: `next,
+	    `add	: "add",
+	    `edit	: "edit",
+	    `Add	: "Add",
+	    `Edit	: "Edit",
+	],
+	"add" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+	"edit" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+	"Add" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+	"Edit" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+    ];
+
+    return Sequencer::Run(aliases, sequence);
+}
+
+/**
+ * Workflow of the configuration of one DSL
+ * @param detected true if DSL was detected (more entries otherwise)
+ * @return sequence result
+ */
+define symbol OneDSLSequence(boolean detected) ``{
+
+    map aliases = $[
+	"parameters_detected"	: ``(DSLDialog()),
+	"parameters"		: ``(DSLDialog()),
+	// FIXME: not used? "details"		: ``(DSLDetailsDialog()),
+	// FIXME: not used? "details_detected"	: ``(DSLDetailsDialog()),
+	"commit"		: [ ``(Commit("dsl")), true ],
+    ];
+
+    string entry = "parameters";
+    if(detected) entry = "parameters_detected";
+
+    map sequence = $[
+	"ws_start" : entry,
+	"parameters": $[
+	    `next   : "commit",
+	    // FIXME: not used? `Details: "details",
+	    `abort  : `abort
+	],
+	"parameters_detected" : $[
+	    `next   : "commit",
+	    // FIXME: not used? `Details: "details_detected",
+	    `abort  : `abort
+	],
+	// FIXME: not used? "details"   : $[
+	    // FIXME: not used? `next   : "parameters",
+	    // FIXME: not used? `abort  : `abort
+	// FIXME: not used? ],
+	// FIXME: not used? "details_detected" : $[
+	    // FIXME: not used? `next   : "parameters_detected",
+	    // FIXME: not used? `abort  : `abort
+	// FIXME: not used? ],
+	"commit" : $[
+	    `next   : `next,
+	],
+    ];
+
+    return Sequencer::Run(aliases, sequence);
+}
+
+/**
+ * Whole configuration of DSL
+ * @return sequence result
+ */
+define symbol DSLSequence() ``{
+
+    map aliases = $[
+	"read"		: [ ``( ReadDialog() ), true ],
+	"main"		:   ``( DSLMainSequence() ),
+	"packages"	: [ ``( PackagesInstall(DSL::Packages()) ), true ],
+	"write"		: [ ``( WriteDialog() ), true ],
+	"finish"	: [ ``( FinishDialog() ), true ],
+    ];
+
+    map sequence = $[
+	"ws_start" : "read",
+	"read" : $[
+	    `abort	: `abort,
+	    `next	: "main"
+	],
+	"main" : $[
+	    `abort	: `abort,
+	    `next	: "packages"
+	],
+	"packages" : $[
+	    `abort	: `abort,
+	    `next	: "write"
+	],
+	"write" : $[
+	    `abort	: `abort,
+	    `next	: "finish"
+	],
+	"finish" : $[
+	    `next	: `next,
+	]
+    ];
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("dsl");
+
+    symbol ret = Sequencer::Run(aliases, sequence);
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/**
+ * Whole configuration of DSL but without reading and writing.
+ * For use with autoinstallation.
+ * @return sequence result
+ */
+define symbol DSLAutoSequence() ``{
+    string caption = _("DSL Configuration");
+    term contents = `Label(_("Initializing..."));
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("dsl");
+    Wizard::SetContentsButtons(caption, contents, "",
+	    Label::BackButton(), Label::NextButton());
+
+    symbol ret = DSLMainSequence();
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/* EOF */
+}

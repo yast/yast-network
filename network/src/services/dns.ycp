@@ -1,0 +1,552 @@
+/**
+ * File:	include/network/services/dns.ycp
+ * Package:	Network configuration
+ * Summary:	Hostname and DNS setup dialog
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *		Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "CWM";
+import "DNS";
+import "GetInstArgs";
+import "Hostname";
+import "IP";
+import "Label";
+import "Lan";
+import "NetworkConfig";
+import "NetworkService";
+import "Popup";
+
+include "network/routines.ycp";
+include "network/widgets.ycp";
+
+/**
+ * If we know that there are no interfaces with DHCP, we can disable
+ * the check boxes.
+ * Each dialog must set this variable.
+ * HostnameDialog does not know yet whether we will have DHCP so it
+ * assumes yes.
+ * DNSMainDialog can query Lan::.
+ */
+boolean has_dhcp = true;
+
+/**
+ * If there's a process modifying resolv.conf, we warn the user before
+ * letting him change things that will be overwritten anyway.
+ * See also #61000.
+ */
+boolean resolver_modifiable = true;
+
+/**
+ * CWM buffer for both dialogs.  Note that NAMESERVERS and SEARCHLIST
+ * are lists and their widgets are suffixed.
+ */
+map hn_settings = $[];
+
+/**
+ * @param l list of strings
+ * @return only non-empty items
+ */
+define list<string> NonEmpty (list<string> l) {
+    return filter (string s, l, ``(s != ""));
+}
+
+/**
+ * @return initial settings for this dialog in one map, from DNS::
+ */
+define map InitSettings () {
+    map settings = $[
+	"HOSTNAME": DNS::hostname,
+	"DOMAIN": DNS::domain,
+	"DHCP_HOSTNAME": NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false,
+	"DHCP_RESOLV": NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false,
+	];
+    // the rest is not so straightforward,
+    // because we have list variables but non-list widgets
+
+    /* domain search */
+    string searchstring = mergestring (DNS::searchlist, "\n");
+    // #49094: populate the search list
+    if (searchstring == "" && !settings["DHCP_RESOLV"]:false)
+    {
+	searchstring = settings["DOMAIN"]:"";
+    }
+    settings["SEARCHLIST_S"] = searchstring;
+    settings["NAMESERVER_1"] = DNS::nameservers[0]:"";
+    settings["NAMESERVER_2"] = DNS::nameservers[1]:"";
+    settings["NAMESERVER_3"] = DNS::nameservers[2]:"";
+
+    return settings;
+}
+
+/**
+ * @param settings map of settings to be stored to DNS::
+ */
+define void StoreSettings (map settings) {
+    list<string> nameservers = [
+	settings["NAMESERVER_1"]:"",
+	settings["NAMESERVER_2"]:"",
+	settings["NAMESERVER_3"]:"",
+	];
+    list<string> searchlist = splitstring (settings["SEARCHLIST_S"]:"",
+					   " ,\n\t");
+
+    DNS::hostname = settings["HOSTNAME"]:"";
+    DNS::domain = settings["DOMAIN"]:"";
+    DNS::nameservers = NonEmpty (nameservers);
+    DNS::searchlist = NonEmpty (searchlist);
+    NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = settings["DHCP_HOSTNAME"]:false;
+    NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"] = settings["DHCP_RESOLV"]:false;
+    /* update modified flag */
+    DNS::modified = true;
+}
+
+/**
+ * Default function to init the value of a widget.
+ * Used for push buttons.
+ * @param key id of the widget
+ */
+define void InitHnWidget (string key) {
+    any value = hn_settings[key]:nil;
+    UI::ChangeWidget (`id (key), `Value, value);
+}
+
+
+/**
+ * Default function to store the value of a widget.
+ * @param key	id of the widget
+ * @param event	the event being handled
+ */
+define void StoreHnWidget (string key, map event) {
+    any value = UI::QueryWidget (`id (key), `Value);
+    hn_settings[key] = value;
+}
+
+/**
+ * Event handler for DHCP_HOSTNAME checkbox.
+ * enable or disable: is DHCP available?
+ * @param key	the widget receiving the event
+ * @param event	the event being handled
+ * @return nil so that the dialog loops on
+ */
+define symbol HandleDhcpHostname (string key, map event) {
+    boolean enabled = has_dhcp;
+    UI::ChangeWidget (`id (key), `Enabled, enabled);
+    return nil;
+}
+
+/**
+ * Event handler for DHCP_RESOLV checkbox.
+ * enable or disable: is DHCP available and not used now? HUH?!
+ * @param key	the widget receiving the event
+ * @param event	the event being handled
+ * @return nil so that the dialog loops on
+ */
+define symbol HandleDhcpResolv (string key, map event) {
+    boolean enabled = has_dhcp && resolver_modifiable;
+    UI::ChangeWidget (`id (key), `Enabled, enabled);
+    return nil;
+}
+
+/**
+ * Event handler for resolver data (nameservers, searchlist)
+ * enable or disable: is DHCP available?
+ * @param key	the widget receiving the event
+ * @param event	the event being handled
+ * @return nil so that the dialog loops on
+ */
+define symbol HandleResolverData (string key, map event) {
+    boolean dhcp_resolv = (boolean) UI::QueryWidget (`id ("DHCP_RESOLV"), `Value);
+    dhcp_resolv = dhcp_resolv && has_dhcp; // #146162
+    boolean enabled = resolver_modifiable && (!dhcp_resolv);
+    UI::ChangeWidget (`id (key), `Enabled, enabled);
+    return nil;
+}
+
+/**
+ * Validator for hostname, no_popup
+ * @param key	the widget being validated
+ * @param event	the event being handled
+ * @return whether valid
+ */
+define boolean ValidateHostname (string key, map event) {
+    boolean dhn = has_dhcp && (boolean) UI::QueryWidget (`id ("DHCP_HOSTNAME"), `Value);
+    // If the names are set by dhcp, the user may enter backup values
+    // here - N#28427. That is, host and domain name are optional then.
+    // For static config, they are mandatory.
+    string value = (string) UI::QueryWidget (`id (key), `Value);
+
+    if (!dhn || value != "")
+    {
+	return Hostname::Check (value);
+    }
+    return true;
+}
+
+/**
+ * Validator for domain name, no_popup
+ * @param key	the widget being validated
+ * @param event	the event being handled
+ * @return whether valid
+ */
+define boolean ValidateDomain (string key, map event) {
+    boolean dhn = has_dhcp && (boolean) UI::QueryWidget (`id ("DHCP_HOSTNAME"), `Value);
+    string value = (string) UI::QueryWidget (`id (key), `Value);
+
+    if (!dhn || value != "")
+    {
+	return Hostname::CheckDomain (value);
+    }
+    return true;
+}
+
+/**
+ * Validator for the search list
+ * @param key	the widget being validated
+ * @param event	the event being handled
+ * @return whether valid
+ */
+define boolean ValidateSearchList (string key, map event) {
+    string value = (string) UI::QueryWidget (`id (key), `Value);
+    list<string> sl = NonEmpty (splitstring (value, " ,\n\t"));
+    string error = "";
+
+    if (size (sl) > 6)
+    {
+	/* Popup::Error text */
+	error = sformat (_("The search list can have at most %1 domains."), 6);
+    }
+    else if (size (mergestring (sl, " ")) > 256)
+    {
+	/* Popup::Error text */
+	error = sformat (_("The search list can have at most %1 characters."), 256);
+    }
+    string bad = find (string s, sl, {
+	if (! Hostname::CheckDomain (s)) {
+	    /* Popup::Error text */
+	    error = sformat (_("The search domain '%1' is invalid."), s) +
+	    "\n" + Hostname::ValidDomain ();
+	    return true;
+	}
+	return false;
+    });
+
+    if (error != "")
+    {
+	UI::SetFocus (`id (key));
+	Popup::Error (error);
+	return false;
+    }
+    return true;
+}
+
+map<string, map<string,any> > widget_descr_dns = $[
+
+    "HOSTNAME": $[
+	"widget": `textentry,
+	/* textentry label */
+	"label": Label::HostName (),
+	"opt": [],
+	"help":
+	// help
+_("<p>Enter the name for this computer and the DNS domain that it belongs to.</p>"),
+	"valid_chars": Hostname::ValidChars,
+	"validate_type": `function_no_popup,
+	"validate_function": ValidateHostname,
+	// validation error popup
+	"validate_help": _("The hostname is invalid.") + "\n" + Hostname::ValidHost (),
+	],
+    "RESOLVER_INTRO": $[
+	"widget": `empty,
+	"help": _("<p>Optionally enter the name server list and domain search list.</p>"),
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
+	],
+    "HOSTNAME_IS_GLOBAL": $[
+	"widget": `empty,
+	// #91202
+	"help": _("<p>Note that the hostname is global--it applies to all
+interfaces, not just this one.</p>"),
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
+	],
+    "DOMAIN": $[
+	"widget": `textentry,
+	/* textentry label */
+	"label": _("&Domain Name"),
+	"opt": [],
+	"help": _("<p>The domain is especially important if this computer is a mail server.</p>"),
+	// Do nothing (the widget doesnt have notify anyway)
+	// In particular do not disable the host and domain name widgets,
+	// setting of FQDN should be possible even if DHCP overrides it.
+	// N#28427, N#63423.
+	// "handle": nil,
+	"valid_chars": Hostname::ValidCharsDomain,
+	"validate_type": `function_no_popup,
+	"validate_function": ValidateDomain,
+	// validation error popup
+	"validate_help": _("The domain name is invalid.") + "\n" + Hostname::ValidDomain (),
+	],
+    "DHCP_HOSTNAME": $[
+	"widget": `checkbox,
+	/* checkbox label */
+	"label": _("&Change Hostname via DHCP"),
+	"opt": [],
+	// help
+	"help": _("<p>If you are using DHCP to get an IP address, check whether to get
+a hostname via DHCP.
+Avoid this when you connect to different networks that might each
+assign a different hostname, because changing the hostname at runtime
+confuses the graphical desktop.</p>
+"),
+	"handle": HandleDhcpHostname,
+	],
+
+    "NAMESERVER_1": $[
+	"widget": `textentry,
+	/* textentry label */
+	"label": _("Name Server &1"),
+	"opt": [],
+	"help": "",		// at "SEARCHLIST_S"
+	"handle": HandleResolverData,
+	"valid_chars": IP::ValidChars,
+	"validate_type": `function_no_popup,
+	"validate_function": ValidateIP,
+	// validation error popup
+	"validate_help": _("The IP address of the name server is invalid.")+ "\n" + IP::Valid4 (),
+	],
+    // NAMESERVER_2 and NAMESERVER_3 are cloned in the dialog function
+
+    "SEARCHLIST_S": $[
+	"widget": `multi_line_edit,
+	/* textentry label */
+	"label": _("Do&main Search"),
+	"opt": [],
+	// all help for resolver goes here for now
+	"help": _("<p>Enter the name servers and domain search list for resolving 
+hostnames. Usually they can be obtained by DHCP.</p>
+") +
+	// resolver dialog help
+	_("<p>A name server is a computer that translates hostnames into
+IP addresses. This value must be entered as an <b>IP address</b>
+(for example, 192.168.0.42), not as a hostname.</p>
+") +
+	// resolver dialog help
+	_("<p>Search domain is the domain name where hostname searching starts.
+The primary search domain is usually the same as the domain name of
+your computer (for example, suse.de). There may be additional search domains
+(such as suse.com). Separate the domains with commas or white space.</p>
+") +
+	// resolver dialog help
+    _("<p>If you plan to use a dial-up Internet connection and have set up your
+connection to use dynamic DNS assignment, these values will be temporarily
+disabled during the connection.</p>"),
+	"handle": HandleResolverData,
+//	"valid_chars": Hostname::ValidCharsFQ, // TODO: whitespace. unused anyway?
+	"validate_type": `function,
+	"validate_function": ValidateSearchList,
+	],
+    "DHCP_RESOLV": $[
+	"widget": `checkbox,
+	/* checkbox label */
+	"label": _("&Update Name Servers and Search List via DHCP"),
+	"opt": [`notify],
+	// help
+	"help": "",		// at "SEARCHLIST_S"
+	"handle": HandleDhcpResolv,
+	],
+    ];
+
+define boolean ReallyAbortInst () {
+    return Popup::ConfirmAbort (`incomplete);
+}
+
+define symbol HostnameDialog () {
+    has_dhcp = true;
+
+    hn_settings = InitSettings ();
+
+    map functions = $[
+	"init" : InitHnWidget,
+	"store" : StoreHnWidget,
+	`abort : ReallyAbortInst,
+    ];
+    term contents = `HSquash (
+	/* Frame label */
+	`Frame(_("Hostname and Domain Name"), `VBox(
+	    `HBox(
+		"HOSTNAME",
+		`HSpacing (1),
+		"DOMAIN"
+	    ),
+	    `Left ("DHCP_HOSTNAME")
+	))
+	);
+
+    map<string, map<string,any> > widget_descr = widget_descr_dns;
+    symbol ret = CWM::ShowAndRun (
+	$[
+	    "widget_descr": widget_descr,
+	    "contents": contents,
+	    // dialog caption
+	    "caption": _("Hostname and Domain Name"),
+	    "back_button" : Label::BackButton (),
+	    "next_button" : Label::NextButton (),
+	    "fallback_functions" : functions,
+	    "disable_buttons" : GetInstArgs::enable_back() ? [] : ["back_button"],
+	]);
+
+    if (ret == `next)
+    {
+	StoreSettings (hn_settings);
+    }
+
+    return ret;
+}
+
+/**
+ * If there's running a process modifying resolv.conf,
+ * present a wanrning popup and return the result.
+ * @return true if resolv.conf should be modified
+ * (ie. no process running, or user decided to do so)
+ */
+define boolean ModifyResolvConfPopup() {
+
+    string process = DNS::resolv_conf_process;
+    if(process == nil || process == "") return true;
+
+    /* Warning popup text 1/2 */
+    string text = _("<p>The resolver configuration file (/etc/resolv.conf)
+has been temporarily modified by %1. You have two options:</p>") +
+
+    /* Warning popup text 2/2 */
+    _("<ol>
+<li>Modify the current (changed) version of the file.</li>
+<li>Press 'Accept' now and continue editing other (nonresolver) data. You
+could return to this dialog later when the above service has terminated.</li>
+</ol>
+");
+
+    /* has been modified by "unknown process" */
+    text = sformat(text, size(process) > 1 ? process : _("unknown process"));
+
+    UI::OpenDialog(`opt(`decorated), `VBox(
+	`HSpacing(60),
+	`HBox(
+	    `VSpacing(8),
+	    `RichText(text)
+	),
+	`HBox(
+	    /* PushButton label */
+	    `PushButton(`id(`accept), `opt(`default), _("&Accept")),
+	    `HSpacing(2),
+	    /* PushButton label */
+	    `PushButton(`id(`modify), _("&Modify"))
+	)
+    ));
+
+    any ret = UI::UserInput();
+    UI::CloseDialog();
+
+    DNS::resolv_conf_force = (ret == `modify);
+    y2milestone ("resolv.conf modified by: %1, force: %2",
+		 process, DNS::resolv_conf_force);
+    return DNS::resolv_conf_force;
+}
+
+/**
+ * Dialog for querying DNS & hostname info
+ * @param standalone true if not run from another ycp client
+ * @return user input
+ */
+define any DNSMainDialog(boolean standalone) {
+
+    ScreenName("dns");
+
+    /* DNS dialog caption */
+    string caption = _("Hostname and Name Server Configuration");
+
+    has_dhcp = NetworkService::IsManaged () ||
+	Lan::bootproto == "dhcp" || Lan::AnyDHCPDevice ();
+
+    hn_settings = InitSettings ();
+
+    string hnlabel = standalone?
+	/* Frame label */
+	_("Hostname and Domain Name"):
+	/* Frame label, emphasizing that the names are global,
+	   not specific to one address */
+	_("Hostname and Domain Name (Global)");
+
+    /* DNS dialog contents */
+    term contents = `HSquash(`VBox(
+	`Frame(hnlabel, `VBox(
+	    `HBox(
+		"HOSTNAME",
+		"RESOLVER_INTRO", // help only
+		standalone? `Empty (): "HOSTNAME_IS_GLOBAL", // help only
+		`HSpacing (1),
+		"DOMAIN"
+	    ),
+	    /* CheckBox label */
+	    `Left("DHCP_HOSTNAME")
+	)),
+	`VSpacing(1),
+	/* Frame label */
+	`Frame(_("Name Servers and Domain Search List"), `VBox(
+	`VSquash ( `HBox(
+	    `HWeight (1, `VBox(
+			  "NAMESERVER_1",
+			  "NAMESERVER_2",
+			  "NAMESERVER_3"
+	    )),
+	    `HSpacing (1),
+	    `HWeight (1, "SEARCHLIST_S")
+	)),
+	/* CheckBox label */
+	`Left ("DHCP_RESOLV")
+	))
+    ));
+
+    map functions = $[
+	"init" : InitHnWidget,
+	"store" : StoreHnWidget,
+	`abort : ReallyAbort,
+    ];
+
+    map<string, map<string,any> > widget_descr = widget_descr_dns;
+    widget_descr["NAMESERVER_2"] = widget_descr["NAMESERVER_1"]:$[];
+    widget_descr["NAMESERVER_3"] = widget_descr["NAMESERVER_1"]:$[];
+    // text entry label
+    widget_descr["NAMESERVER_2", "label"] = _("Name Server &2");
+    // text entry label
+    widget_descr["NAMESERVER_3", "label"] = _("Name Server &3");
+
+    resolver_modifiable = ModifyResolvConfPopup ();
+
+    symbol ret = CWM::ShowAndRun (
+	$[
+	    "widget_descr": widget_descr,
+	    "contents": contents,
+	    "caption": caption,
+	    "back_button" : Label::BackButton (),
+	    "next_button" : standalone? Label::FinishButton (): Label::OKButton(),
+	    "fallback_functions" : functions,
+	]);
+
+    if (ret == `next)
+    {
+	StoreSettings (hn_settings);
+    }
+
+    return ret;
+}
+
+/* EOF */
+}

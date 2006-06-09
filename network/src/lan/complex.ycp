@@ -1,0 +1,426 @@
+/**
+ * File:	include/network/lan/dialogs.ycp
+ * Package:	Network configuration
+ * Summary:	Summary, overview and IO dialogs for network cards config
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Lan";
+import "DNS";
+import "NetworkConfig";
+import "NetworkModules";
+import "NetworkService";
+import "Routing";
+
+import "Wizard";
+import "Wizard_hw";
+import "WizardHW";
+
+import "Popup";
+import "Label";
+
+include "network/routines.ycp";
+include "network/summary.ycp";
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+define boolean Modified() ``{
+    return Lan::Modified() || DNS::modified || Routing::Modified() ||
+	NetworkConfig::Modified();
+}
+
+/**
+ * Commit changes to internal structures
+ * @return always `next
+ */
+define symbol Commit() ``{
+    Lan::Commit();
+    return `next;
+}
+
+/**
+ * Display finished popup
+ * @return dialog result
+ */
+define symbol FinishDialog() ``{
+    return FinishPopup(Modified(), "lan", "", "mail", ["permanent"]);
+}
+
+/**
+ * Read settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol ReadDialog() ``{
+
+    ScreenName("lan-read");
+
+    /* Network cards read dialog help 1/2 */
+    string help = _("<p><b><big>Initializing Network Card
+Configuration</big></b><br>Please wait...<br></p>
+") +
+
+    /* Network cards read dialog help 2/2 */
+_("<p><b><big>Aborting the Initialization:</big></b><br>
+Safely abort the configuration utility by pressing <B>Abort</B> now.</p>
+");
+
+    Wizard::RestoreHelp(help);
+    Lan::AbortFunction = ``{return PollAbort();};
+    boolean ret = Lan::Read (`cache);
+
+    boolean xenbr = Lan::HaveXenBridge ();
+    if (xenbr)
+    {
+	if (! Popup::ContinueCancel (
+		sformat (
+		    // continue-cancel popup, #178848
+		    // %1 is a (long) path to a README file
+_("A Xen network bridge was detected.
+Due to the renaming of network interfaces by the bridge script,
+network interfaces should not be configured or restarted.
+See %1 for details."), "/usr/share/doc/packages/xen/README.SuSE")))
+	{
+	    ret = false;
+	}
+    }
+
+    return ret ? `next : `abort;
+}
+
+/**
+ * Write settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol WriteDialog() ``{
+    ScreenName("lan-write");
+
+    if(!Modified()) return `next;
+
+    /* Network cards write dialog help 1/2 */
+    string help = _("<p><b><big>Saving Network Card
+Configuration</big></b><br>Please wait...<br></p>
+") +
+
+    /* Network cards write dialog help 2/2 */
+_("<p><b><big>Aborting Saving:</big></b><br>
+Abort saving by pressing <b>Abort</b>.</p>
+");
+
+    Wizard::RestoreHelp(help);
+    Lan::AbortFunction = ``{return PollAbort() && ReallyAbort();};
+    boolean ret = Lan::Write();
+    return ret ? `next : `abort;
+}
+
+/**
+ * Initialize the NetworkManager widget
+ * @param key id of the widget
+ */
+define void ManagedInit (string key) {
+    string value = NetworkService::IsManaged ()? "managed": "ifup";
+    UI::ChangeWidget (`id (key), `CurrentButton, value);
+}
+
+/**
+ * Store the NetworkManager widget
+ * @param key	id of the widget
+ * @param event	the event being handled
+ */
+define void ManagedStore (string key, map event) {
+    string value_g = (string) UI::QueryWidget (`id (key), `CurrentButton);
+    boolean value = value_g == "managed";
+    if (NetworkService::IsManaged () != value)
+	Lan::SetModified ();
+    NetworkService::SetManaged (value);
+}
+
+/**
+ * Dialog to choose whether to use NetworkManager or not
+ */
+define symbol ManagedDialog () {
+    map<string, map<string,any> > wd = $[
+	"MANAGED": $[
+	    "widget": `radio_buttons,
+	    // radio button group label, method of setup
+	    "label": _("Network Setup Method"),
+	    "items": [
+		// radio button label
+		// the user can control the network with the NetworkManager
+		// program
+		["managed", _("&User Controlled with NetworkManager")],
+		// radio button label
+		// ifup is a program name
+		["ifup", _("&Traditional Method with ifup")],
+		],
+	    "opt": [],
+	    "help":
+	    /* Network setup method help */
+	    // NetworkManager and ifup are programs
+_("<p>Use <b>NetworkManager</b> to have a desktop applet
+manage connections for all interfaces. It is well-suited
+to switching among wired and multiple wireless networks.</p>
+") +
+	    /* Network setup method help */
+	    // NetworkManager and ifup are programs
+_("<p>Use the <b>Traditional Method with <tt>ifup</tt></b>
+if you do not run a desktop environment (GNOME or KDE)
+or need to use multiple interfaces at once.</p>
+"),
+	    "init": ManagedInit,
+	    "store": ManagedStore,
+	    ],
+	];
+
+    term contents = `VBox (
+	`HSquash ("MANAGED")
+	);
+
+    map functions = $[
+	`abort : ReallyAbort,
+    ];
+
+    symbol ret = (symbol) CWM::ShowAndRun (
+	$[
+	    "widget_descr": wd,
+	    "contents": contents,
+	    /* Address dialog caption */
+	    "caption": _("Network Setup Method"),
+	    "back_button" : Label::BackButton (),
+	    "next_button" : Label::NextButton (),
+	    "fallback_functions" : functions,
+	    ]);
+    // #148485: always show the device overview
+    if (false && ret == `next && NetworkService::IsManaged ())
+    {
+	ret = `managed;
+    }
+    return ret;
+}
+
+/**
+ * Start configuring a new interface (`add or `managed).
+ * Also install needed packages.
+ * @return whether to proceed with editing and commiting the config
+ */
+define boolean AddInterface (integer hwid) {
+    Lan::Add ();
+    Lan::SelectHW (hwid);
+    Lan::SetDefaultsForHW ();
+
+    // warn if selecting a card without a driver, #29296
+    // TODO also for DSL...
+    if (NetworkModules::Alias == "")
+    {
+	if (!Popup::ContinueCancel (_("The device does not have a driver module.
+The driver may be built in the kernel.")))
+	{
+	    return false;
+	}
+    }
+    // this is one of 3 places to install packages :-(
+    // - kernel modules (InstallKernel): before loaded
+    // - smpppd & kinternet: before net start
+    // - wlan firmware: here, just because it is copied from modems
+    //   #45960
+    if(Lan::Requires != [] && Lan::Requires != nil) {
+	if(PackagesInstall(Lan::Requires) != `next)
+	    return false;
+    }
+    return true;
+}
+
+/**
+ * Overview dialog
+ * @return dialog result
+ */
+define any OverviewDialog() ``{
+
+    ScreenName("lan-overview");
+
+    /* Network cards overview dialog caption */
+    string caption = _("Network Card Configuration Overview");
+
+    /* Network cards overview dialog help 1/4 */
+    string help = _("<p><b><big>Network Card Overview</big></b><br>
+Obtain an overview of installed network cards. Additionally,
+edit their configuration.<br></p>
+") +
+
+    /* Network cards overview dialog help 2/4 */
+_("<p><b><big>Adding a Network Card:</big></b><br>
+Press <b>Add</b> to configure a new network card manually.</p>
+") +
+
+    /* Network cards overview dialog help 3/4 */
+_("<p><b><big>Editing or Deleting:</big></b><br>
+Choose a network card to change or remove.
+Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
+");
+
+    // unused
+    list<list> more_buttons = [
+	// Button label
+	// NetworkManager is a program name
+	[`global_managed, _("&Managed by NetworkManager")],
+	// Button label
+	// NetworkManager is a program name
+// `managed was for single interfaces
+//	[`managed, _("&Managed by NetworkManager")],	
+	];
+
+    // FIXME: for now, rework the data for the new WizardHW
+
+    WizardHW::CreateHWDialog (caption, help
+	, [_("Name"), _("IP Address")]
+	, [] );
+    Wizard::EnableBackButton (); // ManagedDialog
+
+    boolean xenbr = Lan::HaveXenBridge ();
+    boolean repaint = true;
+    map ret = nil;
+    while(true) {
+	if (repaint)
+	{
+	    list<map<string,any> > overview = (list<map<string,any> >)Lan::Overview();
+	    overview = overview + Lan::Unconfigured ();
+	    y2debug("overview=%1",overview);
+	    WizardHW::SetContents (overview);
+	    if (xenbr)
+	    {
+		// #178848
+		foreach (symbol b, [`add, `edit, `delete], {
+		    UI::ChangeWidget (`id (b), `Enabled, false);
+		});
+	    }
+
+	    repaint = false;
+	}
+
+	ret = WizardHW::UserInput();
+
+	/* abort? */
+	if(ret["event"]:nil == `abort || ret["event"]:nil == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* add */
+	else if(ret["event"]:nil == `add) {
+	    Lan::Add();
+	    break;
+	}
+	/* edit */
+	else if(ret["event"]:nil == `edit || ret["event"]:nil == `table) {
+	    string dev = ret["selected"]:"";
+	    if(dev == nil) {
+		y2error("Empty device during Edit");
+		continue;
+	    }
+
+	    if (substring (dev, 0, 1) == "-") // unconfigured
+	    {
+		integer i = tointeger (substring (dev, 1));
+		if (! AddInterface (i))
+		{
+		    continue;
+		}
+	    }
+	    else		// configured
+	    {
+		Lan::Edit(dev);
+		if (Lan::startmode == "managed")
+		{
+		    // Continue-Cancel popup
+		    if (!Popup::ContinueCancel (_("The interface is currently set to be managed
+by the NetworkManager applet.
+
+If you edit the settings for this interface here,
+the interface will no longer be managed by NetworkManager.
+")))
+		    {
+			continue; // means cancel
+		    }
+		    //
+		    // TODO move the defaults to GetDefaultsForHW
+		    Lan::startmode = "ifplugd";
+		}
+
+	    }
+
+	    ret = $["event": `edit];
+	    break;
+	}
+	/* managed - global */
+	else if(ret["event"]:nil == `global_managed) {
+	    NetworkService::SetManaged (! NetworkService::IsManaged ());
+	    Lan::SetModified ();
+	    repaint = true;
+	}
+	/* managed - per ifcfg */
+	else if(ret["event"]:nil == `managed) {
+	    string dev = ret["selected"]:"";
+	    if(dev == nil) {
+		y2error("Empty device during Edit");
+		continue;
+	    }
+
+	    if (substring (dev, 0, 1) == "-") // unconfigured
+	    {
+		integer i = tointeger (substring (dev, 1));
+		if (! AddInterface (i))
+		{
+		    continue;
+		}
+	    }
+	    else		// configured
+	    {
+		Lan::Edit(dev);
+	    }
+	    Lan::startmode = "managed";
+	    Lan::nm_name = "";	// no hwcfg
+	    Lan::Commit ();
+	    repaint = true;
+	    continue;
+	}
+	/* delete */
+	else if(ret["event"]:nil == `delete) {
+	    string dev = ret["selected"]:"";
+
+	    if (substring (dev, 0, 1) == "-") // unconfigured
+		continue;
+
+	    /* Popup text */
+	    string pop = sformat(_("All additional addresses belonging to the interface %1
+will be deleted as well.
+
+Really continue?
+"), dev);
+	    if(Lan::HasAliases(dev) && Popup::YesNoHeadline(Label::WarningMsg(), pop) != true)
+		continue;
+
+	    Lan::Delete(dev);
+	    Lan::Commit();
+	    repaint = true;
+	    continue;
+	}
+	else if(ret["event"]:nil == `next || ret["event"]:nil == `back) {
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+    return ret["event"]:nil;
+}
+
+/* EOF */
+}

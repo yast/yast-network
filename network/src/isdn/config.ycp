@@ -1,0 +1,154 @@
+/**
+ * File:
+ *   include/network/isdn/config.ycp
+ *
+ * Package:
+ *   Configuration of network cards
+ *
+ * Summary:
+ *   Reading/Writing functions for isdn config data
+ *
+ * Authors:
+ *   Karsten keil <kkeil@suse.de>
+ *
+ * $Id$
+ *
+ * All config settings are stored in a global variable Devices.
+ * Deleted devices are in the global list DeletedDevices.
+ */
+
+{
+
+textdomain "network";
+
+import "Map";
+include "network/routines.ycp";
+
+/**
+ * Read Devices from files
+ * @param devregex regular expression for the device type
+ * @return true if sucess
+ * @example ReadISDNConfig("eth|tr");
+ */
+global define boolean ReadISDNConfig(string devregex) ``{
+
+    string sysconfig = "/etc/sysconfig/isdn";
+
+    list<string> devices = (list<string>) SCR::Dir(.isdn.section);
+    devices = filter(string file, devices, ``(!regexpmatch(file, "[\.~]")));
+    devices = filter(string file, devices, ``(regexpmatch(file, "^.*/isdn/cfg-.*")));
+
+    if(devregex != nil && devregex != "") {
+	devices = filter(string file, devices, ``(regexpmatch(file, devregex)));
+    }
+    maplist(string d, devices, ``{
+	string devtype = regexpsub(d, "^.*/cfg-([a-z]+)[^a-z]*$", "\\1");
+	if (devtype == nil)
+	    return;
+	string devnum = regexpsub(d, "^.*/cfg-[a-z]+([0-9]+)", "\\1");
+	if (devnum == nil)
+	    return;
+	y2debug("devtype=%1 devnum=%2", devtype, devnum);
+
+	map dev = Devices[devtype]:$[];
+	if(haskey(dev, devnum)) {
+	    y2error("device already present: %1", devnum);
+	    return;
+	}
+
+	string pth = ".isdn.value.\"" + sysconfig + "/cfg-"+devtype+devnum+"\"";
+	list<string> values = (list<string>) SCR::Dir(topath(pth));
+	map config = listmap(string val, values, ``{
+	    string item = (string) SCR::Read(topath(pth + "." + val));
+	    if(item!=nil) return $[ val : item ];
+	});
+
+	dev[devnum] = config;
+	Devices[devtype] = dev;
+    });
+
+    y2debug("Devices=%1",Devices);
+    return true;
+}
+
+/**
+ * Write Devices to files
+ * @return true if success
+ */
+global define boolean WriteISDNConfig(string isdntyp) ``{
+
+    y2debug("Devices=%1",Devices);
+    string sysconfig = "/etc/sysconfig/isdn";
+
+    /* remove deleted devices */
+    list<string> devs = (list<string>) filter(string x, DeletedDevices, ``(regexpmatch(x, isdntyp)));
+    maplist(string d, devs, ``{
+	path p = topath(".isdn.section.\"" + sysconfig + "/cfg-" + d + "\"");
+	y2debug("deleting: %1", p);
+	SCR::Write(p, nil);
+    });
+
+    /* write all devices */
+    maplist(string typ, map devsmap, Devices, ``{
+	maplist(string num, map devmap, (map<string,map>)devsmap, ``{
+	    /* write sysconfig */
+	    if (typ != isdntyp)
+	        return;
+	    string dev = typ + num;
+	    string p = ".isdn.value.\"" + sysconfig + "/cfg-" + dev + "\".";
+
+	    /* write all keys to config */
+	    maplist(string k, (list<string>)Map::Keys(devmap), ``{
+		if(k == "module" || k == "options") return;
+		SCR::Write(topath(p+k), devmap[k]:"");
+	    });
+	    string unq = devmap["UNIQUE"]:"";
+	    if(unq != "")
+		SCR::Write(.probe.status.configured, unq, `yes);
+	});
+    });
+
+    /* finish him */
+    SCR::Write(.isdn, nil);
+
+    /* clean up variables */
+    devs = filter(string x, DeletedDevices, ``{
+	return !regexpmatch(x, isdntyp);
+    });
+    y2debug("DeletedDevices: %1 devs: %2", DeletedDevices, devs);
+    DeletedDevices = devs;
+
+    return true;
+}
+
+/**
+ * Write one Devices to file
+ * @return true if success
+ */
+global define boolean WriteOneISDNConfig(string contr) ``{
+
+    y2debug("Devices=%1",Devices);
+    string sysconfig = "/etc/sysconfig/isdn";
+
+    maplist(string typ, map devsmap, Devices, ``{
+	maplist(string num, map devmap, (map<string,map>)devsmap, ``{
+	    string dev = typ + num;
+	    if (contr != dev)
+		return;
+	    string p = ".isdn.value.\"" + sysconfig + "/cfg-" + dev + "\".";
+
+	    /* write all keys to config */
+	    maplist(string k, (list<string>)Map::Keys(devmap), ``{
+		if(k == "module" || k == "options") return;
+		SCR::Write(topath(p+k), devmap[k]:"");
+	    });
+	});
+    });
+
+    /* finish him */
+    SCR::Write(.isdn, nil);
+
+    return true;
+}
+
+}

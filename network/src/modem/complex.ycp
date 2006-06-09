@@ -1,0 +1,373 @@
+/**
+ * File:	include/network/modem/complex.ycp
+ * Package:	Network configuration
+ * Summary:	Summary, overview and IO dialogs for modems configuration.
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "CWM";
+import "CWMTab";
+import "Label";
+import "Modem";
+import "NetworkDevices";
+import "NetworkService";
+import "Popup";
+import "Provider";
+import "Routing";
+import "Wizard";
+import "WizardHW";
+import "Wizard_hw";
+
+include "network/routines.ycp";
+include "network/summary.ycp";
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+define boolean Modified() {
+    return Modem::Modified() || Provider::Modified("modem");
+}
+
+/**
+ * Commit changes to internal structures
+ * @param what what everything should be commited ("modem"|"provider"|"all")
+ * @return always `next
+ */
+define symbol Commit(string what) {
+    if(what == "" || what == "all" || what == "modem")
+	Modem::Commit();
+    if(what == "" || what == "all" || what == "provider")
+	Provider::Commit();
+    return `next;
+}
+
+/**
+ * Display finished popup
+ * @return dialog result
+ */
+define symbol FinishDialog() {
+    return FinishPopup(Modified(), "modem", "", "mail", ["dialup"]);
+}
+
+/**
+ * Read settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol ReadDialog() {
+
+    ScreenName("modem-read");
+
+    /* modems read dialog help 1/2 */
+    string helptext = _("<P><B><BIG>Initializing Modem Configuration
+</BIG></B><BR>Please wait...<BR></P>");
+
+    /* modems read dialog help 2/2 */
+    helptext = helptext + _("<P><B><BIG>Aborting the Initialization
+</BIG></B><BR>You can safely abort the configuration utility by pressing
+<B>Abort</B> now.</P>
+");
+
+    Wizard::RestoreHelp(helptext);
+    Modem::AbortFunction = ``{return PollAbort();};
+    boolean ret = Modem::Read();
+    
+    // TODO move to Read, but then display only in interactive mode.
+    // Or warn only when adding a provider.
+    if (NetworkService::IsManaged ())
+    {
+	// warning message when modem module starts up and NM is on
+	string warning = _("NetworkManager is enabled. Some features, such as
+multiple providers for one modem, will not work.
+You may want to use kinternet instead.");
+	Popup::LongWarning (warning);
+    }
+
+    return ret ? `next : `abort;
+}
+
+/**
+ * Write settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol WriteDialog() {
+
+    ScreenName("modem-write");
+
+    if(!Modified()) return `next;
+
+    /* modems write dialog help 1/2 */
+    string helptext = _("<P><B><BIG>Saving Modem Configuration</BIG></B><BR>
+Please wait...<BR></P>");
+
+    /* modems write dialog help 2/2 */
+    helptext = helptext + _("<P><B><BIG>Aborting Saving</BIG></B><BR>
+You can abort the save process by pressing <B>Abort</B>. An additional
+dialog may inform you whether it is safe to do so.</P>
+");
+
+    Wizard::RestoreHelp(helptext);
+    Modem::AbortFunction = ``{return PollAbort() && ReallyAbort();};
+    boolean ret = Modem::Write();
+    return ret ? `next : `abort;
+}
+
+
+string selected_tab = "devices";
+
+void InitDevices (string widget_id)
+{
+    list<map<string,any> > overview = (list<map<string,any> >)Modem::Overview();
+    overview = overview + Modem::Unconfigured ();
+    
+    y2milestone ("Init Modem devices: %1", overview);
+    WizardHW::SetContents (overview);
+    
+    if (size(overview) > 0) 
+	WizardHW::SetSelectedItem (overview[0,"id"]:"");
+
+    WizardHW::SetRichDescription (overview[0,"rich_descr"]:"");
+}
+
+string RichTextDevices (string id)
+{
+    // TODO: optimize
+    list<map<string,any> > overview = (list<map<string,any> >)Modem::Overview();
+    overview = overview + Modem::Unconfigured ();
+    
+    map<string,any> entry = find (map<string,any> dev, overview
+	, ``(dev["id"]:nil == id) );
+    
+    return entry["rich_descr"]:id;
+}
+
+symbol HandleDevices (string widget_id, map event)
+{
+    any ret = event["ID"]:nil;
+    
+    y2security ("Event: %1", event);
+    
+    if (event["EventReason"]:nil == "SelectionChanged")
+    {
+	WizardHW::SetRichDescription ( RichTextDevices ( WizardHW::SelectedItem ()));
+	return nil;
+    }
+    
+    /* add */
+    if(ret == `add) {
+	Modem::Add();
+	Provider::Add("modem");
+	selected_tab = "devices";
+	return `add;
+    }
+    /* edit */
+    else if(ret == `edit) {
+	string dev = WizardHW::SelectedItem ();
+	if(dev == nil) {
+	    y2error("Empty device during Edit");
+	    return nil;
+	}
+	if (substring (dev, 0, 1) == "-") // unconfigured
+	{
+	    integer i = tointeger (substring (dev, 1));
+	    Modem::Add ();
+	    Provider::Add ("modem");
+	    Modem::SelectHW (i);
+
+            if(Modem::Requires != [] && Modem::Requires != nil) {
+		if(PackagesInstall(Modem::Requires) != `next)
+		    return nil;
+	    }
+	}
+	else		// configured
+	{
+	    Modem::Edit(dev);
+	    Provider::Edit(Provider::Name);
+	}
+	selected_tab = "devices";
+	return `edit;
+    }
+    /* delete */
+    else if(ret == `delete) {
+	string dev = WizardHW::SelectedItem ();
+	if (substring (dev, 0, 1) == "-") // unconfigured
+	    return nil;
+
+	Modem::Delete(dev);
+	Modem::Commit();
+	InitDevices("devices");
+	return nil;
+    }
+    
+    return nil;
+}
+
+void InitProviders (string widget_id)
+{
+    list<map<string,any> > overview = 
+	(list<map<string,any> >)Provider::Overview("modem");
+    
+    y2milestone ("Init modem devices: %1", overview);
+    WizardHW::SetContents (overview);
+    
+    if (size(overview) > 0) 
+	WizardHW::SetSelectedItem (overview[0,"id"]:"");
+
+    WizardHW::SetRichDescription (overview[0,"rich_descr"]:"");
+}
+
+string RichTextProviders (string id)
+{
+    // TODO: optimize
+    list<map<string,any> > overview = 
+	(list<map<string,any> >)Provider::Overview("modem");
+    
+    map<string,any> entry = find (map<string,any> dev, overview
+	, ``(dev["id"]:nil == id) );
+    
+    return entry["rich_descr"]:id;
+}
+
+symbol HandleProviders (string widget_id, map event)
+{
+    any ret = event["ID"]:nil;
+    
+    if (event["EventReason"]:nil == "SelectionChanged")
+    {
+	WizardHW::SetRichDescription ( RichTextProviders ( WizardHW::SelectedItem ()));
+	return nil;
+    }
+
+    /* provider add */
+    if(ret == `add) {
+	Provider::Add("modem");
+	selected_tab = "providers";
+	return `Add;
+    }
+    /* provider edit */
+    else if(ret == `edit || ret == `Table) {
+	string dev = WizardHW::SelectedItem ();
+	if(dev == nil) {
+	    y2error("Empty device during Edit");
+	    return nil;
+	}
+	Provider::Edit(dev);
+	selected_tab = "providers";
+	return `Edit;
+    }
+    /* provider delete */
+    else if(ret == `delete) {
+	string dev = WizardHW::SelectedItem ();
+
+	/* Check if the provider is not used (#17497) */
+	if(NetworkDevices::LocateProvider(dev)) {
+	    y2debug("Provider used: %1", dev);
+
+	    /* Popup text */
+	    Popup::Error(sformat(_("The provider %1 is in use."), dev));
+	    return nil;
+
+		/* Popup text */
+	    string pop = sformat(_("The provider %1 is in use. Really delete it?"), dev);
+	    if(!Popup::YesNo(pop)) return nil;
+	}
+
+	Provider::Delete(dev);
+	Provider::Commit();
+	InitProviders("providers");
+	return nil;
+    }
+	
+    return nil;
+}
+
+
+/**
+ * Overview dialog
+ * @return dialog result
+ */
+define any OverviewDialog() {
+
+    ScreenName("modem-overview");
+
+    /* Modems overview dialog caption */
+    string caption = _("Modem Configuration Overview");
+
+    /* modems overview dialog help 1/3 */
+    string helptext = _("<P><B><BIG>Modem Overview</BIG></B><BR>
+Here, get an overview of installed modems. Additionally,
+edit their configuration.<BR></P>");
+
+    /* modems overview dialog help 2/3 */
+    helptext = helptext + _("<P><B><BIG>Adding a Modem:</BIG></B><BR>
+If you press <B>Add</B>, you can manually configure a modem.</P>
+");
+
+    /* modems overview dialog help 3/3 */
+    helptext = helptext + _("<P><B><BIG>Editing or Deleting:</BIG></B><BR>
+Choose a modem for which to change or remove the configuration.
+Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
+
+    list overview = Modem::Overview();
+    list overviewp = Provider::Overview("modem");
+    y2debug("overview=%1",overview);
+    y2debug("overviewp=%1",overviewp);
+
+   // use CWMTab for connections and providers
+    map<string, map<string, any> > widget_descr = $[
+        "devices" : WizardHW::CreateWidget (
+            [_("Device"), _("Type"), _("Provider")], [] ),
+        "providers" : WizardHW::CreateWidget (
+            [_("Name"), _("Provider"), _("Phone")], [] ),
+    ];
+
+    widget_descr["devices", "init"] = InitDevices;
+    widget_descr["devices", "handle"] = HandleDevices;
+    widget_descr["devices", "help"] = " ";
+    widget_descr["providers", "init"] = InitProviders;
+    widget_descr["providers", "handle"] = HandleProviders;
+    widget_descr["providers", "help"] = " ";
+
+   widget_descr["tab"] = CWMTab::CreateWidget(
+        $[
+            "tab_order": ["devices", "providers"],
+            "tabs": $[
+                "devices": $[
+                    // tab header
+                    "header" : _("Modem Devices"),
+                    "contents": `VBox(`VSpacing(1)
+                        , `HBox( `HSpacing(1), "devices", `HSpacing(1) )
+                        , `VSpacing (1) ),
+                    "widget_names": ["devices"]
+                ],
+                "providers": $[
+                    // tab header
+                    "header" : _("Providers"),
+                    "contents": `VBox(`VSpacing(1)
+                        , `HBox( `HSpacing(1), "providers", `HSpacing(1) )
+                        , `VSpacing (1) ),
+                    "widget_names": ["providers"]
+                ]],
+            "widget_descr": widget_descr,
+            "initial_tab" : selected_tab,
+           "tab_help" : helptext,
+        ]);
+
+    // shut up CWM
+    widget_descr["tab", "help"] = " ";
+
+    // FIXME: reallyabort
+
+    return CWM::ShowAndRunOrig (["tab"], widget_descr
+        ,`VBox("tab"), caption,
+        Label::BackButton(), Label::FinishButton(), $[]);
+}
+
+/* EOF */
+}

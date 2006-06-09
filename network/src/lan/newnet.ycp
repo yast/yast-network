@@ -1,0 +1,178 @@
+/**
+ * Author:	Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ */
+{
+textdomain "network";
+// has the definition of widget_descr and widget helper functions
+include "network/widgets.ycp";
+
+
+widget_descr["STARTMODE"] = MakeStartmode (
+    ["auto", "ifplugd", "hotplug", "manual", "off", ]);
+
+/*
+term contents = `VBox (
+    "IPADDR",
+    "NETMASK"
+    );
+*/
+/*
+term contents = `HSquash (`VBox (
+    "IPADDR",
+    "NETMASK"
+    ));
+*/
+
+term general_contents = `VBox ("IFNAME", "BINDTOHW", "STARTMODE",
+			       "MANDATORY", "USERCONTROL", "FWZONE");
+
+term address_contents = `VBox (
+    `RadioButtonGroup (
+	`id ("BOOTPROTO"),	// CWM must not expand `id
+	`VBox (
+	    `Left ("BOOTPROTO_dhcp"), // TODO: widget attribute align: left
+	    `Left ("BOOTPROTO_static"),
+	    `Frame (
+		// frame label
+//		_("Static Address Setup"),
+		"",		// labelless frame
+		`VBox (
+		    "IPADDR",
+		    "NETMASK",
+		    "GATEWAY")
+		)
+	    )
+	)
+    );
+
+term address_advanced_contents = `VBox (
+    `RadioButtonGroup (
+	`id ("BOOTPROTO"),	// CWM must not expand `id
+	`VBox (
+	    `Left ("BOOTPROTO_dhcp_autoip"), // TODO: widget attribute align: left
+	    `Left ("BOOTPROTO_dhcp"),
+	    `Left (`HBox (`HSpacing (4), "DHCP_ADVANCED")),
+	    `Left ("BOOTPROTO_autoip"),
+	    `Left ("BOOTPROTO_noaddr"),
+	    `Left ("BOOTPROTO_static"),
+	    `Frame (
+		// frame label
+//		_("Static Address Setup"),
+		"",		// labelless frame
+		`VBox (
+		    "IPADDR",
+		    "NETMASK",
+		    "GATEWAY")
+		),
+	    `Left (`HBox (`HSpacing (4), "ADDITIONAL_ADDRESSES")) // make it a tab?
+	    )
+	)
+    );
+
+term point_to_point_contents = `VBox ();
+
+import "CWM";
+import "CWMTab";
+import "Label";
+import "Wizard";
+
+    /**
+      * Process term with the dialog, return all strings.
+      * To be used as an argument for widget_names until they are obsoleted.
+      * @param t term dialog containing strings
+      * @return strings found in the term
+      */
+    define list<string> StringsOfTerm (term t) {
+	list<string> rets = [];
+	integer args = size (t);
+	integer index = 0;
+	while (index < args)
+	{
+	    any arg = t[index]:nil;
+	    symbol current = symbolof (t);
+	    if (current == `Frame && index == 0)
+	    {
+		y2debug ("Leaving untouched %1", arg);
+	    }
+	    else if (is (arg, term) && arg != nil)
+	    {
+		symbol s = symbolof ((term)arg);
+		if (contains ([ `VBox, `HBox, `Left, `Right, `Frame,
+		    `RadioButtonGroup,
+		    `HWeight, `VWeight], s))
+		{
+		    rets = rets + StringsOfTerm ((term)arg);
+		}
+	    }
+	    else if (is (arg, string))
+	    {
+		rets = add (rets, (string)arg);
+	    }
+	    index = index + 1;
+	}
+	return rets;
+    }
+
+widget_descr = (map<string, map<string,any> >) union (widget_descr, $[
+	"tab" : CWMTab::CreateWidget (
+	    $[
+		"tab_order" : ["general", "addr", "addr_adv", "wlan", "dns"],
+		"tabs" : $[
+                    "general" : $[
+                        "header" : _("General"),
+                        "contents" : general_contents,
+                        "widget_names" : StringsOfTerm (general_contents),
+			// FIXME we have helps per widget and for the whole
+			// tab set but not for one tab
+			"help": _("General help"),
+                    ],
+                    "addr" : $[
+			// FIXME: here it does not complain about missing
+			// shortcuts
+                        "header" : _("Address"),
+                        "contents" : address_contents,
+                        "widget_names" : StringsOfTerm (address_contents),
+                    ],
+                    "addr_adv" : $[
+			// FIXME: here it does not complain about missing
+			// shortcuts
+                        "header" : _("Address Advanced"),
+                        "contents" : address_advanced_contents,
+                        "widget_names" : StringsOfTerm (address_advanced_contents),
+                    ],
+                    "wlan" : $[
+                        "header" : _("Wireless"),
+                        "contents" : `Empty (),
+                        "widget_names" : [],
+                    ],
+                    "dns" : $[
+                        "header" : _("DNS"),
+                        "contents" : `Empty (),
+                        "widget_names" : [],
+                    ],
+                ],
+		"initial_tab" : "addr", // check that it exists
+		"widget_descr" : widget_descr,
+		"tab_help" : _("<p>Help for all tabs</p>"), // docs: <p>
+            ])
+        ]);
+
+Wizard::CreateDialog ();
+
+term contents = `HBox ("tab");
+
+any ret = CWM::ShowAndRun (
+    $[
+	"widget_names": ["tab"],
+	"widget_descr": widget_descr,
+	"contents": contents,
+	"caption": _("CAPTION"),
+        "back_button" : Label::BackButton (),
+        "next_button" : Label::OKButton (),
+	]);
+y2milestone ("ShowAndRun: %1", ret);
+
+Wizard::CloseDialog ();
+}

@@ -1,0 +1,56 @@
+/**
+ * File:	clients/dsl.ycp
+ * Package:	Network configuration
+ * Summary:	DSL main file
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Main file for DSL configuration.
+ * Uses all other files.
+ */
+
+{
+
+textdomain "network";
+
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("DSL module started");
+
+import "DSL";
+
+include "network/dsl/wizards.ycp";
+
+/* is this proposal or not? */
+boolean propose = false;
+list args = WFM::Args();
+if(size(args) > 0) {
+    if(is(WFM::Args(0), path) && WFM::Args(0) == .propose) {
+	y2milestone("Using PROPOSE mode");
+	propose = true;
+    }
+    else if(is(WFM::Args(0), path) && WFM::Args(0) == .capiadsl) {
+        y2milestone("Using CAPI-ADSL mode");
+	DSL::capiadsl = nil;
+	if(size(args) > 1) DSL::capiadsl = (map) WFM::Args(1);
+	if(DSL::capiadsl == nil) DSL::capiadsl = $[];
+    }
+    else
+        y2error("Bad argument for modem: %1", WFM::Args(0));
+}
+
+/* main ui function */
+any ret = nil;
+
+if(propose) ret = DSLAutoSequence();
+else ret = DSLSequence();
+y2debug("ret == %1", ret);
+
+/* Finish */
+y2milestone("DSL module finished");
+y2milestone("----------------------------------------");
+return ret;
+
+/* EOF */
+}

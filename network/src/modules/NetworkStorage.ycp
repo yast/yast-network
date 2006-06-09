@@ -1,0 +1,39 @@
+/**
+ * File:	modules/NetworkStorage.ycp
+ * Package:	Network configuration
+ * Summary:	Networked disks
+ * Authors:	Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ *
+ * #176804 - Root on iSCSI installation fails
+ */
+
+{
+
+module "NetworkStorage";
+
+/**
+ * If the root is on a networked device (NFS, ISCSI),
+ * the main NIC needs STARTMODE nfsroot instead of auto.
+ * @return root dev over network
+ */
+global boolean RootIsOnNetwork () {
+    string iscsi_cmd = "
+	ROOTPART=`sed 's,.*root=/dev/\\([^[:space:]]*\\).*,\1,' /proc/cmdline`
+	echo ROOTPART=\"$ROOTPART\"
+	# use * and .. to get to the device containing ROOTPART
+	case `cd -P /sys/block/*/\"$ROOTPART\"/../device && pwd` in
+	    *session*)
+		IS_ISCSI=true ;;
+	    *)
+		IS_ISCSI=false ;;
+	esac
+	$IS_ISCSI";
+    map out = (map) SCR::Execute (.target.bash_output, iscsi_cmd);
+    y2milestone ("%1", out);
+    return out["exit"]:-1 == 0;
+}
+
+/* EOF */
+}
