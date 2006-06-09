@@ -314,6 +314,7 @@ and correct the settings.</p>
 
 	integer relnotes_counter = 0;
 	Product::relnotesurl_all = toset(Product::relnotesurl_all);
+
 	foreach (string url, Product::relnotesurl_all, {
 	    // protect from wrong urls
 	    if (url == nil || url == "") {
@@ -361,8 +362,12 @@ and correct the settings.</p>
 	    }
 
 	    // label of combobox where the log is selected
-	    logs = add (logs, $[ `menuname : _("Download of Release Notes"),
-			     `filename : log_filename ]);
+	    string menu_name = _("Download of Release Notes");
+	    // identify release notes by name of the product, bug 180581
+	    if (Product::product_of_relnotes[url]:"" != "") {
+		menu_name = menu_name + sformat(" (%1)", Product::product_of_relnotes[url]:"");
+	    }
+	    logs = add (logs, $[ `menuname : menu_name, `filename : log_filename ]);
 
 	});
 	

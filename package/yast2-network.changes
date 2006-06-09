@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jun  9 11:10:10 CEST 2006 - locilka@suse.cz
+
+- Identify the release notes downloaded during the internet test by
+  the product name (#180581).
+- 2.13.56
+
+-------------------------------------------------------------------
 Thu Jun  8 15:06:41 CEST 2006 - mvidner@suse.cz
 
 - Do not report a duplicate IP address if the interface is not up
