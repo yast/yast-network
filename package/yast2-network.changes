@@ -1,7 +1,10 @@
 -------------------------------------------------------------------
-Mon Jul 10 16:17:49 CEST 2006 - mvidner@suse.cz
+Mon Jul 10 16:23:39 CEST 2006 - mvidner@suse.cz
 
+- After the installation, use the correct module for the card over
+  which the installation was done (#186000).
 - Include also WiFi cards in the DSL PPPoE dialog (#186102).
+- 2.13.57
 
 -------------------------------------------------------------------
 Fri Jun  9 11:10:10 CEST 2006 - locilka@suse.cz

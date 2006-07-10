@@ -92,6 +92,22 @@ define boolean ReadInstallInf() {
 	InstallInf["hostname"] = "";
     }
 
+    // #180821, todo cleanup
+    if (netdevice != "")
+    {
+	string mod = (string) SCR::Read (add (.etc.install_inf_alias, netdevice));
+	if (mod != "" && mod != nil)
+	{
+	    InstallInf["module"] = mod;
+	    string options = (string) SCR::Read (add (.etc.install_inf_options, mod));
+	    if (options != "" && options != nil)
+	    {
+		InstallInf["options"] = options;
+	    }
+	}
+    }
+    else
+    {
     // FIXME: alias = eth0 tulip
     // FIXME: options = ne io=0x200
 
@@ -105,6 +121,7 @@ define boolean ReadInstallInf() {
     string options = InstallInf["options"]:"";
     if (options != "") {
 	InstallInf["options"] = DeleteFirstWord (options);
+    }
     }
 
     y2milestone("InstallInf(%1)", InstallInf);
