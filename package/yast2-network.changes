@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jul 10 16:17:49 CEST 2006 - mvidner@suse.cz
+
+- Include also WiFi cards in the DSL PPPoE dialog (#186102).
+
+-------------------------------------------------------------------
 Fri Jun  9 11:10:10 CEST 2006 - locilka@suse.cz
 
 - Identify the release notes downloaded during the internet test by
