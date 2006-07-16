@@ -9,7 +9,8 @@ BuildRequires: yast2-country yast2-installation
 # carrier detection
 Requires:	yast2-core >= 2.10.6
 # String::Random
-Requires:	yast2 >= 2.13.34
+# Linuxrc::display_ip
+Requires:	yast2 >= 2.13.67
 Requires:	sysconfig yast2-country yast2-inetd yast2-packager
 PreReq:		/bin/rm
 
