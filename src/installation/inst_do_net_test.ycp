@@ -520,7 +520,7 @@ RPM signature check failed."));
 				     `prio : 16 ]);
 		if(!Internet::Start(logdir + "/ifup.log")) {
 		    // popup to inform user about the failure
-		    Popup::Message(_("Connecting to the Internet failed. View
+		    Report::Error(_("Connecting to the Internet failed. View
 the logs for details.
 "));
 		    test_stage = `finish;
@@ -545,7 +545,7 @@ the logs for details.
 	    // status must be up
 	    if(!Internet::Status()) {
 		// popup to inform user about the failure
-		Popup::Message(_("Connecting to the Internet failed. View
+		Report::Error(_("Connecting to the Internet failed. View
 the logs for details.
 "));
 		test_stage = `finish;
@@ -589,7 +589,7 @@ the logs for details.
 	    if (!download_release_notes ())
 	    {
 		// popup to inform user about the failure
-		Popup::Message(_("Download of latest release notes failed. View
+		Report::Error(_("Download of latest release notes failed. View
 the logs for details.
 "));
 		test_stage = `close;
@@ -641,7 +641,7 @@ the logs for details.
 	    else
 	    {
 		// popup to inform user about the failure
-		Popup::Message(_("Check for latest updates failed. View
+		Report::Error(_("Check for latest updates failed. View
 the logs for details.
 "));
 		test_result = `failure;

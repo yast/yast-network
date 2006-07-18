@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jul 18 17:15:34 CEST 2006 - mvidner@suse.cz
+
+- Better logging of the internet test (#192745).
+
+-------------------------------------------------------------------
 Sun Jul 16 08:54:55 CEST 2006 - olh@suse.de
 
 - introduce a Linuxrc::display_ip and use it instead of Arch::s390
