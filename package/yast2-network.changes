@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Aug  1 11:15:53 CEST 2006 - mvidner@suse.cz
+
+- NetworkManager now respects DHCLIENT_MODIFY_RESOLV_CONF, enable the
+  checkbox accordingly (#156830).
+
+-------------------------------------------------------------------
 Tue Jul 18 17:15:34 CEST 2006 - mvidner@suse.cz
 
 - Better logging of the internet test (#192745).
