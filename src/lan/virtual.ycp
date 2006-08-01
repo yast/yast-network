@@ -16,7 +16,9 @@ import "Label";
 import "Lan";
 import "Netmask";
 import "NetworkDevices";
+import "NetworkService";
 import "Popup";
+import "Report";
 import "Wizard";
 
 include "network/routines.ycp";
@@ -64,6 +66,15 @@ define term VirtualEditDialog(integer id, term entry, list forbidden);
 define any VirtualDialog(boolean standalone) {
 
     ScreenName("lan-virtual");
+
+    //#165059
+    if (NetworkService::IsManaged())
+    {
+	// message popup
+	Report::Message (_("This setting is not available
+because NetworkManager does not support it."));
+	return `next;
+    }
 
     /* Aliases dialog caption */
     string caption = _("Additional Addresses");
