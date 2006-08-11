@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug 11 10:54:00 CEST 2006 - mvidner@suse.cz
+
+- Fixed typos in English.
+
+-------------------------------------------------------------------
 Fri Aug 11 09:26:54 CEST 2006 - kmachalkova@suse.cz
 
 - Removed running SuSEconfig module "profiles" from Proxy.ycp, since 

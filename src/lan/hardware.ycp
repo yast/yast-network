@@ -583,7 +583,7 @@ define any S390Dialog() {
 	/* S/390 dialog help: QETH Port name */
 	helptext = _("<p>Enter the <b>Port Name</b> for this interface (case-sensitive).</p>") +
 	/* S/390 dialog help: QETH Options */
-	_("<p>Enter any additional <b>Options</b> for this interface (separated by spacess).</p>") +
+	_("<p>Enter any additional <b>Options</b> for this interface (separated by spaces).</p>") +
 	_("<p>Select <b>Enable IPA Takeover</b> if IP address takeover should be enabled for this interface.</p>") +
 	_("<p>Select <b>Enable Layer 2 Support</b> if this card has been configured with layer 2 support.</p>") +
 	_("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been configured with layer 2 support.</p>");
