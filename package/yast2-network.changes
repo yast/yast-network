@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Aug 11 09:26:54 CEST 2006 - kmachalkova@suse.cz
+
+- Removed running SuSEconfig module "profiles" from Proxy.ycp, since 
+  it has been dropped and is no longer needed
+- Updated ProxyFinishPopup() text (#158564)
+- 2.13.60
+
+-------------------------------------------------------------------
 Tue Aug  1 11:18:32 CEST 2006 - mvidner@suse.cz
 
 - NetworkManager cannot do additional addresses, disable the dialog

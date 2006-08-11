@@ -31,8 +31,8 @@ define void ProxyFinishPopup(boolean modified) ``{
     /* Popup text */
 string text = _("Applications that support it, such as YaST2 Online Update,
 use them immediately. Other applications use them after a new login
-(lynx, wget). Some applications, like Mozilla, do not support these settings
-at all--they use their own settings system.
+(lynx, wget). Some applications do not support these settings at all --
+they use their own settings system.
 ");
 
     FinishPopup(modified, "proxy", text, "", []);
