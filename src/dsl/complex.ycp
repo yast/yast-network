@@ -20,7 +20,6 @@ import "Popup";
 import "Provider";
 import "Wizard";
 import "WizardHW";
-import "Wizard_hw";
 
 include "network/routines.ycp";
 include "network/summary.ycp";

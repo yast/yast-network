@@ -19,7 +19,6 @@ import "NetworkService";
 import "Routing";
 
 import "Wizard";
-import "Wizard_hw";
 import "WizardHW";
 
 import "Popup";
