@@ -418,7 +418,7 @@ map SelectHardwareMap (map sel) {
     // but they are handled differently due to multiple kernel flavors
     // (see Package::InstallKernel)
     // Leave only those not starting with "kernel".
-    Requires = filter (string r, Requires, ``( find (r, "kernel") != 0 ));
+    Requires = filter (string r, Requires, ``( search (r, "kernel") != 0 ));
     y2milestone ("requires=%1", Requires);
 
     // FIXME: devname

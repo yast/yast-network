@@ -298,7 +298,7 @@ global define boolean Write(string type) {
 		if(v == "0") v = "no";
 		else if(v == "1") v = "yes";
 		else if(v != "no" && v != "yes")
-		    v = (find(v, "no") != -1 ? "no" : "yes");
+		    v = (search(v, "no") != nil ? "no" : "yes");
 	    }
 
 	    /* Do the write */

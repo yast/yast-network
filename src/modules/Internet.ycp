@@ -123,7 +123,7 @@ global define boolean FindFastest() {
     device = NetworkDevices::Fastest();
     if (device == "")
     {
-	device = select (GetDevices (), 0, "");
+	device = GetDevices ()[0]:"";
     }
 
     y2milestone("fastest=%1", device);
@@ -175,7 +175,7 @@ global define boolean Start(string log) {
 	ret = SCR::Execute(.target.bash, cmd);
     }
     if (ret != 0) {
-	y2error(NetworkService::IsManaged ()?
+	y2error("%1", NetworkService::IsManaged ()?
 		"NM.setActiveDevice failed":
 		"ifup failed");
 	return false;
