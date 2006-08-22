@@ -13,6 +13,7 @@ textdomain "network";
 
 import "Lan";
 import "DNS";
+import "Mode";
 import "NetworkConfig";
 import "NetworkModules";
 import "NetworkService";
@@ -194,6 +195,8 @@ or need to use multiple interfaces at once.</p>
 	    "caption": _("Network Setup Method"),
 	    "back_button" : Label::BackButton (),
 	    "next_button" : Label::NextButton (),
+	    // #54027
+	    "disable_buttons" : (Mode::normal ()? ["back_button"] : []),
 	    "fallback_functions" : functions,
 	    ]);
     // #148485: always show the device overview
@@ -281,6 +284,10 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
 	, [_("Name"), _("IP Address")]
 	, [] );
     Wizard::EnableBackButton (); // ManagedDialog
+    if (Mode::normal ()) {	// #182853
+	// outside the installation proposal and autoyast, this is the last one
+	Wizard::SetNextButton (`next, Label::FinishButton ());
+    }
 
     boolean xenbr = Lan::HaveXenBridge ();
     boolean repaint = true;
