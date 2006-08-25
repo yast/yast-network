@@ -289,7 +289,7 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
 	Wizard::SetNextButton (`next, Label::FinishButton ());
     }
 
-    boolean xenbr = Lan::HaveXenBridge ();
+    boolean xenbr = !Mode::config() && Lan::HaveXenBridge (); // #196479
     boolean repaint = true;
     map ret = nil;
     while(true) {

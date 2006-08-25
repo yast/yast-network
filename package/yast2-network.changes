@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug 25 10:43:26 CEST 2006 - mvidner@suse.cz
+
+- Allow editing despite having a Xen bridge in Autoyast mode (#196479).
+
+-------------------------------------------------------------------
 Tue Aug 22 19:21:05 CEST 2006 - mvidner@suse.cz
 
 - Main dialogs:
