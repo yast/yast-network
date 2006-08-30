@@ -642,7 +642,6 @@ term CommonBox (term contents) {
  * @return dialog result
  */
 define any AddressDialog() {
-
     ScreenName("lan-address");
 
     string ifname = NetworkDevices::device_name (Lan::type, Lan::device);
@@ -857,7 +856,6 @@ Components of this product might not work with DHCP.</p>");
 	"_DIALOG"
     ));
 
-
     map functions = $[
         "init" : InitAddrWidget,
         "store" : StoreAddrWidget,
@@ -905,7 +903,6 @@ Components of this product might not work with DHCP.</p>");
 
     term contents2 = `HBox ("tab");
 
-//    y2internal ("%1", wd);
 
     any ret = CWM::ShowAndRun (
 	$[
@@ -951,6 +948,8 @@ Components of this product might not work with DHCP.</p>");
 	    Lan::ipaddr = "";
 	    Lan::netmask = "";
 	    Lan::remoteip = "";
+	    // fixed bug #73739 - if dhcp is used, dont set default gw statically
+	    Routing::RemoveDefaultGw();
 	}
     }
 

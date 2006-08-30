@@ -19,6 +19,7 @@ import "Netmask";
 import "Popup";
 import "Routing";
 import "Wizard";
+import "Lan";
 
 include "network/routines.ycp";
 
@@ -137,6 +138,9 @@ _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>");
     UI::ChangeWidget(`id(`table), `Enabled, expert);
     UI::ChangeWidget(`id(`add), `Enabled, expert);
     UI::SetFocus(`id(`gw));
+
+    // fixed bug #73739 - if dhcp is used, dont set default gw statically
+    if (Lan::bootproto == "dhcp")UI::ChangeWidget(`id(`gw),`Enabled, false);
 
     any ret = nil;
     while(true) {

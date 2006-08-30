@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Aug 30 13:34:04 CEST 2006 - mzugec@suse.cz
+
+- fixed #73739 - don't use stadic default gw with dhcp 
+
+-------------------------------------------------------------------
 Fri Aug 25 10:43:26 CEST 2006 - mvidner@suse.cz
 
 - Allow editing despite having a Xen bridge in Autoyast mode (#196479).
