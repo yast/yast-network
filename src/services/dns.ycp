@@ -354,7 +354,7 @@ disabled during the connection.</p>"),
     "DHCP_RESOLV": $[
 	"widget": `checkbox,
 	/* checkbox label */
-	"label": _("&Update Name Servers and Search List via DHCP"),
+	"label": _("&Update Name Servers and\nSearch List via DHCP"),
 	"opt": [`notify],
 	// help
 	"help": "",		// at "SEARCHLIST_S"

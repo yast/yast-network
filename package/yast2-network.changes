@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Sep  1 10:40:07 CEST 2006 - kmachalkova@suse.cz
+
+- Added line wrapping to checkbox label in dns.ycp (#166236)
+  due to lack of space for languages such as french  
+
+-------------------------------------------------------------------
 Wed Aug 30 13:34:04 CEST 2006 - mzugec@suse.cz
 
 - fixed #73739 - don't use stadic default gw with dhcp 
