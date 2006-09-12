@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Sep  8 15:00:59 CEST 2006 - kmachalkova@suse.cz
+
+- Added missing icon to Hostname installation dialog (#203816) 
+
+-------------------------------------------------------------------
 Wed Sep  6 16:18:43 CEST 2006 - kmachalkova@suse.cz
 
 - Allow using the same proxy URL for all protocols (#57919)
