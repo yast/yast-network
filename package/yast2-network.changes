@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Sep 14 10:47:50 CEST 2006 - locilka@suse.cz
+
+- Improving the Internet Test Dialog (FATE #100294)
+
+-------------------------------------------------------------------
 Fri Sep  8 15:00:59 CEST 2006 - kmachalkova@suse.cz
 
 - Added missing icon to Hostname installation dialog (#203816) 

@@ -33,6 +33,7 @@ define boolean AskForPassword() {
     if (Internet::askpassword == false)
 	return true;
 
+    UI::NormalCursor();
     UI::OpenDialog(`VBox(
 	/* Heading text */
 	`Heading(_("Enter Provider Password")),
@@ -50,6 +51,7 @@ define boolean AskForPassword() {
 	Internet::password = (string) UI::QueryWidget(`id(`password), `Value);
 
     UI::CloseDialog();
+    UI::BusyCursor();
 
     return ret == `ok;
 }
@@ -153,6 +155,7 @@ activate the test procedure."),
     );
 
     Wizard::SetContents(caption, contents, help, true, true);
+    Wizard::SetTitleIcon ("yast-network");
 
     any ret = nil;
 
