@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Sep 14 13:31:35 CEST 2006 - mzugec@suse.cz
+
+- 2.13.64 - fate #100092 - command line support in network module 
+
+-------------------------------------------------------------------
 Thu Sep 14 10:47:50 CEST 2006 - locilka@suse.cz
 
 - Improving the Internet Test Dialog (FATE #100294)
