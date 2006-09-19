@@ -22,7 +22,7 @@
 `ag_ini(
     `IniAgent( "/etc/hosts",
 	$[
-	    "options"	: [ "global_values", "flat" ],
+	    "options"	: [ "global_values", "repeat_names", "flat" ],
 	    "comments"	: [ "^#.*", "^[ \t]*$" ],
 	    "params"	: [
 		$[ "match" : [ "^[ \t]*([^ \t]+)[ \t]+(.+)[ \t]*$", "%-15s %s" ] ]
