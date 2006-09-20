@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Sep 20 13:55:10 CEST 2006 - kmachalkova@suse.cz
+
+- Network installation proposal: 
+  click on 'Network Mode' title opens ManagedDialog to select 
+  between NM and ifup (#203817)
+
+-------------------------------------------------------------------
 Tue Sep 19 16:54:34 CEST 2006 - kmachalkova@suse.cz
 
 - Allow using more FQDNs for one IP in /etc/hosts editor (#152036)

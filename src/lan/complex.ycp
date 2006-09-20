@@ -11,6 +11,8 @@
 
 textdomain "network";
 
+import "CWM";
+
 import "Lan";
 import "DNS";
 import "Mode";

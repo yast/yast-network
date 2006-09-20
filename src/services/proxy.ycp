@@ -534,9 +534,6 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
     }
 
     if(ret == `next) {
-	if(enabled) {
-
-	}
 
 	if(Proxy::http == http && Proxy::ftp == ftp && Proxy::no == no &&
 		Proxy::https == https &&
