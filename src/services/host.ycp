@@ -75,18 +75,18 @@ define symbol HostsMainDialog(boolean standalone) {
     y2debug("hosts=%1", Host::hosts);
     /* make ui items from the hosts list */
     maplist(string host, list<string> names, (map<string, list<string> >) Host::hosts, {
-		if(size(names) < 1) {
-		    y2error("Invalid host: %1, (%2)", host, names);
-		    return;
-		}
-		foreach (string s, names, {
-			list <string> dns = splitstring(s," ");
-			string name = dns[0]:"";
-			string aliases = mergestring(remove(dns, 0), " ");
-			term item = `item(`id(items), host, name, aliases);
-			table_items = add(table_items, item);
-			items = items + 1;
-		});
+	if(size(names) < 1) {
+	    y2error("Invalid host: %1, (%2)", host, names);
+	    return;
+	}
+	foreach (string s, names, {
+	    list <string> dns = splitstring(s," ");
+		string name = dns[0]:"";
+		string aliases = mergestring(remove(dns, 0), " ");
+		term item = `item(`id(items), host, name, aliases);
+		table_items = add(table_items, item);
+		items = items + 1;
+	});
     });
 
     y2debug("table_items=%1", table_items);
@@ -123,14 +123,14 @@ define symbol HostsMainDialog(boolean standalone) {
     );
 
     if(standalone == true) {
-		Wizard::SetContentsButtons(caption, contents, help,
-			Label::BackButton(), Label::FinishButton());
-		//In standalone mode, there's no going back
-		Wizard::DisableBackButton();
-	}
+	Wizard::SetContentsButtons(caption, contents, help,
+	    Label::BackButton(), Label::FinishButton());
+	//In standalone mode, there's no going back
+	Wizard::DisableBackButton();
+    }
     else
 	Wizard::SetContentsButtons(caption, contents, help,
-		Label::BackButton(), Label::OKButton());
+	    Label::BackButton(), Label::OKButton());
 
     UI::ChangeWidget(`id(`table), `Items, table_items);
     if(items > 0) UI::SetFocus(`id(`table));
@@ -159,12 +159,12 @@ define symbol HostsMainDialog(boolean standalone) {
 	    if(item == nil) 
 			continue;
 	    else {
-			Host::modified = true;
-			string ip = (item[1]:"");
-			string entry = mergestring([item[2]:"", item[3]:""]," ");
+		Host::modified = true;
+		string ip = (item[1]:"");
+		string entry = mergestring([item[2]:"", item[3]:""]," ");
 
-			Host::hosts[ip] = add(Host::hosts[ip]:[], entry);
-		}
+		Host::hosts[ip] = add(Host::hosts[ip]:[], entry);
+	    }
 
 	    table_items = add(table_items, item);
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
@@ -192,7 +192,6 @@ define symbol HostsMainDialog(boolean standalone) {
 	    });
 
 	    if(!HostSystemPopup(olditem[1]:"", false)) continue;
-	    //term item = HostDialog(cur, olditem, forbidden);
 	    term item = HostDialog(cur, olditem);
 
 	    if(item == nil) continue;
@@ -200,25 +199,19 @@ define symbol HostsMainDialog(boolean standalone) {
 
 	    table_items = maplist(term e, table_items, {
 		if(cur == e[0, 0]:-1) {
-			string oldentry = mergestring([olditem[2]:"", olditem[3]:""]," ");
-			string entry = mergestring([item[2]:"", item[3]:""]," ");
+		    string oldentry = mergestring([olditem[2]:"", olditem[3]:""]," ");
+		    string entry = mergestring([item[2]:"", item[3]:""]," ");
 
 		    y2debug("item: %1", item);
 		    y2debug("olditem: %1", olditem);
 		    string ip = item[1]:"";
 		    string oldip = olditem[1]:"";
 
-			Host::hosts[oldip] = filter(string dns, Host::hosts[oldip]:[], {
-				return dns != oldentry;
-			});
-//		    if(ip != oldip) {
-		//		Host::Deleted = add(Host::Deleted, oldip);
-				y2debug("Deleting: %1 (%2)", oldip, ip);
-				Host::hosts[ip] = add(Host::hosts[ip]:[], entry);
-//		    }
-//			else {
-//				Host::hosts[oldip] = add(Host::hosts[oldip])
-//			}
+		    Host::hosts[oldip] = filter(string dns, Host::hosts[oldip]:[], {
+			return dns != oldentry;
+		    });
+		    y2debug("Deleting: %1 (%2)", oldip, ip);
+		    Host::hosts[ip] = add(Host::hosts[ip]:[], entry);
 
 		    return item;
 		}
@@ -247,11 +240,11 @@ define symbol HostsMainDialog(boolean standalone) {
 		string ip = e[1]:"";
 		if(cur == e[0, 0]:nil) {
 		    if(ip != "" && ip != nil) {
-				Host::hosts[ip] = filter(string dns, Host::hosts[ip]:[], {
-					return dns != entry;
-				});
+			Host::hosts[ip] = filter(string dns, Host::hosts[ip]:[], {
+			    return dns != entry;
+			});
 		    return false;
-			}
+		    }
 		}
 		return true;
 	    });
