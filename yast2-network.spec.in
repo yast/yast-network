@@ -65,3 +65,4 @@ fi
 @scrconfdir@/*.scr
 %doc @docdir@
 @schemadir@/autoyast/rnc/networking.rnc
+@schemadir@/autoyast/rnc/host.rnc

@@ -59,8 +59,8 @@ global define boolean Read() {
 	list<string> hostlist = SCR::Dir(.etc.hosts);
 	hosts = listmap(string host, hostlist, {
 	    list <string> names = (list <string>) SCR::Read(topath(sformat(".etc.hosts.\"%1\"", host)));
-		if (names != [])
-		    return $[ host: names ];
+	    if (names != [])
+	        return $[ host: names ];
 	});
     }
 
@@ -105,7 +105,7 @@ global define boolean Write() {
 	y2milestone("hosts=%1", hosts);
 	maplist(string ho, list<string> names, (map<string,list<string> >)hosts, {
 	    y2milestone("%1 (%2:%3)", ho, names, hosts_init[ho]:nil);
-		SCR::Write(add(.etc.hosts, ho), names);
+	    SCR::Write(add(.etc.hosts, ho), names);
 	});
 	ret = true;
     }
@@ -125,6 +125,14 @@ global define boolean Import(map settings) {
     modified = true;
 
     hosts = eval(settings["hosts"]:$[]);
+
+    //convert from old format to the new one
+    //use ::1 entry as a reference
+    if (size(hosts["::1"]:[]) > 1) {
+	foreach(string ip, list<string> hn, hosts, {
+	    hosts[ip] = [mergestring(hn," ")];
+	});
+    }
     return true;
 }
 
@@ -182,54 +190,54 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
     list oldhost = [];
     string ohentry = nil;
     if(SCR::Read(.target.size, "/var/adm/SuSEconfig/oldhostentry") > 0)
-		ohentry = (string) SCR::Read(.target.string, "/var/adm/SuSEconfig/oldhostentry");
+	ohentry = (string) SCR::Read(.target.string, "/var/adm/SuSEconfig/oldhostentry");
     if(ohentry != nil)
-		oldhost = splitstring(ohentry, "\n");
+	oldhost = splitstring(ohentry, "\n");
 
     if(size(oldhost) > 0)
-		oldhostname = String::CutBlanks(oldhost[0]:"");
+	oldhostname = String::CutBlanks(oldhost[0]:"");
     if(size(oldhost) > 1)
-		oldhostip = String::CutBlanks(oldhost[1]:"");
+	oldhostip = String::CutBlanks(oldhost[1]:"");
     y2milestone("oldhostname: '%1' : '%2'", oldhostname, oldhostip);
 
     /* Remove old hostname from hosts */
     if(haskey(hosts, oldhostip)) {
-		y2debug("Deleting: %1", oldhostip);
-		hosts = remove(hosts, oldhostip);
+	y2debug("Deleting: %1", oldhostip);
+	hosts = remove(hosts, oldhostip);
     }
     y2debug("Hosts: %1", hosts);
 
     /* Remove old hostname from hosts */
 //    list oldhnlist = [];
-	foreach (string ip, list<string> hs, hosts, {
-		list <list <string> > wrk = maplist(string s, hs, {
-			return splitstring(s," ");
-		});
-		wrk = filter (list <string> lst, wrk, {
-			return (!contains(lst, oldhn));
-		});
-
-		hosts[ip] = maplist(list <string> lst, wrk, {
-			return mergestring(lst, " ");
-		});
+    foreach (string ip, list<string> hs, hosts, {
+	list <list <string> > wrk = maplist(string s, hs, {
+	    return splitstring(s," ");
 	});
+	wrk = filter (list <string> lst, wrk, {
+	    return (!contains(lst, oldhn));
+        });
+
+        hosts[ip] = maplist(list <string> lst, wrk, {
+	    return mergestring(lst, " ");
+        });
+    });
 
     /* Resurect the rest of oldhnlist without old hostname */
     // FIXME: maybe
 
     /* Add localhost if missing */
     if(!haskey(hosts, "127.0.0.1")) {
-		hosts["127.0.0.1"] = ["localhost"];
+	hosts["127.0.0.1"] = ["localhost"];
     }
 
     /* Add at least one hostname/ip */
     // but do not overload localhost (#46715)
     if (size(ips) < 1 && nick != "localhost") {
-		y2milestone("No IP found, adding dummy 127.0.0.2");
+	y2milestone("No IP found, adding dummy 127.0.0.2");
 	// TODO #42102
-		hosts["127.0.0.2"] = [ newhn + " " + nick ];
-		y2milestone("Hosts: %1", hosts);
-		return true;
+	hosts["127.0.0.2"] = [ newhn + " " + nick ];
+	y2milestone("Hosts: %1", hosts);
+	return true;
     }
 
     /* Add hostname/ip for all ips */
@@ -239,16 +247,16 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
 	/* Only add if not present yet */
 	//		if(haskey(hosts, ip)) return;
 	/* Omit some IP addresses */
-		if(ip == "" || ip == nil || ip == "127.0.0.1" || ip == "127.0.0.2") return;
+	if(ip == "" || ip == nil || ip == "127.0.0.1" || ip == "127.0.0.2") return;
 
-		string name =  newhn ;
+	string name =  newhn ;
 	/* Add nick for the first one */
-		if(!nickadded) {
-			nickadded = true;
-			name = newhn + " " +  nick;
-		}
+	if(!nickadded) {
+	    nickadded = true;
+	    name = newhn + " " +  nick;
+	}
 
-		hosts[ip] = add(hosts[ip]:[],name);
+	hosts[ip] = add(hosts[ip]:[],name);
 
     });
 
@@ -269,8 +277,11 @@ global define string Summary() {
 
 	summary = Summary::OpenList(summary);
 	foreach(string k, list<string> v, (map<string,list<string> >)hosts, {
-	    if(!contains(Host::GetSystemHosts(), k))
-		summary = Summary::AddListItem(summary, k + " - " + mergestring(v, " ") );
+	    if(!contains(Host::GetSystemHosts(), k)) {
+		foreach(string hn, v, {
+		    summary = Summary::AddListItem(summary, k + " - " + hn );
+		});
+	    }
 	});
 	summary = Summary::CloseList(summary);
 	return summary;

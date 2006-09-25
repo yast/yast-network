@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Sep 25 14:49:04 CEST 2006 - kmachalkova@suse.cz
+
+- Better autoyast XML validation for networking and host
+- Conversion function in Host::Import to handle older profiles
+  (as more FQDNs for one IP is allowed since 2.13.65)
+- 2.13.66 
+
+-------------------------------------------------------------------
 Wed Sep 20 13:55:10 CEST 2006 - kmachalkova@suse.cz
 
 - Network installation proposal: 
