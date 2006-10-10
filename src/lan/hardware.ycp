@@ -143,7 +143,6 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	CheckBoxes,
 	`VSpacing(0.4)
     ),`HSpacing(0.5)));
-
     list devices = Lan::FreeDevices(realtype); // TODO: id-, bus-, ... here
     if(!contains(devices, device)) devices = prepend(devices, device);
 
@@ -445,7 +444,6 @@ Really continue?
 
 	y2milestone("type=%1",type);
     }
-
     return ret;
 }
 

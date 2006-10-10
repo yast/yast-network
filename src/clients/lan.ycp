@@ -93,6 +93,11 @@ map cmdline = $[
 	    "type"	: "string",
 	    "example"	: "lan show id=0"
 	],
+	"bootproto" : $[
+	    "help"	: _("Use static or dynamic configuration"),
+	    "type"	: "string",
+	    "example"	: "add type=ethernet bootproto=dhcp"
+	],
 	"type" : $[
 	    "help"	: _("Device type"),
 	    "type"	: "string",
@@ -103,7 +108,7 @@ map cmdline = $[
 	    "help": _("Device boot protocol"),
 	    "type": "string"
 	],
-	"ipaddr" : $[
+	"ip" : $[
 	    /* Commandline option help */
 	    "help": _("Device IP address"),
 	    "type": "ip"
@@ -117,7 +122,7 @@ map cmdline = $[
     "mappings" : $[
 	"list"	: [ "configured", "unconfigured" ],
 	"show"	: [ "id" ],
-	"add"	: [ "type" /*"bootproto", "ipaddr", "netmask"*/ ],
+	"add"	: [ "type", "bootproto", "ip", "netmask" ],
 	"delete": [ "id" ],
     ]
 ];

@@ -80,9 +80,45 @@ define boolean ListHandler(map<string, string> options) {
  * @param options action options
  */
 define boolean AddHandler(map<string, string> options) {
-    string type = options["type"]:"";
+    Lan::type = options["type"]:"ethernet";
+    if (!contains(["arcnet", "bluetooth", "dummy", "ethernet", "fddi", "myrinet", "token-ring", "usb", "wireless"], Lan::type)){
+	Report::Error(_("Not possible value for type!"));
+	 return false;
+	}
+    Lan::bootproto = options["bootproto"]:"none";
+    if (!contains(["none", "static", "dhcp"], Lan::bootproto)){
+        Report::Error(_("Not possible value for bootproto!"));
+         return false;
+        }
+    Lan::ipaddr = options["ip"]:"";
+    Lan::netmask = options["netmask"]:"255.255.255.0";
+    Lan::startmode = options["startmode"]:"auto";
+    if (!contains(["auto", "ifplugd", "nfsroot"], Lan::startmode)){
+        Report::Error(_("Not possible value for startmode!"));
+         return false;
+        }
 
-   CommandLine::Print(type);
+
+    map<string, any> settings = $[
+        "STARTMODE": Lan::startmode,
+        "USERCONTROL": Lan::usercontrol,
+        // problems when renaming the interface?
+        "FWZONE": "EXT",
+        "MTU": Lan::mtu,
+        "BOOTPROTO": Lan::bootproto,
+        "IPADDR": Lan::ipaddr,
+        "NETMASK": Lan::netmask,
+        "REMOTEIP": Lan::remoteip,
+        "IFCFGTYPE": Lan::type,
+        "IFCFGID": Lan::device,
+        ];
+
+
+y2internal("%1", settings);
+   CommandLine::Print(Lan::type);
+   CommandLine::Print(Lan::bootproto);
+   CommandLine::Print(Lan::ipaddr);
+   CommandLine::Print(Lan::netmask);
 /*
     CommandLine::Print(sformat(_("Adding Device: %1"), dev));
 
