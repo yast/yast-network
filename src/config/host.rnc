@@ -1,9 +1,11 @@
 default namespace = "http://www.suse.com/1.0/yast2ns"
 namespace config = "http://www.suse.com/1.0/configns"
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
-include "common.rnc"
-# to be overriden if included
-start = element profile { host }
+# These currently conflict with the including files
+# which would need adjustments
+#include "common.rnc"
+## to be overriden if included
+#start = element profile { host }
 
 host =
   element host {

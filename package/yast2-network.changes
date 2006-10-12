@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Oct 12 10:59:39 CEST 2006 - mvidner@suse.cz
+
+- Disabled conflicting definitions in host.rnc from last change.
+- 2.13.67
+
+-------------------------------------------------------------------
 Mon Sep 25 14:49:04 CEST 2006 - kmachalkova@suse.cz
 
 - Better autoyast XML validation for networking and host
