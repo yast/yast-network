@@ -15,6 +15,7 @@ textdomain "network";
 import "Mode";
 import "Internet";
 import "Label";
+import "NetworkDevices";
 import "Popup";
 import "Product";
 import "String";
@@ -54,6 +55,29 @@ define boolean AskForPassword() {
     UI::BusyCursor();
 
     return ret == `ok;
+}
+
+define map <string, string> GetDeviceDescription(string device_id) {
+
+    string device_name = NetworkDevices::GetValue(device_id,"NAME");
+    //avoid too long device names
+    if (size(device_name) > 30) {
+        device_name = substring (device_name, 0, 27) + "...";
+    }
+
+    map <string, string> ret = $[
+
+	"type" : NetworkDevices::GetDeviceType(device_id),
+	"name" : device_name,
+	"ipaddr" : (NetworkDevices::GetValue(device_id, "BOOTPROTO") == "dhcp" ?
+                    // TRANSLATORS: Informs that the IP address is assigned via DHCP
+                    _("DHCP address")
+                    :
+                    NetworkDevices::GetValue(device_id, "IPADDR")
+                ),
+    ];
+
+    return ret;
 }
 
 /**
@@ -99,13 +123,14 @@ activate the test procedure."),
     boolean already_up = false;
     if(!Mode::test ()) already_up = Internet::Status();
 	/* Label text - selected network device to network test */
-    string connection_text = _("&Yes, Test Connection to the Internet\nvia '%1'");
+    string connection_text = _("&Yes, Test Connection to the Internet\nvia %1 - %2 (%3)");
+    map <string, string> device_descr = GetDeviceDescription(Internet::device);
 
     /* Radiobuttons */
     term buttons = `VBox(
 	`VSpacing(1),
 	/* RadioButton label */
-	`Left(`ReplacePoint(`id(`rp), `RadioButton(`id(`yes), sformat(connection_text, Internet::device) , Internet::do_test))),
+	`Left(`ReplacePoint(`id(`rp), `RadioButton(`id(`yes), sformat(connection_text, device_descr["name"]:"", device_descr["type"]:"", device_descr["ipaddr"]:_("No IP address assigned")), Internet::do_test))),
 	// push button label
 	`Right(`PushButton(`id(`net_expert), _("&Change Device"))),
 	/* RadioButton label */
@@ -157,6 +182,20 @@ activate the test procedure."),
     Wizard::SetContents(caption, contents, help, true, true);
     Wizard::SetTitleIcon ("yast-network");
 
+    list<string> items = NetworkDevices::List("");
+    items = filter (string i, items, ``( i != "lo" ));
+    y2milestone("network devices list %1", items);
+    if (items == [] || items == ["lo"])	// #146167
+    {
+	// no interesting ifcfgs, ask ip
+	items = Internet::GetDevices ();
+    }
+
+    //If only one device is present, disable "Change device" button
+    if (size(items) <= 1){
+	UI::ChangeWidget(`id(`net_expert),`Enabled,false);
+    }
+
     any ret = nil;
 
     while(true)
@@ -165,24 +204,15 @@ activate the test procedure."),
 
 	if (ret == `net_expert)
 	{
-	    import "NetworkDevices";
 	    import "NetworkPopup";
-
-	    list<string> items = NetworkDevices::List("");
-	    if (items == [] || items == ["lo"])	// #146167
-	    {
-		// no interesting ifcfgs, ask ip
-		items = Internet::GetDevices ();
-	    }
-	    items = filter (string i, items, ``( i != "lo" ));
-	    y2milestone("network devices list %1", items);
 
 	    // popup dialog title
 	    string via_device = NetworkPopup::ChooseItem(_("Network Device Select"), items, Internet::device);
 	    if (via_device != nil)
 	    {
+		map <string, string> device_descr = GetDeviceDescription(via_device);
 		Internet::SetDevice( via_device );
-		UI::ReplaceWidget(`id(`rp), `RadioButton(`id(`yes), sformat(connection_text, Internet::device), Internet::do_test));
+		UI::ReplaceWidget(`id(`rp), `RadioButton(`id(`yes), sformat(connection_text, device_descr["name"]:"", device_descr["type"]:"", device_descr["ipaddr"]:_("No IP address assigned")), Internet::do_test));
 		y2milestone("selected network device :%1", via_device);
 	    }
 	}

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Oct 17 16:51:58 CEST 2006 - kmachalkova@suse.cz
+
+- Improved Internet Test Dialog (show more info about devices,
+  disable Change Device button when not needed) (#208000)
+- 2.13.68 
+
+-------------------------------------------------------------------
 Thu Oct 12 10:59:39 CEST 2006 - mvidner@suse.cz
 
 - Disabled conflicting definitions in host.rnc from last change.
