@@ -11,15 +11,17 @@
 
 textdomain "network";
 
+import "CWM";
+
 import "Lan";
 import "DNS";
+import "Mode";
 import "NetworkConfig";
 import "NetworkModules";
 import "NetworkService";
 import "Routing";
 
 import "Wizard";
-import "Wizard_hw";
 import "WizardHW";
 
 import "Popup";
@@ -195,6 +197,8 @@ or need to use multiple interfaces at once.</p>
 	    "caption": _("Network Setup Method"),
 	    "back_button" : Label::BackButton (),
 	    "next_button" : Label::NextButton (),
+	    // #54027
+	    "disable_buttons" : (Mode::normal ()? ["back_button"] : []),
 	    "fallback_functions" : functions,
 	    ]);
     // #148485: always show the device overview
@@ -242,7 +246,7 @@ The driver may be built in the kernel.")))
  * @return dialog result
  */
 define any OverviewDialog() ``{
-
+y2internal("OverviewDialog");
     ScreenName("lan-overview");
 
     /* Network cards overview dialog caption */
@@ -282,8 +286,12 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
 	, [_("Name"), _("IP Address")]
 	, [] );
     Wizard::EnableBackButton (); // ManagedDialog
+    if (Mode::normal ()) {	// #182853
+	// outside the installation proposal and autoyast, this is the last one
+	Wizard::SetNextButton (`next, Label::FinishButton ());
+    }
 
-    boolean xenbr = Lan::HaveXenBridge ();
+    boolean xenbr = !Mode::config() && Lan::HaveXenBridge (); // #196479
     boolean repaint = true;
     map ret = nil;
     while(true) {

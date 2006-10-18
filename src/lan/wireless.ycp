@@ -1085,7 +1085,7 @@ perform the authentication, namely TLS, TTLS, and PEAP.</p>
 	"help": _("<p>For TTLS and PEAP, enter your <b>Identity</b>
 and <b>Password</b> as configured on the server.
 If you have special requirements to set the username used as
-<b>Anonymous Identity</b>, you may set it here. This is usally not needed.</p>
+<b>Anonymous Identity</b>, you may set it here. This is usually not needed.</p>
 "),
 	],
     "WPA_EAP_ANONID": $[

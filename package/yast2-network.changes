@@ -1,4 +1,126 @@
 -------------------------------------------------------------------
+Tue Oct 17 16:51:58 CEST 2006 - kmachalkova@suse.cz
+
+- Improved Internet Test Dialog (show more info about devices,
+  disable Change Device button when not needed) (#208000)
+- 2.13.68 
+
+-------------------------------------------------------------------
+Thu Oct 12 10:59:39 CEST 2006 - mvidner@suse.cz
+
+- Disabled conflicting definitions in host.rnc from last change.
+- 2.13.67
+
+-------------------------------------------------------------------
+Mon Sep 25 14:49:04 CEST 2006 - kmachalkova@suse.cz
+
+- Better autoyast XML validation for networking and host
+- Conversion function in Host::Import to handle older profiles
+  (as more FQDNs for one IP is allowed since 2.13.65)
+- 2.13.66 
+
+-------------------------------------------------------------------
+Wed Sep 20 13:55:10 CEST 2006 - kmachalkova@suse.cz
+
+- Network installation proposal: 
+  click on 'Network Mode' title opens ManagedDialog to select 
+  between NM and ifup (#203817)
+
+-------------------------------------------------------------------
+Tue Sep 19 16:54:34 CEST 2006 - kmachalkova@suse.cz
+
+- Allow using more FQDNs for one IP in /etc/hosts editor (#152036)
+- Adjusted testsuite (Host.*)
+- 2.13.65
+ 
+-------------------------------------------------------------------
+Thu Sep 14 13:31:35 CEST 2006 - mzugec@suse.cz
+
+- 2.13.64 - fate #100092 - command line support in network module 
+
+-------------------------------------------------------------------
+Thu Sep 14 10:47:50 CEST 2006 - locilka@suse.cz
+
+- Improving the Internet Test Dialog (FATE #100294)
+
+-------------------------------------------------------------------
+Fri Sep  8 15:00:59 CEST 2006 - kmachalkova@suse.cz
+
+- Added missing icon to Hostname installation dialog (#203816) 
+
+-------------------------------------------------------------------
+Wed Sep  6 16:18:43 CEST 2006 - kmachalkova@suse.cz
+
+- Allow using the same proxy URL for all protocols (#57919)
+- Updated proxy module help text (#181931)
+- 2.13.63 
+
+-------------------------------------------------------------------
+Fri Sep  1 10:40:07 CEST 2006 - kmachalkova@suse.cz
+
+- Added line wrapping to checkbox label in dns.ycp (#166236)
+  due to lack of space for languages such as french  
+
+-------------------------------------------------------------------
+Wed Aug 30 13:34:04 CEST 2006 - mzugec@suse.cz
+
+- fixed #73739 - don't use stadic default gw with dhcp 
+
+-------------------------------------------------------------------
+Fri Aug 25 10:43:26 CEST 2006 - mvidner@suse.cz
+
+- Allow editing despite having a Xen bridge in Autoyast mode (#196479).
+
+-------------------------------------------------------------------
+Tue Aug 22 19:21:05 CEST 2006 - mvidner@suse.cz
+
+- Main dialogs:
+  Disable the Back button when there is no going back (#54027).
+  Rename Next to Finish when there is nowhere else to go (#182853).
+- 2.13.61
+
+-------------------------------------------------------------------
+Fri Aug 11 10:54:00 CEST 2006 - mvidner@suse.cz
+
+- Fixed typos in English.
+
+-------------------------------------------------------------------
+Fri Aug 11 09:26:54 CEST 2006 - kmachalkova@suse.cz
+
+- Removed running SuSEconfig module "profiles" from Proxy.ycp, since 
+  it has been dropped and is no longer needed
+- Updated ProxyFinishPopup() text (#158564)
+- 2.13.60
+
+-------------------------------------------------------------------
+Tue Aug  1 11:18:32 CEST 2006 - mvidner@suse.cz
+
+- NetworkManager cannot do additional addresses, disable the dialog
+  (#165059).
+- NetworkManager now respects DHCLIENT_MODIFY_RESOLV_CONF, enable the
+  checkbox accordingly (#156830).
+- 2.13.59
+
+-------------------------------------------------------------------
+Tue Jul 18 17:15:34 CEST 2006 - mvidner@suse.cz
+
+- Better logging of the internet test (#192745).
+
+-------------------------------------------------------------------
+Sun Jul 16 08:54:55 CEST 2006 - olh@suse.de
+
+- introduce a Linuxrc::display_ip and use it instead of Arch::s390
+- 2.13.58
+
+-------------------------------------------------------------------
+Mon Jul 10 16:23:39 CEST 2006 - mvidner@suse.cz
+
+- After the installation, use the correct module for the card over
+  which the installation was done (#186000).
+- Include also WiFi cards in the DSL PPPoE dialog (#186102).
+- 2.13.57
+
+-------------------------------------------------------------------
 Fri Jun  9 11:10:10 CEST 2006 - locilka@suse.cz
 
 - Identify the release notes downloaded during the internet test by

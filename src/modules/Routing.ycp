@@ -79,6 +79,18 @@ global define boolean ReadFromGateway (string gw) {
 }
 
 /**
+ * Remove route with default gateway from Routes list
+ */
+global define void RemoveDefaultGw() {
+ list <map> route = [];
+ foreach(map row, Routes,{
+  if (row["destination"]:""!="default") route = add(route, row);
+ });
+ Routes = route;
+}
+
+
+/**
  * Read routing settings
  * If no routes, sets a default gateway from Detection
  * @return true if success

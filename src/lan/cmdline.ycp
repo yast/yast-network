@@ -16,45 +16,110 @@ import "Label";
 import "Lan";
 import "NetworkDevices";
 import "RichText";
+import "Report";
+
+list <map<string, any> > getConfigList(){
+ list <map<string, any> > confList = [];
+ integer count = 0;
+ list<map<string,any> > overview = (list<map<string,any> >)Lan::Overview();
+ overview = overview + Lan::Unconfigured ();
+ foreach(map<string, any> row, overview, {
+  confList = add(confList, $[tostring(count) : $["id" : row["id"]:"",
+				"rich_descr" : row["rich_descr"]:"",
+				"descr" : row["table_descr", 0]:"",
+				"addr" : row["table_descr", 1]:""]]);
+  count = count + 1;
+ });
+ return confList;
+}
+
+boolean validateId(map<string, string> options, list <map<string, any> > config){
+ if (options["id"]:nil == nil){
+			 Report::Error( _("Use \"id\" option to determine device."));
+			 return false;
+			}
+
+   if (tointeger(options["id"]:"0")>size(config)-1){
+			 Report::Error( _("Value of \"id\" is out of range. Use \"list\" option to check max. value of \"id\"."));
+			 return false;
+			}
+ return true;
+}
+
 
 /**
- * Handler for action "list"
+ * Handler for action "show"
  * @param options action options
  */
-define boolean ListHandler(map<string, string> options) {
-
-    boolean cf = false;
-    boolean uncf = false;
-    if(options["configured"]:nil != nil) cf = true;
-    if(options["unconfigured"]:nil != nil) uncf = true;
-
-    string summary = "";
-    if(cf == false && uncf == false)
-	/* Headline */
-	summary = "\n" + _("Network Configuration Summary:") + "\n\n" +
-	    RichText::Rich2Plain(Lan::Summary("summary")[0]:"") + "\n";
-    else {
-	list l = Lan::Summary("split");
-	if(cf) summary = RichText::Rich2Plain(sformat("%1", l[0]:"")) + "\n";
-	/* Headline */
-	if(uncf) summary = _("Available Devices:") + "\n" +
-	    sformat("%1", mergestring(maplist(term i, l[1]:[], { return "* " + i[1]:"" + "\n"; } ), ""));
-	summary = "\n" + summary;
-    }
-
-    y2debug("%1", summary);
-    CommandLine::Print(summary);
+define boolean ShowHandler(map<string, string> options) {
+   list <map<string, any> > config = getConfigList();
+   if (validateId(options, config)==false) return false;
+    foreach(map<string, any> row, config, {
+     foreach(string key, map<string, any> value, (map<string, map<string, any> >) row, {
+	if (key == options["id"]:"0"){
+			 string text = sformat("echo \"%1\"|sed s/'<[/a-z]*>'/'\\n'/g", value["rich_descr"]:"");
+			 map<string, any> descr = (map<string, any>)SCR::Execute(.target.bash_output, text);
+			 y2internal("%1", descr);
+			 CommandLine::Print( descr["stdout"]:"" );
+			}
+     });
+    });
     return true;
 }
 
+define boolean ListHandler(map<string, string> options) {
+    foreach(map<string, any> row, getConfigList(), {
+     foreach(string id, map <string,any> detail, (map<string, map<string, any> >)row, {
+      CommandLine::Print(sformat("%1\t%2, %3\n",id, detail["descr"]:"", detail["addr"]:""));
+     });
+    });
+ return true;
+}
 /**
  * Handler for action "add"
  * @param options action options
  */
 define boolean AddHandler(map<string, string> options) {
-    string dev = options["device"]:"";
+    Lan::type = options["type"]:"ethernet";
+    if (!contains(["arcnet", "bluetooth", "dummy", "ethernet", "fddi", "myrinet", "token-ring", "usb", "wireless"], Lan::type)){
+	Report::Error(_("Not possible value for type!"));
+	 return false;
+	}
+    Lan::bootproto = options["bootproto"]:"none";
+    if (!contains(["none", "static", "dhcp"], Lan::bootproto)){
+        Report::Error(_("Not possible value for bootproto!"));
+         return false;
+        }
+    Lan::ipaddr = options["ip"]:"";
+    Lan::netmask = options["netmask"]:"255.255.255.0";
+    Lan::startmode = options["startmode"]:"auto";
+    if (!contains(["auto", "ifplugd", "nfsroot"], Lan::startmode)){
+        Report::Error(_("Not possible value for startmode!"));
+         return false;
+        }
 
-    /* Progress text */
+
+    map<string, any> settings = $[
+        "STARTMODE": Lan::startmode,
+        "USERCONTROL": Lan::usercontrol,
+        // problems when renaming the interface?
+        "FWZONE": "EXT",
+        "MTU": Lan::mtu,
+        "BOOTPROTO": Lan::bootproto,
+        "IPADDR": Lan::ipaddr,
+        "NETMASK": Lan::netmask,
+        "REMOTEIP": Lan::remoteip,
+        "IFCFGTYPE": Lan::type,
+        "IFCFGID": Lan::device,
+        ];
+
+
+y2internal("%1", settings);
+   CommandLine::Print(Lan::type);
+   CommandLine::Print(Lan::bootproto);
+   CommandLine::Print(Lan::ipaddr);
+   CommandLine::Print(Lan::netmask);
+/*
     CommandLine::Print(sformat(_("Adding Device: %1"), dev));
 
     if(!Lan::Add()) {
@@ -69,8 +134,9 @@ define boolean AddHandler(map<string, string> options) {
     Lan::device = NetworkDevices::device_num(dev);
 
     Lan::Commit();
-    /* Progress result */
     CommandLine::Print(_("Success"));
+*/
+
     return true;
 }
 
@@ -79,20 +145,20 @@ define boolean AddHandler(map<string, string> options) {
  * @param options action options
  */
 define boolean DeleteHandler(map<string, string> options) {
-    string dev = options["device"]:"";
+   list <map<string, any> > config = getConfigList();
+   if (validateId(options, config)==false) return false;
+   foreach(map<string, any> row, config, {
+     foreach(string key, map<string, any> value, (map<string, map<string, any> >) row, {
+        if (key == options["id"]:"0"){
+			string id = value["id"]:"";
+		            Lan::Delete(id);
+		            Lan::Commit();
+			 CommandLine::Print(_("The device was deleted."));
+                        }
+     });
+    });
 
-    /* Progress text */
-    CommandLine::Print(sformat(_("Deleting Device: %1"), dev));
 
-    if(Lan::Delete(dev) && Lan::Commit())
-	/* Progress result */
-	CommandLine::Print(_("Success"));
-    else
-    {
-	/* Progress result */
-	CommandLine::Print(Label::ErrorMsg());
-	return false;
-    }
     return true;
 }
 

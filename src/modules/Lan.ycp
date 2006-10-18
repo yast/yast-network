@@ -1216,6 +1216,11 @@ global define boolean Commit() {
 		NetworkModules::DeleteM(nm_name);
 	    // FIXME: NI DeleteDevice2(NetworkDevices::device_name(type, device));
 	    }
+	    // #145001
+	    /*
+	    NetworkUdev::Delete (device);
+	    HwStatus::...
+	    */
 	}
 	else {
 	    // FIXME: NI DeleteDevice2(NetworkDevices::device_name(type, device) + ":" + alias);

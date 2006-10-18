@@ -123,7 +123,7 @@ global define boolean FindFastest() {
     device = NetworkDevices::Fastest();
     if (device == "")
     {
-	device = select (GetDevices (), 0, "");
+	device = GetDevices ()[0]:"";
     }
 
     y2milestone("fastest=%1", device);
@@ -143,8 +143,11 @@ global define boolean FindFastest() {
 global define boolean Start(string log) {
 
     if ((type == "dsl" && capi_adsl) || (type == "isdn")) {
-	if (Service::Status ("isdn") != 0) {
+	integer status = Service::Status ("isdn");
+	y2milestone ("We need ISDN service, status: %1", status);
+	if (status != 0) {
 	    if (! Service::Start ("isdn")) {
+		y2error ("start failed");
 		return false;
 	    }
 	}
@@ -172,7 +175,7 @@ global define boolean Start(string log) {
 	ret = SCR::Execute(.target.bash, cmd);
     }
     if (ret != 0) {
-	y2error(NetworkService::IsManaged ()?
+	y2error("%1", NetworkService::IsManaged ()?
 		"NM.setActiveDevice failed":
 		"ifup failed");
 	return false;

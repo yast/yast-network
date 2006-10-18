@@ -9,8 +9,8 @@ map READ = $[
     ],
     "etc" : $[
 	"hosts" : $[
-	    "127.0.0.1" : "localhost localhost.localdomain",
-	    "10.20.1.29" : "beholder",
+	    "127.0.0.1" : ["localhost localhost.localdomain"],
+	    "10.20.1.29" : ["beholder"],
 	],
     ],
 ];

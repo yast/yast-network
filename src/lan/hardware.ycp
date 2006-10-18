@@ -143,7 +143,6 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	CheckBoxes,
 	`VSpacing(0.4)
     ),`HSpacing(0.5)));
-
     list devices = Lan::FreeDevices(realtype); // TODO: id-, bus-, ... here
     if(!contains(devices, device)) devices = prepend(devices, device);
 
@@ -445,7 +444,6 @@ Really continue?
 
 	y2milestone("type=%1",type);
     }
-
     return ret;
 }
 
@@ -583,7 +581,7 @@ define any S390Dialog() {
 	/* S/390 dialog help: QETH Port name */
 	helptext = _("<p>Enter the <b>Port Name</b> for this interface (case-sensitive).</p>") +
 	/* S/390 dialog help: QETH Options */
-	_("<p>Enter any additional <b>Options</b> for this interface (separated by spacess).</p>") +
+	_("<p>Enter any additional <b>Options</b> for this interface (separated by spaces).</p>") +
 	_("<p>Select <b>Enable IPA Takeover</b> if IP address takeover should be enabled for this interface.</p>") +
 	_("<p>Select <b>Enable Layer 2 Support</b> if this card has been configured with layer 2 support.</p>") +
 	_("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been configured with layer 2 support.</p>");
