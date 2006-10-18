@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Oct 18 19:15:16 CEST 2006 - mzugec@suse.cz
+
+- 2.13.69 - fate #300604 - UI to disable IPv6 
+
+-------------------------------------------------------------------
 Tue Oct 17 16:51:58 CEST 2006 - kmachalkova@suse.cz
 
 - Improved Internet Test Dialog (show more info about devices,

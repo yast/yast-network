@@ -209,6 +209,63 @@ or need to use multiple interfaces at once.</p>
     return ret;
 }
 
+define symbol IPv6Dialog () {
+    map<string, map<string,any> > wd = $[
+	"IPV6": $[
+	    "widget": `radio_buttons,
+	    // radio button group label, method of setup
+	    "label": _("IPv6 Support"),
+	    "items": [
+		// radio button label
+		// the user can enable IPv6
+		["enable", _("&Enable IPv6")],
+		// radio button label
+		// the user can disable IPv6
+		["disable", _("&Disable IPv6")],
+		],
+	    "opt": [],
+	    "help":
+	    /* IPv6 help */
+_("<p>Select <b>Enable</b> IPv6 to enable ipv6 module in kernel.
+It is possible to use IPv6 together with IPv4. This is default option.
+") +
+	    /* Network setup method help */
+_("<p>Select <b>Disable</b> IPv6 to disable autoload kernel module for ipv6.
+When ipv6 protocol is not used on your network, response time will be faster.
+") +
+_("<p>All changes will be applied after reboot.</p>"),
+	    "init": ManagedInit,
+	    "store": ManagedStore,
+	    ],
+	];
+
+    term contents = `VBox (
+	`HSquash ("IPV6")
+	);
+
+    map functions = $[
+	`abort : ReallyAbort,
+    ];
+
+    symbol ret = (symbol) CWM::ShowAndRun (
+	$[
+	    "widget_descr": wd,
+	    "contents": contents,
+	    /* Address dialog caption */
+	    "caption": _("Network Setup Method"),
+	    "back_button" : Label::BackButton (),
+	    "next_button" : Label::NextButton (),
+	    // #54027
+	    "disable_buttons" : (Mode::normal ()? ["back_button"] : []),
+	    "fallback_functions" : functions,
+	    ]);
+    // #148485: always show the device overview
+    if (false && ret == `next && NetworkService::IsManaged ())
+    {
+	ret = `managed;
+    }
+    return ret;
+}
 /**
  * Start configuring a new interface (`add or `managed).
  * Also install needed packages.
