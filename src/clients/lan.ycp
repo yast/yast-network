@@ -49,6 +49,12 @@ map cmdline = $[
 	    "example"	: "lan list configured",
 	    "handler"	: ListHandler,
 	],
+	"show" : $[
+	    /* Commandline command help */
+	    "help"	: _("Display configuration summary"),
+	    "example"	: "lan show id=...",
+	    "handler"	: ShowHandler,
+	],
 	"add" : $[
 	    /* Commandline command help */
 	    "help"	: _("Add a network card"),
@@ -81,12 +87,28 @@ map cmdline = $[
 	    "type"	: "string",
 	    "example"	: "lan add device=eth0"
 	],
+	"id" : $[
+	    /* Commandline option help */
+	    "help"	: _("Config identifier"),
+	    "type"	: "string",
+	    "example"	: "lan show id=0"
+	],
+	"bootproto" : $[
+	    "help"	: _("Use static or dynamic configuration"),
+	    "type"	: "string",
+	    "example"	: "add type=ethernet bootproto=dhcp"
+	],
+	"type" : $[
+	    "help"	: _("Device type"),
+	    "type"	: "string",
+	    "example"	: "add type=bluetooth"
+	],
 	"bootproto" : $[
 	    /* Commandline option help */
 	    "help": _("Device boot protocol"),
 	    "type": "string"
 	],
-	"ipaddr" : $[
+	"ip" : $[
 	    /* Commandline option help */
 	    "help": _("Device IP address"),
 	    "type": "ip"
@@ -99,8 +121,9 @@ map cmdline = $[
     ],
     "mappings" : $[
 	"list"	: [ "configured", "unconfigured" ],
-	"add"	: [ "device", "bootproto", "ipaddr", "netmask" ],
-	"delete": [ "device" ],
+	"show"	: [ "id" ],
+	"add"	: [ "type", "bootproto", "ip", "netmask" ],
+	"delete": [ "id" ],
     ]
 ];
 

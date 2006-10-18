@@ -16,6 +16,7 @@ import "DNS";
 import "GetInstArgs";
 import "NetworkConfig";
 import "String";
+import "Wizard";
 
 include "network/services/dns.ycp";
 
@@ -35,6 +36,8 @@ if (DNS::hostname == "linux")
 // propose settings
 NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = ! Arch::is_laptop ();
 // TODO: policy for proposing a hostname
+
+Wizard::SetDesktopIcon("dns");
 
 symbol ret = HostnameDialog ();
 

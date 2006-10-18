@@ -130,23 +130,25 @@ and correct the settings.</p>
 	/* Progress labels */
 	term progress = `VBox();
 
+	// do not connect to internet when already connected
 	if(!already_up)
 	    progress = add(progress, `Left(`HBox(`Heading(`id(`s1), dash), `Label(l1))));
 	if(true)
 	    progress = add(progress, `Left(`HBox(`Heading(`id(`s2), dash), `Label(l2))));
+	// do not shutdown the connection when already connected
 	if(!already_up)
-	    progress = add(progress, `Left(`HBox(`Heading(`id(`s4), dash), `Label(l4))));
+	    progress = add(progress, `Left(`HBox(`Heading(`id(`s3), dash), `Label(l4))));
 
 	progress = add(progress, `VStretch());
 
 	progress = add(progress, `HBox(
 				       /* Label for result of internet test */
-				       `Label(_("Result:")),
+				       `Label(_("Test Result:")),
 				       `HSpacing(2),
 				       `Label(`id(`res), `opt(`outputField, `hstretch), "")
 				       ));
 
-	progress = add(progress, `VStretch());
+	progress = add(progress, `VSpacing(1));
 
 	/* Push Button to abort internet test */
 	progress = add(progress, `PushButton(`id(`abort_test), _("&Abort Test")));
@@ -175,6 +177,7 @@ and correct the settings.</p>
 			      );
 
 	Wizard::SetContents(caption, contents, help, true, true);
+	Wizard::SetTitleIcon ("yast-network");
     }
 
 
@@ -193,7 +196,11 @@ and correct the settings.</p>
 	    `dash : UI::Glyph (`CheckMark),
 	    ];
 
-	UI::ChangeWidget (`id (widgets[i]:nil), `Value, bullets[s]:"?");
+	if (UI::WidgetExists(`id(widgets[i]:nil))) {
+	    UI::ChangeWidget (`id (widgets[i]:nil), `Value, bullets[s]:"?");
+	} else {
+	    y2error("No such widget with ID: %1", widgets[i]:nil);
+	}
     }
 
 
@@ -465,7 +472,7 @@ RPM signature check failed."));
 	    if (IsDownloadedRPMInstallable(rpm_name, filename)) {
 		y2milestone("Downloaded version is newer, let's install it...");
 	    } else {
-		y2milestone("Downloaded version is the same of older, skipping...");
+		y2milestone("Downloaded version is the same or older, skipping...");
 		return;
 	    }
 	    
@@ -520,7 +527,7 @@ RPM signature check failed."));
 				     `prio : 16 ]);
 		if(!Internet::Start(logdir + "/ifup.log")) {
 		    // popup to inform user about the failure
-		    Popup::Message(_("Connecting to the Internet failed. View
+		    Report::Error(_("Connecting to the Internet failed. View
 the logs for details.
 "));
 		    test_stage = `finish;
@@ -545,12 +552,12 @@ the logs for details.
 	    // status must be up
 	    if(!Internet::Status()) {
 		// popup to inform user about the failure
-		Popup::Message(_("Connecting to the Internet failed. View
+		Report::Error(_("Connecting to the Internet failed. View
 the logs for details.
 "));
 		test_stage = `finish;
 		test_result = `failure;
-		mark_label (1, `dash);
+		if (!already_up) mark_label (1, `dash);
 		return;
 	    }
 
@@ -562,11 +569,12 @@ the logs for details.
 		// even after we get an address, the test can fail. #145153
 		// so before we have the dbus event filter, let's try this
 		SCR::Execute (.target.bash, "ip route list >&2");
+		y2milestone("Waiting 5000 to get initialized...");
 		sleep (5000);
 		SCR::Execute (.target.bash, "ip route list >&2");
 
 		test_stage = `copy;
-		mark_label(1, `check);
+		if (!already_up) mark_label(1, `check);
 		return;
 	    }
 
@@ -589,7 +597,7 @@ the logs for details.
 	    if (!download_release_notes ())
 	    {
 		// popup to inform user about the failure
-		Popup::Message(_("Download of latest release notes failed. View
+		Report::Error(_("Download of latest release notes failed. View
 the logs for details.
 "));
 		test_stage = `close;
@@ -641,7 +649,7 @@ the logs for details.
 	    else
 	    {
 		// popup to inform user about the failure
-		Popup::Message(_("Check for latest updates failed. View
+		Report::Error(_("Check for latest updates failed. View
 the logs for details.
 "));
 		test_result = `failure;
@@ -687,6 +695,7 @@ the logs for details.
 	}
     }
 
+    /* --- internet test starts here --- */
 
     // Create logdir
     if (!(boolean)SCR::Execute (.target.mkdir, logdir))
@@ -702,6 +711,7 @@ the logs for details.
     UI::ChangeWidget(`id(`abort_test), `Enabled, true);
     UI::ChangeWidget(`id(`view_log), `Enabled, false);
 
+    UI::BusyCursor ();
 
     // loop during internet test
 
@@ -715,7 +725,6 @@ the logs for details.
 	    break;
 
 	ret = UI::TimeoutUserInput (250);
-	UI::NormalCursor ();
 
 	if (ret == `timeout)
 	    continue;
@@ -731,10 +740,7 @@ the logs for details.
 	y2error ("Unexpected return code: %1", ret);
     }
 
-    UI::BusyCursor ();
-
     SCR::Execute (.target.bash, "/bin/logger END OF YAST2 INTERNET TEST");
-
 
     show_result ();
 
@@ -749,6 +755,9 @@ the logs for details.
     UI::ChangeWidget(`id(`abort_test), `Enabled, false);
     UI::ChangeWidget(`id(`view_log), `Enabled, true);
 
+    UI::NormalCursor();
+
+    /* --- internet test ends here --- */
 
     // loop after internet test
     while (true)
@@ -777,18 +786,20 @@ the logs for details.
     }
 
 
+    // set internal data according the test result
     if (ret == `next)
     {
 	Internet::suse_register = test_result == `success;
 
-	if (we_have_patches)
-	{
-	    Internet::do_you = true;
-	    // Removed due to integration of suse_register
-	    // AskYOUDialog ();
-	}
-	else
-	    Internet::do_you = false;
+// we don't check for patches here anymore
+//	if (we_have_patches)
+//	{
+//	    Internet::do_you = true;
+//	    // Removed due to integration of suse_register
+//	    // AskYOUDialog ();
+//	}
+//	else
+//	    Internet::do_you = false;
     }
 
     return (symbol) ret;

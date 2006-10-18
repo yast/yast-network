@@ -20,7 +20,6 @@ import "IP";
 import "Label";
 import "Lan";
 import "NetworkConfig";
-import "NetworkService";
 import "Popup";
 
 include "network/routines.ycp";
@@ -355,7 +354,7 @@ disabled during the connection.</p>"),
     "DHCP_RESOLV": $[
 	"widget": `checkbox,
 	/* checkbox label */
-	"label": _("&Update Name Servers and Search List via DHCP"),
+	"label": _("&Update Name Servers and\nSearch List via DHCP"),
 	"opt": [`notify],
 	// help
 	"help": "",		// at "SEARCHLIST_S"
@@ -472,7 +471,7 @@ define any DNSMainDialog(boolean standalone) {
     /* DNS dialog caption */
     string caption = _("Hostname and Name Server Configuration");
 
-    has_dhcp = NetworkService::IsManaged () ||
+    has_dhcp =  // NetworkService::IsManaged () not: #169858, #156830
 	Lan::bootproto == "dhcp" || Lan::AnyDHCPDevice ();
 
     hn_settings = InitSettings ();

@@ -14,6 +14,7 @@ textdomain "network";
 import "CWM";
 import "CWMTab";
 import "Label";
+import "Mode";
 import "Modem";
 import "NetworkDevices";
 import "NetworkService";
@@ -22,7 +23,6 @@ import "Provider";
 import "Routing";
 import "Wizard";
 import "WizardHW";
-import "Wizard_hw";
 
 include "network/routines.ycp";
 include "network/summary.ycp";
@@ -364,9 +364,17 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 
     // FIXME: reallyabort
 
-    return CWM::ShowAndRunOrig (["tab"], widget_descr
-        ,`VBox("tab"), caption,
-        Label::BackButton(), Label::FinishButton(), $[]);
+    return CWM::ShowAndRun (
+	$[
+	    "widget_descr": widget_descr,
+	    "contents": `VBox("tab"),
+	    "caption": caption,
+	    "back_button": Label::BackButton(),
+	    // #182853
+	    "next_button": (Mode::normal ()? Label::FinishButton(): Label::NextButton()),
+	    // #54027
+	    "disable_buttons" : (Mode::normal ()? ["back_button"] : []),
+	    ]);
 }
 
 /* EOF */

@@ -31,8 +31,8 @@ define void ProxyFinishPopup(boolean modified) ``{
     /* Popup text */
 string text = _("Applications that support it, such as YaST2 Online Update,
 use them immediately. Other applications use them after a new login
-(lynx, wget). Some applications, like Mozilla, do not support these settings
-at all--they use their own settings system.
+(lynx, wget). Some applications do not support these settings at all --
+they use their own settings system.
 ");
 
     FinishPopup(modified, "proxy", text, "", []);
@@ -301,40 +301,48 @@ define any ProxyMainDialog(boolean standalone) ``{
     /* Proxy dialog caption */
     string caption = _("Proxy Configuration");
 
-    /* Proxy dialog help 1/7 */
+    /* Proxy dialog help 1/8 */
     string help = _("<p>Here, configure your Internet proxy (caching) settings.</p>") +
 
-    /* Proxy dialog help 2/7 */
+    /* Proxy dialog help 2/8 */
     _("<p><b>HTTP Proxy URL</b> is the name of the proxy server for your access
 to the World Wide Web (WWW).</p>
 ") +
 
-    /* Proxy dialog help 3/7 */
+    /* Proxy dialog help 3/8 */
     _("<p><b>HTTPS Proxy URL</b> is the name of the proxy server for your secured access
 to the World Wide Web (WWW).</p>
 ") +
 
-    /* Proxy dialog help 3.5/7 */
+    /* Proxy dialog help 3.5/8 */
     _("<p>Example: <i>http://proxy.example.com:3128/</i></p>") +
 
-    /* Proxy dialog help 4/7 */
+    /* Proxy dialog help 4/8 */
 
     _("<p><b>FTP Proxy URL</b> is the name of the proxy server for your access
 to the file transfer services (FTP).</p>") +
 
-    /* Proxy dialog help 5/7 */
+    /* Proxy dialog help 5/8 */
+
+	_("<p>With <b>Use the Same Proxy for All Protocols</b> option checked, it is
+enough to fill in HTTP proxy URL, which will then be used for all protocols
+(HTTP, HTTPS and FTP).") +
+
+    /* Proxy dialog help 6/8 */
+
     sformat (_("<p><b>No Proxy Domains</b> is a comma-separated list of domains
 for which the requests should be made directly without caching,
 for example, <i>%1</i>.</p>
 "),
 	     "localhost, .intranet.example.com, www.example.com") +
 
-    /* Proxy dialog help 6/7 */
+    /* Proxy dialog help 7/8 */
     _("<p>If you are using a proxy server with authorization, enter
-<b>Proxy User Name</b> and <b>Proxy Password</b>.</p>
+<b>Proxy User Name</b> and <b>Proxy Password</b>. A valid username
+consists of printable ASCII characters (except for quotation marks) only.</p>
 ") +
 
-    /* Proxy dialog help 7/7 */
+    /* Proxy dialog help 8/8 */
     _("<p>Press <b>Test Proxy Settings</b> to test
 the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 ");
@@ -347,20 +355,24 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 	`Left(`CheckBox(`id(`enabled), `opt(`notify), _("&Enable Proxy"), enabled)),
 	`VSpacing(1),
 	/* Frame label */
-	`Frame(`id(`frame), _("Proxy Settings"), `HBox(`HSpacing(2), `VBox(
+	`Frame(`id(`frame1), _("Proxy Settings"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(0.2),
 	    /* Text entry label */
-	    `TextEntry(`id(`http), _("&HTTP Proxy URL"), http),
+	    `TextEntry(`id(`http), `opt(`notify), _("&HTTP Proxy URL"), http),
 	    `VSpacing(0.2),
             `TextEntry(`id(`https), _("HTTP&S Proxy URL"), https),
             `VSpacing(0.2),
 	    /* Text entry label */
 	    `TextEntry(`id(`ftp), _("F&TP Proxy URL"), ftp),
 	    `VSpacing(0.2),
+		`Left(`CheckBox(`id(`same_proxy), `opt(`notify), _("Us&e the Same Proxy for All Protocols"))),
 	    /* Text entry label */
 	    // domains without proxying
 	    `TextEntry(`id(`no), _("No Proxy &Domains"), no),
-	    `VSpacing(0.2),
+	    `VSpacing(0.4)
+	    ), `HSpacing(2))),
+	`VSpacing(1),
+	`Frame(`id(`frame2), _("Proxy Authentication"), `HBox(`HSpacing(2), `VBox(
 	    /* Text entry label */
 	    `TextEntry(`id(`user), _("Proxy &User Name"), user),
 	    `VSpacing(0.2),
@@ -390,7 +402,8 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
     UI::ChangeWidget(`id(`ftp), `ValidChars, URL::ValidChars);
     UI::ChangeWidget(`id(`no), `ValidChars, Hostname::ValidCharsDomain + " ,");
     UI::ChangeWidget(`id(`user), `ValidChars, ValidCharsUsername);
-    UI::ChangeWidget(`id(`frame), `Enabled, enabled);
+    UI::ChangeWidget(`id(`frame1), `Enabled, enabled);
+    UI::ChangeWidget(`id(`frame2), `Enabled, enabled);
     UI::ChangeWidget(`id("test_proxy"), `Enabled, enabled);
 
     if(enabled == true) UI::SetFocus(`id(`http));
@@ -408,19 +421,37 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 	}
 	if(ret == `enabled) {
 	    enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
-	    UI::ChangeWidget(`id(`frame), `Enabled, enabled);
+	    UI::ChangeWidget(`id(`frame1), `Enabled, enabled);
+	    UI::ChangeWidget(`id(`frame2), `Enabled, enabled);
 	    UI::ChangeWidget(`id("test_proxy"), `Enabled, enabled);
 	    continue;
 	}
+	else if(ret == `same_proxy) {
+	    enabled = (boolean) UI::QueryWidget(`id(`same_proxy), `Value);
+
+		UI::ChangeWidget(`id(`https), `Value, prefill);
+		UI::ChangeWidget(`id(`ftp), `Value, prefill);
+		UI::ChangeWidget(`id(`https), `Enabled, !enabled);
+		UI::ChangeWidget(`id(`ftp), `Enabled, !enabled);
+		continue;
+	}
 	/* next */
 	else if (ret == `next || ret == "test_proxy") {
+		boolean same_proxy = (boolean) UI::QueryWidget(`id(`same_proxy), `Value);
 
 	    http    = (string)  UI::QueryWidget(`id(`http), `Value);
-	    https   = (string)  UI::QueryWidget(`id(`https), `Value);
-	    ftp     = (string)  UI::QueryWidget(`id(`ftp), `Value);
-	    user    = (string)  UI::QueryWidget(`id(`user), `Value);
-	    pass    = (string)  UI::QueryWidget(`id(`pass), `Value);
-	    enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
+		if (same_proxy) {
+			https = http;
+			ftp = http;
+		}
+		else {
+		    https   = (string)  UI::QueryWidget(`id(`https), `Value);
+		    ftp     = (string)  UI::QueryWidget(`id(`ftp), `Value);
+		}
+
+		user    = (string)  UI::QueryWidget(`id(`user), `Value);
+		pass    = (string)  UI::QueryWidget(`id(`pass), `Value);
+		enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
 
 	    no = (string) UI::QueryWidget(`id(`no), `Value);
 	    list<string> no_list = splitstring (no, " ,");
@@ -503,9 +534,6 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
     }
 
     if(ret == `next) {
-	if(enabled) {
-
-	}
 
 	if(Proxy::http == http && Proxy::ftp == ftp && Proxy::no == no &&
 		Proxy::https == https &&
