@@ -486,6 +486,11 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 	// summary description of STARTMODE=managed
 	"managed": _("Managed by NetworkManager"),
 	];
+list<string> models = [];
+foreach(map<string, any>row, (list<map<string, any> >)SCR::Read (.probe.netcard), {
+ models=add(models, row["model"]:"");
+});
+
     maplist(string type, map devmap, Devs, {
 	maplist(string k, map v, (map<string,map>)devmap, {
 	    term item = nil;
@@ -543,7 +548,7 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 			];
 		}
 		// create the rich text description
-		string rich = HTML::Bold (descr) +"<br>"+ HTML::List (bullets);
+		string rich = HTML::Bold ( sformat("%1 %2", descr, (contains(models, v["NAME"]:"") )?"":_("(not connected)"))) +"<br>"+ HTML::List (bullets);
 		
 		item = `item(`id(dev), descr, ip, rich);
 	    }
@@ -572,6 +577,7 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
  */
 define list BuildOverview(string devregex, list<map> Hardware) {
     map <string, map> Devs = NetworkDevices::FilterDevices (devregex);
+y2internal("Devs %1", Devs);
     return BuildOverviewDevs (Devs, Hardware);
 }
 
