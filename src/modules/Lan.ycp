@@ -65,6 +65,8 @@ global string type = "";
 global string device = "";
 global string alias = "";
 
+// ipv6 module
+global boolean ipv6=true;
 /**
  * Hotplug type ("" if not hot pluggable)
  */
@@ -313,6 +315,7 @@ global define boolean Read (symbol cache) {
     /* Progress step 4/9 */
     ProgressNextStage(_("Reading network configuration..."));
     NetworkConfig::Read();
+    ipv6 = ((map<string, any>)(SCR::Execute(.target.bash_output, "grep -v '^#' /etc/modprobe.conf.local|grep -q ipv6")))["exit"]:0==0?true:false;
     sleep(sl);
 
     if(Abort()) return false;
@@ -366,6 +369,19 @@ global define boolean Read (symbol cache) {
 global boolean ReadWithCache () {
     return Read (`cache);
 }
+
+global void SetIPv6(boolean status){
+ ipv6=status;
+}
+
+void writeIPv6(){
+ boolean ipv6_before = ((map<string, any>)(SCR::Execute(.target.bash_output, "grep -v '^#' /etc/modprobe.conf.local|grep -q ipv6")))["exit"]:0==0?true:false;
+ if (ipv6_before != ipv6){
+  if (ipv6==true) SCR::Execute(.target.bash_output, "echo 'install ipv6 /bin/true' >> /etc/modprobe.conf.local");
+		else SCR::Execute(.target.bash_output, "sed -i s/'install ipv6'/'#install ipv6'/g /etc/modprobe.conf.local");
+ }
+}
+
 
 /**
  * Update the SCR according to network settings
@@ -451,6 +467,7 @@ global define boolean Write() {
     /* Progress step 7 */
     ProgressNextStage(_("Setting up network services..."));
     NetworkService::EnableDisable ();
+    writeIPv6();
     sleep(sl);
 
     if(Abort()) return false;
@@ -667,6 +684,34 @@ global define list SummaryNM () {
     return [descr, links];
 }
 
+/**
+ * Create a textual summary for the ipv6 proposal
+ * @return [rich text, links]
+ */
+global define list SummaryIPv6 () {
+    string status = nil;
+    string href = nil;
+    string link = nil;
+    if (ipv6)
+    {
+	href = "ipv6-disable";
+	// network mode: the interfaces are controlled by the user
+	status = _("Enabled Support for IPv6 Protocol");
+	// disable NetworkManager applet
+	link = Hyperlink (href, _("Disable IPv6"));
+    }
+    else
+    {
+	href = "ipv6-enable";
+	// network mode
+	status = _("Disabled Support for IPv6 Protocol");
+	// enable NetworkManager applet
+	link = Hyperlink (href, _("Enable IPv6"));
+    }
+    string descr = sformat ("<ul><li>%1 (%2)</li></ul>", status, link);
+    list<string> links = [ href ];
+    return [descr, links];
+}
 /**
  * Create an overview table with all configured devices
  * @return table items

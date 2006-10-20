@@ -19,8 +19,11 @@ module "NetworkStorage";
  * @return root dev over network
  */
 global boolean RootIsOnNetwork () {
+	// in create_interface script there is similar code (if some changes needed, don't forget check also that file)
+	// in case that parameter "root=..." is not defined (read from /proc/cmdline) say that device is NOT network
     string iscsi_cmd = "
-	ROOTPART=`sed 's,.*root=/dev/\\([^[:space:]]*\\).*,\1,' /proc/cmdline`
+	ROOT_DISK=$(grep ' / ' /proc/mounts|grep -v rootfs|cut -d' ' -f1);
+	ROOTPART=${ROOT_DISK##*/}
 	echo ROOTPART=\"$ROOTPART\"
 	# use * and .. to get to the device containing ROOTPART
 	case `cd -P /sys/block/*/\"$ROOTPART\"/../device && pwd` in
@@ -29,7 +32,8 @@ global boolean RootIsOnNetwork () {
 	    *)
 		IS_ISCSI=false ;;
 	esac
-	$IS_ISCSI";
+	$IS_ISCSI
+";
     map out = (map) SCR::Execute (.target.bash_output, iscsi_cmd);
     y2milestone ("%1", out);
     return out["exit"]:-1 == 0;
