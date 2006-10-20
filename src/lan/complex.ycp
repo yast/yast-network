@@ -303,7 +303,6 @@ The driver may be built in the kernel.")))
  * @return dialog result
  */
 define any OverviewDialog() ``{
-y2internal("OverviewDialog");
     ScreenName("lan-overview");
 
     /* Network cards overview dialog caption */
