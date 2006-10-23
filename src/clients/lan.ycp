@@ -60,6 +60,10 @@ map cmdline = $[
 	    "help"	: _("Add a network card"),
 	    "handler"	: AddHandler,
 	],
+	"edit" : $[
+	    "help" 	: _("Change existing configuration"),
+	    "handler"	: EditHandler
+	],
 	"delete" : $[
 	    /* Commandline command help */
 	    "help"	: _("Delete a network card"),
@@ -123,6 +127,7 @@ map cmdline = $[
 	"list"	: [ "configured", "unconfigured" ],
 	"show"	: [ "id" ],
 	"add"	: [ "type", "bootproto", "ip", "netmask" ],
+	"edit"	: [ "id", "type", "bootproto", "ip", "netmask" ],
 	"delete": [ "id" ],
     ]
 ];
