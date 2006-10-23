@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Oct 23 10:03:58 CEST 2006 - mzugec@suse.cz
+
+- fate #300604 - UI to disable IPv6 (improved and fixed)
+- 2.13.72 
+
+-------------------------------------------------------------------
 Fri Oct 20 20:20:58 CEST 2006 - mzugec@suse.cz
 
 - fate #300628 - indicate when netcard is not present 

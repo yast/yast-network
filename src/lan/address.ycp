@@ -165,6 +165,7 @@ symbol HandleButton (string key, map event) {
 	"HARDWARE": `hardware,
 	"DHCP_ADVANCED": `dhclient,
 	"ADDITIONAL_ADDRESSES": `virtual,
+	"IPV6":`ipv6,
 	"S390": `s390,
 	];
     return symbols[ret]:nil;
@@ -566,6 +567,16 @@ IP address.</p>"),
 	"store": CWM::StoreNull,
 	"handle": HandleButton,
 	],
+    "IPV6": $[
+	"widget": `push_button,
+	// push button label
+	"label": _("&IPv6"),
+	"opt": [],
+	"help": "",
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
+	"handle": HandleButton,
+	],
     "HARDWARE": $[
 	"widget": `push_button,
 	// push button label
@@ -784,6 +795,7 @@ Components of this product might not work with DHCP.</p>");
 	"HARDWARE",
 	"DHCP_ADVANCED",
 	"ADDITIONAL_ADDRESSES",
+	"IPV6"
 	];
     // Allow changing s390 options, except for iucv, where the option
     // is in the name of the hwcfg file. Haven't figured it out yet.
