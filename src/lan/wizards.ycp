@@ -237,6 +237,7 @@ define symbol AddressSequence(string which) ``{
 	"hosts"		: ``(HostsMainDialog(false)),
 	"proxy"		: ``(ProxyMainDialog(false)),
 	"virtual"	: ``(VirtualDialog(false)),
+	"ipv6"		: ``(IPv6Dialog()),
 	"hostname"	: ``(DNSMainDialog(false)),
 	"routing"	: ``(RoutingMainDialog(false)),
 	"s390"		: ``(S390Dialog()),
@@ -264,6 +265,7 @@ define symbol AddressSequence(string which) ``{
 	    `routing	: "routing",
 	    `hostname	: "hostname",
 	    `virtual	: "virtual",
+	    `ipv6	: "ipv6",
 	    `s390	: "s390",
 	    `hardware	: `hardware,
 	],
@@ -284,6 +286,10 @@ define symbol AddressSequence(string which) ``{
 	    `next	: "address",
 	],
 	"virtual" : $[
+	    `abort	: `abort,
+	    `next	: "address",
+	],
+	"ipv6" : $[
 	    `abort	: `abort,
 	    `next	: "address",
 	],

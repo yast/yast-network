@@ -36,6 +36,7 @@ import "Service";
 import "String";
 import "Summary";
 import "SuSEFirewall4Network";
+import "FileUtils";
 
 include "network/complex.ycp";
 include "network/runtime.ycp";
@@ -315,7 +316,12 @@ global define boolean Read (symbol cache) {
     /* Progress step 4/9 */
     ProgressNextStage(_("Reading network configuration..."));
     NetworkConfig::Read();
-    ipv6 = ((map<string, any>)(SCR::Execute(.target.bash_output, "grep -v '^#' /etc/modprobe.conf.local|grep -q ipv6")))["exit"]:0==0?true:false;
+//    ipv6 = ((map<string, any>)(SCR::Execute(.target.bash_output, "grep -v '^#' /etc/modprobe.conf.local|grep -q ipv6")))["exit"]:0==0?true:false;o
+
+    if (FileUtils::Exists("/etc/modprobe.d/ipv6")){
+      if (((map<string, any>)SCR::Execute (.target.bash_output, "grep ipv6 /etc/modprobe.d/ipv6|cut -d# -f1|grep -q ipv6"))["exit"]:0==0) ipv6=false;
+      }
+
     sleep(sl);
 
     if(Abort()) return false;
@@ -375,11 +381,9 @@ global void SetIPv6(boolean status){
 }
 
 void writeIPv6(){
- boolean ipv6_before = ((map<string, any>)(SCR::Execute(.target.bash_output, "grep -v '^#' /etc/modprobe.conf.local|grep -q ipv6")))["exit"]:0==0?true:false;
- if (ipv6_before != ipv6){
-  if (ipv6==true) SCR::Execute(.target.bash_output, "echo 'install ipv6 /bin/true' >> /etc/modprobe.conf.local");
-		else SCR::Execute(.target.bash_output, "sed -i s/'install ipv6'/'#install ipv6'/g /etc/modprobe.conf.local");
- }
+ if (ipv6){
+  SCR::Execute(.target.bash_output, "echo '#install ipv6 /bin/true' > /etc/modprobe.d/ipv6");
+ } else   SCR::Execute(.target.bash_output, "echo 'install ipv6 /bin/true' > /etc/modprobe.d/ipv6");
 }
 
 

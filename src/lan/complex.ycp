@@ -122,6 +122,21 @@ Abort saving by pressing <b>Abort</b>.</p>
     return ret ? `next : `abort;
 }
 
+
+define void IPv6Init (string key) {
+//    boolean enable_ipv6=true;
+//    if (FileUtils::Exists("/etc/modprobe.d/ipv6")){
+//	if (((map<string, any>)SCR::Execute (.target.bash_output, "grep ipv6 /etc/modprobe.d/ipv6|cut -d# -f1|grep -q ipv6"))["exit"]:0==0) enable_ipv6=false;
+//	}
+
+    UI::ChangeWidget (`id (key), `CurrentButton, Lan::ipv6?"enable":"disable");
+}
+
+define void IPv6Store (string key, map event) {
+ if ((string) UI::QueryWidget (`id (key), `CurrentButton)=="enable") Lan::SetIPv6(true);
+	else Lan::SetIPv6(false);
+}
+
 /**
  * Initialize the NetworkManager widget
  * @param key id of the widget
@@ -234,8 +249,8 @@ _("<p>Select <b>Disable</b> IPv6 to disable autoload kernel module for ipv6.
 When ipv6 protocol is not used on your network, response time will be faster.
 ") +
 _("<p>All changes will be applied after reboot.</p>"),
-	    "init": ManagedInit,
-	    "store": ManagedStore,
+	    "init": IPv6Init,
+	    "store": IPv6Store,
 	    ],
 	];
 
