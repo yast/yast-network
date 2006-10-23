@@ -17,6 +17,7 @@ import "Lan";
 import "NetworkDevices";
 import "RichText";
 import "Report";
+import "NetworkModules";
 
 list <map<string, any> > getConfigList(){
  list <map<string, any> > confList = [];
@@ -46,6 +47,46 @@ boolean validateId(map<string, string> options, list <map<string, any> > config)
  return true;
 }
 
+string getDev(map<string, string> options, list <map<string, any> > config){
+ string dev="";
+ foreach(map<string, any> row, config, {
+  foreach(string row_num, map<string,any> dev_map, (map<string, map<string, any> > )row, {
+   if(options["id"]:"0"==row_num) dev = dev_map["id"]:"";
+  });
+ });
+ return dev;
+}
+
+
+define boolean AddIface (integer hw_id) {
+    Lan::Add ();
+    Lan::SelectHW (hw_id);
+    Lan::SetDefaultsForHW ();
+
+    // warn if selecting a card without a driver, #29296
+    // TODO also for DSL...
+    if (NetworkModules::Alias == "")
+    {
+	CommandLine::Print(_("The device does not have a driver module.
+The driver may be built in the kernel."));
+	if (!CommandLine::YesNo ())
+	{
+	    return false;
+	}
+    }
+    // this is one of 3 places to install packages :-(
+    // - kernel modules (InstallKernel): before loaded
+    // - smpppd & kinternet: before net start
+    // - wlan firmware: here, just because it is copied from modems
+    //   #45960
+/*
+    if(Lan::Requires != [] && Lan::Requires != nil) {
+	if(PackagesInstall(Lan::Requires) != `next)
+	    return false;
+    }
+*/
+    return true;
+}
 
 /**
  * Handler for action "show"
@@ -140,6 +181,91 @@ y2internal("%1", settings);
     return true;
 }
 
+/**
+ * Handler for action "edit"
+ * @param options action options
+ */
+define boolean EditHandler(map<string, string> options) {
+   list <map<string, any> > config = getConfigList();
+   if (validateId(options, config)==false) return false;
+   string dev=getDev(options, config);
+
+	    if (substring (dev, 0, 1) == "-") // unconfigured
+	    {
+		integer i = tointeger (substring (dev, 1));
+		if (! AddIface (i))
+		{
+		CommandLine::Print(_("Couldn't add interface"));
+		return false;
+		}
+	    } else
+	      {
+		Lan::Edit(dev);
+		if (Lan::startmode == "managed")
+		{
+		    // Continue-Cancel popup
+		   CommandLine::Print(_("The interface is currently set to be managed
+by the NetworkManager applet.
+
+If you edit the settings for this interface here,
+the interface will no longer be managed by NetworkManager.
+"));
+
+		    if (!CommandLine::YesNo()) return false;
+		    //
+		    // TODO move the defaults to GetDefaultsForHW
+		    Lan::startmode = "ifplugd";
+		}
+	      }
+
+/*
+    Lan::type = options["type"]:"ethernet";
+    if (!contains(["arcnet", "bluetooth", "dummy", "ethernet", "fddi", "myrinet", "token-ring", "usb", "wireless"], Lan::type)){
+	Report::Error(_("Not possible value for type!"));
+	 return false;
+	}
+*/
+    Lan::bootproto = options["bootproto"]:"none";
+    if (!contains(["none", "static", "dhcp"], Lan::bootproto)){
+        Report::Error(_("Not possible value for bootproto!"));
+         return false;
+        }
+    if (Lan::bootproto=="static"){
+	    Lan::ipaddr = options["ip"]:"";
+	    Lan::netmask = options["netmask"]:"";
+	   } else{
+		Lan::ipaddr = "";
+		Lan::netmask = "";
+		}
+
+    Lan::startmode = options["startmode"]:"auto";
+    if (!contains(["auto", "ifplugd", "nfsroot"], Lan::startmode)){
+        Report::Error(_("Not possible value for startmode!"));
+         return false;
+        }
+
+    map<string, any> settings = $[
+        "STARTMODE": Lan::startmode,
+        "USERCONTROL": Lan::usercontrol,
+        // problems when renaming the interface?
+        "FWZONE": "EXT",
+        "MTU": Lan::mtu,
+        "BOOTPROTO": Lan::bootproto,
+        "IPADDR": Lan::ipaddr,
+        "NETMASK": Lan::netmask,
+        "REMOTEIP": Lan::remoteip,
+        "IFCFGTYPE": Lan::type,
+        "IFCFGID": Lan::device,
+        ];
+   CommandLine::Print(sformat("%1 : %2", _("Changing Configuration for"), dev));
+   CommandLine::Print(sformat("%1 :\t%2", _("Device Type"), Lan::type));
+   CommandLine::Print(sformat("%1 :\t%2", _("Bootproto"), Lan::bootproto));
+   CommandLine::Print(sformat("%1 :\t%2",_("IP Address"), Lan::ipaddr));
+   CommandLine::Print(sformat("%1 :\t%2",_("Mask"), Lan::netmask));
+   Lan::Commit();
+
+    return true;
+}
 /**
  * Handler for action "delete"
  * @param options action options

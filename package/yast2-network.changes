@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Oct 23 16:34:38 CEST 2006 - mzugec@suse.cz
+
+- fate #100092 - command line support for netcards
+- 2.14.4 
+
+-------------------------------------------------------------------
 Mon Oct 23 10:32:13 CEST 2006 - mzugec@suse.cz
 
 - fate #300604 - UI to disable IPv6 (improved and fixed)

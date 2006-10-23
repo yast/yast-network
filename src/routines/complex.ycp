@@ -577,7 +577,6 @@ foreach(map<string, any>row, (list<map<string, any> >)SCR::Read (.probe.netcard)
  */
 define list BuildOverview(string devregex, list<map> Hardware) {
     map <string, map> Devs = NetworkDevices::FilterDevices (devregex);
-y2internal("Devs %1", Devs);
     return BuildOverviewDevs (Devs, Hardware);
 }
 
@@ -610,7 +609,7 @@ define list<map<string,any> > BuildUnconfiguredCommon (list sum, string class) {
 	else if (class == "isdn")
 	    desc = [nc, DeviceType (class), name];
 	else
-	    y2internal (1, "invalid class %1", class);
+	    y2warning (1, "invalid class %1", class);
 	string rich = WizardHW::CreateRichTextDescription (name, WizardHW::UnconfiguredDevice ());
 	return $[ 
 	    "id":id,

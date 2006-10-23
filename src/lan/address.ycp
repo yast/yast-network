@@ -653,7 +653,6 @@ term CommonBox (term contents) {
  * @return dialog result
  */
 define any AddressDialog() {
-y2internal("AddressDialog");
     ScreenName("lan-address");
 
     string ifname = NetworkDevices::device_name (Lan::type, Lan::device);
