@@ -143,25 +143,32 @@ define boolean SetupSMPPPD() {
     y2debug("ret=%1", ret);
     return ret;
 }
+/**
+ * Do we need to start KInternet?
+ */
+define boolean needKInternet(){
+     /* Any dialup devices? */
+     if (!HaveDialupLikeInterfaces ())
+     {
+        y2milestone ("No dialup-like interfaces");
+        return false;
+     }
+
+     /* Installation? */
+     if(!Mode::normal ()) {
+        y2milestone("No normal mode");
+        return false;
+     }
+  return true;
+}
+
 
 /**
  * Run KInternet
  * @return true if success
  */
 define boolean RunKInternet() {
-    /* Any dialup devices? */
-    if (!HaveDialupLikeInterfaces ())
-    {
-	y2milestone ("No dialup-like interfaces");
-	return true;
-    }
-
-    /* Installation? */
-    if(!Mode::normal ()) {
-	y2milestone("No normal mode");
-	return true;
-    }
-
+ if (!needKInternet()) return true;
     /* Text mode? */
     map ui = UI::GetDisplayInfo();
     boolean ncurses = (boolean) ui["TextMode"]:nil;
