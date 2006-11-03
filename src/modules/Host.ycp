@@ -29,6 +29,8 @@ global map<string, list<string> > hosts = $[];
  */
 global boolean modified = false;
 
+global boolean write_hostname = true;
+
 /**
  * All hosts read at the start
  */
@@ -232,13 +234,14 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
 
     /* Add at least one hostname/ip */
     // but do not overload localhost (#46715)
-    if (size(ips) < 1 && nick != "localhost") {
-	y2milestone("No IP found, adding dummy 127.0.0.2");
-	// TODO #42102
-	hosts["127.0.0.2"] = [ newhn + " " + nick ];
-	y2milestone("Hosts: %1", hosts);
-	return true;
-    }
+    if (write_hostname)
+	    if (size(ips) < 1 && nick != "localhost") {
+		y2milestone("No IP found, adding dummy 127.0.0.2");
+		// TODO #42102
+		hosts["127.0.0.2"] = [ newhn + " " + nick ];
+		y2milestone("Hosts: %1", hosts);
+		return true;
+	    }
 
     /* Add hostname/ip for all ips */
     boolean nickadded = false;

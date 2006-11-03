@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Nov  3 16:59:46 CET 2006 - mzugec@suse.cz
+
+- UI to disable writing hostname to /etc/hosts
+- 2.13.76 
+
+-------------------------------------------------------------------
 Fri Nov  3 10:53:51 CET 2006 - mzugec@suse.cz
 
 - #198417 - say "setting up smpppd, kinternet" in Write() only when really starts

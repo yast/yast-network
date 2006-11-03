@@ -60,10 +60,19 @@ define list<string> NonEmpty (list<string> l) {
  * @return initial settings for this dialog in one map, from DNS::
  */
 define map InitSettings () {
+ boolean write_hostname = true;
+
+ // this is only until WRITE_HOSTNAME_TO_HOSTS is not written in sysconfig
+ if (tostring(NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:nil)=="yes" || tostring(NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:nil)=="no")
+			write_hostname = (tostring(NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:"yes")=="yes")?true:false;
+
+	else write_hostname = NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true;
     map settings = $[
 	"HOSTNAME": DNS::hostname,
 	"DOMAIN": DNS::domain,
 	"DHCP_HOSTNAME": NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false,
+	// set as true by default because there wasn't this option in previous version
+	"WRITE_HOSTNAME": write_hostname,
 	"DHCP_RESOLV": NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false,
 	];
     // the rest is not so straightforward,
@@ -101,6 +110,7 @@ define void StoreSettings (map settings) {
     DNS::nameservers = NonEmpty (nameservers);
     DNS::searchlist = NonEmpty (searchlist);
     NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = settings["DHCP_HOSTNAME"]:false;
+    NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"] = settings["WRITE_HOSTNAME"]:true;
     NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"] = settings["DHCP_RESOLV"]:false;
     /* update modified flag */
     DNS::modified = true;
@@ -128,7 +138,7 @@ define void StoreHnWidget (string key, map event) {
 }
 
 /**
- * Event handler for DHCP_HOSTNAME checkbox.
+ * Event handler for DHCP_HOSTNAME and WRITE_HOSTNAME checkbox.
  * enable or disable: is DHCP available?
  * @param key	the widget receiving the event
  * @param event	the event being handled
@@ -307,6 +317,21 @@ confuses the graphical desktop.</p>
 	"handle": HandleDhcpHostname,
 	],
 
+    "WRITE_HOSTNAME": $[
+	"widget": `checkbox,
+	/* checkbox label */
+	"label": _("&Write Hostname to /etc/hosts"),
+	"opt": [],
+	// help
+	"help": _("<p>If you are using DHCP to get an IP address, your hostname will be written
+to /etc/hosts and be resolvable as 127.0.0.2 IP address.
+This is default behavior. If you want to disable this, uncheck this box
+but your hostname will not be resolvable without active network.
+</p>
+"),
+	//use the same handler - it enables checkbox if dhcp is used
+	"handle": HandleDhcpHostname,
+	],
     "NAMESERVER_1": $[
 	"widget": `textentry,
 	/* textentry label */
@@ -384,7 +409,8 @@ define symbol HostnameDialog () {
 		`HSpacing (1),
 		"DOMAIN"
 	    ),
-	    `Left ("DHCP_HOSTNAME")
+	    `Left ("DHCP_HOSTNAME"),
+	    `Left ("WRITE_HOSTNAME")
 	))
 	);
 
@@ -494,7 +520,8 @@ define any DNSMainDialog(boolean standalone) {
 		"DOMAIN"
 	    ),
 	    /* CheckBox label */
-	    `Left("DHCP_HOSTNAME")
+	    `Left("DHCP_HOSTNAME"),
+	    `Left("WRITE_HOSTNAME")
 	)),
 	`VSpacing(1),
 	/* Frame label */
