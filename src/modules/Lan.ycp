@@ -404,12 +404,11 @@ global define boolean Write() {
 
     /* Write dialog caption */
     string caption = _("Saving Network Configuration");
-    integer steps = 11;
 
     integer sl = 0; /* 1000; /* TESTING */
     sleep(sl);
 
-    Progress::New(caption, " ", steps, [
+    list<string> step_labels = [
 	/* Progress stage 2 */
 	_("Write drivers information"),
 	/* Progress stage 3 - multiple devices may be present,really plural*/
@@ -423,16 +422,22 @@ global define boolean Write() {
 	/* Progress stage 7 */
 	_("Set up network services"),
 	/* Progress stage 8 */
-	_("Write firewall settings"),
-	/* Progress stage 9 */
-	_("Activate network services"),
+        _("Write firewall settings")
+        ];
+     /* Progress stage 9 */
+     if (!write_only) step_labels = add(step_labels, _("Activate network services"));
 	/* Progress stage 10 */
-	_("Run SuSEconfig"),
-	/* Progress stage 11 */
-	_("Set up smpppd"),
-	/* Progress stage 12 */
-	_("Run KInternet"),
-    ], [], "");
+     step_labels=add(step_labels, _("Run SuSEconfig"));
+     if (!NetworkService::IsManaged() && (boolean) SCR::Read(.init.scripts.exists, "smpppd") && !write_only && needKInternet())
+	{
+	 /* Progress stage 11 */
+	 step_labels=add(step_labels, _("Set up smpppd"));
+	 /* Progress stage 12 */
+	 step_labels = add(step_labels, _("Run KInternet"));
+	}
+
+     Progress::New(caption, " ", size(step_labels), step_labels, [], "");
+
 
     if(Abort()) return false;
     /* Progress step 2 */
@@ -482,14 +487,14 @@ global define boolean Write() {
     Progress::set (orig);
     sleep(sl);
 
-    if(Abort()) return false;
-    /* Progress step 9 */
-    ProgressNextStage(_("Activating network services..."));
     if(!write_only) {
+     if(Abort()) return false;
+     /* Progress step 9 */
+     ProgressNextStage(_("Activating network services..."));
 	NetworkModules::HwUp ();
 	NetworkService::StartStop ();
-    }
     sleep(sl);
+    }
 
     if(Abort()) return false;
     /* Progress step 10 */
@@ -497,21 +502,21 @@ global define boolean Write() {
     if(!write_only) RunSuSEconfig();
     sleep(sl);
 
-    if(Abort()) return false;
-    /* Progress step 11 */
-    ProgressNextStage(_("Setting up smpppd(8)..."));
-    // takes care of autoinst by itself
-    SetupSMPPPD();
-    sleep(sl);
+    if (!NetworkService::IsManaged() && (boolean) SCR::Read(.init.scripts.exists, "smpppd") && !write_only && needKInternet())
+     {
+       if(Abort()) return false;
+       /* Progress step 11 */
+       ProgressNextStage(_("Setting up smpppd(8)..."));
+       // takes care of autoinst by itself
+       SetupSMPPPD();
+       sleep(sl);
 
-    if(Abort()) return false;
-    /* Progress step 12 */
-    ProgressNextStage(_("Running KInternet..."));
-    if (!write_only)
-    {
-	RunKInternet();
-    }
-    sleep(sl);
+       if(Abort()) return false;
+       /* Progress step 12 */
+       ProgressNextStage(_("Running KInternet..."));
+       RunKInternet();
+       sleep(sl);
+     }
 
     if(Abort()) return false;
     /* Final progress step */

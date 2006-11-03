@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Nov  3 11:18:57 CET 2006 - mzugec@suse.cz
+
+- #198417 - say "setting up smpppd, kinternet" in Write() only when really starts
+- 2.14.6 
+
+-------------------------------------------------------------------
 Fri Nov  3 09:32:05 CET 2006 - kmachalkova@suse.cz
 
 - Advise user to use Add-on CD for installing some wi-fi binary
