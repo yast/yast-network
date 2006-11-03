@@ -27,6 +27,10 @@ import "WizardHW";
 import "Popup";
 import "Label";
 
+import "Product";
+import "Pkg";
+import "Package";
+
 include "network/routines.ycp";
 include "network/summary.ycp";
 
@@ -287,6 +291,8 @@ _("<p>All changes will be applied after reboot.</p>"),
  * @return whether to proceed with editing and commiting the config
  */
 define boolean AddInterface (integer hwid) {
+    list <string> firmwares = ["ipw-firmware", "atmel-firmware", "qlogic-firmware"];
+
     Lan::Add ();
     Lan::SelectHW (hwid);
     Lan::SetDefaultsForHW ();
@@ -307,6 +313,24 @@ The driver may be built in the kernel.")))
     // - wlan firmware: here, just because it is copied from modems
     //   #45960
     if(Lan::Requires != [] && Lan::Requires != nil) {
+	boolean found = false;
+	foreach(string fw, firmwares, {
+	    if(contains(Lan::Requires, fw)){
+		//check if package with the firmware is available
+		//i.e. if there are any inst. sources defined
+		//and if the package is available on any of them
+		if ((Pkg::SourceGetCurrent(true) == []) || !Package::Available(fw)){
+	            Popup::Message(sformat(_("The device needs a firmware to function properly. It can be installed from
+%1 Add-On CD.\nTo install the firmware, add Add-On CD to your YaST installation sources and return 
+to this configuration dialog."), Product::name));
+		    found = true;
+	            break; 
+	        };
+	    }
+	});
+	if (found)
+	    return false;
+
 	if(PackagesInstall(Lan::Requires) != `next)
 	    return false;
     }

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Nov  3 09:32:05 CET 2006 - kmachalkova@suse.cz
+
+- Advise user to use Add-on CD for installing some wi-fi binary
+  firmwares
+
+-------------------------------------------------------------------
 Tue Oct 24 19:20:17 CEST 2006 - mzugec@suse.cz
 
 - #300604 - UI to disable IPv6 (installation)
