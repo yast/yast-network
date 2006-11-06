@@ -762,7 +762,7 @@ Components of this product might not work with DHCP.</p>");
     }
 
     wd["STARTMODE"] = MakeStartmode (
-	["auto", "ifplugd", "hotplug", "manual", "off", ]);
+	["auto", "ifplugd", "hotplug", "manual", "off", "nfsroot" ]);
 
     wd["IFCFGTYPE", "items"] = BuildTypesListCWM (device_types);
     wd["IFCFGID", "items"] = [[settings["IFCFGID"]:"",

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov  6 10:26:28 CET 2006 - mzugec@suse.cz
+
+- #216074 - add nfsroot to STARTMODE items
+- 2.13.77 
+
+-------------------------------------------------------------------
 Fri Nov  3 16:59:46 CET 2006 - mzugec@suse.cz
 
 - UI to disable writing hostname to /etc/hosts
