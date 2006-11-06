@@ -170,6 +170,7 @@ define string ControllerType(map hwdevice) {
  * @return true if success
  */
 define list<map> ReadHardware(string hwtype) {
+y2internal("%1", hwtype);
     list<map> Hardware = [];
 
     y2debug("hwtype=%1", hwtype);

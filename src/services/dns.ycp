@@ -63,16 +63,15 @@ define map InitSettings () {
  boolean write_hostname = true;
 
  // this is only until WRITE_HOSTNAME_TO_HOSTS is not written in sysconfig
- if (tostring(NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:nil)=="yes" || tostring(NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:nil)=="no")
-			write_hostname = (tostring(NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:"yes")=="yes")?true:false;
-
-	else write_hostname = NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true;
+// if (tostring(NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:nil)=="yes" || tostring(NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:nil)=="no")
+//			write_hostname = (tostring(NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:"yes")=="yes")?true:false;
+//else write_hostname = NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true;
     map settings = $[
 	"HOSTNAME": DNS::hostname,
 	"DOMAIN": DNS::domain,
 	"DHCP_HOSTNAME": NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false,
 	// set as true by default because there wasn't this option in previous version
-	"WRITE_HOSTNAME": write_hostname,
+	"WRITE_HOSTNAME": NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true,
 	"DHCP_RESOLV": NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false,
 	];
     // the rest is not so straightforward,
