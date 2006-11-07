@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Tue Nov  7 16:49:37 CET 2006 - kmachalkova@suse.cz
+
+- At least one proxy URL must be set if proxy is enabled (#206676)
+- Do not show 'Test proxy settings' button in installation mode 
+  (#215991)
+- Check 'same proxy for all protocols' checkbox when needed
+- 2.13.78
+
+-------------------------------------------------------------------
 Mon Nov  6 10:26:28 CET 2006 - mzugec@suse.cz
 
 - #216074 - add nfsroot to STARTMODE items

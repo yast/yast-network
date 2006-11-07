@@ -382,7 +382,8 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 	    ), `HSpacing(2))),
 	    `VSpacing(1),
 	    /* Test Proxy Settings - push button */
-	    `PushButton(`id("test_proxy"), _("Test Pr&oxy Settings"))
+	    (!Mode::installation()) ?
+	        `PushButton(`id("test_proxy"), _("Test Pr&oxy Settings")): `Empty()
 	),
 	`HSpacing(6)
     );
@@ -393,6 +394,13 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
     else
 	Wizard::SetContentsButtons(caption, contents, help,
 		Label::BackButton(), Label::OKButton());
+
+    //We have the same (non-empty) proxy URL for all protocols
+    if((http != prefill) && (http == https) && (https == ftp )){
+        UI::ChangeWidget(`id(`same_proxy), `Value, true);
+        UI::ChangeWidget(`id(`https), `Enabled, false);
+        UI::ChangeWidget(`id(`ftp), `Enabled, false);
+    }
 
     // #103841, relaxed. now avoiding only quotes
     // was CAlnum() + ".:_-/\\"
@@ -429,29 +437,29 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 	else if(ret == `same_proxy) {
 	    enabled = (boolean) UI::QueryWidget(`id(`same_proxy), `Value);
 
-		UI::ChangeWidget(`id(`https), `Value, prefill);
-		UI::ChangeWidget(`id(`ftp), `Value, prefill);
-		UI::ChangeWidget(`id(`https), `Enabled, !enabled);
-		UI::ChangeWidget(`id(`ftp), `Enabled, !enabled);
-		continue;
+	    UI::ChangeWidget(`id(`https), `Value, prefill);
+	    UI::ChangeWidget(`id(`ftp), `Value, prefill);
+	    UI::ChangeWidget(`id(`https), `Enabled, !enabled);
+	    UI::ChangeWidget(`id(`ftp), `Enabled, !enabled);
+	    continue;
 	}
 	/* next */
 	else if (ret == `next || ret == "test_proxy") {
-		boolean same_proxy = (boolean) UI::QueryWidget(`id(`same_proxy), `Value);
+	    boolean same_proxy = (boolean) UI::QueryWidget(`id(`same_proxy), `Value);
 
 	    http    = (string)  UI::QueryWidget(`id(`http), `Value);
-		if (same_proxy) {
-			https = http;
-			ftp = http;
-		}
-		else {
-		    https   = (string)  UI::QueryWidget(`id(`https), `Value);
-		    ftp     = (string)  UI::QueryWidget(`id(`ftp), `Value);
-		}
+	    if (same_proxy) {
+		https = http;
+		ftp = http;
+	    }
+	    else {
+	        https   = (string)  UI::QueryWidget(`id(`https), `Value);
+	        ftp     = (string)  UI::QueryWidget(`id(`ftp), `Value);
+	    }
 
-		user    = (string)  UI::QueryWidget(`id(`user), `Value);
-		pass    = (string)  UI::QueryWidget(`id(`pass), `Value);
-		enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
+	    user    = (string)  UI::QueryWidget(`id(`user), `Value);
+	    pass    = (string)  UI::QueryWidget(`id(`pass), `Value);
+	    enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
 
 	    no = (string) UI::QueryWidget(`id(`no), `Value);
 	    list<string> no_list = splitstring (no, " ,");
@@ -462,8 +470,16 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 	    if(https == prefill) https = "";
 	    if(ftp == prefill) ftp = "";
 
-	    if(enabled == false) break;
-
+	    if(enabled == false) 
+		break;
+	    else {
+		if((http == "") && (https == "") && (ftp == "") ){
+		    /* Popup error text - http, https and ftp proxy URLs are blank */
+		    if(!Popup::ContinueCancel(_("Proxy is enabled, but no proxy URL has been specified.
+Really use these settings?")))
+			continue;
+		}
+	    }
 	    /* check_* */
 	    if(user == "" && pass != "") {
 		/* Popup::Error text */
