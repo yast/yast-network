@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Nov  8 13:38:27 CET 2006 - mzugec@suse.cz
+
+- #217270 - incorrect summary when STARTMODE='off' is set 
+
+-------------------------------------------------------------------
 Tue Nov  7 17:04:09 CET 2006 - kmachalkova@suse.cz
 
 - At least one proxy URL must be set if proxy is enabled (#206676)
