@@ -485,6 +485,8 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 	"ifplugd": _("Started automatically on cable connection"),
 	// summary description of STARTMODE=managed
 	"managed": _("Managed by NetworkManager"),
+	// summary description of STARTMODE=off
+	"off"	: _("Will not be started at all")
 	];
 list<string> models = [];
 foreach(map<string, any>row, (list<map<string, any> >)SCR::Read (.probe.netcard), {
