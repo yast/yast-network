@@ -14,7 +14,9 @@ X-SuSE-YaST-RootOnly=true
 X-SuSE-YaST-AutoInst=all
 X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
-X-SuSE-YaST-AutoInstResource=
+X-SuSE-YaST-AutoInstResource=proxy
+X-SuSE-YaST-AutoInstClonable=true
+X-SuSE-YaST-AutoInstSchema=proxy.rnc
 
 Icon=yast-proxy
 Exec=/sbin/yast2 proxy 
