@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
 Tue Nov 14 16:46:01 CET 2006 - kmachalkova@suse.cz
 
-- Added autoyast validation file for proxy module
+- Added autoyast validation file for proxy module(#215251)
 - Display also https proxy URL in autoyast summary
 - 2.14.10 
 
