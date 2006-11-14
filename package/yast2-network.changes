@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov 14 16:46:01 CET 2006 - kmachalkova@suse.cz
+
+- Added autoyast validation file for proxy module
+- Display also https proxy URL in autoyast summary
+- 2.14.10 
+
+-------------------------------------------------------------------
 Wed Nov  8 13:38:27 CET 2006 - mzugec@suse.cz
 
 - #217270 - incorrect summary when STARTMODE='off' is set 

@@ -48,6 +48,10 @@ define string ProxySummary() {
     summary = Summary::AddHeader(summary, _("HTTP"));
     summary = Summary::AddLine(summary, Proxy::http  );
    }
+   if (Proxy::https!="") {
+    summary = Summary::AddHeader(summary, _("HTTPS"));
+    summary = Summary::AddLine(summary, Proxy::https  );
+   }
    if (Proxy::ftp!="") {
     summary = Summary::AddHeader(summary, _("FTP"));
     summary = Summary::AddLine(summary, Proxy::ftp  );
