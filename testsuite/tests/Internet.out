@@ -16,6 +16,9 @@ Dump	dsl
 Dir	.network.section: ["eth1", "tr0"]
 Dir	.network.value."eth1": []
 Dir	.network.value."tr0": []
+Execute	.target.bash_output "getcfg-interface eth1" $["exit":0, "stderr":"", "stdout":""]
+Execute	.target.bash "ethtool  | grep \"Link detected: yes\"" 0
+Execute	.target.bash "ifstatus  | grep \" is up\"" 0
 Return	true
 Dump	eth1
 Dump	netcard
