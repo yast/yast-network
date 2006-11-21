@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Nov 21 10:42:44 CET 2006 - kmachalkova@suse.cz
+
+- Adjusted proxy dialog layout in text mode (#221648) 
+
+-------------------------------------------------------------------
 Tue Nov 14 16:51:06 CET 2006 - kmachalkova@suse.cz
 
 - Added autoyast validation file for proxy module (#215251)

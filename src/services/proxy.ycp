@@ -347,13 +347,18 @@ consists of printable ASCII characters (except for quotation marks) only.</p>
 the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 ");
 
+    map display_info =  UI::GetDisplayInfo();
+    boolean textmode = display_info["TextMode"]:false;
+
+    float s = (textmode) ? (0.2) : 1.0;
+
     /* Proxy dialog contents */
     term contents = `HBox(
-	`HSpacing(6),
+	`HSpacing(5),
 	`VBox(
 	/* CheckBox entry label */
 	`Left(`CheckBox(`id(`enabled), `opt(`notify), _("&Enable Proxy"), enabled)),
-	`VSpacing(1),
+	`VSpacing(s),
 	/* Frame label */
 	`Frame(`id(`frame1), _("Proxy Settings"), `HBox(`HSpacing(2), `VBox(
 	    `VSpacing(0.2),
@@ -369,23 +374,23 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 	    /* Text entry label */
 	    // domains without proxying
 	    `TextEntry(`id(`no), _("No Proxy &Domains"), no),
-	    `VSpacing(0.4)
+	    (textmode) ? `Empty() : `VSpacing(0.4)
 	    ), `HSpacing(2))),
-	`VSpacing(1),
+	`VSpacing(s),
 	`Frame(`id(`frame2), _("Proxy Authentication"), `HBox(`HSpacing(2), `VBox(
 	    /* Text entry label */
 	    `TextEntry(`id(`user), _("Proxy &User Name"), user),
 	    `VSpacing(0.2),
 	    /* Password entry label */
 	    `Password(`id(`pass), _("Proxy &Password"), pass),
-	    `VSpacing(0.4)
+	    (textmode) ? `Empty() : `VSpacing(0.4)
 	    ), `HSpacing(2))),
-	    `VSpacing(1),
+	    `VSpacing(s),
 	    /* Test Proxy Settings - push button */
 	    (!Mode::installation()) ?
 	        `PushButton(`id("test_proxy"), _("Test Pr&oxy Settings")): `Empty()
 	),
-	`HSpacing(6)
+	`HSpacing(5)
     );
 
     if(standalone == true)
