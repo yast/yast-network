@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov 27 14:07:19 CET 2006 - kmachalkova@suse.cz
+
+- Do not attempt to configure wlan card requiring firmware before
+  the firmware is installed (#221235)
+
+-------------------------------------------------------------------
 Tue Nov 21 10:42:44 CET 2006 - kmachalkova@suse.cz
 
 - Adjusted proxy dialog layout in text mode (#221648) 
