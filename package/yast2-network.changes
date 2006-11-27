@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov 27 14:09:18 CET 2006 - kmachalkova@suse.cz
+
+- Do not attempt to configure wlan card requiring firmware before
+  the firmware is installed (#221235)
+
+-------------------------------------------------------------------
 Mon Nov 27 10:43:17 CET 2006 - mzugec@suse.cz
 
 - #223136 - don't modprobe blacklisted modules
