@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov 27 10:43:17 CET 2006 - mzugec@suse.cz
+
+- #223136 - don't modprobe blacklisted modules
+- 2.14.11 
+
+-------------------------------------------------------------------
 Tue Nov 21 10:47:16 CET 2006 - kmachalkova@suse.cz
 
 - Adjusted proxy dialog layout in text mode (#221648) 
