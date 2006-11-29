@@ -28,7 +28,6 @@ import "Popup";
 import "Label";
 
 import "Product";
-import "Pkg";
 import "Package";
 
 include "network/routines.ycp";
@@ -327,7 +326,8 @@ The driver may be built in the kernel.")))
     else if(haskey(request_firmware, NetworkModules::Alias)){
 	string fw = request_firmware[NetworkModules::Alias]:"";
 	if (fw != ""){
-	    if ((Pkg::SourceGetCurrent(true) == []) || !Package::Available(fw)){
+	    if ((!Package::Installed(fw) && !Package::Available(fw))){
+		
 		//check if package with the firmware is available
 		//i.e. if there are any inst. sources defined
 		//and if the package is available on any of them
