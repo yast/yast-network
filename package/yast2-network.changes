@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Nov 29 10:50:02 CET 2006 - kmachalkova@suse.cz
+
+- Correct check for availability of wireless firmware packages 
+  (#223871)
+- 2.14.12 
+
+-------------------------------------------------------------------
 Mon Nov 27 14:09:18 CET 2006 - kmachalkova@suse.cz
 
 - Do not attempt to configure wlan card requiring firmware before
