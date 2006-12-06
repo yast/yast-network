@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Dec  6 15:08:38 CET 2006 - mzugec@suse.cz
+
+- #224884 - avoid some unwished error message (brctl)
+- 2.15.0 
+
+-------------------------------------------------------------------
 Wed Nov 29 10:50:02 CET 2006 - kmachalkova@suse.cz
 
 - Correct check for availability of wireless firmware packages 
