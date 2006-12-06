@@ -274,7 +274,7 @@ _("<p>All changes will be applied after reboot.</p>"),
 	    "back_button" : Label::BackButton (),
 	    "next_button" : Label::NextButton (),
 	    // #54027
-	    "disable_buttons" : (Mode::normal ()? ["back_button"] : []),
+//	    "disable_buttons" : (Mode::normal ()? ["back_button"] : []),
 	    "fallback_functions" : functions,
 	    ]);
     // #148485: always show the device overview
