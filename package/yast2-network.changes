@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Dec  6 17:00:06 CET 2006 - mzugec@suse.cz
+
+- #226408 - Network card -> IPv6 configuration: cannot go back
+- 2.13.82 
+
+-------------------------------------------------------------------
 Wed Dec  6 15:58:38 CET 2006 - mzugec@suse.cz
 
 - #224884 - avoid some unwished error message (brctl)

@@ -290,6 +290,7 @@ define symbol AddressSequence(string which) ``{
 	    `next	: "address",
 	],
 	"ipv6" : $[
+	    `back	: `back,
 	    `abort	: `abort,
 	    `next	: "address",
 	],
