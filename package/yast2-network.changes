@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Dec  8 17:28:53 CET 2006 - mzugec@suse.cz
+
+- #116211 - use combobox for module drivers instead of textedit 
+- 2.15.2
+
+-------------------------------------------------------------------
 Wed Dec  6 16:38:33 CET 2006 - mzugec@suse.cz
 
 - #226408 - Network card -> IPv6 configuration: cannot go back
