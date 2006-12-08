@@ -71,9 +71,9 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 
     string modul = NetworkModules::Alias; // FIXME: MOD Lan::Module["module"]:"";
     string options = NetworkModules::Options; // FIXME: MOD Lan::Module["options"]:"";
-
     string hotplug = Lan::hotplug;
     y2milestone("hotplug=%1", Lan::hotplug);
+    list<string> modules_from_hwinfo = Lan::getModulesFor(Lan::nm_name, modul );
 
     string type = Lan::type;
     if(type == "") {
@@ -128,6 +128,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 () == true)
 	CheckBoxes = `VSpacing(0);
 
+	// #116211 - allow user to change modules from list
     /* Frame label */
     term KernelBox = `Frame(_("&Kernel Module"), `HBox(`HSpacing(0.5), `VBox(
 	`VSpacing(0.4),
@@ -135,7 +136,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	`TextEntry(`id(`hwcfg), _("&Hardware Configuration Name"), hwcfg),
 	`HBox(
 	    /* Text entry label */
-	    `TextEntry(`id(`modul), _("&Module Name"), modul),
+	    `ComboBox(`id(`modul), `opt(`editable), _("&Module Name"), modules_from_hwinfo),
 	    `HSpacing(0.2),
 	    `TextEntry(`id(`options), Label::Options (), options)
 	),

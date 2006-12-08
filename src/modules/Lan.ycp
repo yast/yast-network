@@ -37,6 +37,7 @@ import "String";
 import "Summary";
 import "SuSEFirewall4Network";
 import "FileUtils";
+import "PackageSystem";
 
 include "network/complex.ycp";
 include "network/runtime.ycp";
@@ -199,6 +200,8 @@ boolean modified = false;
 global symbol operation = nil;
 // FIXME: used in lan/address.ycp (#17346) -> "global"
 
+
+
 /*------------------*/
 /* GLOBAL FUNCTIONS */
 
@@ -209,6 +212,26 @@ global symbol operation = nil;
 global define boolean Modified() {
     y2debug("modified=%1",modified);
     return modified;
+}
+
+/*
+ * return list of available modules for device identified by busid
+ * with default default_module (on first possition)
+ */
+
+global list<string> getModulesFor(string busid, string default_module){
+ string bus_id = substring(busid, findfirstof(busid, "0123456789"));
+ list<string> mods = [ default_module ];
+ foreach(map<string, any> mod_row, (list<map<string, any> >)Hardware, {
+  if (mod_row["busid"]:"" == bus_id){
+   foreach(map<string, any> row_drv, mod_row["drivers"]:[], {
+    foreach(list row , row_drv["modules"]:[], {
+     if (row[0]:"" != default_module) mods = add(mods,    row[0]:"");
+    });
+   });
+  }
+ });
+ return mods;
 }
 
 include "network/hardware.ycp";
@@ -316,7 +339,6 @@ global define boolean Read (symbol cache) {
     /* Progress step 4/9 */
     ProgressNextStage(_("Reading network configuration..."));
     NetworkConfig::Read();
-//    ipv6 = ((map<string, any>)(SCR::Execute(.target.bash_output, "grep -v '^#' /etc/modprobe.conf.local|grep -q ipv6")))["exit"]:0==0?true:false;o
 
     if (FileUtils::Exists("/etc/modprobe.d/ipv6")){
       if (((map<string, any>)SCR::Execute (.target.bash_output, "grep ipv6 /etc/modprobe.d/ipv6|cut -d# -f1|grep -q ipv6"))["exit"]:0==0) ipv6=false;
@@ -1937,8 +1959,12 @@ global define void UnsetModified () {
  * @return whether xenbr* exists
  */
 global define boolean HaveXenBridge () {
-    string cmd = "which brctl && ( brctl show | grep '^xenbr' )";
-    boolean have_br = SCR::Execute (.target.bash, cmd) == 0;
+    boolean have_br = false;
+    // #2248874 - disallow error message
+    if (PackageSystem::Installed("bridge-utils")){
+     string cmd = "brctl show | grep '^xenbr'";
+     have_br = SCR::Execute (.target.bash, cmd) == 0;
+    }
     y2milestone ("Have Xen bridge: %1", have_br);
     return have_br;
 }
