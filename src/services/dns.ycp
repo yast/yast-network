@@ -62,10 +62,6 @@ define list<string> NonEmpty (list<string> l) {
 define map InitSettings () {
  boolean write_hostname = true;
 
- // this is only until WRITE_HOSTNAME_TO_HOSTS is not written in sysconfig
-// if (tostring(NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:nil)=="yes" || tostring(NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:nil)=="no")
-//			write_hostname = (tostring(NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:"yes")=="yes")?true:false;
-//else write_hostname = NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true;
     map settings = $[
 	"HOSTNAME": DNS::hostname,
 	"DOMAIN": DNS::domain,
@@ -308,10 +304,13 @@ interfaces, not just this one.</p>"),
 	"opt": [],
 	// help
 	"help": _("<p>If you are using DHCP to get an IP address, check whether to get
-a hostname via DHCP.
-Avoid this when you connect to different networks that might each
-assign a different hostname, because changing the hostname at runtime
-confuses the graphical desktop.</p>
+a hostname via DHCP. The hostname of your host (which can be seen
+by issuing <i>hostname</i> command) will be set automatically by  
+DHCP client.
+You may want to disable this option if you connect to different 
+networks that might each assign a different hostname, because changing
+the hostname at runtime may confuse the graphical desktop.
+</p>
 "),
 	"handle": HandleDhcpHostname,
 	],
