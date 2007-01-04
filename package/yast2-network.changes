@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jan  4 16:16:56 CET 2007 - kmachalkova@suse.cz
+
+- Hostname and DHCP options help improvements (#195148)
+- Show 'Test proxy' related help text and disable the button
+  only when needed (#226034)
+
+-------------------------------------------------------------------
 Thu Jan  4 15:55:36 CET 2007 - mzugec@suse.cz
 
 - fix for rnc file 
