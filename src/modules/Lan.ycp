@@ -214,6 +214,45 @@ global define boolean Modified() {
     return modified;
 }
 
+// functions for use from autoinstallation
+global define boolean isAnyInterfaceDown(){
+ boolean down = false;
+  map<string, any> link_status = $[];
+  list <string> net_devices = splitstring(String::CutBlanks(((map<string, any>)SCR::Execute(.target.bash_output,
+				"cat /proc/net/dev | cut -d':' -f1 | grep -v '|' | tr -d '\n' | sed 's/ \\+/ /g'"))["stdout"]:""), " ");
+  foreach(string net_dev, net_devices, {
+   list<string> row = splitstring(((map<string, any>)SCR::Execute(.target.bash_output, sformat("ip address show dev %1 | grep 'inet\\|link' | sed 's/^ \\+//g'|cut -d' ' -f-2", net_dev)))["stdout"]:"", "\n");
+
+    string tmp_mac="";
+    boolean addr=false;
+    foreach(string column, row, {
+     list<string> tmp_col=splitstring(column, " ");
+     if (size(tmp_col)<2) continue;
+     if (issubstring(tmp_col[0]:"", "link/ether") ) tmp_mac = tmp_col[1]:"";
+     if (issubstring(tmp_col[0]:"", "inet") && !issubstring(tmp_col[0]:"", "inet6")) addr = true;
+    });
+    if (size(tmp_mac)>0) link_status[tmp_mac]=addr;
+  });
+
+    y2debug("%1", link_status);
+      list<string> macs=[];
+      foreach(string devs, (list<string>)Map::Keys(autoinstall_settings["devices"]:$[]), {
+	foreach(string mac, (list<string>)Map::Keys(autoinstall_settings["devices", devs]:$[]), {
+	 list<string> tmp_mac = splitstring(mac, "-");
+	 mac = tmp_mac[size(tmp_mac)-1]:"";
+	if (!haskey(link_status, mac)) y2error("Mac address %1 not found in map %2!", mac, link_status);
+		else if (link_status[mac]:false == false) {
+							y2debug("Interface with mac %1 is down!", mac);
+							down = true;
+							}
+			else y2debug("Interface with mac %1 is up", mac);
+	});
+      });
+ return down;
+}
+
+
+
 /*
  * return list of available modules for device identified by busid
  * with default default_module (on first possition)
@@ -887,7 +926,7 @@ string GetDeviceVar (map primary, map fallback, string key) {
     string ret = (string) primary[key]:fallback[key]:nil;
     if (ret == nil)
     {
-	y2internal ("%1 does not have a default defined", key);
+	y2debug ("%1 does not have a default defined", key);
     }
     return ret;
 }
@@ -1900,26 +1939,26 @@ global list<string> Packages () {
     list<string> pkgs = [];
     if (NetworkDevices::Locate ("USERCONTROL", "yes") != [])
     {
-	pkgs = add (pkgs, "smpppd");
+	if (!PackageSystem::Installed("smpppd")) pkgs = add (pkgs, "smpppd");
     }
     if (NetworkDevices::Locate ("STARTMODE", "ifplugd") != [])
     {
-	pkgs = add (pkgs, "ifplugd");
+	if (!PackageSystem::Installed("ifplugd")) pkgs = add (pkgs, "ifplugd");
     }
     // #49880
     if (NetworkDevices::List ("wlan") != [])
     {
-	pkgs = add (pkgs, "wireless-tools");
+	if (!PackageSystem::Installed("wireless-tools")) pkgs = add (pkgs, "wireless-tools");
     }
     // #47809
     if (NetworkDevices::Locate ("WIRELESS_AUTH_MODE", "psk") != [] ||
 	NetworkDevices::Locate ("WIRELESS_AUTH_MODE", "eap") != [])
     {
-	pkgs = add (pkgs, "wpa_supplicant");
+	if (!PackageSystem::Installed("wpa_supplicant")) pkgs = add (pkgs, "wpa_supplicant");
     }
     if (NetworkService::IsManaged ())
     {
-	pkgs = add (pkgs, "NetworkManager");
+	if (!PackageSystem::Installed("NetworkManager")) pkgs = add (pkgs, "NetworkManager");
     }
     return pkgs;
 }
