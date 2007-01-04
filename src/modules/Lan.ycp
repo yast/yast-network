@@ -231,7 +231,7 @@ global define boolean isAnyInterfaceDown(){
      if (issubstring(tmp_col[0]:"", "inet") && !issubstring(tmp_col[0]:"", "inet6")) addr = true;
     });
     if (size(tmp_mac)>0) link_status[tmp_mac]=addr;
-y2debug("link_status %1", link_status);
+    y2debug("link_status %1", link_status);
   });
 
     y2debug("%1", link_status);
