@@ -281,6 +281,9 @@ connection will be shut down (0 means the connection will not time-out).</p>
 	    demand = (boolean) UI::QueryWidget(`id(`demand), `Value);
 	    modifydns = (boolean) UI::QueryWidget(`id(`modifydns), `Value);
 	    autodns = (boolean) UI::QueryWidget(`id(`autodns), `Value);
+	    if (demand) {
+			 UI::ChangeWidget(`id(`autodns), `Value, false);
+			}
 	    UI::ChangeWidget(`id(`nameservers), `Enabled, modifydns && (demand || !autodns));
 	}
 	else {

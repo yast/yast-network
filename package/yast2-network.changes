@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Jan  4 16:31:58 CET 2007 - mzugec@suse.cz
+
+- 2.15.5 - #230967 - dial-on-demand button activates dns server entry fields 
+
+-------------------------------------------------------------------
 Thu Jan  4 16:16:56 CET 2007 - kmachalkova@suse.cz
 
 - Hostname and DHCP options help improvements (#195148)
