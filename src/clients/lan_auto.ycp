@@ -271,7 +271,7 @@ else if (func == "Write") {
     ret = Lan::WriteOnly();
     if (Lan::autoinstall_settings["strict_IP_check_timeout"]:nil != nil)
      {
-      if (!Lan::isAnyInterfaceDown()){
+      if (Lan::isAnyInterfaceDown()){
 	 integer timeout = Lan::autoinstall_settings["strict_IP_check_timeout"]:0;
 	 string error_text = _("Configuration Error : not initialized interface!");
 	 if (timeout == 0) Popup::Error(error_text);

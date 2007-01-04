@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Jan  4 13:53:59 CET 2007 - mzugec@suse.cz
+
+- 2.15.4 - fixed autoconfiguration 
+
+-------------------------------------------------------------------
 Thu Jan  4 11:19:26 CET 2007 - mzugec@suse.cz
 
 - 2.15.3 - fate #301032 - check if ip is already in use 
