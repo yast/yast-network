@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jan  4 14:34:36 CET 2007 - mzugec@suse.cz
+
+- 2.13.84 - fate #301032 - check if ip is already in use
+                uses <strict_IP_check_timeout config:type="integer">
+
+-------------------------------------------------------------------
 Fri Dec  8 17:55:36 CET 2006 - mzugec@suse.cz
 
 - #116211 - use combobox for module drivers instead of textedit
