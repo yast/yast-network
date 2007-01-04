@@ -343,9 +343,10 @@ consists of printable ASCII characters (except for quotation marks) only.</p>
 ") +
 
     /* Proxy dialog help 8/8 */
-    _("<p>Press <b>Test Proxy Settings</b> to test
-the current configuration for HTTP, HTTPS, and FTP proxy.</p>
-");
+
+    (!Mode::installation() ? _("<p>Press <b>Test Proxy Settings</b> to test
+the current configuration for HTTP, HTTPS, and FTP proxy.</p> 
+") : "");
 
     map display_info =  UI::GetDisplayInfo();
     boolean textmode = display_info["TextMode"]:false;
@@ -417,7 +418,8 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
     UI::ChangeWidget(`id(`user), `ValidChars, ValidCharsUsername);
     UI::ChangeWidget(`id(`frame1), `Enabled, enabled);
     UI::ChangeWidget(`id(`frame2), `Enabled, enabled);
-    UI::ChangeWidget(`id("test_proxy"), `Enabled, enabled);
+    if ( !Mode::installation() ) 
+	UI::ChangeWidget(`id("test_proxy"), `Enabled, enabled) ;
 
     if(enabled == true) UI::SetFocus(`id(`http));
     else UI::SetFocus(`id(`enabled));
