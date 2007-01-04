@@ -6,6 +6,7 @@ namespace config = "http://www.suse.com/1.0/configns"
 networking =
   element networking {
     managed? &
+    strict_IP_check_timeout? &
     interfaces &
     modules? &
     dhcp_options? &
@@ -15,6 +16,9 @@ networking =
 
 managed =
   element managed { BOOLEAN }
+
+strict_IP_check_timeout =
+  element strict_IP_check_timeout { INTEGER }
 
 #
 # INTERFACES
