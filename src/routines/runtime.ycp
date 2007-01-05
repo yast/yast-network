@@ -129,6 +129,12 @@ define boolean SetupSMPPPD() {
     }
     /* Start and enable */
     else {
+        Package::InstallAllMsg(["smpppd", "kinternet"], 
+    // notification about package needed 1/2
+    _("<p>To configure the modem, the <b>%1</b> packages must be installed.</p>") +
+    // notification about package needed 2/2
+    _("<p>Do you want to install it now?</p>"));
+
 	ret = Service::Enable("smpppd") && ret;
 
 	/* Installation? */
@@ -140,7 +146,6 @@ define boolean SetupSMPPPD() {
 	}
     }
 
-    y2debug("ret=%1", ret);
     return ret;
 }
 /**
