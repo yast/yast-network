@@ -489,7 +489,7 @@ global define boolean Write() {
      if (!write_only) step_labels = add(step_labels, _("Activate network services"));
 	/* Progress stage 10 */
      step_labels=add(step_labels, _("Run SuSEconfig"));
-     if (!NetworkService::IsManaged() && (boolean) SCR::Read(.init.scripts.exists, "smpppd") && !write_only && needKInternet())
+     if (!NetworkService::IsManaged() && /*(boolean) SCR::Read(.init.scripts.exists, "smpppd") &&*/ !write_only && needKInternet())
 	{
 	 /* Progress stage 11 */
 	 step_labels=add(step_labels, _("Set up smpppd"));

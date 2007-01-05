@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jan  5 16:45:39 CET 2007 - mzugec@suse.cz
+
+- 2.15.6 - #166997 - install kinternet when needed 
+
+-------------------------------------------------------------------
 Thu Jan  4 16:31:58 CET 2007 - mzugec@suse.cz
 
 - 2.15.5 - #230967 - dial-on-demand button activates dns server entry fields 
