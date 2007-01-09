@@ -11,7 +11,7 @@ Requires:	yast2-core >= 2.10.6
 # String::Random
 # Linuxrc::display_ip
 # NetworkDevices::FindFastest
-Requires:	yast2 >= 2.13.88
+Requires:	yast2 >= 2.13.90
 Requires:	sysconfig yast2-country yast2-inetd yast2-packager
 PreReq:		/bin/rm
 

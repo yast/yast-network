@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jan  9 12:50:07 CET 2007 - mzugec@suse.cz
+
+- 2.13.87
+- fate #417 - interface without IP
+- fate #110040 - Support Bonding Network Device
+
+-------------------------------------------------------------------
 Fri Jan  5 16:50:03 CET 2007 - mzugec@suse.cz
 
 - 2.13.86 - #166997 - install kinternet when needed 

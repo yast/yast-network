@@ -295,6 +295,8 @@ define string CheckEmptyName(string devtype, string hwname) {
 	"wlan-usb"	: _("USB Wireless Network Card"),
 	/* Device type label */
 	"xp"		: _("XP Network"),
+	/* Device type label */
+        "bond"          : _("Bond Network"),
     ];
 
     if(haskey(device_names, devtype))
@@ -549,6 +551,19 @@ foreach(map<string, any>row, (list<map<string, any> >)SCR::Read (.probe.netcard)
 				, ip, v["NETMASK"]:""),
 			];
 		}
+
+                // build the "Bond Slaves" entry of rich box
+		if (type == "bond")
+		{
+			string slaves = "";
+			foreach (string key, any value, (map<string, any>)v, {
+				if ((value != nil) && (regexpmatch(key, "BONDING_SLAVE[0-9]")))
+					slaves = slaves + ((slaves != "") ? ", " : "") + (string)value;
+			});
+			if (slaves != "")
+				bullets = bullets + [_("Bond slaves")+ " : " + slaves];
+		}
+
 		// create the rich text description
 		string rich = HTML::Bold ( sformat("%1 %2", descr, (contains(models, v["NAME"]:"") )?"":_("(not connected)"))) +"<br>"+ HTML::List (bullets);
 		

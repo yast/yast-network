@@ -89,6 +89,25 @@ void StoreAddrWidget (string key, map event) {
 }
 
 /**
+ * Default function to init the value of slave devices box.
+ * @param key	id of the widget
+ */
+void InitSlave(string key)
+{
+    UI::ChangeWidget(`id(key), `SelectedItems, settings["SLAVES"]:[]);
+}
+
+/**
+ * Default function to store the value of slave devices box.
+ * @param key	id of the widget
+ * @param key id of the widget
+ */
+void StoreSlave(string key, map event)
+{
+    settings["SLAVES"] = (list<string>)UI::QueryWidget (`id(key), `SelectedItems);
+}
+
+/**
  * Initialize a RadioButtonGroup
  * Group called FOO has buttons FOO_bar FOO_qux and values bar qux
  * @param key id of the widget
@@ -417,6 +436,26 @@ the firewall will be disabled.</p>"),
 	"handle": HandleIfcfg,
 	],
 
+    "BONDSLAVE": $[
+        "widget": `multi_selection_box,
+        "label": _("Bond Slaves"),
+        "opt": [`shrinkable],
+        "items" : [ ],
+        "init": InitSlave,
+        "store": StoreSlave,
+        "help": _("<p>Select the salve devices for the bond device. Only the deveices which's Device Activation is Never and set as None Address Setup are available.</p>"),
+    ],
+
+    "BONDOPTION": $[
+        "widget": `combobox,
+        /* ComboBox label */
+        "label": _("Bond Driver Options"),
+        "opt": [`hstretch, `editable],
+        "help": _("<p>Select the bond driver options, and edit it if you need. </p>"),
+        "items": [["mode=balance-rr"], ["mode=active-backup"], ["mode=balance-xor"],
+                  ["mode=broadcast"], ["mode=802.3ad"], ["mode=balance-tlb"], ["mode=balance-alb"]],
+    ],
+
     "BOOTPROTO": $[
 	"widget": `empty,
 	"help": "",
@@ -424,6 +463,15 @@ the firewall will be disabled.</p>"),
 	"init": InitializeWidgetRbg,
 	"store": StoreWidgetRbg,
 	],
+
+    "BOOTPROTO_none": $[
+        "widget": `radio_button,
+        // radio button label
+        "label": _("None Address Setup"),
+        "opt": [`notify],
+        "init": CWM::InitNull,
+        "store": CWM::StoreNull
+    ],
 
     "BOOTPROTO_dhcp": $[
 	"widget": `radio_button,
@@ -435,6 +483,8 @@ the firewall will be disabled.</p>"),
 	"help":
 	/* Address dialog help 2-6/8: dynamic address preferred */
 	/* Address dialog help 2/8 */
+    _("<p>You can select none address setup if you don't want any IP address.</p>") +
+
     _("<p>You can select dynamic address assignment
 if you have a <b>DHCP server</b> running on your local network.</p>
 ") +
@@ -743,7 +793,7 @@ define any AddressDialog() {
     }
 
     // FIXME duplicated in hardware.ycp
-    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan" ];
+    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond" ];
 
     if(Arch::s390 ())
 	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv", "qeth", "lcs" ];
@@ -849,6 +899,7 @@ Components of this product might not work with DHCP.</p>");
 	    `id ("BOOTPROTO"),	// CWM must not expand `id
 	    `MarginBox (1, 0,
 		`VBox (
+		    `Left ("BOOTPROTO_none"),
 		    `Left ("BOOTPROTO_dhcp"), // TODO: widget attribute align: left
 		    `Left ("BOOTPROTO_static"),
 		    address_static_contents)
@@ -861,12 +912,54 @@ Components of this product might not work with DHCP.</p>");
 	is_ptp? address_p2p_contents:
 	(no_dhcp? address_static_contents: address_dhcp_contents);
 
-    term address_contents = `HSquash(`VBox(
-	`Left(label),
-	just_address_contents,
-	frame2,
-	"_DIALOG"
-    ));
+    term bond = `MarginBox(1, 0, `Frame( "", `VBox("BONDSLAVE", "BONDOPTION")));
+
+    if (Lan::type == "bond")
+    {
+        settings["SLAVES"] = Lan::bond_slaves;
+
+        //get all eth devices
+        map<string, map<string, map<string, any> > > devices = (map<string, map<string, map<string, any> > >)NetworkDevices::FilterDevices("");
+	map<string, map<string, any> > avails= devices["eth"]:$[];
+
+        //filter the eth devices (BOOT_PROTO=none && START_MODE=off)
+        foreach (string num, map<string, any> value, avails, 
+        {
+            if (((string)value["BOOTPROTO"]:"" == "none") && ((string)value["STARTMODE"]:"" == "off"))
+            wd["BONDSLAVE", "items"] = add (wd["BONDSLAVE", "items"]:[], [NetworkDevices::device_name("eth", num)] );
+        });
+
+        settings["BONDOPTION"] = Lan::bond_option;
+
+        //fill up the drop list and make the default value first
+        wd["BONDOPTION", "items"] = filter(list<string> v, wd["BONDOPTION", "items"]:[],
+        {
+            return v[0]:"" != Lan::bond_option;
+        });
+        wd["BONDOPTION", "items"] = prepend(wd["BONDOPTION", "items"]:[], [Lan::bond_option]);
+    }
+
+
+    term address_contents = nil;
+    if (Lan::type == "bond")
+    {
+        address_contents = `HSquash(`VBox(
+                `Left(label),
+		just_address_contents,
+		bond,
+		frame2,
+		"_DIALOG"
+	));
+    }
+    else
+    {
+	address_contents = `HSquash(`VBox(
+		`Left(label),
+		just_address_contents,
+		frame2,
+		"_DIALOG"
+	));
+    }
 
     map functions = $[
         "init" : InitAddrWidget,
@@ -963,6 +1056,12 @@ Components of this product might not work with DHCP.</p>");
 	    // fixed bug #73739 - if dhcp is used, dont set default gw statically
 	    Routing::RemoveDefaultGw();
 	}
+    }
+
+    if (Lan::type == "bond")
+    {
+        Lan::bond_option = settings["BONDOPTION"]:"";
+	Lan::bond_slaves = (list<string>)settings["SLAVES"]:[];
     }
 
     // proceed with WLAN settings if appropriate, #42420
