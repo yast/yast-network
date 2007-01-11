@@ -448,7 +448,11 @@ global void SetIPv6(boolean status){
 void writeIPv6(){
  if (ipv6){
   SCR::Execute(.target.bash_output, "echo '#install ipv6 /bin/true' > /etc/modprobe.d/ipv6");
- } else   SCR::Execute(.target.bash_output, "echo 'install ipv6 /bin/true' > /etc/modprobe.d/ipv6");
+  SCR::Write(.sysconfig.windowmanager.KDE_USE_IPV6, "yes");
+ } else {
+	 SCR::Execute(.target.bash_output, "echo 'install ipv6 /bin/true' > /etc/modprobe.d/ipv6");
+         SCR::Write(.sysconfig.windowmanager.KDE_USE_IPV6, "no");
+        }
 }
 
 

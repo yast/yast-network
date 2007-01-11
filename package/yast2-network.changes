@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Jan 11 08:13:29 CET 2007 - mzugec@suse.cz
+
+- #150207 - disable sysconfig.displaymanager.KDE_USE_IPV6 when disabling ipv6 
+
+-------------------------------------------------------------------
 Tue Jan  9 13:20:06 CET 2007 - mzugec@suse.cz
 
 - #116092 - network not set up because of pppoe 
