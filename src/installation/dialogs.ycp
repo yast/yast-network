@@ -60,21 +60,30 @@ define boolean AskForPassword() {
 define map <string, string> GetDeviceDescription(string device_id) {
 
     string device_name = NetworkDevices::GetValue(device_id,"NAME");
+
+    if ( (device_name == nil) || (device_name == "") ) {
+	//TRANSLATORS: Informs that device name is not known
+	device_name = _("Unknown device");
+    }
     //avoid too long device names
     if (size(device_name) > 30) {
         device_name = substring (device_name, 0, 27) + "...";
+    }
+
+    string ip_addr = (NetworkDevices::GetValue(device_id, "BOOTPROTO") == "dhcp" ?
+                    // TRANSLATORS: Informs that the IP address is assigned via DHCP
+                    _("DHCP address") :
+                    NetworkDevices::GetValue(device_id, "IPADDR"));
+    if ( (ip_addr == nil) || (ip_addr == "")) {
+	//TRANSLATORS: Informs that no IP has been assigned to the device 
+	ip_addr = _("No IP address assigned");
     }
 
     map <string, string> ret = $[
 
 	"type" : NetworkDevices::GetDeviceType(device_id),
 	"name" : device_name,
-	"ipaddr" : (NetworkDevices::GetValue(device_id, "BOOTPROTO") == "dhcp" ?
-                    // TRANSLATORS: Informs that the IP address is assigned via DHCP
-                    _("DHCP address")
-                    :
-                    NetworkDevices::GetValue(device_id, "IPADDR")
-                ),
+	"ipaddr" : ip_addr,
     ];
 
     return ret;
@@ -212,7 +221,7 @@ activate the test procedure."),
 	    {
 		map <string, string> device_descr = GetDeviceDescription(via_device);
 		Internet::SetDevice( via_device );
-		UI::ReplaceWidget(`id(`rp), `RadioButton(`id(`yes), sformat(connection_text, device_descr["name"]:"", device_descr["type"]:"", device_descr["ipaddr"]:_("No IP address assigned")), Internet::do_test));
+		UI::ReplaceWidget(`id(`rp), `RadioButton(`id(`yes), sformat(connection_text, device_descr["name"]:"", device_descr["type"]:"", device_descr["ipaddr"]:""), Internet::do_test));
 		y2milestone("selected network device :%1", via_device);
 	    }
 	}
