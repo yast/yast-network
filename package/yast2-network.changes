@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jan 16 11:34:56 CET 2007 - kmachalkova@suse.cz
+
+- Avoid displaying empty strings in internet test dialog (#220813,
+  #223498) 
+- 2.13.89
+
+-------------------------------------------------------------------
 Thu Jan 11 08:27:30 CET 2007 - mzugec@suse.cz
 
 - #150207 - disable sysconfig.displaymanager.KDE_USE_IPV6 when disabling ipv6 
