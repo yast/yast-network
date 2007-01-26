@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jan 26 13:07:12 CET 2007 - kmachalkova@suse.cz
+
+- Use random hostname also during autoinstallation (if none found
+  in install.inf or /etc/hosts)(#165269)
+- 2.13.90
+
+-------------------------------------------------------------------
 Tue Jan 16 11:34:56 CET 2007 - kmachalkova@suse.cz
 
 - Avoid displaying empty strings in internet test dialog (#220813,

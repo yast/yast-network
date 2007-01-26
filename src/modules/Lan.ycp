@@ -1797,9 +1797,20 @@ define boolean ProposeHostname () {
 	y2milestone ("hostname from dns");
 	/* try to get hostname from the network */
 	string hnent = Detection::ResolveIP(ipaddr);
-	list hnsplit = Hostname::SplitFQ(hnent);
 
-	DNS::ReadHostDomain (hnsplit[0]:"", hnsplit[1]:"");
+        //last resort - generate random hostname (#165269)
+        if (hnent == "")
+        {
+            y2milestone("random hostname");
+            srandom ();
+            DNS::ReadHostDomain("linux-" + String::Random(4), "site");
+        }
+        else
+        {
+            list hnsplit = Hostname::SplitFQ(hnent);
+            DNS::ReadHostDomain (hnsplit[0]:"", hnsplit[1]:"");
+        }
+
     }
 
     return true;    
