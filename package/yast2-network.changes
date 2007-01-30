@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jan 30 09:50:35 CET 2007 - mzugec@suse.de
+
+- fixed build
+
+-------------------------------------------------------------------
 Fri Jan 26 13:07:12 CET 2007 - kmachalkova@suse.cz
 
 - Use random hostname also during autoinstallation (if none found
