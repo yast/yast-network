@@ -70,6 +70,9 @@ define boolean ReadInstallInf() {
     ReadInstallInfItem(install_inf, "hwaddr", "HWAddr");
     ReadInstallInfItem(install_inf, "ethtool_options", "ethtool");
 
+    ReadInstallInfItem(install_inf, "QETH_LAYER2_SUPPORT", "Layer2");
+    ReadInstallInfItem(install_inf, "LLADDR", "OSAHWAddr");
+
     /* Split network device */
     string netdevice = InstallInf["netdevice"]:"";
     if(netdevice != "") {

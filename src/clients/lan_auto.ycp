@@ -144,7 +144,7 @@ define map FromAY(map input)
 
     input["config"] = $[ "dhcp": dhcp ];
     if (input["strict_IP_check_timeout"]:nil != nil)
-	input["config", "config"] = $["CHECK_DUPLICATE_IP": true];
+					input["config", "config"] = $["CHECK_DUPLICATE_IP": true];
 
     y2milestone("input=%1", input);
     return input;
@@ -274,6 +274,7 @@ else if (func == "Write") {
      {
       if (Lan::isAnyInterfaceDown()){
 	 integer timeout = Lan::autoinstall_settings["strict_IP_check_timeout"]:0;
+	y2debug("timeout %1", timeout);
 	 string error_text = _("Configuration Error : not initialized interface!");
 	 if (timeout == 0) Popup::Error(error_text);
 		else Popup::TimedError(error_text, timeout);

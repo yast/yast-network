@@ -226,7 +226,6 @@ global define boolean isAnyInterfaceDown(){
 				"cat /proc/net/dev | cut -d':' -f1 | grep -v '|' | tr -d '\n' | sed 's/ \\+/ /g'"))["stdout"]:""), " ");
   foreach(string net_dev, net_devices, {
    list<string> row = splitstring(((map<string, any>)SCR::Execute(.target.bash_output, sformat("ip address show dev %1 | grep 'inet\\|link' | sed 's/^ \\+//g'|cut -d' ' -f-2", net_dev)))["stdout"]:"", "\n");
-
     string tmp_mac="";
     boolean addr=false;
     foreach(string column, row, {
@@ -236,6 +235,7 @@ global define boolean isAnyInterfaceDown(){
      if (issubstring(tmp_col[0]:"", "inet") && !issubstring(tmp_col[0]:"", "inet6")) addr = true;
     });
     if (size(tmp_mac)>0) link_status[tmp_mac]=addr;
+    y2debug("link_status %1", link_status);
   });
 
     y2debug("%1", link_status);
@@ -1693,6 +1693,10 @@ global define boolean ProposeInterfaces () {
 
 	y2milestone ("Selected HW with install.inf patches: %1", tosel);
 	SelectHWMap(tosel);
+	// set layer2 status from /etc/install.inf
+	qeth_layer2 = (InstallInf["QETH_LAYER2_SUPPORT"]:"0"=="1")?true:false;
+	qeth_macaddress = InstallInf["LLADDR"]:"";
+
     }
     /* Nothing detected -> use InstallInf */
     else if(size(InstallInf) > 0) {
@@ -1707,6 +1711,7 @@ global define boolean ProposeInterfaces () {
 
 	NetworkModules::Alias = InstallInf["module"]:"";
 	NetworkModules::Options = InstallInf["options"]:"";
+
 
 	type = InstallInf["type"]:"eth";
 	device = NetworkDevices::GetFreeDevice(type);
@@ -1799,7 +1804,7 @@ define boolean ProposeHostname () {
 	string hnent = Detection::ResolveIP(ipaddr);
 
         //last resort - generate random hostname (#165269)
-        if (hnent == "" )
+        if (hnent == "")
         {
             y2milestone("random hostname");
             srandom ();
