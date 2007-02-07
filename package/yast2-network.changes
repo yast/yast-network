@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Feb  7 16:00:58 CET 2007 - mzugec@suse.de
+
+- fix hwaddr matching (#184438)
+- 2.15.12
+
+-------------------------------------------------------------------
 Tue Feb  6 10:24:06 CET 2007 - mzugec@suse.de
 
 - support for handle toggling between OSA Layer2/3 during installation (#184438)

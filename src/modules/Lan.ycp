@@ -1654,7 +1654,12 @@ global define boolean ProposeInterfaces () {
 
     /* Some HW found -> use it for proposal */
     if(size(Hardware) > 0) {
-        tosel =  FindMatchingDevice($[]);
+         if (Arch::s390()){
+         tosel =  FindMatchingDevice( $["device":sformat("%1-id-%2",InstallInf["module"]:"", InstallInf["hwaddr"]:"")] );
+         y2internal("s390 %1", tosel);
+        }
+          else tosel =  FindMatchingDevice($[]);
+
     }
         
 
@@ -1694,6 +1699,7 @@ global define boolean ProposeInterfaces () {
 	y2milestone ("Selected HW with install.inf patches: %1", tosel);
 	SelectHWMap(tosel);
 	// set layer2 status from /etc/install.inf
+y2internal("%1 %2", qeth_layer2, qeth_macaddress);
 	qeth_layer2 = (InstallInf["QETH_LAYER2_SUPPORT"]:"0"=="1")?true:false;
 	qeth_macaddress = InstallInf["LLADDR"]:"";
 
