@@ -48,6 +48,18 @@ boolean we_have_patches = false;
 // then don't open or close it, don't show respective steps
 boolean already_up = false;
 
+// curl return code of downloading release notes
+// useful to tell apart misconfigured network 
+// from server side error (#236371)
+integer curl_ret_code = 0;
+
+//subset of curl return codes, indicating misconfigured network
+list <integer> curl_ret_codes_bad = 
+[ 5, //couldn't resolve proxy
+  6, //couldn't resolve host
+  7  //couldn't connect()
+];
+
 // Stage transitions in handle_stage:
 // open: wait (test), copy, finish (failure), wait
 // wait: copy (test), finish (failure), copy
@@ -366,6 +378,7 @@ and correct the settings.</p>
 		test_ret = true;
 	    } else {
 		y2error("Downloading failed");
+		curl_ret_code = ret;
 	    }
 
 	    // label of combobox where the log is selected
@@ -594,20 +607,44 @@ the logs for details.
 	{
 	    mark_label(2, `arrow);
 
+	    boolean ret = true;
+
 	    if (!download_release_notes ())
 	    {
-		// popup to inform user about the failure
-		Report::Error(_("Download of latest release notes failed. View
-the logs for details.
-"));
+		// return code is not on the blacklist (meaning misconfigured network)
+		// return true if user wants to continue despite the failure, false otherwise
+		if ( !contains(curl_ret_codes_bad, curl_ret_code) ) 
+		{
+		    //popup informing user about the failure to retrieve release notes
+		    //most likely due to server-side error
+		    ret = Popup::ContinueCancel(_("Download of latest release notes failed due to server-side error. 
+This does not necessarily mean misconfigured network.
+
+Click 'Continue' to proceed to the next installation step. To skip any steps
+requiring internet connection or to get back to your network configuration,
+click 'Cancel'."));
+		}
+		// return code shows misconfigured network
+		// return false
+		else 
+		{
+		    // popup to inform user about the failure
+		    Report::Error(_("Download of latest release notes failed. View
+the logs for details."));
+		    ret = false;
+		}
 		test_stage = `close;
-		test_result = `failure;
-		mark_label(2, `dash);
 	    }
-	    else
+
+	    if (ret)
 	    {
 		install_release_notes ();
 		mark_label(2, `check);
+	    }
+	    else
+	    {
+		test_result = `failure;
+		mark_label(2, `dash);
 	    }
 
 	    // we don't check for patches anymore

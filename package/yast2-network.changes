@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Feb  9 16:23:50 CET 2007 - kmachalkova@suse.cz
+
+- If downloading of the relnotes fails because of server-side error,
+  allow to continue towards YOU and/or registration stuff (#236371) 
+- 2.15.13
+
+-------------------------------------------------------------------
 Wed Feb  7 16:00:58 CET 2007 - mzugec@suse.de
 
 - fix hwaddr matching (#184438)
