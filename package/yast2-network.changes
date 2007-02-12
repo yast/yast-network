@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb 12 15:02:25 CET 2007 - mzugec@suse.de
+
+- add checkbox to disable writing hwcfg-file
+- 2.15.14 
+
+-------------------------------------------------------------------
 Fri Feb  9 16:23:50 CET 2007 - kmachalkova@suse.cz
 
 - If downloading of the relnotes fails because of server-side error,

@@ -229,7 +229,8 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	`HStretch()
     );
 
-    term contents = `HBox(
+    term contents = `CheckBoxFrame(`id(`enable_hwconfig), caption, hwcfg != "",
+	`HBox(
 	`HSpacing(2),
 	`VBox(
 	    `VSpacing(0.5),
@@ -241,7 +242,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    `VSpacing(0.5)
 	    ),
 	`HSpacing(2)
-	);
+	));
 
     if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */)
 	Wizard::SetContentsButtons(caption, contents, help,
@@ -374,6 +375,22 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	} */
 	else if(ret == `next || ret == `list) {
 	    /* FIXME: check_* */
+       if(!(boolean)UI::QueryWidget(`enable_hwconfig, `Value))
+        {
+
+NetworkModules::DeleteM(Lan::nm_name);
+if(Lan::nm_name_old==nil) Lan::nm_name_old = Lan::nm_name;
+Lan::nm_name="";
+map<string, any> tmp_current=$[];
+foreach(string key, any value, NetworkDevices::Current, {
+if (key != "_nm_name") tmp_current[key]=value;
+});
+NetworkDevices::Current=tmp_current;
+        } else
+	if(UI::WidgetExists(`id(`hwcfg))) {
+	    Lan::nm_name_old = Lan::nm_name;
+	    Lan::nm_name = (string) UI::QueryWidget(`id(`hwcfg), `Value);
+	}
 
 	    if(UI::WidgetExists(`id(`hwcfg))) {
 		hwcfg = (string) UI::QueryWidget (`id (`hwcfg), `Value);
@@ -432,11 +449,6 @@ Really continue?
     if(ret == `next || ret == `list) {
 	NetworkModules::Alias /* FIXME: MOD Lan::Module["module"] */ = (string) UI::QueryWidget(`id(`modul), `Value);
 	NetworkModules::Options /* FIXME: MOD Lan::Module["options"] */ = (string) UI::QueryWidget(`id(`options), `Value);
-
-	if(UI::WidgetExists(`id(`hwcfg))) {
-	    Lan::nm_name_old = Lan::nm_name;
-	    Lan::nm_name = (string) UI::QueryWidget(`id(`hwcfg), `Value);
-	}
 
 	if(UI::WidgetExists(`id(`num)))
 	    Lan::device = (string) UI::QueryWidget(`id(`num), `Value);

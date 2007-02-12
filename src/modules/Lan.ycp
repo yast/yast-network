@@ -1361,7 +1361,7 @@ global define boolean Commit() {
 	}
 	else
 	    NetworkDevices::Name = NetworkDevices::alias_name(NetworkDevices::RealType(type, hotplug), device, alias);
-
+y2internal("newdev %1", newdev);
 	NetworkDevices::Current = newdev;
 	NetworkDevices::Commit();
     }
