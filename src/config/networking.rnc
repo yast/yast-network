@@ -5,6 +5,7 @@ namespace config = "http://www.suse.com/1.0/configns"
 ## networking
 networking =
   element networking {
+    element start_immediately { BOOLEAN }? &
     managed? &
     strict_IP_check_timeout? &
     interfaces &
