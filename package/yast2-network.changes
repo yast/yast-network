@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Feb 14 09:43:28 CET 2007 - kmachalkova@suse.cz
+
+- Improved usability of Internet test - indicate clearly that 
+  particular step has failed (#121705, #166237)
+
+-------------------------------------------------------------------
 Tue Feb 13 12:44:02 CET 2007 - mzugec@suse.de
 
 - rnc file update 

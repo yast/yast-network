@@ -109,6 +109,7 @@ define string GetLanguageUTF8 ()
 
 /* fix checkycp complaints */
 string dash = "-   ";
+string excl = "!   ";
 
     /**
      * Create the dialog contents
@@ -203,9 +204,7 @@ and correct the settings.</p>
 	map<symbol, string> bullets = $[
 	    `arrow : UI::Glyph (`BulletArrowRight),
 	    `check : UI::Glyph (`CheckMark),
-//	    `dash :  dash,
-	    // preserve the previous look
-	    `dash : UI::Glyph (`CheckMark),
+	    `dash : excl,
 	    ];
 
 	if (UI::WidgetExists(`id(widgets[i]:nil))) {
