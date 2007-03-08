@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Mar  8 14:26:15 CET 2007 - kmachalkova@suse.cz
+
+- Network installation proposal:
+  Do not re-propose firewall zone for the interface if it has been
+  explicitly changed by user in add/edit dialog (#241107)
+- 2.13.95   
+
+-------------------------------------------------------------------
 Tue Feb 13 12:44:16 CET 2007 - mzugec@suse.de
 
 - rnc file update 

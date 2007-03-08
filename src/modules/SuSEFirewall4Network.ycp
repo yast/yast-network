@@ -17,6 +17,8 @@
     textdomain "network";
 
     import "SuSEFirewall";
+    import "SuSEFirewallProposal";
+    import "Stage";
 
     /**
      * Function reads configuration of SuSEFirewall.
@@ -165,5 +167,15 @@
 	return ! SuSEFirewall::IsAnyNetworkInterfaceSupported ();
     }
 
+    /**
+     * Functions sets that a firewall proposal was changed by user
+     * by editing firewall zone of network interface
+     * (applicable during 2nd stage of installation only)
+     * @param boolean whether proposal was changed by user
+     */
+    global define void ChangedByUser (boolean changed) {
+	if (Stage::cont())
+	    SuSEFirewallProposal::SetChangedByUser(changed);
+    }
 /* EOF */
 }
