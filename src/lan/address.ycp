@@ -40,6 +40,8 @@ symbol ChangeDefaults () {
 
 map <string, any> settings = $[];
 
+string fwzone_initial = "";
+
 /**
  * `RadioButtonGroup uses CurrentButton instead of Value, grrr
  * @param key widget id
@@ -719,6 +721,8 @@ define any AddressDialog() {
 	y2milestone ("Defaulting to EXT");
     }
 
+    fwzone_initial = fwzone;
+
     settings = $[
 	// general tab:
 //	"IFNAME": ifname,
@@ -1032,6 +1036,10 @@ Components of this product might not work with DHCP.</p>");
 	Lan::startmode = settings["STARTMODE"]:"";
 	Lan::usercontrol = settings["USERCONTROL"]:false;
 	string zone = settings["FWZONE"]:"";
+
+	if (zone != fwzone_initial)
+	    SuSEFirewall4Network::ChangedByUser(true);
+
 	SuSEFirewall4Network::ProtectByFirewall (ifcfgname, zone, zone != "");
 	Lan::mtu = settings["MTU"]:"";
 
