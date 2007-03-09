@@ -123,6 +123,7 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 
     /* build a list of unconfigured devices */
     maplist(map h, Hardware, {
+y2internal("h %1", h);
 	string unq = h["unique"]:"";
 
 	string busid = "bus-" + h["bus"]:"" + "-" + h["busid"]:"";
@@ -131,8 +132,11 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 	string hwname = CheckEmptyName(hwtype, h["name"]:"");
 	y2debug("busid=%1, mac=%2", busid, mac);
 	if(!contains(uniques, busid) && !contains(uniques, mac) && !contains(uniques_old, unq)) {
-	    if(split)
+	    if(split && !contains(uniques_old, unq))
+{
+y2internal("uniques_old %1\nunq %2", uniques_old, unq);
 		unconfigured = add(unconfigured, h);
+}
 	    else
 		configured = add(configured, Summary::Device(hwname, Summary::NotConfigured()));
 	}

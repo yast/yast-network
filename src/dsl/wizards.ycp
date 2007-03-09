@@ -259,7 +259,7 @@ define symbol DSLSequence() ``{
 	"main"		:   ``( DSLMainSequence() ),
 	"packages"	: [ ``( PackagesInstall(DSL::Packages()) ), true ],
 	"write"		: [ ``( WriteDialog() ), true ],
-	"finish"	: [ ``( FinishDialog() ), true ],
+//	"finish"	: [ ``( FinishDialog() ), true ],
     ];
 
     map sequence = $[
@@ -278,11 +278,13 @@ define symbol DSLSequence() ``{
 	],
 	"write" : $[
 	    `abort	: `abort,
-	    `next	: "finish"
-	],
+	    `next	: `next //"finish"
+	]
+/*
 	"finish" : $[
 	    `next	: `next,
 	]
+*/
     ];
 
     Wizard::CreateDialog();

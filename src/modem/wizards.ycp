@@ -259,7 +259,7 @@ define symbol ModemSequence() {
 	"main"		:   ``( MainSequence() ),
 	"packages"	: [ ``( PackagesInstall(Modem::Packages()) ), true ],
 	"write"		: [ ``( WriteDialog() ), true ],
-	"finish"	: [ ``( FinishDialog() ), true ],
+//	"finish"	: [ ``( FinishDialog() ), true ],
     ];
 
     map sequence = $[
@@ -278,11 +278,13 @@ define symbol ModemSequence() {
 	],
 	"write" : $[
 	    `abort	: `abort,
-	    `next	: "finish"
-	],
+	    `next	: `next //"finish"
+	]
+/*
 	"finish" : $[
 	    `next	: `next,
 	]
+*/
     ];
 
     Wizard::CreateDialog();

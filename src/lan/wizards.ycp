@@ -46,7 +46,7 @@ boolean LanSequence() {
 	"main"	:   ``( MainSequence("") ),
 	"packages"	: [ ``( PackagesInstall(Lan::Packages()) ), true ],
 	"write"	: [ ``( WriteDialog() ), true ],
-	"finish": [ ``( FinishDialog() ), true ],
+//	"finish": [ ``( FinishDialog() ), true ],
     ];
 
     map sequence = $[
@@ -66,10 +66,12 @@ boolean LanSequence() {
 	"write" : $[
 	    `abort	: `abort,
 	    `next	: `next,
-	],
+	]
+/*
 	"finish" : $[
 	    `next	: `next,
 	]
+*/
     ];
 
     Wizard::CreateDialog();

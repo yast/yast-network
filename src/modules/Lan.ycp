@@ -359,6 +359,7 @@ global define boolean Read (symbol cache) {
     if(!Mode::config ()) {
 	if(!Detection::running) Detection::Start();
 	Hardware = ReadHardware("netcard");
+y2internal("I'm in config mode %1", Hardware);
     }
 
     /* ReadHardware(""); /* TESTING */
@@ -1020,7 +1021,6 @@ void SetDeviceVars(map devmap, map defaults) {
  * @return true if success
  */
 global define boolean Select(string dev) {
-
     y2debug("dev=%1", dev);
     map devmap = $[];
     /* dev=="" -> Add */

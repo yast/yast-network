@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Mar  9 16:03:11 CET 2007 - mzugec@suse.cz
+
+- disable finish popup to configure mail (#163955)
+- 2.15.15 
+
+-------------------------------------------------------------------
 Wed Feb 14 09:43:28 CET 2007 - kmachalkova@suse.cz
 
 - Improved usability of Internet test - indicate clearly that 
