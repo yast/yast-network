@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Mar  9 17:19:56 CET 2007 - kmachalkova@suse.cz
+
+- Network installation proposal:
+  Do not re-propose firewall zone for the interface if it has been
+  explicitly changed by user in add/edit dialog (#241107)
+- Disable firewall related functionality (incl. final progress text)
+  if package SuSEfirewall2 is not installed (#249847) 
+
+-------------------------------------------------------------------
 Fri Mar  9 16:03:11 CET 2007 - mzugec@suse.cz
 
 - disable finish popup to configure mail (#163955)
