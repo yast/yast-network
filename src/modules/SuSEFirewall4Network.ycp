@@ -177,5 +177,9 @@
 	if (Stage::cont())
 	    SuSEFirewallProposal::SetChangedByUser(changed);
     }
+
+    global define boolean IsInstalled() {
+	return SuSEFirewall::SuSEFirewallIsInstalled ();
+    }
 /* EOF */
 }

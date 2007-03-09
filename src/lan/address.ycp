@@ -345,6 +345,18 @@ void StoreDialog (string key, map event) {
     return;
 }
 
+/**
+ * Initialize value of firewall zone widget
+ * (disables it when SuSEFirewall is not installed)
+ * @param key id of the widget
+ */
+symbol InitFwZone(string key) {
+    if( !SuSEFirewall4Network::IsInstalled() )
+	UI::ChangeWidget(`id("FWZONE"), `Enabled, false);
+    return nil;
+}
+
+
 map<string, map<string,any> > widget_descr_local = $[
     "_DIALOG": $[
 	"widget": `empty,
@@ -401,6 +413,7 @@ firewalled interfaces exist, the firewall
 will stay enabled but all traffic will be blocked for this
 interface. If you do not select a zone and no others exist, 
 the firewall will be disabled.</p>"),
+	"init" : InitFwZone,
 	],
     "MANDATORY": $[
 	"widget": `checkbox,
@@ -805,6 +818,8 @@ define any AddressDialog() {
     if(Arch::ia64 ())
 	device_types = add(device_types, "xp");
 
+    boolean fw_is_installed = SuSEFirewall4Network::IsInstalled();
+
     map<string, map<string,any> > wd = (map<string, map<string,any> >) union (widget_descr, widget_descr_local);
 
     if (force_static_ip)
@@ -821,8 +836,13 @@ Components of this product might not work with DHCP.</p>");
     wd["IFCFGTYPE", "items"] = BuildTypesListCWM (device_types);
     wd["IFCFGID", "items"] = [[settings["IFCFGID"]:"",
 			       settings["IFCFGID"]:""]];
-//    wd["BINDTOHW", "items"] = ...;
-    wd["FWZONE", "items"] = SuSEFirewall4Network::FirewallZonesComboBoxItems();
+    //wd["BINDTOHW", "items"] = ...;
+
+    if ( fw_is_installed )
+        wd["FWZONE", "items"] = SuSEFirewall4Network::FirewallZonesComboBoxItems();
+    else
+	wd["FWZONE", "items"] = [ ["", _("Firewall is not installed") ] ];
+    
 
     term label = `HBox (
 	    `HSpacing(0.5),
@@ -1035,12 +1055,14 @@ Components of this product might not work with DHCP.</p>");
 	// general tab
 	Lan::startmode = settings["STARTMODE"]:"";
 	Lan::usercontrol = settings["USERCONTROL"]:false;
-	string zone = settings["FWZONE"]:"";
 
-	if (zone != fwzone_initial)
-	    SuSEFirewall4Network::ChangedByUser(true);
+	if (fw_is_installed) {
+	    string zone = settings["FWZONE"]:"";
+	    if (zone != fwzone_initial)
+	        SuSEFirewall4Network::ChangedByUser(true);
+	    SuSEFirewall4Network::ProtectByFirewall (ifcfgname, zone, zone != "");
+	}
 
-	SuSEFirewall4Network::ProtectByFirewall (ifcfgname, zone, zone != "");
 	Lan::mtu = settings["MTU"]:"";
 
 	// address tab

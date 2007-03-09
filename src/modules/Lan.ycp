@@ -472,6 +472,8 @@ global define boolean Write() {
 	return true;
     }
 
+    boolean fw_is_installed = SuSEFirewall4Network::IsInstalled();
+
     /* Write dialog caption */
     string caption = _("Saving Network Configuration");
 
@@ -491,9 +493,10 @@ global define boolean Write() {
 	_("Write hostname and DNS configuration"),
 	/* Progress stage 7 */
 	_("Set up network services"),
-	/* Progress stage 8 */
-        _("Write firewall settings")
         ];
+	/* Progress stage 8 */
+     if (fw_is_installed)
+        step_labels=add(step_labels, _("Write firewall settings"));
      /* Progress stage 9 */
      if (!write_only) step_labels = add(step_labels, _("Activate network services"));
 	/* Progress stage 10 */
@@ -549,13 +552,16 @@ global define boolean Write() {
     writeIPv6();
     sleep(sl);
 
-    if(Abort()) return false;
-    /* Progress step 8 */
-    ProgressNextStage(_("Writing firewall settings..."));
-    boolean orig = Progress::set (false);
-    SuSEFirewall4Network::Write ();
-    Progress::set (orig);
-    sleep(sl);
+    //Show this only if SuSEfirewall is installed
+    if(fw_is_installed) {
+        if(Abort()) return false;
+        /* Progress step 8 */
+        ProgressNextStage(_("Writing firewall settings..."));
+        boolean orig = Progress::set (false);
+        SuSEFirewall4Network::Write ();
+        Progress::set (orig);
+        sleep(sl);
+    }
 
     if(!write_only) {
      if(Abort()) return false;
