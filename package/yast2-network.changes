@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Mar 12 10:01:33 CET 2007 - kmachalkova@suse.cz
+
+- Added dependency yast2 >= 2.15.15, removed dependency on 
+  yast2-inetd, yast2-core moved to Conflicts: (indirect dependency) 
+  
+-------------------------------------------------------------------
 Fri Mar  9 17:19:56 CET 2007 - kmachalkova@suse.cz
 
 - Network installation proposal:
