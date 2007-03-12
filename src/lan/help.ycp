@@ -1,5 +1,7 @@
 {
 
+textdomain "network";
+
 map<string, any> help = $[
 
 "read" :
