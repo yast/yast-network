@@ -61,7 +61,7 @@ else if(func == "AskUser") {
 	Wizard::CreateDialog();
 	Wizard::SetDesktopIcon("lan");
 
-	seq = IPv6Dialog();
+// seq = IPv6Dialog();
 	Wizard::CloseDialog();
     }
     Lan::proposal_valid = false; // repropose

@@ -57,7 +57,7 @@ else if (func == "Reset") {
 else if (func == "Change") {
     Wizard::CreateDialog();
     Wizard::SetDesktopIcon("routing");
-    ret = RoutingMainDialog(true);
+    ret = RoutingMainDialog();
     UI::CloseDialog();
 }
 /* Import configuration */

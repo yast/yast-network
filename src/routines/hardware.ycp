@@ -234,7 +234,7 @@ define list<map> ReadHardware(string hwtype) {
 	boolean card_ok = controller != "";
 	one["name"] = DeviceName(card);
 	one["type"] = controller;
-	one["unique"] = card["unique_key"]:"";
+	one["unique"] = card["udi"]:"";
 	one["requires"] = card["requires"]:[];
 	// Each card remembers its position in the list of _all_ cards.
 	// It is used when selecting the card from the list of _unconfigured_

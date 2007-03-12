@@ -46,7 +46,7 @@ global boolean proposal_valid = false;
  * DRIVER       driver module name
  * STARTMODE    "auto"|"manual"|"hotplug"
  * DEBUG        debuglevel
- * UNIQUE       unique hw id
+ * UDI       unique hw id
  *
  */
 
@@ -691,7 +691,7 @@ void set_hwparameters (map hw) {
     hw_device["PARA_TYPE"] = sformat("%1", get_i4ltype(hw));
     hw_device["PARA_SUBTYPE"] = sformat("%1", get_i4lsubtype(hw));
     hw_device["NAME"] = sformat("%1", hw["name"]:"unknown");
-    hw_device["UNIQUE"] = hw["unique"]:"";
+    hw_device["UDI"] = hw["unique"]:"";
 }
 
 /**

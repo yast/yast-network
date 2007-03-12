@@ -1,0 +1,181 @@
+{
+
+map<string, any> help = $[
+
+"read" :
+    /* Network cards read dialog help 1/2 */
+_("<p><b><big>Initializing Network Card
+Configuration</big></b><br>Please wait...<br></p>
+") +
+
+    /* Network cards read dialog help 2/2 */
+_("<p><b><big>Aborting the Initialization:</big></b><br>
+Safely abort the configuration utility by pressing <B>Abort</B> now.</p>
+"),
+
+"write" :
+    /* Network cards write dialog help 1/2 */
+_("<p><b><big>Saving Network Card
+Configuration</big></b><br>Please wait...<br></p>
+") +
+
+    /* Network cards write dialog help 2/2 */
+_("<p><b><big>Aborting Saving:</big></b><br>
+Abort saving by pressing <b>Abort</b>.</p>
+"),
+
+"managed" :
+	    /* Network setup method help */
+	    // NetworkManager and ifup are programs
+_("<p>Use <b>NetworkManager</b> to have a desktop applet
+manage connections for all interfaces. It is well-suited
+to switching among wired and multiple wireless networks.</p>
+") +
+	    /* Network setup method help */
+	    // NetworkManager and ifup are programs
+_("<p>Use the <b>Traditional Method with <tt>ifup</tt></b>
+if you do not run a desktop environment (GNOME or KDE)
+or need to use multiple interfaces at once.</p>
+"),
+
+"overview" :
+_("<p><b><big>Network Card Overview</big></b><br>
+Obtain an overview of installed network cards. Additionally,
+edit their configuration.<br></p>
+") + _("<p><b><big>Adding a Network Card:</big></b><br>
+Press <b>Add</b> to configure a new network card manually.</p>
+") + _("<p><b><big>Editing or Deleting:</big></b><br>
+Choose a network card to change or remove.
+Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
+"),
+
+"ipv6" :
+	    /* IPv6 help */
+_("<p>Select <b>Enable</b> IPv6 to enable ipv6 module in kernel.
+It is possible to use IPv6 together with IPv4. This is default option.
+") +
+	    /* Network setup method help */
+_("<p>Select <b>Disable</b> IPv6 to disable autoload kernel module for ipv6.
+When ipv6 protocol is not used on your network, response time will be faster.
+") +
+_("<p>All changes will be applied after reboot.</p>"),
+
+"routing":
+    /* Routing dialog help 1/2 */
+_("<p>The routing can be set up in this dialog.
+The <b>Default Gateway</b> matches every possible destination, but poorly. 
+If any other entry exists that matches the required address, it is
+used instead of the default route. The idea of the default route is simply
+to enable you to say \"and everything else should go here.\"</p>
+") +
+    /* Routing dialog help 2/2 */
+_("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>"),
+
+"dhcp_hostname":
+_("<p>If you are using DHCP to get an IP address, check whether to get
+a hostname via DHCP. The hostname of your host (which can be seen
+by issuing <i>hostname</i> command) will be set automatically by  
+DHCP client.
+You may want to disable this option if you connect to different 
+networks that might each assign a different hostname, because changing
+the hostname at runtime may confuse the graphical desktop.
+</p> "),
+
+"write_hostname":
+_("<p>If you are using DHCP to get an IP address, your hostname will be written
+to /etc/hosts and be resolvable as 127.0.0.2 IP address.
+This is default behavior. If you want to disable this, uncheck this box
+but your hostname will not be resolvable without active network.
+</p> "),
+
+"searchlist_s":
+_("<p>Enter the name servers and domain search list for resolving 
+hostnames. Usually they can be obtained by DHCP.</p>
+") +
+	// resolver dialog help
+	_("<p>A name server is a computer that translates hostnames into
+IP addresses. This value must be entered as an <b>IP address</b>
+(for example, 192.168.0.42), not as a hostname.</p>
+") +
+	// resolver dialog help
+	_("<p>Search domain is the domain name where hostname searching starts.
+The primary search domain is usually the same as the domain name of
+your computer (for example, suse.de). There may be additional search domains
+(such as suse.com). Separate the domains with commas or white space.</p>
+") +
+	// resolver dialog help
+    _("<p>If you plan to use a dial-up Internet connection and have set up your
+connection to use dynamic DNS assignment, these values will be temporarily
+disabled during the connection.</p>"),
+
+"hostname_global":
+_("<p>Optionally enter the name server list and domain search list.</p>")
++ _("<p>Note that the hostname is global--it applies to all
+interfaces, not just this one.</p>"),
+
+"modify_resolv_popup":
+    /* Warning popup text 1/2 */
+_("<p>The resolver configuration file (/etc/resolv.conf)
+has been temporarily modified by %1. You have two options:</p>") +
+
+    /* Warning popup text 2/2 */
+    _("<ol>
+<li>Modify the current (changed) version of the file.</li>
+<li>Press 'Accept' now and continue editing other (nonresolver) data. You
+could return to this dialog later when the above service has terminated.</li>
+</ol> "),
+
+"bootproto_dhcp":
+	/* Address dialog help 2-6/8: dynamic address preferred */
+	/* Address dialog help 2/8 */
+    _("<p>You can select none address setup if you don't want any IP address.</p>") +
+
+    _("<p>You can select dynamic address assignment
+if you have a <b>DHCP server</b> running on your local network.</p>
+") +
+    /* Address dialog help 3/8 */
+    _("<p>Also select this if you do not have a static IP address assigned
+by the system administrator or your cable or DSL provider.</p>") +
+    /* Address dialog help 4/8 */
+    _("<p>Network addresses are then obtained
+<b>automatically</b> from the server.</p>
+") +
+    /* Address dialog help 6/8 */
+    _("<p>Otherwise, network addresses must be assigned <b>manually</b>.</p>"),
+
+"remoteip":
+_("<p>Enter the <b>IP Address</b> (e.g., 192.168.100.99)
+for your computer and the <b>Remote IP Address</b> (e.g., 192.168.100.254)
+of your peer.</p>"),
+
+"netmask":
+    _("<p>Enter the IP address (e.g., 192.168.100.99) for your computer,
+the network mask (usually 255.255.255.0), and, optionally, the default gateway
+IP address.</p>"),
+
+"fwzone":
+_("<p>Select the <b>Firewall Zone</b> to put the interface in. If you
+select a zone, the firewall will be enabled. If you do not and other 
+firewalled interfaces exist, the firewall
+will stay enabled but all traffic will be blocked for this
+interface. If you do not select a zone and no others exist, 
+the firewall will be disabled.</p>"),
+
+"mandatory":
+_("<p><b>Mandatory Interface</b> specifies whether the network service reports failure if the interface fails to start at boot time.</p>"),
+
+"mtu":
+_("<p>You can set the maximum transfer unit (<b>MTU</b>) of an interface.</p>"),
+
+"bondslave":
+_("<p>Select the salve devices for the bond device. Only the deveices which's Device Activation is Never and set as None Address Setup are available.</p>"),
+
+
+
+
+
+
+
+];
+
+}

@@ -19,6 +19,7 @@ import "Popup";
 import "String";
 import "Summary";
 import "WizardHW";
+import "NetworkService";
 
 include "network/routines.ycp";
 include "network/summary.ycp";
@@ -45,7 +46,7 @@ define string BuildDescription (string devtype, string devnum, map devmap,
     {
 	return descr;
     }
-    descr = HardwareName (Hardware, devmap["UNIQUE"]:"");
+    descr = HardwareName (Hardware, devmap["UDI"]:"");
     descr = CheckEmptyName (devtype, descr);
     return descr;
 }
@@ -78,7 +79,7 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 
 	    /* main device summary */
 	    string descr = BuildDescription (devtype, devnum, devmap, Hardware);
-	    string unq = devmap["UNIQUE"]:"";
+	    string unq = devmap["UDI"]:"";
 	    string status = DeviceStatus(devtype, devnum, devmap);
 	    if (link)
 	    {
@@ -123,8 +124,7 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 
     /* build a list of unconfigured devices */
     maplist(map h, Hardware, {
-y2internal("h %1", h);
-	string unq = h["unique"]:"";
+	string unq = h["udi"]:"";
 
 	string busid = "bus-" + h["bus"]:"" + "-" + h["busid"]:"";
 	string mac = "id-" + h["mac"]:"";
@@ -134,7 +134,6 @@ y2internal("h %1", h);
 	if(!contains(uniques, busid) && !contains(uniques, mac) && !contains(uniques_old, unq)) {
 	    if(split && !contains(uniques_old, unq))
 {
-y2internal("uniques_old %1\nunq %2", uniques_old, unq);
 		unconfigured = add(unconfigured, h);
 }
 	    else
@@ -330,7 +329,7 @@ define string HardwareName(list<map> Hardware, string id) {
 	    list<string> have = [
 		"id-" + h["mac"]:"",
 		"bus-" + h["bus"]:"" + String::OptFormat("-%1", h["busid"]:""),
-		h["unique"]:"",
+		h["udi"]:"",
 		];
 	    y2debug ("what: %1, have: %2", id, have);
 	    if (contains (have, id))
@@ -371,7 +370,6 @@ define string ProviderName(string provider) {
  */
 define string DeviceStatus(string devtype, string devnum, map devmap) {
     string dev = NetworkDevices::device_name(devtype, devnum);
-
     /* Modem and DSL */
     if(devtype == "ppp" || devtype == "modem" || devtype == "dsl") {
 
@@ -554,6 +552,12 @@ foreach(map<string, any>row, (list<map<string, any> >)SCR::Read (.probe.netcard)
 			sformat(_("IP address: %1, subnet mask %2")
 				, ip, v["NETMASK"]:""),
 			];
+if (size(v["_aliases"]:$[])>0 && !NetworkService::IsManaged()){
+ foreach(string key,   map<string, any> desc, (map<string ,map<string, any> >) v["_aliases"]:$[], {
+ string parameters = sformat(_("IP address: %1, subnet mask %2"), desc["IPADDR"]:"", desc["NETMASK"]:"");
+ bullets = add(bullets, sformat("%1 (%2)", key, parameters) );
+ });
+}
 		}
 
                 // build the "Bond Slaves" entry of rich box
@@ -570,12 +574,12 @@ foreach(map<string, any>row, (list<map<string, any> >)SCR::Read (.probe.netcard)
 
 		// create the rich text description
 		string rich = HTML::Bold ( sformat("%1 %2", descr, (contains(models, v["NAME"]:"") )?"":_("(not connected)"))) +"<br>"+ HTML::List (bullets);
-		
 		item = `item(`id(dev), descr, ip, rich);
 	    }
 	    overview = add(overview, item);
 
 	    /* aliases summary */
+/*
 	    map<string,map> aliasee = v["_aliases"]:$[];
 	    if(aliasee != $[])
 		maplist(string aid, map amap, aliasee, {
@@ -584,6 +588,7 @@ foreach(map<string, any>row, (list<map<string, any> >)SCR::Read (.probe.netcard)
 		    item = `item(`id(adev), DeviceType(adev), adev, ip);
 		    overview = add(overview, item);
 		});
+*/
 
 	});
     });

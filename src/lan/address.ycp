@@ -25,10 +25,11 @@ import "ProductFeatures";
 import "Routing";
 import "SuSEFirewall4Network";
 import "Wizard";
+import "NetworkService";
 
 include "network/summary.ycp";
 include "network/widgets.ycp";
-
+include "network/lan/help.ycp";
 
 /**
  * obsoleted by GetDefaultsForHW
@@ -132,6 +133,7 @@ void StoreWidgetRbg (string key, map event) {
     string value = splitstring (value_g, "_")[1]:"";
     my2debug ("RBGW", sformat ("store k: %1, v: %2, e: %3", key, value, event));
     settings[key] = value;
+y2internal("settings %1", settings);
 }
 
 /**
@@ -180,13 +182,13 @@ symbol HandleStaticAddress (string key, map event) {
 symbol HandleButton (string key, map event) {
     any ret = event["ID"]:nil;
     map<any, symbol> symbols = $[
-	"HOSTNAME_B": `hostname,
-	"ROUTING": `routing,
+//	"HOSTNAME_B": `hostname,
+//	"ROUTING": `routing,
 
 	"HARDWARE": `hardware,
 	"DHCP_ADVANCED": `dhclient,
 	"ADDITIONAL_ADDRESSES": `virtual,
-	"IPV6":`ipv6,
+//	"IPV6":`ipv6,
 	"S390": `s390,
 	];
     return symbols[ret]:nil;
@@ -406,13 +408,7 @@ the network configuration.</p>"),
 	// Combo Box label
 	"label": _("Firewall &Zone"),
 	"opt": [`hstretch],
-	"help":
-_("<p>Select the <b>Firewall Zone</b> to put the interface in. If you
-select a zone, the firewall will be enabled. If you do not and other 
-firewalled interfaces exist, the firewall
-will stay enabled but all traffic will be blocked for this
-interface. If you do not select a zone and no others exist, 
-the firewall will be disabled.</p>"),
+	"help": help["fw<one"]:"",
 	"init" : InitFwZone,
 	],
     "MANDATORY": $[
@@ -420,14 +416,14 @@ the firewall will be disabled.</p>"),
 	// check box label
 	"label": _("&Mandatory Interface"),
 	"opt": [],
-	"help": _("<p><b>Mandatory Interface</b> specifies whether the network service reports failure if the interface fails to start at boot time.</p>"),
+	"help": help["mandatory"]:"",
 	],
     "MTU": $[
 	"widget": `textentry,
 	// textentry label, Maximum Transfer Unit
 	"label": _("&MTU"),
 	"opt": [`hstretch],
-	"help": _("<p>You can set the maximum transfer unit (<b>MTU</b>) of an interface.</p>"),
+	"help": help["mtu"]:"",
 	],
     "IFCFGTYPE": $[
 	"widget": `combobox,
@@ -458,7 +454,7 @@ the firewall will be disabled.</p>"),
         "items" : [ ],
         "init": InitSlave,
         "store": StoreSlave,
-        "help": _("<p>Select the salve devices for the bond device. Only the deveices which's Device Activation is Never and set as None Address Setup are available.</p>"),
+        "help": help["bondslave"]:"",
     ],
 
     "BONDOPTION": $[
@@ -495,23 +491,7 @@ the firewall will be disabled.</p>"),
 	"opt": [`notify],
 	"init": CWM::InitNull,
 	"store": CWM::StoreNull,
-	"help":
-	/* Address dialog help 2-6/8: dynamic address preferred */
-	/* Address dialog help 2/8 */
-    _("<p>You can select none address setup if you don't want any IP address.</p>") +
-
-    _("<p>You can select dynamic address assignment
-if you have a <b>DHCP server</b> running on your local network.</p>
-") +
-    /* Address dialog help 3/8 */
-    _("<p>Also select this if you do not have a static IP address assigned
-by the system administrator or your cable or DSL provider.</p>") +
-    /* Address dialog help 4/8 */
-    _("<p>Network addresses are then obtained
-<b>automatically</b> from the server.</p>
-") +
-    /* Address dialog help 6/8 */
-    _("<p>Otherwise, network addresses must be assigned <b>manually</b>.</p>"),
+	"help": help["bootproto_dhcp"]:"",
 	],
     "BOOTPROTO_static": $[
 	"widget": `radio_button,
@@ -523,7 +503,7 @@ by the system administrator or your cable or DSL provider.</p>") +
 	"store": CWM::StoreNull,
 	],
 
-    "BOOTPROTO_dhcp_autoip": $[
+    "BOOTPROTO_dhcp+autoip": $[
 	"widget": `radio_button,
 	/* Radio button label */
 	"label": _("A&utomatic Address Setup (via DHCP+AUTOIP)"),
@@ -568,9 +548,7 @@ by the system administrator or your cable or DSL provider.</p>") +
 	"widget": `textentry,
 	/* Text entry label */
 	"label": _("R&emote IP Address"),
-	"help": _("<p>Enter the <b>IP Address</b> (e.g., 192.168.100.99)
-for your computer and the <b>Remote IP Address</b> (e.g., 192.168.100.254)
-of your peer.</p>"),
+	"help": help["remoteip"]:"",
 	"validate_type": `function_no_popup,
 	"validate_function": ValidateAddrIP,
 	// validation error popup
@@ -581,10 +559,7 @@ of your peer.</p>"),
 	"widget": `textentry,
 	/* Text entry label for network mask */
 	"label": _("&Subnet Mask"),
-	"help": 
-    _("<p>Enter the IP address (e.g., 192.168.100.99) for your computer,
-the network mask (usually 255.255.255.0), and, optionally, the default gateway
-IP address.</p>"),
+	"help": help["netmask"]:"",
 	"handle": HandleStaticAddress,
 	"validate_type": `function_no_popup,
 	"validate_function": ValidateNetmask,
@@ -632,6 +607,7 @@ IP address.</p>"),
 	"store": CWM::StoreNull,
 	"handle": HandleButton,
 	],
+/*
     "IPV6": $[
 	"widget": `push_button,
 	// push button label
@@ -642,6 +618,7 @@ IP address.</p>"),
 	"store": CWM::StoreNull,
 	"handle": HandleButton,
 	],
+*/
     "HARDWARE": $[
 	"widget": `push_button,
 	// push button label
@@ -663,6 +640,7 @@ IP address.</p>"),
 	"store": CWM::StoreNull,
 	"handle": HandleButton,
 	],
+/*
     "HOSTNAME_B": $[
 	"widget": `push_button,
 	// push button label
@@ -683,6 +661,7 @@ IP address.</p>"),
 	"store": CWM::StoreNull,
 	"handle": HandleButton,
 	],
+*/
     ];
 
 /**
@@ -867,9 +846,10 @@ Components of this product might not work with DHCP.</p>");
     list<string> mb_items = [
 	"HARDWARE",
 	"DHCP_ADVANCED",
-	"ADDITIONAL_ADDRESSES",
-	"IPV6"
+//	"IPV6"
 	];
+    if (!NetworkService::IsManaged()) mb_items = add(mb_items, "ADDITIONAL_ADDRESSES");
+
     // Allow changing s390 options, except for iucv, where the option
     // is in the name of the hwcfg file. Haven't figured it out yet.
     if (Arch::s390 () && drvtype != "iucv")
@@ -887,8 +867,8 @@ Components of this product might not work with DHCP.</p>");
 	`Frame(_("Detailed Settings"), `HBox(`HStretch(),
 	`HSquash(`VBox(
 	    `VSpacing(0.4),
-	    "HOSTNAME_B",
-	    "ROUTING",
+//	    "HOSTNAME_B",
+//	    "ROUTING",
 	    "ADVANCED_MB",
 	    `VSpacing(0.4)
 	)),
@@ -926,6 +906,8 @@ Components of this product might not work with DHCP.</p>");
 		    `Left ("BOOTPROTO_none"),
 		    `Left ("BOOTPROTO_dhcp"), // TODO: widget attribute align: left
 		    `Left ("BOOTPROTO_static"),
+		    `Left ("BOOTPROTO_autoip"),
+		    `Left ("BOOTPROTO_dhcp+autoip"),
 		    address_static_contents)
 		)
 	    ),

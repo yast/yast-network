@@ -102,7 +102,7 @@ global define boolean WriteISDNConfig(string isdntyp) ``{
 		if(k == "module" || k == "options") return;
 		SCR::Write(topath(p+k), devmap[k]:"");
 	    });
-	    string unq = devmap["UNIQUE"]:"";
+	    string unq = devmap["UDI"]:"";
 	    if(unq != "")
 		SCR::Write(.probe.status.configured, unq, `yes);
 	});

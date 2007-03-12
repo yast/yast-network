@@ -316,7 +316,7 @@ global define boolean Select(string dev) {
 
     /* general stuff */
     description = BuildDescription (type, device, devmap, Hardware);
-    unique = devmap["UNIQUE"]:"";
+    unique = devmap["UDI"]:"";
     startmode = devmap["STARTMODE"]:"manual";
     usercontrol = devmap["USERCONTROL"]:"no" == "yes";
 
@@ -393,7 +393,7 @@ global define boolean Commit() {
 	    "STARTMODE"	: startmode,
 	    "USERCONTROL": usercontrol? "yes": "no",
 	    "BOOTPROTO"	: "none",
-	    "UNIQUE"	: unique,
+	    "UDI"	: unique,
 	    "NAME"	: description,
 	    "INIT1"	: Init1,
 	    "INIT2"	: Init2,

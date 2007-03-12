@@ -21,9 +21,12 @@ import "Label";
 import "Lan";
 import "NetworkConfig";
 import "Popup";
+import "Map";
+import "CWMTab";
 
 include "network/routines.ycp";
 include "network/widgets.ycp";
+include "network/lan/help.ycp";
 
 /**
  * If we know that there are no interfaces with DHCP, we can disable
@@ -40,7 +43,7 @@ boolean has_dhcp = true;
  * letting him change things that will be overwritten anyway.
  * See also #61000.
  */
-boolean resolver_modifiable = true;
+boolean resolver_modifiable = false;
 
 /**
  * CWM buffer for both dialogs.  Note that NAMESERVERS and SEARCHLIST
@@ -250,6 +253,45 @@ define boolean ValidateSearchList (string key, map event) {
     return true;
 }
 
+
+void initModifyResolv (string key){
+    string process = DNS::resolv_conf_process;
+    if(process == nil || process == "") {
+     resolver_modifiable = true;
+     UI::ChangeWidget(`id("MODIFY_RESOLV"), `Enabled, false);
+    } else {
+	 resolver_modifiable = false;
+	}
+    DNS::resolv_conf_force = resolver_modifiable;
+}
+
+symbol handleModifyResolv (string key, map event){
+ if ((boolean)UI::QueryWidget(`id("MODIFY_RESOLV"), `Enabled))
+  {
+   if ((boolean)UI::QueryWidget(`id("MODIFY_RESOLV"), `Value))
+    {
+     resolver_modifiable = true;
+    } else {
+	 resolver_modifiable = false;
+	}
+  }
+ return nil;
+}
+
+
+void initHostnameGlobal(string key){
+    has_dhcp =  // NetworkService::IsManaged () not: #169858, #156830
+	Lan::bootproto == "dhcp" || Lan::AnyDHCPDevice ();
+
+    hn_settings = InitSettings ();
+    foreach(string key, (list<string>)Map::Keys(hn_settings),{
+     InitHnWidget(key);
+    });
+
+ // TODO make checkbox instead of popup
+ //    resolver_modifiable = ModifyResolvConfPopup ();
+}
+
 map<string, map<string,any> > widget_descr_dns = $[
 
     "HOSTNAME": $[
@@ -266,19 +308,12 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
 	// validation error popup
 	"validate_help": _("The hostname is invalid.") + "\n" + Hostname::ValidHost (),
 	],
-    "RESOLVER_INTRO": $[
-	"widget": `empty,
-	"help": _("<p>Optionally enter the name server list and domain search list.</p>"),
-	"init": CWM::InitNull,
-	"store": CWM::StoreNull,
-	],
-    "HOSTNAME_IS_GLOBAL": $[
+    "HOSTNAME_GLOBAL": $[
 	"widget": `empty,
 	// #91202
-	"help": _("<p>Note that the hostname is global--it applies to all
-interfaces, not just this one.</p>"),
-	"init": CWM::InitNull,
-	"store": CWM::StoreNull,
+	"help": help["hostname_global"]:"",
+	"init": initHostnameGlobal,
+	"store": StoreHnWidget
 	],
     "DOMAIN": $[
 	"widget": `textentry,
@@ -303,15 +338,7 @@ interfaces, not just this one.</p>"),
 	"label": _("&Change Hostname via DHCP"),
 	"opt": [],
 	// help
-	"help": _("<p>If you are using DHCP to get an IP address, check whether to get
-a hostname via DHCP. The hostname of your host (which can be seen
-by issuing <i>hostname</i> command) will be set automatically by  
-DHCP client.
-You may want to disable this option if you connect to different 
-networks that might each assign a different hostname, because changing
-the hostname at runtime may confuse the graphical desktop.
-</p>
-"),
+	"help": help["dhcp_hostname"]:"",
 	"handle": HandleDhcpHostname,
 	],
 
@@ -321,14 +348,17 @@ the hostname at runtime may confuse the graphical desktop.
 	"label": _("&Write Hostname to /etc/hosts"),
 	"opt": [],
 	// help
-	"help": _("<p>If you are using DHCP to get an IP address, your hostname will be written
-to /etc/hosts and be resolvable as 127.0.0.2 IP address.
-This is default behavior. If you want to disable this, uncheck this box
-but your hostname will not be resolvable without active network.
-</p>
-"),
+	"help": help["write_hostname"]:"",
 	//use the same handler - it enables checkbox if dhcp is used
 	"handle": HandleDhcpHostname,
+	],
+    "MODIFY_RESOLV" : $[
+	"widget": `checkbox,
+	"label" : _("&Change /etc/resol.conf changed by another process"),
+	"opt" : [`notify],
+	"init" : initModifyResolv,
+	"handle": handleModifyResolv,
+	"help" : ""
 	],
     "NAMESERVER_1": $[
 	"widget": `textentry,
@@ -350,25 +380,7 @@ but your hostname will not be resolvable without active network.
 	/* textentry label */
 	"label": _("Do&main Search"),
 	"opt": [],
-	// all help for resolver goes here for now
-	"help": _("<p>Enter the name servers and domain search list for resolving 
-hostnames. Usually they can be obtained by DHCP.</p>
-") +
-	// resolver dialog help
-	_("<p>A name server is a computer that translates hostnames into
-IP addresses. This value must be entered as an <b>IP address</b>
-(for example, 192.168.0.42), not as a hostname.</p>
-") +
-	// resolver dialog help
-	_("<p>Search domain is the domain name where hostname searching starts.
-The primary search domain is usually the same as the domain name of
-your computer (for example, suse.de). There may be additional search domains
-(such as suse.com). Separate the domains with commas or white space.</p>
-") +
-	// resolver dialog help
-    _("<p>If you plan to use a dial-up Internet connection and have set up your
-connection to use dynamic DNS assignment, these values will be temporarily
-disabled during the connection.</p>"),
+	"help": help["searchlist_s"]:"",
 	"handle": HandleResolverData,
 //	"valid_chars": Hostname::ValidCharsFQ, // TODO: whitespace. unused anyway?
 	"validate_type": `function,
@@ -384,6 +396,46 @@ disabled during the connection.</p>"),
 	"handle": HandleDhcpResolv,
 	],
     ];
+
+map dns_td = $[
+	"resolv" : $[
+	 "header" : _("Resolv"),
+	 "contents" : `VBox(
+	`Frame(	_("Hostname and Domain Name"),
+	 `VBox(
+	    `HBox(
+		"HOSTNAME",
+		"HOSTNAME_GLOBAL", // global help, init, store for all dialog
+		`HSpacing (1),
+		"DOMAIN"
+	    ),
+	    /* CheckBox label */
+	    `Left("DHCP_HOSTNAME"),
+	    `Left("WRITE_HOSTNAME")
+	)),
+	`VSpacing(1),
+	`Left("MODIFY_RESOLV"),
+	/* Frame label */
+	`Frame(_("Name Servers and Domain Search List"), `VBox(
+	`VSquash ( `HBox(
+	    `HWeight (1, `VBox(
+			  "NAMESERVER_1",
+			  "NAMESERVER_2",
+			  "NAMESERVER_3"
+	    )),
+	    `HSpacing (1),
+	    `HWeight (1, "SEARCHLIST_S")
+	)),
+	/* CheckBox label */
+	`Left ("DHCP_RESOLV")
+	)
+       ),
+       `VStretch()
+      ),
+	"widget_names" : ["HOSTNAME", "HOSTNAME_GLOBAL", "DOMAIN", "DHCP_HOSTNAME", "WRITE_HOSTNAME", "MODIFY_RESOLV",
+				"NAMESERVER_1", "NAMESERVER_2", "NAMESERVER_3", "SEARCHLIST_S", "DHCP_RESOLV"]
+	]
+];
 
 define boolean ReallyAbortInst () {
     return Popup::ConfirmAbort (`incomplete);
@@ -433,141 +485,29 @@ define symbol HostnameDialog () {
     return ret;
 }
 
-/**
- * If there's running a process modifying resolv.conf,
- * present a wanrning popup and return the result.
- * @return true if resolv.conf should be modified
- * (ie. no process running, or user decided to do so)
- */
-define boolean ModifyResolvConfPopup() {
 
-    string process = DNS::resolv_conf_process;
-    if(process == nil || process == "") return true;
-
-    /* Warning popup text 1/2 */
-    string text = _("<p>The resolver configuration file (/etc/resolv.conf)
-has been temporarily modified by %1. You have two options:</p>") +
-
-    /* Warning popup text 2/2 */
-    _("<ol>
-<li>Modify the current (changed) version of the file.</li>
-<li>Press 'Accept' now and continue editing other (nonresolver) data. You
-could return to this dialog later when the above service has terminated.</li>
-</ol>
-");
-
-    /* has been modified by "unknown process" */
-    text = sformat(text, size(process) > 1 ? process : _("unknown process"));
-
-    UI::OpenDialog(`opt(`decorated), `VBox(
-	`HSpacing(60),
-	`HBox(
-	    `VSpacing(8),
-	    `RichText(text)
-	),
-	`HBox(
-	    /* PushButton label */
-	    `PushButton(`id(`accept), `opt(`default), _("&Accept")),
-	    `HSpacing(2),
-	    /* PushButton label */
-	    `PushButton(`id(`modify), _("&Modify"))
-	)
-    ));
-
-    any ret = UI::UserInput();
-    UI::CloseDialog();
-
-    DNS::resolv_conf_force = (ret == `modify);
-    y2milestone ("resolv.conf modified by: %1, force: %2",
-		 process, DNS::resolv_conf_force);
-    return DNS::resolv_conf_force;
-}
-
-/**
- * Dialog for querying DNS & hostname info
- * @param standalone true if not run from another ycp client
- * @return user input
- */
 define any DNSMainDialog(boolean standalone) {
 
-    ScreenName("dns");
-
-    /* DNS dialog caption */
-    string caption = _("Hostname and Name Server Configuration");
-
-    has_dhcp =  // NetworkService::IsManaged () not: #169858, #156830
-	Lan::bootproto == "dhcp" || Lan::AnyDHCPDevice ();
-
-    hn_settings = InitSettings ();
-
-    string hnlabel = standalone?
-	/* Frame label */
-	_("Hostname and Domain Name"):
-	/* Frame label, emphasizing that the names are global,
-	   not specific to one address */
-	_("Hostname and Domain Name (Global)");
-
-    /* DNS dialog contents */
-    term contents = `HSquash(`VBox(
-	`Frame(hnlabel, `VBox(
-	    `HBox(
-		"HOSTNAME",
-		"RESOLVER_INTRO", // help only
-		standalone? `Empty (): "HOSTNAME_IS_GLOBAL", // help only
-		`HSpacing (1),
-		"DOMAIN"
-	    ),
-	    /* CheckBox label */
-	    `Left("DHCP_HOSTNAME"),
-	    `Left("WRITE_HOSTNAME")
-	)),
-	`VSpacing(1),
-	/* Frame label */
-	`Frame(_("Name Servers and Domain Search List"), `VBox(
-	`VSquash ( `HBox(
-	    `HWeight (1, `VBox(
-			  "NAMESERVER_1",
-			  "NAMESERVER_2",
-			  "NAMESERVER_3"
-	    )),
-	    `HSpacing (1),
-	    `HWeight (1, "SEARCHLIST_S")
-	)),
-	/* CheckBox label */
-	`Left ("DHCP_RESOLV")
-	))
-    ));
-
-    map functions = $[
-	"init" : InitHnWidget,
-	"store" : StoreHnWidget,
-	`abort : ReallyAbort,
+string caption = _("Network Setting Dialog");
+    map widget_descr = $[
+        "tab": CWMTab::CreateWidget($[
+            "tab_order": ["resolv"],
+            "tabs": dns_td,
+            "widget_descr": widget_descr_dns,
+            "initial_tab" : "resolv",
+            "tab_help" : "",
+        ]),
     ];
+    term contents = `VBox( "tab");
 
-    map<string, map<string,any> > widget_descr = widget_descr_dns;
-    widget_descr["NAMESERVER_2"] = widget_descr["NAMESERVER_1"]:$[];
-    widget_descr["NAMESERVER_3"] = widget_descr["NAMESERVER_1"]:$[];
-    // text entry label
-    widget_descr["NAMESERVER_2", "label"] = _("Name Server &2");
-    // text entry label
-    widget_descr["NAMESERVER_3", "label"] = _("Name Server &3");
+    list<map <string, any> > w = CWM::CreateWidgets (["tab"], (map <string, map <string, any> >)widget_descr);
+    string help = CWM::MergeHelps(w);
+    contents = CWM::PrepareDialog(contents, w);
 
-    resolver_modifiable = ModifyResolvConfPopup ();
+    Wizard::SetContentsButtons(caption, contents, help, Label::NextButton (), Label::FinishButton ());
+    Wizard::HideBackButton();
 
-    symbol ret = CWM::ShowAndRun (
-	$[
-	    "widget_descr": widget_descr,
-	    "contents": contents,
-	    "caption": caption,
-	    "back_button" : Label::BackButton (),
-	    "next_button" : standalone? Label::FinishButton (): Label::OKButton(),
-	    "fallback_functions" : functions,
-	]);
-
-    if (ret == `next)
-    {
-	StoreSettings (hn_settings);
-    }
+    symbol ret = CWM::Run(w, $[`abort:ReallyAbort ]);
 
     return ret;
 }

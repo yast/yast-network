@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Mar 12 11:48:02 CET 2007 - mzugec@suse.cz
+
+- use IPADDR/PREFIXLEN as default instead of NETMASK (#231997)
+- use HAL UDI instead of UNIQUE
+- redesign UI into tabs - split global and details (fate #120077)
+- 2.15.16 
+
+-------------------------------------------------------------------
 Mon Mar 12 10:01:33 CET 2007 - kmachalkova@suse.cz
 
 - Added dependency yast2 >= 2.15.15, removed dependency on 

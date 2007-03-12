@@ -28,7 +28,7 @@ include "network/lan/wireless.ycp";
 include "network/services/dns.ycp";
 include "network/services/host.ycp";
 include "network/services/proxy.ycp";
-include "network/services/routing.ycp";
+//include "network/services/routing.ycp";
 
 define symbol NetworkCardSequence(string action);
 define symbol MainSequence(string mode);
@@ -112,25 +112,23 @@ define symbol LanAutoSequence (string mode) ``{
 define symbol MainSequence (string mode) ``{
 
     map aliases = $[
-	"managed"	: ``(ManagedDialog ()),
-	"overview"	: ``(OverviewDialog()),
+	"global"	: ``(MainDialog ("global")),
+	"overview"	: ``(MainDialog ("overview")),
 	"add"		: [ ``(NetworkCardSequence("add")), true ],
 	"edit"		: [ ``(NetworkCardSequence("edit")), true ],
     ];
 
-    string start = "managed";
+    string start = "overview";
     // the NM decision is already present in the proposal.
     // see also #148485
-    if (mode == "proposal")
-    {
-	start = "overview";
-    }
+    if (mode == "proposal") start = "global";
     map sequence = $[
 	"ws_start" : start,
-	"managed" : $[
+	"global" : $[
 	    `abort	: `abort,
-	    `next	: "overview",
-	    `managed	: `next, // unused
+	    `next	: `next,
+	    `add	: "add",
+	    `edit	: "edit",
 	    ],
 	"overview" : $[
 	    `abort	: `abort,
@@ -239,9 +237,9 @@ define symbol AddressSequence(string which) ``{
 	"hosts"		: ``(HostsMainDialog(false)),
 	"proxy"		: ``(ProxyMainDialog(false)),
 	"virtual"	: ``(VirtualDialog(false)),
-	"ipv6"		: ``(IPv6Dialog()),
-	"hostname"	: ``(DNSMainDialog(false)),
-	"routing"	: ``(RoutingMainDialog(false)),
+//	"ipv6"		: ``(IPv6Dialog()),
+//	"hostname"	: ``(DNSMainDialog(false)),
+//	"routing"	: ``(RoutingMainDialog(false)),
 	"s390"		: ``(S390Dialog()),
 	"wire"		: ``(WirelessDialog()),
 	"expert"	: ``(WirelessExpertDialog()),
@@ -264,10 +262,10 @@ define symbol AddressSequence(string which) ``{
 	    `dhclient	: "dhcp",
 	    `hosts	: "hosts",
 	    `proxy	: "proxy",
-	    `routing	: "routing",
-	    `hostname	: "hostname",
+//	    `routing	: "routing",
+//	    `hostname	: "hostname",
 	    `virtual	: "virtual",
-	    `ipv6	: "ipv6",
+//	    `ipv6	: "ipv6",
 	    `s390	: "s390",
 	    `hardware	: `hardware,
 	],
@@ -291,6 +289,7 @@ define symbol AddressSequence(string which) ``{
 	    `abort	: `abort,
 	    `next	: "address",
 	],
+/*
 	"ipv6" : $[
 	    `back	: `back,
 	    `abort	: `abort,
@@ -304,6 +303,7 @@ define symbol AddressSequence(string which) ``{
 	    `abort	: `abort,
 	    `next	: "address",
 	],
+*/
 	"wire" : $[
 	    `next	: "commit",
 	    `expert	: "expert",

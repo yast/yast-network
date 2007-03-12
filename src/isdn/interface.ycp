@@ -145,7 +145,7 @@ in the DSL configuration dialog.</p>");
 	    map dslpara = $[
 		"type"      : "dsl",
 		"name"	    : ISDN::hw_device["NAME"]:"unknown",
-		"unique"    : ISDN::hw_device["UNIQUE"]: "",
+		"unique"    : ISDN::hw_device["UDI"]: "",
 		"pppmode"   : "capi-adsl",
 		"startmode" : "manual"
 	    ];

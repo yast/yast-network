@@ -304,6 +304,9 @@ global boolean DuplicateIP (string ip) {
  * @return resolved host
  */
 global string ResolveIP(string ip) {
+    // quick check to avoid timeout
+    if ( (integer)SCR::Execute(.target.bash, sformat("grep -q %1 /etc/hosts", ip)) !=0 ) return "";
+
     string command = "/usr/bin/getent hosts \"%1\" | sed \"s/^[0-9.: \t]\\+//g\"";
     map getent = (map) SCR::Execute(.target.bash_output, sformat(command, ip));
     string hnent = getent["stdout"]:"";

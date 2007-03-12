@@ -47,7 +47,7 @@ any RoutingGUI() {
     Wizard::SetNextButton(`next, Label::FinishButton() );
 
     /* main ui function */
-    any ret = RoutingMainDialog(true);
+    any ret = RoutingMainDialog();
     y2debug("ret == %1", ret);
 
     if(ret == `next && Routing::Modified()) {

@@ -20,18 +20,22 @@ import "NetworkConfig";
 import "NetworkModules";
 import "NetworkService";
 import "Routing";
-
 import "Wizard";
-import "WizardHW";
-
+//import "WizardHW";
 import "Popup";
 import "Label";
-
 import "Product";
 import "Package";
+import "TablePopup";
+import "CWMTab";
+import "Stage";
 
 include "network/routines.ycp";
 include "network/summary.ycp";
+include "network/lan/help.ycp";
+include "network/services/routing.ycp";
+include "network/services/dns.ycp";
+
 
 /**
  * Return a modification status
@@ -67,17 +71,7 @@ define symbol ReadDialog() ``{
 
     ScreenName("lan-read");
 
-    /* Network cards read dialog help 1/2 */
-    string help = _("<p><b><big>Initializing Network Card
-Configuration</big></b><br>Please wait...<br></p>
-") +
-
-    /* Network cards read dialog help 2/2 */
-_("<p><b><big>Aborting the Initialization:</big></b><br>
-Safely abort the configuration utility by pressing <B>Abort</B> now.</p>
-");
-
-    Wizard::RestoreHelp(help);
+    Wizard::RestoreHelp( help["read"]:"" );
     Lan::AbortFunction = ``{return PollAbort();};
     boolean ret = Lan::Read (`cache);
 
@@ -109,186 +103,12 @@ define symbol WriteDialog() ``{
 
     if(!Modified()) return `next;
 
-    /* Network cards write dialog help 1/2 */
-    string help = _("<p><b><big>Saving Network Card
-Configuration</big></b><br>Please wait...<br></p>
-") +
-
-    /* Network cards write dialog help 2/2 */
-_("<p><b><big>Aborting Saving:</big></b><br>
-Abort saving by pressing <b>Abort</b>.</p>
-");
-
-    Wizard::RestoreHelp(help);
+    Wizard::RestoreHelp(help["write"]:"");
     Lan::AbortFunction = ``{return PollAbort() && ReallyAbort();};
     boolean ret = Lan::Write();
     return ret ? `next : `abort;
 }
 
-
-define void IPv6Init (string key) {
-//    boolean enable_ipv6=true;
-//    if (FileUtils::Exists("/etc/modprobe.d/ipv6")){
-//	if (((map<string, any>)SCR::Execute (.target.bash_output, "grep ipv6 /etc/modprobe.d/ipv6|cut -d# -f1|grep -q ipv6"))["exit"]:0==0) enable_ipv6=false;
-//	}
-
-    UI::ChangeWidget (`id (key), `CurrentButton, Lan::ipv6?"enable":"disable");
-}
-
-define void IPv6Store (string key, map event) {
- if ((string) UI::QueryWidget (`id (key), `CurrentButton)=="enable") Lan::SetIPv6(true);
-	else Lan::SetIPv6(false);
-}
-
-/**
- * Initialize the NetworkManager widget
- * @param key id of the widget
- */
-define void ManagedInit (string key) {
-    string value = NetworkService::IsManaged ()? "managed": "ifup";
-    UI::ChangeWidget (`id (key), `CurrentButton, value);
-}
-
-/**
- * Store the NetworkManager widget
- * @param key	id of the widget
- * @param event	the event being handled
- */
-define void ManagedStore (string key, map event) {
-    string value_g = (string) UI::QueryWidget (`id (key), `CurrentButton);
-    boolean value = value_g == "managed";
-    if (NetworkService::IsManaged () != value)
-	Lan::SetModified ();
-    NetworkService::SetManaged (value);
-}
-
-/**
- * Dialog to choose whether to use NetworkManager or not
- */
-define symbol ManagedDialog () {
-    map<string, map<string,any> > wd = $[
-	"MANAGED": $[
-	    "widget": `radio_buttons,
-	    // radio button group label, method of setup
-	    "label": _("Network Setup Method"),
-	    "items": [
-		// radio button label
-		// the user can control the network with the NetworkManager
-		// program
-		["managed", _("&User Controlled with NetworkManager")],
-		// radio button label
-		// ifup is a program name
-		["ifup", _("&Traditional Method with ifup")],
-		],
-	    "opt": [],
-	    "help":
-	    /* Network setup method help */
-	    // NetworkManager and ifup are programs
-_("<p>Use <b>NetworkManager</b> to have a desktop applet
-manage connections for all interfaces. It is well-suited
-to switching among wired and multiple wireless networks.</p>
-") +
-	    /* Network setup method help */
-	    // NetworkManager and ifup are programs
-_("<p>Use the <b>Traditional Method with <tt>ifup</tt></b>
-if you do not run a desktop environment (GNOME or KDE)
-or need to use multiple interfaces at once.</p>
-"),
-	    "init": ManagedInit,
-	    "store": ManagedStore,
-	    ],
-	];
-
-    term contents = `VBox (
-	`HSquash ("MANAGED")
-	);
-
-    map functions = $[
-	`abort : ReallyAbort,
-    ];
-
-    symbol ret = (symbol) CWM::ShowAndRun (
-	$[
-	    "widget_descr": wd,
-	    "contents": contents,
-	    /* Address dialog caption */
-	    "caption": _("Network Setup Method"),
-	    "back_button" : Label::BackButton (),
-	    "next_button" : Label::NextButton (),
-	    // #54027
-	    "disable_buttons" : (Mode::normal ()? ["back_button"] : []),
-	    "fallback_functions" : functions,
-	    ]);
-    // #148485: always show the device overview
-    if (false && ret == `next && NetworkService::IsManaged ())
-    {
-	ret = `managed;
-    }
-    return ret;
-}
-
-define symbol IPv6Dialog () {
-    map<string, map<string,any> > wd = $[
-	"IPV6": $[
-	    "widget": `radio_buttons,
-	    // radio button group label, method of setup
-	    "label": _("IPv6 Support"),
-	    "items": [
-		// radio button label
-		// the user can enable IPv6
-		["enable", _("&Enable IPv6")],
-		// radio button label
-		// the user can disable IPv6
-		["disable", _("&Disable IPv6")],
-		],
-	    "opt": [],
-	    "help":
-	    /* IPv6 help */
-_("<p>Select <b>Enable</b> IPv6 to enable ipv6 module in kernel.
-It is possible to use IPv6 together with IPv4. This is default option.
-") +
-	    /* Network setup method help */
-_("<p>Select <b>Disable</b> IPv6 to disable autoload kernel module for ipv6.
-When ipv6 protocol is not used on your network, response time will be faster.
-") +
-_("<p>All changes will be applied after reboot.</p>"),
-	    "init": IPv6Init,
-	    "store": IPv6Store,
-	    ],
-	];
-
-    term contents = `VBox (
-	`HSquash ("IPV6")
-	);
-
-    map functions = $[
-	`abort : ReallyAbort,
-    ];
-
-    symbol ret = (symbol) CWM::ShowAndRun (
-	$[
-	    "widget_descr": wd,
-	    "contents": contents,
-	    /* Address dialog caption */
-	    "caption": _("Network Setup Method"),
-	    "back_button" : Label::BackButton (),
-	    "next_button" : Label::NextButton (),
-	    // #54027
-//	    "disable_buttons" : (Mode::normal ()? ["back_button"] : []),
-	    "fallback_functions" : functions,
-	    ]);
-    // #148485: always show the device overview
-    if (false && ret == `next && NetworkService::IsManaged ())
-    {
-	ret = `managed;
-    }
-    return ret;
-}
-/**
- * Start configuring a new interface (`add or `managed).
- * Also install needed packages.
- * @return whether to proceed with editing and commiting the config
- */
 define boolean AddInterface (integer hwid) {
     //this is the map of kernel modules vs. requested firmware 
     //non-empty keys are firmware packages shipped by SUSE
@@ -357,107 +177,90 @@ once you have installed the firmware.")));
     return true;
 }
 
+
+define void IPv6Init (string key) {
+    UI::ChangeWidget (`id (key), `CurrentButton, Lan::ipv6?"enable":"disable");
+}
+
+define void IPv6Store (string key, map event) {
+ if ((string) UI::QueryWidget (`id (key), `CurrentButton)=="enable") Lan::SetIPv6(true);
+	else Lan::SetIPv6(false);
+}
+
 /**
- * Overview dialog
- * @return dialog result
+ * Initialize the NetworkManager widget
+ * @param key id of the widget
  */
-define any OverviewDialog() ``{
-    ScreenName("lan-overview");
+define void ManagedInit (string key) {
+    string value = NetworkService::IsManaged ()? "managed": "ifup";
+    UI::ChangeWidget (`id (key), `CurrentButton, value);
+}
 
-    /* Network cards overview dialog caption */
-    string caption = _("Network Card Configuration Overview");
+/**
+ * Store the NetworkManager widget
+ * @param key	id of the widget
+ * @param event	the event being handled
+ */
+define void ManagedStore (string key, map event) {
+    string value_g = (string) UI::QueryWidget (`id (key), `CurrentButton);
+    boolean value = value_g == "managed";
+    if (NetworkService::IsManaged () != value)
+	Lan::SetModified ();
+    NetworkService::SetManaged (value);
+}
 
-    /* Network cards overview dialog help 1/4 */
-    string help = _("<p><b><big>Network Card Overview</big></b><br>
-Obtain an overview of installed network cards. Additionally,
-edit their configuration.<br></p>
-") +
+list<map<string,any> > o_items = nil;
 
-    /* Network cards overview dialog help 2/4 */
-_("<p><b><big>Adding a Network Card:</big></b><br>
-Press <b>Add</b> to configure a new network card manually.</p>
-") +
+void initOverview (string key) ``{
+// if (o_items == nil){
+    o_items = (list<map<string,any> >)Lan::Overview();
+    o_items = o_items + Lan::Unconfigured ();
+// }
 
-    /* Network cards overview dialog help 3/4 */
-_("<p><b><big>Editing or Deleting:</big></b><br>
-Choose a network card to change or remove.
-Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
-");
+    list<term> term_items = maplist (map<string,any> i, o_items, {
+        term t = `item (`id (i["id"]:""));
+        foreach (string l, i["table_descr"]:[], {
+            t = add (t, l);
+        });
+        return t;
+    });
+    UI::ChangeWidget (`id (`_hw_items), `Items, term_items);
 
-    // unused
-    list<list> more_buttons = [
-	// Button label
-	// NetworkManager is a program name
-	[`global_managed, _("&Managed by NetworkManager")],
-	// Button label
-	// NetworkManager is a program name
-// `managed was for single interfaces
-//	[`managed, _("&Managed by NetworkManager")],	
-	];
-
-    // FIXME: for now, rework the data for the new WizardHW
-
-    WizardHW::CreateHWDialog (caption, help
-	, [_("Name"), _("IP Address")]
-	, [] );
-    Wizard::EnableBackButton (); // ManagedDialog
-    if (Mode::normal ()) {	// #182853
-	// outside the installation proposal and autoyast, this is the last one
-	Wizard::SetNextButton (`next, Label::FinishButton ());
+    if (!Mode::config() && Lan::HaveXenBridge ()) // #196479
+    {
+	// #178848
+	foreach (symbol b, [`add, `edit, `delete], {
+	    UI::ChangeWidget (`id (b), `Enabled, false);
+	});
     }
+}
 
-    boolean xenbr = !Mode::config() && Lan::HaveXenBridge (); // #196479
-    boolean repaint = true;
-    map ret = nil;
-    while(true) {
-	if (repaint)
-	{
-	    list<map<string,any> > overview = (list<map<string,any> >)Lan::Overview();
-	    overview = overview + Lan::Unconfigured ();
-	    y2debug("overview=%1",overview);
-	    WizardHW::SetContents (overview);
-	    if (xenbr)
+symbol handleOverview( string key, map event ) {
+  string current = (string)UI::QueryWidget (`id (`_hw_items), `CurrentItem);
+
+ if (substring (current, 0, 1) == "-") // unconfigured
+			 UI::ChangeWidget(`id(`delete), `Enabled, false);
+	else UI::ChangeWidget(`id(`delete), `Enabled, true);
+
+  foreach(map<string, any> row, o_items, {
+   if (row["id"]:"" == current) UI::ChangeWidget(`_hw_sum, `Value,row["rich_descr"]:"");
+  });
+
+ if (event["EventReason"]:"" == "Activated")
+ {
+  switch ((symbol)event["ID"]:nil){
+   case `add:
+	Lan::Add();
+	return `add;
+   case `edit:
+	    if (substring (current, 0, 1) == "-") // unconfigured
 	    {
-		// #178848
-		foreach (symbol b, [`add, `edit, `delete], {
-		    UI::ChangeWidget (`id (b), `Enabled, false);
-		});
-	    }
-
-	    repaint = false;
-	}
-
-	ret = WizardHW::UserInput();
-
-	/* abort? */
-	if(ret["event"]:nil == `abort || ret["event"]:nil == `cancel) {
-	    if(ReallyAbort()) break;
-	    else continue;
-	}
-	/* add */
-	else if(ret["event"]:nil == `add) {
-	    Lan::Add();
-	    break;
-	}
-	/* edit */
-	else if(ret["event"]:nil == `edit || ret["event"]:nil == `table) {
-	    string dev = ret["selected"]:"";
-	    if(dev == nil) {
-		y2error("Empty device during Edit");
-		continue;
-	    }
-
-	    if (substring (dev, 0, 1) == "-") // unconfigured
-	    {
-		integer i = tointeger (substring (dev, 1));
-		if (! AddInterface (i))
-		{
-		    continue;
-		}
+		integer i = tointeger (substring (current, 1));
+		if (! AddInterface (i)) break;
 	    }
 	    else		// configured
 	    {
-		Lan::Edit(dev);
+		Lan::Edit(current);
 		if (Lan::startmode == "managed")
 		{
 		    // Continue-Cancel popup
@@ -468,25 +271,39 @@ If you edit the settings for this interface here,
 the interface will no longer be managed by NetworkManager.
 ")))
 		    {
-			continue; // means cancel
+			break; // means cancel
 		    }
 		    //
 		    // TODO move the defaults to GetDefaultsForHW
 		    Lan::startmode = "ifplugd";
 		}
-
 	    }
+	    return `edit;
 
-	    ret = $["event": `edit];
+   case `delete:
+	    if (substring (current, 0, 1) == "-") // unconfigured
+		return nil;
+
+	    string pop = sformat(_("All additional addresses belonging to the interface %1
+will be deleted as well.
+
+Really continue?
+"), current);
+	    if(Lan::HasAliases(current) && Popup::YesNoHeadline(Label::WarningMsg(), pop) != true)
+		break;
+
+	    Lan::Delete(current);
+	    Lan::Commit();
+	    initOverview("");
 	    break;
-	}
-	/* managed - global */
+  }
+ }
+/*
 	else if(ret["event"]:nil == `global_managed) {
 	    NetworkService::SetManaged (! NetworkService::IsManaged ());
 	    Lan::SetModified ();
 	    repaint = true;
 	}
-	/* managed - per ifcfg */
 	else if(ret["event"]:nil == `managed) {
 	    string dev = ret["selected"]:"";
 	    if(dev == nil) {
@@ -497,53 +314,140 @@ the interface will no longer be managed by NetworkManager.
 	    if (substring (dev, 0, 1) == "-") // unconfigured
 	    {
 		integer i = tointeger (substring (dev, 1));
-		if (! AddInterface (i))
-		{
-		    continue;
-		}
+		if (! AddInterface (i)) continue;
 	    }
-	    else		// configured
-	    {
-		Lan::Edit(dev);
-	    }
+	    else Lan::Edit(dev);
 	    Lan::startmode = "managed";
 	    Lan::nm_name = "";	// no hwcfg
 	    Lan::Commit ();
 	    repaint = true;
 	    continue;
 	}
-	/* delete */
-	else if(ret["event"]:nil == `delete) {
-	    string dev = ret["selected"]:"";
-
-	    if (substring (dev, 0, 1) == "-") // unconfigured
-		continue;
-
-	    /* Popup text */
-	    string pop = sformat(_("All additional addresses belonging to the interface %1
-will be deleted as well.
-
-Really continue?
-"), dev);
-	    if(Lan::HasAliases(dev) && Popup::YesNoHeadline(Label::WarningMsg(), pop) != true)
-		continue;
-
-	    Lan::Delete(dev);
-	    Lan::Commit();
-	    repaint = true;
-	    continue;
-	}
 	else if(ret["event"]:nil == `next || ret["event"]:nil == `back) {
 	    break;
 	}
-	else {
-	    y2error("unexpected retcode: %1", ret);
-	    continue;
-	}
-    }
-
-    return ret["event"]:nil;
+*/
+ if (size(o_items)==0){
+   UI::ChangeWidget(`_hw_sum, `Value, "");
+   UI::ChangeWidget (`id (`edit), `Enabled, false);
+   UI::ChangeWidget (`id (`delete), `Enabled, false);
+   return nil;
+  }
 }
+
+
+
+map<string, map<string,any> > wd = $[
+	"MANAGED": $[
+	    "widget": `radio_buttons,
+	    // radio button group label, method of setup
+	    "label": _("Network Setup Method"),
+	    "items": [
+		// radio button label
+		// the user can control the network with the NetworkManager
+		// program
+		["managed", _("&User Controlled with NetworkManager")],
+		// radio button label
+		// ifup is a program name
+		["ifup", _("&Traditional Method with ifup")],
+		],
+	    "opt": [],
+	    "help": help["managed"]:"",
+	    "init": ManagedInit,
+	    "store": ManagedStore,
+	    ],
+	"IPV6": $[
+	    "widget": `radio_buttons,
+	    // radio button group label, method of setup
+	    "label": _("IPv6 Support"),
+	    "items": [
+		// radio button label
+		// the user can enable IPv6
+		["enable", _("&Enable")],
+		// radio button label
+		// the user can disable IPv6
+		["disable", _("&Disable")],
+		],
+	    "opt": [],
+	    "help": help["ipv6"]:"",
+	    "init": IPv6Init,
+	    "store": IPv6Store,
+	    ],
+	  "OVERVIEW" : $[
+	    "widget" : `custom,
+	    "custom_widget" :
+		`VBox(
+		`Table (`id (`_hw_items), `opt (`notify, `immediate), `header(_("Name"), _("IP Address"))),
+                 `HBox (
+		        `PushButton (`id (`add), Label::AddButton ()),
+		        `PushButton (`id (`edit), Label::EditButton ()),
+		        `PushButton (`id (`delete), Label::DeleteButton ()),
+		        `HStretch ()
+			),
+		 `RichText (`id (`_hw_sum), "")
+		),
+	    "init" : initOverview,
+	    "handle" : handleOverview,
+//	    "store" : storeOverview,
+	    "help" : help["overview"]:""
+	  ],
+	];
+
+wd =  (map<string, map<string, any> >)union ( wd, widget_descr_dns );
+wd =  (map<string, map<string, any> >)union ( wd, wd_routing );
+
+    wd["NAMESERVER_2"] = wd["NAMESERVER_1"]:$[];
+    wd["NAMESERVER_3"] = wd["NAMESERVER_1"]:$[];
+    // text entry label
+    wd["NAMESERVER_2", "label"] = _("Name Server &2");
+    // text entry label
+    wd["NAMESERVER_3", "label"] = _("Name Server &3");
+
+map tabs_descr = $[
+	"global"   : $[
+	  "header" : _("Global"),
+	  "contents" : `VBox (
+	    "MANAGED", "IPV6",
+	    `VStretch()
+	   ),
+	  "widget_names" : ["MANAGED", "IPV6"]
+	],
+	"overview" : $[
+	  "header" : _("Overview"),
+	  "contents" : `VBox (
+	    "OVERVIEW"
+	  ),
+	 "widget_names" : ["OVERVIEW"]
+	],
+];
+ tabs_descr = union(tabs_descr, route_td);
+ tabs_descr = union(tabs_descr, dns_td);
+
+symbol MainDialog(string init_tab) ``{
+string caption = _("Network Setting Dialog");
+    map widget_descr = $[
+        "tab": CWMTab::CreateWidget($[
+            "tab_order": ( Stage::normal() ) ? [ "global", "overview", "resolv", "route" ] : ["overview", "resolv", "route"],
+            "tabs": tabs_descr,
+            "widget_descr": wd,
+            "initial_tab" : ( Stage::normal() ) ? init_tab : "overview",
+            "tab_help" : "",
+        ]),
+    ];
+    term contents = `VBox( "tab");
+
+    list<map <string, any> > w = CWM::CreateWidgets (["tab"], (map <string, map <string, any> >)widget_descr);
+    string help = CWM::MergeHelps(w);
+    contents = CWM::PrepareDialog(contents, w);
+
+    Wizard::SetContentsButtons(caption, contents, help, Label::NextButton (), Label::FinishButton ());
+    Wizard::HideBackButton();
+
+    symbol ret = CWM::Run(w, $[`abort:ReallyAbort ]);
+
+    return ret;
+}
+
 
 /* EOF */
 }

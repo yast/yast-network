@@ -359,7 +359,6 @@ global define boolean Read (symbol cache) {
     if(!Mode::config ()) {
 	if(!Detection::running) Detection::Start();
 	Hardware = ReadHardware("netcard");
-y2internal("I'm in config mode %1", Hardware);
     }
 
     /* ReadHardware(""); /* TESTING */
@@ -1078,7 +1077,7 @@ global define boolean Select(string dev) {
     /* general stuff */
     description = BuildDescription (type, device, devmap, Hardware);
 
-    unique = devmap["UNIQUE"]:"";
+    unique = devmap["UDI"]:"";
     SetDeviceVars(devmap, SysconfigDefaults);
 
 
@@ -1213,7 +1212,7 @@ global define boolean Commit() {
 	}
 
 	if(unique != "" && unique != nil)
-	    newdev["UNIQUE"] = unique;
+	    newdev["UDI"] = unique;
 
 	if(hotplug == "") {
 	    if(alias == "") {
@@ -1367,7 +1366,6 @@ global define boolean Commit() {
 	}
 	else
 	    NetworkDevices::Name = NetworkDevices::alias_name(NetworkDevices::RealType(type, hotplug), device, alias);
-y2internal("newdev %1", newdev);
 	NetworkDevices::Current = newdev;
 	NetworkDevices::Commit();
     }
@@ -1662,7 +1660,6 @@ global define boolean ProposeInterfaces () {
     if(size(Hardware) > 0) {
          if (Arch::s390()){
          tosel =  FindMatchingDevice( $["device":sformat("%1-id-%2",InstallInf["module"]:"", InstallInf["hwaddr"]:"")] );
-         y2internal("s390 %1", tosel);
         }
           else tosel =  FindMatchingDevice($[]);
 
@@ -1705,7 +1702,6 @@ global define boolean ProposeInterfaces () {
 	y2milestone ("Selected HW with install.inf patches: %1", tosel);
 	SelectHWMap(tosel);
 	// set layer2 status from /etc/install.inf
-y2internal("%1 %2", qeth_layer2, qeth_macaddress);
 	qeth_layer2 = (InstallInf["QETH_LAYER2_SUPPORT"]:"0"=="1")?true:false;
 	qeth_macaddress = InstallInf["LLADDR"]:"";
 

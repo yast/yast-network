@@ -158,7 +158,7 @@ define map FromAY(map input)
  */
 define map ToAY (map settings) {
     list interfaces = [];
-    list discard = ["UNIQUE", "_nm_name"];
+    list discard = ["UDI", "_nm_name"];
     foreach(string device, map devsmap, settings["devices"]:$[], {
             foreach(string num, map devmap, (map<string,map>) devsmap, {
                 map<string, any> newmap = $[];

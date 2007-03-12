@@ -77,7 +77,6 @@ else if(func == "AskUser") {
 	// #113196: must create new dialog for proposal clients
 	Wizard::CreateDialog ();
 	Wizard::SetDesktopIcon ("lan");
-
 	seq = AddressSequence ("wire");
 
 	Wizard::CloseDialog ();
