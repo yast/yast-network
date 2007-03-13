@@ -71,9 +71,21 @@ network = element network { text }
 startmode = element startmode { text }
 wireless = element wireless { text } #?
 
+
 wifi_settings = (
   wireless_auth_mode? &
+  wireless_ap? &
+  wireless_bitrate? &
+  wireless_ca_cert? &
+  wireless_channel? &
+  wireless_client_cert? &
+  wireless_client_key? &
+  wireless_client_key_password? &
+  wireless_default_key? &
+  wireless_eap_auth? &
+  wireless_eap_mode? &
   wireless_essid? &
+  wireless_frequency? &
   wireless_key? &
   wireless_key_0? &
   wireless_key_1? &
@@ -83,12 +95,27 @@ wifi_settings = (
   wireless_mode? &
   wireless_nick? &
   wireless_nwid? &
-  wireless_bitrate? &
-  wireless_channel? &
-  wireless_frequency? &
-  wireless_power?
+  wireless_peap_version? &
+  wireless_power? &
+  wireless_wpa_anonid? &
+  wireless_wpa_identity? &
+  wireless_wpa_password? &
+  wireless_wpa_psk?
 )
+
+wireless_auth_mode = element wireless_auth_mode { text }
+wireless_ap = element wireless_ap { text }
+wireless_bitrate = element wireless_bitrate { text }
+wireless_ca_cert = element wireless_ca_cert { text }
+wireless_channel = element wireless_channel { text }
+wireless_client_cert = element wireless_client_cert { text }
+wireless_client_key = element wireless_client_key { text }
+wireless_client_key_password = element wireless_client_key_password { text }
+wireless_default_key = element wireless_default_key { text }
+wireless_eap_auth = element wireless_eap_auth { text }
+wireless_eap_mode = element wireless_eap_mode { text }
 wireless_essid = element wireless_essid { text }
+wireless_frequency = element wireless_frequency { text }
 wireless_key = element wireless_key { text }
 wireless_key_1 = element wireless_key_1 { text }
 wireless_key_0 = element wireless_key_0 { text }
@@ -96,13 +123,14 @@ wireless_key_2 = element wireless_key_2 { text }
 wireless_key_3 = element wireless_key_3 { text }
 wireless_key_length = element wireless_key_length { text }
 wireless_mode = element wireless_mode { text }
-wireless_auth_mode = element wireless_auth_mode { text }
 wireless_nick = element wireless_nick { text }
 wireless_nwid = element wireless_nwid { text }
-wireless_bitrate = element wireless_bitrate { text }
-wireless_channel = element wireless_channel { text }
-wireless_frequency = element wireless_frequency { text }
+wireless_peap_version = element wireless_peap_version { text }
 wireless_power = element wireless_power { text }
+wireless_wpa_anonid = element wireless_wpa_anonid { text }
+wireless_wpa_identity = element wireless_wpa_identity { text }
+wireless_wpa_password = element wireless_wpa_password { text }
+wireless_wpa_psk = element wireless_wpa_psk { text }
 
 #
 # MODULES
