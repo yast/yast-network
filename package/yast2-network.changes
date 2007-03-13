@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Mar 13 10:19:20 CET 2007 - kmachalkova@suse.cz
+
+- RNC validation file: completed list of wireless options (#211014) 
+
+-------------------------------------------------------------------
 Mon Mar 12 11:48:02 CET 2007 - mzugec@suse.cz
 
 - use IPADDR/PREFIXLEN as default instead of NETMASK (#231997)
