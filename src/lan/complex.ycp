@@ -258,8 +258,13 @@ _("<p>All changes will be applied after reboot.</p>"),
 	];
 
     term contents = `VBox (
-	`HSquash ("IPV6")
-	);
+	`HSquash (
+	    `VBox(
+		//Make sure there's enough space (#251256)
+		`HSpacing(25),
+	        ("IPV6")
+	    )
+	));
 
     map functions = $[
 	`abort : ReallyAbort,
