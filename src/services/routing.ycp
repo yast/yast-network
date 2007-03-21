@@ -176,7 +176,7 @@ symbol handleRouting( string key, map event ) {
  integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
  term item=nil;
 
- if (event["EventReason"]:"" == "Activated")
+ if (event["EventReason"]:"" == "Activated" || event["EventReason"]:"" == "ValueChanged")
  {
   switch (event["ID"]:`nil){
    case `expert:

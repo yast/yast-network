@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Mar 21 15:27:58 CET 2007 - mzugec@suse.cz
+
+- Routing does not allow adding routes in Expert (#255731) 
+- 2.15.17
+
+-------------------------------------------------------------------
 Tue Mar 13 10:19:20 CET 2007 - kmachalkova@suse.cz
 
 - RNC validation file: completed list of wireless options (#211014) 
