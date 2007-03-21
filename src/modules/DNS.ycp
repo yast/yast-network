@@ -280,10 +280,13 @@ global define boolean Write() {
 	SCR::Execute(.target.bash, "/bin/chmod a+r /etc/resolv.conf");
 
 	// reload the lightweight resolver daemon if running, #72450
+	// update: removed from distribution (#256344)
+/*
 	if (Service::Status ("lwresd") == 0)
 	{
 	    Service::Reload ("lwresd");
 	}
+*/
     }
 
     modified = false;
