@@ -23,7 +23,15 @@ global boolean RootIsOnNetwork () {
 	// in case that parameter "root=..." is not defined (read from /proc/cmdline) say that device is NOT network
     string iscsi_cmd = "
 	ROOT_DISK=$(grep ' / ' /proc/mounts|grep -v rootfs|cut -d' ' -f1);
-	ROOTPART=${ROOT_DISK##*/}
+	if [ -n \"$(echo $ROOT_DISK|grep 'by-id\\|by-uuid\\|by-path\\|by-label')\" ]
+         then
+          echo by-id or by-UUID or by-path or by-label
+         ROOT_DISK=$(ls -la $ROOT_DISK)
+         ROOTPART=${ROOT_DISK##*/}
+         else
+           ROOTPART=${ROOT_DISK##*/}
+        fi
+
 	echo ROOTPART=\"$ROOTPART\"
 	# use * and .. to get to the device containing ROOTPART
 	case `cd -P /sys/block/*/\"$ROOTPART\"/../device && pwd` in

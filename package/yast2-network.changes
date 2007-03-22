@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Mar 22 10:58:52 CET 2007 - mzugec@suse.cz
+
+- NetworkStorage - handling alternative connection types (#256371) 
+- 2.13.97 
+
+-------------------------------------------------------------------
 Thu Mar 15 17:42:14 CET 2007 - kmachalkova@suse.cz
 
 - IPv6 dialog: enough space to prevent string cut-off (#251256) 
