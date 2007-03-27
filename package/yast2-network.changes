@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 27 10:32:46 CEST 2007 - mzugec@suse.cz
+
+- yast hangs while configure network (#257347)
+- 2.15.19 
+
+-------------------------------------------------------------------
 Thu Mar 22 11:03:36 CET 2007 - mzugec@suse.cz
 
 - NetworkStorage - handling alternative connection types (#256371)

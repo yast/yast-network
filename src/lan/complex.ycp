@@ -396,13 +396,6 @@ map<string, map<string,any> > wd = $[
 wd =  (map<string, map<string, any> >)union ( wd, widget_descr_dns );
 wd =  (map<string, map<string, any> >)union ( wd, wd_routing );
 
-    wd["NAMESERVER_2"] = wd["NAMESERVER_1"]:$[];
-    wd["NAMESERVER_3"] = wd["NAMESERVER_1"]:$[];
-    // text entry label
-    wd["NAMESERVER_2", "label"] = _("Name Server &2");
-    // text entry label
-    wd["NAMESERVER_3", "label"] = _("Name Server &3");
-
 map tabs_descr = $[
 	"global"   : $[
 	  "header" : _("Global"),

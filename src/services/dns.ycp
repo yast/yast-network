@@ -397,6 +397,13 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
 	],
     ];
 
+    widget_descr_dns["NAMESERVER_2"] = widget_descr_dns["NAMESERVER_1"]:$[];
+    widget_descr_dns["NAMESERVER_3"] = widget_descr_dns["NAMESERVER_1"]:$[];
+    // text entry label
+    widget_descr_dns["NAMESERVER_2", "label"] = _("Name Server &2");
+    // text entry label
+    widget_descr_dns["NAMESERVER_3", "label"] = _("Name Server &3");
+
 map dns_td = $[
 	"resolv" : $[
 	 "header" : _("Resolv"),
@@ -464,10 +471,10 @@ define symbol HostnameDialog () {
 	))
 	);
 
-    map<string, map<string,any> > widget_descr = widget_descr_dns;
+//    map<string, map<string,any> > widget_descr = widget_descr_dns;
     symbol ret = CWM::ShowAndRun (
 	$[
-	    "widget_descr": widget_descr,
+	    "widget_descr": widget_descr_dns,
 	    "contents": contents,
 	    // dialog caption
 	    "caption": _("Hostname and Domain Name"),

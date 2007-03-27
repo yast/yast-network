@@ -204,7 +204,6 @@ global define boolean Read() {
  * @return true if success
  */
 global define boolean Write() {
-
     /* build FQ hostname */
     string fqhostname = Hostname::MergeFQ(hostname, domain);
 
