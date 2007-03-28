@@ -105,6 +105,8 @@ global boolean Write() {
     SuSEFirewall::Write();
     Progress::set(current_progress);
 
+    boolean have_xinetd = Package::Installed("xinetd");
+
     if(allow_administration) {
 	/* Install require packages */
 	list<string> packages = ["xinetd", "tightvnc", "xorg-x11", "xorg-x11-Xvnc", ];
@@ -146,21 +148,24 @@ global boolean Write() {
 		allow_administration ? "yes" : "no");
     SCR::Write(.sysconfig.displaymanager, nil);
 
-    // Enable/disable vnc1 and vnchttpd1 in xinetd.d/vnc
-    // If the port is changed, change also the help in remote/dialogs.ycp
-    // The agent is in yast2-inetd.rpm
-    list<map> xinetd = (list<map>) SCR::Read(.etc.xinetd_conf.services);
-    xinetd = maplist (map m, xinetd, {
-	string s = m["service"]:"";
-	if (s == "vnc1" || s == "vnchttpd1") {
-	    m["changed"] = true;
-	    m["enabled"] = allow_administration;
-	}
-	return m;
-    });
-    SCR::Write(.etc.xinetd_conf.services, xinetd);
+    //Do this only if package xinetd is installed (#256385)
+    if (have_xinetd) {
+        // Enable/disable vnc1 and vnchttpd1 in xinetd.d/vnc
+        // If the port is changed, change also the help in remote/dialogs.ycp
+        // The agent is in yast2-inetd.rpm
+        list<map> xinetd = (list<map>) SCR::Read(.etc.xinetd_conf.services);
+        xinetd = maplist (map m, xinetd, {
+            string s = m["service"]:"";
+            if (s == "vnc1" || s == "vnchttpd1") {
+                m["changed"] = true;
+                m["enabled"] = allow_administration;
+            }
+            return m;
+        });
+        SCR::Write(.etc.xinetd_conf.services, xinetd);
+   }
 
-    if(Mode::normal ()) {
+   if(Mode::normal ()) {
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module xdm");
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kde3");
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kdm3");
@@ -171,6 +176,7 @@ global boolean Write() {
 	    SCR::Write(.etc.inittab.id, "5:initdefault:");
 	    SCR::Write(.etc.inittab, nil);
 
+	    //if allow_administration is set to true, xinetd must be already installed
 	    Service::Restart("xinetd");
 	    if (!dm_was_running)
 	    {
@@ -180,10 +186,12 @@ global boolean Write() {
 	}
 	else
 	{
-	    // xinetd may be needed for other services so we never turn it
-	    // off. It will exit anyway if no services are configured.
-	    // If it is running, restart it.
-	    Service::RunInitScript ("xinetd", "try-restart");
+	    if (have_xinetd) {
+	        // xinetd may be needed for other services so we never turn it
+	        // off. It will exit anyway if no services are configured.
+	        // If it is running, restart it.
+	        Service::RunInitScript ("xinetd", "try-restart");
+	    }
 	}
 
 	// FIXME: reload XDM (#40458)
