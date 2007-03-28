@@ -112,6 +112,7 @@ define void StoreSettings (map settings) {
     NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"] = settings["DHCP_RESOLV"]:false;
     /* update modified flag */
     DNS::modified = true;
+    y2milestone("modified DNS");
 }
 
 /**
@@ -132,6 +133,7 @@ define void InitHnWidget (string key) {
  */
 define void StoreHnWidget (string key, map event) {
     any value = UI::QueryWidget (`id (key), `Value);
+    y2milestone("%1/%2", key, value);
     hn_settings[key] = value;
 }
 
@@ -292,6 +294,14 @@ void initHostnameGlobal(string key){
  //    resolver_modifiable = ModifyResolvConfPopup ();
 }
 
+void storeHostnameGlobal(string key, map event){
+    foreach(string key, (list<string>)Map::Keys(hn_settings),{
+     StoreHnWidget(key, event);
+    });
+
+    StoreSettings( hn_settings );
+}
+
 map<string, map<string,any> > widget_descr_dns = $[
 
     "HOSTNAME": $[
@@ -313,7 +323,7 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
 	// #91202
 	"help": help["hostname_global"]:"",
 	"init": initHostnameGlobal,
-	"store": StoreHnWidget
+	"store": storeHostnameGlobal
 	],
     "DOMAIN": $[
 	"widget": `textentry,
@@ -354,7 +364,7 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
 	],
     "MODIFY_RESOLV" : $[
 	"widget": `checkbox,
-	"label" : _("&Change /etc/resol.conf changed by another process"),
+	"label" : _("&Change /etc/resolv.conf modified by another process"),
 	"opt" : [`notify],
 	"init" : initModifyResolv,
 	"handle": handleModifyResolv,
@@ -404,12 +414,11 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
     // text entry label
     widget_descr_dns["NAMESERVER_3", "label"] = _("Name Server &3");
 
-map dns_td = $[
-	"resolv" : $[
-	 "header" : _("Resolv"),
-	 "contents" : `VBox(
-	`Frame(	_("Hostname and Domain Name"),
+term dns_contents = 
+    `VBox(
+       `Frame( _("Hostname and Domain Name"),
 	 `VBox(
+
 	    `HBox(
 		"HOSTNAME",
 		"HOSTNAME_GLOBAL", // global help, init, store for all dialog
@@ -438,11 +447,16 @@ map dns_td = $[
 	)
        ),
        `VStretch()
-      ),
-	"widget_names" : ["HOSTNAME", "HOSTNAME_GLOBAL", "DOMAIN", "DHCP_HOSTNAME", "WRITE_HOSTNAME", "MODIFY_RESOLV",
+      );
+
+map dns_td = $[
+	"resolv" : $[
+	    "header" : _("Hostname/DNS"),
+	    "contents" : dns_contents,
+	    "widget_names" : ["HOSTNAME", "HOSTNAME_GLOBAL", "DOMAIN", "DHCP_HOSTNAME", "WRITE_HOSTNAME", "MODIFY_RESOLV",
 				"NAMESERVER_1", "NAMESERVER_2", "NAMESERVER_3", "SEARCHLIST_S", "DHCP_RESOLV"]
-	]
-];
+            ]
+    ];
 
 define boolean ReallyAbortInst () {
     return Popup::ConfirmAbort (`incomplete);
@@ -492,29 +506,33 @@ define symbol HostnameDialog () {
     return ret;
 }
 
-
+/**
+ * Standalone dialog only - embedded one is handled separately 
+ * via CWMTab
+ */
 define any DNSMainDialog(boolean standalone) {
 
-string caption = _("Network Setting Dialog");
-    map widget_descr = $[
-        "tab": CWMTab::CreateWidget($[
-            "tab_order": ["resolv"],
-            "tabs": dns_td,
-            "widget_descr": widget_descr_dns,
-            "initial_tab" : "resolv",
-            "tab_help" : "",
-        ]),
+    string caption = _("Hostname and Name Server Configuration");
+
+    map functions = $[
+	"init" : InitHnWidget,
+	"store" : StoreHnWidget,
+	`abort : ReallyAbort,
     ];
-    term contents = `VBox( "tab");
 
-    list<map <string, any> > w = CWM::CreateWidgets (["tab"], (map <string, map <string, any> >)widget_descr);
-    string help = CWM::MergeHelps(w);
-    contents = CWM::PrepareDialog(contents, w);
-
-    Wizard::SetContentsButtons(caption, contents, help, Label::NextButton (), Label::FinishButton ());
     Wizard::HideBackButton();
 
-    symbol ret = CWM::Run(w, $[`abort:ReallyAbort ]);
+    symbol ret = CWM::ShowAndRun (
+	$[
+	    "widget_descr": widget_descr_dns,
+	    "contents": dns_contents,
+	    // dialog caption
+	    "caption": caption,
+	    "back_button" : Label::BackButton (),
+	    "next_button" : Label::FinishButton (),
+	    "fallback_functions" : functions,
+	]);
+
 
     return ret;
 }

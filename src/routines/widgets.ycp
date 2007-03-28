@@ -38,7 +38,7 @@ map<string, map<string,any> > widget_descr = $[
 	"widget": `checkbox,
 	/* CheckBox label */
 	// is the interface administrable by users (as opposed to root)
-	"label": _("&User Controlled"),
+	"label": _("E&nable Device Control for non-root User via KInternet"),
 	"opt": [`notify],
 	"help":
 	// Details dialog help
@@ -177,8 +177,8 @@ Use this when you have a nfs or iscsi root filesystem.
 map<string, any> MakeStartmode (list<string> ids) {
     map<string, any> ret = $[
 	"widget": `combobox,
-	// Combo box label
-	"label": _("&Device Activation"),
+	// Combo box label - when to activate device (e.g. on boot, manually, never,..)
+	"label": "Activate &device ",
 	"help":
 	// Device activation main help. The individual parts will be
 	// substituted as %1
