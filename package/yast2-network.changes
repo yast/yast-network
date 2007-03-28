@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Mar 28 16:59:22 CEST 2007 - kmachalkova@suse.cz
+
+- Make storing hostname and DNS data work again 
+- Further improvements to UI (FaTE #120077)
+- Enable/disable VNC service in xinetd only if pkg 'xinetd' is 
+  installed (#256385)
+- 2.15.20
+
+-------------------------------------------------------------------
 Tue Mar 27 10:32:46 CEST 2007 - mzugec@suse.cz
 
 - yast hangs while configure network (#257347)
