@@ -745,11 +745,11 @@ define any AddressDialog() {
 		    // HWeight (1, ...) is a kludge for `opt (`hstretch)
 //		    (`HWeight(1, "IFNAME")),
 //		    `VSpacing(0.4),
-		    `Frame( _("&Device Activation"), `HBox(("STARTMODE"), `HStretch())),
+		    `Frame( _("Device Activation"), `HBox(("STARTMODE"), `HStretch())),
 		    `VSpacing(0.4),
-		    `Frame(_("Firewall &Zone"), `HBox(("FWZONE"), `HStretch())),
+		    `Frame(_("Firewall Zone"), `HBox(("FWZONE"), `HStretch())),
 		    `VSpacing(0.4),
-		    `Frame(_("Device &Control"), `HBox(("USERCONTROL"), `HStretch())) ,
+		    `Frame(_("Device Control"), `HBox(("USERCONTROL"), `HStretch())) ,
 		    `VSpacing (0.4),
 	            `Frame(_("Maximum Transfer Rate (MTU)"), `HBox(("MTU"), `HStretch()))
 		    // Frame label
