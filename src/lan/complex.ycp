@@ -42,8 +42,10 @@ include "network/services/dns.ycp";
  * @return true if data was modified
  */
 define boolean Modified() ``{
-    return Lan::Modified() || DNS::modified || Routing::Modified() ||
+    boolean ret  = Lan::Modified() || DNS::modified || Routing::Modified() ||
 	NetworkConfig::Modified();
+    y2milestone("ret: %1", ret);
+    return ret;
 }
 
 /**
@@ -103,6 +105,7 @@ define symbol WriteDialog() ``{
 
     if(!Modified()) return `next;
 
+    Lan::SetModified();
     Wizard::RestoreHelp(help["write"]:"");
     Lan::AbortFunction = ``{return PollAbort() && ReallyAbort();};
     boolean ret = Lan::Write();
@@ -377,14 +380,14 @@ map<string, map<string,any> > wd = $[
 	    "widget" : `custom,
 	    "custom_widget" :
 		`VBox(
-		`Table (`id (`_hw_items), `opt (`notify, `immediate), `header(_("Name"), _("IP Address"))),
-                 `HBox (
+		  `VWeight(2,`Table (`id (`_hw_items), `opt (`notify, `immediate), `header(_("Name"), _("IP Address")))),
+		  `VWeight(1,`RichText (`id (`_hw_sum), "")),
+                  `HBox (
 		        `PushButton (`id (`add), Label::AddButton ()),
 		        `PushButton (`id (`edit), Label::EditButton ()),
 		        `PushButton (`id (`delete), Label::DeleteButton ()),
 		        `HStretch ()
-			),
-		 `RichText (`id (`_hw_sum), "")
+			)
 		),
 	    "init" : initOverview,
 	    "handle" : handleOverview,
@@ -398,7 +401,7 @@ wd =  (map<string, map<string, any> >)union ( wd, wd_routing );
 
 map tabs_descr = $[
 	"global"   : $[
-	  "header" : _("Global"),
+	  "header" : _("Global Options"),
 	  "contents" : `VBox (
 	    "MANAGED", "IPV6",
 	    `VStretch()
@@ -417,7 +420,7 @@ map tabs_descr = $[
  tabs_descr = union(tabs_descr, dns_td);
 
 symbol MainDialog(string init_tab) ``{
-string caption = _("Network Setting Dialog");
+string caption = _("Network Settings");
     map widget_descr = $[
         "tab": CWMTab::CreateWidget($[
             "tab_order": ( Stage::normal() ) ? [ "global", "overview", "resolv", "route" ] : ["overview", "resolv", "route"],

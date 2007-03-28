@@ -56,7 +56,7 @@ symbol ValueProp (string key) {
     return `Value;
 }
 
-/**
+    /**
  * Debug messages configurable at runtime
  * @param class debug class
  * @param msg message to log
@@ -406,7 +406,7 @@ the network configuration.</p>"),
     "FWZONE": $[
 	"widget": `combobox,
 	// Combo Box label
-	"label": _("Firewall &Zone"),
+	"label": "Assign Interface to Firewall &Zone",
 	"opt": [`hstretch],
 	"help": help["fw<one"]:"",
 	"init" : InitFwZone,
@@ -421,7 +421,7 @@ the network configuration.</p>"),
     "MTU": $[
 	"widget": `textentry,
 	// textentry label, Maximum Transfer Unit
-	"label": _("&MTU"),
+	"label": _("Set &MTU"),
 	"opt": [`hstretch],
 	"help": help["mtu"]:"",
 	],
@@ -680,15 +680,15 @@ list< list<string> > BuildTypesListCWM (list<string> types) {
  * @return wrapped contents
  */
 term CommonBox (term contents) {
-    return `HBox (
-	//`VSpacing (15),
-	`VStretch (),
+    return `VBox (
+	`VSpacing (1),
 	`HSquash (
 	    `VBox (
 		`HSpacing (48),
 		contents
 		)
-	    )
+	    ),
+	`VStretch ()
 	);
 }
 
@@ -738,35 +738,24 @@ define any AddressDialog() {
 
     term general_contents = `MarginBox (1, 0,
 	`VBox (
- 	    `Frame(
-		// Frame label
-		// common settings for interfaces
-		_("Common Network Interface Settings"),
-		`MarginBox (1, 0,
-		    `VBox(
-			// TODO:
-			// "MANDATORY",
-			// HWeight (1, ...) is a kludge for `opt (`hstretch)
-//			(`HWeight(1, "IFNAME")),
-//			`VSpacing(0.4),
-			(`HWeight(1, "FWZONE")),
-			`VSpacing(0.4),
-			`Left (`HWeight(1, "STARTMODE")),
-			`VSpacing(0.4),
-			`Left ("USERCONTROL")
-			))
-		),
-	    `VSpacing (1),
- 	    `Frame(
-		// Frame label
-		// detailed settings for interfaces
-		_("Detailed Network Interface Settings"),
-		`MarginBox (1, 0,
-		    `VBox(
+	    `MarginBox (1, 0,
+	        `VBox(
+		    // TODO:
+		    // "MANDATORY",
+		    // HWeight (1, ...) is a kludge for `opt (`hstretch)
+//		    (`HWeight(1, "IFNAME")),
+//		    `VSpacing(0.4),
+		    `Frame( _("&Device Activation"), `HBox(("STARTMODE"), `HStretch())),
+		    `VSpacing(0.4),
+		    `Frame(_("Firewall &Zone"), `HBox(("FWZONE"), `HStretch())),
+		    `VSpacing(0.4),
+		    `Frame(_("Device &Control"), `HBox(("USERCONTROL"), `HStretch())) ,
+		    `VSpacing (0.4),
+	            `Frame(_("Maximum Transfer Rate (MTU)"), `HBox(("MTU"), `HStretch()))
+		    // Frame label
 //			 (`HWeight(1, "BINDTOHW")),
 //			`VSpacing(0.4),
-			 (`HWeight(1, "MTU"))
-			))
+		    )
 		)
 	    )
 	);
@@ -905,9 +894,9 @@ Components of this product might not work with DHCP.</p>");
 		`VBox (
 		    `Left ("BOOTPROTO_none"),
 		    `Left ("BOOTPROTO_dhcp"), // TODO: widget attribute align: left
-		    `Left ("BOOTPROTO_static"),
 		    `Left ("BOOTPROTO_autoip"),
 		    `Left ("BOOTPROTO_dhcp+autoip"),
+		    `Left ("BOOTPROTO_static"),
 		    address_static_contents)
 		)
 	    ),
