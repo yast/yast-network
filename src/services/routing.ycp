@@ -330,31 +330,31 @@ map route_td = $[
 
 /**
  * Main routing dialog
- * @param standalone true if not run from another ycp client
  * @return dialog result
  */
 define any RoutingMainDialog() {
 
-string caption = _("Network Setting Dialog");
-    map widget_descr = $[
-        "tab": CWMTab::CreateWidget($[
-            "tab_order": ["route"],
-            "tabs": route_td,
-            "widget_descr": wd_routing,
-            "initial_tab" : "route",
-            "tab_help" : "",
-        ]),
+    string caption = _("Routing Configuration");
+
+    map functions = $[
+	"init" : initRouting,
+        "store" : storeRouting,
+        `abort : ReallyAbort,
     ];
-    term contents = `VBox( "tab");
 
-    list<map <string, any> > w = CWM::CreateWidgets (["tab"], (map <string, map <string, any> >)widget_descr);
-    string help = CWM::MergeHelps(w);
-    contents = CWM::PrepareDialog(contents, w);
+    term contents = `VBox("ROUTING");
 
-    Wizard::SetContentsButtons(caption, contents, help, Label::NextButton (), Label::FinishButton ());
     Wizard::HideBackButton();
 
-    symbol ret = CWM::Run(w, $[`abort:ReallyAbort ]);
+    symbol ret = CWM::ShowAndRun (
+	$[
+            "widget_descr" : wd_routing,
+	    "contents" : contents,
+	    "caption" : caption,
+	    "back_button" : Label::BackButton(),
+	    "next_button" : Label::NextButton(),
+	    "fallback_functions" : functions,
+        ]);
 
     return ret;
 }
