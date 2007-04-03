@@ -44,7 +44,6 @@ include "network/services/dns.ycp";
 define boolean Modified() ``{
     boolean ret  = Lan::Modified() || DNS::modified || Routing::Modified() ||
 	NetworkConfig::Modified();
-    y2milestone("ret: %1", ret);
     return ret;
 }
 
@@ -182,12 +181,14 @@ once you have installed the firmware.")));
 
 
 define void IPv6Init (string key) {
-    UI::ChangeWidget (`id (key), `CurrentButton, Lan::ipv6?"enable":"disable");
+    UI::ChangeWidget (`id (`ipv6), `Value, Lan::ipv6 ? true : false);
 }
 
 define void IPv6Store (string key, map event) {
- if ((string) UI::QueryWidget (`id (key), `CurrentButton)=="enable") Lan::SetIPv6(true);
-	else Lan::SetIPv6(false);
+   if ((boolean) UI::QueryWidget (`id (`ipv6), `Value)) 
+	Lan::SetIPv6(true);
+   else
+	Lan::SetIPv6(false);
 }
 
 /**
@@ -338,8 +339,6 @@ Really continue?
   }
 }
 
-
-
 map<string, map<string,any> > wd = $[
 	"MANAGED": $[
 	    "widget": `radio_buttons,
@@ -360,17 +359,11 @@ map<string, map<string,any> > wd = $[
 	    "store": ManagedStore,
 	    ],
 	"IPV6": $[
-	    "widget": `radio_buttons,
-	    // radio button group label, method of setup
-	    "label": _("IPv6 Support"),
-	    "items": [
-		// radio button label
-		// the user can enable IPv6
-		["enable", _("&Enable")],
-		// radio button label
-		// the user can disable IPv6
-		["disable", _("&Disable")],
-		],
+	    "widget": `custom,
+	    "custom_widget" :
+		`Frame ( _("IPv6 Protocol Settings"),
+		    `Left(`CheckBox(`id(`ipv6), _("Enable IPv6")))
+		),
 	    "opt": [],
 	    "help": help["ipv6"]:"",
 	    "init": IPv6Init,
@@ -403,7 +396,9 @@ map tabs_descr = $[
 	"global"   : $[
 	  "header" : _("Global Options"),
 	  "contents" : `VBox (
-	    "MANAGED", "IPV6",
+	    "MANAGED",
+	    `VSpacing(0.5),
+	    "IPV6",
 	    `VStretch()
 	   ),
 	  "widget_names" : ["MANAGED", "IPV6"]
@@ -419,8 +414,44 @@ map tabs_descr = $[
  tabs_descr = union(tabs_descr, route_td);
  tabs_descr = union(tabs_descr, dns_td);
 
+symbol ManagedDialog() {
+
+    map widget_descr = union(wd["MANAGED"]:$[], wd["IPV6"]:$[]);
+    term contents = `VBox (
+	`HSquash(
+	    `VBox( ("MANAGED"),
+		`VSpacing(0.5),
+		("IPV6")
+	    )
+	));
+
+    map functions = $[
+	`abort : ReallyAbort,
+    ];
+
+    symbol ret = (symbol) CWM::ShowAndRun (
+	$[
+	    "widget_descr": wd,
+	    "contents": contents,
+	    /* Network setup method dialog caption */
+	    "caption": _("Network Setup Method"),
+	    "back_button" : Label::BackButton (),
+	    "next_button" : Label::AcceptButton (),
+	    // #54027
+	    "disable_buttons" : (["back_button"]),
+	    "fallback_functions" : functions,
+	    ]);
+
+    // #148485: always show the device overview
+    if (false && ret == `next && NetworkService::IsManaged ())
+    {
+	ret = `managed;
+    }
+    return ret;
+}
+
 symbol MainDialog(string init_tab) ``{
-string caption = _("Network Settings");
+    string caption = _("Network Settings");
     map widget_descr = $[
         "tab": CWMTab::CreateWidget($[
             "tab_order": ( Stage::normal() ) ? [ "global", "overview", "resolv", "route" ] : ["overview", "resolv", "route"],

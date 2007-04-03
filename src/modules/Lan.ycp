@@ -218,6 +218,28 @@ global define boolean Modified() {
     return modified;
 }
 
+/**
+ * Function which returns if the settings were modified
+ * @return boolean  settings were modified
+ */
+global define boolean GetModified () {
+    return modified;
+}
+/**
+ * Function sets internal variable, which indicates, that any
+ * settings were modified, to "true"
+ */
+global define void SetModified () {
+    modified = true;
+}
+/**
+ * Function sets internal variable, which indicates, that any
+ * settings were modified, to "false"
+ */
+global define void UnsetModified () {
+    modified = false;
+}
+
 // functions for use from autoinstallation
 global define boolean isAnyInterfaceDown(){
  boolean down = false;
@@ -442,7 +464,10 @@ global boolean ReadWithCache () {
 }
 
 global void SetIPv6(boolean status){
- ipv6=status;
+    if(ipv6 != status) {
+	 ipv6=status;
+         SetModified();
+    }
 }
 
 void writeIPv6(){
@@ -740,62 +765,60 @@ global define list Summary(string mode) {
 }
 
 /**
- * Create a textual summary for the NetworkManager proposal
+ * Create a textual summary for the general network settings 
+ * proposal (NetworkManager + ipv6)
  * @return [rich text, links]
  */
-global define list SummaryNM () {
-    string status = nil;
-    string href = nil;
-    string link = nil;
+global define list SummaryGeneral () {
+    string status_nm = nil;
+    string status_v6 = nil;
+    string href_nm = nil;
+    string href_v6 = nil;
+    string link_nm = nil;
+    string link_v6 = nil;
+    string header_nm = _("Network Mode");
+
     if (NetworkService::IsManaged ())
     {
-	href = "lan--nm-disable";
+	href_nm = "lan--nm-disable";
 	// network mode: the interfaces are controlled by the user
-	status = _("User-Controlled Interfaces with the NetworkManager Applet");
+	status_nm = _("Interfaces controlled by NetworkManager");
 	// disable NetworkManager applet
-	link = Hyperlink (href, _("Disable NetworkManager"));
+	link_nm = Hyperlink (href_nm, _("Disable NetworkManager"));
     }
     else
     {
-	href = "lan--nm-enable";
+	href_nm = "lan--nm-enable";
 	// network mode
-	status = _("Traditional Method without the NetworkManager Applet");
+	status_nm = _("Traditional network setup with NetControl - ifup");
 	// enable NetworkManager applet
-	link = Hyperlink (href, _("Enable NetworkManager"));
+	link_nm = Hyperlink (href_nm, _("Enable NetworkManager"));
     }
-    string descr = sformat ("<ul><li>%1 (%2)</li></ul>", status, link);
-    list<string> links = [ href ];
+
+    if (ipv6)
+    {
+	href_v6 = "ipv6-disable";
+	// ipv6 support is enabled
+	status_v6 = _("Support for IPv6 protocol is enabled");
+	// disable ipv6 support
+	link_v6 = Hyperlink (href_v6, _("Disable IPv6"));
+    }
+    else
+    {
+	href_v6 = "ipv6-enable";
+	// ipv6 support is disabled
+	status_v6 = _("Support for IPv6 protocol is disabled");
+	// enable ipv6 support
+	link_v6 = Hyperlink (href_v6, _("Enable IPv6"));
+    }
+
+    string descr = sformat ("<ul><li>%1: %2 (%3)</li></ul> 
+			     <ul><li>%4 (%5)</li></ul>", header_nm, status_nm, link_nm,
+			     status_v6, link_v6);
+    list<string> links = [ href_nm, href_v6 ];
     return [descr, links];
 }
 
-/**
- * Create a textual summary for the ipv6 proposal
- * @return [rich text, links]
- */
-global define list SummaryIPv6 () {
-    string status = nil;
-    string href = nil;
-    string link = nil;
-    if (ipv6)
-    {
-	href = "ipv6-disable";
-	// network mode: the interfaces are controlled by the user
-	status = _("Enabled Support for IPv6 Protocol");
-	// disable NetworkManager applet
-	link = Hyperlink (href, _("Disable IPv6"));
-    }
-    else
-    {
-	href = "ipv6-enable";
-	// network mode
-	status = _("Disabled Support for IPv6 Protocol");
-	// enable NetworkManager applet
-	link = Hyperlink (href, _("Enable IPv6"));
-    }
-    string descr = sformat ("<ul><li>%1 (%2)</li></ul>", status, link);
-    list<string> links = [ href ];
-    return [descr, links];
-}
 /**
  * Create an overview table with all configured devices
  * @return table items
@@ -1990,7 +2013,6 @@ global define boolean HasAliases(string dev) {
     return NetworkDevices::HasAliases(dev);
 }
 
-
 global define list<map> PrepareForAutoinst() {
   
     ReadInstallInf();     
@@ -2035,28 +2057,6 @@ global list<string> Packages () {
  */
 global map AutoPackages () {
       return ($["install": Packages(), "remove": []]);
-}
-
-/**
- * Function which returns if the settings were modified
- * @return boolean  settings were modified
- */
-global define boolean GetModified () {
-    return modified;
-}
-/**
- * Function sets internal variable, which indicates, that any
- * settings were modified, to "true"
- */
-global define void SetModified () {
-    modified = true;
-}
-/**
- * Function sets internal variable, which indicates, that any
- * settings were modified, to "false"
- */
-global define void UnsetModified () {
-    modified = false;
 }
 
 /**

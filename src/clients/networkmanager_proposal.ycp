@@ -16,7 +16,7 @@ textdomain "network";
 
 /* The main () */
 y2milestone("----------------------------------------");
-y2milestone("NetworkManager proposal started");
+y2milestone("General network settings proposal started");
 y2milestone("Arguments: %1", WFM::Args());
 
 import "Lan";
@@ -37,7 +37,7 @@ if(func == "MakeProposal") {
     string warning = nil;
     symbol warning_level = nil;
 
-    list sum = Lan::SummaryNM ();
+    list sum = Lan::SummaryGeneral ();
     proposal = sum[0]:"";
     links = sum[1]:[];
 
@@ -61,12 +61,20 @@ else if(func == "AskUser") {
     {
 	NetworkService::SetManaged (false);
     }
+    else if(chosen_id == "ipv6-enable")
+    {
+	Lan::SetIPv6(true);
+    }
+    else if(chosen_id == "ipv6-disable")
+    {
+	Lan::SetIPv6(false);
+    }
     else
     {
 	Wizard::CreateDialog();
 	Wizard::SetDesktopIcon("lan");
 
-//	seq = ManagedDialog();
+	seq = ManagedDialog();
 	Wizard::CloseDialog();
     }
     Lan::proposal_valid = false; // repropose
@@ -80,9 +88,9 @@ else if(func == "AskUser") {
 else if(func == "Description") {
     ret = $[
 	/* RichText label */
-	"rich_text_title" : _("Network Mode"),
+	"rich_text_title" : _("General Network Settings"),
 	/* Menu label */
-	"menu_title" : _("Network Mo&de"),
+	"menu_title" : _("General &Network Settings"),
 	"id" : "networkmode",
     ];
 }
@@ -97,7 +105,7 @@ else {
 
 /* Finish */
 y2debug("ret=%1", ret);
-y2milestone("NetworkManager proposal finished");
+y2milestone("General network settings proposal finished");
 y2milestone("----------------------------------------");
 return ret;
 
