@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Tue Apr  3 13:36:25 CEST 2007 - kmachalkova@suse.cz
+
+- Network installation proposal:
+  * NetworkManager and IPv6 proposals joined into 'General Settings' 
+    proposal
+  * Make click on 'General Settings' title open separate dialog with
+    NM and IPv6 options (#255609)
+- 2.15.21
+
+-------------------------------------------------------------------
 Wed Mar 28 16:59:22 CEST 2007 - kmachalkova@suse.cz
 
 - Make storing hostname and DNS data work again 
