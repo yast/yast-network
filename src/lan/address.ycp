@@ -133,7 +133,6 @@ void StoreWidgetRbg (string key, map event) {
     string value = splitstring (value_g, "_")[1]:"";
     my2debug ("RBGW", sformat ("store k: %1, v: %2, e: %3", key, value, event));
     settings[key] = value;
-y2internal("settings %1", settings);
 }
 
 /**

@@ -138,15 +138,15 @@ define void StoreHnWidget (string key, map event) {
 }
 
 /**
- * Event handler for DHCP_HOSTNAME and WRITE_HOSTNAME checkbox.
+ * Init handler for DHCP_HOSTNAME.
  * enable or disable: is DHCP available?
  * @param key	the widget receiving the event
  * @param event	the event being handled
  * @return nil so that the dialog loops on
  */
-define symbol HandleDhcpHostname (string key, map event) {
-    boolean enabled = has_dhcp;
-    UI::ChangeWidget (`id (key), `Enabled, enabled);
+define void InitDhcpHostname (string key) {
+    UI::ChangeWidget (`id("DHCP_HOSTNAME"), `Enabled, has_dhcp);
+    if (!has_dhcp) UI::ReplaceWidget(`id ("dh_host_text"),`Label(_("no interface with dhcp")));
     return nil;
 }
 
@@ -158,8 +158,8 @@ define symbol HandleDhcpHostname (string key, map event) {
  * @return nil so that the dialog loops on
  */
 define symbol HandleDhcpResolv (string key, map event) {
-    boolean enabled = has_dhcp && resolver_modifiable;
-    UI::ChangeWidget (`id (key), `Enabled, enabled);
+    UI::ChangeWidget (`id ("DHCP_RESOLV"), `Enabled, has_dhcp && resolver_modifiable);
+    if (!has_dhcp) UI::ReplaceWidget(`id ("dh_resolv_text"),`Label(_("no interface with dhcp")));
     return nil;
 }
 
@@ -343,13 +343,14 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
 	"validate_help": _("The domain name is invalid.") + "\n" + Hostname::ValidDomain (),
 	],
     "DHCP_HOSTNAME": $[
-	"widget": `checkbox,
-	/* checkbox label */
-	"label": _("&Change Hostname via DHCP"),
-	"opt": [],
+	"widget": `custom,
+	"custom_widget" : `HBox(
+	 `CheckBox(`id("DHCP_HOSTNAME"), _("&Change Hostname via DHCP")),
+	 `ReplacePoint( `id("dh_host_text"), `Empty() )
+	),
 	// help
 	"help": help["dhcp_hostname"]:"",
-	"handle": HandleDhcpHostname,
+	"init": InitDhcpHostname,
 	],
 
     "WRITE_HOSTNAME": $[
@@ -359,8 +360,6 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
 	"opt": [],
 	// help
 	"help": help["write_hostname"]:"",
-	//use the same handler - it enables checkbox if dhcp is used
-	"handle": HandleDhcpHostname,
 	],
     "MODIFY_RESOLV" : $[
 	"widget": `checkbox,
@@ -397,10 +396,11 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
 	"validate_function": ValidateSearchList,
 	],
     "DHCP_RESOLV": $[
-	"widget": `checkbox,
-	/* checkbox label */
-	"label": _("&Update Name Servers and\nSearch List via DHCP"),
-	"opt": [`notify],
+	"widget": `custom,
+	"custom_widget" : `HBox(
+	 `CheckBox(`id("DHCP_RESOLV"), `opt(`notify), _("&Update Name Servers and\nSearch List via DHCP")),
+	 `ReplacePoint( `id("dh_resolv_text"), `Empty() )
+	),
 	// help
 	"help": "",		// at "SEARCHLIST_S"
 	"handle": HandleDhcpResolv,

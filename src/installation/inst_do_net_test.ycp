@@ -320,7 +320,7 @@ and correct the settings.</p>
     define boolean download_release_notes () {
 	// Fallback for situation that mustn't exist
 	if (Product::relnotesurl_all == nil || Product::relnotesurl_all == []) {
-	    y2internal("Product::relnotesurl_all = %1", Product::relnotesurl_all);
+	    y2milestone("Product::relnotesurl_all = %1", Product::relnotesurl_all);
 	    return true;
 	}
 

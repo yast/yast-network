@@ -304,7 +304,6 @@ global boolean DuplicateIP (string ip) {
  * @return resolved host
  */
 global string ResolveIP(string ip) {
-y2internal("ResolveIP %1", ip);
     // quick check to avoid timeout
     if ( size(ip)==0 || (integer)SCR::Execute(.target.bash, sformat("grep -q %1 /etc/hosts", ip))!=0 ) return "";
 

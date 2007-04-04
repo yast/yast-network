@@ -213,7 +213,6 @@ define list<map> ReadHardware(string hwtype) {
 	return [];
     }
 
-    y2debug("allcards=%1", allcards);
     if(allcards == nil) {
 	y2error("hardware detection failure");
 	allcards = [];
