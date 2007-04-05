@@ -286,9 +286,9 @@ and correct the settings.</p>
 	while ( (boolean)SCR::Read(.background.output_open) )
 	{
 	    sleep (100);
-	    
+
 	    any ret = UI::PollInput ();
-	    
+
 	    if (ret == `abort || ret == `abort_test)
 	    {
 		// Abort pressed by the user
@@ -297,18 +297,18 @@ and correct the settings.</p>
 		return -1;
 	    }
 	}
-	
+
 	// check the exit code of the test
 	integer res = (integer)SCR::Read(.background.status);
-	
+
 	y2milestone ("Command returned: %1", res);
-	
+
 	return res;
     }
 
     // File names of downloaded release notes
     list <string> release_notes_filenames = [];
-    
+
     // RPM names of downloaded release notes
     map <string, string> release_notes_rpms = $[];
 
@@ -356,15 +356,29 @@ and correct the settings.</p>
 	    // Package name
 	    release_notes_rpms[filename] = substring (url, pos);
 	    release_notes_rpms[filename] = regexpsub(release_notes_rpms[filename]:"\.rpm", "(.*)\.rpm", "\\1");
-	    
+
 	    // Where to store the curl log
 	    string log_filename = sformat("curl_%1.log", relnotes_counter);
 
-	    // .background agent is unable to use ENV variables
-	    string cmd = ". /etc/sysconfig/proxy; http_proxy=${HTTP_PROXY} /usr/bin/curl -s -S -v -f -m 300 " + url + " -o " + filename;
+	    // Get proxy settings (if any)
+	    string proxy = "";
+	    Proxy::Read();
+
+	    // Test if proxy works
+	    if (Proxy::enabled) {
+		//it is enough to test http proxy, release notes are downloaded via http
+	        map <string, map <string, any> > proxy_ret = Proxy::RunTestProxy(Proxy::http, "", "", Proxy::user, Proxy::pass);
+
+	        if ( (proxy_ret["HTTP", "tested"]:true == true) && ((integer) proxy_ret["HTTP", "exit"]:1 == 0 ) ) {
+		    string user_pass = (Proxy::user != "") ? (Proxy::user + ":" + Proxy::pass) : "";
+		    proxy = "--proxy " + Proxy::http + ((user_pass != "") ? (" --proxy-user '" + user_pass + "'") : "");
+		}
+	    }
+
+	    //Include also proxy option (if applicable) - #162800, #260407 
+	    string cmd = " /usr/bin/curl -s -S -v -f -m 300" + proxy + " " + url + " -o " + filename;
 	    cmd = cmd + " > " + logdir + "/" + log_filename + " 2>&1";
 
-	    // map env = Proxy::GetEnvironment ();
 	    // env["LANG"] = GetLanguageUTF8 ();
 
 	    y2milestone ("Downloading release notes: %1", cmd);
@@ -378,7 +392,7 @@ and correct the settings.</p>
 	    } else {
 		y2error("Downloading failed");
 		curl_ret_code = ret;
-	    }
+	     }
 
 	    // label of combobox where the log is selected
 	    string menu_name = _("Download of Release Notes");
