@@ -1991,17 +1991,11 @@ global define boolean Autoinstall() {
 
 
 /**
- * Check if any device except the current one is configured with DHCP.
- * The current one is checked separately because there may be uncommitted
- * changes. (#17391)
- * @return true if any DHCP device except the current one is configured
+ * Check if any device  is configured with DHCP.
+ * @return true if any DHCP device is configured
  */
 global define boolean AnyDHCPDevice() {
-    list<string> devs = NetworkDevices::Locate("BOOTPROTO", "dhcp");
-    devs = filter(string dev, devs, {
-	return dev != NetworkDevices::device_name(NetworkDevices::RealType(type, hotplug), device);
-    });
-    return size(devs) > 0;
+    return size(union(NetworkDevices::Locate("BOOTPROTO", "dhcp"), NetworkDevices::Locate("BOOTPROTO", "dhcp+autoip"))) > 0;
 }
 
 /**

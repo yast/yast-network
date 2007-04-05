@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Apr  5 09:58:01 CEST 2007 - mzugec@suse.cz
+
+- fixed option for 'changed by another process' in dns
+- 2.15.23 
+
+-------------------------------------------------------------------
 Wed Apr  4 19:08:00 CEST 2007 - mzugec@suse.cz
 
 - improve widget handling when dhcp used/not used (#156830)

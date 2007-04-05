@@ -110,6 +110,7 @@ define void StoreSettings (map settings) {
     NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = settings["DHCP_HOSTNAME"]:false;
     NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"] = settings["WRITE_HOSTNAME"]:true;
     NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"] = settings["DHCP_RESOLV"]:false;
+    if ((boolean)UI::QueryWidget(`id("MODIFY_RESOLV"), `Value)) DNS::resolv_conf_process="";
     /* update modified flag */
     DNS::modified = true;
     y2milestone("modified DNS");
@@ -173,8 +174,7 @@ define symbol HandleDhcpResolv (string key, map event) {
 define symbol HandleResolverData (string key, map event) {
     boolean dhcp_resolv = (boolean) UI::QueryWidget (`id ("DHCP_RESOLV"), `Value);
     dhcp_resolv = dhcp_resolv && has_dhcp; // #146162
-    boolean enabled = resolver_modifiable && (!dhcp_resolv);
-    UI::ChangeWidget (`id (key), `Enabled, enabled);
+    UI::ChangeWidget (`id (key), `Enabled, resolver_modifiable && (!dhcp_resolv));
     return nil;
 }
 
@@ -282,8 +282,8 @@ symbol handleModifyResolv (string key, map event){
 
 
 void initHostnameGlobal(string key){
-    has_dhcp =  // NetworkService::IsManaged () not: #169858, #156830
-	Lan::bootproto == "dhcp" || Lan::AnyDHCPDevice ();
+    // NetworkService::IsManaged () not: #169858, #156830
+	has_dhcp = Lan::AnyDHCPDevice ();
 
     hn_settings = InitSettings ();
     foreach(string key, (list<string>)Map::Keys(hn_settings),{
