@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Apr  5 14:25:36 CEST 2007 - kmachalkova@suse.cz
+
+- Correct quoting of proxy auth credentials so that special 
+  characters are not intepreted by bash (#256360) 
+- Internet test: test proxy settings before downloading release
+  notes. If it fails, try direct connection (#162800, #260407)
+
+-------------------------------------------------------------------
 Thu Apr  5 10:35:13 CEST 2007 - mzugec@suse.cz
 
 - for s390 write hwcfg file although driver doesn't provide busID
