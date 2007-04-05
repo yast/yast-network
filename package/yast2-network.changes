@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Apr  5 10:09:14 CEST 2007 - mzugec@suse.cz
+
+- for s390 write hwcfg file although driver doesn't provide busID
+- 2.13.98 
+
+-------------------------------------------------------------------
 Thu Mar 22 10:58:52 CET 2007 - mzugec@suse.cz
 
 - NetworkStorage - handling alternative connection types (#256371) 
