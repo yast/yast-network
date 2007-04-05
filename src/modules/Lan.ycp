@@ -709,9 +709,12 @@ void SelectHWMap (map hw) {
 	if(Arch::s390 ()) nm_name = type + "-" + nm_name;
     }
     else {
-	// #42421
-	y2milestone ("No bus id info found, skipping hwcfg: %1", hw);
-	nm_name = "";
+       // #suse42421 - don't write hwcfg-static for pcmcia cards (PC and CardBus)
+       // #254753 - when busID not available, use static-x hwcfg filename
+       if(Arch::s390 ()) {
+                               nm_name = NetworkModules::GetFreeName("static-");
+                               y2internal("No bus id info found, will use %1", nm_name);
+                       } else y2warning ("No bus id info found, skipping hwcfg: %1", hw);
     }
 
     // name of ifcfg

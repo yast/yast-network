@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Apr  5 10:35:13 CEST 2007 - mzugec@suse.cz
+
+- for s390 write hwcfg file although driver doesn't provide busID
+- 2.15.24 
+
+-------------------------------------------------------------------
 Thu Apr  5 09:58:01 CEST 2007 - mzugec@suse.cz
 
 - fixed option for 'changed by another process' in dns
