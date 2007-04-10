@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Apr 10 16:27:46 CEST 2007 - kmachalkova@suse.cz
+
+- DHCP client options dialog rewritten to CWM and integrated into 
+  General options tab
+- 2.15.25
+
+-------------------------------------------------------------------
 Thu Apr  5 14:25:36 CEST 2007 - kmachalkova@suse.cz
 
 - Correct quoting of proxy auth credentials so that special 
