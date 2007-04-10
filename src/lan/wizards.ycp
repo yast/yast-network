@@ -233,13 +233,9 @@ define symbol AddressSequence(string which) ``{
     map aliases = $[
 	"changedefaults": [ ``(ChangeDefaults()), true ],
 	"address"	: ``(AddressDialog()),
-	"dhcp"		: ``(DHCPDialog()),
 	"hosts"		: ``(HostsMainDialog(false)),
 	"proxy"		: ``(ProxyMainDialog(false)),
 	"virtual"	: ``(VirtualDialog(false)),
-//	"ipv6"		: ``(IPv6Dialog()),
-//	"hostname"	: ``(DNSMainDialog(false)),
-//	"routing"	: ``(RoutingMainDialog(false)),
 	"s390"		: ``(S390Dialog()),
 	"wire"		: ``(WirelessDialog()),
 	"expert"	: ``(WirelessExpertDialog()),
@@ -259,21 +255,13 @@ define symbol AddressSequence(string which) ``{
 	    `abort	: `abort,
 	    `next	: "commit",
 	    `wire	: "wire",
-	    `dhclient	: "dhcp",
 	    `hosts	: "hosts",
 	    `proxy	: "proxy",
-//	    `routing	: "routing",
-//	    `hostname	: "hostname",
 	    `virtual	: "virtual",
-//	    `ipv6	: "ipv6",
 	    `s390	: "s390",
 	    `hardware	: `hardware,
 	],
 	"s390" : $[
-	    `abort	: `abort,
-	    `next	: "address",
-	],
-	"dhcp" : $[
 	    `abort	: `abort,
 	    `next	: "address",
 	],
@@ -289,21 +277,6 @@ define symbol AddressSequence(string which) ``{
 	    `abort	: `abort,
 	    `next	: "address",
 	],
-/*
-	"ipv6" : $[
-	    `back	: `back,
-	    `abort	: `abort,
-	    `next	: "address",
-	],
-	"routing" : $[
-	    `abort	: `abort,
-	    `next	: "address",
-	],
-	"hostname" : $[
-	    `abort	: `abort,
-	    `next	: "address",
-	],
-*/
 	"wire" : $[
 	    `next	: "commit",
 	    `expert	: "expert",
