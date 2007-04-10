@@ -35,6 +35,7 @@ include "network/summary.ycp";
 include "network/lan/help.ycp";
 include "network/services/routing.ycp";
 include "network/services/dns.ycp";
+include "network/lan/dhcp.ycp";
 
 
 /**
@@ -391,17 +392,19 @@ map<string, map<string,any> > wd = $[
 
 wd =  (map<string, map<string, any> >)union ( wd, widget_descr_dns );
 wd =  (map<string, map<string, any> >)union ( wd, wd_routing );
+wd =  (map<string, map<string, any> >)union ( wd, widget_descr_dhclient );
+
 
 map tabs_descr = $[
 	"global"   : $[
 	  "header" : _("Global Options"),
 	  "contents" : `VBox (
-	    "MANAGED",
-	    `VSpacing(0.5),
-	    "IPV6",
+	    `MarginBox(1, 0.5, "MANAGED"),
+	    `MarginBox(1, 0.5, "IPV6"),
+            `MarginBox(1, 0.5, "DHCLIENT_OPTIONS"),
 	    `VStretch()
 	   ),
-	  "widget_names" : ["MANAGED", "IPV6"]
+	  "widget_names" : ["MANAGED", "IPV6", "DHCLIENT_OPTIONS"]
 	],
 	"overview" : $[
 	  "header" : _("Overview"),

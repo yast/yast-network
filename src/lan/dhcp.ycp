@@ -17,115 +17,64 @@ import "Popup";
 import "Wizard";
 
 include "network/routines.ycp";
+include "network/lan/help.ycp";
 
-/**
- * Dialog for DHCP client options
- * @return dialog result
- */
-define any DHCPDialog() ``{
 
-    ScreenName("lan-dhcp");
-
-    /* DHCP dialog caption */
-    string caption = _("DHCP Client Options");
-
-    /* DHCP dialog help 1/8 */
-    string help = _("<p>Configure the DHCP client options here.</p>") +
-
-    /* DHCP dialog help 2/8 */
-    _("<p><b>Request Broadcast Response</b> causes the DHCP client
-to ask the server always to broadcast its responses. You may need this,
-for example, if your machine is a mobile client moving between different
-networks.</p>") +
-
-    /* DHCP dialog help 3/8 */
-    _("<p>The <b>DHCP Client Identifier</b>, if left empty, defaults to
-the hardware address of the network interface. It must be different for each
-DHCP client on a single network. Therefore, specify a unique free-form
-identifier here if you have several (virtual) machines using the same
-network interface and thus the same hardware address.</p>") +
-
-    /* DHCP dialog help 4/8 */
-    _("<p>The <b>Hostname to Send</b> specifies a string used for the
-hostname option field when dhcpcd sends messages to DHCP server. Some 
-DHCP servers update name server zones (forward and reverse records) 
-according to this hostname (dynamic DNS).
-
-Also, some DHCP servers require the <b>Hostname to Send</b> option field to
-contain a specific string in the DHCP messages from clients. Leave <i>AUTO</i>
-to send the current hostname (i.e. the one defined in <i>/etc/HOSTNAME</i>). 
-Leave empty not to send a hostname.</p>");
-
+void initDhclientOptions(string key) {
     boolean dhclient_broadcast = false;
+
     if(issubstring(NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"]:"", "-B"))
-	dhclient_broadcast = true;
+        dhclient_broadcast = true;
 
-    /* Details dialog contents */
-    term contents = `HBox(
-	`HSpacing(6),
-	/* Frame label */
-	`Frame(_("DHCP Client Options"), `HBox(`HSpacing(2), `VBox(
-	    `VSpacing(1),
-	    /* CheckBox label */
-	    `Left(`CheckBox(`id(`broadcast), _("Request Broad&cast Response"), dhclient_broadcast == true)),
-	    `VSpacing(0.5),
-	    /* TextEntry label */
-	    `Left(`TextEntry(`id(`clientid), _("DHCP Client &Identifier"), NetworkConfig::DHCP["DHCLIENT_CLIENT_ID"]:"")),
-	    `VSpacing(0.5),
-	    /* TextEntry label */
-	    `Left(`TextEntry(`id(`hostname), _("&Hostname to Send"), NetworkConfig::DHCP["DHCLIENT_HOSTNAME_OPTION"]:"AUTO")),
-	    `VSpacing(1)
-	    ), `HSpacing(2))),
-	`HSpacing(6)
-    );
+    UI::ChangeWidget(`id(`broadcast), `Value, dhclient_broadcast);
+    UI::ChangeWidget(`id(`clientid), `Value, NetworkConfig::DHCP["DHCLIENT_CLIENT_ID"]:"");
+    UI::ChangeWidget(`id(`hostname), `Value, NetworkConfig::DHCP["DHCLIENT_HOSTNAME_OPTION"]:"");
 
-    Wizard::SetContentsButtons(caption, contents, help,
-	    Label::BackButton(), Label::OKButton());
+}
+ 
+void storeDhclientOptions(string key, map event) {
 
-    any ret = nil;
-    while(true) {
+    NetworkConfig::DHCP["DHCLIENT_CLIENT_ID"] = UI::QueryWidget(`id(`clientid), `Value);
+    NetworkConfig::DHCP["DHCLIENT_HOSTNAME_OPTION"] = UI::QueryWidget(`id(`hostname), `Value);
+    boolean dhclient_broadcast = UI::QueryWidget(`id(`broadcast), `Value) == true;
 
-	ret = UI::UserInput();
+    /* DHCP data */
+    string options = NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"]:"";
+    if(options == nil) options = "";
 
-	/* abort? */
-	if(ret == `abort || ret == `cancel) {
-	    if(ReallyAbort()) break;
-	    else continue;
-	}
-	/* back */
-	else if(ret == `back) {
-	    break;
-	}
-	else if(ret == `next) {
-	    /* check* */
-	    break;
-	}
-	else {
-	    y2error("Unexpected retcode: %1", ret);
-	    continue;
-	}
-
+    if(dhclient_broadcast && !issubstring(options, "-B")) {
+        NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"] = options + " -B";
+    }
+    else if(!dhclient_broadcast && issubstring(options, "-B")) {
+        NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"] = regexpsub(options, "(.*)-B(.*)", "\\1\\2");
     }
 
-    /* update the configuration */
-    if(ret == `next) {
-	NetworkConfig::DHCP["DHCLIENT_CLIENT_ID"] = UI::QueryWidget(`id(`clientid), `Value);
-	NetworkConfig::DHCP["DHCLIENT_HOSTNAME_OPTION"] = UI::QueryWidget(`id(`hostname), `Value);
-	dhclient_broadcast = UI::QueryWidget(`id(`broadcast), `Value) == true;
-
-	/* DHCP data */
-	string options = NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"]:"";
-	if(options == nil) options = "";
-	if(dhclient_broadcast && !issubstring(options, "-B")) {
-	    NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"] = options + " -B";
-	}
-	else if(!dhclient_broadcast && issubstring(options, "-B")) {
-	    NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"] = regexpsub(options, "(.*)-B(.*)", "\\1\\2");
-	}
-    }
-
-    return ret;
 }
 
-/* EOF */
+    /* Details dialog contents */
+term contents = 
+    /* Frame label */
+    `Frame(_("DHCP Client Options"), `VBox(
+        /* CheckBox label */
+        `Left(`CheckBox(`id(`broadcast), _("Request Broad&cast Response"))),
+        `VSpacing(0.5),
+        /* TextEntry label */
+        `Left(`TextEntry(`id(`clientid), _("DHCP Client &Identifier"))),
+        `VSpacing(0.5),
+        /* TextEntry label */
+        `Left(`TextEntry(`id(`hostname), _("&Hostname to Send")))
+        )
+    );
+
+map<string, map<string,any> > widget_descr_dhclient = $[
+
+    "DHCLIENT_OPTIONS" : $[
+	"widget" : `custom,
+	"custom_widget" : contents,
+	"help" : help["dhclient_help"]:"",
+	"init" : initDhclientOptions,
+	"store": storeDhclientOptions,
+    ]
+];
+
 }

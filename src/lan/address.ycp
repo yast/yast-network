@@ -181,13 +181,9 @@ symbol HandleStaticAddress (string key, map event) {
 symbol HandleButton (string key, map event) {
     any ret = event["ID"]:nil;
     map<any, symbol> symbols = $[
-//	"HOSTNAME_B": `hostname,
-//	"ROUTING": `routing,
 
 	"HARDWARE": `hardware,
-	"DHCP_ADVANCED": `dhclient,
 	"ADDITIONAL_ADDRESSES": `virtual,
-//	"IPV6":`ipv6,
 	"S390": `s390,
 	];
     return symbols[ret]:nil;
@@ -585,17 +581,6 @@ the network configuration.</p>"),
 	"store": CWM::StoreNull,
 	"handle": HandleButton,
 	],
-
-    "DHCP_ADVANCED": $[
-	"widget": `push_button,
-	// push button label
-	"label": _("DH&CP Options"),
-	"opt": [],
-	"help": "",
-	"init": CWM::InitNull,
-	"store": CWM::StoreNull,
-	"handle": HandleButton,
-	],
     "ADDITIONAL_ADDRESSES": $[
 	"widget": `push_button,
 	// push button label
@@ -606,18 +591,6 @@ the network configuration.</p>"),
 	"store": CWM::StoreNull,
 	"handle": HandleButton,
 	],
-/*
-    "IPV6": $[
-	"widget": `push_button,
-	// push button label
-	"label": _("&IPv6"),
-	"opt": [],
-	"help": "",
-	"init": CWM::InitNull,
-	"store": CWM::StoreNull,
-	"handle": HandleButton,
-	],
-*/
     "HARDWARE": $[
 	"widget": `push_button,
 	// push button label
@@ -639,28 +612,6 @@ the network configuration.</p>"),
 	"store": CWM::StoreNull,
 	"handle": HandleButton,
 	],
-/*
-    "HOSTNAME_B": $[
-	"widget": `push_button,
-	// push button label
-	"label": _("&Hostname and Name Server"),
-	"opt": [`hstretch],
-	"help": "",
-	"init": CWM::InitNull,
-	"store": CWM::StoreNull,
-	"handle": HandleButton,
-	],
-    "ROUTING": $[
-	"widget": `push_button,
-	// push button label
-	"label": _("R&outing"),
-	"opt": [`hstretch],
-	"help": "",
-	"init": CWM::InitNull,
-	"store": CWM::StoreNull,
-	"handle": HandleButton,
-	],
-*/
     ];
 
 /**
@@ -833,7 +784,7 @@ Components of this product might not work with DHCP.</p>");
     
     list<string> mb_items = [
 	"HARDWARE",
-	"DHCP_ADVANCED",
+//	"DHCP_ADVANCED",
 //	"IPV6"
 	];
     if (!NetworkService::IsManaged()) mb_items = add(mb_items, "ADDITIONAL_ADDRESSES");

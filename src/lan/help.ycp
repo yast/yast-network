@@ -172,11 +172,33 @@ _("<p>You can set the maximum transfer unit (<b>MTU</b>) of an interface.</p>"),
 "bondslave":
 _("<p>Select the salve devices for the bond device. Only the deveices which's Device Activation is Never and set as None Address Setup are available.</p>"),
 
+"dhclient_help" : 
+    /* DHCP dialog help 1/8 */
+_("<p><b><big>DHCP client options</big></b></p>") +
 
+    /* DHCP dialog help 2/8 */
+    _("<p><b>Request Broadcast Response</b> causes the DHCP client
+to ask the server always to broadcast its responses. You may need this,
+for example, if your machine is a mobile client moving between different
+networks.</p>") +
 
+    /* DHCP dialog help 3/8 */
+    _("<p>The <b>DHCP Client Identifier</b>, if left empty, defaults to
+the hardware address of the network interface. It must be different for each
+DHCP client on a single network. Therefore, specify a unique free-form
+identifier here if you have several (virtual) machines using the same
+network interface and thus the same hardware address.</p>") +
 
+    /* DHCP dialog help 4/8 */
+    _("<p>The <b>Hostname to Send</b> specifies a string used for the
+hostname option field when dhcpcd sends messages to DHCP server. Some 
+DHCP servers update name server zones (forward and reverse records) 
+according to this hostname (dynamic DNS).
 
-
+Also, some DHCP servers require the <b>Hostname to Send</b> option field to
+contain a specific string in the DHCP messages from clients. Leave <i>AUTO</i>
+to send the current hostname (i.e. the one defined in <i>/etc/HOSTNAME</i>). 
+Leave empty not to send a hostname.</p>")
 
 ];
 
