@@ -38,13 +38,14 @@ map<string, map<string,any> > widget_descr = $[
 	"widget": `checkbox,
 	/* CheckBox label */
 	// is the interface administrable by users (as opposed to root)
-	"label": _("E&nable Device Control for non-root User via KInternet"),
+	"label": _("E&nable Device Control for Non-root User via KInternet"),
 	"opt": [`notify],
 	"help":
 	// Details dialog help
-_("<p>Normally only the system administrator is allowed to activate and
-deactivate a network interface. With <b>User Controlled</b>, an
-ordinary user may control the interface with KInternet.</p>
+_("<p><b><big>Device Control</big></b></p>
+<p>Normally only the system administrator is allowed to activate and
+deactivate a network interface. With <b>Enable Device Control for Non-root User
+via KInternet</b>, an ordinary user may control the interface with KInternet.</p>
 "),
 	],
 
@@ -182,8 +183,9 @@ map<string, any> MakeStartmode (list<string> ids) {
 	"help":
 	// Device activation main help. The individual parts will be
 	// substituted as %1
-_("<p>With <b>Device Activation</b>, choose when the network
-interface should be set up. <b>At Boot Time</b> starts it during system boot. <b>Never</b> does not start the device.
+_("<p><b><big>Device Activation</big></b></p> 
+<p>Choose when the network interface should be brought up. <b>At Boot Time</b> starts it during system boot. 
+<b>Never</b> does not start the device.
 %1</p>
 "),
 	];

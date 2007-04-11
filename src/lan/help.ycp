@@ -29,7 +29,8 @@ Abort saving by pressing <b>Abort</b>.</p>
 "managed" :
 	    /* Network setup method help */
 	    // NetworkManager and ifup are programs
-_("<p>Use <b>NetworkManager</b> to have a desktop applet
+_("<p><b><big>Network Setup Method</big></b></p>
+<p>Use <b>NetworkManager</b> to have a desktop applet
 manage connections for all interfaces. It is well-suited
 to switching among wired and multiple wireless networks.</p>
 ") +
@@ -53,13 +54,13 @@ Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
 
 "ipv6" :
 	    /* IPv6 help */
-_("<p>Select <b>Enable</b> IPv6 to enable ipv6 module in kernel.
+_("<p><b><big>IPv6 Protocol Settings</big></b></p>
+<p>Check <b>Enable IPv6</b> to enable ipv6 module in the kernel.
 It is possible to use IPv6 together with IPv4. This is default option.
-") +
-	    /* Network setup method help */
-_("<p>Select <b>Disable</b> IPv6 to disable autoload kernel module for ipv6.
-When ipv6 protocol is not used on your network, response time will be faster.
-") +
+To disable IPv6, uncheck this option and disable autoload of the kernel 
+module for ipv6. When ipv6 protocol is not used on your network, response 
+time can be faster.")
+ +
 _("<p>All changes will be applied after reboot.</p>"),
 
 "routing":
@@ -132,7 +133,8 @@ could return to this dialog later when the above service has terminated.</li>
 	/* Address dialog help 2/8 */
     _("<p>You can select none address setup if you don't want any IP address.</p>") +
 
-    _("<p>You can select dynamic address assignment
+    _("<p><b><big>Address Setup</big></b></p>
+<p>You can select dynamic address assignment
 if you have a <b>DHCP server</b> running on your local network.</p>
 ") +
     /* Address dialog help 3/8 */
@@ -156,7 +158,8 @@ the network mask (usually 255.255.255.0), and, optionally, the default gateway
 IP address.</p>"),
 
 "fwzone":
-_("<p>Select the <b>Firewall Zone</b> to put the interface in. If you
+_("<p><b><big>Firewall Zone</big></b></p>
+<p>Select the firewall zone to put the interface into. If you
 select a zone, the firewall will be enabled. If you do not and other 
 firewalled interfaces exist, the firewall
 will stay enabled but all traffic will be blocked for this
@@ -167,7 +170,8 @@ the firewall will be disabled.</p>"),
 _("<p><b>Mandatory Interface</b> specifies whether the network service reports failure if the interface fails to start at boot time.</p>"),
 
 "mtu":
-_("<p>You can set the maximum transfer unit (<b>MTU</b>) of an interface.</p>"),
+_("<p><b><big>Maximum Transfer Unit</big></b></p>
+<p>You can set the maximum transfer unit (<b>MTU</b>) of an interface.</p>"),
 
 "bondslave":
 _("<p>Select the salve devices for the bond device. Only the deveices which's Device Activation is Never and set as None Address Setup are available.</p>"),
