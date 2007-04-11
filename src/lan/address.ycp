@@ -347,10 +347,11 @@ void StoreDialog (string key, map event) {
  * (disables it when SuSEFirewall is not installed)
  * @param key id of the widget
  */
-symbol InitFwZone(string key) {
-    if( !SuSEFirewall4Network::IsInstalled() )
+void InitFwZone(string key) {
+    if( SuSEFirewall4Network::IsInstalled() )
+	UI::ChangeWidget(`id("FWZONE"), `Value, settings["FWZONE"]:"");
+    else
 	UI::ChangeWidget(`id("FWZONE"), `Enabled, false);
-    return nil;
 }
 
 
@@ -403,7 +404,7 @@ the network configuration.</p>"),
 	// Combo Box label
 	"label": "Assign Interface to Firewall &Zone",
 	"opt": [`hstretch],
-	"help": help["fw<one"]:"",
+	"help": help["fwzone"]:"",
 	"init" : InitFwZone,
 	],
     "MANDATORY": $[
