@@ -464,7 +464,7 @@ define string DeviceProtocol(map devmap) {
 	return _("Managed");
     }
     string ip = devmap["BOOTPROTO"]:"static";
-    if(ip == nil || ip == "" || ip == "static" || ip == "none")
+    if(ip == nil || ip == "" || ip == "static")
 	ip = devmap["IPADDR"]:"";
     else ip = toupper(ip);
     return ip;
@@ -492,10 +492,10 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 	// summary description of STARTMODE=off
 	"off"	: _("Will not be started at all")
 	];
-list<string> models = [];
-foreach(map<string, any>row, (list<map<string, any> >)SCR::Read (.probe.netcard), {
- models=add(models, row["model"]:"");
-});
+    list<string> models = [];
+    foreach(map<string, any>row, (list<map<string, any> >)SCR::Read (.probe.netcard), {
+     models=add(models, row["model"]:"");
+    });
 
     maplist(string type, map devmap, Devs, {
 	maplist(string k, map v, (map<string,map>)devmap, {
@@ -547,11 +547,14 @@ foreach(map<string, any>row, (list<map<string, any> >)SCR::Read (.probe.netcard)
 		    ];
 		if (v["STARTMODE"]:"" != "managed")
 		{
+                 if (ip != "NONE")
+		  {
 		    bullets = bullets + [
 			ip == "DHCP" ? _("IP address assigned using DHCP") :
 			sformat(_("IP address: %1, subnet mask %2")
 				, ip, v["NETMASK"]:""),
 			];
+		  }
 if (size(v["_aliases"]:$[])>0 && !NetworkService::IsManaged()){
  foreach(string key,   map<string, any> desc, (map<string ,map<string, any> >) v["_aliases"]:$[], {
  string parameters = sformat(_("IP address: %1, subnet mask %2"), desc["IPADDR"]:"", desc["NETMASK"]:"");

@@ -240,6 +240,18 @@ global define void UnsetModified () {
     modified = false;
 }
 
+
+boolean CheckNetworkManagerPlugin(){
+ if (NetworkService::IsManaged()){
+  y2milestone("Check what package is needed to configure NetworkManager");
+  string nmp = ((string)SCR::Read(.sysconfig.windowmanager.DEFAULT_WM)=="kde")?"NetworkManager-kde":"NetworkManager-gnome";
+  y2milestone("Test for %1 if installed", nmp);
+  PackageSystem::CheckAndInstallPackages([nmp]);
+ }
+ return true;
+}
+
+
 // functions for use from autoinstallation
 global define boolean isAnyInterfaceDown(){
  boolean down = false;
@@ -618,7 +630,7 @@ global define boolean Write() {
        sleep(sl);
      }
 
-    if(Abort()) return false;
+    if(!CheckNetworkManagerPlugin()) return false;
     /* Final progress step */
     ProgressNextStage(_("Finished"));
     sleep(sl);
@@ -1546,25 +1558,36 @@ define map FindMatchingDevice(map interface) {
     } else {
 	// this is the first interface, match the hardware with install.inf
 
-        /* Select the one from install.inf with the same MAC */
-	// find H["mac"] == InstallInf["hwaddr"]
-        if (tosel == nil  ) {
+	if (size(InstallInf)>0){
+         /* Select the one from install.inf with the same MAC */
+	 // find H["mac"] == InstallInf["hwaddr"]
+         if (tosel == nil  ) {
             string hwaddr = InstallInf["hwaddr"]:"";
             if(hwaddr != nil && hwaddr != "") {
                 tosel = find (map h, Hardware, ``( h["mac"]:"" == hwaddr ));
             }
             y2milestone("Rule: matching hwaddr in install.inf");
-        }
+         }
 
-        /* Select the one from install.inf with the same module */
-	// find H["module"] == InstallInf["module"]
-        if (tosel == nil) {
+         /* Select the one from install.inf with the same module */
+	 // find H["module"] == InstallInf["module"]
+         if (tosel == nil) {
             string infmodule = InstallInf["module"]:"";
             if(infmodule != nil && infmodule != "") {
                 tosel = find (map h, Hardware, ``( h["module"]:"" == infmodule ));
             }
             y2milestone("Rule: matching module in install.inf");
-        }
+         }
+	} else{
+	 /* No install.inf -> select the first connected */
+         // find H["active"] == true
+         if (tosel == nil) {
+            tosel = find (map h, Hardware, ``(
+                        h["link", "state"]:false
+                        ));
+            y2milestone("Rule: first connected");
+         }
+	}
 
         /* No install.inf driver -> select the first active */
 	// find H["active"] == true

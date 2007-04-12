@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Apr 12 16:00:12 CEST 2007 - mzugec@suse.cz
+
+- when NetworkManager enabled, install KNetworkManager/GnomeNetworkManager applet(#260532)
+- during installation propose first connected interface (#256606)
+- cosmetic fix - don't show IP/NETMASK for BOOTPROTO=NONE in description
+- 2.15.26 
+
+-------------------------------------------------------------------
 Tue Apr 10 16:27:46 CEST 2007 - kmachalkova@suse.cz
 
 - DHCP client options dialog rewritten to CWM and integrated into 
