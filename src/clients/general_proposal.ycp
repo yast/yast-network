@@ -1,7 +1,7 @@
 /**
- * File:	clients/networkmanager_proposal.ycp
+ * File:	clients/general_proposal.ycp
  * Package:	Network configuration
- * Summary:	Network mode proposal
+ * Summary:	Network mode + ipv6 proposal
  * Authors:	Martin Vidner <mvidner@suse.cz>
  *
  * $Id$
