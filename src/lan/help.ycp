@@ -129,33 +129,36 @@ could return to this dialog later when the above service has terminated.</li>
 </ol> "),
 
 "bootproto_dhcp":
-	/* Address dialog help 2-6/8: dynamic address preferred */
-	/* Address dialog help 2/8 */
-    _("<p>You can select none address setup if you don't want any IP address.</p>") +
+	/* Address dialog help 1-6/8: dynamic address preferred */
+	/* Address dialog help 1/8 */
 
     _("<p><b><big>Address Setup</big></b></p>
 <p>You can select dynamic address assignment
 if you have a <b>DHCP server</b> running on your local network.</p>
 ") +
-    /* Address dialog help 3/8 */
+    /* Address dialog help 2/8 */
     _("<p>Also select this if you do not have a static IP address assigned
 by the system administrator or your cable or DSL provider.</p>") +
-    /* Address dialog help 4/8 */
+    /* Address dialog help 3/8 */
     _("<p>Network addresses are then obtained
 <b>automatically</b> from the server.</p>
 ") +
-    /* Address dialog help 6/8 */
-    _("<p>Otherwise, network addresses must be assigned <b>manually</b>.</p>"),
+    /* Address dialog help 4/8 */
+    _("<p>Otherwise, network addresses must be assigned <b>manually</b>.</p>"), 
+
+    /* Address dialog help 5/8 */
+"bootproto_none":
+    _("<p>You can select <b>No Address Setup</b> if you don't want any IP address.</p>"),
 
 "remoteip":
-_("<p>Enter the <b>IP Address</b> (e.g., 192.168.100.99)
+_("<p>Enter <b>IP Address</b> (e.g., 192.168.100.99)
 for your computer and the <b>Remote IP Address</b> (e.g., 192.168.100.254)
 of your peer.</p>"),
 
+    /* Address dialog help 6/8 */
 "netmask":
-    _("<p>Enter the IP address (e.g., 192.168.100.99) for your computer,
-the network mask (usually 255.255.255.0), and, optionally, the default gateway
-IP address.</p>"),
+    _("<p>For <b>Static Address Setup</b> enter static IP address (e.g., 192.168.100.99) 
+for your computer and the network mask (usually 255.255.255.0)</p>"),
 
 "fwzone":
 _("<p><b><big>Firewall Zone</big></b></p>

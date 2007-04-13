@@ -359,7 +359,7 @@ map<string, map<string,any> > widget_descr_local = $[
     "_DIALOG": $[
 	"widget": `empty,
 	"help": 
-    /* Address dialog help 5/8 */
+    /* Address dialog help 7/8 */
     _("<p>Clicking <b>Next</b> completes the configuration.</p>") +
     /* Address dialog help 8/8 */
     _("<p>Contact your <b>network administrator</b> for more information about
@@ -474,10 +474,11 @@ the network configuration.</p>"),
     "BOOTPROTO_none": $[
         "widget": `radio_button,
         // radio button label
-        "label": _("None Address Setup"),
+        "label": _("No Address Setup"),
         "opt": [`notify],
         "init": CWM::InitNull,
-        "store": CWM::StoreNull
+        "store": CWM::StoreNull,
+	"help": help["bootproto_none"]:"",
     ],
 
     "BOOTPROTO_dhcp": $[
@@ -499,25 +500,23 @@ the network configuration.</p>"),
 	"store": CWM::StoreNull,
 	],
 
-    "BOOTPROTO_dhcp+autoip": $[
+/*    "BOOTPROTO_dhcp+autoip": $[
 	"widget": `radio_button,
-	/* Radio button label */
 	"label": _("A&utomatic Address Setup (via DHCP+AUTOIP)"),
 	"opt": [`notify],
 	"help": ("FIXME, help BOOTPROTO_dhcp_autoip<br>"),
 	"init": CWM::InitNull,
 	"store": CWM::StoreNull,
 	],
-
     "BOOTPROTO_autoip": $[
 	"widget": `radio_button,
-	/* Radio button label */
 	"label": _("A&utomatic Address Setup (via AUTOIP)"),
 	"opt": [`notify],
 	"help": ("FIXME, help BOOTPROTO_autoip<br>"),
 	"init": CWM::InitNull,
 	"store": CWM::StoreNull,
 	],
+*/
     "BOOTPROTO_noaddr": $[
 	"widget": `radio_button,
 	/* Radio button label */
@@ -702,7 +701,7 @@ define any AddressDialog() {
 		    `VSpacing(0.4),
 		    `Frame(_("Device Control"), `HBox(("USERCONTROL"), `HStretch())) ,
 		    `VSpacing (0.4),
-	            `Frame(_("Maximum Transfer Rate (MTU)"), `HBox(("MTU"), `HStretch()))
+	            `Frame(_("Maximum Transfer Unit (MTU)"), `HBox(("MTU"), `HStretch()))
 		    // Frame label
 //			 (`HWeight(1, "BINDTOHW")),
 //			`VSpacing(0.4),
@@ -843,10 +842,8 @@ Components of this product might not work with DHCP.</p>");
 	    `id ("BOOTPROTO"),	// CWM must not expand `id
 	    `MarginBox (1, 0,
 		`VBox (
-		    `Left ("BOOTPROTO_none"),
 		    `Left ("BOOTPROTO_dhcp"), // TODO: widget attribute align: left
-		    `Left ("BOOTPROTO_autoip"),
-		    `Left ("BOOTPROTO_dhcp+autoip"),
+		    `Left ("BOOTPROTO_none"),
 		    `Left ("BOOTPROTO_static"),
 		    address_static_contents)
 		)
@@ -961,7 +958,7 @@ Components of this product might not work with DHCP.</p>");
 	    "widget_descr": wd,
 	    "contents": contents2,
 	    /* Address dialog caption */
-	    "caption": _("Network Address Setup"),
+	    "caption": _("Network Card Setup"),
 	    "back_button" : Label::BackButton (),
 	    "next_button" : Label::NextButton (),
 	    "fallback_functions" : functions,
