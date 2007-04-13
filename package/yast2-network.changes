@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Apr 13 11:36:07 CEST 2007 - kmachalkova@suse.cz
+
+- Correct handling of network interface firewall zone, including 
+  ommited help text (#257479)
+- Helptexts adjusted to reflect UI changes (FaTE #120077)
+- BOOTPROTO_*autoip dropped  
+
+-------------------------------------------------------------------
 Thu Apr 12 16:00:12 CEST 2007 - mzugec@suse.cz
 
 - when NetworkManager enabled, install KNetworkManager/GnomeNetworkManager applet(#260532)
