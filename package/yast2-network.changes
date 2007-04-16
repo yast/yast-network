@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Apr 16 10:31:02 CEST 2007 - mzugec@suse.cz
+
+- /etc/hosts shows incorrect ip address for partition installed via network (#263035)
+- 2.15.27 
+
+-------------------------------------------------------------------
 Fri Apr 13 11:36:07 CEST 2007 - kmachalkova@suse.cz
 
 - Correct handling of network interface firewall zone, including 

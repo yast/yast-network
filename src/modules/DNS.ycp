@@ -207,7 +207,7 @@ global define boolean Write() {
     /* build FQ hostname */
     string fqhostname = Hostname::MergeFQ(hostname, domain);
 
-// FIXME whrere was NetworkDevices::Read called?
+    NetworkDevices::Read();
     /* Update /etc/hosts */
     // Take static network addresses.
     // Watch out, there may be an unused IPADDR for a DHCP interface, #49055
