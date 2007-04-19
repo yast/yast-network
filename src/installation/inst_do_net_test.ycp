@@ -23,6 +23,7 @@ import "PackageCallbacks";
 import "Proxy";
 import "GetInstArgs";
 import "Report";
+import "String";
 
 include "network/routines.ycp";
 include "network/installation/dialogs.ycp";
@@ -235,7 +236,7 @@ and correct the settings.</p>
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Kernel Network Interfaces"),
 			     `filename : "ifconfig.log" ]);
-	run_command = "/sbin/ifconfig > " + logdir + "/ifconfig.log";
+	run_command = "/sbin/ifconfig > '" + String::Quote (logdir) + "/ifconfig.log'";
 	ret_command = (integer) SCR::Execute (.target.bash, run_command,
 		      $["LANG" : GetLanguageUTF8 ()]);
 	if (ret_command != 0) y2error("Command '%1' failed -> %2", run_command, ret_command);
@@ -243,7 +244,7 @@ and correct the settings.</p>
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Kernel Routing Table"),
 			     `filename : "route.log" ]);
-	run_command = "/sbin/route -n > " + logdir + "/route.log";
+	run_command = "/sbin/route -n > '" + String::Quote (logdir) + "/route.log'";
 	ret_command = (integer) SCR::Execute (.target.bash, run_command,
 		      $["LANG" : GetLanguageUTF8 ()]);
 	if (ret_command != 0) y2error("Command '%1' failed -> %2", run_command, ret_command);
@@ -251,7 +252,7 @@ and correct the settings.</p>
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Hostname Lookup"),
 			     `filename : "resolv.conf" ]);
-	run_command = "/bin/cp /etc/resolv.conf " + logdir + "/resolv.conf";
+	run_command = "/bin/cp /etc/resolv.conf '" + String::Quote (logdir) + "/resolv.conf'";
 	ret_command = (integer) SCR::Execute (.target.bash, run_command);
 	if (ret_command != 0) y2error("Command '%1' failed -> %2", run_command, ret_command);
     }
@@ -265,7 +266,7 @@ and correct the settings.</p>
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Kernel Messages"),
 			     `filename : "messages" ]);
-	run_command = Directory::ybindir + "/cut-messages > " + logdir + "/messages";
+	run_command = Directory::ybindir + "/cut-messages > '" + String::Quote (logdir) + "/messages'";
 	ret_command = (integer) SCR::Execute (.target.bash, run_command);
 	if (ret_command != 0) y2error("Command '%1' failed -> %2", run_command, ret_command);
 
@@ -274,7 +275,7 @@ and correct the settings.</p>
 	    logs = add (logs, $[ `menuname : _("PPP Daemon"),
 				 `filename : "smpppd.log",
 				 `prio : 20 ]);
-	    run_command = "/bin/cp " + Internet::logfile + " " + logdir + "/smpppd.log";
+	    run_command = "/bin/cp '" + String::Quote (Internet::logfile) + "' '" + String::Quote (logdir) + "/smpppd.log'";
 	    ret_command = (integer) SCR::Execute (.target.bash, run_command);
 	    if (ret_command != 0) y2error("Command '%1' failed -> %2", run_command, ret_command);
 	}
