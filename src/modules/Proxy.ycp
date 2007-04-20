@@ -16,6 +16,7 @@ module "Proxy";
 textdomain "network";
 
 import "Summary";
+import "Progress";
 
 include "network/routines.ycp";
 include "network/runtime.ycp";
@@ -36,6 +37,21 @@ global string no = "";
 global string user = "";
 global string pass = "";
 
+/**
+ * Display popup at the end of the proxy configuration
+ * @param modified true if proxy settings have been modified
+ */
+define void ProxyFinishPopup(boolean modified) ``{
+
+    /* Popup text */
+string text = _("Applications that support it, such as YaST2 Online Update,
+use them immediately. Other applications use them after a new login
+(lynx, wget). Some applications do not support these settings at all --
+they use their own settings system.
+");
+
+    FinishPopup(modified, "proxy", text, "", []);
+}
 
 /**
  * Read settings
@@ -90,6 +106,17 @@ global define boolean Write() {
 	return true;
     }
 
+    list <string> steps = [
+	_("Update proxy configuration"),
+    ];
+
+    string caption = _("Saving Proxy Configuration");
+    integer sl = 100; //sleep for longer time, so that progress does not disappear right afterwards
+
+    Progress::New(caption, " ", size(steps), steps, [], "");
+
+    ProgressNextStage(_("Updating proxy configuration..."));
+
     /* Update /etc/sysconfig/proxy */
     SCR::Write(.sysconfig.proxy.PROXY_ENABLED, enabled?"yes":"no");
     SCR::Write(.sysconfig.proxy.HTTP_PROXY, http);
@@ -107,6 +134,11 @@ global define boolean Write() {
     SCR::Write(.root.curlrc.proxy-user, proxyuser);
     SCR::Write(.root.curlrc.proxy-user.comment, ChangedComment("proxy"));
     SCR::Write(.root.curlrc, nil);
+    sleep(sl);
+    Progress::NextStage();
+
+    if (!Mode::config ())
+	ProxyFinishPopup(true);
 
     /* Update /root/.wgetrc */
     /* YOU uses curl(1)
