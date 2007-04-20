@@ -312,6 +312,7 @@ global define boolean Write() {
 
     } else y2milestone("resolv.conf changed by %1, leave untouched", resolv_conf_process);
 
+    Progress::NextStage();
     modified = false;
     return true;
 }
