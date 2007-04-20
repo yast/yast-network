@@ -20,6 +20,7 @@ import "NetworkDevices";
 import "Map";
 
 include "network/runtime.ycp";
+include "network/routines.ycp";
 
 /**
  * All routes
@@ -137,6 +138,21 @@ global define boolean Write() {
 	return true;
     }
 
+    list <string> steps = [
+	/* Progress stage 1*/
+	_("Write IP forwarding settings"),
+	/* Progress stage 2*/
+	_("Write routing settings"),
+    ];
+
+    string caption = _("Saving Routing Configuration");
+    integer sl = 0; //100; //for testing
+
+    Progress::New(caption, " ", size(steps), steps, [], "");
+
+    /*Progress stage 1/2*/
+    ProgressNextStage(_("Writing IP forwarding settings..."));
+
     if(Forward) {
 	SCR::Write(.sysconfig.sysctl.IP_FORWARD, "yes");
 	SCR::Execute(.target.bash, "echo 1 > /proc/sys/net/ipv4/ip_forward");
@@ -145,11 +161,15 @@ global define boolean Write() {
 	SCR::Write(.sysconfig.sysctl.IP_FORWARD, "no");
 	SCR::Execute(.target.bash, "echo 0 > /proc/sys/net/ipv4/ip_forward");
     }
+    sleep(sl);
 
     /* at first stop the running routes */
     // FIXME SCR::Execute(.target.bash, "/etc/init.d/route stop");
     // sysconfig does not support restarting routes only,
     // so we let our caller do it together with other things
+
+    /*Progress stage 2/2*/
+    ProgressNextStage(_("Writing routing settings..."));
 
     /* create if not exists, otherwise backup */
     if(SCR::Read(.target.size, routes_file) < 0)
@@ -164,6 +184,7 @@ global define boolean Write() {
     else
 	/* update the routes config */
 	ret = SCR::Write(.routes, Routes);
+     sleep(sl);
 
     /* and finally set up the new routes */
     // FIXME SCR::Execute(.target.bash, "/etc/init.d/route start");
