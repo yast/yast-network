@@ -577,8 +577,10 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 6 */
     ProgressNextStage(_("Writing hostname and DNS configuration..."));
+    boolean orig = Progress::set (false);
     DNS::Write();
     Host::Write();
+    Progress::set (orig);
     sleep(sl);
 
     if(Abort()) return false;
@@ -593,7 +595,7 @@ global define boolean Write() {
         if(Abort()) return false;
         /* Progress step 8 */
         ProgressNextStage(_("Writing firewall settings..."));
-        boolean orig = Progress::set (false);
+        orig = Progress::set (false);
         SuSEFirewall4Network::Write ();
         Progress::set (orig);
         sleep(sl);
