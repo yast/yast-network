@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Apr 20 15:51:24 CEST 2007 - kmachalkova@suse.cz
+
+- Added write progress dialogs to DNS, Routing, Host, Proxy and 
+  Remote (administration) modules (#258846) 
+
+-------------------------------------------------------------------
 Mon Apr 16 10:31:02 CEST 2007 - mzugec@suse.cz
 
 - /etc/hosts shows incorrect ip address for partition installed via network (#263035)
