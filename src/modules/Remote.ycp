@@ -22,6 +22,8 @@ import "SuSEFirewall";
 import "Progress";
 import "Linuxrc";
 
+include "network/routines.ycp";
+
 /**
  * Allow remote administration
  */
@@ -101,10 +103,32 @@ void CreateSaxAutomaticConfiguration() {
  * @return true on success
  */
 global boolean Write() {
+
+    list <string> steps = [
+        /* Progress stage 1 */
+	_("Write firewall settings"),
+        /* Progress stage 2 */
+	_("Configure display manager"),
+    ];
+
+    if (Mode::normal()) {
+        /* Progress stage 3+4 */
+	steps = add( steps,  _("Run SuSEconfig") );
+	steps = add( steps, _("Restart the services") );
+    }
+
+    string caption = _("Saving Remote Administration Configuration");
+    integer sl = 0; //100; //for testing
+
+    Progress::New(caption, " ", size(steps), steps, [], "");
+
+    ProgressNextStage(_("Writing firewall settings..."));
     boolean current_progress = Progress::set(false);
     SuSEFirewall::Write();
     Progress::set(current_progress);
+    sleep(sl);
 
+    ProgressNextStage(_("Configuring display manager..."));
     boolean have_xinetd = Package::Installed("xinetd");
 
     if(allow_administration) {
@@ -164,15 +188,20 @@ global boolean Write() {
         });
         SCR::Write(.etc.xinetd_conf.services, xinetd);
    }
+   sleep(sl);
 
    if(Mode::normal ()) {
+	ProgressNextStage(_("Runing SuSEconfig..."));
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module xdm");
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kde3");
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kdm3");
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module gdm");
+	sleep(sl);
 
 	boolean dm_was_running = Service::Status("xdm") == 0;
-	if(allow_administration) {
+
+	ProgressNextStage(_("Restarting the service..."));
+	if (allow_administration) {
 	    SCR::Write(.etc.inittab.id, "5:initdefault:");
 	    SCR::Write(.etc.inittab, nil);
 
@@ -193,6 +222,8 @@ global boolean Write() {
 	        Service::RunInitScript ("xinetd", "try-restart");
 	    }
 	}
+	sleep(sl);
+        Progress::NextStage();
 
 	// FIXME: reload XDM (#40458)
 	// For now, inform the user
