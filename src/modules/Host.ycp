@@ -16,6 +16,8 @@ import "Hostname";
 import "String";
 import "Summary";
 
+include "network/routines.ycp";
+
 /**
  * All hosts
  * See hosts(5)
@@ -92,6 +94,18 @@ global define boolean Write() {
 	return true;
     }
 
+
+    list <string> steps = [
+	_("Update /etc/hosts"),
+    ];
+
+    string caption = _("Saving Hostname Configuration");
+    integer sl = 500; //sleep for longer time, so that progress does not disappear right afterwards
+
+    Progress::New(caption, " ", size(steps), steps, [], "");
+
+    ProgressNextStage(_("Updating /etc/hosts..."));
+
     /* Create if not exists, otherwise backup */
     if(SCR::Read(.target.size, hosts_file) < 0)
 	SCR::Write(.target.string, hosts_file, "");
@@ -113,6 +127,8 @@ global define boolean Write() {
     }
 
     SCR::Write(.etc.hosts, nil);
+    sleep(sl);
+    Progress::NextStage();
     return ret == true;
 }
 
