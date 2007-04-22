@@ -25,15 +25,8 @@ include "network/summary.ycp";
  * Manual network card configuration dialog
  * @return dialog result
  */
-define any HardwareDialog() {
-
-    ScreenName("lan-hardware");
-
-    /* Manual dialog caption */
-    string caption = _("Manual Network Card Configuration");
-
     /* Manual dialog help 1/4 */
-    string help = _("<p>Here, set up your networking device.
+    string hw_help = _("<p>Here, set up your networking device.
 The values are written to <i>/etc/sysconfig/hardware/hwcfg-*</i>.</p>
 ") +
 
@@ -47,7 +40,7 @@ with the same module name, options will be merged while saving.</p>");
     {
 
     /* Manual dialog help 3/4 */
-help = help + _("<p>Get a list of available network cards by pressing
+hw_help = hw_help + _("<p>Get a list of available network cards by pressing
 <b>Select from List</b>.</p>") +
 
     /* Manual dialog help 4/4 */
@@ -60,7 +53,7 @@ If you have a <b>USB</b> network card, select USB.</p>
     {
 	// overwrite help
 	/* Manual dialog help 5/4 */
-	help = _("<p>Here, set up your networking device. The values will be
+	hw_help = _("<p>Here, set up your networking device. The values will be
 written to <i>/etc/modprobe.conf</i> or <i>/etc/chandev.conf</i>.</p>
 ") +
 
@@ -68,47 +61,57 @@ written to <i>/etc/modprobe.conf</i> or <i>/etc/chandev.conf</i>.</p>
 _("<p>Options for the module should be written in the format specified
 in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     }
+map<string, any> hardware = nil;
 
-    string modul = NetworkModules::Alias; // FIXME: MOD Lan::Module["module"]:"";
-    string options = NetworkModules::Options; // FIXME: MOD Lan::Module["options"]:"";
-    string hotplug = Lan::hotplug;
+void initHwDialog(string text) {
+    hardware = $[];
+//    ScreenName("lan-hardware");
+
+    /* Manual dialog caption */
+    string caption = _("Manual Network Card Configuration");
+
+
+    hardware["modul"] = NetworkModules::Alias; // FIXME: MOD Lan::Module["module"]:"";
+    hardware["options"] = NetworkModules::Options; // FIXME: MOD Lan::Module["options"]:"";
+    hardware["hotplug"] = Lan::hotplug;
     y2milestone("hotplug=%1", Lan::hotplug);
-    list<string> modules_from_hwinfo = Lan::getModulesFor(Lan::nm_name, modul );
+    hardware["modules_from_hwinfo"] = Lan::getModulesFor(Lan::nm_name, hardware["modul"]:"" );
 
-    string type = Lan::type;
-    if(type == "") {
+    hardware["type"] = Lan::type;
+    if(hardware["type"]:"" == "") {
 	y2error("Shouldn't happen -- type is empty. Assuming eth.");
-	type = "eth";
+	hardware["type"] = "eth";
     }
-    string realtype = NetworkDevices::RealType(type, hotplug);
-    string device = Lan::device;
-    string default_device = Lan::device;
+    hardware["realtype"] = NetworkDevices::RealType(hardware["type"]:"", hardware["hotplug"]:"");
+    hardware["device"] = Lan::device;
+    hardware["default_device"] = Lan::device;
     // #38213, remember device id when we switch back from pcmcia/usb
-    string non_hotplug_device_id = device;
-    string hwcfg = Lan::nm_name;
+    hardware["non_hotplug_device_id"] = hardware["device"]:"";
+    hardware["hwcfg"] = Lan::nm_name;
+if (Lan::nm_name=="" && Lan::nm_name_old!=nil) hardware["hwcfg"]=Lan::nm_name_old;
 
     // FIXME duplicated in address.ycp
-    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond" ];
+    hardware["device_types"] = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond" ];
 
     if(Arch::s390 ())
-	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "ficon", "iucv", "qeth", "lcs" ];
+	hardware["device_types"] = [ "eth", "tr", "hsi", "ctc", "escon", "ficon", "iucv", "qeth", "lcs" ];
 
     if(Arch::ia64 ())
-	device_types = add(device_types, "xp");
+	hardware["device_types"] = add(hardware["device_types"]:[], "xp");
 
-    if(issubstring(device, "bus-pcmcia"))
-	hotplug = "pcmcia";
-    else if(issubstring(device, "bus-usb"))
-	hotplug = "usb";
+    if(issubstring(hardware["device"]:"", "bus-pcmcia"))
+	hardware["hotplug"] = "pcmcia";
+    else if(issubstring(hardware["device"]:"", "bus-usb"))
+	hardware["hotplug"] = "usb";
     y2milestone("hotplug=%1", Lan::hotplug);
 
     term CheckBoxes = `HBox(
 	`HSpacing(1.5),
 	/* CheckBox label */
-	`CheckBox(`id(`pcmcia), `opt(`notify), _("&PCMCIA"), hotplug == "pcmcia"),
+	`CheckBox(`id(`pcmcia), `opt(`notify), _("&PCMCIA"), hardware["hotplug"]:"" == "pcmcia"),
 	`HSpacing(1.5),
 	/* CheckBox label */
-	`CheckBox(`id(`usb), `opt(`notify), _("&USB"), hotplug == "usb"),
+	`CheckBox(`id(`usb), `opt(`notify), _("&USB"), hardware["hotplug"]:"" == "usb"),
 	`HSpacing(1.5)
     );
 
@@ -117,7 +120,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	/* ComboBox label */
 	`ComboBox(`id(`hotplug), `opt(`notify), _("&Hotplug Type"), []),
 	/* CheckBox label */
-	`CheckBox(`id(`pci), `opt(`notify), _("P&CI"), hotplug == "pci"),
+	`CheckBox(`id(`pci), `opt(`notify), _("P&CI"), hardware["hotplug"]:"" == "pci"),
 	`HSpacing(1.5)
     );
 
@@ -133,74 +136,48 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     term KernelBox = `Frame(_("&Kernel Module"), `HBox(`HSpacing(0.5), `VBox(
 	`VSpacing(0.4),
 	/* Text entry label */
-	`TextEntry(`id(`hwcfg), _("&Hardware Configuration Name"), hwcfg),
+	`TextEntry(`id(`hwcfg), _("&Hardware Configuration Name"), hardware["hwcfg"]:""),
 	`HBox(
 	    /* Text entry label */
-	    `ComboBox(`id(`modul), `opt(`editable), _("&Module Name"), modules_from_hwinfo),
+	    `ComboBox(`id(`modul), `opt(`editable), _("&Module Name"), hardware["modules_from_hwinfo"]:[]),
 	    `HSpacing(0.2),
-	    `TextEntry(`id(`options), Label::Options (), options)
+	    `TextEntry(`id(`options), Label::Options (), hardware["options"]:"")
 	),
 	`VSpacing(0.4),
 	CheckBoxes,
 	`VSpacing(0.4)
     ),`HSpacing(0.5)));
-    list devices = Lan::FreeDevices(realtype); // TODO: id-, bus-, ... here
-    if(!contains(devices, device)) devices = prepend(devices, device);
+    hardware["devices"] = Lan::FreeDevices(hardware["realtype"]:""); // TODO: id-, bus-, ... here
+    if(!contains(hardware["devices"]:[], hardware["device"]:"")) hardware["devices"] = prepend(hardware["devices"]:[], hardware["device"]:"");
 
     term DeviceNumberBox = `ReplacePoint(`id(`rnum),
 	/* TextEntry label */
-	`ComboBox (`id(`num), `opt(`editable, `hstretch), _("&Configuration Name"), [device]));
+	`ComboBox (`id(`num), `opt(`editable, `hstretch), _("&Configuration Name"), [hardware["device"]:""]));
 
     /* Manual dialog contents */
     term TypeNameWidgets = 
-	    /* Frame label */
-	    `Frame(_("Network &Configuration"),`VBox(
+//	    `Frame(_("Network &Configuration"),
+	       `VBox(
 		`VSpacing(0.2),
 		`HBox(
 		    `HSpacing(0.5),
 		    `ComboBox(`id(`dev), `opt(`hstretch, `notify),
 			/* ComboBox label */
-			_("&Device Type"), BuildTypesList(device_types, type)),
+			_("&Device Type"), BuildTypesList(hardware["device_types"]:[], hardware["type"]:"")),
 		    `HSpacing(1.5),
 		    DeviceNumberBox,
 		    `HSpacing(0.5)
-		),
-		`VSpacing(0.2)
-	    ));
+		)
+//		`VSpacing(0.2)
+//	    )
+	      );
 
     /* Add hardware -> don't allow some changes (card type) */
     // FIXME: devname if(Lan::operation == `add && Lan::unique != "") {
-    if(false) {
-
-	string typ = DeviceType(type);
-	if(hotplug == "pcmcia") typ = typ + " (PCMCIA)";
-	if(hotplug == "usb") typ = typ + " (USB)";
-
-	TypeNameWidgets =
-		/* Frame label */
-		`Frame(_("Configuration Name"),`VBox(
-		    `VSpacing(0.2),
-		    `HBox(
-			`HSpacing(0.9),
-			`VBox(
-			    /* Label text */
-			    `Left(`Label(_("Device Type:"))),
-			    `VSpacing(0.2),
-			    `Left(`Label(`opt(`outputField), typ))
-			),
-			`HSpacing(0.5),
-			DeviceNumberBox,
-			`HSpacing(0.5)
-		    ),
-		    `VSpacing(0.2)
-		));
-    }
 
     /* Edit -> don't allow some changes */
     // FIXME: devname if(true /* FIXME: devname Lan::operation == `edit */) {
     if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */) {
-
-	ListButton = `VSpacing(0);
 
 	TypeNameWidgets =
 		`Left(`HSquash(`Left(`VBox(
@@ -208,14 +185,14 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 			/* Label text */
 			`HWeight(1, `Right(`Label(_("Configuration Name")))),
 			`HSpacing(0.5),
-			`HWeight(1, `Left(`Label(`opt(`outputField), NetworkDevices::device_name(realtype, device))))
+			`HWeight(1, `Left(`Label(`opt(`outputField), NetworkDevices::device_name(hardware["realtype"]:"", hardware["device"]:""))))
 		    ),
 		    `VSpacing(0.5),
 		    `HBox(
 			/* Label text */
 			`HWeight(1, `Right(`Label(_("Hardware Name")))),
 			`HSpacing(0.5),
-			`HWeight(1, `Left(`Label(`opt(`outputField), hwcfg)))
+			`HWeight(1, `Left(`Label(`opt(`outputField), hardware["hwcfg"]:"")))
 		    )
 		))));
     }
@@ -229,7 +206,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	`HStretch()
     );
 
-    term contents = `CheckBoxFrame(`id(`enable_hwconfig), caption, hwcfg != "",
+    term contents = `CheckBoxFrame(`id(`enable_hwconfig), caption, hardware["hwcfg"]:"" != "",
 	`HBox(
 	`HSpacing(2),
 	`VBox(
@@ -241,237 +218,26 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 	    ButtonBox,
 	    `VSpacing(0.5)
 	    ),
-	`HSpacing(2)
+	`HSpacing(2),
+	`VStretch()
 	));
 
-    if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */)
-	Wizard::SetContentsButtons(caption, contents, help,
-		Label::BackButton(), Label::OKButton());
-    else
-	Wizard::SetContentsButtons(caption, contents, help,
-		Label::BackButton(), Label::NextButton());
+    UI::ReplaceWidget(`hw_content, contents);
+if (Lan::nm_name=="" && Lan::nm_name_old!=nil) UI::ChangeWidget(`enable_hwconfig, `Value, false);
+    hardware["no_hotplug"] = hardware["hotplug"]:"" == "";
+    hardware["no_hotplug_dummy"] = hardware["no_hotplug"]:false && hardware["type"]:"" != "dummy";
+    UI::ChangeWidget(`id(`modul), `Enabled, hardware["no_hotplug_dummy"]:false);
+    UI::ChangeWidget(`id(`options), `Enabled, hardware["no_hotplug_dummy"]:false);
+    ChangeWidgetIfExists(`id(`list), `Enabled, hardware["no_hotplug_dummy"]:false);
+    ChangeWidgetIfExists(`id(`hwcfg), `Enabled, hardware["no_hotplug"]:false);
+    ChangeWidgetIfExists(`id(`usb), `Enabled, (hardware["hotplug"]:"" == "usb" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
+    ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hardware["hotplug"]:"" == "pcmcia" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
 
-    boolean no_hotplug = hotplug == "";
-    boolean no_hotplug_dummy = no_hotplug && type != "dummy";
-    UI::ChangeWidget(`id(`modul), `Enabled, no_hotplug_dummy);
-    UI::ChangeWidget(`id(`options), `Enabled, no_hotplug_dummy);
-    ChangeWidgetIfExists(`id(`list), `Enabled, no_hotplug_dummy);
-    ChangeWidgetIfExists(`id(`hwcfg), `Enabled, no_hotplug);
-    ChangeWidgetIfExists(`id(`usb), `Enabled, (hotplug == "usb" || hotplug == "") && type != "dummy");
-    ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hotplug == "pcmcia" || hotplug == "") && type != "dummy");
     ChangeWidgetIfExists(`id(`num), `ValidChars, NetworkDevices::ValidCharsIfcfg ());
     ChangeWidgetIfExists(`id(`hwcfg), `ValidChars, NetworkModules::ValidCharsHwcfg ());
-
-    any ret = nil;
-    while(true) {
-	ret = UI::UserInput();
-
-	/* abort? */
-	if(ret == `abort || ret == `cancel) {
-	    if(ReallyAbort()) break;
-	    else continue;
-	}
-
-	/* change device type or pcmcia/usb card? */
-	else if(ret == `pcmcia || ret == `usb || ret == `dev) {
-
-	    if(UI::WidgetExists(`id(`pcmcia)) || UI::WidgetExists(`id(`usb))) {
-		if(UI::QueryWidget(`id(`pcmcia), `Value) == true)
-		    hotplug = "pcmcia";
-		else if(UI::QueryWidget(`id(`usb), `Value) == true)
-		    hotplug = "usb";
-		else
-		    hotplug = "";
-	    }
-	    y2debug("hotplug=%1", hotplug);
-
-	    if(UI::WidgetExists(`id(`dev))) {
-		type = (string) UI::QueryWidget(`id(`dev), `Value);
-		realtype = NetworkDevices::RealType(type, hotplug);
-	    }
-	    y2debug("type=%1", type);
-	    y2debug("realtype=%1", realtype);
-
-	    if(type == "usb") {
-		UI::ChangeWidget(`id(`usb), `Value, true);
-		hotplug = "usb";
-	    }
-
-	    no_hotplug = hotplug == "";
-	    no_hotplug_dummy = no_hotplug && type != "dummy";
-	    UI::ChangeWidget(`id(`modul), `Enabled, no_hotplug_dummy);
-	    UI::ChangeWidget(`id(`options), `Enabled, no_hotplug_dummy);
-	    ChangeWidgetIfExists(`id(`list), `Enabled, no_hotplug_dummy);
-	    ChangeWidgetIfExists(`id(`hwcfg), `Enabled, no_hotplug);
-	    ChangeWidgetIfExists(`id(`usb), `Enabled, (hotplug == "usb" || hotplug == "") && type != "dummy");
-	    ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hotplug == "pcmcia" || hotplug == "") && type != "dummy");
-
-	    // list devices = Lan::FreeDevices(realtype);
-	    // default_device = (string) devices[0]:"";
-	    /* TextEntry label */
-	    // UI::ReplaceWidget(`id(`rnum), `TextEntry(`id(`num), `opt(`hstretch), _("&Configuration Name"), Lan::nm_name));
-
-	    device = (string) UI::QueryWidget (`id (`num), `Value);
-	    if (device != "bus-usb" && device != "bus-pcmcia")
-	    {
-		non_hotplug_device_id = device;
-	    }
-
-	    if(hotplug == "usb")
-		device = "bus-usb";
-	    else if(hotplug == "pcmcia")
-		device = "bus-pcmcia";
-	    else
-		device = non_hotplug_device_id;
-
-	    UI::ChangeWidget(`id(`num), `Value, device);
-
-	    if(Arch::s390 ()) {
-		string drvtype = Lan::DriverType (type);
-
-		if (contains (["lcs", "qeth", "ctc"], drvtype))
-		    modul = drvtype;
-		else if (drvtype == "iucv")
-		    modul = "netiucv";
-		UI::ChangeWidget(`id(`modul), `Value, modul);
-	    }
-	    if(type == "xp") {
-		modul = "xpnet";
-		UI::ChangeWidget(`id(`modul), `Value, modul);
-	    }
-	    else if (type == "dummy") // #44582
-	    {
-		hwcfg = (string) UI::QueryWidget (`id (`hwcfg), `Value);
-
-		modul = "dummy";
-		options = sformat ("-o dummy-%1", hwcfg);
-		UI::ChangeWidget(`id(`modul), `Value, modul);
-		UI::ChangeWidget(`id(`options), `Value, options);
-	    }
-            else if (type == "bond")
-            {
-                UI::ChangeWidget(`id(`hwcfg), `Enabled, false);
-                UI::ChangeWidget(`id(`modul), `Enabled, false);
-                UI::ChangeWidget(`id(`options), `Enabled, false);
-                UI::ChangeWidget(`id(`pcmcia), `Enabled, false);
-                UI::ChangeWidget(`id(`usb), `Enabled, false);
-		UI::ChangeWidget(`id(`list), `Enabled, false);
-
-                UI::ChangeWidget(`id(`hwcfg), `Value, "");
-                UI::ChangeWidget(`id(`modul), `Value, "");
-                UI::ChangeWidget(`id(`options), `Value, "");
-            }
-
-	    continue;
-	}
-	else if(ret == `back) {
-	    break;
-	}
-	/* select from the list *//*
-	else if(ret == `list) {
-	    Lan::type = type;
-	    Lan::device = tointeger(UI::QueryWidget(`id(`num), `Value));
-	    break;
-	} */
-	else if(ret == `next || ret == `list) {
-	    /* FIXME: check_* */
-       if(!(boolean)UI::QueryWidget(`enable_hwconfig, `Value))
-        {
-
-NetworkModules::DeleteM(Lan::nm_name);
-if(Lan::nm_name_old==nil) Lan::nm_name_old = Lan::nm_name;
-Lan::nm_name="";
-map<string, any> tmp_current=$[];
-foreach(string key, any value, NetworkDevices::Current, {
-if (key != "_nm_name") tmp_current[key]=value;
-});
-NetworkDevices::Current=tmp_current;
-        } else
-	if(UI::WidgetExists(`id(`hwcfg))) {
-	    Lan::nm_name_old = Lan::nm_name;
-	    Lan::nm_name = (string) UI::QueryWidget(`id(`hwcfg), `Value);
-	}
-
-	    if(UI::WidgetExists(`id(`hwcfg))) {
-		hwcfg = (string) UI::QueryWidget (`id (`hwcfg), `Value);
-		if (Lan::operation == `add || hwcfg != Lan::nm_name) {
-		    if (contains (NetworkModules::ListM(""), hwcfg)) {
-			UI::SetFocus (`id (`hwcfg));
-			/* Popup text */
-			Popup::Error(sformat(_("Hardware configuration %1 already exists.
-Choose a different one."), hwcfg));
-			continue;
-		    }
-		}
-	    }
-
-	    if(Lan::operation == `add && UI::WidgetExists(`id(`num))) {
-		string nm = (string) UI::QueryWidget(`id(`num), `Value);
-		if(Lan::operation == `add || (device != Lan::device && type != Lan::type)) {
-		    if(contains(NetworkDevices::List(""), NetworkDevices::device_name(type, nm))) {
-			/* Popup text */
-			Popup::Error(sformat(_("Configuration name %1 (%2) already exists.
-Choose a different one."), nm, NetworkDevices::device_name(type, nm)));
-			UI::SetFocus(`id(`num));
-			continue;
-		    }
-		}
-	    }
-
-	    if(UI::WidgetExists(`id(`num))) {
-		string devic = (string) UI::QueryWidget(`id(`num), `Value);
-		if(false /* devic != default_device */) {
-		    y2warning("Default device: %1 -> %2", default_device, devic);
-		    /* Popup text */
-		    string pop = _("You changed the default device number.
-
-This possibility is only intended for systems with built-in network cards
-or cards with multiple interfaces. If you do not have such network card,
-this would probably result in a nonfunctional network configuration.
-
-Really continue?
-");
-		    if(Popup::YesNoHeadline(Label::WarningMsg(), pop) == true) {
-			y2warning("Default device changed!");
-			break;
-		    }
-		    else continue;
-		}
-	    }
-	    break;
-	}
-	else {
-	    y2error("Unexpected return code: %1", ret);
-	    continue;
-	}
-    }
-
-    if(ret == `next || ret == `list) {
-	NetworkModules::Alias /* FIXME: MOD Lan::Module["module"] */ = (string) UI::QueryWidget(`id(`modul), `Value);
-	NetworkModules::Options /* FIXME: MOD Lan::Module["options"] */ = (string) UI::QueryWidget(`id(`options), `Value);
-
-	if(UI::WidgetExists(`id(`num)))
-	    Lan::device = (string) UI::QueryWidget(`id(`num), `Value);
-
-	if(UI::WidgetExists(`id(`pcmcia)) || UI::WidgetExists(`id(`usb))) {
-	    if(UI::QueryWidget(`id(`pcmcia), `Value) == true)
-		Lan::hotplug = "pcmcia";
-	    else if(UI::QueryWidget(`id(`usb), `Value) == true)
-		Lan::hotplug = "usb";
-	    else
-		Lan::hotplug = "";
-	}
-	Lan::hotplug = "";
-
-	if(UI::WidgetExists(`id(`dev))) {
-	    type = (string) UI::QueryWidget(`id(`dev), `Value);
-	    Lan::type = type;
-	}
-
-	y2milestone("type=%1",type);
-    }
-    return ret;
 }
+
+
 
 /**
  * Call back for a manual selection from the list
@@ -564,6 +330,180 @@ for a particular network card by entering the name in the search entry.</p>");
 
     return ret;
 }
+
+
+
+
+symbol handleHW (string key, map event) {
+ symbol ret=nil;
+ if (event["EventReason"]:"" == "ValueChanged" || event["EventReason"]:"" == "Activated") ret = (symbol)event["WidgetID"]:nil;
+if (ret == `list) SelectionDialog();
+ if(ret == `pcmcia || ret == `usb || ret == `dev) {
+
+
+	    if(UI::WidgetExists(`id(`pcmcia)) || UI::WidgetExists(`id(`usb))) {
+		if(UI::QueryWidget(`id(`pcmcia), `Value) == true)
+		    hardware["hotplug"] = "pcmcia";
+		else if(UI::QueryWidget(`id(`usb), `Value) == true)
+		    hardware["hotplug"] = "usb";
+		else
+		    hardware["hotplug"] = "";
+	    }
+	    y2debug("hotplug=%1", hardware["hotplug"]:"");
+
+	    if(UI::WidgetExists(`id(`dev))) {
+//		type = (string) UI::QueryWidget(`id(`dev), `Value);
+//		realtype = NetworkDevices::RealType(type, hotplug);
+               hardware["type"] = (string) UI::QueryWidget(`id(`dev), `Value);
+               hardware["realtype"] = NetworkDevices::RealType(hardware["type"]:"", hardware["hotplug"]:"");
+	    }
+	    y2debug("type=%1", hardware["type"]:"");
+	    y2debug("realtype=%1", hardware["realtype"]:"");
+
+	    if(hardware["type"]:"" == "usb") {
+		UI::ChangeWidget(`id(`usb), `Value, true);
+		hardware["hotplug"] = "usb";
+	    }
+
+           hardware["no_hotplug"] = hardware["hotplug"]:"" == "";
+           hardware["no_hotplug_dummy"] = hardware["no_hotplug"]:false && hardware["type"]:"" != "dummy";
+           UI::ChangeWidget(`id(`modul), `Enabled, hardware["no_hotplug_dummy"]:false);
+           UI::ChangeWidget(`id(`options), `Enabled, hardware["no_hotplug_dummy"]:false);
+           ChangeWidgetIfExists(`id(`list), `Enabled, hardware["no_hotplug_dummy"]:false);
+           ChangeWidgetIfExists(`id(`hwcfg), `Enabled, hardware["no_hotplug"]:false);
+           ChangeWidgetIfExists(`id(`usb), `Enabled, (hardware["hotplug"]:"" == "usb" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
+           ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hardware["hotplug"]:"" == "pcmcia" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
+
+
+	    // list devices = Lan::FreeDevices(realtype);
+	    // default_device = (string) devices[0]:"";
+	    /* TextEntry label */
+	    // UI::ReplaceWidget(`id(`rnum), `TextEntry(`id(`num), `opt(`hstretch), _("&Configuration Name"), Lan::nm_name));
+
+	    hardware["device"] = (string) UI::QueryWidget (`id (`num), `Value);
+	    if (hardware["device"]:"" != "bus-usb" && hardware["device"]:"" != "bus-pcmcia")
+	    {
+		hardware["non_hotplug_device_id"] = hardware["device"]:"";
+	    }
+
+	    if(hardware["hotplug"]:"" == "usb") hardware["device"] = "bus-usb";
+	    	else if(hardware["hotplug"]:"" == "pcmcia") hardware["device"] = "bus-pcmcia";
+	    		else hardware["device"] = hardware["non_hotplug_device_id"]:"";
+
+	    UI::ChangeWidget(`id(`num), `Value, hardware["device"]:"");
+
+	    if(Arch::s390 ()) {
+		string drvtype = Lan::DriverType (hardware["type"]:"");
+
+		if (contains (["lcs", "qeth", "ctc"], drvtype))
+		    hardware["modul"] = drvtype;
+		else if (drvtype == "iucv")
+		    hardware["modul"] = "netiucv";
+		UI::ChangeWidget(`id(`modul), `Value, hardware["modul"]:"");
+	    }
+	    if(hardware["type"]:"" == "xp") {
+		hardware["modul"] = "xpnet";
+		UI::ChangeWidget(`id(`modul), `Value, hardware["modul"]:"");
+	    }
+	    else if (hardware["type"]:"" == "dummy") // #44582
+	    {
+		hardware["hwcfg"] = (string) UI::QueryWidget (`id (`hwcfg), `Value);
+
+		hardware["modul"] = "dummy";
+		hardware["options"] = sformat ("-o dummy-%1", hardware["hwcfg"]:"");
+		UI::ChangeWidget(`id(`modul), `Value, hardware["modul"]:"");
+		UI::ChangeWidget(`id(`options), `Value, hardware["options"]:"");
+	    }
+            else if (hardware["type"]:"" == "bond")
+            {
+                UI::ChangeWidget(`id(`hwcfg), `Enabled, false);
+                UI::ChangeWidget(`id(`modul), `Enabled, false);
+                UI::ChangeWidget(`id(`options), `Enabled, false);
+                UI::ChangeWidget(`id(`pcmcia), `Enabled, false);
+                UI::ChangeWidget(`id(`usb), `Enabled, false);
+		UI::ChangeWidget(`id(`list), `Enabled, false);
+
+                UI::ChangeWidget(`id(`hwcfg), `Value, "");
+                UI::ChangeWidget(`id(`modul), `Value, "");
+                UI::ChangeWidget(`id(`options), `Value, "");
+            }
+	}
+ return nil;
+}
+
+void storeHW (string key, map event) {
+       if(!(boolean)UI::QueryWidget(`enable_hwconfig, `Value))
+        {
+
+NetworkModules::DeleteM(Lan::nm_name);
+if(Lan::nm_name_old==nil) Lan::nm_name_old = Lan::nm_name;
+Lan::nm_name="";
+map<string, any> tmp_current=$[];
+foreach(string key, any value, NetworkDevices::Current, {
+if (key != "_nm_name") tmp_current[key]=value;
+});
+NetworkDevices::Current=tmp_current;
+        } else {
+
+	if(UI::WidgetExists(`id(`hwcfg))) {
+	    Lan::nm_name_old = Lan::nm_name;
+	    Lan::nm_name = (string) UI::QueryWidget(`id(`hwcfg), `Value);
+	}
+
+	    if(UI::WidgetExists(`id(`hwcfg))) {
+		hardware["hwcfg"] = (string) UI::QueryWidget (`id (`hwcfg), `Value);
+		if (Lan::operation == `add || hardware["hwcfg"]:"" != Lan::nm_name) {
+		    if (contains (NetworkModules::ListM(""), hardware["hwcfg"]:"")) {
+			UI::SetFocus (`id (`hwcfg));
+			/* Popup text */
+			Popup::Error(sformat(_("Hardware configuration %1 already exists.
+Choose a different one."), hardware["hwcfg"]:""));
+		    }
+		}
+	    }
+
+	    if(Lan::operation == `add && UI::WidgetExists(`id(`num))) {
+		string nm = (string) UI::QueryWidget(`id(`num), `Value);
+		if(Lan::operation == `add || (hardware["device"]:"" != Lan::device && hardware["type"]:"" != Lan::type)) {
+		    if(contains(NetworkDevices::List(""), NetworkDevices::device_name(hardware["type"]:"", nm))) {
+			/* Popup text */
+			Popup::Error(sformat(_("Configuration name %1 (%2) already exists.
+Choose a different one."), nm, NetworkDevices::device_name(hardware["type"]:"", nm)));
+			UI::SetFocus(`id(`num));
+		    }
+		}
+	    }
+
+	    if(UI::WidgetExists(`id(`num))) {
+		string devic = (string) UI::QueryWidget(`id(`num), `Value);
+	    }
+	}
+//    }
+
+       NetworkModules::Alias  = (string) UI::QueryWidget(`id(`modul), `Value);
+       NetworkModules::Options = (string) UI::QueryWidget(`id(`options), `Value);
+
+	if(UI::WidgetExists(`id(`num)))
+	    Lan::device = (string) UI::QueryWidget(`id(`num), `Value);
+
+	if(UI::WidgetExists(`id(`pcmcia)) || UI::WidgetExists(`id(`usb))) {
+	    if(UI::QueryWidget(`id(`pcmcia), `Value) == true)
+		Lan::hotplug = "pcmcia";
+	    else if(UI::QueryWidget(`id(`usb), `Value) == true)
+		Lan::hotplug = "usb";
+	    else
+		Lan::hotplug = "";
+	}
+	Lan::hotplug = "";
+
+	if(UI::WidgetExists(`id(`dev))) {
+	    hardware["type"] = (string) UI::QueryWidget(`id(`dev), `Value);
+	    Lan::type = hardware["type"]:"";
+	}
+
+	y2milestone("type=%1",hardware["type"]:"");
+}
+
 
 /**
  * S/390 devices configuration dialog
@@ -780,6 +720,9 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 
     return ret;
 }
+
+
+
 
 /* EOF */
 }

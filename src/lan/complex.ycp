@@ -303,35 +303,6 @@ Really continue?
 	    break;
   }
  }
-/*
-	else if(ret["event"]:nil == `global_managed) {
-	    NetworkService::SetManaged (! NetworkService::IsManaged ());
-	    Lan::SetModified ();
-	    repaint = true;
-	}
-	else if(ret["event"]:nil == `managed) {
-	    string dev = ret["selected"]:"";
-	    if(dev == nil) {
-		y2error("Empty device during Edit");
-		continue;
-	    }
-
-	    if (substring (dev, 0, 1) == "-") // unconfigured
-	    {
-		integer i = tointeger (substring (dev, 1));
-		if (! AddInterface (i)) continue;
-	    }
-	    else Lan::Edit(dev);
-	    Lan::startmode = "managed";
-	    Lan::nm_name = "";	// no hwcfg
-	    Lan::Commit ();
-	    repaint = true;
-	    continue;
-	}
-	else if(ret["event"]:nil == `next || ret["event"]:nil == `back) {
-	    break;
-	}
-*/
  if (size(o_items)==0){
    UI::ChangeWidget(`_hw_sum, `Value, "");
    UI::ChangeWidget (`id (`edit), `Enabled, false);
@@ -378,7 +349,7 @@ map<string, map<string,any> > wd = $[
 		  `VWeight(1,`RichText (`id (`_hw_sum), "")),
                   `HBox (
 		        `PushButton (`id (`add), Label::AddButton ()),
-		        `PushButton (`id (`edit), Label::EditButton ()),
+		        `PushButton (`id (`edit), _("Configure")),
 		        `PushButton (`id (`delete), Label::DeleteButton ()),
 		        `HStretch ()
 			)

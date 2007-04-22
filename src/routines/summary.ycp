@@ -42,6 +42,8 @@ define string DeviceType(string type) {
 	/* Device type label */
 	"bnep"	: _("Bluetooth"),
 	/* Device type label */
+	"bond"	: _("Bond"),
+	/* Device type label */
 	"ci"	: _("CLAW"),
 	/* Device type label */
 	"contr"	: _("ISDN"),

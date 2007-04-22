@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Sun Apr 22 12:41:13 CEST 2007 - mzugec@suse.de
+
+- hardware dialog moved to tab
+- additional addreses moved to address tab
+- changed bootproto dialog
+- 2.15.28
+ 
+
+-------------------------------------------------------------------
 Fri Apr 20 15:51:24 CEST 2007 - kmachalkova@suse.cz
 
 - Added write progress dialogs to DNS, Routing, Host, Proxy and 
