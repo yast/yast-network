@@ -131,23 +131,25 @@ could return to this dialog later when the above service has terminated.</li>
 "bootproto":
 	/* Address dialog help 1-6/8: dynamic address preferred */
 	/* Address dialog help 1/8 */
-
     _("<p><b><big>Address Setup</big></b></p>
-<p>You can select dynamic address assignment
-if you have a <b>DHCP server</b> running on your local network.</p>
-") +
+<p>Select <b>No Address Setup</b> if you don't want any IP address for this device.
+This is particularly useful for bonding ethernet devices.</p>")
+ +
     /* Address dialog help 2/8 */
-    _("<p>Also select this if you do not have a static IP address assigned
-by the system administrator or your cable or DSL provider.</p>") +
+    _("<p>Select <b>Dynamic address</b> if you do not have a static IP address 
+assigned by the system administrator or your cable or DSL provider.</p>") 
+ +
     /* Address dialog help 3/8 */
-    _("<p>Network addresses are then obtained
-<b>automatically</b> from the server.</p>
-") +
+    _("<p>You can choose one of dynamic address assignment method. Select <b>DHCP</b>
+if you have a DHCP server running on your local network. Network addresses are then 
+obtained automatically from the server.<p>") 
+ +
     /* Address dialog help 4/8 */
-    _("<p>Otherwise, network addresses must be assigned <b>manually</b>.</p>")
+   _("To automatically search for free IP and then assign it statically, select 
+<b>Zeroconf</b>. To use DHCP and fall back to zeroconf, select <b>DHCP + Zeroconf
+</b>. Otherwise, network addresses must be assigned <b>statically</b>.</p>"),
 
     /* Address dialog help 5/8 */
-    + _("<p>You can select <b>No Address Setup</b> if you don't want any IP address.</p>"),
 
 "remoteip":
 _("<p>Enter <b>IP Address</b> (e.g., 192.168.100.99)
@@ -157,7 +159,15 @@ of your peer.</p>"),
     /* Address dialog help 6/8 */
 "netmask":
     _("<p>For <b>Static Address Setup</b> enter static IP address (e.g., 192.168.100.99) 
-for your computer and the network mask (usually 255.255.255.0)</p>"),
+for your computer and the network mask (usually 255.255.255.0)</p>")
+ +
+    /* Address dialog help 8/8 */
+    _("<p>Contact your <b>network administrator</b> for more information about
+the network configuration.</p>"),
+
+"force_static_ip": 
+    _("<p>DHCP configuration is not recommended for this product.
+Components of this product might not work with DHCP.</p>"),
 
 "fwzone":
 _("<p><b><big>Firewall Zone</big></b></p>
@@ -208,7 +218,8 @@ Leave empty not to send a hostname.</p>"),
 
 "additional":
     /* Aliases dialog help 1/3 */
-    _("<p>Configure additional addresses of an interface (its aliases) in this dialog.</p>") +
+    _("<p><b><big>Additional addresses</big></b></p>
+<p>Configure additional addresses of an interface (its aliases) in this table.</p>") +
 
     /* Aliases dialog help 2/3 */
     _("<p>Enter an <b>Alias Name</b>, an <b>IP Address</b>, and

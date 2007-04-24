@@ -45,6 +45,9 @@ map <string, any> settings = $[];
 
 string fwzone_initial = "";
 
+//boolean force_static_ip = ProductFeatures::GetBooleanFeature ("network", "force_static_ip");
+boolean force_static_ip = true;
+
 /**
  * `RadioButtonGroup uses CurrentButton instead of Value, grrr
  * @param key widget id
@@ -433,11 +436,8 @@ map<string, map<string,any> > widget_descr_local = $[
     "_DIALOG": $[
 	"widget": `empty,
 	"help": 
-    /* Address dialog help 7/8 */
-    _("<p>Clicking <b>Next</b> completes the configuration.</p>") +
     /* Address dialog help 8/8 */
-    _("<p>Contact your <b>network administrator</b> for more information about
-the network configuration.</p>"),
+    _("<p>Clicking <b>Next</b> completes the configuration.</p>"),
 	"validate_type": `function,
 	"validate_function": ValidateDialog,
 //	"init": InitDialog,
@@ -559,7 +559,7 @@ the network configuration.</p>"),
 		 )
 		)
 	    ),
-	"help": help["bootproto"]:"",
+	"help": force_static_ip ? help["force_static_ip"]:"" : help["bootproto"]:"" + help["netmask"]:"",
 	"init": initBootProto,
 	"handle": handleBootProto,
 	"store": storeBootProto,
@@ -708,7 +708,6 @@ define any AddressDialog() {
 
     if(settings["BOOTPROTO"]:"" == "static" && settings["IPADDR"]:"" == "" && !no_dhcp) settings["BOOTPROTO"] = "dhcp"; 
 
-    boolean force_static_ip = ProductFeatures::GetBooleanFeature ("network", "force_static_ip");
     // #65524
     if (Lan::operation == `add && force_static_ip)
     {
@@ -728,13 +727,6 @@ define any AddressDialog() {
 
     map<string, map<string,any> > wd = (map<string, map<string,any> >) union (widget_descr, widget_descr_local);
 
-    if (force_static_ip)
-    {
-	wd["BOOTPROTO_dhcp", "help"] =
-    /* Address dialog help 2-6/8: static address preferred */
-    _("<p>DHCP configuration is not recommended for this product.
-Components of this product might not work with DHCP.</p>");
-    }
 
     wd["STARTMODE"] = MakeStartmode (
 	["auto", "ifplugd", "hotplug", "manual", "off", "nfsroot" ]);
@@ -925,7 +917,8 @@ Components of this product might not work with DHCP.</p>");
 		    `VSpacing(0.4),
 		    `Frame(_("Device Control"), `HBox(("USERCONTROL"), `HStretch())) ,
 		    `VSpacing (0.4),
-	            `Frame(_("Maximum Transfer Unit (MTU)"), `HBox(("MTU"), `HStretch()))
+	            `Frame(_("Maximum Transfer Unit (MTU)"), `HBox(("MTU"), `HStretch())),
+		    `VStretch()
 		    )
 		)
 	      )
