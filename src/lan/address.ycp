@@ -45,8 +45,7 @@ map <string, any> settings = $[];
 
 string fwzone_initial = "";
 
-//boolean force_static_ip = ProductFeatures::GetBooleanFeature ("network", "force_static_ip");
-boolean force_static_ip = true;
+boolean force_static_ip = ProductFeatures::GetBooleanFeature ("network", "force_static_ip");
 
 /**
  * `RadioButtonGroup uses CurrentButton instead of Value, grrr
