@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Apr 26 10:26:34 CEST 2007 - mzugec@suse.cz
+
+- "change hostname via dhcp" not selected by default (#264915) 
+
+-------------------------------------------------------------------
 Sun Apr 22 12:41:13 CEST 2007 - mzugec@suse.de
 
 - hardware dialog moved to tab

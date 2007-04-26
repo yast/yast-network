@@ -63,7 +63,7 @@ define list<string> NonEmpty (list<string> l) {
  * @return initial settings for this dialog in one map, from DNS::
  */
 define map InitSettings () {
- boolean write_hostname = true;
+// boolean write_hostname = true;
 
     map settings = $[
 	"HOSTNAME": DNS::hostname,
@@ -345,7 +345,7 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
     "DHCP_HOSTNAME": $[
 	"widget": `custom,
 	"custom_widget" : `HBox(
-	 `CheckBox(`id("DHCP_HOSTNAME"), _("&Change Hostname via DHCP")),
+	 `CheckBox(`id("DHCP_HOSTNAME"), _("&Change Hostname via DHCP"), true),
 	 `ReplacePoint( `id("dh_host_text"), `Empty() )
 	),
 	// help
