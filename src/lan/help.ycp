@@ -183,10 +183,14 @@ _("<p><b>Mandatory Interface</b> specifies whether the network service reports f
 
 "mtu":
 _("<p><b><big>Maximum Transfer Unit</big></b></p>
-<p>You can set the maximum transfer unit (<b>MTU</b>) of an interface.</p>"),
+<p>Maximum transfer unit (<b>MTU</b>) is the maximum size of the packet
+transferred in one frame over the network. Normally, you don't need to
+set MTU, but using lower MTU values may improve network performance
+especially on slow dial-up connections. Select one of the recommended values
+or define your own one.</p>"),
 
 "bondslave":
-_("<p>Select the salve devices for the bond device. Only the deveices which's Device Activation is Never and set as None Address Setup are available.</p>"),
+_("<p>Select the slave devices for the bond device. Only the devices which's Device Activation is Never and set as None Address Setup are available.</p>"),
 
 "dhclient_help" : 
     /* DHCP dialog help 1/8 */

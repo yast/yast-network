@@ -392,7 +392,6 @@ void InitFwZone(string key) {
 	UI::ChangeWidget(`id("FWZONE"), `Enabled, false);
 }
 
-
 map<string, map<string,any> > widget_descr_local = $[
     "HWDIALOG" : $[
 	"widget" : `custom,
@@ -488,10 +487,15 @@ map<string, map<string,any> > widget_descr_local = $[
 	"help": help["mandatory"]:"",
 	],
     "MTU": $[
-	"widget": `textentry,
+	"widget": `combobox,
 	// textentry label, Maximum Transfer Unit
 	"label": _("Set &MTU"),
-	"opt": [`hstretch],
+	"opt": [`hstretch, `editable],
+	"items": [
+	    ["1500","1500 (Ethernet, DSL broadband)"],
+	    ["1492","1492 (PPPoE broadband)"],
+	    ["576","576 (dial-up)"],
+	 ],
 	"help": help["mtu"]:"",
 	],
     "IFCFGTYPE": $[
