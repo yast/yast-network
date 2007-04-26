@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Apr 26 10:56:03 CEST 2007 - mzugec@suse.cz
+
+- changed "Stupid Mode" to "Ignore Prompts" in modem
+
+-------------------------------------------------------------------
 Thu Apr 26 10:26:34 CEST 2007 - mzugec@suse.cz
 
 - "change hostname via dhcp" not selected by default (#264915) 

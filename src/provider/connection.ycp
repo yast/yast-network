@@ -126,7 +126,7 @@ disable <b>DNS Modification</b> when connected.</p>
     if (type == "modem")
 	helptext = helptext +
     /* Connection dialog help 5/8 */
-_("<p><b>Stupid Mode</b> disables the detection of any prompts from the dial-up
+_("<p><b>Ignore Prompts</b> disables the detection of any prompts from the dial-up
 server. If the connection build-up is slow or does not work at all, try this
 option.</p>
 ");
@@ -170,7 +170,7 @@ connection will be shut down (0 means the connection will not time-out).</p>
     term StupidMode = `VSpacing(0.1);
     if (type == "modem")
 	/* Checkbox label */
-	StupidMode = `Left(`CheckBox(`id(`stupidmode), _("S&tupid Mode"), stupidmode));
+	StupidMode = `Left(`CheckBox(`id(`stupidmode), _("I&gnore Prompts"), stupidmode));
 
     term details = `VSpacing(0.1);
     // FIXME if(type == "isdn")
