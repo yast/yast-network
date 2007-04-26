@@ -301,11 +301,11 @@ if you know that the detection is wrong.")))
  * Sets default focus
  * @param key id of the widget
  */
-/*
+
 void InitDialog (string key) {
     UI::SetFocus (`id ("IPADDR"));
 }
-*/
+
 
 /**
  * If the traffic would be blocked, ask the user
@@ -373,11 +373,11 @@ Really continue?
  * @param key	the widget being validated
  * @param event	the event being handled
  */
-/*
+
 void StoreDialog (string key, map event) {
     return;
 }
-*/
+
 
 
 /**
@@ -438,8 +438,8 @@ map<string, map<string,any> > widget_descr_local = $[
     _("<p>Clicking <b>Next</b> completes the configuration.</p>"),
 	"validate_type": `function,
 	"validate_function": ValidateDialog,
-//	"init": InitDialog,
-//	"store": StoreDialog,
+	"init": InitDialog,
+	"store": StoreDialog,
 	],
 
     "IFNAME": $[
