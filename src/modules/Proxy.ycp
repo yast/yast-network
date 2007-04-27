@@ -40,10 +40,8 @@ global string pass = "";
 /**
  * Display popup at the end of the proxy configuration
  * @param modified true if proxy settings have been modified
- */
 define void ProxyFinishPopup(boolean modified) ``{
 
-    /* Popup text */
 string text = _("Applications that support it, such as YaST2 Online Update,
 use them immediately. Other applications use them after a new login
 (lynx, wget). Some applications do not support these settings at all --
@@ -52,6 +50,7 @@ they use their own settings system.
 
     FinishPopup(modified, "proxy", text, "", []);
 }
+ */
 
 /**
  * Read settings
@@ -137,8 +136,8 @@ global define boolean Write() {
     sleep(sl);
     Progress::NextStage();
 
-    if (!Mode::config ())
-	ProxyFinishPopup(true);
+    /*if (!Mode::config ())
+	ProxyFinishPopup(true); */
 
     /* Update /root/.wgetrc */
     /* YOU uses curl(1)

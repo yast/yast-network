@@ -286,7 +286,8 @@ define any ProxyMainDialog(boolean standalone) ``{
     string caption = _("Proxy Configuration");
 
     /* Proxy dialog help 1/8 */
-    string help = _("<p>Here, configure your Internet proxy (caching) settings.</p>") +
+    string help = _("<p>Here, configure your Internet proxy (caching) settings.</p>
+<p><b>Note:</b> In some cases you may need to relogin for the settings to take effect</p>") +
 
     /* Proxy dialog help 2/8 */
     _("<p><b>HTTP Proxy URL</b> is the name of the proxy server for your access
