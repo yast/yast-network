@@ -18,7 +18,24 @@ textdomain "network";
 y2milestone("----------------------------------------");
 y2milestone("Modem module started");
 
-include "network/modem/wizards.ycp";
+import "GetInstArgs";
+import "Mode";
+import "CommandLine";
+
+ include "network/modem/wizards.ycp";
+
+
+   // Bugzilla #269899, CommanLine "support"
+   // argmap is only a map, CommandLine uses string parameters
+   if (size (GetInstArgs::argmap()) == 0 && size (WFM::Args()) > 0) {
+       Mode::SetUI ("commandline");
+       y2milestone ("Mode CommandLine not supported, exiting...");
+       // TRANSLATORS: error message - the module does not provide command line interface
+       CommandLine::Print(_("There is no user interface available for this module."));
+       return nil;
+   }
+
+
 
 /* is this proposal or not? */
 boolean propose = false;
