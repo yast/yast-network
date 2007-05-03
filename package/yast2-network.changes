@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu May  3 16:55:00 CEST 2007 - kmachalkova@suse.cz
+
+- Drop finish popup for proxy 
+- Drop finish popup for remote administration module (#258846)
+- To store VNC settings, run 'SuSEconfig' for gdm, 'rcxdm
+  reload' otherwise 
+
+-------------------------------------------------------------------
 Wed May  2 18:42:49 CEST 2007 - mzugec@suse.cz
 
 - CommandLine interface (no support reported) for dsl, isdn and modem (#269890, #269894, #269899)
