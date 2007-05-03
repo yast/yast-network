@@ -30,6 +30,11 @@ include "network/routines.ycp";
 global boolean allow_administration = false;
 
 /**
+ * Default display manager 
+ */
+global string default_dm = "xdm";
+
+/**
  * Remote administration has been already proposed
  * Only force-reset can change it
  */
@@ -65,6 +70,7 @@ global void Propose() {
 global boolean Read() {
     boolean xdm = Service::Enabled ("xdm");
     boolean dm_ra = (string) SCR::Read (.sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS) == "yes";
+    default_dm = (string) SCR::Read (.sysconfig.displaymanager.DISPLAYMANAGER);
 
     boolean xinetd = Service::Enabled ("xinetd");
     // are the proper services enabled in xinetd?
@@ -192,9 +198,13 @@ global boolean Write() {
 
    if(Mode::normal ()) {
 	ProgressNextStage(_("Runing SuSEconfig..."));
+	/* no longer needed - have been dropped from SuSEconfig
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module xdm");
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kde3");
-	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kdm3");
+	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kdm3");*/
+
+        //Still needed for enabling/disabling remote administration
+        //because 'rcxdm reload' kills running X session if gdm is used
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module gdm");
 	sleep(sl);
 
@@ -222,14 +232,12 @@ global boolean Write() {
 	        Service::RunInitScript ("xinetd", "try-restart");
 	    }
 	}
-	sleep(sl);
-        Progress::NextStage();
 
-	// FIXME: reload XDM (#40458)
-	// For now, inform the user
-	if (dm_was_running)
+	//do not call 'rcxdm reload' for gdm - use SuSEconfig
+	if (dm_was_running && default_dm != "gdm")
 	{
-	    import "Report";
+	    Service::RunInitScript("xdm", "reload");
+	/*    import "Report";
 	    Report::Message (sformat (
 	    // message popup
 	    // %1 is a system command
@@ -239,8 +247,11 @@ must be restarted. Because this terminates all X Window System
 sessions, do it manually from the console with
 \"%1\".
 Note that restarting the X server alone is not enough."),
-"rcxdm restart"));
+"rcxdm restart"));*/
 	}
+
+	sleep(sl);
+        Progress::NextStage();
     }
 
     return true;
