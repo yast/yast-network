@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon May  7 10:32:19 CEST 2007 - mzugec@suse.cz
+
+- improved output from command line
+- information about MAC/BusID in devices dialog (#266690)
+- information about link status
+- 2.15.30 
+
+-------------------------------------------------------------------
 Thu May  3 16:55:00 CEST 2007 - kmachalkova@suse.cz
 
 - Drop finish popup for proxy 

@@ -233,7 +233,7 @@ define list<map> ReadHardware(string hwtype) {
 	boolean card_ok = controller != "";
 	one["name"] = DeviceName(card);
 	one["type"] = controller;
-	one["unique"] = card["udi"]:"";
+	one["udi"] = card["udi"]:"";
 	one["requires"] = card["requires"]:[];
 	// Each card remembers its position in the list of _all_ cards.
 	// It is used when selecting the card from the list of _unconfigured_
@@ -411,7 +411,7 @@ map SelectHardwareMap (map sel) {
     type = sel["type"]:"eth";
     hotplug = sel["hotplug"]:"";
 
-    unique = sel["unique"]:"";
+    unique = sel["udi"]:"";
     Requires = sel["requires"]:[];
     // #44977: Requires now contain the appropriate kernel packages
     // but they are handled differently due to multiple kernel flavors

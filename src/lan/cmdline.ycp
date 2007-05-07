@@ -98,7 +98,8 @@ define boolean ShowHandler(map<string, string> options) {
     foreach(map<string, any> row, config, {
      foreach(string key, map<string, any> value, (map<string, map<string, any> >) row, {
 	if (key == options["id"]:"0"){
-			 string text = sformat("echo \"%1\"|sed s/'<[/a-z]*>'/'\\n'/g", value["rich_descr"]:"");
+			// create plain text from formated HTML
+		 string text = sformat("echo \"%1\"|sed s/'<br>'/'\\n'/g|sed s/'<\\/li>'/'\\n'/g|sed s/'<[/a-z]*>'/''/g", value["rich_descr"]:"");
 			 map<string, any> descr = (map<string, any>)SCR::Execute(.target.bash_output, text);
 			 y2internal("%1", descr);
 			 CommandLine::Print( descr["stdout"]:"" );
@@ -218,13 +219,6 @@ the interface will no longer be managed by NetworkManager.
 		}
 	      }
 
-/*
-    Lan::type = options["type"]:"ethernet";
-    if (!contains(["arcnet", "bluetooth", "dummy", "ethernet", "fddi", "myrinet", "token-ring", "usb", "wireless"], Lan::type)){
-	Report::Error(_("Not possible value for type!"));
-	 return false;
-	}
-*/
     Lan::bootproto = options["bootproto"]:"none";
     if (!contains(["none", "static", "dhcp"], Lan::bootproto)){
         Report::Error(_("Not possible value for bootproto!"));

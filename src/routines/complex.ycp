@@ -18,7 +18,6 @@ import "NetworkDevices";
 import "Popup";
 import "String";
 import "Summary";
-import "WizardHW";
 import "NetworkService";
 
 include "network/routines.ycp";
@@ -27,6 +26,7 @@ include "network/summary.ycp";
 define string CheckEmptyName(string devtype, string hwname);
 define string DeviceStatus(string devtype, string devnum, map devmap);
 define string HardwareName(list<map> Hardware, string unq);
+
 
 /**
  * Used for initializing the description variable (ifcfg[NAME])
@@ -79,7 +79,7 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 
 	    /* main device summary */
 	    string descr = BuildDescription (devtype, devnum, devmap, Hardware);
-	    string unq = devmap["UDI"]:"";
+	    string unq = devmap["udi"]:"";
 	    string status = DeviceStatus(devtype, devnum, devmap);
 	    if (link)
 	    {
@@ -123,6 +123,7 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
     y2debug("uniques_old(%1)", uniques_old);
 
     /* build a list of unconfigured devices */
+integer id=0;
     maplist(map h, Hardware, {
 	string unq = h["udi"]:"";
 
@@ -134,11 +135,13 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 	if(!contains(uniques, busid) && !contains(uniques, mac) && !contains(uniques_old, unq)) {
 	    if(split && !contains(uniques_old, unq))
 {
+		h["id"]=id;
 		unconfigured = add(unconfigured, h);
 }
 	    else
 		configured = add(configured, Summary::Device(hwname, Summary::NotConfigured()));
 	}
+	id=id+1;
     });
 
     y2debug("configured=%1", configured);
@@ -146,7 +149,6 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 
     /* create a summary text */
     string summary = Summary::DevicesList(configured);
-
     /* if not split -> summary is finished */
     if(!split) return [ summary, links ];
 
@@ -160,16 +162,18 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 
     /* create a table of unconfigured devices */
     integer selected = unconfigured[0, "num"]:-1;
-    list devs = hwlist2items(unconfigured, selected);
+//    list devs = hwlist2items(unconfigured, selected);
 
     // FIXME OtherDevices(devs, type);
 
     /* Label for not detected devices */
-    devs = add(devs, `item(`id(`other), _("Other (not detected)"), size(devs) == 0));
+//    devs = add(devs, `item(`id(`other), _("Other (not detected)"), size(devs) == 0));
 
     y2debug("summary=%1", summary);
-    y2debug("devs=%1", devs);
-    return [ summary, devs ];
+//    y2debug("devs=%1", devs);
+
+    return [ summary, unconfigured ];
+//    return [ summary, devs ];
 }
 
 /**
@@ -471,13 +475,36 @@ define string DeviceProtocol(map devmap) {
 }
 
 /**
+ * Return description used for device summary dialog
+ * In case device is not connected "(not connected)" string
+ * will be added.
+ * Description also contains MAC address or BusID information.
+ */
+
+string getConnMacBusDescription(map v, list<map> Hardware){
+ string descr = "";
+	string conn="";
+	string mac_dev="";
+	foreach(map device, Hardware, {
+	 if (v["udi"]:(v["UDI"]:"")==device["udi"]:"") {
+			conn = HTML::Bold ( (device["link"]:false == true)?"":_("(not connected)") );
+			if (size(device["mac"]:"")>0) mac_dev= HTML::Bold ("MAC : ") + device["mac"]:"" + "<br>";
+			 else 
+			   if (size(device["busid"]:"")>0) mac_dev= HTML::Bold ("BusID : ") + device["busid"]:"" + "<br>";
+			}
+	});
+ descr = " " + conn + "<br>" + mac_dev;
+ return descr;
+}
+
+/**
  * Create overview table contents
- * (weird interface to accomodate transition from Wizard_hw to WizardHW)
  * List of terms
  * `item (`id (id), ...)
  * @return table items
  */
 define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
+y2internal("%1", Devs);
     list overview = [];
 
     map startmode_descrs = $[
@@ -575,8 +602,8 @@ if (size(v["_aliases"]:$[])>0 && !NetworkService::IsManaged()){
 				bullets = bullets + [_("Bond slaves")+ " : " + slaves];
 		}
 
-		// create the rich text description
-		string rich = HTML::Bold ( sformat("%1 %2", descr, (contains(models, v["NAME"]:"") )?"":_("(not connected)"))) +"<br>"+ HTML::List (bullets);
+		string rich =  descr;
+		rich = HTML::Bold ( rich ) + getConnMacBusDescription(v, Hardware) + HTML::List (bullets);
 		item = `item(`id(dev), descr, ip, rich);
 	    }
 	    overview = add(overview, item);
@@ -619,32 +646,34 @@ define list BuildOverview(string devregex, list<map> Hardware) {
  */
 define list<map<string,any> > BuildUnconfiguredCommon (list sum, string class) {
     // unconfigured devices
-    list<term> res = sum[1]:[`item(`id(`other))];
+//    list<term> res = sum[1]:[`item(`id(`other))];
     // filter out the item for adding an unknown one
-    res = filter (term card, res, ``( card[0,0]:nil != `other ));
+//    list res = filter (term card, sum, ``( card[0,0]:nil != `other ));
     // translators: this device has not been configured yet
     string nc = _("Not configured");
-    return maplist( term card, (list<term>)res, { 
-	integer i = card[0,0]:-1;
+    return maplist( map<string,any> card, (list<map<string, any> >)sum, {
 	// configured cards are identified by the string after ifcfg-,
 	// unconfigured ones by "-%1" where %1 is the index in hardware list
-	string id = sformat ("-%1", i);
-	string name = card[1]:"";
+	string id = sformat ("-%1", card["id"]:0);
+	string name = card["name"]:"";
 	list desc = [];
-	if (class == "netcard")
-	    desc = [name, nc]; // descr, /* dev, */ ip
-	else if (class == "modem" || class == "dsl")
-	    desc = [name, DeviceType (class), nc];
-	else if (class == "isdn")
-	    desc = [nc, DeviceType (class), name];
-	else
-	    y2warning (1, "invalid class %1", class);
-	string rich = WizardHW::CreateRichTextDescription (name, WizardHW::UnconfiguredDevice ());
-	return $[ 
+	switch(class){
+	 case "netcard" : desc = [name, nc];
+			break;
+	 case "modem" :
+	 case "dsl" : desc = [name, DeviceType (class), nc];
+			break;
+	 case "isdn" : desc = [nc, DeviceType (class), name];
+			break;
+	 default : y2warning (1, "invalid class %1", class);
+	}
+	string rich = HTML::Bold(name) + getConnMacBusDescription((map)card, (list<map>)sum) + _("<P><UL><LI>The device is not configured</LI><LI>Press <B>Edit</B> to configure</LI></UL></P>");
+y2internal("id %1", id);
+	return $[
 	    "id":id,
 	    "table_descr":desc,
 	    "rich_descr": rich,
-	]; 
+	 ];
 	}
     );
 }
@@ -659,7 +688,7 @@ define list<map<string,any> > BuildUnconfiguredDevs (map<string,map> Devs, strin
     boolean split = true;
     boolean proposal = false;
     list sum = BuildSummaryDevs (Devs, Hardware, split, proposal);
-    return BuildUnconfiguredCommon (sum, class);
+    return BuildUnconfiguredCommon (sum[size(sum)-1]:[], class);
 }
 
 /**
@@ -672,7 +701,7 @@ define list<map<string,any> > BuildUnconfigured (string class, list<map> Hardwar
     boolean split = true;
     boolean proposal = false;
     list sum = BuildSummary (class, Hardware, split, proposal);
-    return BuildUnconfiguredCommon (sum, class);
+    return BuildUnconfiguredCommon (sum[size(sum)-1]:[], class);
 }
 /* EOF */
 }

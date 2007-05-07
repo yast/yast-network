@@ -1117,7 +1117,7 @@ global define boolean Select(string dev) {
     /* general stuff */
     description = BuildDescription (type, device, devmap, Hardware);
 
-    unique = devmap["UDI"]:"";
+    unique = devmap["udi"]:"";
     SetDeviceVars(devmap, SysconfigDefaults);
 
 
@@ -1252,7 +1252,7 @@ global define boolean Commit() {
 	}
 
 	if(unique != "" && unique != nil)
-	    newdev["UDI"] = unique;
+	    newdev["udi"] = unique;
 
 	if(hotplug == "") {
 	    if(alias == "") {
