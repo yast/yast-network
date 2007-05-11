@@ -504,7 +504,6 @@ string getConnMacBusDescription(map v, list<map> Hardware){
  * @return table items
  */
 define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
-y2internal("%1", Devs);
     list overview = [];
 
     map startmode_descrs = $[
@@ -668,7 +667,6 @@ define list<map<string,any> > BuildUnconfiguredCommon (list sum, string class) {
 	 default : y2warning (1, "invalid class %1", class);
 	}
 	string rich = HTML::Bold(name) + getConnMacBusDescription((map)card, (list<map>)sum) + _("<P><UL><LI>The device is not configured</LI><LI>Press <B>Edit</B> to configure</LI></UL></P>");
-y2internal("id %1", id);
 	return $[
 	    "id":id,
 	    "table_descr":desc,

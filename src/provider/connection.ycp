@@ -35,6 +35,8 @@ define any ConnectionDialog() {
     /* PREPARE VARIABLES */
     string Provider = Provider::Current["PROVIDER"]:"";
 
+    string startmode = "";
+
     boolean demand = Provider::Current["DEMAND"]:"no" == "yes";
     boolean stupidmode = Provider::Current["STUPIDMODE"]:"no" == "yes";
 
@@ -52,6 +54,7 @@ define any ConnectionDialog() {
     if (type == "modem") {
 	dtype = Modem::type;
 	did = Modem::device;
+        startmode = Modem::startmode;
     }
     else if (type == "dsl") {
 	dtype = DSL::type;
@@ -188,6 +191,9 @@ connection will be shut down (0 means the connection will not time-out).</p>
 	    `PushButton(`id(`IPDetails), _("I&P Details"))
 	);
 
+    term STARTMODE=`Empty();
+    if (type=="modem") STARTMODE=`Left(`ComboBox(`id(`startmode), _("When a interface should be set up"), [ "auto", "manual", "off" ]));
+
     term contents = `HBox(
 	`HSpacing(6),
 	`VBox(
@@ -201,6 +207,7 @@ connection will be shut down (0 means the connection will not time-out).</p>
 	    `VSpacing(0.5),
 	    `HBox(
 		`VBox(
+		    STARTMODE,
 		    /* Checkbox label */
 		    `Left(`CheckBox(`id(`demand), `opt(`notify), _("Dial on D&emand"), demand)),
 		    /* Checkbox label */
@@ -237,6 +244,7 @@ connection will be shut down (0 means the connection will not time-out).</p>
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::NextButton());
 
+    if (type=="modem") UI::ChangeWidget(`id(`startmode), `Value, startmode);
     UI::ChangeWidget(`id(`nameservers), `Enabled, modifydns && (demand || !autodns));
 
     /* MAIN CYCLE */
@@ -316,11 +324,12 @@ connection will be shut down (0 means the connection will not time-out).</p>
 	    ]);
 
 	/* update provider type-specific info */
-	if (type == "modem")
+	if (type == "modem"){
 	    Provider::Current = union(Provider::Current, $[
 		"STUPIDMODE" : (boolean) UI::QueryWidget(`id(`stupidmode), `Value) ? "yes" : "no"
 	    ]);
-
+	Modem::startmode = (string)UI::QueryWidget(`id(`startmode), `Value);
+	}
 	/* update firewall info */
 	if(UI::WidgetExists(`id(`Firewall))) {
 

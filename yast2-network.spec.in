@@ -2,7 +2,7 @@
 
 @HEADER@
 # should be required by devtools
-BuildRequires: pkgconfig perl-XML-Writer
+BuildRequires: pkgconfig perl-XML-Writer rpm
 BuildRequires: update-desktop-files
 BuildRequires: yast2-devtools yast2-testsuite yast2
 BuildRequires: yast2-country yast2-installation

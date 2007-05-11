@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri May 11 16:12:27 CEST 2007 - mzugec@suse.cz
+
+- possible to change STARMODE in modem (#116368)
+- 2.15.31 
+
+-------------------------------------------------------------------
 Mon May  7 10:32:19 CEST 2007 - mzugec@suse.cz
 
 - improved output from command line
