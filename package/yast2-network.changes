@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sun May 13 14:17:08 CEST 2007 - mzugec@suse.cz
+
+- fixed create BOND device (#274078)
+- 2.15.32 
+
+-------------------------------------------------------------------
 Fri May 11 16:12:27 CEST 2007 - mzugec@suse.cz
 
 - possible to change STARMODE in modem (#116368)

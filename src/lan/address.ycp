@@ -172,8 +172,8 @@ symbol handleBootProto (string key, map event) {
 void storeBootProto (string key, map event) {
   switch((symbol)UI::QueryWidget(`id(`bootproto), `CurrentButton)){
    case `none : settings["BOOTPROTO"]="none";
-		settings = remove(settings, "IPADDR");
-		settings = remove(settings, "NETMASK");
+		settings["IPADDR"]  = "";
+		settings["NETMASK"] = "";
 		break;
    case `static: settings["BOOTPROTO"]="static";
 		settings["IPADDR"]=(string)UI::QueryWidget(`ipaddr, `Value);
@@ -187,12 +187,20 @@ void storeBootProto (string key, map event) {
 		case `auto: settings["BOOTPROTO"]="autoip";
 			break;
 	         }
-		settings = remove(settings, "IPADDR");
-		settings = remove(settings, "NETMASK");
+		settings["IPADDR"]  = "";
+		settings["NETMASK"] = "";
 		break;
   }
 }
 
+
+void initIfcfg (string key) {
+ UI::ChangeWidget(`id(key), `Value, Lan::type);
+}
+
+void initIfcfgId (string key) {
+ UI::ChangeWidget(`id(key), `Value, Lan::device);
+}
 /**
  * Event handler for ifcfg name
  * enable or disable depending on whether we are adding a new interface
@@ -213,12 +221,7 @@ symbol HandleIfcfg (string key, map event) {
  */
 symbol HandleButton (string key, map event) {
     any ret = event["ID"]:nil;
-    map<any, symbol> symbols = $[
-
-//	"HARDWARE": `hardware,
-	"ADDITIONAL_ADDRESSES": `virtual,
-	"S390": `s390,
-	];
+    map<any, symbol> symbols = $[ "S390": `s390 ];
     return symbols[ret]:nil;
 }
 
@@ -302,10 +305,11 @@ if you know that the detection is wrong.")))
  * @param key id of the widget
  */
 
+/*
 void InitDialog (string key) {
     UI::SetFocus (`id ("IPADDR"));
 }
-
+*/
 
 /**
  * If the traffic would be blocked, ask the user
@@ -344,17 +348,25 @@ Assign it to a zone now?"));
 boolean ValidateDialog (string key, map event) {
     if (UI::QueryWidget(`bootproto, `CurrentButton) == `static)
     {
-	string k = "IPADDR";
-	string ipa = (string) UI::QueryWidget (`id (k), `Value);
+	string ipa = (string) UI::QueryWidget (`ipaddr, `Value);
+	if (! IP::Check(ipa)){
+	 Popup::Error(_("No valid IP address."));
+	 UI::SetFocus(`ipaddr);
+	 return false;
+	}
+	if (!IP::Check((string) UI::QueryWidget (`netmask, `Value))){
+	 Popup::Error(_("No valid Netmask."));
+	 UI::SetFocus(`netmask);
+	 return false;
+	}
 	// validate duplication
 	if (Detection::DuplicateIP (ipa))
 	{
-	    /* Popup text */
-	    string pop = _("Duplicate IP address detected.
+	    UI::SetFocus(`ipaddr);
+							    /* Popup text */
+	    if (! Popup::YesNoHeadline(Label::WarningMsg(), _("Duplicate IP address detected.
 Really continue?
-");
-	    UI::SetFocus(`id (k));
-	    if (! Popup::YesNoHeadline(Label::WarningMsg(), pop))
+")))
 	    {
 		return false;
 	    }
@@ -374,10 +386,11 @@ Really continue?
  * @param event	the event being handled
  */
 
+/*
 void StoreDialog (string key, map event) {
     return;
 }
-
+*/
 
 
 /**
@@ -393,15 +406,6 @@ void InitFwZone(string key) {
 }
 
 map<string, map<string,any> > widget_descr_local = $[
-    "HWDIALOG" : $[
-	"widget" : `custom,
-	"custom_widget" :
-		`ReplacePoint(`id(`hw_content), `Empty()),
-	"init" : initHwDialog,
-	"handle" : handleHW,
-	"store" : storeHW,
-	"help" : hw_help
-		],
     "AD_ADDRESSES" : $[
 	"widget" : `custom,
 	"custom_widget" : 
@@ -429,19 +433,7 @@ map<string, map<string,any> > widget_descr_local = $[
 	"init" : initAdditional,
 	"handle" : handleAdditional,
 	"store" : storeAdditional
-	
 	],
-    "_DIALOG": $[
-	"widget": `empty,
-	"help": 
-    /* Address dialog help 8/8 */
-    _("<p>Clicking <b>Next</b> completes the configuration.</p>"),
-	"validate_type": `function,
-	"validate_function": ValidateDialog,
-	"init": InitDialog,
-	"store": StoreDialog,
-	],
-
     "IFNAME": $[
 	"widget": `textentry,
 	"label": _("&Name of Interface"),
@@ -505,6 +497,7 @@ map<string, map<string,any> > widget_descr_local = $[
 	"opt": [`hstretch, `notify],
 	"help": "",
 	// "items" will be filled in the dialog itself
+	"init" : initIfcfg,
 	"handle": HandleIfcfg,
 	"validate_type": `function,
 	"validate_function": ValidateIfcfgType,
@@ -516,6 +509,7 @@ map<string, map<string,any> > widget_descr_local = $[
 	"label": _("&Configuration Name"),
 	"opt": [`hstretch, `editable],
 	"help": "",
+	"init" : initIfcfgId,
 	"valid_chars": NetworkDevices::ValidCharsIfcfg (),
 	"handle": HandleIfcfg,
 	],
@@ -567,29 +561,6 @@ map<string, map<string,any> > widget_descr_local = $[
 	"handle": handleBootProto,
 	"store": storeBootProto,
 	],
-
-/*
-    "IPADDR": $[
-	"widget": `textentry,
-	"label": _("&IP Address"),
-	"help": "",		// merged to either REMOTEIP or NETMASK
-	"handle": HandleStaticAddress,
-	"validate_type": `function_no_popup,
-	"validate_function": ValidateAddrIP,
-	"validate_help": _("The IP address is invalid.")+ "\n" + IP::Valid4 (),
-	],
-    "NETMASK": $[
-	"widget": `textentry,
-	"label": _("&Subnet Mask"),
-	"help": help["netmask"]:"",
-	"handle": HandleStaticAddress,
-	"validate_type": `function_no_popup,
-	"validate_function": ValidateNetmask,
-	"validate_help": _("The subnet mask is invalid."), // TODO describe a valid one
-	],
-
-*/
-
     "REMOTEIP": $[
 	"widget": `textentry,
 	/* Text entry label */
@@ -600,16 +571,6 @@ map<string, map<string,any> > widget_descr_local = $[
 	// validation error popup
 	"validate_help": _("The remote IP address is invalid.") + "\n" + IP::Valid4 (),
 	],
-
-/*
-    "GATEWAY": $[
-	"widget": `textentry,
-	"label": _("Default &Gateway"),
-	"opt": [],
-	"help": _("<p><b>Default Gateway</b> TODO: the original help is bad</p>"),
-	"handle": HandleStaticAddress,
-	],
-*/
     "ADVANCED_MB": $[
 	"widget": `menu_button,
 	// menu button label
@@ -621,18 +582,6 @@ map<string, map<string,any> > widget_descr_local = $[
 	"store": CWM::StoreNull,
 	"handle": HandleButton,
 	],
-/*
-    "ADDITIONAL_ADDRESSES": $[
-	"widget": `push_button,
-	// push button label
-	"label": _("Addi&tional Addresses"),
-	"opt": [],
-	"help": "",
-	"init": CWM::InitNull,
-	"store": CWM::StoreNull,
-	"handle": HandleButton,
-	],
-*/
     // leftovers
     "S390": $[
 	"widget": `push_button,
@@ -645,6 +594,8 @@ map<string, map<string,any> > widget_descr_local = $[
 	"handle": HandleButton,
 	],
     ];
+
+widget_descr_local["HWDIALOG"]=widget_descr_hardware["HWDIALOG"]:$[];
 
 /**
  * @param types netowrk card types
@@ -785,16 +736,13 @@ define any AddressDialog() {
 	`Frame(_("Detailed Settings"), `HBox(`HStretch(),
 	`HSquash(`VBox(
 	    `VSpacing(0.4),
-//	    "HOSTNAME_B",
-//	    "ROUTING",
 	    "ADVANCED_MB",
 	    `VSpacing(0.4)
 	)),
 	`HStretch()
     )));
 
-    if(Lan::alias != "")
-	frame2 = `VSpacing(0);
+    if(Lan::alias != "") frame2 = `VSpacing(0);
 
     term address_p2p_contents =
 	`Frame (
@@ -817,23 +765,6 @@ define any AddressDialog() {
 	    );
 
     term address_dhcp_contents = `VBox( "BOOTPROTO" );
-/*
-`VBox (
-	`RadioButtonGroup (
-	    `id ("BOOTPROTO"),	// CWM must not expand `id
-	    `MarginBox (1, 0,
-		`VBox (
-//		    `Left ("BOOTPROTO_none"),
-		    `Left ("BOOTPROTO_dhcp"), // TODO: widget attribute align: left
-		    `Left ("BOOTPROTO_dhcp+autoip"),
-		    `Left ("BOOTPROTO_autoip"),
-		    `Left ("BOOTPROTO_static"),
-		    address_static_contents)
-		)
-	    ),
-	"BOOTPROTO" // empty, handler; must come after the individual buttons to override their dumb default handlers
-	);
-*/
     term just_address_contents =
 	is_ptp? address_p2p_contents:
 	(no_dhcp? address_static_contents: address_dhcp_contents);
@@ -869,8 +800,7 @@ define any AddressDialog() {
     term address_contents = `VBox(
 	`Left(label),
 	just_address_contents,
-	frame2,
-	"_DIALOG"
+	frame2
      );
     if (Lan::type == "bond")
     {
@@ -878,8 +808,7 @@ define any AddressDialog() {
                 `Left(label),
 		just_address_contents,
 		bond,
-		frame2,
-		"_DIALOG"
+		frame2
 	);
     }
     else
@@ -888,14 +817,15 @@ define any AddressDialog() {
 		`Left(label),
 		just_address_contents,
 		"AD_ADDRESSES",
-		frame2,
-		"_DIALOG"
+		frame2
 	);
     }
 
 
     map functions = $[
         "init" : InitAddrWidget,
+	"validate_type": `function,
+	"validate_function": ValidateDialog,
         "store" : StoreAddrWidget,
 	`abort : ReallyAbort,
     ];
@@ -941,8 +871,6 @@ define any AddressDialog() {
                     "hardware" : $[
                         "header" : _("&Hardware"),
                         "contents" : `VBox( "HWDIALOG" )
-//                      "help" : hw_help,
-//                        "widget_names" : [],
                     ],
                     "t3" : $[
                         "header" : _("&Wireless"),
@@ -956,7 +884,7 @@ define any AddressDialog() {
                 "fallback_functions" : functions,
             ];
 
- if (Lan::operation == `add) wd_content["initial_tab"] = "hardware";
+// if (Lan::operation == `add) wd_content["initial_tab"] = "hardware";
 
     wd = (map<string, map<string,any> >) union (wd, $[
 	"tab" : CWMTab::CreateWidget (wd_content)

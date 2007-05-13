@@ -352,8 +352,6 @@ if (ret == `list) SelectionDialog();
 	    y2debug("hotplug=%1", hardware["hotplug"]:"");
 
 	    if(UI::WidgetExists(`id(`dev))) {
-//		type = (string) UI::QueryWidget(`id(`dev), `Value);
-//		realtype = NetworkDevices::RealType(type, hotplug);
                hardware["type"] = (string) UI::QueryWidget(`id(`dev), `Value);
                hardware["realtype"] = NetworkDevices::RealType(hardware["type"]:"", hardware["hotplug"]:"");
 	    }
@@ -373,13 +371,6 @@ if (ret == `list) SelectionDialog();
            ChangeWidgetIfExists(`id(`hwcfg), `Enabled, hardware["no_hotplug"]:false);
            ChangeWidgetIfExists(`id(`usb), `Enabled, (hardware["hotplug"]:"" == "usb" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
            ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hardware["hotplug"]:"" == "pcmcia" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
-
-
-	    // list devices = Lan::FreeDevices(realtype);
-	    // default_device = (string) devices[0]:"";
-	    /* TextEntry label */
-	    // UI::ReplaceWidget(`id(`rnum), `TextEntry(`id(`num), `opt(`hstretch), _("&Configuration Name"), Lan::nm_name));
-
 	    hardware["device"] = (string) UI::QueryWidget (`id (`num), `Value);
 	    if (hardware["device"]:"" != "bus-usb" && hardware["device"]:"" != "bus-pcmcia")
 	    {
@@ -478,7 +469,6 @@ Choose a different one."), nm, NetworkDevices::device_name(hardware["type"]:"", 
 		string devic = (string) UI::QueryWidget(`id(`num), `Value);
 	    }
 	}
-//    }
 
        NetworkModules::Alias  = (string) UI::QueryWidget(`id(`modul), `Value);
        NetworkModules::Options = (string) UI::QueryWidget(`id(`options), `Value);
@@ -500,8 +490,6 @@ Choose a different one."), nm, NetworkDevices::device_name(hardware["type"]:"", 
 	    hardware["type"] = (string) UI::QueryWidget(`id(`dev), `Value);
 	    Lan::type = hardware["type"]:"";
 	}
-
-	y2milestone("type=%1",hardware["type"]:"");
 }
 
 
@@ -722,6 +710,40 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 }
 
 
+map<string, map<string,any> > widget_descr_hardware = $[
+    "HWDIALOG" : $[
+	"widget" : `custom,
+	"custom_widget" :
+		`ReplacePoint(`id(`hw_content), `Empty()),
+	"init" : initHwDialog,
+	"handle" : handleHW,
+	"store" : storeHW,
+	"help" : hw_help
+		]];
+
+any HardwareDialog (){
+    string caption = _("Hardware Dialog");
+    list<map <string, any> > w = CWM::CreateWidgets (["HWDIALOG"], (map <string, map <string, any> >) widget_descr_hardware);
+        term contents =
+                          `VBox(
+                          `VStretch(),
+                          `HBox(
+                           `HStretch(),
+                           `HSpacing (1),
+                            `VBox(
+                                w[0, "widget"]:`VSpacing (1)
+                                ),
+                           `HSpacing (1),
+                           `HStretch()
+                               ),
+                          `VStretch()
+                        );
+
+    string help = CWM::MergeHelps(w);
+    contents = CWM::PrepareDialog(contents, w);
+    Wizard::SetContentsButtons(caption, contents, "",Label::BackButton(), Label::NextButton());
+    return CWM::Run(w, $[`abort:ReallyAbort ]);
+}
 
 
 /* EOF */

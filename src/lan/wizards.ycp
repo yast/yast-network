@@ -12,7 +12,6 @@
 textdomain "network";
 
 import "Arch";
-// Arch::s390 () = true;
 import "Label";
 import "Lan";
 import "Sequencer";
@@ -23,19 +22,14 @@ include "network/lan/address.ycp";
 include "network/lan/complex.ycp";
 include "network/lan/dhcp.ycp";
 include "network/lan/hardware.ycp";
-//include "network/lan/virtual.ycp";
 include "network/lan/wireless.ycp";
 include "network/services/dns.ycp";
 include "network/services/host.ycp";
 include "network/services/proxy.ycp";
-//include "network/services/routing.ycp";
 
 define symbol NetworkCardSequence(string action);
 define symbol MainSequence(string mode);
 define symbol AddressSequence(string which);
-define symbol HardwareSequence();
-
-symbol HardwareDialog(){return nil; } 
 
 /**
  * Whole configuration of network
@@ -48,7 +42,6 @@ boolean LanSequence() {
 	"main"	:   ``( MainSequence("") ),
 	"packages"	: [ ``( PackagesInstall(Lan::Packages()) ), true ],
 	"write"	: [ ``( WriteDialog() ), true ],
-//	"finish": [ ``( FinishDialog() ), true ],
     ];
 
     map sequence = $[
@@ -69,11 +62,6 @@ boolean LanSequence() {
 	    `abort	: `abort,
 	    `next	: `next,
 	]
-/*
-	"finish" : $[
-	    `next	: `next,
-	]
-*/
     ];
 
     Wizard::CreateDialog();
@@ -159,13 +147,13 @@ define symbol MainSequence (string mode) ``{
 define symbol NetworkCardSequence(string action) ``{
 
     map aliases = $[
-	"hardware"	: ``(HardwareSequence()),
+	"hardware"	: ``(HardwareDialog()),
 	"address"	: ``(AddressSequence("")),
 	"s390"		: ``(S390Dialog()),
     ];
 
-    string ws_start = "address";//"hardware";
-    if(action == "edit") ws_start = "address";
+    string ws_start = "address";
+    if(action == "add") ws_start = "hardware";
 
     /* All S/390 network devices */
     if(Arch::s390 () && Lan::operation == `add && Lan::unique != "") {
@@ -180,45 +168,11 @@ define symbol NetworkCardSequence(string action) ``{
 	],
 	"address" : $[
 	    `abort	: `abort,
-	    `hardware	: "hardware",
 	    `next	: `next,
 	],
 	"s390" : $[
 	    `abort	: `abort,
 	    `next	: "address",
-	],
-    ];
-
-    return Sequencer::Run(aliases, sequence);
-}
-
-/**
- * Configuration sequence
- * @return sequence result
- */
-define symbol HardwareSequence() ``{
-
-    map aliases = $[
-	"hardware"	: ``(HardwareDialog()),
-	"list"		: ``(SelectionDialog()),
-	"s390"		: ``(S390Dialog()),
-    ];
-
-    map sequence = $[
-	"ws_start"	: "hardware",
-	"hardware" : $[
-	    `abort	: `abort,
-	    `list	: "list",
-	    `s390	: "s390",
-	    `next	: `next,
-	],
-	"s390" : $[
-	    `next	: "hardware",
-	    `abort	: `abort,
-	],
-	"list" : $[
-	    `next	: "hardware",
-	    `abort	: `abort,
 	],
     ];
 
@@ -237,7 +191,6 @@ define symbol AddressSequence(string which) ``{
 	"address"	: ``(AddressDialog()),
 	"hosts"		: ``(HostsMainDialog(false)),
 	"proxy"		: ``(ProxyMainDialog(false)),
-//	"virtual"	: ``(VirtualDialog(false)),
 	"s390"		: ``(S390Dialog()),
 	"wire"		: ``(WirelessDialog()),
 	"expert"	: ``(WirelessExpertDialog()),
@@ -259,7 +212,6 @@ define symbol AddressSequence(string which) ``{
 	    `wire	: "wire",
 	    `hosts	: "hosts",
 	    `proxy	: "proxy",
-//	    `virtual	: "virtual",
 	    `s390	: "s390",
 	    `hardware	: `hardware,
 	],
@@ -275,12 +227,6 @@ define symbol AddressSequence(string which) ``{
 	    `abort	: `abort,
 	    `next	: "address",
 	],
-/*
-	"virtual" : $[
-	    `abort	: `abort,
-	    `next	: "address",
-	],
-*/
 	"wire" : $[
 	    `next	: "commit",
 	    `expert	: "expert",
