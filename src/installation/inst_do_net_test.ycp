@@ -434,8 +434,8 @@ and correct the settings.</p>
 	foreach (string i_item, installed_rpm_version_l, {
 	    installed_version_item  = tointeger(i_item);
 	    downloaded_version_item = tointeger(downloaded_rpm_version_l[loop_counter]:"0");
-	    if (downloaded_version_item > installed_version_item) {
-		downloaded_version_is_newer = true;
+	    if (downloaded_version_item != installed_version_item) {
+		downloaded_version_is_newer = (downloaded_version_item > installed_version_item);
 		break;
 	    }
 	    loop_counter = loop_counter + 1;

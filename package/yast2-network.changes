@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon May 14 10:52:43 CEST 2007 - kmachalkova@suse.cz
+
+- Correct comparison of installed and downloaded release notes 
+  version (to prevent useless error messages) (#269985)
+
+-------------------------------------------------------------------
 Sun May 13 14:17:08 CEST 2007 - mzugec@suse.cz
 
 - fixed create BOND device (#274078)
