@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon May 21 13:57:47 CEST 2007 - kmachalkova@suse.cz
+
+- IsHostLocal test extended to include also hostname and/or IP set by
+  DHCP (#163170)
+
+-------------------------------------------------------------------
 Mon May 14 10:52:43 CEST 2007 - kmachalkova@suse.cz
 
 - Correct comparison of installed and downloaded release notes 

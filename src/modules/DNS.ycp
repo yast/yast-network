@@ -88,6 +88,26 @@ global define boolean ReadHostDomain (string hn, string dn) {
     return true;
 }
 
+/*
+ * Get current hostname and IP Address
+ * if these are set by DHCP
+ * @return map with ip, hostname_short and hostname_fq keys
+ */
+global define map <string, string> GetDHCPHostnameIP () {
+    map <string, string> ret = $[];
+
+    map output = (map) SCR::Execute(.target.bash_output, "hostname -i");
+    ret["ip"] = deletechars(output["stdout"]:"", " \n");
+
+    output = (map) SCR::Execute(.target.bash_output, "hostname");
+    ret["hostname_short"] = deletechars(output["stdout"]:"", " \n");
+
+    output = (map) SCR::Execute(.target.bash_output, "hostname -f");
+    ret["hostname_fq"] = deletechars(output["stdout"]:"", " \n");
+
+    return ret;
+}
+
 /**
  * resolver config file location
  */
@@ -405,10 +425,17 @@ global define string Summary() {
  */
 global define boolean IsHostLocal (string check_host) {
     Read ();
+    NetworkDevices::Read ();
+    map <string, string> dhcp_data = $[];
+
+    if ( (size( NetworkDevices::Locate("BOOTPROTO", "dhcp") ) > 0) || 
+	 NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false == true ) {
+	dhcp_data = GetDHCPHostnameIP();
+	y2milestone("Got DHCP-configured data: %1", dhcp_data);
+    }
     /* FIXME: May not work properly in following situations:
 	- multiple addresses per interface
         - aliases in /etc/hosts
-	- hostname or IP address is set through DHCP
 	- IPADDR=IP/24
     */
 
@@ -422,8 +449,9 @@ global define boolean IsHostLocal (string check_host) {
     // IPv4 address
     if (IP::Check4 (check_host))
     {
-	NetworkDevices::Read ();
-	return 0 != size (NetworkDevices::Locate ("IPADDR", check_host));
+	if ( (size (NetworkDevices::Locate ("IPADDR", check_host)) > 0)
+	      || dhcp_data["ip"]:"" == check_host)
+	    return true;
     }
     // IPv6 address
     else if (IP::Check6 (check_host))
@@ -433,12 +461,16 @@ global define boolean IsHostLocal (string check_host) {
     // short hostname
     else if (findfirstof (check_host, ".") == nil)
     {
-	return tolower (check_host) == tolower (hostname);
+	if ( (tolower (check_host) == tolower (hostname))
+	     || dhcp_data["hostname_short"]:"" == check_host)
+	    return true;
     }
     // fully qualified hostname
     else
     {
-	return tolower (check_host) == tolower (hostname + "." + domain);
+	if ( (tolower (check_host) == tolower (hostname + "." + domain))
+	      || dhcp_data["hostname_fq"]:"" == check_host )
+	    return true;
     }
     return false;
 }
