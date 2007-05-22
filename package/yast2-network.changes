@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue May 22 13:59:04 CEST 2007 - kmachalkova@suse.cz
+
+- Escape backslash characters in proxy auth credentials properly
+  (#256360)
+- 2.15.33 
+
+-------------------------------------------------------------------
 Mon May 21 13:57:47 CEST 2007 - kmachalkova@suse.cz
 
 - IsHostLocal test extended to include also hostname and/or IP set by

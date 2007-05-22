@@ -110,7 +110,7 @@ global define boolean Write() {
     ];
 
     string caption = _("Saving Proxy Configuration");
-    integer sl = 100; //sleep for longer time, so that progress does not disappear right afterwards
+    integer sl = 500; //sleep for longer time, so that progress does not disappear right afterwards
 
     Progress::New(caption, " ", size(steps), steps, [], "");
 
@@ -215,11 +215,14 @@ global define map <string, map <string, any> > RunTestProxy (string http_proxy, 
     https_proxy		= mergestring (splitstring(https_proxy, "\""), "\\\"");
     ftp_proxy		= mergestring (splitstring(ftp_proxy, "\""), "\\\"");
     proxy_user		= mergestring (splitstring(proxy_user, "\""), "\\\"");
+    //escape also '\' character - usernames such as domain\user are causing pain to .target.bash_output
+    //and to curl - #256360
+    proxy_user		= mergestring (splitstring(proxy_user, "\\"), "\\\\");
     proxy_password	= mergestring (splitstring(proxy_password, "\""), "\\\"");
 
     string user_pass = (proxy_user != "" ?
-	" --proxy-user " + "'" + proxy_user + "'" + (proxy_password != "" ?
-	    ":" + "'" + proxy_password + "'"
+	" --proxy-user " +  proxy_user + (proxy_password != "" ?
+	    ":" + proxy_password
 	    :
 	    "")
 	:
@@ -228,7 +231,7 @@ global define map <string, map <string, any> > RunTestProxy (string http_proxy, 
     // timeout for the connection
     integer timeout_sec = 90;
     // %1 = http or ftp proxy, %2 = user:password if any, %3 = URL
-    string command = "curl --verbose --proxy '%1' %2 --connect-timeout %3 --url '%4'";
+    string command = "curl --verbose --proxy %1 %2 --connect-timeout %3 --url '%4'";
     string http_command = sformat(command, http_proxy, user_pass, timeout_sec, "http://www.novell.com");
     // adding option --insecure to accept the certificate without asking
     string https_command = sformat(command, https_proxy, user_pass, timeout_sec, "https://secure-www.novell.com --insecure");
