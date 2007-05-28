@@ -22,6 +22,7 @@ import "Wizard";
 import "Lan";
 import "CWM";
 import "CWMTab";
+import "NetworkService";
 
 include "network/lan/help.ycp";
 include "network/routines.ycp";
@@ -58,7 +59,7 @@ term RoutingEditDialog(integer id, term entry, list devs) {
     ));
 
     if(entry[4]:"" != "")
-	UI::ChangeWidget(`id(`device), `Value, entry[4]:"");
+    UI::ChangeWidget(`id(`device), `Value, entry[4]:"");
     UI::ChangeWidget(`id(`destination), `ValidChars, IP::ValidChars + "default" + "/-");
     UI::ChangeWidget(`id(`gateway), `ValidChars, IP::ValidChars + "-");
     UI::ChangeWidget(`id(`netmask), `ValidChars, Netmask::ValidChars + "-");
@@ -164,6 +165,15 @@ void initRouting (string key) ``{
     UI::ChangeWidget(`id(`table), `Enabled, false);
     UI::ChangeWidget(`id(`add), `Enabled, false);
     UI::SetFocus(`id(`gw));
+
+    // #178538 - disable routing dialog when NetworkManager is used
+    boolean enabled = !(boolean)NetworkService::IsManaged();
+
+    UI::ChangeWidget(`id(`gw), `Enabled, enabled);
+    UI::ChangeWidget(`id(`table),  `Enabled, enabled);
+    UI::ChangeWidget(`id(`forward), `Enabled, enabled);
+    UI::ChangeWidget(`id(`add), `Enabled, enabled);
+    UI::ChangeWidget(`id(`expert), `Enabled, enabled);
 
     // fixed bug #73739 - if dhcp is used, dont set default gw statically
 //    if (Lan::bootproto == "dhcp")UI::ChangeWidget(`id(`gw),`Enabled, false);
