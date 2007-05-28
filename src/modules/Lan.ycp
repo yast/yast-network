@@ -189,11 +189,6 @@ list<map> Hardware = [];
 // FIXME: MOD list<string> DeletedModules = [];
 
 /**
- * /etc/install.inf data
- */
-map InstallInf = $[];
-
-/**
  * Data was modified?
  */
 boolean modified = false;
@@ -312,7 +307,7 @@ global list<string> getModulesFor(string busid, string default_module){
 }
 
 include "network/hardware.ycp";
-include "network/install.ycp";
+//include "network/install.ycp";
 include "network/routines.ycp";
 include "network/runtime.ycp";
 
@@ -439,7 +434,7 @@ global define boolean Read (symbol cache) {
     if(Abort()) return false;
     /* Progress step 7/9 */
     ProgressNextStage(_("Reading installation information..."));
-    ReadInstallInf();
+//    ReadInstallInf();
     sleep(sl);
 
     if(Abort()) return false;
@@ -1559,9 +1554,10 @@ define map FindMatchingDevice(map interface) {
 
     } else {
 	// this is the first interface, match the hardware with install.inf
-
+/*
+ // couldn't happen 
 	if (size(InstallInf)>0){
-         /* Select the one from install.inf with the same MAC */
+         // Select the one from install.inf with the same MAC 
 	 // find H["mac"] == InstallInf["hwaddr"]
          if (tosel == nil  ) {
             string hwaddr = InstallInf["hwaddr"]:"";
@@ -1571,7 +1567,7 @@ define map FindMatchingDevice(map interface) {
             y2milestone("Rule: matching hwaddr in install.inf");
          }
 
-         /* Select the one from install.inf with the same module */
+         // Select the one from install.inf with the same module 
 	 // find H["module"] == InstallInf["module"]
          if (tosel == nil) {
             string infmodule = InstallInf["module"]:"";
@@ -1580,7 +1576,9 @@ define map FindMatchingDevice(map interface) {
             }
             y2milestone("Rule: matching module in install.inf");
          }
-	} else{
+	} else
+*/
+	   {
 	 /* No install.inf -> select the first connected */
          // find H["active"] == true
          if (tosel == nil) {
@@ -1675,7 +1673,7 @@ define void ProposeNMInterfaces () {
 global define boolean ProposeInterfaces () {
 
     y2milestone("Hardware=%1", Hardware);
-    y2milestone("InstallInf=%1", InstallInf);
+//    y2milestone("InstallInf=%1", InstallInf);
 
     y2milestone("NetworkConfig::Config=%1", NetworkConfig::Config);
     y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);
@@ -1710,7 +1708,7 @@ global define boolean ProposeInterfaces () {
     /* Some HW found -> use it for proposal */
     if(size(Hardware) > 0) {
          if (Arch::s390()){
-         tosel =  FindMatchingDevice( $["device":sformat("%1-id-%2",InstallInf["module"]:"", InstallInf["hwaddr"]:"")] );
+//         tosel =  FindMatchingDevice( $["device":sformat("%1-id-%2",InstallInf["module"]:"", InstallInf["hwaddr"]:"")] );
         }
           else tosel =  FindMatchingDevice($[]);
 
@@ -1720,6 +1718,7 @@ global define boolean ProposeInterfaces () {
     y2debug("Hardware=%1", Hardware);
     y2milestone ("Selected HW w/o  install.inf patches: %1", tosel);
 
+/*
     // do not select a card without a driver, #29296
     if (tosel != nil)
     {
@@ -1736,12 +1735,12 @@ global define boolean ProposeInterfaces () {
 	// SelectHW relies on the detected info (eg. busid) from hwinfo
 	// which is not in install.inf
 
+
 	if (InstallInf["module"]:"" != "")
 	{
 	    y2milestone ("Using driver module from install.inf");
 	    tosel["module"] = InstallInf["module"]:"";
 	}
-
         // L3 bug: 75720
         // Setup module options available from /etc/install.inf
         string _options = InstallModuleOptions(tosel["module"]:"");
@@ -1755,9 +1754,9 @@ global define boolean ProposeInterfaces () {
 	// set layer2 status from /etc/install.inf
 	qeth_layer2 = (InstallInf["QETH_LAYER2_SUPPORT"]:"0"=="1")?true:false;
 	qeth_macaddress = InstallInf["LLADDR"]:"";
-
     }
-    /* Nothing detected -> use InstallInf */
+    // Nothing detected -> use InstallInf 
+
     else if(size(InstallInf) > 0) {
 
 	if(!haskey(InstallInf, "module")) {
@@ -1775,10 +1774,12 @@ global define boolean ProposeInterfaces () {
 	type = InstallInf["type"]:"eth";
 	device = NetworkDevices::GetFreeDevice(type);
     }
+
     else {
 	y2milestone("No hardware, no install.inf -> no proposal.");
 	return false;
     }
+*/
 
 // here we know the hardware and could fill the interface defaults for it,
 // like for wifi usercontrol and for eth|wifi ifplugd.
@@ -1788,24 +1789,24 @@ global define boolean ProposeInterfaces () {
     SetDefaultsForHW ();
 
     // #145041
-    ethtool_options = InstallInf["ethtool_options"]:"";
+//    ethtool_options = InstallInf["ethtool_options"]:"";
 
     // #176804
-    if (NetworkStorage::RootIsOnNetwork ())
+    if (NetworkStorage::RootIsOnNetwork ("/"))
     {
 	startmode = "nfsroot";
 	y2milestone ("startmode nfsroot");
     }
 
-    ipaddr = InstallInf["ipaddr"]:"";
-    bootproto = InstallInf["bootproto"]:"static";
+//    ipaddr = InstallInf["ipaddr"]:"";
+//    bootproto = InstallInf["bootproto"]:"static";
     y2debug("ipaddr,bootproto=%1,%2", ipaddr, bootproto);
     if(bootproto == "static" && ipaddr != "" && ipaddr != nil) {
 
 	y2milestone("static proposal");
 
 	/* propose address setup from /etc/install.inf */
-	netmask = InstallInf["netmask"]:"";
+//	netmask = InstallInf["netmask"]:"";
 	if(netmask == nil || netmask == "")
 	    netmask = "255.255.255.0";
     }
@@ -1854,12 +1855,13 @@ define boolean ProposeHostname () {
 	return false;
     }
 
+/*
     y2milestone ("hostname from install.inf");
     if (! DNS::ReadHostDomain (InstallInf["hostname"]:"",
 			       InstallInf["domain"]:""))
     {
 	y2milestone ("hostname from dns");
-	/* try to get hostname from the network */
+	// try to get hostname from the network 
 	string hnent = Detection::ResolveIP(ipaddr);
 
         //last resort - generate random hostname (#165269)
@@ -1876,7 +1878,7 @@ define boolean ProposeHostname () {
         }
 
     }
-
+*/
     return true;    
 }
 
@@ -1887,10 +1889,10 @@ define boolean ProposeHostname () {
 global define boolean ProposeRoutesAndResolver () {
     if(bootproto == "static" && ipaddr != "" && ipaddr != nil) {
 	/* propose default gateway from /etc/install.inf */
-	Routing::ReadFromGateway (InstallInf["gateway"]:"");
+//	Routing::ReadFromGateway (InstallInf["gateway"]:"");
 
 	/* propose DNS setup from /etc/install.inf */
-	DNS::ReadNameserver (InstallInf["nameserver"]:"");
+//	DNS::ReadNameserver (InstallInf["nameserver"]:"");
 	ProposeHostname ();
     }
     return true;
@@ -1946,6 +1948,7 @@ global define boolean Autoinstall() {
 		SelectHWMap(tosel);
 	    }
 	    /* Nothing detected -> use InstallInf */
+/*
 	    else if(size(InstallInf) > 0) {
 
 		if(!haskey(InstallInf, "module")) {
@@ -1955,9 +1958,10 @@ global define boolean Autoinstall() {
 		NetworkModules::Alias = InstallInf["module"]:"";
 		NetworkModules::Options = InstallInf["options"]:"";
 
-		type = InstallInf["type"]:"eth";
+//		type = InstallInf["type"]:"eth";
 		device = NetworkDevices::GetFreeDevice(type);
 	    }
+*/
 	    else {
 		y2milestone("No hardware, no install.inf -> no autoinstallation possible.");
 		return false;
@@ -1990,7 +1994,7 @@ global define boolean Autoinstall() {
 	    }
 	    Commit();
 	});
-    } 
+    }
     else 
     {
         y2milestone ("no interface configuration, taking it from install.inf");
@@ -2002,12 +2006,12 @@ global define boolean Autoinstall() {
     if (autoinstall_settings["routing", "routes"]:[] == [])
     {
 	y2milestone ("gateway from install.inf");
-	Routing::ReadFromGateway (InstallInf["gateway"]:"");
+//	Routing::ReadFromGateway (InstallInf["gateway"]:"");
     }
     if (autoinstall_settings["dns", "nameservers"]:[] == [])
     {
 	y2milestone ("nameserver from install.inf");
-	DNS::ReadNameserver (InstallInf["nameserver"]:"");
+//	DNS::ReadNameserver (InstallInf["nameserver"]:"");
     }
     if (autoinstall_settings["dns", "hostname"]:"" == "")
     {
@@ -2037,7 +2041,7 @@ global define boolean HasAliases(string dev) {
 
 global define list<map> PrepareForAutoinst() {
   
-    ReadInstallInf();     
+//    ReadInstallInf();     
     Hardware = ReadHardware("netcard");
     return Hardware;
 }

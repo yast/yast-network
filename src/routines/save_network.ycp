@@ -1,0 +1,393 @@
+/**
+ * File:	include/network/install.ycp
+ * Package:	Network configuration
+ * Summary:	Installation routines
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * All install.inf settings are stored in a global variable InstallInf.
+ */
+
+{
+
+textdomain "network";
+
+import "Hostname";
+import "IP";
+import "NetworkDevices";
+import "FileUtils";
+import "Netmask";
+import "NetworkStorage";
+import "Installation";
+import "String";
+
+map <string, any> InstallInf = $[];
+
+// global variable because chrooted environment
+boolean network_disk=false;
+
+/**
+ * Read one install.inf item
+ * @param item InstallInf map key
+ * @param var install.inf SCR variable
+ * @return true on success
+ */
+define boolean ReadInstallInfItem(path install_inf, string item, string var) {
+    if(item == nil || item == "" || var == nil || var == "") return false;
+    string val = (string) SCR::Read(add(install_inf, var));
+//y2internal("val %1 %2", item, val);
+    if(val == nil) return false;
+    if(val != "") InstallInf[item] = val;
+//y2internal("%1", InstallInf);
+    return true;
+}
+
+define string DeleteFirstWord (string s) {
+    string ret = regexpsub (s, "^[^ ]* +(.*)", "\\1");
+    return (ret == nil)? s: ret;
+}
+
+/**
+ * Read install.inf from the correct location
+ * @return true on success
+ */
+define boolean ReadInstallInf() {
+
+    /* Detect install.inf location */
+    path install_inf = nil;
+    if(SCR::Read(.target.size,"/etc/install.inf") > 0) {
+	install_inf = .etc.install_inf;
+	InstallInf["installation"] = "yes";
+    }
+    /* FIXME
+    else if(SCR::Read(.target.size,"/var/lib/YaST2/install.inf") > 0)
+	install_inf = .var.lib.YaST2.install_inf;
+    */
+    else
+	return false;
+
+    /* Read install.inf items */
+    ReadInstallInfItem(install_inf, "ipaddr", "IP");
+    ReadInstallInfItem(install_inf, "netmask", "Netmask");
+    ReadInstallInfItem(install_inf, "bcast", "Broadcast");
+    ReadInstallInfItem(install_inf, "remote_ip", "Pointopoint");
+    ReadInstallInfItem(install_inf, "mtu", "IP_MTU");
+    ReadInstallInfItem(install_inf, "bootproto", "NetConfig");
+    ReadInstallInfItem(install_inf, "netdevice", "Netdevice");
+    ReadInstallInfItem(install_inf, "gateway", "Gateway");
+    ReadInstallInfItem(install_inf, "nameserver", "Nameserver");
+    ReadInstallInfItem(install_inf, "domain", "Domain");
+    ReadInstallInfItem(install_inf, "hostname", "Hostname");
+    ReadInstallInfItem(install_inf, "module", "Alias");
+//    ReadInstallInfItem(install_inf, "options", "Options");
+    ReadInstallInfItem(install_inf, "hwaddr", "HWAddr");
+    ReadInstallInfItem(install_inf, "ethtool_options", "ethtool");
+    ReadInstallInfItem(install_inf, "unique", "NetUniqueID");
+    ReadInstallInfItem(install_inf, "connect_wait", "ConnectWait");
+
+    ReadInstallInfItem(install_inf, "QETH_LAYER2_SUPPORT", "Layer2");
+    ReadInstallInfItem(install_inf, "LLADDR", "OSAHWAddr");
+
+    /* Split network device */
+    string netdevice = InstallInf["netdevice"]:"";
+    if(netdevice != "") {
+	string devtype = NetworkDevices::device_type(netdevice);
+	if(devtype != nil && devtype != "") InstallInf["type"] = devtype;
+//	InstallInf = remove(InstallInf, "netdevice");
+    }
+
+    /* Split FQ hostname */
+    string hostname = InstallInf["hostname"]:"";
+    if(hostname != "" && !IP::Check (hostname)) {
+	list split = Hostname::SplitFQ(hostname);
+	InstallInf["hostname"] = split[0]:hostname;
+	InstallInf["domain"] = split[1]:"";
+    }
+    else
+    {
+	// do not have numeric hostname, #152218
+	InstallInf["hostname"] = "";
+    }
+
+    // #180821, todo cleanup
+    if (netdevice != "")
+    {
+	string mod = (string) SCR::Read (add (.etc.install_inf_alias, netdevice));
+	if (mod != "" && mod != nil)
+	{
+	    InstallInf["module"] = mod;
+	    string options = (string) SCR::Read (add (.etc.install_inf_options, mod));
+	    if (options != "" && options != nil)
+	    {
+		InstallInf["options"] = options;
+	    }
+	}
+    }
+    else
+    {
+    // FIXME: alias = eth0 tulip
+    // FIXME: options = ne io=0x200
+
+    // #42203: correctly parse module and options for proposal
+    // "eth0 qeth" -> "qeth"
+    // FIXME: this only works for a single module
+    string mod = InstallInf["module"]:"";
+    if (mod != "") {
+	InstallInf["module"] = DeleteFirstWord (mod);
+    }
+    string options = InstallInf["options"]:"";
+    if (options != "") {
+	InstallInf["options"] = DeleteFirstWord (options);
+    }
+    }
+
+    y2milestone("InstallInf(%1)", InstallInf);
+    return true;
+}
+
+
+/**
+ * Read module options from /etc/install.inf
+ * @param module_name Module name
+ * @return module options, empty string if none
+ */
+string InstallModuleOptions(string module_name) {
+    if(SCR::Read(.target.size,"/etc/install.inf") > 0) {
+        list<string> modules =  SCR::Dir(.etc.install_inf_options);
+        y2milestone("Module with options in /etc/install.inf: %1", modules);
+        if(contains(modules, module_name)) {
+            any options = SCR::Read (add (.etc.install_inf_options, module_name));
+            if (options!=nil && options != "")
+                return (string)options;
+        }
+    }
+    return "";
+}
+
+map<string, any> getcfg(string options, string device){
+ map <string, any> cfg=$[];
+ map <string, any> output = (map <string, any>)SCR::Execute(.target.bash_output, 
+		sformat("getcfg %1 %2", options, device));
+// if (output["exit"]:0==0){
+  foreach(string row, splitstring(output["stdout"]:"", "\n"), {
+   row=deletechars(row, "\\\"\;");
+   list<string> keyval=splitstring(row, "=");
+   if (size(keyval)>1) cfg[keyval[0]:""]=keyval[1]:"";
+
+  });
+// }
+ y2milestone("%1 %2\n%3", options, device, cfg);
+ return cfg;
+}
+
+string getHWFullPath(string hwfile){
+ return sformat("%1/hwcfg-%2", "/etc/sysconfig/hardware", hwfile);
+}
+
+
+map <string,any> hwcfg=$[];
+
+string CreateHardwareFile(){
+ string hwfile="";
+
+  // read current hardware information and check if configuration file exists
+  hwcfg=getcfg("-f hwcfg- -d /etc/sysconfig/hardware", InstallInf["netdevice"]:"");
+  if( tointeger(hwcfg["HWD_CONFIG_N"]:"0")==0 ){
+   y2internal("hwcfg doesn't exist");
+   // check if deriver is connected to bus
+   if (tointeger(hwcfg["HWD_BUS_N"]:"0")>0){
+    string busname = hwcfg[sformat("HWD_BUSNAME_%1", tointeger(hwcfg["HWD_BUS_N"]:"0")-1)]:"";
+    string busid = hwcfg[sformat("HWD_BUSID_%1", tointeger(hwcfg["HWD_BUS_N"]:"0")-1)]:"";
+    if (busname == "vio" && FileUtils::IsDirectory("/proc/iSeries")){
+     // Bug 159652 - LTC22358 - no hwcfg-static files created for iseries_veth
+     hwfile = sformat("static-0");
+     y2warning("vio bus type, using %1", hwfile);
+    } else {
+	    hwfile = sformat("bus-%1-%2", busname, busid);
+	    y2internal("will create hwcfg file %1", hwfile);
+	   }
+
+   } else {
+	   hwfile = sformat("static-0");
+	   y2error("Not connected to bus! Using %1", hwfile);
+	  }
+  string content=sformat("STARTMODE='auto'\nMODULE='%1'\nMODULE_OPTIONS='%2'\n", InstallInf["module"]:"", InstallInf["options"]:"");
+  y2internal ("creating %1 file\n%2", hwfile, content);
+  SCR::Write(.target.string, getHWFullPath(hwfile), content);
+  }else {
+	 // in case of s390 hwcfg is created by Linuxrc (uli)
+	 y2warning("hwcfg already exists");
+	 hwfile = hwcfg[sformat("HWD_CONFIG_%1", tointeger(hwcfg["HWD_CONFIG_N"]:"0")-1)]:"";
+	 y2internal("configuration name = %1", hwfile);
+	}
+ y2internal("Hardware file: %1", getHWFullPath(hwfile));
+
+ return hwfile;
+}
+
+string getIfcName(string hwfile){
+ string ifcfg="";
+ string interfacetype = NetworkDevices::device_type( hwcfg[sformat("HWD_INTERFACE_%1", tointeger(hwcfg["HWD_INTERFACE_N"]:"0")-1)]:"" );
+ // for special s390 interface types write static configuration
+ if (contains(["qeth", "hsi", "ctc", "lcs", "iucv"], interfacetype)){
+  y2internal("special device type %1", interfacetype);
+  ifcfg=sformat("ifcfg-%1", hwfile);
+ } else {
+	 y2internal("usual type %1", interfacetype);
+	 // if MAC available - use it for name
+	 if (size(hwcfg["HWD_ID"]:"")>0){
+	  ifcfg = sformat("ifcfg-%1-id-%2", interfacetype, hwcfg["HWD_ID"]:"");
+	  y2internal("MAC address available - use it for name %1", ifcfg);
+	 } else {
+		// in case MAC is not available, use device name (eth0) 
+		 ifcfg = sformat("ifcfg-%1", hwcfg[sformat("HWD_INTERFACE_%1", tointeger(hwcfg["HWD_INTERFACE_N"]:"0")-1)]:"");
+	         y2internal("MAC address not available - use device name %1", ifcfg);
+		}
+	}
+ y2internal("interface configuration file %1", ifcfg);
+ return ifcfg;
+}
+
+void CreateIfcfg(string hwcfg, string ifcfg){
+ string network_configuration="";
+ // set BOOTPROTO=[ static | dhcp ]
+ if (InstallInf["bootproto"]:"dhcp"=="static") {
+	// add broadcast interface #suse49131
+	 network_configuration=sformat("BOOTPROTO='static'\nIPADDR='%1/%2'\nBROADCAST='%3'\n",
+		InstallInf["ipaddr"]:"", Netmask::ToBits(InstallInf["netmask"]:""), InstallInf["bcast"]:"");
+	} else {
+	       network_configuration="BOOTPROTO='dhcp'\n";
+	       // set DHCP_SET_HOSTNAME=yes  #suse30528
+	       y2milestone("set DHCLIENT_SET_HOSTNAME=yes on installed system");
+	       SCR::Execute(.target.bash_output, "sed -i s/\"DHCLIENT_SET_HOSTNAME=.*\"/'DHCLIENT_SET_HOSTNAME=\"yes\"'/g /etc/sysconfig/network/dhcp");
+	      }
+
+ // if available, write MTU
+ if (size(InstallInf["mtu"]:"")>0) network_configuration = sformat("%1MTU='%2'\n", network_configuration, InstallInf["mtu"]:"");
+
+
+ if (size(InstallInf["LLADDR"]:"")>0) network_configuration = sformat("%1LLADDR='%2'\n", network_configuration, InstallInf["LLADDR"]:"");
+
+ if (size(InstallInf["unique"]:"")>0)
+ {
+  // write UNIQUE - #suse25739
+  network_configuration = sformat("%1UNIQUE='%2'\n", network_configuration, InstallInf["unique"]:"");
+  // write UDI
+  list<map> cards=(list<map>)SCR::Read(.probe.netcard);
+  foreach(map card, cards, {
+   if (card["unique_key"]:""==InstallInf["unique"]:"") network_configuration = sformat("%1udi='%2'\n", network_configuration, card["udi"]:"");
+  });
+ }
+
+ if (network_disk){ network_configuration = sformat("%1STARTMODE='nfsroot'\n", network_configuration);
+  } else{network_configuration = sformat("%1STARTMODE='onboot'\n", network_configuration);
+	}
+
+ // reference to hardware configuration
+ network_configuration = sformat("%1_nm_name='%2'\n", network_configuration, hwcfg);
+
+ // point to point interface
+ if (size(InstallInf["remote_ip"]:"")>0)network_configuration = sformat("%1REMOTE_IPADDR='%2'\n", network_configuration, InstallInf["remote_ip"]:"");
+
+
+ y2internal("Network Configuration:\n%1\n%2", network_configuration, ifcfg);
+
+ // write only if file doesn't exists
+ string dev_file=sformat("/etc/sysconfig/network/%1", ifcfg);
+// string dev_file=sformat("/tmp/%1", ifcfg);
+ if (!FileUtils::Exists(dev_file)) {
+    SCR::Write(.target.string, dev_file, network_configuration);
+    y2internal("ifcfg file: %1", dev_file);
+ }
+	else y2warning("File exists %1", dev_file);
+}
+
+/*
+ * create all network files except ifcfg and hwcfg
+ * directly to installed system
+ */
+
+void CreateOtherNetworkFiles(){
+ // create routes file
+ if (size(InstallInf["gateway"]:"")>0){
+  y2milestone("Writing route : %1", InstallInf["gateway"]:"");
+  SCR::Write(.target.string, "/etc/sysconfig/network/routes", InstallInf["gateway"]:"");
+ } else y2warning("No routing information in install.inf");
+
+ // create hostname
+ if (size(InstallInf["hostname"]:"")>0){
+  y2milestone("Write HOSTANAME: %1", InstallInf["hostname"]:"");
+  SCR::Write(.target.string, "/etc/HOSTNAME", InstallInf["hostname"]:"");
+ }
+
+ // create resolv.conf
+ if (size(InstallInf["domain"]:"")>0 && size(InstallInf["nameserver"]:"")>0){
+  string text=sformat("domain %1
+nameserver %2", InstallInf["domain"]:"", InstallInf["nameserver"]:"");
+  y2milestone("Write resolv.conf content: %1", text);
+  SCR::Write(.target.string, "/etc/resolv.conf", text);
+ }
+
+ // create defaultdomain
+ if (size(InstallInf["domain"]:"")>0 && FileUtils::Exists("/etc/defaultdomain")){
+  y2milestone("Write defaultdomain: %1", InstallInf["domain"]:"");
+  SCR::Write(.target.string, "/etc/defaultdomain", InstallInf["domain"]:"");
+ }
+
+ // write wait_for_interfaces if needed
+ if (size(InstallInf["connect_wait"]:"")>0){
+  SCR::Execute(.target.bash_output, sformat("sed -i s/^WAIT_FOR_INTERFACES=.*/WAIT_FOR_INTERFACES=%1/g /etc/sysconfig/network/config", InstallInf["connect_wait"]:""));
+ }
+}
+
+/*
+ * this replaces bash script create_interface
+ */
+void save_network(){
+
+  // skip from chroot
+  integer old_SCR = WFM::SCRGetDefault ();
+  integer new_SCR = WFM::SCROpen ("chroot=/:scr", false);
+  WFM::SCRSetDefault (new_SCR);
+
+  SCR::Execute(.target.bash, sformat("cp /etc/sysconfig/hardware/* %1/etc/sysconfig/hardware/ 2>/dev/null", Installation::destdir));
+
+ // when root is on nfs/iscsi set startmode=nfsroot #176804
+ string device = NetworkStorage::getDevice( Installation::destdir );
+ y2internal("%1 directory is on %2 device", Installation::destdir, device);
+ network_disk = NetworkStorage::isDiskOnNetwork( device );
+
+ // --------------------------------------------------------------
+ // Copy DHCP client cache so that we can request the same IP (#43974).
+ WFM::Execute (.local.bash, sformat (
+	"mkdir -p '%2%1'; /bin/cp -p %1/dhcpcd-*.cache '%2%1'",
+	"/var/lib/dhcpcd",
+	String::Quote (Installation::destdir)));
+
+ // close and chroot back
+ WFM::SCRClose (new_SCR);
+ WFM::SCRSetDefault (old_SCR);
+
+ if(ReadInstallInf()){
+  string hwcfg = CreateHardwareFile();
+  string ifcfg = getIfcName(hwcfg);
+
+  CreateIfcfg(hwcfg, ifcfg);
+  CreateOtherNetworkFiles();
+
+  SCR::Execute(.target.bash, "chkconfig network on");
+
+  // if portmap running - start it after reboot
+  WFM::Execute (.local.bash,
+     "pidofproc portmap && touch /var/lib/YaST2/network_install_portmap");
+
+
+ } else
+	y2error("Error while reading install.inf!");
+
+}
+
+save_network();
+/* EOF */
+}

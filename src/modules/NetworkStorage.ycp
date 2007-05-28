@@ -13,16 +13,37 @@
 
 module "NetworkStorage";
 
+global string getDevice(string mount_point){
+ map out = (map)SCR::Execute(.target.bash_output, sformat("grep ' %1 ' /proc/mounts|grep -v rootfs|cut -d' ' -f1|tr -d '\n'", mount_point));
+ string device=deletechars(out["stdout"]:"", "1234567890");
+ y2internal("%1", device);
+ return device;
+}
+
+global boolean isDiskOnNetwork(string device){
+ boolean ret=false;
+ foreach(map<string, any> disk, (list<map<string, any> >)SCR::Read(.probe.disk), {
+  y2milestone("%1", disk["dev_name"]:"");
+y2internal("%1", device);
+  if (disk["dev_name"]:""==device){
+   foreach(string row, disk["dev_names"]:[], {
+    if (issubstring(row, "iscsi")) ret=true;
+   });
+  }
+ });
+ return ret;
+}
+
 /**
  * If the root is on a networked device (NFS, ISCSI),
  * the main NIC needs STARTMODE nfsroot instead of auto.
  * @return root dev over network
  */
-global boolean RootIsOnNetwork () {
+global boolean RootIsOnNetwork (string root) {
 	// in create_interface script there is similar code (if some changes needed, don't forget check also that file)
 	// in case that parameter "root=..." is not defined (read from /proc/cmdline) say that device is NOT network
-    string iscsi_cmd = "
-	ROOT_DISK=$(grep ' / ' /proc/mounts|grep -v rootfs|cut -d' ' -f1);
+    string iscsi_cmd = sformat("
+	ROOT_DISK=$(grep ' %1 ' /proc/mounts|grep -v rootfs|cut -d' ' -f1);
 	if [ -n \"$(echo $ROOT_DISK|grep 'by-id\\|by-uuid\\|by-path\\|by-label')\" ]
          then
           echo by-id or by-UUID or by-path or by-label
@@ -32,7 +53,6 @@ global boolean RootIsOnNetwork () {
            ROOTPART=${ROOT_DISK##*/}
         fi
 
-	echo ROOTPART=\"$ROOTPART\"
 	# use * and .. to get to the device containing ROOTPART
 	case `cd -P /sys/block/*/\"$ROOTPART\"/../device && pwd` in
 	    *session*)
@@ -41,7 +61,7 @@ global boolean RootIsOnNetwork () {
 		IS_ISCSI=false ;;
 	esac
 	$IS_ISCSI
-";
+", root);
     map out = (map) SCR::Execute (.target.bash_output, iscsi_cmd);
     y2milestone ("%1", out);
     return out["exit"]:-1 == 0;
