@@ -135,14 +135,11 @@ void initBootProto (string key) {
 		break;
   case "none" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `none);
 		break;
-
-
  }
 }
 
 
 symbol handleBootProto (string key, map event) {
-// if (event["EventReason"]:"" == "ValueChanged"){
   boolean none    = false;
   boolean dynamic = false;
   boolean stat  = false;
@@ -157,8 +154,6 @@ symbol handleBootProto (string key, map event) {
   UI::ChangeWidget(`dyn, `Enabled, dynamic);
   UI::ChangeWidget(`ipaddr, `Enabled, stat);
   UI::ChangeWidget(`netmask, `Enabled, stat);
-
-// }
  return nil;
 }
 
@@ -196,22 +191,13 @@ void storeBootProto (string key, map event) {
 
 void initIfcfg (string key) {
  UI::ChangeWidget(`id(key), `Value, Lan::type);
+ UI::ChangeWidget(`id(key), `Enabled, false);
 }
 
 void initIfcfgId (string key) {
  UI::ChangeWidget(`id(key), `Value, Lan::device);
 }
-/**
- * Event handler for ifcfg name
- * enable or disable depending on whether we are adding a new interface
- * @param key	the widget receiving the event
- * @param event	the event being handled
- * @return nil so that the dialog loops on
- */
-symbol HandleIfcfg (string key, map event) {
-    UI::ChangeWidget (`id (key), `Enabled, Lan::operation == `add);
-    return nil;
-}
+
 
 /**
  * Remap the buttons to their Wizard Sequencer values
@@ -300,18 +286,6 @@ if you know that the detection is wrong.")))
 }
 
 /**
- * Initialize the dialog as a whole
- * Sets default focus
- * @param key id of the widget
- */
-
-/*
-void InitDialog (string key) {
-    UI::SetFocus (`id ("IPADDR"));
-}
-*/
-
-/**
  * If the traffic would be blocked, ask the user
  * if he wants to change it
  * @param event	the event being handled
@@ -381,19 +355,6 @@ Really continue?
 }
 
 /**
- * Store values computed from the whole dialog
- * @param key	the widget being validated
- * @param event	the event being handled
- */
-
-/*
-void StoreDialog (string key, map event) {
-    return;
-}
-*/
-
-
-/**
  * Initialize value of firewall zone widget
  * (disables it when SuSEFirewall is not installed)
  * @param key id of the widget
@@ -410,7 +371,7 @@ map<string, map<string,any> > widget_descr_local = $[
 	"widget" : `custom,
 	"custom_widget" : 
 		    /* Frame label */
-		    `Frame(`id(`f_additional), _("Additional Addresses"), `HBox(`HSpacing(3), `VBox(
+		   `Frame(`id(`f_additional), _("Additional Addresses"), `HBox(`HSpacing(3), `VBox(
 			`VSpacing(1),
 			`Table(`id(`table), `opt(`notify), `header(
 	                    /* Table header label */
@@ -498,7 +459,7 @@ map<string, map<string,any> > widget_descr_local = $[
 	"help": "",
 	// "items" will be filled in the dialog itself
 	"init" : initIfcfg,
-	"handle": HandleIfcfg,
+//	"handle": HandleIfcfg,
 	"validate_type": `function,
 	"validate_function": ValidateIfcfgType,
 	],
@@ -511,7 +472,7 @@ map<string, map<string,any> > widget_descr_local = $[
 	"help": "",
 	"init" : initIfcfgId,
 	"valid_chars": NetworkDevices::ValidCharsIfcfg (),
-	"handle": HandleIfcfg,
+//	"handle": HandleIfcfg,
 	],
 
     "BONDSLAVE": $[
@@ -883,21 +844,16 @@ define any AddressDialog() {
                 "tab_help" : "",
                 "fallback_functions" : functions,
             ];
-
-// if (Lan::operation == `add) wd_content["initial_tab"] = "hardware";
-
+    hw_standalone=false;
     wd = (map<string, map<string,any> >) union (wd, $[
 	"tab" : CWMTab::CreateWidget (wd_content)
         ]);
-
-    term contents2 = `HBox ("tab");
-
 
     any ret = CWM::ShowAndRun (
 	$[
 	    "widget_names": ["tab"],
 	    "widget_descr": wd,
-	    "contents": contents2,
+	    "contents": `HBox ("tab"),
 	    /* Address dialog caption */
 	    "caption": _("Network Card Setup"),
 	    "back_button" : Label::BackButton (),
@@ -905,7 +861,7 @@ define any AddressDialog() {
 	    "fallback_functions" : functions,
 	    ]);
     y2milestone ("ShowAndRun: %1", ret);
- 
+
     if (ret != `back && ret != `abort)
     {
 	string ifcfgname = NetworkDevices::device_name (

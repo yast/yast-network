@@ -61,11 +61,13 @@ written to <i>/etc/modprobe.conf</i> or <i>/etc/chandev.conf</i>.</p>
 _("<p>Options for the module should be written in the format specified
 in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     }
+
 map<string, any> hardware = nil;
+
+boolean hw_standalone=false;
 
 void initHwDialog(string text) {
     hardware = $[];
-//    ScreenName("lan-hardware");
 
     /* Manual dialog caption */
     string caption = _("Manual Network Card Configuration");
@@ -88,7 +90,7 @@ void initHwDialog(string text) {
     // #38213, remember device id when we switch back from pcmcia/usb
     hardware["non_hotplug_device_id"] = hardware["device"]:"";
     hardware["hwcfg"] = Lan::nm_name;
-if (Lan::nm_name=="" && Lan::nm_name_old!=nil) hardware["hwcfg"]=Lan::nm_name_old;
+    if (Lan::nm_name=="" && Lan::nm_name_old!=nil) hardware["hwcfg"]=Lan::nm_name_old;
 
     // FIXME duplicated in address.ycp
     hardware["device_types"] = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond" ];
@@ -99,10 +101,9 @@ if (Lan::nm_name=="" && Lan::nm_name_old!=nil) hardware["hwcfg"]=Lan::nm_name_ol
     if(Arch::ia64 ())
 	hardware["device_types"] = add(hardware["device_types"]:[], "xp");
 
-    if(issubstring(hardware["device"]:"", "bus-pcmcia"))
-	hardware["hotplug"] = "pcmcia";
-    else if(issubstring(hardware["device"]:"", "bus-usb"))
-	hardware["hotplug"] = "usb";
+    if(issubstring(hardware["device"]:"", "bus-pcmcia")) hardware["hotplug"] = "pcmcia";
+	else if(issubstring(hardware["device"]:"", "bus-usb")) hardware["hotplug"] = "usb";
+
     y2milestone("hotplug=%1", Lan::hotplug);
 
     term CheckBoxes = `HBox(
@@ -124,9 +125,6 @@ if (Lan::nm_name=="" && Lan::nm_name_old!=nil) hardware["hwcfg"]=Lan::nm_name_ol
 	`HSpacing(1.5)
     );
 
-    /* Pushbutton label */
-    term ListButton = `PushButton(`id(`list), _("Select from &List"));
-
     /* Disable PCMCIA and USB checkboxex on Edit and s390 */
     if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 () == true)
 	CheckBoxes = `VSpacing(0);
@@ -147,6 +145,7 @@ if (Lan::nm_name=="" && Lan::nm_name_old!=nil) hardware["hwcfg"]=Lan::nm_name_ol
 	CheckBoxes,
 	`VSpacing(0.4)
     ),`HSpacing(0.5)));
+
     hardware["devices"] = Lan::FreeDevices(hardware["realtype"]:""); // TODO: id-, bus-, ... here
     if(!contains(hardware["devices"]:[], hardware["device"]:"")) hardware["devices"] = prepend(hardware["devices"]:[], hardware["device"]:"");
 
@@ -156,7 +155,6 @@ if (Lan::nm_name=="" && Lan::nm_name_old!=nil) hardware["hwcfg"]=Lan::nm_name_ol
 
     /* Manual dialog contents */
     term TypeNameWidgets = 
-//	    `Frame(_("Network &Configuration"),
 	       `VBox(
 		`VSpacing(0.2),
 		`HBox(
@@ -168,8 +166,6 @@ if (Lan::nm_name=="" && Lan::nm_name_old!=nil) hardware["hwcfg"]=Lan::nm_name_ol
 		    DeviceNumberBox,
 		    `HSpacing(0.5)
 		)
-//		`VSpacing(0.2)
-//	    )
 	      );
 
     /* Add hardware -> don't allow some changes (card type) */
@@ -201,7 +197,8 @@ if (Lan::nm_name=="" && Lan::nm_name_old!=nil) hardware["hwcfg"]=Lan::nm_name_ol
     term ButtonBox = `HBox(
 	`HStretch(),
 	`HSpacing(0.5),
-	ListButton,
+	/* Pushbutton label */
+	`PushButton(`id(`list), _("Select from &List")),
 	`HSpacing(0.5),
 	`HStretch()
     );
@@ -223,6 +220,7 @@ if (Lan::nm_name=="" && Lan::nm_name_old!=nil) hardware["hwcfg"]=Lan::nm_name_ol
 	));
 
     UI::ReplaceWidget(`hw_content, contents);
+
 if (Lan::nm_name=="" && Lan::nm_name_old!=nil) UI::ChangeWidget(`enable_hwconfig, `Value, false);
     hardware["no_hotplug"] = hardware["hotplug"]:"" == "";
     hardware["no_hotplug_dummy"] = hardware["no_hotplug"]:false && hardware["type"]:"" != "dummy";
@@ -232,7 +230,7 @@ if (Lan::nm_name=="" && Lan::nm_name_old!=nil) UI::ChangeWidget(`enable_hwconfig
     ChangeWidgetIfExists(`id(`hwcfg), `Enabled, hardware["no_hotplug"]:false);
     ChangeWidgetIfExists(`id(`usb), `Enabled, (hardware["hotplug"]:"" == "usb" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
     ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hardware["hotplug"]:"" == "pcmcia" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
-
+    if (!hw_standalone) ChangeWidgetIfExists(`id(`dev), `Enabled,false);
     ChangeWidgetIfExists(`id(`num), `ValidChars, NetworkDevices::ValidCharsIfcfg ());
     ChangeWidgetIfExists(`id(`hwcfg), `ValidChars, NetworkModules::ValidCharsHwcfg ());
 }
@@ -723,6 +721,7 @@ map<string, map<string,any> > widget_descr_hardware = $[
 
 any HardwareDialog (){
     string caption = _("Hardware Dialog");
+    hw_standalone = true;
     list<map <string, any> > w = CWM::CreateWidgets (["HWDIALOG"], (map <string, map <string, any> >) widget_descr_hardware);
         term contents =
                           `VBox(

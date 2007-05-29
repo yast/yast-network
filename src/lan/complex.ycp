@@ -216,10 +216,8 @@ define void ManagedStore (string key, map event) {
 list<map<string,any> > o_items = nil;
 
 void initOverview (string key) ``{
-// if (o_items == nil){
     o_items = (list<map<string,any> >)Lan::Overview();
     o_items = o_items + Lan::Unconfigured ();
-// }
 
     list<term> term_items = maplist (map<string,any> i, o_items, {
         term t = `item (`id (i["id"]:""));
