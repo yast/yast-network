@@ -277,6 +277,10 @@ global define boolean Read() ``{
     Devices = $[];
 
     if(Abort()) return false;
+
+    // check the environment
+    if(!Confirm::MustBeRoot()) return false;
+
     // step 1 in reading current ISDN setup
     ProgressNextStage(_("Detecting ISDN cards..."));
     Hardware = ReadHardware("isdn");

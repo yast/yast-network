@@ -154,6 +154,10 @@ global define boolean Read() {
     ], [], "");
 
     if(Abort()) return false;
+
+    // check the environment
+    if(!Confirm::MustBeRoot()) return false;
+
     /* Progress step 1/5 */
     ProgressNextStage(_("Detecting DSL devices..."));
     if(!Detection::running) Detection::Start();

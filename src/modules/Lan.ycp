@@ -380,6 +380,11 @@ global define boolean Read (symbol cache) {
     ], [], "");
 
     if(Abort()) return false;
+
+    // check the environment
+    if(!Confirm::MustBeRoot()) return false;
+
+
     /* Progress step 1/9 */
     ProgressNextStage(_("Detecting network devices..."));
     // if(!Arch::s390 ()) /* FIXME: Temporary hack until the detection is functional */
