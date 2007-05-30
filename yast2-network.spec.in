@@ -5,7 +5,8 @@
 BuildRequires: pkgconfig perl-XML-Writer rpm
 BuildRequires: update-desktop-files
 BuildRequires: yast2-devtools yast2-testsuite yast2
-BuildRequires: yast2-country yast2-installation
+BuildRequires: yast2-country
+BuildRequires: yast2-installation >= 2.15.27
 
 # String::Random
 # Linuxrc::display_ip

@@ -25,6 +25,7 @@ import "Wizard";
 include "network/runtime.ycp";
 include "network/routines.ycp";
 include "network/widgets.ycp";
+include "network/installation/dialogs.ycp";
 
 /**
  * DSL device dialog
@@ -119,6 +120,7 @@ be appropriate for dial-on-demand connections.</p>") +
 	    ifaces = add(ifaces, interface);
 
 	y2debug("ifaces=%1", ifaces);
+	y2internal("ifaces=%1", ifaces);
 	ifaces = maplist(string e, (list<string>) ifaces, {
 	    return `item(`id(sformat("%1", e)), sformat("%1", e), e == interface);
 	});
@@ -146,6 +148,11 @@ be appropriate for dial-on-demand connections.</p>") +
 	["USERCONTROL", "STARTMODE",],
 	widget_descr);
 
+NetworkDevices::Read();
+    map <string, string> device_descr = GetDeviceDescription(Internet::device);
+y2internal("device_descr %1", device_descr);
+string connection_text = _("%1 - %2 (%3)");
+
     /* DSL dialog contents */
     term contents = `HBox(
 	`HSpacing(6),
@@ -162,15 +169,20 @@ be appropriate for dial-on-demand connections.</p>") +
 		`VSpacing(0.2),
 		`HBox(
 		    /* ComboBox label */
-		    `Left(`ReplacePoint(`id(`rp), `ComboBox(`id(`interface), _("&Ethernet Card"), ifaces))),
+//		    `Left(`ReplacePoint(`id(`rp), `ComboBox(`id(`interface), _("&Ethernet Card"), ifaces))),
+	/* RadioButton label */
+	`Left(`ReplacePoint(`id(`rp), `Label(`id(`yes), sformat(connection_text, device_descr["name"]:"", device_descr["type"]:"", device_descr["ipaddr"]:_("No IP address assigned"))))),
+	// push button label
+	`Right(`PushButton(`id(`net_expert), _("&Change Device")))
 		    /* TextEntry label */
 		    // `TextEntry(`id(`interface), _("&Ethernet Card"), interface),
-		    `HSpacing(1),
+//		    `HSpacing(1),
+/*
 		    `VBox(
 			`Label(""),
-			/* PushButton label */
 			`PushButton(`id(`lan), _("&Configure Network Cards"))
 		    )
+*/
 		),
 		`VSpacing(0.2),
 		/* TextEntry label */
