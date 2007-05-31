@@ -16,6 +16,8 @@ textdomain "network";
 // This is just a start.
 
 import "IP";
+import "NetworkPopup";
+import "NetworkDevices";
 
 /**
  * Validator for IP adresses, no_popup
@@ -78,26 +80,6 @@ to change the prefix.</p>
 	"opt": [],
 	"help": _("<p>H</p>"),
 	],
-/*
-    "": $[
-	"widget": `,
-	"label": _(""),
-	"opt": [],
-	"help": _("<p>H</p>"),
-	],
-    "": $[
-	"widget": `,
-	"label": _(""),
-	"opt": [],
-	"help": _("<p>H</p>"),
-	],
-    "": $[
-	"widget": `,
-	"label": _(""),
-	"opt": [],
-	"help": _("<p>H</p>"),
-	],
-*/
     ];
 
 /**
@@ -198,6 +180,88 @@ _("<p><b><big>Device Activation</big></b></p>
     ret["help"] = sformat (ret["help"]:"%1", helps);
     ret["items"] = items;
     return ret;
+}
+
+
+define string GetDeviceDescription(string device_id) {
+    string device_name = NetworkDevices::GetValue(device_id,"NAME");
+    if ( (device_name == nil) || (device_name == "") ) {
+        //TRANSLATORS: Informs that device name is not known
+        device_name = _("Unknown device");
+    }
+    //avoid too long device names
+    if (size(device_name) > 30) {
+        device_name = substring (device_name, 0, 27) + "...";
+    }
+    string ip_addr = (NetworkDevices::GetValue(device_id, "BOOTPROTO") == "dhcp" ?
+                    // TRANSLATORS: Informs that the IP address is assigned via DHCP
+                    _("DHCP address") :
+                    NetworkDevices::GetValue(device_id, "IPADDR"));
+    if ( (ip_addr == nil) || (ip_addr == "")) {
+        //TRANSLATORS: Informs that no IP has been assigned to the device
+        ip_addr = _("No IP address assigned");
+    }
+    string output = sformat(_("%1 - %2 (%3)"),
+                        device_name, NetworkDevices::GetDeviceType(device_id), ip_addr);
+        return output;
+}
+
+
+
+list<string> getEthernetItems(){
+    NetworkDevices::Read();
+    list<string> items = NetworkDevices::List("eth");
+    items = filter (string i, items, ``( i != "lo" ));
+    y2internal("network devices list %1", items);
+ return items;
+}
+
+list<string> getNetDeviceItems(){
+	NetworkDevices::Read();
+	list<string> ifaces = NetworkDevices::List("eth");
+	y2debug("ifaces=%1", ifaces);
+	ifaces = (list<string>)union((list)ifaces, (NetworkDevices::List("eth-pcmcia")));
+	y2debug("ifaces=%1", ifaces);
+	ifaces = (list<string>)union((list)ifaces, NetworkDevices::List("eth-usb"));
+	ifaces = (list<string>)union((list)ifaces, NetworkDevices::List("wlan")); // #186102
+	y2debug("ifaces=%1", ifaces);
+ return ifaces;
+}
+
+term getDeviceContens(string selected){
+return `VBox(
+        `VSpacing(1),
+        `Left(`Label(`id(`net_device), GetDeviceDescription(selected))),
+        `Right(`PushButton(`id(`net_expert), _("&Change Device"))),
+        `VSpacing(1)
+    );
+}
+
+
+void initDevice(list<string> items){
+    //If only one device is present, disable "Change device" button
+    if (size(items) <= 1) UI::ChangeWidget(`id(`net_expert),`Enabled,false);
+}
+
+void enableDevices(boolean enable){
+ UI::ChangeWidget(`net_device, `Enabled, enable);
+ UI::ChangeWidget(`net_expert, `Enabled, enable);
+}
+
+void refreshDevice(string via_device){
+ UI::ChangeWidget(`net_device, `Value, GetDeviceDescription(via_device));
+}
+
+string handleDevice(list<string>items, string selected){
+            // popup dialog title
+            string via_device = NetworkPopup::ChooseItem(_("Network Device Select"), items, selected);
+            if (via_device != nil)
+            {
+                UI::ChangeWidget(`net_device, `Value, GetDeviceDescription(via_device));
+                y2milestone("selected network device :%1", via_device);
+                selected = via_device;
+            }
+ return selected;
 }
 
 /* EOF */

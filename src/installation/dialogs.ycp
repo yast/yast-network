@@ -21,6 +21,7 @@ import "Product";
 import "String";
 import "Wizard";
 include "network/routines.ycp";
+include "network/widgets.ycp";
 
 /**
  * Ask for password if required
@@ -57,37 +58,6 @@ define boolean AskForPassword() {
     return ret == `ok;
 }
 
-define map <string, string> GetDeviceDescription(string device_id) {
-
-    string device_name = NetworkDevices::GetValue(device_id,"NAME");
-
-    if ( (device_name == nil) || (device_name == "") ) {
-	//TRANSLATORS: Informs that device name is not known
-	device_name = _("Unknown device");
-    }
-    //avoid too long device names
-    if (size(device_name) > 30) {
-        device_name = substring (device_name, 0, 27) + "...";
-    }
-
-    string ip_addr = (NetworkDevices::GetValue(device_id, "BOOTPROTO") == "dhcp" ?
-                    // TRANSLATORS: Informs that the IP address is assigned via DHCP
-                    _("DHCP address") :
-                    NetworkDevices::GetValue(device_id, "IPADDR"));
-    if ( (ip_addr == nil) || (ip_addr == "")) {
-	//TRANSLATORS: Informs that no IP has been assigned to the device 
-	ip_addr = _("No IP address assigned");
-    }
-
-    map <string, string> ret = $[
-
-	"type" : NetworkDevices::GetDeviceType(device_id),
-	"name" : device_name,
-	"ipaddr" : ip_addr,
-    ];
-
-    return ret;
-}
 
 /**
  * Connection steps dialog
@@ -126,24 +96,21 @@ activate the test procedure."),
 activate the test procedure."),
     ];
 
-    if(haskey(labels, Internet::type))
-	label = labels[Internet::type]:"";
+    if(haskey(labels, Internet::type)) label = labels[Internet::type]:"";
+
+list<string> items = getEthernetItems();
 
     boolean already_up = false;
     if(!Mode::test ()) already_up = Internet::Status();
-	/* Label text - selected network device to network test */
-    string connection_text = _("&Yes, Test Connection to the Internet\nvia %1 - %2 (%3)");
-    map <string, string> device_descr = GetDeviceDescription(Internet::device);
-
+string current = Internet::device;
     /* Radiobuttons */
     term buttons = `VBox(
 	`VSpacing(1),
 	/* RadioButton label */
-	`Left(`ReplacePoint(`id(`rp), `RadioButton(`id(`yes), sformat(connection_text, device_descr["name"]:"", device_descr["type"]:"", device_descr["ipaddr"]:_("No IP address assigned")), Internet::do_test))),
-	// push button label
-	`Right(`PushButton(`id(`net_expert), _("&Change Device"))),
+	`Left(`RadioButton(`id(`yes), `opt(`notify), _("&Yes, Test Connection to the Internet via"), Internet::do_test)),
+	getDeviceContens(current),
 	/* RadioButton label */
-	`Left(`RadioButton(`id(`no), _("N&o, Skip This Test"), !Internet::do_test)),
+	`Left(`RadioButton(`id(`no), `opt(`notify), _("N&o, Skip This Test"), !Internet::do_test)),
 	`VSpacing(1)
     );
 
@@ -190,55 +157,41 @@ activate the test procedure."),
 
     Wizard::SetContents(caption, contents, help, true, true);
     Wizard::SetTitleIcon ("yast-network");
+initDevice(items);
 
-    list<string> items = NetworkDevices::List("");
-    items = filter (string i, items, ``( i != "lo" ));
-    y2milestone("network devices list %1", items);
-    if (items == [] || items == ["lo"])	// #146167
+
+    symbol ret = nil;
+    boolean exit=false;
+    do
     {
-	// no interesting ifcfgs, ask ip
-	items = Internet::GetDevices ();
-    }
-
-    //If only one device is present, disable "Change device" button
-    if (size(items) <= 1){
-	UI::ChangeWidget(`id(`net_expert),`Enabled,false);
-    }
-
-    any ret = nil;
-
-    while(true)
-    {
-	ret = UI::UserInput();
-
-	if (ret == `net_expert)
+	ret = (symbol)UI::UserInput();
+	switch( ret )
 	{
-	    import "NetworkPopup";
 
-	    // popup dialog title
-	    string via_device = NetworkPopup::ChooseItem(_("Network Device Select"), items, Internet::device);
-	    if (via_device != nil)
-	    {
-		map <string, string> device_descr = GetDeviceDescription(via_device);
-		Internet::SetDevice( via_device );
-		UI::ReplaceWidget(`id(`rp), `RadioButton(`id(`yes), sformat(connection_text, device_descr["name"]:"", device_descr["type"]:"", device_descr["ipaddr"]:""), Internet::do_test));
-		y2milestone("selected network device :%1", via_device);
-	    }
-	}
-	else if (ret == `abort || ret == `cancel)
-	{
-	    if (Popup::ConfirmAbort (`incomplete))
+	case `net_expert :
+		current = handleDevice(items, current);
 		break;
-	}
-	else if (ret == `next || ret == `back)
-	{
+	case `abort:
+	case `cancel:
+	    if (Popup::ConfirmAbort (`incomplete)){
+		exit=true;
+		break;
+		}
+	case `next:
+	case `back:
+	    exit=true;
 	    break;
+	case `yes:
+		enableDevices(true);
+		break;
+	case `no:
+		enableDevices(false);
+		break;
+	default:
+	    y2error("Unexpected return code:%1", ret);
+
 	}
-	else
-	{
-	    y2error("Unexpected return code: %1", ret);
-	}
-    }
+    }while(!exit);
 
     Internet::do_test = UI::QueryWidget(`id(`rb), `CurrentButton) == `yes;
     y2debug("Internet::do_test=%1", Internet::do_test);

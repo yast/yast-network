@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu May 31 17:44:21 CEST 2007 - mzugec@suse.cz
+
+- merge code for select interfaces in InternetTest and Dsl (#117426)
+- 2.15.38 
+
+-------------------------------------------------------------------
 Wed May 30 11:34:16 CEST 2007 - mzugec@suse.cz
 
 - fixed spec requirements 

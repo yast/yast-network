@@ -106,33 +106,21 @@ be appropriate for dial-on-demand connections.</p>") +
 
     /**
      */
-    define void UpdateInterfaces() {
-	ifaces = NetworkDevices::List("eth");
-	y2debug("ifaces=%1", ifaces);
-	ifaces = union(ifaces, NetworkDevices::List("eth-pcmcia"));
-	y2debug("ifaces=%1", ifaces);
-	ifaces = union(ifaces, NetworkDevices::List("eth-usb"));
-	ifaces = union(ifaces, NetworkDevices::List("wlan")); // #186102
-	y2debug("ifaces=%1", ifaces);
-
+ //   define void UpdateInterfaces() {
+list<string> items = getNetDeviceItems();
+if(size(items)>0 && interface=="") interface=items[0]:"";
+y2internal("items %1", items);
 	/* FIXME Why is not the current interface added? */
-	if(false && /*interface != "" && */!contains(ifaces, interface))
-	    ifaces = add(ifaces, interface);
+if(false && /*interface != "" && */!contains(ifaces, interface)) ifaces = add(ifaces, interface);
 
-	y2debug("ifaces=%1", ifaces);
-	y2internal("ifaces=%1", ifaces);
-	ifaces = maplist(string e, (list<string>) ifaces, {
-	    return `item(`id(sformat("%1", e)), sformat("%1", e), e == interface);
-	});
-	y2debug("ifaces=%1", ifaces);
-    }
+//}
 
-    /* FIXME: #27137 */
-    UpdateInterfaces();
-    if(size(ifaces) < 1) {
+    /* FIXME: #suse27137 */
+//    UpdateInterfaces();
+    if(size(items) < 1) {
 	NetworkDevices::Push();
 	if(Lan::Propose()) {
-	    UpdateInterfaces();
+//	    UpdateInterfaces();
 	    // list<term (term (string), string, boolean)>
 	    string i = ifaces[0, 0, 0]:"";
 	    y2milestone("i=%1", i);
@@ -148,11 +136,18 @@ be appropriate for dial-on-demand connections.</p>") +
 	["USERCONTROL", "STARTMODE",],
 	widget_descr);
 
+
+//    list<string> items = NetworkDevices::List("");
+//    y2internal("network devices list %1", items);
+
+/*
 NetworkDevices::Read();
-    map <string, string> device_descr = GetDeviceDescription(Internet::device);
+    map <string, string> device_descr = GetDeviceDescription(items[0]:"");
 y2internal("device_descr %1", device_descr);
 string connection_text = _("%1 - %2 (%3)");
+*/
 
+y2internal("interface %1", interface);
     /* DSL dialog contents */
     term contents = `HBox(
 	`HSpacing(6),
@@ -167,23 +162,14 @@ string connection_text = _("%1 - %2 (%3)");
 		/* TextEntry label */
 		`TextEntry(`id(`vpivci),  _("&VPI/VCI"), vpivci),
 		`VSpacing(0.2),
+		`Frame(_("&Ethernet Card"),
 		`HBox(
-		    /* ComboBox label */
-//		    `Left(`ReplacePoint(`id(`rp), `ComboBox(`id(`interface), _("&Ethernet Card"), ifaces))),
 	/* RadioButton label */
-	`Left(`ReplacePoint(`id(`rp), `Label(`id(`yes), sformat(connection_text, device_descr["name"]:"", device_descr["type"]:"", device_descr["ipaddr"]:_("No IP address assigned"))))),
+//	`Left(`ReplacePoint(`id(`rp), `Label(`id(`yes), sformat(connection_text, device_descr["name"]:"", device_descr["type"]:"", device_descr["ipaddr"]:_("No IP address assigned"))))),
 	// push button label
-	`Right(`PushButton(`id(`net_expert), _("&Change Device")))
-		    /* TextEntry label */
-		    // `TextEntry(`id(`interface), _("&Ethernet Card"), interface),
-//		    `HSpacing(1),
-/*
-		    `VBox(
-			`Label(""),
-			`PushButton(`id(`lan), _("&Configure Network Cards"))
-		    )
-*/
-		),
+getDeviceContens(interface)
+		)),
+		`PushButton(`id(`lan), _("&Configure Network Cards")),
 		`VSpacing(0.2),
 		/* TextEntry label */
 		`TextEntry(`id(`modemip), _("Modem &IP Address"), modemip)
@@ -207,7 +193,7 @@ string connection_text = _("%1 - %2 (%3)");
     UI::ChangeWidget (`id ("STARTMODE"), `Value, startmode);
 
     UI::ChangeWidget(`id(`vpivci), `Enabled, pppmode == "pppoatm");
-    UI::ChangeWidget(`id(`interface), `Enabled, pppmode == "pppoe");
+    enableDevices(pppmode == "pppoe" || pppmode == "pptp");
     UI::ChangeWidget(`id(`lan), `Enabled, pppmode == "pppoe" || pppmode == "pptp");
     UI::ChangeWidget(`id(`modemip), `Enabled, pppmode == "pptp");
 
@@ -225,7 +211,7 @@ string connection_text = _("%1 - %2 (%3)");
 	else if(ret == `next) {
 	    /* check_* */
 	    pppmode = (string) UI::QueryWidget(`id(`pppmode), `Value);
-	    interface = (string) UI::QueryWidget(`id(`interface), `Value);
+//	    interface = (string) UI::QueryWidget(`id(`interface), `Value);
 	    vpivci = (string) UI::QueryWidget(`id(`vpivci), `Value);
 	    modemip = (string) UI::QueryWidget(`id(`modemip), `Value);
 	    if(pppmode == "pppoatm" && vpivci == "") {
@@ -251,7 +237,8 @@ string connection_text = _("%1 - %2 (%3)");
 	else if(ret == `pppmode) {
 	    pppmode = (string) UI::QueryWidget(`id(`pppmode), `Value);
 	    UI::ChangeWidget(`id(`vpivci), `Enabled, pppmode == "pppoatm");
-	    UI::ChangeWidget(`id(`interface), `Enabled, pppmode == "pppoe" || pppmode == "pptp");
+    enableDevices(pppmode == "pppoe"|| pppmode == "pptp");
+//	    UI::ChangeWidget(`id(`interface), `Enabled, pppmode == "pppoe" || pppmode == "pptp");
 	    UI::ChangeWidget(`id(`lan), `Enabled, pppmode == "pppoe" || pppmode == "pptp");
 	    UI::ChangeWidget(`id(`modemip), `Enabled, pppmode == "pptp");
 	    continue;
@@ -261,11 +248,14 @@ string connection_text = _("%1 - %2 (%3)");
 	    NetworkDevices::Push();
 	    Call::Function("lan_proposal", ["AskUser"]);
 	    NetworkDevices::Pop();
-	    interface = (string) UI::QueryWidget(`id(`interface), `Value);
-	    UpdateInterfaces();
-	    UI::ReplaceWidget(`id(`rp), `ComboBox(`id(`interface), _("&Ethernet Card"), ifaces));
+	    items = getNetDeviceItems();
+	    refreshDevice(interface);
+//	    interface = (string) UI::QueryWidget(`id(`interface), `Value);
+//	    UpdateInterfaces();
+//	    UI::ReplaceWidget(`id(`rp), `ComboBox(`id(`interface), _("&Ethernet Card"), ifaces));
 	    continue;
 	}
+	else if (ret == `net_expert) interface = handleDevice (items, interface);
 	else {
 	    y2error("Unexpected return code: %1", ret);
 	    continue;
@@ -277,7 +267,7 @@ string connection_text = _("%1 - %2 (%3)");
 	DSL::pppmode = pppmode;
 	if(pppmode == "pppoe" || pppmode == "pptp")
 	{
-	    DSL::interface = (string) UI::QueryWidget(`id(`interface), `Value);
+	    DSL::interface = interface;//(string) UI::QueryWidget(`id(`interface), `Value);
 	    // If firewall is active and interface in no zone, nothing
 	    // gets through (#47309) so add it to the external zone
 	    if (SuSEFirewall4Network::IsOn ())

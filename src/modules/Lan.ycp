@@ -1712,10 +1712,11 @@ global define boolean ProposeInterfaces () {
 
     /* Some HW found -> use it for proposal */
     if(size(Hardware) > 0) {
-         if (Arch::s390()){
+//         if (Arch::s390()){
 //         tosel =  FindMatchingDevice( $["device":sformat("%1-id-%2",InstallInf["module"]:"", InstallInf["hwaddr"]:"")] );
-        }
-          else tosel =  FindMatchingDevice($[]);
+//        }
+//          else 
+		tosel =  FindMatchingDevice($[]);
 
     }
         
