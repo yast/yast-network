@@ -16,7 +16,7 @@ module "DSL";
 textdomain "network";
 
 import "Confirm";
-import "Detection";
+import "NetHwDetection";
 import "Lan";
 import "NetworkDevices";
 import "NetworkService";
@@ -160,7 +160,7 @@ global define boolean Read() {
 
     /* Progress step 1/5 */
     ProgressNextStage(_("Detecting DSL devices..."));
-    if(!Detection::running) Detection::Start();
+    if(!NetHwDetection::running) NetHwDetection::Start();
     Hardware = ReadHardware("dsl");
 
     /* In case of capiadsl we can emulate the detection with the parameters
@@ -256,7 +256,7 @@ global define boolean Write() {
     ], [], "");
 
     /* Stop the detection */
-    if(Detection::running) Detection::Stop();
+    if(NetHwDetection::running) NetHwDetection::Stop();
 
     if(Abort()) return false;
     /* Progress step 1/7 */

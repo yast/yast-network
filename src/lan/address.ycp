@@ -14,7 +14,7 @@ textdomain "network";
 import "Arch";
 import "CWM";
 import "CWMTab";
-import "Detection";
+import "NetHwDetection";
 import "IP";
 import "Label";
 import "Lan";
@@ -334,7 +334,7 @@ boolean ValidateDialog (string key, map event) {
 	 return false;
 	}
 	// validate duplication
-	if (Detection::DuplicateIP (ipa))
+	if (NetHwDetection::DuplicateIP (ipa))
 	{
 	    UI::SetFocus(`ipaddr);
 							    /* Popup text */

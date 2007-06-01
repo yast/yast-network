@@ -15,7 +15,7 @@
 module "DNS";
 textdomain "network";
 
-import "Detection";
+import "NetHwDetection";
 import "Host";
 import "Hostname";
 import "IP";
@@ -199,8 +199,8 @@ global define boolean Read() {
     // detection
     if (hostname == "")
     {
-	hostname = Detection::result["HOSTNAME"]:"";
-	domain = Detection::result["DOMAIN"]:"";
+	hostname = NetHwDetection::result["HOSTNAME"]:"";
+	domain = NetHwDetection::result["DOMAIN"]:"";
     }
     // last resort
     if (hostname == "")
@@ -399,7 +399,7 @@ global define string Summary() {
     }
     else {
 	list<string> nslist = maplist(string ns, nameservers, {
-	    string nss = Detection::ResolveIP(ns);
+	    string nss = NetHwDetection::ResolveIP(ns);
 	    return (nss == "") ? ns : (ns + " (" + nss + ")");
 	});
 

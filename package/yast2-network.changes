@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Jun  1 11:14:21 CEST 2007 - mzugec@suse.cz
+
+- save_network.ycp moved from routines/ to clients/
+- Detection.ycp renamed to NetHwDetection.ycp
+- NetworkStorage.ycp moved to yast2 package
+- 2.15.39 
+
+-------------------------------------------------------------------
 Thu May 31 17:44:21 CEST 2007 - mzugec@suse.cz
 
 - merge code for select interfaces in InternetTest and Dsl (#117426)

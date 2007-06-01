@@ -15,7 +15,7 @@
 module "Routing";
 textdomain "network";
 
-import "Detection";
+import "NetHwDetection";
 import "NetworkDevices";
 import "Map";
 
@@ -120,7 +120,7 @@ global define boolean Read() {
     devices = NetworkDevices::List("");
 
     if(Routes == []) {
-	ReadFromGateway (Detection::result["GATEWAY"]:"");
+	ReadFromGateway (NetHwDetection::result["GATEWAY"]:"");
     }
 
     return true;
@@ -271,7 +271,7 @@ global define string Summary() {
     string summary = "";
 
     string gw = GetGateway();
-    string gwhost = Detection::ResolveIP(gw);
+    string gwhost = NetHwDetection::ResolveIP(gw);
     if(gwhost != "") gw = gw + " (" + gwhost + ")";
 
     if(gw != "") {

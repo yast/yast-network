@@ -4,14 +4,15 @@
 # should be required by devtools
 BuildRequires: pkgconfig perl-XML-Writer rpm
 BuildRequires: update-desktop-files
-BuildRequires: yast2-devtools yast2-testsuite yast2
+BuildRequires: yast2-devtools yast2-testsuite
 BuildRequires: yast2-country
 BuildRequires: yast2-installation >= 2.15.27
+BuildRequires: yast2 >= 2.15.35
 
 # String::Random
 # Linuxrc::display_ip
 # SuSEFirewall::IsInstalled
-Requires:	yast2 >= 2.15.15
+Requires:	yast2 >= 2.15.35
 
 Requires:	sysconfig yast2-country yast2-packager
 PreReq:		/bin/rm

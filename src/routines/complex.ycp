@@ -12,7 +12,7 @@
 
 textdomain "network";
 
-import "Detection";
+import "NetHwDetection";
 import "HTML";
 import "NetworkDevices";
 import "Popup";
@@ -415,7 +415,7 @@ define string DeviceStatus(string devtype, string devnum, map devmap) {
 
 	if(proto == "" || proto == "static" || proto == "none" || proto == nil) {
 	    string addr = devmap["IPADDR"]:"";
-	    string host = Detection::ResolveIP (addr);
+	    string host = NetHwDetection::ResolveIP (addr);
 	    string remip = devmap["REMOTE_IPADDR"]:"";
 	    if(addr == "" || addr == nil)
 		/* Network card status */

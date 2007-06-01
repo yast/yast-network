@@ -17,7 +17,7 @@ textdomain "network";
 
 import "Arch";
 import "DNS";
-import "Detection";
+import "NetHwDetection";
 import "Host";
 import "Hostname";
 import "IP";
@@ -391,7 +391,7 @@ global define boolean Read (symbol cache) {
 
     // Dont read hardware data in config mode
     if(!Mode::config ()) {
-	if(!Detection::running) Detection::Start();
+	if(!NetHwDetection::running) NetHwDetection::Start();
 	Hardware = ReadHardware("netcard");
     }
 
@@ -500,7 +500,7 @@ void writeIPv6(){
 global define boolean Write() {
 
     y2milestone("Writing configuration");
-    if(!write_only && Detection::running) Detection::Stop();
+    if(!write_only && NetHwDetection::running) NetHwDetection::Stop();
 
     /* Stop the detection */
     if(!modified) {
@@ -1073,7 +1073,7 @@ global define boolean Select(string dev) {
 	// defaults for a new device
 	devmap = $[
 	    "STARTMODE": "auto",	// #115448, #156388
-	    "NETMASK": (Detection::result["NETMASK"]:"255.255.255.0"), // #31369
+	    "NETMASK": (NetHwDetection::result["NETMASK"]:"255.255.255.0"), // #31369
 	    ];
 	string product_startmode = ProductFeatures::GetStringFeature ("network", "startmode");
 	if (contains (["auto", "ifplugd"], product_startmode))
@@ -1798,7 +1798,7 @@ global define boolean ProposeInterfaces () {
 //    ethtool_options = InstallInf["ethtool_options"]:"";
 
     // #176804
-    if (NetworkStorage::RootIsOnNetwork ("/"))
+    if (NetworkStorage::isDiskOnNetwork ( NetworkStorage::getDevice("/") ))
     {
 	startmode = "nfsroot";
 	y2milestone ("startmode nfsroot");
