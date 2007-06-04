@@ -1868,7 +1868,7 @@ define boolean ProposeHostname () {
     {
 	y2milestone ("hostname from dns");
 	// try to get hostname from the network 
-	string hnent = Detection::ResolveIP(ipaddr);
+	string hnent = NetHwDetection::ResolveIP(ipaddr);
 
         //last resort - generate random hostname (#165269)
         if (hnent == "")

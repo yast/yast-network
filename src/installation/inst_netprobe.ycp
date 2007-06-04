@@ -11,13 +11,13 @@
 
 textdomain "network";
 
-import "Detection";
+import "NetHwDetection";
 
 y2milestone("----------------------------------------");
 y2milestone("Lan netprobe module started");
 y2milestone("Args: %1", WFM::Args());
 
-if(!Detection::running) Detection::Start();
+if(!NetHwDetection::running) NetHwDetection::Start();
 
 y2milestone("Lan netprobe module finished");
 y2milestone("----------------------------------------");
