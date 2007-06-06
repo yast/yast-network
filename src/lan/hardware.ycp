@@ -90,7 +90,7 @@ void initHwDialog(string text) {
     // #38213, remember device id when we switch back from pcmcia/usb
     hardware["non_hotplug_device_id"] = hardware["device"]:"";
     hardware["hwcfg"] = Lan::nm_name;
-    if (Lan::nm_name=="" && Lan::nm_name_old!=nil) hardware["hwcfg"]=Lan::nm_name_old;
+    if (size(Lan::nm_name)==0 && size(Lan::nm_name_old)>0) hardware["hwcfg"]=Lan::nm_name_old;
 
     // FIXME duplicated in address.ycp
     hardware["device_types"] = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond" ];
@@ -203,7 +203,7 @@ void initHwDialog(string text) {
 	`HStretch()
     );
 
-    term contents = `CheckBoxFrame(`id(`enable_hwconfig), caption, hardware["hwcfg"]:"" != "",
+    term contents = `CheckBoxFrame(`id(`enable_hwcfg), caption, hardware["hwcfg"]:"" != "",
 	`HBox(
 	`HSpacing(2),
 	`VBox(
@@ -221,7 +221,7 @@ void initHwDialog(string text) {
 
     UI::ReplaceWidget(`hw_content, contents);
 
-if (Lan::nm_name=="" && Lan::nm_name_old!=nil) UI::ChangeWidget(`enable_hwconfig, `Value, false);
+if (size(Lan::nm_name)==0 && size(Lan::nm_name_old)>0) UI::ChangeWidget(`enable_hwcfg, `Value, false);
     hardware["no_hotplug"] = hardware["hotplug"]:"" == "";
     hardware["no_hotplug_dummy"] = hardware["no_hotplug"]:false && hardware["type"]:"" != "dummy";
     UI::ChangeWidget(`id(`modul), `Enabled, hardware["no_hotplug_dummy"]:false);
@@ -421,17 +421,13 @@ if (ret == `list) SelectionDialog();
 }
 
 void storeHW (string key, map event) {
-       if(!(boolean)UI::QueryWidget(`enable_hwconfig, `Value))
+       if(!(boolean)UI::QueryWidget(`enable_hwcfg, `Value))
         {
-
-NetworkModules::DeleteM(Lan::nm_name);
-if(Lan::nm_name_old==nil) Lan::nm_name_old = Lan::nm_name;
-Lan::nm_name="";
-map<string, any> tmp_current=$[];
-foreach(string key, any value, NetworkDevices::Current, {
-if (key != "_nm_name") tmp_current[key]=value;
-});
-NetworkDevices::Current=tmp_current;
+	 NetworkModules::DeleteM(Lan::nm_name);
+	 if(size(Lan::nm_name_old)==0) Lan::nm_name_old = Lan::nm_name;
+	 Lan::nm_name="";
+	 NetworkDevices::Current["_nm_name"]="";
+	 NetworkDevices::Commit();
         } else {
 
 	if(UI::WidgetExists(`id(`hwcfg))) {
@@ -466,10 +462,10 @@ Choose a different one."), nm, NetworkDevices::device_name(hardware["type"]:"", 
 	    if(UI::WidgetExists(`id(`num))) {
 		string devic = (string) UI::QueryWidget(`id(`num), `Value);
 	    }
-	}
-
        NetworkModules::Alias  = (string) UI::QueryWidget(`id(`modul), `Value);
        NetworkModules::Options = (string) UI::QueryWidget(`id(`options), `Value);
+	}
+
 
 	if(UI::WidgetExists(`id(`num)))
 	    Lan::device = (string) UI::QueryWidget(`id(`num), `Value);

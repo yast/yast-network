@@ -212,7 +212,6 @@ list<string> getEthernetItems(){
     NetworkDevices::Read();
     list<string> items = NetworkDevices::List("eth");
     items = filter (string i, items, ``( i != "lo" ));
-    y2internal("network devices list %1", items);
  return items;
 }
 

@@ -518,10 +518,12 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 	// summary description of STARTMODE=off
 	"off"	: _("Will not be started at all")
 	];
+/*
     list<string> models = [];
     foreach(map<string, any>row, (list<map<string, any> >)SCR::Read (.probe.netcard), {
      models=add(models, row["model"]:"");
     });
+*/
 
     maplist(string type, map devmap, Devs, {
 	maplist(string k, map v, (map<string,map>)devmap, {
@@ -581,12 +583,14 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 				, ip, v["NETMASK"]:""),
 			];
 		  }
-if (size(v["_aliases"]:$[])>0 && !NetworkService::IsManaged()){
- foreach(string key,   map<string, any> desc, (map<string ,map<string, any> >) v["_aliases"]:$[], {
- string parameters = sformat(_("IP address: %1, subnet mask %2"), desc["IPADDR"]:"", desc["NETMASK"]:"");
- bullets = add(bullets, sformat("%1 (%2)", key, parameters) );
- });
-}
+
+	// build aliases overview
+	if (size(v["_aliases"]:$[])>0 && !NetworkService::IsManaged()){
+	 foreach(string key,   map<string, any> desc, (map<string ,map<string, any> >) v["_aliases"]:$[], {
+	 string parameters = sformat(_("IP address: %1, subnet mask %2"), desc["IPADDR"]:"", desc["NETMASK"]:"");
+	 bullets = add(bullets, sformat("%1 (%2)", key, parameters) );
+	 });
+	}
 		}
 
                 // build the "Bond Slaves" entry of rich box
@@ -603,21 +607,17 @@ if (size(v["_aliases"]:$[])>0 && !NetworkService::IsManaged()){
 
 		string rich =  descr;
 		rich = HTML::Bold ( rich ) + getConnMacBusDescription(v, Hardware) + HTML::List (bullets);
-		item = `item(`id(dev), descr, ip, rich);
+	integer hw_id=-1;
+	boolean found=false;
+	foreach(map device, Hardware, {
+	 hw_id=hw_id+1;
+	 if (v["udi"]:(v["UDI"]:"")==device["udi"]:"") { found=true; break; }
+	 });
+
+		item = `item(`id(dev), descr, ip, rich, (found) ? hw_id : -1);
 	    }
 	    overview = add(overview, item);
 
-	    /* aliases summary */
-/*
-	    map<string,map> aliasee = v["_aliases"]:$[];
-	    if(aliasee != $[])
-		maplist(string aid, map amap, aliasee, {
-		    string adev = NetworkDevices::alias_name(type, k, aid);
-		    ip = DeviceProtocol(amap);
-		    item = `item(`id(adev), DeviceType(adev), adev, ip);
-		    overview = add(overview, item);
-		});
-*/
 
 	});
     });

@@ -98,7 +98,6 @@ define symbol handleAdditional(string key, map event) {
 
 
 	    item = VirtualEditDialog(cur, item, []/*forbidden*/);
-	    y2internal("item=%1", item);
 	    if(item != nil)
 	     {
 	      table_items = maplist(term e, table_items, {

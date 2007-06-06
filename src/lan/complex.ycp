@@ -76,8 +76,7 @@ define symbol ReadDialog() ``{
     Lan::AbortFunction = ``{return PollAbort();};
     boolean ret = Lan::Read (`cache);
 
-    boolean xenbr = Lan::HaveXenBridge ();
-    if (xenbr)
+    if ( Lan::HaveXenBridge() )
     {
 	if (! Popup::ContinueCancel (
 		sformat (
@@ -263,6 +262,10 @@ symbol handleOverview( string key, map event ) {
 	    else		// configured
 	    {
 		Lan::Edit(current);
+		foreach(map<string, any> row, o_items, {
+		 if (row["id"]:"" == current && row["hw_num"]:-1 != -1) Lan::SelectHW(row["hw_num"]:-1);
+		});
+//		Lan::SelectHW (1);
 		if (Lan::startmode == "managed")
 		{
 		    // Continue-Cancel popup

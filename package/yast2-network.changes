@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Jun  6 16:31:35 CEST 2007 - mzugec@suse.cz
+
+- values proposal for hardware dialog
+- 2.15.40
+
+-------------------------------------------------------------------
 Fri Jun  1 11:14:21 CEST 2007 - mzugec@suse.cz
 
 - save_network.ycp moved from routines/ to clients/
