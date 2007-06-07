@@ -234,6 +234,7 @@ define list<map> ReadHardware(string hwtype) {
 	one["name"] = DeviceName(card);
 	one["type"] = controller;
 	one["udi"] = card["udi"]:"";
+	one["sysfs_id"] = card["sysfs_id"]:"";
 	one["requires"] = card["requires"]:[];
 	// Each card remembers its position in the list of _all_ cards.
 	// It is used when selecting the card from the list of _unconfigured_
@@ -469,6 +470,35 @@ map SelectHardwareMap (map sel) {
 map SelectHardware (list Hardware, integer which) {
     return SelectHardwareMap (FindHardware (Hardware, which));
 }
+
+
+import "NetworkModules";
+include "network/routines.ycp";
+
+string createHwcfgName(map hw){
+ string hwcfg_name = "";
+    // name of hwcfg
+    if(hasAnyValue(hw["busid"]:"")) {
+     // #208854 - include "static" string 
+     if(issubstring(hw["sysfs_id"]:"", "pnp")){
+	 hwcfg_name = "static-bus-" + hw["bus"]:"" + "-" + hw["busid"]:""; 
+	}
+	else{
+	 hwcfg_name = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
+	 if(Arch::s390 ()) hwcfg_name = DriverType(type) + "-" + hwcfg_name;
+	}
+    }
+    else {
+       // #suse42421 - don't write hwcfg-static for pcmcia cards (PC and CardBus)
+       // #254753 - when busID not available, use static-x hwcfg filename
+       if(Arch::s390 ()) {
+                               hwcfg_name = NetworkModules::GetFreeName("static-");
+                               y2internal("No bus id info found, will use %1", hwcfg_name);
+                       } else y2warning ("No bus id info found, skipping hwcfg: %1", hw);
+    }
+ return hwcfg_name;
+}
+
 
 /* EOF */
 }

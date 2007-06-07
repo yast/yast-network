@@ -615,7 +615,7 @@ define any AddressDialog() {
 
 
 
-    string drvtype = Lan::DriverType (settings["IFCFGTYPE"]:"");
+    string drvtype = DriverType (settings["IFCFGTYPE"]:"");
 
     boolean is_ptp = drvtype == "ctc" || drvtype == "iucv";
     // TODO: dynamic for dummy. or add dummy from outside?

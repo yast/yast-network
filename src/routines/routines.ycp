@@ -299,5 +299,33 @@ define symbol FinishPopup(boolean modified, string head, string text, string run
     return `next;
 }
 
+/**
+ * For s390 hwinfo gives us a multitude of types but some are handled
+ * the same, mostly acording to the driver which is used. So let's group
+ * them under the name Driver Type.
+ * @param type a type, as in Lan::type
+ * @return driver type, like formerly type2 for s390
+ */
+define string DriverType (string type) {
+    string drvtype = type;
+    // handle HSI like qeth, S#40692#c15
+    if (type == "hsi")
+	drvtype = "qeth";
+    // Should eth occur on s390?
+    else if (type == "tr" || type == "eth")
+	drvtype = "lcs";
+    // N#82891
+    else if (type == "escon" || type == "ficon")
+	drvtype = "ctc";
+    return drvtype;
+}
+
+boolean hasAnyValue(string value){
+ if (value==nil) return false;
+ if (size(value)==0) return false;
+	else return true;
+}
+
+
 /* EOF */
 }

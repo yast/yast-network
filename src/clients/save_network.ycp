@@ -203,8 +203,15 @@ string CreateHardwareFile(){
      hwfile = sformat("static-0");
      y2warning("vio bus type, using %1", hwfile);
     } else {
-	    hwfile = sformat("bus-%1-%2", busname, busid);
+	// #208854 - include "static" string for ISA cards
+	if (busname=="isa")
+	   {
+	    hwfile = sformat("static-bus-%1-%2", busname, busid);
 	    y2internal("will create hwcfg file %1", hwfile);
+	   } else {
+	     hwfile = sformat("bus-%1-%2", busname, busid);
+	     y2internal("will create hwcfg file %1", hwfile);
+	    }
 	   }
 
    } else {

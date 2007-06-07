@@ -20,6 +20,7 @@ import "Popup";
 import "Wizard";
 
 include "network/summary.ycp";
+include "network/routines.ycp";
 
 /**
  * Manual network card configuration dialog
@@ -90,7 +91,7 @@ void initHwDialog(string text) {
     // #38213, remember device id when we switch back from pcmcia/usb
     hardware["non_hotplug_device_id"] = hardware["device"]:"";
     hardware["hwcfg"] = Lan::nm_name;
-    if (size(Lan::nm_name)==0 && size(Lan::nm_name_old)>0) hardware["hwcfg"]=Lan::nm_name_old;
+    if (!hasAnyValue(Lan::nm_name) && hasAnyValue(Lan::nm_name_old)) hardware["hwcfg"]=Lan::nm_name_old;
 
     // FIXME duplicated in address.ycp
     hardware["device_types"] = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond" ];
@@ -221,7 +222,7 @@ void initHwDialog(string text) {
 
     UI::ReplaceWidget(`hw_content, contents);
 
-if (size(Lan::nm_name)==0 && size(Lan::nm_name_old)>0) UI::ChangeWidget(`enable_hwcfg, `Value, false);
+if (!hasAnyValue(Lan::nm_name) && hasAnyValue(Lan::nm_name_old)) UI::ChangeWidget(`enable_hwcfg, `Value, false);
     hardware["no_hotplug"] = hardware["hotplug"]:"" == "";
     hardware["no_hotplug_dummy"] = hardware["no_hotplug"]:false && hardware["type"]:"" != "dummy";
     UI::ChangeWidget(`id(`modul), `Enabled, hardware["no_hotplug_dummy"]:false);
@@ -382,7 +383,7 @@ if (ret == `list) SelectionDialog();
 	    UI::ChangeWidget(`id(`num), `Value, hardware["device"]:"");
 
 	    if(Arch::s390 ()) {
-		string drvtype = Lan::DriverType (hardware["type"]:"");
+		string drvtype = DriverType (hardware["type"]:"");
 
 		if (contains (["lcs", "qeth", "ctc"], drvtype))
 		    hardware["modul"] = drvtype;
@@ -498,7 +499,7 @@ define any S390Dialog() {
     /* S/390 dialog caption */
     string caption = _("S/390 Network Card Configuration");
 
-    string drvtype = Lan::DriverType (Lan::type);
+    string drvtype = DriverType (Lan::type);
 
     string helptext = "";
     term contents = `Empty ();

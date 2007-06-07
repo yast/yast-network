@@ -292,6 +292,7 @@ global define boolean isAnyInterfaceDown(){
  */
 
 global list<string> getModulesFor(string busid, string default_module){
+ if (!hasAnyValue(busid)) return [];
  string bus_id = substring(busid, findfirstof(busid, "0123456789"));
  list<string> mods = [ default_module ];
  foreach(map<string, any> mod_row, (list<map<string, any> >)Hardware, {
@@ -311,26 +312,6 @@ include "network/hardware.ycp";
 include "network/routines.ycp";
 include "network/runtime.ycp";
 
-/**
- * For s390 hwinfo gives us a multitude of types but some are handled
- * the same, mostly acording to the driver which is used. So let's group
- * them under the name Driver Type.
- * @param type a type, as in Lan::type
- * @return driver type, like formerly type2 for s390
- */
-global define string DriverType (string type) {
-    string drvtype = type;
-    // handle HSI like qeth, S#40692#c15
-    if (type == "hsi")
-	drvtype = "qeth";
-    // Should eth occur on s390?
-    else if (type == "tr" || type == "eth")
-	drvtype = "lcs";
-    // N#82891
-    else if (type == "escon" || type == "ficon")
-	drvtype = "ctc";
-    return drvtype;
-}
 
 /**
  * Lan::Read (`cache) will do nothing if initialized already.
@@ -717,19 +698,7 @@ void SelectHWMap (map hw) {
     string mac = hw["mac"]:"";
     string busid = hw["busid"]:"";
 
-    // name of hwcfg
-    if(busid != nil && busid != "") {
-	nm_name = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
-	if(Arch::s390 ()) nm_name = type + "-" + nm_name;
-    }
-    else {
-       // #suse42421 - don't write hwcfg-static for pcmcia cards (PC and CardBus)
-       // #254753 - when busID not available, use static-x hwcfg filename
-       if(Arch::s390 ()) {
-                               nm_name = NetworkModules::GetFreeName("static-");
-                               y2internal("No bus id info found, will use %1", nm_name);
-                       } else y2warning ("No bus id info found, skipping hwcfg: %1", hw);
-    }
+    nm_name = createHwcfgName(hw);
 
     // name of ifcfg
     /* eth, tr, not on s390 (#38819) */

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jun  7 17:45:24 CEST 2007 - mzugec@suse.cz
+
+- use static keyword for ISA/pnp devices hardware filenames (#208854)
+- 2.15.41 
+
+-------------------------------------------------------------------
 Wed Jun  6 16:31:35 CEST 2007 - mzugec@suse.cz
 
 - values proposal for hardware dialog
