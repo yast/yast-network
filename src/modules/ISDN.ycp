@@ -21,6 +21,7 @@ import "NetworkService";
 import "Provider";
 import "Progress";
 import "Summary";
+import "PackageSystem";
 import "SuSEFirewall4Network";
 
 /*-------------*/
@@ -344,6 +345,9 @@ global define boolean WriteOnly()``{
  * if start is true, load drivers and interfaces
  */
 global define boolean Write(boolean start) ``{
+
+    // install kinternet if there is at least one ISDN device - #161782
+    if (size(Devices["contr"]:$[])>0 && !PackageSystem::Installed("kinternet")) installpackages = add (installpackages, "kinternet");
 
     if (installpackages != nil && installpackages != [""]) {
 	symbol retp = PackagesInstall((list<string>) installpackages);
