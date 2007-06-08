@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jun  8 16:59:20 CEST 2007 - mzugec@suse.cz
+
+- dsl module: auto reconnect option (#244503)
+- author : nderkach@gmail.com
+- 2.15.43 
+
+-------------------------------------------------------------------
 Fri Jun  8 13:39:28 CEST 2007 - mzugec@suse.cz
 
 - install kinternet if there is at least one ISDN device (#161782)

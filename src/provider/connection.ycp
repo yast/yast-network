@@ -43,6 +43,8 @@ define any ConnectionDialog() {
     boolean modifydns = Provider::Current["MODIFYDNS"]:"yes" == "yes";
     boolean autodns = Provider::Current["AUTODNS"]:"yes" == "yes";
 
+    boolean autoreconnect = Provider::Current["AUTO_RECONNECT"]:"yes" == "yes";
+
     string DNS1 = Provider::Current["DNS1"]:"";
     string DNS2 = Provider::Current["DNS2"]:"";
 
@@ -103,23 +105,27 @@ define any ConnectionDialog() {
     /* Connection dialog caption */
     string caption = _("Connection Parameters");
 
-    /* Connection dialog help 1/8 */
+    /* Connection dialog help 1/9 */
     string helptext = _("<p><b>Dial on Demand</b> means that the Internet
 connection will be established automatically when data from the Internet is
 requested. To use this feature, specify at least one <i>name server</i>. Use
 this feature only if your Internet connection is inexpensive, because there are
 programs that periodically request data from the Internet.</p>") +
 
-    /* Connection dialog help 2/8 */
+    /* Connection dialog help 2/9 */
 _("<p>When <b>Modify DNS</b> is enabled, the <i>name server</i> will be
 changed automatically when connected to the Internet.</p>") +
 
-    /* Connection dialog help 3/8 */
+    /* Connection dialog help 3/9 */
 _("<p>If the provider does not transmit its domain name server (DNS)
 after connecting, disable <b>Automatically Retrieve DNS</b> and
 manually enter the DNS.</p>") +
 
-    /* Connection dialog help 4/8 */
+    /* Connection dialog help 4/9 */
+_("<p>When <b>Automatically Reconnect</b> is enabled, connection will
+be automatically reestablished after failure.</p>") +
+
+    /* Connection dialog help 5/9 */
 _("<p><b>Name Servers</b> are required to convert hostnames
 (such as www.suse.com) to IP addresses (for example, 213.95.15.200). You only
 need to specify the name servers if you enable dial on demand or
@@ -128,30 +134,30 @@ disable <b>DNS Modification</b> when connected.</p>
 
     if (type == "modem")
 	helptext = helptext +
-    /* Connection dialog help 5/8 */
+    /* Connection dialog help 6/9 */
 _("<p><b>Ignore Prompts</b> disables the detection of any prompts from the dial-up
 server. If the connection build-up is slow or does not work at all, try this
 option.</p>
 ");
 
     helptext = helptext +
-    /* Connection dialog help 6/8 */
+    /* Connection dialog help 7/9 */
 _("<p>Selecting <b>External Firewall Interface</b> activates the firewall
 and sets this interface as external.
 Choosing this option makes dial-up connections
 to the Internet safe from external attacks.</p>") +
 
-    /* Connection dialog help 7/8 */
+    /* Connection dialog help 8/9 */
 _("<p>The <b>Idle Time-Out</b> specifies the time after which an idle
 connection will be shut down (0 means the connection will not time-out).</p>
 ");
 
     // if(type == "isdn")
 
-	/* FIXME Connection dialog help 7/8 */
+	/* FIXME Connection dialog help 8/9 */
 	// helptext = helptext + _("<p><b>Connection details</b> help FIXME</p>") +
 
-	/* FIXME Connection dialog help 8/8 */
+	/* FIXME Connection dialog help 9/9 */
 	// _("<p><b>IP details</b> help FIXME</p>");
 
     /* DIALOG CONTENTS */
@@ -213,7 +219,9 @@ connection will be shut down (0 means the connection will not time-out).</p>
 		    /* Checkbox label */
 		    `Left(`CheckBox(`id(`modifydns), `opt(`notify), _("&Modify DNS When Connected"), modifydns)),
 		    /* Checkbox label */
-		    `Left(`CheckBox(`id(`autodns), `opt(`notify), _("&Automatically Retrieve DNS"), autodns))
+		    `Left(`CheckBox(`id(`autodns), `opt(`notify), _("&Automatically Retrieve DNS"), autodns)),
+		    /* Checkbox label */
+		    `Left(`CheckBox(`id(`autoreconnect), `opt(`notify), _("Automatically &Reconnect"), autoreconnect))
 		 )
 	    ),
 	    `VSpacing(1),
@@ -306,12 +314,14 @@ connection will be shut down (0 means the connection will not time-out).</p>
 	demand = (boolean) UI::QueryWidget(`id(`demand), `Value);
 	modifydns = (boolean) UI::QueryWidget(`id(`modifydns), `Value);
 	autodns = (boolean) UI::QueryWidget(`id(`autodns), `Value);
+	autoreconnect = (boolean) UI::QueryWidget(`id(`autoreconnect), `Value);
 
 	/* update provider info */
 	Provider::Current = union(Provider::Current, $[
 	    "DEMAND" : demand ? "yes" : "no",
 	    "MODIFYDNS" : modifydns ? "yes" : "no",
 	    "AUTODNS" : autodns ? "yes" : "no",
+            "AUTO_RECONNECT" : autoreconnect ? "yes" : "no",
 	    "IDLETIME" : UI::QueryWidget(`id(`idletime), `Value),
 	    "MODEMSUPPORTED" : type == "modem" ? "yes" : "no",
 	    "ISDNSUPPORTED" : type == "isdn" ? "yes" : "no",
