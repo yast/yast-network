@@ -327,5 +327,24 @@ boolean hasAnyValue(string value){
 }
 
 
+boolean needHwcfg(map hw){
+ boolean need=true;
+ // if kernel will autoload module for device
+ if (hasAnyValue(hw["modalias"]:"")){
+  if (size(hw["drivers"]:[])>1) y2milestone("there are more modules available for device, hwcfg is needed");
+       else {
+               y2milestone("Just one autoloadable module available.No need to write hwcfg");
+               need=false;
+               }
+ } else
+       // not autoload because of built-in driver (compiled in kernel)
+       if (!hasAnyValue(hw["driver_module"]:"")) {
+                                                y2milestone("built-in driver %1", hw["driver"]:"");
+                                                need=false;
+                                               }
+ return need;
+}
+
+
 /* EOF */
 }

@@ -21,6 +21,8 @@ import "NetworkStorage";
 import "Installation";
 import "String";
 
+include "network/routines.ycp";
+
 map <string, any> InstallInf = $[];
 
 // global variable because chrooted environment
@@ -189,12 +191,22 @@ map <string,any> hwcfg=$[];
 
 string CreateHardwareFile(){
  string hwfile="";
-
+ boolean need=false;
+ map hw=$[];
   // read current hardware information and check if configuration file exists
   hwcfg=getcfg("-f hwcfg- -d /etc/sysconfig/hardware", InstallInf["netdevice"]:"");
+//y2internal("hwcfg %1", hwcfg);
+foreach(map hw_temp, (list<map>)SCR::Read(.probe.netcard), {
+if (hwcfg["HWD_DEVICEPATH"]:"" == sformat("/sys%1", hw_temp["sysfs_id"]:"")) hw=hw_temp;
+});
+
+y2milestone("hwinfo %1", hw);
+
   if( tointeger(hwcfg["HWD_CONFIG_N"]:"0")==0 ){
    y2internal("hwcfg doesn't exist");
-   // check if deriver is connected to bus
+
+y2internal("need hwcfg: %1", needHwcfg(hw));
+   // check if driver is connected to bus
    if (tointeger(hwcfg["HWD_BUS_N"]:"0")>0){
     string busname = hwcfg[sformat("HWD_BUSNAME_%1", tointeger(hwcfg["HWD_BUS_N"]:"0")-1)]:"";
     string busid = hwcfg[sformat("HWD_BUSID_%1", tointeger(hwcfg["HWD_BUS_N"]:"0")-1)]:"";
@@ -210,7 +222,7 @@ string CreateHardwareFile(){
 	    y2internal("will create hwcfg file %1", hwfile);
 	   } else {
 	     hwfile = sformat("bus-%1-%2", busname, busid);
-	     y2internal("will create hwcfg file %1", hwfile);
+	     y2internal("hwcfg filename %1", hwfile);
 	    }
 	   }
 
@@ -219,15 +231,22 @@ string CreateHardwareFile(){
 	   y2error("Not connected to bus! Using %1", hwfile);
 	  }
   string content=sformat("STARTMODE='auto'\nMODULE='%1'\nMODULE_OPTIONS='%2'\n", InstallInf["module"]:"", InstallInf["options"]:"");
-  y2internal ("creating %1 file\n%2", hwfile, content);
-  SCR::Write(.target.string, getHWFullPath(hwfile), content);
+  if (need) {
+		y2internal ("creating %1 file\n%2", hwfile, content);
+		SCR::Write(.target.string, getHWFullPath(hwfile), content);
+	    }
+		else y2warning("no hwcfg needed");
   }else {
 	 // in case of s390 hwcfg is created by Linuxrc (uli)
 	 y2warning("hwcfg already exists");
 	 hwfile = hwcfg[sformat("HWD_CONFIG_%1", tointeger(hwcfg["HWD_CONFIG_N"]:"0")-1)]:"";
 	 y2internal("configuration name = %1", hwfile);
 	}
- y2internal("Hardware file: %1", getHWFullPath(hwfile));
+ if (!need){
+	y2warning("no needed to create hwcfg file");
+		hwfile="";
+		} else
+			 y2internal("Hardware file: %1", getHWFullPath(hwfile));
 
  return hwfile;
 }

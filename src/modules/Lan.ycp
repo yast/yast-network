@@ -465,10 +465,10 @@ global void SetIPv6(boolean status){
 
 void writeIPv6(){
  if (ipv6){
-  SCR::Execute(.target.bash_output, "echo '#install ipv6 /bin/true' > /etc/modprobe.d/ipv6");
+  SCR::Execute(.target.string, "#install ipv6 /bin/true", "/etc/modprobe.d/ipv6");
   SCR::Write(.sysconfig.windowmanager.KDE_USE_IPV6, "yes");
  } else {
-	 SCR::Execute(.target.bash_output, "echo 'install ipv6 /bin/true' > /etc/modprobe.d/ipv6");
+	 SCR::Execute(.target.string, "install ipv6 /bin/true", "/etc/modprobe.d/ipv6");
          SCR::Write(.sysconfig.windowmanager.KDE_USE_IPV6, "no");
         }
 }
@@ -677,48 +677,50 @@ global define map Export() {
  * Select the hardware component
  * @param hw the component
  */
-void SelectHWMap (map hw) {
-    SelectHardwareMap (hw);
+void SelectHWMap (map hardware) {
+    SelectHardwareMap (hardware);
 
     if(hotplug == "") {
 	// FIXME: MOD Module["module"] = hw["module"]:"";
 	// FIXME: MOD Module["options"] = hw["options"]:"";
-	NetworkModules::Alias = hw["module"]:"";
-	NetworkModules::Options = hw["options"]:"";
+	NetworkModules::Alias = hardware["module"]:"";
+	NetworkModules::Options = hardware["options"]:"";
     }
     else
 	y2milestone("HOTPLUG(%1) -> ignoring modprobe.conf", hotplug);
 
     // Wireless Card Features
-    wl_auth_modes = hw["wl_auth_modes"]:nilliststring;
-    wl_enc_modes = hw["wl_enc_modes"]:nilliststring;
-    wl_channels = hw["wl_channels"]:nilliststring;
-    wl_bitrates = hw["wl_bitrates"]:nilliststring;
+    wl_auth_modes = hardware["wl_auth_modes"]:nilliststring;
+    wl_enc_modes = hardware["wl_enc_modes"]:nilliststring;
+    wl_channels = hardware["wl_channels"]:nilliststring;
+    wl_bitrates = hardware["wl_bitrates"]:nilliststring;
 
-    string mac = hw["mac"]:"";
-    string busid = hw["busid"]:"";
+    string mac = hardware["mac"]:"";
+    string busid = hardware["busid"]:"";
 
-    nm_name = createHwcfgName(hw);
+
+    nm_name = createHwcfgName(hardware);
 
     // name of ifcfg
     /* eth, tr, not on s390 (#38819) */
     if(!Arch::s390 () && mac != nil && mac != "" && mac != "00:00:00:00:00:00")
-	device = "id-" + hw["mac"]:"";
+	device = "id-" + hardware["mac"]:"";
     /* iucv already filled in from lan/hardware.ycp (#42212) */
     else if(type == "iucv")
 	y2debug("IUCV: %1", device);
     /* other devs */
     else if(busid != nil && busid != "")
-	device = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
+	device = "bus-" + hardware["bus"]:"" + "-" + hardware["busid"]:"";
     /* USB, PCMCIA */
-    else if(hw["hotplug"]:"" != "")
-	device = "bus-" + hw["hotplug"]:"";
+    else if(hardware["hotplug"]:"" != "")
+	device = "bus-" + hardware["hotplug"]:"";
     /* dummy */
     else
 	y2milestone("No detailed HW info: %1", device);
 
-    y2milestone("hw=%1", hw);
-    y2milestone("device=%1", device);
+    y2milestone("hw=%1", hardware);
+   y2milestone("device=%1", device);
+   hw=hardware;
 }
 
 /**
@@ -892,7 +894,13 @@ global define void SetDefaultsForHW () {
     else if (Arch::s390 () && contains (["lcs", "eth"], type))
     {
 	mtu = "1492";
-    }    
+    }
+
+ if (!needHwcfg(hw)){
+		nm_name_old = nm_name;
+		nm_name = "";
+	}
+ y2milestone("hwcfg name %1", nm_name);
 }
 
 /**

@@ -475,6 +475,7 @@ map SelectHardware (list Hardware, integer which) {
 import "NetworkModules";
 include "network/routines.ycp";
 
+
 string createHwcfgName(map hw){
  string hwcfg_name = "";
     // name of hwcfg
