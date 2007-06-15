@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jun 15 10:52:42 CEST 2007 - mzugec@suse.cz
+
+- don't write resolv.conf and route for dhcp (#284599)
+- read vendor+device from sysfs instead of NAME
+- 2.15.45 
+
+-------------------------------------------------------------------
 Mon Jun 11 17:45:26 CEST 2007 - mzugec@suse.cz
 
 - don't write hwcfg when not needed

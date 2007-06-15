@@ -191,7 +191,6 @@ map <string,any> hwcfg=$[];
 
 string CreateHardwareFile(){
  string hwfile="";
- boolean need=false;
  map hw=$[];
   // read current hardware information and check if configuration file exists
   hwcfg=getcfg("-f hwcfg- -d /etc/sysconfig/hardware", InstallInf["netdevice"]:"");
@@ -231,22 +230,21 @@ y2internal("need hwcfg: %1", needHwcfg(hw));
 	   y2error("Not connected to bus! Using %1", hwfile);
 	  }
   string content=sformat("STARTMODE='auto'\nMODULE='%1'\nMODULE_OPTIONS='%2'\n", InstallInf["module"]:"", InstallInf["options"]:"");
-  if (need) {
+  if (needHwcfg(hw)) {
 		y2internal ("creating %1 file\n%2", hwfile, content);
 		SCR::Write(.target.string, getHWFullPath(hwfile), content);
 	    }
-		else y2warning("no hwcfg needed");
+		else {
+			y2warning("no hwcfg needed");
+			hwfile = "";
+		     }
   }else {
 	 // in case of s390 hwcfg is created by Linuxrc (uli)
 	 y2warning("hwcfg already exists");
 	 hwfile = hwcfg[sformat("HWD_CONFIG_%1", tointeger(hwcfg["HWD_CONFIG_N"]:"0")-1)]:"";
 	 y2internal("configuration name = %1", hwfile);
 	}
- if (!need){
-	y2warning("no needed to create hwcfg file");
-		hwfile="";
-		} else
-			 y2internal("Hardware file: %1", getHWFullPath(hwfile));
+  y2internal("Hardware file: %1", getHWFullPath(hwfile));
 
  return hwfile;
 }
@@ -334,11 +332,6 @@ void CreateIfcfg(string hwcfg, string ifcfg){
  */
 
 void CreateOtherNetworkFiles(){
- // create routes file
- if (size(InstallInf["gateway"]:"")>0){
-  y2milestone("Writing route : %1", InstallInf["gateway"]:"");
-  SCR::Write(.target.string, "/etc/sysconfig/network/routes", InstallInf["gateway"]:"");
- } else y2warning("No routing information in install.inf");
 
  // create hostname
  if (size(InstallInf["hostname"]:"")>0){
@@ -346,14 +339,22 @@ void CreateOtherNetworkFiles(){
   SCR::Write(.target.string, "/etc/HOSTNAME", InstallInf["hostname"]:"");
  }
 
- // create resolv.conf
- if (size(InstallInf["domain"]:"")>0 && size(InstallInf["nameserver"]:"")>0){
-  string text=sformat("domain %1
-nameserver %2", InstallInf["domain"]:"", InstallInf["nameserver"]:"");
-  y2milestone("Write resolv.conf content: %1", text);
-  SCR::Write(.target.string, "/etc/resolv.conf", text);
- }
+ if(InstallInf["bootproto"]:"dhcp"=="static")
+  {
+ // create routes file
+ if (size(InstallInf["gateway"]:"")>0){
+  y2milestone("Writing route : %1", InstallInf["gateway"]:"");
+  SCR::Write(.target.string, "/etc/sysconfig/network/routes", InstallInf["gateway"]:"");
+ } else y2warning("No routing information in install.inf");
 
+ // create resolv.conf only for static configuration
+  if (size(InstallInf["domain"]:"")>0 && size(InstallInf["nameserver"]:"")>0){
+   string text=sformat("domain %1
+nameserver %2", InstallInf["domain"]:"", InstallInf["nameserver"]:"");
+   y2milestone("Write resolv.conf content: %1", text);
+   SCR::Write(.target.string, "/etc/resolv.conf", text);
+  }
+ }
  // create defaultdomain
  if (size(InstallInf["domain"]:"")>0 && FileUtils::Exists("/etc/defaultdomain")){
   y2milestone("Write defaultdomain: %1", InstallInf["domain"]:"");
