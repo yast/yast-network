@@ -344,13 +344,12 @@ void CreateOtherNetworkFiles(){
  // create routes file
  if (size(InstallInf["gateway"]:"")>0){
   y2milestone("Writing route : %1", InstallInf["gateway"]:"");
-  SCR::Write(.target.string, "/etc/sysconfig/network/routes", InstallInf["gateway"]:"");
+  SCR::Write(.target.string, "/etc/sysconfig/network/routes", sformat("default %1\n", InstallInf["gateway"]:""));
  } else y2warning("No routing information in install.inf");
 
  // create resolv.conf only for static configuration
   if (size(InstallInf["domain"]:"")>0 && size(InstallInf["nameserver"]:"")>0){
-   string text=sformat("domain %1
-nameserver %2", InstallInf["domain"]:"", InstallInf["nameserver"]:"");
+   string text=sformat("domain %1\nnameserver %2\n", InstallInf["domain"]:"", InstallInf["nameserver"]:"");
    y2milestone("Write resolv.conf content: %1", text);
    SCR::Write(.target.string, "/etc/resolv.conf", text);
   }
