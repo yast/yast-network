@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jun 18 18:08:38 CEST 2007 - mzugec@suse.cz
+
+- use correct syntax "default $IP - -" for sysconfig/route
+
+-------------------------------------------------------------------
 Mon Jun 18 10:12:28 CEST 2007 - mzugec@suse.cz
 
 - improved popup string (#257330) 

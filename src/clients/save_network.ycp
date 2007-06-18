@@ -344,7 +344,7 @@ void CreateOtherNetworkFiles(){
  // create routes file
  if (size(InstallInf["gateway"]:"")>0){
   y2milestone("Writing route : %1", InstallInf["gateway"]:"");
-  SCR::Write(.target.string, "/etc/sysconfig/network/routes", sformat("default %1\n", InstallInf["gateway"]:""));
+  SCR::Write(.target.string, "/etc/sysconfig/network/routes", sformat("default %1 - -\n", InstallInf["gateway"]:""));
  } else y2warning("No routing information in install.inf");
 
  // create resolv.conf only for static configuration
