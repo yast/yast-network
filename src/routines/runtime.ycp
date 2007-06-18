@@ -93,7 +93,7 @@ define boolean SetupSMPPPD() {
     else {
         Package::InstallAllMsg(["smpppd", "kinternet"], 
     // notification about package needed 1/2
-    _("<p>To configure the modem, the <b>%1</b> packages must be installed.</p>") +
+    _("<p>Because Device Control for Non-root User has been enabled, the <b>%1</b> packages must be installed.</p>") +
     // notification about package needed 2/2
     _("<p>Do you want to install it now?</p>"));
 

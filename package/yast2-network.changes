@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jun 18 10:12:28 CEST 2007 - mzugec@suse.cz
+
+- improved popup string (#257330) 
+
+-------------------------------------------------------------------
 Fri Jun 15 16:05:08 CEST 2007 - mzugec@suse.cz
 
 - improved fix for sysconfig/route (#284599) 
