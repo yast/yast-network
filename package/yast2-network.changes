@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Mon Jul  2 16:53:26 CEST 2007 - mzugec@suse.cz
+
+- new module LanItems.ycp
+http://lists.opensuse.org/yast-devel/2007-06/msg00001.html
+- new udev agent
+- propose configuration based on interface name (ifcfg-eth0)
+- use getcfg for matching hwcfg instead of nm_name
+- use sysfs_id to match configuration instead of udi/unique
+- 2.15.46
+
+-------------------------------------------------------------------
 Thu Jun 21 17:39:03 CEST 2007 - adrian@suse.de
 
 - fix changelog entry order

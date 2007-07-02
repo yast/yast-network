@@ -21,7 +21,7 @@ import "Lan";
 import "Linuxrc";
 import "Popup";
 import "Progress";
-
+import "LanItems";
 include "network/lan/wizards.ycp";
 
 list args = WFM::Args();
@@ -37,8 +37,8 @@ if(func == "MakeProposal") {
     symbol warning_level = nil;
     boolean force_reset = param["force_reset"]:false;
 
-    if(force_reset || !Lan::proposal_valid) {
-	Lan::proposal_valid = true;
+    if(force_reset || !LanItems::proposal_valid) {
+	LanItems::proposal_valid = true;
 	/* Popup text */
 	BusyPopup(_("Detecting network cards..."));
 	boolean progress_orig = Progress::set (false);

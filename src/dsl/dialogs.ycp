@@ -21,6 +21,7 @@ import "NetworkDevices";
 import "Popup";
 import "SuSEFirewall4Network";
 import "Wizard";
+import "LanItems";
 
 include "network/runtime.ycp";
 include "network/routines.ycp";
@@ -124,9 +125,9 @@ if(false && /*interface != "" && */!contains(ifaces, interface)) ifaces = add(if
 	    string i = ifaces[0, 0, 0]:"";
 	    y2milestone("i=%1", i);
 	    Lan::Edit(i);
-	    Lan::bootproto = "";
-	    Lan::ipaddr = "";
-	    Lan::Commit();
+	    LanItems::bootproto = "";
+	    LanItems::ipaddr = "";
+	    LanItems::Commit();
 	}
 	NetworkDevices::Pop();
     }

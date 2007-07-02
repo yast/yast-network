@@ -166,22 +166,6 @@ string InstallModuleOptions(string module_name) {
     return "";
 }
 
-map<string, any> getcfg(string options, string device){
- map <string, any> cfg=$[];
- map <string, any> output = (map <string, any>)SCR::Execute(.target.bash_output, 
-		sformat("getcfg %1 %2", options, device));
-// if (output["exit"]:0==0){
-  foreach(string row, splitstring(output["stdout"]:"", "\n"), {
-   row=deletechars(row, "\\\"\;");
-   list<string> keyval=splitstring(row, "=");
-   if (size(keyval)>1) cfg[keyval[0]:""]=keyval[1]:"";
-
-  });
-// }
- y2milestone("%1 %2\n%3", options, device, cfg);
- return cfg;
-}
-
 string getHWFullPath(string hwfile){
  return sformat("%1/hwcfg-%2", "/etc/sysconfig/hardware", hwfile);
 }
@@ -195,9 +179,13 @@ string CreateHardwareFile(){
   // read current hardware information and check if configuration file exists
   hwcfg=getcfg("-f hwcfg- -d /etc/sysconfig/hardware", InstallInf["netdevice"]:"");
 //y2internal("hwcfg %1", hwcfg);
+/*
 foreach(map hw_temp, (list<map>)SCR::Read(.probe.netcard), {
 if (hwcfg["HWD_DEVICEPATH"]:"" == sformat("/sys%1", hw_temp["sysfs_id"]:"")) hw=hw_temp;
 });
+*/
+
+hw=getHardware(hwcfg["HWD_DEVICEPATH"]:"", (list<map>)SCR::Read(.probe.netcard));
 
 y2milestone("hwinfo %1", hw);
 
@@ -247,29 +235,6 @@ y2internal("need hwcfg: %1", needHwcfg(hw));
   y2internal("Hardware file: %1", getHWFullPath(hwfile));
 
  return hwfile;
-}
-
-string getIfcName(string hwfile){
- string ifcfg="";
- string interfacetype = NetworkDevices::device_type( hwcfg[sformat("HWD_INTERFACE_%1", tointeger(hwcfg["HWD_INTERFACE_N"]:"0")-1)]:"" );
- // for special s390 interface types write static configuration
- if (contains(["qeth", "hsi", "ctc", "lcs", "iucv"], interfacetype)){
-  y2internal("special device type %1", interfacetype);
-  ifcfg=sformat("ifcfg-%1", hwfile);
- } else {
-	 y2internal("usual type %1", interfacetype);
-	 // if MAC available - use it for name
-	 if (size(hwcfg["HWD_ID"]:"")>0){
-	  ifcfg = sformat("ifcfg-%1-id-%2", interfacetype, hwcfg["HWD_ID"]:"");
-	  y2internal("MAC address available - use it for name %1", ifcfg);
-	 } else {
-		// in case MAC is not available, use device name (eth0) 
-		 ifcfg = sformat("ifcfg-%1", hwcfg[sformat("HWD_INTERFACE_%1", tointeger(hwcfg["HWD_INTERFACE_N"]:"0")-1)]:"");
-	         y2internal("MAC address not available - use device name %1", ifcfg);
-		}
-	}
- y2internal("interface configuration file %1", ifcfg);
- return ifcfg;
 }
 
 void CreateIfcfg(string hwcfg, string ifcfg){
@@ -395,10 +360,10 @@ void save_network(){
  WFM::SCRSetDefault (old_SCR);
 
  if(ReadInstallInf()){
-  string hwcfg = CreateHardwareFile();
-  string ifcfg = getIfcName(hwcfg);
+  string hwcfgname = CreateHardwareFile();
+  string ifcfg = getIfcName(hwcfgname, hwcfg[sformat("HWD_INTERFACE_%1", tointeger(hwcfg["HWD_INTERFACE_N"]:"0")-1)]:"" );
 
-  CreateIfcfg(hwcfg, ifcfg);
+  CreateIfcfg(hwcfgname, ifcfg);
   CreateOtherNetworkFiles();
 
   SCR::Execute(.target.bash, "chkconfig network on");

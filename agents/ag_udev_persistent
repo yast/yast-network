@@ -1,0 +1,69 @@
+#!/usr/bin/perl -w
+package ag_udev_persistent;
+BEGIN { push( @INC, '/usr/share/YaST2/modules/' ); }
+use ycp;
+use YaST::SCRAgent;
+use YaPI;
+textdomain "network";
+our @ISA = ("YaST::SCRAgent");
+
+use strict;
+
+my $filename = "/etc/udev/rules.d/70-net_persistent_names.rules";
+my @comment = ();
+
+sub parse_rules {
+    my $class = shift;
+    my %hash_table = ();
+    # you don't need it read twice
+    return 1 if (keys(%hash_table));    
+
+    if( open( FILE, "< $filename" ) ) {
+        while( my $line = <FILE> ) {
+
+	 # remove '\n' and speace before delimiter ','
+	 chomp($line);
+	 $line =~ s/, /,/g;
+
+	 if ( $line =~ /^#/ ) { push(@comment, $line); }
+	   else {
+		 my @cols = split(",", $line);
+		 my (undef, undef, $device) =  split(" ", $cols[3]);
+		 $device =~ s/\"//g;
+		 $hash_table{ $device } = \@cols; 
+		}
+        }
+        close(FILE);
+    } else {
+        return $class->SetError(summary => sprintf( _("opening %s failed: %s"),$filename, $!),
+                                code    => "OPEN_FAILED");
+    }
+
+    return \%hash_table;
+}
+
+sub Execute {
+    my $class = shift;
+    my ($path, @args) = @_;
+
+    return 1;
+}
+
+
+sub Read {
+    my $class = shift;
+    my ($path, @args) = @_;
+
+        return $class->parse_rules();
+}
+
+sub Write {
+}
+
+sub Dir {
+}
+
+package main;
+
+ag_udev_persistent->Run ();
+

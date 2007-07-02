@@ -190,12 +190,13 @@ void storeBootProto (string key, map event) {
 
 
 void initIfcfg (string key) {
- UI::ChangeWidget(`id(key), `Value, Lan::type);
+ UI::ChangeWidget(`id(key), `Value, LanItems::type);
  UI::ChangeWidget(`id(key), `Enabled, false);
 }
 
 void initIfcfgId (string key) {
- UI::ChangeWidget(`id(key), `Value, Lan::device);
+ initHardware();
+ UI::ChangeWidget(`id(key), `Value, LanItems::Items[LanItems::current, "ifcfg"]:"" );
 }
 
 
@@ -250,12 +251,12 @@ boolean ValidateNetmask (string key, map event) {
  * @return whether valid
  */
 boolean ValidateIfcfgType (string key, map event) {
-    if (Lan::operation == `add)
+    if (LanItems::operation == `add)
     {
 	string ifcfgtype = (string) UI::QueryWidget (`id (key), `Value);
 
 	// validate device type, misdetection
-	if (ifcfgtype != Lan::type)
+	if (ifcfgtype != LanItems::type)
 	{
 	    UI::SetFocus(`id (key));
 	    if (!Popup::ContinueCancel (
@@ -465,13 +466,13 @@ map<string, map<string,any> > widget_descr_local = $[
 	],
 
     "IFCFGID": $[
-	"widget": `combobox,
+	"widget": `textentry,
 	/* ComboBox label */
 	"label": _("&Configuration Name"),
-	"opt": [`hstretch, `editable],
+	"opt": [`hstretch, `disabled ],
 	"help": "",
 	"init" : initIfcfgId,
-	"valid_chars": NetworkDevices::ValidCharsIfcfg (),
+//	"valid_chars": NetworkDevices::ValidCharsIfcfg (),
 //	"handle": HandleIfcfg,
 	],
 
@@ -576,13 +577,13 @@ list< list<string> > BuildTypesListCWM (list<string> types) {
 define any AddressDialog() {
     ScreenName("lan-address");
 
-    string ifname = NetworkDevices::device_name (Lan::type, Lan::device);
+    string ifname = NetworkDevices::device_name (LanItems::type, LanItems::device);
     string fwzone = SuSEFirewall4Network::GetZoneOfInterface (ifname);
 
     // If firewall is active and interface in no zone, nothing
     // gets through (#62309) so add it to the external zone
     if (fwzone == "" &&
-	Lan::operation == `add &&
+	LanItems::operation == `add &&
 	SuSEFirewall4Network::IsOn () &&
 	SuSEFirewall4Network::UnconfiguredIsBlocked ())
     {
@@ -596,20 +597,20 @@ define any AddressDialog() {
 	// general tab:
 //	"IFNAME": ifname,
 //	"BINDTOHW": "mac",	// FIXME
-	"STARTMODE": Lan::startmode,
-	"USERCONTROL": Lan::usercontrol,
+	"STARTMODE": LanItems::startmode,
+	"USERCONTROL": LanItems::usercontrol,
 	// problems when renaming the interface?
 	"FWZONE": fwzone,
-	"MTU": Lan::mtu,
+	"MTU": LanItems::mtu,
 
 	// address tab:
-	"BOOTPROTO": Lan::bootproto,
-	"IPADDR": Lan::ipaddr,
-	"NETMASK": Lan::netmask,
-	"REMOTEIP": Lan::remoteip,
+	"BOOTPROTO": LanItems::bootproto,
+	"IPADDR": LanItems::ipaddr,
+	"NETMASK": LanItems::netmask,
+	"REMOTEIP": LanItems::remoteip,
 
-	"IFCFGTYPE": Lan::type,
-	"IFCFGID": Lan::device,
+	"IFCFGTYPE": LanItems::type,
+	"IFCFGID": LanItems::device,
 	];
 
 
@@ -619,12 +620,12 @@ define any AddressDialog() {
 
     boolean is_ptp = drvtype == "ctc" || drvtype == "iucv";
     // TODO: dynamic for dummy. or add dummy from outside?
-    boolean no_dhcp = is_ptp || settings["IFCFGTYPE"]:"" == "dummy" || Lan::alias != "";
+    boolean no_dhcp = is_ptp || settings["IFCFGTYPE"]:"" == "dummy" || LanItems::alias != "";
 
     if(settings["BOOTPROTO"]:"" == "static" && settings["IPADDR"]:"" == "" && !no_dhcp) settings["BOOTPROTO"] = "dhcp"; 
 
     // #65524
-    if (Lan::operation == `add && force_static_ip)
+    if (LanItems::operation == `add && force_static_ip)
     {
 	settings["BOOTPROTO"] = "static";
     }
@@ -668,12 +669,12 @@ define any AddressDialog() {
 	    "IFCFGID",
 	    `HSpacing(0.5)
 	);
-    if(Lan::operation != `add) {
-	if(Lan::alias == "") {
-	    settings["IFCFG"] = NetworkDevices::device_name(NetworkDevices::RealType(Lan::type, Lan::hotplug), Lan::device);
+    if(LanItems::operation != `add) {
+	if(LanItems::alias == "") {
+	    settings["IFCFG"] = NetworkDevices::device_name(NetworkDevices::RealType(LanItems::type, LanItems::hotplug), LanItems::device);
 	}
 	else {
-	    settings["IFCFG"] = NetworkDevices::alias_name(NetworkDevices::RealType(Lan::type, Lan::hotplug), Lan::device, Lan::alias);
+	    settings["IFCFG"] = NetworkDevices::alias_name(NetworkDevices::RealType(LanItems::type, LanItems::hotplug), LanItems::device, LanItems::alias);
 	}
     }
     
@@ -703,7 +704,7 @@ define any AddressDialog() {
 	`HStretch()
     )));
 
-    if(Lan::alias != "") frame2 = `VSpacing(0);
+    if(LanItems::alias != "") frame2 = `VSpacing(0);
 
     term address_p2p_contents =
 	`Frame (
@@ -732,13 +733,13 @@ define any AddressDialog() {
 
     term bond = `MarginBox(1, 0, `Frame( "", `VBox("BONDSLAVE", "BONDOPTION")));
 
-    if (Lan::type == "bond")
+    if (LanItems::type == "bond")
     {
-        settings["SLAVES"] = Lan::bond_slaves;
+        settings["SLAVES"] = LanItems::bond_slaves;
 
         //get all eth devices
-        map<string, map<string, map<string, any> > > devices = (map<string, map<string, map<string, any> > >)NetworkDevices::FilterDevices("");
-	map<string, map<string, any> > avails= devices["eth"]:$[];
+        map<string, map<string, any> > avails = ((map<string, map<string, map<string, any> > >)NetworkDevices::FilterDevices(""))["eth"]:$[];
+//	map<string, map<string, any> > avails = devices["eth"]:$[];
 
         //filter the eth devices (BOOT_PROTO=none && START_MODE=off)
         foreach (string num, map<string, any> value, avails, 
@@ -747,14 +748,14 @@ define any AddressDialog() {
             wd["BONDSLAVE", "items"] = add (wd["BONDSLAVE", "items"]:[], [NetworkDevices::device_name("eth", num)] );
         });
 
-        settings["BONDOPTION"] = Lan::bond_option;
+        settings["BONDOPTION"] = LanItems::bond_option;
 
         //fill up the drop list and make the default value first
         wd["BONDOPTION", "items"] = filter(list<string> v, wd["BONDOPTION", "items"]:[],
         {
-            return v[0]:"" != Lan::bond_option;
+            return v[0]:"" != LanItems::bond_option;
         });
-        wd["BONDOPTION", "items"] = prepend(wd["BONDOPTION", "items"]:[], [Lan::bond_option]);
+        wd["BONDOPTION", "items"] = prepend(wd["BONDOPTION", "items"]:[], [LanItems::bond_option]);
     }
 
 
@@ -763,7 +764,7 @@ define any AddressDialog() {
 	just_address_contents,
 	frame2
      );
-    if (Lan::type == "bond")
+    if (LanItems::type == "bond")
     {
         address_contents = `VBox(
                 `Left(label),
@@ -869,8 +870,8 @@ define any AddressDialog() {
 	    settings["IFCFGID"]:"");
 
 	// general tab
-	Lan::startmode = settings["STARTMODE"]:"";
-	Lan::usercontrol = settings["USERCONTROL"]:false;
+	LanItems::startmode = settings["STARTMODE"]:"";
+	LanItems::usercontrol = settings["USERCONTROL"]:false;
 
 	if (fw_is_installed) {
 	    string zone = settings["FWZONE"]:"";
@@ -879,39 +880,39 @@ define any AddressDialog() {
 	    SuSEFirewall4Network::ProtectByFirewall (ifcfgname, zone, zone != "");
 	}
 
-	Lan::mtu = settings["MTU"]:"";
+	LanItems::mtu = settings["MTU"]:"";
 
 	// address tab
-	if(Lan::operation == `add) {
-	    Lan::device = NetworkDevices::device_num(ifcfgname);
-	    Lan::type = NetworkDevices::device_type(ifcfgname);
+	if(LanItems::operation == `add) {
+	    LanItems::device = NetworkDevices::device_num(ifcfgname);
+	    LanItems::type = NetworkDevices::device_type(ifcfgname);
 	}
 
-	Lan::bootproto = settings["BOOTPROTO"]:"";
-	if (Lan::bootproto == "static") // #104494
+	LanItems::bootproto = settings["BOOTPROTO"]:"";
+	if (LanItems::bootproto == "static") // #104494
 	{
-	    Lan::ipaddr = settings["IPADDR"]:"";
-	    Lan::netmask = settings["NETMASK"]:"";
-	    Lan::remoteip = settings["REMOTEIP"]:"";
+	    LanItems::ipaddr = settings["IPADDR"]:"";
+	    LanItems::netmask = settings["NETMASK"]:"";
+	    LanItems::remoteip = settings["REMOTEIP"]:"";
 	}
 	else
 	{
-	    Lan::ipaddr = "";
-	    Lan::netmask = "";
-	    Lan::remoteip = "";
+	    LanItems::ipaddr = "";
+	    LanItems::netmask = "";
+	    LanItems::remoteip = "";
 	    // fixed bug #73739 - if dhcp is used, dont set default gw statically
 	    Routing::RemoveDefaultGw();
 	}
     }
 
-    if (Lan::type == "bond")
+    if (LanItems::type == "bond")
     {
-        Lan::bond_option = settings["BONDOPTION"]:"";
-	Lan::bond_slaves = (list<string>)settings["SLAVES"]:[];
+        LanItems::bond_option = settings["BONDOPTION"]:"";
+	LanItems::bond_slaves = (list<string>)settings["SLAVES"]:[];
     }
 
     // proceed with WLAN settings if appropriate, #42420
-    if (ret == `next && Lan::type == "wlan" && Lan::alias == "")
+    if (ret == `next && LanItems::type == "wlan" && LanItems::alias == "")
     {
 	ret = `wire;
     }

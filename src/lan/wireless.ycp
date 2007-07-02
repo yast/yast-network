@@ -15,6 +15,7 @@ import "CWM";
 import "FileUtils";
 import "Label";
 import "Lan";
+import "LanItems";
 import "Map";
 import "Message";
 import "Popup";
@@ -287,21 +288,21 @@ _("<p>These values will be written to the interface configuration file
 add them manually. Refer to the file 'wireless' in the same directory for all
 available options.</p>");
 
-    string mode = Lan::wl_mode;
-    string essid = Lan::wl_essid;
-    string authmode = Lan::wl_auth_mode;
+    string mode = LanItems::wl_mode;
+    string essid = LanItems::wl_essid;
+    string authmode = LanItems::wl_auth_mode;
     // wpa or wep?
     boolean authmode_wpa = authmode == "psk" || authmode == "eap"; // shortcut
     string key = nil;
     string type = nil;
     if (authmode == "psk")
     {
-	key = Lan::wl_wpa_psk;
+	key = LanItems::wl_wpa_psk;
 	type = (size (key) == 64)? "hex": "passphrase";
     }
     else if (authmode != "eap")
     {
-	map<string, string> wkey = ParseWepKey (Lan::wl_key[Lan::wl_default_key]:"");
+	map<string, string> wkey = ParseWepKey (LanItems::wl_key[LanItems::wl_default_key]:"");
 	key = wkey["key"]:"";
 	type = wkey["type"]:"";
     }
@@ -310,7 +311,7 @@ available options.</p>");
 	key = "";		// and type is not used
     }
 
-    list<integer> key_lengths = ParseKeyLengths (Lan::wl_enc_modes);
+    list<integer> key_lengths = ParseKeyLengths (LanItems::wl_enc_modes);
 
     /* Wireless dialog contents */
     term contents = `HBox(
@@ -336,7 +337,7 @@ available options.</p>");
 		`ComboBox (`id (`authmode), `opt (`hstretch, `notify),
 				  /* ComboBox label */
 				  _("&Authentication Mode"),
-				  AuthModeItems (Lan::wl_auth_modes)),
+				  AuthModeItems (LanItems::wl_auth_modes)),
 		`VSpacing(0.2),
 		type_w,
 		`VSpacing(0.2),
@@ -485,16 +486,16 @@ Really continue?
     }
 
     if(ret == `next || ret == `expert || ret == `keys) {
-	Lan::wl_essid = (string) UI::QueryWidget(`id(`essid), `Value);
-	Lan::wl_mode = mode;
-	Lan::wl_auth_mode = authmode;
+	LanItems::wl_essid = (string) UI::QueryWidget(`id(`essid), `Value);
+	LanItems::wl_mode = mode;
+	LanItems::wl_auth_mode = authmode;
 	if (authmode == "psk")
 	{
-	    Lan::wl_wpa_psk = key;
+	    LanItems::wl_wpa_psk = key;
 	}
 	else if (!authmode_wpa)
 	{
-	    Lan::wl_key[Lan::wl_default_key] = ckey;
+	    LanItems::wl_key[LanItems::wl_default_key] = ckey;
 	}
     }
 
@@ -550,27 +551,27 @@ the channel, select the desired value.</p>
     /* Combobox label */
     term freq = `ComboBox(`id(`frequency), `opt(`hstretch), _("&Frequency"), [
 	/* Combobox item */
-	`item(`id("Automatic"), _("Automatic"), Lan::wl_frequency == ""),
-	`item(`id("Automatic"), "FIXME: ASK jg@suse.de", Lan::wl_frequency != ""),
+	`item(`id("Automatic"), _("Automatic"), LanItems::wl_frequency == ""),
+	`item(`id("Automatic"), "FIXME: ASK jg@suse.de", LanItems::wl_frequency != ""),
      ]);
 
     list channels = [ "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", ];
-    if (Lan::wl_channels != nil)
+    if (LanItems::wl_channels != nil)
     {
-	channels = Lan::wl_channels;
+	channels = LanItems::wl_channels;
     }
-    if(Lan::wl_channel != "" && !contains(channels, Lan::wl_channel))
-	channels = prepend(channels, Lan::wl_channel);
+    if(LanItems::wl_channel != "" && !contains(channels, LanItems::wl_channel))
+	channels = prepend(channels, LanItems::wl_channel);
     /* Combobox item */
     channels = prepend(channels, `item(`id(""), _("Automatic")));
 
     list bitrates = [ "54", "48", "36", "24", "18", "12", "11", "9", "6", "5.5", "2", "1" ];
-    if (Lan::wl_bitrates != nil)
+    if (LanItems::wl_bitrates != nil)
     {
-	bitrates = Lan::wl_bitrates;
+	bitrates = LanItems::wl_bitrates;
     }
-    if(Lan::wl_bitrate != "" && !contains(bitrates, Lan::wl_bitrate))
-	bitrates = prepend(bitrates, Lan::wl_bitrate);
+    if(LanItems::wl_bitrate != "" && !contains(bitrates, LanItems::wl_bitrate))
+	bitrates = prepend(bitrates, LanItems::wl_bitrate);
     /* Combobox item */
     bitrates = prepend(bitrates, `item(`id(""), _("Automatic")));
 
@@ -591,10 +592,10 @@ the channel, select the desired value.</p>
 		`ComboBox(`id(`bitrate), `opt(`hstretch), _("B&it Rate"), bitrates),
 		`VSpacing(0.2),
 		/* Text entry label */
-		`TextEntry(`id(`accesspoint), _("&Access Point"), Lan::wl_accesspoint),
+		`TextEntry(`id(`accesspoint), _("&Access Point"), LanItems::wl_accesspoint),
 		`VSpacing(0.2),
 		/* CheckBox label */
-		`Left(`CheckBox(`id(`power), _("Use &Power Management"), Lan::wl_power == true)),
+		`Left(`CheckBox(`id(`power), _("Use &Power Management"), LanItems::wl_power == true)),
 		`VSpacing(1)
 		), `HSpacing(2))),
 	    `VSpacing(0.5)
@@ -605,10 +606,10 @@ the channel, select the desired value.</p>
     Wizard::SetContentsButtons(caption, contents, helptext,
 	    Label::BackButton(), Label::OKButton());
 
-    UI::ChangeWidget(`id(`bitrate), `Value, Lan::wl_bitrate);
-    UI::ChangeWidget(`id(`channel), `Value, Lan::wl_channel);
+    UI::ChangeWidget(`id(`bitrate), `Value, LanItems::wl_bitrate);
+    UI::ChangeWidget(`id(`channel), `Value, LanItems::wl_channel);
     // #88530
-    boolean channel_changeable = contains (["Ad-hoc", "Master"], Lan::wl_mode);
+    boolean channel_changeable = contains (["Ad-hoc", "Master"], LanItems::wl_mode);
     UI::ChangeWidget (`id (`channel), `Enabled, channel_changeable);
 
     any ret = nil;
@@ -633,11 +634,11 @@ the channel, select the desired value.</p>
     }
 
     if(ret == `next) {
-	Lan::wl_channel = (string) UI::QueryWidget(`id(`channel), `Value);
-//	Lan::wl_frequency = (string) UI::QueryWidget(`id(`frequency), `Value);
-	Lan::wl_bitrate = (string) UI::QueryWidget(`id(`bitrate), `Value);
-	Lan::wl_accesspoint = (string) UI::QueryWidget(`id(`accesspoint), `Value);
-	Lan::wl_power = (boolean) UI::QueryWidget(`id(`power), `Value) == true;
+	LanItems::wl_channel = (string) UI::QueryWidget(`id(`channel), `Value);
+//	LanItems::wl_frequency = (string) UI::QueryWidget(`id(`frequency), `Value);
+	LanItems::wl_bitrate = (string) UI::QueryWidget(`id(`bitrate), `Value);
+	LanItems::wl_accesspoint = (string) UI::QueryWidget(`id(`accesspoint), `Value);
+	LanItems::wl_power = (boolean) UI::QueryWidget(`id(`power), `Value) == true;
     }
 
     return ret;
@@ -779,16 +780,16 @@ wireless LAN connection does not establish, you may need to set this
 value to 64.</p>") +
     "";
 
-    string length = Lan::wl_key_length;
+    string length = LanItems::wl_key_length;
     list<string> ui_key_lengths = maplist (integer kl,
-					   ParseKeyLengths (Lan::wl_enc_modes),
+					   ParseKeyLengths (LanItems::wl_enc_modes),
 					   ``( tostring (kl + 24) ));
     if (!contains (ui_key_lengths, length))
     {
 	ui_key_lengths = add (ui_key_lengths, length);
     }
-    list<string> keys = Lan::wl_key;
-    integer defaultk = FindGoodDefault (keys, Lan::wl_default_key);
+    list<string> keys = LanItems::wl_key;
+    integer defaultk = FindGoodDefault (keys, LanItems::wl_default_key);
 
     /* Wireless keys dialog contents */
     term contents = `HBox(
@@ -868,9 +869,9 @@ value to 64.</p>") +
     }
 
     if(ret == `next) {
-	Lan::wl_key_length = length;
-	Lan::wl_key = keys;
-	Lan::wl_default_key = defaultk;
+	LanItems::wl_key_length = length;
+	LanItems::wl_key = keys;
+	LanItems::wl_default_key = defaultk;
     }
 
     return ret;
@@ -884,7 +885,7 @@ value to 64.</p>") +
  */
 define void InitializeWidget (string key) {
     // the "" serves instead of a default constructor for wl_wpa_eap
-    any value = Lan::wl_wpa_eap[key]:"";
+    any value = LanItems::wl_wpa_eap[key]:"";
     my2debug ("AW", sformat ("init k: %1, v: %2", key, value));
     UI::ChangeWidget (`id (key), ValueProp (key), value);
 }
@@ -897,7 +898,7 @@ define void InitializeWidget (string key) {
 define void StoreWidget (string key, map event) {
     any value = UI::QueryWidget (`id (key), ValueProp (key));
     my2debug ("AW", sformat ("store k: %1, v: %2, e: %3", key, value, event));
-    Lan::wl_wpa_eap[key] = value;
+    LanItems::wl_wpa_eap[key] = value;
 }
 
 /**
@@ -946,7 +947,7 @@ define void InitPeapVersion (string key) {
     // inherited
     InitializeWidget (key);
     // enable/disable
-    string mode = Lan::wl_wpa_eap["WPA_EAP_MODE"]:"";
+    string mode = LanItems::wl_wpa_eap["WPA_EAP_MODE"]:"";
     UI::ChangeWidget (`id (key), `Enabled, mode == "peap");
 }
 
@@ -1317,7 +1318,7 @@ define any WirelessWpaEapDetailsDialog () {
 	"TTLS": ["", "MD5", "GTC", "CHAP", "PAP", "MSCHAP", "MSCHAPV2"],
 	"PEAP": ["", "MD5", "GTC", "MSCHAPV2"],
 	];
-    string mode = Lan::wl_wpa_eap["WPA_EAP_MODE"]:"";
+    string mode = LanItems::wl_wpa_eap["WPA_EAP_MODE"]:"";
 
     map<string, map<string,any> > wd = wpa_eap_widget_descr;
     wd["WPA_EAP_AUTH", "items"] = maplist (string i, auth_items[mode]:[],

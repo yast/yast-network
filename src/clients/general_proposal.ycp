@@ -20,6 +20,7 @@ y2milestone("General network settings proposal started");
 y2milestone("Arguments: %1", WFM::Args());
 
 import "Lan";
+import "LanItems";
 import "NetworkService";
 
 include "network/lan/complex.ycp";
@@ -77,8 +78,8 @@ else if(func == "AskUser") {
 	seq = ManagedDialog();
 	Wizard::CloseDialog();
     }
-    Lan::proposal_valid = false; // repropose
-    Lan::SetModified ();
+    LanItems::proposal_valid = false; // repropose
+    LanItems::SetModified ();
 
     ret = $[
 	"workflow_sequence" : seq

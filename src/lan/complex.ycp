@@ -28,6 +28,7 @@ import "Package";
 import "TablePopup";
 import "CWMTab";
 import "Stage";
+import "LanItems";
 
 include "network/routines.ycp";
 include "network/summary.ycp";
@@ -42,7 +43,7 @@ include "network/lan/dhcp.ycp";
  * @return true if data was modified
  */
 define boolean Modified() ``{
-    boolean ret  = Lan::Modified() || DNS::modified || Routing::Modified() ||
+    boolean ret  = LanItems::Modified() || DNS::modified || Routing::Modified() ||
 	NetworkConfig::Modified();
     return ret;
 }
@@ -52,7 +53,7 @@ define boolean Modified() ``{
  * @return always `next
  */
 define symbol Commit() ``{
-    Lan::Commit();
+    LanItems::Commit();
     return `next;
 }
 
@@ -103,19 +104,19 @@ define symbol WriteDialog() ``{
 
     if(!Modified()) return `next;
 
-    Lan::SetModified();
+    LanItems::SetModified();
     Wizard::RestoreHelp(help["write"]:"");
     Lan::AbortFunction = ``{return PollAbort() && ReallyAbort();};
     boolean ret = Lan::Write();
     return ret ? `next : `abort;
 }
 
-define boolean AddInterface (integer hwid) {
-    //this is the map of kernel modules vs. requested firmware 
+define boolean AddInterface () {
+    //this is the map of kernel modules vs. requested firmware
     //non-empty keys are firmware packages shipped by SUSE
     map <string, string> request_firmware = $[
-	"atmel_pci" : "atmel-firmware", 
-	"atmel_cs" : "atmel-firmware", 
+	"atmel_pci" : "atmel-firmware",
+	"atmel_cs" : "atmel-firmware",
 	"bcm43xx" : "",
 	"ipw2100" : "ipw-firmware",
 	"ipw2200" : "ipw-firmware",
@@ -126,13 +127,16 @@ define boolean AddInterface (integer hwid) {
 	"acx" : "",
 	"at76_usb" : "atmel-firmware",
 	"ipw3945" : "ipw-firmware",
-	"rt61pci" : "", 
+	"rt61pci" : "",
 	"rt73usb" : "",
+	"rt73" : "",
     ];
 
     Lan::Add ();
-    Lan::SelectHW (hwid);
-    Lan::SetDefaultsForHW ();
+
+    LanItems::SelectHWMap(LanItems::Items[LanItems::current, "hwinfo"]:$[]);
+    LanItems::SetDefaultsForHW ();
+
 
     // warn if selecting a card without a driver, #29296
     // TODO also for DSL...
@@ -171,8 +175,8 @@ once you have installed the firmware.")));
     // - smpppd & kinternet: before net start
     // - wlan firmware: here, just because it is copied from modems
     //   #45960
-    if(Lan::Requires != [] && Lan::Requires != nil) {
-	if(PackagesInstall(Lan::Requires) != `next)
+    if(LanItems::Requires != [] && LanItems::Requires != nil) {
+	if(PackagesInstall(LanItems::Requires) != `next)
 	    return false;
     }
     return true;
@@ -208,18 +212,18 @@ define void ManagedStore (string key, map event) {
     string value_g = (string) UI::QueryWidget (`id (key), `CurrentButton);
     boolean value = value_g == "managed";
     if (NetworkService::IsManaged () != value)
-	Lan::SetModified ();
+	LanItems::SetModified ();
     NetworkService::SetManaged (value);
 }
 
-list<map<string,any> > o_items = nil;
+//list<map<string,any> > o_items = nil;
 
 void initOverview (string key) ``{
-    o_items = (list<map<string,any> >)Lan::Overview();
-    o_items = o_items + Lan::Unconfigured ();
+//    o_items = (list<map<string,any> >)LanItems::Overview();
 
-    list<term> term_items = maplist (map<string,any> i, o_items, {
-        term t = `item (`id (i["id"]:""));
+
+    list<term> term_items = maplist (map<string,any> i, (list<map<string,any> >)LanItems::Overview(), {
+        term t = `item (`id (i["id"]:-1));
         foreach (string l, i["table_descr"]:[], {
             t = add (t, l);
         });
@@ -234,39 +238,41 @@ void initOverview (string key) ``{
 	    UI::ChangeWidget (`id (b), `Enabled, false);
 	});
     }
+  LanItems::current = (integer)UI::QueryWidget (`id (`_hw_items), `CurrentItem);
+   UI::ChangeWidget(`_hw_sum, `Value,LanItems::GetItemDescription());
 }
 
 symbol handleOverview( string key, map event ) {
-  string current = (string)UI::QueryWidget (`id (`_hw_items), `CurrentItem);
+  LanItems::current = (integer)UI::QueryWidget (`id (`_hw_items), `CurrentItem);
 
- if (substring (current, 0, 1) == "-") // unconfigured
+ if (!LanItems::IsItemConfigured()) // unconfigured
 			 UI::ChangeWidget(`id(`delete), `Enabled, false);
 	else UI::ChangeWidget(`id(`delete), `Enabled, true);
 
-  foreach(map<string, any> row, o_items, {
-   if (row["id"]:"" == current) UI::ChangeWidget(`_hw_sum, `Value,row["rich_descr"]:"");
-  });
+   UI::ChangeWidget(`_hw_sum, `Value,LanItems::GetItemDescription());
 
  if (event["EventReason"]:"" == "Activated")
  {
   switch ((symbol)event["ID"]:nil){
    case `add:
 	Lan::Add();
+	LanItems::AddNew();
 	return `add;
    case `edit:
-	    if (substring (current, 0, 1) == "-") // unconfigured
+	if (!LanItems::IsItemConfigured()) // unconfigured
 	    {
-		integer i = tointeger (substring (current, 1));
-		if (! AddInterface (i)) break;
+		if (! AddInterface ()) break;
 	    }
 	    else		// configured
 	    {
-		Lan::Edit(current);
+		LanItems::SetItem();
+/*
 		foreach(map<string, any> row, o_items, {
-		 if (row["id"]:"" == current && row["hw_num"]:-1 != -1) Lan::SelectHW(row["hw_num"]:-1);
+		 if (row["id"]:-1 == LanItems::current && row["hw_num"]:-1 != -1) LanItems::SelectHW(row["hw_num"]:-1);
 		});
+*/
 //		Lan::SelectHW (1);
-		if (Lan::startmode == "managed")
+		if (LanItems::startmode == "managed")
 		{
 		    // Continue-Cancel popup
 		    if (!Popup::ContinueCancel (_("The interface is currently set to be managed
@@ -280,30 +286,29 @@ the interface will no longer be managed by NetworkManager.
 		    }
 		    //
 		    // TODO move the defaults to GetDefaultsForHW
-		    Lan::startmode = "ifplugd";
+		    LanItems::startmode = "ifplugd";
 		}
 	    }
 	    return `edit;
 
    case `delete:
-	    if (substring (current, 0, 1) == "-") // unconfigured
-		return nil;
+	if (!LanItems::IsItemConfigured()) return nil;
 
 	    string pop = sformat(_("All additional addresses belonging to the interface %1
 will be deleted as well.
 
 Really continue?
-"), current);
-	    if(Lan::HasAliases(current) && Popup::YesNoHeadline(Label::WarningMsg(), pop) != true)
+"), LanItems::current);
+	    if(LanItems::InterfaceHasAliases() && Popup::YesNoHeadline(Label::WarningMsg(), pop) != true)
 		break;
 
-	    Lan::Delete(current);
-	    Lan::Commit();
+	    LanItems::DeleteItem();
+//	    LanItems::Commit();
 	    initOverview("");
 	    break;
   }
  }
- if (size(o_items)==0){
+ if (size(LanItems::Items)==0){
    UI::ChangeWidget(`_hw_sum, `Value, "");
    UI::ChangeWidget (`id (`edit), `Enabled, false);
    UI::ChangeWidget (`id (`delete), `Enabled, false);

@@ -145,7 +145,6 @@ define symbol MainSequence (string mode) ``{
  * @return sequence result
  */
 define symbol NetworkCardSequence(string action) ``{
-
     map aliases = $[
 	"hardware"	: ``(HardwareDialog()),
 	"address"	: ``(AddressSequence("")),
@@ -156,7 +155,7 @@ define symbol NetworkCardSequence(string action) ``{
     if(action == "add") ws_start = "hardware";
 
     /* All S/390 network devices */
-    if(Arch::s390 () && Lan::operation == `add && Lan::unique != "") {
+    if(Arch::s390 () && LanItems::operation == `add && LanItems::unique != "") {
 	ws_start = "s390";
     }
 
@@ -187,7 +186,7 @@ define symbol NetworkCardSequence(string action) ``{
 define symbol AddressSequence(string which) ``{
 
     map aliases = $[
-	"changedefaults": [ ``(ChangeDefaults()), true ],
+//	"changedefaults": [ ``(ChangeDefaults()), true ],
 	"address"	: ``(AddressDialog()),
 	"hosts"		: ``(HostsMainDialog(false)),
 	"proxy"		: ``(ProxyMainDialog(false)),
@@ -200,12 +199,14 @@ define symbol AddressSequence(string which) ``{
 	"commit"	: [ ``(Commit()), true ],
     ];
 
-    string ws_start = which == "wire"? "wire": "changedefaults";
+    string ws_start = which == "wire"? "wire": "address"; //"changedefaults";
     map sequence = $[
 	"ws_start"	: ws_start,
+/*
 	"changedefaults" : $[
 	    `next	: "address",
 	],
+*/
 	"address" : $[
 	    `abort	: `abort,
 	    `next	: "commit",

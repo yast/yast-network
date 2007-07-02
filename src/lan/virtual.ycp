@@ -66,7 +66,7 @@ void initAdditional (string key) {
 
     list<term> table_items = [];
     /* make ui items from the aliases list */
-    maplist(string alias, map data, (map<string,map>) Lan::aliases, {
+    maplist(string alias, map data, (map<string,map>) LanItems::aliases, {
 	table_items = add(table_items, `item(`id(size(table_items)), alias, data["IPADDR"]:"", data["NETMASK"]:""));
     });
 
@@ -92,7 +92,7 @@ define symbol handleAdditional(string key, map event) {
 	 {
 	  case `edit :
 	    term item = nil;
-	    maplist(string alias, map data, (map<string,map>) Lan::aliases, {
+	    maplist(string alias, map data, (map<string,map>) LanItems::aliases, {
 	     item = `item(`id(size(table_items)), alias, data["IPADDR"]:"", data["NETMASK"]:"");
 	    });
 
@@ -140,13 +140,13 @@ void storeAdditional (string key, map event) {
     if (!NetworkService::IsManaged())
      {
     list<term> table_items = (list<term>) UI::QueryWidget(`id(`table), `Items);
-	map aliases_to_delete = Lan::aliases; // #48191
-	Lan::aliases = $[];
+	map aliases_to_delete = LanItems::aliases; // #48191
+	LanItems::aliases = $[];
 	maplist(term e, table_items, {
 	    map alias = $[];
 	    alias["IPADDR"] = e[2]:"";
 	    alias["NETMASK"] = e[3]:"";
-	    Lan::aliases[e[1]:""] = alias;
+	    LanItems::aliases[e[1]:""] = alias;
 	    aliases_to_delete[e[1]:""] = nil;
 	});
 	foreach (string a, any v, (map <string, any>)aliases_to_delete, {

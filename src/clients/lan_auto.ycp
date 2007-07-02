@@ -20,6 +20,7 @@ import "Arch";
 import "Mode";
 import "Map";
 import "NetworkDevices";
+import "LanItems";
 include "network/lan/wizards.ycp";
 include "network/routines.ycp";
 
@@ -234,7 +235,7 @@ if(func == "Summary") {
 }
 else if (func == "Reset") {
     Lan::Import($[]);
-    Lan::UnsetModified ();
+    LanItems::UnsetModified ();
     ret = $[];
 }
 else if (func == "Change") {
@@ -254,10 +255,10 @@ else if (func == "Packages") {
     ret = Lan::AutoPackages ();
 }
 else if (func == "SetModified") {
-    ret = Lan::SetModified ();
+    ret = LanItems::SetModified ();
 }
 else if (func == "GetModified") {
-    ret = Lan::GetModified ();
+    ret = LanItems::GetModified ();
 }
 else if (func == "Export") {
     map settings = Lan::Export();
@@ -270,10 +271,10 @@ else if (func == "Write") {
     Lan::PrepareForAutoinst();
     Lan::Autoinstall();
     ret = Lan::WriteOnly();
-    if (Lan::autoinstall_settings["strict_IP_check_timeout"]:nil != nil)
+    if (LanItems::autoinstall_settings["strict_IP_check_timeout"]:nil != nil)
      {
       if (Lan::isAnyInterfaceDown()){
-	 integer timeout = Lan::autoinstall_settings["strict_IP_check_timeout"]:0;
+	 integer timeout = LanItems::autoinstall_settings["strict_IP_check_timeout"]:0;
 	y2debug("timeout %1", timeout);
 	 string error_text = _("Configuration Error : not initialized interface!");
 	 if (timeout == 0) Popup::Error(error_text);

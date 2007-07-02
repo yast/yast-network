@@ -38,6 +38,7 @@ import "Summary";
 import "SuSEFirewall4Network";
 import "FileUtils";
 import "PackageSystem";
+import "LanItems";
 
 include "network/complex.ycp";
 include "network/runtime.ycp";
@@ -45,14 +46,13 @@ include "network/runtime.ycp";
 /*-------------*/
 /* GLOBAL DATA */
 
+boolean write_only = false;
+
 /**
  * Current module information
  */
 // FIXME: MOD global map Module = $[];
 
-
-// used at autoinstallation time
-global map autoinstall_settings = $[];
 
 /**
  * autoinstallation: if true, write_only is disabled and the network settings
@@ -60,107 +60,12 @@ global map autoinstall_settings = $[];
  */
 boolean start_immediately = false;
 
-global string description = "";
-global string unique = "";
-
-global string type = "";
-global string device = "";
-global string alias = "";
 
 // ipv6 module
 global boolean ipv6=true;
 /**
  * Hotplug type ("" if not hot pluggable)
  */
-global string hotplug = "";
-
-global list<string> Requires = [];
-
-/* address options */
-/** boot protocol: BOOTPROTO */
-global string bootproto = "static";
-global string ipaddr = "";
-global string remoteip = "";
-global string netmask = "";
-
-global string startmode = "auto";
-global boolean usercontrol = false;
-global string mtu = "";
-global string ethtool_options = "";
-
-/* wireless options */
-global string wl_mode = "";
-global string wl_essid = "";
-global string wl_nwid = "";
-global string wl_auth_mode = "";
-// when adding another key, don't forget the chmod 600 in NetworkDevices
-global string wl_wpa_psk = "";
-global string wl_key_length = "";
-global list<string> wl_key = [];
-global integer wl_default_key = 0;
-global string wl_nick = "";
-
-//bond options
-global list<string> bond_slaves = [];
-global string bond_option="";
-/**
- * wl_wpa_eap aggregates the settings in a map for easier CWM access.
- * @struct wpa_eap
- * WPA_EAP_MODE: string ("TTLS" "PEAP" or "TLS")
- * WPA_EAP_IDENTITY: string
- * WPA_EAP_PASSWORD: string (for TTLS and PEAP)
- * WPA_EAP_ANONID: string (for TTLS and PEAP)
- * WPA_EAP_CLIENT_CERT: string (for TLS, file name)
- * WPA_EAP_CLIENT_KEY: string (for TLS, file name)
- * WPA_EAP_CLIENT_KEY_PASSWORD: string (for TLS)
- * WPA_EAP_CA_CERT: string (file name)
- * WPA_EAP_AUTH: string ("", "MD5", "GTC", "CHAP"*, "PAP"*, "MSCHAP"*, "MSCHAPV2") (*: TTLS only)
- * WPA_EAP_PEAP_VERSION: string ("", "0", "1")
- */
-global map<string, any> wl_wpa_eap = $[];
-global string wl_channel = "";
-global string wl_frequency = "";
-global string wl_bitrate = "";
-global string wl_accesspoint = "";
-global boolean wl_power = true;
-
-// Card Features from hwinfo
-// if not provided, we use the default full list
-global list<string> wl_auth_modes = nil;
-global list<string> wl_enc_modes = nil;
-global list<string> wl_channels = nil;
-global list<string> wl_bitrates = nil;
-list<string> nilliststring = nil; // to save some casting
-
-/* s390 options */
-// portname is in ifcfg, others are in hwcfg
-global string portname = "";
-global string chan_mode = "0";
-global string qeth_options = "";
-global boolean ipa_takeover = false;
-// #84148
-// 26bdd00.pdf
-// Ch 7: qeth device driver for OSA-Express (QDIO) and HiperSockets
-// MAC address handling for IPv4 with the layer2 option
-global boolean qeth_layer2 = false;
-global string qeth_macaddress = "00:00:00:00:00:00";
-// Timeout for LCS LANCMD
-global string lcs_timeout = "5";
-
-/* aliases */
-global map aliases = $[];
-
-/* propose options */
-global boolean proposal_valid = false;
-boolean nm_proposal_valid = false;
-boolean write_only = false;
-
-/* current selected HW */
-map hw = $[];
-
-/* NetworkModules:: name */
-global string nm_name = "";
-global string nm_name_old = nil;
 
 /**
  * Abort function
@@ -168,14 +73,12 @@ global string nm_name_old = nil;
  */
 global block<boolean> AbortFunction = nil;
 
+
+
 /*--------------*/
 /* PRIVATE DATA */
 
-/**
- * Hardware information
- * @see ReadHardware
- */
-list<map> Hardware = [];
+
 
 /**
  * Modules information
@@ -188,63 +91,13 @@ list<map> Hardware = [];
  */
 // FIXME: MOD list<string> DeletedModules = [];
 
-/**
- * Data was modified?
- */
-boolean modified = false;
 
-/**
- * Which operation is pending?
- */
-global symbol operation = nil;
 // FIXME: used in lan/address.ycp (#17346) -> "global"
 
 
 
 /*------------------*/
 /* GLOBAL FUNCTIONS */
-
-/**
- * Data was modified?
- * @return true if modified
- */
-global define boolean Modified() {
-    y2debug("modified=%1",modified);
-    return modified;
-}
-
-/**
- * Function which returns if the settings were modified
- * @return boolean  settings were modified
- */
-global define boolean GetModified () {
-    return modified;
-}
-/**
- * Function sets internal variable, which indicates, that any
- * settings were modified, to "true"
- */
-global define void SetModified () {
-    modified = true;
-}
-/**
- * Function sets internal variable, which indicates, that any
- * settings were modified, to "false"
- */
-global define void UnsetModified () {
-    modified = false;
-}
-
-
-boolean CheckNetworkManagerPlugin(){
- if (NetworkService::IsManaged()){
-  y2milestone("Check what package is needed to configure NetworkManager");
-  string nmp = ((string)SCR::Read(.sysconfig.windowmanager.DEFAULT_WM)=="kde")?"NetworkManager-kde":"NetworkManager-gnome";
-  y2milestone("Test for %1 if installed", nmp);
-  PackageSystem::CheckAndInstallPackages([nmp]);
- }
- return true;
-}
 
 
 // functions for use from autoinstallation
@@ -269,8 +122,8 @@ global define boolean isAnyInterfaceDown(){
 
     y2debug("%1", link_status);
       list<string> macs=[];
-      foreach(string devs, (list<string>)Map::Keys(autoinstall_settings["devices"]:$[]), {
-	foreach(string mac, (list<string>)Map::Keys(autoinstall_settings["devices", devs]:$[]), {
+      foreach(string devs, (list<string>)Map::Keys(LanItems::autoinstall_settings["devices"]:$[]), {
+	foreach(string mac, (list<string>)Map::Keys(LanItems::autoinstall_settings["devices", devs]:$[]), {
 	 list<string> tmp_mac = splitstring(mac, "-");
 	 mac = tmp_mac[size(tmp_mac)-1]:"";
 	if (!haskey(link_status, mac)) y2error("Mac address %1 not found in map %2!", mac, link_status);
@@ -286,31 +139,11 @@ global define boolean isAnyInterfaceDown(){
 
 
 
-/*
- * return list of available modules for device identified by busid
- * with default default_module (on first possition)
- */
 
-global list<string> getModulesFor(string busid, string default_module){
- if (!hasAnyValue(busid)) return [];
- string bus_id = substring(busid, findfirstof(busid, "0123456789"));
- list<string> mods = [ default_module ];
- foreach(map<string, any> mod_row, (list<map<string, any> >)Hardware, {
-  if (mod_row["busid"]:"" == bus_id){
-   foreach(map<string, any> row_drv, mod_row["drivers"]:[], {
-    foreach(list row , row_drv["modules"]:[], {
-     if (row[0]:"" != default_module) mods = add(mods,    row[0]:"");
-    });
-   });
-  }
- });
- return mods;
-}
-
-include "network/hardware.ycp";
+//include "network/hardware.ycp";
 //include "network/install.ycp";
-include "network/routines.ycp";
-include "network/runtime.ycp";
+//include "network/routines.ycp";
+//include "network/runtime.ycp";
 
 
 /**
@@ -373,7 +206,7 @@ global define boolean Read (symbol cache) {
     // Dont read hardware data in config mode
     if(!Mode::config ()) {
 	if(!NetHwDetection::running) NetHwDetection::Start();
-	Hardware = ReadHardware("netcard");
+	LanItems::ReadHw();
     }
 
     /* ReadHardware(""); /* TESTING */
@@ -383,14 +216,14 @@ global define boolean Read (symbol cache) {
     /* Progress step 2/9 */
     ProgressNextStage(_("Reading /etc/modprobe.conf..."));
     // FIXME: MOD // ReadModules(NetworkDevices::CardRegex["netcard"]:"");
-    NetworkModules::Read();
+//    NetworkModules::Read();
+     LanItems::ReadNetworkModules();
     sleep(sl);
 
     if(Abort()) return false;
     /* Progress step 3/9 - multiple devices may be present, really plural*/
     ProgressNextStage(_("Reading device configuration..."));
-    NetworkDevices::Read();
-    NetworkDevices::CleanHotplugSymlink();
+     LanItems::ReadNetworkInterfaces();
     sleep(sl);
 
     if(Abort()) return false;
@@ -443,7 +276,7 @@ global define boolean Read (symbol cache) {
     sleep(sl);
 
     if(Abort()) return false;
-    modified = false;
+    LanItems::modified = false;
     initialized = true;
     return true;
 }
@@ -459,7 +292,7 @@ global boolean ReadWithCache () {
 global void SetIPv6(boolean status){
     if(ipv6 != status) {
 	 ipv6=status;
-         SetModified();
+         LanItems::SetModified();
     }
 }
 
@@ -484,7 +317,7 @@ global define boolean Write() {
     if(!write_only && NetHwDetection::running) NetHwDetection::Stop();
 
     /* Stop the detection */
-    if(!modified) {
+    if(!LanItems::modified) {
 	y2milestone("No changes to network setup -> nothing to write");
 	return true;
     }
@@ -643,7 +476,7 @@ global define boolean Import(map settings) {
         NetworkDevices::Import("netcard", (map<string, map>) settings["devices"]:$[]);
         NetworkModules::Import("netcard", (map<string, map>) settings["hwcfg"]:$[]);
     } else {
-        autoinstall_settings = settings;
+        LanItems::autoinstall_settings = settings;
     }
 
     NetworkConfig::Import(settings["config"]:$[]);
@@ -652,7 +485,7 @@ global define boolean Import(map settings) {
     NetworkService::SetManaged (settings["managed"]:false);
     start_immediately = settings["start_immediately"]:false;
 
-    modified = true;
+    LanItems::modified = true;
     return true;
 }
 
@@ -674,65 +507,6 @@ global define map Export() {
 }
 
 /**
- * Select the hardware component
- * @param hw the component
- */
-void SelectHWMap (map hardware) {
-    SelectHardwareMap (hardware);
-
-    if(hotplug == "") {
-	// FIXME: MOD Module["module"] = hw["module"]:"";
-	// FIXME: MOD Module["options"] = hw["options"]:"";
-	NetworkModules::Alias = hardware["module"]:"";
-	NetworkModules::Options = hardware["options"]:"";
-    }
-    else
-	y2milestone("HOTPLUG(%1) -> ignoring modprobe.conf", hotplug);
-
-    // Wireless Card Features
-    wl_auth_modes = hardware["wl_auth_modes"]:nilliststring;
-    wl_enc_modes = hardware["wl_enc_modes"]:nilliststring;
-    wl_channels = hardware["wl_channels"]:nilliststring;
-    wl_bitrates = hardware["wl_bitrates"]:nilliststring;
-
-    string mac = hardware["mac"]:"";
-    string busid = hardware["busid"]:"";
-
-
-    nm_name = createHwcfgName(hardware);
-
-    // name of ifcfg
-    /* eth, tr, not on s390 (#38819) */
-    if(!Arch::s390 () && mac != nil && mac != "" && mac != "00:00:00:00:00:00")
-	device = "id-" + hardware["mac"]:"";
-    /* iucv already filled in from lan/hardware.ycp (#42212) */
-    else if(type == "iucv")
-	y2debug("IUCV: %1", device);
-    /* other devs */
-    else if(busid != nil && busid != "")
-	device = "bus-" + hardware["bus"]:"" + "-" + hardware["busid"]:"";
-    /* USB, PCMCIA */
-    else if(hardware["hotplug"]:"" != "")
-	device = "bus-" + hardware["hotplug"]:"";
-    /* dummy */
-    else
-	y2milestone("No detailed HW info: %1", device);
-
-    y2milestone("hw=%1", hardware);
-   y2milestone("device=%1", device);
-   hw=hardware;
-}
-
-/**
- * Select the hardware component
- * @param which index of the component
- */
-global define void SelectHW(integer which) {
-    SelectHWMap (FindHardware (Hardware, which));
-}
-
-
-/**
  * Create a textual summary and a list of unconfigured devices
  * @param mode "split": split configured and unconfigured?<br />
  *             "summary": add resolver and routing symmary,
@@ -743,7 +517,7 @@ global define list Summary(string mode) {
 
     boolean split = (mode == "split");
 
-    list sum = BuildSummary("netcard", Hardware, split, mode == "proposal");
+    list sum = BuildSummary("netcard", LanItems::Hardware, split, mode == "proposal");
 
     /* Testing improved summary */
     if(mode == "summary")
@@ -807,357 +581,18 @@ global define list SummaryGeneral () {
     return [descr, links];
 }
 
-/**
- * Create an overview table with all configured devices
- * @return table items
- */
-global define list Overview() {
-    list res = BuildOverview("netcard", Hardware);
-    return maplist( term card, (list<term>)res, { 
-	string id = card[0,0]:"";
-	list desc = [ card[1]:"", card[2]:""];
-	return $[ 
-	    "id":id,
-	    "rich_descr": card[3]: (desc[1]:_("Unknown")),
-	    "table_descr":desc 
-	]; 
-	}
-    );
-}
-
-global define list<map<string,any> > Unconfigured () {
-    return BuildUnconfigured ("netcard", Hardware);
-}
-
-/*-------------------*/
-/* PRIVATE FUNCTIONS */
-
-/**
- * Return 10 free devices
- * @param type device type
- * @return list of 10 free devices
- */
-global define list FreeDevices(string type) {
-    return NetworkDevices::GetFreeDevices(type, 10);
-}
-
-/**
- * Return 10 free aliases
- * @param type device type
- * @param num device number
- * @return list of 10 free devices
- */
-global define list FreeAliases(string type, integer num) {
-    // FIXME: NI y2debug("Devices=%1", Devices);
-    map Devices_1 = $[]; // FIXME: NI Devices[type, sformat("%1",num)]:$[];
-    y2debug("Devices=%1", Devices_1);
-    return NetworkDevices::GetFreeDevices("_aliases", 10);
-}
 
 
-/**
- * must be in sync with @ref SetDefaultsForHW
- */
-define map GetDefaultsForHW () {
-    map ret = $[];
-    if (type == "wlan")
-    {
-	ret = union (
-	    ret, $[
-		"USERCONTROL": "yes", // #63767
-		]);
-    }
-    // LCS eth interfaces on s390 need the MTU of 1492. #81815.
-    // TODO: lcs, or eth?
-    // will eth not get mapped to lcs?
-    // Apparently both LCS eth and LCS tr are represented as "lcs"
-    // but it does not hurt to change the default also for tr
-    // #93798: limit to s390 to minimize regressions. Probably it could
-    // be also done by only testing for lcs and not eth but that
-    // would need more testing.
-    else if (Arch::s390 () && contains (["lcs", "eth"], type))
-    {
-	y2milestone ("Adding LCS: setting MTU");
-	ret = add (ret, "MTU", "1492");
-    }
-    return ret;
-}
-
-/**
- * must be in sync with @ref GetDefaultsForHW
- */
-global define void SetDefaultsForHW () {
-    if (type == "wlan")
-    {
-	usercontrol = true;
-    }
-    else if (Arch::s390 () && contains (["lcs", "eth"], type))
-    {
-	mtu = "1492";
-    }
-
- if (!needHwcfg(hw)){
-		nm_name_old = nm_name;
-		nm_name = "";
-	}
- y2milestone("hwcfg name %1", nm_name);
-}
-
-/**
- * the defaults here are what sysconfig defaults to
- * (as opposed to what a new interface gets, in @ref Select)
- */
-map<string, string> SysconfigDefaults = $[
-    "BOOTPROTO": "static",
-    "IPADDR": "",
-    "REMOTE_IPADDR": "",
-    "NETMASK": "",
-    "MTU": "",
-    "ETHTOOL_OPTIONS": "",
-    "NAME": "",
-    "STARTMODE": "manual",
-    "USERCONTROL": "no",
-    "WIRELESS_MODE": "Managed",
-    "WIRELESS_ESSID": "",
-    "WIRELESS_NWID": "",
-    "WIRELESS_AUTH_MODE": "open",
-    "WIRELESS_WPA_PSK": "",
-    "WIRELESS_KEY_LENGTH": "128",
-    "WIRELESS_KEY": "",
-    "WIRELESS_KEY_0": "",
-    "WIRELESS_KEY_1": "",
-    "WIRELESS_KEY_2": "",
-    "WIRELESS_KEY_3": "",
-    "WIRELESS_DEFAULT_KEY": "0",
-    "WIRELESS_NICK": "",
-    "WIRELESS_WPA_IDENTITY": "",
-    "WIRELESS_WPA_PASSWORD": "",
-    "WIRELESS_CLIENT_CERT": "",
-    "WIRELESS_CA_CERT": "",
-    "WIRELESS_CHANNEL": "",
-    "WIRELESS_FREQUENCY": "",
-    "WIRELESS_BITRATE": "auto",
-    "WIRELESS_AP": "",
-    "WIRELESS_POWER": "yes",
-    "PORTNAME": "", 
-    // aliases = devmap["_aliases"]:$[]; // ?
-    "WIRELESS_EAP_MODE": "",
-    "WIRELESS_WPA_IDENTITY": "",
-    "WIRELESS_WPA_PASSWORD": "",
-    "WIRELESS_WPA_ANONID": "",
-    "WIRELESS_CLIENT_CERT": "",
-    "WIRELESS_CLIENT_KEY": "",
-    "WIRELESS_CLIENT_KEY_PASSWORD": "",
-    "WIRELESS_CA_CERT": "",
-    "WIRELESS_EAP_AUTH": "",
-    "WIRELESS_PEAP_VERSION": "",
-
-    "BONDING_MODULE_OPTS": "",
-    ];
-
-string GetDeviceVar (map primary, map fallback, string key) {
-    string ret = (string) primary[key]:fallback[key]:nil;
-    if (ret == nil)
-    {
-	y2debug ("%1 does not have a default defined", key);
-    }
-    return ret;
-}
-
-/**
- * Set various device variables
- * @param devmap map with variables
- * @return void
- */
-void SetDeviceVars(map devmap, map defaults) {
-    /* address options */
-    bootproto = GetDeviceVar (devmap, defaults, "BOOTPROTO");
-    ipaddr = GetDeviceVar (devmap, defaults, "IPADDR");
-    remoteip = GetDeviceVar (devmap, defaults, "REMOTE_IPADDR");
-    netmask = GetDeviceVar (devmap, defaults, "NETMASK");
-
-    mtu = GetDeviceVar (devmap, defaults, "MTU");
-    ethtool_options = GetDeviceVar (devmap, defaults, "ETHTOOL_OPTIONS");
-    startmode = GetDeviceVar (devmap, defaults, "STARTMODE");
-    usercontrol = GetDeviceVar (devmap, defaults, "USERCONTROL") == "yes";
-    description = GetDeviceVar (devmap, defaults, "NAME");
-    bond_option = GetDeviceVar(devmap, defaults, "BONDING_MODULE_OPTS");
-
-    bond_slaves=[];
-    foreach(any key, any value, devmap,
-    {
-        if (regexpmatch((string)key, "BONDING_SLAVE[0-9]+"))
-            if ((string)value != nil)
-                bond_slaves = add(bond_slaves, (string)value);
-    });
-
-    /* wireless options */
-    wl_mode = GetDeviceVar (devmap, defaults, "WIRELESS_MODE");
-    wl_essid = GetDeviceVar (devmap, defaults, "WIRELESS_ESSID");
-    wl_nwid = GetDeviceVar (devmap, defaults, "WIRELESS_NWID");
-    wl_auth_mode = GetDeviceVar (devmap, defaults, "WIRELESS_AUTH_MODE");
-    wl_wpa_psk = GetDeviceVar (devmap, defaults, "WIRELESS_WPA_PSK");
-    wl_key_length = GetDeviceVar (devmap, defaults, "WIRELESS_KEY_LENGTH");
-    wl_key = []; // ensure exactly 4 entries
-    wl_key[0] = GetDeviceVar (devmap, defaults, "WIRELESS_KEY_0");
-    if (wl_key[0]:"" == "")
-    {
-	wl_key[0] = GetDeviceVar (devmap, defaults, "WIRELESS_KEY");
-    }
-    wl_key[1] = GetDeviceVar (devmap, defaults, "WIRELESS_KEY_1");
-    wl_key[2] = GetDeviceVar (devmap, defaults, "WIRELESS_KEY_2");
-    wl_key[3] = GetDeviceVar (devmap, defaults, "WIRELESS_KEY_3");
-
-    wl_default_key = tointeger (GetDeviceVar (devmap, defaults, "WIRELESS_DEFAULT_KEY"));
-    wl_nick = GetDeviceVar (devmap, defaults, "WIRELESS_NICK");
-
-    wl_wpa_eap = $[];
-    wl_wpa_eap["WPA_EAP_MODE"] = GetDeviceVar (devmap, defaults, "WIRELESS_EAP_MODE");
-    wl_wpa_eap["WPA_EAP_IDENTITY"] = GetDeviceVar (devmap, defaults, "WIRELESS_WPA_IDENTITY");
-    wl_wpa_eap["WPA_EAP_PASSWORD"] = GetDeviceVar (devmap, defaults, "WIRELESS_WPA_PASSWORD");
-    wl_wpa_eap["WPA_EAP_ANONID"] = GetDeviceVar (devmap, defaults, "WIRELESS_WPA_ANONID");
-    wl_wpa_eap["WPA_EAP_CLIENT_CERT"] = GetDeviceVar (devmap, defaults, "WIRELESS_CLIENT_CERT");
-    wl_wpa_eap["WPA_EAP_CLIENT_KEY"] = GetDeviceVar (devmap, defaults, "WIRELESS_CLIENT_KEY");
-    wl_wpa_eap["WPA_EAP_CLIENT_KEY_PASSWORD"] = GetDeviceVar (devmap, defaults, "WIRELESS_CLIENT_KEY_PASSWORD");
-    wl_wpa_eap["WPA_EAP_CA_CERT"] = GetDeviceVar (devmap, defaults, "WIRELESS_CA_CERT");
-    wl_wpa_eap["WPA_EAP_AUTH"] = GetDeviceVar (devmap, defaults, "WIRELESS_EAP_AUTH");
-    wl_wpa_eap["WPA_EAP_PEAP_VERSION"] = GetDeviceVar (devmap, defaults, "WIRELESS_PEAP_VERSION");
-
-    wl_channel = GetDeviceVar (devmap, defaults, "WIRELESS_CHANNEL");
-    wl_frequency = GetDeviceVar (devmap, defaults, "WIRELESS_FREQUENCY");
-    wl_bitrate = GetDeviceVar (devmap, defaults, "WIRELESS_BITRATE");
-    wl_accesspoint = GetDeviceVar (devmap, defaults, "WIRELESS_AP");
-    wl_power = GetDeviceVar (devmap, defaults, "WIRELESS_POWER") == "yes";
-
-    /* s/390 options */
-    portname = GetDeviceVar (devmap, defaults, "PORTNAME");
-    
-    aliases = devmap["_aliases"]:$[];
-
-    return;
-}
-
-/**
- * Select the given device
- * @param dev device to select ("" for new device, default values)
- * @return true if success
- */
-global define boolean Select(string dev) {
-    y2debug("dev=%1", dev);
-    map devmap = $[];
-    /* dev=="" -> Add */
-    if(dev == "") {
-	// defaults for a new device
-	devmap = $[
-	    "STARTMODE": "auto",	// #115448, #156388
-	    "NETMASK": (NetHwDetection::result["NETMASK"]:"255.255.255.0"), // #31369
-	    ];
-	string product_startmode = ProductFeatures::GetStringFeature ("network", "startmode");
-	if (contains (["auto", "ifplugd"], product_startmode))
-	{
-	    y2milestone ("Product startmode: %1", product_startmode);
-	    if (product_startmode == "ifplugd" && ! Arch::is_laptop ())
-	    {
-		// #164816
-		y2milestone ("Not a laptop, will not prefer ifplugd");
-		product_startmode = "auto";
-	    }
-	    devmap["STARTMODE"] = product_startmode;
-	}
-
-	type = "eth";
-	device = NetworkDevices::GetFreeDevice(type);
-
-	// FIXME: MOD AddModule(type);
-	NetworkModules::AddM();
-	nm_name = NetworkModules::GetFreeName("static-");
-
-	/* FIXME: alias: how to prefill new alias? */
-	alias = "";
-    }
-    /* dev!="" -> Edit */
-    else {
-	/* FIXME: NI:
-	if(!CheckDevice(dev)) {
-	    y2error("Device not found: %1", dev);
-	    return false;
-	}
-	*/
-	NetworkDevices::Edit(dev);
-	devmap = NetworkDevices::Current;
-	type = NetworkDevices::device_type(dev);
-	device = NetworkDevices::device_num(dev);
-	alias = NetworkDevices::alias_num(dev);
-	nm_name = devmap["_nm_name"]:"";
-    }
-
-    /* general stuff */
-    description = BuildDescription (type, device, devmap, Hardware);
-
-    unique = devmap["udi"]:"";
-    SetDeviceVars(devmap, SysconfigDefaults);
-
-
-    hotplug = "";
-    /*
-    if(issubstring(device, "bus-pcmcia"))
-	hotplug = "pcmcia";
-    else if(issubstring(device, "bus-usb"))
-	hotplug = "usb";
-    */
-
-    y2debug("type=%1", type);
-    if(issubstring(type, "-"))
-	type = regexpsub(type, "([^-]+)-.*$", "\\1");
-    y2debug("type=%1", type);
-
-    /* kernel options */
-    if(hotplug == "" && alias == "" && nm_name != "") {
-	// FIXME: MOD SelectModule(dev);
-	NetworkModules::SelectM(nm_name);
-    }
-    else {
-	// FIXME: MOD SelectModule("");
-	NetworkModules::AddM();
-    }
-
-    qeth_options = NetworkModules::QETH_OPTIONS;
-    chan_mode = NetworkModules::CCW_CHAN_MODE;
-    lcs_timeout = NetworkModules::LCS_LANCMD_TIMEOUT;
-
-    if (NetworkModules::QETH_IPA_TAKEOVER == nil ||
-	NetworkModules::QETH_IPA_TAKEOVER == "" ||
-	NetworkModules::QETH_IPA_TAKEOVER == "0")
-	ipa_takeover = false;
-    else
-	ipa_takeover = true;
-
-    if (NetworkModules::QETH_LAYER2_SUPPORT == nil ||
-	NetworkModules::QETH_LAYER2_SUPPORT == "" ||
-	NetworkModules::QETH_LAYER2_SUPPORT == "0")
-	qeth_layer2 = false;
-    else
-	qeth_layer2 = true;
-
-    /* We always have to set the MAC Address for qeth Layer2 support */
-    if (qeth_layer2 ) {
-	qeth_macaddress = devmap["LLADDR"]:"00:00:00:00:00:00";
-    }
-
-    //if(bootproto == "none") bootproto = "static";
-
-    return true;
-}
 
 /**
  * Add a new device
  * @return true if success
  */
 global define boolean Add() {
-    operation = nil;
-    if(Select("") != true) return false;
+    LanItems::operation = nil;
+    if(LanItems::Select("") != true) return false;
     NetworkDevices::Add();
-    operation = `add;
+    LanItems::operation = `add;
     return true;
 }
 
@@ -1167,10 +602,11 @@ global define boolean Add() {
  * @return true if success
  */
 global define boolean Edit(string name) {
-    operation = nil;
-    if(Select(name) != true) return false;
+    LanItems::operation = nil;
+    if(LanItems::Select(name) != true) return false;
     NetworkDevices::Edit(name);
-    operation = `edit;
+    LanItems::operation = `edit;
+    LanItems::interfacename = NetworkDevices::Name;
     return true;
 }
 
@@ -1179,420 +615,15 @@ global define boolean Edit(string name) {
  * @param name device to delete
  * @return true if success
  */
-global define boolean Delete(string name) {
+global define boolean Delete() {
+ LanItems::DeleteItem();
+/*
     operation = nil;
     if(Select(name) != true) return false;
     NetworkDevices::Delete(name);
     operation = `delete;
-    return true;
-}
-
-// ifplugd sometimes does not work for wifi
-// so wired needs higher priority to override it
-map <string, string> ifplugd_priorities = $[
-    "eth": "20",
-    "wlan": "10",
-    ];
-
-/**
- * Commit pending operation
- * @return true if success
- */
-global define boolean Commit() {
-    y2debug("Commit(%1)", operation);
-
-    if(operation == `add || operation == `edit) {
-	map<string,any> newdev = $[];
-
-	// #104494 - always write IPADDR+NETMASK, even empty
-	newdev["IPADDR"] = ipaddr;
-	newdev["NETMASK"] = netmask;
-	// #50955 omit computable fields
-	newdev["BROADCAST"] = "";
-	newdev["NETWORK"] = "";
-
-	newdev["REMOTE_IPADDR"] = remoteip;
-
-	if(alias == "") {
-	    newdev["MTU"] = mtu;
-	    newdev["ETHTOOL_OPTIONS"] = ethtool_options;
-	    newdev["STARTMODE"] = startmode;
-	    // it is not in Select yet because we don't have a widget for it
-	    if (startmode == "ifplugd")
-	    {
-		string prio = ifplugd_priorities[type]:"";
-		newdev["IFPLUGD_PRIORITY"] = prio;
-	    }
-	    newdev["USERCONTROL"] = usercontrol? "yes": "no";
-	    newdev["BOOTPROTO"] = bootproto;
-	    newdev["NAME"] = description;
-	}
-
-	if(unique != "" && unique != nil)
-	    newdev["udi"] = unique;
-
-	if(hotplug == "") {
-	    if(alias == "") {
-		// FIXME: MOD ChangeModule(NetworkDevices::device_name(type, device), operation == `add);
-		y2milestone("HWCFG name %1 (%2)", nm_name, nm_name_old);
-		if(nm_name != nil && nm_name != "" && operation == `edit &&
-			nm_name_old != nil && nm_name_old != "" &&
-			nm_name != nm_name_old) {
-		    y2milestone("HWCFG name change (%1) -> deleting old (%2)", nm_name, nm_name_old);
-		    NetworkModules::DeleteM(nm_name_old);
-		    nm_name_old = nil;
-		}
-
-		if(Arch::s390 ()) {
- 		    string type2 = DriverType (type);
-		    if(type2 == "iucv") {
-			NetworkModules::SCRIPTUP = "hwup-iucv";
-		    }
-		    else {
-			NetworkModules::SCRIPTUP = "hwup-ccw";
-			NetworkModules::SCRIPTUP_ccw = "hwup-ccw";
-			NetworkModules::SCRIPTDOWN = "hwdown-ccw";
-			NetworkModules::SCRIPTUP_ccwgroup = "hwup-" + type2;
-		    }
-
-		    integer devid = 0;
-		    string devstr = "";
-
-		    y2milestone("nm_name=%1", nm_name);
-		    string s390chanid = "[0-9]+\\.[0-9]+\\.";
-		    if(regexpmatch(nm_name, s390chanid)) {
-			devid = tointeger("0x" + regexpsub(nm_name, s390chanid + "(.*)", "\\1"));
-			devstr = regexpsub(nm_name, ".*[^0-9](" + s390chanid + ").*", "\\1");
-		    }
-
-		    y2milestone("devid=%1(%2)", devid, devstr);
-		    if(devid == nil) devid = 0;
-		    string devid0 = String::PadZeros(regexpsub(tohexstring(devid), "0x(.*)", "\\1"), 4);
-		    string devid1 = String::PadZeros(regexpsub(tohexstring(devid+1), "0x(.*)", "\\1"), 4);
-		    string devid2 = String::PadZeros(regexpsub(tohexstring(devid+2), "0x(.*)", "\\1"), 4);
-
-		    if(type2 == "ctc" || type2 == "lcs") {
-			NetworkModules::CCW_CHAN_IDS = sformat("%1%2 %1%3", devstr, devid0, devid1);
-			NetworkModules::CCW_CHAN_MODE = chan_mode;
-			NetworkModules::CCW_CHAN_NUM = "2";
-			NetworkModules::LCS_LANCMD_TIMEOUT = lcs_timeout;
-		    }
-		    else if(type2 == "qeth") {
-			NetworkModules::CCW_CHAN_IDS = sformat("%1%2 %1%3 %1%4", devstr, devid0, devid1, devid2);
-			NetworkModules::CCW_CHAN_MODE = chan_mode;
-			NetworkModules::CCW_CHAN_NUM = "3";
-			NetworkModules::QETH_OPTIONS = qeth_options;
-			NetworkModules::QETH_IPA_TAKEOVER = ipa_takeover? "1": "0";
-			NetworkModules::QETH_LAYER2_SUPPORT = qeth_layer2? "1": "0";
-			if (qeth_layer2 && qeth_macaddress != "00:00:00:00:00:00") {
-			    newdev["LLADDR"] = qeth_macaddress;
-			}
-			else {
-			    // #151196: layer 3 otherwise fails
-			    newdev["LLADDR"] = "";
-			}
-		    }
-
-		}
-
-		// If "", no hwcfg is created. See also #42421.
-		NetworkModules::ChangeM(nm_name);
-	    }
-	}
-
-	if(hotplug == "pcmcia")
-	    newdev["DHCLIENT_SET_DOWN_LINK"] = "yes";
-
-
-	if (type == "bond")
-	{
-            integer i = 0;
-            foreach (string slave, bond_slaves,
-            {
-		newdev[sformat("BONDING_SLAVE%1", i)] = slave;
-                i = i + 1;
-            });
-
-            //assign nil to rest BONDING_SLAVEn to remove them
-            while (i<10)
-            {
-               newdev[sformat("BONDING_SLAVE%1", i)] = nil;
-               i = i + 1;
-            };
-
-            newdev["BONDING_MODULE_OPTS"] = bond_option;
-
-            //BONDING_MASTER always is yes
-            newdev["BONDING_MASTER"] = "yes";
-	}
-
-	if(type == "wlan") {
-	    newdev["WIRELESS_MODE"] = wl_mode;
-	    newdev["WIRELESS_ESSID"] = wl_essid;
-	    newdev["WIRELESS_NWID"] = wl_nwid;
-	    newdev["WIRELESS_AUTH_MODE"] = wl_auth_mode;
-	    newdev["WIRELESS_WPA_PSK"] = wl_wpa_psk;
-	    newdev["WIRELESS_KEY_LENGTH"] = wl_key_length;
-	    // obsoleted by WIRELESS_KEY_0
-	    newdev["WIRELESS_KEY"] = ""; // TODO: delete the varlable
-	    newdev["WIRELESS_KEY_0"] = wl_key[0]:"";
-	    newdev["WIRELESS_KEY_1"] = wl_key[1]:"";
-	    newdev["WIRELESS_KEY_2"] = wl_key[2]:"";
-	    newdev["WIRELESS_KEY_3"] = wl_key[3]:"";
-	    newdev["WIRELESS_DEFAULT_KEY"] = tostring (wl_default_key);
-	    newdev["WIRELESS_NICK"] = wl_nick;
-
-	    if (wl_wpa_eap != $[])
-	    {
-		newdev["WIRELESS_EAP_MODE"] = wl_wpa_eap["WPA_EAP_MODE"]:"";
-		newdev["WIRELESS_WPA_IDENTITY"] = wl_wpa_eap["WPA_EAP_IDENTITY"]:"";
-		newdev["WIRELESS_WPA_PASSWORD"] = wl_wpa_eap["WPA_EAP_PASSWORD"]:"";
-		newdev["WIRELESS_WPA_ANONID"] = wl_wpa_eap["WPA_EAP_ANONID"]:"";
-		newdev["WIRELESS_CLIENT_CERT"] = wl_wpa_eap["WPA_EAP_CLIENT_CERT"]:"";
-		newdev["WIRELESS_CLIENT_KEY"] = wl_wpa_eap["WPA_EAP_CLIENT_KEY"]:"";
-		newdev["WIRELESS_CLIENT_KEY_PASSWORD"] = wl_wpa_eap["WPA_EAP_CLIENT_KEY_PASSWORD"]:"";
-		newdev["WIRELESS_CA_CERT"] = wl_wpa_eap["WPA_EAP_CA_CERT"]:"";
-		newdev["WIRELESS_EAP_AUTH"] = wl_wpa_eap["WPA_EAP_AUTH"]:"";
-		newdev["WIRELESS_PEAP_VERSION"] = wl_wpa_eap["WPA_EAP_PEAP_VERSION"]:"";	    
-	    }
-
-	    newdev["WIRELESS_CHANNEL"] = wl_channel;
-	    newdev["WIRELESS_FREQUENCY"] = wl_frequency;
-	    newdev["WIRELESS_BITRATE"] = wl_bitrate;
-	    newdev["WIRELESS_AP"] = wl_accesspoint;
-	    newdev["WIRELESS_POWER"] = wl_power ? "yes" : "no";
-	}
-
-	if(nm_name != nil && nm_name != "")
-	    newdev["_nm_name"] = nm_name;
-
-	if(DriverType (type) == "ctc")
-	    if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 40)
-		NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 40;
-
-	/* FIXME: MOD
-	if(DriverType (type) == "qeth")
-	    if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 15)
-		NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 15;
-	*/
-
-	if(alias == "") {
-	    newdev["_aliases"] = aliases;
-	    y2milestone("aliases %1", aliases);
-	    NetworkDevices::Name = NetworkDevices::device_name(NetworkDevices::RealType(type, hotplug), device);
-	}
-	else
-	    NetworkDevices::Name = NetworkDevices::alias_name(NetworkDevices::RealType(type, hotplug), device, alias);
-	NetworkDevices::Current = newdev;
-	NetworkDevices::Commit();
-    }
-    else if(operation == `delete) {
-	NetworkDevices::Commit();
-	if(alias == "") {
-	    if(hotplug == "") {
-		// FIXME: MOD DeleteModule(NetworkDevices::device_name(type, device));
-		NetworkModules::DeleteM(nm_name);
-	    // FIXME: NI DeleteDevice2(NetworkDevices::device_name(type, device));
-	    }
-	    // #145001
-	    /*
-	    NetworkUdev::Delete (device);
-	    HwStatus::...
-	    */
-	}
-	else {
-	    // FIXME: NI DeleteDevice2(NetworkDevices::device_name(type, device) + ":" + alias);
-	}
-    }
-    else {
-	y2error("Unknown operation: %1", operation);
-	return false;
-    }
-
-    nm_name_old = nil;
-    modified = true;
-    operation = nil;
-    return true;
-}
-
-/**
- * Get the module configuration for the modules configured in the 
- * interface section
- * @param ay_device Device, for example eth0
- * @param ay_modules list of modules from the AY profile
- * @return map the module map with module name and options
- */
-define map GetModuleForInterface(string ay_device ,
-				    list<map> ay_modules) {
-    map ayret = $[];
-    list<map> ay_filtered = filter(map ay_m, ay_modules,
-				  ``(
-				     ay_m["device"]:"" == ay_device ));
-    
-    if (size(ay_filtered) > 0 ) {
-	ayret = ay_filtered[0]:$[];
-    }
-
-    return ayret;
-}
-
-
-/**
- * Find matching device 
- * Find a device, optionally with some predefined values
- * @param interface interface map 
- * @return map The map of the matching device.
- */
-define map FindMatchingDevice(map interface) {
-    map tosel = nil;
-    // Minimal changes to code to fix both #119592 and #146965
-    // Alternatively we could try to ensure that we never match a
-    // device that got already matched
-    boolean matched_by_module = false;
-
-    list<string> devs = NetworkDevices::List("netcard");
-    y2milestone("Configured devices: %1", devs );
-
-    // this condition is always true for SLES9, HEAD uses $[] for proposal
-    if (interface != $[])
-    {
-	// Notes for comments about matching:
-	// - interface["device"] is the key which we look for in the actual hw
-	// - H iterates over Hardware
-	// - patterns are shell-like
-
-        list device_id = splitstring(interface["device"]:"", "-");
-        /* code for eth-id-00:80:c8:f6:48:4c configurations */
-	// *-id-$ID => find H["mac"] == $ID
-        if (size(device_id)> 1 && device_id[1]:"" == "id")
-        {
-            string hwaddr = device_id[2]:"";
-            if(hwaddr != nil && hwaddr != "") {
-                tosel = find (map h, Hardware, ``( h["mac"]:"" == hwaddr ));
-            }			
-            y2milestone("Rule: matching mac in device name");
-        }
-        /* code for eth-bus-pci-0000:00:0d.0 configurations */
-        /* code for eth-bus-vio-30000001 configurations */
-	// *-bus-$BUS-$ID => find H["bus"] == $BUS & H["busid"] == $ID
-        else if (size(device_id)> 2 && device_id[1]:"" == "bus")
-        {
-	    string bus = device_id[2]:"";
-            string busid = device_id[3]:"";
-            if(bus != nil && bus != "" && busid != nil && busid != "") {
-                tosel = find (map h, Hardware, ``( h["busid"]:"" == busid
-                            && h["bus"]:"" == bus ));
-            }	
-            y2milestone("Rule: matching bus id in device name");
-        }
-
-        /* code for module configuration */
-	// join with the modules list of the ay profile according to "device"
-	// if exists => find H["module"] == AH["module"]
-        map aymodule = GetModuleForInterface(interface["device"]:"", 
-                autoinstall_settings["modules"]:[]);
-        y2milestone("module data: %1", aymodule );
-        if (tosel == nil && aymodule != $[]) {
-            if(aymodule != nil && aymodule["module"]:"" != "") {
-                tosel = find (map h, Hardware, ``( h["module"]:"" == aymodule["module"]:"" ));
-            }
-	    if (tosel != nil)
-	    {
-		matched_by_module = true;
-	    }
-            y2milestone("Rule: matching module configuration");
-        }
-    }
-    
-    // First device was already configured, we are now looking for 
-    // a second (third,...) one
-    if (size(devs) > 0 )
-    {
-        // #119592, #146965: this used to be unconditional, overwriting the
-        // results of the above matching.	
-	if (matched_by_module || tosel == nil)
-	{
-	    // go thru all devices, check whether there's one that does
-	    // not have a configuration yet
-	    // and has the same type as the current profile item
-	    foreach (map h, Hardware, {
-		y2milestone("Checking for device=%1", h);
-		SelectHWMap(h);
-		string _device_name = NetworkDevices::device_name(NetworkDevices::RealType(type, hotplug), device);
-		if (!NetworkDevices::Check(_device_name) &&
-		    type == NetworkDevices::device_type(interface["device"]:"")
-		    )
-		{
-		    y2milestone("Selected: %1", h );
-		    tosel = h;
-		    break;
-		}
-	    });
-	}
-        if (tosel == nil )
-        {
-            y2error("Nothing found");
-        }
-
-    } else {
-	// this is the first interface, match the hardware with install.inf
-/*
- // couldn't happen 
-	if (size(InstallInf)>0){
-         // Select the one from install.inf with the same MAC 
-	 // find H["mac"] == InstallInf["hwaddr"]
-         if (tosel == nil  ) {
-            string hwaddr = InstallInf["hwaddr"]:"";
-            if(hwaddr != nil && hwaddr != "") {
-                tosel = find (map h, Hardware, ``( h["mac"]:"" == hwaddr ));
-            }
-            y2milestone("Rule: matching hwaddr in install.inf");
-         }
-
-         // Select the one from install.inf with the same module 
-	 // find H["module"] == InstallInf["module"]
-         if (tosel == nil) {
-            string infmodule = InstallInf["module"]:"";
-            if(infmodule != nil && infmodule != "") {
-                tosel = find (map h, Hardware, ``( h["module"]:"" == infmodule ));
-            }
-            y2milestone("Rule: matching module in install.inf");
-         }
-	} else
 */
-	   {
-	 /* No install.inf -> select the first connected */
-         // find H["active"] == true
-         if (tosel == nil) {
-            tosel = find (map h, Hardware, ``(
-                        h["link", "state"]:false
-                        ));
-            y2milestone("Rule: first connected");
-         }
-	}
-
-        /* No install.inf driver -> select the first active */
-	// find H["active"] == true
-        if (tosel == nil) {
-            tosel = find (map h, Hardware, ``(
-                        h["active"]:false
-                        ));
-            y2milestone("Rule: first active");
-        }
-
-        /* No active driver -> select the first with a driver */
-	// find H["module"] != ""
-        if (tosel == nil) {
-            y2milestone("No active driver found, trying further.");
-            tosel = find (map h, Hardware, ``(
-                        h["module"]:"" != ""
-                        && y2milestone("Using driver: %1", h) == nil
-                        ));
-            y2milestone("Rule: first with driver");
-        }
-    }
-
-    return tosel;
+    return true;
 }
 
 
@@ -1635,16 +666,16 @@ define boolean UseNetworkManager () {
  */
 define void ProposeNMInterfaces () {
     y2milestone ("Minimal ifcfgs for NM");
-    foreach (map hwitem, Hardware, {
+    foreach (map hwitem, LanItems::Hardware, {
 	Add ();
 
-	SelectHWMap (hwitem);
-	SetDefaultsForHW ();
-	ipaddr = "";
-	bootproto = "dhcp";
+	LanItems::SelectHWMap (hwitem);
+	LanItems::SetDefaultsForHW ();
+	LanItems::ipaddr = "";
+	LanItems::bootproto = "dhcp";
 	// will say "Device already present" for existing because of Add,
 	// which is what we want
-	Commit ();
+	LanItems::Commit ();
     });
 }
 
@@ -1654,23 +685,23 @@ define void ProposeNMInterfaces () {
  */
 global define boolean ProposeInterfaces () {
 
-    y2milestone("Hardware=%1", Hardware);
+    y2milestone("Hardware=%1", LanItems::Hardware);
 //    y2milestone("InstallInf=%1", InstallInf);
 
     y2milestone("NetworkConfig::Config=%1", NetworkConfig::Config);
     y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);
 
-    if (! nm_proposal_valid)
+    if (! LanItems::nm_proposal_valid)
     {
 	NetworkService::SetManaged (UseNetworkManager ());
-	nm_proposal_valid = true;
+	LanItems::nm_proposal_valid = true;
     }
 
     if (NetworkService::IsManaged ())
     {
 	ProposeNMInterfaces ();
 
-	modified = true;	// #144139 workaround
+	LanItems::modified = true;	// #144139 workaround
 	y2milestone ("NM proposal");
 	return true;
     }
@@ -1688,17 +719,17 @@ global define boolean ProposeInterfaces () {
     map tosel = nil;
 
     /* Some HW found -> use it for proposal */
-    if(size(Hardware) > 0) {
+    if(size(LanItems::Hardware) > 0) {
 //         if (Arch::s390()){
 //         tosel =  FindMatchingDevice( $["device":sformat("%1-id-%2",InstallInf["module"]:"", InstallInf["hwaddr"]:"")] );
 //        }
 //          else 
-		tosel =  FindMatchingDevice($[]);
+		tosel =  LanItems::FindMatchingDevice($[]);
 
     }
         
 
-    y2debug("Hardware=%1", Hardware);
+    y2debug("Hardware=%1", LanItems::Hardware);
     y2milestone ("Selected HW w/o  install.inf patches: %1", tosel);
 
 /*
@@ -1769,7 +800,7 @@ global define boolean ProposeInterfaces () {
 // This is proposal. also need to do it with
 // - add from ui: detected and undetected
 // - autoyast
-    SetDefaultsForHW ();
+    LanItems::SetDefaultsForHW ();
 
     // #145041
 //    ethtool_options = InstallInf["ethtool_options"]:"";
@@ -1777,21 +808,21 @@ global define boolean ProposeInterfaces () {
     // #176804
     if (NetworkStorage::isDiskOnNetwork ( NetworkStorage::getDevice("/") ))
     {
-	startmode = "nfsroot";
+	LanItems::startmode = "nfsroot";
 	y2milestone ("startmode nfsroot");
     }
 
 //    ipaddr = InstallInf["ipaddr"]:"";
 //    bootproto = InstallInf["bootproto"]:"static";
-    y2debug("ipaddr,bootproto=%1,%2", ipaddr, bootproto);
-    if(bootproto == "static" && ipaddr != "" && ipaddr != nil) {
+    y2debug("ipaddr,bootproto=%1,%2", LanItems::ipaddr, LanItems::bootproto);
+    if(LanItems::bootproto == "static" && LanItems::ipaddr != "" && LanItems::ipaddr != nil) {
 
 	y2milestone("static proposal");
 
 	/* propose address setup from /etc/install.inf */
 //	netmask = InstallInf["netmask"]:"";
-	if(netmask == nil || netmask == "")
-	    netmask = "255.255.255.0";
+	if(LanItems::netmask == nil || LanItems::netmask == "")
+	    LanItems::netmask = "255.255.255.0";
     }
     else {
 	/* Propose static config in case of DSL hardware is found */
@@ -1801,8 +832,8 @@ global define boolean ProposeInterfaces () {
 	y2milestone ("pppoe=%1", pppoe);
 	if(pppoe != nil && size(pppoe) > 0) {
 	    y2milestone("DSL proposal");
-	    ipaddr = "";
-	    bootproto = "static";
+	    LanItems::ipaddr = "";
+	    LanItems::bootproto = "static";
 	}
 	else {
 	    // Open Enterprise Server does not like DHCP (#50524).
@@ -1813,12 +844,12 @@ global define boolean ProposeInterfaces () {
 		return false;
 	    }
 	    y2milestone("DHCP proposal");
-	    ipaddr = "";
-	    bootproto = "dhcp";
+	    LanItems::ipaddr = "";
+	    LanItems::bootproto = "dhcp";
 	}
     }
 
-    Commit();
+    LanItems::Commit();
 
     y2milestone("NetworkConfig::Config=%1", NetworkConfig::Config);
     y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);
@@ -1870,7 +901,7 @@ define boolean ProposeHostname () {
  * @return true if something was proposed
  */
 global define boolean ProposeRoutesAndResolver () {
-    if(bootproto == "static" && ipaddr != "" && ipaddr != nil) {
+    if(LanItems::bootproto == "static" && LanItems::ipaddr != "" && LanItems::ipaddr != nil) {
 	/* propose default gateway from /etc/install.inf */
 //	Routing::ReadFromGateway (InstallInf["gateway"]:"");
 
@@ -1897,14 +928,14 @@ global define boolean Propose() {
  */
 global define boolean Autoinstall() {
 
-    y2milestone("Hardware=%1", Hardware);
+    y2milestone("Hardware=%1", LanItems::Hardware);
     map tosel = nil;
 
     /* Some HW found -> use it for proposal */
-    if(size(Hardware) > 0
-       && size(autoinstall_settings["interfaces"]:[]) > 0) {
+    if(size(LanItems::Hardware) > 0
+       && size(LanItems::autoinstall_settings["interfaces"]:[]) > 0) {
 
-        foreach(map<string, string> interface, autoinstall_settings["interfaces"]:[], ``{
+        foreach(map<string, string> interface, LanItems::autoinstall_settings["interfaces"]:[], ``{
                 
             list<string> devs = NetworkDevices::List("netcard");
             y2milestone("devs: %1", devs);
@@ -1912,13 +943,13 @@ global define boolean Autoinstall() {
 
             Add();
 
-    	    tosel = FindMatchingDevice(interface);
+    	    tosel = LanItems::FindMatchingDevice(interface);
 
 	    y2milestone("tosel=%1", tosel);
 
             // Read module data from autoyast
-            map aymodule = GetModuleForInterface(interface["device"]:"",
-                autoinstall_settings["modules"]:[]);
+            map aymodule = LanItems::GetModuleForInterface(interface["device"]:"",
+                LanItems::autoinstall_settings["modules"]:[]);
 
 
 	    if (tosel != nil)
@@ -1928,7 +959,7 @@ global define boolean Autoinstall() {
 		tosel["options"] = (aymodule["options"]:""!= "")?
 		    aymodule["options"]:"" : tosel["options"]:"";
 		
-		SelectHWMap(tosel);
+		LanItems::SelectHWMap(tosel);
 	    }
 	    /* Nothing detected -> use InstallInf */
 /*
@@ -1960,22 +991,22 @@ global define boolean Autoinstall() {
                     });
 
 
-	    map defaults = union (SysconfigDefaults, GetDefaultsForHW ());
+	    map defaults = union (LanItems::SysconfigDefaults, LanItems::GetDefaultsForHW ());
 
             // Set interface variables
-	    SetDeviceVars(interface, defaults);
+	    LanItems::SetDeviceVars(interface, defaults);
 
-	    y2debug("ipaddr,bootproto=%1,%2", ipaddr, bootproto);
-            if(bootproto == "static" && ipaddr != "" && ipaddr != nil) 
+	    y2debug("ipaddr,bootproto=%1,%2", LanItems::ipaddr, LanItems::bootproto);
+            if(LanItems::bootproto == "static" && LanItems::ipaddr != "" && LanItems::ipaddr != nil) 
             {
 
                 y2milestone("static configuration");
 
-		if(netmask == nil || netmask == "")
-		    netmask = "255.255.255.0";
+		if(LanItems::netmask == nil || LanItems::netmask == "")
+		    LanItems::netmask = "255.255.255.0";
 	
 	    }
-	    Commit();
+	    LanItems::Commit();
 	});
     }
     else 
@@ -1986,17 +1017,17 @@ global define boolean Autoinstall() {
 
     // #153426 - using ProposeInterfaces instead of Propose omitted these
     // if they are nonempty, Import has already taken care of them.
-    if (autoinstall_settings["routing", "routes"]:[] == [])
+    if (LanItems::autoinstall_settings["routing", "routes"]:[] == [])
     {
 	y2milestone ("gateway from install.inf");
 //	Routing::ReadFromGateway (InstallInf["gateway"]:"");
     }
-    if (autoinstall_settings["dns", "nameservers"]:[] == [])
+    if (LanItems::autoinstall_settings["dns", "nameservers"]:[] == [])
     {
 	y2milestone ("nameserver from install.inf");
 //	DNS::ReadNameserver (InstallInf["nameserver"]:"");
     }
-    if (autoinstall_settings["dns", "hostname"]:"" == "")
+    if (LanItems::autoinstall_settings["dns", "hostname"]:"" == "")
     {
 	ProposeHostname ();
     }
@@ -2013,20 +1044,12 @@ global define boolean AnyDHCPDevice() {
     return size(union(NetworkDevices::Locate("BOOTPROTO", "dhcp"), NetworkDevices::Locate("BOOTPROTO", "dhcp+autoip"))) > 0;
 }
 
-/**
- * Check if the given device has any virtual alias.
- * @param dev device to be checked
- * @return true if there are some aliases
- */
-global define boolean HasAliases(string dev) {
-    return NetworkDevices::HasAliases(dev);
-}
 
 global define list<map> PrepareForAutoinst() {
   
 //    ReadInstallInf();     
-    Hardware = ReadHardware("netcard");
-    return Hardware;
+    LanItems::ReadHw();
+    return LanItems::Hardware;
 }
 
 /**

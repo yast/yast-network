@@ -4,5 +4,6 @@
 # $Id$
 #
 
+agent_SCRIPTS = ag_udev_persistent
 scrconf_DATA = $(wildcard *.scr)
-EXTRA_DIST = $(scrconf_DATA)
+EXTRA_DIST = $(agent_SCRIPTS) $(scrconf_DATA)
