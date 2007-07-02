@@ -216,11 +216,9 @@ define void ManagedStore (string key, map event) {
     NetworkService::SetManaged (value);
 }
 
-//list<map<string,any> > o_items = nil;
 
 void initOverview (string key) ``{
-//    o_items = (list<map<string,any> >)LanItems::Overview();
-
+y2internal("init");
 
     list<term> term_items = maplist (map<string,any> i, (list<map<string,any> >)LanItems::Overview(), {
         term t = `item (`id (i["id"]:-1));
@@ -240,7 +238,12 @@ void initOverview (string key) ``{
     }
   LanItems::current = (integer)UI::QueryWidget (`id (`_hw_items), `CurrentItem);
    UI::ChangeWidget(`_hw_sum, `Value,LanItems::GetItemDescription());
+ if (!LanItems::IsItemConfigured()) // unconfigured
+			 UI::ChangeWidget(`id(`delete), `Enabled, false);
+	else UI::ChangeWidget(`id(`delete), `Enabled, true);
 }
+
+
 
 symbol handleOverview( string key, map event ) {
   LanItems::current = (integer)UI::QueryWidget (`id (`_hw_items), `CurrentItem);

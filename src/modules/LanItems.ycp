@@ -1128,6 +1128,17 @@ global void DeleteItem(){
 	 NetworkModules::DeleteM(hwcfg);
 	 Items[current, "hwcfg"] = "";
 	}
+ if (! (size(Items[current, "hwinfo"]:$[])>0) ){
+  map<integer, any> tmp_items = $[];
+  foreach(integer key, any value, Items, {
+   if (key==current) continue;
+    else{
+	if (key<current) tmp_items[key]=Items[key]:$[];
+		else tmp_items[key-1]=Items[key]:$[];
+	}
+  });
+  Items = tmp_items;
+ }
  SetModified();
 }
 
