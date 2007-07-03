@@ -69,6 +69,7 @@ fi
 @moduledir@/*.ybc
 @desktopdir@/*.desktop
 @scrconfdir@/*.scr
+@agentdir@/ag_udev_persistent
 %doc @docdir@
 @schemadir@/autoyast/rnc/networking.rnc
 @schemadir@/autoyast/rnc/host.rnc
