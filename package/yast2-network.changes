@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jul  3 11:11:39 CEST 2007 - kmachalkova@suse.cz
+
+- ag_udev_persistent added to .spec file 
+
+-------------------------------------------------------------------
 Mon Jul  2 17:47:46 CEST 2007 - mzugec@suse.cz
 
 - fixed delete item
