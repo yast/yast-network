@@ -154,6 +154,7 @@ symbol handleBootProto (string key, map event) {
   UI::ChangeWidget(`dyn, `Enabled, dynamic);
   UI::ChangeWidget(`ipaddr, `Enabled, stat);
   UI::ChangeWidget(`netmask, `Enabled, stat);
+  UI::ChangeWidget(`hostname, `Enabled, stat);
  return nil;
 }
 
@@ -373,7 +374,9 @@ map<string, map<string,any> > widget_descr_local = $[
 	"custom_widget" : 
 		    /* Frame label */
 		   `Frame(`id(`f_additional), _("Additional Addresses"), `HBox(`HSpacing(3), `VBox(
-			`VSpacing(1),
+			// :-) this is a small trick to make ncurses in 80x25 happy :-)
+			// it rounds spacing up or down to the nearest integer, 0.5 -> 1, 0.49 -> 0
+			`VSpacing(0.49),
 			`Table(`id(`table), `opt(`notify), `header(
 	                    /* Table header label */
 	                    _("Alias Name"),
@@ -388,7 +391,7 @@ map<string, map<string,any> > widget_descr_local = $[
 			    `PushButton(`id(`edit), `opt(`disabled), _("&Edit")),
 			    /* PushButton label */
 			    `PushButton(`id(`delete), `opt(`disabled), _("De&lete"))),
-			`VSpacing(1)
+			`VSpacing(0.49)
 			),
 			`HSpacing(3))),
 	"help" : help["additional"]:"",
@@ -513,8 +516,13 @@ map<string, map<string,any> > widget_descr_local = $[
 		`VBox(
 		 `Left(`RadioButton(`id(`static), `opt(`notify), _("Statically assigned IP Address"))),
 		  `HBox(
-		  `TextEntry(`id(`ipaddr), _("&IP Address")), `TextEntry(`id(`netmask),  _("&Subnet Mask"))
-		   )
+		  `TextEntry(`id(`ipaddr), _("&IP Address")),
+		  `HSpacing(1),
+		  `TextEntry(`id(`netmask),  _("&Subnet Mask")),
+		  `HSpacing(1),
+		  `TextEntry(`id(`hostname), "&Hostname - Do not use yet!")
+	          `HStretch()
+		  ),
 		 )
 		)
 	    ),
@@ -666,7 +674,7 @@ define any AddressDialog() {
 	    // need to change the contents of the dialog. #30890.
 	    "IFCFGTYPE",
 	    `HSpacing(1.5),
-	    "IFCFGID",
+	    `MinWidth(30, "IFCFGID"),
 	    `HSpacing(0.5)
 	);
     if(LanItems::operation != `add) {
