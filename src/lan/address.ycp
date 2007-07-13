@@ -405,29 +405,6 @@ map<string, map<string,any> > widget_descr_local = $[
 	"opt": [`hstretch],
 	"help": _("<p>TODO kind of vague!</p>"),
 	],
-    "BINDTOHW": $[
-	"widget": `combobox,
-	"label": _("Binding &Characteristic"),
-	"opt": [`hstretch],
-	// IDEA: "help" is the traditional detached help, has to include
-	// widget name; "tooltip" or "toolhelp" is visually bound to the
-	// widget, does not need to contain its name (the translator comment
-	// needs to, though)
-	"help": _("<p>FIXME better help! Which hardware to bind to</p>"),
-	// FIXME FAKE: get real values dynamically
-	"items": [
-	    // synchronize keys with ... whatever
-	    // combo box item. %1 is like "00:de:ad:po:rk:00"
-	    ["mac", sformat (_("MAC Address: %1"), "00:de:ad:po:rk:00")],
-	    // combo box item. %1 is like "pci-0000:01:09.0"
-	    ["bus", sformat (_("Bus Path: %1"), "pci-0000:01:09.0")],
-	    // combo box item. %1 is like "1022-2000"
-	    ["vpid", sformat (_("Product ID: %1"), "1022-2000")],
-	    // combo box item. %1 is like "1022-2000-1259-2700"
-	    ["vpsid", sformat (_("Product Sub-ID: %1"), "1022-2000-1259-2700")],
-	    ],
-	],
-
     "FWZONE": $[
 	"widget": `combobox,
 	// Combo Box label
@@ -520,9 +497,9 @@ map<string, map<string,any> > widget_descr_local = $[
 		  `HSpacing(1),
 		  `TextEntry(`id(`netmask),  _("&Subnet Mask")),
 		  `HSpacing(1),
-		  `TextEntry(`id(`hostname), "&Hostname - Do not use yet!")
+		  `TextEntry(`id(`hostname), "&Hostname - Do not use yet!"),
 	          `HStretch()
-		  ),
+		  )
 		 )
 		)
 	    ),
@@ -604,7 +581,6 @@ define any AddressDialog() {
     settings = $[
 	// general tab:
 //	"IFNAME": ifname,
-//	"BINDTOHW": "mac",	// FIXME
 	"STARTMODE": LanItems::startmode,
 	"USERCONTROL": LanItems::usercontrol,
 	// problems when renaming the interface?
