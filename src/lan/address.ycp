@@ -681,9 +681,9 @@ define any AddressDialog() {
 	1, 0,
 	`Frame(_("Detailed Settings"), `HBox(`HStretch(),
 	`HSquash(`VBox(
-	    `VSpacing(0.4),
-	    "ADVANCED_MB",
-	    `VSpacing(0.4)
+//	    `VSpacing(0.4),
+	    "ADVANCED_MB"
+//	    `VSpacing(0.4)
 	)),
 	`HStretch()
     )));

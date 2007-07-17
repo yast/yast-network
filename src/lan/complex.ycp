@@ -134,7 +134,7 @@ define boolean AddInterface () {
 
     Lan::Add ();
 
-    LanItems::SelectHWMap(LanItems::Items[LanItems::current, "hwinfo"]:$[]);
+    LanItems::SelectHWMap(LanItems::getCurrentItem()["hwinfo"]:$[]);
     LanItems::SetDefaultsForHW ();
 
 
@@ -216,6 +216,15 @@ define void ManagedStore (string key, map event) {
     NetworkService::SetManaged (value);
 }
 
+void enableDisableButtons(){
+ LanItems::current = (integer)UI::QueryWidget (`id (`_hw_items), `CurrentItem);
+ UI::ChangeWidget(`_hw_sum, `Value,LanItems::GetItemDescription());
+ if (!LanItems::IsItemConfigured()) // unconfigured
+			 UI::ChangeWidget(`id(`delete), `Enabled, false);
+	else UI::ChangeWidget(`id(`delete), `Enabled, true);
+ if (hasAnyValue(LanItems::getCurrentItem()["hwinfo", "dev_name"]:"")) UI::ChangeWidget(`id(`edit), `Enabled, true);
+	else UI::ChangeWidget(`id(`edit), `Enabled, false);
+}
 
 void initOverview (string key) ``{
 y2internal("init");
@@ -236,22 +245,14 @@ y2internal("init");
 	    UI::ChangeWidget (`id (b), `Enabled, false);
 	});
     }
-  LanItems::current = (integer)UI::QueryWidget (`id (`_hw_items), `CurrentItem);
-   UI::ChangeWidget(`_hw_sum, `Value,LanItems::GetItemDescription());
- if (!LanItems::IsItemConfigured()) // unconfigured
-			 UI::ChangeWidget(`id(`delete), `Enabled, false);
-	else UI::ChangeWidget(`id(`delete), `Enabled, true);
+ enableDisableButtons();
 }
 
 
 
 symbol handleOverview( string key, map event ) {
-  LanItems::current = (integer)UI::QueryWidget (`id (`_hw_items), `CurrentItem);
 
- if (!LanItems::IsItemConfigured()) // unconfigured
-			 UI::ChangeWidget(`id(`delete), `Enabled, false);
-	else UI::ChangeWidget(`id(`delete), `Enabled, true);
-
+   enableDisableButtons();
    UI::ChangeWidget(`_hw_sum, `Value,LanItems::GetItemDescription());
 
  if (event["EventReason"]:"" == "Activated")
@@ -450,7 +451,7 @@ symbol MainDialog(string init_tab) ``{
     contents = CWM::PrepareDialog(contents, w);
 
     Wizard::SetContentsButtons(caption, contents, help, Label::NextButton (), Label::FinishButton ());
-    Wizard::HideBackButton();
+    Wizard::DisableBackButton();
 
     symbol ret = CWM::Run(w, $[`abort:ReallyAbort ]);
 

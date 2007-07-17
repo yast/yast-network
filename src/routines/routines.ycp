@@ -352,7 +352,7 @@ boolean needHwcfg(map hw){
  return need;
 }
 
-
+/*
 map<string, any> getcfg(string options, string device){
  map <string, any> cfg=$[];
  map <string, any> output = (map <string, any>)SCR::Execute(.target.bash_output, 
@@ -366,6 +366,7 @@ map<string, any> getcfg(string options, string device){
  y2milestone("%1 %2\n%3", options, device, cfg);
  return cfg;
 }
+*/
 
 map getHardware(string sysfs_id, list<map> Hw){
  map hardware = $[];
@@ -385,13 +386,14 @@ boolean CheckNetworkManagerPlugin(){
  return true;
 }
 
-string getIfcName(string hwfile, string devicename){
+string getIfcName(string devicename){
  string ifcfg="";
  string interfacetype = NetworkDevices::device_type( devicename );
  // for special s390 interface types write static configuration
  if (contains(["qeth", "hsi", "ctc", "lcs", "iucv"], interfacetype)){
   y2internal("special device type %1", interfacetype);
-  ifcfg=sformat("ifcfg-%1", hwfile);
+//  ifcfg=sformat("ifcfg-%1", hwfile);
+  y2error("TODO: create ifcfg file for s390");
  } else {
 	 y2internal("usual type %1", interfacetype);
 	 // if MAC available - use it for name

@@ -166,24 +166,19 @@ string InstallModuleOptions(string module_name) {
     return "";
 }
 
+/*
 string getHWFullPath(string hwfile){
  return sformat("%1/hwcfg-%2", "/etc/sysconfig/hardware", hwfile);
 }
-
+*/
 
 map <string,any> hwcfg=$[];
-
+/*
 string CreateHardwareFile(){
  string hwfile="";
  map hw=$[];
   // read current hardware information and check if configuration file exists
   hwcfg=getcfg("-f hwcfg- -d /etc/sysconfig/hardware", InstallInf["netdevice"]:"");
-//y2internal("hwcfg %1", hwcfg);
-/*
-foreach(map hw_temp, (list<map>)SCR::Read(.probe.netcard), {
-if (hwcfg["HWD_DEVICEPATH"]:"" == sformat("/sys%1", hw_temp["sysfs_id"]:"")) hw=hw_temp;
-});
-*/
 
 hw=getHardware(hwcfg["HWD_DEVICEPATH"]:"", (list<map>)SCR::Read(.probe.netcard));
 
@@ -236,8 +231,9 @@ y2internal("need hwcfg: %1", needHwcfg(hw));
 
  return hwfile;
 }
+*/
 
-void CreateIfcfg(string hwcfg, string ifcfg){
+void CreateIfcfg(string ifcfg){
  string network_configuration="";
  // set BOOTPROTO=[ static | dhcp ]
  if (InstallInf["bootproto"]:"dhcp"=="static") {
@@ -257,23 +253,27 @@ void CreateIfcfg(string hwcfg, string ifcfg){
 
  if (size(InstallInf["LLADDR"]:"")>0) network_configuration = sformat("%1LLADDR='%2'\n", network_configuration, InstallInf["LLADDR"]:"");
 
+/*
  if (size(InstallInf["unique"]:"")>0)
  {
   // write UNIQUE - #suse25739
   network_configuration = sformat("%1UNIQUE='%2'\n", network_configuration, InstallInf["unique"]:"");
+*/
   // write UDI
+/*
   list<map> cards=(list<map>)SCR::Read(.probe.netcard);
   foreach(map card, cards, {
    if (card["unique_key"]:""==InstallInf["unique"]:"") network_configuration = sformat("%1udi='%2'\n", network_configuration, card["udi"]:"");
   });
  }
+*/
 
  if (network_disk){ network_configuration = sformat("%1STARTMODE='nfsroot'\n", network_configuration);
   } else{network_configuration = sformat("%1STARTMODE='onboot'\n", network_configuration);
 	}
 
  // reference to hardware configuration
- network_configuration = sformat("%1_nm_name='%2'\n", network_configuration, hwcfg);
+// network_configuration = sformat("%1_nm_name='%2'\n", network_configuration, hwcfg);
 
  // point to point interface
  if (size(InstallInf["remote_ip"]:"")>0)network_configuration = sformat("%1REMOTE_IPADDR='%2'\n", network_configuration, InstallInf["remote_ip"]:"");
@@ -341,7 +341,7 @@ void save_network(){
   integer new_SCR = WFM::SCROpen ("chroot=/:scr", false);
   WFM::SCRSetDefault (new_SCR);
 
-  SCR::Execute(.target.bash, sformat("cp /etc/sysconfig/hardware/* %1/etc/sysconfig/hardware/ 2>/dev/null", Installation::destdir));
+//  SCR::Execute(.target.bash, sformat("cp /etc/sysconfig/hardware/* %1/etc/sysconfig/hardware/ 2>/dev/null", Installation::destdir));
 
  // when root is on nfs/iscsi set startmode=nfsroot #176804
  string device = NetworkStorage::getDevice( Installation::destdir );
@@ -360,10 +360,10 @@ void save_network(){
  WFM::SCRSetDefault (old_SCR);
 
  if(ReadInstallInf()){
-  string hwcfgname = CreateHardwareFile();
-  string ifcfg = getIfcName(hwcfgname, hwcfg[sformat("HWD_INTERFACE_%1", tointeger(hwcfg["HWD_INTERFACE_N"]:"0")-1)]:"" );
+//  string hwcfgname = CreateHardwareFile();
+  string ifcfg = sformat("ifcfg-%1", InstallInf["netdevice"]:""); //getIfcName(hwcfg[sformat("HWD_INTERFACE_%1", tointeger(hwcfg["HWD_INTERFACE_N"]:"0")-1)]:"" );
 
-  CreateIfcfg(hwcfgname, ifcfg);
+  CreateIfcfg(ifcfg);
   CreateOtherNetworkFiles();
 
   SCR::Execute(.target.bash, "chkconfig network on");

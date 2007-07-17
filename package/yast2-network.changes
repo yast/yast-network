@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jul 17 07:37:01 CEST 2007 - mzugec@suse.de
+
+- no more hwcfg files, don't use getcfg (#292085)
+- 2.15.48 
+
+-------------------------------------------------------------------
 Fri Jul 13 22:02:40 CEST 2007 - kmachalkova@suse.cz
 
 - Address dialog adapted for 80x25 terminal screen 

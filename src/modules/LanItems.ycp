@@ -206,11 +206,14 @@ global void ReadNetworkInterfaces(){
     NetworkDevices::CleanHotplugSymlink();
     foreach(string tmpdevname, (list<string>)Map::Keys(NetworkDevices::FilterDevices("netcard")["eth"]:$[]), {
      string confname = NetworkDevices::device_name("eth", tmpdevname);
-     map config = getcfg(confname, "");
+y2internal("confname %1", confname);
+
+//     map config = getcfg(confname, "");
      integer pos = nil;
      map<string, any> val = $[];
      foreach(integer key, map<string, any> value, (map<integer, map<string, any> >)Items, {
-	 if (config["HWD_DEVICEPATH"]:"" == sformat("/sys%1", value["hwinfo", "sysfs_id"]:"")) {
+//	 if (config["HWD_DEVICEPATH"]:"" == sformat("/sys%1", value["hwinfo", "sysfs_id"]:"")) {
+	if (value["hwinfo", "dev_name"]:""==confname) {
 		pos = key;
 		val = value;
 	 }
@@ -219,7 +222,7 @@ global void ReadNetworkInterfaces(){
 		pos=size(Items);
 		Items[pos]=$[];
 		}
-	Items[pos, "hwcfg"] = val[sformat("HWD_INTERFACE_%1", tointeger(val["HWD_INTERFACE_N"]:"0")-1)]:"";
+//	Items[pos, "hwcfg"] = val[sformat("HWD_INTERFACE_%1", tointeger(val["HWD_INTERFACE_N"]:"0")-1)]:"";
 	Items[pos, "ifcfg"] = confname;
     });
 }
@@ -287,6 +290,10 @@ global string GetItemDescription(){
  return Items[current, "table_descr", "rich_descr"]:"";
 }
 
+
+global map getCurrentItem(){
+ return Items[current]:$[];
+}
 
 /**
  * Check if the given device has any virtual alias.
