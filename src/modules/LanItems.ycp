@@ -206,7 +206,6 @@ global void ReadNetworkInterfaces(){
     NetworkDevices::CleanHotplugSymlink();
     foreach(string tmpdevname, (list<string>)Map::Keys(NetworkDevices::FilterDevices("netcard")["eth"]:$[]), {
      string confname = NetworkDevices::device_name("eth", tmpdevname);
-y2internal("confname %1", confname);
 
 //     map config = getcfg(confname, "");
      integer pos = nil;
@@ -225,11 +224,13 @@ y2internal("confname %1", confname);
 //	Items[pos, "hwcfg"] = val[sformat("HWD_INTERFACE_%1", tointeger(val["HWD_INTERFACE_N"]:"0")-1)]:"";
 	Items[pos, "ifcfg"] = confname;
     });
+ y2milestone("LanItems::Items %1", Items);
 }
 
 list GetDescr(){
  list descr = [];
  foreach(integer key, map<string, any> value, (map<integer, map<string, any> >)Items, {
+
   if ( haskey(value, "table_descr") && size(Items[key, "table_descr"]:$[])>1)
 	descr = add(descr, $["id":key,
 				"rich_descr":Items[key, "table_descr", "rich_descr"]:"",
@@ -239,50 +240,110 @@ list GetDescr(){
  return descr;
 }
 
+void BuildLanOverview() {
+    map startmode_descrs = $[
+	// summary description of STARTMODE=auto
+	"auto": _("Started automatically at boot"),
+	// summary description of STARTMODE=hotplug
+	"hotplug": _("Started automatically at boot"),
+	// summary description of STARTMODE=ifplugd
+	"ifplugd": _("Started automatically on cable connection"),
+	// summary description of STARTMODE=managed
+	"managed": _("Managed by NetworkManager"),
+	// summary description of STARTMODE=off
+	"off"	: _("Will not be started at all")
+	];
+
+
+  foreach(integer key, (list<integer>)Map::Keys(Items), {
+   string rich = "";
+   string ip =  _("Not configured");
+   string descr = HardwareName (Hardware, Items[key, "hwinfo", "udi"]:"");
+   descr = CheckEmptyName (type, descr);
+   list <string> bullets = [];
+
+   if (hasAnyValue(Items[key, "ifcfg"]:"") ){
+    NetworkDevices::Select(Items[key, "ifcfg"]:"");
+    type = NetworkDevices::device_type(NetworkDevices::Name);
+    string dev = NetworkDevices::device_name(type, NetworkDevices::Name);
+    ip = DeviceProtocol(NetworkDevices::Current);
+
+
+
+    string startmode_descr = startmode_descrs[NetworkDevices::Current["STARTMODE"]:""]:_("Started manually");
+
+		bullets =  [
+		    sformat(_("Device Name: %1"), dev),
+		    startmode_descr,
+		    ];
+		if (NetworkDevices::Current["STARTMODE"]:"" != "managed")
+		{
+                 if (ip != "NONE")
+		  {
+		    bullets = bullets + [
+			ip == "DHCP" ? _("IP address assigned using DHCP") :
+			sformat(_("IP address: %1, subnet mask %2")
+				, ip, NetworkDevices::Current["NETMASK"]:""),
+			];
+		  }
+	// build aliases overview
+	if (size(NetworkDevices::Current["_aliases"]:$[])>0 && !NetworkService::IsManaged()){
+	 foreach(string key,   map<string, any> desc, (map<string ,map<string, any> >) NetworkDevices::Current["_aliases"]:$[], {
+	 string parameters = sformat(_("IP address: %1, subnet mask %2"), desc["IPADDR"]:"", desc["NETMASK"]:"");
+	 bullets = add(bullets, sformat("%1 (%2)", key, parameters) );
+	 });
+	}
+		}
+
+                // build the "Bond Slaves" entry of rich box
+		if (type == "bond")
+		{
+/*
+			string slaves = "";
+			foreach (string key, any value, (map<string, any>)v, {
+				if ((value != nil) && (regexpmatch(key, "BONDING_SLAVE[0-9]")))
+					slaves = slaves + ((slaves != "") ? ", " : "") + (string)value;
+			});
+			if (slaves != "")
+				bullets = bullets + [_("Bond slaves")+ " : " + slaves];
+*/
+		}
+
+        }
+	string conn = HTML::Bold ( (Items[key, "hwinfo", "link"]:false == true)?"":_("(not connected)") );
+	string mac_dev="";
+	if (hasAnyValue(Items[key, "hwinfo", "mac"]:"")) mac_dev= HTML::Bold ("MAC : ") + Items[key, "hwinfo", "mac"]:"" + "<br>";
+	 else if (hasAnyValue(Items[key, "hwinfo", "busid"]:"")) mac_dev= HTML::Bold ("BusID : ") + Items[key, "hwinfo", "busid"]:"" + "<br>";
+		rich = " " + conn + "<br>" + mac_dev;
+		rich = HTML::Bold ( descr ) + rich;
+
+   if (!hasAnyValue(Items[key, "hwinfo", "dev_name"]:""))
+		rich = rich + _("<p>Unable to configure network card because kernel device is not present</p>");
+	else if (hasAnyValue(Items[key, "ifcfg"]:"") ) rich = rich + HTML::List (bullets);
+		else rich = rich + _("<P><UL><LI>The device is not configured</LI><LI>Press <B>Configure</B
+> to configure</LI></UL></P>");
+
+
+    Items[key, "table_descr"] = $[
+		"rich_descr" : rich,
+		"table_descr": [descr, ip]
+		];
+   });
+}
+
+
 /**
  * Create an overview table with all configured devices
  * @return table items
  */
 global list Overview() {
- list unconfigured = Map::Keys(Items);
-
- foreach( term card, (list<term>) BuildOverview("netcard", Hardware), {
-  string id = card[0,0]:"";
-  list desc = [ card[1]:"", card[2]:""];
-  foreach(integer key, (list<integer>)Map::Keys(Items), {
-   if (Items[key, "ifcfg"]:"" == id && hasAnyValue(id)){
-    Items[key, "table_descr"] = $[
-		"rich_descr" : card[3]: (desc[1]:_("Unknown")),
-		"table_descr": desc
-		];
-    unconfigured = filter(integer row, (list<integer>)unconfigured, {return(row!=key);});
-    }
-   });
-  });
-
- list unconf_hwinfo=[];
- foreach(integer row, (list<integer>)unconfigured, {
-  unconf_hwinfo = add(unconf_hwinfo, Items[row, "hwinfo"]:$[]);
- });
- list <map<string,any> > unconf = BuildUnconfiguredCommon (unconf_hwinfo, "netcard");
- integer pos=0;
-  foreach(integer key, map<string, any> value, (map<integer, map<string, any> >)Items, {
-   if (size(value["ifcfg"]:"")==0) {
-    Items[key, "table_descr"] = $[
-		"rich_descr" : unconf[pos, "rich_descr"]:_("Unknown"),
-		"table_descr": unconf[pos, "table_descr"]:[]
-		];
-    pos=pos+1;
-   }
-   });
-
+ BuildLanOverview();
  return GetDescr();
 }
 
 global boolean IsItemConfigured(){
  boolean ret = false;
  if (size(Items[current, "ifcfg"]:"")>0) ret = true;
- y2internal("item %1 configured: %2", current, ret);
  return ret;
 }
 

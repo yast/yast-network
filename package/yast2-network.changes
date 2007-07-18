@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jul 18 14:50:48 CEST 2007 - mzugec@suse.cz
+
+- disallow to configure card without kernel device
+- copy udev rules for persistent names on installed system
+- 2.15.49 
+
+-------------------------------------------------------------------
 Tue Jul 17 07:37:01 CEST 2007 - mzugec@suse.de
 
 - no more hwcfg files, don't use getcfg (#292085)

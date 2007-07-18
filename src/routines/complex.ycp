@@ -518,12 +518,6 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 	// summary description of STARTMODE=off
 	"off"	: _("Will not be started at all")
 	];
-/*
-    list<string> models = [];
-    foreach(map<string, any>row, (list<map<string, any> >)SCR::Read (.probe.netcard), {
-     models=add(models, row["model"]:"");
-    });
-*/
 
     maplist(string type, map devmap, Devs, {
 	maplist(string k, map v, (map<string,map>)devmap, {

@@ -355,6 +355,13 @@ void save_network(){
 	"/var/lib/dhcpcd",
 	String::Quote (Installation::destdir)));
 
+ // --------------------------------------------------------------
+ // Copy udev rules for persistent names
+ WFM::Execute (.local.bash, sformat (
+	"mkdir -p '%2%1'; /bin/cp -p %1/70-net_persistent_names.rules '%2%1'",
+	"/etc/udev/rules.d",
+	String::Quote (Installation::destdir)));
+
  // close and chroot back
  WFM::SCRClose (new_SCR);
  WFM::SCRSetDefault (old_SCR);
