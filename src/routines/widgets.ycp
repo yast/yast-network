@@ -184,21 +184,12 @@ _("<p><b><big>Device Activation</big></b></p>
 
 
 define string GetDeviceDescription(string device_id) {
-	// get sysfs patch for device
-	string sysfs = ((map<string, any>)SCR::Execute(.target.bash_output, sformat("getcfg %1|grep '^HWD_DEVICEPATH' |cut -d '\"' -f2|tr -d '\\n'", device_id)))["stdout"]:"";
-	// get vendorID, deviceID from sysfs path
-	string vendor = deletechars((string) SCR::Read(.target.string, sformat("%1/vendor", sysfs)), "\n");
-	string device  = deletechars((string) SCR::Read(.target.string, sformat("%1/device", sysfs)), "\n");
-	vendor=splitstring(vendor, "x")[1]:"";
-	device=splitstring(device, "x")[1]:"";
-	// get device name from vendorID, deviceID
-	string device_name = ((map<string, any>) SCR::Execute(.target.bash_output, sformat("echo $(grep -i '%1  ' /usr/share/pci.ids |cut -d' ' -f3-) $(grep -i '%1 %2' /usr/share/pci.ids |cut -d ' ' -f4-)|tr -d '\\n'", vendor, device)))["stdout"]:"";
-y2internal("device_name %1", device_name);
-//    string device_name = NetworkDevices::GetValue(device_id,"NAME");
+    string device_name = NetworkDevices::GetValue(device_id,"NAME");
     if ( (device_name == nil) || (device_name == "") ) {
         //TRANSLATORS: Informs that device name is not known
         device_name = _("Unknown device");
     }
+    y2milestone ("device_name %1", device_name);
     //avoid too long device names
     if (size(device_name) > 30) {
         device_name = substring (device_name, 0, 27) + "...";
@@ -241,8 +232,8 @@ term getDeviceContens(string selected){
 return `VBox(
         `VSpacing(1),
         `Left(`Label(`id(`net_device), GetDeviceDescription(selected))),
-        `Right(`PushButton(`id(`net_expert), _("&Change Device"))),
-        `VSpacing(1)
+        `Right(`PushButton(`id(`net_expert), _("&Change Device")))
+     //   `VSpacing(1)
     );
 }
 
