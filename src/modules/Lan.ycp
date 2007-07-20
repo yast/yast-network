@@ -292,18 +292,14 @@ global boolean ReadWithCache () {
 global void SetIPv6(boolean status){
     if(ipv6 != status) {
 	 ipv6=status;
+	Popup::Warning(_("To apply this change reboot is needed."));
          LanItems::SetModified();
     }
 }
 
 void writeIPv6(){
- if (ipv6){
-  SCR::Execute(.target.string, "#install ipv6 /bin/true", "/etc/modprobe.d/ipv6");
-  SCR::Write(.sysconfig.windowmanager.KDE_USE_IPV6, "yes");
- } else {
-	 SCR::Execute(.target.string, "install ipv6 /bin/true", "/etc/modprobe.d/ipv6");
-         SCR::Write(.sysconfig.windowmanager.KDE_USE_IPV6, "no");
-        }
+  SCR::Write(.target.string, "/etc/modprobe.d/ipv6", sformat("%1install ipv6 /bin/true", ipv6?"#":""));
+  SCR::Write(.sysconfig.windowmanager.KDE_USE_IPV6, ipv6?"yes":"no");
 }
 
 
@@ -517,7 +513,8 @@ global define list Summary(string mode) {
 
     boolean split = (mode == "split");
 
-    list sum = BuildSummary("netcard", LanItems::Hardware, split, mode == "proposal");
+//    list sum = BuildSummary("netcard", LanItems::Hardware, split, mode == "proposal");
+    list sum = LanItems::BuildLanOverview();
 
     /* Testing improved summary */
     if(mode == "summary")
@@ -609,7 +606,6 @@ global define boolean Edit(string name) {
     LanItems::interfacename = NetworkDevices::Name;
     return true;
 }
-
 /**
  * Delete the given device
  * @param name device to delete
@@ -656,6 +652,8 @@ define boolean UseNetworkManager () {
 
     boolean nm_installed = Package::Installed ("NetworkManager");
     y2milestone ("NetworkManager wanted: %1, installed: %2", nm_default, nm_installed);
+// NETWORK MANAGER force disabled
+nm_default=false;
     return nm_default && nm_installed;
 }
 
@@ -666,17 +664,16 @@ define boolean UseNetworkManager () {
  */
 define void ProposeNMInterfaces () {
     y2milestone ("Minimal ifcfgs for NM");
-    foreach (map hwitem, LanItems::Hardware, {
-	Add ();
-
-	LanItems::SelectHWMap (hwitem);
-	LanItems::SetDefaultsForHW ();
-	LanItems::ipaddr = "";
-	LanItems::bootproto = "dhcp";
-	// will say "Device already present" for existing because of Add,
-	// which is what we want
-	LanItems::Commit ();
+    foreach (integer number, any lanitem, LanItems::Items, {
+	if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) {
+	LanItems::current = number;
+	if (!LanItems::IsItemConfigured()){
+y2internal("not configured - will configure %1", LanItems::getCurrentItem());
+	  LanItems::ProposeItemConfiguration();
+	 }
+	}
     });
+
 }
 
 /**
@@ -706,31 +703,51 @@ global define boolean ProposeInterfaces () {
 	return true;
     }
 
+
     /* Something is already configured -> do nothing */
-    list<string> devs = NetworkDevices::List("netcard");
-    if(size(devs) > 0) {
-	y2milestone("Something already configured: don't propose.");
-	y2milestone("devs=%1", devs);
-	return false;
-    }
+    foreach (integer number, any lanitem, LanItems::Items, {
+//	if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) {
+	LanItems::current = number;
+	if (LanItems::IsItemConfigured()){
+	 y2milestone("Something already configured: don't propose.");
+//	 y2milestone("devs=%1", devs);
+	 return false;
+        }
+//       }
+      });
 
-    Add();
 
-    map tosel = nil;
+    foreach (integer number, any lanitem, LanItems::Items, {
+	if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) {
+	LanItems::current = number;
+	if (!LanItems::IsItemConfigured()){
+y2internal("not configured - will configure");
+	  LanItems::ProposeItemConfiguration();
+	  break;
+	 }
+	}
+    });
+
+
+
+
+//    Add();
+
+//    map tosel = nil;
 
     /* Some HW found -> use it for proposal */
-    if(size(LanItems::Hardware) > 0) {
+//    if(size(LanItems::Hardware) > 0) {
 //         if (Arch::s390()){
 //         tosel =  FindMatchingDevice( $["device":sformat("%1-id-%2",InstallInf["module"]:"", InstallInf["hwaddr"]:"")] );
 //        }
 //          else 
-		tosel =  LanItems::FindMatchingDevice($[]);
+//		tosel =  LanItems::FindMatchingDevice($[]);
 
-    }
+//    }
         
 
-    y2debug("Hardware=%1", LanItems::Hardware);
-    y2milestone ("Selected HW w/o  install.inf patches: %1", tosel);
+//    y2debug("Hardware=%1", LanItems::Hardware);
+//    y2milestone ("Selected HW w/o  install.inf patches: %1", tosel);
 
 /*
     // do not select a card without a driver, #29296
@@ -800,56 +817,57 @@ global define boolean ProposeInterfaces () {
 // This is proposal. also need to do it with
 // - add from ui: detected and undetected
 // - autoyast
-    LanItems::SetDefaultsForHW ();
+//    LanItems::SetDefaultsForHW ();
 
     // #145041
 //    ethtool_options = InstallInf["ethtool_options"]:"";
 
     // #176804
+/*
     if (NetworkStorage::isDiskOnNetwork ( NetworkStorage::getDevice("/") ))
     {
 	LanItems::startmode = "nfsroot";
 	y2milestone ("startmode nfsroot");
     }
-
+*/
 //    ipaddr = InstallInf["ipaddr"]:"";
 //    bootproto = InstallInf["bootproto"]:"static";
-    y2debug("ipaddr,bootproto=%1,%2", LanItems::ipaddr, LanItems::bootproto);
-    if(LanItems::bootproto == "static" && LanItems::ipaddr != "" && LanItems::ipaddr != nil) {
+//    y2debug("ipaddr,bootproto=%1,%2", LanItems::ipaddr, LanItems::bootproto);
+//    if(LanItems::bootproto == "static" && LanItems::ipaddr != "" && LanItems::ipaddr != nil) {
 
-	y2milestone("static proposal");
+//	y2milestone("static proposal");
 
 	/* propose address setup from /etc/install.inf */
 //	netmask = InstallInf["netmask"]:"";
-	if(LanItems::netmask == nil || LanItems::netmask == "")
-	    LanItems::netmask = "255.255.255.0";
-    }
-    else {
+//	if(LanItems::netmask == nil || LanItems::netmask == "")
+//	    LanItems::netmask = "255.255.255.0";
+//    }
+//    else {
 	/* Propose static config in case of DSL hardware is found */
-	list pppoe = (list) SCR::Read(.probe.pppoe);
+//	list pppoe = (list) SCR::Read(.probe.pppoe);
 	// FIXME: testing pppoe = [ $["a" : "b"] ];
-	map pppoedev = pppoe[0]:$[];
-	y2milestone ("pppoe=%1", pppoe);
-	if(pppoe != nil && size(pppoe) > 0) {
-	    y2milestone("DSL proposal");
-	    LanItems::ipaddr = "";
-	    LanItems::bootproto = "static";
-	}
-	else {
+//	map pppoedev = pppoe[0]:$[];
+//	y2milestone ("pppoe=%1", pppoe);
+//	if(pppoe != nil && size(pppoe) > 0) {
+//	    y2milestone("DSL proposal");
+//	    LanItems::ipaddr = "";
+//	    LanItems::bootproto = "static";
+//	}
+//	else {
 	    // Open Enterprise Server does not like DHCP (#50524).
 	    // In that case, we cannot propose.
-	    if (ProductFeatures::GetBooleanFeature ("network", "force_static_ip"))
-	    {
-		y2milestone ("Static config forced but no info available -> no proposal.");
-		return false;
-	    }
-	    y2milestone("DHCP proposal");
-	    LanItems::ipaddr = "";
-	    LanItems::bootproto = "dhcp";
-	}
-    }
+//	    if (ProductFeatures::GetBooleanFeature ("network", "force_static_ip"))
+//	    {
+//		y2milestone ("Static config forced but no info available -> no proposal.");
+//		return false;
+//	    }
+//	    y2milestone("DHCP proposal");
+//	    LanItems::ipaddr = "";
+//	    LanItems::bootproto = "dhcp";
+//	}
+//    }
 
-    LanItems::Commit();
+//    LanItems::Commit();
 
     y2milestone("NetworkConfig::Config=%1", NetworkConfig::Config);
     y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);

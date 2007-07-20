@@ -6,6 +6,7 @@ textdomain "network";
 import "NetworkDevices";
 import "ProductFeatures";
 import "NetworkConfig";
+import "NetworkStorage";
 include "network/complex.ycp";
 include "network/routines.ycp";
 
@@ -240,7 +241,9 @@ list GetDescr(){
  return descr;
 }
 
-void BuildLanOverview() {
+global list BuildLanOverview() {
+    list<string> overview=[];
+    list<string> links=[];
     map startmode_descrs = $[
 	// summary description of STARTMODE=auto
 	"auto": _("Started automatically at boot"),
@@ -264,10 +267,11 @@ void BuildLanOverview() {
 
    if (hasAnyValue(Items[key, "ifcfg"]:"") ){
     NetworkDevices::Select(Items[key, "ifcfg"]:"");
-    type = NetworkDevices::device_type(NetworkDevices::Name);
+//    type = NetworkDevices::device_type(NetworkDevices::Name);
+    type = Items[key, "hwinfo", "type"]:"";
     string dev = NetworkDevices::device_name(type, NetworkDevices::Name);
     ip = DeviceProtocol(NetworkDevices::Current);
-
+    string status = DeviceStatus(type, NetworkDevices::device_num(NetworkDevices::Name), NetworkDevices::Current);
 
 
     string startmode_descr = startmode_descrs[NetworkDevices::Current["STARTMODE"]:""]:_("Started manually");
@@ -308,8 +312,26 @@ void BuildLanOverview() {
 				bullets = bullets + [_("Bond slaves")+ " : " + slaves];
 */
 		}
+y2internal("%1\n%2", type, NetworkDevices::Current);
+		if (type == "wlan" &&
+		    !(NetworkDevices::Current["WIRELESS_AUTH_MODE"]:"" != "open") &&
+		    !hasAnyValue(NetworkDevices::Current["WIRELESS_KEY_0"]:""))
+		{
+		    // avoid colons
+		    dev = mergestring (splitstring (dev, ":"), "/");
+		    string href = "lan--wifi-encryption-" + dev;
+		    // interface summary: WiFi without encryption
+		    string warning = HTML::Colorize (_("Warning: no encryption is used."), "red");
+		    status = status + " " + warning + " " +
+			// Hyperlink: Change the configuration of an interface
+			Hyperlink (href, _("Change."));
+		    links = add (links, href);
+		}
 
-        }
+    overview = add(overview, Summary::Device(descr, status));
+        } else
+		overview = add(overview, Summary::Device(descr, Summary::NotConfigured()));
+
 	string conn = HTML::Bold ( (Items[key, "hwinfo", "link"]:false == true)?"":_("(not connected)") );
 	string mac_dev="";
 	if (hasAnyValue(Items[key, "hwinfo", "mac"]:"")) mac_dev= HTML::Bold ("MAC : ") + Items[key, "hwinfo", "mac"]:"" + "<br>";
@@ -329,6 +351,7 @@ void BuildLanOverview() {
 		"table_descr": [descr, ip]
 		];
    });
+ return [ Summary::DevicesList(overview), links ];
 }
 
 
@@ -503,6 +526,7 @@ global map GetDefaultsForHW () {
  * must be in sync with @ref GetDefaultsForHW
  */
 global define void SetDefaultsForHW () {
+y2internal("SetDefaultsForHW type %1", type);
     if (type == "wlan")
     {
 	usercontrol = true;
@@ -511,12 +535,13 @@ global define void SetDefaultsForHW () {
     {
 	mtu = "1492";
     }
-
+/*
  if (!needHwcfg(hw)){
 		nm_name_old = nm_name;
 		nm_name = "";
 	}
  y2milestone("hwcfg name %1", nm_name);
+*/
 }
 
 string GetDeviceVar (map primary, map fallback, string key) {
@@ -677,7 +702,7 @@ global define boolean Select(string dev) {
     y2debug("dev=%1", dev);
     map devmap = $[];
     /* dev=="" -> Add */
-    if(dev == "") {
+//    if(dev == "") {
 	// defaults for a new device
 	devmap = $[
 	    "STARTMODE": "auto",	// #115448, #156388
@@ -696,12 +721,13 @@ global define boolean Select(string dev) {
 	    devmap["STARTMODE"] = product_startmode;
 	}
 
-	type = "eth";
+	type = LanItems::Items[LanItems::current, "hwinfo", "type"]:"eth";
+//        type = "eth0";
 	device = NetworkDevices::GetFreeDevice(type);
 
 	// FIXME: MOD AddModule(type);
-	NetworkModules::AddM();
-	nm_name = NetworkModules::GetFreeName("static-");
+//	NetworkModules::AddM();
+//	nm_name = NetworkModules::GetFreeName("static-");
 
 	NetworkDevices::Name = GetItemUdev()[1]:"";
 	LanItems::Items[LanItems::current, "ifcfg"] = NetworkDevices::Name;
@@ -711,29 +737,21 @@ global define boolean Select(string dev) {
 
 	/* FIXME: alias: how to prefill new alias? */
 	alias = "";
-    }
+//    }
     /* dev!="" -> Edit */
+/* FIXME: NI:
     else {
-	/* FIXME: NI:
 	if(!CheckDevice(dev)) {
 	    y2error("Device not found: %1", dev);
 	    return false;
 	}
-	*/
 	NetworkDevices::Edit(dev);
 	devmap = NetworkDevices::Current;
 	type = NetworkDevices::device_type(dev);
 	device = NetworkDevices::device_num(dev);
 	alias = NetworkDevices::alias_num(dev);
-	nm_name = devmap["_nm_name"]:"";
-
-	if (nm_name==""){
-	 nm_name="";
-	 NetworkModules::AddM();
-	 nm_name_old = NetworkModules::GetFreeName("static-");
-	}
     }
-
+*/
     /* general stuff */
     description = BuildDescription (type, device, devmap, Hardware);
 
@@ -834,7 +852,7 @@ global define boolean Commit() {
 	}
 
 //	if(unique != "" && unique != nil) newdev["udi"] = unique;
-
+/*
 	if(hotplug == "") {
 	    if(alias == "") {
 		// FIXME: MOD ChangeModule(NetworkDevices::device_name(type, device), operation == `add);
@@ -903,6 +921,7 @@ global define boolean Commit() {
 			else Items[current, "hwcfg"]="";
 	    }
 	}
+*/
 
 	if(hotplug == "pcmcia") newdev["DHCLIENT_SET_DOWN_LINK"] = "yes";
 
@@ -966,7 +985,7 @@ global define boolean Commit() {
 	    newdev["WIRELESS_POWER"] = wl_power ? "yes" : "no";
 	}
 
-	if(hasAnyValue(nm_name)) newdev["_nm_name"] = nm_name;
+//	if(hasAnyValue(nm_name)) newdev["_nm_name"] = nm_name;
 
 	if(DriverType (type) == "ctc")
 	    if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 40)
@@ -982,15 +1001,10 @@ global define boolean Commit() {
 	    newdev["_aliases"] = aliases;
 	    y2milestone("aliases %1", aliases);
 	}
-//	    NetworkDevices::Name = NetworkDevices::device_name(NetworkDevices::RealType(type, hotplug), device);
-//	    NetworkDevices::Name = interfacename;
-//	}
-//	else
-//	    NetworkDevices::Name = NetworkDevices::alias_name(NetworkDevices::RealType(type, hotplug), device, alias);
 
 	NetworkDevices::Name = interfacename;
 	NetworkDevices::Current = newdev;
-	NetworkDevices::Commit();
+	if (NetworkDevices::Commit()) Items[current, "ifcfg"]=interfacename;
     }
     else {
 	y2error("Unknown operation: %1", operation);
@@ -1215,7 +1229,7 @@ global void SetItem(){
  interfacename = Items[current, "ifcfg"]:"";
  NetworkDevices::Edit(Items[current, "ifcfg"]:"");
  map devmap = NetworkDevices::Current;
- type = NetworkDevices::device_type(Items[current, "ifcfg"]:"");
+ type = Items[current, "hwinfo", "type"]:"";
  device = NetworkDevices::device_num(Items[current, "ifcfg"]:"");
  alias = NetworkDevices::alias_num(Items[current, "ifcfg"]:"");
  nm_name = Items[current, "hwcfg"]:"";
@@ -1273,6 +1287,27 @@ global void SetItem(){
 global void AddNew(){
  y2internal("Name %1", NetworkDevices::Name);
  current = size(Items)+1;
+}
+
+global boolean ProposeItemConfiguration(){
+ y2milestone("Propose configuration for %1", getCurrentItem());
+  operation = nil;
+  if(Select("") != true) return false;
+  SetDefaultsForHW ();
+  ipaddr = "";
+  bootproto = "dhcp";
+    // #176804
+    if (NetworkStorage::isDiskOnNetwork ( NetworkStorage::getDevice("/") ))
+    {
+	startmode = "nfsroot";
+	y2milestone ("startmode nfsroot");
+    }
+  NetworkDevices::Add();
+  operation = `edit;
+  interfacename=getCurrentItem()["hwinfo", "dev_name"]:"";
+  Commit ();
+ y2milestone("After configuration propose %1", getCurrentItem());
+ return true;
 }
 
 }

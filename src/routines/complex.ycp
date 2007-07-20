@@ -184,7 +184,8 @@ integer id=0;
  */
 define list<any> BuildSummary(string devregex, list<map> Hardware, boolean split, boolean link) {
     map <string, map> Devs = NetworkDevices::FilterDevices (devregex);
-    return BuildSummaryDevs (Devs, Hardware, split, link);
+    list <any> ret = BuildSummaryDevs (Devs, Hardware, split, link);
+ return ret;
 }
 
 /**

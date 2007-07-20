@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Jul 20 18:19:27 CEST 2007 - mzugec@suse.de
+
+- disable to configure card without kernel device
+- fixed interface proposal (#292401)
+- write ipv6 correctly (#288744)
+- improved firmware database
+- 2.15.50 
+
+-------------------------------------------------------------------
 Wed Jul 18 14:50:48 CEST 2007 - mzugec@suse.cz
 
 - disallow to configure card without kernel device

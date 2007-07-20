@@ -116,20 +116,21 @@ define boolean AddInterface () {
     //non-empty keys are firmware packages shipped by SUSE
     map <string, string> request_firmware = $[
 	"atmel_pci" : "atmel-firmware",
-	"atmel_cs" : "atmel-firmware",
-	"bcm43xx" : "",
+	"atmel_cs"  : "atmel-firmware",
+	"at76_usb"  : "atmel-firmware",
 	"ipw2100" : "ipw-firmware",
 	"ipw2200" : "ipw-firmware",
+	"ipw3945" : "ipw-firmware",
+	"iwlwifi" : "ipw-firmware",
+	"bcm43xx" : "",
 	"prism54" : "",
 	"spectrum_cs" : "",
 	"zd1201" : "",
 	"zd1211rw" : "",
 	"acx" : "",
-	"at76_usb" : "atmel-firmware",
-	"ipw3945" : "ipw-firmware",
 	"rt61pci" : "",
 	"rt73usb" : "",
-	"rt73" : "",
+	"prism54usb":""
     ];
 
     Lan::Add ();
@@ -183,12 +184,18 @@ once you have installed the firmware.")));
 }
 
 
-define void IPv6Init (string key) {
+define void initIPv6 (string key) {
     UI::ChangeWidget (`id (`ipv6), `Value, Lan::ipv6 ? true : false);
 }
 
-define void IPv6Store (string key, map event) {
-   if ((boolean) UI::QueryWidget (`id (`ipv6), `Value)) 
+
+define symbol handleIPv6( string key, map event ) {
+ if (event["EventReason"]:""=="ValueChanged") Lan::SetIPv6((boolean)UI::QueryWidget (`id (`ipv6), `Value));
+ return nil;
+}
+
+define void storeIPv6 (string key, map event) {
+   if ((boolean) UI::QueryWidget (`id (`ipv6), `Value))
 	Lan::SetIPv6(true);
    else
 	Lan::SetIPv6(false);
@@ -343,12 +350,13 @@ map<string, map<string,any> > wd = $[
 	    "widget": `custom,
 	    "custom_widget" :
 		`Frame ( _("IPv6 Protocol Settings"),
-		    `Left(`CheckBox(`id(`ipv6), _("Enable IPv6")))
+		    `Left(`CheckBox(`id(`ipv6), `opt(`notify), _("Enable IPv6")))
 		),
 	    "opt": [],
 	    "help": help["ipv6"]:"",
-	    "init": IPv6Init,
-	    "store": IPv6Store,
+	    "init": initIPv6,
+	    "handle": handleIPv6,
+	    "store": storeIPv6,
 	    ],
 	  "OVERVIEW" : $[
 	    "widget" : `custom,
