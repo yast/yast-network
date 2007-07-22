@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Sun Jul 22 14:03:23 CEST 2007 - mzugec@suse.de
+
+- fixed testsuite 
+
+-------------------------------------------------------------------
 Fri Jul 20 18:19:27 CEST 2007 - mzugec@suse.de
 
 - disable to configure card without kernel device
