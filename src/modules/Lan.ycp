@@ -652,8 +652,6 @@ define boolean UseNetworkManager () {
 
     boolean nm_installed = Package::Installed ("NetworkManager");
     y2milestone ("NetworkManager wanted: %1, installed: %2", nm_default, nm_installed);
-// NETWORK MANAGER force disabled
-nm_default=false;
     return nm_default && nm_installed;
 }
 

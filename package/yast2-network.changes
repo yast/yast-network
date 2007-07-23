@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jul 23 13:54:32 CEST 2007 - mzugec@suse.de
+
+- fixed - ability to set encryption for wlan cards
+- "no encryption is used" reported for an ethernet card (#257974)
+- 2.15.51 
+
+-------------------------------------------------------------------
 Sun Jul 22 14:03:23 CEST 2007 - mzugec@suse.de
 
 - fixed testsuite 

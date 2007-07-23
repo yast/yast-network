@@ -418,7 +418,8 @@ define string DeviceStatus(string devtype, string devnum, map devmap) {
 	    string addr = devmap["IPADDR"]:"";
 	    string host = NetHwDetection::ResolveIP (addr);
 	    string remip = devmap["REMOTE_IPADDR"]:"";
-	    if(addr == "" || addr == nil)
+ 	 if (proto == "none") return _("Configured without address (NONE)");
+	  else if(!hasAnyValue(addr))
 		/* Network card status */
 		return HTML::Colorize (_("Warning: no encryption is used."), "red"); //sformat(_("Configured without an address"));
 	    else if(remip == "" || remip == nil)
