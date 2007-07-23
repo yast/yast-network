@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jul 23 22:48:24 CEST 2007 - mzugec@suse.de
+
+- improved text in remote.desktop (#230145) 
+
+-------------------------------------------------------------------
 Mon Jul 23 13:54:32 CEST 2007 - mzugec@suse.de
 
 - fixed - ability to set encryption for wlan cards
