@@ -19,17 +19,20 @@ import "RichText";
 import "Report";
 import "NetworkModules";
 import "LanItems";
+import "Map";
 
 list <map<string, any> > getConfigList(){
  list <map<string, any> > confList = [];
- integer count = 0;
- list<map<string,any> > overview = (list<map<string,any> >)LanItems::Overview();
- foreach(map<string, any> row, overview, {
-  confList = add(confList, $[tostring(count) : $["id" : row["id"]:"",
-				"rich_descr" : row["rich_descr"]:"",
-				"descr" : row["table_descr", 0]:"",
-				"addr" : row["table_descr", 1]:""]]);
-  count = count + 1;
+ //integer count = 0;
+ LanItems::BuildLanOverview();
+ //list<map<string,any> > overview = (list<map<string,any> >)LanItems::Overview();
+ foreach(integer position,any row, LanItems::Items, {
+  LanItems::current = position;
+  confList = add(confList, $[tostring(size(confList	)) : $["id" : position,
+				"rich_descr" : LanItems::getCurrentItem()["table_descr", "rich_descr"]:"",
+				"descr" : LanItems::getCurrentItem()["table_descr", "table_descr", 0]:"",
+				"addr" : LanItems::getCurrentItem()["table_descr", "table_descr", 1]:""]]);
+//  count = count + 1;
  });
  return confList;
 }
@@ -47,14 +50,13 @@ boolean validateId(map<string, string> options, list <map<string, any> > config)
  return true;
 }
 
-string getDev(map<string, string> options, list <map<string, any> > config){
- string dev="";
+integer getItem(map<string, string> options, list <map<string, any> > config){
+ integer ret = -1; 
  foreach(map<string, any> row, config, {
-  foreach(string row_num, map<string,any> dev_map, (map<string, map<string, any> > )row, {
-   if(options["id"]:"0"==row_num) dev = dev_map["id"]:"";
-  });
+   if(options["id"]:"0" == Map::Keys(row)[0]:"") ret = tointeger(Map::Keys(row)[0]:"-1");
  });
- return dev;
+ if(ret==-1)y2error("Device not matched!");
+ return ret;
 }
 
 
@@ -141,22 +143,6 @@ define boolean AddHandler(map<string, string> options) {
         }
 
 
-    map<string, any> settings = $[
-        "STARTMODE": LanItems::startmode,
-        "USERCONTROL": LanItems::usercontrol,
-        // problems when renaming the interface?
-        "FWZONE": "EXT",
-        "MTU": LanItems::mtu,
-        "BOOTPROTO": LanItems::bootproto,
-        "IPADDR": LanItems::ipaddr,
-        "NETMASK": LanItems::netmask,
-        "REMOTEIP": LanItems::remoteip,
-        "IFCFGTYPE": LanItems::type,
-        "IFCFGID": LanItems::device,
-        ];
-
-
-y2internal("%1", settings);
    CommandLine::Print(LanItems::type);
    CommandLine::Print(LanItems::bootproto);
    CommandLine::Print(LanItems::ipaddr);
@@ -188,9 +174,19 @@ y2internal("%1", settings);
  */
 define boolean EditHandler(map<string, string> options) {
    list <map<string, any> > config = getConfigList();
-   if (validateId(options, config)==false) return false;
-   string dev=getDev(options, config);
 
+   if (validateId(options, config)==false) return false;
+
+   LanItems::current = getItem(options, config);
+   LanItems::SetItem();
+
+  if (!(size(LanItems::getCurrentItem()["ifcfg"]:"")>0)){
+   NetworkDevices::Add();
+   LanItems::operation = `edit;
+   LanItems::interfacename=LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
+  }
+
+/*
 	    if (substring (dev, 0, 1) == "-") // unconfigured
 	    {
 		integer i = tointeger (substring (dev, 1));
@@ -218,6 +214,7 @@ the interface will no longer be managed by NetworkManager.
 		    LanItems::startmode = "ifplugd";
 		}
 	      }
+*/
 
     LanItems::bootproto = options["bootproto"]:"none";
     if (!contains(["none", "static", "dhcp"], LanItems::bootproto)){
@@ -238,20 +235,6 @@ the interface will no longer be managed by NetworkManager.
          return false;
         }
 
-    map<string, any> settings = $[
-        "STARTMODE": LanItems::startmode,
-        "USERCONTROL": LanItems::usercontrol,
-        // problems when renaming the interface?
-        "FWZONE": "EXT",
-        "MTU": LanItems::mtu,
-        "BOOTPROTO": LanItems::bootproto,
-        "IPADDR": LanItems::ipaddr,
-        "NETMASK": LanItems::netmask,
-        "REMOTEIP": LanItems::remoteip,
-        "IFCFGTYPE": LanItems::type,
-        "IFCFGID": LanItems::device,
-        ];
-   CommandLine::Print(sformat("%1 : %2", _("Changing Configuration for"), dev));
    CommandLine::Print(sformat("%1 :\t%2", _("Device Type"), LanItems::type));
    CommandLine::Print(sformat("%1 :\t%2", _("Bootproto"), LanItems::bootproto));
    CommandLine::Print(sformat("%1 :\t%2",_("IP Address"), LanItems::ipaddr));

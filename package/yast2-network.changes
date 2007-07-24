@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jul 24 15:05:58 CEST 2007 - mzugec@suse.cz
+
+- fixed command line
+- fixed help for ipv6
+- 2.15.52 
+
+-------------------------------------------------------------------
 Mon Jul 23 22:48:24 CEST 2007 - mzugec@suse.de
 
 - improved text in remote.desktop (#230145) 

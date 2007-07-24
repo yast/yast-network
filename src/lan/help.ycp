@@ -57,8 +57,8 @@ Then press <b>Configure</b> or <b>Delete</b> as desired.</p>
 _("<p><b><big>IPv6 Protocol Settings</big></b></p>
 <p>Check <b>Enable IPv6</b> to enable ipv6 module in the kernel.
 It is possible to use IPv6 together with IPv4. This is default option.
-To disable IPv6, uncheck this option and disable autoload of the kernel 
-module for ipv6. When ipv6 protocol is not used on your network, response 
+To disable IPv6, uncheck this option (this will blacklist kernel 
+module for ipv6). When ipv6 protocol is not used on your network, response 
 time can be faster.")
  +
 _("<p>All changes will be applied after reboot.</p>"),
