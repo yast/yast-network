@@ -31,8 +31,21 @@ Conflicts:	yast2-core < 2.10.6
 
 Summary:	Network configuration
 
-%description
--
+%package devel-doc
+
+@HEADER@
+
+Requires:	yast2-network >= 2.15.53
+
+Provides:	yast2-devel-doc
+Summary:	Developer documentation for yast2-network
+
+
+%description 
+Network configuration
+
+%description devel-doc
+Developer documentation for yast2-network
 
 @PREP@
 
@@ -70,7 +83,14 @@ fi
 @desktopdir@/*.desktop
 @scrconfdir@/*.scr
 @agentdir@/ag_udev_persistent
-%doc @docdir@
 @schemadir@/autoyast/rnc/networking.rnc
 @schemadir@/autoyast/rnc/host.rnc
 @schemadir@/autoyast/rnc/proxy.rnc
+
+%files devel-doc
+%defattr(-,root,root)
+%dir @docdir@
+%doc @docdir@
+%exclude @docdir@/COPYING
+%exclude @docdir@/COPYRIGHT.english
+%exclude @docdir@/README
