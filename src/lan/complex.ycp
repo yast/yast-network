@@ -132,7 +132,10 @@ define boolean AddInterface () {
 	"rt73usb" : "",
 	"prism54usb":""
     ];
-
+/*
+ Unsupported:
+rt61, rt2500, z1211
+*/
     Lan::Add ();
 
     LanItems::SelectHWMap(LanItems::getCurrentItem()["hwinfo"]:$[]);
@@ -234,7 +237,6 @@ void enableDisableButtons(){
 }
 
 void initOverview (string key) ``{
-y2internal("init");
 
     list<term> term_items = maplist (map<string,any> i, (list<map<string,any> >)LanItems::Overview(), {
         term t = `item (`id (i["id"]:-1));

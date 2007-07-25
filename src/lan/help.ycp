@@ -230,7 +230,98 @@ Leave empty not to send a hostname.</p>"),
 the <b>Netmask</b>.</p>") +
 
     /* Aliases dialog help 3/3, #83766 */
-    _("<p>Do not include the interface name in the alias name. For example, enter <b>foo</b> instead of <b>eth0:foo</b>.</p>")
+    _("<p>Do not include the interface name in the alias name. For example, enter <b>foo</b> instead of <b>eth0:foo</b>.</p>"),
+
+
+// shared between WirelessDialog and WirelessKeyPopup
+// this is suited to the button-switched key typing
+// Translators: dialog help
+"wep_key" :
+ _("<p>Choose among three <b>key input types</b> for your key.
+<br><b>Passphrase</b>: The key is generated from the phrase entered.
+<br><b>ASCII</b>: The ASCII values of the characters entered form the
+key. Enter 5 characters for 64-bit keys, up to 13
+characters for 128-bit keys, up to 16 characters for 156-bit keys, and
+up to 29 characters for 256-bit keys.
+<br><b>Hexadecimal</b>: Directly enter the hex codes of the key. Enter
+10 hex digits for 64-bit keys, 26 digits for 128-bit keys, 32 digits
+for 156-bit keys, and 58 digits for 256-bit keys. You can
+use hyphens ('-') to separate pairs or groups of digits, for example,
+'0a5f-41e6-48'.
+</p> "),
+
+    // Wireless dialog help
+"wireless":
+_("<p>Here, set the most important settings
+for wireless networking.</p>") +
+
+	// Wireless dialog help
+_("<p>The <b>Operating Mode</b> depends on the network topology. The mode
+can be <b>Ad-Hoc</b> (peer-to-peer network without an access point),
+<b>Managed</b> (network managed by an access point, sometimes also
+called <i>Infrastructure Mode</i>), or <b>Master</b> (the network card
+acts as an access point).</p>
+") +
+
+	// Wireless dialog help
+_("<p>Set the <b>Network Name (ESSID)</b> used to identify
+cells that are part of the same virtual network. All stations in a
+wireless LAN need the same ESSID to communicate with each other. If
+you choose the operation mode <b>Managed</b> and no <b>WPA</b> authentication mode,
+you can leave this field empty or set it to <tt>any</tt>. In this
+case, your WLAN card associates with the access point with the best
+signal strength.</p>
+") +
+
+	// Wireless dialog help
+_("<p>In some networks, you need to set an <b>Authentication Mode</b>.
+It depends on the protection technology used, WEP or WPA. <b>WEP</b>
+(Wired Equivalent Privacy) is a system to encrypt wireless network
+traffic with an optional authentication based on the encryption
+key used. In most cases where WEP is used, <b>WEP-Open</b> mode (no
+authentication at all) is fine. This does not mean that you cannot
+use WEP encryption (in that case use <b>No Encryption</b>). 
+Some networks may require <b>WEP-Shared Key</b> authentication. 
+NOTE: Shared key authentication makes it easier for a
+potential attacker to break into your network. Unless you have
+specific needs for shared key authentication, use the <b>Open</b>
+mode. Because WEP has been proven insecure, <b>WPA</b> (Wi-Fi Protected Access)
+was defined to close its security holes, but not all hardware supports
+WPA. If you want to use WPA, select <b>WPA-PSK</b> or <b>WPA-EAP</b> as the
+authentication mode. This is only possible in the operation mode
+<b>Managed</b>.</p>
+") +
+
+	// Wireless dialog help
+_("<p>To use WEP, enter the
+WEP encryption key to use. It can have a key
+length of 64, 128, 156, or 256 bits, but not all sizes are
+supported by all devices. Of these keys, 24 bits
+are dynamically generated, so you only need to enter 40 to 232 bits.</p>
+"),
+
+
+	// Wireless dialog help
+"wpa":
+_("<p>To use WPA-PSK (sometimes referred to as WPA Home),
+enter the preshared key. This
+key is used for authentication and encryption keys are generated from
+it. These are not vulnerable to known attacks against WEP keys, but
+dictionary attacks are still possible. Do not use a word that is
+easy to guess as the passphrase.</p>
+") +
+
+	// Wireless dialog help
+_("<p>To use WPA-EAP (sometimes referred to as WPA Enterprise),
+enter some additional parameters in the next dialog.</p>
+") +
+
+	// Wireless dialog help
+_("<p>These values will be written to the interface configuration file
+'ifcfg-*' in '/etc/sysconfig/network'. If you need additional settings,
+add them manually. Refer to the file 'wireless' in the same directory for all
+available options.</p>")
+
 
 ];
 

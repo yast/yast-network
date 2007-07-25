@@ -422,7 +422,7 @@ global void SelectHWMap (map hardware) {
 	y2milestone("HOTPLUG(%1) -> ignoring modprobe.conf", hotplug);
 
     // Wireless Card Features
-    wl_auth_modes = hardware["wl_auth_modes"]:nilliststring;
+    wl_auth_modes = prepend(hardware["wl_auth_modes"]:nilliststring, "no-encryption");
     wl_enc_modes = hardware["wl_enc_modes"]:nilliststring;
     wl_channels = hardware["wl_channels"]:nilliststring;
     wl_bitrates = hardware["wl_bitrates"]:nilliststring;

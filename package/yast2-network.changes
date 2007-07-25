@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Jul 25 22:23:54 CEST 2007 - mzugec@suse.de
+
+- new option "No Encryption" in wireless dialog (#213001)
+- 2.15.54
+
+-------------------------------------------------------------------
 Wed Jul 25 16:44:14 CEST 2007 - kmachalkova@suse.cz
 
 - A better layout of internet test dialog (#292621, also in 80x25 
