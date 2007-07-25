@@ -87,9 +87,13 @@ fi
 @schemadir@/autoyast/rnc/host.rnc
 @schemadir@/autoyast/rnc/proxy.rnc
 
+%dir @docdir@
+@docdir@/COPYING
+@docdir@/COPYRIGHT.english
+%readme @docdir@/README
+
 %files devel-doc
 %defattr(-,root,root)
-%dir @docdir@
 %doc @docdir@
 %exclude @docdir@/COPYING
 %exclude @docdir@/COPYRIGHT.english
