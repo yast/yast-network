@@ -135,7 +135,8 @@ string current = Internet::device;
 
     /* Steps dialog contents */
     term contents = `HBox(
-	`HSpacing(5),
+//	`HSpacing(5),
+	`HStretch(),
 	`VBox(
 	    `Left(`Label(label)),
 	    `VSpacing(1),
@@ -144,15 +145,19 @@ string current = Internet::device;
 	    `VSpacing(1),
 	    steps,
 	    `VSpacing(2),
-	    /* Frame label */
-	    `Frame(_("Select:"), `RadioButtonGroup(`id(`rb), `HBox(
-		`HSpacing(2),
-		buttons,
-		`HSpacing(2)
-	    ))),
+	    `Left( `HSquash(
+	             /* Frame label */
+		`Frame(_("Select:"), `RadioButtonGroup(`id(`rb), `HBox(
+		    `HSpacing(2),
+		     buttons,
+		    `HSpacing(2)
+	           ))
+                )
+	    )),
 	    `VSpacing(1)
 	),
-	`HSpacing(5)
+//	`HSpacing(5)
+	`HStretch()
     );
 
     Wizard::SetContents(caption, contents, help, true, true);

@@ -191,18 +191,19 @@ define string GetDeviceDescription(string device_id) {
     }
     y2milestone ("device_name %1", device_name);
     //avoid too long device names
-    if (size(device_name) > 30) {
-        device_name = substring (device_name, 0, 27) + "...";
-    }
+    //if (size(device_name) > 30) {
+    //    device_name = substring (device_name, 0, 27) + "...";
+    //}
     string ip_addr = (NetworkDevices::GetValue(device_id, "BOOTPROTO") == "dhcp" ?
-                    // TRANSLATORS: Informs that the IP address is assigned via DHCP
+		   // TRANSLATORS: Part of label, device with IP address assigned by DHCP
                     _("DHCP address") :
+		   // TRANSLATORS: Part of label, device with static IP address
                     NetworkDevices::GetValue(device_id, "IPADDR"));
     if ( (ip_addr == nil) || (ip_addr == "")) {
         //TRANSLATORS: Informs that no IP has been assigned to the device
         ip_addr = _("No IP address assigned");
     }
-    string output = sformat(_("%1 - %2 (%3)"),
+    string output = sformat(_("%1 \n%2 - %3"),
                         device_name, NetworkDevices::GetDeviceType(device_id), ip_addr);
         return output;
 }
@@ -230,11 +231,15 @@ list<string> getNetDeviceItems(){
 
 term getDeviceContens(string selected){
 return `VBox(
-        `VSpacing(1),
-        `Left(`Label(`id(`net_device), GetDeviceDescription(selected))),
-        `Right(`PushButton(`id(`net_expert), _("&Change Device")))
-     //   `VSpacing(1)
-    );
+        `VSpacing(0.5),
+        `HBox(
+	    `HSpacing(3),
+            `MinWidth(30, `Label(`id(`net_device), `opt(`hstretch), GetDeviceDescription(selected) )),
+	    `HSpacing(1),
+            `PushButton(`id(`net_expert), _("&Change Device"))
+	),
+        `VSpacing(0.5)
+      );
 }
 
 
