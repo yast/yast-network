@@ -91,24 +91,13 @@ define symbol handleAdditional(string key, map event) {
 	 switch((symbol)event["ID"]:`nil)
 	 {
 	  case `edit :
-	    term item = nil;
-	    maplist(string alias, map data, (map<string,map>) LanItems::aliases, {
-	     item = `item(`id(size(table_items)), alias, data["IPADDR"]:"", data["NETMASK"]:"");
-	    });
-
-
-	    item = VirtualEditDialog(cur, item, []/*forbidden*/);
-	    if(item != nil)
-	     {
-	      table_items = maplist(term e, table_items, {
-		if(cur == e[0, 0]:-1)
-		    return item;
-		return e;
-	      });
-	      UI::ChangeWidget(`id(`table), `Items, table_items);
-	      UI::ChangeWidget(`id(`table), `CurrentItem, cur);
-	     }
-	     break;
+		term item = VirtualEditDialog(cur, table_items[cur]:nil, []);
+		if (item!=nil){
+			table_items[cur] = item;
+			UI::ChangeWidget(`id(`table), `Items, table_items);
+			UI::ChangeWidget(`id(`table), `CurrentItem, cur);
+		}
+		break;
 	case `add :
 	    list forbidden = maplist(term e, table_items, { return e[1]:""; });
 	    term item2 = VirtualEditDialog(size(table_items), `empty(), forbidden);

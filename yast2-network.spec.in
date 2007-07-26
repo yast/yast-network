@@ -36,8 +36,6 @@ Summary:	Network configuration
 @HEADER@
 
 Requires:	yast2-network >= 2.15.53
-
-Provides:	yast2-devel-doc
 Summary:	Developer documentation for yast2-network
 
 
