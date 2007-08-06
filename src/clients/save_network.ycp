@@ -37,10 +37,8 @@ boolean network_disk=false;
 define boolean ReadInstallInfItem(path install_inf, string item, string var) {
     if(item == nil || item == "" || var == nil || var == "") return false;
     string val = (string) SCR::Read(add(install_inf, var));
-//y2internal("val %1 %2", item, val);
     if(val == nil) return false;
     if(val != "") InstallInf[item] = val;
-//y2internal("%1", InstallInf);
     return true;
 }
 
@@ -357,6 +355,12 @@ void save_network(){
 
  // --------------------------------------------------------------
  // Copy udev rules for persistent names
+ // workaround (#292375):
+ // delete lock files
+ WFM::Execute(.local.bash, "rm -rf /dev/.udev/.lock*; rm /dev/.udev/tmp-rules*");
+ // re-trigger event for net
+ WFM::Execute(.local.bash, "udevtrigger --subsystem-match=net");
+
  WFM::Execute (.local.bash, sformat (
 	"mkdir -p '%2%1'; /bin/cp -p %1/70-net_persistent_names.rules '%2%1'",
 	"/etc/udev/rules.d",
