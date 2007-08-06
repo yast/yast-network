@@ -25,7 +25,6 @@ import "Map";
 import "Mode";
 import "NetworkConfig";
 import "NetworkDevices";
-import "NetworkModules";
 import "NetworkService";
 import "NetworkStorage";
 import "Package";
@@ -216,7 +215,6 @@ global define boolean Read (symbol cache) {
     /* Progress step 2/9 */
     ProgressNextStage(_("Reading /etc/modprobe.conf..."));
     // FIXME: MOD // ReadModules(NetworkDevices::CardRegex["netcard"]:"");
-//    NetworkModules::Read();
      LanItems::ReadNetworkModules();
     sleep(sl);
 
@@ -362,7 +360,7 @@ global define boolean Write() {
     /* Progress step 2 */
     ProgressNextStage(_("Writing /etc/modprobe.conf..."));
     // FIXME: MOD WriteModules();
-    NetworkModules::Write("netcard");
+//    NetworkModules::Write("netcard");
     sleep(sl);
 
     if(Abort()) return false;
@@ -415,7 +413,7 @@ global define boolean Write() {
      if(Abort()) return false;
      /* Progress step 9 */
      ProgressNextStage(_("Activating network services..."));
-	NetworkModules::HwUp ();
+//	NetworkModules::HwUp ();
 	NetworkService::StartStop ();
     sleep(sl);
     }
@@ -470,7 +468,7 @@ global define boolean Import(map settings) {
     if (!Mode::autoinst()) {
         // FIXME: MOD Modules = (map) eval(settings["modules"]:$[]);
         NetworkDevices::Import("netcard", (map<string, map>) settings["devices"]:$[]);
-        NetworkModules::Import("netcard", (map<string, map>) settings["hwcfg"]:$[]);
+//        NetworkModules::Import("netcard", (map<string, map>) settings["hwcfg"]:$[]);
     } else {
         LanItems::autoinstall_settings = settings;
     }
@@ -495,7 +493,7 @@ global define map Export() {
 	// FIXME: MOD "modules"	: Modules,
 	"config"	: NetworkConfig::Export(),
 	"devices"	: NetworkDevices::Export("netcard"),
-	"hwcfg"		: NetworkModules::Export("netcard"),
+//	"hwcfg"		: NetworkModules::Export("netcard"),
 	"routing"	: Routing::Export(),
 	"managed"	: NetworkService::IsManaged (),
 	"start_immediately": start_immediately,

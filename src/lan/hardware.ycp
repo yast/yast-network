@@ -15,7 +15,6 @@ import "Arch";
 import "Label";
 import "Lan";
 import "NetworkDevices";
-import "NetworkModules";
 import "Popup";
 import "Wizard";
 import "LanItems";
@@ -27,8 +26,7 @@ include "network/routines.ycp";
  * @return dialog result
  */
     /* Manual dialog help 1/4 */
-    string hw_help = _("<p>Here, set up your networking device.
-The values are written to <i>/etc/sysconfig/hardware/hwcfg-*</i>.</p>
+    string hw_help = _("<p>Here, set up your networking device.</p>
 ") +
 
     /* Manual dialog help 2/4 */
@@ -69,8 +67,8 @@ boolean hw_standalone=false;
 
 void initHardware(){
     hardware = $[];
-    hardware["modul"] = NetworkModules::Alias; // FIXME: MOD Lan::Module["module"]:"";
-    hardware["options"] = NetworkModules::Options; // FIXME: MOD Lan::Module["options"]:"";
+//    hardware["modul"] = NetworkModules::Alias; // FIXME: MOD Lan::Module["module"]:"";
+//    hardware["options"] = NetworkModules::Options; // FIXME: MOD Lan::Module["options"]:"";
     hardware["hotplug"] = LanItems::hotplug;
     y2milestone("hotplug=%1", LanItems::hotplug);
     hardware["modules_from_hwinfo"] = LanItems::GetItemModules(hardware["modul"]:"" );
@@ -145,13 +143,11 @@ void initHwDialog(string text) {
     /* Frame label */
     term KernelBox = `Frame(_("&Kernel Module"), `HBox(`HSpacing(0.5), `VBox(
 	`VSpacing(0.4),
-	/* Text entry label */
-	`TextEntry(`id(`hwcfg), _("&Hardware Configuration Name"), hardware["hwcfg"]:""),
 	`HBox(
 	    /* Text entry label */
 	    `ComboBox(`id(`modul), `opt(`editable), _("&Module Name"), hardware["modules_from_hwinfo"]:[]),
 	    `HSpacing(0.2),
-	    `TextEntry(`id(`options), Label::Options (), hardware["options"]:"")
+	    `TextEntry(`id(`options), `opt(`disabled), Label::Options (), hardware["options"]:"")
 	),
 	`VSpacing(0.4),
 	CheckBoxes,
@@ -183,42 +179,26 @@ void initHwDialog(string text) {
 
     /* Edit -> don't allow some changes */
     // FIXME: devname if(true /* FIXME: devname Lan::operation == `edit */) {
-    if(LanItems::operation == `edit /* FIXME: unique || Lan::unique != "" */) {
 
-	TypeNameWidgets =
-		`Left(`HSquash(`Left(`VBox(
-/*
-		    `HBox(
-			`HWeight(1, `Right(`Label(_("Configuration Name")))),
-			`HSpacing(0.5),
-			`HWeight(1, `Left(`Label(`opt(`outputField), NetworkDevices::device_name(hardware["realtype"]:"", hardware["device"]:""))))
-		    ),
-*/
-		    `VSpacing(0.5),
-		    `HBox(
-			/* Label text */
-			`HWeight(1, `Right(`Label(_("Hardware Name")))),
-			`HSpacing(0.5),
-			`HWeight(1, `Left(`Label(`opt(`outputField), hardware["hwcfg"]:"")))
-		    )
-		))));
-    }
 
-    term contents =
-     `VBox(
+    term UdevWidget = 
 	`Frame(_("Udev rules"),
 	 `HBox(
-/*
-	  `RadioButtonGroup(
-	  `VBox(
-            `Left(`RadioButton(`id(0), "SYSFS{address}=='$MAC'", true)),
-	    `Left(`RadioButton(`id(1), "KERNELS=='$BusID'" ))
-	   )),
-*/
 	   `TextEntry(`id(`udev_rule), _("Matching rule"), ""),
 	   `TextEntry(`id(`device_name), _("Device Name"), "")
 	  )
-	 ),
+	 );
+
+    if(LanItems::operation == `edit ) TypeNameWidgets = `Empty();
+		else UdevWidget = `Empty();
+
+    term contents =
+     `VBox(
+	UdevWidget,
+	TypeNameWidgets,
+	KernelBox,
+	`VStretch()
+/*
 	`CheckBoxFrame(`id(`enable_hwcfg), caption, hardware["hwcfg"]:"" != "",
 	 `HBox(
 	 `HSpacing(2),
@@ -231,7 +211,6 @@ void initHwDialog(string text) {
 		`HBox(
 			`HStretch(),
 			`HSpacing(0.5),
-			/* Pushbutton label */
 			`PushButton(`id(`list), _("Select from &List")),
 			`HSpacing(0.5),
 			`HStretch()
@@ -241,26 +220,27 @@ void initHwDialog(string text) {
 	 `HSpacing(2),
 	 `VStretch()
 	))
+*/
        );
 
     UI::ReplaceWidget(`hw_content, contents);
 
-if (!hasAnyValue(LanItems::nm_name) && hasAnyValue(LanItems::nm_name_old)) UI::ChangeWidget(`enable_hwcfg, `Value, false);
     UI::ChangeWidget(`id(`modul), `Enabled, hardware["no_hotplug_dummy"]:false);
-    UI::ChangeWidget(`id(`options), `Enabled, hardware["no_hotplug_dummy"]:false);
+//    UI::ChangeWidget(`id(`options), `Enabled, hardware["no_hotplug_dummy"]:false);
     ChangeWidgetIfExists(`id(`list), `Enabled, hardware["no_hotplug_dummy"]:false);
     ChangeWidgetIfExists(`id(`hwcfg), `Enabled, hardware["no_hotplug"]:false);
     ChangeWidgetIfExists(`id(`usb), `Enabled, (hardware["hotplug"]:"" == "usb" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
     ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hardware["hotplug"]:"" == "pcmcia" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
     UI::ChangeWidget(`id(`udev_rule), `Enabled, false);
     UI::ChangeWidget(`id(`device_name), `Enabled, false);
+    UI::ChangeWidget(`id(`options), `Enabled, false);
 
     UI::ChangeWidget(`id(`udev_rule), `Value, LanItems::GetItemUdev()[0]:"");
     UI::ChangeWidget(`id(`device_name), `Value, LanItems::GetItemUdev()[1]:"");
 
     if (!hw_standalone) ChangeWidgetIfExists(`id(`dev), `Enabled,false);
     ChangeWidgetIfExists(`id(`num), `ValidChars, NetworkDevices::ValidCharsIfcfg ());
-    ChangeWidgetIfExists(`id(`hwcfg), `ValidChars, NetworkModules::ValidCharsHwcfg ());
+//    ChangeWidgetIfExists(`id(`hwcfg), `ValidChars, NetworkModules::ValidCharsHwcfg ());
 }
 
 
@@ -350,8 +330,8 @@ for a particular network card by entering the name in the search entry.</p>");
 	map card = hwlist[selected]:$[];
 	LanItems::description = card["name"]:"";
 
-	NetworkModules::Alias /* FIXME: MOD Lan::Module["module"] */ = card["module"]:"";
-	NetworkModules::Options /* FIXME: MOD Lan::Module["options"] */ = card["options"]:"";
+//	NetworkModules::Alias /* FIXME: MOD Lan::Module["module"] */ = card["module"]:"";
+//	NetworkModules::Options /* FIXME: MOD Lan::Module["options"] */ = card["options"]:"";
     }
 
     return ret;
@@ -449,6 +429,7 @@ symbol handleHW (string key, map event) {
 }
 
 void storeHW (string key, map event) {
+/*
        if(!(boolean)UI::QueryWidget(`enable_hwcfg, `Value))
         {
 	 NetworkModules::DeleteM(LanItems::nm_name);
@@ -470,7 +451,6 @@ void storeHW (string key, map event) {
 		if (LanItems::operation == `add || hardware["hwcfg"]:"" != LanItems::nm_name) {
 		    if (contains (NetworkModules::ListM(""), hardware["hwcfg"]:"")) {
 			UI::SetFocus (`id (`hwcfg));
-			/* Popup text */
 			Popup::Error(sformat(_("Hardware configuration %1 already exists.
 Choose a different one."), hardware["hwcfg"]:""));
 		    }
@@ -481,7 +461,6 @@ Choose a different one."), hardware["hwcfg"]:""));
 		string nm = (string) UI::QueryWidget(`id(`num), `Value);
 		if(LanItems::operation == `add || (hardware["device"]:"" != LanItems::device && hardware["type"]:"" != LanItems::type)) {
 		    if(contains(NetworkDevices::List(""), NetworkDevices::device_name(hardware["type"]:"", nm))) {
-			/* Popup text */
 			Popup::Error(sformat(_("Configuration name %1 (%2) already exists.
 Choose a different one."), nm, NetworkDevices::device_name(hardware["type"]:"", nm)));
 			UI::SetFocus(`id(`num));
@@ -514,6 +493,7 @@ Choose a different one."), nm, NetworkDevices::device_name(hardware["type"]:"", 
 	    hardware["type"] = (string) UI::QueryWidget(`id(`dev), `Value);
 	    LanItems::type = hardware["type"]:"";
 	}
+*/
 }
 
 

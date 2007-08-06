@@ -17,7 +17,6 @@ import "Lan";
 import "DNS";
 import "Mode";
 import "NetworkConfig";
-import "NetworkModules";
 import "NetworkService";
 import "Routing";
 import "Wizard";
@@ -141,9 +140,7 @@ rt61, rt2500, z1211
     LanItems::SelectHWMap(LanItems::getCurrentItem()["hwinfo"]:$[]);
     LanItems::SetDefaultsForHW ();
 
-
-    // warn if selecting a card without a driver, #29296
-    // TODO also for DSL...
+/*
     if (NetworkModules::Alias == "")
     {
 	if (!Popup::ContinueCancel (_("The device does not have a driver module.
@@ -156,11 +153,6 @@ The driver may be built in the kernel.")))
 	string fw = request_firmware[NetworkModules::Alias]:"";
 	if (fw != ""){
 	    if ((!Package::Installed(fw) && !Package::Available(fw))){
-		
-		//check if package with the firmware is available
-		//i.e. if there are any inst. sources defined
-		//and if the package is available on any of them
-
 	        Popup::Message(sformat(_("The device needs a firmware to function properly. It can be installed from
 %1 Add-On CD.\nTo install the firmware, add Add-On CD to your YaST installation sources and return 
 to this configuration dialog."), Product::name));
@@ -174,6 +166,7 @@ to configure the device. Otherwise click \'Cancel\' and return to this dialog
 once you have installed the firmware.")));
 	}
     }
+*/
     // this is one of 3 places to install packages :-(
     // - kernel modules (InstallKernel): before loaded
     // - smpppd & kinternet: before net start

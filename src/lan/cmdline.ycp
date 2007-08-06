@@ -17,7 +17,6 @@ import "Lan";
 import "NetworkDevices";
 import "RichText";
 import "Report";
-import "NetworkModules";
 import "LanItems";
 import "Map";
 
@@ -67,6 +66,7 @@ define boolean AddIface (integer hw_id) {
 
     // warn if selecting a card without a driver, #29296
     // TODO also for DSL...
+/*
     if (NetworkModules::Alias == "")
     {
 	CommandLine::Print(_("The device does not have a driver module.
@@ -76,6 +76,7 @@ The driver may be built in the kernel."));
 	    return false;
 	}
     }
+*/
     // this is one of 3 places to install packages :-(
     // - kernel modules (InstallKernel): before loaded
     // - smpppd & kinternet: before net start

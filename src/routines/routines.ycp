@@ -19,7 +19,6 @@ import "NetworkService";
 import "PackageSystem";
 import "NetworkDevices";
 import "Arch";
-import "NetworkModules";
 import "Confirm";
 import "Map";
 
@@ -411,29 +410,6 @@ string getIfcName(string devicename){
 }
 
 
-string createHwcfgName(map hw, string type){
- string hwcfg_name = "";
-    // name of hwcfg
-    if(hasAnyValue(hw["busid"]:"")) {
-     // #208854 - include "static" string 
-     if(issubstring(hw["sysfs_id"]:"", "pnp")){
-	 hwcfg_name = "static-bus-" + hw["bus"]:"" + "-" + hw["busid"]:""; 
-	}
-	else{
-	 hwcfg_name = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
-	 if(Arch::s390 ()) hwcfg_name = DriverType(type) + "-" + hwcfg_name;
-	}
-    }
-    else {
-       // #suse42421 - don't write hwcfg-static for pcmcia cards (PC and CardBus)
-       // #254753 - when busID not available, use static-x hwcfg filename
-       if(Arch::s390 ()) {
-                               hwcfg_name = NetworkModules::GetFreeName("static-");
-                               y2internal("No bus id info found, will use %1", hwcfg_name);
-                       } else y2warning ("No bus id info found, skipping hwcfg: %1", hw);
-    }
- return hwcfg_name;
-}
 
 define string DistinguishedName(string name, map hwdevice) {
     if(hwdevice["sysfs_bus_id"]:"" != "")

@@ -134,6 +134,7 @@ include "network/hardware.ycp";
 
 map <string, any> ReadUdevRules(){
  udev_rules = (map<string, any>)SCR::Read(.udev_persistent);
+y2internal("read udev : %1", udev_rules);
  return udev_rules;
 }
 
@@ -198,8 +199,8 @@ global void ReadHw(){
 }
 
 global void ReadNetworkModules(){
- NetworkModules::Read();
-y2internal("NetworkModules::ListM  %1", NetworkModules::ListM(""));
+// NetworkModules::Read();
+//y2internal("NetworkModules::ListM  %1", NetworkModules::ListM(""));
 }
 
 global void ReadNetworkInterfaces(){
@@ -415,8 +416,8 @@ global void SelectHWMap (map hardware) {
     if(hotplug == "") {
 	// FIXME: MOD Module["module"] = hw["module"]:"";
 	// FIXME: MOD Module["options"] = hw["options"]:"";
-	NetworkModules::Alias = hardware["module"]:"";
-	NetworkModules::Options = hardware["options"]:"";
+//	NetworkModules::Alias = hardware["module"]:"";
+//	NetworkModules::Options = hardware["options"]:"";
     }
     else
 	y2milestone("HOTPLUG(%1) -> ignoring modprobe.conf", hotplug);
@@ -431,7 +432,7 @@ global void SelectHWMap (map hardware) {
     string busid = hardware["busid"]:"";
 
 
-    nm_name = createHwcfgName(hardware, type);
+//    nm_name = createHwcfgName(hardware, type);
 
     interfacename = hardware["dev_name"]:"";
 
@@ -686,9 +687,13 @@ global list<string> GetItemUdev(){
  if (size(Items[current, "udev"]:[])>3)
  {
   udevs[0]=Items[current, "udev", 2]:"";
+/*
   if (regexpmatch (Items[current, "udev", 3]:"", ".* [^ ]*\"$")) {
     udevs[1]=regexpsub (Items[current, "udev", 3]:"", ".* ([^ ]*)\"$", "\\1");
   }
+*/
+  if (regexpmatch (Items[current, "udev", 3]:"", ".*=[^ ]*\"$"))
+    udevs[1]=regexpsub (Items[current, "udev", 3]:"", ".*=[\"]*([^ ]*)\"$", "\\1");
  }
  return udevs;
 }
@@ -775,17 +780,18 @@ global define boolean Select(string dev) {
     /* kernel options */
     if(hotplug == "" && alias == "" && nm_name != "") {
 	// FIXME: MOD SelectModule(dev);
-	NetworkModules::SelectM(nm_name);
+//	NetworkModules::SelectM(nm_name);
     }
     else {
 	// FIXME: MOD SelectModule("");
-	NetworkModules::AddM();
+//	NetworkModules::AddM();
     }
 
-    qeth_options = NetworkModules::QETH_OPTIONS;
-    chan_mode = NetworkModules::CCW_CHAN_MODE;
-    lcs_timeout = NetworkModules::LCS_LANCMD_TIMEOUT;
+//    qeth_options = NetworkModules::QETH_OPTIONS;
+//    chan_mode = NetworkModules::CCW_CHAN_MODE;
+//    lcs_timeout = NetworkModules::LCS_LANCMD_TIMEOUT;
 
+/*
     if (NetworkModules::QETH_IPA_TAKEOVER == nil ||
 	NetworkModules::QETH_IPA_TAKEOVER == "" ||
 	NetworkModules::QETH_IPA_TAKEOVER == "0")
@@ -799,6 +805,7 @@ global define boolean Select(string dev) {
 	qeth_layer2 = false;
     else
 	qeth_layer2 = true;
+*/
 
     /* We always have to set the MAC Address for qeth Layer2 support */
     if (qeth_layer2 ) {
@@ -1206,10 +1213,12 @@ global void DeleteItem(){
 	 NetworkDevices::Commit();
 	 Items[current, "ifcfg"] = "";
 	}
+/*
  if (hasAnyValue(hwcfg)) {
 	 NetworkModules::DeleteM(hwcfg);
 	 Items[current, "hwcfg"] = "";
 	}
+*/
  if (! (size(Items[current, "hwinfo"]:$[])>0) ){
   map<integer, any> tmp_items = $[];
   foreach(integer key, any value, Items, {
@@ -1232,9 +1241,9 @@ global void SetItem(){
  type = Items[current, "hwinfo", "type"]:"";
  device = NetworkDevices::device_num(Items[current, "ifcfg"]:"");
  alias = NetworkDevices::alias_num(Items[current, "ifcfg"]:"");
- nm_name = Items[current, "hwcfg"]:"";
- if (nm_name=="") nm_name_old = createHwcfgName(Items[current, "hwinfo"]:$[], type);
-  NetworkModules::SelectM(nm_name);
+// nm_name = Items[current, "hwcfg"]:"";
+// if (nm_name=="") nm_name_old = createHwcfgName(Items[current, "hwinfo"]:$[], type);
+//  NetworkModules::SelectM(nm_name);
 
     /* general stuff */
     description = BuildDescription (type, device, devmap, Hardware);
@@ -1252,13 +1261,14 @@ global void SetItem(){
     /* kernel options */
     if(hotplug == "" && alias == "" && nm_name != "") {
 	// FIXME: MOD SelectModule(dev);
-	NetworkModules::SelectM(nm_name);
+//	NetworkModules::SelectM(nm_name);
     }
     else {
 	// FIXME: MOD SelectModule("");
-	NetworkModules::AddM();
+//	NetworkModules::AddM();
     }
 
+/*
     qeth_options = NetworkModules::QETH_OPTIONS;
     chan_mode = NetworkModules::CCW_CHAN_MODE;
     lcs_timeout = NetworkModules::LCS_LANCMD_TIMEOUT;
@@ -1276,7 +1286,7 @@ global void SetItem(){
 	qeth_layer2 = false;
     else
 	qeth_layer2 = true;
-
+*/
     /* We always have to set the MAC Address for qeth Layer2 support */
     if (qeth_layer2 ) {
 	qeth_macaddress = devmap["LLADDR"]:"00:00:00:00:00:00";
