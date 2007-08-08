@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Aug  8 15:28:18 CEST 2007 - mzugec@suse.cz
+
+- fixed wlan::firmware map
+- when no interfaces configured and no NM skip
+  InternetTest(#192818)
+- fixed device selection for InternetTest (#296393)
+- 2.15.58 
+
+-------------------------------------------------------------------
 Mon Aug  6 17:57:37 CEST 2007 - mzugec@suse.cz
 
 - copy udev rules from inst-sys (#297616)

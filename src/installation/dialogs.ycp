@@ -162,7 +162,7 @@ string current = Internet::device;
 
     Wizard::SetContents(caption, contents, help, true, true);
     Wizard::SetTitleIcon ("yast-network");
-initDevice(items);
+    initDevice(items);
 
 
     symbol ret = nil;
@@ -199,6 +199,7 @@ initDevice(items);
     }while(!exit);
 
     Internet::do_test = UI::QueryWidget(`id(`rb), `CurrentButton) == `yes;
+    Internet::SetDevice(current);
     y2debug("Internet::do_test=%1", Internet::do_test);
 
     return (symbol) ret;

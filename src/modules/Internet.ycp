@@ -121,7 +121,7 @@ global define boolean FindFastest() {
 
     NetworkDevices::Read();
     device = NetworkDevices::Fastest();
-    if (device == "")
+    if ((string)SCR::Read(.sysconfig.network.config.NETWORKMANAGER)=="yes" && device == "")
     {
 	device = GetDevices ()[0]:"";
     }

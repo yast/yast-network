@@ -701,16 +701,19 @@ global define boolean ProposeInterfaces () {
 
 
     /* Something is already configured -> do nothing */
+    boolean configured=false;
     foreach (integer number, any lanitem, LanItems::Items, {
 //	if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) {
 	LanItems::current = number;
 	if (LanItems::IsItemConfigured()){
 	 y2milestone("Something already configured: don't propose.");
 //	 y2milestone("devs=%1", devs);
-	 return false;
+	 configured = true;
+	 break;
         }
 //       }
       });
+    if (configured) return false;
 
 
     foreach (integer number, any lanitem, LanItems::Items, {
@@ -1079,7 +1082,7 @@ global list<string> Packages () {
     {
 	if (!PackageSystem::Installed("ifplugd")) pkgs = add (pkgs, "ifplugd");
     }
-    // #49880
+    // #suse49880
     if (NetworkDevices::List ("wlan") != [])
     {
 	if (!PackageSystem::Installed("wireless-tools")) pkgs = add (pkgs, "wireless-tools");

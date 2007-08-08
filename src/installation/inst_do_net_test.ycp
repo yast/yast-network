@@ -284,7 +284,7 @@ and correct the settings.</p>
 
     define integer wait_for_test ()
     {
-	while ( (boolean)SCR::Read(.background.output_open) )
+	while ( (boolean)SCR::Read(.background.output_open) || (boolean)SCR::Read(.background.isrunning) )
 	{
 	    sleep (100);
 
@@ -319,12 +319,6 @@ and correct the settings.</p>
      * @return true when successful
      */
     define boolean download_release_notes () {
-	// Fallback for situation that mustn't exist
-	if (Product::relnotesurl_all == nil || Product::relnotesurl_all == []) {
-	    y2milestone("Product::relnotesurl_all = %1", Product::relnotesurl_all);
-	    return true;
-	}
-
 	// At least one release notes downloaded means success
 	// but the default is false in case of some release-notes
 	// available for download
@@ -383,8 +377,9 @@ and correct the settings.</p>
 	    // env["LANG"] = GetLanguageUTF8 ();
 
 	    y2milestone ("Downloading release notes: %1", cmd);
-	    SCR::Execute(.background.run, cmd);
-	    integer ret = wait_for_test ();
+//	    SCR::Execute(.background.run, cmd);
+//	    integer ret = wait_for_test ();
+	    integer ret = (integer)SCR::Execute(.target.bash, cmd);
 	    if (ret == 0) {
 		release_notes_filenames = add (release_notes_filenames, filename);
 		y2milestone("Successful");
@@ -623,6 +618,16 @@ the logs for details.
 
 	    boolean ret = true;
 
+//Product::relnotesurl_all=[ "http://www.suse.com/relnotes/i386/openSUSE/10.3/release-notes.rpm" ];
+//y2error("FAKE RELNOTES!");
+	    y2milestone("Product::relnotesurl_all = %1", Product::relnotesurl_all);
+	// Fallback for situation that mustn't exist
+	if (Product::relnotesurl_all == nil || Product::relnotesurl_all == []) {
+	 Popup::Warning(_("There is no URL for release notes defined. Internet test can't be performed."));
+	 ret = false;
+	} else
+	 {
+
 	    if (!download_release_notes ())
 	    {
 		// return code is not on the blacklist (meaning misconfigured network)
@@ -649,7 +654,7 @@ the logs for details."));
 		}
 		test_stage = `close;
 	    }
-
+	  }
 	    if (ret)
 	    {
 		install_release_notes ();
