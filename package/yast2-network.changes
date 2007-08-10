@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Aug 10 20:34:21 CEST 2007 - kmachalkova@suse.cz
+
+- Allow specifying different hostnames for different (static) IPs 
+  in address dialog (FaTE #2202) 
+
+-------------------------------------------------------------------
 Fri Aug 10 13:20:51 CEST 2007 - mzugec@suse.cz
 
 - fixed adding new device
