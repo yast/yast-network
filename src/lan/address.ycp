@@ -14,15 +14,17 @@ textdomain "network";
 import "Arch";
 import "CWM";
 import "CWMTab";
-import "NetHwDetection";
+import "Host";
 import "IP";
 import "Label";
 import "Lan";
 import "Netmask";
+import "NetHwDetection";
 import "NetworkDevices";
 import "Popup";
 import "ProductFeatures";
 import "Routing";
+import "String";
 import "SuSEFirewall4Network";
 import "Wizard";
 import "NetworkService";
@@ -44,6 +46,8 @@ symbol ChangeDefaults () {
 map <string, any> settings = $[];
 
 string fwzone_initial = "";
+
+string hostname_initial = "";
 
 boolean force_static_ip = ProductFeatures::GetBooleanFeature ("network", "force_static_ip");
 
@@ -124,6 +128,7 @@ void initBootProto (string key) {
   case "static": UI::ChangeWidget(`id(`bootproto), `CurrentButton, `static);
 		UI::ChangeWidget(`id(`ipaddr), `Value, settings["IPADDR"]:"");
 		UI::ChangeWidget(`id(`netmask), `Value, settings["NETMASK"]:"");
+	        UI::ChangeWidget(`id(`hostname), `Value, settings["HOSTNAME"]:"");
 		break;
   case "dhcp" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
 		break;
@@ -174,6 +179,7 @@ void storeBootProto (string key, map event) {
    case `static: settings["BOOTPROTO"]="static";
 		settings["IPADDR"]=(string)UI::QueryWidget(`ipaddr, `Value);
 		settings["NETMASK"]=(string)UI::QueryWidget(`netmask, `Value);
+		settings["HOSTNAME"]=(string)UI::QueryWidget(`hostname, `Value);
 		break;
    default : switch ((symbol)UI::QueryWidget(`dyn, `Value)){
 		case `dhcp: settings["BOOTPROTO"]="dhcp";
@@ -497,7 +503,7 @@ map<string, map<string,any> > widget_descr_local = $[
 		  `HSpacing(1),
 		  `TextEntry(`id(`netmask),  _("&Subnet Mask")),
 		  `HSpacing(1),
-		  `TextEntry(`id(`hostname), "&Hostname - Do not use yet!"),
+		  `TextEntry(`id(`hostname), "&Hostname"),
 	          `HStretch()
 		  )
 		 )
@@ -578,6 +584,13 @@ define any AddressDialog() {
 
     fwzone_initial = fwzone;
 
+    list <string> host_list = Host::hosts[LanItems::ipaddr]:[];
+    if ( size( host_list) > 1)
+    {
+	y2milestone("More than one hostname for single IP detected, using the first one only");
+    }
+    hostname_initial =  String::FirstChunk( host_list[0]:"", " \t");
+
     settings = $[
 	// general tab:
 //	"IFNAME": ifname,
@@ -593,11 +606,11 @@ define any AddressDialog() {
 	"NETMASK": LanItems::netmask,
 	"REMOTEIP": LanItems::remoteip,
 
+	"HOSTNAME": hostname_initial, 
+
 	"IFCFGTYPE": LanItems::type,
 	"IFCFGID": LanItems::device,
 	];
-
-
 
 
     string drvtype = DriverType (settings["IFCFGTYPE"]:"");
@@ -875,9 +888,19 @@ define any AddressDialog() {
 	LanItems::bootproto = settings["BOOTPROTO"]:"";
 	if (LanItems::bootproto == "static") // #104494
 	{
+	    boolean ip_changed = ( LanItems::ipaddr != settings["IPADDR"]:"" );
+	    if (ip_changed)
+		remove( Host::hosts, LanItems::ipaddr);
+
 	    LanItems::ipaddr = settings["IPADDR"]:"";
 	    LanItems::netmask = settings["NETMASK"]:"";
 	    LanItems::remoteip = settings["REMOTEIP"]:"";
+
+	    if (hostname_initial != settings["HOSTNAME"]:"" || ip_changed)
+	    {
+		y2milestone("%1 %2", hostname_initial, settings["HOSTNAME"]:"");
+		Host::Update(hostname_initial, settings["HOSTNAME"]:"", [ settings["IPADDR"]:""]);
+	    }
 	}
 	else
 	{

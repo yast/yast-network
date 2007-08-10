@@ -159,7 +159,8 @@ of your peer.</p>"),
     /* Address dialog help 6/8 */
 "netmask":
     _("<p>For <b>Static Address Setup</b> enter static IP address (e.g., 192.168.100.99) 
-for your computer and the network mask (usually 255.255.255.0)</p>")
+for your computer and the network mask (usually 255.255.255.0). Optionally, you can enter
+fully qualified hostname for this IP address. It will be written to <i>/etc/hosts</i>.</p>")
  +
     /* Address dialog help 8/8 */
     _("<p>Contact your <b>network administrator</b> for more information about
@@ -190,7 +191,7 @@ especially on slow dial-up connections. Select one of the recommended values
 or define your own one.</p>"),
 
 "bondslave":
-_("<p>Select the slave devices for the bond device. Only the devices which's Device Activation is Never and set as None Address Setup are available.</p>"),
+_("<p>Select the slave devices for the bond device. Only the devices whose Device Activation is set to Never and have No Address Setup are available.</p>"),
 
 "dhclient_help" : 
     /* DHCP dialog help 1/8 */
