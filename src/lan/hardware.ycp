@@ -79,14 +79,15 @@ void initHardware(){
 	hardware["type"] = "eth";
     }
     hardware["realtype"] = NetworkDevices::RealType(hardware["type"]:"", hardware["hotplug"]:"");
-    hardware["device"] = LanItems::device;
+    if (hasAnyValue(NetworkDevices::Name)) hardware["device"] = NetworkDevices::device_num(NetworkDevices::Name);
+	else hardware["device"] = LanItems::device;
     hardware["default_device"] = LanItems::device;
     // #38213, remember device id when we switch back from pcmcia/usb
     hardware["non_hotplug_device_id"] = hardware["device"]:"";
+/*
     hardware["hwcfg"] = LanItems::nm_name;
     if (!hasAnyValue(LanItems::nm_name) && hasAnyValue(LanItems::nm_name_old)) hardware["hwcfg"]=LanItems::nm_name_old;
-y2internal("hwcfg %1", hardware["hwcfg"]:"");
-
+*/
     // FIXME duplicated in address.ycp
     hardware["device_types"] = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond" ];
 
@@ -360,6 +361,7 @@ symbol handleHW (string key, map event) {
 	    if(UI::WidgetExists(`id(`dev))) {
                hardware["type"] = (string) UI::QueryWidget(`id(`dev), `Value);
                hardware["realtype"] = NetworkDevices::RealType(hardware["type"]:"", hardware["hotplug"]:"");
+	       UI::ChangeWidget (`id (`num), `Items, LanItems::FreeDevices(hardware["realtype"]:""));
 	    }
 	    y2debug("type=%1", hardware["type"]:"");
 	    y2debug("realtype=%1", hardware["realtype"]:"");
@@ -429,6 +431,20 @@ symbol handleHW (string key, map event) {
 }
 
 void storeHW (string key, map event) {
+if (LanItems::operation==`add){
+ LanItems::type = (string) UI::QueryWidget(`id(`dev), `Value);
+ string nm = (string) UI::QueryWidget(`id(`num), `Value);
+ string name=NetworkDevices::device_name(LanItems::type, nm);
+//	if( hardware["device"]:"" != LanItems::device ) {
+	    if(contains(NetworkDevices::List(""), name)) {
+		Popup::Error(sformat(_("Configuration name %1 (%2) already exists.
+Choose a different one."), nm, NetworkDevices::device_name(hardware["type"]:"", nm)));
+		UI::SetFocus(`id(`num));
+	    }
+//	}
+ NetworkDevices::Name = name;
+ LanItems::Items[LanItems::current]= $["ifcfg":name];
+}
 /*
        if(!(boolean)UI::QueryWidget(`enable_hwcfg, `Value))
         {

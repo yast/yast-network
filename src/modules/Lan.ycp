@@ -584,10 +584,10 @@ global define list SummaryGeneral () {
  * @return true if success
  */
 global define boolean Add() {
-    LanItems::operation = nil;
+//    LanItems::operation = nil;
     if(LanItems::Select("") != true) return false;
     NetworkDevices::Add();
-    LanItems::operation = `add;
+//    LanItems::AddNew();
     return true;
 }
 

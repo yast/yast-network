@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Aug 10 13:20:51 CEST 2007 - mzugec@suse.cz
+
+- fixed adding new device
+- fix for bonding devices
+- 2.15.59 
+
+-------------------------------------------------------------------
 Wed Aug  8 15:28:18 CEST 2007 - mzugec@suse.cz
 
 - fixed wlan::firmware map

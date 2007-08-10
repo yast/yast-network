@@ -567,7 +567,6 @@ list< list<string> > BuildTypesListCWM (list<string> types) {
  */
 define any AddressDialog() {
     ScreenName("lan-address");
-
     string ifname = NetworkDevices::device_name (LanItems::type, LanItems::device);
     string fwzone = SuSEFirewall4Network::GetZoneOfInterface (ifname);
 

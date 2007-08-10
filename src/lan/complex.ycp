@@ -139,7 +139,8 @@ rt61, rt2500, z1211
     Lan::Add ();
 
     LanItems::SelectHWMap(LanItems::getCurrentItem()["hwinfo"]:$[]);
-    LanItems::SetDefaultsForHW ();
+    LanItems::operation = `edit;
+//    LanItems::SetDefaultsForHW ();
 
 /*
     if (NetworkModules::Alias == "")
@@ -226,8 +227,12 @@ void enableDisableButtons(){
  if (!LanItems::IsItemConfigured()) // unconfigured
 			 UI::ChangeWidget(`id(`delete), `Enabled, false);
 	else UI::ChangeWidget(`id(`delete), `Enabled, true);
- if (hasAnyValue(LanItems::getCurrentItem()["hwinfo", "dev_name"]:"")) UI::ChangeWidget(`id(`edit), `Enabled, true);
+   if (!hasAnyValue(LanItems::getCurrentItem()["hwinfo", "dev_name"]:"") && size(LanItems::getCurrentItem()["hwinfo"]:$[])>0) UI::ChangeWidget(`id(`edit), `Enabled, false);
+	else UI::ChangeWidget(`id(`edit), `Enabled, true);
+/*
+ if (hasAnyValue(LanItems::getCurrentItem()["hwinfo", "dev_name"]:"") && size(LanItems::getCurrentItem()["hwinfo"]:$[])>0) UI::ChangeWidget(`id(`edit), `Enabled, true);
 	else UI::ChangeWidget(`id(`edit), `Enabled, false);
+*/
 }
 
 void initOverview (string key) ``{
@@ -262,8 +267,8 @@ symbol handleOverview( string key, map event ) {
  {
   switch ((symbol)event["ID"]:nil){
    case `add:
-	Lan::Add();
 	LanItems::AddNew();
+	Lan::Add();
 	return `add;
    case `edit:
 	if (!LanItems::IsItemConfigured()) // unconfigured
@@ -299,18 +304,17 @@ the interface will no longer be managed by NetworkManager.
 	    return `edit;
 
    case `delete:
-	if (!LanItems::IsItemConfigured()) return nil;
+//	if (!LanItems::IsItemConfigured()) return nil;
 
 	    string pop = sformat(_("All additional addresses belonging to the interface %1
 will be deleted as well.
 
 Really continue?
-"), LanItems::current);
+"), LanItems::getCurrentItem()["ifcfg"]:"");
 	    if(LanItems::InterfaceHasAliases() && Popup::YesNoHeadline(Label::WarningMsg(), pop) != true)
 		break;
 
 	    LanItems::DeleteItem();
-//	    LanItems::Commit();
 	    initOverview("");
 	    break;
   }
