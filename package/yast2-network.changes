@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Aug 13 18:38:29 CEST 2007 - mzugec@suse.cz
+
+- autoyast support for aliases (F302300)
+- 2.15.60
+
+-------------------------------------------------------------------
 Fri Aug 10 20:34:21 CEST 2007 - kmachalkova@suse.cz
 
 - Allow specifying different hostnames for different (static) IPs 

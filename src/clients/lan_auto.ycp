@@ -81,7 +81,8 @@ define map FromAY(map input)
 	// uppercase map keys
 	string newk = nil;
 	interface =  mapmap(string k, string v, interface, ``{
-	    newk = toupper(k);
+	    if (k=="aliases") newk="_aliases";
+		else newk = toupper(k);
 	    return $[newk: v];
         });
 
@@ -165,16 +166,19 @@ define map ToAY (map settings) {
                 map<string, any> newmap = $[];
                 foreach(string key, any val, (map<string,any>) devmap, {
                     y2milestone("Adding: %1=%2", key, val);
+
                     if (key!="_aliases")
                     {
                     if ( size((string)val) > 0 && ( !contains(discard, key) && !contains(discard, tolower(key))))
                     newmap[tolower(key)] = (string)val;
                     }
-                    else
-                    {
-                    // FIXME: handle aliases
-                    y2debug("val: %1", val);
-                    }
+                    else {
+                      // handle aliases
+                      y2debug("val: %1", val);
+		      // if aliases are empty, then ommit it
+		      if (size((map)val)>0) newmap[tolower("aliases")] = val;
+                     }
+
                     });
                 if (deletechars(num, "0123456789") == "")
                     newmap["device"] = device + num;
@@ -223,11 +227,9 @@ define map ToAY (map settings) {
         ret["routing"] = settings["routing"]:$[];
     if (size(interfaces) > 0 )
         ret["interfaces"] = interfaces;
-
     return (ret);
 
 }
-
 
 
 if(func == "Summary") {
@@ -268,8 +270,8 @@ else if (func == "Export") {
 }
 else if (func == "Write") {
     boolean progress_orig = Progress::set (false);
-    Lan::PrepareForAutoinst();
-    Lan::Autoinstall();
+//    Lan::PrepareForAutoinst();
+//    Lan::Autoinstall();
     ret = Lan::WriteOnly();
     if (LanItems::autoinstall_settings["strict_IP_check_timeout"]:nil != nil)
      {

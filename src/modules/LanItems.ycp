@@ -426,7 +426,6 @@ global void SelectHWMap (map hardware) {
     /* common stuff */
     description = sel["name"]:"";
     type = sel["type"]:"eth";
-y2internal("type %1", type);
     hotplug = sel["hotplug"]:"";
 
     Requires = sel["requires"]:[];

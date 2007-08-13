@@ -465,12 +465,17 @@ global define boolean WriteOnly() {
  */
 global define boolean Import(map settings) {
 
-    if (!Mode::autoinst()) {
+    if (Mode::autoinst()) {
         // FIXME: MOD Modules = (map) eval(settings["modules"]:$[]);
         NetworkDevices::Import("netcard", (map<string, map>) settings["devices"]:$[]);
-//        NetworkModules::Import("netcard", (map<string, map>) settings["hwcfg"]:$[]);
+
     } else {
-        LanItems::autoinstall_settings = settings;
+//        LanItems::autoinstall_settings = settings;
+        NetworkDevices::Import("netcard", (map<string, map>) settings["devices"]:$[]);
+	foreach(string device, NetworkDevices::List(""), {
+	LanItems::AddNew();
+	LanItems::Items[LanItems::current]=$["ifcfg":device];
+	});
     }
 
     NetworkConfig::Import(settings["config"]:$[]);
