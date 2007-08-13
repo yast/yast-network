@@ -45,6 +45,17 @@ interface =
     ipaddr? &
     remote_ipaddr? &
     element netmask { text }? &	#overloaded
+    element bonding_master { text }? &
+    element bonding_slave0 { text }? &
+    element bonding_slave1 { text }? &
+    element bonding_slave2 { text }? &
+    element bonding_slave3 { text }? &
+    element bonding_slave4 { text }? &
+    element bonding_slave5 { text }? &
+    element bonding_slave6 { text }? &
+    element bonding_slave7 { text }? &
+    element bonding_slave8 { text }? &
+    element bonding_slave9 { text }? &
     broadcast? &
     network? &
 
