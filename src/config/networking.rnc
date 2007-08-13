@@ -56,6 +56,7 @@ interface =
     element bonding_slave7 { text }? &
     element bonding_slave8 { text }? &
     element bonding_slave9 { text }? &
+    element aliases        { Anything }? &
     broadcast? &
     network? &
 
