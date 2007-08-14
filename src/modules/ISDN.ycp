@@ -499,7 +499,7 @@ global define boolean Write(boolean start) ``{
 	    if(Abort()) return false;
 	    // step 11 in writing current ISDN setup
 	    ProgressNextStage(_("Setting up smpppd(8)..."));
-	    SetupSMPPPD();
+	    SetupSMPPPD(true);
 	    sleep(sl);
 
 	    if(Abort()) return false;

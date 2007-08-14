@@ -261,7 +261,7 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 5/6 */
     ProgressNextStage(_("Setting up smpppd(8)..."));
-    SetupSMPPPD();
+    SetupSMPPPD(true);
     sleep(sl);
 
     if(Abort()) return false;

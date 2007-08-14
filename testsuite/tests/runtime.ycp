@@ -80,7 +80,7 @@ TEST(``(RunKInternet()), [READ,$[],EXEC0], nil);
 TEST(``(RunKInternet()), [READ,$[],EXEC1], nil);
 
 DUMP("SetupSMPPPD");
-TEST(``(SetupSMPPPD()), [READ,$[],EXEC0], nil);
-TEST(``(SetupSMPPPD()), [READ,$[],EXEC1], nil);
+TEST(``(SetupSMPPPD(true)), [READ,$[],EXEC0], nil);
+TEST(``(SetupSMPPPD(false)), [READ,$[],EXEC1], nil);
 
 }

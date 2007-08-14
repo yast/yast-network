@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Aug 14 23:06:13 CEST 2007 - mzugec@suse.de
+
+- save network configuration also when smpppd/kinternet not available
+ for USERCONTROL enabled devices (#299033)
+- 2.15.61 
+
+-------------------------------------------------------------------
 Mon Aug 13 18:38:29 CEST 2007 - mzugec@suse.cz
 
 - autoyast support for aliases (F302300)

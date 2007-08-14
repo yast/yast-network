@@ -424,13 +424,13 @@ global define boolean Write() {
     if(!write_only) RunSuSEconfig();
     sleep(sl);
 
-    if (!NetworkService::IsManaged() && (boolean) SCR::Read(.init.scripts.exists, "smpppd") && !write_only && needKInternet())
+    if (!NetworkService::IsManaged() /*&& (boolean) SCR::Read(.init.scripts.exists, "smpppd")*/ && !write_only && needKInternet())
      {
        if(Abort()) return false;
        /* Progress step 11 */
        ProgressNextStage(_("Setting up smpppd(8)..."));
        // takes care of autoinst by itself
-       SetupSMPPPD();
+       SetupSMPPPD(false);
        sleep(sl);
 
        if(Abort()) return false;
@@ -1079,10 +1079,13 @@ global define list<map> PrepareForAutoinst() {
  */
 global list<string> Packages () {
     list<string> pkgs = [];
+ // #299033 - don't install smpppd now, do it later (with some tests)
+/*
     if (NetworkDevices::Locate ("USERCONTROL", "yes") != [])
     {
 	if (!PackageSystem::Installed("smpppd")) pkgs = add (pkgs, "smpppd");
     }
+*/
     if (NetworkDevices::Locate ("STARTMODE", "ifplugd") != [])
     {
 	if (!PackageSystem::Installed("ifplugd")) pkgs = add (pkgs, "ifplugd");

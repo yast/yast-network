@@ -16,6 +16,7 @@ import "Mode";
 import "NetworkDevices";
 import "Package";
 import "Service";
+import "PackageSystem";
 
 textdomain "network";
 
@@ -82,7 +83,7 @@ boolean HaveDialupLikeInterfaces () {
  * Setup smpppd(8)
  * @return true if success
  */
-define boolean SetupSMPPPD() {
+define boolean SetupSMPPPD(boolean install_force) {
     boolean ret = true;
     /* Stop and disable */
     if (!HaveDialupLikeInterfaces ()) {
@@ -91,11 +92,19 @@ define boolean SetupSMPPPD() {
     }
     /* Start and enable */
     else {
-        Package::InstallAllMsg(["smpppd", "kinternet"], 
+       if (!PackageSystem::Installed("smpppd") || !PackageSystem::Installed("kinternet"))
+	 {
+    string message =
     // notification about package needed 1/2
     _("<p>Because Device Control for Non-root User has been enabled, the <b>%1</b> packages must be installed.</p>") +
     // notification about package needed 2/2
-    _("<p>Do you want to install it now?</p>"));
+    _("<p>Do you want to install it now?</p>");
+
+	// (#299033) - if not forced, user can continue also without packages
+        if (!install_force) PackageSystem::CheckAndInstallPackages(["smpppd", "kinternet"]);
+		else
+	Package::InstallAllMsg(["smpppd", "kinternet"], message);
+
 
 	ret = Service::Enable("smpppd") && ret;
 
@@ -106,6 +115,7 @@ define boolean SetupSMPPPD() {
 	    else
 		ret = Service::Start("smpppd") && ret;
 	}
+      }
     }
 
     return ret;
