@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Aug 15 16:55:49 CEST 2007 - mzugec@suse.cz
+
+- for NM enable to change default gateway (#299448)
+- 2.15.62 
+
+-------------------------------------------------------------------
 Tue Aug 14 23:06:13 CEST 2007 - mzugec@suse.de
 
 - save network configuration also when smpppd/kinternet not available

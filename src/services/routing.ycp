@@ -167,9 +167,10 @@ void initRouting (string key) ``{
     UI::SetFocus(`id(`gw));
 
     // #178538 - disable routing dialog when NetworkManager is used
+    // but instead of default route (#299448) - NM reads it
     boolean enabled = !(boolean)NetworkService::IsManaged();
 
-    UI::ChangeWidget(`id(`gw), `Enabled, enabled);
+//    UI::ChangeWidget(`id(`gw), `Enabled, enabled);
     UI::ChangeWidget(`id(`table),  `Enabled, enabled);
     UI::ChangeWidget(`id(`forward), `Enabled, enabled);
     UI::ChangeWidget(`id(`add), `Enabled, enabled);
