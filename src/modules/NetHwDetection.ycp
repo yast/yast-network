@@ -1,5 +1,5 @@
 /**
- * File:	modules/Detection.ycp
+ * File:	modules/NetHwDetection.ycp
  * Package:	Network configuration
  * Summary:	Network detection
  * Authors:	Michal Svec <msvec@suse.cz>

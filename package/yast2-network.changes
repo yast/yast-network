@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Aug 17 15:51:42 CEST 2007 - mzugec@suse.cz
+
+- use correct NAME for eth/wlan devices (#300670)
+- 2.15.64 
+
+-------------------------------------------------------------------
 Fri Aug 17 12:59:40 CEST 2007 - mzugec@suse.cz
 
 - fixed proposal dialog for DSL, ISDN and modem (#298273)

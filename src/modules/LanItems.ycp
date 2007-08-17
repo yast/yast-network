@@ -215,11 +215,9 @@ global void ReadNetworkInterfaces(){
     foreach(string tmpdevname, (list<string>)Map::Keys(NetworkDevices::FilterDevices("netcard")["eth"]:$[]), {
      string confname = NetworkDevices::device_name("eth", tmpdevname);
 
-//     map config = getcfg(confname, "");
      integer pos = nil;
      map<string, any> val = $[];
      foreach(integer key, map<string, any> value, (map<integer, map<string, any> >)Items, {
-//	 if (config["HWD_DEVICEPATH"]:"" == sformat("/sys%1", value["hwinfo", "sysfs_id"]:"")) {
 	if (value["hwinfo", "dev_name"]:""==confname) {
 		pos = key;
 		val = value;
@@ -229,7 +227,6 @@ global void ReadNetworkInterfaces(){
 		pos=size(Items);
 		Items[pos]=$[];
 		}
-//	Items[pos, "hwcfg"] = val[sformat("HWD_INTERFACE_%1", tointeger(val["HWD_INTERFACE_N"]:"0")-1)]:"";
 	Items[pos, "ifcfg"] = confname;
     });
 
@@ -249,8 +246,6 @@ global void ReadNetworkInterfaces(){
     }
    });
   });
-
-
  y2milestone("LanItems::Items %1", Items);
 }
 
@@ -287,15 +282,15 @@ global list BuildLanOverview() {
   foreach(integer key, (list<integer>)Map::Keys(Items), {
    string rich = "";
    string ip =  _("Not configured");
-   string descr = HardwareName (Hardware, Items[key, "hwinfo", "udi"]:"");
+   string descr = HardwareName (Hardware, Items[key, "hwinfo", "dev_name"]:"");
+   type = Items[key, "hwinfo", "type"]:"";
    descr = CheckEmptyName (type, descr);
    list <string> bullets = [];
 
    if (hasAnyValue(Items[key, "ifcfg"]:"") ){
     NetworkDevices::Select(Items[key, "ifcfg"]:"");
-    type = Items[key, "hwinfo", "type"]:"";
     if (!hasAnyValue(type)) type = NetworkDevices::device_type(Items[key, "ifcfg"]:"");
-    descr = CheckEmptyName (type, "");
+    descr = BuildDescription(type, NetworkDevices::device_type(Items[key, "ifcfg"]:""), NetworkDevices::Current, [Items[key, "hwinfo"]:$[]]);
     string dev = NetworkDevices::device_name(type, NetworkDevices::Name);
     ip = DeviceProtocol(NetworkDevices::Current);
     string status = DeviceStatus(type, NetworkDevices::device_num(NetworkDevices::Name), NetworkDevices::Current);
