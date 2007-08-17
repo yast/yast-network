@@ -74,19 +74,18 @@ else if(func == "AskUser") {
 	dev = mergestring (splitstring (dev, "/"), ":");
 //	Lan::Edit (dev);
 
-if (hasAnyValue(dev)){
- foreach(integer row, any value, LanItems::Items,{
-  LanItems::current = row;
-  if (LanItems::IsItemConfigured()){
-   if (issubstring(dev, LanItems::getCurrentItem()["ifcfg"]:"")) {
-     LanItems::SetItem();
-     break;
-    }
-  }
- });	
-}
+	if (hasAnyValue(dev)){
+	 foreach(integer row, any value, LanItems::Items,{
+	  LanItems::current = row;
+	  if (LanItems::IsItemConfigured()){
+	   if (issubstring(dev, LanItems::getCurrentItem()["ifcfg"]:"")) {
+	     LanItems::SetItem();
+	     break;
+	    }
+	  }
+	 });
+	}
 
-y2internal("current %1", LanItems::getCurrentItem());
 
 	// #113196: must create new dialog for proposal clients
 	Wizard::CreateDialog ();

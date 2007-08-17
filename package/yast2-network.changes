@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Aug 17 12:59:40 CEST 2007 - mzugec@suse.cz
+
+- fixed proposal dialog for DSL, ISDN and modem (#298273)
+- 2.15.63 
+
+-------------------------------------------------------------------
 Wed Aug 15 16:55:49 CEST 2007 - mzugec@suse.cz
 
 - for NM enable to change default gateway (#299448)

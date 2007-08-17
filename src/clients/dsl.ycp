@@ -26,16 +26,6 @@ import "CommandLine";
 include "network/dsl/wizards.ycp";
 
 
-   // Bugzilla #269890, CommanLine "support"
-   // argmap is only a map, CommandLine uses string parameters
-   if (size (GetInstArgs::argmap()) == 0 && size (WFM::Args()) > 0) {
-       Mode::SetUI ("commandline");
-       y2milestone ("Mode CommandLine not supported, exiting...");
-       // TRANSLATORS: error message - the module does not provide command line interface
-       CommandLine::Print(_("There is no user interface available for this module."));
-       return nil;
-   }
-
 /* is this proposal or not? */
 boolean propose = false;
 list args = WFM::Args();
@@ -44,7 +34,17 @@ if(size(args) > 0) {
 	y2milestone("Using PROPOSE mode");
 	propose = true;
     }
-    else if(is(WFM::Args(0), path) && WFM::Args(0) == .capiadsl) {
+   // Bugzilla #269890, CommanLine "support"
+   // argmap is only a map, CommandLine uses string parameters
+   if (size (GetInstArgs::argmap()) == 0 && size (WFM::Args()) > 0 && !propose) {
+       Mode::SetUI ("commandline");
+       y2milestone ("Mode CommandLine not supported, exiting...");
+       // TRANSLATORS: error message - the module does not provide command line interface
+       CommandLine::Print(_("There is no user interface available for this module."));
+       return nil;
+   }
+
+if(is(WFM::Args(0), path) && WFM::Args(0) == .capiadsl) {
         y2milestone("Using CAPI-ADSL mode");
 	DSL::capiadsl = nil;
 	if(size(args) > 1) DSL::capiadsl = (map) WFM::Args(1);

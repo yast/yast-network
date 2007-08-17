@@ -458,7 +458,7 @@ symbol MainDialog(string init_tab) ``{
     string help = CWM::MergeHelps(w);
     contents = CWM::PrepareDialog(contents, w);
 
-    Wizard::SetContentsButtons(caption, contents, help, Label::NextButton (), Label::FinishButton ());
+    Wizard::SetContentsButtons(caption, contents, help, Label::BackButton (), Label::FinishButton ());
     Wizard::DisableBackButton();
 
     symbol ret = CWM::Run(w, $[`abort:ReallyAbort ]);
