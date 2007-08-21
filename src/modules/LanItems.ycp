@@ -176,7 +176,7 @@ global define void UnsetModified () {
 }
 
 global void AddNew(){
- current = size(Items)+1;
+ current = size(Items);
  operation = `add;
 }
 
@@ -212,12 +212,16 @@ global void ReadNetworkModules(){
 global void ReadNetworkInterfaces(){
     NetworkDevices::Read();
     NetworkDevices::CleanHotplugSymlink();
-    foreach(string tmpdevname, (list<string>)Map::Keys(NetworkDevices::FilterDevices("netcard")["eth"]:$[]), {
-     string confname = NetworkDevices::device_name("eth", tmpdevname);
 
-     integer pos = nil;
-     map<string, any> val = $[];
-     foreach(integer key, map<string, any> value, (map<integer, map<string, any> >)Items, {
+   // match configurations to Items list with hwinfo
+    map <string, any> configurations =  NetworkDevices::FilterDevices("netcard");
+    foreach(string devtype, ["eth", "wlan"], {
+     foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+      string confname = NetworkDevices::device_name(devtype, devnum);
+
+      integer pos = nil;
+      map<string, any> val = $[];
+      foreach(integer key, map<string, any> value, (map<integer, map<string, any> >)Items, {
 	if (value["hwinfo", "dev_name"]:""==confname) {
 		pos = key;
 		val = value;
@@ -228,25 +232,30 @@ global void ReadNetworkInterfaces(){
 		Items[pos]=$[];
 		}
 	Items[pos, "ifcfg"] = confname;
+      });
     });
 
-  // add to items also virtual devices (configurations) without hwinfo
-  foreach(string dev_name, map tmp_map, NetworkDevices::FilterDevices("netcard"), {
-   foreach(string dev_num, (list<string>)Map::Keys(tmp_map), {
+  // add to Items also virtual devices (configurations) without hwinfo
+
+    foreach(string devtype, ["eth", "wlan"], {
+     foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+
+//  foreach(string dev_name, map tmp_map, NetworkDevices::FilterDevices("netcard"), {
+//   foreach(string dev_num, (list<string>)Map::Keys(tmp_map), {
     boolean already = false;
     foreach(integer key, (list<integer>)Map::Keys(Items), {
-     if (NetworkDevices::device_name(dev_name, dev_num) == Items[key, "ifcfg"]:""){
+     if (NetworkDevices::device_name(devtype, devnum) == Items[key, "ifcfg"]:""){
       already = true;
       break;
      };
     });
     if (!already){
      AddNew();
-     Items[current] = $["ifcfg":NetworkDevices::device_name(dev_name, dev_num)];
+     Items[current] = $["ifcfg":NetworkDevices::device_name(devtype, devnum)];
     }
    });
   });
- y2milestone("LanItems::Items %1", Items);
+ y2milestone("Read Configuration LanItems::Items %1", Items);
 }
 
 list GetDescr(){

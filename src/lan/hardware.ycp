@@ -62,7 +62,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     }
 
 map<string, any> hardware = nil;
-map<string, any> udev = nil;
+//map<string, any> udev = nil;
 boolean hw_standalone=false;
 
 void initHardware(){

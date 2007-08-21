@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Aug 21 10:53:41 CEST 2007 - mzugec@suse.cz
+
+- correctly write wlan configuration (#297616)
+- 2.15.65 
+
+-------------------------------------------------------------------
 Fri Aug 17 15:51:42 CEST 2007 - mzugec@suse.cz
 
 - use correct NAME for eth/wlan devices (#300670)

@@ -132,13 +132,10 @@ define boolean AddInterface () {
 	"rt73usb" : "",
 	"prism54usb":""
     ];
-/*
- Unsupported:
-rt61, rt2500, z1211
-*/
     Lan::Add ();
 
     LanItems::SelectHWMap(LanItems::getCurrentItem()["hwinfo"]:$[]);
+    LanItems::Items[LanItems::current, "ifcfg"] = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
     LanItems::operation = `edit;
 //    LanItems::SetDefaultsForHW ();
 
@@ -229,6 +226,13 @@ void enableDisableButtons(){
 	else UI::ChangeWidget(`id(`delete), `Enabled, true);
    if (!hasAnyValue(LanItems::getCurrentItem()["hwinfo", "dev_name"]:"") && size(LanItems::getCurrentItem()["hwinfo"]:$[])>0) UI::ChangeWidget(`id(`edit), `Enabled, false);
 	else UI::ChangeWidget(`id(`edit), `Enabled, true);
+    if (!Mode::config() && Lan::HaveXenBridge ()) // #196479
+    {
+	// #178848
+	foreach (symbol b, [`add, `edit, `delete], {
+	    UI::ChangeWidget (`id (b), `Enabled, false);
+	});
+    }
 /*
  if (hasAnyValue(LanItems::getCurrentItem()["hwinfo", "dev_name"]:"") && size(LanItems::getCurrentItem()["hwinfo"]:$[])>0) UI::ChangeWidget(`id(`edit), `Enabled, true);
 	else UI::ChangeWidget(`id(`edit), `Enabled, false);
@@ -246,14 +250,8 @@ void initOverview (string key) ``{
     });
     UI::ChangeWidget (`id (`_hw_items), `Items, term_items);
 
-    if (!Mode::config() && Lan::HaveXenBridge ()) // #196479
-    {
-	// #178848
-	foreach (symbol b, [`add, `edit, `delete], {
-	    UI::ChangeWidget (`id (b), `Enabled, false);
-	});
-    }
  enableDisableButtons();
+ y2milestone("LanItems %1", LanItems::Items);
 }
 
 
