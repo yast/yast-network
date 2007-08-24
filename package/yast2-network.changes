@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug 24 14:40:53 CEST 2007 - kmachalkova@suse.cz
+
+- Adjusted layout of several dialogs to fit 80x25 screen  
+
+-------------------------------------------------------------------
 Tue Aug 21 10:53:41 CEST 2007 - mzugec@suse.cz
 
 - correctly write wlan configuration (#297616)

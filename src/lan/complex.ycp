@@ -385,9 +385,9 @@ map tabs_descr = $[
 	"global"   : $[
 	  "header" : _("Global Options"),
 	  "contents" : `VBox (
-	    `MarginBox(1, 0.5, "MANAGED"),
-	    `MarginBox(1, 0.5, "IPV6"),
-            `MarginBox(1, 0.5, "DHCLIENT_OPTIONS"),
+	    `MarginBox(1, 0.49, "MANAGED"),
+	    `MarginBox(1, 0.49, "IPV6"),
+            `MarginBox(1, 0.49, "DHCLIENT_OPTIONS"),
 	    `VStretch()
 	   ),
 	  "widget_names" : ["MANAGED", "IPV6", "DHCLIENT_OPTIONS"]

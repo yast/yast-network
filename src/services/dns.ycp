@@ -363,7 +363,7 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
 	],
     "MODIFY_RESOLV" : $[
 	"widget": `checkbox,
-	"label" : _("&Change /etc/resolv.conf modified by another process"),
+	"label" : _("&Change /etc/resolv.conf manually"),
 	"opt" : [`notify],
 	"init" : initModifyResolv,
 	"handle": handleModifyResolv,
@@ -398,7 +398,7 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
     "DHCP_RESOLV": $[
 	"widget": `custom,
 	"custom_widget" : `HBox(
-	 `CheckBox(`id("DHCP_RESOLV"), `opt(`notify), _("&Update Name Servers and\nSearch List via DHCP")),
+	 `CheckBox(`id("DHCP_RESOLV"), `opt(`notify), _("&Update DNS data via DHCP")),
 	 `ReplacePoint( `id("dh_resolv_text"), `Empty() )
 	),
 	// help
@@ -429,7 +429,7 @@ term dns_contents =
 	    `Left("DHCP_HOSTNAME"),
 	    `Left("WRITE_HOSTNAME")
 	)),
-	`VSpacing(1),
+	`VSpacing(0.49),
 	`Left("MODIFY_RESOLV"),
 	/* Frame label */
 	`Frame(_("Name Servers and Domain Search List"), `VBox(
@@ -442,6 +442,7 @@ term dns_contents =
 	    `HSpacing (1),
 	    `HWeight (1, "SEARCHLIST_S")
 	)),
+        `VSpacing(0.49),
 	/* CheckBox label */
 	`Left ("DHCP_RESOLV")
 	)
