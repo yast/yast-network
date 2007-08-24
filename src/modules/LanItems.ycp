@@ -225,7 +225,7 @@ global void ReadNetworkInterfaces(){
 
    // match configurations to Items list with hwinfo
     map <string, any> configurations =  NetworkDevices::FilterDevices("netcard");
-    foreach(string devtype, ["eth", "wlan"], {
+    foreach(string devtype, splitstring(NetworkDevices::CardRegex["netcard"]:"", "|"), {
      foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
       string confname = NetworkDevices::device_name(devtype, devnum);
 
@@ -247,7 +247,7 @@ global void ReadNetworkInterfaces(){
 
   // add to Items also virtual devices (configurations) without hwinfo
 
-    foreach(string devtype, ["eth", "wlan"], {
+    foreach(string devtype, splitstring(NetworkDevices::CardRegex["netcard"]:"", "|"), {
      foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
 
 //  foreach(string dev_name, map tmp_map, NetworkDevices::FilterDevices("netcard"), {
