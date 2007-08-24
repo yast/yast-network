@@ -36,7 +36,6 @@ define string HardwareName(list<map> Hardware, string unq);
  */
 define string BuildDescription (string devtype, string devnum, map devmap,
 				list<map> Hardware) {
-y2internal("devmap %1", devmap);
     string descr = devmap["NAME"]:"";
     if (descr != "") return descr;
     descr = HardwareName (Hardware, devnum);

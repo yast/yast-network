@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Aug 24 16:42:17 CEST 2007 - mzugec@suse.cz
+
+- write extra drivers into 79-yast2-drivers.rules (#300892)
+- handle renamed udev rule for network devices (#302544)
+- 2.15.66 
+
+-------------------------------------------------------------------
 Fri Aug 24 14:40:53 CEST 2007 - kmachalkova@suse.cz
 
 - Adjusted layout of several dialogs to fit 80x25 screen  

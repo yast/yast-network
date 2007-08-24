@@ -9,28 +9,28 @@ our @ISA = ("YaST::SCRAgent");
 
 use strict;
 
-my $filename = "/etc/udev/rules.d/70-persistent-net.rules";
-my @comment = ();
+my $net_file = "/etc/udev/rules.d/70-persistent-net.rules";
+my $drivers_file = "/etc/udev/rules.d/79-yast2-drivers.rules";
+my @net_comment = ();
+my @drivers_comment = ();
 
-sub parse_rules {
+sub parse_net_rules {
     my $class = shift;
     my %hash_table = ();
-    # you don't need it read twice
-#    return 1 if (keys(%hash_table));    
 
-    if( open( FILE, "< $filename" ) ) {
+    if( open( FILE, "< $net_file" ) ) {
         while( my $line = <FILE> ) {
 
 	 # remove '\n' and space before delimiter ','
 	 chomp($line);
 	 $line =~ s/, /,/g;
 
-	 if ( $line =~ /^#/ ) { push(@comment, $line); }
+	 if ( $line =~ /^#/ ) { push(@net_comment, $line); }
 	   else {
 		if ($line =~ /,/ )
 		 {
 		  my @cols = split(",", $line);
-		  my (undef, $device) =  split("=", $cols[3]);
+		  my (undef, $device) =  split("=", $cols[$#cols]);
 		  $device =~ s/\"//g;
 		  $hash_table{ $device } = \@cols; 
 		 }
@@ -38,12 +38,69 @@ sub parse_rules {
         }
         close(FILE);
     } else {
-        return $class->SetError(summary => sprintf( _("opening %s failed: %s"),$filename, $!),
+        return $class->SetError(summary => sprintf( _("opening %s failed: %s"),$net_file, $!),
                                 code    => "OPEN_FAILED");
     }
 
     return \%hash_table;
 }
+
+sub parse_drivers_rules {
+    my $class = shift;
+    my %hash_table = ();
+
+    if( open( FILE, "< $drivers_file" ) ) {
+        while( my $line = <FILE> ) {
+
+	 # remove '\n' and space before delimiter ','
+	 chomp($line);
+	 $line =~ s/, /,/g;
+
+	 if ( $line =~ /^#/ ) { push(@drivers_comment, $line); }
+	   else {
+		if ($line =~ /,/ )
+		 {
+		  my @cols = split(",", $line);
+		  my (undef, $device) =  split("==", $cols[0]);
+		  $device =~ s/\"//g;
+		  $hash_table{ $device } = \@cols; 
+		 }
+		}
+        }
+        close(FILE);
+    } else {
+        return $class->SetError(summary => sprintf( _("opening %s failed: %s"),$drivers_file, $!),
+                                code    => "OPEN_FAILED");
+    }
+
+    return \%hash_table;
+}
+
+sub write_drivers_rules(){
+ my $class = shift;
+ my $param = \@_;
+ my %hash = %{$$param[0]};
+
+ my @output = ();
+ foreach my $row (@drivers_comment){
+  push (@output, $row."\n");
+ }
+ foreach my $key (keys %hash){
+  my $row = join(', ', @{$hash{$key}});
+  push(@output, $row."\n");
+
+ }
+
+
+ if( open( FILE, "> $drivers_file" ) ) {
+   print FILE @output;
+ } else {
+         return $class->SetError(summary => sprintf( _("saving %s failed: %s"),$drivers_file, $!),
+                                code    => "OPEN_FAILED");
+        }
+}
+
+
 
 sub Execute {
     my $class = shift;
@@ -56,11 +113,21 @@ sub Execute {
 sub Read {
     my $class = shift;
     my ($path, @args) = @_;
-
-        return $class->parse_rules();
+    if ($path eq '.net'){
+        return $class->parse_net_rules();
+	}
+    elsif ($path eq '.drivers'){
+           return $class->parse_drivers_rules();
+	  }
 }
 
 sub Write {
+    my $class = shift;
+    my ($path, @args) = @_;
+    if ($path eq '.drivers'){
+	   my $hash_pointer = $args[0];
+           return $class->write_drivers_rules($hash_pointer);
+	  }
 }
 
 sub Dir {

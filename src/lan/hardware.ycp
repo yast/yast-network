@@ -81,7 +81,11 @@ void initHardware(){
     hardware["realtype"] = NetworkDevices::RealType(hardware["type"]:"", hardware["hotplug"]:"");
     if (hasAnyValue(NetworkDevices::Name)) hardware["device"] = NetworkDevices::device_num(NetworkDevices::Name);
 	else hardware["device"] = LanItems::device;
-    hardware["default_device"] = LanItems::device;
+    string driver = LanItems::getCurrentItem()["udev", "driver"]:"";
+
+
+    hardware["default_device"] = hasAnyValue(driver) ? driver : LanItems::getCurrentItem()["hwinfo", "module"]:"" ;
+
     // #38213, remember device id when we switch back from pcmcia/usb
     hardware["non_hotplug_device_id"] = hardware["device"]:"";
 /*
@@ -225,7 +229,7 @@ void initHwDialog(string text) {
        );
 
     UI::ReplaceWidget(`hw_content, contents);
-
+    UI::ChangeWidget(`modul, `Value, hardware["default_device"]:"");
     UI::ChangeWidget(`id(`modul), `Enabled, hardware["no_hotplug_dummy"]:false);
 //    UI::ChangeWidget(`id(`options), `Enabled, hardware["no_hotplug_dummy"]:false);
     ChangeWidgetIfExists(`id(`list), `Enabled, hardware["no_hotplug_dummy"]:false);
@@ -386,8 +390,8 @@ symbol handleHW (string key, map event) {
 	    }
 
 	    if(hardware["hotplug"]:"" == "usb") hardware["device"] = "bus-usb";
-	    	else if(hardware["hotplug"]:"" == "pcmcia") hardware["device"] = "bus-pcmcia";
-	    		else hardware["device"] = hardware["non_hotplug_device_id"]:"";
+		else if(hardware["hotplug"]:"" == "pcmcia") hardware["device"] = "bus-pcmcia";
+			else hardware["device"] = hardware["non_hotplug_device_id"]:"";
 
 	    UI::ChangeWidget(`id(`num), `Value, hardware["device"]:"");
 
@@ -445,6 +449,10 @@ Choose a different one."), nm, NetworkDevices::device_name(hardware["type"]:"", 
  NetworkDevices::Name = name;
  LanItems::Items[LanItems::current]= $["ifcfg":name];
 }
+
+ LanItems::setDriver((string) UI::QueryWidget(`modul, `Value));
+
+
 /*
        if(!(boolean)UI::QueryWidget(`enable_hwcfg, `Value))
         {

@@ -16,7 +16,7 @@ include "network/routines.ycp";
  */
 global map<integer, any> Items = $[];
 global list<map> Hardware = [];
-global map <string, any> udev_rules = $[];
+global map <string, any> udev_net_rules = $[];
 
 global string interfacename="";
 
@@ -134,14 +134,21 @@ global string nm_name_old = nil;
 
 include "network/hardware.ycp";
 
-map <string, any> ReadUdevRules(){
- udev_rules = (map<string, any>)SCR::Read(.udev_persistent);
-y2internal("read udev : %1", udev_rules);
- return udev_rules;
+boolean ReadUdevRules(){
+ y2milestone ("Reading udev rules ...");
+ udev_net_rules = (map<string, any>)SCR::Read(.udev_persistent.net);
+ return true;
 }
 
-void WriteUdevRules(){
-  SCR::Write(.udev_persistent, udev_rules);
+global void WriteUdevRules(){
+//  SCR::Write(.udev_persistent.net, udev_net_rules);
+ map<string, any> udev_drivers_rules = $[];
+ foreach(integer key, (list<integer>)Map::Keys(Items), {
+  if (hasAnyValue(Items[key, "udev", "driver"]:""))
+					udev_drivers_rules[Items[key, "udev", "driver"]:""] = [ sformat("ENV{MODALIAS}==\"%1\"", Items[key, "hwinfo", "modalias"]:""), sformat("ENV{MODALIAS}=\"%1\"", Items[key, "udev", "driver"]:"") ];
+ });
+y2internal("%1", udev_drivers_rules);
+ SCR::Write(.udev_persistent.drivers, udev_drivers_rules);
 }
 
 /**
@@ -199,9 +206,12 @@ global list<string> GetItemModules(string default_module){
 global void ReadHw(){
  Hardware = ReadHardware("netcard");
  ReadUdevRules();
+
+ map<string, any> udev_drivers_rules = (map<string, any>)SCR::Read(.udev_persistent.drivers);
  foreach(map hwitem, Hardware, {
-  list udev = (hwitem["dev_name"]:"" != "") ? udev_rules[hwitem["dev_name"]:""]:[] : [];
-  Items[size(Items)] = $["hwinfo":hwitem, "udev":udev];
+  list udev_net = (hwitem["dev_name"]:"" != "") ? udev_net_rules[hwitem["dev_name"]:""]:[] : [];
+  string mod = deletechars(splitstring((udev_drivers_rules[hwitem["modalias"]:""]:[])[1]:"", "=")[1]:"", "\"");
+  Items[size(Items)] = $["hwinfo":hwitem, "udev":$["net":udev_net, "driver":mod]];
  });
 }
 
@@ -711,18 +721,13 @@ global map<string, string> SysconfigDefaults = $[
     ];
 
 global list<string> GetItemUdev(){
-// column: 0 mens rule, 1 means device
+// column: 0 mens rule, 1 means NAME
  list<string> udevs=["", ""];
- if (size(Items[current, "udev"]:[])>3)
+ if (size(Items[current, "udev", "net"]:[])>3)
  {
-  udevs[0]=Items[current, "udev", 2]:"";
-/*
-  if (regexpmatch (Items[current, "udev", 3]:"", ".* [^ ]*\"$")) {
-    udevs[1]=regexpsub (Items[current, "udev", 3]:"", ".* ([^ ]*)\"$", "\\1");
-  }
-*/
-  if (regexpmatch (Items[current, "udev", 3]:"", ".*=[^ ]*\"$"))
-    udevs[1]=regexpsub (Items[current, "udev", 3]:"", ".*=[\"]*([^ ]*)\"$", "\\1");
+  udevs[0]=Items[current, "udev", "net", 2]:"";
+  if (regexpmatch (Items[current, "udev", "net", 3]:"", ".*=[^ ]*\"$"))
+    udevs[1]=regexpsub (Items[current, "udev", "net", 3]:"", ".*=[\"]*([^ ]*)\"$", "\\1");
  }
  return udevs;
 }
@@ -1340,5 +1345,12 @@ global boolean ProposeItemConfiguration(){
  y2milestone("After configuration propose %1", getCurrentItem());
  return true;
 }
+
+global void setDriver(string driver){
+y2internal("driver %1, %2", driver, getCurrentItem()["hwinfo", "module"]:"");
+ if (getCurrentItem()["hwinfo", "module"]:""==driver && !hasAnyValue(getCurrentItem()["udev", "driver"]:"")) return;
+ Items[current, "udev", "driver"] = driver;
+}
+
 
 }

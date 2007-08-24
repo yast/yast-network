@@ -626,6 +626,7 @@ define list<map> ReadHardware(string hwtype) {
 	one["sysfs_id"] = card["sysfs_id"]:"";
 	one["dev_name"] = card["dev_name"]:"";
 	one["requires"] = card["requires"]:[];
+	one["modalias"] = card["modalias"]:"";
 	// Each card remembers its position in the list of _all_ cards.
 	// It is used when selecting the card from the list of _unconfigured_
 	// ones (which may be smaller). #102945.
@@ -696,7 +697,7 @@ define list<map> ReadHardware(string hwtype) {
 		y2milestone ("No good drivers found");
 		// #153235
 		// fail, unless we are in xen (it has the driver built in)
-		card_ok = Arch::is_xenU ();
+//		card_ok = Arch::is_xenU ();
 	    }
 	    else
 	    {
