@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Aug 27 17:46:39 CEST 2007 - mzugec@suse.cz
+
+- TestCase 388144 - check if ip is already in use (#304250)
+- 2.15.69 
+
+-------------------------------------------------------------------
 Mon Aug 27 11:18:11 CEST 2007 - mzugec@suse.cz
 
 - correctly handle NisDomain option from install.inf (#303844)

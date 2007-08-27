@@ -56,8 +56,8 @@ boolean write_only = false;
 /**
  * autoinstallation: if true, write_only is disabled and the network settings
  * are applied at once, like during the normal installation. #128810, #168806
+ * boolean start_immediately = false;
  */
-boolean start_immediately = false;
 
 
 // ipv6 module
@@ -99,12 +99,13 @@ global block<boolean> AbortFunction = nil;
 /* GLOBAL FUNCTIONS */
 
 
-// functions for use from autoinstallation
+// function for use from autoinstallation (Fate #301032)
 global define boolean isAnyInterfaceDown(){
  boolean down = false;
   map<string, any> link_status = $[];
-  list <string> net_devices = splitstring(String::CutBlanks(((map<string, any>)SCR::Execute(.target.bash_output,
-				"cat /proc/net/dev | cut -d':' -f1 | grep -v '|' | tr -d '\n' | sed 's/ \\+/ /g'"))["stdout"]:""), " ");
+  list <string> net_devices = splitstring(
+	((map<string, any>)SCR::Execute(.target.bash_output, "ls /sys/class/net/ | grep -v lo | tr '\n' ','"))["stdout"]:"", ",") ;
+  net_devices = filter(string item, net_devices, {return (size(item)>0);});
   foreach(string net_dev, net_devices, {
    list<string> row = splitstring(((map<string, any>)SCR::Execute(.target.bash_output, sformat("ip address show dev %1 | grep 'inet\\|link' | sed 's/^ \\+//g'|cut -d' ' -f-2", net_dev)))["stdout"]:"", "\n");
     string tmp_mac="";
@@ -119,20 +120,20 @@ global define boolean isAnyInterfaceDown(){
     y2debug("link_status %1", link_status);
   });
 
-    y2debug("%1", link_status);
-      list<string> macs=[];
-      foreach(string devs, (list<string>)Map::Keys(LanItems::autoinstall_settings["devices"]:$[]), {
-	foreach(string mac, (list<string>)Map::Keys(LanItems::autoinstall_settings["devices", devs]:$[]), {
-	 list<string> tmp_mac = splitstring(mac, "-");
-	 mac = tmp_mac[size(tmp_mac)-1]:"";
-	if (!haskey(link_status, mac)) y2error("Mac address %1 not found in map %2!", mac, link_status);
-		else if (link_status[mac]:false == false) {
-							y2debug("Interface with mac %1 is down!", mac);
-							down = true;
-							}
-			else y2debug("Interface with mac %1 is up", mac);
-	});
-      });
+    y2milestone("link_status %1", link_status);
+    map <string, any> configurations =  NetworkDevices::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkDevices::CardRegex["netcard"]:"", "|"), {
+     foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+      string confname = NetworkDevices::device_name(devtype, devnum);
+      string mac = ((map<string, any>)SCR::Execute(.target.bash_output, sformat("cat /sys/class/net/%1/address|tr -d '\n'", confname)))["stdout"]:"";
+      y2internal("confname %1", mac);
+      if (!haskey(link_status, mac)) y2error("Mac address %1 not found in map %2!", mac, link_status);
+	else if (link_status[mac]:false == false) {
+		y2warning("Interface with mac %1 is down!", mac);
+		down = true;
+	       } else y2debug("Interface with mac %1 is up", mac);
+     });
+    });
  return down;
 }
 
@@ -455,7 +456,7 @@ global define boolean Write() {
  * @return true on success
  */
 global define boolean WriteOnly() {
-    write_only = !start_immediately;
+    write_only = !LanItems::autoinstall_settings["start_immediately"]:false;
     return Write();
 }
 
@@ -471,7 +472,6 @@ global define boolean Import(map settings) {
         NetworkDevices::Import("netcard", (map<string, map>) settings["devices"]:$[]);
 
     } else {
-//        LanItems::autoinstall_settings = settings;
         NetworkDevices::Import("netcard", (map<string, map>) settings["devices"]:$[]);
 	foreach(string device, NetworkDevices::List(""), {
 	LanItems::AddNew();
@@ -479,11 +479,13 @@ global define boolean Import(map settings) {
 	});
     }
 
+    LanItems::autoinstall_settings["start_immediately"] = settings["start_immediately"]:false;
+    LanItems::autoinstall_settings["strict_IP_check_timeout"] = settings["strict_IP_check_timeout"]:-1;
+
     NetworkConfig::Import(settings["config"]:$[]);
     DNS::Import((map) eval(settings["dns"]:$[]));
     Routing::Import((map) eval(settings["routing"]:$[]));
     NetworkService::SetManaged (settings["managed"]:false);
-    start_immediately = settings["start_immediately"]:false;
 
     LanItems::modified = true;
     return true;
@@ -502,7 +504,7 @@ global define map Export() {
 //	"hwcfg"		: NetworkModules::Export("netcard"),
 	"routing"	: Routing::Export(),
 	"managed"	: NetworkService::IsManaged (),
-	"start_immediately": start_immediately,
+	"start_immediately": LanItems::autoinstall_settings["start_immediately"]:false, //start_immediately,
     ];
 }
 
