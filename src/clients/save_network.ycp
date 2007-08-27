@@ -78,6 +78,7 @@ define boolean ReadInstallInf() {
     ReadInstallInfItem(install_inf, "gateway", "Gateway");
     ReadInstallInfItem(install_inf, "nameserver", "Nameserver");
     ReadInstallInfItem(install_inf, "domain", "Domain");
+    ReadInstallInfItem(install_inf, "nisdomain", "NisDomain");
     ReadInstallInfItem(install_inf, "hostname", "Hostname");
     ReadInstallInfItem(install_inf, "module", "Alias");
 //    ReadInstallInfItem(install_inf, "options", "Options");
@@ -249,9 +250,9 @@ void CreateOtherNetworkFiles(){
   }
  }
  // create defaultdomain
- if (size(InstallInf["domain"]:"")>0 && FileUtils::Exists("/etc/defaultdomain")){
-  y2milestone("Write defaultdomain: %1", InstallInf["domain"]:"");
-  SCR::Write(.target.string, "/etc/defaultdomain", InstallInf["domain"]:"");
+ if (size(InstallInf["nisdomain"]:"")>0 && FileUtils::Exists("/etc/defaultdomain")){
+  y2milestone("Write defaultdomain: %1", InstallInf["nisdomain"]:"");
+  SCR::Write(.target.string, "/etc/defaultdomain", InstallInf["nisdomain"]:"");
  }
 
  // write wait_for_interfaces if needed
@@ -291,7 +292,7 @@ void save_network(){
  WFM::Execute(.local.bash, "udevtrigger --subsystem-match=net");
 
  WFM::Execute (.local.bash, sformat (
-	"mkdir -p '%2%1'; /bin/cp -p %1/70-net_persistent_names.rules '%2%1'",
+	"mkdir -p '%2%1'; /bin/cp -p %1/70-persistent-net.rules'%2%1'",
 	"/etc/udev/rules.d",
 	String::Quote (Installation::destdir)));
 
