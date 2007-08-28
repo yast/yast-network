@@ -672,7 +672,7 @@ define void ProposeNMInterfaces () {
 	if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) {
 	LanItems::current = number;
 	if (!LanItems::IsItemConfigured()){
-y2internal("not configured - will configure %1", LanItems::getCurrentItem());
+	  y2internal("Nothing already configured start proposing %1 (NM)", LanItems::getCurrentItem());
 	  LanItems::ProposeItemConfiguration();
 	 }
 	}
@@ -728,7 +728,7 @@ global define boolean ProposeInterfaces () {
 	if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) {
 	LanItems::current = number;
 	if (!LanItems::IsItemConfigured()){
-y2internal("not configured - will configure");
+	  y2milestone("Nothing already configured - start proposing");
 	  LanItems::ProposeItemConfiguration();
 	  break;
 	 }

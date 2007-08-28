@@ -768,6 +768,7 @@ global define boolean Select(string dev) {
 //	NetworkModules::AddM();
 //	nm_name = NetworkModules::GetFreeName("static-");
 
+			// TODO: instead of udev use hwinfo dev_name
 	NetworkDevices::Name = GetItemUdev()[1]:"";
 	if (size(Items)<current) Items[current] = $["ifcfg":NetworkDevices::Name];
 		else Items[current, "ifcfg"] = NetworkDevices::Name;
@@ -888,8 +889,8 @@ global define boolean Commit() {
 	    }
 	    newdev["USERCONTROL"] = usercontrol? "yes": "no";
 	    newdev["BOOTPROTO"] = bootproto;
-	    newdev["NAME"] = description;
 	}
+	newdev["NAME"] = description;
 //	if(unique != "" && unique != nil) newdev["udi"] = unique;
 /*
 	if(hotplug == "") {
@@ -1330,7 +1331,8 @@ global boolean ProposeItemConfiguration(){
   operation = nil;
   if(Select("") != true) return false;
   SetDefaultsForHW ();
-  ipaddr = "";
+  ipaddr  = "";
+  netmask = "";
   bootproto = "dhcp";
     // #176804
     if (NetworkStorage::isDiskOnNetwork ( NetworkStorage::getDevice("/") ))
@@ -1341,13 +1343,14 @@ global boolean ProposeItemConfiguration(){
   NetworkDevices::Add();
   operation = `edit;
   interfacename=getCurrentItem()["hwinfo", "dev_name"]:"";
+  description = HardwareName([getCurrentItem()["hwinfo"]:$[]], getCurrentItem()["hwinfo", "dev_name"]:"");
   Commit ();
  y2milestone("After configuration propose %1", getCurrentItem());
  return true;
 }
 
 global void setDriver(string driver){
-y2internal("driver %1, %2", driver, getCurrentItem()["hwinfo", "module"]:"");
+ y2milestone("driver %1, %2", driver, getCurrentItem()["hwinfo", "module"]:"");
  if (getCurrentItem()["hwinfo", "module"]:""==driver && !hasAnyValue(getCurrentItem()["udev", "driver"]:"")) return;
  Items[current, "udev", "driver"] = driver;
 }
