@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Aug 31 16:04:05 CEST 2007 - locilka@suse.cz
+
+- Using --proxy-user and --proxy in /root/.curlrc (#305163).
+- Changing priorities in syntax for /root/.curlrc parser (#305163).
+
+-------------------------------------------------------------------
 Fri Aug 31 15:38:31 CEST 2007 - mzugec@suse.cz
 
 - autoyast support for udev rules and backport compatibility with 

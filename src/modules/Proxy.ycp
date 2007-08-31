@@ -71,7 +71,7 @@ global define boolean Read() {
 
     /* Read /root/.curlrc */
     if(SCR::Read(.target.size, "/root/.curlrc") > 0)
-	user = (string) SCR::Read(.root.curlrc.proxy-user);
+	user = (string) SCR::Read (add (.root.curlrc, "--proxy-user"));
 
     if(user == nil) user = "";
 
@@ -110,7 +110,9 @@ global define boolean Write() {
     ];
 
     string caption = _("Saving Proxy Configuration");
-    integer sl = 500; //sleep for longer time, so that progress does not disappear right afterwards
+    // sleep for longer time, so that progress does not disappear right afterwards
+    // but only when Progress is visible
+    integer sl = (Progress::status() == true ? 500 : 0);
 
     Progress::New(caption, " ", size(steps), steps, [], "");
 
@@ -124,14 +126,40 @@ global define boolean Write() {
     SCR::Write(.sysconfig.proxy.NO_PROXY, no);
     SCR::Write(.sysconfig.proxy, nil);
 
-    /* Update /root/.curlrc */
-    string proxyuser = nil;
-    if(user != "") {
-	proxyuser = user;
-	if(pass != "") proxyuser = user + ":" + pass;
+    // proxy is used, write /root/.curlrc
+    // bugzilla #305163
+    if (enabled) {
+	/* Update /root/.curlrc */
+	string proxyuser = nil;
+	if (user != "") {
+	    proxyuser = user;
+	    if (pass != "") proxyuser = user + ":" + pass;
+	}
+
+	// nil or real value
+	SCR::Write (add (.root.curlrc, "--proxy-user"), proxyuser);
+
+	// not 'nil', not empty
+	// bugzilla #305163
+	if (http != nil && size (http) > 0) {
+	    SCR::Write (add (.root.curlrc, "--proxy"), http);
+	} else {
+	    SCR::Write (add (.root.curlrc, "--proxy"), nil);
+	}
+
+	// only written value can have a comment
+	if (proxyuser != nil) {
+	    SCR::Write (add (add (.root.curlrc, "--proxy-user"), "comment"), ChangedComment("proxy"));
+	// only when set, can have a comment
+	} else if (http != nil && size (http) > 0) {
+	    SCR::Write (add (add (.root.curlrc, "--proxy"), "comment"), ChangedComment("proxy"));
+	}
+    // proxy is not used, remove proxy-related settings
+    } else {
+	SCR::Write (add (.root.curlrc, "--proxy-user"), nil);
+	SCR::Write (add (.root.curlrc, "--proxy"), nil);
     }
-    SCR::Write(.root.curlrc.proxy-user, proxyuser);
-    SCR::Write(.root.curlrc.proxy-user.comment, ChangedComment("proxy"));
+
     SCR::Write(.root.curlrc, nil);
     sleep(sl);
     Progress::NextStage();
