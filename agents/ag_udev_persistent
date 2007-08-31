@@ -14,6 +14,12 @@ my $drivers_file = "/etc/udev/rules.d/79-yast2-drivers.rules";
 my @net_comment = ();
 my @drivers_comment = ();
 
+sub set_rules_comment(){
+ my $class = shift;
+ my $pointer = \@_;
+ @net_comment = @{$$pointer[0]};
+}
+
 sub parse_net_rules {
     my $class = shift;
     my %hash_table = ();
@@ -101,6 +107,22 @@ sub write_drivers_rules(){
 }
 
 
+sub write_net_rules(){
+ my $class = shift;
+ my $param = \@_;
+
+ my @output = ();
+ foreach my $row (@net_comment, @{$$param[0]}){
+  push (@output, $row."\n");
+ }
+
+ if( open( FILE, "> $net_file" ) ) {
+   print FILE @output;
+ } else {
+         return $class->SetError(summary => sprintf( _("saving %s failed: %s"),$net_file, $!),
+                                code    => "OPEN_FAILED");
+        }
+}
 
 sub Execute {
     my $class = shift;
@@ -125,8 +147,13 @@ sub Write {
     my $class = shift;
     my ($path, @args) = @_;
     if ($path eq '.drivers'){
-	   my $hash_pointer = $args[0];
-           return $class->write_drivers_rules($hash_pointer);
+           return $class->write_drivers_rules($args[0]);
+	  }
+    if ($path eq '.rules'){
+           return $class->write_net_rules($args[0]);
+	  }
+    if ($path eq '.rules_comment'){
+           return $class->set_rules_comment($args[0]);
 	  }
 }
 

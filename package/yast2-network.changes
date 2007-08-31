@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Aug 31 15:38:31 CEST 2007 - mzugec@suse.cz
+
+- autoyast support for udev rules and backport compatibility with 
+  old-style network devices names (#303916)
+- 2.15.71 
+
+-------------------------------------------------------------------
 Tue Aug 28 14:59:38 CEST 2007 - mzugec@suse.cz
 
 - write NAME in propose - (#301977)

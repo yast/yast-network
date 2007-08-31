@@ -20,6 +20,7 @@ import "Netmask";
 import "NetworkStorage";
 import "Installation";
 import "String";
+import "Mode";
 
 include "network/routines.ycp";
 include "network/complex.ycp";
@@ -205,11 +206,10 @@ y2internal("hardware %1", hardware);
 string ifcfg = sformat("ifcfg-%1", InstallInf["netdevice"]:"");
 
  string hw_name = BuildDescription(NetworkDevices::device_type(ifcfg), NetworkDevices::device_num(ifcfg), $["dev_name":InstallInf["netdevice"]:""], hardware);
-y2internal("name %1", hw_name);
  if (size(hw_name)>0) network_configuration = sformat("%1NAME='%2'\n", network_configuration, hw_name);
 
 
- y2internal("Network Configuration:\n%1\nifcfg file: %2", network_configuration, ifcfg);
+ y2milestone("Network Configuration:\n%1\nifcfg file: %2", network_configuration, ifcfg);
 
  // write only if file doesn't exists
  string dev_file=sformat("/etc/sysconfig/network/%1", ifcfg);
@@ -299,6 +299,12 @@ void save_network(){
  // close and chroot back
  WFM::SCRClose (new_SCR);
  WFM::SCRSetDefault (old_SCR);
+
+ if (Mode::autoinst()){
+  import "LanUdevAuto";
+  LanUdevAuto::Write();
+ }
+
 
  if(ReadInstallInf()){
 //  string hwcfgname = CreateHardwareFile();
