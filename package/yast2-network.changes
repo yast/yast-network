@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Sat Sep  1 09:01:47 CEST 2007 - mzugec@suse.cz
+
+- read NISDomain instead of NisDomain from install.inf 
+
+-------------------------------------------------------------------
 Fri Aug 31 16:04:05 CEST 2007 - locilka@suse.cz
 
 - Using --proxy-user and --proxy in /root/.curlrc (#305163).

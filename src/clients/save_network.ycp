@@ -79,7 +79,7 @@ define boolean ReadInstallInf() {
     ReadInstallInfItem(install_inf, "gateway", "Gateway");
     ReadInstallInfItem(install_inf, "nameserver", "Nameserver");
     ReadInstallInfItem(install_inf, "domain", "Domain");
-    ReadInstallInfItem(install_inf, "nisdomain", "NisDomain");
+    ReadInstallInfItem(install_inf, "nisdomain", "NISDomain");
     ReadInstallInfItem(install_inf, "hostname", "Hostname");
     ReadInstallInfItem(install_inf, "module", "Alias");
 //    ReadInstallInfItem(install_inf, "options", "Options");
