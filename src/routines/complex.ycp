@@ -76,7 +76,7 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 
 	    /* main device summary */
 	    string descr = BuildDescription (devtype, devnum, devmap, Hardware);
-	    string unq = devmap["udi"]:"";
+	    string unq = devmap["UDI"]:"";
 	    string status = DeviceStatus(devtype, devnum, devmap);
 	    if (link)
 	    {

@@ -239,7 +239,7 @@ global define boolean Write() {
 
     /* Setup SL modem */
     if(contains(Requires, "smartlink-softmodem")) {
-
+	PackageSystem::CheckAndInstallPackages(Requires);
 	y2milestone("Setting up smartlink-softmodem ...");
 
 	Service::Stop("slmodemd");

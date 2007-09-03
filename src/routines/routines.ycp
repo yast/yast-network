@@ -593,6 +593,8 @@ define list<map> ReadHardware(string hwtype) {
     /* read the corresponding hardware */
     if(haskey(hwtypes, hwtype))
 	allcards = (list) SCR::Read(hwtypes[hwtype]:nil);
+//	allcards = [$["bus":"PCI", "bus_hwcfg":"pci", "class_id":258, "dev_name":"/dev/ttySL0", "dev_names":["/dev/ttySL0"], "dev_num":$["major":212, "minor":0, "range":1, "type":"c"], "device":"82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) AC'97 Modem Controller", "device_id":74950, "driver":"Intel ICH Modem", "driver_module":"snd_intel8x0m", "drivers":[$["active":true, "modprobe":true, "modules":[["snd_intel8x0m", ""]]]], "func_id":6, "modalias":"pci:v00008086d000024C6sv0000103Csd000008BCbc07sc03i00", "model":"Hewlett-Packard Company 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) AC'97 Modem Controller", "old_unique_key":"i5Ju.KmxxluQyLyF", "resource":$["io":[$["active":true, "length":256, "mode":"rw", "start":9216], $["active":true, "length":128, "mode":"rw", "start":10240]], "irq":[$["count":595, "enabled":true, "irq":17]]], "rev":"1", "slot_id":31, "sub_class_id":4, "sub_device_id":67772, "sub_vendor":"Hewlett-Packard Company", "sub_vendor_id":69692, "sysfs_bus_id":"0000:00:1f.6", "sysfs_id":"/devices/pci0000:00/0000:00:1f.6", "udi":"/org/freedesktop/Hal/devices/pci_8086_24c6", "unique_key":"ORVU.KmxxluQyLyF", "vendor":"Intel Corporation", "vendor_id":98438]];
+
     else if(hwtype == "all" || hwtype == "" || hwtype == nil)
 	maplist(path v, (list<path>) Map::Values(hwtypes), {
 	    allcards = merge(allcards, (list) SCR::Read(v));

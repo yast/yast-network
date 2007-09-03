@@ -26,6 +26,10 @@ include "network/widgets.ycp";
  * @return dialog result
  */
 define symbol ModemDialog(boolean detected) {
+ // for ttySL install smartlink-softmodem package (#284287)
+    if(issubstring(Modem::Device, "ttySL")){
+	if (!contains(Modem::Requires, "smartlink-softmodem")) Modem::Requires=add(Modem::Requires, "smartlink-softmodem");
+    }
 
     ScreenName("modem-dialog");
 

@@ -314,10 +314,12 @@ If you press <B>Add</B>, you can manually configure a modem.</P>
 Choose a modem for which to change or remove the configuration.
 Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>");
 
+/*
     list overview = Modem::Overview();
     list overviewp = Provider::Overview("modem");
     y2debug("overview=%1",overview);
     y2debug("overviewp=%1",overviewp);
+*/
 
    // use CWMTab for connections and providers
     map<string, map<string, any> > widget_descr = $[

@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Sep  3 14:43:39 CEST 2007 - mzugec@suse.cz
+
+- install smartlink-softmodem package for devices with *ttySL* 
+  device files (#284287)
+- correctly match configuration with hardware for modem devices
+using UDI instead of udi
+- 2.15.72 
+
+-------------------------------------------------------------------
 Mon Sep  3 09:37:00 CEST 2007 - mzugec@suse.cz
 
 - fixed Proxy testsuite
