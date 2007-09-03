@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Sep  3 09:37:00 CEST 2007 - mzugec@suse.cz
+
+- fixed Proxy testsuite
+
+-------------------------------------------------------------------
 Sat Sep  1 09:01:47 CEST 2007 - mzugec@suse.cz
 
 - read NISDomain instead of NisDomain from install.inf 
