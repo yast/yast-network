@@ -91,6 +91,13 @@ define boolean ReadInstallInf() {
     ReadInstallInfItem(install_inf, "QETH_LAYER2_SUPPORT", "Layer2");
     ReadInstallInfItem(install_inf, "LLADDR", "OSAHWAddr");
 
+    ReadInstallInfItem(install_inf, "WlanESSID", "WESSID");
+    ReadInstallInfItem(install_inf, "WlanAuth", "WAuth");
+    ReadInstallInfItem(install_inf, "WlanKey", "WKey");
+    ReadInstallInfItem(install_inf, "WlanKeyType", "WkeyType");
+    ReadInstallInfItem(install_inf, "WlanKeyLen", "WkeyLen");
+
+
     /* Split network device */
     string netdevice = InstallInf["netdevice"]:"";
     if(netdevice != "") {
@@ -184,10 +191,21 @@ void CreateIfcfg(){
 	       SCR::Execute(.target.bash_output, "sed -i s/\"DHCLIENT_SET_HOSTNAME=.*\"/'DHCLIENT_SET_HOSTNAME=\"yes\"'/g /etc/sysconfig/network/dhcp");
 	      }
 
+ // wlan devices
+ if (size(InstallInf["WESSID"]:"")>0 || size(InstallInf["WAuth"]:"")>0 || size(InstallInf["WKey"]:"")>0 || size(InstallInf["WKeyType"]:"")>0 || size(InstallInf["WKeyLen"]:"")>0){
+    network_configuration = sformat("%1WIRELESS_ESSID='%2'\n", network_configuration, InstallInf["WESSID"]:"");
+    network_configuration = sformat("%1WIRELESS_AUTH_MODE='%2'\n", network_configuration, InstallInf["WAuth"]:"");
+    network_configuration = sformat("%1WIRELESS_AUTH_MODE='%2'\n", network_configuration, InstallInf["WAuth"]:"");
+    network_configuration = sformat("%1WIRELESS_KEY_LENGTH='%2'\n", network_configuration, InstallInf["WKeyLen"]:"");
+	if (size(InstallInf["WKeyType"]:"")>0 && size(InstallInf["WKey"]:"")>0)
+    network_configuration = sformat("%1WIRELESS_KEY_0='%2:%3'\n", network_configuration, substring(InstallInf["WKeyType"]:"", 0, 1), InstallInf["WKey"]:"");
+ }
+
+
  // if available, write MTU
  if (size(InstallInf["mtu"]:"")>0) network_configuration = sformat("%1MTU='%2'\n", network_configuration, InstallInf["mtu"]:"");
 
-
+ // for queth devices (s390)
  if (size(InstallInf["LLADDR"]:"")>0) network_configuration = sformat("%1LLADDR='%2'\n", network_configuration, InstallInf["LLADDR"]:"");
 
 

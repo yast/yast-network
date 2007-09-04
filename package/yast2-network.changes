@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Sep  4 15:14:46 CEST 2007 - mzugec@suse.cz
+
+- WLAN Installation - save data from install.inf (#223570)
+- 2.15.73 
+
+-------------------------------------------------------------------
 Mon Sep  3 14:43:39 CEST 2007 - mzugec@suse.cz
 
 - install smartlink-softmodem package for devices with *ttySL* 
