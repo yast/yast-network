@@ -18,6 +18,7 @@ import "NetworkDevices";
 import "FileUtils";
 import "Netmask";
 import "NetworkStorage";
+import "Proxy";
 import "Installation";
 import "String";
 import "Mode";
@@ -82,6 +83,7 @@ define boolean ReadInstallInf() {
     ReadInstallInfItem(install_inf, "nisdomain", "NISDomain");
     ReadInstallInfItem(install_inf, "hostname", "Hostname");
     ReadInstallInfItem(install_inf, "module", "Alias");
+    ReadInstallInfItem(install_inf, "proxy", "Proxy");
 //    ReadInstallInfItem(install_inf, "options", "Options");
     ReadInstallInfItem(install_inf, "hwaddr", "HWAddr");
     ReadInstallInfItem(install_inf, "ethtool_options", "ethtool");
@@ -266,6 +268,15 @@ void CreateOtherNetworkFiles(){
    y2milestone("Write resolv.conf content: %1", text);
    SCR::Write(.target.string, "/etc/resolv.conf", text);
   }
+ }
+
+ // create proxy sysconfig file
+ if (size(InstallInf["proxy"]:"")>0) {
+  y2milestone("Writing proxy settings: %1", InstallInf["proxy"]:"");
+  map ex = Proxy::Export();
+  Proxy::Read();
+  Proxy::Import( ex );
+  Proxy::Write();
  }
  // create defaultdomain
  if (size(InstallInf["nisdomain"]:"")>0 && FileUtils::Exists("/etc/defaultdomain")){
