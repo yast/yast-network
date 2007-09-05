@@ -271,7 +271,7 @@ void CreateOtherNetworkFiles(){
    else
    //If we don't have search domain data, skip 'search' field,
    //do not leave out 'nameserver' completely - #298001
-     text = sformat("nameserver %1\n", InstallInf["nameserver"]:"")
+     text = sformat("nameserver %1\n", InstallInf["nameserver"]:"");
    y2milestone("Write resolv.conf content: %1", text);
    SCR::Write(.target.string, "/etc/resolv.conf", text);
   }
