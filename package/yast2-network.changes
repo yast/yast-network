@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Wed Sep  5 14:23:30 CEST 2007 - kmachalkova@suse.cz
+
+- Proxy testsuite adjusted to correct .curlrc syntax (#305163 related)
+- Fix downloading release notes with proxy (#305222)
+- Save proxy settings at the end of 1st stage of installation 
+  (#298001)
+- Save nameserver entry at the end of 1st stage of installation even
+  if no search domain is present in install.inf (#298001)
+
+-------------------------------------------------------------------
 Tue Sep  4 15:14:46 CEST 2007 - mzugec@suse.cz
 
 - WLAN Installation - save data from install.inf (#223570)
