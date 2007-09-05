@@ -5,7 +5,7 @@ include "testsuite.ycp";
 map READ = $[
     "root" : $[
 	"curlrc" : $[
-	    "proxy-user" : "user:pass",
+	    "--proxy-user" : "user:pass",
 	],
     ],
     "sysconfig" : $[
