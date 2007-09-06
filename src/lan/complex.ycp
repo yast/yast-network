@@ -459,7 +459,7 @@ symbol MainDialog(string init_tab) ``{
 
     Wizard::SetContentsButtons(caption, contents, help, Label::BackButton (), Label::FinishButton ());
     Wizard::DisableBackButton();
-
+    if (Mode::installation()) Wizard::SetNextButton (`next, Label::AcceptButton());
     symbol ret = CWM::Run(w, $[`abort:ReallyAbort ]);
     return ret;
 }

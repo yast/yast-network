@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Sep  6 14:24:50 CEST 2007 - mzugec@suse.cz
+
+- Finish button renamed to Accept for installation (#307789) 
+
+-------------------------------------------------------------------
 Thu Sep  6 14:05:18 CEST 2007 - mzugec@suse.cz
 
 - for `abort in network dialogs use LanItems::Rollback (#307779)
