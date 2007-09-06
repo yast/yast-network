@@ -328,7 +328,7 @@ void save_network(){
  WFM::Execute(.local.bash, "udevtrigger --subsystem-match=net");
 
  WFM::Execute (.local.bash, sformat (
-	"mkdir -p '%2%1'; /bin/cp -p %1/70-persistent-net.rules'%2%1'",
+	"mkdir -p '%2%1'; /bin/cp -p %1/70-persistent-net.rules '%2%1'",
 	"/etc/udev/rules.d",
 	String::Quote (Installation::destdir)));
 

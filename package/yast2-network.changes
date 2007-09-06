@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Sep  6 16:22:18 CEST 2007 - mzugec@suse.cz
+
+- fixed missing space between source and destination when copy udev
+rules into installed system (#307162)
+
+-------------------------------------------------------------------
 Thu Sep  6 14:24:50 CEST 2007 - mzugec@suse.cz
 
 - Finish button renamed to Accept for installation (#307789) 
