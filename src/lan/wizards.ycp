@@ -162,11 +162,11 @@ define symbol NetworkCardSequence(string action) ``{
     map sequence = $[
 	"ws_start" : ws_start,
 	"hardware" : $[
-	    `abort	: `abort,
+	    `abort	: `back,
 	    `next	: "address",
 	],
 	"address" : $[
-	    `abort	: `abort,
+	    `abort	: `back,
 	    `next	: `next,
 	],
 	"s390" : $[

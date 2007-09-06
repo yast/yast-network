@@ -136,6 +136,7 @@ define boolean AddInterface () {
 
     LanItems::SelectHWMap(LanItems::getCurrentItem()["hwinfo"]:$[]);
     LanItems::Items[LanItems::current, "ifcfg"] = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
+    LanItems::Items[LanItems::current, "commited"] = false;
     LanItems::operation = `edit;
 //    LanItems::SetDefaultsForHW ();
 
@@ -460,7 +461,6 @@ symbol MainDialog(string init_tab) ``{
     Wizard::DisableBackButton();
 
     symbol ret = CWM::Run(w, $[`abort:ReallyAbort ]);
-
     return ret;
 }
 

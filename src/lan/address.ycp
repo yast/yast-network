@@ -792,7 +792,7 @@ define any AddressDialog() {
 	"validate_type": `function,
 	"validate_function": ValidateDialog,
         "store" : StoreAddrWidget,
-	`abort : ReallyAbort,
+	`abort : LanItems::Rollback,
     ];
 
 
@@ -861,10 +861,16 @@ define any AddressDialog() {
 	    /* Address dialog caption */
 	    "caption": _("Network Card Setup"),
 	    "back_button" : Label::BackButton (),
+	    "abort_button" : Label::CancelButton (),
 	    "next_button" : Label::NextButton (),
 	    "fallback_functions" : functions,
 	    ]);
+    Wizard::RestoreAbortButton();
+    if (LanItems::operation!=`add) Wizard::DisableBackButton ();
+
     y2milestone ("ShowAndRun: %1", ret);
+
+    if (ret==`abort) LanItems::Rollback();
 
     if (ret != `back && ret != `abort)
     {

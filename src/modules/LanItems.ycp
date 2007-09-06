@@ -147,7 +147,7 @@ global void WriteUdevRules(){
   if (hasAnyValue(Items[key, "udev", "driver"]:""))
 					udev_drivers_rules[Items[key, "udev", "driver"]:""] = [ sformat("ENV{MODALIAS}==\"%1\"", Items[key, "hwinfo", "modalias"]:""), sformat("ENV{MODALIAS}=\"%1\"", Items[key, "udev", "driver"]:"") ];
  });
-y2internal("%1", udev_drivers_rules);
+ y2milestone("write udev rules: %1", udev_drivers_rules);
  SCR::Write(.udev_persistent.drivers, udev_drivers_rules);
 }
 
@@ -184,6 +184,7 @@ global define void UnsetModified () {
 
 global void AddNew(){
  current = size(Items);
+ Items[current] = $["commited":false];
  operation = `add;
 }
 
@@ -219,16 +220,24 @@ global void ReadHw(){
 global void ReadNetworkModules(){
 }
 
+// get list of all configurations for "netcard" macro in NetworkDevices module
+list<string> getNetworkDevices(){
+ list<string> confs=[];
+    map <string, any> configurations =  NetworkDevices::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkDevices::CardRegex["netcard"]:"", "|"), {
+     foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+      confs = add(confs, NetworkDevices::device_name(devtype, devnum));
+     });
+    });
+ return confs;
+}
+
 global void ReadNetworkInterfaces(){
     NetworkDevices::Read();
     NetworkDevices::CleanHotplugSymlink();
 
    // match configurations to Items list with hwinfo
-    map <string, any> configurations =  NetworkDevices::FilterDevices("netcard");
-    foreach(string devtype, splitstring(NetworkDevices::CardRegex["netcard"]:"", "|"), {
-     foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
-      string confname = NetworkDevices::device_name(devtype, devnum);
-
+    foreach(string confname, getNetworkDevices(), {
       integer pos = nil;
       map<string, any> val = $[];
       foreach(integer key, map<string, any> value, (map<integer, map<string, any> >)Items, {
@@ -243,28 +252,21 @@ global void ReadNetworkInterfaces(){
 		}
 	Items[pos, "ifcfg"] = confname;
       });
-    });
 
   // add to Items also virtual devices (configurations) without hwinfo
-
-    foreach(string devtype, splitstring(NetworkDevices::CardRegex["netcard"]:"", "|"), {
-     foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
-
-//  foreach(string dev_name, map tmp_map, NetworkDevices::FilterDevices("netcard"), {
-//   foreach(string dev_num, (list<string>)Map::Keys(tmp_map), {
+    foreach(string confname, getNetworkDevices(), {
     boolean already = false;
     foreach(integer key, (list<integer>)Map::Keys(Items), {
-     if (NetworkDevices::device_name(devtype, devnum) == Items[key, "ifcfg"]:""){
+     if (confname == Items[key, "ifcfg"]:""){
       already = true;
       break;
      };
     });
     if (!already){
      AddNew();
-     Items[current] = $["ifcfg":NetworkDevices::device_name(devtype, devnum)];
+     Items[current] = $["ifcfg":confname];
     }
    });
-  });
  y2milestone("Read Configuration LanItems::Items %1", Items);
 }
 
@@ -566,7 +568,7 @@ global map GetDefaultsForHW () {
  * must be in sync with @ref GetDefaultsForHW
  */
 global define void SetDefaultsForHW () {
-y2internal("SetDefaultsForHW type %1", type);
+ y2milestone("SetDefaultsForHW type %1", type);
     if (type == "wlan")
     {
 	usercontrol = true;
@@ -1055,6 +1057,19 @@ global define boolean Commit() {
    return true;
 }
 
+global boolean Rollback(){
+ if(getCurrentItem()["commited"]:true==false){
+  y2milestone("rollback item %1", current);
+  if (!(size(getCurrentItem()["hwinfo"]:$[])>0)) Items = remove(Items, current);
+	else{
+	 if (haskey(Items[current]:$[], "ifcfg"))
+		if (!contains(getNetworkDevices(), getCurrentItem()["ifcfg"]:""))
+					Items[current]=remove(Items[current]:$[], "ifcfg");
+	}
+ };
+ return true;
+}
+
 /**
  * Get the module configuration for the modules configured in the 
  * interface section
@@ -1236,7 +1251,7 @@ global map FindMatchingDevice(map interface) {
 }
 
 global void DeleteItem(){
- y2internal("deleting ... %1", Items[current]:$[]);
+ y2milestone("deleting ... %1", Items[current]:$[]);
  string ifcfg = Items[current, "ifcfg"]:"";
  string hwcfg = Items[current, "hwcfg"]:"";
 

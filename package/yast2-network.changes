@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Sep  6 14:05:18 CEST 2007 - mzugec@suse.cz
+
+- for `abort in network dialogs use LanItems::Rollback (#307779)
+- workflow for add/edit card can be aborted (#307778)
+- 2.15.74 
+
+-------------------------------------------------------------------
 Wed Sep  5 14:23:30 CEST 2007 - kmachalkova@suse.cz
 
 - Proxy testsuite adjusted to correct .curlrc syntax (#305163 related)

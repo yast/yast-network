@@ -346,9 +346,11 @@ for a particular network card by entering the name in the search entry.</p>");
 
 
 symbol handleHW (string key, map event) {
+ if (event["ID"]:nil==`cancel) LanItems::Rollback();
  symbol ret=nil;
  if (event["EventReason"]:"" == "ValueChanged" || event["EventReason"]:"" == "Activated") ret = (symbol)event["WidgetID"]:nil;
  if (ret == `list) SelectionDialog();
+// if (ret == `abort) LanItems::Rollback();
  if(ret == `pcmcia || ret == `usb || ret == `dev) {
 
 
@@ -439,15 +441,13 @@ if (LanItems::operation==`add){
  LanItems::type = (string) UI::QueryWidget(`id(`dev), `Value);
  string nm = (string) UI::QueryWidget(`id(`num), `Value);
  string name=NetworkDevices::device_name(LanItems::type, nm);
-//	if( hardware["device"]:"" != LanItems::device ) {
 	    if(contains(NetworkDevices::List(""), name)) {
 		Popup::Error(sformat(_("Configuration name %1 (%2) already exists.
 Choose a different one."), nm, NetworkDevices::device_name(hardware["type"]:"", nm)));
 		UI::SetFocus(`id(`num));
 	    }
-//	}
  NetworkDevices::Name = name;
- LanItems::Items[LanItems::current]= $["ifcfg":name];
+ LanItems::Items[LanItems::current, "ifcfg"]= name;
 }
 
  LanItems::setDriver((string) UI::QueryWidget(`modul, `Value));
@@ -770,8 +770,15 @@ any HardwareDialog (){
 
     string help = CWM::MergeHelps(w);
     contents = CWM::PrepareDialog(contents, w);
-    Wizard::SetContentsButtons(caption, contents, "",Label::BackButton(), Label::NextButton());
-    return CWM::Run(w, $[`abort:ReallyAbort ]);
+
+    Wizard::OpenNextBackDialog();
+    Wizard::SetContents(caption, contents, "",false, true);
+    Wizard::SetAbortButton(`cancel, Label::CancelButton());
+//    Wizard::DisableBackButton();
+    any ret = CWM::Run(w, $[ /*`abort:ReallyAbort*/ ]);
+    Wizard::CloseDialog();
+//    Wizard::RestoreAbortButton();
+    return ret;
 }
 
 
