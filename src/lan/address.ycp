@@ -567,7 +567,6 @@ list< list<string> > BuildTypesListCWM (list<string> types) {
     });
 }
 
-
 /**
  * Dialog for setting up IP address
  * @return dialog result
@@ -864,9 +863,10 @@ define any AddressDialog() {
 	    "abort_button" : Label::CancelButton (),
 	    "next_button" : Label::NextButton (),
 	    "fallback_functions" : functions,
+	    "disable_buttons" :
+  (LanItems::operation!=`add ||(LanItems::operation==`edit && LanItems::getCurrentItem()["ifcfg"]:""=="")) ? [ "back_button" ] : []
 	    ]);
     Wizard::RestoreAbortButton();
-    if (LanItems::operation!=`add) Wizard::DisableBackButton ();
 
     y2milestone ("ShowAndRun: %1", ret);
 

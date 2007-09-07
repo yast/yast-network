@@ -111,29 +111,7 @@ define symbol WriteDialog() ``{
 }
 
 define boolean AddInterface () {
-    //this is the map of kernel modules vs. requested firmware
-    //non-empty keys are firmware packages shipped by SUSE
-    map <string, string> request_firmware = $[
-	"atmel_pci" : "atmel-firmware",
-	"atmel_cs"  : "atmel-firmware",
-	"at76_usb"  : "atmel-firmware",
-	"ipw2100" : "ipw-firmware",
-	"ipw2200" : "ipw-firmware",
-	"ipw3945" : "ipw-firmware",
-	"iwl3945" : "iwl3945-ucode",
-	"iwl4965" : "iwl4965-ucode",
-	"bcm43xx" : "",
-	"prism54" : "",
-	"spectrum_cs" : "",
-	"zd1201" : "",
-	"zd1211rw" : "",
-	"acx" : "",
-	"rt61pci" : "",
-	"rt73usb" : "",
-	"prism54usb":""
-    ];
     Lan::Add ();
-
     LanItems::SelectHWMap(LanItems::getCurrentItem()["hwinfo"]:$[]);
     LanItems::Items[LanItems::current, "ifcfg"] = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
     LanItems::Items[LanItems::current, "commited"] = false;
@@ -149,15 +127,17 @@ The driver may be built in the kernel.")))
 	    return false;
 	}
     }
-    else if(haskey(request_firmware, NetworkModules::Alias)){
-	string fw = request_firmware[NetworkModules::Alias]:"";
+*/
+    if (LanItems::needFirmwareCurrentItem()){
+	string fw = LanItems::GetFirmwareForCurrentItem();
 	if (fw != ""){
 	    if ((!Package::Installed(fw) && !Package::Available(fw))){
 	        Popup::Message(sformat(_("The device needs a firmware to function properly. It can be installed from
 %1 Add-On CD.\nTo install the firmware, add Add-On CD to your YaST installation sources and return 
 to this configuration dialog."), Product::name));
 		return false;
-	    }
+	    } else
+		if (!contains(LanItems::Requires, fw)) LanItems::Requires = add(LanItems::Requires, fw);
 	}
 	else {
 		return (Popup::ContinueCancel(_("The device needs a firmware to function properly. It can be usually downloaded 
@@ -166,7 +146,7 @@ to configure the device. Otherwise click \'Cancel\' and return to this dialog
 once you have installed the firmware.")));
 	}
     }
-*/
+
     // this is one of 3 places to install packages :-(
     // - kernel modules (InstallKernel): before loaded
     // - smpppd & kinternet: before net start
@@ -176,6 +156,9 @@ once you have installed the firmware.")));
 	if(PackagesInstall(LanItems::Requires) != `next)
 	    return false;
     }
+/*
+   TODO: Refresh hwinfo in LanItems
+*/
     return true;
 }
 
@@ -221,12 +204,14 @@ define void ManagedStore (string key, map event) {
 
 void enableDisableButtons(){
  LanItems::current = (integer)UI::QueryWidget (`id (`_hw_items), `CurrentItem);
+
  UI::ChangeWidget(`_hw_sum, `Value,LanItems::GetItemDescription());
  if (!LanItems::IsItemConfigured()) // unconfigured
 			 UI::ChangeWidget(`id(`delete), `Enabled, false);
 	else UI::ChangeWidget(`id(`delete), `Enabled, true);
-   if (!hasAnyValue(LanItems::getCurrentItem()["hwinfo", "dev_name"]:"") && size(LanItems::getCurrentItem()["hwinfo"]:$[])>0) UI::ChangeWidget(`id(`edit), `Enabled, false);
-	else UI::ChangeWidget(`id(`edit), `Enabled, true);
+
+ UI::ChangeWidget(`id(`edit), `Enabled, LanItems::enableCurrentEditButton());
+
     if (!Mode::config() && Lan::HaveXenBridge ()) // #196479
     {
 	// #178848

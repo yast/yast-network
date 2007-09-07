@@ -132,6 +132,28 @@ global boolean nm_proposal_valid = false;
 global string nm_name = "";
 global string nm_name_old = nil;
 
+    //this is the map of kernel modules vs. requested firmware
+    //non-empty keys are firmware packages shipped by SUSE
+map <string, string> request_firmware = $[
+	"atmel_pci" : "atmel-firmware",
+	"atmel_cs"  : "atmel-firmware",
+	"at76_usb"  : "atmel-firmware",
+	"ipw2100" : "ipw-firmware",
+	"ipw2200" : "ipw-firmware",
+	"ipw3945" : "ipw-firmware",
+	"iwl3945" : "iwl3945-ucode",
+	"iwl4965" : "iwl4965-ucode",
+	"bcm43xx" : "",
+	"prism54" : "",
+	"spectrum_cs" : "",
+	"zd1201" : "",
+	"zd1211rw" : "",
+	"acx" : "",
+	"rt61pci" : "",
+	"rt73usb" : "",
+	"prism54usb":""
+    ];
+
 include "network/hardware.ycp";
 
 boolean ReadUdevRules(){
@@ -1370,5 +1392,43 @@ global void setDriver(string driver){
  Items[current, "udev", "driver"] = driver;
 }
 
+global boolean needFirmwareCurrentItem(){
+ boolean need = false;
+ if (hasAnyValue(getCurrentItem()["hwinfo", "driver"]:"")){
+  if(haskey(request_firmware, getCurrentItem()["hwinfo", "driver"]:"")) need = true;
+ } else{
+    foreach(map driver, getCurrentItem()["hwinfo", "drivers"]:[], {
+     if(haskey(request_firmware, driver["modules", 0,0]:"")) {
+      y2milestone("driver %1 needs firmware", driver["modules", 0,0]:"");
+      need = true;
+     }
+    });
+  }
+ y2milestone("item %1 needs firmware:%2", current, need);
+ return need;
+}
+
+global string GetFirmwareForCurrentItem(){
+ string kernel_module="";
+ if (hasAnyValue(getCurrentItem()["hwinfo", "driver"]:"")){
+  if(haskey(request_firmware, getCurrentItem()["hwinfo", "driver"]:"")) kernel_module=getCurrentItem()["hwinfo", "driver"]:"";
+ } else{
+    foreach(map driver, getCurrentItem()["hwinfo", "drivers"]:[], {
+     if(haskey(request_firmware, driver["modules", 0,0]:"")) {
+      kernel_module = driver["modules", 0,0]:"";
+      break;
+     }
+    });
+  }
+ string firmware = request_firmware[kernel_module]:"";
+ y2milestone("driver %1 needs firmware %2", kernel_module, firmware);
+ return firmware;
+}
+
+global boolean enableCurrentEditButton(){
+ if (needFirmwareCurrentItem()) return true;
+ if (!hasAnyValue(LanItems::getCurrentItem()["hwinfo", "dev_name"]:"") && size(LanItems::getCurrentItem()["hwinfo"]:$[])>0) return false;
+	else return true;
+}
 
 }

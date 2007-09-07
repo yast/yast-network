@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Sep  7 12:55:00 CEST 2007 - mzugec@suse.cz
+
+- fixed firmware installation for wlan cards (#307401)
+- 2.15.75 
+
+-------------------------------------------------------------------
 Thu Sep  6 16:22:18 CEST 2007 - mzugec@suse.cz
 
 - fixed missing space between source and destination when copy udev
