@@ -327,10 +327,17 @@ void save_network(){
  // re-trigger event for net
  WFM::Execute(.local.bash, "udevtrigger --subsystem-match=net");
 
- WFM::Execute (.local.bash, sformat (
-	"mkdir -p '%2%1'; /bin/cp -p %1/70-persistent-net.rules '%2%1'",
-	"/etc/udev/rules.d",
-	String::Quote (Installation::destdir)));
+ string udev_rules_srcdir = "/etc/udev/rules.d";
+ string udev_rules_srcfile = "70-persistent-net.rules";
+ string udev_rules_destdir = sformat("%1%2", String::Quote (Installation::destdir), udev_rules_srcdir);
+
+ //Do not create udev_rules_destdir if it already exists (in case of update)
+ //(bug #293366, c#7)
+ if (! FileUtils::Exists( udev_rules_destdir ))
+     WFM::Execute (.local.bash, sformat (
+	 "mkdir -p '%1'; /bin/cp -p '%2/%3' '%1'",
+	  udev_rules_destdir,
+	  udev_rules_srcdir, udev_rules_srcfile);
 
  // close and chroot back
  WFM::SCRClose (new_SCR);
