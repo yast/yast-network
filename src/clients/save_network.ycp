@@ -329,7 +329,7 @@ void save_network(){
 
  string udev_rules_srcdir = "/etc/udev/rules.d";
  string udev_rules_srcfile = "70-persistent-net.rules";
- string udev_rules_destdir = sformat("%1%2", String::Quote (Installation::destdir), udev_rules_srcdir);
+ string udev_rules_destdir = sformat("%1/%2", String::Quote (Installation::destdir), udev_rules_srcdir);
 
  //Do not create udev_rules_destdir if it already exists (in case of update)
  //(bug #293366, c#7)
