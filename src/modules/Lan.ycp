@@ -467,7 +467,7 @@ global define boolean WriteOnly() {
  */
 global define boolean Import(map settings) {
 
-    if (Mode::autoinst()) {
+    if (!Mode::autoinst()) {
         // FIXME: MOD Modules = (map) eval(settings["modules"]:$[]);
         NetworkDevices::Import("netcard", (map<string, map>) settings["devices"]:$[]);
 
