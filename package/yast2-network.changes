@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Sep 12 13:49:17 CEST 2007 - kmachalkova@suse.cz
+
+- Do not re-add network devices (incl. loopback) into available 
+  devices list each time Lan::Import() is called (#308132) 
+- Do not rewrite udev rules file during update (if it already exists 
+  in Installation::destdir) (#293366c#7)
+- 2.15.76
+
+-------------------------------------------------------------------
 Fri Sep  7 12:55:00 CEST 2007 - mzugec@suse.cz
 
 - fixed firmware installation for wlan cards (#307401)
