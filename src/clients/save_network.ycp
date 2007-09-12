@@ -337,7 +337,7 @@ void save_network(){
      WFM::Execute (.local.bash, sformat (
 	 "mkdir -p '%1'; /bin/cp -p '%2/%3' '%1'",
 	  udev_rules_destdir,
-	  udev_rules_srcdir, udev_rules_srcfile);
+	  udev_rules_srcdir, udev_rules_srcfile));
 
  // close and chroot back
  WFM::SCRClose (new_SCR);
