@@ -797,40 +797,40 @@ define any AddressDialog() {
 
 
    map<string, any> wd_content = $[
-                "tab_order" : ["t_general", "t_addr", "hardware"],
-                "tabs" : $[
-                    "t_general" : $[
-                        "header" : _("&General"),
-                        "contents" : 
-    `MarginBox (1, 0,
-	`VBox (
-	    `MarginBox (1, 0,
-	        `VBox(
-		    // TODO:
-		    // "MANDATORY",
-		    `Frame( _("Device Activation"), `HBox(("STARTMODE"), `HStretch())),
-		    `VSpacing(0.4),
-		    `Frame(_("Firewall Zone"), `HBox(("FWZONE"), `HStretch())),
-		    `VSpacing(0.4),
-		    `Frame(_("Device Control"), `HBox(("USERCONTROL"), `HStretch())) ,
-		    `VSpacing (0.4),
-	            `Frame(_("Maximum Transfer Unit (MTU)"), `HBox(("MTU"), `HStretch())),
-		    `VStretch()
-		    )
-		)
-	      )
-	    ),
+	"tab_order" : ["t_general", "t_addr", "hardware"],
+	"tabs" : $[
+	    "t_general" : $[
+	        "header" : _("&General"),
+	        "contents" : 
+		    `MarginBox (1, 0,
+			`VBox (
+			    `MarginBox (1, 0,
+			        `VBox(
+				    // TODO:
+				    // "MANDATORY",
+				    `Frame( _("Device Activation"), `HBox(("STARTMODE"), `HStretch())),
+				    `VSpacing(0.4),
+				    `Frame(_("Firewall Zone"), `HBox(("FWZONE"), `HStretch())),
+				    `VSpacing(0.4),
+				    `Frame(_("Device Control"), `HBox(("USERCONTROL"), `HStretch())) ,
+				    `VSpacing (0.4),
+			            `Frame(_("Maximum Transfer Unit (MTU)"), `HBox(("MTU"), `HStretch())),
+				    `VStretch()
+				    )
+				)
+			      )
+		   ),
                         // FIXME we have helps per widget and for the whole
                         // tab set but not for one tab
-                        "help": _("<p>Configure the detailed network card settings here.</p>"),
+                "help": _("<p>Configure the detailed network card settings here.</p>"),
                     ],
-                    "t_addr" : $[
-                        // FIXME: here it does not complain about missing
-                        // shortcuts
-                        "header" : _("&Address"),
-                        "contents" : address_contents,
-                        // Address tab help
-                        "help": _("<p>Configure your IP address.</p>"),
+            "t_addr" : $[
+                // FIXME: here it does not complain about missing
+                // shortcuts
+                "header" : _("&Address"),
+                "contents" : address_contents,
+                // Address tab help
+                "help": _("<p>Configure your IP address.</p>"),
                     ],
                     "hardware" : $[
                         "header" : _("&Hardware"),
@@ -841,12 +841,13 @@ define any AddressDialog() {
                         "contents" : `Empty (),
                         "widget_names" : [],
                     ]
-                ],
-                "initial_tab" : "t_addr",
-                "widget_descr" : wd,
-                "tab_help" : "",
-                "fallback_functions" : functions,
-            ];
+        ],
+        "initial_tab" : "t_addr",
+        "widget_descr" : wd,
+        "tab_help" : "",
+        "fallback_functions" : functions,
+    ];
+
     hw_standalone=false;
     wd = (map<string, map<string,any> >) union (wd, $[
 	"tab" : CWMTab::CreateWidget (wd_content)
@@ -863,9 +864,10 @@ define any AddressDialog() {
 	    "abort_button" : Label::CancelButton (),
 	    "next_button" : Label::NextButton (),
 	    "fallback_functions" : functions,
-	    "disable_buttons" :
-  (LanItems::operation!=`add ||(LanItems::operation==`edit && LanItems::getCurrentItem()["ifcfg"]:""=="")) ? [ "back_button" ] : []
-	    ]);
+	    "disable_buttons" : (LanItems::operation!=`add || 
+				(LanItems::operation==`edit && LanItems::getCurrentItem()["ifcfg"]:""=="")) 
+				? [ "back_button" ] : []
+	 ]);
     Wizard::RestoreAbortButton();
 
     y2milestone ("ShowAndRun: %1", ret);
