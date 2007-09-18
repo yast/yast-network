@@ -319,25 +319,37 @@ void save_network(){
 	"/var/lib/dhcpcd",
 	String::Quote (Installation::destdir)));
 
- // --------------------------------------------------------------
- // Copy udev rules for persistent names
- // workaround (#292375):
- // delete lock files
- WFM::Execute(.local.bash, "rm -rf /dev/.udev/.lock*; rm /dev/.udev/tmp-rules*");
- // re-trigger event for net
- WFM::Execute(.local.bash, "udevtrigger --subsystem-match=net");
+ //Deleting lockfiles and re-triggering udev events for *net is not needed any more
+ //(#292375 c#18)
 
  string udev_rules_srcdir = "/etc/udev/rules.d";
- string udev_rules_srcfile = "70-persistent-net.rules";
+ string net_srcfile = "70-persistent-net.rules";
+ string cd_srcfile = "70-persistent-cd.rules";
+
  string udev_rules_destdir = sformat("%1%2", String::Quote (Installation::destdir), udev_rules_srcdir);
+ string net_destfile = sformat("%1%2/%3", String::Quote (Installation::destdir), udev_rules_srcdir, net_srcfile);
+ string cd_destfile = sformat("%1%2/%3", String::Quote (Installation::destdir), udev_rules_srcdir, cd_srcfile);
 
  //Do not create udev_rules_destdir if it already exists (in case of update)
  //(bug #293366, c#7)
+
  if (! FileUtils::Exists( udev_rules_destdir ))
-     WFM::Execute (.local.bash, sformat (
-	 "mkdir -p '%1'; /bin/cp -p '%2/%3' '%1'",
-	  udev_rules_destdir,
-	  udev_rules_srcdir, udev_rules_srcfile));
+ {
+     y2milestone("%1 does not exist yet, creating it", udev_rules_destdir);
+     WFM::Execute (.local.bash, sformat ("mkdir -p '%1'", udev_rules_destdir));
+ }
+
+ if (! FileUtils::Exists( net_destfile ))
+ {
+     y2milestone("Copying %1 to the installed system ", net_srcfile);
+     WFM::Execute (.local.bash, sformat ("/bin/cp -p '%1/%2' '%3'", udev_rules_srcdir, net_srcfile, net_destfile));
+ }
+
+ if (! FileUtils::Exists( cd_destfile ))
+ {
+     y2milestone("Copying %1 to the installed system ", cd_srcfile);
+     WFM::Execute (.local.bash, sformat ("/bin/cp -p '%1/%2' '%3'", udev_rules_srcdir, net_srcfile, net_destfile));
+ }
 
  // close and chroot back
  WFM::SCRClose (new_SCR);

@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Sep 18 14:54:18 CEST 2007 - kmachalkova@suse.cz
+
+- Removed all udev rules workarounds (manually removing lockfiles,
+  tmp rules, calling udevtrigger) - just copy udev rules for net and
+  cd to the installed system iff they don't already exist (#292375)
+- 2.15.77
+
+-------------------------------------------------------------------
 Wed Sep 12 13:49:17 CEST 2007 - kmachalkova@suse.cz
 
 - Do not re-add network devices (incl. loopback) into available 
