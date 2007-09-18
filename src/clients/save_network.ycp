@@ -348,7 +348,7 @@ void save_network(){
  if (! FileUtils::Exists( cd_destfile ))
  {
      y2milestone("Copying %1 to the installed system ", cd_srcfile);
-     WFM::Execute (.local.bash, sformat ("/bin/cp -p '%1/%2' '%3'", udev_rules_srcdir, net_srcfile, net_destfile));
+     WFM::Execute (.local.bash, sformat ("/bin/cp -p '%1/%2' '%3'", udev_rules_srcdir, cd_srcfile, cd_destfile));
  }
 
  // close and chroot back
