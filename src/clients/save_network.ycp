@@ -38,10 +38,16 @@ boolean network_disk=false;
  * @return true on success
  */
 define boolean ReadInstallInfItem(path install_inf, string item, string var) {
-    if(item == nil || item == "" || var == nil || var == "") return false;
+    if(item == nil || item == "" || var == nil || var == "") 
+	return false;
+
     string val = (string) SCR::Read(add(install_inf, var));
-    if(val == nil) return false;
-    if(val != "") InstallInf[item] = val;
+    if(val == nil) 
+	return false;
+
+    if(val != "") 
+	InstallInf[item] = val;
+
     return true;
 }
 
@@ -137,20 +143,21 @@ define boolean ReadInstallInf() {
     }
     else
     {
-    // FIXME: alias = eth0 tulip
-    // FIXME: options = ne io=0x200
+        // FIXME: alias = eth0 tulip
+        // FIXME: options = ne io=0x200
 
-    // #42203: correctly parse module and options for proposal
-    // "eth0 qeth" -> "qeth"
-    // FIXME: this only works for a single module
-    string mod = InstallInf["module"]:"";
-    if (mod != "") {
-	InstallInf["module"] = DeleteFirstWord (mod);
-    }
-    string options = InstallInf["options"]:"";
-    if (options != "") {
-	InstallInf["options"] = DeleteFirstWord (options);
-    }
+        // #42203: correctly parse module and options for proposal
+        // "eth0 qeth" -> "qeth"
+        // FIXME: this only works for a single module
+        string mod = InstallInf["module"]:"";
+        if (mod != "") {
+            InstallInf["module"] = DeleteFirstWord (mod);
+        }
+
+        string options = InstallInf["options"]:"";
+        if (options != "") {
+            InstallInf["options"] = DeleteFirstWord (options);
+        }
     }
 
     y2milestone("InstallInf(%1)", InstallInf);
@@ -180,65 +187,84 @@ string InstallModuleOptions(string module_name) {
 map <string,any> hwcfg=$[];
 
 void CreateIfcfg(){
- string network_configuration="";
- // set BOOTPROTO=[ static | dhcp ]
- if (InstallInf["bootproto"]:"dhcp"=="static") {
-	// add broadcast interface #suse49131
-	 network_configuration=sformat("BOOTPROTO='static'\nIPADDR='%1/%2'\nBROADCAST='%3'\n",
-		InstallInf["ipaddr"]:"", Netmask::ToBits(InstallInf["netmask"]:""), InstallInf["bcast"]:"");
-	} else {
-	       network_configuration="BOOTPROTO='dhcp'\n";
-	       // set DHCP_SET_HOSTNAME=yes  #suse30528
-	       y2milestone("set DHCLIENT_SET_HOSTNAME=yes on installed system");
-	       SCR::Execute(.target.bash_output, "sed -i s/\"DHCLIENT_SET_HOSTNAME=.*\"/'DHCLIENT_SET_HOSTNAME=\"yes\"'/g /etc/sysconfig/network/dhcp");
-	      }
+    string network_configuration="";
+    // set BOOTPROTO=[ static | dhcp ]
+    if (InstallInf["bootproto"]:"dhcp"=="static")
+    {
+           // add broadcast interface #suse49131
+         network_configuration=sformat("BOOTPROTO='static'\nIPADDR='%1/%2'\nBROADCAST='%3'\n",
+	 InstallInf["ipaddr"]:"", Netmask::ToBits(InstallInf["netmask"]:""), InstallInf["bcast"]:"");
+    }
+    else
+    {
+       network_configuration="BOOTPROTO='dhcp'\n";
+       // set DHCP_SET_HOSTNAME=yes  #suse30528
+       y2milestone("set DHCLIENT_SET_HOSTNAME=yes on installed system");
+       SCR::Execute(.target.bash_output, "sed -i s/\"DHCLIENT_SET_HOSTNAME=.*\"/'DHCLIENT_SET_HOSTNAME=\"yes\"'/g /etc/sysconfig/network/dhcp");
+    }
 
  // wlan devices
- if (size(InstallInf["WESSID"]:"")>0 || size(InstallInf["WAuth"]:"")>0 || size(InstallInf["WKey"]:"")>0 || size(InstallInf["WKeyType"]:"")>0 || size(InstallInf["WKeyLen"]:"")>0){
-    network_configuration = sformat("%1WIRELESS_ESSID='%2'\n", network_configuration, InstallInf["WESSID"]:"");
-    network_configuration = sformat("%1WIRELESS_AUTH_MODE='%2'\n", network_configuration, InstallInf["WAuth"]:"");
-    network_configuration = sformat("%1WIRELESS_AUTH_MODE='%2'\n", network_configuration, InstallInf["WAuth"]:"");
-    network_configuration = sformat("%1WIRELESS_KEY_LENGTH='%2'\n", network_configuration, InstallInf["WKeyLen"]:"");
-	if (size(InstallInf["WKeyType"]:"")>0 && size(InstallInf["WKey"]:"")>0)
-    network_configuration = sformat("%1WIRELESS_KEY_0='%2:%3'\n", network_configuration, substring(InstallInf["WKeyType"]:"", 0, 1), InstallInf["WKey"]:"");
- }
+     if (size(InstallInf["WESSID"]:"")>0 || size(InstallInf["WAuth"]:"")>0 ||
+         size(InstallInf["WKey"]:"")>0 || size(InstallInf["WKeyType"]:"")>0 ||
+         size(InstallInf["WKeyLen"]:"")>0)
+     {
+         network_configuration = sformat("%1WIRELESS_ESSID='%2'\n", network_configuration, InstallInf["WESSID"]:"");
+         network_configuration = sformat("%1WIRELESS_AUTH_MODE='%2'\n", network_configuration, InstallInf["WAuth"]:"");
+         network_configuration = sformat("%1WIRELESS_AUTH_MODE='%2'\n", network_configuration, InstallInf["WAuth"]:"");
+         network_configuration = sformat("%1WIRELESS_KEY_LENGTH='%2'\n", network_configuration, InstallInf["WKeyLen"]:"");
+             if (size(InstallInf["WKeyType"]:"")>0 && size(InstallInf["WKey"]:"")>0)
+         network_configuration = sformat("%1WIRELESS_KEY_0='%2:%3'\n", network_configuration, 
+					substring(InstallInf["WKeyType"]:"", 0, 1), InstallInf["WKey"]:"");
+     }
 
 
- // if available, write MTU
- if (size(InstallInf["mtu"]:"")>0) network_configuration = sformat("%1MTU='%2'\n", network_configuration, InstallInf["mtu"]:"");
+     // if available, write MTU
+    if (size(InstallInf["mtu"]:"")>0) 
+	network_configuration = sformat("%1MTU='%2'\n", network_configuration, InstallInf["mtu"]:"");
 
- // for queth devices (s390)
- if (size(InstallInf["LLADDR"]:"")>0) network_configuration = sformat("%1LLADDR='%2'\n", network_configuration, InstallInf["LLADDR"]:"");
-
-
- if (network_disk){ network_configuration = sformat("%1STARTMODE='nfsroot'\n", network_configuration);
-  } else{network_configuration = sformat("%1STARTMODE='onboot'\n", network_configuration);
-	}
-
- // reference to hardware configuration
-// network_configuration = sformat("%1_nm_name='%2'\n", network_configuration, hwcfg);
-
- // point to point interface
- if (size(InstallInf["remote_ip"]:"")>0)network_configuration = sformat("%1REMOTE_IPADDR='%2'\n", network_configuration, InstallInf["remote_ip"]:"");
- list<map> hardware=ReadHardware("netcard");
-y2internal("hardware %1", hardware);
-
-string ifcfg = sformat("ifcfg-%1", InstallInf["netdevice"]:"");
-
- string hw_name = BuildDescription(NetworkDevices::device_type(ifcfg), NetworkDevices::device_num(ifcfg), $["dev_name":InstallInf["netdevice"]:""], hardware);
- if (size(hw_name)>0) network_configuration = sformat("%1NAME='%2'\n", network_configuration, hw_name);
+     // for queth devices (s390)
+    if (size(InstallInf["LLADDR"]:"")>0) 
+	network_configuration =	sformat("%1LLADDR='%2'\n", network_configuration, InstallInf["LLADDR"]:"");
 
 
- y2milestone("Network Configuration:\n%1\nifcfg file: %2", network_configuration, ifcfg);
+    if (network_disk)
+    {
+	network_configuration = sformat("%1STARTMODE='nfsroot'\n", network_configuration);
+    }
+    else
+    {
+	network_configuration = sformat("%1STARTMODE='onboot'\n", network_configuration);
+    }
 
- // write only if file doesn't exists
- string dev_file=sformat("/etc/sysconfig/network/%1", ifcfg);
-// string dev_file=sformat("/tmp/%1", ifcfg);
- if (!FileUtils::Exists(dev_file)) {
-    SCR::Write(.target.string, dev_file, network_configuration);
-    y2internal("ifcfg file: %1", dev_file);
- }
-	else y2warning("File exists %1", dev_file);
+    // reference to hardware configuration
+    // network_configuration = sformat("%1_nm_name='%2'\n", network_configuration, hwcfg);
+
+    // point to point interface
+    if (size(InstallInf["remote_ip"]:"")>0)
+	network_configuration = sformat("%1REMOTE_IPADDR='%2'\n", network_configuration, InstallInf["remote_ip"]:"");
+
+    list<map> hardware=ReadHardware("netcard");
+    y2milestone("hardware %1", hardware);
+
+    string ifcfg = sformat("ifcfg-%1", InstallInf["netdevice"]:"");
+
+    string hw_name = BuildDescription(NetworkDevices::device_type(ifcfg), NetworkDevices::device_num(ifcfg), $["dev_name":InstallInf["netdevice"]:""], hardware);
+    if (size(hw_name)>0)
+	network_configuration = sformat("%1NAME='%2'\n", network_configuration, hw_name);
+
+    y2milestone("Network Configuration:\n%1\nifcfg file: %2", network_configuration, ifcfg);
+
+    // write only if file doesn't exists
+    string dev_file=sformat("/etc/sysconfig/network/%1", ifcfg);
+    // string dev_file=sformat("/tmp/%1", ifcfg);
+
+    if (!FileUtils::Exists(dev_file))
+    {
+        SCR::Write(.target.string, dev_file, network_configuration);
+        y2milestone("ifcfg file: %1", dev_file);
+    }
+    else
+	y2warning("File exists %1", dev_file);
 }
 
 /*
@@ -248,53 +274,55 @@ string ifcfg = sformat("ifcfg-%1", InstallInf["netdevice"]:"");
 
 void CreateOtherNetworkFiles(){
 
- // create hostname
- if (size(InstallInf["hostname"]:"")>0){
-  y2milestone("Write HOSTANAME: %1", InstallInf["hostname"]:"");
-  SCR::Write(.target.string, "/etc/HOSTNAME", InstallInf["hostname"]:"");
- }
+    // create hostname
+    if (size(InstallInf["hostname"]:"")>0){
+        y2milestone("Write HOSTANAME: %1", InstallInf["hostname"]:"");
+        SCR::Write(.target.string, "/etc/HOSTNAME", InstallInf["hostname"]:"");
+    }
 
- if(InstallInf["bootproto"]:"dhcp"=="static")
-  {
- // create routes file
- if (size(InstallInf["gateway"]:"")>0){
-  y2milestone("Writing route : %1", InstallInf["gateway"]:"");
-  SCR::Write(.target.string, "/etc/sysconfig/network/routes", sformat("default %1 - -\n", InstallInf["gateway"]:""));
- } else y2warning("No routing information in install.inf");
+    if(InstallInf["bootproto"]:"dhcp"=="static")
+    {
+        // create routes file
+        if (size(InstallInf["gateway"]:"")>0){
+            y2milestone("Writing route : %1", InstallInf["gateway"]:"");
+            SCR::Write(.target.string, "/etc/sysconfig/network/routes", sformat("default %1 - -\n", InstallInf["gateway"]:""));
+        }
+	else
+	    y2warning("No routing information in install.inf");
 
- // create resolv.conf only for static configuration
-  if (size(InstallInf["nameserver"]:"")>0){
-   string text = "";
-   //Enter search domain data only if present
-   if( size(InstallInf["domain"]:"") > 0)
-     text=sformat("search %1\nnameserver %2\n", InstallInf["domain"]:"", InstallInf["nameserver"]:"");
-   else
-   //If we don't have search domain data, skip 'search' field,
-   //do not leave out 'nameserver' completely - #298001
-     text = sformat("nameserver %1\n", InstallInf["nameserver"]:"");
-   y2milestone("Write resolv.conf content: %1", text);
-   SCR::Write(.target.string, "/etc/resolv.conf", text);
-  }
- }
+        // create resolv.conf only for static configuration
+        if (size(InstallInf["nameserver"]:"")>0){
+            string text = "";
+            //Enter search domain data only if present
+            if( size(InstallInf["domain"]:"") > 0)
+              text=sformat("search %1\nnameserver %2\n", InstallInf["domain"]:"", InstallInf["nameserver"]:"");
+            else
+            //If we don't have search domain data, skip 'search' field,
+            //do not leave out 'nameserver' completely - #298001
+              text = sformat("nameserver %1\n", InstallInf["nameserver"]:"");
+            y2milestone("Write resolv.conf content: %1", text);
+            SCR::Write(.target.string, "/etc/resolv.conf", text);
+        }
+    }
 
- // create proxy sysconfig file
- if (size(InstallInf["proxy"]:"")>0) {
-  y2milestone("Writing proxy settings: %1", InstallInf["proxy"]:"");
-  map ex = Proxy::Export();
-  Proxy::Read();
-  Proxy::Import( ex );
-  Proxy::Write();
- }
- // create defaultdomain
- if (size(InstallInf["nisdomain"]:"")>0 && FileUtils::Exists("/etc/defaultdomain")){
-  y2milestone("Write defaultdomain: %1", InstallInf["nisdomain"]:"");
-  SCR::Write(.target.string, "/etc/defaultdomain", InstallInf["nisdomain"]:"");
- }
+    // create proxy sysconfig file
+    if (size(InstallInf["proxy"]:"")>0) {
+        y2milestone("Writing proxy settings: %1", InstallInf["proxy"]:"");
+        map ex = Proxy::Export();
+        Proxy::Read();
+        Proxy::Import( ex );
+        Proxy::Write();
+    }
+    // create defaultdomain
+    if (size(InstallInf["nisdomain"]:"")>0 && FileUtils::Exists("/etc/defaultdomain")){
+       y2milestone("Write defaultdomain: %1", InstallInf["nisdomain"]:"");
+       SCR::Write(.target.string, "/etc/defaultdomain", InstallInf["nisdomain"]:"");
+    }
 
- // write wait_for_interfaces if needed
- if (size(InstallInf["connect_wait"]:"")>0){
-  SCR::Execute(.target.bash_output, sformat("sed -i s/^WAIT_FOR_INTERFACES=.*/WAIT_FOR_INTERFACES=%1/g /etc/sysconfig/network/config", InstallInf["connect_wait"]:""));
- }
+    // write wait_for_interfaces if needed
+    if (size(InstallInf["connect_wait"]:"")>0){
+        SCR::Execute(.target.bash_output, sformat("sed -i s/^WAIT_FOR_INTERFACES=.*/WAIT_FOR_INTERFACES=%1/g /etc/sysconfig/network/config", InstallInf["connect_wait"]:""));
+    }
 }
 
 /*
@@ -302,80 +330,81 @@ void CreateOtherNetworkFiles(){
  */
 void save_network(){
 
-  // skip from chroot
-  integer old_SCR = WFM::SCRGetDefault ();
-  integer new_SCR = WFM::SCROpen ("chroot=/:scr", false);
-  WFM::SCRSetDefault (new_SCR);
+    // skip from chroot
+    integer old_SCR = WFM::SCRGetDefault ();
+    integer new_SCR = WFM::SCROpen ("chroot=/:scr", false);
+    WFM::SCRSetDefault (new_SCR);
 
- // when root is on nfs/iscsi set startmode=nfsroot #176804
- string device = NetworkStorage::getDevice( Installation::destdir );
- y2internal("%1 directory is on %2 device", Installation::destdir, device);
- network_disk = NetworkStorage::isDiskOnNetwork( device );
+    // when root is on nfs/iscsi set startmode=nfsroot #176804
+    string device = NetworkStorage::getDevice( Installation::destdir );
+    y2internal("%1 directory is on %2 device", Installation::destdir, device);
+    network_disk = NetworkStorage::isDiskOnNetwork( device );
 
- // --------------------------------------------------------------
- // Copy DHCP client cache so that we can request the same IP (#43974).
- WFM::Execute (.local.bash, sformat (
-	"mkdir -p '%2%1'; /bin/cp -p %1/dhcpcd-*.cache '%2%1'",
-	"/var/lib/dhcpcd",
-	String::Quote (Installation::destdir)));
+    // --------------------------------------------------------------
+    // Copy DHCP client cache so that we can request the same IP (#43974).
+    WFM::Execute (.local.bash, sformat (
+           "mkdir -p '%2%1'; /bin/cp -p %1/dhcpcd-*.cache '%2%1'",
+           "/var/lib/dhcpcd",
+           String::Quote (Installation::destdir)));
 
- //Deleting lockfiles and re-triggering udev events for *net is not needed any more
- //(#292375 c#18)
+    //Deleting lockfiles and re-triggering udev events for *net is not needed any more
+    //(#292375 c#18)
 
- string udev_rules_srcdir = "/etc/udev/rules.d";
- string net_srcfile = "70-persistent-net.rules";
- string cd_srcfile = "70-persistent-cd.rules";
+    string udev_rules_srcdir = "/etc/udev/rules.d";
+    string net_srcfile = "70-persistent-net.rules";
+    string cd_srcfile = "70-persistent-cd.rules";
 
- string udev_rules_destdir = sformat("%1%2", String::Quote (Installation::destdir), udev_rules_srcdir);
- string net_destfile = sformat("%1%2/%3", String::Quote (Installation::destdir), udev_rules_srcdir, net_srcfile);
- string cd_destfile = sformat("%1%2/%3", String::Quote (Installation::destdir), udev_rules_srcdir, cd_srcfile);
+    string udev_rules_destdir = sformat("%1%2", String::Quote (Installation::destdir), udev_rules_srcdir);
+    string net_destfile = sformat("%1%2/%3", String::Quote (Installation::destdir), udev_rules_srcdir, net_srcfile);
+    string cd_destfile = sformat("%1%2/%3", String::Quote (Installation::destdir), udev_rules_srcdir, cd_srcfile);
 
- //Do not create udev_rules_destdir if it already exists (in case of update)
- //(bug #293366, c#7)
+    //Do not create udev_rules_destdir if it already exists (in case of update)
+    //(bug #293366, c#7)
 
- if (! FileUtils::Exists( udev_rules_destdir ))
- {
-     y2milestone("%1 does not exist yet, creating it", udev_rules_destdir);
-     WFM::Execute (.local.bash, sformat ("mkdir -p '%1'", udev_rules_destdir));
- }
+    if (! FileUtils::Exists( udev_rules_destdir ))
+    {
+        y2milestone("%1 does not exist yet, creating it", udev_rules_destdir);
+        WFM::Execute (.local.bash, sformat ("mkdir -p '%1'", udev_rules_destdir));
+    }
 
- if (! FileUtils::Exists( net_destfile ))
- {
-     y2milestone("Copying %1 to the installed system ", net_srcfile);
-     WFM::Execute (.local.bash, sformat ("/bin/cp -p '%1/%2' '%3'", udev_rules_srcdir, net_srcfile, net_destfile));
- }
+    if (! FileUtils::Exists( net_destfile ))
+    {
+        y2milestone("Copying %1 to the installed system ", net_srcfile);
+        WFM::Execute (.local.bash, sformat ("/bin/cp -p '%1/%2' '%3'", udev_rules_srcdir, net_srcfile, net_destfile));
+    }
 
- if (! FileUtils::Exists( cd_destfile ))
- {
-     y2milestone("Copying %1 to the installed system ", cd_srcfile);
-     WFM::Execute (.local.bash, sformat ("/bin/cp -p '%1/%2' '%3'", udev_rules_srcdir, cd_srcfile, cd_destfile));
- }
+    if (! FileUtils::Exists( cd_destfile ))
+    {
+        y2milestone("Copying %1 to the installed system ", cd_srcfile);
+        WFM::Execute (.local.bash, sformat ("/bin/cp -p '%1/%2' '%3'", udev_rules_srcdir, cd_srcfile, cd_destfile));
+    }
 
- // close and chroot back
- WFM::SCRClose (new_SCR);
- WFM::SCRSetDefault (old_SCR);
+    // close and chroot back
+    WFM::SCRClose (new_SCR);
+    WFM::SCRSetDefault (old_SCR);
 
- if (Mode::autoinst()){
-  import "LanUdevAuto";
-  LanUdevAuto::Write();
- }
-
-
- if(ReadInstallInf()){
-//  string hwcfgname = CreateHardwareFile();
-//  string ifcfg = sformat("ifcfg-%1", InstallInf["netdevice"]:"");
-
-  CreateIfcfg();
-  CreateOtherNetworkFiles();
-
-  SCR::Execute(.target.bash, "chkconfig network on");
-
-  // if portmap running - start it after reboot
-  WFM::Execute (.local.bash,
-     "pidofproc portmap && touch /var/lib/YaST2/network_install_portmap");
+    if (Mode::autoinst()){
+       import "LanUdevAuto";
+       LanUdevAuto::Write();
+    }
 
 
- } else
+    if(ReadInstallInf()){
+    //  string hwcfgname = CreateHardwareFile();
+    //  string ifcfg = sformat("ifcfg-%1", InstallInf["netdevice"]:"");
+
+        CreateIfcfg();
+        CreateOtherNetworkFiles();
+
+        SCR::Execute(.target.bash, "chkconfig network on");
+
+        // if portmap running - start it after reboot
+        WFM::Execute (.local.bash,
+        "pidofproc portmap && touch /var/lib/YaST2/network_install_portmap");
+
+
+    }
+    else
 	y2error("Error while reading install.inf!");
 
 }
