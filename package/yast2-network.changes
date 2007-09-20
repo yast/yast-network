@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Sep 20 16:59:25 CEST 2007 - mvidner@suse.cz
+
+- Escape quotes in NAME in save_network (#305343).
+
+-------------------------------------------------------------------
 Tue Sep 18 14:54:18 CEST 2007 - kmachalkova@suse.cz
 
 - Removed all udev rules workarounds (manually removing lockfiles,

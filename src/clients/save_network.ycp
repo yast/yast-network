@@ -249,8 +249,9 @@ void CreateIfcfg(){
     string ifcfg = sformat("ifcfg-%1", InstallInf["netdevice"]:"");
 
     string hw_name = BuildDescription(NetworkDevices::device_type(ifcfg), NetworkDevices::device_num(ifcfg), $["dev_name":InstallInf["netdevice"]:""], hardware);
+    // protect special characters, #305343
     if (size(hw_name)>0)
-	network_configuration = sformat("%1NAME='%2'\n", network_configuration, hw_name);
+	network_configuration = sformat("%1NAME='%2'\n", network_configuration, String::Quote (hw_name));
 
     y2milestone("Network Configuration:\n%1\nifcfg file: %2", network_configuration, ifcfg);
 
