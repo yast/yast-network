@@ -228,27 +228,19 @@ global define boolean Write() {
     /* build FQ hostname */
     string fqhostname = Hostname::MergeFQ(hostname, domain);
 
-    NetworkDevices::Read();
-    // Take static network addresses.
-    // Watch out, there may be an unused IPADDR for a DHCP interface, #49055
-    list<string> devs =
-	NetworkDevices::Locate ("BOOTPROTO", "static") +
-	NetworkDevices::Locate ("BOOTPROTO", ""); // static is the default
-    list<string> ips = maplist(string dev, devs, {
-	return NetworkDevices::GetValue(dev, "IPADDR");
-    });
-    if (NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true == false) 
+    //We do not collect static IP addresses here, as hostnames
+    //are defined for each static IP separately in address dialog
+    //FaTE #2202
+
+    if (NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true == false)
 	Host::write_hostname=false;
     else
     {
-        /* Update /etc/hosts, but only iff there are no static 
-         IPs defined. Otherwise, hostnames are associated with
-         static IPs in address dialog - FaTE #2202 */
-	if ( ips == [] )
-	{
-            Host::Update(oldhostname, fqhostname, ips);
-	    Host::Write();
-        }
+	//Always add 127.0.0.2 entry to /etc/hosts, otherwise some
+	//desktop apps may hang, not being able to resolve hostname (#304632)
+	//empty list [] as third parameter does that
+        Host::Update(oldhostname, fqhostname, []);
+	Host::Write();
     }
     oldhostname = fqhostname;	// #49634
 
