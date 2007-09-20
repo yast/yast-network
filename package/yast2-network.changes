@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Sep 20 18:40:22 CEST 2007 - kmachalkova@suse.cz
+
+- Always add '127.0.0.2 host.site host' line into /etc/hosts (if
+  'Write hostname to /etc/hosts' is enabled) to make hostname 
+  resolvable even without active network (#304632)    	
+- 2.15.78  
+
+-------------------------------------------------------------------
 Thu Sep 20 16:59:25 CEST 2007 - mvidner@suse.cz
 
 - Escape quotes in NAME in save_network (#305343).
