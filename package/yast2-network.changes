@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Sep 21 12:22:00 CEST 2007 - kmachalkova@suse.cz
+
+- Correct manual adding of network devices and assigning firewall 
+  zones (pass 'eth1' 'wlan0' string instead of 'eth-eth1' or 
+ 'wlan-wlan0') (partly #308763)
+- 2.15.79
+
+-------------------------------------------------------------------
 Thu Sep 20 18:40:22 CEST 2007 - kmachalkova@suse.cz
 
 - Always add '127.0.0.2 host.site host' line into /etc/hosts (if

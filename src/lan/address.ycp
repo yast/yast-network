@@ -328,7 +328,7 @@ Assign it to a zone now?"));
  * @param event	the event being handled
  * @return whether valid
  */
-boolean ValidateDialog (string key, map event) {
+boolean ValidateBootproto (string key, map event) {
     if (UI::QueryWidget(`bootproto, `CurrentButton) == `static)
     {
 	string ipa = (string) UI::QueryWidget (`ipaddr, `Value);
@@ -520,6 +520,8 @@ map<string, map<string,any> > widget_descr_local = $[
 	"init": initBootProto,
 	"handle": handleBootProto,
 	"store": storeBootProto,
+	"validate_type" : `function,
+	"validate_function" : ValidateBootproto,
 	],
     "REMOTEIP": $[
 	"widget": `textentry,
@@ -616,7 +618,6 @@ define any AddressDialog() {
 	"IFCFGTYPE": LanItems::type,
 	"IFCFGID": LanItems::device,
 	];
-
 
     string drvtype = DriverType (settings["IFCFGTYPE"]:"");
 
@@ -788,8 +789,6 @@ define any AddressDialog() {
 
     map functions = $[
         "init" : InitAddrWidget,
-	"validate_type": `function,
-	"validate_function": ValidateDialog,
         "store" : StoreAddrWidget,
 	`abort : LanItems::Rollback,
     ];
@@ -876,9 +875,7 @@ define any AddressDialog() {
 
     if (ret != `back && ret != `abort)
     {
-	string ifcfgname = NetworkDevices::device_name (
-	    settings["IFCFGTYPE"]:"",
-	    settings["IFCFGID"]:"");
+	string ifcfgname = settings["IFCFGID"]:"";
 
 	// general tab
 	LanItems::startmode = settings["STARTMODE"]:"";
@@ -903,7 +900,6 @@ define any AddressDialog() {
 	if (LanItems::bootproto == "static") // #104494
 	{
 	    boolean ip_changed = ( LanItems::ipaddr != settings["IPADDR"]:"" );
-	    y2milestone("jezkovy voci %1 %2", LanItems::ipaddr, settings["IPADDR"]:"");
 	    if (ip_changed)
 	    {
 		Host::hosts[LanItems::ipaddr] = [];
