@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Sep 24 11:01:05 CEST 2007 - mzugec@suse.cz
+
+- for update system don't copy network from inst_sys (#325738)
+- 2.15.80 
+
+-------------------------------------------------------------------
 Fri Sep 21 16:03:44 CEST 2007 - kmachalkova@suse.cz
 
 - Remember correctly device number and device module for manually

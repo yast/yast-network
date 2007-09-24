@@ -331,6 +331,7 @@ void CreateOtherNetworkFiles(){
  */
 void save_network(){
 
+    y2milestone("starting save_network");
     // skip from chroot
     integer old_SCR = WFM::SCRGetDefault ();
     integer new_SCR = WFM::SCROpen ("chroot=/:scr", false);
@@ -410,6 +411,8 @@ void save_network(){
 
 }
 
-save_network();
+// for update system don't copy network from inst_sys (#325738)
+if (!Mode::update()) save_network();
+	else y2milestone("update - skip save_network");
 /* EOF */
 }
