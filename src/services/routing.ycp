@@ -127,7 +127,7 @@ string defgwdev = "";
 void initRouting (string key) ``{
 
     integer max = 0;
-    integer items = 0;
+//    integer items = 0;
     list<term> table_items_orig = [];
 
     boolean forward = Routing::Forward;
@@ -142,28 +142,26 @@ void initRouting (string key) ``{
 	    defgwdev = r["device"]:"";
 	}
 	else {
-	    item = `item(`id(items),
+	    item = `item(`id(size(r_items)),
 		    r["destination"]:"",
 		    r["gateway"]:"",
 		    r["netmask"]:"",
 		    r["device"]:"",
 		    r["extrapara"]:"");
 	    r_items = add(r_items, item);
-	    items = items + 1;
+//	    items = items + 1;
 	}
     });
     table_items_orig = (list<term>) eval(r_items);
 
     y2debug("table_items=%1", r_items);
-    y2debug("items=%1", items);
-    max = items;
+//    y2debug("items=%1", items);
+//    max = items;
 
     UI::ChangeWidget(`gw, `Items, [ defgw ]);
     UI::ChangeWidget(`id(`gw), `ValidChars, IP::ValidChars);
     UI::ChangeWidget(`id(`table), `Items, r_items);
     UI::ChangeWidget(`id(`forward), `Value, forward);
-    UI::ChangeWidget(`id(`table), `Enabled, false);
-    UI::ChangeWidget(`id(`add), `Enabled, false);
     UI::SetFocus(`id(`gw));
 
     // #178538 - disable routing dialog when NetworkManager is used
@@ -173,8 +171,8 @@ void initRouting (string key) ``{
 //    UI::ChangeWidget(`id(`gw), `Enabled, enabled);
     UI::ChangeWidget(`id(`table),  `Enabled, enabled);
     UI::ChangeWidget(`id(`forward), `Enabled, enabled);
-    UI::ChangeWidget(`id(`add), `Enabled, enabled);
-    UI::ChangeWidget(`id(`expert), `Enabled, enabled);
+//    UI::ChangeWidget(`id(`add), `Enabled, enabled);
+//    UI::ChangeWidget(`id(`expert), `Enabled, enabled);
 
     // fixed bug #73739 - if dhcp is used, dont set default gw statically
 //    if (Lan::bootproto == "dhcp")UI::ChangeWidget(`id(`gw),`Enabled, false);
@@ -182,7 +180,8 @@ void initRouting (string key) ``{
 
 
 symbol handleRouting( string key, map event ) {
- boolean expert = (boolean) UI::QueryWidget(`id(`expert), `Value);
+// boolean expert = (boolean) UI::QueryWidget(`id(`expert), `Value);
+ boolean enabled = !(boolean)NetworkService::IsManaged();
  list devs = Routing::GetDevices();
  integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
  term item=nil;
@@ -190,10 +189,12 @@ symbol handleRouting( string key, map event ) {
  if (event["EventReason"]:"" == "Activated" || event["EventReason"]:"" == "ValueChanged")
  {
   switch (event["ID"]:`nil){
+/*
    case `expert:
 	    UI::ChangeWidget(`id(`table), `Enabled, expert);
 	    UI::ChangeWidget(`id(`add), `Enabled, expert);
 	break;
+*/
    case `add:
 	    item = RoutingEditDialog(size(r_items), `empty(), devs);
 
@@ -238,8 +239,9 @@ symbol handleRouting( string key, map event ) {
 
   }
  }
- UI::ChangeWidget(`id(`edit), `Enabled, expert && (size(r_items) > 0));
- UI::ChangeWidget(`id(`delete), `Enabled, expert && (size(r_items) > 0));
+ UI::ChangeWidget(`id(`add), `Enabled, enabled);
+ UI::ChangeWidget(`id(`edit), `Enabled, enabled && (size(r_items) > 0));
+ UI::ChangeWidget(`id(`delete), `Enabled, enabled && (size(r_items) > 0));
 return nil;
 }
 
@@ -293,7 +295,7 @@ map<string, map<string,any> > wd_routing = $[
 	    /* Frame label */
 	    `Frame(_("Routing Table"), `VBox(
 		/* CheckBox label */
-		`Left(`CheckBox(`id(`expert), `opt(`notify), _("E&xpert Configuration"))),
+//		`Left(`CheckBox(`id(`expert), `opt(`notify), _("E&xpert Configuration"))),
 		`Table(`id(`table), `opt(`notify), `header(
 		    /* Table header 1/4 */
 		    _("Destination"),
@@ -310,9 +312,9 @@ map<string, map<string,any> > wd_routing = $[
 		/* PushButton label */
 		`HBox(`PushButton(`id(`add), _("Ad&d")),
 		/* PushButton label */
-		`PushButton(`id(`edit), `opt(`disabled), _("&Edit")),
+		`PushButton(`id(`edit), _("&Edit")),
 		/* PushButton label */
-		`PushButton(`id(`delete), `opt(`disabled), _("De&lete"))))),
+		`PushButton(`id(`delete), _("De&lete"))))),
 	    `VSpacing(1),
 	    /* CheckBox label */
 	    `Left(`CheckBox(`id(`forward), _("Enable &IP Forwarding"))),

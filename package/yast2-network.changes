@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Sep 25 21:28:00 CEST 2007 - mzugec@suse.cz
+
+- fixed routing widget enabling (#326042)
+- 2.16.0 
+
+-------------------------------------------------------------------
 Tue Sep 25 12:44:03 CEST 2007 - mzugec@suse.cz
 
 - write resolv.conf after change from dhcp to static (#327074)
