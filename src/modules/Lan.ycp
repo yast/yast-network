@@ -388,6 +388,9 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 6 */
     ProgressNextStage(_("Writing hostname and DNS configuration..."));
+    // write resolv.conf after change from dhcp to static (#327074)
+    // reload/restart network before this to put correct resolv.conf from dhcp-backup
+    NetworkService::StartStop ();
     DNS::Write();
     Host::Write();
     Progress::set (orig);

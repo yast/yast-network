@@ -354,6 +354,7 @@ void save_network(){
 
     string udev_rules_srcdir = "/etc/udev/rules.d";
     string net_srcfile = "70-persistent-net.rules";
+    // TODO: move "cd.rules" code into storage (#292375)
     string cd_srcfile = "70-persistent-cd.rules";
 
     string udev_rules_destdir = sformat("%1%2", String::Quote (Installation::destdir), udev_rules_srcdir);
