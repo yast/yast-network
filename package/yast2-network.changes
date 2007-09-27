@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Sep 27 14:21:32 CEST 2007 - kmachalkova@suse.cz
+
+- i18n: Missing strings marked for translation (modem + netcard gen.
+  setup) (#328191) 
+
+-------------------------------------------------------------------
 Tue Sep 25 21:28:00 CEST 2007 - mzugec@suse.cz
 
 - fixed routing widget enabling (#326042)
