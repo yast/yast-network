@@ -161,7 +161,7 @@ map<string, any> MakeStartmode (list<string> ids) {
     map<string, any> ret = $[
 	"widget": `combobox,
 	// Combo box label - when to activate device (e.g. on boot, manually, never,..)
-	"label": "Activate &device ",
+	"label": _("Activate &device"),
 	"help":
 	// Device activation main help. The individual parts will be
 	// substituted as %1

@@ -198,7 +198,13 @@ connection will be shut down (0 means the connection will not time-out).</p>
 	);
 
     term STARTMODE=`Empty();
-    if (type=="modem") STARTMODE=`Left(`ComboBox(`id(`startmode), _("When a interface should be set up"), [ "auto", "manual", "off" ]));
+    if (type=="modem")
+	STARTMODE=`Left(`ComboBox(`id(`startmode), _("How the interface should be set up"), 
+	    [ `item(`id("auto"), _("Automatically")),
+	      `item(`id("manual"), _("Manually")),
+	      `item(`id("off"), _("Off")) 
+	    ]
+    ));
 
     term contents = `HBox(
 	`HSpacing(6),
