@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Oct  3 09:57:51 CEST 2007 - mvidner@suse.cz
+
+- Do not try to package COPYRIGHT.english, it is gone from
+  devtools (#299144).
+- 2.16.1
+
+-------------------------------------------------------------------
 Thu Sep 27 14:21:32 CEST 2007 - kmachalkova@suse.cz
 
 - i18n: Missing strings marked for translation (modem + netcard gen.
