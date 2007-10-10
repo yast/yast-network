@@ -325,7 +325,7 @@ global list BuildLanOverview() {
   foreach(integer key, (list<integer>)Map::Keys(Items), {
    string rich = "";
    string ip =  _("Not configured");
-   string descr = HardwareName (Hardware, Items[key, "hwinfo", "dev_name"]:"");
+   string descr = Items[key, "hwinfo", "name"]:"";
    type = Items[key, "hwinfo", "type"]:"";
    descr = CheckEmptyName (type, descr);
    list <string> bullets = [];

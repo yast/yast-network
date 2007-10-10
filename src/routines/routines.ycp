@@ -428,6 +428,8 @@ define string DeviceName(map hwdevice) {
     string vendor = "";
     string dev = "";
 
+    if (hasAnyValue(hwdevice["device"]:"")) return hwdevice["device"]:"";
+
     model = hwdevice["model"]:"";
     if(model != "" && model != nil) return model;
 
