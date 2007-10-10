@@ -79,8 +79,14 @@ global define boolean Read() {
 	pass = regexpsub(user, "^.*:(.*)$", "\\1");
 	user = regexpsub(user, "^(.*):.*$", "\\1");
     }
+
     if(pass == nil) pass = "";
-    if(user == nil) user = "";
+    if(user == nil) 
+	user = "";
+    else {
+	if ( regexpmatch(user, "^.*\\\\.*$"))
+	    user = regexpsub(user, "^(.*)\\\\(.*)$", "\\1\\2");
+    }
 
     /* Read /root/.wgetrc */
     /* YOU uses curl(1)
@@ -132,6 +138,8 @@ global define boolean Write() {
 	/* Update /root/.curlrc */
 	string proxyuser = nil;
 	if (user != "") {
+	    //Escape backslash characters in .curlrc (#331038)
+            user = mergestring (splitstring(user, "\\"), "\\\\");
 	    proxyuser = user;
 	    if (pass != "") proxyuser = user + ":" + pass;
 	}

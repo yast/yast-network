@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Oct 10 10:39:47 CEST 2007 - kmachalkova@suse.cz
+
+- Escape backslashes in usernames also in .curlrc (#331038)
+- 2.16.2
+
+-------------------------------------------------------------------
 Wed Oct  3 09:57:51 CEST 2007 - mvidner@suse.cz
 
 - Do not try to package COPYRIGHT.english, it is gone from
