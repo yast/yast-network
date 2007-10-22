@@ -144,6 +144,7 @@ global boolean ipa_takeover = false;
 // MAC address handling for IPv4 with the layer2 option
 global boolean qeth_layer2 = false;
 global string qeth_macaddress = "00:00:00:00:00:00";
+global string qeth_chanids = "";
 // Timeout for LCS LANCMD
 global string lcs_timeout = "5";
 
@@ -1124,7 +1125,7 @@ global define boolean Select(string dev) {
     if (qeth_layer2 ) {
 	qeth_macaddress = devmap["LLADDR"]:"00:00:00:00:00:00";
     }
-
+    qeth_chanids = NetworkModules::CCW_CHAN_IDS;
     //if(bootproto == "none") bootproto = "static";
 
     return true;
@@ -1235,7 +1236,7 @@ global define boolean Commit() {
 			NetworkModules::SCRIPTDOWN = "hwdown-ccw";
 			NetworkModules::SCRIPTUP_ccwgroup = "hwup-" + type2;
 		    }
-
+/*
 		    integer devid = 0;
 		    string devstr = "";
 
@@ -1251,15 +1252,16 @@ global define boolean Commit() {
 		    string devid0 = String::PadZeros(regexpsub(tohexstring(devid), "0x(.*)", "\\1"), 4);
 		    string devid1 = String::PadZeros(regexpsub(tohexstring(devid+1), "0x(.*)", "\\1"), 4);
 		    string devid2 = String::PadZeros(regexpsub(tohexstring(devid+2), "0x(.*)", "\\1"), 4);
+*/
 
 		    if(type2 == "ctc" || type2 == "lcs") {
-			NetworkModules::CCW_CHAN_IDS = sformat("%1%2 %1%3", devstr, devid0, devid1);
+			NetworkModules::CCW_CHAN_IDS = qeth_chanids; //sformat("%1%2 %1%3", devstr, devid0, devid1);
 			NetworkModules::CCW_CHAN_MODE = chan_mode;
 			NetworkModules::CCW_CHAN_NUM = "2";
 			NetworkModules::LCS_LANCMD_TIMEOUT = lcs_timeout;
 		    }
 		    else if(type2 == "qeth") {
-			NetworkModules::CCW_CHAN_IDS = sformat("%1%2 %1%3 %1%4", devstr, devid0, devid1, devid2);
+			NetworkModules::CCW_CHAN_IDS = qeth_chanids; //sformat("%1%2 %1%3 %1%4", devstr, devid0, devid1, devid2);
 			NetworkModules::CCW_CHAN_MODE = chan_mode;
 			NetworkModules::CCW_CHAN_NUM = "3";
 			NetworkModules::QETH_OPTIONS = qeth_options;

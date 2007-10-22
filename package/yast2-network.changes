@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Oct 22 10:41:37 CEST 2007 - mzugec@suse.cz
+
+- allow user to change CCW of qeth devices - CHAN IDS (#306291)
+- 2.13.99 
+
+-------------------------------------------------------------------
 Thu Apr  5 10:09:14 CEST 2007 - mzugec@suse.cz
 
 - for s390 write hwcfg file although driver doesn't provide busID
