@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Oct 26 15:01:43 CEST 2007 - mzugec@suse.de
+
+- leave WIRELESS_KEY_X and WIRELESS_WPA_PSK empty for "no encryption"
+  auth mode (#335501)
+- 2.16.5 
+
+-------------------------------------------------------------------
 Fri Oct 26 12:38:52 CEST 2007 - mzugec@suse.de
 
 - when select dhcp don't remove static default GW for hotplug 

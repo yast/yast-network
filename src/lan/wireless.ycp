@@ -337,7 +337,12 @@ define any WirelessDialog() ``{
 		continue;
 	    }
 
-	    key = (string) UI::QueryWidget (`id (`key), `Value);
+	    if (authmode!="no-encryption" && authmode!="eap") key = (string) UI::QueryWidget (`id (`key), `Value);
+		else {
+			key="";
+			LanItems::wl_key[LanItems::wl_default_key] = "";
+			LanItems::wl_wpa_psk = "";
+		}
 	    type = (string) UI::QueryWidget (`id (`type_g), `CurrentButton);
 	    if (authmode == "psk")
 	    {
@@ -406,10 +411,12 @@ Really continue?
 	if (authmode == "psk")
 	{
 	    LanItems::wl_wpa_psk = key;
+	    LanItems::wl_key[LanItems::wl_default_key] = "";
 	}
 	else if (!authmode_wpa && authmode!="no-encryption")
 	{
 	    LanItems::wl_key[LanItems::wl_default_key] = ckey;
+	    LanItems::wl_wpa_psk = "";
 	}
     }
 
