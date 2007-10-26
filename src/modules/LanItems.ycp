@@ -40,7 +40,7 @@ global symbol operation = nil;
 global string description = "";
 
 //unique - only for backward compatibility
-global string unique = "";
+//global string unique = "";
 
 global string type = "";
 global string device = "";
@@ -430,6 +430,15 @@ global list Overview() {
 
 global map getCurrentItem(){
  return Items[current]:$[];
+}
+
+/*
+ * Is current device hotplug or not? I.e. is connected via usb/pcmci?
+ */
+global boolean isCurrentHotplug(){
+ string hotplugtype = getCurrentItem()["hwinfo", "hotplug"]:"";
+ if (hotplugtype == "usb" || hotplugtype == "pcmci") return true;
+	else return false;
 }
 
 global boolean IsItemConfigured(){

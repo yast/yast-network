@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Oct 26 12:38:52 CEST 2007 - mzugec@suse.de
+
+- when select dhcp don't remove static default GW for hotplug 
+  (usb/pcmci) devices(#307102)
+- 2.16.4 
+
+-------------------------------------------------------------------
 Wed Oct 10 18:19:37 CEST 2007 - mzugec@suse.cz
 
 - fixed displayed name for network device (#330994)

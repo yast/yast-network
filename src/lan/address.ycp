@@ -926,7 +926,8 @@ define any AddressDialog() {
 	    LanItems::netmask = "";
 	    LanItems::remoteip = "";
 	    // fixed bug #73739 - if dhcp is used, dont set default gw statically
-	    Routing::RemoveDefaultGw();
+	    // don't delete default GW for usb/pcmci devices (#307102)
+	    if (!LanItems::isCurrentHotplug()) Routing::RemoveDefaultGw();
 	}
     }
 
