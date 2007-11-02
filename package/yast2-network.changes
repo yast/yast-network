@@ -3,6 +3,7 @@ Fri Nov  2 14:18:37 CET 2007 - locilka@suse.cz
 
 - YCP Module Internet moved to yast2.rpm to break several
   dependencies on yast2-network.
+- Adjusted RPM dependencies.
 - 2.16.6
 
 -------------------------------------------------------------------

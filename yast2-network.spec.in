@@ -7,12 +7,13 @@ BuildRequires: update-desktop-files
 BuildRequires: yast2-devtools yast2-testsuite
 BuildRequires: yast2-country
 BuildRequires: yast2-installation >= 2.15.27
-BuildRequires: yast2 >= 2.15.35
+BuildRequires: yast2 >= 2.16.6
 
 # String::Random
 # Linuxrc::display_ip
 # SuSEFirewall::IsInstalled
-Requires:	yast2 >= 2.15.35
+# YCP module Internet
+Requires:	yast2 >= 2.16.6
 
 Requires:	sysconfig yast2-country yast2-packager
 PreReq:		/bin/rm
