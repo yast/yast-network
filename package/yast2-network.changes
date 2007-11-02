@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Nov  2 14:18:37 CET 2007 - locilka@suse.cz
+
+- YCP Module Internet moved to yast2.rpm to break several
+  dependencies on yast2-network.
+- 2.16.6
+
+-------------------------------------------------------------------
 Fri Oct 26 15:01:43 CEST 2007 - mzugec@suse.de
 
 - leave WIRELESS_KEY_X and WIRELESS_WPA_PSK empty for "no encryption"
