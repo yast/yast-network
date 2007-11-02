@@ -3,7 +3,10 @@ Fri Nov  2 14:18:37 CET 2007 - locilka@suse.cz
 
 - YCP Module Internet moved to yast2.rpm to break several
   dependencies on yast2-network.
+- Created new YCP module InternetDevices (some functions from
+  Internet module were moved there).
 - Adjusted RPM dependencies.
+- Adjusted Internet testsuite.
 - 2.16.6
 
 -------------------------------------------------------------------

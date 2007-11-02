@@ -58,6 +58,31 @@ define boolean AskForPassword() {
     return ret == `ok;
 }
 
+/**
+ *  Set device from argument as default network device 
+ */
+void SetDevice (string dev) {
+    Internet::device=dev;
+    NetworkDevices::Select(Internet::device);
+    Internet::type = NetworkDevices::FastestType(Internet::device);
+    Internet::provider = NetworkDevices::Current["PROVIDER"]:"";
+
+    if (Internet::provider != "") {
+        import "Provider";
+        Provider::Read();
+        Provider::Select(Internet::provider);
+        Internet::demand = Provider::Current["DEMAND"]:"no" == "yes";
+        Internet::password = Provider::Current["PASSWORD"]:"";
+        Internet::askpassword = Provider::Current["ASKPASSWORD"]:"no" == "yes";
+        Internet::capi_adsl = Provider::Current["PPPMODE"]:"pppoe" == "capi-adsl";
+        Internet::capi_isdn = Provider::Current["PPPMODE"]:"ippp" == "capi-isdn";
+    }
+
+    /* Set logfile */
+    if (Internet::type == "dsl" || Internet::type == "modem" || (Internet::type == "isdn" && Internet::capi_isdn))
+        Internet::logfile = "/var/log/smpppd/ifcfg-" + Internet::device + ".log";
+
+}
 
 /**
  * Connection steps dialog
@@ -199,7 +224,7 @@ string current = Internet::device;
     }while(!exit);
 
     Internet::do_test = UI::QueryWidget(`id(`rb), `CurrentButton) == `yes;
-    Internet::SetDevice(current);
+    SetDevice(current);
     y2debug("Internet::do_test=%1", Internet::do_test);
 
     return (symbol) ret;

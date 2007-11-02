@@ -13,6 +13,7 @@
 textdomain "network";
 
 import "Internet";
+import "InternetDevices";
 import "Mode";
 
 include "network/routines.ycp";
@@ -28,7 +29,7 @@ if (Mode::update ())
 }
 
 /* Nothing to test */
-if(!Internet::FindFastest())
+if(!InternetDevices::FindFastest())
 {
     Internet::do_test = false;
     return `auto;
