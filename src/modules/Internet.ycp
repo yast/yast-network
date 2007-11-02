@@ -11,14 +11,11 @@
 {
 
 module "Internet";
-textdomain "network";
 
 import "Map";
 import "NetworkDevices";
 import "NetworkService";
 import "Service";
-
-include "network/routines.ycp";
 
 /**
  * Flag to remember if user wants to run internet test
