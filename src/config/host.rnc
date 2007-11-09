@@ -9,13 +9,13 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 
 host =
   element host {
-    hosts
+    hosts?
   }
 
 hosts =
   element hosts {
     LIST,
-    hosts_entry+
+    hosts_entry*
   }
 
 hosts_entry =
