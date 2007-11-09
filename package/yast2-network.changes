@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Nov  9 14:54:20 CET 2007 - kmachalkova@suse.cz
+
+- host.rnc modified to accept empty <host> section as a valid one
+- Filter out host IPs with empty hostname so that valid autoyast
+  profile is created (both #335120)
+- 2.13.100 
+
+-------------------------------------------------------------------
 Mon Oct 22 10:41:37 CEST 2007 - mzugec@suse.cz
 
 - allow user to change CCW of qeth devices - CHAN IDS (#306291)
