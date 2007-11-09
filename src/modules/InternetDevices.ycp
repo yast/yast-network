@@ -1,0 +1,87 @@
+/**
+ * File:	modules/InternetDevices.ycp
+ * Package:	Network configuration
+ * Summary:	Internet connection and YOU during the installation
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *		Arvin Schnell <arvin@suse.de>
+ *
+ * $Id:$
+ */
+
+{
+
+module "InternetDevices";
+
+import "Internet";
+import "NetworkDevices";
+
+/**
+ * Reset values.
+ */
+define void Reset() {
+    Internet::device = "";
+    Internet::type = "";
+    Internet::logfile = "";
+    Internet::provider = "";
+    Internet::password = "";
+    Internet::demand = false;
+    Internet::askpassword = nil;
+    Internet::capi_adsl = false;
+    Internet::capi_isdn = false;
+}
+
+/**
+ *  Set device from argument as default network device 
+ */
+global define void SetDevice(string dev){
+    Internet::device=dev;
+    NetworkDevices::Select(Internet::device);
+    Internet::type = NetworkDevices::FastestType(Internet::device);
+    Internet::provider = NetworkDevices::Current["PROVIDER"]:"";
+
+    if (Internet::provider != "") {
+        import "Provider";
+
+        Provider::Read();
+        Provider::Select(Internet::provider);
+
+        Internet::demand = Provider::Current["DEMAND"]:"no" == "yes";
+        Internet::password = Provider::Current["PASSWORD"]:"";
+        Internet::askpassword = Provider::Current["ASKPASSWORD"]:"no" == "yes";
+        Internet::capi_adsl = Provider::Current["PPPMODE"]:"pppoe" == "capi-adsl";
+        Internet::capi_isdn = Provider::Current["PPPMODE"]:"ippp" == "capi-isdn";
+    }
+
+    /* Set logfile */
+    if (Internet::type == "dsl" || Internet::type == "modem" || (Internet::type == "isdn" && Internet::capi_isdn))
+        Internet::logfile = "/var/log/smpppd/ifcfg-" + Internet::device + ".log";
+
+}
+
+/**
+ * Find the fastest connection to the Internet
+ * @return true if a "good" connection was found
+ */
+global define boolean FindFastest() {
+
+    Reset();
+
+    NetworkDevices::Read();
+    Internet::device = NetworkDevices::Fastest();
+
+    if ((string)SCR::Read(.sysconfig.network.config.NETWORKMANAGER)=="yes" && Internet::device == "")
+    {
+	Internet::device = Internet::GetDevices ()[0]:"";
+    }
+
+    y2milestone("fastest=%1", Internet::device);
+
+    /* No fallback since there are devices that must not be tested (e.g. lo) */
+    if (Internet::device == "") return false;
+
+    SetDevice (Internet::device);
+    return true;
+}
+
+/* EOF */
+}
