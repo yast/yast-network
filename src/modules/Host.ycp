@@ -161,6 +161,11 @@ global define boolean Import(map settings) {
 global define map Export() {
     if (size(hosts)>0)
     {
+	//Filter out IPs with empty hostname (so that valid autoyast
+        //profile is created)(#335120)
+	hosts = filter ( string ip, list <string> names, hosts,{
+	    return (names != []);
+	});
         return $[
             "hosts": eval(hosts),
         ];
