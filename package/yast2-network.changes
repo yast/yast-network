@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Nov  9 14:45:11 CET 2007 - kmachalkova@suse.cz
+
+- host.rnc modified to accept empty <host> section as a valid one
+- Filter out host IPs with empty hostname so that valid autoyast 
+  profile is created (both #335120)
+- 2.16.7
+
+-------------------------------------------------------------------
 Fri Nov  2 14:18:37 CET 2007 - locilka@suse.cz
 
 - YCP Module Internet moved to yast2.rpm to break several
