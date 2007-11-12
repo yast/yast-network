@@ -148,6 +148,8 @@ define void StoreHnWidget (string key, map event) {
 define void InitDhcpHostname (string key) {
     UI::ChangeWidget (`id("DHCP_HOSTNAME"), `Enabled, has_dhcp);
     if (!has_dhcp) UI::ReplaceWidget(`id ("dh_host_text"),`Label(_("no interface with dhcp")));
+		// the hostname dialog proposes to update it by DHCP on a laptop (#326102)
+	else UI::ChangeWidget(`id("DHCP_HOSTNAME"), `Value, hn_settings["DHCP_HOSTNAME"]:true);
     return nil;
 }
 

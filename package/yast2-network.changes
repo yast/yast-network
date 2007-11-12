@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Nov 12 15:18:38 CET 2007 - mzugec@suse.cz
+
+- the hostname dialog proposes to update it by DHCP on a laptop 
+  (#326102)
+- 2.16.8
+
+-------------------------------------------------------------------
 Fri Nov  9 14:45:11 CET 2007 - kmachalkova@suse.cz
 
 - host.rnc modified to accept empty <host> section as a valid one
