@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Nov 15 19:28:51 CET 2007 - mzugec@suse.de
+
+- FaTE #302586 - support for qeth devices in bonding
+- 2.16.9 
+
+-------------------------------------------------------------------
 Mon Nov 12 15:18:38 CET 2007 - mzugec@suse.cz
 
 - the hostname dialog proposes to update it by DHCP on a laptop 
