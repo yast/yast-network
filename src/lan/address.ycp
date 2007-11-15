@@ -25,6 +25,7 @@ import "ProductFeatures";
 import "Routing";
 import "SuSEFirewall4Network";
 import "Wizard";
+import "Map";
 
 include "network/summary.ycp";
 include "network/widgets.ycp";
@@ -923,15 +924,15 @@ Components of this product might not work with DHCP.</p>");
         settings["SLAVES"] = Lan::bond_slaves;
 
         //get all eth devices
-        map<string, map<string, map<string, any> > > devices = (map<string, map<string, map<string, any> > >)NetworkDevices::FilterDevices("");
-	map<string, map<string, any> > avails= devices["eth"]:$[];
+    map <string, any> configurations =  NetworkDevices::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkDevices::CardRegex["netcard"]:"", "|"), {
+     foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
 
         //filter the eth devices (BOOT_PROTO=none && START_MODE=off)
-        foreach (string num, map<string, any> value, avails, 
-        {
-            if (((string)value["BOOTPROTO"]:"" == "none") && ((string)value["STARTMODE"]:"" == "off"))
-            wd["BONDSLAVE", "items"] = add (wd["BONDSLAVE", "items"]:[], [NetworkDevices::device_name("eth", num)] );
+            if (((string)configurations[devtype, devnum, "BOOTPROTO"]:"" == "none") && ((string)configurations[devtype, devnum, "STARTMODE"]:"" == "off"))
+            wd["BONDSLAVE", "items"] = add (wd["BONDSLAVE", "items"]:[], [NetworkDevices::device_name(devtype, devnum)] );
         });
+    });
 
         settings["BONDOPTION"] = Lan::bond_option;
 
