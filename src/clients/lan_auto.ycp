@@ -80,7 +80,8 @@ define map FromAY(map input)
 	// uppercase map keys
 	string newk = nil;
 	interface =  mapmap(string k, string v, interface, ``{
-	    newk = toupper(k);
+           if (k=="aliases") newk="_aliases";
+                else newk = toupper(k);
 	    return $[newk: v];
         });
 

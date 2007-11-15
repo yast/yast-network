@@ -612,7 +612,6 @@ global define boolean WriteOnly() {
  * @return true on success
  */
 global define boolean Import(map settings) {
-
     if (!Mode::autoinst()) {
         // FIXME: MOD Modules = (map) eval(settings["modules"]:$[]);
         NetworkDevices::Import("netcard", (map<string, map>) settings["devices"]:$[]);
@@ -1919,7 +1918,8 @@ global define boolean Autoinstall() {
 	    // we use "interfaces". FIXME.
             string newk = nil;
             interface =  mapmap(string k, string v, interface, ``{
-                    newk = toupper(k);
+		if (k=="aliases") newk="_aliases";
+		  else newk = toupper(k);
                     return $[newk: v];
                     });
 

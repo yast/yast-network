@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Nov 15 15:05:59 CET 2007 - mzugec@suse.de
+
+- FaTE #302300 - aliases support for autoYaST
+- 2.13.101 
+
+-------------------------------------------------------------------
 Fri Nov  9 14:54:20 CET 2007 - kmachalkova@suse.cz
 
 - host.rnc modified to accept empty <host> section as a valid one
