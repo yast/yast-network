@@ -133,7 +133,7 @@ The driver may be built in the kernel.")))
 	if (fw != ""){
 	    if ((!Package::Installed(fw) && !Package::Available(fw))){
 	        Popup::Message(sformat(_("The device needs a firmware to function properly. It can be installed from
-%1 Add-On CD.\nTo install the firmware, add Add-On CD to your YaST installation sources and return 
+%1 Add-On CD.\nTo install the firmware, add Add-On CD to your YaST software repositories and return 
 to this configuration dialog."), Product::name));
 		return false;
 	    } else
