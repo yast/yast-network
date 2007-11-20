@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Nov 20 12:28:29 CET 2007 - locilka@suse.cz
+
+- 'Copy 70-persistent-cd.rules' functionality has been moved to
+  yast2-installation (#328126).
+
+-------------------------------------------------------------------
 Thu Nov 15 19:28:51 CET 2007 - mzugec@suse.de
 
 - FaTE #302586 - support for qeth devices in bonding

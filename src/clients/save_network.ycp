@@ -354,12 +354,9 @@ void save_network(){
 
     string udev_rules_srcdir = "/etc/udev/rules.d";
     string net_srcfile = "70-persistent-net.rules";
-    // TODO: move "cd.rules" code into storage (#292375)
-    string cd_srcfile = "70-persistent-cd.rules";
 
     string udev_rules_destdir = sformat("%1%2", String::Quote (Installation::destdir), udev_rules_srcdir);
     string net_destfile = sformat("%1%2/%3", String::Quote (Installation::destdir), udev_rules_srcdir, net_srcfile);
-    string cd_destfile = sformat("%1%2/%3", String::Quote (Installation::destdir), udev_rules_srcdir, cd_srcfile);
 
     //Do not create udev_rules_destdir if it already exists (in case of update)
     //(bug #293366, c#7)
@@ -374,12 +371,6 @@ void save_network(){
     {
         y2milestone("Copying %1 to the installed system ", net_srcfile);
         WFM::Execute (.local.bash, sformat ("/bin/cp -p '%1/%2' '%3'", udev_rules_srcdir, net_srcfile, net_destfile));
-    }
-
-    if (! FileUtils::Exists( cd_destfile ))
-    {
-        y2milestone("Copying %1 to the installed system ", cd_srcfile);
-        WFM::Execute (.local.bash, sformat ("/bin/cp -p '%1/%2' '%3'", udev_rules_srcdir, cd_srcfile, cd_destfile));
     }
 
     // close and chroot back
