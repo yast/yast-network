@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Nov 21 18:28:53 CET 2007 - mzugec@suse.cz
+
+- choosing pptp server by domain name, not only ip (#241461)
+  thanks to nderkach@gmail.com
+- 2.16.10 
+
+-------------------------------------------------------------------
 Wed Nov 21 17:41:01 CET 2007 - kmachalkova@suse.cz
 
 - Allow space characters in proxy username (#337048)

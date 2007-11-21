@@ -22,6 +22,7 @@ import "Popup";
 import "SuSEFirewall4Network";
 import "Wizard";
 import "LanItems";
+import "Hostname";
 
 include "network/runtime.ycp";
 include "network/routines.ycp";
@@ -42,40 +43,45 @@ define any DSLDialog() {
     /* DSL dialog caption */
     string caption = _("DSL Configuration");
 
-    /* DSL dialog help 1/7 */
+    /* DSL dialog help 1/8 */
     string helptext = _("<p>Here, set the most important settings
 for the DSL connection.</p>
 ") +
 
-    /* DSL dialog help 2/7 */
+    /* DSL dialog help 2/8 */
     _("<p>First, choose your <b>PPP mode</b>. This is either
-<i>PPP over Ethernet</i> (PPPoE) or <i>PPP over ATM</i> (PPPoATM). Use
-<i>PPP over Ethernet</i> if your DSL modem is connected via ethernet to your
-computer. If you are not sure which mode to use, ask your provider.</p>") +
+<i>PPP over Ethernet</i> (PPPoE), <i>PPP over ATM</i> (PPPoATM),
+<i>CAPI for ADSL</i> or <i>Point to Point Tunneling Protocol</i> (PPTP).
+Use <i>PPP over Ethernet</i> if your DSL modem is connected via ethernet to your computer.
+Use <i>Point to Point Tunneling Protocol</i> if you want to connect to a VPN server.
+If you are not sure which mode to use, ask your provider. </p>") +
 
-    /* DSL dialog help 3/7 */
+    /* DSL dialog help 3/8 */
     _("<p>If you are using <i>PPP over Ethernet</i>, first configure your
 ethernet card.</p>") +
 
-    /* DSL dialog help 4/7 */
+    /* DSL dialog help 4/8 */
 _("<p>The <b>PPP Mode-Dependent Settings</b> are settings required to set up
 your DSL connection. <b>VPI/VCI</b> makes sense only for <i>PPP over ATM</i>
 connections, <b>Ethernet Card</b> is needed for <i>PPP over Ethernet</i>
 connections.</p>
 ") +
 
-    /* DSL dialog help 5/7 */
+    /* DSL dialog help 5/8 */
 _("<p><b>For PPPoATM, enter your VPI/VCI pair, for example, <i>0.38</i>
 for British Telecom. If unsure, ask your provider.</p>") +
 
-    /* DSL dialog help 6/7 */
+    /* DSL dialog help 6/8 */
 _("<p>For PPPoE, enter the device of the ethernet card to which your DSL
 modem is connected. If you did not set up your ethernet card yet, do
 so by pressing <b>Configure Network Cards</b>.</p>") +
 
+    /* DSL dialog help 7/8 */
+_("<p>For PPTP, enter the server name or ip adress.</p>") +
+
 	widget_descr["STARTMODE", "help"]:"" +
 
-    /* DSL dialog help 7/7 */
+    /* DSL dialog help 8/8 */
 _("<p>Activation during boot may
 be appropriate for dial-on-demand connections.</p>") +
 
@@ -170,7 +176,7 @@ getDeviceContens(interface)
 		`PushButton(`id(`lan), _("&Configure Network Cards")),
 		`VSpacing(0.2),
 		/* TextEntry label */
-		`TextEntry(`id(`modemip), _("Modem &IP Address"), modemip)
+		`TextEntry(`id(`modemip), _("&Server Name or IP Address"), modemip)
 	    ), `HSpacing(2))),
 	    `VSpacing(1),
 	    // STARTMODE
@@ -224,9 +230,9 @@ getDeviceContens(interface)
 		UI::SetFocus(`id(`lan));
 		continue;
 	    }
-	    if(pppmode == "pptp" && !IP::Check4(modemip)) {
+	    if(pppmode == "pptp" && !IP::Check4(modemip) && !Hostname::CheckDomain(modemip)) {
 		/* Popup text */
-		Popup::Error(_("Modem IP address is invalid."));
+		Popup::Error(_("Server IP address or domain name is invalid."));
 		UI::SetFocus(`id(`modemip));
 		continue;
 	    }
