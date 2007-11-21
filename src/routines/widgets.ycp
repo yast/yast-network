@@ -114,7 +114,7 @@ controls the interface. There is no need to set it up in YaST."),
 	"label": _("Manually"),
 	// help text for Device Activation
 	"help": _("<b>Manually</b>: You control the interface manually
-via 'ifup' or 'kinternet' (See 'User Controlled' below)."),
+via 'ifup' or 'KInternet' (See 'User Controlled' below)."),
 	],
     "ifplugd": $[
 	// Combo box option for Device Activation
@@ -142,7 +142,7 @@ boot time if the interface is not present.
         // help text for Device Activation
         "help": _("Using <b>On NFSroot</b> is nearly like 'auto'. But interfaces with this startmode will never
 be shut down via 'rcnetwork stop'. 'ifdown <iface>' still works.
-Use this when you have a nfs or iscsi root filesystem.
+Use this when you have a nfs or iSCSI root filesystem.
 "),
 ],
     "nfsroot" : $[
