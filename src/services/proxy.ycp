@@ -394,8 +394,9 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
     }
 
     // #103841, relaxed. now avoiding only quotes
+    // #337048 allow using space as well
     // was CAlnum() + ".:_-/\\"
-    string ValidCharsUsername = deletechars (String::CGraph (), "'\"");
+    string ValidCharsUsername = deletechars (String::CGraph (), "'\"") + " ";
     UI::ChangeWidget(`id(`http), `ValidChars, URL::ValidChars);
     UI::ChangeWidget(`id(`https), `ValidChars, URL::ValidChars);
     UI::ChangeWidget(`id(`ftp), `ValidChars, URL::ValidChars);

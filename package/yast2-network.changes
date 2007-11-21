@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Nov 21 17:41:01 CET 2007 - kmachalkova@suse.cz
+
+- Allow space characters in proxy username (#337048)
+- Quote user/password string in test proxy command (it may contain
+  special characters) (#338264)
+
+-------------------------------------------------------------------
 Wed Nov 21 16:32:37 CET 2007 - mzugec@suse.cz
 
 - help text kinternet -> KInternet (#237172) 
