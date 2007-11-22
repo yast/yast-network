@@ -470,7 +470,7 @@ the firewall will be disabled.</p>"),
     "BOOTPROTO_none": $[
         "widget": `radio_button,
         // radio button label
-        "label": _("None Address Setup"),
+        "label": _("No IP Address (for Bonding Devices)"),
         "opt": [`notify],
         "init": CWM::InitNull,
         "store": CWM::StoreNull
