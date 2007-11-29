@@ -1444,6 +1444,12 @@ define map FindMatchingDevice(map interface) {
 	// - H iterates over Hardware
 	// - patterns are shell-like
 
+	// exception for bonding devices FaTE (#303039)
+	// (without hwinfo record - will create fake one with device and type)
+	if (issubstring(interface["device"]:"", "bond")) {
+		tosel=$["device":interface["device"]:"", "type":"bond"];
+	 y2milestone("found bonding device");
+	}
         list device_id = splitstring(interface["device"]:"", "-");
         /* code for eth-id-00:80:c8:f6:48:4c configurations */
 	// *-id-$ID => find H["mac"] == $ID
@@ -1874,7 +1880,6 @@ global define boolean Autoinstall() {
             list<string> devs = NetworkDevices::List("netcard");
             y2milestone("devs: %1", devs);
             tosel = nil;
-
             Add();
 
     	    tosel = FindMatchingDevice(interface);
