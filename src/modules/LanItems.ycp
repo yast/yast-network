@@ -777,7 +777,8 @@ global define boolean Select(string dev) {
 //    if(dev == "") {
 	// defaults for a new device
 	devmap = $[
-	    "STARTMODE": "auto",	// #115448, #156388
+			// for hotplug devices set STARTMODE=hotplug (#132583)
+	    "STARTMODE": hasAnyValue(Items[current, "hwinfo", "hotplug"]:"") ? "hotplug" : "auto",	// #115448, #156388
 	    "NETMASK": (NetHwDetection::result["NETMASK"]:"255.255.255.0"), // #31369
 	    ];
 	string product_startmode = ProductFeatures::GetStringFeature ("network", "startmode");
@@ -788,7 +789,7 @@ global define boolean Select(string dev) {
 	    {
 		// #164816
 		y2milestone ("Not a laptop, will not prefer ifplugd");
-		product_startmode = "auto";
+		product_startmode = hasAnyValue(Items[current, "hwinfo", "hotplug"]:"") ? "hotplug" : "auto";
 	    }
 	    devmap["STARTMODE"] = product_startmode;
 	}

@@ -120,6 +120,13 @@ void StoreSlave(string key, map event)
     settings["SLAVES"] = (list<string>)UI::QueryWidget (`id(key), `SelectedItems);
 }
 
+void enableDisableBootProto(symbol current){
+  UI::ChangeWidget(`dyn,	`Enabled, current==`dynamic);
+  UI::ChangeWidget(`ipaddr,	`Enabled, current==`static);
+  UI::ChangeWidget(`netmask,	`Enabled, current==`static);
+  UI::ChangeWidget(`hostname,	`Enabled, current==`static);
+}
+
 /**
  * Initialize a RadioButtonGroup
  * Group called FOO has buttons FOO_bar FOO_qux and values bar qux
@@ -143,25 +150,16 @@ void initBootProto (string key) {
   case "none" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `none);
 		break;
  }
+ enableDisableBootProto((symbol)UI::QueryWidget(`id(`bootproto), `CurrentButton));
 }
 
 
 symbol handleBootProto (string key, map event) {
-  boolean none    = false;
-  boolean dynamic = false;
-  boolean stat  = false;
-  switch((symbol)UI::QueryWidget(`id(`bootproto), `CurrentButton)){
-   case `none : none=true;
-		break;
-   case `static: stat=true;
-		break;
-   default : dynamic=true;
-		break;
-  }
-  UI::ChangeWidget(`dyn, `Enabled, dynamic);
-  UI::ChangeWidget(`ipaddr, `Enabled, stat);
-  UI::ChangeWidget(`netmask, `Enabled, stat);
-  UI::ChangeWidget(`hostname, `Enabled, stat);
+ if (event["EventReason"]:""=="ValueChanged"){
+  symbol current = (symbol)UI::QueryWidget(`id(`bootproto), `CurrentButton);
+  enableDisableBootProto(current);
+  if (current == `none) settings["STARTMODE"] = "off";
+ }
  return nil;
 }
 

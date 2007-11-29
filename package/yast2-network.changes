@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov 29 15:39:35 CET 2007 - mzugec@suse.cz
+
+- when user change BOOTPROTO to NONE, set STARTMODE to off
+- for hotplug devices set STARTMODE=hotplug (#132583)
+- 2.16.11 
+
+-------------------------------------------------------------------
 Wed Nov 21 18:28:53 CET 2007 - mzugec@suse.cz
 
 - choosing pptp server by domain name, not only ip (#241461)
