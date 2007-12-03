@@ -238,10 +238,6 @@ global void ReadHw(){
  });
 }
 
-// temporary used for reading configurations without hwinfo
-global void ReadNetworkModules(){
-}
-
 // get list of all configurations for "netcard" macro in NetworkDevices module
 list<string> getNetworkDevices(){
  list<string> confs=[];

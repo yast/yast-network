@@ -38,6 +38,7 @@ import "SuSEFirewall4Network";
 import "FileUtils";
 import "PackageSystem";
 import "LanItems";
+import "ModuleLoading";
 
 include "network/complex.ycp";
 include "network/runtime.ycp";
@@ -199,14 +200,22 @@ global define boolean Read (symbol cache) {
     if(!Confirm::MustBeRoot()) return false;
 
 
+    if(Abort()) return false;
     /* Progress step 1/9 */
-    ProgressNextStage(_("Detecting network devices..."));
-    // if(!Arch::s390 ()) /* FIXME: Temporary hack until the detection is functional */
-
-    // Dont read hardware data in config mode
-    if(!Mode::config ()) {
-	if(!NetHwDetection::running) NetHwDetection::Start();
-	LanItems::ReadHw();
+    ProgressNextStage(_("Detecting for ndiswrapper..."));
+	// modprobe ndiswrapper before hwinfo when needed (#343893)
+    if (!Mode::autoinst() && PackageSystem::Installed("ndiswrapper")){
+	y2milestone("ndiswrapper: installed");
+     if (size((list<string>)SCR::Read(.target.dir, "/etc/ndiswrapper"))>0){
+	y2milestone("ndiswrapper: configuration found");
+      if ((integer)SCR::Execute(.target.bash, "lsmod |grep -q ndiswrapper")!=0
+		&& Popup::YesNo(_("There is ndiswrapper configuration detected
+but kernel module wasn't modprobed.
+Should I modprobe ndiswrapper?"))) {
+	if (ModuleLoading::Load("ndiswrapper", "", "", "", false, true)==`fail) Popup::Error(_("ndiswrapper kernel module wasn't loaded.
+Check configuration manually."));
+	}
+     }
     }
 
     /* ReadHardware(""); /* TESTING */
@@ -214,9 +223,13 @@ global define boolean Read (symbol cache) {
 
     if(Abort()) return false;
     /* Progress step 2/9 */
-    ProgressNextStage(_("Reading /etc/modprobe.conf..."));
+    ProgressNextStage(_("Detecting network devices..."));
     // FIXME: MOD // ReadModules(NetworkDevices::CardRegex["netcard"]:"");
-     LanItems::ReadNetworkModules();
+    // Dont read hardware data in config mode
+    if(!Mode::config ()) {
+	if(!NetHwDetection::running) NetHwDetection::Start();
+	LanItems::ReadHw();
+    }
     sleep(sl);
 
     if(Abort()) return false;
