@@ -503,6 +503,12 @@ disk. If you enter the password here, it is saved in clear text on disk
 		Popup::Message(_("Enter the password."));
 		UI::SetFocus(`id(`passwd));
 	    } */
+	    // NM doesn't ask for password (#225793)
+	    else if(ask_pass && NetworkService::IsManaged ()){
+		Popup::Warning(_("NetworkManager doesn't have ability to ask for password.
+Use KInternet (without NetworkManager) or store password on the system."));
+		continue;
+	    }
 	    else if(filterchars(phone, phonevalidchars) != phone &&
 		    /* Popup::YesNo text */
 		    !Popup::YesNo(_("You have entered some characters that are not numbers in the phone field.\n\nContinue?")))
