@@ -101,6 +101,28 @@ void StoreAddrWidget (string key, map event) {
     settings[key] = value;
 }
 
+
+/**
+ * Default function to init the value of slave ETHERDEVICE box.
+ * @param key	id of the widget
+ */
+void InitVLANSlave(string key)
+{
+    UI::ChangeWidget(`id(key), `CurrentItem, settings["ETHERDEVICE"]:"");
+}
+
+/**
+ * Default function to store the value of ETHERDEVICE devices box.
+ * @param key	id of the widget
+ * @param key id of the widget
+ */
+void StoreVLANSlave(string key, map event)
+{
+    settings["ETHERDEVICE"] = (string)UI::QueryWidget (`id(key), `CurrentItem);
+}
+
+
+
 /**
  * Default function to init the value of slave devices box.
  * @param key	id of the widget
@@ -468,6 +490,15 @@ map<string, map<string,any> > widget_descr_local = $[
 //	"handle": HandleIfcfg,
 	],
 
+    "ETHERDEVICE": $[
+        "widget": `selection_box,
+        "label": _("Real Interface for &VLAN"),
+        "opt": [`shrinkable],
+        "items" : [ ],
+        "init": InitVLANSlave,
+        "store": StoreVLANSlave,
+        "help": help["etherdevice"]:"",
+    ],
     "BONDSLAVE": $[
         "widget": `multi_selection_box,
         "label": _("Bond &Slaves"),
@@ -481,7 +512,7 @@ map<string, map<string,any> > widget_descr_local = $[
     "BONDOPTION": $[
         "widget": `combobox,
         /* ComboBox label */
-        "label": _("Bond &Driver Options"),
+        "label": _("&Bond Driver Options"),
         "opt": [`hstretch, `editable],
         "help": _("<p>Select the bond driver options, and edit it if you need. </p>"),
         "items": [["mode=balance-rr"], ["mode=active-backup"], ["mode=balance-xor"],
@@ -633,10 +664,10 @@ define any AddressDialog() {
     }
 
     // FIXME duplicated in hardware.ycp
-    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond" ];
+    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond", "vlan" ];
 
     if(Arch::s390 ())
-	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv", "qeth", "lcs" ];
+	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv", "qeth", "lcs", "vlan" ];
 
     if(Arch::ia64 ())
 	device_types = add(device_types, "xp");
@@ -733,7 +764,6 @@ define any AddressDialog() {
 	is_ptp? address_p2p_contents:
 	(no_dhcp? address_static_contents: address_dhcp_contents);
 
-    term bond = `MarginBox(1, 0, `Frame( "", `VBox("BONDSLAVE", "BONDOPTION")));
 
     if (LanItems::type == "bond")
     {
@@ -760,6 +790,19 @@ define any AddressDialog() {
         wd["BONDOPTION", "items"] = prepend(wd["BONDOPTION", "items"]:[], [LanItems::bond_option]);
     }
 
+    if (LanItems::type == "vlan")
+    {
+	 foreach(integer row, any value, LanItems::Items,{
+	  LanItems::current = row;
+	  if (!LanItems::IsItemConfigured()){
+	    string dev_name = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
+	    if (hasAnyValue(dev_name)) wd["ETHERDEVICE", "items"] = add( wd["ETHERDEVICE", "items"]:[], [ dev_name ] );
+	    }
+	 });
+settings["ETHERDEVICE"] = NetworkDevices::Current["ETHERDEVICE"]:"";
+settings["STARTMODE"] = "onboot";
+    }
+
 
     term address_contents = `VBox(
 	`Left(label),
@@ -771,10 +814,18 @@ define any AddressDialog() {
         address_contents = `VBox(
                 `Left(label),
 		just_address_contents,
-		bond,
+		`MarginBox(1, 0, `Frame( "", `VBox("BONDSLAVE", "BONDOPTION"))),
 		frame2
 	);
-    }
+    } else if (LanItems::type == "vlan"){
+        address_contents = `VBox(
+                `Left(label),
+		just_address_contents,
+		`MarginBox(1, 0, `Frame( "", `VBox("ETHERDEVICE"))),
+		frame2
+	);
+}
+
     else
     {
 	address_contents = `VBox(
@@ -934,7 +985,10 @@ define any AddressDialog() {
     {
         LanItems::bond_option = settings["BONDOPTION"]:"";
 	LanItems::bond_slaves = (list<string>)settings["SLAVES"]:[];
-    }
+    } else if (LanItems::type == "vlan"){
+	 LanItems::vlan_etherdevice = settings["ETHERDEVICE"]:"";
+	}
+
 
     // proceed with WLAN settings if appropriate, #42420
     if (ret == `next && LanItems::type == "wlan" && LanItems::alias == "")
