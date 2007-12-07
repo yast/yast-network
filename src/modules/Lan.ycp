@@ -1114,6 +1114,10 @@ global list<string> Packages () {
     {
 	if (!PackageSystem::Installed("wireless-tools")) pkgs = add (pkgs, "wireless-tools");
     }
+    if (NetworkDevices::List ("vlan") != [])
+    {
+	if (!PackageSystem::Installed("vlan")) pkgs = add (pkgs, "vlan");
+    }
     // #47809
     if (NetworkDevices::Locate ("WIRELESS_AUTH_MODE", "psk") != [] ||
 	NetworkDevices::Locate ("WIRELESS_AUTH_MODE", "eap") != [])

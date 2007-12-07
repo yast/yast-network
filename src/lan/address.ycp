@@ -108,7 +108,17 @@ void StoreAddrWidget (string key, map event) {
  */
 void InitVLANSlave(string key)
 {
-    UI::ChangeWidget(`id(key), `CurrentItem, settings["ETHERDEVICE"]:"");
+ list items = [];
+     settings["ETHERDEVICE"] = NetworkDevices::Current["ETHERDEVICE"]:"";
+	 foreach(integer row, any value, LanItems::Items,{
+	  LanItems::current = row;
+	  if (!LanItems::IsItemConfigured()){
+	    string dev_name = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
+	    if (hasAnyValue(dev_name)) items = add(items, `item(`id(dev_name), dev_name, (dev_name==settings["ETHERDEVICE"]:"")?true:false));
+//wd["ETHERDEVICE", "items"] = add( wd["ETHERDEVICE", "items"]:[], [ dev_name ] );
+	    }
+	 });
+    UI::ChangeWidget(`id(key), `Items, items);
 }
 
 /**
@@ -118,7 +128,7 @@ void InitVLANSlave(string key)
  */
 void StoreVLANSlave(string key, map event)
 {
-    settings["ETHERDEVICE"] = (string)UI::QueryWidget (`id(key), `CurrentItem);
+    settings["ETHERDEVICE"] = (string)UI::QueryWidget (`id(key), `Value);
 }
 
 
@@ -155,6 +165,7 @@ void enableDisableBootProto(symbol current){
  * @param key id of the widget
  */
 void initBootProto (string key) {
+ if (LanItems::type=="vlan") UI::ReplaceWidget(`rp, `Empty());
  switch(settings["BOOTPROTO"]:""){
   case "static": UI::ChangeWidget(`id(`bootproto), `CurrentButton, `static);
 		UI::ChangeWidget(`id(`ipaddr), `Value, settings["IPADDR"]:"");
@@ -491,9 +502,9 @@ map<string, map<string,any> > widget_descr_local = $[
 	],
 
     "ETHERDEVICE": $[
-        "widget": `selection_box,
+        "widget": `combobox,
         "label": _("Real Interface for &VLAN"),
-        "opt": [`shrinkable],
+//        "opt": [`shrinkable],
         "items" : [ ],
         "init": InitVLANSlave,
         "store": StoreVLANSlave,
@@ -524,7 +535,7 @@ map<string, map<string,any> > widget_descr_local = $[
 	"custom_widget":
 	  `RadioButtonGroup(`id(`bootproto),
 		`VBox(
-		`Left(`RadioButton(`id(`none),`opt(`notify),  _("No IP Address (for Bonding Devices)"))),
+		`ReplacePoint(`id(`rp), `Left(`RadioButton(`id(`none),`opt(`notify),  _("No IP Address (for Bonding Devices)")))),
 		`Left(`HBox(
 		 `RadioButton(`id(`dynamic), `opt(`notify), _("Dynamic Address")),
 		  `ComboBox(`id(`dyn), "", [
@@ -764,6 +775,11 @@ define any AddressDialog() {
 	is_ptp? address_p2p_contents:
 	(no_dhcp? address_static_contents: address_dhcp_contents);
 
+    term address_contents = `VBox(
+	`Left(label),
+	just_address_contents,
+	frame2
+     );
 
     if (LanItems::type == "bond")
     {
@@ -788,48 +804,19 @@ define any AddressDialog() {
             return v[0]:"" != LanItems::bond_option;
         });
         wd["BONDOPTION", "items"] = prepend(wd["BONDOPTION", "items"]:[], [LanItems::bond_option]);
-    }
-
-    if (LanItems::type == "vlan")
-    {
-	 foreach(integer row, any value, LanItems::Items,{
-	  LanItems::current = row;
-	  if (!LanItems::IsItemConfigured()){
-	    string dev_name = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
-	    if (hasAnyValue(dev_name)) wd["ETHERDEVICE", "items"] = add( wd["ETHERDEVICE", "items"]:[], [ dev_name ] );
-	    }
-	 });
-settings["ETHERDEVICE"] = NetworkDevices::Current["ETHERDEVICE"]:"";
-settings["STARTMODE"] = "onboot";
-    }
-
-
-    term address_contents = `VBox(
-	`Left(label),
-	just_address_contents,
-	frame2
-     );
-    if (LanItems::type == "bond")
-    {
         address_contents = `VBox(
                 `Left(label),
 		just_address_contents,
 		`MarginBox(1, 0, `Frame( "", `VBox("BONDSLAVE", "BONDOPTION"))),
 		frame2
 	);
-    } else if (LanItems::type == "vlan"){
+    }
+    else if (LanItems::type == "vlan")
+    {
+     settings["STARTMODE"] = "onboot";
         address_contents = `VBox(
                 `Left(label),
-		just_address_contents,
-		`MarginBox(1, 0, `Frame( "", `VBox("ETHERDEVICE"))),
-		frame2
-	);
-}
-
-    else
-    {
-	address_contents = `VBox(
-		`Left(label),
+		`Left( `VBox("ETHERDEVICE")),
 		just_address_contents,
 		"AD_ADDRESSES",
 		frame2
@@ -881,11 +868,11 @@ settings["STARTMODE"] = "onboot";
                 // Address tab help
                 "help": _("<p>Configure your IP address.</p>"),
                     ],
-                    "hardware" : $[
+            "hardware" : $[
                         "header" : _("&Hardware"),
                         "contents" : `VBox( "HWDIALOG" )
                     ],
-                    "t3" : $[
+            "t3" : $[
                         "header" : _("&Wireless"),
                         "contents" : `Empty (),
                         "widget_names" : [],
@@ -896,6 +883,8 @@ settings["STARTMODE"] = "onboot";
         "tab_help" : "",
         "fallback_functions" : functions,
     ];
+    if (LanItems::type=="vlan") wd_content["tab_order"]= ["t_general", "t_addr"];
+
 
     hw_standalone=false;
     wd = (map<string, map<string,any> >) union (wd, $[

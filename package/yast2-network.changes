@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Dec  7 15:48:19 CET 2007 - mzugec@suse.cz
+
+- support for VLAN - FaTE (#142127)
+- 2.16.14 
+
+-------------------------------------------------------------------
 Mon Dec  3 18:54:09 CET 2007 - mzugec@suse.cz
 
 - modprobe ndiswrapper before hwinfo when needed (#343893)

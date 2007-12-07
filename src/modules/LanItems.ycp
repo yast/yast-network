@@ -311,6 +311,8 @@ global list BuildLanOverview() {
     map startmode_descrs = $[
 	// summary description of STARTMODE=auto
 	"auto": _("Started automatically at boot"),
+	// summary description of STARTMODE=auto
+	"onboot": _("Started automatically at boot"),
 	// summary description of STARTMODE=hotplug
 	"hotplug": _("Started automatically at boot"),
 	// summary description of STARTMODE=ifplugd
@@ -396,7 +398,8 @@ global list BuildLanOverview() {
         } else
 		overview = add(overview, Summary::Device(descr, Summary::NotConfigured()));
 
-	string conn = HTML::Bold ( (Items[key, "hwinfo", "link"]:false == true)?"":_("(not connected)") );
+	string conn = HTML::Bold ( (Items[key, "hwinfo", "link"]:false == true)?"":sformat("(%1)", _("not connected") ));
+	if (size(Items[key, "hwinfo"]:$[])==0) conn = HTML::Bold(sformat("(%1)", _("no hwinfo")));
 	string mac_dev="";
 	if (hasAnyValue(Items[key, "hwinfo", "mac"]:"")) mac_dev= HTML::Bold ("MAC : ") + Items[key, "hwinfo", "mac"]:"" + "<br>";
 	 else if (hasAnyValue(Items[key, "hwinfo", "busid"]:"")) mac_dev= HTML::Bold ("BusID : ") + Items[key, "hwinfo", "busid"]:"" + "<br>";
