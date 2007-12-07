@@ -92,6 +92,31 @@ void StoreAddrWidget (string key, map event) {
 }
 
 /**
+ * Default function to init the value of slave ETHERDEVICE box.
+ * @param key  id of the widget
+ */
+void InitVLANSlave(string key)
+{
+ list items = [];
+     settings["ETHERDEVICE"] = NetworkDevices::Current["ETHERDEVICE"]:"";
+        foreach(string dev_name, Lan::getUnconfiguredDevices(),{
+           items = add(items, `item(`id(dev_name), dev_name, (dev_name==settings["ETHERDEVICE"]:"")?true:false));
+//wd["ETHERDEVICE", "items"] = add( wd["ETHERDEVICE", "items"]:[], [ dev_name ] );
+        });
+    UI::ChangeWidget(`id(key), `Items, items);
+}
+
+/**
+ * Default function to store the value of ETHERDEVICE devices box.
+ * @param key  id of the widget
+ * @param key id of the widget
+ */
+void StoreVLANSlave(string key, map event)
+{
+    settings["ETHERDEVICE"] = (string)UI::QueryWidget (`id(key), `Value);
+}
+
+/**
  * Default function to init the value of slave devices box.
  * @param key	id of the widget
  */
@@ -110,16 +135,32 @@ void StoreSlave(string key, map event)
     settings["SLAVES"] = (list<string>)UI::QueryWidget (`id(key), `SelectedItems);
 }
 
+void enableDisableBootProto(symbol current){
+  UI::ChangeWidget(`dyn,        `Enabled, current==`dynamic);
+  UI::ChangeWidget(`ipaddr,     `Enabled, current==`static);
+  UI::ChangeWidget(`netmask,    `Enabled, current==`static);
+  UI::ChangeWidget(`hostname,   `Enabled, current==`static);
+}
+
 /**
  * Initialize a RadioButtonGroup
  * Group called FOO has buttons FOO_bar FOO_qux and values bar qux
  * @param key id of the widget
  */
-void InitializeWidgetRbg (string key) {
-    string value = settings[key]:"";
-    value = key + "_" + value;
-    my2debug ("RBGW", sformat ("init k: %1, v: %2", key, value));
-    UI::ChangeWidget (`id (key), ValueProp (key), value);
+void initBootProto (string key) {
+ switch(settings["BOOTPROTO"]:""){
+  case "static": UI::ChangeWidget(`id(`bootproto), `CurrentButton, `static);
+                UI::ChangeWidget(`id(`ipaddr), `Value, settings["IPADDR"]:"");
+                UI::ChangeWidget(`id(`netmask), `Value, settings["NETMASK"]:"");
+                UI::ChangeWidget(`id(`hostname), `Value, settings["HOSTNAME"]:"");
+                break;
+  case "dhcp" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
+                break;
+  case "none" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `none);
+                break;
+ }
+ enableDisableBootProto((symbol)UI::QueryWidget(`id(`bootproto), `CurrentButton));
+
 }
 
 /**
@@ -439,6 +480,14 @@ the firewall will be disabled.</p>"),
 	"handle": HandleIfcfg,
 	],
 
+    "ETHERDEVICE": $[
+        "widget": `combobox,
+        "label": _("Real Interface for &VLAN"),
+        "items" : [ ],
+        "init": InitVLANSlave,
+        "store": StoreVLANSlave,
+    ],
+
     "BONDSLAVE": $[
         "widget": `multi_selection_box,
         "label": _("Bond Slaves"),
@@ -463,7 +512,7 @@ the firewall will be disabled.</p>"),
 	"widget": `empty,
 	"help": "",
 	// just init and store, real widgets are BOOTPROTO_*
-	"init": InitializeWidgetRbg,
+	"init": initBootProto,
 	"store": StoreWidgetRbg,
 	],
 
@@ -798,10 +847,10 @@ define any AddressDialog() {
     }
 
     // FIXME duplicated in hardware.ycp
-    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond" ];
+    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond", "vlan" ];
 
     if(Arch::s390 ())
-	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv", "qeth", "lcs" ];
+	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv", "qeth", "lcs", "vlan" ];
 
     if(Arch::ia64 ())
 	device_types = add(device_types, "xp");
@@ -904,6 +953,7 @@ Components of this product might not work with DHCP.</p>");
 	    `id ("BOOTPROTO"),	// CWM must not expand `id
 	    `MarginBox (1, 0,
 		`VBox (
+//		    `ReplacePoint(`id(`rp), `Left ("BOOTPROTO_none")),
 		    `Left ("BOOTPROTO_none"),
 		    `Left ("BOOTPROTO_dhcp"), // TODO: widget attribute align: left
 		    `Left ("BOOTPROTO_static"),
@@ -917,7 +967,12 @@ Components of this product might not work with DHCP.</p>");
 	is_ptp? address_p2p_contents:
 	(no_dhcp? address_static_contents: address_dhcp_contents);
 
-    term bond = `MarginBox(1, 0, `Frame( "", `VBox("BONDSLAVE", "BONDOPTION")));
+	term address_contents = `HSquash(`VBox(
+		`Left(label),
+		just_address_contents,
+		frame2,
+		"_DIALOG"
+	));
 
     if (Lan::type == "bond")
     {
@@ -942,29 +997,28 @@ Components of this product might not work with DHCP.</p>");
             return v[0]:"" != Lan::bond_option;
         });
         wd["BONDOPTION", "items"] = prepend(wd["BONDOPTION", "items"]:[], [Lan::bond_option]);
-    }
-
-
-    term address_contents = nil;
-    if (Lan::type == "bond")
-    {
         address_contents = `HSquash(`VBox(
                 `Left(label),
 		just_address_contents,
-		bond,
+		`MarginBox(1, 0, `Frame( "", `VBox("BONDSLAVE", "BONDOPTION"))),
 		frame2,
 		"_DIALOG"
 	));
+
     }
-    else
+    else if (Lan::type == "vlan")
     {
-	address_contents = `HSquash(`VBox(
-		`Left(label),
-		just_address_contents,
-		frame2,
-		"_DIALOG"
-	));
+     settings["STARTMODE"] = "onboot";
+        address_contents = `VBox(
+                `Left(label),
+                `Left( `VBox("ETHERDEVICE")),
+                just_address_contents,
+                "AD_ADDRESSES",
+                frame2
+        );
     }
+
+
 
     map functions = $[
         "init" : InitAddrWidget,
@@ -1071,7 +1125,9 @@ Components of this product might not work with DHCP.</p>");
     {
         Lan::bond_option = settings["BONDOPTION"]:"";
 	Lan::bond_slaves = (list<string>)settings["SLAVES"]:[];
-    }
+    } else if (Lan::type == "vlan"){
+        Lan::vlan_etherdevice = settings["ETHERDEVICE"]:"";
+       }
 
     // proceed with WLAN settings if appropriate, #42420
     if (ret == `next && Lan::type == "wlan" && Lan::alias == "")

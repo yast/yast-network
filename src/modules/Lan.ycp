@@ -103,6 +103,10 @@ global string wl_nick = "";
 //bond options
 global list<string> bond_slaves = [];
 global string bond_option="";
+
+// VLAN option
+global string vlan_etherdevice="";
+
 /**
  * wl_wpa_eap aggregates the settings in a map for easier CWM access.
  * @struct wpa_eap
@@ -647,6 +651,27 @@ global define map Export() {
     ];
 }
 
+string proposeIfcfgName(map hw){
+ string dev="";
+    // name of ifcfg
+    /* eth, tr, not on s390 (#38819) */
+    if(!Arch::s390 () && hw["mac"]:"" != nil && hw["mac"]:"" != "" && hw["mac"]:"" != "00:00:00:00:00:00")
+	dev = "id-" + hw["mac"]:"";
+    /* iucv already filled in from lan/hardware.ycp (#42212) */
+    else if(type == "iucv")
+	y2debug("IUCV: %1", dev);
+    /* other devs */
+    else if(hw["busid"]:"" != nil && hw["busid"]:"" != "")
+	dev = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
+    /* USB, PCMCIA */
+    else if(hw["hotplug"]:"" != "")
+	dev = "bus-" + hw["hotplug"]:"";
+    /* dummy */
+    else
+	y2milestone("No detailed HW info: %1", dev);
+return dev;
+}
+
 /**
  * Select the hardware component
  * @param hw the component
@@ -686,22 +711,7 @@ void SelectHWMap (map hw) {
 			} else y2error ("No bus id info found, skipping hwcfg: %1", hw);
     }
 
-    // name of ifcfg
-    /* eth, tr, not on s390 (#38819) */
-    if(!Arch::s390 () && mac != nil && mac != "" && mac != "00:00:00:00:00:00")
-	device = "id-" + hw["mac"]:"";
-    /* iucv already filled in from lan/hardware.ycp (#42212) */
-    else if(type == "iucv")
-	y2debug("IUCV: %1", device);
-    /* other devs */
-    else if(busid != nil && busid != "")
-	device = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
-    /* USB, PCMCIA */
-    else if(hw["hotplug"]:"" != "")
-	device = "bus-" + hw["hotplug"]:"";
-    /* dummy */
-    else
-	y2milestone("No detailed HW info: %1", device);
+    device = proposeIfcfgName(hw);
 
     y2milestone("hw=%1", hw);
     y2milestone("device=%1", device);
@@ -814,6 +824,17 @@ global define list Overview() {
 global define list<map<string,any> > Unconfigured () {
     return BuildUnconfigured ("netcard", Hardware);
 }
+
+global list<string> getUnconfiguredDevices(){
+ list<string> devices = [];
+  foreach(map device, Unconfigured(), {
+  string proposed = proposeIfcfgName(Hardware[tointeger(deletechars(device["id"]:"", "-"))]:$[]);
+  y2milestone("propose name for unconfigured device : %1", proposed);
+  devices = add(devices, proposed);
+ });
+return devices;
+}
+
 
 /*-------------------*/
 /* PRIVATE FUNCTIONS */
@@ -1307,6 +1328,9 @@ global define boolean Commit() {
             //BONDING_MASTER always is yes
             newdev["BONDING_MASTER"] = "yes";
 	}
+       if (type=="vlan"){
+        newdev["ETHERDEVICE"]=vlan_etherdevice;
+       }
 
 	if(type == "wlan") {
 	    newdev["WIRELESS_MODE"] = wl_mode;
@@ -2022,6 +2046,10 @@ global list<string> Packages () {
     if (NetworkDevices::List ("wlan") != [])
     {
 	if (!PackageSystem::Installed("wireless-tools")) pkgs = add (pkgs, "wireless-tools");
+    }
+    if (NetworkDevices::List ("vlan") != [])
+    {
+       if (!PackageSystem::Installed("vlan")) pkgs = add (pkgs, "vlan");
     }
     // #47809
     if (NetworkDevices::Locate ("WIRELESS_AUTH_MODE", "psk") != [] ||

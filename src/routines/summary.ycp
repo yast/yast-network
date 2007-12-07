@@ -103,6 +103,10 @@ define string DeviceType(string type) {
 	"wlan"	: _("Wireless"),
 	/* Device type label */
 	"xp"	: _("XPNET"),
+        /* Device type label */
+         "bond"          : _("Bond Network"),
+       /* Device type label */
+       "vlan"  : _("Virtual LAN")
     ];
 
     if(haskey(device_types, type))

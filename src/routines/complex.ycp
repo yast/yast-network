@@ -297,6 +297,8 @@ define string CheckEmptyName(string devtype, string hwname) {
 	"xp"		: _("XP Network"),
 	/* Device type label */
         "bond"          : _("Bond Network"),
+        /* Device type label */
+        "vlan"  : _("Virtual LAN")
     ];
 
     if(haskey(device_names, devtype))
@@ -481,6 +483,8 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
     map startmode_descrs = $[
 	// summary description of STARTMODE=auto
 	"auto": _("Started automatically at boot"),
+	// summary description of STARTMODE=auto
+	"onboot": _("Started automatically at boot"),
 	// summary description of STARTMODE=hotplug
 	"hotplug": _("Started automatically at boot"),
 	// summary description of STARTMODE=ifplugd
