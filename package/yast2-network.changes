@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sat Dec  8 15:30:11 CET 2007 - mzugec@suse.cz
+
+- support for VLANs (config+AY) (FaTE #142127)
+- 2.13.104 
+
+-------------------------------------------------------------------
 Thu Nov 29 10:06:43 CET 2007 - mzugec@suse.cz
 
 - support for bonding in autoYaST (FaTE #303039)
