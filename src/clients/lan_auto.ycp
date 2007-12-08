@@ -172,8 +172,10 @@ define map ToAY (map settings) {
                     }
                     else
                     {
-                    // FIXME: handle aliases
+                    // handle aliases FaTE (#302300)
                     y2debug("val: %1", val);
+		     // if aliases are empty, then ommit it
+                      if (size((map)val)>0) newmap[tolower("aliases")] = val;
                     }
                     });
                 if (deletechars(num, "0123456789") == "")
