@@ -669,6 +669,7 @@ string proposeIfcfgName(map hw){
     /* dummy */
     else
 	y2milestone("No detailed HW info: %1", dev);
+    y2milestone("proposed ifcfg name : %1", dev);
 return dev;
 }
 
@@ -983,6 +984,7 @@ void SetDeviceVars(map devmap, map defaults) {
     usercontrol = GetDeviceVar (devmap, defaults, "USERCONTROL") == "yes";
     description = GetDeviceVar (devmap, defaults, "NAME");
     bond_option = GetDeviceVar(devmap, defaults, "BONDING_MODULE_OPTS");
+    vlan_etherdevice = GetDeviceVar(devmap, defaults, "ETHERDEVICE");
 
     bond_slaves=[];
     foreach(any key, any value, devmap,
@@ -1389,7 +1391,6 @@ global define boolean Commit() {
 	}
 	else
 	    NetworkDevices::Name = NetworkDevices::alias_name(NetworkDevices::RealType(type, hotplug), device, alias);
-
 	NetworkDevices::Current = newdev;
 	NetworkDevices::Commit();
     }
@@ -1473,6 +1474,10 @@ define map FindMatchingDevice(map interface) {
 	if (issubstring(interface["device"]:"", "bond")) {
 		tosel=$["device":interface["device"]:"", "type":"bond"];
 	 y2milestone("found bonding device");
+	}
+	if (issubstring(interface["device"]:"", "vlan")) {
+		tosel=$["device":interface["device"]:"", "type":"vlan"];
+	 y2milestone("found vlan configuration");
 	}
         list device_id = splitstring(interface["device"]:"", "-");
         /* code for eth-id-00:80:c8:f6:48:4c configurations */
@@ -1907,7 +1912,6 @@ global define boolean Autoinstall() {
             Add();
 
     	    tosel = FindMatchingDevice(interface);
-
 	    y2milestone("tosel=%1", tosel);
 
             // Read module data from autoyast
@@ -1923,6 +1927,7 @@ global define boolean Autoinstall() {
 		    aymodule["options"]:"" : tosel["options"]:"";
 		
 		SelectHWMap(tosel);
+	      if (type=="bond" || type=="vlan") device = NetworkDevices::device_num(tosel["device"]:"");
 	    }
 	    /* Nothing detected -> use InstallInf */
 	    else if(size(InstallInf) > 0) {
