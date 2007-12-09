@@ -99,10 +99,10 @@ void initHardware(){
     if (!hasAnyValue(LanItems::nm_name) && hasAnyValue(LanItems::nm_name_old)) hardware["hwcfg"]=LanItems::nm_name_old;
 */
     // FIXME duplicated in address.ycp
-    hardware["device_types"] = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond", "vlan" ];
+    hardware["device_types"] = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond", "vlan", "br" ];
 
     if(Arch::s390 ())
-	hardware["device_types"] = [ "eth", "tr", "hsi", "ctc", "escon", "ficon", "iucv", "qeth", "lcs", "vlan" ];
+	hardware["device_types"] = [ "eth", "tr", "hsi", "ctc", "escon", "ficon", "iucv", "qeth", "lcs", "vlan", "br" ];
 
     if(Arch::ia64 ())
 	hardware["device_types"] = add(hardware["device_types"]:[], "xp");
@@ -425,7 +425,7 @@ symbol handleHW (string key, map event) {
 		UI::ChangeWidget(`id(`modul), `Value, hardware["modul"]:"");
 		UI::ChangeWidget(`id(`options), `Value, hardware["options"]:"");
 	    }
-            else if (contains(["bond", "vlan"], hardware["type"]:""))
+            else if (contains(["bond", "vlan", "br"], hardware["type"]:""))
             {
                 UI::ChangeWidget(`id(`hwcfg), `Enabled, false);
                 UI::ChangeWidget(`id(`modul), `Enabled, false);

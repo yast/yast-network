@@ -107,6 +107,8 @@ define string DeviceType(string type) {
 	"xp"	: _("XPNET"),
 	/* Device type label */
 	"vlan"	: _("Virtual LAN"),
+	/* Device type label */
+	"br"	: _("Network Bridge"),
     ];
 
     if(haskey(device_types, type))

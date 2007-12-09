@@ -101,6 +101,38 @@ void StoreAddrWidget (string key, map event) {
     settings[key] = value;
 }
 
+/**
+ * Default function to init the value of devices attached to bridge (BRIDGE_PORTS).
+ * @param key	id of the widget
+ */
+void InitBridge(string key)
+{
+ list items = [];
+    map <string, any> configurations =  NetworkDevices::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkDevices::CardRegex["netcard"]:"", "|"), {
+     foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+
+        //filter the eth devices (IPADDR=0.0.0.0 - promiscuited mode)
+            if ((string)configurations[devtype, devnum, "IPADDR"]:"" == "0.0.0.0")
+	    {
+	     string dev_name = NetworkDevices::device_name(devtype, devnum);
+             items = add (items, `item(`id(dev_name), dev_name, contains(splitstring(NetworkDevices::Current["BRIDGE_PORTS"]:"", " "), dev_name)) );
+	    }
+
+     });
+    });
+    UI::ChangeWidget(`id(key), `Items, items);
+}
+
+/**
+ * Default function to store the value of devices attached to bridge (BRIDGE_PORTS).
+ * @param key	id of the widget
+ * @param key id of the widget
+ */
+void StoreBridge(string key, map event)
+{
+    settings["BRIDGE_PORTS"] = mergestring((list<string>)UI::QueryWidget (`id(key), `SelectedItems), " ");
+}
 
 /**
  * Default function to init the value of slave ETHERDEVICE box.
@@ -115,7 +147,6 @@ void InitVLANSlave(string key)
 	  if (!LanItems::IsItemConfigured()){
 	    string dev_name = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
 	    if (hasAnyValue(dev_name)) items = add(items, `item(`id(dev_name), dev_name, (dev_name==settings["ETHERDEVICE"]:"")?true:false));
-//wd["ETHERDEVICE", "items"] = add( wd["ETHERDEVICE", "items"]:[], [ dev_name ] );
 	    }
 	 });
     UI::ChangeWidget(`id(key), `Items, items);
@@ -165,7 +196,7 @@ void enableDisableBootProto(symbol current){
  * @param key id of the widget
  */
 void initBootProto (string key) {
- if (LanItems::type=="vlan") UI::ReplaceWidget(`rp, `Empty());
+ if (contains(["vlan", "br"], LanItems::type)) UI::ReplaceWidget(`rp, `Empty());
  switch(settings["BOOTPROTO"]:""){
   case "static": UI::ChangeWidget(`id(`bootproto), `CurrentButton, `static);
 		UI::ChangeWidget(`id(`ipaddr), `Value, settings["IPADDR"]:"");
@@ -501,10 +532,17 @@ map<string, map<string,any> > widget_descr_local = $[
 //	"handle": HandleIfcfg,
 	],
 
+    "BRIDGE_PORTS": $[
+        "widget": `multi_selection_box,
+        "label": _("Bridged Devices"),
+        "items" : [],
+        "init": InitBridge,
+        "store": StoreBridge,
+        "help": help["bridge_ports"]:"",
+    ],
     "ETHERDEVICE": $[
         "widget": `combobox,
         "label": _("Real Interface for &VLAN"),
-//        "opt": [`shrinkable],
         "items" : [ ],
         "init": InitVLANSlave,
         "store": StoreVLANSlave,
@@ -675,10 +713,10 @@ define any AddressDialog() {
     }
 
     // FIXME duplicated in hardware.ycp
-    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond", "vlan" ];
+    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond", "vlan", "br" ];
 
     if(Arch::s390 ())
-	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv", "qeth", "lcs", "vlan" ];
+	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv", "qeth", "lcs", "vlan", "br" ];
 
     if(Arch::ia64 ())
 	device_types = add(device_types, "xp");
@@ -778,6 +816,7 @@ define any AddressDialog() {
     term address_contents = `VBox(
 	`Left(label),
 	just_address_contents,
+		"AD_ADDRESSES",
 	frame2
      );
 
@@ -819,6 +858,16 @@ define any AddressDialog() {
 		`Left( `VBox("ETHERDEVICE")),
 		just_address_contents,
 		"AD_ADDRESSES",
+		frame2
+	);
+    }
+    else if (LanItems::type == "br")
+    {
+        address_contents = `VBox(
+                `Left(label),
+		just_address_contents,
+		`Frame("",  `VBox("BRIDGE_PORTS")),
+//		"AD_ADDRESSES",
 		frame2
 	);
     }
@@ -883,7 +932,7 @@ define any AddressDialog() {
         "tab_help" : "",
         "fallback_functions" : functions,
     ];
-    if (LanItems::type=="vlan") wd_content["tab_order"]= ["t_general", "t_addr"];
+    if (contains(["vlan", "br"], LanItems::type)) wd_content["tab_order"]= ["t_general", "t_addr"];
 
 
     hw_standalone=false;
@@ -976,7 +1025,10 @@ define any AddressDialog() {
 	LanItems::bond_slaves = (list<string>)settings["SLAVES"]:[];
     } else if (LanItems::type == "vlan"){
 	 LanItems::vlan_etherdevice = settings["ETHERDEVICE"]:"";
-	}
+	} else if (LanItems::type == "br"){
+         LanItems::bridge_ports = settings["BRIDGE_PORTS"]:"";
+        }
+
 
 
     // proceed with WLAN settings if appropriate, #42420
