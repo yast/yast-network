@@ -107,6 +107,9 @@ global string bond_option="";
 // VLAN option
 global string vlan_etherdevice="";
 
+// interfaces attached to bridge (list delimited by ' ')
+global string bridge_ports="";
+
 /**
  * wl_wpa_eap aggregates the settings in a map for easier CWM access.
  * @struct wpa_eap
@@ -985,6 +988,7 @@ void SetDeviceVars(map devmap, map defaults) {
     description = GetDeviceVar (devmap, defaults, "NAME");
     bond_option = GetDeviceVar(devmap, defaults, "BONDING_MODULE_OPTS");
     vlan_etherdevice = GetDeviceVar(devmap, defaults, "ETHERDEVICE");
+    bridge_ports = GetDeviceVar(devmap, defaults, "BRIDGE_PORTS");
 
     bond_slaves=[];
     foreach(any key, any value, devmap,
@@ -1333,6 +1337,10 @@ global define boolean Commit() {
        if (type=="vlan"){
         newdev["ETHERDEVICE"]=vlan_etherdevice;
        }
+       if (type=="br"){
+        newdev["BRIDGE_PORTS"]=bridge_ports;
+	newdev["BRIDGE"]="yes";
+       }
 
 	if(type == "wlan") {
 	    newdev["WIRELESS_MODE"] = wl_mode;
@@ -1478,6 +1486,10 @@ define map FindMatchingDevice(map interface) {
 	if (issubstring(interface["device"]:"", "vlan")) {
 		tosel=$["device":interface["device"]:"", "type":"vlan"];
 	 y2milestone("found vlan configuration");
+	}
+	if (issubstring(interface["device"]:"", "br")) {
+		tosel=$["device":interface["device"]:"", "type":"br"];
+	 y2milestone("found bridge configuration");
 	}
         list device_id = splitstring(interface["device"]:"", "-");
         /* code for eth-id-00:80:c8:f6:48:4c configurations */
@@ -1927,7 +1939,7 @@ global define boolean Autoinstall() {
 		    aymodule["options"]:"" : tosel["options"]:"";
 		
 		SelectHWMap(tosel);
-	      if (type=="bond" || type=="vlan") device = NetworkDevices::device_num(tosel["device"]:"");
+	      if (contains(["bond", "vlan", "br"], type)) device = NetworkDevices::device_num(tosel["device"]:"");
 	    }
 	    /* Nothing detected -> use InstallInf */
 	    else if(size(InstallInf) > 0) {
@@ -2055,6 +2067,10 @@ global list<string> Packages () {
     if (NetworkDevices::List ("vlan") != [])
     {
        if (!PackageSystem::Installed("vlan")) pkgs = add (pkgs, "vlan");
+    }
+    if (NetworkDevices::List ("br") != [])
+    {
+       if (!PackageSystem::Installed("bridge-utils")) pkgs = add (pkgs, "bridge-utils");
     }
     // #47809
     if (NetworkDevices::Locate ("WIRELESS_AUTH_MODE", "psk") != [] ||

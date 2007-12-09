@@ -92,6 +92,41 @@ void StoreAddrWidget (string key, map event) {
 }
 
 /**
+ * Default function to init the value of devices attached to bridge (BRIDGE_PORTS).
+ * @param key  id of the widget
+ */
+void InitBridge(string key)
+{
+ list items = [];
+    map <string, any> configurations =  NetworkDevices::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkDevices::CardRegex["netcard"]:"", "|"), {
+     foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+
+        //filter the eth devices (IPADDR=0.0.0.0 - promiscuited mode)
+            if ((string)configurations[devtype, devnum, "IPADDR"]:"" == "0.0.0.0")
+           {
+            string dev_name = NetworkDevices::device_name(devtype, devnum);
+             items = add (items, `item(`id(dev_name), dev_name, contains(splitstring(NetworkDevices::Current["BRIDGE_PORTS"]:"", " "), dev_name)) );
+           }
+
+     });
+    });
+    UI::ChangeWidget(`id(key), `Items, items);
+}
+
+ /**
++ * Default function to store the value of devices attached to bridge (BRIDGE_PORTS).
++ * @param key  id of the widget
++ * @param key id of the widget
++ */
+void StoreBridge(string key, map event)
+{
+    settings["BRIDGE_PORTS"] = mergestring((list<string>)UI::QueryWidget (`id(key), `SelectedItems), " ");
+}
+
+
+
+/**
  * Default function to init the value of slave ETHERDEVICE box.
  * @param key  id of the widget
  */
@@ -101,7 +136,6 @@ void InitVLANSlave(string key)
      settings["ETHERDEVICE"] = NetworkDevices::Current["ETHERDEVICE"]:"";
         foreach(string dev_name, Lan::getUnconfiguredDevices(),{
            items = add(items, `item(`id(dev_name), dev_name, (dev_name==settings["ETHERDEVICE"]:"")?true:false));
-//wd["ETHERDEVICE", "items"] = add( wd["ETHERDEVICE", "items"]:[], [ dev_name ] );
         });
     UI::ChangeWidget(`id(key), `Items, items);
 }
@@ -479,7 +513,13 @@ the firewall will be disabled.</p>"),
 	"valid_chars": NetworkDevices::ValidCharsIfcfg (),
 	"handle": HandleIfcfg,
 	],
-
+    "BRIDGE_PORTS": $[
+        "widget": `multi_selection_box,
+        "label": _("Bridged Devices"),
+        "items" : [],
+        "init": InitBridge,
+        "store": StoreBridge,
+    ],
     "ETHERDEVICE": $[
         "widget": `combobox,
         "label": _("Real Interface for &VLAN"),
@@ -847,10 +887,10 @@ define any AddressDialog() {
     }
 
     // FIXME duplicated in hardware.ycp
-    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond", "vlan" ];
+    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond", "vlan", "br" ];
 
     if(Arch::s390 ())
-	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv", "qeth", "lcs", "vlan" ];
+	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "iucv", "qeth", "lcs", "vlan", "br" ];
 
     if(Arch::ia64 ())
 	device_types = add(device_types, "xp");
@@ -1016,7 +1056,17 @@ Components of this product might not work with DHCP.</p>");
                 "AD_ADDRESSES",
                 frame2
         );
+   }
+    else if (Lan::type == "br")
+    {
+        address_contents = `VBox(
+                `Left(label),
+               just_address_contents,
+               `Frame("",  `VBox("BRIDGE_PORTS")),
+               frame2
+       );
     }
+
 
 
 
@@ -1127,7 +1177,10 @@ Components of this product might not work with DHCP.</p>");
 	Lan::bond_slaves = (list<string>)settings["SLAVES"]:[];
     } else if (Lan::type == "vlan"){
         Lan::vlan_etherdevice = settings["ETHERDEVICE"]:"";
-       }
+       } else if (Lan::type == "br"){
+         Lan::bridge_ports = settings["BRIDGE_PORTS"]:"";
+        }
+
 
     // proceed with WLAN settings if appropriate, #42420
     if (ret == `next && Lan::type == "wlan" && Lan::alias == "")

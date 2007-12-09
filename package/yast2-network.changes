@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sun Dec  9 16:04:53 CET 2007 - mzugec@suse.cz
+
+- support for bridge devices (Fate #302084)
+- 2.13.105 
+
+-------------------------------------------------------------------
 Sat Dec  8 15:30:11 CET 2007 - mzugec@suse.cz
 
 - support for VLANs (config+AY) (FaTE #142127)

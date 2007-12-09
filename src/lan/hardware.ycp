@@ -88,10 +88,10 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     string hwcfg = Lan::nm_name;
 
     // FIXME duplicated in address.ycp
-    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond", "vlan" ];
+    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond", "vlan", "br" ];
 
     if(Arch::s390 ())
-	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "ficon", "iucv", "qeth", "lcs", "vlan" ];
+	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "ficon", "iucv", "qeth", "lcs", "vlan", "br" ];
 
     if(Arch::ia64 ())
 	device_types = add(device_types, "xp");
@@ -348,7 +348,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 		UI::ChangeWidget(`id(`modul), `Value, modul);
 		UI::ChangeWidget(`id(`options), `Value, options);
 	    }
-            else if (type == "bond"||type == "vlan")
+            else if (contains(["bond", "vlan", "br"], type))
             {
                 UI::ChangeWidget(`id(`hwcfg), `Enabled, false);
                 UI::ChangeWidget(`id(`modul), `Enabled, false);
