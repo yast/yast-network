@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Dec 11 00:01:29 CET 2007 - mzugec@suse.cz
+
+- show description for devices attached to vlan
+- show description for bridged devices
+- 2.16.16 
+
+-------------------------------------------------------------------
 Sun Dec  9 12:36:36 CET 2007 - mzugec@suse.cz
 
 - support for bridging - FaTE (#302183)
