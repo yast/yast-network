@@ -108,6 +108,8 @@ void StoreAddrWidget (string key, map event) {
 void InitBridge(string key)
 {
  list items = [];
+ string old_name=NetworkDevices::Name;
+ list<string> br_ports = splitstring(NetworkDevices::Current["BRIDGE_PORTS"]:"", " ");
     map <string, any> configurations =  NetworkDevices::FilterDevices("netcard");
     foreach(string devtype, splitstring(NetworkDevices::CardRegex["netcard"]:"", "|"), {
      foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
@@ -116,12 +118,13 @@ void InitBridge(string key)
             if ((string)configurations[devtype, devnum, "IPADDR"]:"" == "0.0.0.0")
 	    {
 	     string dev_name = NetworkDevices::device_name(devtype, devnum);
-             items = add (items, `item(`id(dev_name), dev_name, contains(splitstring(NetworkDevices::Current["BRIDGE_PORTS"]:"", " "), dev_name)) );
+             items = add (items, `item(`id(dev_name), sformat("%1 - %2",dev_name, NetworkDevices::GetValue(dev_name, "NAME")), contains(br_ports, dev_name)) );
 	    }
 
      });
     });
-    UI::ChangeWidget(`id(key), `Items, items);
+  NetworkDevices::Select(old_name);
+  UI::ChangeWidget(`id(key), `Items, items);
 }
 
 /**
