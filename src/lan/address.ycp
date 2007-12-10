@@ -36,6 +36,7 @@ include "network/widgets.ycp";
 include "network/lan/help.ycp";
 include "network/lan/hardware.ycp";
 include "network/lan/virtual.ycp";
+include "network/complex.ycp";
 
 /**
  * obsoleted by GetDefaultsForHW
@@ -149,7 +150,8 @@ void InitVLANSlave(string key)
 	  LanItems::current = row;
 	  if (!LanItems::IsItemConfigured()){
 	    string dev_name = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
-	    if (hasAnyValue(dev_name)) items = add(items, `item(`id(dev_name), dev_name, (dev_name==settings["ETHERDEVICE"]:"")?true:false));
+	    string description = BuildDescription(LanItems::type, LanItems::device, $["dev_name":dev_name], [LanItems::getCurrentItem()["hwinfo"]:$[]]);
+	    if (hasAnyValue(dev_name)) items = add(items, `item(`id(dev_name), sformat("%1 - %2", dev_name, description), (dev_name==settings["ETHERDEVICE"]:"")?true:false));
 	    }
 	 });
     UI::ChangeWidget(`id(key), `Items, items);
@@ -547,6 +549,7 @@ map<string, map<string,any> > widget_descr_local = $[
         "widget": `combobox,
         "label": _("Real Interface for &VLAN"),
         "items" : [ ],
+        "opt": [`hstretch],
         "init": InitVLANSlave,
         "store": StoreVLANSlave,
         "help": help["etherdevice"]:"",
