@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Dec 11 20:48:06 CET 2007 - mzugec@suse.cz
+
+- for ficon and escon devices configure chan_ids (#181998)
+- 2.13.107 
+
+-------------------------------------------------------------------
 Tue Dec 11 17:24:27 CET 2007 - mzugec@suse.cz
 
 - added ficon device type (#162961)

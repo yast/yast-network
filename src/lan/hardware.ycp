@@ -698,7 +698,10 @@ define any S390Dialog() {
 		`VSpacing(1),
 		/* TextEntry label */
 		`ComboBox(`id(`chan_mode), _("&Protocol"), ctcitems),
-		`VSpacing(1)
+		`VSpacing(1),
+		// for ficon and escon devices configure chan_ids (#181998)
+		/* TextEntry label */
+		contains(["ficon", "escon"], Lan::type) ? `TextEntry(`id(`qeth_chanids), _("CHAN IDS"), Lan::qeth_chanids) : `Empty()
 		), `HSpacing(2))),
 	    `HSpacing(6)
 	);
@@ -785,8 +788,11 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 	    Lan::nm_name = "static-iucv-id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
 	    Lan::device = "id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
 	}
-	else if (Lan::type != "hsi")
+	else if (Lan::type != "hsi"){
 	       Lan::chan_mode = (string) UI::QueryWidget(`id(`chan_mode), `Value);
+	  // for ficon and escon devices configure chan_ids (#181998)
+	  if (contains(["ficon", "escon"], Lan::type)) Lan::qeth_chanids = (string) UI::QueryWidget(`id(`qeth_chanids), `Value);
+	 }
 	if(Lan::type == "lcs")
 	    Lan::lcs_timeout = (string) UI::QueryWidget(`id(`lcs_timeout), `Value);
 	if(Lan::type == "qeth" || Lan::type == "hsi") {
