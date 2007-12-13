@@ -16,111 +16,7 @@
 textdomain "network";
 
 import "String";
-
-/**
- * Return textual device type
- * @param type device type
- * @return textual form of device type
- * @example DeviceType("eth") -> "Ethernet"
- */
-define string DeviceType(string type) {
-
-    if(issubstring(type, "#"))
-	/* Device type label */
-	// This is what used to be Virtual Interface (eth0:1).
-	// In our data model, additional addresses for an interface
-	// are represented as its sub-interfaces.
-	// And also we frequently confuse "device" and "interface"
-	// :-(
-	return _("Additional Address");
-
-    map device_types = $[
-	/* Device type label */
-	"arc"	: _("ARCnet"),
-	/* Device type label */
-	"atm"	: _("ATM"),
-	/* Device type label */
-	"bnep"	: _("Bluetooth"),
-	/* Device type label */
-	"bond"	: _("Bond"),
-	/* Device type label */
-	"ci"	: _("CLAW"),
-	/* Device type label */
-	"contr"	: _("ISDN"),
-	/* Device type label */
-	"ctc"	: _("CTC"),
-	/* Device type label */
-	"dsl"	: _("DSL"),
-	/* Device type label */
-	"dummy"	: _("Dummy"),
-	/* Device type label */
-	"escon"	: _("ESCON"),
-	/* Device type label */
-	"eth"	: _("Ethernet"),
-	/* Device type label */
-	"fddi"	: _("FDDI"),
-	/* Device type label */
-	"ficon"	: _("FICON"),
-	/* Device type label */
-	"hippi"	: _("HIPPI"),
-	/* Device type label */
-	"hsi"	: _("Hipersockets"),
-	/* Device type label */
-	"ippp"	: _("ISDN"),
-	/* Device type label */
-	"irlan"	: _("IrDA"),
-	/* Device type label */
-	"irda"	: _("IrDA"),
-	/* Device type label */
-	"isdn"	: _("ISDN"),
-	/* Device type label */
-	"iucv"	: _("IUCV"),
-	/* Device type label */
-	"lcs"	: _("OSA LCS"),
-	/* Device type label */
-	"lo"	: _("Loopback"),
-	/* Device type label */
-	"modem"	: _("Modem"),
-	/* Device type label */
-	"myri"	: _("Myrinet"),
-	/* Device type label */
-	"net"	: _("ISDN"),
-	/* Device type label */
-	"plip"	: _("Parallel Line"),
-	/* Device type label */
-	"ppp"	: _("Modem"),
-	/* Device type label */
-	"qeth"	: _("QETH"),
-	/* Device type label */
-	"sit"	: _("IPv6-in-IPv4"),
-	/* Device type label */
-	"slip"	: _("Serial Line"),
-	/* Device type label */
-	"tr"	: _("Token Ring"),
-	/* Device type label */
-	"usb"	: _("USB"),
-	/* Device type label */
-	"vmnet"	: _("VMWare"),
-	/* Device type label */
-	"wlan"	: _("Wireless"),
-	/* Device type label */
-	"xp"	: _("XPNET"),
-	/* Device type label */
-	"vlan"	: _("Virtual LAN"),
-	/* Device type label */
-	"br"	: _("Network Bridge"),
-    ];
-
-    if(haskey(device_types, type))
-	return device_types[type]:"";
-
-    string type1 = String::FirstChunk (type, "-");
-    if(haskey(device_types, type1))
-	return device_types[type1]:"";
-
-    y2error("Unknown type: %1", type);
-    return type;
-}
+import "NetworkDevices";
 
 /**
  * Create list of Table items
@@ -130,7 +26,7 @@ define string DeviceType(string type) {
  */
 define list<term> BuildTypesList(list<string> types, string cur) {
     return maplist(string t, types, {
-	return `item(`id(t), DeviceType(t), t == cur);
+	return `item(`id(t), NetworkDevices::GetDevTypeDescription(t, false), t == cur);
     });
 }
 

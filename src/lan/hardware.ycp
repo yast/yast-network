@@ -99,13 +99,7 @@ void initHardware(){
     if (!hasAnyValue(LanItems::nm_name) && hasAnyValue(LanItems::nm_name_old)) hardware["hwcfg"]=LanItems::nm_name_old;
 */
     // FIXME duplicated in address.ycp
-    hardware["device_types"] = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond", "vlan", "br" ];
-
-    if(Arch::s390 ())
-	hardware["device_types"] = [ "eth", "tr", "hsi", "ctc", "escon", "ficon", "iucv", "qeth", "lcs", "vlan", "br" ];
-
-    if(Arch::ia64 ())
-	hardware["device_types"] = add(hardware["device_types"]:[], "xp");
+    hardware["device_types"] = NetworkDevices::GetDeviceTypes();
 
     if(issubstring(hardware["device"]:"", "bus-pcmcia")) hardware["hotplug"] = "pcmcia";
 	else if(issubstring(hardware["device"]:"", "bus-usb")) hardware["hotplug"] = "usb";

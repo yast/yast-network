@@ -127,7 +127,7 @@ global define boolean isAnyInterfaceDown(){
      foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
       string confname = NetworkDevices::device_name(devtype, devnum);
       string mac = ((map<string, any>)SCR::Execute(.target.bash_output, sformat("cat /sys/class/net/%1/address|tr -d '\n'", confname)))["stdout"]:"";
-      y2internal("confname %1", mac);
+      y2milestone("confname %1", mac);
       if (!haskey(link_status, mac)) y2error("Mac address %1 not found in map %2!", mac, link_status);
 	else if (link_status[mac]:false == false) {
 		y2warning("Interface with mac %1 is down!", mac);
@@ -228,14 +228,13 @@ Check configuration manually."));
     // Dont read hardware data in config mode
     if(!Mode::config ()) {
 	if(!NetHwDetection::running) NetHwDetection::Start();
-	LanItems::ReadHw();
     }
     sleep(sl);
 
     if(Abort()) return false;
     /* Progress step 3/9 - multiple devices may be present, really plural*/
     ProgressNextStage(_("Reading device configuration..."));
-     LanItems::ReadNetworkInterfaces();
+     LanItems::Read();
     sleep(sl);
 
     if(Abort()) return false;
@@ -688,8 +687,8 @@ define void ProposeNMInterfaces () {
 	if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) {
 	LanItems::current = number;
 	if (!LanItems::IsItemConfigured()){
-	  y2internal("Nothing already configured start proposing %1 (NM)", LanItems::getCurrentItem());
-	  LanItems::ProposeItemConfiguration();
+	  y2milestone("Nothing already configured start proposing %1 (NM)", LanItems::getCurrentItem());
+	  LanItems::ProposeItem();
 	 }
 	}
     });
@@ -745,7 +744,7 @@ global define boolean ProposeInterfaces () {
 	LanItems::current = number;
 	if (!LanItems::IsItemConfigured()){
 	  y2milestone("Nothing already configured - start proposing");
-	  LanItems::ProposeItemConfiguration();
+	  LanItems::ProposeItem();
 	  break;
 	 }
 	}
@@ -958,6 +957,8 @@ global define boolean ProposeRoutesAndResolver () {
  * @return true if something was proposed
  */
 global define boolean Propose() {
+NetworkDevices::CleanCacheRead();
+LanItems::Read();
     return
 	ProposeInterfaces () &&
 	ProposeRoutesAndResolver ();

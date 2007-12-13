@@ -196,120 +196,50 @@ define string CheckEmptyName(string devtype, string hwname) {
 
     map device_names = $[
 	/* Device type label */
-	"arc"		: _("ARCnet Network Card"),
-	/* Device type label */
-	"atm"		: _("Asynchronous Transfer Mode (ATM)"),
-	/* Device type label */
-	"bnep"		: _("Bluetooth Connection"),
-	/* Device type label */
-	"ci"		: _("Common Link Access for Workstation (CLAW)"),
-	/* Device type label */
-	"contr"		: _("ISDN Card"),
-	/* Device type label */
 	"contr-pcmcia"	: _("PCMCIA ISDN Card"),
 	/* Device type label */
 	"contr-usb"	: _("USB ISDN Card"),
-	/* Device type label */
-	"ctc"		: _("Channel to Channel Interface (CTC)"),
-	/* Device type label */
-	"dsl"		: _("DSL Connection"),
-	/* Device type label */
-	"dummy"		: _("Dummy Network Device"),
-	/* Device type label */
-	"escon"		: _("Enterprise System Connector (ESCON)"),
-	/* Device type label */
-	"eth"		: _("Ethernet Network Card"),
 	/* Device type label */
 	"eth-pcmcia"	: _("PCMCIA Ethernet Network Card"),
 	/* Device type label */
 	"eth-usb"	: _("USB Ethernet Network Card"),
 	/* Device type label */
-	"fddi"		: _("FDDI Network Card"),
-	/* Device type label */
 	"fddi-pcmcia"	: _("PCMCIA FDDI Network Card"),
 	/* Device type label */
 	"fddi-usb"	: _("USB FDDI Network Card"),
-	/* Device type label */
-	"ficon"		: _("Fiberchannel System Connector (FICON)"),
-	/* Device type label */
-	"hippi"		: _("HIgh Performance Parallel Interface (HIPPI)"),
-	/* Device type label */
-	"hsi"		: _("Hipersockets Interface (HSI)"),
-	/* Device type label */
-	"ippp"		: _("ISDN Connection"),
 	/* Device type label */
 	"ippp-pcmcia"	: _("PCMCIA ISDN Connection"),
 	/* Device type label */
 	"ippp-usb"	: _("USB ISDN Connection"),
 	/* Device type label */
-	"irlan"		: _("Infrared Network Device"),
-	/* Device type label */
-	"irda"		: _("Infrared Device"),
-	/* Device type label */
-	"isdn"		: _("ISDN Connection"),
-	/* Device type label */
 	"isdn-pcmcia"	: _("PCMCIA ISDN Connection"),
 	/* Device type label */
 	"isdn-usb"	: _("USB ISDN Connection"),
-	/* Device type label */
-	"iucv"		: _("Inter User Communication Vehicle (IUCV)"),
-	/* Device type label */
-	"lcs"		: _("OSA LCS Network Card"),
-	/* Device type label */
-	"lo"		: _("Loopback Device"),
-	/* Device type label */
-	"modem"		: _("Modem"),
 	/* Device type label */
 	"modem-pcmcia"	: _("PCMCIA Modem"),
 	/* Device type label */
 	"modem-usb"	: _("USB Modem"),
 	/* Device type label */
-	"myri"		: _("Myrinet Network Card"),
-	/* Device type label */
-	"net"		: _("ISDN Connection"),
-	/* Device type label */
-	"plip"		: _("Parallel Line Connection"),
-	/* Device type label */
-	"ppp"		: _("Modem"),
-	/* Device type label */
 	"ppp-pcmcia"	: _("PCMCIA Modem"),
 	/* Device type label */
 	"ppp-usb"	: _("USB Modem"),
-	/* Device type label */
-	"qeth"		: _("OSA-Express or QDIO Device (QETH)"),
-	/* Device type label */
-	"sit"		: _("IPv6-in-IPv4 Encapsulation Device"),
-	/* Device type label */
-	"slip"		: _("Serial Line Connection"),
-	/* Device type label */
-	"tr"		: _("Token Ring Network Card"),
 	/* Device type label */
 	"tr-pcmcia"	: _("PCMCIA Token Ring Network Card"),
 	/* Device type label */
 	"tr-usb"	: _("USB Token Ring Network Card"),
 	/* Device type label */
-	"usb"		: _("USB Network Device"),
 	"usb-usb"	: _("USB Network Device"),
-	/* Device type label */
-	"vmnet"		: _("VMWare Network Device"),
-	/* Device type label */
-	"wlan"		: _("Wireless Network Card"),
 	/* Device type label */
 	"wlan-pcmcia"	: _("PCMCIA Wireless Network Card"),
 	/* Device type label */
 	"wlan-usb"	: _("USB Wireless Network Card"),
-	/* Device type label */
-	"xp"		: _("XP Network"),
-	/* Device type label */
-        "bond"          : _("Bond Network"),
-        /* Device type label */
-        "vlan"  : _("Virtual LAN"),
-        /* Device type label */
-        "br"  : _("Network Bridge"),
     ];
 
-    if(haskey(device_names, devtype))
-	return device_names[devtype]:"";
+    if(haskey(device_names, devtype)) return device_names[devtype]:"";
+	else {
+		string descr =	NetworkDevices::GetDevTypeDescription(devtype, true);
+		if (hasAnyValue(descr)) return descr;
+	     }
 
     if(haskey(device_names, devtype + "-")) {
 	y2warning("- device found: %1, %2", devtype, hwname);
@@ -544,13 +474,13 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 			sformat(_("Mode: %1"), v["PPPMODE"]:_("Unknown")),
 			startmode_descr,
 		    ]);
-		item = `item(`id(dev), dev, DeviceType(type), ProviderName(v["PROVIDER"]:""), rich);
+		item = `item(`id(dev), dev, NetworkDevices::GetDevTypeDescription(type, false), ProviderName(v["PROVIDER"]:""), rich);
 	    }
 	    /* ISDN stuff */
 	    else if (type == "contr") {
 		// FIXME: richtext
 		string cname = v["NAME"]:"unknown";
-		item = `item(`id(dev), dev, DeviceType(type), cname /*, "active?", ip, "?", "?"*/);
+		item = `item(`id(dev), dev, NetworkDevices::GetDevTypeDescription(type, false), cname /*, "active?", ip, "?", "?"*/);
 	    }
 	    /* ISDN stuff */
 	    else if (type == "net") {
@@ -658,9 +588,9 @@ define list<map<string,any> > BuildUnconfiguredCommon (list sum, string class) {
 	 case "netcard" : desc = [name, nc];
 			break;
 	 case "modem" :
-	 case "dsl" : desc = [name, DeviceType (class), nc];
+	 case "dsl" : desc = [name, NetworkDevices::GetDevTypeDescription (class, false), nc];
 			break;
-	 case "isdn" : desc = [nc, DeviceType (class), name];
+	 case "isdn" : desc = [nc, NetworkDevices::GetDevTypeDescription (class, false), name];
 			break;
 	 default : y2warning (1, "invalid class %1", class);
 	}

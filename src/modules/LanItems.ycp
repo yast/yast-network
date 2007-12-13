@@ -232,18 +232,6 @@ global list<string> GetItemModules(string default_module){
  return mods;
 }
 
-global void ReadHw(){
- Hardware = ReadHardware("netcard");
- ReadUdevRules();
-
- map<string, any> udev_drivers_rules = (map<string, any>)SCR::Read(.udev_persistent.drivers);
- foreach(map hwitem, Hardware, {
-  list udev_net = (hwitem["dev_name"]:"" != "") ? udev_net_rules[hwitem["dev_name"]:""]:[] : [];
-  string mod = deletechars(splitstring((udev_drivers_rules[hwitem["modalias"]:""]:[])[1]:"", "=")[1]:"", "\"");
-  Items[size(Items)] = $["hwinfo":hwitem, "udev":$["net":udev_net, "driver":mod]];
- });
-}
-
 // get list of all configurations for "netcard" macro in NetworkDevices module
 list<string> getNetworkDevices(){
  list<string> confs=[];
@@ -256,7 +244,21 @@ list<string> getNetworkDevices(){
  return confs;
 }
 
-global void ReadNetworkInterfaces(){
+global void ReadHw(){
+ Items=$[];
+ Hardware = ReadHardware("netcard");
+ ReadUdevRules();
+
+ map<string, any> udev_drivers_rules = (map<string, any>)SCR::Read(.udev_persistent.drivers);
+ foreach(map hwitem, Hardware, {
+  list udev_net = (hwitem["dev_name"]:"" != "") ? udev_net_rules[hwitem["dev_name"]:""]:[] : [];
+  string mod = deletechars(splitstring((udev_drivers_rules[hwitem["modalias"]:""]:[])[1]:"", "=")[1]:"", "\"");
+  Items[size(Items)] = $["hwinfo":hwitem, "udev":$["net":udev_net, "driver":mod]];
+ });
+}
+
+global void Read(){
+    ReadHw();
     NetworkDevices::Read();
     NetworkDevices::CleanHotplugSymlink();
 
@@ -794,6 +796,16 @@ global define boolean Select(string dev) {
 	    {
 		// #164816
 		y2milestone ("Not a laptop, will not prefer ifplugd");
+		product_startmode = hasAnyValue(Items[current, "hwinfo", "hotplug"]:"") ? "hotplug" : "auto";
+	    }
+	    if (product_startmode == "ifplugd" && NetworkService::IsManaged())
+	    {
+		y2milestone ("For NetworkManager will not prefer ifplugd");
+		product_startmode = hasAnyValue(Items[current, "hwinfo", "hotplug"]:"") ? "hotplug" : "auto";
+	    }
+	    if (product_startmode == "ifplugd" && contains(["bond", "vlan", "br"], type))
+	    {
+		y2milestone ("For virtual networktypes (bond, bridge, vlan) will not prefer ifplugd");
 		product_startmode = hasAnyValue(Items[current, "hwinfo", "hotplug"]:"") ? "hotplug" : "auto";
 	    }
 	    devmap["STARTMODE"] = product_startmode;
@@ -1386,7 +1398,7 @@ global void SetItem(){
 
 }
 
-global boolean ProposeItemConfiguration(){
+global boolean ProposeItem(){
  y2milestone("Propose configuration for %1", getCurrentItem());
   operation = nil;
   if(Select("") != true) return false;
@@ -1402,7 +1414,8 @@ global boolean ProposeItemConfiguration(){
     }
   NetworkDevices::Add();
   operation = `edit;
-  interfacename=getCurrentItem()["hwinfo", "dev_name"]:"";
+//  interfacename=getCurrentItem()["hwinfo", "dev_name"]:"";
+  Items[current, "ifcfg"]=getCurrentItem()["hwinfo", "dev_name"]:"";
   description = HardwareName([getCurrentItem()["hwinfo"]:$[]], getCurrentItem()["hwinfo", "dev_name"]:"");
   Commit ();
  y2milestone("After configuration propose %1", getCurrentItem());

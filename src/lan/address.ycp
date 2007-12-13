@@ -650,7 +650,7 @@ widget_descr_local["HWDIALOG"]=widget_descr_hardware["HWDIALOG"]:$[];
  */
 list< list<string> > BuildTypesListCWM (list<string> types) {
     return maplist(string t, types, {
-	return [t, DeviceType(t)];
+	return [t, NetworkDevices::GetDevTypeDescription(t, false)];
     });
 }
 

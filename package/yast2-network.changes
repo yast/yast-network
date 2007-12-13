@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu Dec 13 18:33:06 CET 2007 - mzugec@suse.de
+
+- in Proposal() re-read NetworkDevices again (#170558)
+to propose correct values when toggle NM
+- don't propose ifplugd for NM and virtual devices (bond, vlan, br)
+- devices description (short, long) moved to NetworkDevices
+- 2.16.17
+
+-------------------------------------------------------------------
 Tue Dec 11 00:01:29 CET 2007 - mzugec@suse.cz
 
 - show description for devices attached to vlan
