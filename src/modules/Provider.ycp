@@ -197,7 +197,7 @@ global define boolean Read() {
 }
 
 /**
- * This is a single point of dependence on the Language module of yast2-country
+ * This is a single point of dependence on the Language module of yast2-country-data
  */
 global string GetCountry () {
     import "Language";
