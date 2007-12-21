@@ -71,6 +71,11 @@ If any other entry exists that matches the required address, it is
 used instead of the default route. The idea of the default route is simply
 to enable you to say \"and everything else should go here.\"</p>
 ") +
+
+_("For each route, enter destination network IP address, gateway address,
+and netmask. To omit any of these values, use dash sign \"-\". Select also
+the device through which the traffic to defined network will be routed (
+\"-\" stands for any interface).") +
     /* Routing dialog help 2/2 */
 _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>"),
 

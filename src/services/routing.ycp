@@ -48,7 +48,7 @@ term RoutingEditDialog(integer id, term entry, list devs) {
 	    /* TextEntry label */
 	    `TextEntry(`id(`netmask), _("&Netmask"), entry[3]:""),
 	    /* ComboBox label */
-	    `ComboBox(`id(`device), `opt(`editable, `hstretch), _("De&vice (optional)"), devs),
+	    `ComboBox(`id(`device), `opt(`editable, `hstretch), _("De&vice"), devs),
 	    `TextEntry (`id(`options), Label::Options (), entry[5]:"")
 	),
 	`HSpacing(1),
@@ -58,8 +58,14 @@ term RoutingEditDialog(integer id, term entry, list devs) {
 	)
     ));
 
+    //Allow declaring route without iface (for gateway) #93996
+    //if empty, use '-' which stands for any
     if(entry[4]:"" != "")
-    UI::ChangeWidget(`id(`device), `Value, entry[4]:"");
+       UI::ChangeWidget(`id(`device), `Value, entry[4]:"");
+    else {
+	devs= add(devs,"-");
+        UI::ChangeWidget(`id(`device), `Items, devs);
+    }
     UI::ChangeWidget(`id(`destination), `ValidChars, IP::ValidChars + "default" + "/-");
     UI::ChangeWidget(`id(`gateway), `ValidChars, IP::ValidChars + "-");
     UI::ChangeWidget(`id(`netmask), `ValidChars, Netmask::ValidChars + "-");
