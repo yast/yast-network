@@ -127,19 +127,19 @@ define boolean ListHandler(map<string, string> options) {
 define boolean AddHandler(map<string, string> options) {
     LanItems::type = options["type"]:"ethernet";
     if (!contains(["arcnet", "bluetooth", "dummy", "ethernet", "fddi", "myrinet", "token-ring", "usb", "wireless"], LanItems::type)){
-	Report::Error(_("Not possible value for type!"));
+	Report::Error(_("Impossible value for type!"));
 	 return false;
 	}
     LanItems::bootproto = options["bootproto"]:"none";
     if (!contains(["none", "static", "dhcp"], LanItems::bootproto)){
-        Report::Error(_("Not possible value for bootproto!"));
+        Report::Error(_("Impossible value for bootproto!"));
          return false;
         }
     LanItems::ipaddr = options["ip"]:"";
     LanItems::netmask = options["netmask"]:"255.255.255.0";
     LanItems::startmode = options["startmode"]:"auto";
     if (!contains(["auto", "ifplugd", "nfsroot"], LanItems::startmode)){
-        Report::Error(_("Not possible value for startmode!"));
+        Report::Error(_("Impossible value for startmode!"));
          return false;
         }
 
@@ -219,7 +219,7 @@ the interface will no longer be managed by NetworkManager.
 
     LanItems::bootproto = options["bootproto"]:"none";
     if (!contains(["none", "static", "dhcp"], LanItems::bootproto)){
-        Report::Error(_("Not possible value for bootproto!"));
+        Report::Error(_("Impossible value for bootproto!"));
          return false;
         }
     if (LanItems::bootproto=="static"){
@@ -232,7 +232,7 @@ the interface will no longer be managed by NetworkManager.
 
     LanItems::startmode = options["startmode"]:"auto";
     if (!contains(["auto", "ifplugd", "nfsroot"], LanItems::startmode)){
-        Report::Error(_("Not possible value for startmode!"));
+        Report::Error(_("Impossible value for startmode!"));
          return false;
         }
 

@@ -294,7 +294,7 @@ global define boolean Write() {
 	sleep(sl);
 
 	/* Progress step 2/3 */
-	ProgressNextStage(_("Runing SuSEconfig..."));
+	ProgressNextStage(_("Running SuSEconfig..."));
 
 	/* Finish him */
 	RunSuSEconfig();

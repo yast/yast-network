@@ -122,8 +122,9 @@ after connecting, disable <b>Automatically Retrieve DNS</b> and
 manually enter the DNS.</p>") +
 
     /* Connection dialog help 4/9 */
-_("<p>When <b>Automatically Reconnect</b> is enabled, connection will
-be automatically reestablished after failure.</p>") +
+_("<p>When <b>Automatically Reconnect</b> is enabled, the connection will
+be automatically reestablished after failure.</p>
+") +
 
     /* Connection dialog help 5/9 */
 _("<p><b>Name Servers</b> are required to convert hostnames

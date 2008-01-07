@@ -197,7 +197,7 @@ global boolean Write() {
    sleep(sl);
 
    if(Mode::normal ()) {
-	ProgressNextStage(_("Runing SuSEconfig..."));
+	ProgressNextStage(_("Running SuSEconfig..."));
 	/* no longer needed - have been dropped from SuSEconfig
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module xdm");
 	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kde3");

@@ -52,7 +52,7 @@ _("<p><b><big>Remote administration settings</big></b></p>
 <p>If this feature is enabled, you can
 administer this machine remotely from another machine. Use a VNC
 client, such as krdc (connect to <i>&lt;hostname&gt;:%1</i>), or
-a Java-capable web browser (connect to <i>http://&lt;hostname&gt;:%2/</i>).
+a Java-capable Web browser (connect to <i>http://&lt;hostname&gt;:%2/</i>).
 This form of remote administration is less secure than using SSH.</p>
 "), 5901, 5801) + firewall_help;
 

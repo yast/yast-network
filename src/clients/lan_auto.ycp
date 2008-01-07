@@ -278,7 +278,7 @@ else if (func == "Write") {
       if (Lan::isAnyInterfaceDown()){
 	 integer timeout = LanItems::autoinstall_settings["strict_IP_check_timeout"]:0;
 	y2debug("timeout %1", timeout);
-	 string error_text = _("Configuration Error : not initialized interface!");
+	 string error_text = _("Configuration Error : uninitialized interface!");
 	 if (timeout == 0) Popup::Error(error_text);
 		else Popup::TimedError(error_text, timeout);
 	}

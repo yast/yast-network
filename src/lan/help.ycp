@@ -55,11 +55,12 @@ Then press <b>Configure</b> or <b>Delete</b> as desired.</p>
 "ipv6" :
 	    /* IPv6 help */
 _("<p><b><big>IPv6 Protocol Settings</big></b></p>
-<p>Check <b>Enable IPv6</b> to enable ipv6 module in the kernel.
-It is possible to use IPv6 together with IPv4. This is default option.
-To disable IPv6, uncheck this option (this will blacklist kernel 
-module for ipv6). When ipv6 protocol is not used on your network, response 
-time can be faster.")
+<p>Check <b>Enable IPv6</b> to enable the ipv6 module in the kernel.
+It is possible to use IPv6 together with IPv4. This is a default option.
+To disable IPv6, uncheck this option (this will blacklist the kernel 
+module for ipv6). If the ipv6 protocol is not used on your network, the response 
+time can be faster.
+")
  +
 _("<p>All changes will be applied after reboot.</p>"),
 
@@ -82,19 +83,21 @@ _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>"),
 "dhcp_hostname":
 _("<p>If you are using DHCP to get an IP address, check whether to get
 a hostname via DHCP. The hostname of your host (which can be seen
-by issuing <i>hostname</i> command) will be set automatically by  
+by issuing the <i>hostname</i> command) will be set automatically by the  
 DHCP client.
 You may want to disable this option if you connect to different 
-networks that might each assign a different hostname, because changing
+networks that assign different hostnames, because changing
 the hostname at runtime may confuse the graphical desktop.
-</p> "),
+</p> 
+"),
 
 "write_hostname":
 _("<p>If you are using DHCP to get an IP address, your hostname will be written
-to /etc/hosts and be resolvable as 127.0.0.2 IP address.
-This is default behavior. If you want to disable this, uncheck this box
-but your hostname will not be resolvable without active network.
-</p> "),
+to /etc/hosts and be resolvable as a 127.0.0.2 IP address.
+This is the default behavior. If you want to disable this, uncheck this box
+but your hostname will not be resolvable without an active network.
+</p> 
+"),
 
 "searchlist_s":
 _("<p>Enter the name servers and domain search list for resolving 
@@ -137,17 +140,19 @@ could return to this dialog later when the above service has terminated.</li>
 	/* Address dialog help 1-6/8: dynamic address preferred */
 	/* Address dialog help 1/8 */
     _("<p><b><big>Address Setup</big></b></p>
-<p>Select <b>No Address Setup</b> if you don't want any IP address for this device.
-This is particularly useful for bonding ethernet devices.</p>")
+<p>Select <b>No Address Setup</b> if you do not want any IP address for this device.
+This is particularly useful for bonding ethernet devices.</p>
+")
  +
     /* Address dialog help 2/8 */
     _("<p>Select <b>Dynamic address</b> if you do not have a static IP address 
 assigned by the system administrator or your cable or DSL provider.</p>") 
  +
     /* Address dialog help 3/8 */
-    _("<p>You can choose one of dynamic address assignment method. Select <b>DHCP</b>
+    _("<p>You can choose one of the dynamic address assignment method. Select <b>DHCP</b>
 if you have a DHCP server running on your local network. Network addresses are then 
-obtained automatically from the server.<p>") 
+obtained automatically from the server.<p>
+") 
  +
     /* Address dialog help 4/8 */
    _("To automatically search for free IP and then assign it statically, select 
@@ -157,15 +162,17 @@ obtained automatically from the server.<p>")
     /* Address dialog help 5/8 */
 
 "remoteip":
-_("<p>Enter <b>IP Address</b> (e.g., 192.168.100.99)
+_("<p>Enter the <b>IP Address</b> (e.g., 192.168.100.99)
 for your computer and the <b>Remote IP Address</b> (e.g., 192.168.100.254)
-of your peer.</p>"),
+for your peer.</p>
+"),
 
     /* Address dialog help 6/8 */
 "netmask":
-    _("<p>For <b>Static Address Setup</b> enter static IP address (e.g., 192.168.100.99) 
+    _("<p>For <b>Static Address Setup</b> enter the static IP address (e.g., 192.168.100.99) 
 for your computer and the network mask (usually 255.255.255.0). Optionally, you can enter
-fully qualified hostname for this IP address. It will be written to <i>/etc/hosts</i>.</p>")
+a fully qualified hostname for this IP address. It will be written to <i>/etc/hosts</i>.</p>
+")
  +
     /* Address dialog help 8/8 */
     _("<p>Contact your <b>network administrator</b> for more information about
@@ -190,13 +197,14 @@ _("<p><b>Mandatory Interface</b> specifies whether the network service reports f
 "mtu":
 _("<p><b><big>Maximum Transfer Unit</big></b></p>
 <p>Maximum transfer unit (<b>MTU</b>) is the maximum size of the packet
-transferred in one frame over the network. Normally, you don't need to
-set MTU, but using lower MTU values may improve network performance
+transferred in one frame over the network. Normally, you do not need to
+set MTU, but using lower MTU values may improve network performance,
 especially on slow dial-up connections. Select one of the recommended values
-or define your own one.</p>"),
+or define your own one.</p>
+"),
 
 "bondslave":
-_("<p>Select the slave devices for the bond device. Only the devices whose Device Activation is set to Never and have No Address Setup are available.</p>"),
+_("<p>Select the slave devices for the bond device. Only the devices whose Device Activation is set to 'Never' and have 'No Address Setup are available'.</p>"),
 
 "dhclient_help" : 
     /* DHCP dialog help 1/8 */
@@ -217,14 +225,15 @@ network interface and thus the same hardware address.</p>") +
 
     /* DHCP dialog help 4/8 */
     _("<p>The <b>Hostname to Send</b> specifies a string used for the
-hostname option field when dhcpcd sends messages to DHCP server. Some 
+hostname option field when dhcpcd sends messages to the DHCP server. Some 
 DHCP servers update name server zones (forward and reverse records) 
 according to this hostname (dynamic DNS).
 
 Also, some DHCP servers require the <b>Hostname to Send</b> option field to
 contain a specific string in the DHCP messages from clients. Leave <i>AUTO</i>
 to send the current hostname (i.e. the one defined in <i>/etc/HOSTNAME</i>). 
-Leave empty not to send a hostname.</p>"),
+Leave the field empty for not sending a hostname.</p>
+"),
 
 "additional":
     /* Aliases dialog help 1/3 */
@@ -283,8 +292,8 @@ signal strength.</p>
 _("<p>In some networks, you need to set an <b>Authentication Mode</b>.
 It depends on the protection technology used, WEP or WPA. <b>WEP</b>
 (Wired Equivalent Privacy) is a system to encrypt wireless network
-traffic with an optional authentication based on the encryption
-key used. In most cases where WEP is used, <b>WEP-Open</b> mode (no
+traffic with an optional authentication, based on the encryption
+key used. In most cases where WEP is used, the <b>WEP-Open</b> mode (no
 authentication at all) is fine. This does not mean that you cannot
 use WEP encryption (in that case use <b>No Encryption</b>). 
 Some networks may require <b>WEP-Shared Key</b> authentication. 

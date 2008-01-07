@@ -303,7 +303,7 @@ global boolean ReadWithCache () {
 global void SetIPv6(boolean status){
     if(ipv6 != status) {
 	 ipv6=status;
-	Popup::Warning(_("To apply this change reboot is needed."));
+	Popup::Warning(_("To apply this change a reboot is needed."));
          LanItems::SetModified();
     }
 }
