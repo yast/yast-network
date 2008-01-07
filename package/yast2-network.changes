@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Jan  7 11:49:33 CET 2008 - kmachalkova@suse.cz
+
+- Enable setting a route without interface (use '-' which stands for 
+  'any') (#93996) 
+- Merged proofread texts
+- Dependency on yast2-country replaced with yast2-country-data
+
+-------------------------------------------------------------------
 Thu Dec 13 21:58:58 CET 2007 - mzugec@suse.cz
 
 - interface names manage support - FaTE #300636
