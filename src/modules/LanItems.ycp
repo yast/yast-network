@@ -35,7 +35,8 @@ map hw = $[];
  */
 global symbol operation = nil;
 
-
+// in special cases when rcnetwork reload is not enought
+global boolean force_restart=false;
 
 global string description = "";
 
@@ -168,8 +169,28 @@ boolean ReadUdevRules(){
  return true;
 }
 
+global list<string> GetItemUdev(){
+// column: 0 mens rule, 1 means NAME
+ list<string> udevs=["", ""];
+ if (size(Items[current, "udev", "net"]:[])>3)
+ {
+  foreach(string row, Items[current, "udev", "net"]:[], {
+  if (issubstring(row, "ATTR{address}")||issubstring(row, "KERNELS")) udevs[0]=row;
+	else if (issubstring(row, "NAME")) udevs[1]=regexpsub (row, ".*=[\"]*([^ ]*)\"$", "\\1");
+
+  });
+/*
+  udevs[0]=Items[current, "udev", "net", 2]:"";
+  if (regexpmatch (Items[current, "udev", "net", 3]:"", ".*=[^ ]*\"$"))
+    udevs[1]=regexpsub (Items[current, "udev", "net", 3]:"", ".*=[\"]*([^ ]*)\"$", "\\1");
+*/
+ }
+ return udevs;
+}
+
+
+
 global void WriteUdevRules(){
-//  SCR::Write(.udev_persistent.net, udev_net_rules);
  map<string, any> udev_drivers_rules = $[];
  foreach(integer key, (list<integer>)Map::Keys(Items), {
   if (hasAnyValue(Items[key, "udev", "driver"]:""))
@@ -177,6 +198,31 @@ global void WriteUdevRules(){
  });
  y2milestone("write udev rules: %1", udev_drivers_rules);
  SCR::Write(.udev_persistent.drivers, udev_drivers_rules);
+  // write udev net rules and hwdown&hwup when NAME changed
+  list<string> changed_devices = [];
+  list<string> net_rules = [];
+  foreach(integer key, (list<integer>)Map::Keys(Items), {
+  if (size(Items[key, "udev", "net"]:[])>0) {
+    string dev_name = Items[key, "hwinfo", "dev_name"]:"";
+    current=key;
+    net_rules = add(net_rules, sformat("SUBSYSTEM==\"net\", DRIVERS==\"?*\", %1, NAME=\"%2\"",
+                                                 GetItemUdev()[0]:"", GetItemUdev()[1]:""));
+    if (dev_name!=GetItemUdev()[1]:"") {
+		changed_devices = add(changed_devices, dev_name);
+		force_restart=true;
+		}
+
+   }
+  });
+
+ //  SCR::Write(.udev_persistent.rules_comment, comment);
+ //  SCR::Write(.udev_persistent.rules, rules);
+
+   SCR::Write(.udev_persistent.rules, net_rules);
+   SCR::Write(.udev_persistent.nil, []);
+  foreach(string dev, changed_devices, {
+   y2internal("renaming devices : %1", SCR::Execute(.target.bash_output, sformat("hwdown %1 && hwup %1", dev)));
+  });
 }
 
 /**
@@ -759,18 +805,6 @@ global map<string, string> SysconfigDefaults = $[
 
     "BONDING_MODULE_OPTS": "",
     ];
-
-global list<string> GetItemUdev(){
-// column: 0 mens rule, 1 means NAME
- list<string> udevs=["", ""];
- if (size(Items[current, "udev", "net"]:[])>3)
- {
-  udevs[0]=Items[current, "udev", "net", 2]:"";
-  if (regexpmatch (Items[current, "udev", "net", 3]:"", ".*=[^ ]*\"$"))
-    udevs[1]=regexpsub (Items[current, "udev", "net", 3]:"", ".*=[\"]*([^ ]*)\"$", "\\1");
- }
- return udevs;
-}
 
 /**
  * Select the given device

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Dec 13 21:58:58 CET 2007 - mzugec@suse.cz
+
+- interface names manage support - FaTE #300636
+- 2.16.18 
+
+-------------------------------------------------------------------
 Thu Dec 13 18:33:06 CET 2007 - mzugec@suse.de
 
 - in Proposal() re-read NetworkDevices again (#170558)

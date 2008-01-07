@@ -402,7 +402,8 @@ global define boolean Write() {
     ProgressNextStage(_("Writing hostname and DNS configuration..."));
     // write resolv.conf after change from dhcp to static (#327074)
     // reload/restart network before this to put correct resolv.conf from dhcp-backup
-    NetworkService::StartStop ();
+    if (LanItems::force_restart) SCR::Execute(.target.bash, "rcnetwork restart");
+      else NetworkService::StartStop ();
     DNS::Write();
     Host::Write();
     Progress::set (orig);

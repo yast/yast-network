@@ -62,7 +62,6 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     }
 
 map<string, any> hardware = nil;
-//map<string, any> udev = nil;
 boolean hw_standalone=false;
 
 void initHardware(){
@@ -189,8 +188,8 @@ void initHwDialog(string text) {
     term UdevWidget = 
 	`Frame(_("Udev rules"),
 	 `HBox(
-	   `TextEntry(`id(`udev_rule), _("Matching rule"), ""),
-	   `TextEntry(`id(`device_name), _("Device Name"), "")
+	   `TextEntry(`id(`device_name), _("Device Name"), ""),
+	   `PushButton(`id(`change_udev), _("Change"))
 	  )
 	 );
 
@@ -199,33 +198,10 @@ void initHwDialog(string text) {
 
     term contents =
      `VBox(
-	UdevWidget,
+	`HBox(UdevWidget,`HStretch()),
 	TypeNameWidgets,
 	KernelBox,
 	`VStretch()
-/*
-	`CheckBoxFrame(`id(`enable_hwcfg), caption, hardware["hwcfg"]:"" != "",
-	 `HBox(
-	 `HSpacing(2),
-	 `VBox(
-	    `VSpacing(0.5),
-	    TypeNameWidgets,
-	    `VSpacing(1.5),
-	    KernelBox,
-	    `VSpacing(1.5),
-		`HBox(
-			`HStretch(),
-			`HSpacing(0.5),
-			`PushButton(`id(`list), _("Select from &List")),
-			`HSpacing(0.5),
-			`HStretch()
-		    ),
-	    `VSpacing(0.5)
-	    ),
-	 `HSpacing(2),
-	 `VStretch()
-	))
-*/
        );
 
     UI::ReplaceWidget(`hw_content, contents);
@@ -236,11 +212,9 @@ void initHwDialog(string text) {
     ChangeWidgetIfExists(`id(`hwcfg), `Enabled, hardware["no_hotplug"]:false);
     ChangeWidgetIfExists(`id(`usb), `Enabled, (hardware["hotplug"]:"" == "usb" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
     ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hardware["hotplug"]:"" == "pcmcia" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
-    UI::ChangeWidget(`id(`udev_rule), `Enabled, false);
     UI::ChangeWidget(`id(`device_name), `Enabled, false);
     UI::ChangeWidget(`id(`options), `Enabled, false);
 
-    UI::ChangeWidget(`id(`udev_rule), `Value, LanItems::GetItemUdev()[0]:"");
     UI::ChangeWidget(`id(`device_name), `Value, LanItems::GetItemUdev()[1]:"");
 
     if (!hw_standalone) ChangeWidgetIfExists(`id(`dev), `Enabled,false);
@@ -433,6 +407,51 @@ symbol handleHW (string key, map event) {
                 UI::ChangeWidget(`id(`options), `Value, "");
             }
 	}
+  if (ret==`change_udev){
+   UI::OpenDialog(
+	`VBox(
+	  `RadioButtonGroup(`id(`udev_type),
+		`VBox(
+		     `Label("Rule by:"),
+		     `Left(`RadioButton(`id(`mac), sformat("MAC address : %1", LanItems::getCurrentItem()["hwinfo", "mac"]:""))),
+		     `Left(`RadioButton(`id(`busid), sformat("BusID : %1", LanItems::getCurrentItem()["hwinfo", "busid"]:"") ))
+		     )
+	),
+	`HBox(`CheckBox(`id(`change_dev_name), `opt(`notify), _("Change DeviceName"), false),
+				`TextEntry(`id(`dev_name),`opt(`shrinkable), "", LanItems::GetItemUdev()[1]:"")),
+             `VSpacing(0.5),
+             `HBox( `PushButton (`id(`ok), `opt(`default), Label::OKButton ()),
+                 `PushButton (`id(`cancel), Label::CancelButton ()) )
+	)
+
+   );
+   string rule = splitstring(LanItems::GetItemUdev()[0]:"", "==")[0]:"";
+   if (rule=="ATTR{address}") UI::ChangeWidget(`id(`udev_type), `CurrentButton, `mac);
+    else if (rule=="KERNELS") UI::ChangeWidget(`id(`udev_type), `CurrentButton, `busid);
+     else y2error("Unknown udev rule : %1", LanItems::GetItemUdev()[0]:"");
+   UI::ChangeWidget(`dev_name, `Enabled, false);
+   any ret = nil;
+   while(ret!=`cancel && ret!=`ok){
+   ret = UI::UserInput();
+    if (ret == `change_dev_name) UI::ChangeWidget(`dev_name, `Enabled, (boolean)UI::QueryWidget(`change_dev_name, `Value));
+   }
+   if (ret == `ok){
+   string old_name = LanItems::GetItemUdev()[1]:"";
+   // write new udev rule
+    LanItems::Items[LanItems::current, "udev", "net"]=["SUBSYSTEM==\"net\"",
+                             "DRIVERS==\"?*\"",
+	UI::QueryWidget(`udev_type, `CurrentButton)==`mac ? sformat("ATTR{address}==\"%1\"", LanItems::getCurrentItem()["hwinfo", "mac"]:"") : sformat("KERNELS==\"%1\"", LanItems::getCurrentItem()["hwinfo", "busid"]:""),
+	sformat("NAME==\"%1\"", ((boolean)UI::QueryWidget(`change_dev_name, `Value))?UI::QueryWidget(`dev_name, `Value):LanItems::GetItemUdev()[1]:"")
+    ];
+   // when dev_name changed, rename ifcfg (both in NetworkDevices and LanItems)
+    if (LanItems::GetItemUdev()[1]:""!=old_name){
+ //    NetworkDevices::Delete(old_name);
+     LanItems::Items[LanItems::current, "ifcfg"]=LanItems::GetItemUdev()[1]:"";
+    }
+   }
+   UI::CloseDialog();
+   UI::ChangeWidget(`device_name, `Value, LanItems::GetItemUdev()[1]:"");
+  }
  return nil;
 }
 
@@ -458,73 +477,6 @@ Choose a different one."), nm, NetworkDevices::device_name(hardware["type"]:"", 
 }
 
  LanItems::setDriver((string) UI::QueryWidget(`modul, `Value));
-
-
-/*
-       if(!(boolean)UI::QueryWidget(`enable_hwcfg, `Value))
-        {
-	 NetworkModules::DeleteM(LanItems::nm_name);
-	 if(size(LanItems::nm_name_old)==0) LanItems::nm_name_old = LanItems::nm_name;
-	 LanItems::nm_name="";
-	 NetworkDevices::Current["_nm_name"]="";
-	 string tmp_name = NetworkDevices::Name;
-	 NetworkDevices::Commit();
-	 NetworkDevices::Select(tmp_name);
-        } else {
-
-	if(UI::WidgetExists(`id(`hwcfg))) {
-	    LanItems::nm_name_old = LanItems::nm_name;
-	    LanItems::nm_name = (string) UI::QueryWidget(`id(`hwcfg), `Value);
-	}
-
-	    if(UI::WidgetExists(`id(`hwcfg))) {
-		hardware["hwcfg"] = (string) UI::QueryWidget (`id (`hwcfg), `Value);
-		if (LanItems::operation == `add || hardware["hwcfg"]:"" != LanItems::nm_name) {
-		    if (contains (NetworkModules::ListM(""), hardware["hwcfg"]:"")) {
-			UI::SetFocus (`id (`hwcfg));
-			Popup::Error(sformat(_("Hardware configuration %1 already exists.
-Choose a different one."), hardware["hwcfg"]:""));
-		    }
-		}
-	    }
-
-	    if(LanItems::operation == `add && UI::WidgetExists(`id(`num))) {
-		string nm = (string) UI::QueryWidget(`id(`num), `Value);
-		if(LanItems::operation == `add || (hardware["device"]:"" != LanItems::device && hardware["type"]:"" != LanItems::type)) {
-		    if(contains(NetworkDevices::List(""), NetworkDevices::device_name(hardware["type"]:"", nm))) {
-			Popup::Error(sformat(_("Configuration name %1 (%2) already exists.
-Choose a different one."), nm, NetworkDevices::device_name(hardware["type"]:"", nm)));
-			UI::SetFocus(`id(`num));
-		    }
-		}
-	    }
-
-	    if(UI::WidgetExists(`id(`num))) {
-		string devic = (string) UI::QueryWidget(`id(`num), `Value);
-	    }
-       NetworkModules::Alias  = (string) UI::QueryWidget(`id(`modul), `Value);
-       NetworkModules::Options = (string) UI::QueryWidget(`id(`options), `Value);
-	}
-
-
-	if(UI::WidgetExists(`id(`num)))
-	    LanItems::device = (string) UI::QueryWidget(`id(`num), `Value);
-
-	if(UI::WidgetExists(`id(`pcmcia)) || UI::WidgetExists(`id(`usb))) {
-	    if(UI::QueryWidget(`id(`pcmcia), `Value) == true)
-		LanItems::hotplug = "pcmcia";
-	    else if(UI::QueryWidget(`id(`usb), `Value) == true)
-		LanItems::hotplug = "usb";
-	    else
-		LanItems::hotplug = "";
-	}
-	LanItems::hotplug = "";
-
-	if(UI::WidgetExists(`id(`dev))) {
-	    hardware["type"] = (string) UI::QueryWidget(`id(`dev), `Value);
-	    LanItems::type = hardware["type"]:"";
-	}
-*/
 }
 
 
