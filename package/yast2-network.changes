@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Dec 14 17:35:15 CET 2007 - mzugec@suse.cz
+
+- use NetworkInterfaces instead of NetworkDevices
+- 2.16.19 
+
+-------------------------------------------------------------------
+=======
 Mon Jan  7 11:49:33 CET 2008 - kmachalkova@suse.cz
 
 - Enable setting a route without interface (use '-' which stands for 

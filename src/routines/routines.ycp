@@ -17,7 +17,7 @@ import "Progress";
 import "String";
 import "NetworkService";
 import "PackageSystem";
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "Arch";
 import "Confirm";
 import "Map";
@@ -387,7 +387,7 @@ boolean CheckNetworkManagerPlugin(){
 
 string getIfcName(string devicename){
  string ifcfg="";
- string interfacetype = NetworkDevices::device_type( devicename );
+ string interfacetype = NetworkInterfaces::device_type( devicename );
  // for special s390 interface types write static configuration
  if (contains(["qeth", "hsi", "ctc", "lcs", "iucv"], interfacetype)){
   y2internal("special device type %1", interfacetype);

@@ -15,7 +15,7 @@ import "IP";
 import "Label";
 import "Lan";
 import "Netmask";
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "NetworkService";
 import "Popup";
 import "Report";
@@ -139,7 +139,7 @@ void storeAdditional (string key, map event) {
 	    aliases_to_delete[e[1]:""] = nil;
 	});
 	foreach (string a, any v, (map <string, any>)aliases_to_delete, {
-	    if (v != nil) { NetworkDevices::DeleteAlias (NetworkDevices::Name, a); }
+	    if (v != nil) { NetworkInterfaces::DeleteAlias (NetworkInterfaces::Name, a); }
 	});
      }
 }

@@ -15,7 +15,7 @@ textdomain "network";
 import "Mode";
 import "Internet";
 import "Label";
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "Popup";
 import "Product";
 import "String";
@@ -63,9 +63,9 @@ define boolean AskForPassword() {
  */
 void SetDevice (string dev) {
     Internet::device=dev;
-    NetworkDevices::Select(Internet::device);
-    Internet::type = NetworkDevices::FastestType(Internet::device);
-    Internet::provider = NetworkDevices::Current["PROVIDER"]:"";
+    NetworkInterfaces::Select(Internet::device);
+    Internet::type = NetworkInterfaces::FastestType(Internet::device);
+    Internet::provider = NetworkInterfaces::Current["PROVIDER"]:"";
 
     if (Internet::provider != "") {
         import "Provider";

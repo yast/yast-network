@@ -15,7 +15,7 @@ import "DSL";
 import "IP";
 import "ISDN";
 import "Label";
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "Modem";
 import "Popup";
 import "Provider";
@@ -81,7 +81,7 @@ define any ConnectionDialog() {
     boolean FirewallChecked = false;
     if (dtype != "")
     {
-	device = NetworkDevices::device_name (dtype, did);
+	device = NetworkInterfaces::device_name (dtype, did);
 
 	boolean adding = false;
 	if (type == "modem")

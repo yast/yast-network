@@ -16,7 +16,7 @@
 textdomain "network";
 
 import "String";
-import "NetworkDevices";
+import "NetworkInterfaces";
 
 /**
  * Create list of Table items
@@ -26,7 +26,7 @@ import "NetworkDevices";
  */
 define list<term> BuildTypesList(list<string> types, string cur) {
     return maplist(string t, types, {
-	return `item(`id(t), NetworkDevices::GetDevTypeDescription(t, false), t == cur);
+	return `item(`id(t), NetworkInterfaces::GetDevTypeDescription(t, false), t == cur);
     });
 }
 

@@ -15,7 +15,7 @@
 module "Modem";
 textdomain "network";
 
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "NetworkService";
 import "Provider";
 import "Progress";
@@ -141,7 +141,7 @@ global define boolean Read() {
     if(Abort()) return false;
     /* Progress step 2/4 */
     ProgressNextStage(_("Reading current configuration..."));
-    NetworkDevices::Read();
+    NetworkInterfaces::Read();
     NetworkService::Read ();
     sleep(sl);
 
@@ -213,8 +213,8 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 1/6 */
     ProgressNextStage(_("Writing configuration..."));
-    NetworkDevices::Write("modem");
-    NetworkDevices::UpdateModemSymlink();
+    NetworkInterfaces::Write("modem");
+    NetworkInterfaces::UpdateModemSymlink();
     sleep(sl);
 
     if(Abort()) return false;
@@ -304,15 +304,15 @@ global define boolean Select(string dev) {
     /* dev=="" -> Add */
     if(dev == "") {
 	type = "modem";
-	device = NetworkDevices::GetFreeDevice(type);
+	device = NetworkInterfaces::GetFreeDevice(type);
     }
     /* dev!="" -> Edit */
     else {
-	string typ = NetworkDevices::device_type(dev);
-	string num = NetworkDevices::device_num(dev);
+	string typ = NetworkInterfaces::device_type(dev);
+	string num = NetworkInterfaces::device_num(dev);
 
-	NetworkDevices::Edit(dev);
-	devmap = NetworkDevices::Current;
+	NetworkInterfaces::Edit(dev);
+	devmap = NetworkInterfaces::Current;
 
 	type = typ;
 	device = num;
@@ -355,7 +355,7 @@ global define boolean Select(string dev) {
 global define boolean Add() {
     operation = nil;
     if(Select("") != true) return false;
-    NetworkDevices::Add();
+    NetworkInterfaces::Add();
     operation = `add;
     return true;
 }
@@ -368,7 +368,7 @@ global define boolean Add() {
 global define boolean Edit(string name) {
     operation = nil;
     if(Select(name) != true) return false;
-    NetworkDevices::Edit(name);
+    NetworkInterfaces::Edit(name);
     operation = `edit;
     return true;
 }
@@ -382,7 +382,7 @@ global define boolean Edit(string name) {
 global define boolean Delete(string name) {
     operation = nil;
     if(Select(name) != true) return false;
-    NetworkDevices::Delete(name);
+    NetworkInterfaces::Delete(name);
     operation = `delete;
     return true;
 }
@@ -415,12 +415,12 @@ global define boolean Commit() {
 	    "PPPD_OPTIONS"	: PPPDoptions,
 	];
 
-	NetworkDevices::Name = NetworkDevices::device_name(type, device);
-	NetworkDevices::Current = newdev;
-	NetworkDevices::Commit();
+	NetworkInterfaces::Name = NetworkInterfaces::device_name(type, device);
+	NetworkInterfaces::Current = newdev;
+	NetworkInterfaces::Commit();
     }
     else if(operation == `delete) {
-	NetworkDevices::Commit();
+	NetworkInterfaces::Commit();
     }
     else {
 	y2error("Unknown operation: %1", operation);
@@ -438,7 +438,7 @@ global define boolean Commit() {
  * @return true on success
  */
 global define boolean Import(map settings) {
-    NetworkDevices::Import("modem", settings["devices"]:$[]);
+    NetworkInterfaces::Import("modem", settings["devices"]:$[]);
     Provider::Import("modem", settings["providers"]:$[]);
     return true;
 }
@@ -449,7 +449,7 @@ global define boolean Import(map settings) {
  */
 global define map Export() {
     return $[
-	"devices"	: NetworkDevices::Export("modem"),
+	"devices"	: NetworkInterfaces::Export("modem"),
 	"providers"	: Provider::Export("modem"),
     ];
 }
@@ -500,7 +500,7 @@ global define void SelectHW(integer which) {
 }
 
 global list<string> Packages() {
-    if(size(NetworkDevices::List("modem")) < 1) return [];
+    if(size(NetworkInterfaces::List("modem")) < 1) return [];
     return ["smpppd"];
 }
 

@@ -3,7 +3,7 @@
 module "LanItems";
 textdomain "network";
 
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "ProductFeatures";
 import "NetworkConfig";
 import "NetworkStorage";
@@ -68,7 +68,7 @@ global string wl_mode = "";
 global string wl_essid = "";
 global string wl_nwid = "";
 global string wl_auth_mode = "";
-// when adding another key, don't forget the chmod 600 in NetworkDevices
+// when adding another key, don't forget the chmod 600 in NetworkInterfaces
 global string wl_wpa_psk = "";
 global string wl_key_length = "";
 global list<string> wl_key = [];
@@ -278,15 +278,16 @@ global list<string> GetItemModules(string default_module){
  return mods;
 }
 
-// get list of all configurations for "netcard" macro in NetworkDevices module
-list<string> getNetworkDevices(){
+// get list of all configurations for "netcard" macro in NetworkInterfaces module
+list<string> getNetworkInterfaces(){
  list<string> confs=[];
-    map <string, any> configurations =  NetworkDevices::FilterDevices("netcard");
-    foreach(string devtype, splitstring(NetworkDevices::CardRegex["netcard"]:"", "|"), {
-     foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
-      confs = add(confs, NetworkDevices::device_name(devtype, devnum));
-     });
-    });
+ map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
+ foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
+  foreach(string file, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+   confs = add(confs, file);
+  });
+ });
+y2internal("confs %1", confs);
  return confs;
 }
 
@@ -305,11 +306,11 @@ global void ReadHw(){
 
 global void Read(){
     ReadHw();
-    NetworkDevices::Read();
-    NetworkDevices::CleanHotplugSymlink();
+    NetworkInterfaces::Read();
+    NetworkInterfaces::CleanHotplugSymlink();
 
    // match configurations to Items list with hwinfo
-    foreach(string confname, getNetworkDevices(), {
+    foreach(string confname, getNetworkInterfaces(), {
       integer pos = nil;
       map<string, any> val = $[];
       foreach(integer key, map<string, any> value, (map<integer, map<string, any> >)Items, {
@@ -326,7 +327,7 @@ global void Read(){
       });
 
   // add to Items also virtual devices (configurations) without hwinfo
-    foreach(string confname, getNetworkDevices(), {
+    foreach(string confname, getNetworkInterfaces(), {
     boolean already = false;
     foreach(integer key, (list<integer>)Map::Keys(Items), {
      if (confname == Items[key, "ifcfg"]:""){
@@ -383,33 +384,33 @@ global list BuildLanOverview() {
    list <string> bullets = [];
 
    if (hasAnyValue(Items[key, "ifcfg"]:"") ){
-    NetworkDevices::Select(Items[key, "ifcfg"]:"");
-    if (!hasAnyValue(type)) type = NetworkDevices::device_type(Items[key, "ifcfg"]:"");
-    descr = BuildDescription(type, NetworkDevices::device_type(Items[key, "ifcfg"]:""), NetworkDevices::Current, [Items[key, "hwinfo"]:$[]]);
-    string dev = NetworkDevices::Name; //NetworkDevices::device_name(type, NetworkDevices::Name);
-    ip = DeviceProtocol(NetworkDevices::Current);
-    string status = DeviceStatus(type, NetworkDevices::device_num(NetworkDevices::Name), NetworkDevices::Current);
+    NetworkInterfaces::Select(Items[key, "ifcfg"]:"");
+    if (!hasAnyValue(type)) type = NetworkInterfaces::GetType(Items[key, "ifcfg"]:"");
+    descr = BuildDescription(type, NetworkInterfaces::GetType(Items[key, "ifcfg"]:""), NetworkInterfaces::Current, [Items[key, "hwinfo"]:$[]]);
+    string dev = NetworkInterfaces::Name; //NetworkInterfaces::device_name(type, NetworkInterfaces::Name);
+    ip = DeviceProtocol(NetworkInterfaces::Current);
+    string status = DeviceStatus(type, NetworkInterfaces::device_num(NetworkInterfaces::Name), NetworkInterfaces::Current);
 
 
-    string startmode_descr = startmode_descrs[NetworkDevices::Current["STARTMODE"]:""]:_("Started manually");
+    string startmode_descr = startmode_descrs[NetworkInterfaces::Current["STARTMODE"]:""]:_("Started manually");
 
 		bullets =  [
 		    sformat(_("Device Name: %1"), dev),
 		    startmode_descr,
 		    ];
-		if (NetworkDevices::Current["STARTMODE"]:"" != "managed")
+		if (NetworkInterfaces::Current["STARTMODE"]:"" != "managed")
 		{
                  if (ip != "NONE")
 		  {
 		    bullets = bullets + [
 			ip == "DHCP" ? _("IP address assigned using DHCP") :
 			sformat(_("IP address: %1, subnet mask %2")
-				, ip, NetworkDevices::Current["NETMASK"]:""),
+				, ip, NetworkInterfaces::Current["NETMASK"]:""),
 			];
 		  }
 	// build aliases overview
-	if (size(NetworkDevices::Current["_aliases"]:$[])>0 && !NetworkService::IsManaged()){
-	 foreach(string key,   map<string, any> desc, (map<string ,map<string, any> >) NetworkDevices::Current["_aliases"]:$[], {
+	if (size(NetworkInterfaces::Current["_aliases"]:$[])>0 && !NetworkService::IsManaged()){
+	 foreach(string key,   map<string, any> desc, (map<string ,map<string, any> >) NetworkInterfaces::Current["_aliases"]:$[], {
 	 string parameters = sformat(_("IP address: %1, subnet mask %2"), desc["IPADDR"]:"", desc["NETMASK"]:"");
 	 bullets = add(bullets, sformat("%1 (%2)", key, parameters) );
 	 });
@@ -430,8 +431,8 @@ global list BuildLanOverview() {
 */
 		}
 		if (type == "wlan" &&
-		    !(NetworkDevices::Current["WIRELESS_AUTH_MODE"]:"" != "open") &&
-		    !hasAnyValue(NetworkDevices::Current["WIRELESS_KEY_0"]:""))
+		    !(NetworkInterfaces::Current["WIRELESS_AUTH_MODE"]:"" != "open") &&
+		    !hasAnyValue(NetworkInterfaces::Current["WIRELESS_KEY_0"]:""))
 		{
 		    // avoid colons
 		    dev = mergestring (splitstring (dev, ":"), "/");
@@ -512,7 +513,7 @@ global string GetItemDescription(){
  * @return true if there are some aliases
  */
 global define boolean InterfaceHasAliases() {
-    return NetworkDevices::HasAliases(Items[current, "ifcfg"]:"");
+    return NetworkInterfaces::HasAliases(Items[current, "ifcfg"]:"");
 }
 
 /**
@@ -603,7 +604,7 @@ global define void SelectHW(integer which) {
  * @return list of 10 free devices
  */
 global define list FreeDevices(string type) {
-    return NetworkDevices::GetFreeDevices(type, 10);
+    return NetworkInterfaces::GetFreeDevices(type, 10);
 }
 
 /**
@@ -616,7 +617,7 @@ global define list FreeAliases(string type, integer num) {
     // FIXME: NI y2debug("Devices=%1", Devices);
     map Devices_1 = $[]; // FIXME: NI Devices[type, sformat("%1",num)]:$[];
     y2debug("Devices=%1", Devices_1);
-    return NetworkDevices::GetFreeDevices("_aliases", 10);
+    return NetworkInterfaces::GetFreeDevices("_aliases", 10);
 }
 
 
@@ -847,16 +848,16 @@ global define boolean Select(string dev) {
 
 	type = Items[current, "hwinfo", "type"]:"eth";
 //        type = "eth0";
-	device = NetworkDevices::GetFreeDevice(type);
+	device = NetworkInterfaces::GetFreeDevice(type);
 
 	// FIXME: MOD AddModule(type);
 //	NetworkModules::AddM();
 //	nm_name = NetworkModules::GetFreeName("static-");
 
 			// TODO: instead of udev use hwinfo dev_name
-	NetworkDevices::Name = GetItemUdev()[1]:"";
-	if (size(Items)<current) Items[current] = $["ifcfg":NetworkDevices::Name];
-		else Items[current, "ifcfg"] = NetworkDevices::Name;
+	NetworkInterfaces::Name = GetItemUdev()[1]:"";
+	if (size(Items)<current) Items[current] = $["ifcfg":NetworkInterfaces::Name];
+		else Items[current, "ifcfg"] = NetworkInterfaces::Name;
 
 //	interfacename = GetItemUdev()[1]:"";
 //	y2internal("interfacename %1", interfacename);
@@ -871,11 +872,11 @@ global define boolean Select(string dev) {
 	    y2error("Device not found: %1", dev);
 	    return false;
 	}
-	NetworkDevices::Edit(dev);
-	devmap = NetworkDevices::Current;
-	type = NetworkDevices::device_type(dev);
-	device = NetworkDevices::device_num(dev);
-	alias = NetworkDevices::alias_num(dev);
+	NetworkInterfaces::Edit(dev);
+	devmap = NetworkInterfaces::Current;
+	type = NetworkInterfaces::device_type(dev);
+	device = NetworkInterfaces::device_num(dev);
+	alias = NetworkInterfaces::alias_num(dev);
     }
 */
     /* general stuff */
@@ -893,8 +894,7 @@ global define boolean Select(string dev) {
     */
 
     y2debug("type=%1", type);
-    if(issubstring(type, "-"))
-	type = regexpsub(type, "([^-]+)-.*$", "\\1");
+    if(issubstring(type, "-")) type = regexpsub(type, "([^-]+)-.*$", "\\1");
     y2debug("type=%1", type);
 
     /* kernel options */
@@ -976,11 +976,12 @@ global define boolean Commit() {
 	    newdev["BOOTPROTO"] = bootproto;
 	}
 	newdev["NAME"] = description;
+	if (!issubstring(Items[current, "ifcfg"]:"", type)) newdev["INTERFACETYPE"]=type;
 //	if(unique != "" && unique != nil) newdev["udi"] = unique;
 /*
 	if(hotplug == "") {
 	    if(alias == "") {
-		// FIXME: MOD ChangeModule(NetworkDevices::device_name(type, device), operation == `add);
+		// FIXME: MOD ChangeModule(NetworkInterfaces::device_name(type, device), operation == `add);
 		y2milestone("HWCFG name %1 (%2)", nm_name, nm_name_old);
 		if(hasAnyValue(nm_name) && operation == `edit &&
 			hasAnyValue(nm_name_old) && nm_name != nm_name_old) {
@@ -1134,9 +1135,9 @@ global define boolean Commit() {
 	    newdev["_aliases"] = aliases;
 	    y2milestone("aliases %1", aliases);
 	}
-	NetworkDevices::Name = Items[current, "ifcfg"]:"";
-	NetworkDevices::Current = newdev;
-	if (!NetworkDevices::Commit()) Items[current, "ifcfg"]="";
+	NetworkInterfaces::Name = Items[current, "ifcfg"]:"";
+	NetworkInterfaces::Current = newdev;
+	if (!NetworkInterfaces::Commit()) Items[current, "ifcfg"]="";
     }
     else {
 	y2error("Unknown operation: %1", operation);
@@ -1154,7 +1155,7 @@ global boolean Rollback(){
   if (!(size(getCurrentItem()["hwinfo"]:$[])>0)) Items = remove(Items, current);
 	else{
 	 if (haskey(Items[current]:$[], "ifcfg"))
-		if (!contains(getNetworkDevices(), getCurrentItem()["ifcfg"]:""))
+		if (!contains(getNetworkInterfaces(), getCurrentItem()["ifcfg"]:""))
 					Items[current]=remove(Items[current]:$[], "ifcfg");
 	}
  };
@@ -1196,7 +1197,7 @@ global map FindMatchingDevice(map interface) {
     // device that got already matched
     boolean matched_by_module = false;
 
-    list<string> devs = NetworkDevices::List("netcard");
+    list<string> devs = NetworkInterfaces::List("netcard");
     y2milestone("Configured devices: %1", devs );
 
     // this condition is always true for SLES9, HEAD uses $[] for proposal
@@ -1264,9 +1265,9 @@ global map FindMatchingDevice(map interface) {
 	    foreach (map h, LanItems::Hardware, {
 		y2milestone("Checking for device=%1", h);
 		SelectHWMap(h);
-		string _device_name = NetworkDevices::device_name(NetworkDevices::RealType(type, hotplug), device);
-		if (!NetworkDevices::Check(_device_name) &&
-		    type == NetworkDevices::device_type(interface["device"]:"")
+		string _device_name = NetworkInterfaces::device_name(NetworkInterfaces::RealType(type, hotplug), device);
+		if (!NetworkInterfaces::Check(_device_name) &&
+		    type == NetworkInterfaces::GetType(interface["device"]:"")
 		    )
 		{
 		    y2milestone("Selected: %1", h );
@@ -1347,8 +1348,8 @@ global void DeleteItem(){
  string hwcfg = Items[current, "hwcfg"]:"";
 
  if (hasAnyValue(ifcfg)) {
-	 NetworkDevices::Delete(ifcfg);
-	 NetworkDevices::Commit();
+	 NetworkInterfaces::Delete(ifcfg);
+	 NetworkInterfaces::Commit();
 	 Items[current, "ifcfg"] = "";
 	}
 /*
@@ -1374,12 +1375,12 @@ global void DeleteItem(){
 global void SetItem(){
  operation = `edit;
  interfacename = getCurrentItem()["ifcfg"]:"";
- NetworkDevices::Edit(getCurrentItem()["ifcfg"]:"");
- map devmap = NetworkDevices::Current;
+ NetworkInterfaces::Edit(getCurrentItem()["ifcfg"]:"");
+ map devmap = NetworkInterfaces::Current;
  type = Items[current, "hwinfo", "type"]:"";
- if (!hasAnyValue(type)) type = NetworkDevices::device_type(getCurrentItem()["ifcfg"]:"");
- device = NetworkDevices::device_num(getCurrentItem()["ifcfg"]:"");
- alias = NetworkDevices::alias_num(getCurrentItem()["ifcfg"]:"");
+ if (!hasAnyValue(type)) type = NetworkInterfaces::GetType(getCurrentItem()["ifcfg"]:"");
+ device = NetworkInterfaces::device_num(getCurrentItem()["ifcfg"]:"");
+ alias = NetworkInterfaces::alias_num(getCurrentItem()["ifcfg"]:"");
 // nm_name = Items[current, "hwcfg"]:"";
 // if (nm_name=="") nm_name_old = createHwcfgName(Items[current, "hwinfo"]:$[], type);
 //  NetworkModules::SelectM(nm_name);
@@ -1446,7 +1447,7 @@ global boolean ProposeItem(){
 	startmode = "nfsroot";
 	y2milestone ("startmode nfsroot");
     }
-  NetworkDevices::Add();
+  NetworkInterfaces::Add();
   operation = `edit;
 //  interfacename=getCurrentItem()["hwinfo", "dev_name"]:"";
   Items[current, "ifcfg"]=getCurrentItem()["hwinfo", "dev_name"]:"";

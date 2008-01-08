@@ -17,7 +17,7 @@ textdomain "network";
 
 import "IP";
 import "NetworkPopup";
-import "NetworkDevices";
+import "NetworkInterfaces";
 
 /**
  * Validator for IP adresses, no_popup
@@ -90,7 +90,7 @@ to change the prefix.</p>
  */
 map<string, map<string, string> > startmode_items = $[
     // onboot, on and boot are aliases for auto
-    // See NetworkDevices::CanonicalizeStartmode
+    // See NetworkInterfaces::CanonicalizeStartmode
     "auto": $[
 	// Combo box option for Device Activation
 	"label": _("At Boot Time"),
@@ -184,7 +184,7 @@ _("<p><b><big>Device Activation</big></b></p>
 
 
 define string GetDeviceDescription(string device_id) {
-    string device_name = NetworkDevices::GetValue(device_id,"NAME");
+    string device_name = NetworkInterfaces::GetValue(device_id,"NAME");
     if ( (device_name == nil) || (device_name == "") ) {
         //TRANSLATORS: Informs that device name is not known
         device_name = _("Unknown device");
@@ -194,37 +194,37 @@ define string GetDeviceDescription(string device_id) {
     //if (size(device_name) > 30) {
     //    device_name = substring (device_name, 0, 27) + "...";
     //}
-    string ip_addr = (NetworkDevices::GetValue(device_id, "BOOTPROTO") == "dhcp" ?
+    string ip_addr = (NetworkInterfaces::GetValue(device_id, "BOOTPROTO") == "dhcp" ?
 		   // TRANSLATORS: Part of label, device with IP address assigned by DHCP
                     _("DHCP address") :
 		   // TRANSLATORS: Part of label, device with static IP address
-                    NetworkDevices::GetValue(device_id, "IPADDR"));
+                    NetworkInterfaces::GetValue(device_id, "IPADDR"));
     if ( (ip_addr == nil) || (ip_addr == "")) {
         //TRANSLATORS: Informs that no IP has been assigned to the device
         ip_addr = _("No IP address assigned");
     }
     string output = sformat(_("%1 \n%2 - %3"),
-                        device_name, NetworkDevices::GetDeviceType(device_id), ip_addr);
+                        device_name, NetworkInterfaces::GetDeviceType(device_id), ip_addr);
         return output;
 }
 
 
 
 list<string> getEthernetItems(){
-    NetworkDevices::Read();
-    list<string> items = NetworkDevices::List("eth");
+    NetworkInterfaces::Read();
+    list<string> items = NetworkInterfaces::List("eth");
     items = filter (string i, items, ``( i != "lo" ));
  return items;
 }
 
 list<string> getNetDeviceItems(){
-	NetworkDevices::Read();
-	list<string> ifaces = NetworkDevices::List("eth");
+	NetworkInterfaces::Read();
+	list<string> ifaces = NetworkInterfaces::List("eth");
 	y2debug("ifaces=%1", ifaces);
-	ifaces = (list<string>)union((list)ifaces, (NetworkDevices::List("eth-pcmcia")));
+	ifaces = (list<string>)union((list)ifaces, (NetworkInterfaces::List("eth-pcmcia")));
 	y2debug("ifaces=%1", ifaces);
-	ifaces = (list<string>)union((list)ifaces, NetworkDevices::List("eth-usb"));
-	ifaces = (list<string>)union((list)ifaces, NetworkDevices::List("wlan")); // #186102
+	ifaces = (list<string>)union((list)ifaces, NetworkInterfaces::List("eth-usb"));
+	ifaces = (list<string>)union((list)ifaces, NetworkInterfaces::List("wlan")); // #186102
 	y2debug("ifaces=%1", ifaces);
  return ifaces;
 }

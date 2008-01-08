@@ -13,7 +13,7 @@
 module "InternetDevices";
 
 import "Internet";
-import "NetworkDevices";
+import "NetworkInterfaces";
 
 /**
  * Reset values.
@@ -35,9 +35,9 @@ define void Reset() {
  */
 global define void SetDevice(string dev){
     Internet::device=dev;
-    NetworkDevices::Select(Internet::device);
-    Internet::type = NetworkDevices::FastestType(Internet::device);
-    Internet::provider = NetworkDevices::Current["PROVIDER"]:"";
+    NetworkInterfaces::Select(Internet::device);
+    Internet::type = NetworkInterfaces::FastestType(Internet::device);
+    Internet::provider = NetworkInterfaces::Current["PROVIDER"]:"";
 
     if (Internet::provider != "") {
         import "Provider";
@@ -66,8 +66,8 @@ global define boolean FindFastest() {
 
     Reset();
 
-    NetworkDevices::Read();
-    Internet::device = NetworkDevices::Fastest();
+    NetworkInterfaces::Read();
+    Internet::device = NetworkInterfaces::Fastest();
 
     if ((string)SCR::Read(.sysconfig.network.config.NETWORKMANAGER)=="yes" && Internet::device == "")
     {

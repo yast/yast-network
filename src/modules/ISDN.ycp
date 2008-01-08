@@ -16,7 +16,7 @@
 module "ISDN";
 textdomain "network";
 
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "NetworkService";
 import "Provider";
 import "Progress";
@@ -743,8 +743,8 @@ global define boolean Add() ``{
  * @return true if cfg-<dev> was found
  */
 global define boolean Edit(string dev) ``{
-    string typ = NetworkDevices::device_type(dev);
-    string num = NetworkDevices::device_num(dev);
+    string typ = NetworkInterfaces::device_type(dev);
+    string num = NetworkInterfaces::device_num(dev);
 
     map typemap = Devices[typ]:$[];
     if(!haskey(typemap, num)) {
@@ -770,8 +770,8 @@ global define boolean Edit(string dev) ``{
  */
 global define boolean Delete(string item) ``{
     operation = nil;
-    string typ = NetworkDevices::device_type(item);
-    string num = NetworkDevices::device_num(item);
+    string typ = NetworkInterfaces::device_type(item);
+    string num = NetworkInterfaces::device_num(item);
 
     map typemap = Devices[typ]:$[];
     if(!haskey(typemap, num)) {
@@ -810,8 +810,8 @@ global define boolean AddIf(string proto) ``{
  * @return true if cfg-<item> was found
  */
 global define boolean SelIf(string item) ``{
-    string typ = NetworkDevices::device_type(item);
-    string num = NetworkDevices::device_num(item);
+    string typ = NetworkInterfaces::device_type(item);
+    string num = NetworkInterfaces::device_num(item);
 
     map typemap = Devices[typ]:$[];
     if(!haskey(typemap, num)) {

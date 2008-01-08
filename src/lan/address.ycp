@@ -21,7 +21,7 @@ import "Label";
 import "Lan";
 import "Netmask";
 import "NetHwDetection";
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "Popup";
 import "ProductFeatures";
 import "Routing";
@@ -109,22 +109,21 @@ void StoreAddrWidget (string key, map event) {
 void InitBridge(string key)
 {
  list items = [];
- string old_name=NetworkDevices::Name;
- list<string> br_ports = splitstring(NetworkDevices::Current["BRIDGE_PORTS"]:"", " ");
-    map <string, any> configurations =  NetworkDevices::FilterDevices("netcard");
-    foreach(string devtype, splitstring(NetworkDevices::CardRegex["netcard"]:"", "|"), {
+ string old_name=NetworkInterfaces::Name;
+ list<string> br_ports = splitstring(NetworkInterfaces::Current["BRIDGE_PORTS"]:"", " ");
+    map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
      foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
 
         //filter the eth devices (IPADDR=0.0.0.0 - promiscuited mode)
             if ((string)configurations[devtype, devnum, "IPADDR"]:"" == "0.0.0.0")
 	    {
-	     string dev_name = NetworkDevices::device_name(devtype, devnum);
-             items = add (items, `item(`id(dev_name), sformat("%1 - %2",dev_name, NetworkDevices::GetValue(dev_name, "NAME")), contains(br_ports, dev_name)) );
+	     string dev_name = NetworkInterfaces::device_name(devtype, devnum);
+             items = add (items, `item(`id(dev_name), sformat("%1 - %2",dev_name, NetworkInterfaces::GetValue(dev_name, "NAME")), contains(br_ports, dev_name)) );
 	    }
-
      });
     });
-  NetworkDevices::Select(old_name);
+  NetworkInterfaces::Select(old_name);
   UI::ChangeWidget(`id(key), `Items, items);
 }
 
@@ -145,7 +144,7 @@ void StoreBridge(string key, map event)
 void InitVLANSlave(string key)
 {
  list items = [];
-     settings["ETHERDEVICE"] = NetworkDevices::Current["ETHERDEVICE"]:"";
+     settings["ETHERDEVICE"] = NetworkInterfaces::Current["ETHERDEVICE"]:"";
 	 foreach(integer row, any value, LanItems::Items,{
 	  LanItems::current = row;
 	  if (!LanItems::IsItemConfigured()){
@@ -345,12 +344,12 @@ if you know that the detection is wrong.")))
 	}
 
 	string ifcfgid = (string) UI::QueryWidget (`id ("IFCFGID"), `Value);
-	string ifcfgname = NetworkDevices::device_name (ifcfgtype, ifcfgid);
+	string ifcfgname = NetworkInterfaces::device_name (ifcfgtype, ifcfgid);
 
 	// Check should be improved to find differently named but
 	// equivalent configs (eg. by-mac and by-bus, depends on the
 	// current hardware)
-	if (NetworkDevices::Check(ifcfgname))
+	if (NetworkInterfaces::Check(ifcfgname))
 	{
 	    UI::SetFocus(`id (key));
 	    /* Popup text */
@@ -376,7 +375,7 @@ boolean NeedToAssignFwZone (map event) {
 	// gets through (#62309) so warn and redirect to details
 	string type = (string) UI::QueryWidget (`id ("IFCFGTYPE"), `Value);
 	string id = (string) UI::QueryWidget (`id ("IFCFGID"), `Value);
-	string name = NetworkDevices::device_name (type, id);
+	string name = NetworkInterfaces::device_name (type, id);
 	if (SuSEFirewall4Network::IsOn () &&
 	    SuSEFirewall4Network::GetZoneOfInterface (name) == "" &&
 	    SuSEFirewall4Network::UnconfiguredIsBlocked ())
@@ -533,7 +532,7 @@ map<string, map<string,any> > widget_descr_local = $[
 	"opt": [`hstretch, `disabled ],
 	"help": "",
 	"init" : initIfcfgId,
-//	"valid_chars": NetworkDevices::ValidCharsIfcfg (),
+//	"valid_chars": NetworkInterfaces::ValidCharsIfcfg (),
 //	"handle": HandleIfcfg,
 	],
 
@@ -650,7 +649,7 @@ widget_descr_local["HWDIALOG"]=widget_descr_hardware["HWDIALOG"]:$[];
  */
 list< list<string> > BuildTypesListCWM (list<string> types) {
     return maplist(string t, types, {
-	return [t, NetworkDevices::GetDevTypeDescription(t, false)];
+	return [t, NetworkInterfaces::GetDevTypeDescription(t, false)];
     });
 }
 
@@ -660,7 +659,7 @@ list< list<string> > BuildTypesListCWM (list<string> types) {
  */
 define any AddressDialog() {
     ScreenName("lan-address");
-    string ifname = NetworkDevices::device_name (LanItems::type, LanItems::device);
+    string ifname = NetworkInterfaces::device_name (LanItems::type, LanItems::device);
     string fwzone = SuSEFirewall4Network::GetZoneOfInterface (ifname);
 
     // If firewall is active and interface in no zone, nothing
@@ -759,10 +758,10 @@ define any AddressDialog() {
 	);
     if(LanItems::operation != `add) {
 	if(LanItems::alias == "") {
-	    settings["IFCFG"] = NetworkDevices::device_name(NetworkDevices::RealType(LanItems::type, LanItems::hotplug), LanItems::device);
+	    settings["IFCFG"] = NetworkInterfaces::device_name(NetworkInterfaces::RealType(LanItems::type, LanItems::hotplug), LanItems::device);
 	}
 	else {
-	    settings["IFCFG"] = NetworkDevices::alias_name(NetworkDevices::RealType(LanItems::type, LanItems::hotplug), LanItems::device, LanItems::alias);
+	    settings["IFCFG"] = NetworkInterfaces::alias_name(NetworkInterfaces::RealType(LanItems::type, LanItems::hotplug), LanItems::device, LanItems::alias);
 	}
     }
     
@@ -830,13 +829,13 @@ define any AddressDialog() {
     {
         settings["SLAVES"] = LanItems::bond_slaves;
 
-    map <string, any> configurations =  NetworkDevices::FilterDevices("netcard");
-    foreach(string devtype, splitstring(NetworkDevices::CardRegex["netcard"]:"", "|"), {
+    map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
      foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
 
         //filter the eth devices (BOOT_PROTO=none && START_MODE=off)
             if (((string)configurations[devtype, devnum, "BOOTPROTO"]:"" == "none") && ((string)configurations[devtype, devnum, "STARTMODE"]:"" == "off"))
-            wd["BONDSLAVE", "items"] = add (wd["BONDSLAVE", "items"]:[], [NetworkDevices::device_name(devtype, devnum)] );
+            wd["BONDSLAVE", "items"] = add (wd["BONDSLAVE", "items"]:[], [NetworkInterfaces::device_name(devtype, devnum)] );
 
      });
     });
@@ -986,8 +985,8 @@ define any AddressDialog() {
 
 	// address tab
 	if(LanItems::operation == `add) {
-	    LanItems::device = NetworkDevices::device_num(ifcfgname);
-	    LanItems::type = NetworkDevices::device_type(ifcfgname);
+	    LanItems::device = NetworkInterfaces::device_num(ifcfgname);
+	    LanItems::type = NetworkInterfaces::device_type(ifcfgname);
 	}
 
 	LanItems::bootproto = settings["BOOTPROTO"]:"";
@@ -1044,7 +1043,7 @@ define any AddressDialog() {
     }
 
     if(ret == `routing)
-	Routing::SetDevices(NetworkDevices::List(""));
+	Routing::SetDevices(NetworkInterfaces::List(""));
 
 
     return ret;

@@ -14,7 +14,7 @@ textdomain "network";
 import "CommandLine";
 import "Label";
 import "Lan";
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "RichText";
 import "Report";
 import "LanItems";
@@ -159,8 +159,8 @@ define boolean AddHandler(map<string, string> options) {
     if(options["ipaddr"]:"" != "") Lan::ipaddr = options["ipaddr"]:"";
     if(options["netmask"]:"" != "") Lan::netmask = options["netmask"]:"";
     if(options["bootproto"]:"" != "") Lan::bootproto = options["bootproto"]:"";
-    Lan::type = NetworkDevices::device_type(dev);
-    Lan::device = NetworkDevices::device_num(dev);
+    Lan::type = NetworkInterfaces::device_type(dev);
+    Lan::device = NetworkInterfaces::device_num(dev);
 
     Lan::Commit();
     CommandLine::Print(_("Success"));
@@ -182,7 +182,7 @@ define boolean EditHandler(map<string, string> options) {
    LanItems::SetItem();
 
   if (!(size(LanItems::getCurrentItem()["ifcfg"]:"")>0)){
-   NetworkDevices::Add();
+   NetworkInterfaces::Add();
    LanItems::operation = `edit;
    LanItems::interfacename=LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
   }

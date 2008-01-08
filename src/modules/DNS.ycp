@@ -20,7 +20,7 @@ import "Host";
 import "Hostname";
 import "IP";
 import "NetworkConfig";
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "Progress";
 import "Service";
 
@@ -381,7 +381,7 @@ global define string Summary() {
     import "Summary";
     string summary = "";
 
-    boolean has_dhcp = size (NetworkDevices::Locate ("BOOTPROTO", "dhcp")) > 0;
+    boolean has_dhcp = size (NetworkInterfaces::Locate ("BOOTPROTO", "dhcp")) > 0;
 
     if (has_dhcp && NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false)
 	/* Summary text */
@@ -426,10 +426,10 @@ global define string Summary() {
  */
 global define boolean IsHostLocal (string check_host) {
     Read ();
-    NetworkDevices::Read ();
+    NetworkInterfaces::Read ();
     map <string, string> dhcp_data = $[];
 
-    if ( (size( NetworkDevices::Locate("BOOTPROTO", "dhcp") ) > 0) || 
+    if ( (size( NetworkInterfaces::Locate("BOOTPROTO", "dhcp") ) > 0) || 
 	 NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false == true ) {
 	dhcp_data = GetDHCPHostnameIP();
 	y2milestone("Got DHCP-configured data: %1", dhcp_data);
@@ -450,7 +450,7 @@ global define boolean IsHostLocal (string check_host) {
     // IPv4 address
     if (IP::Check4 (check_host))
     {
-	if ( (size (NetworkDevices::Locate ("IPADDR", check_host)) > 0)
+	if ( (size (NetworkInterfaces::Locate ("IPADDR", check_host)) > 0)
 	      || dhcp_data["ip"]:"" == check_host)
 	    return true;
     }

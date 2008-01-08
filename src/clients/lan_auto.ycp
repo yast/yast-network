@@ -19,7 +19,7 @@ import "Progress";
 import "Arch";
 import "Mode";
 import "Map";
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "LanItems";
 include "network/lan/wizards.ycp";
 include "network/routines.ycp";
@@ -95,13 +95,13 @@ define map FromAY(map input)
 	return $[ new_device : new_interface ];
     });
 
-    // split to a two level map like NetworkDevices
+    // split to a two level map like NetworkInterfaces
     map<string, map> devices = $[];
 
     foreach(string devname, map if_data, interfaces, {
 
-	string type = NetworkDevices::device_type (devname);
-	string id = NetworkDevices::device_num (devname);
+	string type = NetworkInterfaces::device_type (devname);
+	string id = NetworkInterfaces::device_num (devname);
 	map d = devices[type]:$[];
 	d[id] = if_data;
 	devices[type] = d;

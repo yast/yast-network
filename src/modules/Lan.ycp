@@ -24,7 +24,7 @@ import "IP";
 import "Map";
 import "Mode";
 import "NetworkConfig";
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "NetworkService";
 import "NetworkStorage";
 import "Package";
@@ -122,10 +122,10 @@ global define boolean isAnyInterfaceDown(){
   });
 
     y2milestone("link_status %1", link_status);
-    map <string, any> configurations =  NetworkDevices::FilterDevices("netcard");
-    foreach(string devtype, splitstring(NetworkDevices::CardRegex["netcard"]:"", "|"), {
+    map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
      foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
-      string confname = NetworkDevices::device_name(devtype, devnum);
+      string confname = NetworkInterfaces::device_name(devtype, devnum);
       string mac = ((map<string, any>)SCR::Execute(.target.bash_output, sformat("cat /sys/class/net/%1/address|tr -d '\n'", confname)))["stdout"]:"";
       y2milestone("confname %1", mac);
       if (!haskey(link_status, mac)) y2error("Mac address %1 not found in map %2!", mac, link_status);
@@ -224,7 +224,7 @@ Check configuration manually."));
     if(Abort()) return false;
     /* Progress step 2/9 */
     ProgressNextStage(_("Detecting network devices..."));
-    // FIXME: MOD // ReadModules(NetworkDevices::CardRegex["netcard"]:"");
+    // FIXME: MOD // ReadModules(NetworkInterfaces::CardRegex["netcard"]:"");
     // Dont read hardware data in config mode
     if(!Mode::config ()) {
 	if(!NetHwDetection::running) NetHwDetection::Start();
@@ -380,7 +380,7 @@ global define boolean Write() {
     /* Progress step 3 - multiple devices may be present, really plural*/
     ProgressNextStage(_("Writing device configuration..."));
     LanItems::WriteUdevRules();
-    NetworkDevices::Write("netcard");
+    NetworkInterfaces::Write("netcard");
     // WriteDevices();
     sleep(sl);
 
@@ -485,11 +485,11 @@ global define boolean Import(map settings) {
 
     if (!Mode::autoinst()) {
         // FIXME: MOD Modules = (map) eval(settings["modules"]:$[]);
-        NetworkDevices::Import("netcard", (map<string, map>) settings["devices"]:$[]);
+        NetworkInterfaces::Import("netcard", (map<string, map>) settings["devices"]:$[]);
 
     } else {
-        NetworkDevices::Import("netcard", (map<string, map>) settings["devices"]:$[]);
-	foreach(string device, NetworkDevices::List(""), {
+        NetworkInterfaces::Import("netcard", (map<string, map>) settings["devices"]:$[]);
+	foreach(string device, NetworkInterfaces::List(""), {
 	LanItems::AddNew();
 	LanItems::Items[LanItems::current]=$["ifcfg":device];
 	});
@@ -516,7 +516,7 @@ global define map Export() {
 	"dns"		: DNS::Export(),
 	// FIXME: MOD "modules"	: Modules,
 	"config"	: NetworkConfig::Export(),
-	"devices"	: NetworkDevices::Export("netcard"),
+	"devices"	: NetworkInterfaces::Export("netcard"),
 //	"hwcfg"		: NetworkModules::Export("netcard"),
 	"routing"	: Routing::Export(),
 	"managed"	: NetworkService::IsManaged (),
@@ -610,7 +610,7 @@ global define list SummaryGeneral () {
 global define boolean Add() {
 //    LanItems::operation = nil;
     if(LanItems::Select("") != true) return false;
-    NetworkDevices::Add();
+    NetworkInterfaces::Add();
 //    LanItems::AddNew();
     return true;
 }
@@ -623,9 +623,9 @@ global define boolean Add() {
 global define boolean Edit(string name) {
     LanItems::operation = nil;
     if(LanItems::Select(name) != true) return false;
-    NetworkDevices::Edit(name);
+    NetworkInterfaces::Edit(name);
     LanItems::operation = `edit;
-    LanItems::interfacename = NetworkDevices::Name;
+    LanItems::interfacename = NetworkInterfaces::Name;
     return true;
 }
 /**
@@ -638,7 +638,7 @@ global define boolean Delete() {
 /*
     operation = nil;
     if(Select(name) != true) return false;
-    NetworkDevices::Delete(name);
+    NetworkInterfaces::Delete(name);
     operation = `delete;
 */
     return true;
@@ -826,7 +826,7 @@ global define boolean ProposeInterfaces () {
 
 
 	type = InstallInf["type"]:"eth";
-	device = NetworkDevices::GetFreeDevice(type);
+	device = NetworkInterfaces::GetFreeDevice(type);
     }
 
     else {
@@ -958,7 +958,7 @@ global define boolean ProposeRoutesAndResolver () {
  * @return true if something was proposed
  */
 global define boolean Propose() {
-NetworkDevices::CleanCacheRead();
+NetworkInterfaces::CleanCacheRead();
 LanItems::Read();
     return
 	ProposeInterfaces () &&
@@ -980,7 +980,7 @@ global define boolean Autoinstall() {
 
         foreach(map<string, string> interface, LanItems::autoinstall_settings["interfaces"]:[], ``{
                 
-            list<string> devs = NetworkDevices::List("netcard");
+            list<string> devs = NetworkInterfaces::List("netcard");
             y2milestone("devs: %1", devs);
             tosel = nil;
 
@@ -1016,7 +1016,7 @@ global define boolean Autoinstall() {
 		NetworkModules::Options = InstallInf["options"]:"";
 
 //		type = InstallInf["type"]:"eth";
-		device = NetworkDevices::GetFreeDevice(type);
+		device = NetworkInterfaces::GetFreeDevice(type);
 	    }
 */
 	    else {
@@ -1084,7 +1084,7 @@ global define boolean Autoinstall() {
  * @return true if any DHCP device is configured
  */
 global define boolean AnyDHCPDevice() {
-    return size(union(NetworkDevices::Locate("BOOTPROTO", "dhcp"), NetworkDevices::Locate("BOOTPROTO", "dhcp+autoip"))) > 0;
+    return size(union(NetworkInterfaces::Locate("BOOTPROTO", "dhcp"), NetworkInterfaces::Locate("BOOTPROTO", "dhcp+autoip"))) > 0;
 }
 
 
@@ -1102,31 +1102,31 @@ global list<string> Packages () {
     list<string> pkgs = [];
  // #299033 - don't install smpppd now, do it later (with some tests)
 /*
-    if (NetworkDevices::Locate ("USERCONTROL", "yes") != [])
+    if (NetworkInterfaces::Locate ("USERCONTROL", "yes") != [])
     {
 	if (!PackageSystem::Installed("smpppd")) pkgs = add (pkgs, "smpppd");
     }
 */
-    if (NetworkDevices::Locate ("STARTMODE", "ifplugd") != [])
+    if (NetworkInterfaces::Locate ("STARTMODE", "ifplugd") != [])
     {
 	if (!PackageSystem::Installed("ifplugd")) pkgs = add (pkgs, "ifplugd");
     }
     // #suse49880
-    if (NetworkDevices::List ("wlan") != [])
+    if (NetworkInterfaces::List ("wlan") != [])
     {
 	if (!PackageSystem::Installed("wireless-tools")) pkgs = add (pkgs, "wireless-tools");
     }
-    if (NetworkDevices::List ("vlan") != [])
+    if (NetworkInterfaces::List ("vlan") != [])
     {
 	if (!PackageSystem::Installed("vlan")) pkgs = add (pkgs, "vlan");
     }
-    if (NetworkDevices::List ("br") != [])
+    if (NetworkInterfaces::List ("br") != [])
     {
 	if (!PackageSystem::Installed("bridge-utils")) pkgs = add (pkgs, "bridge-utils");
     }
     // #47809
-    if (NetworkDevices::Locate ("WIRELESS_AUTH_MODE", "psk") != [] ||
-	NetworkDevices::Locate ("WIRELESS_AUTH_MODE", "eap") != [])
+    if (NetworkInterfaces::Locate ("WIRELESS_AUTH_MODE", "psk") != [] ||
+	NetworkInterfaces::Locate ("WIRELESS_AUTH_MODE", "eap") != [])
     {
 	if (!PackageSystem::Installed("wpa_supplicant")) pkgs = add (pkgs, "wpa_supplicant");
     }

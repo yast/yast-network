@@ -14,7 +14,7 @@ textdomain "network";
 import "Arch";
 import "Label";
 import "Lan";
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "Popup";
 import "Wizard";
 import "LanItems";
@@ -77,10 +77,10 @@ void initHardware(){
 	y2error("Shouldn't happen -- type is empty. Assuming eth.");
 	hardware["type"] = "eth";
     }
-    hardware["realtype"] = NetworkDevices::RealType(hardware["type"]:"", hardware["hotplug"]:"");
-    /*if (hasAnyValue(NetworkDevices::Name))
+    hardware["realtype"] = NetworkInterfaces::RealType(hardware["type"]:"", hardware["hotplug"]:"");
+    /*if (hasAnyValue(NetworkInterfaces::Name))
     {
-	hardware["device"] = NetworkDevices::device_num(NetworkDevices::Name);
+	hardware["device"] = NetworkInterfaces::device_num(NetworkInterfaces::Name);
     }*/
 
     //Use rather LanItems::device, so that device number is initialized correctly at all times (#308763) 
@@ -98,7 +98,7 @@ void initHardware(){
     if (!hasAnyValue(LanItems::nm_name) && hasAnyValue(LanItems::nm_name_old)) hardware["hwcfg"]=LanItems::nm_name_old;
 */
     // FIXME duplicated in address.ycp
-    hardware["device_types"] = NetworkDevices::GetDeviceTypes();
+    hardware["device_types"] = NetworkInterfaces::GetDeviceTypes();
 
     if(issubstring(hardware["device"]:"", "bus-pcmcia")) hardware["hotplug"] = "pcmcia";
 	else if(issubstring(hardware["device"]:"", "bus-usb")) hardware["hotplug"] = "usb";
@@ -218,7 +218,7 @@ void initHwDialog(string text) {
     UI::ChangeWidget(`id(`device_name), `Value, LanItems::GetItemUdev()[1]:"");
 
     if (!hw_standalone) ChangeWidgetIfExists(`id(`dev), `Enabled,false);
-    ChangeWidgetIfExists(`id(`num), `ValidChars, NetworkDevices::ValidCharsIfcfg ());
+    ChangeWidgetIfExists(`id(`num), `ValidChars, NetworkInterfaces::ValidCharsIfcfg ());
 //    ChangeWidgetIfExists(`id(`hwcfg), `ValidChars, NetworkModules::ValidCharsHwcfg ());
 }
 
@@ -340,7 +340,7 @@ symbol handleHW (string key, map event) {
 
 	    if(UI::WidgetExists(`id(`dev))) {
                hardware["type"] = (string) UI::QueryWidget(`id(`dev), `Value);
-               hardware["realtype"] = NetworkDevices::RealType(hardware["type"]:"", hardware["hotplug"]:"");
+               hardware["realtype"] = NetworkInterfaces::RealType(hardware["type"]:"", hardware["hotplug"]:"");
 	       UI::ChangeWidget (`id (`num), `Items, LanItems::FreeDevices(hardware["realtype"]:""));
 	    }
 	    y2debug("type=%1", hardware["type"]:"");
@@ -443,10 +443,12 @@ symbol handleHW (string key, map event) {
 	UI::QueryWidget(`udev_type, `CurrentButton)==`mac ? sformat("ATTR{address}==\"%1\"", LanItems::getCurrentItem()["hwinfo", "mac"]:"") : sformat("KERNELS==\"%1\"", LanItems::getCurrentItem()["hwinfo", "busid"]:""),
 	sformat("NAME==\"%1\"", ((boolean)UI::QueryWidget(`change_dev_name, `Value))?UI::QueryWidget(`dev_name, `Value):LanItems::GetItemUdev()[1]:"")
     ];
-   // when dev_name changed, rename ifcfg (both in NetworkDevices and LanItems)
+   // when dev_name changed, rename ifcfg (both in NetworkInterfaces and LanItems)
     if (LanItems::GetItemUdev()[1]:""!=old_name){
- //    NetworkDevices::Delete(old_name);
+    NetworkInterfaces::Delete2(old_name);
+//    NetworkInterfaces::Commit();
      LanItems::Items[LanItems::current, "ifcfg"]=LanItems::GetItemUdev()[1]:"";
+//     LanItems::Items[LanItems::current, "hwinfo", "dev_name"]=LanItems::GetItemUdev()[1]:"";
     }
    }
    UI::CloseDialog();
@@ -463,14 +465,14 @@ if (LanItems::operation==`add){
     //Remember current device number (#308763)
     LanItems::device = nm;
 
-    string name=NetworkDevices::device_name(LanItems::type, nm);
-    if(contains(NetworkDevices::List(""), name)) {
+    string name=NetworkInterfaces::device_name(LanItems::type, nm);
+    if(contains(NetworkInterfaces::List(""), name)) {
 	Popup::Error(sformat(_("Configuration name %1 (%2) already exists.
-Choose a different one."), nm, NetworkDevices::device_name(hardware["type"]:"", nm)));
+Choose a different one."), nm, NetworkInterfaces::device_name(hardware["type"]:"", nm)));
 	UI::SetFocus(`id(`num));
     }
 
-    NetworkDevices::Name = name;
+    NetworkInterfaces::Name = name;
     LanItems::Items[LanItems::current, "ifcfg"]= name;
     //Initialize udev map, so that setDriver (see below) sets correct module
     LanItems::Items[LanItems::current, "udev"]= $[];

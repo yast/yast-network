@@ -16,7 +16,7 @@ import "CWMTab";
 import "Label";
 import "Mode";
 import "Modem";
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "NetworkService";
 import "Popup";
 import "Provider";
@@ -266,7 +266,7 @@ symbol HandleProviders (string widget_id, map event)
 	string dev = WizardHW::SelectedItem ();
 
 	/* Check if the provider is not used (#17497) */
-	if(NetworkDevices::LocateProvider(dev)) {
+	if(NetworkInterfaces::LocateProvider(dev)) {
 	    y2debug("Provider used: %1", dev);
 
 	    /* Popup text */

@@ -16,7 +16,7 @@ module "Routing";
 textdomain "network";
 
 import "NetHwDetection";
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "Map";
 
 include "network/runtime.ycp";
@@ -116,8 +116,8 @@ global define boolean Read() {
     Orig_Forward = (boolean) eval(Forward);
 
     /* read available devices */
-    NetworkDevices::Read();
-    devices = NetworkDevices::List("");
+    NetworkInterfaces::Read();
+    devices = NetworkInterfaces::List("");
 
     if(Routes == []) {
 	ReadFromGateway (NetHwDetection::result["GATEWAY"]:"");

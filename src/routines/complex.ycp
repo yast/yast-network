@@ -14,7 +14,7 @@ textdomain "network";
 
 import "NetHwDetection";
 import "HTML";
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "Popup";
 import "String";
 import "Summary";
@@ -60,7 +60,7 @@ define string Hyperlink (string href, string text) {
  * @return [ configured, unconfigured ] if split, [ summary, links ] otherwise
  */
 define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, boolean split, boolean link) {
-    y2milestone("Devs=%1", NetworkDevices::ConcealSecrets (Devs));
+    y2milestone("Devs=%1", NetworkInterfaces::ConcealSecrets (Devs));
     y2milestone("Hardware=%1", Hardware);
     y2debug("split=%1", split);
 
@@ -84,7 +84,7 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 		    devmap["WIRELESS_AUTH_MODE"]:"" == "open" &&
 		    devmap["WIRELESS_KEY_0"]:"" == "")
 		{
-		    string dev = NetworkDevices::device_name(devtype, devnum);
+		    string dev = NetworkInterfaces::device_name(devtype, devnum);
 		    // avoid colons
 		    dev = mergestring (splitstring (dev, ":"), "/");
 		    string href = "lan--wifi-encryption-" + dev;
@@ -180,7 +180,7 @@ integer id=0;
  * @return [ configured, unconfigured ] if split, [ summary, links ] otherwise
  */
 define list<any> BuildSummary(string devregex, list<map> Hardware, boolean split, boolean link) {
-    map <string, map> Devs = NetworkDevices::FilterDevices (devregex);
+    map <string, map> Devs = NetworkInterfaces::FilterDevices (devregex);
     list <any> ret = BuildSummaryDevs (Devs, Hardware, split, link);
  return ret;
 }
@@ -237,7 +237,7 @@ define string CheckEmptyName(string devtype, string hwname) {
 
     if(haskey(device_names, devtype)) return device_names[devtype]:"";
 	else {
-		string descr =	NetworkDevices::GetDevTypeDescription(devtype, true);
+		string descr =	NetworkInterfaces::GetDevTypeDescription(devtype, true);
 		if (hasAnyValue(descr)) return descr;
 	     }
 
@@ -306,7 +306,7 @@ define string ProviderName(string provider) {
  * @return text wth device status
  */
 define string DeviceStatus(string devtype, string devnum, map devmap) {
-    string dev = NetworkDevices::device_name(devtype, devnum);
+    string dev = NetworkInterfaces::device_name(devtype, devnum);
     /* Modem and DSL */
     if(devtype == "ppp" || devtype == "modem" || devtype == "dsl") {
 
@@ -456,7 +456,7 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
     maplist(string type, map devmap, Devs, {
 	maplist(string k, map v, (map<string,map>)devmap, {
 	    term item = nil;
-	    string dev = NetworkDevices::device_name(type, k);
+	    string dev = NetworkInterfaces::device_name(type, k);
 	    string ip = DeviceProtocol(v);
 
 	    string descr = BuildDescription (type, k, v, Hardware);
@@ -474,13 +474,13 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 			sformat(_("Mode: %1"), v["PPPMODE"]:_("Unknown")),
 			startmode_descr,
 		    ]);
-		item = `item(`id(dev), dev, NetworkDevices::GetDevTypeDescription(type, false), ProviderName(v["PROVIDER"]:""), rich);
+		item = `item(`id(dev), dev, NetworkInterfaces::GetDevTypeDescription(type, false), ProviderName(v["PROVIDER"]:""), rich);
 	    }
 	    /* ISDN stuff */
 	    else if (type == "contr") {
 		// FIXME: richtext
 		string cname = v["NAME"]:"unknown";
-		item = `item(`id(dev), dev, NetworkDevices::GetDevTypeDescription(type, false), cname /*, "active?", ip, "?", "?"*/);
+		item = `item(`id(dev), dev, NetworkInterfaces::GetDevTypeDescription(type, false), cname /*, "active?", ip, "?", "?"*/);
 	    }
 	    /* ISDN stuff */
 	    else if (type == "net") {
@@ -559,7 +559,7 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
  * @return table items
  */
 define list BuildOverview(string devregex, list<map> Hardware) {
-    map <string, map> Devs = NetworkDevices::FilterDevices (devregex);
+    map <string, map> Devs = NetworkInterfaces::FilterDevices (devregex);
     return BuildOverviewDevs (Devs, Hardware);
 }
 
@@ -588,9 +588,9 @@ define list<map<string,any> > BuildUnconfiguredCommon (list sum, string class) {
 	 case "netcard" : desc = [name, nc];
 			break;
 	 case "modem" :
-	 case "dsl" : desc = [name, NetworkDevices::GetDevTypeDescription (class, false), nc];
+	 case "dsl" : desc = [name, NetworkInterfaces::GetDevTypeDescription (class, false), nc];
 			break;
-	 case "isdn" : desc = [nc, NetworkDevices::GetDevTypeDescription (class, false), name];
+	 case "isdn" : desc = [nc, NetworkInterfaces::GetDevTypeDescription (class, false), name];
 			break;
 	 default : y2warning (1, "invalid class %1", class);
 	}
@@ -619,7 +619,7 @@ define list<map<string,any> > BuildUnconfiguredDevs (map<string,map> Devs, strin
 
 /**
  * @param class netcard modem dsl. not isdn because it does not use
- * NetworkDevices (#103073)
+ * NetworkInterfaces (#103073)
  * @param Hardware the detected hardware
  * @return [ $[id, table_descr, rich descr] ]
  */

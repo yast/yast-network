@@ -17,7 +17,7 @@ import "DSL";
 import "IP";
 import "Label";
 import "Lan";
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "Popup";
 import "SuSEFirewall4Network";
 import "Wizard";
@@ -124,7 +124,7 @@ if(false && /*interface != "" && */!contains(ifaces, interface)) ifaces = add(if
     /* FIXME: #suse27137 */
 //    UpdateInterfaces();
     if(size(items) < 1) {
-	NetworkDevices::Push();
+	NetworkInterfaces::Push();
 	if(Lan::Propose()) {
 //	    UpdateInterfaces();
 	    // list<term (term (string), string, boolean)>
@@ -135,7 +135,7 @@ if(false && /*interface != "" && */!contains(ifaces, interface)) ifaces = add(if
 	    LanItems::ipaddr = "";
 	    LanItems::Commit();
 	}
-	NetworkDevices::Pop();
+	NetworkInterfaces::Pop();
     }
 
     list<map> widgets = CWM::CreateWidgets (
@@ -143,10 +143,10 @@ if(false && /*interface != "" && */!contains(ifaces, interface)) ifaces = add(if
 	widget_descr);
 
 
-//    list<string> items = NetworkDevices::List("");
+//    list<string> items = NetworkInterfaces::List("");
 
 /*
-NetworkDevices::Read();
+NetworkInterfaces::Read();
     map <string, string> device_descr = GetDeviceDescription(items[0]:"");
 y2internal("device_descr %1", device_descr);
 string connection_text = _("%1 - %2 (%3)");
@@ -249,9 +249,9 @@ getDeviceContens(interface)
 	}
 	else if(ret == `lan) {
 	    // WFM::CallFunction("lan_proposal", ["AskUser"]);
-	    NetworkDevices::Push();
+	    NetworkInterfaces::Push();
 	    Call::Function("lan_proposal", ["AskUser"]);
-	    NetworkDevices::Pop();
+	    NetworkInterfaces::Pop();
 	    items = getNetDeviceItems();
 	    refreshDevice(interface);
 //	    interface = (string) UI::QueryWidget(`id(`interface), `Value);
