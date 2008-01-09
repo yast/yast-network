@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Dec 14 21:07:31 CET 2007 - mzugec@suse.cz
+
+- fixed netmask validation (#352425)
+- 2.16.20 
+
+-------------------------------------------------------------------
 Fri Dec 14 17:35:15 CET 2007 - mzugec@suse.cz
 
 - use NetworkInterfaces instead of NetworkDevices

@@ -404,7 +404,7 @@ boolean ValidateBootproto (string key, map event) {
 	 UI::SetFocus(`ipaddr);
 	 return false;
 	}
-	if (!IP::Check((string) UI::QueryWidget (`netmask, `Value))){
+	if (!Netmask::Check4((string) UI::QueryWidget (`netmask, `Value))){
 	 Popup::Error(_("No valid netmask."));
 	 UI::SetFocus(`netmask);
 	 return false;
