@@ -72,8 +72,8 @@ DUMP("RunSuSEconfigModule");
 TEST(``(RunSuSEconfigModule("postfix")), [$[],$[],EXEC0], nil);
 TEST(``(RunSuSEconfigModule("postfix")), [$[],$[],EXEC1], nil);
 
-import "NetworkDevices";
-NetworkDevices::Devices = $[ "dsl" : $[ "0" : $[] ]];
+import "NetworkInterfaces";
+NetworkInterfaces::Devices = $[ "dsl" : $[ "0" : $[] ]];
 
 DUMP("RunKInternet");
 TEST(``(RunKInternet()), [READ,$[],EXEC0], nil);
