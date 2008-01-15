@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jan 15 18:23:41 CET 2008 - mzugec@suse.de
+
+- during autoyast wait for network when set up (#195571)
+- 2.13.108 
+
+-------------------------------------------------------------------
 Tue Dec 11 20:48:06 CET 2007 - mzugec@suse.cz
 
 - for ficon and escon devices configure chan_ids (#181998)
