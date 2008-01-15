@@ -1476,7 +1476,10 @@ define map FindMatchingDevice(map interface) {
 	// - interface["device"] is the key which we look for in the actual hw
 	// - H iterates over Hardware
 	// - patterns are shell-like
-
+	if (issubstring(interface["device"]:"", "bond")) {
+		tosel=$["device":interface["device"]:"", "type":"bond"];
+	 y2milestone("found bonding device");
+	}
 	// exception for bonding devices FaTE (#303039)
 	// (without hwinfo record - will create fake one with device and type)
 	if (issubstring(interface["device"]:"", "bond")) {
