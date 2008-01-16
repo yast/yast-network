@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Jan 16 10:19:36 CET 2008 - kmachalkova@suse.cz
+
+- Merged proofread texts 
+
+-------------------------------------------------------------------
 Tue Jan 15 18:23:41 CET 2008 - mzugec@suse.de
 
 - during autoyast wait for network when set up (#195571)

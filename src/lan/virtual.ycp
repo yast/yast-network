@@ -72,7 +72,8 @@ define any VirtualDialog(boolean standalone) {
     {
 	// message popup
 	Report::Message (_("This setting is not available
-because NetworkManager does not support it."));
+because it is not supported by NetworkManager.
+"));
 	return `next;
     }
 

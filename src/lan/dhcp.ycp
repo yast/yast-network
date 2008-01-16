@@ -47,14 +47,15 @@ network interface and thus the same hardware address.</p>") +
 
     /* DHCP dialog help 4/8 */
     _("<p>The <b>Hostname to Send</b> specifies a string used for the
-hostname option field when dhcpcd sends messages to DHCP server. Some 
+hostname option field when dhcpcd sends messages to the DHCP server. Some 
 DHCP servers update name server zones (forward and reverse records) 
 according to this hostname (dynamic DNS).
 
 Also, some DHCP servers require the <b>Hostname to Send</b> option field to
 contain a specific string in the DHCP messages from clients. Leave <i>AUTO</i>
 to send the current hostname (i.e. the one defined in <i>/etc/HOSTNAME</i>). 
-Leave empty not to send a hostname.</p>");
+Leave empty to not send a hostname.</p>
+");
 
     boolean dhclient_broadcast = false;
     if(issubstring(NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"]:"", "-B"))

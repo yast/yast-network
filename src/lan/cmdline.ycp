@@ -195,7 +195,7 @@ define boolean EditHandler(map<string, string> options) {
 		integer i = tointeger (substring (dev, 1));
 		if (! AddIface (i))
 		{
-		CommandLine::Print(_("Couldn't add interface"));
+		CommandLine::Print(_("Could not add interface."));
 		return false;
 		}
 	    } else

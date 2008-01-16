@@ -245,11 +245,11 @@ define symbol IPv6Dialog () {
 	    "help":
 	    /* IPv6 help */
 _("<p>Select <b>Enable</b> IPv6 to enable ipv6 module in kernel.
-It is possible to use IPv6 together with IPv4. This is default option.
+It is possible to use IPv6 together with IPv4. This is the default option.
 ") +
 	    /* Network setup method help */
 _("<p>Select <b>Disable</b> IPv6 to disable autoload kernel module for ipv6.
-When ipv6 protocol is not used on your network, response time will be faster.
+When the ipv6 protocol is not used on your network, the response time will be faster.
 ") +
 _("<p>All changes will be applied after reboot.</p>"),
 	    "init": IPv6Init,
