@@ -452,7 +452,7 @@ global define boolean Commit() {
 	newdev["VPIVCI"] = vpivci;
 	newdev["MODEM_IP"] = modemip;
 
-	NetworkInterfaces::Name = NetworkInterfaces::device_name(type, device);
+	NetworkInterfaces::Name = device;
 	NetworkInterfaces::Current = newdev;
 	NetworkInterfaces::Commit();
     }

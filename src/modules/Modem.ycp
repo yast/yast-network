@@ -415,7 +415,7 @@ global define boolean Commit() {
 	    "PPPD_OPTIONS"	: PPPDoptions,
 	];
 
-	NetworkInterfaces::Name = NetworkInterfaces::device_name(type, device);
+	NetworkInterfaces::Name = device;
 	NetworkInterfaces::Current = newdev;
 	NetworkInterfaces::Commit();
     }

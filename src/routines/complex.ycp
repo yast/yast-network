@@ -72,22 +72,19 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 
     /* build a list of configured devices */
     maplist(string devtype, map devsmap, Devs, {
-	maplist(string devnum, map devmap, (map<string,map>)devsmap, {
+	maplist(string devname, map devmap, (map<string,map>)devsmap, {
 
 	    /* main device summary */
-	    string descr = BuildDescription (devtype, devnum, devmap, Hardware);
+	    string descr = BuildDescription (devtype, devname, devmap, Hardware);
 	    string unq = devmap["UDI"]:"";
-	    string status = DeviceStatus(devtype, devnum, devmap);
+	    string status = DeviceStatus(devtype, devname, devmap);
 	    if (link)
 	    {
 		if (devtype == "wlan" &&
 		    devmap["WIRELESS_AUTH_MODE"]:"" == "open" &&
 		    devmap["WIRELESS_KEY_0"]:"" == "")
 		{
-		    string dev = NetworkInterfaces::device_name(devtype, devnum);
-		    // avoid colons
-		    dev = mergestring (splitstring (dev, ":"), "/");
-		    string href = "lan--wifi-encryption-" + dev;
+		    string href = "lan--wifi-encryption-" + devname;
 		    // interface summary: WiFi without encryption
 		    string warning = HTML::Colorize (_("Warning: no encryption is used."), "red");
 		    status = status + " " + warning + " " +
@@ -98,7 +95,7 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 	    }
 
 	    configured = add(configured, Summary::Device(descr, status));
-	    uniques = add(uniques, devnum);
+	    uniques = add(uniques, devname);
 	    uniques_old = add(uniques_old, unq);
 
 	    /* aliases summary */
@@ -109,7 +106,7 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 		    // this is what used to be Virtual Interface
 		    // (eth0:1)
 		    descr = _("Additional Address");
-		    status = DeviceStatus(devtype, devnum /* FIXME: devname + sformat(":%1", aid)*/, amap);
+		    status = DeviceStatus(devtype, devname /* FIXME: devname + sformat(":%1", aid)*/, amap);
 		    configured = add(configured, Summary::Device(descr, status));
 		});
 
@@ -305,8 +302,7 @@ define string ProviderName(string provider) {
  * @param devmap map with devices settings
  * @return text wth device status
  */
-define string DeviceStatus(string devtype, string devnum, map devmap) {
-    string dev = NetworkInterfaces::device_name(devtype, devnum);
+define string DeviceStatus(string devtype, string devname, map devmap) {
     /* Modem and DSL */
     if(devtype == "ppp" || devtype == "modem" || devtype == "dsl") {
 
@@ -314,15 +310,15 @@ define string DeviceStatus(string devtype, string devnum, map devmap) {
 
 	if(nam == "" || nam == nil)
 	    /* Modem status (%1 is device) */
-	    return sformat(_("Configured as %1"), dev);
+	    return sformat(_("Configured as %1"), devname);
 	else
 	    /* Modem status (%1 is device, %2 is provider) */
-	    return sformat(_("Configured as %1 with provider %2"), dev, nam);
+	    return sformat(_("Configured as %1 with provider %2"), devname, nam);
     }
     /* ISDN card */
     else if(devtype == "isdn" || devtype == "contr") {
 	/* ISDN device status (%1 is device) */
-	return sformat(_("Configured as %1"), dev);
+	return sformat(_("Configured as %1"), devname);
     }
     /* ISDN stuff */
     else if(devtype == "net") {
@@ -332,7 +328,7 @@ define string DeviceStatus(string devtype, string devnum, map devmap) {
 	string proto = devmap["PROTOCOL"]:"";
 
 	/* ISDN status (%1 is device, %2 is provider, %3 protocol) */
-	return sformat(_("Configured as %1 with provider %2 (protocol %3)"), dev, nam, proto);
+	return sformat(_("Configured as %1 with provider %2 (protocol %3)"), devname, nam, proto);
 
 	/* example: ISDN Connection to Arcor with syncppp on net0 */
 	// return sformat(_("to %1 with %2 on %3"), provider, proto, dev);
@@ -375,17 +371,17 @@ define string DeviceStatus(string devtype, string devnum, map devmap) {
 	    string remip = devmap["REMOTE_IPADDR"]:"";
 	    if(addr == "" || addr == nil)
 		/* Network card status (%1 is device) */
-		return sformat(_("Configured as %1"), dev);
+		return sformat(_("Configured as %1"), devname);
 	    else if(remip == "" || remip == nil)
 		/* Network card status (%1 is device, %2 is address) */
-		return sformat(_("Configured as %1 with address %2"), dev, addr);
+		return sformat(_("Configured as %1 with address %2"), devname, addr);
 	    else
 		/* Network card status (%1 is device, %2 is address, %3 is address) */
-		return sformat(_("Configured as %1 with address %2 (remote %3)"), dev, addr, remip);
+		return sformat(_("Configured as %1 with address %2 (remote %3)"), devname, addr, remip);
 	}
 	else
 	    /* Network card status (%1 is device, %2 is protocol) */
-	    return sformat(_("Configured as %1 with %2"), dev, toupper(proto));
+	    return sformat(_("Configured as %1 with %2"), devname, toupper(proto));
     }
 }
 
@@ -454,12 +450,11 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 	];
 
     maplist(string type, map devmap, Devs, {
-	maplist(string k, map v, (map<string,map>)devmap, {
+	maplist(string devname, map v, (map<string,map>)devmap, {
 	    term item = nil;
-	    string dev = NetworkInterfaces::device_name(type, k);
 	    string ip = DeviceProtocol(v);
 
-	    string descr = BuildDescription (type, k, v, Hardware);
+	    string descr = BuildDescription (type, devname, v, Hardware);
 	    // if(size(descr) > 17) descr = substring(descr, 0, 16) + "...";
 
 	    string startmode_descr = startmode_descrs[v["STARTMODE"]:""]:_("Started manually");
@@ -470,17 +465,17 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 		// create the rich text description
 		string rich = HTML::Bold (descr) 
 		    + "<br>" + HTML::List ( [
-			sformat(_("Device Name: %1"), dev),
+			sformat(_("Device Name: %1"), devname),
 			sformat(_("Mode: %1"), v["PPPMODE"]:_("Unknown")),
 			startmode_descr,
 		    ]);
-		item = `item(`id(dev), dev, NetworkInterfaces::GetDevTypeDescription(type, false), ProviderName(v["PROVIDER"]:""), rich);
+		item = `item(`id(devname), devname, NetworkInterfaces::GetDevTypeDescription(type, false), ProviderName(v["PROVIDER"]:""), rich);
 	    }
 	    /* ISDN stuff */
 	    else if (type == "contr") {
 		// FIXME: richtext
 		string cname = v["NAME"]:"unknown";
-		item = `item(`id(dev), dev, NetworkInterfaces::GetDevTypeDescription(type, false), cname /*, "active?", ip, "?", "?"*/);
+		item = `item(`id(devname), devname, NetworkInterfaces::GetDevTypeDescription(type, false), cname /*, "active?", ip, "?", "?"*/);
 	    }
 	    /* ISDN stuff */
 	    else if (type == "net") {
@@ -488,7 +483,7 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 		string cname = v["PROVIDER"]:"unknown";
 		string rip   = v["PTPADDR"]:"none";
 		string proto = v["PROTOCOL"]:"unknown";
-		item = `item(`id(dev), dev, proto, cname, ip, rip);
+		item = `item(`id(devname), devname, proto, cname, ip, rip);
 	    }
 	    /* Treat others as network cards */
 	    else {
@@ -498,7 +493,7 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 		*/
 		
 		list<string> bullets =  [
-		    sformat(_("Device Name: %1"), dev),
+		    sformat(_("Device Name: %1"), devname),
 		    startmode_descr,
 		    ];
 		if (v["STARTMODE"]:"" != "managed")
@@ -542,7 +537,7 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 	 if (v["udi"]:(v["UDI"]:"")==device["udi"]:"") { found=true; break; }
 	 });
 
-		item = `item(`id(dev), descr, ip, rich, (found) ? hw_id : -1);
+		item = `item(`id(devname), descr, ip, rich, (found) ? hw_id : -1);
 	    }
 	    overview = add(overview, item);
 

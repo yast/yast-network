@@ -113,13 +113,12 @@ void InitBridge(string key)
  list<string> br_ports = splitstring(NetworkInterfaces::Current["BRIDGE_PORTS"]:"", " ");
     map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
     foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
-     foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+     foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
 
         //filter the eth devices (IPADDR=0.0.0.0 - promiscuited mode)
-            if ((string)configurations[devtype, devnum, "IPADDR"]:"" == "0.0.0.0")
+            if ((string)configurations[devtype, devname, "IPADDR"]:"" == "0.0.0.0")
 	    {
-	     string dev_name = NetworkInterfaces::device_name(devtype, devnum);
-             items = add (items, `item(`id(dev_name), sformat("%1 - %2",dev_name, NetworkInterfaces::GetValue(dev_name, "NAME")), contains(br_ports, dev_name)) );
+             items = add (items, `item(`id(devname), sformat("%1 - %2",devname, NetworkInterfaces::GetValue(devname, "NAME")), contains(br_ports, devname)) );
 	    }
      });
     });
@@ -134,7 +133,8 @@ void InitBridge(string key)
  */
 void StoreBridge(string key, map event)
 {
-    settings["BRIDGE_PORTS"] = mergestring((list<string>)UI::QueryWidget (`id(key), `SelectedItems), " ");
+    settings["BRIDGE_PORTS"] = mergestring((list<string>)UI::QueryWidget (`id("BRIDGE_PORTS"), `SelectedItems), " ");
+y2internal("store bridge %1 : %2", key, settings["BRIDGE_PORTS"]:"");
 }
 
 /**
@@ -344,7 +344,7 @@ if you know that the detection is wrong.")))
 	}
 
 	string ifcfgid = (string) UI::QueryWidget (`id ("IFCFGID"), `Value);
-	string ifcfgname = NetworkInterfaces::device_name (ifcfgtype, ifcfgid);
+	string ifcfgname = sformat("%1%2", ifcfgtype, ifcfgid);
 
 	// Check should be improved to find differently named but
 	// equivalent configs (eg. by-mac and by-bus, depends on the
@@ -373,9 +373,7 @@ boolean NeedToAssignFwZone (map event) {
     {
 	// If firewall is active and interface in no zone, nothing
 	// gets through (#62309) so warn and redirect to details
-	string type = (string) UI::QueryWidget (`id ("IFCFGTYPE"), `Value);
-	string id = (string) UI::QueryWidget (`id ("IFCFGID"), `Value);
-	string name = NetworkInterfaces::device_name (type, id);
+	string name = (string) UI::QueryWidget (`id ("IFCFGID"), `Value);
 	if (SuSEFirewall4Network::IsOn () &&
 	    SuSEFirewall4Network::GetZoneOfInterface (name) == "" &&
 	    SuSEFirewall4Network::UnconfiguredIsBlocked ())
@@ -659,8 +657,7 @@ list< list<string> > BuildTypesListCWM (list<string> types) {
  */
 define any AddressDialog() {
     ScreenName("lan-address");
-    string ifname = NetworkInterfaces::device_name (LanItems::type, LanItems::device);
-    string fwzone = SuSEFirewall4Network::GetZoneOfInterface (ifname);
+    string fwzone = SuSEFirewall4Network::GetZoneOfInterface (LanItems::device);
 
     // If firewall is active and interface in no zone, nothing
     // gets through (#62309) so add it to the external zone
@@ -758,10 +755,11 @@ define any AddressDialog() {
 	);
     if(LanItems::operation != `add) {
 	if(LanItems::alias == "") {
-	    settings["IFCFG"] = NetworkInterfaces::device_name(NetworkInterfaces::RealType(LanItems::type, LanItems::hotplug), LanItems::device);
+	    settings["IFCFG"] = LanItems::device;
 	}
 	else {
-	    settings["IFCFG"] = NetworkInterfaces::alias_name(NetworkInterfaces::RealType(LanItems::type, LanItems::hotplug), LanItems::device, LanItems::alias);
+//	    settings["IFCFG"] = NetworkInterfaces::alias_name(NetworkInterfaces::RealType(LanItems::type, LanItems::hotplug), LanItems::device, LanItems::alias);
+	    settings["IFCFG"] = LanItems::device;
 	}
     }
     
@@ -831,11 +829,11 @@ define any AddressDialog() {
 
     map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
     foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
-     foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+     foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
 
         //filter the eth devices (BOOT_PROTO=none && START_MODE=off)
-            if (((string)configurations[devtype, devnum, "BOOTPROTO"]:"" == "none") && ((string)configurations[devtype, devnum, "STARTMODE"]:"" == "off"))
-            wd["BONDSLAVE", "items"] = add (wd["BONDSLAVE", "items"]:[], [NetworkInterfaces::device_name(devtype, devnum)] );
+            if (((string)configurations[devtype, devname, "BOOTPROTO"]:"" == "none") && ((string)configurations[devtype, devname, "STARTMODE"]:"" == "off"))
+            wd["BONDSLAVE", "items"] = add (wd["BONDSLAVE", "items"]:[], [ devname ] );
 
      });
     });

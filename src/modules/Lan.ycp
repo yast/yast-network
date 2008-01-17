@@ -124,9 +124,9 @@ global define boolean isAnyInterfaceDown(){
     y2milestone("link_status %1", link_status);
     map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
     foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
-     foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
-      string confname = NetworkInterfaces::device_name(devtype, devnum);
-      string mac = ((map<string, any>)SCR::Execute(.target.bash_output, sformat("cat /sys/class/net/%1/address|tr -d '\n'", confname)))["stdout"]:"";
+     foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+//      string confname = NetworkInterfaces::device_name(devtype, devnum);
+      string mac = ((map<string, any>)SCR::Execute(.target.bash_output, sformat("cat /sys/class/net/%1/address|tr -d '\n'", devname)))["stdout"]:"";
       y2milestone("confname %1", mac);
       if (!haskey(link_status, mac)) y2error("Mac address %1 not found in map %2!", mac, link_status);
 	else if (link_status[mac]:false == false) {

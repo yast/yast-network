@@ -81,7 +81,7 @@ define any ConnectionDialog() {
     boolean FirewallChecked = false;
     if (dtype != "")
     {
-	device = NetworkInterfaces::device_name (dtype, did);
+	device = did;
 
 	boolean adding = false;
 	if (type == "modem")

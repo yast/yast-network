@@ -287,7 +287,6 @@ list<string> getNetworkInterfaces(){
    confs = add(confs, file);
   });
  });
-y2internal("confs %1", confs);
  return confs;
 }
 
@@ -860,7 +859,6 @@ global define boolean Select(string dev) {
 		else Items[current, "ifcfg"] = NetworkInterfaces::Name;
 
 //	interfacename = GetItemUdev()[1]:"";
-//	y2internal("interfacename %1", interfacename);
 
 	/* FIXME: alias: how to prefill new alias? */
 	alias = "";
@@ -1265,8 +1263,8 @@ global map FindMatchingDevice(map interface) {
 	    foreach (map h, LanItems::Hardware, {
 		y2milestone("Checking for device=%1", h);
 		SelectHWMap(h);
-		string _device_name = NetworkInterfaces::device_name(NetworkInterfaces::RealType(type, hotplug), device);
-		if (!NetworkInterfaces::Check(_device_name) &&
+//		string _device_name = NetworkInterfaces::device_name(NetworkInterfaces::RealType(type, hotplug), device);
+		if (!NetworkInterfaces::Check(device) &&
 		    type == NetworkInterfaces::GetType(interface["device"]:"")
 		    )
 		{
@@ -1379,7 +1377,7 @@ global void SetItem(){
  map devmap = NetworkInterfaces::Current;
  type = Items[current, "hwinfo", "type"]:"";
  if (!hasAnyValue(type)) type = NetworkInterfaces::GetType(getCurrentItem()["ifcfg"]:"");
- device = NetworkInterfaces::device_num(getCurrentItem()["ifcfg"]:"");
+ device = getCurrentItem()["ifcfg"]:"";
  alias = NetworkInterfaces::alias_num(getCurrentItem()["ifcfg"]:"");
 // nm_name = Items[current, "hwcfg"]:"";
 // if (nm_name=="") nm_name_old = createHwcfgName(Items[current, "hwinfo"]:$[], type);
