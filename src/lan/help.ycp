@@ -49,7 +49,7 @@ edit their configuration.<br></p>
 Press <b>Add</b> to configure a new network card manually.</p>
 ") + _("<p><b><big>Configuring or Deleting:</big></b><br>
 Choose a network card to change or remove.
-Then press <b>Configure</b> or <b>Delete</b> as desired.</p>
+Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
 "),
 
 "ipv6" :

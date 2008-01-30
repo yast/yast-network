@@ -350,7 +350,7 @@ map<string, map<string,any> > wd = $[
 		  `VWeight(1,`RichText (`id (`_hw_sum), "")),
                   `HBox (
 		        `PushButton (`id (`add), Label::AddButton ()),
-		        `PushButton (`id (`edit), _("Configure")),
+		        `PushButton (`id (`edit), Label::EditButton()),
 		        `PushButton (`id (`delete), Label::DeleteButton ()),
 		        `HStretch ()
 			)

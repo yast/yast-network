@@ -459,7 +459,7 @@ global list BuildLanOverview() {
    if (!hasAnyValue(Items[key, "hwinfo", "dev_name"]:"") && size(Items[key, "hwinfo"]:$[])>0)
 		rich = rich + _("<p>Unable to configure the network card because the kernel device is not present</p>");
 	else if (hasAnyValue(Items[key, "ifcfg"]:"") ) rich = rich + HTML::List (bullets);
-		else rich = rich + _("<UL><LI>The device is not configured</LI><LI>Press <B>Configure</B>
+		else rich = rich + _("<UL><LI>The device is not configured</LI><LI>Press <B>Edit</B>
 to configure</LI></UL>");
 
 
