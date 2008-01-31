@@ -181,20 +181,11 @@ void enableDisableBootProto(symbol current){
  * Group called FOO has buttons FOO_bar FOO_qux and values bar qux
  * @param key id of the widget
  */
-void initBootProto (string key) {
- switch(settings["BOOTPROTO"]:""){
-  case "static": UI::ChangeWidget(`id(`bootproto), `CurrentButton, `static);
-                UI::ChangeWidget(`id(`ipaddr), `Value, settings["IPADDR"]:"");
-                UI::ChangeWidget(`id(`netmask), `Value, settings["NETMASK"]:"");
-                UI::ChangeWidget(`id(`hostname), `Value, settings["HOSTNAME"]:"");
-                break;
-  case "dhcp" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
-                break;
-  case "none" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `none);
-                break;
- }
- enableDisableBootProto((symbol)UI::QueryWidget(`id(`bootproto), `CurrentButton));
-
+void InitializeWidgetRbg (string key) {
+    string value = settings[key]:"";
+    value = key + "_" + value;
+    my2debug ("RBGW", sformat ("init k: %1, v: %2", key, value));
+    UI::ChangeWidget (`id (key), ValueProp (key), value);
 }
 
 /**
@@ -552,7 +543,7 @@ the firewall will be disabled.</p>"),
 	"widget": `empty,
 	"help": "",
 	// just init and store, real widgets are BOOTPROTO_*
-	"init": initBootProto,
+	"init": InitializeWidgetRbg,
 	"store": StoreWidgetRbg,
 	],
 
