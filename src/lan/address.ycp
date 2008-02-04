@@ -966,7 +966,7 @@ define any AddressDialog() {
 
     if (ret != `back && ret != `abort)
     {
-	string ifcfgname = settings["IFCFGID"]:"";
+	string ifcfgname = LanItems::Items[LanItems::current, "ifcfg"]:"";//settings["IFCFGID"]:"";
 
 	// general tab
 	LanItems::startmode = settings["STARTMODE"]:"";

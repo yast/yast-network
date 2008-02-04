@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb  4 15:57:49 CET 2008 - mzugec@suse.de
+
+- keep firewall zone information when changing deive name (#358523)
+- 2.16.22 
+
+-------------------------------------------------------------------
 Sun Jan 27 21:01:33 CET 2008 - coolo@suse.de
 
 - fix changelog 
