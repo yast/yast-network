@@ -592,7 +592,7 @@ map<string, map<string,any> > widget_descr_local = $[
 		  `HSpacing(1),
 		  `TextEntry(`id(`netmask),  _("&Subnet Mask")),
 		  `HSpacing(1),
-		  `TextEntry(`id(`hostname), "&Hostname"),
+		  `TextEntry(`id(`hostname), _("&Hostname")),
 	          `HStretch()
 		  )
 		 )
