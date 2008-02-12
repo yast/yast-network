@@ -76,8 +76,7 @@ define boolean ReallyAbortCond(boolean modified) {
  * @param name screenshot name
  */
 define void ScreenName(string name) {
-    if(name != "" && name != nil)
-	UI::SetModulename(/* "network/" + */ name);
+// obsolete
 }
 
 /**
