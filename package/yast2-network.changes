@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Feb 19 14:37:51 CET 2008 - mzugec@suse.de
+
+- exception for PPC (bnc#361063) - some drivers are built-in
+- 2.13.110 
+
+-------------------------------------------------------------------
 Wed Jan 30 15:38:06 CET 2008 - mzugec@suse.de
 
 - fixed address widget (#25683)
