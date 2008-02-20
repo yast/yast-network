@@ -37,9 +37,7 @@ Conflicts:	yast2-core < 2.10.6
 Summary:	Network configuration
 
 %package devel-doc
-
-@HEADER@
-
+Group:          System/YaST
 Summary:	Developer documentation for yast2-network
 
 
