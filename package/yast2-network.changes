@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Feb 26 18:18:54 CET 2008 - mzugec@suse.de
+
+- automatic refresh of selection list box (bnc#363423)
+- 2.16.23 
+
+-------------------------------------------------------------------
 Wed Feb 20 07:58:15 CET 2008 - coolo@suse.de
 
 - fix the spec file header

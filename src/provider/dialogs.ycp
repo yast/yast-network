@@ -80,7 +80,7 @@ define any ProvidersDialog(boolean edit) {
 		    `HBox(
 			`HSpacing(3.4),
 			/* SelectionBox label */
-			`SelectionBox(`id(`countries), `opt(`notify), _("C&ountry:"), Provider::GetCountries())
+			`SelectionBox(`id(`countries), `opt(`notify, `immediate), _("C&ountry:"), Provider::GetCountries())
 		    )
 		)),
 		`HSpacing(),
@@ -125,7 +125,7 @@ define any ProvidersDialog(boolean edit) {
 		y2debug("provs=%1", provs);
 		UI::ReplaceWidget(`id(`providers_rep),
 		    /* SelectionBox label */
-		    `SelectionBox(`id(`providers), `opt(`notify), _("&Providers"), provs));
+		    `SelectionBox(`id(`providers), `opt(`notify, `immediate), _("&Providers"), provs));
 		Provider::LastCountry = country;
 	    }
 	}
