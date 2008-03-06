@@ -25,29 +25,39 @@ include "network/routines.ycp";
  * Manual network card configuration dialog
  * @return dialog result
  */
-    /* Manual dialog help 1/4 */
-    string hw_help = _("<p>Here, set up your networking device.</p>
-") +
+    /* Manual network card setup help 1/4 */
+    string hw_help = _("<p>Here, set up hardware-specific options for 
+your network device.</p>") +
 
-    /* Manual dialog help 2/4 */
-_("<p><b>Options</b> for the module should be written in the format
-<i>option</i>=<i>value</i>. Each entry should be space separated,
-for example, <i>io=0x300 irq=5</i>. <b>Note:</b> If  two cards are configured
-with the same module name, options will be merged while saving.</p>");
+    /* Manual network card setup help 2/4 */
+    /* translators: do not translated udev, MAC, BusID*/
+_("<p><b>Udev rules</b> are the rules for kernel device manager that allow
+associating MAC address or BusID of the network device with its name (e.g
+eth1, wlan0 ) and make device name persistent upon reboot. If you don't 
+know what udev and its rules is, you probably don't need to use this option") + 
+
+    /* Manual network card setup help 2/4 */
+_("<p><b>Kernel module</b>. Enter kernel module (in other words, driver) name 
+for your network device. If the device is already configured, you may select 
+one from the drop-down list if more than one driver for your device is 
+available. In most of the cases it is however OK to use the default value.</p>") +
+
+    /* Manual networ card setup help 3/4 */
+_("<p>Additionally, you may specify <b>options</b> for the kernel module. They should 
+be written in the format <i>option</i>=<i>value</i>. Each entry should be space 
+separated,for example, <i>io=0x300 irq=5</i>. <b>Note:</b> If two cards are 
+configured with the same module name, options will be merged while saving.</p>");
 
     if(!(LanItems::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 () == true))
     {
 
-    /* Manual dialog help 3/4 */
-hw_help = hw_help + _("<p>Get a list of available network cards by pressing
-<b>Select from List</b>.</p>") +
-
     /* Manual dialog help 4/4 */
-_("<p>If you have a <b>PCMCIA</b> network card, select PCMCIA.
+hw_help = hw_help + _("<p>If you have a <b>PCMCIA</b> network card, select PCMCIA.
 If you have a <b>USB</b> network card, select USB.</p>
 ");
-    } 
- 
+
+    }
+
     if(Arch::s390 ())
     {
 	// overwrite help
@@ -60,6 +70,7 @@ written to <i>/etc/modprobe.conf</i> or <i>/etc/chandev.conf</i>.</p>
 _("<p>Options for the module should be written in the format specified
 in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     }
+
 
 map<string, any> hardware = nil;
 boolean hw_standalone=false;
@@ -706,7 +717,7 @@ map<string, map<string,any> > widget_descr_hardware = $[
 	"init" : initHwDialog,
 	"handle" : handleHW,
 	"store" : storeHW,
-	"help" : hw_help
+	"help" :  hw_help
 		]];
 
 any HardwareDialog (){
