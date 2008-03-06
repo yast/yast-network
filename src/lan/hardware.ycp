@@ -423,6 +423,8 @@ symbol handleHW (string key, map event) {
 	`VBox(
 	  `RadioButtonGroup(`id(`udev_type),
 		`VBox(
+		     //make sure there is enough space (#367239)
+	             `HSpacing(30),
 		     `Label(_("Rule by:")),
 		     `Left(`RadioButton(`id(`mac), sformat("MAC address : %1", LanItems::getCurrentItem()["hwinfo", "mac"]:""))),
 		     `Left(`RadioButton(`id(`busid), sformat("BusID : %1", LanItems::getCurrentItem()["hwinfo", "busid"]:"") ))
