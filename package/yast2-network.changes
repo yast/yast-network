@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Mar  6 13:03:02 CET 2008 - mzugec@suse.cz
+
+- allow using vlan also with bond and bridge devices (bnc#367093)
+- 2.13.111
+
+-------------------------------------------------------------------
 Tue Feb 19 14:37:51 CET 2008 - mzugec@suse.de
 
 - exception for PPC (bnc#361063) - some drivers are built-in

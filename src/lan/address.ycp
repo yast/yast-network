@@ -133,8 +133,13 @@ void StoreBridge(string key, map event)
 void InitVLANSlave(string key)
 {
  list items = [];
+	// unconfigured devices with proposal ifcfg-names
      settings["ETHERDEVICE"] = NetworkDevices::Current["ETHERDEVICE"]:"";
         foreach(string dev_name, Lan::getUnconfiguredDevices(),{
+           items = add(items, `item(`id(dev_name), dev_name, (dev_name==settings["ETHERDEVICE"]:"")?true:false));
+        });
+	// also bond and bridge devices included
+        foreach(string dev_name, NetworkDevices::List("br|bond"),{
            items = add(items, `item(`id(dev_name), dev_name, (dev_name==settings["ETHERDEVICE"]:"")?true:false));
         });
     UI::ChangeWidget(`id(key), `Items, items);
