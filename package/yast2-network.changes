@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Mar 10 12:42:21 CET 2008 - mzugec@suse.de
+
+- allow using vlan also with bond and bridge devices (bnc#367093)
+- 2.16.24 
+
+-------------------------------------------------------------------
 Tue Feb 26 18:18:54 CET 2008 - mzugec@suse.de
 
 - automatic refresh of selection list box (bnc#363423)

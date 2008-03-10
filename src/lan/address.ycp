@@ -153,6 +153,9 @@ void InitVLANSlave(string key)
 	    if (hasAnyValue(dev_name)) items = add(items, `item(`id(dev_name), sformat("%1 - %2", dev_name, description), (dev_name==settings["ETHERDEVICE"]:"")?true:false));
 	    }
 	 });
+  foreach (string dev_name, NetworkInterfaces::List("br|bond"), {
+   items = add(items, `item(`id(dev_name), dev_name, (dev_name==settings["ETHERDEVICE"]:"")?true:false));
+  });
     UI::ChangeWidget(`id(key), `Items, items);
 }
 
