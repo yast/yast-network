@@ -337,7 +337,7 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
     map display_info =  UI::GetDisplayInfo();
     boolean textmode = display_info["TextMode"]:false;
 
-    float s = (textmode) ? (0.2) : 1.0;
+    float s = (textmode) ? (0.2) : 0.5;
 
     /* Proxy dialog contents */
     term contents = `HBox(
@@ -366,12 +366,13 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 	`VSpacing(s),
 	`Frame(`id(`frame2), _("Proxy Authentication"), `HBox(`HSpacing(2), `VBox(
 	    /* Text entry label */
-	    `TextEntry(`id(`user), _("Proxy &User Name"), user),
-	    `VSpacing(0.2),
-	    /* Password entry label */
-	    `Password(`id(`pass), _("Proxy &Password"), pass),
+	    `HBox (
+	        `TextEntry(`id(`user), _("Proxy &User Name"), user),
+	        `HSpacing(0.5),
+	        /* Password entry label */
+	        `Password(`id(`pass), _("Proxy &Password"), pass),
 	    (textmode) ? `Empty() : `VSpacing(0.4)
-	    ), `HSpacing(2))),
+	    )), `HSpacing(2))),
 	    `VSpacing(s),
 	    /* Test Proxy Settings - push button */
 	    (!Mode::installation()) ?
