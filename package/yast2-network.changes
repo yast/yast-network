@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Mar 13 10:53:44 CET 2008 - kmachalkova@suse.cz
+
+- New help texts for udev rules (obsoleted help text removed - 
+  bnc#328230)    	
+- Improved layout of some dialogs ( edit udev rule - bnc#367239, 
+  proxy - bnc#362577)    	
+
+-------------------------------------------------------------------
 Mon Mar 10 12:42:21 CET 2008 - mzugec@suse.de
 
 - allow using vlan also with bond and bridge devices (bnc#367093)
