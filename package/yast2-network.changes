@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Mar  6 00:35:08 CET 2008 - mzugec@suse.de
+
+- allow to use bridge also with unconfigured device (bnc#369195) 
+- 2.13.112 
+
+-------------------------------------------------------------------
 Thu Mar  6 13:03:02 CET 2008 - mzugec@suse.cz
 
 - allow using vlan also with bond and bridge devices (bnc#367093)

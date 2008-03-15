@@ -111,6 +111,11 @@ void InitBridge(string key)
 
      });
     });
+    // use also unconfigured devices
+    foreach(string dev_name, Lan::getUnconfiguredDevices(),{
+     items = add(items, `item(`id(dev_name), dev_name, contains(splitstring(NetworkDevices::Current["BRIDGE_PORTS"]:"", " "), dev_name)));
+    });
+
     UI::ChangeWidget(`id(key), `Items, items);
 }
 
