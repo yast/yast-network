@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sat Mar 15 12:29:52 CET 2008 - mzugec@suse.de
+
+- allow to use bridge with unconfigured device (bnc#369195)
+- 2.16.24 
+
+-------------------------------------------------------------------
 Thu Mar 13 10:53:44 CET 2008 - kmachalkova@suse.cz
 
 - New help texts for udev rules (obsoleted help text removed - 
