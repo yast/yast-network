@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sun Mar 16 14:48:24 CET 2008 - mzugec@suse.de
+
+- for devices attached to bridge remove configuration (bnc#367938)
+- 2.16.25 
+
+-------------------------------------------------------------------
 Sat Mar 15 12:29:52 CET 2008 - mzugec@suse.de
 
 - allow to use bridge with unconfigured device (bnc#369195)
