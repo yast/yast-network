@@ -1,4 +1,13 @@
+/**
+ * File:        include/network/lan/bridge.ycp
+ * Package:     Network configuration
+ * Summary:     Network card bridge configuration - logic
+ * Authors:     Michal Zugec <mzugec@suse.cz>
+ *
+ */
+
 {
+textdomain "network";
 
 
 /**
