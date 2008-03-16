@@ -1,0 +1,77 @@
+{
+
+
+/**
+ * Default function to init the value of devices attached to bridge (BRIDGE_PORTS).
+ * @param key	id of the widget
+ */
+void InitBridge(string key)
+{
+ list items = [];
+ string old_name=NetworkInterfaces::Name;
+ // old values (preselected values)
+ list<string> br_ports = splitstring(NetworkInterfaces::Current["BRIDGE_PORTS"]:"", " ");
+    // from all configured netcards filter 0.0.0.0 configurations
+    map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
+    if (contains(["br", "vlan"], devtype)) continue;
+     foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+
+        //filter the eth devices (IPADDR=0.0.0.0 - promiscuited mode)
+//            if ((string)configurations[devtype, devname, "IPADDR"]:"" == "0.0.0.0") comment="";
+//	    {
+string description = sformat("%1%2", NetworkInterfaces::GetValue(devname, "NAME"), ((string)configurations[devtype, devname, "IPADDR"]:"" != "0.0.0.0") ? sformat(" (%1)", "configuration") : "");
+             items = add (items, `item(`id(devname), sformat("%1 - %2",devname, description), contains(br_ports, devname)) );
+//	    }
+     });
+    });
+
+	// we can use also unconfigured devices
+         foreach(integer row, any value, LanItems::Items,{
+          LanItems::current = row;
+          if (!LanItems::IsItemConfigured()){
+            string dev_name = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
+            string description = BuildDescription(LanItems::type, LanItems::device, $["dev_name":dev_name], [LanItems::getCurrentItem()["hwinfo"]:$[]]);
+            if (hasAnyValue(dev_name)) items = add(items, `item(`id(dev_name), sformat("%1 - %2", dev_name, description), contains(br_ports, dev_name)));
+            }
+         });
+
+
+  NetworkInterfaces::Select(old_name);
+  UI::ChangeWidget(`id(key), `Items, items);
+}
+
+boolean ValidateBridge (string key, map event) {
+ boolean valid=true;
+ boolean confirmed=false;
+ list<term> items = (list<term>)UI::QueryWidget(`id(key), `Items);
+ list<string> sel = (list<string>)UI::QueryWidget (`id("BRIDGE_PORTS"), `SelectedItems);
+ list <string> confs = [];
+    map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
+     confs = (list<string>)union(confs, Map::Keys(configurations[devtype]:$[]));
+    });
+ foreach(term t, items, {
+  string device = t[0, 0]:"";
+  if (contains(sel, device) && hasAnyValue(device)) {
+    if (contains(confs, device)){
+      if ((string)configurations[NetworkInterfaces::GetType(device), device, "IPADDR"]:"" != "0.0.0.0") {
+	if(!confirmed) confirmed = Popup::ContinueCancel(_("One or more selected devices are already configured.
+To work properly configuration must be removed."));
+	if (confirmed) {
+		integer i = LanItems::current;
+	 if (LanItems::FindAndSelect(device)) {
+		y2internal("delete %1", device);
+		LanItems::DeleteItem();
+		NetworkInterfaces::Add();
+		LanItems::current = i;
+	 }
+        } else valid=false;
+      }
+    }
+   }
+ });
+ return valid;
+}
+
+}

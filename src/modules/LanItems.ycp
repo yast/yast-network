@@ -290,6 +290,18 @@ list<string> getNetworkInterfaces(){
  return confs;
 }
 
+global boolean FindAndSelect(string device){
+ boolean found=false;
+ foreach(integer i, map<string, any> a, (map<integer, map<string, any> >)Items, {
+  if (a["ifcfg"]:""==device){
+   found=true;
+   current = i;
+  }
+ });
+ return found;
+}
+
+
 global void ReadHw(){
  Items=$[];
  Hardware = ReadHardware("netcard");
@@ -695,6 +707,7 @@ global void SetDeviceVars(map devmap, map defaults) {
     mtu = GetDeviceVar (devmap, defaults, "MTU");
     ethtool_options = GetDeviceVar (devmap, defaults, "ETHTOOL_OPTIONS");
     startmode = GetDeviceVar (devmap, defaults, "STARTMODE");
+y2internal("startmode %1", startmode);
     usercontrol = GetDeviceVar (devmap, defaults, "USERCONTROL") == "yes";
     description = GetDeviceVar (devmap, defaults, "NAME");
     bond_option = GetDeviceVar(devmap, defaults, "BONDING_MODULE_OPTS");
@@ -879,6 +892,8 @@ global define boolean Select(string dev) {
 */
     /* general stuff */
     description = BuildDescription (type, device, devmap, Hardware);
+
+y2internal("devmap %1", devmap);
 
     SetDeviceVars(devmap, SysconfigDefaults);
 
@@ -1350,12 +1365,6 @@ global void DeleteItem(){
 	 NetworkInterfaces::Commit();
 	 Items[current, "ifcfg"] = "";
 	}
-/*
- if (hasAnyValue(hwcfg)) {
-	 NetworkModules::DeleteM(hwcfg);
-	 Items[current, "hwcfg"] = "";
-	}
-*/
  if (! (size(Items[current, "hwinfo"]:$[])>0) ){
   map<integer, any> tmp_items = $[];
   foreach(integer key, any value, Items, {
