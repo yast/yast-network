@@ -22,3 +22,4 @@ Exec=/sbin/yast2 remote
 Name=Remote Administration (VNC)
 GenericName=Set up remote administration
 X-KDE-SubstituteUID=true
+StartupNotify=true

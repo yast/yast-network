@@ -22,3 +22,4 @@ Exec=/sbin/yast2 provider
 Name=Providers
 GenericName=Configure providers
 X-KDE-SubstituteUID=true
+StartupNotify=true

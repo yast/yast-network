@@ -22,3 +22,4 @@ Exec=/sbin/yast2 routing
 Name=Routing
 GenericName=Configure routing
 X-KDE-SubstituteUID=true
+StartupNotify=true

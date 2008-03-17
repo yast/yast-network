@@ -22,3 +22,4 @@ Exec=/sbin/yast2 modem
 Name=Modem
 GenericName=Configure a modem
 X-KDE-SubstituteUID=true
+StartupNotify=true

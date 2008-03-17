@@ -22,3 +22,4 @@ Exec=/sbin/yast2 isdn
 Name=ISDN
 GenericName=Configure an ISDN connection
 X-KDE-SubstituteUID=true
+StartupNotify=true

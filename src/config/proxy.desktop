@@ -24,3 +24,4 @@ Exec=/sbin/yast2 proxy
 Name=Proxy
 GenericName=Configure a proxy
 X-KDE-SubstituteUID=true
+StartupNotify=true

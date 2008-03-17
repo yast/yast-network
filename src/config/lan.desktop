@@ -24,3 +24,4 @@ Exec=/sbin/yast2 lan
 Name=Network Card
 GenericName=Configure network cards
 X-KDE-SubstituteUID=true
+StartupNotify=true

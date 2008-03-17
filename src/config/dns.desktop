@@ -22,3 +22,4 @@ Exec=/sbin/yast2 dns
 Name=DNS and Hostname
 GenericName=Configure hostname and name servers
 X-KDE-SubstituteUID=true
+StartupNotify=true
