@@ -78,7 +78,6 @@ boolean hw_standalone=false;
 void initHardware(){
     hardware = $[];
 //    hardware["modul"] = NetworkModules::Alias; // FIXME: MOD Lan::Module["module"]:"";
-//    hardware["options"] = NetworkModules::Options; // FIXME: MOD Lan::Module["options"]:"";
     hardware["hotplug"] = LanItems::hotplug;
     y2milestone("hotplug=%1", LanItems::hotplug);
     hardware["modules_from_hwinfo"] = LanItems::GetItemModules(hardware["modul"]:"" );
@@ -101,6 +100,8 @@ void initHardware(){
 
 
     hardware["default_device"] = hasAnyValue(driver) ? driver : LanItems::getCurrentItem()["hwinfo", "module"]:"" ;
+
+    hardware["options"] = LanItems::driver_options[hardware["default_device"]:""]:"";
 
     // #38213, remember device id when we switch back from pcmcia/usb
     hardware["non_hotplug_device_id"] = hardware["device"]:"";
@@ -162,7 +163,7 @@ void initHwDialog(string text) {
 	    /* Text entry label */
 	    `ComboBox(`id(`modul), `opt(`editable), _("&Module Name"), hardware["modules_from_hwinfo"]:[]),
 	    `HSpacing(0.2),
-	    `TextEntry(`id(`options), `opt(`disabled), Label::Options (), hardware["options"]:"")
+	    `TextEntry(`id(`options), Label::Options (), hardware["options"]:"")
 	),
 	`VSpacing(0.4),
 	CheckBoxes,
@@ -224,7 +225,7 @@ void initHwDialog(string text) {
     ChangeWidgetIfExists(`id(`usb), `Enabled, (hardware["hotplug"]:"" == "usb" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
     ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hardware["hotplug"]:"" == "pcmcia" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
     UI::ChangeWidget(`id(`device_name), `Enabled, false);
-    UI::ChangeWidget(`id(`options), `Enabled, false);
+//    UI::ChangeWidget(`id(`options), `Enabled, false);
 
     UI::ChangeWidget(`id(`device_name), `Value, LanItems::GetItemUdev()[1]:"");
 
@@ -490,7 +491,9 @@ Choose a different one."), nm));
     LanItems::Items[LanItems::current, "udev"]= $[];
 }
 
- LanItems::setDriver((string) UI::QueryWidget(`modul, `Value));
+ string driver = (string) UI::QueryWidget(`modul, `Value);
+ LanItems::setDriver(driver);
+ LanItems::driver_options[driver] = (string) UI::QueryWidget(`options, `Value);
 }
 
 

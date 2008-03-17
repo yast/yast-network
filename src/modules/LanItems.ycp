@@ -17,6 +17,7 @@ include "network/routines.ycp";
 global map<integer, any> Items = $[];
 global list<map> Hardware = [];
 global map <string, any> udev_net_rules = $[];
+global map<string, any> driver_options = $[];
 
 global string interfacename="";
 
@@ -163,9 +164,20 @@ map <string, string> request_firmware = $[
 
 include "network/hardware.ycp";
 
-boolean ReadUdevRules(){
+boolean ReadUdevDriverRules(){
  y2milestone ("Reading udev rules ...");
  udev_net_rules = (map<string, any>)SCR::Read(.udev_persistent.net);
+
+ y2milestone ("Reading driver options ...");
+ foreach(string driver, SCR::Dir(.modprobe.network.options), {
+  string pth=sformat(".modprobe.network.options.%1",driver);
+//  driver_options[driver] = SCR::Read(topath(pth));
+  foreach(string key, string value, (map<string, string>)SCR::Read(topath(pth)), {
+   driver_options[driver] = sformat("%1%2%3=%4", driver_options[driver]:"",
+	(size(driver_options[driver]:"")>0)?" ":"", key, value);
+  });
+ });
+
  return true;
 }
 
@@ -179,18 +191,13 @@ global list<string> GetItemUdev(){
 	else if (issubstring(row, "NAME")) udevs[1]=regexpsub (row, ".*=[\"]*([^ ]*)\"$", "\\1");
 
   });
-/*
-  udevs[0]=Items[current, "udev", "net", 2]:"";
-  if (regexpmatch (Items[current, "udev", "net", 3]:"", ".*=[^ ]*\"$"))
-    udevs[1]=regexpsub (Items[current, "udev", "net", 3]:"", ".*=[\"]*([^ ]*)\"$", "\\1");
-*/
  }
  return udevs;
 }
 
 
 
-global void WriteUdevRules(){
+global void WriteUdevDriverRules(){
  map<string, any> udev_drivers_rules = $[];
  foreach(integer key, (list<integer>)Map::Keys(Items), {
   if (hasAnyValue(Items[key, "udev", "driver"]:""))
@@ -211,18 +218,25 @@ global void WriteUdevRules(){
 		changed_devices = add(changed_devices, dev_name);
 		force_restart=true;
 		}
-
    }
   });
-
- //  SCR::Write(.udev_persistent.rules_comment, comment);
- //  SCR::Write(.udev_persistent.rules, rules);
-
    SCR::Write(.udev_persistent.rules, net_rules);
    SCR::Write(.udev_persistent.nil, []);
   foreach(string dev, changed_devices, {
-   y2internal("renaming devices : %1", SCR::Execute(.target.bash_output, sformat("hwdown %1 && hwup %1", dev)));
+   y2milestone("renaming devices : %1", SCR::Execute(.target.bash_output, sformat("hwdown %1 && hwup %1", dev)));
   });
+
+ // write rules from driver
+ foreach(string key, string value, (map<string, string>)driver_options, {
+  map val=$[];
+  foreach(string k, splitstring(value, " "), {
+   list<string> l = splitstring(k, "=");
+   val[ l[0]:"" ]=l[1]:"";
+  });
+  if (!hasAnyValue(value)) val=nil;
+  SCR::Write(add(.modprobe.network.options, key), val);
+ });
+ SCR::Write(.modprobe.network,nil);
 }
 
 /**
@@ -305,7 +319,7 @@ global boolean FindAndSelect(string device){
 global void ReadHw(){
  Items=$[];
  Hardware = ReadHardware("netcard");
- ReadUdevRules();
+ ReadUdevDriverRules();
 
  map<string, any> udev_drivers_rules = (map<string, any>)SCR::Read(.udev_persistent.drivers);
  foreach(map hwitem, Hardware, {

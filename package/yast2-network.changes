@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Mar 17 20:50:58 CET 2008 - mzugec@suse.de
+
+- support for writing driver parameters (bnc#362535)
+- 2.16.26 
+
+-------------------------------------------------------------------
 Mon Mar 17 12:43:32 CET 2008 - jsrain@suse.cz
 
 - added 'StartupNotify=true' to the desktop file (bnc #304964)
