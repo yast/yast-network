@@ -45,6 +45,7 @@ interface =
     ipaddr? &
     remote_ipaddr? &
     element netmask { text }? &	#overloaded
+    element aliases        { Anything }? &
     broadcast? &
     network? &
 
