@@ -69,9 +69,26 @@ map UpcaseCondSet (map ret, map m, string key) {
 define map FromAY(map input)
 {
  y2debug("input %1", input);
-
-    map<string,map> interfaces = listmap(map<string, string> interface,
-            input["interfaces"]:[],
+ list<map<string,any> > ifaces=[];
+ foreach(map<string,any> interface, input["interfaces"]:[], {
+  map<string,any> iface=$[];
+  foreach(string key, any value, interface, {
+   if (key == "aliases"){
+    foreach(string k, map<string,any > v, (map<string, map<string,any> >)value, {
+    // replace "alias0" to "0" (bnc#372687)
+    map<string,any> t = (map<string,any>)value;
+     t[v["LABEL"]:""]=t[k]:$[];
+     t=remove(t,k);
+     value=t;
+   });
+   }
+   iface[key]=value;
+  });
+  ifaces = add(ifaces, iface);
+ });
+  input["interfaces"] = ifaces;
+    map<string,map> interfaces = listmap(map<string, any> interface,
+            (list<map<string, any> >)input["interfaces"]:[],
     {
 	// input: list of items $[ "device": "d", "foo": "f", "bar": "b"]
 	// output: map of items  "d": $["FOO": "f", "BAR": "b"]
@@ -79,8 +96,17 @@ define map FromAY(map input)
 
 	// uppercase map keys
 	string newk = nil;
-	interface =  mapmap(string k, string v, interface, ``{
-           if (k=="aliases") newk="_aliases";
+	interface =  mapmap(string k, any v, (map<string, any>)interface, ``{
+           if (k=="aliases") {
+			newk="_aliases";
+			map<string, any> alias = $[];
+			foreach(string key, map<string, any> value,(map<string, map<string, any> >)v, {
+			 if (issubstring(key, "alias")) {
+			   alias[value["LABEL"]:""] = value;
+			  }
+			});
+			v = alias;
+		     }
                 else newk = toupper(k);
 	    return $[newk: v];
         });
@@ -93,7 +119,6 @@ define map FromAY(map input)
         string new_device = interface["DEVICE"]:"";
 	return $[ new_device : new_interface ];
     });
-
     // split to a two level map like NetworkDevices
     map<string, map> devices = $[];
 
@@ -175,7 +200,13 @@ define map ToAY (map settings) {
                     // handle aliases FaTE (#302300)
                     y2debug("val: %1", val);
 		     // if aliases are empty, then ommit it
-                      if (size((map)val)>0) newmap[tolower("aliases")] = val;
+                      if (size((map)val)>0) 
+		       {
+			// replace key "0" into "alias0" (bnc#372678)
+			foreach (string k, map<string, any> v, (map<string, map<string, any> >) val, {
+			newmap[tolower("aliases")]=add(newmap[tolower("aliases")]:$[], sformat("alias%1", k), v);
+			});
+		       }
                     }
                     });
                 if (deletechars(num, "0123456789") == "")

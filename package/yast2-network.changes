@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Mar 20 20:08:03 CET 2008 - mzugec@suse.de
+
+- backported validator .rnc from 10.3 for validate AY profile 
+- for aliass elements use aliasX instead of X (bnc#369195)
+- 2.13.113 
+
+-------------------------------------------------------------------
 Thu Mar  6 00:35:08 CET 2008 - mzugec@suse.de
 
 - allow to use bridge also with unconfigured device (bnc#369195) 
