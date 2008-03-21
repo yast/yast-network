@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Mar 21 13:35:40 CET 2008 - mzugec@suse.de
+
+- for alias elements use aliasX instead of X (bnc#369195)
+- 2.16.27 
+
+-------------------------------------------------------------------
 Mon Mar 17 20:50:58 CET 2008 - mzugec@suse.de
 
 - support for writing driver parameters (bnc#362535)
