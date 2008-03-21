@@ -99,13 +99,6 @@ define map FromAY(map input)
 	interface =  mapmap(string k, any v, (map<string, any>)interface, ``{
            if (k=="aliases") {
 			newk="_aliases";
-			map<string, any> alias = $[];
-			foreach(string key, map<string, any> value,(map<string, map<string, any> >)v, {
-			 if (issubstring(key, "alias")) {
-			   alias[value["LABEL"]:""] = value;
-			  }
-			});
-			v = alias;
 		     }
                 else newk = toupper(k);
 	    return $[newk: v];
