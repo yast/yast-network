@@ -1,0 +1,1200 @@
+/**
+ * File:	include/network/lan/address.ycp
+ * Package:	Network configuration
+ * Summary:	Network card adresss configuration dialogs
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Arch";
+import "CWM";
+import "CWMTab";
+import "Detection";
+import "IP";
+import "Label";
+import "Lan";
+import "Netmask";
+import "NetworkDevices";
+import "Popup";
+import "ProductFeatures";
+import "Routing";
+import "SuSEFirewall4Network";
+import "Wizard";
+import "Map";
+
+include "network/summary.ycp";
+include "network/widgets.ycp";
+
+
+/**
+ * obsoleted by GetDefaultsForHW
+ * @return `next
+ */
+symbol ChangeDefaults () {
+    return `next;
+}
+
+map <string, any> settings = $[];
+
+string fwzone_initial = "";
+
+/**
+ * `RadioButtonGroup uses CurrentButton instead of Value, grrr
+ * @param key widget id
+ * @return what property to ask for to get the widget value
+ */
+symbol ValueProp (string key) {
+    if (UI::QueryWidget (`id (key), `WidgetClass) == "YRadioButtonGroup")
+    {
+	return `CurrentButton;
+    }
+    return `Value;
+}
+
+/**
+ * Debug messages configurable at runtime
+ * @param class debug class
+ * @param msg message to log
+ */
+void my2debug (string class, string msg) {
+    if (SCR::Read (.target.size, "/tmp/my2debug/" + class) != -1)
+    {
+	y2internal (class + ": " + msg);
+    }
+}
+
+/**
+ * Default function to init the value of a widget.
+ * Used for push buttons.
+ * @param key id of the widget
+ */
+void InitAddrWidget (string key) {
+    any value = settings[key]:nil;
+    my2debug ("AW", sformat ("init k: %1, v: %2", key, value));
+    UI::ChangeWidget (`id (key), ValueProp (key), value);
+}
+
+
+/**
+ * Default function to store the value of a widget.
+ * @param key	id of the widget
+ * @param event	the event being handled
+ */
+void StoreAddrWidget (string key, map event) {
+    any value = UI::QueryWidget (`id (key), ValueProp (key));
+    my2debug ("AW", sformat ("store k: %1, v: %2, e: %3", key, value, event));
+    settings[key] = value;
+}
+
+/**
+ * Default function to init the value of devices attached to bridge (BRIDGE_PORTS).
+ * @param key  id of the widget
+ */
+void InitBridge(string key)
+{
+ list items = [];
+    map <string, any> configurations =  NetworkDevices::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkDevices::CardRegex["netcard"]:"", "|"), {
+     foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+
+        //filter the eth devices (IPADDR=0.0.0.0 - promiscuited mode)
+            if ((string)configurations[devtype, devnum, "IPADDR"]:"" == "0.0.0.0")
+           {
+            string dev_name = NetworkDevices::device_name(devtype, devnum);
+             items = add (items, `item(`id(dev_name), dev_name, contains(splitstring(NetworkDevices::Current["BRIDGE_PORTS"]:"", " "), dev_name)) );
+           }
+
+     });
+    });
+    // use also unconfigured devices
+    foreach(string dev_name, Lan::getUnconfiguredDevices(),{
+     items = add(items, `item(`id(dev_name), dev_name, contains(splitstring(NetworkDevices::Current["BRIDGE_PORTS"]:"", " "), dev_name)));
+    });
+
+    UI::ChangeWidget(`id(key), `Items, items);
+}
+
+ /**
++ * Default function to store the value of devices attached to bridge (BRIDGE_PORTS).
++ * @param key  id of the widget
++ * @param key id of the widget
++ */
+void StoreBridge(string key, map event)
+{
+    settings["BRIDGE_PORTS"] = mergestring((list<string>)UI::QueryWidget (`id(key), `SelectedItems), " ");
+}
+
+
+
+/**
+ * Default function to init the value of slave ETHERDEVICE box.
+ * @param key  id of the widget
+ */
+void InitVLANSlave(string key)
+{
+ list items = [];
+	// unconfigured devices with proposal ifcfg-names
+     settings["ETHERDEVICE"] = NetworkDevices::Current["ETHERDEVICE"]:"";
+        foreach(string dev_name, Lan::getUnconfiguredDevices(),{
+           items = add(items, `item(`id(dev_name), dev_name, (dev_name==settings["ETHERDEVICE"]:"")?true:false));
+        });
+	// also bond and bridge devices included
+        foreach(string dev_name, NetworkDevices::List("br|bond"),{
+           items = add(items, `item(`id(dev_name), dev_name, (dev_name==settings["ETHERDEVICE"]:"")?true:false));
+        });
+    UI::ChangeWidget(`id(key), `Items, items);
+}
+
+/**
+ * Default function to store the value of ETHERDEVICE devices box.
+ * @param key  id of the widget
+ * @param key id of the widget
+ */
+void StoreVLANSlave(string key, map event)
+{
+    settings["ETHERDEVICE"] = (string)UI::QueryWidget (`id(key), `Value);
+}
+
+/**
+ * Default function to init the value of slave devices box.
+ * @param key	id of the widget
+ */
+void InitSlave(string key)
+{
+    UI::ChangeWidget(`id(key), `SelectedItems, settings["SLAVES"]:[]);
+}
+
+/**
+ * Default function to store the value of slave devices box.
+ * @param key	id of the widget
+ * @param key id of the widget
+ */
+void StoreSlave(string key, map event)
+{
+    settings["SLAVES"] = (list<string>)UI::QueryWidget (`id(key), `SelectedItems);
+}
+
+void enableDisableBootProto(symbol current){
+  UI::ChangeWidget(`dyn,        `Enabled, current==`dynamic);
+  UI::ChangeWidget(`ipaddr,     `Enabled, current==`static);
+  UI::ChangeWidget(`netmask,    `Enabled, current==`static);
+  UI::ChangeWidget(`hostname,   `Enabled, current==`static);
+}
+
+/**
+ * Initialize a RadioButtonGroup
+ * Group called FOO has buttons FOO_bar FOO_qux and values bar qux
+ * @param key id of the widget
+ */
+void InitializeWidgetRbg (string key) {
+    string value = settings[key]:"";
+    value = key + "_" + value;
+    my2debug ("RBGW", sformat ("init k: %1, v: %2", key, value));
+    UI::ChangeWidget (`id (key), ValueProp (key), value);
+}
+
+/**
+ * Store a RadioButtonGroup
+ * Group called FOO has buttons FOO_bar FOO_qux and values bar qux
+ * @param key	id of the widget
+ * @param event	the event being handled
+ */
+void StoreWidgetRbg (string key, map event) {
+    string value_g = (string) UI::QueryWidget (`id (key), ValueProp (key));
+    string value = splitstring (value_g, "_")[1]:"";
+    my2debug ("RBGW", sformat ("store k: %1, v: %2, e: %3", key, value, event));
+    settings[key] = value;
+}
+
+/**
+ * Helper
+ * @return whether the address is static
+ */
+boolean HaveStaticAddress () {
+    if (UI::WidgetExists (`id ("BOOTPROTO_static")))
+    {
+	return (boolean) UI::QueryWidget (`id ("BOOTPROTO_static"), `Value);
+    }
+    return true;
+}
+
+/**
+ * Event handler for ifcfg name
+ * enable or disable depending on whether we are adding a new interface
+ * @param key	the widget receiving the event
+ * @param event	the event being handled
+ * @return nil so that the dialog loops on
+ */
+symbol HandleIfcfg (string key, map event) {
+    UI::ChangeWidget (`id (key), `Enabled, Lan::operation == `add);
+    return nil;
+}
+
+/**
+ * Event handler for static network information:
+ * enable or disable depending on whether static setup is enabled
+ * @param key	the widget receiving the event
+ * @param event	the event being handled
+ * @return nil so that the dialog loops on
+ */
+symbol HandleStaticAddress (string key, map event) {
+    my2debug ("HSI", sformat ("k: %1 e: %2", key, event));
+    UI::ChangeWidget (`id (key), `Enabled, HaveStaticAddress ());
+    return nil;
+}
+
+/**
+ * Remap the buttons to their Wizard Sequencer values
+ * @param key	the widget receiving the event
+ * @param event	the event being handled
+ * @return nil so that the dialog loops on
+ */
+symbol HandleButton (string key, map event) {
+    any ret = event["ID"]:nil;
+    map<any, symbol> symbols = $[
+	"HOSTNAME_B": `hostname,
+	"ROUTING": `routing,
+
+	"HARDWARE": `hardware,
+	"DHCP_ADVANCED": `dhclient,
+	"ADDITIONAL_ADDRESSES": `virtual,
+	"IPV6":`ipv6,
+	"S390": `s390,
+	];
+    return symbols[ret]:nil;
+}
+
+/**
+ * Validator for IP adresses
+ * used for IPADDR and REMOTEIP
+ * @param key	the widget being validated
+ * @param event	the event being handled
+ * @return whether valid
+ */
+boolean ValidateAddrIP (string key, map event) {
+    if (HaveStaticAddress ())
+    {
+	return ValidateIP (key, event);
+    }
+    return true;
+}
+
+/**
+ * Validator for network masks adresses
+ * @param key	the widget being validated
+ * @param event	the event being handled
+ * @return whether valid
+ */
+boolean ValidateNetmask (string key, map event) {
+    // TODO general CWM improvement idea: validate and save only nondisabled
+    // widgets
+    if (HaveStaticAddress ())
+    {
+	string ipa = (string) UI::QueryWidget (`id (key), `Value);
+	return Netmask::Check (ipa);
+    }
+    return true;
+}
+
+/**
+ * Validator for ifcfg names
+ * @param key	the widget being validated
+ * @param event	the event being handled
+ * @return whether valid
+ */
+boolean ValidateIfcfgType (string key, map event) {
+    if (Lan::operation == `add)
+    {
+	string ifcfgtype = (string) UI::QueryWidget (`id (key), `Value);
+
+	// validate device type, misdetection
+	if (ifcfgtype != Lan::type)
+	{
+	    UI::SetFocus(`id (key));
+	    if (!Popup::ContinueCancel (
+_("You have changed the interface type from the one
+that has been detected. This only makes sense
+if you know that the detection is wrong.")))
+	    {
+		return false;
+	    }
+	}
+
+	string ifcfgid = (string) UI::QueryWidget (`id ("IFCFGID"), `Value);
+	string ifcfgname = NetworkDevices::device_name (ifcfgtype, ifcfgid);
+
+	// Check should be improved to find differently named but
+	// equivalent configs (eg. by-mac and by-bus, depends on the
+	// current hardware)
+	if (NetworkDevices::Check(ifcfgname))
+	{
+	    UI::SetFocus(`id (key));
+	    /* Popup text */
+	    Popup::Error (sformat (_("Configuration %1 already present."),
+				   ifcfgname));
+	    return false;
+	}
+    }
+    return true;
+}
+
+/**
+ * Initialize the dialog as a whole
+ * Sets default focus
+ * @param key id of the widget
+ */
+void InitDialog (string key) {
+    UI::SetFocus (`id ("IPADDR"));
+}
+
+/**
+ * If the traffic would be blocked, ask the user
+ * if he wants to change it
+ * @param event	the event being handled
+ * @return change it?
+ */
+boolean NeedToAssignFwZone (map event) {
+    any ret = event["ID"]:nil;
+    if (ret == `next)
+    {
+	// If firewall is active and interface in no zone, nothing
+	// gets through (#62309) so warn and redirect to details
+	string type = (string) UI::QueryWidget (`id ("IFCFGTYPE"), `Value);
+	string id = (string) UI::QueryWidget (`id ("IFCFGID"), `Value);
+	string name = NetworkDevices::device_name (type, id);
+	if (SuSEFirewall4Network::IsOn () &&
+	    SuSEFirewall4Network::GetZoneOfInterface (name) == "" &&
+	    SuSEFirewall4Network::UnconfiguredIsBlocked ())
+	{
+	    return Popup::YesNoHeadline (Label::WarningMsg (),
+_("The firewall is active, but this interface is not
+in any zone. All its traffic would be blocked.
+Assign it to a zone now?"));
+	}
+    }
+    return false;
+}
+
+/**
+ * Validator for network masks adresses
+ * @param key	the widget being validated
+ * @param event	the event being handled
+ * @return whether valid
+ */
+boolean ValidateDialog (string key, map event) {
+    if (HaveStaticAddress ())
+    {
+	string k = "IPADDR";
+	string ipa = (string) UI::QueryWidget (`id (k), `Value);
+	// validate duplication
+	if (Detection::DuplicateIP (ipa))
+	{
+	    /* Popup text */
+	    string pop = _("Duplicate IP address detected.
+Really continue?
+");
+	    UI::SetFocus(`id (k));
+	    if (! Popup::YesNoHeadline(Label::WarningMsg(), pop))
+	    {
+		return false;
+	    }
+	}
+    }
+    if (NeedToAssignFwZone (event))
+    {
+	UI::FakeUserInput ($["ID": "t_general"]);
+	return false;
+    }
+    return true;
+}
+
+/**
+ * Store values computed from the whole dialog
+ * @param key	the widget being validated
+ * @param event	the event being handled
+ */
+void StoreDialog (string key, map event) {
+    return;
+}
+
+map<string, map<string,any> > widget_descr_local = $[
+    "_DIALOG": $[
+	"widget": `empty,
+	"help": 
+    /* Address dialog help 5/8 */
+    _("<p>Clicking <b>Next</b> completes the configuration.</p>") +
+    /* Address dialog help 8/8 */
+    _("<p>Contact your <b>network administrator</b> for more information about
+the network configuration.</p>"),
+	"validate_type": `function,
+	"validate_function": ValidateDialog,
+	"init": InitDialog,
+	"store": StoreDialog,
+	],
+
+    "IFNAME": $[
+	"widget": `textentry,
+	"label": _("&Name of Interface"),
+	"opt": [`hstretch],
+	"help": _("<p>TODO kind of vague!</p>"),
+	],
+    "BINDTOHW": $[
+	"widget": `combobox,
+	"label": _("&Binding Characteristic"),
+	"opt": [`hstretch],
+	// IDEA: "help" is the traditional detached help, has to include
+	// widget name; "tooltip" or "toolhelp" is visually bound to the
+	// widget, does not need to contain its name (the translator comment
+	// needs to, though)
+	"help": _("<p>FIXME better help! Which hardware to bind to</p>"),
+	// FIXME FAKE: get real values dynamically
+	"items": [
+	    // synchronize keys with ... whatever
+	    // combo box item. %1 is like "00:de:ad:po:rk:00"
+	    ["mac", sformat (_("MAC Address: %1"), "00:de:ad:po:rk:00")],
+	    // combo box item. %1 is like "pci-0000:01:09.0"
+	    ["bus", sformat (_("Bus Path: %1"), "pci-0000:01:09.0")],
+	    // combo box item. %1 is like "1022-2000"
+	    ["vpid", sformat (_("Product ID: %1"), "1022-2000")],
+	    // combo box item. %1 is like "1022-2000-1259-2700"
+	    ["vpsid", sformat (_("Product Sub-ID: %1"), "1022-2000-1259-2700")],
+	    ],
+	],
+
+    "FWZONE": $[
+	"widget": `combobox,
+	// Combo Box label
+	"label": _("Firewall &Zone"),
+	"opt": [`hstretch],
+	"help":
+_("<p>Select the <b>Firewall Zone</b> to put the interface in. If you
+select a zone, the firewall will be enabled. If you do not and other 
+firewalled interfaces exist, the firewall
+will stay enabled but all traffic will be blocked for this
+interface. If you do not select a zone and no others exist, 
+the firewall will be disabled.</p>"),
+	],
+    "MANDATORY": $[
+	"widget": `checkbox,
+	// check box label
+	"label": _("&Mandatory Interface"),
+	"opt": [],
+	"help": _("<p><b>Mandatory Interface</b> specifies whether the network service reports failure if the interface fails to start at boot time.</p>"),
+	],
+    "MTU": $[
+	"widget": `textentry,
+	// textentry label, Maximum Transfer Unit
+	"label": _("&MTU"),
+	"opt": [`hstretch],
+	"help": _("<p>You can set the maximum transfer unit (<b>MTU</b>) of an interface.</p>"),
+	],
+    "IFCFGTYPE": $[
+	"widget": `combobox,
+	/* ComboBox label */
+	"label": _("&Device Type"),
+	"opt": [`hstretch, `notify],
+	"help": "",
+	// "items" will be filled in the dialog itself
+	"handle": HandleIfcfg,
+	"validate_type": `function,
+	"validate_function": ValidateIfcfgType,
+	],
+
+    "IFCFGID": $[
+	"widget": `combobox,
+	/* ComboBox label */
+	"label": _("&Configuration Name"),
+	"opt": [`hstretch, `editable],
+	"help": "",
+	"valid_chars": NetworkDevices::ValidCharsIfcfg (),
+	"handle": HandleIfcfg,
+	],
+    "BRIDGE_PORTS": $[
+        "widget": `multi_selection_box,
+        "label": _("Bridged Devices"),
+        "items" : [],
+        "init": InitBridge,
+        "store": StoreBridge,
+    ],
+    "ETHERDEVICE": $[
+        "widget": `combobox,
+        "label": _("Real Interface for &VLAN"),
+        "items" : [ ],
+        "init": InitVLANSlave,
+        "store": StoreVLANSlave,
+    ],
+
+    "BONDSLAVE": $[
+        "widget": `multi_selection_box,
+        "label": _("Bond Slaves"),
+        "opt": [`shrinkable],
+        "items" : [ ],
+        "init": InitSlave,
+        "store": StoreSlave,
+        "help": _("<p>Select the slave devices for the bond device. Only the devices whose Device Activation is Never and set as None Address Setup are available.</p>"),
+    ],
+
+    "BONDOPTION": $[
+        "widget": `combobox,
+        /* ComboBox label */
+        "label": _("Bond Driver Options"),
+        "opt": [`hstretch, `editable],
+        "help": _("<p>Select the bond driver options, and edit if needed. </p>"),
+        "items": [["mode=balance-rr"], ["mode=active-backup"], ["mode=balance-xor"],
+                  ["mode=broadcast"], ["mode=802.3ad"], ["mode=balance-tlb"], ["mode=balance-alb"]],
+    ],
+
+    "BOOTPROTO": $[
+	"widget": `empty,
+	"help": "",
+	// just init and store, real widgets are BOOTPROTO_*
+	"init": InitializeWidgetRbg,
+	"store": StoreWidgetRbg,
+	],
+
+    "BOOTPROTO_none": $[
+        "widget": `radio_button,
+        // radio button label
+        "label": _("No IP Address (for Bonding Devices)"),
+        "opt": [`notify],
+        "init": CWM::InitNull,
+        "store": CWM::StoreNull
+    ],
+
+    "BOOTPROTO_dhcp": $[
+	"widget": `radio_button,
+	// radio button label
+	"label": _("A&utomatic Address Setup (via DHCP)"),
+	"opt": [`notify],
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
+	"help":
+	/* Address dialog help 2-6/8: dynamic address preferred */
+	/* Address dialog help 2/8 */
+    _("<p>You can select <b>None Address Setup</b> if you do not want any IP address.</p>") +
+
+    _("<p>You can select dynamic address assignment
+if you have a <b>DHCP server</b> running on your local network.</p>
+") +
+    /* Address dialog help 3/8 */
+    _("<p>Also select this if you do not have a static IP address assigned
+by the system administrator or your cable or DSL provider.</p>") +
+    /* Address dialog help 4/8 */
+    _("<p>Network addresses are then obtained
+<b>automatically</b> from the server.</p>
+") +
+    /* Address dialog help 6/8 */
+    _("<p>Otherwise, network addresses must be assigned <b>manually</b>.</p>"),
+	],
+    "BOOTPROTO_static": $[
+	"widget": `radio_button,
+	// radio button label
+	"label": _("S&tatic Address Setup"),
+	"opt": [`notify],
+	"help": "",		// merged with BOOTPROTO_dhcp
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
+	],
+
+    "BOOTPROTO_dhcp_autoip": $[
+	"widget": `radio_button,
+	/* Radio button label */
+	"label": _("A&utomatic Address Setup (via DHCP+AUTOIP)"),
+	"opt": [`notify],
+	"help": ("FIXME, help BOOTPROTO_dhcp_autoip<br>"),
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
+	],
+
+    "BOOTPROTO_autoip": $[
+	"widget": `radio_button,
+	/* Radio button label */
+	"label": _("A&utomatic Address Setup (via AUTOIP)"),
+	"opt": [`notify],
+	"help": ("FIXME, help BOOTPROTO_autoip<br>"),
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
+	],
+    "BOOTPROTO_noaddr": $[
+	"widget": `radio_button,
+	/* Radio button label */
+	"label": _("&Without an address"),
+	"opt": [`notify],
+	"help": _("without an IPv4 address, this is useful when the interface is used for pppoe"),
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
+	],
+
+    "IPADDR": $[
+	"widget": `textentry,
+	/* Text entry label for IP address */
+	"label": _("&IP Address"),
+	"help": "",		// merged to either REMOTEIP or NETMASK
+	"handle": HandleStaticAddress,
+	"validate_type": `function_no_popup,
+	"validate_function": ValidateAddrIP,
+	// validation error popup
+	"validate_help": _("The IP address is invalid.")+ "\n" + IP::Valid4 (),
+	],
+
+    "REMOTEIP": $[
+	"widget": `textentry,
+	/* Text entry label */
+	"label": _("R&emote IP Address"),
+	"help": _("<p>Enter the <b>IP Address</b> (e.g., 192.168.100.99)
+for your computer and the <b>Remote IP Address</b> (e.g., 192.168.100.254)
+of your peer.</p>"),
+	"validate_type": `function_no_popup,
+	"validate_function": ValidateAddrIP,
+	// validation error popup
+	"validate_help": _("The remote IP address is invalid.") + "\n" + IP::Valid4 (),
+	],
+
+    "NETMASK": $[
+	"widget": `textentry,
+	/* Text entry label for network mask */
+	"label": _("&Subnet Mask"),
+	"help": 
+    _("<p>Enter the IP address (e.g., 192.168.100.99) for your computer,
+the network mask (usually 255.255.255.0), and, optionally, the default gateway
+IP address.</p>"),
+	"handle": HandleStaticAddress,
+	"validate_type": `function_no_popup,
+	"validate_function": ValidateNetmask,
+	// validation error popup
+	"validate_help": _("The subnet mask is invalid."), // TODO describe a valid one
+	],
+
+    "GATEWAY": $[
+	"widget": `textentry,
+	"label": _("Default &Gateway"),
+	"opt": [],
+	"help": _("<p><b>Default Gateway</b> TODO: the original help is bad</p>"),
+	"handle": HandleStaticAddress,
+	],
+
+    "ADVANCED_MB": $[
+	"widget": `menu_button,
+	// menu button label
+	"label": _("&Advanced..."),
+	"opt": [`hstretch],
+	"help": "",
+	// "items" will be filled in the dialog itself
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
+	"handle": HandleButton,
+	],
+
+    "DHCP_ADVANCED": $[
+	"widget": `push_button,
+	// push button label
+	"label": _("DH&CP Options"),
+	"opt": [],
+	"help": "",
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
+	"handle": HandleButton,
+	],
+    "ADDITIONAL_ADDRESSES": $[
+	"widget": `push_button,
+	// push button label
+	"label": _("Addi&tional Addresses"),
+	"opt": [],
+	"help": "",
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
+	"handle": HandleButton,
+	],
+    "IPV6": $[
+	"widget": `push_button,
+	// push button label
+	"label": _("&IPv6"),
+	"opt": [],
+	"help": "",
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
+	"handle": HandleButton,
+	],
+    "HARDWARE": $[
+	"widget": `push_button,
+	// push button label
+	"label": _("H&ardware Details"),
+	"opt": [],
+	"help": "",
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
+	"handle": HandleButton,
+	],
+    // leftovers
+    "S390": $[
+	"widget": `push_button,
+	// push button label
+	"label": _("&S/390"),
+	"opt": [],
+	"help": "",
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
+	"handle": HandleButton,
+	],
+    "HOSTNAME_B": $[
+	"widget": `push_button,
+	// push button label
+	"label": _("&Hostname and Name Server"),
+	"opt": [`hstretch],
+	"help": "",
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
+	"handle": HandleButton,
+	],
+    "ROUTING": $[
+	"widget": `push_button,
+	// push button label
+	"label": _("R&outing"),
+	"opt": [`hstretch],
+	"help": "",
+	"init": CWM::InitNull,
+	"store": CWM::StoreNull,
+	"handle": HandleButton,
+	],
+    ];
+
+/**
+ * @param types netowrk card types
+ * @return their descriptions for CWM
+ */
+list< list<string> > BuildTypesListCWM (list<string> types) {
+    return maplist(string t, types, {
+	return [t, DeviceType(t)];
+    });
+}
+
+/**
+ * Wrap contents to a box so that the tabs have the same size
+ * @param contents the tab contents
+ * @return wrapped contents
+ */
+term CommonBox (term contents) {
+    return `HBox (
+	//`VSpacing (15),
+	`VStretch (),
+	`HSquash (
+	    `VBox (
+		`HSpacing (48),
+		contents
+		)
+	    )
+	);
+}
+
+/**
+ * Dialog for setting up IP address
+ * @return dialog result
+ */
+define any AddressDialog() {
+    ScreenName("lan-address");
+
+    string ifname = NetworkDevices::device_name (Lan::type, Lan::device);
+    string fwzone = SuSEFirewall4Network::GetZoneOfInterface (ifname);
+
+    // If firewall is active and interface in no zone, nothing
+    // gets through (#62309) so add it to the external zone
+    if (fwzone == "" &&
+	Lan::operation == `add &&
+	SuSEFirewall4Network::IsOn () &&
+	SuSEFirewall4Network::UnconfiguredIsBlocked ())
+    {
+	fwzone = "EXT";
+	y2milestone ("Defaulting to EXT");
+    }
+
+    fwzone_initial = fwzone;
+
+    settings = $[
+	// general tab:
+//	"IFNAME": ifname,
+//	"BINDTOHW": "mac",	// FIXME
+	"STARTMODE": Lan::startmode,
+	"USERCONTROL": Lan::usercontrol,
+	// problems when renaming the interface?
+	"FWZONE": fwzone,
+	"MTU": Lan::mtu,
+
+	// address tab:
+	"BOOTPROTO": Lan::bootproto,
+	"IPADDR": Lan::ipaddr,
+	"NETMASK": Lan::netmask,
+	"REMOTEIP": Lan::remoteip,
+
+	"IFCFGTYPE": Lan::type,
+	"IFCFGID": Lan::device,
+	];
+
+
+    term general_contents = `MarginBox (1, 0,
+	`VBox (
+ 	    `Frame(
+		// Frame label
+		// common settings for interfaces
+		_("Common Network Interface Settings"),
+		`MarginBox (1, 0,
+		    `VBox(
+			// TODO:
+			// "MANDATORY",
+			// HWeight (1, ...) is a kludge for `opt (`hstretch)
+//			(`HWeight(1, "IFNAME")),
+//			`VSpacing(0.4),
+			(`HWeight(1, "FWZONE")),
+			`VSpacing(0.4),
+			`Left (`HWeight(1, "STARTMODE")),
+			`VSpacing(0.4),
+			`Left ("USERCONTROL")
+			))
+		),
+	    `VSpacing (1),
+ 	    `Frame(
+		// Frame label
+		// detailed settings for interfaces
+		_("Detailed Network Interface Settings"),
+		`MarginBox (1, 0,
+		    `VBox(
+//			 (`HWeight(1, "BINDTOHW")),
+//			`VSpacing(0.4),
+			 (`HWeight(1, "MTU"))
+			))
+		)
+	    )
+	);
+
+
+    string drvtype = Lan::DriverType (settings["IFCFGTYPE"]:"");
+
+    boolean is_ptp = drvtype == "ctc" || drvtype == "iucv";
+    // TODO: dynamic for dummy. or add dummy from outside?
+    boolean no_dhcp = is_ptp || settings["IFCFGTYPE"]:"" == "dummy" || Lan::alias != "";
+
+    if(settings["BOOTPROTO"]:"" == "static" && settings["IPADDR"]:"" == "" && !no_dhcp)
+	settings["BOOTPROTO"] = "dhcp"; 
+
+    boolean force_static_ip = ProductFeatures::GetBooleanFeature ("network", "force_static_ip");
+    // #65524
+    if (Lan::operation == `add && force_static_ip)
+    {
+	settings["BOOTPROTO"] = "static";
+    }
+
+    // FIXME duplicated in hardware.ycp
+    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond", "vlan", "br" ];
+
+    if(Arch::s390 ())
+	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "ficon", "iucv", "qeth", "lcs", "vlan", "br" ];
+
+    if(Arch::ia64 ())
+	device_types = add(device_types, "xp");
+
+    map<string, map<string,any> > wd = (map<string, map<string,any> >) union (widget_descr, widget_descr_local);
+
+    if (force_static_ip)
+    {
+	wd["BOOTPROTO_dhcp", "help"] =
+    /* Address dialog help 2-6/8: static address preferred */
+    _("<p>DHCP configuration is not recommended for this product.
+Components of this product might not work with DHCP.</p>");
+    }
+
+    wd["STARTMODE"] = MakeStartmode (
+	["auto", "ifplugd", "hotplug", "manual", "off", "nfsroot" ]);
+
+    wd["IFCFGTYPE", "items"] = BuildTypesListCWM (device_types);
+    wd["IFCFGID", "items"] = [[settings["IFCFGID"]:"",
+			       settings["IFCFGID"]:""]];
+//    wd["BINDTOHW", "items"] = ...;
+    wd["FWZONE", "items"] = SuSEFirewall4Network::FirewallZonesComboBoxItems();
+
+    term label = `HBox (
+	    `HSpacing(0.5),
+	    // The combo is a hack to allow changing misdetected
+	    // interface types. It will work in some cases, like
+	    // overriding eth to wlan but not in others where we would
+	    // need to change the contents of the dialog. #30890.
+	    "IFCFGTYPE",
+	    `HSpacing(1.5),
+	    "IFCFGID",
+	    `HSpacing(0.5)
+	);
+    if(Lan::operation != `add) {
+	if(Lan::alias == "") {
+	    settings["IFCFG"] = NetworkDevices::device_name(NetworkDevices::RealType(Lan::type, Lan::hotplug), Lan::device);
+	}
+	else {
+	    settings["IFCFG"] = NetworkDevices::alias_name(NetworkDevices::RealType(Lan::type, Lan::hotplug), Lan::device, Lan::alias);
+	}
+    }
+    
+    list<string> mb_items = [
+	"HARDWARE",
+	"DHCP_ADVANCED",
+	"ADDITIONAL_ADDRESSES",
+	"IPV6"
+	];
+    // Allow changing s390 options, except for iucv, where the option
+    // is in the name of the hwcfg file. Haven't figured it out yet.
+    if (Arch::s390 () && drvtype != "iucv")
+    {
+	mb_items = add(mb_items, "S390");
+    }
+    wd["ADVANCED_MB", "items"] = maplist (string btn, mb_items, {
+	// TODO helps
+	return [btn, wd[btn, "label"]:btn];
+    });
+
+    /* Frame label */
+    term frame2 = `MarginBox (
+	1, 0,
+	`Frame(_("Detailed Settings"), `HBox(`HStretch(),
+	`HSquash(`VBox(
+	    `VSpacing(0.4),
+	    "HOSTNAME_B",
+	    "ROUTING",
+	    "ADVANCED_MB",
+	    `VSpacing(0.4)
+	)),
+	`HStretch()
+    )));
+
+    if(Lan::alias != "")
+	frame2 = `VSpacing(0);
+
+    term address_p2p_contents =
+	`Frame (
+	    "",		// labelless frame
+	    `VBox (
+		"IPADDR",
+		"REMOTEIP")
+	    );
+
+    term address_static_contents =
+	`Frame (
+	    "",		// labelless frame
+	    `VBox (
+		"IPADDR",
+		"NETMASK",
+		// TODO new widget, add logic
+		//"GATEWAY"
+		`Empty ()
+		)
+	    );
+
+    term address_dhcp_contents = `VBox (
+	`RadioButtonGroup (
+	    `id ("BOOTPROTO"),	// CWM must not expand `id
+	    `MarginBox (1, 0,
+		`VBox (
+//		    `ReplacePoint(`id(`rp), `Left ("BOOTPROTO_none")),
+		    `Left ("BOOTPROTO_none"),
+		    `Left ("BOOTPROTO_dhcp"), // TODO: widget attribute align: left
+		    `Left ("BOOTPROTO_static"),
+		    address_static_contents)
+		)
+	    ),
+	"BOOTPROTO" // empty, handler; must come after the individual buttons to override their dumb default handlers
+	);
+
+    term just_address_contents =
+	is_ptp? address_p2p_contents:
+	(no_dhcp? address_static_contents: address_dhcp_contents);
+
+	term address_contents = `HSquash(`VBox(
+		`Left(label),
+		just_address_contents,
+		frame2,
+		"_DIALOG"
+	));
+
+    if (Lan::type == "bond")
+    {
+        settings["SLAVES"] = Lan::bond_slaves;
+
+        //get all eth devices
+    map <string, any> configurations =  NetworkDevices::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkDevices::CardRegex["netcard"]:"", "|"), {
+     foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+
+        //filter the eth devices (BOOT_PROTO=none && START_MODE=off)
+            if (((string)configurations[devtype, devnum, "BOOTPROTO"]:"" == "none") && ((string)configurations[devtype, devnum, "STARTMODE"]:"" == "off"))
+            wd["BONDSLAVE", "items"] = add (wd["BONDSLAVE", "items"]:[], [NetworkDevices::device_name(devtype, devnum)] );
+        });
+    });
+
+        settings["BONDOPTION"] = Lan::bond_option;
+
+        //fill up the drop list and make the default value first
+        wd["BONDOPTION", "items"] = filter(list<string> v, wd["BONDOPTION", "items"]:[],
+        {
+            return v[0]:"" != Lan::bond_option;
+        });
+        wd["BONDOPTION", "items"] = prepend(wd["BONDOPTION", "items"]:[], [Lan::bond_option]);
+        address_contents = `HSquash(`VBox(
+                `Left(label),
+		just_address_contents,
+		`MarginBox(1, 0, `Frame( "", `VBox("BONDSLAVE", "BONDOPTION"))),
+		frame2,
+		"_DIALOG"
+	));
+
+    }
+    else if (Lan::type == "vlan")
+    {
+     settings["STARTMODE"] = "onboot";
+        address_contents = `VBox(
+                `Left(label),
+                `Left( `VBox("ETHERDEVICE")),
+                just_address_contents,
+                "AD_ADDRESSES",
+                frame2
+        );
+   }
+    else if (Lan::type == "br")
+    {
+        address_contents = `VBox(
+                `Left(label),
+               just_address_contents,
+               `Frame("",  `VBox("BRIDGE_PORTS")),
+               frame2
+       );
+    }
+
+
+
+
+    map functions = $[
+        "init" : InitAddrWidget,
+        "store" : StoreAddrWidget,
+	`abort : ReallyAbort,
+    ];
+
+    wd = (map<string, map<string,any> >) union (wd, $[
+	"tab" : CWMTab::CreateWidget (
+	    $[
+		"tab_order" : ["t_general", "t_addr"],
+		"tabs" : $[
+                    "t_general" : $[
+                        "header" : _("&General"),
+                        "contents" : CommonBox (general_contents),
+			// FIXME we have helps per widget and for the whole
+			// tab set but not for one tab
+			"help": _("<p>Configure the detailed network card settings here.</p>"),
+                    ],
+                    "t_addr" : $[
+			// FIXME: here it does not complain about missing
+			// shortcuts
+                        "header" : _("&Address"),
+                        "contents" : CommonBox (address_contents),
+			// Address tab help
+			"help": _("<p>Configure your IP address.</p>"),
+                    ],
+                    "t3" : $[
+                        "header" : _("&Wireless"),
+                        "contents" : CommonBox (`Empty ()),
+                        "widget_names" : [],
+                    ],
+                    "t4" : $[
+                        "header" : _("&DNS"),
+                        "contents" : CommonBox (`Empty ()),
+                        "widget_names" : [],
+                    ],
+                ],
+		"initial_tab" : "t_addr",
+		"widget_descr" : wd,
+		"tab_help" : "",
+		"fallback_functions" : functions,
+            ])
+        ]);
+
+
+    term contents2 = `HBox ("tab");
+
+
+    any ret = CWM::ShowAndRun (
+	$[
+	    "widget_names": ["tab"],
+	    "widget_descr": wd,
+	    "contents": contents2,
+	    /* Address dialog caption */
+	    "caption": _("Network Address Setup"),
+	    "back_button" : Label::BackButton (),
+	    "next_button" : Label::NextButton (),
+	    "fallback_functions" : functions,
+	    ]);
+    y2milestone ("ShowAndRun: %1", ret);
+ 
+    if (ret != `back && ret != `abort)
+    {
+	string ifcfgname = NetworkDevices::device_name (
+	    settings["IFCFGTYPE"]:"",
+	    settings["IFCFGID"]:"");
+
+	// general tab
+	Lan::startmode = settings["STARTMODE"]:"";
+	Lan::usercontrol = settings["USERCONTROL"]:false;
+	string zone = settings["FWZONE"]:"";
+
+	if (zone != fwzone_initial)
+	    SuSEFirewall4Network::ChangedByUser(true);
+
+	SuSEFirewall4Network::ProtectByFirewall (ifcfgname, zone, zone != "");
+	Lan::mtu = settings["MTU"]:"";
+
+	// address tab
+	if(Lan::operation == `add) {
+	    Lan::device = NetworkDevices::device_num(ifcfgname);
+	    Lan::type = NetworkDevices::device_type(ifcfgname);
+	}
+
+	Lan::bootproto = settings["BOOTPROTO"]:"";
+	if (Lan::bootproto == "static") // #104494
+	{
+	    Lan::ipaddr = settings["IPADDR"]:"";
+	    Lan::netmask = settings["NETMASK"]:"";
+	    Lan::remoteip = settings["REMOTEIP"]:"";
+	}
+	else
+	{
+	    Lan::ipaddr = "";
+	    Lan::netmask = "";
+	    Lan::remoteip = "";
+	    // fixed bug #73739 - if dhcp is used, dont set default gw statically
+	    Routing::RemoveDefaultGw();
+	}
+    }
+
+    if (Lan::type == "bond")
+    {
+        Lan::bond_option = settings["BONDOPTION"]:"";
+	Lan::bond_slaves = (list<string>)settings["SLAVES"]:[];
+    } else if (Lan::type == "vlan"){
+        Lan::vlan_etherdevice = settings["ETHERDEVICE"]:"";
+       } else if (Lan::type == "br"){
+         Lan::bridge_ports = settings["BRIDGE_PORTS"]:"";
+        }
+
+
+    // proceed with WLAN settings if appropriate, #42420
+    if (ret == `next && Lan::type == "wlan" && Lan::alias == "")
+    {
+	ret = `wire;
+    }
+
+    if(ret == `routing)
+	Routing::SetDevices(NetworkDevices::List(""));
+
+
+    return ret;
+}
+
+/* EOF */
+}

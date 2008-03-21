@@ -1,0 +1,100 @@
+/**
+ * File:	clients/ipv6_proposal.ycp
+ * Package:	Network configuration
+ * Summary:	Network mode proposal
+ * Authors:	Michal Zugec <mzugec@novell.com>
+ */
+
+{
+
+textdomain "network";
+
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("ipv6 proposal started");
+y2milestone("Arguments: %1", WFM::Args());
+
+import "Lan";
+import "NetworkService";
+
+include "network/lan/complex.ycp";
+
+list args = WFM::Args();
+
+string func = args[0]:"";
+map param = args[1]:$[];
+map ret = $[];
+
+/* create a textual proposal */
+if(func == "MakeProposal") {
+    string proposal = "";
+    list<string> links = [];
+    string warning = nil;
+    symbol warning_level = nil;
+
+    list sum = Lan::SummaryIPv6 ();
+    proposal = sum[0]:"";
+    links = sum[1]:[];
+
+    ret = $[
+	"preformatted_proposal" : proposal,
+	"links" : links,
+	"warning_level" : warning_level,
+	"warning" : warning,
+    ];
+}
+/* run the module */
+else if(func == "AskUser") {
+    string chosen_id = param["chosen_id"]:"";
+    symbol seq = `next;
+
+    if (chosen_id == "ipv6-enable")
+    {
+	Lan::SetIPv6 (true);
+    }
+    else if (chosen_id == "ipv6-disable")
+    {
+	Lan::SetIPv6 (false);
+    }
+    else
+    {
+	Wizard::CreateDialog();
+	Wizard::SetDesktopIcon("lan");
+
+	seq = IPv6Dialog();
+	Wizard::CloseDialog();
+    }
+    Lan::proposal_valid = false; // repropose
+    Lan::SetModified ();
+
+    ret = $[
+	"workflow_sequence" : seq
+    ];
+}
+/* create titles */
+else if(func == "Description") {
+    ret = $[
+	/* RichText label */
+	"rich_text_title" : _("IPv6"),
+	/* Menu label */
+	"menu_title" : _("IPv6"),
+	"id" : "ipv6suport",
+    ];
+}
+/* write the proposal */
+else if (func == "Write") {
+    y2debug ("lan_proposal did it");
+}
+/* unknown function */
+else {
+    y2error("unknown function: %1", func);
+}
+
+/* Finish */
+y2debug("ret=%1", ret);
+y2milestone("ipv6 proposal finished");
+y2milestone("----------------------------------------");
+return ret;
+
+/* EOF */
+}

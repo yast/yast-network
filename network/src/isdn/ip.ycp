@@ -1,0 +1,189 @@
+/**
+ * File:	include/network/isdn/ip.ycp
+ * Package:	Configuration of network
+ * Summary:	ISDN configuration IP addresses dialog
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *		Karsten Keil <kkeil@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "IP";
+import "ISDN";
+import "Label";
+import "Popup";
+import "Wizard";
+
+/**
+ * Dialog for ISDN IP settings
+ * @return any user input
+ */
+define any IPDialog() ``{
+
+
+    /* DIALOG TEXTS */
+
+    // title for ISDN IP address dialog
+    string caption = _("ISDN IP Address Settings");
+
+    /* FIXME: help texts, contents */
+
+    string helptext =
+    // help text 1/3
+_("<p>Enter the IP addresses if you received a fixed IP address
+from your provider for syncppp or you use raw IP.</p>
+");
+
+    helptext = helptext +
+    // help text 2/3
+_("<p>Check <b>Dynamic IP Address</b> if your provider
+assigns you one temporary address per connection. In this case, the
+outgoing address is unknown until the moment the link is established.
+This is the default with most providers.
+</p>
+");
+
+    helptext = helptext +
+    // help text 3/3
+_("<p>Check <b>Default Route</b> to use this interface as the
+default route. Only one interface can be the default
+route.</p>
+");
+
+    /* PREPARE VARIABLES */
+    string Local_IP = ISDN::interface["IPADDR"]:"192.168.99.1";
+    string Remote_IP = ISDN::interface["PTPADDR"]:"192.168.99.2";
+    boolean syncppp = ISDN::interface["PROTOCOL"]:"syncppp" == "syncppp";
+    boolean defaultroute = ISDN::interface["DEFAULTROUTE"]:"yes" == "yes";
+    boolean dynip = ISDN::interface["DYNAMICIP"]:"yes" == "yes";
+
+    /* DIALOG CONTENTS */
+
+    term contents = nil;
+
+    if(syncppp) {
+	contents =
+	    `HSquash(
+		`VBox(
+		    // Frame title for ISDN IP address settings
+		    `Frame(_("IP Address Settings"),
+			`HBox(
+			    `HSpacing(),
+			    `VBox(
+				`VSpacing(),
+				// CheckBox label
+				`Left(`CheckBox(`id(`dynip), `opt(`notify), _("&Dynamic IP Address"), dynip)),
+				`VSpacing(),
+				// TextEntry label
+				`Left(`TextEntry(`id(`IP_local), _("&Local IP Address of Your Machine"), Local_IP)),
+				// TextEntry label
+                                `Left(`TextEntry(`id(`IP_remote), _("Re&mote IP Address"), Remote_IP)),
+				`VSpacing()
+			    ),
+			    `HSpacing()
+			)
+		    ),
+		    `VSpacing(),
+		    // CheckBox label
+		    `Left(`CheckBox(`id(`defaultroute), _("D&efault Route"), defaultroute))
+		)
+	    );
+    }
+    else
+    {
+	contents =
+	    //`HSquash(
+		`VBox(
+		    // Frame title for ISDN IP address settings
+		    `Frame(_("IP Address Settings"),
+			`HBox(
+			    `HSpacing(),
+			    `VBox(
+				`VSpacing(),
+				// TextEntry label
+				`Left(`TextEntry(`id(`IP_local), _("&Local IP Address of Your Machine"), Local_IP)),
+				// TextEntry label
+				`Left(`TextEntry(`id(`IP_remote), _("Re&mote IP Address"), Remote_IP)),
+				`VSpacing()
+			    ),
+			    `HSpacing()
+			)
+		    ),
+		    `VSpacing(),
+		    // CheckBox label
+		    `Left(`CheckBox(`id(`defaultroute), _("D&efault Route"), defaultroute))
+		//)
+	    );
+    }
+
+    y2debug("contents=%1",contents);
+
+    /* DIALOG PREPARE */
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    Label::BackButton(), Label::NextButton());
+
+    /* MAIN CYCLE */
+    any ret = nil;
+    while(true) {
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(Popup::ReallyAbort(true))
+		break;
+	    else
+		continue;
+	} else if(ret == `dynip) {
+	    boolean dip = (boolean) UI::QueryWidget(`id(`dynip), `Value);
+	    continue;
+	}
+	/* back */
+	else if(ret == `back) {
+	    break;
+	}
+	/* next */
+	else if(ret == `next) {
+	    Local_IP = (string) UI::QueryWidget(`id(`IP_local), `Value);
+	    Remote_IP = (string) UI::QueryWidget(`id(`IP_remote), `Value);
+	    defaultroute = (boolean) UI::QueryWidget(`id(`defaultroute), `Value);
+
+	    if(syncppp)
+		dynip = (boolean) UI::QueryWidget(`id(`dynip), `Value);
+
+	    if((!syncppp || !dynip) && (!IP::Check4(Local_IP) || !IP::Check4(Remote_IP))) {
+		// Popup::Message if entries are incorrect
+		Popup::Message(_("Local and remote IP addresses must be completed correctly."));
+		continue;
+	    }
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+
+    /* UPDATE VARIABLES */
+
+    if(ret == `next) {
+        ISDN::interface = union(ISDN::interface, $[
+            "IPADDR"		: Local_IP,
+            "PTPADDR"		: Remote_IP,
+            "DEFAULTROUTE"	: defaultroute ? "yes" : "no",
+        ]);
+	if (syncppp) {
+	    ISDN::interface = union(ISDN::interface, $[
+		"DYNAMICIP"	: dynip ? "yes" : "no",
+	    ]);
+	}
+    }
+    return ret;
+}
+
+
+}
