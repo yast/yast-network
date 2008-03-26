@@ -16,10 +16,10 @@ textdomain "network";
  */
 void InitBridge(string key)
 {
- list items = [];
  string old_name=NetworkInterfaces::Name;
  // old values (preselected values)
  list<string> br_ports = splitstring(NetworkInterfaces::Current["BRIDGE_PORTS"]:"", " ");
+ list items = createUnconfigured(br_ports);
     // from all configured netcards filter 0.0.0.0 configurations
     map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
     foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
@@ -35,15 +35,6 @@ string description = sformat("%1%2", NetworkInterfaces::GetValue(devname, "NAME"
      });
     });
 
-	// we can use also unconfigured devices
-         foreach(integer row, any value, LanItems::Items,{
-          LanItems::current = row;
-          if (!LanItems::IsItemConfigured()){
-            string dev_name = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
-            string description = BuildDescription(LanItems::type, LanItems::device, $["dev_name":dev_name], [LanItems::getCurrentItem()["hwinfo"]:$[]]);
-            if (hasAnyValue(dev_name)) items = add(items, `item(`id(dev_name), sformat("%1 - %2", dev_name, description), contains(br_ports, dev_name)));
-            }
-         });
   NetworkInterfaces::Select(old_name);
   UI::ChangeWidget(`id(key), `Items, items);
 }

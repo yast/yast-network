@@ -18,6 +18,7 @@ textdomain "network";
 import "IP";
 import "NetworkPopup";
 import "NetworkInterfaces";
+import "LanItems";
 
 /**
  * Validator for IP adresses, no_popup
@@ -268,6 +269,24 @@ string handleDevice(list<string>items, string selected){
             }
  return selected;
 }
+
+define list createUnconfigured(list<string> match){
+ list items=[];
+ foreach(integer row, any value, LanItems::Items,{
+  LanItems::current = row;
+  if (!LanItems::IsItemConfigured()){
+    string dev_name = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
+    string description = BuildDescription(LanItems::type, LanItems::device, $["dev_name":dev_name], [LanItems::getCurrentItem()["hwinfo"]:$[]]);
+    if (hasAnyValue(dev_name)) items = add(items, `item(`id(dev_name), sformat("%1 - %2", dev_name, description), contains(match, dev_name)?true:false));
+    }
+ });
+ return items;
+}
+
+
+
+
+
 
 /* EOF */
 }

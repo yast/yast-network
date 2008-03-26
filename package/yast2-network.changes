@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar 25 18:15:16 CET 2008 - mzugec@suse.de
+
+- possibility to use unconfigured device for vlan, bond and bridge
+  (bnc#369195)
+- 2.16.28 
+
+-------------------------------------------------------------------
 Fri Mar 21 13:35:40 CET 2008 - mzugec@suse.de
 
 - for alias elements use aliasX instead of X (bnc#369195)

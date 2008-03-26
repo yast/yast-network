@@ -625,13 +625,5 @@ define list<map<string,any> > BuildUnconfigured (string class, list<map> Hardwar
     return BuildUnconfiguredCommon (sum[size(sum)-1]:[], class);
 }
 
-
-
-
-
-
-
-
-
 /* EOF */
 }

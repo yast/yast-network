@@ -32,11 +32,11 @@ import "NetworkService";
 import "Map";
 
 include "network/summary.ycp";
-include "network/widgets.ycp";
 include "network/lan/help.ycp";
 include "network/lan/hardware.ycp";
 include "network/lan/virtual.ycp";
 include "network/complex.ycp";
+include "network/widgets.ycp";
 include "network/lan/bridge.ycp";
 
 /**
@@ -122,18 +122,13 @@ y2internal("store bridge %1 : %2", key, settings["BRIDGE_PORTS"]:"");
  */
 void InitVLANSlave(string key)
 {
- list items = [];
      settings["ETHERDEVICE"] = NetworkInterfaces::Current["ETHERDEVICE"]:"";
-	 foreach(integer row, any value, LanItems::Items,{
-	  LanItems::current = row;
-	  if (!LanItems::IsItemConfigured()){
-	    string dev_name = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
-	    string description = BuildDescription(LanItems::type, LanItems::device, $["dev_name":dev_name], [LanItems::getCurrentItem()["hwinfo"]:$[]]);
-	    if (hasAnyValue(dev_name)) items = add(items, `item(`id(dev_name), sformat("%1 - %2", dev_name, description), (dev_name==settings["ETHERDEVICE"]:"")?true:false));
-	    }
-	 });
+
+ list items = createUnconfigured([settings["ETHERDEVICE"]:""]);
+
   foreach (string dev_name, NetworkInterfaces::List("br|bond"), {
-   items = add(items, `item(`id(dev_name), dev_name, (dev_name==settings["ETHERDEVICE"]:"")?true:false));
+   items = add(items, `item(`id(dev_name), dev_name,
+				(dev_name==settings["ETHERDEVICE"]:"")?true:false));
   });
     UI::ChangeWidget(`id(key), `Items, items);
 }
@@ -156,7 +151,21 @@ void StoreVLANSlave(string key, map event)
  */
 void InitSlave(string key)
 {
-    UI::ChangeWidget(`id(key), `SelectedItems, settings["SLAVES"]:[]);
+//    UI::ChangeWidget(`id(key), `SelectedItems, settings["SLAVES"]:[]);
+      list items = createUnconfigured(settings["SLAVES"]:[]);
+
+    map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
+     foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+
+        //filter the eth devices (BOOT_PROTO=none && START_MODE=off)
+            if (((string)configurations[devtype, devname, "BOOTPROTO"]:"" == "none") && ((string)configurations[devtype, devname, "STARTMODE"]:"" == "off"))
+            items = add (items, [ devname ] );
+
+     });
+    });
+
+    UI::ChangeWidget(`id(key), `Items, items);
 }
 
 /**
@@ -809,27 +818,18 @@ define any AddressDialog() {
 
     if (LanItems::type == "bond")
     {
-        settings["SLAVES"] = LanItems::bond_slaves;
-
-    map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
-    foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
-     foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
-
-        //filter the eth devices (BOOT_PROTO=none && START_MODE=off)
-            if (((string)configurations[devtype, devname, "BOOTPROTO"]:"" == "none") && ((string)configurations[devtype, devname, "STARTMODE"]:"" == "off"))
-            wd["BONDSLAVE", "items"] = add (wd["BONDSLAVE", "items"]:[], [ devname ] );
-
-     });
-    });
-
+      settings["SLAVES"] = LanItems::bond_slaves;
         settings["BONDOPTION"] = LanItems::bond_option;
 
         //fill up the drop list and make the default value first
+
         wd["BONDOPTION", "items"] = filter(list<string> v, wd["BONDOPTION", "items"]:[],
         {
             return v[0]:"" != LanItems::bond_option;
         });
         wd["BONDOPTION", "items"] = prepend(wd["BONDOPTION", "items"]:[], [LanItems::bond_option]);
+
+
         address_contents = `VBox(
                 `Left(label),
 		just_address_contents,
