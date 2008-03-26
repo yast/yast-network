@@ -1030,8 +1030,11 @@ Components of this product might not work with DHCP.</p>");
         });
     });
 
-        settings["BONDOPTION"] = Lan::bond_option;
+       settings["BONDOPTION"] = Lan::bond_option;
 
+        foreach(string dev_name, Lan::getUnconfiguredDevices(),{
+           wd["BONDSLAVE", "items"] = add(wd["BONDSLAVE", "items"]:[], `item(dev_name, dev_name));
+        });
         //fill up the drop list and make the default value first
         wd["BONDOPTION", "items"] = filter(list<string> v, wd["BONDOPTION", "items"]:[],
         {

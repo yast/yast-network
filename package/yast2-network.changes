@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar 25 14:34:24 CET 2008 - mzugec@suse.de
+
+- possibility to use unconfigured devices for vlan, bond and bridge
+  (bnc#369195)
+- 2.13.114 
+
+-------------------------------------------------------------------
 Thu Mar 20 20:08:03 CET 2008 - mzugec@suse.de
 
 - backported validator .rnc from 10.3 for validate AY profile 
