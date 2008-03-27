@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Mar 27 10:40:04 CET 2008 - mzugec@suse.de
+
+- fixed package build 
+ 
+-------------------------------------------------------------------
 Tue Mar 25 18:15:16 CET 2008 - mzugec@suse.de
 
 - possibility to use unconfigured device for vlan, bond and bridge
