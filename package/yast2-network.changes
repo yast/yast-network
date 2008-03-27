@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 25 16:59:27 CET 2008 - mzugec@suse.de
+
+- pre-select currently used driver in hardware dialog (bnc#373928)
+- 2.13.115 
+
+-------------------------------------------------------------------
 Tue Mar 25 14:34:24 CET 2008 - mzugec@suse.de
 
 - possibility to use unconfigured devices for vlan, bond and bridge

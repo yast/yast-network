@@ -73,7 +73,7 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     string options = NetworkModules::Options; // FIXME: MOD Lan::Module["options"]:"";
     string hotplug = Lan::hotplug;
     y2milestone("hotplug=%1", Lan::hotplug);
-    list<string> modules_from_hwinfo = Lan::getModulesFor(Lan::nm_name, modul );
+    list<string> modules_from_hwinfo = Lan::getModulesFor(Lan::nm_name, (Lan::operation==`add)?"":modul );
 
     string type = Lan::type;
     if(type == "") {

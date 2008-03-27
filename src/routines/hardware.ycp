@@ -316,6 +316,11 @@ define list<map> ReadHardware(string hwtype) {
 		map driver = drivers[0]:$[];
 		one["active"] = driver["active"]:false;
 		list module0 = driver["modules", 0]:[]; // [module, options]
+                foreach(map drv, (list<map>)drivers, {
+                 if (drv["modules", 0, 0]:""==card["driver"]:"") module0=drv["modules", 0]:[];
+                });
+                one["driver"] = card["driver"]:"";
+
 		one["module"] = module0[0]:"";
 		one["options"] = module0[1]:"";
 	    }
@@ -349,6 +354,7 @@ define list<map> ReadHardware(string hwtype) {
 	}
 
 	y2debug("found device: %1", one);
+	y2internal("found device: %1", one);
 	if (card_ok) {
 	    Hardware[size(Hardware)] = one;
 	    num = num + 1;

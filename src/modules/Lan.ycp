@@ -272,9 +272,10 @@ global define boolean isAnyInterfaceDown(){
 
 global list<string> getModulesFor(string busid, string default_module){
  string bus_id = substring(busid, findfirstof(busid, "0123456789"));
- list<string> mods = [ default_module ];
+ list<string> mods = [ ];
  foreach(map<string, any> mod_row, (list<map<string, any> >)Hardware, {
   if (mod_row["busid"]:"" == bus_id){
+  if (size(default_module)==0) default_module = mod_row["driver"]:"";
    foreach(map<string, any> row_drv, mod_row["drivers"]:[], {
     foreach(list row , row_drv["modules"]:[], {
      if (row[0]:"" != default_module) mods = add(mods,    row[0]:"");
@@ -282,6 +283,7 @@ global list<string> getModulesFor(string busid, string default_module){
    });
   }
  });
+ mods = prepend(mods, default_module);
  return mods;
 }
 
