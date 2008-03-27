@@ -20,6 +20,8 @@ import "NetworkPopup";
 import "NetworkInterfaces";
 import "LanItems";
 
+include "network/complex.ycp";
+
 /**
  * Validator for IP adresses, no_popup
  * @param key	the widget being validated
