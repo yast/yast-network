@@ -1,0 +1,812 @@
+/**
+ * File:	include/network/lan/hardware.ycp
+ * Package:	Network configuration
+ * Summary:	Hardware dialogs
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Arch";
+import "Label";
+import "Lan";
+import "NetworkDevices";
+import "NetworkModules";
+import "Popup";
+import "Wizard";
+
+include "network/summary.ycp";
+
+/**
+ * Manual network card configuration dialog
+ * @return dialog result
+ */
+define any HardwareDialog() {
+
+    ScreenName("lan-hardware");
+
+    /* Manual dialog caption */
+    string caption = _("Manual Network Card Configuration");
+
+    /* Manual dialog help 1/4 */
+    string help = _("<p>Here, set up your networking device.
+The values are written to <i>/etc/sysconfig/hardware/hwcfg-*</i>.</p>
+") +
+
+    /* Manual dialog help 2/4 */
+_("<p><b>Options</b> for the module should be written in the format
+<i>option</i>=<i>value</i>. Each entry should be space separated,
+for example, <i>io=0x300 irq=5</i>. <b>Note:</b> If  two cards are configured
+with the same module name, options will be merged while saving.</p>");
+
+    if(!(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 () == true))
+    {
+
+    /* Manual dialog help 3/4 */
+help = help + _("<p>Get a list of available network cards by pressing
+<b>Select from List</b>.</p>") +
+
+    /* Manual dialog help 4/4 */
+_("<p>If you have a <b>PCMCIA</b> network card, select PCMCIA.
+If you have a <b>USB</b> network card, select USB.</p>
+");
+    } 
+ 
+    if(Arch::s390 ())
+    {
+	// overwrite help
+	/* Manual dialog help 5/4 */
+	help = _("<p>Here, set up your networking device. The values will be
+written to <i>/etc/modprobe.conf</i> or <i>/etc/chandev.conf</i>.</p>
+") +
+
+	/* Manual dialog help 6/4 */
+_("<p>Options for the module should be written in the format specified
+in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
+    }
+
+    string modul = NetworkModules::Alias; // FIXME: MOD Lan::Module["module"]:"";
+    string options = NetworkModules::Options; // FIXME: MOD Lan::Module["options"]:"";
+    string hotplug = Lan::hotplug;
+    y2milestone("hotplug=%1", Lan::hotplug);
+    list<string> modules_from_hwinfo = Lan::getModulesFor(Lan::nm_name, (Lan::operation==`add)?"":modul );
+
+    string type = Lan::type;
+    if(type == "") {
+	y2error("Shouldn't happen -- type is empty. Assuming eth.");
+	type = "eth";
+    }
+    string realtype = NetworkDevices::RealType(type, hotplug);
+    string device = Lan::device;
+    string default_device = Lan::device;
+    // #38213, remember device id when we switch back from pcmcia/usb
+    string non_hotplug_device_id = device;
+    string hwcfg = Lan::nm_name;
+
+    // FIXME duplicated in address.ycp
+    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond", "vlan", "br" ];
+
+    if(Arch::s390 ())
+	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "ficon", "iucv", "qeth", "lcs", "vlan", "br" ];
+
+    if(Arch::ia64 ())
+	device_types = add(device_types, "xp");
+
+    if(issubstring(device, "bus-pcmcia"))
+	hotplug = "pcmcia";
+    else if(issubstring(device, "bus-usb"))
+	hotplug = "usb";
+    y2milestone("hotplug=%1", Lan::hotplug);
+
+    term CheckBoxes = `HBox(
+	`HSpacing(1.5),
+	/* CheckBox label */
+	`CheckBox(`id(`pcmcia), `opt(`notify), _("&PCMCIA"), hotplug == "pcmcia"),
+	`HSpacing(1.5),
+	/* CheckBox label */
+	`CheckBox(`id(`usb), `opt(`notify), _("&USB"), hotplug == "usb"),
+	`HSpacing(1.5)
+    );
+
+    /* Placeholders (translations) */
+    term XBox = `HBox(
+	/* ComboBox label */
+	`ComboBox(`id(`hotplug), `opt(`notify), _("&Hotplug Type"), []),
+	/* CheckBox label */
+	`CheckBox(`id(`pci), `opt(`notify), _("P&CI"), hotplug == "pci"),
+	`HSpacing(1.5)
+    );
+
+    /* Pushbutton label */
+    term ListButton = `PushButton(`id(`list), _("Select from &List"));
+
+    /* Disable PCMCIA and USB checkboxex on Edit and s390 */
+    if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 () == true)
+	CheckBoxes = `VSpacing(0);
+
+	// #116211 - allow user to change modules from list
+    /* Frame label */
+    term KernelBox = `Frame(_("&Kernel Module"), `HBox(`HSpacing(0.5), `VBox(
+	`VSpacing(0.4),
+	/* Text entry label */
+	`TextEntry(`id(`hwcfg), _("&Hardware Configuration Name"), hwcfg),
+	`HBox(
+	    /* Text entry label */
+	    `ComboBox(`id(`modul), `opt(`editable), _("&Module Name"), modules_from_hwinfo),
+	    `HSpacing(0.2),
+	    `TextEntry(`id(`options), Label::Options (), options)
+	),
+	`VSpacing(0.4),
+	CheckBoxes,
+	`VSpacing(0.4)
+    ),`HSpacing(0.5)));
+    list devices = Lan::FreeDevices(realtype); // TODO: id-, bus-, ... here
+    if(!contains(devices, device)) devices = prepend(devices, device);
+
+    term DeviceNumberBox = `ReplacePoint(`id(`rnum),
+	/* TextEntry label */
+	`ComboBox (`id(`num), `opt(`editable, `hstretch), _("&Configuration Name"), [device]));
+
+    /* Manual dialog contents */
+    term TypeNameWidgets = 
+	    /* Frame label */
+	    `Frame(_("Network &Configuration"),`VBox(
+		`VSpacing(0.2),
+		`HBox(
+		    `HSpacing(0.5),
+		    `ComboBox(`id(`dev), `opt(`hstretch, `notify),
+			/* ComboBox label */
+			_("&Device Type"), BuildTypesList(device_types, type)),
+		    `HSpacing(1.5),
+		    DeviceNumberBox,
+		    `HSpacing(0.5)
+		),
+		`VSpacing(0.2)
+	    ));
+
+    /* Add hardware -> don't allow some changes (card type) */
+    // FIXME: devname if(Lan::operation == `add && Lan::unique != "") {
+    if(false) {
+
+	string typ = DeviceType(type);
+	if(hotplug == "pcmcia") typ = typ + " (PCMCIA)";
+	if(hotplug == "usb") typ = typ + " (USB)";
+
+	TypeNameWidgets =
+		/* Frame label */
+		`Frame(_("Configuration Name"),`VBox(
+		    `VSpacing(0.2),
+		    `HBox(
+			`HSpacing(0.9),
+			`VBox(
+			    /* Label text */
+			    `Left(`Label(_("Device Type:"))),
+			    `VSpacing(0.2),
+			    `Left(`Label(`opt(`outputField), typ))
+			),
+			`HSpacing(0.5),
+			DeviceNumberBox,
+			`HSpacing(0.5)
+		    ),
+		    `VSpacing(0.2)
+		));
+    }
+
+    /* Edit -> don't allow some changes */
+    // FIXME: devname if(true /* FIXME: devname Lan::operation == `edit */) {
+    if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */) {
+
+	ListButton = `VSpacing(0);
+
+	TypeNameWidgets =
+		`Left(`HSquash(`Left(`VBox(
+		    `HBox(
+			/* Label text */
+			`HWeight(1, `Right(`Label(_("Configuration Name")))),
+			`HSpacing(0.5),
+			`HWeight(1, `Left(`Label(`opt(`outputField), NetworkDevices::device_name(realtype, device))))
+		    ),
+		    `VSpacing(0.5),
+		    `HBox(
+			/* Label text */
+			`HWeight(1, `Right(`Label(_("Hardware Name")))),
+			`HSpacing(0.5),
+			`HWeight(1, `Left(`Label(`opt(`outputField), hwcfg)))
+		    )
+		))));
+    }
+
+    /* Frame label */
+    term ButtonBox = `HBox(
+	`HStretch(),
+	`HSpacing(0.5),
+	ListButton,
+	`HSpacing(0.5),
+	`HStretch()
+    );
+
+    term contents = `CheckBoxFrame(`id(`enable_hwconfig), caption, hwcfg != "",
+	`HBox(
+	`HSpacing(2),
+	`VBox(
+	    `VSpacing(0.5),
+	    TypeNameWidgets,
+	    `VSpacing(1.5),
+	    KernelBox,
+	    `VSpacing(1.5),
+	    ButtonBox,
+	    `VSpacing(0.5)
+	    ),
+	`HSpacing(2)
+	));
+
+    if(Lan::operation == `edit /* FIXME: unique || Lan::unique != "" */)
+	Wizard::SetContentsButtons(caption, contents, help,
+		Label::BackButton(), Label::OKButton());
+    else
+	Wizard::SetContentsButtons(caption, contents, help,
+		Label::BackButton(), Label::NextButton());
+
+    boolean no_hotplug = hotplug == "";
+    boolean no_hotplug_dummy = no_hotplug && type != "dummy";
+    UI::ChangeWidget(`id(`modul), `Enabled, no_hotplug_dummy);
+    UI::ChangeWidget(`id(`options), `Enabled, no_hotplug_dummy);
+    ChangeWidgetIfExists(`id(`list), `Enabled, no_hotplug_dummy);
+    ChangeWidgetIfExists(`id(`hwcfg), `Enabled, no_hotplug);
+    ChangeWidgetIfExists(`id(`usb), `Enabled, (hotplug == "usb" || hotplug == "") && type != "dummy");
+    ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hotplug == "pcmcia" || hotplug == "") && type != "dummy");
+    ChangeWidgetIfExists(`id(`num), `ValidChars, NetworkDevices::ValidCharsIfcfg ());
+    ChangeWidgetIfExists(`id(`hwcfg), `ValidChars, NetworkModules::ValidCharsHwcfg ());
+
+    any ret = nil;
+    while(true) {
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+
+	/* change device type or pcmcia/usb card? */
+	else if(ret == `pcmcia || ret == `usb || ret == `dev) {
+
+	    if(UI::WidgetExists(`id(`pcmcia)) || UI::WidgetExists(`id(`usb))) {
+		if(UI::QueryWidget(`id(`pcmcia), `Value) == true)
+		    hotplug = "pcmcia";
+		else if(UI::QueryWidget(`id(`usb), `Value) == true)
+		    hotplug = "usb";
+		else
+		    hotplug = "";
+	    }
+	    y2debug("hotplug=%1", hotplug);
+
+	    if(UI::WidgetExists(`id(`dev))) {
+		type = (string) UI::QueryWidget(`id(`dev), `Value);
+		realtype = NetworkDevices::RealType(type, hotplug);
+	    }
+	    y2debug("type=%1", type);
+	    y2debug("realtype=%1", realtype);
+
+	    if(type == "usb") {
+		UI::ChangeWidget(`id(`usb), `Value, true);
+		hotplug = "usb";
+	    }
+
+	    no_hotplug = hotplug == "";
+	    no_hotplug_dummy = no_hotplug && type != "dummy";
+	    UI::ChangeWidget(`id(`modul), `Enabled, no_hotplug_dummy);
+	    UI::ChangeWidget(`id(`options), `Enabled, no_hotplug_dummy);
+	    ChangeWidgetIfExists(`id(`list), `Enabled, no_hotplug_dummy);
+	    ChangeWidgetIfExists(`id(`hwcfg), `Enabled, no_hotplug);
+	    ChangeWidgetIfExists(`id(`usb), `Enabled, (hotplug == "usb" || hotplug == "") && type != "dummy");
+	    ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hotplug == "pcmcia" || hotplug == "") && type != "dummy");
+
+	    // list devices = Lan::FreeDevices(realtype);
+	    // default_device = (string) devices[0]:"";
+	    /* TextEntry label */
+	    // UI::ReplaceWidget(`id(`rnum), `TextEntry(`id(`num), `opt(`hstretch), _("&Configuration Name"), Lan::nm_name));
+
+	    device = (string) UI::QueryWidget (`id (`num), `Value);
+	    if (device != "bus-usb" && device != "bus-pcmcia")
+	    {
+		non_hotplug_device_id = device;
+	    }
+
+	    if(hotplug == "usb")
+		device = "bus-usb";
+	    else if(hotplug == "pcmcia")
+		device = "bus-pcmcia";
+	    else
+		device = non_hotplug_device_id;
+
+	    UI::ChangeWidget(`id(`num), `Value, device);
+
+	    if(Arch::s390 ()) {
+		string drvtype = Lan::DriverType (type);
+
+		if (contains (["lcs", "qeth", "ctc"], drvtype))
+		    modul = drvtype;
+		else if (drvtype == "iucv")
+		    modul = "netiucv";
+		UI::ChangeWidget(`id(`modul), `Value, modul);
+	    }
+	    if(type == "xp") {
+		modul = "xpnet";
+		UI::ChangeWidget(`id(`modul), `Value, modul);
+	    }
+	    else if (type == "dummy") // #44582
+	    {
+		hwcfg = (string) UI::QueryWidget (`id (`hwcfg), `Value);
+
+		modul = "dummy";
+		options = sformat ("-o dummy-%1", hwcfg);
+		UI::ChangeWidget(`id(`modul), `Value, modul);
+		UI::ChangeWidget(`id(`options), `Value, options);
+	    }
+            else if (contains(["bond", "vlan", "br"], type))
+            {
+                UI::ChangeWidget(`id(`hwcfg), `Enabled, false);
+                UI::ChangeWidget(`id(`modul), `Enabled, false);
+                UI::ChangeWidget(`id(`options), `Enabled, false);
+                UI::ChangeWidget(`id(`pcmcia), `Enabled, false);
+                UI::ChangeWidget(`id(`usb), `Enabled, false);
+		UI::ChangeWidget(`id(`list), `Enabled, false);
+
+                UI::ChangeWidget(`id(`hwcfg), `Value, "");
+                UI::ChangeWidget(`id(`modul), `Value, "");
+                UI::ChangeWidget(`id(`options), `Value, "");
+            }
+
+	    continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	/* select from the list *//*
+	else if(ret == `list) {
+	    Lan::type = type;
+	    Lan::device = tointeger(UI::QueryWidget(`id(`num), `Value));
+	    break;
+	} */
+	else if(ret == `next || ret == `list) {
+	    /* FIXME: check_* */
+       if(!(boolean)UI::QueryWidget(`enable_hwconfig, `Value))
+        {
+
+NetworkModules::DeleteM(Lan::nm_name);
+if(Lan::nm_name_old==nil) Lan::nm_name_old = Lan::nm_name;
+Lan::nm_name="";
+map<string, any> tmp_current=$[];
+foreach(string key, any value, NetworkDevices::Current, {
+if (key != "_nm_name") tmp_current[key]=value;
+});
+NetworkDevices::Current=tmp_current;
+        } else
+	if(UI::WidgetExists(`id(`hwcfg))) {
+	    Lan::nm_name_old = Lan::nm_name;
+	    Lan::nm_name = (string) UI::QueryWidget(`id(`hwcfg), `Value);
+	}
+
+	    if(UI::WidgetExists(`id(`hwcfg))) {
+		hwcfg = (string) UI::QueryWidget (`id (`hwcfg), `Value);
+		if (Lan::operation == `add || hwcfg != Lan::nm_name) {
+		    if (contains (NetworkModules::ListM(""), hwcfg)) {
+			UI::SetFocus (`id (`hwcfg));
+			/* Popup text */
+			Popup::Error(sformat(_("Hardware configuration %1 already exists.
+Choose a different one."), hwcfg));
+			continue;
+		    }
+		}
+	    }
+
+	    if(Lan::operation == `add && UI::WidgetExists(`id(`num))) {
+		string nm = (string) UI::QueryWidget(`id(`num), `Value);
+		if(Lan::operation == `add || (device != Lan::device && type != Lan::type)) {
+		    if(contains(NetworkDevices::List(""), NetworkDevices::device_name(type, nm))) {
+			/* Popup text */
+			Popup::Error(sformat(_("Configuration name %1 (%2) already exists.
+Choose a different one."), nm, NetworkDevices::device_name(type, nm)));
+			UI::SetFocus(`id(`num));
+			continue;
+		    }
+		}
+	    }
+
+	    if(UI::WidgetExists(`id(`num))) {
+		string devic = (string) UI::QueryWidget(`id(`num), `Value);
+		if(false /* devic != default_device */) {
+		    y2warning("Default device: %1 -> %2", default_device, devic);
+		    /* Popup text */
+		    string pop = _("You changed the default device number.
+
+This possibility is only intended for systems with built-in network cards
+or cards with multiple interfaces. If you do not have such network card,
+this would probably result in a nonfunctional network configuration.
+
+Really continue?
+");
+		    if(Popup::YesNoHeadline(Label::WarningMsg(), pop) == true) {
+			y2warning("Default device changed!");
+			break;
+		    }
+		    else continue;
+		}
+	    }
+	    break;
+	}
+	else {
+	    y2error("Unexpected return code: %1", ret);
+	    continue;
+	}
+    }
+
+    if(ret == `next || ret == `list) {
+	NetworkModules::Alias /* FIXME: MOD Lan::Module["module"] */ = (string) UI::QueryWidget(`id(`modul), `Value);
+	NetworkModules::Options /* FIXME: MOD Lan::Module["options"] */ = (string) UI::QueryWidget(`id(`options), `Value);
+
+	if(UI::WidgetExists(`id(`num)))
+	    Lan::device = (string) UI::QueryWidget(`id(`num), `Value);
+
+	if(UI::WidgetExists(`id(`pcmcia)) || UI::WidgetExists(`id(`usb))) {
+	    if(UI::QueryWidget(`id(`pcmcia), `Value) == true)
+		Lan::hotplug = "pcmcia";
+	    else if(UI::QueryWidget(`id(`usb), `Value) == true)
+		Lan::hotplug = "usb";
+	    else
+		Lan::hotplug = "";
+	}
+	Lan::hotplug = "";
+
+	if(UI::WidgetExists(`id(`dev))) {
+	    type = (string) UI::QueryWidget(`id(`dev), `Value);
+	    Lan::type = type;
+	}
+	if (type=="qeth"){
+                    integer devid = 0;
+                    string devstr = "";
+
+                    y2milestone("nm_name=%1", Lan::nm_name);
+                    string s390chanid = "[0-9]+\\.[0-9]+\\.";
+                    if(regexpmatch(Lan::nm_name, s390chanid)) {
+                        devid = tointeger("0x" + regexpsub(Lan::nm_name, s390chanid + "(.*)", "\\1"));
+                        devstr = regexpsub(Lan::nm_name, ".*[^0-9](" + s390chanid + ").*", "\\1");
+                    }
+
+                    y2milestone("devid=%1(%2)", devid, devstr);
+                    if(devid == nil) devid = 0;
+                    string devid0 = String::PadZeros(regexpsub(tohexstring(devid), "0x(.*)", "\\1"), 4);
+                    string devid1 = String::PadZeros(regexpsub(tohexstring(devid+1), "0x(.*)", "\\1"), 4);
+                    string devid2 = String::PadZeros(regexpsub(tohexstring(devid+2), "0x(.*)", "\\1"), 4);
+		    Lan::qeth_chanids = sformat("%1%2 %1%3 %1%4", devstr, devid0, devid1, devid2);
+Popup::Message(sformat("chanids %1", Lan::qeth_chanids));
+	}
+
+	y2milestone("type=%1",type);
+    }
+    return ret;
+}
+
+/**
+ * Call back for a manual selection from the list
+ * @return dialog result
+ */
+define any SelectionDialog() {
+
+    ScreenName("lan-hardware-selection");
+
+    string type = Lan::type;
+    integer selected = 0;
+
+    /* map NetworkCards */
+    include "network/lan/cards.ycp";
+
+    list<map> hwlist = NetworkCards[type]:[];
+    list cards = hwlist2items(hwlist, 0);
+
+    /* Manual selection caption */
+    string caption = _("Manual Network Card Selection");
+
+    /* Manual selection help */
+    string helptext = _("<p>Select the network card to configure. Search
+for a particular network card by entering the name in the search entry.</p>");
+
+    /* Manual selection contents */
+    term contents = `VBox(
+	`VSpacing(0.5),
+	/* Selection box label */
+	`ReplacePoint(`id(`rp), `SelectionBox(`id(`cards), _("&Network Card"), cards)),
+	`VSpacing(0.5),
+	/* Text entry field */
+	`TextEntry(`id(`search), `opt(`notify), _("&Search")),
+	`VSpacing(0.5)
+    );
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    Label::BackButton(), Label::OKButton());
+
+    UI::SetFocus(`id(`cards));
+
+    any ret = nil;
+    while(true) {
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	else if(ret == `search) {
+
+	    string entry = (string) UI::QueryWidget(`id(`search), `Value);
+
+	    list l = filter(term e, (list<term>) cards, {
+		return tolower(substring(e[1]:"", 0, size(entry))) == tolower(entry);
+	    });
+
+	    if(size(entry) == 0) selected = 0;
+	    if(size(l) > 0) selected = l[0, 0, 0]:0;
+
+	    cards = [];
+	    cards = hwlist2items(hwlist, selected);
+
+	    /* Selection box title */
+	    UI::ReplaceWidget(`id(`rp), `SelectionBox(`id(`cards), _("&Network Card"), cards));
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    /* FIXME: check_* */
+	    break;
+	}
+	else {
+	    y2error("Unexpected return code: %1", ret);
+	    continue;
+	}
+    }
+
+    if(ret == `next) {
+	selected = (integer) UI::QueryWidget(`id(`cards), `CurrentItem);
+	if(selected == nil) selected = 0;
+	map card = hwlist[selected]:$[];
+	Lan::description = card["name"]:"";
+
+	NetworkModules::Alias /* FIXME: MOD Lan::Module["module"] */ = card["module"]:"";
+	NetworkModules::Options /* FIXME: MOD Lan::Module["options"] */ = card["options"]:"";
+    }
+
+    return ret;
+}
+
+/**
+ * S/390 devices configuration dialog
+ * @return dialog result
+ */
+define any S390Dialog() {
+
+    ScreenName("lan-hardware-s390");
+
+    /* S/390 dialog caption */
+    string caption = _("S/390 Network Card Configuration");
+
+    string drvtype = Lan::DriverType (Lan::type);
+
+    string helptext = "";
+    term contents = `Empty ();
+    if(Lan::type == "qeth") {
+	contents = `HBox(
+	    `HSpacing(6),
+	    /* Frame label */
+	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
+		`VSpacing(1),
+		/* TextEntry label */
+		`TextEntry(`id(`chan_mode), _("&Port Name"), Lan::chan_mode),
+		`VSpacing(1),
+		/* TextEntry label */
+		`TextEntry(`id(`qeth_options), Label::Options (), Lan::qeth_options),
+		`VSpacing(1),
+		/* CheckBox label */
+		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA Takeover"))),
+		`VSpacing(1),
+		/* CheckBox label */
+		`Left(`CheckBox(`id(`qeth_layer2), `opt(`notify), _("Enable &Layer 2 Support"))),
+		/* TextEntry label */
+		`TextEntry(`id(`qeth_macaddress), _("Layer2 &MAC Address"), Lan::qeth_macaddress),
+		`VSpacing(1),
+		/* TextEntry label */
+		`TextEntry(`id(`qeth_chanids), _("CHAN IDS"), Lan::qeth_chanids)
+		), `HSpacing(2))),
+	    `HSpacing(6)
+	);
+	/* S/390 dialog help: QETH Port name */
+	helptext = _("<p>Enter the <b>Port Name</b> for this interface (case-sensitive).</p>") +
+	/* S/390 dialog help: QETH Options */
+	_("<p>Enter any additional <b>Options</b> for this interface (separated by spaces).</p>") +
+	_("<p>Select <b>Enable IPA Takeover</b> if IP address takeover should be enabled for this interface.</p>") +
+	_("<p>Select <b>Enable Layer 2 Support</b> if this card has been configured with layer 2 support.</p>") +
+	_("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been configured with layer 2 support.</p>");
+    }
+
+    if(Lan::type == "hsi") {
+	contents = `HBox(
+	    `HSpacing(6),
+	    /* Frame label */
+	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
+		`VSpacing(1),
+		/* TextEntry label */
+		`TextEntry(`id(`qeth_options), Label::Options (), Lan::qeth_options),
+		`VSpacing(1),
+		/* CheckBox label */
+		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA Takeover"))),
+		`VSpacing(1),
+		/* CheckBox label */
+		`Left(`CheckBox(`id(`qeth_layer2), `opt(`notify), _("Enable &Layer 2 Support"))),
+		/* TextEntry label */
+		`TextEntry(`id(`qeth_macaddress), _("Layer2 &MAC Address"), Lan::qeth_macaddress),
+		`VSpacing(1)
+		), `HSpacing(2))),
+	    `HSpacing(6)
+	);
+	/* S/390 dialog help: QETH */
+	helptext = _("<p>Enter any additional <b>Options</b> for this interface (separated by spaces).</p>") +
+	_("<p>Select <b>Enable IPA Takeover</b> if IP address takeover should be enabled for this interface.</p>") +
+	_("<p>Select <b>Enable Layer 2 Support</b> if this card has been configured with layer 2 support.</p>") +
+	_("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been configured with layer 2 support.</p>");
+    }
+
+    if(drvtype == "lcs") {
+	contents = `HBox(
+	    `HSpacing(6),
+	    /* Frame label */
+	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
+		`VSpacing(1),
+		/* TextEntry label */
+		`TextEntry(`id(`chan_mode), _("&Port Number"), Lan::chan_mode),
+		`VSpacing(1),
+		/* TextEntry label */
+		`TextEntry(`id(`lcs_timeout), _("&LANCMD Time-Out"), Lan::lcs_timeout)
+		), `HSpacing(2))),
+	    `HSpacing(6)
+	);
+	/* S/390 dialog help: LCS */
+	helptext = _("<p>Choose the <b>Port Number</b> for this interface.</p>") +
+	           _("<p>Specify the <b>LANCMD Time-Out</b> for this interface.</p>");
+    }
+
+    list ctcitems = [
+	/* ComboBox item: CTC device protocol */
+	`item(`id("0"), _("Compatibility Mode")),
+	/* ComboBox item: CTC device protocol */
+	`item(`id("1"), _("Extended Mode")),
+	/* ComboBox item: CTC device protocol */
+	`item(`id("2"), _("CTC-Based tty (Linux to Linux Connections)")),
+	/* ComboBox item: CTC device protocol */
+	`item(`id("3"), _("Compatibility Mode with OS/390 and z/OS")),
+    ];
+
+    if(drvtype == "ctc") {
+	contents = `HBox(
+	    `HSpacing(6),
+	    /* Frame label */
+	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
+		`VSpacing(1),
+		/* TextEntry label */
+		`ComboBox(`id(`chan_mode), _("&Protocol"), ctcitems),
+		`VSpacing(1),
+		// for ficon and escon devices configure chan_ids (#181998)
+		/* TextEntry label */
+		contains(["ficon", "escon"], Lan::type) ? `TextEntry(`id(`qeth_chanids), _("CHAN IDS"), Lan::qeth_chanids) : `Empty()
+		), `HSpacing(2))),
+	    `HSpacing(6)
+	);
+	/* S/390 dialog help: CTC */
+	helptext = _("<p>Choose the <b>Protocol</b> for this interface.</p>");
+    }
+
+    if(drvtype == "iucv") {
+	contents = `HBox(
+	    `HSpacing(6),
+	    /* Frame label */
+	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
+		`VSpacing(1),
+		/* TextEntry label, #42789 */
+		`TextEntry(`id(`chan_mode), _("&Peer Name"), ""),
+		`VSpacing(1)
+		), `HSpacing(2))),
+	    `HSpacing(6)
+	);
+	/* S/390 dialog help: IUCV, #42789 */
+	helptext = _("<p>Enter the name of the IUCV peer,
+for example, the z/VM user name with which to connect (case-sensitive).</p>
+");
+    }
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    Label::BackButton(), Label::NextButton());
+
+    if (drvtype == "ctc") 
+        UI::ChangeWidget(`id(`chan_mode), `Value, Lan::chan_mode);
+
+    if (drvtype == "lcs")
+    {
+	UI::ChangeWidget(`id(`chan_mode), `Value, Lan::chan_mode);
+	UI::ChangeWidget(`id(`lcs_timeout), `Value, Lan::lcs_timeout);
+    }
+
+    if (drvtype == "qeth")
+    {
+        UI::ChangeWidget(`id(`ipa_takeover), `Value, Lan::ipa_takeover);
+	UI::ChangeWidget(`id(`qeth_layer2), `Value, Lan::qeth_layer2);
+	UI::ChangeWidget(`id(`qeth_macaddress), `ValidChars, ":0123456789abcdefABCDEF");
+    }
+
+    if (Lan::type != "hsi")
+        UI::SetFocus(`id(`chan_mode));
+    else
+        UI::SetFocus(`id(`qeth_options));
+
+    // FIXME: no spaces
+    // UI::ChangeWidget(`id(`key), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_:;");
+
+    any ret = nil;
+    while(true) {
+	if (drvtype == "qeth") {
+	    boolean mac_enabled = (boolean) UI::QueryWidget(`id(`qeth_layer2),`Value);
+	    UI::ChangeWidget(`id(`qeth_macaddress), `Enabled, mac_enabled);
+	}
+
+	ret = UI::UserInput();
+
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    break;
+	}
+	else if(ret == `qeth_layer2) {
+	    continue;
+	}
+	else {
+	    y2error("Unexpected return code: %1", ret);
+	    continue;
+	}
+    }
+
+    if(ret == `next) {
+	if(Lan::type == "iucv") {
+	    // #176330, must be static
+	    Lan::nm_name = "static-iucv-id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
+	    Lan::device = "id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
+	}
+	else if (Lan::type != "hsi"){
+	       Lan::chan_mode = (string) UI::QueryWidget(`id(`chan_mode), `Value);
+	  // for ficon and escon devices configure chan_ids (#181998)
+	  if (contains(["ficon", "escon"], Lan::type)) Lan::qeth_chanids = (string) UI::QueryWidget(`id(`qeth_chanids), `Value);
+	 }
+	if(Lan::type == "lcs")
+	    Lan::lcs_timeout = (string) UI::QueryWidget(`id(`lcs_timeout), `Value);
+	if(Lan::type == "qeth" || Lan::type == "hsi") {
+	    Lan::qeth_options = (string) UI::QueryWidget(`id(`qeth_options), `Value);
+	    Lan::ipa_takeover = (boolean) UI::QueryWidget(`id(`ipa_takeover), `Value);
+	    Lan::qeth_layer2 = (boolean) UI::QueryWidget(`id(`qeth_layer2), `Value);
+	    Lan::qeth_macaddress = (string) UI::QueryWidget(`id(`qeth_macaddress), `Value);
+	    Lan::qeth_chanids = (string) UI::QueryWidget(`id(`qeth_chanids), `Value);
+	}
+
+    }
+
+    return ret;
+}
+
+/* EOF */
+}

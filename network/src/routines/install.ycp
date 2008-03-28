@@ -1,0 +1,156 @@
+/**
+ * File:	include/network/install.ycp
+ * Package:	Network configuration
+ * Summary:	Installation routines
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * All install.inf settings are stored in a global variable InstallInf.
+ */
+
+{
+
+textdomain "network";
+
+import "Hostname";
+import "IP";
+import "NetworkDevices";
+
+/**
+ * Read one install.inf item
+ * @param item InstallInf map key
+ * @param var install.inf SCR variable
+ * @return true on success
+ */
+define boolean ReadInstallInfItem(path install_inf, string item, string var) {
+    if(item == nil || item == "" || var == nil || var == "") return false;
+    string val = (string) SCR::Read(add(install_inf, var));
+    if(val == nil) return false;
+    if(val != "") InstallInf[item] = val;
+    return true;
+}
+
+define string DeleteFirstWord (string s) {
+    string ret = regexpsub (s, "^[^ ]* +(.*)", "\\1");
+    return (ret == nil)? s: ret;
+}
+
+/**
+ * Read install.inf from the correct location
+ * @return true on success
+ */
+define boolean ReadInstallInf() {
+
+    InstallInf = $[];
+
+    /* Detect install.inf location */
+    path install_inf = nil;
+    if(SCR::Read(.target.size,"/etc/install.inf") > 0) {
+	install_inf = .etc.install_inf;
+	InstallInf["installation"] = "yes";
+    }
+    /* FIXME
+    else if(SCR::Read(.target.size,"/var/lib/YaST2/install.inf") > 0)
+	install_inf = .var.lib.YaST2.install_inf;
+    */
+    else
+	return false;
+
+    /* Read install.inf items */
+    ReadInstallInfItem(install_inf, "ipaddr", "IP");
+    ReadInstallInfItem(install_inf, "netmask", "Netmask");
+    ReadInstallInfItem(install_inf, "bootproto", "NetConfig");
+    ReadInstallInfItem(install_inf, "netdevice", "Netdevice");
+    ReadInstallInfItem(install_inf, "gateway", "Gateway");
+    ReadInstallInfItem(install_inf, "nameserver", "Nameserver");
+    ReadInstallInfItem(install_inf, "hostname", "Hostname");
+    ReadInstallInfItem(install_inf, "module", "Alias");
+    ReadInstallInfItem(install_inf, "options", "Options");
+    ReadInstallInfItem(install_inf, "hwaddr", "HWAddr");
+    ReadInstallInfItem(install_inf, "ethtool_options", "ethtool");
+    ReadInstallInfItem(install_inf, "ConnectWait", "ConnectWait");
+
+    ReadInstallInfItem(install_inf, "QETH_LAYER2_SUPPORT", "Layer2");
+    ReadInstallInfItem(install_inf, "LLADDR", "OSAHWAddr");
+
+    /* Split network device */
+    string netdevice = InstallInf["netdevice"]:"";
+    if(netdevice != "") {
+	string devtype = NetworkDevices::device_type(netdevice);
+	if(devtype != nil && devtype != "")
+	    InstallInf["type"] = devtype;
+	InstallInf = remove(InstallInf, "netdevice");
+    }
+
+    /* Split FQ hostname */
+    string hostname = InstallInf["hostname"]:"";
+    if(hostname != "" && !IP::Check (hostname)) {
+	list split = Hostname::SplitFQ(hostname);
+	InstallInf["hostname"] = split[0]:hostname;
+	InstallInf["domain"] = split[1]:"";
+    }
+    else
+    {
+	// do not have numeric hostname, #152218
+	InstallInf["hostname"] = "";
+    }
+
+    // #180821, todo cleanup
+    if (netdevice != "")
+    {
+	string mod = (string) SCR::Read (add (.etc.install_inf_alias, netdevice));
+	if (mod != "" && mod != nil)
+	{
+	    InstallInf["module"] = mod;
+	    string options = (string) SCR::Read (add (.etc.install_inf_options, mod));
+	    if (options != "" && options != nil)
+	    {
+		InstallInf["options"] = options;
+	    }
+	}
+    }
+    else
+    {
+    // FIXME: alias = eth0 tulip
+    // FIXME: options = ne io=0x200
+
+    // #42203: correctly parse module and options for proposal
+    // "eth0 qeth" -> "qeth"
+    // FIXME: this only works for a single module
+    string mod = InstallInf["module"]:"";
+    if (mod != "") {
+	InstallInf["module"] = DeleteFirstWord (mod);
+    }
+    string options = InstallInf["options"]:"";
+    if (options != "") {
+	InstallInf["options"] = DeleteFirstWord (options);
+    }
+    }
+
+    y2milestone("InstallInf(%1)", InstallInf);
+    return true;
+}
+
+
+/**
+ * Read module options from /etc/install.inf
+ * @param module_name Module name
+ * @return module options, empty string if none
+ */
+string InstallModuleOptions(string module_name) {
+    if(SCR::Read(.target.size,"/etc/install.inf") > 0) {
+        list<string> modules =  SCR::Dir(.etc.install_inf_options);
+        y2milestone("Module with options in /etc/install.inf: %1", modules);
+        if(contains(modules, module_name)) {
+            any options = SCR::Read (add (.etc.install_inf_options, module_name));
+            if (options!=nil && options != "")
+                return (string)options;
+        }
+    }
+    return "";
+}
+
+
+/* EOF */
+}

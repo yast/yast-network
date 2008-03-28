@@ -1,0 +1,72 @@
+Read	.target.tmpdir "/tmp"
+Dump	Fastest
+Dir	.network.section: ["dsl0", "eth0"]
+Dir	.network.value."dsl0": ["DEVICE"]
+Read	.network.value."dsl0".DEVICE "eth0"
+Dir	.network.value."eth0": []
+Return	true
+Dump	dsl0
+Dump	dsl
+Dir	.network.section: ["dsl0", "eth0"]
+Dir	.network.value."dsl0": []
+Dir	.network.value."eth0": []
+Return	true
+Dump	dsl0
+Dump	dsl
+Dir	.network.section: ["eth1", "tr0"]
+Dir	.network.value."eth1": []
+Dir	.network.value."tr0": []
+Execute	.target.bash_output "getcfg-interface eth1" $["exit":0, "stderr":"", "stdout":""]
+Read	.probe.architecture nil
+Read	.probe.architecture nil
+Execute	.target.bash "ethtool  | grep \"Link detected: yes\"" 0
+Execute	.target.bash "ifstatus  | grep \" is up\"" 0
+Return	true
+Dump	eth1
+Dump	netcard
+Dir	.network.section: ["dsl0", "tr0"]
+Dir	.network.value."dsl0": []
+Dir	.network.value."tr0": []
+Return	true
+Dump	dsl0
+Dump	dsl
+Dir	.network.section: ["dsl0", "ppp0"]
+Dir	.network.value."dsl0": []
+Dir	.network.value."ppp0": []
+Return	true
+Dump	dsl0
+Dump	dsl
+Dir	.network.section: ["ppp0", "tr1"]
+Dir	.network.value."ppp0": []
+Dir	.network.value."tr1": []
+Return	true
+Dump	ppp0
+Dump	modem
+Dir	.network.section: ["ppp0"]
+Dir	.network.value."ppp0": []
+Return	true
+Dump	ppp0
+Dump	modem
+Dir	.network.section: ["ippp0", "tr1"]
+Dir	.network.value."ippp0": []
+Dir	.network.value."tr1": []
+Return	true
+Dump	ippp0
+Dump	isdn
+Dir	.network.section: ["ippp0", "ppp0"]
+Dir	.network.value."ippp0": []
+Dir	.network.value."ppp0": []
+Return	true
+Dump	ippp0
+Dump	isdn
+Dir	.network.section: []
+Execute	.target.bash_output "ip -oneline link list | sed -e 's/^[0-9]*: \\([^:]*\\).*/\\1/' | grep -v 'lo\\|sit0'" $["exit":0, "stderr":"", "stdout":""]
+Return	false
+Dump	
+Dump	
+Dir	.network.section: []
+Execute	.target.bash_output "ip -oneline link list | sed -e 's/^[0-9]*: \\([^:]*\\).*/\\1/' | grep -v 'lo\\|sit0'" $["exit":0, "stderr":"", "stdout":"eth0\nppp0\n"]
+Log	No such device: eth0
+Return	true
+Dump	eth0
+Dump	netcard

@@ -1,0 +1,106 @@
+/**
+ * File:	clients/routing.ycp
+ * Package:	Network configuration
+ * Summary:	Routing client
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Main file for routing configuration.
+ * Uses all other files.
+ */
+
+{
+
+textdomain "network";
+
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("Routing module started");
+
+import "Label";
+import "Routing";
+import "Wizard";
+
+import "CommandLine";
+import "RichText";
+import "NetworkService";
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+define boolean Modified() {
+    return Routing::Modified();
+}
+
+include "network/services/routing.ycp";
+
+/**
+ * Main Routing GUI
+ */
+any RoutingGUI() {
+    Routing::Read();
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("routing");
+    Wizard::SetNextButton(`next, Label::FinishButton() );
+
+    /* main ui function */
+    any ret = RoutingMainDialog(true);
+    y2debug("ret == %1", ret);
+
+    if(ret == `next && Routing::Modified()) {
+	Routing::Write();
+	NetworkService::StartStop ();
+    }
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/**
+ * Handler for action "list"
+ * @param options action options
+ */
+define boolean ListHandler(map<string, string> options) {
+
+    string summary = "";
+    /* Command line output Headline */
+    summary = "\n" + _("Routing Configuration Summary:") + "\n\n" +
+	RichText::Rich2Plain(Routing::Summary()) + "\n";
+
+    y2debug("%1", summary);
+    CommandLine::Print(summary);
+    return true;
+}
+
+/**
+ * Command line definition
+ */
+map cmdline = $[
+    /* Commandline help title */
+    "help"	: _("Routing Configuration"),
+    "id"	: "routing",
+    "guihandler": RoutingGUI,
+    "initialize": Routing::Read,
+    "finish"	: Routing::Write, // FIXME
+    "actions"	: $[
+	"list" : $[
+	    /* Commandline command help */
+	    "help"	: _("Display configuration summary"),
+	    "handler"	: ListHandler,
+	],
+    ],
+];
+
+any ret = CommandLine::Run(cmdline);
+y2debug("ret=%1", ret);
+
+/* Finish */
+y2milestone("Routing module finished");
+y2milestone("----------------------------------------");
+return ret;
+
+/* EOF */
+}

@@ -1,0 +1,48 @@
+/**
+ * File:	clients/modem.ycp
+ * Package:	Network configuration
+ * Summary:	Modems main file
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Main file for modem configuration.
+ * Uses all other files.
+ */
+
+{
+
+textdomain "network";
+
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("Modem module started");
+
+include "network/modem/wizards.ycp";
+
+/* is this proposal or not? */
+boolean propose = false;
+list args = WFM::Args();
+if(size(args) > 0) {
+    if(is(WFM::Args(0), path) && WFM::Args(0) == .propose) {
+	y2milestone("Using PROPOSE mode");
+	propose = true;
+    }
+    else
+	y2error("Bad argument for modem: %1", WFM::Args(0));
+}
+
+/* main ui function */
+any ret = nil;
+
+if(propose) ret = ModemAutoSequence();
+else ret = ModemSequence();
+y2debug("ret == %1", ret);
+
+/* Finish */
+y2milestone("Modem module finished");
+y2milestone("----------------------------------------");
+return ret;
+
+/* EOF */
+}

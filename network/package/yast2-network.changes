@@ -1,0 +1,4287 @@
+-------------------------------------------------------------------
+Tue Mar 28 16:42:18 CET 2008 - mzugec@suse.de
+
+- L3: wait specified seconds according /etc/install.inf.ConnectWait 
+  (bnc#363423)
+- 2.13.116 
+
+-------------------------------------------------------------------
+Tue Mar 25 16:59:27 CET 2008 - mzugec@suse.de
+
+- pre-select currently used driver in hardware dialog (bnc#373928)
+- 2.13.115 
+
+-------------------------------------------------------------------
+Tue Mar 25 14:34:24 CET 2008 - mzugec@suse.de
+
+- possibility to use unconfigured devices for vlan, bond and bridge
+  (bnc#369195)
+- 2.13.114 
+
+-------------------------------------------------------------------
+Thu Mar 20 20:08:03 CET 2008 - mzugec@suse.de
+
+- backported validator .rnc from 10.3 for validate AY profile 
+- for aliass elements use aliasX instead of X (bnc#369195)
+- 2.13.113 
+
+-------------------------------------------------------------------
+Thu Mar  6 00:35:08 CET 2008 - mzugec@suse.de
+
+- allow to use bridge also with unconfigured device (bnc#369195) 
+- 2.13.112 
+
+-------------------------------------------------------------------
+Thu Mar  6 13:03:02 CET 2008 - mzugec@suse.cz
+
+- allow using vlan also with bond and bridge devices (bnc#367093)
+- 2.13.111
+
+-------------------------------------------------------------------
+Tue Feb 19 14:37:51 CET 2008 - mzugec@suse.de
+
+- exception for PPC (bnc#361063) - some drivers are built-in
+- 2.13.110 
+
+-------------------------------------------------------------------
+Wed Jan 30 15:38:06 CET 2008 - mzugec@suse.de
+
+- fixed address widget (#25683)
+- 2.13.109 
+
+-------------------------------------------------------------------
+Wed Jan 16 10:19:36 CET 2008 - kmachalkova@suse.cz
+
+- Merged proofread texts 
+
+-------------------------------------------------------------------
+Tue Jan 15 18:23:41 CET 2008 - mzugec@suse.de
+
+- during autoyast wait for network when set up (#195571)
+- 2.13.108 
+
+-------------------------------------------------------------------
+Tue Dec 11 20:48:06 CET 2007 - mzugec@suse.cz
+
+- for ficon and escon devices configure chan_ids (#181998)
+- 2.13.107 
+
+-------------------------------------------------------------------
+Tue Dec 11 17:24:27 CET 2007 - mzugec@suse.cz
+
+- added ficon device type (#162961)
+- 2.13.106 
+
+-------------------------------------------------------------------
+Sun Dec  9 16:04:53 CET 2007 - mzugec@suse.cz
+
+- support for bridge devices (Fate #302084)
+- 2.13.105 
+
+-------------------------------------------------------------------
+Sat Dec  8 15:30:11 CET 2007 - mzugec@suse.cz
+
+- support for VLANs (config+AY) (FaTE #142127)
+- 2.13.104 
+
+-------------------------------------------------------------------
+Thu Nov 29 10:06:43 CET 2007 - mzugec@suse.cz
+
+- support for bonding in autoYaST (FaTE #303039)
+- 2.13.103 
+
+-------------------------------------------------------------------
+Thu Nov 22 14:11:33 CET 2007 - mzugec@suse.cz
+
+- proofread 
+
+-------------------------------------------------------------------
+Thu Nov 15 19:03:22 CET 2007 - mzugec@suse.de
+
+- FaTE #302586 - support for qeth devices in bonding
+- 2.13.102 
+
+-------------------------------------------------------------------
+Thu Nov 15 15:05:59 CET 2007 - mzugec@suse.de
+
+- FaTE #302300 - aliases support for autoYaST
+- 2.13.101 
+
+-------------------------------------------------------------------
+Fri Nov  9 14:54:20 CET 2007 - kmachalkova@suse.cz
+
+- host.rnc modified to accept empty <host> section as a valid one
+- Filter out host IPs with empty hostname so that valid autoyast
+  profile is created (both #335120)
+- 2.13.100 
+
+-------------------------------------------------------------------
+Mon Oct 22 10:41:37 CEST 2007 - mzugec@suse.cz
+
+- allow user to change CCW of qeth devices - CHAN IDS (#306291)
+- 2.13.99 
+
+-------------------------------------------------------------------
+Thu Apr  5 10:09:14 CEST 2007 - mzugec@suse.cz
+
+- for s390 write hwcfg file although driver doesn't provide busID
+- 2.13.98 
+
+-------------------------------------------------------------------
+Thu Mar 22 10:58:52 CET 2007 - mzugec@suse.cz
+
+- NetworkStorage - handling alternative connection types (#256371) 
+- 2.13.97 
+
+-------------------------------------------------------------------
+Thu Mar 15 17:42:14 CET 2007 - kmachalkova@suse.cz
+
+- IPv6 dialog: enough space to prevent string cut-off (#251256) 
+- 2.13.96
+
+-------------------------------------------------------------------
+Tue Mar 13 11:33:22 CET 2007 - kmachalkova@suse.cz
+
+- RNC validation file: completed list of wireless options (#211014) 
+
+-------------------------------------------------------------------
+Thu Mar  8 14:26:15 CET 2007 - kmachalkova@suse.cz
+
+- Network installation proposal:
+  Do not re-propose firewall zone for the interface if it has been
+  explicitly changed by user in add/edit dialog (#241107)
+- 2.13.95   
+
+-------------------------------------------------------------------
+Tue Feb 13 12:44:16 CET 2007 - mzugec@suse.de
+
+- rnc file update 
+
+-------------------------------------------------------------------
+Mon Feb 12 16:32:13 CET 2007 - mzugec@suse.de
+
+- add checkbox to disable writing hwcfg-file
+- 2.13.94 
+
+-------------------------------------------------------------------
+Fri Feb  9 16:10:33 CET 2007 - kmachalkova@suse.cz
+
+- If downloading of the relnotes fails because of server-side error, 
+  allow to continue towards YOU and/or registration stuff (#236371)
+- 2.13.93
+
+-------------------------------------------------------------------
+Wed Feb  7 16:01:24 CET 2007 - mzugec@suse.de
+
+- fix hwaddr matching (#184438)
+- 2.13.92 
+
+-------------------------------------------------------------------
+Mon Feb  5 10:42:23 CET 2007 - mzugec@suse.de
+
+- support for handle toggling between OSA Layer2/3 during installation (#184438)
+- 2.13.91 
+
+-------------------------------------------------------------------
+Tue Jan 30 09:50:35 CET 2007 - mzugec@suse.de
+
+- fixed build
+
+-------------------------------------------------------------------
+Fri Jan 26 13:07:12 CET 2007 - kmachalkova@suse.cz
+
+- Use random hostname also during autoinstallation (if none found
+  in install.inf or /etc/hosts)(#165269)
+- 2.13.90
+
+-------------------------------------------------------------------
+Tue Jan 16 11:34:56 CET 2007 - kmachalkova@suse.cz
+
+- Avoid displaying empty strings in internet test dialog (#220813,
+  #223498) 
+- 2.13.89
+
+-------------------------------------------------------------------
+Thu Jan 11 08:27:30 CET 2007 - mzugec@suse.cz
+
+- #150207 - disable sysconfig.displaymanager.KDE_USE_IPV6 when disabling ipv6 
+
+-------------------------------------------------------------------
+Tue Jan  9 13:36:04 CET 2007 - mzugec@suse.cz
+
+- 2.13.88
+- #116092 - network not set up because of pppoe 
+
+-------------------------------------------------------------------
+Tue Jan  9 12:50:07 CET 2007 - mzugec@suse.cz
+
+- 2.13.87
+- fate #417 - interface without IP
+- fate #110040 - Support Bonding Network Device
+
+-------------------------------------------------------------------
+Fri Jan  5 16:50:03 CET 2007 - mzugec@suse.cz
+
+- 2.13.86 - #166997 - install kinternet when needed 
+
+-------------------------------------------------------------------
+Thu Jan  4 16:40:11 CET 2007 - mzugec@suse.cz
+
+- 2.13.85 - #230967 - dial-on-demand button activates dns server entry fields 
+
+-------------------------------------------------------------------
+Thu Jan  4 16:08:11 CET 2007 - kmachalkova@suse.cz
+
+- Hostname and DHCP options help improvements (#195148)
+- Show 'Test proxy' related help text and disable the button
+  only when needed (#226034) 
+
+-------------------------------------------------------------------
+Thu Jan  4 15:22:51 CET 2007 - mzugec@suse.cz
+
+- fix for rnc file 
+
+-------------------------------------------------------------------
+Thu Jan  4 14:34:36 CET 2007 - mzugec@suse.cz
+
+- 2.13.84 - fate #301032 - check if ip is already in use
+                uses <strict_IP_check_timeout config:type="integer">
+
+-------------------------------------------------------------------
+Fri Dec  8 17:55:36 CET 2006 - mzugec@suse.cz
+
+- #116211 - use combobox for module drivers instead of textedit
+- 2.13.83 
+
+-------------------------------------------------------------------
+Wed Dec  6 17:00:06 CET 2006 - mzugec@suse.cz
+
+- #226408 - Network card -> IPv6 configuration: cannot go back
+- 2.13.82 
+
+-------------------------------------------------------------------
+Wed Dec  6 15:58:38 CET 2006 - mzugec@suse.cz
+
+- #224884 - avoid some unwished error message (brctl)
+- 2.13.81 
+
+-------------------------------------------------------------------
+Wed Nov 29 14:57:37 CET 2006 - kmachalkova@suse.cz
+
+- Correct check for availability of wireless firmware packages
+  (#223871)
+- 2.13.80
+
+-------------------------------------------------------------------
+Mon Nov 27 14:07:19 CET 2006 - kmachalkova@suse.cz
+
+- Do not attempt to configure wlan card requiring firmware before
+  the firmware is installed (#221235)
+
+-------------------------------------------------------------------
+Tue Nov 21 10:42:44 CET 2006 - kmachalkova@suse.cz
+
+- Adjusted proxy dialog layout in text mode (#221648) 
+
+-------------------------------------------------------------------
+Tue Nov 14 16:51:06 CET 2006 - kmachalkova@suse.cz
+
+- Added autoyast validation file for proxy module (#215251)
+- Display also https proxy URL in autoyast summary
+- 2.13.79
+
+-------------------------------------------------------------------
+Wed Nov  8 12:59:49 CET 2006 - mzugec@suse.cz
+
+- #217270 - incorrect summary when STARTMODE='off' is set  
+
+-------------------------------------------------------------------
+Tue Nov  7 16:49:37 CET 2006 - kmachalkova@suse.cz
+
+- At least one proxy URL must be set if proxy is enabled (#206676)
+- Do not show 'Test proxy settings' button in installation mode 
+  (#215991)
+- Check 'same proxy for all protocols' checkbox when needed
+- 2.13.78
+
+-------------------------------------------------------------------
+Mon Nov  6 10:26:28 CET 2006 - mzugec@suse.cz
+
+- #216074 - add nfsroot to STARTMODE items
+- 2.13.77 
+
+-------------------------------------------------------------------
+Fri Nov  3 16:59:46 CET 2006 - mzugec@suse.cz
+
+- UI to disable writing hostname to /etc/hosts
+- 2.13.76 
+
+-------------------------------------------------------------------
+Fri Nov  3 10:53:51 CET 2006 - mzugec@suse.cz
+
+- #198417 - say "setting up smpppd, kinternet" in Write() only when really starts
+- 2.13.75 
+
+-------------------------------------------------------------------
+Fri Nov  3 09:27:45 CET 2006 - kmachalkova@suse.cz
+
+- Advise user to use Add-on CD for installing some wi-fi binary
+  firmwares (#209413) 
+
+-------------------------------------------------------------------
+Tue Oct 24 19:21:41 CEST 2006 - mzugec@suse.cz
+
+- #300604 - UI to disable IPv6 (installation)
+- 2.13.74 
+
+-------------------------------------------------------------------
+Mon Oct 23 16:12:31 CEST 2006 - mzugec@suse.cz
+
+- fate #100092 - command line support for netcards
+- 2.13.73
+
+-------------------------------------------------------------------
+Mon Oct 23 10:03:58 CEST 2006 - mzugec@suse.cz
+
+- fate #300604 - UI to disable IPv6 (improved and fixed)
+- 2.13.72 
+
+-------------------------------------------------------------------
+Fri Oct 20 20:20:58 CEST 2006 - mzugec@suse.cz
+
+- fate #300628 - indicate when netcard is not present 
+- 2.13.71 
+
+-------------------------------------------------------------------
+Fri Oct 20 14:28:48 CEST 2006 - mzugec@suse.cz
+
+- 2.13.70 - #176804 - root on iscsi 
+
+-------------------------------------------------------------------
+Wed Oct 18 19:15:16 CEST 2006 - mzugec@suse.cz
+
+- 2.13.69 - fate #300604 - UI to disable IPv6 
+
+-------------------------------------------------------------------
+Tue Oct 17 16:51:58 CEST 2006 - kmachalkova@suse.cz
+
+- Improved Internet Test Dialog (show more info about devices,
+  disable Change Device button when not needed) (#208000)
+- 2.13.68 
+
+-------------------------------------------------------------------
+Thu Oct 12 10:59:39 CEST 2006 - mvidner@suse.cz
+
+- Disabled conflicting definitions in host.rnc from last change.
+- 2.13.67
+
+-------------------------------------------------------------------
+Mon Sep 25 14:49:04 CEST 2006 - kmachalkova@suse.cz
+
+- Better autoyast XML validation for networking and host
+- Conversion function in Host::Import to handle older profiles
+  (as more FQDNs for one IP is allowed since 2.13.65)
+- 2.13.66 
+
+-------------------------------------------------------------------
+Wed Sep 20 13:55:10 CEST 2006 - kmachalkova@suse.cz
+
+- Network installation proposal: 
+  click on 'Network Mode' title opens ManagedDialog to select 
+  between NM and ifup (#203817)
+
+-------------------------------------------------------------------
+Tue Sep 19 16:54:34 CEST 2006 - kmachalkova@suse.cz
+
+- Allow using more FQDNs for one IP in /etc/hosts editor (#152036)
+- Adjusted testsuite (Host.*)
+- 2.13.65
+ 
+-------------------------------------------------------------------
+Thu Sep 14 13:31:35 CEST 2006 - mzugec@suse.cz
+
+- 2.13.64 - fate #100092 - command line support in network module 
+
+-------------------------------------------------------------------
+Thu Sep 14 10:47:50 CEST 2006 - locilka@suse.cz
+
+- Improving the Internet Test Dialog (FATE #100294)
+
+-------------------------------------------------------------------
+Fri Sep  8 15:00:59 CEST 2006 - kmachalkova@suse.cz
+
+- Added missing icon to Hostname installation dialog (#203816) 
+
+-------------------------------------------------------------------
+Wed Sep  6 16:18:43 CEST 2006 - kmachalkova@suse.cz
+
+- Allow using the same proxy URL for all protocols (#57919)
+- Updated proxy module help text (#181931)
+- 2.13.63 
+
+-------------------------------------------------------------------
+Fri Sep  1 10:40:07 CEST 2006 - kmachalkova@suse.cz
+
+- Added line wrapping to checkbox label in dns.ycp (#166236)
+  due to lack of space for languages such as french  
+
+-------------------------------------------------------------------
+Wed Aug 30 13:34:04 CEST 2006 - mzugec@suse.cz
+
+- fixed #73739 - don't use stadic default gw with dhcp 
+
+-------------------------------------------------------------------
+Fri Aug 25 10:43:26 CEST 2006 - mvidner@suse.cz
+
+- Allow editing despite having a Xen bridge in Autoyast mode (#196479).
+
+-------------------------------------------------------------------
+Tue Aug 22 19:21:05 CEST 2006 - mvidner@suse.cz
+
+- Main dialogs:
+  Disable the Back button when there is no going back (#54027).
+  Rename Next to Finish when there is nowhere else to go (#182853).
+- 2.13.61
+
+-------------------------------------------------------------------
+Fri Aug 11 10:54:00 CEST 2006 - mvidner@suse.cz
+
+- Fixed typos in English.
+
+-------------------------------------------------------------------
+Fri Aug 11 09:26:54 CEST 2006 - kmachalkova@suse.cz
+
+- Removed running SuSEconfig module "profiles" from Proxy.ycp, since 
+  it has been dropped and is no longer needed
+- Updated ProxyFinishPopup() text (#158564)
+- 2.13.60
+
+-------------------------------------------------------------------
+Tue Aug  1 11:18:32 CEST 2006 - mvidner@suse.cz
+
+- NetworkManager cannot do additional addresses, disable the dialog
+  (#165059).
+- NetworkManager now respects DHCLIENT_MODIFY_RESOLV_CONF, enable the
+  checkbox accordingly (#156830).
+- 2.13.59
+
+-------------------------------------------------------------------
+Tue Jul 18 17:15:34 CEST 2006 - mvidner@suse.cz
+
+- Better logging of the internet test (#192745).
+
+-------------------------------------------------------------------
+Sun Jul 16 08:54:55 CEST 2006 - olh@suse.de
+
+- introduce a Linuxrc::display_ip and use it instead of Arch::s390
+- 2.13.58
+
+-------------------------------------------------------------------
+Mon Jul 10 16:23:39 CEST 2006 - mvidner@suse.cz
+
+- After the installation, use the correct module for the card over
+  which the installation was done (#186000).
+- Include also WiFi cards in the DSL PPPoE dialog (#186102).
+- 2.13.57
+
+-------------------------------------------------------------------
+Fri Jun  9 11:10:10 CEST 2006 - locilka@suse.cz
+
+- Identify the release notes downloaded during the internet test by
+  the product name (#180581).
+- 2.13.56
+
+-------------------------------------------------------------------
+Thu Jun  8 15:06:41 CEST 2006 - mvidner@suse.cz
+
+- Do not report a duplicate IP address if the interface is not up
+  (#182473).
+- After the internet test, set focus to Next (#105811).
+- 2.13.55
+
+-------------------------------------------------------------------
+Mon Jun  5 09:27:12 CEST 2006 - mvidner@suse.cz
+
+- Made the proxy settings fit to 24 lines (#181404).
+- 2.13.54
+
+-------------------------------------------------------------------
+Fri Jun  2 10:32:56 CEST 2006 - mvidner@suse.cz
+
+- Added a missing translation marker to the routing table (#179906).
+
+-------------------------------------------------------------------
+Fri Jun  2 09:31:36 CEST 2006 - locilka@suse.cz
+
+- At least one release-notes downloaded results in the successful
+  internet test (#181094).
+- 2.13.53
+
+-------------------------------------------------------------------
+Mon May 29 17:27:48 CEST 2006 - mvidner@suse.cz
+
+- Disable editing interfaces if we see a Xen bridge (#178848).
+- 2.13.52
+
+-------------------------------------------------------------------
+Mon May 22 13:43:42 CEST 2006 - mvidner@suse.cz
+
+- Set STARTMODE=nfsroot for proposed interface if on iSCSI root (#176804).
+- 2.13.51
+
+-------------------------------------------------------------------
+Fri May 19 15:21:54 CEST 2006 - mvidner@suse.cz
+
+- Tell NetworkManager when writing the dialup settings by calling
+  rcnetwork reload (#162959).
+- 2.13.50
+
+-------------------------------------------------------------------
+Wed May 17 17:30:35 CEST 2006 - mvidner@suse.cz
+
+- For iucv, create static hwcfgs, like hwcfg-static-iucv-id-$ID
+  (#176330).
+- 2.13.49
+
+-------------------------------------------------------------------
+Tue Apr 25 11:11:05 CEST 2006 - mvidner@suse.cz
+
+- Added an autoyast option to apply the network settings immediately
+  so that suse_register or OES can use them (#128810, #168806).
+- 2.13.48
+
+-------------------------------------------------------------------
+Fri Apr 21 12:12:14 CEST 2006 - locilka@suse.cz
+
+- Added missing changes between 2.13.45 and 2.13.46
+- 2.13.47
+
+-------------------------------------------------------------------
+Fri Apr 21 10:00:06 CEST 2006 - locilka@suse.cz
+
+- Prevent from installing older release notes during the internet
+  test. It would fail with useless error message and confuse user.
+  This change enhances behavior of #164388 and fixes (#167985).
+- 2.13.46
+
+-------------------------------------------------------------------
+Thu Apr 20 18:29:40 CEST 2006 - sreeves@suse.de
+
+- Fixes were made in gnome-menus so rolling back these redundant changes.
+
+-------------------------------------------------------------------
+Wed Apr 19 17:39:51 CEST 2006 - sreeves@suse.de
+
+- Fix for 152681 - add "yast2 modem" and "yast2 dsl" to CC
+  Fix for 152999 - add "yast2 lan" to CC
+
+-------------------------------------------------------------------
+Wed Apr 12 13:23:40 CEST 2006 - mvidner@suse.cz
+
+- Enable ifplugd by default only on laptops (#164816).
+- 2.13.45
+
+-------------------------------------------------------------------
+Wed Apr 12 09:21:09 CEST 2006 - locilka@suse.cz
+
+- Prevent from downloading 'undefined' release notes (#165314).
+- 2.13.44
+
+-------------------------------------------------------------------
+Fri Apr  7 11:13:25 CEST 2006 - locilka@suse.cz
+
+- Adding more error messages into log when some bash command fails
+  during the internet test (#162628).
+- Check the installed version of release-notes against the
+  downloaded one during the internet test. Skip installation of
+  release-notes in case of the same version (#164388).
+- 2.13.43
+
+-------------------------------------------------------------------
+Thu Apr  6 19:48:45 CEST 2006 - mvidner@suse.cz
+
+- Disable suse_register if the internet test fails (#164042).
+- Disable the back button in inst_hostname (jsuchome, #157125).
+- 2.13.42
+
+-------------------------------------------------------------------
+Mon Apr  3 16:55:10 CEST 2006 - mvidner@suse.cz
+
+- Fixed determining the installation network device by using the C
+  locale properly (#116537c47).
+- 2.13.41
+
+-------------------------------------------------------------------
+Mon Apr  3 15:37:05 CEST 2006 - locilka@suse.cz
+
+- Fixing log viewer to be able to show more log files with the same
+  label (such as Release Notes) (#162175).
+- 2.13.40
+
+-------------------------------------------------------------------
+Tue Mar 28 15:56:22 CEST 2006 - locilka@suse.cz
+
+- Every single fetching of release notes has its own log (#161251).
+- 2.13.39
+
+-------------------------------------------------------------------
+Fri Mar 24 16:46:02 CET 2006 - locilka@suse.cz
+
+- Merged proofread texts.
+
+-------------------------------------------------------------------
+Fri Mar 24 15:10:33 CET 2006 - locilka@suse.cz
+
+- Download all release notes for all installed products (add-ons)
+  during the internet test (#160563).
+- Inform user when checking or installing downloaded RPM fails
+  (#160562).
+- 2.13.38
+
+-------------------------------------------------------------------
+Mon Mar 20 13:46:11 CET 2006 - mvidner@suse.cz
+
+- Do not always enable the firewall when adding a new interface
+  (#152650).
+- Preserve route options when editing (#159359).
+- 2.13.37
+
+-------------------------------------------------------------------
+Mon Mar 13 13:08:09 CET 2006 - locilka@suse.cz
+
+- Partly fixing bug #157342, 'raw' is not known termtype
+  using 'dumb' instead
+- 2.13.36
+
+-------------------------------------------------------------------
+Fri Mar 10 17:26:14 CET 2006 - mvidner@suse.cz
+
+- Instead of linux, use a randomized hostname like linux-09az (#157107).
+- 2.13.35
+
+-------------------------------------------------------------------
+Thu Mar  9 17:17:56 CET 2006 - mvidner@suse.cz
+
+- Take the default STARTMODE from the product control file,
+  allowing not to have ifplugd get in the way on SLES (#156388).
+- Merged proofread texts.
+- Reapplied the changes between 2.13.29 and 2.13.31 (discarding
+  2.13.33) as they were unrelated to #156054.
+- 2.13.34
+
+-------------------------------------------------------------------
+Wed Mar  8 00:56:01 CET 2006 - jsrain@suse.de
+
+- reverted changes between 2.13.29 and 2.13.31
+- 2.13.33
+
+-------------------------------------------------------------------
+Tue Mar  7 22:54:38 CET 2006 - jdsn@suse.de
+
+- added global variable for suse register 
+- 2.13.32
+
+-------------------------------------------------------------------
+Tue Mar  7 14:37:48 CET 2006 - mvidner@suse.cz
+
+- Load network modules before determining the interface used for the
+  installation source (#116537).
+- 2.13.31
+
+-------------------------------------------------------------------
+Thu Mar  2 11:29:17 CET 2006 - mvidner@suse.cz
+
+- Autoyast: use linuxrc data for routing, resolver and hostname if
+  not specified in the profile (#153426, improving the #117484 fix).
+- 2.13.30
+
+-------------------------------------------------------------------
+Thu Mar  2 10:12:25 CET 2006 - visnov@suse.cz
+
+- don't check available updates in internet connection test
+- 2.13.29
+
+-------------------------------------------------------------------
+Wed Mar  1 10:39:01 CET 2006 - mvidner@suse.cz
+
+- If an interface is not assigned to a firewall zone, do not say the
+  firewall is disabled (#154295).
+- Do not allow the USB speed to enter the provider file (#148893).
+
+-------------------------------------------------------------------
+Tue Feb 28 11:43:18 CET 2006 - mvidner@suse.cz
+
+- Do not use the IP for the hostname (#152218).
+- 2.13.28
+
+-------------------------------------------------------------------
+Mon Feb 27 15:03:27 CET 2006 - mvidner@suse.cz
+
+- XenU: do not filter out the network device (#153235).
+- 2.13.27
+
+-------------------------------------------------------------------
+Thu Feb 23 18:10:28 CET 2006 - mvidner@suse.cz
+
+- Hwup all hwcfgs, not just the changed ones, so that we get back
+  modules that were unloaded because of deconfigured devices but are
+  still needed (#136298).
+- Autoyast: Allow matching by MAC, bus id and module for second and
+  subsequent interfaces (#119592#c9), improved not to break when
+  specifying two devices with the same module (#146965).
+- When switching from Layer 2 to Layer 3, LLADDR must be emptied (#151196).
+- 2.13.26
+
+-------------------------------------------------------------------
+Mon Feb 20 16:23:04 CET 2006 - mvidner@suse.cz
+
+- Using the DHCP hostname:
+  hostname dialog proposes it on non-laptops
+  network proposal must not override earlier user choice (#152029)
+  function moved to Arch (#151813)
+- Changed the warning for the binary-only AVM driver (#151148).
+- 2.13.25
+
+-------------------------------------------------------------------
+Tue Feb  7 20:27:26 CET 2006 - mvidner@suse.cz
+
+- Don't disable important widgets if NetworkManager is enabled (#148485).
+- 2.13.24
+
+-------------------------------------------------------------------
+Tue Feb  7 17:35:18 CET 2006 - mvidner@suse.cz
+
+- Allow to configure the network cards even if NetworkManager is
+  enabled (#148485).
+- Skip the internet test when there are no interfaces (#148005).
+- 2.13.23
+
+-------------------------------------------------------------------
+Mon Feb  6 14:12:08 CET 2006 - mvidner@suse.cz
+
+- Added ETHTOOL_OPTIONS (so far for autoyast only, uses also
+  install.inf) (#145041).
+- Use Hostname instead of Machinename from install.inf (#144687)
+- 2.13.22
+
+-------------------------------------------------------------------
+Sun Feb  5 17:59:56 CET 2006 - mvidner@suse.cz
+
+- Hide the dialup firewall checkbox when there is no device yet (#146388).
+- Distinguish cached and full Lan::Read so that the dirty bit is
+  not reset when reproposing because of NM change. #147270
+- 2.13.21
+
+-------------------------------------------------------------------
+Wed Feb  1 17:42:54 CET 2006 - mvidner@suse.cz
+
+- Fixed the formfactor laptop detection.
+
+-------------------------------------------------------------------
+Mon Jan 30 17:36:35 CET 2006 - mvidner@suse.cz
+
+- For NetworkManager, propose basic ifcfgs because of firewall.
+- Fixed editing of resolver settings for static setups (#146162).
+- Fixed changing the interface for the internet test if NM is used (#146167).
+- Use BuildRequires
+- 2.13.20
+
+-------------------------------------------------------------------
+Wed Jan 25 18:25:57 CET 2006 - mvidner@suse.cz
+
+- Use "formfactor" from .probe.system to detect a laptop (#145485).
+- Proposal: when NetworkManager is turned off, do not ask about it
+  again when entering network card configuration.
+
+-------------------------------------------------------------------
+Wed Jan 25 09:30:15 CET 2006 - visnov@suse.cz
+
+- Network Mode proposal client must have different id than Lan client
+- 2.13.19 
+
+-------------------------------------------------------------------
+Tue Jan 24 16:39:31 CET 2006 - mvidner@suse.cz
+
+- Internet test: even after getting an address, sleep 5 (#145153c7).
+- 2.13.18
+
+-------------------------------------------------------------------
+Tue Jan 24 15:48:43 CET 2006 - mvidner@suse.cz
+
+- Internet test: another try at waiting for managed interfaces (#145153).
+- Prefer /etc/install.inf to /etc/HOSTNAME when determinining the
+  hostname (#144687).
+- Install NetworkManager.rpm if needed.
+- Changed the values of WIRELESS_WPA_MODE and WIRELESS_EAP_AUTH
+  (mostly just uppercased) (#145196).
+- Merged proofread messages.
+- 2.13.17
+
+-------------------------------------------------------------------
+Mon Jan 23 17:13:59 CET 2006 - mvidner@suse.cz
+
+- For NetworkManager, don't forget to write the network/config setting (#144139).
+- Added networkmanager_proposal to the network proposal.
+  Now NM has a separate heading and comes first.
+- Fixed the standalone hostname and name server dialog which looked
+  quite psychedelic lately.
+- 2.13.16
+
+-------------------------------------------------------------------
+Mon Jan 16 17:18:09 CET 2006 - mvidner@suse.cz
+
+- Use /etc/sysconfig/network/config:NETWORKMANAGER instead of
+  rcnetworkmanager (#135595).
+- Sleep 15 seconds after telling NetworkManager to activate an
+  interface for internet test.
+- Prefer the string product feature network/network_manager (always,
+  laptop, never) over boolean network/network_manager_is_default.
+- Warn when configuring modems and NetworkManager is enabled.
+- Disabled entering the apostrophe to ESSID since the agent does not
+  quote it (#118157).
+- Use a separate dialog for switching between NetworkManager and ifup.
+  Format the NetworkManager part of the proposal like the firewall one.
+  (#141025).
+- Internet test: fixed cancelling of device selection that got broken
+  again (#143182).
+- 2.13.15
+
+-------------------------------------------------------------------
+Thu Jan 12 19:31:28 CET 2006 - mvidner@suse.cz
+
+- Added networking/managed for autoyast.
+- 2.13.14
+
+-------------------------------------------------------------------
+Thu Jan 12 15:52:52 CET 2006 - locilka@suse.cz
+
+- Fixed/Enhanced Remote Administration (#135605)
+  If the installation is running in VNC, Remote Administration is
+  enabled by default and a new xorg.conf is written by SaX2 because
+  XServer configuration is disabled in the hardware proposal in this
+  case.
+
+-------------------------------------------------------------------
+Thu Jan 12 10:35:33 CET 2006 - mvidner@suse.cz
+
+- Fixed a typo in the device-activating dbus-send (#142782).
+
+-------------------------------------------------------------------
+Tue Jan 10 16:49:42 CET 2006 - mvidner@suse.cz
+
+- Really write hostname in the new dialog (#142292).
+- Lan::GetDefaultsForHW (used by autoyast) works again.
+- 2.13.13
+
+-------------------------------------------------------------------
+Mon Jan  9 16:54:04 CET 2006 - mvidner@suse.cz
+
+- Fixed internet connection test with NetworkManager (#138507).
+- inst_hostname: Use the installation-style abort popup.
+- 2.13.12
+
+-------------------------------------------------------------------
+Thu Jan  5 16:39:09 CET 2006 - mvidner@suse.cz
+
+- SLES: Ask for the host name, before the root password dialog (#62165, F4126).
+- Replaced Require by Package.
+- Made the Internet connection test dialog fit to text console (#140950).
+- Replaced "host name" by "hostname" according to the style guide.
+- 2.13.11
+
+-------------------------------------------------------------------
+Mon Dec 19 17:36:16 CET 2005 - mvidner@suse.cz
+
+- Moved NetworkService from yast2-network.rpm to yast2.rpm
+  so that the firewall proposal can use it (#139402).
+- Merged proofread texts (many changes: do not end summary lines with
+  periods).
+- 2.13.10
+
+-------------------------------------------------------------------
+Thu Dec 15 18:14:40 CET 2005 - mvidner@suse.cz
+
+- Added the WPA EAP Details dialog, with EAP authentication method and
+  PEAP version (F300381).
+- 2.13.9
+
+-------------------------------------------------------------------
+Tue Dec 13 10:29:33 CET 2005 - mvidner@suse.cz
+
+- Internet test: when cancelling changing of a device, nothing was
+  selected (#138219, mzugec)
+- 2.13.8
+
+-------------------------------------------------------------------
+Mon Dec 12 16:13:09 CET 2005 - mvidner@suse.cz
+
+- Domain search: limit input to 6 domains, help with syntax (#138017).
+- Enhanced the WPA EAP dialog (F300381): added a mode switch,
+  anonymous identity, client key and password.
+- 2.13.7
+
+-------------------------------------------------------------------
+Mon Dec  5 15:42:20 CET 2005 - mvidner@suse.cz
+
+- Added a global switch for NetworkManager. Either rcnetwork or
+  rcnetworkmanager is run. STARTMODE=managed is not used.
+- 2.13.6
+
+-------------------------------------------------------------------
+Fri Dec  2 11:17:09 CET 2005 - mvidner@suse.cz
+
+- Address dialog:
+   Fixed displaying the initial tab.
+   Adjusted spacing to fit to 80x24.
+   Prepared some widgets for interface renaming.
+
+-------------------------------------------------------------------
+Wed Nov 23 18:22:33 CET 2005 - mvidner@suse.cz
+
+- Moved the NIC details dialog to a tab in the address dialog.
+- Allowed more than 3 search domains (#55012, F120075) in the resolver
+  dialog by using a multi line edit instead of 3 text entries.  Also
+  fixed checking whether something has changed in the dialog.
+
+-------------------------------------------------------------------
+Tue Nov 22 09:26:21 CET 2005 - mzugec@suse.cz
+
+- feature #100095 - select network interface for testing internet
+  connection
+
+-------------------------------------------------------------------
+Tue Nov 15 19:16:12 CET 2005 - mvidner@suse.cz
+
+- Rewrote AddressDialog to CWM (preparing to attack bug #44721).
+  For the time being, the wizard sequencer interface is the same
+  and the look almost the same.
+- 2.13.5
+
+-------------------------------------------------------------------
+Wed Nov  9 17:34:43 CET 2005 - mvidner@suse.cz
+
+- lan: Added ifcfg:STARTMODE=managed for NetworkManager.
+- 2.13.4
+
+-------------------------------------------------------------------
+Fri Oct 21 11:24:17 CEST 2005 - mvidner@suse.cz
+
+- Added a widget for hwcfg:LCS_LANCMD_TIMEOUT (#98958#c23, hare).
+- Use ifcfg:LLADDR instead of hwcfg:QETH_MACADDRESS for Layer 2
+  (#98958#c12, hare).
+- 2.13.3
+
+-------------------------------------------------------------------
+Thu Oct 13 10:47:47 CEST 2005 - mvidner@suse.cz
+
+- Merged messages proofread for SLES9 SP2.
+- 2.13.2
+
+-------------------------------------------------------------------
+Fri Oct  7 14:06:05 CEST 2005 - mvidner@suse.cz
+
+- Autoyast: support interface matching by vio bus id (#119592).
+- Autoyast: do not ignore networking/dns if networking/interfaces is
+  empty (#117484).
+- Added a widget for Layer 2 MAC address (#98958, with hare).
+- Honor BrokenModules from install.inf (#97540).
+
+-------------------------------------------------------------------
+Fri Sep 30 13:37:19 CEST 2005 - mvidner@suse.cz
+
+- Enabled DHCP on S/390s (#87336, with hare).
+- Emphasized that the host name is global (#91202).
+- Fixed disabling IPA takeover (#85438#c32).
+- Fixed setting QETH options to empty (#90454).
+- Changed the default MTU for LCS eth and tr to 1492 (#81815,
+  #93798).
+- Added the possibility to turn on the Layer 2 option
+  for qeth and hsi (hare, #84148, #85438#c32).
+- Fixed the configuration of ESCON and FICON (#82891).
+- When proposing LAN config (also in autoyast in some cases), use the
+  module from install.inf, not the first one of several options (like
+  tg3/bcm5700). #81533.
+- 2.13.1
+
+-------------------------------------------------------------------
+Mon Sep 26 13:17:26 CEST 2005 - mvidner@suse.cz
+
+- Make ifplugd the default startmode for NICs (#115448).
+- If a NIC is configured with no address, say so (#116092).
+- 2.13.0
+
+-------------------------------------------------------------------
+Fri Sep 09 12:06:54 CEST 2005 - arvin@suse.de
+
+- run SuSEconfig gdm after remote control changes (bug #115901)
+- 2.12.15
+
+-------------------------------------------------------------------
+Fri Sep  2 11:06:13 CEST 2005 - mvidner@suse.cz
+
+- Do not show ISDN controllers both as configured and unconfigured
+  (#103073).
+- Fix acivating network after backing out and configuring again
+  (#113101).
+- 2.12.14
+
+-------------------------------------------------------------------
+Wed Aug 31 12:51:37 CEST 2005 - locilka@suse.cz
+
+- Fixing bug #113223, Fetching release notes in the installation
+  did not use PROXY settings. Testing proxy timed out after a very
+  long time.
+- 2.12.13
+
+-------------------------------------------------------------------
+Sat Aug 27 16:04:02 CEST 2005 - mvidner@suse.cz
+
+- Fixed editing ISDN providers (#104122).
+- Network settings would not be written if the wifi link was used in
+  the proposal (#113196).
+
+-------------------------------------------------------------------
+Mon Aug 22 17:02:30 CEST 2005 - mvidner@suse.cz
+
+- Don't use rcnetwork reload if it is not running (#106040).
+- Don't stop network unnecessarily (Detection stuff, #106040).
+- 2.12.12
+
+-------------------------------------------------------------------
+Thu Aug 18 16:49:13 CEST 2005 - mvidner@suse.cz
+
+- More valid characters for proxy user name (#103841).
+
+-------------------------------------------------------------------
+Wed Aug 17 18:15:35 CEST 2005 - mvidner@suse.cz
+
+- Enable firewall for newly added modems and DSLs (#66478).
+- 2.12.11
+
+-------------------------------------------------------------------
+Mon Aug 15 17:21:48 CEST 2005 - mvidner@suse.cz
+
+- Clear the static address if using DHCP (#104494).
+- Omit BROADCAST and NETWORK (#50955).
+- Enable the ISDN init script (#104590).
+- Merged proofread texts.
+- 2.12.10
+
+-------------------------------------------------------------------
+Thu Aug 11 16:28:11 CEST 2005 - mvidner@suse.cz
+
+- Added missing imports (check_ycp).
+
+-------------------------------------------------------------------
+Tue Aug  9 20:08:15 CEST 2005 - mvidner@suse.cz
+
+- Made the proposal link to change WiFi work (F2103).
+- Again fixed selecting the wrong card to edit (#98852, #102945).
+- 2.12.9
+
+-------------------------------------------------------------------
+Fri Aug  5 13:02:57 CEST 2005 - mvidner@suse.cz
+
+- Unified the configured and unconfigured lists (F5630, with visnov).
+- 2.12.8
+
+-------------------------------------------------------------------
+Thu Aug  4 12:18:07 CEST 2005 - mvidner@suse.cz
+
+- Do not mix up the unconfigured cards (#98852).
+
+-------------------------------------------------------------------
+Thu Jul 28 12:31:56 CEST 2005 - jsuchome@suse.cz
+
+- updated desktop files
+- merged proofread messages
+- 2.12.7
+
+-------------------------------------------------------------------
+Mon Jul 25 17:46:10 CEST 2005 - mvidner@suse.cz
+
+- Warn in the proposal about unencrypted WiFi,
+  have a direct link to change it (unimplemented) (F2103).
+- 2.12.6
+
+-------------------------------------------------------------------
+Fri Jul 22 20:44:38 CEST 2005 - mvidner@suse.cz
+
+- Prefer WiFi for the proposal (F2103).
+- 2.12.5
+
+-------------------------------------------------------------------
+Fri Jul 22 12:07:40 CEST 2005 - mvidner@suse.cz
+
+- Added WPA-EAP configuration (F100140).
+- 2.12.4
+
+-------------------------------------------------------------------
+Mon Jul 18 13:34:13 CEST 2005 - mvidner@suse.cz
+
+- Removed an obsolete workaround for bug 65164.
+- 2.12.3
+
+-------------------------------------------------------------------
+Thu Jul 14 15:40:58 CEST 2005 - mvidner@suse.cz
+
+- Do not default to storing ISP passwords on disk (#59836).
+
+-------------------------------------------------------------------
+Mon Jul 11 18:22:05 CEST 2005 - mvidner@suse.cz
+
+- Fixed aborting the network test during the installation (YOU and
+  release notes) (visnov, #44552, F110072).
+
+-------------------------------------------------------------------
+Mon Jul 11 17:25:01 CEST 2005 - mvidner@suse.cz
+
+- Added "Test Proxy Settings" functionality (locilka, #55861).
+- 2.12.2
+
+-------------------------------------------------------------------
+Thu Jun 23 12:08:59 CEST 2005 - mvidner@suse.cz
+
+- Fixed and beautified HTTPS_PROXY.
+
+-------------------------------------------------------------------
+Wed Jun 22 08:46:14 CEST 2005 - visnov@suse.cz
+
+- HTTPS_PROXY support (#67357)
+- Proxy command line support
+
+-------------------------------------------------------------------
+Fri Jun 10 14:42:04 CEST 2005 - mvidner@suse.cz
+
+- WiFi: allow setting the channel only in Master and Ad-hoc modes
+  (#88530)
+
+-------------------------------------------------------------------
+Wed Jun  1 15:27:01 CEST 2005 - mvidner@suse.cz
+
+- Do not load a NIC driver if one is already loaded (#59794#c31).
+- Use network module options supplied by user during
+  boot (install.inf) when installing and proposing (#75720).
+- For force_static_ip, also change the default in the address dialog
+  (#65524).
+- Properly enable/disable widgets and validate input
+  in the DNS dialog (#28427, #63423).
+
+-------------------------------------------------------------------
+Mon May 16 12:33:05 CEST 2005 - mvidner@suse.cz
+
+- Removed an obsolete Requires: yast2-firewall.
+- Added help text about the alias name format (#83766).
+
+-------------------------------------------------------------------
+Mon May  2 13:17:38 CEST 2005 - locilka@suse.cz
+
+- Added Firewall support into the Remote Administration settings
+- Added full Command Line support for Remote Administration
+
+-------------------------------------------------------------------
+Tue Apr 19 17:24:12 CEST 2005 - mvidner@suse.cz
+
+- Adapted to ProductFeatures changes
+- Do not use "default" as an identifier.
+- 2.12.1
+
+-------------------------------------------------------------------
+Fri Apr  1 10:45:14 CEST 2005 - mvidner@suse.cz
+
+- Fixed detection of WPA-PSK support (#74496).
+- Removed obsolete file for personal firewall.
+
+-------------------------------------------------------------------
+Tue Mar 22 09:56:21 CET 2005 - mvidner@suse.cz
+
+- isdnctrl was moved to /sbin (#74096).
+- 2.11.32
+
+-------------------------------------------------------------------
+Tue Mar 22 09:16:34 CET 2005 - mvidner@suse.cz
+
+- ISDN proposal: full init before internet test (#74096).
+- Sleep before drdsl to avoid some race.
+- 2.11.31
+
+-------------------------------------------------------------------
+Tue Mar 22 08:28:31 CET 2005 - mvidner@suse.cz
+
+- Fritz!Card DSL: drdsl must not use the -n switch (#74205).
+- 2.11.30
+
+-------------------------------------------------------------------
+Sat Mar 19 16:36:14 CET 2005 - nashif@suse.de
+
+- DSL: Offer Point to Point Tunneling Protocol again (#73043)
+- V 2.11.29
+
+-------------------------------------------------------------------
+Fri Mar 18 23:23:59 CET 2005 - nashif@suse.de
+
+- Do not set empty UNIQUE when autoinstalling  (#73922)
+
+-------------------------------------------------------------------
+Fri Mar 18 15:22:06 CET 2005 - mvidner@suse.cz
+
+- DSL: do not offer Point to Point Tunneling Protocol,
+  pptp.rpm was removed because we no longer have ppp_mppe.ko (#73043)
+- 2.11.27
+
+-------------------------------------------------------------------
+Thu Mar 17 13:01:46 CET 2005 - mvidner@suse.cz
+
+- Fixed autoinstallation by reintroducing uppercasing (#73595).
+- 2.11.26
+
+-------------------------------------------------------------------
+Mon Mar 14 17:14:50 CET 2005 - mvidner@suse.cz
+
+- Reload lwresd if resolv.conf changes (#72450).
+- Moved the single quote fix to NetworkDevices.ycp (#72164).
+- 2.11.25
+
+-------------------------------------------------------------------
+Fri Mar 11 16:25:44 CET 2005 - mvidner@suse.cz
+
+- Don't allow single quotes inside ifcfg-*:NAME (#72164).
+- Use NetworkDevices::ConcealSecrets not to log sensitive information
+  (#65741).
+- Multiple autoinstallation fixes by means of a rewrite (nashif)
+  * #65976 - autoyast does not write network configuration
+  correctly. Use proposal method to setup network devices
+  for autoyast and handle multiple interfaces correctly
+  * #60716 - autoyast detects myrinet as ethX
+  * #67405 - autoyast configures two interfaces
+  * #65353 - ability to provide static network information for autoyast
+- Added WLAN channels 13 and 14 to the default list (#67150).
+- Enable user control of newly added WLAN cards (#63767).
+- 2.11.24
+
+-------------------------------------------------------------------
+Tue Mar  8 15:22:21 CET 2005 - kkeil@suse.de
+
+- use valid default IPs for ISDN and not 0.0.0.0 (#43169, #56181)
+- 2.11.23
+
+-------------------------------------------------------------------
+Thu Mar  3 18:30:22 CET 2005 - kkeil@suse.de
+
+- fix ISDN ISA card setup (#67129)
+- /etc/init.d/isdn stop --> /etc/init.d/isdn unload
+- 2.11.22
+
+-------------------------------------------------------------------
+Wed Mar  2 10:27:32 CET 2005 - locilka@suse.cz
+
+- Merged proofed texts
+- 2.11.21
+
+-------------------------------------------------------------------
+Thu Feb 24 14:37:16 CET 2005 - mvidner@suse.cz
+
+- Allow WEP keys of lengths that the card supports (#60011).
+- Adjusted to the actual wireless card features implementation in
+  agent-probe (#65391).
+- 2.11.20
+
+-------------------------------------------------------------------
+Mon Feb 21 16:57:57 CET 2005 - mvidner@suse.cz
+
+- Improved the layout of the internet connection test dialog
+  (F100294).
+- Confirm also detection of PPPoE DSL (Novell #66056).
+- Provider help texts now match the dialog (Novell #66001).
+- Set modified to false when resetting in autoyast.
+- 2.11.19
+
+-------------------------------------------------------------------
+Fri Feb 11 17:24:05 CET 2005 - mvidner@suse.cz
+
+- Fixed CLI handlers (wrong function signatures).
+- Propose network config also when there's ifcfg-usb (#50164).
+- Do not log provider data, they contain passwords (#50741).
+- Fixed selecting an ISDN card manually (#50725).
+- Do not propose a dynamic address if the product (OES) says
+  force_static_ip (#50524).
+- Warn when selecting a device without a module (#29296).
+- 2.11.18
+
+-------------------------------------------------------------------
+Mon Feb  7 17:35:47 CET 2005 - mvidner@suse.cz
+
+- Merged proofread texts.
+- 2.11.17
+
+-------------------------------------------------------------------
+Fri Feb  4 17:32:35 CET 2005 - mvidner@suse.cz
+
+- Introduced ifcfg:NAME, user's name for the interface,
+  initialized from the hardware description. No widget yet.
+- Added firewall zone selection to network card details dialog,
+  jump to it if the interface is not in any zone.
+  Add new network cards to the external zone if the firewall
+  is already enabled (#47309, #50333).
+- For WLAN interfaces, wireless-tools.rpm is needed (#49880).
+- Help text fix: cannot correct network settings during an update
+  (#50381).
+- 2.11.16
+
+-------------------------------------------------------------------
+Thu Jan 27 17:33:54 CET 2005 - mvidner@suse.cz
+
+- Use /etc/init.d/network reload (#31698).
+- hwdown and hwup changed devices (#44794).
+- Added SGI Gigabit Ethernet (#48973).
+- 2.11.15
+
+-------------------------------------------------------------------
+Thu Jan 27 14:32:53 CET 2005 - mvidner@suse.cz
+
+- Improved and unified labels and helps for STARTMODE (#50095).
+  Canonicalized its values (on, boot, onboot -> auto).
+- 2.11.14
+
+-------------------------------------------------------------------
+Tue Jan 25 17:34:09 CET 2005 - mvidner@suse.cz
+
+- Use Progress::set also in clients.
+
+-------------------------------------------------------------------
+Mon Jan 24 21:19:34 CET 2005 - nashif@suse.de
+
+- Fixed second argument used to skip client when going back in the workflow
+
+-------------------------------------------------------------------
+Mon Jan 24 19:34:52 CET 2005 - nashif@suse.de
+
+- Hardcode argument of inst_netsetup, currently argument `up is not
+  needed because the client does only `up and no `down anymore
+
+-------------------------------------------------------------------
+Mon Jan 17 09:45:40 CET 2005 - mvidner@suse.cz
+
+- Added DSL card detection.
+- Recognize USB Host-to-Host link detected by hwinfo (#22739).
+- Moved common things from SelectHW to SelectHardware.
+
+-------------------------------------------------------------------
+Fri Jan 14 13:04:50 CET 2005 - mvidner@suse.cz
+
+- Remove old data from /etc/hosts after having re-configured
+  hostname or IP during installation (#49634).
+- UI for Wireless card feature enquiry.
+- Keep logs from internet connection test (#46285).
+- Fixed building with new devtools.
+- 2.11.11
+
+-------------------------------------------------------------------
+Wed Dec 22 11:27:38 CET 2004 - mvidner@suse.cz
+
+- Updated help for WLAN ESSID (#39458).
+- Warn when changing the interface type (#30890).
+- Describe valid host and domain names in error popups (#22802).
+- 2.11.10
+
+-------------------------------------------------------------------
+Wed Dec 15 17:27:36 CET 2004 - mvidner@suse.cz
+
+- fixed build
+- 2.11.9
+
+-------------------------------------------------------------------
+Wed Dec 15 15:11:51 CET 2004 - mvidner@suse.cz
+
+- Using new firewall code in yast2.rpm via SuSEFirewall4Network.
+- Using Progress::set
+- Resolver: if the search list is empty, prefill the domain (#49094).
+- 2.11.8
+
+-------------------------------------------------------------------
+Thu Dec  9 17:44:03 CET 2004 - mvidner@suse.cz
+
+- IPs for /etc/hosts: watch out for BOOTPROTO=dhcp and nonempty
+  IPADDR (#49055).
+- No-proxy domains: improved help, add commas if missing (#48998).
+
+-------------------------------------------------------------------
+Thu Dec  2 12:51:48 CET 2004 - locilka@suse.cz
+
+- Added module SuSEFirewall4Network for handling network interfaces
+  in SuSEfirewall2 using SuSEFirewall module.
+
+-------------------------------------------------------------------
+Fri Nov 12 17:54:10 CET 2004 - mvidner@suse.cz
+
+- Fixed deleting additional addresses via the specialized dialog (#48191).
+- Do not allow slashes ifcfg and hwcfg names (#46803).
+- Run kinternet with the --quiet option (#46828).
+- Install wpa_supplicant when a device uses WPA-PSK (#47809).
+- 2.11.7
+
+-------------------------------------------------------------------
+Wed Nov 10 10:51:52 CET 2004 - mvidner@suse.cz
+
+- Moved NetworkDevices from yast2-network to yast2.
+- 2.11.6
+
+-------------------------------------------------------------------
+Thu Nov  4 10:52:12 CET 2004 - mvidner@suse.cz
+
+- Fixed errors found by stricter type checking.
+- Replaced selects and lookups by brackets.
+- 2.11.5
+
+-------------------------------------------------------------------
+Wed Oct 27 15:38:09 CEST 2004 - mvidner@suse.cz
+
+- Actually assign to allow_administration in Remote::Read (#44684).
+- Changed label: IUCV "link name/partner" to "peer name" (#42789).
+- Added qeth options and IP takeover to qeth and hsi (hare, #41570).
+- Use new common strings from Label.
+- Adapted to changes in Mode.
+- 2.11.4
+
+-------------------------------------------------------------------
+Tue Oct 19 10:11:45 CEST 2004 - mvidner@suse.cz
+
+- Deleted an unused file that triggered a format string mismatch.
+- 2.11.3
+
+-------------------------------------------------------------------
+Thu Oct 14 14:01:45 CEST 2004 - jsrain@suse.cz
+
+- fixed testsuite
+- 2.11.2
+
+-------------------------------------------------------------------
+Mon Oct 11 16:25:46 CEST 2004 - jsrain@suse.cz
+
+- adapted to new Arch:: interface
+
+-------------------------------------------------------------------
+Thu Oct 07 16:41:15 CEST 2004 - arvin@suse.de
+
+- protect special characters when displaying logs from Internet
+  connection test (bug #46410)
+
+-------------------------------------------------------------------
+Wed Oct  6 15:34:33 CEST 2004 - mvidner@suse.cz
+
+- Consider smpppd and kinternet also for ISDN interfaces (#46888),
+  dialup does not matter, only USERCONTROL does (#44303).
+- 2.10.33
+
+-------------------------------------------------------------------
+Tue Oct  5 14:39:53 CEST 2004 - mvidner@suse.cz
+
+- Do not set FIREWALL (restart on connect) according to the External
+  fw interface checkbox (#45935).
+- 2.10.32
+
+-------------------------------------------------------------------
+Tue Oct  5 10:41:12 CEST 2004 - mvidner@suse.cz
+
+- Do not assign 127.0.0.2 to localhost (#46715).
+- 2.10.31
+
+-------------------------------------------------------------------
+Mon Oct  4 16:52:13 CEST 2004 - mvidner@suse.cz
+
+- Moved the "cd /" workaround to yast2-network (#46055).
+- Do not change proxy settings in the proposal (#46635).
+- 2.10.30
+
+-------------------------------------------------------------------
+Thu Sep 30 13:43:59 CEST 2004 - mvidner@suse.cz
+
+- One more place to pass the required packages (#45960).
+- 2.10.29
+
+-------------------------------------------------------------------
+Wed Sep 29 14:30:23 CEST 2004 - mvidner@suse.cz
+
+- Don't display DHCP if the resolver is set up statically (#46377).
+- Don't use "ppp" as the firewall interface (#46378).
+- 2.10.28
+
+-------------------------------------------------------------------
+Wed Sep 29 10:52:33 CEST 2004 - arvin@suse.de
+
+- disable ugly hack of bug #42177 since 9.2 is a box product
+
+-------------------------------------------------------------------
+Tue Sep 28 16:54:01 CEST 2004 - mvidner@suse.cz
+
+- Do not run dhcpcd-test, it may trigger IP address change (#46214).
+- 2.10.26
+
+-------------------------------------------------------------------
+Mon Sep 27 16:11:47 CEST 2004 - mvidner@suse.cz
+
+- Lan: install packages reported by hwinfo, eg. firmware (#45960).
+- Fixed firewall fix (#45857).
+- 2.10.25
+
+-------------------------------------------------------------------
+Sat Sep 25 12:43:17 CEST 2004 - mvidner@suse.cz
+
+- Removed inst_netsetup (`dn) and write resolv.conf directly.
+  Network setup will be able to install packages from network
+  and write the definitive configuration (#45317).
+- Check whether kinternet is installed (#43556).
+- Run it via a desktop file (#37864).
+- Use yast2-firewall to access the firewall configuration (#45857).
+- Edit the default wireless key, not the first one (#46029).
+- 2.10.24
+
+-------------------------------------------------------------------
+Fri Sep 24 14:01:23 CEST 2004 - mvidner@suse.cz
+
+- Don't require installation of generically named kernel packages
+  (#44977).
+- Do not warn about no wireless key if we proceed with the key
+  dialog (#46025).
+- 2.10.23
+
+-------------------------------------------------------------------
+Thu Sep 23 16:36:59 CEST 2004 - arvin@suse.de
+
+- set proxy for downloading of release notes (bug #35370)
+
+-------------------------------------------------------------------
+Wed Sep 22 16:10:02 CEST 2004 - arvin@suse.de
+
+- check signature of release notes (bug #45647)
+
+-------------------------------------------------------------------
+Mon Sep 20 16:38:00 CEST 2004 - kkeil@suse.de
+
+- do only install addon packages if proposal was accepted (#45314)
+- 2.10.20
+
+-------------------------------------------------------------------
+Mon Sep 20 16:19:58 CEST 2004 - mvidner@suse.cz
+
+- Do not write hwcfg for PC Cards (#42421).
+- lan_auto::Reset: clear modification flag
+- 2.10.19
+
+-------------------------------------------------------------------
+Fri Sep 17 13:00:01 CEST 2004 - mvidner@suse.cz
+
+- Do not (mis)configure WLAN cards automatically (#44951).
+- Do not falsely alarm about duplicate IPs if we have more
+  interfaces (#45169).
+- 2.10.18
+
+-------------------------------------------------------------------
+Tue Sep 14 16:36:23 CEST 2004 - mvidner@suse.cz
+
+- Firewall for network interfaces: use FW_DEV_EXT instead of
+  personal-firewall (#33649).
+
+-------------------------------------------------------------------
+Mon Sep 13 15:44:18 CEST 2004 - mvidner@suse.cz
+
+- Added Lan::AutoPackages for autoinst mode (nashif).
+- Install RPMs with kernel modules (#44394).
+- 2.10.17
+
+-------------------------------------------------------------------
+Mon Sep 13 14:21:58 CEST 2004 - kkeil@suse.de
+
+- add ISDN:NetDeviceList() function for a list of configured
+  ISDN network interfaces (#44677)
+- manual is the default STARTMODE for ISDN interfaces
+
+-------------------------------------------------------------------
+Thu Sep  9 10:56:28 CEST 2004 - mvidner@suse.cz
+
+- Do not write the VNC settings until the whole proposal
+  has been accepted (#44136).
+- LAN: STARTMODE="manual" if not specified but "auto"
+  for new configurations (#44804).
+- Install ifplugd if needed (#44838).
+- There's no dhcp detection process to kill (#44557).
+- 2.10.16
+
+-------------------------------------------------------------------
+Mon Sep  6 17:29:58 CEST 2004 - mvidner@suse.cz
+
+- Added STARTMODE=ifplugd.
+- Prepare for installing kernel RPMs (#44394).
+- 2.10.15
+
+-------------------------------------------------------------------
+Fri Sep  3 14:48:06 CEST 2004 - mvidner@suse.cz
+
+- Renamed Virtual Aliases to Additional Addresses (#42412).
+- Deleted a redundant copy of DuplicateIP and fixed
+  the other one (#9951).
+- Call hwup for hwcfg-static* instead of rccoldplug (#44626).
+- Don't write hwcfg files for bus-(pcmcia|usb) devices (#42421).
+- 2.10.14
+
+-------------------------------------------------------------------
+Thu Sep  2 16:54:07 CEST 2004 - msvec@suse.cz
+
+- write alias label and fixed alias editing (#42412)
+
+-------------------------------------------------------------------
+Wed Sep  1 17:51:51 CEST 2004 - mvidner@suse.cz
+
+- Fixed configuring the dummy interface (#44582).
+- Another try at detecting KDE because of kinternet (#43556).
+
+-------------------------------------------------------------------
+Tue Aug 31 00:44:07 CEST 2004 - nashif@suse.de
+
+- Fixed lan_auto to handle different devices (#44014)
+- use modified flag (#43904) in auto clients
+
+-------------------------------------------------------------------
+Mon Aug 30 11:04:03 CEST 2004 - mvidner@suse.cz
+
+- Removed excess vertical spacing from LAN proposal (#44449).
+- Added periods to summary sentences (#44139).
+- 2.10.12
+
+-------------------------------------------------------------------
+Fri Aug 27 16:31:33 CEST 2004 - mvidner@suse.cz
+
+- Fixed telephone country code of Slovakia, added Czech Rep. and
+  North America. (#44085)
+- Merged proofread texts.
+
+-------------------------------------------------------------------
+Thu Aug 26 17:40:26 CEST 2004 - mvidner@suse.cz
+
+- Don't forget to write the WPA-PSK key (#44316).
+- Activate smpppd+kinternet for user controlled interfaces (#44303).
+- Restore interface configuration name when switching back from
+  bus-{usb,pcmcia} (#38213)
+- 2.10.11
+
+-------------------------------------------------------------------
+Mon Aug 23 12:23:35 CEST 2004 - mvidner@suse.cz
+
+- Enable USERCONTROL for new modem, DSL and ISDN interfaces (#43945).
+- Dial Prefix Regex is enabled only for user controlled modems (#43945).
+- 2.10.10
+
+-------------------------------------------------------------------
+Thu Aug 19 09:58:06 CEST 2004 - mvidner@suse.cz
+
+- Wireless: better input checking, updated help texts.
+- 2.10.9
+
+-------------------------------------------------------------------
+Wed Aug 18 13:24:13 CEST 2004 - mvidner@suse.cz
+
+- Mark unplugged network cards in the list of unconfigured ones.
+- Fixed return type of LanSequence for CommandLine.
+- 2.10.8
+
+-------------------------------------------------------------------
+Tue Aug 17 15:02:09 CEST 2004 - mvidner@suse.cz
+
+- VNC: Using xorg-x11 instead of XFree86.
+- Fixed parallel build (nested directory symlinks).
+- 2.10.7
+
+-------------------------------------------------------------------
+Mon Aug 16 16:39:27 CEST 2004 - mvidner@suse.cz
+
+- Phone number checking relaxed from validchars to are-you-sure (#43723).
+- Added usb to CardRegex[netcard] (#43089).
+- 2.10.6
+
+-------------------------------------------------------------------
+Tue Aug 10 17:51:22 CEST 2004 - mvidner@suse.cz
+
+- VNC: Fixed status display and restarting xinetd,
+  enhanced XDM warning (#43264)
+- Merged proofread texts.
+
+-------------------------------------------------------------------
+Thu Aug  5 12:51:45 CEST 2004 - msvec@suse.cz
+
+- modem config files are now ifcfg-modem*
+- enabled preliminary Bluetooth support
+- minimal commandline support
+- improved summary output
+- 2.10.5
+
+-------------------------------------------------------------------
+Fri Jul 30 16:19:13 CEST 2004 - mvidner@suse.cz
+
+- Wireless: Added WPA-PSK.
+- LAN: Use editable combo instead of textentry for Configuration name
+  (not filled with useful data yet).
+- Adjusted testsuite for removal of Mode::live_evil.
+- 2.10.4
+
+-------------------------------------------------------------------
+Thu Jul 29 16:44:09 CEST 2004 - mvidner@suse.cz
+
+- Added Dial prefix regular expression for modem ifcfgs (#23315).
+
+-------------------------------------------------------------------
+Tue Jul 27 17:30:44 CEST 2004 - mvidner@suse.cz
+
+- New checkbox for interfaces: "User Controlled".
+- 2.10.3
+
+-------------------------------------------------------------------
+Fri Jul 23 18:27:51 CEST 2004 - mvidner@suse.cz
+
+- Moved the wireless dialog from the hardware one
+  to after the address one (#42420).
+
+-------------------------------------------------------------------
+Fri Jul 23 13:46:03 CEST 2004 - jsrain@suse.cz
+
+- added function to detect if host name (or IP address) is local
+  host
+
+-------------------------------------------------------------------
+Fri Jul 23 12:38:40 CEST 2004 - mvidner@suse.cz
+
+- Fixed configuration of s390 LCS devices (#42886).
+
+-------------------------------------------------------------------
+Tue Jul 20 21:36:30 CEST 2004 - msvec@suse.cz
+
+- improved DNS and Routing summaries
+- duplicate IP address detection (#9951)
+- fixed coldplugged HW (#40587)
+
+-------------------------------------------------------------------
+Wed Jul 14 13:00:02 CEST 2004 - mvidner@suse.cz
+
+- Shut up when there are no wlan files to fix (#42990).
+
+-------------------------------------------------------------------
+Mon Jul 12 15:42:00 CEST 2004 - mvidner@suse.cz
+
+- For temporary network setup during installation (inst_netsetup),
+  use also the domain name from install.inf (#42758).
+- Moved nsswitch.conf agent to yast2-pam.
+- 2.10.2
+
+-------------------------------------------------------------------
+Thu Jul  8 12:37:46 CEST 2004 - mvidner@suse.cz
+
+- Fixed deleting virtual aliases (#42386).
+- 2.10.1
+
+-------------------------------------------------------------------
+Thu Jul  8 08:47:23 CEST 2004 - mvidner@suse.cz
+
+- Added more "testedfiles" to test cases to make it work with the new testsuite.
+- 2.10.0
+
+-------------------------------------------------------------------
+Mon Jun 28 14:56:16 CEST 2004 - msvec@suse.cz
+
+- don't show writing progress (#42248)
+- use by-id naming for IUCV devices (#42212)
+- after update fix possibly wrong permissions (#24842)
+- updated s390 card list (hare)
+- 2.9.57
+
+-------------------------------------------------------------------
+Wed Jun 23 11:06:18 CEST 2004 - msvec@suse.cz
+
+- QETH devices detection changed (mvidner, #41461)
+- fixed setting host and domain name when Machinename has FQDN (#42242).
+- preliminary support for LCS devices (s390)
+- 2.9.56
+
+-------------------------------------------------------------------
+Fri Jun 18 15:41:02 CEST 2004 - mvidner@suse.cz
+
+- Correctly parse module and options to fix proposal when
+  MAC addresses are unknown (#42203).
+- 2.9.55
+
+-------------------------------------------------------------------
+Fri Jun 18 11:32:51 CEST 2004 - arvin@suse.de
+
+- fake check for online patches (bug #42177)
+- 2.9.54
+
+-------------------------------------------------------------------
+Thu Jun 17 16:32:03 CEST 2004 - mvidner@suse.cz
+
+- Make the ifcfg file unreadable (chmod 600) if _any_ of the wireless
+  keys is specified (#24842).
+- 2.9.53
+
+-------------------------------------------------------------------
+Wed Jun 16 17:51:29 CEST 2004 - mvidner@suse.cz
+
+- Fixed changing the host name during the installation
+  after the network has already been set up (#42102).
+- 2.9.52
+
+-------------------------------------------------------------------
+Wed Jun 16 14:31:10 CEST 2004 - mvidner@suse.cz
+
+- Fixed an untranslated heading in ISDN setup (#42089).
+- 2.9.51
+
+-------------------------------------------------------------------
+Thu Jun 10 18:08:04 CEST 2004 - mvidner@suse.cz
+
+- VNC: Fixed hanging when starting KDM (#41611).
+- VNC: Tell the user if he must restart xdm (#40458).
+- 2.9.50
+
+-------------------------------------------------------------------
+Fri Jun  4 14:34:51 CEST 2004 - msvec@suse.cz
+
+- fixed coldplugged HW on s390 (#40587)
+- fixed QETH params writing (#41461)
+- fixed IUCV detection (#41525)
+- 2.9.49
+
+-------------------------------------------------------------------
+Fri May 28 12:20:15 CEST 2004 - mvidner@suse.cz
+
+- Require kdebase3 or fvwm2 instead of windowmanager
+  to make VNC work (#40155).
+- 2.9.48
+
+-------------------------------------------------------------------
+Thu May 27 16:50:32 CEST 2004 - mvidner@suse.cz
+
+- Resolver: fixed restarting DHCP clients (#41303).
+- 2.9.47
+
+-------------------------------------------------------------------
+Thu May 27 06:19:13 CEST 2004 - nashif@suse.de
+
+- Fixed bug where autoyast config for network does not select
+  correct interface (#41065)
+- Parse autoyast data correctly to show configured devices with
+  ids (mac/pci bus)
+
+-------------------------------------------------------------------
+Mon May 24 10:55:09 CEST 2004 - mvidner@suse.cz
+
+- Fixed /etc/inittab broken by last fix of VNC administration (#40458).
+- 2.9.46
+
+-------------------------------------------------------------------
+Wed May 19 17:40:54 CEST 2004 - mvidner@suse.cz
+
+- Another fix of hwcfg-{hsi,qeth}-* (#40692#c15)
+- 2.9.45
+
+-------------------------------------------------------------------
+Fri May 21 02:43:12 CEST 2004 - nashif@suse.de
+
+- return right device name when cloning with autoyast.
+
+-------------------------------------------------------------------
+Tue May 18 15:01:31 CEST 2004 - msvec@suse.cz
+
+- proper CTC devices support (#40692)
+- show busid for s390 netcards (#40587)
+- fixed virtual aliases deleting (#40597)
+- don't use by-MAC identification on s390 (#38819)
+- network proposal by MAC (#40088, #40096)
+- improved remote administration (#40458)
+- 2.4.44
+
+-------------------------------------------------------------------
+Fri May 14 14:21:29 CEST 2004 - mvidner@suse.cz
+
+- fixed committing isdn providers (#39110)
+- 2.9.43
+
+-------------------------------------------------------------------
+Fri May 14 11:17:52 CEST 2004 - msvec@suse.cz
+
+- further s390 improvements (#39456)
+- 2.9.42
+
+-------------------------------------------------------------------
+Thu May 13 17:29:59 CEST 2004 - mvidner@suse.cz
+
+- fixed switching resolv.conf from DHCP to static config (#38834)
+- 2.9.41
+
+-------------------------------------------------------------------
+Thu May 13 15:45:51 CEST 2004 - mvidner@suse.cz
+
+- fixed saving empty WEP keys (#40431)
+- 2.9.40
+
+-------------------------------------------------------------------
+Wed May 12 15:09:15 CEST 2004 - msvec@suse.cz
+
+- added custom s390 dialogs (#39456)
+- preserve additional DNS searches (#40012)
+- make WLAN Master mode functional (#40431)
+- propose install.inf netcard if defined (#40088, #39130)
+- use bus_hwcfg hwinfo BUS identification field (#39456)
+- drop UML hardware detection hack, it works now (#39945)
+- save the 3rd modem init string (#40191)
+- drop obsolete s390 chandev stuff
+- 2.9.39
+
+-------------------------------------------------------------------
+Tue May  4 10:07:02 CEST 2004 - mvidner@suse.cz
+
+- merged proofread messages
+- 2.9.38
+
+-------------------------------------------------------------------
+Thu Apr 29 17:52:14 CEST 2004 - msvec@suse.cz
+
+- "detect" undetectable UML network device (#39521)
+- resurrected virtual aliases support (#39657)
+- updated list of hwinfo controllers (#39456)
+- fixed parallel build and updated testsuite
+- 2.9.37
+
+-------------------------------------------------------------------
+Tue Apr 27 13:32:49 CEST 2004 - mvidner@suse.cz
+
+- reduced operation modes to managed, ad-hoc and master
+- removed NWID and nickname (all #39458 c3)
+- 2.9.36
+
+-------------------------------------------------------------------
+Mon Apr 26 12:46:16 CEST 2004 - msvec@suse.cz
+
+- XPNet detection support (#35867)
+- 2.9.35
+
+-------------------------------------------------------------------
+Wed Apr 21 17:30:55 CEST 2004 - mvidner@suse.cz
+
+- Added comments to base modules
+
+-------------------------------------------------------------------
+Mon Apr 19 16:58:21 CEST 2004 - mvidner@suse.cz
+
+- WEP: choose key type also in the main dialog (#35857 c19)
+       fixed the Back button
+       abbreviated Number as No.
+- 2.9.34
+
+-------------------------------------------------------------------
+Mon Apr 19 10:34:46 CEST 2004 - mvidner@suse.cz
+
+- added a dialog for multiple WEP keys (#35857)
+- proofread some more messages
+- inst_net_setup: ignore HWaddr if empty
+- export forgotten domain (#38770)
+- 2.9.33
+
+-------------------------------------------------------------------
+Wed Apr 07 12:07:57 CEST 2004 - arvin@suse.de
+
+- start capi during Internet test also for capi based dsl
+  connections (bug #38540)
+
+-------------------------------------------------------------------
+Tue Apr  6 11:04:01 CEST 2004 - msvec@suse.cz
+
+- use ifconfig -a to get interfaces (#38330)
+- fixed update of /etc/hosts (#38439)
+- 2.9.31
+
+-------------------------------------------------------------------
+Mon Apr  5 19:45:53 CEST 2004 - msvec@suse.cz
+
+- use BUSID when MAC=00:00:00:00:00:00 (partly #38392)
+- 2.9.30
+
+-------------------------------------------------------------------
+Mon Apr  5 19:27:05 CEST 2004 - msvec@suse.cz
+
+- fixed shortcuts in ISDN dialog (#38216)
+- 2.9.29
+
+-------------------------------------------------------------------
+Mon Apr 05 18:56:53 CEST 2004 - arvin@suse.de
+
+- don't setup and shutdown network if it has already been setup
+  before yast is started (bug #38354)
+- 2.9.28
+
+-------------------------------------------------------------------
+Mon Apr  5 17:31:35 CEST 2004 - msvec@suse.cz
+
+- workaround bad german routing.desktop translation (#36936)
+- fixed syntax errors now reported by new core
+- 2.9.27
+
+-------------------------------------------------------------------
+Sun Apr  4 06:14:25 CEST 2004 - nashif@suse.de
+
+- create network config files using mac or pci ids when
+  auto-installing (#37186)
+- fixed module parsing due to change in data structure in
+  auto-install mode
+- 2.9.26
+
+-------------------------------------------------------------------
+Fri Apr  2 19:39:05 CEST 2004 - msvec@suse.cz
+
+- further smartlink-softmodems fixes (#37335)
+- changed license to GPL
+- 2.9.25
+
+-------------------------------------------------------------------
+Fri Apr  2 12:31:45 CEST 2004 - msvec@suse.cz
+
+- improved smartlink-softmodems support (#37335)
+- added more milestones to debug #38031
+- 2.9.24
+
+-------------------------------------------------------------------
+Thu Apr  1 17:13:37 CEST 2004 - msvec@suse.cz
+
+- reintroduce unique key writing to map device to cfg
+- better naming for hotplug devices (#37666, #35225)
+- show shorter netcard name in overvew (#36147)
+- 2.9.23
+
+-------------------------------------------------------------------
+Wed Mar 31 17:55:02 CEST 2004 - msvec@suse.cz
+
+- dropped testing desktop entries (#37522)
+- fixed STARTMODE and MTU writing (#37516)
+- better smartlink-softmodems support (#37335)
+- replace type with netcard name in overview table (#36147)
+- fixed summary to properly show configured modems (#37744)
+- 2.9.22
+
+-------------------------------------------------------------------
+Mon Mar 29 17:11:33 CEST 2004 - msvec@suse.cz
+
+- fixed DSL configuration write (#36629)
+- device textentry now in address dialog (#36147)
+- fixed HW mapping for old-style ifcfg-files (#36910)
+- fixed missing translation (#37144)
+- 2.9.21
+
+-------------------------------------------------------------------
+Mon Mar 29 12:09:07 CEST 2004 - arvin@suse.de
+
+- implemented setup of nameserver during second stage of
+  installation (bug #36957)
+- 2.9.20
+
+-------------------------------------------------------------------
+Fri Mar 26 12:29:25 CET 2004 - msvec@suse.cz
+
+- changed default hostname from linux.local -> linux.site (#36949)
+- 2.9.19
+
+-------------------------------------------------------------------
+Tue Mar 23 13:12:48 CET 2004 - mvidner@suse.cz
+
+- fixed enabling VNC administration (#31004, #36748)
+- 2.9.18
+
+-------------------------------------------------------------------
+Mon Mar 22 15:29:42 CET 2004 - msvec@suse.cz
+
+- preliminary XPNet devices support (#35867)
+- correct providers desktop entry (#36633)
+- never rmmod kernel modules (#36478)
+- further improve the naming (#36147)
+- possibility to change proposed names (#36147)
+- simplified summary output (#35647)
+- properly removed old hostname from /etc/hosts
+- 2.9.17
+
+-------------------------------------------------------------------
+Thu Mar 18 18:47:01 CET 2004 - arvin@suse.de
+
+- avoid flickering mouse cursor during Internet test (bug #36442)
+- 2.9.16
+
+-------------------------------------------------------------------
+Wed Mar 17 10:56:50 CET 2004 - msvec@suse.cz
+
+- added custom provider texts from msommer
+- 2.9.15
+
+-------------------------------------------------------------------
+Tue Mar 16 15:09:36 CET 2004 - msvec@suse.cz
+
+- offer possibility to change configuration name (#36147)
+- properly write hostname to /etc/hosts (#22825)
+- fixed kernel module selection
+- 2.9.14
+
+-------------------------------------------------------------------
+Tue Mar 16 12:35:26 CET 2004 - msvec@suse.cz
+
+- better device selection for installation (#35624)
+- 2.9.13
+
+-------------------------------------------------------------------
+Mon Mar 15 17:52:04 CET 2004 - msvec@suse.cz
+
+- use MAC address as a primary identification (#35731)
+- stop using UNIQUE numbers for ifcfg and hwcfg mapping
+- always use BUSID for HW configuration
+- write hostname to /etc/hosts (#22825)
+- dropped unused desktop entries (#35618)
+- proper focus in proxy (#35614)
+- fixed deleting of modem and DSL devices (#36079)
+- fixed testsuite
+- 2.9.12
+
+-------------------------------------------------------------------
+Wed Mar 10 11:07:35 CET 2004 - msvec@suse.cz
+
+- fixed modem and DSL packages names
+- 2.9.10
+
+-------------------------------------------------------------------
+Wed Mar 10 01:49:30 CET 2004 - sh@suse.de
+
+- Migration to new wizard
+- V 2.9.9
+
+-------------------------------------------------------------------
+Tue Mar  9 14:31:28 CET 2004 - msvec@suse.cz
+
+- added missing helps
+- minor fixes to WLAN configuration
+- 2.9.8
+
+-------------------------------------------------------------------
+Mon Mar  8 17:50:33 CET 2004 - msvec@suse.cz
+
+- use the new device naming (#33073)
+- set title icons
+- 2.9.7
+
+-------------------------------------------------------------------
+Fri Mar  5 13:07:34 CET 2004 - msvec@suse.cz
+
+- simple device interface (GetValue, SetValue)
+- possibility to set MTU (#34397, #20035)
+- possibility do change startmode (#24926)
+- don't always start smpppd and KInternet (#26382)
+- don't run KInternet in ncurses (#27891)
+- run KInternet according to the number of connections (#29475)
+- run|stop kinternet, if DISPLAY and (not)running (#14320)
+- don't allow to delete default provider (#17497)
+- install required packages in the installation proposals (#31536)
+- allow to delete proposed network cards (#34859)
+- drop resolv.conf header if not needed
+- correctly delete files on disk
+- fixed hosts writing (#35349)
+- added strict type casts
+- proof-read messages
+- 2.9.6
+
+-------------------------------------------------------------------
+Mon Feb 23 14:09:52 CET 2004 - msvec@suse.cz
+
+- reduced neededforbuild
+- fixed network proposal creation
+- fixed writing of kernel modules
+- resurrected virtual aliases support (#6627)
+- correct module name for Apple gmac (#34687)
+- sort now uses < because of the switch to std::sort <mvidner>
+- use Sequencer and Service modules
+- added wireless expert settings (#34873)
+- added more milestones
+- 2.9.5
+
+-------------------------------------------------------------------
+Mon Feb 16 19:21:25 CET 2004 - msvec@suse.cz
+
+- syntax fixes in the detection code
+- correct test for providers modification (#34419)
+- 2.9.4
+
+-------------------------------------------------------------------
+Tue Feb 10 08:41:53 CET 2004 - msvec@suse.cz
+
+- typo in shellcommand (may affect #29452, #33049)
+- 2.9.3
+
+-------------------------------------------------------------------
+Sat Feb  7 23:57:14 CET 2004 - msvec@suse.cz
+
+- ISDN compiles and seems to work
+- NVidia cards should be supported now (#25531)
+- 2.9.2
+
+-------------------------------------------------------------------
+Tue Jan  6 16:10:30 CET 2004 - msvec@suse.cz
+
+- sources restructured and cleaned up
+- new interpreter updates (ISDN not functional yet)
+- 2.9.1
+
+-------------------------------------------------------------------
+Tue Nov 11 17:11:54 CET 2003 - msvec@suse.cz
+
+- dummy device support (#15960)
+- preliminary USB Network support (#22739)
+- replace obsolete require calls (#31673)
+- allow to select a different card (#32450)
+- prefill "http://" in proxy fields (#31269)
+- don't allow to delete a provider which is used (#17497)
+- preliminary virtual aliases support (read|write and edit|delete so far)
+- allow "default" to be entered as a route destination (#21398)
+- fixed concurrent providers usage during installation (#31508)
+- fix netcard y2cc label (#33802)
+- automatic DNS support (#27955)
+- cleanup of redundant stuff
+- 2.9.0
+
+-------------------------------------------------------------------
+Tue Sep 23 15:47:33 CEST 2003 - msvec@suse.cz
+
+- ignore partially activated interfaces during Detection (#29452)
+- 2.8.43
+
+-------------------------------------------------------------------
+Mon Sep 22 09:50:11 CEST 2003 - msvec@suse.cz
+
+- install required packages for winmodems (#31443, #31471)
+- install all required packages after DSL configuration (#31536)
+- fixed starting of kinternet <kkeil@suse.de>
+- updated testsuite
+- 2.8.42
+
+-------------------------------------------------------------------
+Sun Sep 21 22:03:22 CEST 2003 - kkeil@suse.de
+
+- fix start of kinternet,option must be --quiet not -quiet (#31322)
+
+-------------------------------------------------------------------
+Sun Sep 21 19:03:06 CEST 2003 - arvin@suse.de
+
+- run 'rcnetwork start' before online test during update
+  (bug #31466)
+
+-------------------------------------------------------------------
+Sun Sep 21 15:42:34 CEST 2003 - msvec@suse.cz
+
+- fixed default baud rate value (#31442)
+- added more milestone calls to proposal clients
+- save the original providers for later comparison (#31322)
+- disable IPADDR prefilling (#31369)
+- 2.8.40
+
+-------------------------------------------------------------------
+Sun Sep 21 09:32:05 CEST 2003 - kkeil@suse.de
+
+- fix Firewall setting lookup (#31322)
+- if the interface was deleted, delete also the firewall entry
+
+-------------------------------------------------------------------
+Thu Sep 18 11:40:00 CEST 2003 - arvin@suse.de
+
+- shut down temporary network before online test during update
+  (bug #31030)
+
+-------------------------------------------------------------------
+Wed Sep 17 10:07:39 CEST 2003 - arvin@suse.de
+
+- better helptext for vnc administration (bug #31085)
+
+-------------------------------------------------------------------
+Tue Sep 16 13:07:00 CEST 2003 - msvec@suse.cz
+
+- don't detect unknown devices (#31022)
+- prefer cards with a driver during proposal (#30993)
+- make PCI modems known (#31022)
+- 2.8.36
+
+-------------------------------------------------------------------
+Mon Sep 15 18:06:56 CEST 2003 - adrian@suse.de
+
+- allow also remote root login in remote admin mode
+- 2.8.35
+
+-------------------------------------------------------------------
+Mon Sep 15 09:32:05 CEST 2003 - kkeil@suse.de
+
+- fix handling of BACK key, better default focus (#30104)
+- fix none translated driver descriptions (#30857)
+- 2.8.34
+
+-------------------------------------------------------------------
+Fri Sep 12 13:34:42 CEST 2003 - msvec@suse.cz
+
+- added more logging to simplify further bugfixing
+- 2.8.33
+
+-------------------------------------------------------------------
+Fri Sep 12 12:27:35 CEST 2003 - arvin@suse.de
+
+- fixed loading of modules for network setup during 2nd stage
+  installation (bug #29945)
+- 2.8.32
+
+-------------------------------------------------------------------
+Wed Sep 10 18:00:14 CEST 2003 - msvec@suse.cz
+
+- fixed log erros possible affecting the detection (#30424)
+- 2.8.31
+
+-------------------------------------------------------------------
+Mon Sep  8 23:59:05 CEST 2003 - kkeil@suse.de
+
+- fix lost of firewall settings (#29103)
+- do not start smpppd and kinternet if no isdn interface was
+  configured (#18831)
+- run drdsl if a new DSL-ISDN card was configured (#30294)
+
+-------------------------------------------------------------------
+Mon Sep  8 23:19:44 CEST 2003 - msvec@suse.cz
+
+- hardware detection emulation for AVM DSL cards (#30294)
+- 2.8.30
+
+-------------------------------------------------------------------
+Mon Sep  8 17:17:06 CEST 2003 - msvec@suse.cz
+
+- skip nForce2 network cards, no driver available (#25531)
+- 2.8.29
+
+-------------------------------------------------------------------
+Mon Sep  8 12:27:30 CEST 2003 - msvec@suse.cz
+
+- drop restart of the pcmcia subsystem (#25604)
+- 2.8.28
+
+-------------------------------------------------------------------
+Fri Sep  5 18:03:19 CEST 2003 - msvec@suse.cz
+
+- added more milestone logging to the detection process
+- 2.8.27
+
+-------------------------------------------------------------------
+Fri Sep  5 09:17:58 CEST 2003 - msvec@suse.cz
+
+- proof read texts
+- 2.8.26
+
+-------------------------------------------------------------------
+Thu Sep  4 10:21:23 CEST 2003 - msvec@suse.cz
+
+- use dhcpcd-test script for testing of DHCP (#29945)
+- changed DSL default for CZ to PPtP
+- fixed proxy help text (#29948)
+- fixed Myrinet subclass ID
+- 2.8.25
+
+-------------------------------------------------------------------
+Thu Sep 04 11:39:02 CEST 2003 - arvin@suse.de
+
+- fixed encoding of logs in internet test (bug #29500)
+
+-------------------------------------------------------------------
+Wed Sep  3 11:26:51 CEST 2003 - msvec@suse.de
+
+- fixed typo (#29905)
+- 2.8.23
+
+-------------------------------------------------------------------
+Tue Sep  2 16:09:49 CEST 2003 - msvec@suse.de
+
+- proxy url must contain the scheme identifier (#29754)
+- 2.8.22
+
+-------------------------------------------------------------------
+Tue Sep 02 14:36:21 CEST 2003 - arvin@suse.de
+
+- better text for vnc remote administration (bug #29717)
+
+-------------------------------------------------------------------
+Tue Sep  2 07:11:45 CEST 2003 - nashif@suse.de
+
+- fixed testsuite
+- 2.8.21
+
+-------------------------------------------------------------------
+Tue Sep  2 00:31:31 CEST 2003 - nashif@suse.de
+
+- Fixed kernel module handling in normal and autoinst mode
+- Added Package function to auto client
+- 2.8.20
+
+-------------------------------------------------------------------
+Mon Sep  1 16:55:12 CEST 2003 - msvec@suse.cz
+
+- properly support detected wlan devices (#29506)
+- 2.8.19
+
+-------------------------------------------------------------------
+Thu Aug 28 15:35:34 CEST 2003 - msvec@suse.cz
+
+- don't shut down network interface during detection (#29452)
+- don't show error messages in case detection isn't started (#29582)
+- don't make modules.conf entries for hotpluggable hardware (#29547)
+- improve DSL detection message (#29576)
+- 2.8.18
+
+-------------------------------------------------------------------
+Sun Aug 31 14:57:34 CEST 2003 - arvin@suse.de
+
+- use Popup::ConfirmAbort
+
+-------------------------------------------------------------------
+Sat Aug 30 22:47:56 CEST 2003 - arvin@suse.de
+
+- moved reactivation of network here (bug #29561)
+
+-------------------------------------------------------------------
+Fri Aug 29 16:58:35 CEST 2003 - visnov@suse.de
+
+- CommandLine::Plain2Rich -> RichText::Plain2Rich
+
+-------------------------------------------------------------------
+Wed Aug 27 16:38:05 CEST 2003 - msvec@suse.cz
+
+- confirm hardware detection in manual mode (#26515)
+- 2.8.15
+
+-------------------------------------------------------------------
+Mon Aug 25 15:10:14 CEST 2003 - kkeil@suse.de
+
+- new hardware dialog for ISDN based on CDB data
+- firewall has now 2 checkboxes
+
+-------------------------------------------------------------------
+Thu Aug 21 11:00:14 CEST 2003 - msvec@suse.de
+
+- suppress error message if pcmcia is not installed (#29195)
+- propose empty lan config in case DSL pppoe is detected (#23662)
+- load modules before detection takes place (#24462)
+- fixed more pcmcia devices naming (#28314)
+- DSL PPTP support (#18407)
+- 2.8.13
+
+-------------------------------------------------------------------
+Wed Aug 20 16:28:43 CEST 2003 - jsuchome@suse.de
+
+- removed redundant "initialization dialog" (#28779)
+- 2.8.12
+
+-------------------------------------------------------------------
+Tue Aug 19 14:21:53 CEST 2003 - msvec@suse.cz
+
+- better WLAN help text (#28598)
+- 2.8.11
+
+-------------------------------------------------------------------
+Fri Aug  1 12:49:15 CEST 2003 - msvec@suse.cz
+
+- read /root/.curlrc only if present
+- 2.8.10
+
+-------------------------------------------------------------------
+Mon Aug 18 17:05:14 CEST 2003 - nashif@suse.de
+
+- Fixed dhcp configuration in autoinst mode
+- 2.8.9
+
+-------------------------------------------------------------------
+Tue Aug 12 20:43:53 CEST 2003 - arvin@suse.de
+
+- added remote administration proposal
+
+-------------------------------------------------------------------
+Mon Aug 11 10:37:17 CEST 2003 - jsrain@suse.de
+
+- merged texts from proofread
+- 2.8.7
+
+-------------------------------------------------------------------
+Fri Aug 08 10:49:05 CEST 2003 - arvin@suse.de
+
+- variable handling of release notes url
+- added desktop files
+
+-------------------------------------------------------------------
+Mon Aug  4 11:20:31 CEST 2003 - jsrain@suse.de
+
+- fixed testsuite
+
+-------------------------------------------------------------------
+Mon Aug 04 11:06:12 CEST 2003 - arvin@suse.de
+
+- fixed return value in inst_netprobe
+
+-------------------------------------------------------------------
+Fri Aug  1 12:49:15 CEST 2003 - msvec@suse.de
+
+- drop yast2-network-instsys package
+- added inst_netprobe installation client
+- don't expose password in plain text (#27459)
+- change wireless devices to wlan* (#28048)
+- basic more IPs support
+- 2.8.4
+
+-------------------------------------------------------------------
+Tue Jul 22 15:12:20 CEST 2003 - msvec@suse.cz
+
+- additional DHCP options dialog (improvement 31.2)
+- cleanup obsolete virtual aliases support
+- improved abort handling in routing setup
+- improved network config handling
+- preliminary more IPs support
+- 2.8.3
+
+-------------------------------------------------------------------
+Thu Jul 10 15:09:00 CEST 2003 - msvec@suse.de
+
+- proxy: better helps (#24803)
+- proxy: input checking (#18791)
+- lan: coordinate proposal with dsl (#17631)
+- add additional arcnet modules (#26858)
+- updated testsuite
+- 2.8.2
+
+-------------------------------------------------------------------
+Fri Jun 27 11:22:37 CEST 2003 - msvec@suse.de
+
+- fixed writing of modules.conf options (#26217)
+- check wireless key (#24839)
+- 2.8.1
+
+-------------------------------------------------------------------
+Thu Jun 26 10:00:50 CEST 2003 - msvec@suse.de
+
+- provider: recognize provider change in ncurses (#25432)
+- proxy: allow '\' in the username field (#27444)
+- lookup hostname during proposal (#21009)
+- sync help with widgets (#25106)
+- dns: restart only dhcp services
+- several updates and bugfixes
+- minimal dhcp detection
+- 2.8.0
+
+-------------------------------------------------------------------
+Thu Jun 12 16:09:06 CEST 2003 - arvin@suse.de
+
+- show several log files after internet test (bug #25057)
+- better interface of Internet module
+
+-------------------------------------------------------------------
+Tue May 27 12:40:53 CEST 2003 - arvin@suse.de
+
+- handle no_you switch in content file
+
+-------------------------------------------------------------------
+Wed Mar 19 13:13:25 CET 2003 - arvin@suse.de
+
+- reinitialize some values in Internet module
+
+-------------------------------------------------------------------
+Fri Mar 14 15:30:05 CET 2003 - arvin@suse.de
+
+- preferable test dial up connection during internet test (bug
+  #25264)
+
+-------------------------------------------------------------------
+Fri Mar 14 13:40:29 CET 2003 - msvec@suse.de
+
+- change permissions of files containing wireless keys (#24842)
+- 2.7.34
+
+-------------------------------------------------------------------
+Thu Mar 13 13:20:03 CET 2003 - msvec@suse.de
+
+- allow to set autodetected NICs as WLAN (#25234)
+- 2.7.33
+
+-------------------------------------------------------------------
+Wed Mar 12 13:52:42 CET 2003 - msvec@suse.de
+
+- get around CallFunction scope problems (#25116)
+- 2.7.32
+
+-------------------------------------------------------------------
+Tue Mar 11 11:08:09 CET 2003 - msvec@suse.de
+
+- fixed reading of unknown devices (#24972)
+- reload smpppd after DSL config (#24663)
+- added pcmcia subsystem restart (#23935)
+- 2.7.31
+
+-------------------------------------------------------------------
+Mon Mar 10 17:42:31 CET 2003 - arvin@suse.de
+
+- better trigger for dial on demand connection during internet
+  connection test
+- 2.7.30
+
+-------------------------------------------------------------------
+Fri Mar  7 15:04:39 CET 2003 - msvec@suse.de
+
+- restart smpppd after DSL and modem configuration (#24663)
+- change permissions of files containing wireless keys (#24842)
+- drop valid chars check of the wireless key (#24839)
+- updated testsuite
+- 2.7.29
+
+-------------------------------------------------------------------
+Thu Mar 06 12:15:17 CET 2003 - arvin@suse.de
+
+- better result in internet connection test (bug #24734)
+- avoid rocking progress labels during internet connection test
+- 2.7.28
+
+-------------------------------------------------------------------
+Wed Mar  5 12:46:08 CET 2003 - msvec@suse.de
+
+- updated kdesu kinternet call (#14320)
+- 2.7.27
+
+-------------------------------------------------------------------
+Tue Mar 04 21:35:11 CET 2003 - arvin@suse.de
+
+- fixed testsuite
+
+-------------------------------------------------------------------
+Tue Mar 04 18:35:40 CET 2003 - arvin@suse.de
+
+- redesigned "Internet Connection Test" dialogue (bug #23775)
+
+-------------------------------------------------------------------
+Mon Mar  3 17:08:14 CET 2003 - msvec@suse.de
+
+- proofread texts
+- better proxy proposal summary
+- default proxy proposal to disabled (#24277)
+- translated double clicks to edit (#23997)
+- don't read Routing in modem proposal (#24114)
+- offer USB and PCMCIA network cards in DSL configuration (#24056)
+- provide function for testing DSL devices (#24004)
+- 2.7.24
+
+-------------------------------------------------------------------
+Sat Mar  1 19:49:57 CET 2003 - nashif@suse.de
+
+- enable host and proxy configurations for autoyast
+
+-------------------------------------------------------------------
+Fri Feb 28 13:44:16 CET 2003 - mvidner@suse.de
+
+- Fix writing /etc/sysconfig/network/routes in the network proposal (#24114).
+- 2.7.23
+
+-------------------------------------------------------------------
+Thu Feb 27 16:34:43 CET 2003 - arvin@suse.de
+
+- start isdn subsystem before isdn internet connection test
+
+-------------------------------------------------------------------
+Thu Feb 27 15:34:32 CET 2003 - mvidner@suse.de
+
+- Sometimes package installation wrongly returned abort (#24316).
+- Don't select custom providers if there are none (#23994).
+- Fixed disabling the USB and PCMCIA checkboxes (#24332).
+- 2.7.21
+
+-------------------------------------------------------------------
+Thu Feb 27 11:39:15 CET 2003 - arvin@suse.de
+
+- fixed asking for provider password during internet connection
+  test
+
+-------------------------------------------------------------------
+Thu Feb 27 10:49:00 CET 2003 - kkeil@suse.de
+
+- fix FIREWALL handling in ISDN (#24089)
+
+-------------------------------------------------------------------
+Wed Feb 26 16:19:34 CET 2003 - arvin@suse.de
+
+- fixed result field of internet test (bug #24354)
+
+-------------------------------------------------------------------
+Mon Feb 24 17:36:27 CET 2003 - mvidner@suse.de
+
+- Added proxy to the network configuration proposal (#24204).
+- 2.7.18
+
+-------------------------------------------------------------------
+Mon Feb 24 14:38:07 CET 2003 - arvin@suse.de
+
+- only access widget with id s4 if it exists (bug #23800)
+
+-------------------------------------------------------------------
+Fri Feb 21 15:20:06 CET 2003 - arvin@suse.de
+
+- better text for "abort installation" popup (bug #24019)
+
+-------------------------------------------------------------------
+Fri Feb 21 11:42:56 CET 2003 - arvin@suse.de
+
+- better help text for network test (bug #23866)
+
+-------------------------------------------------------------------
+Fri Feb 21 10:56:54 CET 2003 - arvin@suse.de
+
+- fixed Provider handling in Internet module (bug #23991)
+
+-------------------------------------------------------------------
+Thu Feb 20 15:40:20 CET 2003 - arvin@suse.de
+
+- really download release notes
+
+-------------------------------------------------------------------
+Wed Feb 19 19:30:43 CET 2003 - msvec@suse.de
+
+- changed proxy info popup text (#23728)
+- added missing host editor entry to Y2CC
+- surpress ProgressBar warning (#23796)
+- 2.7.12
+
+-------------------------------------------------------------------
+Mon Feb 17 18:59:54 CET 2003 - kkaempf@suse.de
+
+- dialogs.ycp:AskForPassword() must be global.
+
+-------------------------------------------------------------------
+Mon Feb 17 18:02:00 CET 2003 - kkeil@suse.de
+
+- reenable isdn in provider dialog (#23725)
+
+-------------------------------------------------------------------
+Mon Feb 17 14:40:49 CET 2003 - msvec@suse.de
+
+- don't read the lan devices in DSL proposal (#23569)
+- allow comma in phone number (#23678)
+- 2.7.9
+
+-------------------------------------------------------------------
+Fri Feb 14 12:30:53 CET 2003 - msvec@suse.de
+
+- fix homepage and hotline (#23600)
+- partially fix the status problem (#23593)
+- 2.7.8
+
+-------------------------------------------------------------------
+Tue Feb 11 17:25:32 CET 2003 - arvin@suse.de
+
+- fixed testsuite
+
+-------------------------------------------------------------------
+Mon Feb 10 13:10:49 CET 2003 - msvec@suse.de
+
+- better hotplug devices support (#19478)
+- correct wlan kernel module names (#23491)
+- start cups server detection after write
+- installation bugfixes
+- proof read texts
+- 2.7.6
+
+-------------------------------------------------------------------
+Tue Feb 04 19:28:19 CET 2003 - arvin@suse.de
+
+- added missing inst_{ask,do}_net_test.ycp files
+
+-------------------------------------------------------------------
+Mon Feb  3 16:40:45 CET 2003 - msvec@suse.cz
+
+- P2P tunneling protocol
+- ISDN: support for AVM T1B version
+- Capi-ADSL PPP mode
+- proofread texts
+- bugfixes
+- 2.7.4
+
+-------------------------------------------------------------------
+Tue Jan 28 12:44:15 CET 2003 - kkaempf@suse.de
+
+- fix testsuite
+- switch of progress in autoinstall read.
+- 2.7.3
+
+-------------------------------------------------------------------
+Mon Jan 27 14:34:16 CET 2003 - msvec@suse.de
+
+- new installation dialogs for internet connection
+- autoinst and other bug fixes
+- updated testsuite
+- 2.7.2
+
+-------------------------------------------------------------------
+Mon Jan 20 18:35:31 CET 2003 - msvec@suse.de
+
+- providers: quote variables (they are enclosed in 's) (#22776)
+- routing: fill in available devices (#21122)
+- other bugfixes
+- 2.7.1
+
+-------------------------------------------------------------------
+Wed Jan  8 14:54:45 CET 2003 - msvec@suse.de
+
+- dsl:
+  o add/edit/delete (#15301, #17217, #19855)
+  o enable to change the device start mode (#14315)
+  o propose the network card config if none found
+
+- general:
+  o new hosts manipulation and editor (#20970)
+  o display info popup during proposal detection
+  o new devices manipulation
+
+- hardware:
+  o ARCnet support
+  o FDDI support
+  o preliminary MyriNet support (#21129)
+
+- lan:
+  o editing of hardware settings (#15062, #10077, #12378)
+  o remove kernel module after delete
+  o warning if device number changed (#21288)
+  o propose also if install.inf present but no hardware found
+  o preliminary virtual aliases support (only edit|delete so far)
+
+- providers:
+  o UI mode (#6244, #16291, #21499)
+  o new providers handling (#17496, #18356)
+  o correctly handle the providers with unknown type
+  o correctly handle the nameservers requirement
+  o check the name servers IP addresses
+
+- proxy:
+  o display info popup at the end of configuration
+  o use /root/.curlrc for storing proxy user and password (#21431)
+  o added minimal input constraints (#18791)
+  o allow to turn on|off with a checkbox
+
+- routing:
+  o fixed crash (#21334)
+  o minor GUI clenup and fixes
+
+- 2.7.0
+
+-------------------------------------------------------------------
+Mon Oct 21 11:35:40 CEST 2002 - msvec@suse.cz
+
+- fixed default gateway in the complex routing dialog (#21122)
+- 2.6.33
+
+-------------------------------------------------------------------
+Thu Oct 17 12:44:46 CEST 2002 - msvec@suse.cz
+
+- moved firewall checkbox to the isdn interface dialog (#18840)
+- 2.6.32
+
+-------------------------------------------------------------------
+Wed Oct 16 11:59:03 CEST 2002 - arvin@suse.de
+
+- the string returned from ip2hex has a fixed with
+  of 8 now (bug #20936)
+
+-------------------------------------------------------------------
+Mon Oct 14 11:29:04 CEST 2002 - msvec@suse.cz
+
+- really use the custom device number (#17346)
+- 2.6.30
+
+-------------------------------------------------------------------
+Wed Oct  9 11:49:20 CEST 2002 - msvec@suse.cz
+
+- setup network in the firewall setup (#18840)
+- 2.6.29
+
+-------------------------------------------------------------------
+Mon Oct  7 18:31:53 CEST 2002 - msvec@suse.cz
+
+- disable the s390 specific dialog
+- don't restart network after proxy configuration (#19615)
+- really enable the new proxy settings (#20179)
+- allow to choose custom network device (#17346)
+- fix firewall setup (#18840)
+- 2.6.28
+
+-------------------------------------------------------------------
+Fri Sep 13 15:20:35 CEST 2002 - arvin@suse.de
+
+- activate service network when saving isdn (bug #19625)
+- 2.6.27
+
+-------------------------------------------------------------------
+Mon Sep  9 17:18:21 CEST 2002 - msvec@suse.cz
+
+- chmod a+r /etc/resolv.conf (#19188)
+- the package is not noarch any more (#19206)
+- 2.6.26
+
+-------------------------------------------------------------------
+Thu Sep  5 15:06:00 CEST 2002 - kkeil@suse.de
+
+- write FIREWALL=[yes|no] for isdn (additional fix for #18840)
+- don't start smpppd/kinternet in save only mode (#18831)
+- set default STARTMODE for interface depending on STARTMODE
+  of hardware
+- 2.6.25
+
+-------------------------------------------------------------------
+Wed Sep  4 12:10:30 CEST 2002 - msvec@suse.cz
+
+- write the correct ISDN device for the firewall (#18840)
+- regenerate profiles by SuSEconfig after proxy data change (#18791)
+- set up the network service also for modems and DSL (#18770)
+- added the s390 network devices types
+- 2.6.24
+
+-------------------------------------------------------------------
+Mon Sep  2 13:52:33 CEST 2002 - msvec@suse.cz
+
+- proxy example help text (#18721)
+- 2.6.23
+
+-------------------------------------------------------------------
+Thu Aug 29 17:10:52 CEST 2002 - msvec@suse.cz
+
+- fixed testsuite (new Installation.ycp constructor)
+- 2.6.22
+
+-------------------------------------------------------------------
+Tue Aug 27 15:18:23 CEST 2002 - msvec@suse.cz
+
+- provide/obsolete old translation packages
+- possibility to edit wireless settings (#9209)
+- 2.6.21
+
+-------------------------------------------------------------------
+Fri Aug 23 14:46:29 CEST 2002 - msvec@suse.cz
+
+- new screen for s390 hsi devices
+- prepare ISDN for the mail config question (#18256)
+- enable defaultroute editing again (#17498)
+- partial fix for the hostname problems (#17741)
+- preliminary support for s390 devices
+- updated testsuite
+- 2.6.20
+
+-------------------------------------------------------------------
+Tue Aug 20 17:01:06 CEST 2002 - jsuchome@suse.cz
+
+- updated dialogs's look (#17572)
+
+-------------------------------------------------------------------
+Tue Aug 20 12:09:03 CEST 2002 - arvin@suse.de
+
+- don't stop/start network during writing of proposal on s390
+
+-------------------------------------------------------------------
+Mon Aug 19 17:46:07 CEST 2002 - kkeil@suse.de
+
+- display long provider name for isdn overview (#17564)
+- 2.6.18
+
+-------------------------------------------------------------------
+Mon Aug 19 16:46:07 CEST 2002 - kkeil@suse.de
+
+- check and install needed packages for isdn (#17615)
+
+-------------------------------------------------------------------
+Mon Aug 19 14:07:47 CEST 2002 - mvidner@suse.cz
+
+- Now cardbus cards are detected, so use eth-pcmcia-0
+  and STARTMODE=hotplug (#13571).
+
+-------------------------------------------------------------------
+Fri Aug 16 18:48:13 CEST 2002 - jsuchome@suse.cz
+
+- Providers: Added simple check for user name for T-Online provider
+  (#16756, #6244)
+
+-------------------------------------------------------------------
+Fri Aug 16 09:55:20 CEST 2002 - mvidner@suse.cz
+
+- DSL device: write a dummy ifcfg file (#17631).
+- DSL provider: allow switching between T-Online/other (kkeil).
+
+-------------------------------------------------------------------
+Fri Aug 16 09:12:56 CEST 2002 - jsuchome@suse.cz
+
+- ISDN: Checked user input in "own phone number" (#16756).
+
+-------------------------------------------------------------------
+Thu Aug 15 19:16:35 CEST 2002 - jsuchome@suse.cz
+
+- Corrected bug in writing modem configuration (check for providers
+  change).
+
+-------------------------------------------------------------------
+Thu Aug 15 11:53:35 CEST 2002 - mvidner@suse.cz
+
+- ISDN: saving interface/provider although not configured fixed (jsuchome).
+- Restrict valid characters for the wireless encryption key (#17546).
+- Disable DHCP related widgets when switching to static config (#17391).
+
+-------------------------------------------------------------------
+Wed Aug 14 12:16:49 CEST 2002 - mvidner@suse.cz
+
+- Installation proposal: differentiate between static and dhcp
+  network settings provided by linuxrc (#16471).
+- Exclude DSL, ISDN and modem control center entries
+  on s390 and s390x (#17675).
+- Merged proofread texts for the second translation round.
+- 2.6.17
+
+-------------------------------------------------------------------
+Tue Aug 13 21:58:14 CEST 2002 - kkeil@suse.de
+
+- add support for Fritz!DSL
+- fix bug according regexpsub in DSLDevice module
+
+-------------------------------------------------------------------
+Mon Aug 12 21:28:18 CEST 2002 - arvin@suse.de
+
+- fixed testsuite
+
+-------------------------------------------------------------------
+Mon Aug 12 18:02:51 CEST 2002 - mvidner@suse.cz
+
+- Proxy: fix writing (#17623)
+- Routing: use a transparent icon (#16868).
+- 2.6.15
+
+-------------------------------------------------------------------
+Sun Aug 11 22:14:15 CEST 2002 - mvidner@suse.cz
+
+- Make "yast2 network" invoke "yast2 lan" (#17570).
+- Testsuite adapted to Runlevel changes due to #17608.
+
+-------------------------------------------------------------------
+Fri Aug  9 00:11:13 EDT 2002 - nashif@suse.de
+
+- lower case of wireless/pcmcia options
+
+-------------------------------------------------------------------
+Tue Aug  6 17:25:59 CEST 2002 - msvec@suse.cz
+
+- adapt proposal to the new install.inf agent
+- 2.6.13
+
+-------------------------------------------------------------------
+Tue Aug 06 10:41:41 CEST 2002 - arvin@suse.de
+
+- adapted testsuite to new /etc/install.inf agent
+
+-------------------------------------------------------------------
+Mon Aug  5 11:49:16 CEST 2002 - msvec@suse.cz
+
+- install required packages for modem (#16863) and dsl (#14315)
+- fixed help texts
+- 2.6.11
+
+-------------------------------------------------------------------
+Mon Jul 29 17:57:19 CEST 2002 - msvec@suse.cz
+
+- remove deleted providers after Delete (#16094)
+- start kinternet after modem and isdn config (#14320)
+- fixed writing of additional providers (#17221)
+- possibility to enter infinite (0) idle timeout (#17218)
+- fixed caption, enabled defaultroute by default (#17219)
+- 2.6.10
+
+-------------------------------------------------------------------
+Sun Jul 24 20:05:14 CEST 2002 - kkeil@suse.de
+
+- ISDN interface and multi provider setup
+- simple dialin server setup
+- D-channel protocol selection depends on HW database
+- cleanups
+- 2.6.9
+
+-------------------------------------------------------------------
+Wed Jul 24 20:05:14 CEST 2002 - msvec@suse.cz
+
+- fixed some error messages
+- fix progress bar steps (#17180)
+- propose something only if there's nothing configured
+- 2.6.8
+
+-------------------------------------------------------------------
+Mon Jul 22 16:47:14 CEST 2002 - msvec@suse.cz
+
+- set up network in runlevels 2,3,5 (#17076)
+- write proxy user/pass to /root/.wgetrc (#17005)
+- fixed multiple proposals (#17016)
+- merged proofread texts
+- wireless help text
+- 2.6.7
+
+-------------------------------------------------------------------
+Mon Jul 15 18:21:14 CEST 2002 - msvec@suse.cz
+
+- proxy configuration
+- namespace hacks <arvin>
+- 2.6.6
+
+-------------------------------------------------------------------
+Thu Jul 11 20:33:29 CEST 2002 - mvidner@suse.cz
+
+- general library: Added {check,valid}_address, valid_ip4.
+- 2.6.5
+
+-------------------------------------------------------------------
+Wed Jul 10 20:12:34 CEST 2002 - msvec@suse.cz
+
+- wireless network cards support (#9209)
+- run also SuSEconfigs for apache, sendmail and postfix (#16710)
+- remove netcard modules after delete (#16797)
+- correct IP details dialog
+- fixed providers filter
+- 2.6.4
+
+-------------------------------------------------------------------
+Thu Jul 04 20:48:09 CEST 2002 - arvin@suse.de
+
+- moved non binary files to /usr/share/YaST2
+
+-------------------------------------------------------------------
+Mon Jul  1 14:58:04 CEST 2002 - msvec@suse.cz
+
+- multiple providers support for modems
+- yast2-config-network -> yast2-network
+- netmask bits function and testsuite
+- new providers dialogs
+- added stupid mode checkbox (#16330)
+- IP6 checking
+- tell mail who is calling (#13565)
+- merged with yast2-lib-network
+- allow IP settings for ISDN rawip connections (#16309)
+- always write ifcfg- file entries with '' (#16549)
+- removed dependence on -trans package
+- network card proposal
+- updated testsuite
+- common connection dialog
+- default language heuristics
+- new modem and providers dialogs
+- use "rewrite" for providers files
+- always save providers with values enclosed in '' (#16069)
+- use config files
+- 2.6.2
+
+-------------------------------------------------------------------
+Wed May 15 20:30:32 CEST 2002 - msvec@suse.cz
+
+- added checking of error values to routing
+- fixed Abort confirmation in routing, dns (#14926)
+- IP forwarding support (#13053)
+- preliminary support for virtual network interfaces
+- allow * and & in Phone number, don't check pass emptiness (#16021)
+- ask for mail config after save (#13565)
+- enable DHCP checkboxes only in case of any DHCP device (#13223)
+- better modems summary and overview
+- prepared for the overall network config
+- properly fix substring lookup (#13735)
+- 2.6.1
+
+-------------------------------------------------------------------
+Wed Apr 17 09:22:51 CEST 2002 - msvec@suse.cz
+
+- updated testsuite due to #15694
+- properly support externally modified resolv.conf
+- abort confirmation should work better cross modules (#14926)
+- agent for sysconfig/sysctl
+- added labels to DNS config (#13443)
+- allow setup of DHCP resolv.conf setting (#14792)
+- limit allowable characters in DNS dialog (#15653)
+- limit allowable characters in routing dialog
+- fixed checkycp complaints in ISDN config
+- use ycpdoc more-dirs mode
+- 2.6.0
+
+-------------------------------------------------------------------
+Sat Mar 23 14:43:32 CET 2002 - kkeil@suse.de
+
+- fix empty custom provider problem (#15425)
+- 2.5.52
+
+-------------------------------------------------------------------
+Thu Mar 21 18:06:41 CET 2002 - kkeil@suse.de
+
+- don't load drivers in proposal mode (#15078)
+
+-------------------------------------------------------------------
+Tue Mar 26 00:45:36 CET 2002 - ro@suse.de
+
+- added yast2 to neededforbuild (modules/Mode.ycp)
+
+-------------------------------------------------------------------
+Thu Mar 21 16:15:47 CET 2002 - mvidner@suse.cz
+
+- Added autoloading of a network card module for DSL.
+  (if there is only one). #15182
+- A "Finished" popup for DSL. (#15074)
+- 2.5.51
+
+-------------------------------------------------------------------
+Mon Mar 18 14:48:21 CET 2002 - mvidner@suse.cz
+
+- Providers::Commit should come before ISDN::Commit.
+  Fixes #15079 (provider name empty in ifcfg-ippp0)
+- 2.5.50
+
+-------------------------------------------------------------------
+Mon Mar 18 13:30:56 CET 2002 - mvidner@suse.cz
+
+- Fixed writing of network card module options. (#15061)
+- 2.5.49
+
+-------------------------------------------------------------------
+Mon Mar 18 07:45:26 CET 2002 - pblahos@suse.cz
+
+- Providers: window with countries is disabled when custom providers
+  are selected. (#15063)
+- 2.5.48
+
+-------------------------------------------------------------------
+Thu Mar 14 10:12:40 CET 2002 - msvec@suse.cz
+
+- minor documentation fixes
+- enhanced testsuite
+- 2.5.47
+
+-------------------------------------------------------------------
+Wed Mar 13 23:42:03 CET 2002 - kkeil@suse.de
+
+- don't reload driver, if only interface data was changed (#14865)
+- call Provider::Commit only if needed (#14145)
+- 2.5.46
+
+-------------------------------------------------------------------
+Wed Mar 13 14:54:14 CET 2002 - msvec@suse.cz
+
+- update /etc/hosts also if only the IP address changes (#14182)
+- added textdomain to menuentries for dns and routing
+- removed obsolete help text
+- 2.5.45
+
+-------------------------------------------------------------------
+Tue Mar 12 15:31:11 CET 2002 - msvec@suse.cz
+
+- better syntax for default gateway (#14878)
+- setup hostname before writing xauth info (#14530)
+- enhanced Firewall testsuite
+- 2.5.44
+
+-------------------------------------------------------------------
+Mon Mar 11 19:14:57 CET 2002 - msvec@suse.cz
+
+- return empty map on canceled autoinst (#14526)
+- 2.5.43
+
+-------------------------------------------------------------------
+Mon Mar 11 16:40:28 CET 2002 - kkeil@suse.de
+
+- fix to use LFS script path
+- called rcisdn twice (part of #14777)
+- allways use ComboBox for driver (#14665, #14772)
+
+-------------------------------------------------------------------
+Mon Mar 11 13:39:57 CET 2002 - pblahos@suse.cz
+
+- It isn't necessary to specify a password when "Always ask me for
+  a password" is set in ISDN provider setup (#14774)
+- 2.5.41
+
+-------------------------------------------------------------------
+Fri Mar  8 18:11:38 CET 2002 - kkeil@suse.de
+
+- start mode must allow hotplug for netif too (#13853)
+- smpppd should setup as last action
+- 2.5.40
+
+-------------------------------------------------------------------
+Fri Mar  8 18:01:08 CET 2002 - msvec@suse.cz
+
+- preserve /dev/modem symlink loops (#14577)
+- removed obsolete help texts and added missing (#14462)
+- 2.5.39
+
+-------------------------------------------------------------------
+Thu Mar  7 14:34:26 CET 2002 - pblahos@suse.cz
+
+- Check for Connection name uniqueness did not work (#14620)
+- When duplicate Provider name or Connection name was entered no
+  error message was shown (#14618)
+- version 2.5.38
+
+-------------------------------------------------------------------
+Thu Mar  7 11:02:57 CET 2002 - kkeil@suse.de
+
+- fix allways write config bug (#14528)
+
+-------------------------------------------------------------------
+Wed Mar 06 01:20:20 CET 2002 - kkeil@suse.de
+
+- fix Add/Edit/Delete disable/enable (#13899)
+- fix onboot/hotplug STARTMODE (#13853)
+- save provider related info (username and phone) only in
+  provider file (#6169)
+- add Test carddriver (#2618)
+- add ask allways for password (#12413)
+- idle timeout in seconds, default=60 (#13222)
+- setup smpppd (#13172)
+- change finish to OK (part #13707)
+- USEPEERDNS and DEFAULTROUTE now enabled in default (#14177)
+- fix wrong matches for ppp if here are ippp devices
+- disable IP setting if dynamic IP is selected (#13218)
+- add warning if an binonly driver is selected
+- only legal ISA cards and parport devices have parameter
+- add more help text
+
+-------------------------------------------------------------------
+Tue Mar  5 13:52:27 CET 2002 - lslezak@suse.cz
+
+- do not show ippp devices in modem configuration (#13735)
+- version 2.5.37
+
+-------------------------------------------------------------------
+Mon Mar 04 16:24:50 CET 2002 - arvin@suse.de
+
+- default for AUTODNS is "yes" for modems
+- providers configured for modem don't support isdn and vice
+  versa (bug #14071)
+
+-------------------------------------------------------------------
+Mon Mar  4 15:49:58 CET 2002 - mvidner@suse.cz
+
+- Fixed a race when writing /etc/resolv.conf (#13982)
+- 2.5.35
+
+-------------------------------------------------------------------
+Mon Mar 04 14:33:46 CET 2002 - arvin@suse.de
+
+- include STARTMODE in dsl config file (bug #14315)
+
+-------------------------------------------------------------------
+Sun Mar 03 17:43:37 CET 2002 - arvin@suse.de
+
+- use correct provider name "dsl-provider0" in ifcfg-dsl0
+
+-------------------------------------------------------------------
+Sat Mar  2 12:45:06 CET 2002 - kkaempf@suse.de
+
+- Fix routing agent (#14184).
+- Enable edit/delete for a single entry also (kkeil@suse.de).
+
+-------------------------------------------------------------------
+Fri Mar  1 17:53:00 CET 2002 - mvidner@suse.cz
+
+- Always save the DNS configuration so that /etc/hosts is saved
+  even if only the IP address changes. (#14182)
+- Input validation in provider editing fixed. (#14209)
+- 2.5.31
+
+-------------------------------------------------------------------
+Wed Feb 27 16:25:02 CET 2002 - msvec@suse.cz
+
+- set DHCLIENT_SET_DOWN_LINK only for pcmcia cards
+- 2.5.30
+
+-------------------------------------------------------------------
+Mon Feb 25 19:45:37 CET 2002 - msvec@suse.cz
+
+- disable firewall checkbox is SuSEfirewall2 is active (#13639)
+- create /dev/modem symlink (#13764)
+- 2.5.29
+
+-------------------------------------------------------------------
+Mon Feb 25 17:32:35 CET 2002 - msvec@suse.cz
+
+- support of USB network cards (#13364)
+- added PCMCIA/USB ugly symlink hackery
+- ensuring that *SUPPORTED are present when writting (#13873)
+- better checking of values of variables ASKPASSWORD, STUPIDMODE,
+  COMPUSERVE, ISDNSUPPORTED, DSLSUPPORTED, MODEMSUPPORTED
+- 2.5.28
+
+-------------------------------------------------------------------
+Mon Feb 25 15:58:52 CET 2002 - msvec@suse.cz
+
+- updated testsuite
+- proper PCMCIA support
+- don't require personal-firewall any more
+- don't show isdn cards in modem config (#13735)
+- checking that ASKPASSWORD, STUPIDMODE, COMPUSERVE, ISDNSUPPORTED,
+  DSLSUPPORTED, MODEMSUPPORTED is yes or no <pblahos@suse.cz>
+- the option ASKPASSWORD must be yes or no <arvin@suse.de>
+- changes due to providers: provider file names changed from
+  XX.wvdial.conf to XX.conf. <pblahos@suse.cz>
+- 2.5.27
+
+-------------------------------------------------------------------
+Wed Feb 20 17:48:01 CET 2002 - msvec@suse.cz
+
+- always allow hostname setting (#13427)
+- fixed dhcp hostname writing (#13642)
+- added support for personal firewall to DSL
+- changes due to new providers <pblahos@suse.cz>
+- added check for empty interface
+- enhanced firewall interface
+- 2.5.26
+
+-------------------------------------------------------------------
+Wed Feb 20 13:47:50 CET 2002 - msvec@suse.cz
+
+- added support for personal firewall to modems
+- use " as the default delimiter in sysconfig
+- fixed some network strings (#6646)
+- 2.5.25
+
+-------------------------------------------------------------------
+Tue Feb 19 16:23:26 CET 2002 - msvec@suse.cz
+
+- DSL: nice idle combo box
+- DSL: added check for empty user name
+- DSL: removed pppmode combo box for T-Online
+- DSL: default name servers for T-Online
+- DSL: updated texts (#13553)
+- 2.5.24
+
+-------------------------------------------------------------------
+Tue Feb 19 14:00:02 CET 2002 - msvec@suse.cz
+
+- fixed broken initial startup
+- fixed filtering of modem/isdn/dsl providers
+- merged Connection details screen to connection
+- set IDLE to 300 by default
+- 2.5.23
+
+-------------------------------------------------------------------
+Tue Feb 19 10:19:35 CET 2002 - msvec@suse.cz
+
+- DSL T-Online mode added
+- don't write DSL settings if nothing changed
+- 2.5.22
+
+-------------------------------------------------------------------
+Mon Feb 18 18:02:53 CET 2002 - msvec@suse.cz
+
+- removed checkIP builtins
+- BOOTMODE -> STARTMODE and updated testsuite
+- fixed modem speaker and carier writing
+- added filtering of providers that support modem/dsl (#13499)
+- files containing custom providers are now (0600, root, root) (#13353)
+- use yast2-db-country for getting nice name of country of provider (#13397)
+- proposals: no more two reads, reset and writing functional (#13410)
+- provides/obsoletes yast2-config-adsl
+- DSL configuration finished (#12971)
+- ISDN support by kkeil@suse.de
+- 2.5.21
+
+-------------------------------------------------------------------
+Fri Feb 15 21:53:23 CET 2002 - msvec@suse.cz
+
+- use yast2-db-country for the countries list
+- DSL configuration dialogs (#12971)
+- added pppoe and pppoatm switch
+- DSL preliminary write support
+- 2.5.20
+
+-------------------------------------------------------------------
+Fri Feb 15 17:16:21 CET 2002 - msvec@suse.cz
+
+- don't write dns and routing if not modified
+- support for PCMCIA network cards (#13362, #13365)
+- set boot mode of PCMCIA cards to "hotplug" (#13368)
+- add netcards list to the package (#13378)
+- 2.5.19
+
+-------------------------------------------------------------------
+Fri Feb 15 15:16:52 CET 2002 - msvec@suse.cz
+
+- some isdn dialogs fixes
+- more texts proof reading
+- 2.5.18
+
+-------------------------------------------------------------------
+Thu Feb 14 17:36:13 CET 2002 - msvec@suse.cz
+
+- don't start smpppd during installation (#13249)
+- don't write routing or DNS if it's not modified
+- check IP addresses, hostname and domains (#13201)
+- also check in routing and DNS config
+- added writing of .probe.status
+- delete modules.conf entries
+- closed a lot of bugs
+- 2.5.17
+
+-------------------------------------------------------------------
+Wed Feb 13 18:47:28 CET 2002 - msvec@suse.cz
+
+- ISDN configuration in progress
+- layout of the "Select providers" screen changed.
+- name of country for custom providers changed Other --> Custom
+- always saves (MODEM|ISDN|DSL)SUPPORTED
+- 2.5.16
+
+-------------------------------------------------------------------
+Tue Feb 12 17:57:06 CET 2002 - msvec@suse.cz
+
+- added proposals (only summary so far)
+- fixed format of custom providers and added missing fields
+- provider stuff removed from Modem module
+- added functions Export/Import into Providers
+- 2.5.15
+
+-------------------------------------------------------------------
+Mon Feb 11 14:29:38 CET 2002 - pblahos@suse.cz
+
+- implemented module Providers
+- don't set FQ hostname
+- 2.5.14
+
+-------------------------------------------------------------------
+Tue Feb  5 14:21:29 CET 2002 - msvec@suse.cz
+
+- fixed PPPD_OPTIONS writing
+- setup smpppd(8)
+- 2.5.13
+
+-------------------------------------------------------------------
+Fri Feb  1 16:22:06 CET 2002 - msvec@suse.cz
+
+- fixed CarrierDetect and SpeakerOn initstrings
+- some more minor modem fixes
+- 2.5.12
+
+-------------------------------------------------------------------
+Wed Jan 30 17:10:06 CET 2002 - msvec@suse.cz
+
+- added preliminary dsl dialogs
+- write detected PPPD_OPTIONS
+- AutoReconnect is not supported any more
+- removed some other obsolete settings
+- proof-read texts
+- 2.5.11
+
+-------------------------------------------------------------------
+Tue Jan 29 20:36:39 CET 2002 - msvec@suse.cz
+
+- reading progress for modems and isdn
+- modems writing and configuration partly done
+- 2.5.10
+
+-------------------------------------------------------------------
+Tue Jan 29 15:35:09 CET 2002 - msvec@suse.cz
+
+- network cards summary done
+- preliminary work for modems and isdn config
+- modems and isdn summary and overview screens
+- 2.5.9
+
+-------------------------------------------------------------------
+Mon Jan 28 17:49:15 EST 2002 - nashif@suse.de
+
+- Adapted for auto-installation
+- 2.5.8
+
+-------------------------------------------------------------------
+Mon Jan 28 16:21:12 CET 2002 - msvec@suse.cz
+
+- fixed default route writing
+- 2.5.7
+
+-------------------------------------------------------------------
+Fri Jan 25 17:27:43 CET 2002 - msvec@suse.cz
+
+- fixed modules initialization and cleanup (#12905)
+- fix writing of kernel modules for manually added cards
+- autoinstallation support for routing, dns, modems and isdn
+- ISDN configuration UI (no reading or writing)
+- fixed modem shortcuts
+- use Summary module
+- 2.5.6
+
+-------------------------------------------------------------------
+Thu Jan 24 13:38:33 CET 2002 - msvec@suse.cz
+
+- modems configuration UI
+- expect missing /etc/resolv.conf
+- preliminary lan autoinstallation support
+- 2.5.5
+
+-------------------------------------------------------------------
+Wed Jan 23 11:12:29 CET 2002 - msvec@suse.cz
+
+- writing modules.conf
+- preliminary summary clients
+- 2.5.4
+
+-------------------------------------------------------------------
+Wed Jan 16 20:41:36 CET 2002 - msvec@suse.cz
+
+- preliminary clients and for modem, ISDN and DSL
+- interaction of search and domain in resolv.conf
+- correct use of /etc/sysconfig/network/routes
+- added some help texts
+- 2.5.3
+
+-------------------------------------------------------------------
+Tue Jan 15 13:53:10 CET 2002 - msvec@suse.cz
+
+- DNS and routing clients
+- DNS writing somehow functional
+- use /etc/HOSTNAME for hostname
+- 2.5.2
+
+-------------------------------------------------------------------
+Mon Jan 14 18:54:07 CET 2002 - msvec@suse.cz
+
+- preliminary DNS dialog
+- routing configuration functional
+- use toupper, merge and remove builtins
+- preliminary version of modem and ISDN dialogs
+- added agents for routing and DNS
+- 2.5.1
+
+-------------------------------------------------------------------
+Wed Jan  9 17:27:09 CET 2002 - msvec@suse.cz
+
+- complete rewrite (almost no old code left)
+- updated network cards list from yast1
+- supports new /etc/sysconfig scheme
+- only dialog layouts are similar
+- uses modules and devtools
+- new agents added
+- 2.5.0
+
+-------------------------------------------------------------------
+Tue Sep 25 10:45:39 CEST 2001 - dan@suse.cz
+
+- test for running i4l only if it exists (#11286)
+
+-------------------------------------------------------------------
+Mon Sep 24 16:17:39 CEST 2001 - dan@suse.cz
+
+- start smpppd only if it exists (#11250)
+- fix adding providers for PCMCIA
+
+-------------------------------------------------------------------
+Fri Sep 21 11:30:43 CEST 2001 - dan@suse.cz
+
+- add PollInput to avoid strange UserInput behavior
+  also fixes (#11069)
+
+-------------------------------------------------------------------
+Tue Sep 18 12:41:58 CEST 2001 - dan@suse.cz
+
+- start smpppd after starting ISDN (#10545)
+- enable to write 0.0.0.0 as default route (#10751)
+- 2.4.16
+
+-------------------------------------------------------------------
+Fri Sep 14 17:26:51 CEST 2001 - msvec@suse.cz
+
+- fixed shortcuts (#10401)
+- 2.4.14
+
+-------------------------------------------------------------------
+Fri Sep 14 13:43:10 CEST 2001 - dan@suse.cz
+
+- generate correct device numbers (#10580)
+- start smpppd after starting ISDN (#10545)
+- fix values from install.inf (#10628)
+- just one DNS is needed for modems (#10640)
+
+-------------------------------------------------------------------
+Wed Sep 12 13:32:53 CEST 2001 - dan@suse.cz
+
+- adding providers for PCMCIA cards fix (#10116)
+- 2.4.12
+
+-------------------------------------------------------------------
+Tue Sep 11 11:42:44 CEST 2001 - dan@suse.cz
+
+- use LSB complainant return values
+- remember entered DNS values
+
+-------------------------------------------------------------------
+Mon Sep 10 09:09:02 CEST 2001 - dan@suse.cz
+
+- fixed reading exiting configuration (also #10348)
+
+-------------------------------------------------------------------
+Thu Sep  6 17:15:44 CEST 2001 - msvec@suse.cz
+
+- progress bar again functional
+- fixed some anyagent error messages
+- fixed route writing (maybe also #10123)
+- 2.4.9
+
+-------------------------------------------------------------------
+Wed Sep  5 18:21:50 CEST 2001 - msvec@suse.cz
+
+- fixed some CallFunction(lan_route)
+- fixed some other CallFunctions
+- fixed some untranslated messages
+- hopefully finally fixed the hostname settings (#10192)
+- more trailing whitespace removed
+- use :: in the dns configuration
+- 2.4.8
+
+-------------------------------------------------------------------
+Tue Sep  4 21:05:13 CEST 2001 - msvec@suse.cz
+
+- partial fix of duplicated variables (#9991)
+- fixed SCR variables (#10031)
+- fixed route writing (#10123)
+- removed some trailing whitespace
+- fixed some typos (#10034)
+- enabled parseycp check
+- fixed complex dialog
+- fixed hostname settings
+- 2.4.7
+
+-------------------------------------------------------------------
+Fri Aug 31 00:49:12 CEST 2001 - ro@suse.de
+
+- added <libycp-devel> to neededforbuild (for testsuite)
+
+-------------------------------------------------------------------
+Wed Aug 22 11:22:08 CEST 2001 - dan@suse.cz
+
+- static DNS enabled for ISDN flow (also #6020)
+
+-------------------------------------------------------------------
+Tue Aug 21 12:14:05 CEST 2001 - msvec@suse.cz
+
+- fixed netcards.ycp database
+- removed more obsolete builtins
+- fixed some minor bugs
+- 2.4.5
+
+-------------------------------------------------------------------
+Tue Aug 21 09:26:32 CEST 2001 - msvec@suse.cz
+
+- removed obsolete fileexist builtin
+- enabled abuild checking
+- 2.4.4
+
+-------------------------------------------------------------------
+Thu Aug 16 16:46:48 CEST 2001 - dan@suse.cz
+
+- adoption to the new probe format
+
+-------------------------------------------------------------------
+Tue Aug 14 14:52:58 CEST 2001 - msvec@suse.cz
+
+- AddtoSecrets fixed (#9716)
+- AddtoSecrets testsuite
+- 2.4.2
+
+-------------------------------------------------------------------
+Fri Jul 27 11:38:36 CEST 2001 - dan@suse.cz
+
+- hostname change re-enabled on a running system
+
+-------------------------------------------------------------------
+Fri Jul 20 14:42:10 CEST 2001 - dan@suse.cz
+
+- split of the nfs services, sendmail and nis configuration <msvec@suse.cz>
+- removed superfluous first dialog of NFS client <mvidner@suse.cz>
+- version 2.4.0
+- new libycp adoption
+- minor text changes
+
+-------------------------------------------------------------------
+Tue Jul 10 01:35:40 CEST 2001 - ro@suse.de
+
+- removed yast2-core-translator from neededforbuild
+
+-------------------------------------------------------------------
+Tue May 22 10:29:47 CEST 2001 - dan@suse.cz
+
+- removing search from resolv.conf fixed (#8578)
+
+-------------------------------------------------------------------
+Tue May 15 18:14:39 CEST 2001 - dan@suse.cz
+
+- propagate installation parameter to set-up hostname during installation (#7964)
+- set-up /etc/HOSTNAME after reboot (#8344)
+- write MODEM variable into rc.config (#7895)
+
+-------------------------------------------------------------------
+Tue May 15 13:52:36 CEST 2001 - kkaempf@suse.de
+
+- write "--module hostname" to /var/lib/YaST2/run_suseconfig to
+  force hostname change propagation on next reboot.
+
+-------------------------------------------------------------------
+Tue May 15 10:35:11 CEST 2001 - dan@suse.cz
+
+- write PCMCIA ISDN cards under NETCONFIG_PCMCIA instead of NETCONFIG
+in the rc.config file (bug #8069)
+- y2log cleanup (bug #8327)
+
+-------------------------------------------------------------------
+Mon May 14 17:38:26 CEST 2001 - dan@suse.cz
+
+- do not write empty headers into '/etc/resolv.conf' (bug #8299)
+
+-------------------------------------------------------------------
+Mon May 14 15:07:35 CEST 2001 - dan@suse.cz
+
+- write hostname for PCMCIA cards (bug #7964)
+- run full SuSE config during intsllation to set-up '/etc/HOSTNAME' (bug
+#8183)
+- DNS info writting fixed (bug #8256)
+
+-------------------------------------------------------------------
+Fri May 11 15:53:21 CEST 2001 - dan@suse.cz
+
+- quote user and name in '/etc/ppp/ioptions.<dev>'
+- message in DNS popup fixed (#8071)
+
+-------------------------------------------------------------------
+Fri May 11 12:47:57 CEST 2001 - dan@suse.cz
+
+- Inherits fixes for modem (#7968)
+- do not stop/start PCMCIA directly
+- message fixes for DNS dialog
+
+-------------------------------------------------------------------
+Mon May  7 15:29:37 CEST 2001 - dan@suse.cz
+
+- manual setup flow fixed
+- allow to change hostname during installation (#7630)
+- writing of chap/pap secrets fixed (#7377)
+
+-------------------------------------------------------------------
+Fri May  4 13:04:01 CEST 2001 - dan@suse.cz
+
+- reindexing isdn cards when reindexing
+- unique keys handeling unified
+
+-------------------------------------------------------------------
+Mon Apr 30 17:46:37 CEST 2001 - dan@suse.cz
+
+- isdn subclass fixes
+
+-------------------------------------------------------------------
+Fri Apr 27 15:40:26 CEST 2001 - dan@suse.cz
+
+- resolving fixes
+- multiple bugfixes in workflow
+
+-------------------------------------------------------------------
+Tue Apr 24 15:26:20 CEST 2001 - dan@suse.cz
+
+- fixes for modem, isdn
+- ypclient fix
+- summary info fixes
+
+-------------------------------------------------------------------
+Tue Apr 17 15:53:33 CEST 2001 - dan@suse.cz
+
+- summary added
+- isdn config files under /etc/ppp/providers
+- menuentries fixed
+- saving resolv.conf fixed
+
+-------------------------------------------------------------------
+Tue Apr 17 15:33:45 CEST 2001 - kkaempf@suse.de
+
+- set "START_PORTMAP" to "yes" when configuring NFS server (#6270)
+
+-------------------------------------------------------------------
+Thu Apr 12 14:51:11 CEST 2001 - dan@suse.cz
+
+- new resolving and hwprobe compliant
+- abort button allowed again
+
+-------------------------------------------------------------------
+Thu Apr  5 10:59:31 CEST 2001 - msvec@suse.cz
+
+- translation package rename
+- documentation moved to $RPMNAME
+- enabled abuild checking
+- version 2.3.3
+
+-------------------------------------------------------------------
+Tue Apr  3 14:32:05 CEST 2001 - kukuk@suse.de
+
+- Remove ycpdoc from requires
+
+-------------------------------------------------------------------
+Fri Mar 30 16:18:44 CEST 2001 - dan@suse.cz
+
+- alone function header removed
+
+-------------------------------------------------------------------
+Fri Mar 30 15:32:24 CEST 2001 - dan@suse.cz
+
+- more new libycp addopting, using wizard library,
+- adopting to the new resolver agent
+
+-------------------------------------------------------------------
+Tue Mar 27 19:55:36 CEST 2001 - dan@suse.cz
+
+- switch to the new libycp
+- package rename
+
+-------------------------------------------------------------------
+Fri Jan 26 16:22:02 CET 2001 - msvec@suse.cz
+
+- translation fix (broken textdomains) #6166
+
+-------------------------------------------------------------------
+Fri Jan 26 12:57:05 CET 2001 - arvin@suse.de
+
+- use absolute path for rci4l scripts
+
+-------------------------------------------------------------------
+Fri Jan 26 12:45:43 CET 2001 - dan@suse.de
+
+- temporal fix of rcnfsserver start call (bug #6157)
+
+-------------------------------------------------------------------
+Fri Jan 26 09:47:45 CET 2001 - dan@suse.cz
+
+- ISDN default vaules fix (bug #6151)
+
+-------------------------------------------------------------------
+Thu Jan 25 13:40:30 CET 2001 - dan@suse.cz
+
+- minor log fixes, added providers.ycp to enamble translation of ISP
+countries
+
+-------------------------------------------------------------------
+Mon Jan 22 14:14:40 CET 2001 - dan@suse.cz
+
+- missing textdomain
+
+-------------------------------------------------------------------
+Mon Jan 22 10:30:23 CET 2001 - dan@suse.cz
+
+- include missing
+
+-------------------------------------------------------------------
+Fri Jan 19 16:13:44 CET 2001 - smid@suse.cz
+
+- bugfixes
+
+-------------------------------------------------------------------
+Thu Jan 18 17:27:11 CET 2001 - dan@suse.cz
+
+- wait for dhclient up to 55 secs that should be enough.
+- don't start dhclient for pcmcia cards
+- always write "off" to pcmcia device
+
+-------------------------------------------------------------------
+Wed Jan 17 15:13:23 CET 2001 - smid@suse.cz
+
+- bugfixes
+
+-------------------------------------------------------------------
+Tue Jan 16 17:16:43 CET 2001 - dan@suse.cz
+
+- editing fixes
+
+-------------------------------------------------------------------
+Tue Jan 16 08:55:17 CET 2001 - smid@suse.cz
+
+- many bugfixes
+
+-------------------------------------------------------------------
+Mon Jan 15 19:20:17 CET 2001 - mike@suse.de
+
+- bug 5617 confusing names
+
+-------------------------------------------------------------------
+Mon Jan 15 17:11:31 CET 2001 - dan@suse.cz
+
+- mostly button fixes, dhclient delay increased
+
+-------------------------------------------------------------------
+Fri Jan 12 18:57:30 CET 2001 - kkaempf@suse.de
+
+- mark routing helptext as translatable
+
+-------------------------------------------------------------------
+Fri Jan 12 10:13:50 CET 2001 - smid@suse.de
+
+- next button in route dialog fixed
+- forgotten debug dialog from isdn removed
+
+-------------------------------------------------------------------
+Thu Jan 11 17:32:21 CET 2001 - dan@suse.de
+
+- pcmcia fixes, enabling dhclient to set hostname
+- personal firewall checkbox added
+
+-------------------------------------------------------------------
+Thu Jan 11 00:44:07 CET 2001 - smid@suse.cz
+
+- bugfixes
+
+-------------------------------------------------------------------
+Wed Jan 10 01:38:37 CET 2001 - smid@suse.cz
+
+- bugfixes (xauth, saving)
+
+-------------------------------------------------------------------
+Tue Jan  9 23:27:13 CET 2001 - dan@suse.cz
+
+- new configuration workflow (another version :))
+
+
+-------------------------------------------------------------------
+Thu Jan  4 12:40:06 CET 2001 - dan@suse.cz
+
+- new configuration workflow
+
+-------------------------------------------------------------------
+Tue Dec 19 18:57:56 CET 2000 - smid@suse.cz
+
+- added detection of init strings
+
+-------------------------------------------------------------------
+Tue Dec 19 16:53:47 CET 2000 - dan@suse.cz
+
+- more bugfixes (#4833, #4737, #4838, #4815)
+
+-------------------------------------------------------------------
+Mon Dec 18 14:26:14 CET 2000 - dan@suse.cz
+
+- more fixes (esp. checks), isdn saving fix (bugs #4738, #4751)
+
+-------------------------------------------------------------------
+Fri Dec 15 16:25:22 CET 2000 - dan@suse.cz
+
+- fixes of bugs #4736, #4734, #4733, #4731
+
+-------------------------------------------------------------------
+Fri Dec 15 14:14:39 CET 2000 - dan@suse.cz
+
+- passing unique_keys fixed, y2t_lan required again
+
+-------------------------------------------------------------------
+Fri Dec 15 13:24:31 CET 2000 - dan@suse.cz
+
+- restarting network just in the case of editing ethernet or token ring (bug #4677)
+
+-------------------------------------------------------------------
+Fri Dec 15 10:55:41 CET 2000 - dan@suse.cz
+
+- PCMCIA fix (for manual), minor changes (default values ...)
+
+-------------------------------------------------------------------
+Wed Dec 13 18:59:30 CET 2000 - mike@suse.de
+
+- new menuentry
+
+-------------------------------------------------------------------
+Wed Dec 13 08:22:31 CET 2000 - dan@suse.cz
+
+- spec file fixed (missing database for manual selection)
+- xauth agent used for setting xauthority
+
+-------------------------------------------------------------------
+Sun Dec 10 20:26:37 CET 2000 - dan@suse.cz
+
+- ypcliet script is ypbind now
+- debug dialog removed from sendmail config
+
+-------------------------------------------------------------------
+Sun Dec 10 17:34:43 CET 2000 - dan@suse.cz
+
+- typo fixed
+
+-------------------------------------------------------------------
+Sat Dec  9 14:07:36 CET 2000 - dan@suse.cz
+
+- Unknown provider label when provider is not recognized
+- fixed route saving
+- fixed modem list
+
+-------------------------------------------------------------------
+Fri Dec  8 01:25:24 CET 2000 - kendy@suse.cz
+
+- Fixed saving of resolv.conf and route.conf
+- test_mode switched off in dialup
+- added textdomains for dialup modules
+- /sbin/init.d changed to /etc/init.d
+
+-------------------------------------------------------------------
+Thu Dec  7 19:12:09 CET 2000 - kkaempf@suse.de
+
+- fix double qouted terms
+
+-------------------------------------------------------------------
+Thu Dec  7 13:12:41 CET 2000 - kkaempf@suse.de
+
+- fix dhcp setup
+
+-------------------------------------------------------------------
+Wed Dec  6 17:45:06 CET 2000 - kkaempf@suse.de
+
+- read default values from /etc/install.inf
+
+-------------------------------------------------------------------
+Wed Dec  6 16:12:22 CET 2000 - kkaempf@suse.de
+
+- fix filelist in spec
+
+-------------------------------------------------------------------
+Wed Dec  6 15:58:08 CET 2000 - kkaempf@suse.de
+
+- use bzip2 for packaging
+
+-------------------------------------------------------------------
+Fri Dec  1 13:46:09 CET 2000 - dan@suse.cz
+
+- merge with dial, initial
+
+-------------------------------------------------------------------
+Fri Oct 27 14:02:05 CEST 2000 - dan@suse.de
+
+- configuration of more devices enabled.
+
+-------------------------------------------------------------------
+Mon Jul 24 15:16:01 MEST 2000 - dan@suse.de
+
+- added cheching for running NIS server (bugfix of #3422) and testing if /etc/route.conf exists (bugfix #3627)
+
+-------------------------------------------------------------------
+Mon Jul 24 12:03:31 CEST 2000 - kkaempf@suse.de
+
+- fix ip address checking
+  version 2.0.22
+
+-------------------------------------------------------------------
+Thu Jul 20 13:34:28 CEST 2000 - kkaempf@suse.de
+
+- dont check unwanted values
+  version 2.0.21
+
+-------------------------------------------------------------------
+Thu Jul 13 13:36:40 CEST 2000 - kkaempf@suse.de
+
+- call ifconfig before rcdhclient
+  version 2.0.20
+
+-------------------------------------------------------------------
+Thu Jul 13 09:27:10 MEST 2000 - dan@suse.de
+
+- minor dhcp changes (now accepts both dhclient and dhcpcd, longer delay)
+
+-------------------------------------------------------------------
+Tue Jul 11 10:59:51 CEST 2000 - kkaempf@suse.de
+
+- bump version to 2.0.18
+
+-------------------------------------------------------------------
+Mon Jul 10 18:02:46 MEST 2000 - dan@suse.de
+
+- fixed dhcp configuration
+
+-------------------------------------------------------------------
+Fri Jul  7 18:28:45 CEST 2000 - kkaempf@suse.de
+
+- fix modules.conf writing
+  version 2.0.16
+
+-------------------------------------------------------------------
+Tue Jul  4 11:19:00 MEST 2000 - dan@suse.de
+
+- fixed cheching of running DHCP client
+
+-------------------------------------------------------------------
+Mon Jul  3 16:52:17 MEST 2000 - dan@suse.de
+
+- added message for dhcp error
+
+-------------------------------------------------------------------
+Fri Jun 30 11:39:19 MEST 2000 - dan@suse.de
+
+- Correct setting of hostname and domainname, bugfix (bug #2461)
+
+-------------------------------------------------------------------
+Fri Jun 30 09:24:33 MEST 2000 - dan@suse.de
+
+- calling /bin/domainname to set correct domain name (bugfix, bug #3084)
+
+-------------------------------------------------------------------
+Thu Jun 29 16:00:25 MEST 2000 - dan@suse.de
+
+- correction of calling split function
+
+-------------------------------------------------------------------
+Thu Jun 29 15:20:40 MEST 2000 - dan@suse.de
+
+- fixed bug #3085, allow to enter more than one NIS servers (space separated)
+
+-------------------------------------------------------------------
+Thu Jun 29 14:18:00 CEST 2000 - kkaempf@suse.de
+
+- put y2t_lan as Requires
+
+-------------------------------------------------------------------
+Thu Jun 29 09:58:03 MEST 2000 - dan@suse.de
+
+- fixed smarthost bug (bug #3013)
+
+-------------------------------------------------------------------
+Mon Jun 26 16:50:07 CEST 2000 - kkaempf@suse.de
+
+- messages fixes
+  version 2.0.8
+
+-------------------------------------------------------------------
+Fri Jun 23 13:38:49 MEST 2000 - dan@suse.de
+
+- comment for translators
+
+-------------------------------------------------------------------
+Thu Jun 22 13:24:35 MEST 2000 - dan@suse.de
+
+- correction of calling anyagents
+
+-------------------------------------------------------------------
+Thu Jun 22 09:49:02 MEST 2000 - dan@suse.de
+
+- more message corrections
+
+-------------------------------------------------------------------
+Wed Jun 21 08:55:45 MEST 2000 - dan@suse.de
+
+- messages corrections
+
+-------------------------------------------------------------------
+Tue Jun 20 16:02:26 MEST 2000 - dan@suse.de
+
+- NFS problems (hopefully) fixed
+
+-------------------------------------------------------------------
+Fri Jun 16 11:14:40 MEST 2000 - dan@suse.de
+
+- sendmail configuration, nfs configuration, bugfixes
+
+-------------------------------------------------------------------
+Thu Jun  8 20:46:57 MEST 2000 - dan@suse.cz
+
+- ypclient added, kernel card support
+
+-------------------------------------------------------------------
+Fri May 19 09:44:08 CEST 2000 - kkaempf@suse.de
+
+- initial version
+

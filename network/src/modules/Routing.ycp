@@ -1,0 +1,281 @@
+/**
+ * File:	modules/Routing.ycp
+ * Package:	Network configuration
+ * Summary:	Routing data (/etc/sysconfig/network/routes)
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * See routes(5)
+ * Does not work with interface-specific routes yet (ifroute-lo...)
+ */
+
+{
+
+module "Routing";
+textdomain "network";
+
+import "Detection";
+import "NetworkDevices";
+import "Map";
+
+include "network/runtime.ycp";
+
+/**
+ * All routes
+ * list <map <string, string> >:
+ * keys: destination, gateway, netmask, [device, [extrapara]]
+ */
+global list<map> Routes = [];
+
+/**
+ * Enable IP forwarding
+ * .sysconfig.sysctl.IP_FORWARD
+ */
+global boolean Forward = false;
+
+/**
+ * List of available devices
+ */
+list devices = [];
+
+/**
+ * All routes read at the start
+ */
+list Orig_Routes = nil;
+boolean Orig_Forward = nil;
+
+/**
+ * "routes" file location
+ */
+string routes_file = "/etc/sysconfig/network/routes";
+
+/**
+ * Data was modified?
+ * @return true if modified
+ */
+global define boolean Modified() {
+    boolean ret = (Routes != Orig_Routes || Forward != Orig_Forward);
+    y2debug("ret=%1", ret);
+    return ret;
+}
+
+/**
+ * Set the routes to contain only the default route, if it is defined.
+ * Used when there is nothing better.
+ * @param gw ip of the default gateway
+ * @return true if success
+ */
+global define boolean ReadFromGateway (string gw) {
+    if (gw == "" || gw == nil)
+	return false;
+    Routes = [ $[
+		   "destination"       : "default",
+		   "gateway"           : gw,
+		   "netmask"           : "-",
+		   "device"            : "-"
+		   ] ];
+    return true;
+}
+
+/**
+ * Remove route with default gateway from Routes list
+ */
+global define void RemoveDefaultGw() {
+ list <map> route = [];
+ foreach(map row, Routes,{
+  if (row["destination"]:""!="default") route = add(route, row);
+ });
+ Routes = route;
+}
+
+
+/**
+ * Read routing settings
+ * If no routes, sets a default gateway from Detection
+ * @return true if success
+ */
+global define boolean Read() {
+
+    /* read route.conf */
+    if(SCR::Read(.target.size, routes_file) > 0)
+	Routes = (list<map>) SCR::Read(.routes);
+    else
+	Routes = [];
+
+    /* enabled IP forwarding */
+    if(SCR::Read(.sysconfig.sysctl.IP_FORWARD) == "yes")
+	Forward = true;
+
+    y2debug("Routes=%1", Routes);
+    y2debug("Forward=%1", Forward);
+
+    /* save routes to check for changes later */
+    Orig_Routes = (list) eval(Routes);
+    Orig_Forward = (boolean) eval(Forward);
+
+    /* read available devices */
+    NetworkDevices::Read();
+    devices = NetworkDevices::List("");
+
+    if(Routes == []) {
+	ReadFromGateway (Detection::result["GATEWAY"]:"");
+    }
+
+    return true;
+}
+
+/**
+ * Write routing settings and apply changes
+ * @return true if success
+ */
+global define boolean Write() {
+
+    y2milestone("Writing configuration");
+    if(!Modified()) {
+	y2milestone("No changes to routing -> nothing to write");
+	return true;
+    }
+
+    if(Forward) {
+	SCR::Write(.sysconfig.sysctl.IP_FORWARD, "yes");
+	SCR::Execute(.target.bash, "echo 1 > /proc/sys/net/ipv4/ip_forward");
+    }
+    else {
+	SCR::Write(.sysconfig.sysctl.IP_FORWARD, "no");
+	SCR::Execute(.target.bash, "echo 0 > /proc/sys/net/ipv4/ip_forward");
+    }
+
+    /* at first stop the running routes */
+    // FIXME SCR::Execute(.target.bash, "/etc/init.d/route stop");
+    // sysconfig does not support restarting routes only,
+    // so we let our caller do it together with other things
+
+    /* create if not exists, otherwise backup */
+    if(SCR::Read(.target.size, routes_file) < 0)
+	SCR::Write(.target.string, routes_file, "");
+    else
+	SCR::Execute(.target.bash, "/bin/cp "+routes_file+" "+routes_file+".YaST2save");
+
+    any ret = false;
+    if(Routes == [])
+	/* workaround bug [#4476] */
+	ret = SCR::Write(.target.string, routes_file, "");
+    else
+	/* update the routes config */
+	ret = SCR::Write(.routes, Routes);
+
+    /* and finally set up the new routes */
+    // FIXME SCR::Execute(.target.bash, "/etc/init.d/route start");
+
+    return ret == true;
+}
+
+
+/**
+ * Get all the Routing configuration from a map.
+ * When called by routing_auto (preparing autoinstallation data)
+ * the map may be empty.
+ * @param settings autoinstallation settings
+ * @return true if success
+ */
+global define boolean Import(map settings) {
+
+    Routes = (list<map>) eval(settings["routes"]:[]);
+    Forward = settings["ip_forward"]:false;
+
+    Orig_Routes = nil;
+    Orig_Forward = nil;
+
+    return true;
+}
+
+/**
+ * Dump the Routing settings to a map, for autoinstallation use.
+ * @return autoinstallation settings
+ */
+global define map Export() {
+    map<string, any> exproute = $[];
+    if (size(eval(Routes))> 0)
+        exproute["routes"] = eval(Routes);
+    exproute["ip_forward"] = Forward;
+    return exproute;
+}
+
+/**
+ * Get the current devices list
+ * @return devices list
+ */
+global define list GetDevices() {
+    return devices;
+}
+
+/**
+ * Get the default gateway
+ * @return gateway
+ */
+global define string GetGateway() {
+    string defgw = "";
+    maplist(map r, Routes, {
+	if(r["destination"]:"" == "default")
+	    defgw = r["gateway"]:"";
+    });
+    return defgw;
+}
+
+/**
+ * Set the available devices list (for expert routing dialog)
+ * @param devs new devices list
+ * @return true if success
+ */
+global define boolean SetDevices(list devs) {
+    if(devs == nil) {
+	devices = [];
+	return false;
+    }
+    devices = devs;
+    return true;
+}
+
+/**
+ * Create routing text summary
+ * @return summary text
+ */
+global define string Summary() {
+
+    if(size(Routes) < 1) return "";
+
+    import "Summary";
+    string summary = "";
+
+    string gw = GetGateway();
+    string gwhost = Detection::ResolveIP(gw);
+    if(gwhost != "") gw = gw + " (" + gwhost + ")";
+
+    if(gw != "") {
+	/* Summary text */
+	summary = Summary::AddListItem(summary, sformat(_("Gateway: %1"), gw));
+	// summary = add(summary, Summary::Device(sformat(_("Gateway: %1"), gw), ""));
+    }
+
+    if(Forward == true)
+	/* Summary text */
+	summary = Summary::AddListItem(summary, _("IP Forwarding: on"));
+	// summary = add(summary, Summary::Device(_("IP Forwarding: on"), ""));
+    else
+	/* Summary text */
+	summary = Summary::AddListItem(summary, _("IP Forwarding: off"));
+	// summary = add(summary, Summary::Device(_("IP Forwarding: off"), ""));
+
+    if(Routes != []) {
+	/* Summary text */
+	// summary = add(summary, Summary::Device(sformat(_("Routes: %1"), Routes), ""));
+	y2debug ("not adding Routes to summary");
+    }
+
+    if(size(summary) < 1) return "";
+    return "<ul>" + summary + "</ul>";
+}
+
+/* EOF */
+}
