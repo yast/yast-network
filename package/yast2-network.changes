@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar 25 18:42:18 CET 2008 - mzugec@suse.de
+
+- L3: wait specified seconds according /etc/install.inf.ConnectWait 
+  (bnc#363423)
+- 2.13.116 
+
+-------------------------------------------------------------------
 Tue Mar 25 16:59:27 CET 2008 - mzugec@suse.de
 
 - pre-select currently used driver in hardware dialog (bnc#373928)

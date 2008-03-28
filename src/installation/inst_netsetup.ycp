@@ -126,6 +126,21 @@ define boolean do_network_setup ()
     return true;
 }
 
+/**
+ * when netwait boot parameter is passed in first stage of installation,
+ * Linuxrc will write ConnectWait parameter into /etc/install.inf
+ * now yast should wait for specified seconds after network is configured
+ * L3: (bnc#363423)
+**/
+void wait_if_needed(){
+ if (size(InstallInf("ConnectWait"))>0){
+  integer wait = tointeger(InstallInf("ConnectWait"));
+  y2milestone("ConnectWait parameter found in /etc/install.inf (comes from netwait boot parameter)");
+  y2milestone("waiting for %1 seconds", wait);
+  sleep(wait*1000);
+ }
+
+}
 
 if (mode == `up)
 {
@@ -191,7 +206,7 @@ if (mode == `up)
     {
 	SCR::Execute (.target.bash, "/sbin/rcportmap start");
     }
-
+    wait_if_needed();
     ShowIfconfig ("set up done");
 }
 
