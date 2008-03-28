@@ -1,5 +1,5 @@
 -------------------------------------------------------------------
-Tue Mar 25 18:42:18 CET 2008 - mzugec@suse.de
+Tue Mar 28 16:42:18 CET 2008 - mzugec@suse.de
 
 - L3: wait specified seconds according /etc/install.inf.ConnectWait 
   (bnc#363423)
