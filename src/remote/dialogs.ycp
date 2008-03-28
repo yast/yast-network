@@ -100,6 +100,10 @@ This form of remote administration is less secure than using SSH.</p>
 	{
 	    Wizard::ShowHelp(help);
 	}
+	else if(ret == `cancel)
+	{
+	   break;
+	}
 
     } until( ret == `next || ret == `back );
 
