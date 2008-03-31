@@ -430,12 +430,17 @@ symbol handleHW (string key, map event) {
 		     `Left(`RadioButton(`id(`mac), sformat("MAC address : %1", LanItems::getCurrentItem()["hwinfo", "mac"]:""))),
 		     `Left(`RadioButton(`id(`busid), sformat("BusID : %1", LanItems::getCurrentItem()["hwinfo", "busid"]:"") ))
 		     )
-	),
-	`HBox(`CheckBox(`id(`change_dev_name), `opt(`notify), _("Change DeviceName"), false),
-				`TextEntry(`id(`dev_name),`opt(`shrinkable), "", LanItems::GetItemUdev()[1]:"")),
-             `VSpacing(0.5),
-             `HBox( `PushButton (`id(`ok), `opt(`default), Label::OKButton ()),
-                 `PushButton (`id(`cancel), Label::CancelButton ()) )
+	  ),
+	  `Left(
+	      `HBox(
+	          `CheckBox(`id(`change_dev_name), `opt(`notify), _("Change DeviceName"), false),
+		  `InputField(`id(`dev_name), "", LanItems::GetItemUdev()[1]:"")
+               )
+	  ), 
+          `VSpacing(0.5),
+          `HBox( `PushButton (`id(`ok), `opt(`default), Label::OKButton ()),
+                 `PushButton (`id(`cancel), Label::CancelButton ()) 
+	  )
 	)
 
    );
