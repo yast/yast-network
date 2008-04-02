@@ -122,10 +122,10 @@ define map FromAY(map input)
 
     foreach(string devname, map if_data, interfaces, {
 
-	string type = NetworkInterfaces::device_type (devname);
-	string id = NetworkInterfaces::device_num (devname);
+	string type = NetworkInterfaces::GetType(devname);
+//	string id = NetworkInterfaces::device_num (devname);
 	map d = devices[type]:$[];
-	d[id] = if_data;
+	d[devname] = if_data;
 	devices[type] = d;
     });
 
@@ -183,8 +183,8 @@ define map FromAY(map input)
 define map ToAY (map settings) {
     list interfaces = [];
     list discard = ["UDI", "_nm_name"];
-    foreach(string device, map devsmap, settings["devices"]:$[], {
-            foreach(string num, map devmap, (map<string,map>) devsmap, {
+    foreach(string type, map devsmap, settings["devices"]:$[], {
+            foreach(string device, map devmap, (map<string,map>) devsmap, {
                 map<string, any> newmap = $[];
                 foreach(string key, any val, (map<string,any>) devmap, {
                     y2milestone("Adding: %1=%2", key, val);
@@ -208,10 +208,10 @@ define map ToAY (map settings) {
                     }
 
                     });
-                if (deletechars(num, "0123456789") == "")
-                    newmap["device"] = device + num;
+                if (deletechars(device, "0123456789") == "")
+                    newmap["device"] = device;
                 else
-                    newmap["device"] = device + "-" + num;
+                    newmap["device"] = device;
                 interfaces = add(interfaces, newmap);
             });
             });
@@ -273,6 +273,7 @@ else if (func == "Change") {
 }
 else if(func == "Import") {
     map new = FromAY(param);
+y2internal("AY new %1", new);
     Lan::Import(new);
     ret = true;
 }
