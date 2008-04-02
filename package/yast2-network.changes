@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 25 19:23:57 CET 2008 - mzugec@suse.de
+
+- adapted Lan::HaveXenBridge (bnc#375606)
+- 2.13.117 
+
+-------------------------------------------------------------------
 Tue Mar 28 16:42:18 CET 2008 - mzugec@suse.de
 
 - L3: wait specified seconds according /etc/install.inf.ConnectWait 
