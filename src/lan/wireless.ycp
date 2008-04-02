@@ -1018,7 +1018,7 @@ If you have special requirements to set the username used as
 	"help": "",
 	],
     "WPA_EAP_PASSWORD": $[
-	"widget": `textentry,	// or password?
+	"widget": `password,	// or password?
 	// text entry label
 	"label": _("&Password"),
 	"opt": [],

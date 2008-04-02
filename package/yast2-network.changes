@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Apr  2 22:15:08 CEST 2008 - mzugec@suse.de
+
+- use "password" type widget for wpa-eap password (bnc#373.632)
+- 2.16.32 
+
+-------------------------------------------------------------------
 Tue Apr  1 21:49:06 CEST 2008 - mzugec@suse.de
 
 - fixed autoyast profile <device> section (bnc#376321)

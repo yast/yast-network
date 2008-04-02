@@ -13,7 +13,7 @@ BuildRequires: yast2 >= 2.16.6
 # Linuxrc::display_ip
 # SuSEFirewall::IsInstalled
 # NetworkDevices::GetDevTypeDescription 
-Requires:	yast2 >= 2.16.20
+Requires:	yast2 >= 2.16.43
 
 Requires:	sysconfig yast2-packager
 #GetLanguageCountry
