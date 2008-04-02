@@ -1,0 +1,18 @@
+[General]
+UniqueID=i7s0.gdm40Ifamk7
+HWClass=modem
+Model=Microcom TravelCard 56K
+
+[Status]
+Configured=yes
+Available=unknown
+Needed=no
+
+[Hardware]
+Bus=0x81
+BaseClass=0x102
+DeviceName=TravelCard 56K
+VendorName=Microcom
+UnixDevice=/dev/ttyS1
+Res.Baud=115200,0,0,0x00,0x00
+

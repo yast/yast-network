@@ -1,0 +1,60 @@
+[Desktop Entry]
+Type=Application
+Categories=Qt;X-SuSE-YaST;X-SuSE-YaST-Net_advanced;
+
+X-KDE-ModuleType=Library
+X-KDE-RootOnly=true
+X-KDE-HasReadOnlyMode=true
+X-KDE-Library=yast2
+X-SuSE-YaST-Call=host
+
+X-SuSE-YaST-Group=Net_advanced
+X-SuSE-YaST-Argument=
+X-SuSE-YaST-RootOnly=true
+X-SuSE-YaST-AutoInst=all
+X-SuSE-YaST-Geometry=
+X-SuSE-YaST-SortKey=
+X-SuSE-YaST-AutoInstResource=host
+X-SuSE-YaST-AutoInstClonable=true
+X-SuSE-YaST-AutoInstSchema=host.rnc
+
+Icon=yast-host
+Exec=/sbin/yast2 host 
+
+Name=Hostnames
+GenericName=Assign hostnames and aliases to IP addresses
+Name[cs]=Jména počítačů
+GenericName[cs]=Konfigurovat jména počítačů
+Name[de]=Hostnamen
+GenericName[de]=Hostnamen konfigurieren
+Name[es]=Nombres de ordenador
+GenericName[es]=Configurar nombres de ordenador
+Name[hu]=Gépnevek
+GenericName[hu]=Gépnevek beállítása
+Name[it]=Nome host
+GenericName[it]=Configura nomi degli host
+Name[ko]=호스트 이름
+GenericName[ko]=호스트 이름 설정
+Name[nl]=Hostnamen
+GenericName[nl]=Configureer hostnamen
+Name[pt]=Nomes de Host
+GenericName[pt]=Configurar Nomes de Host
+Name[sk]=Mená hostiteľov
+GenericName[sk]=Nastavenie mien hostiteľov
+Name[sv]=Värddatornamn
+GenericName[sv]=Ställ in värddatornamn
+Name[bg]=Имена на машините
+GenericName[bg]=Настройка на имената на машините
+Name[el]=Ονόματα Κόμβου
+GenericName[el]=Ρύθμιση ονομάτων Κόμβου
+Name[fr]=Noms d'hôte
+GenericName[fr]=Configurer les noms d'hôte
+Name[ja]=ホスト名
+GenericName[ja]=ホスト名を設定する
+Name[lt]=Kompiuterių vardai
+GenericName[lt]=Konfigūruoti kompiuterių vardus
+Name[sl]=Imena gostiteljev
+GenericName[sl]=Nastavite imena gostiteljev
+Name[tr]=Ana makinaların adı
+GenericName[tr]=Ana makine adlarını ayarla
+X-KDE-SubstituteUID=true

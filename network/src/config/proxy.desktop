@@ -1,0 +1,49 @@
+[Desktop Entry]
+Type=Application
+Categories=Qt;X-SuSE-YaST;X-SuSE-YaST-Net_advanced;
+
+X-KDE-ModuleType=Library
+X-KDE-RootOnly=true
+X-KDE-HasReadOnlyMode=true
+X-KDE-Library=yast2
+X-SuSE-YaST-Call=proxy
+
+X-SuSE-YaST-Group=Net_advanced
+X-SuSE-YaST-Argument=
+X-SuSE-YaST-RootOnly=true
+X-SuSE-YaST-AutoInst=all
+X-SuSE-YaST-Geometry=
+X-SuSE-YaST-SortKey=
+X-SuSE-YaST-AutoInstResource=proxy
+X-SuSE-YaST-AutoInstClonable=true
+X-SuSE-YaST-AutoInstSchema=proxy.rnc
+
+Icon=yast-proxy
+Exec=/sbin/yast2 proxy 
+
+Name=Proxy
+GenericName=Configure a proxy
+GenericName[cs]=Konfigurovat proxy
+GenericName[de]=Proxy konfigurieren
+GenericName[es]=Configurar proxy
+GenericName[hu]=A proxy beállítása
+GenericName[it]=Configura proxy
+Name[ko]=프락시
+GenericName[ko]=프락시 설정
+GenericName[nl]=Configureer proxy
+GenericName[pt]=Configurar proxy
+GenericName[sk]=Nastavenie proxy
+GenericName[sv]=Ställ in proxy
+Name[bg]=Прокси
+GenericName[bg]=Настройка на прокси
+Name[el]=Μεσολαβητής
+GenericName[el]=Ρύθμιση μεσολαβητή
+GenericName[fr]=Configurer le proxy
+Name[ja]=プロキシ
+GenericName[ja]=プロキシの設定
+Name[lt]=„Proxy“
+GenericName[lt]=Konfigūruoti „proxy“
+Name[sl]=Namestnik (proxy)
+GenericName[sl]=Nastavi namestnika (proxy)
+GenericName[tr]=Proxy yapılandır
+X-KDE-SubstituteUID=true

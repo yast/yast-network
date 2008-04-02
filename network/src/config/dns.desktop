@@ -1,0 +1,59 @@
+[Desktop Entry]
+Type=Application
+Categories=Qt;X-SuSE-YaST;X-SuSE-YaST-Net_advanced;
+
+X-KDE-ModuleType=Library
+X-KDE-RootOnly=true
+X-KDE-HasReadOnlyMode=true
+X-KDE-Library=yast2
+X-SuSE-YaST-Call=dns
+
+X-SuSE-YaST-Group=Net_advanced
+X-SuSE-YaST-Argument=
+X-SuSE-YaST-RootOnly=true
+X-SuSE-YaST-AutoInst=write
+X-SuSE-YaST-Geometry=
+X-SuSE-YaST-SortKey=
+X-SuSE-YaST-AutoInstResource=dns
+
+Icon=yast-dns
+Exec=/sbin/yast2 dns 
+
+Name=DNS and Hostname
+GenericName=Configure hostname and name servers
+Name[cs]=DNS a jméno počítače
+GenericName[cs]=Konfigurovat jméno počítače a DNS
+Name[de]=DNS- und Hostname
+GenericName[de]=Konfigurieren Sie Ihren Hostnamen und DNS
+Name[es]=DNS y nombre de ordenador
+GenericName[es]=Configurar nombre de ordenador y DNS
+Name[hu]=DNS és gépnév
+GenericName[hu]=A gépnév és a DNS beállítása
+Name[it]=Nome host e DNS
+GenericName[it]=Configurazione nome host e DNS
+Name[ko]= DNS 및 호스트 이름(&D)
+GenericName[ko]=호스트 이름과 DNS 설정
+Name[nl]=DNS en hostnaam
+GenericName[nl]=Configureer hostnaam en DNS
+Name[pt]=Nome de Host e DNS
+GenericName[pt]=Configurar nome de Host e DNS
+Name[sk]=DNS a meno hostiteľa
+GenericName[sk]=Konfigurácia hostiteľa počítača a DNS
+Name[sv]=DNS och värddatornamn
+GenericName[sv]=Ställ in värddatornamn och DNS
+Name[bg]=DNS и име на машината
+GenericName[bg]=Настройка на името на машината и DNS
+GenericName[da]=Indstil værtsmaskinenavn og DNS
+Name[el]=DNS και όνομα Κόμβου
+GenericName[el]=Ρυθμίστε το όνομα host και DNS.
+Name[fr]=Nom d'hôte et DNS
+GenericName[fr]=Configurer nom d'hôte et DNS
+Name[ja]=DNS とホスト名
+GenericName[ja]=ホスト名と DNS を設定する
+Name[lt]=DNS ir kompiuterio vardas
+GenericName[lt]=Konfigūruoti kompiuterio vardą ir DNS
+Name[sl]=DNS in ime gostitelja
+GenericName[sl]=Nastavitev imena računalnika in DNS-ja
+Name[tr]=DNS ve ana makine adı
+GenericName[tr]=Ana makine adını ve DNS'i yapılandır
+X-KDE-SubstituteUID=true

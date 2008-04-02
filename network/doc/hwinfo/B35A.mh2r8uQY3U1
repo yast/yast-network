@@ -1,0 +1,29 @@
+[General]
+UniqueID=B35A.mh2r8uQY3U1
+HWClass=network
+Model=FE575C-3Com 10/100 LAN CardBus-Fast Ethernet
+
+[Status]
+Configured=no
+Available=unknown
+Needed=no
+
+[Hardware]
+Bus=0x4
+Slot=0x200
+BaseClass=0x2
+VendorID=10b7
+DeviceID=5257
+SubVendorID=10b7
+SubDeviceID=5c57
+RevisionID=0x10
+DeviceName=3CCFE575CT Cyclone CardBus
+VendorName=3Com Corporation
+SubDeviceName=FE575C-3Com 10/100 LAN CardBus-Fast Ethernet
+SubVendorName=3Com Corporation
+Res.IO=0x4000,0x100,1,3
+Res.Memory=0x10400000,0x0,1,3,1
+Res.Memory=0x10400080,0x0,1,3,1
+Res.Memory=0x10000000,0x0,1,1,0
+Res.Interrupts=11,433588,1
+

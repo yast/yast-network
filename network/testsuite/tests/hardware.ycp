@@ -1,0 +1,21 @@
+{
+
+// testedfiles: hardware.ycp Testsuite.ycp
+
+include "testsuite.ycp";
+
+TESTSUITE_INIT([], nil);
+
+string description = "";
+string type = "";
+string unique = "";
+string hotplug = "";
+list<string> Requires = [];
+include "network/hardware.ycp";
+
+DUMP("DeviceName");
+TEST(``(DeviceName($[])), [], nil);
+TEST(``(DeviceName($["model":"hwmodel"])), [], nil);
+TEST(``(DeviceName($["sub_vendor":"hwvendor", "sub_device":"hwdevice"])), [], nil);
+
+}

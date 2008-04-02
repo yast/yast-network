@@ -1,0 +1,370 @@
+/**
+ * File:	include/network/services/host.ycp
+ * Module:	Network configuration
+ * Summary:	Hosts configuration dialogs
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Hosts configuration dialogs
+ */
+
+{
+
+textdomain "network";
+
+import "Host";
+import "Hostname";
+import "IP";
+import "Label";
+import "Popup";
+import "Wizard";
+
+include "network/routines.ycp";
+
+//define term HostDialog(integer id, term entry, list forbidden);
+define term HostDialog(integer id, term entry);
+
+/**
+ * Check if given host is system and present warning in this case.
+ * @param host host to be checked
+ * @param delete true if the host will be deleted
+ * @return true if continue
+ */
+define boolean HostSystemPopup(string host, boolean delete) {
+
+    if(!contains(Host::GetSystemHosts(), host)) return true;
+
+    /* Warning popup text 1/2 */
+    string text = sformat(_("The host %1 is a system host.") + "\n", host);
+
+    if(delete)
+	/* Warning popup text 2/2 */
+	text = text + _("Really delete it?");
+    else
+	/* Warning popup text 2/2 */
+	text = text + _("Really change it?");
+
+    return Popup::AnyQuestion("", text, Label::YesButton(), Label::NoButton(), `focus_no);
+}
+
+/**
+ * Main hosts dialog
+ * @param standalone true if not run from another ycp client
+ * @return dialog result
+ */
+define symbol HostsMainDialog(boolean standalone) {
+
+    ScreenName("host");
+
+    /* Hosts dialog caption */
+    string caption = _("Host Configuration");
+
+    /* Hosts dialog help 1/2 */
+    string help = _("<p>The hosts can be set up in this dialog.</p>") +
+
+    /* Hosts dialog help 2/2 */
+    _("<p>Enter a host <b>IP Address</b>, a <b>Hostname</b>, and optional
+<b>Host Aliases</b>, separated by spaces.</p>
+");
+
+    integer items = 0;
+    integer max = 0;
+    list<term> table_items = [];
+
+    y2debug("hosts=%1", Host::hosts);
+    /* make ui items from the hosts list */
+    maplist(string host, list<string> names, (map<string, list<string> >) Host::hosts, {
+	if(size(names) < 1) {
+	    y2error("Invalid host: %1, (%2)", host, names);
+	    return;
+	}
+	foreach (string s, names, {
+	    list <string> dns = splitstring(s," ");
+		string name = dns[0]:"";
+		string aliases = mergestring(remove(dns, 0), " ");
+		term item = `item(`id(items), host, name, aliases);
+		table_items = add(table_items, item);
+		items = items + 1;
+	});
+    });
+
+    y2debug("table_items=%1", table_items);
+    y2debug("items=%1", items);
+    max = items;
+
+    /* Hosts dialog contents */
+    term contents = `HBox(
+	`HSpacing(5),
+	`VBox(
+	    `VSpacing(2),
+	    /* Frame label */
+	    `Frame(_("Current Hosts"), `HBox(`HSpacing(3), `VBox(
+		`VSpacing(1),
+		`Table(`id(`table), `opt(`notify), `header(
+                    /* Table header label */
+                    _("IP Address"),
+                    /* Table header label */
+                    _("Hostnames"),
+                    /* Table header label */
+                    _("Host Aliases")), []),
+		`HBox(
+		    /* PushButton label */
+		    `PushButton(`id(`add), _("Ad&d")),
+		    /* PushButton label */
+		    `PushButton(`id(`edit), `opt(`disabled), _("&Edit")),
+		    /* PushButton label */
+		    `PushButton(`id(`delete), `opt(`disabled), _("De&lete"))),
+		`VSpacing(1)
+		), `HSpacing(3))),
+	    `VSpacing(2)
+	),
+	`HSpacing(5)
+    );
+
+    if(standalone == true) {
+	Wizard::SetContentsButtons(caption, contents, help,
+	    Label::BackButton(), Label::FinishButton());
+	//In standalone mode, there's no going back
+	Wizard::DisableBackButton();
+    }
+    else
+	Wizard::SetContentsButtons(caption, contents, help,
+	    Label::BackButton(), Label::OKButton());
+
+    UI::ChangeWidget(`id(`table), `Items, table_items);
+    if(items > 0) UI::SetFocus(`id(`table));
+
+    any ret = nil;
+    while(true) {
+
+	UI::ChangeWidget(`id(`edit), `Enabled, items > 0);
+	UI::ChangeWidget(`id(`delete), `Enabled, items > 0);
+
+	ret = UI::UserInput();
+	y2debug("ret=%1", ret);
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	/* add host */
+	else if(ret == `add) {
+	//    list forbidden = maplist(term e, table_items, {
+	//	return e[1]:"";
+	//    });
+	//    term item = HostDialog(max, `empty(), forbidden);
+	    term item = HostDialog(max, `empty());
+	    if(item == nil) 
+			continue;
+	    else {
+		Host::modified = true;
+		string ip = (item[1]:"");
+		string entry = mergestring([item[2]:"", item[3]:""]," ");
+
+		Host::hosts[ip] = add(Host::hosts[ip]:[], entry);
+	    }
+
+	    table_items = add(table_items, item);
+	    UI::ChangeWidget(`id(`table), `Items, table_items);
+	    UI::ChangeWidget(`id(`table), `CurrentItem, max);
+	    items = items + 1;
+	    max = max + 1;
+	    continue;
+	}
+	/* edit host */
+	else if(ret == `edit || ret == `table) {
+	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
+	    list<term> cur_item = filter(term e, table_items, {
+		return cur == e[0, 0]:nil;
+	    });
+
+	    y2debug("cur=%1", cur);
+	    y2debug("cur_item=%1", cur_item);
+
+	    term olditem = cur_item[0]:nil;
+	    list forbidden = maplist(term e, table_items, {
+		return e[1]:"";
+	    });
+	    forbidden = filter(string h, (list<string>) forbidden, {
+		return h != olditem[1]:"";
+	    });
+
+	    if(!HostSystemPopup(olditem[1]:"", false)) continue;
+	    term item = HostDialog(cur, olditem);
+
+	    if(item == nil) continue;
+	    else Host::modified = true;
+
+	    table_items = maplist(term e, table_items, {
+		if(cur == e[0, 0]:-1) {
+		    string oldentry = mergestring([olditem[2]:"", olditem[3]:""]," ");
+		    string entry = mergestring([item[2]:"", item[3]:""]," ");
+
+		    y2debug("item: %1", item);
+		    y2debug("olditem: %1", olditem);
+		    string ip = item[1]:"";
+		    string oldip = olditem[1]:"";
+
+		    Host::hosts[oldip] = filter(string dns, Host::hosts[oldip]:[], {
+			return dns != oldentry;
+		    });
+		    y2debug("Deleting: %1 (%2)", oldip, ip);
+		    Host::hosts[ip] = add(Host::hosts[ip]:[], entry);
+
+		    return item;
+		}
+		return e;
+	    });
+	    UI::ChangeWidget(`id(`table), `Items, table_items);
+	    UI::ChangeWidget(`id(`table), `CurrentItem, cur);
+	    continue;
+	}
+	/* delete host */
+	else if(ret == `delete) {
+	    integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
+	    list<term> cur_item = filter(term e, table_items, {
+		return cur == e[0, 0]:nil;
+	    });
+
+	    y2debug("cur=%1", cur);
+	    y2debug("cur_item=%1", cur_item);
+
+	    term item = cur_item[0]:nil;
+		string entry = mergestring([item[2]:"", item[3]:""]," ");
+
+	    if(!HostSystemPopup(item[1]:"", true)) continue;
+
+	    table_items = filter(term e, table_items, {
+		string ip = e[1]:"";
+		if(cur == e[0, 0]:nil) {
+		    if(ip != "" && ip != nil) {
+			Host::hosts[ip] = filter(string dns, Host::hosts[ip]:[], {
+			    return dns != entry;
+			});
+		    return false;
+		    }
+		}
+		return true;
+	    });
+	    UI::ChangeWidget(`id(`table), `Items, table_items);
+	    items = size(table_items);
+	    Host::modified = true;
+	    continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    /* check_ */
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+    }
+
+
+    y2debug("table_items=%1", table_items);
+    y2debug("hosts=%1", Host::hosts);
+
+    return (symbol) ret;
+}
+
+/**
+ * Host edit dialog
+ * @param id id of the edited host
+ * @param entry edited entry
+ * @return host or nil, if canceled
+ */
+
+define term HostDialog(integer id, term entry) {
+
+    ScreenName("host-edit");
+
+    y2debug("id=%1", id);
+    y2debug("entry=%1", entry);
+    //y2debug("forbidden=%1", forbidden);
+
+    UI::OpenDialog(`opt(`decorated),`VBox(
+	`HSpacing(1),
+	`VBox(
+	    /* TextEntry label */
+	    `TextEntry(`id(`host), _("&IP Address"), entry[1]:""),
+	    /* TextEntry label */
+	    `TextEntry(`id(`name), Label::HostName (), entry[2]:""),
+	    /* TextEntry label */
+	    `TextEntry(`id(`aliases), _("Hos&t Aliases"), entry[3]:"")
+	    ),
+	`HSpacing(1),
+	`HBox(
+	    `PushButton(`id(`ok), `opt(`default), Label::OKButton()),
+	    `PushButton(`id(`cancel), Label::CancelButton())
+	    )
+	));
+
+    UI::ChangeWidget(`id(`host), `ValidChars, IP::ValidChars);
+    UI::ChangeWidget(`id(`name), `ValidChars, Hostname::ValidCharsFQ);
+    UI::ChangeWidget(`id(`aliases), `ValidChars, Hostname::ValidCharsFQ + " ");
+
+    if(entry == `empty())
+	UI::SetFocus(`id(`host));
+    else
+	UI::SetFocus(`id(`aliases));
+
+    any ret = nil;
+    term host = nil;
+
+    while(true) {
+	host = nil;
+	ret = UI::UserInput();
+	if(ret != `ok) break;
+
+	host = `item(`id(id));
+	string val = (string) UI::QueryWidget(`id(`host), `Value);
+	if(!IP::Check(val)) {
+	    /* Popup::Error text */
+	    Popup::Error(_("The IP address is invalid."));
+	    UI::SetFocus(`id(`host));
+	    continue;
+	}
+
+	host = add(host, val);
+
+	val = (string) UI::QueryWidget(`id(`name), `Value);
+	if(!Hostname::CheckFQ(val)) {
+	    UI::SetFocus(`id(`name));
+	    /* Popup::Error text */
+	    Popup::Error(_("The hostname is invalid.") +
+			 "\n" + Hostname::ValidFQ ());
+	    continue;
+	}
+	host = add(host, val);
+
+	val = (string) UI::QueryWidget(`id(`aliases), `Value);
+	if(val != "") {
+	    list<string> vals = splitstring(val, " ");
+	    vals = filter(string ho, vals, {
+		return ho != "" && !Hostname::CheckFQ(ho);
+	    });
+	    if(size(vals) > 0) {
+		UI::SetFocus(`id(`aliases));
+		/* Popup::Error text */
+		Popup::Error(sformat(_("Alias name \"%1\" is invalid.") +
+			     "\n" + Hostname::ValidFQ (), vals[0]:""));
+		continue;
+	    }
+	}
+	host = add(host, val);
+	break;
+    }
+
+    UI::CloseDialog();
+    if(ret != `ok) return nil;
+    return host;
+}
+
+/* EOF */
+}

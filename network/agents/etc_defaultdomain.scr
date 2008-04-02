@@ -1,0 +1,24 @@
+/**
+ * File:	etc_defaultdomain.scr
+ * Summary:	Agent for reading/writing /etc/defaultdomain
+ * Author:	Martin Vidner <mvidner@suse.cz>
+ * Access:	read / write
+ *
+ * Example:
+ *   Read(.etc.defaultdomain)
+ *   ("suse.cz")
+ *
+ * $Id$
+ *
+ * Returns the domain name for NIS (and some other services)
+ */
+.etc.defaultdomain
+
+`ag_anyagent(
+    `Description(
+	(`File("/etc/defaultdomain")),	// real file name
+	"",				// comment
+	false,				// read-only?
+	(`Or(`String("^\n"), ""))	// just a string, may be empty
+    )
+)

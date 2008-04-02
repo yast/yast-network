@@ -1,0 +1,54 @@
+/**
+ * File:	clients/inst_hostname.ycp
+ * Package:	Network configuration
+ * Summary:	Mandatory hostname configuration
+ * Authors:	Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Arch";
+import "DNS";
+import "GetInstArgs";
+import "NetworkConfig";
+import "String";
+import "Wizard";
+
+include "network/services/dns.ycp";
+
+
+/* Called backwards */
+//if(GetInstArgs::going_back())
+//   return `auto;
+
+DNS::Read ();			// handles NetworkConfig too
+
+if (DNS::hostname == "linux")
+{ 
+    srandom ();
+    DNS::hostname = "linux-" + String::Random (4); // #157107
+}
+
+// propose settings
+NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = ! Arch::is_laptop ();
+// TODO: policy for proposing a hostname
+
+Wizard::SetDesktopIcon("dns");
+
+symbol ret = HostnameDialog ();
+
+if (ret == `next)
+{
+    // do not let Lan override us, #152218
+    DNS::proposal_valid = true;
+    DNS::Write ();		// handles NetworkConfig too
+}
+
+return ret;
+
+/* EOF */
+}

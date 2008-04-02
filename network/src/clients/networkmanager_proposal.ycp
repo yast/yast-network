@@ -1,0 +1,105 @@
+/**
+ * File:	clients/networkmanager_proposal.ycp
+ * Package:	Network configuration
+ * Summary:	Network mode proposal
+ * Authors:	Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ *
+ * This is not a standalone proposal, it depends on lan_proposal. It
+ * must run after it.
+ */
+
+{
+
+textdomain "network";
+
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("NetworkManager proposal started");
+y2milestone("Arguments: %1", WFM::Args());
+
+import "Lan";
+import "NetworkService";
+
+include "network/lan/complex.ycp";
+
+list args = WFM::Args();
+
+string func = args[0]:"";
+map param = args[1]:$[];
+map ret = $[];
+
+/* create a textual proposal */
+if(func == "MakeProposal") {
+    string proposal = "";
+    list<string> links = [];
+    string warning = nil;
+    symbol warning_level = nil;
+
+    list sum = Lan::SummaryNM ();
+    proposal = sum[0]:"";
+    links = sum[1]:[];
+
+    ret = $[
+	"preformatted_proposal" : proposal,
+	"links" : links,
+	"warning_level" : warning_level,
+	"warning" : warning,
+    ];
+}
+/* run the module */
+else if(func == "AskUser") {
+    string chosen_id = param["chosen_id"]:"";
+    symbol seq = `next;
+
+    if (chosen_id == "lan--nm-enable")
+    {
+	NetworkService::SetManaged (true);
+    }
+    else if (chosen_id == "lan--nm-disable")
+    {
+	NetworkService::SetManaged (false);
+    }
+    else
+    {
+	Wizard::CreateDialog();
+	Wizard::SetDesktopIcon("lan");
+
+	seq = ManagedDialog();
+	Wizard::CloseDialog();
+    }
+    Lan::proposal_valid = false; // repropose
+    Lan::SetModified ();
+
+    ret = $[
+	"workflow_sequence" : seq
+    ];
+}
+/* create titles */
+else if(func == "Description") {
+    ret = $[
+	/* RichText label */
+	"rich_text_title" : _("Network Mode"),
+	/* Menu label */
+	"menu_title" : _("Network Mo&de"),
+	"id" : "networkmode",
+    ];
+}
+/* write the proposal */
+else if (func == "Write") {
+    y2debug ("lan_proposal did it");
+}
+/* unknown function */
+else {
+    y2error("unknown function: %1", func);
+}
+
+/* Finish */
+y2debug("ret=%1", ret);
+y2milestone("NetworkManager proposal finished");
+y2milestone("----------------------------------------");
+return ret;
+
+/* EOF */
+}

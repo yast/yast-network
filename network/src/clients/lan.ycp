@@ -1,0 +1,143 @@
+/**
+ * File:	clients/lan.ycp
+ * Package:	Network configuration
+ * Summary:	Network cards main file
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Main file for network card configuration.
+ * Uses all other files.
+ */
+
+{
+
+/***
+ * <h3>Network configuration</h3>
+ */
+
+textdomain "network";
+
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("Lan module started");
+
+import "CommandLine";
+import "Label";
+import "Lan";
+import "RichText";
+
+include "network/lan/cmdline.ycp";
+include "network/lan/wizards.ycp";
+
+// return LanSequence();
+
+/**
+ * Command line definition
+ */
+map cmdline = $[
+    /* Commandline help title */
+    "help"	: _("Network Card Configuration"),
+    "id"	: "lan",
+    "guihandler": LanSequence,
+    "initialize": Lan::ReadWithCache,
+    "finish"	: Lan::Write,
+    "actions"	: $[
+	"list" : $[
+	    /* Commandline command help */
+	    "help"	: _("Display configuration summary"),
+	    "example"	: "lan list configured",
+	    "handler"	: ListHandler,
+	],
+	"show" : $[
+	    /* Commandline command help */
+	    "help"	: _("Display configuration summary"),
+	    "example"	: "lan show id=...",
+	    "handler"	: ShowHandler,
+	],
+	"add" : $[
+	    /* Commandline command help */
+	    "help"	: _("Add a network card"),
+	    "handler"	: AddHandler,
+	],
+	"edit" : $[
+	    "help" 	: _("Change existing configuration"),
+	    "handler"	: EditHandler
+	],
+	"delete" : $[
+	    /* Commandline command help */
+	    "help"	: _("Delete a network card"),
+	    "handler"	: DeleteHandler,
+	]
+    ],
+    "options" : $[
+	"propose" : $[
+	    /* Commandline option help */
+	    "help"	: _("Propose a configuration"),
+	    "example"	: "lan add propose",
+	    "type"	: ""
+	],
+	"configured" : $[
+	    /* Commandline option help */
+	    "help"	: _("List only configured cards")
+	],
+	"unconfigured" : $[
+	    /* Commandline option help */
+	    "help"	: _("List only unconfigured cards")
+	],
+	"device" : $[
+	    /* Commandline option help */
+	    "help"	: _("Device identifier"),
+	    "type"	: "string",
+	    "example"	: "lan add device=eth0"
+	],
+	"id" : $[
+	    /* Commandline option help */
+	    "help"	: _("Config identifier"),
+	    "type"	: "string",
+	    "example"	: "lan show id=0"
+	],
+	"bootproto" : $[
+	    "help"	: _("Use static or dynamic configuration"),
+	    "type"	: "string",
+	    "example"	: "add type=ethernet bootproto=dhcp"
+	],
+	"type" : $[
+	    "help"	: _("Device type"),
+	    "type"	: "string",
+	    "example"	: "add type=bluetooth"
+	],
+	"bootproto" : $[
+	    /* Commandline option help */
+	    "help": _("Device boot protocol"),
+	    "type": "string"
+	],
+	"ip" : $[
+	    /* Commandline option help */
+	    "help": _("Device IP address"),
+	    "type": "ip"
+	],
+	"netmask" : $[
+	    /* Commandline option help */
+	    "help": _("Network mask"),
+	    "type": "netmask"
+	],
+    ],
+    "mappings" : $[
+	"list"	: [ "configured", "unconfigured" ],
+	"show"	: [ "id" ],
+	"add"	: [ "type", "bootproto", "ip", "netmask" ],
+	"edit"	: [ "id", "type", "bootproto", "ip", "netmask" ],
+	"delete": [ "id" ],
+    ]
+];
+
+any ret = CommandLine::Run(cmdline);
+y2debug("ret=%1", ret);
+
+/* Finish */
+y2milestone("Lan module finished");
+y2milestone("----------------------------------------");
+
+/* EOF */
+}

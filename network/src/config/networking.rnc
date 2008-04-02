@@ -1,0 +1,221 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+## networking
+networking =
+  element networking {
+    element start_immediately { BOOLEAN }? &
+    managed? &
+    strict_IP_check_timeout? &
+    interfaces &
+    modules? &
+    dhcp_options? &
+    routing? &
+    dns?
+  }
+
+managed =
+  element managed { BOOLEAN }
+
+strict_IP_check_timeout =
+  element strict_IP_check_timeout { INTEGER }
+
+#
+# INTERFACES
+#
+
+interfaces =
+  element interfaces {
+    LIST,
+    interface+
+  }
+
+interface =
+  element interface {
+    element device { text }? &	#overloaded
+    element name { text }? &
+
+    bootproto? &
+    startmode? &
+    ifplugd_priority? &
+    usercontrol? &
+
+    # address
+    ipaddr? &
+    remote_ipaddr? &
+    element netmask { text }? &	#overloaded
+    element aliases        { Anything }? &
+    broadcast? &
+    network? &
+
+    # link
+    mtu? &
+    ethtool_options? &
+
+    wireless? &
+    wifi_settings? &
+
+    dhclient_set_down_link?
+  }
+
+remote_ipaddr = element remote_ipaddr { text }
+bootproto = element bootproto { text }
+broadcast = element broadcast { text }
+dhclient_set_down_link = element dhclient_set_down_link { text }
+ipaddr = element ipaddr { text }
+usercontrol = element usercontrol { text }
+mtu = element mtu { text }
+ethtool_options = element ethtool_options { text }
+ifplugd_priority = element ifplugd_priority { text }
+network = element network { text }
+startmode = element startmode { text }
+wireless = element wireless { text } #?
+
+
+wifi_settings = (
+  wireless_auth_mode? &
+  wireless_ap? &
+  wireless_bitrate? &
+  wireless_ca_cert? &
+  wireless_channel? &
+  wireless_client_cert? &
+  wireless_client_key? &
+  wireless_client_key_password? &
+  wireless_default_key? &
+  wireless_eap_auth? &
+  wireless_eap_mode? &
+  wireless_essid? &
+  wireless_frequency? &
+  wireless_key? &
+  wireless_key_0? &
+  wireless_key_1? &
+  wireless_key_2? &
+  wireless_key_3? &
+  wireless_key_length? &
+  wireless_mode? &
+  wireless_nick? &
+  wireless_nwid? &
+  wireless_peap_version? &
+  wireless_power? &
+  wireless_wpa_anonid? &
+  wireless_wpa_identity? &
+  wireless_wpa_password? &
+  wireless_wpa_psk?
+)
+
+wireless_auth_mode = element wireless_auth_mode { text }
+wireless_ap = element wireless_ap { text }
+wireless_bitrate = element wireless_bitrate { text }
+wireless_ca_cert = element wireless_ca_cert { text }
+wireless_channel = element wireless_channel { text }
+wireless_client_cert = element wireless_client_cert { text }
+wireless_client_key = element wireless_client_key { text }
+wireless_client_key_password = element wireless_client_key_password { text }
+wireless_default_key = element wireless_default_key { text }
+wireless_eap_auth = element wireless_eap_auth { text }
+wireless_eap_mode = element wireless_eap_mode { text }
+wireless_essid = element wireless_essid { text }
+wireless_frequency = element wireless_frequency { text }
+wireless_key = element wireless_key { text }
+wireless_key_1 = element wireless_key_1 { text }
+wireless_key_0 = element wireless_key_0 { text }
+wireless_key_2 = element wireless_key_2 { text }
+wireless_key_3 = element wireless_key_3 { text }
+wireless_key_length = element wireless_key_length { text }
+wireless_mode = element wireless_mode { text }
+wireless_nick = element wireless_nick { text }
+wireless_nwid = element wireless_nwid { text }
+wireless_peap_version = element wireless_peap_version { text }
+wireless_power = element wireless_power { text }
+wireless_wpa_anonid = element wireless_wpa_anonid { text }
+wireless_wpa_identity = element wireless_wpa_identity { text }
+wireless_wpa_password = element wireless_wpa_password { text }
+wireless_wpa_psk = element wireless_wpa_psk { text }
+
+#
+# MODULES
+#
+
+modules =
+  element modules {
+    LIST,
+    module_entry+
+  }
+module_entry =
+  element module_entry {
+    element device { text } &	# overloaded
+    element module { text }? &	# likely overloaded
+    element options { text }? 	# overloaded
+  }
+
+#
+# DHCP_OPTIONS
+#
+
+dhcp_options =
+  element dhcp_options {
+    dhclient_additional_options? &
+    dhclient_client_id? &
+    dhclient_hostname_option?
+  }
+dhclient_additional_options = element dhclient_additional_options { text }
+dhclient_client_id = element dhclient_client_id { text }
+dhclient_hostname_option = element dhclient_hostname_option { text }
+
+#
+# ROUTING
+#
+
+routing =
+  element routing {
+    ip_forward? &
+    routes?
+  }
+
+ip_forward = element ip_forward { BOOLEAN }
+
+routes =
+  element routes {
+    LIST,
+    route+
+  }
+route =
+  element route {
+    destination &
+    element netmask { text } &	#overloaded
+    element device { text } &	#overloaded
+    gateway
+  }
+destination = element destination { text }
+gateway = element gateway { text }
+
+
+#
+# DNS (fqdn + resolver)
+#
+dns =
+  element dns {
+    dhcp_hostname ? &
+    dhcp_resolv ? &
+    hostname ? &
+    domain ? &
+    nameservers ? &
+    searchlist ?
+  }
+dhcp_hostname = element dhcp_hostname { BOOLEAN }
+dhcp_resolv = element dhcp_resolv { BOOLEAN }
+hostname = element hostname { text }
+domain = element domain { text }
+nameservers =
+  element nameservers {
+    LIST,
+    nameserver+
+  }
+nameserver = element nameserver { text }
+searchlist =
+  element searchlist {
+    LIST,
+    search+
+  }
+search = element search { text }

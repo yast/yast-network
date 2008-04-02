@@ -1,0 +1,289 @@
+/**
+ * File:	include/network/dsl/dialogs.ycp
+ * Package:	Network configuration
+ * Summary:	Configuration dialogs for DSL
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Call";
+import "CWM";
+import "DSL";
+import "IP";
+import "Label";
+import "Lan";
+import "NetworkDevices";
+import "Popup";
+import "SuSEFirewall4Network";
+import "Wizard";
+
+include "network/runtime.ycp";
+include "network/routines.ycp";
+include "network/widgets.ycp";
+
+/**
+ * DSL device dialog
+ * @return dialog result
+ */
+define any DSLDialog() {
+
+    ScreenName("dsl-dialog");
+
+    widget_descr["STARTMODE"] = MakeStartmode (
+	["auto", "hotplug", "manual", "off", ]);
+
+    /* DSL dialog caption */
+    string caption = _("DSL Configuration");
+
+    /* DSL dialog help 1/7 */
+    string helptext = _("<p>Here, set the most important settings
+for the DSL connection.</p>
+") +
+
+    /* DSL dialog help 2/7 */
+    _("<p>First, choose your <b>PPP mode</b>. This is either
+<i>PPP over Ethernet</i> (PPPoE) or <i>PPP over ATM</i> (PPPoATM). Use
+<i>PPP over Ethernet</i> if your DSL modem is connected via ethernet to your
+computer. If you are not sure which mode to use, ask your provider.</p>") +
+
+    /* DSL dialog help 3/7 */
+    _("<p>If you are using <i>PPP over Ethernet</i>, first configure your
+ethernet card.</p>") +
+
+    /* DSL dialog help 4/7 */
+_("<p>The <b>PPP Mode-Dependent Settings</b> are settings required to set up
+your DSL connection. <b>VPI/VCI</b> makes sense only for <i>PPP over ATM</i>
+connections, <b>Ethernet Card</b> is needed for <i>PPP over Ethernet</i>
+connections.</p>
+") +
+
+    /* DSL dialog help 5/7 */
+_("<p><b>For PPPoATM, enter your VPI/VCI pair, for example, <i>0.38</i>
+for British Telecom. If unsure, ask your provider.</p>") +
+
+    /* DSL dialog help 6/7 */
+_("<p>For PPPoE, enter the device of the ethernet card to which your DSL
+modem is connected. If you did not set up your ethernet card yet, do
+so by pressing <b>Configure Network Cards</b>.</p>") +
+
+	widget_descr["STARTMODE", "help"]:"" +
+
+    /* DSL dialog help 7/7 */
+_("<p>Activation during boot may
+be appropriate for dial-on-demand connections.</p>") +
+
+	widget_descr["USERCONTROL", "help"]:"";
+
+    string pppmode = DSL::pppmode;
+    if (pppmode == nil || pppmode == "")
+	pppmode = "pppoe";
+
+    list pppmodes = [
+	/* ComboBox item */
+	`item(`id("pppoe"), _("PPP over Ethernet"), pppmode == "pppoe"),
+	/* ComboBox item */
+	`item(`id("pppoatm"), _("PPP over ATM"), pppmode == "pppoatm"),
+	/* ComboBox item */
+	`item(`id("capi-adsl"), _("CAPI for ADSL"), pppmode == "capi-adsl"),
+	/* ComboBox item */
+	`item(`id("pptp"), _("Point to Point Tunneling Protocol"), pppmode == "pptp"),
+    ];
+    /* ComboBox label */
+    term pppwidget = `Left(`ComboBox(`id(`pppmode), `opt(`hstretch,`notify), _("PPP &Mode"), pppmodes));
+
+    string vpivci = DSL::vpivci;
+    string startmode = DSL::startmode;
+    boolean usercontrol = DSL::usercontrol;
+    string interface = DSL::interface;
+    string modemip = DSL::modemip;
+    list ifaces = [];
+
+    /**
+     */
+    define void UpdateInterfaces() {
+	ifaces = NetworkDevices::List("eth");
+	y2debug("ifaces=%1", ifaces);
+	ifaces = union(ifaces, NetworkDevices::List("eth-pcmcia"));
+	y2debug("ifaces=%1", ifaces);
+	ifaces = union(ifaces, NetworkDevices::List("eth-usb"));
+	ifaces = union(ifaces, NetworkDevices::List("wlan")); // #186102
+	y2debug("ifaces=%1", ifaces);
+
+	/* FIXME Why is not the current interface added? */
+	if(false && /*interface != "" && */!contains(ifaces, interface))
+	    ifaces = add(ifaces, interface);
+
+	y2debug("ifaces=%1", ifaces);
+	ifaces = maplist(string e, (list<string>) ifaces, {
+	    return `item(`id(sformat("%1", e)), sformat("%1", e), e == interface);
+	});
+	y2debug("ifaces=%1", ifaces);
+    }
+
+    /* FIXME: #27137 */
+    UpdateInterfaces();
+    if(size(ifaces) < 1) {
+	NetworkDevices::Push();
+	if(Lan::Propose()) {
+	    UpdateInterfaces();
+	    // list<term (term (string), string, boolean)>
+	    string i = ifaces[0, 0, 0]:"";
+	    y2milestone("i=%1", i);
+	    Lan::Edit(i);
+	    Lan::bootproto = "";
+	    Lan::ipaddr = "";
+	    Lan::Commit();
+	}
+	NetworkDevices::Pop();
+    }
+
+    list<map> widgets = CWM::CreateWidgets (
+	["USERCONTROL", "STARTMODE",],
+	widget_descr);
+
+    /* DSL dialog contents */
+    term contents = `HBox(
+	`HSpacing(6),
+	/* Frame label */
+	`Frame(_("DSL Connection Settings"), `HBox(`HSpacing(2), `VBox(
+	    `VSpacing(1),
+	    pppwidget,
+	    `VSpacing(1),
+	    /* Frame label */
+	    `Frame(_("PPP Mode-Dependent Settings"), `HBox(`HSpacing(2), `VBox(
+		`VSpacing(0.2),
+		/* TextEntry label */
+		`TextEntry(`id(`vpivci),  _("&VPI/VCI"), vpivci),
+		`VSpacing(0.2),
+		`HBox(
+		    /* ComboBox label */
+		    `Left(`ReplacePoint(`id(`rp), `ComboBox(`id(`interface), _("&Ethernet Card"), ifaces))),
+		    /* TextEntry label */
+		    // `TextEntry(`id(`interface), _("&Ethernet Card"), interface),
+		    `HSpacing(1),
+		    `VBox(
+			`Label(""),
+			/* PushButton label */
+			`PushButton(`id(`lan), _("&Configure Network Cards"))
+		    )
+		),
+		`VSpacing(0.2),
+		/* TextEntry label */
+		`TextEntry(`id(`modemip), _("Modem &IP Address"), modemip)
+	    ), `HSpacing(2))),
+	    `VSpacing(1),
+	    // STARTMODE
+	    `Left (widgets[1, "widget"]:`Empty ()),
+	    `VSpacing (0.5),
+	    // USERCONTROL
+	    // 0 is index to CreateWidgets... ugly
+	    `Left (widgets[0, "widget"]:`Empty ()),
+	    `VSpacing(1)
+	    ), `HSpacing(2))),
+	`HSpacing(6)
+    );
+
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    Label::BackButton(), Label::NextButton());
+
+    UI::ChangeWidget (`id ("USERCONTROL"), `Value, usercontrol);
+    UI::ChangeWidget (`id ("STARTMODE"), `Value, startmode);
+
+    UI::ChangeWidget(`id(`vpivci), `Enabled, pppmode == "pppoatm");
+    UI::ChangeWidget(`id(`interface), `Enabled, pppmode == "pppoe");
+    UI::ChangeWidget(`id(`lan), `Enabled, pppmode == "pppoe" || pppmode == "pptp");
+    UI::ChangeWidget(`id(`modemip), `Enabled, pppmode == "pptp");
+
+    any ret = nil;
+    while(true) {
+	ret = UI::UserInput();
+
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+	else if(ret == `back) {
+	    break;
+	}
+	else if(ret == `next) {
+	    /* check_* */
+	    pppmode = (string) UI::QueryWidget(`id(`pppmode), `Value);
+	    interface = (string) UI::QueryWidget(`id(`interface), `Value);
+	    vpivci = (string) UI::QueryWidget(`id(`vpivci), `Value);
+	    modemip = (string) UI::QueryWidget(`id(`modemip), `Value);
+	    if(pppmode == "pppoatm" && vpivci == "") {
+		/* Popup text */
+		Popup::Error(_("Enter the VPI/VCI."));
+		UI::SetFocus(`id(`vpivci));
+		continue;
+	    }
+	    if((pppmode == "pppoe" || pppmode == "pptp") && interface == "") {
+		/* Popup text */
+		Popup::Error(_("At least one ethernet interface must be configured."));
+		UI::SetFocus(`id(`lan));
+		continue;
+	    }
+	    if(pppmode == "pptp" && !IP::Check4(modemip)) {
+		/* Popup text */
+		Popup::Error(_("Modem IP address is invalid."));
+		UI::SetFocus(`id(`modemip));
+		continue;
+	    }
+	    break;
+	}
+	else if(ret == `pppmode) {
+	    pppmode = (string) UI::QueryWidget(`id(`pppmode), `Value);
+	    UI::ChangeWidget(`id(`vpivci), `Enabled, pppmode == "pppoatm");
+	    UI::ChangeWidget(`id(`interface), `Enabled, pppmode == "pppoe" || pppmode == "pptp");
+	    UI::ChangeWidget(`id(`lan), `Enabled, pppmode == "pppoe" || pppmode == "pptp");
+	    UI::ChangeWidget(`id(`modemip), `Enabled, pppmode == "pptp");
+	    continue;
+	}
+	else if(ret == `lan) {
+	    // WFM::CallFunction("lan_proposal", ["AskUser"]);
+	    NetworkDevices::Push();
+	    Call::Function("lan_proposal", ["AskUser"]);
+	    NetworkDevices::Pop();
+	    interface = (string) UI::QueryWidget(`id(`interface), `Value);
+	    UpdateInterfaces();
+	    UI::ReplaceWidget(`id(`rp), `ComboBox(`id(`interface), _("&Ethernet Card"), ifaces));
+	    continue;
+	}
+	else {
+	    y2error("Unexpected return code: %1", ret);
+	    continue;
+	}
+    }
+
+    if(ret == `next) {
+	pppmode = (string) UI::QueryWidget(`id(`pppmode), `Value);
+	DSL::pppmode = pppmode;
+	if(pppmode == "pppoe" || pppmode == "pptp")
+	{
+	    DSL::interface = (string) UI::QueryWidget(`id(`interface), `Value);
+	    // If firewall is active and interface in no zone, nothing
+	    // gets through (#47309) so add it to the external zone
+	    if (SuSEFirewall4Network::IsOn ())
+	    {
+		SuSEFirewall4Network::ProtectByFirewall (DSL::interface,
+							 "EXT", true);
+	    }
+	}
+	if(pppmode == "pppoatm")
+	    DSL::vpivci = (string) UI::QueryWidget(`id(`vpivci), `Value);
+	if(pppmode == "pptp")
+	    DSL::modemip = (string) UI::QueryWidget(`id(`modemip), `Value);
+	DSL::startmode = (string) UI::QueryWidget(`id("STARTMODE"), `Value);
+	DSL::usercontrol = (boolean) UI::QueryWidget (`id ("USERCONTROL"), `Value);
+    }
+
+    return ret;
+}
+
+/* EOF */
+}
