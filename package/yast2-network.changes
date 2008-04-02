@@ -1,5 +1,5 @@
 -------------------------------------------------------------------
-Tue Mar 25 19:23:57 CET 2008 - mzugec@suse.de
+Wed Apr  2 16:35:48 CET 2008 - mzugec@suse.de
 
 - adapted Lan::HaveXenBridge (bnc#375606)
 - 2.13.117 
