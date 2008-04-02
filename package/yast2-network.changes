@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Apr  1 17:09:58 CEST 2008 - mzugec@suse.de
+
+- improved text for devices without kernel device (bnc#375805)
+- 2.16.30 
+
+-------------------------------------------------------------------
 Mon Mar 31 15:53:06 CEST 2008 - kmachalkova@suse.cz
 
 - Exit remote administration module on closing GUI window 

@@ -483,7 +483,7 @@ global list BuildLanOverview() {
 		rich = HTML::Bold ( descr ) + rich;
 
    if (!hasAnyValue(Items[key, "hwinfo", "dev_name"]:"") && size(Items[key, "hwinfo"]:$[])>0)
-		rich = rich + _("<p>Unable to configure the network card because the kernel device is not present</p>");
+		rich = rich + _("<p>Unable to configure the network card because the kernel device (eth0, wlan0) is not present. This is mostly caused by missing firmware (for wlan devices). See dmesg output for details.</p>");
 	else if (hasAnyValue(Items[key, "ifcfg"]:"") ) rich = rich + HTML::List (bullets);
 		else rich = rich + _("<UL><LI>The device is not configured</LI><LI>Press <B>Edit</B>
 to configure</LI></UL>");
