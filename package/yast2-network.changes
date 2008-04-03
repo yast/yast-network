@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Apr  3 10:32:40 CEST 2008 - kmachalkova@suse.cz
+
+- DNS & hostname and Routing standalone modules removed from control 
+  center (desktop files only, it is still possible to
+  run them from commandline)  (FaTE #303470) 
+- Network Card module renamed to Network Settings (FaTE #303470) 
+
+-------------------------------------------------------------------
 Wed Apr  2 22:24:33 CEST 2008 - mzugec@suse.de
 
 - adapted Lan::HaveXenBridge() (bnc#375606)
