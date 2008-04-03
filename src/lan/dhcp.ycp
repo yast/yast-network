@@ -29,11 +29,14 @@ void initDhclientOptions(string key) {
     UI::ChangeWidget(`id(`broadcast), `Value, dhclient_broadcast);
     UI::ChangeWidget(`id(`clientid), `Value, NetworkConfig::DHCP["DHCLIENT_CLIENT_ID"]:"");
     UI::ChangeWidget(`id(`hostname), `Value, NetworkConfig::DHCP["DHCLIENT_HOSTNAME_OPTION"]:"");
+    UI::ChangeWidget(`id(`no_defaultroute), `Value, NetworkConfig::DHCP["DHCLIENT_SET_DEFAULT_ROUTE"]:true);
 
 }
  
 void storeDhclientOptions(string key, map event) {
 
+    NetworkConfig::DHCP["DHCLIENT_SET_DEFAULT_ROUTE"] =
+			UI::QueryWidget(`id(`no_defaultroute), `Value) == true;
     NetworkConfig::DHCP["DHCLIENT_CLIENT_ID"] = UI::QueryWidget(`id(`clientid), `Value);
     NetworkConfig::DHCP["DHCLIENT_HOSTNAME_OPTION"] = UI::QueryWidget(`id(`hostname), `Value);
     boolean dhclient_broadcast = UI::QueryWidget(`id(`broadcast), `Value) == true;
@@ -62,7 +65,9 @@ term contents =
         `Left(`TextEntry(`id(`clientid), _("DHCP Client &Identifier"))),
         `VSpacing(0.5),
         /* TextEntry label */
-        `Left(`TextEntry(`id(`hostname), _("&Hostname to Send")))
+        `Left(`TextEntry(`id(`hostname), _("&Hostname to Send"))),
+        `VSpacing(0.5),
+        `Left(`HBox(`CheckBox(`id(`no_defaultroute), _("Change Default Route via DHCP"))))
         )
     );
 

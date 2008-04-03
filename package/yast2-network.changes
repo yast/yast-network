@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Apr  3 14:56:13 CEST 2008 - mzugec@suse.de
+
+- option in UI for dhcpcd "-G" - don't touch default route
+  (bnc#366948)
+- 2.16.34 
+
+-------------------------------------------------------------------
 Thu Apr  3 10:32:40 CEST 2008 - kmachalkova@suse.cz
 
 - DNS & hostname and Routing standalone modules removed from control 
