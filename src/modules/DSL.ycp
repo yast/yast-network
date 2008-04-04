@@ -339,7 +339,7 @@ global define boolean Select(string dev) {
     /* dev=="" -> Add */
     if(dev == "") {
 	type = "dsl";
-	device = NetworkInterfaces::GetFreeDevice(type);
+	device = sformat("dsl%1",NetworkInterfaces::GetFreeDevice(type));
     }
     /* dev!="" -> Edit */
     else {
