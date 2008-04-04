@@ -42,13 +42,17 @@ term RoutingEditDialog(integer id, term entry, list devs) {
 	`HSpacing(1),
 	`VBox(
 	    /* TextEntry label */
-	    `TextEntry(`id(`destination), _("&Destination"), entry[1]:""),
+	    `HBox(
+		`TextEntry(`id(`destination), _("&Destination"), entry[1]:""),
+		`ComboBox(`id(`device), `opt(`editable, `hstretch), _("De&vice"), devs)
+		),
+	    `HBox(
 	    /* TextEntry label */
-	    `TextEntry(`id(`gateway), _("&Gateway"), entry[2]:""),
+		`TextEntry(`id(`gateway), _("&Gateway"), entry[2]:""),
 	    /* TextEntry label */
-	    `TextEntry(`id(`netmask), _("&Netmask"), entry[3]:""),
+		`TextEntry(`id(`netmask), _("&Netmask"), entry[3]:"")
+		),
 	    /* ComboBox label */
-	    `ComboBox(`id(`device), `opt(`editable, `hstretch), _("De&vice"), devs),
 	    `TextEntry (`id(`options), Label::Options (), entry[5]:"")
 	),
 	`HSpacing(1),
@@ -143,7 +147,7 @@ void initRouting (string key) ``{
     /* make ui items from the routes list */
     term item = nil;
     maplist(map r, route_conf, {
-	if(r["destination"]:"" == "default") {
+	if(r["destination"]:"" == "default" && !issubstring(r["extrapara"]:"", "metric")) {
 	    defgw = r["gateway"]:"";
 	    defgwdev = r["device"]:"";
 	}
