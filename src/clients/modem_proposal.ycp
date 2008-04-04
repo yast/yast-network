@@ -19,6 +19,7 @@ y2milestone("Arguments: %1", WFM::Args());
 import "Modem";
 import "Popup";
 import "Progress";
+import "GetInstArgs";
 
 include "network/routines.ycp";
 
@@ -35,12 +36,14 @@ if(func == "MakeProposal") {
 
     if(force_reset || !Modem::proposal_valid) {
 	Modem::proposal_valid = true;
-	/* Popup text */
-	BusyPopup(_("Detecting modems..."));
+	if (! GetInstArgs::automatic_configuration())
+	    /* Popup text */
+	    BusyPopup(_("Detecting modems..."));
 	boolean progress_orig = Progress::set (false);
 	Modem::Read();
 	// no Modem::Propose () ?
-	Progress::set (progress_orig);
+	if (! GetInstArgs::automatic_configuration())
+	    Progress::set (progress_orig);
 	BusyPopupClose();
     }
     list sum = Modem::Summary(false);

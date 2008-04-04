@@ -19,6 +19,7 @@ y2milestone("Arguments: %1", WFM::Args());
 import "DSL";
 import "Popup";
 import "Progress";
+import "GetInstArgs";
 
 include "network/routines.ycp";
 
@@ -35,13 +36,15 @@ if(func == "MakeProposal") {
 
     if(force_reset || !DSL::proposal_valid) {
 	DSL::proposal_valid = true;
-	/* Popup text */
-	BusyPopup(_("Detecting DSL devices..."));
+	if (! GetInstArgs::automatic_configuration())
+	    /* Popup text */
+	    BusyPopup(_("Detecting DSL devices..."));
 	boolean progress_orig = Progress::set (false);
 	DSL::Read();
 	DSL::Propose();
 	Progress::set (progress_orig);
-	BusyPopupClose();
+	if (! GetInstArgs::automatic_configuration())
+	    BusyPopupClose();
     }
     list sum = DSL::Summary(false);
     proposal = sum[0]:"";

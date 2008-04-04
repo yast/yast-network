@@ -18,6 +18,7 @@ y2milestone("Arguments: %1", WFM::Args());
 
 import "ISDN";
 import "Progress";
+import "GetInstArgs";
 
 include "network/routines.ycp";
 
@@ -34,13 +35,15 @@ if(func == "MakeProposal") {
 
     if(force_reset || !ISDN::proposal_valid) {
 	ISDN::proposal_valid = true;
-	/* Popup text */
-	BusyPopup(_("Detecting ISDN cards..."));
+	if (! GetInstArgs::automatic_configuration())
+	    /* Popup text */
+	    BusyPopup(_("Detecting ISDN cards..."));
 	boolean progress_orig = Progress::set (false);
 	ISDN::Read();
 	// no ISDN::Propose () ?
 	Progress::set (progress_orig);
-	BusyPopupClose();
+	if (! GetInstArgs::automatic_configuration())
+	    BusyPopupClose();
     }
     list sum = ISDN::Summary(false);
     proposal = sum[0]:"";

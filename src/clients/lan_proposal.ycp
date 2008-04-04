@@ -22,6 +22,8 @@ import "Linuxrc";
 import "Popup";
 import "Progress";
 import "LanItems";
+import "GetInstArgs";
+
 include "network/lan/wizards.ycp";
 
 list args = WFM::Args();
@@ -39,15 +41,17 @@ if(func == "MakeProposal") {
 
     if(force_reset || !LanItems::proposal_valid) {
 	LanItems::proposal_valid = true;
-	/* Popup text */
-	BusyPopup(_("Detecting network cards..."));
+	if (! GetInstArgs::automatic_configuration())
+	    /* Popup text */
+	    BusyPopup(_("Detecting network cards..."));
 	boolean progress_orig = Progress::set (false);
 	// NM wants us to repropose but while at it Lan::Read should not
 	// think it does a full reread and unset Lan::modified. #147270
 	Lan::Read (force_reset? `nocache: `cache);
 	Lan::Propose();
 	Progress::set (progress_orig);
-	BusyPopupClose();
+	if (! GetInstArgs::automatic_configuration())
+	    BusyPopupClose();
     }
     list sum = Lan::Summary("proposal");
     proposal = sum[0]:"";
