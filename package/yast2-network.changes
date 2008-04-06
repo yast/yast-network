@@ -4,16 +4,16 @@ Fri Apr  4 19:06:48 CEST 2008 - mzugec@suse.de
 - fixed testsuite 
 
 -------------------------------------------------------------------
-Fri Apr  4 18:30:17 CEST 2008 - locilka@suse.cz
-
-- Enhanced user-feedback during automatic installation.
-- Adjusted RPM dependencies.
-
--------------------------------------------------------------------
 Fri Apr  4 18:32:34 CEST 2008 - mzugec@suse.de
 
 - support for default gateway metrics (FaTE#301948)
 - 2.16.36 
+
+-------------------------------------------------------------------
+Fri Apr  4 18:30:17 CEST 2008 - locilka@suse.cz
+
+- Enhanced user-feedback during automatic installation.
+- Adjusted RPM dependencies.
 
 -------------------------------------------------------------------
 Thu Apr  3 20:13:17 CEST 2008 - mzugec@suse.de
