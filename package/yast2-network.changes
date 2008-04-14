@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Apr  3 01:30:13 CEST 2008 - mzugec@suse.de
+
+- removed fake hwinfo 
+
+-------------------------------------------------------------------
 Mon Apr 14 17:09:59 CEST 2008 - mzugec@suse.cz
 
 - install firmware for bcm4xx wireless (FaTE#302130)
