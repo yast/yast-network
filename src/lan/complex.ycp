@@ -411,7 +411,8 @@ symbol ManagedDialog() {
 	    /* Network setup method dialog caption */
 	    "caption": _("Network Setup Method"),
 	    "back_button" : Label::BackButton (),
-	    "next_button" : Label::AcceptButton (),
+	    "abort_button" : Label::CancelButton (),
+	    "next_button" : Label::OKButton (),
 	    // #54027
 	    "disable_buttons" : (["back_button"]),
 	    "fallback_functions" : functions,
@@ -444,7 +445,10 @@ symbol MainDialog(string init_tab) ``{
 
     Wizard::SetContentsButtons(caption, contents, help, Label::BackButton (), Label::FinishButton ());
     Wizard::DisableBackButton();
-    if (Mode::installation()) Wizard::SetNextButton (`next, Label::AcceptButton());
+    if (Mode::installation()){
+	 Wizard::SetNextButton (`next, Label::OKButton());
+	 Wizard::SetAbortButton(`abort, Label::CancelButton());
+    }
     symbol ret = CWM::Run(w, $[`abort:ReallyAbort ]);
     return ret;
 }
