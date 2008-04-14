@@ -151,7 +151,7 @@ map <string, string> request_firmware = $[
 	"ipw3945" : "ipw-firmware",
 	"iwl3945" : "iwl3945-ucode",
 	"iwl4965" : "iwl4965-ucode",
-	"bcm43xx" : "",
+	"bcm43xx" : "b43-fwcutter",
 	"prism54" : "",
 	"spectrum_cs" : "",
 	"zd1201" : "",

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Apr 14 17:09:59 CEST 2008 - mzugec@suse.cz
+
+- install firmware for bcm4xx wireless (FaTE#302130)
+- 2.16.37 
+
+-------------------------------------------------------------------
 Mon Apr 14 14:56:03 CEST 2008 - kmachalkova@suse.cz
 
 - Unified button labels (FaTE #120373), esp. in installation clients 

@@ -128,8 +128,9 @@ The driver may be built in the kernel.")))
 	}
     }
 */
+    string fw = "";
     if (LanItems::needFirmwareCurrentItem()){
-	string fw = LanItems::GetFirmwareForCurrentItem();
+	fw = LanItems::GetFirmwareForCurrentItem();
 	if (fw != ""){
 	    if ((!Package::Installed(fw) && !Package::Available(fw))){
 	        Popup::Message(sformat(_("The device needs a firmware to function properly. It can be installed from
@@ -155,6 +156,16 @@ once you have installed the firmware.")));
     if(LanItems::Requires != [] && LanItems::Requires != nil) {
 	if(PackagesInstall(LanItems::Requires) != `next)
 	    return false;
+     if (fw=="b43-fwcutter"){
+	 if(Popup::ContinueCancelHeadline(_("Installing firmware"), _("For successful firmware installation it needs to execute install_bcm43xx_firmwar script. Should I execute it?"))){
+	map<string, any> command = (map<string, any>)SCR::Execute(.target.bash_output, "/usr/sbin/install_bcm43xx_firmware");
+	y2internal("command %1", command);
+//	 Popup::ShowFile ("Boot Messages", "/tmp/bcm_firmware.log");
+//	Popup::LongText(command["stdout"]:"");
+	if (command["exit"]:-1!=0) Popup::ErrorDetails(_("An error occured during installation."), command["stderr"]:"");
+		else Popup::Message("bcm43xx_firmware installed successfully");
+	}
+     }
     }
 /*
    TODO: Refresh hwinfo in LanItems
