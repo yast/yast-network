@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Apr 14 14:56:03 CEST 2008 - kmachalkova@suse.cz
+
+- Unified button labels (FaTE #120373), esp. in installation clients 
+
+-------------------------------------------------------------------
 Fri Apr  4 19:06:48 CEST 2008 - mzugec@suse.de
 
 - fixed testsuite 
