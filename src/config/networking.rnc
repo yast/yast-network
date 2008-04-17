@@ -155,6 +155,8 @@ modules =
   }
 module_entry =
   element module_entry {
+    element ccw_chan_ids { text }? &
+    element ccw_chan_num { text }? &
     element device { text } &	# overloaded
     element module { text }? &	# likely overloaded
     element options { text }? 	# overloaded
