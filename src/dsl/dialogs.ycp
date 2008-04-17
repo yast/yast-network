@@ -77,7 +77,7 @@ modem is connected. If you did not set up your ethernet card yet, do
 so by pressing <b>Configure Network Cards</b>.</p>") +
 
     /* DSL dialog help 7/8 */
-_("<p>For PPTP, enter the server name or ip adress.</p>") +
+_("<p>For PPTP, enter the server name or IP address.</p>") +
 
 	widget_descr["STARTMODE", "help"]:"" +
 

@@ -58,7 +58,7 @@ _("<p><b><big>IPv6 Protocol Settings</big></b></p>
 <p>Check <b>Enable IPv6</b> to enable the ipv6 module in the kernel.
 It is possible to use IPv6 together with IPv4. This is a default option.
 To disable IPv6, uncheck this option (this will blacklist the kernel 
-module for ipv6). If the ipv6 protocol is not used on your network, the response 
+module for ipv6). If the IPv6 protocol is not used on your network, the response 
 time can be faster.
 ")
  +
