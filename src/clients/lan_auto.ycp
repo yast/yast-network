@@ -139,6 +139,9 @@ define map FromAY(map input)
                                 "MODULE_OPTIONS":options,
                                 "STARTMODE":start_mode
                                 ];
+	    foreach(string k, any v, (map<string, any>)mod, {
+	     if (issubstring(k, "ccw"))module_data[toupper(k)]=v;
+	    });
 	    return $[device_name : module_data];
         });
     }
@@ -215,6 +218,9 @@ define map ToAY (map settings) {
     list modules = [];
     foreach(string device, map mod, settings["hwcfg"]:$[], {
             map newmap = $[];
+     foreach(string k, any v, (map<string, any>)mod, {
+      if (issubstring(k, "CCW")) newmap[tolower(k)]=v;
+     });
             newmap["device"] =  device;
             newmap["module"] =  mod["MODULE"]:"";
             newmap["options"] = mod["MODULE_OPTIONS"]:"";

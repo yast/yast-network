@@ -690,6 +690,12 @@ void SelectHWMap (map hw) {
 	// FIXME: MOD Module["options"] = hw["options"]:"";
 	NetworkModules::Alias = hw["module"]:"";
 	NetworkModules::Options = hw["options"]:"";
+/*
+	if (contains(Map::Keys((map<string, any>)hw), "ccw_chan_num"))
+		NetworkModules::CCW_CHAN_NUM=hw["ccw_chan_num"]:"";
+	if (contains(Map::Keys((map<string, any>)hw), "ccw_chan_ids"))
+		NetworkModules::CCW_CHAN_IDS=hw["ccw_chan_ids"]:"";
+*/
     }
     else
 	y2milestone("HOTPLUG(%1) -> ignoring modprobe.conf", hotplug);
@@ -700,13 +706,15 @@ void SelectHWMap (map hw) {
     wl_channels = hw["wl_channels"]:nilliststring;
     wl_bitrates = hw["wl_bitrates"]:nilliststring;
 
+    qeth_chanids=hw["ccw_chan_ids"]:"";
+
     string mac = hw["mac"]:"";
     string busid = hw["busid"]:"";
 
     // name of hwcfg
     if(busid != nil && busid != "") {
 	nm_name = "bus-" + hw["bus"]:"" + "-" + hw["busid"]:"";
-	if(Arch::s390 ()) nm_name = type + "-" + nm_name;
+	if(Arch::s390 ()) nm_name = DriverType(type) + "-" + nm_name;
     }
     else {
 	// #suse42421 - don't write hwcfg-static for pcmcia cards (PC and CardBus)
@@ -1397,10 +1405,10 @@ global define boolean Commit() {
 	if(alias == "") {
 	    newdev["_aliases"] = aliases;
 	    y2milestone("aliases %1", aliases);
-	    NetworkDevices::Name = NetworkDevices::device_name(NetworkDevices::RealType(type, hotplug), device);
+	    NetworkDevices::Name = NetworkDevices::device_name(NetworkDevices::RealType(DriverType(type), hotplug), device);
 	}
 	else
-	    NetworkDevices::Name = NetworkDevices::alias_name(NetworkDevices::RealType(type, hotplug), device, alias);
+	    NetworkDevices::Name = NetworkDevices::alias_name(NetworkDevices::RealType(DriverType(type), hotplug), device, alias);
 	NetworkDevices::Current = newdev;
 	NetworkDevices::Commit();
     }
@@ -1935,14 +1943,15 @@ global define boolean Autoinstall() {
             map aymodule = GetModuleForInterface(interface["device"]:"",
                 autoinstall_settings["modules"]:[]);
 
-
 	    if (tosel != nil)
 	    {
 		tosel["module"] = (aymodule["module"]:""!= "")?
 		    aymodule["module"]:"" : tosel["module"]:"";
 		tosel["options"] = (aymodule["options"]:""!= "")?
 		    aymodule["options"]:"" : tosel["options"]:"";
-		
+		foreach(string k, any v, (map<string, any>)aymodule, {
+		 if (issubstring(k, "ccw"))tosel[k]=v;
+		});
 		SelectHWMap(tosel);
 	      if (contains(["bond", "vlan", "br"], type)) device = NetworkDevices::device_num(tosel["device"]:"");
 	    }

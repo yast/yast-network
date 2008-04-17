@@ -599,14 +599,14 @@ define any S390Dialog() {
 
     string helptext = "";
     term contents = `Empty ();
-    if(Lan::type == "qeth") {
+    if(Lan::type == "qeth" || Lan::type == "hsi") {
 	contents = `HBox(
 	    `HSpacing(6),
 	    /* Frame label */
 	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
 		`VSpacing(1),
 		/* TextEntry label */
-		`TextEntry(`id(`chan_mode), _("&Port Name"), Lan::chan_mode),
+		(Lan::type == "qeth")?`TextEntry(`id(`chan_mode), _("&Port Name"), Lan::chan_mode):`Empty(),
 		`VSpacing(1),
 		/* TextEntry label */
 		`TextEntry(`id(`qeth_options), Label::Options (), Lan::qeth_options),
@@ -625,41 +625,37 @@ define any S390Dialog() {
 	    `HSpacing(6)
 	);
 	/* S/390 dialog help: QETH Port name */
-	helptext = _("<p>Enter the <b>Port Name</b> for this interface (case-sensitive).</p>") +
+	if (Lan::type == "qeth") helptext = _("<p>Enter the <b>Port Name</b> for this interface (case-sensitive).</p>");
+	helptext = helptext +
 	/* S/390 dialog help: QETH Options */
 	_("<p>Enter any additional <b>Options</b> for this interface (separated by spaces).</p>") +
 	_("<p>Select <b>Enable IPA Takeover</b> if IP address takeover should be enabled for this interface.</p>") +
 	_("<p>Select <b>Enable Layer 2 Support</b> if this card has been configured with layer 2 support.</p>") +
 	_("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been configured with layer 2 support.</p>");
     }
-
+/*
     if(Lan::type == "hsi") {
 	contents = `HBox(
 	    `HSpacing(6),
-	    /* Frame label */
 	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
 		`VSpacing(1),
-		/* TextEntry label */
 		`TextEntry(`id(`qeth_options), Label::Options (), Lan::qeth_options),
 		`VSpacing(1),
-		/* CheckBox label */
 		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA Takeover"))),
 		`VSpacing(1),
-		/* CheckBox label */
 		`Left(`CheckBox(`id(`qeth_layer2), `opt(`notify), _("Enable &Layer 2 Support"))),
-		/* TextEntry label */
 		`TextEntry(`id(`qeth_macaddress), _("Layer2 &MAC Address"), Lan::qeth_macaddress),
-		`VSpacing(1)
+		`VSpacing(1),
+		`TextEntry(`id(`qeth_chanids), _("CHAN IDS"), Lan::qeth_chanids)
 		), `HSpacing(2))),
 	    `HSpacing(6)
 	);
-	/* S/390 dialog help: QETH */
 	helptext = _("<p>Enter any additional <b>Options</b> for this interface (separated by spaces).</p>") +
 	_("<p>Select <b>Enable IPA Takeover</b> if IP address takeover should be enabled for this interface.</p>") +
 	_("<p>Select <b>Enable Layer 2 Support</b> if this card has been configured with layer 2 support.</p>") +
 	_("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been configured with layer 2 support.</p>");
     }
-
+*/
     if(drvtype == "lcs") {
 	contents = `HBox(
 	    `HSpacing(6),

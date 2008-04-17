@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Apr  2 23:29:39 CEST 2008 - mzugec@suse.de
+
+- support for hsi hipersockets (bnc#383978)
+- 2.13.118 
+
+-------------------------------------------------------------------
 Wed Apr  2 16:35:48 CET 2008 - mzugec@suse.de
 
 - adapted Lan::HaveXenBridge (bnc#375606)
