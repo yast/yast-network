@@ -589,7 +589,7 @@ define list<map<string,any> > BuildUnconfiguredCommon (list sum, string class) {
 			break;
 	 default : y2warning (1, "invalid class %1", class);
 	}
-	string rich = HTML::Bold(name) + getConnMacBusDescription((map)card, (list<map>)sum) + _("<P><UL><LI>The device is not configured</LI><LI>Press <B>Configure</B> for configuration</LI></UL></P>");
+	string rich = HTML::Bold(name) + getConnMacBusDescription((map)card, (list<map>)sum) + _("<p>The device is not configured. Press <b>Configure</b> for configuration.</p>");
 	return $[
 	    "id":id,
 	    "table_descr":desc,

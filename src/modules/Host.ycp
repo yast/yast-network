@@ -104,7 +104,7 @@ global define boolean Write() {
 
     Progress::New(caption, " ", size(steps), steps, [], "");
 
-    ProgressNextStage(_("Updating /etc/hosts..."));
+    ProgressNextStage(_("Updating <tt>/etc/hosts</tt>..."));
 
     /* Create if not exists, otherwise backup */
     if(SCR::Read(.target.size, hosts_file) < 0)

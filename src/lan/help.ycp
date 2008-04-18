@@ -30,9 +30,9 @@ Abort saving by pressing <b>Abort</b>.</p>
 	    /* Network setup method help */
 	    // NetworkManager and ifup are programs
 _("<p><b><big>Network Setup Method</big></b></p>
-<p>Use <b>NetworkManager</b> to have a desktop applet
-manage connections for all interfaces. It is well-suited
-to switching among wired and multiple wireless networks.</p>
+<p>Use the <b>NetworkManager</b> to have a desktop applet
+managing connections for all interfaces. It is well suited
+for switching among wired and multiple wireless networks.</p>
 ") +
 	    /* Network setup method help */
 	    // NetworkManager and ifup are programs
@@ -74,28 +74,26 @@ to enable you to say \"and everything else should go here.\"</p>
 ") +
 
 _("For each route, enter destination network IP address, gateway address,
-and netmask. To omit any of these values, use dash sign \"-\". Select also
-the device through which the traffic to defined network will be routed (
-\"-\" stands for any interface).") +
+and netmask. To omit any of these values, use dash sign \"-\". Select
+the device through which the traffic to the defined network will be routed, as well.\"-\" is an alias for any interface.
+") +
     /* Routing dialog help 2/2 */
 _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>"),
 
 "dhcp_hostname":
-_("<p>If you are using DHCP to get an IP address, check whether to get
-a hostname via DHCP. The hostname of your host (which can be seen
-by issuing the <i>hostname</i> command) will be set automatically by the  
-DHCP client.
-You may want to disable this option if you connect to different 
-networks that assign different hostnames, because changing
-the hostname at runtime may confuse the graphical desktop.
+_("<p>If you are using DHCP to get an IP address, check whether you get
+a hostname via DHCP. You can see the hostname of you host using the <i>hostname</i> command. The hostname
+will be set automatically by the DHCP client.
+Changing the hostname at runtime may confuse the graphical Desktop. Therefore, disable this option if you connect to different 
+networks that assign different hostnames.
 </p> 
 "),
 
 "write_hostname":
 _("<p>If you are using DHCP to get an IP address, your hostname will be written
-to /etc/hosts and be resolvable as a 127.0.0.2 IP address.
-This is the default behavior. If you want to disable this, uncheck this box
-but your hostname will not be resolvable without an active network.
+to <tt>/etc/hosts</tt> and be resolvable as a <tt>127.0.0.2</tt> IP address.
+This is the default behavior. To disable this option, uncheck this box.
+Now your hostname will not be resolvable without an active network.
 </p> 
 "),
 
@@ -130,11 +128,10 @@ _("<p>The resolver configuration file (/etc/resolv.conf)
 has been temporarily modified by %1. You have two options:</p>") +
 
     /* Warning popup text 2/2 */
-    _("<ol>
-<li>Modify the current (changed) version of the file.</li>
-<li>Press 'Accept' now and continue editing other (nonresolver) data. You
-could return to this dialog later when the above service has terminated.</li>
-</ol> "),
+    _("<p>Modify the current version of the file.</p>
+<p>Press <b>Accept</b> and continue editing other data. You are able to return to this dialog at a later time, 
+when the above service has terminated.</p>
+"),
 
 "bootproto":
 	/* Address dialog help 1-6/8: dynamic address preferred */
@@ -145,33 +142,35 @@ This is particularly useful for bonding ethernet devices.</p>
 ")
  +
     /* Address dialog help 2/8 */
-    _("<p>Select <b>Dynamic address</b> if you do not have a static IP address 
-assigned by the system administrator or your cable or DSL provider.</p>") 
+    _("<p>Select <b>Dynamic Address</b> if you do not have a static IP address 
+assigned by the system administrator or your Internet provider.</p>
+") 
  +
     /* Address dialog help 3/8 */
-    _("<p>You can choose one of the dynamic address assignment method. Select <b>DHCP</b>
+    _("<p>You can choose one of the dynamic address assignment methods. Select <b>DHCP</b>
 if you have a DHCP server running on your local network. Network addresses are then 
 obtained automatically from the server.<p>
 ") 
  +
     /* Address dialog help 4/8 */
-   _("To automatically search for free IP and then assign it statically, select 
+   _("To search for an IP address and assign it statically, select 
 <b>Zeroconf</b>. To use DHCP and fall back to zeroconf, select <b>DHCP + Zeroconf
-</b>. Otherwise, network addresses must be assigned <b>statically</b>.</p>"),
+</b>. Otherwise, the network addresses must be assigned <b>Statically</b>.</p>
+"),
 
     /* Address dialog help 5/8 */
 
 "remoteip":
-_("<p>Enter the <b>IP Address</b> (e.g., 192.168.100.99)
-for your computer and the <b>Remote IP Address</b> (e.g., 192.168.100.254)
+_("<p>Enter the <b>IP Address</b> (for example: <tt>192.168.100.99</tt>) for your computer, and the 
+ <b>Remote IP Address</b> (for example: <tt>192.168.100.254</tt>)
 for your peer.</p>
 "),
 
     /* Address dialog help 6/8 */
 "netmask":
-    _("<p>For <b>Static Address Setup</b> enter the static IP address (e.g., 192.168.100.99) 
-for your computer and the network mask (usually 255.255.255.0). Optionally, you can enter
-a fully qualified hostname for this IP address. It will be written to <i>/etc/hosts</i>.</p>
+    _("<p>For <b>Static Address Setup</b> enter the static IP address for your computer (for example: <tt>192.168.100.99</tt>) and
+the network mask (usually <tt>255.255.255.0</tt>). Optionally, you can enter
+a fully qualified hostname for this IP address. The hostname will be written to <tt>/etc/hosts</tt>.</p>
 ")
  +
     /* Address dialog help 8/8 */
@@ -196,19 +195,19 @@ _("<p><b>Mandatory Interface</b> specifies whether the network service reports f
 
 "mtu":
 _("<p><b><big>Maximum Transfer Unit</big></b></p>
-<p>Maximum transfer unit (<b>MTU</b>) is the maximum size of the packet
-transferred in one frame over the network. Normally, you do not need to
-set MTU, but using lower MTU values may improve network performance,
-especially on slow dial-up connections. Select one of the recommended values
-or define your own one.</p>
+<p>Maximum transfer unit (<b>MTU</b>) is the maximum size of the packet,
+transferred over the network in one frame. Usually, you do not need to
+set a MTU, but using lower MTU values may improve the network performance,
+especially on slow dial-up connections. Either, select one of the recommended values,
+or define another one.</p>
 "),
 
 "bondslave":
-_("<p>Select the slave devices for the bond device. Only the devices whose Device Activation is set to 'Never' and have 'No Address Setup are available'.</p>"),
+_("<p>Select the slave devices for the bond device.\nOnly devices with the device activation set to <b>Never</b> and with <b>No Address Setup</b> are available.</p>"),
 
 "dhclient_help" : 
     /* DHCP dialog help 1/8 */
-_("<p><b><big>DHCP client options</big></b></p>") +
+_("<p><b><big>DHCP Client Options</big></b></p>") +
 
     /* DHCP dialog help 2/8 */
     _("<p><b>Request Broadcast Response</b> causes the DHCP client
@@ -225,20 +224,20 @@ network interface and thus the same hardware address.</p>") +
 
     /* DHCP dialog help 4/8 */
     _("<p>The <b>Hostname to Send</b> specifies a string used for the
-hostname option field when dhcpcd sends messages to the DHCP server. Some 
+hostname option field, when dhcpcd sends messages to the DHCP server. Some 
 DHCP servers update name server zones (forward and reverse records) 
-according to this hostname (dynamic DNS).
-
-Also, some DHCP servers require the <b>Hostname to Send</b> option field to
-contain a specific string in the DHCP messages from clients. Leave <i>AUTO</i>
-to send the current hostname (i.e. the one defined in <i>/etc/HOSTNAME</i>). 
-Leave the field empty for not sending a hostname.</p>
+according to this hostname (dynamic DNS).</p>
+Some DHCP servers require the <b>Hostname to Send</b> option field to
+contain a specific string in the DHCP messages from clients. Leave <b>AUTO</b>
+to send the current hostname (for example, the one defined in <tt>/etc/HOSTNAME</tt>). 
+For not sending a hostname leave the field empty.</p>
 "),
 
 "additional":
     /* Aliases dialog help 1/3 */
-    _("<p><b><big>Additional addresses</big></b></p>
-<p>Configure additional addresses of an interface (its aliases) in this table.</p>") +
+    _("<p><b><big>Additional Addresses</big></b></p>
+<p>Configure additional addresses of an interface (its aliases) in this table.</p>
+") +
 
     /* Aliases dialog help 2/3 */
     _("<p>Enter an <b>Alias Name</b>, an <b>IP Address</b>, and
@@ -252,18 +251,19 @@ the <b>Netmask</b>.</p>") +
 // this is suited to the button-switched key typing
 // Translators: dialog help
 "wep_key" :
- _("<p>Choose among three <b>key input types</b> for your key.
+ _("<p>Choose between three <b>Key Input Types</b> for your key.
 <br><b>Passphrase</b>: The key is generated from the phrase entered.
 <br><b>ASCII</b>: The ASCII values of the characters entered form the
 key. Enter 5 characters for 64-bit keys, up to 13
 characters for 128-bit keys, up to 16 characters for 156-bit keys, and
 up to 29 characters for 256-bit keys.
-<br><b>Hexadecimal</b>: Directly enter the hex codes of the key. Enter
+<br><b>Hexadecimal</b>: Enter the hex codes of the key, directly. Enter
 10 hex digits for 64-bit keys, 26 digits for 128-bit keys, 32 digits
 for 156-bit keys, and 58 digits for 256-bit keys. You can
-use hyphens ('-') to separate pairs or groups of digits, for example,
-'0a5f-41e6-48'.
-</p> "),
+use hyphens <tt>-</tt> to separate pairs or groups of digits, for example,
+<tt>0a5f-41e6-48</tt>.
+</p> 
+"),
 
     // Wireless dialog help
 "wireless":

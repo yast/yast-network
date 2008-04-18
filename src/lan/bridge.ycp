@@ -55,8 +55,9 @@ boolean ValidateBridge (string key, map event) {
     if (contains(confs, device)){
       if ((string)configurations[NetworkInterfaces::GetType(device), device, "IPADDR"]:"" != "0.0.0.0") {
 	if(!confirmed) {
-	 valid = Popup::ContinueCancel(_("One or more selected devices are already configured.
-To work properly configuration must be removed."));
+	 valid = Popup::ContinueCancel(_("At least one selected device is already configured.
+Remove the configuration.
+"));
 	 confirmed=true;
 	}
 	if (valid) {

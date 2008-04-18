@@ -26,27 +26,28 @@ include "network/routines.ycp";
  * @return dialog result
  */
     /* Manual network card setup help 1/4 */
-    string hw_help = _("<p>Here, set up hardware-specific options for 
-your network device.</p>") +
+    string hw_help = _("<p>Set up hardware-specific options for 
+your network device here.</p>
+") +
 
     /* Manual network card setup help 2/4 */
     /* translators: do not translated udev, MAC, BusID*/
-_("<p><b>Udev rules</b> are the rules for kernel device manager that allow
-associating MAC address or BusID of the network device with its name (e.g
-eth1, wlan0 ) and make device name persistent upon reboot. If you don't 
-know what udev and its rules is, you probably don't need to use this option") + 
+_("<p><b>Udev Rules</b> are rules for the Kernel device manager that allow
+associating the MAC address or BusID of the network device with its name (for example,
+eth1, wlan0 ) and assure a persistent device name upon reboot.
+") + 
 
     /* Manual network card setup help 2/4 */
-_("<p><b>Kernel module</b>. Enter kernel module (in other words, driver) name 
-for your network device. If the device is already configured, you may select 
-one from the drop-down list if more than one driver for your device is 
-available. In most of the cases it is however OK to use the default value.</p>") +
+_("<p><b>Kernel Module</b>. Enter the kernel module (driver) name 
+for your network device here. If the device is already configured, see if there are more than one drivers available for
+your device in the drop-down list. If necessary, choose a driver from the list, but usually the default value works.</p>
+") +
 
     /* Manual networ card setup help 3/4 */
-_("<p>Additionally, you may specify <b>options</b> for the kernel module. They should 
-be written in the format <i>option</i>=<i>value</i>. Each entry should be space 
-separated,for example, <i>io=0x300 irq=5</i>. <b>Note:</b> If two cards are 
-configured with the same module name, options will be merged while saving.</p>");
+_("<p>Additionally, you may specify <b>Options</b> for the Kernel module. Use this format: <i>option</i>=<i>value</i>. Each entry should be space 
+separated,for example: <i>io=0x300 irq=5</i>. <b>Note:</b> If two cards are 
+configured with the same module name, options will be merged while saving.</p>
+");
 
     if(!(LanItems::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 () == true))
     {

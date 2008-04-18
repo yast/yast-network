@@ -133,9 +133,11 @@ The driver may be built in the kernel.")))
 	fw = LanItems::GetFirmwareForCurrentItem();
 	if (fw != ""){
 	    if ((!Package::Installed(fw) && !Package::Available(fw))){
-	        Popup::Message(sformat(_("The device needs a firmware to function properly. It can be installed from
-%1 Add-On CD.\nTo install the firmware, add Add-On CD to your YaST software repositories and return 
-to this configuration dialog."), Product::name));
+	        Popup::Message(sformat(_("Firmware is needed. Install it from 
+%1 Add-On CD.
+First add the Add-On CD to your YaST software repositories and return 
+to this configuration dialog.
+"), Product::name));
 		return false;
 	    } else
 		if (!contains(LanItems::Requires, fw)) LanItems::Requires = add(LanItems::Requires, fw);

@@ -122,8 +122,8 @@ after connecting, disable <b>Automatically Retrieve DNS</b> and
 manually enter the DNS.</p>") +
 
     /* Connection dialog help 4/9 */
-_("<p>When <b>Automatically Reconnect</b> is enabled, the connection will
-be automatically reestablished after failure.</p>
+_("<p>If <b>Automatically Reconnect</b> is enabled, the connection will
+be reestablished automatically after failure.</p>
 ") +
 
     /* Connection dialog help 5/9 */

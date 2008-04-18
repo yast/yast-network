@@ -48,9 +48,9 @@ map<string, map<string,any> > widget_descr = $[
 	"help":
 	// Details dialog help
 _("<p><b><big>Device Control</big></b></p>
-<p>Normally only the system administrator is allowed to activate and
+<p>Usually, only the system administrator is allowed to activate and
 deactivate a network interface. With <b>Enable Device Control for Non-root User
-Via KInternet</b>, an ordinary user may control the interface with KInternet.</p>
+Via KInternet</b>, any user may control the interface via KInternet.</p>
 "),
 	],
 
@@ -116,8 +116,9 @@ controls the interface. There is no need to set it up in YaST."),
 	// Combo box option for Device Activation
 	"label": _("Manually"),
 	// help text for Device Activation
-	"help": _("<b>Manually</b>: You control the interface manually
-via 'ifup' or 'KInternet' (See 'User Controlled' below)."),
+	"help": _("<p>Press <b>Manually</b> tocontrol the interface manually
+via ifup or KInternet (See <b>User Controlled</b> below).
+"),
 	],
     "ifplugd": $[
 	// Combo box option for Device Activation
@@ -143,9 +144,9 @@ boot time if the interface is not present.
         // Combo box option for Device Activation
         "label": _("On NFSroot"),
         // help text for Device Activation
-        "help": _("Using <b>On NFSroot</b> is nearly like 'auto'. But interfaces with this startmode will never
-be shut down via 'rcnetwork stop'. 'ifdown <iface>' still works.
-Use this when you have a nfs or iSCSI root filesystem.
+        "help": _("Using <b>On NFSroot</b> is similar to <tt>auto</tt>. Interfaces with this startmode will never
+be shut down via <tt>rcnetwork stop</tt>. <tt>ifdown <iface></tt> is still available.
+Use this if you have an NFS or iSCSI root filesystem.
 "),
 ],
     "nfsroot" : $[
@@ -169,7 +170,7 @@ map<string, any> MakeStartmode (list<string> ids) {
 	// Device activation main help. The individual parts will be
 	// substituted as %1
 _("<p><b><big>Device Activation</big></b></p> 
-<p>Choose, when the network interface should be brought up. <b>At Boot Time</b> starts it during system boot. 
+<p>Choose when to bring up the network interface.<b>At Boot Time</b> activates it during system boot, 
 <b>Never</b> does not start the device.
 %1</p>
 "),

@@ -286,7 +286,7 @@ define any ProxyMainDialog(boolean standalone) ``{
     string caption = _("Proxy Configuration");
 
     /* Proxy dialog help 1/8 */
-    string help = _("<p>Here, configure your Internet proxy (caching) settings.</p>
+    string help = _("<p>Configure your Internet proxy (caching) settings here.</p>
 <p><b>Note:</b> In some cases you may need to relogin for the settings to take effect</p>") +
 
     /* Proxy dialog help 2/8 */
@@ -309,10 +309,9 @@ to the file transfer services (FTP).</p>") +
 
     /* Proxy dialog help 5/8 */
 
-	_("<p>With the <b>Use the Same Proxy for All Protocols</b> option checked, it is
-enough to fill in the HTTP proxy URL, which will then be used for all protocols
-(HTTP, HTTPS and FTP).
-") +
+	_("<p>If you have the <b>Use the Same Proxy for All Protocols</b> option checked, it is
+enough to fill in the HTTP proxy URL. It will be used for all protocols
+(HTTP, HTTPS and FTP).\n") +
 
     /* Proxy dialog help 6/8 */
 

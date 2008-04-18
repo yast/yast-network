@@ -209,9 +209,10 @@ global define boolean Read (symbol cache) {
      if (size((list<string>)SCR::Read(.target.dir, "/etc/ndiswrapper"))>0){
 	y2milestone("ndiswrapper: configuration found");
       if ((integer)SCR::Execute(.target.bash, "lsmod |grep -q ndiswrapper")!=0
-		&& Popup::YesNo(_("There is ndiswrapper configuration detected
-but kernel module wasn't modprobed.
-Should I modprobe ndiswrapper?"))) {
+		&& Popup::YesNo(_("There is a ndiswrapper configuration detected,
+but the Kernel module was not modprobed.
+Do you want to modprobe ndiswrapper?
+"))) {
 	if (ModuleLoading::Load("ndiswrapper", "", "", "", false, true)==`fail) Popup::Error(_("ndiswrapper kernel module wasn't loaded.
 Check configuration manually."));
 	}

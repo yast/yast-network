@@ -623,7 +623,7 @@ the logs for details.
 	    y2milestone("Product::relnotesurl_all = %1", Product::relnotesurl_all);
 	// Fallback for situation that mustn't exist
 	if (Product::relnotesurl_all == nil || Product::relnotesurl_all == []) {
-	 Popup::Warning(_("There is no URL for release notes defined. Internet test cannot be performed."));
+	 Popup::Warning(_("No URL for the release notes defined. Internet test cannot be performed."));
 	 ret = false;
 	} else
 	 {
@@ -639,9 +639,9 @@ the logs for details.
 		    ret = Popup::ContinueCancel(_("Download of latest release notes failed due to server-side error. 
 This does not necessarily mean misconfigured network.
 
-Click 'Continue' to proceed to the next installation step. To skip any steps
+Click Continue to proceed to the next installation step. To skip any steps
 requiring internet connection or to get back to your network configuration,
-click 'Cancel'."));
+click Cancel."));
 		}
 		// return code shows misconfigured network
 		// return false

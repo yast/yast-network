@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Apr 18 15:46:22 CEST 2008 - jsrain@suse.cz
+
+- merged texts from proofread
+- 2.16.39
+
+-------------------------------------------------------------------
 Tue Apr 15 08:54:14 CEST 2008 - jsuchome@suse.cz
 
 - fixed testsuite again (do not save the logs)
