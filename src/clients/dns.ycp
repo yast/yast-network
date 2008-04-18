@@ -87,7 +87,7 @@ define boolean ListHandler(map<string, string> options) {
 map cmdline = $[
     /* Commandline help title */
     "help"	: _("DNS Configuration"),
-    "id"	: "routing",
+    "id"	: "dns",
     "guihandler": DNSGUI,
     "initialize": DNS::Read,
     "finish"	: DNS::Write, // FIXME
