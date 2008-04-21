@@ -21,6 +21,7 @@ import "NetworkInterfaces";
 import "Arch";
 import "Confirm";
 import "Map";
+import "DefaultDesktop";
 
 /**
  * Abort function
@@ -376,10 +377,14 @@ map getHardware(string sysfs_id, list<map> Hw){
 
 boolean CheckNetworkManagerPlugin(){
  if (NetworkService::IsManaged()){
-  y2milestone("Check what package is needed to configure NetworkManager");
-  string nmp = ((string)SCR::Read(.sysconfig.windowmanager.DEFAULT_WM)=="kde")?"NetworkManager-kde":"NetworkManager-gnome";
+  list<string> nmp = [];
+  y2milestone("Check what packages are needed to configure NetworkManager");
+//  string nmp = ((string)SCR::Read(.sysconfig.windowmanager.DEFAULT_WM)=="kde")?"NetworkManager-kde":"NetworkManager-gnome";
+  list<string> desktops = DefaultDesktop::SelectedDesktops();
+  if (contains(desktops, "kde3")) nmp = add(nmp, "NetworkManager-kde");
+  if (contains(desktops, "gnome")) nmp = add(nmp, "NetworkManager-gnome");
   y2milestone("Test for %1 if installed", nmp);
-  PackageSystem::CheckAndInstallPackages([nmp]);
+  PackageSystem::CheckAndInstallPackages(nmp);
  }
  return true;
 }

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Apr 21 15:15:53 CEST 2008 - mzugec@suse.cz
+
+- improved algorithm to require gnome/kde version of NetworkManager
+ (bnc#380774)
+- 2.16.40 
+
+-------------------------------------------------------------------
 Fri Apr 18 15:46:22 CEST 2008 - jsrain@suse.cz
 
 - merged texts from proofread

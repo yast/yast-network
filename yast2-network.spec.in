@@ -12,7 +12,8 @@ BuildRequires: yast2 >= 2.16.6
 # GetInstArgs::automatic_configuration
 Requires:	yast2 >= 2.16.46
 
-Requires:	sysconfig yast2-packager
+Requires:	sysconfig
+Requires:	yast2-packager >= 2.16.37
 #GetLanguageCountry
 #(in newly created yast2-country-data)
 Requires:	yast2-country-data >= 2.16.3
