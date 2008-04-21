@@ -8,6 +8,7 @@ BuildRequires: yast2-devtools yast2-testsuite
 BuildRequires: yast2-country
 BuildRequires: yast2-installation >= 2.15.27
 BuildRequires: yast2 >= 2.16.6
+BuildRequires: yast2-packager >= 2.16.37
 
 # GetInstArgs::automatic_configuration
 Requires:	yast2 >= 2.16.46
