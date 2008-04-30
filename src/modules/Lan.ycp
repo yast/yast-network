@@ -301,6 +301,8 @@ include "network/runtime.ycp";
  */
 global define string DriverType (string type) {
     string drvtype = type;
+ if (Arch::s390())
+  {
     // handle HSI like qeth, S#40692#c15
     if (type == "hsi")
 	drvtype = "qeth";
@@ -310,7 +312,8 @@ global define string DriverType (string type) {
     // N#82891
     else if (type == "escon" || type == "ficon")
 	drvtype = "ctc";
-    return drvtype;
+  }
+  return drvtype;
 }
 
 /**

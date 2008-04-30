@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Apr 30 12:00:26 CEST 2008 - mzugec@suse.de
+
+- eth device recognized as lcs (bnc#385094)
+- 2.13.119
+
+-------------------------------------------------------------------
 Wed Apr  2 23:29:39 CEST 2008 - mzugec@suse.de
 
 - support for hsi hipersockets (bnc#383978)
