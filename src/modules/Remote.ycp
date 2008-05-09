@@ -142,9 +142,11 @@ global boolean Write() {
 	list<string> packages = ["xinetd", "tightvnc", "xorg-x11", "xorg-x11-Xvnc", ];
 	// #40155: have to specify a concrete window manager,
 	// "windowmanager" only works for yast2 -i
-	if (!Package::Installed ("kdebase3"))
+	// #381708: take KDE4 into consideration, too
+	// ( but what about GNOME? )
+	if (!Package::Installed ("kdebase3") && !Package::Installed("kdebase4"))
 	{
-	    packages = add (packages, "fvwm2");
+	    packages = add (packages, "fvwm2" );
 	}
 	if(!Package::InstallAll(packages)) {
 	    y2error("Installing of required packages failed");
