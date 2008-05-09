@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri May  9 07:35:15 CEST 2008 - mzugec@suse.de
+
+- just edit udev rules, not replace them (bnc#383320)
+- 2.16.41
+
+-------------------------------------------------------------------
 Mon Apr 21 15:15:53 CEST 2008 - mzugec@suse.cz
 
 - improved algorithm to require gnome/kde version of NetworkManager
