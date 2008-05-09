@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri May  9 16:51:31 CEST 2008 - kmachalkova@suse.cz
+
+- Remote administration: make windowmanager detection KDE4 aware -
+  consider also kdebase4 pkg (bnc#381708)
+
+-------------------------------------------------------------------
 Fri May  9 07:35:15 CEST 2008 - mzugec@suse.de
 
 - just edit udev rules, not replace them (bnc#383320)
