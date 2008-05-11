@@ -204,6 +204,7 @@ global string GetItemUdev(string key){
 
   });
  }
+y2internal("udevs %1", udevs);
  return udevs;
 */
 }

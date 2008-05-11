@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Sun May 11 17:37:54 CEST 2008 - mzugec@suse.de
+
+- for NetControl propose only link:true interfaces (bnc#389131) 
+
+-------------------------------------------------------------------
 Fri May  9 16:51:31 CEST 2008 - kmachalkova@suse.cz
 
 - Remote administration: make windowmanager detection KDE4 aware -
