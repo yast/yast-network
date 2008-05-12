@@ -408,6 +408,7 @@ global define boolean Write() {
     DNS::Write();
     Host::Write();
     Progress::set (orig);
+
     sleep(sl);
 
     if(Abort()) return false;
@@ -465,6 +466,21 @@ global define boolean Write() {
     sleep(sl);
 
     if(Abort()) return false;
+    if (NetworkService::IsManaged())
+     {
+      boolean network=false;
+      integer timeout=10;
+      while(timeout>0)
+      {
+	if (NetworkService::isNetworkRunning()){
+	 network=true;
+	 break;
+	}
+	y2milestone("waiting for network ... %1", timeout);
+	timeout = timeout-1;
+      }
+     if (!network) Popup::Error(_("No network running"));
+    }
     return true;
 }
 
