@@ -28,7 +28,7 @@ include "network/services/dns.ycp";
 DNS::Read ();			// handles NetworkConfig too
 
 if (DNS::hostname == "linux")
-{ 
+{
     srandom ();
     DNS::hostname = "linux-" + String::Random (4); // #157107
 }
@@ -37,9 +37,13 @@ if (DNS::hostname == "linux")
 NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = ! Arch::is_laptop ();
 // TODO: policy for proposing a hostname
 
-Wizard::SetDesktopIcon("dns");
+symbol ret = `next;
 
-symbol ret = HostnameDialog ();
+if ( ! GetInstArgs::automatic_configuration() )
+{
+   Wizard::SetDesktopIcon("dns");
+   ret = HostnameDialog ();
+}
 
 if (ret == `next)
 {
