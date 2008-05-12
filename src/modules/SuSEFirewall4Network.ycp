@@ -61,7 +61,7 @@
 	boolean protected_from_internal = SuSEFirewall::GetProtectFromInternalZone();
 	string nozone = IsOn ()?
 	    // item in combo box Firewall Zone
-	    _("No Zone, All Traffic Blocked"):
+	    _("Automatically Assigned Zone"):
 	    // item in combo box Firewall Zone
 	    _("Firewall Disabled");
 	list_items = add (list_items, ["", nozone]);

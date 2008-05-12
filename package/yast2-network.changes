@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon May 12 13:44:27 CEST 2008 - mzugec@suse.cz
+
+- misleading description of firewall "No Zone" (bnc#388703)
+- 2.16.42 
+
+-------------------------------------------------------------------
 Sun May 11 17:37:54 CEST 2008 - mzugec@suse.de
 
 - for NetControl propose only link:true interfaces (bnc#389131) 
