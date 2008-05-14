@@ -39,10 +39,17 @@ NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = ! Arch::is_laptop ();
 
 symbol ret = `next;
 
+//No need for interactive UI in automatic configuration
 if ( ! GetInstArgs::automatic_configuration() )
 {
-   Wizard::SetDesktopIcon("dns");
-   ret = HostnameDialog ();
+    Wizard::SetDesktopIcon("dns");
+    ret = HostnameDialog ();
+}
+//but we need to force writing /etc/HOSTNAME in such case
+//(#383336)
+else
+{
+    DNS::modified = true;
 }
 
 if (ret == `next)
