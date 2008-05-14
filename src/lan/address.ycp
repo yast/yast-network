@@ -579,6 +579,7 @@ map<string, map<string,any> > widget_descr_local = $[
 		   ])
 		 )),
 		`VBox(
+								// TODO : Stat ... Assigned
 		 `Left(`RadioButton(`id(`static), `opt(`notify), _("Statically assigned IP Address"))),
 		  `HBox(
 		  `TextEntry(`id(`ipaddr), _("&IP Address")),

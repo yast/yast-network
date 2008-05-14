@@ -199,6 +199,7 @@ void initHwDialog(string text) {
 
 
     term UdevWidget = 
+		// TODO: Ud ... Rules
 	`Frame(_("Udev rules"),
 	 `HBox(
 	   `TextEntry(`id(`device_name), _("Device Name"), ""),
