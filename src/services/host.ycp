@@ -80,12 +80,11 @@ define symbol HostsMainDialog(boolean standalone) {
 	    return;
 	}
 	foreach (string s, names, {
-	    list <string> dns = splitstring(s," ");
-		string name = dns[0]:"";
-		string aliases = mergestring(remove(dns, 0), " ");
-		term item = `item(`id(items), host, name, aliases);
-		table_items = add(table_items, item);
-		items = items + 1;
+	    string name = regexpsub(s, "^([^ \t]+)[ \t].*$", "\\1");
+	    string aliases = regexpsub(s, "^[^ \t]+[ \t]+(.*)[ \t]*$", "\\1");
+	    term item = `item(`id(items), host, name, aliases);
+	    table_items = add(table_items, item);
+	    items = items + 1;
 	});
     });
 
@@ -156,7 +155,7 @@ define symbol HostsMainDialog(boolean standalone) {
 	//    });
 	//    term item = HostDialog(max, `empty(), forbidden);
 	    term item = HostDialog(max, `empty());
-	    if(item == nil) 
+	    if(item == nil)
 			continue;
 	    else {
 		Host::modified = true;
@@ -204,11 +203,13 @@ define symbol HostsMainDialog(boolean standalone) {
 
 		    y2debug("item: %1", item);
 		    y2debug("olditem: %1", olditem);
+		    y2debug("entry: %1", entry);
+		    y2debug("oldentry: %1", oldentry);
 		    string ip = item[1]:"";
 		    string oldip = olditem[1]:"";
 
 		    Host::hosts[oldip] = filter(string dns, Host::hosts[oldip]:[], {
-			return dns != oldentry;
+			return regexpsub(dns, "([ \t]+)", " ") != regexpsub(oldentry, "([ \t]+)", " ");
 		    });
 		    y2debug("Deleting: %1 (%2)", oldip, ip);
 		    Host::hosts[ip] = add(Host::hosts[ip]:[], entry);
