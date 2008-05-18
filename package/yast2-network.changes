@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sun May 18 21:44:04 CEST 2008 - mzugec@suse.de
+
+- fixed mangle device name (bnc#391802)
+- 2.16.45 
+
+-------------------------------------------------------------------
 Fri May 16 16:40:22 CEST 2008 - jsrain@suse.cz
 
 - added categories Settings and System into desktop file
