@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon May 19 11:31:21 CEST 2008 - mzugec@suse.de
+
+- fixed translation text (bnc#391180)
+
+-------------------------------------------------------------------
 Sun May 18 21:44:04 CEST 2008 - mzugec@suse.de
 
 - fixed mangle device name (bnc#391802)

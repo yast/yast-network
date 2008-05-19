@@ -45,7 +45,7 @@ Configure your provider here.<br></p>
     /* Provider summary dialog help 2/3 */
 _("<p><b><big>Adding a Provider:</big></b><br>
 Choose a provider from the list of available providers
-then press <b>Configure</b>.</p>
+then press <b>Edit</b>.</p>
 ") +
 
     /* Provider summary dialog help 3/3 */
