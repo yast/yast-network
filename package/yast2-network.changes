@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu May 22 13:34:28 CEST 2008 - kmachalkova@suse.cz
+
+- Fit Global Options dialog into 80x25 screen (one line missing)
+  (bnc#392969)
+
+-------------------------------------------------------------------
 Mon May 19 11:31:21 CEST 2008 - mzugec@suse.de
 
 - fixed translation text (bnc#391180)
