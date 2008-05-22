@@ -60,13 +60,13 @@ term contents =
     `Frame(_("DHCP Client Options"), `VBox(
         /* CheckBox label */
         `Left(`CheckBox(`id(`broadcast), _("Request Broad&cast Response"))),
-        `VSpacing(0.5),
+        `VSpacing(0.49),
         /* TextEntry label */
         `Left(`TextEntry(`id(`clientid), _("DHCP Client &Identifier"))),
-        `VSpacing(0.5),
+        `VSpacing(0.49),
         /* TextEntry label */
         `Left(`TextEntry(`id(`hostname), _("&Hostname to Send"))),
-        `VSpacing(0.5),
+        `VSpacing(0.49),
         `Left(`HBox(`CheckBox(`id(`no_defaultroute), _("Change Default Route via DHCP"))))
         )
     );
