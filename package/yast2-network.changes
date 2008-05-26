@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon May 26 13:47:40 CEST 2008 - kmachalkova@suse.cz
+
+- Use Product::ReadProduct() to obtain release notes URL, thus make
+  the internet test (2nd stage) work again (bnc#390738)
+- 2.16.46 
+
+-------------------------------------------------------------------
 Thu May 22 13:34:28 CEST 2008 - kmachalkova@suse.cz
 
 - Fit Global Options dialog into 80x25 screen (one line missing)
