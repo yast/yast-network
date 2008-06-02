@@ -118,6 +118,7 @@ define boolean StartEthInterface() {
 
 
     /* Setup the interface */
+/*
     detection_interface=false;
     if(SCR::Execute(.target.bash, sformat("/sbin/ifconfig %1 2>&1 | grep 'inet6\\? addr'", device), $["LC_ALL":"C"]) != 0) {
 	y2milestone("Setting up interface %1 ...", device);
@@ -125,6 +126,18 @@ define boolean StartEthInterface() {
 	detection_interface=true;
     }
     y2debug("detection_interface=%1", detection_interface);
+*/
+ string command =  "ls /sys/class/net|grep -v \"^lo$\"";
+ map<string, any> output = (map<string, any>)SCR::Execute(.target.bash_output, command);
+ if (output["exit"]:-1==0){
+  list<string> interfaces = filter(string s, splitstring(output["stdout"]:"", "\n"), {return (size(s)>0);});
+  y2internal("output %1", interfaces);
+  foreach(string ifc, interfaces, {
+   y2milestone("Setting up interface %1", ifc);
+   SCR::Execute(.target.bash, sformat("ip link set %1 up", ifc));
+   if (ifc == device) detection_interface=true;
+  });
+ } else y2error("Error while execute %1 : %2", command, output);
 
     y2milestone("Network detection prepare (end)");
     return true;
