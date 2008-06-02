@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jun  2 16:19:15 CEST 2008 - mzugec@suse.cz
+
+- removed html tags in progress bar (bnc#393966) 
+
+-------------------------------------------------------------------
 Mon Jun  2 09:21:09 CEST 2008 - mzugec@suse.cz
 
 - set link status up for all interfaces during installation

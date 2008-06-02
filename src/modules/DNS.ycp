@@ -309,7 +309,7 @@ global define boolean Write() {
     if( update_resolv ) {
 
 	/* Progress step 3/3 */
-	ProgressNextStage(_("Updating <tt>/etc/resolv.conf</tt>..."));
+	ProgressNextStage(_("Updating /etc/resolv.conf ..."));
 
 	/* update /etc/resolv.conf */
 	SCR::Write(.etc.resolv_conf.search, searchlist);
