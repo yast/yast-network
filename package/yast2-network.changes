@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Jun  4 12:48:24 CEST 2008 - mzugec@suse.cz
+
+- fixed command-line  (bnc#397016)
+- 2.16.48 
+
+-------------------------------------------------------------------
 Mon Jun  2 09:21:09 CEST 2008 - mzugec@suse.cz
 
 - set link status up for all interfaces during installation
