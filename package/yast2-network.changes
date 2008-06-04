@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Jun  4 12:53:11 CEST 2008 - mzugec@suse.cz
+
+- fixed command-line  (bnc#397016)
+- 2.16.48 
+
+-------------------------------------------------------------------
 Mon Jun  2 16:19:15 CEST 2008 - mzugec@suse.cz
 
 - removed html tags in progress bar (bnc#393966) 

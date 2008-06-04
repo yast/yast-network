@@ -181,10 +181,11 @@ define boolean EditHandler(map<string, string> options) {
    LanItems::current = getItem(options, config);
    LanItems::SetItem();
 
-  if (!(size(LanItems::getCurrentItem()["ifcfg"]:"")>0)){
+  if (size(LanItems::getCurrentItem()["ifcfg"]:"")==0){
    NetworkInterfaces::Add();
    LanItems::operation = `edit;
    LanItems::interfacename=LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
+   LanItems::Items[LanItems::current, "ifcfg"] = LanItems::interfacename;
   }
 
 /*
@@ -216,6 +217,7 @@ the interface will no longer be managed by NetworkManager.
 		}
 	      }
 */
+if (contains(Map::Keys(options), "ip")) options["bootproto"] = "static";
 
     LanItems::bootproto = options["bootproto"]:"none";
     if (!contains(["none", "static", "dhcp"], LanItems::bootproto)){
@@ -224,7 +226,7 @@ the interface will no longer be managed by NetworkManager.
         }
     if (LanItems::bootproto=="static"){
 	    LanItems::ipaddr = options["ip"]:"";
-	    LanItems::netmask = options["netmask"]:"";
+	    LanItems::netmask = options["netmask"]:"255.255.255.0";
 	   } else{
 		LanItems::ipaddr = "";
 		LanItems::netmask = "";
