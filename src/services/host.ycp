@@ -68,11 +68,11 @@ define symbol HostsMainDialog(boolean standalone) {
 <b>Host Aliases</b>, separated by spaces.</p>
 ");
 
-    integer items = 0;
     integer max = 0;
     list<term> table_items = [];
 
     y2debug("hosts=%1", Host::hosts);
+
     /* make ui items from the hosts list */
     maplist(string host, list<string> names, (map<string, list<string> >) Host::hosts, {
 	if(size(names) < 1) {
@@ -80,17 +80,14 @@ define symbol HostsMainDialog(boolean standalone) {
 	    return;
 	}
 	foreach (string s, names, {
-	    string name = regexpsub(s, "^([^ \t]+)[ \t].*$", "\\1");
-	    string aliases = regexpsub(s, "^[^ \t]+[ \t]+(.*)[ \t]*$", "\\1");
-	    term item = `item(`id(items), host, name, aliases);
+	    list<string> row=splitstring(s, " ");
+	    string aliases = mergestring(remove(row, 0), " ");
+	    term item = `item(`id(size(table_items)), host, row[0]:"", aliases);
 	    table_items = add(table_items, item);
-	    items = items + 1;
 	});
     });
-
     y2debug("table_items=%1", table_items);
-    y2debug("items=%1", items);
-    max = items;
+    max = size(table_items);
 
     /* Hosts dialog contents */
     term contents = `HBox(
@@ -132,13 +129,13 @@ define symbol HostsMainDialog(boolean standalone) {
 	    Label::BackButton(), Label::OKButton());
 
     UI::ChangeWidget(`id(`table), `Items, table_items);
-    if(items > 0) UI::SetFocus(`id(`table));
+    if(size(table_items) > 0) UI::SetFocus(`id(`table));
 
     any ret = nil;
     while(true) {
 
-	UI::ChangeWidget(`id(`edit), `Enabled, items > 0);
-	UI::ChangeWidget(`id(`delete), `Enabled, items > 0);
+	UI::ChangeWidget(`id(`edit), `Enabled, size(table_items) > 0);
+	UI::ChangeWidget(`id(`delete), `Enabled, size(table_items) > 0);
 
 	ret = UI::UserInput();
 	y2debug("ret=%1", ret);
@@ -150,25 +147,12 @@ define symbol HostsMainDialog(boolean standalone) {
 	}
 	/* add host */
 	else if(ret == `add) {
-	//    list forbidden = maplist(term e, table_items, {
-	//	return e[1]:"";
-	//    });
-	//    term item = HostDialog(max, `empty(), forbidden);
 	    term item = HostDialog(max, `empty());
 	    if(item == nil)
 			continue;
-	    else {
-		Host::modified = true;
-		string ip = (item[1]:"");
-		string entry = mergestring([item[2]:"", item[3]:""]," ");
-
-		Host::hosts[ip] = add(Host::hosts[ip]:[], entry);
-	    }
-
 	    table_items = add(table_items, item);
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
 	    UI::ChangeWidget(`id(`table), `CurrentItem, max);
-	    items = items + 1;
 	    max = max + 1;
 	    continue;
 	}
@@ -207,12 +191,7 @@ define symbol HostsMainDialog(boolean standalone) {
 		    y2debug("oldentry: %1", oldentry);
 		    string ip = item[1]:"";
 		    string oldip = olditem[1]:"";
-
-		    Host::hosts[oldip] = filter(string dns, Host::hosts[oldip]:[], {
-			return regexpsub(dns, "([ \t]+)", " ") != regexpsub(oldentry, "([ \t]+)", " ");
-		    });
 		    y2debug("Deleting: %1 (%2)", oldip, ip);
-		    Host::hosts[ip] = add(Host::hosts[ip]:[], entry);
 
 		    return item;
 		}
@@ -241,16 +220,12 @@ define symbol HostsMainDialog(boolean standalone) {
 		string ip = e[1]:"";
 		if(cur == e[0, 0]:nil) {
 		    if(ip != "" && ip != nil) {
-			Host::hosts[ip] = filter(string dns, Host::hosts[ip]:[], {
-			    return dns != entry;
-			});
 		    return false;
 		    }
 		}
 		return true;
 	    });
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
-	    items = size(table_items);
 	    Host::modified = true;
 	    continue;
 	}
@@ -259,6 +234,15 @@ define symbol HostsMainDialog(boolean standalone) {
 	}
 	else if(ret == `next) {
 	    /* check_ */
+	if(Host::modified){
+	Host::hosts=$[];
+	 foreach(term row, table_items, {
+	  string value = mergestring([row[2]:"", row[3]:""], " ");
+	  string key = row[1]:"";
+	  if(!haskey(Host::hosts, key))Host::hosts[key]=[ value ];
+		else Host::hosts[key] = add(Host::hosts[key]:[], value);
+	 });
+	}
 	    break;
 	}
 	else {
