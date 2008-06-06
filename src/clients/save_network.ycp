@@ -259,13 +259,13 @@ void CreateIfcfg(){
     string dev_file=sformat("/etc/sysconfig/network/%1", ifcfg);
     // string dev_file=sformat("/tmp/%1", ifcfg);
 
-    if (!FileUtils::Exists(dev_file))
-    {
+//    if (!FileUtils::Exists(dev_file))
+//    {
         SCR::Write(.target.string, dev_file, network_configuration);
         y2milestone("ifcfg file: %1", dev_file);
-    }
-    else
-	y2warning("File exists %1", dev_file);
+//    }
+//    else
+//	y2warning("File exists %1", dev_file);
 }
 
 /*
@@ -341,6 +341,7 @@ void save_network(){
     string device = NetworkStorage::getDevice( Installation::destdir );
     y2internal("%1 directory is on %2 device", Installation::destdir, device);
     network_disk = NetworkStorage::isDiskOnNetwork( device );
+    y2internal("Network based device: %1", network_disk);
 
     // --------------------------------------------------------------
     // Copy DHCP client cache so that we can request the same IP (#43974).

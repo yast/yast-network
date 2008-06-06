@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jun  6 17:16:20 CEST 2008 - mzugec@suse.cz
+
+- installation onto nfs - STARTMODE='nfsroot' (bnc#397410)
+- 2.16.50 
+
+-------------------------------------------------------------------
 Thu Jun  5 13:59:51 CEST 2008 - mzugec@suse.cz
 
 - host module crashes when editing 'localhost' hostnames (bnc#397322)
