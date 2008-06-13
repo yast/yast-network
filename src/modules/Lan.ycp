@@ -477,6 +477,7 @@ global define boolean Write() {
 	 break;
 	}
 	y2milestone("waiting for network ... %1", timeout);
+	sleep(1000);
 	timeout = timeout-1;
       }
      if (!network) Popup::Error(_("No network running"));

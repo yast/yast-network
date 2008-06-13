@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jun 13 16:23:20 CEST 2008 - mzugec@suse.cz
+
+- sleep while waiting for network (bnc#399062) 
+
+-------------------------------------------------------------------
 Fri Jun 13 16:15:05 CEST 2008 - mzugec@suse.cz
 
 - button enable/disable behavior in Internet Test (bnc#391857) 
