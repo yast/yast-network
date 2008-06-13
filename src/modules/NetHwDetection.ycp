@@ -69,11 +69,9 @@ global map result = $[];
  */
 global boolean running = false;
 
-string device = "eth0";
 string tmpdir = Directory::tmpdir;
 
 list<string> detection_modules = [];
-boolean detection_interface = false;
 
 /**
  * Set up the first eth interface, if not already running
@@ -117,16 +115,6 @@ define boolean StartEthInterface() {
     });
 
 
-    /* Setup the interface */
-/*
-    detection_interface=false;
-    if(SCR::Execute(.target.bash, sformat("/sbin/ifconfig %1 2>&1 | grep 'inet6\\? addr'", device), $["LC_ALL":"C"]) != 0) {
-	y2milestone("Setting up interface %1 ...", device);
-	SCR::Execute(.target.bash, sformat("/sbin/ifconfig %1 up 2>&1", device));
-	detection_interface=true;
-    }
-    y2debug("detection_interface=%1", detection_interface);
-*/
  string command =  "ls /sys/class/net|grep -v \"^lo$\"";
  map<string, any> output = (map<string, any>)SCR::Execute(.target.bash_output, command);
  if (output["exit"]:-1==0){
@@ -135,7 +123,6 @@ define boolean StartEthInterface() {
   foreach(string ifc, interfaces, {
    y2milestone("Setting up interface %1", ifc);
    SCR::Execute(.target.bash, sformat("ip link set %1 up", ifc));
-   if (ifc == device) detection_interface=true;
   });
  } else y2error("Error while execute %1 : %2", command, output);
 
@@ -143,97 +130,8 @@ define boolean StartEthInterface() {
     return true;
 }
 
-/**
- * Shut down the eth interface, previously set up by StartEthInterface
- * @return true if success
- */
-define boolean StopEthInterface() {
 
-    y2milestone("Network detection finish");
 
-    if(detection_interface) {
-	y2milestone("Shut down interface %1 ...", device);
-	SCR::Execute(.target.bash, sformat("/sbin/ifconfig %1 down 2>&1", device));
-    }
-    detection_interface = false;
-
-    foreach(string mod, detection_modules, {
-	y2milestone("NOT removing module %1 ...", mod);
-	// #36478 SCR::Execute(.target.bash, sformat("/sbin/rmmod %1 2>&1", mod));
-    });
-
-    y2milestone("Network detection finish (end)");
-    return true;
-}
-
-/**
- * Start detection
- * @return true if success
- */
-define boolean StartDetection() {
-
-    y2milestone("Network detection start");
-
-    /* Start DHCP detection */
-    SCR::Execute(.target.bash, sformat("/bin/rm -f %1/dhcpcd-*", tmpdir));
-
-    // #46214
-    if (true)
-    {
-	y2milestone ("dhcpcd-test skipped");
-    }
-    else
-    {
-	// Do not lose our lease just because of the test,
-	// pretend we are someone else. #46214#c18
-	SCR::Execute(.target.bash, sformat("/usr/sbin/dhcpcd-test %1 -I yast-detection-id > %2/dhcpcd-%1.info", device, tmpdir));
-    }
-
-    y2milestone("Network detection start (end)");
-    return true;
-}
-
-/**
- * Finish detection
- * @return true if success
- */
-define boolean StopDetection() {
-
-    y2milestone("Network detection stop");
-
-    result = $[];
-
-    /* Read DHCP data */
-    string info = sformat("%1/dhcpcd-%2.info", tmpdir, device);
-    // info = "/var/lib/dhcpcd/dhcpcd-eth0.info";
-
-    if(SCR::Read(.target.size, info) > 0) {
-
-	path detpath = .detection.dhcp;
-	string tmpfile = tmpdir + "/detection_dhcp.scr";
-	string scrfile = sformat("%1\n\n`ag_ini(`SysConfigFile(\"%2\"))\n", detpath, info);
-	SCR::Write(.target.string, tmpfile, scrfile);
-	SCR::RegisterAgent(detpath, tmpfile);
-
-	list<string> keys = SCR::Dir(detpath);
-	y2debug("keys=%1", keys);
-
-	maplist(string k, keys, {
-	    string v = (string) SCR::Read(add(detpath, k));
-	    y2debug("%1=%2", k, v);
-	    /* FIXME: duplicate keys (make list? add with suffix1, etc? ...? */
-	    result[k] = v;
-	});
-	SCR::UnregisterAgent(detpath);
-
-    }
-
-    /* Finish DHCP detection */
-    // nothing, #44557
-
-    y2milestone("Network detection stop (end)");
-    return true;
-}
 
 /**
  * Start the detection
@@ -247,7 +145,7 @@ global define boolean Start() {
 
 y2milestone("IFCONFIG1: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
     boolean ret = false;
-    if(StartEthInterface() && StartDetection()) {
+    if(StartEthInterface()) {
 	running = true;
 	ret = true;
     }
@@ -269,12 +167,9 @@ global define boolean Stop() {
     running = false;
 
 y2milestone("IFCONFIG3: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
-    boolean ret = StopDetection();
-    ret = StopEthInterface() && ret;
 
-y2milestone("IFCONFIG4: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
-    y2milestone("Detection stop result: %1", ret);
-    return ret;
+    y2milestone("Detection stop ");
+    return true;
 }
 
 /**

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jun 13 17:07:11 CEST 2008 - mzugec@suse.cz
+
+- network installation broken (bnc#399645)
+- remove all historic dhcp-test related code
+- 2.17.0 
+
+-------------------------------------------------------------------
 Fri Jun 13 16:23:20 CEST 2008 - mzugec@suse.cz
 
 - sleep while waiting for network (bnc#399062) 
