@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jun 13 16:15:05 CEST 2008 - mzugec@suse.cz
+
+- button enable/disable behavior in Internet Test (bnc#391857) 
+
+-------------------------------------------------------------------
 Fri Jun  6 17:16:20 CEST 2008 - mzugec@suse.cz
 
 - installation onto nfs - STARTMODE='nfsroot' (bnc#397410)

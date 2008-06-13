@@ -212,7 +212,7 @@ string current = Internet::device;
 	    exit=true;
 	    break;
 	case `yes:
-		enableDevices(true);
+		enableDevices(size(items)>1);
 		break;
 	case `no:
 		enableDevices(false);
