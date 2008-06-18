@@ -58,6 +58,7 @@ global string bootproto = "static";
 global string ipaddr = "";
 global string remoteip = "";
 global string netmask = "";
+global string prefix = "";
 
 global string startmode = "auto";
 global boolean usercontrol = false;
@@ -245,7 +246,6 @@ global void WriteUdevDriverRules(){
 		}
    }
   });
-y2internal("udev net_rules %1", net_rules);
    SCR::Write(.udev_persistent.rules, net_rules);
    SCR::Write(.udev_persistent.nil, []);
   foreach(string dev, changed_devices, {
@@ -453,11 +453,13 @@ global list BuildLanOverview() {
 		{
                  if (ip != "NONE")
 		  {
-		    bullets = bullets + [
-			ip == "DHCP" ? _("IP address assigned using DHCP") :
-			sformat(_("IP address: %1, subnet mask %2")
-				, ip, NetworkInterfaces::Current["NETMASK"]:""),
-			];
+		    string prefixlen = NetworkInterfaces::Current["PREFIXLEN"]:"";
+		    string descr = _("IP address assigned using DHCP");
+		    if (ip != "DHCP") descr=(size(prefixlen)>0) ?
+                                sformat(_("IP address: %1/%2"), ip, prefixlen) :
+                                sformat(_("IP address: %1, subnet mask %2")
+                                , ip, NetworkInterfaces::Current["NETMASK"]:"");
+		    bullets = bullets + [ descr ];
 		  }
 	// build aliases overview
 	if (size(NetworkInterfaces::Current["_aliases"]:$[])>0 && !NetworkService::IsManaged()){
@@ -742,13 +744,13 @@ global void SetDeviceVars(map devmap, map defaults) {
     /* address options */
     bootproto = GetDeviceVar (devmap, defaults, "BOOTPROTO");
     ipaddr = GetDeviceVar (devmap, defaults, "IPADDR");
+    prefix = GetDeviceVar (devmap, defaults, "PREFIXLEN");
     remoteip = GetDeviceVar (devmap, defaults, "REMOTE_IPADDR");
     netmask = GetDeviceVar (devmap, defaults, "NETMASK");
 
     mtu = GetDeviceVar (devmap, defaults, "MTU");
     ethtool_options = GetDeviceVar (devmap, defaults, "ETHTOOL_OPTIONS");
     startmode = GetDeviceVar (devmap, defaults, "STARTMODE");
-y2internal("startmode %1", startmode);
     usercontrol = GetDeviceVar (devmap, defaults, "USERCONTROL") == "yes";
     description = GetDeviceVar (devmap, defaults, "NAME");
     bond_option = GetDeviceVar(devmap, defaults, "BONDING_MODULE_OPTS");
@@ -815,6 +817,7 @@ y2internal("startmode %1", startmode);
 global map<string, string> SysconfigDefaults = $[
     "BOOTPROTO": "static",
     "IPADDR": "",
+    "PREFIXLEN": "",
     "REMOTE_IPADDR": "",
     "NETMASK": "",
     "MTU": "",
@@ -934,10 +937,7 @@ global define boolean Select(string dev) {
     /* general stuff */
     description = BuildDescription (type, device, devmap, Hardware);
 
-y2internal("devmap %1", devmap);
-
     SetDeviceVars(devmap, SysconfigDefaults);
-
 
     hotplug = "";
     /*
@@ -1009,7 +1009,8 @@ global define boolean Commit() {
 
 	// #104494 - always write IPADDR+NETMASK, even empty
 	newdev["IPADDR"] = ipaddr;
-	newdev["NETMASK"] = netmask;
+	if(size(prefix)>0) newdev["PREFIXLEN"] = prefix;
+		else newdev["NETMASK"] = netmask;
 	// #50955 omit computable fields
 	newdev["BROADCAST"] = "";
 	newdev["NETWORK"] = "";

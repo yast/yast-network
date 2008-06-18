@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Jun 18 12:16:54 CEST 2008 - mzugec@suse.de
+
+- initial support for IPv6
+- prefix parameter in CLI
+- support for "/24" syntax as prefixlen
+- 2.17.1 
+
+-------------------------------------------------------------------
 Fri Jun 13 17:07:11 CEST 2008 - mzugec@suse.cz
 
 - network installation broken (bnc#399645)

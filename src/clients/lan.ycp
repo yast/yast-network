@@ -122,12 +122,17 @@ map cmdline = $[
 	    "help": _("Network mask"),
 	    "type": "netmask"
 	],
+	"prefix" : $[
+	    /* Commandline option help */
+	    "help": _("Prefix lenght"),
+	    "type": "string"
+	],
     ],
     "mappings" : $[
 	"list"	: [ "configured", "unconfigured" ],
 	"show"	: [ "id" ],
-	"add"	: [ "type", "bootproto", "ip", "netmask" ],
-	"edit"	: [ "id", "type", "bootproto", "ip", "netmask" ],
+	"add"	: [ "type", "bootproto", "ip", "netmask", "prefix" ],
+	"edit"	: [ "id", "type", "bootproto", "ip", "netmask", "prefix" ],
 	"delete": [ "id" ],
     ]
 ];

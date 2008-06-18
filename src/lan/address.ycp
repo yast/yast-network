@@ -112,7 +112,7 @@ void StoreAddrWidget (string key, map event) {
 void StoreBridge(string key, map event)
 {
     settings["BRIDGE_PORTS"] = mergestring((list<string>)UI::QueryWidget (`id("BRIDGE_PORTS"), `SelectedItems), " ");
-y2internal("store bridge %1 : %2", key, settings["BRIDGE_PORTS"]:"");
+y2milestone("store bridge %1 : %2", key, settings["BRIDGE_PORTS"]:"");
 }
 
 
@@ -195,7 +195,9 @@ void initBootProto (string key) {
  switch(settings["BOOTPROTO"]:""){
   case "static": UI::ChangeWidget(`id(`bootproto), `CurrentButton, `static);
 		UI::ChangeWidget(`id(`ipaddr), `Value, settings["IPADDR"]:"");
-		UI::ChangeWidget(`id(`netmask), `Value, settings["NETMASK"]:"");
+		if (size(settings["PREFIXLEN"]:"")>0) 
+				UI::ChangeWidget(`id(`netmask), `Value, sformat("/%1", settings["PREFIXLEN"]:""));
+			else UI::ChangeWidget(`id(`netmask), `Value, settings["NETMASK"]:"");
 	        UI::ChangeWidget(`id(`hostname), `Value, settings["HOSTNAME"]:"");
 		break;
   case "dhcp" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
@@ -234,10 +236,13 @@ void storeBootProto (string key, map event) {
    case `none : settings["BOOTPROTO"]="none";
 		settings["IPADDR"]  = "";
 		settings["NETMASK"] = "";
+		settings["PREFIXLEN"] = "";
 		break;
    case `static: settings["BOOTPROTO"]="static";
 		settings["IPADDR"]=(string)UI::QueryWidget(`ipaddr, `Value);
-		settings["NETMASK"]=(string)UI::QueryWidget(`netmask, `Value);
+		string mask = (string)UI::QueryWidget(`netmask, `Value);
+		if(substring(mask, 0,1)=="/") settings["PREFIXLEN"]=substring(mask, 1);
+			else settings["NETMASK"]=mask;
 		settings["HOSTNAME"]=(string)UI::QueryWidget(`hostname, `Value);
 		break;
    default : switch ((symbol)UI::QueryWidget(`dyn, `Value)){
@@ -393,11 +398,20 @@ boolean ValidateBootproto (string key, map event) {
 	 UI::SetFocus(`ipaddr);
 	 return false;
 	}
-	if (!Netmask::Check4((string) UI::QueryWidget (`netmask, `Value))){
-	 Popup::Error(_("No valid netmask."));
-	 UI::SetFocus(`netmask);
-	 return false;
+
+	string mask=(string) UI::QueryWidget (`netmask, `Value);
+	boolean valid_mask=false;
+	if (Netmask::Check4(mask)) valid_mask=true;
+	 else if (regexpmatch(mask, "^/[[:digit:]]{1,2}$")) valid_mask=true;
+	    else if (Netmask::Check6(mask)) valid_mask=true;
+	     else if (regexpmatch(mask, "^/[[:digit:]]{1,3}$")) valid_mask=true;
+
+	if(!valid_mask){
+		Popup::Error(_("No valid netmask or prefix lenght."));
+		UI::SetFocus(`netmask);
+		return false;
 	}
+
         string h = (string) UI::QueryWidget(`hostname, `Value );
 	if ( h != "" && !Hostname::CheckFQ(h)) {
 	 Popup::Error(_("No valid hostname."));
@@ -686,6 +700,7 @@ define any AddressDialog() {
 	"BOOTPROTO": LanItems::bootproto,
 	"IPADDR": LanItems::ipaddr,
 	"NETMASK": LanItems::netmask,
+	"PREFIXLEN": LanItems::prefix,
 	"REMOTEIP": LanItems::remoteip,
 
 	"HOSTNAME": hostname_initial, 
