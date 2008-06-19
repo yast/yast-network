@@ -102,10 +102,10 @@ map cmdline = $[
 	    "type"	: "string",
 	    "example"	: "add type=ethernet bootproto=dhcp"
 	],
-	"type" : $[
-	    "help"	: _("Device type"),
+	"name" : $[
+	    "help"	: _("Configuration Name"),
 	    "type"	: "string",
-	    "example"	: "add type=bluetooth"
+	    "example"	: "add name=bond0"
 	],
 	"bootproto" : $[
 	    /* Commandline option help */
@@ -127,12 +127,27 @@ map cmdline = $[
 	    "help": _("Prefix lenght"),
 	    "type": "string"
 	],
+	"slaves" : $[
+	    /* Commandline option help */
+	    "help": _("Bond Slaves"),
+	    "type": "string"
+	],
+	"ethdevice" : $[
+	    /* Commandline option help */
+	    "help": _("Ethernet Device for VLAN"),
+	    "type": "string"
+	],
+	"bridge_ports" : $[
+	    /* Commandline option help */
+	    "help": _("Interfaces for Bridging"),
+	    "type": "string"
+	],
     ],
     "mappings" : $[
 	"list"	: [ "configured", "unconfigured" ],
 	"show"	: [ "id" ],
-	"add"	: [ "type", "bootproto", "ip", "netmask", "prefix" ],
-	"edit"	: [ "id", "type", "bootproto", "ip", "netmask", "prefix" ],
+	"add"	: [ "name", "bootproto", "ip", "netmask", "prefix", "slaves", "ethdevice", "bridge_ports" ],
+	"edit"	: [ "id", "bootproto", "ip", "netmask", "prefix" ],
 	"delete": [ "id" ],
     ]
 ];

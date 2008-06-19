@@ -59,37 +59,6 @@ integer getItem(map<string, string> options, list <map<string, any> > config){
 }
 
 
-define boolean AddIface (integer hw_id) {
-    Lan::Add ();
-    LanItems::SelectHW (hw_id);
-    LanItems::SetDefaultsForHW ();
-
-    // warn if selecting a card without a driver, #29296
-    // TODO also for DSL...
-/*
-    if (NetworkModules::Alias == "")
-    {
-	CommandLine::Print(_("The device does not have a driver module.
-The driver may be built in the kernel."));
-	if (!CommandLine::YesNo ())
-	{
-	    return false;
-	}
-    }
-*/
-    // this is one of 3 places to install packages :-(
-    // - kernel modules (InstallKernel): before loaded
-    // - smpppd & kinternet: before net start
-    // - wlan firmware: here, just because it is copied from modems
-    //   #45960
-/*
-    if(Lan::Requires != [] && Lan::Requires != nil) {
-	if(PackagesInstall(Lan::Requires) != `next)
-	    return false;
-    }
-*/
-    return true;
-}
 
 /**
  * Handler for action "show"
@@ -124,17 +93,22 @@ define boolean ListHandler(map<string, string> options) {
  * @param options action options
  */
 define boolean AddHandler(map<string, string> options) {
-    LanItems::type = options["type"]:"ethernet";
-    if (!contains(["arcnet", "bluetooth", "dummy", "ethernet", "fddi", "myrinet", "token-ring", "usb", "wireless"], LanItems::type)){
-	Report::Error(_("Impossible value for type!"));
-	 return false;
-	}
+  LanItems::AddNew();
+  Lan::Add();
+  LanItems::Items[LanItems::current, "ifcfg"]=options["name"]:"";
+  LanItems::type=NetworkInterfaces::device_type(options["name"]:"");
+  if (LanItems::type=="bond") LanItems::bond_slaves=splitstring(options["slaves"]:"", " ");
+  if (LanItems::type=="vlan") LanItems::vlan_etherdevice=options["ethdevice"]:"";
+  if (LanItems::type=="br") LanItems::bridge_ports=options["bridge_ports"]:"";
+
     LanItems::bootproto = options["bootproto"]:"none";
     if (!contains(["none", "static", "dhcp"], LanItems::bootproto)){
         Report::Error(_("Impossible value for bootproto!"));
          return false;
         }
+
     LanItems::ipaddr = options["ip"]:"";
+    LanItems::prefix = options["prefix"]:"";
     LanItems::netmask = options["netmask"]:"255.255.255.0";
     LanItems::startmode = options["startmode"]:"auto";
     if (!contains(["auto", "ifplugd", "nfsroot"], LanItems::startmode)){
@@ -142,28 +116,8 @@ define boolean AddHandler(map<string, string> options) {
          return false;
         }
 
-
-   CommandLine::Print(LanItems::type);
-   CommandLine::Print(LanItems::bootproto);
-   CommandLine::Print(LanItems::ipaddr);
-   CommandLine::Print(LanItems::netmask);
-/*
-    CommandLine::Print(sformat(_("Adding Device: %1"), dev));
-
-    if(!Lan::Add()) {
-	CommandLine::Print(Label::ErrorMsg());
-	return false;
-    }
-
-    if(options["ipaddr"]:"" != "") Lan::ipaddr = options["ipaddr"]:"";
-    if(options["netmask"]:"" != "") Lan::netmask = options["netmask"]:"";
-    if(options["bootproto"]:"" != "") Lan::bootproto = options["bootproto"]:"";
-    Lan::type = NetworkInterfaces::device_type(dev);
-    Lan::device = NetworkInterfaces::device_num(dev);
-
-    Lan::Commit();
-    CommandLine::Print(_("Success"));
-*/
+   LanItems::Commit();
+   ListHandler($[]);
 
     return true;
 }
@@ -187,35 +141,6 @@ define boolean EditHandler(map<string, string> options) {
    LanItems::Items[LanItems::current, "ifcfg"] = LanItems::interfacename;
   }
 
-/*
-	    if (substring (dev, 0, 1) == "-") // unconfigured
-	    {
-		integer i = tointeger (substring (dev, 1));
-		if (! AddIface (i))
-		{
-		CommandLine::Print(_("Couldn't add interface"));
-		return false;
-		}
-	    } else
-	      {
-		Lan::Edit(dev);
-		if (LanItems::startmode == "managed")
-		{
-		    // Continue-Cancel popup
-		   CommandLine::Print(_("The interface is currently set to be managed
-by the NetworkManager applet.
-
-If you edit the settings for this interface here,
-the interface will no longer be managed by NetworkManager.
-"));
-
-		    if (!CommandLine::YesNo()) return false;
-		    //
-		    // TODO move the defaults to GetDefaultsForHW
-		    LanItems::startmode = "ifplugd";
-		}
-	      }
-*/
     if (contains(Map::Keys(options), "ip")) options["bootproto"] = "static";
 
     LanItems::bootproto = options["bootproto"]:"none";
@@ -237,12 +162,7 @@ the interface will no longer be managed by NetworkManager.
         Report::Error(_("Impossible value for startmode!"));
          return false;
         }
-/*
-   CommandLine::Print(sformat("%1 :\t%2", _("Device Type"), LanItems::type));
-   CommandLine::Print(sformat("%1 :\t%2", _("Bootproto"), LanItems::bootproto));
-   CommandLine::Print(sformat("%1 :\t%2",_("IP Address"), LanItems::ipaddr));
-   CommandLine::Print(sformat("%1 :\t%2",_("Mask"), LanItems::netmask));
-*/
+
    LanItems::Commit();
    ShowHandler(options);
     return true;
