@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jun 20 15:11:11 CEST 2008 - mzugec@suse.cz
+
+- download firmware for b43 (bnc#400846)
+- 2.17.3 
+
+-------------------------------------------------------------------
 Thu Jun 19 19:04:03 CEST 2008 - mzugec@suse.cz
 
 - CLI support for VLAN, bonding, bridge
