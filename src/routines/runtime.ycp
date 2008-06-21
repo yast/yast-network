@@ -103,8 +103,8 @@ define boolean SetupSMPPPD(boolean install_force) {
 	// (#299033) - if not forced, user can continue also without packages
         if (!install_force) PackageSystem::CheckAndInstallPackages(["smpppd", "kinternet"]);
 		else
-	Package::InstallAllMsg(["smpppd", "kinternet"], message);
-
+	ret = Package::InstallAllMsg(["smpppd", "kinternet"], message);
+      }
 
 	ret = Service::Enable("smpppd") && ret;
 
@@ -114,8 +114,7 @@ define boolean SetupSMPPPD(boolean install_force) {
 		ret = Service::Reload("smpppd") && ret;
 	    else
 		ret = Service::Start("smpppd") && ret;
-	}
-      }
+	 }
     }
 
     return ret;
