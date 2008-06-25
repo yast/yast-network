@@ -116,8 +116,8 @@ controls the interface. There is no need to set it up in YaST."),
 	// Combo box option for Device Activation
 	"label": _("Manually"),
 	// help text for Device Activation
-	"help": _("<p>Press <b>Manually</b> tocontrol the interface manually
-via ifup or KInternet (See <b>User Controlled</b> below).
+	"help": _("<p><b>Manually</b>: You control the interface manually
+via 'ifup' or 'kinternet' (see 'User Controlled' below)</p>.
 "),
 	],
     "ifplugd": $[

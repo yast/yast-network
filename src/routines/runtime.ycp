@@ -96,7 +96,7 @@ define boolean SetupSMPPPD(boolean install_force) {
 	 {
     string message =
     // notification about package needed 1/2
-    _("<p>The <b>%1</b> packages must be installed because device control for non-root users has benn established.</p>") +
+    _("<p>The <b>%1</b> packages must be installed because device control for non-root users has been established.</p>") +
     // notification about package needed 2/2
     _("<p>Do you want to install it now?</p>");
 
