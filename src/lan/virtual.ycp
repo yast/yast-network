@@ -67,7 +67,10 @@ void initAdditional (string key) {
     list<term> table_items = [];
     /* make ui items from the aliases list */
     maplist(string alias, map data, (map<string,map>) LanItems::aliases, {
-	table_items = add(table_items, `item(`id(size(table_items)), alias, data["IPADDR"]:"", data["NETMASK"]:""));
+	string ip = data["IPADDR"]:"";
+	string mask = data["NETMASK"]:"";
+	if (size(data["PREFIXLEN"]:"")>0) mask=sformat("/%1", data["PREFIXLEN"]:"");
+	table_items = add(table_items, `item(`id(size(table_items)), alias, ip, mask));
     });
 
     UI::ChangeWidget(`id(`table), `Items, table_items);
@@ -134,7 +137,8 @@ void storeAdditional (string key, map event) {
 	maplist(term e, table_items, {
 	    map alias = $[];
 	    alias["IPADDR"] = e[2]:"";
-	    alias["NETMASK"] = e[3]:"";
+		if(substring(e[3]:"", 0,1)=="/") alias["PREFIXLEN"]=substring(e[3]:"", 1);
+			else alias["NETMASK"]=e[3]:"";
 	    LanItems::aliases[e[1]:""] = alias;
 	    aliases_to_delete[e[1]:""] = nil;
 	});
@@ -178,7 +182,7 @@ define term VirtualEditDialog(integer id, term entry, list forbidden) {
 
     UI::ChangeWidget(`id(`name), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
     UI::ChangeWidget(`id(`ipaddr), `ValidChars, IP::ValidChars);
-    UI::ChangeWidget(`id(`netmask), `ValidChars, Netmask::ValidChars);
+//    UI::ChangeWidget(`id(`netmask), `ValidChars, Netmask::ValidChars);
 
     if(entry == `empty())
 	UI::SetFocus(`id(`name));
@@ -219,7 +223,7 @@ define term VirtualEditDialog(integer id, term entry, list forbidden) {
 	host = add(host, val);
 
 	val = (string) UI::QueryWidget(`id(`netmask), `Value);
-	if(!Netmask::Check(val)) {
+	if(!validPrefixOrNetmask(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("The subnet mask is invalid."));
 	    UI::SetFocus(`id(`netmask));

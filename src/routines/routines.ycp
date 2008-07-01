@@ -22,6 +22,7 @@ import "Arch";
 import "Confirm";
 import "Map";
 import "DefaultDesktop";
+import "Netmask";
 
 /**
  * Abort function
@@ -784,5 +785,19 @@ define list<map> ReadHardware(string hwtype) {
     y2debug("Hardware=%1", Hardware);
     return Hardware;
 }
+
+boolean validPrefixOrNetmask(string val){
+
+ boolean valid_mask=false;
+ if (Netmask::Check4(val)) valid_mask=true;
+  else
+   if (regexpmatch(val, "^/[[:digit:]]{1,2}$") && tointeger(substring(val, 1))<=32) valid_mask=true;
+    else
+     if (Netmask::Check6(val)) valid_mask=true;
+      else
+       if (regexpmatch(val, "^/[[:digit:]]{1,3}$") && tointeger(substring(val, 1))<=128) valid_mask=true;
+ return valid_mask;
+}
+
 /* EOF */
 }

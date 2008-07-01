@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Jul  1 17:51:19 CEST 2008 - mzugec@suse.de
+
+- support for "/PREFIXLEN" in aliases
+- common mask/prefix validator
+- IPv6 support in aliases
+- 2.17.6 
+
+-------------------------------------------------------------------
 Tue Jun 24 16:38:56 CEST 2008 - mzugec@suse.cz
 
 - correctly show bonding slaves (bnc#401719)

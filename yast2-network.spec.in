@@ -10,8 +10,8 @@ BuildRequires: yast2-installation >= 2.15.27
 BuildRequires: yast2 >= 2.16.6
 BuildRequires: yast2-packager >= 2.16.37
 
-# needed for prefixlen support
-Requires:	yast2 >= 2.17.1
+# needed for prefixlen support in aliases
+Requires:	yast2 >= 2.17.5
 
 Requires:	sysconfig
 Requires:	yast2-packager >= 2.16.37
