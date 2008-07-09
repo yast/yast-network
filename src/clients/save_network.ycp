@@ -77,6 +77,7 @@ define boolean ReadInstallInf() {
 
     /* Read install.inf items */
     ReadInstallInfItem(install_inf, "ipaddr", "IP");
+    ReadInstallInfItem(install_inf, "ipaddr6", "IP6");
     ReadInstallInfItem(install_inf, "netmask", "Netmask");
     ReadInstallInfItem(install_inf, "bcast", "Broadcast");
     ReadInstallInfItem(install_inf, "remote_ip", "Pointopoint");
@@ -194,9 +195,15 @@ void CreateIfcfg(){
            // add broadcast interface #suse49131
          network_configuration=sformat("BOOTPROTO='static'\nIPADDR='%1/%2'\nBROADCAST='%3'\n",
 	 InstallInf["ipaddr"]:"", Netmask::ToBits(InstallInf["netmask"]:""), InstallInf["bcast"]:"");
+     if(size(InstallInf["ipaddr6"]:"")>0){
+      network_configuration=sformat("%1\n%2", network_configuration,
+      sformat("LABEL_ipv6='ipv6'\nIPADDR_ipv6='%1'", InstallInf["ipaddr6"]:"")
+      );
+     }
     }
     else
     {
+	//DHCP for IPv6 is not implemented yet in sysconfig
        network_configuration="BOOTPROTO='dhcp'\n";
        // set DHCP_SET_HOSTNAME=yes  #suse30528
        y2milestone("set DHCLIENT_SET_HOSTNAME=yes on installed system");
@@ -348,6 +355,11 @@ void save_network(){
     WFM::Execute (.local.bash, sformat (
            "mkdir -p '%2%1'; /bin/cp -p %1/dhcpcd-*.cache '%2%1'",
            "/var/lib/dhcpcd",
+           String::Quote (Installation::destdir)));
+    // Copy DHCPv6 (DHCP for IPv6) client cache.
+    WFM::Execute (.local.bash, sformat (
+           "/bin/cp -p %1/ '%2%1'",
+           "/var/lib/dhcpv6",
            String::Quote (Installation::destdir)));
 
     //Deleting lockfiles and re-triggering udev events for *net is not needed any more
