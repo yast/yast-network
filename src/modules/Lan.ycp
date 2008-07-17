@@ -969,8 +969,8 @@ map<string, string> SysconfigDefaults = $[
     "WIRELESS_CA_CERT": "",
     "WIRELESS_EAP_AUTH": "",
     "WIRELESS_PEAP_VERSION": "",
-
-    "BONDING_MODULE_OPTS": "",
+     // default options for bonding (bnc#404449)
+    "BONDING_MODULE_OPTS": "mode=802.3ad miimon=100",
     ];
 
 string GetDeviceVar (map primary, map fallback, string key) {

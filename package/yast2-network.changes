@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jul 17 18:15:01 CEST 2008 - mzugec@suse.de
+
+- default options for bonding (bnc#404449)
+- 2.13.120 
+
+-------------------------------------------------------------------
 Wed Apr 30 12:00:26 CEST 2008 - mzugec@suse.de
 
 - eth device recognized as lcs (bnc#385094)
