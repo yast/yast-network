@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jul 17 18:12:13 CEST 2008 - mzugec@suse.de
+
+- default options for bonding (bnc#404449)
+- 2.17.8 
+
+-------------------------------------------------------------------
 Wed Jul  9 16:06:44 CEST 2008 - mzugec@suse.de
 
 - configure IPv6 static IP given from Linuxrc (FaTE#302926)
