@@ -76,8 +76,12 @@
    rules = add(rules, sformat("SUBSYSTEM==\"net\", DRIVERS==\"?*\", %1==\"%2\", NAME=\"%3\"",
 						rule["rule"]:"", rule["value"]:"", rule["name"]:""));
   });
-  SCR::Write(.udev_persistent.rules_comment, comment);
-  SCR::Write(.udev_persistent.rules, rules);
+  if (size(rules)>0){
+   y2milestone("Writing AY udev rules for network (will replace original rules from 1st stage)");
+   SCR::Write(.udev_persistent.rules_comment, comment);
+   SCR::Write(.udev_persistent.rules, rules);
+  } else
+     y2milestone("No udev rules defined by AY, nothing to write (keep original file)");
   return true;
  }
 

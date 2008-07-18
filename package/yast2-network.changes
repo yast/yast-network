@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jul 18 13:13:47 CEST 2008 - mzugec@suse.cz
+
+- don't replace udev rules file by AY if nothing defined in profile
+  (bnc#408338)
+- 2.17.9 
+
+-------------------------------------------------------------------
 Thu Jul 17 18:12:13 CEST 2008 - mzugec@suse.de
 
 - default options for bonding (bnc#404449)

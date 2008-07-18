@@ -371,6 +371,9 @@ void save_network(){
     string udev_rules_destdir = sformat("%1%2", String::Quote (Installation::destdir), udev_rules_srcdir);
     string net_destfile = sformat("%1%2/%3", String::Quote (Installation::destdir), udev_rules_srcdir, net_srcfile);
 
+y2internal("udev_rules_destdir %1", udev_rules_destdir);
+y2internal("net_destfile %1", net_destfile);
+
     //Do not create udev_rules_destdir if it already exists (in case of update)
     //(bug #293366, c#7)
 
@@ -378,17 +381,19 @@ void save_network(){
     {
         y2milestone("%1 does not exist yet, creating it", udev_rules_destdir);
         WFM::Execute (.local.bash, sformat ("mkdir -p '%1'", udev_rules_destdir));
-    }
+    } else
+	y2internal("file %1 exists", udev_rules_destdir);
 
     if (! FileUtils::Exists( net_destfile ))
     {
         y2milestone("Copying %1 to the installed system ", net_srcfile);
         WFM::Execute (.local.bash, sformat ("/bin/cp -p '%1/%2' '%3'", udev_rules_srcdir, net_srcfile, net_destfile));
-    }
+    } else
+	y2internal("file %1 exists", net_destfile);
 
     // close and chroot back
-    WFM::SCRClose (new_SCR);
     WFM::SCRSetDefault (old_SCR);
+    WFM::SCRClose (new_SCR);
 
     if (Mode::autoinst()){
        import "LanUdevAuto";
