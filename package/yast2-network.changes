@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jul 22 12:52:40 CEST 2008 - kmachalkova@suse.cz
+
+- Do not force-rewrite /etc/hosts when saving network configuration
+  i.e. keep manual changes (thanks, fissie) (bnc#399084)
+- 2.13.121
+
+-------------------------------------------------------------------
 Thu Jul 17 18:15:01 CEST 2008 - mzugec@suse.de
 
 - default options for bonding (bnc#404449)

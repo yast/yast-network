@@ -13,8 +13,10 @@ module "Host";
 textdomain "network";
 
 import "Hostname";
+import "Map";
 import "String";
 import "Summary";
+import "NetworkDevices";
 
 /**
  * All hosts
@@ -49,6 +51,11 @@ global boolean write_only = false;
 boolean initialized = false;
 
 /**
+ * Original IP address list
+ */
+global list <string> oldips = [];
+
+/**
  * Read hosts settings
  * @return true if success
  */
@@ -68,6 +75,14 @@ global define boolean Read() {
 
     /* save hosts to check for changes later */
     hosts_init = hosts;
+
+    /* save also used static IPs */
+    list<string> devs =
+        NetworkDevices::Locate ("BOOTPROTO", "static") +
+        NetworkDevices::Locate ("BOOTPROTO", "");
+    oldips = maplist(string dev, devs, {
+        return NetworkDevices::GetValue(dev, "IPADDR");
+    });
 
     y2debug("hosts=%1", hosts);
     initialized = true;
@@ -214,6 +229,8 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
     }
     y2debug("Hosts: %1", hosts);
 
+    string ipwithnick = "";
+
     /* Remove old hostname from hosts */
 //    list oldhnlist = [];
     foreach (string ip, list<string> hs, hosts, {
@@ -221,6 +238,9 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
 	    return splitstring(s," ");
 	});
 	wrk = filter (list <string> lst, wrk, {
+	    if (contains(lst, oldnick) && contains(lst, oldhn)) {
+		ipwithnick = ip;
+	    }
 	    return (!contains(lst, oldhn));
         });
 
@@ -228,6 +248,7 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
 	    return mergestring(lst, " ");
         });
     });
+    y2milestone("Hosts: %1", hosts);
 
     /* Resurect the rest of oldhnlist without old hostname */
     // FIXME: maybe
@@ -237,10 +258,22 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
 	hosts["127.0.0.1"] = ["localhost"];
     }
 
+    list <string> system_hosts = (list <string>) GetSystemHosts();
+
     /* Add at least one hostname/ip */
     // but do not overload localhost (#46715)
     if (write_hostname)
 	    if (size(ips) < 1 && nick != "localhost") {
+		//This means we have DHCP config (or even no config at all)
+		//so let's keep system hosts, 127.0.0.2 and foreign hosts only
+		//in such case
+		//#399084
+	        foreach (string ip, list<string> hs, hosts, {
+			if ( !contains(system_hosts, ip) && contains(oldips, ip) ) {
+				hosts[ip] = []; 
+			}
+		});
+
 		y2milestone("No IP found, adding dummy 127.0.0.2");
 		// TODO #42102
 		hosts["127.0.0.2"] = [ newhn + " " + nick ];
@@ -249,23 +282,46 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
 	    }
 
     /* Add hostname/ip for all ips */
+
+    list <string> to_update = (list <string>)union(ips, Map::Keys(hosts_init));
     boolean nickadded = false;
-    maplist(string ip, ips, {
+    maplist(string ip, to_update, {
 
 	/* Only add if not present yet */
 	//		if(haskey(hosts, ip)) return;
 	/* Omit some IP addresses */
-	if(ip == "" || ip == nil || ip == "127.0.0.1" || ip == "127.0.0.2") return;
+	if(ip == "" || ip == nil || contains(system_hosts, ip) || ip == "127.0.0.2") return;
 
-	string name =  newhn ;
-	/* Add nick for the first one */
-	if(!nickadded) {
-	    nickadded = true;
-	    name = newhn + " " +  nick;
+	//this IP no longer exists (device has been deleted/set to DHCP)
+	// => reset the hostname
+ 	if (!contains(ips, ip) && contains(oldips, ip)) {
+	    hosts[ip] = [];
+	    return;
+        }
+
+	//#399084:
+	//Some hostname for this static IP existed before
+	//and it was different from the one to be currently set 
+	// => we need to preserve the hostname
+	if ( (hosts_init[ip]:[] != []) && (hosts[ip]:[] != []) ) {
+	    hosts[ip] = hosts_init[ip]:[];
 	}
+	else {
+	    string name = newhn ;
+	    if (ip == ipwithnick) {
+		nickadded = true;
+		name = newhn + " " + nick;
+	    }
+	    hosts[ip] = [ name ];
+	}
+    });
 
-	hosts[ip] = add(hosts[ip]:[],name);
-
+    maplist(string ip, to_update, {
+	list <string> hst = hosts[ip]:[];
+	if (contains(hst, newhn) && !nickadded) {
+	    nickadded = true;
+	    hosts[ip] = [ newhn + " " + nick ];
+	}
     });
 
     y2milestone("Hosts: %1", hosts);
