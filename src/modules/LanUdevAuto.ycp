@@ -73,7 +73,7 @@
 			"# You can modify it, as long as you keep each rule on a single line." ];
   list<string> rules = [];
   foreach(map rule, udev_rules, {
-   rules = add(rules, sformat("SUBSYSTEM==\"net\", DRIVERS==\"?*\", %1==\"%2\", NAME=\"%3\"",
+   rules = add(rules, sformat("SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", %1==\"%2\", NAME=\"%3\"",
 						rule["rule"]:"", rule["value"]:"", rule["name"]:""));
   });
   if (size(rules)>0){

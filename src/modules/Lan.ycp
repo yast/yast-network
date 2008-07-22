@@ -373,14 +373,12 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 2 */
     ProgressNextStage(_("Writing /etc/modprobe.conf..."));
-    // FIXME: MOD WriteModules();
-//    NetworkModules::Write("netcard");
     sleep(sl);
 
     if(Abort()) return false;
     /* Progress step 3 - multiple devices may be present, really plural*/
     ProgressNextStage(_("Writing device configuration..."));
-    LanItems::WriteUdevDriverRules();
+    if (!Mode::autoinst()) LanItems::WriteUdevDriverRules();
     NetworkInterfaces::Write("netcard");
     // WriteDevices();
     sleep(sl);

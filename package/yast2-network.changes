@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jul 22 12:46:07 CEST 2008 - mzugec@suse.cz
+
+- 2.17.10
+- don't write udev rules in 2nd stage from AY 
+
+-------------------------------------------------------------------
 Fri Jul 18 13:13:47 CEST 2008 - mzugec@suse.cz
 
 - don't replace udev rules file by AY if nothing defined in profile
