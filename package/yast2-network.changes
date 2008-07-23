@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jul 23 15:17:46 CEST 2008 - mzugec@suse.cz
+
+- convert eth-id-xx.. device names in AY profile into ethx and udev 
+  rule
+- 2.17.11 
+
+-------------------------------------------------------------------
 Tue Jul 22 12:46:07 CEST 2008 - mzugec@suse.cz
 
 - 2.17.10

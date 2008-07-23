@@ -11,9 +11,46 @@
 
 {
  module     "LanUdevAuto";
+ include "network/routines.ycp";
+
  textdomain "network";
 
  list<map> udev_rules=[];
+ list <map> hardware=nil;
+
+global string getDeviceName(string oldname){
+ string newname=oldname;
+ if (hardware==nil) hardware=ReadHardware("netcard");
+
+   if (issubstring(oldname, "-id-")){
+    y2milestone("device by ID found %1", oldname);
+
+   string mac_from_ay = splitstring(tostring(oldname), "-")[2]:"";
+    y2milestone("MAC address from AY : %1", mac_from_ay);
+    foreach(map hw, hardware, {
+     y2internal("hw %1", hw["mac"]:"");
+     if (hw["mac"]:""==mac_from_ay){
+      y2milestone("device matched : %1", hw["dev_name"]:"");
+      newname = hw["dev_name"]:"";
+     }
+    });
+   }
+
+   else if (issubstring(oldname, "-bus-")){
+    y2milestone("device by BUS found %1", oldname);
+    string bus_from_ay = splitstring(tostring(oldname), "-")[2]:"";
+    y2milestone("BUSID from AY : %1", bus_from_ay);
+    foreach(map hw, hardware, {
+     y2internal("hw %1", hw["busid"]:"");
+     if (hw["busid"]:""==bus_from_ay){
+      y2milestone("device matched : %1", hw["dev_name"]:"");
+      newname = hw["dev_name"]:"";
+     }
+    });
+   }
+ if (oldname==newname) y2milestone("nothing changed, %1 is old style dev_name", newname);
+ return newname;
+}
 
 /**
  *  internal function:
@@ -36,23 +73,20 @@
  list<map> createUdevFromIfaceName(list<map> interfaces){
   y2milestone("old-style names for interfaces found - convert into new-style");
   y2internal("interfaces %1", interfaces);
-  integer pos=0;
   list<map> tmp_interfaces=[];
   foreach(map interface, interfaces, {
    if (issubstring(interface["device"]:"", "-id-")||issubstring(interface["device"]:"", "-bus-")){
     string value = splitstring(interface["device"]:"", "-")[2]:"";
     string rule="ATTR{address}";
     if (splitstring(interface["device"]:"", "-")[1]:"" == "bus") rule = "KERNELS";
-    interface["device"]=sformat("eth%1", pos);
     udev_rules = add(udev_rules,
 				$[
 				  "rule"  : rule,
 				  "value" : value,
-				  "name"  : interface["device"]:""
+				  "name"  : getDeviceName( interface["device"]:"" )
 				 ]);
     tmp_interfaces=add(tmp_interfaces, interface);
    }
-   pos=pos+1;
   });
   y2milestone("converted interfaces: %1", tmp_interfaces);
   return tmp_interfaces;

@@ -21,6 +21,7 @@ import "Mode";
 import "Map";
 import "NetworkInterfaces";
 import "LanItems";
+import "LanUdevAuto";
 include "network/lan/wizards.ycp";
 include "network/routines.ycp";
 
@@ -83,7 +84,8 @@ define map FromAY(map input)
      t=remove(t,k);
      value=t;
    });
-   }
+   } else
+      if (key=="device") value = LanUdevAuto::getDeviceName(tostring(value));
    iface[key]=value;
   });
   ifaces = add(ifaces, iface);
