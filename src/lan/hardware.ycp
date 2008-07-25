@@ -407,7 +407,7 @@ symbol handleHW (string key, map event) {
 		UI::ChangeWidget(`id(`modul), `Value, hardware["modul"]:"");
 		UI::ChangeWidget(`id(`options), `Value, hardware["options"]:"");
 	    }
-            else if (contains(["bond", "vlan", "br"], hardware["type"]:""))
+            else if (contains(["bond", "vlan", "br", "tun", "tap"], hardware["type"]:""))
             {
                 UI::ChangeWidget(`id(`hwcfg), `Enabled, false);
                 UI::ChangeWidget(`id(`modul), `Enabled, false);

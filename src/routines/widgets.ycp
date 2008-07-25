@@ -275,6 +275,7 @@ string handleDevice(list<string>items, string selected){
 
 define list createUnconfigured(list<string> match){
  list items=[];
+ integer current = LanItems::current;
  foreach(integer row, any value, LanItems::Items,{
   LanItems::current = row;
   if (!LanItems::IsItemConfigured()){
@@ -283,6 +284,7 @@ define list createUnconfigured(list<string> match){
     if (hasAnyValue(dev_name)) items = add(items, `item(`id(dev_name), sformat("%1 - %2", dev_name, description), contains(match, dev_name)?true:false));
     }
  });
+ LanItems::current = current;
  return items;
 }
 

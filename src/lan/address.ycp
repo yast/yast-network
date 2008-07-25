@@ -111,7 +111,7 @@ void StoreAddrWidget (string key, map event) {
  */
 void StoreBridge(string key, map event)
 {
-    settings["BRIDGE_PORTS"] = mergestring((list<string>)UI::QueryWidget (`id("BRIDGE_PORTS"), `SelectedItems), " ");
+    settings["BRIDGE_PORTS"] = String::CutBlanks( mergestring((list<string>)UI::QueryWidget (`id("BRIDGE_PORTS"), `SelectedItems), " ") );
 y2milestone("store bridge %1 : %2", key, settings["BRIDGE_PORTS"]:"");
 }
 
@@ -175,6 +175,20 @@ y2internal("slaves %1", settings["SLAVES"]:[]);
 void StoreSlave(string key, map event)
 {
     settings["SLAVES"] = (list<string>)UI::QueryWidget (`id(key), `SelectedItems);
+}
+
+
+void initTunnel(string key){
+y2internal("initTunnel %1", settings);
+ UI::ChangeWidget(`persistent, `Value, settings["TUNNEL_SET_PERSISTENT"]:""=="yes");
+ UI::ChangeWidget(`owner, `Value, settings["TUNNEL_SET_OWNER"]:"");
+ UI::ChangeWidget(`group, `Value, settings["TUNNEL_SET_GROUP"]:"");
+}
+
+void storeTunnel(string key, map event){
+ settings["TUNNEL_SET_PERSISTENT"]=((boolean)UI::QueryWidget(`persistent, `Value)) ? "yes" : "no";
+ settings["TUNNEL_SET_OWNER"] = (string)UI::QueryWidget(`owner, `Value);
+ settings["TUNNEL_SET_GROUP"] = (string)UI::QueryWidget(`group, `Value);
 }
 
 void enableDisableBootProto(symbol current){
@@ -531,7 +545,20 @@ map<string, map<string,any> > widget_descr_local = $[
 //	"valid_chars": NetworkInterfaces::ValidCharsIfcfg (),
 //	"handle": HandleIfcfg,
 	],
-
+   "TUNNEL" : $[
+	"widget" : `custom,
+	"custom_widget":
+		`VBox(
+		 `Left(`CheckBox(`id(`persistent), _("Persistent Tunnel"))),
+		  `HBox(
+			`InputField(`id(`owner), _("Tunnel owner")),
+			`InputField(`id(`group), _("Tunnel group"))
+		      )
+		),
+	"help" : help["tunnel"]:"",
+	"init" : initTunnel,
+	"store" : storeTunnel,
+    ],
     "BRIDGE_PORTS": $[
         "widget": `multi_selection_box,
         "label": _("Bridged Devices"),
@@ -589,11 +616,11 @@ map<string, map<string,any> > widget_descr_local = $[
 								// TODO : Stat ... Assigned
 		 `Left(`RadioButton(`id(`static), `opt(`notify), _("Statically assigned IP Address"))),
 		  `HBox(
-		  `TextEntry(`id(`ipaddr), _("&IP Address")),
+		  `InputField(`id(`ipaddr), _("&IP Address")),
 		  `HSpacing(1),
-		  `TextEntry(`id(`netmask),  _("&Subnet Mask")),
+		  `InputField(`id(`netmask),  _("&Subnet Mask")),
 		  `HSpacing(1),
-		  `TextEntry(`id(`hostname), _("&Hostname")),
+		  `InputField(`id(`hostname), _("&Hostname")),
 	          `HStretch()
 		  )
 		 )
@@ -701,6 +728,16 @@ define any AddressDialog() {
 	"IFCFGTYPE": LanItems::type,
 	"IFCFGID": LanItems::device,
 	];
+    if (contains(["tun", "tap"], LanItems::type))
+    {
+      settings = $[
+	"BOOTPROTO": "static",
+	"TUNNEL" : LanItems::type,
+	"TUNNEL_SET_PERSISTENT" : LanItems::tunnel_set_persistent ? "yes" : "no",
+	"TUNNEL_SET_OWNER" : LanItems::tunnel_set_owner,
+	"TUNNEL_SET_GROUP" : LanItems::tunnel_set_group
+	];
+    }
 
     string drvtype = DriverType (settings["IFCFGTYPE"]:"");
 
@@ -717,10 +754,10 @@ define any AddressDialog() {
     }
 
     // FIXME duplicated in hardware.ycp
-    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond", "vlan", "br" ];
+    list<string> device_types = [ "arc", "bnep", "dummy", "eth", "fddi", "myri", "tr", "usb", "wlan", "bond", "vlan", "br", "tun", "tap" ];
 
     if(Arch::s390 ())
-	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "ficon", "iucv", "qeth", "lcs", "vlan", "br" ];
+	device_types = [ "eth", "tr", "hsi", "ctc", "escon", "ficon", "iucv", "qeth", "lcs", "vlan", "br", "tun", "tap" ];
 
     if(Arch::ia64 ())
 	device_types = add(device_types, "xp");
@@ -863,9 +900,16 @@ define any AddressDialog() {
                 `Left(label),
 		just_address_contents,
 		`Frame("",  `VBox("BRIDGE_PORTS")),
-//		"AD_ADDRESSES",
 		frame2
 	);
+    }
+    else if (contains(["tun", "tap"], LanItems::type))
+    {
+     address_contents = `VBox(
+			`Left(label),
+			"TUNNEL",
+			frame2
+		);
     }
 
 
@@ -874,6 +918,8 @@ define any AddressDialog() {
         "store" : StoreAddrWidget,
 	`abort : LanItems::Rollback,
     ];
+
+   if (contains(["tun", "tap"], LanItems::type)) functions=$[ `abort:LanItems::Rollback ];
 
 
 
@@ -929,6 +975,7 @@ define any AddressDialog() {
         "fallback_functions" : functions,
     ];
     if (contains(["vlan", "br"], LanItems::type)) wd_content["tab_order"]= ["t_general", "t_addr"];
+    if (contains(["tun", "tap"], LanItems::type)) wd_content["tab_order"]= ["t_addr"];
 
 
     hw_standalone=false;
@@ -960,7 +1007,6 @@ define any AddressDialog() {
     if (ret != `back && ret != `abort)
     {
 	string ifcfgname = LanItems::Items[LanItems::current, "ifcfg"]:"";//settings["IFCFGID"]:"";
-
 	// general tab
 	LanItems::startmode = settings["STARTMODE"]:"";
 	LanItems::usercontrol = settings["USERCONTROL"]:false;
@@ -1023,7 +1069,11 @@ define any AddressDialog() {
 	 LanItems::vlan_etherdevice = settings["ETHERDEVICE"]:"";
 	} else if (LanItems::type == "br"){
          LanItems::bridge_ports = settings["BRIDGE_PORTS"]:"";
-        }
+        } else if (contains(["tun", "tap"], LanItems::type)){
+		 LanItems::tunnel_set_persistent = (settings["TUNNEL_SET_PERSISTENT"]:"" == "yes");
+		 LanItems::tunnel_set_owner = settings["TUNNEL_SET_OWNER"]:"";
+		 LanItems::tunnel_set_group = settings["TUNNEL_SET_GROUP"]:"";
+		}
 
 
 

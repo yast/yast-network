@@ -133,6 +133,13 @@ global string lcs_timeout = "5";
 /* aliases */
 global map aliases = $[];
 
+
+/* for TUN / TAP devices */
+global boolean tunnel_set_persistent=true;
+global string tunnel_set_owner="";
+global string tunnel_set_group="";
+
+
 /* propose options */
 global boolean proposal_valid = false;
 global boolean nm_proposal_valid = false;
@@ -1006,6 +1013,7 @@ map <string, string> ifplugd_priorities = $[
  * @return true if success
  */
 global define boolean Commit() {
+y2internal("name %1, current %2", NetworkInterfaces::Name, NetworkInterfaces::Current);
     if(operation == `add || operation == `edit) {
 	map<string,any> newdev = $[];
 
@@ -1191,6 +1199,15 @@ global define boolean Commit() {
 	if(alias == "") {
 	    newdev["_aliases"] = aliases;
 	    y2milestone("aliases %1", aliases);
+	}
+	if (contains(["tun", "tap"], type)){
+	 newdev=$[
+		"BOOTPROTO" : "static",
+		"TUNNEL" : type,
+		"TUNNEL_SET_PERSISTENT" : tunnel_set_persistent ? "yes" : "no",
+		"TUNNEL_SET_OWNER" : tunnel_set_owner,
+		"TUNNEL_SET_GROUP" : tunnel_set_group
+		];
 	}
 	NetworkInterfaces::Name = Items[current, "ifcfg"]:"";
 	NetworkInterfaces::Current = newdev;
