@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jul 28 11:06:05 CEST 2008 - mzugec@suse.cz
+
+- use all devices for InternetTest, not only eth (bnc#400632)
+- 2.17.13 
+
+-------------------------------------------------------------------
 Fri Jul 25 16:19:08 CEST 2008 - mzugec@suse.cz
 
 - initial support for TUN/TAP (FaTE#302184)
