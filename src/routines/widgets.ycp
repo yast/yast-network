@@ -214,9 +214,9 @@ define string GetDeviceDescription(string device_id) {
 
 
 
-list<string> getEthernetItems(){
+list<string> getInternetItems(){
     NetworkInterfaces::Read();
-    list<string> items = NetworkInterfaces::List("eth");
+    list<string> items = NetworkInterfaces::List("");
     items = filter (string i, items, ``( i != "lo" ));
  return items;
 }

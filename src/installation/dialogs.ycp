@@ -123,7 +123,7 @@ activate the test procedure."),
 
     if(haskey(labels, Internet::type)) label = labels[Internet::type]:"";
 
-list<string> items = getEthernetItems();
+list<string> items = getInternetItems();
 
     boolean already_up = false;
     if(!Mode::test ()) already_up = Internet::Status();
