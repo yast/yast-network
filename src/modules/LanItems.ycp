@@ -1203,6 +1203,7 @@ y2internal("name %1, current %2", NetworkInterfaces::Name, NetworkInterfaces::Cu
 	if (contains(["tun", "tap"], type)){
 	 newdev=$[
 		"BOOTPROTO" : "static",
+		"STARTMODE" : "onboot",
 		"TUNNEL" : type,
 		"TUNNEL_SET_PERSISTENT" : tunnel_set_persistent ? "yes" : "no",
 		"TUNNEL_SET_OWNER" : tunnel_set_owner,

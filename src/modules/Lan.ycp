@@ -1123,29 +1123,42 @@ global list<string> Packages () {
 	if (!PackageSystem::Installed("smpppd")) pkgs = add (pkgs, "smpppd");
     }
 */
-    if (NetworkInterfaces::Locate ("STARTMODE", "ifplugd") != [])
-    {
-	if (!PackageSystem::Installed("ifplugd")) pkgs = add (pkgs, "ifplugd");
-    }
-    // #suse49880
-    if (NetworkInterfaces::List ("wlan") != [])
-    {
-	if (!PackageSystem::Installed("wireless-tools")) pkgs = add (pkgs, "wireless-tools");
-    }
-    if (NetworkInterfaces::List ("vlan") != [])
-    {
-	if (!PackageSystem::Installed("vlan")) pkgs = add (pkgs, "vlan");
-    }
-    if (NetworkInterfaces::List ("br") != [])
-    {
-	if (!PackageSystem::Installed("bridge-utils")) pkgs = add (pkgs, "bridge-utils");
-    }
-    // #47809
-    if (NetworkInterfaces::Locate ("WIRELESS_AUTH_MODE", "psk") != [] ||
-	NetworkInterfaces::Locate ("WIRELESS_AUTH_MODE", "eap") != [])
-    {
-	if (!PackageSystem::Installed("wpa_supplicant")) pkgs = add (pkgs, "wpa_supplicant");
-    }
+   map<string, any> required = $[
+			"types":$[
+				"wlan" : "wireless-tools",
+				"vlan" : "vlan",
+				"br"   : "bridge-utils",
+				"tun"  : "tunctl",
+				"tap"  : "tunctl"
+			],
+			"options":$[
+				"STARTMODE":$[
+					"ifplugd" : "ifplugd"
+				],
+				"WIRELESS_AUTH_MODE":$[
+					"psk" : "wpa_supplicant",
+					"eap" : "wpa_supplicant"
+				]
+			]
+		];
+
+    foreach(string type, (list<string>)Map::Keys(required["types"]:$[]), {
+     string package=required["types", type]:"";
+     if (size( NetworkInterfaces::List(type) ) > 0)
+	y2milestone("Network interface type %1 requires package %2", type, package);
+	if (!PackageSystem::Installed( package )) pkgs = add (pkgs, package);
+    });
+
+
+    foreach(string type, (list<string>)Map::Keys(required["options"]:$[]), {
+     foreach(string option, (list<string>)Map::Keys(required["options", type]:$[]), {
+      string package=required["options", type, option]:"";
+      if (NetworkInterfaces::Locate (type, option) != [])
+       y2milestone("Network interface with options %1, %2 requires package %3", type, option, package);
+       if (!PackageSystem::Installed(package)) pkgs = add (pkgs, package);
+     });
+    });
+
     if (NetworkService::IsManaged ())
     {
 	if (!PackageSystem::Installed("NetworkManager")) pkgs = add (pkgs, "NetworkManager");
