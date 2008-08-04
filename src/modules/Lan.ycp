@@ -39,6 +39,8 @@ import "FileUtils";
 import "PackageSystem";
 import "LanItems";
 import "ModuleLoading";
+import "Linuxrc";
+import "Stage";
 
 include "network/complex.ycp";
 include "network/runtime.ycp";
@@ -399,10 +401,12 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 6 */
     ProgressNextStage(_("Writing hostname and DNS configuration..."));
+    // For ssh/vnc installation don't reload/restart network because possibility of IP change (bnc#347482)
+    if (Stage::cont() && (Linuxrc::usessh() || Linuxrc::vnc())) y2milestone("For ssh or vnc installation don't reload/restart network during installation.");
+     else if (LanItems::force_restart) SCR::Execute(.target.bash, "rcnetwork restart");
+	   else NetworkService::StartStop ();
     // write resolv.conf after change from dhcp to static (#327074)
     // reload/restart network before this to put correct resolv.conf from dhcp-backup
-    if (LanItems::force_restart) SCR::Execute(.target.bash, "rcnetwork restart");
-      else NetworkService::StartStop ();
     DNS::Write();
     Host::Write();
     Progress::set (orig);

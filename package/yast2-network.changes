@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Aug  4 15:56:34 CEST 2008 - mzugec@suse.cz
+
+- for ssh/vnc installation don't reload/restart network because 
+  possibility of IP change (bnc#347482)
+- 2.17.15 
+
+-------------------------------------------------------------------
 Mon Aug  4 13:22:38 CEST 2008 - mzugec@suse.cz
 
 - improved Lan::Packages() function
