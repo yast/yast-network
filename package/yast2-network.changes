@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Aug  5 10:28:41 CEST 2008 - mzugec@suse.cz
+
+- improved help text (bnc#376063) 
+
+-------------------------------------------------------------------
 Mon Aug  4 15:56:34 CEST 2008 - mzugec@suse.cz
 
 - for ssh/vnc installation don't reload/restart network because 
