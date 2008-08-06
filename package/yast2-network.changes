@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Aug  6 09:18:00 CEST 2008 - mzugec@suse.cz
+
+- installation via wireless (bnc#223570)
+- possibility to add bond device into bridge and device with /32 
+  prefixlen (bnc#405343)
+- 2.17.16 
+
+-------------------------------------------------------------------
 Tue Aug  5 10:28:41 CEST 2008 - mzugec@suse.cz
 
 - improved help text (bnc#376063) 
