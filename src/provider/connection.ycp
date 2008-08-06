@@ -48,7 +48,7 @@ define any ConnectionDialog() {
     string DNS1 = Provider::Current["DNS1"]:"";
     string DNS2 = Provider::Current["DNS2"]:"";
 
-    string idletime = Provider::Current["IDLETIME"]:"300";
+    string idletime = Provider::Current["IDLETIME"]:"900";
 
     string device = nil;
     string dtype = nil;
@@ -168,7 +168,8 @@ connection will be shut down (0 means the connection will not time-out).</p>
 	seconds = add(seconds, idletime);
 
     seconds = maplist(string e, (list<string>) seconds, {
-	return `item(`id(sformat("%1", e)), sformat("%1", e), e == idletime);
+										// translators: min - shortcut to "minutes" (fate#303429)
+	return `item(`id(sformat("%1", e)), sformat("%1 (%2 %3)", e, tofloat(e)/60, _("min")), e == idletime);
     });
 
     /* Checkbox label */

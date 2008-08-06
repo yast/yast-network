@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Aug  6 13:00:12 CEST 2008 - mzugec@suse.cz
+
+- increase default idle time-out for modem connection (fate#303429)
+- 2.17.17 
+
+-------------------------------------------------------------------
 Wed Aug  6 09:18:00 CEST 2008 - mzugec@suse.cz
 
 - installation via wireless (bnc#223570)
