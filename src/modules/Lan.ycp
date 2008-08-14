@@ -199,7 +199,7 @@ global define boolean Read (symbol cache) {
     if(Abort()) return false;
 
     // check the environment
-    if(!Confirm::MustBeRoot()) return false;
+//    if(!Confirm::MustBeRoot()) return false;
 
 
     if(Abort()) return false;

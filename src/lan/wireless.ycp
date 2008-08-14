@@ -247,7 +247,10 @@ define any WirelessDialog() ``{
 		 ]),
 		`VSpacing(0.2),
 		/* Text entry label */
-		`TextEntry(`id(`essid), _("Ne&twork Name (ESSID)"), essid),
+		`HBox(
+			`ComboBox(`id(`essid), `opt(`editable), _("Ne&twork Name (ESSID)"), [ essid ]),
+			`PushButton(`id(`scan_for_networks), _("Scan Network"))
+		),
 		`VSpacing(0.2),
 		`ComboBox (`id (`authmode), `opt (`hstretch, `notify),
 				  /* ComboBox label */
@@ -396,6 +399,15 @@ Really continue?
 		}
 	    }
 	    break;
+	}
+	else if (ret == `scan_for_networks){
+	 string command = sformat("ip link set %1 up && iwlist %1 scan|grep ESSID|cut -d':' -f2|cut -d'\"' -f2|sort -u", "wlan0");
+	 map output = (map<string, any>)SCR::Execute(.target.bash_output, command);
+	 if (output["exit"]:-1==0){
+	  list<string> networks = splitstring(output["stdout"]:"", "\n");
+	  y2milestone("Found networks : %1", networks);
+	  UI::ChangeWidget(`essid, `Items, networks);
+	 }
 	}
 	else if (ret != `authmode)
 	{
