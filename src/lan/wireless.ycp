@@ -401,7 +401,7 @@ Really continue?
 	    break;
 	}
 	else if (ret == `scan_for_networks){
-	 string command = sformat("ip link set %1 up && iwlist %1 scan|grep ESSID|cut -d':' -f2|cut -d'\"' -f2|sort -u", "wlan0");
+ 	string command = sformat("ip link set %1 up && iwlist %1 scan|grep ESSID|cut -d':' -f2|cut -d'\"' -f2|sort -u", LanItems::Items[LanItems::current, "ifcfg"]:"");
 	 map output = (map<string, any>)SCR::Execute(.target.bash_output, command);
 	 if (output["exit"]:-1==0){
 	  list<string> networks = splitstring(output["stdout"]:"", "\n");
