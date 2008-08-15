@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Aug 15 16:27:57 CEST 2008 - mzugec@suse.cz
+
+- switch regarding 127.0.0.2 entry in /etc/hosts by control.xml
+  (fate#303875)
+- 2.17.19 
+
+-------------------------------------------------------------------
 Thu Aug 14 10:31:37 CEST 2008 - mzugec@suse.cz
 
 - change hardcoded wlan0 into real device 
