@@ -1148,9 +1148,10 @@ global list<string> Packages () {
 
     foreach(string type, (list<string>)Map::Keys(required["types"]:$[]), {
      string package=required["types", type]:"";
-     if (size( NetworkInterfaces::List(type) ) > 0)
+     if (size( NetworkInterfaces::List(type) ) > 0) {
 	y2milestone("Network interface type %1 requires package %2", type, package);
 	if (!PackageSystem::Installed( package )) pkgs = add (pkgs, package);
+    }
     });
 
 
