@@ -1158,9 +1158,10 @@ global list<string> Packages () {
     foreach(string type, (list<string>)Map::Keys(required["options"]:$[]), {
      foreach(string option, (list<string>)Map::Keys(required["options", type]:$[]), {
       string package=required["options", type, option]:"";
-      if (NetworkInterfaces::Locate (type, option) != [])
+      if (NetworkInterfaces::Locate (type, option) != []){
        y2milestone("Network interface with options %1, %2 requires package %3", type, option, package);
        if (!PackageSystem::Installed(package)) pkgs = add (pkgs, package);
+      }
      });
     });
 
