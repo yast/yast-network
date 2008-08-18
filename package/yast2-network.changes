@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Aug 18 09:03:53 CEST 2008 - mzugec@suse.cz
+
+- fixed Lan::Required() function
+- 2.17.20 
+
+-------------------------------------------------------------------
 Fri Aug 15 16:27:57 CEST 2008 - mzugec@suse.cz
 
 - switch regarding 127.0.0.2 entry in /etc/hosts by control.xml
