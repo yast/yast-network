@@ -103,7 +103,8 @@ void InitBridge(string key)
      foreach(string devnum, (list<string>) Map::Keys(configurations[devtype]:$[]), {
 
         //filter the eth devices (IPADDR=0.0.0.0 - promiscuited mode)
-            if ((string)configurations[devtype, devnum, "IPADDR"]:"" == "0.0.0.0")
+            if (((string)configurations[devtype, devnum, "IPADDR"]:"" == "0.0.0.0")
+		|| (devtype=="bond"))
            {
             string dev_name = NetworkDevices::device_name(devtype, devnum);
              items = add (items, `item(`id(dev_name), dev_name, contains(splitstring(NetworkDevices::Current["BRIDGE_PORTS"]:"", " "), dev_name)) );

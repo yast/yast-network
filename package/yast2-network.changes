@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Aug 18 11:27:26 CEST 2008 - mzugec@suse.de
+
+- L3: allow configured bonding device inside bridge (bnc#405343)
+- 2.13.122 
+
+-------------------------------------------------------------------
 Tue Jul 22 12:52:40 CEST 2008 - kmachalkova@suse.cz
 
 - Do not force-rewrite /etc/hosts when saving network configuration
