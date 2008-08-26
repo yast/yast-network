@@ -76,12 +76,6 @@ map cmdline = $[
 	]
     ],
     "options" : $[
-	"propose" : $[
-	    /* Commandline option help */
-	    "help"	: _("Propose a configuration"),
-	    "example"	: "lan add propose",
-	    "type"	: ""
-	],
 	"configured" : $[
 	    /* Commandline option help */
 	    "help"	: _("List only configured cards")
