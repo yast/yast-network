@@ -52,13 +52,18 @@ map cmdline = $[
 	"show" : $[
 	    /* Commandline command help */
 	    "help"	: _("Display configuration summary"),
-	    "example"	: "lan show id=...",
+	    "example"	: "lan show id=0",
 	    "handler"	: ShowHandler,
 	],
 	"add" : $[
 	    /* Commandline command help */
 	    "help"	: _("Add a network card"),
 	    "handler"	: AddHandler,
+	    "example"	: [
+			   "add device=eth0",
+			   "add device=eth0 type=ethernet bootproto=dhcp",
+			   "add device=eth0 name=bond0"
+			]
 	],
 	"edit" : $[
 	    "help" 	: _("Change existing configuration"),
@@ -89,23 +94,19 @@ map cmdline = $[
 	    /* Commandline option help */
 	    "help"	: _("Device identifier"),
 	    "type"	: "string",
-	    "example"	: "lan add device=eth0"
 	],
 	"id" : $[
 	    /* Commandline option help */
 	    "help"	: _("Config identifier"),
 	    "type"	: "string",
-	    "example"	: "lan show id=0"
 	],
 	"bootproto" : $[
 	    "help"	: _("Use static or dynamic configuration"),
 	    "type"	: "string",
-	    "example"	: "add type=ethernet bootproto=dhcp"
 	],
 	"name" : $[
 	    "help"	: _("Configuration Name"),
 	    "type"	: "string",
-	    "example"	: "add name=bond0"
 	],
 	"bootproto" : $[
 	    /* Commandline option help */
