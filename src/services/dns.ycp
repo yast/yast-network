@@ -70,8 +70,7 @@ define map InitSettings () {
 	"DOMAIN": DNS::domain,
 	"DHCP_HOSTNAME": NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false,
 	// set as true by default because there wasn't this option in previous version
-	"WRITE_HOSTNAME": NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true,
-	"DHCP_RESOLV": NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false,
+	"WRITE_HOSTNAME": NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true
 	];
     // the rest is not so straightforward,
     // because we have list variables but non-list widgets
@@ -79,7 +78,7 @@ define map InitSettings () {
     /* domain search */
     string searchstring = mergestring (DNS::searchlist, "\n");
     // #49094: populate the search list
-    if (searchstring == "" && !settings["DHCP_RESOLV"]:false)
+    if (searchstring == "")
     {
 	searchstring = settings["DOMAIN"]:"";
     }
@@ -109,8 +108,7 @@ define void StoreSettings (map settings) {
     DNS::searchlist = NonEmpty (searchlist);
     NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = settings["DHCP_HOSTNAME"]:false;
     NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"] = settings["WRITE_HOSTNAME"]:true;
-    NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"] = settings["DHCP_RESOLV"]:false;
-    if ((boolean)UI::QueryWidget(`id("MODIFY_RESOLV"), `Value)) DNS::resolv_conf_process="";
+    
     /* update modified flag */
     DNS::modified = true;
     y2milestone("modified DNS");
@@ -154,19 +152,6 @@ define void InitDhcpHostname (string key) {
 }
 
 /**
- * Event handler for DHCP_RESOLV checkbox.
- * enable or disable: is DHCP available and not used now? HUH?!
- * @param key	the widget receiving the event
- * @param event	the event being handled
- * @return nil so that the dialog loops on
- */
-define symbol HandleDhcpResolv (string key, map event) {
-    UI::ChangeWidget (`id ("DHCP_RESOLV"), `Enabled, has_dhcp && resolver_modifiable);
-    if (!has_dhcp) UI::ReplaceWidget(`id ("dh_resolv_text"),`Label(_("No interface with dhcp")));
-    return nil;
-}
-
-/**
  * Event handler for resolver data (nameservers, searchlist)
  * enable or disable: is DHCP available?
  * @param key	the widget receiving the event
@@ -174,9 +159,7 @@ define symbol HandleDhcpResolv (string key, map event) {
  * @return nil so that the dialog loops on
  */
 define symbol HandleResolverData (string key, map event) {
-    boolean dhcp_resolv = (boolean) UI::QueryWidget (`id ("DHCP_RESOLV"), `Value);
-    dhcp_resolv = dhcp_resolv && has_dhcp; // #146162
-    UI::ChangeWidget (`id (key), `Enabled, resolver_modifiable && (!dhcp_resolv));
+    UI::ChangeWidget (`id (key), `Enabled, resolver_modifiable);
     return nil;
 }
 
@@ -258,28 +241,77 @@ define boolean ValidateSearchList (string key, map event) {
 }
 
 
-void initModifyResolv (string key){
-    string process = DNS::resolv_conf_process;
-    if(process == nil || process == "") {
-     resolver_modifiable = true;
-     UI::ChangeWidget(`id("MODIFY_RESOLV"), `Enabled, false);
-    } else {
-	 resolver_modifiable = false;
+void initPolicy(string key) {
+
+	y2milestone("initPolicy: %1", UI::QueryWidget(`id("MODIFY_RESOLV"), `Value));
+	
+	if(UI::QueryWidget(`id("MODIFY_RESOLV"), `Value) == `custom)
+	{
+		UI::ChangeWidget(`id("PLAIN_POLICY"), `Enabled, true);
+		if (UI::QueryWidget(`id("PLAIN_POLICY"), `Value) == "")
+		{
+			UI::ChangeWidget(`id("PLAIN_POLICY"), `Value, DNS::resolv_conf_policy);
+		}
 	}
-    DNS::resolv_conf_force = resolver_modifiable;
+	else
+	{
+		UI::ChangeWidget(`id("PLAIN_POLICY"), `Value, "");
+		UI::ChangeWidget(`id("PLAIN_POLICY"), `Enabled, false);
+	}
 }
 
-symbol handleModifyResolv (string key, map event){
- if ((boolean)UI::QueryWidget(`id("MODIFY_RESOLV"), `Enabled))
-  {
-   if ((boolean)UI::QueryWidget(`id("MODIFY_RESOLV"), `Value))
-    {
-     resolver_modifiable = true;
-    } else {
-	 resolver_modifiable = false;
+symbol handlePolicy(string key, map event) {
+
+	y2milestone("handlePolicy");
+	
+	if(UI::QueryWidget(`id("MODIFY_RESOLV"), `Value) == `custom)
+	{
+		DNS::resolv_conf_policy = (string)UI::QueryWidget(`id("PLAIN_POLICY"), `Value);
 	}
-  }
- return nil;
+	else if(UI::QueryWidget(`id("MODIFY_RESOLV"), `Value) == `auto)
+	{
+		DNS::resolv_conf_policy = "auto";
+	}
+	else
+	{
+		DNS::resolv_conf_policy = "";
+	}
+}
+
+void initModifyResolvPolicy (string key){
+
+	y2milestone("initModifyResolvPolicy");
+	
+	if(DNS::resolv_conf_policy == nil || DNS::resolv_conf_policy == "")
+	{
+		UI::ChangeWidget(`id("MODIFY_RESOLV"), `Value, `id(`nomodify) );
+	}
+	else if(DNS::resolv_conf_policy == "auto" || DNS::resolv_conf_policy == "STATIC *")
+	{
+		UI::ChangeWidget(`id("MODIFY_RESOLV"), `Value, `id(`auto) );
+	}
+	else
+	{
+		UI::ChangeWidget(`id("MODIFY_RESOLV"), `Value, `id(`custom) );
+	}
+}
+
+symbol handleModifyResolvPolicy (string key, map event){
+	y2milestone("handleModifyResolvPolicy called: %1", UI::QueryWidget(`id("MODIFY_RESOLV"), `Value));
+	
+	if (UI::QueryWidget(`id("MODIFY_RESOLV"), `Value) == `nomodify)
+	{
+		resolver_modifiable = false;
+	}
+	else
+	{
+		resolver_modifiable = true;
+	}
+
+	initPolicy(key);
+	
+	y2milestone("Exit: resolver_modifiable = %1", resolver_modifiable);
+	return nil;
 }
 
 
@@ -363,14 +395,28 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
 	// help
 	"help": help["write_hostname"]:"",
 	],
-    "MODIFY_RESOLV" : $[
-	"widget": `checkbox,
-	"label" : _("&Change /etc/resolv.conf manually"),
-	"opt" : [`notify],
-	"init" : initModifyResolv,
-	"handle": handleModifyResolv,
-	"help" : ""
-	],
+	"MODIFY_RESOLV" : $[
+						"widget": `combobox,
+						"label": _("&Modify DNS configuration"),
+						"opt" : [`notify],
+						"items": [ [`nomodify, _("Only Manually")], 
+							   [`auto, _("Use Default Policy")], 
+							   [`custom, _("Use Custom Policy")] ],
+						"init" : initModifyResolvPolicy,
+						"handle": handleModifyResolvPolicy,
+						"help" : ""
+					   ],
+	"PLAIN_POLICY" : $[
+					   "widget": `combobox,
+					   "label": _("&Custom Policy Rule"),
+					   "opt" : [`editable],
+					   "items" : [ [`static, "STATIC"],
+						       [`static_fallback, "STATIC_FALLBACK" ]
+						     ],
+					   "init": initPolicy,
+					   "handle": handlePolicy,
+					   "help" : ""
+					  ],
     "NAMESERVER_1": $[
 	"widget": `textentry,
 	/* textentry label */
@@ -397,16 +443,6 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
 	"validate_type": `function,
 	"validate_function": ValidateSearchList,
 	],
-    "DHCP_RESOLV": $[
-	"widget": `custom,
-	"custom_widget" : `HBox(
-	 `CheckBox(`id("DHCP_RESOLV"), `opt(`notify), _("&Update DNS data via DHCP")),
-	 `ReplacePoint( `id("dh_resolv_text"), `Empty() )
-	),
-	// help
-	"help": "",		// at "SEARCHLIST_S"
-	"handle": HandleDhcpResolv,
-	],
     ];
 
     widget_descr_dns["NAMESERVER_2"] = widget_descr_dns["NAMESERVER_1"]:$[];
@@ -432,7 +468,11 @@ term dns_contents =
 	    `Left("WRITE_HOSTNAME")
 	)),
 	`VSpacing(0.49),
-	`Left("MODIFY_RESOLV"),
+	`Left( `HBox(
+			 "MODIFY_RESOLV",
+			 `HSpacing (1),
+			 "PLAIN_POLICY"
+			) ),
 	/* Frame label */
 	`Frame(_("Name Servers and Domain Search List"), `VBox(
 	`VSquash ( `HBox(
@@ -444,9 +484,7 @@ term dns_contents =
 	    `HSpacing (1),
 	    `HWeight (1, "SEARCHLIST_S")
 	)),
-        `VSpacing(0.49),
-	/* CheckBox label */
-	`Left ("DHCP_RESOLV")
+        `VSpacing(0.49)
 	)
        ),
        `VStretch()
@@ -456,8 +494,8 @@ map dns_td = $[
 	"resolv" : $[
 	    "header" : _("Hostname/DNS"),
 	    "contents" : dns_contents,
-	    "widget_names" : ["HOSTNAME", "HOSTNAME_GLOBAL", "DOMAIN", "DHCP_HOSTNAME", "WRITE_HOSTNAME", "MODIFY_RESOLV",
-				"NAMESERVER_1", "NAMESERVER_2", "NAMESERVER_3", "SEARCHLIST_S", "DHCP_RESOLV"]
+	    "widget_names" : ["HOSTNAME", "HOSTNAME_GLOBAL", "DOMAIN", "DHCP_HOSTNAME", "WRITE_HOSTNAME", "MODIFY_RESOLV", "PLAIN_POLICY",
+				"NAMESERVER_1", "NAMESERVER_2", "NAMESERVER_3", "SEARCHLIST_S"]
             ]
     ];
 

@@ -161,9 +161,7 @@ define map FromAY(map input)
 
     if (haskey(dns, "dhcp_hostname"))
         dhcp["DHCLIENT_SET_HOSTNAME"] = dns["dhcp_hostname"]:false;
-    if (haskey(dns, "dhcp_resolv"))
-        dhcp["DHCLIENT_MODIFY_RESOLV_CONF"] = dns["dhcp_resolv"]:false;
-
+	
     dhcp = UpcaseCondSet (dhcp, dhcpopts, "dhclient_client_id");
     dhcp = UpcaseCondSet (dhcp, dhcpopts, "dhclient_additional_options");
     dhcp = UpcaseCondSet (dhcp, dhcpopts, "dhclient_hostname_option");
@@ -231,11 +229,9 @@ define map ToAY (map settings) {
 
     map config = settings["config"]:$[];
     map dhcp = config["dhcp"]:$[];
-    boolean dhcp_resolv = dhcp["DHCLIENT_MODIFY_RESOLV_CONF"]:false;
     boolean dhcp_hostname = dhcp["DHCLIENT_SET_HOSTNAME"]:false;
     map dns = settings["dns"]:$[];
     dns["dhcp_hostname"] = dhcp_hostname;
-    dns["dhcp_resolv"] = dhcp_resolv;
     map dhcpopts = $[];
     if (haskey(dhcp, "DHCLIENT_HOSTNAME_OPTION"))
         dhcpopts["dhclient_hostname_option"] = dhcp["DHCLIENT_HOSTNAME_OPTION"]:"AUTO";
