@@ -343,9 +343,7 @@ map<string, map<string,any> > widget_descr_dns = $[
 	/* textentry label */
 	"label": Label::HostName (),
 	"opt": [],
-	"help":
-	// help
-_("<p>Enter the name for this computer and the DNS domain that it belongs to.</p>"),
+	"help": help["hostname_global"]:"",
 	"valid_chars": Hostname::ValidChars,
 	"validate_type": `function_no_popup,
 	"validate_function": ValidateHostname,
@@ -355,7 +353,6 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
     "HOSTNAME_GLOBAL": $[
 	"widget": `empty,
 	// #91202
-	"help": help["hostname_global"]:"",
 	"init": initHostnameGlobal,
 	"store": storeHostnameGlobal
 	],
@@ -364,7 +361,6 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
 	/* textentry label */
 	"label": _("&Domain Name"),
 	"opt": [],
-	"help": _("<p>The domain is especially important if this computer is a mail server.</p>"),
 	// Do nothing (the widget doesnt have notify anyway)
 	// In particular do not disable the host and domain name widgets,
 	// setting of FQDN should be possible even if DHCP overrides it.
@@ -404,7 +400,7 @@ _("<p>Enter the name for this computer and the DNS domain that it belongs to.</p
 							   [`custom, _("Use Custom Policy")] ],
 						"init" : initModifyResolvPolicy,
 						"handle": handleModifyResolvPolicy,
-						"help" : ""
+						"help" : help["dns_config_policy"]:"",
 					   ],
 	"PLAIN_POLICY" : $[
 					   "widget": `combobox,

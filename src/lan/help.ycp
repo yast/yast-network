@@ -81,19 +81,17 @@ the device through which the traffic to the defined network will be routed, as w
 _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>"),
 
 "dhcp_hostname":
-_("<p>If you are using DHCP to get an IP address, check whether you get
-a hostname via DHCP. You can see the hostname of you host using the <i>hostname</i> command. The hostname
-will be set automatically by the DHCP client.
-Changing the hostname at runtime may confuse the graphical Desktop. Therefore, disable this option if you connect to different 
-networks that assign different hostnames.
-</p> 
-"),
+_("<p>If you are using DHCP to get an IP address, check whether to get
+also a hostname via DHCP.  The hostname will be set automatically by the DHCP client.
+However, changing the hostname at runtime may confuse the graphical desktop. 
+Therefore, disable this option if you connect to different networks that assign 
+different hostnames.</p> "),
 
 "write_hostname":
-_("<p>If you are using DHCP to get an IP address, your hostname will be written
-to <tt>/etc/hosts</tt> and be resolvable as a <tt>127.0.0.2</tt> IP address.
-This is the default behavior. To disable this option, uncheck this box.
-Now your hostname will not be resolvable without an active network.
+_("<p>Your hostname will be written to <tt>/etc/hosts</tt> and will be 
+resolvable as a <tt>127.0.0.2</tt> IP address. This is the default behavior. 
+To disable such option, uncheck <b>Write Hostname to /etc/hosts</b> box.
+In that case your hostname will not be resolvable without an active network.
 </p> 
 "),
 
@@ -111,27 +109,27 @@ IP addresses. This value must be entered as an <b>IP address</b>
 The primary search domain is usually the same as the domain name of
 your computer (for example, suse.de). There may be additional search domains
 (such as suse.com). Separate the domains with commas or white space.</p>
-") +
-	// resolver dialog help
-    _("<p>If you plan to use a dial-up Internet connection and have set up your
-connection to use dynamic DNS assignment, these values will be temporarily
-disabled during the connection.</p>"),
+"),
 
 "hostname_global":
-_("<p>Optionally enter the name server list and domain search list.</p>")
-+ _("<p>Note that the hostname is global--it applies to all
-interfaces, not just this one.</p>"),
+_("<p>Enter the short name for this computer (e.g. <i>mymachine</i>) and the DNS domain
+(e.g. <i>example.com</i>) that it belongs to. The domain is especially important if this 
+computer is a mail server. You can view the hostname of you computer using the <i>hostname</i> 
+command.</p>"),
 
-"modify_resolv_popup":
-    /* Warning popup text 1/2 */
-_("<p>The resolver configuration file (/etc/resolv.conf)
-has been temporarily modified by %1. You have two options:</p>") +
-
-    /* Warning popup text 2/2 */
-    _("<p>Modify the current version of the file.</p>
-<p>Press <b>Accept</b> and continue editing other data. You are able to return to this dialog at a later time, 
-when the above service has terminated.</p>
-"),
+"dns_config_policy" :
+_("<p>Select the way how DNS configuration (name servers, search list, the content of 
+<i>/etc/resolv.conf</i> file) will be modified. Normally, it is handled by <i>netconfig</i>
+script which merges the data statically defined here with those obtained dynamically (e.g. from
+DHCP client, NetworkManager etc.). This is the default, <b>Use Default Policy</b> option and
+it is sufficient for most of the configurations.</p>") + 
+ 
+_("<p>By choosing <b>Only Manually</b> option, <i>netconfig</i> will no longer be allowed to modify 
+<i>/etc/resolv.conf</i>. You can however edit the file manually. By choosing <b>Use Custom Policy</b> 
+option, you may specify a custom policy string, which consists of comma-separated list of interface 
+names, including wildcards, with STATIC and STATIC_FALLBACK as predefined special values. For more 
+information, see <i>netconfig</i> manual page. Note: leaving the field blank is the same as using <b>
+Only Manually</b> policy.</p>"),
 
 "bootproto":
 	/* Address dialog help 1-6/8: dynamic address preferred */
