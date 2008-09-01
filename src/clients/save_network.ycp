@@ -315,17 +315,21 @@ void CreateOtherNetworkFiles(){
 	    y2warning("No routing information in install.inf");
 
         // create resolv.conf only for static configuration
-        if (size(InstallInf["nameserver"]:"")>0){
-            string text = "";
+        if (size(InstallInf["nameserver"]:"")>0)
+	{
+	    //Do not write /etc/resolv.conf directly, feed the data to sysconfig instead,
+	    //'netconfig' will do the job later on network startup (FaTE #303618)
+	    SCR::Write(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS,  InstallInf["nameserver"]:""); 
+            y2milestone("Writing static nameserver entry: %1", InstallInf["nameserver"]:"");
             //Enter search domain data only if present
             if( size(InstallInf["domain"]:"") > 0)
-              text=sformat("search %1\nnameserver %2\n", InstallInf["domain"]:"", InstallInf["nameserver"]:"");
-            else
-            //If we don't have search domain data, skip 'search' field,
-            //do not leave out 'nameserver' completely - #298001
-              text = sformat("nameserver %1\n", InstallInf["nameserver"]:"");
-            y2milestone("Write resolv.conf content: %1", text);
-            SCR::Write(.target.string, "/etc/resolv.conf", text);
+	    {
+		SCR::Write(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST, InstallInf["domain"]:"");
+                y2milestone("Writing static searchlist entry: %1", InstallInf["domain"]:"");
+	    }
+	    //We're done. It is OK not to touch NETCONFIG_DNS_POLICY now as it is set to 'auto' by default
+	    //and user did not have a chance to modify it up to now
+            SCR::Write(.sysconfig.network.config, nil);
         }
     }
 
