@@ -210,14 +210,14 @@ gateway = element gateway { text }
 dns =
   element dns {
     dhcp_hostname ? &
-    dhcp_resolv ? &
+    resolv_conf_policy ? &
     hostname ? &
     domain ? &
     nameservers ? &
     searchlist ?
   }
 dhcp_hostname = element dhcp_hostname { BOOLEAN }
-dhcp_resolv = element dhcp_resolv { BOOLEAN }
+resolv_conf_policy = element resolv_conf_policy { text }
 hostname = element hostname { text }
 domain = element domain { text }
 nameservers =
