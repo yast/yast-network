@@ -322,7 +322,7 @@ global define boolean Import(map settings) {
     searchlist = (list<string>) eval(settings["searchlist"]:[]);
     //if not defined, set to 'auto'
     resolv_conf_policy = settings["resolv_conf_policy"]:"auto";
-    modified = true
+    modified = true;
     initialized = true;
     return true;
 }
