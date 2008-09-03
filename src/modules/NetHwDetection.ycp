@@ -121,8 +121,12 @@ define boolean StartEthInterface() {
   list<string> interfaces = filter(string s, splitstring(output["stdout"]:"", "\n"), {return (size(s)>0);});
   y2internal("output %1", interfaces);
   foreach(string ifc, interfaces, {
-   y2milestone("Setting up interface %1", ifc);
-   SCR::Execute(.target.bash, sformat("ip link set %1 up", ifc));
+// TODO: do some tests before uncomment block bellow
+//   if ((integer)SCR::Execute(.target.bash, sformat("ip link show %1|head -n1|grep -q \"[^[:alpha:]]UP[^[:alpha:]]\"", ifc))!=0)
+//    {
+     y2milestone("Setting link up for interface %1", ifc);
+     SCR::Execute(.target.bash, sformat("ip link set %1 up", ifc));
+//    } else y2milestone("Link for %1 interface is already up, do nothing", ifc);
   });
  } else y2error("Error while execute %1 : %2", command, output);
 
