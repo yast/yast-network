@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Sep  4 12:47:25 CEST 2008 - mzugec@suse.cz
+
+- fixed yast lan list configured|unconfigured (bnc#420449)
+- 2.17.21 
+
+-------------------------------------------------------------------
 Wed Sep  3 10:50:48 CEST 2008 - kmachalkova@suse.cz
 
 - DNS data configuration adapted to using netconfig (resolv.conf is

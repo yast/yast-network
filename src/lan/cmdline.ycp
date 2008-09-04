@@ -20,18 +20,25 @@ import "Report";
 import "LanItems";
 import "Map";
 
-list <map<string, any> > getConfigList(){
+list <map<string, any> > getConfigList(string config_filter){
  list <map<string, any> > confList = [];
- //integer count = 0;
+ integer count = -1;
  LanItems::BuildLanOverview();
  //list<map<string,any> > overview = (list<map<string,any> >)LanItems::Overview();
  foreach(integer position,any row, LanItems::Items, {
   LanItems::current = position;
-  confList = add(confList, $[tostring(size(confList	)) : $["id" : position,
+  count = count + 1;
+  if (size(LanItems::getCurrentItem()["ifcfg"]:"")>0)
+   {
+	if (config_filter=="unconfigured") continue;
+   } else {
+	if (config_filter=="configured") continue;
+     }
+
+  confList = add(confList, $[ tostring(count) : $["id" : position,
 			"rich_descr" : LanItems::getCurrentItem()["table_descr", "rich_descr"]:"",
 			"descr" : LanItems::getCurrentItem()["table_descr", "table_descr", 0]:"",
 			"addr" : LanItems::getCurrentItem()["table_descr", "table_descr", 1]:""]]);
-//  count = count + 1;
  });
  return confList;
 }
@@ -65,7 +72,7 @@ integer getItem(map<string, string> options, list <map<string, any> > config){
  * @param options action options
  */
 define boolean ShowHandler(map<string, string> options) {
-   list <map<string, any> > config = getConfigList();
+   list <map<string, any> > config = getConfigList("");
    if (validateId(options, config)==false) return false;
     foreach(map<string, any> row, config, {
      foreach(string key, map<string, any> value, (map<string, map<string, any> >) row, {
@@ -81,7 +88,10 @@ define boolean ShowHandler(map<string, string> options) {
 }
 
 define boolean ListHandler(map<string, string> options) {
-    foreach(map<string, any> row, getConfigList(), {
+ string config_filter="";
+ if (contains(Map::Keys(options), "configured")) config_filter="configured";
+ if (contains(Map::Keys(options), "unconfigured")) config_filter="unconfigured";
+    foreach(map<string, any> row, getConfigList(config_filter), {
      foreach(string id, map <string,any> detail, (map<string, map<string, any> >)row, {
       CommandLine::Print(sformat("%1\t%2, %3\n",id, detail["descr"]:"", detail["addr"]:""));
      });
@@ -127,7 +137,7 @@ define boolean AddHandler(map<string, string> options) {
  * @param options action options
  */
 define boolean EditHandler(map<string, string> options) {
-   list <map<string, any> > config = getConfigList();
+   list <map<string, any> > config = getConfigList("");
 
    if (validateId(options, config)==false) return false;
 
@@ -172,7 +182,7 @@ define boolean EditHandler(map<string, string> options) {
  * @param options action options
  */
 define boolean DeleteHandler(map<string, string> options) {
-   list <map<string, any> > config = getConfigList();
+   list <map<string, any> > config = getConfigList("");
    if (validateId(options, config)==false) return false;
    foreach(map<string, any> row, config, {
      foreach(string key, map<string, any> value, (map<string, map<string, any> >) row, {
