@@ -490,13 +490,16 @@ map<string, map<string,any> > widget_descr_local = $[
 	                    _("IP Address"),
 	                    /* Table header label */
 	                    _("Netmask")), []),
-			`HBox(
+			`Left(
+			  `HBox(
 			    /* PushButton label */
 			    `PushButton(`id(`add), _("Ad&d")),
 			    /* PushButton label */
 			    `PushButton(`id(`edit), `opt(`disabled), _("&Edit")),
 			    /* PushButton label */
-			    `PushButton(`id(`delete), `opt(`disabled), _("De&lete"))),
+			    `PushButton(`id(`delete), `opt(`disabled), _("De&lete"))
+			      )
+			    ),
 			`VSpacing(0.49)
 			),
 			`HSpacing(3))),
