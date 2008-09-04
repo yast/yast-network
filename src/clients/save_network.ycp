@@ -203,8 +203,11 @@ void CreateIfcfg(){
     }
     else
     {
-	//DHCP for IPv6 is not implemented yet in sysconfig
-       network_configuration="BOOTPROTO='dhcp'\n";
+	//DHCP (also for IPv6) setup
+       if (InstallInf["bootproto"]:""=="dhcp") network_configuration="BOOTPROTO='dhcp4'\n";
+        else if (InstallInf["bootproto"]:""=="dhcp6") network_configuration="BOOTPROTO='dhcp6'\n";
+		else if (InstallInf["bootproto"]:""=="dhcp,dhcp6") network_configuration="BOOTPROTO='dhcp'\n";
+
        // set DHCP_SET_HOSTNAME=yes  #suse30528
        y2milestone("set DHCLIENT_SET_HOSTNAME=yes on installed system");
        SCR::Execute(.target.bash_output, "sed -i s/\"DHCLIENT_SET_HOSTNAME=.*\"/'DHCLIENT_SET_HOSTNAME=\"yes\"'/g /etc/sysconfig/network/dhcp");

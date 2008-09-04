@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Sep  4 15:18:14 CEST 2008 - mzugec@suse.cz
+
+- IPv6 configuration (fate#304397) 
+- installation with IPv6 (fate#302926)
+- 2.17.22 
+
+-------------------------------------------------------------------
 Thu Sep  4 12:47:25 CEST 2008 - mzugec@suse.cz
 
 - fixed yast lan list configured|unconfigured (bnc#420449)

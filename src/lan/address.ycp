@@ -193,6 +193,7 @@ void storeTunnel(string key, map event){
 
 void enableDisableBootProto(symbol current){
   UI::ChangeWidget(`dyn,	`Enabled, current==`dynamic);
+  UI::ChangeWidget(`dhcp_mode,	`Enabled, current==`dynamic);
   UI::ChangeWidget(`ipaddr,	`Enabled, current==`static);
   UI::ChangeWidget(`netmask,	`Enabled, current==`static);
   UI::ChangeWidget(`hostname,	`Enabled, current==`static);
@@ -214,6 +215,13 @@ void initBootProto (string key) {
 	        UI::ChangeWidget(`id(`hostname), `Value, settings["HOSTNAME"]:"");
 		break;
   case "dhcp" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
+		UI::ChangeWidget(`id(`dhcp_mode), `Value, `dhcp_both);
+		break;
+  case "dhcp4" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
+		UI::ChangeWidget(`id(`dhcp_mode), `Value, `dhcp_v4);
+		break;
+  case "dhcp6" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
+		UI::ChangeWidget(`id(`dhcp_mode), `Value, `dhcp_v6);
 		break;
   case "dhcp+autoip" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
 		UI::ChangeWidget(`id(`dyn), `Value, `dhcp_auto);
@@ -259,7 +267,15 @@ void storeBootProto (string key, map event) {
 		settings["HOSTNAME"]=(string)UI::QueryWidget(`hostname, `Value);
 		break;
    default : switch ((symbol)UI::QueryWidget(`dyn, `Value)){
-		case `dhcp: settings["BOOTPROTO"]="dhcp";
+		case `dhcp:
+			switch((symbol)UI::QueryWidget(`dhcp_mode, `Value)){
+			 case `dhcp_both : settings["BOOTPROTO"]="dhcp";
+					break;
+			 case `dhcp_v4 : settings["BOOTPROTO"]="dhcp4";
+					break;
+			 case `dhcp_v6 : settings["BOOTPROTO"]="dhcp6";
+					break;
+			}
 			break;
 		case `dhcp_auto: settings["BOOTPROTO"]="dhcp+autoip";
 			break;
@@ -610,6 +626,11 @@ map<string, map<string,any> > widget_descr_local = $[
 			`item(`id(`dhcp), "DHCP"),
 			`item(`id(`dhcp_auto), "DHCP+Zeroconf"),
 			`item(`id(`auto), "Zeroconf")
+		   ]),
+		  `ComboBox(`id(`dhcp_mode), "", [
+			`item(`id(`dhcp_both), _("DHCP both version 4 and 6")),
+			`item(`id(`dhcp_v4), _("DHCP version 4 only")),
+			`item(`id(`dhcp_v6), _("DHCP version 6 only"))
 		   ])
 		 )),
 		`VBox(
