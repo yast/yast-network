@@ -104,13 +104,16 @@ define symbol HostsMainDialog(boolean standalone) {
                     _("Hostnames"),
                     /* Table header label */
                     _("Host Aliases")), []),
-		`HBox(
+		`Left(
+		   `HBox(
 		    /* PushButton label */
 		    `PushButton(`id(`add), _("Ad&d")),
 		    /* PushButton label */
 		    `PushButton(`id(`edit), `opt(`disabled), _("&Edit")),
 		    /* PushButton label */
-		    `PushButton(`id(`delete), `opt(`disabled), _("De&lete"))),
+		    `PushButton(`id(`delete), `opt(`disabled), _("De&lete"))
+			)
+		    ),
 		`VSpacing(1)
 		), `HSpacing(3))),
 	    `VSpacing(2)
