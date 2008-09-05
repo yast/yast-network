@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Sep  5 14:34:01 CEST 2008 - mzugec@suse.cz
+
+- support for InfiniBand (fate#304870), (fate#304115)
+- 2.17.23 
+
+-------------------------------------------------------------------
 Thu Sep  4 16:10:43 CEST 2008 - mzugec@suse.cz
 
 - alignment of add/edit/delete (bnc#421037) 

@@ -473,6 +473,7 @@ define string ControllerType(map hwdevice) {
 	else if(subclass_id == 2) return "fddi";
 	else if(subclass_id == 3) return "atm";
 	else if(subclass_id == 4) return "isdn";
+	else if(subclass_id == 6) return "ib";
 	else if(subclass_id == 0x81) return "myri";
 	else if(subclass_id == 0x82) return "wlan";
 	else if(subclass_id == 0x83) return "xp";
@@ -497,6 +498,11 @@ define string ControllerType(map hwdevice) {
 	}
 
     }
+    // exception for infiniband device
+    if(hwdevice["class_id"]:-1 == 12) {
+	if(subclass_id == 6) return "ib";
+    }
+
     /* Communication controller */
     if(hwdevice["class_id"]:-1 == 7) {
 	if(subclass_id == 3) return "modem";
