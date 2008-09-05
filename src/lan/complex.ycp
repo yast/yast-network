@@ -457,12 +457,9 @@ symbol MainDialog(string init_tab) ``{
     string help = CWM::MergeHelps(w);
     contents = CWM::PrepareDialog(contents, w);
 
-    Wizard::SetContentsButtons(caption, contents, help, Label::BackButton (), Label::FinishButton ());
+    Wizard::SetContentsButtons(caption, contents, help, Label::BackButton (), Label::OKButton ());
     Wizard::DisableBackButton();
-    if (Mode::installation()){
-	 Wizard::SetNextButton (`next, Label::OKButton());
-	 Wizard::SetAbortButton(`abort, Label::CancelButton());
-    }
+    Wizard::SetAbortButton(`abort, Label::CancelButton());
     symbol ret = CWM::Run(w, $[`abort:ReallyAbort ]);
     return ret;
 }

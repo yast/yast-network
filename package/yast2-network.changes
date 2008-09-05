@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Sep  5 16:20:12 CEST 2008 - mzugec@suse.cz
+
+- fixed button labeling (bnc#398509) 
+
+-------------------------------------------------------------------
 Fri Sep  5 14:34:01 CEST 2008 - mzugec@suse.cz
 
 - support for InfiniBand (fate#304870), (fate#304115)
