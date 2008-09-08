@@ -411,7 +411,10 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
 	    "caption": caption,
 	    "back_button": Label::BackButton(),
 	    // #182853
-	    "next_button": (Mode::normal ()? Label::FinishButton(): Label::NextButton()),
+//	    "next_button": (Mode::normal ()? Label::FinishButton(): Label::NextButton()),
+	    // button labeling (fate#120373)
+	    "next_button": Label::OKButton(),
+	    "abort_button": Label::CancelButton(),
 	    // #54027
 	    "disable_buttons" : (Mode::normal ()? ["back_button"] : []),
 	    ]);
