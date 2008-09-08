@@ -81,7 +81,7 @@ the device through which the traffic to the defined network will be routed, as w
 _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>"),
 
 "dhcp_hostname":
-_("<p>If you are using DHCP to get an IP address, check whether to get
+_("<p>If you are using DHCP to get an IP address, check whether you get
 also a hostname via DHCP.  The hostname will be set automatically by the DHCP client.
 However, changing the hostname at runtime may confuse the graphical desktop. 
 Therefore, disable this option if you connect to different networks that assign 

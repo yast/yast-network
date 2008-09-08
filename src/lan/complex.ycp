@@ -135,7 +135,7 @@ The driver may be built in the kernel.")))
 	    if ((!Package::Installed(fw) && !Package::Available(fw))){
 	        Popup::Message(sformat(_("Firmware is needed. Install it from 
 %1 Add-On CD.
-First add the Add-On CD to your YaST software repositories and return 
+First add the Add-On CD to your YaST software repositories then return 
 to this configuration dialog.
 "), Product::name));
 		return false;
@@ -143,8 +143,8 @@ to this configuration dialog.
 		if (!contains(LanItems::Requires, fw)) LanItems::Requires = add(LanItems::Requires, fw);
 	}
 	else {
-		return (Popup::ContinueCancel(_("The device needs a firmware to function properly. It can be usually downloaded from your driver vendor web page.\nIf you have already downloaded and installed the firmware, click \'Continue\' 
-to configure the device. Otherwise click \'Cancel\' and return to this dialog
+		return (Popup::ContinueCancel(_("The device needs a firmware to function properly. It can be usually downloaded from your driver vendor web page.\nIf you have already downloaded and installed the firmware, click <b>Continue</b> 
+to configure the device. Otherwise click <b>Cancel</b> and return to this dialog
 once you have installed the firmware.")));
 	}
     }
@@ -158,7 +158,7 @@ once you have installed the firmware.")));
 	if(PackagesInstall(LanItems::Requires) != `next)
 	    return false;
         if (fw=="b43-fwcutter"){
-	    if(Popup::ContinueCancelHeadline(_("Installing firmware"), _("For successful firmware installation, 'install_bcm43xx_firmware' script needs to be executed. Execute it now ?"))){
+	    if(Popup::ContinueCancelHeadline(_("Installing firmware"), _("For successful firmware installation the, 'install_bcm43xx_firmware' script needs to be executed. Execute it now ?"))){
 	    map<string, any> command = (map<string, any>)SCR::Execute(.target.bash_output, "/usr/sbin/install_bcm43xx_firmware");
 	    //y2internal("command %1", command);
 //	 Popup::ShowFile ("Boot Messages", "/tmp/bcm_firmware.log");

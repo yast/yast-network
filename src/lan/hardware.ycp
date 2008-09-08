@@ -33,13 +33,13 @@ your network device here.</p>
     /* Manual network card setup help 2/4 */
     /* translators: do not translated udev, MAC, BusID*/
 _("<p><b>Udev Rules</b> are rules for the Kernel device manager that allow
-associating the MAC address or BusID of the network device with its name (for example,
-eth1, wlan0 ) and assure a persistent device name upon reboot.
+associating MAC address or BusID of the network device with its name (for example,
+eth1, wlan0 ) and assures a persistent device name upon reboot.
 ") + 
 
     /* Manual network card setup help 2/4 */
 _("<p><b>Kernel Module</b>. Enter the kernel module (driver) name 
-for your network device here. If the device is already configured, see if there are more than one drivers available for
+for your network device here. If the device is already configured, see if there is more than one driver available for
 your device in the drop-down list. If necessary, choose a driver from the list, but usually the default value works.</p>
 ") +
 
