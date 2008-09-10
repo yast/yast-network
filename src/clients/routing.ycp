@@ -23,6 +23,7 @@ import "Routing";
 import "Wizard";
 
 import "CommandLine";
+import "String";
 import "RichText";
 import "NetworkService";
 
@@ -59,22 +60,76 @@ any RoutingGUI() {
     return ret;
 }
 
+string PrintableRoutingTable( list <map> items )
+{
+    list <list <string> > table_items = [];
+    foreach (map route, items, {
+	table_items = add( table_items, 
+		[
+		  route["destination"]:"",
+		  route["gateway"]:"",
+		  route["netmask"]:"-",
+		  route["device"]:"-",
+		  route["extrapara"]:""
+		]
+	);
+
+    });
+
+    string headline = String::UnderlinedHeader( _("Routing Table"), 0 );
+    string table = String::TextTable(
+	[
+	    _("Destination"),
+	    _("Gateway"),
+	    _("Netmask"),
+	    _("Device"),
+	    _("Options")
+	],
+	table_items,
+	$[] );
+
+    return headline + "\n" + table;
+
+}
 /**
  * Handler for action "list"
  * @param options action options
  */
-define boolean ListHandler(map<string, string> options) {
+define boolean ListHandler( map <string, string> options ) {
 
-    string summary = "";
-    /* Command line output Headline */
-    summary = "\n" + _("Routing Configuration Summary:") + "\n\n" +
-	RichText::Rich2Plain(Routing::Summary()) + "\n";
+    CommandLine::Print( PrintableRoutingTable( Routing::Routes ) );
+    CommandLine::Print("");
 
-    y2debug("%1", summary);
-    CommandLine::Print(summary);
     return true;
 }
 
+define boolean ShowHandler( map <string, string> options ) {
+    //FIXME: handle empty list
+
+    CommandLine::Print( PrintableRoutingTable (
+	filter( map route, Routing::Routes, {
+	    return (route["destination"]:"" == options["dest"]:"");
+	})
+    ) );
+    CommandLine::Print("");
+
+    return true;
+}
+
+define boolean IPFWHandler( map <string, string> options ) {
+    CommandLine::Print( String::UnderlinedHeader(_("IP Forwarding:"), 0) );
+
+    if (options["show"]:nil != nil)
+    {
+	CommandLine::Print("");
+	if ( Routing::Forward )
+	   CommandLine::Print(_("IP forwarding is enabled"));
+	else
+	   CommandLine::Print(_("IP forwarding is disabled"));
+	CommandLine::Print("");
+    }
+    return true;
+}
 /**
  * Command line definition
  */
@@ -87,11 +142,37 @@ map cmdline = $[
     "finish"	: Routing::Write, // FIXME
     "actions"	: $[
 	"list" : $[
-	    /* Commandline command help */
-	    "help"	: _("Display configuration summary"),
-	    "handler"	: ListHandler,
+	    "help"	: _("Show complete routing table"),
+	    "handler"	: ListHandler, 
+	],
+	"show" : $[
+	    "help"	: _("Show routing table entry for selected destination"),
+	    "handler"	: ShowHandler,
+	],
+	"ip-forwarding" : $[
+	    "help"	: _("IP forwarding settings"),
+	    "handler"   : IPFWHandler,
+	]
+    ],
+    "options" : $[
+	"dest" : $[
+	    "type" : "string",
+	    "help" : _("Destination addresss IP"),
+	],
+	"show" : $[
+	    "help" : _("Show current settings")
+	],
+	"on" : $[
+	    "help" : _("Enable IP forwarding")
+	],
+	"off" : $[
+	    "help" : _("Disable IP forwarding")
 	],
     ],
+    "mappings" : $[
+	"show" : [ "dest" ],
+	"ip-forwarding" : [ "show", "on", "off" ]
+	]
 ];
 
 any ret = CommandLine::Run(cmdline);
