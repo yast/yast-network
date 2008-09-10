@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Sep 10 16:00:40 CEST 2008 - mzugec@suse.de
+
+- special proposal for virtualization network (fate#303386)
+- 2.17.25
+
+-------------------------------------------------------------------
 Mon Sep  8 14:12:22 CEST 2008 - mzugec@suse.cz
 
 - button labeling in isdn module (fate#120373) 

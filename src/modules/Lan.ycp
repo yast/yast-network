@@ -728,6 +728,54 @@ global define boolean ProposeInterfaces () {
     y2milestone("NetworkConfig::Config=%1", NetworkConfig::Config);
     y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);
 
+ // test if we have any virtualization installed
+ boolean has_virtualization = PackageSystem::Installed("xen")||PackageSystem::Installed("kvm")||
+				PackageSystem::Installed("qemu")||PackageSystem::Installed("virtualbox-ose");
+ if (has_virtualization)
+ {
+  y2milestone("Virtualization [xen|kvm|qemu|virtualbox-ose] detected - will propose virtualization network");
+    // in case of virtualization use special proposal
+    // first configure all connected unconfigured devices with dhcp (with default parameters)
+    foreach (integer number, any lanitem, LanItems::Items, {
+	if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) {
+	LanItems::current = number;
+        boolean link = LanItems::getCurrentItem()["hwinfo", "link"]:false;
+	if (!link) y2warning("item number %1 has link:false detected", number);
+	if (!LanItems::IsItemConfigured() && link){
+	  y2milestone("Nothing already configured - start proposing");
+	  LanItems::ProposeItem();
+	 }
+	}
+    });
+
+    // then each configuration (except bridges) move to the bridge
+    // and add old device name into bridge_ports
+    foreach(integer current, any config, LanItems::Items, {
+     string ifcfg = LanItems::Items[current, "ifcfg"]:"";
+     if (! (NetworkInterfaces::GetType(ifcfg)=="br")){
+      NetworkInterfaces::Edit(ifcfg);
+      string new_ifcfg = sformat("br%1", NetworkInterfaces::GetFreeDevice("br"));
+      y2milestone("old configuration %1, bridge %2", ifcfg, new_ifcfg);
+      NetworkInterfaces::Name = new_ifcfg;
+      NetworkInterfaces::Current["BRIDGE"]="yes";
+      NetworkInterfaces::Current["BRIDGE_PORTS"]=ifcfg;
+      // remove description - will be replaced by new (real) one
+      NetworkInterfaces::Current=remove(NetworkInterfaces::Current, "NAME");
+      if( NetworkInterfaces::Commit() ){
+       NetworkInterfaces::Delete(ifcfg);
+       NetworkInterfaces::Commit();
+
+       LanItems::Items[current, "ifcfg"] = new_ifcfg;
+       LanItems::modified=true;
+       LanItems::force_restart=true;
+       y2internal("List %1", NetworkInterfaces::List(""));
+       // re-read configuration to see new items in UI
+       LanItems::Read();
+      } else y2error("error while proposing bridge device for %1", ifcfg);
+     } else y2internal("skipping bridge ...");
+    });
+ } else {
+
     if (! LanItems::nm_proposal_valid)
     {
 	NetworkService::SetManaged (UseNetworkManager ());
@@ -744,6 +792,7 @@ global define boolean ProposeInterfaces () {
     }
 
 
+  }
     /* Something is already configured -> do nothing */
     boolean configured=false;
     foreach (integer number, any lanitem, LanItems::Items, {
@@ -753,7 +802,6 @@ global define boolean ProposeInterfaces () {
 	 configured = true;
 	 break;
         }
-//       }
       });
     if (configured) return false;
 
