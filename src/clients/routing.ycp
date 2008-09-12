@@ -262,22 +262,30 @@ map cmdline = $[
 	"show" : $[
 	    "help"	: _("Show routing table entry for selected destination"),
 	    "handler"	: ShowHandler,
+	    "example"	: "show dest=10.10.1.0"
 	],
 	"ip-forwarding" : $[
 	    "help"	: _("IP forwarding settings"),
 	    "handler"   : IPFWHandler,
+	    "example"	: [
+			    "ip-forwarding show",
+			    "ip-forwarding on",
+			]
 	],
 	"add" : $[
 	    "help"	: _("Add new route"),
-	    "handler"	: AddHandler
+	    "handler"	: AddHandler,
+	    "example"   : "add dest=10.10.1.0 gateway=10.10.1.1 netmask=255.255.255.0"
 	],
 	"edit" : $[
 	    "help"	: _("Edit an existing route"),
-	    "handler"	: EditHandler
+	    "handler"	: EditHandler,
+	    "example"   : "edit dest=10.10.1.0 gateway=10.10.1.1 netmask=255.255.255.0"
 	],
 	"delete" : $[
 	    "help"	: _("Delete an existing route"),
-	    "handler"	: DeleteHandler
+	    "handler"	: DeleteHandler,
+	    "example"	: "delete dest=10.10.1.0"
 	],
     ],
     "options" : $[
