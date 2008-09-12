@@ -48,6 +48,12 @@ if(func == "MakeProposal") {
 	// NM wants us to repropose but while at it Lan::Read should not
 	// think it does a full reread and unset Lan::modified. #147270
 	Lan::Read (force_reset? `nocache: `cache);
+	if (Lan::virt_net_proposal==nil){
+         if(PackageSystem::Installed("xen")||PackageSystem::Installed("kvm")||
+		PackageSystem::Installed("qemu")||PackageSystem::Installed("virtualbox-ose"))
+		Lan::virt_net_proposal = true;
+	 else Lan::virt_net_proposal = false;
+	}
 	Lan::Propose();
 	Progress::set (progress_orig);
 	if (! GetInstArgs::automatic_configuration())

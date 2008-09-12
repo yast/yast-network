@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Sep 12 15:36:38 CEST 2008 - mzugec@suse.cz
+
+- hyperlinks to revert bridged proposal (FaTE#303386)
+- 2.17.26
+
+-------------------------------------------------------------------
 Fri Sep 12 11:39:38 CEST 2008 - kmachalkova@suse.cz
 
 - Added CLI support for routing settings (FaTE#120078)
