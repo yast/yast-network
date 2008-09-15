@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Sep 15 16:36:58 CEST 2008 - mzugec@suse.de
+
+- fixed testsuite 
+
+-------------------------------------------------------------------
 Fri Sep 12 15:36:38 CEST 2008 - mzugec@suse.cz
 
 - hyperlinks to revert bridged proposal (FaTE#303386)

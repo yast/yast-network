@@ -1,4 +1,7 @@
 Read	.target.tmpdir "/tmp"
+Read	.target.stat "/y2update/control.xml" nil
+Read	.target.size "/y2update/control.xml" 1
+Read	.xml "/y2update/control.xml" nil
 Dump	Read
 Read	.target.size "/etc/hosts" 1
 Dir	.etc.hosts: ["10.20.1.29", "127.0.0.1"]
