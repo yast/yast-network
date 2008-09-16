@@ -1,4 +1,7 @@
 Read	.target.tmpdir "/tmp"
+Read	.target.stat "/y2update/control.xml" nil
+Read	.target.size "/y2update/control.xml" 1
+Read	.xml "/y2update/control.xml" nil
 Dump	Read
 Read	.sysconfig.proxy.HTTP_PROXY "h"
 Read	.sysconfig.proxy.HTTPS_PROXY "h"

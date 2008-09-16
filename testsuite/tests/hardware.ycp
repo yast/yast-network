@@ -1,10 +1,15 @@
 {
 
 // testedfiles: hardware.ycp Testsuite.ycp
+    import "Testsuite";
+    map READ = $[
+        "target" : $[
+            "tmpdir" : "/tmp",
+            "stat" : $[],
+        ],
+    ];
+    Testsuite::Init ([READ], 0);
 
-include "testsuite.ycp";
-
-TESTSUITE_INIT([], nil);
 
 string description = "";
 string type = "";
@@ -13,9 +18,9 @@ string hotplug = "";
 list<string> Requires = [];
 include "network/hardware.ycp";
 
-DUMP("DeviceName");
-TEST(``(DeviceName($[])), [], nil);
-TEST(``(DeviceName($["model":"hwmodel"])), [], nil);
-TEST(``(DeviceName($["sub_vendor":"hwvendor", "sub_device":"hwdevice"])), [], nil);
+Testsuite::Dump("DeviceName");
+Testsuite::Test(``(DeviceName($[])), [], nil);
+Testsuite::Test(``(DeviceName($["model":"hwmodel"])), [], nil);
+Testsuite::Test(``(DeviceName($["sub_vendor":"hwvendor", "sub_device":"hwdevice"])), [], nil);
 
 }

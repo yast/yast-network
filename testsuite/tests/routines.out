@@ -1,4 +1,10 @@
 Read	.target.tmpdir "/tmp"
+Read	.target.stat "/y2update/control.xml" $[]
+Read	.target.stat "/control.xml" $[]
+Read	.target.stat "/etc/YaST2/control.xml" $[]
+Read	.target.stat "/usr/share/YaST2/control/control.xml" $[]
+Log	No control file found
+Log	control file missing
 Dump	list2items
 Return	[`item (`id (0), "x", true), `item (`id (1), "y", false)]
 Dump	hwlist2items
