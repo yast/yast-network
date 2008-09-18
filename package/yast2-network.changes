@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Sep 18 11:44:49 CEST 2008 - jsrain@suse.cz
+
+- use release notes of all products when checking internet
+  connection (bnc #413444)
+- 2.17.27
+
+-------------------------------------------------------------------
 Tue Sep 16 15:59:54 CEST 2008 - mzugec@suse.de
 
 - testsuite adapted to new changes (call yast2::XML) 
