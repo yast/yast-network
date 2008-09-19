@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Sep 19 17:45:23 CEST 2008 - mzugec@suse.de
+
+- button labeling in dsl module (bnc#398505)
+- button labeling in modem module (bnc#398508)
+- 2.17.29 
+
+-------------------------------------------------------------------
 Fri Sep 19 14:36:53 CEST 2008 - mzugec@suse.de
 
 - fixed detection of dhcp devices (bnc#427669)
