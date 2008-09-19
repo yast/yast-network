@@ -1170,7 +1170,19 @@ global define boolean Autoinstall() {
  * @return true if any DHCP device is configured
  */
 global define boolean AnyDHCPDevice() {
-    return size(union(NetworkInterfaces::Locate("BOOTPROTO", "dhcp"), NetworkInterfaces::Locate("BOOTPROTO", "dhcp+autoip"))) > 0;
+ // return true if there is at least one device with dhcp4, dhcp6, dhcp or dhcp+autoip
+   return size(
+	  union(
+	    union(
+	     NetworkInterfaces::Locate("BOOTPROTO", "dhcp4"),
+	     NetworkInterfaces::Locate("BOOTPROTO", "dhcp6")
+		 ),
+	   union(
+	     NetworkInterfaces::Locate("BOOTPROTO", "dhcp"),
+	     NetworkInterfaces::Locate("BOOTPROTO", "dhcp+autoip")
+		)
+	       )
+	      ) > 0;
 }
 
 
