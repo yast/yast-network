@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Sep 22 11:20:12 CEST 2008 - mzugec@suse.de
+
+- Modem: check return value of installation (bnc#387716)
+- 2.17.30 
+
+-------------------------------------------------------------------
 Fri Sep 19 17:45:23 CEST 2008 - mzugec@suse.de
 
 - button labeling in dsl module (bnc#398505)

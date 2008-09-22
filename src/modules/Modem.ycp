@@ -22,6 +22,7 @@ import "Progress";
 import "Routing";
 import "Service";
 import "Summary";
+import "Message";
 import "SuSEFirewall4Network";
 
 include "network/complex.ycp";
@@ -239,7 +240,8 @@ global define boolean Write() {
 
     /* Setup SL modem */
     if(contains(Requires, "smartlink-softmodem")) {
-	PackageSystem::CheckAndInstallPackages(Requires);
+	if(!PackageSystem::CheckAndInstallPackages(Requires))
+		Popup::Error(sformat("%1 : smartlink-softmodem",Message::CannotContinueWithoutPackagesInstalled()));
 	y2milestone("Setting up smartlink-softmodem ...");
 
 	Service::Stop("slmodemd");
