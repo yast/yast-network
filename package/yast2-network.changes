@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Sep 22 16:07:34 CEST 2008 - mzugec@suse.de
+
+- add "need firmware" into overview description (bnc#327549)
+- 2.17.31 
+
+-------------------------------------------------------------------
 Mon Sep 22 11:20:12 CEST 2008 - mzugec@suse.de
 
 - Modem: check return value of installation (bnc#387716)

@@ -415,6 +415,40 @@ list GetDescr(){
  return descr;
 }
 
+global boolean needFirmwareCurrentItem(){
+ boolean need = false;
+ if (hasAnyValue(Items[current, "hwinfo", "driver"]:"")){
+  if(haskey(request_firmware, Items[current, "hwinfo", "driver"]:"")) need = true;
+ } else{
+    foreach(map driver, Items[current, "hwinfo", "drivers"]:[], {
+     if(haskey(request_firmware, driver["modules", 0,0]:"")) {
+      y2milestone("driver %1 needs firmware", driver["modules", 0,0]:"");
+      need = true;
+     }
+    });
+  }
+ y2milestone("item %1 needs firmware:%2", current, need);
+ return need;
+}
+
+global string GetFirmwareForCurrentItem(){
+ string kernel_module="";
+ if (hasAnyValue(Items[current, "hwinfo", "driver"]:"")){
+  if(haskey(request_firmware, Items[current, "hwinfo", "driver"]:"")) kernel_module=Items[current, "hwinfo", "driver"]:"";
+ } else{
+    foreach(map driver, Items[current, "hwinfo", "drivers"]:[], {
+     if(haskey(request_firmware, driver["modules", 0,0]:"")) {
+      kernel_module = driver["modules", 0,0]:"";
+      break;
+     }
+    });
+  }
+ string firmware = request_firmware[kernel_module]:"";
+ y2milestone("driver %1 needs firmware %2", kernel_module, firmware);
+
+ return firmware;
+}
+
 global list BuildLanOverview() {
     list<string> overview=[];
     list<string> links=[];
@@ -521,9 +555,19 @@ global list BuildLanOverview() {
    if (!hasAnyValue(Items[key, "hwinfo", "dev_name"]:"") && size(Items[key, "hwinfo"]:$[])>0)
 		rich = rich + _("<p>Unable to configure the network card because the kernel device (eth0, wlan0) is not present. This is mostly caused by missing firmware (for wlan devices). See dmesg output for details.</p>");
 	else if (hasAnyValue(Items[key, "ifcfg"]:"") ) rich = rich + HTML::List (bullets);
-		else rich = rich + _("<p>The device is not configured. Press <b>Edit</b>
+		else {
+			rich = rich + _("<p>The device is not configured. Press <b>Edit</b>
 to configure.</p>
 ");
+		 integer curr=current;
+		 current=key;
+		 if(needFirmwareCurrentItem()){
+		  string fw = GetFirmwareForCurrentItem();
+			 rich = rich+ sformat("%1 : %2",
+				_("Needed firmware"), (fw!="") ? fw : _("unknown"));
+		 }
+		 current=curr;
+		}
 
 
     Items[key, "table_descr"] = $[
@@ -1529,39 +1573,6 @@ global void setDriver(string driver){
  y2milestone("driver %1, %2", driver, getCurrentItem()["hwinfo", "module"]:"");
  if (getCurrentItem()["hwinfo", "module"]:""==driver && !hasAnyValue(getCurrentItem()["udev", "driver"]:"")) return;
  Items[current, "udev", "driver"] = driver;
-}
-
-global boolean needFirmwareCurrentItem(){
- boolean need = false;
- if (hasAnyValue(getCurrentItem()["hwinfo", "driver"]:"")){
-  if(haskey(request_firmware, getCurrentItem()["hwinfo", "driver"]:"")) need = true;
- } else{
-    foreach(map driver, getCurrentItem()["hwinfo", "drivers"]:[], {
-     if(haskey(request_firmware, driver["modules", 0,0]:"")) {
-      y2milestone("driver %1 needs firmware", driver["modules", 0,0]:"");
-      need = true;
-     }
-    });
-  }
- y2milestone("item %1 needs firmware:%2", current, need);
- return need;
-}
-
-global string GetFirmwareForCurrentItem(){
- string kernel_module="";
- if (hasAnyValue(getCurrentItem()["hwinfo", "driver"]:"")){
-  if(haskey(request_firmware, getCurrentItem()["hwinfo", "driver"]:"")) kernel_module=getCurrentItem()["hwinfo", "driver"]:"";
- } else{
-    foreach(map driver, getCurrentItem()["hwinfo", "drivers"]:[], {
-     if(haskey(request_firmware, driver["modules", 0,0]:"")) {
-      kernel_module = driver["modules", 0,0]:"";
-      break;
-     }
-    });
-  }
- string firmware = request_firmware[kernel_module]:"";
- y2milestone("driver %1 needs firmware %2", kernel_module, firmware);
- return firmware;
 }
 
 global boolean enableCurrentEditButton(){
