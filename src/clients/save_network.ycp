@@ -22,6 +22,7 @@ import "Proxy";
 import "Installation";
 import "String";
 import "Mode";
+import "Arch";
 
 include "network/routines.ycp";
 include "network/complex.ycp";
@@ -373,6 +374,14 @@ void save_network(){
     network_disk = NetworkStorage::isDiskOnNetwork( device );
     y2internal("Network based device: %1", network_disk);
 
+
+    if (Arch::s390()){
+     y2milestone("For s390 architecture copy udev rule files (/etc/udev/rules/51*)");
+     WFM::Execute (.local.bash, sformat (
+           "/bin/cp -p %1/51-* '%2%1'",
+           "/etc/udev/rules.d",
+           String::Quote (Installation::destdir)));
+    }
     // --------------------------------------------------------------
     // Copy DHCP client cache so that we can request the same IP (#43974).
     WFM::Execute (.local.bash, sformat (

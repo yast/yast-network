@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Sep 25 19:28:57 CEST 2008 - mzugec@suse.de
+
+- copy udev files for s390 (bnc#422150)
+- 2.17.32 
+
+-------------------------------------------------------------------
 Mon Sep 22 16:07:34 CEST 2008 - mzugec@suse.de
 
 - add "need firmware" into overview description (bnc#327549)
