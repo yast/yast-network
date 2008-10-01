@@ -326,7 +326,7 @@ void writeIPv6(){
 global define boolean Write() {
 
     y2milestone("Writing configuration");
-    if(!write_only && NetHwDetection::running) NetHwDetection::Stop();
+//    if(!write_only && NetHwDetection::running) NetHwDetection::Stop();
 
     /* Stop the detection */
     if(!LanItems::modified) {
@@ -403,10 +403,6 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 6 */
     ProgressNextStage(_("Writing hostname and DNS configuration..."));
-    // For ssh/vnc installation don't reload/restart network because possibility of IP change (bnc#347482)
-    if (Stage::cont() && (Linuxrc::usessh() || Linuxrc::vnc())) y2milestone("For ssh or vnc installation don't reload/restart network during installation.");
-     else if (LanItems::force_restart) SCR::Execute(.target.bash, "rcnetwork restart");
-	   else NetworkService::StartStop ();
     // write resolv.conf after change from dhcp to static (#327074)
     // reload/restart network before this to put correct resolv.conf from dhcp-backup
     DNS::Write();
@@ -438,7 +434,13 @@ global define boolean Write() {
      /* Progress step 9 */
      ProgressNextStage(_("Activating network services..."));
 //	NetworkModules::HwUp ();
-	NetworkService::StartStop ();
+    // For ssh/vnc installation don't reload/restart network because possibility of IP change (bnc#347482)
+    if (Stage::cont() && (Linuxrc::usessh() || Linuxrc::vnc())) y2milestone("For ssh or vnc installation don't reload/restart network during installation.");
+     else if (LanItems::force_restart) Service::Restart("rcnetwork");
+	   else if(Service::Status("network")==0){
+			 Service::Reload("network");
+			} else Service::Restart("network");
+//	NetworkService::StartStop ();
     sleep(sl);
     }
 
