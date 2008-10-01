@@ -444,7 +444,7 @@ y2internal("net_destfile %1", net_destfile);
 
         // if portmap running - start it after reboot
         WFM::Execute (.local.bash,
-        "pidofproc portmap && touch /var/lib/YaST2/network_install_portmap");
+        "pidofproc rpcbind && touch /var/lib/YaST2/network_install_rpcbind");
 
 
     }
