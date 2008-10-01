@@ -436,7 +436,7 @@ global define boolean Write() {
 //	NetworkModules::HwUp ();
     // For ssh/vnc installation don't reload/restart network because possibility of IP change (bnc#347482)
     if (Stage::cont() && (Linuxrc::usessh() || Linuxrc::vnc())) y2milestone("For ssh or vnc installation don't reload/restart network during installation.");
-     else if (LanItems::force_restart) Service::Restart("rcnetwork");
+     else if (LanItems::force_restart) Service::Restart("network");
 	   else if(Service::Status("network")==0){
 			 Service::Reload("network");
 			} else Service::Restart("network");
