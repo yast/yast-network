@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Oct  2 21:21:38 CEST 2008 - mzugec@suse.de
+
+- check NM plugin after network is up (bnc#427374)
+- 2.17.35 
+
+-------------------------------------------------------------------
 Wed Oct  1 15:57:16 CEST 2008 - mzugec@suse.de
 
 - use rpcbind instead of portmap for nfs installation (bnc#423026)

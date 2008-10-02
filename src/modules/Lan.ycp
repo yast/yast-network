@@ -466,12 +466,6 @@ global define boolean Write() {
        sleep(sl);
      }
 
-    if(!CheckNetworkManagerPlugin()) return false;
-    /* Final progress step */
-    ProgressNextStage(_("Finished"));
-    sleep(sl);
-
-    if(Abort()) return false;
     if (NetworkService::IsManaged())
      {
       boolean network=false;
@@ -488,6 +482,12 @@ global define boolean Write() {
       }
      if (!network) Popup::Error(_("No network running"));
     }
+    if(!CheckNetworkManagerPlugin()) return false;
+    /* Final progress step */
+    ProgressNextStage(_("Finished"));
+    sleep(sl);
+
+    if(Abort()) return false;
     return true;
 }
 
