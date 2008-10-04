@@ -127,6 +127,7 @@ global boolean ipa_takeover = false;
 // MAC address handling for IPv4 with the layer2 option
 global boolean qeth_layer2 = false;
 global string qeth_macaddress = "00:00:00:00:00:00";
+global string qeth_chanids = "";
 // Timeout for LCS LANCMD
 global string lcs_timeout = "5";
 
@@ -552,7 +553,7 @@ global list BuildLanOverview() {
 		rich = " " + conn + "<br>" + mac_dev;
 		rich = HTML::Bold ( descr ) + rich;
 
-   if (!hasAnyValue(Items[key, "hwinfo", "dev_name"]:"") && size(Items[key, "hwinfo"]:$[])>0)
+   if (!hasAnyValue(Items[key, "hwinfo", "dev_name"]:"") && size(Items[key, "hwinfo"]:$[])>0 && !Arch::s390())
 		rich = rich + _("<p>Unable to configure the network card because the kernel device (eth0, wlan0) is not present. This is mostly caused by missing firmware (for wlan devices). See dmesg output for details.</p>");
 	else if (hasAnyValue(Items[key, "ifcfg"]:"") ) rich = rich + HTML::List (bullets);
 		else {
@@ -1577,8 +1578,62 @@ global void setDriver(string driver){
 
 global boolean enableCurrentEditButton(){
  if (needFirmwareCurrentItem()) return true;
+ if (Arch::s390()) return true;
  if (!hasAnyValue(LanItems::getCurrentItem()["hwinfo", "dev_name"]:"") && size(LanItems::getCurrentItem()["hwinfo"]:$[])>0) return false;
 	else return true;
+}
+
+global boolean createS390Device(){
+ y2milestone("creating device s390 network device");
+ boolean result=true;
+ // command to create device
+ string command1="";
+ // command to find created device
+ string command2="";
+ switch(type){
+  case "qeth":
+					// chan_ids (read, write, control), port
+	command1=sformat("qeth_configure -p %1 %2 1", chan_mode, qeth_chanids);
+	command2=sformat("ls /sys/devices/%1/%2/net/|head -n1|tr -d '\n'", type, (splitstring(qeth_chanids, " "))[0]:"");
+	break;
+  case "ctc":
+					// chan_ids (read, write), protocol
+	command1=sformat("ctc_configure %1 1 %2", qeth_chanids, chan_mode);
+	command2=sformat("ls /sys/devices/cu3088/%1/net/|head -n1|tr -d '\n'", (splitstring(qeth_chanids, " "))[0]:"");
+	break;
+  case "iucv":
+					// router
+	command1=sformat("iucv_configure %1", chan_mode);
+	command2=sformat("ls /sys/devices/%1/*/net/|head -n1|tr -d '\n'", type);
+	break;
+  default:
+	y2error("Unsupported type : %1", type);
+ }
+ y2milestone("execute %1", command1);
+  map<string, any> output1=(map<string, any>) SCR::Execute(.target.bash_output, command1);
+  if (output1["exit"]:-1==0 && size(output1["stderr"]:"")==0) y2milestone("Success : %1", output1);
+  else{
+	y2error("Problem occured : %1", output1);
+	result=false;
+	}
+  y2milestone("output1 %1", output1);
+
+
+ if (result){
+  y2milestone("command2 %1", command2);
+  map<string, any> output2=(map<string, any>) SCR::Execute(.target.bash_output, command2);
+  y2milestone("output2 %1", output2);
+  if (output2["exit"]:-1==0 && size(output2["stderr"]:"")==0){
+   Items[current, "ifcfg"]    = output2["stdout"]:"";
+   Items[current, "hwinfo", "dev_name"] = output2["stdout"]:"";
+   y2milestone("Device %1 created", output2["stdout"]:"");
+  }else{
+   y2error("Some problem occured : %1", output2);
+   result=false;
+  }
+ }
+
+ return result;
 }
 
 }

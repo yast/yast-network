@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Sat Oct  4 11:25:21 CEST 2008 - mzugec@suse.de
+
+- adapt yast to configure network devices on s390 using udev 
+ (fate#304938)
+- 2.17.36 
+
+-------------------------------------------------------------------
 Thu Oct  2 21:21:38 CEST 2008 - mzugec@suse.de
 
 - check NM plugin after network is up (bnc#427374)

@@ -155,7 +155,8 @@ define symbol NetworkCardSequence(string action) ``{
     if(action == "add") ws_start = "hardware";
 
     /* All S/390 network devices */
-    if(Arch::s390 () && LanItems::operation == `add) {
+//    if(Arch::s390 () && LanItems::operation == `add) {
+    if(Arch::s390 () ) {
 	ws_start = "s390";
     }
 

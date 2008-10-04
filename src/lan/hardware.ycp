@@ -164,7 +164,7 @@ void initHwDialog(string text) {
 	    /* Text entry label */
 	    `ComboBox(`id(`modul), `opt(`editable), _("&Module Name"), hardware["modules_from_hwinfo"]:[]),
 	    `HSpacing(0.2),
-	    `TextEntry(`id(`options), Label::Options (), hardware["options"]:"")
+	    `InputField(`id(`options), `opt(`hstretch), Label::Options (), hardware["options"]:"")
 	),
 	`VSpacing(0.4),
 	CheckBoxes,
@@ -202,7 +202,7 @@ void initHwDialog(string text) {
 		// TODO: Ud ... Rules
 	`Frame(_("Udev rules"),
 	 `HBox(
-	   `TextEntry(`id(`device_name), _("Device Name"), ""),
+	   `InputField(`id(`device_name), `opt(`hstretch), _("Device Name"), ""),
 	   `PushButton(`id(`change_udev), _("Change"))
 	  )
 	 );
@@ -269,7 +269,7 @@ for a particular network card by entering the name in the search entry.</p>");
 	`ReplacePoint(`id(`rp), `SelectionBox(`id(`cards), _("&Network Card"), cards)),
 	`VSpacing(0.5),
 	/* Text entry field */
-	`TextEntry(`id(`search), `opt(`notify), _("&Search")),
+	`InputField(`id(`search), `opt(`hstretch, `notify), _("&Search")),
 	`VSpacing(0.5)
     );
 
@@ -525,6 +525,8 @@ Choose a different one."), nm));
  */
 define any S390Dialog() {
 
+    // already configured device (on hardware layer), skip this dialog
+    if (size(LanItems::Items[LanItems::current, "hwinfo", "dev_name"]:"")>0) return `next;
     ScreenName("lan-hardware-s390");
 
     /* S/390 dialog caption */
@@ -535,17 +537,25 @@ define any S390Dialog() {
     string helptext = "";
     term contents = `Empty ();
 
+
     if(LanItems::type == "qeth") {
+   // CHANIDS
+	list<string> tmp_list=splitstring(LanItems::qeth_chanids, " ");
+        map<string, any> chanids_map = $[
+				 "read" : tmp_list[0]:"",
+				 "write" : tmp_list[1]:"",
+				 "control" : tmp_list[2]:""
+				];
 	contents = `HBox(
 	    `HSpacing(6),
 	    /* Frame label */
 	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
 		`VSpacing(1),
 		/* TextEntry label */
-		`TextEntry(`id(`chan_mode), _("&Port Name"), LanItems::chan_mode),
+		`InputField(`id(`chan_mode), `opt(`hstretch), _("&Port Name"), LanItems::chan_mode),
 		`VSpacing(1),
 		/* TextEntry label */
-		`TextEntry(`id(`qeth_options), Label::Options (), LanItems::qeth_options),
+		`InputField(`id(`qeth_options), `opt(`hstretch), Label::Options (), LanItems::qeth_options),
 		`VSpacing(1),
 		/* CheckBox label */
 		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA Takeover"))),
@@ -553,8 +563,14 @@ define any S390Dialog() {
 		/* CheckBox label */
 		`Left(`CheckBox(`id(`qeth_layer2), `opt(`notify), _("Enable &Layer 2 Support"))),
 		/* TextEntry label */
-		`TextEntry(`id(`qeth_macaddress), _("Layer2 &MAC Address"), LanItems::qeth_macaddress),
-		`VSpacing(1)
+		`InputField(`id(`qeth_macaddress), `opt(`hstretch), _("Layer2 &MAC Address"), LanItems::qeth_macaddress),
+		`VSpacing(1),
+//		`InputField(`id(`qeth_chanids), `opt(`hstretch), _("CHAN IDS"), LanItems::qeth_chanids)
+		`HBox(
+			`InputField(`id(`qeth_chan_read), `opt(`hstretch), _("Read Channel"), chanids_map["read"]:""),
+			`InputField(`id(`qeth_chan_write), `opt(`hstretch), _("Write Channel"), chanids_map["write"]:""),
+			`InputField(`id(`qeth_chan_control), `opt(`hstretch), _("Control Channel"), chanids_map["control"]:"")
+		     )
 		), `HSpacing(2))),
 	    `HSpacing(6)
 	);
@@ -574,7 +590,7 @@ define any S390Dialog() {
 	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
 		`VSpacing(1),
 		/* TextEntry label */
-		`TextEntry(`id(`qeth_options), Label::Options (), LanItems::qeth_options),
+		`InputField(`id(`qeth_options), `opt(`hstretch), Label::Options (), LanItems::qeth_options),
 		`VSpacing(1),
 		/* CheckBox label */
 		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA Takeover"))),
@@ -582,7 +598,7 @@ define any S390Dialog() {
 		/* CheckBox label */
 		`Left(`CheckBox(`id(`qeth_layer2), `opt(`notify), _("Enable &Layer 2 Support"))),
 		/* TextEntry label */
-		`TextEntry(`id(`qeth_macaddress), _("Layer2 &MAC Address"), LanItems::qeth_macaddress),
+		`InputField(`id(`qeth_macaddress), `opt(`hstretch), _("Layer2 &MAC Address"), LanItems::qeth_macaddress),
 		`VSpacing(1)
 		), `HSpacing(2))),
 	    `HSpacing(6)
@@ -601,10 +617,10 @@ define any S390Dialog() {
 	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
 		`VSpacing(1),
 		/* TextEntry label */
-		`TextEntry(`id(`chan_mode), _("&Port Number"), LanItems::chan_mode),
+		`InputField(`id(`chan_mode), `opt(`hstretch), _("&Port Number"), LanItems::chan_mode),
 		`VSpacing(1),
 		/* TextEntry label */
-		`TextEntry(`id(`lcs_timeout), _("&LANCMD Time-Out"), LanItems::lcs_timeout)
+		`InputField(`id(`lcs_timeout), `opt(`hstretch), _("&LANCMD Time-Out"), LanItems::lcs_timeout)
 		), `HSpacing(2))),
 	    `HSpacing(6)
 	);
@@ -625,6 +641,11 @@ define any S390Dialog() {
     ];
 
     if(drvtype == "ctc") {
+	list<string> tmp_list=splitstring(LanItems::qeth_chanids, " ");
+        map<string, any> chanids_map = $[
+				 "read" : tmp_list[0]:"",
+				 "write" : tmp_list[1]:"",
+				];
 	contents = `HBox(
 	    `HSpacing(6),
 	    /* Frame label */
@@ -632,7 +653,11 @@ define any S390Dialog() {
 		`VSpacing(1),
 		/* TextEntry label */
 		`ComboBox(`id(`chan_mode), _("&Protocol"), ctcitems),
-		`VSpacing(1)
+		`VSpacing(1),
+		`HBox(
+			`InputField(`id(`qeth_chan_read), `opt(`hstretch), _("Read Channel"), chanids_map["read"]:""),
+			`InputField(`id(`qeth_chan_write), `opt(`hstretch), _("Write Channel"), chanids_map["write"]:"")
+		     )
 		), `HSpacing(2))),
 	    `HSpacing(6)
 	);
@@ -647,7 +672,7 @@ define any S390Dialog() {
 	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
 		`VSpacing(1),
 		/* TextEntry label, #42789 */
-		`TextEntry(`id(`chan_mode), _("&Peer Name"), ""),
+		`InputField(`id(`chan_mode), `opt(`hstretch), _("&Peer Name"), ""),
 		`VSpacing(1)
 		), `HSpacing(2))),
 	    `HSpacing(6)
@@ -702,6 +727,32 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 	    break;
 	}
 	else if(ret == `next) {
+	if(LanItems::type == "iucv") {
+	    // #176330, must be static
+	    LanItems::nm_name = "static-iucv-id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
+	    LanItems::device = "id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
+	}
+	if (LanItems::type != "hsi")
+	    LanItems::chan_mode = (string) UI::QueryWidget(`id(`chan_mode), `Value);
+
+	if(LanItems::type == "lcs")
+	    LanItems::lcs_timeout = (string) UI::QueryWidget(`id(`lcs_timeout), `Value);
+	if(LanItems::type == "qeth" || LanItems::type == "hsi") {
+	    LanItems::qeth_options = (string) UI::QueryWidget(`id(`qeth_options), `Value);
+	    LanItems::ipa_takeover = (boolean) UI::QueryWidget(`id(`ipa_takeover), `Value);
+	    LanItems::qeth_layer2 = (boolean) UI::QueryWidget(`id(`qeth_layer2), `Value);
+	    LanItems::qeth_macaddress = (string) UI::QueryWidget(`id(`qeth_macaddress), `Value);
+	}
+	    string read = (string) UI::QueryWidget(`id(`qeth_chan_read), `Value);
+	    string write = (string) UI::QueryWidget(`id(`qeth_chan_write), `Value);
+	    string control = (string) UI::QueryWidget(`id(`qeth_chan_control), `Value);
+	    if (control==nil) control="";
+	    LanItems::qeth_chanids = String::CutBlanks( sformat("%1 %2 %3", read, write, control) );
+     if (!LanItems::createS390Device()){
+	Popup::Error(_("An error occured while creating device.\nSee YaST log for details."));
+	ret=nil;
+	continue;
+     };
 	    break;
 	}
 	else if(ret == `qeth_layer2) {
@@ -711,25 +762,6 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 	    y2error("Unexpected return code: %1", ret);
 	    continue;
 	}
-    }
-
-    if(ret == `next) {
-	if(LanItems::type == "iucv") {
-	    // #176330, must be static
-	    LanItems::nm_name = "static-iucv-id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
-	    LanItems::device = "id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
-	}
-	else if (LanItems::type != "hsi")
-	       LanItems::chan_mode = (string) UI::QueryWidget(`id(`chan_mode), `Value);
-	if(LanItems::type == "lcs")
-	    LanItems::lcs_timeout = (string) UI::QueryWidget(`id(`lcs_timeout), `Value);
-	if(LanItems::type == "qeth" || LanItems::type == "hsi") {
-	    LanItems::qeth_options = (string) UI::QueryWidget(`id(`qeth_options), `Value);
-	    LanItems::ipa_takeover = (boolean) UI::QueryWidget(`id(`ipa_takeover), `Value);
-	    LanItems::qeth_layer2 = (boolean) UI::QueryWidget(`id(`qeth_layer2), `Value);
-	    LanItems::qeth_macaddress = (string) UI::QueryWidget(`id(`qeth_macaddress), `Value);
-	}
-
     }
 
     return ret;
