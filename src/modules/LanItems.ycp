@@ -1592,9 +1592,13 @@ global boolean createS390Device(){
  string command2="";
  switch(type){
   case "qeth":
+  case "hsi":
+	if (size(chan_mode)>0)
 					// chan_ids (read, write, control), port
-	command1=sformat("qeth_configure -p %1 %2 1", chan_mode, qeth_chanids);
-	command2=sformat("ls /sys/devices/%1/%2/net/|head -n1|tr -d '\n'", type, (splitstring(qeth_chanids, " "))[0]:"");
+		command1=sformat("qeth_configure -p %1 %2 1", chan_mode, qeth_chanids);
+	else
+		command1=sformat("qeth_configure %1 1", qeth_chanids);
+	command2=sformat("ls /sys/devices/qeth/%1/net/|head -n1|tr -d '\n'", (splitstring(qeth_chanids, " "))[0]:"");
 	break;
   case "ctc":
 					// chan_ids (read, write), protocol

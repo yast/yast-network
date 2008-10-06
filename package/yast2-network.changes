@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Oct  6 14:08:39 CEST 2008 - mzugec@suse.de
+
+- added support for HSI (s390) devices (fate#304938)
+- 2.17.37 
+
+-------------------------------------------------------------------
 Mon Oct  6 13:26:49 CEST 2008 - visnov@suse.cz
 
 - adapt to new Confirm::Detection API (bnc #431276) 

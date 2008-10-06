@@ -538,7 +538,7 @@ define any S390Dialog() {
     term contents = `Empty ();
 
 
-    if(LanItems::type == "qeth") {
+    if(LanItems::type == "qeth" || LanItems::type == "hsi") {
    // CHANIDS
 	list<string> tmp_list=splitstring(LanItems::qeth_chanids, " ");
         map<string, any> chanids_map = $[
@@ -583,32 +583,28 @@ define any S390Dialog() {
 	_("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been configured with layer 2 support.</p>");
     }
 
+/*
     if(LanItems::type == "hsi") {
 	contents = `HBox(
 	    `HSpacing(6),
-	    /* Frame label */
 	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
 		`VSpacing(1),
-		/* TextEntry label */
 		`InputField(`id(`qeth_options), `opt(`hstretch), Label::Options (), LanItems::qeth_options),
 		`VSpacing(1),
-		/* CheckBox label */
 		`Left(`CheckBox(`id(`ipa_takeover), _("&Enable IPA Takeover"))),
 		`VSpacing(1),
-		/* CheckBox label */
 		`Left(`CheckBox(`id(`qeth_layer2), `opt(`notify), _("Enable &Layer 2 Support"))),
-		/* TextEntry label */
 		`InputField(`id(`qeth_macaddress), `opt(`hstretch), _("Layer2 &MAC Address"), LanItems::qeth_macaddress),
 		`VSpacing(1)
 		), `HSpacing(2))),
 	    `HSpacing(6)
 	);
-	/* S/390 dialog help: QETH */
 	helptext = _("<p>Enter any additional <b>Options</b> for this interface (separated by spaces).</p>") +
 	_("<p>Select <b>Enable IPA Takeover</b> if IP address takeover should be enabled for this interface.</p>") +
 	_("<p>Select <b>Enable Layer 2 Support</b> if this card has been configured with layer 2 support.</p>") +
 	_("<p>Enter the <b>Layer 2 MAC Address</b> if this card has been configured with layer 2 support.</p>");
     }
+*/
 
     if(drvtype == "lcs") {
 	contents = `HBox(
@@ -732,7 +728,7 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 	    LanItems::nm_name = "static-iucv-id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
 	    LanItems::device = "id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
 	}
-	if (LanItems::type != "hsi")
+//	if (LanItems::type != "hsi")
 	    LanItems::chan_mode = (string) UI::QueryWidget(`id(`chan_mode), `Value);
 
 	if(LanItems::type == "lcs")
