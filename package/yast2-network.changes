@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Oct  6 13:26:49 CEST 2008 - visnov@suse.cz
+
+- adapt to new Confirm::Detection API (bnc #431276) 
+
+-------------------------------------------------------------------
 Sat Oct  4 11:25:21 CEST 2008 - mzugec@suse.de
 
 - adapt yast to configure network devices on s390 using udev 

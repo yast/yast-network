@@ -601,7 +601,7 @@ define list<map> ReadHardware(string hwtype) {
     /* Confirmation: label text (detecting hardware: xxx) */
     string hwstring = _("All Network Devices");
     if(haskey(hwstrings, hwtype)) hwstring = hwstrings[hwtype]:"";
-    if(!Confirm::Detection(hwstring)) return [];
+    if(!Confirm::Detection(hwstring, "yast-lan")) return [];
 
     /* read the corresponding hardware */
     if(haskey(hwtypes, hwtype))

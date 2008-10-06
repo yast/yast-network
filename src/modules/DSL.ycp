@@ -201,7 +201,7 @@ global define boolean Read() {
     sleep(sl);
 
     // Confirmation: label text (detecting hardware: xxx)
-    if (Confirm::Detection (_("PPPoE DSL Devices")))
+    if (Confirm::Detection (_("PPPoE DSL Devices"), "yast-dsl"))
     {
 	// it doesn't do anything except looking whether probe.pppoe is empty
 	// FIXME: HW
