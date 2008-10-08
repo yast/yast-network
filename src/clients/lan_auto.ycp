@@ -218,6 +218,16 @@ define map ToAY (map settings) {
 
     // Modules
 
+    list s390_devices=[];
+    foreach(string device, map mod, settings["s390-devices"]:$[], {
+     s390_devices=add(s390_devices, mod);
+    });
+
+    list net_udev=[];
+    foreach(string device, map mod, settings["net_udev"]:$[], {
+     net_udev=add(net_udev, mod);
+    });
+
     list modules = [];
     foreach(string device, map mod, settings["hwcfg"]:$[], {
             map newmap = $[];
@@ -253,6 +263,10 @@ define map ToAY (map settings) {
         ret["routing"] = settings["routing"]:$[];
     if (size(interfaces) > 0 )
         ret["interfaces"] = interfaces;
+    if (size(s390_devices) > 0 )
+        ret["s390_devices"] = s390_devices;
+    if (size(net_udev) > 0 )
+        ret["net_udev"] = net_udev;
     return (ret);
 
 }
@@ -292,7 +306,9 @@ else if (func == "GetModified") {
 else if (func == "Export") {
     map settings = Lan::Export();
     y2debug("settings: %1", settings);
+    y2internal("AY after Export: %1", settings);
     map autoyast = ToAY(settings);
+y2internal("AY %1", autoyast);
     ret = autoyast;
 }
 else if (func == "Write") {

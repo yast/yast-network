@@ -23,6 +23,7 @@ import "Installation";
 import "String";
 import "Mode";
 import "Arch";
+import "LanUdevAuto";
 
 include "network/routines.ycp";
 include "network/complex.ycp";
@@ -428,7 +429,6 @@ y2internal("net_destfile %1", net_destfile);
     WFM::SCRClose (new_SCR);
 
     if (Mode::autoinst()){
-       import "LanUdevAuto";
        LanUdevAuto::Write();
     }
 

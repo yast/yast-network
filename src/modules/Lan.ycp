@@ -41,6 +41,7 @@ import "LanItems";
 import "ModuleLoading";
 import "Linuxrc";
 import "Stage";
+import "LanUdevAuto";
 
 include "network/complex.ycp";
 include "network/runtime.ycp";
@@ -536,11 +537,15 @@ global define boolean Import(map settings) {
  * @return dumped settings (later acceptable by Import())
  */
 global define map Export() {
+ map devices = NetworkInterfaces::Export("netcard");
+ map udev_rules = LanUdevAuto::Export(devices);
     return $[
 	"dns"		: DNS::Export(),
 	// FIXME: MOD "modules"	: Modules,
+	"s390-devices"  : udev_rules["s390_devices"]:$[],
+	"net_udev"  	: udev_rules["net_udev"]:$[],
 	"config"	: NetworkConfig::Export(),
-	"devices"	: NetworkInterfaces::Export("netcard"),
+	"devices"	: devices,
 //	"hwcfg"		: NetworkModules::Export("netcard"),
 	"routing"	: Routing::Export(),
 	"managed"	: NetworkService::IsManaged (),

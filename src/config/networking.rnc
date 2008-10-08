@@ -70,6 +70,36 @@ interface =
     dhclient_set_down_link?
   }
 
+
+s390_devices =
+  element device {
+    LIST,
+    device+
+  }
+
+device =
+  element device {
+    element type { text }? &
+    element chanids { text }? &
+    element portname { text }? &
+    element protocol { text }? &
+    element router { text }? &
+  }
+
+
+net_udev =
+  element rule {
+    LIST,
+    rule+
+  }
+
+rule =
+  element rule {
+    element rule { text }? &
+    element value { text }? &
+    element name { text }? &
+  }
+
 remote_ipaddr = element remote_ipaddr { text }
 bootproto = element bootproto { text }
 broadcast = element broadcast { text }

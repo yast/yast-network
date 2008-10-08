@@ -11,11 +11,13 @@
 
 {
  module     "LanUdevAuto";
+ import "LanItems";
  include "network/routines.ycp";
 
  textdomain "network";
 
  list<map> udev_rules=[];
+ list<map> s390_devices=[];
  list <map> hardware=nil;
 
 global string getDeviceName(string oldname){
@@ -93,10 +95,13 @@ global string getDeviceName(string oldname){
  }
 
  global define boolean Import(map settings) {
+y2milestone("importing %1", settings);
   if (oldStyle(settings)) settings["interfaces"] = createUdevFromIfaceName(settings["interfaces"]:[]);
 	else udev_rules = settings["net-udev"]:[];
+  if (Arch::s390()) s390_devices=settings["s390_devices"]:[];
   y2internal("interfaces: %1", settings["interfaces"]:[]);
   y2internal("udev rules:%1", udev_rules);
+  y2internal("s390_devices rules:%1", s390_devices);
   return true;
  }
 
@@ -116,8 +121,88 @@ global string getDeviceName(string oldname){
    SCR::Write(.udev_persistent.rules, rules);
   } else
      y2milestone("No udev rules defined by AY, nothing to write (keep original file)");
+  if (Arch::s390()){
+   foreach(map rule, s390_devices, {
+    LanItems::Select("");
+    LanItems::type=rule["type"]:"";
+    LanItems::qeth_chanids=rule["chanids"]:"";
+    switch(rule["type"]:""){
+     case "qeth":
+		LanItems::chan_mode=rule["portname"]:"";
+		break;
+     case "ctc":
+		LanItems::chan_mode=rule["protocol"]:"";
+		break;
+     case "iucv":
+		LanItems::chan_mode=rule["router"]:"";
+		break;
+    }
+    LanItems::createS390Device();
+    y2internal("%1", rule);
+   });
+   y2internal("Writing s390 rules %1", s390_devices);
+  }
   return true;
  }
 
+global map Export(map devices){
+ map AY=$["s390_devices":$[], "net_udev":$[]];
+ if (Arch::s390()){
+  list<string> devs=[];
+  foreach(string type, any value, (map<string, any>)devices, {
+   devs = (list<string>)union((list)devs, Map::Keys((map)value));
+  });
+  foreach(string device, devs, {
+   map<string, any> driver=(map<string, any>)SCR::Execute(.target.bash_output, sformat("driver=$(ls -l /sys/class/net/%1/device/driver);echo ${driver##*/}|tr -d '\n'", device));
+   string device_type="";
+   string chanids="";
+   string portname="";
+   string protocol="";
+   if(driver["exit"]:-1==0){
+    switch(driver["stdout"]:""){
+     case "qeth":
+	device_type=driver["stdout"]:"";
+	break;
+     case "ctcm":
+	device_type="ctc";
+	break;
+     case "netiucv":
+	device_type="iucv";
+	break;
+     default:
+	y2error("unknown driver type :%1", driver["stdout"]:"");
+    }
+   } else{
+    y2error("%1", driver);
+    continue;
+   }
+  map <string, any> chan_ids=(map<string, any>)SCR::Execute(.target.bash_output,
+		sformat("for i in $(seq 0 2);do chanid=$(ls -l /sys/class/net/%1/device/cdev$i);echo ${chanid##*/};done|tr '\n' ' '", device));
+  if (size(chan_ids["stdout"]:"")>0) chanids=String::CutBlanks(chan_ids["stdout"]:"");
+  map <string, any> port_name=(map<string, any>)SCR::Execute(.target.bash_output, sformat("cat /sys/class/net/%1/device/portname|tr -d '\n'", device));
+  if (size(port_name["stdout"]:"")>0) portname=String::CutBlanks(port_name["stdout"]:"");
+  map <string, any> proto=(map<string, any>)SCR::Execute(.target.bash_output, sformat("cat /sys/class/net/%1/device/protocol|tr -d '\n'", device));
+  if (size(proto["stdout"]:"")>0) protocol=String::CutBlanks(proto["stdout"]:"");
+
+   AY["s390_devices", device]=$["type":device_type];
+   if (size(chanids)>0) AY["s390_devices", device, "chanids"]=chanids;
+//   if (size(portname)>0) AY[device, "portname"]=portname;
+   if (size(protocol)>0) AY["s390_devices", device, "protocol"]=protocol;
+
+   map<string, any> port0 = (map<string, any>)SCR::Execute(.target.bash_output, sformat("port0=$(ls -l /sys/class/net/%1/device/cdev0);echo ${port0##*/}|tr -d '\n'", device));
+y2internal("port0 %1", port0);
+   if (size(port0["stdout"]:"")>0){
+    string value = port0["stdout"]:"";
+    AY["net_udev", device]=$["rule"  : "KERNELS",
+			     "name"  : device,
+			     "value" : value
+			    ];
+   }
+  });
+//  AY=$["device":$["type":"qeth"]];
+ }
+ y2internal("AY profile %1", AY);
+ return AY;
+}
 
 }
