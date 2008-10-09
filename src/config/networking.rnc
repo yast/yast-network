@@ -71,7 +71,7 @@ interface =
   }
 
 
-s390_devices =
+s390-devices =
   element device {
     LIST,
     device+
@@ -87,7 +87,7 @@ device =
   }
 
 
-net_udev =
+net-udev =
   element rule {
     LIST,
     rule+

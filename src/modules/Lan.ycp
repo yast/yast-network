@@ -542,8 +542,8 @@ global define map Export() {
     return $[
 	"dns"		: DNS::Export(),
 	// FIXME: MOD "modules"	: Modules,
-	"s390-devices"  : udev_rules["s390_devices"]:$[],
-	"net_udev"  	: udev_rules["net_udev"]:$[],
+	"s390-devices"  : udev_rules["s390-devices"]:$[],
+	"net-udev"  	: udev_rules["net-udev"]:$[],
 	"config"	: NetworkConfig::Export(),
 	"devices"	: devices,
 //	"hwcfg"		: NetworkModules::Export("netcard"),

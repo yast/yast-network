@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Oct  9 10:21:52 CEST 2008 - mzugec@suse.de
+
+- for s390 devices added AY read/write support (fate#304938)
+- 2.17.38 
+
+-------------------------------------------------------------------
 Mon Oct  6 14:08:39 CEST 2008 - mzugec@suse.de
 
 - added support for HSI (s390) devices (fate#304938)

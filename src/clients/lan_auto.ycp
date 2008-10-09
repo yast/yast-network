@@ -224,7 +224,7 @@ define map ToAY (map settings) {
     });
 
     list net_udev=[];
-    foreach(string device, map mod, settings["net_udev"]:$[], {
+    foreach(string device, map mod, settings["net-udev"]:$[], {
      net_udev=add(net_udev, mod);
     });
 
@@ -264,9 +264,9 @@ define map ToAY (map settings) {
     if (size(interfaces) > 0 )
         ret["interfaces"] = interfaces;
     if (size(s390_devices) > 0 )
-        ret["s390_devices"] = s390_devices;
+        ret["s390-devices"] = s390_devices;
     if (size(net_udev) > 0 )
-        ret["net_udev"] = net_udev;
+        ret["net-udev"] = net_udev;
     return (ret);
 
 }
@@ -285,7 +285,6 @@ else if (func == "Change") {
 }
 else if(func == "Import") {
     map new = FromAY(param);
-y2internal("AY new %1", new);
     Lan::Import(new);
     ret = true;
 }
@@ -306,9 +305,7 @@ else if (func == "GetModified") {
 else if (func == "Export") {
     map settings = Lan::Export();
     y2debug("settings: %1", settings);
-    y2internal("AY after Export: %1", settings);
     map autoyast = ToAY(settings);
-y2internal("AY %1", autoyast);
     ret = autoyast;
 }
 else if (func == "Write") {
