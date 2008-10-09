@@ -260,6 +260,8 @@ void storeBootProto (string key, map event) {
 		settings["PREFIXLEN"] = "";
 		break;
    case `static: settings["BOOTPROTO"]="static";
+		settings["NETMASK"] = "";
+		settings["PREFIXLEN"] = "";
 		settings["IPADDR"]=(string)UI::QueryWidget(`ipaddr, `Value);
 		string mask = (string)UI::QueryWidget(`netmask, `Value);
 		if(substring(mask, 0,1)=="/") settings["PREFIXLEN"]=substring(mask, 1);
@@ -1064,6 +1066,7 @@ define any AddressDialog() {
 
 	    LanItems::ipaddr = settings["IPADDR"]:"";
 	    LanItems::netmask = settings["NETMASK"]:"";
+	    LanItems::prefix = settings["PREFIXLEN"]:"";
 	    LanItems::remoteip = settings["REMOTEIP"]:"";
 
 	    if ( (hostname_initial != settings["HOSTNAME"]:"") || ip_changed)
