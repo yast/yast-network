@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Oct 13 10:10:18 CEST 2008 - locilka@suse.cz
+
+- Fixed help texts (bnc#430521)
+
+-------------------------------------------------------------------
 Thu Oct  9 12:04:21 CEST 2008 - mzugec@suse.de
 
 - fixed IPv6 prefixlen problem (bnc#428128)

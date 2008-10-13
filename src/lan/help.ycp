@@ -59,7 +59,7 @@ _("<p><b><big>IPv6 Protocol Settings</big></b></p>
 It is possible to use IPv6 together with IPv4. This is a default option.
 To disable IPv6, uncheck this option (this will blacklist the kernel 
 module for ipv6). If the IPv6 protocol is not used on your network, the response 
-time can be faster.
+time can be faster.</p>
 ")
  +
 _("<p>All changes will be applied after reboot.</p>"),
@@ -73,9 +73,9 @@ used instead of the default route. The idea of the default route is simply
 to enable you to say \"and everything else should go here.\"</p>
 ") +
 
-_("For each route, enter destination network IP address, gateway address,
+_("<p>For each route, enter destination network IP address, gateway address,
 and netmask. To omit any of these values, use dash sign \"-\". Select
-the device through which the traffic to the defined network will be routed, as well.\"-\" is an alias for any interface.
+the device through which the traffic to the defined network will be routed, as well.\"-\" is an alias for any interface.</p>
 ") +
     /* Routing dialog help 2/2 */
 _("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>"),
@@ -147,11 +147,11 @@ assigned by the system administrator or your Internet provider.</p>
     /* Address dialog help 3/8 */
     _("<p>You can choose one of the dynamic address assignment methods. Select <b>DHCP</b>
 if you have a DHCP server running on your local network. Network addresses are then 
-obtained automatically from the server.<p>
+obtained automatically from the server.</p>
 ") 
  +
     /* Address dialog help 4/8 */
-   _("To search for an IP address and assign it statically, select 
+   _("<p>To search for an IP address and assign it statically, select 
 <b>Zeroconf</b>. To use DHCP and fall back to zeroconf, select <b>DHCP + Zeroconf
 </b>. Otherwise, the network addresses must be assigned <b>Statically</b>.</p>
 "),
