@@ -83,7 +83,7 @@ device =
     element chanids { text }? &
     element portname { text }? &
     element protocol { text }? &
-    element router { text }? &
+    element router { text }?
   }
 
 
@@ -97,7 +97,7 @@ rule =
   element rule {
     element rule { text }? &
     element value { text }? &
-    element name { text }? &
+    element name { text }?
   }
 
 remote_ipaddr = element remote_ipaddr { text }
