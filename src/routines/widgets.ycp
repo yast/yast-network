@@ -198,7 +198,7 @@ define string GetDeviceDescription(string device_id) {
     //if (size(device_name) > 30) {
     //    device_name = substring (device_name, 0, 27) + "...";
     //}
-    string ip_addr = (NetworkInterfaces::GetValue(device_id, "BOOTPROTO") == "dhcp" ?
+    string ip_addr = (issubstring(NetworkInterfaces::GetValue(device_id, "BOOTPROTO"), "dhcp") ?
 		   // TRANSLATORS: Part of label, device with IP address assigned by DHCP
                     _("DHCP address") :
 		   // TRANSLATORS: Part of label, device with static IP address

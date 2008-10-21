@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Oct 21 16:33:54 CEST 2008 - mzugec@suse.de
+
+- fixed device description (bnc#437326)
+- 2.17.43 
+
+-------------------------------------------------------------------
 Mon Oct 20 18:12:05 CEST 2008 - mzugec@suse.de
 
 - installation via p-t-p devices (bnc#436956)
