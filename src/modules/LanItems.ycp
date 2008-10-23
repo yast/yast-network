@@ -203,20 +203,6 @@ global string GetItemUdev(string key){
   }
  });
  return value;
-// column: 0 mens rule, 1 means NAME
-/*
- list<string> udevs=["", ""];
- if (size(Items[current, "udev", "net"]:[])>3)
- {
-  foreach(string row, Items[current, "udev", "net"]:[], {
-  if (issubstring(row, "ATTR{address}")||issubstring(row, "KERNELS")) udevs[0]=row;
-	else if (issubstring(row, "NAME")) udevs[1]=regexpsub (row, ".*=[\"]*([^ ]*)\"$", "\\1");
-
-  });
- }
-y2internal("udevs %1", udevs);
- return udevs;
-*/
 }
 
 global list<string> GetReplacedItemUdev(string r_key, string r_val){

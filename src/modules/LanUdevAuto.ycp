@@ -199,7 +199,34 @@ y2internal("port0 %1", port0);
 			    ];
    }
   });
+ } else{
+/*
+  list<map> all_devices=[];
+y2internal("export devices %1", devices);
+  foreach(string key, (list<string>)Map::Keys(devices), {
+   all_devices=add(all_devices, devices[key]:$[]);
+  });
+  y2internal("export rules %1", createUdevFromIfaceName(all_devices));
+*/
+  foreach(integer id, map<string, any> row, (map<integer, map <string, any> >)LanItems::Items, {
+   LanItems::current=id;
+   if (size(row["ifcfg"]:"")>0){
+    string name	    = LanItems::GetItemUdev("NAME");
+    string mac_rule = LanItems::GetItemUdev("ATTR{address}");
+    string bus_rule = LanItems::GetItemUdev("KERNELS");
+    if (size(mac_rule)==0 && size(bus_rule)==0){
+     y2error("No MAC or BusID rule %1", row);
+     continue;
+    }
+    AY["net-udev", name]=$["rule"  : size(mac_rule)>0 ? "ATTR{address}" : "KERNELS",
+                           "name"  : name,
+                           "value" : size(mac_rule)>0 ? mac_rule : bus_rule
+                          ];
+
+   }
+  });
  }
+
  y2internal("AY profile %1", AY);
  return AY;
 }
