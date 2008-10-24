@@ -49,8 +49,8 @@ if(func == "MakeProposal") {
 	// think it does a full reread and unset Lan::modified. #147270
 	Lan::Read (force_reset? `nocache: `cache);
 	if (Lan::virt_net_proposal==nil){
-         if(PackageSystem::Installed("xen")||PackageSystem::Installed("kvm")||
-		PackageSystem::Installed("qemu")||PackageSystem::Installed("virtualbox-ose"))
+         if((PackageSystem::Installed("xen") && Arch::is_xen0()) || PackageSystem::Installed("kvm")||
+		PackageSystem::Installed("qemu") || PackageSystem::Installed("virtualbox-ose"))
 		Lan::virt_net_proposal = true;
 	 else Lan::virt_net_proposal = false;
 	}

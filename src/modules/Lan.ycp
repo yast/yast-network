@@ -624,7 +624,7 @@ global define list SummaryGeneral () {
 	// enable ipv6 support
 	link_v6 = Hyperlink (href_v6, _("Enable IPv6"));
     }
-   if ( PackageSystem::Installed("xen")||PackageSystem::Installed("kvm")||
+   if ( (PackageSystem::Installed("xen") && Arch::is_xen0()) || PackageSystem::Installed("kvm")||
          PackageSystem::Installed("qemu")||PackageSystem::Installed("virtualbox-ose")
     ){
     if (virt_net_proposal){

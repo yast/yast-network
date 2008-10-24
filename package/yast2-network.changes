@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Oct 24 13:00:29 CEST 2008 - mzugec@suse.de
+
+- don't propose bridged network in DomU (bnc#437628)
+- 2.17.45 
+
+-------------------------------------------------------------------
 Thu Oct 23 17:53:01 CEST 2008 - mzugec@suse.de
 
 - clone udev rules in AY (bnc#434103)
