@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Oct 27 13:24:33 CET 2008 - kmachalkova@suse.cz
+
+- Remote administration (VNC): service name for opening port in 
+  firewall is 'service:xorg-x11-server'(bnc#431971)
+- Make sure at least one windowmanager is installed if VNC is enabled,
+  taking (almost) all shipped ones into account (bnc#427044)
+
+-------------------------------------------------------------------
 Mon Oct 27 12:37:38 CET 2008 - mzugec@suse.cz
 
 - during installation export sysconfig network settings 
