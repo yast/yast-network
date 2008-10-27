@@ -250,7 +250,8 @@ void initOverview (string key) ``{
     });
     UI::ChangeWidget (`id (`_hw_items), `Items, term_items);
 
- enableDisableButtons();
+ if (!disableItemsIfNM([`_hw_items, `_hw_sum, `add, `edit, `delete], true))
+     enableDisableButtons();
  y2milestone("LanItems %1", LanItems::Items);
 }
 
@@ -258,7 +259,8 @@ void initOverview (string key) ``{
 
 symbol handleOverview( string key, map event ) {
 
-   enableDisableButtons();
+ if (!disableItemsIfNM([`_hw_items, `_hw_sum, `add, `edit, `delete], false))
+     enableDisableButtons();
    UI::ChangeWidget(`_hw_sum, `Value,LanItems::GetItemDescription());
 
  if (event["EventReason"]:"" == "Activated")

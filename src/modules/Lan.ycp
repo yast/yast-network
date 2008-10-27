@@ -435,6 +435,9 @@ global define boolean Write() {
      /* Progress step 9 */
      ProgressNextStage(_("Activating network services..."));
 //	NetworkModules::HwUp ();
+   // during installation export sysconfig settings into NetworkManager (bnc#433084)
+   if (Mode::installation() && NetworkService::IsManaged()) y2internal("Export sysconfig settings into NetworkManager %1", SCR::Execute(.target.bash_output, "/usr/lib/NetworkManager/nm-opensuse-sysconfig-merge --connections"));
+
     // For ssh/vnc installation don't reload/restart network because possibility of IP change (bnc#347482)
     if (Stage::cont() && (Linuxrc::usessh() || Linuxrc::vnc())) y2milestone("For ssh or vnc installation don't reload/restart network during installation.");
      else if (LanItems::force_restart) Service::Restart("network");

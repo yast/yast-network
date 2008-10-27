@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Oct 27 12:37:38 CET 2008 - mzugec@suse.cz
+
+- during installation export sysconfig network settings 
+into NetworkManager
+- on running system disable lan UI for NM (bnc#433084)
+- 2.17.46 
+
+-------------------------------------------------------------------
 Fri Oct 24 13:00:29 CEST 2008 - mzugec@suse.de
 
 - don't propose bridged network in DomU (bnc#437628)

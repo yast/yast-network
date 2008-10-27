@@ -122,6 +122,7 @@ define void StoreSettings (map settings) {
 define void InitHnWidget (string key) {
     any value = hn_settings[key]:nil;
     UI::ChangeWidget (`id (key), `Value, value);
+    if (disableItemsIfNM([], false)) UI::ChangeWidget(`id (key),`Enabled, false);
 }
 
 
@@ -144,8 +145,9 @@ define void StoreHnWidget (string key, map event) {
  * @return nil so that the dialog loops on
  */
 define void InitDhcpHostname (string key) {
-    UI::ChangeWidget (`id("DHCP_HOSTNAME"), `Enabled, has_dhcp);
-    if (!has_dhcp) UI::ReplaceWidget(`id ("dh_host_text"),`Label(_("No interface with dhcp")));
+   if (!disableItemsIfNM([], false))
+		 UI::ChangeWidget (`id("DHCP_HOSTNAME"), `Enabled, has_dhcp);
+   if (!has_dhcp) UI::ReplaceWidget(`id ("dh_host_text"),`Label(_("No interface with dhcp")));
 		// the hostname dialog proposes to update it by DHCP on a laptop (#326102)
 	else UI::ChangeWidget(`id("DHCP_HOSTNAME"), `Value, hn_settings["DHCP_HOSTNAME"]:true);
     return nil;
@@ -159,6 +161,7 @@ define void InitDhcpHostname (string key) {
  * @return nil so that the dialog loops on
  */
 define symbol HandleResolverData (string key, map event) {
+  if (!disableItemsIfNM([], false))
     UI::ChangeWidget (`id (key), `Enabled, resolver_modifiable);
     return nil;
 }
@@ -243,8 +246,8 @@ define boolean ValidateSearchList (string key, map event) {
 
 void initPolicy(string key) {
 
-	y2milestone("initPolicy: %1", UI::QueryWidget(`id("MODIFY_RESOLV"), `Value));
-	
+ y2milestone("initPolicy: %1", UI::QueryWidget(`id("MODIFY_RESOLV"), `Value));
+ if (!disableItemsIfNM([], false)){
 	if(UI::QueryWidget(`id("MODIFY_RESOLV"), `Value) == `custom)
 	{
 		UI::ChangeWidget(`id("PLAIN_POLICY"), `Enabled, true);
@@ -258,6 +261,10 @@ void initPolicy(string key) {
 		UI::ChangeWidget(`id("PLAIN_POLICY"), `Value, "");
 		UI::ChangeWidget(`id("PLAIN_POLICY"), `Enabled, false);
 	}
+ } else {
+  UI::ChangeWidget(`id("MODIFY_RESOLV"), `Enabled, false);
+  UI::ChangeWidget(`id("PLAIN_POLICY"), `Enabled, false);
+ }
 }
 
 symbol handlePolicy(string key, map event) {
@@ -294,6 +301,7 @@ void initModifyResolvPolicy (string key){
 	{
 		UI::ChangeWidget(`id("MODIFY_RESOLV"), `Value, `id(`custom) );
 	}
+	if (disableItemsIfNM([], false)) UI::ChangeWidget(`id("MODIFY_RESOLV"), `Enabled, false);
 }
 
 symbol handleModifyResolvPolicy (string key, map event){
@@ -392,27 +400,27 @@ map<string, map<string,any> > widget_descr_dns = $[
 	"help": help["write_hostname"]:"",
 	],
 	"MODIFY_RESOLV" : $[
-						"widget": `combobox,
-						"label": _("&Modify DNS configuration"),
-						"opt" : [`notify],
-						"items": [ [`nomodify, _("Only Manually")], 
-							   [`auto, _("Use Default Policy")], 
-							   [`custom, _("Use Custom Policy")] ],
-						"init" : initModifyResolvPolicy,
-						"handle": handleModifyResolvPolicy,
-						"help" : help["dns_config_policy"]:"",
-					   ],
+	 "widget": `combobox,
+	 "label": _("&Modify DNS configuration"),
+	 "opt" : [`notify],
+	 "items": [ [`nomodify, _("Only Manually")], 
+		   [`auto, _("Use Default Policy")], 
+		   [`custom, _("Use Custom Policy")] ],
+	 "init" : initModifyResolvPolicy,
+	 "handle": handleModifyResolvPolicy,
+	 "help" : help["dns_config_policy"]:"",
+	],
 	"PLAIN_POLICY" : $[
-					   "widget": `combobox,
-					   "label": _("&Custom Policy Rule"),
-					   "opt" : [`editable],
-					   "items" : [ [`static, "STATIC"],
-						       [`static_fallback, "STATIC_FALLBACK" ]
-						     ],
-					   "init": initPolicy,
-					   "handle": handlePolicy,
-					   "help" : ""
-					  ],
+		"widget": `combobox,
+		"label": _("&Custom Policy Rule"),
+		"opt" : [`editable],
+		"items" : [ [`static, "STATIC"],
+			       [`static_fallback, "STATIC_FALLBACK" ]
+		     ],
+		"init": initPolicy,
+		"handle": handlePolicy,
+		"help" : ""
+	],
     "NAMESERVER_1": $[
 	"widget": `textentry,
 	/* textentry label */
