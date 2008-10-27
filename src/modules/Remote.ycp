@@ -138,16 +138,30 @@ global boolean Write() {
     boolean have_xinetd = Package::Installed("xinetd");
 
     if(allow_administration) {
-	/* Install require packages */
+	/* Install required packages */
 	list<string> packages = ["xinetd", "tightvnc", "xorg-x11", "xorg-x11-Xvnc", ];
-	// #40155: have to specify a concrete window manager,
-	// "windowmanager" only works for yast2 -i
-	// #381708: take KDE4 into consideration, too
-	// ( but what about GNOME? )
-	if (!Package::Installed ("kdebase3") && !Package::Installed("kdebase4"))
+
+	//At least one windowmanager must be installed (#427044)
+	//Not all windowmanagers have 'windowmanager' string in their Provides:
+	//(fvwm2, icewm, kdebase3, windowmaker & xfwm4 do, the rest is listed here)
+	//Package::Installed uses rpm -q --whatprovides
+	list <string> window_mgrs = ["windowmanager", "kdebase4", "metacity" ];
+	boolean is_win_mgr_installed = false;
+
+	foreach( string w, window_mgrs, {
+	    if( Package::Installed( w ))
+	    {
+		is_win_mgr_installed = true;
+		break;
+	    }
+	});
+
+	//If no windowmanager is there, use fvwm2 as fallback
+	if ( !is_win_mgr_installed )
 	{
 	    packages = add (packages, "fvwm2" );
 	}
+
 	if(!Package::InstallAll(packages)) {
 	    y2error("Installing of required packages failed");
 	    return false;
