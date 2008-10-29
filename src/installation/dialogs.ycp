@@ -130,13 +130,13 @@ list<string> items = getInternetItems();
 string current = Internet::device;
     /* Radiobuttons */
     term buttons = `VBox(
-	`VSpacing(1),
+	`VSpacing(0.4),
 	/* RadioButton label */
 	`Left(`RadioButton(`id(`yes), `opt(`notify), _("&Yes, Test Connection to the Internet Via"), Internet::do_test)),
 	getDeviceContens(current),
 	/* RadioButton label */
 	`Left(`RadioButton(`id(`no), `opt(`notify), _("N&o, Skip This Test"), !Internet::do_test)),
-	`VSpacing(1)
+	`VSpacing(0.4)
     );
 
     /* the steps */
