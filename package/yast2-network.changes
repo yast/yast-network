@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Oct 29 10:51:00 CET 2008 - kmachalkova@suse.cz
+
+- Fit internet test dialog into 80x24 console (bnc#433091) 
+
+-------------------------------------------------------------------
 Mon Oct 27 13:24:33 CET 2008 - kmachalkova@suse.cz
 
 - Remote administration (VNC): service name for opening port in 
