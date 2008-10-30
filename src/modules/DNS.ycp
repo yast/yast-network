@@ -44,11 +44,6 @@ global string domain = "";
 
 global list<string> nameservers = [];
 global list<string> searchlist = [];
-/**
- * Name of program that has claimed resolv.conf
- */
-global string resolv_conf_process = "";
-global boolean resolv_conf_force = false;
 
 global string resolv_conf_policy = "";
 
@@ -236,19 +231,15 @@ global define boolean Write() {
     y2milestone("hostname=%1", hostname);
     y2milestone("domain=%1", domain);
 
-    /* either no process or force update */
-    boolean update_resolv = (resolv_conf_process == "" || resolv_conf_force == true);
 
     list <string> steps = [
         /* Progress stage 1 */
 	_("Write hostname"),
         /* Progress stage 2 */
 	_("Run SuSEconfig"),
-    ];
-
-    if( update_resolv )
         /* Progress stage 3 */
-	steps = add(steps, _("Update /etc/resolv.conf"));
+	_("Update /etc/resolv.conf")
+    ];
 
     /* Write dialog caption */
     string caption = _("Saving Hostname and DNS Configuration");
@@ -287,21 +278,18 @@ global define boolean Write() {
 	SCR::Write(.target.string, resolv_conf, "");
 	*/
 	
-    if( update_resolv ) {
 
-	/* Progress step 3/3 */
-	ProgressNextStage(_("Updating /etc/resolv.conf ..."));
+    /* Progress step 3/3 */
+    ProgressNextStage(_("Updating /etc/resolv.conf ..."));
 
-	SCR::Write(.sysconfig.network.config.NETCONFIG_DNS_POLICY, resolv_conf_policy);
-	SCR::Write(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST, mergestring(searchlist, " "));
-	SCR::Write(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS, mergestring(nameservers, " "));
-	SCR::Write(.sysconfig.network.config, nil);
+    SCR::Write(.sysconfig.network.config.NETCONFIG_DNS_POLICY, resolv_conf_policy);
+    SCR::Write(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST, mergestring(searchlist, " "));
+    SCR::Write(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS, mergestring(nameservers, " "));
+    SCR::Write(.sysconfig.network.config, nil);
 
-	SCR::Execute(.target.bash, "/sbin/netconfig update");
-	
-	sleep(sl);
+    SCR::Execute(.target.bash, "/sbin/netconfig update");
 
-    } else y2milestone("resolv.conf changed by %1, leave untouched", resolv_conf_process);
+    sleep(sl);
 
     Progress::NextStage();
     modified = false;
