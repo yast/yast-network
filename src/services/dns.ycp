@@ -78,7 +78,8 @@ define map InitSettings () {
     /* domain search */
     string searchstring = mergestring (DNS::searchlist, "\n");
     // #49094: populate the search list
-    if (searchstring == "")
+    // #437759: discard 'site', nobody really wants that pre-set
+    if (searchstring == "" && settings["DOMAIN"]:"" != "site" )
     {
 	searchstring = settings["DOMAIN"]:"";
     }
@@ -530,7 +531,6 @@ define symbol HostnameDialog () {
 	))
 	);
 
-//    map<string, map<string,any> > widget_descr = widget_descr_dns;
     symbol ret = CWM::ShowAndRun (
 	$[
 	    "widget_descr": widget_descr_dns,
@@ -545,6 +545,16 @@ define symbol HostnameDialog () {
 
     if (ret == `next)
     {
+	//Pre-populate resolv.conf search list with current domain name
+	//but only if none exists so far
+	string current_domain = hn_settings["DOMAIN"]:"";
+
+	//Need to modify hn_settings explicitly as SEARCHLIST_S widget
+	//does not exist in this dialog, thus StoreHnWidget won't do it
+	//#438167
+	if ( DNS::searchlist == []  && current_domain != "site")
+	    hn_settings["SEARCHLIST_S"] = current_domain;
+
 	StoreSettings (hn_settings);
     }
 
