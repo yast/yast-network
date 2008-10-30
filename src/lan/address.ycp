@@ -632,6 +632,7 @@ map<string, map<string,any> > widget_descr_local = $[
 			`item(`id(`dhcp_auto), "DHCP+Zeroconf"),
 			`item(`id(`auto), "Zeroconf")
 		   ]),
+		  `HSpacing(2),
 		  `ComboBox(`id(`dhcp_mode), "", [
 			`item(`id(`dhcp_both), _("DHCP both version 4 and 6")),
 			`item(`id(`dhcp_v4), _("DHCP version 4 only")),

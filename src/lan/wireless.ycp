@@ -260,7 +260,7 @@ define any WirelessDialog() ``{
 		type_w,
 		`VSpacing(0.2),
 		/* Text entry label */
-		`TextEntry(`id(`key), _("&Encryption Key"), key),
+		`Password(`id(`key), _("&Encryption Key"), key),
 		`VSpacing(0.5)
 		), `HSpacing(2))),
 	    `VSpacing(0.5),

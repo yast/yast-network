@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Oct 30 10:32:12 CET 2008 - mzugec@suse.de
+
+- address dialog layout (bnc#439100) 
+
+-------------------------------------------------------------------
 Thu Oct 30 09:30:54 CET 2008 - mzugec@suse.de
 
 - fixed exception when propose bridged network (bnc#439978)
