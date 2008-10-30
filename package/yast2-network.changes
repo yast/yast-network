@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Oct 30 09:30:54 CET 2008 - mzugec@suse.de
+
+- fixed exception when propose bridged network (bnc#439978)
+- 2.14.47 
+
+-------------------------------------------------------------------
 Wed Oct 29 10:51:00 CET 2008 - kmachalkova@suse.cz
 
 - Fit internet test dialog into 80x24 console (bnc#433091) 
