@@ -126,7 +126,7 @@ define boolean StartEthInterface() {
 //    {
      y2milestone("Setting link up for interface %1", ifc);
      SCR::Execute(.target.bash, sformat("ip link set %1 up", ifc));
-//    } else y2milestone("Link for %1 interface is already up, do nothing", ifc);
+//    } else y2milestone("Link for %1 interface is already up, nothing to do", ifc);
   });
  } else y2error("Error while execute %1 : %2", command, output);
 

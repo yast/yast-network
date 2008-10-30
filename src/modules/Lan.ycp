@@ -780,27 +780,29 @@ global define boolean ProposeInterfaces () {
     // and add old device name into bridge_ports
     foreach(integer current, any config, LanItems::Items, {
      string ifcfg = LanItems::Items[current, "ifcfg"]:"";
-     if (! (NetworkInterfaces::GetType(ifcfg)=="br")){
-      NetworkInterfaces::Edit(ifcfg);
-      string new_ifcfg = sformat("br%1", NetworkInterfaces::GetFreeDevice("br"));
-      y2milestone("old configuration %1, bridge %2", ifcfg, new_ifcfg);
-      NetworkInterfaces::Name = new_ifcfg;
-      NetworkInterfaces::Current["BRIDGE"]="yes";
-      NetworkInterfaces::Current["BRIDGE_PORTS"]=ifcfg;
-      // remove description - will be replaced by new (real) one
-      NetworkInterfaces::Current=remove(NetworkInterfaces::Current, "NAME");
-      if( NetworkInterfaces::Commit() ){
-       NetworkInterfaces::Delete(ifcfg);
-       NetworkInterfaces::Commit();
+      if (size(ifcfg)>0){
+       if (! (NetworkInterfaces::GetType(ifcfg)=="br")){
+       NetworkInterfaces::Edit(ifcfg);
+       string new_ifcfg = sformat("br%1", NetworkInterfaces::GetFreeDevice("br"));
+       y2milestone("old configuration %1, bridge %2", ifcfg, new_ifcfg);
+       NetworkInterfaces::Name = new_ifcfg;
+       NetworkInterfaces::Current["BRIDGE"]="yes";
+       NetworkInterfaces::Current["BRIDGE_PORTS"]=ifcfg;
+       // remove description - will be replaced by new (real) one
+       NetworkInterfaces::Current=remove(NetworkInterfaces::Current, "NAME");
+       if( NetworkInterfaces::Commit() ){
+        NetworkInterfaces::Delete(ifcfg);
+        NetworkInterfaces::Commit();
 
-       LanItems::Items[current, "ifcfg"] = new_ifcfg;
-       LanItems::modified=true;
-       LanItems::force_restart=true;
-       y2internal("List %1", NetworkInterfaces::List(""));
-       // re-read configuration to see new items in UI
-       LanItems::Read();
-      } else y2error("error while proposing bridge device for %1", ifcfg);
-     } else y2internal("skipping bridge ...");
+        LanItems::Items[current, "ifcfg"] = new_ifcfg;
+        LanItems::modified=true;
+        LanItems::force_restart=true;
+        y2internal("List %1", NetworkInterfaces::List(""));
+        // re-read configuration to see new items in UI
+        LanItems::Read();
+       } else y2error("error while proposing bridge device for %1", ifcfg);
+      } else y2internal("skipping bridge ...");
+     } else y2warning("empty ifcfg");
     });
  } else {
 

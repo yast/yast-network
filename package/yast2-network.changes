@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Oct 30 10:38:26 CET 2008 - mzugec@suse.de
+
+- for bridged proposal skip devices with no ifcfg (bnc#440132)
+- 2.14.48 
+
+-------------------------------------------------------------------
 Thu Oct 30 10:32:12 CET 2008 - mzugec@suse.de
 
 - address dialog layout (bnc#439100) 
