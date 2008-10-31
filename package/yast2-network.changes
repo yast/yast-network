@@ -9,6 +9,8 @@ Thu Oct 30 17:01:53 CET 2008 - kmachalkova@suse.cz
 
 - If no DNS search list exists in 2nd stage of installation, preset 
   current domain name (!= 'site') as a default value (bnc#438167) 
+- Correct fix for bnc#427044: removed workaround for KDE4 and 
+  metacity
 
 -------------------------------------------------------------------
 Thu Oct 30 10:38:26 CET 2008 - mzugec@suse.de
