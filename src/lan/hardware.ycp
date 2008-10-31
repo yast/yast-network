@@ -511,6 +511,11 @@ Choose a different one."), nm));
     LanItems::Items[LanItems::current, "ifcfg"]= nm;
     //Initialize udev map, so that setDriver (see below) sets correct module
     LanItems::Items[LanItems::current, "udev"]= $[];
+    //FIXME: for interfaces with no hwinfo don't propose ifplugd
+    if (size(LanItems::getCurrentItem()["hwinfo"]:$[])==0) {
+		y2milestone("interface without hwinfo, proposing STARTMODE=auto");
+		LanItems::startmode="auto";
+    }
 }
 
  string driver = (string) UI::QueryWidget(`modul, `Value);
