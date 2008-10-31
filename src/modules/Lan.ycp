@@ -473,7 +473,7 @@ global define boolean Write() {
     if (NetworkService::IsManaged())
      {
       boolean network=false;
-      integer timeout=10;
+      integer timeout=15;
       while(timeout>0)
       {
 	if (NetworkService::isNetworkRunning()){

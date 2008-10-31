@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Oct 30 10:52:58 CET 2008 - mzugec@suse.de
+
+- increase time to wait for NM to 15 seconds (bnc#439915)
+- 2.14.49 
+
+-------------------------------------------------------------------
 Thu Oct 30 17:01:53 CET 2008 - kmachalkova@suse.cz
 
 - If no DNS search list exists in 2nd stage of installation, preset 
