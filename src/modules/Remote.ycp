@@ -142,22 +142,9 @@ global boolean Write() {
 	list<string> packages = ["xinetd", "tightvnc", "xorg-x11", "xorg-x11-Xvnc", ];
 
 	//At least one windowmanager must be installed (#427044)
-	//Not all windowmanagers have 'windowmanager' string in their Provides:
-	//(fvwm2, icewm, kdebase3, windowmaker & xfwm4 do, the rest is listed here)
+	//If none is, there, use fvwm2 as fallback
 	//Package::Installed uses rpm -q --whatprovides
-	list <string> window_mgrs = ["windowmanager", "kdebase4", "metacity" ];
-	boolean is_win_mgr_installed = false;
-
-	foreach( string w, window_mgrs, {
-	    if( Package::Installed( w ))
-	    {
-		is_win_mgr_installed = true;
-		break;
-	    }
-	});
-
-	//If no windowmanager is there, use fvwm2 as fallback
-	if ( !is_win_mgr_installed )
+	if ( !Package::Installed("windowmanager") )
 	{
 	    packages = add (packages, "fvwm2" );
 	}
