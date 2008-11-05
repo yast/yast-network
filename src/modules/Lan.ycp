@@ -42,6 +42,7 @@ import "ModuleLoading";
 import "Linuxrc";
 import "Stage";
 import "LanUdevAuto";
+import "Label";
 
 include "network/complex.ycp";
 include "network/runtime.ycp";
@@ -438,9 +439,45 @@ global define boolean Write() {
    // during installation export sysconfig settings into NetworkManager (bnc#433084)
    if (Mode::installation() && NetworkService::IsManaged()) y2internal("Export sysconfig settings into NetworkManager %1", SCR::Execute(.target.bash_output, "/usr/lib/NetworkManager/nm-opensuse-sysconfig-merge --connections"));
 
+y2internal("virt_net_proposal %1", virt_net_proposal);
+   if (Stage::cont() && virt_net_proposal && (Linuxrc::usessh() || Linuxrc::vnc() || Linuxrc::display_ip())){
+	UI::OpenDialog(`opt(`decorated), `HBox(
+        `HSpacing(1),
+        `HCenter(`HSquash(`VBox(
+            `HCenter(`HSquash(`VBox(
+                // This is the heading of the popup box
+                `Left(`Heading(_("Confirm Network Restart"))),
+                `VSpacing(0.5),
+                // This is in information message. Next come the
+                // hardware class name (network cards).
+                `HVCenter(`Label(_("Because of bridged network YaST2 needs to restart network to apply the settings."))),
+                `VSpacing(0.5)
+            ))),
+            `ButtonBox (
+                `HWeight (1, `PushButton (`id(`ok), `opt(`default, `okButton),  Label::OKButton())),
+                /* PushButton label */
+                `HWeight (1, `PushButton (`id (`cancel), `opt (`cancelButton),  Label::CancelButton()))
+            ),
+            `VSpacing(0.2)
+        ))),
+        `HSpacing(1)
+    ));
+
+    UI::SetFocus (`id(`ok));
+
+    // for autoinstallation popup has timeout 10 seconds (#192181)
+    // timeout for every case (bnc#429562)
+    any ret = UI::TimeoutUserInput(10*1000);
+	if (ret==`ok){
+	 y2internal("Restarting network because of bridged proposal");
+	 Service::Restart("network");
+	}
+     UI::CloseDialog();
+    }
+
     // For ssh/vnc installation don't reload/restart network because possibility of IP change (bnc#347482)
-    if (Stage::cont() && (Linuxrc::usessh() || Linuxrc::vnc())) y2milestone("For ssh or vnc installation don't reload/restart network during installation.");
-     else if (LanItems::force_restart) Service::Restart("network");
+    else if (Stage::cont() && (Linuxrc::usessh() || Linuxrc::vnc() || Linuxrc::display_ip())) y2milestone("For ssh or vnc installation don't reload/restart network during installation.");
+        else if (LanItems::force_restart) Service::Restart("network");
 	   else if(Service::Status("network")==0){
 			 Service::Reload("network");
 			} else Service::Restart("network");

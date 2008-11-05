@@ -131,7 +131,7 @@ else if (func == "Write") {
 	// popup already shown
 	y2error("Packages installation failure, not saving");
     }
-    else if (Linuxrc::display_ip () || Linuxrc::vnc () || Linuxrc::usessh () )
+    else if ((!Lan::virt_net_proposal) && (Linuxrc::display_ip () || Linuxrc::vnc () || Linuxrc::usessh ()) )
     {
 	y2milestone ("write only");
 	Lan::WriteOnly();

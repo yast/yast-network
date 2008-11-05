@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Nov  5 16:49:02 CET 2008 - mzugec@suse.cz
+
+- in case of proposed bridger network do "rcnetwork restart"
+(timeout popup confirmation) also for vnc/ssh/x11 installation
+(bnc#431500)
+- 2.14.51 
+
+-------------------------------------------------------------------
 Fri Oct 31 12:19:25 CET 2008 - mzugec@suse.de
 
 - for devices without hwinfo (bridge, vlan, ...) dont propose 
