@@ -825,6 +825,8 @@ global define boolean ProposeInterfaces () {
        NetworkInterfaces::Name = new_ifcfg;
        NetworkInterfaces::Current["BRIDGE"]="yes";
        NetworkInterfaces::Current["BRIDGE_PORTS"]=ifcfg;
+       NetworkInterfaces::Current["BRIDGE_STP"]="off";
+       NetworkInterfaces::Current["BRIDGE_FORWARDDELAY"]="0";
        // remove description - will be replaced by new (real) one
        NetworkInterfaces::Current=remove(NetworkInterfaces::Current, "NAME");
        if( NetworkInterfaces::Commit() ){

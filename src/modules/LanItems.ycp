@@ -1175,6 +1175,8 @@ global define boolean Commit() {
 	if (type=="br"){
 	 newdev["BRIDGE_PORTS"]=bridge_ports;
 	 newdev["BRIDGE"]="yes";
+	 newdev["BRIDGE_STP"]="off";
+	 newdev["BRIDGE_FORWARDDELAY"]="0";
 	}
 
 	if(type == "wlan") {

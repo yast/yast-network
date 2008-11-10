@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov 10 17:37:35 CET 2008 - mzugec@suse.cz
+
+- set default values for bridge (bnc#443413)
+- 2.14.52 
+
+-------------------------------------------------------------------
 Wed Nov  5 16:49:02 CET 2008 - mzugec@suse.cz
 
 - in case of proposed bridger network do "rcnetwork restart"
