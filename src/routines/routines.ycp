@@ -820,8 +820,10 @@ boolean disableItemsIfNM(list<symbol> items, boolean show_popup){
   foreach(symbol w, items, {
    UI::ChangeWidget(w, `Enabled, false);
   });
-  if (show_popup)  Popup::Warning(_("This configuration is not compatible with NetworkManager.
-Use nm-settings applet or switch to Traditional Method with ifup "));
+  if (show_popup)  Popup::Warning( _("Network is currently controlled by NetworkManager and its settings 
+cannot be edited by YaST.\n
+To edit the settings, use NetworkManager connection editor, or
+switch the network setup method to Traditional method with ifup."));
  } else disable=false;
  return disable;
 }
