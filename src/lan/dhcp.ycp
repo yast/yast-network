@@ -31,6 +31,7 @@ void initDhclientOptions(string key) {
     UI::ChangeWidget(`id(`hostname), `Value, NetworkConfig::DHCP["DHCLIENT_HOSTNAME_OPTION"]:"");
     UI::ChangeWidget(`id(`no_defaultroute), `Value, NetworkConfig::DHCP["DHCLIENT_SET_DEFAULT_ROUTE"]:true);
 
+    disableItemsIfNM([ `broadcast, `clientid, `hostname, `no_defaultroute ], false);
 }
  
 void storeDhclientOptions(string key, map event) {

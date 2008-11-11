@@ -239,6 +239,8 @@ void enableDisableButtons(){
 */
 }
 
+boolean shown = false;
+
 void initOverview (string key) ``{
 
     list<term> term_items = maplist (map<string,any> i, (list<map<string,any> >)LanItems::Overview(), {
@@ -250,8 +252,14 @@ void initOverview (string key) ``{
     });
     UI::ChangeWidget (`id (`_hw_items), `Items, term_items);
 
- if (!disableItemsIfNM([`_hw_items, `_hw_sum, `add, `edit, `delete], true))
+ if (!shown)
+ {
+    disableItemsIfNM([`_hw_items, `_hw_sum, `add, `edit, `delete], true);
+    shown = true;
+ }
+ else
      enableDisableButtons();
+
  y2milestone("LanItems %1", LanItems::Items);
 }
 

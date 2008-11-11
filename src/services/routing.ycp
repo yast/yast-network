@@ -187,7 +187,7 @@ void initRouting (string key) ``{
 
     // fixed bug #73739 - if dhcp is used, dont set default gw statically
 //    if (Lan::bootproto == "dhcp")UI::ChangeWidget(`id(`gw),`Enabled, false);
-   disableItemsIfNM([ `gw, `table, `add, `edit, `delete ], true);
+   disableItemsIfNM([ `gw, `table, `add, `edit, `delete ], false);
 }
 
 
