@@ -181,7 +181,6 @@ define symbol HostsMainDialog(boolean standalone) {
 	    term item = HostDialog(cur, olditem);
 
 	    if(item == nil) continue;
-	    else Host::modified = true;
 
 	    table_items = maplist(term e, table_items, {
 		if(cur == e[0, 0]:-1) {
@@ -351,6 +350,8 @@ define term HostDialog(integer id, term entry) {
 
     UI::CloseDialog();
     if(ret != `ok) return nil;
+
+    Host::modified = true;
     return host;
 }
 
