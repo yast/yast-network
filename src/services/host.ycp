@@ -276,19 +276,22 @@ define term HostDialog(integer id, term entry) {
     //y2debug("forbidden=%1", forbidden);
 
     UI::OpenDialog(`opt(`decorated),`VBox(
-	`HSpacing(1),
-	`VBox(
-	    /* TextEntry label */
-	    `TextEntry(`id(`host), _("&IP Address"), entry[1]:""),
-	    /* TextEntry label */
-	    `TextEntry(`id(`name), Label::HostName (), entry[2]:""),
-	    /* TextEntry label */
-	    `TextEntry(`id(`aliases), _("Hos&t Aliases"), entry[3]:"")
-	    ),
-	`HSpacing(1),
-	`HBox(
-	    `PushButton(`id(`ok), `opt(`default), Label::OKButton()),
-	    `PushButton(`id(`cancel), Label::CancelButton())
+	`MarginBox(1.5, 0,
+	    `VBox(
+		`HSpacing(20),
+	        /* TextEntry label */
+	        `TextEntry(`id(`host), _("&IP Address"), entry[1]:""),
+		`VSpacing(0.5),
+	        /* TextEntry label */
+	        `TextEntry(`id(`name), Label::HostName (), entry[2]:""),
+	        /* TextEntry label */
+		`VSpacing(0.5),
+	        `TextEntry(`id(`aliases), _("Hos&t Aliases"), entry[3]:"")
+	    )
+	),
+	`ButtonBox(
+	    `PushButton(`id(`ok), `opt(`default, `okButton), Label::OKButton()),
+	    `PushButton(`id(`cancel), `opt(`cancelButton), Label::CancelButton())
 	    )
 	));
 
