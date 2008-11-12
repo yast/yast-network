@@ -75,10 +75,6 @@ TEST(``(RunSuSEconfigModule("postfix")), [$[],$[],EXEC1], nil);
 import "NetworkInterfaces";
 NetworkInterfaces::Devices = $[ "dsl" : $[ "0" : $[] ]];
 
-DUMP("RunKInternet");
-TEST(``(RunKInternet()), [READ,$[],EXEC0], nil);
-TEST(``(RunKInternet()), [READ,$[],EXEC1], nil);
-
 DUMP("SetupSMPPPD");
 TEST(``(SetupSMPPPD(true)), [READ,$[],EXEC0], nil);
 TEST(``(SetupSMPPPD(false)), [READ,$[],EXEC1], nil);

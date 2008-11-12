@@ -12,9 +12,6 @@ Execute	.target.bash "/sbin/SuSEconfig --module postfix" 0
 Return	true
 Execute	.target.bash "/sbin/SuSEconfig --module postfix" 1
 Return	false
-Dump	RunKInternet
-Return	true
-Return	true
 Dump	SetupSMPPPD
 Return	true
 Return	false
