@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Nov 12 14:10:54 CET 2008 - kmachalkova@suse.cz
+
+- Set 'modified' flag also when a new host is added (bnc#443239)
+
+-------------------------------------------------------------------
 Tue Nov 11 15:13:56 CET 2008 - mzugec@suse.cz
 
 - fixed CLI examples
