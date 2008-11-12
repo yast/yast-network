@@ -231,7 +231,7 @@ global define boolean Write() {
 
     /* Write dialog caption */
     string caption = _("Saving DSL Configuration");
-    integer steps = 8;
+    integer steps = 7;
 
     integer sl = 0; /* 1000; /* TESTING */
     sleep(sl);
@@ -249,8 +249,6 @@ global define boolean Write() {
 	_("Set up network services"),
 	/* Progress stage 6/7 */
 	_("Set up smpppd"),
-	/* Progress stage 7/7 */
-	_("Run KInternet"),
 	/* Progress stage 9 */
 	_("Activate network services"),
     ], [], "");
@@ -296,12 +294,6 @@ global define boolean Write() {
     /* Progress step 6/7 */
     ProgressNextStage(_("Setting up smpppd(8)..."));
     SetupSMPPPD(true);
-    sleep(sl);
-
-    if(Abort()) return false;
-    /* Progress step 7/7 */
-    ProgressNextStage(_("Running KInternet..."));
-    RunKInternet();
     sleep(sl);
 
     if(Abort()) return false;

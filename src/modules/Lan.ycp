@@ -365,12 +365,10 @@ global define boolean Write() {
      if (!write_only) step_labels = add(step_labels, _("Activate network services"));
 	/* Progress stage 10 */
      step_labels=add(step_labels, _("Run SuSEconfig"));
-     if (!NetworkService::IsManaged() && /*(boolean) SCR::Read(.init.scripts.exists, "smpppd") &&*/ !write_only && needKInternet())
+     if (!NetworkService::IsManaged() && /*(boolean) SCR::Read(.init.scripts.exists, "smpppd") &&*/ !write_only )
 	{
 	 /* Progress stage 11 */
 	 step_labels=add(step_labels, _("Set up smpppd"));
-	 /* Progress stage 12 */
-	 step_labels = add(step_labels, _("Run KInternet"));
 	}
 
      Progress::New(caption, " ", size(step_labels), step_labels, [], "");
@@ -491,7 +489,7 @@ y2internal("virt_net_proposal %1", virt_net_proposal);
     if(!write_only) RunSuSEconfig();
     sleep(sl);
 
-    if (!NetworkService::IsManaged() /*&& (boolean) SCR::Read(.init.scripts.exists, "smpppd")*/ && !write_only && needKInternet())
+    if (!NetworkService::IsManaged() /*&& (boolean) SCR::Read(.init.scripts.exists, "smpppd")*/ && !write_only )
      {
        if(Abort()) return false;
        /* Progress step 11 */
@@ -500,11 +498,6 @@ y2internal("virt_net_proposal %1", virt_net_proposal);
        SetupSMPPPD(false);
        sleep(sl);
 
-       if(Abort()) return false;
-       /* Progress step 12 */
-       ProgressNextStage(_("Running KInternet..."));
-       RunKInternet();
-       sleep(sl);
      }
 
     if (NetworkService::IsManaged())

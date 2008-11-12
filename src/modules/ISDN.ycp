@@ -393,15 +393,13 @@ global define boolean Write(boolean start) ``{
 	    steps = 9;
 	}
 	if (haveISDNif) {
-	    steps = steps + 5;
+	    steps = steps + 4;
 	    // stage 11/13
 	    plist = add(plist, _("Set up network services"));
             // stage 11/13
 	    plist = add(plist, _("Set up smpppd"));
             // stage 12/13
 	    plist = add(plist, _("Start ISDN networking"));
-            // stage 13/13
-	    plist = add(plist, _("Run KInternet"));
 	    /* Progress stage 9 */
 	    plist = add(plist, _("Activate network services"));
 	}
@@ -510,12 +508,6 @@ global define boolean Write(boolean start) ``{
 	    cmd = sformat("/etc/init.d/network start -o type=ippp");
 	    SCR::Execute(.target.bash, cmd);
 	    modified_if = false;
-	    sleep(sl);
-
-	    if(Abort()) return false;
-	    // step 13 in writing current ISDN setup
-	    ProgressNextStage(_("Running KInternet..."));
-	    RunKInternet();
 	    sleep(sl);
 
 	    if(Abort()) return false;

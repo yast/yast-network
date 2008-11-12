@@ -92,19 +92,9 @@ define boolean SetupSMPPPD(boolean install_force) {
     }
     /* Start and enable */
     else {
-       if (!PackageSystem::Installed("smpppd") || !PackageSystem::Installed("kinternet"))
-	 {
-    string message =
-    // notification about package needed 1/2
-    _("<p>The <b>%1</b> packages must be installed because device control for non-root users has been established.</p>") +
-    // notification about package needed 2/2
-    _("<p>Do you want to install it now?</p>");
 
 	// (#299033) - if not forced, user can continue also without packages
-        if (!install_force) PackageSystem::CheckAndInstallPackages(["smpppd", "kinternet"]);
-		else
-	ret = Package::InstallAllMsg(["smpppd", "kinternet"], message);
-      }
+        ret=PackageSystem::CheckAndInstallPackagesInteractive(["smpppd"]);
 
 	ret = Service::Enable("smpppd") && ret;
 
@@ -119,54 +109,6 @@ define boolean SetupSMPPPD(boolean install_force) {
 
     return ret;
 }
-/**
- * Do we need to start KInternet?
- */
-define boolean needKInternet(){
-     /* Any dialup devices? */
-     if (!HaveDialupLikeInterfaces ())
-     {
-        y2milestone ("No dialup-like interfaces");
-        return false;
-     }
-
-     /* Installation? */
-     if(!Mode::normal ()) {
-        y2milestone("No normal mode");
-        return false;
-     }
-  return true;
-}
-
-
-/**
- * Run KInternet
- * @return true if success
- */
-define boolean RunKInternet() {
- if (!needKInternet()) return true;
-    /* Text mode? */
-    map ui = UI::GetDisplayInfo();
-    boolean ncurses = (boolean) ui["TextMode"]:nil;
-    y2milestone("Text mode: %1", ncurses);
-    if(ncurses == nil || ncurses == true) return true;
-
-    string kdepath = "/opt/kde3/bin/";
-
-    // Is it installed?
-    string kinternet = kdepath + "kinternet";
-    if ((integer) SCR::Read (.target.size, kinternet) < 0)
-    {
-	y2milestone ("%1 does not exist", kinternet);
-	return true;
-    }
-
-    // run it by creating a file in /var/lib/Desktop
-    Desktop::RunViaDesktop ("kinternet", ["--quiet"]);
-}
-
-
-
 
 
 /* EOF */
