@@ -135,7 +135,6 @@ global boolean Write() {
     sleep(sl);
 
     ProgressNextStage(_("Configuring display manager..."));
-    boolean have_xinetd = Package::Installed("xinetd");
 
     if(allow_administration) {
 	/* Install required packages */
@@ -180,6 +179,9 @@ global boolean Write() {
     SCR::Write(.sysconfig.displaymanager.DISPLAYMANAGER_ROOT_LOGIN_REMOTE,
 		allow_administration ? "yes" : "no");
     SCR::Write(.sysconfig.displaymanager, nil);
+
+    //Query xinetd presence here (it might not have been even installed before)
+    boolean have_xinetd = Package::Installed("xinetd");
 
     //Do this only if package xinetd is installed (#256385)
     if (have_xinetd) {
