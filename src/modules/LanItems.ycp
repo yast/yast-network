@@ -167,7 +167,7 @@ map <string, string> request_firmware = $[
 	"zd1201" : "",
 	"zd1211rw" : "",
 	"acx" : "",
-	"rt61pci" : "",
+	"rt61pci" : "ralink-firmware",
 	"rt73usb" : "",
 	"prism54usb":""
     ];

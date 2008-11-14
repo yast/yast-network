@@ -119,7 +119,7 @@ map cmdline = $[
 	],
 	"prefix" : $[
 	    /* Commandline option help */
-	    "help": _("Prefix lenght"),
+	    "help": _("Prefix length"),
 	    "type": "string"
 	],
 	"slaves" : $[
