@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Nov 19 14:36:53 CET 2008 - kmachalkova@suse.cz
+
+- Use icewm (instead of fvwm2) as a fallback windowmanager for 
+  remote administration (bnc#446561)
+
+-------------------------------------------------------------------
 Fri Nov 14 17:45:16 CET 2008 - mzugec@suse.cz
 
 - fixed typo (bnc#444526) 
