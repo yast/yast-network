@@ -519,7 +519,7 @@ map<string, map<string,any> > widget_descr_local = $[
     "FWZONE": $[
 	"widget": `combobox,
 	// Combo Box label
-	"label": "Assign Interface to Firewall &Zone",
+	"label": _("Assign Interface to Firewall &Zone"),
 	"opt": [`hstretch],
 	"help": help["fwzone"]:"",
 	"init" : InitFwZone,
