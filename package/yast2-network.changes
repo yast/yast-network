@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Nov 19 17:52:32 CET 2008 - mzugec@suse.cz
+
+- fox CLI when bootproto=dhcp, "ip" is required (bnc#444570) 
+
+-------------------------------------------------------------------
 Wed Nov 19 17:14:05 CET 2008 - mzugec@suse.cz
 
 - changed default bonding mode into active-backup (bnc#404449)

@@ -159,6 +159,10 @@ define boolean EditHandler(map<string, string> options) {
          return false;
         }
     if (LanItems::bootproto=="static"){
+	    if (!(size(options["ip"]:"")>0)){
+		 Report::Error(_("For static configuration \"ip\" option is needed!"));
+		 return false;
+		}
 	    LanItems::ipaddr = options["ip"]:"";
 	    if (size(options["prefix"]:"")>0) LanItems::prefix = options["prefix"]:"";
 		else LanItems::netmask = options["netmask"]:"255.255.255.0";
