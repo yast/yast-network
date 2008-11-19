@@ -161,13 +161,14 @@ map <string, string> request_firmware = $[
 	"iwl3945" : "iwl3945-ucode",
 	"iwl4965" : "iwl4965-ucode",
 	"b43"     : "b43-fwcutter",
+	"rt73usb" : "ralink-firmware",
+	"rt61pci" : "ralink-firmware",
 	"bcm43xx" : "",
 	"prism54" : "",
 	"spectrum_cs" : "",
 	"zd1201" : "",
 	"zd1211rw" : "",
 	"acx" : "",
-	"rt61pci" : "ralink-firmware",
 	"rt73usb" : "",
 	"prism54usb":""
     ];
@@ -900,7 +901,7 @@ global map<string, string> SysconfigDefaults = $[
     "WIRELESS_PEAP_VERSION": "",
 
     // default options for bonding (bnc#404449)
-    "BONDING_MODULE_OPTS": "mode=802.3ad miimon=100",
+    "BONDING_MODULE_OPTS": "mode=active-backup miimon=100",
     ];
 
 /**

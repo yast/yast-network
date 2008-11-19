@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Nov 19 17:14:05 CET 2008 - mzugec@suse.cz
+
+- changed default bonding mode into active-backup (bnc#404449)
+- 2.17.55
+
+-------------------------------------------------------------------
 Wed Nov 19 14:36:53 CET 2008 - kmachalkova@suse.cz
 
 - Use icewm (instead of fvwm2) as a fallback windowmanager for 
