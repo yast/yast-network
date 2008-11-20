@@ -88,6 +88,7 @@ define boolean ReadInstallInf() {
     ReadInstallInfItem(install_inf, "netdevice", "Netdevice");
     ReadInstallInfItem(install_inf, "gateway", "Gateway");
     ReadInstallInfItem(install_inf, "nameserver", "Nameserver");
+    ReadInstallInfItem(install_inf, "nameserver2", "Nameserver2");
     ReadInstallInfItem(install_inf, "domain", "Domain");
     ReadInstallInfItem(install_inf, "nisdomain", "NISDomain");
     ReadInstallInfItem(install_inf, "hostname", "Hostname");
@@ -327,9 +328,12 @@ void CreateOtherNetworkFiles(){
         // create resolv.conf only for static configuration
         if (size(InstallInf["nameserver"]:"")>0)
 	{
+	    string serverlist=InstallInf["nameserver"]:"";
+	    // write also secondary nameserver when available (bnc#446101)
+	    if (size(InstallInf["nameserver2"]:"")>0) serverlist=sformat("%1 %2", serverlist, InstallInf["nameserver2"]:"");
 	    //Do not write /etc/resolv.conf directly, feed the data to sysconfig instead,
 	    //'netconfig' will do the job later on network startup (FaTE #303618)
-	    SCR::Write(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS,  InstallInf["nameserver"]:""); 
+	    SCR::Write(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS,  serverlist);
             y2milestone("Writing static nameserver entry: %1", InstallInf["nameserver"]:"");
             //Enter search domain data only if present
             if( size(InstallInf["domain"]:"") > 0)
