@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov 20 15:27:41 CET 2008 - mzugec@suse.cz
+
+- change in device activation in dsl configuration is not accepted
+(bnc#442741)
+- 2.17.57 
+
+-------------------------------------------------------------------
 Thu Nov 20 10:31:28 CET 2008 - mzugec@suse.cz
 
 - during installation write secondary nameserver when available 

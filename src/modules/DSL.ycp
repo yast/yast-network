@@ -340,9 +340,8 @@ global define boolean Select(string dev) {
 
 	NetworkInterfaces::Edit(dev);
 	devmap = NetworkInterfaces::Current;
-
 	type = typ;
-	device = num;
+//	device = num;
 	operation = `edit;
     }
 
