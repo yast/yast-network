@@ -8,13 +8,13 @@ BuildRequires: yast2-devtools yast2-testsuite
 BuildRequires: yast2-country
 BuildRequires: yast2-installation >= 2.15.27
 BuildRequires: yast2 >= 2.16.6
-BuildRequires: yast2-packager >= 2.16.37
+#BuildRequires: yast2-packager >= 2.16.37
 
 # needed for prefixlen support in aliases
 Requires:	yast2 >= 2.17.5
 #netconfig (FaTE #303618)
 Requires:	sysconfig >= 0.71.2
-Requires:	yast2-packager >= 2.16.37
+#Requires:	yast2-packager >= 2.16.37
 #GetLanguageCountry
 #(in newly created yast2-country-data)
 Requires:	yast2-country-data >= 2.16.3
