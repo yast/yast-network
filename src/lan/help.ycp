@@ -89,9 +89,9 @@ different hostnames.</p> "),
 
 "write_hostname":
 _("<p>Your hostname will be written to <tt>/etc/hosts</tt> and will be 
-resolvable as a <tt>127.0.0.2</tt> IP address. This is the default behavior. 
-To disable such option, uncheck <b>Write Hostname to /etc/hosts</b> box.
-In that case your hostname will not be resolvable without an active network.
+resolvable as <tt>127.0.0.2</tt> IP address. To disable this modification, 
+uncheck <b>Write Hostname to /etc/hosts</b> box. In that case your 
+hostname will not be resolvable without an active network.
 </p> 
 "),
 
