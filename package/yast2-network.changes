@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Nov 21 14:27:20 CET 2008 - kmachalkova@suse.cz
+
+- Removed workaround for installing the right NetworkManager 
+  frontend - this is now handled by NM itself (bnc#445643)
+- Removed dependency on yast2-packager because of that  
+
+-------------------------------------------------------------------
 Thu Nov 20 15:27:41 CET 2008 - mzugec@suse.cz
 
 - change in device activation in dsl configuration is not accepted
