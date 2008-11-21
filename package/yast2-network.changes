@@ -3,7 +3,11 @@ Fri Nov 21 14:27:20 CET 2008 - kmachalkova@suse.cz
 
 - Removed workaround for installing the right NetworkManager 
   frontend - this is now handled by NM itself (bnc#445643)
-- Removed dependency on yast2-packager because of that  
+- Removed the single point of dependency on yast2-packager 
+  because of that 
+- Avoid passing 'nil' arguments when /etc/HOSTNAME's content is not
+  \n-terminated (bnc#445531)
+- Adjusted help text (write_hostname is configurable) (bnc#441819)
 
 -------------------------------------------------------------------
 Thu Nov 20 15:27:41 CET 2008 - mzugec@suse.cz
