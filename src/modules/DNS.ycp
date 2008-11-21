@@ -23,6 +23,7 @@ import "NetworkConfig";
 import "NetworkInterfaces";
 import "Progress";
 import "Service";
+import "String";
 
 include "network/routines.ycp";
 include "network/runtime.ycp";
@@ -163,7 +164,8 @@ global define boolean Read() {
 	if (SCR::Read (.target.size, "/etc/HOSTNAME") > 0)
 	{
 	    fqhostname = (string) SCR::Read (.target.string, "/etc/HOSTNAME");
-	    fqhostname = substring(fqhostname, 0, findfirstof(fqhostname, "\n"));
+	    //avoid passing nil argument when we get non-\n-terminated string (#445531)
+	    fqhostname = String::FirstChunk( fqhostname, "\n" );
 	}
     }
     list<string> split = Hostname::SplitFQ (fqhostname);
