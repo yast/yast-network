@@ -516,7 +516,7 @@ y2internal("virt_net_proposal %1", virt_net_proposal);
       }
      if (!network) Popup::Error(_("No network running"));
     }
-    if(!CheckNetworkManagerPlugin()) return false;
+
     /* Final progress step */
     ProgressNextStage(_("Finished"));
     sleep(sl);
