@@ -457,37 +457,27 @@ symbol handleHW (string key, map event) {
    }
    if (ret == `ok){
    string old_name = LanItems::GetItemUdev("NAME");
+   string new_name = (string)UI::QueryWidget(`dev_name, `Value);
    // write new udev rule
-/*
-  string rule_key = UI::QueryWidget(`udev_type, `CurrentButton)==`mac ? sformat("ATTR{address}==\"%1\"",
-        LanItems::getCurrentItem()["hwinfo", "mac"]:"") : sformat("KERNELS==\"%1\"", LanItems::getCurrentItem()["hwinfo", "busid"]:"");
-*/
-  string rule_key = UI::QueryWidget(`udev_type, `CurrentButton)==`mac ? "ATTR{address}" : "KERNELS";
-  string rule_value = UI::QueryWidget(`udev_type, `CurrentButton)==`mac ? LanItems::getCurrentItem()["hwinfo", "mac"]:"" : LanItems::getCurrentItem()["hwinfo", "busid"]:"";
-//  LanItems::Items[LanItems::current, "udev", "net"]=
+   string rule_key = UI::QueryWidget(`udev_type, `CurrentButton)==`mac ? "ATTR{address}" : "KERNELS";
+   string rule_value = UI::QueryWidget(`udev_type, `CurrentButton)==`mac ? LanItems::getCurrentItem()["hwinfo", "mac"]:"" : LanItems::getCurrentItem()["hwinfo", "busid"]:"";
 y2internal("LanItems::GetReplacedItemUdev(%1, %2) %3",rule_key, rule_value,  LanItems::GetReplacedItemUdev(rule_key, rule_value));
- if ((boolean)UI::QueryWidget(`change_dev_name, `Value)){
-      y2internal("LanItems::GetReplacedItemUdev2 %1", LanItems::GetReplacedItemUdev("NAME", (string)UI::QueryWidget(`dev_name, `Value)));
- }
-/*
-    LanItems::Items[LanItems::current, "udev", "net"]=
-		["SUBSYSTEM==\"net\"",
-                  "DRIVERS==\"?*\"",
-	UI::QueryWidget(`udev_type, `CurrentButton)==`mac ? sformat("ATTR{address}==\"%1\"",
-	LanItems::getCurrentItem()["hwinfo", "mac"]:"") : sformat("KERNELS==\"%1\"", LanItems::getCurrentItem()["hwinfo", "busid"]:""),
-	sformat("NAME==\"%1\"", ((boolean)UI::QueryWidget(`change_dev_name, `Value))?UI::QueryWidget(`dev_name, `Value):LanItems::GetItemUdev("NAME"))
-    ];
-*/
+   if ((boolean)UI::QueryWidget(`change_dev_name, `Value)){
    // when dev_name changed, rename ifcfg (both in NetworkInterfaces and LanItems)
-    if (LanItems::GetItemUdev("NAME")!=old_name){
-    NetworkInterfaces::Delete2(old_name);
-//    NetworkInterfaces::Commit();
-     LanItems::Items[LanItems::current, "ifcfg"]=LanItems::GetItemUdev("NAME");
-//     LanItems::Items[LanItems::current, "hwinfo", "dev_name"]=LanItems::GetItemUdev()[1]:"";
+    if (new_name!=old_name){
+    if (contains(NetworkInterfaces::List(""), new_name)){
+     Popup::Error(_("Configuration name already exists!"));
+     ret=nil;
+    } else{
+      y2internal("LanItems::GetReplacedItemUdev2 %1", LanItems::GetReplacedItemUdev("NAME", new_name));
+	 NetworkInterfaces::Delete2(old_name);
+	 LanItems::Items[LanItems::current, "ifcfg"]=LanItems::GetItemUdev("NAME");
+     }
+     }
     }
    }
    UI::CloseDialog();
-   UI::ChangeWidget(`device_name, `Value, LanItems::GetItemUdev("NAME"));
+   UI::ChangeWidget(`device_name, `Value, LanItems::Items[LanItems::current, "ifcfg"]:"");
   }
  return nil;
 }
