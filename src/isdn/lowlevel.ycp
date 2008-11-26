@@ -134,7 +134,7 @@ particular vendors by selecting a vendor.</p>");
 	    if(size(l) > 0) {
 		card = l[0, 0, 0]:0;
 		UI::ChangeWidget(`id(`cards), `CurrentItem, card);
-		UI::ReplaceWidget(`id(`rp), `SelectionBox(`id(`cards), _("Se&lect ISDN Card"), cards));
+		UI::ReplaceWidget(`id(`rpc), `SelectionBox(`id(`cards), _("Se&lect ISDN Card"), cards));
 		continue;
 	    }
 	    map m = filter(integer i, map c, ISDN::ISDNCDB["Cards"]:$[], ``(tolower(substring(c["longname"]:"", 0, size(entry))) == tolower(entry)));
