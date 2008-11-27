@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov 27 11:21:48 CET 2008 - kmachalkova@suse.cz
+
+- Removed source of UI syntax error in ISDN - invalid widget ID 
+  (bnc#446346)  
+- Make IP/Netmask/Hostname widgets h-stretched (bnc#447897)
+
+-------------------------------------------------------------------
 Wed Nov 26 17:19:46 CET 2008 - mzugec@suse.de
 
 - change device name - validation for existing names (bnc#447480)
