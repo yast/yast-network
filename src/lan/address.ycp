@@ -643,11 +643,11 @@ map<string, map<string,any> > widget_descr_local = $[
 								// TODO : Stat ... Assigned
 		 `Left(`RadioButton(`id(`static), `opt(`notify), _("Statically assigned IP Address"))),
 		  `HBox(
-		  `InputField(`id(`ipaddr), _("&IP Address")),
+		  `InputField(`id(`ipaddr), `opt(`hstretch), _("&IP Address")),
 		  `HSpacing(1),
-		  `InputField(`id(`netmask),  _("&Subnet Mask")),
+		  `InputField(`id(`netmask), `opt(`hstretch), _("&Subnet Mask")),
 		  `HSpacing(1),
-		  `InputField(`id(`hostname), _("&Hostname")),
+		  `InputField(`id(`hostname), `opt(`hstretch), _("&Hostname")),
 	          `HStretch()
 		  )
 		 )
