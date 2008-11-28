@@ -118,6 +118,7 @@ list<string> nilliststring = nil; // to save some casting
 /* s390 options */
 // portname is in ifcfg, others are in hwcfg
 global string portname = "";
+global string qeth_portnumber = "";
 global string chan_mode = "0";
 global string qeth_options = "";
 global boolean ipa_takeover = false;
@@ -1582,11 +1583,12 @@ global boolean createS390Device(){
  switch(type){
   case "qeth":
   case "hsi":
+	string portnumber_param = (size(qeth_portnumber)>0) ? sformat("-n %1", qeth_portnumber) : "";
 	if (size(chan_mode)>0)
 					// chan_ids (read, write, control), port
-		command1=sformat("qeth_configure -p %1 %2 1", chan_mode, qeth_chanids);
+		command1=sformat("qeth_configure -p %1 %2 %3 1", chan_mode, portnumber_param, qeth_chanids);
 	else
-		command1=sformat("qeth_configure %1 1", qeth_chanids);
+		command1=sformat("qeth_configure %1 %2 1", portnumber_param, qeth_chanids);
 	command2=sformat("ls /sys/devices/qeth/%1/net/|head -n1|tr -d '\n'", (splitstring(qeth_chanids, " "))[0]:"");
 	break;
   case "ctc":

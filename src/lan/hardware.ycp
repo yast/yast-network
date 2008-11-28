@@ -546,8 +546,11 @@ define any S390Dialog() {
 	    /* Frame label */
 	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
 		`VSpacing(1),
-		/* TextEntry label */
-		`InputField(`id(`chan_mode), `opt(`hstretch), _("&Port Name"), LanItems::chan_mode),
+		`HBox(
+			/* TextEntry label */
+			`InputField(`id(`chan_mode), `opt(`hstretch), _("&Port Name"), LanItems::chan_mode),
+			`ComboBox(`id(`qeth_portnumber), _("Port Number"), [`item(`id("0"), "0", true), `item(`id("1"), "1")])
+		),
 		`VSpacing(1),
 		/* TextEntry label */
 		`InputField(`id(`qeth_options), `opt(`hstretch), Label::Options (), LanItems::qeth_options),
@@ -733,6 +736,7 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 	    LanItems::ipa_takeover = (boolean) UI::QueryWidget(`id(`ipa_takeover), `Value);
 	    LanItems::qeth_layer2 = (boolean) UI::QueryWidget(`id(`qeth_layer2), `Value);
 	    LanItems::qeth_macaddress = (string) UI::QueryWidget(`id(`qeth_macaddress), `Value);
+	    LanItems::qeth_portnumber = (string) UI::QueryWidget(`id(`qeth_portnumber), `Value);
 	}
 	    string read = (string) UI::QueryWidget(`id(`qeth_chan_read), `Value);
 	    string write = (string) UI::QueryWidget(`id(`qeth_chan_write), `Value);
