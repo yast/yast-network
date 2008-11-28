@@ -66,6 +66,12 @@ global boolean virt_net_proposal = nil;
  * boolean start_immediately = false;
  */
 
+/**
+ * boolean if we do automatic installation in second stage
+ */
+
+global boolean automatic_configuration=false;
+
 
 // ipv6 module
 global boolean ipv6=true;
@@ -514,7 +520,10 @@ y2internal("virt_net_proposal %1", virt_net_proposal);
 	sleep(1000);
 	timeout = timeout-1;
       }
-     if (!network) Popup::Error(_("No network running"));
+     if (!network) {
+		if (automatic_configuration) y2error("No network running");
+			else Popup::Error(_("No network running"));
+		}
     }
 
     /* Final progress step */
