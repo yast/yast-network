@@ -1,8 +1,8 @@
 -------------------------------------------------------------------
 Thu Nov 27 11:21:48 CET 2008 - kmachalkova@suse.cz
 
-- Removed source of UI syntax error in ISDN - invalid widget ID 
-  (bnc#446346)  
+- Removed source of UI syntax error in ISDN - invalid widget ID
+  (bnc#446346)
 - Make IP/Netmask/Hostname widgets h-stretched (bnc#447897)
 
 -------------------------------------------------------------------
@@ -107,18 +107,18 @@ Fri Oct 31 12:19:25 CET 2008 - mzugec@suse.de
 - 2.14.50 
 
 -------------------------------------------------------------------
-Thu Oct 30 10:52:58 CET 2008 - mzugec@suse.de
-
-- increase time to wait for NM to 15 seconds (bnc#439915)
-- 2.14.49 
-
--------------------------------------------------------------------
 Thu Oct 30 17:01:53 CET 2008 - kmachalkova@suse.cz
 
 - If no DNS search list exists in 2nd stage of installation, preset 
   current domain name (!= 'site') as a default value (bnc#438167) 
 - Correct fix for bnc#427044: removed workaround for KDE4 and 
   metacity
+
+-------------------------------------------------------------------
+Thu Oct 30 10:52:58 CET 2008 - mzugec@suse.de
+
+- increase time to wait for NM to 15 seconds (bnc#439915)
+- 2.14.49 
 
 -------------------------------------------------------------------
 Thu Oct 30 10:38:26 CET 2008 - mzugec@suse.de
@@ -4028,7 +4028,7 @@ Mon Aug 04 11:06:12 CEST 2003 - arvin@suse.de
 - fixed return value in inst_netprobe
 
 -------------------------------------------------------------------
-Fri Aug  1 12:49:15 CEST 2003 - msvec@suse.cz
+Fri Aug  2 12:49:15 CEST 2003 - msvec@suse.cz
 
 - read /root/.curlrc only if present
 - 2.8.10
@@ -4607,7 +4607,7 @@ Mon Jul 29 17:57:19 CEST 2002 - msvec@suse.cz
 - 2.6.10
 
 -------------------------------------------------------------------
-Sun Jul 24 20:05:14 CEST 2002 - kkeil@suse.de
+Wed Jul 24 20:07:14 CEST 2002 - kkeil@suse.de
 
 - ISDN interface and multi provider setup
 - simple dialin server setup
