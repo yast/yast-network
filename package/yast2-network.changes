@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Dec  2 17:42:02 CET 2008 - kmachalkova@suse.cz
+
+- Allow setting hostname even if network is NM-controlled (bnc#444967)
+- Write only limited set of values (NetworkConfig, DNS, Hostname) 
+  in case of NM on installed system, do not restart/reload network
+
+-------------------------------------------------------------------
 Tue Dec  2 14:00:09 CET 2008 - ug@suse.de
 
 - rnc file fixed
