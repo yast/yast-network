@@ -332,9 +332,7 @@ void writeIPv6(){
  * @return true on success
  */
 global define boolean Write() {
-
     y2milestone("Writing configuration");
-//    if(!write_only && NetHwDetection::running) NetHwDetection::Stop();
 
     /* Stop the detection */
     if(!LanItems::modified) {
@@ -343,6 +341,10 @@ global define boolean Write() {
     }
 
     boolean fw_is_installed = SuSEFirewall4Network::IsInstalled();
+    //A variable to determine whether we're on installed system and have NM -
+    //then, only limited setup is done
+    //FIXME: remove it once NetworkManager can set up everything 
+    boolean NMonInstalledSys = NetworkService::IsManaged() && !Mode::installation();
 
     /* Write dialog caption */
     string caption = _("Saving Network Configuration");
@@ -350,60 +352,79 @@ global define boolean Write() {
     integer sl = 0; /* 1000; /* TESTING */
     sleep(sl);
 
-    list<string> step_labels = [
-	/* Progress stage 2 */
-	_("Write drivers information"),
-	/* Progress stage 3 - multiple devices may be present,really plural*/
-	_("Write device configuration"),
-	/* Progress stage 4 */
-	_("Write network configuration"),
-	/* Progress stage 5 */
-	_("Write routing configuration"),
-	/* Progress stage 6 */
-	_("Write hostname and DNS configuration"),
-	/* Progress stage 7 */
-	_("Set up network services"),
-        ];
-	/* Progress stage 8 */
-     if (fw_is_installed)
-        step_labels=add(step_labels, _("Write firewall settings"));
-     /* Progress stage 9 */
-     if (!write_only) step_labels = add(step_labels, _("Activate network services"));
-	/* Progress stage 10 */
-     step_labels=add(step_labels, _("Run SuSEconfig"));
-     if (!NetworkService::IsManaged() && /*(boolean) SCR::Read(.init.scripts.exists, "smpppd") &&*/ !write_only )
-	{
-	 /* Progress stage 11 */
-	 step_labels=add(step_labels, _("Set up smpppd"));
-	}
+    list<string> sl1 = [
+       /* Progress stage 2 */
+       _("Write drivers information"),
+       /* Progress stage 3 - multiple devices may be present,really plural*/
+       _("Write device configuration"),
+       /* Progress stage 4 */
+       _("Write routing configuration"),
+    ];
+
+    list<string> sl2 = [
+       /* Progress stage 5 */
+       _("Write network configuration"),
+       /* Progress stage 6 */
+       _("Write hostname and DNS configuration"),
+       /* Progress stage 7 */
+       _("Set up network services"),
+    ];
+
+    list <string> sl3 = [];
+    if (fw_is_installed)
+       /* Progress stage 8 */
+       sl3 = add(sl3, _("Write firewall settings"));
+    /* Progress stage 9 */
+    if (!write_only) 
+       sl3 = add(sl3, _("Activate network services"));
+
+       /* Progress stage 10 */
+    sl3 =add(sl3, _("Run SuSEconfig"));
+
+    if (!NetworkService::IsManaged() && !write_only )
+    {
+        /* Progress stage 11 */
+        sl3 = add(sl3, _("Set up smpppd"));
+    }
+
+    list <string> step_labels = [];
+    if (!NMonInstalledSys)
+	 step_labels = (list <string> ) merge(sl1, merge (sl2, sl3));
+    else
+         step_labels = sl2;
 
      Progress::New(caption, " ", size(step_labels), step_labels, [], "");
 
+    //skip these steps iff NetworkManager & we're on installed system
+    if ( !NMonInstalledSys )
+    {
+        if(Abort()) return false;
+        /* Progress step 2 */
+        ProgressNextStage(_("Writing /etc/modprobe.conf..."));
+        //FIXME: unused?
+        sleep(sl);
 
-    if(Abort()) return false;
-    /* Progress step 2 */
-    ProgressNextStage(_("Writing /etc/modprobe.conf..."));
-    sleep(sl);
+        if(Abort()) return false;
+        /* Progress step 3 - multiple devices may be present, really plural*/
+        ProgressNextStage(_("Writing device configuration..."));
+        if (!Mode::autoinst()) LanItems::WriteUdevDriverRules();
+        NetworkInterfaces::Write("netcard");
+        // WriteDevices();
+        sleep(sl);
 
-    if(Abort()) return false;
-    /* Progress step 3 - multiple devices may be present, really plural*/
-    ProgressNextStage(_("Writing device configuration..."));
-    if (!Mode::autoinst()) LanItems::WriteUdevDriverRules();
-    NetworkInterfaces::Write("netcard");
-    // WriteDevices();
-    sleep(sl);
-
-    if(Abort()) return false;
-    /* Progress step 4 */
-    ProgressNextStage(_("Writing network configuration..."));
-    NetworkConfig::Write();
-    sleep(sl);
+        if(Abort()) return false;
+        /* Progress step 4 */
+        ProgressNextStage(_("Writing routing configuration..."));
+        boolean orig = Progress::set (false);
+        Routing::Write();
+        Progress::set (orig);
+        sleep(sl);
+    }
 
     if(Abort()) return false;
     /* Progress step 5 */
-    ProgressNextStage(_("Writing routing configuration..."));
-    boolean orig = Progress::set (false);
-    Routing::Write();
+    ProgressNextStage(_("Writing network configuration..."));
+    NetworkConfig::Write();
     sleep(sl);
 
     if(Abort()) return false;
@@ -411,10 +432,10 @@ global define boolean Write() {
     ProgressNextStage(_("Writing hostname and DNS configuration..."));
     // write resolv.conf after change from dhcp to static (#327074)
     // reload/restart network before this to put correct resolv.conf from dhcp-backup
+    boolean orig = Progress::set (false);
     DNS::Write();
     Host::Write();
     Progress::set (orig);
-
     sleep(sl);
 
     if(Abort()) return false;
@@ -424,106 +445,116 @@ global define boolean Write() {
     writeIPv6();
     sleep(sl);
 
-    //Show this only if SuSEfirewall is installed
-    if(fw_is_installed) {
-        if(Abort()) return false;
-        /* Progress step 8 */
-        ProgressNextStage(_("Writing firewall settings..."));
-        orig = Progress::set (false);
-        SuSEFirewall4Network::Write ();
-        Progress::set (orig);
-        sleep(sl);
-    }
+    //Do not write firewall and reload network if NM is in charge
+    //and we're on the installed system
+    if (!NMonInstalledSys)
+    {
+        //Show this only if SuSEfirewall is installed
+        if(fw_is_installed) {
+            if(Abort()) return false;
+            /* Progress step 8 */
+            ProgressNextStage(_("Writing firewall settings..."));
+            orig = Progress::set (false);
+            SuSEFirewall4Network::Write ();
+            Progress::set (orig);
+            sleep(sl);
+        }
 
-    if(!write_only) {
-     if(Abort()) return false;
-     /* Progress step 9 */
-     ProgressNextStage(_("Activating network services..."));
-//	NetworkModules::HwUp ();
-   // during installation export sysconfig settings into NetworkManager (bnc#433084)
-   if (Mode::installation() && NetworkService::IsManaged()) y2internal("Export sysconfig settings into NetworkManager %1", SCR::Execute(.target.bash_output, "/usr/lib/NetworkManager/nm-opensuse-sysconfig-merge --connections"));
+        if(!write_only) {
+         if (Abort()) return false;
+         /* Progress step 9 */
+         ProgressNextStage(_("Activating network services..."));
 
-y2internal("virt_net_proposal %1", virt_net_proposal);
-   if (Stage::cont() && virt_net_proposal && (Linuxrc::usessh() || Linuxrc::vnc() || Linuxrc::display_ip())){
-	UI::OpenDialog(`opt(`decorated), `HBox(
-        `HSpacing(1),
-        `HCenter(`HSquash(`VBox(
+         // during installation export sysconfig settings into NetworkManager (bnc#433084)
+         if (Mode::installation() && NetworkService::IsManaged()) 
+            y2internal("Export sysconfig settings into NetworkManager %1", SCR::Execute(.target.bash_output, "/usr/lib/NetworkManager/nm-opensuse-sysconfig-merge --connections"));
+
+         // A special case for bridged network
+         y2internal("virt_net_proposal %1", virt_net_proposal);
+         if (Stage::cont() && virt_net_proposal && (Linuxrc::usessh() || Linuxrc::vnc() || Linuxrc::display_ip())){
+            UI::OpenDialog(`opt(`decorated), `HBox(
+            `HSpacing(1),
             `HCenter(`HSquash(`VBox(
-                // This is the heading of the popup box
-                `Left(`Heading(_("Confirm Network Restart"))),
-                `VSpacing(0.5),
-                // This is in information message. Next come the
-                // hardware class name (network cards).
-                `HVCenter(`Label(_("Because of bridged network YaST2 needs to restart network to apply the settings."))),
-                `VSpacing(0.5)
+                `HCenter(`HSquash(`VBox(
+                    // This is the heading of the popup box
+                    `Left(`Heading(_("Confirm Network Restart"))),
+                    `VSpacing(0.5),
+                    // This is in information message. Next come the
+                    // hardware class name (network cards).
+                    `HVCenter(`Label(_("Because of bridged network YaST2 needs to restart network to apply the settings."))),
+                    `VSpacing(0.5)
+                ))),
+                `ButtonBox (
+                    `HWeight (1, `PushButton (`id(`ok), `opt(`default, `okButton),  Label::OKButton())),
+                    /* PushButton label */
+                    `HWeight (1, `PushButton (`id (`cancel), `opt (`cancelButton),  Label::CancelButton()))
+                ),
+                `VSpacing(0.2)
             ))),
-            `ButtonBox (
-                `HWeight (1, `PushButton (`id(`ok), `opt(`default, `okButton),  Label::OKButton())),
-                /* PushButton label */
-                `HWeight (1, `PushButton (`id (`cancel), `opt (`cancelButton),  Label::CancelButton()))
-            ),
-            `VSpacing(0.2)
-        ))),
-        `HSpacing(1)
-    ));
+            `HSpacing(1)
+        ));
 
-    UI::SetFocus (`id(`ok));
+         UI::SetFocus (`id(`ok));
 
-    // for autoinstallation popup has timeout 10 seconds (#192181)
-    // timeout for every case (bnc#429562)
-    any ret = UI::TimeoutUserInput(10*1000);
-	if (ret==`ok){
-	 y2internal("Restarting network because of bridged proposal");
-	 Service::Restart("network");
-	}
-     UI::CloseDialog();
-    }
+         // for autoinstallation popup has timeout 10 seconds (#192181)
+         // timeout for every case (bnc#429562)
+         any ret = UI::TimeoutUserInput(10*1000);
+            if (ret==`ok){
+             y2internal("Restarting network because of bridged proposal");
+             Service::Restart("network");
+            }
+          UI::CloseDialog();
+         }
 
-    // For ssh/vnc installation don't reload/restart network because possibility of IP change (bnc#347482)
-    else if (Stage::cont() && (Linuxrc::usessh() || Linuxrc::vnc() || Linuxrc::display_ip())) y2milestone("For ssh or vnc installation don't reload/restart network during installation.");
-        else if (LanItems::force_restart) Service::Restart("network");
-	   else if(Service::Status("network")==0){
-			 Service::Reload("network");
-			} else Service::Restart("network");
-//	NetworkService::StartStop ();
-    sleep(sl);
-    }
+         // For ssh/vnc installation don't reload/restart network because possibility of IP change (bnc#347482)
+         else if (Stage::cont() && (Linuxrc::usessh() || Linuxrc::vnc() || Linuxrc::display_ip())) 
+             y2milestone("For ssh or vnc installation don't reload/restart network during installation.");
+         else if (LanItems::force_restart) 
+             Service::Restart("network");
+         else if(Service::Status("network")==0){
+              Service::Reload("network");
+         }
+         else
+             Service::Restart("network");
+         sleep(sl);
+        }
 
-    if(Abort()) return false;
-    /* Progress step 10 */
-    ProgressNextStage(_("Running SuSEconfig..."));
-    if(!write_only) RunSuSEconfig();
-    sleep(sl);
+        if(Abort()) return false;
+        /* Progress step 10 */
+        ProgressNextStage(_("Running SuSEconfig..."));
+        if(!write_only) RunSuSEconfig();
+        sleep(sl);
 
-    if (!NetworkService::IsManaged() /*&& (boolean) SCR::Read(.init.scripts.exists, "smpppd")*/ && !write_only )
-     {
-       if(Abort()) return false;
-       /* Progress step 11 */
-       ProgressNextStage(_("Setting up smpppd(8)..."));
-       // takes care of autoinst by itself
-       SetupSMPPPD(false);
-       sleep(sl);
+        if (!NetworkService::IsManaged() /*&& (boolean) SCR::Read(.init.scripts.exists, "smpppd")*/ && !write_only )
+        {
+           if(Abort()) return false;
+           /* Progress step 11 */
+           ProgressNextStage(_("Setting up smpppd(8)..."));
+           // takes care of autoinst by itself
+           SetupSMPPPD(false);
+           sleep(sl);
 
-     }
+        }
 
-    if (NetworkService::IsManaged())
-     {
-      boolean network=false;
-      integer timeout=15;
-      while(timeout>0)
-      {
-	if (NetworkService::isNetworkRunning()){
-	 network=true;
-	 break;
-	}
-	y2milestone("waiting for network ... %1", timeout);
-	sleep(1000);
-	timeout = timeout-1;
-      }
-     if (!network) {
-		if (automatic_configuration) y2error("No network running");
-			else Popup::Error(_("No network running"));
-		}
+        if (NetworkService::IsManaged())
+        {
+          boolean network=false;
+          integer timeout=15;
+          while(timeout>0)
+          {
+            if (NetworkService::isNetworkRunning()){
+             network=true;
+             break;
+            }
+            y2milestone("waiting for network ... %1", timeout);
+            sleep(1000);
+            timeout = timeout-1;
+          }
+          if (!network) {
+	     if (automatic_configuration) y2error("No network running");
+		else Popup::Error(_("No network running"));
+	  }
+        }
     }
 
     /* Final progress step */
