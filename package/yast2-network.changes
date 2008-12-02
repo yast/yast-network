@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Dec  2 14:00:09 CET 2008 - ug@suse.de
+
+- rnc file fixed
+
+-------------------------------------------------------------------
 Fri Nov 28 16:52:22 CET 2008 - mzugec@suse.cz
 
 - don't show "no network running" popup for automatic installation 
