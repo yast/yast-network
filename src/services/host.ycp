@@ -70,6 +70,7 @@ define symbol HostsMainDialog(boolean standalone) {
 
     integer max = 0;
     list<term> table_items = [];
+    list <string> deleted_items = []; 
 
     y2debug("hosts=%1", Host::hosts);
 
@@ -193,6 +194,7 @@ define symbol HostsMainDialog(boolean standalone) {
 		    y2debug("oldentry: %1", oldentry);
 		    string ip = item[1]:"";
 		    string oldip = olditem[1]:"";
+		    deleted_items = add(deleted_items, oldip);
 		    y2debug("Deleting: %1 (%2)", oldip, ip);
 
 		    return item;
@@ -222,7 +224,8 @@ define symbol HostsMainDialog(boolean standalone) {
 		string ip = e[1]:"";
 		if(cur == e[0, 0]:nil) {
 		    if(ip != "" && ip != nil) {
-		    return false;
+		        deleted_items = add(deleted_items, ip);
+		        return false;
 		    }
 		}
 		return true;
@@ -236,15 +239,23 @@ define symbol HostsMainDialog(boolean standalone) {
 	}
 	else if(ret == `next) {
 	    /* check_ */
-	if(Host::modified){
-	Host::hosts=$[];
-	 foreach(term row, table_items, {
-	  string value = mergestring([row[2]:"", row[3]:""], " ");
-	  string key = row[1]:"";
-	  if(!haskey(Host::hosts, key))Host::hosts[key]=[ value ];
-		else Host::hosts[key] = add(Host::hosts[key]:[], value);
-	 });
-	}
+	    if(Host::modified){
+	     Host::hosts=$[];
+	     foreach(term row, table_items, {
+	         string value = mergestring([row[2]:"", row[3]:""], " ");
+	         string key = row[1]:"";
+	         if(!haskey(Host::hosts, key))
+		Host::hosts[key]=[ value ];
+	         else 
+		Host::hosts[key] = add(Host::hosts[key]:[], value);
+	     });
+	     //deleted entries need to be set to [], 
+	     //so that ini-agent does not keep them in
+	     //config file (#455862)
+	     foreach( string d, deleted_items, {
+	         Host::hosts[d] = [];
+	     });
+	    }
 	    break;
 	}
 	else {
