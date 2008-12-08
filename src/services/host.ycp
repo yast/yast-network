@@ -18,6 +18,7 @@ import "Hostname";
 import "IP";
 import "Label";
 import "Popup";
+import "Punycode";
 import "Wizard";
 
 include "network/routines.ycp";
@@ -82,8 +83,9 @@ define symbol HostsMainDialog(boolean standalone) {
 	}
 	foreach (string s, names, {
 	    list<string> row=splitstring(s, " ");
-	    string aliases = mergestring(remove(row, 0), " ");
-	    term item = `item(`id(size(table_items)), host, row[0]:"", aliases);
+	    string aliases = mergestring(Punycode::DecodePunycodes(remove(row, 0)), " ");
+	    term item = `item(`id(size(table_items)), host, 
+			Punycode::DecodeDomainName(row[0]:""), aliases);
 	    table_items = add(table_items, item);
 	});
     });
@@ -242,7 +244,8 @@ define symbol HostsMainDialog(boolean standalone) {
 	    if(Host::modified){
 	     Host::hosts=$[];
 	     foreach(term row, table_items, {
-	         string value = mergestring([row[2]:"", row[3]:""], " ");
+	         string value = mergestring( prepend( Punycode::EncodePunycodes( [row[3]:""]),
+					              Punycode::EncodeDomainName( row[2]:"" ) ), " " ); 
 	         string key = row[1]:"";
 	         if(!haskey(Host::hosts, key))
 		Host::hosts[key]=[ value ];
@@ -307,8 +310,9 @@ define term HostDialog(integer id, term entry) {
 	));
 
     UI::ChangeWidget(`id(`host), `ValidChars, IP::ValidChars);
-    UI::ChangeWidget(`id(`name), `ValidChars, Hostname::ValidCharsFQ);
-    UI::ChangeWidget(`id(`aliases), `ValidChars, Hostname::ValidCharsFQ + " ");
+//    anything allowed here - will be converted to punycode (#448486)
+//    UI::ChangeWidget(`id(`name), `ValidChars, Hostname::ValidCharsFQ);
+//    UI::ChangeWidget(`id(`aliases), `ValidChars, Hostname::ValidCharsFQ + " ");
 
     if(entry == `empty())
 	UI::SetFocus(`id(`host));
@@ -334,8 +338,8 @@ define term HostDialog(integer id, term entry) {
 
 	host = add(host, val);
 
-	val = (string) UI::QueryWidget(`id(`name), `Value);
-	if(!Hostname::CheckFQ(val)) {
+	val =  (string) UI::QueryWidget(`id(`name), `Value);
+	if(!Hostname::CheckFQ( Punycode::EncodeDomainName (val) )) {
 	    UI::SetFocus(`id(`name));
 	    /* Popup::Error text */
 	    Popup::Error(_("The hostname is invalid.") +
@@ -346,7 +350,7 @@ define term HostDialog(integer id, term entry) {
 
 	val = (string) UI::QueryWidget(`id(`aliases), `Value);
 	if(val != "") {
-	    list<string> vals = splitstring(val, " ");
+	    list<string> vals = Punycode::EncodePunycodes( splitstring(val, " ") );
 	    vals = filter(string ho, vals, {
 		return ho != "" && !Hostname::CheckFQ(ho);
 	    });
