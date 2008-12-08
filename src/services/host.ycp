@@ -82,10 +82,12 @@ define symbol HostsMainDialog(boolean standalone) {
 	    return;
 	}
 	foreach (string s, names, {
-	    list<string> row=splitstring(s, " ");
-	    string aliases = mergestring(Punycode::DecodePunycodes(remove(row, 0)), " ");
+
+	    string name = regexpsub(s, "^([^ \t]+)[ \t].*$", "\\1");
+	    string aliases = regexpsub(s, "^[^ \t]+[ \t]+(.*)[ \t]*$", "\\1");
+
 	    term item = `item(`id(size(table_items)), host, 
-			Punycode::DecodeDomainName(row[0]:""), aliases);
+			Punycode::DecodeDomainName(name), Punycode::DecodePunycodes( [aliases] )[0]:"");
 	    table_items = add(table_items, item);
 	});
     });
@@ -194,9 +196,12 @@ define symbol HostsMainDialog(boolean standalone) {
 		    y2debug("olditem: %1", olditem);
 		    y2debug("entry: %1", entry);
 		    y2debug("oldentry: %1", oldentry);
+
 		    string ip = item[1]:"";
 		    string oldip = olditem[1]:"";
-		    deleted_items = add(deleted_items, oldip);
+
+		    if( ip != oldip)
+		        deleted_items = add(deleted_items, oldip);
 		    y2debug("Deleting: %1 (%2)", oldip, ip);
 
 		    return item;
