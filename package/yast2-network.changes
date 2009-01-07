@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Jan  7 16:45:59 CET 2009 - mzugec@suse.cz
+
+- set layer2 bit and LLADDR for s390 qeth devices (bnc#457189)
+- 2.17.63 
+
+-------------------------------------------------------------------
 Mon Dec  8 12:22:25 CET 2008 - kmachalkova@suse.cz
 
 - Really delete hostname entries from /etc/hosts, not only from UI 
