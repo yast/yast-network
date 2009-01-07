@@ -1058,6 +1058,7 @@ global define boolean Commit() {
 	newdev["NETWORK"] = "";
 
 	newdev["REMOTE_IPADDR"] = remoteip;
+	if (qeth_layer2) newdev["LLADDR"] = qeth_macaddress;
 
 	if(alias == "") {
 	    newdev["MTU"] = mtu;
@@ -1586,9 +1587,9 @@ global boolean createS390Device(){
 	string portnumber_param = (size(qeth_portnumber)>0) ? sformat("-n %1", qeth_portnumber) : "";
 	if (size(chan_mode)>0)
 					// chan_ids (read, write, control), port
-		command1=sformat("qeth_configure -p %1 %2 %3 1", chan_mode, portnumber_param, qeth_chanids);
+		command1=sformat("qeth_configure %1 -p %2 %3 %4 1", qeth_layer2?"-l":"", chan_mode, portnumber_param, qeth_chanids);
 	else
-		command1=sformat("qeth_configure %1 %2 1", portnumber_param, qeth_chanids);
+		command1=sformat("qeth_configure %1 %2 %3 1", qeth_layer2?"-l":"", portnumber_param, qeth_chanids);
 	command2=sformat("ls /sys/devices/qeth/%1/net/|head -n1|tr -d '\n'", (splitstring(qeth_chanids, " "))[0]:"");
 	break;
   case "ctc":
