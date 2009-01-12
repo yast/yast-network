@@ -140,13 +140,18 @@ void initRouting (string key) ``{
     integer max = 0;
 //    integer items = 0;
     list<term> table_items_orig = [];
-
     boolean forward = Routing::Forward;
     list<map> route_conf = Routing::Routes;
+
+    //reset, so that UI really reflect current state
+    //maplist below will supply correct data, if there are some
+    defgw = "";
+    defgwdev = "";
     r_items = [];
 
     /* make ui items from the routes list */
     term item = nil;
+
     maplist(map r, route_conf, {
 	if(r["destination"]:"" == "default" && !issubstring(r["extrapara"]:"", "metric")) {
 	    defgw = r["gateway"]:"";
@@ -167,7 +172,7 @@ void initRouting (string key) ``{
 
     y2debug("table_items=%1", r_items);
 //    y2debug("items=%1", items);
-//    max = items;
+  //  max = items;
 
     UI::ChangeWidget(`gw, `Items, [ defgw ]);
     UI::ChangeWidget(`id(`gw), `ValidChars, IP::ValidChars);
