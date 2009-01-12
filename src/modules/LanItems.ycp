@@ -590,6 +590,15 @@ global boolean isCurrentHotplug(){
 	else return false;
 }
 
+/**
+ * Check if currently edited device gets its IP address 
+ * from DHCP (v4, v6 or both)
+ * @return true if it is
+ */
+global boolean isCurrentDHCP(){
+    return regexpmatch( bootproto, "dhcp[46]?");
+}
+
 global boolean IsItemConfigured(){
  boolean ret = false;
  if (size(getCurrentItem()["ifcfg"]:"")>0) ret = true;
