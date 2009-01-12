@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jan 12 16:44:12 CET 2009 - kmachalkova@suse.cz
+
+- Do not reset default gw if the interface is set to 'No IP address'
+  mode ( reset iff it is set to DHCP - #460262) 
+
+-------------------------------------------------------------------
 Wed Jan  7 16:45:59 CET 2009 - mzugec@suse.cz
 
 - set layer2 bit and LLADDR for s390 qeth devices (bnc#457189)
