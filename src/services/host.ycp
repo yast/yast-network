@@ -127,10 +127,11 @@ define symbol HostsMainDialog(boolean standalone) {
     );
 
     if(standalone == true) {
-	Wizard::SetContentsButtons(caption, contents, help,
-	    Label::BackButton(), Label::FinishButton());
+//	Wizard::SetContentsButtons(caption, contents, help,
+//	    Label::CancelButton(), Label::OKButton());
 	//In standalone mode, there's no going back
-	Wizard::DisableBackButton();
+//	Wizard::DisableBackButton();
+	Wizard::OpenOKDialog();
     }
     else
 	Wizard::SetContentsButtons(caption, contents, help,

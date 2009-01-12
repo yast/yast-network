@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jan 12 19:46:59 CET 2009 - mzugec@suse.de
+
+- fixed typo (bnc#441897) 
+
+-------------------------------------------------------------------
 Mon Jan 12 16:44:12 CET 2009 - kmachalkova@suse.cz
 
 - Do not reset default gw if the interface is set to 'No IP address'

@@ -38,7 +38,7 @@ for switching among wired and multiple wireless networks.</p>
 	    // NetworkManager and ifup are programs
 _("<p>Use the <b>Traditional Method with <tt>ifup</tt></b>
 if you do not run a desktop environment (GNOME or KDE)
-or need to use multiple interfaces at once.</p>
+or need to use multiple interfaces at the same time.</p>
 "),
 
 "overview" :
