@@ -84,6 +84,7 @@ global define boolean ReadFromGateway (string gw) {
  */
 global define void RemoveDefaultGw() {
  list <map> route = [];
+ y2milestone("Resetting default gateway - interface has been set to DHCP mode");
  foreach(map row, Routes,{
   if (row["destination"]:""!="default") route = add(route, row);
  });
