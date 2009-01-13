@@ -165,14 +165,11 @@ void initRouting (string key) ``{
 		    r["device"]:"",
 		    r["extrapara"]:"");
 	    r_items = add(r_items, item);
-//	    items = items + 1;
 	}
     });
     table_items_orig = (list<term>) eval(r_items);
 
     y2debug("table_items=%1", r_items);
-//    y2debug("items=%1", items);
-  //  max = items;
 
     UI::ChangeWidget(`gw, `Items, [ defgw ]);
     UI::ChangeWidget(`id(`gw), `ValidChars, IP::ValidChars);
@@ -184,20 +181,14 @@ void initRouting (string key) ``{
     // but instead of default route (#299448) - NM reads it
     boolean enabled = !(boolean)NetworkService::IsManaged();
 
-//    UI::ChangeWidget(`id(`gw), `Enabled, enabled);
     UI::ChangeWidget(`id(`table),  `Enabled, enabled);
     UI::ChangeWidget(`id(`forward), `Enabled, enabled);
-//    UI::ChangeWidget(`id(`add), `Enabled, enabled);
-//    UI::ChangeWidget(`id(`expert), `Enabled, enabled);
 
-    // fixed bug #73739 - if dhcp is used, dont set default gw statically
-//    if (Lan::bootproto == "dhcp")UI::ChangeWidget(`id(`gw),`Enabled, false);
    disableItemsIfNM([ `gw, `table, `add, `edit, `delete ], false);
 }
 
 
 symbol handleRouting( string key, map event ) {
-// boolean expert = (boolean) UI::QueryWidget(`id(`expert), `Value);
  boolean enabled = !(boolean)NetworkService::IsManaged();
  list devs = Routing::GetDevices();
  integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
@@ -206,12 +197,6 @@ symbol handleRouting( string key, map event ) {
  if (event["EventReason"]:"" == "Activated" || event["EventReason"]:"" == "ValueChanged")
  {
   switch (event["ID"]:`nil){
-/*
-   case `expert:
-	    UI::ChangeWidget(`id(`table), `Enabled, expert);
-	    UI::ChangeWidget(`id(`add), `Enabled, expert);
-	break;
-*/
    case `add:
 	    item = RoutingEditDialog(size(r_items), `empty(), devs);
 
@@ -219,9 +204,6 @@ symbol handleRouting( string key, map event ) {
 	     {
 	      r_items = add(r_items, item);
 	      UI::ChangeWidget(`id(`table), `Items, r_items);
-//	      UI::ChangeWidget(`id(`table), `CurrentItem, max);
-//	      items = items + 1;
-//	      max = max + 1;
 	     }
 	break;
    case `delete:
@@ -312,7 +294,6 @@ map<string, map<string,any> > wd_routing = $[
 	    /* Frame label */
 	    `Frame(_("Routing Table"), `VBox(
 		/* CheckBox label */
-//		`Left(`CheckBox(`id(`expert), `opt(`notify), _("E&xpert Configuration"))),
 		`Table(`id(`table), `opt(`notify), `header(
 		    /* Table header 1/4 */
 		    _("Destination"),

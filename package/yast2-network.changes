@@ -7,7 +7,7 @@ Mon Jan 12 19:46:59 CET 2009 - mzugec@suse.de
 Mon Jan 12 16:44:12 CET 2009 - kmachalkova@suse.cz
 
 - Do not reset default gw if the interface is set to 'No IP address'
-  mode ( reset iff it is set to DHCP - #460262) 
+  mode ( reset iff it is set to DHCP - bnc#460262) 
 
 -------------------------------------------------------------------
 Wed Jan  7 16:45:59 CET 2009 - mzugec@suse.cz
