@@ -46,24 +46,25 @@ global define boolean ReadISDNConfig(string devregex) ``{
 	if (devtype == nil)
 	    return;
 	string devnum = regexpsub(d, "^.*/cfg-[a-z]+([0-9]+)", "\\1");
+	string devname = sformat("%1%2", devtype, devnum);
 	if (devnum == nil)
 	    return;
 	y2debug("devtype=%1 devnum=%2", devtype, devnum);
 
 	map dev = Devices[devtype]:$[];
-	if(haskey(dev, devnum)) {
-	    y2error("device already present: %1", devnum);
+	if(haskey(dev, devname)) {
+	    y2error("device already present: %1", devname);
 	    return;
 	}
 
-	string pth = ".isdn.value.\"" + sysconfig + "/cfg-"+devtype+devnum+"\"";
+	string pth = ".isdn.value.\"" + sysconfig + "/cfg-"+devname+"\"";
 	list<string> values = (list<string>) SCR::Dir(topath(pth));
 	map config = listmap(string val, values, ``{
 	    string item = (string) SCR::Read(topath(pth + "." + val));
 	    if(item!=nil) return $[ val : item ];
 	});
 
-	dev[devnum] = config;
+	dev[devname] = config;
 	Devices[devtype] = dev;
     });
 
@@ -90,11 +91,10 @@ global define boolean WriteISDNConfig(string isdntyp) ``{
 
     /* write all devices */
     maplist(string typ, map devsmap, Devices, ``{
-	maplist(string num, map devmap, (map<string,map>)devsmap, ``{
+	maplist(string dev, map devmap, (map<string,map>)devsmap, ``{
 	    /* write sysconfig */
 	    if (typ != isdntyp)
 	        return;
-	    string dev = typ + num;
 	    string p = ".isdn.value.\"" + sysconfig + "/cfg-" + dev + "\".";
 
 	    /* write all keys to config */
@@ -102,9 +102,8 @@ global define boolean WriteISDNConfig(string isdntyp) ``{
 		if(k == "module" || k == "options") return;
 		SCR::Write(topath(p+k), devmap[k]:"");
 	    });
-	    string unq = devmap["UDI"]:"";
-	    if(unq != "")
-		SCR::Write(.probe.status.configured, unq, `yes);
+//	    string unq = devmap["UDI"]:"";
+//	    if(unq != "") SCR::Write(.probe.status.configured, unq, `yes);
 	});
     });
 

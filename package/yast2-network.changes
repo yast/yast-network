@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jan 16 11:47:51 CET 2009 - mzugec@suse.cz
+
+- ISDN: use UNIQUE to match device with configuration (bnc#407683)
+- 2.17.64 
+
+-------------------------------------------------------------------
 Mon Jan 12 19:46:59 CET 2009 - mzugec@suse.de
 
 - fixed typo (bnc#441897) 

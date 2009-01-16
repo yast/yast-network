@@ -630,6 +630,7 @@ define list<map> ReadHardware(string hwtype) {
 	one["dev_name"] = card["dev_name"]:"";
 	one["requires"] = card["requires"]:[];
 	one["modalias"] = card["modalias"]:"";
+	one["unique"]	= card["unique_key"]:"";
 	// Each card remembers its position in the list of _all_ cards.
 	// It is used when selecting the card from the list of _unconfigured_
 	// ones (which may be smaller). #102945.
