@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
 Fri Jan 16 16:50:13 CET 2009 - mzugec@suse.cz
 
-- run isdn only when needed (bnc#104590)
+- run isdn only when needed (thanks to Karsten Keil) (bnc#104590)
 - 2.18.0 
 
 -------------------------------------------------------------------
