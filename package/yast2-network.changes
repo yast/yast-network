@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jan 12 17:23:38 CET 2009 - kmachalkova@suse.cz
+
+- Do not reset default gw if the interface is set to 'No IP address'
+  mode ( reset iff it is set to DHCP - bnc#460262) 
+
+-------------------------------------------------------------------
 Mon Aug 18 11:27:26 CEST 2008 - mzugec@suse.de
 
 - L3: allow configured bonding device inside bridge (bnc#405343)

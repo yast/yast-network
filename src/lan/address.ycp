@@ -1171,8 +1171,11 @@ Components of this product might not work with DHCP.</p>");
 	    Lan::ipaddr = "";
 	    Lan::netmask = "";
 	    Lan::remoteip = "";
-	    // fixed bug #73739 - if dhcp is used, dont set default gw statically
-	    Routing::RemoveDefaultGw();
+
+	    // fixed bug #73739 - if dhcp is used, don't set default gw statically
+	    // but reset it if and only if DHCP will be used to supply it - #460262
+	    if( Lan::bootproto == "dhcp")
+	        Routing::RemoveDefaultGw();
 	}
     }
 
