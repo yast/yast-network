@@ -354,6 +354,7 @@ global define boolean Write(boolean start) ``{
 	y2debug("Packages returns %1", retp);
     }
 
+    boolean haveISDNDev = ($[] != Devices["contr"]:$[]);
     if(!(modified_hw || modified_if || Provider::Modified("isdn"))) return true;
     y2milestone("Writing configuration");
 
@@ -525,8 +526,15 @@ global define boolean Write(boolean start) ``{
 
     if(Abort()) return false;
     // last step in writing current ISDN setup
-    cmd = sformat("/sbin/insserv isdn"); // #104590
-    SCR::Execute(.target.bash, cmd);
+    if(haveISDNDev) {
+        cmd = sformat("/sbin/insserv isdn"); // #104590
+        SCR::Execute(.target.bash, cmd);
+    } else {
+        cmd = sformat("/sbin/insserv -r capisuite");
+        SCR::Execute(.target.bash, cmd);
+        cmd = sformat("/sbin/insserv -r isdn");
+        SCR::Execute(.target.bash, cmd);
+    }
     ProgressNextStage(_("Finished"));
     sleep(sl);
 

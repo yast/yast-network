@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jan 16 16:50:13 CET 2009 - mzugec@suse.cz
+
+- run isdn only when needed (bnc#104590)
+- 2.18.0 
+
+-------------------------------------------------------------------
 Fri Jan 16 11:47:51 CET 2009 - mzugec@suse.cz
 
 - ISDN: use UNIQUE to match device with configuration (bnc#407683)
