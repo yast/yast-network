@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jan 20 10:36:38 CET 2009 - mzugec@suse.cz
+
+- run isdn only when needed (thanks to Karsten Keil) (bnc#104590)
+- ISDN: use UNIQUE to match device with configuration (bnc#407683)
+- 2.17.65 
+
+-------------------------------------------------------------------
 Mon Jan 12 16:49:26 CET 2009 - kmachalkova@suse.cz
 
 - Do not reset default gw if the interface is set to 'No IP address'

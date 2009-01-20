@@ -49,7 +49,7 @@ global define list<string> GetFreeDevices(string type, integer num) ``{
     /* Remaining numbered devices */
     while(count < num) {
 	string ii = sformat("%1", i);
-	if(!contains(curdevs, ii)) {
+	if(!contains(curdevs, sformat("%1%2", type,ii))) {
 	    ret = add(ret, ii);
 	    count = count + 1;
 	}
@@ -116,7 +116,7 @@ global define boolean DeleteDevice(string type, string dev) ``{
     //remove(devmap, dev);
     devmap = remove(devmap, dev);
     Devices[type] = devmap;
-    DeletedDevices = add(DeletedDevices, type+dev);
+    DeletedDevices = add(DeletedDevices, dev);
 
     y2debug("Devices=%1", Devices);
     y2debug("DeletedDevices=%1", DeletedDevices);
