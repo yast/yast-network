@@ -278,7 +278,7 @@ void CreateIfcfg(){
 
     string ifcfg = sformat("ifcfg-%1", InstallInf["netdevice"]:"");
 
-    string hw_name = BuildDescription(NetworkInterfaces::device_type(ifcfg), NetworkInterfaces::device_num(ifcfg), $["dev_name":InstallInf["netdevice"]:""], hardware);
+    string hw_name = BuildDescription(NetworkInterfaces::device_type(InstallInf["netdevice"]:""), NetworkInterfaces::device_num(ifcfg), $["dev_name":InstallInf["netdevice"]:""], hardware);
     // protect special characters, #305343
     if (size(hw_name)>0)
 	network_configuration = sformat("%1NAME='%2'\n", network_configuration, String::Quote (hw_name));

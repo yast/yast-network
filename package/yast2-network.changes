@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jan 21 09:15:03 CET 2009 - mzugec@suse.cz
+
+- fix mailformed NAME in ifcfg file when setup network via Linuxrc
+(bnc#460547)
+- 2.18.1 
+
+-------------------------------------------------------------------
 Fri Jan 16 16:50:13 CET 2009 - mzugec@suse.cz
 
 - run isdn only when needed (thanks to Karsten Keil) (bnc#104590)
