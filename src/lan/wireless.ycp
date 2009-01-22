@@ -933,6 +933,7 @@ define symbol HandleDetails (string key, map event) {
     return nil;
 }
 
+
 /**
  * Called to validate that the file entered exists
  * @param key widget id
@@ -957,6 +958,15 @@ define boolean ValidateFileExists (string key, map event) {
 	Popup::Error (Message::CannotOpenFile (file));
 	return false;
     }
+}
+
+define boolean ValidateCaCertExists (string key, map event) {
+ boolean ret=true;
+ if (size((string) UI::QueryWidget (`id (key), `Value))==0 || !ValidateFileExists(key, event)){
+  if (!Popup::YesNo(_("Not using a Certificate Authority (CA) certificate can result in connections
+to insecure, rogue wireless networks. Continue without CA ?"))) ret=false;
+ }
+ return ret;
 }
 
 /**
@@ -1077,7 +1087,7 @@ a <b>Server Certificate</b>. It is used
 to validate the server's authenticity.</p>
 "),
 	"validate_type": `function,
-	"validate_function": ValidateFileExists,
+	"validate_function": ValidateCaCertExists,
 	],
     "WPA_EAP_CLIENT_CERT_BROWSE": $[
 	"widget": `push_button,
@@ -1178,6 +1188,7 @@ define term AddButton (string id, string button_id) {
 define any WirelessWpaEapDialog () {
     term contents = `VBox (
 	"WPA_EAP_MODE",
+	"WPA_EAP_DUMMY",
 	`HBox (
 	    "WPA_EAP_IDENTITY",
 	    `HSpacing (1),
@@ -1192,8 +1203,7 @@ define any WirelessWpaEapDialog () {
 	    ),
 	AddButton ("WPA_EAP_CA_CERT",     "WPA_EAP_CA_CERT_BROWSE"),
 	`VSpacing (1),
-	`Right ("DETAILS_B"),
-	"WPA_EAP_DUMMY"
+	`Right ("DETAILS_B")
 	);
 
     map functions = $[

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jan 22 14:39:20 CET 2009 - mzugec@suse.cz
+
+- improved wlan settings validation (bnc#346693)
+- 2.18.2 
+
+-------------------------------------------------------------------
 Wed Jan 21 09:15:03 CET 2009 - mzugec@suse.cz
 
 - fix mailformed NAME in ifcfg file when setup network via Linuxrc
