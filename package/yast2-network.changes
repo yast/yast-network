@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jan 26 09:29:12 CET 2009 - mzugec@suse.cz
+
+- removed fake hwinfo 
+
+-------------------------------------------------------------------
 Thu Jan 22 14:39:20 CET 2009 - mzugec@suse.cz
 
 - improved wlan settings validation (bnc#346693)
