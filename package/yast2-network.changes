@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jan 26 18:52:27 CET 2009 - mzugec@suse.de
+
+- run isdn only when needed (thanks to Karsten Keil) (bnc#104590)
+- ISDN: use UNIQUE to match device with configuration (bnc#407683)
+- 2.16.49 
+
+-------------------------------------------------------------------
 Wed Jun  4 12:48:24 CEST 2008 - mzugec@suse.cz
 
 - fixed command-line  (bnc#397016)

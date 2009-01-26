@@ -40,7 +40,7 @@ define string BuildDescription (string devtype, string devnum, map devmap,
     if (descr != "") return descr;
     descr = HardwareName (Hardware, devnum);
     if (descr != "") return descr;
-    descr = HardwareName (Hardware, devmap["UDI"]:"");
+    descr = HardwareName (Hardware, devmap["UNIQUE"]:"");
     if (descr != "") return descr;
     descr = HardwareName (Hardware, devmap["dev_name"]:"");
     if (descr != "") return descr;
@@ -76,7 +76,7 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
 
 	    /* main device summary */
 	    string descr = BuildDescription (devtype, devname, devmap, Hardware);
-	    string unq = devmap["UDI"]:"";
+	    string unq = devmap["UNIQUE"]:"";
 	    string status = DeviceStatus(devtype, devname, devmap);
 	    if (link)
 	    {
@@ -119,7 +119,7 @@ define list<any> BuildSummaryDevs(map<string,map> Devs, list<map> Hardware, bool
     /* build a list of unconfigured devices */
 integer id=0;
     maplist(map h, Hardware, {
-	string unq = h["udi"]:"";
+	string unq = h["unique"]:"";
 
 	string busid = "bus-" + h["bus"]:"" + "-" + h["busid"]:"";
 	string mac = "id-" + h["mac"]:"";
@@ -416,7 +416,7 @@ string getConnMacBusDescription(map v, list<map> Hardware){
 	string conn="";
 	string mac_dev="";
 	foreach(map device, Hardware, {
-	 if (v["udi"]:(v["UDI"]:"")==device["udi"]:"") {
+	 if (v["UNIQUE"]:""==device["unique_key"]:"") {
 			conn = HTML::Bold ( (device["link"]:false == true)?"":_("(not connected)") );
 			if (size(device["mac"]:"")>0) mac_dev= HTML::Bold ("MAC : ") + device["mac"]:"" + "<br>";
 			 else 
@@ -455,8 +455,6 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 	    string ip = DeviceProtocol(v);
 
 	    string descr = BuildDescription (type, devname, v, Hardware);
-	    // if(size(descr) > 17) descr = substring(descr, 0, 16) + "...";
-
 	    string startmode_descr = startmode_descrs[v["STARTMODE"]:""]:_("Started manually");
 
 	    /* Modem and DSL */
@@ -534,7 +532,7 @@ define list BuildOverviewDevs(map<string,map> Devs, list<map> Hardware) {
 	boolean found=false;
 	foreach(map device, Hardware, {
 	 hw_id=hw_id+1;
-	 if (v["udi"]:(v["UDI"]:"")==device["udi"]:"") { found=true; break; }
+	 if (v["UNIQUE"]:""==device["unique_key"]:"") { found=true; break; }
 	 });
 
 		item = `item(`id(devname), descr, ip, rich, (found) ? hw_id : -1);

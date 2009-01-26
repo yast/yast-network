@@ -354,6 +354,7 @@ global define boolean Write(boolean start) ``{
 	y2debug("Packages returns %1", retp);
     }
 
+    boolean haveISDNDev = ($[] != Devices["contr"]:$[]);
     if(!(modified_hw || modified_if || Provider::Modified("isdn"))) return true;
     y2milestone("Writing configuration");
 
@@ -533,8 +534,15 @@ global define boolean Write(boolean start) ``{
 
     if(Abort()) return false;
     // last step in writing current ISDN setup
-    cmd = sformat("/sbin/insserv isdn"); // #104590
-    SCR::Execute(.target.bash, cmd);
+    if(haveISDNDev) {
+        cmd = sformat("/sbin/insserv isdn"); // #104590
+        SCR::Execute(.target.bash, cmd);
+    } else {
+        cmd = sformat("/sbin/insserv -r capisuite");
+        SCR::Execute(.target.bash, cmd);
+        cmd = sformat("/sbin/insserv -r isdn");
+        SCR::Execute(.target.bash, cmd);
+    }
     ProgressNextStage(_("Finished"));
     sleep(sl);
 
@@ -699,7 +707,7 @@ void set_hwparameters (map hw) {
     hw_device["PARA_TYPE"] = sformat("%1", get_i4ltype(hw));
     hw_device["PARA_SUBTYPE"] = sformat("%1", get_i4lsubtype(hw));
     hw_device["NAME"] = sformat("%1", hw["name"]:"unknown");
-    hw_device["UDI"] = hw["unique"]:"";
+    hw_device["UNIQUE"] = hw["unique"]:"";
 }
 
 /**
@@ -718,7 +726,7 @@ global define void SelectHW(integer which) ``{
 	y2error("Item not found in Hardware: %1 (%2)", which, size(Hardware));
 
     type = "contr";
-    device = GetFreeDevice(type);
+    device = sformat("%1%2", type, GetFreeDevice(type));
     hw_device = set_cardparameters ($[]);
     set_hwparameters (sel);
     operation = `add;
@@ -731,7 +739,8 @@ global define void SelectHW(integer which) ``{
  */
 global define boolean Add() ``{
     type = "contr";
-    device = GetFreeDevice(type);
+    device = sformat("%1%2",type, GetFreeDevice(type));
+y2internal("New Added device %1", device);
     hw_device = set_cardparameters ($[]);
     operation = `add;
     return true;
@@ -744,18 +753,18 @@ global define boolean Add() ``{
  */
 global define boolean Edit(string dev) ``{
     string typ = NetworkInterfaces::device_type(dev);
-    string num = NetworkInterfaces::device_num(dev);
+//    string num = NetworkInterfaces::device_num(dev);
 
     map typemap = Devices[typ]:$[];
-    if(!haskey(typemap, num)) {
+    if(!haskey(typemap, dev)) {
 	y2error("Key not found: %1", dev);
 	return false;
     }
-    hw_device = typemap[num]:$[];
+    hw_device = typemap[dev]:$[];
 
     y2debug("Hardware: %1", Hardware);
 
-    device = num;
+    device = dev;
     type = typ;
     hw_device = set_cardparameters (hw_device);
     y2debug("devmap=%1", hw_device);
@@ -771,17 +780,17 @@ global define boolean Edit(string dev) ``{
 global define boolean Delete(string item) ``{
     operation = nil;
     string typ = NetworkInterfaces::device_type(item);
-    string num = NetworkInterfaces::device_num(item);
+//    string num = NetworkInterfaces::device_num(item);
 
     map typemap = Devices[typ]:$[];
-    if(!haskey(typemap, num)) {
+    if(!haskey(typemap, item)) {
 	y2error("Key not found: %1", item);
 	return false;
     }
     if (type == "net")
-	interface = typemap[num]:$[];
+	interface = typemap[item]:$[];
     type = typ;
-    device = num;
+    device = item;
     operation = `delete;
     return true;
 }
@@ -849,8 +858,6 @@ global define boolean EditIf(string item) ``{
 global define boolean Commit() ``{
     y2debug("Commit(%1) dev:%2%3",operation,type,device);
 	y2debug("skip %1", skip);
-    string n = sformat("%1", device);
-
     if (operation == nil)
 	return true;
 
@@ -863,7 +870,7 @@ global define boolean Commit() ``{
 
 	map typemap = Devices[type]:$[];
 	y2debug("typemap %1", typemap);
-	if(!haskey(typemap, n)) {
+	if(!haskey(typemap, device)) {
 	    y2error("Key not found: %1", device);
 	    return false;
 	}
@@ -987,7 +994,6 @@ global define list OverviewDev() ``{
         ];
         });
 	
-    //return BuildOverview("contr");
 }
 
 global define list<map<string,any> > UnconfiguredDev () {
