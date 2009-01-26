@@ -380,12 +380,17 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 	`HSpacing(5)
     );
 
-    if(standalone == true)
+//    if(standalone == true)
 	Wizard::SetContentsButtons(caption, contents, help,
 		Label::BackButton(), Label::FinishButton());
+        Wizard::SetNextButton(`next, Label::OKButton());
+        Wizard::SetAbortButton(`abort, Label::CancelButton());
+        Wizard::HideBackButton();
+/*
     else
 	Wizard::SetContentsButtons(caption, contents, help,
 		Label::BackButton(), Label::OKButton());
+*/
 
     //We have the same (non-empty) proxy URL for all protocols
     if((http != prefill) && (http == https) && (https == ftp )){
