@@ -409,7 +409,7 @@ Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.</P>
 	    "widget_descr": widget_descr,
 	    "contents": `VBox("tab"),
 	    "caption": caption,
-	    "back_button": Label::BackButton(),
+	    "back_button": nil,
 	    // #182853
 //	    "next_button": (Mode::normal ()? Label::FinishButton(): Label::NextButton()),
 	    // button labeling (fate#120373)
