@@ -287,7 +287,7 @@ define symbol DSLSequence() ``{
 */
     ];
 
-    Wizard::CreateDialog();
+    Wizard::OpenCancelOKDialog();
     Wizard::SetDesktopIcon("dsl");
 
     symbol ret = Sequencer::Run(aliases, sequence);
