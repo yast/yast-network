@@ -64,7 +64,7 @@ boolean LanSequence() {
 	]
     ];
 
-    Wizard::CreateDialog();
+    Wizard::OpenCancelOKDialog();
     Wizard::SetDesktopIcon("lan");
 
     symbol ret = Sequencer::Run(aliases, sequence);

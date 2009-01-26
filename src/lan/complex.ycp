@@ -468,8 +468,10 @@ symbol MainDialog(string init_tab) ``{
     contents = CWM::PrepareDialog(contents, w);
 
     Wizard::SetContentsButtons(caption, contents, help, Label::BackButton (), Label::OKButton ());
-    Wizard::DisableBackButton();
+    Wizard::SetNextButton(`next, Label::OKButton());
     Wizard::SetAbortButton(`abort, Label::CancelButton());
+    Wizard::HideBackButton();
+
     symbol ret = CWM::Run(w, $[`abort:ReallyAbort ]);
     return ret;
 }
