@@ -78,6 +78,9 @@ This form of remote administration is less secure than using SSH.</p>
 
     Wizard::SetContentsButtons(caption, contents, help,
 	    Label::BackButton(), Label::FinishButton());
+    Wizard::SetNextButton(`next, Label::OKButton());
+    Wizard::SetAbortButton(`abort, Label::CancelButton());
+    Wizard::HideBackButton();
 
     UI::ChangeWidget(`id(`allow), `Value, Remote::allow_administration);
     UI::ChangeWidget(`id(`disallow), `Value, !Remote::allow_administration);
