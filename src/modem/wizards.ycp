@@ -287,7 +287,7 @@ define symbol ModemSequence() {
 */
     ];
 
-    Wizard::CreateDialog();
+    Wizard::OpenCancelOKDialog();
     Wizard::SetDesktopIcon("modem");
 
     symbol ret = Sequencer::Run(aliases, sequence);
