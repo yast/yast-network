@@ -9,8 +9,9 @@ BuildRequires: yast2-country
 BuildRequires: yast2-installation >= 2.15.27
 BuildRequires: yast2 >= 2.16.6
 
-# needed for prefixlen support in aliases
-Requires:	yast2 >= 2.17.5
+# network needs Wizard::OpenCancelOKDialog()
+#  function from yast2-2.18.2
+Requires:	yast2 >= 2.18.2
 #netconfig (FaTE #303618)
 Requires:	sysconfig >= 0.71.2
 #GetLanguageCountry
