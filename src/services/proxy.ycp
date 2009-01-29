@@ -287,7 +287,9 @@ define any ProxyMainDialog(boolean standalone) ``{
 
     /* Proxy dialog help 1/8 */
     string help = _("<p>Configure your Internet proxy (caching) settings here.</p>
-<p><b>Note:</b> In some cases you may need to relogin for the settings to take effect</p>") +
+<p><b>Note:</b> It is generally recommended to relogin for the settings to take effect, 
+however in some cases the application may pick up new settings immediately. Please check 
+what your application (web browser, ftp client,...) supports. </p>") +
 
     /* Proxy dialog help 2/8 */
     _("<p><b>HTTP Proxy URL</b> is the name of the proxy server for your access

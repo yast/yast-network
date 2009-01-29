@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jan 29 11:59:48 CET 2009 - kmachalkova@suse.cz
+
+- Proxy finish popup is back - notify user about the need to relogin
+  to apply new settings (bnc#458708)
+
+-------------------------------------------------------------------
 Mon Jan 26 13:30:16 CET 2009 - mzugec@suse.cz
 
 - lan : button labeling (bnc#440551) 
