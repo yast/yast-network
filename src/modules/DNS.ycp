@@ -125,8 +125,12 @@ global define boolean Read() {
 
     if(initialized == true) return true;
 
-    Host::Read();
+    //in this order, because Host:;write hostname gets initialized from NetworkConfig::DHCP
     NetworkConfig::Read();
+    Host::Read();
+
+    Host::SetWriteHostname( NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true );
+    y2milestone("write_hostname_to_hosts value from sysconfig : %1", NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true);
 
     /* install.inf from linuxrc */
     map install_inf = $[];
@@ -208,18 +212,16 @@ global define boolean Write() {
     //are defined for each static IP separately in address dialog
     //FaTE #2202
 
-    if (NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true == false)
-	Host::write_hostname=false;
-    else
-    {
+    if (Host::WriteHostname()) {
 	//Always add 127.0.0.2 entry to /etc/hosts, otherwise some
 	//desktop apps may hang, not being able to resolve hostname (#304632)
 	//empty list [] as third parameter does that
-        Host::Update(oldhostname, fqhostname, []);
+	Host::Update(oldhostname, fqhostname, []);
 	Host::Write();
     }
     oldhostname = fqhostname;	// #49634
 
+    NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"] = Host::WriteHostname();
     NetworkConfig::Write();
 
     y2milestone("Writing configuration");

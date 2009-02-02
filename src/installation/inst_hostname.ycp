@@ -31,9 +31,6 @@ include "network/services/dns.ycp";
 // FaTe#303875: Introduce a switch regarding 127.0.0.2 entry in /etc/hosts
 boolean whth = ProductFeatures::GetBooleanFeature ("globals", "write_hostname_to_hosts");
 y2milestone("write_hostname_to_hosts value from control.xml : %1", whth);
-SCR::Write(.sysconfig.network.dhcp."WRITE_HOSTNAME_TO_HOSTS", whth ? "yes" : "no");
-SCR::Write(.sysconfig.network.dhcp, nil);
-
 
 DNS::Read ();			// handles NetworkConfig too
 
@@ -45,6 +42,8 @@ if (DNS::hostname == "linux")
 
 // propose settings
 NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = ! Arch::is_laptop ();
+// override with setting from control.xml
+Host::SetWriteHostname( whth );
 // TODO: policy for proposing a hostname
 
 symbol ret = `next;
