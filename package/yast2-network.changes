@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb  2 15:11:27 CET 2009 - kmachalkova@suse.cz
+
+- Read/write Host::write_hostname variable by Host module only, 
+  override in inst_hostname if applicable (bnc#469752) 
+
+-------------------------------------------------------------------
 Thu Jan 29 11:59:48 CET 2009 - kmachalkova@suse.cz
 
 - Proxy finish popup is back - notify user about the need to relogin
