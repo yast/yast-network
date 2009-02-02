@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Feb  2 15:02:08 CET 2009 - kmachalkova@suse.cz
+
+- Read/write Host::write_hostname variable by Host module only, 
+  override in inst_hostname if applicable (bnc#469752) 
+- 2.17.67
+
+-------------------------------------------------------------------
 Wed Jan 21 09:38:33 CET 2009 - mzugec@suse.cz
 
 - fix mailformed NAME in ifcfg file when setup network via Linuxrc
