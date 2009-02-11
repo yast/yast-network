@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Feb 11 15:19:27 CET 2009 - mzugec@suse.cz
+
+- store qeth options (bnc#474276)
+- 2.18.3 
+
+-------------------------------------------------------------------
 Mon Feb  2 15:11:27 CET 2009 - kmachalkova@suse.cz
 
 - Read/write Host::write_hostname variable by Host module only, 
