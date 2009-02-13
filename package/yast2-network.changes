@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Feb 13 18:17:22 CET 2009 - mzugec@suse.de
+
+- workaround for automatic configuration detection to not show 
+"No network running" popup (bnc#475169)
+- 2.17.69
+
+-------------------------------------------------------------------
 Wed Feb 11 15:33:19 CET 2009 - mzugec@suse.cz
 
 - store qeth options (bnc#474276)

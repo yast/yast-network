@@ -32,7 +32,6 @@ string func = args[0]:"";
 map param = args[1]:$[];
 map ret = $[];
 
-Lan::automatic_configuration = GetInstArgs::automatic_configuration();
 
 /* create a textual proposal */
 if(func == "MakeProposal") {
@@ -41,9 +40,18 @@ if(func == "MakeProposal") {
     symbol warning_level = nil;
     boolean force_reset = param["force_reset"]:false;
 
+    Lan::automatic_configuration = false;
+    integer i=0;
+    while(i<size(WFM::Args())){
+     if(is(WFM::Args(i), map)){
+      if (((map)WFM::Args(i))["AutomaticConfiguration"]:false==true) Lan::automatic_configuration=true;
+     }
+     i=i+1;
+    }
+
     if(force_reset || !LanItems::proposal_valid) {
 	LanItems::proposal_valid = true;
-	if (! GetInstArgs::automatic_configuration())
+	if (! Lan::automatic_configuration)
 	    /* Popup text */
 	    BusyPopup(_("Detecting network cards..."));
 	boolean progress_orig = Progress::set (false);
@@ -58,8 +66,7 @@ if(func == "MakeProposal") {
 	}
 	Lan::Propose();
 	Progress::set (progress_orig);
-	if (! GetInstArgs::automatic_configuration())
-	    BusyPopupClose();
+	if (! Lan::automatic_configuration) BusyPopupClose();
     }
     list sum = Lan::Summary("proposal");
     proposal = sum[0]:"";
