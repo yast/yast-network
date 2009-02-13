@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Feb 13 13:49:19 CET 2009 - mzugec@suse.cz
+
+- don't propose wlan during installation (bnc#462631)
+- 2.18.4 
+
+-------------------------------------------------------------------
 Wed Feb 11 15:19:27 CET 2009 - mzugec@suse.cz
 
 - store qeth options (bnc#474276)
