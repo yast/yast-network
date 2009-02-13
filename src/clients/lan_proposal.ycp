@@ -44,7 +44,10 @@ if(func == "MakeProposal") {
     integer i=0;
     while(i<size(WFM::Args())){
      if(is(WFM::Args(i), map)){
-      if (((map)WFM::Args(i))["AutomaticConfiguration"]:false==true) Lan::automatic_configuration=true;
+      if (((map)WFM::Args(i))["AutomaticConfiguration"]:false==true) {
+	Lan::automatic_configuration=true;
+	y2milestone("Lan::automatic_configuration=true;");
+       }
      }
      i=i+1;
     }
