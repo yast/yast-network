@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb 16 13:12:02 CET 2009 - mzugec@suse.cz
+
+- warn user when device to delete has STARTMODE=nfsroot (bnc#433867)
+- 2.18.5 
+
+-------------------------------------------------------------------
 Fri Feb 13 13:49:19 CET 2009 - mzugec@suse.cz
 
 - don't propose wlan during installation (bnc#462631)

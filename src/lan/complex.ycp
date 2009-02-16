@@ -322,6 +322,11 @@ Really continue?
 	    if(LanItems::InterfaceHasAliases() && Popup::YesNoHeadline(Label::WarningMsg(), pop) != true)
 		break;
 
+	    // warn user when device to delete has STARTMODE=nfsroot (bnc#433867)
+	    if(NetworkInterfaces::GetValue(LanItems::getCurrentItem()["ifcfg"]:"", "STARTMODE")=="nfsroot"){
+		if(!Popup::YesNoHeadline(Label::WarningMsg(), _("Device you select has STARTMODE=nfsroot. Really delete?"))) break;
+	    }
+
 	    LanItems::DeleteItem();
 	    initOverview("");
 	    break;
