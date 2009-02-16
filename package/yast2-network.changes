@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Feb 16 14:17:41 CET 2009 - mzugec@suse.cz
+
+- headers for yast lan list (bnc#443753) 
+
+-------------------------------------------------------------------
 Mon Feb 16 13:12:02 CET 2009 - mzugec@suse.cz
 
 - warn user when device to delete has STARTMODE=nfsroot (bnc#433867)

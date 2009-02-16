@@ -91,11 +91,13 @@ define boolean ListHandler(map<string, string> options) {
  string config_filter="";
  if (contains(Map::Keys(options), "configured")) config_filter="configured";
  if (contains(Map::Keys(options), "unconfigured")) config_filter="unconfigured";
-    foreach(map<string, any> row, getConfigList(config_filter), {
+ list<map<string, any> > confList = getConfigList(config_filter);
+ if (size(confList)>0) CommandLine::Print("id\tname, \t\t\tbootproto");
+ foreach(map<string, any> row, confList, {
      foreach(string id, map <string,any> detail, (map<string, map<string, any> >)row, {
-      CommandLine::Print(sformat("%1\t%2, %3\n",id, detail["descr"]:"", detail["addr"]:""));
+      CommandLine::Print(sformat("%1\t%2, %3",id, detail["descr"]:"", detail["addr"]:""));
      });
-    });
+  });
  return true;
 }
 /**
