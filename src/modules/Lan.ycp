@@ -581,17 +581,11 @@ global define boolean WriteOnly() {
  */
 global define boolean Import(map settings) {
 
-    if (!Mode::autoinst()) {
-        // FIXME: MOD Modules = (map) eval(settings["modules"]:$[]);
-        NetworkInterfaces::Import("netcard", (map<string, map>) settings["devices"]:$[]);
-
-    } else {
         NetworkInterfaces::Import("netcard", (map<string, map>) settings["devices"]:$[]);
 	foreach(string device, NetworkInterfaces::List(""), {
 	LanItems::AddNew();
 	LanItems::Items[LanItems::current]=$["ifcfg":device];
 	});
-    }
 
     LanItems::autoinstall_settings["start_immediately"] = settings["start_immediately"]:false;
     LanItems::autoinstall_settings["strict_IP_check_timeout"] = settings["strict_IP_check_timeout"]:-1;

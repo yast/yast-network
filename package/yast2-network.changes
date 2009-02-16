@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb 16 15:54:16 CET 2009 - mzugec@suse.cz
+
+- AutoYaST - show Imported settings in UI (bnc#461650)
+- 2.18.6 
+
+-------------------------------------------------------------------
 Mon Feb 16 14:17:41 CET 2009 - mzugec@suse.cz
 
 - headers for yast lan list (bnc#443753) 
