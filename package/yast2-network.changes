@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Feb 18 16:52:43 CET 2009 - kmachalkova@suse.cz
+
+- Save complete FQDN into /etc/HOSTNAME if specified by 'hostname='
+  Linuxrc parameter, do not cut off domain name (bnc#476208)
+
+-------------------------------------------------------------------
 Mon Feb 16 15:54:16 CET 2009 - mzugec@suse.cz
 
 - AutoYaST - show Imported settings in UI (bnc#461650)
