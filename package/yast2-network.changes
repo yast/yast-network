@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Feb 18 16:55:01 CET 2009 - kmachalkova@suse.cz
+
+- Save complete FQDN into /etc/HOSTNAME if specified by 'hostname='
+  Linuxrc parameter, do not cut off domain name (bnc#476208)
+
+-------------------------------------------------------------------
 Fri Feb 13 18:17:22 CET 2009 - mzugec@suse.de
 
 - workaround for automatic configuration detection to not show 

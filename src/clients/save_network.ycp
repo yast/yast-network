@@ -123,8 +123,12 @@ define boolean ReadInstallInf() {
     string hostname = InstallInf["hostname"]:"";
     if(hostname != "" && !IP::Check (hostname)) {
 	list split = Hostname::SplitFQ(hostname);
-	InstallInf["hostname"] = split[0]:hostname;
-	InstallInf["domain"] = split[1]:"";
+
+	// hostname is supposed to be FQDN (http://en.opensuse.org/Linuxrc)
+	// so we should not cut off domain name ... anyway remember domain, 
+	// use it as fallback below, if there is no DNS search domain (#476208)
+	if (size(split) > 1)
+	    InstallInf["fqdomain"] = split[1]:"";
     }
     else
     {
@@ -307,7 +311,7 @@ void CreateOtherNetworkFiles(){
 
     // create hostname
     if (size(InstallInf["hostname"]:"")>0){
-        y2milestone("Write HOSTANAME: %1", InstallInf["hostname"]:"");
+        y2milestone("Write HOSTNAME: %1", InstallInf["hostname"]:"");
         SCR::Write(.target.string, "/etc/HOSTNAME", InstallInf["hostname"]:"");
     }
 
@@ -337,12 +341,19 @@ void CreateOtherNetworkFiles(){
 	    //'netconfig' will do the job later on network startup (FaTE #303618)
 	    SCR::Write(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS,  serverlist);
             y2milestone("Writing static nameserver entry: %1", InstallInf["nameserver"]:"");
+
             //Enter search domain data only if present
             if( size(InstallInf["domain"]:"") > 0)
 	    {
 		SCR::Write(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST, InstallInf["domain"]:"");
                 y2milestone("Writing static searchlist entry: %1", InstallInf["domain"]:"");
 	    }
+	    else if ( size(InstallInf["fqdomain"]:"") > 0)
+	    {
+		SCR::Write(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST, InstallInf["fqdomain"]:"");
+		y2milestone("No DNS search domain defined, using FQ domain name %1 as a fallback", InstallInf["fqdomain"]:"");
+	    }
+
 	    //We're done. It is OK not to touch NETCONFIG_DNS_POLICY now as it is set to 'auto' by default
 	    //and user did not have a chance to modify it up to now
             SCR::Write(.sysconfig.network.config, nil);
