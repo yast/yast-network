@@ -152,13 +152,11 @@ define symbol NetworkCardSequence(string action) ``{
     ];
 
     string ws_start = "address";
-    if(action == "add") ws_start = "hardware";
-
-    /* All S/390 network devices */
-//    if(Arch::s390 () && LanItems::operation == `add) {
-    if(Arch::s390 () ) {
-	ws_start = "s390";
-    }
+    // for s390 start with S390Dialog() - there are another conditions
+    // for new devices start with HardwareDialog()
+    if(Arch::s390 () ) ws_start = "s390";
+       else if(action == "add") ws_start = "hardware";
+    y2milestone("ws_start %1", ws_start);
 
     map sequence = $[
 	"ws_start" : ws_start,
