@@ -835,10 +835,12 @@ define any AddressDialog() {
 
     // Allow changing s390 options, except for iucv, where the option
     // is in the name of the hwcfg file. Haven't figured it out yet.
+/*
     if (Arch::s390 () && drvtype != "iucv")
     {
 	mb_items = add(mb_items, "S390");
     }
+*/
     wd["ADVANCED_MB", "items"] = maplist (string btn, mb_items, {
 	// TODO helps
 	return [btn, wd[btn, "label"]:btn];
