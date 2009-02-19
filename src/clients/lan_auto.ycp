@@ -315,7 +315,7 @@ else if (func == "Write") {
      }
  boolean network=false;
  integer i=0;
- while(i<10){
+ while(i<15){
   if (NetworkService::isNetworkRunning()){
    network=true;
    break;
@@ -323,7 +323,7 @@ else if (func == "Write") {
   sleep(1000);
   i=i+1;
  }
- if (!network) Popup::Error(_("No network running"));
+ if (!network) y2warning("No network running!");
 
     Progress::set (progress_orig);
 }
