@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Feb 20 12:26:48 CET 2009 - mzugec@suse.cz
+
+- fixed configuration of OSA Layer2 during installation (bnc#476253)
+- 2.18.8
+
+-------------------------------------------------------------------
 Wed Feb 18 18:08:03 CET 2009 - mzugec@suse.cz
 
 - fixed dialogs workflow for s390 (bnc#476490)
