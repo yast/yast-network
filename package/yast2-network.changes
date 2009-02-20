@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Feb 20 15:18:32 CET 2009 - mzugec@suse.cz
+
+- check size of alias label (bnc#467087)
+- 2.18.9 
+
+-------------------------------------------------------------------
 Fri Feb 20 12:26:48 CET 2009 - mzugec@suse.cz
 
 - fixed configuration of OSA Layer2 during installation (bnc#476253)
