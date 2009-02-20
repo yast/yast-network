@@ -203,9 +203,9 @@ define term VirtualEditDialog(integer id, term entry, list forbidden) {
 
 	host = `item(`id(id));
 	string val = (string) UI::QueryWidget(`id(`name), `Value);
-	if(false && !IP::Check(val)) {
+	if(size(LanItems::interfacename)+size(val)+1>16) {
 	    /* Popup::Error text */
-	    Popup::Error(_("The IP address is invalid."));
+	    Popup::Error(_("Label is too long."));
 	    UI::SetFocus(`id(`name));
 	    continue;
 	}

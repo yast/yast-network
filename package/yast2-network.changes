@@ -1,9 +1,10 @@
 -------------------------------------------------------------------
-Tue Mar 25 21:47:15 UTC 2014 - mfilka@suse.com
+Wed Mar 26 07:16:14 UTC 2014 - mfilka@suse.com
 
-- Refactoring editing interface names.
-- Added nic name checking according bnc#784952 (OpenSUSE),
-  bnc#869695 (SLES)
+- Ported fixes from OpenSUSE:
+  - check size of alias label (OS: bnc#467087, sles: bnc#869695)
+  - Refactoring editing interface names.
+  - Added nic name checking according bnc#784952 (OpenSUSE)
 - 2.17.198
 
 -------------------------------------------------------------------
