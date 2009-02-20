@@ -96,13 +96,14 @@ define boolean ReadInstallInf() {
     ReadInstallInfItem(install_inf, "module", "Alias");
     ReadInstallInfItem(install_inf, "proxy", "Proxy");
 //    ReadInstallInfItem(install_inf, "options", "Options");
+    // OSAHwAddr parameter s390
     ReadInstallInfItem(install_inf, "hwaddr", "HWAddr");
     ReadInstallInfItem(install_inf, "ethtool_options", "ethtool");
     ReadInstallInfItem(install_inf, "unique", "NetUniqueID");
     ReadInstallInfItem(install_inf, "connect_wait", "ConnectWait");
 
     ReadInstallInfItem(install_inf, "QETH_LAYER2_SUPPORT", "Layer2");
-    ReadInstallInfItem(install_inf, "LLADDR", "OSAHWAddr");
+//    ReadInstallInfItem(install_inf, "LLADDR", "OSAHWAddr");
 
     ReadInstallInfItem(install_inf, "WESSID", "WlanESSID");
     ReadInstallInfItem(install_inf, "WAuth", "WlanAuth");
@@ -257,8 +258,8 @@ void CreateIfcfg(){
 	network_configuration = sformat("%1MTU='%2'\n", network_configuration, InstallInf["mtu"]:"");
 
      // for queth devices (s390)
-    if (size(InstallInf["LLADDR"]:"")>0)
-	network_configuration =	sformat("%1LLADDR='%2'\n", network_configuration, InstallInf["LLADDR"]:"");
+    if (size(InstallInf["hwaddr"]:"")>0)
+	network_configuration =	sformat("%1LLADDR='%2'\n", network_configuration, InstallInf["hwaddr"]:"");
 
 
     if (network_disk)
