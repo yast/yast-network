@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb 23 11:51:27 CET 2009 - mzugec@suse.cz
+
+- restart network when NetworkManager selected (bnc#467939)
+- 2.17.72 
+
+-------------------------------------------------------------------
 Fri Feb 20 12:10:24 CET 2009 - mzugec@suse.cz
 
 - fixed configuration of OSA Layer2 during installation (bnc#476253)
