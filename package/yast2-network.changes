@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb 23 12:09:28 CET 2009 - mzugec@suse.cz
+
+- restart network when NetworkManager selected (bnc#467939)
+- 2.18.10 
+
+-------------------------------------------------------------------
 Fri Feb 20 15:18:32 CET 2009 - mzugec@suse.cz
 
 - check size of alias label (bnc#467087)
