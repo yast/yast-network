@@ -408,8 +408,7 @@ global define boolean Commit() {
 	    // "PROVIDER_NAME"	: Provider::Current["PROVIDER"]:"",
 	    "PPPD_OPTIONS"	: PPPDoptions,
 	];
-
-	NetworkInterfaces::Name = device;
+	NetworkInterfaces::Name = sformat("%1%2", type, device);
 	NetworkInterfaces::Current = newdev;
 	NetworkInterfaces::Commit();
     }

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb 23 13:52:21 CET 2009 - mzugec@suse.cz
+
+- correctly write modem configuration in case of edit (bnc#465371)
+- 2.18.11 
+
+-------------------------------------------------------------------
 Mon Feb 23 12:09:28 CET 2009 - mzugec@suse.cz
 
 - restart network when NetworkManager selected (bnc#467939)
