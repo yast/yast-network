@@ -46,6 +46,7 @@ global string description = "";
 
 global string type = "";
 global string device = "";
+//FIXME: always empty string - remove all occuriences
 global string alias = "";
 global integer current = -1;
 global string hotplug = "";
@@ -496,8 +497,8 @@ global list BuildLanOverview() {
 	// build aliases overview
 	if (size(NetworkInterfaces::Current["_aliases"]:$[])>0 && !NetworkService::IsManaged()){
 	 foreach(string key,   map<string, any> desc, (map<string ,map<string, any> >) NetworkInterfaces::Current["_aliases"]:$[], {
-	 string parameters = sformat(_("IP address: %1, subnet mask %2"), desc["IPADDR"]:"", desc["NETMASK"]:"");
-	 bullets = add(bullets, sformat("%1 (%2)", key, parameters) );
+	 string parameters = sformat("%1/%2", desc["IPADDR"]:"", desc["PREFIXLEN"]:"");
+	 bullets = add(bullets, sformat("%1 (%2)", desc["LABEL"]:"", parameters) );
 	 });
 	}
 		}

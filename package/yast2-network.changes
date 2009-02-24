@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Feb 24 18:22:06 CET 2009 - mzugec@suse.cz
+
+- possible to not use LABEL for aliases (bnc#471253)
+- 2.18.12 
+
+-------------------------------------------------------------------
 Mon Feb 23 13:52:21 CET 2009 - mzugec@suse.cz
 
 - correctly write modem configuration in case of edit (bnc#465371)
