@@ -120,6 +120,21 @@ define boolean ReadInstallInf() {
 //	InstallInf = remove(InstallInf, "netdevice");
     }
 
+    if (Arch::s390()) {
+	y2milestone ("Interface type: %1", InstallInf["type"]:"");
+	// hsi devices do not support setting hwaddr (bnc #479481)
+	if (InstallInf["type"]:"" == "hsi" && haskey (InstallInf, "hwaddr"))
+	    InstallInf = remove (InstallInf, "hwaddr");
+	// do not set MAC address of device if it is the same as of an existing device (bnc #479481)
+	list<string> known_hwaddr = [];
+	foreach (map c, (list<map>)SCR::Read (.probe.netcard), {
+	    list hwaddr = maplist (map m, c["resource", "hwaddr"]:[], { return m["addr"]:""; });
+	    known_hwaddr = (list<string>)merge (known_hwaddr, hwaddr);
+	});
+	if (InstallInf["type"]:"" == "qeth" && haskey (InstallInf, "hwaddr") && contains (known_hwaddr, InstallInf["hwaddr"]:""))
+	    InstallInf = remove (InstallInf, "hwaddr");
+    }
+
     /* Split FQ hostname */
     string hostname = InstallInf["hostname"]:"";
     if(hostname != "" && !IP::Check (hostname)) {

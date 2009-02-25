@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Feb 25 14:47:29 CET 2009 - jsrain@suse.cz
+
+- do not store HW address into sysconfig on hsi and some qeth
+  interfaces (bnc #479481)
+- 2.17.73
+
+-------------------------------------------------------------------
 Mon Feb 23 11:51:27 CET 2009 - mzugec@suse.cz
 
 - restart network when NetworkManager selected (bnc#467939)
