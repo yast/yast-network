@@ -170,6 +170,7 @@ define symbol NetworkCardSequence(string action) ``{
 	],
 	"s390" : $[
 	    `abort	: `abort,
+	    `hardware	: "hardware",
 	    `next	: "address",
 	],
     ];

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Feb 27 15:31:32 CET 2009 - kmachalkova@suse.cz
+
+- Added omitted handling of `hardware symbol in s390 device workflow 
+  (bnc#476490) 
+- 2.17.75
+
+-------------------------------------------------------------------
 Thu Feb 26 12:07:25 CET 2009 - jsrain@suse.cz
 
 - store HW address only for L2 qeth devices (bnc #479481)
