@@ -126,7 +126,7 @@ define boolean ReadInstallInf() {
 	if (InstallInf["type"]:"" == "hsi" && haskey (InstallInf, "hwaddr"))
 	    InstallInf = remove (InstallInf, "hwaddr");
 	// set HW address only for qeth set to Layer 2 (bnc #479481)
-	if (InstallInf["type"]:"" == "qeth" && InstallInf["QETH_LAYER2_SUPPORT"]:"0" != "1")
+	if (InstallInf["type"]:"" == "eth" && InstallInf["QETH_LAYER2_SUPPORT"]:"0" != "1")
 	    InstallInf = remove (InstallInf, "hwaddr");
     }
 

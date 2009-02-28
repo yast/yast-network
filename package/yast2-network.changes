@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sat Feb 28 16:32:25 CET 2009 - jsrain@suse.cz
+
+- fixed identification of qeth interfaces (bnc #479481)
+- 2.17.76
+
+-------------------------------------------------------------------
 Fri Feb 27 15:31:32 CET 2009 - kmachalkova@suse.cz
 
 - Added omitted handling of `hardware symbol in s390 device workflow 
