@@ -232,16 +232,21 @@ For not sending a hostname leave the field empty.</p>
 "),
 
 "additional":
-    /* Aliases dialog help 1/3 */
+    /* Aliases dialog help 1/4 */
     _("<p><b><big>Additional Addresses</big></b></p>
 <p>Configure additional addresses of an interface (its aliases) in this table.</p>
 ") +
 
-    /* Aliases dialog help 2/3 */
+    /* Aliases dialog help 2/4 */
     _("<p>Enter an <b>Alias Name</b>, an <b>IP Address</b>, and
 the <b>Netmask</b>.</p>") +
 
-    /* Aliases dialog help 3/3, #83766 */
+    /* Aliases dialog help 3/4 */
+    _("<p><b>Alias Name</b> is optional and legacy.The total
+              length of interface name (inclusive of the colon and  label)  is
+              limited to 15 characters and the obsolete ifconfig utility truncates it after 9 characters.</p>")+
+
+    /* Aliases dialog help 3/4, #83766 */
     _("<p>Do not include the interface name in the alias name. For example, enter <b>foo</b> instead of <b>eth0:foo</b>.</p>"),
 
 

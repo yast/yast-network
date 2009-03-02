@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Mar  2 15:41:50 CET 2009 - mzugec@suse.cz
+
+- added help text (bnc#471253) 
+
+-------------------------------------------------------------------
 Mon Mar  2 09:20:42 CET 2009 - mzugec@suse.cz
 
 - Added omitted handling of `hardware symbol in s390 device workflow
