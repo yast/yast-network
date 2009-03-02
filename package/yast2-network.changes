@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Mon Mar  2 09:20:42 CET 2009 - mzugec@suse.cz
+
+- Added omitted handling of `hardware symbol in s390 device workflow
+  (bnc#476490)
+- store HW address only for L2 qeth devices (bnc #479481)
+- do not store HW address into sysconfig on hsi and some qeth
+  interfaces (bnc #479481)
+
+- 2.18.13 
+
+-------------------------------------------------------------------
 Tue Feb 24 18:22:06 CET 2009 - mzugec@suse.cz
 
 - possible to not use LABEL for aliases (bnc#471253)

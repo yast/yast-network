@@ -120,6 +120,16 @@ define boolean ReadInstallInf() {
 //	InstallInf = remove(InstallInf, "netdevice");
     }
 
+    if (Arch::s390()) {
+	y2milestone ("Interface type: %1", InstallInf["type"]:"");
+	// hsi devices do not support setting hwaddr (bnc #479481)
+	if (InstallInf["type"]:"" == "hsi" && haskey (InstallInf, "hwaddr"))
+	    InstallInf = remove (InstallInf, "hwaddr");
+	// set HW address only for qeth set to Layer 2 (bnc #479481)
+	if (InstallInf["type"]:"" == "eth" && InstallInf["QETH_LAYER2_SUPPORT"]:"0" != "1")
+	    InstallInf = remove (InstallInf, "hwaddr");
+    }
+
     /* Split FQ hostname */
     string hostname = InstallInf["hostname"]:"";
     if(hostname != "" && !IP::Check (hostname)) {
