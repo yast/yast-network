@@ -114,48 +114,6 @@ define term OverviewTableDouble(string caption1, term header1, list contents1, s
 
 }
 
-/*
-    list overviewdev = [
-	`item(`id(0), "0", "ISDN", "ippp0", "Hisax ISDN"),
-    ];
-    list overviewif = [
-	`item(`id(0), "0", "ippp", "Contactel", "1.2.3.4", "4.3.2.1"),
-	`item(`id(1), "1", "ippp", "Czech Online", "1.2.3.6", "6.3.2.1"),
-    ];
-
-    y2debug("overviewdev=%1", overviewdev);
-    y2debug("overviewif=%1", overviewif);
-
-    import "Wizard";
-    import "Label";
-    Wizard::CreateDialog();
-    term contents = nil;
-
-    contents = OverviewTable(
-	`header(_("No."), _("Type"), _("Device"), _("Hardware")),
-	overviewdev
-    );
-
-    Wizard::SetContentsButtons("Network cards configuration overview", contents, "helptext",
-	    Label::BackButton(), Label::FinishButton());
-
-    UI::UserInput();
-
-    contents = OverviewTableDouble(
-	"ISDN devices",
-	`header(_("No."), _("Type"), _("Device"), _("Hardware")),
-	overviewdev,
-	"Providers",
-	`header(_("No."), _("Type"), _("Connection"), _("IP"), _("Remote IP")),
-	overviewif
-    );
-
-    Wizard::SetContentsButtons("ISDN configuration overview", contents, "helptext",
-	    Label::BackButton(), Label::FinishButton());
-
-    UI::UserInput();
-
-*/
 
 /* EOF */
 }

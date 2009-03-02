@@ -86,28 +86,6 @@ global boolean ipv6=true;
 global block<boolean> AbortFunction = nil;
 
 
-
-/*--------------*/
-/* PRIVATE DATA */
-
-
-
-/**
- * Modules information
- * @see ReadModules
- */
-// FIXME: MOD map Modules = $[];
-
-/**
- * Deleted modules
- */
-// FIXME: MOD list<string> DeletedModules = [];
-
-
-// FIXME: used in lan/address.ycp (#17346) -> "global"
-
-
-
 /*------------------*/
 /* GLOBAL FUNCTIONS */
 
@@ -137,7 +115,6 @@ global define boolean isAnyInterfaceDown(){
     map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
     foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
      foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
-//      string confname = NetworkInterfaces::device_name(devtype, devnum);
       string mac = ((map<string, any>)SCR::Execute(.target.bash_output, sformat("cat /sys/class/net/%1/address|tr -d '\n'", devname)))["stdout"]:"";
       y2milestone("confname %1", mac);
       if (!haskey(link_status, mac)) y2error("Mac address %1 not found in map %2!", mac, link_status);
@@ -149,14 +126,6 @@ global define boolean isAnyInterfaceDown(){
     });
  return down;
 }
-
-
-
-
-//include "network/hardware.ycp";
-//include "network/install.ycp";
-//include "network/routines.ycp";
-//include "network/runtime.ycp";
 
 
 /**
@@ -334,7 +303,6 @@ void writeIPv6(){
 global define boolean Write() {
 
     y2milestone("Writing configuration");
-//    if(!write_only && NetHwDetection::running) NetHwDetection::Stop();
 
     /* Stop the detection */
     if(!LanItems::modified) {
@@ -439,7 +407,6 @@ global define boolean Write() {
      if(Abort()) return false;
      /* Progress step 9 */
      ProgressNextStage(_("Activating network services..."));
-//	NetworkModules::HwUp ();
    // during installation export sysconfig settings into NetworkManager (bnc#433084)
    if (Mode::installation() && NetworkService::IsManaged()) y2internal("Export sysconfig settings into NetworkManager %1", SCR::Execute(.target.bash_output, "/usr/lib/NetworkManager/nm-opensuse-sysconfig-merge --connections"));
 
@@ -485,7 +452,6 @@ y2internal("virt_net_proposal %1", virt_net_proposal);
 	   else if(Service::Status("network")==0){
 			 Service::Reload("network");
 			} else Service::Restart("network");
-//	NetworkService::StartStop ();
     sleep(sl);
     }
 
@@ -691,10 +657,8 @@ global define list SummaryGeneral () {
  * @return true if success
  */
 global define boolean Add() {
-//    LanItems::operation = nil;
     if(LanItems::Select("") != true) return false;
     NetworkInterfaces::Add();
-//    LanItems::AddNew();
     return true;
 }
 
@@ -893,144 +857,6 @@ global define boolean ProposeInterfaces () {
 
 
 
-//    Add();
-
-//    map tosel = nil;
-
-    /* Some HW found -> use it for proposal */
-//    if(size(LanItems::Hardware) > 0) {
-//         if (Arch::s390()){
-//         tosel =  FindMatchingDevice( $["device":sformat("%1-id-%2",InstallInf["module"]:"", InstallInf["hwaddr"]:"")] );
-//        }
-//          else 
-//		tosel =  LanItems::FindMatchingDevice($[]);
-
-//    }
-        
-
-//    y2debug("Hardware=%1", LanItems::Hardware);
-//    y2milestone ("Selected HW w/o  install.inf patches: %1", tosel);
-
-/*
-    // do not select a card without a driver, #29296
-    if (tosel != nil)
-    {
-	// L3 N#81533
-	// Autoyast takes network config from install.inf, has
-	// problem with hardware that has a choice of drivers:
-	// Module A is used even though install.inf says module B.
-	// It is because we selected the _hardware_ and then took
-	// the first module.
-	// Future: select hardware+driver together
-	// CODE 9 fix: for the selected hardware, patch in the driver
-
-	// We cannot simply _create_ tosel from install.inf data because
-	// SelectHW relies on the detected info (eg. busid) from hwinfo
-	// which is not in install.inf
-
-
-	if (InstallInf["module"]:"" != "")
-	{
-	    y2milestone ("Using driver module from install.inf");
-	    tosel["module"] = InstallInf["module"]:"";
-	}
-        // L3 bug: 75720
-        // Setup module options available from /etc/install.inf
-        string _options = InstallModuleOptions(tosel["module"]:"");
-        if (_options != "" && _options!=nil) {
-	    y2milestone ("Using driver options from install.inf");
-            tosel["options"] = _options;
-        }
-
-	y2milestone ("Selected HW with install.inf patches: %1", tosel);
-	SelectHWMap(tosel);
-	// set layer2 status from /etc/install.inf
-	qeth_layer2 = (InstallInf["QETH_LAYER2_SUPPORT"]:"0"=="1")?true:false;
-	qeth_macaddress = InstallInf["LLADDR"]:"";
-    }
-    // Nothing detected -> use InstallInf 
-
-    else if(size(InstallInf) > 0) {
-
-	if(!haskey(InstallInf, "module")) {
-	    y2milestone("No hardware, no install.inf module -> no proposal.");
-	    return false;
-	}
-
-	// FIXME: MOD Module["module"] = InstallInf["module"]:"";
-	// FIXME: MOD Module["options"] = InstallInf["options"]:"";
-
-	NetworkModules::Alias = InstallInf["module"]:"";
-	NetworkModules::Options = InstallInf["options"]:"";
-
-
-	type = InstallInf["type"]:"eth";
-	device = NetworkInterfaces::GetFreeDevice(type);
-    }
-
-    else {
-	y2milestone("No hardware, no install.inf -> no proposal.");
-	return false;
-    }
-*/
-
-// here we know the hardware and could fill the interface defaults for it,
-// like for wifi usercontrol and for eth|wifi ifplugd.
-// This is proposal. also need to do it with
-// - add from ui: detected and undetected
-// - autoyast
-//    LanItems::SetDefaultsForHW ();
-
-    // #145041
-//    ethtool_options = InstallInf["ethtool_options"]:"";
-
-    // #176804
-/*
-    if (NetworkStorage::isDiskOnNetwork ( NetworkStorage::getDevice("/") ))
-    {
-	LanItems::startmode = "nfsroot";
-	y2milestone ("startmode nfsroot");
-    }
-*/
-//    ipaddr = InstallInf["ipaddr"]:"";
-//    bootproto = InstallInf["bootproto"]:"static";
-//    y2debug("ipaddr,bootproto=%1,%2", LanItems::ipaddr, LanItems::bootproto);
-//    if(LanItems::bootproto == "static" && LanItems::ipaddr != "" && LanItems::ipaddr != nil) {
-
-//	y2milestone("static proposal");
-
-	/* propose address setup from /etc/install.inf */
-//	netmask = InstallInf["netmask"]:"";
-//	if(LanItems::netmask == nil || LanItems::netmask == "")
-//	    LanItems::netmask = "255.255.255.0";
-//    }
-//    else {
-	/* Propose static config in case of DSL hardware is found */
-//	list pppoe = (list) SCR::Read(.probe.pppoe);
-	// FIXME: testing pppoe = [ $["a" : "b"] ];
-//	map pppoedev = pppoe[0]:$[];
-//	y2milestone ("pppoe=%1", pppoe);
-//	if(pppoe != nil && size(pppoe) > 0) {
-//	    y2milestone("DSL proposal");
-//	    LanItems::ipaddr = "";
-//	    LanItems::bootproto = "static";
-//	}
-//	else {
-	    // Open Enterprise Server does not like DHCP (#50524).
-	    // In that case, we cannot propose.
-//	    if (ProductFeatures::GetBooleanFeature ("network", "force_static_ip"))
-//	    {
-//		y2milestone ("Static config forced but no info available -> no proposal.");
-//		return false;
-//	    }
-//	    y2milestone("DHCP proposal");
-//	    LanItems::ipaddr = "";
-//	    LanItems::bootproto = "dhcp";
-//	}
-//    }
-
-//    LanItems::Commit();
-
     y2milestone("NetworkConfig::Config=%1", NetworkConfig::Config);
     y2milestone("NetworkConfig::DHCP=%1", NetworkConfig::DHCP);
 
@@ -1049,31 +875,7 @@ define boolean ProposeHostname () {
 	return false;
     }
 
-/*
-    y2milestone ("hostname from install.inf");
-    if (! DNS::ReadHostDomain (InstallInf["hostname"]:"",
-			       InstallInf["domain"]:""))
-    {
-	y2milestone ("hostname from dns");
-	// try to get hostname from the network 
-	string hnent = NetHwDetection::ResolveIP(ipaddr);
-
-        //last resort - generate random hostname (#165269)
-        if (hnent == "")
-        {
-            y2milestone("random hostname");
-            srandom ();
-            DNS::ReadHostDomain("linux-" + String::Random(4), "site");
-        }
-        else
-        {
-            list hnsplit = Hostname::SplitFQ(hnent);
-            DNS::ReadHostDomain (hnsplit[0]:"", hnsplit[1]:"");
-        }
-
-    }
-*/
-    return true;    
+    return true;
 }
 
 /**
@@ -1082,11 +884,6 @@ define boolean ProposeHostname () {
  */
 global define boolean ProposeRoutesAndResolver () {
     if(LanItems::bootproto == "static" && LanItems::ipaddr != "" && LanItems::ipaddr != nil) {
-	/* propose default gateway from /etc/install.inf */
-//	Routing::ReadFromGateway (InstallInf["gateway"]:"");
-
-	/* propose DNS setup from /etc/install.inf */
-//	DNS::ReadNameserver (InstallInf["nameserver"]:"");
 	ProposeHostname ();
     }
     return true;
@@ -1097,8 +894,8 @@ global define boolean ProposeRoutesAndResolver () {
  * @return true if something was proposed
  */
 global define boolean Propose() {
-NetworkInterfaces::CleanCacheRead();
-LanItems::Read();
+	NetworkInterfaces::CleanCacheRead();
+	LanItems::Read();
     return
 	ProposeInterfaces () &&
 	ProposeRoutesAndResolver ();
@@ -1140,24 +937,9 @@ global define boolean Autoinstall() {
 		    aymodule["module"]:"" : tosel["module"]:"";
 		tosel["options"] = (aymodule["options"]:""!= "")?
 		    aymodule["options"]:"" : tosel["options"]:"";
-		
+
 		LanItems::SelectHWMap(tosel);
 	    }
-	    /* Nothing detected -> use InstallInf */
-/*
-	    else if(size(InstallInf) > 0) {
-
-		if(!haskey(InstallInf, "module")) {
-		    y2milestone("No hardware, no install.inf module -> no proposal.");
-		    return false;
-		}
-		NetworkModules::Alias = InstallInf["module"]:"";
-		NetworkModules::Options = InstallInf["options"]:"";
-
-//		type = InstallInf["type"]:"eth";
-		device = NetworkInterfaces::GetFreeDevice(type);
-	    }
-*/
 	    else {
 		y2milestone("No hardware, no install.inf -> no autoinstallation possible.");
 		return false;
@@ -1179,14 +961,14 @@ global define boolean Autoinstall() {
 	    LanItems::SetDeviceVars(interface, defaults);
 
 	    y2debug("ipaddr,bootproto=%1,%2", LanItems::ipaddr, LanItems::bootproto);
-            if(LanItems::bootproto == "static" && LanItems::ipaddr != "" && LanItems::ipaddr != nil) 
+            if(LanItems::bootproto == "static" && LanItems::ipaddr != "" && LanItems::ipaddr != nil)
             {
 
                 y2milestone("static configuration");
 
 		if(LanItems::netmask == nil || LanItems::netmask == "")
 		    LanItems::netmask = "255.255.255.0";
-	
+
 	    }
 	    LanItems::Commit();
 	});
@@ -1251,13 +1033,6 @@ global define list<map> PrepareForAutoinst() {
  */
 global list<string> Packages () {
     list<string> pkgs = [];
- // #299033 - don't install smpppd now, do it later (with some tests)
-/*
-    if (NetworkInterfaces::Locate ("USERCONTROL", "yes") != [])
-    {
-	if (!PackageSystem::Installed("smpppd")) pkgs = add (pkgs, "smpppd");
-    }
-*/
    map<string, any> required = $[
 			"types":$[
 				"wlan" : "wireless-tools",
@@ -1318,13 +1093,6 @@ global map AutoPackages () {
 global define boolean HaveXenBridge () {
     // changed xen bridge detection (bnc#375606)
     boolean have_br = FileUtils::Exists("/dev/shm/sysconfig/xenbridges");
-    // #2248874 - disallow error message
-/*
-    if (PackageSystem::Installed("bridge-utils")){
-     string cmd = "brctl show | grep '^xenbr'";
-     have_br = SCR::Execute (.target.bash, cmd) == 0;
-    }
-*/
     y2milestone ("Have Xen bridge: %1", have_br);
     return have_br;
 }

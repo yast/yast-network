@@ -236,7 +236,6 @@ global void WriteUdevDriverRules(){
   if (size(Items[key, "udev", "net"]:[])>0) {
     string dev_name = Items[key, "hwinfo", "dev_name"]:"";
     current=key;
-//    net_rules = add(net_rules, sformat("SUBSYSTEM==\"net\", DRIVERS==\"?*\", %1, NAME=\"%2\"", GetItemUdev("ATTR{address}"), GetItemUdev("NAME")));
     net_rules = add(net_rules, mergestring(Items[key, "udev", "net"]:[], ", "));
     if (dev_name!=GetItemUdev("NAME")) {
 		changed_devices = add(changed_devices, dev_name);
@@ -503,19 +502,6 @@ global list BuildLanOverview() {
 	}
 		}
 
-                // build the "Bond Slaves" entry of rich box
-		if (type == "bond")
-		{
-/*
-			string slaves = "";
-			foreach (string key, any value, (map<string, any>)v, {
-				if ((value != nil) && (regexpmatch(key, "BONDING_SLAVE[0-9]")))
-					slaves = slaves + ((slaves != "") ? ", " : "") + (string)value;
-			});
-			if (slaves != "")
-				bullets = bullets + [_("Bond slaves")+ " : " + slaves];
-*/
-		}
 		if (type == "wlan" &&
 		    !(NetworkInterfaces::Current["WIRELESS_AUTH_MODE"]:"" != "open") &&
 		    !hasAnyValue(NetworkInterfaces::Current["WIRELESS_KEY_0"]:""))
@@ -645,14 +631,6 @@ global void SelectHWMap (map hardware) {
 
     // FIXME: devname
     hotplug = "";
-    if(hotplug == "") {
-	// FIXME: MOD Module["module"] = hw["module"]:"";
-	// FIXME: MOD Module["options"] = hw["options"]:"";
-//	NetworkModules::Alias = hardware["module"]:"";
-//	NetworkModules::Options = hardware["options"]:"";
-    }
-    else
-	y2milestone("HOTPLUG(%1) -> ignoring modprobe.conf", hotplug);
 
     // Wireless Card Features
     wl_auth_modes = prepend(hardware["wl_auth_modes"]:nilliststring, "no-encryption");
@@ -956,90 +934,33 @@ global define boolean Select(string dev) {
 	}
 
 	type = Items[current, "hwinfo", "type"]:"eth";
-//        type = "eth0";
 	device = NetworkInterfaces::GetFreeDevice(type);
 
-	// FIXME: MOD AddModule(type);
-//	NetworkModules::AddM();
-//	nm_name = NetworkModules::GetFreeName("static-");
 
 			// TODO: instead of udev use hwinfo dev_name
 	NetworkInterfaces::Name = GetItemUdev("NAME");
 	if (size(Items)<current) Items[current] = $["ifcfg":NetworkInterfaces::Name];
 		else Items[current, "ifcfg"] = NetworkInterfaces::Name;
 
-//	interfacename = GetItemUdev()[1]:"";
 
 	/* FIXME: alias: how to prefill new alias? */
 	alias = "";
-//    }
-    /* dev!="" -> Edit */
-/* FIXME: NI:
-    else {
-	if(!CheckDevice(dev)) {
-	    y2error("Device not found: %1", dev);
-	    return false;
-	}
-	NetworkInterfaces::Edit(dev);
-	devmap = NetworkInterfaces::Current;
-	type = NetworkInterfaces::device_type(dev);
-	device = NetworkInterfaces::device_num(dev);
-	alias = NetworkInterfaces::alias_num(dev);
-    }
-*/
     /* general stuff */
     description = BuildDescription (type, device, devmap, Hardware);
 
     SetDeviceVars(devmap, SysconfigDefaults);
 
     hotplug = "";
-    /*
-    if(issubstring(device, "bus-pcmcia"))
-	hotplug = "pcmcia";
-    else if(issubstring(device, "bus-usb"))
-	hotplug = "usb";
-    */
 
     y2debug("type=%1", type);
     if(issubstring(type, "-")) type = regexpsub(type, "([^-]+)-.*$", "\\1");
     y2debug("type=%1", type);
 
-    /* kernel options */
-//    if(hotplug == "" && alias == "" && nm_name != "") {
-	// FIXME: MOD SelectModule(dev);
-//	NetworkModules::SelectM(nm_name);
-//    }
-//    else {
-	// FIXME: MOD SelectModule("");
-//	NetworkModules::AddM();
-//    }
-
-//    qeth_options = NetworkModules::QETH_OPTIONS;
-//    chan_mode = NetworkModules::CCW_CHAN_MODE;
-//    lcs_timeout = NetworkModules::LCS_LANCMD_TIMEOUT;
-
-/*
-    if (NetworkModules::QETH_IPA_TAKEOVER == nil ||
-	NetworkModules::QETH_IPA_TAKEOVER == "" ||
-	NetworkModules::QETH_IPA_TAKEOVER == "0")
-	ipa_takeover = false;
-    else
-	ipa_takeover = true;
-
-    if (NetworkModules::QETH_LAYER2_SUPPORT == nil ||
-	NetworkModules::QETH_LAYER2_SUPPORT == "" ||
-	NetworkModules::QETH_LAYER2_SUPPORT == "0")
-	qeth_layer2 = false;
-    else
-	qeth_layer2 = true;
-*/
 
     /* We always have to set the MAC Address for qeth Layer2 support */
     if (qeth_layer2 ) {
 	qeth_macaddress = devmap["LLADDR"]:"00:00:00:00:00:00";
     }
-
-    //if(bootproto == "none") bootproto = "static";
 
     return true;
 }
@@ -1086,77 +1007,6 @@ global define boolean Commit() {
 	}
 	newdev["NAME"] = description;
 	if (!issubstring(Items[current, "ifcfg"]:"", type)) newdev["INTERFACETYPE"]=type;
-//	if(unique != "" && unique != nil) newdev["udi"] = unique;
-/*
-	if(hotplug == "") {
-	    if(alias == "") {
-		// FIXME: MOD ChangeModule(NetworkInterfaces::device_name(type, device), operation == `add);
-		y2milestone("HWCFG name %1 (%2)", nm_name, nm_name_old);
-		if(hasAnyValue(nm_name) && operation == `edit &&
-			hasAnyValue(nm_name_old) && nm_name != nm_name_old) {
-		    y2milestone("HWCFG name change (%1) -> deleting old (%2)", nm_name, nm_name_old);
-		    NetworkModules::DeleteM(nm_name_old);
-		    nm_name_old = nil;
-		}
-
-		if(Arch::s390 ()) {
-		    string type2 = DriverType (type);
-		    if(type2 == "iucv") {
-			NetworkModules::SCRIPTUP = "hwup-iucv";
-		    }
-		    else {
-			NetworkModules::SCRIPTUP = "hwup-ccw";
-			NetworkModules::SCRIPTUP_ccw = "hwup-ccw";
-			NetworkModules::SCRIPTDOWN = "hwdown-ccw";
-			NetworkModules::SCRIPTUP_ccwgroup = "hwup-" + type2;
-		    }
-
-		    integer devid = 0;
-		    string devstr = "";
-
-		    y2milestone("nm_name=%1", nm_name);
-		    string s390chanid = "[0-9]+\\.[0-9]+\\.";
-		    if(regexpmatch(nm_name, s390chanid)) {
-			devid = tointeger("0x" + regexpsub(nm_name, s390chanid + "(.*)", "\\1"));
-			devstr = regexpsub(nm_name, ".*[^0-9](" + s390chanid + ").*", "\\1");
-		    }
-
-		    y2milestone("devid=%1(%2)", devid, devstr);
-		    if(devid == nil) devid = 0;
-		    string devid0 = String::PadZeros(regexpsub(tohexstring(devid), "0x(.*)", "\\1"), 4);
-		    string devid1 = String::PadZeros(regexpsub(tohexstring(devid+1), "0x(.*)", "\\1"), 4);
-		    string devid2 = String::PadZeros(regexpsub(tohexstring(devid+2), "0x(.*)", "\\1"), 4);
-
-		    if(type2 == "ctc" || type2 == "lcs") {
-			NetworkModules::CCW_CHAN_IDS = sformat("%1%2 %1%3", devstr, devid0, devid1);
-			NetworkModules::CCW_CHAN_MODE = chan_mode;
-			NetworkModules::CCW_CHAN_NUM = "2";
-			NetworkModules::LCS_LANCMD_TIMEOUT = lcs_timeout;
-		    }
-		    else if(type2 == "qeth") {
-			NetworkModules::CCW_CHAN_IDS = sformat("%1%2 %1%3 %1%4", devstr, devid0, devid1, devid2);
-			NetworkModules::CCW_CHAN_MODE = chan_mode;
-			NetworkModules::CCW_CHAN_NUM = "3";
-			NetworkModules::QETH_OPTIONS = qeth_options;
-			NetworkModules::QETH_IPA_TAKEOVER = ipa_takeover? "1": "0";
-			NetworkModules::QETH_LAYER2_SUPPORT = qeth_layer2? "1": "0";
-			if (qeth_layer2 && qeth_macaddress != "00:00:00:00:00:00") {
-			    newdev["LLADDR"] = qeth_macaddress;
-			}
-			else {
-			    // #151196: layer 3 otherwise fails
-			    newdev["LLADDR"] = "";
-			}
-		    }
-
-		}
-
-		// If "", no hwcfg is created. See also #42421.
-		if (NetworkModules::ChangeM(nm_name)) Items[current, "hwcfg"]=nm_name;
-			else Items[current, "hwcfg"]="";
-	    }
-	}
-*/
 
 	if(hotplug == "pcmcia") newdev["DHCLIENT_SET_DOWN_LINK"] = "yes";
 
@@ -1230,17 +1080,9 @@ global define boolean Commit() {
 	    newdev["WIRELESS_POWER"] = wl_power ? "yes" : "no";
 	}
 
-//	if(hasAnyValue(nm_name)) newdev["_nm_name"] = nm_name;
-
 	if(DriverType (type) == "ctc")
 	    if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 40)
 		NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 40;
-
-	/* FIXME: MOD
-	if(DriverType (type) == "qeth")
-	    if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 15)
-		NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 15;
-	*/
 
 	if(alias == "") {
 	    newdev["_aliases"] = aliases;
@@ -1264,7 +1106,6 @@ global define boolean Commit() {
 	y2error("Unknown operation: %1", operation);
 	return false;
     }
-//   nm_name_old = nil;
    modified = true;
    operation = nil;
    return true;
@@ -1404,30 +1245,6 @@ global map FindMatchingDevice(map interface) {
 
     } else {
 	// this is the first interface, match the hardware with install.inf
-/*
- // couldn't happen 
-	if (size(InstallInf)>0){
-         // Select the one from install.inf with the same MAC 
-	 // find H["mac"] == InstallInf["hwaddr"]
-         if (tosel == nil  ) {
-            string hwaddr = InstallInf["hwaddr"]:"";
-            if(hwaddr != nil && hwaddr != "") {
-                tosel = find (map h, Hardware, ``( h["mac"]:"" == hwaddr ));
-            }
-            y2milestone("Rule: matching hwaddr in install.inf");
-         }
-
-         // Select the one from install.inf with the same module 
-	 // find H["module"] == InstallInf["module"]
-         if (tosel == nil) {
-            string infmodule = InstallInf["module"]:"";
-            if(infmodule != nil && infmodule != "") {
-                tosel = find (map h, Hardware, ``( h["module"]:"" == infmodule ));
-            }
-            y2milestone("Rule: matching module in install.inf");
-         }
-	} else
-*/
 	   {
 	 /* No install.inf -> select the first connected */
          // find H["active"] == true
@@ -1496,9 +1313,6 @@ global void SetItem(){
  if (!hasAnyValue(type)) type = NetworkInterfaces::GetType(getCurrentItem()["ifcfg"]:"");
  device = getCurrentItem()["ifcfg"]:"";
  alias = NetworkInterfaces::alias_num(getCurrentItem()["ifcfg"]:"");
-// nm_name = Items[current, "hwcfg"]:"";
-// if (nm_name=="") nm_name_old = createHwcfgName(Items[current, "hwinfo"]:$[], type);
-//  NetworkModules::SelectM(nm_name);
 
     /* general stuff */
     description = BuildDescription (type, device, devmap, Hardware);
@@ -1512,35 +1326,6 @@ global void SetItem(){
     if(issubstring(type, "-")) type = regexpsub(type, "([^-]+)-.*$", "\\1");
     y2debug("type=%1", type);
 
-    /* kernel options */
-    if(hotplug == "" && alias == "" && nm_name != "") {
-	// FIXME: MOD SelectModule(dev);
-//	NetworkModules::SelectM(nm_name);
-    }
-    else {
-	// FIXME: MOD SelectModule("");
-//	NetworkModules::AddM();
-    }
-
-/*
-    qeth_options = NetworkModules::QETH_OPTIONS;
-    chan_mode = NetworkModules::CCW_CHAN_MODE;
-    lcs_timeout = NetworkModules::LCS_LANCMD_TIMEOUT;
-
-    if (NetworkModules::QETH_IPA_TAKEOVER == nil ||
-	NetworkModules::QETH_IPA_TAKEOVER == "" ||
-	NetworkModules::QETH_IPA_TAKEOVER == "0")
-	ipa_takeover = false;
-    else
-	ipa_takeover = true;
-
-    if (NetworkModules::QETH_LAYER2_SUPPORT == nil ||
-	NetworkModules::QETH_LAYER2_SUPPORT == "" ||
-	NetworkModules::QETH_LAYER2_SUPPORT == "0")
-	qeth_layer2 = false;
-    else
-	qeth_layer2 = true;
-*/
     /* We always have to set the MAC Address for qeth Layer2 support */
     if (qeth_layer2 ) {
 	qeth_macaddress = devmap["LLADDR"]:"00:00:00:00:00:00";
@@ -1564,7 +1349,6 @@ global boolean ProposeItem(){
     }
   NetworkInterfaces::Add();
   operation = `edit;
-//  interfacename=getCurrentItem()["hwinfo", "dev_name"]:"";
   Items[current, "ifcfg"]=getCurrentItem()["hwinfo", "dev_name"]:"";
   description = HardwareName([getCurrentItem()["hwinfo"]:$[]], getCurrentItem()["hwinfo", "dev_name"]:"");
   Commit ();
@@ -1596,13 +1380,6 @@ global boolean createS390Device(){
   case "qeth":
   case "hsi":
 	string portnumber_param = (size(qeth_portnumber)>0) ? sformat("-n %1", qeth_portnumber) : "";
-/*
-	if (size(chan_mode)>0)
-					// chan_ids (read, write, control), port
-		command1=sformat("qeth_configure %1 -p %2 %3 %4 1", qeth_layer2?"-l":"", chan_mode, portnumber_param, qeth_chanids);
-	else
-		command1=sformat("qeth_configure %1 %2 %3 1", qeth_layer2?"-l":"", portnumber_param, qeth_chanids);
-*/
 	string portname_param=(size(chan_mode)>0) ? sformat("-p %1", chan_mode) : "";
         string options_param=(size(qeth_options)>0) ? sformat("-o %1", qeth_options) : "";
 	command1=sformat("qeth_configure %1 %2 %3 %4 %5 1", options_param, qeth_layer2?"-l":"", portname_param, portnumber_param, qeth_chanids);
