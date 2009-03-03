@@ -44,6 +44,7 @@ interface =
 
     # address
     ipaddr? &
+    prefixlen? &
     remote_ipaddr? &
     element netmask { text }? &	#overloaded
     element bonding_master { text }? &
@@ -106,6 +107,7 @@ bootproto = element bootproto { text }
 broadcast = element broadcast { text }
 dhclient_set_down_link = element dhclient_set_down_link { text }
 ipaddr = element ipaddr { text }
+prefixlen = element prefixlen { text }
 usercontrol = element usercontrol { text }
 mtu = element mtu { text }
 ethtool_options = element ethtool_options { text }
