@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar  3 14:47:18 CET 2009 - mzugec@suse.cz
+
+- apply forwarding on both IPv4 and IPv6 (bnc#479370)
+- 2.18.15 
+
+-------------------------------------------------------------------
 Tue Mar  3 10:13:05 CET 2009 - mzugec@suse.cz
 
 - fixed networking.rnc (bnc#480466)
