@@ -116,18 +116,6 @@ define boolean AddInterface () {
     LanItems::Items[LanItems::current, "ifcfg"] = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
     LanItems::Items[LanItems::current, "commited"] = false;
     LanItems::operation = `edit;
-//    LanItems::SetDefaultsForHW ();
-
-/*
-    if (NetworkModules::Alias == "")
-    {
-	if (!Popup::ContinueCancel (_("The device does not have a driver module.
-The driver may be built in the kernel.")))
-	{
-	    return false;
-	}
-    }
-*/
     string fw = "";
     if (LanItems::needFirmwareCurrentItem()){
 	fw = LanItems::GetFirmwareForCurrentItem();
@@ -160,9 +148,6 @@ once you have installed the firmware.")));
         if (fw=="b43-fwcutter"){
 	    if(Popup::ContinueCancelHeadline(_("Installing firmware"), _("For successful firmware installation the, 'install_bcm43xx_firmware' script needs to be executed. Execute it now ?"))){
 	    map<string, any> command = (map<string, any>)SCR::Execute(.target.bash_output, "/usr/sbin/install_bcm43xx_firmware");
-	    //y2internal("command %1", command);
-//	 Popup::ShowFile ("Boot Messages", "/tmp/bcm_firmware.log");
-//	Popup::LongText(command["stdout"]:"");
 	    if (command["exit"]:-1!=0)
 		Popup::ErrorDetails(_("An error occurred during firmware installation."), command["stderr"]:"");
 	    else
@@ -233,10 +218,6 @@ void enableDisableButtons(){
 	    UI::ChangeWidget (`id (b), `Enabled, false);
 	});
     }
-/*
- if (hasAnyValue(LanItems::getCurrentItem()["hwinfo", "dev_name"]:"") && size(LanItems::getCurrentItem()["hwinfo"]:$[])>0) UI::ChangeWidget(`id(`edit), `Enabled, true);
-	else UI::ChangeWidget(`id(`edit), `Enabled, false);
-*/
 }
 
 boolean shown = false;
@@ -286,12 +267,6 @@ symbol handleOverview( string key, map event ) {
 	    else		// configured
 	    {
 		LanItems::SetItem();
-/*
-		foreach(map<string, any> row, o_items, {
-		 if (row["id"]:-1 == LanItems::current && row["hw_num"]:-1 != -1) LanItems::SelectHW(row["hw_num"]:-1);
-		});
-*/
-//		Lan::SelectHW (1);
 		if (LanItems::startmode == "managed")
 		{
 		    // Continue-Cancel popup
