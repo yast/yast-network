@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Mar  5 11:13:06 CET 2009 - mzugec@suse.cz
+
+- fixed testsuite for Routing 
+
+-------------------------------------------------------------------
 Tue Mar  3 14:47:18 CET 2009 - mzugec@suse.cz
 
 - apply forwarding on both IPv4 and IPv6 (bnc#479370)
