@@ -161,7 +161,7 @@ global define boolean Read() {
     /* Progress step 1/5 */
     ProgressNextStage(_("Detecting DSL devices..."));
     if(!NetHwDetection::running) NetHwDetection::Start();
-    Hardware = ReadHardware("dsl");
+    Hardware = (list<map>)union(ReadHardware("dsl"), ReadHardware("pppoe"));
 
     /* In case of capiadsl we can emulate the detection with the parameters
      * from ISDN. Advantage: we can setup the dialog items correctly.

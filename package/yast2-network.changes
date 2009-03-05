@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Mar  5 14:27:19 CET 2009 - mzugec@suse.cz
+
+- in DSL module list also pppoe devices (bnc#449982)
+- 2.18.16 
+
+-------------------------------------------------------------------
 Thu Mar  5 11:13:06 CET 2009 - mzugec@suse.cz
 
 - fixed testsuite for Routing 
