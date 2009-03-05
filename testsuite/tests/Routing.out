@@ -7,7 +7,9 @@ Dump	Routing::routes [$["1":"r1"], $["2":"r2"]]
 Dump	Write
 Return	true
 Write	.sysconfig.sysctl.IP_FORWARD "yes" true
+Write	.sysconfig.sysctl.IPV6_FORWARD "yes" true
 Execute	.target.bash "echo 1 > /proc/sys/net/ipv4/ip_forward" 0
+Execute	.target.bash "echo 1 > /proc/sys/net/ipv6/conf/all/forwarding" 0
 Read	.target.size "/etc/sysconfig/network/routes" 1
 Execute	.target.bash "/bin/cp /etc/sysconfig/network/routes /etc/sysconfig/network/routes.YaST2save" 0
 Write	.routes [$["1":"r1"], $["3":"r3"]] true
