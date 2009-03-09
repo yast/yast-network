@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Mar  9 14:58:10 CET 2009 - mzugec@suse.cz
+
+- improve address dialog for vlan (bnc#376063)
+- allow all netcard devices except vlan, bridge and bond to be
+etherdevice for vlan
+- 2.18.17 
+
+-------------------------------------------------------------------
 Thu Mar  5 14:27:19 CET 2009 - mzugec@suse.cz
 
 - in DSL module list also pppoe devices (bnc#449982)

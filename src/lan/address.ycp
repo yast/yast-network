@@ -122,14 +122,16 @@ y2milestone("store bridge %1 : %2", key, settings["BRIDGE_PORTS"]:"");
  */
 void InitVLANSlave(string key)
 {
-     settings["ETHERDEVICE"] = NetworkInterfaces::Current["ETHERDEVICE"]:"";
+ settings["ETHERDEVICE"] = NetworkInterfaces::Current["ETHERDEVICE"]:"";
 
- list items = createUnconfigured([settings["ETHERDEVICE"]:""]);
-
-  foreach (string dev_name, NetworkInterfaces::List("br|bond"), {
-   items = add(items, `item(`id(dev_name), dev_name,
-				(dev_name==settings["ETHERDEVICE"]:"")?true:false));
-  });
+ list items = [];
+    map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
+     foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+	if (contains(["vlan", "bond", "br"], NetworkInterfaces::GetType(devname))) continue;
+        items = add (items, `item(`id(devname), sformat("%1 - %2", devname, configurations[devtype, devname, "NAME"]:""), settings["ETHERDEVICE"]:""==devname) );
+     });
+    });
     UI::ChangeWidget(`id(key), `Items, items);
 }
 
@@ -205,7 +207,7 @@ void enableDisableBootProto(symbol current){
  * @param key id of the widget
  */
 void initBootProto (string key) {
- if (contains(["vlan", "br"], LanItems::type)) UI::ReplaceWidget(`rp, `Empty());
+ if (LanItems::type=="br") UI::ReplaceWidget(`rp, `Empty());
  switch(settings["BOOTPROTO"]:""){
   case "static": UI::ChangeWidget(`id(`bootproto), `CurrentButton, `static);
 		UI::ChangeWidget(`id(`ipaddr), `Value, settings["IPADDR"]:"");
@@ -818,29 +820,19 @@ define any AddressDialog() {
 	    "IFCFGTYPE",
 	    `HSpacing(1.5),
 	    `MinWidth(30, "IFCFGID"),
-	    `HSpacing(0.5)
+	    `HSpacing(0.5),
+	LanItems::type=="vlan" ? `VBox("ETHERDEVICE") : `Empty()
 	);
     if(LanItems::operation != `add) {
 	if(LanItems::alias == "") {
 	    settings["IFCFG"] = LanItems::device;
 	}
 	else {
-//	    settings["IFCFG"] = NetworkInterfaces::alias_name(NetworkInterfaces::RealType(LanItems::type, LanItems::hotplug), LanItems::device, LanItems::alias);
 	    settings["IFCFG"] = LanItems::device;
 	}
     }
     
     list<string> mb_items = [];
-//    if (!NetworkService::IsManaged()) mb_items = add(mb_items, "ADDITIONAL_ADDRESSES");
-
-    // Allow changing s390 options, except for iucv, where the option
-    // is in the name of the hwcfg file. Haven't figured it out yet.
-/*
-    if (Arch::s390 () && drvtype != "iucv")
-    {
-	mb_items = add(mb_items, "S390");
-    }
-*/
     wd["ADVANCED_MB", "items"] = maplist (string btn, mb_items, {
 	// TODO helps
 	return [btn, wd[btn, "label"]:btn];
@@ -910,17 +902,6 @@ define any AddressDialog() {
                 `Left(label),
 		just_address_contents,
 		`MarginBox(1, 0, `Frame( "", `VBox("BONDSLAVE", "BONDOPTION"))),
-		frame2
-	);
-    }
-    else if (LanItems::type == "vlan")
-    {
-     settings["STARTMODE"] = "onboot";
-        address_contents = `VBox(
-                `Left(label),
-		`Left( `VBox("ETHERDEVICE")),
-		just_address_contents,
-		"AD_ADDRESSES",
 		frame2
 	);
     }
