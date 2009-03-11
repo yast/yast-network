@@ -216,7 +216,7 @@ void CreateIfcfg(){
 	 InstallInf["ipaddr"]:"", Netmask::ToBits(InstallInf["netmask"]:""), InstallInf["bcast"]:"");
      if(size(InstallInf["ipaddr6"]:"")>0){
       network_configuration=sformat("%1\n%2", network_configuration,
-      sformat("LABEL_ipv6='ipv6'\nIPADDR_ipv6='%1'", InstallInf["ipaddr6"]:"")
+      sformat("LABEL_ipv6='ipv6'\nIPADDR_ipv6='%1'\n", InstallInf["ipaddr6"]:"")
       );
      }
     }

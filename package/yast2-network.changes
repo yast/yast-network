@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Mar 11 22:48:10 CET 2009 - mzugec@suse.cz
+
+- 1st stage - correctly write ifcfg for ipv6 only (bnc#477917)
+- 2.18.18 
+
+-------------------------------------------------------------------
 Mon Mar  9 14:58:10 CET 2009 - mzugec@suse.cz
 
 - improve address dialog for vlan (bnc#376063)
