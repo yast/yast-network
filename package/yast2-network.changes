@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Mar 12 10:10:46 CET 2009 - mzugec@suse.cz
+
+- for s390 propose CHAN_IDS values (445339)
+- 2.18.19
+
+-------------------------------------------------------------------
 Mon Mar 11 22:48:10 CET 2009 - mzugec@suse.cz
 
 - 1st stage - correctly write ifcfg for ipv6 only (bnc#477917)
