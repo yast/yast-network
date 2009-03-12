@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Mar 12 09:28:12 CET 2009 - mzugec@suse.cz
+
+- for s390 propose CHAN_IDS values (445339)
+- 2.14.125 
+
+-------------------------------------------------------------------
 Mon Mar  2 13:49:32 CET 2009 - mzugec@suse.de
 
 - possible to not use LABEL for aliases (bnc#471253)
