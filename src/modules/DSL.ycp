@@ -341,7 +341,7 @@ global define boolean Select(string dev) {
 	NetworkInterfaces::Edit(dev);
 	devmap = NetworkInterfaces::Current;
 	type = typ;
-//	device = num;
+	device = sformat("%1%2",type,num);
 	operation = `edit;
     }
 

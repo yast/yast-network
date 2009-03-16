@@ -350,12 +350,11 @@ connection will be shut down (0 means the connection will not time-out).</p>
 	}
 	/* update firewall info */
 	if(UI::WidgetExists(`id(`Firewall))) {
-
 	    /* Update /etc/sysconfig/firewall */
-	    if(FirewallChecked != UI::QueryWidget(`id(`Firewall), `Value)) {
+//	    if(FirewallChecked != UI::QueryWidget(`id(`Firewall), `Value)) {
 		FirewallChecked = (boolean) UI::QueryWidget(`id(`Firewall), `Value);
 		SuSEFirewall4Network::ProtectByFirewall (device, "EXT", FirewallChecked);
-	    }
+//	    }
 	}
     }
 
