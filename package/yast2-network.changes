@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Mar 18 10:42:23 CET 2009 - mzugec@suse.cz
+
+- use 50-ipv6.conf instead of modprobe.d/ipv6 file (bnc#485947)
+- 2.18.21 
+
+-------------------------------------------------------------------
 Mon Mar 16 14:49:34 CET 2009 - mzugec@suse.cz
 
 - fixed firewall checkbox status for dsl and modem (bnc#404359)
