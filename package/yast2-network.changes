@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Mar 18 14:56:28 CET 2009 - kmachalkova@suse.cz
+
+- Escape '\' characters in username when writing .curlrc (backport 
+  of bnc#331038, now bnc#410750)
+
+-------------------------------------------------------------------
 Thu Mar 12 09:28:12 CET 2009 - mzugec@suse.cz
 
 - for s390 propose CHAN_IDS values (445339)
