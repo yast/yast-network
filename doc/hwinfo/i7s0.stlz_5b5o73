@@ -1,0 +1,24 @@
+[General]
+UniqueID=i7s0.stlz_5b5o73
+ParentID=v9l_.3fyvFV+mbWD
+HWClass=modem
+Model=U.S. Robotics 56K FAX EXT
+
+[Status]
+Configured=no
+Available=yes
+Needed=no
+
+[Hardware]
+Bus=0x81
+BaseClass=0x102
+VendorID=USR
+DeviceID=2082
+CompatVendorID=PNP
+CompatDeviceID=c107
+DeviceName=U.S. Robotics 56K FAX EXT
+VendorName=U.S. Robotics, Inc.
+UnixDevice=/dev/ttyS1
+HWClassList=000008000000
+Res.Baud=115200,0,0,0x00,0x00
+

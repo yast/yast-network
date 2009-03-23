@@ -1,0 +1,74 @@
+/**
+ * File:	clients/inst_hostname.ycp
+ * Package:	Network configuration
+ * Summary:	Mandatory hostname configuration
+ * Authors:	Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Arch";
+import "DNS";
+import "GetInstArgs";
+import "NetworkConfig";
+import "String";
+import "Wizard";
+import "ProductControl";
+import "ProductFeatures";
+
+include "network/services/dns.ycp";
+
+
+/* Called backwards */
+//if(GetInstArgs::going_back())
+//   return `auto;
+
+
+// FaTe#303875: Introduce a switch regarding 127.0.0.2 entry in /etc/hosts
+boolean whth = ProductFeatures::GetBooleanFeature ("globals", "write_hostname_to_hosts");
+y2milestone("write_hostname_to_hosts value from control.xml : %1", whth);
+
+DNS::Read ();			// handles NetworkConfig too
+
+if (DNS::hostname == "linux")
+{
+    srandom ();
+    DNS::hostname = "linux-" + String::Random (4); // #157107
+}
+
+// propose settings
+NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = ! Arch::is_laptop ();
+// override with setting from control.xml
+Host::SetWriteHostname( whth );
+// TODO: policy for proposing a hostname
+
+symbol ret = `next;
+
+//No need for interactive UI in automatic configuration
+if ( ! GetInstArgs::automatic_configuration() )
+{
+    Wizard::SetDesktopIcon("dns");
+    ret = HostnameDialog ();
+}
+//but we need to force writing /etc/HOSTNAME in such case
+//(#383336)
+else
+{
+    DNS::modified = true;
+}
+
+if (ret == `next)
+{
+    // do not let Lan override us, #152218
+    DNS::proposal_valid = true;
+    DNS::Write ();		// handles NetworkConfig too
+}
+
+return ret;
+
+/* EOF */
+}

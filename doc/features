@@ -1,0 +1,95 @@
+2004-06-08
+
+Improvements:
+- dns: two resolv.conf scrconfs (resolv.conf.saved.by.dhcpcd, #38834)
+- lan: check IP presence (#9951)
+- lan: check link presence (see sysconfig.rpm how is it done)
+- lan: myrinet: check for driver presence [warning + info]
+- modem: check existence of the modem device in ModemDialog
+- routing: check already present default route (partially #11132c26)
+- routines: check for yast2-mail presence
+- routines: support plip, slip, ppp (serial cable, not modem)
+- provider: offer to delete provider after device delete if not used (#16094)
+- provider: delete default route if removed (#10739)
+- lan: warn before the network restart (#27137, #19851) [WARN]
+- lan: yp configuration failed (#25506)
+ ask if network should be restarted
+- dns: better "DNS and Hostname" and "Hosts" titles (#29722)
+- lan: netcards without a driver (what to do on s390?, warn?) (#29296)
+- dns: better message for broken fields (eg. domain) (#22802)
+- lan: ssh installation (install.inf format) (#24836)
+ duplicate Alias lines; maybe not necessary, review #22444
+- all: don't always ask for the mail config (#31472)
+- dialup: mail question only if new device was added
+ yast ui config
+
+Enhancements:
+- proxy: use immediately (#23728)
+ enhance other programs
+- detection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
+ #7287, #13200 are dups of #16471: take info from linuxrc
+ #9951: arping to detect duplicate IPs
+- lan: compiled in kernel drivers
+ offer them besides modularized drivers? src/lan/cards.ycp?
+- modem: speaker volume as combo (or better as slider)
+- modem: pap|chap secrets writing (isdn may do it already)
+- providers: no-global-values (ini-agent parameter, ease of use: flat(21867)?)
+- providers: -> HWDB-NG
+- all: edit without restart (reload)
+- device: use map instead of variables (-> fill all variables)
+- package: include all agents (ag_xauth, ag_resolver, ag_hostnames, ...)
+- package: require yast2-language, yast2-mail, ...
+- hardware: cable connection (plip, slip, usb)
+- hardware: wireless connection (irda, bluetooth)
+- feature: IP-masquerading (#16131), is already in the firewall
+- routing: default route without GW (#23977)
+- host: scan for hosts on the local network [Add]
+- host: add (update) all hosts in the local network
+- host: show system hosts checkbox (like users have)
+- routing: other fields (see routes(5))
+- routing: possibly rename to Route
+- not only lan: temporary interface disable (#24926)
+- dsl: flat rate (#27840)
+- better network UI [sigi] (#29721)
+- support custom provider from INS file (#25774)
+- improve modules.conf options merging (maybe obsolete with 2.6) (#29995)
+- make DHCP options iface-local (questionable) (#30476)
+- propose "http://" for the proxy strings (#31269)
+- edit dsl HW goes through provider again (default provider?) (#24000)
+- allow to change the netcard type (for a broken detection) (#30890)
+- skip detect check box (general yast2 feature) (#31478)
+- installation: better network configuration (inst_netcfg, create_interfaces)
+- dns: update /etc/hosts (#22825)
+- lan: install dhcpcd|sysconfig|... (before Write)
+- lan: install wireless-tools, hotplug, ... if needed (before Write)
+- IPv6 support (tunnels)
+- host: drop oldhostentry file
+- host: better deleted hostnames handling
+
+
+New in Bugzilla:
+
+#33071 enh        provide a per interface routing configuration
+#33649 cri        yast2 ISDN module always activates personal firewall
+#33801 enh        Allow configuring a net interface without an IP address
+#34626 enh        Allow giving a net interface an arbitrary name
+#35221 nor LATER  Better behavior with multiple dhcp clients
+#35638 min        On Abort, ask only if there have been any changes
+#35671 min        Yast2 deletes hostname aliases, if more than one are present
+#35747 enh        Provide way to configure irda
+#35935 nor        yast2 asks for internet test although network config skipped
+#35955 min LATER  Obsolete NETWORK, BROADCAST, NETMASK, UNIQUE in ifcfg
+#37520 enh LATER  Let user identify ifcfg by MAC, bus id, vpid...
+#38213 min        YaST network forgets configuration name proposal
+#37864 nor        kinternet not started after dsl config
+#38031 nor        Changing network environment causes resolver problems
+#38135 min        after deleting the only configured modem, yast2-mail is run
+#38746 nor        dsl config is not working with two network cards
+#39027 min LATER  "Back" button is interpreted as "Abort"
+#40012 enh LATER  Allow editing the whole resolver search list
+#40254 nor LATER  Allow choosing the encoding for passwords
+#40458 nor LATER  Improve VNC Remote Administration
+#40587 maj LATER  Call coldplug to initialize newly setup net hardware
+#40861 enh LATER  Add "Test connection" button to proxy etc. config
+#41204 enh LATER  unconnected network card is assumed to be connected
+
