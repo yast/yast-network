@@ -1,0 +1,32 @@
+/**
+ * File:	root_wgetrc.scr
+ * Summary:	Agent for reading/writing /root/.wgetrc
+ * Access:	read / write
+ * Author:	Michal Svec <msvec@suse.cz>
+ * See:		wget(1)
+ *
+ * Example:
+ *   Dir(.root.wgetrc)
+ *   (["proxy_user", "proxy_user"])
+ **
+ *   Read(.root.wgetrc.proxy_user)
+ *   ("olduser")
+ **
+ *   Write(.root.wgetrc.proxy_user, "newuser")
+ *   (true)
+ *
+ * $Id$
+ */
+.root.wgetrc
+
+`ag_ini(
+    `IniAgent( "/root/.wgetrc",
+	$[
+	    "options" : [ "ignore_case", "global_values", "flat" ],
+	    "comments" : [ "^#.*", "^[ \t]*$", ],
+	    "params" : [
+		$[ "match" : [ "^[ \t]*([a-zA-Z_]+)[ \t]*=[ \t]*(.*)[ \t]*$", "%s = %s" ] ]
+	    ]
+	]
+    )
+)

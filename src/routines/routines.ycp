@@ -1,0 +1,822 @@
+/**
+ * File:	include/network/routines.ycp
+ * Package:	Network configuration
+ * Summary:	Miscellaneous routines
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Call";
+import "Popup";
+import "Progress";
+import "String";
+import "NetworkService";
+import "PackageSystem";
+import "NetworkInterfaces";
+import "Arch";
+import "Confirm";
+import "Map";
+import "Netmask";
+import "Mode";
+
+
+/**
+ * Abort function
+ * @return blah blah lahjk
+ */
+define boolean Abort() {
+    import "Mode";
+    if(Mode::commandline ()) return false;
+    return UI::PollInput() == `abort;
+
+    /* FIXME: NI
+    if(AbortFunction != nil)
+	return eval(AbortFunction) == true;
+    */
+    return false;
+}
+
+/**
+ * Check for pending Abort press
+ * @return true if pending abort
+ */
+define boolean PollAbort() {
+    return UI::PollInput() == `abort;
+}
+
+/**
+ * If modified, ask for confirmation
+ * @return true if abort is confirmed
+ */
+define boolean ReallyAbort() {
+    return Popup::ReallyAbort(true);
+
+    /* FIXME: NI
+    return !Modified() || Popup::ReallyAbort(true);
+    */
+}
+
+/**
+ * If modified, ask for confirmation
+ * @param modified true if modified
+ * @return true if abort is confirmed
+ */
+define boolean ReallyAbortCond(boolean modified) {
+    return (!modified) || Popup::ReallyAbort(true);
+
+    /* FIXME: NI
+    return (!modified && !Modified()) || Popup::ReallyAbort(true);
+    */
+}
+
+/**
+ * Set screen shot name
+ * @param name screenshot name
+ */
+define void ScreenName(string name) {
+// obsolete
+}
+
+/**
+ * Progress::NextStage and Progress::Title combined into one function
+ * @param title progressbar title
+ */
+define void ProgressNextStage(string title) {
+    Progress::NextStage();
+    Progress::Title(title);
+}
+
+/**
+ * Change UI widget only if it exists
+ * @param id widget id
+ * @param param widget parameter
+ * @param value widget parameter value
+ */
+define void ChangeWidgetIfExists(term id, symbol param, any value) {
+    if(UI::WidgetExists(id))
+	UI::ChangeWidget(id, param, value);
+    else
+	y2debug("Not changing: %1", id);
+}
+
+/**
+ * Query UI widget only if it exists
+ * @param id widget id
+ * @param param widget parameter
+ * @param value previous parameter value
+ * @return widget value if exists, previous value otherwise
+ */
+define any QueryWidgetIfExists(term id, symbol param, any value) {
+    if(UI::WidgetExists(id))
+	return UI::QueryWidget(id, param);
+    y2debug("Not changing: %1", id);
+    return value;
+}
+
+/**
+ * Check if required packages are installed and install them if they're not
+ * @param packages list of required packages (["rpm", "bash"])
+ * @return `next if packages installation is successfull, `abort otherwise
+ */
+define symbol PackagesInstall(list<string> packages) {
+    if (packages == [])
+	return `next;
+    y2debug("Checking packages: %1", packages);
+
+    import "Package";
+    if (Package::InstalledAll (packages))
+	return `next;
+
+    /* Popup text */
+    string text = _("These packages need to be installed:") + "<p>";
+    foreach(string l, packages, { text = text + sformat("%1<br>",l); });
+    y2debug("Installing packages: %1", text);
+
+    boolean ret = false;
+    while(true) {
+	ret = Package::InstallAll (packages);
+	if(ret == true) break;
+
+	if(ret == false && Package::InstalledAll (packages)) {
+	    ret = true;
+	    break;
+	}
+
+	/* Popup text */
+	if(!Popup::YesNo(_("The required packages are not installed.
+The configuration will be aborted.
+
+Try again?
+") + "
+"))
+	    break;
+    }
+
+    return ret == true ? `next : `abort;
+}
+
+/**
+ * Create comment for changed file
+ * @param modul YaST2 module changing the file
+ * @return comment
+ * @example ChangedComment("lan") -> # Changed by YaST2 module lan 1.1.2000"
+ */
+define string ChangedComment(string modul) {
+    string ret = "\n# Changed by YaST2";
+    if(modul != nil && modul != "") ret = ret + " module " + modul;
+    map out = (map)SCR::Execute(.target.bash_output, "/bin/date '+%x'");
+    string date = out["stdout"]:"";
+    if(date != "") ret = ret + " " + date;
+    return ret;
+}
+
+/**
+ * Show busy popup (for proposal)
+ * @param message label to be shown
+ */
+define void BusyPopup(string message) {
+    UI::BusyCursor();
+    UI::OpenDialog(`VBox(`Label(message)));
+}
+
+/**
+ * Close busy popup
+ * @see BusyPopup
+ */
+define void BusyPopupClose() {
+    UI::CloseDialog();
+}
+
+/**
+ * Create a list of items for UI from the given list
+ * @param l given list for conversion
+ * @param selected selected item (0 for the first)
+ * @return a list of items
+ * @example [ "x", "y" ] -&gt; [ `item(`id(0), "x"), `item(`id(1), "y") ]
+ */
+define list list2items(list l, integer selected) {
+    list items = [];
+    integer n = 0;
+    foreach(any i, l, {
+	items = add(items, `item(`id(n), i, n == selected));
+	n = n + 1;
+    });
+    return items;
+}
+
+/**
+ * Create a list of items for UI from the given hardware list.
+ *
+ * This list is used when selecting <ol>
+ * <li> detected unconfigured cards,
+ * there we want to see the link status </li>
+ * <li> undetected cards manually. there is no link status there
+ * and it won't be displayed. all is ok. </li>
+ * </ol>
+ * @param l given list for conversion
+ * @param selected selected item (0 for the first)
+ * @return a list of items
+ */
+define list hwlist2items(list<map> l, integer selected) {
+    // Translators: Appended after a network card name to indicate that
+    // there is no carrier, no link to the network, the cable is not
+    // plugged in. Preferably a short string.
+    string nolink = _("unplugged");
+
+    list items = [];
+    integer n = 0;
+    foreach(map i, l, {
+	/* Table field (Unknown device) */
+	string hwname = i["name"]:_("Unknown");
+	string label = hwname + (i["link"]:nil == false ?
+				 sformat (" (%1)", nolink) : "");
+	integer num = i["num"]:n; // num for detected, n for manual
+	items = add(items, `item(`id(num), hwname, num == selected));
+	n = n + 1;
+    });
+    return items;
+    //return list2items(maplist(map h, l, { return h["name"]:_("Unknown Device"); }), selected);
+}
+
+/**
+ * Display the finished popup and possibly run another module.
+ * If not modified, don't do anything.
+ * @param modified true if there are any modified data
+ * @param head headline to be shown
+ * @param text text to be shown
+ * @param run module to be run
+ * @param params parameters to pass to the module
+ * @return always `next
+ */
+define symbol FinishPopup(boolean modified, string head, string text, string run, list params) {
+
+    if(!modified) return `next;
+
+    string h = head;
+    if(h == nil || h == "")
+	/* Popup headline */
+	h = _("Configuration Successfully Saved");
+
+    map heads = $[
+	/* Popup headline */
+	"dns"		: _("DNS Configuration Successfully Saved"),
+	/* Popup headline */
+	"dsl"		: _("DSL Configuration Successfully Saved"),
+	/* Popup headline */
+	"host"		: _("Hosts Configuration Successfully Saved"),
+	/* Popup headline */
+	"isdn"		: _("ISDN Configuration Successfully Saved"),
+	/* Popup headline */
+	"lan"		: _("Network Card Configuration Successfully Saved"),
+	/* Popup headline */
+	"modem"		: _("Modem Configuration Successfully Saved"),
+	/* Popup headline */
+	"proxy"		: _("Proxy Configuration Successfully Saved"),
+	/* Popup headline */
+	"provider"	: _("Provider Configuration Successfully Saved"),
+	/* Popup headline */
+	"routing"	: _("Routing Configuration Successfully Saved"),
+    ];
+    h = heads[head]:h;
+
+    string t = text;
+    map texts = $[
+	/* Popup text */
+	"mail"	: _("Configure mail now?"),
+    ];
+    if(t == "")
+	t = texts[run]:text;
+    if(t == "")
+	/* Popup text */
+	t = sformat(_("Run configuration of %1?"), run);
+
+    any ret = nil;
+    if(run != "") {
+	ret = Popup::YesNoHeadline(h, t);
+	/* FIXME: check for the module presence */
+	if(ret == true) Call::Function(run, params);
+    }
+    else
+	ret = Popup::AnyMessage(h, t);
+
+    return `next;
+}
+
+/**
+ * For s390 hwinfo gives us a multitude of types but some are handled
+ * the same, mostly acording to the driver which is used. So let's group
+ * them under the name Driver Type.
+ * @param type a type, as in Lan::type
+ * @return driver type, like formerly type2 for s390
+ */
+define string DriverType (string type) {
+    string drvtype = type;
+    // handle HSI like qeth, S#40692#c15
+    if (type == "hsi")
+	drvtype = "qeth";
+    // Should eth occur on s390?
+    else if (type == "tr" || type == "eth")
+	drvtype = "lcs";
+    // N#82891
+    else if (type == "escon" || type == "ficon")
+	drvtype = "ctc";
+    return drvtype;
+}
+
+boolean hasAnyValue(string value){
+ if (value==nil) return false;
+ if (size(value)==0) return false;
+	else return true;
+}
+
+
+boolean needHwcfg(map hw){
+ boolean need=true;
+ // if kernel will autoload module for device
+ if (hasAnyValue(hw["modalias"]:"")){
+  if (size(hw["drivers"]:[])>1) y2milestone("there are more modules available for device, hwcfg is needed");
+       else {
+               y2milestone("Just one autoloadable module available.No need to write hwcfg");
+               need=false;
+               }
+ } else
+       // not autoload because of built-in driver (compiled in kernel)
+       if (!hasAnyValue(hw["driver_module"]:"")) {
+                                                y2milestone("built-in driver %1", hw["driver"]:"");
+                                                need=false;
+                                               }
+ return need;
+}
+
+/*
+map<string, any> getcfg(string options, string device){
+ map <string, any> cfg=$[];
+ map <string, any> output = (map <string, any>)SCR::Execute(.target.bash_output, 
+		sformat("getcfg %1 %2", options, device));
+  foreach(string row, splitstring(output["stdout"]:"", "\n"), {
+   row=deletechars(row, "\\\"\;");
+   list<string> keyval=splitstring(row, "=");
+   if (size(keyval)>1) cfg[keyval[0]:""]=keyval[1]:"";
+
+  });
+ y2milestone("%1 %2\n%3", options, device, cfg);
+ return cfg;
+}
+*/
+
+map getHardware(string sysfs_id, list<map> Hw){
+ map hardware = $[];
+ foreach(map hw_temp, Hw, {
+  if (sysfs_id == sformat("/sys%1", hw_temp["sysfs_id"]:"")) hardware = hw_temp;
+ });
+ return hardware;
+}
+
+string getIfcName(string devicename){
+ string ifcfg="";
+ string interfacetype = NetworkInterfaces::device_type( devicename );
+ // for special s390 interface types write static configuration
+ if (contains(["qeth", "hsi", "ctc", "lcs", "iucv"], interfacetype)){
+  y2internal("special device type %1", interfacetype);
+//  ifcfg=sformat("ifcfg-%1", hwfile);
+  y2error("TODO: create ifcfg file for s390");
+ } else {
+	 y2internal("usual type %1", interfacetype);
+	 // if MAC available - use it for name
+//	 if (size(hwcfg["HWD_ID"]:"")>0){
+//	  ifcfg = sformat("ifcfg-%1-id-%2", interfacetype, hwcfg["HWD_ID"]:"");
+//	  y2internal("MAC address available - use it for name %1", ifcfg);
+//	 } else {
+		// in case MAC is not available, use device name (eth0) 
+		 ifcfg = sformat("ifcfg-%1", devicename );
+//	         y2internal("MAC address not available - use device name %1", ifcfg);
+//		}
+	}
+ y2internal("interface configuration file %1", ifcfg);
+ return ifcfg;
+}
+
+
+
+define string DistinguishedName(string name, map hwdevice) {
+    if(hwdevice["sysfs_bus_id"]:"" != "")
+	return sformat("%1 (%2)", name, hwdevice["sysfs_bus_id"]:"");
+    return name;
+}
+
+/**
+ * Extract the device 'name'
+ * @param hwdevice hardware device
+ * @return name consisting of vendor and device name
+ */
+define string DeviceName(map hwdevice) {
+    string delimiter = " "; // "\n";
+    string model = "";
+    string vendor = "";
+    string dev = "";
+
+    if (hasAnyValue(hwdevice["device"]:"")) return hwdevice["device"]:"";
+
+    model = hwdevice["model"]:"";
+    if(model != "" && model != nil) return model;
+
+    vendor = hwdevice["sub_vendor"]:"";
+    dev = hwdevice["sub_device"]:"";
+
+    if((vendor == "") || (dev == "")) {
+	vendor = hwdevice["vendor"]:"";
+	dev = hwdevice["device"]:"";
+    }
+
+    if(vendor != "")
+	return vendor + delimiter + dev;
+    else
+	return dev;
+}
+
+/**
+ * Simple convertor from subclass to controller type.
+ * @param hwdevice map with card info containing "subclass"
+ * @return short device name
+ * @example ControllerType(<ethernet controller map>) -> "eth"
+ */
+define string ControllerType(map hwdevice) {
+
+    if(hwdevice["subclass"]:"" == "Modem") return "modem";
+    if(hwdevice["subclass"]:"" == "ISDN") return "isdn";
+    if(hwdevice["subclass"]:"" == "DSL") return "dsl";
+
+    integer subclass_id = hwdevice["sub_class_id"]:-1;
+
+    /* Network controller */
+    if(hwdevice["class_id"]:-1 == 2) {
+	if(subclass_id == 0) return "eth";
+	else if(subclass_id == 1) return "tr";
+	else if(subclass_id == 2) return "fddi";
+	else if(subclass_id == 3) return "atm";
+	else if(subclass_id == 4) return "isdn";
+	else if(subclass_id == 6) return "ib";
+	else if(subclass_id == 0x81) return "myri";
+	else if(subclass_id == 0x82) return "wlan";
+	else if(subclass_id == 0x83) return "xp";
+	else if(subclass_id == 0x86) return "qeth";
+	else if(subclass_id == 0x87) return "hsi";
+	else if(subclass_id == 0x88) return "ctc";
+	else if(subclass_id == 0x89) return "lcs";
+	else if(subclass_id == 0x8E) return "ficon";
+	else if(subclass_id == 0x8F) return "escon";
+	else if(subclass_id == 0x90) return "iucv";
+	else if(subclass_id == 0x91) return "usb"; // #22739
+	else if(subclass_id == 0x80) {
+	    /* Nothing was found */
+	    y2error("Unknown network controller type: %1", hwdevice);
+	    y2error("It's probably missing in hwinfo (NOT src/hd/hd.h:sc_net_if)");
+	    return "";
+	}
+	else {
+	    /* Nothing was found */
+	    y2error("Unknown network controller type: %1", hwdevice);
+	    return "";
+	}
+
+    }
+    // exception for infiniband device
+    if(hwdevice["class_id"]:-1 == 12) {
+	if(subclass_id == 6) return "ib";
+    }
+
+    /* Communication controller */
+    if(hwdevice["class_id"]:-1 == 7) {
+	if(subclass_id == 3) return "modem";
+	else if(subclass_id == 0x80) {
+	    /* Nothing was found */
+	    y2error("Unknown network controller type: %1", hwdevice);
+	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
+	    return "";
+	}
+	else {
+	    /* Nothing was found */
+	    y2error("Unknown network controller type: %1", hwdevice);
+	    return "";
+	}
+
+    }
+    /* Network Interface */
+	// check the CVS history and then kill this code!
+	// 0x107 is the output of hwinfo --network
+	// which lists the INTERFACES
+	// but we are inteested in hwinfo --netcard
+	// Just make sure that hwinfo or ag_probe
+	// indeed does not pass this to us
+    else if(hwdevice["class_id"]:-1 == 0x107) {
+	y2milestone ("CLASS 0x107"); // this should happen rarely
+	if(subclass_id == 0) return "lo";
+	else if(subclass_id == 1) return "eth";
+	else if(subclass_id == 2) return "tr";
+	else if(subclass_id == 3) return "fddi";
+	else if(subclass_id == 4) return "ctc";
+	else if(subclass_id == 5) return "iucv";
+	else if(subclass_id == 6) return "hsi";
+	else if(subclass_id == 7) return "qeth";
+	else if(subclass_id == 8) return "escon";
+	else if(subclass_id == 9) return "myri";
+	else if(subclass_id == 10) return "wlan";
+	else if(subclass_id == 11) return "xp";
+	else if(subclass_id == 12) return "usb";
+	else if(subclass_id == 0x80) {
+	    /* Nothing was found */
+	    y2error("Unknown network interface type: %1", hwdevice);
+	    y2error("It's probably missing in hwinfo (src/hd/hd.h:sc_net_if)");
+	    return "";
+	}
+	else if(subclass_id == 0x81) return "sit";
+	else {
+	    /* Nothing was found */
+	    y2error("Unknown network interface type: %1", hwdevice);
+	    return "";
+	}
+    }
+    else if(hwdevice["class_id"]:-1 == 0x102)
+	return "modem";
+    else if(hwdevice["class_id"]:-1 == 0x103)
+	return "isdn";
+    else if(hwdevice["class_id"]:-1 == 0x114)
+	return "dsl";
+
+    /* Nothing was found */
+    y2error("Unknown controller type: %1", hwdevice);
+    return "";
+}
+
+/**
+ * Read HW information
+ * @param hwtype type of devices to read (netcard|modem|isdn)
+ * @return true if success
+ */
+define list<map> ReadHardware(string hwtype) {
+    list<map> Hardware = [];
+
+    y2debug("hwtype=%1", hwtype);
+
+    integer num = 0;
+    list paths = [];
+    list allcards = [];
+
+    map<string,path> hwtypes = $[
+	"netcard"	: .probe.netcard,
+	"modem"		: .probe.modem,
+	"isdn"		: .probe.isdn,
+	"dsl"		: .probe.dsl,
+    ];
+
+    map<string,string> hwstrings = $[
+	/* Confirmation: label text (detecting hardware: xxx) */
+	"netcard"	: _("Network Cards"),
+	/* Confirmation: label text (detecting hardware: xxx) */
+	"modem"		: _("Modems"),
+	/* Confirmation: label text (detecting hardware: xxx) */
+	"isdn"		: _("ISDN Cards"),
+	/* Confirmation: label text (detecting hardware: xxx) */
+	"dsl"		: _("DSL Devices"),
+    ];
+
+    /* Confirmation: label text (detecting hardware: xxx) */
+    string hwstring = _("All Network Devices");
+    if(haskey(hwstrings, hwtype)) hwstring = hwstrings[hwtype]:"";
+    if(!Confirm::Detection(hwstring, "yast-lan")) return [];
+
+    /* read the corresponding hardware */
+    if(haskey(hwtypes, hwtype))
+	allcards = (list) SCR::Read(hwtypes[hwtype]:nil);
+//allcards=[$["bus":"PCI", "bus_hwcfg":"pci", "bus_id":2, "class_id":2, "dev_name":"wlan0", "dev_names":["wlan0"], "device":"AR242x 802.11abg Wireless PCI Express Adapter", "device_id":65564, "driver":"ath5k_pci", "driver_module":"ath5k", "drivers":[$["active":true, "modprobe":true, "modules":[["ath5k", ""]]]], "modalias":"pci:v0000168Cd0000001Csv00001A3Bsd00001026bc02sc00i00", "model":"Atheros AR242x 802.11abg Wireless PCI Express Adapter", "old_unique_key":"eHlF.oTCoeEt5Tw6", "parent_unique_key":"qTvu.bQ30eTbcr+3", "resource":$["hwaddr":[$["addr":"00:22:43:37:55:c3"]], "irq":[$["count":0, "enabled":true, "irq":17]], "link":[$["state":true]], "mem":[$["active":true, "length":65536, "start":4227792896]], "wlan":[$["auth_modes":["open", "sharedkey", "wpa-psk", "wpa-eap"], "channels":["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"], "enc_modes":["WEP40", "WEP104", "TKIP", "CCMP"], "frequencies":["2.412", "2.417", "2.422", "2.427", "2.432", "2.437", "2.442", "2.447", "2.452", "2.457", "2.462"]]]], "rev":"1", "sub_class_id":130, "sub_device":"AR5007EG 802.11bg Wi-Fi mini PCI express card", "sub_device_id":69670, "sub_vendor_id":72251, "sysfs_bus_id":"0000:02:00.0", "sysfs_id":"/devices/pci0000:00/0000:00:1c.1/0000:02:00.0", "udi":"/org/freedesktop/Hal/devices/pci_168c_1c", "unique_key":"y9sn.oTCoeEt5Tw6", "vendor":"Atheros Communications Inc.", "vendor_id":71308, "wlan":true], $["bus":"PCI", "bus_hwcfg":"pci", "bus_id":1, "class_id":2, "dev_name":"eth0", "dev_names":["eth0"], "device":"L1 Gigabit EthernetAdapter", "device_id":69670, "driver":"ATL1E", "driver_module":"atl1e", "drivers":[$["active":true, "modprobe":true, "modules":[["atl1e", ""]]]], "modalias":"pci:v00001969d00001026sv00001043sd00008324bc02sc00i00", "model":"Attansic L1 Gigabit Ethernet Adapter", "old_unique_key":"BiAc.emcIbgAqn59", "parent_unique_key":"Z7uZ.f4r+Yl3RyX5", "resource":$["hwaddr":[$["addr":"00:23:54:3f:7c:c3"]], "io":[$["active":true, "length":128, "mode":"rw", "start":56320]], "irq":[$["count":74680, "enabled":true, "irq":220]], "link":[$["state":true]], "mem":[$["active":true, "length":262144, "start":4093378560]]], "rev":"176", "sub_class_id":0,"sub_device_id":99108, "sub_vendor":"ASUSTeK Computer Inc.", "sub_vendor_id":69699, "sysfs_bus_id":"0000:01:00.0","sysfs_id":"/devices/pci0000:00/0000:00:1c.3/0000:01:00.0", "udi":"/org/freedesktop/Hal/devices/pci_1969_1026", "unique_key":"rBUF.emcIbgAqn59", "vendor":"Attansic Technology Corp.", "vendor_id":72041]];
+
+    else if(hwtype == "all" || hwtype == "" || hwtype == nil)
+	maplist(path v, (list<path>) Map::Values(hwtypes), {
+	    allcards = merge(allcards, (list) SCR::Read(v));
+	});
+    else {
+	y2error("unknown hwtype: %1", hwtype);
+	return [];
+    }
+
+    if(allcards == nil) {
+	y2error("hardware detection failure");
+	allcards = [];
+    }
+
+
+    // #97540
+    string bms = (string)SCR::Read (.etc.install_inf.BrokenModules);
+    if (bms == nil) bms = "";
+    list<string> broken_modules = splitstring (bms, " ");
+
+    /* fill in the hardware data */
+    maplist(map card, (list<map>) allcards, {
+	map one = $[];
+
+	/* common stuff */
+	map resource = card["resource"]:$[];
+	string controller = ControllerType(card);
+	boolean card_ok = controller != "";
+	one["name"] = DeviceName(card);
+	one["type"] = controller;
+	one["udi"] = card["udi"]:"";
+	one["sysfs_id"] = card["sysfs_id"]:"";
+	one["dev_name"] = card["dev_name"]:"";
+	one["requires"] = card["requires"]:[];
+	one["modalias"] = card["modalias"]:"";
+	one["unique"]	= card["unique_key"]:"";
+	// Each card remembers its position in the list of _all_ cards.
+	// It is used when selecting the card from the list of _unconfigured_
+	// ones (which may be smaller). #102945.
+	one["num"] = num;
+
+	/* Temporary solution for s390: #40587 */
+	if(Arch::s390 ()) one["name"] = DistinguishedName(one["name"]:"", card);
+
+	/* modem */
+	if(controller == "modem") {
+	    one["device_name"] = card["dev_name"]:"";
+	    one["drivers"] = card["drivers"]:[];
+	    integer speed = resource["baud", 0, "speed"]:57600;
+	    // :-) have to check .probe and libhd if this confusion is
+	    // really necessary. maybe a pppd bug too? #148893
+	    if (speed == 12000000)
+	    {
+		speed = 57600;
+		y2milestone ("Driving faster than light is prohibited on this planet.");
+	    }
+	    one["speed"] = speed;
+	    one["init1"] = resource["init_strings", 0, "init1"]:"";
+	    one["init2"] = resource["init_strings", 0, "init2"]:"";
+	    one["pppd_options"] = resource["pppd_option", 0, "option"]:"";
+	}
+	/* isdn card */
+	else if(controller == "isdn") {
+	    list drivers = card["isdn"]:[];
+	    one["drivers"] = drivers;
+	    one["sel_drv"] = 0;
+	    one["bus"] = card["bus"]:"";
+	    one["io"] = resource["io", 0, "start"]:0;
+	    one["irq"] = resource["irq", 0, "irq"]:0;
+	}
+	/* dsl card */
+	else if(controller == "dsl") {
+	    map driver_info = card["dsl", 0]:$[];
+	    map<string, string> translate_mode = $[
+		"capiadsl": "capi-adsl",
+		"pppoe": "pppoe",
+		];
+	    string m = driver_info["mode"]:"";
+	    one["pppmode"] = translate_mode[m]:m;
+	    // driver_info["name"]:"" has no use here??
+	}
+	/* treat the rest as a network card */
+	else if(controller != "") {
+	    // drivers:
+	    // Although normally there is only one module
+	    // (one=$[active:, module:, options:,...]), the generic
+	    // situation is: one or more driver variants (exclusive),
+	    // each having one or more modules (one[drivers])
+
+	    // only drivers that are not marked as broken (#97540)
+	    list drivers = filter (map d, (list<map>) card["drivers"]:[], {
+		// ignoring more modules per driver...
+		list module0 = d["modules", 0]:[]; // [module, options]
+		boolean brk = contains (broken_modules, module0[0]:"");
+		if (brk)
+		{
+		    y2milestone ("In BrokenModules, skipping: %1", module0);
+		}
+		return !brk;
+	    });
+	    
+	    if (drivers == [])
+	    {
+		y2milestone ("No good drivers found");
+		// #153235
+		// fail, unless we are in xen (it has the driver built in)
+		// or PPC (#bnc#361063)
+//		card_ok = Arch::is_xenU () || Arch::ppc();
+	    }
+	    else
+	    {
+		one["drivers"] = drivers;
+
+		map driver = drivers[0]:$[];
+		one["active"] = driver["active"]:false;
+		list module0 = driver["modules", 0]:[]; // [module, options]
+		one["module"] = module0[0]:"";
+		one["options"] = module0[1]:"";
+	    }
+
+	    /* FIXME: this should be also done for modems and others */
+	    /* FIXME: #13571 */
+	    string hp = card["hotplug"]:"";
+	    if(hp == "pcmcia" || hp == "cardbus")
+		one["hotplug"] = "pcmcia";
+	    else if(hp == "usb")
+		one["hotplug"] = "usb";
+
+	    /* store the BUS type */
+	    string bus = card["bus_hwcfg"]:(card["bus"]:"");
+	    if(bus == "PCI") bus = "pci";
+	    else if(bus == "USB") bus = "usb";
+	    else if(bus == "Virtual IO") bus = "vio";
+	    one["bus"] = bus;
+
+	    one["busid"] = card["sysfs_bus_id"]:"";
+	    one["mac"] = resource["hwaddr", 0, "addr"]:"";
+	    // is the cable plugged in? nil = don't know
+	    one["link"] = resource["link", 0, "state"]:nil;
+
+	    // Wireless Card Features
+	    one["wl_channels"]    = resource["wlan", 0, "channels"]:nil;
+	    //one["wl_frequencies"] = resource["wlan", 0, "frequencies"]:nil;
+	    one["wl_bitrates"]    = resource["wlan", 0, "bitrates"]:nil;
+	    one["wl_auth_modes"]  = resource["wlan", 0, "auth_modes"]:nil;
+	    one["wl_enc_modes"]   = resource["wlan", 0, "enc_modes"]:nil;
+	}
+
+	y2debug("found device: %1", one);
+	if (card_ok) {
+	    Hardware[size(Hardware)] = one;
+	    num = num + 1;
+	}
+	else {
+	    y2milestone ("Filtering out: %1", card);
+	}
+    });
+
+    /* if there is wlan, put it to the front of the list */
+    // that's because we want it proposed and currently only one card
+    // can be proposed
+    boolean found = false;
+    integer i = 0;
+    foreach (map h, Hardware, {
+	if (h["type"]:"" == "wlan")
+	{
+	    found = true;
+	    break;
+	}
+	i = i + 1;
+    });
+    if (found)
+    {
+	map temp = Hardware[0]:$[];
+	Hardware[0] = Hardware[i]:$[];
+	Hardware[i] = temp;
+	// adjust mapping: #98852, #102945
+	Hardware[0, "num"] = 0;
+	Hardware[i, "num"] = i;
+    }
+
+    y2debug("Hardware=%1", Hardware);
+    return Hardware;
+}
+
+boolean validPrefixOrNetmask(string val){
+
+ boolean valid_mask=false;
+ if (Netmask::Check4(val)) valid_mask=true;
+  else
+   if (regexpmatch(val, "^/[[:digit:]]{1,2}$") && tointeger(substring(val, 1))<=32) valid_mask=true;
+    else
+     if (Netmask::Check6(val)) valid_mask=true;
+      else
+       if (regexpmatch(val, "^/[[:digit:]]{1,3}$") && tointeger(substring(val, 1))<=128) valid_mask=true;
+ return valid_mask;
+}
+
+
+/**
+ * Check if we're running in "normal" stage with NM
+ * see bnc#433084
+ * if listed any items, disable them, if show_popup, show warning popup
+ */
+
+boolean disableItemsIfNM(list<any> items, boolean show_popup){
+ boolean disable=true;
+ if (Mode::normal() && NetworkService::IsManaged()){
+  foreach(any w, items, {
+   UI::ChangeWidget(`id(w), `Enabled, false);
+  });
+  if (show_popup)
+  {
+    Popup::Warning( _("Network is currently controlled by NetworkManager and its settings 
+cannot be edited by YaST.\n
+To edit the settings, use NetworkManager connection editor, or
+switch the network setup method to Traditional method with ifup."));
+     UI::FakeUserInput ($["ID": "global"]);
+  }
+ } else disable=false;
+ return disable;
+}
+
+/* EOF */
+}

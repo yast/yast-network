@@ -1,0 +1,22 @@
+{
+
+// testedfiles: complex.ycp Testsuite.ycp
+    import "Testsuite";
+    map READ = $[
+        "target" : $[
+            "tmpdir" : "/tmp",
+            "stat" : $[],
+        ],
+    ];
+    Testsuite::Init ([READ], 0);
+
+map Devs = $[];
+include "network/complex.ycp";
+
+list<map> Hardware = [ $["bus":"pci", "busid":"1234", "name":"hwtest"] ];
+
+Testsuite::Dump("HardwareName");
+Testsuite::Test(``(HardwareName(Hardware, "")), [], nil);
+Testsuite::Test(``(HardwareName(Hardware, "bus-pci-1234")), [], nil);
+
+}
