@@ -1,0 +1,62 @@
+/**
+ * File:	clients/modem.ycp
+ * Package:	Network configuration
+ * Summary:	Modems main file
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Main file for modem configuration.
+ * Uses all other files.
+ */
+
+{
+
+textdomain "network";
+
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("Modem module started");
+
+import "GetInstArgs";
+import "Mode";
+import "CommandLine";
+
+ include "network/modem/wizards.ycp";
+
+
+/* is this proposal or not? */
+boolean propose = false;
+list args = WFM::Args();
+if(size(args) > 0) {
+    if(is(WFM::Args(0), path) && WFM::Args(0) == .propose) {
+	y2milestone("Using PROPOSE mode");
+	propose = true;
+    }
+   // Bugzilla #269899, CommanLine "support"
+   // argmap is only a map, CommandLine uses string parameters
+   if (size (GetInstArgs::argmap()) == 0 && size (WFM::Args()) > 0 && !propose) {
+       Mode::SetUI ("commandline");
+       y2milestone ("Mode CommandLine not supported, exiting...");
+       // TRANSLATORS: error message - the module does not provide command line interface
+       CommandLine::Print(_("There is no user interface available for this module."));
+       return nil;
+   }
+    else
+	y2error("Bad argument for modem: %1", WFM::Args(0));
+}
+
+/* main ui function */
+any ret = nil;
+
+if(propose) ret = ModemAutoSequence();
+else ret = ModemSequence();
+y2debug("ret == %1", ret);
+
+/* Finish */
+y2milestone("Modem module finished");
+y2milestone("----------------------------------------");
+return ret;
+
+/* EOF */
+}

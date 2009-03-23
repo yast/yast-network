@@ -1,0 +1,4 @@
+Dump	DeviceName
+Return	
+Return	hwmodel
+Return	hwvendor hwdevice
