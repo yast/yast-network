@@ -1,0 +1,26 @@
+/**
+ * File:	cfg_slmodemd.scr
+ * Summary:	Agent for reading/writing /etc/sysconfig/slmodemd
+ * Author:	Michal Svec <msvec@suse.cz>
+ * Access:	read / write
+ *
+ * Example:
+ *   Dir(.sysconfig.slmodemd)
+ *   (["HTTP_PROXY"])
+ **
+ *   Read(.sysconfig.slmodemd.HTTP_PROXY)
+ *   ("yes")
+ **
+ *   Write(.sysconfig.slmodemd.HTTP_PROXY, "ppp")
+ *   (true)
+ *
+ * $Id$
+ *
+ * Read/Sets the values defined in <tt>/etc/sysconfig/slmodemd</tt>
+ * in an easy manner.
+ */
+.sysconfig.slmodemd
+
+`ag_ini(
+    `SysConfigFile("/etc/sysconfig/slmodemd")
+)
