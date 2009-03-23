@@ -1,0 +1,220 @@
+/**
+ * File:	clients/proxy.ycp
+ * Package:	Network configuration
+ * Summary:	Proxy client
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Main file for proxy configuration.
+ * Uses all other files.
+ */
+
+{
+
+textdomain "network";
+
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("Proxy module started");
+
+import "CommandLine";
+import "Label";
+import "Proxy";
+import "Wizard";
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+define boolean Modified() {
+    return Proxy::modified;
+}
+
+any ProxyGUI() {
+    include "network/runtime.ycp";
+    include "network/services/proxy.ycp";
+
+    Proxy::Read ();
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("proxy");
+    Wizard::SetNextButton(`next, Label::FinishButton() );
+
+    /* main ui function */
+    any ret = ProxyMainDialog(true);
+    y2debug("ret == %1", ret);
+    
+    if (ret == `next && Modified ())
+	Proxy::Write();
+    
+    UI::CloseDialog();
+
+    return ret;
+}
+
+boolean EnableHandler (map<string, string> options)
+{
+    Proxy::enabled = true;
+    Proxy::modified = true;
+    return true;
+}
+
+boolean DisableHandler (map<string, string> options)
+{
+    Proxy::enabled = false;
+    Proxy::modified = true;
+    return true;
+}
+
+boolean SetHandler(map<string, string> options)
+{
+    boolean clear = haskey (options, "clear");
+
+    // TODO: maybe we should validate the values
+    foreach (string option, string value, options, {
+	switch (option) {
+	    case "http" :
+		y2milestone ("Setting HTTP proxy to '%1'", clear ? "" : option);
+		Proxy::http = clear ? "" : value;
+		Proxy::modified = true;
+		break;
+	    case "https" :
+		y2milestone ("Setting HTTPS proxy to '%1'", clear ? "" : option);
+		Proxy::https = clear ? "" : value;
+		Proxy::modified = true;
+		break;
+	    case "ftp" :
+		y2milestone ("Setting FTP proxy to '%1'", clear ? "" : option);
+		Proxy::ftp = clear ? "" : value;
+		Proxy::modified = true;
+		break;
+	    case "noproxy" :
+		y2milestone ("Setting NO proxy to '%1'", clear ? "" : option);
+		Proxy::no = clear ? "" : value;
+		Proxy::modified = true;
+		break;
+	}
+    });
+
+    return true;
+}
+
+boolean AuthHandler(map<string, string> options)
+{
+    if ( haskey (options, "clear") ) {
+	Proxy::user = "";
+	Proxy::pass = "";
+    }
+    else
+    {
+	Proxy::user = options["username"]:"";
+	Proxy::pass = options["password"]:nil;
+	
+	if (Proxy::pass == nil)
+	{
+	    // ask the user
+	    
+	    // translators: command line prompt for entering a password
+	    Proxy::pass = CommandLine::PasswordInput (_("Password:"));
+	}
+    }
+    return true;
+}
+
+boolean SummaryHandler (map<string, string> options)
+{
+    import "RichText";
+
+    CommandLine::Print (RichText::Rich2Plain (Proxy::Summary ()));
+    return true;
+}
+
+map cmdline = $[
+    /* Commandline help title */
+    "help"      : _("Proxy Configuration"),
+    "id"        : "proxy",
+    "guihandler": ProxyGUI,
+    "initialize": Proxy::Read,
+    "finish"    : Proxy::Write,
+    "actions"   : $[
+	"enable" : $[
+	    /* command-line help */
+	    "help" : _("Enable proxy settings"),
+	    "handler" : EnableHandler,
+	],
+	"disable" : $[
+	    /* command-line help */
+	    "help" : _("Disable proxy settings"),
+	    "handler" : DisableHandler,
+	],
+	"set" : $[
+	    /* command-line help */
+	    "help" : _("Change the current proxy settings"),
+	    "handler" : SetHandler,
+	],
+	"authentication" : $[
+	    /* command-line help */
+	    "help" : _("Set the authentication for proxy"),
+	    "handler" : AuthHandler,
+	],
+	"summary" : $[
+	    /* command-line help */
+	    "help" : _("Show the summary of the current settings"),
+	    "handler" : SummaryHandler,
+	],
+    ],
+    "options" : $[
+	"http": $[
+	    /* command-line option help */
+	    "help" : _("Set HTTP proxy"),
+	    "type" : "string",
+	],
+	"https" : $[
+	    /* command-line option help */
+	    "help" : _("Set HTTPS proxy"),
+	    "type" : "string",
+	],
+	"ftp" : $[
+	    /* command-line option help */
+	    "help" : _("Set FTP proxy"),
+	    "type" : "string",
+	],
+	"clear" : $[
+	    /* command-line option help */
+	    "help" : _("Clear all options listed"),
+	],
+	"noproxy" : $[
+	    /* command-line option help */
+	    "help" : _("Set domains for not using the proxy settings"),
+	    "type" : "string",
+	],
+	"username" : $[
+	    /* command-line option help */
+	    "help" : _("The username to be used for proxy authentication"),
+	    "type" : "string",
+	],
+	"password" : $[
+	    /* command-line option help */
+	    "help" : _("The password to be used for proxy authentication"),
+	    "type" : "string",
+	],
+    ],
+    "mappings" : $[
+	"enable" : [],
+	"disable" : [],
+	"summary" : [],
+	"set" : [ "http", "https", "ftp", "noproxy", "clear" ],
+	"authentication" : [ "username", "password", "clear" ],
+    ],
+];
+
+any ret = CommandLine::Run(cmdline);
+
+/* Finish */
+y2milestone("Proxy module finished");
+y2milestone("----------------------------------------");
+return ret;
+
+/* EOF */
+}

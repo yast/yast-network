@@ -1,0 +1,171 @@
+#!/usr/bin/perl -w
+package ag_udev_persistent;
+BEGIN { push( @INC, '/usr/share/YaST2/modules/' ); }
+use ycp;
+use YaST::SCRAgent;
+use YaPI;
+textdomain "network";
+our @ISA = ("YaST::SCRAgent");
+
+use strict;
+
+my $net_file = "/etc/udev/rules.d/70-persistent-net.rules";
+my $drivers_file = "/etc/udev/rules.d/79-yast2-drivers.rules";
+my @net_comment = ();
+my @drivers_comment = ();
+
+sub set_rules_comment(){
+ my $class = shift;
+ my $pointer = \@_;
+ @net_comment = @{$$pointer[0]};
+}
+
+sub parse_net_rules {
+    my $class = shift;
+    my %hash_table = ();
+
+    if( open( FILE, "< $net_file" ) ) {
+        while( my $line = <FILE> ) {
+
+	 # remove '\n' and space before delimiter ','
+	 chomp($line);
+	 $line =~ s/, /,/g;
+
+	 if ( $line =~ /^#/ ) { push(@net_comment, $line); }
+	   else {
+		if ($line =~ /,/ )
+		 {
+		  my @cols = split(",", $line);
+		  my (undef, $device) =  split("=", $cols[$#cols]);
+		  $device =~ s/\"//g;
+		  $hash_table{ $device } = \@cols; 
+		 }
+		}
+        }
+        close(FILE);
+    } else {
+        return $class->SetError(summary => sprintf( _("opening %s failed: %s"),$net_file, $!),
+                                code    => "OPEN_FAILED");
+    }
+
+    return \%hash_table;
+}
+
+sub parse_drivers_rules {
+    my $class = shift;
+    my %hash_table = ();
+
+    if( open( FILE, "< $drivers_file" ) ) {
+        while( my $line = <FILE> ) {
+
+	 # remove '\n' and space before delimiter ','
+	 chomp($line);
+	 $line =~ s/, /,/g;
+
+	 if ( $line =~ /^#/ ) { push(@drivers_comment, $line); }
+	   else {
+		if ($line =~ /,/ )
+		 {
+		  my @cols = split(",", $line);
+		  my (undef, $device) =  split("==", $cols[0]);
+		  $device =~ s/\"//g;
+		  $hash_table{ $device } = \@cols; 
+		 }
+		}
+        }
+        close(FILE);
+    } else {
+        return $class->SetError(summary => sprintf( _("opening %s failed: %s"),$drivers_file, $!),
+                                code    => "OPEN_FAILED");
+    }
+
+    return \%hash_table;
+}
+
+sub write_drivers_rules(){
+ my $class = shift;
+ my $param = \@_;
+ my %hash = %{$$param[0]};
+
+ my @output = ();
+ foreach my $row (@drivers_comment){
+  push (@output, $row."\n");
+ }
+ foreach my $key (keys %hash){
+  my $row = join(', ', @{$hash{$key}});
+  push(@output, $row."\n");
+
+ }
+
+
+ if( open( FILE, "> $drivers_file" ) ) {
+   print FILE @output;
+ } else {
+         return $class->SetError(summary => sprintf( _("saving %s failed: %s"),$drivers_file, $!),
+                                code    => "OPEN_FAILED");
+        }
+}
+
+
+sub write_net_rules(){
+ my $class = shift;
+ my $param = \@_;
+
+ my @output = ();
+ foreach my $row (@net_comment, @{$$param[0]}){
+  push (@output, $row."\n");
+ }
+
+ if( open( FILE, "> $net_file" ) ) {
+   print FILE @output;
+ } else {
+         return $class->SetError(summary => sprintf( _("saving %s failed: %s"),$net_file, $!),
+                                code    => "OPEN_FAILED");
+        }
+}
+
+sub Execute {
+    my $class = shift;
+    my ($path, @args) = @_;
+
+    return 1;
+}
+
+
+sub Read {
+    my $class = shift;
+    my ($path, @args) = @_;
+    if ($path eq '.net'){
+        return $class->parse_net_rules();
+	}
+    elsif ($path eq '.drivers'){
+           return $class->parse_drivers_rules();
+	  }
+}
+
+sub Write {
+    my $class = shift;
+    my ($path, @args) = @_;
+    if ($path eq '.drivers'){
+           return $class->write_drivers_rules($args[0]);
+	  }
+    if ($path eq '.rules'){
+           return $class->write_net_rules($args[0]);
+	  }
+    if ($path eq '.rules_comment'){
+           return $class->set_rules_comment($args[0]);
+	  }
+
+     if ($path eq '.nil'){
+ 	   close FILE;
+ 	   return 0;
+           }
+}
+
+sub Dir {
+}
+
+package main;
+
+ag_udev_persistent->Run ();
+
