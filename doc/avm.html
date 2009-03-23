@@ -1,0 +1,192 @@
+This is the desctiption of hardware sent to Prague by AVM in November 2004. The
+numbers (avm-2000-xxxx) refer to Artikel-Nr. near the barcode on the boxes.
+
+<h3>dsl-isdn-avm-2000-1619</h3>
+
+Hwinfo and YaST detect it as ISDN.
+
+<pre>16: PCI 09.0: 10300 ISDN Adapter
+  [Created at pci.243]
+  Unique ID: WL76.sPKw5MDkHpA
+  SysFS ID: /devices/pci0000:00/0000:00:09.0
+  SysFS BusID: 0000:00:09.0
+  Hardware Class: isdn adapter
+  Model: "AVM FRITZ!Card DSL v2.0"
+  Vendor: pci 0x1244 "AVM Audiovisuelles MKTG & Computer System GmbH"
+  Device: pci 0x2900 
+  SubVendor: pci 0x1244 "AVM Audiovisuelles MKTG & Computer System GmbH"
+  SubDevice: pci 0x2900 
+  Revision: 0x02
+  Driver: "fcdsl2"
+  Memory Range: 0xf2800000-0xf2bfffff (rw,prefetchable)
+  Memory Range: 0xf2000000-0xf27fffff (rw,non-prefetchable)
+  I/O Ports: 0x6c00-0x6c0f (rw)
+  IRQ: 9 (no events)
+  Requires: kernel-nongpl, avm_fcdsl, capi4linux, i4l-base, i4l-isdnlog
+  Driver Info #0:
+    I4L Type: 8004/3 [AVM FRITZ!Card DSL v2.0]
+  Config Status: cfg=yes, avail=yes, need=no, active=unknown
+</pre>
+
+<h3>dsl-sl-avm-2000-1611</h3>
+
+New in YaST: detected as DSL.
+
+<pre>07: PCI 09.0: 11402 Network controller
+  [Created at pci.243]
+  Unique ID: WL76.IDXtufUoD50
+  SysFS ID: /devices/pci0000:00/0000:00:09.0
+  SysFS BusID: 0000:00:09.0
+  Hardware Class: DSL adapter
+  Model: "AVM FRITZ!Card DSL SL"
+  Vendor: pci 0x1244 "AVM Audiovisuelles MKTG & Computer System GmbH"
+  Device: pci 0x2700 "Fritz!Card DSL SL"
+  SubVendor: pci 0x1244 "AVM Audiovisuelles MKTG & Computer System GmbH"
+  SubDevice: pci 0x2700 
+  Revision: 0x02
+  Memory Range: 0xf2800000-0xf2bfffff (rw,prefetchable)
+  Memory Range: 0xf2000000-0xf27fffff (rw,non-prefetchable)
+  I/O Ports: 0x6c00-0x6c0f (rw)
+  IRQ: 9 (no events)
+  Requires: kernel-nongpl, avm_fcdsl, capi4linux, i4l-base
+  Driver Info #0:
+    DSL Mode: capiadsl
+    Driver: fcdslsl
+  Config Status: cfg=new, avail=yes, need=no, active=unknown
+</pre>
+
+<h3>dsl-usb-avm-2000-1627</h3>
+<pre>05: USB 00.0: 0000 Unclassified device
+  [Created at usb.118]
+  Unique ID: ADDn.FGWFNUuF0w8
+  Parent ID: k4bc.1Z2mRNfvkDF
+  SysFS ID: /devices/pci0000:00/0000:00:07.2/usb1/1-1/1-1:1.0
+  SysFS BusID: 1-1:1.0
+  Hardware Class: unknown
+  Model: "AVM USB DSL Device"
+  Hotplug: USB
+  Vendor: usb 0x057c "AVM GmbH"
+  Device: usb 0x3000 "USB DSL Device"
+  Revision: "1.04"
+  Serial ID: "00783501"
+  Speed: 1.5 Mbps
+  Config Status: cfg=new, avail=yes, need=no, active=unknown
+  Attached to: #4 (Hub)
+</pre>
+
+<h3>dsl-usb-avm-2000-1655</h3>
+<pre>05: USB 00.0: 11401 DSL Card
+  [Created at usb.118]
+  Unique ID: ADDn.Btypm3ougH1
+  Parent ID: k4bc.1Z2mRNfvkDF
+  SysFS ID: /devices/pci0000:00/0000:00:07.2/usb1/1-1/1-1:1.0
+  SysFS BusID: 1-1:1.0
+  Hardware Class: DSL adapter
+  Model: "AVM FRITZ!Box"
+  Hotplug: USB
+  Vendor: usb 0x057c "AVM GmbH"
+  Device: usb 0x3702 "USB DSL Device"
+  Revision: "1.00"
+  Driver: "usbnet"
+  Device File: /dev/ttyACM0
+  Speed: 1.5 Mbps
+  Requires: ppp, smpppd
+  Driver Info #0:
+    DSL Mode: pppoe
+    Driver: usbnet
+  Config Status: cfg=new, avail=yes, need=no, active=unknown
+  Attached to: #4 (Hub)
+</pre>
+
+<h3>isdn-avm-2000-1332</h3>
+<pre>16: PCI 09.0: 10300 ISDN Adapter
+  [Created at pci.243]
+  Unique ID: WL76.8twkxmoMQ3C
+  SysFS ID: /devices/pci0000:00/0000:00:09.0
+  SysFS BusID: 0000:00:09.0
+  Hardware Class: isdn adapter
+  Model: "AVM FRITZ!Card PCI"
+  Vendor: pci 0x1244 "AVM Audiovisuelles MKTG & Computer System GmbH"
+  Device: pci 0x0a00 "A1 ISDN [Fritz]"
+  SubVendor: pci 0x1244 "AVM Audiovisuelles MKTG & Computer System GmbH"
+  SubDevice: pci 0x0a00 "FRITZ!Card ISDN Controller"
+  Revision: 0x02
+  Driver: "fcpci"
+  Memory Range: 0xf2008000-0xf200801f (rw,non-prefetchable)
+  I/O Ports: 0x6c00-0x6c1f (rw)
+  IRQ: 9 (8573 events)
+  Requires: kernel-nongpl, capi4linux, i4l-base, i4l-isdnlog
+  Driver Info #0:
+    I4L Type: 8002/1 [AVM FRITZ!Card PCI]
+  Driver Info #1:
+    I4L Type: 27/1 [AVM FRITZ!Card PCI]
+  Config Status: cfg=yes, avail=yes, need=no, active=unknown
+</pre>
+
+<h3>isdn-avm-2000-1700</h3>
+<pre>16: PCI 0a.0: 10300 ISDN Adapter
+  [Created at pci.243]
+  Unique ID: bSAa.GGXqL9GEYV1
+  SysFS ID: /devices/pci0000:00/0000:00:0a.0
+  SysFS BusID: 0000:00:0a.0
+  Hardware Class: isdn adapter
+  Model: "AVM FRITZ!Card PCI v2.0"
+  Vendor: pci 0x1244 "AVM Audiovisuelles MKTG & Computer System GmbH"
+  Device: pci 0x0e00 "Fritz!PCI v2.0 ISDN"
+  SubVendor: pci 0x1244 "AVM Audiovisuelles MKTG & Computer System GmbH"
+  SubDevice: pci 0x0e00 
+  Revision: 0x02
+  Driver: "fcpci"
+  Memory Range: 0xf2008000-0xf200801f (rw,non-prefetchable)
+  I/O Ports: 0x6c00-0x6c1f (rw)
+  IRQ: 9 (14 events)
+  Requires: kernel-nongpl, capi4linux, i4l-base, i4l-isdnlog
+  Driver Info #0:
+    I4L Type: 8002/2 [AVM FRITZ!Card PCI v2.0]
+  Driver Info #1:
+    I4L Type: 1000/0 [AVM FRITZ!Card PCI v2.0]
+  Config Status: cfg=no, avail=yes, need=no, active=unknown
+</pre>
+
+<h3>isdn-b1-avm-2000-1445</h3>
+<pre>16: PCI 09.0: 10300 ISDN Adapter
+  [Created at pci.243]
+  Unique ID: WL76.gaD24FG1U99
+  SysFS ID: /devices/pci0000:00/0000:00:09.0
+  SysFS BusID: 0000:00:09.0
+  Hardware Class: isdn adapter
+  Model: "AVM B1 PCI"
+  Vendor: pci 0x1244 "AVM Audiovisuelles MKTG & Computer System GmbH"
+  Device: pci 0x0700 "B1 ISDN"
+  Revision: 0x01
+  Memory Range: 0xf2008000-0xf200803f (rw,non-prefetchable)
+  I/O Ports: 0x6c00-0x6c3f (rw)
+  I/O Ports: 0x7000-0x701f (rw)
+  IRQ: 9 (no events)
+  Requires: capi4linux, i4l-base, i4l-isdnlog, i4lfirm
+  Driver Info #0:
+    I4L Type: 8001/1 [AVM B1 PCI]
+  Config Status: cfg=no, avail=yes, need=no, active=unknown
+</pre>
+
+<h3>isdn-usb-avm-2000-1590</h3>
+<pre>05: USB 00.0: 10300 ISDN Adapter
+  [Created at usb.118]
+  Unique ID: ADDn.FC71YnSrDeA
+  Parent ID: k4bc.1Z2mRNfvkDF
+  SysFS ID: /devices/pci0000:00/0000:00:07.2/usb1/1-1/1-1:1.0
+  SysFS BusID: 1-1:1.0
+  Hardware Class: isdn adapter
+  Model: "AVM FRITZ!X USB v3.0"
+  Hotplug: USB
+  Vendor: usb 0x057c "AVM GmbH"
+  Device: usb 0x2000 "USB ISDN-Connector"
+  Revision: "3.02"
+  Speed: 1.5 Mbps
+  Requires: kernel-nongpl, capi4linux, i4l-base, i4l-isdnlog
+  Driver Info #0:
+    I4L Type: 8003/8 [AVM FRITZ!X USB v3.0]
+  Config Status: cfg=yes, avail=yes, need=no, active=unknown
+  Attached to: #4 (Hub)
+</pre>
+
