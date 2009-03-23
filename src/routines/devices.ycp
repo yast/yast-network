@@ -1,0 +1,127 @@
+/**
+ * File:	include/network/devices.ycp
+ * Package:	Network configuration
+ * Summary:	Device manipulation functions
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * All config settings are stored in a global variable Devices.
+ * Deleted devices are in the global list DeletedDevices.
+ *
+ * NOTE: do NOT use this include, it's OBSOLETE!
+ * It's used only in ISDN.
+ */
+
+{
+
+textdomain "network";
+
+import "Map";
+import "NetworkInterfaces";
+
+/**
+ * Compute free devices
+ * @param type device type
+ * @param num how many free devices return
+ * @return num of free devices
+ * @example GetFreeDevices("eth", 2) -&gt; [ 1, 2 ]
+ */
+global define list<string> GetFreeDevices(string type, integer num) ``{
+    y2debug("Devices=%1", Devices);
+    y2debug("type,num=%1,%2", type, num);
+    y2debug("Devices[%1]=%2", type, Devices[type]:$[]);
+
+    list curdevs = Map::Keys(Devices[type]:$[]);
+    y2debug("curdevs=%1", curdevs);
+
+    integer i = 0;
+    integer count = 0;
+    list<string> ret = [];
+
+    /* Hotpluggable devices */
+    if(NetworkInterfaces::IsHotplug(type) && !contains(curdevs, "")) {
+	y2debug("Added simple hotplug device");
+	count = count + 1;
+	ret = add(ret, "");
+    }
+
+    /* Remaining numbered devices */
+    while(count < num) {
+	string ii = sformat("%1", i);
+	if(!contains(curdevs, sformat("%1%2", type,ii))) {
+	    ret = add(ret, ii);
+	    count = count + 1;
+	}
+	i = i + 1;
+    }
+
+    y2debug("Free devices=%1", ret);
+    return ret;
+}
+
+/**
+ * Return free device
+ * @param type device type
+ * @return free device
+ * @example GetFreeDevice("eth") -&gt; "1"
+ */
+global define string GetFreeDevice(string type) ``{
+    y2debug("type=%1", type);
+    string ret = GetFreeDevices(type, 1)[0]:nil;
+    if(ret == nil) y2error("Free device location error: %1", ret);
+    y2debug("Free device=%1", ret);
+    return ret;
+}
+
+/**
+ * Update Devices map
+ * @param type device type
+ * @param device device number
+ * @param newdev new device map
+ * @param check if check if device already exists
+ * @return true if success
+ */
+global define boolean ChangeDevice(string type, string device, map newdev, boolean check) ``{
+    y2debug("ChangeDevice(%1,%2,%3,%4)", type, device, newdev, check);
+    y2debug("Devices=%1", Devices);
+    map devmap = Devices[type]:$[];
+    string dev = sformat("%1", device);
+
+    if(check && haskey(devmap, dev)) {
+	y2error("Key already present: %1(%2)", dev, type);
+	return false;
+    }
+    devmap[dev] = newdev;
+    Devices[type] = devmap;
+    y2debug("Devices=%1", Devices);
+    return true;
+}
+
+/**
+ * Delete a device from Devices map
+ * @param type device type
+ * @param dev device number
+ * @return true if success
+ */
+global define boolean DeleteDevice(string type, string dev) ``{
+    y2debug("Devices=%1", Devices);
+    y2debug("DeletedDevices=%1", DeletedDevices);
+
+    map devmap = Devices[type]:$[];
+    if(!haskey(devmap, dev)) {
+	y2error("Key not found: %1(%2)", dev, type);
+	return false;
+    }
+    //remove(devmap, dev);
+    devmap = remove(devmap, dev);
+    Devices[type] = devmap;
+    DeletedDevices = add(DeletedDevices, dev);
+
+    y2debug("Devices=%1", Devices);
+    y2debug("DeletedDevices=%1", DeletedDevices);
+    return true;
+}
+
+/* EOF */
+}
