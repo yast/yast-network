@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 24 14:41:57 CET 2009 - mzugec@suse.cz
+
+- tun/tap device - don't remove default gw (bnc#483233)
+- 2.18.22 
+
+-------------------------------------------------------------------
 Tue Mar 24 09:30:03 CET 2009 - mzugec@suse.cz
 
 - improved WPA items description (bnc#481509)

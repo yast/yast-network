@@ -757,6 +757,13 @@ define any AddressDialog() {
 	"IFCFGTYPE": LanItems::type,
 	"IFCFGID": LanItems::device,
 	];
+
+    string drvtype = DriverType (settings["IFCFGTYPE"]:"");
+
+    boolean is_ptp = drvtype == "ctc" || drvtype == "iucv";
+    // TODO: dynamic for dummy. or add dummy from outside?
+    boolean no_dhcp = is_ptp || settings["IFCFGTYPE"]:"" == "dummy" || LanItems::alias != "";
+
     if (contains(["tun", "tap"], LanItems::type))
     {
       settings = $[
@@ -767,15 +774,9 @@ define any AddressDialog() {
 	"TUNNEL_SET_OWNER" : LanItems::tunnel_set_owner,
 	"TUNNEL_SET_GROUP" : LanItems::tunnel_set_group
 	];
+    } else {
+	if(settings["BOOTPROTO"]:"" == "static" && settings["IPADDR"]:"" == "" && !no_dhcp) settings["BOOTPROTO"] = "dhcp";
     }
-
-    string drvtype = DriverType (settings["IFCFGTYPE"]:"");
-
-    boolean is_ptp = drvtype == "ctc" || drvtype == "iucv";
-    // TODO: dynamic for dummy. or add dummy from outside?
-    boolean no_dhcp = is_ptp || settings["IFCFGTYPE"]:"" == "dummy" || LanItems::alias != "";
-
-    if(settings["BOOTPROTO"]:"" == "static" && settings["IPADDR"]:"" == "" && !no_dhcp) settings["BOOTPROTO"] = "dhcp"; 
 
     // #65524
     if (LanItems::operation == `add && force_static_ip)
