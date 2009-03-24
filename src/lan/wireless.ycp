@@ -176,9 +176,9 @@ list<term> AuthModeItems (list<string> authmodes) {
 	"sharedkey": _("WEP - Shared Key"),
 	/* ComboBox item */
 	// Ask me what it means, I don't know yet
-	"wpa-psk": _("WPA-PSK"),
+	"wpa-psk": _("WPA-PSK (WPA version 1 or 2)"),
 	/* ComboBox item */
-	"wpa-eap": _("WPA-EAP"),
+	"wpa-eap": _("WPA-EAP (WPA version 1 or 2)"),
 	];
     map <string, string> ids = $["wpa-psk": "psk", "wpa-eap": "eap"];
     if (authmodes == nil)
