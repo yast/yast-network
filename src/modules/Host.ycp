@@ -1,0 +1,345 @@
+/**
+ * File:	modules/Host.ycp
+ * Package:	Network configuration
+ * Summary:	Hosts data (/etc/hosts)
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+module "Host";
+textdomain "network";
+
+import "Hostname";
+import "NetworkConfig";
+import "String";
+import "Summary";
+
+include "network/routines.ycp";
+
+/**
+ * All hosts
+ * See hosts(5)
+ * keys: IPs, (But #35671 suggests that repeating IPs is valid)
+ * values: names, the first one is the canonical one
+ */
+global map<string, list<string> > hosts = $[];
+
+/**
+ * Data was modified?
+ */
+global boolean modified = false;
+
+/**
+ * Should static hostname be written to /etc/hosts?
+ */
+boolean write_hostname = true;
+
+/**
+ * All hosts read at the start
+ */
+map<string,any> hosts_init = $[];
+
+/**
+ * "hosts" file location
+ */
+string hosts_file = "/etc/hosts";
+
+/**
+ * Only write configuration
+ */
+global boolean write_only = false;
+
+boolean initialized = false;
+
+global boolean WriteHostname()
+{
+    return write_hostname;
+}
+
+global void SetWriteHostname( boolean w)
+{
+    write_hostname = w;
+}
+
+/**
+ * Read hosts settings
+ * @return true if success
+ */
+global define boolean Read() {
+
+    if(initialized == true) return true;
+
+    /* read /etc/hosts */
+    if(SCR::Read(.target.size, hosts_file) > 0) {
+	list<string> hostlist = SCR::Dir(.etc.hosts);
+	hosts = listmap(string host, hostlist, {
+	    list <string> names = (list <string>) SCR::Read(topath(sformat(".etc.hosts.\"%1\"", host)));
+	    if (names != [])
+	        return $[ host: names ];
+	});
+    }
+
+    /* save hosts to check for changes later */
+    hosts_init = hosts;
+
+    y2debug("hosts=%1", hosts);
+    initialized = true;
+    return true;
+}
+
+/**
+ * Write hosts settings and apply changes
+ * @return true if success
+ */
+global define boolean Write() {
+
+    y2milestone("Writing configuration");
+
+    if(!modified) {
+	y2milestone("No changes to Host -> nothing to write");
+	return true;
+    }
+
+    /* Check if there is anything to do */
+    if(hosts_init == hosts) {
+	y2milestone("Hosts not modified");
+	return true;
+    }
+
+    list <string> steps = [
+	_("Update /etc/hosts"),
+    ];
+
+    string caption = _("Saving Hostname Configuration");
+    integer sl = 500; //sleep for longer time, so that progress does not disappear right afterwards
+
+    Progress::New(caption, " ", size(steps), steps, [], "");
+
+    ProgressNextStage(_("Updating /etc/hosts ..."));
+
+    /* Create if not exists, otherwise backup */
+    if(SCR::Read(.target.size, hosts_file) < 0)
+	SCR::Write(.target.string, hosts_file, "");
+    else
+	SCR::Execute(.target.bash, "/bin/cp "+hosts_file+" "+hosts_file+".YaST2save");
+
+    any ret = false;
+    if(hosts == $[] || hosts == nil)
+	/* Workaround bug [#4476] */
+	ret = SCR::Write(.target.string, hosts_file, "");
+    else {
+	/* Update the hosts config */
+	y2milestone("hosts=%1", hosts);
+	maplist(string ho, list<string> names, (map<string,list<string> >)hosts, {
+	    y2milestone("%1 (%2:%3)", ho, names, hosts_init[ho]:nil);
+	    SCR::Write(add(.etc.hosts, ho), names);
+	});
+	ret = true;
+    }
+
+    SCR::Write(.etc.hosts, nil);
+    sleep(sl);
+    Progress::NextStage();
+    return ret == true;
+}
+
+/**
+ * Get all the Hosts configuration from a map.
+ * When called by hosts_auto (preparing autoinstallation data)
+ * the map may be empty.
+ * @param settings autoinstallation settings
+ * @return true if success
+ */
+global define boolean Import(map settings) {
+    modified = true;
+
+    hosts = eval(settings["hosts"]:$[]);
+
+    //convert from old format to the new one
+    //use ::1 entry as a reference
+    if (size(hosts["::1"]:[]) > 1) {
+	foreach(string ip, list<string> hn, hosts, {
+	    hosts[ip] = [mergestring(hn," ")];
+	});
+    }
+    return true;
+}
+
+/**
+ * Dump the Hosts settings to a map, for autoinstallation use.
+ * @return autoinstallation settings
+ */
+global define map Export() {
+    if (size(hosts)>0)
+    {
+	//Filter out IPs with empty hostname (so that valid autoyast
+        //profile is created)(#335120)
+	hosts = filter ( string ip, list <string> names, hosts,{
+	    return (names != []);
+	});
+        return $[
+            "hosts": eval(hosts),
+        ];
+    } else {
+        return $[];
+    }
+}
+
+/**
+ * Return "system" predefined hosts (should be present all the time)
+ * @return list of system hosts
+ */
+global define list GetSystemHosts() {
+    return [
+	"127.0.0.1",
+	"::1", "fe00::0", "ff00::0", "ff02::1", "ff02::2", "ff02::3"
+    ];
+}
+
+/**
+ * Update hosts according to the current hostname
+ * (only one hostname, assigned to all IPs)
+ * @param hostname current hostname
+ * @param domain current domain name
+ * @param iplist localhost IP addresses
+ * @return true if success
+ */
+global define boolean Update(string oldhn, string newhn, list<string> iplist) {
+
+    list<string> ips = filter(string ip, iplist, {
+	return ip != "127.0.0.1";
+    });
+
+    y2milestone("Hosts: %1", hosts);
+    y2milestone("Updating /etc/hosts: %1 -> %2: %3", oldhn, newhn, ips);
+    modified = true;
+
+    string nick = Hostname::SplitFQ(newhn)[0]:"";
+    string oldnick = Hostname::SplitFQ(oldhn)[0]:"";
+
+    string oldhostname = "";
+    string oldhostip = "";
+
+    /* Read oldhostname entry */
+    list oldhost = [];
+    string ohentry = nil;
+    if(SCR::Read(.target.size, "/var/adm/SuSEconfig/oldhostentry") > 0)
+	ohentry = (string) SCR::Read(.target.string, "/var/adm/SuSEconfig/oldhostentry");
+    if(ohentry != nil)
+	oldhost = splitstring(ohentry, "\n");
+
+    if(size(oldhost) > 0)
+	oldhostname = String::CutBlanks(oldhost[0]:"");
+    if(size(oldhost) > 1)
+	oldhostip = String::CutBlanks(oldhost[1]:"");
+    y2milestone("oldhostname: '%1' : '%2'", oldhostname, oldhostip);
+
+    /* Remove old hostname from hosts */
+    if(haskey(hosts, oldhostip)) {
+	y2debug("Deleting: %1", oldhostip);
+	hosts = remove(hosts, oldhostip);
+    }
+    y2debug("Hosts: %1", hosts);
+
+    /* Add at least one hostname/ip */
+    // but do not overload localhost (#46715)
+    if (write_hostname) {
+	    if (size(ips) < 1 && nick != "localhost") {
+		y2milestone("Adding dummy 127.0.0.2 %1 entry", newhn);
+		// TODO #42102
+		hosts["127.0.0.2"] = [ newhn + " " + nick ];
+		y2milestone("Hosts: %1", hosts);
+		return true;
+	    }
+    }
+
+    /* Remove old hostname from hosts */
+//    list oldhnlist = [];
+    foreach (string ip, list<string> hs, hosts, {
+	list <list <string> > wrk = maplist(string s, hs, {
+	    return splitstring(s," ");
+	});
+	wrk = filter (list <string> lst, wrk, {
+	    return (!contains(lst, oldhn));
+        });
+
+        hosts[ip] = maplist(list <string> lst, wrk, {
+	    return mergestring(lst, " ");
+        });
+    });
+
+    /* Resurect the rest of oldhnlist without old hostname */
+    // FIXME: maybe
+
+    /* Add localhost if missing */
+    if(!haskey(hosts, "127.0.0.1")) {
+	hosts["127.0.0.1"] = ["localhost"];
+    }
+
+    
+    /* Add hostname/ip for all ips */
+    boolean nickadded = false;
+    maplist(string ip, ips, {
+
+	/* Only add if not present yet */
+	//		if(haskey(hosts, ip)) return;
+	/* Omit some IP addresses */
+	if(ip == "" || ip == nil || ip == "127.0.0.1" ) return;
+
+	string name =  newhn ;
+	/* Add nick for the first one */
+	if(!nickadded && name != "")  {
+	    nickadded = true;
+	    name = newhn + " " +  nick;
+	}
+
+	hosts[ip] = add(hosts[ip]:[],name);
+
+    });
+
+    y2milestone("Hosts: %1", hosts);
+
+    return true;
+}
+
+/**
+ * Create summary
+ * @return summary text
+ */
+global define string Summary() {
+
+	string summary = "";
+	if(hosts == $[] )
+	    return Summary::NotConfigured();
+
+	summary = Summary::OpenList(summary);
+	foreach(string k, list<string> v, (map<string,list<string> >)hosts, {
+	    if(!contains(Host::GetSystemHosts(), k)) {
+		foreach(string hn, v, {
+		    summary = Summary::AddListItem(summary, k + " - " + hn );
+		});
+	    }
+	});
+	summary = Summary::CloseList(summary);
+	return summary;
+}
+
+/**
+ * Function which returns if the settings were modified
+ * @return boolean  settings were modified
+ */
+global define boolean GetModified () {
+    return modified;
+}
+/**
+ * Function sets internal variable, which indicates, that any
+ * settings were modified, to "true"
+ */
+global define void SetModified () {
+    modified = true;
+}
+/* EOF */
+}
