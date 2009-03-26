@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Mar 26 15:22:22 CET 2009 - mzugec@suse.cz
+
+- show PopupAbort only when data modified (bnc#458324)
+- 2.18.24 
+
+-------------------------------------------------------------------
 Thu Mar 26 10:49:19 CET 2009 - mzugec@suse.cz
 
 - don't allow to use networkmanager with bridged proposal (bnc#487419)

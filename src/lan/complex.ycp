@@ -452,8 +452,15 @@ symbol MainDialog(string init_tab) ``{
     Wizard::SetAbortButton(`abort, Label::CancelButton());
     Wizard::HideBackButton();
 
-    symbol ret = CWM::Run(w, $[`abort:ReallyAbort ]);
+    symbol ret = nil;
+    while(true){
+	ret = CWM::Run(w, $[]);
+	if (ret==`abort){
+	  if (LanItems::modified && !ReallyAbort()) continue;
+	  return ret;
+	}
     return ret;
+    }
 }
 
 
