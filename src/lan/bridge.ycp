@@ -1,0 +1,87 @@
+/**
+ * File:        include/network/lan/bridge.ycp
+ * Package:     Network configuration
+ * Summary:     Network card bridge configuration - logic
+ * Authors:     Michal Zugec <mzugec@suse.cz>
+ *
+ */
+
+{
+textdomain "network";
+
+
+/**
+ * Default function to init the value of devices attached to bridge (BRIDGE_PORTS).
+ * @param key	id of the widget
+ */
+void InitBridge(string key)
+{
+ string old_name=NetworkInterfaces::Name;
+ // old values (preselected values)
+ list<string> br_ports = splitstring( NetworkInterfaces::Current["BRIDGE_PORTS"]:"" , " ");
+ list items = createUnconfigured(br_ports);
+    // from all configured netcards filter 0.0.0.0 configurations
+    map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
+    if (contains(["br", "vlan"], devtype)) continue;
+    if (contains(["tun", "tap"], devtype)) {
+     foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+	string description = NetworkInterfaces::GetDevTypeDescription(devtype, true);
+        items = add (items, `item(`id(devname), sformat("%1 - %2",devname, description), contains(br_ports, devname)) );
+     });
+     continue;
+    }
+     foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+	string description = sformat("%1%2", NetworkInterfaces::GetValue(devname, "NAME"),
+		((string)configurations[devtype, devname, "IPADDR"]:"" != "0.0.0.0") ? sformat(" (%1)", "configuration") : "");
+             items = add (items, `item(`id(devname), sformat("%1 - %2",devname, description), contains(br_ports, devname)) );
+     });
+    });
+  NetworkInterfaces::Select(old_name);
+  UI::ChangeWidget(`id(key), `Items, items);
+}
+
+boolean ValidateBridge (string key, map event) {
+ string old_name=NetworkInterfaces::Name;
+ boolean valid=true;
+ boolean confirmed=false;
+ list<term> items = (list<term>)UI::QueryWidget(`id(key), `Items);
+ list<string> sel = (list<string>)UI::QueryWidget (`id("BRIDGE_PORTS"), `SelectedItems);
+ list <string> confs = [];
+    map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
+     confs = (list<string>)union(confs, Map::Keys(configurations[devtype]:$[]));
+    });
+ foreach(term t, items, {
+  string device = t[0, 0]:"";
+  if (contains(sel, device) && hasAnyValue(device)) {
+    if (contains(confs, device)){
+     // allow to add bonding device into bridge and also device with mask /32(bnc#405343)
+     if (contains(["tun", "tap", "bond"], NetworkInterfaces::GetType(device))) continue;
+      if (((string)configurations[NetworkInterfaces::GetType(device), device, "PREFIXLEN"]:"" != "32")
+	 || ((string)configurations[NetworkInterfaces::GetType(device), device, "NETMASK"]:"" != "255.255.255.255"))
+      if ((string)configurations[NetworkInterfaces::GetType(device), device, "IPADDR"]:"" != "0.0.0.0") {
+	if(!confirmed) {
+	 valid = Popup::ContinueCancel(_("At least one selected device is already configured.
+Remove the configuration?
+"));
+	 confirmed=true;
+	}
+	if (valid) {
+		integer i = LanItems::current;
+	 if (LanItems::FindAndSelect(device)) {
+		y2internal("delete %1", device);
+		LanItems::DeleteItem();
+		NetworkInterfaces::Add();
+		LanItems::current = i;
+	 }
+        }
+      }
+    }
+   }
+ });
+  NetworkInterfaces::Select(old_name);
+ return valid;
+}
+
+}

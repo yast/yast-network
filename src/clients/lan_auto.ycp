@@ -1,0 +1,340 @@
+/**
+ * File:	clients/lan_proposal.ycp
+ * Package:	Network configuration
+ * Summary:	Lan configuration proposal
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+y2milestone("----------------------------------------");
+y2milestone("Lan autoinst client started");
+
+import "Lan";
+import "Progress";
+import "Arch";
+import "Mode";
+import "Map";
+import "NetworkInterfaces";
+import "LanItems";
+import "LanUdevAuto";
+include "network/lan/wizards.ycp";
+include "network/routines.ycp";
+
+any ret = nil;
+string func = "";
+map param = $[];
+
+/* Check arguments */
+if(size(WFM::Args()) > 0 && is(WFM::Args(0), string))
+{
+    func = (string) WFM::Args(0);
+    if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
+	param = (map) WFM::Args(1);
+}
+y2debug("func=%1", func);
+y2debug("param=%1", param);
+
+// Mode::SetTest("test");
+
+if (Mode::test ())
+{
+    Mode::SetMode ("autoinstallation");
+    param = $["dns":$["dhcp_hostname":false, "dhcp_resolv":false],
+    "interfaces":[$["bootproto":"static", "device":"eth0", "ipaddr":"192.168.1.233",
+    "startmode":"onboot"]], "routing":$["ip_forward":false]];
+    func = "Import";
+}
+
+/**
+ * If there's key in m, upcase key and assign the value to ret
+ * @return ret
+ */
+map UpcaseCondSet (map ret, map m, string key) {
+    if (haskey (m, key))
+    {
+	ret[toupper (key)] = m[key]:nil;
+    }
+    return ret;
+}
+
+
+/**
+ * Convert data from autoyast to structure used by module.
+ * @param input autoyast settings
+ * @return native network settings
+ */
+define map FromAY(map input)
+{
+ y2debug("input %1", input);
+
+ list<map<string,any> > ifaces=[];
+ foreach(map<string,any> interface, input["interfaces"]:[], {
+  map<string,any> iface=$[];
+  foreach(string key, any value, interface, {
+   if (key == "aliases"){
+    foreach(string k, map<string,any > v, (map<string, map<string,any> >)value, {
+    // replace "alias0" to "0" (bnc#372687)
+    map<string,any> t = (map<string,any>)value;
+     t[v["LABEL"]:""]=t[k]:$[];
+     t=remove(t,k);
+     value=t;
+   });
+   } else
+      if (key=="device") value = LanUdevAuto::getDeviceName(tostring(value));
+   iface[key]=value;
+  });
+  ifaces = add(ifaces, iface);
+ });
+  input["interfaces"] = ifaces;
+
+    map<string,map> interfaces = listmap(map<string, any> interface,
+            (list<map<string, any> >)input["interfaces"]:[],
+    {
+	// input: list of items $[ "device": "d", "foo": "f", "bar": "b"]
+	// output: map of items  "d": $["FOO": "f", "BAR": "b"]
+	map new_interface = $[];
+
+	// uppercase map keys
+	string newk = nil;
+
+	interface =  mapmap(string k, any v, (map<string, any>)interface, ``{
+           if (k=="aliases") {
+			newk="_aliases";
+		     }
+		else newk = toupper(k);
+	    return $[newk: v];
+        });
+
+	foreach(string k, any v, interface , {
+	    if (v != "" && k!="DEVICE") {
+		new_interface[k] = v;
+	    }
+	});
+        string new_device = interface["DEVICE"]:"";
+	return $[ new_device : new_interface ];
+    });
+
+    // split to a two level map like NetworkInterfaces
+    map<string, map> devices = $[];
+
+    foreach(string devname, map if_data, interfaces, {
+
+	string type = NetworkInterfaces::GetType(devname);
+//	string id = NetworkInterfaces::device_num (devname);
+	map d = devices[type]:$[];
+	d[devname] = if_data;
+	devices[type] = d;
+    });
+
+    map hwcfg = $[];
+    if (size(input["modules"]:[]) > 0)
+    {
+        // "hwcfg":$["bus-pci-0000:02:05.0":$["MODULE":"sk98lin",
+        // "MODULE_OPTIONS":"", "STARTMODE":"auto"]]
+	hwcfg = listmap(map mod, input["modules"]:[], {
+            string options = mod["options"]:"";
+            string module_name = mod["module"]:"";
+            string start_mode= mod["startmode"]:"auto";
+            string device_name= mod["device"]:"";
+
+            map module_data = $["MODULE":module_name,
+                                "MODULE_OPTIONS":options,
+                                "STARTMODE":start_mode
+                                ];
+	    return $[device_name : module_data];
+        });
+    }
+
+
+    input["devices"] = devices;
+    input["hwcfg"] = hwcfg;
+
+    // DHCP:: config: some of it is in the DNS part of the profile
+    map dhcp = $[];
+    map dhcpopts =  input["dhcp_options"]:$[];
+    map dns = input["dns"]:$[];
+
+    if (haskey(dns, "dhcp_hostname"))
+        dhcp["DHCLIENT_SET_HOSTNAME"] = dns["dhcp_hostname"]:false;
+	
+    dhcp = UpcaseCondSet (dhcp, dhcpopts, "dhclient_client_id");
+    dhcp = UpcaseCondSet (dhcp, dhcpopts, "dhclient_additional_options");
+    dhcp = UpcaseCondSet (dhcp, dhcpopts, "dhclient_hostname_option");
+
+    input["config"] = $[ "dhcp": dhcp ];
+    if (input["strict_IP_check_timeout"]:nil != nil)
+					input["config", "config"] = $["CHECK_DUPLICATE_IP": true];
+
+    y2milestone("input=%1", input);
+    return input;
+}
+
+
+/**
+ * Convert data from native network to autoyast for XML
+ * @param map settings native network settings
+ * @return map autoyast network settings
+ */
+define map ToAY (map settings) {
+    list interfaces = [];
+    list discard = ["UDI", "_nm_name"];
+    foreach(string type, map devsmap, settings["devices"]:$[], {
+            foreach(string device, map devmap, (map<string,map>) devsmap, {
+                map<string, any> newmap = $[];
+                foreach(string key, any val, (map<string,any>) devmap, {
+                    y2milestone("Adding: %1=%2", key, val);
+
+                    if (key!="_aliases")
+                    {
+                    if ( size((string)val) > 0 && ( !contains(discard, key) && !contains(discard, tolower(key))))
+                    newmap[tolower(key)] = (string)val;
+                    }
+                    else {
+                      // handle aliases
+                      y2debug("val: %1", val);
+		      // if aliases are empty, then ommit it
+                      if (size((map)val)>0)
+		       {
+			// replace key "0" into "alias0" (bnc#372678)
+			foreach (string k, map<string, any> v, (map<string, map<string, any> >) val, {
+			newmap[tolower("aliases")]=add(newmap[tolower("aliases")]:$[], sformat("alias%1", k), v);
+			});
+		       }
+                    }
+
+                    });
+                if (deletechars(device, "0123456789") == "")
+                    newmap["device"] = device;
+                else
+                    newmap["device"] = device;
+                interfaces = add(interfaces, newmap);
+            });
+            });
+
+    // Modules
+
+    list s390_devices=[];
+    foreach(string device, map mod, settings["s390-devices"]:$[], {
+     s390_devices=add(s390_devices, mod);
+    });
+
+    list net_udev=[];
+    foreach(string device, map mod, settings["net-udev"]:$[], {
+     net_udev=add(net_udev, mod);
+    });
+
+    list modules = [];
+    foreach(string device, map mod, settings["hwcfg"]:$[], {
+            map newmap = $[];
+            newmap["device"] =  device;
+            newmap["module"] =  mod["MODULE"]:"";
+            newmap["options"] = mod["MODULE_OPTIONS"]:"";
+            modules = add(modules, newmap);
+            });
+
+    map config = settings["config"]:$[];
+    map dhcp = config["dhcp"]:$[];
+    boolean dhcp_hostname = dhcp["DHCLIENT_SET_HOSTNAME"]:false;
+    map dns = settings["dns"]:$[];
+    dns["dhcp_hostname"] = dhcp_hostname;
+    map dhcpopts = $[];
+    if (haskey(dhcp, "DHCLIENT_HOSTNAME_OPTION"))
+        dhcpopts["dhclient_hostname_option"] = dhcp["DHCLIENT_HOSTNAME_OPTION"]:"AUTO";
+    if (haskey(dhcp, "DHCLIENT_ADDITIONAL_OPTIONS"))
+        dhcpopts["dhclient_additional_options"] = dhcp["DHCLIENT_ADDITIONAL_OPTIONS"]:"";
+    if (haskey(dhcp, "DHCLIENT_CLIENT_ID"))
+        dhcpopts["dhclient_client_id"] = dhcp["DHCLIENT_CLIENT_ID"]:"";
+
+
+    map ret = $[];
+    ret["managed"] = settings["managed"]:false;
+    if (size(modules) > 0 )
+        ret["modules"] = modules;
+    if (size(dns) > 0 )
+        ret["dns"] = dns;
+    if (size(dhcpopts) > 0 )
+        ret["dhcp_options"] = dhcpopts;
+    if (size(settings["routing"]:$[]) > 0 )
+        ret["routing"] = settings["routing"]:$[];
+    if (size(interfaces) > 0 )
+        ret["interfaces"] = interfaces;
+    if (size(s390_devices) > 0 )
+        ret["s390-devices"] = s390_devices;
+    if (size(net_udev) > 0 )
+        ret["net-udev"] = net_udev;
+    return (ret);
+
+}
+
+
+if(func == "Summary") {
+    ret = Lan::Summary("summary")[0]:"";
+}
+else if (func == "Reset") {
+    Lan::Import($[]);
+    LanItems::UnsetModified ();
+    ret = $[];
+}
+else if (func == "Change") {
+    ret = LanAutoSequence("");
+}
+else if(func == "Import") {
+    map new = FromAY(param);
+    Lan::Import(new);
+    ret = true;
+}
+else if(func == "Read") {
+    boolean progress_orig = Progress::set (false);
+    ret = Lan::Read (`cache);
+    Progress::set (progress_orig);
+}
+else if (func == "Packages") {
+    ret = Lan::AutoPackages ();
+}
+else if (func == "SetModified") {
+    ret = LanItems::SetModified ();
+}
+else if (func == "GetModified") {
+    ret = LanItems::GetModified ();
+}
+else if (func == "Export") {
+    map settings = Lan::Export();
+    y2debug("settings: %1", settings);
+    map autoyast = ToAY(settings);
+    ret = autoyast;
+}
+else if (func == "Write") {
+    boolean progress_orig = Progress::set (false);
+//    Lan::PrepareForAutoinst();
+//    Lan::Autoinstall();
+    ret = Lan::WriteOnly();
+    if (LanItems::autoinstall_settings["strict_IP_check_timeout"]:nil != nil)
+     {
+      if (Lan::isAnyInterfaceDown()){
+	 integer timeout = LanItems::autoinstall_settings["strict_IP_check_timeout"]:0;
+	y2debug("timeout %1", timeout);
+	 string error_text = _("Configuration Error : uninitialized interface!");
+	 if (timeout == 0) Popup::Error(error_text);
+		else Popup::TimedError(error_text, timeout);
+	}
+     }
+    Progress::set (progress_orig);
+}
+/* unknown function */
+else {
+    y2error("unknown function: %1", func);
+    ret =  false;
+}
+
+y2debug("ret=%1", ret);
+y2milestone("Lan auto finished");
+y2milestone("----------------------------------------");
+return ret;
+
+/* EOF */
+}
