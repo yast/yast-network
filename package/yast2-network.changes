@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Mar 26 10:49:19 CET 2009 - mzugec@suse.cz
+
+- don't allow to use networkmanager with bridged proposal (bnc#487419)
+- 2.18.23 
+
+-------------------------------------------------------------------
 Tue Mar 24 14:41:57 CET 2009 - mzugec@suse.cz
 
 - tun/tap device - don't remove default gw (bnc#483233)

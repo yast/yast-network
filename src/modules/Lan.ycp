@@ -609,7 +609,8 @@ global define list SummaryGeneral () {
 	// network mode
 	status_nm = _("Traditional network setup with NetControl - ifup");
 	// enable NetworkManager applet
-	link_nm = Hyperlink (href_nm, _("Enable NetworkManager"));
+	// for virtual network proposal (bridged) don't show hyperlink to enable networkmanager
+	link_nm = (virt_net_proposal) ? "..." : Hyperlink (href_nm, _("Enable NetworkManager"));
     }
 
     if (ipv6)
