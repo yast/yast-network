@@ -39,12 +39,15 @@ if(func == "MakeProposal") {
 	if (! GetInstArgs::automatic_configuration())
 	    /* Popup text */
 	    BusyPopup(_("Detecting modems..."));
+
 	boolean progress_orig = Progress::set (false);
 	Modem::Read();
 	// no Modem::Propose () ?
 	if (! GetInstArgs::automatic_configuration())
+	{
 	    Progress::set (progress_orig);
-	BusyPopupClose();
+	    BusyPopupClose();
+	}
     }
     list sum = Modem::Summary(false);
     proposal = sum[0]:"";
