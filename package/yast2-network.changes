@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 31 10:46:35 CEST 2009 - mzugec@suse.cz
+
+- tun/tap device - don't remove default gw (bnc#483233)
+- 2.17.77 
+
+-------------------------------------------------------------------
 Sat Feb 28 16:32:25 CET 2009 - jsrain@suse.cz
 
 - fixed identification of qeth interfaces (bnc #479481)
