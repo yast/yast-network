@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Apr  2 23:04:11 CEST 2009 - mzugec@suse.de
+
+- fixed additional addresses with bonding (bnc#420074)
+- 2.18.25 
+
+-------------------------------------------------------------------
 Thu Apr  2 11:46:07 CEST 2009 - kmachalkova@suse.cz
 
 - Show "Really abort" pop-up dialog only when data are modified (in
