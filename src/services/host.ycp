@@ -150,7 +150,7 @@ define symbol HostsMainDialog(boolean standalone) {
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel) {
-	    if(ReallyAbort()) break;
+	    if(ReallyAbortCond( Host::GetModified()) ) break;
 	    else continue;
 	}
 	/* add host */
@@ -162,6 +162,7 @@ define symbol HostsMainDialog(boolean standalone) {
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
 	    UI::ChangeWidget(`id(`table), `CurrentItem, max);
 	    max = max + 1;
+	    Host::SetModified();
 	    continue;
 	}
 	/* edit host */
@@ -210,6 +211,7 @@ define symbol HostsMainDialog(boolean standalone) {
 	    });
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
 	    UI::ChangeWidget(`id(`table), `CurrentItem, cur);
+	    Host::SetModified();
 	    continue;
 	}
 	/* delete host */
@@ -238,7 +240,7 @@ define symbol HostsMainDialog(boolean standalone) {
 		return true;
 	    });
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
-	    Host::modified = true;
+	    Host::SetModified();
 	    continue;
 	}
 	else if(ret == `back) {
