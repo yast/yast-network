@@ -1,0 +1,19 @@
+/**
+ * File:
+ *   tty.scr
+ * Summary:
+ *   SCR Agent for reading/writing Apache2 configuration
+ * Access:
+ *   read/write
+ * Authors:
+ * See:
+ *   anyagent
+ *   libscr
+ * Example:
+
+ * $Id: cfg_http_server.scr 14516 2004-02-20 16:34:50Z visnov $
+ *
+ */
+.udev_persistent
+
+`ag_udev_persistent ()
