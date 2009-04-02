@@ -29,6 +29,10 @@ string ftp = "";
 string no = "";
 string user = "";
 string pass = "";
+boolean same_proxy = false;
+/* String to pre-filled into the proxy server field */
+string prefill = "http://";
+
 
 // from OnlineUpdateDialogs.ycp
 /**
@@ -39,6 +43,14 @@ string pass = "";
  * @param string message with the short error message
  * @param string details with all of the error details
  */
+
+boolean modified() {
+    return !(Proxy::http == http && Proxy::ftp == ftp && Proxy::no == no &&
+		Proxy::https == https &&
+		Proxy::user == user && Proxy::pass == pass &&
+		Proxy::enabled == enabled);
+}
+
 define void ErrorPopupGeneric( string message, string details ) {
     // Informative label
     if ( size( details ) == 0 ) details = _("No details available.");
@@ -258,6 +270,37 @@ define boolean TestProxySettings () {
     }
 }
 
+void InitSameProxy() {
+    //We have the same (non-empty) proxy URL for all protocols
+    if((http != prefill) && (http == https) && (https == ftp )){
+        UI::ChangeWidget(`id(`same_proxy), `Value, true);
+        UI::ChangeWidget(`id(`https), `Enabled, false);
+        UI::ChangeWidget(`id(`https), `Value, prefill);
+        UI::ChangeWidget(`id(`ftp), `Enabled, false);
+        UI::ChangeWidget(`id(`ftp), `Value, prefill);
+    }
+}
+
+void QueryWidgets() {
+    same_proxy = (boolean) UI::QueryWidget(`id(`same_proxy), `Value);
+    http    = (string)  UI::QueryWidget(`id(`http), `Value);
+    if (same_proxy) {
+	https = http;
+	ftp = http;
+    }
+    else {
+        https   = (string)  UI::QueryWidget(`id(`https), `Value);
+        ftp     = (string)  UI::QueryWidget(`id(`ftp), `Value);
+    }
+
+    user    = (string)  UI::QueryWidget(`id(`user), `Value);
+    pass    = (string)  UI::QueryWidget(`id(`pass), `Value);
+    enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
+
+    no = (string) UI::QueryWidget(`id(`no), `Value);
+
+}
+
 /**
  * Proxy dialog
  * @param standalone true if not run from another ycp client
@@ -274,9 +317,6 @@ define any ProxyMainDialog(boolean standalone) ``{
     pass = Proxy::pass;
 
     ScreenName("proxy");
-
-    /* String to pre-filled into the proxy server field */
-    string prefill = "http://";
 
     if(http == "") http = prefill;
     if(https == "") https = prefill;
@@ -368,10 +408,10 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 	`Frame(`id(`frame2), _("Proxy Authentication"), `HBox(`HSpacing(2), `VBox(
 	    /* Text entry label */
 	    `HBox (
-	        `TextEntry(`id(`user), _("Proxy &User Name"), user),
+	        `InputField(`id(`user), `opt(`hstretch), _("Proxy &User Name"), user),
 	        `HSpacing(0.5),
 	        /* Password entry label */
-	        `Password(`id(`pass), _("Proxy &Password"), pass),
+	        `Password( `id(`pass), `opt(`hstretch), _("Proxy &Password"), pass),
 	    (textmode) ? `Empty() : `VSpacing(0.4)
 	    )), `HSpacing(2))),
 	    `VSpacing(s),
@@ -394,13 +434,6 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 		Label::BackButton(), Label::OKButton());
 */
 
-    //We have the same (non-empty) proxy URL for all protocols
-    if((http != prefill) && (http == https) && (https == ftp )){
-        UI::ChangeWidget(`id(`same_proxy), `Value, true);
-        UI::ChangeWidget(`id(`https), `Enabled, false);
-        UI::ChangeWidget(`id(`ftp), `Enabled, false);
-    }
-
     // #103841, relaxed. now avoiding only quotes
     // #337048 allow using space as well
     // was CAlnum() + ".:_-/\\"
@@ -414,6 +447,7 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
     UI::ChangeWidget(`id(`frame2), `Enabled, enabled);
     if ( !Mode::installation() ) 
 	UI::ChangeWidget(`id("test_proxy"), `Enabled, enabled) ;
+    InitSameProxy();
 
     if(enabled == true) UI::SetFocus(`id(`http));
     else UI::SetFocus(`id(`enabled));
@@ -422,47 +456,30 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
     while(true) {
 
 	ret = UI::UserInput();
+	QueryWidgets();
 
 	/* abort? */
 	if(ret == `abort || ret == `cancel || ret == `back) {
-	    if(ReallyAbort()) break;
+	    if(ReallyAbortCond( modified() )) break;
 	    else continue;
 	}
 	if(ret == `enabled) {
-	    enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
 	    UI::ChangeWidget(`id(`frame1), `Enabled, enabled);
-	    UI::ChangeWidget(`id(`frame2), `Enabled, enabled);
-	    UI::ChangeWidget(`id("test_proxy"), `Enabled, enabled);
+	    UI::ChangeWidget(`id(`frame2), `Enabled,enabled);
+	    UI::ChangeWidget(`id("test_proxy"), `Enabled, !enabled);
+	    InitSameProxy();
 	    continue;
 	}
 	else if(ret == `same_proxy) {
-	    enabled = (boolean) UI::QueryWidget(`id(`same_proxy), `Value);
-
 	    UI::ChangeWidget(`id(`https), `Value, prefill);
 	    UI::ChangeWidget(`id(`ftp), `Value, prefill);
-	    UI::ChangeWidget(`id(`https), `Enabled, !enabled);
-	    UI::ChangeWidget(`id(`ftp), `Enabled, !enabled);
+	    UI::ChangeWidget(`id(`https), `Enabled, !same_proxy);
+	    UI::ChangeWidget(`id(`ftp), `Enabled, !same_proxy);
 	    continue;
 	}
 	/* next */
 	else if (ret == `next || ret == "test_proxy") {
-	    boolean same_proxy = (boolean) UI::QueryWidget(`id(`same_proxy), `Value);
 
-	    http    = (string)  UI::QueryWidget(`id(`http), `Value);
-	    if (same_proxy) {
-		https = http;
-		ftp = http;
-	    }
-	    else {
-	        https   = (string)  UI::QueryWidget(`id(`https), `Value);
-	        ftp     = (string)  UI::QueryWidget(`id(`ftp), `Value);
-	    }
-
-	    user    = (string)  UI::QueryWidget(`id(`user), `Value);
-	    pass    = (string)  UI::QueryWidget(`id(`pass), `Value);
-	    enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
-
-	    no = (string) UI::QueryWidget(`id(`no), `Value);
 	    list<string> no_list = splitstring (no, " ,");
 	    no_list = filter (string no_i, no_list, ``( no_i != "") );
 	    no = mergestring (no_list, ", ");
@@ -552,10 +569,7 @@ Really use these settings?")))
 
     if(ret == `next) {
 
-	if(Proxy::http == http && Proxy::ftp == ftp && Proxy::no == no &&
-		Proxy::https == https &&
-		Proxy::user == user && Proxy::pass == pass &&
-		Proxy::enabled == enabled) {
+	if (!modified()){
 
 	    y2debug("not modified");
 	    return ret;
@@ -571,9 +585,7 @@ Really use these settings?")))
 	    Proxy::pass = pass;
 	}
 
-	Proxy::modified = true;
-//	if (!Mode::config ())
-//		ProxyFinishPopup(true);
+	Proxy::SetModified();
     }
 
     return ret;
