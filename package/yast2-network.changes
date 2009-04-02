@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Apr  2 11:47:13 CEST 2009 - mzugec@suse.de
+
+- fixed overview dialog for additional addresses (bnc#420074)
+- 2.14.126 
+
+-------------------------------------------------------------------
 Wed Mar 18 14:56:28 CET 2009 - kmachalkova@suse.cz
 
 - Escape '\' characters in username when writing .curlrc (backport 

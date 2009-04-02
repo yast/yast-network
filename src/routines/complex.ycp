@@ -578,6 +578,7 @@ foreach(map<string, any>row, (list<map<string, any> >)SCR::Read (.probe.netcard)
 	    overview = add(overview, item);
 
 	    /* aliases summary */
+/*
 	    map<string,map> aliasee = v["_aliases"]:$[];
 	    if(aliasee != $[])
 		maplist(string aid, map amap, aliasee, {
@@ -586,6 +587,7 @@ foreach(map<string, any>row, (list<map<string, any> >)SCR::Read (.probe.netcard)
 		    item = `item(`id(adev), DeviceType(adev), adev, ip);
 		    overview = add(overview, item);
 		});
+*/
 
 	});
     });
