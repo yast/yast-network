@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Apr  2 11:46:07 CEST 2009 - kmachalkova@suse.cz
+
+- Show "Really abort" pop-up dialog only when data are modified (in
+  proxy - bnc#460172 and hosts - bnc#460156)
+- Allow '/' character in NO_PROXY (subnet definition - bnc#490661)   	
+
+-------------------------------------------------------------------
 Thu Mar 26 15:22:22 CET 2009 - mzugec@suse.cz
 
 - show PopupAbort only when data modified (bnc#458324)
