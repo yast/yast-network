@@ -254,9 +254,6 @@ global define boolean Write() {
     /* Allow to set hostname even if it's modified by DHCP (#13427)
     if(NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false != true) { */
 
-	/* remember the X authorization key */
-	string xauth_key = (string) SCR::Read(.xauth.key);
-
 	/* Progress step 1/3 */
 	ProgressNextStage(_("Writing hostname..."));
 
@@ -273,9 +270,6 @@ global define boolean Write() {
 	/* Finish him */
 	RunSuSEconfig();
 	sleep(sl);
-
-	/* update X authorization */
-	SCR::Write(.xauth.key, xauth_key);
 
 	/*
     if(SCR::Read(.target.size, resolv_conf) < 0)
