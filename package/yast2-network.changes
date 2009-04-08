@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Apr  8 14:00:42 CEST 2009 - mzugec@suse.de
+
+- IPv6 default gateway (bnc#458891)
+- added "route via device" for default gw
+- 2.18.26 
+
+-------------------------------------------------------------------
 Mon Apr  6 13:12:39 CEST 2009 - mvidner@suse.cz
 
 - Dropped ag_xauth (.xauth.key), superseded since 2005 by

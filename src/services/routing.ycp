@@ -67,7 +67,6 @@ term RoutingEditDialog(integer id, term entry, list devs) {
     if(entry[4]:"" != "")
        UI::ChangeWidget(`id(`device), `Value, entry[4]:"");
     else {
-	devs= add(devs,"-");
         UI::ChangeWidget(`id(`device), `Items, devs);
     }
     UI::ChangeWidget(`id(`destination), `ValidChars, IP::ValidChars + "default" + "/-");
@@ -133,6 +132,8 @@ list<term> r_items = [];
 string defgw = "";
 string defgwdev = "";
 
+string defgw6 = "";
+string defgwdev6 = "";
 
 
 void initRouting (string key) ``{
@@ -146,7 +147,9 @@ void initRouting (string key) ``{
     //reset, so that UI really reflect current state
     //maplist below will supply correct data, if there are some
     defgw = "";
-    defgwdev = "";
+    defgwdev = "-";
+    defgw6 = "";
+    defgwdev6 = "-";
     r_items = [];
 
     /* make ui items from the routes list */
@@ -154,8 +157,13 @@ void initRouting (string key) ``{
 
     maplist(map r, route_conf, {
 	if(r["destination"]:"" == "default" && !issubstring(r["extrapara"]:"", "metric")) {
+         if (IP::Check4(r["gateway"]:"")){
 	    defgw = r["gateway"]:"";
 	    defgwdev = r["device"]:"";
+	 } else {
+	    defgw6 = r["gateway"]:"";
+	    defgwdev6 = r["device"]:"";
+	 }
 	}
 	else {
 	    item = `item(`id(size(r_items)),
@@ -171,7 +179,8 @@ void initRouting (string key) ``{
 
     y2debug("table_items=%1", r_items);
 
-    UI::ChangeWidget(`gw, `Items, [ defgw ]);
+    UI::ChangeWidget(`gw, `Value,  defgw );
+    UI::ChangeWidget(`gw6, `Value,  defgw6 );
     UI::ChangeWidget(`id(`gw), `ValidChars, IP::ValidChars);
     UI::ChangeWidget(`id(`table), `Items, r_items);
     UI::ChangeWidget(`id(`forward), `Value, forward);
@@ -183,14 +192,25 @@ void initRouting (string key) ``{
 
     UI::ChangeWidget(`id(`table),  `Enabled, enabled);
     UI::ChangeWidget(`id(`forward), `Enabled, enabled);
-
    disableItemsIfNM([ `gw, `table, `add, `edit, `delete ], false);
+    if (!Lan::ipv6){
+	 UI::ChangeWidget(`id(`gw6), `Enabled, false);
+	 UI::ChangeWidget(`id(`gw6dev), `Enabled, false);
+    }
+
+   list devs = Routing::GetDevices();
+	devs= add(devs,"-");
+   UI::ChangeWidget(`gw4dev, `Items, devs);
+   UI::ChangeWidget(`gw4dev, `Value,  defgwdev );
+   UI::ChangeWidget(`gw6dev, `Items, devs);
+   UI::ChangeWidget(`gw6dev, `Value,  defgwdev6);
 }
 
 
 symbol handleRouting( string key, map event ) {
  boolean enabled = !(boolean)NetworkService::IsManaged();
  list devs = Routing::GetDevices();
+	devs= add(devs,"-");
  integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
  term item=nil;
 
@@ -265,16 +285,27 @@ void storeRouting (string key, map event) ``{
 	    ];
 	});
 
-	if(defgw != UI::QueryWidget(`id(`gw), `Value))
-	    defgwdev = "-"; // FIXME: find correct device
+
 
 	defgw = (string) UI::QueryWidget(`id(`gw), `Value);
+        defgwdev = (string)UI::QueryWidget(`id(`gw4dev), `Value);
+	defgw6 = (string) UI::QueryWidget(`id(`gw6), `Value);
+        defgwdev6 = (string)UI::QueryWidget(`id(`gw6dev), `Value);
+
 	if(defgw != "")
 	    route_conf = add(route_conf, $[
 		"destination"	: "default",
 		"gateway"	: defgw,
 		"netmask"	: "-",
 		"device"	: defgwdev
+	    ]);
+
+	if(defgw6 != "")
+	    route_conf = add(route_conf, $[
+		"destination"	: "default",
+		"gateway"	: defgw6,
+		"netmask"	: "-",
+		"device"	: defgwdev6
 	    ]);
 
     Routing::Routes = route_conf;
@@ -289,7 +320,14 @@ map<string, map<string,any> > wd_routing = $[
 	`VBox(
 	    `VStretch(),
 	    /* ComboBox label */
-	    `ComboBox(`id(`gw), `opt(`editable, `hstretch), _("Default &Gateway") ),
+	    `HBox(
+		`InputField(`id(`gw), `opt(`hstretch), _("Default IPv4 &Gateway") ),
+		`ComboBox(`id(`gw4dev), `opt(`editable), _("Device"), [])
+	     ),
+	     `HBox(
+		`InputField(`id(`gw6), `opt(`hstretch), _("Default IPv6 &Gateway") ),
+		`ComboBox(`id(`gw6dev), `opt(`editable), _("Device"), [])
+	     ),
 	    `VSpacing(1),
 	    /* Frame label */
 	    `Frame(_("Routing Table"), `VBox(
