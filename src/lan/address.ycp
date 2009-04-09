@@ -274,7 +274,10 @@ void storeBootProto (string key, map event) {
 		settings["IPADDR"]=(string)UI::QueryWidget(`ipaddr, `Value);
 		string mask = (string)UI::QueryWidget(`netmask, `Value);
 		if(substring(mask, 0,1)=="/") settings["PREFIXLEN"]=substring(mask, 1);
-			else settings["NETMASK"]=mask;
+			else {
+				if (Netmask::Check6(mask)) settings["PREFIXLEN"]=mask;
+					else settings["NETMASK"]=mask;
+			     }
 		settings["HOSTNAME"]=(string)UI::QueryWidget(`hostname, `Value);
 		break;
    default : switch ((symbol)UI::QueryWidget(`dyn, `Value)){
@@ -440,7 +443,7 @@ boolean ValidateBootproto (string key, map event) {
 	}
 
 	string mask=(string) UI::QueryWidget (`netmask, `Value);
-	if(!validPrefixOrNetmask(mask)){
+	if(!validPrefixOrNetmask(ipa, mask)){
 		Popup::Error(_("No valid netmask or prefix lenght."));
 		UI::SetFocus(`netmask);
 		return false;

@@ -139,7 +139,10 @@ void storeAdditional (string key, map event) {
 	    alias["IPADDR"] = e[2]:"";
 	    if (size(e[1]:"")>0) alias["LABEL"]=e[1]:"";
 		if(substring(e[3]:"", 0,1)=="/") alias["PREFIXLEN"]=substring(e[3]:"", 1);
-			else alias["NETMASK"]=e[3]:"";
+		  else {
+			if (Netmask::Check6(e[3]:"")) alias["PREFIXLEN"]=e[3]:"";
+				else alias["NETMASK"]=e[3]:"";
+		  }
 	    LanItems::aliases[tostring(size(LanItems::aliases))] = alias;
 //	    aliases_to_delete[tostring(size(LanItems::aliases))] = nil;
 	});
@@ -215,17 +218,17 @@ define term VirtualEditDialog(integer id, term entry, list forbidden) {
 */
 	host = add(host, val);
 
-	val = (string) UI::QueryWidget(`id(`ipaddr), `Value);
-	if(!IP::Check(val)) {
+	string ip = (string) UI::QueryWidget(`id(`ipaddr), `Value);
+	if(!IP::Check(ip)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("The IP address is invalid."));
 	    UI::SetFocus(`id(`ipaddr));
 	    continue;
 	}
-	host = add(host, val);
+	host = add(host, ip);
 
 	val = (string) UI::QueryWidget(`id(`netmask), `Value);
-	if(!validPrefixOrNetmask(val)) {
+	if(!validPrefixOrNetmask(ip, val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("The subnet mask is invalid."));
 	    UI::SetFocus(`id(`netmask));

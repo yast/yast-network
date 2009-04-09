@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Apr  9 14:05:51 CEST 2009 - mzugec@suse.de
+
+- fixed netmask/prefixlen validation and correct write (bnc#493222)
+- 2.18.27 
+
+-------------------------------------------------------------------
 Thu Apr  9 10:17:43 CEST 2009 - kmachalkova@suse.cz
 
 - Make proxy configuration autoyast-clonable (bnc#492786) 

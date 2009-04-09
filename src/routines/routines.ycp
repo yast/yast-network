@@ -23,7 +23,8 @@ import "Confirm";
 import "Map";
 import "Netmask";
 import "Mode";
-
+import "IP";
+import "Netmask";
 
 /**
  * Abort function
@@ -780,16 +781,14 @@ define list<map> ReadHardware(string hwtype) {
     return Hardware;
 }
 
-boolean validPrefixOrNetmask(string val){
+boolean validPrefixOrNetmask(string ip, string mask){
 
  boolean valid_mask=false;
- if (Netmask::Check4(val)) valid_mask=true;
-  else
-   if (regexpmatch(val, "^/[[:digit:]]{1,2}$") && tointeger(substring(val, 1))<=32) valid_mask=true;
-    else
-     if (Netmask::Check6(val)) valid_mask=true;
-      else
-       if (regexpmatch(val, "^/[[:digit:]]{1,3}$") && tointeger(substring(val, 1))<=128) valid_mask=true;
+ if (substring(mask, 0,1)=="/") mask=substring(mask,1);
+
+ if (IP::Check4(ip) && Netmask::Check4(mask)) valid_mask=true;
+   else if (IP::Check6(ip) && Netmask::Check6(mask)) valid_mask=true;
+     else y2warning("IP address %1 is not valid", ip);
  return valid_mask;
 }
 
