@@ -1,0 +1,297 @@
+/**
+ * File:        include/network/widgets.ycp
+ * Package:     Network configuration
+ * Summary:     Widgets for CWM
+ * Authors:     Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+// Gradually all yast2-network UI will be converted to CWM
+// for easier maintenance.
+// This is just a start.
+
+import "IP";
+import "NetworkPopup";
+import "NetworkInterfaces";
+import "LanItems";
+
+include "network/complex.ycp";
+
+/**
+ * Validator for IP adresses, no_popup
+ * @param key	the widget being validated
+ * @param event	the event being handled
+ * @return whether valid
+ */
+define boolean ValidateIP (string key, map event) {
+    string value = (string) UI::QueryWidget (`id (key), `Value);
+    if (value != "")
+    {
+	return IP::Check (value);
+    }
+    return true;
+}
+
+map<string, map<string,any> > widget_descr = $[
+
+    "USERCONTROL": $[
+	"widget": `checkbox,
+	/* CheckBox label */
+	// is the interface administrable by users (as opposed to root)
+	"label": _("E&nable Device Control for Non-root User Via KInternet"),
+	"opt": [`notify],
+	"help":
+	// Details dialog help
+_("<p><b><big>Device Control</big></b></p>
+<p>Usually, only the system administrator is allowed to activate and
+deactivate a network interface. With <b>Enable Device Control for Non-root User
+Via KInternet</b>, any user may control the interface via KInternet.</p>
+"),
+	],
+
+    // #23315
+    "DIALPREFIXREGEX": $[
+	"widget": `textentry,
+	// TextEntry label
+	"label": _("&Dial Prefix Regular Expression"),
+	"help":
+	// dial prefix regex help
+_("<p>When <b>Dial Prefix Regular Expression</b> is set, users can
+change the dial prefix in KInternet provided that it matches the expression.
+A recommended value is <tt>[09]?</tt>, allowing <tt>0</tt>, <tt>9</tt>,
+and the empty prefix. If the expression is empty, users are not allowed
+to change the prefix.</p>
+"),
+	],
+
+    // obsoleted by BOOTPROTO_*
+    "BOOTPROTO": $[
+	"widget": `radio_buttons,
+	// radio button group label,method of setup
+	"label": _("Setup Method"), // is this necessary?
+	"items": [
+	    // radio button label
+	    ["dhcp", _("A&utomatic Address Setup (via DHCP)")],
+	    // radio button label
+	    ["static", _("S&tatic Address Setup")],
+	    ],
+	"opt": [],
+	"help": _("<p>H</p>"),
+	],
+    ];
+
+/**
+ * This is the data for widget_descr["STARTMODE"].
+ * It is separated because the list of items depends on the device type
+ * and will be substituted dynamically.
+ * Helps are rich text, but not paragraphs.
+ */
+map<string, map<string, string> > startmode_items = $[
+    // onboot, on and boot are aliases for auto
+    // See NetworkInterfaces::CanonicalizeStartmode
+    "auto": $[
+	// Combo box option for Device Activation
+	"label": _("At Boot Time"),
+	"help": "",	    // is a part of the static help text
+	],
+    "off": $[
+	"label": _("Never"),
+	"help": "",	    // is a part of the static help text
+	],
+    "managed": $[
+	// Combo box option for Device Activation
+	// DO NOT TRANSLATE NetworkManager, it is a program name
+	"label": _("By NetworkManager"),
+	// help text for Device Activation
+	// DO NOT TRANSLATE NetworkManager, it is a program name
+	"help": _("<b>By NetworkManager</b>: a desktop applet
+controls the interface. There is no need to set it up in YaST."),
+	],
+    "manual": $[
+	// Combo box option for Device Activation
+	"label": _("Manually"),
+	// help text for Device Activation
+	"help": _("<p><b>Manually</b>: You control the interface manually
+via 'ifup' or 'kinternet' (see 'User Controlled' below)</p>.
+"),
+	],
+    "ifplugd": $[
+	// Combo box option for Device Activation
+	"label": _("On Cable Connection"),
+	// help text for Device Activation
+	"help": _("<b>On Cable Connection</b>:
+The interface is watched for whether there is a physical
+network connection. That means either the cable is connected or the
+wireless interface can connect to an access point.
+"),
+	],
+    "hotplug": $[
+	// Combo box option for Device Activation
+	"label": _("On Hotplug"),
+	// help text for Device Activation
+	"help": _("With <b>On Hotplug</b>,
+the interface is set up as soon as it is available. This is
+nearly the same as 'At Boot Time', but does not result in an error at
+boot time if the interface is not present.
+"),
+	],
+    "nfsroot" : $[
+        // Combo box option for Device Activation
+        "label": _("On NFSroot"),
+        // help text for Device Activation
+        "help": _("Using <b>On NFSroot</b> is similar to <tt>auto</tt>. Interfaces with this startmode will never
+be shut down via <tt>rcnetwork stop</tt>. <tt>ifdown <iface></tt> is still available.
+Use this if you have an NFS or iSCSI root filesystem.
+"),
+],
+    "nfsroot" : $[
+        // Combo box option for Device Activation
+        "label": _("On NFSroot"),
+        // help text for Device Activation
+        "help": _("Using <b>On NFSroot</b> is nearly like 'auto'. But interfaces with this startmode will never
+be shut down via 'rcnetwork stop'. 'ifdown <iface>' still works.
+Use this when you have a nfs or iscsi root filesystem.
+"),
+]
+
+    ];
+
+map<string, any> MakeStartmode (list<string> ids) {
+    map<string, any> ret = $[
+	"widget": `combobox,
+	// Combo box label - when to activate device (e.g. on boot, manually, never,..)
+	"label": _("Activate &device"),
+	"help":
+	// Device activation main help. The individual parts will be
+	// substituted as %1
+_("<p><b><big>Device Activation</big></b></p> 
+<p>Choose when to bring up the network interface.<b>At Boot Time</b> activates it during system boot, 
+<b>Never</b> does not start the device.
+%1</p>
+"),
+	];
+    string helps = "";
+    list items = maplist (string id, ids, {
+	helps = helps + " " + startmode_items[id, "help"]:"";
+	return [id, startmode_items[id, "label"]:""];
+    });
+
+    ret["help"] = sformat (ret["help"]:"%1", helps);
+    ret["items"] = items;
+    return ret;
+}
+
+
+define string GetDeviceDescription(string device_id) {
+    string device_name = NetworkInterfaces::GetValue(device_id,"NAME");
+    if ( (device_name == nil) || (device_name == "") ) {
+        //TRANSLATORS: Informs that device name is not known
+        device_name = _("Unknown device");
+    }
+    y2milestone ("device_name %1", device_name);
+    //avoid too long device names
+    //if (size(device_name) > 30) {
+    //    device_name = substring (device_name, 0, 27) + "...";
+    //}
+    string ip_addr = (issubstring(NetworkInterfaces::GetValue(device_id, "BOOTPROTO"), "dhcp") ?
+		   // TRANSLATORS: Part of label, device with IP address assigned by DHCP
+                    _("DHCP address") :
+		   // TRANSLATORS: Part of label, device with static IP address
+                    NetworkInterfaces::GetValue(device_id, "IPADDR"));
+    if ( (ip_addr == nil) || (ip_addr == "")) {
+        //TRANSLATORS: Informs that no IP has been assigned to the device
+        ip_addr = _("No IP address assigned");
+    }
+    string output = sformat(_("%1 \n%2 - %3"),
+                        device_name, NetworkInterfaces::GetDeviceType(device_id), ip_addr);
+        return output;
+}
+
+
+
+list<string> getInternetItems(){
+    NetworkInterfaces::Read();
+    list<string> items = NetworkInterfaces::List("");
+    items = filter (string i, items, ``( i != "lo" ));
+ return items;
+}
+
+list<string> getNetDeviceItems(){
+	NetworkInterfaces::Read();
+	list<string> ifaces = NetworkInterfaces::List("eth");
+	y2debug("ifaces=%1", ifaces);
+	ifaces = (list<string>)union((list)ifaces, (NetworkInterfaces::List("eth-pcmcia")));
+	y2debug("ifaces=%1", ifaces);
+	ifaces = (list<string>)union((list)ifaces, NetworkInterfaces::List("eth-usb"));
+	ifaces = (list<string>)union((list)ifaces, NetworkInterfaces::List("wlan")); // #186102
+	y2debug("ifaces=%1", ifaces);
+ return ifaces;
+}
+
+term getDeviceContens(string selected){
+return `VBox(
+        `VSpacing(0.5),
+        `HBox(
+	    `HSpacing(3),
+            `MinWidth(30, `Label(`id(`net_device), `opt(`hstretch), GetDeviceDescription(selected) )),
+	    `HSpacing(1),
+            `PushButton(`id(`net_expert), _("&Change Device"))
+	),
+        `VSpacing(0.5)
+      );
+}
+
+
+void initDevice(list<string> items){
+    //If only one device is present, disable "Change device" button
+    if (size(items) <= 1) UI::ChangeWidget(`id(`net_expert),`Enabled,false);
+}
+
+void enableDevices(boolean enable){
+ UI::ChangeWidget(`net_device, `Enabled, enable);
+ UI::ChangeWidget(`net_expert, `Enabled, enable);
+}
+
+void refreshDevice(string via_device){
+ UI::ChangeWidget(`net_device, `Value, GetDeviceDescription(via_device));
+}
+
+string handleDevice(list<string>items, string selected){
+            // popup dialog title
+            string via_device = NetworkPopup::ChooseItem(_("Network Device Select"), items, selected);
+            if (via_device != nil)
+            {
+                UI::ChangeWidget(`net_device, `Value, GetDeviceDescription(via_device));
+                y2milestone("selected network device :%1", via_device);
+                selected = via_device;
+            }
+ return selected;
+}
+
+define list createUnconfigured(list<string> match){
+ list items=[];
+ integer current = LanItems::current;
+ foreach(integer row, any value, LanItems::Items,{
+  LanItems::current = row;
+  if (!LanItems::IsItemConfigured()){
+    string dev_name = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
+    string description = BuildDescription(LanItems::type, LanItems::device, $["dev_name":dev_name], [LanItems::getCurrentItem()["hwinfo"]:$[]]);
+    if (hasAnyValue(dev_name)) items = add(items, `item(`id(dev_name), sformat("%1 - %2", dev_name, description), contains(match, dev_name)?true:false));
+    }
+ });
+ LanItems::current = current;
+ return items;
+}
+
+
+
+
+
+
+/* EOF */
+}

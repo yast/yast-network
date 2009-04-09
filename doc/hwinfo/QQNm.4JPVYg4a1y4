@@ -1,0 +1,23 @@
+[General]
+UniqueID=QQNm.4JPVYg4a1y4
+HWClass=isdn adapter
+Model=AVM FRITZ!Card PnP
+
+[Status]
+Configured=no
+Available=unknown
+Needed=no
+
+[Hardware]
+Bus=0x1
+Slot=0x1
+BaseClass=0x103
+VendorID=AVM
+DeviceID=0900
+DeviceName=AVM ISDN-Controller FRITZ!Card
+VendorName=AVM
+HWClassList=000004400000
+Features=0x2
+Res.IO=0x220,0x0,1,3
+Res.Interrupts=5,0,1
+

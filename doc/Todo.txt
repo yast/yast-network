@@ -1,0 +1,233 @@
+# $Id$
+
+##############################################################################
+##### Bugs #####
+
+Bugs:
+- KInternet: better helptext (configured + kinternet, cinternet)
+- ISDN cleanup (adapt to new sources, better sysconfig) [ISDN]
+
+#35935 nor        yast2 asks for internet test although network config skipped
+#37864 nor        kinternet not started after dsl config
+
+- name resolving doesn't work without /etc/resolv.conf (ResolveIP, ag_hostnames)
+
+- cleanup ifcfg and hwcfg naming
+- cleanup NetworkModules
+- fix (or delete) all FIXMEs
+
+in-progress:
+- [snwint] ifcfg-usb-usb: detected devices (manual adding done, detected missing) (#22739)
+- [zoz] routing: restart only routing (#33025)
+
+##############################################################################
+##### Features #####
+
+Small Features:
+- host: add (update) all hosts in the local network
+- host: scan for hosts on the local network [Add]
+- host: show system hosts checkbox (like users have)
+- modem: check existence of the modem device in ModemDialog
+- routing: summary: print other routes in nice form
+- package: include all agents (ag_xauth, ag_resolver, ag_hostnames, ...)
+- routing: DHCLIENT_SET_DEFAULT_ROUTE (similar to RESOLV_CONF, HOSTNAME)
+
+Large Features:
+- lan: new UI (#29721, see also #33801) [sigi]
+- proxy: use immediately (#23728), enhance other programs
+- new: IPv6 support (tunnels)
+- lan: check IPv6 support is really functional (all fields)
+- new: cable connection (slip, plip, ppp, usb)
+- hardware: wireless connection (irda, bluetooth) (#35747)
+- support custom provider from INS file (#25774)
+- lan: install required packages: dhcpcd|sysconfig|hotplug|wireless-tools (only if needed, before Write?)
+- dialup: don't always ask for the mail config (#31472)
+- lan: ask for the mail config?
+- lan: allow configuring a net interface without an IP address (#33801)
+- routing: other fields (see routes(5))
+- modem: speaker volume as combo (or better as slider)
+- not only lan: temporary interface disable (#24926)
+- lan: myrinet: check for driver presence [warning + info]
+
+##############################################################################
+##### Old Stuff #####
+
+- lan: netcards without a driver (what to do on s390?, warn?) (#29296)
+- lan: compiled in kernel drivers (#???)
+  offer them besides modularized drivers? src/lan/cards.ycp?
+
+Improvements:
+- dns: two resolv.conf scrconfs (resolv.conf.saved.by.dhcpcd, #38834)		XXX?
+- lan: check link presence (see sysconfig.rpm how is it done, or was it RH?)
+- routing: check already present default route (partially #11132c26)
+- routines: check for yast2-mail presence
+- provider: offer to delete provider after device delete if not used (#16094)
+- provider: delete default route if removed (#10739)
+- lan: warn before the network restart (#27137, #19851) [WARN]
+- lan: yp configuration failed (#25506)
+ ask if network should be restarted
+- dns: better "DNS and Hostname" and "Hosts" titles (#29722)
+- dns: better message for broken fields (eg. domain) (#22802)
+- lan: ssh installation (install.inf format) (#24836)
+ duplicate Alias lines; maybe not necessary, review #22444
+- dialup: mail question only if new device was added
+ yast ui config									XXX?
+
+Enhancements:
+- detection (netprobe, dhcpcd) #15489 (see also #7287, #13200, #9951)
+ #7287, #13200 are dups of #16471: take info from linuxrc
+- modem: pap|chap secrets writing (isdn may do it already), not sure if it's useful
+- providers: no-global-values (ini-agent parameter, ease of use: flat(#21867)?)
+- providers: -> HWDB-NG
+- all: edit without restart (reload)
+- device: use map instead of variables (-> fill all variables)
+- package: require yast2-language, yast2-mail, ... (maybe do that at runtime)
+- feature: IP-masquerading (#16131), is already in the firewall
+- routing: default route without GW (#23977)
+- dsl: flat rate (#27840)
+- improve modules.conf options merging (maybe obsolete with 2.6) (#29995)
+- make DHCP options iface-local (questionable) (#30476)
+- edit dsl HW goes through provider again (default provider?) (#24000)
+- allow to change the netcard type (for a broken detection) (#30890)
+- skip detect check box (general yast2 feature) (#31478)
+- installation: better network configuration (inst_netcfg, create_interfaces)
+- host: drop oldhostentry file
+- host: better deleted hostnames handling
+
+##############################################################################
+##### New Bugs #####
+
+New in Bugzilla:
+
+#33071 enh        provide a per interface routing configuration
+#33649 cri        yast2 ISDN module always activates personal firewall
+#34626 enh        Allow giving a net interface an arbitrary name
+#35221 nor LATER  Better behavior with multiple dhcp clients
+#35638 min        On Abort, ask only if there have been any changes
+#35671 min        Yast2 deletes hostname aliases, if more than one are present
+#35955 min LATER  Obsolete NETWORK, BROADCAST, NETMASK, UNIQUE in ifcfg
+#37520 enh LATER  Let user identify ifcfg by MAC, bus id, vpid...
+#38213 min        YaST network forgets configuration name proposal
+#38031 nor        Changing network environment causes resolver problems
+#38135 min        after deleting the only configured modem, yast2-mail is run
+#38746 nor        dsl config is not working with two network cards
+#39027 min LATER  "Back" button is interpreted as "Abort"
+#40012 enh LATER  Allow editing the whole resolver search list
+#40254 nor LATER  Allow choosing the encoding for passwords
+#40458 nor LATER  Improve VNC Remote Administration
+#40861 enh LATER  Add "Test connection" button to proxy etc. config
+#41204 enh LATER  unconnected network card is assumed to be connected
+
+##############################################################################
+##### Documentation #####
+
+Documentation:
+- example dhcpcd-eth0.info
+- example intstall.inf's
+- Net-HOWTO link
+- s390 devices (see bellow, also from mails)
+- overall device overview (see bellow, also required data like IP, RI, NM)
+- UIMODE: link to autodocs
+- doc: adding network device mini-howto: grep for "escon" for example
+- doc: include public_html/network, dia, ...
+
+New device type:
+- lan/cards.ycp			add type cards (at least one entry)
+- lan/hardware.ycp		update "device_types" list
+- modules/NetworkDevices.ycp	update "netcard" list
+- routines/complex.ycp		add "device_name" to CheckEmptyName
+- routines/hardware.ycp		update ControllerType (detection)
+- routines/summary.ycp		add "device_type" to DeviceType
+
+Debug (bugzilla):
+- 'hwinfo --all --log hwinfo.log'
+- /etc/sysconfig/hardware/hwcfg-*
+- /etc/sysconfig/network/ifcfg-*
+- /etc/sysconfig/network/ifroute-*
+- /var/lib/YaST2/install.inf
+- /var/log/YaST2/y2log*
+
+- /etc/sysconfig/network/providers/*	[dialup problems]
+
+- /etc/sysconfig/network/config
+- /etc/sysconfig/network/dhcp
+- /etc/sysconfig/network/routes
+
+- /etc/resolv.conf			[DNS problems]
+
+- /etc/modprobe.conf
+- /etc/modprobe.conf.local
+- /etc/modprobe.d/*
+
+- 'ip a'
+- /var/log/messages
+
+##############################################################################
+##### Details for some of the above #####
+
+ISDN:
+- code cleanup (use yast2-network structure: Provider, devices, ...)
+- UI cleanup (http://w3.suse.de/~sigi/yast2/modules/isdn/81isdn/isdn81_improvement_it01.html)
+- isdn: start mail after config (#18256)
+
+WARN:
+- #19851, #27137
+- warn before rcnetwork restart -> RestartNetwork() || StopNetwork();
+- see routines/runtime.ycp:RunningLocal()
+
+##############################################################################
+##### Ancient Stuff #####
+
+TO-SORT:
+
+- all: use rcnetwork reload (but probably only in some cases, things like
+  remove 2 eth cards and add them in a different order won't work due to
+  the kernel modules not being unloaded)
+  * "rcnetwork reload" (if DeletedModules\!=[] "restart")
+
+- routines: -> FIREWALL=yes|no to each ifcfg-XXX #18840 (support for modems)
+
+##############################################################################
+##### Some details, other stuff, old #####
+
+DOC:
+- doc: dummy: IP/NM/BC
+- doc: irlan: IP/NM/BC (eth?)
+- doc: irnet: IP/RI (?)
+- doc: plip: IP/RI (Parallel Line IP)
+- doc: slip: IP/RI (Serial Line IP, obsoleted by PPP)
+- doc: ppp: IP/RI (Serial Point-To-Point protocol)
+
+UI proposal:
+- detected
+- choose your card (current list)
+- hw params only (current manual)
+
+Hardware:
+- usb: network cabel, ethernet card, TR card, ISDN card, modem
+- pcmcia: ethernet card, TR card, ISDN card, modem
+- wireless network cards
+- fddi card
+
+- make device optional in routes agent
+- DefaultDevice(ip)
+    check all PPP connections (REMOTEIP)
+    other devices
+      - take IP
+      - if(network(IP) == network(ip)) return x;
+- compare with old lan
+- where is this used?
+
+Modules:
+- see the "*ISDN*" paper
+
+MODULES=$[];	-> Lan.ycp
+DELETED=[];	-> Lan.ycp
+ReadModules();	-> M
+WriteModules();	<- D,M
+Select: C,M -> global vars
+AddEdit: global vars -> C,M
+Delete: global vars -> C,M,D
+
+##############################################################################
+##### EOF :-) ####
