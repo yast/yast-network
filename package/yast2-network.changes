@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Apr  9 10:17:43 CEST 2009 - kmachalkova@suse.cz
+
+- Make proxy configuration autoyast-clonable (bnc#492786) 
+
+-------------------------------------------------------------------
 Wed Apr  8 14:00:42 CEST 2009 - mzugec@suse.de
 
 - IPv6 default gateway (bnc#458891)

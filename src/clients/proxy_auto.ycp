@@ -102,6 +102,10 @@ else if (func == "SetModified") {
 else if (func == "GetModified") {
     ret = Proxy::GetModified ();
 }
+/* Read configuration (useful for cloning) */
+else if (func == "Read") {
+    ret = Proxy::Read();
+}
 /* Return actual state */
 else if (func == "Export") {
     ret = Proxy::Export();
