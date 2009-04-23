@@ -767,10 +767,15 @@ global define boolean ProposeInterfaces () {
     foreach (integer number, any lanitem, LanItems::Items, {
 	if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) {
 	LanItems::current = number;
-        boolean link = LanItems::getCurrentItem()["hwinfo", "link"]:false == true;
-	if (!link) y2warning("item number %1 has link:false detected", number);
-	if (!LanItems::IsItemConfigured() && link){
-	  y2milestone("Nothing already configured - start proposing");
+        boolean valid = LanItems::getCurrentItem()["hwinfo", "link"]:false == true;
+	if (!valid) y2warning("item number %1 has link:false detected", number);
+	   // don't propose WLAN interface (bnc#450670)
+	    else if (LanItems::getCurrentItem()["hwinfo", "type"]:""=="wlan"){
+		 y2warning("not proposing WLAN interface");
+		 valid = false;
+		}
+	if (!LanItems::IsItemConfigured() && valid){
+	  y2milestone("Not configured - start proposing");
 	  LanItems::ProposeItem();
 	 }
 	}

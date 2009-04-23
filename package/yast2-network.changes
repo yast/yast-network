@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Apr 23 21:46:28 CEST 2009 - mzugec@suse.cz
+
+- don't propose bridged network for WLAN devices (bnc#450670)
+- 2.18.28 
+
+-------------------------------------------------------------------
 Thu Apr  9 14:05:51 CEST 2009 - mzugec@suse.de
 
 - fixed netmask/prefixlen validation and correct write (bnc#493222)
