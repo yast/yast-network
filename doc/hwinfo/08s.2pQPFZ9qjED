@@ -1,0 +1,22 @@
+[General]
+UniqueID=08s.2pQPFZ9qjED
+ParentID=SnfP.KtyDS4JP629
+HWClass=network
+Model=NETGEAR MA401RA Wireless PC Card
+
+[Status]
+Configured=yes
+Available=unknown
+Needed=no
+
+[Hardware]
+Bus=0x5
+Slot=0x1
+BaseClass=0x2
+SubClass=0x82
+VendorID=000b
+DeviceID=7300
+DeviceName=Card
+VendorName=NETGEAR MA401RA Wireless PC
+Hotplug=1
+HWClassList=000002002000

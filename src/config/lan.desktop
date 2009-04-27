@@ -1,0 +1,27 @@
+[Desktop Entry]
+Type=Application
+Categories=Settings;System;Qt;X-SuSE-YaST;X-SuSE-YaST-Network;
+
+X-KDE-ModuleType=Library
+X-KDE-RootOnly=true
+X-KDE-HasReadOnlyMode=true
+X-KDE-Library=yast2
+X-SuSE-YaST-Call=lan
+
+X-SuSE-YaST-Group=Network
+X-SuSE-YaST-Argument=
+X-SuSE-YaST-RootOnly=true
+X-SuSE-YaST-AutoInst=all
+X-SuSE-YaST-Geometry=
+X-SuSE-YaST-SortKey=
+X-SuSE-YaST-AutoInstResource=networking
+X-SuSE-YaST-AutoInstClonable=true
+X-SuSE-YaST-AutoInstSchema=networking.rnc
+
+Icon=yast-lan
+Exec=/sbin/yast2 lan 
+
+Name=Network Settings
+GenericName=Configure network cards, hostname and routing
+X-KDE-SubstituteUID=true
+StartupNotify=true
