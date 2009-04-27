@@ -245,9 +245,8 @@ global void WriteUdevDriverRules(){
   });
    SCR::Write(.udev_persistent.rules, net_rules);
    SCR::Write(.udev_persistent.nil, []);
-  foreach(string dev, changed_devices, {
-   y2milestone("renaming devices : %1", SCR::Execute(.target.bash_output, sformat("hwdown %1 && hwup %1", dev)));
-  });
+   y2milestone("Changed devices %1", changed_devices);
+  if (size(changed_devices)>0) y2milestone("Renaming interfaces %1", SCR::Execute(.target.bash_output, "rcnetwork stop && udevadm trigger --subsystem-match=net && rcnetwork start"));
 
  // write rules from driver
  foreach(string key, string value, (map<string, string>)driver_options, {

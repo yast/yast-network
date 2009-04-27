@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Apr 27 10:15:25 CEST 2009 - mzugec@suse.de
+
+- improved "device renaming" functionality (bnc#447480) and
+ (bnc#461179)
+- 2.18.29 
+
+-------------------------------------------------------------------
 Thu Apr 23 21:46:28 CEST 2009 - mzugec@suse.cz
 
 - don't propose bridged network for WLAN devices (bnc#450670)
