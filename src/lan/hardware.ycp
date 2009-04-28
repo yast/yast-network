@@ -506,7 +506,7 @@ Choose a different one."), nm));
 		y2milestone("interface without hwinfo, proposing STARTMODE=auto");
 		LanItems::startmode="auto";
     }
-}
+ }
 
  string driver = (string) UI::QueryWidget(`modul, `Value);
  LanItems::setDriver(driver);

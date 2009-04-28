@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Apr 28 16:02:37 CEST 2009 - mzugec@suse.de
+
+- correctly read/write module options (bnc#487656)
+- 2.18.30 
+
+-------------------------------------------------------------------
 Mon Apr 27 10:15:25 CEST 2009 - mzugec@suse.de
 
 - improved "device renaming" functionality (bnc#447480) and

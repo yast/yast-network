@@ -182,8 +182,8 @@ boolean ReadUdevDriverRules(){
  udev_net_rules = (map<string, any>)SCR::Read(.udev_persistent.net);
 
  y2milestone ("Reading driver options ...");
- foreach(string driver, SCR::Dir(.modprobe.network.options), {
-  string pth=sformat(".modprobe.network.options.%1",driver);
+ foreach(string driver, SCR::Dir(.modules.options), {
+  string pth=sformat(".modules.options.%1",driver);
 //  driver_options[driver] = SCR::Read(topath(pth));
   foreach(string key, string value, (map<string, string>)SCR::Read(topath(pth)), {
    driver_options[driver] = sformat("%1%2%3=%4", driver_options[driver]:"",
@@ -256,9 +256,9 @@ global void WriteUdevDriverRules(){
    val[ l[0]:"" ]=l[1]:"";
   });
   if (!hasAnyValue(value)) val=nil;
-  SCR::Write(add(.modprobe.network.options, key), val);
+  SCR::Write(add(.modules.options, key), val);
  });
- SCR::Write(.modprobe.network,nil);
+ SCR::Write(.modules,nil);
 }
 
 /**
