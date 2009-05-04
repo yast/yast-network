@@ -1,0 +1,20 @@
+{
+    import "Testsuite";
+    map READ = $[
+        "target" : $[
+            "tmpdir" : "/tmp",
+            "stat" : $[],
+        ],
+    ];
+    Testsuite::Init ([READ], 0);
+
+include "testsuite.ycp";
+
+include "network/routines.ycp";
+
+Testsuite::Dump("list2items");
+Testsuite::Test(``(list2items(["x","y"], 0)), [], nil);
+
+Testsuite::Dump("hwlist2items");
+Testsuite::Test(``(hwlist2items([$["name":"x"],$["name":"y"]], 0)), [], nil);
+}

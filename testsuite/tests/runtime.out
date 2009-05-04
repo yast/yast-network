@@ -1,0 +1,17 @@
+Dump	RunSuSEconfig
+Execute	.target.bash "/sbin/SuSEconfig --module apache 2>/dev/null" 0
+Execute	.target.bash "/sbin/SuSEconfig --module sendmail 2>/dev/null" 0
+Execute	.target.bash "/sbin/SuSEconfig --module postfix 2>/dev/null" 0
+Return	true
+Execute	.target.bash "/sbin/SuSEconfig --module apache 2>/dev/null" 1
+Execute	.target.bash "/sbin/SuSEconfig --module sendmail 2>/dev/null" 1
+Execute	.target.bash "/sbin/SuSEconfig --module postfix 2>/dev/null" 1
+Return	true
+Dump	RunSuSEconfigModule
+Execute	.target.bash "/sbin/SuSEconfig --module postfix" 0
+Return	true
+Execute	.target.bash "/sbin/SuSEconfig --module postfix" 1
+Return	false
+Dump	SetupSMPPPD
+Return	true
+Return	false
