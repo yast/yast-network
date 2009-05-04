@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon May  4 14:48:06 CEST 2009 - mzugec@suse.de
+
+- fixed: after autoinstall, dns and routing info are lost
+ (bnc#498993)
+- 2.18.31 
+
+-------------------------------------------------------------------
 Tue Apr 28 16:02:37 CEST 2009 - mzugec@suse.de
 
 - correctly read/write module options (bnc#487656)
