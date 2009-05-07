@@ -1,8 +1,14 @@
 -------------------------------------------------------------------
+Thu May  7 16:11:55 CEST 2009 - mzugec@suse.cz
+
+- configure CHAN_IDS for LCS devices (bnc#363978)
+- 2.13.127
+
+-------------------------------------------------------------------
 Thu Apr  2 11:47:13 CEST 2009 - mzugec@suse.de
 
 - fixed overview dialog for additional addresses (bnc#420074)
-- 2.14.126 
+- 2.13.126 
 
 -------------------------------------------------------------------
 Wed Mar 18 14:56:28 CET 2009 - kmachalkova@suse.cz
@@ -14,13 +20,13 @@ Wed Mar 18 14:56:28 CET 2009 - kmachalkova@suse.cz
 Thu Mar 12 09:28:12 CET 2009 - mzugec@suse.cz
 
 - for s390 propose CHAN_IDS values (445339)
-- 2.14.125 
+- 2.13.125 
 
 -------------------------------------------------------------------
 Mon Mar  2 13:49:32 CET 2009 - mzugec@suse.de
 
 - possible to not use LABEL for aliases (bnc#471253)
-- 2.14.124 
+- 2.13.124 
 
 -------------------------------------------------------------------
 Thu Feb 19 09:10:00 CET 2009 - mzugec@suse.cz

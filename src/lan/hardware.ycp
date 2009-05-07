@@ -666,7 +666,10 @@ define any S390Dialog() {
 		`TextEntry(`id(`chan_mode), _("&Port Number"), Lan::chan_mode),
 		`VSpacing(1),
 		/* TextEntry label */
-		`TextEntry(`id(`lcs_timeout), _("&LANCMD Time-Out"), Lan::lcs_timeout)
+		`TextEntry(`id(`lcs_timeout), _("&LANCMD Time-Out"), Lan::lcs_timeout),
+		`VSpacing(1),
+		/* TextEntry label */
+		`TextEntry(`id(`qeth_chanids), _("CHAN IDS"), Lan::qeth_chanids)
 		), `HSpacing(2))),
 	    `HSpacing(6)
 	);
@@ -791,6 +794,7 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 	 }
 	if(Lan::type == "lcs")
 	    Lan::lcs_timeout = (string) UI::QueryWidget(`id(`lcs_timeout), `Value);
+	    Lan::qeth_chanids = (string) UI::QueryWidget(`id(`qeth_chanids), `Value);
 	if(Lan::type == "qeth" || Lan::type == "hsi") {
 	    Lan::qeth_options = (string) UI::QueryWidget(`id(`qeth_options), `Value);
 	    Lan::ipa_takeover = (boolean) UI::QueryWidget(`id(`ipa_takeover), `Value);
