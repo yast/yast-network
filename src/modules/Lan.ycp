@@ -82,6 +82,7 @@ global string bootproto = "static";
 global string ipaddr = "";
 global string remoteip = "";
 global string netmask = "";
+global string prefix = "";
 
 global string startmode = "auto";
 global boolean usercontrol = false;
@@ -949,6 +950,7 @@ global define void SetDefaultsForHW () {
 map<string, string> SysconfigDefaults = $[
     "BOOTPROTO": "static",
     "IPADDR": "",
+    "PREFIXLEN": "",
     "REMOTE_IPADDR": "",
     "NETMASK": "",
     "MTU": "",
@@ -1012,6 +1014,7 @@ void SetDeviceVars(map devmap, map defaults) {
     /* address options */
     bootproto = GetDeviceVar (devmap, defaults, "BOOTPROTO");
     ipaddr = GetDeviceVar (devmap, defaults, "IPADDR");
+    prefix = GetDeviceVar (devmap, defaults, "PREFIXLEN");
     remoteip = GetDeviceVar (devmap, defaults, "REMOTE_IPADDR");
     netmask = GetDeviceVar (devmap, defaults, "NETMASK");
 
@@ -1248,7 +1251,8 @@ global define boolean Commit() {
 
 	// #104494 - always write IPADDR+NETMASK, even empty
 	newdev["IPADDR"] = ipaddr;
-	newdev["NETMASK"] = netmask;
+	if(size(prefix)>0) newdev["PREFIXLEN"] = prefix;
+		else newdev["NETMASK"] = netmask;
 	// #50955 omit computable fields
 	newdev["BROADCAST"] = "";
 	newdev["NETWORK"] = "";

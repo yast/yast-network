@@ -193,10 +193,11 @@ void enableDisableBootProto(symbol current){
  * @param key id of the widget
  */
 void InitializeWidgetRbg (string key) {
-    string value = settings[key]:"";
-    value = key + "_" + value;
-    my2debug ("RBGW", sformat ("init k: %1, v: %2", key, value));
-    UI::ChangeWidget (`id (key), ValueProp (key), value);
+     string value = settings[key]:"";
+     value = key + "_" + value;
+     my2debug ("RBGW", sformat ("init k: %1, v: %2", key, value));
+     UI::ChangeWidget (`id (key), ValueProp (key), value);
+//    }
 }
 
 /**
@@ -210,6 +211,15 @@ void StoreWidgetRbg (string key, map event) {
     string value = splitstring (value_g, "_")[1]:"";
     my2debug ("RBGW", sformat ("store k: %1, v: %2, e: %3", key, value, event));
     settings[key] = value;
+  if (value=="static"){
+   string mask = (string)UI::QueryWidget(`id("NETMASK"), `Value);
+   settings["PREFIXLEN"]="";
+   if(substring(mask, 0,1)=="/") settings["PREFIXLEN"]=substring(mask, 1);
+    else {
+     if (Netmask::Check6(mask)) settings["PREFIXLEN"]=mask;
+      else settings["NETMASK"]=mask;
+    }
+  }
 }
 
 /**
@@ -296,8 +306,15 @@ boolean ValidateNetmask (string key, map event) {
     // widgets
     if (HaveStaticAddress ())
     {
-	string ipa = (string) UI::QueryWidget (`id (key), `Value);
-	return Netmask::Check (ipa);
+	boolean valid_mask=false;
+	string ip = (string) UI::QueryWidget (`id ("IPADDR"), `Value);
+	string mask = (string) UI::QueryWidget (`id ("NETMASK"), `Value);
+	 if (substring(mask, 0,1)=="/") mask=substring(mask,1);
+
+	 if (IP::Check4(ip) && Netmask::Check4(mask)) valid_mask=true;
+	   else if (IP::Check6(ip) && Netmask::Check6(mask)) valid_mask=true;
+	     else y2warning("IP address %1 is not valid", ip);
+	 return valid_mask;
     }
     return true;
 }
@@ -829,12 +846,15 @@ define any AddressDialog() {
 	"BOOTPROTO": Lan::bootproto,
 	"IPADDR": Lan::ipaddr,
 	"NETMASK": Lan::netmask,
+	"PREFIXLEN": Lan::prefix,
 	"REMOTEIP": Lan::remoteip,
 
 	"IFCFGTYPE": Lan::type,
 	"IFCFGID": Lan::device,
 	];
 
+    if (size(settings["PREFIXLEN"]:"")>0)
+	settings["NETMASK"]=sformat("/%1", settings["PREFIXLEN"]:"");
 
     term general_contents = `MarginBox (1, 0,
 	`VBox (
@@ -1165,12 +1185,14 @@ Components of this product might not work with DHCP.</p>");
 	    Lan::ipaddr = settings["IPADDR"]:"";
 	    Lan::netmask = settings["NETMASK"]:"";
 	    Lan::remoteip = settings["REMOTEIP"]:"";
+	    Lan::prefix = settings["PREFIXLEN"]:"";
 	}
 	else
 	{
 	    Lan::ipaddr = "";
 	    Lan::netmask = "";
 	    Lan::remoteip = "";
+	    Lan::prefix = "";
 
 	    // fixed bug #73739 - if dhcp is used, don't set default gw statically
 	    // but reset it if and only if DHCP will be used to supply it - #460262

@@ -8,10 +8,8 @@ BuildRequires: yast2-devtools yast2-testsuite yast2
 BuildRequires: yast2-country yast2-installation
 # carrier detection
 Requires:	yast2-core >= 2.10.6
-# String::Random
-# Linuxrc::display_ip
-# NetworkDevices::FindFastest
-Requires:	yast2 >= 2.13.90
+# yast2 requires for IPv6/PREFIXLEN
+Requires:	yast2 >= 2.13.115
 Requires:	sysconfig yast2-country yast2-inetd yast2-packager
 PreReq:		/bin/rm
 

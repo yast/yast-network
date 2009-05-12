@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue May 12 20:02:41 CEST 2009 - mzugec@suse.de
+
+- support for IPv6/PREFIXLEN (fate#303811)
+- 2.13.128 
+
+-------------------------------------------------------------------
 Thu May  7 16:11:55 CEST 2009 - mzugec@suse.cz
 
 - configure CHAN_IDS for LCS devices (bnc#363978)
