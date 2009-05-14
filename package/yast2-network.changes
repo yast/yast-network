@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu May 14 12:41:07 CEST 2009 - mzugec@suse.cz
+
+- support for lcs::s390 devices (bnc#363978)
+- 2.18.32 
+
+-------------------------------------------------------------------
 Mon May  4 14:48:06 CEST 2009 - mzugec@suse.de
 
 - fixed: after autoinstall, dns and routing info are lost
