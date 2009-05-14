@@ -1,0 +1,25 @@
+[Desktop Entry]
+Type=Application
+Categories=Settings;System;Qt;X-SuSE-YaST;X-SuSE-YaST-Net_advanced;
+
+X-KDE-ModuleType=Library
+X-KDE-RootOnly=true
+X-KDE-HasReadOnlyMode=true
+X-KDE-Library=yast2
+X-SuSE-YaST-Call=provider
+
+X-SuSE-YaST-Group=Network
+X-SuSE-YaST-Argument=
+X-SuSE-YaST-RootOnly=true
+X-SuSE-YaST-AutoInst=write
+X-SuSE-YaST-Geometry=
+X-SuSE-YaST-SortKey=
+X-SuSE-YaST-AutoInstResource=provider
+
+Icon=yast-provider
+Exec=/sbin/yast2 provider
+
+Name=Providers
+GenericName=Configure providers
+X-KDE-SubstituteUID=true
+StartupNotify=true
