@@ -112,6 +112,7 @@ define symbol WriteDialog() ``{
 
 define boolean AddInterface () {
     Lan::Add ();
+    LanItems::operation = `add;
     LanItems::SelectHWMap(LanItems::getCurrentItem()["hwinfo"]:$[]);
     LanItems::Items[LanItems::current, "ifcfg"] = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
     LanItems::Items[LanItems::current, "commited"] = false;

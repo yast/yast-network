@@ -49,7 +49,7 @@ separated,for example: <i>io=0x300 irq=5</i>. <b>Note:</b> If two cards are
 configured with the same module name, options will be merged while saving.</p>
 ");
 
-    if(!(LanItems::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 () == true))
+    if(!(LanItems::operation == `edit || Arch::s390 ()))
     {
 
     /* Manual dialog help 4/4 */
@@ -153,8 +153,7 @@ void initHwDialog(string text) {
     );
 
     /* Disable PCMCIA and USB checkboxex on Edit and s390 */
-    if(LanItems::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 () == true)
-	CheckBoxes = `VSpacing(0);
+    if(LanItems::operation == `edit || Arch::s390 ()) CheckBoxes = `VSpacing(0);
 
 	// #116211 - allow user to change modules from list
     /* Frame label */
@@ -190,13 +189,6 @@ void initHwDialog(string text) {
 		    `HSpacing(0.5)
 		)
 	      );
-
-    /* Add hardware -> don't allow some changes (card type) */
-    // FIXME: devname if(Lan::operation == `add && Lan::unique != "") {
-
-    /* Edit -> don't allow some changes */
-    // FIXME: devname if(true /* FIXME: devname Lan::operation == `edit */) {
-
 
     term UdevWidget = 
 		// TODO: Ud ... Rules
@@ -483,7 +475,7 @@ y2internal("LanItems::GetReplacedItemUdev(%1, %2) %3",rule_key, rule_value,  Lan
 }
 
 void storeHW (string key, map event) {
-if (LanItems::operation==`add){
+  if (LanItems::operation==`add){
 
     LanItems::type = (string) UI::QueryWidget(`id(`dev), `Value);
     string nm = sformat("%1%2", LanItems::type, (string) UI::QueryWidget(`id(`num), `Value));

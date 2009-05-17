@@ -685,13 +685,7 @@ global define boolean Edit(string name) {
  */
 global define boolean Delete() {
  LanItems::DeleteItem();
-/*
-    operation = nil;
-    if(Select(name) != true) return false;
-    NetworkInterfaces::Delete(name);
-    operation = `delete;
-*/
-    return true;
+ return true;
 }
 
 
