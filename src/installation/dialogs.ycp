@@ -1,0 +1,355 @@
+/**
+ * File:	include/network/installation/dialogs.ycp
+ * Package:	Network configuration
+ * Summary:	Configuration dialogs for installation
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *		Arvin Schnell <arvin@suse.de>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Mode";
+import "Internet";
+import "Label";
+import "NetworkInterfaces";
+import "Popup";
+import "Product";
+import "String";
+import "Wizard";
+include "network/routines.ycp";
+include "network/widgets.ycp";
+
+/**
+ * Ask for password if required
+ * @return true on success
+ */
+define boolean AskForPassword() {
+
+    if (Internet::askpassword == nil)
+	return true;
+
+    if (Internet::askpassword == false)
+	return true;
+
+    UI::NormalCursor();
+    UI::OpenDialog(`VBox(
+	/* Heading text */
+	`Heading(_("Enter Provider Password")),
+	`Password(`id(`password), Label::Password ()),
+	`HBox(
+	    `PushButton(`id(`ok), `opt(`default), Label::OKButton()),
+	    `PushButton(`id(`cancel), Label::CancelButton()))
+    ));
+
+    UI::SetFocus(`id(`password));
+
+    any ret = UI::UserInput();
+
+    if(ret == `ok)
+	Internet::password = (string) UI::QueryWidget(`id(`password), `Value);
+
+    UI::CloseDialog();
+    UI::BusyCursor();
+
+    return ret == `ok;
+}
+
+/**
+ *  Set device from argument as default network device 
+ */
+void SetDevice (string dev) {
+    Internet::device=dev;
+    NetworkInterfaces::Select(Internet::device);
+    Internet::type = NetworkInterfaces::FastestType(Internet::device);
+    Internet::provider = NetworkInterfaces::Current["PROVIDER"]:"";
+
+    if (Internet::provider != "") {
+        import "Provider";
+        Provider::Read();
+        Provider::Select(Internet::provider);
+        Internet::demand = Provider::Current["DEMAND"]:"no" == "yes";
+        Internet::password = Provider::Current["PASSWORD"]:"";
+        Internet::askpassword = Provider::Current["ASKPASSWORD"]:"no" == "yes";
+        Internet::capi_adsl = Provider::Current["PPPMODE"]:"pppoe" == "capi-adsl";
+        Internet::capi_isdn = Provider::Current["PPPMODE"]:"ippp" == "capi-isdn";
+    }
+
+    /* Set logfile */
+    if (Internet::type == "dsl" || Internet::type == "modem" || (Internet::type == "isdn" && Internet::capi_isdn))
+        Internet::logfile = "/var/log/smpppd/ifcfg-" + Internet::device + ".log";
+
+}
+
+/**
+ * Connection steps dialog
+ * @return dialog result
+ */
+define symbol TestStepsDialog() {
+
+    ScreenName("installation-steps-dialog");
+
+    /* Steps dialog caption */
+    string caption = _("Test Internet Connection");
+
+    /* Steps dialog caption 1/2 */
+    string help = _("<p>Here, validate the Internet connection just
+configured. The test is entirely optional.</p>");
+
+    if(Product::run_you) {
+	/* Steps dialog caption 2/2 */
+	help = help + _("<p>A successful result enables you to run
+the YaST Online Update.</p>");
+    }
+
+    /* Label text (keep lines max. 65 chars long) */
+    string label = _("To validate your Internet access,
+activate the test procedure.");
+
+    map labels = $[
+	/* Label text (keep lines max. 65 chars long) */
+	"dsl" : _("To validate your DSL Internet access,
+activate the test procedure."),
+	/* Label text (keep lines max. 65 chars long) */
+	"isdn" : _("To validate your ISDN Internet access,
+activate the test procedure."),
+	/* Label text (keep lines max. 65 chars long) */
+	"modem" : _("To validate your modem Internet access,
+activate the test procedure."),
+    ];
+
+    if(haskey(labels, Internet::type)) label = labels[Internet::type]:"";
+
+list<string> items = getInternetItems();
+
+    boolean already_up = false;
+    if(!Mode::test ()) already_up = Internet::Status();
+string current = Internet::device;
+    /* Radiobuttons */
+    term buttons = `VBox(
+	`VSpacing(0.4),
+	/* RadioButton label */
+	`Left(`RadioButton(`id(`yes), `opt(`notify), _("&Yes, Test Connection to the Internet Via"), Internet::do_test)),
+	getDeviceContens(current),
+	/* RadioButton label */
+	`Left(`RadioButton(`id(`no), `opt(`notify), _("N&o, Skip This Test"), !Internet::do_test)),
+	`VSpacing(0.4)
+    );
+
+    /* the steps */
+    term steps = `VBox();
+    if(!already_up) {
+	/* label text - one step of during network test */
+	steps = add(steps, `Left(`Label(_("- Connect to the Internet"))));
+    }
+    if(true) {
+	/* label text - one step of during network test */
+	steps = add(steps, `Left(`Label(_("- Download latest release notes"))));
+    }
+    if(Product::run_you) {
+	/* label text - one step of during network test */
+	steps = add(steps, `Left(`Label(_("- Check for latest updates"))));
+    }
+    if(!already_up) {
+	/* label text - one step of during network test */
+	steps = add(steps, `Left(`Label(_("- Close connection"))));
+    }
+
+    /* Steps dialog contents */
+    term contents = `HBox(
+//	`HSpacing(5),
+	`HStretch(),
+	`VBox(
+	    `Left(`Label(label)),
+	    `VSpacing(1),
+	    /* Heading text */
+	    `Left(`Heading(_("The following steps will be performed:"))),
+	    `VSpacing(1),
+	    steps,
+	    `VSpacing(2),
+	    `Left( `HSquash(
+	             /* Frame label */
+		`Frame(_("Select:"), `RadioButtonGroup(`id(`rb), `HBox(
+		    `HSpacing(2),
+		     buttons,
+		    `HSpacing(2)
+	           ))
+                )
+	    )),
+	    `VSpacing(1)
+	),
+//	`HSpacing(5)
+	`HStretch()
+    );
+
+    Wizard::SetContents(caption, contents, help, true, true);
+    Wizard::SetTitleIcon ("yast-network");
+    initDevice(items);
+
+
+    symbol ret = nil;
+    boolean exit=false;
+    do
+    {
+	ret = (symbol)UI::UserInput();
+	switch( ret )
+	{
+
+	case `net_expert :
+		current = handleDevice(items, current);
+		break;
+	case `abort:
+	case `cancel:
+	    if (Popup::ConfirmAbort (`incomplete)){
+		exit=true;
+		break;
+		}
+	case `next:
+	case `back:
+	    exit=true;
+	    break;
+	case `yes:
+		enableDevices(size(items)>1);
+		break;
+	case `no:
+		enableDevices(false);
+		break;
+	default:
+	    y2error("Unexpected return code:%1", ret);
+
+	}
+    }while(!exit);
+
+    Internet::do_test = UI::QueryWidget(`id(`rb), `CurrentButton) == `yes;
+    SetDevice(current);
+    y2debug("Internet::do_test=%1", Internet::do_test);
+
+    return (symbol) ret;
+}
+
+/**
+ * Connection test dialog
+ * @return dialog result
+ */
+define void AskYOUDialog() {
+
+    ScreenName("installation-you-dialog");
+
+    /* Radiobuttons */
+    term buttons = `VBox(
+	`VSpacing(1),
+	/* RadioButton label */
+	`Left(`RadioButton(`id(`yes), _("&Yes, Run Online Update Now"), true)),
+	/* RadioButton label */
+	`Left(`RadioButton(`id(`no), _("N&o, Skip Update"), false)),
+	`VSpacing(1)
+    );
+
+    /* Dialog Content */
+    term content = `HBox(
+	`HSpacing(1),
+	`VBox(
+	    `VSpacing(1),
+	    /* Heading text */
+	    `Left(`Heading(_("Online Updates Available"))),
+	    `VSpacing(1),
+	    /* Label text */
+	    `Label(_("Download and install them via the YaST Online Update?")),
+	    `RadioButtonGroup(`HBox(
+		`HSpacing(2),
+		buttons,
+		`HSpacing(2)
+	    )),
+	    `HBox(`PushButton(`opt(`default), Label::OKButton())),
+	    `VSpacing(0.5)
+	),
+	`HSpacing(1)
+    );
+
+    UI::OpenDialog(content);
+    UI::UserInput();
+
+    Internet::do_you = (boolean) UI::QueryWidget(`id(`yes), `Value);
+    y2debug("Internet::do_you=%1", Internet::do_you);
+
+    UI::CloseDialog ();
+}
+
+
+/**
+ * Show several log files.
+ * @param logs log files
+ * @param logdir log files directory
+ */
+define void ShowLogs(list<map> logs, string logdir) {
+
+    ScreenName("installation-show-logs");
+
+    logs = sort(map x, map y, logs, {
+	return x[`prio]:0 > y[`prio]:0;
+    });
+
+    list <term> menunames = [];
+    integer item_counter = 0;
+    map <integer, string> file_index = $[];
+    maplist(map v, logs, {
+	item_counter = item_counter + 1;
+	file_index[item_counter] = v[`filename]:"none";
+	menunames = add(menunames, `item(`id(item_counter), v[`menuname]:"none"));
+    });
+
+    term content = `VBox(
+	/* Heading */
+	`Left(`Heading(_("Internet Connection Test Logs:"))),
+	`HSpacing(70),
+	`HBox(
+	    `HSpacing(1.0),
+	    /* ComboBox label */
+	    `ComboBox(`id(`selector), `opt(`notify, `hstretch),
+		_("&Select Log:"), menunames),
+	    `HStretch()
+	),
+	`HBox(
+	    `VSpacing(18),
+	    `HSpacing(0.5),
+	    `RichText(`id(`log), ""),
+	    `HSpacing(0.5)
+	),
+	`PushButton(`id(`ok), `opt(`default), Label::OKButton())
+    );
+
+    UI::OpenDialog(content);
+
+    string filename = file_index[1]:"none";
+
+    while(true)
+    {
+	/* Read file and fill logview */
+	y2milestone("Opening file: %1", logdir + "/" + filename);
+	string tmp2 = (string) SCR::Read(.target.string, logdir + "/" + filename);
+	if(tmp2 == nil) tmp2 = "file not found";
+	UI::ChangeWidget(`id(`log), `Value, "<pre>" +
+			 String::EscapeTags (tmp2) + "</pre>");
+
+	any ret = UI::UserInput();
+
+	if(ret == `ok)
+	{
+	    break;
+	}
+	else if(ret == `selector)
+	{
+	    integer selected_menu_item = (integer) UI::QueryWidget(`id(`selector), `Value);
+
+	    filename = file_index[selected_menu_item]:"none";
+	}
+    }
+
+    UI::CloseDialog();
+}
+
+/* EOF */
+}

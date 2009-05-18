@@ -1,0 +1,287 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+<title>Network Configuration: Devices Overview</title>
+</head><body bgcolor=#ffffff>
+
+<!-- Author: Michal Svec <msvec@suse.cz> -->
+<!-- $Id$ -->
+<a name="top"></a>
+<h1>Network Configuration: Devices Overview</h1>
+<hr>
+
+<table border="1" summary="overview">
+  <tbody>
+<!-- ========================================================= -->
+    <tr>
+      <th>Type</th>
+      <th>Subtype</th>
+      <th>Device</th>
+
+      <th>PTP</th>
+
+      <th>ISA</th>
+      <th>PCI</th>
+      <th>PCMCIA</th>
+      <th>CardBus</th>
+      <th>USB</th>
+      <th>Serial</th>
+
+      <th>Other</th>
+    </tr>
+<!-- ========================================================= -->
+    <tr>
+      <td rowspan=13>Network Card</td>
+      <td><a href="#arc">ARCnet</a></td>
+      <td>arc</td>
+      <td></td>
+      <td>ISA</td>
+      <td><a href="">#</a></td>
+    </tr>
+    <tr>
+      <td><a href="#dummy">Dummy</a></td>
+      <td>dummy</td>
+    </tr>
+    <tr>
+      <td><a href="#ci">CLAW</a></td>
+      <td>ci</td>
+    </tr>
+    <tr>
+      <td><a href="#ctc">CTC</a></td>
+      <td>ctc</td>
+      <td>PTP</td>
+    </tr>
+    <tr>
+      <td><a href="#escon">Escon</a></td>
+      <td>escon</td>
+      <td>PTP</td>
+    </tr>
+    <tr>
+      <td><a href="#eth">Ethernet</a></td>
+      <td>eth</td>
+      <td></td>
+      <td>ISA</td>
+      <td><a href="hwinfo/bSAa.+xOL8ZCSAQC">PCI</a></td>
+      <td><a href="hwinfo/K1pk.IbtCQ++Y3l4">PCMCIA</a></td>
+      <td><a href="hwinfo/vTuk.IQxIdIhhuH7">CardBus</a></td>
+      <td><a href="">#</a></td>
+    </tr>
+    <tr>
+      <td><a href="#fddi">FDDI</a></td>
+      <td>fddi</td>
+      <td></td>
+      <td>ISA</td>
+      <td><a href="">#</a></td>
+    </tr>
+    <tr>
+      <td><a href="#hsi">Hipersockets</a></td>
+      <td>hsi</td>
+    </tr>
+    <tr>
+      <td><a href="#iucv">IUCV</a></td>
+      <td>iucv</td>
+      <td>PTP</td>
+    </tr>
+    <tr>
+      <td><a href="#myri">Myrinet</a></td>
+      <td>myri</td>
+      <td></td>
+      <td></td>
+      <td><a href="hwinfo/bSAa.wZUhdK_A1p5">PCI</a></td>
+    </tr>
+    <tr>
+      <td><a href="#qeth">QETH</a></td>
+      <td>qeth</td>
+    </tr>
+    <tr>
+      <td><a href="#tr">Token-Ring</a></td>
+      <td>tr</td>
+      <td></td>
+      <td>ISA</td>
+      <td><a href="hwinfo/H9CO.Oa5XQ+zHPiE">PCI</a></td>
+      <td><a href="">#</a></td>
+      <td><a href="">#</a></td>
+      <td><a href="">#</a></td>
+    </tr>
+    <tr>
+      <td><a href="#wlan">Wireless</a></td>
+      <td>wlan</td>
+      <td></td>
+      <td></td>
+      <td><a href="hwinfo/jqQS.CA1y3f8FAiF">PCI</a></td>
+      <td><a href="">#</a></td>
+      <td><a href="hwinfo/08s.2pQPFZ9qjED">CardBus</a></td>
+      <td><a href="">#</a></td>
+    </tr>
+<!-- ========================================================= -->
+    <tr>
+      <td rowspan=3><a href="#dialup">Dialup</a></td>
+      <td>Modem</td>
+      <td>ppp</td>
+      <td>PTP</td>
+      <td>ISA</td>
+      <td><a href="">#</a></td>
+      <td><a href="hwinfo/i7s0.gdm40Ifamk7">PCMCIA</a></td>
+      <td><a href="">#</a></td>
+      <td><a href="hwinfo/ZLwt.gGqXKNqGK+7">USB</a></td>
+      <td><a href="hwinfo/i7s0.stlz_5b5o73">Serial</a></td>
+    </tr>
+<!-- ========================================================= -->
+    <tr>
+      <td>ISDN Card</td>
+      <td>ippp</td>
+      <td>PTP</td>
+      <td><a href="hwinfo/QQNm.4JPVYg4a1y4">ISA</a></td>
+      <td><a href="hwinfo/gZD2.gV8_U5wZ+LB">PCI</a></td>
+      <td><a href="">#</a></td>
+      <td><a href="">#</a></td>
+      <td><a href="hwinfo/B3Fu.FC71YnSrDeA">USB</a></td>
+      <td></td>
+      <td><a href="hwinfo/WL76.NfNR2ssSbN5">DSL - combo</a></td>
+    </tr>
+<!-- ========================================================= -->
+    <tr>
+      <td>DSL</td>
+      <td>ppp</td>
+      <td>PTP</td>
+      <td></td>
+      <td><a href="hwinfo/WL76.NfNR2ssSbN5">PCI</a></td>
+      <td></td>
+      <td></td>
+      <td><a href="hwinfo/B3Fu.Z4Y2LKD9B2B">USB</a></td>
+      <td></td>
+      <td><a href="hwinfo/Phe5.ndpeucax6V12">PPPOE</a></td>
+    </tr>
+<!-- ========================================================= -->
+    <tr>
+      <td rowspan=3><a href="#tunnel">Tunnel</a></td>
+      <td>6-in-4</td>
+      <td>sit</td>
+      <td>PTP</td>
+    </tr>
+    <tr>
+      <td>GRE</td>
+      <td>gre</td>
+      <td>PTP</td>
+    </tr>
+    <tr>
+      <td>IPIP</td>
+      <td>ipip</td>
+      <td>PTP</td>
+    </tr>
+<!-- ========================================================= -->
+    <tr>
+      <td rowspan=2><a href="#special">Special</a></td>
+      <td>Loopback</td>
+      <td>lo</td>
+    </tr>
+    <tr>
+      <td>VMWare</td>
+      <td>vmnet</td>
+    </tr>
+<!-- ========================================================= -->
+    <tr>
+      <td rowspan=4><a href="#cable">Cable</a></td>
+      <td rowspan=2>Serial Line</td>
+      <td>slip</td>
+    </tr>
+    <tr>
+      <td>ppp</td>
+    </tr>
+    <tr>
+      <td>Parallel Line</td>
+      <td>plip</td>
+    </tr>
+    <tr>
+      <td>USB Network</td>
+      <td>usb?</td>
+    </tr>
+<!-- ========================================================= -->
+    <tr>
+      <td rowspan=7><a href="#wireless">Wireless</a></td>
+      <td rowspan=3>Infra-Red</td>
+      <td>irda</td>
+    </tr>
+    <tr>
+      <td>irlan</td>
+    </tr>
+    <tr>
+      <td>ppp</td>
+    </tr>
+    <tr>
+      <td>Bluetooth</td>
+      <td>bt</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td><a href="hwinfo/B3Fu.FC71YnSrDeA">USB</a></td>
+    </tr>
+<!-- ========================================================= -->
+  </tbody>
+</table>
+
+<!-- ********************************************************* -->
+
+<h3>Notes:</h3>
+<ol>
+<li><b>PTP</b> means a <b>Point-to-Point</b> network link
+<li>Regular <b>ISA</b> cards can't be detected by hwinfo, so there's no way
+    to download the hwinfo log. It's only possible for some ISA PnP cards.
+<li># means missing hwinfo log
+</ol>
+
+<!-- ********************************************************* -->
+
+<h3>Description:</h3>
+
+<ul>
+<li><a name="arc">ARCnet</a>
+/usr/src/linux/Documentation/networking/arcnet.txt
+/usr/src/linux/Documentation/networking/arcnet-hardware.txt
+
+<li><a name="ci">CLAW</a>
+<li><a name="ctc">CTC</a>
+Channel-To-Channel
+
+<li><a name="dummy">dummy</a>
+/usr/src/linux/drivers/net/dummy.c
+
+<li><a name="decnet">DecNet</a>
+/usr/src/linux/Documentation/networking/decnet.txt
+
+<li><a name="escon">Escon</a>
+Enteprise System CONnector (something like a mixture of SCSI and
+Ethernet - its a channel, but can carry network traffic)
+
+<li><a name="eth">Ethernet</a>
+<li><a name="fddi">FDDI</a>
+<li><a name="hsi">HSI</a>
+Hipersockets
+
+<li><a name="iucv">IUCV</a>
+Inter User Communication Vehicle (means: DMA based network pipe
+between Virtual Machine instances (like vmware) on an s390)
+
+<li><a name="myri">Myrinet</a>
+<a href="http://www.myri.com">http://www.myri.com</a>
+
+<li><a name="plip">PLIP</a>
+Parallel Line IP
+/usr/src/linux/Documentation/networking/PLIP.txt
+
+<li><a name="qeth">QETH</a>
+
+<li><a name="sci">SCI</a>
+<a href="http://www.scizzl.com/WhatIsSCI.html">http://www.scizzl.com/WhatIsSCI.html</a>
+<a href="http://www.dolphinics.com/sci/index.html">http://www.dolphinics.com/sci/index.html</a>
+
+<li><a name="tr">Token-Ring</a>
+<li><a name="wlan">Wireless</a>
+</ul>
+
+<!-- ********************************************************* -->
+
+</body>
+</html>
+<!-- EOF -->
