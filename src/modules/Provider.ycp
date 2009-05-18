@@ -802,6 +802,7 @@ global define list GetProviders(string type, string country, string preselect) {
     y2debug("type=%1", type);
     y2debug("provs=%1", provs);
     /* Filter only desired providers */
+    if (provs==nil) provs=[];
     provs = FilterProviders(provs, type);
 
     y2debug("provs=%1",provs);

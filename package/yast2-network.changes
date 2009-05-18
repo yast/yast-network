@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon May 18 10:04:57 CEST 2009 - mzugec@suse.cz
+
+- fixed: modem configuration syntax error (bnc#497459)
+- 2.18.33 
+
+-------------------------------------------------------------------
 Thu May 14 12:41:07 CEST 2009 - mzugec@suse.cz
 
 - support for lcs::s390 devices (bnc#363978)
