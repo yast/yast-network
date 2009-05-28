@@ -650,6 +650,7 @@ map<string, map<string,any> > widget_descr_local = $[
 		`ReplacePoint(`id(`rp), `Left(`RadioButton(`id(`none),`opt(`notify),  _("No IP Address (for Bonding Devices)")))),
 		`Left(`HBox(
 		 `RadioButton(`id(`dynamic), `opt(`notify), _("Dynamic Address")),
+		  `HSpacing(2),
 		  `ComboBox(`id(`dyn), "", [
 			`item(`id(`dhcp), "DHCP"),
 			`item(`id(`dhcp_auto), "DHCP+Zeroconf"),

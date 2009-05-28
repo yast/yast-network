@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu May 28 16:47:38 CEST 2009 - mzugec@suse.cz
+
+- fixed: missing space in lan dialog (bnc#506732)
+- 2.18.34 
+
+-------------------------------------------------------------------
 Mon May 18 10:04:57 CEST 2009 - mzugec@suse.cz
 
 - fixed: modem configuration syntax error (bnc#497459)
