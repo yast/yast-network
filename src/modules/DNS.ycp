@@ -1,0 +1,447 @@
+/**
+ * File:	modules/DNS.ycp
+ * Package:	Network configuration
+ * Summary:	Hostname and DNS data
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Manages resolv.conf and (fully qualified) hostname, also
+ * respecting DHCP.
+ */
+
+{
+
+module "DNS";
+textdomain "network";
+
+import "NetHwDetection";
+import "Host";
+import "Hostname";
+import "IP";
+import "NetworkConfig";
+import "NetworkInterfaces";
+import "Progress";
+import "Service";
+import "String";
+
+include "network/routines.ycp";
+include "network/runtime.ycp";
+
+/**
+ * Should the hostname be proposed? #152218
+ */
+global boolean proposal_valid = false;
+
+/**
+ * Short Hostname
+ */
+global string hostname = "";
+
+/**
+ * Domain Name (not including the host part)
+ */
+global string domain = "";
+
+global list<string> nameservers = [];
+global list<string> searchlist = [];
+
+global string resolv_conf_policy = "";
+
+// fully qualified
+string oldhostname = "";
+
+/**
+ * Data was modified?
+ */
+global boolean modified = false;
+
+
+/**
+ * Use the parameter, coming usually from install.inf, if it is defined.
+ * Used when there is nothing better.
+ * @param ns ip of the nameserver
+ * @return true if success
+ */
+global define boolean ReadNameserver (string ns) {
+    if (ns == "" || ns == nil)
+	return false;
+    nameservers = [ ns ];
+    modified = true;
+    return true;
+}
+
+/**
+ * Use this host and domain name, if they are defined
+ * @param hn hostname
+ * @param dn domain name
+ * @return true if the hostname has been assigned
+ */
+global define boolean ReadHostDomain (string hn, string dn) {
+    if (hn == "" || hn == nil || dn == nil)
+	return false;
+    hostname = hn;
+    domain = dn;
+    modified = true;
+    return true;
+}
+
+/*
+ * Get current hostname and IP Address
+ * if these are set by DHCP
+ * @return map with ip, hostname_short and hostname_fq keys
+ */
+global define map <string, string> GetDHCPHostnameIP () {
+    map <string, string> ret = $[];
+
+    map output = (map) SCR::Execute(.target.bash_output, "hostname -i");
+    ret["ip"] = deletechars(output["stdout"]:"", " \n");
+
+    output = (map) SCR::Execute(.target.bash_output, "hostname");
+    ret["hostname_short"] = deletechars(output["stdout"]:"", " \n");
+
+    output = (map) SCR::Execute(.target.bash_output, "hostname -f");
+    ret["hostname_fq"] = deletechars(output["stdout"]:"", " \n");
+
+    return ret;
+}
+
+/**
+ * resolver config file location
+ */
+string resolv_conf = "/etc/resolv.conf";
+
+/**
+ * True if DNS is already read
+ */
+boolean initialized = false;
+
+/**
+ * Reads current DNS and hostname settings
+ * Includes Host,NetworkConfig::Read
+ * @return true if success
+ */
+global define boolean Read() {
+
+    if(initialized == true) return true;
+
+    //in this order, because Host:;write hostname gets initialized from NetworkConfig::DHCP
+    NetworkConfig::Read();
+    Host::Read();
+
+    Host::SetWriteHostname( NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true );
+    y2milestone("write_hostname_to_hosts value from sysconfig : %1", NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true);
+
+    /* install.inf from linuxrc */
+    map install_inf = $[];
+    if(SCR::Read(.target.size, "/etc/install.inf") > 0)
+	install_inf = (map) SCR::Read(.etc.install_inf);
+    // bogus?!
+    y2milestone ("install.inf: %1", install_inf);
+
+    resolv_conf_policy = (string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_POLICY);	
+    list<string> resolvlist = splitstring((string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS), " ");
+    if(resolvlist == nil) {
+        ReadNameserver (install_inf["Nameserver"]:"");
+    }
+    else
+        nameservers = resolvlist;
+
+    searchlist = splitstring((string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST), " ");
+
+    /* hostname and domain */
+    // all this is much too intelligent and belongs rather to the proposal
+
+    // prefer /etc/install.inf
+    // (because HOSTNAME comes with netcfg.rpm already, #144687)
+    string fqhostname = install_inf["Hostname"]:""; // Machinename never existed??
+    // if the name is actually an IP only, we discard it too
+    if (IP::Check (fqhostname))
+    {
+	fqhostname = "";
+    }
+
+    // /etc/HOSTNAME
+    // the usual location
+    if (fqhostname == "")
+    {
+	if (SCR::Read (.target.size, "/etc/HOSTNAME") > 0)
+	{
+	    fqhostname = (string) SCR::Read (.target.string, "/etc/HOSTNAME");
+	    //avoid passing nil argument when we get non-\n-terminated string (#445531)
+	    fqhostname = String::FirstChunk( fqhostname, "\n" );
+	}
+    }
+    list<string> split = Hostname::SplitFQ (fqhostname);
+    hostname = split[0]:"";
+    domain = split[1]:"";
+
+    // detection
+    if (hostname == "")
+    {
+	hostname = NetHwDetection::result["HOSTNAME"]:"";
+	domain = NetHwDetection::result["DOMAIN"]:"";
+    }
+    // last resort
+    if (hostname == "")
+    {
+	hostname = "linux";
+	domain = "site";
+    }
+    oldhostname = Hostname::MergeFQ (hostname, domain);
+
+    y2milestone("nameservers=%1", nameservers);
+    y2milestone("searchlist=%1", searchlist);
+    y2milestone("hostname=%1", hostname);
+    y2milestone("domain=%1", domain);
+
+    initialized = true;
+    return true;
+}
+
+/**
+ * Write new DNS and hostname settings
+ * Includes Host,NetworkConfig::Write
+ * @return true if success
+ */
+global define boolean Write() {
+    /* build FQ hostname */
+    string fqhostname = Hostname::MergeFQ(hostname, domain);
+
+    //We do not collect static IP addresses here, as hostnames
+    //are defined for each static IP separately in address dialog
+    //FaTE #2202
+
+    if (Host::WriteHostname()) {
+	//Always add 127.0.0.2 entry to /etc/hosts, otherwise some
+	//desktop apps may hang, not being able to resolve hostname (#304632)
+	//empty list [] as third parameter does that
+	Host::Update(oldhostname, fqhostname, []);
+	Host::Write();
+    }
+    oldhostname = fqhostname;	// #49634
+
+    NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"] = Host::WriteHostname();
+    NetworkConfig::Write();
+
+    y2milestone("Writing configuration");
+    if(!modified) {
+	y2milestone("No changes to DNS -> nothing to write");
+	return true;
+    }
+
+    y2milestone("nameservers=%1", nameservers);
+    y2milestone("searchlist=%1", searchlist);
+    y2milestone("hostname=%1", hostname);
+    y2milestone("domain=%1", domain);
+
+
+    list <string> steps = [
+        /* Progress stage 1 */
+	_("Write hostname"),
+        /* Progress stage 2 */
+	_("Run SuSEconfig"),
+        /* Progress stage 3 */
+	_("Update /etc/resolv.conf")
+    ];
+
+    /* Write dialog caption */
+    string caption = _("Saving Hostname and DNS Configuration");
+    integer sl = 0; //100; for testing
+
+    Progress::New(caption, " ", size(steps), steps, [], "");
+
+    /* Allow to set hostname even if it's modified by DHCP (#13427)
+    if(NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false != true) { */
+
+	/* remember the X authorization key */
+	string xauth_key = (string) SCR::Read(.xauth.key);
+
+	/* Progress step 1/3 */
+	ProgressNextStage(_("Writing hostname..."));
+
+	/* change the hostname */
+	SCR::Execute(.target.bash, "/bin/hostname " + hostname);
+
+	/* write hostname */
+	SCR::Write(.target.string, "/etc/HOSTNAME", fqhostname + "\n");
+	sleep(sl);
+
+	/* Progress step 2/3 */
+	ProgressNextStage(_("Running SuSEconfig..."));
+
+	/* Finish him */
+	RunSuSEconfig();
+	sleep(sl);
+
+	/* update X authorization */
+	SCR::Write(.xauth.key, xauth_key);
+
+	/*
+    if(SCR::Read(.target.size, resolv_conf) < 0)
+	SCR::Write(.target.string, resolv_conf, "");
+	*/
+	
+
+    /* Progress step 3/3 */
+    ProgressNextStage(_("Updating /etc/resolv.conf ..."));
+
+    SCR::Write(.sysconfig.network.config.NETCONFIG_DNS_POLICY, resolv_conf_policy);
+    SCR::Write(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST, mergestring(searchlist, " "));
+    SCR::Write(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS, mergestring(nameservers, " "));
+    SCR::Write(.sysconfig.network.config, nil);
+
+    SCR::Execute(.target.bash, "/sbin/netconfig update");
+
+    sleep(sl);
+
+    Progress::NextStage();
+    modified = false;
+    return true;
+}
+
+/**
+ * Get all the DNS configuration from a map.
+ * When called by dns_auto (preparing autoinstallation data)
+ * the map may be empty.
+ * @param settings autoinstallation settings
+ * @return true if success
+ */
+global define boolean Import(map settings) {
+    hostname = settings["hostname"]:"";
+    domain = settings["domain"]:"";
+    nameservers = (list<string>) eval(settings["nameservers"]:[]);
+    searchlist = (list<string>) eval(settings["searchlist"]:[]);
+    //if not defined, set to 'auto'
+    resolv_conf_policy = settings["resolv_conf_policy"]:"auto";
+    modified = true;
+    initialized = true;
+    return true;
+}
+
+/**
+ * Dump the DNS settings to a map, for autoinstallation use.
+ * @return autoinstallation settings
+ */
+global define map Export() {
+    map<string, any> expdns = $[];
+    if (size(hostname)>0)
+        expdns["hostname"] = hostname;
+    if (size(domain)>0)
+        expdns["domain"] = domain;
+    if (size(nameservers)>0)
+        expdns["nameservers"] = eval(nameservers);
+    if (size(searchlist) >0)
+        expdns["searchlist"] = eval(searchlist);
+    //TODO: test if it really works with empty string
+    expdns["resolv_conf_policy"] = resolv_conf_policy;
+    return expdns;
+}
+
+/**
+ * Create DNS text summary
+ * @return summary text
+ */
+global define string Summary() {
+
+    import "Summary";
+    string summary = "";
+
+    boolean has_dhcp = size (NetworkInterfaces::Locate ("BOOTPROTO", "dhcp")) > 0;
+
+    if (has_dhcp && NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false)
+	/* Summary text */
+	summary = Summary::AddListItem(summary, _("Hostname: Set by DHCP"));
+    else if(size(hostname) > 0)
+	/* Summary text */
+	summary = Summary::AddListItem(summary, sformat(_("Hostname: %1"), Hostname::MergeFQ(hostname, domain)));
+    if (NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true == false)
+	summary = Summary::AddListItem(summary, _("Hostname will not be written to /etc/hosts"));
+
+	
+    /*if (has_dhcp && NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false) {*/
+	/* Summary text */
+	/*summary = Summary::AddListItem(summary, _("Name Servers: Set by DHCP")); */
+	/* Summary text */
+	/*summary = Summary::AddListItem(summary, _("Search List: Set by DHCP")); */
+    /*}*/
+    /*else {*/
+	list<string> nslist = maplist(string ns, nameservers, {
+	    string nss = NetHwDetection::ResolveIP(ns);
+	    return (nss == "") ? ns : (ns + " (" + nss + ")");
+	});
+
+	if(size(nslist) > 0)
+	    /* Summary text */
+	    summary = Summary::AddListItem(summary, sformat(_("Name Servers: %1"), mergestring(nslist, ", ")));
+	if(size(searchlist) > 0)
+	    /* Summary text */
+	    summary = Summary::AddListItem(summary, sformat(_("Search List: %1"), mergestring(searchlist, ", ")));
+    /*}*/
+
+    if(size(summary) < 1) return "";
+    return "<ul>" + summary + "</ul>";
+}
+
+/**
+ * Check if hostname or IP address is local computer
+ * Used to determine if LDAP server is local (and it should be checked if
+ *  required schemes are included
+ * Calls Read () function before querying any data
+ * @param check_host string hostname or IP address to check
+ * @return boolean true if hostname is local host
+ */
+global define boolean IsHostLocal (string check_host) {
+    Read ();
+    NetworkInterfaces::Read ();
+    map <string, string> dhcp_data = $[];
+
+    if ( (size( NetworkInterfaces::Locate("BOOTPROTO", "dhcp") ) > 0) || 
+	 NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false == true ) {
+	dhcp_data = GetDHCPHostnameIP();
+	y2milestone("Got DHCP-configured data: %1", dhcp_data);
+    }
+    /* FIXME: May not work properly in following situations:
+	- multiple addresses per interface
+        - aliases in /etc/hosts
+	- IPADDR=IP/24
+    */
+
+    // loopback interface
+    if (check_host == "127.0.0.1" || check_host == "::1")
+	return true;
+    // localhost hostname
+    if (check_host == "localhost" || check_host == "localhost.localdomain")
+	return true;
+
+    // IPv4 address
+    if (IP::Check4 (check_host))
+    {
+	if ( (size (NetworkInterfaces::Locate ("IPADDR", check_host)) > 0)
+	      || dhcp_data["ip"]:"" == check_host)
+	    return true;
+    }
+    // IPv6 address
+    else if (IP::Check6 (check_host))
+    {
+	y2debug ("TODO make it similar to IPv4 after other code adapted to IPv6");
+    }
+    // short hostname
+    else if (findfirstof (check_host, ".") == nil)
+    {
+	if ( (tolower (check_host) == tolower (hostname))
+	     || dhcp_data["hostname_short"]:"" == check_host)
+	    return true;
+    }
+    // fully qualified hostname
+    else
+    {
+	if ( (tolower (check_host) == tolower (hostname + "." + domain))
+	      || dhcp_data["hostname_fq"]:"" == check_host )
+	    return true;
+    }
+    return false;
+}
+
+/* EOF */
+}

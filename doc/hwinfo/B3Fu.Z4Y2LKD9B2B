@@ -1,0 +1,23 @@
+[General]
+UniqueID=B3Fu.Z4Y2LKD9B2B
+HWClass=unknown
+Model=ALCATEL Speed Touch USB
+
+[Status]
+Configured=new
+Available=unknown
+Needed=no
+
+[Hardware]
+Bus=0x86
+Slot=0x203
+VendorID=u06b9
+DeviceID=4061
+DeviceName=Speed Touch ISDN
+VendorName=Alcatel Telecom
+SubDeviceName=Speed Touch USB
+SubVendorName=ALCATEL
+Serial=0090D0542E53
+USBGUID=06b9406100000090d0542e53
+Res.Baud=1500000,0,0,0x00,0x00
+
