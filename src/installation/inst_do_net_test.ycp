@@ -219,9 +219,11 @@ and correct the settings.</p>
     define void show_result ()
     {
 	if(test_result == `success) {
+	    Internet::test = true;
 	    /* result of internet test */
 	    UI::ChangeWidget(`id(`res), `Value, _("Success"));
 	} else {
+	    Internet::test = false;
 	    /* result of internet test */
 	    UI::ChangeWidget(`id(`res), `Value, _("Failure"));
 	}

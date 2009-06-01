@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jun  1 11:59:35 CEST 2009 - mzugec@suse.cz
+
+- new variable Internet::test to store status of test (bnc#506721)
+- 2.18.35 
+
+-------------------------------------------------------------------
 Mon Jun  1 08:58:25 CEST 2009 - mzugec@suse.cz
 
 - fixed buildtest 
