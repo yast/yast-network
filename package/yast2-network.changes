@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jun  1 08:58:25 CEST 2009 - mzugec@suse.cz
+
+- fixed buildtest 
+
+-------------------------------------------------------------------
 Thu May 28 16:47:38 CEST 2009 - mzugec@suse.cz
 
 - fixed: missing space in lan dialog (bnc#506732)

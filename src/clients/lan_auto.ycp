@@ -301,8 +301,8 @@ else if(func == "Import") {
    // merge with param
    param["dns"]=dns;
    param["routing"]=routing;
-   y2milestone("", dns);
-   y2milestone("", routing);
+   y2milestone("dns %1", dns);
+   y2milestone("routing %1", routing);
   } else{
    y2milestone("DNS and routing defined in AY profile, will use it");
   }
