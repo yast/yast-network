@@ -605,8 +605,11 @@ define any S390Dialog() {
 	    /* Frame label */
 	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
 		`VSpacing(1),
-		/* TextEntry label */
-		(Lan::type == "qeth")?`TextEntry(`id(`chan_mode), _("&Port Name"), Lan::chan_mode):`Empty(),
+               `HBox(
+                       /* TextEntry label */
+                       `TextEntry(`id(`chan_mode), `opt(`hstretch), _("&Port Name"), Lan::chan_mode),
+                       `ComboBox(`id(`qeth_portnumber), _("Port Number"), [`item(`id("0"), "0", Lan::port_num=="0"), `item(`id("1"), "1", Lan::port_num=="1")])
+               ),
 		`VSpacing(1),
 		/* TextEntry label */
 		`TextEntry(`id(`qeth_options), Label::Options (), Lan::qeth_options),
@@ -801,6 +804,7 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 	    Lan::qeth_layer2 = (boolean) UI::QueryWidget(`id(`qeth_layer2), `Value);
 	    Lan::qeth_macaddress = (string) UI::QueryWidget(`id(`qeth_macaddress), `Value);
 	    Lan::qeth_chanids = (string) UI::QueryWidget(`id(`qeth_chanids), `Value);
+	    Lan::port_num = (string) UI::QueryWidget(`id(`qeth_portnumber), `Value);
 	}
 
     }

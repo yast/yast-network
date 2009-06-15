@@ -144,6 +144,7 @@ list<string> nilliststring = nil; // to save some casting
 // portname is in ifcfg, others are in hwcfg
 global string portname = "";
 global string chan_mode = "0";
+global string port_num = "0";
 global string qeth_options = "";
 global boolean ipa_takeover = false;
 // #84148
@@ -1168,6 +1169,7 @@ global define boolean Select(string dev) {
 
     qeth_options = NetworkModules::QETH_OPTIONS;
     chan_mode = NetworkModules::CCW_CHAN_MODE;
+    port_num = NetworkModules::QETH_PORTNO;
     lcs_timeout = NetworkModules::LCS_LANCMD_TIMEOUT;
 
     if (NetworkModules::QETH_IPA_TAKEOVER == nil ||
@@ -1321,12 +1323,14 @@ global define boolean Commit() {
 		    if(type2 == "ctc" || type2 == "lcs") {
 			NetworkModules::CCW_CHAN_IDS = qeth_chanids; //sformat("%1%2 %1%3", devstr, devid0, devid1);
 			NetworkModules::CCW_CHAN_MODE = chan_mode;
+    			NetworkModules::QETH_PORTNO = port_num;
 			NetworkModules::CCW_CHAN_NUM = "2";
 			NetworkModules::LCS_LANCMD_TIMEOUT = lcs_timeout;
 		    }
 		    else if(type2 == "qeth") {
 			NetworkModules::CCW_CHAN_IDS = qeth_chanids; //sformat("%1%2 %1%3 %1%4", devstr, devid0, devid1, devid2);
 			NetworkModules::CCW_CHAN_MODE = chan_mode;
+    			NetworkModules::QETH_PORTNO = port_num;
 			NetworkModules::CCW_CHAN_NUM = "3";
 			NetworkModules::QETH_OPTIONS = qeth_options;
 			NetworkModules::QETH_IPA_TAKEOVER = ipa_takeover? "1": "0";

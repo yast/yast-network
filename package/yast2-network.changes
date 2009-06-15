@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue May 15 15:43:51 CEST 2009 - mzugec@suse.de
+
+- support for OSA 2 Ports per CHPID (fate#306075)
+- 2.13.129 
+
+-------------------------------------------------------------------
 Tue May 12 20:02:41 CEST 2009 - mzugec@suse.de
 
 - support for IPv6/PREFIXLEN (fate#303811)
