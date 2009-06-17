@@ -703,7 +703,7 @@ define any S390Dialog() {
 		`VSpacing(1),
 		// for ficon and escon devices configure chan_ids (#181998)
 		/* TextEntry label */
-		contains(["ficon", "escon"], Lan::type) ? `TextEntry(`id(`qeth_chanids), _("CHAN IDS"), Lan::qeth_chanids) : `Empty()
+		/*contains(["ficon", "escon"], Lan::type) ? */ `TextEntry(`id(`qeth_chanids), _("CHAN IDS"), Lan::qeth_chanids) /* : `Empty() */
 		), `HSpacing(2))),
 	    `HSpacing(6)
 	);

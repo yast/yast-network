@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jun 17 14:21:05 CEST 2009 - mzugec@suse.de
+
+- fixed ctc escon ficon configuration (bnc#181998)
+- 2.13.130 
+
+-------------------------------------------------------------------
 Tue May 15 15:43:51 CEST 2009 - mzugec@suse.de
 
 - support for OSA 2 Ports per CHPID (fate#306075)
