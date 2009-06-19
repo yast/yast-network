@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jun 19 10:56:49 CEST 2009 - mvidner@suse.cz
+
+- Using autodocs-ycp.ami, which contains a fix for automake 1.11.
+
+-------------------------------------------------------------------
 Mon Jun  1 11:59:35 CEST 2009 - mzugec@suse.cz
 
 - new variable Internet::test to store status of test (bnc#506721)
