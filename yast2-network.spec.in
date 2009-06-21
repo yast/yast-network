@@ -32,11 +32,11 @@ Obsoletes:	y2t_lan y2t_adsl y2t_dial
 # carrier detection
 Conflicts:	yast2-core < 2.10.6
 
-Summary:	Network configuration
+Summary:	YaST2 - Network Configuration
 
 %package devel-doc
 Group:          System/YaST
-Summary:	Developer documentation for yast2-network
+Summary:	YaST2 - Developer documentation for yast2-network
 
 
 %description 
