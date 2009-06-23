@@ -3310,12 +3310,12 @@ Sat Mar 23 14:43:32 CET 2002 - kkeil@suse.de
 - 2.5.52
 
 -------------------------------------------------------------------
-Thu Mar 21 18:06:41 CET 2002 - kkeil@suse.de
+Thu Mar 22 18:06:41 CET 2002 - kkeil@suse.de
 
 - don't load drivers in proposal mode (#15078)
 
 -------------------------------------------------------------------
-Tue Mar 26 00:45:36 CET 2002 - ro@suse.de
+Tue Mar 21 17:45:36 CET 2002 - ro@suse.de
 
 - added yast2 to neededforbuild (modules/Mode.ycp)
 
