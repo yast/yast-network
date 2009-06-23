@@ -7,7 +7,9 @@ SUBDIRS = autodocs # files hwinfo
 htmldir = $(docdir)
 
 doc_DATA = autoinst
-html_DATA = todo.html $(wildcard *.html)
+html_DATA = $(wildcard *.html)
+
+all-local: todo.html
 
 todo.html: Todo.txt
 	@(							\
