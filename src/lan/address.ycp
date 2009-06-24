@@ -563,8 +563,8 @@ the firewall will be disabled.</p>"),
         "label": _("Bond Driver Options"),
         "opt": [`hstretch, `editable],
         "help": _("<p>Select the bond driver options, and edit if needed. </p>"),
-        "items": [["mode=balance-rr"], ["mode=active-backup"], ["mode=balance-xor"],
-                  ["mode=broadcast"], ["mode=802.3ad"], ["mode=balance-tlb"], ["mode=balance-alb"]],
+        "items": [["mode=balance-rr miimon=100"], ["mode=active-backup miimon=100"], ["mode=balance-xor miimon=100"],
+                  ["mode=broadcast miimon=100"], ["mode=802.3ad miimon=100"], ["mode=balance-tlb miimon=100"], ["mode=balance-alb miimon=100"]],
     ],
 
     "BOOTPROTO": $[

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed May 13 00:59:51 CEST 2009 - mzugec@suse.de
+
+- default option miimon=100 for bonding (bnc#40449)
+- 2.13.131 
+
+-------------------------------------------------------------------
 Tue Jun 17 14:21:05 CEST 2009 - mzugec@suse.de
 
 - fixed ctc escon ficon configuration (bnc#181998)
