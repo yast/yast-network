@@ -1,0 +1,1100 @@
+/**
+ * File:	modules/ISDN.ycp
+ * Package:	Network configuration
+ * Summary:	ISDN data
+ * Authors:	Michal Svec  <msvec@suse.cz>
+ *		Karsten Keil <kkeil@suse.de>
+ *
+ * $Id$
+ *
+ * Representation of the configuration of ISDN.
+ * Input and output routines.
+ */
+
+{
+
+module "ISDN";
+textdomain "network";
+
+import "NetworkInterfaces";
+import "NetworkService";
+import "Provider";
+import "Progress";
+import "Summary";
+import "PackageSystem";
+import "SuSEFirewall4Network";
+
+/*-------------*/
+/* GLOBAL DATA */
+
+global boolean proposal_valid = false;
+
+/**
+ * hold current device settings
+ *
+ * handled items are
+ * line specific
+ * PROTOCOL     D-channel protocol
+ * AREACODE     international area code
+ * DIALPREFIX   dialprefixfor PBX setups
+ * hw specific
+ * PARA_IO	IO address for legacy ISA
+ * PARA_MEMBASE memory base address for legacy ISA
+ * PARA_IRQ     IRQ number for legacy ISA
+ * PARA_TYPE    card type
+ * PARA_SUBTYPE card sub type
+ * NAME         full card name
+ * DRIVER       driver module name
+ * STARTMODE    "auto"|"manual"|"hotplug"
+ * DEBUG        debuglevel
+ * UDI       unique hw id
+ *
+ */
+
+global map hw_device = $[];
+
+// global dialprefix default value for current
+global string global_dp="";
+// global areacode default value for current
+global string global_ac = "";
+// global start mode
+global string global_sm = "";
+
+/**
+ * ISDN database based on CDB
+ *
+ * map with two keys, of maps:
+ * Cards:
+ *   map, keyed by integers, of maps:
+ *   CardID:	integer (the key)
+ *   VendorRef:	integer
+ *   bus:	string (ISA)
+ *   class:	string (ISDN Single/Multiple Basic Rate)
+ *   device:	integer
+ *   driver:	list of driver maps
+ *   features:	integer
+ *   lines:	integer
+ *   longname:	string
+ *   name:	string
+ *   revision:	integer
+ *   subdevice:	integer
+ *   subvendor:	integer
+ *   vendor:	integer
+ * Vendors:
+ *   map, keyed by integers, of maps:
+ *   VendorID:	integer (the key)
+ *   name:	string
+ *   refcnt:	integer
+ *   shortname:	string
+ *
+ *
+ * driver map:
+ *   IO:	list<string>
+ *   IRQ:	list<string>
+ *   MEMBASE:	list<string>
+ *   description: string
+ *   drvid:	integer
+ *   info:	string
+ *   mod_name:	string
+ *   name:	string
+ *   need_pkg:	list<string>
+ *   protocol:	list<string>
+ *   subtype:	integer
+ *   type:	integer
+ */
+global map ISDNCDB = $[];
+
+
+/**
+ * hold current interface settings
+ *
+ * handled items are
+ * IPADDR         local IP address
+ * REMOTE_ADDR    remote IP address
+ * DEFAULTROUTE   default route yes/no
+ * DYNAMICIP      dynamic IP assignment yes/no
+ * PROTOCOL       encapsulation "rawip" | "syncppp"
+ * MSN            own phone number
+ * CHARGEHUP      try to hangup on idle just before next charge
+ * CALLBACK       callback mode
+ * CBDELAY        callback delay
+ * STARTMODE      auto | manual | hotplug
+ * USERCONTROL    controllable bt user yes/no
+ * MULTILINK      channel bundling yes/no
+ * PROVIDER       default provider filename
+ * IPPPD_OPTIONS  additional ipppd options
+ *
+ */
+global map interface = $[];
+
+/* set if here is any ISDN interface */
+
+global string  provider_file = "";
+
+// current item
+global string  type = "";
+global string device = "";
+
+/**
+ * Flag for Fritz!card DSL configuration
+ */
+global boolean have_dsl = false;
+global boolean only_dsl = false;
+global boolean DRDSLrun = false;
+global list installpackages = [];
+
+/**
+ * Which operation is pending?
+ */
+global symbol operation = nil;
+
+/**
+ * If the interface or provider configuration is skipped
+ */
+global boolean skip = false;
+
+/*--------------*/
+/* PRIVATE DATA */
+
+/**
+ * Hardware information
+ * @see ReadHardware
+ */
+list<map> Hardware = [];
+
+/**
+ * Config information
+ * @see ReadDevices
+ */
+map<string,map> Devices = $[];
+
+/**
+ * deleted devices
+ */
+list<string> DeletedDevices = [];
+
+/**
+ * configured ISDN net devices
+ */
+list<string> NetDevs = [];
+
+/**
+ * Abort function
+ * return boolean return true if abort
+ */
+global block<boolean> AbortFunction = nil;
+
+/**
+ * Data was modified?
+ */
+boolean modified_hw = false;
+boolean modified_if = false;
+
+/*------------------*/
+/* GLOBAL FUNCTIONS */
+
+/**
+ * Data was modified?
+ * @return true if modified
+ */
+global define boolean Modified() ``{
+    y2debug("modified(hw,if)=%1,%2", modified_hw, modified_if);
+    return (modified_hw || modified_if);
+}
+
+string description = "";
+string unique = "";
+string hotplug = "";
+string alias = "";
+global list<string> Requires = []; // because of hardware.ycp
+
+include "network/devices.ycp";
+include "network/hardware.ycp";
+include "network/routines.ycp";
+
+include "network/complex.ycp";
+
+include "network/isdn/config.ycp";
+include "network/isdn/routines.ycp";
+
+/**
+ * @return name of interface
+ */
+string IfaceName (string num, map iface) {
+    string protocol = iface["PROTOCOL"]:"";
+    map format = $[
+	"syncppp": "ippp%1",
+	"rawip": "isdn%1",
+	];
+    return sformat (format[protocol]:"unknown%1", num);
+}
+
+/**
+ * Locate interfaces of the given key and value
+ * @param key interface key
+ * @param val interface value
+ * @return list of devices with key=val
+ */
+global list<string> Locate (string key, string val) {
+    map<string,map> netdevs = (map<string,map>) Devices["net"]:$[];
+    list<string> ret = [];
+    foreach (string num, map dev, netdevs, {
+	if (dev[key]:"" == val)
+	{
+	    ret = add (ret, IfaceName (num, dev));
+	}
+    });
+    return ret;
+}
+
+include "network/runtime.ycp";
+
+/**
+ * Read all ISDN settings from the SCR
+ * @return true on success
+ */
+global define boolean Read() ``{
+    // title for ISDN reading current setup progress screen
+    string caption = _("Initializing ISDN Card Configuration");
+    integer steps = 5;
+
+    integer sl = 0; /* 1000; /* TESTING */
+    sleep(sl);
+
+    Progress::New(caption, " ", steps, [
+    // stages for the ISDN reading current setup progress screen
+    // stage 1/5
+	_("Detect devices"),
+    // stage 2/5
+	_("Read current device configuration"),
+    // stage 3/5
+	_("Read current connection setup"),
+    // stage 4/5
+	_("Read firewall settings"),
+    // stage 5/5
+	_("Read providers"),
+    ], [], "");
+
+    Devices = $[];
+
+    if(Abort()) return false;
+
+    // check the environment
+    if(!Confirm::MustBeRoot()) return false;
+
+    // step 1 in reading current ISDN setup
+    ProgressNextStage(_("Detecting ISDN cards..."));
+    Hardware = ReadHardware("isdn");
+    sleep(sl);
+
+    if(Abort()) return false;
+    // step 2 in reading current ISDN setup
+    ProgressNextStage(_("Reading current device configuration..."));
+    ReadISDNConfig("cfg-contr");
+    NetworkService::Read ();
+    sleep(sl);
+
+    if(Abort()) return false;
+    // step 3 in reading current ISDN setup
+    ProgressNextStage(_("Reading current connection setup..."));
+    ReadISDNConfig("cfg-net");
+    sleep(sl);
+
+    if(Abort()) return false;
+    // step 4 in reading current ISDN setup
+    ProgressNextStage(_("Reading firewall settings..."));
+    boolean progress_orig = Progress::set (false);
+    SuSEFirewall4Network::Read ();
+    Progress::set (progress_orig);
+    sleep(sl);
+
+    if(Abort()) return false;
+    // step 5 in reading current ISDN setup
+    ProgressNextStage(_("Reading providers..."));
+    Provider::Read();
+    sleep(sl);
+
+    if(Abort()) return false;
+    // last step in reading current ISDN setup
+    ProgressNextStage(_("Finished"));
+    sleep(sl);
+
+    if(Abort()) return false;
+    modified_hw = false;
+    modified_if = false;
+    return true;
+}
+
+
+/**
+ * Only write configuration without starting any init scripts and SuSEconfig
+ * @return true on success
+ */
+
+global define boolean WriteOnly()``{
+    WriteISDNConfig("contr");
+    WriteISDNConfig("net");
+    Provider::Write("isdn");
+    return true;
+}
+
+/**
+ * Update the SCR according to network settings
+ * @return true on success
+ *
+ * if start is true, load drivers and interfaces
+ */
+global define boolean Write(boolean start) ``{
+
+    // install kinternet if there is at least one ISDN device - #161782
+    if (size(Devices["contr"]:$[])>0 && !PackageSystem::Installed("kinternet")) installpackages = add (installpackages, "kinternet");
+
+    if (installpackages != nil && installpackages != [""]) {
+	symbol retp = PackagesInstall((list<string>) installpackages);
+	y2debug("Packages returns %1", retp);
+    }
+
+    boolean haveISDNDev = ($[] != Devices["contr"]:$[]);
+    if(!(modified_hw || modified_if || Provider::Modified("isdn"))) return true;
+    y2milestone("Writing configuration");
+
+    // title for ISDN writing current setup progress screen
+    string caption = _("Saving ISDN Configuration");
+    string cmd = "";
+
+    integer sl = 0; /* 1000; /* TESTING */
+
+    integer steps = 7;
+    list<string> plist = [];
+    boolean haveISDNif = ($[] != Devices["net"]:$[]);
+
+    // stages for the ISDN writing current setup progress screen with start
+    // stage 1/13
+    plist = add(plist, _("Stop ISDN networking"));
+    // stage 2/13
+    plist = add(plist, _("Stop ISDN subsystem"));
+    // stage 3/13
+    plist = add(plist, _("Write controller configuration"));
+    // stage 4/13
+    plist = add(plist, _("Write interface configuration"));
+    // stage 5/13
+    plist = add(plist, _("Write firewall"));
+    // stage 6/13
+    plist = add(plist, _("Write providers"));
+    // stage 7/13
+    plist = add(plist, _("Run SuSEconfig"));
+    if (start) {
+	steps = 8;
+        // stage 8/13
+	plist = add(plist, _("Start ISDN subsystem"));
+
+	if (DRDSLrun) {
+	    // stage 9/13
+	    plist = add(plist, _("Run drdsl"));
+	    steps = 9;
+	}
+	if (haveISDNif) {
+	    steps = steps + 4;
+	    // stage 11/13
+	    plist = add(plist, _("Set up network services"));
+            // stage 11/13
+	    plist = add(plist, _("Set up smpppd"));
+            // stage 12/13
+	    plist = add(plist, _("Start ISDN networking"));
+	    /* Progress stage 9 */
+	    plist = add(plist, _("Activate network services"));
+	}
+    }
+
+    Progress::New(caption, " ", steps, plist, [], "");
+    if(Abort()) return false;
+    // step 1 in writing current ISDN setup
+    ProgressNextStage(_("Stopping ISDN networking..."));
+    cmd = sformat("/etc/init.d/network stop -o type=isdn");
+    SCR::Execute(.target.bash, cmd);
+    cmd = sformat("/etc/init.d/network stop -o type=ippp");
+    SCR::Execute(.target.bash, cmd);
+    sleep(sl);
+
+    if(Abort()) return false;
+    // step 2 in writing current ISDN setup
+    ProgressNextStage(_("Stopping ISDN subsystem..."));
+    if (modified_hw) {
+	cmd = sformat("/etc/init.d/isdn unload");
+	SCR::Execute(.target.bash, cmd);
+    }
+    sleep(sl);
+
+    if(Abort()) return false;
+    // step 3 in writing current ISDN setup
+    ProgressNextStage(_("Writing controller configuration..."));
+    if (modified_hw)
+	WriteISDNConfig("contr");
+    sleep(sl);
+
+    if(Abort()) return false;
+    // step 4 in writing current ISDN setup
+    ProgressNextStage(_("Writing interface configuration..."));
+    WriteISDNConfig("net");
+    sleep(sl);
+
+    if(Abort()) return false;
+    // step 5 in writing current ISDN setup
+    ProgressNextStage(_("Writing firewall settings..."));
+    boolean progress_orig = Progress::set (false);
+    SuSEFirewall4Network::Write ();
+    Progress::set (progress_orig);
+    sleep(sl);
+
+    if(Abort()) return false;
+    // step 6 in writing current ISDN setup
+    ProgressNextStage(_("Writing providers..."));
+    if (Provider::Modified("isdn"))
+	Provider::Write("isdn");
+    sleep(sl);
+
+    if(Abort()) return false;
+    // step 7 in writing current ISDN setup
+    ProgressNextStage(_("Running SuSEconfig..."));
+    SCR::Execute(.target.bash, "/sbin/SuSEconfig --module isdn");
+    sleep(sl);
+
+    if(Abort()) return false;
+
+    if (start) {
+	// step 8 in writing current ISDN setup
+	ProgressNextStage(_("Loading ISDN driver..."));
+	if (modified_hw) {
+	    cmd = sformat("/etc/init.d/isdn start -o all");
+	    SCR::Execute(.target.bash, cmd);
+	    modified_hw = false;
+	}
+	sleep(sl);
+
+	if(Abort()) return false;
+	if (DRDSLrun) {
+	    // step 9 in writing current ISDN setup
+	    ProgressNextStage(_("Running drdsl (could take over a minute)..."));
+	    // Avoid some race. kkeil:
+	    // I got one customer report about this race, but never
+	    // was able to reproduce, on the customer side this sleep
+	    // fixes the problem. It seems that after loading the
+	    // firmware the controller does some more internal
+	    // stuff. If drdsl is called too early, it will confuse
+	    // the controller and it does not get valid values.
+	    // One second is small compared to 10-20s for drdsl itself.
+	    sleep (1000);
+	    cmd = sformat("/usr/sbin/drdsl -q");
+	    SCR::Execute(.target.bash, cmd);
+	    sleep(sl);
+	}
+	if (haveISDNif) {
+	    if(Abort()) return false;
+	    // step 10 in writing current ISDN setup
+	    ProgressNextStage(_("Setting up network services..."));
+	    NetworkService::EnableDisable ();
+	    sleep(sl);
+
+	    if(Abort()) return false;
+	    // step 11 in writing current ISDN setup
+	    ProgressNextStage(_("Setting up smpppd(8)..."));
+	    SetupSMPPPD(true);
+	    sleep(sl);
+
+	    if(Abort()) return false;
+	    // step 12 in writing current ISDN setup
+	    ProgressNextStage(_("Loading ISDN network..."));
+	    cmd = sformat("/etc/init.d/network start -o type=isdn");
+	    SCR::Execute(.target.bash, cmd);
+	    cmd = sformat("/etc/init.d/network start -o type=ippp");
+	    SCR::Execute(.target.bash, cmd);
+	    modified_if = false;
+	    sleep(sl);
+
+	    if(Abort()) return false;
+	    /* Progress step 9 */
+	    ProgressNextStage(_("Activating network services..."));
+	    const boolean write_only = false;
+	    if(!write_only) {
+//		NetworkModules::HwUp (); // this is needed too
+		NetworkService::StartStop ();
+	    }
+	    sleep(sl);
+
+	}
+    }
+
+    if(Abort()) return false;
+    // last step in writing current ISDN setup
+    if(haveISDNDev) {
+        cmd = sformat("/sbin/insserv isdn"); // #104590
+        SCR::Execute(.target.bash, cmd);
+    } else {
+        cmd = sformat("/sbin/insserv -r capisuite");
+        SCR::Execute(.target.bash, cmd);
+        cmd = sformat("/sbin/insserv -r isdn");
+        SCR::Execute(.target.bash, cmd);
+    }
+    ProgressNextStage(_("Finished"));
+    sleep(sl);
+
+    if(Abort()) return false;
+    return true;
+}
+
+/**
+ * Test the given card settings
+ * @return true on success
+ */
+global define boolean TestDev(string dev) ``{
+
+    // title for ISDN testing current setup progress screen
+    string caption = sformat(_("Testing ISDN Configuration %1"), dev);
+    string cmd = "";
+    string details = "";
+    map out = $[];
+    integer result = 1;
+    integer steps = 5;
+
+    integer sl = 500; //1000;
+    sleep(sl);
+
+    Progress::New(caption, " ", steps, [
+    // stages for the ISDN testing current setup progress screen
+    // stage 1/5
+	_("Write controller configuration"),
+    // stage 2/5
+	_("Stop ISDN network"),
+    // stage 3/5
+	_("Unload ISDN driver"),
+    // stage 4/5
+	_("Load controller"),
+    // stage 5/5
+	_("Unload controller")
+    ], [], "");
+
+    if(Abort()) return false;
+    // step 1 in testing current ISDN setup
+    ProgressNextStage(_("Writing controller configuration..."));
+    WriteOneISDNConfig(dev);
+    sleep(sl);
+
+    if(Abort()) return false;
+    // step 2 in testing current ISDN setup
+    ProgressNextStage(_("Stopping ISDN network..."));
+    cmd = sformat("/etc/init.d/network stop -o type=isdn");
+    out = (map) SCR::Execute(.target.bash_output, cmd);
+    details = details + cmd + "\n";
+    details = details + out["stdout"]:"";
+    details = details + out["stderr"]:"";
+    details = details + "\n";
+    cmd = sformat("/etc/init.d/network stop -o type=ippp");
+    out = (map) SCR::Execute(.target.bash_output, cmd);
+    details = details + cmd + "\n";
+    details = details + out["stdout"]:"";
+    details = details + out["stderr"]:"";
+    details = details + "\n";
+    sleep(sl);
+
+    if(Abort()) return false;
+    // step 3 in testing current ISDN setup
+    ProgressNextStage(_("Unloading ISDN driver..."));
+    cmd = sformat("/etc/init.d/isdn unload");
+    out = (map) SCR::Execute(.target.bash_output, cmd);
+    details = details + cmd + "\n";
+    details = details + out["stdout"]:"";
+    details = details + out["stderr"]:"";
+    details = details + "\n";
+    sleep(sl);
+
+    if(Abort()) return false;
+    // step 4 in testing current ISDN setup
+    ProgressNextStage(_("Loading controller..."));
+    cmd = sformat("/etc/init.d/isdn start %1 -o all", dev);
+    out = (map) SCR::Execute(.target.bash_output, cmd);
+    details = details + cmd + "\n";
+    details = details + out["stdout"]:"";
+    details = details + out["stderr"]:"";
+    details = details + "\n";
+    result = out["exit"]:1;
+    sleep(sl);
+
+    if(Abort()) return false;
+    // step 5 in testing current ISDN setup
+    ProgressNextStage(_("Unloading controller..."));
+    cmd = sformat("/etc/init.d/isdn unload");
+    out = (map) SCR::Execute(.target.bash_output, cmd);
+    details = details + cmd + "\n";
+    details = details + out["stdout"]:"";
+    details = details + out["stderr"]:"";
+    details = details + "\n";
+    sleep(sl);
+
+    if(Abort()) return false;
+    // last step in testing current ISDN setup
+    ProgressNextStage(_("Finished"));
+    sleep(sl);
+
+    if(Abort()) return false;
+    display_testresult(result, details);
+    operation = `testdev;
+    return true;
+}
+
+/**
+ * default settings of hw device
+ *
+ * @param map of parameters
+ *
+ */
+map set_cardparameters (map cfg) {
+    string ac = cfg["AREACODE"]: global_ac;
+    if (global_ac == "")
+	global_ac = ac;
+    cfg["AREACODE"] = ac;
+
+    string dp = cfg["DIALPREFIX"]: global_dp;
+    if (global_dp == "")
+	global_dp = dp;
+    if (dp != "")
+	cfg["DIALPREFIX"] = dp;
+
+    string sm = cfg["STARTMODE"]: "auto";
+    if (sm == "hotplug")
+        global_sm = "hotplug";
+    if (sm == "")
+	sm = "auto";
+    cfg["STARTMODE"] = sm;
+
+    return cfg;
+}
+
+/**
+ * default settings of interface
+ *
+ * @param map of parameters
+ *
+ */
+map set_ifparameters (map cfg) {
+    string sm = cfg["STARTMODE"]: "manual";
+    if (global_sm == "")
+        global_sm = sm;
+    if (sm == "")
+	sm = "auto";
+    cfg["STARTMODE"] = sm;
+
+    provider_file = cfg["PROVIDER"]: "";
+
+    return cfg;
+}
+
+/**
+ * copy detected hw settings to current item
+ *
+ * @param map of detected hw settings
+ *
+ */
+void set_hwparameters (map hw) {
+    // Fixme parameter lookup for ISA hardware
+    hw_device["PARA_TYPE"] = sformat("%1", get_i4ltype(hw));
+    hw_device["PARA_SUBTYPE"] = sformat("%1", get_i4lsubtype(hw));
+    hw_device["NAME"] = sformat("%1", hw["name"]:"unknown");
+    hw_device["UNIQUE"] = hw["unique"]:"";
+}
+
+/**
+ * Select the given hardware item or clean up structures
+ * @param which item to be chosen
+ */
+// FIXME: -> routines/hardware.ycp (?)
+// sel["name"] for the interface
+global define void SelectHW(integer which) ``{
+    map sel = $[];
+
+    if(which != nil)
+	sel = Hardware[which]:$[];
+
+    if(which > size(Hardware) || which < 0)
+	y2error("Item not found in Hardware: %1 (%2)", which, size(Hardware));
+
+    type = "contr";
+    device = sformat("%1%2", type, GetFreeDevice(type));
+    hw_device = set_cardparameters ($[]);
+    set_hwparameters (sel);
+    operation = `add;
+}
+
+/*
+ * selects next free cfg-contr<N>
+ * and initialisize all cfg-contr<N> values
+ * @return true if a free cfg-contr<N> was found
+ */
+global define boolean Add() ``{
+    type = "contr";
+    device = sformat("%1%2",type, GetFreeDevice(type));
+y2internal("New Added device %1", device);
+    hw_device = set_cardparameters ($[]);
+    operation = `add;
+    return true;
+}
+
+/*
+ * selects cfg-<dev> for edit
+ * @param  string dev device to edit
+ * @return true if cfg-<dev> was found
+ */
+global define boolean Edit(string dev) ``{
+    string typ = NetworkInterfaces::device_type(dev);
+//    string num = NetworkInterfaces::device_num(dev);
+
+    map typemap = Devices[typ]:$[];
+    if(!haskey(typemap, dev)) {
+	y2error("Key not found: %1", dev);
+	return false;
+    }
+    hw_device = typemap[dev]:$[];
+
+    y2debug("Hardware: %1", Hardware);
+
+    device = dev;
+    type = typ;
+    hw_device = set_cardparameters (hw_device);
+    y2debug("devmap=%1", hw_device);
+    operation = `edit;
+    return true;
+}
+
+/*
+ * selects cfg-<item> for delete
+ * @param  string item item to delete
+ * @return true if cfg-<delete> was found
+ */
+global define boolean Delete(string item) ``{
+    operation = nil;
+    string typ = NetworkInterfaces::device_type(item);
+//    string num = NetworkInterfaces::device_num(item);
+
+    map typemap = Devices[typ]:$[];
+    if(!haskey(typemap, item)) {
+	y2error("Key not found: %1", item);
+	return false;
+    }
+    if (type == "net")
+	interface = typemap[item]:$[];
+    type = typ;
+    device = item;
+    operation = `delete;
+    return true;
+}
+
+/*
+ * selects next free cfg-net<N>
+ * and initialisize all cfg-net<N> values
+ * @param proto "syncppp" or "rawip"
+ * @return true if a free cfg-net<N> was found
+ */
+global define boolean AddIf(string proto) ``{
+    type = "net";
+    device = GetFreeDevice(type);
+    interface = $[
+	"PROTOCOL": proto,
+	"USERCONTROL": "yes",
+	];
+    interface = set_ifparameters (interface);
+    operation = `addif;
+    return true;
+}
+
+/*
+ * selects interface cfg-<item>
+ * @param  string item interface to select
+ * @return true if cfg-<item> was found
+ */
+global define boolean SelIf(string item) ``{
+    string typ = NetworkInterfaces::device_type(item);
+    string num = NetworkInterfaces::device_num(item);
+
+    map typemap = Devices[typ]:$[];
+    if(!haskey(typemap, num)) {
+	y2error("Key not found: %1", item);
+	return false;
+    }
+    interface = typemap[num]:$[];
+    /* interface settings */
+    interface = set_ifparameters (interface);
+    interface["NAME"] = BuildDescription (typ, num, interface, Hardware);
+    device = num;
+    type = typ;
+    return true;
+}
+
+/*
+ * selects interface cfg-<item> for edit
+ * @param  string item interface to edit
+ * @return true if cfg-<item> was found
+ */
+global define boolean EditIf(string item) ``{
+    if (SelIf (item))
+    {
+	operation = `editif;
+	return true;
+    }
+    return false;
+}
+
+/*
+ * commit changes of the current item
+ * defined by type device
+ * @return true if the current item was found
+ */
+global define boolean Commit() ``{
+    y2debug("Commit(%1) dev:%2%3",operation,type,device);
+	y2debug("skip %1", skip);
+    if (operation == nil)
+	return true;
+
+    if (skip && operation != `add && operation != `edit && operation != `delete)
+    {
+        skip = false;
+        return true;
+    }
+    if (operation == `edit || operation == `editif || operation == `addproc) {
+
+	map typemap = Devices[type]:$[];
+	y2debug("typemap %1", typemap);
+	if(!haskey(typemap, device)) {
+	    y2error("Key not found: %1", device);
+	    return false;
+	}
+
+    }
+    if (operation == `add || operation == `edit) {
+
+	string ac = hw_device["AREACODE"]:"";
+	if (ac != "")
+	    global_ac = ac;
+	string dp = hw_device["DIALPREFIX"]:"";
+	global_dp = dp;
+	string sm = hw_device["STARTMODE"]: "";
+	if (sm == "hotplug")
+	    global_sm = "hotplug";
+	if (sm == "manual" && global_sm == "auto")
+	    global_sm = "manual";
+
+	ChangeDevice(type, device, hw_device, operation == `add);
+	modified_hw = true;
+
+    } else if (operation == `addif || operation == `editif) {
+
+	interface["PROVIDER"] = provider_file;
+	ChangeDevice(type, device, interface, operation == `addif);
+	modified_if = true;
+
+    // } else if(operation == `addprov || operation == `editprov) {
+
+	// handled in Provider module
+
+    } else if(operation == `testdev) {
+
+        y2debug("op testdev");
+
+    } else if(operation == `delete) {
+	if (type == "net") {
+	    string p = interface["PROTOCOL"]:"";
+	    string devnam = "";
+	    if (p == "syncppp")
+		devnam = sformat("ippp%1", device);
+	    else if (p == "rawip")
+		devnam = sformat("isdn%1", device);
+	    else
+		devnam = sformat("unknown%1", device);
+	    SuSEFirewall4Network::ProtectByFirewall (devnam, "EXT", false);
+	}
+	DeleteDevice(type, device);
+
+	if (type == "contr")
+	    modified_hw = true;
+	else
+	    modified_if = true;
+
+    } else {
+	y2error("Unknown operation: %1", operation);
+	return false;
+    }
+
+    operation = nil;
+    return true;
+}
+
+/**
+ */
+global define boolean Import(map settings) ``{
+    Provider::Import("isdn", settings["_PROVIDERS"]:$[]);
+    Devices = (map<string,map>)add(settings, "_PROVIDERS", nil);
+    return true;
+}
+
+/**
+ */
+global define map Export() ``{
+    map PROVIDERS = Provider::Export("isdn");
+    return add(Devices, "_PROVIDERS", PROVIDERS);
+}
+
+/**
+ * List of configured interface entries
+ * @return list<strings>
+ */
+global define list<string> NetDeviceList() ``{
+    map<string,map> typemap = (map<string,map>)Devices["net"]:$[];
+
+    NetDevs = [];
+    maplist(string num, map devmap, typemap, ``{
+	string prot = devmap["PROTOCOL"]:"";
+	string devnam = "";
+	if (prot == "syncppp")
+	   devnam = sformat("ippp%1", num);
+	else if (prot == "rawip")
+	   devnam = sformat("isdn%1", num);
+	else
+	   devnam = sformat("unkown%1", num);
+	NetDevs = add(NetDevs, devnam);
+    });
+    return NetDevs;
+    // better: return maplist (string num, map devmap, typemap, ``( IfaceName (num, devmap) ));
+}
+
+/**
+ * Build a textual summary and a list of unconfigured cards
+ * @return summary of the current configuration
+ */
+global define list Summary(boolean split) ``{
+    return BuildSummaryDevs (Devices, Hardware, split, false);
+}
+
+/**
+ */
+global define list OverviewDev() ``{
+    list res = filter(term i, (list<term>)BuildOverviewDevs (Devices, Hardware), ``(issubstring(i[0, 0]:"","contr")));
+    return maplist( term card, (list<term>)res, {
+        string id = card[0,0]:"";
+        list desc = [ card[1]:"", card[2]:"", card[3]:""];
+        return $[
+            "id":id,
+            "rich_descr": card[4]: (desc[1]:_("Unknown")),
+            "table_descr":desc
+        ];
+        });
+	
+}
+
+global define list<map<string,any> > UnconfiguredDev () {
+    return BuildUnconfiguredDevs (Devices, "isdn", Hardware);
+}
+
+global define list OverviewIf() ``{
+    list res = filter(term i, (list<term>)BuildOverviewDevs (Devices, Hardware), ``(issubstring(i[0, 0]:"","net")));
+
+    return maplist( term card, (list<term>)res, {
+        string id = card[0,0]:"";
+        list desc = [ card[1]:"", card[2]:"", card[3]:""];
+        return $[
+            "id":id,
+            "rich_descr": card[4]: (desc[1]:_("Unknown")),
+            "table_descr":desc
+        ];
+        });
+
+    //return BuildOverview("net");
+}
+
+/**
+ * Count of valid interface entries
+ * @return count
+ */
+global define integer CountIF() ``{
+    map typemap = Devices["net"]:$[];
+
+    return size(typemap);
+}
+
+/**
+ * If not allready done set a valid interface
+ * @return true  if the selection was successful
+ *         false if here aren't any interfaces
+ */
+global define boolean PrepareInterface() ``{
+    if ((tointeger(device) > -1) && (type == "net"))
+	return true;
+    map<string,map> typemap = (map<string,map>)Devices["net"]:$[];
+    if (0 == size(typemap))
+	return false;
+    string id = "";
+    maplist(string num, map devmap, typemap, ``{
+	id = sformat("net%1", num);
+    });
+    return SelIf(id);
+}
+
+/**
+ * Displays a popup to select one interface to be the
+ * current interface
+ * @param auto if true and only one interface exist
+ *             take it without a extra dialog
+ * @return true  if the selection war successful
+ *         false if here aren't any interfaces
+ */
+global define boolean SelectInterface(boolean auto) ``{
+
+    map<string,map> typemap = (map<string,map>)Devices["net"]:$[];
+    string id = "";
+    integer s = size(typemap);
+
+    y2debug("device = %1", device);
+    y2debug("typemap = %1", typemap);
+
+    if (s == 0)
+	return(false);
+    if (auto && (s == 1)) {
+	maplist(string num, map devmap, typemap, ``{
+	    id = sformat("net%1", num);
+	});
+	return SelIf(id);
+    }
+
+    list ifl = maplist(string num, map devmap, typemap, ``{
+	string p = devmap["PROTOCOL"]:"";
+	string devid = sformat("net%1", num);
+	string devnam = "";
+	if (p == "syncppp")
+	    devnam = sformat("ippp%1", num);
+	else if (p == "rawip")
+	    devnam = sformat("isdn%1", num);
+	else
+	    devnam = sformat("unknown%1", num);
+	return `item(`id(devid), devnam, (num == device));
+    });
+    y2debug("ifl=%1", ifl);
+    // label of a single combo box in a popup to select a interface for an edit/delete operation
+    id = select_fromlist_popup(_("&Select Interface"), ifl);
+    return SelIf(id);
+}
+
+global define string GetInterface4Provider(string prov) ``{
+    string ifn = "";
+    map<string,map> typemap = (map<string,map>)Devices["net"]:$[];
+
+    maplist(string num, map devmap, typemap, ``{
+	if (prov == devmap["PROVIDER"]:"") {
+	    if ("syncppp" == devmap["PROTOCOL"]:"")
+		ifn = sformat("ippp%1",num);
+	    else
+		ifn = sformat("isdn%1",num);
+	}
+	return false;
+    });
+    return ifn;
+}
+
+/* EOF */
+}

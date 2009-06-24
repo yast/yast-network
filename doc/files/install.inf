@@ -1,0 +1,40 @@
+Sourcemounted: 0
+Display: Color
+Alias: eth0 tulip
+Alias: eth1 tulip
+HasPCMCIA: 0
+InstMode: ftp
+NetConfig: dhcp
+Netdevice: eth0
+NetUniqueID: lgGW.+xOL8ZCSAQC
+IP: 10.20.1.29
+Hostname: 10.20.1.29
+Broadcast: 10.20.15.255
+Network: 10.20.0.0
+Netmask: 255.255.240.0
+Gateway: 10.20.0.1
+Nameserver: 10.20.0.2
+Server: 10.20.0.20
+Serverdir: /netboot/find/SuSE-9.0-Prof-i386-RC5-CD1
+Domain: suse.cz
+InitrdModules: cdrom scsi_mod sr_mod ide-cd
+Manual: 0
+Demo: 0
+Floppydisk: /dev/fd0
+UpdateDir: /linux/suse/i386-9.0
+YaST2update: 0
+Textmode: 0
+MemFree: 452000
+VNC: 0
+UseSSH: 0
+BootDisk: 0
+Disks: /dev/hda
+Cmdline: vga=0x31a splash=silent
+Keyboard: 1
+Framebuffer: 0x031a
+X11i: 
+XServer: mga
+XVersion: 4
+XBusID: 1:0:0
+XkbRules: xfree86
+XkbModel: pc104
