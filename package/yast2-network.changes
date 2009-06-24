@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Jun 24 12:40:34 CEST 2009 - mzugec@suse.cz
+
+- default option miimon=100 for bonding (bnc#404449)
+- 2.18.36
+
+-------------------------------------------------------------------
 Fri Jun 19 10:56:49 CEST 2009 - mvidner@suse.cz
 
 - Using autodocs-ycp.ami, which contains a fix for automake 1.11.
