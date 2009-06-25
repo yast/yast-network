@@ -1,0 +1,248 @@
+/**
+ * File:	include/network/lan/virtual.ycp
+ * Module:	Network configuration
+ * Summary:	Multiple addresses dialogs
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "IP";
+import "Label";
+import "Lan";
+import "Netmask";
+import "NetworkInterfaces";
+import "NetworkService";
+import "Popup";
+import "Report";
+import "Wizard";
+
+include "network/routines.ycp";
+
+/*
+ * TODO:
+ * - bug: where to put Edit, Add?
+ * - bug: aliases to overview (add,edit,delete)
+ * - enh: more items (REMOTE_IPADDR, ...)
+ * - enh: disallow already used IP addresses?
+ * - enh: disallow already used IP addresses in lan?
+ */
+
+/*
+ * Check if given host is system and present warning in this case.
+ * @param host host to be checked
+ * @param delete true if the host will be deleted
+ * @return true if continue
+ * /
+defin boolean AliasSystemPopup(string host, boolean delete) {
+
+    if(!contains(Host::GetSystemHosts(), host)) return true;
+
+    /* Warning popup text 1/2 * /
+    string text = sformat(_("The host %1 is a system host.") + "\n", host);
+
+    if(delete)
+	/* Warning popup text 2/2 * /
+	text = text + _("Really delete it?");
+    else
+	/* Warning popup text 2/2 * /
+	text = text + _("Really change it?");
+
+    return Popup::AnyQuestion("", text, Label::YesButton(), Label::NoButton(), `focus_no);
+}
+*/
+
+define term VirtualEditDialog(integer id, term entry, list forbidden);
+
+
+void initAdditional (string key) {
+    //#165059
+    if (NetworkService::IsManaged()) UI::ChangeWidget(`f_additional, `Enabled, false);
+
+    list<term> table_items = [];
+    /* make ui items from the aliases list */
+    maplist(string alias, map data, (map<string,map>) LanItems::aliases, {
+	string label = data["LABEL"]:"";
+	string ip = data["IPADDR"]:"";
+	string mask = data["NETMASK"]:"";
+	if (size(data["PREFIXLEN"]:"")>0) mask=sformat("/%1", data["PREFIXLEN"]:"");
+	table_items = add(table_items, `item(`id(size(table_items)), label, ip, mask));
+    });
+
+    UI::ChangeWidget(`id(`table), `Items, table_items);
+}
+
+/**
+ * Main aliases dialog
+ * @param standalone true if not run from another ycp client
+ * @return dialog result
+ */
+define symbol handleAdditional(string key, map event) {
+
+    if (NetworkService::IsManaged()) return nil;
+
+    list<term> table_items = (list<term>) UI::QueryWidget(`id(`table), `Items);
+
+	if (event["EventReason"]:"" == "Activated")
+	{
+	 integer cur = (integer) UI::QueryWidget(`id(`table), `CurrentItem);
+	 list<term> cur_item = filter(term e, table_items, { return cur == e[0, 0]:nil; });
+	 switch((symbol)event["ID"]:`nil)
+	 {
+	  case `edit :
+		term item = VirtualEditDialog(cur, table_items[cur]:nil, []);
+		if (item!=nil){
+			table_items[cur] = item;
+			UI::ChangeWidget(`id(`table), `Items, table_items);
+			UI::ChangeWidget(`id(`table), `CurrentItem, cur);
+		}
+		break;
+	case `add :
+	    list forbidden = maplist(term e, table_items, { return e[1]:""; });
+	    term item2 = VirtualEditDialog(size(table_items), `empty(), forbidden);
+	    y2debug("item=%1", item2);
+	    if(item2 != nil)
+	     {
+	      table_items = add(table_items, item2);
+	      UI::ChangeWidget(`id(`table), `Items, table_items);
+	      UI::ChangeWidget(`id(`table), `CurrentItem, size(table_items));
+	     }
+	     break;
+	case `delete :
+	    table_items = filter(term e, table_items, {
+		return cur != e[0, 0]:nil;
+	    });
+	    UI::ChangeWidget(`id(`table), `Items, table_items);
+	    break;
+	 }
+        }
+
+	UI::ChangeWidget(`id(`edit), `Enabled, size(table_items) > 0);
+	UI::ChangeWidget(`id(`delete), `Enabled, size(table_items) > 0);
+
+    return nil;
+}
+
+
+void storeAdditional (string key, map event) {
+    if (!NetworkService::IsManaged())
+     {
+    list<term> table_items = (list<term>) UI::QueryWidget(`id(`table), `Items);
+	map aliases_to_delete = LanItems::aliases; // #48191
+	LanItems::aliases = $[];
+	maplist(term e, table_items, {
+	    map alias = $[];
+	    alias["IPADDR"] = e[2]:"";
+	    if (size(e[1]:"")>0) alias["LABEL"]=e[1]:"";
+		if(substring(e[3]:"", 0,1)=="/") alias["PREFIXLEN"]=substring(e[3]:"", 1);
+		  else {
+			if (Netmask::Check6(e[3]:"")) alias["PREFIXLEN"]=e[3]:"";
+				else alias["NETMASK"]=e[3]:"";
+		  }
+	    LanItems::aliases[tostring(size(LanItems::aliases))] = alias;
+//	    aliases_to_delete[tostring(size(LanItems::aliases))] = nil;
+	});
+	foreach (string a, any v, (map <string, any>)aliases_to_delete, {
+	    if (v != nil) { NetworkInterfaces::DeleteAlias (NetworkInterfaces::Name, a); }
+	});
+     }
+}
+
+/**
+ * Alias edit dialog
+ * @param id id of the edited host
+ * @param entry edited entry
+ * @param forbidden already used IP addresses
+ * @return host or nil, if canceled
+ */
+define term VirtualEditDialog(integer id, term entry, list forbidden) {
+
+    ScreenName("lan-virtual-edit");
+
+    y2debug("id=%1", id);
+    y2debug("entry=%1", entry);
+    y2debug("forbidden=%1", forbidden);
+
+    UI::OpenDialog(`opt(`decorated),`VBox(
+	`HSpacing(1),
+	`VBox(
+	    /* TextEntry label */
+	    `TextEntry(`id(`name), _("Alias &Name"), entry[1]:""),
+	    /* TextEntry label */
+	    `TextEntry(`id(`ipaddr), _("&IP Address"), entry[2]:""),
+	    /* TextEntry label */
+	    `TextEntry(`id(`netmask), _("Net&mask"), entry[3]:"")
+	    ),
+	`HSpacing(1),
+	`HBox(
+	    `PushButton(`id(`ok), `opt(`default), Label::OKButton()),
+	    `PushButton(`id(`cancel), Label::CancelButton())
+	    )
+	));
+
+    UI::ChangeWidget(`id(`name), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    UI::ChangeWidget(`id(`ipaddr), `ValidChars, IP::ValidChars);
+//    UI::ChangeWidget(`id(`netmask), `ValidChars, Netmask::ValidChars);
+
+    if(entry == `empty())
+	UI::SetFocus(`id(`name));
+    else
+	UI::SetFocus(`id(`ipaddr));
+
+    any ret = nil;
+    term host = nil;
+
+    while(true) {
+	host = nil;
+	ret = UI::UserInput();
+	if(ret != `ok) break;
+
+	host = `item(`id(id));
+	string val = (string) UI::QueryWidget(`id(`name), `Value);
+	if(false && !IP::Check(val)) {
+	    /* Popup::Error text */
+	    Popup::Error(_("The IP address is invalid."));
+	    UI::SetFocus(`id(`name));
+	    continue;
+	}
+/*
+	if(contains(forbidden, val)) {
+	    Popup::Error(sformat(_("IP address %1 is already present."), val));
+	    UI::SetFocus(`id(`host));
+	    continue;
+	}
+*/
+	host = add(host, val);
+
+	string ip = (string) UI::QueryWidget(`id(`ipaddr), `Value);
+	if(!IP::Check(ip)) {
+	    /* Popup::Error text */
+	    Popup::Error(_("The IP address is invalid."));
+	    UI::SetFocus(`id(`ipaddr));
+	    continue;
+	}
+	host = add(host, ip);
+
+	val = (string) UI::QueryWidget(`id(`netmask), `Value);
+	if(!validPrefixOrNetmask(ip, val)) {
+	    /* Popup::Error text */
+	    Popup::Error(_("The subnet mask is invalid."));
+	    UI::SetFocus(`id(`netmask));
+	    continue;
+	}
+	host = add(host, val);
+
+	break;
+    }
+
+    UI::CloseDialog();
+    if(ret != `ok) return nil;
+    return host;
+}
+
+/* EOF */
+}

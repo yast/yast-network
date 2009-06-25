@@ -1,0 +1,283 @@
+/**
+ * File:	src/modules/Remote.ycp
+ * Module:	Network configuration
+ * Summary:	Module for Remote Administration via VNC
+ * Authors:	Arvin Schnell <arvin@suse.de>
+ *		Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ *
+ */
+
+{
+
+module "Remote";
+textdomain "network";
+
+import "Label";
+import "Mode";
+import "Package";
+import "Service";
+import "SuSEFirewall";
+import "Progress";
+import "Linuxrc";
+
+include "network/routines.ycp";
+
+/**
+ * Allow remote administration
+ */
+global boolean allow_administration = false;
+
+/**
+ * Default display manager 
+ */
+global string default_dm = "xdm";
+
+/**
+ * Remote administration has been already proposed
+ * Only force-reset can change it
+ */
+boolean already_proposed = false;
+
+/**
+ * Reset all module data.
+ */
+global void Reset() {
+    already_proposed = true;
+
+    // Bugzilla #135605 - enabling Remote Administration when installing using VNC
+    if (Linuxrc::vnc()) {
+	allow_administration = true;
+    } else {
+	allow_administration = false;
+    }
+    y2milestone("Remote Administration was proposed as: %1", (allow_administration ? "enabled":"disabled"));
+}
+
+/**
+ * Function proposes a configuration
+ * But only if it hasn't been proposed already
+ */
+global void Propose() {
+    if (!already_proposed) Reset();
+}
+
+/**
+ * Read the current status
+ * @return true on success
+ */
+global boolean Read() {
+    boolean xdm = Service::Enabled ("xdm");
+    boolean dm_ra = (string) SCR::Read (.sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS) == "yes";
+    default_dm = (string) SCR::Read (.sysconfig.displaymanager.DISPLAYMANAGER);
+
+    boolean xinetd = Service::Enabled ("xinetd");
+    // are the proper services enabled in xinetd?
+    list<map> xinetd_conf = (list<map>) SCR::Read(.etc.xinetd_conf.services);
+    list<map> vnc_conf = filter (map m, xinetd_conf, {
+	string s = m["service"]:"";
+	return s == "vnc1" || s == "vnchttpd1";
+    });
+    boolean vnc = size (vnc_conf) == 2 &&
+	vnc_conf[0, "enabled"]:false &&
+	vnc_conf[1, "enabled"]:false;
+
+    y2milestone ("XDM: %1, DM_R_A: %2", xdm, dm_ra);
+    y2milestone ("xinetd: %1, VNC: %2", xinetd, vnc);
+    allow_administration = xdm && dm_ra && xinetd && vnc;
+
+    boolean current_progress = Progress::set(false);
+    SuSEFirewall::Read();
+    Progress::set(current_progress);
+
+    return true;
+}
+
+/**
+ * Function creates automatic X configuration by calling sax2
+ * see bugs #135605, #157342
+ */
+void CreateSaxAutomaticConfiguration() {
+    string command = "TERM=dumb /usr/sbin/sax2 -r -a | /usr/bin/grep -v '\\r$'";
+    y2milestone("Creating automatic Xconfiguration: %1", command);
+    y2milestone("SaX2 returned: %1", SCR::Execute(.target.bash_output, command));
+}
+
+/**
+ * Update the SCR according to network settings
+ * @return true on success
+ */
+global boolean Write() {
+
+    list <string> steps = [
+        /* Progress stage 1 */
+	_("Write firewall settings"),
+        /* Progress stage 2 */
+	_("Configure display manager"),
+    ];
+
+    if (Mode::normal()) {
+        /* Progress stage 3+4 */
+	steps = add( steps,  _("Run SuSEconfig") );
+	steps = add( steps, _("Restart the services") );
+    }
+
+    string caption = _("Saving Remote Administration Configuration");
+    integer sl = 0; //100; //for testing
+
+    Progress::New(caption, " ", size(steps), steps, [], "");
+
+    ProgressNextStage(_("Writing firewall settings..."));
+    boolean current_progress = Progress::set(false);
+    SuSEFirewall::Write();
+    Progress::set(current_progress);
+    sleep(sl);
+
+    ProgressNextStage(_("Configuring display manager..."));
+
+    if(allow_administration) {
+	/* Install required packages */
+	list<string> packages = ["xinetd", "tightvnc", "xorg-x11", "xorg-x11-Xvnc", ];
+
+	//At least one windowmanager must be installed (#427044)
+	//If none is, there, use icewm as fallback
+	//Package::Installed uses rpm -q --whatprovides
+	if ( !Package::Installed("windowmanager") )
+	{
+	    packages = add (packages, "icewm" );
+	}
+
+	if(!Package::InstallAll(packages)) {
+	    y2error("Installing of required packages failed");
+	    return false;
+	}
+
+	/* Enable xinetd */
+	if(!Service::Enable("xinetd")) {
+	    y2error("Enabling of xinetd failed");
+	    return false;
+	}
+
+	/* Enable XDM */
+	if(!Service::Enable("xdm")) {
+	    y2error("Enabling of xdm failed");
+	    return false;
+	}
+	
+	// Bugzilla #135605 - creating xorg.conf based on the sax2 automatic configuration
+	// It is a special case when the installation runs in VNC
+	//     - Xconfiguration in the hardware proposal is disabled
+	if (Mode::installation() && Linuxrc::vnc()) {
+	    CreateSaxAutomaticConfiguration();
+	}
+    }
+
+    /* Set DISPLAYMANAGER_REMOTE_ACCESS in sysconfig/displaymanager */
+    SCR::Write(.sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS,
+		allow_administration ? "yes" : "no");
+    SCR::Write(.sysconfig.displaymanager.DISPLAYMANAGER_ROOT_LOGIN_REMOTE,
+		allow_administration ? "yes" : "no");
+    SCR::Write(.sysconfig.displaymanager, nil);
+
+    //Query xinetd presence here (it might not have been even installed before)
+    boolean have_xinetd = Package::Installed("xinetd");
+
+    //Do this only if package xinetd is installed (#256385)
+    if (have_xinetd) {
+        // Enable/disable vnc1 and vnchttpd1 in xinetd.d/vnc
+        // If the port is changed, change also the help in remote/dialogs.ycp
+        // The agent is in yast2-inetd.rpm
+        list<map> xinetd = (list<map>) SCR::Read(.etc.xinetd_conf.services);
+        xinetd = maplist (map m, xinetd, {
+            string s = m["service"]:"";
+            if (s == "vnc1" || s == "vnchttpd1") {
+                m["changed"] = true;
+                m["enabled"] = allow_administration;
+            }
+            return m;
+        });
+        SCR::Write(.etc.xinetd_conf.services, xinetd);
+   }
+   sleep(sl);
+
+   if(Mode::normal ()) {
+	ProgressNextStage(_("Running SuSEconfig..."));
+	/* no longer needed - have been dropped from SuSEconfig
+	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module xdm");
+	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kde3");
+	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kdm3");*/
+
+        //Still needed for enabling/disabling remote administration
+        //because 'rcxdm reload' kills running X session if gdm is used
+	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module gdm");
+	sleep(sl);
+
+	boolean dm_was_running = Service::Status("xdm") == 0;
+
+	ProgressNextStage(_("Restarting the service..."));
+	if (allow_administration) {
+	    SCR::Write(.etc.inittab.id, "5:initdefault:");
+	    SCR::Write(.etc.inittab, nil);
+
+	    //if allow_administration is set to true, xinetd must be already installed
+	    Service::Restart("xinetd");
+	    if (!dm_was_running)
+	    {
+		//#41611: with Service::Start, yast hangs :-(
+		SCR::Execute (.target.bash_background, "/etc/init.d/xdm start");
+	    }
+	}
+	else
+	{
+	    if (have_xinetd) {
+	        // xinetd may be needed for other services so we never turn it
+	        // off. It will exit anyway if no services are configured.
+	        // If it is running, restart it.
+	        Service::RunInitScript ("xinetd", "try-restart");
+	    }
+	}
+
+	//do not call 'rcxdm reload' for gdm - use SuSEconfig
+	if (dm_was_running && default_dm != "gdm")
+	{
+	    Service::RunInitScript("xdm", "reload");
+	/*    import "Report";
+	    Report::Message (sformat (
+	    // message popup
+	    // %1 is a system command
+	    // Note: it is a DISPLAY manager, not a WINDOW manager
+_("For the settings to take effect, the display manager
+must be restarted. Because this terminates all X Window System
+sessions, do it manually from the console with
+\"%1\".
+Note that restarting the X server alone is not enough."),
+"rcxdm restart"));*/
+	}
+
+	sleep(sl);
+        Progress::NextStage();
+    }
+
+    return true;
+}
+
+/**
+ * Create summary
+ * @return summary text
+ */
+global define string Summary() {
+
+    if(allow_administration) {
+	/* Label in proposal text */
+	return _("Remote administration is enabled.");
+    }
+    else {
+	/* Label in proposal text */
+	return _("Remote administration is disabled.");
+    }
+
+}
+
+/* EOF */
+}

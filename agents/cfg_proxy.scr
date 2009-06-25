@@ -1,0 +1,26 @@
+/**
+ * File:	cfg_proxy.scr
+ * Summary:	Agent for reading/writing /etc/sysconfig/proxy
+ * Author:	Michal Svec <msvec@suse.cz>
+ * Access:	read / write
+ *
+ * Example:
+ *   Dir(.sysconfig.proxy)
+ *   (["HTTP_PROXY"])
+ **
+ *   Read(.sysconfig.proxy.HTTP_PROXY)
+ *   ("yes")
+ **
+ *   Write(.sysconfig.proxy.HTTP_PROXY, "ppp")
+ *   (true)
+ *
+ * $Id$
+ *
+ * Read/Sets the values defined in <tt>/etc/sysconfig/proxy</tt>
+ * in an easy manner.
+ */
+.sysconfig.proxy
+
+`ag_ini(
+    `SysConfigFile("/etc/sysconfig/proxy")
+)

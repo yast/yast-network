@@ -1,0 +1,224 @@
+/**
+ * File:	include/network/provider/details.ycp
+ * Package:	Network configuration
+ * Summary:	Provider details configuration dialogs
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "IP";
+import "Label";
+import "Popup";
+import "Provider";
+import "Wizard";
+
+include "network/routines.ycp";
+
+/**
+ * IP details dialog
+ * @return dialog result
+ */
+define any IPDetailsDialog() ``{
+
+    ScreenName("provider-details");
+
+    /* PREPARE VARIABLES */
+
+    string type = Provider::Type;
+
+    /* FIXME: help texts, contents */
+    string Local_IP = Provider::Current["IPADDR"]:"";
+    string Remote_IP = Provider::Current["REMOTE_IPADDR"]:"";
+
+    string encap = Provider::Current["ENCAP"]:"syncppp";
+    boolean defaultroute = Provider::Current["DEFAULTROUTE"]:"yes" == "yes";
+    boolean modifyip = Provider::Current["MODIFYIP"]:"yes" == "yes";
+
+    /* DIALOG TEXTS and  DIALOG CONTENTS */
+
+    /* IP details dialog caption */
+    string caption = _("IP Address Settings");
+
+    /* IP details dialog help 1/3 */
+    string helptext = _("<p>Enter the IP addresses if you received fixed
+IP addresses from your provider.</p>");
+
+    /* IP details dialog help 2/3 */
+    helptext = helptext + _("<p>Check <b>Dynamic IP Address</b>
+if your provider assigns one temporary address per connection. In this case,
+the outgoing address is unknown until the moment the link is established.
+This is the default with most providers.</p>");
+
+    if(false) // FIXME: not needed
+    if(encap != "rawip")
+	helptext = helptext +
+	/* IP details dialog help 3/3 */
+_("<p>Check <b>Use Peer DNS</b> to change
+your domain name servers after the connection is made. This replaces your static
+DNS configuration with the obtained DNS server IP addresses. Today, almost all
+providers support <b>Use Peer DNS</b>.</p>
+");
+
+    if(type == "isdn") {
+
+    helptext = helptext +
+    // help text 1/3
+_("<p>If callback mode is off,  calls  are handled normally without special 
+processing.</p>");
+
+    helptext = helptext +
+    // helptext text 2/3
+_("<p>If callback mode is server, after getting an incoming call, a callback 
+is triggered.</p>");
+
+    helptext = helptext +
+    // helptext text 3/3
+_("If callback mode is client, the local system does the initial call then 
+waits for callback from the remote machine.
+");
+
+    }
+
+    /* IP details dialog help 4/4 */
+    helptext = helptext + _("<p>Check <b>Default Route</b> to set the default
+route for this provider. This is most likely correct unless you want to reach
+single machines or subnetworks through this provider.</p>");
+
+    term contents = nil;
+
+    if(encap == "rawip") {
+	contents =
+	    //`HSquash(
+		`VBox(
+		    /* Frame label */
+		    `Frame(_("IP Address Settings"),
+			`HBox(
+			    `HSpacing(),
+			    `VBox(
+				`VSpacing(),
+				/* Text entry label */
+				`Left(`TextEntry(`id(`IP_local), _("&Local IP Address of Your Machine"), Local_IP)),
+				/* Text entry label */
+				`Left(`TextEntry(`id(`IP_remote), _("Re&mote IP Address"), Remote_IP)),
+				`VSpacing()
+			    ),
+			    `HSpacing()
+			)
+		    ),
+		    `VSpacing(),
+		    /* Checkbox label */
+		    `Left(`CheckBox(`id(`defaultroute), _("D&efault Route"), defaultroute))
+		//)
+	    );
+    }
+    else
+    {
+	contents =
+	    `HSquash(
+		`VBox(
+		    /* Frame label */
+		    `Frame(_("IP Address Settings"),
+			`HBox(
+			    `HSpacing(),
+			    `VBox(
+				`VSpacing(),
+				/* Checkbox label */
+				`Left(`CheckBox(`id(`modifyip), `opt(`notify), _("&Dynamic IP Address"), modifyip)),
+				`VSpacing(),
+				/* Text entry label */
+				`Left(`TextEntry(`id(`IP_local), _("&Local IP Address of Your Machine"), Local_IP)),
+				/* Text entry label */
+                                `Left(`TextEntry(`id(`IP_remote), _("Re&mote IP Address"), Remote_IP)),
+				`VSpacing()
+			    ),
+			    `HSpacing()
+			)
+		    ),
+		    `VSpacing(),
+		    /* Checkbox label */
+		    `Left(`CheckBox(`id(`defaultroute), _("D&efault Route"), defaultroute))
+		)
+	    );
+    }
+
+    if(type == "isdn")
+	contents = `HSquash(`VBox(
+	    contents,
+	    `VSpacing(0.5)
+	));
+
+    y2debug("type=%1",type);
+    y2debug("contents=%1",contents);
+
+    /* DIALOG PREPARE */
+    Wizard::SetContentsButtons(caption, contents, helptext,
+	    Label::BackButton(), Label::OKButton());
+
+    if(modifyip && encap != "rawip") {
+	UI::ChangeWidget(`id(`IP_local), `Enabled, false);
+	UI::ChangeWidget(`id(`IP_remote), `Enabled, false);
+    }
+
+    /* MAIN CYCLE */
+    any ret = nil;
+    while(true) {
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(Popup::ReallyAbort(true))
+		break;
+	    else
+		continue;
+	} else if(ret == `modifyip) {
+	    boolean dip = (boolean) UI::QueryWidget(`id(`modifyip), `Value);
+	    UI::ChangeWidget(`id(`IP_local), `Enabled, !dip);
+	    UI::ChangeWidget(`id(`IP_remote), `Enabled, !dip);
+	    continue;
+	}
+	/* back */
+	else if(ret == `back) {
+	    break;
+	}
+	/* next */
+	else if(ret == `next) {
+	    Local_IP = (string) UI::QueryWidget(`id(`IP_local), `Value);
+	    Remote_IP = (string) UI::QueryWidget(`id(`IP_remote), `Value);
+	    defaultroute = (boolean) UI::QueryWidget(`id(`defaultroute), `Value);
+
+	    if(encap != "rawip")
+		modifyip = (boolean) UI::QueryWidget(`id(`modifyip), `Value);
+
+	    if((encap=="rawip" || !modifyip) && (!IP::Check4(Local_IP) || !IP::Check4(Remote_IP))) {
+		Popup::Message(_("Local and remote IP addresses must be completed correctly."));
+		continue;
+	    }
+	    break;
+	}
+	else {
+	    y2error("unexpected retcode: %1", ret);
+	    continue;
+	}
+
+    }
+
+    /* UPDATE VARIABLES */
+
+    if(ret == `next) {
+        Provider::Current = union(Provider::Current, $[
+            "IPADDR"		: Local_IP,
+            "REMOTE_IPADDR"	: Remote_IP,
+            "DEFAULTROUTE"	: defaultroute ? "yes" : "no",
+            "MODIFYIP"		: modifyip ? "yes" : "no",
+        ]);
+    }
+    return ret;
+}
+
+/* EOF */
+}

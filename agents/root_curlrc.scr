@@ -1,0 +1,37 @@
+/**
+ * File:	root_curlrc.scr
+ * Summary:	Agent for reading/writing /root/.curlrc
+ * Access:	read / write
+ * Author:	Michal Svec <msvec@suse.cz>
+ * See:		wget(1)
+ *
+ * Example:
+ *   Dir(.root.curlrc)
+ *   (["proxy_user", "proxy_user"])
+ **
+ *   Read(.root.curlrc.proxy_user)
+ *   ("olduser")
+ **
+ *   Write(.root.curlrc.proxy_user, "newuser")
+ *   (true)
+ *
+ * $Id$
+ */
+.root.curlrc
+
+`ag_ini(
+    `IniAgent( "/root/.curlrc",
+	$[
+	    "options" : [ "ignore_case", "global_values", "flat" ],
+	    "comments" : [ "^#.*", "^[ \t]*$", ],
+	    "params" : [
+		$[ "match" : [ "^[ \t]*([a-zA-Z_-]+)[ \t]* [ \t]*\"(.*)\"[ \t]*$", "%s \"%s\"" ] ],
+		$[ "match" : [ "^[ \t]*([a-zA-Z_-]+)[ \t]*=[ \t]*\"(.*)\"[ \t]*$", "%s = \"%s\"" ] ],
+		$[ "match" : [ "^[ \t]*([a-zA-Z_-]+)[ \t]*:[ \t]*\"(.*)\"[ \t]*$", "%s : \"%s\"" ] ],
+		$[ "match" : [ "^[ \t]*([a-zA-Z_-]+)[ \t]* [ \t]*(.*)[ \t]*$", "%s %s" ] ],
+		$[ "match" : [ "^[ \t]*([a-zA-Z_-]+)[ \t]*=[ \t]*(.*)[ \t]*$", "%s = %s" ] ],
+		$[ "match" : [ "^[ \t]*([a-zA-Z_-]+)[ \t]*:[ \t]*(.*)[ \t]*$", "%s : %s" ] ],
+	    ]
+	]
+    )
+)
