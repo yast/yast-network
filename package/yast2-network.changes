@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jun 25 15:54:01 CEST 2009 - mzugec@suse.cz
+
+- for lcs and ctc offer only 2 CHAN_IDS (bnc#515492)
+- 2.18.37 
+
+-------------------------------------------------------------------
 Wed Jun 24 12:40:34 CEST 2009 - mzugec@suse.cz
 
 - default option miimon=100 for bonding (bnc#404449)
