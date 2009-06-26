@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jun 26 13:24:15 CEST 2009 - mzugec@suse.cz
+
+- removed broadcast option from dhcp settings (bnc#513146)
+- 2.18.38 
+
+-------------------------------------------------------------------
 Thu Jun 25 15:54:01 CEST 2009 - mzugec@suse.cz
 
 - for lcs and ctc offer only 2 CHAN_IDS (bnc#515492)
