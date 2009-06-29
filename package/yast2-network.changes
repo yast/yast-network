@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jun 29 11:50:16 CEST 2009 - mzugec@suse.de
+
+- linuxrc DHCPTimeout -> sysconfig/network.WAIT_FOR_INTERFACES 
+(bnc#396824)
+- 2.18.39 
+
+-------------------------------------------------------------------
 Fri Jun 26 13:24:15 CEST 2009 - mzugec@suse.cz
 
 - removed broadcast option from dhcp settings (bnc#513146)
