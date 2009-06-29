@@ -344,7 +344,7 @@ void CreateOtherNetworkFiles(){
 
 	// write DHCPTimeout linuxrc parameter as /etc/sysconfig/network/config.WAIT_FOR_INTERFACES (bnc#396824)
 	if(size(InstallInf["dhcptimeout"]:"")>0){
-	    SCR::Write(.sysconfig.network.config.WAIT_FOR_INTERFACES,  "20");
+	    SCR::Write(.sysconfig.network.config.WAIT_FOR_INTERFACES,  InstallInf["dhcptimeout"]:"");
 	    y2milestone("Writing WAIT_FOR_INTERFACES=%1", InstallInf["dhcptimeout"]:"");
 	}
 
