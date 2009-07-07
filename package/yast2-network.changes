@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jul  7 14:46:38 CEST 2009 - kmachalkova@suse.cz
+
+- Editing /etc/hosts via host module adjusted to cope with hosts 
+  with empty alias (do not replace those with 'nil') (bnc#513033)
+
+-------------------------------------------------------------------
 Mon Jun 29 11:50:16 CEST 2009 - mzugec@suse.de
 
 - linuxrc DHCPTimeout -> sysconfig/network.WAIT_FOR_INTERFACES 
