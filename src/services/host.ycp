@@ -83,8 +83,8 @@ define symbol HostsMainDialog(boolean standalone) {
 	}
 	foreach (string s, names, {
 
-	    string name = regexpsub(s, "^([^ \t]+)[ \t].*$", "\\1");
-	    string aliases = regexpsub(s, "^[^ \t]+[ \t]+(.*)[ \t]*$", "\\1");
+	    string name = regexpsub(s, "^([^ \t]+)[ \t]*.*$", "\\1");
+	    string aliases = regexpsub(s, "^[^ \t]+[ \t]*(.*)[ \t]*$", "\\1");
 
 	    term item = `item(`id(size(table_items)), host, 
 			Punycode::DecodeDomainName(name), Punycode::DecodePunycodes( [aliases] )[0]:"");

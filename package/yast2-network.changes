@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jul  7 16:01:52 CEST 2009 - kmachalkova@suse.cz
+
+- Editing /etc/hosts via host module adjusted to cope with hosts 
+  with empty alias (do not replace those with 'nil') (bnc#513033) 
+- 2.17.78
+
+-------------------------------------------------------------------
 Tue Mar 31 10:46:35 CEST 2009 - mzugec@suse.cz
 
 - tun/tap device - don't remove default gw (bnc#483233)
