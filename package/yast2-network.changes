@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Mon Jul 13 16:43:57 CEST 2009 - kmachalkova@suse.cz
+
+- Collective SP2 update for several bugs:
+  - For s390 propose CHAN_IDS values (bnc#445339)
+  - Do not reset default gw if the interface is set to 'No IP address'
+    mode ( reset iff it is set to DHCP - bnc#460262)
+  - Do not force-rewrite /etc/hosts when saving network configuration
+    i.e. keep manual changes (bnc#399084)
+- 2.13.119.1
+
+-------------------------------------------------------------------
 Wed Apr 30 12:00:26 CEST 2008 - mzugec@suse.de
 
 - eth device recognized as lcs (bnc#385094)
