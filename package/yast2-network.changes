@@ -55,16 +55,16 @@ Thu Mar 20 20:08:03 CET 2008 - mzugec@suse.de
 - 2.13.113 
 
 -------------------------------------------------------------------
-Thu Mar  6 00:35:08 CET 2008 - mzugec@suse.de
-
-- allow to use bridge also with unconfigured device (bnc#369195) 
-- 2.13.112 
-
--------------------------------------------------------------------
 Thu Mar  6 13:03:02 CET 2008 - mzugec@suse.cz
 
 - allow using vlan also with bond and bridge devices (bnc#367093)
 - 2.13.111
+
+-------------------------------------------------------------------
+Thu Mar  6 00:35:08 CET 2008 - mzugec@suse.de
+
+- allow to use bridge also with unconfigured device (bnc#369195) 
+- 2.13.112 
 
 -------------------------------------------------------------------
 Tue Feb 19 14:37:51 CET 2008 - mzugec@suse.de
@@ -1905,15 +1905,15 @@ Mon May 24 10:55:09 CEST 2004 - mvidner@suse.cz
 - 2.9.46
 
 -------------------------------------------------------------------
+Fri May 21 02:43:12 CEST 2004 - nashif@suse.de
+
+- return right device name when cloning with autoyast.
+
+-------------------------------------------------------------------
 Wed May 19 17:40:54 CEST 2004 - mvidner@suse.cz
 
 - Another fix of hwcfg-{hsi,qeth}-* (#40692#c15)
 - 2.9.45
-
--------------------------------------------------------------------
-Fri May 21 02:43:12 CEST 2004 - nashif@suse.de
-
-- return right device name when cloning with autoyast.
 
 -------------------------------------------------------------------
 Tue May 18 15:01:31 CEST 2004 - msvec@suse.cz
@@ -2407,6 +2407,11 @@ Fri Sep  5 09:17:58 CEST 2003 - msvec@suse.cz
 - 2.8.26
 
 -------------------------------------------------------------------
+Thu Sep 04 11:39:02 CEST 2003 - arvin@suse.de
+
+- fixed encoding of logs in internet test (bug #29500)
+
+-------------------------------------------------------------------
 Thu Sep  4 10:21:23 CEST 2003 - msvec@suse.cz
 
 - use dhcpcd-test script for testing of DHCP (#29945)
@@ -2414,11 +2419,6 @@ Thu Sep  4 10:21:23 CEST 2003 - msvec@suse.cz
 - fixed proxy help text (#29948)
 - fixed Myrinet subclass ID
 - 2.8.25
-
--------------------------------------------------------------------
-Thu Sep 04 11:39:02 CEST 2003 - arvin@suse.de
-
-- fixed encoding of logs in internet test (bug #29500)
 
 -------------------------------------------------------------------
 Wed Sep  3 11:26:51 CEST 2003 - msvec@suse.de
@@ -2457,15 +2457,6 @@ Mon Sep  1 16:55:12 CEST 2003 - msvec@suse.cz
 - 2.8.19
 
 -------------------------------------------------------------------
-Thu Aug 28 15:35:34 CEST 2003 - msvec@suse.cz
-
-- don't shut down network interface during detection (#29452)
-- don't show error messages in case detection isn't started (#29582)
-- don't make modules.conf entries for hotpluggable hardware (#29547)
-- improve DSL detection message (#29576)
-- 2.8.18
-
--------------------------------------------------------------------
 Sun Aug 31 14:57:34 CEST 2003 - arvin@suse.de
 
 - use Popup::ConfirmAbort
@@ -2479,6 +2470,15 @@ Sat Aug 30 22:47:56 CEST 2003 - arvin@suse.de
 Fri Aug 29 16:58:35 CEST 2003 - visnov@suse.de
 
 - CommandLine::Plain2Rich -> RichText::Plain2Rich
+
+-------------------------------------------------------------------
+Thu Aug 28 15:35:34 CEST 2003 - msvec@suse.cz
+
+- don't shut down network interface during detection (#29452)
+- don't show error messages in case detection isn't started (#29582)
+- don't make modules.conf entries for hotpluggable hardware (#29547)
+- improve DSL detection message (#29576)
+- 2.8.18
 
 -------------------------------------------------------------------
 Wed Aug 27 16:38:05 CEST 2003 - msvec@suse.cz
@@ -2515,12 +2515,6 @@ Tue Aug 19 14:21:53 CEST 2003 - msvec@suse.cz
 - 2.8.11
 
 -------------------------------------------------------------------
-Fri Aug  1 12:49:15 CEST 2003 - msvec@suse.cz
-
-- read /root/.curlrc only if present
-- 2.8.10
-
--------------------------------------------------------------------
 Mon Aug 18 17:05:14 CEST 2003 - nashif@suse.de
 
 - Fixed dhcp configuration in autoinst mode
@@ -2552,6 +2546,12 @@ Mon Aug  4 11:20:31 CEST 2003 - jsrain@suse.de
 Mon Aug 04 11:06:12 CEST 2003 - arvin@suse.de
 
 - fixed return value in inst_netprobe
+
+-------------------------------------------------------------------
+Fri Aug  1 12:49:15 CEST 2003 - msvec@suse.cz
+
+- read /root/.curlrc only if present
+- 2.8.10
 
 -------------------------------------------------------------------
 Fri Aug  1 12:49:15 CEST 2003 - msvec@suse.de
@@ -3236,6 +3236,11 @@ Wed Apr 17 09:22:51 CEST 2002 - msvec@suse.cz
 - 2.6.0
 
 -------------------------------------------------------------------
+Tue Mar 26 00:45:36 CET 2002 - ro@suse.de
+
+- added yast2 to neededforbuild (modules/Mode.ycp)
+
+-------------------------------------------------------------------
 Sat Mar 23 14:43:32 CET 2002 - kkeil@suse.de
 
 - fix empty custom provider problem (#15425)
@@ -3245,11 +3250,6 @@ Sat Mar 23 14:43:32 CET 2002 - kkeil@suse.de
 Thu Mar 21 18:06:41 CET 2002 - kkeil@suse.de
 
 - don't load drivers in proposal mode (#15078)
-
--------------------------------------------------------------------
-Tue Mar 26 00:45:36 CET 2002 - ro@suse.de
-
-- added yast2 to neededforbuild (modules/Mode.ycp)
 
 -------------------------------------------------------------------
 Thu Mar 21 16:15:47 CET 2002 - mvidner@suse.cz
