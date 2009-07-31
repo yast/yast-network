@@ -1,0 +1,93 @@
+/* ------------------------------------------------------------------------------
+ * Copyright (c) 2008 Novell, Inc. All Rights Reserved.
+ *
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of version 2 of the GNU General Public License as published by the
+ * Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, contact Novell, Inc.
+ *
+ * To contact Novell about this file by physical or electronic mail, you may find
+ * current contact information at www.novell.com.
+ * ------------------------------------------------------------------------------
+ */
+
+/**
+ * File:	firewall_stage1_proposal.ycp
+ * Summary:	Configuration of fw in 1st stage
+ * Author:	Bubli <kmachalkova@suse.cz>
+ *
+ */
+
+{
+    textdomain "network";
+
+
+    string func  = (string)WFM::Args(0);
+    map    param = (map)WFM::Args(1);
+    map<string,any>    ret   = $[];
+
+    boolean firewall_enabled = false;
+    boolean ssh_enabled = true;
+
+    if ( func == "MakeProposal" )
+    {
+	string output = "<ul>\n";
+        output = output + "<li>" + (firewall_enabled ?
+            _("Firewall is enabled (<a href=\"firewall--disable_firewall_in_proposal\">disable</a>)")
+            :
+            _("Firewall is disabled (<a href=\"firewall--enable_firewall_in_proposal\">enable</a>)")
+        ) + "</li>\n";
+
+	if (firewall_enabled)
+	{
+	    output = output + "<li>" + (ssh_enabled ?
+                _("SSH port is open (<a href=\"firewall--disable_ssh_in_proposal\">close</a>)")
+                :
+                _("SSH port is blocked (<a href=\"firewall--enable_ssh_in_proposal\">open</a>)")
+           ) + "</li>\n";
+
+	}
+        output = output + "</ul>\n";
+
+	ret = $[
+        "preformatted_proposal" : output,
+        "warning_level" : `warning,
+        //"warning" : proposal["warning"]:nil,
+        "links" : [
+            "firewall--enable_firewall_in_proposal", "firewall--disable_firewall_in_proposal",
+            "firewall--enable_ssh_in_proposal", "firewall--disable_ssh_in_proposal",
+        ]
+    ];
+
+    }
+    else if ( func == "AskUser" ) {
+	ret = $[ "workflow_sequence" : `next ];
+    }
+    else if ( func == "Description" )
+    {
+        ret =
+            $[
+                // Proposal title 
+              "rich_text_title" :       _("Firewall"),
+                // Menu entry label
+              "menu_title"      :       _("&Firewall"),
+              "id"              :       "firewall_stage1"
+            ];
+    }
+    else if (func == "Write")
+    {
+	ret =
+	    $[
+		"success"	:	true
+	    ];
+    }
+
+    return ret;
+}
