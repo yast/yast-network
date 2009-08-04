@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Aug  4 14:49:57 CEST 2009 - mzugec@suse.de
+
+- s390: correctly configure hsi devices (bnc#406091)
+- 2.13.133 
+
+-------------------------------------------------------------------
 Thu Jun 25 15:36:09 CEST 2009 - mzugec@suse.de
 
 - for lcs and ctc offer only 2 CHAN_IDS (bnc#515492)

@@ -790,11 +790,11 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 	    Lan::nm_name = "static-iucv-id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
 	    Lan::device = "id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
 	}
-	else if (Lan::type != "hsi"){
+	else //if (Lan::type != "hsi"){
 	       Lan::chan_mode = (string) UI::QueryWidget(`id(`chan_mode), `Value);
 	  // for ficon and escon devices configure chan_ids (#181998)
 	  if (contains(["ficon", "escon"], Lan::type)) Lan::qeth_chanids = (string) UI::QueryWidget(`id(`qeth_chanids), `Value);
-	 }
+//	 }
 	if(Lan::type == "lcs")
 	    Lan::lcs_timeout = (string) UI::QueryWidget(`id(`lcs_timeout), `Value);
 	    Lan::qeth_chanids = (string) UI::QueryWidget(`id(`qeth_chanids), `Value);
