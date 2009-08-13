@@ -28,29 +28,30 @@
 {
     textdomain "network";
 
+    import "SuSEFirewall4Network";
 
     string func  = (string)WFM::Args(0);
     map    param = (map)WFM::Args(1);
     map<string,any>    ret   = $[];
 
-    boolean firewall_enabled = false;
-    boolean ssh_enabled = true;
+    boolean ssh_enabled = false;
+
 
     if ( func == "MakeProposal" )
     {
 	string output = "<ul>\n";
-        output = output + "<li>" + (firewall_enabled ?
-            _("Firewall is enabled (<a href=\"firewall--disable_firewall_in_proposal\">disable</a>)")
+        output = output + "<li>" + (SuSEFirewall4Network::Enabled1stStage() ?
+            _("Firewall will be enabled (<a href=\"firewall--disable_firewall_in_proposal\">disable</a>)")
             :
-            _("Firewall is disabled (<a href=\"firewall--enable_firewall_in_proposal\">enable</a>)")
+            _("Firewall will be disabled (<a href=\"firewall--enable_firewall_in_proposal\">enable</a>)")
         ) + "</li>\n";
 
-	if (firewall_enabled)
+	if (SuSEFirewall4Network::Enabled1stStage())
 	{
-	    output = output + "<li>" + (ssh_enabled ?
-                _("SSH port is open (<a href=\"firewall--disable_ssh_in_proposal\">close</a>)")
+	    output = output + "<li>" + (SuSEFirewall4Network::EnabledSsh1stStage() ?
+                _("SSH port will be open (<a href=\"firewall--disable_ssh_in_proposal\">close</a>)")
                 :
-                _("SSH port is blocked (<a href=\"firewall--enable_ssh_in_proposal\">open</a>)")
+                _("SSH port will be blocked (<a href=\"firewall--enable_ssh_in_proposal\">open</a>)")
            ) + "</li>\n";
 
 	}
@@ -68,6 +69,29 @@
 
     }
     else if ( func == "AskUser" ) {
+	any chosen_link = param["chosen_id"]:nil;
+	y2milestone("User clicked %1", chosen_link);
+
+	if (chosen_link == "firewall--enable_firewall_in_proposal")
+	{
+	    y2milestone("Enabling FW");
+	    SuSEFirewall4Network::SetEnabled1stStage(true);
+	}
+	else if (chosen_link == "firewall--disable_firewall_in_proposal")
+	{
+	    y2milestone("Disabling FW");
+	    SuSEFirewall4Network::SetEnabled1stStage( false );
+	}
+	else if (chosen_link == "firewall--enable_ssh_in_proposal")
+	{
+	    y2milestone("Enabling SSH");
+	    SuSEFirewall4Network::SetSshEnabled1stStage( true );
+	}
+	else if (chosen_link == "firewall--disable_ssh_in_proposal")
+	{
+	    y2milestone("Disabling SSH");
+	    SuSEFirewall4Network::SetSshEnabled1stStage( false );
+	}
 	ret = $[ "workflow_sequence" : `next ];
     }
     else if ( func == "Description" )

@@ -20,6 +20,9 @@
     import "SuSEFirewallProposal";
     import "Stage";
 
+    boolean firewall_enabled_1st_stage = false;
+    boolean ssh_enabled_1st_stage = false;
+
     /**
      * Function reads configuration of SuSEFirewall.
      *
@@ -168,7 +171,7 @@
     }
 
     /**
-     * Functions sets that a firewall proposal was changed by user
+     * Function sets that a firewall proposal was changed by user
      * by editing firewall zone of network interface
      * (applicable during 2nd stage of installation only)
      * @param boolean whether proposal was changed by user
@@ -180,6 +183,19 @@
 
     global define boolean IsInstalled() {
 	return SuSEFirewall::SuSEFirewallIsInstalled ();
+    }
+
+    global define void SetEnabled1stStage( boolean enabled) {
+	firewall_enabled_1st_stage = enabled;
+    }
+    global define boolean Enabled1stStage() {
+	return firewall_enabled_1st_stage;
+    }
+    global define void SetSshEnabled1stStage( boolean enabled) {
+	ssh_enabled_1st_stage = enabled;
+    }
+    global define boolean EnabledSsh1stStage() {
+	return ssh_enabled_1st_stage;
     }
 /* EOF */
 }
