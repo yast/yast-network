@@ -28,13 +28,28 @@
 {
     textdomain "network";
 
+    import "ProductFeatures";
     import "SuSEFirewall4Network";
+    import "SuSEFirewallProposal";
+
+    // run this only once
+    if (!SuSEFirewallProposal::GetProposalInitialized()) {
+
+        // variables from control file
+        y2milestone("Default firewall values: enable_firewall=%1, enable_ssh=%2",
+            ProductFeatures::GetBooleanFeature ("globals", "enable_firewall"), 
+	    ProductFeatures::GetBooleanFeature ("globals", "firewall_enable_ssh"));
+
+        SuSEFirewall4Network::SetEnabled1stStage(ProductFeatures::GetBooleanFeature ("globals", "enable_firewall"));
+        SuSEFirewall4Network::SetSshEnabled1stStage (ProductFeatures::GetBooleanFeature ("globals", "firewall_enable_ssh"));
+
+        SuSEFirewallProposal::SetProposalInitialized(true);
+    }
+
 
     string func  = (string)WFM::Args(0);
     map    param = (map)WFM::Args(1);
     map<string,any>    ret   = $[];
-
-    boolean ssh_enabled = false;
 
 
     if ( func == "MakeProposal" )
