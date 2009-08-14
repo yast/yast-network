@@ -38,18 +38,24 @@ if (func == "Info")
 }
 else if (func == "Write")
 {
+    //we have those from the proposal
     boolean fw_enabled = SuSEFirewall4Network::Enabled1stStage();
     boolean ssh_enabled = SuSEFirewall4Network::EnabledSsh1stStage();
     y2milestone("After installation, firewall will be %1, ssh port will be %2", 
 	fw_enabled ? "enabled" : "disabled",
 	ssh_enabled ? "open" : "closed");
 
+    //now read the config from SuSEfirewall2 RPM
     SuSEFirewall::Read();
 
+    //and merge
     SuSEFirewall::SetEnableService( fw_enabled );
     SuSEFirewall::SetStartService( fw_enabled );
 
-    SuSEFirewall::SetServicesForZones (["service:sshd"], SuSEFirewall::GetKnownFirewallZones(), ssh_enabled );
+    //only if we have openssh package - proposal takes care 
+    //it gets installed if the user wants to open ssh port
+    if (ssh_enabled)
+        SuSEFirewall::SetServicesForZones (["service:sshd"], SuSEFirewall::GetKnownFirewallZones(), true );
 
     SuSEFirewall::Write(); 
 }
