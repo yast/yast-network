@@ -1,0 +1,66 @@
+/**
+ * File:	clients/firewall_stage1_finish.ycp
+ * Summary:	Installation client for writing firewall configuration 
+ *		at the end of 1st stage
+ * Author:	Bubli <kmachalkova@suse.cz>
+ *
+ */
+{
+textdomain "network";
+
+import "SuSEFirewall";
+import "SuSEFirewall4Network";
+import "SuSEFirewallProposal";
+
+any ret = nil;
+string func = "";
+map param = $[];
+
+/* Check arguments */
+if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
+    func = (string)WFM::Args(0);
+    if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
+	param = (map)WFM::Args(1);
+}
+
+y2milestone ("starting firewall_stage1_finish");
+y2debug("func=%1", func);
+y2debug("param=%1", param);
+
+if (func == "Info")
+{
+    return (any)$[
+	"steps" : 1,
+	// progress step title
+	"title" : _("Writing Firewall Configuration..."),
+	"when" : SuSEFirewallProposal::GetChangedByUser() ? [ `installation,  `autoinst ] : [],
+    ];
+}
+else if (func == "Write")
+{
+    boolean fw_enabled = SuSEFirewall4Network::Enabled1stStage();
+    boolean ssh_enabled = SuSEFirewall4Network::EnabledSsh1stStage();
+    y2milestone("After installation, firewall will be %1, ssh port will be %2", 
+	fw_enabled ? "enabled" : "disabled",
+	ssh_enabled ? "open" : "closed");
+
+    SuSEFirewall::Read();
+
+    SuSEFirewall::SetEnableService( fw_enabled );
+    SuSEFirewall::SetStartService( fw_enabled );
+
+    SuSEFirewall::SetServicesForZones (["service:sshd"], SuSEFirewall::GetKnownFirewallZones(), ssh_enabled );
+
+    SuSEFirewall::Write(); 
+}
+else
+{
+    y2error ("unknown function: %1", func);
+    ret = nil;
+}
+
+y2debug("ret=%1", ret);
+y2milestone("firewall_stage1_finish finished");
+return ret;
+
+}
