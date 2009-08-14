@@ -28,9 +28,12 @@
 {
     textdomain "network";
 
+    import "PackagesProposal";
     import "ProductFeatures";
     import "SuSEFirewall4Network";
     import "SuSEFirewallProposal";
+
+    string proposal_id = "fw_1ststage";
 
     // run this only once
     if (!SuSEFirewallProposal::GetProposalInitialized()) {
@@ -91,6 +94,7 @@
 	{
 	    y2milestone("Enabling FW");
 	    SuSEFirewall4Network::SetEnabled1stStage(true);
+	    PackagesProposal::AddResolvables(proposal_id, `package, ["SuSEfirewall2"]);
 	}
 	else if (chosen_link == "firewall--disable_firewall_in_proposal")
 	{
@@ -100,6 +104,7 @@
 	else if (chosen_link == "firewall--enable_ssh_in_proposal")
 	{
 	    y2milestone("Enabling SSH");
+	    PackagesProposal::AddResolvables(proposal_id, `package, ["openssh"]);
 	    SuSEFirewall4Network::SetSshEnabled1stStage( true );
 	}
 	else if (chosen_link == "firewall--disable_ssh_in_proposal")
@@ -107,6 +112,7 @@
 	    y2milestone("Disabling SSH");
 	    SuSEFirewall4Network::SetSshEnabled1stStage( false );
 	}
+	SuSEFirewallProposal::SetChangedByUser(true);
 	ret = $[ "workflow_sequence" : `next ];
     }
     else if ( func == "Description" )
