@@ -117,7 +117,7 @@ controls the interface. There is no need to set it up in YaST."),
 	"label": _("Manually"),
 	// help text for Device Activation
 	"help": _("<p><b>Manually</b>: You control the interface manually
-via 'ifup' or 'kinternet' (see 'User Controlled' below)</p>.
+via 'ifup' or 'kinternet' (see 'User Controlled' below).</p>
 "),
 	],
     "ifplugd": $[
@@ -170,7 +170,7 @@ map<string, any> MakeStartmode (list<string> ids) {
 	// Device activation main help. The individual parts will be
 	// substituted as %1
 _("<p><b><big>Device Activation</big></b></p> 
-<p>Choose when to bring up the network interface.<b>At Boot Time</b> activates it during system boot, 
+<p>Choose when to bring up the network interface. <b>At Boot Time</b> activates it during system boot, 
 <b>Never</b> does not start the device.
 %1</p>
 "),
