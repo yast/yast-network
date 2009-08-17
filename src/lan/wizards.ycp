@@ -1,0 +1,264 @@
+/**
+ * File:	include/network/lan/wizards.ycp
+ * Package:	Network configuration
+ * Summary:	Network cards configuration wizards
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "Arch";
+import "Label";
+import "Lan";
+import "Sequencer";
+import "Wizard";
+
+include "network/routines.ycp";
+include "network/lan/address.ycp";
+include "network/lan/complex.ycp";
+include "network/lan/dhcp.ycp";
+include "network/lan/hardware.ycp";
+include "network/lan/wireless.ycp";
+include "network/services/dns.ycp";
+include "network/services/host.ycp";
+include "network/services/proxy.ycp";
+
+define symbol NetworkCardSequence(string action);
+define symbol MainSequence(string mode);
+define symbol AddressSequence(string which);
+
+/**
+ * Whole configuration of network
+ * @return successfully finished
+ */
+boolean LanSequence() {
+
+    map aliases = $[
+	"read"	: [ ``( ReadDialog() ), true ],
+	"main"	:   ``( MainSequence("") ),
+	"packages"	: [ ``( PackagesInstall(Lan::Packages()) ), true ],
+	"write"	: [ ``( WriteDialog() ), true ],
+    ];
+
+    map sequence = $[
+	"ws_start" : "read",
+	"read" : $[
+	    `abort	: `abort,
+	    `next	: "main"
+	],
+	"main" : $[
+	    `abort	: `abort,
+	    `next	: "packages",
+	],
+	"packages" : $[
+	    `abort	: `abort,
+	    `next	: "write"
+	],
+	"write" : $[
+	    `abort	: `abort,
+	    `next	: `next,
+	]
+    ];
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("lan");
+
+    symbol ret = Sequencer::Run(aliases, sequence);
+
+    UI::CloseDialog();
+    return ret == `next;
+}
+
+/**
+ * Whole configuration of network but without reading and writing.
+ * For use with autoinstallation and proposal
+ * @param mode if "proposal", NM dialog may be skipped
+ * @return sequence result
+ */
+define symbol LanAutoSequence (string mode) ``{
+    string caption = _("Network Card Configuration");
+    term contents = `Label(_("Initializing..."));
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("lan");
+    Wizard::SetContentsButtons(caption, contents, "",
+				Label::BackButton(), Label::NextButton());
+
+    symbol ret = MainSequence (mode);
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/**
+ * Main workflow of the network configuration
+ * @param mode if "proposal", NM dialog may be skipped
+ * @return sequence result
+ */
+define symbol MainSequence (string mode) ``{
+
+    map aliases = $[
+	"global"	: ``(MainDialog ("global")),
+	"overview"	: ``(MainDialog ("overview")),
+	"add"		: [ ``(NetworkCardSequence("add")), true ],
+	"edit"		: [ ``(NetworkCardSequence("edit")), true ],
+    ];
+
+    string start = "overview";
+    // the NM decision is already present in the proposal.
+    // see also #148485
+    if (mode == "proposal") start = "global";
+    map sequence = $[
+	"ws_start" : start,
+	"global" : $[
+	    `abort	: `abort,
+	    `next	: `next,
+	    `add	: "add",
+	    `edit	: "edit",
+	    ],
+	"overview" : $[
+	    `abort	: `abort,
+	    `next	: `next,
+	    `add	: "add",
+	    `edit	: "edit",
+	],
+	"add" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+	"edit" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+    ];
+
+    return Sequencer::Run(aliases, sequence);
+}
+
+/**
+ * Configuration sequence
+ * @param action which workflow ("add"|"edit")
+ * @return sequence result
+ */
+define symbol NetworkCardSequence(string action) ``{
+    map aliases = $[
+	"hardware"	: ``(HardwareDialog()),
+	"address"	: ``(AddressSequence("")),
+	"s390"		: ``(S390Dialog()),
+    ];
+
+    string ws_start = "address";
+    // for s390 start with S390Dialog() - there are another conditions
+    // for new devices start with HardwareDialog()
+    if(Arch::s390 () ) ws_start = "s390";
+       else if(action == "add") ws_start = "hardware";
+    y2milestone("ws_start %1", ws_start);
+
+    map sequence = $[
+	"ws_start" : ws_start,
+	"hardware" : $[
+	    `abort	: `back,
+	    `next	: "address",
+	],
+	"address" : $[
+	    `abort	: `back,
+	    `next	: `next,
+	],
+	"s390" : $[
+	    `abort	: `abort,
+	    `hardware	: "hardware",
+	    `next	: "address",
+	],
+    ];
+
+    return Sequencer::Run(aliases, sequence);
+}
+
+/**
+ * Configuration sequence
+ * @param which: if "wire", go directly to wifi setup
+ * @return sequence result
+ */
+define symbol AddressSequence(string which) ``{
+
+    map aliases = $[
+//	"changedefaults": [ ``(ChangeDefaults()), true ],
+	"address"	: ``(AddressDialog()),
+	"hosts"		: ``(HostsMainDialog(false)),
+	"proxy"		: ``(ProxyMainDialog(false)),
+	"s390"		: ``(S390Dialog()),
+	"wire"		: ``(WirelessDialog()),
+	"expert"	: ``(WirelessExpertDialog()),
+	"keys"		: ``(WirelessKeysDialog()),
+	"eap"		: ``(WirelessWpaEapDialog()),
+	"eap-details"	: ``(WirelessWpaEapDetailsDialog()),
+	"commit"	: [ ``(Commit()), true ],
+    ];
+
+    string ws_start = which == "wire"? "wire": "address"; //"changedefaults";
+    map sequence = $[
+	"ws_start"	: ws_start,
+/*
+	"changedefaults" : $[
+	    `next	: "address",
+	],
+*/
+	"address" : $[
+	    `abort	: `abort,
+	    `next	: "commit",
+	    `wire	: "wire",
+	    `hosts	: "hosts",
+	    `proxy	: "proxy",
+	    `s390	: "s390",
+	    `hardware	: `hardware,
+	],
+	"s390" : $[
+	    `abort	: `abort,
+	    `next	: "address",
+	],
+	"hosts" : $[
+	    `abort	: `abort,
+	    `next	: "address",
+	],
+	"proxy" : $[
+	    `abort	: `abort,
+	    `next	: "address",
+	],
+	"wire" : $[
+	    `next	: "commit",
+	    `expert	: "expert",
+	    `keys	: "keys",
+	    `eap	: "eap",
+	    `abort	: `abort,
+	],
+	"expert" : $[
+	    `next	: "wire",
+	    `abort	: `abort,
+	],
+	"keys" : $[
+	    `next	: "wire",
+	    `abort	: `abort,
+	],
+	"eap" : $[
+	    `next	: "commit",
+	    `details	: "eap-details",
+	    `abort	: `abort,
+	],
+	"eap-details" : $[
+	    `next	: "eap",
+	    `abort	: `abort,
+	],
+	"commit" : $[
+	    `next	: `next,
+	],
+    ];
+
+    return Sequencer::Run(aliases, sequence);
+}
+
+/* EOF */
+}
