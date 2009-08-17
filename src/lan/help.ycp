@@ -204,23 +204,17 @@ or define another one.</p>
 _("<p>Select the slave devices for the bond device.\nOnly devices with the device activation set to <b>Never</b> and with <b>No Address Setup</b> are available.</p>"),
 
 "dhclient_help" : 
-    /* DHCP dialog help 1/8 */
+    /* DHCP dialog help 1/7 */
 _("<p><b><big>DHCP Client Options</big></b></p>") +
 
-    /* DHCP dialog help 2/8 */
-    _("<p><b>Request Broadcast Response</b> causes the DHCP client
-to ask the server always to broadcast its responses. You may need this,
-for example, if your machine is a mobile client moving between different
-networks.</p>") +
-
-    /* DHCP dialog help 3/8 */
+    /* DHCP dialog help 2/7 */
     _("<p>The <b>DHCP Client Identifier</b>, if left empty, defaults to
 the hardware address of the network interface. It must be different for each
 DHCP client on a single network. Therefore, specify a unique free-form
 identifier here if you have several (virtual) machines using the same
 network interface and thus the same hardware address.</p>") +
 
-    /* DHCP dialog help 4/8 */
+    /* DHCP dialog help 3/7 */
     _("<p>The <b>Hostname to Send</b> specifies a string used for the
 hostname option field, when dhcpcd sends messages to the DHCP server. Some 
 DHCP servers update name server zones (forward and reverse records) 
