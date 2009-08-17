@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Aug 17 13:27:50 CEST 2009 - mzugec@suse.de
+
+- L3: manually created bridge over bonding (bnc#528074)
+- 2.18.42 
+
+-------------------------------------------------------------------
 Mon Aug 17 11:51:35 CEST 2009 - mzugec@suse.de
 
 - L3: proposed bridge over bonding (bnc#528076)
