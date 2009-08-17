@@ -1,0 +1,95 @@
+@HEADER-COMMENT@
+
+@HEADER@
+# should be required by devtools
+BuildRequires: pkgconfig perl-XML-Writer rpm
+BuildRequires: update-desktop-files
+BuildRequires: yast2-devtools yast2-testsuite
+BuildRequires: yast2-country
+BuildRequires: yast2-installation >= 2.15.27
+BuildRequires: yast2 >= 2.16.6
+
+# needed for prefixlen support in aliases
+Requires:	yast2 >= 2.17.5
+#netconfig (FaTE #303618)
+Requires:	sysconfig >= 0.71.2
+#GetLanguageCountry
+#(in newly created yast2-country-data)
+Requires:	yast2-country-data >= 2.16.3
+
+PreReq:		/bin/rm
+
+Provides:	y2c_lan y2c_dial yast2-config-adsl y2c_adsl
+Obsoletes:	y2c_lan y2c_dial yast2-config-adsl y2c_adsl
+Provides:	yast2-lib-network yast2-config-network
+Obsoletes:	yast2-lib-network yast2-config-network
+Provides:	yast2-trans-network yast2-trans-adsl
+Obsoletes:	yast2-trans-network yast2-trans-adsl
+Provides:	y2t_lan y2t_adsl y2t_dial
+Obsoletes:	y2t_lan y2t_adsl y2t_dial
+
+# carrier detection
+Conflicts:	yast2-core < 2.10.6
+
+Summary:	Network configuration
+
+%package devel-doc
+Group:          System/YaST
+Summary:	Developer documentation for yast2-network
+
+
+%description 
+Network configuration
+
+%description devel-doc
+Developer documentation for yast2-network
+
+@PREP@
+
+@BUILD@
+
+@INSTALL@
+%ifarch s390 s390x
+/bin/rm -f $RPM_BUILD_ROOT/@desktopdir@/dsl.desktop
+/bin/rm -f $RPM_BUILD_ROOT/@desktopdir@/isdn.desktop
+/bin/rm -f $RPM_BUILD_ROOT/@desktopdir@/modem.desktop
+%endif
+/bin/rm -f $RPM_BUILD_ROOT/@desktopdir@/network.desktop
+/bin/rm -f $RPM_BUILD_ROOT/@desktopdir@/provider.desktop
+
+@CLEAN@
+
+%post -p /bin/bash
+# This fixes the files that were touched when #24842 was in effect.
+# #42990: shut up when no wlan files are there.
+shopt -s nullglob
+files=`echo /etc/sysconfig/network/ifcfg-wlan*`
+if [ -n "$files" ]; then
+    /bin/chown root:root $files
+    /bin/chmod 0600 $files
+fi
+
+%files
+%defattr(-,root,root)
+@ybindir@/*
+@ydatadir@/*
+@yncludedir@/network
+@clientdir@/*.ycp
+@moduledir@/*.ycp
+@moduledir@/*.ybc
+@desktopdir@/*.desktop
+@scrconfdir@/*.scr
+@agentdir@/ag_udev_persistent
+@schemadir@/autoyast/rnc/networking.rnc
+@schemadir@/autoyast/rnc/host.rnc
+@schemadir@/autoyast/rnc/proxy.rnc
+
+%dir @docdir@
+@docdir@/COPYING
+%readme @docdir@/README
+
+%files devel-doc
+%defattr(-,root,root)
+%doc @docdir@
+%exclude @docdir@/COPYING
+%exclude @docdir@/README

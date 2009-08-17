@@ -1,0 +1,92 @@
+/**
+ * File:	clients/dns_auto.ycp
+ * Package:	Network configuration
+ * Summary:	Client for autoinstallation
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * This is a client for autoinstallation. It takes its arguments,
+ * goes through the configuration and return the setting.
+ * Does not do any changes to the configuration.
+ */
+
+/**
+ * @param function to execute
+ * @param map/list of dns settings
+ * @return map edited settings, Summary or boolean on success depending on called function
+ * @example map mm = $[ "FAIL_DELAY" : "77" ];
+ * @example map ret = WFM::CallFunction ("dns_auto", [ "Summary", mm ]);
+ */
+
+{
+
+textdomain "network";
+
+y2milestone("----------------------------------------");
+y2milestone("DNS auto started");
+
+import "DNS";
+import "Wizard";
+
+include "network/services/dns.ycp";
+
+any ret = nil;
+string func = "";
+map param = $[];
+
+/* Check arguments */
+if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
+    func = (string) WFM::Args(0);
+    if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
+	param = (map) WFM::Args(1);
+}
+y2debug("func=%1", func);
+y2debug("param=%1", param);
+
+/* Create a summary*/
+if(func == "Summary") {
+    ret = DNS::Summary();
+}
+/* Reset configuration */
+else if (func == "Reset") {
+    DNS::Import($[]);
+    ret = $[];
+}
+/* Change configuration (run AutoSequence) */
+else if (func == "Change") {
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("dns");
+    ret = DNSMainDialog(true);
+    UI::CloseDialog();
+}
+/* Import configuration */
+else if (func == "Import") {
+    ret = DNS::Import(param);
+}
+/* Return actual state */
+else if (func == "Export") {
+    ret = DNS::Export();
+}
+/* Write givven settings */
+else if (func == "Write") {
+    import "Progress";
+    boolean progress_orig = Progress::set (false);
+    // DNS::write_only = true;
+    ret = DNS::Write();
+    Progress::set (progress_orig);
+}
+/* Unknown function */
+else {
+    y2error("Unknown function: %1", func);
+    ret = false;
+}
+
+y2debug("ret=%1", ret);
+y2milestone("DNS auto finished");
+y2milestone("----------------------------------------");
+
+return ret;
+
+/* EOF */
+}
