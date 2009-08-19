@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Aug 19 10:55:06 CEST 2009 - kmachalkova@suse.cz
+
+- Do a proper reload of network service on writing (standalone) DNS
+  configuration (removed *-all-dhcp-clients workaround - bnc#528937)  
+
+-------------------------------------------------------------------
 Mon Aug 17 14:55:33 CEST 2009 - mzugec@suse.de
 
 - fixed help text (bnc#530345) 
