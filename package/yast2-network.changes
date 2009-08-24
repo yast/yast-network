@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Aug 25 00:05:45 CEST 2009 - mzugec@suse.de
+
+- initial commit for DBus YaPI 
+- 2.18.43 
+
+-------------------------------------------------------------------
 Wed Aug 19 10:55:06 CEST 2009 - kmachalkova@suse.cz
 
 - Do a proper reload of network service on writing (standalone) DNS

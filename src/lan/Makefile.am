@@ -7,4 +7,10 @@
 yncludedir = @yncludedir@/network/lan
 ynclude_DATA = $(wildcard *.ycp)
 
+YaPI_perldir = @moduledir@/YaPI
+
+YaPI_perl_DATA = \
+    YaPI/NETWORK.pm
+
+
 EXTRA_DIST = $(ynclude_DATA)
