@@ -13,44 +13,40 @@ our $VERSION            = '1.0.0';
 our @CAPABILITIES       = ('SLES11');
 our %TYPEINFO;
 
-
+# TODO: parameter map<string, boolean> what_I_Need
 BEGIN{$TYPEINFO{Read} = ["function",
-    ["list", [ "map", "string", "any"]]];
+    [ "map", "string", "any"]];
 }
 sub Read {
 
   my $self	= shift;
-  my @ret	= ();
+# FIXME: just a fake data, replace with real data from system
+  my %ret	= ('interfaces'=>{
+				'eth0'=>{'bootproto'=>'dhcp'}, 
+				'eth1'=>{'bootproto'=>'static', 'ipaddr'=>'192.168.3.27/24'}},
+		   'routes'=>{'default'=>'10.20.7.254'}, 
+                   'dns'=>{'dnsservers'=>'10.20.0.15 10.20.0.8', 'dnsdomains'=>'suse.cz suse.de'}, 
+                   'hostname'=>{'name'=>'linux', 'domain'=>'suse.cz'}
+		);
 
-  my $current_runlevel	= 3; #FIXME which runlevel?
-
-  my $services	= Service->EnabledServices ($current_runlevel);
-  foreach my $name (@$services) {
-    my $s	= {
-	"name"		=> $name
-#read the status on demand, this is costly
-#	"status"	=> Service->Status ($name)
-    };
-    push @ret, $s;
-  }
-  return \@ret;
+  return \%ret;
 }
 
-BEGIN{$TYPEINFO{Get} = ["function",
-    [ "map", "string", "any"],
-    "string" ];
-}
-sub Get {
-
-  my $self	= shift;
-  my $name	= shift;
-
-  my $service	= {
-    "name"	=> $name,
-    "status"	=> Service->Status ($name)
-  };
-  return $service;
-}
+#BEGIN{$TYPEINFO{Get} = ["function",
+#    [ "map", "string", "any"],
+#    "string" ];
+#}
+#sub Get {
+#
+#  my $self	= shift;
+#  my $name	= shift;
+#
+#  my $service	= {
+#    "name"	=> $name,
+#    "status"	=> Service->Status ($name)
+#  };
+#  return $service;
+#}
 
 BEGIN{$TYPEINFO{Execute} = ["function",
     [ "map", "string", "any"],
