@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug 28 15:52:27 CEST 2009 - mzugec@suse.de
+
+- YaPI: real data for dns, routing 
+
+-------------------------------------------------------------------
 Fri Aug 28 15:32:32 CEST 2009 - kmachalkova@suse.cz
 
 - Write configuration only in firewall_stage1_finish, do not try to 

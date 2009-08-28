@@ -6,8 +6,9 @@ use YaPI;
 use Data::Dumper;
 
 # ------------------- imported modules
-YaST::YCP::Import ("Lan");
+#YaST::YCP::Import ("Lan");
 YaST::YCP::Import ("DNS");
+YaST::YCP::Import ("Routing");
 # -------------------------------------
 
 our $VERSION            = '1.0.0';
@@ -22,13 +23,14 @@ sub Read {
   my $self	= shift;
 
  DNS->Read();
+ Routing->Read();
 
-# FIXME: just a fake data, replace with real data from system
+# FIXME: interfaces are a fake data, replace with real data from system
   my %ret	= ('interfaces'=>{
 				'eth0'=>{'bootproto'=>'dhcp'}, 
 				'eth1'=>{'bootproto'=>'static', 'ipaddr'=>'192.168.3.27/24'}},
-		   'routes'=>{'default'=>'10.20.7.254'}, 
-                   'dns'=>{'dnsservers'=>'10.20.0.15 10.20.0.8', 'dnsdomains'=>'suse.cz suse.de'}, 
+		   'routes'=>{'default'=>Routing->GetGateway()}, 
+                   'dns'=>{'dnsservers'=>join(' ', @{DNS->nameservers}), 'dnsdomains'=>join(' ', @{DNS->searchlist})}, 
                    'hostname'=>{'name'=>DNS->hostname, 'domain'=>DNS->domain}
 		);
 
