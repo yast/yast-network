@@ -41,9 +41,9 @@ else if (func == "Write")
     //we have those from the proposal
     boolean fw_enabled = SuSEFirewall4Network::Enabled1stStage();
     boolean ssh_enabled = SuSEFirewall4Network::EnabledSsh1stStage();
-    y2milestone("After installation, firewall will be %1, ssh port will be %2", 
-	fw_enabled ? "enabled" : "disabled",
-	ssh_enabled ? "open" : "closed");
+    y2milestone("After installation, firewall will be %1",
+	fw_enabled ? sformat("enabled, ssh port will be %1", 
+	ssh_enabled ? "open" : "closed") : "disabled");
 
     //now read the config from SuSEfirewall2 RPM
     SuSEFirewall::Read();
@@ -57,7 +57,8 @@ else if (func == "Write")
     if (ssh_enabled)
         SuSEFirewall::SetServicesForZones (["service:sshd"], SuSEFirewall::GetKnownFirewallZones(), true );
 
-    SuSEFirewall::Write(); 
+    //this is equivalent to write-only, do not attempt to restart the service
+    SuSEFirewall::WriteConfiguration(); 
 }
 else
 {
