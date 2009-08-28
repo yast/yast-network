@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Aug 28 15:32:32 CEST 2009 - kmachalkova@suse.cz
+
+- Write configuration only in firewall_stage1_finish, do not try to 
+  start/stop SuSEFirewall2 service
+
+-------------------------------------------------------------------
 Thu Aug 27 16:17:40 CEST 2009 - mzugec@suse.de
 
 - YaPI: read real data for hostname
