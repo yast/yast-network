@@ -467,7 +467,7 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 	if(ret == `enabled) {
 	    UI::ChangeWidget(`id(`frame1), `Enabled, enabled);
 	    UI::ChangeWidget(`id(`frame2), `Enabled,enabled);
-	    UI::ChangeWidget(`id("test_proxy"), `Enabled, !enabled);
+	    UI::ChangeWidget(`id("test_proxy"), `Enabled, enabled);
 	    InitSameProxy();
 	    continue;
 	}
