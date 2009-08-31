@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Aug 31 15:09:48 CEST 2009 - mzugec@suse.de
+
+- YaPI: added testsuite 
+
+-------------------------------------------------------------------
 Fri Aug 28 15:52:27 CEST 2009 - mzugec@suse.de
 
 - YaPI: real data for dns, routing 
