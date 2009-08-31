@@ -29,7 +29,8 @@ sub Read {
   my %ret	= ('interfaces'=>{
 				'eth0'=>{'bootproto'=>'dhcp'}, 
 				'eth1'=>{'bootproto'=>'static', 'ipaddr'=>'192.168.3.27/24'}},
-		   'routes'=>{'default'=>Routing->GetGateway()}, 
+		   'routes'=>{'default'=>{'via'=>Routing->GetGateway()}}, 
+#		   'routes'=>{'default'=>Routing->GetGateway()}, 
                    'dns'=>{'dnsservers'=>join(' ', @{DNS->nameservers}), 'dnsdomains'=>join(' ', @{DNS->searchlist})}, 
                    'hostname'=>{'name'=>DNS->hostname, 'domain'=>DNS->domain}
 		);
