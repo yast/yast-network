@@ -4,9 +4,11 @@ use strict;
 use YaST::YCP qw(:LOGGING);
 use YaPI;
 use Data::Dumper;
+use Switch;
 
 # ------------------- imported modules
-#YaST::YCP::Import ("Lan");
+YaST::YCP::Import ("LanItems");
+YaST::YCP::Import ("NetworkInterfaces");
 YaST::YCP::Import ("DNS");
 YaST::YCP::Import ("Routing");
 # -------------------------------------
@@ -24,13 +26,33 @@ sub Read {
 
  DNS->Read();
  Routing->Read();
+ LanItems->Read();
+ NetworkInterfaces->Read();
 
-# FIXME: interfaces are a fake data, replace with real data from system
-  my %ret	= ('interfaces'=>{
-				'eth0'=>{'bootproto'=>'dhcp'}, 
-				'eth1'=>{'bootproto'=>'static', 'ipaddr'=>'192.168.3.27/24'}},
+ my %interfaces = ();
+ foreach my $devnum (keys %{LanItems->Items}){
+  my $devname= %{LanItems->Items}->{$devnum}->{'hwinfo'}->{'dev_name'};
+  my $name = %{LanItems->Items}->{$devnum}->{'ifcfg'};
+  if ($name ne ""){
+    my %configuration = ();
+    NetworkInterfaces->Select($name);
+    my %config = %{NetworkInterfaces->Current};
+    my $bootproto = %config->{'BOOTPROTO'};
+    switch($bootproto){
+      case "dhcp" {
+        %configuration = ( 'bootproto' => 'dhcp' );
+       }
+      case "static" {
+	%configuration = ( 'bootproto' => 'static' );
+        %configuration->{'ipaddr'} = %config->{'IPADDR'} . "/" . %config->{'PREFIXLEN'}
+       }
+    }
+    $interfaces{$name}=\%configuration;
+  }
+ }
+
+  my %ret	= ('interfaces'=>\%interfaces,
 		   'routes'=>{'default'=>{'via'=>Routing->GetGateway()}}, 
-#                   'dns'=>{'dnsservers'=>join(' ', @{DNS->nameservers}), 'dnsdomains'=>join(' ', @{DNS->searchlist})}, 
                    'dns'=>{'dnsservers'=>\@{DNS->nameservers}, 'dnsdomains'=>\@{DNS->searchlist}}, 
                    'hostname'=>{'name'=>DNS->hostname, 'domain'=>DNS->domain}
 		);
