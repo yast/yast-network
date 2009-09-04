@@ -18,7 +18,12 @@ Read	.target.string "/etc/HOSTNAME" "laptop.suse.cz"
 Read	.target.size "/etc/sysconfig/network/routes" 27
 Read	.routes [$["destination":"default", "gateway":"10.20.30.40"]]
 Read	.sysconfig.sysctl.IP_FORWARD nil
-Dir	.network.section: []
+Dir	.network.section: ["eth0", "eth1"]
+Dir	.network.value."eth0": ["BOOTPROTO"]
+Read	.network.value."eth0".BOOTPROTO "dhcp4"
+Dir	.network.value."eth1": ["BOOTPROTO", "IPADDR"]
+Read	.network.value."eth1".BOOTPROTO "static"
+Read	.network.value."eth1".IPADDR "1.2.3.4/24"
 Read	.target.size "/etc/install.inf" 27
 Dir	.etc.install_inf: []
 Read	.target.string "/proc/cmdline" "laptop.suse.cz"
@@ -32,4 +37,4 @@ Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-pcmcia" nil
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-usb" nil
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-tr-pcmcia" nil
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-tr-usb" nil
-Return	$["dns":$["dnsdomains":["suse.cz", "suse.de"], "dnsservers":["208.67.222.222", "208.67.220.220"]], "hostname":$["domain":"suse.cz", "name":"laptop"], "interfaces":$[], "routes":$["default":$["via":"10.20.30.40"]]]
+Return	$["dns":$["dnsdomains":["suse.cz", "suse.de"], "dnsservers":["208.67.222.222", "208.67.220.220"]], "hostname":$["domain":"suse.cz", "name":"laptop"], "interfaces":$["eth0":$["bootproto":"dhcp4"], "eth1":$["bootproto":"static", "ipaddr":"1.2.3.4/24"]], "routes":$["default":$["via":"10.20.30.40"]]]

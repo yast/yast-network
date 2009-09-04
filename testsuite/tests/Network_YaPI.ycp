@@ -9,6 +9,13 @@ map READ = $[
     ],
     "sysconfig": $[
         "network" : $[
+	  "config" : $[
+	    "NETCONFIG_DNS_STATIC_SERVERS" : "208.67.222.222 208.67.220.220",
+	    "NETCONFIG_DNS_STATIC_SEARCHLIST" : "suse.cz suse.de"
+	  ]
+        ],
+    ],
+    "network" : $[
 	  "section" : $[ "eth0":$[], "eth1":$[] ],
 	  "value" : $[
 		"eth0" : $[
@@ -18,11 +25,6 @@ map READ = $[
 		    "BOOTPROTO" : "static",
 		    "IPADDR"	: "1.2.3.4/24"
 		  ]],
-	  "config" : $[
-	    "NETCONFIG_DNS_STATIC_SERVERS" : "208.67.222.222 208.67.220.220",
-	    "NETCONFIG_DNS_STATIC_SEARCHLIST" : "suse.cz suse.de"
-	  ]
-        ],
     ],
     "routes" : [ $["destination":"default", "gateway":"10.20.30.40"] ]
 ];
