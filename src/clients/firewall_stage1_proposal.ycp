@@ -29,6 +29,7 @@
     textdomain "network";
 
     import "PackagesProposal";
+    import "ProductControl";
     import "ProductFeatures";
     import "SuSEFirewall4Network";
     import "SuSEFirewallProposal";
@@ -113,6 +114,14 @@
 	    SuSEFirewall4Network::SetSshEnabled1stStage( false );
 	}
 	SuSEFirewallProposal::SetChangedByUser(true);
+
+	//Disable one of the AC steps (see control.$product.xml for appropriate unique IDs)
+	if ( ProductControl::GetUseAutomaticConfiguration() )
+	    ProductControl::DisableACItem("ac_2", "firewall");
+	//or subproposal (if 2nd stage is non-automatic)
+	else
+	    ProductControl::DisableSubProposal("network_continue", "firewall");
+
 	ret = $[ "workflow_sequence" : `next ];
     }
     else if ( func == "Description" )
