@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Sep  7 19:11:04 CEST 2009 - kmachalkova@suse.cz
+
+- Disable firewall_proposal AC step (or equivalent non-automatic 
+  subproposal) if it has been configured in 1st stage already
+  (FaTE #303859 and bnc#534862)
+- 2.18.45 
+
+-------------------------------------------------------------------
 Thu Sep  3 20:18:48 CEST 2009 - mzugec@suse.de
 
 - YaPI: read interfaces from system (not only fake data)
