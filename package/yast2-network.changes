@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Sep  9 15:07:34 CEST 2009 - kmachalkova@suse.cz
+
+- Fixed packaging (YaPI stuff goes to @moduledir@)
+
+-------------------------------------------------------------------
 Mon Sep  7 19:11:04 CEST 2009 - kmachalkova@suse.cz
 
 - Disable firewall_proposal AC step (or equivalent non-automatic 
