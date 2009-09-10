@@ -58,7 +58,16 @@ BEGIN{$TYPEINFO{Write} = ["function",
 sub Write {
   my $self = shift;
   my $args = shift;
-y2internal("args", $args);
+  if (exists($args->{'route'})){
+    Routing->Read();
+    Routing->Routes([ {"destination" => "default",
+			"gateway" => $args->{'route'}->{'default'}->{'via'},
+			"netmask" => "-",
+			"device" => "-"
+		     }
+    		]);
+    Routing->Write();
+  }
  return 1;
 }
 
