@@ -52,31 +52,14 @@ sub Read {
   return \%ret;
 }
 
-#BEGIN{$TYPEINFO{Get} = ["function",
-#    [ "map", "string", "any"],
-#    "string" ];
-#}
-#sub Get {
-#
-#  my $self	= shift;
-#  my $name	= shift;
-#
-#  my $service	= {
-#    "name"	=> $name,
-#    "status"	=> Service->Status ($name)
-#  };
-#  return $service;
-#}
-
-BEGIN{$TYPEINFO{Execute} = ["function",
-    [ "map", "string", "any"],
-    "string", "string" ];
+BEGIN{$TYPEINFO{Write} = ["function",
+    "boolean",["map","string","any"]];
 }
-sub Execute {
-
-  my $self	= shift;
-  my $name	= shift;
-  my $action	= shift;
-  return Service->RunInitScriptOutput ($name, $action);
+sub Write {
+  my $self = shift;
+  my $args = shift;
+y2internal("args", $args);
+ return 1;
 }
+
 1;
