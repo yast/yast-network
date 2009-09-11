@@ -58,16 +58,29 @@ BEGIN{$TYPEINFO{Write} = ["function",
 sub Write {
   my $self = shift;
   my $args = shift;
+  y2milestone("YaPI->Write with settings:", Dumper(\$args));
   if (exists($args->{'route'})){
+    my $gw="";
+    my $dest="";
+    my @route = ();
+    if (defined ($args->{'route'}->{'default'}->{'via'})){
+      $gw = $args->{'route'}->{'default'}->{'via'};
+      if ($gw ne ""){
+        $dest = "default";
+        @route = ( {"destination" => $dest,
+                        "gateway" => $gw,
+                        "netmask" => "-",
+                        "device" => "-"
+                     });
+      }
+    }
     Routing->Read();
-    Routing->Routes([ {"destination" => "default",
-			"gateway" => $args->{'route'}->{'default'}->{'via'},
-			"netmask" => "-",
-			"device" => "-"
-		     }
-    		]);
+    y2milestone("YaPI->Write before change Routes:", Dumper(Routing->Routes));
+    Routing->Routes( \@route );
+    y2milestone("YaPI->Write after change Routes:", Dumper(Routing->Routes));
     Routing->Write();
   }
+
  return 1;
 }
 

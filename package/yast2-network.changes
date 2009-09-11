@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Sep 11 15:31:27 CEST 2009 - mzugec@suse.cz
+
+- YaPI: possible to remove default GW (bnc#538397)
+- 2.18.46 
+
+-------------------------------------------------------------------
 Wed Sep  9 15:07:34 CEST 2009 - kmachalkova@suse.cz
 
 - Fixed packaging (YaPI stuff goes to @moduledir@)
