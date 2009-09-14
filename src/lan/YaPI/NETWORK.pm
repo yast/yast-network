@@ -43,12 +43,13 @@ sub Read {
   }
  }
 
+  #FIXME: validate for nil values (dns espacially)
   my %ret	= ('interfaces'=>\%interfaces,
 		   'routes'=>{'default'=>{'via'=>Routing->GetGateway()}}, 
-                   'dns'=>{'dnsservers'=>\@{DNS->nameservers}, 'dnsdomains'=>\@{DNS->searchlist}}, 
+                   'dns'=>{'nameservers'=>\@{DNS->nameservers}, 'searches'=>\@{DNS->searchlist}}, 
                    'hostname'=>{'name'=>DNS->hostname, 'domain'=>DNS->domain}
 		);
-
+y2internal("Network_YaPI->Read() ", Dumper(\%ret));
   return \%ret;
 }
 
@@ -59,6 +60,7 @@ sub Write {
   my $self = shift;
   my $args = shift;
   y2milestone("YaPI->Write with settings:", Dumper(\$args));
+  # SAVE DEFAULT ROUTE
   if (exists($args->{'route'})){
     my $gw="";
     my $dest="";
@@ -79,6 +81,24 @@ sub Write {
     Routing->Routes( \@route );
     y2milestone("YaPI->Write after change Routes:", Dumper(Routing->Routes));
     Routing->Write();
+  }
+  # SAVE HOSTNAME
+  if (exists($args->{'hostname'})){
+   y2internal("hostname", Dumper(\$args->{'hostname'}));
+   DNS->Read();
+   DNS->hostname($args->{'hostname'}->{'name'});
+   DNS->domain($args->{'hostname'}->{'domain'});
+   DNS->modified(1);
+   DNS->Write();
+  }
+  # SAVE DNS Settings
+  if (exists($args->{'dns'})){
+   y2internal("dns", Dumper(\$args->{'dns'}));
+   DNS->Read();
+   DNS->nameservers($args->{'dns'}->{'nameservers'});
+   DNS->searchlist($args->{'dns'}->{'searches'});
+   DNS->modified(1);
+   DNS->Write();
   }
 
  return 1;
