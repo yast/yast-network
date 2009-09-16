@@ -42,7 +42,9 @@ sub Read {
 	  %configuration->{'ipaddr'} = LanItems->ipaddr . "/" . LanItems->prefix;
 	}
     $interfaces{LanItems->interfacename}=\%configuration;
-  }
+  } elsif (LanItems->getCurrentItem()->{'hwinfo'}->{'type'} eq "eth") {
+	  $interfaces{%{LanItems->getCurrentItem()}->{"hwinfo"}->{"dev_name"}}= {};
+	}
  }
 
   #FIXME: validate for nil values (dns espacially)
@@ -125,7 +127,6 @@ sub Write {
            NetworkInterfaces->Write("");
            YaST::YCP::Import ("Service");
 	   Service->Restart("network");
-	   # rcnetwork restart
    }
 
   }
