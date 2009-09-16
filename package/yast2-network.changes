@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Sep 16 14:53:15 CEST 2009 - mzugec@suse.cz
+
+- YaPI: write all values (included interfaces)
+- 2.18.47 
+
+-------------------------------------------------------------------
 Fri Sep 11 15:31:27 CEST 2009 - mzugec@suse.cz
 
 - YaPI: possible to remove default GW (bnc#538397)

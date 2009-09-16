@@ -8,6 +8,7 @@ use Switch;
 
 # ------------------- imported modules
 YaST::YCP::Import ("LanItems");
+YaST::YCP::Import ("Hostname");
 YaST::YCP::Import ("DNS");
 YaST::YCP::Import ("Routing");
 # -------------------------------------
@@ -23,6 +24,7 @@ BEGIN{$TYPEINFO{Read} = ["function",
 sub Read {
   my $self	= shift;
 
+# Hostname->Read();
  DNS->Read();
  Routing->Read();
  LanItems->Read();
@@ -47,9 +49,8 @@ sub Read {
   my %ret	= ('interfaces'=>\%interfaces,
 		   'routes'=>{'default'=>{'via'=>Routing->GetGateway()}}, 
                    'dns'=>{'nameservers'=>\@{DNS->nameservers}, 'searches'=>\@{DNS->searchlist}}, 
-                   'hostname'=>{'name'=>DNS->hostname, 'domain'=>DNS->domain}
+                   'hostname'=>{'name'=>Hostname->CurrentHostname, 'domain'=>Hostname->CurrentDomain}
 		);
-y2internal("Network_YaPI->Read() ", Dumper(\%ret));
   return \%ret;
 }
 
@@ -84,7 +85,7 @@ sub Write {
   }
   # SAVE HOSTNAME
   if (exists($args->{'hostname'})){
-   y2internal("hostname", Dumper(\$args->{'hostname'}));
+   y2milestone("hostname", Dumper(\$args->{'hostname'}));
    DNS->Read();
    DNS->hostname($args->{'hostname'}->{'name'});
    DNS->domain($args->{'hostname'}->{'domain'});
@@ -93,12 +94,40 @@ sub Write {
   }
   # SAVE DNS Settings
   if (exists($args->{'dns'})){
-   y2internal("dns", Dumper(\$args->{'dns'}));
+   y2milestone("dns", Dumper(\$args->{'dns'}));
    DNS->Read();
    DNS->nameservers($args->{'dns'}->{'nameservers'});
    DNS->searchlist($args->{'dns'}->{'searches'});
    DNS->modified(1);
    DNS->Write();
+  }
+  # SAVE DNS Settings
+  if (exists($args->{'interface'})){
+   y2milestone("interface", Dumper(\$args->{'interface'}));
+   foreach my $dev (keys %{$args->{'interface'}}){
+#           YaST::YCP::Import ("LanItems");
+#           LanItems->Read();
+#           foreach my $iface (keys %{LanItems->Items}){
+#             LanItems->current($iface);
+#             LanItems->DeleteItem();
+#           }
+#           LanItems->Write();
+           YaST::YCP::Import ("NetworkInterfaces");
+           NetworkInterfaces->Read();
+           NetworkInterfaces->Add() if NetworkInterfaces->Edit($dev) ne 1;
+           NetworkInterfaces->Name($dev);
+           my %config=("STARTMODE" => "onboot",
+                        "BOOTPROTO" => $args->{'interface'}->{$dev}->{'bootproto'},
+                        "IPADDR" => $args->{'interface'}->{$dev}->{'ipaddr'}
+                        );
+           NetworkInterfaces->Current(\%config);
+           NetworkInterfaces->Commit();
+           NetworkInterfaces->Write("");
+           YaST::YCP::Import ("Service");
+	   Service->Restart("network");
+	   # rcnetwork restart
+   }
+
   }
 
  return 1;
