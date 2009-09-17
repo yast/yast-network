@@ -5,7 +5,8 @@ import "YaPI::NETWORK";
 map READ = $[
     "target" : $[
 	"size":27,
-	"string" : "laptop.suse.cz"
+	"string" : "laptop.suse.cz",
+	"bash_output" : "laptop.suse.cz"
     ],
     "sysconfig": $[
         "network" : $[
@@ -29,6 +30,14 @@ map READ = $[
     "routes" : [ $["destination":"default", "gateway":"10.20.30.40"] ]
 ];
 
-TEST(``(YaPI::NETWORK::Read()), [READ], nil);
+map EXEC = $[
+    "target" : $[
+	"bash_output" : $[
+		"exit" : 0,
+		"stdout" : "laptop.suse.cz"
+		]
+      ]
+    ];
+TEST(``(YaPI::NETWORK::Read()), [READ, $[], EXEC], nil);
 
 }
