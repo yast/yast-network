@@ -118,7 +118,7 @@ sub Write {
            NetworkInterfaces->Read();
            NetworkInterfaces->Add() if NetworkInterfaces->Edit($dev) ne 1;
            NetworkInterfaces->Name($dev);
-           my %config=("STARTMODE" => "onboot",
+           my %config=("STARTMODE" => "auto",
                         "BOOTPROTO" => $args->{'interface'}->{$dev}->{'bootproto'},
                         "IPADDR" => $args->{'interface'}->{$dev}->{'ipaddr'}
                         );

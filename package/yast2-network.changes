@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Sep 17 13:37:54 CEST 2009 - mzugec@suse.cz
+
+- replace STARTMODE='onboot' (which is deprecated) with 'auto'
+ (bnc#533818)
+- 2.18.48 
+
+-------------------------------------------------------------------
 Wed Sep 16 14:53:15 CEST 2009 - mzugec@suse.cz
 
 - YaPI: write all values (included interfaces)

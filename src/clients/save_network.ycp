@@ -279,7 +279,7 @@ void CreateIfcfg(){
     }
     else
     {
-	network_configuration = sformat("%1STARTMODE='onboot'\n", network_configuration);
+	network_configuration = sformat("%1STARTMODE='auto'\n", network_configuration);
     }
 
     // reference to hardware configuration

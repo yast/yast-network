@@ -817,7 +817,7 @@ global define boolean ProposeInterfaces () {
        NetworkInterfaces::Current["BRIDGE_STP"]="off";
        NetworkInterfaces::Current["BRIDGE_FORWARDDELAY"]="0";
 	// hardcode startmode (bnc#450670), it can't be ifplugd!
-       NetworkInterfaces::Current["STARTMODE"]="onboot";
+       NetworkInterfaces::Current["STARTMODE"]="auto";
        // remove description - will be replaced by new (real) one
        NetworkInterfaces::Current=remove(NetworkInterfaces::Current, "NAME");
        if( NetworkInterfaces::Commit() ){
@@ -849,7 +849,7 @@ global define boolean ProposeInterfaces () {
        NetworkInterfaces::Current["BRIDGE_STP"]="off";
        NetworkInterfaces::Current["BRIDGE_FORWARDDELAY"]="0";
 	// hardcode startmode (bnc#450670), it can't be ifplugd!
-       NetworkInterfaces::Current["STARTMODE"]="onboot";
+       NetworkInterfaces::Current["STARTMODE"]="auto";
        // remove description - will be replaced by new (real) one
        NetworkInterfaces::Current=remove(NetworkInterfaces::Current, "NAME");
        if( NetworkInterfaces::Commit() ){

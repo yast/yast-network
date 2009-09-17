@@ -1109,7 +1109,7 @@ global define boolean Commit() {
 	if (contains(["tun", "tap"], type)){
 	 newdev=$[
 		"BOOTPROTO" : "static",
-		"STARTMODE" : "onboot",
+		"STARTMODE" : "auto",
 		"TUNNEL" : type,
 		"TUNNEL_SET_PERSISTENT" : tunnel_set_persistent ? "yes" : "no",
 		"TUNNEL_SET_OWNER" : tunnel_set_owner,

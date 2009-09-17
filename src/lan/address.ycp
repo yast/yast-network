@@ -790,7 +790,7 @@ define any AddressDialog() {
     {
       settings = $[
 	"BOOTPROTO": "static",
-	"STARTMODE": "onboot",
+	"STARTMODE": "auto",
 	"TUNNEL" : LanItems::type,
 	"TUNNEL_SET_PERSISTENT" : LanItems::tunnel_set_persistent ? "yes" : "no",
 	"TUNNEL_SET_OWNER" : LanItems::tunnel_set_owner,
