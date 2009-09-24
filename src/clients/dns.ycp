@@ -1,0 +1,111 @@
+/**
+ * File:	clients/dns.ycp
+ * Package:	Network configuration
+ * Summary:	Hostname and DNS client
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ *
+ * Main file for hostname and DNS configuration.
+ * Uses all other files.
+ */
+
+{
+
+textdomain "network";
+
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("DNS module started");
+
+import "DNS";
+import "Label";
+import "Lan";
+import "NetworkService";
+import "Wizard";
+
+import "CommandLine";
+import "RichText";
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+define boolean Modified() {
+    return DNS::modified;
+}
+
+include "network/runtime.ycp";
+include "network/services/dns.ycp";
+
+/**
+ * Main DNS GUI
+ */
+any DNSGUI() {
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("dns");
+    DNS::Read();
+    Lan::Read(`cache);
+
+    Wizard::SetNextButton(`next, Label::FinishButton() );
+
+    /* main ui function */
+    any ret = DNSMainDialog(true);
+    y2debug("ret == %1", ret);
+
+    if(ret == `next && DNS::modified) {
+	DNS::Write();
+        // no more workarounds with dhcp-clients
+        // do a full network restart (bnc#528937)
+	NetworkService::StartStop();
+    }
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/**
+ * Handler for action "list"
+ * @param options action options
+ */
+define boolean ListHandler(map<string, string> options) {
+
+    string summary = "";
+    /* Command line output Headline */
+    summary = "\n" + _("DNS Configuration Summary:") + "\n\n" +
+	RichText::Rich2Plain(DNS::Summary()) + "\n";
+
+    y2debug("%1", summary);
+    CommandLine::Print(summary);
+    return true;
+}
+
+/**
+ * Command line definition
+ */
+map cmdline = $[
+    /* Commandline help title */
+    "help"	: _("DNS Configuration"),
+    "id"	: "dns",
+    "guihandler": DNSGUI,
+    "initialize": DNS::Read,
+    "finish"	: DNS::Write, // FIXME
+    "actions"	: $[
+	"list" : $[
+	    /* Commandline command help */
+	    "help"	: _("Display configuration summary"),
+	    "handler"	: ListHandler,
+	],
+    ],
+];
+
+any ret = CommandLine::Run(cmdline);
+y2debug("ret=%1", ret);
+
+/* Finish */
+y2milestone("DNS module finished");
+y2milestone("----------------------------------------");
+return ret;
+
+/* EOF */
+}

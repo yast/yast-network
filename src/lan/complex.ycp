@@ -1,0 +1,480 @@
+/**
+ * File:	include/network/lan/dialogs.ycp
+ * Package:	Network configuration
+ * Summary:	Summary, overview and IO dialogs for network cards config
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "CWM";
+
+import "Lan";
+import "DNS";
+import "Mode";
+import "NetworkConfig";
+import "NetworkService";
+import "Routing";
+import "Wizard";
+import "Popup";
+import "Label";
+import "Product";
+import "Package";
+import "TablePopup";
+import "CWMTab";
+import "Stage";
+import "LanItems";
+
+include "network/routines.ycp";
+include "network/summary.ycp";
+include "network/lan/help.ycp";
+include "network/services/routing.ycp";
+include "network/services/dns.ycp";
+include "network/lan/dhcp.ycp";
+
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+define boolean Modified() ``{
+    boolean ret  = LanItems::Modified() || DNS::modified || Routing::Modified() ||
+	NetworkConfig::Modified();
+    return ret;
+}
+
+/**
+ * Commit changes to internal structures
+ * @return always `next
+ */
+define symbol Commit() ``{
+    LanItems::Commit();
+    return `next;
+}
+
+/**
+ * Display finished popup
+ * @return dialog result
+ */
+define symbol FinishDialog() ``{
+    return FinishPopup(Modified(), "lan", "", "mail", ["permanent"]);
+}
+
+/**
+ * Read settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol ReadDialog() ``{
+
+    ScreenName("lan-read");
+
+    Wizard::RestoreHelp( help["read"]:"" );
+    Lan::AbortFunction = ``{return PollAbort();};
+    boolean ret = Lan::Read (`cache);
+
+    if ( Lan::HaveXenBridge() )
+    {
+	if (! Popup::ContinueCancel (
+		sformat (
+		    // continue-cancel popup, #178848
+		    // %1 is a (long) path to a README file
+_("A Xen network bridge was detected.
+Due to the renaming of network interfaces by the bridge script,
+network interfaces should not be configured or restarted.
+See %1 for details."), "/usr/share/doc/packages/xen/README.SuSE")))
+	{
+	    ret = false;
+	}
+    }
+
+    return ret ? `next : `abort;
+}
+
+/**
+ * Write settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+define symbol WriteDialog() ``{
+    ScreenName("lan-write");
+
+    if(!Modified()) return `next;
+
+    LanItems::SetModified();
+    Wizard::RestoreHelp(help["write"]:"");
+    Lan::AbortFunction = ``{return PollAbort() && ReallyAbort();};
+    boolean ret = Lan::Write();
+    return ret ? `next : `abort;
+}
+
+define boolean AddInterface () {
+    Lan::Add ();
+    LanItems::operation = `add;
+    LanItems::SelectHWMap(LanItems::getCurrentItem()["hwinfo"]:$[]);
+    LanItems::Items[LanItems::current, "ifcfg"] = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
+    LanItems::Items[LanItems::current, "commited"] = false;
+    LanItems::operation = `edit;
+//    LanItems::SetDefaultsForHW ();
+
+/*
+    if (NetworkModules::Alias == "")
+    {
+	if (!Popup::ContinueCancel (_("The device does not have a driver module.
+The driver may be built in the kernel.")))
+	{
+	    return false;
+	}
+    }
+*/
+    string fw = "";
+    if (LanItems::needFirmwareCurrentItem()){
+	fw = LanItems::GetFirmwareForCurrentItem();
+	if (fw != ""){
+	    if ((!Package::Installed(fw) && !Package::Available(fw))){
+	        Popup::Message(sformat(_("Firmware is needed. Install it from 
+%1 Add-On CD.
+First add the Add-On CD to your YaST software repositories then return 
+to this configuration dialog.
+"), Product::name));
+		return false;
+	    } else
+		if (!contains(LanItems::Requires, fw)) LanItems::Requires = add(LanItems::Requires, fw);
+	}
+	else {
+		return (Popup::ContinueCancel(_("The device needs a firmware to function properly. It can be usually downloaded from your driver vendor web page.\nIf you have already downloaded and installed the firmware, click <b>Continue</b> 
+to configure the device. Otherwise click <b>Cancel</b> and return to this dialog
+once you have installed the firmware.")));
+	}
+    }
+
+    // this is one of 3 places to install packages :-(
+    // - kernel modules (InstallKernel): before loaded
+    // - smpppd & kinternet: before net start
+    // - wlan firmware: here, just because it is copied from modems
+    //   #45960
+    if(LanItems::Requires != [] && LanItems::Requires != nil) {
+	if(PackagesInstall(LanItems::Requires) != `next)
+	    return false;
+        if (fw=="b43-fwcutter"){
+	    if(Popup::ContinueCancelHeadline(_("Installing firmware"), _("For successful firmware installation the, 'install_bcm43xx_firmware' script needs to be executed. Execute it now ?"))){
+	    map<string, any> command = (map<string, any>)SCR::Execute(.target.bash_output, "/usr/sbin/install_bcm43xx_firmware");
+	    //y2internal("command %1", command);
+//	 Popup::ShowFile ("Boot Messages", "/tmp/bcm_firmware.log");
+//	Popup::LongText(command["stdout"]:"");
+	    if (command["exit"]:-1!=0)
+		Popup::ErrorDetails(_("An error occurred during firmware installation."), command["stderr"]:"");
+	    else
+		Popup::Message("bcm43xx_firmware installed successfully");
+	    }
+        }
+    }
+/*
+   TODO: Refresh hwinfo in LanItems
+*/
+    return true;
+}
+
+
+define void initIPv6 (string key) {
+    UI::ChangeWidget (`id (`ipv6), `Value, Lan::ipv6 ? true : false);
+}
+
+
+define symbol handleIPv6( string key, map event ) {
+ if (event["EventReason"]:""=="ValueChanged") Lan::SetIPv6((boolean)UI::QueryWidget (`id (`ipv6), `Value));
+ return nil;
+}
+
+define void storeIPv6 (string key, map event) {
+   if ((boolean) UI::QueryWidget (`id (`ipv6), `Value))
+	Lan::SetIPv6(true);
+   else
+	Lan::SetIPv6(false);
+}
+
+/**
+ * Initialize the NetworkManager widget
+ * @param key id of the widget
+ */
+define void ManagedInit (string key) {
+    string value = NetworkService::IsManaged ()? "managed": "ifup";
+    UI::ChangeWidget (`id (key), `CurrentButton, value);
+}
+
+/**
+ * Store the NetworkManager widget
+ * @param key	id of the widget
+ * @param event	the event being handled
+ */
+define void ManagedStore (string key, map event) {
+    string value_g = (string) UI::QueryWidget (`id (key), `CurrentButton);
+    boolean value = value_g == "managed";
+    if (NetworkService::IsManaged () != value)
+	LanItems::SetModified ();
+    NetworkService::SetManaged (value);
+}
+
+void enableDisableButtons(){
+ LanItems::current = (integer)UI::QueryWidget (`id (`_hw_items), `CurrentItem);
+
+ UI::ChangeWidget(`_hw_sum, `Value,LanItems::GetItemDescription());
+ if (!LanItems::IsItemConfigured()) // unconfigured
+			 UI::ChangeWidget(`id(`delete), `Enabled, false);
+	else UI::ChangeWidget(`id(`delete), `Enabled, true);
+
+ UI::ChangeWidget(`id(`edit), `Enabled, LanItems::enableCurrentEditButton());
+
+    if (!Mode::config() && Lan::HaveXenBridge ()) // #196479
+    {
+	// #178848
+	foreach (symbol b, [`add, `edit, `delete], {
+	    UI::ChangeWidget (`id (b), `Enabled, false);
+	});
+    }
+/*
+ if (hasAnyValue(LanItems::getCurrentItem()["hwinfo", "dev_name"]:"") && size(LanItems::getCurrentItem()["hwinfo"]:$[])>0) UI::ChangeWidget(`id(`edit), `Enabled, true);
+	else UI::ChangeWidget(`id(`edit), `Enabled, false);
+*/
+}
+
+boolean shown = false;
+
+void initOverview (string key) ``{
+
+    list<term> term_items = maplist (map<string,any> i, (list<map<string,any> >)LanItems::Overview(), {
+        term t = `item (`id (i["id"]:-1));
+        foreach (string l, i["table_descr"]:[], {
+            t = add (t, l);
+        });
+        return t;
+    });
+    UI::ChangeWidget (`id (`_hw_items), `Items, term_items);
+
+ if (!shown)
+ {
+    disableItemsIfNM([`_hw_items, `_hw_sum, `add, `edit, `delete], true);
+    shown = true;
+ }
+ else
+     enableDisableButtons();
+
+ y2milestone("LanItems %1", LanItems::Items);
+}
+
+
+
+symbol handleOverview( string key, map event ) {
+
+ if (!disableItemsIfNM([`_hw_items, `_hw_sum, `add, `edit, `delete], false))
+     enableDisableButtons();
+   UI::ChangeWidget(`_hw_sum, `Value,LanItems::GetItemDescription());
+
+ if (event["EventReason"]:"" == "Activated")
+ {
+  switch ((symbol)event["ID"]:nil){
+   case `add:
+	LanItems::AddNew();
+	Lan::Add();
+	return `add;
+   case `edit:
+	if (!LanItems::IsItemConfigured()) // unconfigured
+	    {
+		if (! AddInterface ()) break;
+	    }
+	    else		// configured
+	    {
+		LanItems::SetItem();
+/*
+		foreach(map<string, any> row, o_items, {
+		 if (row["id"]:-1 == LanItems::current && row["hw_num"]:-1 != -1) LanItems::SelectHW(row["hw_num"]:-1);
+		});
+*/
+//		Lan::SelectHW (1);
+		if (LanItems::startmode == "managed")
+		{
+		    // Continue-Cancel popup
+		    if (!Popup::ContinueCancel (_("The interface is currently set to be managed
+by the NetworkManager applet.
+
+If you edit the settings for this interface here,
+the interface will no longer be managed by NetworkManager.
+")))
+		    {
+			break; // means cancel
+		    }
+		    //
+		    // TODO move the defaults to GetDefaultsForHW
+		    LanItems::startmode = "ifplugd";
+		}
+	    }
+	    return `edit;
+
+   case `delete:
+//	if (!LanItems::IsItemConfigured()) return nil;
+
+	    string pop = sformat(_("All additional addresses belonging to the interface %1
+will be deleted as well.
+
+Really continue?
+"), LanItems::getCurrentItem()["ifcfg"]:"");
+	    if(LanItems::InterfaceHasAliases() && Popup::YesNoHeadline(Label::WarningMsg(), pop) != true)
+		break;
+
+	    LanItems::DeleteItem();
+	    initOverview("");
+	    break;
+  }
+ }
+ if (size(LanItems::Items)==0){
+   UI::ChangeWidget(`_hw_sum, `Value, "");
+   UI::ChangeWidget (`id (`edit), `Enabled, false);
+   UI::ChangeWidget (`id (`delete), `Enabled, false);
+   return nil;
+  }
+}
+
+map<string, map<string,any> > wd = $[
+	"MANAGED": $[
+	    "widget": `radio_buttons,
+	    // radio button group label, method of setup
+	    "label": _("Network Setup Method"),
+	    "items": [
+		// radio button label
+		// the user can control the network with the NetworkManager
+		// program
+		["managed", _("&User Controlled with NetworkManager")],
+		// radio button label
+		// ifup is a program name
+		["ifup", _("&Traditional Method with ifup")],
+		],
+	    "opt": [],
+	    "help": help["managed"]:"",
+	    "init": ManagedInit,
+	    "store": ManagedStore,
+	    ],
+	"IPV6": $[
+	    "widget": `custom,
+	    "custom_widget" :
+		`Frame ( _("IPv6 Protocol Settings"),
+		    `Left(`CheckBox(`id(`ipv6), `opt(`notify), _("Enable IPv6")))
+		),
+	    "opt": [],
+	    "help": help["ipv6"]:"",
+	    "init": initIPv6,
+	    "handle": handleIPv6,
+	    "store": storeIPv6,
+	    ],
+	  "OVERVIEW" : $[
+	    "widget" : `custom,
+	    "custom_widget" :
+		`VBox(
+		  `VWeight(2,`Table (`id (`_hw_items), `opt (`notify, `immediate), `header(_("Name"), _("IP Address")))),
+		  `VWeight(1,`RichText (`id (`_hw_sum), "")),
+                  `HBox (
+		        `PushButton (`id (`add), Label::AddButton ()),
+		        `PushButton (`id (`edit), Label::EditButton()),
+		        `PushButton (`id (`delete), Label::DeleteButton ()),
+		        `HStretch ()
+			)
+		),
+	    "init" : initOverview,
+	    "handle" : handleOverview,
+//	    "store" : storeOverview,
+	    "help" : help["overview"]:""
+	  ],
+	];
+
+wd =  (map<string, map<string, any> >)union ( wd, widget_descr_dns );
+wd =  (map<string, map<string, any> >)union ( wd, wd_routing );
+wd =  (map<string, map<string, any> >)union ( wd, widget_descr_dhclient );
+
+
+map tabs_descr = $[
+	"global"   : $[
+	  "header" : _("Global Options"),
+	  "contents" : `VBox (
+	    `MarginBox(1, 0.49, "MANAGED"),
+	    `MarginBox(1, 0.49, "IPV6"),
+            `MarginBox(1, 0.49, "DHCLIENT_OPTIONS"),
+	    `VStretch()
+	   ),
+	  "widget_names" : ["MANAGED", "IPV6", "DHCLIENT_OPTIONS"]
+	],
+	"overview" : $[
+	  "header" : _("Overview"),
+	  "contents" : `VBox (
+	    "OVERVIEW"
+	  ),
+	 "widget_names" : ["OVERVIEW"]
+	],
+];
+ tabs_descr = union(tabs_descr, route_td);
+ tabs_descr = union(tabs_descr, dns_td);
+
+symbol ManagedDialog() {
+
+    map widget_descr = union(wd["MANAGED"]:$[], wd["IPV6"]:$[]);
+    term contents = `VBox (
+	`HSquash(
+	    `VBox( ("MANAGED"),
+		`VSpacing(0.5),
+		("IPV6")
+	    )
+	));
+
+    map functions = $[
+	`abort : ReallyAbort,
+    ];
+
+    symbol ret = (symbol) CWM::ShowAndRun (
+	$[
+	    "widget_descr": wd,
+	    "contents": contents,
+	    /* Network setup method dialog caption */
+	    "caption": _("Network Setup Method"),
+	    "back_button" : Label::BackButton (),
+	    "abort_button" : Label::CancelButton (),
+	    "next_button" : Label::OKButton (),
+	    // #54027
+	    "disable_buttons" : (["back_button"]),
+	    "fallback_functions" : functions,
+	    ]);
+
+    // #148485: always show the device overview
+    if (false && ret == `next && NetworkService::IsManaged ())
+    {
+	ret = `managed;
+    }
+    return ret;
+}
+
+symbol MainDialog(string init_tab) ``{
+    string caption = _("Network Settings");
+    map widget_descr = $[
+        "tab": CWMTab::CreateWidget($[
+            "tab_order": ( Stage::normal() ) ? [ "global", "overview", "resolv", "route" ] : ["overview", "resolv", "route"],
+            "tabs": tabs_descr,
+            "widget_descr": wd,
+            "initial_tab" : ( Stage::normal() ) ? init_tab : "overview",
+            "tab_help" : "",
+        ]),
+    ];
+    term contents = `VBox( "tab");
+
+    list<map <string, any> > w = CWM::CreateWidgets (["tab"], (map <string, map <string, any> >)widget_descr);
+    string help = CWM::MergeHelps(w);
+    contents = CWM::PrepareDialog(contents, w);
+
+    Wizard::SetContentsButtons(caption, contents, help, Label::BackButton (), Label::OKButton ());
+    Wizard::DisableBackButton();
+    Wizard::SetAbortButton(`abort, Label::CancelButton());
+    symbol ret = CWM::Run(w, $[`abort:ReallyAbort ]);
+    return ret;
+}
+
+
+/* EOF */
+}

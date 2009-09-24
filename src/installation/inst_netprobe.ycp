@@ -1,0 +1,27 @@
+/**
+ * File:	clients/inst_netprobe
+ * Package:	Network configuration
+ * Summary:	Start the network detection
+ * Authors:	Michal Svec <msvec@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "network";
+
+import "NetHwDetection";
+
+y2milestone("----------------------------------------");
+y2milestone("Lan netprobe module started");
+y2milestone("Args: %1", WFM::Args());
+
+if(!NetHwDetection::running) NetHwDetection::Start();
+
+y2milestone("Lan netprobe module finished");
+y2milestone("----------------------------------------");
+
+return `auto;
+
+}
