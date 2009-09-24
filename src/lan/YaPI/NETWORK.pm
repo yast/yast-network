@@ -116,7 +116,7 @@ sub Write {
 #           LanItems->Write();
            YaST::YCP::Import ("NetworkInterfaces");
            NetworkInterfaces->Read();
-           NetworkInterfaces->Add() if NetworkInterfaces->Edit($dev) ne 1;
+           NetworkInterfaces->Add() unless NetworkInterfaces->Edit($dev);
            NetworkInterfaces->Name($dev);
            my %config=("STARTMODE" => "auto",
                         "BOOTPROTO" => $args->{'interface'}->{$dev}->{'bootproto'},
