@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Sep 24 18:37:03 CEST 2009 - kmachalkova@suse.cz
+
+- Propose opening SSH port in firewall in SSH installation 
+  (bnc#535206)
+- Enable SSH service if SSH port in firewall is to be opened 
+  (bnc#537980)  
+
+-------------------------------------------------------------------
 Thu Sep 17 13:37:54 CEST 2009 - mzugec@suse.cz
 
 - replace STARTMODE='onboot' (which is deprecated) with 'auto'
