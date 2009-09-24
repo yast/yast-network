@@ -28,6 +28,7 @@
 {
     textdomain "network";
 
+    import "Linuxrc";
     import "PackagesProposal";
     import "ProductControl";
     import "ProductFeatures";
@@ -45,6 +46,14 @@
 	    ProductFeatures::GetBooleanFeature ("globals", "firewall_enable_ssh"));
 
         SuSEFirewall4Network::SetEnabled1stStage(ProductFeatures::GetBooleanFeature ("globals", "enable_firewall"));
+
+	//we're installing over SSH, propose opening SSH port (bnc#535206)
+	if(Linuxrc::usessh()) {
+	    SuSEFirewall4Network::SetSshEnabled1stStage (true);
+	} else {
+	    SuSEFirewall4Network::SetSshEnabled1stStage (ProductFeatures::GetBooleanFeature ("globals", "firewall_enable_ssh"));
+	}
+
         SuSEFirewall4Network::SetSshEnabled1stStage (ProductFeatures::GetBooleanFeature ("globals", "firewall_enable_ssh"));
 
         SuSEFirewallProposal::SetProposalInitialized(true);

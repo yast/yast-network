@@ -8,6 +8,7 @@
 {
 textdomain "network";
 
+import "Service";
 import "SuSEFirewall";
 import "SuSEFirewall4Network";
 import "SuSEFirewallProposal";
@@ -55,7 +56,11 @@ else if (func == "Write")
     //only if we have openssh package - proposal takes care 
     //it gets installed if the user wants to open ssh port
     if (ssh_enabled)
+    {
         SuSEFirewall::SetServicesForZones (["service:sshd"], SuSEFirewall::GetKnownFirewallZones(), true );
+	//enable SSH service if the port is to be opened (bnc#537980)
+	Service::Enable("sshd");
+    }
 
     //this is equivalent to write-only, do not attempt to restart the service
     SuSEFirewall::WriteConfiguration(); 
