@@ -107,20 +107,23 @@ sub Write {
   if (exists($args->{'interface'})){
    y2milestone("interface", Dumper(\$args->{'interface'}));
    foreach my $dev (keys %{$args->{'interface'}}){
-#           YaST::YCP::Import ("LanItems");
-#           LanItems->Read();
-#           foreach my $iface (keys %{LanItems->Items}){
-#             LanItems->current($iface);
-#             LanItems->DeleteItem();
-#           }
-#           LanItems->Write();
            YaST::YCP::Import ("NetworkInterfaces");
            NetworkInterfaces->Read();
            NetworkInterfaces->Add() unless NetworkInterfaces->Edit($dev);
            NetworkInterfaces->Name($dev);
+	   my $ip = $args->{'interface'}->{$dev}->{'ipaddr'};
+           my $prefix="32";
+           YaST::YCP::Import ("Netmask");
+           my @ip_row = split(/\//, $ip);
+           my $prefix = $ip_row[$#ip_row];
+           if (Netmask->Check4($prefix)){
+                y2milestone("Valid netmask: ", $prefix, " will change to prefixlen");
+                $prefix = Netmask->ToBits($prefix);
+           }
+		$ip = $ip_row[0]."/".$prefix;
            my %config=("STARTMODE" => "auto",
                         "BOOTPROTO" => $args->{'interface'}->{$dev}->{'bootproto'},
-                        "IPADDR" => $args->{'interface'}->{$dev}->{'ipaddr'}
+                        "IPADDR" => $ip
                         );
            NetworkInterfaces->Current(\%config);
            NetworkInterfaces->Commit();
