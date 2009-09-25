@@ -401,7 +401,8 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
     UI::ChangeWidget(`id(`http), `ValidChars, URL::ValidChars);
     UI::ChangeWidget(`id(`https), `ValidChars, URL::ValidChars);
     UI::ChangeWidget(`id(`ftp), `ValidChars, URL::ValidChars);
-    UI::ChangeWidget(`id(`no), `ValidChars, Hostname::ValidCharsDomain + " ,");
+    // '/' character for subnets definition - #490661
+    UI::ChangeWidget(`id(`no), `ValidChars, Hostname::ValidCharsDomain + " ,/");
     UI::ChangeWidget(`id(`user), `ValidChars, ValidCharsUsername);
     UI::ChangeWidget(`id(`frame1), `Enabled, enabled);
     UI::ChangeWidget(`id(`frame2), `Enabled, enabled);

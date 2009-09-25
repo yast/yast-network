@@ -122,14 +122,16 @@ y2milestone("store bridge %1 : %2", key, settings["BRIDGE_PORTS"]:"");
  */
 void InitVLANSlave(string key)
 {
-     settings["ETHERDEVICE"] = NetworkInterfaces::Current["ETHERDEVICE"]:"";
+ settings["ETHERDEVICE"] = NetworkInterfaces::Current["ETHERDEVICE"]:"";
 
- list items = createUnconfigured([settings["ETHERDEVICE"]:""]);
-
-  foreach (string dev_name, NetworkInterfaces::List("br|bond"), {
-   items = add(items, `item(`id(dev_name), dev_name,
-				(dev_name==settings["ETHERDEVICE"]:"")?true:false));
-  });
+ list items = [];
+    map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
+     foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+	if (contains(["vlan", "bond", "br"], NetworkInterfaces::GetType(devname))) continue;
+        items = add (items, `item(`id(devname), sformat("%1 - %2", devname, configurations[devtype, devname, "NAME"]:""), settings["ETHERDEVICE"]:""==devname) );
+     });
+    });
     UI::ChangeWidget(`id(key), `Items, items);
 }
 
@@ -151,7 +153,11 @@ void StoreVLANSlave(string key, map event)
  */
 void InitSlave(string key)
 {
-//    UI::ChangeWidget(`id(key), `SelectedItems, settings["SLAVES"]:[]);
+    settings["SLAVES"] = LanItems::bond_slaves;
+    UI::ChangeWidget(`id("BONDSLAVE"), `SelectedItems, settings["SLAVES"]:[]);
+
+      settings["BONDOPTION"] = LanItems::bond_option;
+
       list items = createUnconfigured(settings["SLAVES"]:[]);
     map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
     foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
@@ -175,6 +181,9 @@ y2internal("slaves %1", settings["SLAVES"]:[]);
 void StoreSlave(string key, map event)
 {
     settings["SLAVES"] = (list<string>)UI::QueryWidget (`id(key), `SelectedItems);
+    settings["BONDOPTION"] = UI::QueryWidget (`id("BONDOPTION"), `Value);
+    LanItems::bond_slaves = settings["SLAVES"]:[];
+    LanItems::bond_option = settings["BONDOPTION"]:"";
 }
 
 
@@ -205,7 +214,7 @@ void enableDisableBootProto(symbol current){
  * @param key id of the widget
  */
 void initBootProto (string key) {
- if (contains(["vlan", "br"], LanItems::type)) UI::ReplaceWidget(`rp, `Empty());
+ if (LanItems::type=="br") UI::ReplaceWidget(`rp, `Empty());
  switch(settings["BOOTPROTO"]:""){
   case "static": UI::ChangeWidget(`id(`bootproto), `CurrentButton, `static);
 		UI::ChangeWidget(`id(`ipaddr), `Value, settings["IPADDR"]:"");
@@ -265,7 +274,10 @@ void storeBootProto (string key, map event) {
 		settings["IPADDR"]=(string)UI::QueryWidget(`ipaddr, `Value);
 		string mask = (string)UI::QueryWidget(`netmask, `Value);
 		if(substring(mask, 0,1)=="/") settings["PREFIXLEN"]=substring(mask, 1);
-			else settings["NETMASK"]=mask;
+			else {
+				if (Netmask::Check6(mask)) settings["PREFIXLEN"]=mask;
+					else settings["NETMASK"]=mask;
+			     }
 		settings["HOSTNAME"]=(string)UI::QueryWidget(`hostname, `Value);
 		break;
    default : switch ((symbol)UI::QueryWidget(`dyn, `Value)){
@@ -431,7 +443,7 @@ boolean ValidateBootproto (string key, map event) {
 	}
 
 	string mask=(string) UI::QueryWidget (`netmask, `Value);
-	if(!validPrefixOrNetmask(mask)){
+	if(!validPrefixOrNetmask(ipa, mask)){
 		Popup::Error(_("No valid netmask or prefix lenght."));
 		UI::SetFocus(`netmask);
 		return false;
@@ -599,6 +611,17 @@ map<string, map<string,any> > widget_descr_local = $[
         "store": StoreVLANSlave,
         "help": help["etherdevice"]:"",
     ],
+/*
+    "BONDSLAVES": $[
+        "widget": `multi_selection_box,
+        "label": _("Bond &Slaves"),
+        "opt": [`shrinkable],
+        "items" : [ ],
+        "init": InitSlave,
+        "store": StoreSlave,
+        "help": help["bondslave"]:"",
+    ],
+*/
     "BONDSLAVE": $[
         "widget": `multi_selection_box,
         "label": _("Bond &Slaves"),
@@ -615,8 +638,8 @@ map<string, map<string,any> > widget_descr_local = $[
         "label": _("&Bond Driver Options"),
         "opt": [`hstretch, `editable],
         "help": _("<p>Select the bond driver options, and edit it if necessary. </p>"),
-        "items": [["mode=balance-rr"], ["mode=active-backup"], ["mode=balance-xor"],
-                  ["mode=broadcast"], ["mode=802.3ad"], ["mode=balance-tlb"], ["mode=balance-alb"]],
+	"items" : [["mode=balance-rr miimon=100"], ["mode=active-backup miimon=100"], ["mode=balance-xor miimon=100"],
+                  ["mode=broadcast miimon=100"], ["mode=802.3ad miimon=100"], ["mode=balance-tlb miimon=100"], ["mode=balance-alb miimon=100"]]
     ],
 
     "BOOTPROTO": $[
@@ -819,29 +842,19 @@ define any AddressDialog() {
 	    "IFCFGTYPE",
 	    `HSpacing(1.5),
 	    `MinWidth(30, "IFCFGID"),
-	    `HSpacing(0.5)
+	    `HSpacing(0.5),
+	LanItems::type=="vlan" ? `VBox("ETHERDEVICE") : `Empty()
 	);
     if(LanItems::operation != `add) {
 	if(LanItems::alias == "") {
 	    settings["IFCFG"] = LanItems::device;
 	}
 	else {
-//	    settings["IFCFG"] = NetworkInterfaces::alias_name(NetworkInterfaces::RealType(LanItems::type, LanItems::hotplug), LanItems::device, LanItems::alias);
 	    settings["IFCFG"] = LanItems::device;
 	}
     }
     
     list<string> mb_items = [];
-//    if (!NetworkService::IsManaged()) mb_items = add(mb_items, "ADDITIONAL_ADDRESSES");
-
-    // Allow changing s390 options, except for iucv, where the option
-    // is in the name of the hwcfg file. Haven't figured it out yet.
-/*
-    if (Arch::s390 () && drvtype != "iucv")
-    {
-	mb_items = add(mb_items, "S390");
-    }
-*/
     wd["ADVANCED_MB", "items"] = maplist (string btn, mb_items, {
 	// TODO helps
 	return [btn, wd[btn, "label"]:btn];
@@ -892,40 +905,7 @@ define any AddressDialog() {
 		"AD_ADDRESSES",
 	frame2
      );
-
-    if (LanItems::type == "bond")
-    {
-      settings["SLAVES"] = LanItems::bond_slaves;
-        settings["BONDOPTION"] = LanItems::bond_option;
-
-        //fill up the drop list and make the default value first
-
-        wd["BONDOPTION", "items"] = filter(list<string> v, wd["BONDOPTION", "items"]:[],
-        {
-            return v[0]:"" != LanItems::bond_option;
-        });
-        wd["BONDOPTION", "items"] = prepend(wd["BONDOPTION", "items"]:[], [LanItems::bond_option]);
-
-
-        address_contents = `VBox(
-                `Left(label),
-		just_address_contents,
-		`MarginBox(1, 0, `Frame( "", `VBox("BONDSLAVE", "BONDOPTION"))),
-		frame2
-	);
-    }
-    else if (LanItems::type == "vlan")
-    {
-     settings["STARTMODE"] = "onboot";
-        address_contents = `VBox(
-                `Left(label),
-		`Left( `VBox("ETHERDEVICE")),
-		just_address_contents,
-		"AD_ADDRESSES",
-		frame2
-	);
-    }
-    else if (LanItems::type == "br")
+    if (LanItems::type == "br")
     {
         address_contents = `VBox(
                 `Left(label),
@@ -994,6 +974,10 @@ define any AddressDialog() {
                         "header" : _("&Hardware"),
                         "contents" : `VBox( "HWDIALOG" )
                     ],
+            "bond_slaves" : $[
+                        "header" : _("&Bond Slaves"),
+                        "contents" : `VBox( "BONDSLAVE", "BONDOPTION" )
+                    ],
             "t3" : $[
                         "header" : _("&Wireless"),
                         "contents" : `Empty (),
@@ -1007,7 +991,7 @@ define any AddressDialog() {
     ];
     if (contains(["vlan", "br"], LanItems::type)) wd_content["tab_order"]= ["t_general", "t_addr"];
     if (contains(["tun", "tap"], LanItems::type)) wd_content["tab_order"]= ["t_addr"];
-
+    if (LanItems::type == "bond") wd_content["tab_order"]=add(wd_content["tab_order"]:[], "bond_slaves");
 
     hw_standalone=false;
     wd = (map<string, map<string,any> >) union (wd, $[
@@ -1096,11 +1080,7 @@ define any AddressDialog() {
 	}
     }
 
-    if (LanItems::type == "bond")
-    {
-        LanItems::bond_option = settings["BONDOPTION"]:"";
-	LanItems::bond_slaves = (list<string>)settings["SLAVES"]:[];
-    } else if (LanItems::type == "vlan"){
+	if (LanItems::type == "vlan"){
 	 LanItems::vlan_etherdevice = settings["ETHERDEVICE"]:"";
 	} else if (LanItems::type == "br"){
          LanItems::bridge_ports = settings["BRIDGE_PORTS"]:"";

@@ -104,6 +104,7 @@ define boolean ReadInstallInf() {
 
     ReadInstallInfItem(install_inf, "QETH_LAYER2_SUPPORT", "Layer2");
 //    ReadInstallInfItem(install_inf, "LLADDR", "OSAHWAddr");
+    ReadInstallInfItem(install_inf, "dhcptimeout", "DHCPTimeout");
 
     ReadInstallInfItem(install_inf, "WESSID", "WlanESSID");
     ReadInstallInfItem(install_inf, "WAuth", "WlanAuth");
@@ -216,7 +217,7 @@ void CreateIfcfg(){
 	 InstallInf["ipaddr"]:"", Netmask::ToBits(InstallInf["netmask"]:""), InstallInf["bcast"]:"");
      if(size(InstallInf["ipaddr6"]:"")>0){
       network_configuration=sformat("%1\n%2", network_configuration,
-      sformat("LABEL_ipv6='ipv6'\nIPADDR_ipv6='%1'", InstallInf["ipaddr6"]:"")
+      sformat("LABEL_ipv6='ipv6'\nIPADDR_ipv6='%1'\n", InstallInf["ipaddr6"]:"")
       );
      }
     }
@@ -340,6 +341,13 @@ void CreateOtherNetworkFiles(){
 	}
 	else
 	    y2warning("No routing information in install.inf");
+
+	// write DHCPTimeout linuxrc parameter as /etc/sysconfig/network/config.WAIT_FOR_INTERFACES (bnc#396824)
+	if(size(InstallInf["dhcptimeout"]:"")>0){
+	    SCR::Write(.sysconfig.network.config.WAIT_FOR_INTERFACES,  "20");
+	    y2milestone("Writing WAIT_FOR_INTERFACES=%1", InstallInf["dhcptimeout"]:"");
+	}
+
 
         // create resolv.conf only for static configuration
         if (size(InstallInf["nameserver"]:"")>0)

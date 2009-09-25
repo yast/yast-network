@@ -23,7 +23,8 @@ import "Confirm";
 import "Map";
 import "Netmask";
 import "Mode";
-
+import "IP";
+import "Netmask";
 
 /**
  * Abort function
@@ -593,7 +594,7 @@ define list<map> ReadHardware(string hwtype) {
     /* read the corresponding hardware */
     if(haskey(hwtypes, hwtype))
 	allcards = (list) SCR::Read(hwtypes[hwtype]:nil);
-//	allcards = [$["bus":"PCI", "bus_hwcfg":"pci", "class_id":258, "dev_name":"/dev/ttySL0", "dev_names":["/dev/ttySL0"], "dev_num":$["major":212, "minor":0, "range":1, "type":"c"], "device":"82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) AC'97 Modem Controller", "device_id":74950, "driver":"Intel ICH Modem", "driver_module":"snd_intel8x0m", "drivers":[$["active":true, "modprobe":true, "modules":[["snd_intel8x0m", ""]]]], "func_id":6, "modalias":"pci:v00008086d000024C6sv0000103Csd000008BCbc07sc03i00", "model":"Hewlett-Packard Company 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) AC'97 Modem Controller", "old_unique_key":"i5Ju.KmxxluQyLyF", "resource":$["io":[$["active":true, "length":256, "mode":"rw", "start":9216], $["active":true, "length":128, "mode":"rw", "start":10240]], "irq":[$["count":595, "enabled":true, "irq":17]]], "rev":"1", "slot_id":31, "sub_class_id":4, "sub_device_id":67772, "sub_vendor":"Hewlett-Packard Company", "sub_vendor_id":69692, "sysfs_bus_id":"0000:00:1f.6", "sysfs_id":"/devices/pci0000:00/0000:00:1f.6", "udi":"/org/freedesktop/Hal/devices/pci_8086_24c6", "unique_key":"ORVU.KmxxluQyLyF", "vendor":"Intel Corporation", "vendor_id":98438]];
+//allcards=[$["bus":"PCI", "bus_hwcfg":"pci", "bus_id":2, "class_id":2, "dev_name":"wlan0", "dev_names":["wlan0"], "device":"AR242x 802.11abg Wireless PCI Express Adapter", "device_id":65564, "driver":"ath5k_pci", "driver_module":"ath5k", "drivers":[$["active":true, "modprobe":true, "modules":[["ath5k", ""]]]], "modalias":"pci:v0000168Cd0000001Csv00001A3Bsd00001026bc02sc00i00", "model":"Atheros AR242x 802.11abg Wireless PCI Express Adapter", "old_unique_key":"eHlF.oTCoeEt5Tw6", "parent_unique_key":"qTvu.bQ30eTbcr+3", "resource":$["hwaddr":[$["addr":"00:22:43:37:55:c3"]], "irq":[$["count":0, "enabled":true, "irq":17]], "link":[$["state":true]], "mem":[$["active":true, "length":65536, "start":4227792896]], "wlan":[$["auth_modes":["open", "sharedkey", "wpa-psk", "wpa-eap"], "channels":["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"], "enc_modes":["WEP40", "WEP104", "TKIP", "CCMP"], "frequencies":["2.412", "2.417", "2.422", "2.427", "2.432", "2.437", "2.442", "2.447", "2.452", "2.457", "2.462"]]]], "rev":"1", "sub_class_id":130, "sub_device":"AR5007EG 802.11bg Wi-Fi mini PCI express card", "sub_device_id":69670, "sub_vendor_id":72251, "sysfs_bus_id":"0000:02:00.0", "sysfs_id":"/devices/pci0000:00/0000:00:1c.1/0000:02:00.0", "udi":"/org/freedesktop/Hal/devices/pci_168c_1c", "unique_key":"y9sn.oTCoeEt5Tw6", "vendor":"Atheros Communications Inc.", "vendor_id":71308, "wlan":true], $["bus":"PCI", "bus_hwcfg":"pci", "bus_id":1, "class_id":2, "dev_name":"eth0", "dev_names":["eth0"], "device":"L1 Gigabit EthernetAdapter", "device_id":69670, "driver":"ATL1E", "driver_module":"atl1e", "drivers":[$["active":true, "modprobe":true, "modules":[["atl1e", ""]]]], "modalias":"pci:v00001969d00001026sv00001043sd00008324bc02sc00i00", "model":"Attansic L1 Gigabit Ethernet Adapter", "old_unique_key":"BiAc.emcIbgAqn59", "parent_unique_key":"Z7uZ.f4r+Yl3RyX5", "resource":$["hwaddr":[$["addr":"00:23:54:3f:7c:c3"]], "io":[$["active":true, "length":128, "mode":"rw", "start":56320]], "irq":[$["count":74680, "enabled":true, "irq":220]], "link":[$["state":true]], "mem":[$["active":true, "length":262144, "start":4093378560]]], "rev":"176", "sub_class_id":0,"sub_device_id":99108, "sub_vendor":"ASUSTeK Computer Inc.", "sub_vendor_id":69699, "sysfs_bus_id":"0000:01:00.0","sysfs_id":"/devices/pci0000:00/0000:00:1c.3/0000:01:00.0", "udi":"/org/freedesktop/Hal/devices/pci_1969_1026", "unique_key":"rBUF.emcIbgAqn59", "vendor":"Attansic Technology Corp.", "vendor_id":72041]];
 
     else if(hwtype == "all" || hwtype == "" || hwtype == nil)
 	maplist(path v, (list<path>) Map::Values(hwtypes), {
@@ -780,16 +781,14 @@ define list<map> ReadHardware(string hwtype) {
     return Hardware;
 }
 
-boolean validPrefixOrNetmask(string val){
+boolean validPrefixOrNetmask(string ip, string mask){
 
  boolean valid_mask=false;
- if (Netmask::Check4(val)) valid_mask=true;
-  else
-   if (regexpmatch(val, "^/[[:digit:]]{1,2}$") && tointeger(substring(val, 1))<=32) valid_mask=true;
-    else
-     if (Netmask::Check6(val)) valid_mask=true;
-      else
-       if (regexpmatch(val, "^/[[:digit:]]{1,3}$") && tointeger(substring(val, 1))<=128) valid_mask=true;
+ if (substring(mask, 0,1)=="/") mask=substring(mask,1);
+
+ if (IP::Check4(ip) && Netmask::Check4(mask)) valid_mask=true;
+   else if (IP::Check6(ip) && Netmask::Check6(mask)) valid_mask=true;
+     else y2warning("IP address %1 is not valid", ip);
  return valid_mask;
 }
 

@@ -547,17 +547,11 @@ global define boolean WriteOnly() {
  */
 global define boolean Import(map settings) {
 
-    if (!Mode::autoinst()) {
-        // FIXME: MOD Modules = (map) eval(settings["modules"]:$[]);
-        NetworkInterfaces::Import("netcard", (map<string, map>) settings["devices"]:$[]);
-
-    } else {
         NetworkInterfaces::Import("netcard", (map<string, map>) settings["devices"]:$[]);
 	foreach(string device, NetworkInterfaces::List(""), {
 	LanItems::AddNew();
 	LanItems::Items[LanItems::current]=$["ifcfg":device];
 	});
-    }
 
     LanItems::autoinstall_settings["start_immediately"] = settings["start_immediately"]:false;
     LanItems::autoinstall_settings["strict_IP_check_timeout"] = settings["strict_IP_check_timeout"]:-1;
@@ -644,7 +638,8 @@ global define list SummaryGeneral () {
 	// network mode
 	status_nm = _("Traditional network setup with NetControl - ifup");
 	// enable NetworkManager applet
-	link_nm = Hyperlink (href_nm, _("Enable NetworkManager"));
+	// for virtual network proposal (bridged) don't show hyperlink to enable networkmanager
+	link_nm = (virt_net_proposal) ? "..." : Hyperlink (href_nm, _("Enable NetworkManager"));
     }
 
     if (ipv6)
@@ -803,7 +798,7 @@ global define boolean ProposeInterfaces () {
     foreach (integer number, any lanitem, LanItems::Items, {
 	if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) {
 	LanItems::current = number;
-        boolean link = LanItems::getCurrentItem()["hwinfo", "link"]:false;
+        boolean link = LanItems::getCurrentItem()["hwinfo", "link"]:false == true;
 	if (!link) y2warning("item number %1 has link:false detected", number);
 	if (!LanItems::IsItemConfigured() && link){
 	  y2milestone("Nothing already configured - start proposing");
@@ -812,12 +807,39 @@ global define boolean ProposeInterfaces () {
 	}
     });
 
+    // collect all interfaces that will be skipped from bridged proposal
+    list<string> skipped = [];
+    foreach(integer current, any config, LanItems::Items, {
+     string ifcfg = LanItems::Items[current, "ifcfg"]:"";
+     if (NetworkInterfaces::GetType(ifcfg)=="br"){
+       NetworkInterfaces::Edit(ifcfg);
+       y2milestone("Bridge %1 with ports (%2) found", ifcfg, NetworkInterfaces::Current["BRIDGE_PORTS"]:"");
+	skipped=add(skipped, ifcfg);
+        foreach(string port, (list<string>) splitstring(NetworkInterfaces::Current["BRIDGE_PORTS"]:"", " "), {
+	  skipped=add(skipped, port);
+	});
+     }
+     if (NetworkInterfaces::GetType(ifcfg)=="bond"){
+      NetworkInterfaces::Edit(ifcfg);
+      foreach(string i, (list<string>)splitstring("0,1,2,3,4,5,6,7,8,9", ","), {
+	string slave = NetworkInterfaces::Current[sformat("BONDING_SLAVE%1", i)]:"";
+	y2milestone("For interface %1 found slave %2", ifcfg, slave);
+	if(size(slave)>0) skipped=add(skipped, slave);
+      });
+     }
+    });
+    y2milestone("Skipped interfaces : %1", skipped);
+
     // then each configuration (except bridges) move to the bridge
     // and add old device name into bridge_ports
     foreach(integer current, any config, LanItems::Items, {
      string ifcfg = LanItems::Items[current, "ifcfg"]:"";
+     if (contains(skipped, ifcfg)){
+	y2milestone("Skipping interface %1", ifcfg);
+	continue;
+     }
       if (size(ifcfg)>0){
-       if (! (NetworkInterfaces::GetType(ifcfg)=="br")){
+       if (! (NetworkInterfaces::GetType(ifcfg)=="bond")){
        NetworkInterfaces::Edit(ifcfg);
        string new_ifcfg = sformat("br%1", NetworkInterfaces::GetFreeDevice("br"));
        y2milestone("old configuration %1, bridge %2", ifcfg, new_ifcfg);
@@ -837,11 +859,48 @@ global define boolean ProposeInterfaces () {
         LanItems::Items[current, "ifcfg"] = new_ifcfg;
         LanItems::modified=true;
         LanItems::force_restart=true;
-        y2internal("List %1", NetworkInterfaces::List(""));
+        y2debug("List %1", NetworkInterfaces::List(""));
         // re-read configuration to see new items in UI
         LanItems::Read();
        } else y2error("error while proposing bridge device for %1", ifcfg);
-      } else y2internal("skipping bridge ...");
+      } else {
+       NetworkInterfaces::Edit(ifcfg);
+       map<string, any> old_config = NetworkInterfaces::Current;
+       y2debug("Old Config %1\n%2", ifcfg, old_config);
+       string new_ifcfg = sformat("br%1", NetworkInterfaces::GetFreeDevice("br"));
+       y2milestone("old configuration %1, bridge %2", ifcfg, new_ifcfg);
+       NetworkInterfaces::Name = new_ifcfg;
+       // from bridge interface remove all bonding-related stuff
+       foreach(string key, any value, NetworkInterfaces::Current, {
+	if (issubstring(key, "BONDING")){
+	 NetworkInterfaces::Current[key]=nil;
+	}
+       });
+       NetworkInterfaces::Current["BRIDGE"]="yes";
+       NetworkInterfaces::Current["BRIDGE_PORTS"]=ifcfg;
+       NetworkInterfaces::Current["BRIDGE_STP"]="off";
+       NetworkInterfaces::Current["BRIDGE_FORWARDDELAY"]="0";
+	// hardcode startmode (bnc#450670), it can't be ifplugd!
+       NetworkInterfaces::Current["STARTMODE"]="onboot";
+       // remove description - will be replaced by new (real) one
+       NetworkInterfaces::Current=remove(NetworkInterfaces::Current, "NAME");
+       if( NetworkInterfaces::Commit() ){
+	NetworkInterfaces::Edit(ifcfg);
+	old_config["BOOTPROTO"]="static";
+	old_config["IPADDR"]="0.0.0.0/32";
+        y2debug("Old Config with apllied changes %1\n%2", ifcfg, old_config);
+	NetworkInterfaces::Current = old_config;
+        NetworkInterfaces::Commit();
+
+        LanItems::Items[current, "ifcfg"] = new_ifcfg;
+        LanItems::modified=true;
+        LanItems::force_restart=true;
+        y2internal("List %1", NetworkInterfaces::List(""));
+        // re-read configuration to see new items in UI
+        LanItems::Read();
+       } else y2error("error while porting bonding configuration for %1", ifcfg);
+	
+      }
      } else y2warning("empty ifcfg");
     });
  } else {
@@ -880,12 +939,16 @@ global define boolean ProposeInterfaces () {
 	if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) {
 	LanItems::current = number;
         boolean link = LanItems::getCurrentItem()["hwinfo", "link"]:false;
-	if (!link) y2warning("item number %1 has link:false detected", number);
-	if (!LanItems::IsItemConfigured() && link){
-	  y2milestone("Nothing already configured - start proposing");
-	  LanItems::ProposeItem();
-	  break;
-	 }
+	if (LanItems::getCurrentItem()["hwinfo", "type"]:"" == "wlan")
+		y2warning("Will not propose wlan interfaces");
+	else{
+		if (!link) y2warning("item number %1 has link:false detected", number);
+			else if (!LanItems::IsItemConfigured() && link){
+			  y2milestone("Nothing already configured - start proposing");
+			  LanItems::ProposeItem();
+			  break;
+			 }
+	    }
 	}
     });
 

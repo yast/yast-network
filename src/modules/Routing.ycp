@@ -156,11 +156,15 @@ global define boolean Write() {
 
     if(Forward) {
 	SCR::Write(.sysconfig.sysctl.IP_FORWARD, "yes");
+	SCR::Write(.sysconfig.sysctl.IPV6_FORWARD, "yes");
 	SCR::Execute(.target.bash, "echo 1 > /proc/sys/net/ipv4/ip_forward");
+	SCR::Execute(.target.bash, "echo 1 > /proc/sys/net/ipv6/conf/all/forwarding");
     }
     else {
 	SCR::Write(.sysconfig.sysctl.IP_FORWARD, "no");
+	SCR::Write(.sysconfig.sysctl.IPV6_FORWARD, "no");
 	SCR::Execute(.target.bash, "echo 0 > /proc/sys/net/ipv4/ip_forward");
+	SCR::Execute(.target.bash, "echo 0 > /proc/sys/net/ipv6/conf/all/forwarding");
     }
     sleep(sl);
 

@@ -77,6 +77,7 @@ fi
 @clientdir@/*.ycp
 @moduledir@/*.ycp
 @moduledir@/*.ybc
+@moduledir@/YaPI/NETWORK.pm
 @desktopdir@/*.desktop
 @scrconfdir@/*.scr
 @agentdir@/ag_udev_persistent

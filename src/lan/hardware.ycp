@@ -536,7 +536,7 @@ define any S390Dialog() {
     term contents = `Empty ();
 
 
-    if(LanItems::type == "qeth" || LanItems::type == "hsi") {
+    if( contains(["qeth", "hsi"], LanItems::type) ) {
    // CHANIDS
 	list<string> tmp_list=splitstring(LanItems::qeth_chanids, " ");
         map<string, any> chanids_map = $[
@@ -608,6 +608,11 @@ define any S390Dialog() {
 */
 
     if(drvtype == "lcs") {
+	list<string> tmp_list=splitstring(LanItems::qeth_chanids, " ");
+        map<string, any> chanids_map = $[
+				 "read" : tmp_list[0]:"",
+				 "write" : tmp_list[1]:""
+				];
 	contents = `HBox(
 	    `HSpacing(6),
 	    /* Frame label */
@@ -617,7 +622,12 @@ define any S390Dialog() {
 		`InputField(`id(`chan_mode), `opt(`hstretch), _("&Port Number"), LanItems::chan_mode),
 		`VSpacing(1),
 		/* TextEntry label */
-		`InputField(`id(`lcs_timeout), `opt(`hstretch), _("&LANCMD Time-Out"), LanItems::lcs_timeout)
+		`InputField(`id(`lcs_timeout), `opt(`hstretch), _("&LANCMD Time-Out"), LanItems::lcs_timeout),
+		`VSpacing(1),
+		`HBox(
+			`InputField(`id(`qeth_chan_read), `opt(`hstretch), _("Read Channel"), chanids_map["read"]:""),
+			`InputField(`id(`qeth_chan_write), `opt(`hstretch), _("Write Channel"), chanids_map["write"]:"")
+		     )
 		), `HSpacing(2))),
 	    `HSpacing(6)
 	);

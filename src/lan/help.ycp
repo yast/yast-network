@@ -78,7 +78,7 @@ and netmask. To omit any of these values, use dash sign \"-\". Select
 the device through which the traffic to the defined network will be routed, as well.\"-\" is an alias for any interface.</p>
 ") +
     /* Routing dialog help 2/2 */
-_("<p>Enable <b>IP Forwarding</b> if the system is a router.</p>"),
+_("<p>Enable <b>IP Forwarding</b> if the system is a router. This will apply on both IPv4 and IPv6.</p>"),
 
 "dhcp_hostname":
 _("<p>If you are using DHCP to get an IP address, check whether you get

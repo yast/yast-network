@@ -1,4 +1,163 @@
 -------------------------------------------------------------------
+Thu Sep 24 09:42:13 CEST 2009 - mzugec@suse.cz
+
+- YaPI: backported NETWORK.pm for webYaST
+- 2.17.99 
+
+-------------------------------------------------------------------
+Wed Aug 19 10:40:36 CEST 2009 - kmachalkova@suse.cz
+
+- Do a proper reload of network service on writing (standalone) DNS
+  configuration (removed *-all-dhcp-clients workaround - bnc#528937)  
+
+-------------------------------------------------------------------
+Mon Aug 17 13:30:40 CEST 2009 - mzugec@suse.de
+
+- L3: manually created bridge over bonding (bnc#528074)
+- 2.17.98 
+
+-------------------------------------------------------------------
+Mon Aug 17 11:36:33 CEST 2009 - mzugec@suse.de
+
+- L3: proposed bridge over bonding (bnc#528076)
+- 2.17.97 
+
+-------------------------------------------------------------------
+Mon Jun 29 11:50:28 CEST 2009 - mzugec@suse.de
+
+- linuxrc DHCPTimeout -> sysconfig/network.WAIT_FOR_INTERFACES
+(bnc#396824)
+- 2.17.96 
+
+-------------------------------------------------------------------
+Thu Jun 25 16:09:51 CEST 2009 - mzugec@suse.cz
+
+- for lcs and ctc offer only 2 CHAN_IDS (bnc#515492)
+- 2.17.95 
+
+-------------------------------------------------------------------
+Wed Jun 24 12:51:30 CEST 2009 - mzugec@suse.cz
+
+- default option miimon=100 for bonding (bnc#404449)
+- 2.17.94 
+
+-------------------------------------------------------------------
+Mon Jun  1 09:12:11 CEST 2009 - mzugec@suse.cz
+
+- fixed buildtest 
+
+-------------------------------------------------------------------
+Mon May 18 10:20:05 CEST 2009 - mzugec@suse.cz
+
+- fixed: modem configuration syntax error (bnc#497459)
+- 2.17.93 
+
+-------------------------------------------------------------------
+Thu May 14 12:38:54 CEST 2009 - mzugec@suse.cz
+
+- support for lcs::s390 devices (bnc#363978)
+- 2.17.92 
+
+-------------------------------------------------------------------
+Mon May  4 15:15:00 CEST 2009 - mzugec@suse.cz
+
+- fixed: After network autoinstall, dns and routes info are lost
+ (bnc#498993)
+- 2.17.91 
+
+-------------------------------------------------------------------
+Mon Apr 27 10:27:22 CEST 2009 - mzugec@suse.cz
+
+- improved "device renaming" functionality (bnc#447480) and
+ (bnc#461179)
+- 2.17.90 
+
+-------------------------------------------------------------------
+Thu Apr  9 14:28:04 CEST 2009 - mzugec@suse.de
+
+- fixed netmask/prefixlen validation and correct write (bnc#493222)
+- 2.17.89
+
+-------------------------------------------------------------------
+Fri Apr  3 12:36:53 CEST 2009 - kmachalkova@suse.cz
+
+- Allow '/' character in NO_PROXY (subnet definition - bnc#490661) 
+
+-------------------------------------------------------------------
+Thu Apr  2 23:07:49 CEST 2009 - mzugec@suse.de
+
+- fixed additional addresses with bonding (bnc#420074)
+- 2.17.88 
+
+-------------------------------------------------------------------
+Thu Mar 26 12:37:55 CET 2009 - mzugec@suse.cz
+
+- tun/tap device - don't remove default gw (bnc#483233)
+- 2.17.87 
+
+-------------------------------------------------------------------
+Thu Mar 26 10:53:19 CET 2009 - mzugec@suse.cz
+
+- don't allow to use networkmanager with bridged proposal (bnc#487419)
+- 2.17.86 
+
+-------------------------------------------------------------------
+Mon Mar 23 21:20:12 CET 2009 - mzugec@suse.de
+
+- fixed firewall checkbox status for dsl and modem (bnc#404359)
+- 2.17.85
+
+-------------------------------------------------------------------
+Mon Mar 23 21:18:27 CET 2009 - mzugec@suse.de
+
+- for s390 propose CHAN_IDS values (bnc#445339)
+- 2.17.84 
+
+-------------------------------------------------------------------
+Mon Mar 23 21:17:04 CET 2009 - mzugec@suse.de
+
+- 1st stage - correctly write ifcfg for ipv6 only (bnc#477917)
+- 2.17.83 
+
+-------------------------------------------------------------------
+Mon Mar 23 21:15:42 CET 2009 - mzugec@suse.de
+
+- improve address dialog for vlan (bnc#376063)
+- allow all netcard devices except vlan, bridge and bond to be
+etherdevice for vlan
+- 2.17.82 
+
+-------------------------------------------------------------------
+Mon Mar 23 21:13:49 CET 2009 - mzugec@suse.de
+
+- apply forwarding on both IPv4 and IPv6 (bnc#479370)
+- 2.17.81 
+
+-------------------------------------------------------------------
+Mon Mar 23 21:10:16 CET 2009 - mzugec@suse.de
+
+- fixed networking.rnc (bnc#480466)
+- 2.17.80 
+
+-------------------------------------------------------------------
+Mon Mar 23 21:07:22 CET 2009 - mzugec@suse.de
+
+- possible to not use LABEL for aliases (bnc#471253)
+- 2.17.79 
+
+-------------------------------------------------------------------
+Mon Mar 23 21:01:15 CET 2009 - mzugec@suse.de
+
+- AutoYaST - show Imported settings in UI (bnc#461650)
+- 2.17.78 
+
+-------------------------------------------------------------------
+Mon Mar 23 20:57:52 CET 2009 - mzugec@suse.de
+
+- don't propose wlan during installation (bnc#462631)
+- 2.17.77 
+
+-------------------------------------------------------------------
 Tue Jul  7 16:01:52 CEST 2009 - kmachalkova@suse.cz
 
 - Editing /etc/hosts via host module adjusted to cope with hosts 
