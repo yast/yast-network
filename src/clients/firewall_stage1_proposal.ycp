@@ -150,9 +150,9 @@ will be started on computer boot).</p>");
 	if (SuSEFirewall4Network::Enabled1stStage())
 	{
 	    output = output + "<li>" + (SuSEFirewall4Network::EnabledSsh1stStage() ?
-                _("SSH port will be open (<a href=\"firewall--disable_ssh_in_proposal\">close</a>)")
+                _("SSH service will be enabled, SSH port will be open (<a href=\"firewall--disable_ssh_in_proposal\">disable and close</a>)")
                 :
-                _("SSH port will be blocked (<a href=\"firewall--enable_ssh_in_proposal\">open</a>)")
+                _("SSH service will be disabled, SSH port will be blocked(<a href=\"firewall--enable_ssh_in_proposal\">enable and open</a>)")
            ) + "</li>\n";
 
 	}
@@ -217,9 +217,9 @@ will be started on computer boot).</p>");
         ret =
             $[
                 // Proposal title 
-              "rich_text_title" :       _("Firewall"),
+              "rich_text_title" :       _("Firewall and SSH"),
                 // Menu entry label
-              "menu_title"      :       _("&Firewall"),
+              "menu_title"      :       _("&Firewall and SSH"),
               "id"              :       "firewall_stage1"
             ];
     }
