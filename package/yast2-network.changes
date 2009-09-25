@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Sep 25 17:50:03 CEST 2009 - kmachalkova@suse.cz
+
+- Display simple firewall & SSH config dialog after clicking on
+  'Firewall' headline in initial proposal (bnc#539289)
+- 2.18.49 
+
+-------------------------------------------------------------------
 Thu Sep 24 18:37:03 CEST 2009 - kmachalkova@suse.cz
 
 - Propose opening SSH port in firewall in SSH installation 
