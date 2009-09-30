@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Sep 30 17:07:53 CEST 2009 - mzugec@suse.cz
+
+- YaPI: correctly handle netmask/prefixlen (bnc#539889)
+- 2.17.100 
+
+-------------------------------------------------------------------
 Thu Sep 24 09:42:13 CEST 2009 - mzugec@suse.cz
 
 - YaPI: backported NETWORK.pm for webYaST
