@@ -68,7 +68,7 @@ sub writeRoute {
       $gw = $args->{'route'}->{'default'}->{'via'};
       if ($gw ne ""){
         YaST::YCP::Import ("IP");
-	unless (IP->Check4($gw) eq "") {
+	unless (IP->Check4($gw)) {
 	  $ret{'exit'} = -1;
 	  $ret{'error'} = IP->Valid4();
 	  return \%ret;	
