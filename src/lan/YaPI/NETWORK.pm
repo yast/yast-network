@@ -153,8 +153,8 @@ BEGIN{$TYPEINFO{Write} = ["function",
 sub Write {
   my $self  = shift;
   my $args  = shift;
-#  my %ret = ('exit'=>0, 'error'=>'');
   y2milestone("YaPI->Write with settings:", Dumper(\$args));
+
   # SAVE DEFAULT ROUTE
   if (exists($args->{'route'})){
     my $route_ret = writeRoute($args);
@@ -176,6 +176,8 @@ sub Write {
     return $ifc_ret if ($ifc_ret->{'exit'} != 0);
   }
 
+ # return value for exit is type integer, but it'll be converted into string (in yast-perl-bindings)
+ # that means in rest-api it'll be {'exit'=>'0', 'error'=>''}
  return {'exit'=>0, 'error'=>''};
 }
 

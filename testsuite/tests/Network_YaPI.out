@@ -40,3 +40,16 @@ Read	.target.lstat "/etc/sysconfig/network/ifcfg-tr-usb" nil
 Execute	.target.bash_output "hostname --fqdn" $["exit":0, "stdout":"laptop.suse.cz"]
 Execute	.target.bash_output "hostname --fqdn" $["exit":0, "stdout":"laptop.suse.cz"]
 Return	$["dns":$["nameservers":["208.67.222.222", "208.67.220.220"], "searches":["suse.cz", "suse.de"]], "hostname":$["domain":"suse.cz", "name":"laptop"], "interfaces":$["eth0":$["bootproto":"dhcp4"], "eth1":$["bootproto":"static", "ipaddr":"1.2.3.4/24"]], "routes":$["default":$["via":"10.20.30.40"]]]
+Return	$["error":"", "exit":"0"]
+Read	.target.size "/etc/sysconfig/network/routes" 27
+Read	.routes [$["destination":"default", "gateway":"10.20.30.40"]]
+Read	.sysconfig.sysctl.IP_FORWARD nil
+Write	.sysconfig.sysctl.IP_FORWARD "no" true
+Write	.sysconfig.sysctl.IPV6_FORWARD "no" true
+Execute	.target.bash "echo 0 > /proc/sys/net/ipv4/ip_forward" 0
+Execute	.target.bash "echo 0 > /proc/sys/net/ipv6/conf/all/forwarding" 0
+Read	.target.size "/etc/sysconfig/network/routes" 27
+Execute	.target.bash "/bin/cp /etc/sysconfig/network/routes /etc/sysconfig/network/routes.YaST2save" 0
+Write	.routes [$["destination":"default", "device":"-", "gateway":"10.20.30.40", "netmask":"-"]] true
+Return	$["error":"", "exit":"0"]
+Return	$["error":"A valid IP address consists of four integers\nin the range 0-255 separated by dots.", "exit":"-1"]

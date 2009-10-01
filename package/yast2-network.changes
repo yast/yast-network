@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Oct  1 16:46:02 CEST 2009 - mzugec@suse.cz
+
+- YaPI: return map with return code and error message in Write
+ function + testsuite
+- 2.18.50 
+
+-------------------------------------------------------------------
 Fri Sep 25 17:50:03 CEST 2009 - kmachalkova@suse.cz
 
 - Display simple firewall & SSH config dialog after clicking on
