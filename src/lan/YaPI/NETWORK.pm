@@ -127,7 +127,7 @@ sub writeInterfaces {
            YaST::YCP::Import ("Netmask");
            my @ip_row = split(/\//, $ip);
            $prefix = $ip_row[$#ip_row];
-           if (Netmask->Check4($prefix)){
+           if (Netmask->Check4($prefix) && $prefix =~ /\./){
                 y2milestone("Valid netmask: ", $prefix, " will change to prefixlen");
                 $prefix = Netmask->ToBits($prefix);
            }
