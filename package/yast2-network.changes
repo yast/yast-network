@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Oct  1 16:46:02 CEST 2009 - mzugec@suse.cz
+
+- YaPI: return map with return code and error message in Write
+ function + testsuite
+- 2.18.101
+
+-------------------------------------------------------------------
 Wed Sep 30 17:07:53 CEST 2009 - mzugec@suse.cz
 
 - YaPI: correctly handle netmask/prefixlen (bnc#539889)
