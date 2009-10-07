@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Oct  7 14:31:59 CEST 2009 - mvidner@suse.cz
+
+- Don't depend on yast2-2.18.26
+- 2.17.102
+
+-------------------------------------------------------------------
 Thu Oct  1 16:46:02 CEST 2009 - mzugec@suse.cz
 
 - YaPI: return map with return code and error message in Write
