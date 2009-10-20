@@ -1101,7 +1101,8 @@ global list<string> Packages () {
     list<string> pkgs = [];
    map<string, any> required = $[
 			"types":$[
-				"wlan" : "wireless-tools",
+			//for wlan require iw instead of wireless-tools (bnc#539669)
+				"wlan" : "iw",
 				"vlan" : "vlan",
 				"br"   : "bridge-utils",
 				"tun"  : "tunctl",

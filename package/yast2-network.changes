@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Oct 20 11:28:01 CEST 2009 - mzugec@suse.cz
+
+- for wlan require iw instead of wireless-tools (bnc#539669)
+- 2.18.51 
+
+-------------------------------------------------------------------
 Thu Oct  1 16:46:02 CEST 2009 - mzugec@suse.cz
 
 - YaPI: return map with return code and error message in Write
