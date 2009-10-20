@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Oct 20 13:20:12 CEST 2009 - mzugec@suse.cz
+
+- missing space in translated text (bnc#545074) 
+
+-------------------------------------------------------------------
 Tue Oct 20 11:28:01 CEST 2009 - mzugec@suse.cz
 
 - for wlan require iw instead of wireless-tools (bnc#539669)
