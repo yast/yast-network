@@ -534,11 +534,12 @@ global list BuildLanOverview() {
 		overview = add(overview, Summary::Device(descr, Summary::NotConfigured()));
 
 	string conn = HTML::Bold ( (Items[key, "hwinfo", "link"]:false == true)?"":sformat("(%1)", _("Not connected") ));
+
 	if (size(Items[key, "hwinfo"]:$[])==0) conn = HTML::Bold(sformat("(%1)", _("No hwinfo")));
-	string mac_dev="";
-	if (hasAnyValue(Items[key, "hwinfo", "mac"]:"")) mac_dev= HTML::Bold ("MAC : ") + Items[key, "hwinfo", "mac"]:"" + "<br>";
-	 else if (hasAnyValue(Items[key, "hwinfo", "busid"]:"")) mac_dev= HTML::Bold ("BusID : ") + Items[key, "hwinfo", "busid"]:"" + "<br>";
-		rich = " " + conn + "<br>" + mac_dev;
+	string mac_dev = HTML::Bold ("MAC : ") + Items[key, "hwinfo", "mac"]:"" + "<br>";
+	string bus_id  = HTML::Bold ("BusID : ") + Items[key, "hwinfo", "busid"]:"" + "<br>";
+	if (hasAnyValue(Items[key, "hwinfo", "mac"]:"")) rich = " " + conn + "<br>" + mac_dev;
+	if (hasAnyValue(Items[key, "hwinfo", "busid"]:"")) rich = rich + bus_id;
 		rich = HTML::Bold ( descr ) + rich;
 
    if (!hasAnyValue(Items[key, "hwinfo", "dev_name"]:"") && size(Items[key, "hwinfo"]:$[])>0 && !Arch::s390())
