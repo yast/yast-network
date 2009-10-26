@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Oct 26 16:00:33 CET 2009 - mzugec@suse.cz
+
+- show BusID in lan description (FaTE#307165)
+- 2.18.52 
+
+-------------------------------------------------------------------
 Tue Oct 20 13:20:12 CEST 2009 - mzugec@suse.cz
 
 - missing space in translated text (bnc#545074) 
