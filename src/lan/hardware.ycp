@@ -37,6 +37,10 @@ associating MAC address or BusID of the network device with its name (for exampl
 eth1, wlan0 ) and assures a persistent device name upon reboot.
 ") + 
 
+_("<p><b>Show visible port identification</b> allows you to physically identify now configured NIC. 
+Set appropriate time, click <b>Blink</b> and LED diods on you NIC will start blinking for selected time.
+</p>")+
+
     /* Manual network card setup help 2/4 */
 _("<p><b>Kernel Module</b>. Enter the kernel module (driver) name 
 for your network device here. If the device is already configured, see if there is more than one driver available for
@@ -210,9 +214,16 @@ void initHwDialog(string text) {
     if(LanItems::operation == `edit ) TypeNameWidgets = `Empty();
 		else UdevWidget = `Empty();
 
+   term BlinkCard = `Frame(_("Show visible port identification"),
+     `HBox(
+	`IntField(`id(`blink_time), "Seconds:", 0, 100, 5),
+	`PushButton(`id(`blink), _("Blink"))
+     )
+   );
+
     term contents =
      `VBox(
-	`HBox(UdevWidget,`HStretch()),
+	`HBox(UdevWidget,`HStretch(), BlinkCard),
 	TypeNameWidgets,
 	KernelBox,
 	`VStretch()
@@ -438,10 +449,10 @@ symbol handleHW (string key, map event) {
 	          `CheckBox(`id(`change_dev_name), `opt(`notify), _("Change DeviceName"), false),
 		  `InputField(`id(`dev_name), "", LanItems::GetItemUdev("NAME"))
                )
-	  ), 
+	  ),
           `VSpacing(0.5),
           `HBox( `PushButton (`id(`ok), `opt(`default), Label::OKButton ()),
-                 `PushButton (`id(`cancel), Label::CancelButton ()) 
+                 `PushButton (`id(`cancel), Label::CancelButton ())
 	  )
 	)
 
@@ -478,6 +489,13 @@ y2internal("LanItems::GetReplacedItemUdev(%1, %2) %3",rule_key, rule_value,  Lan
    }
    UI::CloseDialog();
    UI::ChangeWidget(`device_name, `Value, LanItems::Items[LanItems::current, "ifcfg"]:"");
+  }
+  if (ret==`blink){
+    string device = LanItems::device;
+    integer timeout = tointeger(UI::QueryWidget(`blink_time, `Value));
+    y2milestone("blink, blink ... %1 seconds on %2 device", timeout, device);
+    string cmd = sformat("ethtool -p %1 %2", device, timeout);
+    y2milestone("%1 : %2", cmd, SCR::Execute(.target.bash_output, cmd));
   }
  return nil;
 }
