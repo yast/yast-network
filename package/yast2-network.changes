@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Oct 29 17:47:14 CET 2009 - mzugec@suse.cz
+
+- physical identification for NIC cards (FaTE#307164)
+- 2.18.53 
+
+-------------------------------------------------------------------
 Mon Oct 26 16:00:33 CET 2009 - mzugec@suse.cz
 
 - show BusID in lan description (FaTE#307165)
