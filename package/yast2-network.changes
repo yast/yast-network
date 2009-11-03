@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Nov  3 15:32:18 CET 2009 - mzugec@suse.cz
+
+- support for ETHTOOL_OPTIONS (FaTE#305352)
+- 2.18.54 
+
+-------------------------------------------------------------------
 Thu Oct 29 17:47:14 CET 2009 - mzugec@suse.cz
 
 - physical identification for NIC cards (FaTE#307164)
