@@ -51,6 +51,9 @@ your device in the drop-down list. If necessary, choose a driver from the list, 
 _("<p>Additionally, you may specify <b>Options</b> for the Kernel module. Use this format: <i>option</i>=<i>value</i>. Each entry should be space 
 separated,for example: <i>io=0x300 irq=5</i>. <b>Note:</b> If two cards are 
 configured with the same module name, options will be merged while saving.</p>
+") +
+
+_("<p>If you write something into <b>Ethtool options</b>, ifup will call ethtool with this options.</p>
 ");
 
     if(!(LanItems::operation == `edit /* FIXME: unique || Lan::unique != "" */ || Arch::s390 () == true))
@@ -127,6 +130,7 @@ void initHardware(){
 
     hardware["no_hotplug"] = hardware["hotplug"]:"" == "";
     hardware["no_hotplug_dummy"] = hardware["no_hotplug"]:false && hardware["type"]:"" != "dummy";
+    hardware["ethtool_options"] = LanItems::ethtool_options;
 
 }
 
@@ -221,11 +225,20 @@ void initHwDialog(string text) {
      )
    );
 
+    term EthtoolWidget = 
+      `Frame(_("Ethtool options"),
+	`HBox(
+	  `InputField(`id(`ethtool_opts), `opt(`hstretch), _("Options"), hardware["ethtool_options"]:"")
+	)
+
+      );
+
     term contents =
      `VBox(
 	`HBox(UdevWidget,`HStretch(), BlinkCard),
 	TypeNameWidgets,
 	KernelBox,
+	EthtoolWidget,
 	`VStretch()
        );
 
@@ -529,6 +542,7 @@ Choose a different one."), nm));
  string driver = (string) UI::QueryWidget(`modul, `Value);
  LanItems::setDriver(driver);
  LanItems::driver_options[driver] = (string) UI::QueryWidget(`options, `Value);
+ LanItems::ethtool_options = (string) UI::QueryWidget(`ethtool_opts, `Value);
 }
 
 
