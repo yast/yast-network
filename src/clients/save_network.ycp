@@ -78,6 +78,7 @@ define boolean ReadInstallInf() {
 	return false;
 
     /* Read install.inf items */
+    ReadInstallInfItem(install_inf, "firststage_network", "ConfigureNetwork");
     ReadInstallInfItem(install_inf, "ipaddr", "IP");
     ReadInstallInfItem(install_inf, "ipaddr6", "IP6");
     ReadInstallInfItem(install_inf, "netmask", "Netmask");
@@ -399,6 +400,52 @@ void CreateOtherNetworkFiles(){
     }
 }
 
+void CopyConfiguredNetworkFiles(){
+  y2milestone("Copy network configuration files from 1st stage into installed system");
+  string sysconfig = "/etc/sysconfig/network/";
+  string copy_to   = String::Quote (sformat("%1%2", Installation::destdir, sysconfig));
+
+  // just copy files
+  foreach(string file, ["ifcfg-*", "routes"], {
+    string copy_from = String::Quote (sformat("%1%2", sysconfig, file));
+    y2milestone("Copy %1 into %2", copy_from, copy_to);
+    string cmd = sformat("cp %1 %2", copy_from, copy_to);
+    y2internal("cml %1:%2", cmd, SCR::Execute(.target.bash_output, cmd));
+
+  // merge files with default installed by sysconfig
+  foreach(string file, ["dhcp", "config"], {
+    string source_file = sformat("%1%2", sysconfig, file);
+    string dest_file = sformat("%1%2", copy_to, file);
+
+    // apply options from initrd configuration files into installed system
+    // i.e. just modify (not replace) files from sysconfig rpm
+    string cmd2 = "
+for row in $(grep -v \"^[[:space:]]*#\" $source_file)
+ do
+  option=$(echo $row|sed s/\"^[[:space:]]$row\"/\"$row\"/g)
+  key=${option%*=*}
+  grep -v \"^[[:space:]]*#\" $dest_file | grep -q $key
+  if [ $? != \"0\" ]
+   then
+    echo $option >> $dest_file
+   else
+    sed -i s/\"^[[:space:]]*$key.*\"/\"$option\"/g $dest_file
+  fi
+ done";
+
+    string cmd1 = sformat("source_file=%1;dest_file=%2
+", source_file, dest_file);
+
+    // merge commands (add file-path variables) because of some sformat limits with % character
+    string command=sformat("%1%2", cmd1, cmd2);
+    y2milestone("Execute file merging script : %1", SCR::Execute(.target.bash_output, command));
+
+  });
+//FIXME: proxy
+}
+
+
+
 /*
  * this replaces bash script create_interface
  */
@@ -445,8 +492,8 @@ void save_network(){
     string udev_rules_destdir = sformat("%1%2", String::Quote (Installation::destdir), udev_rules_srcdir);
     string net_destfile = sformat("%1%2/%3", String::Quote (Installation::destdir), udev_rules_srcdir, net_srcfile);
 
-y2internal("udev_rules_destdir %1", udev_rules_destdir);
-y2internal("net_destfile %1", net_destfile);
+    y2milestone("udev_rules_destdir %1", udev_rules_destdir);
+    y2milestone("net_destfile %1", net_destfile);
 
     //Do not create udev_rules_destdir if it already exists (in case of update)
     //(bug #293366, c#7)
@@ -465,6 +512,16 @@ y2internal("net_destfile %1", net_destfile);
     } else
 	y2internal("file %1 exists", net_destfile);
 
+   boolean install_inf = ReadInstallInf();
+   boolean configure_network = false;
+    if (install_inf){
+	    configure_network = (InstallInf["firststage_network"]:"0"=="1");
+	    if(configure_network){
+	        CopyConfiguredNetworkFiles();
+	    }
+   } else
+	y2error("Error while reading install.inf!");
+
     // close and chroot back
     WFM::SCRSetDefault (old_SCR);
     WFM::SCRClose (new_SCR);
@@ -474,12 +531,14 @@ y2internal("net_destfile %1", net_destfile);
     }
 
 
-    if(ReadInstallInf()){
+    if(install_inf){
     //  string hwcfgname = CreateHardwareFile();
     //  string ifcfg = sformat("ifcfg-%1", InstallInf["netdevice"]:"");
 
-        CreateIfcfg();
-        CreateOtherNetworkFiles();
+	if (!configure_network){
+          CreateIfcfg();
+          CreateOtherNetworkFiles();
+	}
 
         SCR::Execute(.target.bash, "chkconfig network on");
 
