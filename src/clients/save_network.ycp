@@ -411,6 +411,7 @@ void CopyConfiguredNetworkFiles(){
     y2milestone("Copy %1 into %2", copy_from, copy_to);
     string cmd = sformat("cp %1 %2", copy_from, copy_to);
     y2internal("cml %1:%2", cmd, SCR::Execute(.target.bash_output, cmd));
+  });
 
   // merge files with default installed by sysconfig
   foreach(string file, ["dhcp", "config"], {
