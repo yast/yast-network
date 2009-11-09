@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov  9 14:25:20 CET 2009 - mzugec@suse.de
+
+- allow VLAN into bridge (bnc#530109)
+- 2.17.108 
+
+-------------------------------------------------------------------
 Mon Nov  9 14:04:37 CET 2009 - mzugec@suse.de
 
 - adapted test for xen bridged network (bnc#553794)
