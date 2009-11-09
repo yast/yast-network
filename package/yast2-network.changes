@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Nov  9 14:32:22 CET 2009 - mzugec@suse.de
+
+- allow physical indentification only when edit device 
+
+-------------------------------------------------------------------
 Mon Nov  9 14:25:20 CET 2009 - mzugec@suse.de
 
 - allow VLAN into bridge (bnc#530109)
