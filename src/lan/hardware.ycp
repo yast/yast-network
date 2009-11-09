@@ -227,7 +227,7 @@ void initHwDialog(string text) {
 
     term contents =
      `VBox(
-	`HBox(UdevWidget,`HStretch(), BlinkCard),
+	`HBox(UdevWidget,`HStretch(), (LanItems::operation==`edit) ? BlinkCard : `Empty()),
 	TypeNameWidgets,
 	KernelBox,
 	EthtoolWidget,

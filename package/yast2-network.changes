@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Nov  9 14:53:52 CET 2009 - mzugec@suse.de
+
+- allow physical identification only when edit device
+
+-------------------------------------------------------------------
 Mon Nov  9 14:14:37 CET 2009 - mzugec@suse.cz
 
 - adapted test for xen bridged network (bnc#553794)
