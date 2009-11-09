@@ -6,6 +6,7 @@
 
 yncludedir = @yncludedir@/network/lan
 ynclude_DATA = $(wildcard *.ycp)
+
 YaPI_perldir = @moduledir@/YaPI
 
 YaPI_perl_DATA = \
