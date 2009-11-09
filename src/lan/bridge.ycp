@@ -23,7 +23,8 @@ void InitBridge(string key)
     // from all configured netcards filter 0.0.0.0 configurations
     map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
     foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
-    if (contains(["br", "vlan"], devtype)) continue;
+//    if (contains(["br", "vlan"], devtype)) continue;
+    if (contains(["br"], devtype)) continue;
     if (contains(["tun", "tap"], devtype)) {
      foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
 	string description = NetworkInterfaces::GetDevTypeDescription(devtype, true);
@@ -72,7 +73,7 @@ boolean ValidateBridge (string key, map event) {
      }
       if (((string)configurations[NetworkInterfaces::GetType(device), device, "PREFIXLEN"]:"" != "32")
 	 || ((string)configurations[NetworkInterfaces::GetType(device), device, "NETMASK"]:"" != "255.255.255.255"))
-      if ((string)configurations[NetworkInterfaces::GetType(device), device, "IPADDR"]:"" != "0.0.0.0") {
+      if ((string)configurations[NetworkInterfaces::GetType(device), device, "IPADDR"]:"" != "0.0.0.0" && (string)configurations[NetworkInterfaces::GetType(device), device, "BOOTPROTO"]:"" != "none") {
 	if(!confirmed) {
 	 valid = Popup::ContinueCancel(_("At least one selected device is already configured.
 Remove the configuration?
