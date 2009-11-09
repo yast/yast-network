@@ -1378,8 +1378,8 @@ global map AutoPackages () {
  * @return whether xenbr* exists
  */
 global define boolean HaveXenBridge () {
-    // changed xen bridge detection (bnc#375606)
-    boolean have_br = FileUtils::Exists("/dev/shm/sysconfig/xenbridges");
+    //adapted test for xen bridged network (bnc#553794)
+    boolean have_br = FileUtils::Exists("/dev/.sysconfig/network/xenbridges");
     // #2248874 - disallow error message
 /*
     if (PackageSystem::Installed("bridge-utils")){
