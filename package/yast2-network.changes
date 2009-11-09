@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov  9 14:14:37 CET 2009 - mzugec@suse.cz
+
+- adapted test for xen bridged network (bnc#553794)
+- 2.18.56 
+
+-------------------------------------------------------------------
 Wed Nov  4 16:17:18 CET 2009 - mzugec@suse.cz
 
 - lan module in 1st stage (FaTE#303069)
