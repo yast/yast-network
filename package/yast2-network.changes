@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Nov 10 15:50:05 CET 2009 - mzugec@suse.cz
+
+- replace kinternet dependency with qinternet (bnc#549912)
+- 2.18.58 
+
+-------------------------------------------------------------------
 Mon Nov  9 15:20:50 CET 2009 - mzugec@suse.de
 
 - allow VLAN into bridge (bnc#530109)
