@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Nov 11 20:45:22 CET 2009 - mzugec@suse.cz
+
+- install broadcom for b43-pci-bridge driver (bnc#412248)
+- 2.18.59 
+
+-------------------------------------------------------------------
 Tue Nov 10 15:50:05 CET 2009 - mzugec@suse.cz
 
 - replace kinternet dependency with qinternet (bnc#549912)

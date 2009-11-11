@@ -163,6 +163,7 @@ map <string, string> request_firmware = $[
 	"iwl3945" : "iwl3945-ucode",
 	"iwl4965" : "iwl4965-ucode",
 	"b43"     : "b43-fwcutter",
+	"b43-pci-bridge" : "b43-fwcutter",
 	"rt73usb" : "ralink-firmware",
 	"rt61pci" : "ralink-firmware",
 	"bcm43xx" : "",
