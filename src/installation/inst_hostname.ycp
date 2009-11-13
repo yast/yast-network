@@ -41,7 +41,7 @@ if (DNS::hostname == "linux")
 }
 
 // propose settings
-DNC::dhcp_hostname = ! Arch::is_laptop ();
+DNS::dhcp_hostname = ! Arch::is_laptop ();
 // override with setting from control.xml
 Host::SetWriteHostname( whth );
 // TODO: policy for proposing a hostname
