@@ -62,6 +62,7 @@ global boolean WriteHostname()
 global void SetWriteHostname( boolean w)
 {
     write_hostname = w;
+    modified = true;
 }
 
 /**
@@ -70,7 +71,11 @@ global void SetWriteHostname( boolean w)
  */
 global define boolean Read() {
 
-    if(initialized == true) return true;
+    if(initialized == true) 
+	return true;
+
+    string tmpval = (string) SCR::Read(.sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS);
+    write_hostname = ( tmpval == "yes");
 
     /* read /etc/hosts */
     if(SCR::Read(.target.size, hosts_file) > 0) {
@@ -102,6 +107,10 @@ global define boolean Write() {
 	y2milestone("No changes to Host -> nothing to write");
 	return true;
     }
+
+    SCR::Write(.sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS, write_hostname ? "yes" : "no");
+    SCR::Write(.sysconfig.network.dhcp, nil);
+
 
     /* Check if there is anything to do */
     if(hosts_init == hosts) {

@@ -130,9 +130,6 @@ global define boolean Read() {
     dhcp_hostname = ( tmpval == "yes");
     Host::Read();
 
-    Host::SetWriteHostname( NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true );
-    y2milestone("write_hostname_to_hosts value from sysconfig : %1", NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true);
-
     /* install.inf from linuxrc */
     map install_inf = $[];
     if(SCR::Read(.target.size, "/etc/install.inf") > 0)
@@ -140,7 +137,7 @@ global define boolean Read() {
     // bogus?!
     y2milestone ("install.inf: %1", install_inf);
 
-    resolv_conf_policy = (string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_POLICY);	
+    resolv_conf_policy = (string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_POLICY);
     list<string> resolvlist = splitstring((string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS), " ");
     if(resolvlist == nil) {
         ReadNameserver (install_inf["Nameserver"]:"");
@@ -218,11 +215,10 @@ global define boolean Write() {
 	//desktop apps may hang, not being able to resolve hostname (#304632)
 	//empty list [] as third parameter does that
 	Host::Update(oldhostname, fqhostname, []);
-	Host::Write();
     }
+    Host::Write();
     oldhostname = fqhostname;	// #49634
 
-    NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"] = Host::WriteHostname();
     SCR::Write(.sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME, dhcp_hostname ? "yes" : "no");
     SCR::Write(.sysconfig.network.dhcp, nil);
 
@@ -357,7 +353,7 @@ global define string Summary() {
     else if(size(hostname) > 0)
 	/* Summary text */
 	summary = Summary::AddListItem(summary, sformat(_("Hostname: %1"), Hostname::MergeFQ(hostname, domain)));
-    if (NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true == false)
+    if (!Host::WriteHostname())
 	summary = Summary::AddListItem(summary, _("Hostname will not be written to /etc/hosts"));
 
 	
