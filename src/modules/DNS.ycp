@@ -46,6 +46,7 @@ global string domain = "";
 global list<string> nameservers = [];
 global list<string> searchlist = [];
 
+global boolean dhcp_hostname = false; 
 global string resolv_conf_policy = "";
 
 // fully qualified
@@ -125,8 +126,8 @@ global define boolean Read() {
 
     if(initialized == true) return true;
 
-    //in this order, because Host:;write hostname gets initialized from NetworkConfig::DHCP
-    NetworkConfig::Read();
+    string tmpval = (string) SCR::Read(.sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME);
+    dhcp_hostname = ( tmpval == "yes");
     Host::Read();
 
     Host::SetWriteHostname( NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true );
@@ -222,7 +223,8 @@ global define boolean Write() {
     oldhostname = fqhostname;	// #49634
 
     NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"] = Host::WriteHostname();
-    NetworkConfig::Write();
+    SCR::Write(.sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME, dhcp_hostname ? "yes" : "no");
+    SCR::Write(.sysconfig.network.dhcp, nil);
 
     y2milestone("Writing configuration");
     if(!modified) {
@@ -349,7 +351,7 @@ global define string Summary() {
 
     boolean has_dhcp = size (NetworkInterfaces::Locate ("BOOTPROTO", "dhcp")) > 0;
 
-    if (has_dhcp && NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false)
+    if (has_dhcp && dhcp_hostname)
 	/* Summary text */
 	summary = Summary::AddListItem(summary, _("Hostname: Set by DHCP"));
     else if(size(hostname) > 0)
@@ -396,8 +398,8 @@ global define boolean IsHostLocal (string check_host) {
     NetworkInterfaces::Read ();
     map <string, string> dhcp_data = $[];
 
-    if ( (size( NetworkInterfaces::Locate("BOOTPROTO", "dhcp") ) > 0) || 
-	 NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false == true ) {
+    if ( (size( NetworkInterfaces::Locate("BOOTPROTO", "dhcp") ) > 0) ||
+	 dhcp_hostname ) {
 	dhcp_data = GetDHCPHostnameIP();
 	y2milestone("Got DHCP-configured data: %1", dhcp_data);
     }

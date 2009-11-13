@@ -69,7 +69,7 @@ define map InitSettings () {
     map settings = $[
 	"HOSTNAME": DNS::hostname,
 	"DOMAIN": DNS::domain,
-	"DHCP_HOSTNAME": NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false,
+	"DHCP_HOSTNAME": DNS::dhcp_hostname,
 	// set as true by default because there wasn't this option in previous version
 	"WRITE_HOSTNAME": Host::WriteHostname()
 	];
@@ -108,7 +108,7 @@ define void StoreSettings (map settings) {
     DNS::domain = settings["DOMAIN"]:"";
     DNS::nameservers = NonEmpty (nameservers);
     DNS::searchlist = NonEmpty (searchlist);
-    NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"] = settings["DHCP_HOSTNAME"]:false;
+    DNS::dhcp_hostname = settings["DHCP_HOSTNAME"]:false;
     Host::SetWriteHostname( settings["WRITE_HOSTNAME"]:true );
     
     /* update modified flag */
@@ -147,9 +147,10 @@ define void StoreHnWidget (string key, map event) {
  */
 define void InitDhcpHostname (string key) {
    UI::ChangeWidget (`id("DHCP_HOSTNAME"), `Enabled, has_dhcp);
-   if (!has_dhcp) UI::ReplaceWidget(`id ("dh_host_text"),`Label(_("No interface with dhcp")));
-		// the hostname dialog proposes to update it by DHCP on a laptop (#326102)
-    else 
+   if (!has_dhcp)
+	UI::ReplaceWidget(`id ("dh_host_text"),`Label(_("No interface with dhcp")));
+	// the hostname dialog proposes to update it by DHCP on a laptop (#326102)
+    else
 	UI::ChangeWidget(`id("DHCP_HOSTNAME"), `Value, hn_settings["DHCP_HOSTNAME"]:true);
     return nil;
 }
