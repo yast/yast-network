@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Nov 13 17:01:09 CET 2009 - mzugec@suse.de
+
+- adapt interfaces into bridge with 0.0.0.0/32 (bnc#547327)
+- 2.18.60 
+
+-------------------------------------------------------------------
 Wed Nov 11 20:45:22 CET 2009 - mzugec@suse.cz
 
 - install broadcom for b43-pci-bridge driver (bnc#412248)
