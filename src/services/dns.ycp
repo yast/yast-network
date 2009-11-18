@@ -107,7 +107,7 @@ define void StoreSettings (map settings) {
     DNS::nameservers = NonEmpty (nameservers);
     DNS::searchlist = NonEmpty (searchlist);
     DNS::dhcp_hostname = settings["DHCP_HOSTNAME"]:false;
-    DNS::write_hostname( settings["WRITE_HOSTNAME"]:true );
+    DNS::write_hostname = settings["WRITE_HOSTNAME"]:true;
     
     /* update modified flag */
     DNS::modified = true;
