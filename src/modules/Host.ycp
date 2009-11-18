@@ -229,30 +229,6 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
     string nick = Hostname::SplitFQ(newhn)[0]:"";
     string oldnick = Hostname::SplitFQ(oldhn)[0]:"";
 
-    string oldhostname = "";
-    string oldhostip = "";
-
-    /* Read oldhostname entry */
-    list oldhost = [];
-    string ohentry = nil;
-    if(SCR::Read(.target.size, "/var/adm/SuSEconfig/oldhostentry") > 0)
-	ohentry = (string) SCR::Read(.target.string, "/var/adm/SuSEconfig/oldhostentry");
-    if(ohentry != nil)
-	oldhost = splitstring(ohentry, "\n");
-
-    if(size(oldhost) > 0)
-	oldhostname = String::CutBlanks(oldhost[0]:"");
-    if(size(oldhost) > 1)
-	oldhostip = String::CutBlanks(oldhost[1]:"");
-    y2milestone("oldhostname: '%1' : '%2'", oldhostname, oldhostip);
-
-    /* Remove old hostname from hosts */
-    if(haskey(hosts, oldhostip)) {
-	y2debug("Deleting: %1", oldhostip);
-	hosts = remove(hosts, oldhostip);
-    }
-    y2debug("Hosts: %1", hosts);
-
     /* Add at least one hostname/ip */
     // but do not overload localhost (#46715)
     if (write_hostname) {
