@@ -323,13 +323,29 @@ global define boolean Write() {
  * @return true if success
  */
 global define boolean Import(map settings) {
-    hostname = settings["hostname"]:"";
-    domain = settings["domain"]:"";
-    nameservers = (list<string>) eval(settings["nameservers"]:[]);
-    searchlist = (list<string>) eval(settings["searchlist"]:[]);
     dhcp_hostname = settings["dhcp_hostname"]:false;
     //if not defined, set to 'auto'
     resolv_conf_policy = settings["resolv_conf_policy"]:"auto";
+    // user-defined value has higher priority - FaTE#305281
+    if ( haskey(settings, "write_hostname") )
+	write_hostname = settings["write_hostname"]:false;
+    // otherwise, use control.xml default
+    else
+	write_hostname = DefaultWriteHostname();
+
+    // user-defined <hostname>
+    if ( haskey(settings, "hostname") )
+	hostname = settings["hostname"]:"";
+    else {
+	// otherwise, check 1) install.inf 2) /etc/HOSTNAME
+	ReadHostname();
+	// if nothing is found, generate a random one
+	ProposeHostname();
+    }
+
+    domain = settings["domain"]:"site";
+    nameservers = (list<string>) eval(settings["nameservers"]:[]);
+    searchlist = (list<string>) eval(settings["searchlist"]:[]);
     modified = true;
     initialized = true;
     return true;
