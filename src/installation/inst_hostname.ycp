@@ -27,24 +27,18 @@ include "network/services/dns.ycp";
 //if(GetInstArgs::going_back())
 //   return `auto;
 
+// only once, do not re-propose if user gets back to this dialog from
+// the previous screen - bnc#438124
+if (!DNS::proposal_valid) {
+    DNS::Read ();			// handles NetworkConfig too
+    DNS::ProposeHostname();		// generate random hostname, if none known so far
 
-// FaTe#303875: Introduce a switch regarding 127.0.0.2 entry in /etc/hosts
-boolean whth = ProductFeatures::GetBooleanFeature ("globals", "write_hostname_to_hosts");
-y2milestone("write_hostname_to_hosts value from control.xml : %1", whth);
+    // propose settings
+    DNS::dhcp_hostname = ! Arch::is_laptop ();
 
-DNS::Read ();			// handles NetworkConfig too
-
-if (DNS::hostname == "linux")
-{
-    srandom ();
-    DNS::hostname = "linux-" + String::Random (4); // #157107
+    // get default value, from control.xml
+    DNS::write_hostname = DNS::DefaultWriteHostname();
 }
-
-// propose settings
-DNS::dhcp_hostname = ! Arch::is_laptop ();
-// override with setting from control.xml
-Host::SetWriteHostname( whth );
-// TODO: policy for proposing a hostname
 
 symbol ret = `next;
 
