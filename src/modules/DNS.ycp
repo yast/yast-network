@@ -20,6 +20,7 @@ import "Host";
 import "Hostname";
 import "IP";
 import "NetworkInterfaces";
+import "ProductFeatures";
 import "Progress";
 import "Service";
 import "String";
@@ -52,6 +53,8 @@ global string resolv_conf_policy = "";
 // fully qualified
 string oldhostname = "";
 
+/* install.inf from linuxrc */
+map install_inf = $[];
 /**
  * Data was modified?
  */
@@ -107,6 +110,55 @@ global define map <string, string> GetDHCPHostnameIP () {
     return ret;
 }
 
+global boolean DefaultWriteHostname() {
+    boolean whth = ProductFeatures::GetBooleanFeature ("globals", "write_hostname_to_hosts");
+    y2milestone("write_hostname_to_hosts default value: %1", whth);
+    return whth;
+}
+
+global void ReadHostname() {
+
+    // prefer /etc/install.inf
+    // (because HOSTNAME comes with netcfg.rpm already, #144687)
+    string fqhostname = install_inf["Hostname"]:""; // Machinename never existed??
+    // if the name is actually an IP only, we discard it too
+    if (IP::Check (fqhostname))
+    {
+	fqhostname = "";
+    }
+
+    // /etc/HOSTNAME
+    // the usual location
+    if (fqhostname == "")
+    {
+	if (SCR::Read (.target.size, "/etc/HOSTNAME") > 0)
+	{
+	    fqhostname = (string) SCR::Read (.target.string, "/etc/HOSTNAME");
+	    //avoid passing nil argument when we get non-\n-terminated string (#445531)
+	    fqhostname = String::FirstChunk( fqhostname, "\n" );
+	}
+    }
+
+    list<string> split = Hostname::SplitFQ (fqhostname);
+    hostname = split[0]:"";
+    domain = split[1]:"";
+
+    // last resort
+    if (hostname == "")
+    {
+	hostname = "linux";
+	domain = "site";
+    }
+}
+
+global void ProposeHostname() {
+    if (hostname == "linux")
+    {
+	srandom ();
+	hostname = "linux-" + String::Random (4); // #157107
+    }
+}
+
 /**
  * resolver config file location
  */
@@ -131,8 +183,6 @@ global define boolean Read() {
     string tmp2 = (string) SCR::Read(.sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS);
     write_hostname = ( tmp2 == "yes");
 
-    /* install.inf from linuxrc */
-    map install_inf = $[];
     if(SCR::Read(.target.size, "/etc/install.inf") > 0)
 	install_inf = (map) SCR::Read(.etc.install_inf);
     // bogus?!
@@ -149,44 +199,7 @@ global define boolean Read() {
     searchlist = splitstring((string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST), " ");
 
     /* hostname and domain */
-    // all this is much too intelligent and belongs rather to the proposal
-
-    // prefer /etc/install.inf
-    // (because HOSTNAME comes with netcfg.rpm already, #144687)
-    string fqhostname = install_inf["Hostname"]:""; // Machinename never existed??
-    // if the name is actually an IP only, we discard it too
-    if (IP::Check (fqhostname))
-    {
-	fqhostname = "";
-    }
-
-    // /etc/HOSTNAME
-    // the usual location
-    if (fqhostname == "")
-    {
-	if (SCR::Read (.target.size, "/etc/HOSTNAME") > 0)
-	{
-	    fqhostname = (string) SCR::Read (.target.string, "/etc/HOSTNAME");
-	    //avoid passing nil argument when we get non-\n-terminated string (#445531)
-	    fqhostname = String::FirstChunk( fqhostname, "\n" );
-	}
-    }
-    list<string> split = Hostname::SplitFQ (fqhostname);
-    hostname = split[0]:"";
-    domain = split[1]:"";
-
-    // detection
-    if (hostname == "")
-    {
-	hostname = NetHwDetection::result["HOSTNAME"]:"";
-	domain = NetHwDetection::result["DOMAIN"]:"";
-    }
-    // last resort
-    if (hostname == "")
-    {
-	hostname = "linux";
-	domain = "site";
-    }
+    ReadHostname();
     oldhostname = Hostname::MergeFQ (hostname, domain);
 
     y2milestone("nameservers=%1", nameservers);
