@@ -19,7 +19,6 @@ import "NetHwDetection";
 import "Host";
 import "Hostname";
 import "IP";
-import "NetworkConfig";
 import "NetworkInterfaces";
 import "Progress";
 import "Service";
@@ -46,7 +45,8 @@ global string domain = "";
 global list<string> nameservers = [];
 global list<string> searchlist = [];
 
-global boolean dhcp_hostname = false; 
+global boolean dhcp_hostname = false;
+global boolean write_hostname = false;
 global string resolv_conf_policy = "";
 
 // fully qualified
@@ -126,9 +126,10 @@ global define boolean Read() {
 
     if(initialized == true) return true;
 
-    string tmpval = (string) SCR::Read(.sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME);
-    dhcp_hostname = ( tmpval == "yes");
-    Host::Read();
+    string tmp1 = (string) SCR::Read(.sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME);
+    dhcp_hostname = ( tmp1 == "yes");
+    string tmp2 = (string) SCR::Read(.sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS);
+    write_hostname = ( tmp2 == "yes");
 
     /* install.inf from linuxrc */
     map install_inf = $[];
@@ -210,16 +211,18 @@ global define boolean Write() {
     //are defined for each static IP separately in address dialog
     //FaTE #2202
 
-    if (Host::WriteHostname()) {
+    //FIXME: move to Host::
+    /*if (Host::WriteHostname()) {
 	//Always add 127.0.0.2 entry to /etc/hosts, otherwise some
 	//desktop apps may hang, not being able to resolve hostname (#304632)
 	//empty list [] as third parameter does that
 	Host::Update(oldhostname, fqhostname, []);
     }
-    Host::Write();
+    Host::Write();*/
     oldhostname = fqhostname;	// #49634
 
     SCR::Write(.sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME, dhcp_hostname ? "yes" : "no");
+    SCR::Write(.sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS, write_hostname ? "yes" : "no");
     SCR::Write(.sysconfig.network.dhcp, nil);
 
     y2milestone("Writing configuration");
@@ -310,6 +313,7 @@ global define boolean Import(map settings) {
     domain = settings["domain"]:"";
     nameservers = (list<string>) eval(settings["nameservers"]:[]);
     searchlist = (list<string>) eval(settings["searchlist"]:[]);
+    dhcp_hostname = settings["dhcp_hostname"]:false;
     //if not defined, set to 'auto'
     resolv_conf_policy = settings["resolv_conf_policy"]:"auto";
     modified = true;
@@ -331,6 +335,7 @@ global define map Export() {
         expdns["nameservers"] = eval(nameservers);
     if (size(searchlist) >0)
         expdns["searchlist"] = eval(searchlist);
+    expdns["dhcp_hostname"] = dhcp_hostname;
     //TODO: test if it really works with empty string
     expdns["resolv_conf_policy"] = resolv_conf_policy;
     return expdns;
@@ -353,7 +358,7 @@ global define string Summary() {
     else if(size(hostname) > 0)
 	/* Summary text */
 	summary = Summary::AddListItem(summary, sformat(_("Hostname: %1"), Hostname::MergeFQ(hostname, domain)));
-    if (!Host::WriteHostname())
+    if ( !write_hostname )
 	summary = Summary::AddListItem(summary, _("Hostname will not be written to /etc/hosts"));
 
 	

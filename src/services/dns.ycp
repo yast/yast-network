@@ -64,14 +64,12 @@ define list<string> NonEmpty (list<string> l) {
  * @return initial settings for this dialog in one map, from DNS::
  */
 define map InitSettings () {
-// boolean write_hostname = true;
 
     map settings = $[
 	"HOSTNAME": DNS::hostname,
 	"DOMAIN": DNS::domain,
 	"DHCP_HOSTNAME": DNS::dhcp_hostname,
-	// set as true by default because there wasn't this option in previous version
-	"WRITE_HOSTNAME": Host::WriteHostname()
+	"WRITE_HOSTNAME": DNS::write_hostname
 	];
     // the rest is not so straightforward,
     // because we have list variables but non-list widgets
@@ -109,7 +107,7 @@ define void StoreSettings (map settings) {
     DNS::nameservers = NonEmpty (nameservers);
     DNS::searchlist = NonEmpty (searchlist);
     DNS::dhcp_hostname = settings["DHCP_HOSTNAME"]:false;
-    Host::SetWriteHostname( settings["WRITE_HOSTNAME"]:true );
+    DNS::write_hostname( settings["WRITE_HOSTNAME"]:true );
     
     /* update modified flag */
     DNS::modified = true;

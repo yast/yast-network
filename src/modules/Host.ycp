@@ -33,11 +33,6 @@ global map<string, list<string> > hosts = $[];
 global boolean modified = false;
 
 /**
- * Should static hostname be written to /etc/hosts?
- */
-boolean write_hostname = true;
-
-/**
  * All hosts read at the start
  */
 map<string,any> hosts_init = $[];
@@ -54,17 +49,6 @@ global boolean write_only = false;
 
 boolean initialized = false;
 
-global boolean WriteHostname()
-{
-    return write_hostname;
-}
-
-global void SetWriteHostname( boolean w)
-{
-    write_hostname = w;
-    modified = true;
-}
-
 /**
  * Read hosts settings
  * @return true if success
@@ -73,9 +57,6 @@ global define boolean Read() {
 
     if(initialized == true) 
 	return true;
-
-    string tmpval = (string) SCR::Read(.sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS);
-    write_hostname = ( tmpval == "yes");
 
     /* read /etc/hosts */
     if(SCR::Read(.target.size, hosts_file) > 0) {
@@ -107,9 +88,6 @@ global define boolean Write() {
 	y2milestone("No changes to Host -> nothing to write");
 	return true;
     }
-
-    SCR::Write(.sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS, write_hostname ? "yes" : "no");
-    SCR::Write(.sysconfig.network.dhcp, nil);
 
 
     /* Check if there is anything to do */
@@ -231,7 +209,8 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
 
     /* Add at least one hostname/ip */
     // but do not overload localhost (#46715)
-    if (write_hostname) {
+    //FIXME: adapt this
+    /*if (write_hostname) {
 	    if (size(ips) < 1 && nick != "localhost") {
 		y2milestone("Adding dummy 127.0.0.2 %1 entry", newhn);
 		// TODO #42102
@@ -239,7 +218,7 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
 		y2milestone("Hosts: %1", hosts);
 		return true;
 	    }
-    }
+    }*/
 
     /* Remove old hostname from hosts */
 //    list oldhnlist = [];
