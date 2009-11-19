@@ -16,7 +16,6 @@ module "DNS";
 textdomain "network";
 
 import "NetHwDetection";
-import "Host";
 import "Hostname";
 import "IP";
 import "NetworkInterfaces";
@@ -249,6 +248,7 @@ global define boolean Write() {
     y2milestone("searchlist=%1", searchlist);
     y2milestone("hostname=%1", hostname);
     y2milestone("domain=%1", domain);
+    y2milestone("dhcp_hostname=%1, write_hostname=%2", dhcp_hostname, write_hostname);
 
 
     list <string> steps = [
