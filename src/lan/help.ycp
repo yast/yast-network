@@ -139,6 +139,9 @@ Only Manually</b> policy.</p>"),
 This is particularly useful for bonding ethernet devices.</p>
 ")
  +
+    _("<p>Check <b>iBFT</b> if you want to keep network configured in your BIOS.</p>
+")
+ +
     /* Address dialog help 2/8 */
     _("<p>Select <b>Dynamic Address</b> if you do not have a static IP address 
 assigned by the system administrator or your Internet provider.</p>

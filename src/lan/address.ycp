@@ -206,6 +206,7 @@ void enableDisableBootProto(symbol current){
   UI::ChangeWidget(`ipaddr,	`Enabled, current==`static);
   UI::ChangeWidget(`netmask,	`Enabled, current==`static);
   UI::ChangeWidget(`hostname,	`Enabled, current==`static);
+  UI::ChangeWidget(`ibft,	`Enabled, current==`none);
 }
 
 /**
@@ -215,6 +216,8 @@ void enableDisableBootProto(symbol current){
  */
 void initBootProto (string key) {
  if (LanItems::type=="br") UI::ReplaceWidget(`rp, `Empty());
+	else if (LanItems::type!="eth") UI::ReplaceWidget(`rp, `Left(
+                     `RadioButton(`id(`none),`opt(`notify),  _("No IP Address (for Bonding Devices)"))));
  switch(settings["BOOTPROTO"]:""){
   case "static": UI::ChangeWidget(`id(`bootproto), `CurrentButton, `static);
 		UI::ChangeWidget(`id(`ipaddr), `Value, settings["IPADDR"]:"");
@@ -240,6 +243,9 @@ void initBootProto (string key) {
 		break;
   case "none" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `none);
 		break;
+  case "ibft" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `none);
+		UI::ChangeWidget(`id(`ibft), `Value, true);
+		break;
  }
  enableDisableBootProto((symbol)UI::QueryWidget(`id(`bootproto), `CurrentButton));
 }
@@ -249,7 +255,7 @@ symbol handleBootProto (string key, map event) {
  if (event["EventReason"]:""=="ValueChanged"){
   symbol current = (symbol)UI::QueryWidget(`id(`bootproto), `CurrentButton);
   enableDisableBootProto(current);
-  if (current == `none) settings["STARTMODE"] = "off";
+//  if (current == `none) settings["STARTMODE"] = "off";
  }
  return nil;
 }
@@ -263,7 +269,10 @@ symbol handleBootProto (string key, map event) {
  */
 void storeBootProto (string key, map event) {
   switch((symbol)UI::QueryWidget(`id(`bootproto), `CurrentButton)){
-   case `none : settings["BOOTPROTO"]="none";
+   case `none : string bootproto="none";
+		if (UI::WidgetExists(`id(`ibft)))
+			bootproto = (boolean)UI::QueryWidget(`id(`ibft), `Value) ? "ibft" : "none";
+		settings["BOOTPROTO"]=bootproto;
 		settings["IPADDR"]  = "";
 		settings["NETMASK"] = "";
 		settings["PREFIXLEN"] = "";
@@ -647,7 +656,14 @@ map<string, map<string,any> > widget_descr_local = $[
 	"custom_widget":
 	  `RadioButtonGroup(`id(`bootproto),
 		`VBox(
-		`ReplacePoint(`id(`rp), `Left(`RadioButton(`id(`none),`opt(`notify),  _("No IP Address (for Bonding Devices)")))),
+		`ReplacePoint(`id(`rp),
+		  `Left(
+		   `HBox(
+		     `RadioButton(`id(`none),`opt(`notify),  _("No IP Address (for Bonding Devices)")),
+		     `HSpacing(1),
+		     `CheckBox(`id(`ibft), `opt(`notify), _("Use iBFT values"))
+		   )
+		  )),
 		`Left(`HBox(
 		 `RadioButton(`id(`dynamic), `opt(`notify), _("Dynamic Address")),
 		  `ComboBox(`id(`dyn), "", [
