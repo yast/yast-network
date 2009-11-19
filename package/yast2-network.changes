@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Nov 19 17:09:19 CET 2009 - mzugec@suse.cz
+
+- support for BOOTPROTO=ibft (bnc#547569)
+- 2.18.61 
+
+-------------------------------------------------------------------
 Fri Nov 13 17:01:09 CET 2009 - mzugec@suse.de
 
 - adapt interfaces into bridge with 0.0.0.0/32 (bnc#547327)
