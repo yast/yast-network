@@ -342,7 +342,7 @@ global define boolean Import(map settings) {
     modified = true;
     initialized = true;
 
-    y2milestone("DNS Import:")
+    y2milestone("DNS Import:");
     y2milestone("nameservers=%1", nameservers);
     y2milestone("searchlist=%1", searchlist);
     y2milestone("hostname=%1", hostname);
