@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov  5 11:47:26 CET 2009 - mzugec@suse.de
+
+- Do a proper reload of network service on writing (standalone) DNS
+  configuration (removed *-all-dhcp-clients workaround - bnc#528937)
+- 2.13.119.2
+
+-------------------------------------------------------------------
 Mon Jul 13 16:43:57 CEST 2009 - kmachalkova@suse.cz
 
 - Collective SP2 update for several bugs:

@@ -21,7 +21,7 @@ y2milestone("DNS module started");
 import "DNS";
 import "Label";
 import "Lan";
-import "Service";
+import "NetworkService";
 import "Wizard";
 
 import "CommandLine";
@@ -54,11 +54,10 @@ any DNSGUI() {
     y2debug("ret == %1", ret);
 
     if(ret == `next && DNS::modified) {
-	// #38834
-	Service::RunInitScript("network", "stop-all-dhcp-clients");
 	DNS::Write();
-	// #41303
-	Service::RunInitScript("network", "start");
+	// no more workarounds with dhcp-clients
+	// do a full network restart (bnc#528937)
+	NetworkService::StartStop();
     }
 
     UI::CloseDialog();
