@@ -11,9 +11,11 @@
 
 textdomain "network";
 
+import "Address";
 import "Hostname";
 import "Label";
 import "Mode";
+import "Netmask";
 import "Popup";
 import "Proxy";
 import "String";
@@ -258,6 +260,39 @@ define boolean TestProxySettings () {
     }
 }
 
+boolean ValidateNoProxyDomains( string no_proxies ) {
+    list <string> proxy_list = splitstring( no_proxies, ",");
+    boolean validate = true;
+    string hostname = "";
+    string netmask = "";
+
+    foreach( string one_proxy, proxy_list, {
+	one_proxy = String::CutBlanks( one_proxy );
+
+	// IP/netmask
+	if ( findfirstof( one_proxy, "/" ) != nil ) {
+	    list <string> tmp = splitstring(hostname,"/");
+	    hostname = tmp[0]:"";
+	    netmask = tmp[1]:"";
+
+	    if (!Netmask::Check( netmask ))
+		validate = false;
+	}
+	// hostname or domain name
+	else {
+	    hostname = one_proxy;
+	    // .domain.name case
+	    if ( findfirstof( hostname, ".") == 0)
+		hostname = substring(hostname, 1);
+	}
+	y2milestone("hostname %1, netmask %2", hostname, netmask);
+
+	if (!Address::Check(hostname))
+	    validate = false;
+    });
+
+    return validate;
+}
 /**
  * Proxy dialog
  * @param standalone true if not run from another ycp client
@@ -457,9 +492,6 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 	    enabled = (boolean) UI::QueryWidget(`id(`enabled), `Value);
 
 	    no = (string) UI::QueryWidget(`id(`no), `Value);
-	    list<string> no_list = splitstring (no, " ,");
-	    no_list = filter (string no_i, no_list, ``( no_i != "") );
-	    no = mergestring (no_list, ", ");
 
 	    if(http == prefill) http = "";
 	    if(https == prefill) https = "";
@@ -527,6 +559,19 @@ Really use these settings?")))
 		    continue;
 		}
 	    }
+	    if ( no != "" && no != nil) {
+		if (!ValidateNoProxyDomains( no )) {
+		    //Translators: no proxy domain is a domain that can be accessed without proxy
+		    Popup::Error(_("One or more no proxy domains are invalid. 
+Check if all domains match one of the following:
+* IP address
+* IP address/netmask
+* Fully qualified hostname
+* Domain name prefixed by '.'"));
+		    UI::SetFocus(`id(`no));
+		    continue;
+		}
+	    }
 
 	    if (ret == `next) {
 		break;
@@ -554,6 +599,7 @@ Really use these settings?")))
 	    y2debug("not modified");
 	    return ret;
 	}
+
 
 	Proxy::enabled = enabled;
 	if(enabled) {
