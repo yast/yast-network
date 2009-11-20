@@ -1,4 +1,18 @@
 -------------------------------------------------------------------
+Fri Nov 20 13:55:01 CET 2009 - kmachalkova@suse.cz
+
+- Introduced <dns><write_hostname> option to AY profile to allow 
+  overriding product default write_hostname_to_hosts (FaTE#305281)
+- DNS Import: read product default write_hostname (bnc#500568) and
+  hostname/domain from the system (generate random if needed - 
+  bnc#502715)
+- Read defaults and propose values in inst_hostname only once 
+  (bnc#438124)
+- Do not append 127.0.0.2 line when it is not needed (bnc#469752)
+- Validate no proxy domains (for FaTE#302377)
+- 2.17.110
+
+-------------------------------------------------------------------
 Thu Nov 19 16:54:15 CET 2009 - mzugec@suse.cz
 
 - support for BOOTPROTO=ibft (bnc#547569)
