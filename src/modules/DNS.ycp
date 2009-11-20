@@ -224,14 +224,6 @@ global define boolean Write() {
     //are defined for each static IP separately in address dialog
     //FaTE #2202
 
-    //FIXME: move to Host::
-    /*if (Host::WriteHostname()) {
-	//Always add 127.0.0.2 entry to /etc/hosts, otherwise some
-	//desktop apps may hang, not being able to resolve hostname (#304632)
-	//empty list [] as third parameter does that
-	Host::Update(oldhostname, fqhostname, []);
-    }
-    Host::Write();*/
     oldhostname = fqhostname;	// #49634
 
     SCR::Write(.sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME, dhcp_hostname ? "yes" : "no");

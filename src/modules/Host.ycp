@@ -72,11 +72,17 @@ boolean NeedDummyIP() {
 global void EnsureHostnameResolvable() {
     string local_ip = "127.0.0.2";
     if ( NeedDummyIP() ) {
+	//Add 127.0.0.2 entry to /etc/hosts,if product default says so
+	//or user requests it otherwise some desktop apps may hang,
+	//being unable to resolve hostname (bnc#304632)
+
 	string fqhostname = Hostname::MergeFQ( DNS::hostname, DNS::domain);
 	hosts[ local_ip ] = [ fqhostname + " " + DNS::hostname ];
 	modified = true;
     }
     else {
+	// do not add it if product default says no or if there are some
+	// static IPs (bnc#469752)
 	if( haskey( hosts, local_ip) ) {
 	    hosts[ local_ip] = [];
 	    modified = true;
@@ -240,19 +246,6 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
 
     string nick = Hostname::SplitFQ(newhn)[0]:"";
     string oldnick = Hostname::SplitFQ(oldhn)[0]:"";
-
-    /* Add at least one hostname/ip */
-    // but do not overload localhost (#46715)
-    //FIXME: adapt this
-    /*if (write_hostname) {
-	    if (size(ips) < 1 && nick != "localhost") {
-		y2milestone("Adding dummy 127.0.0.2 %1 entry", newhn);
-		// TODO #42102
-		hosts["127.0.0.2"] = [ newhn + " " + nick ];
-		y2milestone("Hosts: %1", hosts);
-		return true;
-	    }
-    }*/
 
     /* Remove old hostname from hosts */
 //    list oldhnlist = [];
