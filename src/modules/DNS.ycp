@@ -326,8 +326,10 @@ global define boolean Import(map settings) {
 	write_hostname = DefaultWriteHostname();
 
     // user-defined <hostname>
-    if ( haskey(settings, "hostname") )
+    if ( haskey(settings, "hostname")  && haskey(settings, "domain")) {
 	hostname = settings["hostname"]:"";
+	domain = settings["domain"]:"site";
+    }
     else {
 	// otherwise, check 1) install.inf 2) /etc/HOSTNAME
 	ReadHostname();
@@ -335,11 +337,18 @@ global define boolean Import(map settings) {
 	ProposeHostname();
     }
 
-    domain = settings["domain"]:"site";
     nameservers = (list<string>) eval(settings["nameservers"]:[]);
     searchlist = (list<string>) eval(settings["searchlist"]:[]);
     modified = true;
     initialized = true;
+
+    y2milestone("DNS Import:")
+    y2milestone("nameservers=%1", nameservers);
+    y2milestone("searchlist=%1", searchlist);
+    y2milestone("hostname=%1", hostname);
+    y2milestone("domain=%1", domain);
+    y2milestone("dhcp_hostname=%1, write_hostname=%2", dhcp_hostname, write_hostname);
+
     return true;
 }
 
