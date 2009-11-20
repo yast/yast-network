@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Nov 20 13:15:14 CET 2009 - mzugec@suse.de
+
+- fixed problem with not matching udev rule (bnc#551310)
+- 2.18.62 
+
+-------------------------------------------------------------------
 Thu Nov 19 17:09:19 CET 2009 - mzugec@suse.cz
 
 - support for BOOTPROTO=ibft (bnc#547569)

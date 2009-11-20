@@ -178,6 +178,11 @@ map <string, string> request_firmware = $[
 
 include "network/hardware.ycp";
 
+
+global map getCurrentItem(){
+ return Items[current]:$[];
+}
+
 boolean ReadUdevDriverRules(){
  y2milestone ("Reading udev rules ...");
  udev_net_rules = (map<string, any>)SCR::Read(.udev_persistent.net);
@@ -195,9 +200,27 @@ boolean ReadUdevDriverRules(){
  return true;
 }
 
+list<string> getUdevFallback(){
+  list<string> udev_rules = getCurrentItem()["udev", "net"]:[];
+  if (size(udev_rules)==0){
+    udev_rules = [
+             "SUBSYSTEM==\"net\"",
+             "ACTION==\"add\"",
+             "DRIVERS==\"?*\"",
+             sformat("ATTR{address}==\"%1\"", getCurrentItem()["hwinfo", "mac"]:""),
+             "ATTR{type}==\"1\"",
+             "KERNEL==\"eth*\"",
+             sformat("NAME=\"%1\"", getCurrentItem()["ifcfg"]:"")
+	];
+	y2error("No Udev rules found, create new as fallback: %1", udev_rules);
+  }
+  return udev_rules;
+}
+
 global string GetItemUdev(string key){
  string value="";
- foreach(string row, Items[current, "udev", "net"]:[], {
+
+ foreach(string row, getUdevFallback(), {
   if(issubstring(row, key)){
 
    list items = filter(string s, splitstring(row, "="), { return (size(s)>0); });
@@ -211,7 +234,7 @@ global string GetItemUdev(string key){
 
 global list<string> GetReplacedItemUdev(string r_key, string r_val){
  list <string> new_rules=[];
- foreach(string row, Items[current, "udev", "net"]:[], {
+ foreach(string row, getUdevFallback(), {
   if (r_key=="NAME"){
    if (issubstring(row, "NAME")) row = sformat("NAME=\"%1\"", r_val);
   } else if (issubstring(row, "ATTR{address}") || issubstring(row, "KERNELS")) row = sformat("%1==\"%2\"", r_key, r_val);
@@ -564,10 +587,6 @@ to configure.</p>
 global list Overview() {
  BuildLanOverview();
  return GetDescr();
-}
-
-global map getCurrentItem(){
- return Items[current]:$[];
 }
 
 /*
