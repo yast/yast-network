@@ -412,6 +412,7 @@ global define boolean Write() {
     // write resolv.conf after change from dhcp to static (#327074)
     // reload/restart network before this to put correct resolv.conf from dhcp-backup
     DNS::Write();
+    Host::EnsureHostnameResolvable();
     Host::Write();
     Progress::set (orig);
 

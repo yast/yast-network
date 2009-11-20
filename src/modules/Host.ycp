@@ -12,8 +12,9 @@
 module "Host";
 textdomain "network";
 
+import "DNS";
 import "Hostname";
-import "NetworkConfig";
+import "NetworkInterfaces";
 import "String";
 import "Summary";
 
@@ -49,6 +50,40 @@ global boolean write_only = false;
 
 boolean initialized = false;
 
+boolean AnyStaticIP() {
+    NetworkInterfaces::Read ();
+    list<string> devs =
+        NetworkInterfaces::Locate ("BOOTPROTO", "static");
+    list<string> ips = maplist(string dev, devs, {
+        return NetworkInterfaces::GetValue(dev, "IPADDR");
+    });
+
+     y2milestone("%1 %2", devs, ips);
+    return ( size(ips) > 0 );
+}
+
+boolean NeedDummyIP() {
+   boolean ret = ( DNS::write_hostname && !AnyStaticIP() );
+   if (ret)
+	y2milestone("No (static) IP address found, dummy 127.0.0.2 will be added");
+   return ret;
+}
+
+global void EnsureHostnameResolvable() {
+    string local_ip = "127.0.0.2";
+    if ( NeedDummyIP() ) {
+	string fqhostname = Hostname::MergeFQ( DNS::hostname, DNS::domain);
+	hosts[ local_ip ] = [ fqhostname + " " + DNS::hostname ];
+	modified = true;
+    }
+    else {
+	if( haskey( hosts, local_ip) ) {
+	    hosts[ local_ip] = [];
+	    modified = true;
+	}
+    }
+}
+
 /**
  * Read hosts settings
  * @return true if success
@@ -82,13 +117,12 @@ global define boolean Read() {
  */
 global define boolean Write() {
 
-    y2milestone("Writing configuration");
+    y2milestone("Writing hosts configuration");
 
     if(!modified) {
-	y2milestone("No changes to Host -> nothing to write");
-	return true;
+       y2milestone("No changes to Host -> nothing to write");
+       return true;
     }
-
 
     /* Check if there is anything to do */
     if(hosts_init == hosts) {
