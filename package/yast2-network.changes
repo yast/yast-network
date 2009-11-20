@@ -2,6 +2,7 @@
 Thu Nov  6 10:48:55 UTC 2014 - mfilka@suse.com
 
 - adopted to new device type detection API provided by yast2
+- fixed problem with not matching udev rule (bnc#551310)
 - 2.17.199.1
 
 -------------------------------------------------------------------

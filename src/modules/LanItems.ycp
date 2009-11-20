@@ -289,9 +289,27 @@ boolean ReadUdevDriverRules(){
  return true;
 }
 
+list<string> getUdevFallback(){
+  list<string> udev_rules = getCurrentItem()["udev", "net"]:[];
+  if (size(udev_rules)==0){
+    udev_rules = [
+             "SUBSYSTEM==\"net\"",
+             "ACTION==\"add\"",
+             "DRIVERS==\"?*\"",
+             sformat("ATTR{address}==\"%1\"", getCurrentItem()["hwinfo", "mac"]:""),
+             "ATTR{type}==\"1\"",
+             "KERNEL==\"eth*\"",
+             sformat("NAME=\"%1\"", getCurrentItem()["ifcfg"]:"")
+	];
+	y2error("No Udev rules found, create new as fallback: %1", udev_rules);
+  }
+  return udev_rules;
+}
+
 global string GetItemUdev(string key){
  string value="";
- foreach(string row, Items[current, "udev", "net"]:[], {
+
+ foreach(string row, getUdevFallback(), {
   if(issubstring(row, key)){
 
    list items = filter(string s, splitstring(row, "="), { return (size(s)>0); });
