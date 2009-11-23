@@ -24,19 +24,23 @@ void InitBridge(string key)
     map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
     foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
 //    if (contains(["br", "vlan"], devtype)) continue;
-    if (contains(["br"], devtype)) continue;
-    if (contains(["tun", "tap"], devtype)) {
-     foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+      if (contains(["br"], devtype)) continue;
+      if (contains(["tun", "tap"], devtype)) {
+       foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
 	string description = NetworkInterfaces::GetDevTypeDescription(devtype, true);
         items = add (items, `item(`id(devname), sformat("%1 - %2",devname, description), contains(br_ports, devname)) );
-     });
-     continue;
-    }
-     foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+       });
+       continue;
+      }
+       foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
+	if ((string)configurations[devtype, devname, "STARTMODE"]:"" == "nfsroot") {
+	  y2milestone("Exclude %1 from bridge slaves because of nfsroot.", devname);
+	  continue;
+	}
 	string description = sformat("%1%2", NetworkInterfaces::GetValue(devname, "NAME"),
 		((string)configurations[devtype, devname, "IPADDR"]:"" != "0.0.0.0") ? sformat(" (%1)", "configuration") : "");
              items = add (items, `item(`id(devname), sformat("%1 - %2",devname, description), contains(br_ports, devname)) );
-     });
+       });
     });
   NetworkInterfaces::Select(old_name);
   UI::ChangeWidget(`id(key), `Items, items);

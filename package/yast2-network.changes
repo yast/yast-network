@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov 23 13:07:13 CET 2009 - mzugec@suse.de
+
+- exclude nfsroot devices from bridged slaves (bnc#557688)
+- 2.17.112 
+
+-------------------------------------------------------------------
 Mon Nov 23 10:15:27 CET 2009 - mzugec@suse.de
 
 - adapt interfaces into bridge with 0.0.0.0/32 (bnc#547327)
