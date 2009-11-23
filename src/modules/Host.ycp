@@ -12,8 +12,9 @@
 module "Host";
 textdomain "network";
 
+import "DNS";
 import "Hostname";
-import "NetworkConfig";
+import "NetworkInterfaces";
 import "String";
 import "Summary";
 
@@ -33,11 +34,6 @@ global map<string, list<string> > hosts = $[];
 global boolean modified = false;
 
 /**
- * Should static hostname be written to /etc/hosts?
- */
-boolean write_hostname = true;
-
-/**
  * All hosts read at the start
  */
 map<string,any> hosts_init = $[];
@@ -54,14 +50,44 @@ global boolean write_only = false;
 
 boolean initialized = false;
 
-global boolean WriteHostname()
-{
-    return write_hostname;
+boolean AnyStaticIP() {
+    NetworkInterfaces::Read ();
+    list<string> devs =
+        NetworkInterfaces::Locate ("BOOTPROTO", "static");
+    list<string> ips = maplist(string dev, devs, {
+        return NetworkInterfaces::GetValue(dev, "IPADDR");
+    });
+
+     y2milestone("%1 %2", devs, ips);
+    return ( size(ips) > 0 );
 }
 
-global void SetWriteHostname( boolean w)
-{
-    write_hostname = w;
+boolean NeedDummyIP() {
+   boolean ret = ( DNS::write_hostname && !AnyStaticIP() );
+   if (ret)
+	y2milestone("No (static) IP address found, dummy 127.0.0.2 will be added");
+   return ret;
+}
+
+global void EnsureHostnameResolvable() {
+    string local_ip = "127.0.0.2";
+    if ( NeedDummyIP() ) {
+	//Add 127.0.0.2 entry to /etc/hosts,if product default says so
+	//or user requests it otherwise some desktop apps may hang,
+	//being unable to resolve hostname (bnc#304632)
+
+	string fqhostname = Hostname::MergeFQ( DNS::hostname, DNS::domain);
+	hosts[ local_ip ] = [ fqhostname + " " + DNS::hostname ];
+	modified = true;
+    }
+    else {
+	// do not add it if product default says no or if there are some
+	// static IPs (bnc#469752)
+	if( haskey( hosts, local_ip) ) {
+	    hosts[ local_ip] = [];
+	    modified = true;
+	}
+    }
 }
 
 /**
@@ -70,7 +96,8 @@ global void SetWriteHostname( boolean w)
  */
 global define boolean Read() {
 
-    if(initialized == true) return true;
+    if(initialized == true) 
+	return true;
 
     /* read /etc/hosts */
     if(SCR::Read(.target.size, hosts_file) > 0) {
@@ -96,11 +123,11 @@ global define boolean Read() {
  */
 global define boolean Write() {
 
-    y2milestone("Writing configuration");
+    y2milestone("Writing hosts configuration");
 
     if(!modified) {
-	y2milestone("No changes to Host -> nothing to write");
-	return true;
+       y2milestone("No changes to Host -> nothing to write");
+       return true;
     }
 
     /* Check if there is anything to do */
@@ -219,42 +246,6 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
 
     string nick = Hostname::SplitFQ(newhn)[0]:"";
     string oldnick = Hostname::SplitFQ(oldhn)[0]:"";
-
-    string oldhostname = "";
-    string oldhostip = "";
-
-    /* Read oldhostname entry */
-    list oldhost = [];
-    string ohentry = nil;
-    if(SCR::Read(.target.size, "/var/adm/SuSEconfig/oldhostentry") > 0)
-	ohentry = (string) SCR::Read(.target.string, "/var/adm/SuSEconfig/oldhostentry");
-    if(ohentry != nil)
-	oldhost = splitstring(ohentry, "\n");
-
-    if(size(oldhost) > 0)
-	oldhostname = String::CutBlanks(oldhost[0]:"");
-    if(size(oldhost) > 1)
-	oldhostip = String::CutBlanks(oldhost[1]:"");
-    y2milestone("oldhostname: '%1' : '%2'", oldhostname, oldhostip);
-
-    /* Remove old hostname from hosts */
-    if(haskey(hosts, oldhostip)) {
-	y2debug("Deleting: %1", oldhostip);
-	hosts = remove(hosts, oldhostip);
-    }
-    y2debug("Hosts: %1", hosts);
-
-    /* Add at least one hostname/ip */
-    // but do not overload localhost (#46715)
-    if (write_hostname) {
-	    if (size(ips) < 1 && nick != "localhost") {
-		y2milestone("Adding dummy 127.0.0.2 %1 entry", newhn);
-		// TODO #42102
-		hosts["127.0.0.2"] = [ newhn + " " + nick ];
-		y2milestone("Hosts: %1", hosts);
-		return true;
-	    }
-    }
 
     /* Remove old hostname from hosts */
 //    list oldhnlist = [];

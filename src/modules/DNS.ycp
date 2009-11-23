@@ -16,11 +16,10 @@ module "DNS";
 textdomain "network";
 
 import "NetHwDetection";
-import "Host";
 import "Hostname";
 import "IP";
-import "NetworkConfig";
 import "NetworkInterfaces";
+import "ProductFeatures";
 import "Progress";
 import "Service";
 import "String";
@@ -46,11 +45,15 @@ global string domain = "";
 global list<string> nameservers = [];
 global list<string> searchlist = [];
 
+global boolean dhcp_hostname = false;
+global boolean write_hostname = false;
 global string resolv_conf_policy = "";
 
 // fully qualified
 string oldhostname = "";
 
+/* install.inf from linuxrc */
+map install_inf = $[];
 /**
  * Data was modified?
  */
@@ -106,51 +109,14 @@ global define map <string, string> GetDHCPHostnameIP () {
     return ret;
 }
 
-/**
- * resolver config file location
- */
-string resolv_conf = "/etc/resolv.conf";
+global boolean DefaultWriteHostname() {
+    // FaTe#303875: Introduce a switch regarding 127.0.0.2 entry in /etc/hosts
+    boolean whth = ProductFeatures::GetBooleanFeature ("globals", "write_hostname_to_hosts");
+    y2milestone("write_hostname_to_hosts default value: %1", whth);
+    return whth;
+}
 
-/**
- * True if DNS is already read
- */
-boolean initialized = false;
-
-/**
- * Reads current DNS and hostname settings
- * Includes Host,NetworkConfig::Read
- * @return true if success
- */
-global define boolean Read() {
-
-    if(initialized == true) return true;
-
-    //in this order, because Host:;write hostname gets initialized from NetworkConfig::DHCP
-    NetworkConfig::Read();
-    Host::Read();
-
-    Host::SetWriteHostname( NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true );
-    y2milestone("write_hostname_to_hosts value from sysconfig : %1", NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true);
-
-    /* install.inf from linuxrc */
-    map install_inf = $[];
-    if(SCR::Read(.target.size, "/etc/install.inf") > 0)
-	install_inf = (map) SCR::Read(.etc.install_inf);
-    // bogus?!
-    y2milestone ("install.inf: %1", install_inf);
-
-    resolv_conf_policy = (string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_POLICY);	
-    list<string> resolvlist = splitstring((string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS), " ");
-    if(resolvlist == nil) {
-        ReadNameserver (install_inf["Nameserver"]:"");
-    }
-    else
-        nameservers = resolvlist;
-
-    searchlist = splitstring((string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST), " ");
-
-    /* hostname and domain */
-    // all this is much too intelligent and belongs rather to the proposal
+global void ReadHostname() {
 
     // prefer /etc/install.inf
     // (because HOSTNAME comes with netcfg.rpm already, #144687)
@@ -172,22 +138,68 @@ global define boolean Read() {
 	    fqhostname = String::FirstChunk( fqhostname, "\n" );
 	}
     }
+
     list<string> split = Hostname::SplitFQ (fqhostname);
     hostname = split[0]:"";
     domain = split[1]:"";
 
-    // detection
-    if (hostname == "")
-    {
-	hostname = NetHwDetection::result["HOSTNAME"]:"";
-	domain = NetHwDetection::result["DOMAIN"]:"";
-    }
     // last resort
     if (hostname == "")
     {
 	hostname = "linux";
 	domain = "site";
     }
+}
+
+global void ProposeHostname() {
+    if (hostname == "linux")
+    {
+	srandom ();
+	hostname = "linux-" + String::Random (4); // #157107
+    }
+}
+
+/**
+ * resolver config file location
+ */
+string resolv_conf = "/etc/resolv.conf";
+
+/**
+ * True if DNS is already read
+ */
+boolean initialized = false;
+
+/**
+ * Reads current DNS and hostname settings
+ * Includes Host,NetworkConfig::Read
+ * @return true if success
+ */
+global define boolean Read() {
+
+    if(initialized == true) return true;
+
+    string tmp1 = (string) SCR::Read(.sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME);
+    dhcp_hostname = ( tmp1 == "yes");
+    string tmp2 = (string) SCR::Read(.sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS);
+    write_hostname = ( tmp2 == "yes");
+
+    if(SCR::Read(.target.size, "/etc/install.inf") > 0)
+	install_inf = (map) SCR::Read(.etc.install_inf);
+    // bogus?!
+    y2milestone ("install.inf: %1", install_inf);
+
+    resolv_conf_policy = (string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_POLICY);
+    list<string> resolvlist = splitstring((string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS), " ");
+    if(resolvlist == nil) {
+        ReadNameserver (install_inf["Nameserver"]:"");
+    }
+    else
+        nameservers = resolvlist;
+
+    searchlist = splitstring((string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST), " ");
+
+    /* hostname and domain */
+    ReadHostname();
     oldhostname = Hostname::MergeFQ (hostname, domain);
 
     y2milestone("nameservers=%1", nameservers);
@@ -212,17 +224,11 @@ global define boolean Write() {
     //are defined for each static IP separately in address dialog
     //FaTE #2202
 
-    if (Host::WriteHostname()) {
-	//Always add 127.0.0.2 entry to /etc/hosts, otherwise some
-	//desktop apps may hang, not being able to resolve hostname (#304632)
-	//empty list [] as third parameter does that
-	Host::Update(oldhostname, fqhostname, []);
-	Host::Write();
-    }
     oldhostname = fqhostname;	// #49634
 
-    NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"] = Host::WriteHostname();
-    NetworkConfig::Write();
+    SCR::Write(.sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME, dhcp_hostname ? "yes" : "no");
+    SCR::Write(.sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS, write_hostname ? "yes" : "no");
+    SCR::Write(.sysconfig.network.dhcp, nil);
 
     y2milestone("Writing configuration");
     if(!modified) {
@@ -234,6 +240,7 @@ global define boolean Write() {
     y2milestone("searchlist=%1", searchlist);
     y2milestone("hostname=%1", hostname);
     y2milestone("domain=%1", domain);
+    y2milestone("dhcp_hostname=%1, write_hostname=%2", dhcp_hostname, write_hostname);
 
 
     list <string> steps = [
@@ -302,14 +309,40 @@ global define boolean Write() {
  * @return true if success
  */
 global define boolean Import(map settings) {
-    hostname = settings["hostname"]:"";
-    domain = settings["domain"]:"";
-    nameservers = (list<string>) eval(settings["nameservers"]:[]);
-    searchlist = (list<string>) eval(settings["searchlist"]:[]);
+    dhcp_hostname = settings["dhcp_hostname"]:false;
     //if not defined, set to 'auto'
     resolv_conf_policy = settings["resolv_conf_policy"]:"auto";
+    // user-defined value has higher priority - FaTE#305281
+    if ( haskey(settings, "write_hostname") )
+	write_hostname = settings["write_hostname"]:false;
+    // otherwise, use control.xml default
+    else
+	write_hostname = DefaultWriteHostname();
+
+    // user-defined <hostname>
+    if ( haskey(settings, "hostname")  && haskey(settings, "domain")) {
+	hostname = settings["hostname"]:"";
+	domain = settings["domain"]:"site";
+    }
+    else {
+	// otherwise, check 1) install.inf 2) /etc/HOSTNAME
+	ReadHostname();
+	// if nothing is found, generate a random one
+	ProposeHostname();
+    }
+
+    nameservers = (list<string>) eval(settings["nameservers"]:[]);
+    searchlist = (list<string>) eval(settings["searchlist"]:[]);
     modified = true;
     initialized = true;
+
+    y2milestone("DNS Import:");
+    y2milestone("nameservers=%1", nameservers);
+    y2milestone("searchlist=%1", searchlist);
+    y2milestone("hostname=%1", hostname);
+    y2milestone("domain=%1", domain);
+    y2milestone("dhcp_hostname=%1, write_hostname=%2", dhcp_hostname, write_hostname);
+
     return true;
 }
 
@@ -327,6 +360,7 @@ global define map Export() {
         expdns["nameservers"] = eval(nameservers);
     if (size(searchlist) >0)
         expdns["searchlist"] = eval(searchlist);
+    expdns["dhcp_hostname"] = dhcp_hostname;
     //TODO: test if it really works with empty string
     expdns["resolv_conf_policy"] = resolv_conf_policy;
     return expdns;
@@ -343,13 +377,13 @@ global define string Summary() {
 
     boolean has_dhcp = size (NetworkInterfaces::Locate ("BOOTPROTO", "dhcp")) > 0;
 
-    if (has_dhcp && NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false)
+    if (has_dhcp && dhcp_hostname)
 	/* Summary text */
 	summary = Summary::AddListItem(summary, _("Hostname: Set by DHCP"));
     else if(size(hostname) > 0)
 	/* Summary text */
 	summary = Summary::AddListItem(summary, sformat(_("Hostname: %1"), Hostname::MergeFQ(hostname, domain)));
-    if (NetworkConfig::DHCP["WRITE_HOSTNAME_TO_HOSTS"]:true == false)
+    if ( !write_hostname )
 	summary = Summary::AddListItem(summary, _("Hostname will not be written to /etc/hosts"));
 
 	
@@ -390,8 +424,8 @@ global define boolean IsHostLocal (string check_host) {
     NetworkInterfaces::Read ();
     map <string, string> dhcp_data = $[];
 
-    if ( (size( NetworkInterfaces::Locate("BOOTPROTO", "dhcp") ) > 0) || 
-	 NetworkConfig::DHCP["DHCLIENT_SET_HOSTNAME"]:false == true ) {
+    if ( (size( NetworkInterfaces::Locate("BOOTPROTO", "dhcp") ) > 0) ||
+	 dhcp_hostname ) {
 	dhcp_data = GetDHCPHostnameIP();
 	y2milestone("Got DHCP-configured data: %1", dhcp_data);
     }

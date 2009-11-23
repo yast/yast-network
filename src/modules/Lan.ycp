@@ -385,6 +385,7 @@ global define boolean Write() {
     // write resolv.conf after change from dhcp to static (#327074)
     // reload/restart network before this to put correct resolv.conf from dhcp-backup
     DNS::Write();
+    Host::EnsureHostnameResolvable();
     Host::Write();
     Progress::set (orig);
 
@@ -416,7 +417,7 @@ global define boolean Write() {
    if (Mode::installation() && NetworkService::IsManaged()) y2internal("Export sysconfig settings into NetworkManager %1", SCR::Execute(.target.bash_output, "/usr/lib/NetworkManager/nm-opensuse-sysconfig-merge --connections"));
 
 y2internal("virt_net_proposal %1", virt_net_proposal);
-   if (Stage::cont() && virt_net_proposal && (Linuxrc::usessh() || Linuxrc::vnc() || Linuxrc::display_ip())){
+   if (Stage::cont() && virt_net_proposal && (Linuxrc::usessh() || Linuxrc::vnc() || Linuxrc::display_ip())) {
 	UI::OpenDialog(`opt(`decorated), `HBox(
         `HSpacing(1),
         `HCenter(`HSquash(`VBox(
@@ -452,11 +453,14 @@ y2internal("virt_net_proposal %1", virt_net_proposal);
     }
 
     // For ssh/vnc installation don't reload/restart network because possibility of IP change (bnc#347482)
-    else if (Stage::cont() && (Linuxrc::usessh() || Linuxrc::vnc() || Linuxrc::display_ip())) y2milestone("For ssh or vnc installation don't reload/restart network during installation.");
-        else if (LanItems::force_restart) Service::Restart("network");
-	   else if(Service::Status("network")==0){
-			 Service::Reload("network");
-			} else Service::Restart("network");
+    else if (Stage::cont() && (Linuxrc::usessh() || Linuxrc::vnc() || Linuxrc::display_ip())) 
+	y2milestone("For ssh or vnc installation don't reload/restart network during installation.");
+    else if (LanItems::force_restart)
+	Service::Restart("network");
+    else if(Service::Status("network")==0){
+	Service::Reload("network");
+    }
+    else Service::Restart("network");
     sleep(sl);
     }
 
