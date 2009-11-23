@@ -302,6 +302,9 @@ Check configuration manually."));
     if(Abort()) return false;
     LanItems::modified = false;
     initialized = true;
+
+    Progress::Finish();
+
     return true;
 }
 
@@ -530,6 +533,8 @@ y2internal("virt_net_proposal %1", virt_net_proposal);
     /* Final progress step */
     ProgressNextStage(_("Finished"));
     sleep(sl);
+
+    Progress::Finish();
 
     if(Abort()) return false;
     return true;

@@ -76,15 +76,19 @@ boolean ValidateBridge (string key, map event) {
       if ((string)configurations[NetworkInterfaces::GetType(device), device, "IPADDR"]:"" != "0.0.0.0" && (string)configurations[NetworkInterfaces::GetType(device), device, "BOOTPROTO"]:"" != "none") {
 	if(!confirmed) {
 	 valid = Popup::ContinueCancel(_("At least one selected device is already configured.
-Remove the configuration?
+Adapt the configuration for bridge (IP addess 0.0.0.0/32)?
 "));
 	 confirmed=true;
 	}
 	if (valid) {
 		integer i = LanItems::current;
 	 if (LanItems::FindAndSelect(device)) {
-		y2internal("delete %1", device);
-		LanItems::DeleteItem();
+		y2internal("Adapt device %1 for bridge (0.0.0.0/32)", device);
+		NetworkInterfaces::Edit(device);
+		NetworkInterfaces::Current["IPADDR"]="0.0.0.0";
+		NetworkInterfaces::Current["PREFIXLEN"]="32";
+		NetworkInterfaces::Current["BOOTPROTO"]="static";
+		NetworkInterfaces::Commit();
 		NetworkInterfaces::Add();
 		LanItems::current = i;
 	 }
