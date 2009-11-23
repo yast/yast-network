@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov 23 13:32:59 CET 2009 - mzugec@suse.cz
+
+- exclude nfsroot devices from bridged slaves (bnc#557688)
+- 2.18.63 
+
+-------------------------------------------------------------------
 Fri Nov 20 13:15:14 CET 2009 - mzugec@suse.de
 
 - fixed problem with not matching udev rule (bnc#551310)
