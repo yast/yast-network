@@ -816,31 +816,6 @@ global define boolean ProposeInterfaces () {
 	continue;
      }
       if (size(ifcfg)>0){
-       if (! (NetworkInterfaces::GetType(ifcfg)=="bond")){
-       NetworkInterfaces::Edit(ifcfg);
-       string new_ifcfg = sformat("br%1", NetworkInterfaces::GetFreeDevice("br"));
-       y2milestone("old configuration %1, bridge %2", ifcfg, new_ifcfg);
-       NetworkInterfaces::Name = new_ifcfg;
-       NetworkInterfaces::Current["BRIDGE"]="yes";
-       NetworkInterfaces::Current["BRIDGE_PORTS"]=ifcfg;
-       NetworkInterfaces::Current["BRIDGE_STP"]="off";
-       NetworkInterfaces::Current["BRIDGE_FORWARDDELAY"]="0";
-	// hardcode startmode (bnc#450670), it can't be ifplugd!
-       NetworkInterfaces::Current["STARTMODE"]="auto";
-       // remove description - will be replaced by new (real) one
-       NetworkInterfaces::Current=remove(NetworkInterfaces::Current, "NAME");
-       if( NetworkInterfaces::Commit() ){
-        NetworkInterfaces::Delete(ifcfg);
-        NetworkInterfaces::Commit();
-
-        LanItems::Items[current, "ifcfg"] = new_ifcfg;
-        LanItems::modified=true;
-        LanItems::force_restart=true;
-        y2debug("List %1", NetworkInterfaces::List(""));
-        // re-read configuration to see new items in UI
-        LanItems::Read();
-       } else y2error("error while proposing bridge device for %1", ifcfg);
-      } else {
        NetworkInterfaces::Edit(ifcfg);
        map<string, any> old_config = NetworkInterfaces::Current;
        y2debug("Old Config %1\n%2", ifcfg, old_config);
