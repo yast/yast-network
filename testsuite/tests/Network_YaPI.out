@@ -1,5 +1,7 @@
 Read	.target.tmpdir nil
 Log	Failed to set temporary directory: nil
+Read	.sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME "no"
+Read	.sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS "no"
 Read	.target.size "/etc/install.inf" 27
 Read	.etc.install_inf nil
 Read	.sysconfig.network.config.NETCONFIG_DNS_POLICY nil
