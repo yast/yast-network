@@ -508,8 +508,6 @@ the channel, select the desired value.</p>
     /* Combobox item */
     bitrates = prepend(bitrates, `item(`id(""), _("Automatic")));
 
-    list b = [];
-
     /* Wireless expert dialog contents */
     term contents = `HBox(
 	`HSpacing(4),
@@ -525,10 +523,12 @@ the channel, select the desired value.</p>
 		`ComboBox(`id(`bitrate), `opt(`hstretch), _("B&it Rate"), bitrates),
 		`VSpacing(0.2),
 		/* Text entry label */
-		`TextEntry(`id(`accesspoint), _("&Access Point"), LanItems::wl_accesspoint),
+		`InputField(`id(`accesspoint), `opt(`hstretch), _("&Access Point"), LanItems::wl_accesspoint),
 		`VSpacing(0.2),
 		/* CheckBox label */
 		`Left(`CheckBox(`id(`power), _("Use &Power Management"), LanItems::wl_power == true)),
+		`VSpacing(0.2),
+		`Left(`IntField(`id(`ap_scanmode), `opt(`hstretch), _("AP ScanMode"), 0,2,tointeger(LanItems::wl_ap_scanmode))),
 		`VSpacing(1)
 		), `HSpacing(2))),
 	    `VSpacing(0.5)
@@ -572,6 +572,7 @@ the channel, select the desired value.</p>
 	LanItems::wl_bitrate = (string) UI::QueryWidget(`id(`bitrate), `Value);
 	LanItems::wl_accesspoint = (string) UI::QueryWidget(`id(`accesspoint), `Value);
 	LanItems::wl_power = (boolean) UI::QueryWidget(`id(`power), `Value) == true;
+	LanItems::wl_ap_scanmode = tostring(UI::QueryWidget(`id(`ap_scanmode), `Value));
     }
 
     return ret;

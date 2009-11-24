@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Nov 24 13:07:12 CET 2009 - mzugec@suse.cz
+
+- support for WIRELESS_AP_SCANMODE option (bnc#551618) 
+- 2.19.1
+
+-------------------------------------------------------------------
 Tue Nov 24 10:06:26 CET 2009 - kmachalkova@suse.cz
 
 Cumulative patch with SLE11 SP1 bugfixes and features

@@ -107,6 +107,7 @@ global string wl_frequency = "";
 global string wl_bitrate = "";
 global string wl_accesspoint = "";
 global boolean wl_power = true;
+global string wl_ap_scanmode = "";
 
 // Card Features from hwinfo
 // if not provided, we use the default full list
@@ -869,7 +870,7 @@ global void SetDeviceVars(map devmap, map defaults) {
     wl_bitrate = GetDeviceVar (devmap, defaults, "WIRELESS_BITRATE");
     wl_accesspoint = GetDeviceVar (devmap, defaults, "WIRELESS_AP");
     wl_power = GetDeviceVar (devmap, defaults, "WIRELESS_POWER") == "yes";
-
+    wl_ap_scanmode = GetDeviceVar (devmap, defaults, "WIRELESS_AP_SCANMODE");
     /* s/390 options */
     portname = GetDeviceVar (devmap, defaults, "PORTNAME");
     
@@ -928,6 +929,7 @@ global map<string, string> SysconfigDefaults = $[
     "WIRELESS_CA_CERT": "",
     "WIRELESS_EAP_AUTH": "",
     "WIRELESS_PEAP_VERSION": "",
+    "WIRELESS_AP_SCANMODE": "1",
 
     // default options for bonding (bnc#404449)
     "BONDING_MODULE_OPTS": "mode=active-backup miimon=100",
@@ -1097,6 +1099,7 @@ global define boolean Commit() {
 	    newdev["WIRELESS_KEY_3"] = wl_key[3]:"";
 	    newdev["WIRELESS_DEFAULT_KEY"] = tostring (wl_default_key);
 	    newdev["WIRELESS_NICK"] = wl_nick;
+	    newdev["WIRELESS_AP_SCANMODE"] = wl_ap_scanmode;
 
 	    if (wl_wpa_eap != $[])
 	    {
