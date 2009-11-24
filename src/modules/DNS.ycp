@@ -18,6 +18,7 @@ textdomain "network";
 import "NetHwDetection";
 import "Hostname";
 import "IP";
+import "NetworkConfig";
 import "NetworkInterfaces";
 import "ProductFeatures";
 import "Progress";
