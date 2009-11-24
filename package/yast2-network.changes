@@ -1,4 +1,19 @@
 -------------------------------------------------------------------
+Tue Nov 24 10:06:26 CET 2009 - kmachalkova@suse.cz
+
+Cumulative patch with SLE11 SP1 bugfixes and features
+- Introduced <dns><write_hostname> option to AY profile to allow 
+  overriding product default write_hostname_to_hosts (FaTE#305281)
+- DNS Import: read product default write_hostname (bnc#500568) and
+  hostname/domain from the system (generate random if needed - 
+  bnc#502715)
+- Read defaults and propose values in inst_hostname only once 
+  (bnc#438124)
+- Do not append 127.0.0.2 line when it is not needed (bnc#469752)
+- Validate no proxy domains (for FaTE#302377)
+- 2.19.0
+
+-------------------------------------------------------------------
 Mon Nov 23 13:32:59 CET 2009 - mzugec@suse.cz
 
 - exclude nfsroot devices from bridged slaves (bnc#557688)
