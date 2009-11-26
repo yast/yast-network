@@ -18,6 +18,7 @@ textdomain "network";
 import "NetHwDetection";
 import "NetworkInterfaces";
 import "Map";
+import "SuSEFirewall";
 
 include "network/runtime.ycp";
 include "network/routines.ycp";
@@ -91,6 +92,30 @@ global define void RemoveDefaultGw() {
  Routes = route;
 }
 
+void ReadIPForwarding() {
+    if ( SuSEFirewall::IsEnabled() ){
+	Forward = SuSEFirewall::GetSupportRoute();
+    }
+    else {
+	Forward = (SCR::Read(.sysconfig.sysctl.IP_FORWARD) == "yes");
+    }
+}
+
+void WriteIPForwarding() {
+    if ( SuSEFirewall::IsEnabled() ){
+	SuSEFirewall::SetSupportRoute( Forward );
+    }
+    else {
+	SCR::Write(.sysconfig.sysctl.IP_FORWARD, Forward ? "yes" : "no");
+	SCR::Write(.sysconfig.sysctl.IPV6_FORWARD, Forward ? "yes" : "no");
+	SCR::Write(.sysconfig.sysctl, nil);
+    }
+    SCR::Execute(.target.bash, sformat("echo %1 > /proc/sys/net/ipv4/ip_forward",
+		  Forward ? 1 : 0));
+    SCR::Execute(.target.bash, sformat("echo %1 > /proc/sys/net/ipv6/conf/all/forwarding",
+		  Forward ? 1 : 0));
+
+}
 
 /**
  * Read routing settings
@@ -105,9 +130,7 @@ global define boolean Read() {
     else
 	Routes = [];
 
-    /* enabled IP forwarding */
-    if(SCR::Read(.sysconfig.sysctl.IP_FORWARD) == "yes")
-	Forward = true;
+    ReadIPForwarding();
 
     y2debug("Routes=%1", Routes);
     y2debug("Forward=%1", Forward);
@@ -154,18 +177,7 @@ global define boolean Write() {
     /*Progress stage 1/2*/
     ProgressNextStage(_("Writing IP forwarding settings..."));
 
-    if(Forward) {
-	SCR::Write(.sysconfig.sysctl.IP_FORWARD, "yes");
-	SCR::Write(.sysconfig.sysctl.IPV6_FORWARD, "yes");
-	SCR::Execute(.target.bash, "echo 1 > /proc/sys/net/ipv4/ip_forward");
-	SCR::Execute(.target.bash, "echo 1 > /proc/sys/net/ipv6/conf/all/forwarding");
-    }
-    else {
-	SCR::Write(.sysconfig.sysctl.IP_FORWARD, "no");
-	SCR::Write(.sysconfig.sysctl.IPV6_FORWARD, "no");
-	SCR::Execute(.target.bash, "echo 0 > /proc/sys/net/ipv4/ip_forward");
-	SCR::Execute(.target.bash, "echo 0 > /proc/sys/net/ipv6/conf/all/forwarding");
-    }
+    WriteIPForwarding();
     sleep(sl);
 
     /* at first stop the running routes */
