@@ -195,13 +195,13 @@ global define boolean Read (symbol cache) {
 	/* Progress stage 4/9 */
 	_("Read network configuration"),
 	/* Progress stage 5/9 */
-	_("Read routing configuration"),
+	_("Read firewall settings"),
 	/* Progress stage 6/9 */
 	_("Read hostname and DNS configuration"),
 	/* Progress stage 7/9 */
 	_("Read installation information"),
 	/* Progress stage 8/9 */
-	_("Read firewall settings"),
+	_("Read routing configuration"),
 	/* Progress stage 9/9 */
 	_("Detect current status"),
     ], [], "");
@@ -263,8 +263,10 @@ Check configuration manually."));
 
     if(Abort()) return false;
     /* Progress step 5/9 */
-    ProgressNextStage(_("Reading routing configuration..."));
-    Routing::Read();
+    ProgressNextStage(_("Reading firewall settings..."));
+    boolean orig = Progress::set (false);
+    SuSEFirewall4Network::Read ();
+    Progress::set (orig);
     sleep(sl);
 
     if(Abort()) return false;
@@ -282,10 +284,8 @@ Check configuration manually."));
 
     if(Abort()) return false;
     /* Progress step 8/9 */
-    ProgressNextStage(_("Reading firewall settings..."));
-    boolean orig = Progress::set (false);
-    SuSEFirewall4Network::Read ();
-    Progress::set (orig);
+    ProgressNextStage(_("Reading routing configuration..."));
+    Routing::Read();
     sleep(sl);
 
     if(Abort()) return false;
@@ -448,7 +448,7 @@ global define boolean Write() {
    if (Mode::installation() && NetworkService::IsManaged()) y2internal("Export sysconfig settings into NetworkManager %1", SCR::Execute(.target.bash_output, "/usr/lib/NetworkManager/nm-opensuse-sysconfig-merge --connections"));
 
 y2internal("virt_net_proposal %1", virt_net_proposal);
-   if (Stage::cont() && virt_net_proposal && (Linuxrc::usessh() || Linuxrc::vnc() || Linuxrc::display_ip())) {
+    if (Stage::cont() && virt_net_proposal && (Linuxrc::usessh() || Linuxrc::vnc() || Linuxrc::display_ip())) {
 	UI::OpenDialog(`opt(`decorated), `HBox(
         `HSpacing(1),
         `HCenter(`HSquash(`VBox(
