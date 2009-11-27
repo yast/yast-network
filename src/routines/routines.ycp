@@ -788,7 +788,7 @@ boolean validPrefixOrNetmask(string ip, string mask){
  boolean valid_mask=false;
  if (substring(mask, 0,1)=="/") mask=substring(mask,1);
 
- if (IP::Check4(ip) && Netmask::Check4(mask)) valid_mask=true;
+ if (IP::Check4(ip) && (Netmask::Check4(mask) || Netmask::CheckPrefix4(mask))) valid_mask=true;
    else if (IP::Check6(ip) && Netmask::Check6(mask)) valid_mask=true;
      else y2warning("IP address %1 is not valid", ip);
  return valid_mask;
