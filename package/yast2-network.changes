@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Dec  1 11:24:25 CET 2009 - mzugec@suse.de
+
+- ISDN: fixed creating configuration with incorrect name (bnc#534504)
+- 2.19.4 
+
+-------------------------------------------------------------------
 Fri Nov 27 13:20:10 CET 2009 - mzugec@suse.cz
 
 - fixed prefixlen validation

@@ -795,13 +795,14 @@ global define boolean Delete(string item) ``{
  */
 global define boolean AddIf(string proto) ``{
     type = "net";
-    device = GetFreeDevice(type);
+    device = sformat("%1%2", type, GetFreeDevice(type));
     interface = $[
 	"PROTOCOL": proto,
 	"USERCONTROL": "yes",
 	];
     interface = set_ifparameters (interface);
     operation = `addif;
+    y2milestone("Adding network configuration %1", device);
     return true;
 }
 
