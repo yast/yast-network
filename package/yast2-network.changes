@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Dec  1 13:51:08 CET 2009 - mzugec@suse.cz
+
+- ISDN: fixed creating configuration with incorrect name (bnc#534504)
+- 2.17.114 
+
+-------------------------------------------------------------------
 Thu Nov 26 17:41:36 CET 2009 - kmachalkova@suse.cz
 
 - With enabled SuSEFirewall, set SuSEFirewall's FW_ROUTE variable
