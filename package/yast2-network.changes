@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Nov 30 09:50:12 CET 2009 - mzugec@suse.de
+
+- fixed testsuite 
+
+-------------------------------------------------------------------
 Tue Dec  1 13:51:08 CET 2009 - mzugec@suse.cz
 
 - ISDN: fixed creating configuration with incorrect name (bnc#534504)
