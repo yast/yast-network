@@ -75,10 +75,16 @@ to enable you to say \"and everything else should go here.\"</p>
 
 _("<p>For each route, enter destination network IP address, gateway address,
 and netmask. To omit any of these values, use dash sign \"-\". Select
-the device through which the traffic to the defined network will be routed, as well.\"-\" is an alias for any interface.</p>
+the device through which the traffic to the defined network will be routed, 
+as well.\"-\" is an alias for any interface.</p>
 ") +
     /* Routing dialog help 2/2 */
-_("<p>Enable <b>IP Forwarding</b> if the system is a router. This will apply on both IPv4 and IPv6.</p>"),
+_("<p>Enable <b>IP Forwarding</b> (forwarding packets from external networks
+to the internal one) if this system is a router. Both IPv4 and IPv6 connectivity 
+will be affected by this setting. 
+<b>Important:</b> if the firewall is enabled, allowing IP forwarding alone is not enough. 
+You should enable masquerade and/or set at least one redirect rule in firewall. You may
+use YaST firewall module for that.</p>"),
 
 "dhcp_hostname":
 _("<p>If you are using DHCP to get an IP address, check whether you get

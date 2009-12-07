@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Dec  7 16:18:51 CET 2009 - kmachalkova@suse.cz
+
+- With enabled SuSEFirewall, set SuSEFirewall's FW_ROUTE variable
+  when enabling/disabling IP forwarding in routing settings. This
+  avoids overwriting sysctl variables by SuSEFirewall init scripts  
+  (bnc#474304) 
+
+-------------------------------------------------------------------
 Tue Dec  1 11:24:25 CET 2009 - mzugec@suse.de
 
 - ISDN: fixed creating configuration with incorrect name (bnc#534504)
