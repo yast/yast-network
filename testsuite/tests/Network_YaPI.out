@@ -11,6 +11,8 @@ Read	.target.size "/etc/HOSTNAME" 27
 Read	.target.string "/etc/HOSTNAME" "laptop.suse.cz"
 Read	.target.size "/etc/sysconfig/network/routes" 27
 Read	.routes [$["destination":"default", "gateway":"10.20.30.40"]]
+Execute	.target.bash "rpm -q --whatprovides SuSEfirewall2" 0
+Read	.init.scripts.exists "SuSEfirewall2_init" false
 Read	.sysconfig.sysctl.IP_FORWARD nil
 Dir	.network.section: ["eth0", "eth1"]
 Dir	.network.value."eth0": ["BOOTPROTO"]
@@ -37,9 +39,12 @@ Return	$["dns":$["nameservers":["208.67.222.222", "208.67.220.220"], "searches":
 Return	$["error":"", "exit":"0"]
 Read	.target.size "/etc/sysconfig/network/routes" 27
 Read	.routes [$["destination":"default", "gateway":"10.20.30.40"]]
+Read	.init.scripts.exists "SuSEfirewall2_init" false
 Read	.sysconfig.sysctl.IP_FORWARD nil
+Read	.init.scripts.exists "SuSEfirewall2_init" false
 Write	.sysconfig.sysctl.IP_FORWARD "no" true
 Write	.sysconfig.sysctl.IPV6_FORWARD "no" true
+Write	.sysconfig.sysctl nil true
 Execute	.target.bash "echo 0 > /proc/sys/net/ipv4/ip_forward" 0
 Execute	.target.bash "echo 0 > /proc/sys/net/ipv6/conf/all/forwarding" 0
 Read	.target.size "/etc/sysconfig/network/routes" 27

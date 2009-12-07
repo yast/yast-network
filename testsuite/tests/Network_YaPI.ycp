@@ -3,6 +3,11 @@ include "testsuite.ycp";
 import "YaPI::NETWORK";
 
 map READ = $[
+    "init" : $[
+	"scripts" :$[
+	  "exists" : false
+	]
+    ],
     "target" : $[
 	"size":27,
 	"string" : "laptop.suse.cz",
