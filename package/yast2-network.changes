@@ -5,6 +5,7 @@ Mon Dec  7 16:18:51 CET 2009 - kmachalkova@suse.cz
   when enabling/disabling IP forwarding in routing settings. This
   avoids overwriting sysctl variables by SuSEFirewall init scripts  
   (bnc#474304) 
+- Show proxy relogin msg only in Mode::normal (bnc#543469)
 
 -------------------------------------------------------------------
 Tue Dec  1 11:24:25 CET 2009 - mzugec@suse.de

@@ -168,8 +168,8 @@ global define boolean Write() {
     sleep(sl);
     Progress::NextStage();
 
-    //user can't relogin in installation, do not show the msg then (#486037)
-    if (!Mode::config () && !Mode::installation())
+    //user can't relogin in installation and update, do not show the msg then (bnc#486037, bnc#543469)
+    if (Mode::normal())
 	ProxyFinishPopup(true);
 
     /* Update /root/.wgetrc */
