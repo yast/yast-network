@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Dec  8 15:25:49 CET 2009 - mzugec@suse.cz
+
+- ISDN: fixed creating configuration with incorrect name (bnc#534504)
+- 2.18.53 
+
+-------------------------------------------------------------------
 Mon Oct 26 16:00:33 CET 2009 - mzugec@suse.cz
 
 - show BusID in lan description (FaTE#307165)
