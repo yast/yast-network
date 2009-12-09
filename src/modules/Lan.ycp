@@ -75,6 +75,7 @@ global boolean automatic_configuration=false;
 
 // ipv6 module
 global boolean ipv6=true;
+
 /**
  * Hotplug type ("" if not hot pluggable)
  */
@@ -158,6 +159,29 @@ global define boolean isAnyInterfaceDown(){
 //include "network/routines.ycp";
 //include "network/runtime.ycp";
 
+void readIPv6(){
+  ipv6=true;
+
+  list<string>  filelist = ["sysctl.conf"];
+  string filepath = "/etc/";
+  string regexp = "^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1";
+// uncomment bellow to read from old place
+//  filelist = ["ipv6", "50-ipv6.conf"];
+//  filepath ="/etc/modprobe.d/";
+//  regexp = "^[[:space:]]*(install ipv6 /bin/true)";
+
+  foreach(string file, filelist,{
+    string filename=sformat("%1/%2", filepath, file);
+    if (FileUtils::Exists(filename)){
+      foreach(string row, splitstring((string)SCR::Read(.target.string, filename), "\n"), {
+        if (size(regexptokenize(String::CutBlanks(row), regexp))>0){
+           y2milestone("IPv6 is disabled.");
+           ipv6=false;
+        }
+      });
+    }
+  });
+}
 
 /**
  * Lan::Read (`cache) will do nothing if initialized already.
@@ -255,9 +279,12 @@ Check configuration manually."));
     ProgressNextStage(_("Reading network configuration..."));
     NetworkConfig::Read();
 
+/*
     if (FileUtils::Exists("/etc/modprobe.d/ipv6")){
       if (((map<string, any>)SCR::Execute (.target.bash_output, "grep ipv6 /etc/modprobe.d/ipv6|cut -d# -f1|grep -q ipv6"))["exit"]:0==0) ipv6=false;
       }
+*/
+    readIPv6();
 
     sleep(sl);
 
@@ -325,7 +352,23 @@ global void SetIPv6(boolean status){
 }
 
 void writeIPv6(){
-  SCR::Write(.target.string, "/etc/modprobe.d/ipv6", sformat("%1install ipv6 /bin/true", ipv6?"#":""));
+//  SCR::Write(.target.string, "/etc/modprobe.d/ipv6", sformat("%1install ipv6 /bin/true", ipv6?"#":""));
+// uncomment to write to old place (and comment code bellow)
+//  SCR::Write(.target.string, "/etc/modprobe.d/50-ipv6.conf", sformat("%1install ipv6 /bin/true", ipv6?"#":""));
+  string filename = "/etc/sysctl.conf";
+  string sysctl = (string)SCR::Read(.target.string, filename);
+  string sysctl_row = sformat("%1net.ipv6.conf.all.disable_ipv6 = 1", ipv6?"# ":"");
+  boolean found = false; //size(regexptokenize(sysctl, "(net.ipv6.conf.all.disable_ipv6)"))>0;
+  list<string> file=[];
+  foreach(string row, splitstring(sysctl, "\n"), {
+    if (size(regexptokenize(row, "(net.ipv6.conf.all.disable_ipv6)"))>0){
+         row = sysctl_row;
+         found = true;
+     }
+     file=add(file, row);
+  });
+  if (!found) file=add(file, sysctl_row);
+  SCR::Write(.target.string, filename, mergestring(file, "\n"));
   SCR::Write(.sysconfig.windowmanager.KDE_USE_IPV6, ipv6?"yes":"no");
 }
 
