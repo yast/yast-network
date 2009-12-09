@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Dec  9 10:48:36 CET 2009 - mzugec@suse.de
+
+- ISDN: fixed creating configuration with incorrect name (bnc#534504) 
+- 2.17.78.2
+
+-------------------------------------------------------------------
 Mon Nov  9 16:36:18 CET 2009 - mzugec@suse.cz
 
 - YaPI: backported NETWORK.pm file
