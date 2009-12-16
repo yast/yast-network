@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Dec 16 15:59:25 CET 2009 - mzugec@suse.cz
+
+- DNS: warn user to not use .local as domain name (bnc#564317)
+- 2.19.5 
+
+-------------------------------------------------------------------
 Mon Dec  7 16:18:51 CET 2009 - kmachalkova@suse.cz
 
 - With enabled SuSEFirewall, set SuSEFirewall's FW_ROUTE variable

@@ -200,6 +200,9 @@ define boolean ValidateDomain (string key, map event) {
 
     if (!dhn || value != "")
     {
+	if (value=="local"){
+	  if (!Popup::YesNo(_("It's not recomended to use .local as domainname due to Multicast DNS. Use it on your own risk?"))) return false;
+	}
 	return Hostname::CheckDomain (value);
     }
     return true;
