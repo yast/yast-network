@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Dec 17 15:23:39 CET 2009 - mzugec@suse.de
+
+- resolv.conf not updated when switch from dhcp->static (bnc#561349)
+- 2.13.119.3 
+
+-------------------------------------------------------------------
 Thu Nov  5 11:47:26 CET 2009 - mzugec@suse.de
 
 - Do a proper reload of network service on writing (standalone) DNS
