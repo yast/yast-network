@@ -17,9 +17,8 @@ X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=remote
 
 Icon=yast-remote
-Exec=/sbin/yast2 remote 
+Exec=xdg-su -c "/sbin/yast2 remote"
 
 Name=Remote Administration (VNC)
 GenericName=Set up remote administration
-X-KDE-SubstituteUID=true
 StartupNotify=true

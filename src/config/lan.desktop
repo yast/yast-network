@@ -19,9 +19,8 @@ X-SuSE-YaST-AutoInstClonable=true
 X-SuSE-YaST-AutoInstSchema=networking.rnc
 
 Icon=yast-lan
-Exec=/sbin/yast2 lan 
+Exec=xdg-su -c "/sbin/yast2 lan"
 
 Name=Network Settings
 GenericName=Configure network cards, hostname and routing
-X-KDE-SubstituteUID=true
 StartupNotify=true

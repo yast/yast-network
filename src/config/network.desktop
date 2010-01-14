@@ -17,9 +17,8 @@ X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=network
 
 Icon=yast-network
-Exec=/sbin/yast2 network 
+Exec=xdg-su -c "/sbin/yast2 network"
 
 Name=Expert Network Configuration
 GenericName=Configure network
-X-KDE-SubstituteUID=true
 StartupNotify=true

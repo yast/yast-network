@@ -19,9 +19,8 @@ X-SuSE-YaST-AutoInstClonable=true
 X-SuSE-YaST-AutoInstSchema=proxy.rnc
 
 Icon=yast-proxy
-Exec=/sbin/yast2 proxy 
+Exec=xdg-su -c "/sbin/yast2 proxy"
 
 Name=Proxy
 GenericName=Configure a proxy
-X-KDE-SubstituteUID=true
 StartupNotify=true

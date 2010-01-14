@@ -17,9 +17,8 @@ X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=provider
 
 Icon=yast-provider
-Exec=/sbin/yast2 provider
+Exec=xdg-su -c "/sbin/yast2 provider"
 
 Name=Providers
 GenericName=Configure providers
-X-KDE-SubstituteUID=true
 StartupNotify=true

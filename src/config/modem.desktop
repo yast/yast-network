@@ -17,9 +17,8 @@ X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=modem
 
 Icon=yast-modem
-Exec=/sbin/yast2 modem 
+Exec=xdg-su -c "/sbin/yast2 modem"
 
 Name=Modem
 GenericName=Configure a modem
-X-KDE-SubstituteUID=true
 StartupNotify=true

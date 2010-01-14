@@ -17,9 +17,8 @@ X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=isdn
 
 Icon=yast-isdn
-Exec=/sbin/yast2 isdn 
+Exec=xdg-su -c "/sbin/yast2 isdn"
 
 Name=ISDN
 GenericName=Configure an ISDN connection
-X-KDE-SubstituteUID=true
 StartupNotify=true

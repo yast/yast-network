@@ -17,9 +17,8 @@ X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=dsl
 
 Icon=yast-dsl
-Exec=/sbin/yast2 dsl 
+Exec=xdg-su -c "/sbin/yast2 dsl"
 
 Name=DSL
 GenericName=Configure a DSL connection
-X-KDE-SubstituteUID=true
 StartupNotify=true

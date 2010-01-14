@@ -19,9 +19,8 @@ X-SuSE-YaST-AutoInstClonable=true
 X-SuSE-YaST-AutoInstSchema=host.rnc
 
 Icon=yast-host
-Exec=/sbin/yast2 host 
+Exec=xdg-su -c "/sbin/yast2 host"
 
 Name=Hostnames
 GenericName=Assign hostnames and aliases to IP addresses
-X-KDE-SubstituteUID=true
 StartupNotify=true
