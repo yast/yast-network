@@ -7,10 +7,11 @@ BuildRequires: update-desktop-files
 BuildRequires: yast2-devtools yast2-testsuite
 BuildRequires: yast2-country
 BuildRequires: yast2-installation >= 2.15.27
-BuildRequires: yast2 >= 2.16.6
+# NetworkStorage: adapt functions needed for iBFT (bnc#551380)
+BuildRequires: yast2 >= 2.17.82
 
-# needed for prefixlen support in aliases
-Requires:	yast2 >= 2.17.5
+# NetworkStorage: adapt functions needed for iBFT (bnc#551380)
+Requires:	yast2 >= 2.17.82
 #netconfig (FaTE #303618)
 Requires:	sysconfig >= 0.71.2
 #GetLanguageCountry

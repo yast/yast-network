@@ -31,7 +31,7 @@ include "network/complex.ycp";
 map <string, any> InstallInf = $[];
 
 // global variable because chrooted environment
-boolean network_disk=false;
+integer network_disk=0;
 
 /**
  * Read one install.inf item
@@ -206,33 +206,60 @@ string InstallModuleOptions(string module_name) {
 }
 
 
-map <string,any> hwcfg=$[];
+//map <string,any> hwcfg=$[];
+list<map> hardware=ReadHardware("netcard");
+y2milestone("hardware %1", hardware);
+
+
 
 void CreateIfcfg(){
     string network_configuration="";
-    // set BOOTPROTO=[ static | dhcp ]
-    if (InstallInf["bootproto"]:"dhcp"=="static")
-    {
-           // add broadcast interface #suse49131
-         network_configuration=sformat("BOOTPROTO='static'\nIPADDR='%1/%2'\nBROADCAST='%3'\n",
-	 InstallInf["ipaddr"]:"", Netmask::ToBits(InstallInf["netmask"]:""), InstallInf["bcast"]:"");
-     if(size(InstallInf["ipaddr6"]:"")>0){
-      network_configuration=sformat("%1\n%2", network_configuration,
-      sformat("LABEL_ipv6='ipv6'\nIPADDR_ipv6='%1'\n", InstallInf["ipaddr6"]:"")
-      );
-     }
-    }
-    else
-    {
-	//DHCP (also for IPv6) setup
-       if (InstallInf["bootproto"]:""=="dhcp") network_configuration="BOOTPROTO='dhcp4'\n";
-        else if (InstallInf["bootproto"]:""=="dhcp6") network_configuration="BOOTPROTO='dhcp6'\n";
-		else if (InstallInf["bootproto"]:""=="dhcp,dhcp6") network_configuration="BOOTPROTO='dhcp'\n";
 
-       // set DHCP_SET_HOSTNAME=yes  #suse30528
-       y2milestone("set DHCLIENT_SET_HOSTNAME=yes on installed system");
-       SCR::Execute(.target.bash_output, "sed -i s/\"DHCLIENT_SET_HOSTNAME=.*\"/'DHCLIENT_SET_HOSTNAME=\"yes\"'/g /etc/sysconfig/network/dhcp");
+    if (network_disk==1 && contains(NetworkStorage::getiBFTDevices(), InstallInf["netdevice"]:"")){
+      network_configuration = sformat("%1STARTMODE='nfsroot'\nBOOTPROTO='ibft'\n", network_configuration);
+    } else {
+
+      // set BOOTPROTO=[ static | dhcp ]
+      if (InstallInf["bootproto"]:"dhcp"=="static")
+      {
+          // add broadcast interface #suse49131
+	  network_configuration=sformat("BOOTPROTO='static'\nIPADDR='%1/%2'\nBROADCAST='%3'\n",
+	  InstallInf["ipaddr"]:"", Netmask::ToBits(InstallInf["netmask"]:""), InstallInf["bcast"]:"");
+      if(size(InstallInf["ipaddr6"]:"")>0){
+	network_configuration=sformat("%1\n%2", network_configuration,
+	sformat("LABEL_ipv6='ipv6'\nIPADDR_ipv6='%1'\n", InstallInf["ipaddr6"]:"")
+	);
+       }
+      }
+      else
+      {
+	  //DHCP (also for IPv6) setup
+	if (InstallInf["bootproto"]:""=="dhcp") network_configuration="BOOTPROTO='dhcp4'\n";
+	  else if (InstallInf["bootproto"]:""=="dhcp6") network_configuration="BOOTPROTO='dhcp6'\n";
+		  else if (InstallInf["bootproto"]:""=="dhcp,dhcp6") network_configuration="BOOTPROTO='dhcp'\n";
+
+	// set DHCP_SET_HOSTNAME=yes  #suse30528
+	y2milestone("set DHCLIENT_SET_HOSTNAME=yes on installed system");
+	SCR::Execute(.target.bash_output, "sed -i s/\"DHCLIENT_SET_HOSTNAME=.*\"/'DHCLIENT_SET_HOSTNAME=\"yes\"'/g /etc/sysconfig/network/dhcp");
+      }
+
+      switch(network_disk)
+      {
+	case 0:
+	      network_configuration = sformat("%1STARTMODE='onboot'\n", network_configuration);
+	      break;
+	case 1:
+	      if (!contains(NetworkStorage::getiBFTDevices(), InstallInf["netdevice"]:"")){
+		network_configuration = sformat("%1STARTMODE='nfsroot'\n", network_configuration);
+	      }
+	      break;
+	case 2:
+	      network_configuration = sformat("%1STARTMODE='nfsroot'\n", network_configuration);
+	      break;
+      }
+
     }
+
 
  // wireless devices (bnc#223570)
      if ( size(InstallInf["WESSID"]:"")>0 )
@@ -274,24 +301,10 @@ void CreateIfcfg(){
 	network_configuration =	sformat("%1LLADDR='%2'\n", network_configuration, InstallInf["hwaddr"]:"");
 
 
-    if (network_disk)
-    {
-	network_configuration = sformat("%1STARTMODE='nfsroot'\n", network_configuration);
-    }
-    else
-    {
-	network_configuration = sformat("%1STARTMODE='onboot'\n", network_configuration);
-    }
-
-    // reference to hardware configuration
-    // network_configuration = sformat("%1_nm_name='%2'\n", network_configuration, hwcfg);
 
     // point to point interface
     if (size(InstallInf["remote_ip"]:"")>0)
 	network_configuration = sformat("%1REMOTE_IPADDR='%2'\n", network_configuration, InstallInf["remote_ip"]:"");
-
-    list<map> hardware=ReadHardware("netcard");
-    y2milestone("hardware %1", hardware);
 
     string ifcfg = sformat("ifcfg-%1", InstallInf["netdevice"]:"");
 
