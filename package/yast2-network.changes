@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jan 15 10:02:26 CET 2010 - mzugec@suse.cz
+
+- allow bridge as ETHERDEVICE for VLAN (bnc#569970)
+- 2.19.7 
+
+-------------------------------------------------------------------
 Thu Jan 14 17:59:48 CET 2010 - mzugec@suse.cz
 
 - support for BOOTPROTO=ibft option (bnc#551380)
