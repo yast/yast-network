@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jan 18 09:56:54 CET 2010 - mzugec@suse.cz
+
+- fixed remote.desktop file (Categories)
+- 2.17.117 
+
+-------------------------------------------------------------------
 Thu Jan 14 17:44:36 CET 2010 - mzugec@suse.cz
 
 - support for BOOTPROTO=ibft option (bnc#551380)
