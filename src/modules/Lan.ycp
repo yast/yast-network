@@ -105,20 +105,21 @@ global block<boolean> AbortFunction = nil;
 // FIXME: MOD list<string> DeletedModules = [];
 
 
-/**
- * Return a modification status
- * @return true if data was modified
- */
-boolean Modified() {
-    boolean ret  = LanItems::Modified() || DNS::modified || Routing::Modified() ||
-	NetworkConfig::Modified();
-    return ret;
-}
-
 // FIXME: used in lan/address.ycp (#17346) -> "global"
 
 /*------------------*/
 /* GLOBAL FUNCTIONS */
+/*------------------*/
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+global boolean Modified() {
+    boolean ret  = LanItems::Modified() || DNS::modified || Routing::Modified() ||
+	NetworkConfig::Modified();
+    return ret;
+}
 
 // function for use from autoinstallation (Fate #301032)
 global define boolean isAnyInterfaceDown(){
@@ -387,11 +388,11 @@ void writeIPv6(){
 global define boolean Write() {
 
     y2milestone("Writing configuration");
-//    if(!write_only && NetHwDetection::running) NetHwDetection::Stop();
 
-    /* Stop the detection */
-    //FIXME: not only LanItems
-    if(!LanItems::modified) {
+    // Query modified flag in all components, not just LanItems - DNS,
+    // Routing, NetworkConfig too in order not to discard changes made
+    // outside LanItems (bnc#439235)
+    if(!Modified()) {
 	y2milestone("No changes to network setup -> nothing to write");
 	return true;
     }

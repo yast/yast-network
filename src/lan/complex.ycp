@@ -50,9 +50,9 @@ define symbol Commit() ``{
  * Display finished popup
  * @return dialog result
  */
-define symbol FinishDialog() ``{
+/*define symbol FinishDialog() ``{
     return FinishPopup(Modified(), "lan", "", "mail", ["permanent"]);
-}
+}*/
 
 /**
  * Read settings dialog
@@ -91,7 +91,7 @@ See %1 for details."), "/usr/share/doc/packages/xen/README.SuSE")))
 define symbol WriteDialog() ``{
     ScreenName("lan-write");
 
-    if(!Modified()) return `next;
+    if(!Lan::Modified()) return `next;
 
     LanItems::SetModified();
     Wizard::RestoreHelp(help["write"]:"");
