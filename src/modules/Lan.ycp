@@ -105,13 +105,20 @@ global block<boolean> AbortFunction = nil;
 // FIXME: MOD list<string> DeletedModules = [];
 
 
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+boolean Modified() {
+    boolean ret  = LanItems::Modified() || DNS::modified || Routing::Modified() ||
+	NetworkConfig::Modified();
+    return ret;
+}
+
 // FIXME: used in lan/address.ycp (#17346) -> "global"
-
-
 
 /*------------------*/
 /* GLOBAL FUNCTIONS */
-
 
 // function for use from autoinstallation (Fate #301032)
 global define boolean isAnyInterfaceDown(){

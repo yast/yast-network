@@ -38,16 +38,6 @@ include "network/lan/dhcp.ycp";
 
 
 /**
- * Return a modification status
- * @return true if data was modified
- */
-define boolean Modified() ``{
-    boolean ret  = LanItems::Modified() || DNS::modified || Routing::Modified() ||
-	NetworkConfig::Modified();
-    return ret;
-}
-
-/**
  * Commit changes to internal structures
  * @return always `next
  */
