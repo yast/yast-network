@@ -70,7 +70,7 @@ global define boolean ReadNameserver (string ns) {
     if (ns == "" || ns == nil)
 	return false;
     nameservers = [ ns ];
-    modified = true;
+    //modified = true;
     return true;
 }
 
@@ -85,7 +85,7 @@ global define boolean ReadHostDomain (string hn, string dn) {
 	return false;
     hostname = hn;
     domain = dn;
-    modified = true;
+    //modified = true;
     return true;
 }
 

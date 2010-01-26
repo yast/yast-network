@@ -47,6 +47,11 @@ boolean has_dhcp = true;
 boolean resolver_modifiable = false;
 
 /**
+ * original setup, used to determine whether data have been modified
+ */
+map settings_orig = $[];
+
+/**
  * CWM buffer for both dialogs.  Note that NAMESERVERS and SEARCHLIST
  * are lists and their widgets are suffixed.
  */
@@ -87,6 +92,8 @@ define map InitSettings () {
     settings["NAMESERVER_2"] = DNS::nameservers[1]:"";
     settings["NAMESERVER_3"] = DNS::nameservers[2]:"";
 
+    settings_orig = settings;
+
     return settings;
 }
 
@@ -110,8 +117,8 @@ define void StoreSettings (map settings) {
     DNS::write_hostname = settings["WRITE_HOSTNAME"]:true;
     
     /* update modified flag */
-    DNS::modified = true;
-    y2milestone("modified DNS");
+    DNS::modified = DNS::modified || (settings != settings_orig);
+    y2milestone("Modified DNS: %1", DNS::modified );
 }
 
 /**
@@ -329,6 +336,7 @@ void initHostnameGlobal(string key){
     has_dhcp = Lan::AnyDHCPDevice ();
 
     hn_settings = InitSettings ();
+
     foreach(string key, (list<string>)Map::Keys(hn_settings),{
         InitHnWidget(key);
     });
