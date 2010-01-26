@@ -406,7 +406,7 @@ map<string, map<string,any> > widget_descr_dns = $[
     "WRITE_HOSTNAME": $[
 	"widget": `checkbox,
 	/* checkbox label */
-	"label": _("&Write Hostname to /etc/hosts"),
+	"label": _("&Assign Hostname to Loopback IP"),
 	"opt": [],
 	// help
 	"help": help["write_hostname"]:"",
