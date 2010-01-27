@@ -89,7 +89,17 @@ global block<boolean> AbortFunction = nil;
 
 /*------------------*/
 /* GLOBAL FUNCTIONS */
+/*------------------*/
 
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+global boolean Modified() {
+    boolean ret  = LanItems::Modified() || DNS::modified || Routing::Modified() ||
+	NetworkConfig::Modified();
+    return ret;
+}
 
 // function for use from autoinstallation (Fate #301032)
 global define boolean isAnyInterfaceDown(){
@@ -344,8 +354,10 @@ global define boolean Write() {
 
     y2milestone("Writing configuration");
 
-    /* Stop the detection */
-    if(!LanItems::modified) {
+    // Query modified flag in all components, not just LanItems - DNS,
+    // Routing, NetworkConfig too in order not to discard changes made
+    // outside LanItems (bnc#439235)
+    if(!Modified()) {
 	y2milestone("No changes to network setup -> nothing to write");
 	return true;
     }
@@ -396,7 +408,8 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 3 - multiple devices may be present, really plural*/
     ProgressNextStage(_("Writing device configuration..."));
-    if (!Mode::autoinst()) LanItems::WriteUdevDriverRules();
+    if (!Mode::autoinst()) 
+	LanItems::WriteUdevDriverRules();
     NetworkInterfaces::Write("netcard");
     // WriteDevices();
     sleep(sl);

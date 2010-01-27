@@ -47,6 +47,11 @@ boolean has_dhcp = true;
 boolean resolver_modifiable = false;
 
 /**
+ * original setup, used to determine whether data have been modified
+ */
+map settings_orig = $[];
+
+/**
  * CWM buffer for both dialogs.  Note that NAMESERVERS and SEARCHLIST
  * are lists and their widgets are suffixed.
  */
@@ -87,6 +92,8 @@ define map InitSettings () {
     settings["NAMESERVER_2"] = DNS::nameservers[1]:"";
     settings["NAMESERVER_3"] = DNS::nameservers[2]:"";
 
+    settings_orig = settings;
+
     return settings;
 }
 
@@ -94,6 +101,7 @@ define map InitSettings () {
  * @param settings map of settings to be stored to DNS::
  */
 define void StoreSettings (map settings) {
+
     list<string> nameservers = [
 	settings["NAMESERVER_1"]:"",
 	settings["NAMESERVER_2"]:"",
@@ -110,8 +118,8 @@ define void StoreSettings (map settings) {
     DNS::write_hostname = settings["WRITE_HOSTNAME"]:true;
     
     /* update modified flag */
-    DNS::modified = true;
-    y2milestone("modified DNS");
+    DNS::modified = DNS::modified || (settings != settings_orig);
+    y2milestone("Modified DNS: %1", DNS::modified );
 }
 
 /**
@@ -332,6 +340,7 @@ void initHostnameGlobal(string key){
     has_dhcp = Lan::AnyDHCPDevice ();
 
     hn_settings = InitSettings ();
+
     foreach(string key, (list<string>)Map::Keys(hn_settings),{
         InitHnWidget(key);
     });
@@ -401,7 +410,7 @@ map<string, map<string,any> > widget_descr_dns = $[
     "WRITE_HOSTNAME": $[
 	"widget": `checkbox,
 	/* checkbox label */
-	"label": _("&Write Hostname to /etc/hosts"),
+	"label": _("&Assign Hostname to Loopback IP"),
 	"opt": [],
 	// help
 	"help": help["write_hostname"]:"",

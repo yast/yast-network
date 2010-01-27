@@ -94,12 +94,11 @@ Therefore, disable this option if you connect to different networks that assign
 different hostnames.</p> "),
 
 "write_hostname":
-_("<p>Your hostname will be written to <tt>/etc/hosts</tt> and will be 
-resolvable as <tt>127.0.0.2</tt> IP address. To disable this modification, 
-uncheck <b>Write Hostname to /etc/hosts</b> box. In that case your 
-hostname will not be resolvable without an active network.
-</p> 
-"),
+_("<p><b>Assign Hostname to Loopback IP</b> associates your hostname with 
+<tt>127.0.0.2</tt> (loopback) IP address in <tt>/etc/hosts</tt>. This is an 
+useful option if you want to have the hostname resolvable at all times, even 
+without active network. In all other cases, use it carefully, especially 
+if this computer provides some network services.</p>"),
 
 "searchlist_s":
 _("<p>Enter the name servers and domain search list for resolving 

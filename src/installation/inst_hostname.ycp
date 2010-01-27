@@ -59,7 +59,10 @@ if (ret == `next)
 {
     // do not let Lan override us, #152218
     DNS::proposal_valid = true;
-    DNS::Write ();		// handles NetworkConfig too
+
+    // delay writing, write along with the rest of network configuration
+    // in lan_proposal
+    // DNS::Write ();
 }
 
 return ret;
