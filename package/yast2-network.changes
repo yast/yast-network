@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Tue Jan 26 12:54:44 CET 2010 - kmachalkova@suse.cz
+
+- Evaluate modified flag of all net components (not only LanItems), 
+  so that change in any of them triggers Write (bnc#439235)
+- Write DNS data along with other network settings in lan_proposal,
+  not separately in inst_hostname (related to bnc#556613) 
+- Renamed "Write hostname to /etc/hosts" and updated related help
+  text (bnc#510228, bnc#469752)
+- 2.17.118
+
+-------------------------------------------------------------------
 Mon Jan 18 09:56:54 CET 2010 - mzugec@suse.cz
 
 - fixed remote.desktop file (Categories)

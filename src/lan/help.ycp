@@ -98,7 +98,7 @@ _("<p><b>Assign Hostname to Loopback IP</b> associates your hostname with
 <tt>127.0.0.2</tt> (loopback) IP address in <tt>/etc/hosts</tt>. This is an 
 useful option if you want to have the hostname resolvable at all times, even 
 without active network. In all other cases, use it carefully, especially 
-if this computer runs some network services.</p>"),
+if this computer provides some network services.</p>"),
 
 "searchlist_s":
 _("<p>Enter the name servers and domain search list for resolving 
