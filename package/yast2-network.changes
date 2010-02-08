@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb  8 14:47:14 CET 2010 - mzugec@suse.cz
+
+- L3: write resolv.conf when change from dhcp->static  (bnc#561349)
+- 2.13.135 
+
+-------------------------------------------------------------------
 Wed Aug 19 10:14:32 CEST 2009 - kmachalkova@suse.cz
 
 - Do a proper reload of network service on writing (standalone) DNS

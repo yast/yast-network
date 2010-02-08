@@ -553,7 +553,12 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 6 */
     ProgressNextStage(_("Writing hostname and DNS configuration..."));
+    // write resolv.conf after change from dhcp to static (bnc#327074)
+    // and (bnc#561349)
+    NetworkService::StartStop ();
+    y2milestone("resolv.conf:%1", SCR::Read(.target.string, "/etc/resolv.conf"));
     DNS::Write();
+    y2milestone("resolv.conf:%1", SCR::Read(.target.string, "/etc/resolv.conf"));
     Host::Write();
     sleep(sl);
 
@@ -577,7 +582,12 @@ global define boolean Write() {
      /* Progress step 9 */
      ProgressNextStage(_("Activating network services..."));
 	NetworkModules::HwUp ();
+	y2milestone("resolv.conf:%1", SCR::Read(.target.string, "/etc/resolv.conf"));
 	NetworkService::StartStop ();
+	y2milestone("resolv.conf:%1", SCR::Read(.target.string, "/etc/resolv.conf"));
+    DNS::modified=true;  
+    DNS::Write();
+    y2milestone("resolv.conf:%1", SCR::Read(.target.string, "/etc/resolv.conf"));
     sleep(sl);
     }
 
