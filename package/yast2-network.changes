@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb  8 16:23:46 CET 2010 - mzugec@suse.cz
+
+- correctly setup iucv devices (bnc#575950)
+- 2.19.10 
+
+-------------------------------------------------------------------
 Wed Jan 27 15:21:42 CET 2010 - kmachalkova@suse.cz
 
 - Evaluate modified flag of all net components (not only LanItems), 
