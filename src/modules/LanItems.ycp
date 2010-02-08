@@ -1637,7 +1637,7 @@ global boolean createS390Device(){
 	break;
   case "iucv":
 					// router
-	command1=sformat("iucv_configure %1", chan_mode);
+	command1=sformat("iucv_configure %1 1", chan_mode);
 	command2=sformat("ls /sys/devices/%1/*/net/|head -n1|tr -d '\n'", type);
 	break;
   default:
