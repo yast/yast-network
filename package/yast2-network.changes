@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Feb  9 15:51:34 CET 2010 - mzugec@suse.cz
+
+- ipv6: enable/disable both module and sysctl method (bnc#561611)
+- 2.19.11 
+
+-------------------------------------------------------------------
 Mon Feb  8 16:23:46 CET 2010 - mzugec@suse.cz
 
 - correctly setup iucv devices (bnc#575950)
