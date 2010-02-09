@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Feb  9 14:31:42 CET 2010 - mzugec@suse.cz
+
+- ipv6: enable/disable both module and sysctl method (bnc#561611)
+- 2.17.120 
+
+-------------------------------------------------------------------
 Tue Feb  9 11:35:22 CET 2010 - kmachalkova@suse.cz
 
 - Include <write_hostname> in cloned data (bnc#576495)

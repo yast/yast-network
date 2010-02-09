@@ -170,25 +170,37 @@ global define boolean isAnyInterfaceDown(){
 void readIPv6(){
   ipv6=true;
 
-  list<string>  filelist = ["sysctl.conf"];
-  string filepath = "/etc/";
-  string regexp = "^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1";
-// uncomment bellow to read from old place
-//  filelist = ["ipv6", "50-ipv6.conf"];
-//  filepath ="/etc/modprobe.d/";
-//  regexp = "^[[:space:]]*(install ipv6 /bin/true)";
+ map<string, map<string, any> > methods = $[
+        "builtin"  : $[
+                "filelist" : ["sysctl.conf"],
+                "filepath" : "/etc/",
+                "regexp"   : "^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1"
+        ],
+        "module" : $[
+                "filelist" : ["ipv6", "50-ipv6.conf"],
+                "filepath" : "/etc/modprobe.d/",
+                "regexp"   : "^[[:space:]]*(install ipv6 /bin/true)"
+        ]
+ ];
+
+ foreach(string which,map<string,any> method, methods, {
+ list<string>  filelist = method["filelist"]:[];
+ string filepath = method["filepath"]:"";
+ string regexp = method["regexp"]:"";
 
   foreach(string file, filelist,{
     string filename=sformat("%1/%2", filepath, file);
     if (FileUtils::Exists(filename)){
       foreach(string row, splitstring((string)SCR::Read(.target.string, filename), "\n"), {
         if (size(regexptokenize(String::CutBlanks(row), regexp))>0){
-           y2milestone("IPv6 is disabled.");
+           y2milestone("IPv6 is disabled by '%1' method.", which);
            ipv6=false;
         }
       });
     }
   });
+ });
+
 }
 
 /**
@@ -362,7 +374,7 @@ global void SetIPv6(boolean status){
 void writeIPv6(){
 //  SCR::Write(.target.string, "/etc/modprobe.d/ipv6", sformat("%1install ipv6 /bin/true", ipv6?"#":""));
 // uncomment to write to old place (and comment code bellow)
-//  SCR::Write(.target.string, "/etc/modprobe.d/50-ipv6.conf", sformat("%1install ipv6 /bin/true", ipv6?"#":""));
+  SCR::Write(.target.string, "/etc/modprobe.d/50-ipv6.conf", sformat("%1install ipv6 /bin/true\n", ipv6?"#":""));
   string filename = "/etc/sysctl.conf";
   string sysctl = (string)SCR::Read(.target.string, filename);
   string sysctl_row = sformat("%1net.ipv6.conf.all.disable_ipv6 = 1", ipv6?"# ":"");
