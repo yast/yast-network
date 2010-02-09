@@ -318,6 +318,7 @@ global define boolean Import(map settings) {
     dhcp_hostname = settings["dhcp_hostname"]:false;
     //if not defined, set to 'auto'
     resolv_conf_policy = settings["resolv_conf_policy"]:"auto";
+
     // user-defined value has higher priority - FaTE#305281
     if ( haskey(settings, "write_hostname") )
 	write_hostname = settings["write_hostname"]:false;
@@ -340,7 +341,9 @@ global define boolean Import(map settings) {
     nameservers = (list<string>) eval(settings["nameservers"]:[]);
     searchlist = (list<string>) eval(settings["searchlist"]:[]);
     modified = true;
-    initialized = true;
+    // empty settings means that we're probably resetting the config
+    // thus, setup is not initialized anymore
+    initialized = ( settings != $[] );
 
     y2milestone("DNS Import:");
     y2milestone("nameservers=%1", nameservers);
@@ -369,6 +372,8 @@ global define map Export() {
     expdns["dhcp_hostname"] = dhcp_hostname;
     //TODO: test if it really works with empty string
     expdns["resolv_conf_policy"] = resolv_conf_policy;
+    //bnc#576495, FaTE#305281 - clone write_hostname, too
+    expdns["write_hostname"] = write_hostname;
     return expdns;
 }
 

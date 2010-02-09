@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Feb  9 11:35:22 CET 2010 - kmachalkova@suse.cz
+
+- Include <write_hostname> in cloned data (bnc#576495)
+
+-------------------------------------------------------------------
 Mon Feb  8 16:15:10 CET 2010 - mzugec@suse.cz
 
 - correctly setup iucv devices (bnc#575950)
