@@ -389,6 +389,7 @@ void writeIPv6(){
   });
   if (!found) file=add(file, sysctl_row);
   SCR::Write(.target.string, filename, mergestring(file, "\n"));
+  SCR::Execute(.target.bash, sformat("sysctl -w net.ipv6.conf.all.disable_ipv6=%1",!ipv6?"1":"0"));
   SCR::Write(.sysconfig.windowmanager.KDE_USE_IPV6, ipv6?"yes":"no");
 }
 
