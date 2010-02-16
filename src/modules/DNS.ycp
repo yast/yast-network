@@ -226,9 +226,19 @@ global define boolean Write() {
 
     oldhostname = fqhostname;	// #49634
 
-    SCR::Write(.sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME, dhcp_hostname ? "yes" : "no");
-    SCR::Write(.sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS, write_hostname ? "yes" : "no");
-    SCR::Write(.sysconfig.network.dhcp, nil);
+    // ensure that nothing is saved in case old values are the same, as it makes
+    // rcnetwork reload restart all interfaces (even 'touch /etc/sysconfig/network/dhcp'
+    // is sufficient)
+    string tmp1 = (string) SCR::Read(.sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME);
+    boolean old_dhcp_hostname = ( tmp1 == "yes");
+    string tmp2 = (string) SCR::Read(.sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS);
+    boolean old_write_hostname = ( tmp2 == "yes");
+
+    if (old_dhcp_hostname != dhcp_hostname || old_write_hostname != write_hostname) {
+	SCR::Write(.sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME, dhcp_hostname ? "yes" : "no");
+	SCR::Write(.sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS, write_hostname ? "yes" : "no");
+	SCR::Write(.sysconfig.network.dhcp, nil);
+    }
 
     y2milestone("Writing configuration");
     if(!modified) {
