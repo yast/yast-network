@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Feb 17 09:38:52 CET 2010 - mzugec@suse.cz
+
+- L3: incorrect reported "not connected" status (bnc#561012)
+- 2.16.136 
+
+-------------------------------------------------------------------
 Mon Feb  8 14:47:14 CET 2010 - mzugec@suse.cz
 
 - L3: write resolv.conf when change from dhcp->static  (bnc#561349)

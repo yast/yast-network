@@ -571,7 +571,12 @@ foreach(map<string, any>row, (list<map<string, any> >)SCR::Read (.probe.netcard)
 		}
 
 		// create the rich text description
-		string rich = HTML::Bold ( sformat("%1 %2", descr, (contains(models, v["NAME"]:"") )?"":_("(not connected)"))) +"<br>"+ HTML::List (bullets);
+		boolean connected=false;
+		string cmd=sformat("cat $(getcfg %1-%2|grep HWD_INTERFACEPATH_0=|cut -d'=' -f2|cut -d'\"' -f2)/carrier|tr -d '\n'", type,k);
+		map<string, any> cmd_out = (map<string,any>) SCR::Execute(.target.bash_output, cmd);
+		y2milestone("cmd %1 : %2", cmd, cmd_out);
+                if (cmd_out["stdout"]:""=="1") connected=true;
+		string rich = HTML::Bold ( sformat("%1 %2", descr, connected?"":_("(not connected)"))) +"<br>"+ HTML::List (bullets);
 		
 		item = `item(`id(dev), descr, ip, rich);
 	    }
