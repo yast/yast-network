@@ -220,7 +220,8 @@ void initHwDialog(string text) {
 
    term BlinkCard = `Frame(_("Show visible port identification"),
      `HBox(
-	`IntField(`id(`blink_time), "Seconds:", 0, 100, 5),
+					//translators: how many seconds will card be blinking
+	`IntField(`id(`blink_time), sformat("%1:", _("Seconds")), 0, 100, 5),
 	`PushButton(`id(`blink), _("Blink"))
      )
    );

@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Feb 22 09:55:55 CET 2010 - mzugec@suse.cz
+
+- mark string for translation (bnc#580019) 
+
+-------------------------------------------------------------------
 Tue Feb 16 17:30:15 CET 2010 - jsrain@suse.cz
 
 - do not write network config files if not changed  (fate#308978)
