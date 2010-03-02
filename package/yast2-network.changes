@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar  2 09:54:54 CET 2010 - mzugec@suse.cz
+
+- added fix for saving MAC address to ifcfg (bnc#578689)
+- 2.19.12 
+
+-------------------------------------------------------------------
 Mon Feb 22 10:18:24 CET 2010 - mzugec@suse.cz
 
 - mark string for translation (bnc#580019)

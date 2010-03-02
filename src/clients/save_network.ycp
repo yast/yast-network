@@ -297,7 +297,8 @@ void CreateIfcfg(){
 	network_configuration = sformat("%1MTU='%2'\n", network_configuration, InstallInf["mtu"]:"");
 
      // for queth devices (s390)
-    if (size(InstallInf["hwaddr"]:"")>0)
+    // bnc#578689 - YaST2 should not write the MAC address into ifcfg file
+    if ((Arch::s390()) && (size(InstallInf["hwaddr"]:"")>0))
 	network_configuration =	sformat("%1LLADDR='%2'\n", network_configuration, InstallInf["hwaddr"]:"");
 
 

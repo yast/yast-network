@@ -737,7 +737,7 @@ map<string, map<string,any> > widget_descr_local = $[
 widget_descr_local["HWDIALOG"]=widget_descr_hardware["HWDIALOG"]:$[];
 
 /**
- * @param types netowrk card types
+ * @param types network card types
  * @return their descriptions for CWM
  */
 list< list<string> > BuildTypesListCWM (list<string> types) {
