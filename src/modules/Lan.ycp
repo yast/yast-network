@@ -171,11 +171,14 @@ void readIPv6(){
   ipv6=true;
 
  map<string, map<string, any> > methods = $[
+/*
+	// this map was created because of too many changes whether ipv6 will be builtin or as a module
         "builtin"  : $[
                 "filelist" : ["sysctl.conf"],
                 "filepath" : "/etc/",
                 "regexp"   : "^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1"
         ],
+*/
         "module" : $[
                 "filelist" : ["ipv6", "50-ipv6.conf"],
                 "filepath" : "/etc/modprobe.d/",
@@ -299,11 +302,6 @@ Check configuration manually."));
     ProgressNextStage(_("Reading network configuration..."));
     NetworkConfig::Read();
 
-/*
-    if (FileUtils::Exists("/etc/modprobe.d/ipv6")){
-      if (((map<string, any>)SCR::Execute (.target.bash_output, "grep ipv6 /etc/modprobe.d/ipv6|cut -d# -f1|grep -q ipv6"))["exit"]:0==0) ipv6=false;
-      }
-*/
     readIPv6();
 
     sleep(sl);
@@ -372,13 +370,13 @@ global void SetIPv6(boolean status){
 }
 
 void writeIPv6(){
-//  SCR::Write(.target.string, "/etc/modprobe.d/ipv6", sformat("%1install ipv6 /bin/true", ipv6?"#":""));
 // uncomment to write to old place (and comment code bellow)
   SCR::Write(.target.string, "/etc/modprobe.d/50-ipv6.conf", sformat("%1install ipv6 /bin/true\n", ipv6?"#":""));
+/*
   string filename = "/etc/sysctl.conf";
   string sysctl = (string)SCR::Read(.target.string, filename);
   string sysctl_row = sformat("%1net.ipv6.conf.all.disable_ipv6 = 1", ipv6?"# ":"");
-  boolean found = false; //size(regexptokenize(sysctl, "(net.ipv6.conf.all.disable_ipv6)"))>0;
+  boolean found = false;
   list<string> file=[];
   foreach(string row, splitstring(sysctl, "\n"), {
     if (size(regexptokenize(row, "(net.ipv6.conf.all.disable_ipv6)"))>0){
@@ -390,6 +388,7 @@ void writeIPv6(){
   if (!found) file=add(file, sysctl_row);
   SCR::Write(.target.string, filename, mergestring(file, "\n"));
   SCR::Execute(.target.bash, sformat("sysctl -w net.ipv6.conf.all.disable_ipv6=%1",!ipv6?"1":"0"));
+*/
   SCR::Write(.sysconfig.windowmanager.KDE_USE_IPV6, ipv6?"yes":"no");
 }
 

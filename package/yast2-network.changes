@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar  2 15:51:43 CET 2010 - mzugec@suse.cz
+
+- enable/disable IPv6 as a module again (bnc#574789)
+- 2.17.124 
+
+-------------------------------------------------------------------
 Mon Mar  1 16:52:36 CET 2010 - mzugec@suse.cz
 
 - NetHwDetection: use blacklist (bnc#580729)
