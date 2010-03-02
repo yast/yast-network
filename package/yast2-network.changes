@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar  2 09:57:05 CET 2010 - mzugec@suse.cz
+
+- NetHwDetection: use blacklist (bnc#580729)
+- 2.19.13 
+
+-------------------------------------------------------------------
 Tue Mar  2 09:54:54 CET 2010 - mzugec@suse.cz
 
 - added fix for saving MAC address to ifcfg (bnc#578689)
