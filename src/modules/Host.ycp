@@ -50,44 +50,29 @@ global boolean write_only = false;
 
 boolean initialized = false;
 
-boolean AnyStaticIP() {
-    NetworkInterfaces::Read ();
-    list<string> devs =
-        NetworkInterfaces::Locate ("BOOTPROTO", "static");
-    list<string> ips = maplist(string dev, devs, {
-        return NetworkInterfaces::GetValue(dev, "IPADDR");
-    });
-
-     y2milestone("%1 %2", devs, ips);
-    return ( size(ips) > 0 );
-}
-
 boolean NeedDummyIP() {
-   boolean ret = ( DNS::write_hostname && !AnyStaticIP() );
-   if (ret)
-	y2milestone("No (static) IP address found, dummy 127.0.0.2 will be added");
-   return ret;
+   return DNS::write_hostname;
 }
 
 global void EnsureHostnameResolvable() {
     string local_ip = "127.0.0.2";
     if ( NeedDummyIP() ) {
+	y2milestone("Dummy 127.0.0.2 IP will be added");
 	//Add 127.0.0.2 entry to /etc/hosts,if product default says so
 	//or user requests it otherwise some desktop apps may hang,
 	//being unable to resolve hostname (bnc#304632)
 
 	string fqhostname = Hostname::MergeFQ( DNS::hostname, DNS::domain);
 	hosts[ local_ip ] = [ fqhostname + " " + DNS::hostname ];
-	modified = true;
     }
     else {
-	// do not add it if product default says no or if there are some
-	// static IPs (bnc#469752)
+	// Do not add it if product default says no
+	// and remove 127.0.02 entry if it exists
 	if( haskey( hosts, local_ip) ) {
 	    hosts[ local_ip] = [];
-	    modified = true;
 	}
     }
+    modified = true;
 }
 
 /**
