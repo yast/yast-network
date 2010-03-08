@@ -14,6 +14,7 @@ textdomain "network";
 import "Arch";
 import "CWM";
 import "CWMTab";
+import "DNS";
 import "Host";
 import "Hostname";
 import "IP";
@@ -252,12 +253,19 @@ void initBootProto (string key) {
 
 
 symbol handleBootProto (string key, map event) {
- if (event["EventReason"]:""=="ValueChanged"){
-  symbol current = (symbol)UI::QueryWidget(`id(`bootproto), `CurrentButton);
-  enableDisableBootProto(current);
-//  if (current == `none) settings["STARTMODE"] = "off";
- }
- return nil;
+   if (event["EventReason"]:""=="ValueChanged"){
+	symbol current = (symbol)UI::QueryWidget(`id(`bootproto), `CurrentButton); 
+	enableDisableBootProto(current);
+
+	if (current == `static) {
+	    string one_ip = (string) UI::QueryWidget(`id(`ipaddr), `Value);
+	    if ( size(one_ip) == 0) {
+		y2milestone("Presetting global hostname");
+		UI::ChangeWidget(`id(`hostname), `Value, Hostname::MergeFQ(DNS::hostname, DNS::domain));
+	    }
+	}
+   }
+   return nil;
 }
 
 
@@ -458,12 +466,24 @@ boolean ValidateBootproto (string key, map event) {
 		return false;
 	}
 
-        string h = (string) UI::QueryWidget(`hostname, `Value );
-	if ( h != "" && !Hostname::CheckFQ(h)) {
-	 Popup::Error(_("No valid hostname."));
-	 UI::SetFocus(`hostname);
-	 return false;
+        string hname = (string) UI::QueryWidget(`hostname, `Value );
+	if ( size(hname) > 0 ) {
+	    if( !Hostname::CheckFQ(hname) ) {
+		Popup::Error(_("Invalid hostname."));
+		UI::SetFocus(`hostname);
+		return false;
+	    }
+	} else {
+	    //User doesn't want to define hname for this static IP
+	    if( !Popup::YesNo( _("No hostname has been specified. It is recommended to associate 
+some hostname with static IP, otherwise the machine name will 
+not be resolvable without active network connection.\n
+Really leave the hostname blank?")) ) {
+		UI::SetFocus(`hostname);
+		return false;
+	    }
 	}
+
 	// validate duplication
 	if (NetHwDetection::DuplicateIP (ipa))
 	{
