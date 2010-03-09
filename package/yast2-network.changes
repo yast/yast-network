@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Mar  9 12:51:18 CET 2010 - kmachalkova@suse.cz
+
+- Don't check for presence of static IPs when deciding whether to
+  append 127.0.0.2 line to /etc/hosts
+- Pre-fill hostname field with global hostname in static IP dialog
+- Warn if no hostname is specified for static IP (all bnc#583786) 
+
+-------------------------------------------------------------------
 Tue Mar  2 15:51:43 CET 2010 - mzugec@suse.cz
 
 - enable/disable IPv6 as a module again (bnc#574789)
