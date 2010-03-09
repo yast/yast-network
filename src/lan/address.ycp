@@ -474,8 +474,9 @@ boolean ValidateBootproto (string key, map event) {
 		return false;
 	    }
 	} else {
-	    //User doesn't want to define hname for this static IP
-	    if( !Popup::YesNo( _("No hostname has been specified. It is recommended to associate 
+	    // There'll be no 127.0.0.2 -> remind user to define some hostname
+	    if( !Host::NeedDummyIP() &&
+		!Popup::YesNo( _("No hostname has been specified. It is recommended to associate 
 some hostname with static IP, otherwise the machine name will 
 not be resolvable without active network connection.\n
 Really leave the hostname blank?")) ) {

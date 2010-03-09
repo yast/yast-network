@@ -50,7 +50,7 @@ global boolean write_only = false;
 
 boolean initialized = false;
 
-boolean NeedDummyIP() {
+global boolean NeedDummyIP() {
    return DNS::write_hostname;
 }
 
