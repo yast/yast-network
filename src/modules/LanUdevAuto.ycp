@@ -200,14 +200,6 @@ y2internal("port0 %1", port0);
    }
   });
  } else{
-/*
-  list<map> all_devices=[];
-y2internal("export devices %1", devices);
-  foreach(string key, (list<string>)Map::Keys(devices), {
-   all_devices=add(all_devices, devices[key]:$[]);
-  });
-  y2internal("export rules %1", createUdevFromIfaceName(all_devices));
-*/
   foreach(integer id, map<string, any> row, (map<integer, map <string, any> >)LanItems::Items, {
    LanItems::current=id;
    if (size(row["ifcfg"]:"")>0){
@@ -230,5 +222,30 @@ y2internal("export devices %1", devices);
  y2internal("AY profile %1", AY);
  return AY;
 }
+
+global string GetDevnameByMAC(string mac){
+ string devname="";
+ if (size(mac)>0){
+  foreach(integer id, map<string, any> row, (map<integer, map <string, any> >)LanItems::Items, {
+   LanItems::current=id;
+    string name	    = LanItems::GetItemUdev("NAME");
+    string mac_rule = LanItems::GetItemUdev("ATTR{address}");
+    if (size(mac_rule)==0){
+     y2error("No MAC rule %1", row);
+     continue;
+    } else
+	y2internal("MAC rule %1", row);
+    if (mac_rule==mac){
+	devname=name;
+     y2internal("Rule matched! New devname %1", devname);
+     break;
+    }
+  });
+
+ } else y2warning("No MAC address to compare.");
+ return devname;
+}
+
+
 
 }

@@ -32,6 +32,7 @@ map <string, any> InstallInf = $[];
 
 // global variable because chrooted environment
 integer network_disk=0;
+string netdevice="";
 
 /**
  * Read one install.inf item
@@ -116,6 +117,13 @@ define boolean ReadInstallInf() {
 
     /* Split network device */
     string netdevice = InstallInf["netdevice"]:"";
+    if (Mode::autoinst()){
+       string new_devname = LanUdevAuto::GetDevnameByMAC(InstallInf["hwaddr"]:"");
+       if (size(new_devname)>0){
+	y2internal("old devname: %1, new devname: %2", netdevice, new_devname);
+	netdevice=new_devname;
+       }
+    }
     if(netdevice != "") {
 	string devtype = NetworkInterfaces::device_type(netdevice);
 	if(devtype != nil && devtype != "") InstallInf["type"] = devtype;
@@ -307,9 +315,9 @@ void CreateIfcfg(){
     if (size(InstallInf["remote_ip"]:"")>0)
 	network_configuration = sformat("%1REMOTE_IPADDR='%2'\n", network_configuration, InstallInf["remote_ip"]:"");
 
-    string ifcfg = sformat("ifcfg-%1", InstallInf["netdevice"]:"");
+    string ifcfg = sformat("ifcfg-%1", netdevice);
 
-    string hw_name = BuildDescription(NetworkInterfaces::device_type(InstallInf["netdevice"]:""), NetworkInterfaces::device_num(ifcfg), $["dev_name":InstallInf["netdevice"]:""], hardware);
+    string hw_name = BuildDescription(NetworkInterfaces::device_type(netdevice), NetworkInterfaces::device_num(ifcfg), $["dev_name":netdevice], hardware);
     // protect special characters, #305343
     if (size(hw_name)>0)
 	network_configuration = sformat("%1NAME='%2'\n", network_configuration, String::Quote (hw_name));
@@ -320,13 +328,8 @@ void CreateIfcfg(){
     string dev_file=sformat("/etc/sysconfig/network/%1", ifcfg);
     // string dev_file=sformat("/tmp/%1", ifcfg);
 
-//    if (!FileUtils::Exists(dev_file))
-//    {
         SCR::Write(.target.string, dev_file, network_configuration);
         y2milestone("ifcfg file: %1", dev_file);
-//    }
-//    else
-//	y2warning("File exists %1", dev_file);
 }
 
 /*
@@ -518,7 +521,7 @@ void save_network(){
         y2milestone("%1 does not exist yet, creating it", udev_rules_destdir);
         WFM::Execute (.local.bash, sformat ("mkdir -p '%1'", udev_rules_destdir));
     } else
-	y2internal("file %1 exists", udev_rules_destdir);
+	y2milestone("File %1 exists", udev_rules_destdir);
 
     if (! FileUtils::Exists( net_destfile ))
     {
