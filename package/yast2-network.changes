@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Mar 11 10:29:11 CET 2010 - mzugec@suse.cz
+
+- L3: update device name via which is system installed by AY 
+(bnc#578760)
+- 2.19.14 
+
+-------------------------------------------------------------------
 Tue Mar  2 09:57:05 CET 2010 - mzugec@suse.cz
 
 - NetHwDetection: use blacklist (bnc#580729)
