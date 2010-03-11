@@ -52,8 +52,6 @@ global string resolv_conf_policy = "";
 // fully qualified
 string oldhostname = "";
 
-/* install.inf from linuxrc */
-map install_inf = $[];
 /**
  * Data was modified?
  */
@@ -109,6 +107,24 @@ global define map <string, string> GetDHCPHostnameIP () {
     return ret;
 }
 
+//Copied from former Detection.ycp
+/**
+ * Resolve IP to hostname
+ * @param ip given IP address
+ * @return resolved host
+ */
+string ResolveIP(string ip) {
+    string command = "/usr/bin/getent hosts \"%1\" | sed \"s/^[0-9.: \t]\\+//g\"";
+    map getent = (map) SCR::Execute(.target.bash_output, sformat(command, ip));
+    string hnent = getent["stdout"]:"";
+    y2debug("%1", hnent);
+    hnent = String::FirstChunk (hnent, " \t\n");
+    if(hnent == nil) hnent = "";
+    y2debug("'%1'", hnent);
+    return String::CutBlanks(hnent);
+}
+
+
 global boolean DefaultWriteHostname() {
     // FaTe#303875: Introduce a switch regarding 127.0.0.2 entry in /etc/hosts
     boolean whth = ProductFeatures::GetBooleanFeature ("globals", "write_hostname_to_hosts");
@@ -118,13 +134,20 @@ global boolean DefaultWriteHostname() {
 
 global void ReadHostname() {
 
-    // prefer /etc/install.inf
+    string fqhostname = "";
+    // In installation (standard, or AutoYaST one), prefer /etc/install.inf
     // (because HOSTNAME comes with netcfg.rpm already, #144687)
-    string fqhostname = install_inf["Hostname"]:""; // Machinename never existed??
-    // if the name is actually an IP only, we discard it too
-    if (IP::Check (fqhostname))
-    {
-	fqhostname = "";
+    if( (Mode::installation() || Mode::autoinst()) &&
+	 SCR::Read(.target.size, "/etc/install.inf") > 0) {
+	string install_inf_hostname = (string) SCR::Read(.etc.install_inf.Hostname);
+
+	//if the name is actually IP, try to resolve it (bnc#556613, bnc#435649)
+        if (IP::Check (install_inf_hostname))
+        {
+            fqhostname = ResolveIP( install_inf_hostname );
+        }
+        else
+            fqhostname = install_inf_hostname;
     }
 
     // /etc/HOSTNAME
@@ -183,15 +206,10 @@ global define boolean Read() {
     string tmp2 = (string) SCR::Read(.sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS);
     write_hostname = ( tmp2 == "yes");
 
-    if(SCR::Read(.target.size, "/etc/install.inf") > 0)
-	install_inf = (map) SCR::Read(.etc.install_inf);
-    // bogus?!
-    y2milestone ("install.inf: %1", install_inf);
-
     resolv_conf_policy = (string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_POLICY);
     list<string> resolvlist = splitstring((string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS), " ");
     if(resolvlist == nil) {
-        ReadNameserver (install_inf["Nameserver"]:"");
+       /* ReadNameserver (install_inf["Nameserver"]:"");*/
     }
     else
         nameservers = resolvlist;
