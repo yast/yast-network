@@ -208,10 +208,7 @@ global define boolean Read() {
 
     resolv_conf_policy = (string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_POLICY);
     list<string> resolvlist = splitstring((string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS), " ");
-    if(resolvlist == nil) {
-       /* ReadNameserver (install_inf["Nameserver"]:"");*/
-    }
-    else
+    if( size(resolvlist) > 0)
         nameservers = resolvlist;
 
     searchlist = splitstring((string)SCR::Read(.sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST), " ");
