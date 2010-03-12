@@ -138,16 +138,19 @@ global void ReadHostname() {
     // In installation (standard, or AutoYaST one), prefer /etc/install.inf
     // (because HOSTNAME comes with netcfg.rpm already, #144687)
     if( (Mode::installation() || Mode::autoinst()) &&
-	 SCR::Read(.target.size, "/etc/install.inf") > 0) {
+	SCR::Read(.target.size, "/etc/install.inf") > 0) {
 	string install_inf_hostname = (string) SCR::Read(.etc.install_inf.Hostname);
+	y2milestone("Got %1 from install.inf", install_inf_hostname);
 
-	//if the name is actually IP, try to resolve it (bnc#556613, bnc#435649)
-        if (IP::Check (install_inf_hostname))
-        {
-            fqhostname = ResolveIP( install_inf_hostname );
-        }
-        else
-            fqhostname = install_inf_hostname;
+        if ( (size(install_inf_hostname) > 0) {
+	    //if the name is actually IP, try to resolve it (bnc#556613, bnc#435649)
+	    if ( IP::Check(install_inf_hostname) ) {
+		fqhostname = ResolveIP( install_inf_hostname );
+		y2milestone("Got %1 after resolving IP from install.inf", fqhostname);
+	    }
+	    else
+	        fqhostname = install_inf_hostname;
+	}
     }
 
     // /etc/HOSTNAME
@@ -159,6 +162,7 @@ global void ReadHostname() {
 	    fqhostname = (string) SCR::Read (.target.string, "/etc/HOSTNAME");
 	    //avoid passing nil argument when we get non-\n-terminated string (#445531)
 	    fqhostname = String::FirstChunk( fqhostname, "\n" );
+	    y2milestone("Got %1 from /etc/HOSTNAME", fqhostname);
 	}
     }
 
