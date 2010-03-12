@@ -142,7 +142,7 @@ global void ReadHostname() {
 	string install_inf_hostname = (string) SCR::Read(.etc.install_inf.Hostname);
 	y2milestone("Got %1 from install.inf", install_inf_hostname);
 
-        if ( (size(install_inf_hostname) > 0) {
+        if ( size(install_inf_hostname) > 0) {
 	    //if the name is actually IP, try to resolve it (bnc#556613, bnc#435649)
 	    if ( IP::Check(install_inf_hostname) ) {
 		fqhostname = ResolveIP( install_inf_hostname );
