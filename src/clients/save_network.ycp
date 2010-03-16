@@ -116,7 +116,7 @@ define boolean ReadInstallInf() {
 
 
     /* Split network device */
-    string netdevice = InstallInf["netdevice"]:"";
+    netdevice = InstallInf["netdevice"]:"";
     if (Mode::autoinst()){
        string new_devname = LanUdevAuto::GetDevnameByMAC(InstallInf["hwaddr"]:"");
        if (size(new_devname)>0){

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar 16 13:14:40 CET 2010 - mzugec@suse.cz
+
+- during 1st installation stage write correctly filename for ifcfg
+file (bnc#588586)
+- 2.17.127 
+
+-------------------------------------------------------------------
 Fri Mar 12 10:42:43 CET 2010 - kmachalkova@suse.cz
 
 - In [auto]installation, prefer hostname from install.inf. Convert
