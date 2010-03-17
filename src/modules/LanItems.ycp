@@ -1047,7 +1047,9 @@ global define boolean Commit() {
 	    newdev["BOOTPROTO"] = bootproto;
 	}
 	newdev["NAME"] = description;
-	if (!issubstring(Items[current, "ifcfg"]:"", type)) newdev["INTERFACETYPE"]=type;
+        // L3: bnc#585458
+//      if (!issubstring(Items[current, "ifcfg"]:"", type)) newdev["INTERFACETYPE"]=type;
+        if (deletechars(Items[current, "ifcfg"]:"", "0123456789")!=type) newdev["INTERFACETYPE"]=type;
 
 	if(hotplug == "pcmcia") newdev["DHCLIENT_SET_DOWN_LINK"] = "yes";
 
