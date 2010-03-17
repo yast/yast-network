@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Mar 17 09:05:30 CET 2010 - mzugec@suse.cz
+
+- L3: in case of type different from config. name write INTERFACETYPE
+option (bnc#585458)
+- 2.17.128 
+
+-------------------------------------------------------------------
 Tue Mar 16 13:14:40 CET 2010 - mzugec@suse.cz
 
 - during 1st installation stage write correctly filename for ifcfg
