@@ -510,12 +510,14 @@ global list BuildLanOverview() {
                  if (ip != "NONE")
 		  {
 		    string prefixlen = NetworkInterfaces::Current["PREFIXLEN"]:"";
-		    string descr = sformat("%1 %2", _("IP address assigned using"), ip);
-		    if (!issubstring(ip, "DHCP")) descr=(size(prefixlen)>0) ?
+		    if (size(ip)>0){
+		      string descr = sformat("%1 %2", _("IP address assigned using"), ip);
+		      if (!issubstring(ip, "DHCP")) descr=(size(prefixlen)>0) ?
                                 sformat(_("IP address: %1/%2"), ip, prefixlen) :
                                 sformat(_("IP address: %1, subnet mask %2")
                                 , ip, NetworkInterfaces::Current["NETMASK"]:"");
-		    bullets = bullets + [ descr ];
+		      bullets = bullets + [ descr ];
+		    }
 		  }
 	// build aliases overview
 	if (size(NetworkInterfaces::Current["_aliases"]:$[])>0 && !NetworkService::IsManaged()){

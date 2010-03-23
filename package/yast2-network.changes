@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 23 10:44:20 CET 2010 - mzugec@suse.cz
+
+- fixed description for IP/netmask (bnc#588590)
+- 2.19.17 
+
+-------------------------------------------------------------------
 Wed Mar 17 09:12:03 CET 2010 - mzugec@suse.cz
 
 - L3: in case of type different from config. name write INTERFACETYPE
