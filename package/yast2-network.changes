@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Mar 24 15:10:19 CET 2010 - mzugec@suse.cz
+
+- store hostname from installation proposal dialog (bnc#588938)
+- 2.17.130 
+
+-------------------------------------------------------------------
 Tue Mar 23 10:49:52 CET 2010 - mzugec@suse.cz
 
 - fixed description for IP/netmask (bnc#588590)

@@ -150,6 +150,11 @@ global void ReadHostname() {
 	    }
 	    else
 	        fqhostname = install_inf_hostname;
+
+	    // We have non-empty hostname by now => we must set DNS modified flag
+	    // in order to get the setting actually written (bnc#588938)
+	    if (size(fqhostname) > 0)
+		DNS::modified = true;
 	}
     }
 
