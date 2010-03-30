@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 30 14:02:10 CEST 2010 - mzugec@suse.cz
+
+- remove aliases from automatically bridged device (bnc#590167)
+- 2.19.19 
+
+-------------------------------------------------------------------
 Wed Mar 24 15:10:33 CET 2010 - mzugec@suse.cz
 
 - store hostname from installation proposal dialog (bnc#588938)

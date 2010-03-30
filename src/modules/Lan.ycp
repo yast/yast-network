@@ -907,6 +907,11 @@ global define boolean ProposeInterfaces () {
 	NetworkInterfaces::Edit(ifcfg);
 	old_config["BOOTPROTO"]="static";
 	old_config["IPADDR"]="0.0.0.0/32";
+	// remove all aliases (bnc#590167)
+	foreach (string a, any v, (map <string, any>)NetworkInterfaces::Current["_aliases"]:$[], {
+	    if (v != nil) { NetworkInterfaces::DeleteAlias (NetworkInterfaces::Name, a); }
+	});
+	old_config["_aliases"]=$[];
         y2milestone("Old Config with apllied changes %1\n%2", ifcfg, old_config);
 	NetworkInterfaces::Current = old_config;
         NetworkInterfaces::Commit();
