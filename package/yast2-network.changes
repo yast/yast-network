@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Mar 30 16:13:54 CEST 2010 - mzugec@suse.de
+
+- added exception to filter out virtio semi-device (bnc#585506)
+- 2.17.132 
+
+-------------------------------------------------------------------
 Tue Mar 30 13:56:54 CEST 2010 - mzugec@suse.de
 
 - remove aliases from automatically bridged device (bnc#590167)

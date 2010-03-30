@@ -743,7 +743,11 @@ define list<map> ReadHardware(string hwtype) {
 	    one["wl_auth_modes"]  = resource["wlan", 0, "auth_modes"]:nil;
 	    one["wl_enc_modes"]   = resource["wlan", 0, "enc_modes"]:nil;
 	}
-
+	// filter out device with virtio_pci Driver and no Device File (bnc#585506)
+	if (one["module"]:""=="virtio_pci" && one["dev_name"]:""==""){
+	 card_ok=false;
+	 y2milestone("Filtering out virtio device without device file.");
+	}
 	y2debug("found device: %1", one);
 	if (card_ok) {
 	    Hardware[size(Hardware)] = one;
