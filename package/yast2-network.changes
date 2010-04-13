@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Apr 13 12:41:59 CEST 2010 - mzugec@suse.cz
+
+- proxy: "/" character validation (bnc#566350)
+- 2.19.21 
+
+-------------------------------------------------------------------
 Tue Mar 30 16:17:10 CEST 2010 - mzugec@suse.cz
 
 - added exception to filter out virtio semi-device (bnc#585506)
