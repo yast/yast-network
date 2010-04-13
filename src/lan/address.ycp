@@ -129,7 +129,7 @@ void InitVLANSlave(string key)
     map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
     foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
      foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
-	if (contains(["vlan", "bond", "br"], NetworkInterfaces::GetType(devname))) continue;
+	if (contains(["vlan"], NetworkInterfaces::GetType(devname))) continue;
         items = add (items, `item(`id(devname), sformat("%1 - %2", devname, configurations[devtype, devname, "NAME"]:""), settings["ETHERDEVICE"]:""==devname) );
      });
     });
