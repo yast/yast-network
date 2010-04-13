@@ -271,7 +271,7 @@ boolean ValidateNoProxyDomains( string no_proxies ) {
 
 	// IP/netmask
 	if ( findfirstof( one_proxy, "/" ) != nil ) {
-	    list <string> tmp = splitstring(hostname,"/");
+	    list <string> tmp = splitstring(one_proxy,"/");
 	    hostname = tmp[0]:"";
 	    netmask = tmp[1]:"";
 
