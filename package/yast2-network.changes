@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Apr 13 13:18:57 CEST 2010 - mzugec@suse.cz
+
+- allow vlan on top of bonding device (bnc#591835)
+- 2.19.22 
+
+-------------------------------------------------------------------
 Tue Apr 13 12:41:59 CEST 2010 - mzugec@suse.cz
 
 - proxy: "/" character validation (bnc#566350)
