@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Fri Apr 16 13:02:10 UTC 2010 - kmachalkova@novell.com
+
+- Rollup patch with several Code11 bugfixes:
+  - Include <write_hostname> in cloned data (bnc#576495)
+  - Don't check for presence of static IPs when deciding whether to
+    append 127.0.0.2 line to /etc/hosts
+  - Pre-fill hostname field with global hostname in static IP dialog
+  - Warn if no hostname is specified for static IP (all bnc#583786)
+  - In [auto]installation, prefer hostname from install.inf. Convert
+    to FQDN if it is an IP address (bnc#556613, bnc#502715)
+
+-------------------------------------------------------------------
 Tue Apr 13 13:18:57 CEST 2010 - mzugec@suse.cz
 
 - allow vlan on top of bonding device (bnc#591835)
