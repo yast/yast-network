@@ -43,6 +43,7 @@ define any ConnectionDialog() {
     boolean modifydns = Provider::Current["MODIFYDNS"]:"yes" == "yes";
     boolean autodns = Provider::Current["AUTODNS"]:"yes" == "yes";
 
+    // hide autoreconnect from UI (bnc#558788)
     boolean autoreconnect = Provider::Current["AUTO_RECONNECT"]:"yes" == "yes";
 
     string DNS1 = Provider::Current["DNS1"]:"";
@@ -122,9 +123,9 @@ after connecting, disable <b>Automatically Retrieve DNS</b> and
 manually enter the DNS.</p>") +
 
     /* Connection dialog help 4/9 */
-_("<p>If <b>Automatically Reconnect</b> is enabled, the connection will
-be reestablished automatically after failure.</p>
-") +
+//_("<p>If <b>Automatically Reconnect</b> is enabled, the connection will
+//be reestablished automatically after failure.</p>
+//") +
 
     /* Connection dialog help 5/9 */
 _("<p><b>Name Servers</b> are required to convert hostnames
@@ -227,9 +228,9 @@ connection will be shut down (0 means the connection will not time-out).</p>
 		    /* Checkbox label */
 		    `Left(`CheckBox(`id(`modifydns), `opt(`notify), _("&Modify DNS When Connected"), modifydns)),
 		    /* Checkbox label */
-		    `Left(`CheckBox(`id(`autodns), `opt(`notify), _("&Automatically Retrieve DNS"), autodns)),
+		    `Left(`CheckBox(`id(`autodns), `opt(`notify), _("&Automatically Retrieve DNS"), autodns))
 		    /* Checkbox label */
-		    `Left(`CheckBox(`id(`autoreconnect), `opt(`notify), _("Automatically &Reconnect"), autoreconnect))
+//		    `Left(`CheckBox(`id(`autoreconnect), `opt(`notify), _("Automatically &Reconnect"), autoreconnect))
 		 )
 	    ),
 	    `VSpacing(1),
@@ -322,7 +323,7 @@ connection will be shut down (0 means the connection will not time-out).</p>
 	demand = (boolean) UI::QueryWidget(`id(`demand), `Value);
 	modifydns = (boolean) UI::QueryWidget(`id(`modifydns), `Value);
 	autodns = (boolean) UI::QueryWidget(`id(`autodns), `Value);
-	autoreconnect = (boolean) UI::QueryWidget(`id(`autoreconnect), `Value);
+//	autoreconnect = (boolean) UI::QueryWidget(`id(`autoreconnect), `Value);
 
 	/* update provider info */
 	Provider::Current = union(Provider::Current, $[
