@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Apr 19 15:26:59 CEST 2010 - mzugec@suse.cz
+
+- CLI: respect netmask argument (bnc#584406)
+- 2.19.23 
+
+-------------------------------------------------------------------
 Fri Apr 16 13:02:10 UTC 2010 - kmachalkova@novell.com
 
 - Rollup patch with several Code11 bugfixes:

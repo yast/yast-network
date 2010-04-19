@@ -167,7 +167,10 @@ define boolean EditHandler(map<string, string> options) {
 		}
 	    LanItems::ipaddr = options["ip"]:"";
 	    if (size(options["prefix"]:"")>0) LanItems::prefix = options["prefix"]:"";
-		else LanItems::netmask = options["netmask"]:"255.255.255.0";
+		else {
+			LanItems::netmask = options["netmask"]:"255.255.255.0";
+			LanItems::prefix="";
+		     }
 	   } else{
 		LanItems::ipaddr = "";
 		LanItems::netmask = "";
