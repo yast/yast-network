@@ -37,7 +37,7 @@ map cmdline = $[
     /* Commandline help title */
     "help"	: _("Network Card Configuration"),
     "id"	: "lan",
-//    "guihandler": LanSequence,
+    "guihandler": LanSequence,
     "initialize": Lan::ReadWithCacheNoGUI,
     "finish"	: Lan::Write,
     "actions"	: $[
