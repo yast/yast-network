@@ -750,6 +750,11 @@ define list<map> ReadHardware(string hwtype) {
 	 card_ok=false;
 	 y2milestone("Filtering out virtio device without device file.");
 	}
+	// exception to filter out uicv devices (bnc#585363)
+        if (card["device"]:""=="IUCV" && card["sysfs_bus_id"]:""!="netiucv"){
+	 card_ok=false;
+	 y2milestone("Filtering out iucv device different from netiucv.");
+	}
 	y2debug("found device: %1", one);
 	if (card_ok) {
 	    Hardware[size(Hardware)] = one;

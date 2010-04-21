@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Apr 21 15:03:21 CEST 2010 - mzugec@suse.cz
+
+- filter out some iucv devices (bnc#585363)
+- 2.19.25 
+
+-------------------------------------------------------------------
 Mon Apr 19 16:17:49 CEST 2010 - mzugec@suse.cz
 
 - hide autoreconnect from UI (bnc#558788)
