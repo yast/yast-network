@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed May 12 14:29:08 CEST 2010 - mzugec@suse.cz
+
+- don't write 79-yast2-drivers.rules if empty (bnc#601723)
+- 2.19.26 
+
+-------------------------------------------------------------------
 Wed Apr 21 15:03:21 CEST 2010 - mzugec@suse.cz
 
 - filter out some iucv devices (bnc#585363)

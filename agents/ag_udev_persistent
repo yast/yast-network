@@ -97,13 +97,16 @@ sub write_drivers_rules(){
 
  }
 
-
- if( open( FILE, "> $drivers_file" ) ) {
-   print FILE @output;
- } else {
+ if ($#output>-1){
+   if( open( FILE, "> $drivers_file" ) ) {
+     print FILE @output;
+   } else {
          return $class->SetError(summary => sprintf( _("saving %s failed: %s"),$drivers_file, $!),
                                 code    => "OPEN_FAILED");
-        }
+          }
+ } else {
+	  unlink $drivers_file;
+	}
 }
 
 
