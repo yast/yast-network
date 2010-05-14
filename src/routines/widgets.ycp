@@ -43,14 +43,15 @@ map<string, map<string,any> > widget_descr = $[
 	"widget": `checkbox,
 	/* CheckBox label */
 	// is the interface administrable by users (as opposed to root)
-	"label": _("E&nable Device Control for Non-root User Via KInternet"),
+	"label": _("E&nable Device Control for Non-root User Via QInternet"),
 	"opt": [`notify],
 	"help":
 	// Details dialog help
 _("<p><b><big>Device Control</big></b></p>
 <p>Usually, only the system administrator is allowed to activate and
 deactivate a network interface. With <b>Enable Device Control for Non-root User
-Via KInternet</b>, any user may control the interface via KInternet.</p>
+Via QInternet</b>, any user may control the interface via QInternet.This will require
+<b>smpppd</b> installed and running.</p>
 "),
 	],
 

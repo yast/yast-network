@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri May 14 10:54:52 CEST 2010 - mzugec@suse.cz
+
+- improved help text (bnc#580039)
+- 2.19.27 
+
+-------------------------------------------------------------------
 Wed May 12 14:29:08 CEST 2010 - mzugec@suse.cz
 
 - don't write 79-yast2-drivers.rules if empty (bnc#601723)
