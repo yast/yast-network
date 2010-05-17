@@ -736,7 +736,7 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 
 	    if ((Default_TYPE == 8002) || (Default_TYPE == 8003) || (Default_TYPE == 8004)) {
 		// #151148
-		string url = "http://en.opensuse.org/SDB:AVM_binary_driver_for_SUSE_Linux_10.1";
+		string url = "http://en.opensuse.org/SDB:Notes_on_the_FRITZ!Card_DSL_Configuration";
 // multiline Popup::YesNo text
 		if (! Popup::YesNo (sformat (_(" WARNING
 
