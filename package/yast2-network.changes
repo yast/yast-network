@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon May 17 12:17:30 CEST 2010 - mzugec@suse.cz
+
+- additional addresses for bridge (bnc#590160)
+- 2.19.28 
+
+-------------------------------------------------------------------
 Fri May 14 10:54:52 CEST 2010 - mzugec@suse.cz
 
 - improved help text (bnc#580039)

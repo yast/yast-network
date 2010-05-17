@@ -641,17 +641,6 @@ map<string, map<string,any> > widget_descr_local = $[
         "store": StoreVLANSlave,
         "help": help["etherdevice"]:"",
     ],
-/*
-    "BONDSLAVES": $[
-        "widget": `multi_selection_box,
-        "label": _("Bond &Slaves"),
-        "opt": [`shrinkable],
-        "items" : [ ],
-        "init": InitSlave,
-        "store": StoreSlave,
-        "help": help["bondslave"]:"",
-    ],
-*/
     "BONDSLAVE": $[
         "widget": `multi_selection_box,
         "label": _("Bond &Slaves"),
@@ -943,6 +932,7 @@ define any AddressDialog() {
 		"AD_ADDRESSES",
 	frame2
      );
+/*
     if (LanItems::type == "br")
     {
         address_contents = `VBox(
@@ -952,7 +942,9 @@ define any AddressDialog() {
 		frame2
 	);
     }
-    else if (contains(["tun", "tap"], LanItems::type))
+    else 
+*/
+    if (contains(["tun", "tap"], LanItems::type))
     {
      address_contents = `VBox(
 			`Left(label),
@@ -1016,6 +1008,10 @@ define any AddressDialog() {
                         "header" : _("&Bond Slaves"),
                         "contents" : `VBox( "BONDSLAVE", "BONDOPTION" )
                     ],
+            "bridge_ports" : $[
+                        "header" : _("Bridged Devices"),
+                        "contents" : `VBox( "BRIDGE_PORTS" )
+                    ],
             "t3" : $[
                         "header" : _("&Wireless"),
                         "contents" : `Empty (),
@@ -1027,8 +1023,9 @@ define any AddressDialog() {
         "tab_help" : "",
         "fallback_functions" : functions,
     ];
-    if (contains(["vlan", "br"], LanItems::type)) wd_content["tab_order"]= ["t_general", "t_addr"];
+    if (LanItems::type=="vlan") wd_content["tab_order"]= ["t_general", "t_addr"];
     if (contains(["tun", "tap"], LanItems::type)) wd_content["tab_order"]= ["t_addr"];
+    if (LanItems::type=="br") wd_content["tab_order"]= ["t_general", "t_addr", "bridge_ports"];
     if (LanItems::type == "bond") wd_content["tab_order"]=add(wd_content["tab_order"]:[], "bond_slaves");
 
     hw_standalone=false;
