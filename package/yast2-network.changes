@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon May 24 16:56:46 CEST 2010 - mzugec@suse.cz
+
+- make add/edit route popup consistent (bnc#583136)
+- 2.19.30 
+
+-------------------------------------------------------------------
 Mon May 17 15:12:05 CEST 2010 - mzugec@suse.cz
 
 - updated documentation URL (bnc#590742)

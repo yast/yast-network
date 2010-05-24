@@ -41,19 +41,16 @@ term RoutingEditDialog(integer id, term entry, list devs) {
     UI::OpenDialog(`opt(`decorated),`VBox(
 	`HSpacing(1),
 	`VBox(
-	    /* TextEntry label */
 	    `HBox(
 		`InputField(`id(`destination), `opt(`hstretch), _("&Destination"), entry[1]:""),
-		`ComboBox(`id(`device), `opt(`editable, `hstretch), _("De&vice"), devs)
+		`InputField(`id(`genmask), `opt(`hstretch), _("Ge&nmask"), entry[3]:"")
 		),
 	    `HBox(
-	    /* TextEntry label */
-		`TextEntry(`id(`gateway), _("&Gateway"), entry[2]:""),
-	    /* TextEntry label */
-		`TextEntry(`id(`netmask), _("&Netmask"), entry[3]:"")
+		`InputField(`id(`gateway), `opt(`hstretch), _("&Gateway"), entry[2]:""),
+		`ComboBox(`id(`device), `opt(`editable, `hstretch), _("De&vice"), devs)
 		),
 	    /* ComboBox label */
-	    `TextEntry (`id(`options), Label::Options (), entry[5]:"")
+	    `InputField(`id(`options), `opt(`hstretch), Label::Options (), entry[5]:"")
 	),
 	`HSpacing(1),
 	`HBox(
@@ -71,7 +68,7 @@ term RoutingEditDialog(integer id, term entry, list devs) {
     }
     UI::ChangeWidget(`id(`destination), `ValidChars, IP::ValidChars + "default" + "/-");
     UI::ChangeWidget(`id(`gateway), `ValidChars, IP::ValidChars + "-");
-    UI::ChangeWidget(`id(`netmask), `ValidChars, Netmask::ValidChars + "-");
+    UI::ChangeWidget(`id(`genmask), `ValidChars, Netmask::ValidChars + "-");
 
     if(entry == `empty())
 	UI::SetFocus(`id(`destination));
@@ -106,11 +103,11 @@ term RoutingEditDialog(integer id, term entry, list devs) {
 	    continue;
 	}
 	route = add(route, val);
-	val = (string) UI::QueryWidget(`id(`netmask), `Value);
+	val = (string) UI::QueryWidget(`id(`genmask), `Value);
 	if(val != "-" && val != "0.0.0.0" && !Netmask::Check(val)) {
 	    /* Popup::Error text */
 	    Popup::Error(_("Subnetmask is invalid."));
-	    UI::SetFocus(`id(`netmask));
+	    UI::SetFocus(`id(`genmask));
 	    continue;
 	}
 	route = add(route, val);
@@ -338,7 +335,7 @@ map<string, map<string,any> > wd_routing = $[
 		    /* Table header 2/4 */
 		    _("Gateway"),
 		    /* Table header 3/4 */
-		    _("Netmask"),
+		    _("Genmask"),
 		    /* Table header 4/4 */
 		    _("Device"),
 		    /* Table header 5/4 */
