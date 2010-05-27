@@ -111,7 +111,10 @@ else if(func == "AskUser") {
 	seq = LanAutoSequence ("proposal");
     }
 
-    if(seq != `next) Lan::Import(stored);
+    if(seq != `next) {
+		LanItems::Items = $[];
+		Lan::Import(stored);
+    }
     ret = $[
 	"workflow_sequence" : seq
     ];

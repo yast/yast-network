@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu May 27 13:54:45 CEST 2010 - mzugec@suse.cz
+
+- fixed duplicate items issue in UI (bnc#584842)
+- 2.19.31 
+
+-------------------------------------------------------------------
 Mon May 24 16:56:46 CEST 2010 - mzugec@suse.cz
 
 - make add/edit route popup consistent (bnc#583136)

@@ -119,7 +119,7 @@ define boolean StartEthInterface() {
  map<string, any> output = (map<string, any>)SCR::Execute(.target.bash_output, command);
  if (output["exit"]:-1==0){
   list<string> interfaces = filter(string s, splitstring(output["stdout"]:"", "\n"), {return (size(s)>0);});
-  y2internal("output %1", interfaces);
+  y2milestone("interfaces %1", interfaces);
   foreach(string ifc, interfaces, {
 // TODO: do some tests before uncomment block bellow
 //   if ((integer)SCR::Execute(.target.bash, sformat("ip link show %1|head -n1|grep -q \"[^[:alpha:]]UP[^[:alpha:]]\"", ifc))!=0)

@@ -597,7 +597,7 @@ global define boolean WriteOnly() {
 global define boolean Import(map settings) {
 
         NetworkInterfaces::Import("netcard", (map<string, map>) settings["devices"]:$[]);
-	foreach(string device, NetworkInterfaces::List(""), {
+	foreach(string device, NetworkInterfaces::List("netcard"), {
 	LanItems::AddNew();
 	LanItems::Items[LanItems::current]=$["ifcfg":device];
 	});
