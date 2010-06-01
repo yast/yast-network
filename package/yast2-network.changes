@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu May 27 17:08:23 CEST 2010 - mzugec@suse.de
+
+- for bonding slaves use BusID based device names (bnc#564370)
+- 2.13.138 
+
+-------------------------------------------------------------------
 Wed Feb 17 09:38:52 CET 2010 - mzugec@suse.cz
 
 - L3: incorrect reported "not connected" status (bnc#561012)

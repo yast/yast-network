@@ -873,16 +873,20 @@ global define list Overview() {
 }
 
 global define list<map<string,any> > Unconfigured () {
-    return BuildUnconfigured ("netcard", Hardware);
+    list<map<string,any> > bo = BuildUnconfigured ("netcard", Hardware);
+    return bo;
 }
 
-global list<string> getUnconfiguredDevices(){
+global list<string> getUnconfiguredDevices(boolean byid){
  list<string> devices = [];
   foreach(map device, Unconfigured(), {
-  string proposed = proposeIfcfgName(Hardware[tointeger(deletechars(device["id"]:"", "-"))]:$[]);
+  map hw = Hardware[tointeger(deletechars(device["id"]:"", "-"))]:$[];
+  if (!byid) hw["mac"]="";
+  string proposed = proposeIfcfgName(hw);
   y2milestone("propose name for unconfigured device : %1", proposed);
   devices = add(devices, proposed);
  });
+y2internal("devices %1", devices);
 return devices;
 }
 

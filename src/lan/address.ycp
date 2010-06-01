@@ -113,7 +113,7 @@ void InitBridge(string key)
      });
     });
     // use also unconfigured devices
-    foreach(string dev_name, Lan::getUnconfiguredDevices(),{
+    foreach(string dev_name, Lan::getUnconfiguredDevices(true),{
      items = add(items, `item(`id(dev_name), dev_name, contains(splitstring(NetworkDevices::Current["BRIDGE_PORTS"]:"", " "), dev_name)));
     });
 
@@ -141,7 +141,7 @@ void InitVLANSlave(string key)
  list items = [];
 	// unconfigured devices with proposal ifcfg-names
      settings["ETHERDEVICE"] = NetworkDevices::Current["ETHERDEVICE"]:"";
-        foreach(string dev_name, Lan::getUnconfiguredDevices(),{
+        foreach(string dev_name, Lan::getUnconfiguredDevices(true),{
            items = add(items, `item(`id(dev_name), dev_name, (dev_name==settings["ETHERDEVICE"]:"")?true:false));
         });
 	// also bond and bridge devices included
@@ -1053,7 +1053,9 @@ Components of this product might not work with DHCP.</p>");
 
        settings["BONDOPTION"] = Lan::bond_option;
 
-        foreach(string dev_name, Lan::getUnconfiguredDevices(),{
+y2internal("bond slaves");
+        foreach(string dev_name, Lan::getUnconfiguredDevices(false),{
+y2internal("unconfigured slave %1", dev_name);
            wd["BONDSLAVE", "items"] = add(wd["BONDSLAVE", "items"]:[], `item(dev_name, dev_name));
         });
         //fill up the drop list and make the default value first
