@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jun 22 12:36:47 CEST 2010 - mzugec@suse.cz
+
+- updated firmware dependency list (bnc#608979)
+- 2.19.32 
+
+-------------------------------------------------------------------
 Thu May 27 13:54:45 CEST 2010 - mzugec@suse.cz
 
 - fixed duplicate items issue in UI (bnc#584842)
