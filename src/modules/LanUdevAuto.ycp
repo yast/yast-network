@@ -126,6 +126,7 @@ y2milestone("importing %1", settings);
     LanItems::Select("");
     LanItems::type=rule["type"]:"";
     LanItems::qeth_chanids=rule["chanids"]:"";
+    LanItems::qeth_layer2 = rule["layer2"]:false;
     switch(rule["type"]:""){
      case "qeth":
 		LanItems::chan_mode=rule["portname"]:"";
@@ -183,11 +184,13 @@ global map Export(map devices){
   if (size(port_name["stdout"]:"")>0) portname=String::CutBlanks(port_name["stdout"]:"");
   map <string, any> proto=(map<string, any>)SCR::Execute(.target.bash_output, sformat("cat /sys/class/net/%1/device/protocol|tr -d '\n'", device));
   if (size(proto["stdout"]:"")>0) protocol=String::CutBlanks(proto["stdout"]:"");
+  boolean layer2 = ((integer)SCR::Execute(.target.bash, sformat("grep -q 1 /sys/class/net/%1/device/layer2", device))==0) ? true : false;
 
    AY["s390-devices", device]=$["type":device_type];
    if (size(chanids)>0) AY["s390-devices", device, "chanids"]=chanids;
 //   if (size(portname)>0) AY[device, "portname"]=portname;
    if (size(protocol)>0) AY["s390-devices", device, "protocol"]=protocol;
+   if (layer2) AY["s390-devices", device, "layer2"]=true;
 
    map<string, any> port0 = (map<string, any>)SCR::Execute(.target.bash_output, sformat("port0=$(ls -l /sys/class/net/%1/device/cdev0);echo ${port0##*/}|tr -d '\n'", device));
 y2internal("port0 %1", port0);

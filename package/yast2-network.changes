@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jun 22 16:09:27 CEST 2010 - mzugec@suse.cz
+
+- L3: AY Layer2 support (bnc#573607)
+- 2.17.138 
+
+-------------------------------------------------------------------
 Thu May  6 19:05:34 CEST 2010 - mzugec@suse.cz
 
 - correctly assign provider to modem configuration (bnc#602019)
