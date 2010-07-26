@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jul 26 17:43:09 CEST 2010 - mzugec@suse.cz
+
+- L3: allow unconfigured devices for VLAN (bnc#625103)
+- 2.19.34 
+
+-------------------------------------------------------------------
 Wed Jun 23 09:41:31 CEST 2010 - mzugec@suse.cz
 
 - L3: AY Layer2 support (bnc#573607)

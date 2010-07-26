@@ -126,6 +126,14 @@ void InitVLANSlave(string key)
  settings["ETHERDEVICE"] = NetworkInterfaces::Current["ETHERDEVICE"]:"";
 
  list items = [];
+    // unconfigured devices
+    foreach(integer i, map a, (map<integer, map>)LanItems::Items,{
+      if (size(a["ifcfg"]:"")==0){
+       string dev_name = a["hwinfo", "dev_name"]:"";
+       items = add(items, `item(`id(dev_name), dev_name, (dev_name==settings["ETHERDEVICE"]:"")?true:false));
+      }
+    });
+    // configured devices
     map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
     foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
      foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
@@ -135,6 +143,8 @@ void InitVLANSlave(string key)
     });
     UI::ChangeWidget(`id(key), `Items, items);
 }
+
+
 
 /**
  * Default function to store the value of ETHERDEVICE devices box.
