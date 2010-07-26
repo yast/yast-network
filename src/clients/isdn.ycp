@@ -21,7 +21,7 @@ import "GetInstArgs";
 import "Mode";
 import "CommandLine";
 
- include "network/isdn/wizards.ycp";
+include "network/isdn/wizards.ycp";
 
 
 /* is this proposal or not? */

@@ -30,8 +30,6 @@ import "RichText";
 include "network/lan/cmdline.ycp";
 include "network/lan/wizards.ycp";
 
-// return LanSequence();
-
 /**
  * Command line definition
  */
@@ -40,7 +38,7 @@ map cmdline = $[
     "help"	: _("Network Card Configuration"),
     "id"	: "lan",
     "guihandler": LanSequence,
-    "initialize": Lan::ReadWithCache,
+    "initialize": Lan::ReadWithCacheNoGUI,
     "finish"	: Lan::Write,
     "actions"	: $[
 	"list" : $[

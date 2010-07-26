@@ -22,7 +22,6 @@ import "Routing";
 import "Wizard";
 import "Popup";
 import "Label";
-import "Product";
 import "Package";
 import "TablePopup";
 import "CWMTab";
@@ -125,10 +124,10 @@ The driver may be built in the kernel.")))
 	if (fw != ""){
 	    if ((!Package::Installed(fw) && !Package::Available(fw))){
 	        Popup::Message(sformat(_("Firmware is needed. Install it from 
-%1 Add-On CD.
+Add-On CD.
 First add the Add-On CD to your YaST software repositories then return 
 to this configuration dialog.
-"), Product::name));
+")));
 		return false;
 	    } else
 		if (!contains(LanItems::Requires, fw)) LanItems::Requires = add(LanItems::Requires, fw);

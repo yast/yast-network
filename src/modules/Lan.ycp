@@ -50,6 +50,9 @@ include "network/runtime.ycp";
 /*-------------*/
 /* GLOBAL DATA */
 
+// gui or cli mode
+boolean gui=true;
+
 boolean write_only = false;
 
 /**
@@ -232,7 +235,7 @@ global define boolean Read (symbol cache) {
     integer sl = 0; /* 1000; /* TESTING */
     sleep(sl);
 
-    Progress::New(caption, " ", steps, [
+    if (gui) Progress::New(caption, " ", steps, [
 	/* Progress stage 1/9 */
 	_("Detect network devices"),
 	/* Progress stage 2/9 */
@@ -258,10 +261,9 @@ global define boolean Read (symbol cache) {
     // check the environment
 //    if(!Confirm::MustBeRoot()) return false;
 
-
     if(Abort()) return false;
     /* Progress step 1/9 */
-    ProgressNextStage(_("Detecting for ndiswrapper..."));
+    if (gui) ProgressNextStage(_("Detecting for ndiswrapper..."));
 	// modprobe ndiswrapper before hwinfo when needed (#343893)
     if (!Mode::autoinst() && PackageSystem::Installed("ndiswrapper")){
 	y2milestone("ndiswrapper: installed");
@@ -283,7 +285,7 @@ Check configuration manually."));
 
     if(Abort()) return false;
     /* Progress step 2/9 */
-    ProgressNextStage(_("Detecting network devices..."));
+    if (gui) ProgressNextStage(_("Detecting network devices..."));
     // FIXME: MOD // ReadModules(NetworkInterfaces::CardRegex["netcard"]:"");
     // Dont read hardware data in config mode
     if(!Mode::config ()) {
@@ -293,13 +295,13 @@ Check configuration manually."));
 
     if(Abort()) return false;
     /* Progress step 3/9 - multiple devices may be present, really plural*/
-    ProgressNextStage(_("Reading device configuration..."));
+    if (gui) ProgressNextStage(_("Reading device configuration..."));
      LanItems::Read();
     sleep(sl);
 
     if(Abort()) return false;
     /* Progress step 4/9 */
-    ProgressNextStage(_("Reading network configuration..."));
+    if (gui) ProgressNextStage(_("Reading network configuration..."));
     NetworkConfig::Read();
 
     readIPv6();
@@ -308,47 +310,47 @@ Check configuration manually."));
 
     if(Abort()) return false;
     /* Progress step 5/9 */
-    ProgressNextStage(_("Reading firewall settings..."));
+    if (gui) ProgressNextStage(_("Reading firewall settings..."));
     boolean orig = Progress::set (false);
     SuSEFirewall4Network::Read ();
-    Progress::set (orig);
+    if (gui) Progress::set (orig);
     sleep(sl);
 
     if(Abort()) return false;
     /* Progress step 6/9 */
-    ProgressNextStage(_("Reading hostname and DNS configuration..."));
+    if (gui) ProgressNextStage(_("Reading hostname and DNS configuration..."));
     DNS::Read();
     Host::Read();
     sleep(sl);
 
     if(Abort()) return false;
     /* Progress step 7/9 */
-    ProgressNextStage(_("Reading installation information..."));
+    if (gui) ProgressNextStage(_("Reading installation information..."));
 //    ReadInstallInf();
     sleep(sl);
 
     if(Abort()) return false;
     /* Progress step 8/9 */
-    ProgressNextStage(_("Reading routing configuration..."));
+    if (gui) ProgressNextStage(_("Reading routing configuration..."));
     Routing::Read();
     sleep(sl);
 
     if(Abort()) return false;
     /* Progress step 9/9 */
-    ProgressNextStage(_("Detecting current status..."));
+    if (gui) ProgressNextStage(_("Detecting current status..."));
     NetworkService::Read ();
     sleep(sl);
 
     if(Abort()) return false;
     /* Final progress step */
-    ProgressNextStage(_("Finished"));
+    if (gui) ProgressNextStage(_("Finished"));
     sleep(sl);
 
     if(Abort()) return false;
     LanItems::modified = false;
     initialized = true;
 
-    Progress::Finish();
+    if (gui) Progress::Finish();
 
     return true;
 }
@@ -359,6 +361,11 @@ Check configuration manually."));
  */
 global boolean ReadWithCache () {
     return Read (`cache);
+}
+
+global boolean ReadWithCacheNoGUI () {
+ gui=false;
+ return ReadWithCache();
 }
 
 global void SetIPv6(boolean status){

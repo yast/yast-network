@@ -27,7 +27,7 @@ import "Hostname";
 include "network/runtime.ycp";
 include "network/routines.ycp";
 include "network/widgets.ycp";
-include "network/installation/dialogs.ycp";
+//include "network/installation/dialogs.ycp";
 
 /**
  * DSL device dialog
