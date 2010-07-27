@@ -52,7 +52,8 @@ sub Read {
   my %ret	= ('interfaces'=>\%interfaces,
 		   'routes'=>{'default'=>{'via'=>Routing->GetGateway()}}, 
                    'dns'=>{'nameservers'=>\@{DNS->nameservers}, 'searches'=>\@{DNS->searchlist}}, 
-                   'hostname'=>{'name'=>Hostname->CurrentHostname, 'domain'=>Hostname->CurrentDomain}
+                   'hostname'=>{'name'=>Hostname->CurrentHostname, 'domain'=>Hostname->CurrentDomain, 'dhcp_hostname'=>DNS->dhcp_hostname}
+#                   'hostname'=>{'name'=>Hostname->CurrentHostname, 'domain'=>Hostname->CurrentDomain}
 		);
   return \%ret;
 }
@@ -96,6 +97,7 @@ sub writeHostname {
    DNS->Read();
    DNS->hostname($args->{'hostname'}->{'name'});
    DNS->domain($args->{'hostname'}->{'domain'});
+   DNS->dhcp_hostname($args->{'hostname'}->{'dhcp_hostname'}) if (defined $args->{'hostname'}->{'dhcp_hostname'});
    DNS->modified(1);
    DNS->Write();
   return $ret;

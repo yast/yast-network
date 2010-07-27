@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jul 27 16:20:24 CEST 2010 - mzugec@suse.cz
+
+- YaPI: allow dhcp + static hostname (bnc#624655)
+- 2.19.35 
+
+-------------------------------------------------------------------
 Mon Jul 26 17:43:09 CEST 2010 - mzugec@suse.cz
 
 - L3: allow unconfigured devices for VLAN (bnc#625103)
