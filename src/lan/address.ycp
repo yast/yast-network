@@ -471,7 +471,7 @@ boolean ValidateBootproto (string key, map event) {
 
 	string mask=(string) UI::QueryWidget (`netmask, `Value);
 	if(!validPrefixOrNetmask(ipa, mask)){
-		Popup::Error(_("No valid netmask or prefix lenght."));
+		Popup::Error(_("No valid netmask or prefix length."));
 		UI::SetFocus(`netmask);
 		return false;
 	}
