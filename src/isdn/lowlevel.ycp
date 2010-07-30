@@ -735,20 +735,15 @@ _("<p>If you do not want to log all your ISDN traffic, uncheck <b>Start ISDN Log
 		ISDN::only_dsl = false;
 
 	    if ((Default_TYPE == 8002) || (Default_TYPE == 8003) || (Default_TYPE == 8004)) {
-		// #151148
-		string url = "http://en.opensuse.org/SDB:Notes_on_the_FRITZ!Card_DSL_Configuration";
 // multiline Popup::YesNo text
-		if (! Popup::YesNo (sformat (_(" WARNING
+		if (! Popup::YesNo (_(" WARNING
 
 You have selected a binary-only driver that is not
 part of our distribution. You can only use this driver
-after installing additional packages from AVM.
-Refer to the release notes and get
-further instructions from the following Web page:
-%1
+after installing additional packages from AVM manually.
 
 Continue?
-"), url)))
+")))
 		    continue;
 	    }
 	    break;

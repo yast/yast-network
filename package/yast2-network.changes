@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jul 30 13:37:32 CEST 2010 - mzugec@suse.cz
+
+- ISDN: removed deprecated documentation URL (bnc#590742)
+
+-------------------------------------------------------------------
 Thu Jul 29 10:30:49 CEST 2010 - mzugec@suse.cz
 
 - fixed typo (bnc#626280) 
