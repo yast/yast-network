@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Aug  2 14:01:45 CEST 2010 - mzugec@suse.de
+
+- YaPI: static hostname with DHCP (bnc#624655)
+- 2.17.140 
+
+-------------------------------------------------------------------
 Mon Jul 26 14:28:35 CEST 2010 - mzugec@suse.de
 
 - L3: fixed cmd-line support (bnc#624246)
