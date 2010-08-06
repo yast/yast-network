@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Aug  6 13:47:17 CEST 2010 - mzugec@suse.cz
+
+- Proxy: correctly enclose user:password into quotes (bnc#616695)
+- 2.19.36
+
+-------------------------------------------------------------------
 Fri Jul 30 13:37:32 CEST 2010 - mzugec@suse.cz
 
 - ISDN: removed deprecated documentation URL (bnc#590742)
