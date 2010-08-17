@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Aug 17 10:18:13 CEST 2010 - mzugec@suse.de
+
+- L3: allow configured eth device for VLAN (bnc#625103)
+- 2.13.139 
+
+-------------------------------------------------------------------
 Thu May 27 17:08:23 CEST 2010 - mzugec@suse.de
 
 - for bonding slaves use BusID based device names (bnc#564370)

@@ -144,8 +144,8 @@ void InitVLANSlave(string key)
         foreach(string dev_name, Lan::getUnconfiguredDevices(true),{
            items = add(items, `item(`id(dev_name), dev_name, (dev_name==settings["ETHERDEVICE"]:"")?true:false));
         });
-	// also bond and bridge devices included
-        foreach(string dev_name, NetworkDevices::List("br|bond"),{
+	// also ethernet, bond and bridge devices included
+        foreach(string dev_name, NetworkDevices::List("eth|br|bond"),{
            items = add(items, `item(`id(dev_name), dev_name, (dev_name==settings["ETHERDEVICE"]:"")?true:false));
         });
     UI::ChangeWidget(`id(key), `Items, items);
