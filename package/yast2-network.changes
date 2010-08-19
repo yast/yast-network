@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Aug 19 14:08:33 CEST 2010 - mzugec@suse.de
+
+- warn user about nm-applet/knetworkmanager (bnc#627273)
+- 2.19.37 
+
+-------------------------------------------------------------------
 Fri Aug  6 13:47:17 CEST 2010 - mzugec@suse.cz
 
 - Proxy: correctly enclose user:password into quotes (bnc#616695)

@@ -186,8 +186,10 @@ define void ManagedInit (string key) {
 define void ManagedStore (string key, map event) {
     string value_g = (string) UI::QueryWidget (`id (key), `CurrentButton);
     boolean value = value_g == "managed";
-    if (NetworkService::IsManaged () != value)
+    if (NetworkService::IsManaged () != value){
 	LanItems::SetModified ();
+        if (value && Stage::normal()) Popup::AnyMessage(_("Applet needed"), _("NetworkManager is controlled by desktop applet\n(knetworkmanager for KDE and nm-applet for GNOME).\nBe sure it's running and if not, start it manually."));
+    }
     NetworkService::SetManaged (value);
 }
 
