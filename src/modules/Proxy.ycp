@@ -257,10 +257,10 @@ global define map <string, map <string, any> > RunTestProxy (string http_proxy, 
     proxy_password	= mergestring (splitstring(proxy_password, "\""), "\\\"");
 
     string user_pass = (proxy_user != "" ?
-	" --proxy-user " +  proxy_user + (proxy_password != "" ?
+	" --proxy-user '" +  proxy_user + (proxy_password != "" ?
 	    ":" + proxy_password
 	    :
-	    "")
+	    "") + "'"
 	:
 	"");
 
@@ -268,7 +268,7 @@ global define map <string, map <string, any> > RunTestProxy (string http_proxy, 
     integer timeout_sec = 90;
     // %1 = http or ftp proxy, %2 = user:password if any, %3 = URL
     // enclose user:password into quotes, it may contain special characters (#338264)
-    string command = "curl --verbose --proxy %1 '%2' --connect-timeout %3 --url %4";
+    string command = "curl --verbose --proxy %1 %2 --connect-timeout %3 --url %4";
     string http_command = sformat(command, http_proxy, user_pass, timeout_sec, "http://www.novell.com");
     // adding option --insecure to accept the certificate without asking
     string https_command = sformat(command, https_proxy, user_pass, timeout_sec, "https://secure-www.novell.com --insecure");
