@@ -609,6 +609,7 @@ global define boolean Import(map settings) {
     DNS::Import((map) eval(settings["dns"]:$[]));
     Routing::Import((map) eval(settings["routing"]:$[]));
     NetworkService::SetManaged (settings["managed"]:false);
+    if(haskey(settings, "ipv6")) ipv6=settings["ipv6"]:true;
 
     LanItems::modified = true;
     return true;
@@ -621,18 +622,20 @@ global define boolean Import(map settings) {
 global define map Export() {
  map devices = NetworkInterfaces::Export("netcard");
  map udev_rules = LanUdevAuto::Export(devices);
-    return $[
+    map ay = $[
 	"dns"		: DNS::Export(),
 	// FIXME: MOD "modules"	: Modules,
 	"s390-devices"  : udev_rules["s390-devices"]:$[],
 	"net-udev"  	: udev_rules["net-udev"]:$[],
 	"config"	: NetworkConfig::Export(),
 	"devices"	: devices,
-//	"hwcfg"		: NetworkModules::Export("netcard"),
+	"ipv6"		: ipv6,
 	"routing"	: Routing::Export(),
 	"managed"	: NetworkService::IsManaged (),
 	"start_immediately": LanItems::autoinstall_settings["start_immediately"]:false, //start_immediately,
     ];
+    y2milestone("Exported map: %1", ay);
+  return ay;
 }
 
 /**

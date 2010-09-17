@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Sep 17 11:27:05 CEST 2010 - mzugec@suse.cz
+
+- AY: added IPv6 option (bnc#633310)
+- 2.19.38 
+
+-------------------------------------------------------------------
 Thu Aug 19 14:08:33 CEST 2010 - mzugec@suse.de
 
 - warn user about nm-applet/knetworkmanager (bnc#627273)
