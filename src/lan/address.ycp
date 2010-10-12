@@ -89,7 +89,9 @@ void my2debug (string class, string msg) {
 void InitAddrWidget (string key) {
     any value = settings[key]:nil;
     my2debug ("AW", sformat ("init k: %1, v: %2", key, value));
-    UI::ChangeWidget (`id (key), ValueProp (key), value);
+    // because IFPLUGD_PRIORITY is integer, not string
+    if (key != "IFPLUGD_PRIORITY")
+	    UI::ChangeWidget (`id (key), ValueProp (key), value);
 }
 
 
@@ -339,7 +341,6 @@ void initIfcfgId (string key) {
  initHardware();
  UI::ChangeWidget(`id(key), `Value, LanItems::Items[LanItems::current, "ifcfg"]:"" );
 }
-
 
 /**
  * Remap the buttons to their Wizard Sequencer values
@@ -766,6 +767,17 @@ list< list<string> > BuildTypesListCWM (list<string> types) {
     });
 }
 
+
+void initIfplugdPriority(string key){
+ UI::ChangeWidget(`id("IFPLUGD_PRIORITY"), `Value, tointeger(settings["IFPLUGD_PRIORITY"]:"0"));
+}
+
+symbol handleStartmode (string key, map event){
+
+UI::ChangeWidget(`id("IFPLUGD_PRIORITY"), `Enabled, (UI::QueryWidget(`id("STARTMODE"), `Value)=="ifplugd"));
+ return nil;
+}
+
 /**
  * Dialog for setting up IP address
  * @return dialog result
@@ -798,6 +810,7 @@ define any AddressDialog() {
 	// general tab:
 //	"IFNAME": ifname,
 	"STARTMODE": LanItems::startmode,
+	"IFPLUGD_PRIORITY": LanItems::ifplugd_priority,
 	"USERCONTROL": LanItems::usercontrol,
 	// problems when renaming the interface?
 	"FWZONE": fwzone,
@@ -858,6 +871,26 @@ define any AddressDialog() {
 
     wd["STARTMODE"] = MakeStartmode (
 	["auto", "ifplugd", "hotplug", "manual", "off", "nfsroot" ]);
+    wd["STARTMODE", "handle"] = handleStartmode;
+    wd["STARTMODE", "opt"] = [`notify];
+
+    wd["IFPLUGD_PRIORITY"] = $[
+	"widget": `intfield,
+	"minimum":0,
+	"maximum":100,
+	// Combo box label - when to activate device (e.g. on boot, manually, never,..)
+	"label": _("Ifplugd priority"),
+	"help":
+	// Device activation main help. The individual parts will be
+	// substituted as %1
+_("<p><b><big>IFPLUGD PRIORITY</big></b></p> 
+<p> All interfaces configured with <b>On Cable Connection</b> and with IFPLUGD_PRIORITY != 0 will be
+ used mutually exclusive. If more then one of these interfaces is <b>On Cable Connection</b>
+ then we need a way to decide which interface to take up. Therefore we have to
+ set the priority of each interface.  </p>
+"),
+	"init": initIfplugdPriority
+	];
 
     wd["IFCFGTYPE", "items"] = BuildTypesListCWM (device_types);
     wd["IFCFGID", "items"] = [[settings["IFCFGID"]:"",
@@ -986,7 +1019,7 @@ define any AddressDialog() {
 			        `VBox(
 				    // TODO:
 				    // "MANDATORY",
-				    `Frame( _("Device Activation"), `HBox(("STARTMODE"), `HStretch())),
+				    `Frame( _("Device Activation"), `HBox(("STARTMODE"), ("IFPLUGD_PRIORITY"), `HStretch())),
 				    `VSpacing(0.4),
 				    `Frame(_("Firewall Zone"), `HBox(("FWZONE"), `HStretch())),
 				    `VSpacing(0.4),
@@ -1069,6 +1102,10 @@ define any AddressDialog() {
 	string ifcfgname = LanItems::Items[LanItems::current, "ifcfg"]:"";//settings["IFCFGID"]:"";
 	// general tab
 	LanItems::startmode = settings["STARTMODE"]:"";
+	if (LanItems::startmode=="ifplugd"){
+		string ifp_prio=tostring(UI::QueryWidget(`id("IFPLUGD_PRIORITY"), `Value));
+		if(ifp_prio!=nil) LanItems::ifplugd_priority=ifp_prio;
+	}
 	LanItems::usercontrol = settings["USERCONTROL"]:false;
 
 	if (fw_is_installed) {

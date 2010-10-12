@@ -62,6 +62,7 @@ global string netmask = "";
 global string prefix = "";
 
 global string startmode = "auto";
+global string ifplugd_priority = "0";
 global boolean usercontrol = false;
 global string mtu = "";
 global string ethtool_options = "";
@@ -827,6 +828,7 @@ global void SetDeviceVars(map devmap, map defaults) {
     mtu = GetDeviceVar (devmap, defaults, "MTU");
     ethtool_options = GetDeviceVar (devmap, defaults, "ETHTOOL_OPTIONS");
     startmode = GetDeviceVar (devmap, defaults, "STARTMODE");
+    ifplugd_priority = GetDeviceVar (devmap, defaults, "IFPLUGD_PRIORITY");
     usercontrol = GetDeviceVar (devmap, defaults, "USERCONTROL") == "yes";
     description = GetDeviceVar (devmap, defaults, "NAME");
     bond_option = GetDeviceVar(devmap, defaults, "BONDING_MODULE_OPTS");
@@ -900,6 +902,7 @@ global map<string, string> SysconfigDefaults = $[
     "ETHTOOL_OPTIONS": "",
     "NAME": "",
     "STARTMODE": "manual",
+    "IFPLUGD_PRIORITY": "0",
     "USERCONTROL": "no",
     "WIRELESS_MODE": "Managed",
     "WIRELESS_ESSID": "",
@@ -1019,7 +1022,6 @@ map <string, string> ifplugd_priorities = $[
     "wlan": "10",
     ];
 
-
 /**
  * Commit pending operation
  * @return true if success
@@ -1046,9 +1048,15 @@ global define boolean Commit() {
 	    // it is not in Select yet because we don't have a widget for it
 	    if (startmode == "ifplugd")
 	    {
+/*
 		string prio = ifplugd_priorities[type]:"";
 		newdev["IFPLUGD_PRIORITY"] = prio;
-	    }
+*/
+		if (ifplugd_priority!=nil)
+			newdev["IFPLUGD_PRIORITY"] = ifplugd_priority;
+		else
+			newdev["IFPLUGD_PRIORITY"] = ifplugd_priorities[type]:"0";
+	    } // else if (haskey(newdev, "IFPLUGD_PRIORITY"))newdev = remove(newdev, "IFPLUGD_PRIORITY");
 	    newdev["USERCONTROL"] = usercontrol? "yes": "no";
 	    newdev["BOOTPROTO"] = bootproto;
 	}

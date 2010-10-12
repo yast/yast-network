@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Oct 12 01:19:58 CEST 2010 - mzugec@suse.cz
+
+- added support for IFPLUGD_PRIORITY (bnc#586376)
+- 2.19.39 
+
+-------------------------------------------------------------------
 Fri Sep 17 11:27:05 CEST 2010 - mzugec@suse.cz
 
 - AY: added IPv6 option (bnc#633310)
