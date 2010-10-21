@@ -25,7 +25,7 @@ Read	.probe.netcard nil
 Log	hardware detection failure
 Read	.etc.install_inf.BrokenModules nil
 Read	.udev_persistent.net nil
-Dir	.modprobe.network.options: []
+Dir	.modules.options: []
 Read	.udev_persistent.drivers nil
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-pcmcia" nil
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-usb" nil

@@ -182,8 +182,8 @@ boolean ReadUdevDriverRules(){
  udev_net_rules = (map<string, any>)SCR::Read(.udev_persistent.net);
 
  y2milestone ("Reading driver options ...");
- foreach(string driver, SCR::Dir(.modprobe.network.options), {
-  string pth=sformat(".modprobe.network.options.%1",driver);
+ foreach(string driver, SCR::Dir(.modules.options), {
+  string pth=sformat(".modules.options.%1",driver);
 //  driver_options[driver] = SCR::Read(topath(pth));
   foreach(string key, string value, (map<string, string>)SCR::Read(topath(pth)), {
    driver_options[driver] = sformat("%1%2%3=%4", driver_options[driver]:"",
@@ -236,7 +236,6 @@ global void WriteUdevDriverRules(){
   if (size(Items[key, "udev", "net"]:[])>0) {
     string dev_name = Items[key, "hwinfo", "dev_name"]:"";
     current=key;
-//    net_rules = add(net_rules, sformat("SUBSYSTEM==\"net\", DRIVERS==\"?*\", %1, NAME=\"%2\"", GetItemUdev("ATTR{address}"), GetItemUdev("NAME")));
     net_rules = add(net_rules, mergestring(Items[key, "udev", "net"]:[], ", "));
     if (dev_name!=GetItemUdev("NAME")) {
 		changed_devices = add(changed_devices, dev_name);
@@ -257,9 +256,9 @@ global void WriteUdevDriverRules(){
    val[ l[0]:"" ]=l[1]:"";
   });
   if (!hasAnyValue(value)) val=nil;
-  SCR::Write(add(.modprobe.network.options, key), val);
+  SCR::Write(add(.modules.options, key), val);
  });
- SCR::Write(.modprobe.network,nil);
+ SCR::Write(.modules,nil);
 }
 
 /**
@@ -690,7 +689,7 @@ global void SelectHWMap (map hardware) {
    y2milestone("device=%1", device);
    hw=hardware;
    if(Arch::s390() && operation==`add){
-         y2internal("Propose chan_ids values for %1", hw);
+         y2milestone("Propose chan_ids values for %1", hw);
              integer devid = 0;
              string devstr = "";
              string s390chanid = "[0-9]+\\.[0-9]+\\.";

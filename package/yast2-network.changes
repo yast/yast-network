@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Oct 21 15:41:33 CEST 2010 - mzugec@suse.cz
+
+- L3: setup kernel module options (bnc#645389)
+- 2.17.142 
+
+-------------------------------------------------------------------
 Fri Aug  6 14:20:40 CEST 2010 - mzugec@suse.de
 
 - Proxy: correctly enclose user:password into quotes (bnc#616695)
