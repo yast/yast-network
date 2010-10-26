@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Oct 26 14:44:47 CEST 2010 - mzugec@suse.cz
+
+- added "No IP" option for bridge devices (bnc#648620)
+- 2.19.40 
+
+-------------------------------------------------------------------
 Tue Oct 12 01:19:58 CEST 2010 - mzugec@suse.cz
 
 - added support for IFPLUGD_PRIORITY (bnc#586376)

@@ -175,7 +175,7 @@ for your peer.</p>
     /* Address dialog help 6/8 */
 "netmask":
     _("<p>For <b>Static Address Setup</b> enter the static IP address for your computer (for example: <tt>192.168.100.99</tt>) and
-the network mask (usually <tt>255.255.255.0</tt> or just lenght of prefix <tt>/24</tt>). For special case - unconfigured interface use <tt>0.0.0.0</tt> and <tt>/32</tt>.Optionally, you can enter
+the network mask (usually <tt>255.255.255.0</tt> or just lenght of prefix <tt>/24</tt>).Optionally, you can enter
 a fully qualified hostname for this IP address. The hostname will be written to <tt>/etc/hosts</tt>.</p>
 ")
  +
