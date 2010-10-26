@@ -467,14 +467,14 @@ boolean ValidateBootproto (string key, map event) {
     if (UI::QueryWidget(`bootproto, `CurrentButton) == `static)
     {
 	string ipa = (string) UI::QueryWidget (`ipaddr, `Value);
-	if (! IP::Check(ipa)){
+	if (ipa!="" && !IP::Check(ipa)){
 	 Popup::Error(_("No valid IP address."));
 	 UI::SetFocus(`ipaddr);
 	 return false;
 	}
 
 	string mask=(string) UI::QueryWidget (`netmask, `Value);
-	if(!validPrefixOrNetmask(ipa, mask)){
+	if((ipa!="" && mask!="") && !validPrefixOrNetmask(ipa, mask)){
 		Popup::Error(_("No valid netmask or prefix length."));
 		UI::SetFocus(`netmask);
 		return false;
@@ -848,9 +848,12 @@ define any AddressDialog() {
 	"TUNNEL_SET_OWNER" : LanItems::tunnel_set_owner,
 	"TUNNEL_SET_GROUP" : LanItems::tunnel_set_group
 	];
-    } else {
+    }
+/*
+ else {
 	if(settings["BOOTPROTO"]:"" == "static" && settings["IPADDR"]:"" == "" && !no_dhcp) settings["BOOTPROTO"] = "dhcp";
     }
+*/
 
     // #65524
     if (LanItems::operation == `add && force_static_ip)
