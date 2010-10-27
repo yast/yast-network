@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Oct 27 13:53:54 CEST 2010 - mzugec@suse.cz
+
+- AY: when no network profile, don't change network configuration
+(bnc#649494)
+- 2.19.41 
+
+-------------------------------------------------------------------
 Tue Oct 26 14:44:47 CEST 2010 - mzugec@suse.cz
 
 - added "No IP" option for bridge devices (bnc#648620)
