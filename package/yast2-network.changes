@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Oct 27 13:28:04 CEST 2010 - mzugec@suse.cz
+
+- AY: when no network profile, don't change network configuration 
+(bnc#649494)
+- 2.17.143 
+
+-------------------------------------------------------------------
 Thu Oct 21 15:41:33 CEST 2010 - mzugec@suse.cz
 
 - L3: setup kernel module options (bnc#645389)

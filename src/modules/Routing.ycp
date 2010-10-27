@@ -30,6 +30,8 @@ include "network/routines.ycp";
  */
 global list<map> Routes = [];
 
+// modified by AY (bnc#649494)
+boolean modified = nil;
 /**
  * Enable IP forwarding
  * .sysconfig.sysctl.IP_FORWARD
@@ -58,6 +60,8 @@ string routes_file = "/etc/sysconfig/network/routes";
  */
 global define boolean Modified() {
     boolean ret = (Routes != Orig_Routes || Forward != Orig_Forward);
+    // probably called without Read()  (bnc#649494)
+    if (Orig_Routes==nil && Orig_Forward==nil && modified!=true) ret = false;
     y2debug("ret=%1", ret);
     return ret;
 }
@@ -225,6 +229,8 @@ global define boolean Import(map settings) {
 
     Orig_Routes = nil;
     Orig_Forward = nil;
+
+    modified=true;
 
     return true;
 }
