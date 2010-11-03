@@ -159,6 +159,27 @@ void StoreVLANSlave(string key, map event)
 }
 
 
+integer getISlaveIndex(string slave){
+  list<term> items = (list<term>)UI::QueryWidget(`msbox_items, `Items);
+  integer index = -1;
+  integer pos=0;
+  foreach(term it, (list<term>)items, {
+	if(it[0, 0]:""==slave){
+	  index = pos;
+	  break;
+	}
+	pos=pos+1;
+  });
+ return index;
+}
+
+void enableSlaveButtons(){
+  list<term> items = (list<term>)UI::QueryWidget(`msbox_items, `Items);
+  string current = tostring(UI::QueryWidget(`msbox_items, `CurrentItem));
+ integer index = getISlaveIndex(current);
+ UI::ChangeWidget(`up, `Enabled, index>0);
+ UI::ChangeWidget(`down, `Enabled, index<size(items)-1);
+}
 
 /**
  * Default function to init the value of slave devices box.
@@ -167,11 +188,11 @@ void StoreVLANSlave(string key, map event)
 void InitSlave(string key)
 {
     settings["SLAVES"] = LanItems::bond_slaves;
-    UI::ChangeWidget(`id("BONDSLAVE"), `SelectedItems, settings["SLAVES"]:[]);
+    UI::ChangeWidget(`msbox_items, `SelectedItems, settings["SLAVES"]:[]);
 
-      settings["BONDOPTION"] = LanItems::bond_option;
+    settings["BONDOPTION"] = LanItems::bond_option;
 
-      list items = createUnconfigured(settings["SLAVES"]:[]);
+    list items = createUnconfigured(settings["SLAVES"]:[]);
     map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
     foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
      foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
@@ -182,8 +203,72 @@ void InitSlave(string key)
      });
     });
 
-    UI::ChangeWidget(`id(key), `Items, items);
-y2internal("slaves %1", settings["SLAVES"]:[]);
+  // reorder the items
+  list l2=[];
+  list l1=[];
+  foreach(term t, (list<term>) items, {
+	if (contains(settings["SLAVES"]:[], t[0,0]:"")){
+	l1=add(l1, t);
+	} else {
+		l2=add(l2, t);
+		}
+  });
+
+  items=[];
+  foreach(string s, settings["SLAVES"]:[],{
+    foreach(term t, (list<term>) l1,{
+      if (t[0,0]:""==s) items=add(items, t);
+    });
+  });
+
+  items=union(items,l2);
+  UI::ChangeWidget(`msbox_items, `Items, items);
+  enableSlaveButtons();
+}
+
+symbol HandleSlave(string key, map event)
+{
+ if (event["EventReason"]:"" =="SelectionChanged"){
+    enableSlaveButtons();
+ } else if (event["EventReason"]:""=="Activated" && event["WidgetClass"]:nil==`PushButton){
+        list<term> items = (list<term>)UI::QueryWidget(`msbox_items, `Items);
+	string current = tostring(UI::QueryWidget(`msbox_items, `CurrentItem));
+	integer index = getISlaveIndex(current);
+	list<term> new_items=[];
+	integer pos=0;
+  switch(event["ID"]:`nil){
+    case `up:
+	while(index>pos+1){
+	 new_items=add(new_items, items[pos]:nil);
+	 pos=pos+1;
+	}
+	 new_items=add(new_items, items[index]:nil);
+	 new_items=add(new_items, items[index-1]:nil);
+	 new_items=(list<term>)union(new_items, (list<term>)sublist(items, index));
+	break;
+    case `down:
+	while(index>pos){
+	 new_items=add(new_items, items[pos]:nil);
+	 pos=pos+1;
+	}
+	 new_items=add(new_items, items[index+1]:nil);
+	 new_items=add(new_items, items[index]:nil);
+	 new_items=(list<term>)union(new_items, (list<term>)sublist(items, index+1));
+	break;
+    default:
+	y2warning("unknown action");
+	return nil;
+  }
+	items = new_items;
+	UI::ChangeWidget(`msbox_items, `Items, items);
+	enableSlaveButtons();
+
+ } else
+ {
+  y2debug("event:%1", event);
+ }
+
+ return nil;
 }
 
 /**
@@ -193,7 +278,7 @@ y2internal("slaves %1", settings["SLAVES"]:[]);
  */
 void StoreSlave(string key, map event)
 {
-    settings["SLAVES"] = (list<string>)UI::QueryWidget (`id(key), `SelectedItems);
+    settings["SLAVES"] = (list<string>)UI::QueryWidget (`msbox_items, `SelectedItems);
     settings["BONDOPTION"] = UI::QueryWidget (`id("BONDOPTION"), `Value);
     LanItems::bond_slaves = settings["SLAVES"]:[];
     LanItems::bond_option = settings["BONDOPTION"]:"";
@@ -656,11 +741,15 @@ map<string, map<string,any> > widget_descr_local = $[
         "help": help["etherdevice"]:"",
     ],
     "BONDSLAVE": $[
-        "widget": `multi_selection_box,
+        "widget": `custom,
+	"custom_widget" : `Frame(_("Bond Slaves and Order"), `VBox(
+				`MultiSelectionBox(`id(`msbox_items), `opt(`notify), "", []),
+				`HBox(`PushButton(`id(`up), `opt(`disabled), _("Up") ), `PushButton(`id(`down), `opt(`disabled), _("Down") ) )
+			)),
         "label": _("Bond &Slaves"),
-        "opt": [`shrinkable],
-        "items" : [ ],
+//        "opt": [`shrinkable],
         "init": InitSlave,
+	"handle": HandleSlave,
         "store": StoreSlave,
         "help": help["bondslave"]:"",
     ],

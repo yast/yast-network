@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Nov  3 17:03:37 CET 2010 - mzugec@suse.cz
+
+- support for ordering in bonding slaves (bnc#640611)
+- 2.20.1 
+
+-------------------------------------------------------------------
 Wed Oct 27 13:53:54 CEST 2010 - mzugec@suse.cz
 
 - AY: when no network profile, don't change network configuration
