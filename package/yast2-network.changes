@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Nov  8 15:28:20 CET 2010 - mzugec@suse.cz
+
+- TP-L3: if possible, for temporary installation network use same
+device with same MAC address, even if devicename changed (bnc#648270)
+- 2.20.2 
+
+-------------------------------------------------------------------
 Wed Nov  3 17:03:37 CET 2010 - mzugec@suse.cz
 
 - support for ordering in bonding slaves (bnc#640611)
