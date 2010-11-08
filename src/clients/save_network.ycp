@@ -64,6 +64,7 @@ define string DeleteFirstWord (string s) {
  * @return true on success
  */
 define boolean ReadInstallInf() {
+    y2milestone("ReadInstallInf()");
 
     /* Detect install.inf location */
     path install_inf = nil;
@@ -117,10 +118,14 @@ define boolean ReadInstallInf() {
 
     /* Split network device */
     netdevice = InstallInf["netdevice"]:"";
+    y2milestone("InstallInf::netdevice:%1", netdevice);
     if (Mode::autoinst()){
+       // if possible, for temporary installation network use same device
+       // with same MAC address (even if devicename changed) (bnc#648270)
        string new_devname = LanUdevAuto::GetDevnameByMAC(InstallInf["hwaddr"]:"");
+       y2milestone("LanUdevAuto::netdevice:%1", new_devname);
        if (size(new_devname)>0){
-	y2internal("old devname: %1, new devname: %2", netdevice, new_devname);
+	y2milestone("old devname: %1, new devname: %2", netdevice, new_devname);
 	netdevice=new_devname;
        }
     }
