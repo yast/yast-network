@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov 15 12:31:45 CET 2010 - mzugec@suse.cz
+
+- correctly apply BusID based udev rules in AY (bnc#648270)
+- 2.17.145 
+
+-------------------------------------------------------------------
 Mon Nov  8 16:40:34 CET 2010 - mzugec@suse.de
 
 - TP-L3: if possible, for temporary installation network use same
