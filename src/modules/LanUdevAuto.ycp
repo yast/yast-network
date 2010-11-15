@@ -237,7 +237,20 @@ global string GetDevnameByMAC(string mac){
        y2milestone("MAC address matched with device:%1", rule["name"]:"");
        break;
      }
-   }
+   } else if (rule["rule"]:""=="KERNELS"){
+	y2milestone("rule: %1", rule);
+	/* input parameter is MAC address, output is BusID of matched device */
+	map cmd = (map)SCR::Execute(.target.bash_output,
+	sformat( "DEVICE=$(grep '%1' /sys/class/net/*/address);KERNELS=$(ls -l \"$(echo ${DEVICE%%/*})/device\");echo ${KERNELS##*/}|tr -d '\n'", mac));
+	if (cmd["exit"]:-1==0){
+	  y2milestone("cmd output:%1", cmd["stdout"]:"");
+          if (cmd["stdout"]:""==rule["value"]:""){
+	    y2internal("match!");
+	    devname=rule["name"]:"";
+          }
+        }
+   } else
+	y2error("Unknown rule for:%1", rule);
   });
  } else y2warning("No MAC address to compare.");
  return devname;
