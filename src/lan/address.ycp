@@ -163,8 +163,9 @@ void InitSlave(string key)
     map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
     foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
      foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
-        //filter the eth devices (BOOT_PROTO=none && START_MODE=off)
-            if (((string)configurations[devtype, devname, "BOOTPROTO"]:"" == "none") && ((string)configurations[devtype, devname, "STARTMODE"]:"" == "off"))
+        //filter the eth devices (BOOT_PROTO=none
+	// don't care about STARTMODE (see bnc#652987c6)
+            if (((string)configurations[devtype, devname, "BOOTPROTO"]:"" == "none")/* && ((string)configurations[devtype, devname, "STARTMODE"]:"" == "off")*/)
              items = add (items, `item(`id(devname), sformat("%1 - %2", devname, configurations[devtype, devname, "NAME"]:""), contains(settings["SLAVES"]:[], devname)) );
 
      });
