@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Nov 16 11:13:12 CET 2010 - mzugec@suse.cz
+
+- accept unconfigured + BOOTPROTO=none bondslaves (bnc#652987)
+- 2.20.4 
+
+-------------------------------------------------------------------
 Mon Nov 15 12:37:29 CET 2010 - mzugec@suse.cz
 
 - correctly apply BusID based udev rules in AY (bnc#648270)
