@@ -454,14 +454,14 @@ boolean ValidateBootproto (string key, map event) {
     if (UI::QueryWidget(`bootproto, `CurrentButton) == `static)
     {
 	string ipa = (string) UI::QueryWidget (`ipaddr, `Value);
-	if (! IP::Check(ipa)){
+	if (ipa!="" && !IP::Check(ipa)){
 	 Popup::Error(_("No valid IP address."));
 	 UI::SetFocus(`ipaddr);
 	 return false;
 	}
 
 	string mask=(string) UI::QueryWidget (`netmask, `Value);
-	if(!validPrefixOrNetmask(ipa, mask)){
+	if(ipa!="" && !validPrefixOrNetmask(ipa, mask)){
 		Popup::Error(_("No valid netmask or prefix lenght."));
 		UI::SetFocus(`netmask);
 		return false;
