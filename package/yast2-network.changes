@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Thu Nov 25 15:02:53 CET 2010 - mzugec@suse.cz
+
+- reverted previous YaPI change (see bnc#624655c#14)
+- 2.17.78.4 
+
+-------------------------------------------------------------------
+Thu Oct  7 21:54:29 CEST 2010 - ro@suse.de
+
+- add directory to filelist to fix build 
+
+-------------------------------------------------------------------
 Fri Sep  3 15:29:37 CEST 2010 - mzugec@suse.cz
 
 - Proxy: correctly enclose user:password into quotes (bnc#616695)
