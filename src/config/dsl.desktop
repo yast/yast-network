@@ -22,3 +22,4 @@ Exec=xdg-su -c "/sbin/yast2 dsl"
 Name=DSL
 GenericName=Configure a DSL connection
 StartupNotify=true
+X-SuSE-YaST-Keywords=dsl,vpn,pptp,pppoe,network

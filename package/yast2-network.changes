@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Nov 26 14:09:27 CET 2010 - mzugec@suse.cz
+
+- added search keywords (bnc#641922)
+- 2.20.5 
+
+-------------------------------------------------------------------
 Tue Nov 16 11:13:12 CET 2010 - mzugec@suse.cz
 
 - accept unconfigured + BOOTPROTO=none bondslaves (bnc#652987)
