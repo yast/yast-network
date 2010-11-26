@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Nov 26 15:32:13 CET 2010 - mzugec@suse.cz
+
+- replaced kinternet dependency with qinternet (bnc#654604)
+- 2.17.147 
+
+-------------------------------------------------------------------
 Tue Nov 16 11:07:19 CET 2010 - mzugec@suse.cz
 
 - L3: accept unconfigured+BOOTPROTO=none bondslaves (bnc#652987)

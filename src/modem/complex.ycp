@@ -86,7 +86,7 @@ define symbol ReadDialog() {
 	// warning message when modem module starts up and NM is on
 	string warning = _("NetworkManager is enabled. Some features, such as
 multiple providers for one modem, will not work.
-You may want to use kinternet instead.");
+You may want to use qinternet instead.");
 	Popup::LongWarning (warning);
     }
 */

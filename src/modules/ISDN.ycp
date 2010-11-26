@@ -346,8 +346,8 @@ global define boolean WriteOnly()``{
  */
 global define boolean Write(boolean start) ``{
 
-    // install kinternet if there is at least one ISDN device - #161782
-    if (size(Devices["contr"]:$[])>0 && !PackageSystem::Installed("kinternet")) installpackages = add (installpackages, "kinternet");
+    // install qinternet if there is at least one ISDN device - #161782
+    if (size(Devices["contr"]:$[])>0 && !PackageSystem::Installed("qinternet")) installpackages = add (installpackages, "qinternet");
 
     if (installpackages != nil && installpackages != [""]) {
 	symbol retp = PackagesInstall((list<string>) installpackages);
