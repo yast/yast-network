@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov 29 11:19:05 CET 2010 - mzugec@suse.cz
+
+- require qinternet only when available (bnc#654604)
+- 2.17.148 
+
+-------------------------------------------------------------------
 Fri Nov 26 15:32:13 CET 2010 - mzugec@suse.cz
 
 - replaced kinternet dependency with qinternet (bnc#654604)

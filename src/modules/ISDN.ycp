@@ -347,7 +347,13 @@ global define boolean WriteOnly()``{
 global define boolean Write(boolean start) ``{
 
     // install qinternet if there is at least one ISDN device - #161782
-    if (size(Devices["contr"]:$[])>0 && !PackageSystem::Installed("qinternet")) installpackages = add (installpackages, "qinternet");
+    // only if package available (it's not in SLE) (bnc#654604)
+    if (size(Devices["contr"]:$[])>0 && !PackageSystem::Installed("qinternet")) {
+	if (Package::Available("qinternet"))
+		installpackages = add (installpackages, "qinternet");
+	else
+		y2error("Package qinternet is not available.");
+    }
 
     if (installpackages != nil && installpackages != [""]) {
 	symbol retp = PackagesInstall((list<string>) installpackages);
