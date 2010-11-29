@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Nov 29 14:01:27 CET 2010 - mzugec@suse.cz
+
+- reverted changed strings (qinternet/kinternet) 
+
+-------------------------------------------------------------------
 Mon Nov 29 11:19:05 CET 2010 - mzugec@suse.cz
 
 - require qinternet only when available (bnc#654604)
