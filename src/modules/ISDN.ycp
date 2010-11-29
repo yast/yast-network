@@ -351,7 +351,7 @@ global define boolean Write(boolean start) ``{
 	if (Package::Available("qinternet"))
 		installpackages = add (installpackages, "qinternet");
 	else
-		y2error("There's no qinternet package available.");
+		y2error("There's no kinternet package available.");
     }
 
     if (installpackages != nil && installpackages != [""]) {

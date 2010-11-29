@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Nov 29 13:58:04 CET 2010 - mzugec@suse.cz
+
+- reverted changed strings (kinternet/qinternet) 
+
+-------------------------------------------------------------------
 Mon Nov 29 11:33:13 CET 2010 - mzugec@suse.cz
 
 - install qinternet for ISDN only if available (bnc#654604)

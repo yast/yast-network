@@ -117,7 +117,7 @@ controls the interface. There is no need to set it up in YaST."),
 	"label": _("Manually"),
 	// help text for Device Activation
 	"help": _("<p><b>Manually</b>: You control the interface manually
-via 'ifup' or 'qinternet' (see 'User Controlled' below)</p>.
+via 'ifup' or 'kinternet' (see 'User Controlled' below)</p>.
 "),
 	],
     "ifplugd": $[
