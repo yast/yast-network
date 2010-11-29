@@ -61,7 +61,7 @@ boolean HasLink() {
 }
 
 /**
- * Are there interfaces controlled by smpppd and kinternet?
+ * Are there interfaces controlled by smpppd and qinternet?
  * They are the ones with USERCONTROL=yes (#44303)
  * @return true/false
  */

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov 29 11:33:13 CET 2010 - mzugec@suse.cz
+
+- install qinternet for ISDN only if available (bnc#654604)
+- 2.17.78.5 
+
+-------------------------------------------------------------------
 Thu Nov 25 15:02:53 CET 2010 - mzugec@suse.cz
 
 - reverted previous YaPI change (see bnc#624655c#14)
