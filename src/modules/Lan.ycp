@@ -149,12 +149,14 @@ void readIPv6(){
                 "filelist" : ["sysctl.conf"],
                 "filepath" : "/etc/",
                 "regexp"   : "^[[:space:]]*(net.ipv6.conf.all.disable_ipv6)[[:space:]]*=[[:space:]]*1"
-        ],
+        ]
+/*
         "module" : $[
                 "filelist" : ["ipv6", "50-ipv6.conf"],
                 "filepath" : "/etc/modprobe.d/",
                 "regexp"   : "^[[:space:]]*(install ipv6 /bin/true)"
         ]
+*/
  ];
 
  foreach(string which,map<string,any> method, methods, {
@@ -347,7 +349,7 @@ global void SetIPv6(boolean status){
 void writeIPv6(){
 //  SCR::Write(.target.string, "/etc/modprobe.d/ipv6", sformat("%1install ipv6 /bin/true", ipv6?"#":""));
 // uncomment to write to old place (and comment code bellow)
-  SCR::Write(.target.string, "/etc/modprobe.d/50-ipv6.conf", sformat("%1install ipv6 /bin/true\n", ipv6?"#":""));
+//  SCR::Write(.target.string, "/etc/modprobe.d/50-ipv6.conf", sformat("%1install ipv6 /bin/true\n", ipv6?"#":""));
   string filename = "/etc/sysctl.conf";
   string sysctl = (string)SCR::Read(.target.string, filename);
   string sysctl_row = sformat("%1net.ipv6.conf.all.disable_ipv6 = 1", ipv6?"# ":"");
