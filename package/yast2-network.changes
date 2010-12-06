@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Dec  6 15:46:53 CET 2010 - mzugec@suse.cz
+
+- L3: AY Layer2 support - fixed portname option (bnc#573607)
+- 2.17.149 
+
+-------------------------------------------------------------------
 Mon Nov 29 14:01:27 CET 2010 - mzugec@suse.cz
 
 - reverted changed strings (qinternet/kinternet) 

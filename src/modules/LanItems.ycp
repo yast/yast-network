@@ -1558,7 +1558,7 @@ global boolean createS390Device(){
 */
 	string portname_param=(size(chan_mode)>0) ? sformat("-p %1", chan_mode) : "";
         string options_param=(size(qeth_options)>0) ? sformat("-o %1", qeth_options) : "";
-	command1=sformat("qeth_configure %1 %2 %3 %4 %5 1", options_param, qeth_layer2?"-l":"", portname_param, portnumber_param, qeth_chanids);
+	command1=sformat("qeth_configure %1 %2 %3 %4 %5 1", options_param, (qeth_layer2==true)?"-l":"", portname_param, portnumber_param, qeth_chanids);
 	command2=sformat("ls /sys/devices/qeth/%1/net/|head -n1|tr -d '\n'", (splitstring(qeth_chanids, " "))[0]:"");
 	break;
   case "ctc":
