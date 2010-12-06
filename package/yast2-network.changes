@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Dec  6 16:13:04 CET 2010 - mzugec@suse.cz
+
+- L3: AY Layer2 support - fixed portname option (bnc#573607)
+- 2.20.7 
+
+-------------------------------------------------------------------
 Thu Dec  2 10:07:43 CET 2010 - mzugec@suse.cz
 
 - removed obsolete 50-ipv6.conf (bnc#632530)

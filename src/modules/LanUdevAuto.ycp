@@ -138,6 +138,11 @@ y2milestone("importing %1", settings);
 		LanItems::chan_mode=rule["router"]:"";
 		break;
     }
+    y2milestone("rule:%1", rule);
+    y2milestone("type:%1", LanItems::type);
+    y2milestone("chanids:%1", LanItems::qeth_chanids);
+    y2milestone("layer2:%1", LanItems::qeth_layer2);
+    y2milestone("portname:%1", LanItems::chan_mode);
     LanItems::createS390Device();
     y2milestone("rule %1", rule);
    });
@@ -188,7 +193,7 @@ global map Export(map devices){
 
    AY["s390-devices", device]=$["type":device_type];
    if (size(chanids)>0) AY["s390-devices", device, "chanids"]=chanids;
-//   if (size(portname)>0) AY[device, "portname"]=portname;
+   if (size(portname)>0) AY["s390-devices", device, "portname"]=portname;
    if (size(protocol)>0) AY["s390-devices", device, "protocol"]=protocol;
    if (layer2) AY["s390-devices", device, "layer2"]=true;
 
