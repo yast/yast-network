@@ -52,7 +52,7 @@ if(func == "MakeProposal") {
 	Lan::Read (force_reset? `nocache: `cache);
 	if (Lan::virt_net_proposal==nil){
          if((PackageSystem::Installed("xen") && !Arch::is_xenU()) || PackageSystem::Installed("kvm")||
-		PackageSystem::Installed("qemu") || PackageSystem::Installed("virtualbox-ose"))
+		PackageSystem::Installed("qemu"))
 		Lan::virt_net_proposal = true;
 	 else Lan::virt_net_proposal = false;
 	}

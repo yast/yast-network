@@ -712,8 +712,9 @@ global define list SummaryGeneral () {
 	// enable ipv6 support
 	link_v6 = Hyperlink (href_v6, _("Enable IPv6"));
     }
+   // no exception needed for virtualbox* (bnc#648044) http://www.virtualbox.org/manual/ch06.html
    if ( (PackageSystem::Installed("xen") && !Arch::is_xenU()) || PackageSystem::Installed("kvm")||
-         PackageSystem::Installed("qemu")||PackageSystem::Installed("virtualbox-ose")
+         PackageSystem::Installed("qemu")
     ){
     if (virt_net_proposal){
 	href_virt_net = "virtual-revert";
@@ -838,7 +839,7 @@ global define boolean ProposeInterfaces () {
  // test if we have any virtualization installed
  if (virt_net_proposal)
  {
-  y2milestone("Virtualization [xen|kvm|qemu|virtualbox-ose] detected - will propose virtualization network");
+  y2milestone("Virtualization [xen|kvm|qemu] detected - will propose virtualization network");
     // in case of virtualization use special proposal
     // collect all interfaces that will be skipped from bridged proposal
     list<string> skipped = [];

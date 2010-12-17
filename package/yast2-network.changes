@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Dec 17 10:57:38 CET 2010 - mzugec@suse.cz
+
+- L3: don't propose bridge for vbox (bnc#648044)
+- 2.20.8 
+
+-------------------------------------------------------------------
 Mon Dec  6 16:13:04 CET 2010 - mzugec@suse.cz
 
 - L3: AY Layer2 support - fixed portname option (bnc#573607)
