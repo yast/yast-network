@@ -266,6 +266,20 @@ void CreateIfcfg(){
 		network_configuration = sformat("%1STARTMODE='nfsroot'\n", network_configuration);
 	      }
 	      break;
+	case 3: // FCoE case - create VLAN configuration
+ map<string,any> cmd = (map<string,any>) SCR::Execute(.target.bash_output,
+	"ls -la /sys/block/*|grep target|grep eth|cut -d'>' -f2|cut -d'/' -f5|uniq");
+ y2internal("cmd %1", cmd);
+ if (cmd["exit"]:-1==0){
+  string ifcfg = splitstring(cmd["stdout"]:"", "\n")[0]:"";
+  y2internal("ifcfg: %1", ifcfg);
+  string config=sformat("BOOTPROTO=\"static\"\nSTARTMODE=\"nfsroot\"
+ETHERDEVICE=\"%1\"\nUSERCONTROL=\"no\"\n", splitstring(ifcfg, ".")[0]:"");
+  y2internal("config: %1", config);
+  string config_file=sformat("/etc/sysconfig/network/ifcfg-%1", ifcfg);
+  y2internal("filename: %1", config_file);
+  SCR::Write(.target.string, config_file, config);
+ } else y2error("Command failed.");
 	case 2:
 	      network_configuration = sformat("%1STARTMODE='nfsroot'\n", network_configuration);
 	      break;
