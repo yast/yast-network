@@ -124,6 +124,7 @@ y2milestone("store bridge %1 : %2", key, settings["BRIDGE_PORTS"]:"");
 void InitVLANSlave(string key)
 {
  settings["ETHERDEVICE"] = NetworkInterfaces::Current["ETHERDEVICE"]:"";
+ settings["VLAN_ID"] = tointeger(NetworkInterfaces::Current["VLAN_ID"]:"0");
 
  list items = [];
     map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
@@ -143,7 +144,8 @@ void InitVLANSlave(string key)
  */
 void StoreVLANSlave(string key, map event)
 {
-    settings["ETHERDEVICE"] = (string)UI::QueryWidget (`id(key), `Value);
+    settings["ETHERDEVICE"] = (string)UI::QueryWidget (`id(`vlan_eth), `Value);
+    settings["VLAN_ID"] = UI::QueryWidget (`id(`vlan_id), `Value);
 }
 
 
@@ -634,11 +636,15 @@ map<string, map<string,any> > widget_descr_local = $[
         "help": help["bridge_ports"]:"",
     ],
     "ETHERDEVICE": $[
-        "widget": `combobox,
-        "label": _("Real Interface for &VLAN"),
-        "items" : [ ],
+        "widget": `custom,
+	"custom_widget":
+		`HBox(
+		  `ComboBox(`id(`vlan_eth), `opt(`notify), _("Real Interface for &VLAN"), []),
+		  `IntField(`id(`vlan_id), `opt(`notify), _("VLAN id"), 0, 9999, 0)
+		),
         "opt": [`hstretch],
         "init": InitVLANSlave,
+        "handle": HandleVLANSlave,
         "store": StoreVLANSlave,
         "help": help["etherdevice"]:"",
     ],
@@ -877,7 +883,7 @@ define any AddressDialog() {
 	    // interface types. It will work in some cases, like
 	    // overriding eth to wlan but not in others where we would
 	    // need to change the contents of the dialog. #30890.
-	    "IFCFGTYPE",
+	    LanItems::type!="vlan" ? "IFCFGTYPE" : `Empty(),
 	    `HSpacing(1.5),
 	    `MinWidth(30, "IFCFGID"),
 	    `HSpacing(0.5),
@@ -1120,6 +1126,9 @@ define any AddressDialog() {
 
 	if (LanItems::type == "vlan"){
 	 LanItems::vlan_etherdevice = settings["ETHERDEVICE"]:"";
+y2internal("%1, %2", LanItems::vlan_id, (integer)settings["VLAN_ID"]:0);
+	 LanItems::vlan_id = tostring((integer)settings["VLAN_ID"]:0);
+y2internal("%1", LanItems::vlan_id);
 	} else if (LanItems::type == "br"){
          LanItems::bridge_ports = settings["BRIDGE_PORTS"]:"";
         } else if (contains(["tun", "tap"], LanItems::type)){
