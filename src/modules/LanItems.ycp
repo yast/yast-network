@@ -85,6 +85,7 @@ global string bond_option="";
 
 // VLAN option
 global string vlan_etherdevice="";
+global string vlan_id="";
 
 // interfaces attached to bridge (list delimited by ' ')
 global string bridge_ports="";
@@ -832,6 +833,7 @@ global void SetDeviceVars(map devmap, map defaults) {
     usercontrol = GetDeviceVar (devmap, defaults, "USERCONTROL") == "yes";
     description = GetDeviceVar (devmap, defaults, "NAME");
     bond_option = GetDeviceVar(devmap, defaults, "BONDING_MODULE_OPTS");
+    vlan_id = GetDeviceVar(devmap, defaults, "VLAN_ID");
 
     bond_slaves=[];
     foreach(any key, any value, devmap,
@@ -1063,7 +1065,9 @@ global define boolean Commit() {
 	newdev["NAME"] = description;
         // L3: bnc#585458
 //      if (!issubstring(Items[current, "ifcfg"]:"", type)) newdev["INTERFACETYPE"]=type;
-        if (deletechars(Items[current, "ifcfg"]:"", "0123456789")!=type) newdev["INTERFACETYPE"]=type;
+									// exception for VLAN
+									// because of ethX.Y
+//        if (deletechars(Items[current, "ifcfg"]:"", "0123456789")!=type && type!="vlan") newdev["INTERFACETYPE"]=type;
 
 	if(hotplug == "pcmcia") newdev["DHCLIENT_SET_DOWN_LINK"] = "yes";
 
@@ -1092,6 +1096,7 @@ global define boolean Commit() {
 
 	if (type=="vlan"){
 	 newdev["ETHERDEVICE"]=vlan_etherdevice;
+	 newdev["VLAN_ID"]=vlan_id;
 	}
 	if (type=="br"){
 	 newdev["BRIDGE_PORTS"]=bridge_ports;
@@ -1158,6 +1163,7 @@ global define boolean Commit() {
 	}
 	NetworkInterfaces::Name = Items[current, "ifcfg"]:"";
 	NetworkInterfaces::Current = newdev;
+y2internal("%1", newdev);
 	if (!NetworkInterfaces::Commit()) Items[current, "ifcfg"]="";
     }
     else {
