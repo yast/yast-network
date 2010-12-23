@@ -134,7 +134,19 @@ void InitVLANSlave(string key)
         items = add (items, `item(`id(devname), sformat("%1 - %2", devname, configurations[devtype, devname, "NAME"]:""), settings["ETHERDEVICE"]:""==devname) );
      });
     });
-    UI::ChangeWidget(`id(key), `Items, items);
+    UI::ChangeWidget(`id(`vlan_eth), `Items, items);
+    UI::ChangeWidget(`id(`vlan_id), `Value, settings["VLAN_ID"]:0);
+}
+
+
+symbol HandleVLANSlave(string key, map event){
+  if (event["EventReason"]:""=="ValueChanged"){
+    string configname = sformat("%1.%2", UI::QueryWidget(`id(`vlan_eth), `Value), UI::QueryWidget(`id(`vlan_id), `Value));
+    NetworkInterfaces::Name = configname;
+    LanItems::Items[LanItems::current, "ifcfg"]= configname;
+    UI::ChangeWidget(`id("IFCFGID"), `Value, configname);
+  }
+ return nil;
 }
 
 /**
@@ -1126,9 +1138,7 @@ define any AddressDialog() {
 
 	if (LanItems::type == "vlan"){
 	 LanItems::vlan_etherdevice = settings["ETHERDEVICE"]:"";
-y2internal("%1, %2", LanItems::vlan_id, (integer)settings["VLAN_ID"]:0);
 	 LanItems::vlan_id = tostring((integer)settings["VLAN_ID"]:0);
-y2internal("%1", LanItems::vlan_id);
 	} else if (LanItems::type == "br"){
          LanItems::bridge_ports = settings["BRIDGE_PORTS"]:"";
         } else if (contains(["tun", "tap"], LanItems::type)){
