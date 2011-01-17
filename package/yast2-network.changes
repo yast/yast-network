@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jan 17 14:10:10 UTC 2011 - mvidner@novell.com
+
+- fixed progress messages being out of sync when writing LAN config
+  (reported by bmwiedemann)
+
+-------------------------------------------------------------------
 Thu Dec 23 00:32:23 CET 2010 - mzugec@suse.cz
 
 - ifcfg-ethX.Y style config files for VLAN(fate#309240)
