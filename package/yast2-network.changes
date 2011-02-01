@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Feb  1 13:05:46 CET 2011 - mvidner@suse.cz
+
+- Dropped ag_xauth (.xauth.key), superseded since 2005 by
+  $XAUTHLOCALHOSTNAME (bnc#660226, bnc#482223).
+- 2.13.140
+
+-------------------------------------------------------------------
 Tue Aug 17 10:18:13 CEST 2010 - mzugec@suse.de
 
 - L3: allow configured eth device for VLAN (bnc#625103)
