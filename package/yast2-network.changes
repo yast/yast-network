@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Feb 17 16:27:51 CET 2011 - mvidner@suse.cz
+
+- Fixed losing nameservers when doing a DVD installation (bnc#668034).
+- 2.13.141
+
+-------------------------------------------------------------------
 Tue Feb  1 13:05:46 CET 2011 - mvidner@suse.cz
 
 - Dropped ag_xauth (.xauth.key), superseded since 2005 by

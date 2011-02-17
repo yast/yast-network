@@ -585,9 +585,6 @@ global define boolean Write() {
 	y2milestone("resolv.conf:%1", SCR::Read(.target.string, "/etc/resolv.conf"));
 	NetworkService::StartStop ();
 	y2milestone("resolv.conf:%1", SCR::Read(.target.string, "/etc/resolv.conf"));
-    DNS::modified=true;  
-    DNS::Write();
-    y2milestone("resolv.conf:%1", SCR::Read(.target.string, "/etc/resolv.conf"));
     sleep(sl);
     }
 
