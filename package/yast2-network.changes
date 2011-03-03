@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Mar  3 17:20:16 CET 2011 - mvidner@suse.cz
+
+- added exception to filter out virtio semi-device (bnc#585506,
+  bnc#666025). Only virtio_net has a network device, virtio_pci
+  would just confuse users.
+- 2.13.142
+
+-------------------------------------------------------------------
 Thu Feb 17 16:27:51 CET 2011 - mvidner@suse.cz
 
 - Fixed losing nameservers when doing a DVD installation (bnc#668034).
