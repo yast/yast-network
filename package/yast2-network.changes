@@ -1,11 +1,4 @@
 -------------------------------------------------------------------
-Fri Mar 25 11:48:54 CET 2011 - kmachalkova@suse.cz
-
-- Remote administration (VNC): corresponding service name is 
-  xorg-x11-Xvnc - this makes opening/closing ports in fw work again
-  (bnc#682608)
-
--------------------------------------------------------------------
 Tue Feb 15 15:19:47 CET 2011 - mvidner@suse.cz
 
 - DSL: linux-atm-lib.rpm was renamed to libatm1.rpm (bnc#668586)
