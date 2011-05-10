@@ -31,6 +31,7 @@ Mon Nov 29 11:19:05 CET 2010 - mzugec@suse.cz
 Fri Nov 26 15:32:13 CET 2010 - mzugec@suse.cz
 
 - replaced kinternet dependency with qinternet (bnc#654604)
+- allow IPADDR='' for BOOTPROTO='static' (bnc#652091)
 - 2.17.147 
 
 -------------------------------------------------------------------
