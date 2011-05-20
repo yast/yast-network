@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Apr 13 16:17:19 CEST 2011 - mvidner@suse.cz
+
+- AutoYaST: networking/start_immediately was ignored (bnc#655571, bnc#675844)
+- 2.20.11
+
+-------------------------------------------------------------------
 Tue Feb 15 15:19:47 CET 2011 - mvidner@suse.cz
 
 - DSL: linux-atm-lib.rpm was renamed to libatm1.rpm (bnc#668586)
