@@ -4,7 +4,6 @@ use strict;
 use YaST::YCP qw(:LOGGING);
 use YaPI;
 use Data::Dumper;
-use Switch;
 
 # ------------------- imported modules
 YaST::YCP::Import ("LanItems");
