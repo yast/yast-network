@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon May 30 16:40:55 CEST 2011 - mvidner@suse.cz
+
+- WebYaST: also update /etc/hosts, for hostname -f (bnc#694283#c8)
+- 2.17.154
+
+-------------------------------------------------------------------
 Wed Apr 13 16:17:19 CEST 2011 - mvidner@suse.cz
 
 - AutoYaST: networking/start_immediately was ignored (bnc#655571, bnc#675844)
