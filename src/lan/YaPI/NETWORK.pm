@@ -8,6 +8,7 @@ use Data::Dumper;
 # ------------------- imported modules
 YaST::YCP::Import ("LanItems");
 YaST::YCP::Import ("Hostname");
+YaST::YCP::Import ("Host");
 YaST::YCP::Import ("DNS");
 YaST::YCP::Import ("Routing");
 # -------------------------------------
@@ -109,6 +110,9 @@ sub writeHostname {
     DNS->dhcp_hostname($args->{'hostname'}->{'dhcp_hostname'}) if (defined $args->{'hostname'}->{'dhcp_hostname'});
     DNS->modified(1);
     DNS->Write();
+    Host->Read();
+    Host->EnsureHostnameResolvable();
+    Host->Write();
     return $ret;
 }
 

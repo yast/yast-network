@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon May 30 16:40:55 CEST 2011 - mvidner@suse.cz
+
+- WebYaST: also update /etc/hosts, for hostname -f (bnc#694283#c8)
+- 2.20.12
+
+-------------------------------------------------------------------
 Thu May 26 15:44:14 UTC 2011 - coolo@novell.com
 
 - Switch is not used, so don't require it (removed from perl 5.13.1)
