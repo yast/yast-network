@@ -23,7 +23,6 @@ BEGIN{$TYPEINFO{Read} = ["function",
 sub Read {
     my $self	= shift;
 
-# Hostname->Read();
     DNS->Read();
     Routing->Read();
     LanItems->Read();
@@ -48,11 +47,22 @@ sub Read {
     }
 
     #FIXME: validate for nil values (dns espacially)
-    my %ret	= ('interfaces'=>\%interfaces,
-		   'routes'=>{'default'=>{'via'=>Routing->GetGateway()}}, 
-                   'dns'=>{'nameservers'=>\@{DNS->nameservers}, 'searches'=>\@{DNS->searchlist}}, 
-                   'hostname'=>{'name'=>Hostname->CurrentHostname, 'domain'=>Hostname->CurrentDomain, 'dhcp_hostname'=>DNS->dhcp_hostname}
-#                   'hostname'=>{'name'=>Hostname->CurrentHostname, 'domain'=>Hostname->CurrentDomain}
+    my %ret	= (
+        'interfaces' => \%interfaces,
+        'routes' => {
+            'default' => {
+                'via' => Routing->GetGateway()
+            }
+        }, 
+        'dns' => {
+            'nameservers' => \@{DNS->nameservers},
+            'searches'    => \@{DNS->searchlist}
+        },
+        'hostname' => {
+            'name'          => Hostname->CurrentHostname,
+            'domain'        => Hostname->CurrentDomain,
+            'dhcp_hostname' => DNS->dhcp_hostname
+        }
         );
     return \%ret;
 }
