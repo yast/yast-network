@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jun  3 13:42:51 CEST 2011 - mvidner@suse.cz
+
+- Make the hostname resolvable to our static address coming from
+  Linuxrc (bnc#664929).
+- 2.17.155
+
+-------------------------------------------------------------------
 Mon May 30 16:40:55 CEST 2011 - mvidner@suse.cz
 
 - WebYaST: also update /etc/hosts, for hostname -f (bnc#694283#c8)
