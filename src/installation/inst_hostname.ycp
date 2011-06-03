@@ -14,6 +14,7 @@ textdomain "network";
 import "Arch";
 import "DNS";
 import "GetInstArgs";
+import "Host";
 import "NetworkConfig";
 import "String";
 import "Wizard";
@@ -57,6 +58,10 @@ else
 
 if (ret == `next)
 {
+    Host::Read();
+    Host::ResolveHostnameToStaticIPs();
+    Host::Write();
+
     // do not let Lan override us, #152218
     DNS::proposal_valid = true;
 

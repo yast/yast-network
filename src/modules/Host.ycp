@@ -303,6 +303,27 @@ global define string Summary() {
 	return summary;
 }
 
+list<string> StaticIPs() {
+    NetworkInterfaces::Read ();
+    list<string> devs = NetworkInterfaces::Locate ("BOOTPROTO", "static");
+    devs = filter(string dev, devs, { return dev != "lo"; });
+    list<string> ips = maplist(string dev, devs, {
+            return NetworkInterfaces::GetValue(dev, "IPADDR");
+        });
+    y2milestone("ifcfgs: %1 IPs: %2", devs, ips);
+    return ips;
+}
+
+// if we have a static address,
+// make sure /etc/hosts resolves it to our, bnc#664929
+global void ResolveHostnameToStaticIPs() {
+    list<string> static_ips = StaticIPs();
+    if (size(static_ips) > 0) {// excluding lo
+        string fqhostname = Hostname::MergeFQ( DNS::hostname, DNS::domain);
+        Update(fqhostname, fqhostname, static_ips);
+    }
+}
+
 /**
  * Function which returns if the settings were modified
  * @return boolean  settings were modified
