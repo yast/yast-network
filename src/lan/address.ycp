@@ -660,17 +660,6 @@ map<string, map<string,any> > widget_descr_local = $[
         "store": StoreVLANSlave,
         "help": help["etherdevice"]:"",
     ],
-/*
-    "BONDSLAVES": $[
-        "widget": `multi_selection_box,
-        "label": _("Bond &Slaves"),
-        "opt": [`shrinkable],
-        "items" : [ ],
-        "init": InitSlave,
-        "store": StoreSlave,
-        "help": help["bondslave"]:"",
-    ],
-*/
     "BONDSLAVE": $[
         "widget": `multi_selection_box,
         "label": _("Bond &Slaves"),
