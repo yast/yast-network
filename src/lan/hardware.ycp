@@ -539,8 +539,7 @@ Choose a different one."), nm));
 		LanItems::startmode="auto";
     }
    if (LanItems::type=="vlan"){
-         string vlanid=(string) UI::QueryWidget(`id(`num), `Value);
-	 NetworkInterfaces::Current["VLAN_ID"] = vlanid;
+	 LanItems::vlan_id = (string) UI::QueryWidget(`id(`num), `Value);
    }
 }
 

@@ -829,7 +829,8 @@ global void SetDeviceVars(map devmap, map defaults) {
     usercontrol = GetDeviceVar (devmap, defaults, "USERCONTROL") == "yes";
     description = GetDeviceVar (devmap, defaults, "NAME");
     bond_option = GetDeviceVar(devmap, defaults, "BONDING_MODULE_OPTS");
-    vlan_id = GetDeviceVar(devmap, defaults, "VLAN_ID");
+    vlan_etherdevice = GetDeviceVar(devmap, defaults, "ETHERDEVICE");
+    vlan_id = GetDeviceVar(devmap, defaults, "VLAN_ID"); // FIXME, remember that it can be implied from the name. probably
 
     bond_slaves=[];
     foreach(any key, any value, devmap,

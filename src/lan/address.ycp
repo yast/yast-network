@@ -123,9 +123,6 @@ y2milestone("store bridge %1 : %2", key, settings["BRIDGE_PORTS"]:"");
  */
 void InitVLANSlave(string key)
 {
- settings["ETHERDEVICE"] = NetworkInterfaces::Current["ETHERDEVICE"]:"";
- settings["VLAN_ID"] = tointeger(NetworkInterfaces::Current["VLAN_ID"]:"0");
-
  list items = [];
     map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
     foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
@@ -140,13 +137,8 @@ void InitVLANSlave(string key)
 
 
 symbol HandleVLANSlave(string key, map event){
-  if (event["EventReason"]:""=="ValueChanged"){
-    string configname = sformat("%1.%2", UI::QueryWidget(`id(`vlan_eth), `Value), UI::QueryWidget(`id(`vlan_id), `Value));
-    NetworkInterfaces::Name = configname;
-    LanItems::Items[LanItems::current, "ifcfg"]= configname;
-    UI::ChangeWidget(`id("IFCFGID"), `Value, configname);
-  }
- return nil;
+    // formerly tried to edit ifcfg name. bad idea, surrounding code not ready
+    return nil;
 }
 
 /**
@@ -830,6 +822,11 @@ define any AddressDialog() {
     // TODO: dynamic for dummy. or add dummy from outside?
     boolean no_dhcp = is_ptp || settings["IFCFGTYPE"]:"" == "dummy" || LanItems::alias != "";
 
+    if (LanItems::type == "vlan") {
+	settings["ETHERDEVICE"] = LanItems::vlan_etherdevice;
+	settings["VLAN_ID"] = tointeger(LanItems::vlan_id);
+    }
+
     if (contains(["tun", "tap"], LanItems::type))
     {
       settings = $[
@@ -1083,7 +1080,10 @@ define any AddressDialog() {
 	// address tab
 	if(LanItems::operation == `add) {
 	    LanItems::device = NetworkInterfaces::device_num(ifcfgname);
-	    LanItems::type = NetworkInterfaces::device_type(ifcfgname);
+	    LanItems::type = NetworkInterfaces::GetTypeFromIfcfg(settings);
+	    if (LanItems::type == nil) {
+		LanItems::type = NetworkInterfaces::device_type(ifcfgname);
+	    }
 	}
 
 	LanItems::bootproto = settings["BOOTPROTO"]:"";
