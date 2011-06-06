@@ -478,6 +478,7 @@ global list BuildLanOverview() {
                         sformat(_("Device Name: %1"), dev),
                         startmode_descr,
                         ];
+
             if (NetworkInterfaces::Current["STARTMODE"]:"" != "managed") {
                 if (ip != "NONE") {
                     string prefixlen = NetworkInterfaces::Current["PREFIXLEN"]:"";
@@ -537,14 +538,25 @@ global list BuildLanOverview() {
         if (size(Items[key, "hwinfo"]:$[])==0) {
             conn = HTML::Bold(sformat("(%1)", _("No hwinfo")));
         }
+
         string mac_dev = HTML::Bold ("MAC : ") + Items[key, "hwinfo", "mac"]:"" + "<br>";
         string bus_id  = HTML::Bold ("BusID : ") + Items[key, "hwinfo", "busid"]:"" + "<br>";
+
         if (hasAnyValue(Items[key, "hwinfo", "mac"]:"")) {
-            rich = " " + conn + "<br>" + mac_dev;
+            rich = rich + " " + conn + "<br>";
+            rich = rich + mac_dev;
         }
         if (hasAnyValue(Items[key, "hwinfo", "busid"]:"")) {
             rich = rich + bus_id;
         }
+        // display it only if we need it, don't duplicate "dev" above
+        if (hasAnyValue(Items[key, "hwinfo", "dev_name"]:"") &&
+            ! hasAnyValue(Items[key, "ifcfg"]:"")) {
+            string dev_name = sformat(_("Device Name: %1"), Items[key, "hwinfo", "dev_name"]:"" );
+            string dev_name_r = HTML::Bold(dev_name) + "<br>";
+            rich = rich + dev_name_r;
+        }
+
         rich = HTML::Bold ( descr ) + rich;
 
         if (!hasAnyValue(Items[key, "hwinfo", "dev_name"]:"") && size(Items[key, "hwinfo"]:$[])>0 && !Arch::s390()) {

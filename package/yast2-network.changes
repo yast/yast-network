@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jun  6 18:39:23 CEST 2011 - mvidner@suse.cz
+
+- Show NIC device names for unconfigured NICs (FATE#311335).
+- 2.17.157
+
+-------------------------------------------------------------------
 Mon Jun  6 18:30:50 CEST 2011 - mvidner@suse.cz
 
 - Fixed configuring multiple interfaces with the same VLAN (FATE#311380,
