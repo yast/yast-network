@@ -18,6 +18,12 @@ Wed Apr 13 16:17:19 CEST 2011 - mvidner@suse.cz
 - 2.17.153
 
 -------------------------------------------------------------------
+Thu Dec 23 00:44:01 CET 2010 - mzugec@suse.de
+
+- ifcfg-ethX.Y style config files for VLAN(fate#309240)
+- 2.17.152 
+
+-------------------------------------------------------------------
 Fri Dec 17 10:05:06 CET 2010 - mzugec@suse.de
 
 - L3: don't propose bridge for vbox (bnc#648044)

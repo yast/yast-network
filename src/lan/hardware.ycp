@@ -538,6 +538,10 @@ Choose a different one."), nm));
 		y2milestone("interface without hwinfo, proposing STARTMODE=auto");
 		LanItems::startmode="auto";
     }
+   if (LanItems::type=="vlan"){
+         string vlanid=(string) UI::QueryWidget(`id(`num), `Value);
+	 NetworkInterfaces::Current["VLAN_ID"] = vlanid;
+   }
 }
 
  string driver = (string) UI::QueryWidget(`modul, `Value);
