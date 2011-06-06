@@ -442,132 +442,139 @@ global list BuildLanOverview() {
     list<string> overview=[];
     list<string> links=[];
     map startmode_descrs = $[
-	// summary description of STARTMODE=auto
-	"auto": _("Started automatically at boot"),
-	// summary description of STARTMODE=auto
-	"onboot": _("Started automatically at boot"),
-	// summary description of STARTMODE=hotplug
-	"hotplug": _("Started automatically at boot"),
-	// summary description of STARTMODE=ifplugd
-	"ifplugd": _("Started automatically on cable connection"),
-	// summary description of STARTMODE=managed
-	"managed": _("Managed by NetworkManager"),
-	// summary description of STARTMODE=off
-	"off"	: _("Will not be started at all")
-	];
+        // summary description of STARTMODE=auto
+        "auto": _("Started automatically at boot"),
+        // summary description of STARTMODE=auto
+        "onboot": _("Started automatically at boot"),
+        // summary description of STARTMODE=hotplug
+        "hotplug": _("Started automatically at boot"),
+        // summary description of STARTMODE=ifplugd
+        "ifplugd": _("Started automatically on cable connection"),
+        // summary description of STARTMODE=managed
+        "managed": _("Managed by NetworkManager"),
+        // summary description of STARTMODE=off
+        "off"	: _("Will not be started at all")
+        ];
 
+    foreach(integer key, (list<integer>)Map::Keys(Items), {
+        string rich = "";
+        string ip =  _("Not configured");
+        string descr = Items[key, "hwinfo", "name"]:"";
+        type = Items[key, "hwinfo", "type"]:"";
+        descr = CheckEmptyName (type, descr);
+        list <string> bullets = [];
 
-  foreach(integer key, (list<integer>)Map::Keys(Items), {
-   string rich = "";
-   string ip =  _("Not configured");
-   string descr = Items[key, "hwinfo", "name"]:"";
-   type = Items[key, "hwinfo", "type"]:"";
-   descr = CheckEmptyName (type, descr);
-   list <string> bullets = [];
+        if (hasAnyValue(Items[key, "ifcfg"]:"") ){
+            NetworkInterfaces::Select(Items[key, "ifcfg"]:"");
+            if (!hasAnyValue(type)) type = NetworkInterfaces::GetType(Items[key, "ifcfg"]:"");
+            descr = BuildDescription(type, NetworkInterfaces::GetType(Items[key, "ifcfg"]:""), NetworkInterfaces::Current, [Items[key, "hwinfo"]:$[]]);
+            string dev = NetworkInterfaces::Name; //NetworkInterfaces::device_name(type, NetworkInterfaces::Name);
+            ip = DeviceProtocol(NetworkInterfaces::Current);
+            string status = DeviceStatus(type, NetworkInterfaces::device_num(NetworkInterfaces::Name), NetworkInterfaces::Current);
 
-   if (hasAnyValue(Items[key, "ifcfg"]:"") ){
-    NetworkInterfaces::Select(Items[key, "ifcfg"]:"");
-    if (!hasAnyValue(type)) type = NetworkInterfaces::GetType(Items[key, "ifcfg"]:"");
-    descr = BuildDescription(type, NetworkInterfaces::GetType(Items[key, "ifcfg"]:""), NetworkInterfaces::Current, [Items[key, "hwinfo"]:$[]]);
-    string dev = NetworkInterfaces::Name; //NetworkInterfaces::device_name(type, NetworkInterfaces::Name);
-    ip = DeviceProtocol(NetworkInterfaces::Current);
-    string status = DeviceStatus(type, NetworkInterfaces::device_num(NetworkInterfaces::Name), NetworkInterfaces::Current);
+            string startmode_descr = startmode_descrs[NetworkInterfaces::Current["STARTMODE"]:""]:_("Started manually");
 
-
-    string startmode_descr = startmode_descrs[NetworkInterfaces::Current["STARTMODE"]:""]:_("Started manually");
-
-		bullets =  [
-		    sformat(_("Device Name: %1"), dev),
-		    startmode_descr,
-		    ];
-		if (NetworkInterfaces::Current["STARTMODE"]:"" != "managed")
-		{
-                 if (ip != "NONE")
-		  {
-		    string prefixlen = NetworkInterfaces::Current["PREFIXLEN"]:"";
-		    if (size(ip)>0){
-		      string descr = sformat("%1 %2", _("IP address assigned using"), ip);
-		      if (!issubstring(ip, "DHCP")) descr=(size(prefixlen)>0) ?
+            bullets =  [
+                        sformat(_("Device Name: %1"), dev),
+                        startmode_descr,
+                        ];
+            if (NetworkInterfaces::Current["STARTMODE"]:"" != "managed") {
+                if (ip != "NONE") {
+                    string prefixlen = NetworkInterfaces::Current["PREFIXLEN"]:"";
+                    if (size(ip)>0) {
+                        string descr = sformat("%1 %2", _("IP address assigned using"), ip);
+                        if (!issubstring(ip, "DHCP"))
+                            descr=(size(prefixlen)>0) ?
                                 sformat(_("IP address: %1/%2"), ip, prefixlen) :
                                 sformat(_("IP address: %1, subnet mask %2")
-                                , ip, NetworkInterfaces::Current["NETMASK"]:"");
-		      bullets = bullets + [ descr ];
-		    }
-		  }
-	// build aliases overview
-	if (size(NetworkInterfaces::Current["_aliases"]:$[])>0 && !NetworkService::IsManaged()){
-	 foreach(string key,   map<string, any> desc, (map<string ,map<string, any> >) NetworkInterfaces::Current["_aliases"]:$[], {
-	 string parameters = sformat("%1/%2", desc["IPADDR"]:"", desc["PREFIXLEN"]:"");
-	 bullets = add(bullets, sformat("%1 (%2)", desc["LABEL"]:"", parameters) );
-	 });
-	}
-		}
+                                        , ip, NetworkInterfaces::Current["NETMASK"]:"");
+                        bullets = bullets + [ descr ];
+                    }
+                }
+                // build aliases overview
+                if (size(NetworkInterfaces::Current["_aliases"]:$[])>0 && !NetworkService::IsManaged()){
+                    foreach(string key,   map<string, any> desc, (map<string ,map<string, any> >) NetworkInterfaces::Current["_aliases"]:$[], {
+                            string parameters = sformat("%1/%2", desc["IPADDR"]:"", desc["PREFIXLEN"]:"");
+                            bullets = add(bullets, sformat("%1 (%2)", desc["LABEL"]:"", parameters) );
+                        });
+                }
+            }
 
-                // build the "Bond Slaves" entry of rich box
-		if (type == "bond")
-		{
-/*
-			string slaves = "";
-			foreach (string key, any value, (map<string, any>)v, {
-				if ((value != nil) && (regexpmatch(key, "BONDING_SLAVE[0-9]")))
-					slaves = slaves + ((slaves != "") ? ", " : "") + (string)value;
-			});
-			if (slaves != "")
-				bullets = bullets + [_("Bond slaves")+ " : " + slaves];
-*/
-		}
-		if (type == "wlan" &&
-		    !(NetworkInterfaces::Current["WIRELESS_AUTH_MODE"]:"" != "open") &&
-		    !hasAnyValue(NetworkInterfaces::Current["WIRELESS_KEY_0"]:""))
-		{
-		    // avoid colons
-		    dev = mergestring (splitstring (dev, ":"), "/");
-		    string href = "lan--wifi-encryption-" + dev;
-		    // interface summary: WiFi without encryption
-		    string warning = HTML::Colorize (_("Warning: no encryption is used."), "red");
-		    status = status + " " + warning + " " +
-			// Hyperlink: Change the configuration of an interface
-			Hyperlink (href, _("Change."));
-		    links = add (links, href);
-		}
+            // build the "Bond Slaves" entry of rich box
+            if (type == "bond") {
+                /*
+                string slaves = "";
+                foreach (string key, any value, (map<string, any>)v, {
+                    if ((value != nil) && (regexpmatch(key, "BONDING_SLAVE[0-9]")))
+                        slaves = slaves + ((slaves != "") ? ", " : "") + (string)value;
+                    });
+                if (slaves != "")
+                    bullets = bullets + [_("Bond slaves")+ " : " + slaves];
+                */
+            }
+            if (type == "wlan" &&
+                !(NetworkInterfaces::Current["WIRELESS_AUTH_MODE"]:"" != "open") &&
+                !hasAnyValue(NetworkInterfaces::Current["WIRELESS_KEY_0"]:"")) {
+                // avoid colons
+                dev = mergestring (splitstring (dev, ":"), "/");
+                string href = "lan--wifi-encryption-" + dev;
+                // interface summary: WiFi without encryption
+                string warning = HTML::Colorize (_("Warning: no encryption is used."), "red");
+                status = status + " " + warning + " " +
+                    // Hyperlink: Change the configuration of an interface
+                    Hyperlink (href, _("Change."));
+                links = add (links, href);
+            }
 
-    overview = add(overview, Summary::Device(descr, status));
-        } else
-		overview = add(overview, Summary::Device(descr, Summary::NotConfigured()));
+            overview = add(overview, Summary::Device(descr, status));
+        }
+        else {
+            overview = add(overview, Summary::Device(descr, Summary::NotConfigured()));
+        }
 
-	string conn = HTML::Bold ( (Items[key, "hwinfo", "link"]:false == true)?"":sformat("(%1)", _("Not connected") ));
+        string conn = HTML::Bold ( (Items[key, "hwinfo", "link"]:false == true)?"":sformat("(%1)", _("Not connected") ));
 
-	if (size(Items[key, "hwinfo"]:$[])==0) conn = HTML::Bold(sformat("(%1)", _("No hwinfo")));
-	string mac_dev = HTML::Bold ("MAC : ") + Items[key, "hwinfo", "mac"]:"" + "<br>";
-	string bus_id  = HTML::Bold ("BusID : ") + Items[key, "hwinfo", "busid"]:"" + "<br>";
-	if (hasAnyValue(Items[key, "hwinfo", "mac"]:"")) rich = " " + conn + "<br>" + mac_dev;
-	if (hasAnyValue(Items[key, "hwinfo", "busid"]:"")) rich = rich + bus_id;
-		rich = HTML::Bold ( descr ) + rich;
+        if (size(Items[key, "hwinfo"]:$[])==0) {
+            conn = HTML::Bold(sformat("(%1)", _("No hwinfo")));
+        }
+        string mac_dev = HTML::Bold ("MAC : ") + Items[key, "hwinfo", "mac"]:"" + "<br>";
+        string bus_id  = HTML::Bold ("BusID : ") + Items[key, "hwinfo", "busid"]:"" + "<br>";
+        if (hasAnyValue(Items[key, "hwinfo", "mac"]:"")) {
+            rich = " " + conn + "<br>" + mac_dev;
+        }
+        if (hasAnyValue(Items[key, "hwinfo", "busid"]:"")) {
+            rich = rich + bus_id;
+        }
+        rich = HTML::Bold ( descr ) + rich;
 
-   if (!hasAnyValue(Items[key, "hwinfo", "dev_name"]:"") && size(Items[key, "hwinfo"]:$[])>0 && !Arch::s390())
-		rich = rich + _("<p>Unable to configure the network card because the kernel device (eth0, wlan0) is not present. This is mostly caused by missing firmware (for wlan devices). See dmesg output for details.</p>");
-	else if (hasAnyValue(Items[key, "ifcfg"]:"") ) rich = rich + HTML::List (bullets);
-		else {
-			rich = rich + _("<p>The device is not configured. Press <b>Edit</b>
+        if (!hasAnyValue(Items[key, "hwinfo", "dev_name"]:"") && size(Items[key, "hwinfo"]:$[])>0 && !Arch::s390()) {
+            rich = rich + _("<p>Unable to configure the network card because the kernel device (eth0, wlan0) is not present. This is mostly caused by missing firmware (for wlan devices). See dmesg output for details.</p>");
+        }
+        else if (hasAnyValue(Items[key, "ifcfg"]:"") ) {
+            rich = rich + HTML::List (bullets);
+        }
+        else {
+            rich = rich + _("<p>The device is not configured. Press <b>Edit</b>
 to configure.</p>
 ");
-		 integer curr=current;
-		 current=key;
-		 if(needFirmwareCurrentItem()){
-		  string fw = GetFirmwareForCurrentItem();
-			 rich = rich+ sformat("%1 : %2",
-				_("Needed firmware"), (fw!="") ? fw : _("unknown"));
-		 }
-		 current=curr;
-		}
 
+            integer curr = current;
+            current = key;
+            if (needFirmwareCurrentItem()) {
+                string fw = GetFirmwareForCurrentItem();
+                rich = rich+ sformat("%1 : %2",
+                                     _("Needed firmware"),
+                                     (fw!="") ? fw : _("unknown"));
+            }
+            current=curr;
+        }
 
-    Items[key, "table_descr"] = $[
-		"rich_descr" : rich,
-		"table_descr": [descr, ip]
-		];
-   });
- return [ Summary::DevicesList(overview), links ];
+        Items[key, "table_descr"] = $[
+                                      "rich_descr" : rich,
+                                      "table_descr": [descr, ip]
+                                      ];
+        });
+    return [ Summary::DevicesList(overview), links ];
 }
 
 
