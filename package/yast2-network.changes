@@ -1,7 +1,9 @@
 -------------------------------------------------------------------
-Wed May  4 14:56:00 UTC 2011 - mvidner@suse.cz
+Mon Jun  6 18:30:50 CEST 2011 - mvidner@suse.cz
 
-- ifcfg-ethX.Y style config files for VLAN(fate#309240)
+- Fixed configuring multiple interfaces with the same VLAN (FATE#311380,
+  FATE#309240, bnc#572747, bnc#588588)
+- 2.17.156
 
 -------------------------------------------------------------------
 Fri Jun  3 13:42:51 CEST 2011 - mvidner@suse.cz
