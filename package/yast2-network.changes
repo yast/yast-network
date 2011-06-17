@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jun 17 15:35:59 CEST 2011 - jreidinger@suse.cz
+
+- Do not enable WIRELESS_POWER by default, some APs are broken
+  (FATE#309255).
+
+-------------------------------------------------------------------
 Mon Jun  6 18:39:23 CEST 2011 - mvidner@suse.cz
 
 - Show NIC device names for unconfigured NICs (FATE#311335).
