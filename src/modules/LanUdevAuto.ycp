@@ -12,6 +12,7 @@
 {
  module     "LanUdevAuto";
  import "LanItems";
+ import "Map";
  include "network/routines.ycp";
 
  textdomain "network";
@@ -19,6 +20,42 @@
  list<map> udev_rules=[];
  list<map> s390_devices=[];
  list <map> hardware=nil;
+
+/**
+ * @return parameter from /etc/install.inf or nil
+ * @param name parameter name, case sensitive
+ */
+string InstallInfParameter(string name) {
+    path p = add(.etc.install_inf, name);
+    return (string) SCR::Read(p);
+}
+
+/**
+ * @return parameter from the kernel(boot) command line or nil
+ * @param name parameter name, case sensitive
+ */
+string KernelCmdlineParameter(string name) {
+    string cmdline = InstallInfParameter("Cmdline");
+    map cmdmap = Map::FromString(cmdline); // handles nil too
+    return (string) cmdmap[name]:nil;
+}
+
+/**
+ * @return installation parameter or nil
+ * @param name parameter name, case sensitive
+ */
+string InstallationParameter(string name) {
+    string value = InstallInfParameter(name);
+    if (value == nil) {
+        value = KernelCmdlineParameter(name);
+    }
+    return value;
+}
+
+// FATE#311332
+global boolean AllowUdevModify() {
+    return InstallationParameter("biosdevname") == "1";
+}
 
 global string getDeviceName(string oldname){
  string newname=oldname;
@@ -117,8 +154,10 @@ y2milestone("importing %1", settings);
   });
   if (size(rules)>0){
    y2milestone("Writing AY udev rules for network (will replace original rules from 1st stage)");
-   SCR::Write(.udev_persistent.rules_comment, comment);
-   SCR::Write(.udev_persistent.rules, rules);
+   if (AllowUdevModify()){
+    SCR::Write(.udev_persistent.rules_comment, comment);
+    SCR::Write(.udev_persistent.rules, rules);
+   }
   } else
      y2milestone("No udev rules defined by AY, nothing to write (keep original file)");
   if (Arch::s390()){

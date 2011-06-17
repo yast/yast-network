@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jun 17 15:49:54 CEST 2011 - mvidner@suse.cz
+
+- Support biosdevname=1 NIC naming scheme: don't write mac-based udev
+  rules (FATE#311332).
+
+-------------------------------------------------------------------
 Fri Jun 17 15:42:23 CEST 2011 - mvidner@suse.cz
 
 - STARMODE='nfsroot' also for FCoE (FATE#306855).
