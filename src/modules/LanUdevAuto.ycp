@@ -54,7 +54,7 @@ string InstallationParameter(string name) {
 
 // FATE#311332
 global boolean AllowUdevModify() {
-    return InstallationParameter("biosdevname") == "1";
+    return InstallationParameter("biosdevname") != "1";
 }
 
 global string getDeviceName(string oldname){
