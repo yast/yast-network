@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jun 17 15:42:23 CEST 2011 - mvidner@suse.cz
+
+- STARMODE='nfsroot' also for FCoE (FATE#306855).
+
+-------------------------------------------------------------------
 Fri Jun 17 15:35:59 CEST 2011 - jreidinger@suse.cz
 
 - Do not enable WIRELESS_POWER by default, some APs are broken
