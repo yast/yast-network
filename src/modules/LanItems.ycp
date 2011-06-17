@@ -942,7 +942,7 @@ global map<string, string> SysconfigDefaults = $[
     "WIRELESS_FREQUENCY": "",
     "WIRELESS_BITRATE": "auto",
     "WIRELESS_AP": "",
-    "WIRELESS_POWER": "yes",
+    "WIRELESS_POWER": "",
     "PORTNAME": "", 
     // aliases = devmap["_aliases"]:$[]; // ?
     "WIRELESS_EAP_MODE": "",
