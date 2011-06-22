@@ -490,7 +490,7 @@ global define boolean Write() {
    if (Mode::installation() && NetworkService::IsManaged()) y2internal("Export sysconfig settings into NetworkManager %1", SCR::Execute(.target.bash_output, "/usr/lib/NetworkManager/nm-opensuse-sysconfig-merge --connections"));
 
 y2internal("virt_net_proposal %1", virt_net_proposal);
-    if (Stage::cont() && virt_net_proposal && (Linuxrc::usessh() || Linuxrc::vnc() || Linuxrc::display_ip())) {
+    if (Stage::cont() && virt_net_proposal == true && (Linuxrc::usessh() || Linuxrc::vnc() || Linuxrc::display_ip())) {
 	UI::OpenDialog(`opt(`decorated), `HBox(
         `HSpacing(1),
         `HCenter(`HSquash(`VBox(
