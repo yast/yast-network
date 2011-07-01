@@ -129,10 +129,10 @@ void finishNet(){
 
 map cmdline_description = $[
     "id" 	: "network",
-    // translators: command line help for HTTP server module
+    // translators: command line help for network module
     "help"	: _("Configuration of network.
-This is only executer of network sub-modules.
-You can run this network modules:
+This is only a delegator to network sub-modules.
+You can run these network modules:
 
 lan	")+ _("Network Card")	+("
 isdn	")+ _("ISDN Card")	+("

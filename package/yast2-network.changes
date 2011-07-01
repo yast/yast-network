@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jul  1 13:42:16 CEST 2011 - mvidner@suse.cz
+
+- Proofread texts for translation (by A.Turrini, bnc#703190).
+
+-------------------------------------------------------------------
 Mon May 30 16:40:55 CEST 2011 - mvidner@suse.cz
 
 - WebYaST: also update /etc/hosts, for hostname -f (bnc#694283#c8)

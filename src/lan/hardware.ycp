@@ -38,7 +38,7 @@ eth1, wlan0 ) and assures a persistent device name upon reboot.
 ") + 
 
 _("<p><b>Show visible port identification</b> allows you to physically identify now configured NIC. 
-Set appropriate time, click <b>Blink</b> and LED diods on you NIC will start blinking for selected time.
+Set appropriate time, click <b>Blink</b> and LED diodes on you NIC will start blinking for selected time.
 </p>")+
 
     /* Manual network card setup help 2/4 */
@@ -786,7 +786,7 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 	    if (control==nil) control="";
 	    LanItems::qeth_chanids = String::CutBlanks( sformat("%1 %2 %3", read, write, control) );
      if (!LanItems::createS390Device()){
-	Popup::Error(_("An error occured while creating device.\nSee YaST log for details."));
+	Popup::Error(_("An error occurred while creating device.\nSee YaST log for details."));
 	ret=nil;
 	continue;
      };

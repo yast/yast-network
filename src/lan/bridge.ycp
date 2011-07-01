@@ -79,7 +79,7 @@ boolean ValidateBridge (string key, map event) {
       if ((string)configurations[NetworkInterfaces::GetType(device), device, "IPADDR"]:"" != "0.0.0.0" && (string)configurations[NetworkInterfaces::GetType(device), device, "BOOTPROTO"]:"" != "none") {
 	if(!confirmed) {
 	 valid = Popup::ContinueCancel(_("At least one selected device is already configured.
-Adapt the configuration for bridge (IP addess 0.0.0.0/32)?
+Adapt the configuration for bridge (IP address 0.0.0.0/32)?
 "));
 	 confirmed=true;
 	}
