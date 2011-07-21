@@ -28,20 +28,21 @@ y2milestone ("starting firewall_stage1_finish");
 y2debug("func=%1", func);
 y2debug("param=%1", param);
 
+//we have those from the proposal
+boolean fw_enabled = SuSEFirewall4Network::Enabled1stStage();
+boolean ssh_enabled = SuSEFirewall4Network::EnabledSsh1stStage();
+
 if (func == "Info")
 {
     return (any)$[
 	"steps" : 1,
 	// progress step title
 	"title" : _("Writing Firewall Configuration..."),
-	"when" : SuSEFirewallProposal::GetChangedByUser() ? [ `installation,  `autoinst ] : [],
+	"when" : (SuSEFirewallProposal::GetChangedByUser() || ssh_enabled) ? [ `installation,  `autoinst ] : [],
     ];
 }
 else if (func == "Write")
 {
-    //we have those from the proposal
-    boolean fw_enabled = SuSEFirewall4Network::Enabled1stStage();
-    boolean ssh_enabled = SuSEFirewall4Network::EnabledSsh1stStage();
     y2milestone("After installation, firewall will be %1",
 	fw_enabled ? sformat("enabled, ssh port will be %1", 
 	ssh_enabled ? "open" : "closed") : "disabled");

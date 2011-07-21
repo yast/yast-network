@@ -127,8 +127,6 @@ will be started on computer boot).</p>");
 	    SuSEFirewall4Network::SetSshEnabled1stStage (ProductFeatures::GetBooleanFeature ("globals", "firewall_enable_ssh"));
 	}
 
-        SuSEFirewall4Network::SetSshEnabled1stStage (ProductFeatures::GetBooleanFeature ("globals", "firewall_enable_ssh"));
-
         SuSEFirewallProposal::SetProposalInitialized(true);
     }
 
@@ -147,27 +145,23 @@ will be started on computer boot).</p>");
             _("Firewall will be disabled (<a href=\"firewall--enable_firewall_in_proposal\">enable</a>)")
         ) + "</li>\n";
 
-	if (SuSEFirewall4Network::Enabled1stStage())
-	{
-	    output = output + "<li>" + (SuSEFirewall4Network::EnabledSsh1stStage() ?
-                _("SSH service will be enabled, SSH port will be open (<a href=\"firewall--disable_ssh_in_proposal\">disable and close</a>)")
-                :
-                _("SSH service will be disabled, SSH port will be blocked (<a href=\"firewall--enable_ssh_in_proposal\">enable and open</a>)")
-           ) + "</li>\n";
+	output = output + "<li>" + (SuSEFirewall4Network::EnabledSsh1stStage() ?
+            _("SSH service will be enabled, SSH port will be open (<a href=\"firewall--disable_ssh_in_proposal\">disable and close</a>)")
+            :
+            _("SSH service will be disabled, SSH port will be blocked (<a href=\"firewall--enable_ssh_in_proposal\">enable and open</a>)")
+        ) + "</li>\n";
 
-	}
         output = output + "</ul>\n";
 
 	ret = $[
-        "preformatted_proposal" : output,
-        "warning_level" : `warning,
-        //"warning" : proposal["warning"]:nil,
-        "links" : [
-            "firewall--enable_firewall_in_proposal", "firewall--disable_firewall_in_proposal",
-            "firewall--enable_ssh_in_proposal", "firewall--disable_ssh_in_proposal",
-        ]
-    ];
-
+	    "preformatted_proposal" : output,
+	    "warning_level" : `warning,
+	    //"warning" : proposal["warning"]:nil,
+	    "links" : [
+		"firewall--enable_firewall_in_proposal", "firewall--disable_firewall_in_proposal",
+		"firewall--enable_ssh_in_proposal", "firewall--disable_ssh_in_proposal",
+	    ]
+	];
     }
     else if ( func == "AskUser" ) {
 	any chosen_link = param["chosen_id"]:nil;

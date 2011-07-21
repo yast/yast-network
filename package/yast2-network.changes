@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jul 21 13:44:24 CEST 2011 - locilka@suse.cz
+
+- Fixed Firewall and SSH proposal to be still able to adjust SSH
+  independently on the firewall status (bnc#537980).
+- 2.20.13
+
+-------------------------------------------------------------------
 Fri Jul  1 13:42:16 CEST 2011 - mvidner@suse.cz
 
 - Proofread texts for translation (by A.Turrini, bnc#703190).
