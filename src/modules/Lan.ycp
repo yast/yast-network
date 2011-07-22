@@ -431,8 +431,9 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 3 - multiple devices may be present, really plural*/
     ProgressNextStage(_("Writing device configuration..."));
-    if (!Mode::autoinst()) 
+    if (!Mode::autoinst() && LanUdevAuto::AllowUdevModify()) {
 	LanItems::WriteUdevDriverRules();
+    }
     NetworkInterfaces::Write("netcard");
     // WriteDevices();
     sleep(sl);

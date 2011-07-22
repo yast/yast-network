@@ -1,4 +1,23 @@
 -------------------------------------------------------------------
+Fri Jul 22 17:49:47 CEST 2011 - mvidner@suse.cz
+
+- Support biosdevname=1 NIC naming scheme: don't write mac-based udev
+  rules (FATE#311332).
+- STARMODE='nfsroot' also for FCoE (FATE#306855).
+- Show NIC device names for unconfigured NICs (FATE#311335).
+- Fixed configuring multiple interfaces with the same VLAN (FATE#311380,
+  FATE#309240, bnc#572747, bnc#588588)
+- Make the hostname resolvable to our static address coming from
+  Linuxrc (bnc#664929).
+- 2.21.0
+
+-------------------------------------------------------------------
+Fri Jul 22 17:49:46 CEST 2011 - jreidinger@suse.cz
+
+- Do not enable WIRELESS_POWER by default, some APs are broken
+  (FATE#309255).
+
+-------------------------------------------------------------------
 Fri Jul 22 15:48:16 CEST 2011 - locilka@suse.cz
 
 - Obsoleted X-KDE-SubstituteUID replaced with xdg-su in Exec in

@@ -223,132 +223,122 @@ string InstallModuleOptions(string module_name) {
 list<map> hardware=ReadHardware("netcard");
 y2milestone("hardware %1", hardware);
 
+string StdoutOf(string command) {
+    map out = (map) SCR::Execute (.target.bash_output, command);
+    return out["stdout"]:"";
+}
 
-
-void CreateIfcfg(){
-    string network_configuration="";
+void CreateIfcfg() {
+    string ifcfg="";
 
     if (network_disk==1 && contains(NetworkStorage::getiBFTDevices(), InstallInf["netdevice"]:"")){
-      network_configuration = sformat("%1STARTMODE='nfsroot'\nBOOTPROTO='ibft'\n", network_configuration);
-    } else {
+        ifcfg = sformat("%1STARTMODE='nfsroot'\nBOOTPROTO='ibft'\n", ifcfg);
+    }
+    else {
+        // set BOOTPROTO=[ static | dhcp ]
+        if (InstallInf["bootproto"]:"dhcp"=="static") {
+            // add broadcast interface #suse49131
+            ifcfg=sformat("BOOTPROTO='static'\nIPADDR='%1/%2'\nBROADCAST='%3'\n",
+                          InstallInf["ipaddr"]:"", Netmask::ToBits(InstallInf["netmask"]:""), InstallInf["bcast"]:"");
+            if(size(InstallInf["ipaddr6"]:"")>0){
+                ifcfg=sformat("%1\n%2", ifcfg,
+                              sformat("LABEL_ipv6='ipv6'\nIPADDR_ipv6='%1'\n", InstallInf["ipaddr6"]:"")
+                              );
+            }
+        }
+        else {
+            //DHCP (also for IPv6) setup
+            if (InstallInf["bootproto"]:""=="dhcp") ifcfg="BOOTPROTO='dhcp4'\n";
+            else if (InstallInf["bootproto"]:""=="dhcp6") ifcfg="BOOTPROTO='dhcp6'\n";
+            else if (InstallInf["bootproto"]:""=="dhcp,dhcp6") ifcfg="BOOTPROTO='dhcp'\n";
 
-      // set BOOTPROTO=[ static | dhcp ]
-      if (InstallInf["bootproto"]:"dhcp"=="static")
-      {
-          // add broadcast interface #suse49131
-	  network_configuration=sformat("BOOTPROTO='static'\nIPADDR='%1/%2'\nBROADCAST='%3'\n",
-	  InstallInf["ipaddr"]:"", Netmask::ToBits(InstallInf["netmask"]:""), InstallInf["bcast"]:"");
-      if(size(InstallInf["ipaddr6"]:"")>0){
-	network_configuration=sformat("%1\n%2", network_configuration,
-	sformat("LABEL_ipv6='ipv6'\nIPADDR_ipv6='%1'\n", InstallInf["ipaddr6"]:"")
-	);
-       }
-      }
-      else
-      {
-	  //DHCP (also for IPv6) setup
-	if (InstallInf["bootproto"]:""=="dhcp") network_configuration="BOOTPROTO='dhcp4'\n";
-	  else if (InstallInf["bootproto"]:""=="dhcp6") network_configuration="BOOTPROTO='dhcp6'\n";
-		  else if (InstallInf["bootproto"]:""=="dhcp,dhcp6") network_configuration="BOOTPROTO='dhcp'\n";
+            // set DHCP_SET_HOSTNAME=yes  #suse30528
+            y2milestone("set DHCLIENT_SET_HOSTNAME=yes on installed system");
+            SCR::Execute(.target.bash_output, "sed -i s/\"DHCLIENT_SET_HOSTNAME=.*\"/'DHCLIENT_SET_HOSTNAME=\"yes\"'/g /etc/sysconfig/network/dhcp");
+        }
 
-	// set DHCP_SET_HOSTNAME=yes  #suse30528
-	y2milestone("set DHCLIENT_SET_HOSTNAME=yes on installed system");
-	SCR::Execute(.target.bash_output, "sed -i s/\"DHCLIENT_SET_HOSTNAME=.*\"/'DHCLIENT_SET_HOSTNAME=\"yes\"'/g /etc/sysconfig/network/dhcp");
-      }
-
-      switch(network_disk)
-      {
-	case 0:
-	      network_configuration = sformat("%1STARTMODE='onboot'\n", network_configuration);
-	      break;
-	case 1:
-	      if (!contains(NetworkStorage::getiBFTDevices(), InstallInf["netdevice"]:"")){
-		network_configuration = sformat("%1STARTMODE='nfsroot'\n", network_configuration);
-	      }
-	      break;
-	case 3: // FCoE case - create VLAN configuration
- map<string,any> cmd = (map<string,any>) SCR::Execute(.target.bash_output,
-	"ls -la /sys/block/*|grep target|grep eth|cut -d'>' -f2|cut -d'/' -f5|uniq");
- y2internal("cmd %1", cmd);
- if (cmd["exit"]:-1==0){
-  string ifcfg = splitstring(cmd["stdout"]:"", "\n")[0]:"";
-  y2internal("ifcfg: %1", ifcfg);
-  string config=sformat("BOOTPROTO=\"static\"\nSTARTMODE=\"nfsroot\"
-ETHERDEVICE=\"%1\"\nUSERCONTROL=\"no\"\n", splitstring(ifcfg, ".")[0]:"");
-  y2internal("config: %1", config);
-  string config_file=sformat("/etc/sysconfig/network/ifcfg-%1", ifcfg);
-  y2internal("filename: %1", config_file);
-  SCR::Write(.target.string, config_file, config);
- } else y2error("Command failed.");
-	case 2:
-	      network_configuration = sformat("%1STARTMODE='nfsroot'\n", network_configuration);
-	      break;
-      }
-
+        if (network_disk == 0) {
+            ifcfg = sformat("%1STARTMODE='onboot'\n", ifcfg);
+        }
+        else if (network_disk > 0) {
+            ifcfg = sformat("%1STARTMODE='nfsroot'\n", ifcfg);
+        }
     }
 
+    // wireless devices (bnc#223570)
+    if ( size(InstallInf["WESSID"]:"")>0 ) {
+        ifcfg = sformat("%1WIRELESS_ESSID='%2'\n", ifcfg, InstallInf["WESSID"]:"");
 
- // wireless devices (bnc#223570)
-     if ( size(InstallInf["WESSID"]:"")>0 )
-     {
-         network_configuration = sformat("%1WIRELESS_ESSID='%2'\n", network_configuration, InstallInf["WESSID"]:"");
-//         network_configuration = sformat("%1WIRELESS_AUTH_MODE='%2'\n", network_configuration, InstallInf["WAuth"]:"");
-	 switch(InstallInf["WAuth"]:""){
-	  case "" : // "" means wpa-psk
-	  case "psk" :
-			network_configuration = sformat("%1WIRELESS_WPA_PSK='%2'\n", network_configuration, InstallInf["WKey"]:"");
-			network_configuration = sformat("%1WIRELESS_AUTH_MODE='psk'\n", network_configuration);
-			break;
-	  case "open" :
-			network_configuration = sformat("%1WIRELESS_AUTH_MODE='no-encryption'\n", network_configuration);
-			break;
-	  case "wep_open" :
-	  case "wep_restricted" :
-			string type="";
-			if (InstallInf["WkeyType"]:""=="password") type="h:";
-			  else if (InstallInf["WkeyType"]:""=="ascii") type="s:";
-			network_configuration = sformat("%1WIRELESS_AUTH_MODE='%2'\n", network_configuration, (InstallInf["WAuth"]:""=="wep-open") ? "open" : "sharedkey");
-			network_configuration = sformat("%1WIRELESS_DEFAULT_KEY='0'\n", network_configuration);
-			network_configuration = sformat("%1WIRELESS_KEY_0='%2%3'\n", network_configuration, type, InstallInf["WKey"]:"");
-			network_configuration = sformat("%1WIRELESS_KEY_LENGTH='%2'\n", network_configuration, InstallInf["WKeyLen"]:"");
-			if (size(InstallInf["WKeyType"]:"")>0 && size(InstallInf["WKey"]:"")>0)
-				network_configuration = sformat("%1WIRELESS_KEY_0='%2:%3'\n", network_configuration,
-					substring(InstallInf["WKeyType"]:"", 0, 1), InstallInf["WKey"]:"");
-			break;
-	 }
-     }
+        switch(InstallInf["WAuth"]:"") {
+            case "" : // "" means wpa-psk
+            case "psk" :
+                ifcfg = sformat("%1WIRELESS_WPA_PSK='%2'\n", ifcfg, InstallInf["WKey"]:"");
+                ifcfg = sformat("%1WIRELESS_AUTH_MODE='psk'\n", ifcfg);
+                break;
+            case "open" :
+                ifcfg = sformat("%1WIRELESS_AUTH_MODE='no-encryption'\n", ifcfg);
+                break;
+            case "wep_open" :
+            case "wep_restricted" :
+                string type="";
+                if (InstallInf["WkeyType"]:""=="password") type="h:";
+                else if (InstallInf["WkeyType"]:""=="ascii") type="s:";
+                ifcfg = sformat("%1WIRELESS_AUTH_MODE='%2'\n", ifcfg, (InstallInf["WAuth"]:""=="wep-open") ? "open" : "sharedkey");
+                ifcfg = sformat("%1WIRELESS_DEFAULT_KEY='0'\n", ifcfg);
+                ifcfg = sformat("%1WIRELESS_KEY_0='%2%3'\n", ifcfg, type, InstallInf["WKey"]:"");
+                ifcfg = sformat("%1WIRELESS_KEY_LENGTH='%2'\n", ifcfg, InstallInf["WKeyLen"]:"");
+                if (size(InstallInf["WKeyType"]:"")>0 && size(InstallInf["WKey"]:"")>0) {
+                    ifcfg = sformat("%1WIRELESS_KEY_0='%2:%3'\n", ifcfg,
+                                    substring(InstallInf["WKeyType"]:"", 0, 1), InstallInf["WKey"]:"");
+                }
+                break;
+        }
+    }
 
+    // if available, write MTU
+    if (size(InstallInf["mtu"]:"")>0) {
+        ifcfg = sformat("%1MTU='%2'\n", ifcfg, InstallInf["mtu"]:"");
+    }
 
-     // if available, write MTU
-    if (size(InstallInf["mtu"]:"")>0)
-	network_configuration = sformat("%1MTU='%2'\n", network_configuration, InstallInf["mtu"]:"");
-
-     // for queth devices (s390)
+    // for queth devices (s390)
     // bnc#578689 - YaST2 should not write the MAC address into ifcfg file
-    if ((Arch::s390()) && (size(InstallInf["hwaddr"]:"")>0))
-	network_configuration =	sformat("%1LLADDR='%2'\n", network_configuration, InstallInf["hwaddr"]:"");
-
-
+    if ((Arch::s390()) && (size(InstallInf["hwaddr"]:"")>0)) {
+        ifcfg =	sformat("%1LLADDR='%2'\n", ifcfg, InstallInf["hwaddr"]:"");
+    }
 
     // point to point interface
-    if (size(InstallInf["remote_ip"]:"")>0)
-	network_configuration = sformat("%1REMOTE_IPADDR='%2'\n", network_configuration, InstallInf["remote_ip"]:"");
+    if (size(InstallInf["remote_ip"]:"")>0) {
+        ifcfg = sformat("%1REMOTE_IPADDR='%2'\n", ifcfg, InstallInf["remote_ip"]:"");
+    }
 
-    string ifcfg = sformat("ifcfg-%1", netdevice);
+    string new_netdevice = netdevice;
+    if (! LanUdevAuto::AllowUdevModify()) {
+        string cmd = sformat("biosdevname --policy=all_names -i %1", netdevice);
+        string out = String::FirstChunk(StdoutOf(cmd), "\n");
+        if (out != "") {
+            y2milestone ("biosdevname renames %1 to %2", netdevice, out);
+            new_netdevice = out;
+        }
+    }
 
-    string hw_name = BuildDescription(NetworkInterfaces::device_type(netdevice), NetworkInterfaces::device_num(ifcfg), $["dev_name":netdevice], hardware);
+    string ifcfg_name = sformat("ifcfg-%1", new_netdevice);
+
+    string hw_name = BuildDescription(NetworkInterfaces::device_type(netdevice),
+                                      NetworkInterfaces::device_num(ifcfg_name),
+                                      $["dev_name":netdevice],
+                                      hardware);
     // protect special characters, #305343
-    if (size(hw_name)>0)
-	network_configuration = sformat("%1NAME='%2'\n", network_configuration, String::Quote (hw_name));
+    if (size(hw_name)>0) {
+        ifcfg = sformat("%1NAME='%2'\n", ifcfg, String::Quote (hw_name));
+    }
 
-    y2milestone("Network Configuration:\n%1\nifcfg file: %2", network_configuration, ifcfg);
+    y2milestone("Network Configuration:\n%1\nifcfg file: %2", ifcfg, ifcfg_name);
 
     // write only if file doesn't exists
-    string dev_file=sformat("/etc/sysconfig/network/%1", ifcfg);
-    // string dev_file=sformat("/tmp/%1", ifcfg);
+    string dev_file=sformat("/etc/sysconfig/network/%1", ifcfg_name);
 
-        SCR::Write(.target.string, dev_file, network_configuration);
-        y2milestone("ifcfg file: %1", dev_file);
+    SCR::Write(.target.string, dev_file, ifcfg);
+    y2milestone("ifcfg file: %1", dev_file);
 }
 
 /*
