@@ -17,9 +17,8 @@ X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=dns
 
 Icon=yast-dns
-Exec=/sbin/yast2 dns 
+Exec=/usr/bin/xdg-su -c '/sbin/yast2 dns'
 
 Name=DNS and Hostname
 GenericName=Configure hostname and name servers
-X-KDE-SubstituteUID=true
 StartupNotify=true

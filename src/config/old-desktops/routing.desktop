@@ -17,9 +17,8 @@ X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=routing
 
 Icon=yast-routing
-Exec=/sbin/yast2 routing 
+Exec=/usr/bin/xdg-su -c '/sbin/yast2 routing'
 
 Name=Routing
 GenericName=Configure routing
-X-KDE-SubstituteUID=true
 StartupNotify=true

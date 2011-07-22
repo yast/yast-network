@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jul 22 15:48:16 CEST 2011 - locilka@suse.cz
+
+- Obsoleted X-KDE-SubstituteUID replaced with xdg-su in Exec in
+  desktop files (bnc#540627)
+
+-------------------------------------------------------------------
 Thu Jul 21 13:44:24 CEST 2011 - locilka@suse.cz
 
 - Fixed Firewall and SSH proposal to be still able to adjust SSH
