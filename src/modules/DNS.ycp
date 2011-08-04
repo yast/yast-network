@@ -361,9 +361,9 @@ global define boolean Import(map settings) {
 	write_hostname = DefaultWriteHostname();
 
     // user-defined <hostname>
-    if ( haskey(settings, "hostname")  && haskey(settings, "domain")) {
+    if ( haskey(settings, "hostname")) {
 	hostname = settings["hostname"]:"";
-	domain = settings["domain"]:"site";
+	domain = settings["domain"]:""; // empty is not a bug, bnc#677471
     }
     else {
 	// otherwise, check 1) install.inf 2) /etc/HOSTNAME

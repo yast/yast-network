@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Jul 20 16:14:07 CEST 2011 - mvidner@suse.cz
+
+- Allow empty domain in autoyast profiles again (bnc#677471).
+- 2.17.155.1
+
+-------------------------------------------------------------------
 Fri Jun  3 13:42:51 CEST 2011 - mvidner@suse.cz
 
 - Make the hostname resolvable to our static address coming from
