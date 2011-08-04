@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Aug  3 17:09:21 CEST 2011 - mvidner@suse.cz
+
+- inst_hostname: do write the randomized /etc/HOSTNAME if left
+  unchanged by user (bnc#695803).
+- Allow empty domain in autoyast profiles again (bnc#677471).
+- 2.21.1
+
+-------------------------------------------------------------------
 Fri Jul 22 17:49:47 CEST 2011 - mvidner@suse.cz
 
 - Support biosdevname=1 NIC naming scheme: don't write mac-based udev
