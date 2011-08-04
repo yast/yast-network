@@ -49,12 +49,6 @@ if ( ! GetInstArgs::automatic_configuration() )
     Wizard::SetDesktopIcon("dns");
     ret = HostnameDialog ();
 }
-//but we need to force writing /etc/HOSTNAME in such case
-//(#383336)
-else
-{
-    DNS::modified = true;
-}
 
 if (ret == `next)
 {

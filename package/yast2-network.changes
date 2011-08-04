@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Aug  3 17:09:21 CEST 2011 - mvidner@suse.cz
+
+- inst_hostname: do write the randomized /etc/HOSTNAME if left
+  unchanged by user (bnc#695803).
+- 2.17.155.2
+
+-------------------------------------------------------------------
 Wed Jul 20 16:14:07 CEST 2011 - mvidner@suse.cz
 
 - Allow empty domain in autoyast profiles again (bnc#677471).

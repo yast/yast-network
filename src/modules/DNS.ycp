@@ -188,6 +188,7 @@ global void ProposeHostname() {
     {
 	srandom ();
 	hostname = "linux-" + String::Random (4); // #157107
+        modified = true;
     }
 }
 
