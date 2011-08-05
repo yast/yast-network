@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug  5 12:34:09 CEST 2011 - tgoettlicher@suse.de
+
+- fixed .desktop file (bnc #681249)
+
+-------------------------------------------------------------------
 Wed Aug  3 17:09:21 CEST 2011 - mvidner@suse.cz
 
 - inst_hostname: do write the randomized /etc/HOSTNAME if left
