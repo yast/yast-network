@@ -1181,7 +1181,8 @@ global define boolean Commit() {
 	// L3: bnc#585458
 	// FIXME: INTERFACETYPE confuses sysconfig, bnc#458412
 	// Only test when newdev has enough info for GetTypeFromIfcfg to work.
-	if (NetworkInterfaces::GetTypeFromIfcfg(newdev) != type) {
+        string implied_type = NetworkInterfaces::GetTypeFromIfcfg(newdev);
+        if (implied_type != nil && implied_type != type) {
 	    newdev["INTERFACETYPE"]=type;
 	}
 

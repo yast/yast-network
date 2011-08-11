@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Aug 11 16:33:26 CEST 2011 - mvidner@suse.cz
+
+- Omit unnecessary INTERFACETYPE declaration in ifcfg (bnc#711762)
+  This broke the VM-proposed bridge because it copied ifcfg-ethN's
+  INTERFACETYPE=eth (bnc#704999).
+- 2.17.160
+
+-------------------------------------------------------------------
 Fri Aug  5 12:34:09 CEST 2011 - tgoettlicher@suse.de
 
 - fixed .desktop file (bnc #681249)
