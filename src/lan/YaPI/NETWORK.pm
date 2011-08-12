@@ -38,7 +38,11 @@ sub Read {
                 %configuration = ( 'bootproto' => LanItems->bootproto );
             } elsif (LanItems->bootproto eq "static"){
                 %configuration = ( 'bootproto' => 'static' );
-                $configuration{'ipaddr'} = LanItems->ipaddr . "/" . LanItems->prefix;
+
+                $configuration{'ipaddr'} = LanItems->ipaddr;
+                if (LanItems->prefix ne "") {
+                     $configuration{'ipaddr'} .= "/" . LanItems->prefix
+                }
             }
             $interfaces{LanItems->interfacename}=\%configuration;
         } elsif (LanItems->getCurrentItem()->{'hwinfo'}->{'type'} eq "eth") {
