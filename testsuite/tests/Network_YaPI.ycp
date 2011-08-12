@@ -26,7 +26,13 @@ map READ = $[
         ],
     ],
     "network" : $[
-	  "section" : $[ "eth0":$[], "eth1":$[] ],
+	  "section" : $[
+                        "eth0":$[],
+                        "eth1":$[],
+                        "eth2":$[],
+                        "eth3":$[],
+                        "eth4":$[],
+                        ],
 	  "value" : $[
 		"eth0" : $[
 		    "BOOTPROTO" : "dhcp4"
@@ -34,7 +40,23 @@ map READ = $[
 	        "eth1" : $[
 		    "BOOTPROTO" : "static",
 		    "IPADDR"	: "1.2.3.4/24"
-		  ]],
+                  ],
+	        "eth2" : $[
+		    "BOOTPROTO" : "static",
+		    "IPADDR"	: "1.2.3.5/24",
+                    "PREFIXLEN"	: "",
+                  ],
+	        "eth3" : $[
+		    "BOOTPROTO" : "static",
+		    "IPADDR"	: "1.2.3.6",
+                    "PREFIXLEN" : "24",
+		  ],
+	        "eth4" : $[
+		    "BOOTPROTO" : "static",
+		    "IPADDR"	: "1.2.3.7",
+                    "NETMASK"   : "255.255.255.0",
+		  ],
+          ],
     ],
     "routes" : [ $["destination":"default", "gateway":"10.20.30.40"] ]
 ];
@@ -57,4 +79,8 @@ TEST(``(YaPI::NETWORK::Write($["route":$["default":$["via":"10.20.30.40"]]])), [
 
 // test incorrect default route (invalid gw IP)
 TEST(``(YaPI::NETWORK::Write($["route":$["default":$["via":"10.20.30"]]])), [READ], nil);
+
+TEST(``(YaPI::NETWORK::Write($["interface":$["eth3":$["bootproto":"static", "ipaddr":"1.2.3.7/24"]]])), [READ], nil);
+TEST(``(YaPI::NETWORK::Read()), [READ, $[], EXEC], nil);
+
 }
