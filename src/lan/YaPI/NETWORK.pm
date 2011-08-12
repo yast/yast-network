@@ -44,6 +44,7 @@ sub Read {
                      $configuration{'ipaddr'} .= "/" . LanItems->prefix
                 }
             }
+            $configuration{'mtu'} = LanItems->mtu;
             $interfaces{LanItems->interfacename}=\%configuration;
         } elsif (LanItems->getCurrentItem()->{'hwinfo'}->{'type'} eq "eth") {
             my $device = LanItems->getCurrentItem()->{"hwinfo"}->{"dev_name"};
@@ -136,12 +137,12 @@ sub writeInterfaces {
     my $args  = shift;
     my $ret = {'exit'=>0, 'error'=>''};
     y2milestone("interface", Dumper(\$args->{'interface'}));
-    foreach my $dev (keys %{$args->{'interface'}}){
+    while (my ($dev, $ifc) = each %{$args->{'interface'}}) {
         YaST::YCP::Import ("NetworkInterfaces");
         NetworkInterfaces->Read();
         NetworkInterfaces->Add() unless NetworkInterfaces->Edit($dev);
         NetworkInterfaces->Name($dev);
-        my $ip = $args->{'interface'}->{$dev}->{'ipaddr'};
+        my $ip = $ifc->{'ipaddr'};
         my $prefix="32";
         YaST::YCP::Import ("Netmask");
         my @ip_row = split(/\//, $ip);
@@ -152,9 +153,12 @@ sub writeInterfaces {
         }
         $ip = $ip_row[0]."/".$prefix;
         my %config=("STARTMODE" => "auto",
-                    "BOOTPROTO" => $args->{'interface'}->{$dev}->{'bootproto'},
+                    "BOOTPROTO" => $ifc->{'bootproto'},
                     "IPADDR" => $ip
             );
+        if (defined $ifc->{'mtu'}) {
+            $config{"MTU"} = $ifc->{'mtu'};
+        }
         NetworkInterfaces->Current(\%config);
         NetworkInterfaces->Commit();
         NetworkInterfaces->Write("");
