@@ -39,7 +39,8 @@ map READ = $[
 		  ],
 	        "eth1" : $[
 		    "BOOTPROTO" : "static",
-		    "IPADDR"	: "1.2.3.4/24"
+		    "IPADDR"	: "1.2.3.4/24",
+                    "MTU"	: "1234",
                   ],
 	        "eth2" : $[
 		    "BOOTPROTO" : "static",
