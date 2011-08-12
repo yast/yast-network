@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Aug 12 16:27:39 CEST 2011 - mvidner@suse.cz
+
+- Integrated patches from Justus Winter:
+ - Make MTU configurable using YaPI.
+ - YaPI (re)Read: Don't append a slash to ipaddr like '1.2.3.4/8/'.
+- 2.21.3
+
+-------------------------------------------------------------------
 Thu Aug 11 16:33:26 CEST 2011 - mvidner@suse.cz
 
 - Omit unnecessary INTERFACETYPE declaration in ifcfg (bnc#711762)
