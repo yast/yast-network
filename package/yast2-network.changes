@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Oct 11 14:27:48 CEST 2012 - mvidner@suse.cz
+
+- Backported patches from Justus Winter:
+ - Make MTU configurable using YaPI.
+ - YaPI (re)Read: Don't append a slash to ipaddr like '1.2.3.4/8/'.
+
+-------------------------------------------------------------------
 Wed Oct 10 11:28:48 UTC 2012 - mfilka@suse.com
 
 - Autoenabling of all interfaces allowed during installation only.
