@@ -126,7 +126,7 @@ global define boolean isAnyInterfaceDown(){
   });
 
     y2milestone("link_status %1", link_status);
-    map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
+    map <string, any> configurations =  NetworkInterfaces::FilterDevices("");
     foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
      foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
       string mac = ((map<string, any>)SCR::Execute(.target.bash_output, sformat("cat /sys/class/net/%1/address|tr -d '\n'", devname)))["stdout"]:"";
@@ -256,7 +256,6 @@ Check configuration manually."));
     if(Abort()) return false;
     /* Progress step 2/9 */
     if (gui) ProgressNextStage(_("Detecting network devices..."));
-    // FIXME: MOD // ReadModules(NetworkInterfaces::CardRegex["netcard"]:"");
     // Dont read hardware data in config mode
     if(!Mode::config ()) {
 	if(!NetHwDetection::running) NetHwDetection::Start();
@@ -434,7 +433,8 @@ global define boolean Write() {
     if (!Mode::autoinst() && LanUdevAuto::AllowUdevModify()) {
 	LanItems::WriteUdevDriverRules();
     }
-    NetworkInterfaces::Write("netcard");
+    // hack: no "netcard" filter as biosdevname names it diferently (bnc#712232)
+    NetworkInterfaces::Write("");
     // WriteDevices();
     sleep(sl);
 
@@ -625,7 +625,7 @@ global define boolean Import(map settings) {
  * @return dumped settings (later acceptable by Import())
  */
 global define map Export() {
- map devices = NetworkInterfaces::Export("netcard");
+ map devices = NetworkInterfaces::Export("");
  map udev_rules = LanUdevAuto::Export(devices);
     map ay = $[
 	"dns"		: DNS::Export(),
@@ -654,7 +654,6 @@ global define list Summary(string mode) {
 
     boolean split = (mode == "split");
 
-//    list sum = BuildSummary("netcard", LanItems::Hardware, split, mode == "proposal");
     list sum = LanItems::BuildLanOverview();
 
     /* Testing improved summary */
@@ -1054,7 +1053,7 @@ global define boolean Autoinstall() {
 
         foreach(map<string, string> interface, LanItems::autoinstall_settings["interfaces"]:[], ``{
                 
-            list<string> devs = NetworkInterfaces::List("netcard");
+            list<string> devs = NetworkInterfaces::List("");
             y2milestone("devs: %1", devs);
             tosel = nil;
 

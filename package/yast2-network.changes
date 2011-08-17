@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Aug 17 15:02:50 CEST 2011 - mvidner@suse.cz
+
+- Sort of enable arbitrary interface names.
+  Fix skipping the internet test, release notes, registration, with
+  biosdevname (bnc#712232).
+- 2.21.4
+
+-------------------------------------------------------------------
 Fri Aug 12 16:27:39 CEST 2011 - mvidner@suse.cz
 
 - Integrated patches from Justus Winter:
