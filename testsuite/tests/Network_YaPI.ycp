@@ -38,6 +38,8 @@ map READ = $[
                         "eth2":$[],
                         "eth3":$[],
                         "eth4":$[],
+                        "eth5":$[],
+                        "eth5.23":$[],
                         ],
 	  "value" : $[
 		"eth0" : $[
@@ -68,6 +70,17 @@ map READ = $[
 		    "IPADDR"	: "1.2.3.7",
                     "NETMASK"   : "255.255.255.0",
 		  ],
+	        "eth5" : $[
+		    "STARTMODE" : "auto",
+		    "BOOTPROTO" : "static",
+		  ],
+	        "eth5.23" : $[
+		    "STARTMODE"   : "auto",
+		    "BOOTPROTO"   : "static",
+		    "IPADDR"	  : "1.2.3.8/24",
+		    "VLAN_ID"     : "23",
+		    "ETHERDEVICE" : "eth5",
+		  ],
           ],
     ],
     "routes" : [ $["destination":"default", "gateway":"10.20.30.40"] ]
@@ -95,7 +108,12 @@ TEST(``(YaPI::NETWORK::Write($["route":$["default":$["via":"10.20.30.40"]]])), [
 // test incorrect default route (invalid gw IP)
 TEST(``(YaPI::NETWORK::Write($["route":$["default":$["via":"10.20.30"]]])), [READ], nil);
 
+// test setting the network prefix length for an interface that was previously configured via netmask
 TEST(``(YaPI::NETWORK::Write($["interface":$["eth3":$["bootproto":"static", "ipaddr":"1.2.3.7/24"]]])), [READ], nil);
+
+// test vlan_id change
+TEST(``(YaPI::NETWORK::Write($["interface":$["eth5.23":$["bootproto":"static", "ipaddr":"1.2.3.8/24", "vlan_etherdevice":"eth5", "vlan_id":"42"]]])), [READ], nil);
+
 TEST(``(YaPI::NETWORK::Read()), [READ, $[], EXEC], nil);
 
 }
