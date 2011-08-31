@@ -44,6 +44,12 @@ sub Read {
                 }
             }
             $configuration{'mtu'} = LanItems->mtu;
+            if (LanItems->vlan_id){
+                $configuration{'vlan_id'} = LanItems->vlan_id;
+            }
+            if (LanItems->vlan_etherdevice){
+                $configuration{'vlan_etherdevice'} = LanItems->vlan_etherdevice;
+            }
             $interfaces{LanItems->interfacename}=\%configuration;
         } elsif (LanItems->getCurrentItem()->{'hwinfo'}->{'type'} eq "eth") {
             my $device = LanItems->getCurrentItem()->{"hwinfo"}->{"dev_name"};
@@ -157,6 +163,12 @@ sub writeInterfaces {
         }
         if (defined $ifc->{'mtu'}) {
             $config{"MTU"} = $ifc->{'mtu'};
+        }
+        if (defined $ifc->{'vlan_id'}) {
+            $config{"VLAN_ID"} = $ifc->{'vlan_id'};
+        }
+        if (defined $ifc->{'vlan_etherdevice'}) {
+            $config{"ETHERDEVICE"} = $ifc->{'vlan_etherdevice'};
         }
         NetworkInterfaces->Current(\%config);
         NetworkInterfaces->Commit();
