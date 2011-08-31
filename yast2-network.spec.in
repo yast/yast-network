@@ -10,9 +10,9 @@ BuildRequires: yast2-devtools yast2-testsuite
 BuildRequires: yast2-country
 BuildRequires: yast2-installation >= 2.15.27
 
-# NetworkInterfaces::GetTypeFromIfcfg (bnc#572747)
-BuildRequires:	yast2 >= 2.21.6
-Requires:	yast2 >= 2.21.6
+# NetworkInterfaces::Write should write ifcfgs only once
+BuildRequires:	yast2 >= 2.21.14
+Requires:	yast2 >= 2.21.14
 
 #netconfig (FaTE #303618)
 Requires:	sysconfig >= 0.71.2

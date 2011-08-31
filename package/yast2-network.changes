@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Aug 31 16:23:38 CEST 2011 - mvidner@suse.cz
+
+- More YaPI improvements from Justus Winter:
+ - Write: default BOOTPROTO to 'static', allow omitting IPADDR
+ - Allow manipulating STARTMODE, don't assume 'auto'.
+ - Handle ETHERDEVICE and VLAN_ID.
+- 2.21.5
+
+-------------------------------------------------------------------
 Wed Aug 17 15:02:50 CEST 2011 - mvidner@suse.cz
 
 - Sort of enable arbitrary interface names.
