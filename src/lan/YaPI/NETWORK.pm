@@ -142,20 +142,20 @@ sub writeInterfaces {
         NetworkInterfaces->Read();
         NetworkInterfaces->Add() unless NetworkInterfaces->Edit($dev);
         NetworkInterfaces->Name($dev);
-        my $ip = $ifc->{'ipaddr'};
-        my $prefix="32";
-        YaST::YCP::Import ("Netmask");
-        my @ip_row = split(/\//, $ip);
-        $prefix = $ip_row[$#ip_row];
-        if (Netmask->Check4($prefix) && $prefix =~ /\./){
-            y2milestone("Valid netmask: ", $prefix, " will change to prefixlen");
-            $prefix = Netmask->ToBits($prefix);
-        }
-        $ip = $ip_row[0]."/".$prefix;
         my %config=("STARTMODE" => "auto",
                     "BOOTPROTO" => defined $ifc->{'bootproto'}? $ifc->{'bootproto'}: 'static',
-                    "IPADDR" => $ip
             );
+        if (defined $ifc->{'ipaddr'}) {
+            my $prefix = "32";
+            YaST::YCP::Import ("Netmask");
+            my @ip_row = split(/\//, $ifc->{'ipaddr'});
+            $prefix = $ip_row[$#ip_row];
+            if (Netmask->Check4($prefix) && $prefix =~ /\./){
+                y2milestone("Valid netmask: ", $prefix, " will change to prefixlen");
+                $prefix = Netmask->ToBits($prefix);
+            }
+            $config{"IPADDR"} = $ip_row[0]."/".$prefix;
+        }
         if (defined $ifc->{'mtu'}) {
             $config{"MTU"} = $ifc->{'mtu'};
         }
