@@ -153,7 +153,7 @@ sub writeInterfaces {
         }
         $ip = $ip_row[0]."/".$prefix;
         my %config=("STARTMODE" => "auto",
-                    "BOOTPROTO" => $ifc->{'bootproto'},
+                    "BOOTPROTO" => defined $ifc->{'bootproto'}? $ifc->{'bootproto'}: 'static',
                     "IPADDR" => $ip
             );
         if (defined $ifc->{'mtu'}) {
