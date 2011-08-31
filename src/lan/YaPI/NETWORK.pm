@@ -32,13 +32,12 @@ sub Read {
     foreach my $devnum (keys %{LanItems->Items}){
         LanItems->current($devnum);
         if (LanItems->IsItemConfigured()){
-            my %configuration = ();
             LanItems->SetItem();
-            if (LanItems->isCurrentDHCP()){
-                %configuration = ( 'bootproto' => LanItems->bootproto );
-            } elsif (LanItems->bootproto eq "static"){
-                %configuration = ( 'bootproto' => 'static' );
-
+            my %configuration = (
+                'startmode' => LanItems->startmode ne ''? LanItems->startmode: 'manual',
+                'bootproto' => LanItems->bootproto,
+            );
+            if (LanItems->bootproto eq "static"){
                 $configuration{'ipaddr'} = LanItems->ipaddr;
                 if (LanItems->prefix ne "") {
                      $configuration{'ipaddr'} .= "/" . LanItems->prefix
@@ -142,7 +141,7 @@ sub writeInterfaces {
         NetworkInterfaces->Read();
         NetworkInterfaces->Add() unless NetworkInterfaces->Edit($dev);
         NetworkInterfaces->Name($dev);
-        my %config=("STARTMODE" => "auto",
+        my %config=("STARTMODE" => defined $ifc->{'startmode'}? $ifc->{'startmode'}: 'auto',
                     "BOOTPROTO" => defined $ifc->{'bootproto'}? $ifc->{'bootproto'}: 'static',
             );
         if (defined $ifc->{'ipaddr'}) {

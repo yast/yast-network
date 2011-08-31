@@ -41,24 +41,29 @@ map READ = $[
                         ],
 	  "value" : $[
 		"eth0" : $[
+		    "STARTMODE" : "manual",
 		    "BOOTPROTO" : "dhcp4"
 		  ],
 	        "eth1" : $[
+		    "STARTMODE" : "auto",
 		    "BOOTPROTO" : "static",
 		    "IPADDR"	: "1.2.3.4/24",
                     "MTU"	: "1234",
                   ],
 	        "eth2" : $[
+		    "STARTMODE" : "auto",
 		    "BOOTPROTO" : "static",
 		    "IPADDR"	: "1.2.3.5/24",
                     "PREFIXLEN"	: "",
                   ],
 	        "eth3" : $[
+		    "STARTMODE" : "auto",
 		    "BOOTPROTO" : "static",
 		    "IPADDR"	: "1.2.3.6",
                     "PREFIXLEN" : "24",
 		  ],
 	        "eth4" : $[
+		    "STARTMODE" : "auto",
 		    "BOOTPROTO" : "static",
 		    "IPADDR"	: "1.2.3.7",
                     "NETMASK"   : "255.255.255.0",
@@ -80,6 +85,9 @@ map EXEC = $[
 TEST(``(YaPI::NETWORK::Read()), [READ, $[], EXEC], nil);
 
 TEST(``(YaPI::NETWORK::Write($[])), [$[], $[], $[]], nil);
+
+// test manipulation of the startmode
+TEST(``(YaPI::NETWORK::Write($["interface":$["eth0":$["bootproto":"dhcp4", "STARTMODE":"auto"]]])), [READ], nil);
 
 // test correct default route
 TEST(``(YaPI::NETWORK::Write($["route":$["default":$["via":"10.20.30.40"]]])), [READ], nil);
