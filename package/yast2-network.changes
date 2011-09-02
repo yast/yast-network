@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Sep  2 16:08:07 CEST 2011 - mvidner@suse.cz
+
+- Don't switch bonding interfaces to DHCP when editing them (bnc#711962).
+
+-------------------------------------------------------------------
 Wed Aug 17 15:02:50 CEST 2011 - mvidner@suse.cz
 
 - Sort of enable arbitrary interface names.
