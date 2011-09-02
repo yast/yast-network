@@ -346,11 +346,11 @@ define string DeviceStatus(string devtype, string devname, map devmap) {
 	    string addr = devmap["IPADDR"]:"";
 	    string host = NetHwDetection::ResolveIP (addr);
 	    string remip = devmap["REMOTE_IPADDR"]:"";
- 	 if (proto == "none") return _("Configured without address (NONE)");
-	  else if(!hasAnyValue(addr))
+            if (proto == "none") return _("Configured without address (NONE)");
+            else if(!hasAnyValue(addr))
 		/* Network card status */
-		return HTML::Colorize (_("Warning: no encryption is used."), "red"); //sformat(_("Configured without an address"));
-	    else if(remip == "" || remip == nil)
+                return HTML::Colorize (_("Configured without an address"), "red");
+            else if(remip == "" || remip == nil)
 		/* Network card status (%1 is address) */
 		return sformat(_("Configured with address %1"),
 			       addr + String::OptParens (host));
