@@ -952,11 +952,6 @@ define any AddressDialog() {
 	"TUNNEL_SET_GROUP" : LanItems::tunnel_set_group
 	];
     }
-/*
- else {
-	if(settings["BOOTPROTO"]:"" == "static" && settings["IPADDR"]:"" == "" && !no_dhcp) settings["BOOTPROTO"] = "dhcp";
-    }
-*/
 
     // #65524
     if (LanItems::operation == `add && force_static_ip)
