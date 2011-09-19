@@ -15,7 +15,6 @@ import "Label";
 import "Popup";
 import "Provider";
 import "Wizard";
-import "Wizard_hw";
 
 include "network/routines.ycp";
 include "network/summary.ycp";
@@ -123,64 +122,6 @@ define any TypeDialog() {
 	string type = (string) UI::QueryWidget(`id(`modules), `CurrentItem);
 	y2debug("type=%1", type);
 	Provider::Add(type);
-    }
-
-    return ret;
-}
-
-/**
- * Main dialog
- * @return dialog result
- */
-define any SummaryDialog() {
-
-    ScreenName("provider-summary");
-
-    /* Provider summary dialog caption */
-    string caption = _("Provider Configuration");
-
-    list summary = Provider::Summary("all", true);
-    list unconfigured = summary[1]:[];
-    string configured = summary[0]:"";
-    y2debug("unconfigured=%1", unconfigured);
-
-    /* Frame label */
-    term contents = Wizard_hw::DetectedContent(_("Providers to Configure"),
-	    unconfigured, false, configured);
-
-    Wizard::SetContentsButtons(caption, contents, HELPS["summary"]:"",
-	    Label::BackButton(), Label::FinishButton());
-
-    any ret = nil;
-    while(true) {
-
-	ret = UI::UserInput();
-	y2debug("ret=%1", ret);
-
-	/* abort? */
-	if(ret == `abort || ret == `cancel || ret == `back) {
-	    if(ReallyAbort()) break;
-	    else continue;
-	}
-	/* overview dialog */
-	else if(ret == `edit_button) {
-	    ret = `overview;
-	    break;
-	}
-	/* configure the selected card */
-	else if(ret == `configure_button || ret == `detected_selbox) {
-	    string type = (string) UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
-	    Provider::Add(type);
-	    ret = `configure;
-	    break;
-	}
-	else if(ret == `next) {
-	    break;
-	}
-	else {
-	    y2error("unexpected retcode: %1", ret);
-	    continue;
-	}
     }
 
     return ret;
