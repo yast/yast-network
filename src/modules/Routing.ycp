@@ -34,7 +34,7 @@ global list<map> Routes = [];
 boolean modified = nil;
 /**
  * Enable IP forwarding
- * .sysconfig.sysctl.IP_FORWARD
+ * .etc.sysctl_conf."net.ipv4.ip_forward"
  */
 global boolean Forward = false;
 
