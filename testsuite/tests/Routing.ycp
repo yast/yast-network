@@ -29,29 +29,38 @@ map READ = $[
 	"console" : $[
 	    "CONSOLE_ENCODING" : "UTF-8",
 	],
-	"sysctl" : $[ "IP_FORWARD" : "yes" ],
     ],
+    "etc" : $[
+	"sysctl_conf" : $[
+	    "net.ipv4.ip_forward" : "1"
+	]
+    ]
 ];
 
-map EXEC = $["target": $["bash_output": $[] ] ];
+map EXEC = $[
+    "target": $[
+	"bash_output": $[],
+	"bash" : -1	// simluate not running SuSEFirewall
+    ]
+];
 
 TESTSUITE_INIT([READ, $[], EXEC], nil);
 import "Routing";
 
-DUMP("Read");
-TEST(``(Routing::Read()), [READ], nil);
+DUMP("==== Read =====");
+TEST(``(Routing::Read()), [READ, $[], EXEC], nil);
 DUMP(sformat("Routing::routes %1",Routing::Routes));
 
-DUMP("Write");
+DUMP("==== Write ====");
 // Routing::Forward = true;
 TEST(``(Routing::Write()), [READ], nil);
 Routing::Routes = [ $["1":"r1"], $["3":"r3"] ];
 TEST(``(Routing::Write()), [READ], nil);
 
-DUMP("Import");
+DUMP("==== Import ====");
 TEST(``(Routing::Import($["routes":["r7", "r8"], "ip_forward":true])), [], nil);
 
-DUMP("Export");
+DUMP("==== Export ====");
 TEST(``(Routing::Export()), [], nil);
 
 }

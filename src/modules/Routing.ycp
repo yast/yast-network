@@ -101,7 +101,7 @@ void ReadIPForwarding() {
 	Forward = SuSEFirewall::GetSupportRoute();
     }
     else {
-	Forward = (SCR::Read(.sysconfig.sysctl.IP_FORWARD) == "yes");
+	Forward = (SCR::Read(.etc.sysctl_conf."net.ipv4.ip_forward") == "1");
     }
 }
 
@@ -110,9 +110,9 @@ void WriteIPForwarding() {
 	SuSEFirewall::SetSupportRoute( Forward );
     }
     else {
-	SCR::Write(.sysconfig.sysctl.IP_FORWARD, Forward ? "yes" : "no");
-	SCR::Write(.sysconfig.sysctl.IPV6_FORWARD, Forward ? "yes" : "no");
-	SCR::Write(.sysconfig.sysctl, nil);
+	SCR::Write(.etc.sysctl_conf."net.ipv4.ip_forward", Forward ? "1" : "0");
+	SCR::Write(.etc.sysctl_conf."net.ipv6.conf.all.forwarding", Forward ? "1" : "0");
+	SCR::Write(.etc.sysctl_conf, nil);
     }
     SCR::Execute(.target.bash, sformat("echo %1 > /proc/sys/net/ipv4/ip_forward",
 		  Forward ? 1 : 0));

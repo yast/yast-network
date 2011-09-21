@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Sep 21 14:15:44 UTC 2011 - lslezak@suse.cz
+
+- Routing.ycp - use /etc/sysctl.conf file instead of deprecated
+  /etc/sysconfig/sysctl, adapted testsuite
+
+-------------------------------------------------------------------
 Mon Sep 19 09:20:00 CEST 2011 - visnov@suse.cz
 
 - Remove unneeded dialog and dependency on Wizard_hw 

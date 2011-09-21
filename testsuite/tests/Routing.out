@@ -1,21 +1,21 @@
-Dump	Read
+Dump	==== Read =====
 Read	.target.size "/etc/sysconfig/network/routes" 1
 Read	.routes [$["1":"r1"], $["2":"r2"]]
-Read	.sysconfig.sysctl.IP_FORWARD "yes"
+Read	.etc.sysctl_conf."net.ipv4.ip_forward" "1"
 Return	true
 Dump	Routing::routes [$["1":"r1"], $["2":"r2"]]
-Dump	Write
+Dump	==== Write ====
 Return	true
-Write	.sysconfig.sysctl.IP_FORWARD "yes" true
-Write	.sysconfig.sysctl.IPV6_FORWARD "yes" true
-Write	.sysconfig.sysctl nil true
+Write	.etc.sysctl_conf."net.ipv4.ip_forward" "1" true
+Write	.etc.sysctl_conf."net.ipv6.conf.all.forwarding" "1" true
+Write	.etc.sysctl_conf nil true
 Execute	.target.bash "echo 1 > /proc/sys/net/ipv4/ip_forward" 0
 Execute	.target.bash "echo 1 > /proc/sys/net/ipv6/conf/all/forwarding" 0
 Read	.target.size "/etc/sysconfig/network/routes" 1
 Execute	.target.bash "/bin/cp /etc/sysconfig/network/routes /etc/sysconfig/network/routes.YaST2save" 0
 Write	.routes [$["1":"r1"], $["3":"r3"]] true
 Return	true
-Dump	Import
+Dump	==== Import ====
 Return	true
-Dump	Export
+Dump	==== Export ====
 Return	$["ip_forward":true, "routes":["r7", "r8"]]
