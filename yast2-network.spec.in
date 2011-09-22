@@ -1,46 +1,45 @@
 @HEADER-COMMENT@
 
 @HEADER@
-Group:	System/YaST
-License: GPL v2 or later
+Group:          System/YaST
+License:        GPL v2 or later
 # should be required by devtools
-BuildRequires: pkgconfig perl-XML-Writer rpm
-BuildRequires: update-desktop-files
-BuildRequires: yast2-devtools yast2-testsuite
-BuildRequires: yast2-country
-BuildRequires: yast2-installation >= 2.15.27
+BuildRequires:  perl-XML-Writer pkgconfig rpm
+BuildRequires:  update-desktop-files
+BuildRequires:  yast2-devtools yast2-testsuite
+BuildRequires:  yast2-country
+BuildRequires:  yast2-installation >= 2.15.27
 
 # NetworkInterfaces::Write should write ifcfgs only once
 # Wizard::SetDesktopTitleAndIcon
-BuildRequires:	yast2 >= 2.21.22
-Requires:	yast2 >= 2.21.22
+BuildRequires:  yast2 >= 2.21.22
+Requires:       yast2 >= 2.21.22
 
 #netconfig (FaTE #303618)
-Requires:	sysconfig >= 0.71.2
+Requires:       sysconfig >= 0.71.2
 #GetLanguageCountry
 #(in newly created yast2-country-data)
-Requires:	yast2-country-data >= 2.16.3
+Requires:       yast2-country-data >= 2.16.3
 
-PreReq:		/bin/rm
+PreReq:         /bin/rm
 
-Provides:	y2c_lan y2c_dial yast2-config-adsl y2c_adsl
-Obsoletes:	y2c_lan y2c_dial yast2-config-adsl y2c_adsl
-Provides:	yast2-lib-network yast2-config-network
-Obsoletes:	yast2-lib-network yast2-config-network
-Provides:	yast2-trans-network yast2-trans-adsl
-Obsoletes:	yast2-trans-network yast2-trans-adsl
-Provides:	y2t_lan y2t_adsl y2t_dial
-Obsoletes:	y2t_lan y2t_adsl y2t_dial
+Provides:       y2c_lan y2c_dial yast2-config-adsl y2c_adsl
+Obsoletes:      y2c_lan y2c_dial yast2-config-adsl y2c_adsl
+Provides:       yast2-lib-network yast2-config-network
+Obsoletes:      yast2-lib-network yast2-config-network
+Provides:       yast2-trans-network yast2-trans-adsl
+Obsoletes:      yast2-trans-network yast2-trans-adsl
+Provides:       y2t_lan y2t_adsl y2t_dial
+Obsoletes:      y2t_lan y2t_adsl y2t_dial
 
 # carrier detection
-Conflicts:	yast2-core < 2.10.6
+Conflicts:      yast2-core < 2.10.6
 
-Summary:	YaST2 - Network Configuration
+Summary:        YaST2 - Network Configuration
 
 %package devel-doc
 Group:          System/YaST
-Summary:	YaST2 - Developer documentation for yast2-network
-
+Summary:        YaST2 - Developer documentation for yast2-network
 
 %description 
 This package contains the YaST2 component for network configuration.
@@ -98,3 +97,5 @@ fi
 %doc @docdir@
 %exclude @docdir@/COPYING
 %exclude @docdir@/README
+
+%changelog
