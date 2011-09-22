@@ -38,7 +38,7 @@ any ProxyGUI() {
     Proxy::Read ();
 
     Wizard::CreateDialog();
-    Wizard::SetDesktopIcon("proxy");
+    Wizard::SetDesktopTitleAndIcon("proxy");
     Wizard::SetNextButton(`next, Label::FinishButton() );
 
     /* main ui function */

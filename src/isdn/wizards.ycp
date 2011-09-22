@@ -124,7 +124,7 @@ define symbol ISDNSequence() ``{
     ];
 
     Wizard::OpenCancelOKDialog();
-    Wizard::SetDesktopIcon("isdn");
+    Wizard::SetDesktopTitleAndIcon("isdn");
 
     symbol ret = Sequencer::Run(aliases, sequence);
 
@@ -144,7 +144,7 @@ define symbol ISDNAutoSequence() ``{
     term contents = `Label(_("Initializing..."));
 
     Wizard::CreateDialog();
-    Wizard::SetDesktopIcon("isdn");
+    Wizard::SetDesktopTitleAndIcon("isdn");
     Wizard::SetContentsButtons(caption, contents, "",
 	    Label::BackButton(), Label::NextButton());
 

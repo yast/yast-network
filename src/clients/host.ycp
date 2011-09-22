@@ -43,7 +43,7 @@ any HostGUI() {
     Host::Read();
 
     Wizard::CreateDialog();
-    Wizard::SetDesktopIcon("host");
+    Wizard::SetDesktopTitleAndIcon("host");
     Wizard::SetNextButton(`next, Label::FinishButton() );
 
     /* main ui function */

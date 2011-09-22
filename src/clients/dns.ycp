@@ -43,7 +43,7 @@ include "network/services/dns.ycp";
  */
 any DNSGUI() {
     Wizard::CreateDialog();
-    Wizard::SetDesktopIcon("dns");
+    Wizard::SetDesktopTitleAndIcon("dns");
     DNS::Read();
     Lan::Read(`cache);
 

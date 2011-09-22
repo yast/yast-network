@@ -80,7 +80,7 @@ else if(func == "AskUser") {
     else
     {
 	Wizard::CreateDialog();
-	Wizard::SetDesktopIcon("lan");
+	Wizard::SetDesktopTitleAndIcon("lan");
 
 	seq = ManagedDialog();
 	Wizard::CloseDialog();

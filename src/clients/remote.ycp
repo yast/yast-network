@@ -33,7 +33,7 @@ any RemoteGUI() {
     Remote::Read();
 
     Wizard::CreateDialog();
-    Wizard::SetDesktopIcon("remote");
+    Wizard::SetDesktopTitleAndIcon("remote");
     Wizard::SetNextButton(`next, Label::FinishButton() );
 
     any ret = RemoteMainDialog();

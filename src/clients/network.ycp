@@ -55,7 +55,7 @@ any startDialog(){
  );
 
  Wizard::CreateDialog();
- Wizard::SetDesktopIcon("network");
+ Wizard::SetDesktopTitleAndIcon("network");
  Wizard::SetContentsButtons(caption, contents, help,
 	Label::BackButton(), /* Label::FinishButton() */ _("&Launch"));
 

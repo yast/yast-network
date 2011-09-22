@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Sep 22 11:24:51 CEST 2011 - visnov@suse.cz
+
+- show module name in window title
+- 2.21.8
+
+-------------------------------------------------------------------
 Thu Sep 22 09:04:17 UTC 2011 - lslezak@suse.cz
 
 - updated Network_YaPI test (adapted to systemd and sysctl changes)

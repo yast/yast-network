@@ -65,7 +65,7 @@ symbol LanSequence() {
     ];
 
     Wizard::OpenCancelOKDialog();
-    Wizard::SetDesktopIcon("lan");
+    Wizard::SetDesktopTitleAndIcon("lan");
 
     symbol ret = Sequencer::Run(aliases, sequence);
 

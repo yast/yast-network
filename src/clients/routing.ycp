@@ -44,7 +44,7 @@ any RoutingGUI() {
     Routing::Read();
 
     Wizard::CreateDialog();
-    Wizard::SetDesktopIcon("routing");
+    Wizard::SetDesktopTitleAndIcon("routing");
     Wizard::SetNextButton(`next, Label::FinishButton() );
 
     /* main ui function */
