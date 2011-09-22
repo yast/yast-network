@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Sep 22 09:04:17 UTC 2011 - lslezak@suse.cz
+
+- updated Network_YaPI test (adapted to systemd and sysctl changes)
+- 2.21.7
+
+-------------------------------------------------------------------
 Wed Sep 21 14:15:44 UTC 2011 - lslezak@suse.cz
 
 - Routing.ycp - use /etc/sysctl.conf file instead of deprecated

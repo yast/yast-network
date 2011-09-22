@@ -3,14 +3,10 @@ include "testsuite.ycp";
 import "YaPI::NETWORK";
 
 map READ = $[
-    "init" : $[
-	"scripts" :$[
-	  "exists" : false
-	]
-    ],
     "target" : $[
 	"size":27,
 	"string" : "laptop.suse.cz",
+	"stat" : $[]
     ],
     "sysconfig": $[
         "network" : $[
@@ -76,7 +72,12 @@ map READ = $[
 		  ],
           ],
     ],
-    "routes" : [ $["destination":"default", "gateway":"10.20.30.40"] ]
+    "routes" : [ $["destination":"default", "gateway":"10.20.30.40"] ],
+    "etc" : $[
+	"sysctl_conf" : $[
+	    "net.ipv4.ip_forward" : nil
+	]
+    ]
 ];
 
 map EXEC = $[
@@ -84,7 +85,8 @@ map EXEC = $[
 	"bash_output" : $[
 		"exit" : 0,
 		"stdout" : "laptop.suse.cz"
-		]
+		],
+	"bash" : 0
       ]
     ];
 
