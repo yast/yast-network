@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Oct 25 15:36:34 CEST 2011 - mvidner@suse.cz
+
+- Moved NetworkStorage from yast2.rpm to yast2-network.rpm
+  (bnc#726057)
+
+-------------------------------------------------------------------
 Fri Sep  2 16:08:07 CEST 2011 - mvidner@suse.cz
 
 - Don't switch bonding interfaces to DHCP when editing them (bnc#711962).
