@@ -18,6 +18,9 @@ Read	.network.value."eth0".BOOTPROTO "dhcp4"
 Dir	.network.value."eth1": ["BOOTPROTO", "IPADDR"]
 Read	.network.value."eth1".BOOTPROTO "static"
 Read	.network.value."eth1".IPADDR "1.2.3.4/24"
+Read	.probe.architecture "i386"
+Read	.sysconfig.console.CONSOLE_ENCODING "UTF-8"
+Execute	.target.bash_output "locale -k charmap" $["exit":0, "stdout":"laptop.suse.cz"]
 Read	.target.size "/etc/install.inf" 27
 Dir	.etc.install_inf: []
 Read	.target.string "/proc/cmdline" "laptop.suse.cz"

@@ -1540,7 +1540,7 @@ global boolean ProposeItem(){
   netmask = "";
   bootproto = "dhcp";
     // #176804
-    if (NetworkStorage::isDiskOnNetwork ( NetworkStorage::getDevice("/") )>0)
+    if (NetworkStorage::isDiskOnNetwork ( NetworkStorage::getDevice("/") ) != `no)
     {
 	startmode = "nfsroot";
 	y2milestone ("startmode nfsroot");

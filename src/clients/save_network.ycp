@@ -31,7 +31,7 @@ include "network/complex.ycp";
 map <string, any> InstallInf = $[];
 
 // global variable because chrooted environment
-integer network_disk=0;
+symbol network_disk = `no;      // `nfs `iscsi `fcoe
 string netdevice="";
 
 /**
@@ -231,7 +231,7 @@ string StdoutOf(string command) {
 void CreateIfcfg() {
     string ifcfg="";
 
-    if (network_disk==1 && contains(NetworkStorage::getiBFTDevices(), InstallInf["netdevice"]:"")){
+    if (network_disk == `iscsi && contains(NetworkStorage::getiBFTDevices(), InstallInf["netdevice"]:"")){
         ifcfg = sformat("%1STARTMODE='nfsroot'\nBOOTPROTO='ibft'\n", ifcfg);
     }
     else {
@@ -257,10 +257,10 @@ void CreateIfcfg() {
             SCR::Execute(.target.bash_output, "sed -i s/\"DHCLIENT_SET_HOSTNAME=.*\"/'DHCLIENT_SET_HOSTNAME=\"yes\"'/g /etc/sysconfig/network/dhcp");
         }
 
-        if (network_disk == 0) {
+        if (network_disk == `no) {
             ifcfg = sformat("%1STARTMODE='onboot'\n", ifcfg);
         }
-        else if (network_disk > 0) {
+        else {
             ifcfg = sformat("%1STARTMODE='nfsroot'\n", ifcfg);
         }
     }
