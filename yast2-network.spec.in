@@ -1,46 +1,63 @@
+#
+# spec file for package _
+#
+# Copyright (c) 2011 SUSE LINUX Products GmbH, Nuernberg, Germany.
+#
+# All modifications and additions to the file contributed by third parties
+# remain the property of their copyright owners, unless otherwise agreed
+# upon. The license for this file, and modifications and additions to the
+# file, is the same license as for the pristine package itself (unless the
+# license for the pristine package is not an Open Source License, in which
+# case the license is the MIT License). An "Open Source License" is a
+# license that conforms to the Open Source Definition (Version 1.9)
+# published by the Open Source Initiative.
+
+# Please submit bugfixes or comments via http://bugs.opensuse.org/
+#
+
+
 @HEADER-COMMENT@
 
 @HEADER@
 # should be required by devtools
-BuildRequires: pkgconfig perl-XML-Writer rpm
-BuildRequires: update-desktop-files
-BuildRequires: yast2-devtools yast2-testsuite
-BuildRequires: yast2-country
-BuildRequires: yast2-installation >= 2.15.27
+BuildRequires:  perl-XML-Writer pkgconfig rpm
+BuildRequires:  update-desktop-files
+BuildRequires:  yast2-devtools yast2-testsuite
+BuildRequires:  yast2-country
+BuildRequires:  yast2-installation >= 2.15.27
 
 # NetworkInterfaces::GetTypeFromIfcfg (bnc#572747)
-BuildRequires:	yast2 >= 2.17.96
-Requires:	yast2 >= 2.17.96
+BuildRequires:  yast2 >= 2.17.96
+Requires:       yast2 >= 2.17.96
 
 #netconfig (FaTE #303618)
-Requires:	sysconfig >= 0.71.2
+Requires:       sysconfig >= 0.71.2
 #GetLanguageCountry
 #(in newly created yast2-country-data)
-Requires:	yast2-country-data >= 2.16.3
+Requires:       yast2-country-data >= 2.16.3
 # Storage::IsDeviceOnNetwork
 BuildRequires:  yast2-storage >= 2.17.118
 Requires:       yast2-storage >= 2.17.118
 
-PreReq:		/bin/rm
+PreReq:         /bin/rm
 
-Provides:	y2c_lan y2c_dial yast2-config-adsl y2c_adsl
-Obsoletes:	y2c_lan y2c_dial yast2-config-adsl y2c_adsl
-Provides:	yast2-lib-network yast2-config-network
-Obsoletes:	yast2-lib-network yast2-config-network
-Provides:	yast2-trans-network yast2-trans-adsl
-Obsoletes:	yast2-trans-network yast2-trans-adsl
-Provides:	y2t_lan y2t_adsl y2t_dial
-Obsoletes:	y2t_lan y2t_adsl y2t_dial
+Provides:       y2c_lan y2c_dial yast2-config-adsl y2c_adsl
+Obsoletes:      y2c_lan y2c_dial yast2-config-adsl y2c_adsl
+Provides:       yast2-lib-network yast2-config-network
+Obsoletes:      yast2-lib-network yast2-config-network
+Provides:       yast2-trans-network yast2-trans-adsl
+Obsoletes:      yast2-trans-network yast2-trans-adsl
+Provides:       y2t_lan y2t_adsl y2t_dial
+Obsoletes:      y2t_lan y2t_adsl y2t_dial
 
 # carrier detection
-Conflicts:	yast2-core < 2.10.6
+Conflicts:      yast2-core < 2.10.6
 
-Summary:	Network configuration
+Summary:        Network configuration
 
 %package devel-doc
 Group:          System/YaST
-Summary:	Developer documentation for yast2-network
-
+Summary:        Developer documentation for yast2-network
 
 %description 
 Network configuration
@@ -98,3 +115,5 @@ fi
 %doc @docdir@
 %exclude @docdir@/COPYING
 %exclude @docdir@/README
+
+%changelog
