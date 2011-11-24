@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov 24 14:50:54 CET 2011 - mvidner@suse.cz
+
+- Only save LLADDR (persistent MAC) for some s390 card types
+  (bnc#658708).
+- 2.17.164
+
+-------------------------------------------------------------------
 Tue Oct 25 15:36:34 CEST 2011 - mvidner@suse.cz
 
 - Moved NetworkStorage from yast2.rpm to yast2-network.rpm
