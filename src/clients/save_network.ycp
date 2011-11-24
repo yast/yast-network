@@ -34,6 +34,10 @@ map <string, any> InstallInf = $[];
 symbol network_disk = `no;      // `nfs `iscsi `fcoe
 string netdevice="";
 
+list<map> hardware=ReadHardware("netcard");
+y2milestone("hardware %1", hardware);
+
+
 /**
  * Read one install.inf item
  * @param item InstallInf map key
@@ -57,6 +61,35 @@ define boolean ReadInstallInfItem(path install_inf, string item, string var) {
 define string DeleteFirstWord (string s) {
     string ret = regexpsub (s, "^[^ ]* +(.*)", "\\1");
     return (ret == nil)? s: ret;
+}
+
+string dev_name_to_sysfs_id(string dev_name) {
+    // hardware is global, read at client start
+    map hw_item = find(map i, hardware, ``( i["dev_name"]:"" == dev_name ));
+    return hw_item["sysfs_id"]:"";
+}
+
+string sysfs_card_type(string device) {
+    string sysfs_id = dev_name_to_sysfs_id(device);
+    if (sysfs_id == "") return "none";
+    string filename = "/sys" + sysfs_id + "/card_type";
+    string card_type = (string) SCR::Read(.target.string, filename);
+    return String::FirstChunk(card_type, "\n");
+}
+
+boolean s390_device_needs_persistent_mac(string device) {
+    string card_type = sysfs_card_type(device);
+    list<string> types_needing_persistent = [
+                                    "OSD_100",
+                                    "OSD_1000",
+                                    "OSD_10GIG",
+                                    "OSD_FE_LANE",
+                                    "OSD_GbE_LANE",
+                                    "OSD_Express",
+                                    ];
+    boolean needs_persistent = contains(types_needing_persistent, card_type);
+    y2milestone("Device: %1, card type: %2, needs persistent MAC: %3", device, card_type, needs_persistent);
+    return needs_persistent;
 }
 
 /**
@@ -137,6 +170,10 @@ define boolean ReadInstallInf() {
 
     if (Arch::s390()) {
 	y2milestone ("Interface type: %1", InstallInf["type"]:"");
+        // only some card types need a persistent MAC (bnc#658708)
+        if (! s390_device_needs_persistent_mac(netdevice)) {
+            InstallInf = remove (InstallInf, "hwaddr");
+        }
 	// hsi devices do not support setting hwaddr (bnc #479481)
 	if (InstallInf["type"]:"" == "hsi" && haskey (InstallInf, "hwaddr"))
 	    InstallInf = remove (InstallInf, "hwaddr");
@@ -217,11 +254,6 @@ string InstallModuleOptions(string module_name) {
     }
     return "";
 }
-
-
-//map <string,any> hwcfg=$[];
-list<map> hardware=ReadHardware("netcard");
-y2milestone("hardware %1", hardware);
 
 string StdoutOf(string command) {
     map out = (map) SCR::Execute (.target.bash_output, command);
