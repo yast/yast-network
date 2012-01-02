@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jan  2 17:13:13 UTC 2012 - jreidinger@suse.com
+
+- do not inherit for new bridge port devices PREFIXLEN (bnc#735109)
+- do not inherit for bridge device ETHTOOLS_OPTIONS (bnc#735109) 
+
+-------------------------------------------------------------------
 Mon Jan  2 15:48:29 UTC 2012 - jreidinger@suse.com
 
 - Filter out Chelsio devices without device file (bnc#711432) 
