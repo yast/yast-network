@@ -748,6 +748,11 @@ define list<map> ReadHardware(string hwtype) {
 	 card_ok=false;
 	 y2milestone("Filtering out virtio device without device file.");
 	}
+	// filter out device with chelsio Driver and no Device File (bnc#711432)
+	if (one["module"]:""=="cxgb4" && one["dev_name"]:""==""){
+	 card_ok=false;
+	 y2milestone("Filtering out Chelsio device without device file.");
+	}
 	// exception to filter out uicv devices (bnc#585363)
         if (card["device"]:""=="IUCV" && card["sysfs_bus_id"]:""!="netiucv"){
 	 card_ok=false;
