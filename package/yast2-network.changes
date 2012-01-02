@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jan  2 15:48:29 UTC 2012 - jreidinger@suse.com
+
+- Filter out Chelsio devices without device file (bnc#711432) 
+
+-------------------------------------------------------------------
 Thu Nov 24 14:50:54 CET 2011 - mvidner@suse.cz
 
 - Only save LLADDR (persistent MAC) for some s390 card types
