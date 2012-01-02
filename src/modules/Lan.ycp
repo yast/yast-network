@@ -947,6 +947,8 @@ void ProposeVirtualized() {
                     foreach (string a, any v, (map <string, any>)NetworkInterfaces::Current["_aliases"]:$[], {
                             if (v != nil) { NetworkInterfaces::DeleteAlias (NetworkInterfaces::Name, a); }
                         });
+                    //take out PREFIXLEN from old configuration (BNC#735109)
+                    old_config["PREFIXLEN"=""
                     old_config["_aliases"]=$[];
                     y2milestone("Old Config with apllied changes %1\n%2", ifcfg, old_config);
                     NetworkInterfaces::Current = old_config;
