@@ -938,6 +938,8 @@ void ProposeVirtualized() {
                 NetworkInterfaces::Current["STARTMODE"]="onboot";
                 // remove description - will be replaced by new (real) one
                 NetworkInterfaces::Current=remove(NetworkInterfaces::Current, "NAME");
+                // remove ETHTOOLS_OPTIONS as it is useful only for real hardware
+                NetworkInterfaces::Current=remove(NetworkInterfaces::Current, "ETHTOOLS_OPTIONS");
                 if( NetworkInterfaces::Commit() ){
                     NetworkInterfaces::Add();
                     NetworkInterfaces::Edit(ifcfg);
@@ -948,7 +950,7 @@ void ProposeVirtualized() {
                             if (v != nil) { NetworkInterfaces::DeleteAlias (NetworkInterfaces::Name, a); }
                         });
                     //take out PREFIXLEN from old configuration (BNC#735109)
-                    old_config["PREFIXLEN"=""
+                    old_config["PREFIXLEN"]="";
                     old_config["_aliases"]=$[];
                     y2milestone("Old Config with apllied changes %1\n%2", ifcfg, old_config);
                     NetworkInterfaces::Current = old_config;
