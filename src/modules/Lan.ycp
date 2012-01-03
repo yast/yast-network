@@ -882,6 +882,12 @@ list<string> IfcfgsToSkipVirtualizedProposal() {
                         if(size(slave)>0) skipped=add(skipped, slave);
                     });
             }
+	     // Skip also usb device as it is not good for bridge proposal (bnc#710098)
+            if (NetworkInterfaces::GetType(ifcfg)=="usb"){
+                NetworkInterfaces::Edit(ifcfg);
+                y2milestone("Usb device %1 skipped from bridge proposal", ifcfg);
+                skipped=add(skipped, ifcfg);
+	    }
             if (NetworkInterfaces::GetValue(ifcfg, "STARTMODE")=="nfsroot"){
                 y2milestone("Skipped %1 interface from bridge slaves because of nfsroot.", ifcfg);
                 skipped=add(skipped, ifcfg);
