@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jan  5 16:27:13 CET 2012 - mvidner@suse.cz
+
+- skip USB NICs during bridge proposal (bnc#710098)
+- 2.17.165
+
+-------------------------------------------------------------------
 Mon Jan  2 17:13:13 UTC 2012 - jreidinger@suse.com
 
 - do not inherit for new bridge port devices PREFIXLEN (bnc#735109)
