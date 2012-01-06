@@ -20,6 +20,9 @@ Requires:       sysconfig >= 0.71.2
 #GetLanguageCountry
 #(in newly created yast2-country-data)
 Requires:       yast2-country-data >= 2.16.3
+# Storage::IsDeviceOnNetwork
+BuildRequires:  yast2-storage >= 2.21.11
+Requires:       yast2-storage >= 2.21.11
 
 PreReq:         /bin/rm
 

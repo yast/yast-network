@@ -46,6 +46,9 @@ Read	.network.value."eth5.23".ETHERDEVICE "eth5"
 Read	.network.value."eth5.23".IPADDR "1.2.3.8/24"
 Read	.network.value."eth5.23".STARTMODE "auto"
 Read	.network.value."eth5.23".VLAN_ID "23"
+Read	.probe.architecture "i386"
+Read	.sysconfig.console.CONSOLE_ENCODING "UTF-8"
+Execute	.target.bash_output "locale -k charmap" $["exit":0, "stdout":"laptop.suse.cz"]
 Read	.target.size "/etc/install.inf" 27
 Dir	.etc.install_inf: []
 Read	.target.string "/proc/cmdline" "laptop.suse.cz"
