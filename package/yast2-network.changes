@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu Jan 12 15:52:47 CET 2012 - mvidner@suse.cz
+
+- AY keep_install_network: merge dns and routing from linuxrc
+  item by item, not just in bulk (bnc#712864).
+- Clarified the label for BOOTPROTO=none: "No Setup (Bridge or
+  Bonding Slaves)" (bnc#737333).
+- 2.22.1
+
+-------------------------------------------------------------------
 Fri Jan  6 16:17:00 CET 2012 - mvidner@suse.cz
 
 - skip USB NICs during bridge proposal (bnc#710098)

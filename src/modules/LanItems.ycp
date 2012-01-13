@@ -975,8 +975,6 @@ global map<string, string> SysconfigDefaults = $[
 global define boolean Select(string dev) {
     y2debug("dev=%1", dev);
     map devmap = $[];
-    /* dev=="" -> Add */
-//    if(dev == "") {
 	// defaults for a new device
 	devmap = $[
 			// for hotplug devices set STARTMODE=hotplug (#132583)
@@ -1009,26 +1007,23 @@ global define boolean Select(string dev) {
 	type = Items[current, "hwinfo", "type"]:"eth";
 	device = NetworkInterfaces::GetFreeDevice(type);
 
-
 			// TODO: instead of udev use hwinfo dev_name
 	NetworkInterfaces::Name = GetItemUdev("NAME");
 	if (size(Items)<current) Items[current] = $["ifcfg":NetworkInterfaces::Name];
 		else Items[current, "ifcfg"] = NetworkInterfaces::Name;
 
-
 	/* FIXME: alias: how to prefill new alias? */
 	alias = "";
+
     /* general stuff */
     description = BuildDescription (type, device, devmap, Hardware);
 
     SetDeviceVars(devmap, SysconfigDefaults);
 
     hotplug = "";
-
     y2debug("type=%1", type);
     if(issubstring(type, "-")) type = regexpsub(type, "([^-]+)-.*$", "\\1");
     y2debug("type=%1", type);
-
 
     /* We always have to set the MAC Address for qeth Layer2 support */
     if (qeth_layer2 ) {
@@ -1408,9 +1403,7 @@ global void SetItem(){
 
     SetDeviceVars(devmap, SysconfigDefaults);
 
-
     hotplug = "";
-
     y2debug("type=%1", type);
     if(issubstring(type, "-")) type = regexpsub(type, "([^-]+)-.*$", "\\1");
     y2debug("type=%1", type);

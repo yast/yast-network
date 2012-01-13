@@ -323,7 +323,7 @@ void initBootProto (string key) {
 	else 
 */
 	if (LanItems::type!="eth") UI::ReplaceWidget(`rp, `Left(
-                     `RadioButton(`id(`none),`opt(`notify),  _("No IP Address (for Bonding Devices)"))));
+                     `RadioButton(`id(`none),`opt(`notify),  _("No Setup (Bridge or Bonding Slaves)"))));
  switch(settings["BOOTPROTO"]:""){
   case "static": UI::ChangeWidget(`id(`bootproto), `CurrentButton, `static);
 		UI::ChangeWidget(`id(`ipaddr), `Value, settings["IPADDR"]:"");
@@ -781,7 +781,7 @@ map<string, map<string,any> > widget_descr_local = $[
 		`ReplacePoint(`id(`rp),
 		  `Left(
 		   `HBox(
-		     `RadioButton(`id(`none),`opt(`notify),  _("No IP Address (for Bonding Devices)")),
+		     `RadioButton(`id(`none),`opt(`notify),  _("No Setup (Bridge or Bonding Slaves)")),
 		     `HSpacing(1),
 		     `CheckBox(`id(`ibft), `opt(`notify), _("Use iBFT values"))
 		   )
