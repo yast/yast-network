@@ -70,27 +70,29 @@ map UpcaseCondSet (map ret, map m, string key) {
  */
 define map FromAY(map input)
 {
- y2debug("input %1", input);
+    y2debug("input %1", input);
 
- list<map<string,any> > ifaces=[];
- foreach(map<string,any> interface, input["interfaces"]:[], {
-  map<string,any> iface=$[];
-  foreach(string key, any value, interface, {
-   if (key == "aliases"){
-    foreach(string k, map<string,any > v, (map<string, map<string,any> >)value, {
-    // replace "alias0" to "0" (bnc#372687)
-    map<string,any> t = (map<string,any>)value;
-     t[v["LABEL"]:""]=t[k]:$[];
-     t=remove(t,k);
-     value=t;
-   });
-   } else
-      if (key=="device") value = LanUdevAuto::getDeviceName(tostring(value));
-   iface[key]=value;
-  });
-  ifaces = add(ifaces, iface);
- });
-  input["interfaces"] = ifaces;
+    list<map<string,any> > ifaces=[];
+    foreach(map<string,any> interface, input["interfaces"]:[], {
+        map<string,any> iface=$[];
+        foreach(string key, any value, interface, {
+            if (key == "aliases"){
+                foreach(string k, map<string,any > v, (map<string, map<string,any> >)value, {
+                    // replace "alias0" to "0" (bnc#372687)
+                        map<string,any> t = (map<string,any>)value;
+                        t[v["LABEL"]:""]=t[k]:$[];
+                        t=remove(t,k);
+                        value=t;
+                    });
+            }
+            else if (key=="device") {
+                value = LanUdevAuto::getDeviceName(tostring(value));
+            }
+            iface[key]=value;
+        });
+        ifaces = add(ifaces, iface);
+    });
+    input["interfaces"] = ifaces;
 
     map<string,map> interfaces = listmap(map<string, any> interface,
             (list<map<string, any> >)input["interfaces"]:[],
@@ -284,29 +286,29 @@ else if (func == "Change") {
     ret = LanAutoSequence("");
 }
 else if(func == "Import") {
- // see bnc#498993
- // in case keep_install_network is set to true (in AY)
- // and there is no dns and routing definition,
- // we'll keep values from installation
- if(param["keep_install_network"]:false==true) {
-  y2milestone("keep_install_network is enabled");
-  if(param["dns"]:$[]==$[] && param["routing"]:$[]==$[]){
-   y2milestone("DNS and routing are not defined in AY, will keep settings from installation");
-   // read settings from installation
-   Lan::Read(`cache);
-   // export settings into AY map
-   map from_system=Lan::Export();
-   map dns=from_system["dns"]:$[];
-   map routing=from_system["routing"]:$[];
-   // merge with param
-   param["dns"]=dns;
-   param["routing"]=routing;
-   y2milestone("dns %1", dns);
-   y2milestone("routing %1", routing);
-  } else{
-   y2milestone("DNS and routing defined in AY profile, will use it");
-  }
- }
+    // see bnc#498993
+    // in case keep_install_network is set to true (in AY)
+    // and there is no dns and routing definition,
+    // we'll keep values from installation
+    if(param["keep_install_network"]:false==true) {
+        y2milestone("keep_install_network is enabled");
+        if(param["dns"]:$[]==$[] && param["routing"]:$[]==$[]){
+            y2milestone("DNS and routing are not defined in AY, will keep settings from installation");
+            // read settings from installation
+            Lan::Read(`cache);
+            // export settings into AY map
+            map from_system=Lan::Export();
+            map dns=from_system["dns"]:$[];
+            map routing=from_system["routing"]:$[];
+            // merge with param
+            param["dns"]=dns;
+            param["routing"]=routing;
+            y2milestone("dns %1", dns);
+            y2milestone("routing %1", routing);
+        } else{
+            y2milestone("DNS and routing defined in AY profile, will use it");
+        }
+    }
     map new = FromAY(param);
     Lan::Import(new);
     ret = true;
