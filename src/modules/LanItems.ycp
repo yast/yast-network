@@ -968,8 +968,6 @@ global map<string, string> SysconfigDefaults = $[
 global define boolean Select(string dev) {
     y2debug("dev=%1", dev);
     map devmap = $[];
-    /* dev=="" -> Add */
-//    if(dev == "") {
 	// defaults for a new device
 	devmap = $[
 			// for hotplug devices set STARTMODE=hotplug (#132583)
@@ -1000,90 +998,30 @@ global define boolean Select(string dev) {
 	}
 
 	type = Items[current, "hwinfo", "type"]:"eth";
-//        type = "eth0";
 	device = NetworkInterfaces::GetFreeDevice(type);
-
-	// FIXME: MOD AddModule(type);
-//	NetworkModules::AddM();
-//	nm_name = NetworkModules::GetFreeName("static-");
 
 			// TODO: instead of udev use hwinfo dev_name
 	NetworkInterfaces::Name = GetItemUdev("NAME");
 	if (size(Items)<current) Items[current] = $["ifcfg":NetworkInterfaces::Name];
 		else Items[current, "ifcfg"] = NetworkInterfaces::Name;
 
-//	interfacename = GetItemUdev()[1]:"";
-
 	/* FIXME: alias: how to prefill new alias? */
 	alias = "";
-//    }
-    /* dev!="" -> Edit */
-/* FIXME: NI:
-    else {
-	if(!CheckDevice(dev)) {
-	    y2error("Device not found: %1", dev);
-	    return false;
-	}
-	NetworkInterfaces::Edit(dev);
-	devmap = NetworkInterfaces::Current;
-	type = NetworkInterfaces::device_type(dev);
-	device = NetworkInterfaces::device_num(dev);
-	alias = NetworkInterfaces::alias_num(dev);
-    }
-*/
+
     /* general stuff */
     description = BuildDescription (type, device, devmap, Hardware);
 
     SetDeviceVars(devmap, SysconfigDefaults);
 
     hotplug = "";
-    /*
-    if(issubstring(device, "bus-pcmcia"))
-	hotplug = "pcmcia";
-    else if(issubstring(device, "bus-usb"))
-	hotplug = "usb";
-    */
-
     y2debug("type=%1", type);
     if(issubstring(type, "-")) type = regexpsub(type, "([^-]+)-.*$", "\\1");
     y2debug("type=%1", type);
-
-    /* kernel options */
-//    if(hotplug == "" && alias == "" && nm_name != "") {
-	// FIXME: MOD SelectModule(dev);
-//	NetworkModules::SelectM(nm_name);
-//    }
-//    else {
-	// FIXME: MOD SelectModule("");
-//	NetworkModules::AddM();
-//    }
-
-//    qeth_options = NetworkModules::QETH_OPTIONS;
-//    chan_mode = NetworkModules::CCW_CHAN_MODE;
-//    lcs_timeout = NetworkModules::LCS_LANCMD_TIMEOUT;
-
-/*
-    if (NetworkModules::QETH_IPA_TAKEOVER == nil ||
-	NetworkModules::QETH_IPA_TAKEOVER == "" ||
-	NetworkModules::QETH_IPA_TAKEOVER == "0")
-	ipa_takeover = false;
-    else
-	ipa_takeover = true;
-
-    if (NetworkModules::QETH_LAYER2_SUPPORT == nil ||
-	NetworkModules::QETH_LAYER2_SUPPORT == "" ||
-	NetworkModules::QETH_LAYER2_SUPPORT == "0")
-	qeth_layer2 = false;
-    else
-	qeth_layer2 = true;
-*/
 
     /* We always have to set the MAC Address for qeth Layer2 support */
     if (qeth_layer2 ) {
 	qeth_macaddress = devmap["LLADDR"]:"00:00:00:00:00:00";
     }
-
-    //if(bootproto == "none") bootproto = "static";
 
     return true;
 }
@@ -1479,51 +1417,17 @@ global void SetItem(){
  if (!hasAnyValue(type)) type = NetworkInterfaces::GetType(getCurrentItem()["ifcfg"]:"");
  device = getCurrentItem()["ifcfg"]:"";
  alias = NetworkInterfaces::alias_num(getCurrentItem()["ifcfg"]:"");
-// nm_name = Items[current, "hwcfg"]:"";
-// if (nm_name=="") nm_name_old = createHwcfgName(Items[current, "hwinfo"]:$[], type);
-//  NetworkModules::SelectM(nm_name);
 
     /* general stuff */
     description = BuildDescription (type, device, devmap, Hardware);
 
     SetDeviceVars(devmap, SysconfigDefaults);
 
-
     hotplug = "";
-
     y2debug("type=%1", type);
     if(issubstring(type, "-")) type = regexpsub(type, "([^-]+)-.*$", "\\1");
     y2debug("type=%1", type);
 
-    /* kernel options */
-    if(hotplug == "" && alias == "" && nm_name != "") {
-	// FIXME: MOD SelectModule(dev);
-//	NetworkModules::SelectM(nm_name);
-    }
-    else {
-	// FIXME: MOD SelectModule("");
-//	NetworkModules::AddM();
-    }
-
-/*
-    qeth_options = NetworkModules::QETH_OPTIONS;
-    chan_mode = NetworkModules::CCW_CHAN_MODE;
-    lcs_timeout = NetworkModules::LCS_LANCMD_TIMEOUT;
-
-    if (NetworkModules::QETH_IPA_TAKEOVER == nil ||
-	NetworkModules::QETH_IPA_TAKEOVER == "" ||
-	NetworkModules::QETH_IPA_TAKEOVER == "0")
-	ipa_takeover = false;
-    else
-	ipa_takeover = true;
-
-    if (NetworkModules::QETH_LAYER2_SUPPORT == nil ||
-	NetworkModules::QETH_LAYER2_SUPPORT == "" ||
-	NetworkModules::QETH_LAYER2_SUPPORT == "0")
-	qeth_layer2 = false;
-    else
-	qeth_layer2 = true;
-*/
     /* We always have to set the MAC Address for qeth Layer2 support */
     if (qeth_layer2 ) {
 	qeth_macaddress = devmap["LLADDR"]:"00:00:00:00:00:00";
