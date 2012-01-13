@@ -288,26 +288,31 @@ else if (func == "Change") {
 else if(func == "Import") {
     // see bnc#498993
     // in case keep_install_network is set to true (in AY)
-    // and there is no dns and routing definition,
     // we'll keep values from installation
+    // and merge with XML data (bnc#712864)
     if(param["keep_install_network"]:false==true) {
-        y2milestone("keep_install_network is enabled");
-        if(param["dns"]:$[]==$[] && param["routing"]:$[]==$[]){
-            y2milestone("DNS and routing are not defined in AY, will keep settings from installation");
-            // read settings from installation
-            Lan::Read(`cache);
-            // export settings into AY map
-            map from_system=Lan::Export();
-            map dns=from_system["dns"]:$[];
-            map routing=from_system["routing"]:$[];
-            // merge with param
-            param["dns"]=dns;
-            param["routing"]=routing;
-            y2milestone("dns %1", dns);
-            y2milestone("routing %1", routing);
-        } else{
-            y2milestone("DNS and routing defined in AY profile, will use it");
-        }
+        // read settings from installation
+        Lan::Read(`cache);
+        // export settings into AY map
+        map from_system=Lan::Export();
+        map dns     = from_system["dns"]:$[];
+        map routing = from_system["routing"]:$[];
+
+        // copy the keys/values that are not existing in the XML
+        // so we merge the inst-sys settings with the XML while XML
+        // has higher priority
+        foreach( string key, any value, dns, {
+            if( ! haskey( param["dns"]:$[], key ) ) {
+                y2milestone("(dns) taking %1 from inst-sys. Value = %2", key, value);
+                param["dns",key] = value;
+            }
+        });
+        foreach( string key, any value, routing, {
+            if( ! haskey( param["routing"]:$[], key ) ) {
+                param["routing",key] = value;
+                y2milestone("(routing) taking %1 from inst-sys. Value = %2", key, value);
+            }
+        });
     }
     map new = FromAY(param);
     Lan::Import(new);
