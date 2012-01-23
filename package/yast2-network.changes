@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jan 23 14:15:33 CET 2012 - mvidner@suse.cz
+
+- Filter out more Chelsio devices, by PCI id (bnc#711432#c83)
+- 2.17.167
+
+-------------------------------------------------------------------
 Thu Jan 12 15:52:47 CET 2012 - mvidner@suse.cz
 
 - AY keep_install_network: merge dns and routing from linuxrc
