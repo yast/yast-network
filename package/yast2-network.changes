@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Jan 24 16:28:37 CET 2012 - mvidner@suse.cz
+
+- Fixed broken autoyast in general (bnc#742855)
+  and in case with keep_install_network without dns without routing
+  (bnc#712864).
+- 2.17.168
+
+-------------------------------------------------------------------
 Mon Jan 23 14:15:33 CET 2012 - mvidner@suse.cz
 
 - Filter out more Chelsio devices, by PCI id (bnc#711432#c83)
