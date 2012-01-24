@@ -297,18 +297,24 @@ else if(func == "Import") {
         Lan::Read(`cache);
         // export settings into AY map
         map from_system=Lan::Export();
-        map dns     = from_system["dns"]:$[];
-        map routing = from_system["routing"]:$[];
+        map<string, any> dns     = from_system["dns"]:$[];
+        map<string, any> routing = from_system["routing"]:$[];
 
         // copy the keys/values that are not existing in the XML
         // so we merge the inst-sys settings with the XML while XML
         // has higher priority
+        if (! haskey(param, "dns")) {
+            param["dns"] = $[];
+        }
         foreach( string key, any value, dns, {
             if( ! haskey( param["dns"]:$[], key ) ) {
                 y2milestone("(dns) taking %1 from inst-sys. Value = %2", key, value);
                 param["dns",key] = value;
             }
         });
+        if (! haskey(param, "routing")) {
+            param["routing"] = $[];
+        }
         foreach( string key, any value, routing, {
             if( ! haskey( param["routing"]:$[], key ) ) {
                 param["routing",key] = value;

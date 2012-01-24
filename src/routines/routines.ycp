@@ -750,8 +750,9 @@ define list<map> ReadHardware(string hwtype) {
 	 card_ok=false;
 	 y2milestone("Filtering out virtio device without device file.");
 	}
-	// filter out device with chelsio Driver and no Device File (bnc#711432)
-	if (one["module"]:""=="cxgb4" && one["dev_name"]:""==""){
+	// filter out device with chelsio Driver and no Device File or which cannot networking(bnc#711432)
+	if ((one["module"]:""=="cxgb4" && one["dev_name"]:""=="") ||
+		(card["vendor_id"]:0==0x11425 && card["device_id"]:0 == 0x14102)){ // 0x10000 for PCI and 0x4102 is device id of device and 0x1425 for chelsio inc
 	 card_ok=false;
 	 y2milestone("Filtering out Chelsio device without device file.");
 	}
