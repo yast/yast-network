@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Jan 25 13:22:14 CET 2012 - mvidner@suse.cz
+
+- Filter out the last Chelsio device (bnc#711432#c88).
+- 2.17.169
+
+-------------------------------------------------------------------
 Tue Jan 24 16:28:37 CET 2012 - mvidner@suse.cz
 
 - Fixed broken autoyast in general (bnc#742855)
