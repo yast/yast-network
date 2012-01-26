@@ -1065,7 +1065,11 @@ global define boolean Commit() {
 	newdev["NETWORK"] = "";
 
 	newdev["REMOTE_IPADDR"] = remoteip;
-	if (qeth_layer2) newdev["LLADDR"] = qeth_macaddress;
+	// set LLADDR to sysconfig only for device on layer2 and only these which needs it
+	if (qeth_layer2 &&
+		s390_device_needs_persistent_mac(Items[current, "ifcfg"]:"",Hardware)){
+	    newdev["LLADDR"] = qeth_macaddress;
+	}
 
 	if(alias == "") {
 	    newdev["MTU"] = mtu;
