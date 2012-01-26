@@ -366,22 +366,27 @@ boolean needHwcfg(map hw){
  return need;
 }
 
+string busid_to_sysfs_id(string busid, list<map> hardware) {
+    // hardware is cached list of netcards
+    map hw_item = find(map i, hardware, ``( i["busid"]:"" == busid ));
+    return hw_item["sysfs_id"]:"";
+}
+
 string dev_name_to_sysfs_id(string dev_name, list<map> hardware) {
     // hardware is cached list of netcards
     map hw_item = find(map i, hardware, ``( i["dev_name"]:"" == dev_name ));
     return hw_item["sysfs_id"]:"";
 }
 
-string sysfs_card_type(string device,list<map> hardware) {
-    string sysfs_id = dev_name_to_sysfs_id(device,hardware);
+string sysfs_card_type(string sysfs_id, list<map> hardware) {
     if (sysfs_id == "") return "none";
     string filename = "/sys" + sysfs_id + "/card_type";
     string card_type = (string) SCR::Read(.target.string, filename);
     return String::FirstChunk(card_type, "\n");
 }
 
-boolean s390_device_needs_persistent_mac(string device,list<map> hardware) {
-    string card_type = sysfs_card_type(device,hardware);
+boolean s390_device_needs_persistent_mac(string sysfs_id,list<map> hardware) {
+    string card_type = sysfs_card_type(sysfs_id,hardware);
     list<string> types_needing_persistent = [
                                     "OSD_100",
                                     "OSD_1000",
@@ -391,7 +396,7 @@ boolean s390_device_needs_persistent_mac(string device,list<map> hardware) {
                                     "OSD_Express",
                                     ];
     boolean needs_persistent = contains(types_needing_persistent, card_type);
-    y2milestone("Device: %1, card type: %2, needs persistent MAC: %3", device, card_type, needs_persistent);
+    y2milestone("Sysfs Device: %1, card type: %2, needs persistent MAC: %3", sysfs_id, card_type, needs_persistent);
     return needs_persistent;
 }
 

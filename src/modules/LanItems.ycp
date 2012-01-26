@@ -1492,10 +1492,17 @@ global define boolean Commit() {
 	newdev["NETWORK"] = "";
 
 	newdev["REMOTE_IPADDR"] = remoteip;
+
 	// set LLADDR to sysconfig only for device on layer2 and only these which needs it
-	if (qeth_layer2 &&
-		s390_device_needs_persistent_mac(Items[current, "ifcfg"]:"",Hardware)){
-	    newdev["LLADDR"] = qeth_macaddress;
+	if (qeth_layer2) {
+            string busid = Items[current, "hwinfo", "busid"]:"";
+            // string sysfs_id = busid_to_sysfs_id(busid, Hardware);
+            // sysfs id has changed from css0...
+            string sysfs_id = "/devices/qeth/" + busid;
+	    y2milestone("busid %1", busid);
+            if (s390_device_needs_persistent_mac(sysfs_id, Hardware)) {
+	        newdev["LLADDR"] = qeth_macaddress;
+            }
 	}
 
 	if(alias == "") {
