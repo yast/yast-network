@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Apr 19 07:30:38 UTC 2013 - mfilka@suse.com
+
+- Ensure persistent interface names by retriggering udev events
+  after we have written an incomplete 70-persistent-net.rules
+  (bnc#721520).
+
+-------------------------------------------------------------------
 Fri Apr 12 10:49:56 UTC 2013 - mfilka@suse.com
 
 - Changed way how list of slave candidates for bridge is created
