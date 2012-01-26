@@ -1481,39 +1481,39 @@ map <string, string> ifplugd_priorities = $[
  */
 global define boolean Commit() {
     if(operation == `add || operation == `edit) {
-        map<string,any> newdev = $[];
+	map<string,any> newdev = $[];
 
-        // #104494 - always write IPADDR+NETMASK, even empty
-        newdev["IPADDR"] = ipaddr;
-        if(size(prefix)>0) newdev["PREFIXLEN"] = prefix;
-        else newdev["NETMASK"] = netmask;
-        // #50955 omit computable fields
-        newdev["BROADCAST"] = "";
-        newdev["NETWORK"] = "";
+	// #104494 - always write IPADDR+NETMASK, even empty
+	newdev["IPADDR"] = ipaddr;
+	if(size(prefix)>0) newdev["PREFIXLEN"] = prefix;
+		else newdev["NETMASK"] = netmask;
+	// #50955 omit computable fields
+	newdev["BROADCAST"] = "";
+	newdev["NETWORK"] = "";
 
-        newdev["REMOTE_IPADDR"] = remoteip;
-        if (qeth_layer2) newdev["LLADDR"] = qeth_macaddress;
+	newdev["REMOTE_IPADDR"] = remoteip;
+	// set LLADDR to sysconfig only for device on layer2 and only these which needs it
+	if (qeth_layer2 &&
+		s390_device_needs_persistent_mac(Items[current, "ifcfg"]:"",Hardware)){
+	    newdev["LLADDR"] = qeth_macaddress;
+	}
 
-        if(alias == "") {
-            newdev["MTU"] = mtu;
-            newdev["ETHTOOL_OPTIONS"] = ethtool_options;
-            newdev["STARTMODE"] = startmode;
-            // it is not in Select yet because we don't have a widget for it
-            if (startmode == "ifplugd")
-            {
-                /*
-                   string prio = ifplugd_priorities[type]:"";
-                   newdev["IFPLUGD_PRIORITY"] = prio;
-                 */
+	if(alias == "") {
+	    newdev["MTU"] = mtu;
+	    newdev["ETHTOOL_OPTIONS"] = ethtool_options;
+	    newdev["STARTMODE"] = startmode;
+	    // it is not in Select yet because we don't have a widget for it
+	    if (startmode == "ifplugd")
+	    {
                 if (ifplugd_priority!=nil)
                     newdev["IFPLUGD_PRIORITY"] = ifplugd_priority;
                 else
                     newdev["IFPLUGD_PRIORITY"] = ifplugd_priorities[type]:"0";
-            } // else if (haskey(newdev, "IFPLUGD_PRIORITY"))newdev = remove(newdev, "IFPLUGD_PRIORITY");
-            newdev["USERCONTROL"] = usercontrol? "yes": "no";
-            newdev["BOOTPROTO"] = bootproto;
-        }
-        newdev["NAME"] = description;
+	    }
+	    newdev["USERCONTROL"] = usercontrol? "yes": "no";
+	    newdev["BOOTPROTO"] = bootproto;
+	}
+	newdev["NAME"] = description;
 
         if(hotplug == "pcmcia") newdev["DHCLIENT_SET_DOWN_LINK"] = "yes";
 
