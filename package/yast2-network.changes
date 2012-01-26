@@ -1,6 +1,8 @@
 -------------------------------------------------------------------
 Fri Apr 19 07:30:38 UTC 2013 - mfilka@suse.com
 
+- Only save LLADDR (persistent MAC) for some s390 card types,
+  avoiding softsetup, also after the installation (bnc#728611).
 - Ensure persistent interface names by retriggering udev events
   after we have written an incomplete 70-persistent-net.rules
   (bnc#721520).
