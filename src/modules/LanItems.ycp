@@ -223,47 +223,51 @@ global list<string> GetReplacedItemUdev(string r_key, string r_val){
 }
 
 global void WriteUdevDriverRules(){
- map<string, any> udev_drivers_rules = $[];
- foreach(integer key, (list<integer>)Map::Keys(Items), {
-  string driver = Items[key, "udev", "driver"]:"";
-  if (hasAnyValue(driver))
-      udev_drivers_rules[driver] = [
-                                    sformat("ENV{MODALIAS}==\"%1\"", Items[key, "hwinfo", "modalias"]:""),
-                                    sformat("ENV{MODALIAS}=\"%1\"", driver)
-                                    ];
- });
- y2milestone("write udev rules: %1", udev_drivers_rules);
- SCR::Write(.udev_persistent.drivers, udev_drivers_rules);
-  // write udev net rules and hwdown&hwup when NAME changed
-  list<string> changed_devices = [];
-  list<string> net_rules = [];
-  foreach(integer key, (list<integer>)Map::Keys(Items), {
-  if (size(Items[key, "udev", "net"]:[])>0) {
-    string dev_name = Items[key, "hwinfo", "dev_name"]:"";
-    current=key;
-    net_rules = add(net_rules, mergestring(Items[key, "udev", "net"]:[], ", "));
-    if (dev_name!=GetItemUdev("NAME")) {
-		changed_devices = add(changed_devices, dev_name);
-		force_restart=true;
-		}
-   }
-  });
-   SCR::Write(.udev_persistent.rules, net_rules);
-   SCR::Write(.udev_persistent.nil, []);
-   y2milestone("Changed devices %1", changed_devices);
-  if (size(changed_devices)>0) y2milestone("Renaming interfaces %1", SCR::Execute(.target.bash_output, "rcnetwork stop && udevadm trigger --subsystem-match=net && rcnetwork start"));
+    map<string, any> udev_drivers_rules = $[];
+    foreach(integer key, (list<integer>)Map::Keys(Items), {
+        string driver = Items[key, "udev", "driver"]:"";
+        if (hasAnyValue(driver)) {
+            udev_drivers_rules[driver] = [
+                sformat("ENV{MODALIAS}==\"%1\"", Items[key, "hwinfo", "modalias"]:""),
+                sformat("ENV{MODALIAS}=\"%1\"", driver)
+            ];
+        }
+    });
+    y2milestone("write udev rules: %1", udev_drivers_rules);
+    SCR::Write(.udev_persistent.drivers, udev_drivers_rules);
+    // write udev net rules and hwdown&hwup when NAME changed
+    list<string> changed_devices = [];
+    list<string> net_rules = [];
+    foreach(integer key, (list<integer>)Map::Keys(Items), {
+        if (size(Items[key, "udev", "net"]:[])>0) {
+            string dev_name = Items[key, "hwinfo", "dev_name"]:"";
+            current=key;
+            net_rules = add(net_rules, mergestring(Items[key, "udev", "net"]:[], ", "));
+            if (dev_name!=GetItemUdev("NAME")) {
+                changed_devices = add(changed_devices, dev_name);
+                force_restart=true;
+            }
+        }
+    });
+    SCR::Write(.udev_persistent.rules, net_rules);
+    SCR::Write(.udev_persistent.nil, []);
+    y2milestone("Changed devices %1", changed_devices);
+    if (size(changed_devices)>0) {
+        string cmd = "rcnetwork stop && udevadm trigger --subsystem-match=net && rcnetwork start";
+        y2milestone("Renaming interfaces %1", SCR::Execute(.target.bash_output, cmd));
+    }
 
- // write rules from driver
- foreach(string key, string value, (map<string, string>)driver_options, {
-  map val=$[];
-  foreach(string k, splitstring(value, " "), {
-   list<string> l = splitstring(k, "=");
-   val[ l[0]:"" ]=l[1]:"";
-  });
-  if (!hasAnyValue(value)) val=nil;
-  SCR::Write(add(.modules.options, key), val);
- });
- SCR::Write(.modules,nil);
+    // write rules from driver
+    foreach(string key, string value, (map<string, string>)driver_options, {
+        map val=$[];
+        foreach(string k, splitstring(value, " "), {
+            list<string> l = splitstring(k, "=");
+            val[ l[0]:"" ]=l[1]:"";
+        });
+        if (!hasAnyValue(value)) val=nil;
+        SCR::Write(add(.modules.options, key), val);
+    });
+    SCR::Write(.modules,nil);
 }
 
 /**
