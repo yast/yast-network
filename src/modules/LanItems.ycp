@@ -251,6 +251,12 @@ global void WriteUdevDriverRules(){
     });
     SCR::Write(.udev_persistent.rules, net_rules);
     SCR::Write(.udev_persistent.nil, []);
+    // When configuring a new s390 card, we neglect to fill
+    // its Items[i, "udev", "net"], causing jumbled names (bnc#721520)
+    // The udev trigger will will make udev write the persistent names
+    // (which it already has done, but we have overwritten them now).
+    SCR::Execute(.target.bash, "udevadm trigger --subsystem-match=net");
+
     y2milestone("Changed devices %1", changed_devices);
     if (size(changed_devices)>0) {
         string cmd = "rcnetwork stop && udevadm trigger --subsystem-match=net && rcnetwork start";
