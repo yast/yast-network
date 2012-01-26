@@ -142,7 +142,8 @@ define boolean ReadInstallInf() {
     if (Arch::s390()) {
 	y2milestone ("Interface type: %1", InstallInf["type"]:"");
         // only some card types need a persistent MAC (bnc#658708)
-        if (! s390_device_needs_persistent_mac(netdevice,hardware)) {
+        string sysfs_id = dev_name_to_sysfs_id(netdevice, hardware);
+        if (! s390_device_needs_persistent_mac(sysfs_id, hardware)) {
             InstallInf = remove (InstallInf, "hwaddr");
         }
 	// hsi devices do not support setting hwaddr (bnc #479481)
