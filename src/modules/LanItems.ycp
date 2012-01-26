@@ -225,8 +225,12 @@ global list<string> GetReplacedItemUdev(string r_key, string r_val){
 global void WriteUdevDriverRules(){
  map<string, any> udev_drivers_rules = $[];
  foreach(integer key, (list<integer>)Map::Keys(Items), {
-  if (hasAnyValue(Items[key, "udev", "driver"]:""))
-					udev_drivers_rules[Items[key, "udev", "driver"]:""] = [ sformat("ENV{MODALIAS}==\"%1\"", Items[key, "hwinfo", "modalias"]:""), sformat("ENV{MODALIAS}=\"%1\"", Items[key, "udev", "driver"]:"") ];
+  string driver = Items[key, "udev", "driver"]:"";
+  if (hasAnyValue(driver))
+      udev_drivers_rules[driver] = [
+                                    sformat("ENV{MODALIAS}==\"%1\"", Items[key, "hwinfo", "modalias"]:""),
+                                    sformat("ENV{MODALIAS}=\"%1\"", driver)
+                                    ];
  });
  y2milestone("write udev rules: %1", udev_drivers_rules);
  SCR::Write(.udev_persistent.drivers, udev_drivers_rules);
