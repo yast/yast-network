@@ -36,26 +36,7 @@ global string getDevice(string mount_point) {
  * @return root dev over network: `no `iscsi `nfs `fcoe
  */
 global symbol isDiskOnNetwork(string device) {
-    y2milestone("begin isDiskOnNetwork(%1) function", device);
-    if (device=="nfs") {
-        return `nfs;
-    }
-    if (size(device)==0) {
-        y2error("Empty parameter for isDiskOnNetwork() function");
-        return `no;
-    }
-
-    symbol network_based = Storage::IsDeviceOnNetwork(device);
-
-    // test for nfs (bnc#384420)
-    if (network_based == `no) {
-        string space="[[:space:]]";
-        if (SCR::Execute(.target.bash, sformat("grep '%1%2%3*nfs%4' /proc/mounts ", space, device, space, space))==0){
-            y2milestone("device %1 is network based : %2", device, network_based);
-            network_based = `nfs;
-        }
-    }
-    return network_based;
+    return Storage::IsDeviceOnNetwork(device);
 }
 
 global list<string> getiBFTDevices() {

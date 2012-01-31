@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jan 31 17:36:27 CET 2012 - mvidner@suse.cz
+
+- Simplified NetworkStorage::isDiskOnNetwork, thx locilka (bnc#726057#c12)
+
+-------------------------------------------------------------------
 Tue Jan 24 16:28:37 CET 2012 - mvidner@suse.cz
 
 - Fixed broken autoyast in general (bnc#742855)
