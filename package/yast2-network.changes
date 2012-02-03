@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Feb  3 13:52:59 CET 2012 - mvidner@suse.cz
+
+- Fix detection of properly configured LCS and CTC devices (bnc#741071#c20)
+- 2.17.171
+
+-------------------------------------------------------------------
 Thu Jan 26 16:05:05 CET 2012 - mvidner@suse.cz
 
 - Only save LLADDR (persistent MAC) for some s390 card types,
