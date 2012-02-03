@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
 Fri Apr 19 07:30:38 UTC 2013 - mfilka@suse.com
 
+- Fix detection of properly configured LCS and CTC devices (bnc#741071#c20)
 - Only save LLADDR (persistent MAC) for some s390 card types,
   avoiding softsetup, also after the installation (bnc#728611).
 - Ensure persistent interface names by retriggering udev events

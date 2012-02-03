@@ -1916,10 +1916,14 @@ global boolean createS390Device(){
 	command2=sformat("ls /sys/devices/qeth/%1/net/|head -n1|tr -d '\n'", (splitstring(qeth_chanids, " "))[0]:"");
 	break;
   case "ctc":
+					// chan_ids (read, write), protocol
+	command1=sformat("ctc_configure %1 1 %2", qeth_chanids, chan_mode);
+	command2=sformat("ls /sys/devices/ctcm/%1/net/|head -n1|tr -d '\n'", (splitstring(qeth_chanids, " "))[0]:"");
+	break;
   case "lcs":
 					// chan_ids (read, write), protocol
 	command1=sformat("ctc_configure %1 1 %2", qeth_chanids, chan_mode);
-	command2=sformat("ls /sys/devices/cu3088/%1/net/|head -n1|tr -d '\n'", (splitstring(qeth_chanids, " "))[0]:"");
+	command2=sformat("ls /sys/devices/lcs/%1/net/|head -n1|tr -d '\n'", (splitstring(qeth_chanids, " "))[0]:"");
 	break;
   case "iucv":
 					// router
