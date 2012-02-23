@@ -45,14 +45,14 @@ y2milestone("hardware %1", hardware);
  * @return true on success
  */
 define boolean ReadInstallInfItem(path install_inf, string item, string var) {
-    if(item == nil || item == "" || var == nil || var == "") 
+    if(item == nil || item == "" || var == nil || var == "")
 	return false;
 
     string val = (string) SCR::Read(add(install_inf, var));
-    if(val == nil) 
+    if(val == nil)
 	return false;
 
-    if(val != "") 
+    if(val != "")
 	InstallInf[item] = val;
 
     return true;

@@ -32,6 +32,7 @@ map READ = $[
     ],
     "target" : $[
 	"size" : 1,
+        "stat" : $[ "dummy": true ]
     ],
 ];
 

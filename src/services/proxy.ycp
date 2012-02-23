@@ -336,6 +336,13 @@ boolean ValidateNoProxyDomains( string no_proxies ) {
 
     return validate;
 }
+
+boolean UrlContainPassword( string url)
+{
+    map ret = URL::Parse( url);
+
+    return size( ret[ "pass"]:"") > 0 ;
+}
 /**
  * Proxy dialog
  * @param standalone true if not run from another ycp client
@@ -481,8 +488,8 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
     UI::ChangeWidget(`id(`user), `ValidChars, ValidCharsUsername);
     UI::ChangeWidget(`id(`frame1), `Enabled, enabled);
     UI::ChangeWidget(`id(`frame2), `Enabled, enabled);
-    if ( !Mode::installation() ) 
-	UI::ChangeWidget(`id("test_proxy"), `Enabled, enabled) ;
+    if ( !Mode::installation() )
+        UI::ChangeWidget(`id("test_proxy"), `Enabled, enabled) ;
     InitSameProxy();
 
     if(enabled == true) UI::SetFocus(`id(`http));
@@ -520,16 +527,30 @@ the current configuration for HTTP, HTTPS, and FTP proxy.</p>
 	    if(https == prefill) https = "";
 	    if(ftp == prefill) ftp = "";
 
-	    if(enabled == false) 
-		break;
-	    else {
-		if((http == "") && (https == "") && (ftp == "") ){
-		    /* Popup error text - http, https and ftp proxy URLs are blank */
-		    if(!Popup::ContinueCancel(_("Proxy is enabled, but no proxy URL has been specified.
+	    if(enabled == false)
+                break;
+            if((http == "") && (https == "") && (ftp == "") ){
+                /* Popup error text - http, https and ftp proxy URLs are blank */
+                if(!Popup::ContinueCancel(_("Proxy is enabled, but no proxy URL has been specified.
 Really use these settings?")))
-			continue;
-		}
-	    }
+                    continue;
+            }
+            // bnc#694582 - username and password in URL
+            else
+            {
+                boolean password_inside =   UrlContainPassword( http) ||
+                                            UrlContainPassword( https) ||
+                                            UrlContainPassword( ftp);
+
+                if( (password_inside) && ( ret != "test_proxy"))
+                {
+                    if(!Popup::ContinueCancel(_("Security warning:
+Username and password will be stored unencrypted
+in a worldwide readable plaintext file.
+Really use these settings?")))
+                        continue;
+                }
+            }
 	    /* check_* */
 	    if(user == "" && pass != "") {
 		/* Popup::Error text */

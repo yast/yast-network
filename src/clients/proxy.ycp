@@ -44,10 +44,10 @@ any ProxyGUI() {
     /* main ui function */
     any ret = ProxyMainDialog(true);
     y2debug("ret == %1", ret);
-    
+
     if (ret == `next && Modified ())
 	Proxy::Write();
-    
+
     UI::CloseDialog();
 
     return ret;
