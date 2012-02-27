@@ -130,7 +130,8 @@ define boolean ReadInstallInf() {
     ReadInstallInfItem(install_inf, "nisdomain", "NISDomain");
     ReadInstallInfItem(install_inf, "hostname", "Hostname");
     ReadInstallInfItem(install_inf, "module", "Alias");
-    ReadInstallInfItem(install_inf, "proxy", "Proxy");
+    ReadInstallInfItem(install_inf, "proxyUrl", "ProxyUrl");
+    ReadInstallInfItem(install_inf, "proxyProto", "ProxyProto");
 //    ReadInstallInfItem(install_inf, "options", "Options");
     // OSAHwAddr parameter s390
     ReadInstallInfItem(install_inf, "hwaddr", "HWAddr");
@@ -439,12 +440,22 @@ void CreateOtherNetworkFiles(){
     }
 
     // create proxy sysconfig file
-    if (size(InstallInf["proxy"]:"")>0) {
-        y2milestone("Writing proxy settings: %1", InstallInf["proxy"]:"");
-        map ex = Proxy::Export();
+    if( (size(InstallInf["proxyProto"]:"")>0) &&
+        (size( InstallInf["proxyUrl"]:"") >0) ) {
+        y2milestone("Writing proxy settings: %1", InstallInf["proxyUrl"]:"");
+
         Proxy::Read();
+        map ex = Proxy::Export();
+
+        // bnc#693640 - update Proxy module's configuration
+        // username and password is stored in url because it is handled by linuxrc this way and it is impossible
+        // to distinguish how the user inserted it (separate or as a part of url?)
+        ex[ InstallInf[ "proxyProto"]:"" + "_proxy"] = InstallInf[ "proxyUrl"]:"";
+
         Proxy::Import( ex );
         Proxy::Write();
+
+        y2debug( "Written proxy settings: %1", ex);
     }
     // create defaultdomain
     if (size(InstallInf["nisdomain"]:"")>0 && FileUtils::Exists("/etc/defaultdomain")){
