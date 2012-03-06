@@ -1,3 +1,28 @@
+#--
+# Copyright (c) 2009 Novell, Inc.
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License
+# as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, contact Novell, Inc.
+#
+# To contact Novell about this file by physical or electronic mail,
+# you may find current contact information at www.novell.com
+#++
+# = Network interface model
+# Provides set and gets resources from YaPI network module.
+# Main goal is handle YaPI specific calls and data formats. Provides cleaned
+# and well defined data.
+
 {
 
 module "LanItems";
@@ -88,7 +113,8 @@ global string vlan_etherdevice="";
 global string vlan_id="";
 
 // interfaces attached to bridge (list delimited by ' ')
-global string bridge_ports="";
+global string bridge_ports = "";
+
 /**
  * wl_wpa_eap aggregates the settings in a map for easier CWM access.
  * @struct wpa_eap
@@ -103,6 +129,7 @@ global string bridge_ports="";
  * WPA_EAP_AUTH: string ("", "MD5", "GTC", "CHAP"*, "PAP"*, "MSCHAP"*, "MSCHAPV2") (*: TTLS only)
  * WPA_EAP_PEAP_VERSION: string ("", "0", "1")
  */
+
 global map<string, any> wl_wpa_eap = $[];
 global string wl_channel = "";
 global string wl_frequency = "";
@@ -419,6 +446,7 @@ global void Read(){
      Items[current] = $["ifcfg":confname];
     }
    });
+
  y2milestone("Read Configuration LanItems::Items %1", Items);
 }
 
@@ -855,6 +883,8 @@ global void SetDeviceVars(map devmap, map defaults) {
     bond_option = GetDeviceVar(devmap, defaults, "BONDING_MODULE_OPTS");
     vlan_etherdevice = GetDeviceVar(devmap, defaults, "ETHERDEVICE");
     vlan_id = GetDeviceVar(devmap, defaults, "VLAN_ID"); // FIXME, remember that it can be implied from the name. probably
+
+    bridge_ports = GetDeviceVar(devmap, defaults, "BRIDGE_PORTS");
 
     bond_slaves=[];
     foreach(any key, any value, devmap,
