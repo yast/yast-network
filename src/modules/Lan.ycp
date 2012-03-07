@@ -462,6 +462,11 @@ global define boolean Write() {
     ProgressNextStage(_("Writing device configuration..."));
     if (!Mode::autoinst() && LanUdevAuto::AllowUdevModify()) {
 	LanItems::WriteUdevDriverRules();
+        // wait so that ifcfgs written in NetworkInterfaces are newer
+        // (1-second-wise) than netcontrol status files,
+        // and rcnetwork reload actually works (bnc#749365)
+        SCR::Execute(.target.bash, "udevadm settle");
+        sleep(1000);
     }
     // hack: no "netcard" filter as biosdevname names it diferently (bnc#712232)
     NetworkInterfaces::Write("");
