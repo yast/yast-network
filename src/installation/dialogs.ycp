@@ -207,6 +207,7 @@ string current = Internet::device;
 		exit=true;
 		break;
 		}
+            break;
 	case `next:
 	case `back:
 	    exit=true;
