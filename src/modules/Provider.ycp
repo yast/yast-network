@@ -309,10 +309,6 @@ global define boolean Write(string type) {
     /* Flush */
     SCR::Write(.sysconfig.network.providers, nil);
 
-    /* Change the rights (provider can contain password #13353 */
-    SCR::Execute(.target.bash, "/bin/chown root:root /etc/sysconfig/network/providers");
-    SCR::Execute(.target.bash, "/bin/chmod 0700 /etc/sysconfig/network/providers");
-
     return ret;
 }
 

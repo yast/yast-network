@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Mar 14 12:00:35 CET 2012 - mvidner@suse.cz
+
+- No need to chmod /etc/sysconfig/network/providers after placing
+  files there (which opens up a race): filesystem.rpm and
+  permissions.rpm have the correct permissions for it already
+  (bnc#713661)
+
+-------------------------------------------------------------------
 Wed Mar  7 11:10:31 CET 2012 - mvidner@suse.cz
 
 - Sleep between writing udev rules and ifcfgs so that 
