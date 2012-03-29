@@ -163,7 +163,7 @@ define boolean AddEditHandler( symbol addedit, map <string, string> options ) {
     if (addedit == `add)
     {
         if ( destination == "" || gateway == "" ) {
-	    CommandLine::Error( _("At least destination and gateway IP addresses must be specified"));
+	    CommandLine::Error( _("At least destination and gateway IP addresses must be specified."));
 	    return false;
         }
 
@@ -180,7 +180,7 @@ define boolean AddEditHandler( symbol addedit, map <string, string> options ) {
     else if ( addedit == `edit)
     {
         if ( destination == "") {
-	    CommandLine::Error( _("Destination IP address must be specified"));
+	    CommandLine::Error( _("Destination IP address must be specified."));
 	    return false;
 	}
 	if ( size( options) < 2 ) {

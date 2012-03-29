@@ -580,10 +580,12 @@ boolean ValidateBootproto (string key, map event) {
 	} else {
 	    // There'll be no 127.0.0.2 -> remind user to define some hostname
 	    if( !Host::NeedDummyIP() &&
-		!Popup::YesNo( _("No hostname has been specified. It is recommended to associate 
-some hostname with static IP, otherwise the machine name will 
-not be resolvable without active network connection.\n
-Really leave the hostname blank?")) ) {
+		!Popup::YesNo( _("No hostname has been specified. We recommend to associate 
+a hostname with a static IP, otherwise the machine name will 
+not be resolvable without an active network connection.
+
+Really leave the hostname blank?
+")) ) {
 		UI::SetFocus(`hostname);
 		return false;
 	    }
@@ -741,7 +743,7 @@ map<string, map<string,any> > widget_descr_local = $[
 	"custom_widget":
 		`HBox(
 		  `ComboBox(`id(`vlan_eth), `opt(`notify), _("Real Interface for &VLAN"), []),
-		  `IntField(`id(`vlan_id), `opt(`notify), _("VLAN id"), 0, 9999, 0)
+		  `IntField(`id(`vlan_id), `opt(`notify), _("VLAN ID"), 0, 9999, 0)
 		),
         "opt": [`hstretch],
         "init": InitVLANSlave,
@@ -768,7 +770,7 @@ map<string, map<string,any> > widget_descr_local = $[
         /* ComboBox label */
         "label": _("&Bond Driver Options"),
         "opt": [`hstretch, `editable],
-        "help": _("<p>Select the bond driver options, and edit it if necessary. </p>"),
+        "help": _("<p>Select the bond driver options and edit them if necessary. </p>"),
 	"items" : [["mode=balance-rr miimon=100"], ["mode=active-backup miimon=100"], ["mode=balance-xor miimon=100"],
                   ["mode=broadcast miimon=100"], ["mode=802.3ad miimon=100"], ["mode=balance-tlb miimon=100"], ["mode=balance-alb miimon=100"]]
     ],
@@ -1004,7 +1006,7 @@ _("<p><b><big>IFPLUGD PRIORITY</big></b></p>
     if ( fw_is_installed )
         wd["FWZONE", "items"] = SuSEFirewall4Network::FirewallZonesComboBoxItems();
     else
-	wd["FWZONE", "items"] = [ ["", _("Firewall is not installed") ] ];
+	wd["FWZONE", "items"] = [ ["", _("Firewall is not installed.") ] ];
     
 
     term label = `HBox (

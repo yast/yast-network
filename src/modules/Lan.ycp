@@ -232,19 +232,20 @@ global define boolean Read (symbol cache) {
 
     if(Abort()) return false;
     /* Progress step 1/9 */
-    if (gui) ProgressNextStage(_("Detecting for ndiswrapper..."));
+    if (gui) ProgressNextStage(_("Detecting ndiswrapper..."));
 	// modprobe ndiswrapper before hwinfo when needed (#343893)
     if (!Mode::autoinst() && PackageSystem::Installed("ndiswrapper")){
 	y2milestone("ndiswrapper: installed");
      if (size((list<string>)SCR::Read(.target.dir, "/etc/ndiswrapper"))>0){
 	y2milestone("ndiswrapper: configuration found");
       if ((integer)SCR::Execute(.target.bash, "lsmod |grep -q ndiswrapper")!=0
-		&& Popup::YesNo(_("There is a ndiswrapper configuration detected,
-but the Kernel module was not modprobed.
+		&& Popup::YesNo(_("Detected a ndiswrapper configuration,
+but the kernel module was not modprobed.
 Do you want to modprobe ndiswrapper?
 "))) {
-	if (ModuleLoading::Load("ndiswrapper", "", "", "", false, true)==`fail) Popup::Error(_("ndiswrapper kernel module wasn't loaded.
-Check configuration manually."));
+	if (ModuleLoading::Load("ndiswrapper", "", "", "", false, true)==`fail) Popup::Error(_("ndiswrapper kernel module has not been loaded.
+Check configuration manually.
+"));
 	}
      }
     }
@@ -339,7 +340,7 @@ global boolean ReadWithCacheNoGUI () {
 global void SetIPv6(boolean status){
     if(ipv6 != status) {
 	 ipv6=status;
-	Popup::Warning(_("To apply this change a reboot is needed."));
+	Popup::Warning(_("To apply this change, a reboot is needed."));
          LanItems::SetModified();
     }
 }
@@ -505,7 +506,7 @@ y2internal("virt_net_proposal %1", virt_net_proposal);
                 `VSpacing(0.5),
                 // This is in information message. Next come the
                 // hardware class name (network cards).
-                `HVCenter(`Label(_("Because of bridged network YaST2 needs to restart network to apply the settings."))),
+                `HVCenter(`Label(_("Because of the bridged network, YaST2 needs to restart the network to apply the settings."))),
                 `VSpacing(0.5)
             ))),
             `ButtonBox (

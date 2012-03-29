@@ -825,9 +825,11 @@ boolean disableItemsIfNM(list<any> items, boolean show_popup){
   if (show_popup)
   {
     Popup::Warning( _("Network is currently controlled by NetworkManager and its settings 
-cannot be edited by YaST.\n
-To edit the settings, use NetworkManager connection editor, or
-switch the network setup method to Traditional method with ifup."));
+cannot be edited by YaST.
+
+To edit the settings, use the NetworkManager connection editor or
+switch the network setup method to Traditional with ifup.
+"));
      UI::FakeUserInput ($["ID": "global"]);
   }
  } else disable=false;

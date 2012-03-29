@@ -32,9 +32,9 @@ your network device here.</p>
 
     /* Manual network card setup help 2/4 */
     /* translators: do not translated udev, MAC, BusID*/
-_("<p><b>Udev Rules</b> are rules for the Kernel device manager that allow
-associating MAC address or BusID of the network device with its name (for example,
-eth1, wlan0 ) and assures a persistent device name upon reboot.
+_("<p><b>Udev Rules</b> are rules for the kernel device manager that allow
+associating the MAC address or BusID of the network device with its name (for
+example, eth1, wlan0 ) and assures a persistent device name upon reboot.
 ") + 
 
 _("<p><b>Show visible port identification</b> allows you to physically identify now configured NIC. 
@@ -48,13 +48,12 @@ your device in the drop-down list. If necessary, choose a driver from the list, 
 ") +
 
     /* Manual networ card setup help 3/4 */
-_("<p>Additionally, you may specify <b>Options</b> for the Kernel module. Use this format: <i>option</i>=<i>value</i>. Each entry should be space 
-separated,for example: <i>io=0x300 irq=5</i>. <b>Note:</b> If two cards are 
-configured with the same module name, options will be merged while saving.</p>
+_("<p>Additionally, specify <b>Options</b> for the kernel module. Use this
+format: <i>option</i>=<i>value</i>. Each entry should be space-separated, for example: <i>io=0x300 irq=5</i>. <b>Note:</b> If two cards are 
+configured with the same module name, the options will be merged while saving.</p>
 ") +
 
-_("<p>If you write something into <b>Ethtool options</b>, ifup will call ethtool with this options.</p>
-");
+_("<p>If you specify options via <b>Ethtool options</b>, ifup will call ethtool with these options.</p>\n");
 
     if(!(LanItems::operation == `edit || Arch::s390 ()))
     {
@@ -483,7 +482,7 @@ y2internal("LanItems::GetReplacedItemUdev(%1, %2) %3",rule_key, rule_value,  Lan
    // when dev_name changed, rename ifcfg (both in NetworkInterfaces and LanItems)
     if (new_name!=old_name){
     if (contains(NetworkInterfaces::List(""), new_name)){
-     Popup::Error(_("Configuration name already exists!"));
+     Popup::Error(_("Configuration name already exists."));
      ret=nil;
     } else{
       y2internal("LanItems::GetReplacedItemUdev2 %1", LanItems::GetReplacedItemUdev("NAME", new_name));

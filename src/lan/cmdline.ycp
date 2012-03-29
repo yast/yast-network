@@ -115,7 +115,7 @@ define boolean AddHandler(map<string, string> options) {
 
     LanItems::bootproto = options["bootproto"]:"none";
     if (!contains(["none", "static", "dhcp"], LanItems::bootproto)){
-        Report::Error(_("Impossible value for bootproto!"));
+        Report::Error(_("Impossible value for bootproto."));
          return false;
         }
 
@@ -124,7 +124,7 @@ define boolean AddHandler(map<string, string> options) {
     LanItems::netmask = options["netmask"]:"255.255.255.0";
     LanItems::startmode = options["startmode"]:"auto";
     if (!contains(["auto", "ifplugd", "nfsroot"], LanItems::startmode)){
-        Report::Error(_("Impossible value for startmode!"));
+        Report::Error(_("Impossible value for startmode."));
          return false;
         }
 
@@ -157,12 +157,12 @@ define boolean EditHandler(map<string, string> options) {
 
     LanItems::bootproto = options["bootproto"]:"none";
     if (!contains(["none", "static", "dhcp"], LanItems::bootproto)){
-        Report::Error(_("Impossible value for bootproto!"));
+        Report::Error(_("Impossible value for bootproto."));
          return false;
         }
     if (LanItems::bootproto=="static"){
 	    if (!(size(options["ip"]:"")>0)){
-		 Report::Error(_("For static configuration \"ip\" option is needed!"));
+		 Report::Error(_("For static configuration, the \"ip\" option is needed."));
 		 return false;
 		}
 	    LanItems::ipaddr = options["ip"]:"";
@@ -178,7 +178,7 @@ define boolean EditHandler(map<string, string> options) {
 
     LanItems::startmode = options["startmode"]:"auto";
     if (!contains(["auto", "ifplugd", "nfsroot"], LanItems::startmode)){
-        Report::Error(_("Impossible value for startmode!"));
+        Report::Error(_("Impossible value for startmode."));
          return false;
         }
 

@@ -505,7 +505,7 @@ disk. If you enter the password here, it is saved in clear text on disk
 	    } */
 	    // NM doesn't ask for password (#225793)
 	    else if(ask_pass && NetworkService::IsManaged ()){
-		Popup::Warning(_("NetworkManager does not have the ability to ask for the password.
+		Popup::Warning(_("NetworkManager cannot ask for the password.
 Use KInternet (without NetworkManager) or store passwords on the system.
 "));
 		continue;

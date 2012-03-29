@@ -30,9 +30,9 @@ Abort saving by pressing <b>Abort</b>.</p>
 	    /* Network setup method help */
 	    // NetworkManager and ifup are programs
 _("<p><b><big>Network Setup Method</big></b></p>
-<p>Use the <b>NetworkManager</b> to have a desktop applet
+<p>Use the <b>NetworkManager</b> as a desktop applet
 managing connections for all interfaces. It is well suited
-for switching among wired and multiple wireless networks.</p>
+for switching among wired and wireless networks.</p>
 ") +
 	    /* Network setup method help */
 	    // NetworkManager and ifup are programs
@@ -49,16 +49,16 @@ edit their configuration.<br></p>
 Press <b>Add</b> to configure a new network card manually.</p>
 ") + _("<p><b><big>Configuring or Deleting:</big></b><br>
 Choose a network card to change or remove.
-Then press <b>Edit</b> or <b>Delete</b> as desired.</p>
+Then press <b>Edit</b> or <b>Delete</b> respectively.</p>
 "),
 
 "ipv6" :
 	    /* IPv6 help */
 _("<p><b><big>IPv6 Protocol Settings</big></b></p>
 <p>Check <b>Enable IPv6</b> to enable the ipv6 module in the kernel.
-It is possible to use IPv6 together with IPv4. This is a default option.
-To disable IPv6, uncheck this option (this will blacklist the kernel 
-module for ipv6). If the IPv6 protocol is not used on your network, the response 
+It is possible to use IPv6 together with IPv4. This is the default option.
+To disable IPv6, uncheck this option. This will blacklist the kernel 
+module for ipv6. If the IPv6 protocol is not used on your network, the response 
 time can be faster.</p>
 ")
  +
@@ -74,17 +74,17 @@ to enable you to say \"and everything else should go here.\"</p>
 ") +
 
 _("<p>For each route, enter destination network IP address, gateway address,
-and netmask. To omit any of these values, use dash sign \"-\". Select
-the device through which the traffic to the defined network will be routed, 
-as well.\"-\" is an alias for any interface.</p>
+and netmask. To omit any of these values, use a dash sign \"-\". Select
+the device through which the traffic to the defined network will be routed.\"-\" is an alias for any interface.</p>
 ") +
     /* Routing dialog help 2/2 */
 _("<p>Enable <b>IP Forwarding</b> (forwarding packets from external networks
 to the internal one) if this system is a router. Both IPv4 and IPv6 connectivity 
 will be affected by this setting. 
 <b>Important:</b> if the firewall is enabled, allowing IP forwarding alone is not enough. 
-You should enable masquerade and/or set at least one redirect rule in firewall. You may
-use YaST firewall module for that.</p>"),
+You should enable masquerading and/or set at least one redirect rule in the
+firewall configuration. Use the YaST firewall module.</p>
+"),
 
 "dhcp_hostname":
 _("<p>If you are using DHCP to get an IP address, check whether you get
@@ -95,10 +95,11 @@ different hostnames.</p> "),
 
 "write_hostname":
 _("<p><b>Assign Hostname to Loopback IP</b> associates your hostname with 
-<tt>127.0.0.2</tt> (loopback) IP address in <tt>/etc/hosts</tt>. This is an 
+the IP address <tt>127.0.0.2</tt> (loopback) in <tt>/etc/hosts</tt>. This is a 
 useful option if you want to have the hostname resolvable at all times, even 
-without active network. In all other cases, use it carefully, especially 
-if this computer provides some network services.</p>"),
+without an active network. In all other cases, use it carefully, especially 
+if this computer provides some network services.</p>
+"),
 
 "searchlist_s":
 _("<p>Enter the name servers and domain search list for resolving 
@@ -123,29 +124,33 @@ computer is a mail server. You can view the hostname of you computer using the <
 command.</p>"),
 
 "dns_config_policy" :
-_("<p>Select the way how DNS configuration (name servers, search list, the content of 
-<i>/etc/resolv.conf</i> file) will be modified. Normally, it is handled by <i>netconfig</i>
-script which merges the data statically defined here with those obtained dynamically (e.g. from
-DHCP client, NetworkManager etc.). This is the default, <b>Use Default Policy</b> option and
-it is sufficient for most of the configurations.</p>") + 
+_("<p>Select the way how the DNS configuration will be modified (name servers,
+search list, the content of <i>/etc/resolv.conf</i>). Normally, it is handled
+by the <i>netconfig</i> script, which merges statically defined data with
+dynamically obtained data (e.g. from the DHCP client, NetworkManager,
+etc.). This is the default. <b>Use Default Policy</b> is sufficient for most
+configurations.</p>
+") + 
  
-_("<p>By choosing <b>Only Manually</b> option, <i>netconfig</i> will no longer be allowed to modify 
-<i>/etc/resolv.conf</i>. You can however edit the file manually. By choosing <b>Use Custom Policy</b> 
-option, you may specify a custom policy string, which consists of comma-separated list of interface 
-names, including wildcards, with STATIC and STATIC_FALLBACK as predefined special values. For more 
-information, see <i>netconfig</i> manual page. Note: leaving the field blank is the same as using <b>
-Only Manually</b> policy.</p>"),
+_("<p>By choosing <b>Only Manually</b>, <i>netconfig</i> will no longer be
+allowed to modify <i>/etc/resolv.conf</i>. You can however edit the file
+manually. By choosing <b>Use Custom Policy</b>, you may specify a custom
+policy string, which consists of a comma-separated list of interface names,
+including wildcards, with STATIC and STATIC_FALLBACK as predefined special
+values. For more information, see the <i>netconfig</i> manual page. Note:
+Leaving the field blank is the same as using the <b> Only Manually</b>
+policy.</p>
+"),
 
 "bootproto":
 	/* Address dialog help 1-6/8: dynamic address preferred */
 	/* Address dialog help 1/8 */
     _("<p><b><big>Address Setup</big></b></p>
-<p>Select <b>No Address Setup</b> if you do not want any IP address for this device.
+<p>Select <b>No Address Setup</b> if you do not want to assign an IP address to this device.
 This is particularly useful for bonding ethernet devices.</p>
 ")
  +
-    _("<p>Check <b>iBFT</b> if you want to keep network configured in your BIOS.</p>
-")
+    _("<p>Check <b>iBFT</b> if you want to keep the network configured in your BIOS.</p>\n")
  +
     /* Address dialog help 2/8 */
     _("<p>Select <b>Dynamic Address</b> if you do not have a static IP address 
@@ -153,9 +158,9 @@ assigned by the system administrator or your Internet provider.</p>
 ") 
  +
     /* Address dialog help 3/8 */
-    _("<p>You can choose one of the dynamic address assignment methods. Select <b>DHCP</b>
-if you have a DHCP server running on your local network. Network addresses are then 
-obtained automatically from the server.</p>
+    _("<p>Choose one of the dynamic address assignment methods. Select <b>DHCP</b>
+if you have a DHCP server running on your local network. Network addresses 
+are then automatically obtained from the server.</p>
 ") 
  +
     /* Address dialog help 4/8 */
@@ -204,8 +209,8 @@ _("<p><b><big>Maximum Transfer Unit</big></b></p>
 <p>Maximum transfer unit (<b>MTU</b>) is the maximum size of the packet,
 transferred over the network in one frame. Usually, you do not need to
 set a MTU, but using lower MTU values may improve the network performance,
-especially on slow dial-up connections. Either, select one of the recommended values,
-or define another one.</p>
+especially on slow dial-up connections. Either select one of the recommended
+values or define another one.</p>
 "),
 
 "bondslave":
@@ -224,13 +229,13 @@ network interface and thus the same hardware address.</p>") +
 
     /* DHCP dialog help 3/7 */
     _("<p>The <b>Hostname to Send</b> specifies a string used for the
-hostname option field, when dhcpcd sends messages to the DHCP server. Some 
+hostname option field when dhcpcd sends messages to the DHCP server. Some 
 DHCP servers update name server zones (forward and reverse records) 
 according to this hostname (dynamic DNS).</p>
 Some DHCP servers require the <b>Hostname to Send</b> option field to
 contain a specific string in the DHCP messages from clients. Leave <b>AUTO</b>
 to send the current hostname (for example, the one defined in <tt>/etc/HOSTNAME</tt>). 
-For not sending a hostname leave the field empty.</p>
+If you do not want to send a hostname, leave the field empty.</p>
 "),
 
 "additional":
@@ -258,11 +263,11 @@ the <b>Netmask</b>.</p>") +
 "wep_key" :
  _("<p>Choose between three <b>Key Input Types</b> for your key.
 <br><b>Passphrase</b>: The key is generated from the phrase entered.
-<br><b>ASCII</b>: The ASCII values of the characters entered form the
+<br><b>ASCII</b>: The ASCII values of the characters entered constitute the
 key. Enter 5 characters for 64-bit keys, up to 13
 characters for 128-bit keys, up to 16 characters for 156-bit keys, and
 up to 29 characters for 256-bit keys.
-<br><b>Hexadecimal</b>: Enter the hex codes of the key, directly. Enter
+<br><b>Hexadecimal</b>: Enter the hex codes of the key directly. Enter
 10 hex digits for 64-bit keys, 26 digits for 128-bit keys, 32 digits
 for 156-bit keys, and 58 digits for 256-bit keys. You can
 use hyphens <tt>-</tt> to separate pairs or groups of digits, for example,

@@ -393,9 +393,10 @@ to the file transfer services (FTP).</p>") +
 
     /* Proxy dialog help 5/8 */
 
-	_("<p>If you have the <b>Use the Same Proxy for All Protocols</b> option checked, it is
+	_("<p>If you check <b>Use the Same Proxy for All Protocols</b>, it is
 enough to fill in the HTTP proxy URL. It will be used for all protocols
-(HTTP, HTTPS and FTP).\n") +
+(HTTP, HTTPS and FTP).
+") +
 
     /* Proxy dialog help 6/8 */
 
@@ -408,7 +409,7 @@ for example, <i>%1</i>.</p>
     /* Proxy dialog help 7/8 */
     _("<p>If you are using a proxy server with authorization, enter
 the <b>Proxy User Name</b> and <b>Proxy Password</b>. A valid username
-consists of printable ASCII characters (except for quotation marks) only.</p>
+consists of printable ASCII characters only (except for quotation marks).</p>
 ") +
 
     /* Proxy dialog help 8/8 */
