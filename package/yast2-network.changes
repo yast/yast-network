@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Apr 10 14:45:17 CEST 2012 - mvidner@suse.cz
+
+- Moved proxy client config to a new package yast2-proxy.rpm
+- 2.22.6
+
+-------------------------------------------------------------------
 Thu Mar 29 15:26:35 CEST 2012 - jsuchome@suse.cz
 
 - merged proofread texts 

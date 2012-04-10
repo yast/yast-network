@@ -89,7 +89,6 @@ fi
 @agentdir@/ag_udev_persistent
 @schemadir@/autoyast/rnc/networking.rnc
 @schemadir@/autoyast/rnc/host.rnc
-@schemadir@/autoyast/rnc/proxy.rnc
 
 %dir @docdir@
 @docdir@/COPYING
