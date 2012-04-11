@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Apr 11 11:13:51 CEST 2012 - mvidner@suse.cz
+
+- Fixed a dead reference to proxy code; moved a forgotten file.
+- 2.22.7
+
+-------------------------------------------------------------------
 Tue Apr 10 14:45:17 CEST 2012 - mvidner@suse.cz
 
 - Moved proxy client config to a new package yast2-proxy.rpm
