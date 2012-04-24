@@ -614,6 +614,7 @@ global define boolean Import(map settings) {
 
     LanItems::autoinstall_settings["start_immediately"] = settings["start_immediately"]:false;
     LanItems::autoinstall_settings["strict_IP_check_timeout"] = settings["strict_IP_check_timeout"]:-1;
+    LanItems::autoinstall_settings["keep_install_network"] = settings["keep_install_network"]:false;
 
     NetworkConfig::Import(settings["config"]:$[]);
     DNS::Import((map) eval(settings["dns"]:$[]));
@@ -643,6 +644,7 @@ global define map Export() {
 	"routing"	: Routing::Export(),
 	"managed"	: NetworkService::IsManaged (),
 	"start_immediately": LanItems::autoinstall_settings["start_immediately"]:false, //start_immediately,
+	"keep_install_network": LanItems::autoinstall_settings["keep_install_network"]:false,
     ];
     y2milestone("Exported map: %1", ay);
   return ay;

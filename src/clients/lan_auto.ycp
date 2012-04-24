@@ -257,6 +257,7 @@ define map ToAY (map settings) {
     ret["managed"] = settings["managed"]:false;
     if(haskey(settings, "ipv6"))
 	ret["ipv6"] = settings["ipv6"]:true;
+    ret["keep_install_network"] = settings["keep_install_network"]:false;
     if (size(modules) > 0 )
         ret["modules"] = modules;
     if (size(dns) > 0 )

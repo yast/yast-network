@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Apr 24 13:35:28 CEST 2012 - ug@suse.de
+
+- keep_install_network added to rnc file
+
+-------------------------------------------------------------------
 Wed Apr 11 11:13:51 CEST 2012 - mvidner@suse.cz
 
 - Fixed a dead reference to proxy code; moved a forgotten file.
