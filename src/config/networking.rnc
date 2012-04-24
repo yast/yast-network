@@ -10,7 +10,7 @@ networking =
     ipv6? &
     managed? &
     strict_IP_check_timeout? &
-    interfaces &
+    interfaces? &
     modules? &
     dhcp_options? &
     routing? &
