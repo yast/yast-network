@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed May 2 07:19:02 UTC 2012 - mfilka@suse.com
+
+- bnc#750325 - allow apostrophe in ESSID
+- 2.23.0 
+
+-------------------------------------------------------------------
 Tue Apr 24 13:35:28 CEST 2012 - ug@suse.de
 
 - keep_install_network added to rnc file (bnc#758529)

@@ -12,8 +12,9 @@ BuildRequires:  yast2-installation >= 2.15.27
 
 # NetworkInterfaces::Write should write ifcfgs only once
 # Wizard::SetDesktopTitleAndIcon
+# yast2 v2.23.0 - support for shel (un)quoting
 BuildRequires:  yast2 >= 2.21.22
-Requires:       yast2 >= 2.21.22
+Requires:       yast2 >= 2.23.0
 
 #netconfig (FaTE #303618)
 Requires:       sysconfig >= 0.71.2

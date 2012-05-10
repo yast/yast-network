@@ -278,9 +278,19 @@ define any WirelessDialog() ``{
     Wizard::SetContentsButtons(caption, contents, sformat("%1%2%3", help["wireless"]:"", help["wep_key"]:"", help["wpa"]:""),
 	    Label::BackButton(), Label::NextButton());
 
-    // workaround for #118157
-    string no_apos = deletechars (String::CPrint (), "'");
-    UI::ChangeWidget (`id (`essid), `ValidChars, no_apos);
+    //
+    // Situation with (E)SSID is not as clear as it should be.
+    // According IEEE 802.11-2007 it should be between 0 and 32 octets (sometimes including trailing \0).
+    //
+    // However, vendors can have additional limits.
+    // According http://www.cisco.com/web/techdoc/wireless/access_points/online_help/eag/123-04.JA/1400br/h_ap_sec_ap-client-security.html
+    // characters ?, ", $, [, \, ], + are disallowed. Moreover !, #, : shouldn't be at beginning of the id.
+    // As this is only part of vendor specification and an APs which breaks that rule (see http://www.wirelessforums.org/alt-internet-wireless/ssid-33892.html)
+    // this is ignored.
+    //
+    // Eventually, as a note to bnc#118157 and bnc#750325 an ' (apostrophe) is valid character in ESSID.
+    //
+    UI::ChangeWidget (`id (`essid), `ValidChars, String::CPrint ());
 
     UI::ChangeWidget (`id (`authmode), `Value, authmode);
     if (authmode != "eap")
@@ -299,7 +309,7 @@ define any WirelessDialog() ``{
 	UI::ChangeWidget (`id (`type_g), `Enabled, authmode!="no-encryption" && authmode!="eap");
 	UI::ChangeWidget (`id (`key),    `Enabled, authmode!="no-encryption" && authmode!="eap");
 	UI::ChangeWidget (`id (`keys), `Enabled,   authmode!="no-encryption" && !authmode_wpa);
-	UI::ChangeWidget (`id ("ascii"), `Enabled, authmode!="no-encryption" && authmode!="psk"); 
+	UI::ChangeWidget (`id ("ascii"), `Enabled, authmode!="no-encryption" && authmode!="psk");
 
 	ret = UI::UserInput();
 
@@ -401,13 +411,14 @@ Really continue?
 	    break;
 	}
 	else if (ret == `scan_for_networks){
- 	string command = sformat("ip link set %1 up && iwlist %1 scan|grep ESSID|cut -d':' -f2|cut -d'\"' -f2|sort -u", LanItems::Items[LanItems::current, "ifcfg"]:"");
-	 map output = (map<string, any>)SCR::Execute(.target.bash_output, command);
-	 if (output["exit"]:-1==0){
-	  list<string> networks = splitstring(output["stdout"]:"", "\n");
-	  y2milestone("Found networks : %1", networks);
-	  UI::ChangeWidget(`essid, `Items, networks);
-	 }
+            string command = sformat("ip link set %1 up && iwlist %1 scan|grep ESSID|cut -d':' -f2|cut -d'\"' -f2|sort -u", LanItems::Items[LanItems::current, "ifcfg"]:"");
+            map output = (map<string, any>)SCR::Execute(.target.bash_output, command);
+
+            if (output["exit"]:-1==0){
+                list<string> networks = splitstring(output["stdout"]:"", "\n");
+                y2milestone("Found networks : %1", networks);
+                UI::ChangeWidget(`essid, `Items, networks);
+            }
 	}
 	else if (ret != `authmode)
 	{
