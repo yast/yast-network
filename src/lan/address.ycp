@@ -310,6 +310,7 @@ void enableDisableBootProto(symbol current){
   UI::ChangeWidget(`netmask,	`Enabled, current==`static);
   UI::ChangeWidget(`hostname,	`Enabled, current==`static);
   UI::ChangeWidget(`ibft,	`Enabled, current==`none);
+  UI::ChangeWidget(`bus_persistent, `Enabled, current==`none);
 }
 
 /**
@@ -322,8 +323,10 @@ void initBootProto (string key) {
  if (LanItems::type=="br") UI::ReplaceWidget(`rp, `Empty());
 	else 
 */
-	if (LanItems::type!="eth") UI::ReplaceWidget(`rp, `Left(
-                     `RadioButton(`id(`none),`opt(`notify),  _("No Link and IP Setup (Bonding Slaves)"))));
+    if (LanItems::type!="eth") 
+        UI::ReplaceWidget(`rp, `Left(
+                                `RadioButton(`id(`none),`opt(`notify),  _("No Link and IP Setup (Bonding Slaves)"))
+                                ));
  switch(settings["BOOTPROTO"]:""){
   case "static": UI::ChangeWidget(`id(`bootproto), `CurrentButton, `static);
 		UI::ChangeWidget(`id(`ipaddr), `Value, settings["IPADDR"]:"");
@@ -369,6 +372,14 @@ symbol handleBootProto (string key, map event) {
 		UI::ChangeWidget(`id(`hostname), `Value, Hostname::MergeFQ(DNS::hostname, DNS::domain));
 	    }
 	}
+        if( current == `none)
+        {
+            y2milestone( "Enabling bus id persistency");
+            if( UI::QueryWidget( `id( `bus_persistent), `Value) == true)
+            {
+                LanItems::PushUdevRule( LanItems::CreateBusPersistentUdevRule());
+            }
+        }
    }
    return nil;
 }
@@ -785,7 +796,9 @@ map<string, map<string,any> > widget_descr_local = $[
 		   `HBox(
 		     `RadioButton(`id(`none),`opt(`notify),  _("No Link and IP Setup (Bonding Slaves)")),
 		     `HSpacing(1),
-		     `CheckBox(`id(`ibft), `opt(`notify), _("Use iBFT values"))
+		     `CheckBox(`id(`ibft), `opt(`notify), _("Use iBFT values")),
+		     `HSpacing(1),
+		     `CheckBox(`id(`bus_persistent), `opt(`notify), _("Enable BUS ID based persistency"))
 		   )
 		  )),
 		`Left(`HBox(
