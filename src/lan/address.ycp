@@ -215,6 +215,7 @@ void enableDisableBootProto(symbol current){
   UI::ChangeWidget(`netmask,	`Enabled, current==`static);
   UI::ChangeWidget(`hostname,	`Enabled, current==`static);
   UI::ChangeWidget(`ibft,	`Enabled, current==`none);
+  UI::ChangeWidget(`bus_persistent, `Enabled, current==`none);
 }
 
 /**
@@ -223,39 +224,73 @@ void enableDisableBootProto(symbol current){
  * @param key id of the widget
  */
 void initBootProto (string key) {
- if (LanItems::type=="br") UI::ReplaceWidget(`rp, `Empty());
-	else if (LanItems::type!="eth") UI::ReplaceWidget(`rp, `Left(
+    if (LanItems::type=="br") 
+        UI::ReplaceWidget(`rp, `Empty());
+    else
+    { 
+        if (LanItems::type!="eth") 
+            UI::ReplaceWidget(`rp, `Left(
                      `RadioButton(`id(`none),`opt(`notify),  _("No Link and IP Setup (Bonding Slaves)"))));
- switch(settings["BOOTPROTO"]:""){
-  case "static": UI::ChangeWidget(`id(`bootproto), `CurrentButton, `static);
-		UI::ChangeWidget(`id(`ipaddr), `Value, settings["IPADDR"]:"");
-		if (size(settings["PREFIXLEN"]:"")>0) 
-				UI::ChangeWidget(`id(`netmask), `Value, sformat("/%1", settings["PREFIXLEN"]:""));
-			else UI::ChangeWidget(`id(`netmask), `Value, settings["NETMASK"]:"");
-	        UI::ChangeWidget(`id(`hostname), `Value, settings["HOSTNAME"]:"");
-		break;
-  case "dhcp" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
-		UI::ChangeWidget(`id(`dhcp_mode), `Value, `dhcp_both);
-		break;
-  case "dhcp4" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
-		UI::ChangeWidget(`id(`dhcp_mode), `Value, `dhcp_v4);
-		break;
-  case "dhcp6" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
-		UI::ChangeWidget(`id(`dhcp_mode), `Value, `dhcp_v6);
-		break;
-  case "dhcp+autoip" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
-		UI::ChangeWidget(`id(`dyn), `Value, `dhcp_auto);
-		break;
-  case "autoip" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
-		UI::ChangeWidget(`id(`dyn), `Value, `auto);
-		break;
-  case "none" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `none);
-		break;
-  case "ibft" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `none);
-		UI::ChangeWidget(`id(`ibft), `Value, true);
-		break;
- }
- enableDisableBootProto((symbol)UI::QueryWidget(`id(`bootproto), `CurrentButton));
+    }
+
+    switch(settings["BOOTPROTO"]:"")
+    {
+        case "static": 
+            UI::ChangeWidget(`id(`bootproto), `CurrentButton, `static);
+	    UI::ChangeWidget(`id(`ipaddr), `Value, settings["IPADDR"]:"");
+	    
+            if (size(settings["PREFIXLEN"]:"")>0) 
+	        UI::ChangeWidget(`id(`netmask), `Value, sformat("/%1", settings["PREFIXLEN"]:""));
+	    else 
+                UI::ChangeWidget(`id(`netmask), `Value, settings["NETMASK"]:"");
+	        
+            UI::ChangeWidget(`id(`hostname), `Value, settings["HOSTNAME"]:"");
+	    
+            break;
+        
+        case "dhcp" : 
+            UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
+	    UI::ChangeWidget(`id(`dhcp_mode), `Value, `dhcp_both);
+	
+            break;
+
+        case "dhcp4" : 
+            UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
+	    UI::ChangeWidget(`id(`dhcp_mode), `Value, `dhcp_v4);
+	
+            break;
+
+        case "dhcp6" : 
+            UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
+	    UI::ChangeWidget(`id(`dhcp_mode), `Value, `dhcp_v6);
+	
+            break;
+  
+        case "dhcp+autoip" : 
+            UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
+	    UI::ChangeWidget(`id(`dyn), `Value, `dhcp_auto);
+	
+            break;
+
+        case "autoip" : 
+            UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
+	    UI::ChangeWidget(`id(`dyn), `Value, `auto);
+	
+            break;
+
+        case "none" : 
+            UI::ChangeWidget(`id(`bootproto), `CurrentButton, `none);
+
+            break;
+  
+        case "ibft" : 
+            UI::ChangeWidget(`id(`bootproto), `CurrentButton, `none);
+	    UI::ChangeWidget(`id(`ibft), `Value, true);
+	
+            break;
+    }
+ 
+    enableDisableBootProto((symbol)UI::QueryWidget(`id(`bootproto), `CurrentButton));
 }
 
 
@@ -271,6 +306,14 @@ symbol handleBootProto (string key, map event) {
 		UI::ChangeWidget(`id(`hostname), `Value, Hostname::MergeFQ(DNS::hostname, DNS::domain));
 	    }
 	}
+        if( current == `none)
+        {
+            y2milestone( "Enabling bus id persistency");
+            if( UI::QueryWidget( `id( `bus_persistent), `Value) == true)
+            {
+                LanItems::PushUdevRule( LanItems::CreateBusPersistentUdevRule());
+            }
+        }
    }
    return nil;
 }
@@ -682,7 +725,9 @@ map<string, map<string,any> > widget_descr_local = $[
 		   `HBox(
 		     `RadioButton(`id(`none),`opt(`notify),  _("No Link and IP Setup (Bonding Slaves)")),
 		     `HSpacing(1),
-		     `CheckBox(`id(`ibft), `opt(`notify), _("Use iBFT values"))
+		     `CheckBox(`id(`ibft), `opt(`notify), _("Use iBFT values")),
+		     `HSpacing(1),
+		     `CheckBox(`id(`bus_persistent), `opt(`notify), _("Enable BUS ID based persistency"))
 		   )
 		  )),
 		`Left(`HBox(
