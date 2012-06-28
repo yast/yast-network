@@ -29,10 +29,16 @@ include "network/routines.ycp";
 map<string, list<string> > hosts = $[];
 
 /**
+ * Data was modified?
+ */
+boolean modified = false;
+
+/**
  * Remove all entries from the host table.
  */
 global void Clear() {
     hosts = $[];
+    modified = true;
 }
 
 /**
@@ -54,6 +60,7 @@ global list<string> Names(string address) {
  */
 global void SetNames(string address, list<string> names) {
     hosts[address] = names;
+    modified = true;
 }
 
 /**
@@ -61,12 +68,8 @@ global void SetNames(string address, list<string> names) {
  */
 global void AddName(string address, string name) {
     hosts[address] = add(hosts[address]:[], name);
+    modified = true;
 }
-
-/**
- * Data was modified?
- */
-global boolean modified = false;
 
 /**
  * All hosts read at the start

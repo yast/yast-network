@@ -25,14 +25,6 @@ import "Wizard";
 import "CommandLine";
 import "RichText";
 
-/**
- * Return a modification status
- * @return true if data was modified
- */
-define boolean Modified() {
-    return Host::modified;
-}
-
 include "network/runtime.ycp";
 include "network/services/host.ycp";
 
@@ -50,7 +42,7 @@ any HostGUI() {
     any ret = HostsMainDialog(true);
     y2debug("ret == %1", ret);
 
-    if(ret == `next && Host::modified) {
+    if(ret == `next && Host::GetModified()) {
 	Host::Write();
 	/* Not needed? RestartNetwork(); */
     }

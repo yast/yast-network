@@ -239,7 +239,7 @@ define symbol HostsMainDialog(boolean standalone) {
 		return true;
 	    });
 	    UI::ChangeWidget(`id(`table), `Items, table_items);
-	    Host::modified = true;
+	    Host::SetModified();
 	    continue;
 	}
 	else if(ret == `back) {
@@ -247,7 +247,7 @@ define symbol HostsMainDialog(boolean standalone) {
 	}
 	else if(ret == `next) {
 	    /* check_ */
-	    if(Host::modified){
+            if(Host::GetModified()){
              Host::Clear();
 	     foreach(term row, table_items, {
 	         string value = mergestring( prepend( Punycode::EncodePunycodes( [row[3]:""]),
@@ -372,7 +372,7 @@ define term HostDialog(integer id, term entry) {
     UI::CloseDialog();
     if(ret != `ok) return nil;
 
-    Host::modified = true;
+    Host::SetModified();
     return host;
 }
 

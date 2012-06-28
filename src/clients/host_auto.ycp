@@ -31,14 +31,6 @@ import "Wizard";
 
 include "network/services/host.ycp";
 
-/**
- * Return a modification status
- * @return true if data was modified
- */
-define boolean Modified() {
-    return Host::modified;
-}
-
 any ret = nil;
 string func = "";
 map param = $[];
@@ -58,7 +50,6 @@ if(func == "Summary") {
 }
 /* Reset configuration */
 else if (func == "Reset") {
-    Host::modified = false;
     Host::Import($[]);
     ret = $[];
 }

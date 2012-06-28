@@ -1092,7 +1092,6 @@ define any AddressDialog() {
 	    {
                 Host::SetNames(LanItems::ipaddr, []);
 		y2milestone("IP has changed");
-		Host::SetModified();
 	    }
 
 	    LanItems::ipaddr = settings["IPADDR"]:"";
@@ -1106,7 +1105,6 @@ define any AddressDialog() {
                     Host::SetNames(LanItems::ipaddr, []);
 		else
 		    Host::Update(hostname_initial, settings["HOSTNAME"]:"", [ settings["IPADDR"]:""]);
-		Host::SetModified();
 	    }
 	}
 	else
