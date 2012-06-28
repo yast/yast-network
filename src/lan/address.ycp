@@ -292,13 +292,21 @@ symbol HandleSlave(string key, map event)
  */
 void StoreSlave(string key, map event)
 {
+    list<string> configured_slaves = settings[ "SLAVES"]:[];
+
     settings["SLAVES"] = (list<string>)UI::QueryWidget (`msbox_items, `SelectedItems);
     settings["BONDOPTION"] = UI::QueryWidget (`id("BONDOPTION"), `Value);
 
     LanItems::bond_slaves = settings["SLAVES"]:[];
     LanItems::bond_option = settings["BONDOPTION"]:"";
 
-    bond_slaves = (list<string>) toset( merge( bond_slaves, settings[ "SLAVES"]:[]));
+    list<string> new_slaves = filter( string slave, settings[ "SLAVES"]:[],
+    {
+        return !contains( configured_slaves, slave);
+    });
+//    bond_slaves = (list<string>) toset( merge( bond_slaves, settings[ "SLAVES"]:[]));
+    y2milestone( "New slaves: %1", new_slaves);
+    bond_slaves = (list<string>) toset( merge( bond_slaves, new_slaves));
 }
 
 void initTunnel(string key){
