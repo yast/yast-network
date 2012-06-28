@@ -54,6 +54,11 @@ string fwzone_initial = "";
 
 string hostname_initial = "";
 
+/**
+ * list of interface names which were recently assigned as a slave to a bond device
+ */
+list<string> bond_slaves = [];
+
 boolean force_static_ip = ProductFeatures::GetBooleanFeature ("network", "force_static_ip");
 
 /**
@@ -192,6 +197,7 @@ void enableSlaveButtons(){
 void InitSlave(string key)
 {
     settings["SLAVES"] = LanItems::bond_slaves;
+    y2milestone( "InitSlave bond_slaves: %1", settings[ "SLAVES"]:[]);
     UI::ChangeWidget(`msbox_items, `SelectedItems, settings["SLAVES"]:[]);
 
     settings["BONDOPTION"] = LanItems::bond_option;
@@ -203,7 +209,10 @@ void InitSlave(string key)
         //filter the eth devices (BOOT_PROTO=none
 	// don't care about STARTMODE (see bnc#652987c6)
             if (((string)configurations[devtype, devname, "BOOTPROTO"]:"" == "none")/* && ((string)configurations[devtype, devname, "STARTMODE"]:"" == "off")*/)
-             items = add (items, `item(`id(devname), sformat("%1 - %2", devname, configurations[devtype, devname, "NAME"]:""), contains(settings["SLAVES"]:[], devname)) );
+            {
+                y2milestone( "InitSlave appending bond slave: %1", devname);
+                items = add (items, `item(`id(devname), sformat("%1 - %2", devname, configurations[devtype, devname, "NAME"]:""), contains(settings["SLAVES"]:[], devname)) );
+            }
 
      });
     });
@@ -285,10 +294,12 @@ void StoreSlave(string key, map event)
 {
     settings["SLAVES"] = (list<string>)UI::QueryWidget (`msbox_items, `SelectedItems);
     settings["BONDOPTION"] = UI::QueryWidget (`id("BONDOPTION"), `Value);
+
     LanItems::bond_slaves = settings["SLAVES"]:[];
     LanItems::bond_option = settings["BONDOPTION"]:"";
-}
 
+    bond_slaves = (list<string>) toset( merge( bond_slaves, settings[ "SLAVES"]:[]));
+}
 
 void initTunnel(string key){
 y2internal("initTunnel %1", settings);
@@ -310,7 +321,6 @@ void enableDisableBootProto(symbol current){
   UI::ChangeWidget(`netmask,	`Enabled, current==`static);
   UI::ChangeWidget(`hostname,	`Enabled, current==`static);
   UI::ChangeWidget(`ibft,	`Enabled, current==`none);
-  UI::ChangeWidget(`bus_persistent, `Enabled, current==`none);
 }
 
 /**
@@ -372,14 +382,6 @@ symbol handleBootProto (string key, map event) {
 		UI::ChangeWidget(`id(`hostname), `Value, Hostname::MergeFQ(DNS::hostname, DNS::domain));
 	    }
 	}
-        if( current == `none)
-        {
-            y2milestone( "Enabling bus id persistency");
-            if( UI::QueryWidget( `id( `bus_persistent), `Value) == true)
-            {
-                LanItems::PushUdevRule( LanItems::CreateBusPersistentUdevRule());
-            }
-        }
    }
    return nil;
 }
@@ -796,9 +798,7 @@ map<string, map<string,any> > widget_descr_local = $[
 		   `HBox(
 		     `RadioButton(`id(`none),`opt(`notify),  _("No Link and IP Setup (Bonding Slaves)")),
 		     `HSpacing(1),
-		     `CheckBox(`id(`ibft), `opt(`notify), _("Use iBFT values")),
-		     `HSpacing(1),
-		     `CheckBox(`id(`bus_persistent), `opt(`notify), _("Enable BUS ID based persistency"))
+		     `CheckBox(`id(`ibft), `opt(`notify), _("Use iBFT values"))
 		   )
 		  )),
 		`Left(`HBox(

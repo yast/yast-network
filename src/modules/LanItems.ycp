@@ -190,25 +190,6 @@ global map getCurrentItem(){
  return Items[current]:$[];
 }
 
-global string CreateBusPersistentUdevRule()
-{
-    return sformat( "KERNELS==\"%1\" NAME=\"%2\"", getCurrentItem()[ "hwinfo", "busid"]:"", getCurrentItem()[ "ifcfg"]:"");
-}
-
-global list<string> PushUdevRule( string rule)
-{
-    list<string> new_rules=[];
-
-    new_rules = add(new_rules, rule);
-    
-    if( size( getCurrentItem()[ "udev", "net"]:[]) == 0)
-        Items[ current, "udev"] = add( Items[ current, "udev"]:$[], "net", new_rules);
-    else
-        Items[current, "udev", "net"] = new_rules;
-
-    return new_rules;
-}
-
 boolean ReadUdevDriverRules(){
  y2milestone ("Reading udev rules ...");
  udev_net_rules = (map<string, any>)SCR::Read(.udev_persistent.net);
@@ -410,6 +391,24 @@ global boolean FindAndSelect(string device){
  return found;
 }
 
+/**
+ * search all known devices to find it's index in Items array
+ */
+global integer FindDeviceIndex( string device)
+{
+    integer ret = -1;
+
+    foreach(integer i, map<string, any> a, (map<integer, map<string, any> >)Items, 
+    {
+        if( a[ "hwinfo", "dev_name"]:"" == device)
+        {
+            ret = i;
+            break;
+        }
+    });
+
+    return ret;
+}
 
 global void ReadHw(){
  Items=$[];
