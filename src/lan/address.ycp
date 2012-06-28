@@ -787,7 +787,7 @@ define any AddressDialog() {
 
     fwzone_initial = fwzone;
 
-    list <string> host_list = Host::hosts[LanItems::ipaddr]:[];
+    list <string> host_list = Host::Names(LanItems::ipaddr);
     if ( size( host_list) > 1)
     {
 	y2milestone("More than one hostname for single IP detected, using the first one only");
@@ -1090,7 +1090,7 @@ define any AddressDialog() {
 	    boolean ip_changed = ( LanItems::ipaddr != settings["IPADDR"]:"" );
 	    if (ip_changed)
 	    {
-		Host::hosts[LanItems::ipaddr] = [];
+                Host::SetNames(LanItems::ipaddr, []);
 		y2milestone("IP has changed");
 		Host::SetModified();
 	    }
@@ -1103,7 +1103,7 @@ define any AddressDialog() {
 	    if ( (hostname_initial != settings["HOSTNAME"]:"") || ip_changed)
 	    {
 		if (settings["HOSTNAME"]:"" == "" )
-		    Host::hosts[LanItems::ipaddr] = [];
+                    Host::SetNames(LanItems::ipaddr, []);
 		else
 		    Host::Update(hostname_initial, settings["HOSTNAME"]:"", [ settings["IPADDR"]:""]);
 		Host::SetModified();

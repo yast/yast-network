@@ -26,7 +26,42 @@ include "network/routines.ycp";
  * keys: IPs, (But #35671 suggests that repeating IPs is valid)
  * values: names, the first one is the canonical one
  */
-global map<string, list<string> > hosts = $[];
+map<string, list<string> > hosts = $[];
+
+/**
+ * Remove all entries from the host table.
+ */
+global void Clear() {
+    hosts = $[];
+}
+
+/**
+ * @return a map: address->list of names
+ */
+global map<string, list<string> > NameMap() {
+    return hosts;
+}
+
+/**
+ * @return list of names for that address
+ */
+global list<string> Names(string address) {
+    return hosts[address]:[];
+}
+
+/**
+ * Give address a new list of names.
+ */
+global void SetNames(string address, list<string> names) {
+    hosts[address] = names;
+}
+
+/**
+ * Add another name to the list for address (which may be empty so far)
+ */
+global void AddName(string address, string name) {
+    hosts[address] = add(hosts[address]:[], name);
+}
 
 /**
  * Data was modified?
