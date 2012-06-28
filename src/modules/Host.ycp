@@ -81,11 +81,6 @@ map<string,any> hosts_init = $[];
  */
 string hosts_file = "/etc/hosts";
 
-/**
- * Only write configuration
- */
-global boolean write_only = false;
-
 boolean initialized = false;
 
 global boolean NeedDummyIP() {

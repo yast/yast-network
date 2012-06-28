@@ -95,7 +95,6 @@ else if (func == "Packages") {
 else if (func == "Write") {
     import "Progress";
     boolean progress_orig = Progress::set (false);
-    Host::write_only = true;
     ret = Host::Write();
     Progress::set (progress_orig);
 }
