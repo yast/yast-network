@@ -233,8 +233,44 @@ boolean shown = false;
 
 void initOverview (string key) ``{
 
+    // search for automatic updates
+    integer current = LanItems::current;
+
+    foreach( string dev, bond_slaves,
+    {
+        if( LanItems::FindAndSelect( dev))
+        {
+            LanItems::SetItem();
+        }
+        else
+        {
+            integer dev_index = LanItems::FindDeviceIndex( dev);
+            if( dev_index < 0)
+            {
+                y2error( "initOverview: invalid bond slave device name %1", dev);
+                continue;
+            }
+            LanItems::current = dev_index;
+
+            AddInterface();
+
+            // clear defaults
+            LanItems::netmask = "";
+        }
+
+        LanItems::startmode = "hotplug";
+        LanItems::bootproto = "none";
+        LanItems::GetReplacedItemUdev("KERNELS", LanItems::getCurrentItem()["hwinfo", "busid"]:"");
+
+        LanItems::Commit();
+    });
+
+    LanItems::current = current;
+
+    // update table with device description
     list<term> term_items = maplist (map<string,any> i, (list<map<string,any> >)LanItems::Overview(), {
         term t = `item (`id (i["id"]:-1));
+
         foreach (string l, i["table_descr"]:[], {
             t = add (t, l);
         });
@@ -242,15 +278,15 @@ void initOverview (string key) ``{
     });
     UI::ChangeWidget (`id (`_hw_items), `Items, term_items);
 
- if (!shown)
- {
-    disableItemsIfNM([`_hw_items, `_hw_sum, `add, `edit, `delete], true);
-    shown = true;
- }
- else
-     enableDisableButtons();
+    if (!shown)
+    {
+        disableItemsIfNM([`_hw_items, `_hw_sum, `add, `edit, `delete], true);
+        shown = true;
+    }
+    else
+        enableDisableButtons();
 
- y2milestone("LanItems %1", LanItems::Items);
+    y2milestone("LanItems %1", LanItems::Items);
 }
 
 
