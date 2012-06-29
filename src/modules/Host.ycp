@@ -263,22 +263,25 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
     modified = true;
 
     string nick = Hostname::SplitFQ(newhn)[0]:"";
-    string oldnick = Hostname::SplitFQ(oldhn)[0]:"";
 
     /* Remove old hostname from hosts */
 //    list oldhnlist = [];
-    foreach (string ip, list<string> hs, hosts, {
-	list <list <string> > wrk = maplist(string s, hs, {
-	    return splitstring(s," ");
-	});
-	wrk = filter (list <string> lst, wrk, {
-	    return (!contains(lst, oldhn));
-        });
+    // if wrk contains "" because of multiple spaces,
+    // the loop  would remove innocent lines (bnc#769081)
+    if (oldhn != "") {
+        foreach (string ip, list<string> hs, hosts, {
+            list <list <string> > wrk = maplist(string s, hs, {
+                return splitstring(s," ");
+            });
+            wrk = filter (list <string> lst, wrk, {
+                return (!contains(lst, oldhn));
+            });
 
-        hosts[ip] = maplist(list <string> lst, wrk, {
-	    return mergestring(lst, " ");
+            hosts[ip] = maplist(list <string> lst, wrk, {
+                return mergestring(lst, " ");
+            });
         });
-    });
+    }
 
     /* Resurect the rest of oldhnlist without old hostname */
     // FIXME: maybe
