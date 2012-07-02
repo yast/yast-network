@@ -1,0 +1,32 @@
+//bnc#769081: two spaces and an empty oldhostname would remove a line
+{
+
+include "testsuite.ycp";
+
+map READ = $[
+    "target" : $[
+	"size" : 1,
+	"tmpdir" : "/tmp",
+    ],
+    "etc" : $[
+	"hosts" : $[
+	    "127.0.0.1" : ["localhost localhost.localdomain"],
+	    "10.0.0.1" : ["somehost.example.com  notice-two-spaces"],
+	],
+    ],
+];
+
+TESTSUITE_INIT([READ], nil);
+
+import "Assert";
+import "Host";
+import "Progress";
+Progress::off();
+
+DUMP("Read");
+TEST(``(Host::Read()), [READ], nil);
+list<string> names = Host::Names("10.0.0.1");
+Host::Update("", "newname", ["10.0.0.42"]);
+list<string> new_names = Host::Names("10.0.0.1");
+Assert::Equal(names, new_names);
+}

@@ -26,12 +26,50 @@ include "network/routines.ycp";
  * keys: IPs, (But #35671 suggests that repeating IPs is valid)
  * values: names, the first one is the canonical one
  */
-global map<string, list<string> > hosts = $[];
+map<string, list<string> > hosts = $[];
 
 /**
  * Data was modified?
  */
-global boolean modified = false;
+boolean modified = false;
+
+/**
+ * Remove all entries from the host table.
+ */
+global void Clear() {
+    hosts = $[];
+    modified = true;
+}
+
+/**
+ * @return a map: address->list of names
+ */
+global map<string, list<string> > NameMap() {
+    return hosts;
+}
+
+/**
+ * @return list of names for that address
+ */
+global list<string> Names(string address) {
+    return hosts[address]:[];
+}
+
+/**
+ * Give address a new list of names.
+ */
+global void SetNames(string address, list<string> names) {
+    hosts[address] = names;
+    modified = true;
+}
+
+/**
+ * Add another name to the list for address (which may be empty so far)
+ */
+global void AddName(string address, string name) {
+    hosts[address] = add(hosts[address]:[], name);
+    modified = true;
+}
 
 /**
  * All hosts read at the start
@@ -42,11 +80,6 @@ map<string,any> hosts_init = $[];
  * "hosts" file location
  */
 string hosts_file = "/etc/hosts";
-
-/**
- * Only write configuration
- */
-global boolean write_only = false;
 
 boolean initialized = false;
 
@@ -230,22 +263,25 @@ global define boolean Update(string oldhn, string newhn, list<string> iplist) {
     modified = true;
 
     string nick = Hostname::SplitFQ(newhn)[0]:"";
-    string oldnick = Hostname::SplitFQ(oldhn)[0]:"";
 
     /* Remove old hostname from hosts */
 //    list oldhnlist = [];
-    foreach (string ip, list<string> hs, hosts, {
-	list <list <string> > wrk = maplist(string s, hs, {
-	    return splitstring(s," ");
-	});
-	wrk = filter (list <string> lst, wrk, {
-	    return (!contains(lst, oldhn));
-        });
+    // if wrk contains "" because of multiple spaces,
+    // the loop  would remove innocent lines (bnc#769081)
+    if (oldhn != "") {
+        foreach (string ip, list<string> hs, hosts, {
+            list <list <string> > wrk = maplist(string s, hs, {
+                return splitstring(s," ");
+            });
+            wrk = filter (list <string> lst, wrk, {
+                return (!contains(lst, oldhn));
+            });
 
-        hosts[ip] = maplist(list <string> lst, wrk, {
-	    return mergestring(lst, " ");
+            hosts[ip] = maplist(list <string> lst, wrk, {
+                return mergestring(lst, " ");
+            });
         });
-    });
+    }
 
     /* Resurect the rest of oldhnlist without old hostname */
     // FIXME: maybe

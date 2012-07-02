@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Jun 29 16:54:11 CEST 2012 - mvidner@suse.cz
+
+- Don't remove /etc/hosts lines containing repeated spaces
+  (bnc#769081).
+- Hosts.ycp: encapsulated by making variables private.
+- 2.17.173
+
+-------------------------------------------------------------------
 Wed Mar  7 11:10:31 CET 2012 - mvidner@suse.cz
 
 - Sleep between writing udev rules and ifcfgs so that 
