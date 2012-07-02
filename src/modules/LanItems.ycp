@@ -510,6 +510,49 @@ global string GetFirmwareForCurrentItem(){
  return firmware;
 }
 
+list<string> GetBondSlaves( string bond_master)
+{
+    list<string> slaves = [];
+    integer slave_index = 0;
+
+    while( slave_index < 10)
+    {
+        string slave = NetworkInterfaces::FilterDevices("netcard")[ "bond", bond_master, sformat("BONDING_SLAVE%1", slave_index)]:"";
+
+        if( size( slave) > 0)
+            slaves = add( slaves, slave);
+
+        slave_index = slave_index +1;
+    }
+
+    return slaves;
+}
+/**
+ * Creates list of devices enslaved in any bond device.
+ *
+ * @return map<string dev, string bond> where dev is device name (e.g. eth0) and bond is
+ * master bond device name (e.g. bond0)
+ */
+map<string, string> BuildBondIndex()
+{
+    map<string, string> index = $[];
+    map<string, map> bond_devs = (map<string, map>) NetworkInterfaces::FilterDevices( "netcard")[ "bond"]:$[];
+
+    foreach( string bond_master, map value, bond_devs,
+    {
+        integer slave_index = 0;
+
+        foreach( string slave, GetBondSlaves( bond_master),
+        {
+            index = add( index, slave, bond_master);
+        });
+    });
+
+    y2debug( "bond slaves index: %1", index);
+
+    return index;
+}
+
 global list BuildLanOverview() {
     list<string> overview=[];
     list<string> links=[];
@@ -532,6 +575,8 @@ global list BuildLanOverview() {
         string rich = "";
         string ip =  _("Not configured");
         string descr = Items[key, "hwinfo", "name"]:"";
+        string dev = "";
+        string note = "";
         type = Items[key, "hwinfo", "type"]:"";
         descr = CheckEmptyName (type, descr);
         list <string> bullets = [];
@@ -540,7 +585,7 @@ global list BuildLanOverview() {
             NetworkInterfaces::Select(Items[key, "ifcfg"]:"");
             if (!hasAnyValue(type)) type = NetworkInterfaces::GetType(Items[key, "ifcfg"]:"");
             descr = BuildDescription(type, NetworkInterfaces::GetType(Items[key, "ifcfg"]:""), NetworkInterfaces::Current, [Items[key, "hwinfo"]:$[]]);
-            string dev = NetworkInterfaces::Name; //NetworkInterfaces::device_name(type, NetworkInterfaces::Name);
+            dev = NetworkInterfaces::Name; //NetworkInterfaces::device_name(type, NetworkInterfaces::Name);
             ip = DeviceProtocol(NetworkInterfaces::Current);
             string status = DeviceStatus(type, NetworkInterfaces::device_num(NetworkInterfaces::Name), NetworkInterfaces::Current);
 
@@ -585,6 +630,20 @@ global list BuildLanOverview() {
                     // Hyperlink: Change the configuration of an interface
                     Hyperlink (href, _("Change."));
                 links = add (links, href);
+            }
+
+            if( type == "bond")
+            {
+                bullets = add( bullets, sformat( "%1: %2", _( "Bonding slaves"), mergestring( GetBondSlaves( dev), " ")));
+            }
+
+            map<string, string> bond_index = BuildBondIndex();
+            string bond_master = bond_index[ Items[ key, "ifcfg"]:""]:"";
+
+            if( size( bond_master) > 0)
+            {
+                note = sformat( "%1 %2", _("enslaved in"), bond_master);
+                bullets = add( bullets, sformat( "%1: %2", _( "Bonding master"), bond_master));
             }
 
             overview = add(overview, Summary::Device(descr, status));
@@ -643,7 +702,7 @@ to configure.</p>
 
         Items[key, "table_descr"] = $[
                                       "rich_descr" : rich,
-                                      "table_descr": [descr, ip]
+                                      "table_descr": [descr, ip, dev, note]
                                       ];
         });
     return [ Summary::DevicesList(overview), links ];

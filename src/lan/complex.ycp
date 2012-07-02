@@ -217,9 +217,8 @@ void enableDisableButtons(){
 
 boolean shown = false;
 
-void initOverview (string key) ``{
-
-    // search for automatic updates
+void AutoUpdateOverview()
+{
     integer current = LanItems::current;
 
     foreach( string dev, bond_slaves,
@@ -252,6 +251,12 @@ void initOverview (string key) ``{
     });
 
     LanItems::current = current;
+}
+
+void initOverview (string key) ``{
+
+    // search for automatic updates
+    AutoUpdateOverview();
 
     // update table with device description
     list<term> term_items = maplist (map<string,any> i, (list<map<string,any> >)LanItems::Overview(), {
@@ -381,7 +386,7 @@ map<string, map<string,any> > wd = $[
 	    "widget" : `custom,
 	    "custom_widget" :
 		`VBox(
-		  `VWeight(2,`Table (`id (`_hw_items), `opt (`notify, `immediate), `header(_("Name"), _("IP Address")))),
+		  `VWeight(2,`Table (`id (`_hw_items), `opt (`notify, `immediate), `header(_("Name"), _("IP Address"), _("Device"), _("Note")))),
 		  `VWeight(1,`RichText (`id (`_hw_sum), "")),
                   `HBox (
 		        `PushButton (`id (`add), Label::AddButton ()),
