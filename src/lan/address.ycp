@@ -166,7 +166,6 @@ void StoreVLANSlave(string key, map event)
 void InitSlave(string key)
 {
     settings["SLAVES"] = LanItems::bond_slaves;
-    y2milestone( "InitSlave bond_slaves: %1", settings[ "SLAVES"]:[]);
     UI::ChangeWidget(`id("BONDSLAVE"), `SelectedItems, settings["SLAVES"]:[]);
 
     settings["BONDOPTION"] = LanItems::bond_option;
@@ -179,7 +178,6 @@ void InitSlave(string key)
 	// don't care about STARTMODE (see bnc#652987c6)
             if (((string)configurations[devtype, devname, "BOOTPROTO"]:"" == "none")/* && ((string)configurations[devtype, devname, "STARTMODE"]:"" == "off")*/)
             {
-                y2milestone( "InitSlave appending bond slave: %1", devname);
                 items = add (items, `item(`id(devname), sformat("%1 - %2", devname, configurations[devtype, devname, "NAME"]:""), contains(settings["SLAVES"]:[], devname)) );
             }
 
@@ -205,12 +203,12 @@ void StoreSlave(string key, map event)
     LanItems::bond_slaves = settings["SLAVES"]:[];
     LanItems::bond_option = settings["BONDOPTION"]:"";
 
+    // create list of "unconfigured" slaves
     list<string> new_slaves = filter( string slave, settings[ "SLAVES"]:[],
     {
         return !contains( configured_slaves, slave);
     });
-//    bond_slaves = (list<string>) toset( merge( bond_slaves, settings[ "SLAVES"]:[]));
-    y2milestone( "New slaves: %1", new_slaves);
+
     bond_slaves = (list<string>) toset( merge( bond_slaves, new_slaves));
 }
 
