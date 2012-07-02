@@ -845,13 +845,15 @@ list<string> IfcfgsToSkipVirtualizedProposal() {
                         skipped=add(skipped, port);
                     });
             }
-            if (NetworkInterfaces::GetType(ifcfg)=="bond"){
+            if (NetworkInterfaces::GetType(ifcfg)=="bond")
+            {
                 NetworkInterfaces::Edit(ifcfg);
-                foreach(string i, (list<string>)splitstring("0,1,2,3,4,5,6,7,8,9", ","), {
-                        string slave = NetworkInterfaces::Current[sformat("BONDING_SLAVE%1", i)]:"";
+
+                foreach( string slave, LanItems::GetBondSlaves( ifcfg), 
+                {
                         y2milestone("For interface %1 found slave %2", ifcfg, slave);
-                        if(size(slave)>0) skipped=add(skipped, slave);
-                    });
+                        skipped=add(skipped, slave);
+                });
             }
 	     // Skip also usb device as it is not good for bridge proposal (bnc#710098)
             if (NetworkInterfaces::GetType(ifcfg)=="usb"){

@@ -217,6 +217,11 @@ void enableDisableButtons(){
 
 boolean shown = false;
 
+/**
+ * Automatically updates interfaces configuration according users input.
+ *
+ * E.g. automatically configures bonding slaves when user enslaves them into a master bond device.
+ */
 void AutoUpdateOverview()
 {
     integer current = LanItems::current;
@@ -239,7 +244,8 @@ void AutoUpdateOverview()
 
             AddInterface();
 
-            // clear defaults
+            // clear defaults, some defaults are invalid for bonding slaves and can cause troubles
+            // in related sysconfig scripts or makes no sence for bonding slaves (e.g. ip configuration).
             LanItems::netmask = "";
         }
 
@@ -275,7 +281,9 @@ void initOverview (string key) ``{
         shown = true;
     }
     else
+    {
         enableDisableButtons();
+    }
 
     y2milestone("LanItems %1", LanItems::Items);
 }
