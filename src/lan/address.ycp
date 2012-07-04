@@ -299,7 +299,7 @@ void StoreSlave(string key, map event)
         return !contains( configured_slaves, slave);
     });
 
-    bond_slaves = (list<string>) toset( merge( bond_slaves, new_slaves));
+    LanItems::bond_slaves = (list<string>) toset( merge( LanItems::bond_slaves, new_slaves));
 }
 
 void initTunnel(string key){
