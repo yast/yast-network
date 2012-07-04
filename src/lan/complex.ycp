@@ -240,7 +240,7 @@ void AutoUpdateOverview()
 {
     integer current = LanItems::current;
 
-    foreach( string dev, LanItems::bond_autoconf_slaves,
+    foreach( string dev, Lan::bond_autoconf_slaves,
     {
         if( LanItems::FindAndSelect( dev))
         {
