@@ -649,7 +649,7 @@ global list BuildLanOverview() {
 
             if( size( bond_master) > 0)
             {
-                note = sformat( "%1 %2", _("enslaved in"), bond_master);
+                note = sformat( _("enslaved in %1"), bond_master);
                 bullets = add( bullets, sformat( "%1: %2", _( "Bonding master"), bond_master));
             }
 
