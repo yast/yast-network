@@ -226,7 +226,7 @@ void AutoUpdateOverview()
 {
     integer current = LanItems::current;
 
-    foreach( string dev, bond_slaves,
+    foreach( string dev, LanItems::bond_slaves,
     {
         if( LanItems::FindAndSelect( dev))
         {

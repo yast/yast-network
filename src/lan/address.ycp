@@ -54,11 +54,6 @@ string fwzone_initial = "";
 
 string hostname_initial = "";
 
-/**
- * list of interface names which were recently assigned as a slave to a bond device
- */
-list<string> bond_slaves = [];
-
 boolean force_static_ip = ProductFeatures::GetBooleanFeature ("network", "force_static_ip");
 
 /**
@@ -304,7 +299,7 @@ void StoreSlave(string key, map event)
         return !contains( configured_slaves, slave);
     });
 
-    bond_slaves = (list<string>) toset( merge( bond_slaves, new_slaves));
+    LanItems::bond_slaves = (list<string>) toset( merge( LanItems::bond_slaves, new_slaves));
 }
 
 void initTunnel(string key){
