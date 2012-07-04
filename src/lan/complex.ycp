@@ -231,12 +231,16 @@ void enableDisableButtons(){
 
 boolean shown = false;
 
-void initOverview (string key) ``{
-
-    // search for automatic updates
+/**
+ * Automatically updates interfaces configuration according users input.
+ *
+ * E.g. automatically configures bonding slaves when user enslaves them into a master bond device.
+ */
+void AutoUpdateOverview()
+{
     integer current = LanItems::current;
 
-    foreach( string dev, bond_slaves,
+    foreach( string dev, LanItems::bond_slaves,
     {
         if( LanItems::FindAndSelect( dev))
         {
@@ -254,7 +258,8 @@ void initOverview (string key) ``{
 
             AddInterface();
 
-            // clear defaults
+            // clear defaults, some defaults are invalid for bonding slaves and can cause troubles
+            // in related sysconfig scripts or makes no sence for bonding slaves (e.g. ip configuration).
             LanItems::netmask = "";
         }
 
@@ -266,6 +271,12 @@ void initOverview (string key) ``{
     });
 
     LanItems::current = current;
+}
+
+void initOverview (string key) ``{
+
+    // search for automatic updates
+    AutoUpdateOverview();
 
     // update table with device description
     list<term> term_items = maplist (map<string,any> i, (list<map<string,any> >)LanItems::Overview(), {
@@ -284,7 +295,9 @@ void initOverview (string key) ``{
         shown = true;
     }
     else
+    {
         enableDisableButtons();
+    }
 
     y2milestone("LanItems %1", LanItems::Items);
 }
@@ -396,7 +409,7 @@ map<string, map<string,any> > wd = $[
 	    "widget" : `custom,
 	    "custom_widget" :
 		`VBox(
-		  `VWeight(2,`Table (`id (`_hw_items), `opt (`notify, `immediate), `header(_("Name"), _("IP Address")))),
+		  `VWeight(2,`Table (`id (`_hw_items), `opt (`notify, `immediate), `header(_("Name"), _("IP Address"), _("Device"), _("Note")))),
 		  `VWeight(1,`RichText (`id (`_hw_sum), "")),
                   `HBox (
 		        `PushButton (`id (`add), Label::AddButton ()),
