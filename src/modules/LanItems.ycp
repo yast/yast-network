@@ -85,7 +85,7 @@ global string bond_option="";
 /**
  * list of interface names which were recently assigned as a slave to a bond device
  */
-global list<string> bond_slaves = [];
+global list<string> bond_autoconf_slaves = [];
 
 const integer MAX_BOND_SLAVE = 10;
 
