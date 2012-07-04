@@ -54,11 +54,6 @@ string fwzone_initial = "";
 
 string hostname_initial = "";
 
-/**
- * list of interface names which were recently assigned as a slave to a bond device
- */
-list<string> bond_slaves = [];
-
 boolean force_static_ip = ProductFeatures::GetBooleanFeature ("network", "force_static_ip");
 
 /**

@@ -82,6 +82,11 @@ global string wl_nick = "";
 //bond options
 global list<string> bond_slaves = [];
 global string bond_option="";
+/**
+ * list of interface names which were recently assigned as a slave to a bond device
+ */
+global list<string> bond_slaves = [];
+
 const integer MAX_BOND_SLAVE = 10;
 
 // VLAN option
