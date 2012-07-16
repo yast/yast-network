@@ -259,6 +259,10 @@ void UpdateBondingSlaves()
 
 /**
  * Automatically updates interfaces configuration according users input.
+ *
+ * Perform automatic configuration based on user input. E.g. when an interface is inserted
+ * into bond device and persistence based on bus id is required, then some configuration changes 
+ * are required in ifcfg and udev. It used to be needed to do it by hand before.
  */
 void AutoUpdateOverview()
 {
