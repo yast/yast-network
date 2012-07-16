@@ -398,6 +398,9 @@ global boolean FindAndSelect(string device){
 
 /**
  * search all known devices to find it's index in Items array
+ *
+ * @param device matched with item[ "hwinfo", "dev_name"]
+ * @return index in Items or -1 if not found
  */
 global integer FindDeviceIndex( string device)
 {
@@ -514,6 +517,9 @@ global string GetFirmwareForCurrentItem(){
  return firmware;
 }
 
+/**
+ * Creates list of devices enslaved in any bond device.
+ */
 global list<string> GetBondSlaves( string bond_master)
 {
     list<string> slaves = [];
@@ -531,8 +537,9 @@ global list<string> GetBondSlaves( string bond_master)
 
     return slaves;
 }
-/**
- * Creates list of devices enslaved in any bond device.
+
+/*
+ * Creates mapping of bonding slaves to its master.
  *
  * @return map<string dev, string bond> where dev is device name (e.g. eth0) and bond is
  * master bond device name (e.g. bond0)

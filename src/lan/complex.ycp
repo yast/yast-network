@@ -231,12 +231,10 @@ void enableDisableButtons(){
 
 boolean shown = false;
 
-/**
- * Automatically updates interfaces configuration according users input.
- *
- * E.g. automatically configures bonding slaves when user enslaves them into a master bond device.
+ /*
+ * Automatically configures bonding slaves when user enslaves them into a master bond device.
  */
-void AutoUpdateOverview()
+void UpdateBondingSlaves()
 {
     integer current = LanItems::current;
 
@@ -271,6 +269,15 @@ void AutoUpdateOverview()
     });
 
     LanItems::current = current;
+}
+
+/**
+ * Automatically updates interfaces configuration according users input.
+ */
+void AutoUpdateOverview()
+{
+    // TODO: allow disabling. E.g. iff bus id based persistency is not requested.
+    UpdateBondingSlaves();
 }
 
 void initOverview (string key) ``{
