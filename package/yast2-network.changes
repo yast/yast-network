@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Jun  9 07:21:45 UTC 2014 - mfilka@suse.com
+
+- bnc#840565
+  - configuring dummy netwok interface error disable '-o' option
+    for dummy module (ported from OS: bnc#767946) hwcfg widget
+    doesn't exist
+- 2.17.199
+
+-------------------------------------------------------------------
 Wed Mar 26 07:16:14 UTC 2014 - mfilka@suse.com
 
 - Ported fixes from OpenSUSE:
