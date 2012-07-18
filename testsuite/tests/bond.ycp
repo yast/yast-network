@@ -1,0 +1,57 @@
+{
+import "LanItems";
+import "NetworkInterfaces";
+import "Assert";
+import "Testsuite";
+
+map READ = $[
+    "network" : $[
+	"section" : $[
+            "eth1"      : nil,
+            "eth2"      : nil,
+
+	    "eth4"	: nil,
+	    "eth5"	: nil,
+            
+            "bond0"     : nil,
+	],
+	"value" : $[
+            "eth1"      : $["BOOTPROTO":"none"],
+            "eth2"      : $["BOOTPROTO":"none"],
+
+	    "eth4"	: $["BOOTPROTO":"none"],
+	    "eth5"	: $["BOOTPROTO":"none"],
+
+            "bond0"     : $[
+                            "BOOTPROTO":"static", 
+                            "BONDING_MASTER":"yes", 
+                            "BONDING_SLAVE0":"eth1",
+                            "BONDING_SLAVE1":"eth2",
+                        ],
+	]
+    ],
+    "probe" : $[
+	"system" : [],
+    ],
+    "target" : $[
+	"tmpdir" : "/tmp",
+    ],
+];
+
+Testsuite::Init([READ], 0);
+
+Testsuite::Dump( "NetworkInterfaces::Read");
+Testsuite::Test(``(NetworkInterfaces::Read()), [READ], nil);
+
+Testsuite::Dump("LanItems::BuildBondIndex");
+map expected_bond_index = $[
+    "eth1": "bond0",
+    "eth2": "bond0",
+];
+Assert::Equal( expected_bond_index, LanItems::BuildBondIndex());
+
+Testsuite::Dump("LanItems::GetBondSlaves");
+list expected_bond_slaves = [ "eth1", "eth2" ];
+Assert::Equal( expected_bond_slaves, LanItems::GetBondSlaves( "bond0"));
+
+} /* EOF */
