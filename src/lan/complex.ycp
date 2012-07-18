@@ -217,10 +217,68 @@ void enableDisableButtons(){
 
 boolean shown = false;
 
+ /*
+ * Automatically configures bonding slaves when user enslaves them into a master bond device.
+ */
+void UpdateBondingSlaves()
+{
+    integer current = LanItems::current;
+
+    foreach( string dev, Lan::bond_autoconf_slaves,
+    {
+        if( LanItems::FindAndSelect( dev))
+        {
+            LanItems::SetItem();
+        }
+        else
+        {
+            integer dev_index = LanItems::FindDeviceIndex( dev);
+            if( dev_index < 0)
+            {
+                y2error( "initOverview: invalid bond slave device name %1", dev);
+                continue;
+            }
+            LanItems::current = dev_index;
+
+            AddInterface();
+
+            // clear defaults, some defaults are invalid for bonding slaves and can cause troubles
+            // in related sysconfig scripts or makes no sence for bonding slaves (e.g. ip configuration).
+            LanItems::netmask = "";
+        }
+
+        LanItems::startmode = "hotplug";
+        LanItems::bootproto = "none";
+        LanItems::GetReplacedItemUdev("KERNELS", LanItems::getCurrentItem()["hwinfo", "busid"]:"");
+
+        LanItems::Commit();
+    });
+
+    LanItems::current = current;
+}
+
+/**
+ * Automatically updates interfaces configuration according users input.
+ *
+ * Perform automatic configuration based on user input. E.g. when an interface is inserted
+ * into bond device and persistence based on bus id is required, then some configuration changes 
+ * are required in ifcfg and udev. It used to be needed to do it by hand before.
+ */
+void AutoUpdateOverview()
+{
+    // TODO: allow disabling. E.g. iff bus id based persistency is not requested.
+    UpdateBondingSlaves();
+}
+
 void initOverview (string key) ``{
 
+    // search for automatic updates
+    AutoUpdateOverview();
+
+    // update table with device description
     list<term> term_items = maplist (map<string,any> i, (list<map<string,any> >)LanItems::Overview(), {
         term t = `item (`id (i["id"]:-1));
+
         foreach (string l, i["table_descr"]:[], {
             t = add (t, l);
         });
@@ -228,15 +286,17 @@ void initOverview (string key) ``{
     });
     UI::ChangeWidget (`id (`_hw_items), `Items, term_items);
 
- if (!shown)
- {
-    disableItemsIfNM([`_hw_items, `_hw_sum, `add, `edit, `delete], true);
-    shown = true;
- }
- else
-     enableDisableButtons();
+    if (!shown)
+    {
+        disableItemsIfNM([`_hw_items, `_hw_sum, `add, `edit, `delete], true);
+        shown = true;
+    }
+    else
+    {
+        enableDisableButtons();
+    }
 
- y2milestone("LanItems %1", LanItems::Items);
+    y2milestone("LanItems %1", LanItems::Items);
 }
 
 
@@ -345,7 +405,7 @@ map<string, map<string,any> > wd = $[
 	    "widget" : `custom,
 	    "custom_widget" :
 		`VBox(
-		  `VWeight(2,`Table (`id (`_hw_items), `opt (`notify, `immediate), `header(_("Name"), _("IP Address")))),
+		  `VWeight(2,`Table (`id (`_hw_items), `opt (`notify, `immediate), `header(_("Name"), _("IP Address"), _("Device"), _("Note")))),
 		  `VWeight(1,`RichText (`id (`_hw_sum), "")),
                   `HBox (
 		        `PushButton (`id (`add), Label::AddButton ()),
