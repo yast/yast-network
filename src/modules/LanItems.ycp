@@ -83,6 +83,8 @@ global string wl_nick = "";
 global list<string> bond_slaves = [];
 global string bond_option="";
 
+const integer MAX_BOND_SLAVE = 10;
+
 // VLAN option
 global string vlan_etherdevice="";
 global string vlan_id="";
@@ -253,43 +255,69 @@ global list<string> GetReplacedItemUdev(string r_key, string r_val){
 }
 
 global void WriteUdevDriverRules(){
- map<string, any> udev_drivers_rules = $[];
- foreach(integer key, (list<integer>)Map::Keys(Items), {
-  if (hasAnyValue(Items[key, "udev", "driver"]:""))
-					udev_drivers_rules[Items[key, "udev", "driver"]:""] = [ sformat("ENV{MODALIAS}==\"%1\"", Items[key, "hwinfo", "modalias"]:""), sformat("ENV{MODALIAS}=\"%1\"", Items[key, "udev", "driver"]:"") ];
- });
- y2milestone("write udev rules: %1", udev_drivers_rules);
- SCR::Write(.udev_persistent.drivers, udev_drivers_rules);
-  // write udev net rules and hwdown&hwup when NAME changed
-  list<string> changed_devices = [];
-  list<string> net_rules = [];
-  foreach(integer key, (list<integer>)Map::Keys(Items), {
-  if (size(Items[key, "udev", "net"]:[])>0) {
-    string dev_name = Items[key, "hwinfo", "dev_name"]:"";
-    current=key;
-    net_rules = add(net_rules, mergestring(Items[key, "udev", "net"]:[], ", "));
-    if (dev_name!=GetItemUdev("NAME")) {
-		changed_devices = add(changed_devices, dev_name);
-		force_restart=true;
-		}
-   }
-  });
-   SCR::Write(.udev_persistent.rules, net_rules);
-   SCR::Write(.udev_persistent.nil, []);
-   y2milestone("Changed devices %1", changed_devices);
-  if (size(changed_devices)>0) y2milestone("Renaming interfaces %1", SCR::Execute(.target.bash_output, "rcnetwork stop && udevadm trigger --subsystem-match=net && rcnetwork start"));
+    map<string, any> udev_drivers_rules = $[];
+    
+    foreach(integer key, (list<integer>)Map::Keys(Items), 
+    {
+        if (hasAnyValue(Items[key, "udev", "driver"]:""))
+	    udev_drivers_rules[Items[key, "udev", "driver"]:""] = [ sformat("ENV{MODALIAS}==\"%1\"", Items[key, "hwinfo", "modalias"]:""), sformat("ENV{MODALIAS}=\"%1\"", Items[key, "udev", "driver"]:"") ];
+    });
 
- // write rules from driver
- foreach(string key, string value, (map<string, string>)driver_options, {
-  map val=$[];
-  foreach(string k, splitstring(value, " "), {
-   list<string> l = splitstring(k, "=");
-   val[ l[0]:"" ]=l[1]:"";
-  });
-  if (!hasAnyValue(value)) val=nil;
-  SCR::Write(add(.modules.options, key), val);
- });
- SCR::Write(.modules,nil);
+    y2milestone("write drivers udev rules: %1", udev_drivers_rules);
+
+    SCR::Write(.udev_persistent.drivers, udev_drivers_rules);
+
+    // write udev net rules and hwdown&hwup when NAME changed
+    list<string> changed_devices = [];
+    list<string> net_rules = [];
+
+    foreach(integer key, (list<integer>)Map::Keys(Items), 
+    {
+        if (size(Items[key, "udev", "net"]:[]) > 0) 
+        {
+            string dev_name = Items[key, "hwinfo", "dev_name"]:"";
+
+            current=key;
+            net_rules = add(net_rules, mergestring(Items[key, "udev", "net"]:[], ", "));
+    
+            if (dev_name != GetItemUdev("NAME")) 
+            {
+	        changed_devices = add(changed_devices, dev_name);
+		force_restart=true;
+	    }
+        }
+    });
+    
+    SCR::Write(.udev_persistent.rules, net_rules);
+    SCR::Write(.udev_persistent.nil, []);
+   
+    y2milestone("write net udev rules: %1", net_rules);
+    y2milestone("Changed devices %1", changed_devices);
+  
+    if (size(changed_devices)>0) 
+    {
+        any new_name = SCR::Execute(.target.bash_output, "rcnetwork stop && udevadm trigger --subsystem-match=net && rcnetwork start");
+        y2milestone("Renaming interfaces %1", new_name);
+    }
+
+    // write rules from driver
+    foreach(string key, string value, (map<string, string>)driver_options, 
+    {
+        map val=$[];
+  
+        foreach(string k, splitstring(value, " "), 
+        {
+            list<string> l = splitstring(k, "=");
+            val[ l[0]:"" ]=l[1]:"";
+        });
+  
+        if (!hasAnyValue(value)) 
+            val=nil;
+
+        SCR::Write(add(.modules.options, key), val);
+    });
+ 
+    SCR::Write(.modules,nil);
 }
 
 /**
@@ -368,6 +396,27 @@ global boolean FindAndSelect(string device){
  return found;
 }
 
+/**
+ * search all known devices to find it's index in Items array
+ *
+ * @param device matched with item[ "hwinfo", "dev_name"]
+ * @return index in Items or -1 if not found
+ */
+global integer FindDeviceIndex( string device)
+{
+    integer ret = -1;
+
+    foreach(integer i, map<string, any> a, (map<integer, map<string, any> >)Items, 
+    {
+        if( a[ "hwinfo", "dev_name"]:"" == device)
+        {
+            ret = i;
+            break;
+        }
+    });
+
+    return ret;
+}
 
 global void ReadHw(){
  Items=$[];
@@ -469,6 +518,51 @@ global string GetFirmwareForCurrentItem(){
  return firmware;
 }
 
+/**
+ * Creates list of devices enslaved in any bond device.
+ */
+global list<string> GetBondSlaves( string bond_master)
+{
+    list<string> slaves = [];
+    integer slave_index = 0;
+
+    while( slave_index < MAX_BOND_SLAVE)
+    {
+        string slave = NetworkInterfaces::FilterDevices("netcard")[ "bond", bond_master, sformat("BONDING_SLAVE%1", slave_index)]:"";
+
+        if( size( slave) > 0)
+            slaves = add( slaves, slave);
+
+        slave_index = slave_index +1;
+    }
+
+    return slaves;
+}
+
+/*
+ * Creates mapping of bonding slaves to its master.
+ *
+ * @return map<string dev, string bond> where dev is device name (e.g. eth0) and bond is
+ * master bond device name (e.g. bond0)
+ */
+map<string, string> BuildBondIndex()
+{
+    map<string, string> index = $[];
+    map<string, map> bond_devs = (map<string, map>) NetworkInterfaces::FilterDevices( "netcard")[ "bond"]:$[];
+
+    foreach( string bond_master, map value, bond_devs,
+    {
+        foreach( string slave, GetBondSlaves( bond_master),
+        {
+            index = add( index, slave, bond_master);
+        });
+    });
+
+    y2debug( "bond slaves index: %1", index);
+
+    return index;
+}
+
 global list BuildLanOverview() {
     list<string> overview=[];
     list<string> links=[];
@@ -491,6 +585,8 @@ global list BuildLanOverview() {
         string rich = "";
         string ip =  _("Not configured");
         string descr = Items[key, "hwinfo", "name"]:"";
+        string dev = "";
+        string note = "";
         type = Items[key, "hwinfo", "type"]:"";
         descr = CheckEmptyName (type, descr);
         list <string> bullets = [];
@@ -499,7 +595,7 @@ global list BuildLanOverview() {
             NetworkInterfaces::Select(Items[key, "ifcfg"]:"");
             if (!hasAnyValue(type)) type = NetworkInterfaces::GetType(Items[key, "ifcfg"]:"");
             descr = BuildDescription(type, NetworkInterfaces::GetType(Items[key, "ifcfg"]:""), NetworkInterfaces::Current, [Items[key, "hwinfo"]:$[]]);
-            string dev = NetworkInterfaces::Name; //NetworkInterfaces::device_name(type, NetworkInterfaces::Name);
+            dev = NetworkInterfaces::Name; //NetworkInterfaces::device_name(type, NetworkInterfaces::Name);
             ip = DeviceProtocol(NetworkInterfaces::Current);
             string status = DeviceStatus(type, NetworkInterfaces::device_num(NetworkInterfaces::Name), NetworkInterfaces::Current);
 
@@ -544,6 +640,20 @@ global list BuildLanOverview() {
                     // Hyperlink: Change the configuration of an interface
                     Hyperlink (href, _("Change."));
                 links = add (links, href);
+            }
+
+            if( type == "bond")
+            {
+                bullets = add( bullets, sformat( "%1: %2", _( "Bonding slaves"), mergestring( GetBondSlaves( dev), " ")));
+            }
+
+            map<string, string> bond_index = BuildBondIndex();
+            string bond_master = bond_index[ Items[ key, "ifcfg"]:""]:"";
+
+            if( size( bond_master) > 0)
+            {
+                note = sformat( _("enslaved in %1"), bond_master);
+                bullets = add( bullets, sformat( "%1: %2", _( "Bonding master"), bond_master));
             }
 
             overview = add(overview, Summary::Device(descr, status));
@@ -602,7 +712,7 @@ to configure.</p>
 
         Items[key, "table_descr"] = $[
                                       "rich_descr" : rich,
-                                      "table_descr": [descr, ip]
+                                      "table_descr": [descr, ip, dev, note]
                                       ];
         });
     return [ Summary::DevicesList(overview), links ];
@@ -1093,7 +1203,7 @@ global define boolean Commit() {
             });
 
             //assign nil to rest BONDING_SLAVEn to remove them
-            while (i<10)
+            while (i < MAX_BOND_SLAVE)
             {
                newdev[sformat("BONDING_SLAVE%1", i)] = nil;
                i = i + 1;
