@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Jul 16 09:01:25 UTC 2012 - mfilka@suse.com
+
+- bnc#767946 - configuring dummy netwok interface error
+- disable '-o' option for dummy module hwcfg widget doesn't exist
+- updated testsuite
+- 2.24.1
+
+-------------------------------------------------------------------
 Mon Jul  2 09:23:14 UTC 2012 - mfilka@suse.com
 
 - fate#312287 - hotpluging of bonding slaves
