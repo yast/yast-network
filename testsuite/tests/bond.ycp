@@ -30,12 +30,11 @@ map READ = $[
                         ],
 	]
     ],
-    "probe" : $[
-	"system" : [],
-    ],
-    "target" : $[
-	"tmpdir" : "/tmp",
-    ],
+    "sysconfig": $[
+            "console"   : $[
+                            "CONSOLE_ENCODING" : "UTF-8",
+                        ],
+        ]
 ];
 
 Testsuite::Init([READ], 0);
