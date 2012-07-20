@@ -163,16 +163,18 @@ void InitSlave(string key)
     settings["SLAVES"] = LanItems::bond_slaves;
     UI::ChangeWidget(`id("BONDSLAVE"), `SelectedItems, settings["SLAVES"]:[]);
 
-      settings["BONDOPTION"] = LanItems::bond_option;
+    settings["BONDOPTION"] = LanItems::bond_option;
 
-      list items = createUnconfigured(settings["SLAVES"]:[]);
+    list items = createUnconfigured(settings["SLAVES"]:[]);
     map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
     foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
      foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
         //filter the eth devices (BOOT_PROTO=none
 	// don't care about STARTMODE (see bnc#652987c6)
             if (((string)configurations[devtype, devname, "BOOTPROTO"]:"" == "none")/* && ((string)configurations[devtype, devname, "STARTMODE"]:"" == "off")*/)
-             items = add (items, `item(`id(devname), sformat("%1 - %2", devname, configurations[devtype, devname, "NAME"]:""), contains(settings["SLAVES"]:[], devname)) );
+            {
+                items = add (items, `item(`id(devname), sformat("%1 - %2", devname, configurations[devtype, devname, "NAME"]:""), contains(settings["SLAVES"]:[], devname)) );
+            }
 
      });
     });
@@ -188,12 +190,22 @@ y2internal("slaves %1", settings["SLAVES"]:[]);
  */
 void StoreSlave(string key, map event)
 {
+    list<string> configured_slaves = settings[ "SLAVES"]:[];
+
     settings["SLAVES"] = (list<string>)UI::QueryWidget (`id(key), `SelectedItems);
     settings["BONDOPTION"] = UI::QueryWidget (`id("BONDOPTION"), `Value);
+
     LanItems::bond_slaves = settings["SLAVES"]:[];
     LanItems::bond_option = settings["BONDOPTION"]:"";
-}
 
+    // create list of "unconfigured" slaves
+    list<string> new_slaves = filter( string slave, settings[ "SLAVES"]:[],
+    {
+        return !contains( configured_slaves, slave);
+    });
+
+    Lan::bond_autoconf_slaves = (list<string>) toset( merge( Lan::bond_autoconf_slaves, new_slaves));
+}
 
 void initTunnel(string key){
 y2internal("initTunnel %1", settings);
@@ -223,39 +235,73 @@ void enableDisableBootProto(symbol current){
  * @param key id of the widget
  */
 void initBootProto (string key) {
- if (LanItems::type=="br") UI::ReplaceWidget(`rp, `Empty());
-	else if (LanItems::type!="eth") UI::ReplaceWidget(`rp, `Left(
+    if (LanItems::type=="br") 
+        UI::ReplaceWidget(`rp, `Empty());
+    else
+    { 
+        if (LanItems::type!="eth") 
+            UI::ReplaceWidget(`rp, `Left(
                      `RadioButton(`id(`none),`opt(`notify),  _("No Link and IP Setup (Bonding Slaves)"))));
- switch(settings["BOOTPROTO"]:""){
-  case "static": UI::ChangeWidget(`id(`bootproto), `CurrentButton, `static);
-		UI::ChangeWidget(`id(`ipaddr), `Value, settings["IPADDR"]:"");
-		if (size(settings["PREFIXLEN"]:"")>0) 
-				UI::ChangeWidget(`id(`netmask), `Value, sformat("/%1", settings["PREFIXLEN"]:""));
-			else UI::ChangeWidget(`id(`netmask), `Value, settings["NETMASK"]:"");
-	        UI::ChangeWidget(`id(`hostname), `Value, settings["HOSTNAME"]:"");
-		break;
-  case "dhcp" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
-		UI::ChangeWidget(`id(`dhcp_mode), `Value, `dhcp_both);
-		break;
-  case "dhcp4" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
-		UI::ChangeWidget(`id(`dhcp_mode), `Value, `dhcp_v4);
-		break;
-  case "dhcp6" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
-		UI::ChangeWidget(`id(`dhcp_mode), `Value, `dhcp_v6);
-		break;
-  case "dhcp+autoip" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
-		UI::ChangeWidget(`id(`dyn), `Value, `dhcp_auto);
-		break;
-  case "autoip" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
-		UI::ChangeWidget(`id(`dyn), `Value, `auto);
-		break;
-  case "none" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `none);
-		break;
-  case "ibft" : UI::ChangeWidget(`id(`bootproto), `CurrentButton, `none);
-		UI::ChangeWidget(`id(`ibft), `Value, true);
-		break;
- }
- enableDisableBootProto((symbol)UI::QueryWidget(`id(`bootproto), `CurrentButton));
+    }
+
+    switch(settings["BOOTPROTO"]:"")
+    {
+        case "static": 
+            UI::ChangeWidget(`id(`bootproto), `CurrentButton, `static);
+	    UI::ChangeWidget(`id(`ipaddr), `Value, settings["IPADDR"]:"");
+	    
+            if (size(settings["PREFIXLEN"]:"")>0) 
+	        UI::ChangeWidget(`id(`netmask), `Value, sformat("/%1", settings["PREFIXLEN"]:""));
+	    else 
+                UI::ChangeWidget(`id(`netmask), `Value, settings["NETMASK"]:"");
+	        
+            UI::ChangeWidget(`id(`hostname), `Value, settings["HOSTNAME"]:"");
+	    
+            break;
+        
+        case "dhcp" : 
+            UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
+	    UI::ChangeWidget(`id(`dhcp_mode), `Value, `dhcp_both);
+	
+            break;
+
+        case "dhcp4" : 
+            UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
+	    UI::ChangeWidget(`id(`dhcp_mode), `Value, `dhcp_v4);
+	
+            break;
+
+        case "dhcp6" : 
+            UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
+	    UI::ChangeWidget(`id(`dhcp_mode), `Value, `dhcp_v6);
+	
+            break;
+  
+        case "dhcp+autoip" : 
+            UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
+	    UI::ChangeWidget(`id(`dyn), `Value, `dhcp_auto);
+	
+            break;
+
+        case "autoip" : 
+            UI::ChangeWidget(`id(`bootproto), `CurrentButton, `dynamic);
+	    UI::ChangeWidget(`id(`dyn), `Value, `auto);
+	
+            break;
+
+        case "none" : 
+            UI::ChangeWidget(`id(`bootproto), `CurrentButton, `none);
+
+            break;
+  
+        case "ibft" : 
+            UI::ChangeWidget(`id(`bootproto), `CurrentButton, `none);
+	    UI::ChangeWidget(`id(`ibft), `Value, true);
+	
+            break;
+    }
+ 
+    enableDisableBootProto((symbol)UI::QueryWidget(`id(`bootproto), `CurrentButton));
 }
 
 
