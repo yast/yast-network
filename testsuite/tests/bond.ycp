@@ -1,6 +1,6 @@
 {
-import "LanItems";
-import "NetworkInterfaces";
+// testedfiles: LanItems
+
 import "Assert";
 import "Testsuite";
 
@@ -30,22 +30,22 @@ map READ = $[
                         ],
 	]
     ],
-    "sysconfig": $[
-            "console"   : $[
-                            "CONSOLE_ENCODING" : "UTF-8",
-                        ],
-        ]
 ];
 
 map EXEC = $[ 
-    "sysconfig": $[
-            "console"   : $[
-                            "CONSOLE_ENCODING" : "UTF-8",
-                        ],
-        ]
+    "target": $[
+        "bash_output": $[
+                "exit": 0,
+                "stdout": "charset=UTF-8",
+                "stderr":"",
+        ],
+    ],
 ];
 
-Testsuite::Init([READ, $[], EXEC], 0);
+Testsuite::Init([READ, $[], EXEC], nil);
+
+import "NetworkInterfaces";
+import "LanItems";
 
 Testsuite::Dump( "NetworkInterfaces::Read");
 Testsuite::Test(``(NetworkInterfaces::Read()), [READ, $[], EXEC], nil);
