@@ -1,18 +1,4 @@
 Dump	NetworkInterfaces::Read
-Dir	.network.section: ["bond0", "eth1", "eth2", "eth4", "eth5"]
-Dir	.network.value."bond0": ["BONDING_MASTER", "BONDING_SLAVE0", "BONDING_SLAVE1", "BOOTPROTO"]
-Read	.network.value."bond0".BONDING_MASTER "yes"
-Read	.network.value."bond0".BONDING_SLAVE0 "eth1"
-Read	.network.value."bond0".BONDING_SLAVE1 "eth2"
-Read	.network.value."bond0".BOOTPROTO "static"
-Dir	.network.value."eth1": ["BOOTPROTO"]
-Read	.network.value."eth1".BOOTPROTO "none"
-Dir	.network.value."eth2": ["BOOTPROTO"]
-Read	.network.value."eth2".BOOTPROTO "none"
-Dir	.network.value."eth4": ["BOOTPROTO"]
-Read	.network.value."eth4".BOOTPROTO "none"
-Dir	.network.value."eth5": ["BOOTPROTO"]
-Read	.network.value."eth5".BOOTPROTO "none"
 Return	true
 Dump	LanItems::BuildBondIndex
 Dump	LanItems::GetBondSlaves
