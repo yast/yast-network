@@ -237,16 +237,16 @@ and correct the settings.</p>
     
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Kernel Network Interfaces"),
-			     `filename : "ifconfig.log" ]);
-	run_command = "/sbin/ifconfig > '" + String::Quote (logdir) + "/ifconfig.log'";
+			     `filename : "ip_addr.log" ]);
+	run_command = "/sbin/ip addr show > '" + String::Quote (logdir) + "/ip_addr.log'";
 	ret_command = (integer) SCR::Execute (.target.bash, run_command,
 		      $["LANG" : GetLanguageUTF8 ()]);
 	if (ret_command != 0) y2error("Command '%1' failed -> %2", run_command, ret_command);
 
 	// label of combobox where the log is selected
 	logs = add (logs, $[ `menuname : _("Kernel Routing Table"),
-			     `filename : "route.log" ]);
-	run_command = "/sbin/route -n > '" + String::Quote (logdir) + "/route.log'";
+			     `filename : "ip_route.log" ]);
+	run_command = "/sbin/ip route show > '" + String::Quote (logdir) + "/ip_route.log'";
 	ret_command = (integer) SCR::Execute (.target.bash, run_command,
 		      $["LANG" : GetLanguageUTF8 ()]);
 	if (ret_command != 0) y2error("Command '%1' failed -> %2", run_command, ret_command);
