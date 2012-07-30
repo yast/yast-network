@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jul 30 12:44:37 UTC 2012 - mfilka@suse.com
+
+- bnc#766217 - Gateway IP address is invalid
+  added default '-' for Genmask and gateway fields
+- 2.24.2
+
+-------------------------------------------------------------------
 Mon Jul 16 09:01:25 UTC 2012 - mfilka@suse.com
 
 - bnc#767946 - configuring dummy netwok interface error

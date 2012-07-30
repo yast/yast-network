@@ -43,10 +43,10 @@ term RoutingEditDialog(integer id, term entry, list devs) {
 	`VBox(
 	    `HBox(
 		`InputField(`id(`destination), `opt(`hstretch), _("&Destination"), entry[1]:""),
-		`InputField(`id(`genmask), `opt(`hstretch), _("Ge&nmask"), entry[3]:"")
+		`InputField(`id(`genmask), `opt(`hstretch), _("Ge&nmask"), entry[3]:"-")
 		),
 	    `HBox(
-		`InputField(`id(`gateway), `opt(`hstretch), _("&Gateway"), entry[2]:""),
+		`InputField(`id(`gateway), `opt(`hstretch), _("&Gateway"), entry[2]:"-"),
 		`ComboBox(`id(`device), `opt(`editable, `hstretch), _("De&vice"), devs)
 		),
 	    /* ComboBox label */
