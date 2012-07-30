@@ -6,6 +6,12 @@ Mon Jul 30 12:44:37 UTC 2012 - mfilka@suse.com
 - 2.24.2
 
 -------------------------------------------------------------------
+Wed Jul 25 08:09:48 UTC 2012 - mkubecek@suse.cz
+
+- use "ip addr" and "ip route" for network test logs rather than
+  ifconfig and route
+
+-------------------------------------------------------------------
 Mon Jul 16 09:01:25 UTC 2012 - mfilka@suse.com
 
 - bnc#767946 - configuring dummy netwok interface error

@@ -147,14 +147,14 @@ global define boolean Start() {
 	return false;
     }
 
-y2milestone("IFCONFIG1: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
+y2milestone("IFCONFIG1: %1", SCR::Execute(.target.bash_output, "/sbin/ip addr show"));
     boolean ret = false;
     if(StartEthInterface()) {
 	running = true;
 	ret = true;
     }
 
-y2milestone("IFCONFIG2: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
+y2milestone("IFCONFIG2: %1", SCR::Execute(.target.bash_output, "/sbin/ip addr show"));
     y2milestone("Detection start result: %1", ret);
     return ret;
 }
@@ -170,7 +170,7 @@ global define boolean Stop() {
     }
     running = false;
 
-y2milestone("IFCONFIG3: %1", SCR::Execute(.target.bash_output, "/sbin/ifconfig"));
+y2milestone("IFCONFIG3: %1", SCR::Execute(.target.bash_output, "/sbin/ip addr show"));
 
     y2milestone("Detection stop ");
     return true;
