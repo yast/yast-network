@@ -374,15 +374,20 @@ global list<string> GetItemModules(string default_module){
 }
 
 // get list of all configurations for "netcard" macro in NetworkInterfaces module
-list<string> getNetworkInterfaces(){
- list<string> confs=[];
- map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
- foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
-  foreach(string file, (list<string>) Map::Keys(configurations[devtype]:$[]), {
-   confs = add(confs, file);
-  });
- });
- return confs;
+list<string> getNetworkInterfaces()
+{
+    list<string> confs=[];
+    map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
+
+    foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), 
+    {
+        foreach(string file, (list<string>) Map::Keys(configurations[devtype]:$[]), 
+        {
+            confs = add(confs, file);
+        });
+    });
+
+    return confs;
 }
 
 global boolean FindAndSelect(string device){
