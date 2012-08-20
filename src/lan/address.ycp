@@ -1219,7 +1219,6 @@ _("<p><b><big>IFPLUGD PRIORITY</big></b></p>
     if (LanItems::type=="br") wd_content["tab_order"]= ["t_general", "t_addr", "bridge_ports"];
     if (LanItems::type == "bond") wd_content["tab_order"]=add(wd_content["tab_order"]:[], "bond_slaves");
 
-    hw_standalone=false;
     wd = (map<string, map<string,any> >) union (wd, $[
 	"tab" : CWMTab::CreateWidget (wd_content)
         ]);
