@@ -12,6 +12,7 @@
 textdomain "network";
 
 import "Arch";
+import "CWM";
 import "Label";
 import "Lan";
 import "NetworkInterfaces";
@@ -80,7 +81,7 @@ configured with the same module name, the options will be merged while saving.</
 
 _("<p>If you specify options via <b>Ethtool options</b>, ifup will call ethtool with these options.</p>\n");
 
-    if( isNewDevice() && !Arch::s390() ))
+    if( isNewDevice() && !Arch::s390() )
     {
 
     /* Manual dialog help 4/4 */
