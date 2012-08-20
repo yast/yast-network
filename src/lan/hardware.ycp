@@ -12,6 +12,7 @@
 textdomain "network";
 
 import "Arch";
+import "CWM";
 import "Label";
 import "Lan";
 import "NetworkInterfaces";
