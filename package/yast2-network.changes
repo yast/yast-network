@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Aug 20 10:53:33 UTC 2012 - mfilka@suse.com
+
+- bnc#754940 - missing help in hw dialog when adding new device.
+- code cleanup
+- 2.24.3 
+
+-------------------------------------------------------------------
 Mon Jul 30 12:44:37 UTC 2012 - mfilka@suse.com
 
 - bnc#766217 - Gateway IP address is invalid

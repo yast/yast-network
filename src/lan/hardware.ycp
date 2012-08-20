@@ -22,27 +22,52 @@ include "network/summary.ycp";
 include "network/routines.ycp";
 
 /**
- * Manual network card configuration dialog
- * @return dialog result
+ * Determines if the dialog is used for adding new device or for editing existing one.
+ *
+ * Some widgets are disabled when creating new device. Also, when editing existing device, it is not possible
+ * to e.g. change device type.
+ *
+ * @return false if hardware widgets are embedded into another dialog, otherwise true.
  */
+boolean isNewDevice()
+{
+    return LanItems::operation == `add;
+}
+
+/**
+ * Dynamic initialization of help text.
+ *
+ * @return content of the help
+ */
+string initHelp()
+{
     /* Manual network card setup help 1/4 */
     string hw_help = _("<p>Set up hardware-specific options for 
 your network device here.</p>
-") +
+");
 
-    /* Manual network card setup help 2/4 */
-    /* translators: do not translated udev, MAC, BusID*/
-_("<p><b>Udev Rules</b> are rules for the kernel device manager that allow
+    if( isNewDevice())
+    {
+        /* Manual network card setup help 2/4 */
+        /* translators: do not translated udev, MAC, BusID*/
+        hw_help = hw_help + _("<p><b>Device Type</b>. Various device types are available, select 
+one according your needs.</p>");
+    }
+    else
+    {
+        hw_help = hw_help + _("<p><b>Udev Rules</b> are rules for the kernel device manager that allow
 associating the MAC address or BusID of the network device with its name (for
 example, eth1, wlan0 ) and assures a persistent device name upon reboot.
-") + 
+") 
 
-_("<p><b>Show visible port identification</b> allows you to physically identify now configured NIC. 
+    + _("<p><b>Show visible port identification</b> allows you to physically identify now configured NIC. 
 Set appropriate time, click <b>Blink</b> and LED diodes on you NIC will start blinking for selected time.
-</p>")+
+</p>");
+
+    }
 
     /* Manual network card setup help 2/4 */
-_("<p><b>Kernel Module</b>. Enter the kernel module (driver) name 
+    hw_help = hw_help + _("<p><b>Kernel Module</b>. Enter the kernel module (driver) name 
 for your network device here. If the device is already configured, see if there is more than one driver available for
 your device in the drop-down list. If necessary, choose a driver from the list, but usually the default value works.</p>
 ") +
@@ -55,7 +80,7 @@ configured with the same module name, the options will be merged while saving.</
 
 _("<p>If you specify options via <b>Ethtool options</b>, ifup will call ethtool with these options.</p>\n");
 
-    if(!(LanItems::operation == `edit || Arch::s390 ()))
+    if( isNewDevice() && !Arch::s390() ))
     {
 
     /* Manual dialog help 4/4 */
@@ -78,9 +103,10 @@ _("<p>Options for the module should be written in the format specified
 in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
     }
 
+    return hw_help;
+}
 
 map<string, any> hardware = nil;
-boolean hw_standalone=false;
 
 void initHardware(){
     hardware = $[];
@@ -160,7 +186,7 @@ void initHwDialog(string text) {
     );
 
     /* Disable PCMCIA and USB checkboxex on Edit and s390 */
-    if(LanItems::operation == `edit || Arch::s390 ()) CheckBoxes = `VSpacing(0);
+    if( !isNewDevice() || Arch::s390 ()) CheckBoxes = `VSpacing(0);
 
 	// #116211 - allow user to change modules from list
     /* Frame label */
@@ -206,7 +232,7 @@ void initHwDialog(string text) {
 	  )
 	 );
 
-    if(LanItems::operation == `edit ) TypeNameWidgets = `Empty();
+    if( !isNewDevice()) TypeNameWidgets = `Empty();
 		else UdevWidget = `Empty();
 
    term BlinkCard = `Frame(_("Show visible port identification"),
@@ -227,7 +253,7 @@ void initHwDialog(string text) {
 
     term contents =
      `VBox(
-	`HBox(UdevWidget,`HStretch(), (LanItems::operation==`edit) ? BlinkCard : `Empty()),
+	`HBox(UdevWidget,`HStretch(), ( isNewDevice()) ? `Empty() : BlinkCard ),
 	TypeNameWidgets,
 	KernelBox,
 	EthtoolWidget,
@@ -242,12 +268,11 @@ void initHwDialog(string text) {
     ChangeWidgetIfExists(`id(`hwcfg), `Enabled, hardware["no_hotplug"]:false);
     ChangeWidgetIfExists(`id(`usb), `Enabled, (hardware["hotplug"]:"" == "usb" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
     ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hardware["hotplug"]:"" == "pcmcia" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
-    UI::ChangeWidget(`id(`device_name), `Enabled, false);
-//    UI::ChangeWidget(`id(`options), `Enabled, false);
 
-    UI::ChangeWidget(`id(`device_name), `Value, LanItems::GetItemUdev("NAME"));
+    ChangeWidgetIfExists(`id(`device_name), `Enabled, false);
+    ChangeWidgetIfExists(`id(`device_name), `Value, LanItems::GetItemUdev("NAME"));
 
-    if (!hw_standalone) ChangeWidgetIfExists(`id(`dev), `Enabled,false);
+    if (!isNewDevice()) ChangeWidgetIfExists(`id(`dev), `Enabled,false);
     ChangeWidgetIfExists(`id(`num), `ValidChars, NetworkInterfaces::ValidCharsIfcfg ());
 //    ChangeWidgetIfExists(`id(`hwcfg), `ValidChars, NetworkModules::ValidCharsHwcfg ());
 }
@@ -510,7 +535,7 @@ y2internal("LanItems::GetReplacedItemUdev(%1, %2) %3",rule_key, rule_value,  Lan
 }
 
 void storeHW (string key, map event) {
-  if (LanItems::operation==`add){
+  if ( isNewDevice()){
 
     LanItems::type = (string) UI::QueryWidget(`id(`dev), `Value);
     string nm = sformat("%1%2", LanItems::type, (string) UI::QueryWidget(`id(`num), `Value));
@@ -552,7 +577,7 @@ Choose a different one."), nm));
 define any S390Dialog() {
     // for virtual devices (no hwinfo) just skip to next dialog (bnc#476490)
     if (size(LanItems::getCurrentItem()["hwinfo"]:$[])==0)
-               return (LanItems::operation==`add) ? `hardware : `next;
+               return ( isNewDevice()) ? `hardware : `next;
 
     // already configured device (on hardware layer), skip this dialog
     if (size(LanItems::Items[LanItems::current, "hwinfo", "dev_name"]:"")>0) return `next;
@@ -790,12 +815,16 @@ map<string, map<string,any> > widget_descr_hardware = $[
 	"init" : initHwDialog,
 	"handle" : handleHW,
 	"store" : storeHW,
-	"help" :  hw_help
+	"help" :  initHelp(),
 		]];
 
+/**
+ * Manual network card configuration dialog
+ * @return dialog result
+ */
 any HardwareDialog (){
     string caption = _("Hardware Dialog");
-    hw_standalone = true;
+
     list<map <string, any> > w = CWM::CreateWidgets (["HWDIALOG"], (map <string, map <string, any> >) widget_descr_hardware);
         term contents =
                           `VBox(
@@ -816,7 +845,7 @@ any HardwareDialog (){
     contents = CWM::PrepareDialog(contents, w);
 
     Wizard::OpenNextBackDialog();
-    Wizard::SetContents(caption, contents, "",false, true);
+    Wizard::SetContents(caption, contents, initHelp(),false, true);
     Wizard::SetAbortButton(`cancel, Label::CancelButton());
 //    Wizard::DisableBackButton();
     any ret = CWM::Run(w, $[ /*`abort:ReallyAbort*/ ]);
