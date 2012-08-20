@@ -22,6 +22,17 @@ include "network/summary.ycp";
 include "network/routines.ycp";
 
 /**
+ * Determines if hardware related widgets are placed in standalon dialog.
+ *
+ * @return false if hardware widgets are embedded into another dialog, otherwise true.
+ */
+boolean isStandalone()
+{
+    // replaces hw_standalone global variable from previous versions.
+    return LanItems::operation == `add;
+}
+
+/**
  * Dynamic initialization of help text.
  *
  * @return content of the help
@@ -34,7 +45,6 @@ your network device here.</p>
 ");
 
     /* Manual network card setup help 2/4 */
-    /* This part is not relevant when creating new device */
     /* translators: do not translated udev, MAC, BusID*/
     if( LanItems::operation == `add)
     {
@@ -95,7 +105,6 @@ in the <b>IBM Device Drivers and Installation Commands</b> manual.</p>");
 }
 
 map<string, any> hardware = nil;
-boolean hw_standalone=false;
 
 void initHardware(){
     hardware = $[];
@@ -264,7 +273,7 @@ void initHwDialog(string text) {
         UI::ChangeWidget(`id(`device_name), `Value, LanItems::GetItemUdev("NAME"));
     }
 
-    if (!hw_standalone) ChangeWidgetIfExists(`id(`dev), `Enabled,false);
+    if (!isStandalone()) ChangeWidgetIfExists(`id(`dev), `Enabled,false);
     ChangeWidgetIfExists(`id(`num), `ValidChars, NetworkInterfaces::ValidCharsIfcfg ());
 //    ChangeWidgetIfExists(`id(`hwcfg), `ValidChars, NetworkModules::ValidCharsHwcfg ());
 }
@@ -816,7 +825,7 @@ map<string, map<string,any> > widget_descr_hardware = $[
  */
 any HardwareDialog (){
     string caption = _("Hardware Dialog");
-    hw_standalone = true;
+
     list<map <string, any> > w = CWM::CreateWidgets (["HWDIALOG"], (map <string, map <string, any> >) widget_descr_hardware);
         term contents =
                           `VBox(
