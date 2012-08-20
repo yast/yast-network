@@ -242,10 +242,12 @@ void initHwDialog(string text) {
     ChangeWidgetIfExists(`id(`hwcfg), `Enabled, hardware["no_hotplug"]:false);
     ChangeWidgetIfExists(`id(`usb), `Enabled, (hardware["hotplug"]:"" == "usb" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
     ChangeWidgetIfExists(`id(`pcmcia), `Enabled, (hardware["hotplug"]:"" == "pcmcia" || hardware["hotplug"]:"" == "") && hardware["type"]:"" != "dummy");
-    UI::ChangeWidget(`id(`device_name), `Enabled, false);
-//    UI::ChangeWidget(`id(`options), `Enabled, false);
 
-    UI::ChangeWidget(`id(`device_name), `Value, LanItems::GetItemUdev("NAME"));
+    if( LanItems::operation == `edit)
+    {
+        UI::ChangeWidget(`id(`device_name), `Enabled, false);
+        UI::ChangeWidget(`id(`device_name), `Value, LanItems::GetItemUdev("NAME"));
+    }
 
     if (!hw_standalone) ChangeWidgetIfExists(`id(`dev), `Enabled,false);
     ChangeWidgetIfExists(`id(`num), `ValidChars, NetworkInterfaces::ValidCharsIfcfg ());
