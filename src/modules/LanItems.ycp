@@ -1308,7 +1308,11 @@ global define boolean Commit() {
 
 	NetworkInterfaces::Name = Items[current, "ifcfg"]:"";
 	NetworkInterfaces::Current = newdev;
-y2internal("%1", newdev);
+
+        // bnc#752464 - can leak wireless passwords
+        // useful only for debugging. Writes huge struct mostly filled by defaults.
+        y2debug("%1", NetworkInterfaces::ConcealSecrets1( newdev) );
+
 	if (!NetworkInterfaces::Commit()) Items[current, "ifcfg"]="";
     }
     else {
