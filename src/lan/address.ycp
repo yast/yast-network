@@ -1196,13 +1196,13 @@ y2internal("unconfigured slave %1", dev_name);
 	    Lan::remoteip = "";
 	    Lan::prefix = "";
 
-	    // fixed bug #73739 - if dhcp is used, don't set default gw statically
-	    // but reset it if and only if DHCP will be used to supply it - #460262
+            // fixed bug #73739 - if dhcp is used, don't set default gw statically
+            // but reset it if and only if DHCP will be used to supply it - #460262
             //
             // bnc#777472 - default route is deleted even if a sub dialog is opened and 
             // <Back>, <Back> pressed subsequently iff other interface is edited to, so
             // there are some changes to write
-	    if( ( ret == `next) && (Lan::bootproto == "dhcp") )
+            if( ( ret == `next) && (Lan::bootproto == "dhcp") )
 	        Routing::RemoveDefaultGw();
 	}
     }
