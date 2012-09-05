@@ -1055,8 +1055,6 @@ global map<string, string> SysconfigDefaults = $[
     "WIRELESS_KEY_3": "",
     "WIRELESS_DEFAULT_KEY": "0",
     "WIRELESS_NICK": "",
-    "WIRELESS_WPA_IDENTITY": "",
-    "WIRELESS_WPA_PASSWORD": "",
     "WIRELESS_CLIENT_CERT": "",
     "WIRELESS_CA_CERT": "",
     "WIRELESS_CHANNEL": "",
