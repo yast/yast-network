@@ -1055,8 +1055,6 @@ global map<string, string> SysconfigDefaults = $[
     "WIRELESS_KEY_3": "",
     "WIRELESS_DEFAULT_KEY": "0",
     "WIRELESS_NICK": "",
-    "WIRELESS_WPA_IDENTITY": "",
-    "WIRELESS_WPA_PASSWORD": "",
     "WIRELESS_CLIENT_CERT": "",
     "WIRELESS_CA_CERT": "",
     "WIRELESS_CHANNEL": "",
@@ -1161,166 +1159,170 @@ map <string, string> ifplugd_priorities = $[
  */
 global define boolean Commit() {
     if(operation == `add || operation == `edit) {
-	map<string,any> newdev = $[];
+        map<string,any> newdev = $[];
 
-	// #104494 - always write IPADDR+NETMASK, even empty
-	newdev["IPADDR"] = ipaddr;
-	if(size(prefix)>0) newdev["PREFIXLEN"] = prefix;
-		else newdev["NETMASK"] = netmask;
-	// #50955 omit computable fields
-	newdev["BROADCAST"] = "";
-	newdev["NETWORK"] = "";
+        // #104494 - always write IPADDR+NETMASK, even empty
+        newdev["IPADDR"] = ipaddr;
+        if(size(prefix)>0) newdev["PREFIXLEN"] = prefix;
+        else newdev["NETMASK"] = netmask;
+        // #50955 omit computable fields
+        newdev["BROADCAST"] = "";
+        newdev["NETWORK"] = "";
 
-	newdev["REMOTE_IPADDR"] = remoteip;
+        newdev["REMOTE_IPADDR"] = remoteip;
 
-	// set LLADDR to sysconfig only for device on layer2 and only these which needs it
-	if (qeth_layer2) {
+        // set LLADDR to sysconfig only for device on layer2 and only these which needs it
+        if (qeth_layer2) {
             string busid = Items[current, "hwinfo", "busid"]:"";
             // string sysfs_id = busid_to_sysfs_id(busid, Hardware);
             // sysfs id has changed from css0...
             string sysfs_id = "/devices/qeth/" + busid;
-	    y2milestone("busid %1", busid);
+            y2milestone("busid %1", busid);
             if (s390_device_needs_persistent_mac(sysfs_id, Hardware)) {
-	        newdev["LLADDR"] = qeth_macaddress;
+                newdev["LLADDR"] = qeth_macaddress;
             }
-	}
+        }
 
-	if(alias == "") {
-	    newdev["MTU"] = mtu;
-	    newdev["ETHTOOL_OPTIONS"] = ethtool_options;
-	    newdev["STARTMODE"] = startmode;
-	    // it is not in Select yet because we don't have a widget for it
-	    if (startmode == "ifplugd")
-	    {
-		string prio = ifplugd_priorities[type]:"";
-		newdev["IFPLUGD_PRIORITY"] = prio;
-	    }
-	    newdev["USERCONTROL"] = usercontrol? "yes": "no";
-	    newdev["BOOTPROTO"] = bootproto;
-	}
-	newdev["NAME"] = description;
+        if(alias == "") {
+            newdev["MTU"] = mtu;
+            newdev["ETHTOOL_OPTIONS"] = ethtool_options;
+            newdev["STARTMODE"] = startmode;
+            // it is not in Select yet because we don't have a widget for it
+            if (startmode == "ifplugd")
+            {
+                string prio = ifplugd_priorities[type]:"";
+                newdev["IFPLUGD_PRIORITY"] = prio;
+            }
+            newdev["USERCONTROL"] = usercontrol? "yes": "no";
+            newdev["BOOTPROTO"] = bootproto;
+        }
+        newdev["NAME"] = description;
 
-	if(hotplug == "pcmcia") newdev["DHCLIENT_SET_DOWN_LINK"] = "yes";
+        if(hotplug == "pcmcia") newdev["DHCLIENT_SET_DOWN_LINK"] = "yes";
 
 
-	if (type == "bond")
-	{
+        if (type == "bond")
+        {
             integer i = 0;
             foreach (string slave, bond_slaves,
-            {
-		newdev[sformat("BONDING_SLAVE%1", i)] = slave;
-                i = i + 1;
-            });
+                    {
+                    newdev[sformat("BONDING_SLAVE%1", i)] = slave;
+                    i = i + 1;
+                    });
 
             //assign nil to rest BONDING_SLAVEn to remove them
             while (i < MAX_BOND_SLAVE)
             {
-               newdev[sformat("BONDING_SLAVE%1", i)] = nil;
-               i = i + 1;
+                newdev[sformat("BONDING_SLAVE%1", i)] = nil;
+                i = i + 1;
             };
 
             newdev["BONDING_MODULE_OPTS"] = bond_option;
 
             //BONDING_MASTER always is yes
             newdev["BONDING_MASTER"] = "yes";
-	}
+        }
 
-	if (type=="vlan"){
-	 newdev["ETHERDEVICE"]=vlan_etherdevice;
-	 newdev["VLAN_ID"]=vlan_id;
-	}
-	if (type=="br"){
-	 newdev["BRIDGE_PORTS"]=bridge_ports;
-	 newdev["BRIDGE"]="yes";
-	 newdev["BRIDGE_STP"]="off";
-	 newdev["BRIDGE_FORWARDDELAY"]="0";
-	}
+        if (type=="vlan"){
+            newdev["ETHERDEVICE"]=vlan_etherdevice;
+            newdev["VLAN_ID"]=vlan_id;
+        }
+        if (type=="br"){
+            newdev["BRIDGE_PORTS"]=bridge_ports;
+            newdev["BRIDGE"]="yes";
+            newdev["BRIDGE_STP"]="off";
+            newdev["BRIDGE_FORWARDDELAY"]="0";
+        }
 
-	if(type == "wlan") {
-	    newdev["WIRELESS_MODE"] = wl_mode;
-	    newdev["WIRELESS_ESSID"] = wl_essid;
-	    newdev["WIRELESS_NWID"] = wl_nwid;
-	    newdev["WIRELESS_AUTH_MODE"] = wl_auth_mode;
-	    newdev["WIRELESS_WPA_PSK"] = wl_wpa_psk;
-	    newdev["WIRELESS_KEY_LENGTH"] = wl_key_length;
-	    // obsoleted by WIRELESS_KEY_0
-	    newdev["WIRELESS_KEY"] = ""; // TODO: delete the varlable
-	    newdev["WIRELESS_KEY_0"] = wl_key[0]:"";
-	    newdev["WIRELESS_KEY_1"] = wl_key[1]:"";
-	    newdev["WIRELESS_KEY_2"] = wl_key[2]:"";
-	    newdev["WIRELESS_KEY_3"] = wl_key[3]:"";
-	    newdev["WIRELESS_DEFAULT_KEY"] = tostring (wl_default_key);
-	    newdev["WIRELESS_NICK"] = wl_nick;
+        if(type == "wlan") {
+            newdev["WIRELESS_MODE"] = wl_mode;
+            newdev["WIRELESS_ESSID"] = wl_essid;
+            newdev["WIRELESS_NWID"] = wl_nwid;
+            newdev["WIRELESS_AUTH_MODE"] = wl_auth_mode;
+            newdev["WIRELESS_WPA_PSK"] = wl_wpa_psk;
+            newdev["WIRELESS_KEY_LENGTH"] = wl_key_length;
+            // obsoleted by WIRELESS_KEY_0
+            newdev["WIRELESS_KEY"] = ""; // TODO: delete the varlable
+            newdev["WIRELESS_KEY_0"] = wl_key[0]:"";
+            newdev["WIRELESS_KEY_1"] = wl_key[1]:"";
+            newdev["WIRELESS_KEY_2"] = wl_key[2]:"";
+            newdev["WIRELESS_KEY_3"] = wl_key[3]:"";
+            newdev["WIRELESS_DEFAULT_KEY"] = tostring (wl_default_key);
+            newdev["WIRELESS_NICK"] = wl_nick;
 
-	    if (wl_wpa_eap != $[])
-	    {
-		newdev["WIRELESS_EAP_MODE"] = wl_wpa_eap["WPA_EAP_MODE"]:"";
-		newdev["WIRELESS_WPA_IDENTITY"] = wl_wpa_eap["WPA_EAP_IDENTITY"]:"";
-		newdev["WIRELESS_WPA_PASSWORD"] = wl_wpa_eap["WPA_EAP_PASSWORD"]:"";
-		newdev["WIRELESS_WPA_ANONID"] = wl_wpa_eap["WPA_EAP_ANONID"]:"";
-		newdev["WIRELESS_CLIENT_CERT"] = wl_wpa_eap["WPA_EAP_CLIENT_CERT"]:"";
-		newdev["WIRELESS_CLIENT_KEY"] = wl_wpa_eap["WPA_EAP_CLIENT_KEY"]:"";
-		newdev["WIRELESS_CLIENT_KEY_PASSWORD"] = wl_wpa_eap["WPA_EAP_CLIENT_KEY_PASSWORD"]:"";
-		newdev["WIRELESS_CA_CERT"] = wl_wpa_eap["WPA_EAP_CA_CERT"]:"";
-		newdev["WIRELESS_EAP_AUTH"] = wl_wpa_eap["WPA_EAP_AUTH"]:"";
-		newdev["WIRELESS_PEAP_VERSION"] = wl_wpa_eap["WPA_EAP_PEAP_VERSION"]:"";	    
-	    }
+            if (wl_wpa_eap != $[])
+            {
+                newdev["WIRELESS_EAP_MODE"] = wl_wpa_eap["WPA_EAP_MODE"]:"";
+                newdev["WIRELESS_WPA_IDENTITY"] = wl_wpa_eap["WPA_EAP_IDENTITY"]:"";
+                newdev["WIRELESS_WPA_PASSWORD"] = wl_wpa_eap["WPA_EAP_PASSWORD"]:"";
+                newdev["WIRELESS_WPA_ANONID"] = wl_wpa_eap["WPA_EAP_ANONID"]:"";
+                newdev["WIRELESS_CLIENT_CERT"] = wl_wpa_eap["WPA_EAP_CLIENT_CERT"]:"";
+                newdev["WIRELESS_CLIENT_KEY"] = wl_wpa_eap["WPA_EAP_CLIENT_KEY"]:"";
+                newdev["WIRELESS_CLIENT_KEY_PASSWORD"] = wl_wpa_eap["WPA_EAP_CLIENT_KEY_PASSWORD"]:"";
+                newdev["WIRELESS_CA_CERT"] = wl_wpa_eap["WPA_EAP_CA_CERT"]:"";
+                newdev["WIRELESS_EAP_AUTH"] = wl_wpa_eap["WPA_EAP_AUTH"]:"";
+                newdev["WIRELESS_PEAP_VERSION"] = wl_wpa_eap["WPA_EAP_PEAP_VERSION"]:"";	    
+            }
 
-	    newdev["WIRELESS_CHANNEL"] = wl_channel;
-	    newdev["WIRELESS_FREQUENCY"] = wl_frequency;
-	    newdev["WIRELESS_BITRATE"] = wl_bitrate;
-	    newdev["WIRELESS_AP"] = wl_accesspoint;
-	    newdev["WIRELESS_POWER"] = wl_power ? "yes" : "no";
-	}
+            newdev["WIRELESS_CHANNEL"] = wl_channel;
+            newdev["WIRELESS_FREQUENCY"] = wl_frequency;
+            newdev["WIRELESS_BITRATE"] = wl_bitrate;
+            newdev["WIRELESS_AP"] = wl_accesspoint;
+            newdev["WIRELESS_POWER"] = wl_power ? "yes" : "no";
+        }
 
-//	if(hasAnyValue(nm_name)) newdev["_nm_name"] = nm_name;
+        //	if(hasAnyValue(nm_name)) newdev["_nm_name"] = nm_name;
 
-	if(DriverType (type) == "ctc")
-	    if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 40)
-		NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 40;
+        if(DriverType (type) == "ctc")
+            if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 40)
+                NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 40;
 
-	/* FIXME: MOD
-	if(DriverType (type) == "qeth")
-	    if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 15)
-		NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 15;
-	*/
+        /* FIXME: MOD
+           if(DriverType (type) == "qeth")
+           if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 15)
+           NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 15;
+         */
 
-	if(alias == "") {
-	    newdev["_aliases"] = aliases;
-	    y2milestone("aliases %1", aliases);
-	}
-	if (contains(["tun", "tap"], type)){
-	 newdev=$[
-		"BOOTPROTO" : "static",
-		"STARTMODE" : "onboot",
-		"TUNNEL" : type,
-		"TUNNEL_SET_PERSISTENT" : tunnel_set_persistent ? "yes" : "no",
-		"TUNNEL_SET_OWNER" : tunnel_set_owner,
-		"TUNNEL_SET_GROUP" : tunnel_set_group
-		];
-	}
+        if(alias == "") {
+            newdev["_aliases"] = aliases;
+            y2milestone("aliases %1", aliases);
+        }
+        if (contains(["tun", "tap"], type)){
+            newdev=$[
+                "BOOTPROTO" : "static",
+                "STARTMODE" : "onboot",
+                "TUNNEL" : type,
+                "TUNNEL_SET_PERSISTENT" : tunnel_set_persistent ? "yes" : "no",
+                "TUNNEL_SET_OWNER" : tunnel_set_owner,
+                "TUNNEL_SET_GROUP" : tunnel_set_group
+            ];
+        }
 
-	// L3: bnc#585458
-	// FIXME: INTERFACETYPE confuses sysconfig, bnc#458412
-	// Only test when newdev has enough info for GetTypeFromIfcfg to work.
+        // L3: bnc#585458
+        // FIXME: INTERFACETYPE confuses sysconfig, bnc#458412
+        // Only test when newdev has enough info for GetTypeFromIfcfg to work.
         string implied_type = NetworkInterfaces::GetTypeFromIfcfg(newdev);
         if (implied_type != nil && implied_type != type) {
-	    newdev["INTERFACETYPE"]=type;
-	}
+            newdev["INTERFACETYPE"]=type;
+        }
 
-	NetworkInterfaces::Name = Items[current, "ifcfg"]:"";
-	NetworkInterfaces::Current = newdev;
-y2internal("%1", newdev);
-	if (!NetworkInterfaces::Commit()) Items[current, "ifcfg"]="";
+        NetworkInterfaces::Name = Items[current, "ifcfg"]:"";
+        NetworkInterfaces::Current = newdev;
+
+        // bnc#752464 - can leak wireless passwords
+        // useful only for debugging. Writes huge struct mostly filled by defaults.
+        y2debug("%1", NetworkInterfaces::ConcealSecrets1( newdev) );
+
+        if (!NetworkInterfaces::Commit()) Items[current, "ifcfg"]="";
     }
     else {
-	y2error("Unknown operation: %1", operation);
-	return false;
+        y2error("Unknown operation: %1", operation);
+        return false;
     }
-//   nm_name_old = nil;
-   modified = true;
-   operation = nil;
-   return true;
+    //   nm_name_old = nil;
+    modified = true;
+    operation = nil;
+    return true;
 }
 
 global boolean Rollback(){
