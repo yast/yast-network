@@ -321,15 +321,6 @@ global void WriteUdevDriverRules(){
 }
 
 /**
- * Data was modified?
- * @return true if modified
- */
-global define boolean Modified() {
-    y2debug("modified=%1",modified);
-    return modified;
-}
-
-/**
  * Function which returns if the settings were modified
  * @return boolean  settings were modified
  */
