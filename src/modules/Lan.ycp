@@ -122,7 +122,7 @@ global list<string> bond_autoconf_slaves = [];
  * @return true if data was modified
  */
 global boolean Modified() {
-    boolean ret  = LanItems::Modified() || DNS::modified || Routing::Modified() ||
+    boolean ret  = LanItems::GetModified() || DNS::modified || Routing::Modified() ||
 	NetworkConfig::Modified();
     return ret;
 }
