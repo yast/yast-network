@@ -377,7 +377,7 @@ and correct the settings.</p>
 	    }
 
 	    //Include also proxy option (if applicable) - #162800, #260407 
-	    string cmd = " /usr/bin/curl -s -S -v -f -m 300 " + proxy + " " + url + " -o " + filename;
+	    string cmd = " /usr/bin/curl -L -s -S -v -f -m 300 " + proxy + " " + url + " -o " + filename;
 	    cmd = cmd + " > " + logdir + "/" + log_filename + " 2>&1";
 
 	    // env["LANG"] = GetLanguageUTF8 ();
