@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Sep 21 11:26:22 CEST 2012 - jsuchome@suse.cz
+
+- let curl follow redirects when downloading release notes package
+  (bnc#781330)
+- 2.17.176
+
+-------------------------------------------------------------------
 Wed Sep  5 14:09:52 UTC 2012 - mfilka@suse.com
 
 - bnc#752464 - leak wireless passwords
