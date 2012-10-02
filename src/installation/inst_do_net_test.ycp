@@ -375,7 +375,7 @@ and correct the settings.</p>
 	    }
 
 	    //Include also proxy option (if applicable) - #162800, #260407
-	    string cmd = "/usr/bin/curl --location --silent --show-error --verbose --fail --max-time 300 " +
+	    string cmd = "/usr/bin/curl --location --verbose --fail --max-time 300 " +
               sformat ("%1 %2 --output '%3' > '%4/%5' 2>&1",
               proxy, url, String::Quote (filename), String::Quote (logdir), String::Quote (log_filename));
 
