@@ -772,6 +772,83 @@ define list<map> ReadHardware(string hwtype) {
     return Hardware;
 }
 
+/*
+ * TODO - begin:
+ * Following functions should be generalized and ported into yast-yast2
+ */
+
+boolean IsEmptyString( string str)
+{
+    return ( str == nil) || isempty( str);
+}
+
+/**
+ * @param Shell command to run
+ * @return Hash in form $[ "exit": <command-exit-status>, "output": [ <1st line>, <2nd line>, ... ] ] 
+ */
+map< string, any> RunAndRead( string command)
+{
+    map< string, any> ret = $[ "exit": false, "output": [] ];
+    map result = ( map) SCR::Execute( .target.bash_output, command);
+    string output = result[ "stdout"]:"";
+
+    if( regexpmatch( output, ".*\n$"))
+        output = substring( output, 0, size( output) -1 );
+
+    ret[ "output"] = splitstring( output, "\n");
+    ret[ "exit"] = result[ "exit"]:1 == 0;
+
+    if( ( ret[ "exit"]:false == false) || ( IsEmptyString( result[ "stderr"]:"") == false) )
+    {
+        y2error( "RunAndRead <%1>: Command execution failed.\n%2", command, result[ "stderr"]:"");
+    }
+
+    return ret;
+}
+
+/**
+ * @param Shell command to run
+ * @return whether command execution succeeds
+ */
+boolean Run( string command)
+{
+    boolean ret = SCR::Execute( .target.bash, command) == 0;
+
+    if( !ret)
+    {    
+        y2error( "Run <%1>: Command execution failed.", command);
+    }    
+        
+    return ret;
+}            
+/* TODO - end */
+
+/**
+ * Return list of all interfaces present in the system (not only configured ones as NetworkInterfaces::List does).
+ *
+ * @return list of interface names.
+ */
+define list<string> GetAllInterfaces()
+{
+    map<string, any> result = RunAndRead( "ls /sys/class/net");
+
+    return result[ "exit"]:false ? result[ "output"]:[] : [];
+}
+
+define boolean SetAllLinksUp() 
+{
+    list< string> interfaces = GetAllInterfaces();
+    boolean ret = size( interfaces) > 0;
+
+    foreach(string ifc, interfaces, 
+    {
+        y2milestone("Setting link up for interface %1", ifc);
+        ret = Run( sformat("ip link set %1 up", ifc) ) && ret;
+    });
+
+    return ret;
+}
+
 boolean validPrefixOrNetmask(string ip, string mask){
 
  boolean valid_mask=false;

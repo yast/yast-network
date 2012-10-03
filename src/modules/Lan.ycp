@@ -261,8 +261,14 @@ Check configuration manually.
     /* Progress step 2/9 */
     if (gui) ProgressNextStage(_("Detecting network devices..."));
     // Dont read hardware data in config mode
-    if(!Mode::config ()) {
-	if(!NetHwDetection::running) NetHwDetection::Start();
+    if(!Mode::config ()) 
+    {
+        NetHwDetection::Start();
+    }
+    // Start interfaces iff running installation. See bnc#395014 and bnc#782283
+    if( Mode::installation())
+    {
+        SetAllLinksUp();
     }
     sleep(sl);
 
