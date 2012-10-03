@@ -929,13 +929,6 @@ global define void SetDefaultsForHW () {
     {
 	mtu = "1492";
     }
-/*
- if (!needHwcfg(hw)){
-		nm_name_old = nm_name;
-		nm_name = "";
-	}
- y2milestone("hwcfg name %1", nm_name);
-*/
 }
 
 string GetDeviceVar (map primary, map fallback, string key) {

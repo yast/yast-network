@@ -46,20 +46,6 @@ define boolean RunSuSEconfigModule(string modul) {
     return (SCR::Execute(.target.bash, sformat("/sbin/SuSEconfig --module %1", modul)) == 0);
 }
 
-
-/**
- * Link detection
- * @return true if link found
- * @see ethtool(8)
- */
-boolean HasLink() {
-    string ifname = "eth0";
-
-    string command = sformat("ethtool %1 | grep -q 'Link detected: no'", ifname);
-    if((integer) SCR::Execute(.target.bash, command) == 1) return false;
-    return true;
-}
-
 /**
  * Are there interfaces controlled by smpppd and qinternet?
  * They are the ones with USERCONTROL=yes (#44303)
