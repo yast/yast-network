@@ -44,6 +44,7 @@ textdomain "network";
 
 import "Directory";
 import "Package";
+import "Sh";
 import "String";
 
 // yuck, FIXME
@@ -105,13 +106,12 @@ define boolean StartEthInterface() {
     });
     needed_modules = filter (string m, boolean load, needed_modules, {
 	return load && m != nil && m != "" &&
-	  SCR::Execute (.target.bash, sformat ("grep ^%1 /proc/modules", m)) != 0;
+          Sh::Fail(sformat ("grep ^%1 /proc/modules", m));
     });
     detection_modules = maplist (string m, boolean a, needed_modules, ``( m ));
     Package::InstallKernel (maplist (string m, detection_modules, ``(m+".ko")));
     foreach (string mod, detection_modules, {
-	y2milestone("Loading module: %1", mod);
-	SCR::Execute (.target.bash, sformat ("/sbin/modprobe --use-blacklist %1 2>&1", mod));
+        Sh::Run(sformat("/sbin/modprobe --use-blacklist %1 2>&1", mod));
     });
 
 

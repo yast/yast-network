@@ -25,6 +25,7 @@ import "Netmask";
 import "Mode";
 import "IP";
 import "Netmask";
+import "Sh";
 
 /**
  * Abort function
@@ -170,8 +171,7 @@ Try again?
 define string ChangedComment(string modul) {
     string ret = "\n# Changed by YaST2";
     if(modul != nil && modul != "") ret = ret + " module " + modul;
-    map out = (map)SCR::Execute(.target.bash_output, "/bin/date '+%x'");
-    string date = out["stdout"]:"";
+    string date = Sh::RawOut("/bin/date '+%x'");
     if(date != "") ret = ret + " " + date;
     return ret;
 }

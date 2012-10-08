@@ -1,0 +1,83 @@
+{
+  module "Sh";
+
+  /**
+   * Returns output of shell command,
+   * with newlines squashed mimilarly to shell `` backtick interpolation.
+   * Stderr is logged.
+   * Failure (non zero exit code) is logged.
+   * @example
+   * Sh::Out("echo first line; echo second line") -> "first line second line"
+   */
+  global string Out(string command) {
+    // stub implementation, FIXME!
+    return "first line second line";
+  }
+
+  /**
+   * Returns output of shell command (including any trailing newline)
+   * Stderr is logged.
+   * Failure (non zero exit code) is logged.
+   * @example
+   * Sh::RawOut("echo first line; echo second line") -> "first line\nsecond line\n"
+   */
+  global string RawOut(string command) {
+    // stub implementation, FIXME!
+    return "first line\nsecond line\n";
+  }
+
+  /**
+   * Run a command and log the command, stdout, stderr, exit code
+   * @return exit code
+   * @example
+   * Sh::Log("echo ERR >&2; echo OUT") -> nil
+   * <1> Command: "echo ERR >&2; echo OUT" Exit: 0
+   * <1> OUT
+   * <3> ERR
+   */
+  global integer Log(string command) {
+    map<string, any> ret = (map<string,any>) SCR::Execute(.target.bash_output, command);
+    // stub implementation, FIXME!
+    return 0;
+  }
+
+  
+  /*
+   * Simple commands, to replace .target.bash
+   */
+
+
+  // implementation
+  integer Bash(string command) {
+    // y2milestone(2, ...) reports code locations from 2 call frames up,
+    // that is from the caller's perspective
+    y2milestone(2, "Run: %1", command);
+    integer exit = (integer) SCR::Execute(.target.bash, command);
+    y2milestone(2, "Exit: %1", exit);
+    return exit;
+  }
+
+  /**
+   * command, exit, stderr is logged
+   * output is discarded (target.bash compatibility; use >&2 to get it)
+   */
+  global void Run(string command) {
+    Bash(command);
+  }
+  /**
+   * command, exit, stderr is logged
+   * output is discarded (target.bash compatibility; use >&2 to get it)
+   * @return exit code was zero
+   */
+  global boolean OK(string command) {
+    return Bash(command) == 0;
+  }
+  /**
+   * command, exit, stderr is logged
+   * output is discarded (target.bash compatibility; use >&2 to get it)
+   * @return exit code was nonzero
+   */
+  global boolean Fail(string command) {
+    return Bash(command) != 0;
+  }
+}
