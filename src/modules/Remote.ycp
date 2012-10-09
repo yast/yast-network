@@ -100,8 +100,7 @@ global boolean Read() {
  */
 void CreateSaxAutomaticConfiguration() {
     string command = "TERM=dumb /usr/sbin/sax2 -r -a | /usr/bin/grep -v '\\r$'";
-    y2milestone("Creating automatic Xconfiguration: %1", command);
-    y2milestone("SaX2 returned: %1", SCR::Execute(.target.bash_output, command));
+    Sh::LogMsg("Creating automatic Xconfiguration, SaX2: %1", command);
 }
 
 /**
@@ -203,14 +202,10 @@ global boolean Write() {
 
    if(Mode::normal ()) {
 	ProgressNextStage(_("Running SuSEconfig..."));
-	/* no longer needed - have been dropped from SuSEconfig
-	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module xdm");
-	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kde3");
-	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kdm3");*/
 
         //Still needed for enabling/disabling remote administration
         //because 'rcxdm reload' kills running X session if gdm is used
-	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module gdm");
+	Sh::Run("/sbin/SuSEconfig --module gdm");
 	sleep(sl);
 
 	boolean dm_was_running = Service::Status("xdm") == 0;

@@ -15,6 +15,28 @@
   }
 
   /**
+   * Returns output of shell command, as a list of whitespace-delimited words
+   * Stderr is logged.
+   * Failure (non zero exit code) is logged.
+   * @example
+   * Sh::Words("echo ' wlan0'; echo ' eth0') -> ["wlan0", "eth0"]
+   */
+  global list<string> Words(string command) {
+    return ["FIXME"];
+  }
+
+  /**
+   * Returns output of shell command, as a list of chomped lines
+   * Stderr is logged.
+   * Failure (non zero exit code) is logged.
+   * @example
+   * Sh::Lines("echo '1 eth0'; echo; echo '3 eth2') -> ["1 eth0", "", "3 eth2"]
+   */
+  global list<string> Lines(string command) {
+    return ["FIXME"];
+  }
+
+  /**
    * Returns output of shell command (including any trailing newline)
    * Stderr is logged.
    * Failure (non zero exit code) is logged.
@@ -26,26 +48,42 @@
     return "first line\nsecond line\n";
   }
 
+  integer Log_impl(string message, string command) {
+    map<string, any> ret = (map<string,any>) SCR::Execute(.target.bash_output, command);
+    // stub implementation, FIXME!
+    return 0;
+  }
+
+  /**
+   * Run a command and log a message, the command, stdout, stderr, exit code
+   * @return exit code
+   * @example
+   * Sh::LogMsg("Testing", "echo ERR >&2; echo OUT") -> 0
+   * <1> Testing: Command: "echo ERR >&2; echo OUT" Exit: 0
+   * <1> OUT
+   * <3> ERR
+   */
+  global integer LogMsg(string message, string command) {
+    return Log_impl(message, command);
+  }
+
   /**
    * Run a command and log the command, stdout, stderr, exit code
    * @return exit code
    * @example
-   * Sh::Log("echo ERR >&2; echo OUT") -> nil
+   * Sh::Log("echo ERR >&2; echo OUT") -> 0
    * <1> Command: "echo ERR >&2; echo OUT" Exit: 0
    * <1> OUT
    * <3> ERR
    */
   global integer Log(string command) {
-    map<string, any> ret = (map<string,any>) SCR::Execute(.target.bash_output, command);
-    // stub implementation, FIXME!
-    return 0;
+    return Log_impl(/*message = */ nil, command);
   }
 
   
   /*
    * Simple commands, to replace .target.bash
    */
-
 
   // implementation
   integer Bash(string command) {

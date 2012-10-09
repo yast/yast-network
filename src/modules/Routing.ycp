@@ -18,6 +18,7 @@ textdomain "network";
 import "NetHwDetection";
 import "NetworkInterfaces";
 import "Map";
+import "Sh";
 import "SuSEFirewall";
 
 include "network/runtime.ycp";
@@ -106,19 +107,17 @@ void ReadIPForwarding() {
 }
 
 void WriteIPForwarding() {
+    string s_forward = Forward ? "1" : "0";
     if ( SuSEFirewall::IsEnabled() ){
 	SuSEFirewall::SetSupportRoute( Forward );
     }
     else {
-	SCR::Write(.etc.sysctl_conf."net.ipv4.ip_forward", Forward ? "1" : "0");
-	SCR::Write(.etc.sysctl_conf."net.ipv6.conf.all.forwarding", Forward ? "1" : "0");
+	SCR::Write(.etc.sysctl_conf."net.ipv4.ip_forward", s_forward);
+	SCR::Write(.etc.sysctl_conf."net.ipv6.conf.all.forwarding", s_forward);
 	SCR::Write(.etc.sysctl_conf, nil);
     }
-    SCR::Execute(.target.bash, sformat("echo %1 > /proc/sys/net/ipv4/ip_forward",
-		  Forward ? 1 : 0));
-    SCR::Execute(.target.bash, sformat("echo %1 > /proc/sys/net/ipv6/conf/all/forwarding",
-		  Forward ? 1 : 0));
-
+    Sh::Run(sformat("echo %1 > /proc/sys/net/ipv4/ip_forward", s_forward));
+    Sh::Run(sformat("echo %1 > /proc/sys/net/ipv6/conf/all/forwarding", s_forward));
 }
 
 /**
@@ -185,7 +184,7 @@ global define boolean Write() {
     sleep(sl);
 
     /* at first stop the running routes */
-    // FIXME SCR::Execute(.target.bash, "/etc/init.d/route stop");
+    // FIXME Sh::Run("/etc/init.d/route stop");
     // sysconfig does not support restarting routes only,
     // so we let our caller do it together with other things
 
@@ -196,7 +195,7 @@ global define boolean Write() {
     if(SCR::Read(.target.size, routes_file) < 0)
 	SCR::Write(.target.string, routes_file, "");
     else
-	SCR::Execute(.target.bash, "/bin/cp "+routes_file+" "+routes_file+".YaST2save");
+	Sh::Run("/bin/cp "+routes_file+" "+routes_file+".YaST2save");
 
     any ret = false;
     if(Routes == [])
@@ -209,7 +208,7 @@ global define boolean Write() {
      Progress::NextStage();
 
     /* and finally set up the new routes */
-    // FIXME SCR::Execute(.target.bash, "/etc/init.d/route start");
+    // FIXME Sh::Run("/etc/init.d/route start");
 
     return ret == true;
 }
