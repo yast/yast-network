@@ -302,15 +302,6 @@ global void WriteUdevDriverRules(){
 }
 
 /**
- * Data was modified?
- * @return true if modified
- */
-global define boolean Modified() {
-    y2debug("modified=%1",modified);
-    return modified;
-}
-
-/**
  * Function which returns if the settings were modified
  * @return boolean  settings were modified
  */
@@ -608,18 +599,6 @@ global list BuildLanOverview() {
                 }
             }
 
-            // build the "Bond Slaves" entry of rich box
-            if (type == "bond") {
-                /*
-                string slaves = "";
-                foreach (string key, any value, (map<string, any>)v, {
-                    if ((value != nil) && (regexpmatch(key, "BONDING_SLAVE[0-9]")))
-                        slaves = slaves + ((slaves != "") ? ", " : "") + (string)value;
-                    });
-                if (slaves != "")
-                    bullets = bullets + [_("Bond slaves")+ " : " + slaves];
-                */
-            }
             if (type == "wlan" &&
                 !(NetworkInterfaces::Current["WIRELESS_AUTH_MODE"]:"" != "open") &&
                 !hasAnyValue(NetworkInterfaces::Current["WIRELESS_KEY_0"]:"")) {
