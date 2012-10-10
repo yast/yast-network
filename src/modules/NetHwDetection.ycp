@@ -78,7 +78,7 @@ list<string> detection_modules = [];
  * WATCH OUT, this is the place where modules are loaded
  * @return true if success
  */
-define boolean StartEthInterface() {
+define boolean LoadNetModules() {
 
     y2milestone("Network detection prepare");
 
@@ -114,28 +114,10 @@ define boolean StartEthInterface() {
 	SCR::Execute (.target.bash, sformat ("/sbin/modprobe --use-blacklist %1 2>&1", mod));
     });
 
-
- string command =  "ls /sys/class/net|grep -v \"^lo$\"";
- map<string, any> output = (map<string, any>)SCR::Execute(.target.bash_output, command);
- if (output["exit"]:-1==0){
-  list<string> interfaces = filter(string s, splitstring(output["stdout"]:"", "\n"), {return (size(s)>0);});
-  y2milestone("interfaces %1", interfaces);
-  foreach(string ifc, interfaces, {
-// TODO: do some tests before uncomment block bellow
-//   if ((integer)SCR::Execute(.target.bash, sformat("ip link show %1|head -n1|grep -q \"[^[:alpha:]]UP[^[:alpha:]]\"", ifc))!=0)
-//    {
-     y2milestone("Setting link up for interface %1", ifc);
-     SCR::Execute(.target.bash, sformat("ip link set %1 up", ifc));
-//    } else y2milestone("Link for %1 interface is already up, nothing to do", ifc);
-  });
- } else y2error("Error while execute %1 : %2", command, output);
-
     y2milestone("Network detection prepare (end)");
+
     return true;
 }
-
-
-
 
 /**
  * Start the detection
@@ -149,7 +131,7 @@ global define boolean Start() {
 
 y2milestone("IFCONFIG1: %1", SCR::Execute(.target.bash_output, "/sbin/ip addr show"));
     boolean ret = false;
-    if(StartEthInterface()) {
+    if( LoadNetModules()) {
 	running = true;
 	ret = true;
     }
