@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Oct 10 11:28:48 UTC 2012 - mfilka@suse.com
+
+- Autoenabling of all interfaces allowed during installation only.
+- fixes bnc#782283
+
+-------------------------------------------------------------------
 Fri Sep 21 11:26:22 CEST 2012 - jsuchome@suse.cz
 
 - let curl follow redirects when downloading release notes package
