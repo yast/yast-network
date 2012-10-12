@@ -951,6 +951,8 @@ global void SetDeviceVars(map devmap, map defaults) {
     vlan_etherdevice = GetDeviceVar(devmap, defaults, "ETHERDEVICE");
     vlan_id = GetDeviceVar(devmap, defaults, "VLAN_ID"); // FIXME, remember that it can be implied from the name. probably
 
+    bridge_ports = GetDeviceVar(devmap, defaults, "BRIDGE_PORTS");
+
     bond_slaves=[];
     foreach(any key, any value, devmap,
     {
