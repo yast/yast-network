@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
 Thu Oct 11 15:47:37 CEST 2012 - mvidner@suse.cz
 
+- YaPI for WebYaST features: bonding and bridging (FATE#313209).
 - More YaPI improvements from Justus Winter:
  - Write: default BOOTPROTO to 'static', allow omitting IPADDR
  - Allow manipulating STARTMODE, don't assume 'auto'.
