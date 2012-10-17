@@ -355,8 +355,32 @@ for a particular network card by entering the name in the search entry.</p>");
     return ret;
 }
 
+/**
+ * Checks if given name can be accepted as nic's new one.
+ */
+boolean CheckUdevNicName( string name)
+{
+    // when dev_name changed, rename ifcfg (both in NetworkInterfaces and LanItems)
+    boolean error = false;
 
-string ChangeNicNameDialog()
+    if( UsedNicName( name) )
+    {
+        Popup::Error(_("Configuration name already exists."));
+        return false;
+    }
+    if( !ValidNicName( name) )
+    {
+        Popup::Error(_("Invalid configuration name."));
+        return false;
+    } 
+
+    return true;
+}
+
+/**
+ * Opens dialog for editing nic's udev rules.
+ */
+string EditUdevRulesDialog()
 {
     UI::OpenDialog(
             `VBox(
@@ -399,43 +423,43 @@ string ChangeNicNameDialog()
     UI::ChangeWidget(`dev_name, `Enabled, false);
 
     any ret = nil;
-    while(ret!=`cancel && ret!=`ok)
+    while( ret != `cancel && ret != `abort && ret != `ok)
     {
         ret = UI::UserInput();
+        boolean change_name_active = (boolean)UI::QueryWidget(`change_dev_name, `Value);
+
         if (ret == `change_dev_name) 
         {
-            UI::ChangeWidget(`dev_name, `Enabled, (boolean)UI::QueryWidget(`change_dev_name, `Value));
+            UI::ChangeWidget(`dev_name, `Enabled, change_name_active);
         }
-    }
 
-    if (ret == `ok)
-    {
-        string old_name = LanItems::GetItemUdev("NAME");
-        string new_name = (string)UI::QueryWidget(`dev_name, `Value);
-        // write new udev rule
-        string rule_key = UI::QueryWidget(`udev_type, `CurrentButton)==`mac ? "ATTR{address}" : "KERNELS";
-        string rule_value = UI::QueryWidget(`udev_type, `CurrentButton)==`mac ? LanItems::getCurrentItem()["hwinfo", "mac"]:"" : LanItems::getCurrentItem()["hwinfo", "busid"]:"";
-
-        y2internal("LanItems::GetReplacedItemUdev(%1, %2) %3",rule_key, rule_value,  LanItems::GetReplacedItemUdev(rule_key, rule_value));
-
-        if ((boolean)UI::QueryWidget(`change_dev_name, `Value))
+        if(ret == `ok)
         {
-            // when dev_name changed, rename ifcfg (both in NetworkInterfaces and LanItems)
-            if (new_name != old_name)
+            string old_name = LanItems::GetItemUdev("NAME");
+            string new_name = (string)UI::QueryWidget(`dev_name, `Value);
+            string rule_key = UI::QueryWidget(`udev_type, `CurrentButton)==`mac ? "ATTR{address}" : "KERNELS";
+            string rule_value = UI::QueryWidget(`udev_type, `CurrentButton)==`mac ? LanItems::getCurrentItem()["hwinfo", "mac"]:"" : LanItems::getCurrentItem()["hwinfo", "busid"]:"";
+
+            if( change_name_active && (new_name != old_name))
             {
-                if (contains(NetworkInterfaces::List(""), new_name))
+                if( CheckUdevNicName( new_name))
                 {
-                    Popup::Error(_("Configuration name already exists."));
-                    ret=nil;
-                } 
-                else
-                {
-                    y2internal("LanItems::GetReplacedItemUdev2 %1", LanItems::GetReplacedItemUdev("NAME", new_name));
+                    LanItems::GetReplacedItemUdev("NAME", new_name);
 
                     NetworkInterfaces::Delete2(old_name);
-                    LanItems::Items[LanItems::current, "ifcfg"]=LanItems::GetItemUdev("NAME");
+                    LanItems::Items[LanItems::current, "ifcfg"] = LanItems::GetItemUdev("NAME");
+                }
+                else
+                {
+                    UI::SetFocus( `dev_name);
+                    ret = nil;
+
+                    continue;
                 }
             }
+
+            // update udev rules
+            LanItems::GetReplacedItemUdev(rule_key, rule_value);
         }
     }
     UI::CloseDialog();
@@ -532,7 +556,7 @@ symbol handleHW (string key, map event) {
             }
 	}
   if (ret==`change_udev){
-   UI::ChangeWidget(`device_name, `Value, ChangeNicNameDialog() );
+   UI::ChangeWidget(`device_name, `Value, EditUdevRulesDialog() );
   }
   if (ret==`blink){
     string device = LanItems::device;
