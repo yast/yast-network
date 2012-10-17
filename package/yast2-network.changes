@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Mar 25 21:47:15 UTC 2014 - mfilka@suse.com
+
+- Refactoring editing interface names.
+- Added nic name checking according bnc#784952 (OpenSUSE),
+  bnc#869695 (SLES)
+- 2.17.198
+
+-------------------------------------------------------------------
 Mon Nov 11 12:40:25 UTC 2013 - mfilka@suse.com
 
 - bnc#779531
