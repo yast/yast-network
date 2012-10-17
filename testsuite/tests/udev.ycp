@@ -1,0 +1,16 @@
+{
+    import "Assert";
+
+    include "network/routines.ycp";
+
+    // valid
+    Assert::Equal( true, ValidNicName( "eth0") );
+    Assert::Equal( true, ValidNicName( "eth_0") );
+    Assert::Equal( true, ValidNicName( "eth-0") );
+    Assert::Equal( true, ValidNicName( "eth.0") );
+    Assert::Equal( true, ValidNicName( "eth:0") );
+    // invalid: too long
+    Assert::Equal( false, ValidNicName( "0123456789012345") );
+    // invalid: wrong char
+    Assert::Equal( false, ValidNicName( "eth0?") );
+}
