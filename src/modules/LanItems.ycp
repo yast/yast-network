@@ -261,6 +261,8 @@ global list<string> GetReplacedItemUdev(string r_key, string r_val)
     });
     Items[current, "udev", "net"] = new_rules;
 
+    y2debug("LanItems::GetReplacedItemUdev(%1, %2) %3", r_key, r_val,  new_rules);
+
     return new_rules;
 }
 
