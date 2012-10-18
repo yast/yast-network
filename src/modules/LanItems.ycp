@@ -1024,6 +1024,13 @@ global void SetDeviceVars(map devmap, map defaults) {
     wl_power = GetDeviceVar (devmap, defaults, "WIRELESS_POWER") == "yes";
     wl_ap_scanmode = GetDeviceVar (devmap, defaults, "WIRELESS_AP_SCANMODE");
     /* s/390 options */
+    chan_mode = GetDeviceVar (devmap, defaults, "PORTNAME");
+    qeth_portnumber = GetDeviceVar (devmap, defaults, "QETH_PORTNUMBER");
+    qeth_options = GetDeviceVar (devmap, defaults, "QETH_OPTIONS");
+    qeth_layer2 = GetDeviceVar (devmap, defaults, "QETH_LAYER2") == "yes";
+    qeth_macaddress = GetDeviceVar (devmap, defaults, "QETH_MACADDRESS");
+    qeth_chanids = GetDeviceVar (devmap, defaults, "QETH_CHANIDS");
+    ipa_takeover = GetDeviceVar (devmap, defaults, "IPA_TAKEOVER") == "yes";
     
     aliases = devmap["_aliases"]:$[];
 
@@ -1067,7 +1074,6 @@ global map<string, string> SysconfigDefaults = $[
     "WIRELESS_BITRATE": "auto",
     "WIRELESS_AP": "",
     "WIRELESS_POWER": "",
-    "PORTNAME": "", 
     // aliases = devmap["_aliases"]:$[]; // ?
     "WIRELESS_EAP_MODE": "",
     "WIRELESS_WPA_IDENTITY": "",
@@ -1083,6 +1089,15 @@ global map<string, string> SysconfigDefaults = $[
 
     // default options for bonding (bnc#404449)
     "BONDING_MODULE_OPTS": "mode=active-backup miimon=100",
+
+    // s390 defaults
+    "PORTNAME": "0", 
+    "QETH_PORTNUMBER": "",
+    "QETH_OPTIONS": "",
+    "QETH_LAYER2": "no",
+    "QETH_MACADDRESS": "00:00:00:00:00:00",
+    "QETH_CHANIDS": "",
+    "IPA_TAKEOVER": "no",
     ];
 
 /**
