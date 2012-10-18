@@ -120,8 +120,6 @@ global list<string> wl_bitrates = nil;
 list<string> nilliststring = nil; // to save some casting
 
 /* s390 options */
-// portname is in ifcfg, others are in hwcfg
-global string portname = "";
 global string qeth_portnumber = "";
 global string chan_mode = "0";
 global string qeth_options = "";
@@ -1000,7 +998,6 @@ global void SetDeviceVars(map devmap, map defaults) {
     wl_power = GetDeviceVar (devmap, defaults, "WIRELESS_POWER") == "yes";
 
     /* s/390 options */
-    portname = GetDeviceVar (devmap, defaults, "PORTNAME");
     
     aliases = devmap["_aliases"]:$[];
 
