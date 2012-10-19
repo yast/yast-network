@@ -249,7 +249,8 @@ void UpdateBondingSlaves()
 
         LanItems::startmode = "hotplug";
         LanItems::bootproto = "none";
-        LanItems::GetReplacedItemUdev("KERNELS", LanItems::getCurrentItem()["hwinfo", "busid"]:"");
+        // if particular bond slave uses mac based persistency, overwrite to bus id based one. Don't touch otherwise.
+        LanItems::ReplaceItemUdev( "ATTR{address}", "KERNELS", LanItems::getCurrentItem()["hwinfo", "busid"]:"");
 
         LanItems::Commit();
     });
