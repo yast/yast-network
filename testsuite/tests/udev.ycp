@@ -1,5 +1,6 @@
 {
     import "Assert";
+    import "LanItems";
 
     include "network/routines.ycp";
 
@@ -13,4 +14,29 @@
     Assert::Equal( false, ValidNicName( "0123456789012345") );
     // invalid: wrong char
     Assert::Equal( false, ValidNicName( "eth0?") );
+
+    // create Items hash, it's easier to create by hand than use LanItems::Read
+    // due to embedded ReadHardware and co (too many faked inputs which are not
+    // in fact needed).
+    LanItems::Items[ 0] = $[ 
+        "ifcfg" : "eth1",
+        "udev" : $[
+            "net" : [ 
+                "KERNELS=\"invalid\"", 
+                "NAME=\"eth1\"" 
+            ],
+            "driver" : nil,
+        ]
+    ];
+
+    LanItems::FindAndSelect( "eth1");
+
+    list<string> new_rules = LanItems::SetItemUdev( "NAME", "nic_name");
+    Assert::Equal( true, contains( new_rules, "NAME=\"nic_name\""));
+
+    new_rules = LanItems::SetItemUdev( "KERNELS", "0000:00:19.x");
+    Assert::Equal( true, contains( new_rules, "KERNELS==\"0000:00:19.x\""));
+
+    new_rules = LanItems::ReplaceItemUdev( "KERNELS", "ATTR{address}", "xx:01:02:03:04:05");
+    Assert::Equal( true, contains( new_rules, "ATTR{address}==\"xx:01:02:03:04:05\""));
 }
