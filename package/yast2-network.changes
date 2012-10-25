@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Oct 24 07:45:09 UTC 2012 - varkoly@suse.com
+
+- bnc#778665 - YAST host name change will not update postfix main.cf file
+- 2.17.178
+
+-------------------------------------------------------------------
 Thu Oct 11 15:47:37 CEST 2012 - mvidner@suse.cz
 
 - YaPI for WebYaST features: bonding and bridging (FATE#313209).

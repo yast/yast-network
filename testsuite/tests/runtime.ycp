@@ -68,10 +68,6 @@ DUMP("RunSuSEconfig");
 TEST(``(RunSuSEconfig()), [$[],$[],EXEC0], nil);
 TEST(``(RunSuSEconfig()), [$[],$[],EXEC1], nil);
 
-DUMP("RunSuSEconfigModule");
-TEST(``(RunSuSEconfigModule("postfix")), [$[],$[],EXEC0], nil);
-TEST(``(RunSuSEconfigModule("postfix")), [$[],$[],EXEC1], nil);
-
 import "NetworkInterfaces";
 NetworkInterfaces::Devices = $[ "dsl" : $[ "0" : $[] ]];
 
