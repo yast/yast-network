@@ -1,8 +1,13 @@
 -------------------------------------------------------------------
+Thu Oct 25 13:49:39 CEST 2012 - mvidner@suse.cz
+
+- upstreamed the previous change (bnc#778665)
+- 2.17.178
+
+-------------------------------------------------------------------
 Wed Oct 24 07:45:09 UTC 2012 - varkoly@suse.com
 
 - bnc#778665 - YAST host name change will not update postfix main.cf file
-- 2.17.178
 
 -------------------------------------------------------------------
 Thu Oct 11 15:47:37 CEST 2012 - mvidner@suse.cz
