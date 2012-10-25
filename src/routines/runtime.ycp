@@ -28,24 +28,10 @@ define boolean RunSuSEconfig() {
     y2milestone("Running SuSEconfig ...");
     SCR::Execute(.target.bash, "/sbin/SuSEconfig --module apache 2>/dev/null");
     SCR::Execute(.target.bash, "/sbin/SuSEconfig --module sendmail 2>/dev/null");
+    // not a real SuSEconfig module anymore: FATE#311272
     SCR::Execute(.target.bash, "/usr/sbin/SuSEconfig.postfix 2>/dev/null");
     return true;
 }
-
-/**
- * Run one SuSEconfig module
- * @param modul SuSEconfig module
- * @return true if success
- */
-define boolean RunSuSEconfigModule(string modul) {
-    if(modul == nil || modul == "") {
-	y2error("Wrong SuSEconfig module: %1", modul);
-	return false;
-    }
-    y2milestone("Running SuSEconfig module %1", modul);
-    return (SCR::Execute(.target.bash, sformat("/sbin/SuSEconfig --module %1", modul)) == 0);
-}
-
 
 /**
  * Link detection
