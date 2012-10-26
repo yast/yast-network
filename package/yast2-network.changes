@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Oct 26 14:58:22 CEST 2012 - mvidner@suse.cz
+
+- Remove additional addresses from the correct ifcfg (bnc#749800).
+- 2.13.144
+
+-------------------------------------------------------------------
 Wed Sep  5 11:13:53 UTC 2012 - mfilka@suse.com
 
 - Fixed overwriting of default gw after closing NIC edit dialog using Back button.
