@@ -241,17 +241,34 @@ global string GetItemUdev(string key){
  return value;
 }
 
-global list<string> GetReplacedItemUdev(string r_key, string r_val){
- list <string> new_rules=[];
- foreach(string row, getUdevFallback(), {
-  if (r_key=="NAME"){
-   if (issubstring(row, "NAME")) row = sformat("NAME=\"%1\"", r_val);
-  } else if (issubstring(row, "ATTR{address}") || issubstring(row, "KERNELS")) row = sformat("%1==\"%2\"", r_key, r_val);
+global list<string> ReplaceItemUdev(string replace_key, string new_key, string new_val)
+{
+    list<string> new_rules=[];
+    // udev syntax distinguishes among others:
+    // =    for assignment
+    // ==   for equality checks
+    string operator = new_key == "NAME" ? "=" : "==";
 
-  new_rules = add(new_rules, row);
- });
- Items[current, "udev", "net"]=new_rules;
- return new_rules;
+    foreach(string row, getUdevFallback(), 
+    {
+        if( issubstring( row, replace_key))
+            row = sformat( "%1%2\"%3\"", new_key, operator, new_val);
+
+        new_rules = add( new_rules, row);
+    });
+
+    y2debug("LanItems::ReplaceItemUdev: udev rules %1", Items[ current, "udev", "net"]:[] );
+
+    Items[current, "udev", "net"] = new_rules;
+
+    y2debug("LanItems::ReplaceItemUdev(%1, %2, %3) %4", replace_key, new_key, new_val, new_rules);
+
+    return new_rules;
+}
+
+global list<string> SetItemUdev(string rule_key, string rule_val)
+{
+    return ReplaceItemUdev( rule_key, rule_key, rule_val);
 }
 
 global void WriteUdevDriverRules(){

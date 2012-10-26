@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Oct 17 12:42:29 UTC 2012 - mfilka@suse.com
+
+- Refactoring editing interface names.
+- Added nic name checking according bnc#784952 
+- 2.24.7
+
+-------------------------------------------------------------------
 Wed Oct  3 09:07:01 UTC 2012 - mfilka@suse.com
 
 - Autoenabling of all interfaces allowed during installation only.
