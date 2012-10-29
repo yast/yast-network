@@ -240,10 +240,11 @@ the <b>Netmask</b>.</p>") +
 	    Lan::aliases[tostring(size(Lan::aliases))] = alias;
 //	    aliases_to_delete[e[1]:""] = nil;
 	});
+	string ifname = NetworkDevices::device_name (Lan::type, Lan::device);
 	foreach (string a, any v, (map <string, any>)aliases_to_delete, {
 	    if (v != nil)
 	    {
-		NetworkDevices::DeleteAlias (NetworkDevices::Name, a);
+		NetworkDevices::DeleteAlias (ifname, a);
 	    }
 	});
     }
