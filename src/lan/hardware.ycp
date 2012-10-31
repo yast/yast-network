@@ -667,7 +667,7 @@ define any S390Dialog() {
 		`VSpacing(1),
 		`HBox(
 			/* TextEntry label */
-			`InputField(`id(`chan_mode), `opt(`hstretch), _("&Port Name"), LanItems::chan_mode),
+			`InputField(`id(`qeth_portname), `opt(`hstretch), _("&Port Name"), LanItems::qeth_portname),
 			`ComboBox(`id(`qeth_portnumber), _("Port Number"), [`item(`id("0"), "0", true), `item(`id("1"), "1")])
 		),
 		`VSpacing(1),
@@ -771,7 +771,7 @@ define any S390Dialog() {
 	    `Frame(_("S/390 Device Settings"), `HBox(`HSpacing(2), `VBox(
 		`VSpacing(1),
 		/* TextEntry label, #42789 */
-		`InputField(`id(`chan_mode), `opt(`hstretch), _("&Peer Name"), ""),
+		`InputField(`id(`iucv_user), `opt(`hstretch), _("&Peer Name"), LanItems::iucv_user),
 		`VSpacing(1)
 		), `HSpacing(2))),
 	    `HSpacing(6)
@@ -801,10 +801,20 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 	UI::ChangeWidget(`id(`qeth_macaddress), `ValidChars, ":0123456789abcdefABCDEF");
     }
 
-    if (LanItems::type != "hsi")
-        UI::SetFocus(`id(`chan_mode));
-    else
-        UI::SetFocus(`id(`qeth_options));
+    switch( LanItems::type)
+    {
+        case "hsi":
+            UI::SetFocus(`id(`qeth_options));
+            break;
+        case "qeth":
+            UI::SetFocus(`id(`qeth_portname));
+            break;
+        case "iucv":
+            UI::SetFocus(`id(`iucv_user));
+            break;
+        default:
+            UI::SetFocus(`id(`chan_mode));
+    }
 
     // FIXME: no spaces
     // UI::ChangeWidget(`id(`key), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_:;");
@@ -828,19 +838,27 @@ for example, the z/VM user name with which to connect (case-sensitive).</p>
 	else if(ret == `next) {
 	if(LanItems::type == "iucv") {
 	    // #176330, must be static
-	    LanItems::nm_name = "static-iucv-id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
-	    LanItems::device = "id-" + (string) UI::QueryWidget(`id(`chan_mode), `Value);
+	    LanItems::nm_name = "static-iucv-id-" + (string) UI::QueryWidget(`id(`iucv_user), `Value);
+	    LanItems::device = "id-" + (string) UI::QueryWidget(`id(`iucv_user), `Value);
+            LanItems::iucv_user = (string) UI::QueryWidget(`id(`iucv_user), `Value);
 	}
-        LanItems::chan_mode = (string) UI::QueryWidget(`id(`chan_mode), `Value);
 
+	if(LanItems::type == "ctc")
+        {
+            LanItems::chan_mode = (string) UI::QueryWidget(`id(`chan_mode), `Value);
+        }
 	if(LanItems::type == "lcs")
+        {
 	    LanItems::lcs_timeout = (string) UI::QueryWidget(`id(`lcs_timeout), `Value);
+            LanItems::chan_mode = (string) UI::QueryWidget(`id(`chan_mode), `Value);
+        }
 	if(LanItems::type == "qeth" || LanItems::type == "hsi") {
 	    LanItems::qeth_options = (string) UI::QueryWidget(`id(`qeth_options), `Value);
 	    LanItems::ipa_takeover = (boolean) UI::QueryWidget(`id(`ipa_takeover), `Value);
 	    LanItems::qeth_layer2 = (boolean) UI::QueryWidget(`id(`qeth_layer2), `Value);
 	    LanItems::qeth_macaddress = (string) UI::QueryWidget(`id(`qeth_macaddress), `Value);
 	    LanItems::qeth_portnumber = (string) UI::QueryWidget(`id(`qeth_portnumber), `Value);
+            LanItems::qeth_portname = (string) UI::QueryWidget(`id(`qeth_portname), `Value);
 	}
 	    string read = (string) UI::QueryWidget(`id(`qeth_chan_read), `Value);
 	    string write = (string) UI::QueryWidget(`id(`qeth_chan_write), `Value);

@@ -122,10 +122,14 @@ global list<string> wl_bitrates = nil;
 list<string> nilliststring = nil; // to save some casting
 
 /* s390 options */
+global string qeth_portname = "";
 global string qeth_portnumber = "";
+// * ctc as PROTOCOL (or ctc mode, number in { 0, 1, .., 4 }, default: 0)
 global string chan_mode = "0";
 global string qeth_options = "";
 global boolean ipa_takeover = false;
+// * iucv as ROUTER (or iucv user, a zVM guest, string of 1 to 8 chars )
+global string iucv_user = "";
 // #84148
 // 26bdd00.pdf
 // Ch 7: qeth device driver for OSA-Express (QDIO) and HiperSockets
@@ -1024,13 +1028,8 @@ global void SetDeviceVars(map devmap, map defaults) {
     wl_power = GetDeviceVar (devmap, defaults, "WIRELESS_POWER") == "yes";
     wl_ap_scanmode = GetDeviceVar (devmap, defaults, "WIRELESS_AP_SCANMODE");
     /* s/390 options */
-    chan_mode = GetDeviceVar (devmap, defaults, "PORTNAME");
-    qeth_portnumber = GetDeviceVar (devmap, defaults, "QETH_PORTNUMBER");
-    qeth_options = GetDeviceVar (devmap, defaults, "QETH_OPTIONS");
-    qeth_layer2 = GetDeviceVar (devmap, defaults, "QETH_LAYER2") == "yes";
-    qeth_macaddress = GetDeviceVar (devmap, defaults, "QETH_MACADDRESS");
-    qeth_chanids = GetDeviceVar (devmap, defaults, "QETH_CHANIDS");
-    ipa_takeover = GetDeviceVar (devmap, defaults, "IPA_TAKEOVER") == "yes";
+    /* We always have to set the MAC Address for qeth Layer2 support */
+    qeth_macaddress = GetDeviceVar (devmap, defaults, "LLADDR");
     
     aliases = devmap["_aliases"]:$[];
 
@@ -1049,6 +1048,7 @@ global map<string, string> SysconfigDefaults = $[
     "REMOTE_IPADDR": "",
     "NETMASK": "",
     "MTU": "",
+    "LLADDR": "00:00:00:00:00:00",
     "ETHTOOL_OPTIONS": "",
     "NAME": "",
     "STARTMODE": "manual",
@@ -1090,15 +1090,21 @@ global map<string, string> SysconfigDefaults = $[
     // default options for bonding (bnc#404449)
     "BONDING_MODULE_OPTS": "mode=active-backup miimon=100",
 
-    // s390 defaults
-    "PORTNAME": "0", 
+    ];
+
+/**
+ * Default values used when creating an emulated NIC for physical s390 hardware.
+ */
+map<string, string> s390_defaults = $[  
+    "CHAN_MODE": "0",
+    "QETH_PORTNAME": "", 
     "QETH_PORTNUMBER": "",
     "QETH_OPTIONS": "",
     "QETH_LAYER2": "no",
-    "QETH_MACADDRESS": "00:00:00:00:00:00",
     "QETH_CHANIDS": "",
     "IPA_TAKEOVER": "no",
-    ];
+    "IUCV_USER": "",
+];
 
 /**
  * Select the given device
@@ -1545,9 +1551,16 @@ global void SetItem(){
     if(issubstring(type, "-")) type = regexpsub(type, "([^-]+)-.*$", "\\1");
     y2debug("type=%1", type);
 
-    /* We always have to set the MAC Address for qeth Layer2 support */
-    if (qeth_layer2 ) {
-	qeth_macaddress = devmap["LLADDR"]:"00:00:00:00:00:00";
+    if( Arch::s390()) 
+    {
+        chan_mode = s390_defaults[ "CHAN_MODE"]:"";
+        qeth_portname =  s390_defaults[ "QETH_PORTNAME"]:"";
+        qeth_portnumber = s390_defaults[ "QETH_PORTNUMBER"]:"";
+        qeth_options = s390_defaults[ "QETH_OPTIONS"]:"";
+        qeth_layer2 = s390_defaults[ "QETH_LAYER2"]:"" == "yes";
+        qeth_chanids = s390_defaults[ "QETH_CHANIDS"]:"";
+        ipa_takeover = s390_defaults[ "IPA_TAKEOVER"]:"" == "yes";
+        iucv_user = s390_defaults[ "IUCV_USER"]:"";
     }
 
 }
@@ -1599,7 +1612,7 @@ global boolean createS390Device(){
   case "qeth":
   case "hsi":
 	string portnumber_param = (size(qeth_portnumber)>0) ? sformat("-n %1", qeth_portnumber) : "";
-	string portname_param=(size(chan_mode)>0) ? sformat("-p %1", chan_mode) : "";
+	string portname_param=(size(qeth_portname)>0) ? sformat("-p %1", qeth_portname) : "";
         string options_param=(size(qeth_options)>0) ? sformat("-o %1", qeth_options) : "";
 	command1=sformat("qeth_configure %1 %2 %3 %4 %5 1", options_param, qeth_layer2?"-l":"", portname_param, portnumber_param, qeth_chanids);
 	command2=sformat("ls /sys/devices/qeth/%1/net/|head -n1|tr -d '\n'", (splitstring(qeth_chanids, " "))[0]:"");
@@ -1612,7 +1625,7 @@ global boolean createS390Device(){
 	break;
   case "iucv":
 					// router
-	command1=sformat("iucv_configure %1 1", chan_mode);
+	command1=sformat("iucv_configure %1 1", iucv_user);
 	command2=sformat("ls /sys/devices/%1/*/net/|head -n1|tr -d '\n'", type);
 	break;
   default:

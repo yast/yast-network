@@ -166,22 +166,15 @@ y2milestone("importing %1", settings);
     LanItems::type=rule["type"]:"";
     LanItems::qeth_chanids=rule["chanids"]:"";
     LanItems::qeth_layer2 = rule["layer2"]:false;
-    switch(rule["type"]:""){
-     case "qeth":
-		LanItems::chan_mode=rule["portname"]:"";
-		break;
-     case "ctc":
-		LanItems::chan_mode=rule["protocol"]:"";
-		break;
-     case "iucv":
-		LanItems::chan_mode=rule["router"]:"";
-		break;
-    }
+    LanItems::qeth_portname=rule["portname"]:"";
+    LanItems::chan_mode=rule["protocol"]:"";
+    LanItems::iucv_user=rule["router"]:"";
+
     y2milestone("rule:%1", rule);
     y2milestone("type:%1", LanItems::type);
     y2milestone("chanids:%1", LanItems::qeth_chanids);
     y2milestone("layer2:%1", LanItems::qeth_layer2);
-    y2milestone("portname:%1", LanItems::chan_mode);
+    y2milestone("portname:%1", LanItems::qeth_portname);
     LanItems::createS390Device();
     y2milestone("rule %1", rule);
    });
