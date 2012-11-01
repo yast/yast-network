@@ -7,6 +7,7 @@ import "NetworkInterfaces";
 import "ProductFeatures";
 import "NetworkConfig";
 import "NetworkStorage";
+import "Sh";
 include "network/complex.ycp";
 include "network/routines.ycp";
 
@@ -313,8 +314,8 @@ global void WriteUdevDriverRules(){
   
     if (size(changed_devices)>0) 
     {
-        any new_name = SCR::Execute(.target.bash_output, "rcnetwork stop && udevadm trigger --subsystem-match=net && rcnetwork start");
-        y2milestone("Renaming interfaces %1", new_name);
+        y2milestone("Renaming interfaces:");
+        Sh::Log("rcnetwork stop && udevadm trigger --subsystem-match=net && rcnetwork start");
     }
 
     // write rules from driver
@@ -937,13 +938,6 @@ global define void SetDefaultsForHW () {
     {
 	mtu = "1492";
     }
-/*
- if (!needHwcfg(hw)){
-		nm_name_old = nm_name;
-		nm_name = "";
-	}
- y2milestone("hwcfg name %1", nm_name);
-*/
 }
 
 string GetDeviceVar (map primary, map fallback, string key) {
@@ -1606,28 +1600,19 @@ global boolean createS390Device(){
   default:
 	y2error("Unsupported type : %1", type);
  }
- y2milestone("execute %1", command1);
-  map<string, any> output1=(map<string, any>) SCR::Execute(.target.bash_output, command1);
-  if (output1["exit"]:-1==0 && size(output1["stderr"]:"")==0) y2milestone("Success : %1", output1);
-  else{
-	y2error("Problem occured : %1", output1);
-	result=false;
-	}
-  y2milestone("output1 %1", output1);
-
+ // FIXME: add option `fail_on_stderr
+ result = 0 == Sh::Log(command1);
 
  if (result){
-  y2milestone("command2 %1", command2);
-  map<string, any> output2=(map<string, any>) SCR::Execute(.target.bash_output, command2);
-  y2milestone("output2 %1", output2);
-  if (output2["exit"]:-1==0 && size(output2["stderr"]:"")==0){
-   Items[current, "ifcfg"]    = output2["stdout"]:"";
-   Items[current, "hwinfo", "dev_name"] = output2["stdout"]:"";
-   y2milestone("Device %1 created", output2["stdout"]:"");
-  }else{
-   y2error("Some problem occured : %1", output2);
-   result=false;
-  }
+   // NOTE not an exact translation but ok due to what command2 does
+   string devname = Sh::Out(command2);
+   if (devname != "") {
+     Items[current, "ifcfg"] = devname;
+     Items[current, "hwinfo", "dev_name"] = devname;
+   }
+   else {
+     result=false;
+   }
  }
 
  return result;

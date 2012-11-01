@@ -13,6 +13,7 @@
 
 module "NetworkStorage";
 
+import "Sh";
 import "Storage";
 
 /**
@@ -20,10 +21,8 @@ import "Storage";
  * @return e.g. /dev/sda2 (or just "nfs")
  */
 global string getDevice(string mount_point) {
-    string cmd = sformat("grep ' %1 ' /proc/mounts|grep -v rootfs|tr -d '\n'", mount_point);
-    map out = (map)SCR::Execute(.target.bash_output, cmd);
-    y2milestone("mountpoint found %1", out);
-    list<string> fields =  splitstring(out["stdout"]:"", " ");
+    string cmd = sformat("grep ' %1 ' /proc/mounts|grep -v rootfs", mount_point);
+    list<string> fields = Sh::Words(cmd);
     string vfstype = fields[2]:"";
     string device = (vfstype == "nfs" || vfstype == "nfs4")? "nfs": fields[0]:"";
     y2milestone("%1 is on device: %2", mount_point, device);
@@ -40,10 +39,8 @@ global symbol isDiskOnNetwork(string device) {
 }
 
 global list<string> getiBFTDevices() {
-    if (SCR::Execute(.target.bash, "ls /sys/firmware/ibft")==0){
-        map<string, any> output = (map<string, any>)SCR::Execute(.target.bash_output, "ls /sys/firmware/ibft/ethernet*/device/net/");
-        list<string> ifaces = filter(string row, splitstring(output["stdout"]:"", "\n"), { return (size(row)>0);});
-        return ifaces;
+  if (Sh::OK("ls /sys/firmware/ibft")){
+        return Sh::Lines("ls /sys/firmware/ibft/ethernet*/device/net/");
     }
     else {
         return [];

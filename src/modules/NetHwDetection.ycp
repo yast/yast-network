@@ -44,6 +44,7 @@ textdomain "network";
 
 import "Directory";
 import "Package";
+import "Sh";
 import "String";
 
 // yuck, FIXME
@@ -105,13 +106,12 @@ define boolean LoadNetModules() {
     });
     needed_modules = filter (string m, boolean load, needed_modules, {
 	return load && m != nil && m != "" &&
-	  SCR::Execute (.target.bash, sformat ("grep ^%1 /proc/modules", m)) != 0;
+          Sh::Fail(sformat ("grep ^%1 /proc/modules", m));
     });
     detection_modules = maplist (string m, boolean a, needed_modules, ``( m ));
     Package::InstallKernel (maplist (string m, detection_modules, ``(m+".ko")));
     foreach (string mod, detection_modules, {
-	y2milestone("Loading module: %1", mod);
-	SCR::Execute (.target.bash, sformat ("/sbin/modprobe --use-blacklist %1 2>&1", mod));
+        Sh::Run(sformat("/sbin/modprobe --use-blacklist %1 2>&1", mod));
     });
 
     y2milestone("Network detection prepare (end)");
@@ -129,14 +129,14 @@ global define boolean Start() {
 	return false;
     }
 
-y2milestone("IFCONFIG1: %1", SCR::Execute(.target.bash_output, "/sbin/ip addr show"));
+    Sh::LogMsg("IFCONFIG1", "/sbin/ip addr show");
     boolean ret = false;
     if( LoadNetModules()) {
 	running = true;
 	ret = true;
     }
 
-y2milestone("IFCONFIG2: %1", SCR::Execute(.target.bash_output, "/sbin/ip addr show"));
+    Sh::LogMsg("IFCONFIG2", "/sbin/ip addr show");
     y2milestone("Detection start result: %1", ret);
     return ret;
 }
@@ -152,7 +152,7 @@ global define boolean Stop() {
     }
     running = false;
 
-y2milestone("IFCONFIG3: %1", SCR::Execute(.target.bash_output, "/sbin/ip addr show"));
+    Sh::LogMsg("IFCONFIG3", "/sbin/ip addr show");
 
     y2milestone("Detection stop ");
     return true;
@@ -165,10 +165,7 @@ y2milestone("IFCONFIG3: %1", SCR::Execute(.target.bash_output, "/sbin/ip addr sh
  * @see arping(8), ip(8)
  */
 global boolean DuplicateIP (string ip) {
-    string command = "LC_ALL=C ip link show|grep BROADCAST|grep -v NOARP|cut -d: -f2";
-    map exe = (map) SCR::Execute (.target.bash_output, command);
-    string ifs = exe["stdout"]:"";
-    list<string> ifsl = filter (string i, splitstring (ifs, " \t\n"), ``( i != ""));
+    list<string> ifsl = Sh::Words("LC_ALL=C ip link show|grep BROADCAST|grep -v NOARP|cut -d: -f2");
 
     // #45169: must only probe the interface being set up
     // but I don't know which one it is :-(
@@ -181,9 +178,9 @@ global boolean DuplicateIP (string ip) {
     // find the interface that detects the dup
     string ifc = find (string ifname, ifsl, {
 	// no need to be quiet, diagnostics is good
-	command = "arping  -D -c2 -w3 -I" + ifname + " " + ip;
+	string command = "arping  -D -c2 -w3 -I" + ifname + " " + ip;
 	// 0 no dup, 1 dup, 2 other error (eg. ifc not up, #182473)
-	return SCR::Execute(.target.bash, command) == 1;
+	return Sh::Log(command) == 1;
     });
 
     return ifc != nil;
@@ -199,16 +196,12 @@ global boolean DuplicateIP (string ip) {
  */
 global string ResolveIP(string ip) {
     // quick check to avoid timeout
-    if ( size(ip)==0 || (integer)SCR::Execute(.target.bash, sformat("grep -q %1 /etc/hosts", ip))!=0 ) return "";
+    if (ip == "" || Sh::Fail(sformat("grep -q %1 /etc/hosts", ip))) {
+        return "";
+    }
 
     string command = "/usr/bin/getent hosts \"%1\" | sed \"s/^[0-9.: \t]\\+//g\"";
-    map getent = (map) SCR::Execute(.target.bash_output, sformat(command, ip));
-    string hnent = getent["stdout"]:"";
-    y2debug("%1", hnent);
-    hnent = String::FirstChunk (hnent, " \t\n");
-    if(hnent == nil) hnent = "";
-    y2debug("'%1'", hnent);
-    return String::CutBlanks(hnent);
+    return Sh::Words(sformat(command, ip))[0]:"";
 }
 
 /* EOF */
