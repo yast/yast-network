@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Thu Oct 25 21:04:58 UTC 2012 - mfilka@suse.com
+
+- initialize s390 specific device variables when switching interfaces
+- s390 code cleanup. chan_mode variable is not shared between different
+device types anymore. qeth_macaddress is set according sysconfig now.
+- bnc#747844
+- 2.24.8
+
+-------------------------------------------------------------------
 Wed Oct 17 12:42:29 UTC 2012 - mfilka@suse.com
 
 - Refactoring editing interface names.
