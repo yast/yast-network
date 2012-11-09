@@ -4,7 +4,6 @@
  * Summary:	Network cards cmdline handlers
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  */
 
 {

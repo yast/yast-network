@@ -4,7 +4,6 @@
  * Summary:	Miscellaneous routines
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  */
 
 {
@@ -73,14 +72,6 @@ define boolean ReallyAbortCond(boolean modified) {
     /* FIXME: NI
     return (!modified && !Modified()) || Popup::ReallyAbort(true);
     */
-}
-
-/**
- * Set screen shot name
- * @param name screenshot name
- */
-define void ScreenName(string name) {
-// obsolete
 }
 
 /**

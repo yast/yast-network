@@ -6,7 +6,6 @@
  *		Petr Blahos <pblahos@suse.cz>
  *		Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * Used by Modem, ISDN, DSL.
  * The provider data is grouped by country. There are predefined ones

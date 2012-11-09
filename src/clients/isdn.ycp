@@ -4,7 +4,6 @@
  * Summary:	ISDN main file
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * Main file for ISDN configuration.
  * Uses all other files.

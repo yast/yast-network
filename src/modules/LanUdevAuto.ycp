@@ -4,7 +4,6 @@
  * Summary:     Udev rules for autoinstallation
  * Authors:     Michal Zugec <mzugec@suse.cz>
  *
- * $Id: Lan.ycp 40537 2007-08-28 13:22:01Z mzugec $
  *
  * Representation of the configuration of network cards.
  */

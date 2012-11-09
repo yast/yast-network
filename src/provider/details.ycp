@@ -4,7 +4,6 @@
  * Summary:	Provider details configuration dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  */
 
 {
@@ -24,8 +23,6 @@ include "network/routines.ycp";
  * @return dialog result
  */
 define any IPDetailsDialog() ``{
-
-    ScreenName("provider-details");
 
     /* PREPARE VARIABLES */
 

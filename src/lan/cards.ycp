@@ -4,7 +4,6 @@
  * Summary:	Network cards database
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * Originally copyied from yast1 NetCardDlg.cc.
  *

@@ -4,7 +4,6 @@
  * Summary:	Hosts client
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * Main file for hosts configuration.
  * Uses all other files.

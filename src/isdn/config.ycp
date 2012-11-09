@@ -11,7 +11,6 @@
  * Authors:
  *   Karsten keil <kkeil@suse.de>
  *
- * $Id$
  *
  * All config settings are stored in a global variable Devices.
  * Deleted devices are in the global list DeletedDevices.

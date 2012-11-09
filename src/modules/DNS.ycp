@@ -4,7 +4,6 @@
  * Summary:	Hostname and DNS data
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * Manages resolv.conf and (fully qualified) hostname, also
  * respecting DHCP.

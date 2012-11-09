@@ -4,7 +4,6 @@
  * Summary:	Provider main file
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * Main file for provider configuration.
  * Uses all other files.

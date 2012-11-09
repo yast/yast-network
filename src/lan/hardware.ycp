@@ -4,7 +4,6 @@
  * Summary:	Hardware dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  */
 
 {
@@ -285,8 +284,6 @@ void initHwDialog(string text) {
  * @return dialog result
  */
 define any SelectionDialog() {
-
-    ScreenName("lan-hardware-selection");
 
     string type = LanItems::type;
     integer selected = 0;
@@ -641,7 +638,6 @@ define any S390Dialog() {
 
     // already configured device (on hardware layer), skip this dialog
     if (size(LanItems::Items[LanItems::current, "hwinfo", "dev_name"]:"")>0) return `next;
-    ScreenName("lan-hardware-s390");
 
     /* S/390 dialog caption */
     string caption = _("S/390 Network Card Configuration");
