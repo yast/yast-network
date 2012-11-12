@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Nov  6 10:44:59 UTC 2012 - mfilka@suse.com
+
+- Fixed testsuite. tests/include.ycp, tests/udev.ycp failed when
+missing /etc/sysconfig/console. 
+
+-------------------------------------------------------------------
 Thu Oct 25 21:04:58 UTC 2012 - mfilka@suse.com
 
 - initialize s390 specific device variables when switching interfaces

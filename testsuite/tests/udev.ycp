@@ -1,5 +1,25 @@
 {
     import "Assert";
+    import "Testsuite";
+
+    map READ = $[
+	"probe" : $[
+	    "architecture" : "i386",
+        ],
+    ];
+
+    map EXEC = $[
+        "target": $[
+            "bash_output": $[
+                "stdout": "",
+                "stderr": "",
+                "exit": 0
+            ],
+        ],
+    ];
+
+    Testsuite::Init( [ READ, $[], EXEC ], nil);
+
     import "LanItems";
 
     include "network/routines.ycp";
