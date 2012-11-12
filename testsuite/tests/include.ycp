@@ -1,4 +1,26 @@
 // A basic syntax check
 {
-	include "network/lan/hardware.ycp";
+    // wonderful, isn't it? Believe me, you can't live without that.
+    // At least if you need Encoding.ycp which is included from somewhere.
+    import "Testsuite";
+
+    map READ = $[
+	"probe" : $[
+	    "architecture" : "i386",
+        ],
+    ];
+
+    map EXEC = $[
+        "target": $[
+            "bash_output": $[
+                "stdout": "",
+                "stderr": "",
+                "exit": 0
+            ],
+        ],
+    ];
+
+    Testsuite::Init( [ READ, $[], EXEC ], nil);
+
+    include "network/lan/hardware.ycp";
 }
