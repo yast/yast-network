@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Nov 13 08:51:51 UTC 2012 - mfilka@suse.com
+
+- Code cleanup: 
+	- removed obsolete and empty function ScreenName. 
+	- removed reference to CVS/SVN feature ($Id$)
+
+-------------------------------------------------------------------
 Tue Nov  6 10:44:59 UTC 2012 - mfilka@suse.com
 
 - Fixed testsuite. tests/include.ycp, tests/udev.ycp failed when
