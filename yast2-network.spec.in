@@ -2,7 +2,7 @@
 
 @HEADER@
 Group:          System/YaST
-License:        GPL-2.0+
+License:        GPL-2.0
 # should be required by devtools
 BuildRequires:  perl-XML-Writer pkgconfig rpm
 BuildRequires:  update-desktop-files
