@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Nov  9 07:22:46 UTC 2012 - mfilka@suse.com
+
+- s390 - bnc#719881 - only devices with L2 support can be enslaved in bond
+	- improved filtering of devices available for enslaving.
+	- able to load qeth config from system (layer2 support and other
+qeth attributes used to be lost once qeth device was configured) 
+- 2.17.180
+
+-------------------------------------------------------------------
 Thu Oct 25 21:04:58 UTC 2012 - mfilka@suse.com
 
 - initialize s390 specific device variables when switching interfaces
