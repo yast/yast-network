@@ -4,7 +4,6 @@
  * Summary:	Dialog for Remote Administration
  * Authors:	Arvin Schnell <arvin@suse.de>
  *
- * $Id$
  */
 
 {
@@ -16,15 +15,11 @@ import "Remote";
 import "Wizard";
 import "CWMFirewallInterfaces";
 
-include "network/routines.ycp";
-
 /**
  * Remote administration dialog
  * @return dialog result
  */
 define symbol RemoteMainDialog() {
-
-    ScreenName("remote");
 
     /* Ramote Administration dialog caption */
     string caption = _("Remote Administration");

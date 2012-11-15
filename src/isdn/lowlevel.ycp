@@ -11,7 +11,6 @@
  * Authors:
  *   Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  */
 
@@ -68,7 +67,6 @@ define list<term> ISDNCards4Vendor(integer vendor, integer defcard) ``{
  */
 
 define any SelectISDNCard() ``{
-    ScreenName("isdn-hardware-selection");
 
     /* Manual selection caption */
     string caption = _("Manual ISDN Card Selection");

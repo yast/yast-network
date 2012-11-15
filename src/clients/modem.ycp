@@ -4,7 +4,6 @@
  * Summary:	Modems main file
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * Main file for modem configuration.
  * Uses all other files.

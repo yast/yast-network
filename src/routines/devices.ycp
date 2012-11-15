@@ -4,7 +4,6 @@
  * Summary:	Device manipulation functions
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * All config settings are stored in a global variable Devices.
  * Deleted devices are in the global list DeletedDevices.

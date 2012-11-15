@@ -4,7 +4,6 @@
  * Summary:	Network data
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * Representation of the configuration of network.
  * Input and output routines.

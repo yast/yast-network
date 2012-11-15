@@ -4,7 +4,6 @@
  * Summary:	Client for autoinstallation
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * This is a client for autoinstallation. It takes its arguments,
  * goes through the configuration and return the setting.

@@ -4,7 +4,6 @@
  * Summary:	Provider dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  */
 
 {
@@ -85,8 +84,6 @@ dialing number, call the hot line <b>%2</b>.</p>
  * @return dialog result
  */
 define any ProviderDialog() ``{
-
-    ScreenName("provider-dialog");
 
     string type = Provider::Type;
 

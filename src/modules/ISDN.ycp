@@ -5,7 +5,6 @@
  * Authors:	Michal Svec  <msvec@suse.cz>
  *		Karsten Keil <kkeil@suse.de>
  *
- * $Id$
  *
  * Representation of the configuration of ISDN.
  * Input and output routines.

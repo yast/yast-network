@@ -4,7 +4,6 @@
  * Summary:	Summary, overview and IO dialogs for DSL configuration.
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  */
 
 {
@@ -62,8 +61,6 @@ define symbol FinishDialog() {
  */
 define symbol ReadDialog() {
 
-    ScreenName("dsl-read");
-
     /* DSL read dialog help 1/2 */
     string helptext = _("<P><B><BIG>Initializing DSL Configuration
 </BIG></B><BR>Please wait...<BR></P>");
@@ -85,8 +82,6 @@ define symbol ReadDialog() {
  * @return `abort if aborted and `next otherwise
  */
 define symbol WriteDialog() {
-
-    ScreenName("dsl-write");
 
     if(!Modified()) return `next;
 
@@ -274,8 +269,6 @@ symbol HandleProviders (string widget_id, map event)
  * @return dialog result
  */
 define any OverviewDialog() {
-
-    ScreenName("dsl-overview");
 
     /* DSL overview dialog caption */
     string caption = _("DSL Configuration Overview");

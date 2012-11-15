@@ -4,7 +4,6 @@
  * Summary:	DSL data
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * Representation of the configuration of DSL.
  * Input and output routines.

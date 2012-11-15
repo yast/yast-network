@@ -4,7 +4,6 @@
  * Summary:	Hosts data (/etc/hosts)
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  */
 
 {
