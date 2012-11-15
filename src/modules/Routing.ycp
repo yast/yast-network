@@ -4,7 +4,6 @@
  * Summary:	Routing data (/etc/sysconfig/network/routes)
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * See routes(5)
  * Does not work with interface-specific routes yet (ifroute-lo...)

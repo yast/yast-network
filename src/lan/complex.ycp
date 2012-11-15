@@ -4,7 +4,6 @@
  * Summary:	Summary, overview and IO dialogs for network cards config
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  */
 
 {
@@ -59,8 +58,6 @@ define symbol Commit() ``{
  */
 define symbol ReadDialog() ``{
 
-    ScreenName("lan-read");
-
     Wizard::RestoreHelp( help["read"]:"" );
     Lan::AbortFunction = ``{return PollAbort();};
     boolean ret = Lan::Read (`cache);
@@ -88,7 +85,6 @@ See %1 for details."), "/usr/share/doc/packages/xen/README.SuSE")))
  * @return `abort if aborted and `next otherwise
  */
 define symbol WriteDialog() ``{
-    ScreenName("lan-write");
 
     if(!Lan::Modified()) return `next;
 

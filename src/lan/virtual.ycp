@@ -4,7 +4,6 @@
  * Summary:	Multiple addresses dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  */
 
 {
@@ -160,8 +159,6 @@ void storeAdditional (string key, map event) {
  * @return host or nil, if canceled
  */
 define term VirtualEditDialog(integer id, term entry, list forbidden) {
-
-    ScreenName("lan-virtual-edit");
 
     y2debug("id=%1", id);
     y2debug("entry=%1", entry);

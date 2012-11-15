@@ -4,7 +4,6 @@
  * Summary:	Network card data
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * Representation of the configuration of network cards.
  * Input and output routines.

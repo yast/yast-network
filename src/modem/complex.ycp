@@ -4,7 +4,6 @@
  * Summary:	Summary, overview and IO dialogs for modems configuration.
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  */
 
 {
@@ -62,8 +61,6 @@ define symbol FinishDialog() {
  */
 define symbol ReadDialog() {
 
-    ScreenName("modem-read");
-
     /* modems read dialog help 1/2 */
     string helptext = _("<P><B><BIG>Initializing Modem Configuration
 </BIG></B><BR>Please wait...<BR></P>");
@@ -98,8 +95,6 @@ You may want to use qinternet instead.");
  * @return `abort if aborted and `next otherwise
  */
 define symbol WriteDialog() {
-
-    ScreenName("modem-write");
 
     if(!Modified()) return `next;
 
@@ -294,8 +289,6 @@ symbol HandleProviders (string widget_id, map event)
  * @return dialog result
  */
 define any OverviewDialog() {
-
-    ScreenName("modem-overview");
 
     /* Modems overview dialog caption */
     string caption = _("Modem Configuration Overview");

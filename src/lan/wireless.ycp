@@ -4,7 +4,6 @@
  * Summary:	Wireless dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  */
 
 {
@@ -198,8 +197,6 @@ list<term> AuthModeItems (list<string> authmodes) {
  * @return dialog result
  */
 define any WirelessDialog() ``{
-
-    ScreenName("lan-hardware-wireless");
 
     /* Wireless dialog caption */
     string caption = _("Wireless Network Card Configuration");
@@ -456,8 +453,6 @@ Really continue?
  */
 define any WirelessExpertDialog() ``{
 
-    ScreenName("lan-hardware-wireless-expert");
-
     /* Wireless expert dialog caption */
     string caption = _("Wireless Expert Settings");
 
@@ -595,7 +590,6 @@ the channel, select the desired value.</p>
  * @param lengths allowed real key lengths
  */
 define string WirelessKeyPopup (string tkey, list<integer> lengths) ``{
-    ScreenName("lan-hardware-wireless-key");
 
     map<string, string> wkey = ParseWepKey (tkey);
     string key = wkey["key"]:"";
@@ -704,8 +698,6 @@ define integer FindGoodDefault (list<string> keys, integer defaultk) ``{
  * @return dialog result
  */
 define any WirelessKeysDialog() ``{
-
-    ScreenName("lan-hardware-wireless-keys");
 
     /* Wireless keys dialog caption */
     string caption = _("Wireless Keys");

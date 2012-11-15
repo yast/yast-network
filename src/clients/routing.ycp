@@ -4,7 +4,6 @@
  * Summary:	Routing client
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * Main file for routing configuration.
  * Uses all other files.

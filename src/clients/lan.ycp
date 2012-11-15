@@ -4,7 +4,6 @@
  * Summary:	Network cards main file
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * Main file for network card configuration.
  * Uses all other files.

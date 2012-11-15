@@ -4,7 +4,6 @@
  * Summary:	Hostname and DNS client
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * Main file for hostname and DNS configuration.
  * Uses all other files.

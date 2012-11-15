@@ -4,7 +4,6 @@
  * Summary:	Configuration dialogs for DSL
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  */
 
 {
@@ -34,8 +33,6 @@ include "network/installation/dialogs.ycp";
  * @return dialog result
  */
 define any DSLDialog() {
-
-    ScreenName("dsl-dialog");
 
     widget_descr["STARTMODE"] = MakeStartmode (
 	["auto", "hotplug", "manual", "off", ]);

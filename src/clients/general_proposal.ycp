@@ -4,7 +4,6 @@
  * Summary:	Network mode + ipv6 proposal
  * Authors:	Martin Vidner <mvidner@suse.cz>
  *
- * $Id$
  *
  * This is not a standalone proposal, it depends on lan_proposal. It
  * must run after it.

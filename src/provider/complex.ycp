@@ -4,7 +4,6 @@
  * Summary:	Complex providers dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  */
 
 {
@@ -34,7 +33,6 @@ define symbol CommitProvider() {
  * @return `abort if aborted and `next otherwise
  */
 define symbol ReadDialog() {
-    ScreenName("provider-read");
     Wizard::RestoreHelp(HELPS["read"]:"");
     // Provider::AbortFunction = ``{return PollAbort();};
     boolean ret = Provider::Read();
@@ -46,7 +44,6 @@ define symbol ReadDialog() {
  * @return `abort if aborted and `next otherwise
  */
 define symbol WriteDialog() {
-    ScreenName("provider-write");
     if(!Modified()) return `next;
     Wizard::RestoreHelp(HELPS["write"]:"");
     // Provider::AbortFunction = ``{return PollAbort() && ReallyAbort();};
@@ -59,8 +56,6 @@ define symbol WriteDialog() {
  * @return `abort if aborted and `next otherwise
  */
 define any TypeDialog() {
-
-    ScreenName("provider-type");
 
     /* Provider type dialog caption */
     string caption = _("Provider Type");
@@ -132,8 +127,6 @@ define any TypeDialog() {
  * @return dialog result
  */
 define any OverviewDialog() {
-
-    ScreenName("provider-overview");
 
     /* Provider overview dialog help caption */
     string caption = _("Provider Overview");

@@ -4,7 +4,6 @@
  * Summary:	Main network client
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * Main file for the network configuration.
  * Uses all other files.

@@ -6,7 +6,6 @@
  * Summary:	Module for handling interfaces in SuSEfirewall2
  * Authors:	Lukas Ocilka <locilka@suse.cz>
  *
- * $Id$
  *
  * Module for handling network interfaces in SuSEfirewall2 using SuSEFirewall
  * module.

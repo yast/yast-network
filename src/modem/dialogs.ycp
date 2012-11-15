@@ -4,7 +4,6 @@
  * Summary:	Modem configuration dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  */
 
 {
@@ -30,8 +29,6 @@ define symbol ModemDialog(boolean detected) {
     if(issubstring(Modem::Device, "ttySL")){
 	if (!contains(Modem::Requires, "smartlink-softmodem")) Modem::Requires=add(Modem::Requires, "smartlink-softmodem");
     }
-
-    ScreenName("modem-dialog");
 
     /* PREPARE VARIABLES */
 
@@ -198,8 +195,6 @@ initialization strings.</p>");
  * @return dialog result
  */
 define symbol ModemDetailsDialog() {
-
-    ScreenName("modem-details");
 
     /* PREPARE VARIABLES */
     integer BaudRate = Modem::BaudRate;

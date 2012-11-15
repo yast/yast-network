@@ -4,7 +4,6 @@
  * Summary:	Network card adresss configuration dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  */
 
 {
@@ -928,7 +927,6 @@ UI::ChangeWidget(`id("IFPLUGD_PRIORITY"), `Enabled, (UI::QueryWidget(`id("STARTM
  * @return dialog result
  */
 define any AddressDialog() {
-    ScreenName("lan-address");
     string fwzone = SuSEFirewall4Network::GetZoneOfInterface (LanItems::device);
 
     // If firewall is active and interface in no zone, nothing

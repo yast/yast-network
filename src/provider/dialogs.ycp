@@ -6,7 +6,6 @@
  *		Petr Blahos <pblahos@suse.cz>
  *		Dan Vesely <dan@suse.cz>
  *
- * $Id$
  */
 
 {
@@ -50,7 +49,6 @@ define any dividerHack(list provs, any prev) {
  */
 define any ProvidersDialog(boolean edit) {
 
-    ScreenName("provider-list");
     string type = Provider::Type;
     y2security("type=%1", type);
 

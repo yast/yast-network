@@ -4,7 +4,6 @@
  * Summary:	Connection configuration dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  */
 
 {
@@ -22,13 +21,13 @@ import "Provider";
 import "SuSEFirewall4Network";
 import "Wizard";
 
+include "network/routines.ycp";
+
 /**
  * Connection dialog
  * @return dialog result
  */
 define any ConnectionDialog() {
-
-    ScreenName("provider-connection");
 
     string type = Provider::Type;
 

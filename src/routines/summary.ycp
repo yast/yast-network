@@ -4,7 +4,6 @@
  * Summary:	Summary and overview functions
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * All config settings are stored in a global variable Devices.
  * All hardware settings are stored in a global variable Hardware.

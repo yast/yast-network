@@ -4,7 +4,6 @@
  * Summary:	Hosts configuration dialogs
  * Authors:	Michal Svec <msvec@suse.cz>
  *
- * $Id$
  *
  * Hosts configuration dialogs
  */
@@ -55,8 +54,6 @@ define boolean HostSystemPopup(string host, boolean delete) {
  * @return dialog result
  */
 define symbol HostsMainDialog(boolean standalone) {
-
-    ScreenName("host");
 
     /* Hosts dialog caption */
     string caption = _("Host Configuration");
@@ -289,8 +286,6 @@ define symbol HostsMainDialog(boolean standalone) {
  */
 
 define term HostDialog(integer id, term entry) {
-
-    ScreenName("host-edit");
 
     y2debug("id=%1", id);
     y2debug("entry=%1", entry);
