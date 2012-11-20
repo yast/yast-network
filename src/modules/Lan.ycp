@@ -470,7 +470,7 @@ global define boolean Write() {
     if(Abort()) return false;
     /* Progress step 3 - multiple devices may be present, really plural*/
     ProgressNextStage(_("Writing device configuration..."));
-    if (!Mode::autoinst() && LanUdevAuto::AllowUdevModify()) {
+    if (LanUdevAuto::AllowUdevModify()) {
 	LanItems::WriteUdevDriverRules();
         // wait so that ifcfgs written in NetworkInterfaces are newer
         // (1-second-wise) than netcontrol status files,

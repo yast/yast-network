@@ -285,7 +285,11 @@ global string GetDevnameByMAC(string mac)
             } 
             else 
             {
-                if (rule["rule"]:""=="KERNELS")
+                // ID= is deprecated. It should be replaced by KERNELS since udev 148 and
+                // is completely removed in udev 174. However SLES11 uses udev 147, so
+                // id is used for backward compatibility. Conclusion: bnc#787296 (see customer's
+                // AutoYaST profile).
+                if( contains( [ "KERNELS", "ID"], rule["rule"]:"") )
                 {
                     y2milestone("rule: %1", rule);
                     map cmd = (map)SCR::Execute(.target.bash_output,
