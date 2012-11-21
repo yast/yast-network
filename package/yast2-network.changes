@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Nov 21 08:26:28 UTC 2012 - mfilka@suse.com
+
+- bnc#787296
+	- writting udev rules allowed during autoinstallation
+	- added support for deprecated (but still supported) udev
+attrib ID= 
+
+-------------------------------------------------------------------
 Fri Nov  9 07:22:46 UTC 2012 - mfilka@suse.com
 
 - s390 - bnc#719881 - only devices with L2 support can be enslaved in bond
