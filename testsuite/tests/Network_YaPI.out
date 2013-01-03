@@ -10,7 +10,6 @@ Read	.target.string "/etc/HOSTNAME" "laptop.suse.cz"
 Read	.target.size "/etc/sysconfig/network/routes" 27
 Read	.routes [$["destination":"default", "gateway":"10.20.30.40"]]
 Execute	.target.bash "rpm -q --whatprovides SuSEfirewall2" 0
-Read	.target.stat "/etc/init.d/SuSEfirewall2_init" $[]
 Read	.target.stat "/lib/systemd/system/SuSEfirewall2_init.service" $[]
 Read	.etc.sysctl_conf."net.ipv4.ip_forward" nil
 Dir	.network.section: ["eth0", "eth1", "eth2", "eth3", "eth4", "eth5", "eth5.23"]
@@ -69,15 +68,12 @@ Return	$["error":"", "exit":"0"]
 Write	.network.value."eth0".BOOTPROTO "dhcp4" true
 Write	.network.value."eth0".STARTMODE "auto" true
 Write	.network nil true
-Read	.target.stat "/etc/init.d/network" $[]
 Read	.target.stat "/lib/systemd/system/network.service" $[]
 Return	$["error":"", "exit":"0"]
 Read	.target.size "/etc/sysconfig/network/routes" 27
 Read	.routes [$["destination":"default", "gateway":"10.20.30.40"]]
-Read	.target.stat "/etc/init.d/SuSEfirewall2_init" $[]
 Read	.target.stat "/lib/systemd/system/SuSEfirewall2_init.service" $[]
 Read	.etc.sysctl_conf."net.ipv4.ip_forward" nil
-Read	.target.stat "/etc/init.d/SuSEfirewall2_init" $[]
 Read	.target.stat "/lib/systemd/system/SuSEfirewall2_init.service" $[]
 Write	.etc.sysctl_conf."net.ipv4.ip_forward" "0" true
 Write	.etc.sysctl_conf."net.ipv6.conf.all.forwarding" "0" true
@@ -93,7 +89,6 @@ Write	.network.value."eth3".BOOTPROTO "static" true
 Write	.network.value."eth3".IPADDR "1.2.3.7/24" true
 Write	.network.value."eth3".STARTMODE "auto" true
 Write	.network nil true
-Read	.target.stat "/etc/init.d/network" $[]
 Read	.target.stat "/lib/systemd/system/network.service" $[]
 Return	$["error":"", "exit":"0"]
 Write	.network.value."eth5.23".BOOTPROTO "static" true
@@ -102,12 +97,10 @@ Write	.network.value."eth5.23".IPADDR "1.2.3.8/24" true
 Write	.network.value."eth5.23".STARTMODE "auto" true
 Write	.network.value."eth5.23".VLAN_ID "42" true
 Write	.network nil true
-Read	.target.stat "/etc/init.d/network" $[]
 Read	.target.stat "/lib/systemd/system/network.service" $[]
 Return	$["error":"", "exit":"0"]
 Read	.target.size "/etc/sysconfig/network/routes" 27
 Read	.routes [$["destination":"default", "gateway":"10.20.30.40"]]
-Read	.target.stat "/etc/init.d/SuSEfirewall2_init" $[]
 Read	.target.stat "/lib/systemd/system/SuSEfirewall2_init.service" $[]
 Read	.etc.sysctl_conf."net.ipv4.ip_forward" nil
 Read	.probe.netcard nil

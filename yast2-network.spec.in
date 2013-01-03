@@ -14,7 +14,8 @@ BuildRequires:  yast2-installation >= 2.15.27
 # Wizard::SetDesktopTitleAndIcon
 # yast2 v2.23.0 - support for shel (un)quoting
 # yast2 v2.23.6 - updated API for IPv6
-BuildRequires:  yast2 >= 2.23.6
+# yast2 v2.23.15 - Service module switched to systemd
+BuildRequires:  yast2 >= 2.23.15
 Requires:       yast2 >= 2.23.6
 
 #netconfig (FaTE #303618)

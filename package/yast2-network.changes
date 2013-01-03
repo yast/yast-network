@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jan  3 12:31:30 UTC 2013 - locilka@suse.com
+
+- Testsuites adapted to switching Service module to systemd
+  (yast2-2.23.15)
+
+-------------------------------------------------------------------
 Thu Nov 15 11:48:12 UTC 2012 - mfilka@suse.com
 
 - confirmed license 
