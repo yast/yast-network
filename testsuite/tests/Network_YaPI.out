@@ -10,7 +10,7 @@ Read	.target.string "/etc/HOSTNAME" "laptop.suse.cz"
 Read	.target.size "/etc/sysconfig/network/routes" 27
 Read	.routes [$["destination":"default", "gateway":"10.20.30.40"]]
 Execute	.target.bash "rpm -q --whatprovides SuSEfirewall2" 0
-Read	.target.stat "/lib/systemd/system/SuSEfirewall2_init.service" $[]
+Read	.target.stat "/lib/systemd/system/SuSEfirewall2.service" $[]
 Read	.etc.sysctl_conf."net.ipv4.ip_forward" nil
 Dir	.network.section: ["eth0", "eth1", "eth2", "eth3", "eth4", "eth5", "eth5.23"]
 Dir	.network.value."eth0": ["BOOTPROTO", "STARTMODE"]
@@ -72,9 +72,9 @@ Read	.target.stat "/lib/systemd/system/network.service" $[]
 Return	$["error":"", "exit":"0"]
 Read	.target.size "/etc/sysconfig/network/routes" 27
 Read	.routes [$["destination":"default", "gateway":"10.20.30.40"]]
-Read	.target.stat "/lib/systemd/system/SuSEfirewall2_init.service" $[]
+Read	.target.stat "/lib/systemd/system/SuSEfirewall2.service" $[]
 Read	.etc.sysctl_conf."net.ipv4.ip_forward" nil
-Read	.target.stat "/lib/systemd/system/SuSEfirewall2_init.service" $[]
+Read	.target.stat "/lib/systemd/system/SuSEfirewall2.service" $[]
 Write	.etc.sysctl_conf."net.ipv4.ip_forward" "0" true
 Write	.etc.sysctl_conf."net.ipv6.conf.all.forwarding" "0" true
 Write	.etc.sysctl_conf nil true
@@ -101,7 +101,7 @@ Read	.target.stat "/lib/systemd/system/network.service" $[]
 Return	$["error":"", "exit":"0"]
 Read	.target.size "/etc/sysconfig/network/routes" 27
 Read	.routes [$["destination":"default", "gateway":"10.20.30.40"]]
-Read	.target.stat "/lib/systemd/system/SuSEfirewall2_init.service" $[]
+Read	.target.stat "/lib/systemd/system/SuSEfirewall2.service" $[]
 Read	.etc.sysctl_conf."net.ipv4.ip_forward" nil
 Read	.probe.netcard nil
 Log	hardware detection failure
