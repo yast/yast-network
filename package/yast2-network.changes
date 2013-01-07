@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Jan  7 08:47:01 UTC 2013 - mfilka@suse.com
+
+- fate#312733
+	- Added edit action for DNS CLI mode. 
+	- Hostname editing supported.
+- 2.17.181
+
+-------------------------------------------------------------------
 Fri Nov  9 07:22:46 UTC 2012 - mfilka@suse.com
 
 - s390 - bnc#719881 - only devices with L2 support can be enslaved in bond
