@@ -10,12 +10,8 @@ BuildRequires:  yast2-devtools yast2-testsuite
 BuildRequires:  yast2-country
 BuildRequires:  yast2-installation >= 2.15.27
 
-# NetworkInterfaces::Write should write ifcfgs only once
-# Wizard::SetDesktopTitleAndIcon
-# yast2 v2.23.0 - support for shel (un)quoting
-# yast2 v2.23.6 - updated API for IPv6
-# yast2 v2.23.15 - Service module switched to systemd
-BuildRequires:  yast2 >= 2.23.15
+# yast2 v2.23.17 - SuSEfirewall2_* scripts merged into one
+BuildRequires:  yast2 >= 2.23.17
 Requires:       yast2 >= 2.23.6
 
 #netconfig (FaTE #303618)
