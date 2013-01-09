@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Jan  7 08:47:01 UTC 2013 - mfilka@suse.com
+
+- fate#312733
+	- Added edit action for DNS CLI mode. 
+	- Hostname editing supported.
+- 2.24.10
+
+-------------------------------------------------------------------
 Thu Jan  3 12:31:30 UTC 2013 - locilka@suse.com
 
 - Testsuites adapted to switching Service module to systemd

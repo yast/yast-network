@@ -101,6 +101,53 @@ define boolean ListHandler(map<string, string> options) {
 }
 
 /**
+ * Handler for action "edit"
+ * @param options action options
+ * @return boolean if successful
+ */
+define boolean EditHandler(map<string, string> options)
+{
+    string new_hostname = options[ "hostname"]:"";
+    
+    y2milestone( "Edit handler, options: %1", options);
+
+    if( ! Hostname::Check( new_hostname))
+    {
+        CommandLine::Print( _( "Invalid hostname. ") + Hostname::ValidHost() );
+        return false;
+    }
+
+    SetHostname( new_hostname);
+
+    return true;
+}
+
+/**
+ * CLI mode initialization handler
+ * @return boolean if successful
+ */
+define boolean InitHandler()
+{
+    if( !DNS::Read() || !Lan::Read( `cache))
+        return false;
+
+    InitHnSettings();
+
+    return true;
+}
+
+/**
+ *  CLI mode finish handler
+ * @return boolean if successful
+ */
+define boolean FinishHandler()
+{
+    StoreHnSettings();
+
+    return DNS::Write();
+}
+
+/**
  * Command line definition
  */
 map cmdline = $[
@@ -108,14 +155,28 @@ map cmdline = $[
     "help"	: _("DNS Configuration"),
     "id"	: "dns",
     "guihandler": DNSGUI,
-    "initialize": DNS::Read,
-    "finish"	: DNS::Write, // FIXME
+    "initialize": InitHandler,
+    "finish"	: FinishHandler,
     "actions"	: $[
 	"list" : $[
 	    /* Commandline command help */
 	    "help"	: _("Display configuration summary"),
 	    "handler"	: ListHandler,
 	],
+        "edit" : $[
+            "help"      : _("Edit current settings"),
+            "handler"   : EditHandler,
+        ],
+    ],
+    "options"   : $[
+        "hostname"      : $[
+            "help"      : _( "Used machine hostname"),
+            "type"      : "string",
+            "example"   : "dns edit hostname=SUSE-host",
+        ],
+    ],
+    "mappings"  : $[
+        "edit"  : [ "hostname" ],
     ],
 ];
 
