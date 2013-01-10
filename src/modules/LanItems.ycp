@@ -30,6 +30,7 @@ import "NetworkConfig";
 import "NetworkStorage";
 include "network/complex.ycp";
 include "network/routines.ycp";
+include "network/lan/s390.ycp";
 
 /**
  * Hardware information
@@ -1574,14 +1575,22 @@ global void SetItem(){
 
     if( Arch::s390()) 
     {
-        chan_mode = s390_defaults[ "CHAN_MODE"]:"";
-        qeth_portname =  s390_defaults[ "QETH_PORTNAME"]:"";
-        qeth_portnumber = s390_defaults[ "QETH_PORTNUMBER"]:"";
-        qeth_options = s390_defaults[ "QETH_OPTIONS"]:"";
-        qeth_layer2 = s390_defaults[ "QETH_LAYER2"]:"" == "yes";
-        qeth_chanids = s390_defaults[ "QETH_CHANIDS"]:"";
+        map<string, any> s390_devmap = ReadQethConfig( Items[current, "hwinfo", "dev_name"]:"" ); 
+
+        qeth_portname =  GetDeviceVar( s390_devmap, s390_defaults, "QETH_PORTNAME");
+        qeth_portnumber = GetDeviceVar( s390_devmap, s390_defaults, "QETH_PORTNUMBER");
+        qeth_layer2 = GetDeviceVar( s390_devmap, s390_defaults, "QETH_LAYER2") == "yes";
+        qeth_chanids = GetDeviceVar( s390_devmap, s390_defaults, "QETH_CHANIDS");
+
+        // qeth attribute. FIXME: currently not read from system.
         ipa_takeover = s390_defaults[ "IPA_TAKEOVER"]:"" == "yes";
+
+        // not device attribute
+        qeth_options = s390_defaults[ "QETH_OPTIONS"]:"";
+
+        // handle non qeth devices
         iucv_user = s390_defaults[ "IUCV_USER"]:"";
+        chan_mode = s390_defaults[ "CHAN_MODE"]:"";
     }
 
 }
