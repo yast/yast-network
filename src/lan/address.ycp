@@ -59,6 +59,7 @@ include "network/lan/virtual.ycp";
 include "network/complex.ycp";
 include "network/widgets.ycp";
 include "network/lan/bridge.ycp";
+include "network/lan/s390.ycp";
 
 /**
  * obsoleted by GetDefaultsForHW
@@ -182,7 +183,6 @@ void StoreVLANSlave(string key, map event)
     settings["VLAN_ID"] = UI::QueryWidget (`id(`vlan_id), `Value);
 }
 
-
 integer getISlaveIndex(string slave){
   list<term> items = (list<term>)UI::QueryWidget(`msbox_items, `Items);
   integer index = -1;
@@ -206,6 +206,32 @@ void enableSlaveButtons(){
 }
 
 /**
+ * Searches map of known devices and decides if a device of given name and type can be enslaved in a bond device
+ *
+ * @param devtype device type. See NetworkInterfaces::CardRegex for known categories.
+ * @param devname particular device name (e.g. eth0)
+ */
+boolean IsBondable( string devtype, string devname)
+{
+    boolean ret = true;
+    map<string, any> ifcfg =  NetworkInterfaces::FilterDevices("netcard")[ devtype, devname]:$[];
+
+    // filter the eth devices (BOOTPROTO=none)
+    // don't care about STARTMODE (see bnc#652987c6)
+    ret = ret && ifcfg[ "BOOTPROTO"]:"" == "none";
+
+    if( Arch::s390() )
+    {
+        map<string, any> s390_config = ReadQethConfig( devname);
+
+        // only devices with L2 support can be enslaved in bond. See bnc#719881
+        ret = ret && s390_config[ "QETH_LAYER2"]:"no" == "yes";
+    }
+
+    return ret;
+}
+
+/**
  * Default function to init the value of slave devices box.
  * @param key	id of the widget
  */
@@ -217,17 +243,17 @@ void InitSlave(string key)
     settings["BONDOPTION"] = LanItems::bond_option;
 
     list items = createUnconfigured(settings["SLAVES"]:[]);
-    map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
-    foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
-     foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
-        //filter the eth devices (BOOT_PROTO=none
-	// don't care about STARTMODE (see bnc#652987c6)
-            if (((string)configurations[devtype, devname, "BOOTPROTO"]:"" == "none")/* && ((string)configurations[devtype, devname, "STARTMODE"]:"" == "off")*/)
+    map<string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
+    foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), 
+    {
+        foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), 
+        {
+            if( IsBondable( devtype, devname) )
             {
                 items = add (items, `item(`id(devname), sformat("%1 - %2", devname, configurations[devtype, devname, "NAME"]:""), contains(settings["SLAVES"]:[], devname)) );
             }
 
-     });
+        });
     });
 
   // reorder the items
