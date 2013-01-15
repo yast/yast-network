@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jan 21 20:09:15 UTC 2013 - mfilka@suse.com
+
+- fate#312733
+	- nameservers editing supported via CLI
+- 2.24.13
+ 
+-------------------------------------------------------------------
 Thu Jan 10 10:28:04 UTC 2013 - mfilka@suse.com
 
 - s390 - bnc#719881 - only devices with L2 support can be enslaved in bond
