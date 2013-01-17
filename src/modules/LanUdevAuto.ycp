@@ -265,33 +265,56 @@ y2internal("port0 %1", port0);
  return AY;
 }
 
-global string GetDevnameByMAC(string mac){
- string devname="";
- if (size(mac)>0){
-  y2milestone("MAC address from 1st stage: %1", mac);
-  foreach(map rule, udev_rules, {
-   if (rule["rule"]:""=="ATTR{address}"){
-     if (mac==rule["value"]:""){
-       devname=rule["name"]:"";
-       y2milestone("MAC address matched with device:%1", rule["name"]:"");
-       break;
-     }
-   } else if (rule["rule"]:""=="KERNELS"){
-	y2milestone("rule: %1", rule);
-	map cmd = (map)SCR::Execute(.target.bash_output,
-	sformat( "DEVICE=$(grep '%1' /sys/class/net/*/address);KERNELS=$(ls -l \"$(echo ${DEVICE%%/*})/device\");echo ${KERNELS##*/}|tr -d '\n'", mac));
-	if (cmd["exit"]:-1==0){
-	  y2milestone("cmd output:%1", cmd["stdout"]:"");
-          if (cmd["stdout"]:""==rule["value"]:""){
-	    y2internal("match!");
-	    devname=rule["name"]:"";
-          }
-        }
-   } else
-	y2error("Unknown rule for:%1", rule);
-  });
- } else y2warning("No MAC address to compare.");
- return devname;
+global string GetDevnameByMAC(string mac)
+{
+    string devname="";
+
+    if (size(mac)>0)
+    {
+        y2milestone("MAC address from 1st stage: %1", mac);
+        foreach(map rule, udev_rules, 
+        {
+            if (rule["rule"]:""=="ATTR{address}")
+            {
+                if (mac==rule["value"]:"")
+                {
+                    devname=rule["name"]:"";
+                    y2milestone("MAC address matched with device:%1", rule["name"]:"");
+                    break;
+                }
+            } 
+            else 
+            {
+                // ID= is deprecated. It should be replaced by KERNELS since udev 148 and
+                // is completely removed in udev 174. However SLES11 uses udev 147, so
+                // id is used for backward compatibility. Conclusion: bnc#787296 (see customer's
+                // AutoYaST profile).
+                if( contains( [ "KERNELS", "ID"], rule["rule"]:"") )
+                {
+                    y2milestone("rule: %1", rule);
+                    map cmd = (map)SCR::Execute(.target.bash_output,
+                        sformat( "DEVICE=$(grep '%1' /sys/class/net/*/address);KERNELS=$(ls -l \"$(echo ${DEVICE%%/*})/device\");echo ${KERNELS##*/}|tr -d '\n'", mac));
+                    
+                    if (cmd["exit"]:-1==0)
+                    {
+                        y2milestone("cmd output:%1", cmd["stdout"]:"");
+                
+                        if (cmd["stdout"]:""==rule["value"]:"")
+                        {
+                            y2internal("match!");
+                            devname=rule["name"]:"";
+                        }
+                    }
+                } 
+                else
+                    y2error("Unknown rule for:%1", rule);
+            }
+        } );
+    } 
+    else 
+        y2warning("No MAC address to compare.");
+
+    return devname;
 }
 
 

@@ -187,6 +187,14 @@ global define boolean Write() {
 
     SCR::Write(.etc.hosts, nil);
     sleep(sl);
+
+    /* 
+     * Reset nscd cache.
+     * Workaround due to buggy inotify implementation in nscd.
+     * See bnc#779531.
+     */
+    SCR::Execute( .target.bash, "nscd -i hosts");
+
     Progress::NextStage();
     return ret == true;
 }
