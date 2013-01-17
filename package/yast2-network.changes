@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jan 17 16:12:32 CET 2013 - locilka@suse.com
+
+- Added support for VNC in network/firewall configuration in first
+  stage of installation (bnc#795929)
+- 2.24.12
+
+-------------------------------------------------------------------
 Thu Jan 10 10:28:04 UTC 2013 - mfilka@suse.com
 
 - s390 - bnc#719881 - only devices with L2 support can be enslaved in bond
