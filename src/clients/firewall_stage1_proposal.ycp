@@ -44,6 +44,10 @@
     symbol FirewallDialogSimple() {
 	string title =  _("Basic Firewall and SSH Configuration");
 
+	term vnc_support = `Left(`CheckBox(`id("open_vnc_port"),
+	    // TRANSLATORS: check-box label
+	    _("Open &VNC Ports"), SuSEFirewall4Network::EnabledVnc1stStage()));
+
 	term contents = `VBox (
             `Frame (
             // frame label
@@ -54,8 +58,9 @@
 			`VBox(
 			    `Left(`CheckBox(`id("enable_fw"),`opt(`notify), 
 				    _("Enable Firewall"), SuSEFirewall4Network::Enabled1stStage())),
-			    `Left(`CheckBox(`id("open_port"), 
-				    _("Open SSH Port and Enable SSH Service"), SuSEFirewall4Network::EnabledSsh1stStage()))
+			    `Left(`CheckBox(`id("open_ssh_port"), 
+				    _("Open SSH Port and Enable SSH Service"), SuSEFirewall4Network::EnabledSsh1stStage())),
+			    (Linuxrc::vnc() ? vnc_support : `Empty())
 			)
                     )
                 )
@@ -72,8 +77,16 @@ the installation. It is recommended to keep it enabled.</p>") +
 
 _("<p>With enabled firewall, you can decide whether to open firewall port for SSH
 service and allow remote SSH logins. This will also enable SSH service (i.e. it
-will be started on computer boot).</p>");
+will be started on computer boot).</p>") +
 
+(Linuxrc::vnc() ?
+    // TRANSLATORS: help text
+    _("<p>You can also open VNC ports in firewall. It will not enable
+the remote administration service on a running system but it is
+started by the installer automatically if needed.</p>")
+    :
+    ""
+);
 
 	Wizard::CreateDialog ();
 	Wizard::SetTitleIcon ("yast-firewall");
@@ -82,7 +95,8 @@ will be started on computer boot).</p>");
 	Wizard::SetAbortButton (`cancel, Label::CancelButton());
 	Wizard::HideBackButton();
 
-	UI::ChangeWidget(`id("open_port"),`Enabled, SuSEFirewall4Network::Enabled1stStage());
+	UI::ChangeWidget(`id("open_ssh_port"),`Enabled, SuSEFirewall4Network::Enabled1stStage());
+	UI::ChangeWidget(`id("open_vnc_port"),`Enabled, SuSEFirewall4Network::Enabled1stStage());
 
 	any dialog_ret = nil;
 
@@ -91,16 +105,20 @@ will be started on computer boot).</p>");
 	    boolean enable = (boolean) UI::QueryWidget(`id("enable_fw"),`Value);
 
 	    if (dialog_ret == "enable_fw") {
-		UI::ChangeWidget(`id("open_port"),`Enabled, enable);
+		UI::ChangeWidget(`id("open_ssh_port"),`Enabled, enable);
+		UI::ChangeWidget(`id("open_vnc_port"),`Enabled, enable);
 		continue;
 	    }
 	    else if( dialog_ret == `next || dialog_ret == `ok) {
-	        boolean open = (boolean) UI::QueryWidget(`id("open_port"),`Value);
-	        boolean can_be_opened = (boolean) UI::QueryWidget(`id("open_port"),`Enabled);
+	        boolean open_ssh_port = (boolean) UI::QueryWidget(`id("open_ssh_port"),`Value);
+	        boolean open_vnc_port = (boolean) UI::QueryWidget(`id("open_vnc_port"),`Value);
+
+	        boolean can_be_opened = (boolean) UI::QueryWidget(`id("open_ssh_port"),`Enabled);
 
 		SuSEFirewall4Network::SetEnabled1stStage(enable);
 		if (can_be_opened)
-		    SuSEFirewall4Network::SetSshEnabled1stStage(open);
+		    SuSEFirewall4Network::SetSshEnabled1stStage(open_ssh_port);
+		    SuSEFirewall4Network::SetVncEnabled1stStage(open_vnc_port);
 		break;
 	    }
 	    else
@@ -127,6 +145,11 @@ will be started on computer boot).</p>");
 	    SuSEFirewall4Network::SetSshEnabled1stStage (true);
 	} else {
 	    SuSEFirewall4Network::SetSshEnabled1stStage (ProductFeatures::GetBooleanFeature ("globals", "firewall_enable_ssh"));
+	}
+
+	//we're installing over VNC, propose opening VNC port (bnc#734264)
+	if (Linuxrc::vnc()) {
+	    SuSEFirewall4Network::SetVncEnabled1stStage (true);
 	}
 
         SuSEFirewallProposal::SetProposalInitialized(true);
