@@ -88,7 +88,7 @@ else if (func == "Write")
     if (vnc_enabled)
     {
 	foreach (string zone, SuSEFirewall::GetKnownFirewallZones(), {
-	    // This VNC service doesn't have firewal services defined by package thus using ports
+	    // This VNC service doesn't have firewall services defined by package thus using ports
 	    // Ports taken from yast2-installation:/startup/common/vnc.sh (function startVNCServer)
 	    SuSEFirewall::SetAdditionalServices("TCP", zone, ["5801", "5901"]);
 	});
