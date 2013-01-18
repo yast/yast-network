@@ -1,4 +1,4 @@
-/****************************************************************************
+/***************************************************************************
  *
  * Copyright (c) 2008 - 2012 Novell, Inc.
  * All Rights Reserved.
@@ -39,7 +39,14 @@
     import "SuSEFirewallProposal";
     import "Wizard";
 
-    string proposal_id = "fw_1ststage";
+    const string PROPOSAL_ID = "fw_1ststage";
+
+    const string LINK_ENABLE_FIREWALL  = "firewall--enable_firewall_in_proposal";
+    const string LINK_DISABLE_FIREWALL = "firewall--disable_firewall_in_proposal";
+    const string LINK_ENABLE_SSH       = "firewall--enable_ssh_in_proposal";
+    const string LINK_DISABLE_SSH      = "firewall--disable_ssh_in_proposal";
+    const string LINK_ENABLE_VNC       = "firewall--enable_vnc_in_proposal";
+    const string LINK_DISABLE_VNC      = "firewall--disable_vnc_in_proposal";
 
     symbol FirewallDialogSimple() {
 	string title =  _("Basic Firewall and SSH Configuration");
@@ -169,9 +176,9 @@ started by the installer automatically if needed.</p>")
         // and if firewall is enabled - otherwise port could not be blocked
         string vnc_proposal = ((Linuxrc::vnc() && SuSEFirewall4Network::Enabled1stStage()) ?
             "<li>" + (SuSEFirewall4Network::EnabledVnc1stStage() ?
-                _("VNC ports will be open (<a href=\"firewall--disable_vnc_in_proposal\">close</a>)")
+                sformat(_("VNC ports will be open (<a href=\"%1\">close</a>)"), LINK_DISABLE_VNC)
                 :
-                _("VNC ports will be blocked (<a href=\"firewall--enable_vnc_in_proposal\">open</a>)")
+                sformat(_("VNC ports will be blocked (<a href=\"%1\">open</a>)"), LINK_ENABLE_VNC)
             ) + "</li>\n"
             :
             ""
@@ -180,16 +187,16 @@ started by the installer automatically if needed.</p>")
         string output = "<ul>\n" +
 
         "<li>" + (SuSEFirewall4Network::Enabled1stStage() ?
-            _("Firewall will be enabled (<a href=\"firewall--disable_firewall_in_proposal\">disable</a>)")
+            sformat(_("Firewall will be enabled (<a href=\"%1\">disable</a>)"), LINK_DISABLE_FIREWALL)
             :
-            _("Firewall will be disabled (<a href=\"firewall--enable_firewall_in_proposal\">enable</a>)")
+            sformat(_("Firewall will be disabled (<a href=\"%1\">enable</a>)"), LINK_ENABLE_FIREWALL)
         ) + "</li>\n" +
 
         // Summary is visible even if firewall is disabled - it also installs and enables the SSHD service
         "<li>" + (SuSEFirewall4Network::EnabledSsh1stStage() ?
-            _("SSH service will be enabled, SSH port will be open (<a href=\"firewall--disable_ssh_in_proposal\">disable and close</a>)")
+            sformat(_("SSH service will be enabled, SSH port will be open (<a href=\"%1\">disable and close</a>)"), LINK_DISABLE_SSH)
             :
-            _("SSH service will be disabled, SSH port will be blocked (<a href=\"firewall--enable_ssh_in_proposal\">enable and open</a>)")
+            sformat(_("SSH service will be disabled, SSH port will be blocked (<a href=\"%1\">enable and open</a>)"), LINK_ENABLE_SSH)
         ) + "</li>\n" +
 
         vnc_proposal +
@@ -200,9 +207,9 @@ started by the installer automatically if needed.</p>")
 	    "preformatted_proposal" : output,
 	    "warning_level" : `warning,
 	    "links" : [
-		"firewall--enable_firewall_in_proposal", "firewall--disable_firewall_in_proposal",
-		"firewall--enable_ssh_in_proposal", "firewall--disable_ssh_in_proposal",
-		"firewall--enable_vnc_in_proposal", "firewall--disable_vnc_in_proposal",
+		LINK_ENABLE_FIREWALL, LINK_DISABLE_FIREWALL,
+		LINK_ENABLE_SSH, LINK_DISABLE_SSH,
+		LINK_ENABLE_VNC, LINK_DISABLE_VNC,
 	    ]
 	];
     }
@@ -211,34 +218,35 @@ started by the installer automatically if needed.</p>")
 	symbol result = `next;
 	y2milestone("User clicked %1", chosen_link);
 
-	if (chosen_link == "firewall--enable_firewall_in_proposal")
+// FIXME switch/case/case
+	if (chosen_link == LINK_ENABLE_FIREWALL)
 	{
 	    y2milestone("Enabling FW");
 	    SuSEFirewall4Network::SetEnabled1stStage(true);
-	    PackagesProposal::AddResolvables(proposal_id, `package, ["SuSEfirewall2"]);
+	    PackagesProposal::AddResolvables(PROPOSAL_ID, `package, ["SuSEfirewall2"]);
 	}
-	else if (chosen_link == "firewall--disable_firewall_in_proposal")
+	else if (chosen_link == LINK_DISABLE_FIREWALL)
 	{
 	    y2milestone("Disabling FW");
 	    SuSEFirewall4Network::SetEnabled1stStage( false );
 	}
-	else if (chosen_link == "firewall--enable_ssh_in_proposal")
+	else if (chosen_link == LINK_ENABLE_SSH)
 	{
 	    y2milestone("Enabling SSH");
-	    PackagesProposal::AddResolvables(proposal_id, `package, ["openssh"]);
+	    PackagesProposal::AddResolvables(PROPOSAL_ID, `package, ["openssh"]);
 	    SuSEFirewall4Network::SetSshEnabled1stStage( true );
 	}
-	else if (chosen_link == "firewall--disable_ssh_in_proposal")
+	else if (chosen_link == LINK_DISABLE_SSH)
 	{
 	    y2milestone("Disabling SSH");
 	    SuSEFirewall4Network::SetSshEnabled1stStage( false );
 	}
-	else if (chosen_link == "firewall--enable_vnc_in_proposal")
+	else if (chosen_link == LINK_ENABLE_VNC)
 	{
 	    y2milestone("Enabling VNC");
 	    SuSEFirewall4Network::SetVncEnabled1stStage( true );
 	}
-	else if (chosen_link == "firewall--disable_vnc_in_proposal")
+	else if (chosen_link == LINK_DISABLE_VNC)
 	{
 	    y2milestone("Disabling VNC");
 	    SuSEFirewall4Network::SetVncEnabled1stStage( false );
