@@ -52,6 +52,7 @@ y2debug("param=%1", param);
 //we have those from the proposal
 boolean fw_enabled = SuSEFirewall4Network::Enabled1stStage();
 boolean ssh_enabled = SuSEFirewall4Network::EnabledSsh1stStage();
+boolean vnc_enabled = SuSEFirewall4Network::EnabledVnc1stStage();
 
 if (func == "Info")
 {
@@ -59,7 +60,7 @@ if (func == "Info")
 	"steps" : 1,
 	// progress step title
 	"title" : _("Writing Firewall Configuration..."),
-	"when" : (SuSEFirewallProposal::GetChangedByUser() || ssh_enabled) ? [ `installation,  `autoinst ] : [],
+	"when" : (SuSEFirewallProposal::GetChangedByUser() || ssh_enabled || vnc_enabled) ? [ `installation,  `autoinst ] : [],
     ];
 }
 else if (func == "Write")
@@ -82,6 +83,15 @@ else if (func == "Write")
         SuSEFirewall::SetServicesForZones (["service:sshd"], SuSEFirewall::GetKnownFirewallZones(), true );
 	//enable SSH service if the port is to be opened (bnc#537980)
 	Service::Enable("sshd");
+    }
+
+    if (vnc_enabled)
+    {
+	foreach (string zone, SuSEFirewall::GetKnownFirewallZones(), {
+	    // This VNC service doesn't have firewall services defined by package thus using ports
+	    // Ports taken from yast2-installation:/startup/common/vnc.sh (function startVNCServer)
+	    SuSEFirewall::SetAdditionalServices("TCP", zone, ["5801", "5901"]);
+	});
     }
 
     //this is equivalent to write-only, do not attempt to restart the service
