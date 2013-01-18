@@ -42,6 +42,7 @@
 
     boolean firewall_enabled_1st_stage = false;
     boolean ssh_enabled_1st_stage = false;
+    boolean vnc_enabled_1st_stage = false;
 
     /**
      * Function reads configuration of SuSEFirewall.
@@ -201,21 +202,59 @@
 	    SuSEFirewallProposal::SetChangedByUser(changed);
     }
 
+    /**
+     * Returns whether the firewall package is installed
+     * @return boolean if installed
+     */
     global define boolean IsInstalled() {
 	return SuSEFirewall::SuSEFirewallIsInstalled ();
     }
 
+    /**
+     * Sets whether firewall should be enabled
+     * @param boolean new state
+     */
     global define void SetEnabled1stStage( boolean enabled) {
 	firewall_enabled_1st_stage = enabled;
     }
+
+    /**
+     * Returns whether firewall is supposed to be enabled
+     * @return boolean whether enabled
+     */
     global define boolean Enabled1stStage() {
 	return firewall_enabled_1st_stage;
     }
+
+    /**
+     * Sets whether SSH port should be opened in firewall
+     * @param boolean new state
+     */
     global define void SetSshEnabled1stStage( boolean enabled) {
 	ssh_enabled_1st_stage = enabled;
     }
+
+    /**
+     * Returns whether SSH port is supposed to be open in firewall
+     */
     global define boolean EnabledSsh1stStage() {
 	return ssh_enabled_1st_stage;
     }
+
+    /**
+     * Sets whether VNC ports should be opened in firewall
+     * @param boolean new state
+     */
+    global define void SetVncEnabled1stStage( boolean enabled) {
+	vnc_enabled_1st_stage = enabled;
+    }
+
+    /**
+     * Returns whether VNC ports are supposed to be open in firewall
+     */
+    global define boolean EnabledVnc1stStage() {
+	return vnc_enabled_1st_stage;
+    }
+
 /* EOF */
 }
