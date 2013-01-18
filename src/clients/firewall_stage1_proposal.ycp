@@ -47,6 +47,7 @@
     const string LINK_DISABLE_SSH      = "firewall--disable_ssh_in_proposal";
     const string LINK_ENABLE_VNC       = "firewall--enable_vnc_in_proposal";
     const string LINK_DISABLE_VNC      = "firewall--disable_vnc_in_proposal";
+    const string LINK_FIREWALL_DIALOG  = "firewall_stage1";
 
     symbol FirewallDialogSimple() {
 	string title =  _("Basic Firewall and SSH Configuration");
@@ -218,7 +219,6 @@ started by the installer automatically if needed.</p>")
 	symbol result = `next;
 	y2milestone("User clicked %1", chosen_link);
 
-// FIXME switch/case/case
 	if (chosen_link == LINK_ENABLE_FIREWALL)
 	{
 	    y2milestone("Enabling FW");
@@ -251,7 +251,7 @@ started by the installer automatically if needed.</p>")
 	    y2milestone("Disabling VNC");
 	    SuSEFirewall4Network::SetVncEnabled1stStage( false );
 	}
-	else if (chosen_link == "firewall_stage1")
+	else if (chosen_link == LINK_FIREWALL_DIALOG)
 	{
 	    result = FirewallDialogSimple();
 	}
@@ -275,7 +275,7 @@ started by the installer automatically if needed.</p>")
               "rich_text_title" :       _("Firewall and SSH"),
                 // Menu entry label
               "menu_title"      :       _("&Firewall and SSH"),
-              "id"              :       "firewall_stage1"
+              "id"              :       LINK_FIREWALL_DIALOG
             ];
     }
     else if (func == "Write")
