@@ -229,6 +229,7 @@ started by the installer automatically if needed.</p>")
 	{
 	    y2milestone("Disabling FW");
 	    SuSEFirewall4Network::SetEnabled1stStage( false );
+	    PackagesProposal::RemoveResolvables(PROPOSAL_ID, `package, ["SuSEfirewall2"]);
 	}
 	else if (chosen_link == LINK_ENABLE_SSH)
 	{
@@ -240,6 +241,7 @@ started by the installer automatically if needed.</p>")
 	{
 	    y2milestone("Disabling SSH");
 	    SuSEFirewall4Network::SetSshEnabled1stStage( false );
+	    PackagesProposal::RemoveResolvables(PROPOSAL_ID, `package, ["openssh"]);
 	}
 	else if (chosen_link == LINK_ENABLE_VNC)
 	{
