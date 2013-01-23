@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jan 21 20:09:15 UTC 2013 - mfilka@suse.com
+
+- fate#312733
+	- nameservers editing supported via CLI
+- 2.24.13
+ 
+-------------------------------------------------------------------
 Thu Jan 17 16:12:32 CET 2013 - locilka@suse.com
 
 - Added support for VNC in network/firewall configuration in first
