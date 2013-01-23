@@ -180,6 +180,30 @@ define void SetHostname( any value)
 }
 
 /**
+ * Function for updating ip address of first nameserver.
+ */
+define void SetNameserver1( any value)
+{
+    SetHnItem( "NAMESERVER_1", value);
+}
+
+/**
+ * Function for updating ip address of second nameserver.
+ */
+define void SetNameserver2( any value)
+{
+    SetHnItem( "NAMESERVER_2", value);
+}
+
+/**
+ * Function for updating ip address of third nameserver.
+ */
+define void SetNameserver3( any value)
+{
+    SetHnItem( "NAMESERVER_3", value);
+}
+
+/**
  * Default function to init the value of a widget.
  * Used for push buttons.
  * @param key id of the widget
