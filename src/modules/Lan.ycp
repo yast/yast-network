@@ -123,7 +123,7 @@ global list<string> bond_autoconf_slaves = [];
  */
 global boolean Modified() {
     boolean ret  = LanItems::GetModified() || DNS::modified || Routing::Modified() ||
-	NetworkConfig::Modified();
+	NetworkConfig::Modified() || NetworkService::Modified();
     return ret;
 }
 
@@ -522,6 +522,7 @@ global define boolean Write() {
      if(Abort()) return false;
      /* Progress step 9 */
      ProgressNextStage(_("Activating network services..."));
+     NetworkService::ReloadOrRestart();
    // during installation export sysconfig settings into NetworkManager (bnc#433084)
    if (Mode::installation() && NetworkService::IsManaged()) y2internal("Export sysconfig settings into NetworkManager %1", SCR::Execute(.target.bash_output, "/usr/lib/NetworkManager/nm-opensuse-sysconfig-merge --connections"));
 
@@ -556,7 +557,7 @@ y2internal("virt_net_proposal %1", virt_net_proposal);
     any ret = UI::TimeoutUserInput(10*1000);
 	if (ret==`ok){
 	 y2internal("Restarting network because of bridged proposal");
-	 Service::Restart("network");
+	 NetworkService::ReloadOrRestart();
 	}
      UI::CloseDialog();
     }
@@ -565,11 +566,9 @@ y2internal("virt_net_proposal %1", virt_net_proposal);
     else if (Stage::cont() && (Linuxrc::usessh() || Linuxrc::vnc() || Linuxrc::display_ip())) 
 	y2milestone("For ssh or vnc installation don't reload/restart network during installation.");
     else if (LanItems::force_restart)
-	Service::Restart("network");
-    else if(Service::Status("network")==0){
-	Service::Reload("network");
-    }
-    else Service::Restart("network");
+	NetworkService::Restart();
+    else
+	NetworkService::ReloadOrRestart();
     sleep(sl);
     }
 
