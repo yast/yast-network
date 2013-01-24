@@ -11,8 +11,8 @@ BuildRequires:  yast2-country
 BuildRequires:  yast2-installation >= 2.15.27
 
 # yast2 v2.23.19 - Checking for systemd services extended with /etc/init.d path
-BuildRequires:  yast2 >= 2.23.19
-Requires:       yast2 >= 2.23.6
+BuildRequires:  yast2 >= 2.23.20
+Requires:       yast2 >= 2.23.20
 
 #netconfig (FaTE #303618)
 Requires:       sysconfig >= 0.80.0
