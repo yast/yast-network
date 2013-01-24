@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Thu Jan 24 18:18:57 UTC 2013 - mt@suse.com
+
+- Adopted to restart / reload using NetworkService instead Service,
+  that has been changed to use network.service alias link installed
+  by NetworkManager.service while "systemctl enable" and obsoletes
+  the NETWORKMANAGER=yes/no variable in /etc/sysconfig/network/config
+  (bnc#764055,bnc#764336,bnc#798348)
+- 2.24.13
+
+-------------------------------------------------------------------
 Thu Jan 17 16:12:32 CET 2013 - locilka@suse.com
 
 - Added support for VNC in network/firewall configuration in first
