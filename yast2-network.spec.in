@@ -15,7 +15,7 @@ BuildRequires:  yast2 >= 2.23.19
 Requires:       yast2 >= 2.23.6
 
 #netconfig (FaTE #303618)
-Requires:       sysconfig >= 0.71.2
+Requires:       sysconfig >= 0.80.0
 #GetLanguageCountry
 #(in newly created yast2-country-data)
 Requires:       yast2-country-data >= 2.16.3
