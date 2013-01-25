@@ -122,6 +122,67 @@ define void StoreSettings (map settings) {
 }
 
 /**
+ * Stores actual hostname settings.
+ */
+define void StoreHnSettings()
+{
+    StoreSettings( hn_settings);
+}
+
+/**
+ * Initialize internal state according current system configuration.
+ */
+define void InitHnSettings()
+{
+    has_dhcp = Lan::AnyDHCPDevice ();
+
+    hn_settings = InitSettings ();
+}
+
+/**
+ * Function for updating actual hostname settings.
+ * @param key for known keys see hn_settings
+ * @param value value for particular hn_settings key
+ */
+define void SetHnItem( string key, any value)
+{
+    y2milestone("hn_settings[ \"%1\"] changes '%2' -> '%3'", key, hn_settings[ key]:"", value);
+    hn_settings[key] = value;
+}
+
+/**
+ * Function for updating actual hostname.
+ */
+define void SetHostname( any value)
+{
+    SetHnItem( "HOSTNAME", value);
+}
+
+/**
+ * Function for updating ip address of first nameserver.
+ */
+define void SetNameserver1( any value)
+{
+    SetHnItem( "NAMESERVER_1", value);
+}
+
+/**
+ * Function for updating ip address of second nameserver.
+ */
+define void SetNameserver2( any value)
+{
+    SetHnItem( "NAMESERVER_2", value);
+}
+
+/**
+ * Function for updating ip address of third nameserver.
+ */
+define void SetNameserver3( any value)
+{
+    SetHnItem( "NAMESERVER_3", value);
+}
+
+/**
  * Default function to init the value of a widget.
  * Used for push buttons.
  * @param key id of the widget
@@ -139,8 +200,7 @@ define void InitHnWidget (string key) {
  */
 define void StoreHnWidget (string key, map event) {
     any value = UI::QueryWidget (`id (key), `Value);
-    y2milestone("%1/%2", key, value);
-    hn_settings[key] = value;
+    SetHnItem( key, value);
 }
 
 /**
@@ -330,12 +390,13 @@ symbol handleModifyResolvPolicy (string key, map event){
 	return nil;
 }
 
-
+/**
+ * Used in GUI mode - initializes widgets according hn_settings
+ * @param key ignored
+ */
 void initHostnameGlobal(string key){
     // NetworkService::IsManaged () not: #169858, #156830
-    has_dhcp = Lan::AnyDHCPDevice ();
-
-    hn_settings = InitSettings ();
+    InitHnSettings();
 
     foreach(string key, (list<string>)Map::Keys(hn_settings),{
         InitHnWidget(key);
@@ -348,12 +409,18 @@ void initHostnameGlobal(string key){
 
 }
 
+/**
+ * Used in GUI mode - updates and stores actuall hostname settings according dialog widgets content.
+ * It calls store handler for every widget from hn_settings with event as an option.
+ * @param key ignored
+ * @param event user generated event
+ */
 void storeHostnameGlobal(string key, map event){
     foreach(string key, (list<string>)Map::Keys(hn_settings),{
      StoreHnWidget(key, event);
     });
 
-    StoreSettings( hn_settings );
+    StoreHnSettings();
 }
 
 map<string, map<string,any> > widget_descr_dns = $[
