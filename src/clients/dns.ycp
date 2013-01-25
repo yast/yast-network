@@ -38,6 +38,11 @@ define boolean Modified() {
 include "network/runtime.ycp";
 include "network/services/dns.ycp";
 
+const string HOSTNAME       = "hostname";
+const string NAMESERVER_1   = "nameserver1";
+const string NAMESERVER_2   = "nameserver2";
+const string NAMESERVER_3   = "nameserver3";
+
 /**
  * Main DNS GUI
  */
@@ -81,6 +86,110 @@ define boolean ListHandler(map<string, string> options) {
 }
 
 /**
+ * Handler for action "edit"
+ * @param options action options
+ * @return boolean if successful
+ */
+define boolean EditHandler(map<string, string> options)
+{
+    y2milestone( "Edit handler, options: %1", options);
+
+    // validator: a reference to boolean( string) is expected 
+    // setter: a reference to void( any) is expected
+    // fail message: a string is expected
+    map< string, map< string, any> > option_handlers = $[
+        HOSTNAME: $[
+            "validator":    Hostname::Check,
+            "setter":       SetHostname,
+            "fail_message": _( "InvalidHostname. ") + Hostname::ValidHost(),
+        ], 
+        NAMESERVER_1: $[
+            "validator":    IP::Check,
+            "setter":       SetNameserver1,
+            "fail_message": _( "Invalid IP. ") + IP::Valid4() + "\n" + IP::Valid6(),
+        ],
+        NAMESERVER_2: $[
+            "validator":    IP::Check,
+            "setter":       SetNameserver2,
+            "fail_message": _( "Invalid IP. ") + IP::Valid4() + "\n" + IP::Valid6(),
+        ],
+        NAMESERVER_3: $[
+            "validator":    IP::Check,
+            "setter":       SetNameserver3,
+            "fail_message": _( "Invalid IP. ") + IP::Valid4() + "\n" + IP::Valid6(),
+        ],
+    ];
+
+    const list< string> unmanaged_only_options = [
+        NAMESERVER_1,
+        NAMESERVER_2,
+        NAMESERVER_3,
+    ];
+
+    boolean ret = true;
+
+    foreach( string option, string value, options, 
+    {
+        if( contains( unmanaged_only_options, option) && NetworkService::IsManaged() )
+        {
+            CommandLine::Print( _("Cannot set ") + option + _(". Network is managed by NetworkManager."));
+            
+            ret = false;
+        }
+
+        boolean( string) option_validator = ( boolean( string)) option_handlers[ option, "validator"]:nil;
+        void( any) option_setter = ( void( any)) option_handlers[ option, "setter"]:nil;
+        string fail_message = ( string) option_handlers[ option, "fail_message"]:_( "Invalid option value.");
+
+        if( ( option_validator == nil) || ( option_setter == nil))
+        {
+            y2internal( "Edit handler: unknown option (%1=%2) or unknown option handlers", option, value);
+
+            CommandLine::Print( _("Internal error") );
+
+            ret = false;
+        }
+
+        if( option_validator( value))
+        {
+            option_setter( value);
+        }
+        else
+        {
+            CommandLine::Print( fail_message);
+            ret = false;
+        }
+    });
+
+    return ret;
+}
+
+/**
+ * CLI mode initialization handler
+ * @return boolean if successful
+ */
+define boolean InitHandler()
+{
+    if( !DNS::Read() || !Lan::Read( `cache))
+        return false;
+
+    InitHnSettings();
+
+    return true;
+}
+
+/**
+ *  CLI mode finish handler
+ * @return boolean if successful
+ */
+define boolean FinishHandler()
+{
+    StoreHnSettings();
+
+    return DNS::Write();
+}
+
+/**
  * Command line definition
  */
 map cmdline = $[
@@ -88,14 +197,48 @@ map cmdline = $[
     "help"	: _("DNS Configuration"),
     "id"	: "dns",
     "guihandler": DNSGUI,
-    "initialize": DNS::Read,
-    "finish"	: DNS::Write, // FIXME
+    "initialize": InitHandler,
+    "finish"	: FinishHandler,
     "actions"	: $[
 	"list" : $[
 	    /* Commandline command help */
 	    "help"	: _("Display configuration summary"),
 	    "handler"	: ListHandler,
 	],
+        "edit" : $[
+            "help"      : _("Edit current settings"),
+            "handler"   : EditHandler,
+        ],
+    ],
+    "options"   : $[
+        HOSTNAME      : $[
+            "help"      : _( "Used machine hostname"),
+            "type"      : "string",
+            "example"   : "dns edit hostname=SUSE-host",
+        ],
+        NAMESERVER_1   : $[
+            "help"      : _( "IP address of first nameserver."),
+            "type"      : "string",
+            "example"   : "dns edit nameserver1=192.168.0.1",
+        ],
+        NAMESERVER_2   : $[
+            "help"      : _( "IP address of second nameserver."),
+            "type"      : "string",
+            "example"   : "dns edit nameserver2=192.168.0.1",
+        ],
+        NAMESERVER_3   : $[
+            "help"      : _( "IP address of third nameserver."),
+            "type"      : "string",
+            "example"   : "dns edit nameserver3=192.168.0.1",
+        ],
+    ],
+    "mappings"  : $[
+        "edit"  : [ 
+            HOSTNAME,
+            NAMESERVER_1,
+            NAMESERVER_2,
+            NAMESERVER_3,
+         ],
     ],
 ];
 
