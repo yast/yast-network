@@ -33,6 +33,8 @@ textdomain "network";
 
 import "NetHwDetection";
 
+include "network/routines.ycp";
+
 y2milestone("----------------------------------------");
 y2milestone("Lan netprobe module started");
 y2milestone("Args: %1", WFM::Args());
