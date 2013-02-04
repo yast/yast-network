@@ -556,7 +556,7 @@ y2internal("virt_net_proposal %1", virt_net_proposal);
     any ret = UI::TimeoutUserInput(10*1000);
 	if (ret==`ok){
 	 y2internal("Restarting network because of bridged proposal");
-	 NetworkService::ReloadOrRestart();
+	 NetworkService::Restart();
 	}
      UI::CloseDialog();
     }
