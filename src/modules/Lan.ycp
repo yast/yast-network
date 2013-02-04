@@ -522,7 +522,6 @@ global define boolean Write() {
      if(Abort()) return false;
      /* Progress step 9 */
      ProgressNextStage(_("Activating network services..."));
-     NetworkService::ReloadOrRestart();
    // during installation export sysconfig settings into NetworkManager (bnc#433084)
    if (Mode::installation() && NetworkService::IsManaged()) y2internal("Export sysconfig settings into NetworkManager %1", SCR::Execute(.target.bash_output, "/usr/lib/NetworkManager/nm-opensuse-sysconfig-merge --connections"));
 
