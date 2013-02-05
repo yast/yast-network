@@ -294,11 +294,7 @@ Check configuration manually."));
     {
         NetHwDetection::Start();
     }
-    // Start interfaces iff running installation. See bnc#395014 and bnc#782283
-    if( Mode::installation())
-    {
-        SetAllLinksUp();
-    }
+
     sleep(sl);
 
     if(Abort()) return false;

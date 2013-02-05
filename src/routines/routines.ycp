@@ -895,6 +895,11 @@ define list<string> GetAllInterfaces()
     return result[ "exit"]:false ? result[ "output"]:[] : [];
 }
 
+/**
+ * Set all known interfaces up.
+ *
+ * @return true if all interfaces were successfully set up, false otherwise.
+ */
 define boolean SetAllLinksUp() 
 {
     list< string> interfaces = GetAllInterfaces();
