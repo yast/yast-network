@@ -1,4 +1,28 @@
 -------------------------------------------------------------------
+Tue Feb  5 15:13:46 CET 2013 - mvidner@suse.cz
+
+- version bump for SP2 maintenance; note that by mistake the two
+  previous changes (bnc#796580) have version numbers colliding with
+  different changes in SP3 (FATE#312733).
+- 2.17.182.1
+
+-------------------------------------------------------------------
+Fri Jan 11 10:09:25 CET 2013 - mvidner@suse.cz
+
+- AutoYaST: If keep_install_network=true and dns/write_hostname
+  is unspecified, use the product default (which is false on SLES),
+  thus not writing 127.0.0.2 to /etc/hosts. (bnc#796580)
+  (fixing a regression introduced in 2.17.166)
+- 2.17.182
+
+-------------------------------------------------------------------
+Tue Jan  8 14:43:10 CET 2013 - mvidner@suse.cz
+
+- AutoYaST: write /etc/hosts even if keep_install_network=true
+  (bnc#796580)
+- 2.17.181
+
+-------------------------------------------------------------------
 Fri Nov  9 07:22:46 UTC 2012 - mfilka@suse.com
 
 - s390 - bnc#719881 - only devices with L2 support can be enslaved in bond
