@@ -13,11 +13,20 @@ textdomain "network";
 
 import "NetHwDetection";
 
+include "network/routines.ycp";
+
 y2milestone("----------------------------------------");
 y2milestone("Lan netprobe module started");
 y2milestone("Args: %1", WFM::Args());
 
-if(!NetHwDetection::running) NetHwDetection::Start();
+if(!NetHwDetection::running) 
+{
+    if( NetHwDetection::Start())
+    {
+        // Start interfaces iff running installation. See bnc#395014, bnc#782283 and bnc#792985
+        SetAllLinksUp();
+    }
+}
 
 y2milestone("Lan netprobe module finished");
 y2milestone("----------------------------------------");
