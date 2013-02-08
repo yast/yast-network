@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Tue Feb  5 15:13:46 CET 2013 - mvidner@suse.cz
+
+- AutoYaST: write /etc/hosts even if keep_install_network=true
+  (bnc#796580)
+- AutoYaST: If keep_install_network=true and dns/write_hostname
+  is unspecified, use the product default (which is false on SLES),
+  thus not writing 127.0.0.2 to /etc/hosts. (bnc#796580)
+  (fixing a regression introduced in 2.17.166)
+- 2.17.184
+
+-------------------------------------------------------------------
 Thu Jan 31 11:49:10 UTC 2013 - mfilka@suse.com
 
 - bnc#792985 

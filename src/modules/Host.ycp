@@ -199,7 +199,8 @@ global define boolean Write() {
  * @return true if success
  */
 global define boolean Import(map settings) {
-    modified = true;
+    modified = true;            // trigger Write
+    initialized = true;         // don't let Read discard our data
 
     hosts = eval(settings["hosts"]:$[]);
 
