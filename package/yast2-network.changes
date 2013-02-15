@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Feb 14 15:16:51 UTC 2013 - mfilka@suse.com
+
+- bnc#790219
+    - fixed writting ifcfg for bonding through YaPI.
+- 2.17.182.2
+
+-------------------------------------------------------------------
 Tue Feb  5 15:13:46 CET 2013 - mvidner@suse.cz
 
 - version bump for SP2 maintenance; note that by mistake the two
