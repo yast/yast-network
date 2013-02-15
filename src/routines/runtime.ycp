@@ -47,8 +47,8 @@ textdomain "network";
 define boolean RunSuSEconfig() {
     y2milestone("Running SuSEconfig ...");
     SCR::Execute(.target.bash, "/sbin/SuSEconfig --module apache 2>/dev/null");
-    SCR::Execute(.target.bash, "/sbin/SuSEconfig --module sendmail 2>/dev/null");
-    SCR::Execute(.target.bash, "/sbin/SuSEconfig --module postfix 2>/dev/null");
+    SCR::Execute(.target.bash, "/usr/lib/sendmail/update 2>/dev/null");
+    SCR::Execute(.target.bash, "/usr/sbin/config.postfix 2>/dev/null");
     return true;
 }
 
