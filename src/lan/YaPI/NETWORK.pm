@@ -67,12 +67,8 @@ sub Read {
                     $configuration{'bond_slaves'} = LanItems->bond_slaves;
                 }
                 
-                if(@{LanItems->bond_slaves}) {
-                    $configuration{'bond_slaves'} = LanItems->bond_slaves;
-                }
-        
-        	    if(LanItems->bond_option) {
-            		$configuration{'bond_option'} = LanItems->bond_option; 
+        	if(LanItems->bond_option) {
+            	    $configuration{'bond_option'} = LanItems->bond_option; 
                 }
             }
 
@@ -84,11 +80,7 @@ sub Read {
 
         } elsif (LanItems->getCurrentItem()->{'hwinfo'}->{'type'} eq "eth") {
             my $device = LanItems->getCurrentItem()->{"hwinfo"}->{"dev_name"};
-	    $interfaces{$device}= {};
-
-	    if(LanItems->getCurrentItem()->{'hwinfo'}->{'type'} eq "eth") {
-		$interfaces{$device}= {'vendor' => LanItems->getCurrentItem()->{"hwinfo"}->{"name"}};
-	    } 
+	    $interfaces{$device}= {'vendor' => LanItems->getCurrentItem()->{"hwinfo"}->{"name"}};
 
 	    $interfaces{$device}
 	}
@@ -230,7 +222,7 @@ sub writeInterfaces {
 	  
 		if (defined $ifc->{'bond'}) {
 		    y2milestone("*** bonding settings *******************************");
-		    $config{"BONDING_MASTER_MASTER"} = "yes";
+		    $config{"BONDING_MASTER"} = "yes";
 		    $config{"BONDING_MODULE_OPTS"} = $ifc->{'bond_option'};
 		    #$config{"BONDING_SLAVE"} = $ifc->{'bond_option'};
 
