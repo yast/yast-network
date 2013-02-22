@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Fri Mar 22 10:08:35 UTC 2013 - mfilka@suse.com
+
+- Ported several fixes in YaPI:
+- bnc#790219
+    - fixed writting ifcfg for bonding through YaPI.
+    More than two interfaces can be added into bond device.
+- 2.17.187
+
+-------------------------------------------------------------------
 Wed Mar 20 13:57:51 UTC 2013 - mfilka@suse.com
 
 - bnc#810525
