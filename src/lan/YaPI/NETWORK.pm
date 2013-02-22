@@ -224,14 +224,13 @@ sub writeInterfaces {
 		    y2milestone("*** bonding settings *******************************");
 		    $config{"BONDING_MASTER"} = "yes";
 		    $config{"BONDING_MODULE_OPTS"} = $ifc->{'bond_option'};
-		    #$config{"BONDING_SLAVE"} = $ifc->{'bond_option'};
 
 		    my @slaves = split(/ /,$ifc->{'bond_slaves'});	    
 		    
-		    for my $i (0 .. length(@slaves)) {
-                y2milestone("BONDING_SLAVE$i", @slaves[$i]); 
-                $config{"BONDING_SLAVE$i"} = @slaves[$i];
-            }
+		    for my $i (0 .. scalar(@slaves) -1) {
+			y2milestone("BONDING_SLAVE$i", @slaves[$i]); 
+			$config{"BONDING_SLAVE$i"} = @slaves[$i];
+		    }
 		}
 
 
