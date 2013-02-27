@@ -5,6 +5,8 @@ Fri Mar 22 10:08:35 UTC 2013 - mfilka@suse.com
 - bnc#790219
     - fixed writting ifcfg for bonding through YaPI.
     More than two interfaces can be added into bond device.
+    - YaPI: drop caches when reading network interfaces, make it
+    stateless (bnc#790219#c33) - lslezak@suse.cz
 - 2.17.187
 
 -------------------------------------------------------------------
