@@ -85,8 +85,6 @@ sub Read {
         } elsif (LanItems->getCurrentItem()->{'hwinfo'}->{'type'} eq "eth") {
             my $device = LanItems->getCurrentItem()->{"hwinfo"}->{"dev_name"};
 	    $interfaces{$device}= {'vendor' => LanItems->getCurrentItem()->{"hwinfo"}->{"name"}};
-
-	    $interfaces{$device}
 	}
     }
 
