@@ -11,6 +11,7 @@ YaST::YCP::Import ("Hostname");
 YaST::YCP::Import ("Host");
 YaST::YCP::Import ("DNS");
 YaST::YCP::Import ("Routing");
+YaST::YCP::Import ("NetworkInterfaces");
 # -------------------------------------
 
 our $VERSION            = '1.0.0';
@@ -26,6 +27,9 @@ sub Read {
 
     DNS->Read();
     Routing->Read();
+    # force cleaning the cache to make it stateless
+    # NetworkInterfaces are read in LanItems
+    NetworkInterfaces->CleanCacheRead();
     LanItems->Read();
 
     my %interfaces = ();
@@ -81,8 +85,6 @@ sub Read {
         } elsif (LanItems->getCurrentItem()->{'hwinfo'}->{'type'} eq "eth") {
             my $device = LanItems->getCurrentItem()->{"hwinfo"}->{"dev_name"};
 	    $interfaces{$device}= {'vendor' => LanItems->getCurrentItem()->{"hwinfo"}->{"name"}};
-
-	    $interfaces{$device}
 	}
     }
 
@@ -174,8 +176,8 @@ sub writeInterfaces {
     y2milestone("interface", Dumper(\$args->{'interface'}));
 
     while (my ($dev, $ifc) = each %{$args->{'interface'}}) {
-        YaST::YCP::Import ("NetworkInterfaces");
-        NetworkInterfaces->Read();
+        # force cleaning the cache to make it stateless
+        NetworkInterfaces->CleanCacheRead();
         NetworkInterfaces->Add() unless NetworkInterfaces->Edit($dev);
         NetworkInterfaces->Name($dev);
 
