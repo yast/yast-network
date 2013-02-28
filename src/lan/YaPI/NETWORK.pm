@@ -174,8 +174,14 @@ sub writeInterfaces {
     my $ret = {'exit'=>0, 'error'=>''};
 
     y2milestone("interface", Dumper(\$args->{'interface'}));
+    my %interfaces = %{$args->{'interface'}};
+    my @interface_names = keys %interfaces;
 
-    while (my ($dev, $ifc) = each %{$args->{'interface'}}) {
+    # interface_names is used as FIFO and can be updated during loop. It's because
+    # some interfaces (e.g. bridge) can require reconfiguring of other interfaces too.
+    while ( my $dev = shift @interface_names) {
+	my $ifc = $interfaces{ $dev };
+
         # force cleaning the cache to make it stateless
         NetworkInterfaces->CleanCacheRead();
         NetworkInterfaces->Add() unless NetworkInterfaces->Edit($dev);
@@ -189,6 +195,15 @@ sub writeInterfaces {
 	   NetworkInterfaces->Write("");
 	   YaST::YCP::Import ("Service");
 	   Service->Restart("network");
+
+	    # part of hack (1) see bellow
+	    # when forcing reconfiguration of bridge slaves the slave's configuration is
+	    # initially deleted and created new one for each slave. It's done so that, the 
+	    # slave's name is included twice in @interface_name FIFO. When processing it 
+	    # for the second time we need to skip over this branch, so deleting is disabled.
+	    # Rest of the device configuration is left untouched so it can be used for 
+	    # setting new configuration.
+	    $interfaces{ $dev }{ 'delete' } = "false";
 
         } else {
 		my %config=("STARTMODE" => defined $ifc->{'startmode'}? $ifc->{'startmode'}: 'auto',
@@ -220,6 +235,24 @@ sub writeInterfaces {
 		    y2milestone(Dumper($ifc->{'bridge_ports'}));
 		    $config{"BRIDGE"} = "yes";
 		    $config{"BRIDGE_PORTS"} = $ifc->{'bridge_ports'};
+
+		    # ugly hack (1) which forces overwriting configuration of already configured ports.
+		    # it works this way:
+		    # 1) creates configuration for deleting the port. bootproto and startmode are present
+		    # to make the hack independent on default values and are used when creating new config.
+		    # 2) push device name into FIFO interface_names (to perform delete)
+		    # 3) push device name into FIFO interface_names one more time (to create default config)
+		    foreach my $iface ( split( / /, $ifc->{'bridge_ports'}))
+		    {
+			$interfaces{ $iface } = { 
+			    'delete' => "true", 
+			    'startmode' => "auto",
+			    'bootproto' => "static",
+			};
+
+			push @interface_names, $iface;
+			push @interface_names, $iface;
+		    }
 		}
 	  
 		if (defined $ifc->{'bond'}) {
