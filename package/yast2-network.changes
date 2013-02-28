@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Feb 27 22:42:42 UTC 2013 - mfilka@suse.com
+
+- fate#313548, fate#309055 and fate#100011 in general. Removed
+  SUSEconfig calls for postfix and sendmail. Also related to
+  bnc#786665
+- 2.24.15 
+
+-------------------------------------------------------------------
 Tue Feb 12 14:00:05 CET 2013 - mvidner@suse.cz
 
 - AutoYaST: write /etc/hosts even if keep_install_network=true
