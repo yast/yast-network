@@ -45,27 +45,11 @@ textdomain "network";
  * @return true if success
  */
 define boolean RunSuSEconfig() {
-    y2milestone("Running SuSEconfig ...");
-    SCR::Execute(.target.bash, "/sbin/SuSEconfig --module apache 2>/dev/null");
-    SCR::Execute(.target.bash, "/sbin/SuSEconfig --module sendmail 2>/dev/null");
-    SCR::Execute(.target.bash, "/sbin/SuSEconfig --module postfix 2>/dev/null");
+    y2milestone("Updating sendmail and/or postfix configuration.");
+    SCR::Execute(.target.bash, "/usr/lib/sendmail.d/update 2>/dev/null");
+    SCR::Execute(.target.bash, "/usr/sbin/config.postfix 2>/dev/null");
     return true;
 }
-
-/**
- * Run one SuSEconfig module
- * @param modul SuSEconfig module
- * @return true if success
- */
-define boolean RunSuSEconfigModule(string modul) {
-    if(modul == nil || modul == "") {
-	y2error("Wrong SuSEconfig module: %1", modul);
-	return false;
-    }
-    y2milestone("Running SuSEconfig module %1", modul);
-    return (SCR::Execute(.target.bash, sformat("/sbin/SuSEconfig --module %1", modul)) == 0);
-}
-
 
 /**
  * Link detection
