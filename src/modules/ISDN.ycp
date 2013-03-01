@@ -402,7 +402,7 @@ global define boolean Write(boolean start) ``{
     // stage 6/13
     plist = add(plist, _("Write providers"));
     // stage 7/13
-    plist = add(plist, _("Run SuSEconfig"));
+    plist = add(plist, _("Update configuration..."));
     if (start) {
 	steps = 8;
         // stage 8/13
@@ -475,8 +475,8 @@ global define boolean Write(boolean start) ``{
 
     if(Abort()) return false;
     // step 7 in writing current ISDN setup
-    ProgressNextStage(_("Running SuSEconfig..."));
-    SCR::Execute(.target.bash, "/sbin/SuSEconfig --module isdn");
+    ProgressNextStage(_("Updating configuration..."));
+    SCR::Execute(.target.bash, "/etc/sysconfig/isdn/scripts/postprocess.isdn");
     sleep(sl);
 
     if(Abort()) return false;
