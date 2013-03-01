@@ -1,9 +1,7 @@
 Dump	RunSuSEconfig
-Execute	.target.bash "/sbin/SuSEconfig --module apache 2>/dev/null" 0
 Execute	.target.bash "/usr/lib/sendmail.d/update 2>/dev/null" 0
 Execute	.target.bash "/usr/sbin/config.postfix 2>/dev/null" 0
 Return	true
-Execute	.target.bash "/sbin/SuSEconfig --module apache 2>/dev/null" 1
 Execute	.target.bash "/usr/lib/sendmail.d/update 2>/dev/null" 1
 Execute	.target.bash "/usr/sbin/config.postfix 2>/dev/null" 1
 Return	true
