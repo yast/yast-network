@@ -442,7 +442,7 @@ global define boolean Write() {
      /* Progress stage 9 */
      if (!write_only) step_labels = add(step_labels, _("Activate network services"));
 	/* Progress stage 10 */
-     step_labels=add(step_labels, _("Run SuSEconfig"));
+     step_labels=add(step_labels, _("Update configuration"));
      if (!NetworkService::IsManaged() && /*(boolean) SCR::Read(.init.scripts.exists, "smpppd") &&*/ !write_only )
 	{
 	 /* Progress stage 11 */
@@ -575,7 +575,7 @@ y2internal("virt_net_proposal %1", virt_net_proposal);
 
     if(Abort()) return false;
     /* Progress step 10 */
-    ProgressNextStage(_("Running SuSEconfig..."));
+    ProgressNextStage(_("Updating configuration..."));
     if(!write_only) RunSuSEconfig();
     sleep(sl);
 

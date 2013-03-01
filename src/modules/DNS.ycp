@@ -293,7 +293,7 @@ global define boolean Write() {
         /* Progress stage 1 */
 	_("Write hostname"),
         /* Progress stage 2 */
-	_("Run SuSEconfig"),
+	_("Update configuration"),
         /* Progress stage 3 */
 	_("Update /etc/resolv.conf")
     ];
@@ -318,7 +318,7 @@ global define boolean Write() {
 	sleep(sl);
 
 	/* Progress step 2/3 */
-	ProgressNextStage(_("Running SuSEconfig..."));
+	ProgressNextStage(_("Updating configuration..."));
 
 	/* Finish him */
 	RunSuSEconfig();
