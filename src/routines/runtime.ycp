@@ -45,7 +45,7 @@ textdomain "network";
  * @return true if success
  */
 define boolean RunSuSEconfig() {
-    y2milestone("Running SuSEconfig ...");
+    y2milestone("Updating sendmail and/or postfix configuration.");
     SCR::Execute(.target.bash, "/usr/lib/sendmail.d/update 2>/dev/null");
     SCR::Execute(.target.bash, "/usr/sbin/config.postfix 2>/dev/null");
     return true;
