@@ -223,10 +223,6 @@ global boolean Write() {
 
    if(Mode::normal ()) {
 	ProgressNextStage(_("Running SuSEconfig..."));
-	/* no longer needed - have been dropped from SuSEconfig
-	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module xdm");
-	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kde3");
-	SCR::Execute(.target.bash, "/sbin/SuSEconfig --module kdm3");*/
 
         //Still needed for enabling/disabling remote administration
         //because 'rcxdm reload' kills running X session if gdm is used
