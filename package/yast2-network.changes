@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Mar  6 10:05:01 UTC 2013 - mfilka@suse.com
+
+- bnc#790202
+    - address a lost configuration problem when vlan device is
+      used together with bridge 
+- 2.17.182.6
+
+-------------------------------------------------------------------
 Tue Mar  5 12:51:11 UTC 2013 - mfilka@suse.com
 
 - bnc#790202
