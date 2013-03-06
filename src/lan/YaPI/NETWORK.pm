@@ -12,6 +12,7 @@ YaST::YCP::Import ("Host");
 YaST::YCP::Import ("DNS");
 YaST::YCP::Import ("Routing");
 YaST::YCP::Import ("NetworkInterfaces");
+YaST::YCP::Import ("Service");
 # -------------------------------------
 
 our $VERSION            = '1.0.0';
@@ -190,12 +191,6 @@ sub writeInterfaces {
 	if (defined $ifc->{'delete'} && $ifc->{'delete'} eq "true") {
 	   y2milestone("Delete virtual interface", Dumper(\$dev));
 
-	   NetworkInterfaces->Delete($dev);
-	   NetworkInterfaces->Commit();
-	   NetworkInterfaces->Write("");
-	   YaST::YCP::Import ("Service");
-	   Service->Restart("network");
-
 	    # part of hack (1) see bellow
 	    # when forcing reconfiguration of bridge slaves the slave's configuration is
 	    # initially deleted and created new one for each slave. It's done so that, the 
@@ -203,7 +198,23 @@ sub writeInterfaces {
 	    # for the second time we need to skip over this branch, so deleting is disabled.
 	    # Rest of the device configuration is left untouched so it can be used for 
 	    # setting new configuration.
+	    # Also load pieces of configuration of deleted device as it can be used for reconfiguration
+	    # e.g. for bridge.
+	    my $vlan_id = NetworkInterfaces->GetValue( $dev, 'VLAN_ID');
+	    my $vlan_etherdevice = NetworkInterfaces->GetValue( $dev, 'ETHERDEVICE');
+
+	    if( $vlan_id)
+	    {
+		$interfaces{ $dev}{ 'vlan_id'} = $vlan_id;
+	    }
+	    if( $vlan_etherdevice)
+	    {
+		${$ifc}{ 'vlan_etherdevice' } = $vlan_etherdevice;
+	    }
+
 	    $interfaces{ $dev }{ 'delete' } = "false";
+
+	    NetworkInterfaces->Delete($dev);
 
         } else {
 		my %config=("STARTMODE" => defined $ifc->{'startmode'}? $ifc->{'startmode'}: 'auto',
@@ -231,8 +242,10 @@ sub writeInterfaces {
 		}
 
 		if (defined $ifc->{'bridge'}) {
+
 		    y2milestone("*** BRIDGE DETECTED ***");
 		    y2milestone(Dumper($ifc->{'bridge_ports'}));
+
 		    $config{"BRIDGE"} = "yes";
 		    $config{"BRIDGE_PORTS"} = $ifc->{'bridge_ports'};
 
@@ -268,13 +281,13 @@ sub writeInterfaces {
 		    }
 		}
 
-
 		NetworkInterfaces->Current(\%config);
-		NetworkInterfaces->Commit();
-		NetworkInterfaces->Write("");
-		YaST::YCP::Import ("Service");
-		Service->Restart("network");
 	}
+
+       NetworkInterfaces->Commit();
+       NetworkInterfaces->Write("");
+
+       Service->Restart("network");
     }
     return $ret;
 }
