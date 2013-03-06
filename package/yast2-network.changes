@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Tue Mar  5 16:05:05 CET 2013 - mvidner@suse.cz
+
+- Adopted to restart / reload using NetworkService instead Service,
+  that has been changed to use network.service alias link installed
+  by NetworkManager.service while "systemctl enable" and obsoletes
+  the NETWORKMANAGER=yes/no variable in /etc/sysconfig/network/config
+  (bnc#764055,bnc#764336,bnc#798348, by mt@suse.com)
+- Requires sysconfig >= 0.80.0 and yast2 >= 2.23.20
+- 2.24.16
+
+-------------------------------------------------------------------
 Wed Feb 27 22:42:42 UTC 2013 - mfilka@suse.com
 
 - fate#313548, fate#309055 and fate#100011 in general. Removed

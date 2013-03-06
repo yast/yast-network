@@ -10,12 +10,13 @@ BuildRequires:  yast2-devtools yast2-testsuite
 BuildRequires:  yast2-country
 BuildRequires:  yast2-installation >= 2.15.27
 
-# yast2 v2.23.19 - Checking for systemd services extended with /etc/init.d path
-BuildRequires:  yast2 >= 2.23.19
-Requires:       yast2 >= 2.23.6
+# yast2 v2.23.22: NetworkService handles
+# systemd link network.service->NetworkManager.service
+BuildRequires:  yast2 >= 2.23.22
+Requires:       yast2 >= 2.23.22
 
 #netconfig (FaTE #303618)
-Requires:       sysconfig >= 0.71.2
+Requires:       sysconfig >= 0.80.0
 #GetLanguageCountry
 #(in newly created yast2-country-data)
 Requires:       yast2-country-data >= 2.16.3
