@@ -5,6 +5,9 @@ Fri Mar 22 11:37:29 UTC 2013 - mfilka@suse.com
     - Extended bugfix. Initializes reasonable defaults for s390
     specific variables when configuring device for the first time.
     Previous fix handled switching between interfaces only.
+- bnc#792985
+    - eth not set up during installation
+    - previous bugfix was not working
 
 -------------------------------------------------------------------
 Fri Mar 22 10:08:35 UTC 2013 - mfilka@suse.com
