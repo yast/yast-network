@@ -7,6 +7,20 @@
  * Functions for accessing and handling s390 specific needs.
  */
 
+import "FileUtils";
+
+include "network/routines.ycp";
+
+const string sys_dir = "/sys/class/net";
+
+define boolean s390_DriverLoaded( string devname)
+{
+    if( IsEmptyString( devname))
+        return false;
+
+    return FileUtils::IsDirectory( sformat( "%1/%2", sys_dir, devname)) == true;
+}
+
 /**
  * Reads particular qeth attribute and returns its value as a string.
  *
@@ -15,7 +29,6 @@
  */
 define string ReadQethAttribute( string devname, string attrib)
 {
-    string sys_dir = "/sys/class/net";
     string result = (string) SCR::Read( .target.string, sformat( "%1/%2/device/%3", sys_dir, devname, attrib));
 
     return regexpsub( result, "(.*)\n", "\\1");

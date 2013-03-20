@@ -106,6 +106,7 @@ define symbol MainSequence (string mode) ``{
 	"overview"	: ``(MainDialog ("overview")),
 	"add"		: [ ``(NetworkCardSequence("add")), true ],
 	"edit"		: [ ``(NetworkCardSequence("edit")), true ],
+	"init_s390"	: [ ``(NetworkCardSequence("init_s390")), true ],
     ];
 
     string start = "overview";
@@ -125,12 +126,17 @@ define symbol MainSequence (string mode) ``{
 	    `next	: `next,
 	    `add	: "add",
 	    `edit	: "edit",
+            `init_s390  : "init_s390",
 	],
 	"add" : $[
 	    `abort	: `abort,
 	    `next	: "overview",
 	],
 	"edit" : $[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+        "init_s390" : $[
 	    `abort	: `abort,
 	    `next	: "overview",
 	],
@@ -153,16 +159,22 @@ define symbol NetworkCardSequence(string action) ``{
 
     string ws_start = "address";
 
-    // for s390 start with S390Dialog() - there are another conditions
-    // for new devices start with HardwareDialog()
-    if( Arch::s390() && action == "edit") 
+    switch( action)
     {
-        ws_start = "s390";
-    }
-    else 
-    {
-        if(action == "add") 
+        case "add":
             ws_start = "hardware";
+            break;
+
+        case "edit":
+            ws_start = "address";
+            break;
+
+        case "init_s390":
+            // s390 may require configuring additional modules. Which
+            // enables IBM net cards for linux. Basicaly it creates 
+            // linux devices with common api (e.g. eth0, hsi1, ...)
+            ws_start = "s390";
+            break;
     }
 
     y2milestone("ws_start %1", ws_start);
