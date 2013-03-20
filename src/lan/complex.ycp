@@ -329,37 +329,33 @@ symbol handleOverview( string key, map event ) {
 	Lan::Add();
 	return `add;
    case `edit:
-	if (!LanItems::IsItemConfigured()) // unconfigured
-	    {
-		if (! AddInterface ()) break;
-	    }
-	    else		// configured
-	    {
-		LanItems::SetItem();
-/*
-		foreach(map<string, any> row, o_items, {
-		 if (row["id"]:-1 == LanItems::current && row["hw_num"]:-1 != -1) LanItems::SelectHW(row["hw_num"]:-1);
-		});
-*/
-//		Lan::SelectHW (1);
-		if (LanItems::startmode == "managed")
-		{
-		    // Continue-Cancel popup
-		    if (!Popup::ContinueCancel (_("The interface is currently set to be managed
+	if (!LanItems::IsItemConfigured())
+        {
+            if (! AddInterface ()) 
+                break;
+        }
+        else
+        {
+            LanItems::SetItem();
+
+            if (LanItems::startmode == "managed")
+            {
+                // Continue-Cancel popup
+                if (!Popup::ContinueCancel (_("The interface is currently set to be managed
 by the NetworkManager applet.
 
 If you edit the settings for this interface here,
 the interface will no longer be managed by NetworkManager.
 ")))
-		    {
-			break; // means cancel
-		    }
-		    //
-		    // TODO move the defaults to GetDefaultsForHW
-		    LanItems::startmode = "ifplugd";
-		}
-	    }
-	    return `edit;
+                {
+                    break; // means cancel
+                }
+
+                // TODO move the defaults to GetDefaultsForHW
+                LanItems::startmode = "ifplugd";
+            }
+        }
+        return `edit;
 
    case `delete:
 //	if (!LanItems::IsItemConfigured()) return nil;
