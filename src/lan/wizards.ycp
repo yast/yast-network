@@ -174,7 +174,7 @@ define symbol NetworkCardSequence(string action) ``{
 
     // for s390 start with S390Dialog() - there are another conditions
     // for new devices start with HardwareDialog()
-    if(Arch::s390 () ) 
+    if( Arch::s390() && action == "edit") 
     {
         ws_start = "s390";
     }
@@ -198,7 +198,6 @@ define symbol NetworkCardSequence(string action) ``{
 	],
 	"s390" : $[
 	    `abort	: `abort,
-	    `hardware	: "hardware",
 	    `next	: "address",
 	],
     ];

@@ -653,9 +653,6 @@ Choose a different one."), nm));
  * @return dialog result
  */
 define any S390Dialog() {
-    // for virtual devices (no hwinfo) just skip to next dialog (bnc#476490)
-    if (size(LanItems::getCurrentItem()["hwinfo"]:$[])==0)
-               return ( isNewDevice()) ? `hardware : `next;
 
     // already configured device (on hardware layer), skip this dialog
     if (size(LanItems::Items[LanItems::current, "hwinfo", "dev_name"]:"")>0) return `next;
