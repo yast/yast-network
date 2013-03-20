@@ -41,6 +41,10 @@ global list<map> Hardware = [];
 global map <string, any> udev_net_rules = $[];
 global map<string, any> driver_options = $[];
 
+// FIXME: what's the difference against "device" defined below? 
+// some refactoring led to interfacename = device in SetItem.
+// Probably, interfacename is used outside. It is only set in 
+// this file.
 global string interfacename="";
 
 // used at autoinstallation time
@@ -1587,17 +1591,22 @@ global void DeleteItem(){
  SetModified();
 }
 
-global void SetItem(){
- operation = `edit;
- interfacename = getCurrentItem()["ifcfg"]:"";
- NetworkInterfaces::Edit(getCurrentItem()["ifcfg"]:"");
- map devmap = NetworkInterfaces::Current;
- type = Items[current, "hwinfo", "type"]:"";
- if (!hasAnyValue(type)) type = NetworkInterfaces::GetType(getCurrentItem()["ifcfg"]:"");
- device = getCurrentItem()["ifcfg"]:"";
- alias = NetworkInterfaces::alias_num(getCurrentItem()["ifcfg"]:"");
+global void SetItem()
+{
+    operation = `edit;
+    device = getCurrentItem()["ifcfg"]:"";
+    interfacename = device;
+
+    NetworkInterfaces::Edit( device);
+    type = getCurrentItem()[ "hwinfo", "type"]:"";
+    
+    if (!hasAnyValue(type)) 
+        type = NetworkInterfaces::GetType( device);
+
+    alias = NetworkInterfaces::alias_num( device);
 
     /* general stuff */
+    map devmap = NetworkInterfaces::Current;
     description = BuildDescription (type, device, devmap, Hardware);
 
     SetDeviceVars(devmap, SysconfigDefaults);
@@ -1609,7 +1618,7 @@ global void SetItem(){
 
     if( Arch::s390()) 
     {
-        map<string, any> s390_devmap = ReadQethConfig( Items[current, "hwinfo", "dev_name"]:"" ); 
+        map<string, any> s390_devmap = ReadQethConfig( getCurrentItem()[ "hwinfo", "dev_name"]:"" ); 
 
         SetS390Vars( s390_devmap, s390_defaults);
     }
