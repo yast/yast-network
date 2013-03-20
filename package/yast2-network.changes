@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Mar 20 13:57:51 UTC 2013 - mfilka@suse.com
+
+- bnc#810525
+	- fixed typo in dialog 
+
+-------------------------------------------------------------------
 Tue Feb  5 15:13:46 CET 2013 - mvidner@suse.cz
 
 - AutoYaST: write /etc/hosts even if keep_install_network=true
