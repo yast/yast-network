@@ -54,6 +54,7 @@ include "network/lan/help.ycp";
 include "network/services/routing.ycp";
 include "network/services/dns.ycp";
 include "network/lan/dhcp.ycp";
+include "network/lan/s390.ycp";
 
 
 /**
@@ -333,12 +334,7 @@ symbol handleOverview( string key, map event ) {
 	Lan::Add();
 	return `add;
    case `edit:
-	if (!LanItems::IsItemConfigured())
-        {
-            if (! AddInterface ()) 
-                break;
-        }
-        else
+	if( LanItems::IsItemConfigured())
         {
             LanItems::SetItem();
 
@@ -359,6 +355,17 @@ the interface will no longer be managed by NetworkManager.
                 LanItems::startmode = "ifplugd";
             }
         }
+        else
+        {
+            if (! AddInterface ()) 
+                break;
+
+            if( Arch::s390() && !s390_DriverLoaded( LanItems::getCurrentItem()[ "hwinfo", "dev_name"]:"") )
+            {
+                return `init_s390;
+            }
+        }
+
         return `edit;
 
    case `delete:

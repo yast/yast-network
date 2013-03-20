@@ -654,9 +654,6 @@ Choose a different one."), nm));
  */
 define any S390Dialog() {
 
-    // already configured device (on hardware layer), skip this dialog
-    if (size(LanItems::Items[LanItems::current, "hwinfo", "dev_name"]:"")>0) return `next;
-
     /* S/390 dialog caption */
     string caption = _("S/390 Network Card Configuration");
 
