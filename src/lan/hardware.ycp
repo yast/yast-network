@@ -556,8 +556,6 @@ Choose a different one."), nm));
  */
 define any S390Dialog() {
 
-    // already configured device (on hardware layer), skip this dialog
-    if (size(LanItems::Items[LanItems::current, "hwinfo", "dev_name"]:"")>0) return `next;
     ScreenName("lan-hardware-s390");
 
     /* S/390 dialog caption */
