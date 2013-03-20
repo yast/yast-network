@@ -5,6 +5,8 @@ Wed May 29 10:19:10 UTC 2013 - mfilka@suse.com
     - fixed biosdevname renaming in case of buggy SMBIOS.
     - original patch provided by Martin Wilck 
     (martin.wilck@ts.fujitsu.com)
+- bnc#810525
+	- fixed typo in dialog 
 
 -------------------------------------------------------------------
 Mon May 27 06:21:40 UTC 2013 - mfilka@suse.com
