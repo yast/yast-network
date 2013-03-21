@@ -1594,22 +1594,17 @@ global void SetItem()
 
     /* general stuff */
     map devmap = NetworkInterfaces::Current;
+    map<string, any> s390_devmap = s390_ReadQethConfig( getCurrentItem()[ "hwinfo", "dev_name"]:"" ); 
+
     description = BuildDescription (type, device, devmap, Hardware);
 
     SetDeviceVars(devmap, SysconfigDefaults);
+    SetS390Vars( s390_devmap, s390_defaults);
 
     hotplug = "";
     y2debug("type=%1", type);
     if(issubstring(type, "-")) type = regexpsub(type, "([^-]+)-.*$", "\\1");
     y2debug("type=%1", type);
-
-    if( Arch::s390()) 
-    {
-        map<string, any> s390_devmap = ReadQethConfig( getCurrentItem()[ "hwinfo", "dev_name"]:"" ); 
-
-        SetS390Vars( s390_devmap, s390_defaults);
-    }
-
 }
 
 global boolean ProposeItem(){
