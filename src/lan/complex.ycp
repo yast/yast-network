@@ -356,7 +356,7 @@ the interface will no longer be managed by NetworkManager.
             if (! AddInterface ()) 
                 break;
 
-            if( Arch::s390() && !s390_DriverLoaded( LanItems::getCurrentItem()[ "hwinfo", "dev_name"]:"") )
+            if( s390_DeviceInitNeeded( LanItems::getCurrentItem()[ "hwinfo", "dev_name"]:"") )
             {
                 return `init_s390;
             }
