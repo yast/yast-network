@@ -222,7 +222,7 @@ boolean IsBondable( string devtype, string devname)
 
     if( Arch::s390() )
     {
-        map<string, any> s390_config = ReadQethConfig( devname);
+        map<string, any> s390_config = s390_ReadQethConfig( devname);
 
         // only devices with L2 support can be enslaved in bond. See bnc#719881
         ret = ret && s390_config[ "QETH_LAYER2"]:"no" == "yes";
