@@ -9,38 +9,7 @@ Write	.network.value."bond0".BOOTPROTO "static" true
 Write	.network.value."bond0".IPADDR "4.3.2.1/24" true
 Write	.network.value."bond0".STARTMODE "auto" true
 Write	.network nil true
-Read	.init.scripts.exists "network" false
-Return	$["error":"", "exit":"0"]
 Read	.target.tmpdir nil
 Log	Failed to set temporary directory: nil
-Read	.sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME "no"
-Read	.sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS "no"
-Read	.sysconfig.network.config.NETCONFIG_DNS_POLICY nil
-Read	.sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS "208.67.222.222 208.67.220.220"
-Read	.sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST "suse.cz suse.de"
-Read	.target.size "/etc/HOSTNAME" 27
-Read	.target.string "/etc/HOSTNAME" "laptop.suse.cz"
-Read	.target.size "/etc/sysconfig/network/routes" 27
-Read	.routes [$["destination":"default", "gateway":"10.20.30.40"]]
-Execute	.target.bash "rpm -q --whatprovides SuSEfirewall2" 0
-Read	.init.scripts.exists "SuSEfirewall2_init" false
-Read	.sysconfig.sysctl.IP_FORWARD nil
-Read	.probe.architecture "i386"
-Read	.sysconfig.console.CONSOLE_ENCODING "UTF-8"
-Execute	.target.bash_output "locale -k charmap" $["exit":0, "stdout":"laptop.suse.cz"]
-Read	.target.size "/etc/install.inf" 27
-Dir	.etc.install_inf: []
-Read	.target.string "/proc/cmdline" "laptop.suse.cz"
-Read	.probe.netcard nil
-Log	hardware detection failure
-Read	.etc.install_inf.BrokenModules nil
-Read	.udev_persistent.net nil
-Dir	.modules.options: []
-Read	.udev_persistent.drivers nil
-Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-pcmcia" nil
-Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-usb" nil
-Read	.target.lstat "/etc/sysconfig/network/ifcfg-tr-pcmcia" nil
-Read	.target.lstat "/etc/sysconfig/network/ifcfg-tr-usb" nil
-Execute	.target.bash_output "hostname --fqdn" $["exit":0, "stdout":"laptop.suse.cz"]
-Execute	.target.bash_output "hostname --fqdn" $["exit":0, "stdout":"laptop.suse.cz"]
-Return	$["dns":$["nameservers":["208.67.222.222", "208.67.220.220"], "searches":["suse.cz", "suse.de"]], "hostname":$["dhcp_hostname":"0", "domain":"suse.cz", "name":"laptop"], "interfaces":$["bond0":$["bond_slaves":["eth1", "eth2", "eth3"], "bootproto":"static", "ipaddr":"4.3.2.1/24", "mtu":"", "startmode":"auto"]], "routes":$["default":$["via":"10.20.30.40"]]]
+Read	.target.stat "/usr/lib/systemd/system/network.service" nil
+Execute	.target.bash_output "/bin/systemctl restart network.service" $["TERM":"raw"] $["exit":0, "stdout":"laptop.suse.cz"]
