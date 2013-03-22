@@ -27,9 +27,9 @@ define boolean s390_DriverLoaded( string devname)
 /**
  * Returns true if device should be initialized to work properly at s390.
  */
-define boolean s390_DeviceInitNeeded( string devname)
+define boolean s390_DeviceReady( string devname)
 {
-    return Arch::s390() && !s390_DriverLoaded( devname);
+    return Arch::s390() && s390_DriverLoaded( devname);
 }
 
 /**
@@ -40,7 +40,7 @@ define boolean s390_DeviceInitNeeded( string devname)
  */
 define string s390_ReadQethAttribute( string devname, string attrib)
 {
-    if( !s390_DeviceInitNeeded( devname))
+    if( !s390_DeviceReady( devname))
         return nil;
     
     string result = (string) SCR::Read( .target.string, sformat( "%1/%2/device/%3", sys_dir, devname, attrib));
@@ -66,7 +66,7 @@ define string s390_ReadQethAttribute( string devname, string attrib)
  */
 define map<string, any> s390_ReadQethConfig( string devname)
 {
-    if( !s390_DeviceInitNeeded( devname))
+    if( !s390_DeviceReady( devname))
         return $[];
     
     map<string, any> result = $[];
