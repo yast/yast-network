@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Mar 20 12:42:18 UTC 2013 - mfilka@suse.com
+
+- bnc#747844
+    - Extended bugfix. Initializes reasonable defaults for s390
+    specific variables when configuring device for the first time.
+    Previous fix handled switching between interfaces only.
+- 2.17.182.7 
+
+-------------------------------------------------------------------
 Wed Mar  6 10:05:01 UTC 2013 - mfilka@suse.com
 
 - bnc#790202
