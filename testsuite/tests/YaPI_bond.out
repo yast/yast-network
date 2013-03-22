@@ -1,0 +1,12 @@
+Dir	.network.section: []
+Log	No such device: bond0
+Write	.network.value."bond0".BONDING_MASTER "yes" true
+Write	.network.value."bond0".BONDING_MODULE_OPTS "" true
+Write	.network.value."bond0".BONDING_SLAVE0 "eth1" true
+Write	.network.value."bond0".BONDING_SLAVE1 "eth2" true
+Write	.network.value."bond0".BONDING_SLAVE2 "eth3" true
+Write	.network.value."bond0".BOOTPROTO "static" true
+Write	.network.value."bond0".IPADDR "4.3.2.1/24" true
+Write	.network.value."bond0".STARTMODE "auto" true
+Write	.network nil true
+Read	.init.scripts.exists "network" false

@@ -11,6 +11,8 @@ YaST::YCP::Import ("Hostname");
 YaST::YCP::Import ("Host");
 YaST::YCP::Import ("DNS");
 YaST::YCP::Import ("Routing");
+YaST::YCP::Import ("NetworkInterfaces");
+YaST::YCP::Import ("Service");
 # -------------------------------------
 
 our $VERSION            = '1.0.0';
@@ -26,6 +28,9 @@ sub Read {
 
     DNS->Read();
     Routing->Read();
+    # force cleaning the cache to make it stateless
+    # NetworkInterfaces are read in LanItems
+    NetworkInterfaces->CleanCacheRead();
     LanItems->Read();
 
     my %interfaces = ();
@@ -67,12 +72,8 @@ sub Read {
                     $configuration{'bond_slaves'} = LanItems->bond_slaves;
                 }
                 
-                if(@{LanItems->bond_slaves}) {
-                    $configuration{'bond_slaves'} = LanItems->bond_slaves;
-                }
-        
-        	    if(LanItems->bond_option) {
-            		$configuration{'bond_option'} = LanItems->bond_option; 
+        	if(LanItems->bond_option) {
+            	    $configuration{'bond_option'} = LanItems->bond_option; 
                 }
             }
 
@@ -84,13 +85,7 @@ sub Read {
 
         } elsif (LanItems->getCurrentItem()->{'hwinfo'}->{'type'} eq "eth") {
             my $device = LanItems->getCurrentItem()->{"hwinfo"}->{"dev_name"};
-	    $interfaces{$device}= {};
-
-	    if(LanItems->getCurrentItem()->{'hwinfo'}->{'type'} eq "eth") {
-		$interfaces{$device}= {'vendor' => LanItems->getCurrentItem()->{"hwinfo"}->{"name"}};
-	    } 
-
-	    $interfaces{$device}
+	    $interfaces{$device}= {'vendor' => LanItems->getCurrentItem()->{"hwinfo"}->{"name"}};
 	}
     }
 
@@ -180,21 +175,46 @@ sub writeInterfaces {
     my $ret = {'exit'=>0, 'error'=>''};
 
     y2milestone("interface", Dumper(\$args->{'interface'}));
+    my %interfaces = %{$args->{'interface'}};
+    my @interface_names = keys %interfaces;
 
-    while (my ($dev, $ifc) = each %{$args->{'interface'}}) {
-        YaST::YCP::Import ("NetworkInterfaces");
-        NetworkInterfaces->Read();
+    # interface_names is used as FIFO and can be updated during loop. It's because
+    # some interfaces (e.g. bridge) can require reconfiguring of other interfaces too.
+    while ( my $dev = shift @interface_names) {
+	my $ifc = $interfaces{ $dev };
+
+        # force cleaning the cache to make it stateless
+        NetworkInterfaces->CleanCacheRead();
         NetworkInterfaces->Add() unless NetworkInterfaces->Edit($dev);
         NetworkInterfaces->Name($dev);
 
 	if (defined $ifc->{'delete'} && $ifc->{'delete'} eq "true") {
 	   y2milestone("Delete virtual interface", Dumper(\$dev));
 
-	   NetworkInterfaces->Delete($dev);
-	   NetworkInterfaces->Commit();
-	   NetworkInterfaces->Write("");
-	   YaST::YCP::Import ("Service");
-	   Service->Restart("network");
+	    # part of hack (1) see bellow
+	    # when forcing reconfiguration of bridge slaves the slave's configuration is
+	    # initially deleted and created new one for each slave. It's done so that, the 
+	    # slave's name is included twice in @interface_name FIFO. When processing it 
+	    # for the second time we need to skip over this branch, so deleting is disabled.
+	    # Rest of the device configuration is left untouched so it can be used for 
+	    # setting new configuration.
+	    # Also load pieces of configuration of deleted device as it can be used for reconfiguration
+	    # e.g. for bridge.
+	    my $vlan_id = NetworkInterfaces->GetValue( $dev, 'VLAN_ID');
+	    my $vlan_etherdevice = NetworkInterfaces->GetValue( $dev, 'ETHERDEVICE');
+
+	    if( $vlan_id)
+	    {
+		$interfaces{ $dev}{ 'vlan_id'} = $vlan_id;
+	    }
+	    if( $vlan_etherdevice)
+	    {
+		${$ifc}{ 'vlan_etherdevice' } = $vlan_etherdevice;
+	    }
+
+	    $interfaces{ $dev }{ 'delete' } = "false";
+
+	    NetworkInterfaces->Delete($dev);
 
         } else {
 		my %config=("STARTMODE" => defined $ifc->{'startmode'}? $ifc->{'startmode'}: 'auto',
@@ -222,33 +242,52 @@ sub writeInterfaces {
 		}
 
 		if (defined $ifc->{'bridge'}) {
+
 		    y2milestone("*** BRIDGE DETECTED ***");
 		    y2milestone(Dumper($ifc->{'bridge_ports'}));
+
 		    $config{"BRIDGE"} = "yes";
 		    $config{"BRIDGE_PORTS"} = $ifc->{'bridge_ports'};
+
+		    # ugly hack (1) which forces overwriting configuration of already configured ports.
+		    # it works this way:
+		    # 1) creates configuration for deleting the port. bootproto and startmode are present
+		    # to make the hack independent on default values and are used when creating new config.
+		    # 2) push device name into FIFO interface_names (to perform delete)
+		    # 3) push device name into FIFO interface_names one more time (to create default config)
+		    foreach my $iface ( split( / /, $ifc->{'bridge_ports'}))
+		    {
+			$interfaces{ $iface } = { 
+			    'delete' => "true", 
+			    'startmode' => "auto",
+			    'bootproto' => "static",
+			};
+
+			push @interface_names, $iface;
+			push @interface_names, $iface;
+		    }
 		}
 	  
 		if (defined $ifc->{'bond'}) {
 		    y2milestone("*** bonding settings *******************************");
-		    $config{"BONDING_MASTER_MASTER"} = "yes";
+		    $config{"BONDING_MASTER"} = "yes";
 		    $config{"BONDING_MODULE_OPTS"} = $ifc->{'bond_option'};
-		    #$config{"BONDING_SLAVE"} = $ifc->{'bond_option'};
 
 		    my @slaves = split(/ /,$ifc->{'bond_slaves'});	    
 		    
-		    for my $i (0 .. length(@slaves)) {
-                y2milestone("BONDING_SLAVE$i", @slaves[$i]); 
-                $config{"BONDING_SLAVE$i"} = @slaves[$i];
-            }
+		    for my $i (0 .. scalar(@slaves) -1) {
+			y2milestone("BONDING_SLAVE$i", @slaves[$i]); 
+			$config{"BONDING_SLAVE$i"} = @slaves[$i];
+		    }
 		}
 
-
 		NetworkInterfaces->Current(\%config);
-		NetworkInterfaces->Commit();
-		NetworkInterfaces->Write("");
-		YaST::YCP::Import ("Service");
-		Service->Restart("network");
 	}
+
+       NetworkInterfaces->Commit();
+       NetworkInterfaces->Write("");
+
+       Service->Restart("network");
     }
     return $ret;
 }
