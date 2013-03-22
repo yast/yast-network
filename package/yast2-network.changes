@@ -1,5 +1,5 @@
 -------------------------------------------------------------------
-Wed Mar 20 12:42:18 UTC 2013 - mfilka@suse.com
+Fri Mar 22 11:37:29 UTC 2013 - mfilka@suse.com
 
 - bnc#747844
     - Extended bugfix. Initializes reasonable defaults for s390
