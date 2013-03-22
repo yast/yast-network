@@ -25,7 +25,7 @@ define boolean s390_DriverLoaded( string devname)
 }
 
 /**
- * Returns true if device should be initialized to work properly at s390.
+ * Returns true if running at s390 architecture and linux net device emulation was started successfully
  */
 define boolean s390_DeviceReady( string devname)
 {
