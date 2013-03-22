@@ -20,6 +20,10 @@ global list<map> Hardware = [];
 global map <string, any> udev_net_rules = $[];
 global map<string, any> driver_options = $[];
 
+// FIXME: what's the difference against "device" defined below? 
+// some refactoring led to interfacename = device in SetItem.
+// Probably, interfacename is used outside. It is only set in 
+// this file.
 global string interfacename="";
 
 // used at autoinstallation time
@@ -1011,6 +1015,32 @@ global void SetDeviceVars(map devmap, map defaults) {
     return;
 }
 
+/**
+ * Initializes s390 specific device variables.
+ *
+ * @param devmap    map with s390 specific attributes and its values
+ * @param defaults  map with default values for attributes not found in devmap
+ */
+void SetS390Vars( map devmap, map defaults)
+{
+    if( !Arch::s390())
+        return;
+
+    qeth_portname =  GetDeviceVar( devmap, defaults, "QETH_PORTNAME");
+    qeth_portnumber = GetDeviceVar( devmap, defaults, "QETH_PORTNUMBER");
+    qeth_layer2 = GetDeviceVar( devmap, defaults, "QETH_LAYER2") == "yes";
+    qeth_chanids = GetDeviceVar( devmap, defaults, "QETH_CHANIDS");
+
+    // qeth attribute. FIXME: currently not read from system.
+    ipa_takeover = defaults[ "IPA_TAKEOVER"]:"" == "yes";
+
+    // not device attribute
+    qeth_options = defaults[ "QETH_OPTIONS"]:"";
+
+    // handle non qeth devices
+    iucv_user = defaults[ "IUCV_USER"]:"";
+    chan_mode = defaults[ "CHAN_MODE"]:"";
+}
 
 /**
  * the defaults here are what sysconfig defaults to
@@ -1068,7 +1098,7 @@ global map<string, string> SysconfigDefaults = $[
 /**
  * Default values used when creating an emulated NIC for physical s390 hardware.
  */
-map<string, string> s390_defaults = $[  
+const map<string, string> s390_defaults = $[  
     "CHAN_MODE": "0",
     "QETH_PORTNAME": "", 
     "QETH_PORTNUMBER": "",
@@ -1078,6 +1108,11 @@ map<string, string> s390_defaults = $[
     "IPA_TAKEOVER": "no",
     "IUCV_USER": "",
 ];
+
+void InitS390VarsByDefaults()
+{
+    SetS390Vars( $[], s390_defaults);
+}
 
 /**
  * Select the given device
@@ -1131,6 +1166,7 @@ global define boolean Select(string dev) {
     description = BuildDescription (type, device, devmap, Hardware);
 
     SetDeviceVars(devmap, SysconfigDefaults);
+    InitS390VarsByDefaults();
 
     hotplug = "";
     y2debug("type=%1", type);
@@ -1542,46 +1578,33 @@ global void DeleteItem(){
  SetModified();
 }
 
-global void SetItem(){
- operation = `edit;
- interfacename = getCurrentItem()["ifcfg"]:"";
- NetworkInterfaces::Edit(getCurrentItem()["ifcfg"]:"");
- map devmap = NetworkInterfaces::Current;
- type = Items[current, "hwinfo", "type"]:"";
- if (!hasAnyValue(type)) type = NetworkInterfaces::GetType(getCurrentItem()["ifcfg"]:"");
- device = getCurrentItem()["ifcfg"]:"";
- alias = NetworkInterfaces::alias_num(getCurrentItem()["ifcfg"]:"");
+global void SetItem()
+{
+    operation = `edit;
+    device = getCurrentItem()["ifcfg"]:"";
+    interfacename = device;
+
+    NetworkInterfaces::Edit( device);
+    type = getCurrentItem()[ "hwinfo", "type"]:"";
+    
+    if (!hasAnyValue(type)) 
+        type = NetworkInterfaces::GetType( device);
+
+    alias = NetworkInterfaces::alias_num( device);
 
     /* general stuff */
+    map devmap = NetworkInterfaces::Current;
+    map<string, any> s390_devmap = s390_ReadQethConfig( getCurrentItem()[ "hwinfo", "dev_name"]:"" ); 
+
     description = BuildDescription (type, device, devmap, Hardware);
 
     SetDeviceVars(devmap, SysconfigDefaults);
+    SetS390Vars( s390_devmap, s390_defaults);
 
     hotplug = "";
     y2debug("type=%1", type);
     if(issubstring(type, "-")) type = regexpsub(type, "([^-]+)-.*$", "\\1");
     y2debug("type=%1", type);
-
-    if( Arch::s390()) 
-    {
-        map<string, any> s390_devmap = ReadQethConfig( Items[current, "hwinfo", "dev_name"]:"" ); 
-
-        qeth_portname =  GetDeviceVar( s390_devmap, s390_defaults, "QETH_PORTNAME");
-        qeth_portnumber = GetDeviceVar( s390_devmap, s390_defaults, "QETH_PORTNUMBER");
-        qeth_layer2 = GetDeviceVar( s390_devmap, s390_defaults, "QETH_LAYER2") == "yes";
-        qeth_chanids = GetDeviceVar( s390_devmap, s390_defaults, "QETH_CHANIDS");
-
-        // qeth attribute. FIXME: currently not read from system.
-        ipa_takeover = s390_defaults[ "IPA_TAKEOVER"]:"" == "yes";
-
-        // not device attribute
-        qeth_options = s390_defaults[ "QETH_OPTIONS"]:"";
-
-        // handle non qeth devices
-        iucv_user = s390_defaults[ "IUCV_USER"]:"";
-        chan_mode = s390_defaults[ "CHAN_MODE"]:"";
-    }
-
 }
 
 global boolean ProposeItem(){
