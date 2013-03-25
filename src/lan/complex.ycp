@@ -211,7 +211,7 @@ void enableDisableButtons(){
  LanItems::current = (integer)UI::QueryWidget (`id (`_hw_items), `CurrentItem);
 
  UI::ChangeWidget(`_hw_sum, `Value,LanItems::GetItemDescription());
- if (!LanItems::IsItemConfigured()) // unconfigured
+ if (!LanItems::IsCurrentConfigured()) // unconfigured
 			 UI::ChangeWidget(`id(`delete), `Enabled, false);
 	else UI::ChangeWidget(`id(`delete), `Enabled, true);
 
@@ -330,7 +330,7 @@ symbol handleOverview( string key, map event ) {
 	Lan::Add();
 	return `add;
    case `edit:
-	if( LanItems::IsItemConfigured())
+	if( LanItems::IsCurrentConfigured())
         {
             LanItems::SetItem();
 
@@ -365,7 +365,6 @@ the interface will no longer be managed by NetworkManager.
         return `edit;
 
    case `delete:
-//	if (!LanItems::IsItemConfigured()) return nil;
 
 	    string pop = sformat(_("All additional addresses belonging to the interface %1
 will be deleted as well.
