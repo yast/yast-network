@@ -206,32 +206,6 @@ void enableSlaveButtons(){
 }
 
 /**
- * Searches map of known devices and decides if a device of given name and type can be enslaved in a bond device
- *
- * @param devtype device type. See NetworkInterfaces::CardRegex for known categories.
- * @param devname particular device name (e.g. eth0)
- */
-boolean IsBondable( string devtype, string devname)
-{
-    boolean ret = true;
-    map<string, any> ifcfg =  NetworkInterfaces::FilterDevices("netcard")[ devtype, devname]:$[];
-
-    // filter the eth devices (BOOTPROTO=none)
-    // don't care about STARTMODE (see bnc#652987c6)
-    ret = ret && ifcfg[ "BOOTPROTO"]:"" == "none";
-
-    if( Arch::s390() )
-    {
-        map<string, any> s390_config = s390_ReadQethConfig( devname);
-
-        // only devices with L2 support can be enslaved in bond. See bnc#719881
-        ret = ret && s390_config[ "QETH_LAYER2"]:"no" == "yes";
-    }
-
-    return ret;
-}
-
-/**
  * Default function to init the value of slave devices box.
  * @param key	id of the widget
  */
@@ -242,19 +216,7 @@ void InitSlave(string key)
 
     settings["BONDOPTION"] = LanItems::bond_option;
 
-    list items = createUnconfigured(settings["SLAVES"]:[]);
-    map<string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
-    foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), 
-    {
-        foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), 
-        {
-            if( IsBondable( devtype, devname) )
-            {
-                items = add (items, `item(`id(devname), sformat("%1 - %2", devname, configurations[devtype, devname, "NAME"]:""), contains(settings["SLAVES"]:[], devname)) );
-            }
-
-        });
-    });
+    list items = CreateSlaveItems( LanItems::GetBondableInterfaces(), LanItems::bond_slaves);
 
   // reorder the items
   list l2=[];
