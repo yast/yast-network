@@ -187,6 +187,75 @@ map <string, string> request_firmware = $[
 
 include "network/hardware.ycp";
 
+/**
+ * Returns configuration of item (see LanItems::Items) with given id.
+ */
+global map GetLanItem( integer itemId)
+{
+    return Items[ itemId]:$[];
+}
+
+/**
+ * Returns configuration for currently modified item. 
+ */
+global map getCurrentItem(){
+    return GetLanItem( current);
+}
+
+/**
+ * Returns true if the item (see LanItems::Items) has
+ * netconfig configuration.
+ */
+global boolean IsItemConfigured( integer itemId)
+{
+    boolean ret = false;
+
+    if( size( GetLanItem( itemId)[ "ifcfg"]:"")>0) 
+        ret = true;
+
+    y2milestone("is item %1 configured? %2", itemId, ret);
+
+    return ret;
+}
+
+/**
+ * Returns true if current (see LanItems::current) has 
+ * configuration
+ */
+global boolean IsCurrentConfigured()
+{
+    return IsItemConfigured( LanItems::current);
+}
+
+/**
+ * Returns device name for given lan item.
+ *
+ * First it looks into the item's netconfig and if it doesn't exist
+ * it uses device name from hwinfo if available.
+ */
+global string GetDeviceName( integer itemId)
+{
+    map lanItem = GetLanItem( itemId);
+
+    return lanItem[ "ifcfg"]: lanItem[ "hwinfo", "dev_name"]: "";
+}
+
+/**
+ * Returns ifcfg configuration for particular item
+ */
+global map< string, any> GetDeviceMap( integer itemId)
+{
+    if( !IsItemConfigured( itemId))
+    {
+        return nil;
+    }
+
+    string devname = GetDeviceName( itemId);
+    string devtype = NetworkInterfaces::GetType( devname);
+
+    return (map< string, any>) NetworkInterfaces::FilterDevices("netcard")[ devtype, devname]:nil;
+}
+
 boolean ReadUdevDriverRules(){
  y2milestone ("Reading udev rules ...");
  udev_net_rules = (map<string, any>)SCR::Read(.udev_persistent.net);
@@ -350,6 +419,65 @@ global list<string> GetItemModules(string default_module){
    if (!contains(mods, tmp_mod)) mods = add(mods, tmp_mod);
  });
  return mods;
+}
+
+/**
+ * Searches map of known devices and decides if referenced lan item 
+ * can be enslaved in a bond device
+ *
+ * @param itemId    index into LanItems::Items
+ */
+// TODO: Check for valid configurations. E.g. bond device over vlan
+// is nonsense and is not supported by netconfig.
+boolean IsBondable( integer itemId)
+{
+    boolean ret = true;
+
+    // check if the device is L2 capable
+    if( Arch::s390() )
+    {
+        string devname = GetDeviceName( itemId);
+        map<string, any> s390_config = s390_ReadQethConfig( devname);
+
+        // only devices with L2 support can be enslaved in bond. See bnc#719881
+        ret = ret && s390_config[ "QETH_LAYER2"]:"no" == "yes";
+    }
+
+    map<string, any> ifcfg = GetDeviceMap( itemId);
+
+    if( ifcfg == nil)
+    {
+        return ret;
+    }
+
+    // filter the eth devices (BOOTPROTO=none)
+    // don't care about STARTMODE (see bnc#652987c6)
+    ret = ret && ifcfg[ "BOOTPROTO"]:"" == "none";
+
+    return ret;
+}
+
+/**
+ * Iterates over all items and lists those which has no 
+ * netconfig configuration.
+ *
+ * @return list of lan item ids (see LanItems::Items)
+ */
+global list< integer> GetBondableInterfaces()
+{
+    list< integer> result = [];
+
+    foreach(integer itemId, any attribs, Items,
+    {
+        if( ( current != itemId) && IsBondable( itemId))
+        {
+            result = add( result, itemId);
+        }
+    });
+
+    y2milestone( "GetBondableInterfaces: candidates for enslaving: %1", result);
+
+    return result;
 }
 
 // get list of all configurations for "netcard" macro in NetworkInterfaces module
@@ -706,10 +834,6 @@ global list Overview() {
  return GetDescr();
 }
 
-global map getCurrentItem(){
- return Items[current]:$[];
-}
-
 /*
  * Is current device hotplug or not? I.e. is connected via usb/pcmci?
  */
@@ -726,13 +850,6 @@ global boolean isCurrentHotplug(){
  */
 global boolean isCurrentDHCP(){
     return regexpmatch( bootproto, "dhcp[46]?");
-}
-
-global boolean IsItemConfigured(){
- boolean ret = false;
- if (size(getCurrentItem()["ifcfg"]:"")>0) ret = true;
- y2milestone("is item %1 configured? %2", current, ret);
- return ret;
 }
 
 global string GetItemDescription(){
