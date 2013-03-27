@@ -1,5 +1,4 @@
 {
-// testedfiles: LanItems
 
 import "Assert";
 import "Testsuite";
@@ -12,6 +11,8 @@ map READ = $[
 
 	    "eth4"	: nil,
 	    "eth5"	: nil,
+
+            "eth6"      : nil,
             
             "bond0"     : nil,
 	],
@@ -22,6 +23,8 @@ map READ = $[
 	    "eth4"	: $["BOOTPROTO":"none"],
 	    "eth5"	: $["BOOTPROTO":"none"],
 
+	    "eth6"	: $["BOOTPROTO":"dhcp"],
+
             "bond0"     : $[
                             "BOOTPROTO":"static", 
                             "BONDING_MASTER":"yes", 
@@ -29,6 +32,19 @@ map READ = $[
                             "BONDING_SLAVE1":"eth2",
                         ],
 	]
+    ],
+    "probe" : $[
+        "architecture" : "i386",
+        "netcard" : [
+            // yast2-network lists those as "Not configured" devices (no matching ifcfg files are defined)
+            $["bus":"PCI", "bus_hwcfg":"pci", "class_id":2, "dev_name":"eth11", "dev_names":["eth11"], "device_id":70914, "driver":"e1000e", "driver_module":"e1000e", "drivers":[$["active":true, "modprobe":true, "modules":[["e1000e", ""]]]], "modalias":"pci:v00008086d00001502sv000017AAsd000021F3bc02sc00i00", "model":"Intel Ethernet controller", "old_unique_key":"wH9Z.41x4AT4gee2", "resource":$["hwaddr":[$["addr":"00:01:02:03:04:05"]], "io":[$["active":true, "length":32, "mode":"rw", "start":24704]], "irq":[$["count":0, "enabled":true, "irq":20]], "mem":[$["active":true, "length":131072, "start":4087349248], $["active":true, "length":4096, "start":4087590912]]], "rev":"4", "slot_id":25, "sub_class_id":0, "sub_device_id":74227, "sub_vendor":"Vendor", "sub_vendor_id":007, "sysfs_bus_id":"0000:00:19.0", "sysfs_id":"/devices/pci0000:00/0000:00:19.0", "unique_key":"rBUF.41x4AT4gee2", "vendor":"Intel Corporation", "vendor_id":98438], 
+            $["bus":"PCI", "bus_hwcfg":"pci", "class_id":2, "dev_name":"eth12", "dev_names":["eth12"], "device_id":70914, "driver":"e1000e", "driver_module":"e1000e", "drivers":[$["active":true, "modprobe":true, "modules":[["e1000e", ""]]]], "modalias":"pci:v00008086d00001502sv000017AAsd000021F3bc02sc00i00", "model":"Intel Ethernet controller", "old_unique_key":"wH9Z.41x4AT4gee2", "resource":$["hwaddr":[$["addr":"00:11:12:13:14:15"]], "io":[$["active":true, "length":32, "mode":"rw", "start":24704]], "irq":[$["count":0, "enabled":true, "irq":20]], "mem":[$["active":true, "length":131072, "start":4087349248], $["active":true, "length":4096, "start":4087590912]]], "rev":"4", "slot_id":25, "sub_class_id":0, "sub_device_id":74227, "sub_vendor":"Vendor", "sub_vendor_id":007, "sysfs_bus_id":"0000:00:19.0", "sysfs_id":"/devices/pci0000:00/0000:00:19.0", "unique_key":"rBUF.41x4AT4gee2", "vendor":"Intel Corporation", "vendor_id":98438], 
+        ],
+    ],
+    "sysconfig" : $[
+        "console" : $[
+            "CONSOLE_ENCODING" : "UTF-8",
+        ],
     ],
 ];
 
@@ -47,8 +63,7 @@ Testsuite::Init([READ, $[], EXEC], nil);
 import "NetworkInterfaces";
 import "LanItems";
 
-Testsuite::Dump( "NetworkInterfaces::Read");
-Testsuite::Test(``(NetworkInterfaces::Read()), [READ, $[], EXEC], nil);
+Testsuite::Test( LanItems::Read(), [READ, $[], EXEC], nil);
 
 Testsuite::Dump("LanItems::BuildBondIndex");
 map expected_bond_index = $[
@@ -60,5 +75,15 @@ Assert::Equal( expected_bond_index, LanItems::BuildBondIndex());
 Testsuite::Dump("LanItems::GetBondSlaves");
 list expected_bond_slaves = [ "eth1", "eth2" ];
 Assert::Equal( expected_bond_slaves, LanItems::GetBondSlaves( "bond0"));
+
+Testsuite::Dump("LanItems::GetBondableInterfaces");
+list< string> expected_bondable = [ "eth1", "eth11", "eth12", "eth2", "eth4", "eth5"];
+list< string> bondable_devs = [];
+
+// query bondable devices and make testsuite independent of internal sorting of LanItems
+bondable_devs = maplist(integer itemId, LanItems::GetBondableInterfaces(), ``( LanItems::GetDeviceName( itemId) ));
+bondable_devs = sort( bondable_devs);
+
+Assert::Equal( expected_bondable, bondable_devs);
 
 } /* EOF */
