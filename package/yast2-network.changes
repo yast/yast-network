@@ -26,6 +26,14 @@ Wed Mar 20 13:57:51 UTC 2013 - mfilka@suse.com
 	- fixed typo in dialog 
 
 -------------------------------------------------------------------
+Wed Mar  6 11:54:14 UTC 2013 - mfilka@suse.com
+
+- bnc#792985
+	- eth not set up during installation
+	- previous bugfix was not working
+- 2.17.185 
+
+-------------------------------------------------------------------
 Tue Feb  5 15:13:46 CET 2013 - mvidner@suse.cz
 
 - AutoYaST: write /etc/hosts even if keep_install_network=true
