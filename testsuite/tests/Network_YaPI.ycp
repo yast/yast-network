@@ -20,8 +20,8 @@
  *
  ****************************************************************************/
 {
-include "testsuite.ycp";
-import "YaPI::NETWORK";
+import "Testsuite";
+import "Assert";
 
 map READ = $[
     "target" : $[
@@ -117,25 +117,39 @@ map EXEC = $[
       ]
     ];
 
-TEST(``(YaPI::NETWORK::Read()), [READ, $[], EXEC], nil);
+Testsuite::Init([READ, $[], EXEC], nil);
 
-TEST(``(YaPI::NETWORK::Write($[])), [$[], $[], $[]], nil);
+import "YaPI::NETWORK";
+
+// Test Read
+Testsuite::Test(``(YaPI::NETWORK::Read()), [READ, $[], EXEC], nil);
+
+// Test various writes. Writing is done as stateless in YaPI so it cannot be checked by rereading values.
+map write_succeeded = $[
+    "error":"", 
+    "exit":"0",
+];
+
+Assert::Equal( write_succeeded, YaPI::NETWORK::Write($[]));
 
 // test manipulation of the startmode
-TEST(``(YaPI::NETWORK::Write($["interface":$["eth0":$["bootproto":"dhcp4", "STARTMODE":"auto"]]])), [READ, $[], EXEC], nil);
+Assert::Equal( write_succeeded, YaPI::NETWORK::Write($["interface":$["eth0":$["bootproto":"dhcp4", "STARTMODE":"auto"]]]));
 
 // test correct default route
-TEST(``(YaPI::NETWORK::Write($["route":$["default":$["via":"10.20.30.40"]]])), [READ, $[], EXEC], nil);
+Assert::Equal( write_succeeded, YaPI::NETWORK::Write($["route":$["default":$["via":"10.20.30.40"]]]));
 
 // test incorrect default route (invalid gw IP)
-TEST(``(YaPI::NETWORK::Write($["route":$["default":$["via":"10.20.30"]]])), [READ, $[], EXEC], nil);
+map write_ip_fails = $[
+    "error":"A valid IP address consists of four integers\nin the range 0-255 separated by dots.", 
+    "exit":"-1",
+];
+
+Assert::Equal( write_ip_fails, YaPI::NETWORK::Write($["route":$["default":$["via":"10.20.30"]]]));
 
 // test setting the network prefix length for an interface that was previously configured via netmask
-TEST(``(YaPI::NETWORK::Write($["interface":$["eth3":$["bootproto":"static", "ipaddr":"1.2.3.7/24"]]])), [READ, $[], EXEC], nil);
+Assert::Equal( write_succeeded, YaPI::NETWORK::Write($["interface":$["eth3":$["bootproto":"static", "ipaddr":"1.2.3.7/24"]]]));
 
 // test vlan_id change
-TEST(``(YaPI::NETWORK::Write($["interface":$["eth5.23":$["bootproto":"static", "ipaddr":"1.2.3.8/24", "vlan_etherdevice":"eth5", "vlan_id":"42"]]])), [READ, $[], EXEC], nil);
-
-TEST(``(YaPI::NETWORK::Read()), [READ, $[], EXEC], nil);
+Assert::Equal( write_succeeded, YaPI::NETWORK::Write($["interface":$["eth5.23":$["bootproto":"static", "ipaddr":"1.2.3.8/24", "vlan_etherdevice":"eth5", "vlan_id":"42"]]]));
 
 }

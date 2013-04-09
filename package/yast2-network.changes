@@ -1,4 +1,19 @@
 -------------------------------------------------------------------
+Fri Mar 22 10:08:35 UTC 2013 - mfilka@suse.com
+
+- Ported several fixes in YaPI:
+- fate#313309
+    - support for bonding and bridging (WebYaST)
+- bnc#790219
+    - fixed writting ifcfg for bonding through YaPI.
+    More than two interfaces can be added into bond device.
+    - YaPI: drop caches when reading network interfaces, make it
+    stateless (bnc#790219#c33) - lslezak@suse.cz
+- bnc#790202
+    - workaround for forcing reconfiguration of bridge slaves
+- 2.24.17
+
+-------------------------------------------------------------------
 Tue Mar  5 16:05:05 CET 2013 - mvidner@suse.cz
 
 - Adopted to restart / reload using NetworkService instead Service,

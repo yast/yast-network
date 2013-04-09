@@ -1,0 +1,15 @@
+Dir	.network.section: []
+Log	No such device: bond0
+Write	.network.value."bond0".BONDING_MASTER "yes" true
+Write	.network.value."bond0".BONDING_MODULE_OPTS "" true
+Write	.network.value."bond0".BONDING_SLAVE0 "eth1" true
+Write	.network.value."bond0".BONDING_SLAVE1 "eth2" true
+Write	.network.value."bond0".BONDING_SLAVE2 "eth3" true
+Write	.network.value."bond0".BOOTPROTO "static" true
+Write	.network.value."bond0".IPADDR "4.3.2.1/24" true
+Write	.network.value."bond0".STARTMODE "auto" true
+Write	.network nil true
+Read	.target.tmpdir nil
+Log	Failed to set temporary directory: nil
+Read	.target.stat "/usr/lib/systemd/system/network.service" nil
+Execute	.target.bash_output "/bin/systemctl restart network.service" $["TERM":"raw"] $["exit":0, "stdout":"laptop.suse.cz"]
