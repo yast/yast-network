@@ -402,7 +402,7 @@ global define boolean Write(boolean start) ``{
     // stage 6/13
     plist = add(plist, _("Write providers"));
     // stage 7/13
-    plist = add(plist, _("Update configuration..."));
+    plist = add(plist, _("Update configuration"));
     if (start) {
 	steps = 8;
         // stage 8/13
