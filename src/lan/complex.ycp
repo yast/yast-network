@@ -172,11 +172,20 @@ return to this dialog once you have installed the firmware.
     return true;
 }
 
+/**
+ * Returns true if the device can be used (means handled as normal linux device)
+ * or false otherwise (it is used mainly at s390 based systems where a special
+ * handling is needed to run linux device emulation)
+ */
+define boolean DeviceReady( string devname)
+{
+    return !Arch::s390() || s390_DriverLoaded( devname);
+}
+
 
 define void initIPv6 (string key) {
     UI::ChangeWidget (`id (`ipv6), `Value, Lan::ipv6 ? true : false);
 }
-
 
 define symbol handleIPv6( string key, map event ) {
  if (event["EventReason"]:""=="ValueChanged") Lan::SetIPv6((boolean)UI::QueryWidget (`id (`ipv6), `Value));
@@ -318,8 +327,6 @@ void initOverview (string key) ``{
     y2milestone("LanItems %1", LanItems::Items);
 }
 
-
-
 symbol handleOverview( string key, map event ) {
 
  if (!disableItemsIfNM([`_hw_items, `_hw_sum, `add, `edit, `delete], false))
@@ -360,7 +367,7 @@ the interface will no longer be managed by NetworkManager.
             if (! AddInterface ()) 
                 break;
 
-            if( !s390_DeviceReady( LanItems::getCurrentItem()[ "hwinfo", "dev_name"]:"") )
+            if( !DeviceReady( LanItems::getCurrentItem()[ "hwinfo", "dev_name"]:"") )
             {
                 return `init_s390;
             }
