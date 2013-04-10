@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Apr 10 09:13:30 UTC 2013 - mfilka@suse.com
+
+- bnc#813835
+    - Crash when attempting to edit unconfigured interface.
+
+-------------------------------------------------------------------
 Tue Apr  2 07:06:49 UTC 2013 - mfilka@suse.com
 
 - bnc#719881
