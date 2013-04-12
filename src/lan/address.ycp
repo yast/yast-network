@@ -154,7 +154,7 @@ void StoreVLANSlave(string key, map event)
 }
 
 /**
- * Default function to init the value of slave devices box.
+ * Default function to init the value of slave devices box for bonding.
  * @param key	id of the widget
  */
 void InitSlave(string key)
