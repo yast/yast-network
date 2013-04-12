@@ -481,6 +481,8 @@ global list<string> GetItemModules(string default_module){
  return mods;
 }
 
+map<string, string> BuildBondIndex();
+
 /**
  * Searches map of known devices and decides if referenced lan item 
  * can be enslaved in a bond device
@@ -492,11 +494,12 @@ global list<string> GetItemModules(string default_module){
 boolean IsBondable( integer itemId)
 {
     boolean ret = true;
+    string devname = GetDeviceName( itemId);
+    map<string, string> bonded = BuildBondIndex();
 
     // check if the device is L2 capable
     if( Arch::s390() )
     {
-        string devname = GetDeviceName( itemId);
         map<string, any> s390_config = s390_ReadQethConfig( devname);
 
         // only devices with L2 support can be enslaved in bond. See bnc#719881
@@ -504,6 +507,13 @@ boolean IsBondable( integer itemId)
     }
 
     map<string, any> ifcfg = GetDeviceMap( itemId);
+
+    string bondMaster = bonded[ devname]:"";
+    if( !IsEmptyString( bondMaster) && ( GetDeviceName( current) != bondMaster) )
+    {
+        y2debug( "IsBondable: excluding lan item (%1: %2) for %3 - is already bonded", itemId, devname, GetDeviceName( current) );
+        return false;
+    }
 
     if( ifcfg == nil)
     {
@@ -526,12 +536,22 @@ boolean IsBridgeable( integer itemId)
 {
     map< string, any> ifcfg = GetDeviceMap( itemId);
 
+    // no netconfig configuration has been found so nothing
+    // blocks using the device as bridge slave
     if( ifcfg == nil)
     {
         return true;
     }
 
     string devname = GetDeviceName( itemId);
+    map<string, string> bonded = BuildBondIndex();
+
+    if( bonded[ devname]:nil != nil)
+    {
+        y2debug( "IsBridgeable: excluding lan item (%1: %2) - is bonded", itemId, devname);
+        return false;
+    }
+
     string devtype = GetDeviceType( itemId);
 
     // exclude forbidden configurations
@@ -560,13 +580,13 @@ boolean IsBridgeable( integer itemId)
  */
 global list< integer> GetSlaveCandidates( boolean( integer) validator)
 {
-    list< integer> result = [];
-
     if( validator == nil)
     {
         y2error( "GetSlaveCandidates: needs a validator.");
         return [];
     }
+
+    list< integer> result = [];
 
     foreach(integer itemId, any attribs, Items,
     {
