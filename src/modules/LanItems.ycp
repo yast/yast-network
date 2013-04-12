@@ -269,6 +269,14 @@ global string GetDeviceName( integer itemId)
 }
 
 /**
+ * Returns device type for particular lan item
+ */
+global string GetDeviceType( integer itemId)
+{
+    return NetworkInterfaces::GetType( GetDeviceName( itemId));
+}
+
+/**
  * Returns ifcfg configuration for particular item
  */
 global map< string, any> GetDeviceMap( integer itemId)
@@ -510,26 +518,89 @@ boolean IsBondable( integer itemId)
 }
 
 /**
- * Iterates over all items and lists those which has no 
- * netconfig configuration.
+ * Decides if given lan item can be enslaved in a bridge.
  *
- * @return list of lan item ids (see LanItems::Items)
+ * @param itemId    index into LanItems::Items
  */
-global list< integer> GetBondableInterfaces()
+boolean IsBridgeable( integer itemId)
+{
+    map< string, any> ifcfg = GetDeviceMap( itemId);
+
+    if( ifcfg == nil)
+    {
+        return true;
+    }
+
+    string devname = GetDeviceName( itemId);
+    string devtype = GetDeviceType( itemId);
+
+    // exclude forbidden configurations
+    if( devtype == "br")
+    {
+        y2debug( "IsBridgeable: excluding lan item (%1: %2) - is bridge", itemId, devname);
+        return false;
+    }
+
+    if( ifcfg[ "STARTMODE"]:"" == "nfsroot")
+    {
+        y2debug( "IsBridgeable: excluding lan item (%1: %2) - is nfsroot", itemId, devname);
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Iterates over all items and lists those for which given validator returns
+ * true.
+ *
+ * @param   validator   a reference to function which checks if an interface
+ *                      can be enslaved. Validator takes one argument - itemId.
+ * @return  list of lan item ids (see LanItems::Items)
+ */
+global list< integer> GetSlaveCandidates( boolean( integer) validator)
 {
     list< integer> result = [];
 
+    if( validator == nil)
+    {
+        y2error( "GetSlaveCandidates: needs a validator.");
+        return [];
+    }
+
     foreach(integer itemId, any attribs, Items,
     {
-        if( ( current != itemId) && IsBondable( itemId))
+        if( ( current != itemId) && validator( itemId))
         {
             result = add( result, itemId);
         }
+        else
+        {
+            y2debug( "GetSlaveCandidates: validation failed for item (%1), current (%2)", itemId, current);
+        }
     });
 
-    y2milestone( "GetBondableInterfaces: candidates for enslaving: %1", result);
+    y2milestone( "GetSlaveCandidates: candidates for enslaving: %1", result);
 
     return result;
+}
+
+/**
+ * Creates list of items (interfaces) which can be used as
+ * a bond slave. 
+ */
+global list< integer> GetBondableInterfaces()
+{
+    return GetSlaveCandidates( IsBondable);
+}
+
+/**
+ * Creates list of items (interfaces) which can be used as
+ * a bridge slave. 
+ */
+global list< integer> GetBridgeableInterfaces()
+{
+    return GetSlaveCandidates( IsBridgeable);
 }
 
 // get list of all configurations for "netcard" macro in NetworkInterfaces module

@@ -365,7 +365,10 @@ the interface will no longer be managed by NetworkManager.
         else
         {
             if (! AddInterface ()) 
+            {
+                y2error( "handleOverview: AddInterface failed.");
                 break;
+            }
 
             if( !DeviceReady( LanItems::getCurrentItem()[ "hwinfo", "dev_name"]:"") )
             {
