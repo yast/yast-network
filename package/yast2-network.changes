@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Apr 12 10:49:56 UTC 2013 - mfilka@suse.com
+
+- Changed way how list of slave candidates for bridge is created
+- 2.17.190 
+
+-------------------------------------------------------------------
 Wed Apr 10 09:13:30 UTC 2013 - mfilka@suse.com
 
 - bnc#813835
