@@ -36,6 +36,7 @@ map READ = $[
             "eth6"      : nil,
             
             "bond0"     : nil,
+            "bond1"     : nil,
 	],
 	"value" : $[
             "eth1"      : $["BOOTPROTO":"none"],
@@ -51,6 +52,10 @@ map READ = $[
                             "BONDING_MASTER":"yes", 
                             "BONDING_SLAVE0":"eth1",
                             "BONDING_SLAVE1":"eth2",
+                        ],
+            "bond1"     : $[
+                            "BOOTPROTO":"static", 
+                            "BONDING_MASTER":"yes", 
                         ],
 	]
     ],
@@ -97,11 +102,16 @@ Testsuite::Dump("LanItems::GetBondSlaves");
 list expected_bond_slaves = [ "eth1", "eth2" ];
 Assert::Equal( expected_bond_slaves, LanItems::GetBondSlaves( "bond0"));
 
+expected_bond_slaves = [];
+Assert::Equal( expected_bond_slaves, LanItems::GetBondSlaves( "bond1"));
+
 Testsuite::Dump("LanItems::GetBondableInterfaces");
-list< string> expected_bondable = [ "eth1", "eth11", "eth12", "eth2", "eth4", "eth5"];
+list< string> expected_bondable = [ "eth11", "eth12", "eth4", "eth5"];
 list< string> bondable_devs = [];
 
 // query bondable devices and make testsuite independent of internal sorting of LanItems
+Assert::Equal( true, LanItems::FindAndSelect( "bond1") );   // set up context for GetBondableInterfaces
+
 bondable_devs = maplist(integer itemId, LanItems::GetBondableInterfaces(), ``( LanItems::GetDeviceName( itemId) ));
 bondable_devs = sort( bondable_devs);
 

@@ -11,12 +11,15 @@ Read	.etc.install_inf.BrokenModules nil
 Read	.udev_persistent.net nil
 Dir	.modules.options: []
 Read	.udev_persistent.drivers nil
-Dir	.network.section: ["bond0", "eth1", "eth2", "eth4", "eth5", "eth6"]
+Dir	.network.section: ["bond0", "bond1", "eth1", "eth2", "eth4", "eth5", "eth6"]
 Dir	.network.value."bond0": ["BONDING_MASTER", "BONDING_SLAVE0", "BONDING_SLAVE1", "BOOTPROTO"]
 Read	.network.value."bond0".BONDING_MASTER "yes"
 Read	.network.value."bond0".BONDING_SLAVE0 "eth1"
 Read	.network.value."bond0".BONDING_SLAVE1 "eth2"
 Read	.network.value."bond0".BOOTPROTO "static"
+Dir	.network.value."bond1": ["BONDING_MASTER", "BOOTPROTO"]
+Read	.network.value."bond1".BONDING_MASTER "yes"
+Read	.network.value."bond1".BOOTPROTO "static"
 Dir	.network.value."eth1": ["BOOTPROTO"]
 Read	.network.value."eth1".BOOTPROTO "none"
 Dir	.network.value."eth2": ["BOOTPROTO"]
