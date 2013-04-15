@@ -2,6 +2,8 @@
 Fri Apr 12 10:49:56 UTC 2013 - mfilka@suse.com
 
 - Changed way how list of slave candidates for bridge is created
+- Improved conditions for slave candidates list creation. Devices
+enslaved in a bond are excluded.
 - 2.17.190 
 
 -------------------------------------------------------------------
