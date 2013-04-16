@@ -10,31 +10,51 @@ map READ = $[
             "eth2"      : nil,
 
 	    "eth4"	: nil,
+
 	    "eth5"	: nil,
 
-            "eth6"      : nil,
+	    "tun0"	: nil,
+            "tap0"      : nil,
+
+            "br0"      : nil,
             
             "bond0"     : nil,
-            "bond1"     : nil,
 	],
 	"value" : $[
             "eth1"      : $["BOOTPROTO":"none"],
             "eth2"      : $["BOOTPROTO":"none"],
 
-	    "eth4"	: $["BOOTPROTO":"none"],
-	    "eth5"	: $["BOOTPROTO":"none"],
+	    "eth4"	: $[
+                            "BOOTPROTO":"static",
+                            "IPADDR":"0.0.0.0",
+                            "PREFIX":"32",
+                        ],
 
-	    "eth6"	: $["BOOTPROTO":"dhcp"],
+
+	    "eth5"	: $[
+                            "BOOTPROTO":"static",
+                            "STARTMODE":"nfsroot",
+                        ],
+
+	    "tun0"	: $[
+                            "BOOTPROTO":"static",
+                            "STARTMODE":"onboot",
+                            "TUNNEL":"tun",
+                        ],
+	    "tap0"	: $[
+                            "BOOTPROTO":"static",
+                            "STARTMODE":"onboot",
+                            "TUNNEL":"tap",
+                        ],
+
+
+	    "br0"	: $["BOOTPROTO":"dhcp"],
 
             "bond0"     : $[
                             "BOOTPROTO":"static", 
                             "BONDING_MASTER":"yes", 
                             "BONDING_SLAVE0":"eth1",
                             "BONDING_SLAVE1":"eth2",
-                        ],
-            "bond1"     : $[
-                            "BOOTPROTO":"static", 
-                            "BONDING_MASTER":"yes", 
                         ],
 	]
     ],
@@ -70,30 +90,16 @@ import "LanItems";
 
 Testsuite::Test( LanItems::Read(), [READ, $[], EXEC], nil);
 
-Testsuite::Dump("LanItems::BuildBondIndex");
-map expected_bond_index = $[
-    "eth1": "bond0",
-    "eth2": "bond0",
-];
-Assert::Equal( expected_bond_index, LanItems::BuildBondIndex());
+Testsuite::Dump("LanItems::GetBridgeableInterfaces");
+list< string> expected_bridgeable = [ "bond0", "eth11", "eth12", "eth4", "tap0", "tun0"];
+list< string> bridgeable_devs = [];
 
-Testsuite::Dump("LanItems::GetBondSlaves");
-list expected_bond_slaves = [ "eth1", "eth2" ];
-Assert::Equal( expected_bond_slaves, LanItems::GetBondSlaves( "bond0"));
+// query bridgeable devices and make testsuite independent of internal sorting of LanItems
+Assert::Equal( true, LanItems::FindAndSelect( "br0") );   // set up context for GetBondableInterfaces
 
-expected_bond_slaves = [];
-Assert::Equal( expected_bond_slaves, LanItems::GetBondSlaves( "bond1"));
+bridgeable_devs = maplist(integer itemId, LanItems::GetBridgeableInterfaces( LanItems::GetCurrentName()), ``( LanItems::GetDeviceName( itemId) ));
+bridgeable_devs = sort( bridgeable_devs);
 
-Testsuite::Dump("LanItems::GetBondableInterfaces");
-list< string> expected_bondable = [ "eth11", "eth12", "eth4", "eth5"];
-list< string> bondable_devs = [];
-
-// query bondable devices and make testsuite independent of internal sorting of LanItems
-Assert::Equal( true, LanItems::FindAndSelect( "bond1") );   // set up context for GetBondableInterfaces
-
-bondable_devs = maplist(integer itemId, LanItems::GetBondableInterfaces( LanItems::GetCurrentName()), ``( LanItems::GetDeviceName( itemId) ));
-bondable_devs = sort( bondable_devs);
-
-Assert::Equal( expected_bondable, bondable_devs);
+Assert::Equal( expected_bridgeable, bridgeable_devs);
 
 } /* EOF */

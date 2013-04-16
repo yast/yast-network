@@ -11,39 +11,17 @@ textdomain "network";
 
 
 /**
- * Default function to init the value of devices attached to bridge (BRIDGE_PORTS).
+ * Initializes widget (BRIDGE_PORTS) which contains list of devices available
+ * for enslaving in a brige.
+ *
  * @param key	id of the widget
  */
 void InitBridge(string key)
 {
- string old_name=NetworkInterfaces::Name;
- // old values (preselected values)
- list<string> br_ports = splitstring( NetworkInterfaces::Current["BRIDGE_PORTS"]:"" , " ");
- list items = createUnconfigured(br_ports);
-    // from all configured netcards filter 0.0.0.0 configurations
-    map <string, any> configurations =  NetworkInterfaces::FilterDevices("netcard");
-    foreach(string devtype, splitstring(NetworkInterfaces::CardRegex["netcard"]:"", "|"), {
-//    if (contains(["br", "vlan"], devtype)) continue;
-      if (contains(["br"], devtype)) continue;
-      if (contains(["tun", "tap"], devtype)) {
-       foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
-	string description = NetworkInterfaces::GetDevTypeDescription(devtype, true);
-        items = add (items, `item(`id(devname), sformat("%1 - %2",devname, description), contains(br_ports, devname)) );
-       });
-       continue;
-      }
-       foreach(string devname, (list<string>) Map::Keys(configurations[devtype]:$[]), {
-	if ((string)configurations[devtype, devname, "STARTMODE"]:"" == "nfsroot") {
-	  y2milestone("Exclude %1 from bridge slaves because of nfsroot.", devname);
-	  continue;
-	}
-	string description = sformat("%1%2", NetworkInterfaces::GetValue(devname, "NAME"),
-		((string)configurations[devtype, devname, "IPADDR"]:"" != "0.0.0.0") ? sformat(" (%1)", "configuration") : "");
-             items = add (items, `item(`id(devname), sformat("%1 - %2",devname, description), contains(br_ports, devname)) );
-       });
-    });
-  NetworkInterfaces::Select(old_name);
-  UI::ChangeWidget(`id(key), `Items, items);
+    list<string> br_ports = splitstring( NetworkInterfaces::Current["BRIDGE_PORTS"]:"" , " ");
+    list items = CreateSlaveItems( LanItems::GetBridgeableInterfaces( LanItems::GetCurrentName()), br_ports);
+  
+    UI::ChangeWidget(`id(key), `Items, items);
 }
 
 boolean ValidateBridge (string key, map event) {

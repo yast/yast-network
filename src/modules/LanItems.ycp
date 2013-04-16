@@ -241,6 +241,22 @@ global string GetDeviceName( integer itemId)
 }
 
 /**
+ * Returns device name for current lan item (see LanItems::current)
+ */
+global string GetCurrentName()
+{
+    return GetDeviceName( current);
+}
+
+/**
+ * Returns device type for particular lan item
+ */
+global string GetDeviceType( integer itemId)
+{
+    return NetworkInterfaces::GetType( GetDeviceName( itemId));
+}
+
+/**
  * Returns ifcfg configuration for particular item
  */
 global map< string, any> GetDeviceMap( integer itemId)
@@ -421,22 +437,27 @@ global list<string> GetItemModules(string default_module){
  return mods;
 }
 
+map<string, string> BuildBondIndex();
+
 /**
  * Searches map of known devices and decides if referenced lan item 
  * can be enslaved in a bond device
  *
- * @param itemId    index into LanItems::Items
+ * @param bondMaster    name of master device
+ * @param itemId        index into LanItems::Items
  */
 // TODO: Check for valid configurations. E.g. bond device over vlan
 // is nonsense and is not supported by netconfig.
-boolean IsBondable( integer itemId)
+// Also devices enslaved in a bridge should be excluded too.
+boolean IsBondable( string bondMaster, integer itemId)
 {
     boolean ret = true;
+    string devname = GetDeviceName( itemId);
+    map<string, string> bonded = BuildBondIndex();
 
     // check if the device is L2 capable
     if( Arch::s390() )
     {
-        string devname = GetDeviceName( itemId);
         map<string, any> s390_config = s390_ReadQethConfig( devname);
 
         // only devices with L2 support can be enslaved in bond. See bnc#719881
@@ -444,6 +465,14 @@ boolean IsBondable( integer itemId)
     }
 
     map<string, any> ifcfg = GetDeviceMap( itemId);
+
+    string itemBondMaster = bonded[ devname]:"";
+
+    if( !IsEmptyString( itemBondMaster) && ( bondMaster != itemBondMaster) )
+    {
+        y2debug( "IsBondable: excluding lan item (%1: %2) for %3 - is already bonded", itemId, devname, GetDeviceName( current) );
+        return false;
+    }
 
     if( ifcfg == nil)
     {
@@ -458,26 +487,111 @@ boolean IsBondable( integer itemId)
 }
 
 /**
- * Iterates over all items and lists those which has no 
- * netconfig configuration.
+ * Decides if given lan item can be enslaved in a bridge.
  *
- * @return list of lan item ids (see LanItems::Items)
+ * @param bridgeMaster  name of master device
+ * @param itemId        index into LanItems::Items
  */
-global list< integer> GetBondableInterfaces()
+// TODO: bridgeMaster is not used yet bcs detection of bridge master
+// for checked device is missing.
+boolean IsBridgeable( string bridgeMaster, integer itemId)
 {
+    map< string, any> ifcfg = GetDeviceMap( itemId);
+
+    // no netconfig configuration has been found so nothing
+    // blocks using the device as bridge slave
+    if( ifcfg == nil)
+    {
+        return true;
+    }
+
+    string devname = GetDeviceName( itemId);
+    map<string, string> bonded = BuildBondIndex();
+
+    if( bonded[ devname]:nil != nil)
+    {
+        y2debug( "IsBridgeable: excluding lan item (%1: %2) - is bonded", itemId, devname);
+        return false;
+    }
+
+    string devtype = GetDeviceType( itemId);
+
+    // exclude forbidden configurations
+    if( devtype == "br")
+    {
+        y2debug( "IsBridgeable: excluding lan item (%1: %2) - is bridge", itemId, devname);
+        return false;
+    }
+
+    if( ifcfg[ "STARTMODE"]:"" == "nfsroot")
+    {
+        y2debug( "IsBridgeable: excluding lan item (%1: %2) - is nfsroot", itemId, devname);
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Iterates over all items and lists those for which given validator returns
+ * true.
+ *
+ * @param   validator   a reference to function which checks if an interface
+ *                      can be enslaved. Validator takes one argument - itemId.
+ * @return  list of lan item ids (see LanItems::Items)
+ */
+global list< integer> GetSlaveCandidates( string master, boolean( string, integer) validator)
+{
+    if( validator == nil)
+    {
+        y2error( "GetSlaveCandidates: needs a validator.");
+        return [];
+    }
+    if( IsEmptyString( master))
+    {
+        y2error( "GetSlaveCandidates: master device name is required.");
+        return [];
+    }
+
     list< integer> result = [];
 
     foreach(integer itemId, any attribs, Items,
     {
-        if( ( current != itemId) && IsBondable( itemId))
+        if( ( current != itemId) && validator( master, itemId))
         {
             result = add( result, itemId);
         }
+        else
+        {
+            y2debug( "GetSlaveCandidates: validation failed for item (%1), current (%2)", itemId, current);
+        }
     });
 
-    y2milestone( "GetBondableInterfaces: candidates for enslaving: %1", result);
+    y2milestone( "GetSlaveCandidates: candidates for enslaving: %1", result);
 
     return result;
+}
+
+/**
+ * Creates list of items (interfaces) which can be used as
+ * a bond slave. 
+ *
+ * @param bondMaster    bond device name
+ */
+global list< integer> GetBondableInterfaces( string bondMaster)
+{
+    return GetSlaveCandidates( bondMaster, IsBondable);
+}
+
+/**
+ * Creates list of items (interfaces) which can be used as
+ * a bridge slave. 
+ *
+ * @param bridgeMaster  bridge device name
+ */
+global list< integer> GetBridgeableInterfaces( string bridgeMaster)
+{
+    return GetSlaveCandidates( bridgeMaster, IsBridgeable);
 }
 
 // get list of all configurations for "netcard" macro in NetworkInterfaces module
