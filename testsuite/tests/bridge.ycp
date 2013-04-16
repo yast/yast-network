@@ -95,7 +95,9 @@ list< string> expected_bridgeable = [ "bond0", "eth11", "eth12", "eth4", "tap0",
 list< string> bridgeable_devs = [];
 
 // query bridgeable devices and make testsuite independent of internal sorting of LanItems
-bridgeable_devs = maplist(integer itemId, LanItems::GetBridgeableInterfaces(), ``( LanItems::GetDeviceName( itemId) ));
+Assert::Equal( true, LanItems::FindAndSelect( "br0") );   // set up context for GetBondableInterfaces
+
+bridgeable_devs = maplist(integer itemId, LanItems::GetBridgeableInterfaces( LanItems::GetCurrentName()), ``( LanItems::GetDeviceName( itemId) ));
 bridgeable_devs = sort( bridgeable_devs);
 
 Assert::Equal( expected_bridgeable, bridgeable_devs);
