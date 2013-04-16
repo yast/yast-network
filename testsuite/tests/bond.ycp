@@ -112,7 +112,7 @@ list< string> bondable_devs = [];
 // query bondable devices and make testsuite independent of internal sorting of LanItems
 Assert::Equal( true, LanItems::FindAndSelect( "bond1") );   // set up context for GetBondableInterfaces
 
-bondable_devs = maplist(integer itemId, LanItems::GetBondableInterfaces(), ``( LanItems::GetDeviceName( itemId) ));
+bondable_devs = maplist(integer itemId, LanItems::GetBondableInterfaces( LanItems::GetCurrentName()), ``( LanItems::GetDeviceName( itemId) ));
 bondable_devs = sort( bondable_devs);
 
 Assert::Equal( expected_bondable, bondable_devs);
