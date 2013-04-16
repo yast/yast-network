@@ -216,7 +216,7 @@ void InitSlave(string key)
 
     settings["BONDOPTION"] = LanItems::bond_option;
 
-    list items = CreateSlaveItems( LanItems::GetBondableInterfaces(), LanItems::bond_slaves);
+    list items = CreateSlaveItems( LanItems::GetBondableInterfaces( LanItems::GetCurrentName()), LanItems::bond_slaves);
 
   // reorder the items
   list l2=[];
