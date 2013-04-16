@@ -19,7 +19,7 @@ textdomain "network";
 void InitBridge(string key)
 {
     list<string> br_ports = splitstring( NetworkInterfaces::Current["BRIDGE_PORTS"]:"" , " ");
-    list items = CreateSlaveItems( LanItems::GetBridgeableInterfaces(), br_ports);
+    list items = CreateSlaveItems( LanItems::GetBridgeableInterfaces( LanItems::GetCurrentName()), br_ports);
   
     UI::ChangeWidget(`id(key), `Items, items);
 }

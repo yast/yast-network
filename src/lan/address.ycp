@@ -164,7 +164,7 @@ void InitSlave(string key)
 
     settings["BONDOPTION"] = LanItems::bond_option;
 
-    list items = CreateSlaveItems( LanItems::GetBondableInterfaces(), LanItems::bond_slaves);
+    list items = CreateSlaveItems( LanItems::GetBondableInterfaces( LanItems::GetCurrentName()), LanItems::bond_slaves);
 
     UI::ChangeWidget(`id(key), `Items, items);
     y2debug("slaves %1", settings["SLAVES"]:[]);
