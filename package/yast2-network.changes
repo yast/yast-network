@@ -1,4 +1,34 @@
 -------------------------------------------------------------------
+Fri Apr 12 10:49:56 UTC 2013 - mfilka@suse.com
+
+- Changed way how list of slave candidates for bridge is created
+- Improved conditions for slave candidates list creation. Devices
+enslaved in a bond are excluded.
+
+-------------------------------------------------------------------
+Wed Apr 10 09:13:30 UTC 2013 - mfilka@suse.com
+
+- bnc#813835
+    - Crash when attempting to edit unconfigured interface.
+
+-------------------------------------------------------------------
+Tue Apr  2 07:06:49 UTC 2013 - mfilka@suse.com
+
+- bnc#719881
+    - S390: only L2 capable devices can be enslaved into bond. 
+
+-------------------------------------------------------------------
+Fri Mar 22 11:37:29 UTC 2013 - mfilka@suse.com
+
+- bnc#747844
+    - Extended bugfix. Initializes reasonable defaults for s390
+    specific variables when configuring device for the first time.
+    Previous fix handled switching between interfaces only.
+- bnc#792985
+    - eth not set up during installation
+    - previous bugfix was not working
+
+-------------------------------------------------------------------
 Fri Mar 22 10:08:35 UTC 2013 - mfilka@suse.com
 
 - Ported several fixes in YaPI:

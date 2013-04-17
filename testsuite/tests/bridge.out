@@ -11,30 +11,36 @@ Read	.etc.install_inf.BrokenModules nil
 Read	.udev_persistent.net nil
 Dir	.modules.options: []
 Read	.udev_persistent.drivers nil
-Dir	.network.section: ["bond0", "bond1", "eth1", "eth2", "eth4", "eth5", "eth6"]
+Dir	.network.section: ["bond0", "br0", "eth1", "eth2", "eth4", "eth5", "tap0", "tun0"]
 Dir	.network.value."bond0": ["BONDING_MASTER", "BONDING_SLAVE0", "BONDING_SLAVE1", "BOOTPROTO"]
 Read	.network.value."bond0".BONDING_MASTER "yes"
 Read	.network.value."bond0".BONDING_SLAVE0 "eth1"
 Read	.network.value."bond0".BONDING_SLAVE1 "eth2"
 Read	.network.value."bond0".BOOTPROTO "static"
-Dir	.network.value."bond1": ["BONDING_MASTER", "BOOTPROTO"]
-Read	.network.value."bond1".BONDING_MASTER "yes"
-Read	.network.value."bond1".BOOTPROTO "static"
+Dir	.network.value."br0": ["BOOTPROTO"]
+Read	.network.value."br0".BOOTPROTO "dhcp"
 Dir	.network.value."eth1": ["BOOTPROTO"]
 Read	.network.value."eth1".BOOTPROTO "none"
 Dir	.network.value."eth2": ["BOOTPROTO"]
 Read	.network.value."eth2".BOOTPROTO "none"
-Dir	.network.value."eth4": ["BOOTPROTO"]
-Read	.network.value."eth4".BOOTPROTO "none"
-Dir	.network.value."eth5": ["BOOTPROTO"]
-Read	.network.value."eth5".BOOTPROTO "none"
-Dir	.network.value."eth6": ["BOOTPROTO"]
-Read	.network.value."eth6".BOOTPROTO "dhcp"
+Dir	.network.value."eth4": ["BOOTPROTO", "IPADDR", "PREFIX"]
+Read	.network.value."eth4".BOOTPROTO "static"
+Read	.network.value."eth4".IPADDR "0.0.0.0"
+Read	.network.value."eth4".PREFIX "32"
+Dir	.network.value."eth5": ["BOOTPROTO", "STARTMODE"]
+Read	.network.value."eth5".BOOTPROTO "static"
+Read	.network.value."eth5".STARTMODE "nfsroot"
+Dir	.network.value."tap0": ["BOOTPROTO", "STARTMODE", "TUNNEL"]
+Read	.network.value."tap0".BOOTPROTO "static"
+Read	.network.value."tap0".STARTMODE "onboot"
+Read	.network.value."tap0".TUNNEL "tap"
+Dir	.network.value."tun0": ["BOOTPROTO", "STARTMODE", "TUNNEL"]
+Read	.network.value."tun0".BOOTPROTO "static"
+Read	.network.value."tun0".STARTMODE "onboot"
+Read	.network.value."tun0".TUNNEL "tun"
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-pcmcia" nil
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-usb" nil
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-tr-pcmcia" nil
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-tr-usb" nil
 Return	nil
-Dump	LanItems::BuildBondIndex
-Dump	LanItems::GetBondSlaves
-Dump	LanItems::GetBondableInterfaces
+Dump	LanItems::GetBridgeableInterfaces
