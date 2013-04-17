@@ -41,6 +41,10 @@ global list<map> Hardware = [];
 global map <string, any> udev_net_rules = $[];
 global map<string, any> driver_options = $[];
 
+// FIXME: what's the difference against "device" defined below? 
+// some refactoring led to interfacename = device in SetItem.
+// Probably, interfacename is used outside. It is only set in 
+// this file.
 global string interfacename="";
 
 // used at autoinstallation time
@@ -211,9 +215,89 @@ map <string, string> request_firmware = $[
 
 include "network/hardware.ycp";
 
+/**
+ * Returns configuration of item (see LanItems::Items) with given id.
+ */
+global map GetLanItem( integer itemId)
+{
+    return Items[ itemId]:$[];
+}
 
+/**
+ * Returns configuration for currently modified item. 
+ */
 global map getCurrentItem(){
- return Items[current]:$[];
+    return GetLanItem( current);
+}
+
+/**
+ * Returns true if the item (see LanItems::Items) has
+ * netconfig configuration.
+ */
+global boolean IsItemConfigured( integer itemId)
+{
+    boolean ret = false;
+
+    if( size( GetLanItem( itemId)[ "ifcfg"]:"")>0) 
+        ret = true;
+
+    y2milestone("is item %1 configured? %2", itemId, ret);
+
+    return ret;
+}
+
+/**
+ * Returns true if current (see LanItems::current) has 
+ * configuration
+ */
+global boolean IsCurrentConfigured()
+{
+    return IsItemConfigured( LanItems::current);
+}
+
+/**
+ * Returns device name for given lan item.
+ *
+ * First it looks into the item's netconfig and if it doesn't exist
+ * it uses device name from hwinfo if available.
+ */
+global string GetDeviceName( integer itemId)
+{
+    map lanItem = GetLanItem( itemId);
+
+    return lanItem[ "ifcfg"]: lanItem[ "hwinfo", "dev_name"]: "";
+}
+
+/**
+ * Returns device name for current lan item (see LanItems::current)
+ */
+global string GetCurrentName()
+{
+    return GetDeviceName( current);
+}
+
+/**
+ * Returns device type for particular lan item
+ */
+global string GetDeviceType( integer itemId)
+{
+    return NetworkInterfaces::GetType( GetDeviceName( itemId));
+}
+
+/**
+ * Returns ifcfg configuration for particular item
+ */
+global map< string, any> GetDeviceMap( integer itemId)
+{
+    if( !IsItemConfigured( itemId))
+    {
+        return nil;
+    }
+
+    string devname = GetDeviceName( itemId);
+    string devtype = NetworkInterfaces::GetType( devname);
+
+    return (map< string, any>) NetworkInterfaces::FilterDevices("netcard")[ devtype, devname]:nil;
 }
 
 boolean ReadUdevDriverRules(){
@@ -403,6 +487,163 @@ global list<string> GetItemModules(string default_module){
    if (!contains(mods, tmp_mod)) mods = add(mods, tmp_mod);
  });
  return mods;
+}
+
+map<string, string> BuildBondIndex();
+
+/**
+ * Searches map of known devices and decides if referenced lan item 
+ * can be enslaved in a bond device
+ *
+ * @param bondMaster    name of master device
+ * @param itemId        index into LanItems::Items
+ */
+// TODO: Check for valid configurations. E.g. bond device over vlan
+// is nonsense and is not supported by netconfig.
+// Also devices enslaved in a bridge should be excluded too.
+boolean IsBondable( string bondMaster, integer itemId)
+{
+    boolean ret = true;
+    string devname = GetDeviceName( itemId);
+    map<string, string> bonded = BuildBondIndex();
+
+    // check if the device is L2 capable
+    if( Arch::s390() )
+    {
+        map<string, any> s390_config = s390_ReadQethConfig( devname);
+
+        // only devices with L2 support can be enslaved in bond. See bnc#719881
+        ret = ret && s390_config[ "QETH_LAYER2"]:"no" == "yes";
+    }
+
+    map<string, any> ifcfg = GetDeviceMap( itemId);
+
+    string itemBondMaster = bonded[ devname]:"";
+
+    if( !IsEmptyString( itemBondMaster) && ( bondMaster != itemBondMaster) )
+    {
+        y2debug( "IsBondable: excluding lan item (%1: %2) for %3 - is already bonded", itemId, devname, GetDeviceName( current) );
+        return false;
+    }
+
+    if( ifcfg == nil)
+    {
+        return ret;
+    }
+
+    // filter the eth devices (BOOTPROTO=none)
+    // don't care about STARTMODE (see bnc#652987c6)
+    ret = ret && ifcfg[ "BOOTPROTO"]:"" == "none";
+
+    return ret;
+}
+
+/**
+ * Decides if given lan item can be enslaved in a bridge.
+ *
+ * @param bridgeMaster  name of master device
+ * @param itemId        index into LanItems::Items
+ */
+// TODO: bridgeMaster is not used yet bcs detection of bridge master
+// for checked device is missing.
+boolean IsBridgeable( string bridgeMaster, integer itemId)
+{
+    map< string, any> ifcfg = GetDeviceMap( itemId);
+
+    // no netconfig configuration has been found so nothing
+    // blocks using the device as bridge slave
+    if( ifcfg == nil)
+    {
+        return true;
+    }
+
+    string devname = GetDeviceName( itemId);
+    map<string, string> bonded = BuildBondIndex();
+
+    if( bonded[ devname]:nil != nil)
+    {
+        y2debug( "IsBridgeable: excluding lan item (%1: %2) - is bonded", itemId, devname);
+        return false;
+    }
+
+    string devtype = GetDeviceType( itemId);
+
+    // exclude forbidden configurations
+    if( devtype == "br")
+    {
+        y2debug( "IsBridgeable: excluding lan item (%1: %2) - is bridge", itemId, devname);
+        return false;
+    }
+
+    if( ifcfg[ "STARTMODE"]:"" == "nfsroot")
+    {
+        y2debug( "IsBridgeable: excluding lan item (%1: %2) - is nfsroot", itemId, devname);
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Iterates over all items and lists those for which given validator returns
+ * true.
+ *
+ * @param   validator   a reference to function which checks if an interface
+ *                      can be enslaved. Validator takes one argument - itemId.
+ * @return  list of lan item ids (see LanItems::Items)
+ */
+global list< integer> GetSlaveCandidates( string master, boolean( string, integer) validator)
+{
+    if( validator == nil)
+    {
+        y2error( "GetSlaveCandidates: needs a validator.");
+        return [];
+    }
+    if( IsEmptyString( master))
+    {
+        y2error( "GetSlaveCandidates: master device name is required.");
+        return [];
+    }
+
+    list< integer> result = [];
+
+    foreach(integer itemId, any attribs, Items,
+    {
+        if( ( current != itemId) && validator( master, itemId))
+        {
+            result = add( result, itemId);
+        }
+        else
+        {
+            y2debug( "GetSlaveCandidates: validation failed for item (%1), current (%2)", itemId, current);
+        }
+    });
+
+    y2milestone( "GetSlaveCandidates: candidates for enslaving: %1", result);
+
+    return result;
+}
+
+/**
+ * Creates list of items (interfaces) which can be used as
+ * a bond slave. 
+ *
+ * @param bondMaster    bond device name
+ */
+global list< integer> GetBondableInterfaces( string bondMaster)
+{
+    return GetSlaveCandidates( bondMaster, IsBondable);
+}
+
+/**
+ * Creates list of items (interfaces) which can be used as
+ * a bridge slave. 
+ *
+ * @param bridgeMaster  bridge device name
+ */
+global list< integer> GetBridgeableInterfaces( string bridgeMaster)
+{
+    return GetSlaveCandidates( bridgeMaster, IsBridgeable);
 }
 
 // get list of all configurations for "netcard" macro in NetworkInterfaces module
@@ -783,13 +1024,6 @@ global boolean isCurrentDHCP(){
     return regexpmatch( bootproto, "dhcp[46]?");
 }
 
-global boolean IsItemConfigured(){
- boolean ret = false;
- if (size(getCurrentItem()["ifcfg"]:"")>0) ret = true;
- y2milestone("is item %1 configured? %2", current, ret);
- return ret;
-}
-
 global string GetItemDescription(){
  return Items[current, "table_descr", "rich_descr"]:"";
 }
@@ -1060,6 +1294,32 @@ global void SetDeviceVars(map devmap, map defaults) {
     return;
 }
 
+/**
+ * Initializes s390 specific device variables.
+ *
+ * @param devmap    map with s390 specific attributes and its values
+ * @param defaults  map with default values for attributes not found in devmap
+ */
+void SetS390Vars( map devmap, map defaults)
+{
+    if( !Arch::s390())
+        return;
+
+    qeth_portname =  GetDeviceVar( devmap, defaults, "QETH_PORTNAME");
+    qeth_portnumber = GetDeviceVar( devmap, defaults, "QETH_PORTNUMBER");
+    qeth_layer2 = GetDeviceVar( devmap, defaults, "QETH_LAYER2") == "yes";
+    qeth_chanids = GetDeviceVar( devmap, defaults, "QETH_CHANIDS");
+
+    // qeth attribute. FIXME: currently not read from system.
+    ipa_takeover = defaults[ "IPA_TAKEOVER"]:"" == "yes";
+
+    // not device attribute
+    qeth_options = defaults[ "QETH_OPTIONS"]:"";
+
+    // handle non qeth devices
+    iucv_user = defaults[ "IUCV_USER"]:"";
+    chan_mode = defaults[ "CHAN_MODE"]:"";
+}
 
 /**
  * the defaults here are what sysconfig defaults to
@@ -1119,7 +1379,7 @@ global map<string, string> SysconfigDefaults = $[
 /**
  * Default values used when creating an emulated NIC for physical s390 hardware.
  */
-map<string, string> s390_defaults = $[  
+const map<string, string> s390_defaults = $[  
     "CHAN_MODE": "0",
     "QETH_PORTNAME": "", 
     "QETH_PORTNUMBER": "",
@@ -1129,6 +1389,11 @@ map<string, string> s390_defaults = $[
     "IPA_TAKEOVER": "no",
     "IUCV_USER": "",
 ];
+
+void InitS390VarsByDefaults()
+{
+    SetS390Vars( $[], s390_defaults);
+}
 
 /**
  * Select the given device
@@ -1182,6 +1447,7 @@ global define boolean Select(string dev) {
     description = BuildDescription (type, device, devmap, Hardware);
 
     SetDeviceVars(devmap, SysconfigDefaults);
+    InitS390VarsByDefaults();
 
     hotplug = "";
     y2debug("type=%1", type);
@@ -1555,46 +1821,33 @@ global void DeleteItem(){
  SetModified();
 }
 
-global void SetItem(){
- operation = `edit;
- interfacename = getCurrentItem()["ifcfg"]:"";
- NetworkInterfaces::Edit(getCurrentItem()["ifcfg"]:"");
- map devmap = NetworkInterfaces::Current;
- type = Items[current, "hwinfo", "type"]:"";
- if (!hasAnyValue(type)) type = NetworkInterfaces::GetType(getCurrentItem()["ifcfg"]:"");
- device = getCurrentItem()["ifcfg"]:"";
- alias = NetworkInterfaces::alias_num(getCurrentItem()["ifcfg"]:"");
+global void SetItem()
+{
+    operation = `edit;
+    device = getCurrentItem()["ifcfg"]:"";
+    interfacename = device;
+
+    NetworkInterfaces::Edit( device);
+    type = getCurrentItem()[ "hwinfo", "type"]:"";
+    
+    if (!hasAnyValue(type)) 
+        type = NetworkInterfaces::GetType( device);
+
+    alias = NetworkInterfaces::alias_num( device);
 
     /* general stuff */
+    map devmap = NetworkInterfaces::Current;
+    map<string, any> s390_devmap = s390_ReadQethConfig( getCurrentItem()[ "hwinfo", "dev_name"]:"" ); 
+
     description = BuildDescription (type, device, devmap, Hardware);
 
     SetDeviceVars(devmap, SysconfigDefaults);
+    SetS390Vars( s390_devmap, s390_defaults);
 
     hotplug = "";
     y2debug("type=%1", type);
     if(issubstring(type, "-")) type = regexpsub(type, "([^-]+)-.*$", "\\1");
     y2debug("type=%1", type);
-
-    if( Arch::s390()) 
-    {
-        map<string, any> s390_devmap = ReadQethConfig( Items[current, "hwinfo", "dev_name"]:"" ); 
-
-        qeth_portname =  GetDeviceVar( s390_devmap, s390_defaults, "QETH_PORTNAME");
-        qeth_portnumber = GetDeviceVar( s390_devmap, s390_defaults, "QETH_PORTNUMBER");
-        qeth_layer2 = GetDeviceVar( s390_devmap, s390_defaults, "QETH_LAYER2") == "yes";
-        qeth_chanids = GetDeviceVar( s390_devmap, s390_defaults, "QETH_CHANIDS");
-
-        // qeth attribute. FIXME: currently not read from system.
-        ipa_takeover = s390_defaults[ "IPA_TAKEOVER"]:"" == "yes";
-
-        // not device attribute
-        qeth_options = s390_defaults[ "QETH_OPTIONS"]:"";
-
-        // handle non qeth devices
-        iucv_user = s390_defaults[ "IUCV_USER"]:"";
-        chan_mode = s390_defaults[ "CHAN_MODE"]:"";
-    }
-
 }
 
 global boolean ProposeItem(){

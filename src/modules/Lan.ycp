@@ -852,7 +852,7 @@ define void ProposeNMInterfaces () {
     foreach (integer number, any lanitem, LanItems::Items, {
 	if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) {
 	LanItems::current = number;
-	if (!LanItems::IsItemConfigured()){
+	if (!LanItems::IsCurrentConfigured()){
 	  y2milestone("Nothing already configured start proposing %1 (NM)", LanItems::getCurrentItem());
 	  LanItems::ProposeItem();
 	 }
@@ -904,20 +904,27 @@ void ProposeVirtualized() {
     list<string> skipped = IfcfgsToSkipVirtualizedProposal();
 
     // first configure all connected unconfigured devices with dhcp (with default parameters)
-    foreach (integer number, any lanitem, LanItems::Items, {
-	if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) {
-	LanItems::current = number;
-        boolean valid = LanItems::getCurrentItem()["hwinfo", "link"]:false == true;
-	if (!valid) y2warning("item number %1 has link:false detected", number);
+    foreach (integer number, any lanitem, LanItems::Items, 
+    {
+	if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) 
+        {
+            LanItems::current = number;
+            boolean valid = LanItems::getCurrentItem()["hwinfo", "link"]:false == true;
+	    if (!valid) y2warning("item number %1 has link:false detected", number);
 	   // don't propose WLAN interface (bnc#450670)
-	    else if (LanItems::getCurrentItem()["hwinfo", "type"]:""=="wlan"){
-		 y2warning("not proposing WLAN interface");
-		 valid = false;
+	    else 
+            {
+                if (LanItems::getCurrentItem()["hwinfo", "type"]:""=="wlan")
+                {
+		    y2warning("not proposing WLAN interface");
+		    valid = false;
 		}
-	if (!LanItems::IsItemConfigured() && valid && !contains(skipped, LanItems::getCurrentItem()["hwinfo", "dev_name"]:"")){
-	  y2milestone("Not configured - start proposing");
-	  LanItems::ProposeItem();
-	 }
+            }
+	    if (!LanItems::IsCurrentConfigured() && valid && !contains(skipped, LanItems::getCurrentItem()["hwinfo", "dev_name"]:""))
+            {
+	        y2milestone("Not configured - start proposing");
+	        LanItems::ProposeItem();
+	    }
 	}
     });
 
@@ -1015,7 +1022,7 @@ global define boolean ProposeInterfaces () {
     boolean configured=false;
     foreach (integer number, any lanitem, LanItems::Items, {
             LanItems::current = number;
-            if (LanItems::IsItemConfigured()){
+            if (LanItems::IsCurrentConfigured()){
                 y2milestone("Something already configured: don't propose.");
                 configured = true;
                 break;
@@ -1032,7 +1039,7 @@ global define boolean ProposeInterfaces () {
                     y2warning("Will not propose wlan interfaces");
                 else{
                     if (!link) y2warning("item number %1 has link:false detected", number);
-                    else if (!LanItems::IsItemConfigured() && link){
+                    else if (!LanItems::IsCurrentConfigured() && link){
                         y2milestone("Nothing already configured - start proposing");
                         LanItems::ProposeItem();
                         break;

@@ -37,9 +37,24 @@ y2milestone("----------------------------------------");
 y2milestone("Lan netprobe module started");
 y2milestone("Args: %1", WFM::Args());
 
-if(!NetHwDetection::running) NetHwDetection::Start();
+boolean succeeded = true;
 
-y2milestone("Lan netprobe module finished");
+if(!NetHwDetection::running) 
+{
+    if( !NetHwDetection::Start())
+    {
+        y2milestone( "Network hardware detection failed.");
+        succeeded = false;
+    }
+}
+
+if( NetHwDetection::running)
+{
+    // Start interfaces iff running installation. See bnc#395014, bnc#782283 and bnc#792985
+    SetAllLinksUp();
+}
+
+y2milestone("Lan netprobe module finished ... %1", succeeded ? "OK" : "Failed");
 y2milestone("----------------------------------------");
 
 return `auto;

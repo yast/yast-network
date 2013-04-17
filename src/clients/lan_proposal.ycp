@@ -109,7 +109,7 @@ else if(func == "AskUser") {
 	if (hasAnyValue(dev)){
 	 foreach(integer row, any value, LanItems::Items,{
 	  LanItems::current = row;
-	  if (LanItems::IsItemConfigured()){
+	  if (LanItems::IsCurrentConfigured()){
 	   if (issubstring(dev, LanItems::getCurrentItem()["ifcfg"]:"")) {
 	     LanItems::SetItem();
 	     break;
