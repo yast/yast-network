@@ -276,8 +276,8 @@ sub writeInterfaces {
 		    my @slaves = split(/ /,$ifc->{'bond_slaves'});	    
 		    
 		    for my $i (0 .. scalar(@slaves) -1) {
-			y2milestone("BONDING_SLAVE$i", @slaves[$i]); 
-			$config{"BONDING_SLAVE$i"} = @slaves[$i];
+			y2milestone("BONDING_SLAVE$i", $slaves[$i]); 
+			$config{"BONDING_SLAVE$i"} = $slaves[$i];
 		    }
 		}
 
