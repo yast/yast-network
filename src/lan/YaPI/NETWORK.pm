@@ -36,7 +36,7 @@ sub Read {
     my %interfaces = ();
     foreach my $devnum (keys %{LanItems->Items}){
         LanItems->current($devnum);
-        if (LanItems->IsItemConfigured()){
+        if (LanItems->IsCurrentConfigured()){
             LanItems->SetItem();
             my %configuration = (
                 'startmode' => LanItems->startmode ne ''? LanItems->startmode: 'manual',

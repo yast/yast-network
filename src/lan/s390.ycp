@@ -18,18 +18,13 @@ const string sys_dir = "/sys/class/net";
  */
 define boolean s390_DriverLoaded( string devname)
 {
+    if( !Arch::s390())
+        return false;
+
     if( IsEmptyString( devname))
         return false;
 
     return FileUtils::IsDirectory( sformat( "%1/%2", sys_dir, devname)) == true;
-}
-
-/**
- * Returns true if running at s390 architecture and linux net device emulation was started successfully
- */
-define boolean s390_DeviceReady( string devname)
-{
-    return Arch::s390() && s390_DriverLoaded( devname);
 }
 
 /**
@@ -40,7 +35,7 @@ define boolean s390_DeviceReady( string devname)
  */
 define string s390_ReadQethAttribute( string devname, string attrib)
 {
-    if( !s390_DeviceReady( devname))
+    if( !s390_DriverLoaded( devname))
         return nil;
     
     string result = (string) SCR::Read( .target.string, sformat( "%1/%2/device/%3", sys_dir, devname, attrib));
@@ -66,7 +61,7 @@ define string s390_ReadQethAttribute( string devname, string attrib)
  */
 define map<string, any> s390_ReadQethConfig( string devname)
 {
-    if( !s390_DeviceReady( devname))
+    if( !s390_DriverLoaded( devname))
         return $[];
     
     map<string, any> result = $[];

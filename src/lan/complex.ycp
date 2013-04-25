@@ -167,11 +167,20 @@ once you have installed the firmware.")));
     return true;
 }
 
+/**
+ * Returns true if the device can be used (means handled as normal linux device)
+ * or false otherwise (it is used mainly at s390 based systems where a special
+ * handling is needed to run linux device emulation)
+ */
+define boolean DeviceReady( string devname)
+{
+    return !Arch::s390() || s390_DriverLoaded( devname);
+}
+
 
 define void initIPv6 (string key) {
     UI::ChangeWidget (`id (`ipv6), `Value, Lan::ipv6 ? true : false);
 }
-
 
 define symbol handleIPv6( string key, map event ) {
  if (event["EventReason"]:""=="ValueChanged") Lan::SetIPv6((boolean)UI::QueryWidget (`id (`ipv6), `Value));
@@ -211,7 +220,7 @@ void enableDisableButtons(){
  LanItems::current = (integer)UI::QueryWidget (`id (`_hw_items), `CurrentItem);
 
  UI::ChangeWidget(`_hw_sum, `Value,LanItems::GetItemDescription());
- if (!LanItems::IsItemConfigured()) // unconfigured
+ if (!LanItems::IsCurrentConfigured()) // unconfigured
 			 UI::ChangeWidget(`id(`delete), `Enabled, false);
 	else UI::ChangeWidget(`id(`delete), `Enabled, true);
 
@@ -314,8 +323,6 @@ void initOverview (string key) ``{
     y2milestone("LanItems %1", LanItems::Items);
 }
 
-
-
 symbol handleOverview( string key, map event ) {
 
  if (!disableItemsIfNM([`_hw_items, `_hw_sum, `add, `edit, `delete], false))
@@ -330,7 +337,7 @@ symbol handleOverview( string key, map event ) {
 	Lan::Add();
 	return `add;
    case `edit:
-	if( LanItems::IsItemConfigured())
+	if( LanItems::IsCurrentConfigured())
         {
             LanItems::SetItem();
 
@@ -356,7 +363,7 @@ the interface will no longer be managed by NetworkManager.
             if (! AddInterface ()) 
                 break;
 
-            if( !s390_DeviceReady( LanItems::getCurrentItem()[ "hwinfo", "dev_name"]:"") )
+            if( !DeviceReady( LanItems::getCurrentItem()[ "hwinfo", "dev_name"]:"") )
             {
                 return `init_s390;
             }
@@ -365,7 +372,6 @@ the interface will no longer be managed by NetworkManager.
         return `edit;
 
    case `delete:
-//	if (!LanItems::IsItemConfigured()) return nil;
 
 	    string pop = sformat(_("All additional addresses belonging to the interface %1
 will be deleted as well.
