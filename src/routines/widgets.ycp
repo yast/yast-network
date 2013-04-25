@@ -273,12 +273,13 @@ string handleDevice(list<string>items, string selected){
  return selected;
 }
 
+// TODO: fix creating slave items for bridge and remove
 define list createUnconfigured(list<string> match){
  list items=[];
  integer current = LanItems::current;
  foreach(integer row, any value, LanItems::Items,{
   LanItems::current = row;
-  if (!LanItems::IsItemConfigured()){
+  if (!LanItems::IsCurrentConfigured()){
     string dev_name = LanItems::getCurrentItem()["hwinfo", "dev_name"]:"";
     string description = BuildDescription(LanItems::type, LanItems::device, $["dev_name":dev_name], [LanItems::getCurrentItem()["hwinfo"]:$[]]);
     if (hasAnyValue(dev_name)) items = add(items, `item(`id(dev_name), sformat("%1 - %2", dev_name, description), contains(match, dev_name)?true:false));
@@ -286,6 +287,42 @@ define list createUnconfigured(list<string> match){
  });
  LanItems::current = current;
  return items;
+}
+
+/**
+ * Builds content for slave configuration dialog (used e.g. when configuring
+ * bond slaves) according the given list of itemIds (see LanItems::Items)
+ *
+ * @param itemIds           list of indexes into LanItems::Items
+ * @param enslavedIfaces    list of device names of already enslaved devices
+ */
+define list CreateSlaveItems( list<integer> itemIds, list<string> enslavedIfaces)
+{
+    list items = [];
+
+    foreach( integer itemId, itemIds,
+    {
+        string description = "";
+        string dev_name = "";
+        map<string, any> ifcfg = LanItems::GetDeviceMap( itemId);
+
+        dev_name = LanItems::GetDeviceName( itemId);
+
+        if( ifcfg == nil)
+        {
+            ifcfg = $["dev_name":dev_name];
+        }
+
+        description = BuildDescription( "", "", ifcfg, [LanItems::GetLanItem( itemId)["hwinfo"]:$[]]);
+
+        if( !IsEmptyString(dev_name)) 
+        {
+            boolean selected = contains( enslavedIfaces, dev_name);
+            items = add(items, `item(`id(dev_name), sformat("%1 - %2", dev_name, description), selected) );
+        }
+    });
+
+    return items;
 }
 
 
