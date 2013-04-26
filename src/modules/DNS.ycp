@@ -127,21 +127,54 @@ global define map <string, string> GetDHCPHostnameIP () {
     return ret;
 }
 
-//Copied from former Detection.ycp
+/**
+ * Handles input as one line of getent output. Returns first hostname found on the line.
+ */
+string GetHostnameFromGetent( string line)
+{
+    // hosts line is formatted this way:
+    //
+    // <ip address> <canonical hostname> [<alias> ...]
+    //
+    // field separators are at least one space and/or tab.
+
+    string hostname = regexpsub( line, sformat( "^[%1]+[[:blank:]]+(.*)", IP::ValidChars), "\\1");
+
+    hostname = String::FirstChunk( hostname, " \t\n");
+    hostname = String::CutBlanks( hostname);
+
+    if( ! Hostname::Check( hostname))
+    {
+        y2error( "GetHostnameFromGetent: Invalid hostname detected (%1)", hostname);
+        y2error( "GetHostnameFromGetent: input params - begin");
+        y2error( "%1", line);
+        y2error( "GetHostnameFromGetent: input params - end");
+
+        return "";
+    }
+
+    return hostname;
+}
+
 /**
  * Resolve IP to hostname
  * @param ip given IP address
- * @return resolved host
+ * @return resolved host or empty string in case of failure.
  */
-string ResolveIP(string ip) {
-    string command = "/usr/bin/getent hosts \"%1\" | sed \"s/^[0-9.: \t]\\+//g\"";
+string ResolveIP(string ip) 
+{
+    string command = "/usr/bin/getent hosts \"%1\"";
     map getent = (map) SCR::Execute(.target.bash_output, sformat(command, ip));
-    string hnent = getent["stdout"]:"";
-    y2debug("%1", hnent);
-    hnent = String::FirstChunk (hnent, " \t\n");
-    if(hnent == nil) hnent = "";
-    y2debug("'%1'", hnent);
-    return String::CutBlanks(hnent);
+    integer exit_code = getent[ "exit"]:-1;
+
+    if( exit_code != 0)
+    {
+        y2error( "ResolveIP: getent call failed (%1)", exit_code);
+    
+        return "";
+    }
+
+    return GetHostnameFromGetent( getent[ "stdout"]:"");
 }
 
 
