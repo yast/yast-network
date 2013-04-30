@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Apr 30 08:37:34 UTC 2013 - mfilka@suse.com
+
+- bnc#793367
+    - Added loading tun/tap settings from netconfig.
+- 2.25.0
+
+-------------------------------------------------------------------
 Fri Apr 19 07:30:38 UTC 2013 - mfilka@suse.com
 
 - Fix detection of properly configured LCS and CTC devices (bnc#741071#c20)
