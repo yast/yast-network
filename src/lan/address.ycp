@@ -1082,9 +1082,7 @@ define any AddressDialog() {
 	    "abort_button" : Label::CancelButton (),
 	    "next_button" : Label::NextButton (),
 	    "fallback_functions" : functions,
-	    "disable_buttons" : (LanItems::operation!=`add || 
-				(LanItems::operation==`edit && LanItems::getCurrentItem()["ifcfg"]:""=="")) 
-				? [ "back_button" ] : []
+	    "disable_buttons" : LanItems::operation!=`add ? [ "back_button" ] : [],
 	 ]);
     Wizard::RestoreAbortButton();
 
@@ -1094,7 +1092,7 @@ define any AddressDialog() {
 
     if (ret != `back && ret != `abort)
     {
-	string ifcfgname = LanItems::Items[LanItems::current, "ifcfg"]:"";//settings["IFCFGID"]:"";
+	string ifcfgname = LanItems::getCurrentItem()[ "ifcfg"]:"";
 	// general tab
 	LanItems::startmode = settings["STARTMODE"]:"";
 	LanItems::usercontrol = settings["USERCONTROL"]:false;
