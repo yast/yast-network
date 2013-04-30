@@ -1130,18 +1130,7 @@ _("<p><b><big>IFPLUGD PRIORITY</big></b></p>
 		"AD_ADDRESSES",
 	frame2
      );
-/*
-    if (LanItems::type == "br")
-    {
-        address_contents = `VBox(
-                `Left(label),
-		just_address_contents,
-		`Frame("",  `VBox("BRIDGE_PORTS")),
-		frame2
-	);
-    }
-    else 
-*/
+
     if (contains(["tun", "tap"], LanItems::type))
     {
      address_contents = `VBox(
@@ -1241,9 +1230,7 @@ _("<p><b><big>IFPLUGD PRIORITY</big></b></p>
 	    "abort_button" : Label::CancelButton (),
 	    "next_button" : Label::NextButton (),
 	    "fallback_functions" : functions,
-	    "disable_buttons" : (LanItems::operation!=`add || 
-				(LanItems::operation==`edit && LanItems::getCurrentItem()["ifcfg"]:""=="")) 
-				? [ "back_button" ] : []
+	    "disable_buttons" : LanItems::operation!=`add ? [ "back_button" ] : [],
 	 ]);
     Wizard::RestoreAbortButton();
 
@@ -1253,7 +1240,7 @@ _("<p><b><big>IFPLUGD PRIORITY</big></b></p>
 
     if (ret != `back && ret != `abort)
     {
-	string ifcfgname = LanItems::Items[LanItems::current, "ifcfg"]:"";//settings["IFCFGID"]:"";
+	string ifcfgname = LanItems::getCurrentItem()[ "ifcfg"]:"";
 	// general tab
 	LanItems::startmode = settings["STARTMODE"]:"";
 	if (LanItems::startmode=="ifplugd"){

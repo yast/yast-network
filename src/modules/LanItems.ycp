@@ -1253,6 +1253,11 @@ global void SetDeviceVars(map devmap, map defaults) {
                 bond_slaves = add(bond_slaves, (string)value);
     });
 
+    /* tun/tap settings */
+    tunnel_set_owner = GetDeviceVar( devmap, defaults, "TUNNEL_SET_OWNER");
+    tunnel_set_group = GetDeviceVar( devmap, defaults, "TUNNEL_SET_GROUP");
+    tunnel_set_persistent = GetDeviceVar( devmap, defaults, "TUNNEL_SET_PERSISTENT") == "yes";
+
     /* wireless options */
     wl_mode = GetDeviceVar (devmap, defaults, "WIRELESS_MODE");
     wl_essid = GetDeviceVar (devmap, defaults, "WIRELESS_ESSID");
@@ -1380,6 +1385,10 @@ global map<string, string> SysconfigDefaults = $[
     // default options for bonding (bnc#404449)
     "BONDING_MODULE_OPTS": "mode=active-backup miimon=100",
 
+    // defaults for tun/tap devices
+    "TUNNEL_SET_OWNER": "",
+    "TUNNEL_SET_GROUP": "",
+    "TUNNEL_SET_PERSISTENT": "yes",
     ];
 
 /**
