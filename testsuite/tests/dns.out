@@ -1,0 +1,6 @@
+Read	.target.tmpdir nil
+Log	Failed to set temporary directory: nil
+Log	GetHostnameFromGetent: Invalid hostname detected (-invalid_hostname-)
+Log	GetHostnameFromGetent: input params - begin
+Log	3.3.3.3         -invalid_hostname-
+Log	GetHostnameFromGetent: input params - end
