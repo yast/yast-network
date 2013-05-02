@@ -1,5 +1,5 @@
 -------------------------------------------------------------------
-Fri Apr 26 07:46:04 UTC 2013 - mfilka@suse.com
+Thu May  2 12:21:37 UTC 2013 - mfilka@suse.com
 
 - bnc#813232
     - fixed parsing hostname in DNS module. Number from begining is
