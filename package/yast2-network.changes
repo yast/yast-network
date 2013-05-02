@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Apr 26 07:46:04 UTC 2013 - mfilka@suse.com
+
+- bnc#813232
+    - fixed parsing hostname in DNS module. Number from begining is
+    not stripped anymore.
+- 2.17.192 
+
+-------------------------------------------------------------------
 Tue Apr 30 08:37:34 UTC 2013 - mfilka@suse.com
 
 - bnc#793367
