@@ -1,0 +1,42 @@
+{
+
+import "Assert";
+import "Testsuite";
+
+map READ = $[
+
+    "probe" : $[
+        "architecture" : "i386",
+    ],
+    "sysconfig" : $[
+        "console" : $[
+            "CONSOLE_ENCODING" : "UTF-8",
+        ],
+    ],
+];
+
+map EXEC = $[ 
+    "target": $[
+        "bash_output": $[
+                "exit": 0,
+                "stdout": "charset=UTF-8",
+                "stderr":"",
+        ],
+    ],
+];
+
+list<string> hostnames = [
+    "127.0.0.1       localhost",
+    "1.1.1.1         1-hostname alias",
+    "2.2.2.2         hostname-2",
+    "3.3.3.3         -invalid_hostname-",
+];
+
+import "DNS";
+
+Assert::Equal( "localhost", DNS::GetHostnameFromGetent( hostnames[ 0]:"") );
+Assert::Equal( "1-hostname", DNS::GetHostnameFromGetent( hostnames[ 1]:"") );
+Assert::Equal( "hostname-2", DNS::GetHostnameFromGetent( hostnames[ 2]:"") );
+Assert::Equal( "", DNS::GetHostnameFromGetent( hostnames[ 3]:"") );
+
+} /* EOF */
