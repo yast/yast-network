@@ -43,43 +43,53 @@ if(func == "MakeProposal") {
     Lan::automatic_configuration = false;
     integer i=0;
     while(i<size(WFM::Args())){
-     if(is(WFM::Args(i), map)){
-      if (((map)WFM::Args(i))["AutomaticConfiguration"]:false==true) {
-	Lan::automatic_configuration=true;
-	y2milestone("Lan::automatic_configuration=true;");
-       }
-     }
-     i=i+1;
+        if(is(WFM::Args(i), map)){
+            if (((map)WFM::Args(i))["AutomaticConfiguration"]:false==true) {
+                Lan::automatic_configuration=true;
+                y2milestone("Lan::automatic_configuration=true;");
+            }
+        }
+        i=i+1;
     }
 
-    if(force_reset || !LanItems::proposal_valid) {
-	LanItems::proposal_valid = true;
-	if (! Lan::automatic_configuration)
-	    /* Popup text */
-	    BusyPopup(_("Detecting network cards..."));
-	boolean progress_orig = Progress::set (false);
-	// NM wants us to repropose but while at it Lan::Read should not
-	// think it does a full reread and unset Lan::modified. #147270
-	Lan::Read (force_reset? `nocache: `cache);
-	if (Lan::virt_net_proposal==nil){
-         if((PackageSystem::Installed("xen") && !Arch::is_xenU()) || PackageSystem::Installed("kvm")||
-		PackageSystem::Installed("qemu"))
-		Lan::virt_net_proposal = true;
-	 else Lan::virt_net_proposal = false;
-	}
-	Lan::Propose();
-	Progress::set (progress_orig);
-	if (! Lan::automatic_configuration) BusyPopupClose();
+    if(force_reset || !LanItems::proposal_valid) 
+    {
+        LanItems::proposal_valid = true;
+
+        if (! Lan::automatic_configuration)
+            BusyPopup(_("Detecting network cards..."));
+
+        boolean progress_orig = Progress::set (false);
+
+        // NM wants us to repropose but while at it Lan::Read should not
+        // think it does a full reread and unset Lan::modified. #147270
+        Lan::Read (force_reset ? `nocache : `cache);
+
+        if (Lan::virt_net_proposal==nil)
+        {
+            if((PackageSystem::Installed("xen") && !Arch::is_xenU()) || PackageSystem::Installed("kvm")||
+                    PackageSystem::Installed("qemu"))
+                Lan::virt_net_proposal = true;
+            else 
+                Lan::virt_net_proposal = false;
+        }
+
+        Lan::Propose();
+        Progress::set (progress_orig);
+
+        if (! Lan::automatic_configuration)
+            BusyPopupClose();
     }
+
     list sum = Lan::Summary("proposal");
     proposal = sum[0]:"";
 
     ret = $[
-	"preformatted_proposal" : proposal,
-	"warning_level" : warning_level, // TODO `warning
-	"warning" : warning,	// TODO WiFi but no encryption
-	"links" : sum[1]:[],
-    ];
+        "preformatted_proposal" : proposal,
+        "warning_level" : warning_level, // TODO `warning
+        "warning" : warning,	// TODO WiFi but no encryption
+        "links" : sum[1]:[],
+        ];
 }
 /* run the module */
 else if(func == "AskUser") {
