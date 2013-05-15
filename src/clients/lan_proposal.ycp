@@ -54,6 +54,25 @@ map ret = $[];
 
 Lan::automatic_configuration = GetInstArgs::automatic_configuration();
 
+/*
+ * Decides if a proposal for virtualization host machine is required.
+ */
+define boolean VirtProposalRequired()
+{
+    // S390 has special requirements. See bnc#817943
+    if( Arch::s390() )
+        return false;
+
+    if( PackageSystem::Installed("xen") && !Arch::is_xenU()) 
+        return true;
+    if( PackageSystem::Installed("kvm") )
+        return true;
+    if( PackageSystem::Installed("qemu"))
+        return true;
+
+    return false;
+}
+
 /* create a textual proposal */
 if(func == "MakeProposal") {
     string proposal = "";
@@ -76,11 +95,7 @@ if(func == "MakeProposal") {
 
         if (Lan::virt_net_proposal==nil)
         {
-            if((PackageSystem::Installed("xen") && !Arch::is_xenU()) || PackageSystem::Installed("kvm")||
-                    PackageSystem::Installed("qemu"))
-                Lan::virt_net_proposal = true;
-            else 
-                Lan::virt_net_proposal = false;
+            Lan::virt_net_proposal = VirtProposalRequired();
         }
 
         Lan::Propose();
