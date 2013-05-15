@@ -48,11 +48,19 @@ include "network/lan/wizards.ycp";
 
 list args = WFM::Args();
 
+// yast2-installation calls the method this way:
+//
+//  WFM::CallFunction( <proposal>, [<client function>, <map of arguments>])
+//
+// particularly for AutomaticConfiguration:
+//
+//  WFM::CallFunction( <proposal>, ["MakeProposal", $[ "AutomaticConfiguration":true ]])
+//
+// see inst_proposal.ycp and inst_automatic_configuration.ycp
 string func = args[0]:"";
 map param = args[1]:$[];
-map ret = $[];
 
-Lan::automatic_configuration = GetInstArgs::automatic_configuration();
+map ret = $[];
 
 /*
  * Decides if a proposal for virtualization host machine is required.
@@ -79,12 +87,18 @@ if(func == "MakeProposal") {
     string warning = nil;
     symbol warning_level = nil;
     boolean force_reset = param["force_reset"]:false;
+    boolean automatic_configuration = GetInstArgs::automatic_configuration();
+
+    Lan::automatic_configuration = automatic_configuration;
+
+    y2milestone("lan_proposal/MakeProposal automatic_configuration: %1", automatic_configuration);
+    y2milestone("lan_proposal/MakeProposal force_reset: %1", force_reset);
 
     if(force_reset || !LanItems::proposal_valid) 
     {
         LanItems::proposal_valid = true;
 
-	if (! GetInstArgs::automatic_configuration())
+        if (! automatic_configuration)
             BusyPopup(_("Detecting network cards..."));
 
         boolean progress_orig = Progress::set (false);
@@ -101,7 +115,7 @@ if(func == "MakeProposal") {
         Lan::Propose();
         Progress::set (progress_orig);
 
-	if (! GetInstArgs::automatic_configuration())
+        if (! automatic_configuration) 
             BusyPopupClose();
     }
 
