@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu May 16 06:51:35 UTC 2013 - mfilka@suse.com
+
+- bnc#817943
+    - do not propose bridge devices when a virtualization is installed
+    on s390
+- 2.17.193
+
+-------------------------------------------------------------------
 Thu May  2 12:21:37 UTC 2013 - mfilka@suse.com
 
 - bnc#813232
