@@ -28,10 +28,38 @@ include "network/lan/wizards.ycp";
 
 list args = WFM::Args();
 
+// yast2-installation calls the method this way:
+//
+//  WFM::CallFunction( <proposal>, [<client function>, <map of arguments>])
+//
+// particularly for AutomaticConfiguration:
+//
+//  WFM::CallFunction( <proposal>, ["MakeProposal", $[ "AutomaticConfiguration":true ]])
+//
+// see inst_proposal.ycp and inst_automatic_configuration.ycp
 string func = args[0]:"";
 map param = args[1]:$[];
+
 map ret = $[];
 
+/*
+ * Decides if a proposal for virtualization host machine is required.
+ */
+define boolean VirtProposalRequired()
+{
+    // S390 has special requirements. See bnc#817943
+    if( Arch::s390() )
+        return false;
+
+    if( PackageSystem::Installed("xen") && !Arch::is_xenU()) 
+        return true;
+    if( PackageSystem::Installed("kvm") )
+        return true;
+    if( PackageSystem::Installed("qemu"))
+        return true;
+
+    return false;
+}
 
 /* create a textual proposal */
 if(func == "MakeProposal") {
@@ -39,47 +67,48 @@ if(func == "MakeProposal") {
     string warning = nil;
     symbol warning_level = nil;
     boolean force_reset = param["force_reset"]:false;
+    boolean automatic_configuration = param["AutomaticConfiguration"]:false==true;
 
-    Lan::automatic_configuration = false;
-    integer i=0;
-    while(i<size(WFM::Args())){
-     if(is(WFM::Args(i), map)){
-      if (((map)WFM::Args(i))["AutomaticConfiguration"]:false==true) {
-	Lan::automatic_configuration=true;
-	y2milestone("Lan::automatic_configuration=true;");
-       }
-     }
-     i=i+1;
+    if( automatic_configuration)
+    {
+        Lan::automatic_configuration=true;
+        y2milestone("Lan::automatic_configuration=true;");
     }
 
-    if(force_reset || !LanItems::proposal_valid) {
-	LanItems::proposal_valid = true;
-	if (! Lan::automatic_configuration)
-	    /* Popup text */
-	    BusyPopup(_("Detecting network cards..."));
-	boolean progress_orig = Progress::set (false);
-	// NM wants us to repropose but while at it Lan::Read should not
-	// think it does a full reread and unset Lan::modified. #147270
-	Lan::Read (force_reset? `nocache: `cache);
-	if (Lan::virt_net_proposal==nil){
-         if((PackageSystem::Installed("xen") && !Arch::is_xenU()) || PackageSystem::Installed("kvm")||
-		PackageSystem::Installed("qemu"))
-		Lan::virt_net_proposal = true;
-	 else Lan::virt_net_proposal = false;
-	}
-	Lan::Propose();
-	Progress::set (progress_orig);
-	if (! Lan::automatic_configuration) BusyPopupClose();
+    if(force_reset || !LanItems::proposal_valid) 
+    {
+        LanItems::proposal_valid = true;
+
+        if (! automatic_configuration)
+            BusyPopup(_("Detecting network cards..."));
+
+        boolean progress_orig = Progress::set (false);
+
+        // NM wants us to repropose but while at it Lan::Read should not
+        // think it does a full reread and unset Lan::modified. #147270
+        Lan::Read (force_reset ? `nocache : `cache);
+
+        if (Lan::virt_net_proposal==nil)
+        {
+            Lan::virt_net_proposal = VirtProposalRequired();
+        }
+
+        Lan::Propose();
+        Progress::set (progress_orig);
+
+        if (! automatic_configuration) 
+            BusyPopupClose();
     }
+
     list sum = Lan::Summary("proposal");
     proposal = sum[0]:"";
 
     ret = $[
-	"preformatted_proposal" : proposal,
-	"warning_level" : warning_level, // TODO `warning
-	"warning" : warning,	// TODO WiFi but no encryption
-	"links" : sum[1]:[],
-    ];
+        "preformatted_proposal" : proposal,
+        "warning_level" : warning_level, // TODO `warning
+        "warning" : warning,	// TODO WiFi but no encryption
+        "links" : sum[1]:[],
+        ];
 }
 /* run the module */
 else if(func == "AskUser") {
