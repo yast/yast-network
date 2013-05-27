@@ -108,24 +108,41 @@ global define map <string, string> GetDHCPHostnameIP () {
 }
 
 /**
- * Handles input as one line of getent output. Returns first hostname found on the line.
+ * Handles input as one line of getent output. Returns first hostname found 
+ * on the line (= canonical hostname).
+ *
+ * @param line in /etc/hosts format
+ * @return canonical hostname from given line
  */
 string GetHostnameFromGetent( string line)
 {
-    // hosts line is formatted this way:
-    //
-    // <ip address> <canonical hostname> [<alias> ...]
-    //
-    // field separators are at least one space and/or tab.
+/*
+ *  line is expected same format as is used in /etc/hosts without additional 
+ *  comments (getent removes comments from the end).
+ *
+ *  /etc/hosts line is formatted this way (man 5 hosts):
+ * 
+ *      <ip address> <canonical hostname> [<alias> ...]
+ * 
+ *  - field separators are at least one space and/or tab.
+ *  - <canonical hostname>, in generic it is "a computer's unique name". In case
+ *  of DNS world, <canonical hostname> is FQDN ("A" record), then <hostname> is 
+ *  <canonical hostname> without domain part. For example:
+ *
+ *      foo.example.com. IN A 1.2.3.4
+ *
+ *  <canonical hostname> => foo.example.com
+ *  <hostname> => foo
+ *
+ */
+    string canonical_hostname = regexpsub( line, sformat( "^[%1]+[[:blank:]]+(.*)", IP::ValidChars), "\\1");
 
-    string hostname = regexpsub( line, sformat( "^[%1]+[[:blank:]]+(.*)", IP::ValidChars), "\\1");
+    canonical_hostname = String::FirstChunk( canonical_hostname, " \t\n");
+    canonical_hostname = String::CutBlanks( canonical_hostname);
 
-    hostname = String::FirstChunk( hostname, " \t\n");
-    hostname = String::CutBlanks( hostname);
-
-    if( ! Hostname::Check( hostname))
+    if( !Hostname::CheckDomain( canonical_hostname) && !Hostname::Check( canonical_hostname))
     {
-        y2error( "GetHostnameFromGetent: Invalid hostname detected (%1)", hostname);
+        y2error( "GetHostnameFromGetent: Invalid hostname detected (%1)", canonical_hostname);
         y2error( "GetHostnameFromGetent: input params - begin");
         y2error( "%1", line);
         y2error( "GetHostnameFromGetent: input params - end");
@@ -133,13 +150,16 @@ string GetHostnameFromGetent( string line)
         return "";
     }
 
-    return hostname;
+    y2milestone( "GetHostnameFromGetEnt: canonical hostname => (%1)", canonical_hostname);
+
+    return canonical_hostname;
 }
 
 /**
- * Resolve IP to hostname
+ * Resolve IP to canonical hostname
+ *
  * @param ip given IP address
- * @return resolved host or empty string in case of failure.
+ * @return resolved canonical hostname (FQDN) for given IP or empty string in case of failure.
  */
 string ResolveIP(string ip) 
 {
