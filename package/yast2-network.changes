@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon May 27 06:21:40 UTC 2013 - mfilka@suse.com
+
+- bnc#813232
+   - extended fix from 2.25.2. DNS module is able to handle FQDN now. 
+- 2.25.3
+
+-------------------------------------------------------------------
 Thu May 16 06:51:35 UTC 2013 - mfilka@suse.com
 
 - bnc#817943
