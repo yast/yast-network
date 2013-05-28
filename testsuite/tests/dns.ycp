@@ -30,6 +30,7 @@ list<string> hostnames = [
     "1.1.1.1         1-hostname alias",
     "2.2.2.2         hostname-2",
     "3.3.3.3         -invalid_hostname-",
+    "9.114.214.42    9117-mma-1-lp1.pok.stglabs.ibm.com"
 ];
 
 import "DNS";
@@ -38,5 +39,6 @@ Assert::Equal( "localhost", DNS::GetHostnameFromGetent( hostnames[ 0]:"") );
 Assert::Equal( "1-hostname", DNS::GetHostnameFromGetent( hostnames[ 1]:"") );
 Assert::Equal( "hostname-2", DNS::GetHostnameFromGetent( hostnames[ 2]:"") );
 Assert::Equal( "", DNS::GetHostnameFromGetent( hostnames[ 3]:"") );
+Assert::Equal( "9117-mma-1-lp1.pok.stglabs.ibm.com", DNS::GetHostnameFromGetent( hostnames[ 4]:"") );
 
 } /* EOF */
