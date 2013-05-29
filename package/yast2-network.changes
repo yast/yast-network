@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed May 29 10:19:10 UTC 2013 - mfilka@suse.com
+
+- bnc#821427
+    - fixed biosdevname renaming in case of buggy SMBIOS.
+    - original patch provided by Martin Wilck 
+    (martin.wilck@ts.fujitsu.com)
+- 2.17.195
+
+-------------------------------------------------------------------
 Mon May 27 06:21:40 UTC 2013 - mfilka@suse.com
 
 - bnc#813232
