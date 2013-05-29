@@ -317,7 +317,8 @@ void CreateIfcfg() {
 
     string new_netdevice = netdevice;
     if (! LanUdevAuto::AllowUdevModify()) {
-        string cmd = sformat("biosdevname --policy=all_names -i %1", netdevice);
+        // bnc#821427: use same options as in /lib/udev/rules.d/71-biosdevname.rules
+        string cmd = sformat("biosdevname --policy physical --smbios 2.6 --nopirq -i %1", netdevice);
         string out = String::FirstChunk(StdoutOf(cmd), "\n");
         if (out != "") {
             y2milestone ("biosdevname renames %1 to %2", netdevice, out);
