@@ -83,11 +83,7 @@ This form of remote administration is less secure than using SSH.</p>
 		allow_buttons
 	    ),
 	    `VSpacing (1),
-	    `Frame (
-		/* Dialog frame title */
-		_("Firewall Settings"),
-		firewall_layout
-	    )
+	    firewall_layout
 	),
 	`HStretch()
     );
