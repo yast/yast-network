@@ -41,13 +41,43 @@ import "Service";
 import "SuSEFirewall";
 import "Progress";
 import "Linuxrc";
+import "String";
+import "FileUtils";
 
 include "network/routines.ycp";
+
+// security types supported by Xvnc
+global const string SEC_NONE = "none";
+global const string SEC_VNC  = "vncauth";
+
+global const list< string> SEC_TYPES = [
+    SEC_NONE,
+    SEC_VNC,
+];
+
+global const string SEC_OPT_SECURITYTYPE = "securitytypes";
+global const string SEC_OPT_RFBAUTH = "rfbauth";
+global const string SEC_OPT_PASSWORDFILE = "passwordfile";
+
+// Currently, all attributes (enablement of remote access, password
+// protection, ...) are applied on vnc1 even vnchttpd1 configuration
 
 /**
  * Allow remote administration
  */
-global boolean allow_administration = false;
+boolean allow_administration = false;
+
+/**
+ * Use password protection for sessions.
+ *
+ * Currently only r/w sessions are password protected.
+ */
+boolean password_protected = false;
+
+/**
+ * Plaintext string which should be used as a new password.
+ */
+string new_password = nil;
 
 /**
  * Default display manager 
@@ -59,6 +89,85 @@ global string default_dm = "xdm";
  * Only force-reset can change it
  */
 boolean already_proposed = false;
+
+/**
+ * Checks if remote administration is currently allowed
+ */
+global boolean IsEnabled()
+{
+    return allow_administration;
+}
+
+/**
+ * Checks if remote administration is currently disallowed
+ */
+global boolean IsDisabled()
+{
+    return !IsEnabled();
+}
+
+/**
+ * Switch remote administration (vnc) availability.
+ */
+global void Toggle( boolean new_state)
+{
+    allow_administration = new_state;
+}
+
+/**
+ * Tells if password is required for vnc session.
+ */
+global boolean IsPasswordEnabled()
+{
+    return password_protected;
+}
+
+/**
+ * Tells if password is required for vnc session.
+ */
+global boolean IsPasswordDisabled()
+{
+    return !IsPasswordEnabled();
+}
+
+/**
+ * Returns valid password description.
+ *
+ * See man vncpasswd for details.
+ */
+global string ValidPassword()
+{
+    return _( "Password has to be at least six characters long.");
+}
+
+/**
+ * Checks if given password is valid.
+ *
+ * See man vncpasswd for details.
+ */
+global boolean CheckPassword( string pw)
+{
+    return size( pw) >= 6;
+}
+
+/**
+ * Set password for vnc session.
+ *
+ * @param pw    string with plaintext password
+ * @return true if the password was set successfully
+ */
+global boolean SetPassword( string pw)
+{
+    if( !CheckPassword( pw))
+    {
+        return false;
+    }
+
+    password_protected = true;
+    new_password = pw;
+
+    return true;
+}
 
 /**
  * Reset all module data.
@@ -83,6 +192,173 @@ global void Propose() {
     if (!already_proposed) Reset();
 }
 
+boolean ExecuteAsUser( string cmd, string user)
+{
+    return 0 == (integer) (SCR::Execute( .target.bash, sformat( "su -c \"%1\" %2", cmd, user)) );
+}
+
+/**
+ * Generates default path for passwd file for given user.
+ *
+ * Same default path as used in vncpasswd is used ($HOME/.vnc/passwd).
+ * If given user doesn't have home dir set then /tmp is used.
+ * If the path doesn't exist it is created and the file is accessible to the given user only
+ * (same behavior as vncpasswd).
+ */
+string GetDefaultPasswdPath( string user)
+{
+    const string cmd = sformat( "getent passwd %1", user);
+    const string vnc_subdir = ".vnc";
+    const string vnc_file = "passwd";
+    const string vnc_suffix = vnc_subdir + "/" + vnc_file;
+
+    string line = ((map <string, any>)SCR::Execute( .target.bash_output, cmd))[ "stdout"]:"";
+    string home_path = splitstring( line, ":")[ 5]:"/tmp";
+
+    boolean succeeded = ExecuteAsUser( sformat( "mkdir -p %1", home_path + "/" + vnc_subdir), user);
+
+    string vnc_path = home_path + "/" + vnc_suffix;
+
+    if( !succeeded)
+    {
+        y2error( "GetDefaultPasswdPath: User '%1' cannot write its home dir '%2'", user, home_path);
+            
+        return nil;
+    }
+
+    succeeded = ExecuteAsUser( sformat( "touch %1", vnc_path), user );
+
+    if( !succeeded)
+    {
+        y2error( "GetDefaultPasswdPath: User '%1' cannot create file '%2'", user, vnc_path);
+
+        return nil;
+    }
+
+    if( !FileUtils::Chmod( "0600", vnc_path, false) )
+    {
+        y2error( "GetDefaultPasswdPath: Cannot chmod file '%1'", vnc_path);
+
+        return nil;
+    }
+
+    return vnc_path;
+}
+
+/**
+ * Extracts path to passwd file.
+ *
+ * @param server_args   string with server options as written in xinetd cfg file
+ *
+ * @return              empty string if path wasn't found
+ */
+string GetPasswdPath( string server_args)
+{
+    server_args = tolower( server_args);
+
+    string file = regexpsub( server_args, "(rfbauth|passwordfile)[[:space:]=]([^[:space:]]+)", "\\2");
+
+    return file != nil ? file : "";
+}
+
+/**
+ * Removes all options <option> (and its value) from <server_args>
+ *
+ * Note: server_args has to be valid. In case of incorrect input (e.g. -opt1= -opt2) 
+ * is result undefined.
+ */
+string ServerArgsRemoveOpt( string server_args, string option, boolean has_value)
+{
+    if( IsEmptyString( server_args) || IsEmptyString( option))
+    {
+        return server_args;
+    }
+
+    // Xvnc:
+    // - is case insensitive to option names.
+    // - option can be prefixed by 0 or up to 2 dashes
+    // - option and value can be separated by space or =
+    string new_server_args = tolower( server_args);
+
+    // e.g. delimiter+value from -file="path to file"
+    const string value_pattern_dquotes = "[=[:space:]]\"[^\"]*\"";
+    const string value_pattern_squotes = "[=[:space:]]'[^']*'";
+
+    // e.g. delimiter+value from -file=path_to_file or
+    // e.g. delimiter+value from -file path_to_file
+    const string value_pattern_nquote = "[=[:space:]][^[:space:]]+";
+    string value_pattern = "";
+
+    if( has_value)
+    {
+        value_pattern = sformat( "(%1|%2|%3)", value_pattern_dquotes, value_pattern_squotes, value_pattern_nquote);
+    }
+
+    const string pattern = sformat( "[[:space:]]*[-]{0,2}%1%2", option, value_pattern);
+    new_server_args = String::CutRegexMatch( new_server_args, pattern, true);
+
+    return new_server_args;
+}
+
+/**
+ * Add given option and its value to server_args. 
+ *
+ * If option is present already then all occurences of option are removed.
+ * New option value pair is added subsequently.
+ */
+string SetServerArgsOpt( string server_args, string option, string value)
+{
+    string new_server_args = ServerArgsRemoveOpt( server_args, option, !IsEmptyString( value));
+    new_server_args = sformat( "%1 -%2 %3", new_server_args, option, value);
+
+    return String::CutBlanks( new_server_args);
+}
+
+/**
+ * Appends option with given file absolute path as value.
+ *
+ * @param server_args   string with server options as written in xinetd cfg file
+ * @param new_path      absolute path to passwd file
+ *
+ * @return              server_args with appended option if new_path is valid. 
+ *                      Unchanged server_args otherwise.
+ */
+string SetPasswdPath( string server_args, string new_path)
+{
+    if( !FileUtils::IsFile( new_path))
+    {
+        y2error( "SetPasswdPath: invalid path: \"%1\"", new_path);
+        return server_args;
+    }
+
+    // rfbauth is an alias for PasswdFile.
+    // note: xinetd or Xvnc do not understand quotes.
+    // -rfbauth 'file' do not work
+    // -rfbauth file works
+    server_args = ServerArgsRemoveOpt( server_args, SEC_OPT_RFBAUTH, true);
+    return SetServerArgsOpt( server_args, SEC_OPT_PASSWORDFILE, sformat( "%1", new_path) );
+}
+
+/**
+ * Appends option for particular security type.
+ *
+ * @param server_args   string with server options as written in xinetd cfg file
+ * @param sec_type      a security type supported by Xvnc (see man xvnc)
+ *
+ * @return              server_args with appended option for particular sec_type 
+ *                      if sec_type is valid. Unchanged server_args otherwise.
+ */
+string SetSecurityType( string server_args, string sec_type)
+{
+    // validate sec_type
+    if( !contains( SEC_TYPES, sec_type))
+    {
+        return server_args;
+    }
+
+    return SetServerArgsOpt( server_args, SEC_OPT_SECURITYTYPE, sec_type);
+}
+
 /**
  * Read the current status
  * @return true on success
@@ -97,7 +373,8 @@ global boolean Read() {
     list<map> xinetd_conf = (list<map>) SCR::Read(.etc.xinetd_conf.services);
     list<map> vnc_conf = filter (map m, xinetd_conf, {
 	string s = m["service"]:"";
-	return s == "vnc1" || s == "vnchttpd1";
+
+        return s == "vnc1" || s == "vnchttpd1";
     });
     boolean vnc = size (vnc_conf) == 2 &&
 	vnc_conf[0, "enabled"]:false &&
@@ -122,6 +399,75 @@ void CreateSaxAutomaticConfiguration() {
     string command = "TERM=dumb /usr/sbin/sax2 -r -a | /usr/bin/grep -v '\\r$'";
     y2milestone("Creating automatic Xconfiguration: %1", command);
     y2milestone("SaX2 returned: %1", SCR::Execute(.target.bash_output, command));
+}
+
+boolean WritePassword( string file, string user, string pw)
+{
+    const string cmd = sformat( "echo '%1' | vncpasswd -f > %2", pw, file);
+
+    return ExecuteAsUser( cmd, user);
+}
+
+boolean WriteXinetd()
+{
+    // Enable/disable vnc1 and vnchttpd1 in xinetd.d/vnc
+    // If the port is changed, change also the help in remote/dialogs.ycp
+    // The agent is in yast2-inetd.rpm
+    list<map> xinetd = (list<map>) SCR::Read(.etc.xinetd_conf.services);
+
+    boolean ret = true;
+    xinetd = maplist (map m, xinetd, 
+    {
+        string s = m["service"]:"";
+
+        if (s == "vnc1" || s == "vnchttpd1") 
+        {
+            m["changed"] = true;
+            m["enabled"] = allow_administration;
+
+            // set security type
+            const string sec_type = IsPasswordDisabled() ? SEC_NONE : SEC_VNC;
+            string server_args = m[ "server_args"]:"";
+
+            server_args = SetSecurityType( server_args, sec_type);
+        
+            // update password if needed
+            if( IsPasswordEnabled() && !IsEmptyString( new_password))
+            {
+                const string user = m[ "user"]:"";
+                string passwd_path = GetPasswdPath( server_args);
+
+                if( IsEmptyString( passwd_path))
+                {
+                    passwd_path = GetDefaultPasswdPath( user);
+                }
+
+                y2milestone( "WriteXinetd: passwd file: \"%1\"", passwd_path);
+                ret = WritePassword( passwd_path, user, new_password);
+
+                if( ret)
+                {
+                    server_args = SetPasswdPath( server_args, passwd_path); 
+                }
+            }
+    
+            m[ "server_args"] = server_args;
+        }
+
+        y2milestone("Updated xinet cfg: %1", m);
+
+        return m;
+    });
+
+    if( !ret)
+    {
+        y2error( "WriteXinetd: updating of vnc configuration failed.");
+        return false;
+    }
+
+    SCR::Write(.etc.xinetd_conf.services, xinetd);
+
+    return true;
 }
 
 /**
@@ -203,22 +549,11 @@ global boolean Write() {
     boolean have_xinetd = Package::Installed("xinetd");
 
     //Do this only if package xinetd is installed (#256385)
-    if (have_xinetd) {
-        // Enable/disable vnc1 and vnchttpd1 in xinetd.d/vnc
-        // If the port is changed, change also the help in remote/dialogs.ycp
-        // The agent is in yast2-inetd.rpm
-        list<map> xinetd = (list<map>) SCR::Read(.etc.xinetd_conf.services);
-        xinetd = maplist (map m, xinetd, {
-            string s = m["service"]:"";
-            if (s == "vnc1" || s == "vnchttpd1") {
-                m["changed"] = true;
-                m["enabled"] = allow_administration;
-            }
-            return m;
-        });
-        SCR::Write(.etc.xinetd_conf.services, xinetd);
-   }
-   sleep(sl);
+    if (have_xinetd && !WriteXinetd() ) 
+    {
+        return false;
+    }
+    sleep(sl);
 
    if(Mode::normal ()) {
 
