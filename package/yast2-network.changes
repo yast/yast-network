@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Jun 20 06:49:08 UTC 2013 - mfilka@suse.com
+
+- improved UX in Remote Administration module. 
+    - Password setup enabled.
+    - bnc#808490
+- 2.25.5 
+
+-------------------------------------------------------------------
 Wed May 29 10:19:10 UTC 2013 - mfilka@suse.com
 
 - bnc#821427
