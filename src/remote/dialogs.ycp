@@ -35,12 +35,66 @@ import "Label";
 import "Remote";
 import "Wizard";
 import "CWMFirewallInterfaces";
+import "Popup";
+
+boolean DialogDone( any event)
+{
+    symbol action = (symbol) event;
+
+    if( action == `next || action == `back)
+        return true;
+    if( action == `abort || action == `cancel)
+        return true;
+
+    return false;
+}
+
+boolean UsePassword()
+{
+    boolean allowed = (boolean) UI::QueryWidget(`id(`allow), `Value);
+    boolean use_password = (boolean) UI::QueryWidget( `id( `passwd_used), `Value);
+
+    return allowed && use_password;
+}
+
+/**
+ * Enables/Disables widgets used for password input.
+ */
+void TogglePasswdInputs( boolean enabled)
+{
+    list <symbol> widgets = [
+        `passwd_new,
+    ];
+
+    foreach( symbol widget, widgets, 
+    {
+        UI::ChangeWidget( `id( widget), `Enabled, enabled);
+    });
+}
+
+/**
+ * Enables/Disables all widgets somehow related to password setup.
+ */
+void TogglePasswdWidgets( boolean enabled)
+{
+    UI::ChangeWidget( `id( `passwd_used), `Enabled, enabled);
+    TogglePasswdInputs( enabled);
+}
+
+/**
+ * Handles remote access (de)activation.
+ */
+void ToggleAllowed( boolean enabled)
+{
+    Remote::Toggle( enabled);
+    TogglePasswdWidgets( enabled);
+}
 
 /**
  * Remote administration dialog
  * @return dialog result
  */
-define symbol RemoteMainDialog() {
+symbol RemoteMainDialog() {
 
     /* Ramote Administration dialog caption */
     string caption = _("Remote Administration");
@@ -48,10 +102,15 @@ define symbol RemoteMainDialog() {
     term allow_buttons = `RadioButtonGroup(
 	`VBox (
 	    /* RadioButton label */
-	    `Left(`RadioButton(`id(`allow), _("&Allow Remote Administration"), false)),
+	    `Left(`RadioButton(`id(`allow), `opt( `notify), _("&Allow Remote Administration"), Remote::IsEnabled() )),
 	    /* RadioButton label */
-	    `Left(`RadioButton(`id(`disallow), _("&Do Not Allow Remote Administration"), false))
+	    `Left(`RadioButton(`id(`disallow), `opt( `notify), _("&Do Not Allow Remote Administration"), Remote::IsDisabled() ))
 	)
+    );
+
+    term password_settings = `VBox(
+        `Left( `CheckBox( `id( `passwd_used), `opt( `notify), _( "Use password"), true) ),
+        `Password( `id( `passwd_new), `opt(`hstretch), Label::Password(), "")
     );
 
     map<string,any> firewall_widget = CWMFirewallInterfaces::CreateOpenFirewallWidget ($[
@@ -80,14 +139,14 @@ This form of remote administration is less secure than using SSH.</p>
 	    `Frame (
 		/* Dialog frame title */
 		_("Remote Administration Settings"),
-		allow_buttons
+                `VBox(
+                    allow_buttons, 
+                    `VSpacing( 1),
+                    password_settings
+                )
 	    ),
-	    `VSpacing (1),
-	    `Frame (
-		/* Dialog frame title */
-		_("Firewall Settings"),
-		firewall_layout
-	    )
+            `VSpacing( 1), 
+	    firewall_layout
 	),
 	`HStretch()
     );
@@ -98,8 +157,7 @@ This form of remote administration is less secure than using SSH.</p>
     Wizard::SetAbortButton(`abort, Label::CancelButton());
     Wizard::HideBackButton();
 
-    UI::ChangeWidget(`id(`allow), `Value, Remote::allow_administration);
-    UI::ChangeWidget(`id(`disallow), `Value, !Remote::allow_administration);
+    TogglePasswdWidgets( Remote::IsEnabled());
 
     CWMFirewallInterfaces::OpenFirewallInit (firewall_widget, "");
 
@@ -112,26 +170,39 @@ This form of remote administration is less secure than using SSH.</p>
 
 	CWMFirewallInterfaces::OpenFirewallHandle (firewall_widget, "", event);
 
-	if(ret == `abort)
-	{
-	    break;
-	}
+        if( ret == `passwd_used)
+        {
+            TogglePasswdInputs( (boolean) UI::QueryWidget( `id( `passwd_used), `Value));
+        }
+        else if( ret == `allow || ret == `disallow)
+        {
+            boolean allowed = (boolean) UI::QueryWidget(`id(`allow), `Value);
+
+            ToggleAllowed( allowed);
+        }
 	else if(ret == `help)
 	{
 	    Wizard::ShowHelp(help);
 	}
-	else if(ret == `cancel)
-	{
-	   break;
-	}
+        else if(ret == `next)
+        {
+    	    CWMFirewallInterfaces::OpenFirewallStore (firewall_widget, "", event);
 
-    } until( ret == `next || ret == `back );
+            string new_password = (string) UI::QueryWidget( `id( `passwd_new), `Value);
 
-    if(ret == `next)
-    {
-	CWMFirewallInterfaces::OpenFirewallStore (firewall_widget, "", event);
-	Remote::allow_administration = (boolean) UI::QueryWidget(`id(`allow), `Value);
-    }
+            if( UsePassword() && !Remote::SetPassword( new_password) )
+            {
+                Popup::Error( Remote::ValidPassword() );
+                y2error( "Remote Administration: Invalid password");
+
+                UI::ChangeWidget( `id( `passwd_new), `Value, "");
+
+                ret = nil;
+            }
+        }
+
+    } until( DialogDone( ret) );
+
 
     return (symbol) ret;
 }

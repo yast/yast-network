@@ -94,7 +94,7 @@ or 'no' to disallow it."));
     }
 
     y2milestone("Setting AllowRemoteAdministration to '%1'", allow_ra);
-    Remote::allow_administration = (allow_ra == "yes" ? true : false);
+    Remote::Toggle(allow_ra == "yes");
 
     return true;
 }

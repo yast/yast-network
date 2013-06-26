@@ -1,0 +1,4 @@
+Read	.target.tmpdir nil
+Log	Failed to set temporary directory: nil
+Read	.target.stat "/var/lib/nobody/.vnc/passwd2" $["isreg":true]
+Read	.target.stat "/var/lib/nobody/.vnc/passwd2" $["isreg":true]
