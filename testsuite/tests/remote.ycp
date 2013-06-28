@@ -1,0 +1,56 @@
+{
+
+import "Assert";
+import "Testsuite";
+
+map READ = $[
+
+    "probe" : $[
+        "architecture" : "i386",
+    ],
+    "sysconfig" : $[
+        "console" : $[
+            "CONSOLE_ENCODING" : "UTF-8",
+        ],
+    ],
+];
+
+map EXEC = $[ 
+    "target": $[
+        "bash_output": $[
+            "exit": 0,
+            "stdout": "charset=UTF-8",
+            "stderr":"",
+        ],
+    ],
+];
+
+import "Remote";
+
+// currently used default server_args from Xvnc package
+const string default_server_args = "-noreset -inetd -once -query localhost -geometry 1024x768 -depth 16";
+const string none_result = sformat( "-securitytypes %1", Remote::SEC_NONE);
+
+// empty args
+string server_args_empty = "";
+// default args from Xvnc
+string server_args_0 = default_server_args;
+// two dashes, upper case in option value
+string server_args_1 = "--securityTypes=VNCAUTH";
+// securitytypes present twice, camel case in option name.
+string server_args_2 = "securityTypes=VNCAUTH -rfbauth /var/lib/nobody/.vnc/passwd -securitytypes=vncauth";
+// space separated option and value
+string server_args_3 = "-securitytypes none " + default_server_args;
+
+// ********** Remote::SetSecurityType ********** //
+
+Assert::Equal( none_result, Remote::SetSecurityType( server_args_empty, Remote::SEC_NONE) );
+Assert::Equal( sformat( "%1 %2", default_server_args, none_result), Remote::SetSecurityType( server_args_0, Remote::SEC_NONE) );
+Assert::Equal( none_result, Remote::SetSecurityType( server_args_1, Remote::SEC_NONE) );
+Assert::Equal( sformat( "-rfbauth /var/lib/nobody/.vnc/passwd %1", none_result), Remote::SetSecurityType( server_args_2, Remote::SEC_NONE) );
+Assert::Equal( sformat( "%1 %2", default_server_args, none_result), Remote::SetSecurityType( server_args_3, Remote::SEC_NONE) );
+
+Assert::Equal( server_args_empty, Remote::SetSecurityType( server_args_empty, "INVALID") );
+Assert::Equal( default_server_args, Remote::SetSecurityType( default_server_args, "INVALID") );
+
+} /* EOF */

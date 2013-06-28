@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Thu Jun 20 06:49:08 UTC 2013 - mfilka@suse.com
+
+- bnc#808490
+    - set securitytypes=none for Xvnc when remote administration
+    is allowed. Required due to different default value in currently
+    used Xvnc implementation (TigerVNC).
+    - Remote Administration module opens ports in firewall when 
+    requested by user
+- 2.25.5 
+
+-------------------------------------------------------------------
 Wed May 29 10:19:10 UTC 2013 - mfilka@suse.com
 
 - bnc#821427

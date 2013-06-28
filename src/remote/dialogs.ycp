@@ -35,12 +35,25 @@ import "Label";
 import "Remote";
 import "Wizard";
 import "CWMFirewallInterfaces";
+import "Popup";
+
+boolean DialogDone( any event)
+{
+    symbol action = (symbol) event;
+
+    if( action == `next || action == `back)
+        return true;
+    if( action == `abort || action == `cancel)
+        return true;
+
+    return false;
+}
 
 /**
  * Remote administration dialog
  * @return dialog result
  */
-define symbol RemoteMainDialog() {
+symbol RemoteMainDialog() {
 
     /* Ramote Administration dialog caption */
     string caption = _("Remote Administration");
@@ -48,15 +61,14 @@ define symbol RemoteMainDialog() {
     term allow_buttons = `RadioButtonGroup(
 	`VBox (
 	    /* RadioButton label */
-	    `Left(`RadioButton(`id(`allow), _("&Allow Remote Administration"), false)),
+	    `Left(`RadioButton(`id(`allow), _("&Allow Remote Administration"), Remote::IsEnabled() )),
 	    /* RadioButton label */
-	    `Left(`RadioButton(`id(`disallow), _("&Do Not Allow Remote Administration"), false))
+	    `Left(`RadioButton(`id(`disallow), _("&Do Not Allow Remote Administration"), Remote::IsDisabled() ))
 	)
     );
 
     map<string,any> firewall_widget = CWMFirewallInterfaces::CreateOpenFirewallWidget ($[
-	//Service vnc renamed to service:xorg-x11-server (#431971)
-	"services" : [ "service:xorg-x11-server" ],
+	"services" : [ "service:xorg-x11-Xvnc" ],
 	"display_details" : true,
     ]);
     term firewall_layout = firewall_widget["custom_widget"]:`VBox ();
@@ -80,14 +92,10 @@ This form of remote administration is less secure than using SSH.</p>
 	    `Frame (
 		/* Dialog frame title */
 		_("Remote Administration Settings"),
-		allow_buttons
+                allow_buttons 
 	    ),
-	    `VSpacing (1),
-	    `Frame (
-		/* Dialog frame title */
-		_("Firewall Settings"),
-		firewall_layout
-	    )
+            `VSpacing( 1), 
+	    firewall_layout
 	),
 	`HStretch()
     );
@@ -97,9 +105,6 @@ This form of remote administration is less secure than using SSH.</p>
     Wizard::SetNextButton(`next, Label::OKButton());
     Wizard::SetAbortButton(`abort, Label::CancelButton());
     Wizard::HideBackButton();
-
-    UI::ChangeWidget(`id(`allow), `Value, Remote::allow_administration);
-    UI::ChangeWidget(`id(`disallow), `Value, !Remote::allow_administration);
 
     CWMFirewallInterfaces::OpenFirewallInit (firewall_widget, "");
 
@@ -112,25 +117,27 @@ This form of remote administration is less secure than using SSH.</p>
 
 	CWMFirewallInterfaces::OpenFirewallHandle (firewall_widget, "", event);
 
-	if(ret == `abort)
-	{
-	    break;
-	}
-	else if(ret == `help)
+	if(ret == `help)
 	{
 	    Wizard::ShowHelp(help);
 	}
-	else if(ret == `cancel)
-	{
-	   break;
-	}
 
-    } until( ret == `next || ret == `back );
+    } until( DialogDone( ret) );
 
     if(ret == `next)
     {
-	CWMFirewallInterfaces::OpenFirewallStore (firewall_widget, "", event);
-	Remote::allow_administration = (boolean) UI::QueryWidget(`id(`allow), `Value);
+        CWMFirewallInterfaces::OpenFirewallStore (firewall_widget, "", event);
+        
+        boolean allowed = (boolean) UI::QueryWidget( `id( `allow), `Value);  
+
+        if( allowed)
+        {
+            Remote::Enable();
+        }
+        else
+        {
+            Remote::Disable();
+        }
     }
 
     return (symbol) ret;
