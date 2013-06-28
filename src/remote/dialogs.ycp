@@ -68,8 +68,7 @@ symbol RemoteMainDialog() {
     );
 
     map<string,any> firewall_widget = CWMFirewallInterfaces::CreateOpenFirewallWidget ($[
-	//Service vnc renamed to service:xorg-x11-server (#431971)
-	"services" : [ "service:xorg-x11-server" ],
+	"services" : [ "service:xorg-x11-Xvnc" ],
 	"display_details" : true,
     ]);
     term firewall_layout = firewall_widget["custom_widget"]:`VBox ();
