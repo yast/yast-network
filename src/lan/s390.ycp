@@ -6,6 +6,7 @@
  *
  * Functions for accessing and handling s390 specific needs.
  */
+{
 
 import "FileUtils";
 
@@ -88,4 +89,6 @@ define map<string, any> s390_ReadQethConfig( string devname)
     y2debug( "s390_ReadQethConfig: %1", result);
 
     return result;
+}
+
 }
