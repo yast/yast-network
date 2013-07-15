@@ -442,8 +442,8 @@ void WriteUdevDriverRules()
             list<string> l = splitstring(k, "=");
             val[ l[0]:"" ]=l[1]:"";
         });
-
-        if (!hasAnyValue(value)) 
+  
+        if (IsEmpty(value)) 
             val=nil;
         
         SCR::Write(add(.modules.options, key), val);
@@ -493,7 +493,7 @@ global void AddNew(){
 
 global list<string> GetItemModules(string default_module){
  list<string> mods = [];
- if (hasAnyValue(default_module)) mods = add(mods, default_module);
+ if (IsNotEmpty(default_module)) mods = add(mods, default_module);
   foreach(map row, Items[current, "hwinfo", "drivers"]:[], {
    string tmp_mod = row["modules", 0, 0]:"";
    if (!contains(mods, tmp_mod)) mods = add(mods, tmp_mod);
@@ -532,7 +532,7 @@ boolean IsBondable( string bondMaster, integer itemId)
 
     string itemBondMaster = bonded[ devname]:"";
 
-    if( !IsEmptyString( itemBondMaster) && ( bondMaster != itemBondMaster) )
+    if( IsNotEmpty( itemBondMaster) && ( bondMaster != itemBondMaster) )
     {
         y2debug( "IsBondable: excluding lan item (%1: %2) for %3 - is already bonded", itemId, devname, GetDeviceName( current) );
         return false;
@@ -611,7 +611,7 @@ global list< integer> GetSlaveCandidates( string master, boolean( string, intege
         y2error( "GetSlaveCandidates: needs a validator.");
         return [];
     }
-    if( IsEmptyString( master))
+    if( IsEmpty( master))
     {
         y2error( "GetSlaveCandidates: master device name is required.");
         return [];
@@ -770,7 +770,7 @@ list GetDescr(){
 
 global boolean needFirmwareCurrentItem(){
  boolean need = false;
- if (hasAnyValue(Items[current, "hwinfo", "driver"]:"")){
+ if (IsNotEmpty(Items[current, "hwinfo", "driver"]:"")){
   if(haskey(request_firmware, Items[current, "hwinfo", "driver"]:"")) need = true;
  } else{
     foreach(map driver, Items[current, "hwinfo", "drivers"]:[], {
@@ -786,7 +786,7 @@ global boolean needFirmwareCurrentItem(){
 
 global string GetFirmwareForCurrentItem(){
  string kernel_module="";
- if (hasAnyValue(Items[current, "hwinfo", "driver"]:"")){
+ if (IsNotEmpty(Items[current, "hwinfo", "driver"]:"")){
   if(haskey(request_firmware, Items[current, "hwinfo", "driver"]:"")) kernel_module=Items[current, "hwinfo", "driver"]:"";
  } else{
     foreach(map driver, Items[current, "hwinfo", "drivers"]:[], {
@@ -875,9 +875,9 @@ global list BuildLanOverview() {
         descr = CheckEmptyName (type, descr);
         list <string> bullets = [];
 
-        if (hasAnyValue(Items[key, "ifcfg"]:"") ){
+        if (IsNotEmpty(Items[key, "ifcfg"]:"") ){
             NetworkInterfaces::Select(Items[key, "ifcfg"]:"");
-            if (!hasAnyValue(type)) type = NetworkInterfaces::GetType(Items[key, "ifcfg"]:"");
+            if (IsEmpty(type)) type = NetworkInterfaces::GetType(Items[key, "ifcfg"]:"");
             descr = BuildDescription(type, NetworkInterfaces::GetType(Items[key, "ifcfg"]:""), NetworkInterfaces::Current, [Items[key, "hwinfo"]:$[]]);
             dev = NetworkInterfaces::Name; //NetworkInterfaces::device_name(type, NetworkInterfaces::Name);
             ip = DeviceProtocol(NetworkInterfaces::Current);
@@ -914,7 +914,7 @@ global list BuildLanOverview() {
 
             if (type == "wlan" &&
                 !(NetworkInterfaces::Current["WIRELESS_AUTH_MODE"]:"" != "open") &&
-                !hasAnyValue(NetworkInterfaces::Current["WIRELESS_KEY_0"]:"")) {
+                IsEmpty(NetworkInterfaces::Current["WIRELESS_KEY_0"]:"")) {
                 // avoid colons
                 dev = mergestring (splitstring (dev, ":"), "/");
                 string href = "lan--wifi-encryption-" + dev;
@@ -955,16 +955,16 @@ global list BuildLanOverview() {
         string mac_dev = HTML::Bold ("MAC : ") + Items[key, "hwinfo", "mac"]:"" + "<br>";
         string bus_id  = HTML::Bold ("BusID : ") + Items[key, "hwinfo", "busid"]:"" + "<br>";
 
-        if (hasAnyValue(Items[key, "hwinfo", "mac"]:"")) {
+        if (IsNotEmpty(Items[key, "hwinfo", "mac"]:"")) {
             rich = rich + " " + conn + "<br>";
             rich = rich + mac_dev;
         }
-        if (hasAnyValue(Items[key, "hwinfo", "busid"]:"")) {
+        if (IsNotEmpty(Items[key, "hwinfo", "busid"]:"")) {
             rich = rich + bus_id;
         }
         // display it only if we need it, don't duplicate "dev" above
-        if (hasAnyValue(Items[key, "hwinfo", "dev_name"]:"") &&
-            ! hasAnyValue(Items[key, "ifcfg"]:"")) {
+        if (IsNotEmpty(Items[key, "hwinfo", "dev_name"]:"") &&
+            IsEmpty(Items[key, "ifcfg"]:"")) {
             string dev_name = sformat(_("Device Name: %1"), Items[key, "hwinfo", "dev_name"]:"" );
             string dev_name_r = HTML::Bold(dev_name) + "<br>";
             rich = rich + dev_name_r;
@@ -972,10 +972,10 @@ global list BuildLanOverview() {
 
         rich = HTML::Bold ( descr ) + rich;
 
-        if (!hasAnyValue(Items[key, "hwinfo", "dev_name"]:"") && size(Items[key, "hwinfo"]:$[])>0 && !Arch::s390()) {
+        if (IsEmpty(Items[key, "hwinfo", "dev_name"]:"") && size(Items[key, "hwinfo"]:$[])>0 && !Arch::s390()) {
             rich = rich + _("<p>Unable to configure the network card because the kernel device (eth0, wlan0) is not present. This is mostly caused by missing firmware (for wlan devices). See dmesg output for details.</p>");
         }
-        else if (hasAnyValue(Items[key, "ifcfg"]:"") ) {
+        else if (IsNotEmpty(Items[key, "ifcfg"]:"") ) {
             rich = rich + HTML::List (bullets);
         }
         else {
@@ -1429,7 +1429,7 @@ global define boolean Select(string dev) {
 	// defaults for a new device
 	devmap = $[
 			// for hotplug devices set STARTMODE=hotplug (#132583)
-	    "STARTMODE": hasAnyValue(Items[current, "hwinfo", "hotplug"]:"") ? "hotplug" : "auto",	// #115448, #156388
+	    "STARTMODE": IsNotEmpty(Items[current, "hwinfo", "hotplug"]:"") ? "hotplug" : "auto",	// #115448, #156388
 	    "NETMASK": (NetHwDetection::result["NETMASK"]:"255.255.255.0"), // #31369
 	    ];
 	string product_startmode = ProductFeatures::GetStringFeature ("network", "startmode");
@@ -1440,17 +1440,17 @@ global define boolean Select(string dev) {
 	    {
 		// #164816
 		y2milestone ("Not a laptop, will not prefer ifplugd");
-		product_startmode = hasAnyValue(Items[current, "hwinfo", "hotplug"]:"") ? "hotplug" : "auto";
+		product_startmode = IsNotEmpty(Items[current, "hwinfo", "hotplug"]:"") ? "hotplug" : "auto";
 	    }
 	    if (product_startmode == "ifplugd" && NetworkService::IsManaged())
 	    {
 		y2milestone ("For NetworkManager will not prefer ifplugd");
-		product_startmode = hasAnyValue(Items[current, "hwinfo", "hotplug"]:"") ? "hotplug" : "auto";
+		product_startmode = IsNotEmpty(Items[current, "hwinfo", "hotplug"]:"") ? "hotplug" : "auto";
 	    }
 	    if (product_startmode == "ifplugd" && contains(["bond", "vlan", "br"], type))
 	    {
 		y2milestone ("For virtual networktypes (bond, bridge, vlan) will not prefer ifplugd");
-		product_startmode = hasAnyValue(Items[current, "hwinfo", "hotplug"]:"") ? "hotplug" : "auto";
+		product_startmode = IsNotEmpty(Items[current, "hwinfo", "hotplug"]:"") ? "hotplug" : "auto";
 	    }
 	    devmap["STARTMODE"] = product_startmode;
 	}
@@ -1610,8 +1610,6 @@ global define boolean Commit() {
             newdev["WIRELESS_AP"] = wl_accesspoint;
             newdev["WIRELESS_POWER"] = wl_power ? "yes" : "no";
         }
-
-        //	if(hasAnyValue(nm_name)) newdev["_nm_name"] = nm_name;
 
         if(DriverType (type) == "ctc")
             if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 40)
@@ -1863,7 +1861,7 @@ global void DeleteItem(){
  string ifcfg = Items[current, "ifcfg"]:"";
  string hwcfg = Items[current, "hwcfg"]:"";
 
- if (hasAnyValue(ifcfg)) {
+ if (IsNotEmpty(ifcfg)) {
 	 NetworkInterfaces::Delete(ifcfg);
 	 NetworkInterfaces::Commit();
 	 Items[current, "ifcfg"] = "";
@@ -1891,7 +1889,7 @@ global void SetItem()
     NetworkInterfaces::Edit( device);
     type = getCurrentItem()[ "hwinfo", "type"]:"";
     
-    if (!hasAnyValue(type)) 
+    if (IsEmpty(type)) 
         type = NetworkInterfaces::GetType( device);
 
     alias = NetworkInterfaces::alias_num( device);
@@ -1937,14 +1935,14 @@ global boolean ProposeItem(){
 
 global void setDriver(string driver){
  y2milestone("driver %1, %2", driver, getCurrentItem()["hwinfo", "module"]:"");
- if (getCurrentItem()["hwinfo", "module"]:""==driver && !hasAnyValue(getCurrentItem()["udev", "driver"]:"")) return;
+ if (getCurrentItem()["hwinfo", "module"]:""==driver && IsEmpty(getCurrentItem()["udev", "driver"]:"")) return;
  Items[current, "udev", "driver"] = driver;
 }
 
 global boolean enableCurrentEditButton(){
  if (needFirmwareCurrentItem()) return true;
  if (Arch::s390()) return true;
- if (!hasAnyValue(LanItems::getCurrentItem()["hwinfo", "dev_name"]:"") && size(LanItems::getCurrentItem()["hwinfo"]:$[])>0) return false;
+ if (IsEmpty(LanItems::getCurrentItem()["hwinfo", "dev_name"]:"") && size(LanItems::getCurrentItem()["hwinfo"]:$[])>0) return false;
 	else return true;
 }
 

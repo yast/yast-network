@@ -290,7 +290,7 @@ define list CreateSlaveItems( list<integer> itemIds, list<string> enslavedIfaces
         string dev_name = LanItems::GetDeviceName( itemId);
         map<string, any> ifcfg = LanItems::GetDeviceMap( itemId);
 
-        if( IsEmptyString( dev_name))
+        if( IsEmpty( dev_name))
         {
             continue;
         }

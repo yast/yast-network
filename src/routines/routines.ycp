@@ -25,6 +25,7 @@ import "Netmask";
 import "Mode";
 import "IP";
 import "Netmask";
+import "TypeRepository";
 
 /**
  * Abort function
@@ -193,6 +194,22 @@ define void BusyPopupClose() {
     UI::CloseDialog();
 }
 
+/*
+ * Checks if given value is emtpy.
+ */
+boolean IsEmpty( any value)
+{
+    return TypeRepository::IsEmpty( value);
+}
+
+/*
+ * Checks if given value is non emtpy.
+ */
+boolean IsNotEmpty( any value)
+{
+    return !IsEmpty( value);
+}
+
 /**
  * Create a list of items for UI from the given list
  * @param l given list for conversion
@@ -329,17 +346,10 @@ define string DriverType (string type) {
     return drvtype;
 }
 
-boolean hasAnyValue(string value){
- if (value==nil) return false;
- if (size(value)==0) return false;
-	else return true;
-}
-
-
 boolean needHwcfg(map hw){
  boolean need=true;
  // if kernel will autoload module for device
- if (hasAnyValue(hw["modalias"]:"")){
+ if (IsNotEmpty(hw["modalias"]:"")){
   if (size(hw["drivers"]:[])>1) y2milestone("there are more modules available for device, hwcfg is needed");
        else {
                y2milestone("Just one autoloadable module available.No need to write hwcfg");
@@ -347,7 +357,7 @@ boolean needHwcfg(map hw){
                }
  } else
        // not autoload because of built-in driver (compiled in kernel)
-       if (!hasAnyValue(hw["driver_module"]:"")) {
+       if (IsEmpty(hw["driver_module"]:"")) {
                                                 y2milestone("built-in driver %1", hw["driver"]:"");
                                                 need=false;
                                                }
@@ -456,7 +466,7 @@ define string DeviceName(map hwdevice) {
     string vendor = "";
     string dev = "";
 
-    if (hasAnyValue(hwdevice["device"]:"")) return hwdevice["device"]:"";
+    if (IsNotEmpty(hwdevice["device"]:"")) return hwdevice["device"]:"";
 
     model = hwdevice["model"]:"";
     if(model != "" && model != nil) return model;
@@ -857,11 +867,6 @@ define list<map> ReadHardware(string hwtype) {
  * Following functions should be generalized and ported into yast-yast2
  */
 
-boolean IsEmptyString( string str)
-{
-    return ( str == nil) || isempty( str);
-}
-
 /**
  * @param Shell command to run
  * @return Hash in form $[ "exit": <command-exit-status>, "output": [ <1st line>, <2nd line>, ... ] ] 
@@ -878,7 +883,7 @@ map< string, any> RunAndRead( string command)
     ret[ "output"] = splitstring( output, "\n");
     ret[ "exit"] = result[ "exit"]:1 == 0;
 
-    if( ( ret[ "exit"]:false == false) || ( IsEmptyString( result[ "stderr"]:"") == false) )
+    if( ( ret[ "exit"]:false == false) || ( IsEmpty( result[ "stderr"]:"") == false) )
     {
         y2error( "RunAndRead <%1>: Command execution failed.\n%2", command, result[ "stderr"]:"");
     }

@@ -125,7 +125,7 @@ else if(func == "AskUser") {
 	dev = mergestring (splitstring (dev, "/"), ":");
 //	Lan::Edit (dev);
 
-	if (hasAnyValue(dev)){
+	if (IsNotEmpty(dev)){
 	 foreach(integer row, any value, LanItems::Items,{
 	  LanItems::current = row;
 	  if (LanItems::IsCurrentConfigured()){
