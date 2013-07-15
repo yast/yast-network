@@ -148,7 +148,7 @@ global void Propose() {
  */
 string ServerArgsRemoveOpt( string server_args, string option, boolean has_value)
 {
-    if( IsEmptyString( server_args) || IsEmptyString( option))
+    if( IsEmpty( server_args) || IsEmpty( option))
     {
         return server_args;
     }
@@ -179,7 +179,7 @@ string ServerArgsRemoveOpt( string server_args, string option, boolean has_value
  */
 string SetServerArgsOpt( string server_args, string option, string value)
 {
-    string new_server_args = ServerArgsRemoveOpt( server_args, option, !IsEmptyString( value));
+    string new_server_args = ServerArgsRemoveOpt( server_args, option, IsNotEmpty( value));
     new_server_args = sformat( "%1 -%2 %3", new_server_args, option, value);
 
     return String::CutBlanks( new_server_args);
