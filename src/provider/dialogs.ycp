@@ -132,7 +132,10 @@ define any ProvidersDialog(boolean edit) {
 	/* Update custom and providers tables */
 	if(re != `providers) {
 	    if((boolean) UI::QueryWidget(`id(`custom), `Value))
+            {
 		country = "_custom";
+                UI::ChangeWidget( `id( `countries), `CurrentItem, nil);
+            }
 	    else
 		country = (string) UI::QueryWidget(`id(`countries), `CurrentItem);
 
