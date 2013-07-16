@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Jul 16 10:32:22 UTC 2013 - mfilka@suse.com
+
+- adopted to new device type detection API provided by yast2
+- minor improvement in Modem module - no country is selected when
+  a custom provider is selected
+- 2.25.6 
+
+-------------------------------------------------------------------
 Tue Jul 16 07:59:47 UTC 2013 - lslezak@suse.cz
 
 - move an include statement to the top level (needed for Ruby

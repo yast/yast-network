@@ -229,7 +229,7 @@ define string GetDeviceDescription(string device_id) {
         ip_addr = _("No IP address assigned");
     }
     string output = sformat(_("%1 \n%2 - %3"),
-                        device_name, NetworkInterfaces::GetDeviceType(device_id), ip_addr);
+                        device_name, NetworkInterfaces::GetDeviceTypeName(device_id), ip_addr);
         return output;
 }
 
@@ -311,7 +311,7 @@ define list CreateSlaveItems( list<integer> itemIds, list<string> enslavedIfaces
         string dev_name = LanItems::GetDeviceName( itemId);
         map<string, any> ifcfg = LanItems::GetDeviceMap( itemId);
 
-        if( IsEmptyString( dev_name))
+        if( IsEmpty( dev_name))
         {
             continue;
         }
