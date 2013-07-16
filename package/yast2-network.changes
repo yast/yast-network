@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jul 16 07:59:47 UTC 2013 - lslezak@suse.cz
+
+- move an include statement to the top level (needed for Ruby
+  translation)
+
+-------------------------------------------------------------------
 Thu Jun 20 06:49:08 UTC 2013 - mfilka@suse.com
 
 - bnc#808490

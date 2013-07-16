@@ -41,6 +41,8 @@ import "Wizard";
 import "LanItems";
 include "network/summary.ycp";
 include "network/routines.ycp";
+/* map NetworkCards */
+include "network/lan/cards.ycp";
 
 /**
  * Determines if the dialog is used for adding new device or for editing existing one.
@@ -308,9 +310,6 @@ define any SelectionDialog() {
 
     string type = LanItems::type;
     integer selected = 0;
-
-    /* map NetworkCards */
-    include "network/lan/cards.ycp";
 
     list<map> hwlist = NetworkCards[type]:[];
     list cards = hwlist2items(hwlist, 0);
