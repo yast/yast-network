@@ -915,6 +915,16 @@ define list<string> GetAllInterfaces()
     return result[ "exit"]:false ? result[ "output"]:[] : [];
 }
 
+boolean SetLinkUp( string dev_name)
+{
+    return Run( sformat("ip link set %1 up", dev_name) );
+}
+
+boolean SetLinkDown( string dev_name)
+{
+    return Run( sformat("ip link set %1 down", dev_name) );
+}
+
 /**
  * Set all known interfaces up.
  *
@@ -928,7 +938,7 @@ define boolean SetAllLinksUp()
     foreach(string ifc, interfaces, 
     {
         y2milestone("Setting link up for interface %1", ifc);
-        ret = Run( sformat("ip link set %1 up", ifc) ) && ret;
+        ret = SetLinkUp( ifc) && ret;
     });
 
     return ret;
