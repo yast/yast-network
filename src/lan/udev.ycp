@@ -16,7 +16,6 @@ list< string> GetDefaultUdevRule( string dev_name, string dev_mac)
              "DRIVERS==\"?*\"",
              sformat("ATTR{address}==\"%1\"", dev_mac),
              "ATTR{type}==\"1\"",
-             "KERNEL==\"eth*\"",
              sformat("NAME=\"%1\"", dev_name)
 	];
 
