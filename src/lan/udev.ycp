@@ -1,0 +1,38 @@
+/**
+ * File:        include/network/lan/udev.ycp
+ * Package:     Network configuration
+ * Summary:     udev helpers
+ * Authors:     Michal Filka <mfilka@suse.cz>
+ *
+ * Functions for handling udev rules
+ */
+{
+
+list< string> GetDefaultUdevRule( string dev_name, string dev_mac)
+{
+    list< string> default_rule = [
+             "SUBSYSTEM==\"net\"",
+             "ACTION==\"add\"",
+             "DRIVERS==\"?*\"",
+             sformat("ATTR{address}==\"%1\"", dev_mac),
+             "ATTR{type}==\"1\"",
+             "KERNEL==\"eth*\"",
+             sformat("NAME=\"%1\"", dev_name)
+	];
+
+    return default_rule;
+}
+
+/*
+ * Removes (key,operator,value) tripplet from given udev rule.
+ */
+list< string> RemoveKeyFromUdevRule( list< string> rule, string key)
+{
+    const string pattern = sformat( "%1={1,2}[^[:space:]]*", key );
+
+    return filter( string atom, rule, {
+        return !regexpmatch( atom, pattern);
+    });
+}
+
+}
