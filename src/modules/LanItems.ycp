@@ -273,6 +273,14 @@ global map< string, any> GetDeviceMap( integer itemId)
     return (map< string, any>) NetworkInterfaces::FilterDevices("netcard")[ devtype, devname]:nil;
 }
 
+/**
+ * Returns udev rule known for particular item
+ */
+global list< string> GetItemUdevRule( integer itemId)
+{
+    return GetLanItem( itemId)[ "udev", "net"]:[];
+}
+
 boolean ReadUdevDriverRules(){
  y2milestone ("Reading udev rules ...");
  udev_net_rules = (map<string, any>)SCR::Read(.udev_persistent.net);
