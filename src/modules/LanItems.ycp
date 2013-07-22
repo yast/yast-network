@@ -363,43 +363,47 @@ global list<string> SetItemUdev(string rule_key, string rule_val)
  */
 boolean WriteUdevItemsRules()
 {
-    // write udev net rules and hwdown&hwup when NAME changed
-    list<string> changed_devices = [];
+    // loop over all items and checks if device name has changed
     list<string> net_rules = [];
 
     foreach(integer key, (list<integer>)Map::Keys(Items), 
     {
-        if (size(Items[key, "udev", "net"]:[])>0) 
+        list< string> item_udev_net = GetItemUdevRule( key);
+
+        if( IsEmpty( item_udev_net) )
+            continue;
+        
+        string dev_name = Items[key, "hwinfo", "dev_name"]:"";
+
+        current=key;
+    
+        if (dev_name != GetItemUdev("NAME")) 
         {
-            string dev_name = Items[key, "hwinfo", "dev_name"]:"";
-
-            current=key;
-            net_rules = add(net_rules, mergestring(Items[key, "udev", "net"]:[], ", "));
-
-            if (dev_name!=GetItemUdev("NAME")) 
-            {
-                changed_devices = add(changed_devices, dev_name);
-                force_restart=true;
-            }
+            // when changing device name you have a choice
+            // - change kernel "match rule", or
+            // - remove it completely
+            // removing is less error prone when tracking name changes, so it was chosen.
+            item_udev_net = RemoveKeyFromUdevRule( item_udev_net, "KERNEL");
+            SetLinkDown( dev_name);
+            
+            force_restart=true;
         }
+
+        net_rules = add(net_rules, mergestring( item_udev_net, ", "));
     });
+    
+    y2milestone("write net udev rules: %1", net_rules);
 
     SCR::Write(.udev_persistent.rules, net_rules);
     SCR::Write(.udev_persistent.nil, []);
+   
+    SCR::Execute( .target.bash, "udevadm control --reload");
 
     // When configuring a new s390 card, we neglect to fill
     // its Items[i, "udev", "net"], causing jumbled names (bnc#721520)
     // The udev trigger will will make udev write the persistent names
     // (which it already has done, but we have overwritten them now).
-    SCR::Execute(.target.bash, "udevadm trigger --subsystem-match=net");
-
-    y2milestone("Changed devices %1", changed_devices);
-
-    if (size(changed_devices)>0) 
-    {
-        any new_name = SCR::Execute(.target.bash_output,  "rcnetwork stop && udevadm trigger --subsystem-match=net && rcnetwork start");
-        y2milestone("Renaming interfaces %1", new_name);
-    }
+    SCR::Execute(.target.bash, "udevadm trigger --subsystem-match=net --action=add");
 
     return true;
 }
@@ -411,7 +415,7 @@ void WriteUdevDriverRules()
     foreach(integer key, (list<integer>)Map::Keys(Items), 
     {
         if (IsNotEmpty(Items[key, "udev", "driver"]:""))
-	    udev_drivers_rules[Items[key, "udev", "driver"]:""] = [ sformat("ENV{MODALIAS}==\"%1\"", Items[key, "hwinfo", "modalias"]:""), sformat("ENV{MODALIAS}=\"%1\"", Items[key, "udev", "driver"]:"") ];
+        udev_drivers_rules[Items[key, "udev", "driver"]:""] = [ sformat("ENV{MODALIAS}==\"%1\"", Items[key, "hwinfo", "modalias"]:""), sformat("ENV{MODALIAS}=\"%1\"", Items[key, "udev", "driver"]:"") ];
     });
 
     y2milestone("write drivers udev rules: %1", udev_drivers_rules);
