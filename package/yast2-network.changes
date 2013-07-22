@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jul 18 11:54:43 UTC 2013 - mfilka@suse.com
+
+- bnc#695262
+    - fixed write sequence to enable device renaming.
+-2.25.7
+
+-------------------------------------------------------------------
 Tue Jul 16 10:32:22 UTC 2013 - mfilka@suse.com
 
 - adopted to new device type detection API provided by yast2

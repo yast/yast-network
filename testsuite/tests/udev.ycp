@@ -44,6 +44,7 @@
     import "LanItems";
 
     include "network/routines.ycp";
+    include "network/lan/udev.ycp";
 
     // valid
     Assert::Equal( true, ValidNicName( "eth0") );
@@ -64,6 +65,7 @@
         "udev" : $[
             "net" : [ 
                 "KERNELS=\"invalid\"", 
+                "KERNEL=\"eth*\"",
                 "NAME=\"eth1\"" 
             ],
             "driver" : nil,
@@ -80,4 +82,12 @@
 
     new_rules = LanItems::ReplaceItemUdev( "KERNELS", "ATTR{address}", "xx:01:02:03:04:05");
     Assert::Equal( true, contains( new_rules, "ATTR{address}==\"xx:01:02:03:04:05\""));
+
+    list< string> rule = LanItems::Items[ 0, "udev", "net"]:[];
+    new_rules = RemoveKeyFromUdevRule( rule, "KERNEL");
+    Assert::Equal( false, contains( new_rules, "KERNEL=\"eth*\"") );
+
+    rule = LanItems::Items[ 0, "udev", "net"]:[];
+    new_rules = AddToUdevRule( rule, "ENV{MODALIAS}==\"e1000\"");
+    Assert::Equal( true, contains( new_rules, "ENV{MODALIAS}==\"e1000\"") );
 }
