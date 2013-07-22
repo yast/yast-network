@@ -34,4 +34,20 @@ list< string> RemoveKeyFromUdevRule( list< string> rule, string key)
     });
 }
 
+/*
+ * Adds (key, operator, value) tripplet into given udev rule
+ *
+ * Tripplet is given as a string in form KEY="VALUE" or
+ * MATCHKEY=="MATCHVALUE"
+ */
+list< string> AddToUdevRule( list< string> rule, string tripplet)
+{
+    if( !regexpmatch( tripplet, ".+={1,2}\".*\"") )
+        return rule;
+    if( rule == nil)
+        rule = [];
+
+    return add( rule, tripplet );
+}
+
 }
