@@ -414,8 +414,18 @@ void WriteUdevDriverRules()
     
     foreach(integer key, (list<integer>)Map::Keys(Items), 
     {
-        if (IsNotEmpty(Items[key, "udev", "driver"]:""))
-        udev_drivers_rules[Items[key, "udev", "driver"]:""] = [ sformat("ENV{MODALIAS}==\"%1\"", Items[key, "hwinfo", "modalias"]:""), sformat("ENV{MODALIAS}=\"%1\"", Items[key, "udev", "driver"]:"") ];
+        string driver = Items[key, "udev", "driver"]:"";
+
+        if( IsNotEmpty( driver))
+        {
+            string modalias = Items[key, "hwinfo", "modalias"]:"";
+            list< string> driver_rule = [];
+
+            driver_rule = AddToUdevRule( driver_rule, sformat( "ENV{MODALIAS}==\"%1\"", modalias) );
+            driver_rule = AddToUdevRule( driver_rule, sformat( "ENV{MODALIAS}=\"%1\"", driver) );
+
+            udev_drivers_rules[ driver] = driver_rule;
+        }
     });
 
     y2milestone("write drivers udev rules: %1", udev_drivers_rules);
