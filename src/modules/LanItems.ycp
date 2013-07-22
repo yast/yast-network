@@ -31,6 +31,7 @@ import "NetworkStorage";
 include "network/complex.ycp";
 include "network/routines.ycp";
 include "network/lan/s390.ycp";
+include "network/lan/udev.ycp";
 
 /**
  * Hardware information
@@ -300,6 +301,14 @@ global map< string, any> GetDeviceMap( integer itemId)
     return (map< string, any>) NetworkInterfaces::FilterDevices("netcard")[ devtype, devname]:nil;
 }
 
+/**
+ * Returns udev rule known for particular item
+ */
+global list< string> GetItemUdevRule( integer itemId)
+{
+    return GetLanItem( itemId)[ "udev", "net"]:[];
+}
+
 boolean ReadUdevDriverRules(){
  y2milestone ("Reading udev rules ...");
  udev_net_rules = (map<string, any>)SCR::Read(.udev_persistent.net);
@@ -317,21 +326,17 @@ boolean ReadUdevDriverRules(){
  return true;
 }
 
-list<string> getUdevFallback(){
-  list<string> udev_rules = getCurrentItem()["udev", "net"]:[];
-  if (size(udev_rules)==0){
-    udev_rules = [
-             "SUBSYSTEM==\"net\"",
-             "ACTION==\"add\"",
-             "DRIVERS==\"?*\"",
-             sformat("ATTR{address}==\"%1\"", getCurrentItem()["hwinfo", "mac"]:""),
-             "ATTR{type}==\"1\"",
-             "KERNEL==\"eth*\"",
-             sformat("NAME=\"%1\"", getCurrentItem()["ifcfg"]:"")
-	];
-	y2error("No Udev rules found, create new as fallback: %1", udev_rules);
-  }
-  return udev_rules;
+list<string> getUdevFallback()
+{
+    list<string> udev_rules = getCurrentItem()["udev", "net"]:[];
+    
+    if( IsEmpty( udev_rules) )
+    {
+        udev_rules = GetDefaultUdevRule( GetCurrentName(), getCurrentItem()[ "hwinfo", "mac"]:""); 
+	y2milestone("No Udev rules found, creating default: %1", udev_rules);
+    }
+
+    return udev_rules;
 }
 
 global string GetItemUdev(string key){
@@ -379,57 +384,81 @@ global list<string> SetItemUdev(string rule_key, string rule_val)
     return ReplaceItemUdev( rule_key, rule_key, rule_val);
 }
 
-global void WriteUdevDriverRules(){
+/*
+ * Writes udev rules for all items.
+ *
+ * Currently only interesting change is renaming interface.
+ */
+boolean WriteUdevItemsRules()
+{
+    // loop over all items and checks if device name has changed
+    list<string> net_rules = [];
+
+    foreach(integer key, (list<integer>)Map::Keys(Items), 
+    {
+        list< string> item_udev_net = GetItemUdevRule( key);
+
+        if( IsEmpty( item_udev_net) )
+            continue;
+        
+        string dev_name = Items[key, "hwinfo", "dev_name"]:"";
+
+        current=key;
+    
+        if (dev_name != GetItemUdev("NAME")) 
+        {
+            // when changing device name you have a choice
+            // - change kernel "match rule", or
+            // - remove it completely
+            // removing is less error prone when tracking name changes, so it was chosen.
+            item_udev_net = RemoveKeyFromUdevRule( item_udev_net, "KERNEL");
+            SetLinkDown( dev_name);
+            
+            force_restart=true;
+        }
+
+        net_rules = add(net_rules, mergestring( item_udev_net, ", "));
+    });
+    
+    y2milestone("write net udev rules: %1", net_rules);
+
+    SCR::Write(.udev_persistent.rules, net_rules);
+    SCR::Write(.udev_persistent.nil, []);
+   
+    SCR::Execute( .target.bash, "udevadm control --reload");
+
+    // When configuring a new s390 card, we neglect to fill
+    // its Items[i, "udev", "net"], causing jumbled names (bnc#721520)
+    // The udev trigger will will make udev write the persistent names
+    // (which it already has done, but we have overwritten them now).
+    SCR::Execute(.target.bash, "udevadm trigger --subsystem-match=net --action=add");
+
+    return true;
+}
+
+void WriteUdevDriverRules()
+{
     map<string, any> udev_drivers_rules = $[];
     
     foreach(integer key, (list<integer>)Map::Keys(Items), 
     {
-        if (IsNotEmpty(Items[key, "udev", "driver"]:""))
-	    udev_drivers_rules[Items[key, "udev", "driver"]:""] = [ sformat("ENV{MODALIAS}==\"%1\"", Items[key, "hwinfo", "modalias"]:""), sformat("ENV{MODALIAS}=\"%1\"", Items[key, "udev", "driver"]:"") ];
+        string driver = Items[key, "udev", "driver"]:"";
+
+        if( IsNotEmpty( driver))
+        {
+            string modalias = Items[key, "hwinfo", "modalias"]:"";
+            list< string> driver_rule = [];
+
+            driver_rule = AddToUdevRule( driver_rule, sformat( "ENV{MODALIAS}==\"%1\"", modalias) );
+            driver_rule = AddToUdevRule( driver_rule, sformat( "ENV{MODALIAS}=\"%1\"", driver) );
+
+            udev_drivers_rules[ driver] = driver_rule;
+        }
     });
 
     y2milestone("write drivers udev rules: %1", udev_drivers_rules);
 
     SCR::Write(.udev_persistent.drivers, udev_drivers_rules);
-
-    // write udev net rules and hwdown&hwup when NAME changed
-    list<string> changed_devices = [];
-    list<string> net_rules = [];
-
-    foreach(integer key, (list<integer>)Map::Keys(Items), 
-    {
-        if (size(Items[key, "udev", "net"]:[]) > 0) 
-        {
-            string dev_name = Items[key, "hwinfo", "dev_name"]:"";
-
-            current=key;
-            net_rules = add(net_rules, mergestring(Items[key, "udev", "net"]:[], ", "));
-    
-            if (dev_name != GetItemUdev("NAME")) 
-            {
-	        changed_devices = add(changed_devices, dev_name);
-		force_restart=true;
-	    }
-        }
-    });
-    
-    SCR::Write(.udev_persistent.rules, net_rules);
-    SCR::Write(.udev_persistent.nil, []);
-   
-    // When configuring a new s390 card, we neglect to fill
-    // its Items[i, "udev", "net"], causing jumbled names (bnc#721520)
-    // The udev trigger will will make udev write the persistent names
-    // (which it already has done, but we have overwritten them now).
-    SCR::Execute(.target.bash, "udevadm trigger --subsystem-match=net");
-
-    y2milestone("write net udev rules: %1", net_rules);
-    y2milestone("Changed devices %1", changed_devices);
-  
-    if (size(changed_devices)>0) 
-    {
-        any new_name = SCR::Execute(.target.bash_output, "rcnetwork stop && udevadm trigger --subsystem-match=net && rcnetwork start");
-        y2milestone("Renaming interfaces %1", new_name);
-    }
 
     // write rules from driver
     foreach(string key, string value, (map<string, string>)driver_options, 
@@ -449,6 +478,12 @@ global void WriteUdevDriverRules(){
     });
  
     SCR::Write(.modules,nil);
+}
+
+global void WriteUdevRules()
+{
+    WriteUdevItemsRules();
+    WriteUdevDriverRules();
 }
 
 /**
