@@ -467,7 +467,7 @@ global define boolean Write() {
     /* Progress step 3 - multiple devices may be present, really plural*/
     ProgressNextStage(_("Writing device configuration..."));
     if (!Mode::autoinst() && LanUdevAuto::AllowUdevModify()) {
-	LanItems::WriteUdevDriverRules();
+	LanItems::WriteUdevRules();
         // wait so that ifcfgs written in NetworkInterfaces are newer
         // (1-second-wise) than netcontrol status files,
         // and rcnetwork reload actually works (bnc#749365)

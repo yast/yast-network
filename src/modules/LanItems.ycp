@@ -10,6 +10,7 @@ import "NetworkStorage";
 include "network/complex.ycp";
 include "network/routines.ycp";
 include "network/lan/s390.ycp";
+include "network/lan/udev.ycp";
 
 /**
  * Hardware information
@@ -347,26 +348,13 @@ global list<string> SetItemUdev(string rule_key, string rule_val)
     return ReplaceItemUdev( rule_key, rule_key, rule_val);
 }
 
-global void WriteUdevDriverRules(){
-    map<string, any> udev_drivers_rules = $[];
-    
-    foreach(integer key, (list<integer>)Map::Keys(Items), 
-    {
-        string driver = Items[key, "udev", "driver"]:"";
-        
-        if (hasAnyValue(driver)) 
-        {
-            udev_drivers_rules[driver] = [
-                sformat("ENV{MODALIAS}==\"%1\"", Items[key, "hwinfo", "modalias"]:""),
-                sformat("ENV{MODALIAS}=\"%1\"", driver)
-            ];
-        }
-    });
-
-    y2milestone("write udev rules: %1", udev_drivers_rules);
-
-    SCR::Write(.udev_persistent.drivers, udev_drivers_rules);
-
+/*
+ * Writes udev rules for all items.
+ *
+ * Currently only interesting change is renaming interface.
+ */
+boolean WriteUdevItemsRules()
+{
     // write udev net rules and hwdown&hwup when NAME changed
     list<string> changed_devices = [];
     list<string> net_rules = [];
@@ -405,6 +393,23 @@ global void WriteUdevDriverRules(){
         y2milestone("Renaming interfaces %1", new_name);
     }
 
+    return true;
+}
+
+void WriteUdevDriverRules()
+{
+    map<string, any> udev_drivers_rules = $[];
+    
+    foreach(integer key, (list<integer>)Map::Keys(Items), 
+    {
+        if (IsNotEmpty(Items[key, "udev", "driver"]:""))
+	    udev_drivers_rules[Items[key, "udev", "driver"]:""] = [ sformat("ENV{MODALIAS}==\"%1\"", Items[key, "hwinfo", "modalias"]:""), sformat("ENV{MODALIAS}=\"%1\"", Items[key, "udev", "driver"]:"") ];
+    });
+
+    y2milestone("write drivers udev rules: %1", udev_drivers_rules);
+
+    SCR::Write(.udev_persistent.drivers, udev_drivers_rules);
+
     // write rules from driver
     foreach(string key, string value, (map<string, string>)driver_options, 
     {
@@ -422,6 +427,12 @@ global void WriteUdevDriverRules(){
         SCR::Write(add(.modules.options, key), val);
     });
     SCR::Write(.modules,nil);
+}
+
+global void WriteUdevRules()
+{
+    WriteUdevItemsRules();
+    WriteUdevDriverRules();
 }
 
 /**
