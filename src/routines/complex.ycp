@@ -572,7 +572,7 @@ foreach(map<string, any>row, (list<map<string, any> >)SCR::Read (.probe.netcard)
 
 		// create the rich text description
 		boolean connected=false;
-		string cmd=sformat("cat $(getcfg %1-%2|grep HWD_INTERFACEPATH_0=|cut -d'=' -f2|cut -d'\"' -f2)/carrier|tr -d '\n'", type,k);
+		string cmd=sformat("cat $(getcfg %1|grep HWD_INTERFACEPATH_0=|cut -d'=' -f2|cut -d'\"' -f2)/carrier|tr -d '\n'", dev);
 		map<string, any> cmd_out = (map<string,any>) SCR::Execute(.target.bash_output, cmd);
 		y2milestone("cmd %1 : %2", cmd, cmd_out);
                 if (cmd_out["stdout"]:""=="1") connected=true;
