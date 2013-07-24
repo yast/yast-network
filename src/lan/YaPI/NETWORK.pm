@@ -34,7 +34,7 @@ sub Read {
     LanItems->Read();
 
     my %interfaces = ();
-    foreach my $devnum (keys %{LanItems->Items}){
+    foreach my $devnum (sort keys %{LanItems->Items}){
         LanItems->current($devnum);
         if (LanItems->IsCurrentConfigured()){
             LanItems->SetItem();
