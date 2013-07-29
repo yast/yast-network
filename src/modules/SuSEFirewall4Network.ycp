@@ -146,6 +146,27 @@
     }
 
     /**
+     * Returns whether any network interfaces are handled firewall either
+     * explicitly mentioning them in any firewall zone or implicitly
+     * by using string 'any' in firewall zones that would assign any interface
+     * unassigned to any zone to that zone as a fallback.
+     *
+     * @return boolean if any interface is handled by firewall
+     */
+    boolean AnyInterfacesHandledByFirewall () {
+        list <string> interfaces = [];
+
+        foreach (string zone, SuSEFirewall::GetKnownFirewallZones(), {
+            interfaces = (list <string>) union(
+                interfaces,
+                SuSEFirewall::GetInterfacesInZoneSupportingAnyFeature(zone)
+            );
+        });
+
+        return (size(interfaces) > 0);
+    }
+
+    /**
      * Functions sets protection of interface by the protect-status.<br>
      * protect==true  -> add interface into selected firewall zone, sets firewall
      *			 to be started and enabled when booting.<br>
@@ -173,7 +194,7 @@
 	    });
 	    // if there are no other interfaces in configuration, stop firewall
 	    // and remove it from boot process
-	    if (size(SuSEFirewall::GetFirewallInterfaces())==0) {
+	    if (!AnyInterfacesHandledByFirewall()) {
 		y2milestone("Disabling firewall, no interfaces are protected.");
 		SuSEFirewall::SetEnableService(false);
 		SuSEFirewall::SetStartService(false);
