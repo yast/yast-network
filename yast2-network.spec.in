@@ -31,6 +31,8 @@ PreReq:         /bin/rm
 # carrier detection
 Conflicts:      yast2-core < 2.10.6
 
+Requires:       yast2-ruby-bindings >= 1.0.0
+
 Summary:        YaST2 - Network Configuration
 
 %package devel-doc
@@ -73,10 +75,9 @@ fi
 @ybindir@/*
 @ydatadir@/*
 @yncludedir@/network
-@clientdir@/*.ycp
+@clientdir@/*.rb
 @moduledir@/YaPI/NETWORK.pm
-@moduledir@/*.ycp
-@moduledir@/*.ybc
+@moduledir@/*.rb
 @desktopdir@/*.desktop
 @scrconfdir@/*.scr
 @agentdir@/ag_udev_persistent

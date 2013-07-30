@@ -222,7 +222,6 @@ string current = Internet::device;
 	case `cancel:
 	    if (Popup::ConfirmAbort (`incomplete)){
 		exit=true;
-		break;
 		}
             break;
 	case `next:

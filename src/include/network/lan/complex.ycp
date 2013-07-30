@@ -355,7 +355,9 @@ If you edit the settings for this interface here,
 the interface will no longer be managed by NetworkManager.
 ")))
                 {
-                    break; // means cancel
+                    // y2r: cannot break from middle of switch
+                    // but in this function return will do
+                    return nil; // means cancel
                 }
 
                 // TODO move the defaults to GetDefaultsForHW
@@ -367,7 +369,9 @@ the interface will no longer be managed by NetworkManager.
             if (! AddInterface ()) 
             {
                 y2error( "handleOverview: AddInterface failed.");
-                break;
+                // y2r: cannot break from middle of switch
+                // but in this function return will do
+                return nil;
             }
 
             if( !DeviceReady( LanItems::getCurrentItem()[ "hwinfo", "dev_name"]:"") )
@@ -386,11 +390,20 @@ will be deleted as well.
 Really continue?
 "), LanItems::getCurrentItem()["ifcfg"]:"");
 	    if(LanItems::InterfaceHasAliases() && Popup::YesNoHeadline(Label::WarningMsg(), pop) != true)
-		break;
+            {
+                // y2r: cannot break from middle of switch
+                // but in this function return will do
+		return nil;
+            }
 
 	    // warn user when device to delete has STARTMODE=nfsroot (bnc#433867)
 	    if(NetworkInterfaces::GetValue(LanItems::getCurrentItem()["ifcfg"]:"", "STARTMODE")=="nfsroot"){
-		if(!Popup::YesNoHeadline(Label::WarningMsg(), _("Device you select has STARTMODE=nfsroot. Really delete?"))) break;
+		if(!Popup::YesNoHeadline(Label::WarningMsg(), _("Device you select has STARTMODE=nfsroot. Really delete?")))
+                {
+                    // y2r: cannot break from middle of switch
+                    // but in this function return will do
+                    return nil;
+                }
 	    }
 
 	    LanItems::DeleteItem();
