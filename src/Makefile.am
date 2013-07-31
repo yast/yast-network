@@ -1,6 +1,169 @@
-#
-# Makefile.am for network/src
-#
+# Sources for network
 
-SUBDIRS = modules clients routines lan services modem isdn dsl config	\
-	provider installation remote
+module_DATA = \
+  modules/DSL.rb \
+  modules/LanUdevAuto.rb \
+  modules/SuSEFirewall4Network.rb \
+  modules/Remote.rb \
+  modules/Modem.rb \
+  modules/ISDN.rb \
+  modules/InternetDevices.rb \
+  modules/NetworkStorage.rb \
+  modules/Host.rb \
+  modules/NetHwDetection.rb \
+  modules/Routing.rb \
+  modules/LanItems.rb \
+  modules/Provider.rb \
+  modules/Network.rb \
+  modules/Lan.rb \
+  modules/DNS.rb
+
+module1dir = @moduledir@/YaPI
+module1_DATA = \
+  modules/YaPI/NETWORK.pm
+
+client_DATA = \
+  clients/inst_lan.rb \
+  clients/remote_proposal.rb \
+  clients/dns_auto.rb \
+  clients/isdn_proposal.rb \
+  clients/modem_proposal.rb \
+  clients/save_network.rb \
+  clients/isdn.rb \
+  clients/lan_auto.rb \
+  clients/network.rb \
+  clients/firewall_stage1_finish.rb \
+  clients/inst_netprobe.rb \
+  clients/inst_do_net_test.rb \
+  clients/routing.rb \
+  clients/lan.rb \
+  clients/host_auto.rb \
+  clients/general_proposal.rb \
+  clients/modem.rb \
+  clients/inst_ask_net_test.rb \
+  clients/inst_hostname.rb \
+  clients/firewall_stage1_proposal.rb \
+  clients/routing_auto.rb \
+  clients/dsl_proposal.rb \
+  clients/provider.rb \
+  clients/remote.rb \
+  clients/dns.rb \
+  clients/dsl.rb \
+  clients/lan_proposal.rb \
+  clients/host.rb
+
+yncludedir = @yncludedir@/network/installation
+ynclude_DATA = \
+  include/network/installation/dialogs.rb
+
+ynclude1dir = @yncludedir@/network
+ynclude1_DATA = \
+  include/network/runtime.rb \
+  include/network/hardware.rb \
+  include/network/widgets.rb \
+  include/network/devices.rb \
+  include/network/summary.rb \
+  include/network/complex.rb \
+  include/network/routines.rb
+
+ynclude2dir = @yncludedir@/network/services
+ynclude2_DATA = \
+  include/network/services/routing.rb \
+  include/network/services/dns.rb \
+  include/network/services/host.rb
+
+ynclude3dir = @yncludedir@/network/provider
+ynclude3_DATA = \
+  include/network/provider/wizards.rb \
+  include/network/provider/connection.rb \
+  include/network/provider/dialogs.rb \
+  include/network/provider/complex.rb \
+  include/network/provider/provider.rb \
+  include/network/provider/details.rb \
+  include/network/provider/helps.rb \
+  include/network/provider/texts.rb
+
+ynclude4dir = @yncludedir@/network/isdn
+ynclude4_DATA = \
+  include/network/isdn/interface.rb \
+  include/network/isdn/wizards.rb \
+  include/network/isdn/config.rb \
+  include/network/isdn/ip.rb \
+  include/network/isdn/ifdetails.rb \
+  include/network/isdn/complex.rb \
+  include/network/isdn/lowlevel.rb \
+  include/network/isdn/routines.rb
+
+ynclude5dir = @yncludedir@/network/remote
+ynclude5_DATA = \
+  include/network/remote/dialogs.rb
+
+ynclude6dir = @yncludedir@/network/lan
+ynclude6_DATA = \
+  include/network/lan/wireless.rb \
+  include/network/lan/hardware.rb \
+  include/network/lan/wizards.rb \
+  include/network/lan/s390.rb \
+  include/network/lan/udev.rb \
+  include/network/lan/dhcp.rb \
+  include/network/lan/bridge.rb \
+  include/network/lan/complex.rb \
+  include/network/lan/help.rb \
+  include/network/lan/address.rb \
+  include/network/lan/virtual.rb \
+  include/network/lan/cards.rb \
+  include/network/lan/cmdline.rb
+
+ynclude7dir = @yncludedir@/network/dsl
+ynclude7_DATA = \
+  include/network/dsl/wizards.rb \
+  include/network/dsl/dialogs.rb \
+  include/network/dsl/complex.rb
+
+ynclude8dir = @yncludedir@/network/modem
+ynclude8_DATA = \
+  include/network/modem/wizards.rb \
+  include/network/modem/dialogs.rb \
+  include/network/modem/complex.rb
+
+scrconf_DATA = \
+  scrconf/providers.scr \
+  scrconf/cfg_slmodemd.scr \
+  scrconf/cfg_udev_persistent.scr \
+  scrconf/etc_hosts.scr \
+  scrconf/etc_resolv_conf.scr \
+  scrconf/cfg_providers.scr \
+  scrconf/cfg_dhcp.scr \
+  scrconf/cfg_network.scr \
+  scrconf/isdn.scr \
+  scrconf/routes.scr \
+  scrconf/etc_defaultdomain.scr
+
+agent_SCRIPTS = \
+  servers_non_y2/ag_udev_persistent
+
+schemafilesdir = $(schemadir)/autoyast/rnc
+schemafiles_DATA = \
+  autoyast-rnc/host.rnc \
+  autoyast-rnc/networking.rnc
+
+ybin_SCRIPTS = \
+  bin/cut-messages
+
+ydata_DATA = \
+  data/modem-t35-keys.ycp \
+  data/phone-codes.ycp
+
+desktop_DATA = \
+  desktop/isdn.desktop \
+  desktop/host.desktop \
+  desktop/provider.desktop \
+  desktop/network.desktop \
+  desktop/remote.desktop \
+  desktop/modem.desktop \
+  desktop/dsl.desktop \
+  desktop/lan.desktop
+
+EXTRA_DIST = $(module_DATA) $(module1_DATA) $(client_DATA) $(ynclude_DATA) $(ynclude1_DATA) $(ynclude2_DATA) $(ynclude3_DATA) $(ynclude4_DATA) $(ynclude5_DATA) $(ynclude6_DATA) $(ynclude7_DATA) $(ynclude8_DATA) $(scrconf_DATA) $(agent_SCRIPTS) $(schemafiles_DATA) $(ybin_SCRIPTS) $(ydata_DATA) $(desktop_DATA)
+
+include $(top_srcdir)/Makefile.am.common
