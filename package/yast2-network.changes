@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jul 31 08:33:47 UTC 2013 - yast-devel@opensuse.org
+
+- converted from YCP to Ruby by YCP Killer
+  (https://github.com/yast/ycp-killer)
+- version 3.0.0
+
+-------------------------------------------------------------------
 Mon Jul 29 18:08:19 CEST 2013 - locilka@suse.com
 
 - Fixed detection whether interface is handled by firewall and thus
