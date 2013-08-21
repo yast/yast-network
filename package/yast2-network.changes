@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Aug 21 07:32:22 UTC 2013 - mfilka@suse.com
+
+- bnc#803616
+    - do not disable firewall proposal in second stage
+- 3.0.1 
+
+-------------------------------------------------------------------
 Wed Jul 31 08:33:47 UTC 2013 - yast-devel@opensuse.org
 
 - converted from YCP to Ruby by YCP Killer

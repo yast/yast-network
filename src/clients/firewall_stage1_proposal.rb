@@ -211,15 +211,8 @@ module Yast
 
         SuSEFirewallProposal.SetChangedByUser(true)
 
-        #Disable one of the AC steps (see control.$product.xml for appropriate unique IDs)
-        if ProductControl.GetUseAutomaticConfiguration
-          ProductControl.DisableACItem("ac_2", "firewall")
-        else
-          #or subproposal (if 2nd stage is non-automatic)
-          ProductControl.DisableSubProposal("network_continue", "firewall")
-        end
-
         @ret = { "workflow_sequence" => @result }
+
       elsif @func == "Description"
         @ret = {
           # Proposal title
