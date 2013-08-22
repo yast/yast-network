@@ -251,16 +251,17 @@ module Yast
       @modified = true
 
       nick = Ops.get(Hostname.SplitFQ(newhn), 0, "")
-      oldnick = Ops.get(Hostname.SplitFQ(oldhn), 0, "")
 
       # Remove old hostname from hosts
       #    list oldhnlist = [];
-      Builtins.foreach(@hosts) do |ip, hs|
-        wrk = Builtins.maplist(hs) { |s| Builtins.splitstring(s, " ") }
-        wrk = Builtins.filter(wrk) { |lst| !Builtins.contains(lst, oldhn) }
-        Ops.set(@hosts, ip, Builtins.maplist(wrk) do |lst|
-          Builtins.mergestring(lst, " ")
-        end)
+      if !oldhn.empty?
+        Builtins.foreach(@hosts) do |ip, hs|
+          wrk = Builtins.maplist(hs) { |s| Builtins.splitstring(s, " ") }
+          wrk = Builtins.filter(wrk) { |lst| !Builtins.contains(lst, oldhn) }
+          Ops.set(@hosts, ip, Builtins.maplist(wrk) do |lst|
+            Builtins.mergestring(lst, " ")
+          end)
+        end
       end
 
       # Resurect the rest of oldhnlist without old hostname
