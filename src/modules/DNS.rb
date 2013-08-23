@@ -355,15 +355,29 @@ module Yast
 
       @oldhostname = fqhostname # #49634
 
-      SCR.Write(
-        path(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"),
-        @dhcp_hostname ? "yes" : "no"
+      # ensure that nothing is saved in case old values are the same, as it makes
+      # rcnetwork reload restart all interfaces (even 'touch /etc/sysconfig/network/dhcp'
+      # is sufficient)
+      tmp1 = Convert.to_string(
+        SCR.Read(path(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"))
       )
-      SCR.Write(
-        path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"),
-        @write_hostname ? "yes" : "no"
+      old_dhcp_hostname = tmp1 == "yes"
+      tmp2 = Convert.to_string(
+        SCR.Read(path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"))
       )
-      SCR.Write(path(".sysconfig.network.dhcp"), nil)
+      old_write_hostname = tmp2 == "yes"
+
+      if old_dhcp_hostname != dhcp_hostname || old_write_hostname != write_hostname
+        SCR.Write(
+          path(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"),
+          @dhcp_hostname ? "yes" : "no"
+        )
+        SCR.Write(
+          path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"),
+          @write_hostname ? "yes" : "no"
+        )
+        SCR.Write(path(".sysconfig.network.dhcp"), nil)
+      end
 
       Builtins.y2milestone("Writing configuration")
       if !@modified
