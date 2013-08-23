@@ -7,6 +7,8 @@ Thu Aug 22 12:26:42 UTC 2013 - mfilka@suse.com
     between hostnames
 - bnc#810539
     - fixed issue in YaPI which caused a syntax warning
+- fate#308978
+    - do not write network config files if not changed
 - 3.0.2
 
 -------------------------------------------------------------------
