@@ -356,7 +356,7 @@ module Yast
             _("Applet needed"),
             _(
               "NetworkManager is controlled by desktop applet\n" +
-                "(knetworkmanager for KDE and nm-applet for GNOME).\n" +
+                "(KDE plasma widget and nm-applet for GNOME).\n" +
                 "Be sure it's running and if not, start it manually."
             )
           )

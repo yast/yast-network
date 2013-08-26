@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Aug 26 16:00:38 UTC 2013 - jreidinger@suse.com
+
+- fix suggest for KDE network manager applet (BNC#747808)
+- 3.0.3
+
+-------------------------------------------------------------------
 Thu Aug 22 12:26:42 UTC 2013 - mfilka@suse.com
 
 - Ported changes from SLE branch (bnc#831833)
