@@ -358,14 +358,11 @@ module Yast
       # ensure that nothing is saved in case old values are the same, as it makes
       # rcnetwork reload restart all interfaces (even 'touch /etc/sysconfig/network/dhcp'
       # is sufficient)
-      tmp1 = Convert.to_string(
-        SCR.Read(path(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"))
-      )
-      old_dhcp_hostname = tmp1 == "yes"
-      tmp2 = Convert.to_string(
-        SCR.Read(path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"))
-      )
-      old_write_hostname = tmp2 == "yes"
+      tmp = SCR.Read(path(".sysconfig.network.dhcp.DHCLIENT_SET_HOSTNAME"))
+      old_dhcp_hostname = tmp == "yes"
+
+      tmp = SCR.Read(path(".sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS"))
+      old_write_hostname = tmp == "yes"
 
       if old_dhcp_hostname != dhcp_hostname || old_write_hostname != write_hostname
         SCR.Write(
