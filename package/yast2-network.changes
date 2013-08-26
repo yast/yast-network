@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Thu Aug 22 12:26:42 UTC 2013 - mfilka@suse.com
+
+- Ported changes from SLE branch (bnc#831833)
+- bnc#769081
+    - do not remove line from /etc/hosts if it contains two spaces 
+    between hostnames
+- bnc#810539
+    - fixed issue in YaPI which caused a syntax warning
+- fate#308978
+    - do not write network config files if not changed
+- 3.0.2
+
+-------------------------------------------------------------------
 Wed Aug 21 07:32:22 UTC 2013 - mfilka@suse.com
 
 - bnc#803616
