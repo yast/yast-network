@@ -531,7 +531,6 @@ module Yast
 
       ##390738: only one URL now
       #works well with the list of all products
-      #	string url = Product::relnotesurl;
       Builtins.foreach(Product.relnotesurl_all) do |url|
         # protect from wrong urls
         if url == nil || url == ""
