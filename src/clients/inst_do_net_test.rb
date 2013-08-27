@@ -531,7 +531,6 @@ module Yast
 
       ##390738: only one URL now
       #works well with the list of all products
-      #	string url = Product::relnotesurl;
       Builtins.foreach(Product.relnotesurl_all) do |url|
         # protect from wrong urls
         if url == nil || url == ""
@@ -543,7 +542,6 @@ module Yast
           Builtins.y2error("broken url for release notes: %1", url)
           next false
         end
-        #relnotes_counter = relnotes_counter + 1;
         # Where we want to store the downloaded release notes
         filename = Builtins.sformat(
           "%1/%2-%3",
@@ -636,6 +634,8 @@ module Yast
           @logs,
           { :menuname => menu_name, :filename => log_filename }
         )
+
+        relnotes_counter += 1;
       end
       test_ret
     end
