@@ -543,7 +543,6 @@ module Yast
           Builtins.y2error("broken url for release notes: %1", url)
           next false
         end
-        #relnotes_counter = relnotes_counter + 1;
         # Where we want to store the downloaded release notes
         filename = Builtins.sformat(
           "%1/%2-%3",
@@ -636,6 +635,8 @@ module Yast
           @logs,
           { :menuname => menu_name, :filename => log_filename }
         )
+
+        relnotes_counter += 1;
       end
       test_ret
     end
