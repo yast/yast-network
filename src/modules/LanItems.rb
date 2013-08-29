@@ -853,6 +853,7 @@ module Yast
       ret
     end
 
+    # preinitializates @Items according info on physically detected network cards
     def ReadHw
       @Items = {}
       @Hardware = ReadHardware("netcard")
@@ -904,6 +905,14 @@ module Yast
       nil
     end
 
+    # initializates @Items
+    #
+    # It does:
+    # (1) read hardware present on the system
+    # (2) read known configurations (e.g. ifcfg-eth0)
+    # (3) joins together. Join is done via device name (e.g. eth0) as key.
+    # It is full outer join in -> you can have hwinfo part with no coresponding
+    # netconfig part (or vice versa) in @Items when the method is done.
     def Read
       ReadHw()
       NetworkInterfaces.Read
