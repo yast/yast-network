@@ -5,6 +5,7 @@ tmp.*
 *.sw?
 Makefile*
 !Makefile.cvs
+!/Makefile.am
 configure
 configure.in
 config.*
