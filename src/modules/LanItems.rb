@@ -335,6 +335,15 @@ module Yast
       )
     end
 
+    # transforms given list of item ids onto device names
+    #
+    # item id is index into internal @Items structure
+    def GetDeviceNames( items)
+      return [] unless items
+
+      items.map { |itemId| GetDeviceName( itemId) }.reject( &:empty?)
+    end
+
     # Returns device name for current lan item (see LanItems::current)
     def GetCurrentName
       GetDeviceName(@current)
@@ -788,6 +797,19 @@ module Yast
         bridgeMaster,
         fun_ref(method(:IsBridgeable), "boolean (string, integer)")
       )
+    end
+
+    # Creates list of all known netcard items
+    #
+    # It means list of item ids of all netcards which are detected and/or
+    # configured in the system
+    def GetNetcardInterfaces
+      @Items.keys
+    end
+
+    # Creates list of names of all known netcards
+    def GetNetcardNames
+      GetDeviceNames( GetNetcardInterfaces())
     end
 
     # get list of all configurations for "netcard" macro in NetworkInterfaces module
@@ -2622,6 +2644,7 @@ module Yast
     publish :function => :GetSlaveCandidates, :type => "list <integer> (string, boolean (string, integer))"
     publish :function => :GetBondableInterfaces, :type => "list <integer> (string)"
     publish :function => :GetBridgeableInterfaces, :type => "list <integer> (string)"
+    publish :function => :GetNetcardNames, :type => "list <string> ( list <integer>)"
     publish :function => :FindAndSelect, :type => "boolean (string)"
     publish :function => :FindDeviceIndex, :type => "integer (string)"
     publish :function => :ReadHw, :type => "void ()"
