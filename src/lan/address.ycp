@@ -805,7 +805,7 @@ list< list<string> > BuildTypesListCWM (list<string> types) {
  */
 define any AddressDialog() {
     ScreenName("lan-address");
-    string fwzone = SuSEFirewall4Network::GetZoneOfInterface (LanItems::device);
+    string fwzone = SuSEFirewall4Network::GetZoneOfInterface( LanItems::GetCurrentName() );
 
     // If firewall is active and interface in no zone, nothing
     // gets through (#62309) so add it to the external zone
