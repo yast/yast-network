@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Sep  4 08:59:44 UTC 2013 - mfilka@suse.com
+
+- bnc#837793
+   - Network Card details / General: show the assigned firewall zone;
+   previously "Automatically Assigned Zone" would be always shown.
+- 2.17.196
+
+-------------------------------------------------------------------
 Wed May 29 10:19:10 UTC 2013 - mfilka@suse.com
 
 - bnc#821427
