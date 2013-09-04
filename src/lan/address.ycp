@@ -804,7 +804,6 @@ list< list<string> > BuildTypesListCWM (list<string> types) {
  * @return dialog result
  */
 define any AddressDialog() {
-    ScreenName("lan-address");
     string fwzone = SuSEFirewall4Network::GetZoneOfInterface( LanItems::GetCurrentName() );
 
     // If firewall is active and interface in no zone, nothing
@@ -829,7 +828,6 @@ define any AddressDialog() {
 
     settings = $[
 	// general tab:
-//	"IFNAME": ifname,
 	"STARTMODE": LanItems::startmode,
 	"USERCONTROL": LanItems::usercontrol,
 	// problems when renaming the interface?
@@ -898,7 +896,6 @@ define any AddressDialog() {
     wd["IFCFGTYPE", "items"] = BuildTypesListCWM (device_types);
     wd["IFCFGID", "items"] = [[settings["IFCFGID"]:"",
 			       settings["IFCFGID"]:""]];
-    //wd["BINDTOHW", "items"] = ...;
 
     if ( fw_is_installed )
         wd["FWZONE", "items"] = SuSEFirewall4Network::FirewallZonesComboBoxItems();
@@ -938,9 +935,7 @@ define any AddressDialog() {
 	1, 0,
 	`Frame(_("Detailed Settings"), `HBox(`HStretch(),
 	`HSquash(`VBox(
-//	    `VSpacing(0.4),
 	    "ADVANCED_MB"
-//	    `VSpacing(0.4)
 	)),
 	`HStretch()
     )));
