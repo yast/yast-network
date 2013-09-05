@@ -1241,7 +1241,7 @@ module Yast
     # Dialog for setting up IP address
     # @return dialog result
     def AddressDialog
-      fwzone = SuSEFirewall4Network.GetZoneOfInterface(LanItems.device)
+      fwzone = SuSEFirewall4Network.GetZoneOfInterface(LanItems.GetCurrentName)
 
       # If firewall is active and interface in no zone, nothing
       # gets through (#62309) so add it to the external zone
