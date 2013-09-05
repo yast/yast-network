@@ -1241,7 +1241,7 @@ module Yast
     # Dialog for setting up IP address
     # @return dialog result
     def AddressDialog
-      fwzone = SuSEFirewall4Network.GetZoneOfInterface(LanItems.device)
+      fwzone = SuSEFirewall4Network.GetZoneOfInterface(LanItems.GetCurrentName)
 
       # If firewall is active and interface in no zone, nothing
       # gets through (#62309) so add it to the external zone
@@ -1263,7 +1263,6 @@ module Yast
 
       @settings = {
         # general tab:
-        #	"IFNAME": ifname,
         "STARTMODE"        => LanItems.startmode(
         ),
         "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
@@ -1408,7 +1407,6 @@ module Yast
           ]
         ]
       )
-      #wd["BINDTOHW", "items"] = ...;
 
       if fw_is_installed
         Ops.set(
@@ -1463,8 +1461,7 @@ module Yast
               HStretch(),
               HSquash(
                 VBox(
-                  #	    `VSpacing(0.4),
-                  "ADVANCED_MB" #	    `VSpacing(0.4)
+                  "ADVANCED_MB"
                 )
               ),
               HStretch()

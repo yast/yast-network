@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Sep  4 08:59:44 UTC 2013 - mfilka@suse.com
+
+- bnc#837793
+   - Network Card details / General: show the assigned firewall zone;
+   previously "Automatically Assigned Zone" would be always shown.
+- 3.0.5
+
+-------------------------------------------------------------------
 Tue Aug 27 08:20:41 UTC 2013 - jreidinger@suse.com
 
 - do not overwrite curl log for addon (BNC#632917)
