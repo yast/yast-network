@@ -1263,7 +1263,6 @@ module Yast
 
       @settings = {
         # general tab:
-        #	"IFNAME": ifname,
         "STARTMODE"        => LanItems.startmode(
         ),
         "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
@@ -1408,7 +1407,6 @@ module Yast
           ]
         ]
       )
-      #wd["BINDTOHW", "items"] = ...;
 
       if fw_is_installed
         Ops.set(
@@ -1463,8 +1461,7 @@ module Yast
               HStretch(),
               HSquash(
                 VBox(
-                  #	    `VSpacing(0.4),
-                  "ADVANCED_MB" #	    `VSpacing(0.4)
+                  "ADVANCED_MB"
                 )
               ),
               HStretch()
