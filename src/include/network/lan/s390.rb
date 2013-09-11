@@ -59,6 +59,7 @@ module Yast
     #
     # @return a map with keys QETH_LAYER2, QETH_PORTNAME, QETH_PORTNUMBER, QETH_CHANIDS
     def s390_ReadQethConfig(devname)
+      return {} if devname.empty?
       return {} if !s390_DriverLoaded(devname)
 
       result = {}

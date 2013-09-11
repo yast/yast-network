@@ -335,6 +335,15 @@ module Yast
       )
     end
 
+    # transforms given list of item ids onto device names
+    #
+    # item id is index into internal @Items structure
+    def GetDeviceNames( items)
+      return [] unless items
+
+      items.map { |itemId| GetDeviceName( itemId) }.reject( &:empty?)
+    end
+
     # Returns device name for current lan item (see LanItems::current)
     def GetCurrentName
       GetDeviceName(@current)
@@ -790,6 +799,19 @@ module Yast
       )
     end
 
+    # Creates list of all known netcard items
+    #
+    # It means list of item ids of all netcards which are detected and/or
+    # configured in the system
+    def GetNetcardInterfaces
+      @Items.keys
+    end
+
+    # Creates list of names of all known netcards
+    def GetNetcardNames
+      GetDeviceNames( GetNetcardInterfaces())
+    end
+
     # get list of all configurations for "netcard" macro in NetworkInterfaces module
     def getNetworkInterfaces
       confs = []
@@ -853,6 +875,7 @@ module Yast
       ret
     end
 
+    # preinitializates @Items according info on physically detected network cards
     def ReadHw
       @Items = {}
       @Hardware = ReadHardware("netcard")
@@ -904,6 +927,14 @@ module Yast
       nil
     end
 
+    # initializates @Items
+    #
+    # It does:
+    # (1) read hardware present on the system
+    # (2) read known configurations (e.g. ifcfg-eth0)
+    # (3) joins together. Join is done via device name (e.g. eth0) as key.
+    # It is full outer join in -> you can have hwinfo part with no coresponding
+    # netconfig part (or vice versa) in @Items when the method is done.
     def Read
       ReadHw()
       NetworkInterfaces.Read
@@ -2613,6 +2644,7 @@ module Yast
     publish :function => :GetSlaveCandidates, :type => "list <integer> (string, boolean (string, integer))"
     publish :function => :GetBondableInterfaces, :type => "list <integer> (string)"
     publish :function => :GetBridgeableInterfaces, :type => "list <integer> (string)"
+    publish :function => :GetNetcardNames, :type => "list <string> ( list <integer>)"
     publish :function => :FindAndSelect, :type => "boolean (string)"
     publish :function => :FindDeviceIndex, :type => "integer (string)"
     publish :function => :ReadHw, :type => "void ()"
