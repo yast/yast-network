@@ -607,6 +607,31 @@ module Yast
     #
     # @return nic name. New one if `ok, old one otherwise.
     def EditUdevRulesDialog
+
+      current_item = LanItems.getCurrentItem
+
+      begin
+
+        if current_item[ "hwinfo"]
+          mac = current_item[ "hwinfo"][ "mac"]
+          bus_id = current_item[ "hwinfo"][ "busid"]
+        else
+          mac = ""
+          bus_id = ""
+        end
+
+      rescue NoMethodError
+        # current item is cruicial 
+        return nil if current_item.nil?
+
+        # no mac/busid in hwinfo
+        mac = "" if mac.nil?
+        bus_id = "" if bus_id.nil?
+
+      end
+
+      old_name = LanItems.GetItemUdev("NAME")
+
       UI.OpenDialog(
         VBox(
           RadioButtonGroup(
@@ -618,27 +643,13 @@ module Yast
               Left(
                 RadioButton(
                   Id(:mac),
-                  Builtins.sformat(
-                    "MAC address : %1",
-                    Ops.get_string(
-                      LanItems.getCurrentItem,
-                      ["hwinfo", "mac"],
-                      ""
-                    )
-                  )
+                  "MAC address: #{mac}"
                 )
               ),
               Left(
                 RadioButton(
                   Id(:busid),
-                  Builtins.sformat(
-                    "BusID : %1",
-                    Ops.get_string(
-                      LanItems.getCurrentItem,
-                      ["hwinfo", "busid"],
-                      ""
-                    )
-                  )
+                  "BusID: #{bus_id}"
                 )
               )
             )
@@ -651,7 +662,7 @@ module Yast
                 _("Change DeviceName"),
                 false
               ),
-              InputField(Id(:dev_name), "", LanItems.GetItemUdev("NAME"))
+              InputField(Id(:dev_name), "", old_name)
             )
           ),
           VSpacing(0.5),
@@ -662,17 +673,18 @@ module Yast
         )
       )
 
-      if Ops.greater_than(
-          Builtins.size(LanItems.GetItemUdev("ATTR{address}")),
-          0
-        )
+      attr_address = LanItems.GetItemUdev("ATTR{address}")
+      attr_kernels = LanItems.GetItemUdev("KERNELS")
+
+      if !attr_address.nil? && !attr_address.empty?
         UI.ChangeWidget(Id(:udev_type), :CurrentButton, :mac)
+        old_key =  "ATTR{address}" 
+      elsif !attr_kernels.nil? && !attr_kernels.empty?
+        UI.ChangeWidget(Id(:udev_type), :CurrentButton, :busid)
+        old_key = "KERNELS"
       else
-        if Ops.greater_than(Builtins.size(LanItems.GetItemUdev("KERNELS")), 0)
-          UI.ChangeWidget(Id(:udev_type), :CurrentButton, :busid)
-        else
-          Builtins.y2error("Unknown udev rule ")
-        end
+        Builtins.y2error("Unknown udev rule ")
+        old_key = ""
       end
 
       UI.ChangeWidget(:dev_name, :Enabled, false)
@@ -689,39 +701,34 @@ module Yast
         end
 
         if ret == :ok
-          old_name = LanItems.GetItemUdev("NAME")
           new_name = Convert.to_string(UI.QueryWidget(:dev_name, :Value))
-          rule_key = UI.QueryWidget(:udev_type, :CurrentButton) == :mac ? "ATTR{address}" : "KERNELS"
-          rule_value = UI.QueryWidget(:udev_type, :CurrentButton) == :mac ?
-            Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "mac"], "") :
-            Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "busid"], "")
 
-          if change_name_active && new_name != old_name
-            if CheckUdevNicName(new_name)
-              LanItems.SetItemUdev("NAME", new_name)
+          break if !change_name_active || new_name == old_name
 
-              NetworkInterfaces.Delete2(old_name)
-              Ops.set(
-                LanItems.Items,
-                [LanItems.current, "ifcfg"],
-                LanItems.GetItemUdev("NAME")
-              )
-            else
-              UI.SetFocus(:dev_name)
-              ret = nil
+          if !CheckUdevNicName(new_name)
+            UI.SetFocus(:dev_name)
+            ret = nil
 
-              next
-            end
+            next
           end
 
-          # update udev rules
-          old_key = Builtins.isempty(LanItems.GetItemUdev("KERNELS")) ? "ATTR{address}" : "KERNELS"
+
+          if UI.QueryWidget(:udev_type, :CurrentButton) == :mac 
+            rule_key = "ATTR{address}"
+            rule_value = mac
+          else
+            rule_key = "KERNELS"
+            rule_value = bus_id
+          end
+
+          # update udev rules and other config
+          LanItems.SetCurrentName( new_name)
           LanItems.ReplaceItemUdev(old_key, rule_key, rule_value)
         end
       end
       UI.CloseDialog
 
-      Ops.get_string(LanItems.Items, [LanItems.current, "ifcfg"], "")
+      LanItems.GetCurrentName
     end
 
     def handleHW(key, event)
