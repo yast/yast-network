@@ -39,12 +39,11 @@ module Yast
         end
 
       rescue NoMethodError
+        Popup.Error(_("Internal error. Please report a bug."))
+        Bultins.y2internal( "EditNicName.initialize: current item has to be defined")
+ 
         # current item is cruicial 
         return nil if current_item.nil?
-
-        # no mac/busid in hwinfo
-        @mac = "" if mac.nil?
-        @bus_id = "" if bus_id.nil?
       end
     end
 
@@ -52,39 +51,34 @@ module Yast
       open
 
       ret = nil
-      while ret != :cancel && ret != :abort && ret != :ok
+      while ![:cancel, :abort, :ok].include? ret
         ret = UI.UserInput
-        change_name_active = Convert.to_boolean(
-          UI.QueryWidget(:change_dev_name, :Value)
-        )
 
-        if ret == :change_dev_name
-          UI.ChangeWidget(:dev_name, :Enabled, change_name_active)
-        end
+        case ret
+          when :ok
+            new_name = UI.QueryWidget(:dev_name, :Value)
 
-        if ret == :ok
-          new_name = Convert.to_string(UI.QueryWidget(:dev_name, :Value))
+            if new_name != @old_name
+              if CheckUdevNicName(new_name)
+                LanItems.SetCurrentName( new_name)
+              else
+                UI.SetFocus(:dev_name)
+                ret = nil
 
-          break if !change_name_active || new_name == @old_name
+                next
+              end
+            end
 
-          if !CheckUdevNicName(new_name)
-            UI.SetFocus(:dev_name)
-            ret = nil
+            if UI.QueryWidget(:udev_type, :CurrentButton) == :mac 
+              rule_key = MAC_UDEV_ATTR
+              rule_value = @mac
+            else
+              rule_key = BUSID_UDEV_ATTR
+              rule_value = @bus_id
+            end
 
-            next
-          end
-
-          if UI.QueryWidget(:udev_type, :CurrentButton) == :mac 
-            rule_key = MAC_UDEV_ATTR
-            rule_value = @mac
-          else
-            rule_key = BUSID_UDEV_ATTR
-            rule_value = @bus_id
-          end
-
-          # update udev rules and other config
-          LanItems.SetCurrentName( new_name)
-          LanItems.ReplaceItemUdev( @old_key, rule_key, rule_value)
+            # update udev rules and other config
+            LanItems.ReplaceItemUdev( @old_key, rule_key, rule_value)
         end
       end
 
@@ -93,40 +87,39 @@ module Yast
       LanItems.GetCurrentName
     end
 
-    protected
+  private
+    # Opens dialog for editing NIC name
     def open
       UI.OpenDialog(
         VBox(
-          RadioButtonGroup(
-            Id(:udev_type),
-            VBox(
-              #make sure there is enough space (#367239)
-              HSpacing(30),
-              Label(_("Rule by:")),
-              Left(
-                RadioButton(
-                  Id(:mac),
-                  "MAC address: #{@mac}"
-                )
-              ),
-              Left(
-                RadioButton(
-                  Id(:busid),
-                  "BusID: #{@bus_id}"
-                )
-              )
-            )
-          ),
           Left(
             HBox(
-              CheckBox(
-                Id(:change_dev_name),
-                Opt(:notify),
-                _("Change DeviceName"),
-                false
-              ),
+              Label( _( "Device name:") ),
               InputField(Id(:dev_name), "", @old_name)
             )
+          ),
+          VSpacing(0.5),
+          Frame(
+            _( "Base udev rule on"),
+            RadioButtonGroup(
+              Id(:udev_type),
+              VBox(
+                #make sure there is enough space (#367239)
+                HSpacing(30),
+                Left(
+                  RadioButton(
+                    Id(:mac),
+                    _( "MAC address: %s") % @mac
+                  )
+                ),
+                Left(
+                  RadioButton(
+                    Id(:busid),
+                    _( "BusID: %s") % @bus_id
+                  )
+                )
+              )
+            ),
           ),
           VSpacing(0.5),
           HBox(
@@ -136,18 +129,17 @@ module Yast
         )
       )
 
-      if @old_key == MAC_UDEV_ATTR
-        UI.ChangeWidget(Id(:udev_type), :CurrentButton, :mac)
-      elsif @old_key == BUSID_UDEV_ATTR
-        UI.ChangeWidget(Id(:udev_type), :CurrentButton, :busid)
-      else
-        Builtins.y2error("Unknown udev rule ")
+      case @old_key
+        when MAC_UDEV_ATTR
+          UI.ChangeWidget(Id(:udev_type), :CurrentButton, :mac)
+        when BUSID_UDEV_ATTR
+          UI.ChangeWidget(Id(:udev_type), :CurrentButton, :busid)
+        else
+          Builtins.y2error("Unknown udev rule ")
       end
-
-      UI.ChangeWidget(:dev_name, :Enabled, false)
     end
   
-    protected
+    # Closes the dialog
     def close
       UI.CloseDialog
     end
@@ -155,11 +147,7 @@ module Yast
     # Checks if given name can be accepted as nic's new one.
     #
     # @return false and pops up an explanation if the name is invalid
-    protected
     def CheckUdevNicName(name)
-      # when dev_name changed, rename ifcfg (both in NetworkInterfaces and LanItems)
-      error = false
-
       if UsedNicName(name)
         Popup.Error(_("Configuration name already exists."))
         return false
