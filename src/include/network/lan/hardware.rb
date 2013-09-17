@@ -26,6 +26,9 @@
 # Summary:	Hardware dialogs
 # Authors:	Michal Svec <msvec@suse.cz>
 #
+
+require "network/EditNicName"
+
 module Yast
   module NetworkLanHardwareInclude
     def initialize_network_lan_hardware(include_target)
@@ -584,151 +587,12 @@ module Yast
       deep_copy(ret)
     end
 
-    # Checks if given name can be accepted as nic's new one.
-    #
-    # @return false and pops up an explanation if the name is invalid
-    def CheckUdevNicName(name)
-      # when dev_name changed, rename ifcfg (both in NetworkInterfaces and LanItems)
-      error = false
-
-      if UsedNicName(name)
-        Popup.Error(_("Configuration name already exists."))
-        return false
-      end
-      if !ValidNicName(name)
-        Popup.Error(_("Invalid configuration name."))
-        return false
-      end
-
-      true
-    end
-
     # Dialog for editing nic's udev rules.
     #
     # @return nic name. New one if `ok, old one otherwise.
     def EditUdevRulesDialog
-
-      current_item = LanItems.getCurrentItem
-
-      begin
-
-        if current_item[ "hwinfo"]
-          mac = current_item[ "hwinfo"][ "mac"]
-          bus_id = current_item[ "hwinfo"][ "busid"]
-        else
-          mac = ""
-          bus_id = ""
-        end
-
-      rescue NoMethodError
-        # current item is cruicial 
-        return nil if current_item.nil?
-
-        # no mac/busid in hwinfo
-        mac = "" if mac.nil?
-        bus_id = "" if bus_id.nil?
-
-      end
-
-      old_name = LanItems.GetItemUdev("NAME")
-
-      UI.OpenDialog(
-        VBox(
-          RadioButtonGroup(
-            Id(:udev_type),
-            VBox(
-              #make sure there is enough space (#367239)
-              HSpacing(30),
-              Label(_("Rule by:")),
-              Left(
-                RadioButton(
-                  Id(:mac),
-                  "MAC address: #{mac}"
-                )
-              ),
-              Left(
-                RadioButton(
-                  Id(:busid),
-                  "BusID: #{bus_id}"
-                )
-              )
-            )
-          ),
-          Left(
-            HBox(
-              CheckBox(
-                Id(:change_dev_name),
-                Opt(:notify),
-                _("Change DeviceName"),
-                false
-              ),
-              InputField(Id(:dev_name), "", old_name)
-            )
-          ),
-          VSpacing(0.5),
-          HBox(
-            PushButton(Id(:ok), Opt(:default), Label.OKButton),
-            PushButton(Id(:cancel), Label.CancelButton)
-          )
-        )
-      )
-
-      attr_address = LanItems.GetItemUdev("ATTR{address}")
-      attr_kernels = LanItems.GetItemUdev("KERNELS")
-
-      if !attr_address.nil? && !attr_address.empty?
-        UI.ChangeWidget(Id(:udev_type), :CurrentButton, :mac)
-        old_key =  "ATTR{address}" 
-      elsif !attr_kernels.nil? && !attr_kernels.empty?
-        UI.ChangeWidget(Id(:udev_type), :CurrentButton, :busid)
-        old_key = "KERNELS"
-      else
-        Builtins.y2error("Unknown udev rule ")
-        old_key = ""
-      end
-
-      UI.ChangeWidget(:dev_name, :Enabled, false)
-
-      ret = nil
-      while ret != :cancel && ret != :abort && ret != :ok
-        ret = UI.UserInput
-        change_name_active = Convert.to_boolean(
-          UI.QueryWidget(:change_dev_name, :Value)
-        )
-
-        if ret == :change_dev_name
-          UI.ChangeWidget(:dev_name, :Enabled, change_name_active)
-        end
-
-        if ret == :ok
-          new_name = Convert.to_string(UI.QueryWidget(:dev_name, :Value))
-
-          break if !change_name_active || new_name == old_name
-
-          if !CheckUdevNicName(new_name)
-            UI.SetFocus(:dev_name)
-            ret = nil
-
-            next
-          end
-
-
-          if UI.QueryWidget(:udev_type, :CurrentButton) == :mac 
-            rule_key = "ATTR{address}"
-            rule_value = mac
-          else
-            rule_key = "KERNELS"
-            rule_value = bus_id
-          end
-
-          # update udev rules and other config
-          LanItems.SetCurrentName( new_name)
-          LanItems.ReplaceItemUdev(old_key, rule_key, rule_value)
-        end
-      end
-      UI.CloseDialog
-
-      LanItems.GetCurrentName
+      edit_name_dlg = EditNicName.new
+      edit_name_dlg.run
     end
 
     def handleHW(key, event)
