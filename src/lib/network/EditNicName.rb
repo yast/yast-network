@@ -8,12 +8,18 @@ module Yast
   Yast.import "LanItems"
   Yast.import "Popup"
 
+  # The class represents a simple dialog which allows user to input new NIC
+  # name. It also allows to select a device attribute (MAC, Bus id, ...) which will
+  # be used for device selection.
   class EditNicName
 
     include UIShortcuts
     include I18n
     
+    # udev rule attribute for MAC address
     MAC_UDEV_ATTR   = "ATTR{address}"
+
+    # udev rule attribute for BUS id
     BUSID_UDEV_ATTR = "KERNELS"
 
     def initialize
@@ -47,6 +53,9 @@ module Yast
       end
     end
 
+    # Opens dialog for editing NIC name and runs event loop.
+    #
+    # @return [String] new NIC name
     def run
       open
 
@@ -140,13 +149,16 @@ module Yast
     end
   
     # Closes the dialog
+    protected
     def close
       UI.CloseDialog
     end
 
     # Checks if given name can be accepted as nic's new one.
     #
-    # @return false and pops up an explanation if the name is invalid
+    # Pops up an explanation if the name is invalid
+    #
+    # @return [boolean] false if name is invalid 
     def CheckUdevNicName(name)
       if UsedNicName(name)
         Popup.Error(_("Configuration name already exists."))
