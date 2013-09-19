@@ -15,7 +15,7 @@ module Yast
 
     include UIShortcuts
     include I18n
-    
+
     # udev rule attribute for MAC address
     MAC_UDEV_ATTR   = "ATTR{address}"
 
@@ -35,21 +35,12 @@ module Yast
       @old_key = MAC_UDEV_ATTR unless LanItems.GetItemUdev( MAC_UDEV_ATTR).empty?
       @old_key = BUSID_UDEV_ATTR unless LanItems.GetItemUdev( BUSID_UDEV_ATTR).empty?
 
-      begin
-        if current_item["hwinfo"]
-          @mac = current_item["hwinfo"]["mac"]
-          @bus_id = current_item["hwinfo"]["busid"]
-        else
-          @mac = ""
-          @bus_id = ""
-        end
-
-      rescue NoMethodError
-        Popup.Error(_("Internal error. Please report a bug."))
-        Bultins.y2internal("EditNicName.initialize: current item has to be defined")
- 
-        # current item is cruicial 
-        return nil if current_item.nil?
+      if current_item["hwinfo"]
+        @mac = current_item["hwinfo"]["mac"]
+        @bus_id = current_item["hwinfo"]["busid"]
+      else
+        @mac = ""
+        @bus_id = ""
       end
     end
 
@@ -78,7 +69,7 @@ module Yast
               end
             end
 
-            if UI.QueryWidget(:udev_type, :CurrentButton) == :mac 
+            if UI.QueryWidget(:udev_type, :CurrentButton) == :mac
               rule_key = MAC_UDEV_ATTR
               rule_value = @mac
             else
@@ -147,7 +138,7 @@ module Yast
           Builtins.y2error("Unknown udev rule.")
       end
     end
-  
+
     # Closes the dialog
     def close
       UI.CloseDialog
@@ -157,7 +148,7 @@ module Yast
     #
     # Pops up an explanation if the name is invalid
     #
-    # @return [boolean] false if name is invalid 
+    # @return [boolean] false if name is invalid
     def CheckUdevNicName(name)
       if UsedNicName(name)
         Popup.Error(_("Configuration name already exists."))
