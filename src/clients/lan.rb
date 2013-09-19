@@ -194,12 +194,18 @@ module Yast
         }
       }
 
-      @ret = CommandLine.Run(@cmdline)
-      Builtins.y2debug("ret=%1", @ret)
+      begin
+        @ret = CommandLine.Run(@cmdline)
+        Builtins.y2debug("ret=%1", @ret)
+      rescue Exception => e
+        Report.Error(_("Internal error. Please report a bug."))
+        Builtins.y2internal("LanClient exception:")
+        Builtins.y2internal(e.backtrace.inspect)
+      end
 
       # Finish
       Builtins.y2milestone("Lan module finished")
-      Builtins.y2milestone("----------------------------------------") 
+      Builtins.y2milestone("----------------------------------------")
 
       # EOF
 

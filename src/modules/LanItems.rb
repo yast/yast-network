@@ -487,6 +487,31 @@ module Yast
       ReplaceItemUdev(rule_key, rule_key, rule_val)
     end
 
+    # Updates device name.
+    #
+    # It updates device's udev rules and config name.
+    #
+    # Returns new name
+    def SetItemName( itemId, name)
+      SetItemUdev("NAME", name)
+
+      if @Items[ itemId].has_key?( "ifcfg")
+        NetworkInterfaces.Delete2( @Items[ itemId][ "ifcfg"])
+        @Items[ itemId][ "ifcfg"] = name
+      end
+
+      name
+    end
+
+    # Updates current device name.
+    #
+    # It updates device's udev rules and config name.
+    #
+    # Returns new name
+    def SetCurrentName( name)
+      SetItemName( @current, name)
+    end
+
     # Writes udev rules for all items.
     #
     # Currently only interesting change is renaming interface.

@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Sep 18 09:12:23 UTC 2013 - mfilka@suse.com
+
+- Refactoring
+  - removing ycp artifacts
+  - separated dialog for editing nic name into own class
+- 3.0.7 
+
+-------------------------------------------------------------------
 Wed Sep 11 09:34:47 UTC 2013 - mfilka@suse.com
 
 - bnc#578787

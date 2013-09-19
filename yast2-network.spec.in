@@ -83,6 +83,8 @@ fi
 @agentdir@/ag_udev_persistent
 @schemadir@/autoyast/rnc/networking.rnc
 @schemadir@/autoyast/rnc/host.rnc
+/usr/share/YaST2/lib/
+/usr/share/YaST2/lib/network
 
 %dir @docdir@
 @docdir@/COPYING

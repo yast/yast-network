@@ -164,6 +164,29 @@ desktop_DATA = \
   desktop/dsl.desktop \
   desktop/lan.desktop
 
-EXTRA_DIST = $(module_DATA) $(module1_DATA) $(client_DATA) $(ynclude_DATA) $(ynclude1_DATA) $(ynclude2_DATA) $(ynclude3_DATA) $(ynclude4_DATA) $(ynclude5_DATA) $(ynclude6_DATA) $(ynclude7_DATA) $(ynclude8_DATA) $(scrconf_DATA) $(agent_SCRIPTS) $(schemafiles_DATA) $(ybin_SCRIPTS) $(ydata_DATA) $(desktop_DATA)
+ylibdir = "${yast2dir}/lib/network"
+ylib_DATA = \
+  lib/network/edit_nic_name.rb
+
+EXTRA_DIST = \
+  $(module_DATA) \
+  $(module1_DATA) \
+  $(client_DATA) \
+  $(ynclude_DATA) \
+  $(ynclude1_DATA) \
+  $(ynclude2_DATA) \
+  $(ynclude3_DATA) \
+  $(ynclude4_DATA) \
+  $(ynclude5_DATA) \
+  $(ynclude6_DATA) \
+  $(ynclude7_DATA) \
+  $(ynclude8_DATA) \
+  $(scrconf_DATA) \
+  $(agent_SCRIPTS) \
+  $(schemafiles_DATA) \
+  $(ybin_SCRIPTS) \
+  $(ydata_DATA) \
+  $(desktop_DATA) \
+  $(ylib_DATA)
 
 include $(top_srcdir)/Makefile.am.common
