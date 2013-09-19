@@ -81,7 +81,7 @@ sub Read {
 		$configuration{'vendor'} = LanItems->getCurrentItem()->{"hwinfo"}->{"name"};
 	    }
 
-            $interfaces{LanItems->interfacename}=\%configuration;
+            $interfaces{LanItems->GetCurrentName()}=\%configuration;
 
         } elsif (LanItems->getCurrentItem()->{'hwinfo'}->{'type'} eq "eth") {
             my $device = LanItems->getCurrentItem()->{"hwinfo"}->{"dev_name"};

@@ -250,7 +250,7 @@ module Yast
         val = Convert.to_string(UI.QueryWidget(Id(:name), :Value))
         if Ops.greater_than(
             Ops.add(
-              Ops.add(Builtins.size(LanItems.interfacename), Builtins.size(val)),
+              Ops.add(Builtins.size(LanItems.device), Builtins.size(val)),
               1
             ),
             16
