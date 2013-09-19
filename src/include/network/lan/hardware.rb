@@ -27,7 +27,7 @@
 # Authors:	Michal Svec <msvec@suse.cz>
 #
 
-require "network/EditNicName"
+require "network/edit_nic_name"
 
 module Yast
   module NetworkLanHardwareInclude

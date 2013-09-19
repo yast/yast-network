@@ -166,7 +166,7 @@ desktop_DATA = \
 
 ylibdir = "${yast2dir}/lib/network"
 ylib_DATA = \
-  lib/network/EditNicName.rb
+  lib/network/edit_nic_name.rb
 
 EXTRA_DIST = \
   $(module_DATA) \

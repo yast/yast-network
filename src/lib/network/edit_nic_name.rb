@@ -36,9 +36,9 @@ module Yast
       @old_key = BUSID_UDEV_ATTR unless LanItems.GetItemUdev( BUSID_UDEV_ATTR).empty?
 
       begin
-        if current_item[ "hwinfo"]
-          @mac = current_item[ "hwinfo"][ "mac"]
-          @bus_id = current_item[ "hwinfo"][ "busid"]
+        if current_item["hwinfo"]
+          @mac = current_item["hwinfo"]["mac"]
+          @bus_id = current_item["hwinfo"]["busid"]
         else
           @mac = ""
           @bus_id = ""
@@ -46,7 +46,7 @@ module Yast
 
       rescue NoMethodError
         Popup.Error(_("Internal error. Please report a bug."))
-        Bultins.y2internal( "EditNicName.initialize: current item has to be defined")
+        Bultins.y2internal("EditNicName.initialize: current item has to be defined")
  
         # current item is cruicial 
         return nil if current_item.nil?
@@ -87,7 +87,7 @@ module Yast
             end
 
             # update udev rules and other config
-            LanItems.ReplaceItemUdev( @old_key, rule_key, rule_value)
+            LanItems.ReplaceItemUdev(@old_key, rule_key, rule_value)
         end
       end
 
@@ -103,13 +103,13 @@ module Yast
         VBox(
           Left(
             HBox(
-              Label( _( "Device name:") ),
+              Label(_("Device name:")),
               InputField(Id(:dev_name), "", @old_name)
             )
           ),
           VSpacing(0.5),
           Frame(
-            _( "Base udev rule on"),
+            _("Base udev rule on"),
             RadioButtonGroup(
               Id(:udev_type),
               VBox(
@@ -118,13 +118,13 @@ module Yast
                 Left(
                   RadioButton(
                     Id(:mac),
-                    _( "MAC address: %s") % @mac
+                    _("MAC address: %s") % @mac
                   )
                 ),
                 Left(
                   RadioButton(
                     Id(:busid),
-                    _( "BusID: %s") % @bus_id
+                    _("BusID: %s") % @bus_id
                   )
                 )
               )
@@ -144,12 +144,11 @@ module Yast
         when BUSID_UDEV_ATTR
           UI.ChangeWidget(Id(:udev_type), :CurrentButton, :busid)
         else
-          Builtins.y2error("Unknown udev rule ")
+          Builtins.y2error("Unknown udev rule.")
       end
     end
   
     # Closes the dialog
-    protected
     def close
       UI.CloseDialog
     end
