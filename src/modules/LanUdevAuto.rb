@@ -74,53 +74,30 @@ module Yast
     end
 
     def getDeviceName(oldname)
+      # TODO:
+      # raise an exception when old name could not be matched to existing cfg.
       newname = oldname
+
       @hardware = ReadHardware("netcard") if @hardware == nil
 
-      if Builtins.issubstring(oldname, "-id-")
-        Builtins.y2milestone("device by ID found %1", oldname)
+      @hardware.each do |hw|
+        hw_dev_name = hw["dev_name"] || ""
+        hw_dev_mac = hw["mac"] || ""
+        hw_dev_busid = hw["busid"] || ""
 
-        mac_from_ay = Ops.get(
-          Builtins.splitstring(Builtins.tostring(oldname), "-"),
-          2,
-          ""
-        )
-        Builtins.y2milestone("MAC address from AY : %1", mac_from_ay)
-        Builtins.foreach(@hardware) do |hw|
-          Builtins.y2milestone("hw %1", Ops.get_string(hw, "mac", ""))
-          if Ops.get_string(hw, "mac", "") == mac_from_ay
-            Builtins.y2milestone(
-              "device matched : %1",
-              Ops.get_string(hw, "dev_name", "")
-            )
-            newname = Ops.get_string(hw, "dev_name", "")
-          end
-        end
-      elsif Builtins.issubstring(oldname, "-bus-")
-        Builtins.y2milestone("device by BUS found %1", oldname)
-        bus_from_ay = Ops.get(
-          Builtins.splitstring(Builtins.tostring(oldname), "-"),
-          2,
-          ""
-        )
-        Builtins.y2milestone("BUSID from AY : %1", bus_from_ay)
-        Builtins.foreach(@hardware) do |hw|
-          Builtins.y2milestone("hw %1", Ops.get_string(hw, "busid", ""))
-          if Ops.get_string(hw, "busid", "") == bus_from_ay
-            Builtins.y2milestone(
-              "device matched : %1",
-              Ops.get_string(hw, "dev_name", "")
-            )
-            newname = Ops.get_string(hw, "dev_name", "")
-          end
+        case oldname
+        when /.*-id-#{hw_dev_mac}/i
+          Builtins.y2milestone("device by ID found: #{oldname}")
+          newname = hw_dev_name
+        when /.*-bus-#{hw_dev_busid}/i
+          Builtins.y2milestone("device by BUS found #{oldname}")
+          newname = hw_dev_name
         end
       end
-      if oldname == newname
-        Builtins.y2milestone(
-          "nothing changed, %1 is old style dev_name",
-          newname
-        )
-      end
+
+      log = "nothing changed, #{newname} is old style dev_name"
+      Builtins.y2milestone( log) if oldname == newname
+
       newname
     end
 
