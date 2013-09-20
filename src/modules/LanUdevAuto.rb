@@ -73,6 +73,12 @@ module Yast
       InstallationParameter("biosdevname") != "1"
     end
 
+    # It finds a new style device name for device name in old fashioned format
+    #
+    # It goes through currently present devices and tries to mach it to given
+    # old fashioned name
+    #
+    # @returns [String] new style name in case of success. Given name otherwise.
     def getDeviceName(oldname)
       # TODO:
       # raise an exception when old name could not be matched to existing cfg.
