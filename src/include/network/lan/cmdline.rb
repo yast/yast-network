@@ -249,7 +249,7 @@ module Yast
       if Builtins.size(Ops.get_string(LanItems.getCurrentItem, "ifcfg", "")) == 0
         NetworkInterfaces.Add
         LanItems.operation = :edit
-        LanItems.interfacename = Ops.get_string(
+        interfacename = Ops.get_string(
           LanItems.getCurrentItem,
           ["hwinfo", "dev_name"],
           ""
@@ -257,7 +257,7 @@ module Yast
         Ops.set(
           LanItems.Items,
           [LanItems.current, "ifcfg"],
-          LanItems.interfacename
+          interfacename
         )
       end
 

@@ -45,12 +45,6 @@ module Yast
       @udev_net_rules = {}
       @driver_options = {}
 
-      # FIXME: what's the difference against "device" defined below?
-      # some refactoring led to interfacename = device in SetItem.
-      # Probably, interfacename is used outside. It is only set in
-      # this file.
-      @interfacename = ""
-
       # used at autoinstallation time
       @autoinstall_settings = {}
 
@@ -71,6 +65,7 @@ module Yast
       #global string unique = "";
 
       @type = ""
+      # ifcfg name for the @current device
       @device = ""
       #FIXME: always empty string - remove all occuriences
       @alias = ""
@@ -1519,37 +1514,9 @@ module Yast
         :to   => "list <string>"
       )
 
-      mac = Ops.get_string(hardware, "mac", "")
       busid = Ops.get_string(hardware, "busid", "")
 
-
-      #    nm_name = createHwcfgName(hardware, type);
-
-      @interfacename = Ops.get_string(hardware, "dev_name", "")
-
-      # name of ifcfg
-      # eth, tr, not on s390 (#38819)
-      if !Arch.s390 && mac != nil && mac != "" && mac != "00:00:00:00:00:00"
-        @device = Ops.add("id-", Ops.get_string(hardware, "mac", ""))
-      # iucv already filled in from lan/hardware.ycp (#42212)
-      elsif @type == "iucv"
-        Builtins.y2debug("IUCV: %1", @device)
-      # other devs
-      elsif busid != nil && busid != ""
-        @device = Ops.add(
-          Ops.add(Ops.add("bus-", Ops.get_string(hardware, "bus", "")), "-"),
-          Ops.get_string(hardware, "busid", "")
-        )
-      # USB, PCMCIA
-      elsif Ops.get_string(hardware, "hotplug", "") != ""
-        @device = Ops.add("bus-", Ops.get_string(hardware, "hotplug", ""))
-      else
-        # dummy
-        Builtins.y2milestone("No detailed HW info: %1", @device)
-      end
-
       Builtins.y2milestone("hw=%1", hardware)
-      Builtins.y2milestone("device=%1", @device)
       @hw = deep_copy(hardware)
       if Arch.s390 && @operation == :add
         Builtins.y2internal("Propose chan_ids values for %1", @hw)
@@ -2377,7 +2344,6 @@ module Yast
     def SetItem
       @operation = :edit
       @device = Ops.get_string(getCurrentItem, "ifcfg", "")
-      @interfacename = @device
 
       NetworkInterfaces.Edit(@device)
       @type = Ops.get_string(getCurrentItem, ["hwinfo", "type"], "")
@@ -2583,7 +2549,6 @@ module Yast
     publish :variable => :Hardware, :type => "list <map>"
     publish :variable => :udev_net_rules, :type => "map <string, any>"
     publish :variable => :driver_options, :type => "map <string, any>"
-    publish :variable => :interfacename, :type => "string"
     publish :variable => :autoinstall_settings, :type => "map"
     publish :variable => :modified, :type => "boolean"
     publish :variable => :operation, :type => "symbol"
