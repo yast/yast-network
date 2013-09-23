@@ -992,7 +992,6 @@ module Yast
       return false if LanItems.Select(name) != true
       NetworkInterfaces.Edit(name)
       LanItems.operation = :edit
-      LanItems.interfacename = NetworkInterfaces.Name
       true
     end
     # Delete the given device

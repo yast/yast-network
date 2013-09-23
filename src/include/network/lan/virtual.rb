@@ -40,6 +40,7 @@ module Yast
       Yast.import "Popup"
       Yast.import "Report"
       Yast.import "Wizard"
+      Yast.import "String"
 
       Yast.include include_target, "network/routines.rb"
     end
@@ -193,6 +194,10 @@ module Yast
 
       nil
     end
+
+    # max length of device / interface filename lenght supported by kernel
+    IFACE_LABEL_MAX = 16
+
     def VirtualEditDialog(id, entry, forbidden)
       entry = deep_copy(entry)
       forbidden = deep_copy(forbidden)
@@ -227,10 +232,9 @@ module Yast
       UI.ChangeWidget(
         Id(:name),
         :ValidChars,
-        "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        String.calnum
       )
       UI.ChangeWidget(Id(:ipaddr), :ValidChars, IP.ValidChars)
-      #    UI::ChangeWidget(`id(`netmask), `ValidChars, Netmask::ValidChars);
 
       if entry == term(:empty)
         UI.SetFocus(Id(:name))
@@ -238,36 +242,23 @@ module Yast
         UI.SetFocus(Id(:ipaddr))
       end
 
-      ret = nil
-      host = nil
-
       while true
         host = nil
         ret = UI.UserInput
         break if ret != :ok
 
         host = Item(Id(id))
-        val = Convert.to_string(UI.QueryWidget(Id(:name), :Value))
-        if Ops.greater_than(
-            Ops.add(
-              Ops.add(Builtins.size(LanItems.interfacename), Builtins.size(val)),
-              1
-            ),
-            16
-          )
+        val = UI.QueryWidget(Id(:name), :Value)
+        if Builtins.size(LanItems.device) + Builtins.size(val) + 1 > IFACE_LABEL_MAX
           # Popup::Error text
           Popup.Error(_("Label is too long."))
           UI.SetFocus(Id(:name))
           next
         end
-        # 	if(contains(forbidden, val)) {
-        # 	    Popup::Error(sformat(_("IP address %1 is already present."), val));
-        # 	    UI::SetFocus(`id(`host));
-        # 	    continue;
-        # 	}
+
         host = Builtins.add(host, val)
 
-        ip = Convert.to_string(UI.QueryWidget(Id(:ipaddr), :Value))
+        ip = UI.QueryWidget(Id(:ipaddr), :Value)
         if !IP.Check(ip)
           # Popup::Error text
           Popup.Error(_("The IP address is invalid."))
@@ -276,7 +267,7 @@ module Yast
         end
         host = Builtins.add(host, ip)
 
-        val = Convert.to_string(UI.QueryWidget(Id(:netmask), :Value))
+        val = UI.QueryWidget(Id(:netmask), :Value)
         if !validPrefixOrNetmask(ip, val)
           # Popup::Error text
           Popup.Error(_("The subnet mask is invalid."))
