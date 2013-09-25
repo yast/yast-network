@@ -275,9 +275,7 @@ module Yast
 
     def initRouting(key)
       max = 0
-      #    integer items = 0;
       table_items_orig = []
-      forward = Routing.Forward_v4
       route_conf = deep_copy(Routing.Routes)
 
       #reset, so that UI really reflect current state
@@ -321,7 +319,8 @@ module Yast
       UI.ChangeWidget(:gw6, :Value, @defgw6)
       UI.ChangeWidget(Id(:gw), :ValidChars, IP.ValidChars)
       UI.ChangeWidget(Id(:table), :Items, @r_items)
-      UI.ChangeWidget(Id(:forward_v4), :Value, forward)
+      UI.ChangeWidget(Id(:forward_v4), :Value, Routing.Forward_v4)
+      UI.ChangeWidget(Id(:forward_v6), :Value, Routing.Forward_v6)
       UI.SetFocus(Id(:gw))
 
       # #178538 - disable routing dialog when NetworkManager is used
@@ -466,7 +465,8 @@ module Yast
       end
 
       Routing.Routes = deep_copy(route_conf)
-      Routing.Forward_v4 = Convert.to_boolean(UI.QueryWidget(Id(:forward_v4), :Value))
+      Routing.Forward_v4 = UI.QueryWidget(Id(:forward_v4), :Value)
+      Routing.Forward_v6 = UI.QueryWidget(Id(:forward_v6), :Value)
 
       nil
     end
@@ -502,9 +502,16 @@ module Yast
     # @param [String] defgw current default gw widget contents
     # @return true if differ
     def RoutingModified(defgw)
-      forward = Convert.to_boolean(UI.QueryWidget(Id(:forward_v4), :Value))
+      forward_v4 = UI.QueryWidget(Id(:forward_v4), :Value)
+      forward_v6 = UI.QueryWidget(Id(:forward_v6), :Value)
+
       defg = Convert.to_string(UI.QueryWidget(Id(:gw), :Value))
-      forward != Routing.Forward_v4 || defg != defgw
+
+      return true if forward_v4 != Routing.Forward_v4 
+      return true if forward_v6 != Routing.Forward_v6 
+      return true if defg != defgw
+
+      false
     end
   end
 end
