@@ -2,6 +2,7 @@ Dump	==== Read =====
 Read	.target.size "/etc/sysconfig/network/routes" 1
 Read	.routes [$["1":"r1"], $["2":"r2"]]
 Read	.etc.sysctl_conf."net.ipv4.ip_forward" "1"
+Read	.etc.sysctl_conf."net.ipv6.conf.all.forwarding" "1"
 Return	true
 Dump	Routing::routes [$["1":"r1"], $["2":"r2"]]
 Dump	==== Write ====

@@ -49,7 +49,12 @@ module Yast
           },
           "console"  => { "CONSOLE_ENCODING" => "UTF-8" }
         },
-        "etc"       => { "sysctl_conf" => { "net.ipv4.ip_forward" => "1" } }
+        "etc"       => { 
+          "sysctl_conf" => { 
+            "net.ipv4.ip_forward" => "1",
+            "net.ipv6.conf.all.forwarding" => "1"  
+          } 
+        }
       }
 
       @EXEC = {
