@@ -54,14 +54,14 @@ module Yast
       @modified = nil
       # Enable IP forwarding
       # .etc.sysctl_conf."net.ipv4.ip_forward"
-      @Forward = false
+      @Forward_v4 = false
 
       # List of available devices
       @devices = []
 
       # All routes read at the start
       @Orig_Routes = nil
-      @Orig_Forward = nil
+      @Orig_Forward_v4 = nil
 
       # "routes" file location
       @routes_file = "/etc/sysconfig/network/routes"
@@ -70,9 +70,9 @@ module Yast
     # Data was modified?
     # @return true if modified
     def Modified
-      ret = @Routes != @Orig_Routes || @Forward != @Orig_Forward
+      ret = @Routes != @Orig_Routes || @Forward_v4 != @Orig_Forward_v4
       # probably called without Read()  (bnc#649494)
-      if @Orig_Routes == nil && @Orig_Forward == nil && @modified != true
+      if @Orig_Routes == nil && @Orig_Forward_v4 == nil && @modified != true
         ret = false
       end
       Builtins.y2debug("ret=%1", ret)
@@ -114,9 +114,9 @@ module Yast
 
     def ReadIPForwarding
       if SuSEFirewall.IsEnabled
-        @Forward = SuSEFirewall.GetSupportRoute
+        @Forward_v4 = SuSEFirewall.GetSupportRoute
       else
-        @Forward = SCR.Read(path(".etc.sysctl_conf.\"net.ipv4.ip_forward\"")) == "1"
+        @Forward_v4 = SCR.Read(path(".etc.sysctl_conf.\"net.ipv4.ip_forward\"")) == "1"
       end
 
       nil
@@ -124,15 +124,15 @@ module Yast
 
     def WriteIPForwarding
       if SuSEFirewall.IsEnabled
-        SuSEFirewall.SetSupportRoute(@Forward)
+        SuSEFirewall.SetSupportRoute(@Forward_v4)
       else
         SCR.Write(
           path(".etc.sysctl_conf.\"net.ipv4.ip_forward\""),
-          @Forward ? "1" : "0"
+          @Forward_v4 ? "1" : "0"
         )
         SCR.Write(
           path(".etc.sysctl_conf.\"net.ipv6.conf.all.forwarding\""),
-          @Forward ? "1" : "0"
+          @Forward_v4 ? "1" : "0"
         )
         SCR.Write(path(".etc.sysctl_conf"), nil)
       end
@@ -140,14 +140,14 @@ module Yast
         path(".target.bash"),
         Builtins.sformat(
           "echo %1 > /proc/sys/net/ipv4/ip_forward",
-          @Forward ? 1 : 0
+          @Forward_v4 ? 1 : 0
         )
       )
       SCR.Execute(
         path(".target.bash"),
         Builtins.sformat(
           "echo %1 > /proc/sys/net/ipv6/conf/all/forwarding",
-          @Forward ? 1 : 0
+          @Forward_v4 ? 1 : 0
         )
       )
 
@@ -172,11 +172,11 @@ module Yast
       ReadIPForwarding()
 
       Builtins.y2debug("Routes=%1", @Routes)
-      Builtins.y2debug("Forward=%1", @Forward)
+      Builtins.y2debug("Forward_v4=%1", @Forward_v4)
 
       # save routes to check for changes later
       @Orig_Routes = Builtins.eval(@Routes)
-      @Orig_Forward = Builtins.eval(@Forward)
+      @Orig_Forward_v4 = Builtins.eval(@Forward_v4)
 
       # read available devices
       NetworkInterfaces.Read
@@ -266,10 +266,10 @@ module Yast
     def Import(settings)
       settings = deep_copy(settings)
       @Routes = Builtins.eval(Ops.get_list(settings, "routes", []))
-      @Forward = Ops.get_boolean(settings, "ip_forward", false)
+      @Forward_v4 = Ops.get_boolean(settings, "ip_forward", false)
 
       @Orig_Routes = nil
-      @Orig_Forward = nil
+      @Orig_Forward_v4 = nil
 
       @modified = true
 
@@ -283,7 +283,7 @@ module Yast
       if Ops.greater_than(Builtins.size(Builtins.eval(@Routes)), 0)
         Ops.set(exproute, "routes", Builtins.eval(@Routes))
       end
-      Ops.set(exproute, "ip_forward", @Forward)
+      Ops.set(exproute, "ip_forward", @Forward_v4)
       deep_copy(exproute)
     end
 
@@ -339,14 +339,14 @@ module Yast
         # summary = add(summary, Summary::Device(sformat(_("Gateway: %1"), gw), ""));
       end
 
-      if @Forward == true
+      if @Forward_v4 == true
         # Summary text
-        summary = Summary.AddListItem(summary, _("IP Forwarding: on"))
+        summary = Summary.AddListItem(summary, _("IP Forwarding for IPv4: on"))
       else
         # summary = add(summary, Summary::Device(_("IP Forwarding: on"), ""));
 
         # Summary text
-        summary = Summary.AddListItem(summary, _("IP Forwarding: off"))
+        summary = Summary.AddListItem(summary, _("IP Forwarding for IPv4: off"))
       end
       # summary = add(summary, Summary::Device(_("IP Forwarding: off"), ""));
 
@@ -361,7 +361,7 @@ module Yast
     end
 
     publish :variable => :Routes, :type => "list <map>"
-    publish :variable => :Forward, :type => "boolean"
+    publish :variable => :Forward_v4, :type => "boolean"
     publish :function => :Modified, :type => "boolean ()"
     publish :function => :ReadFromGateway, :type => "boolean (string)"
     publish :function => :RemoveDefaultGw, :type => "void ()"
