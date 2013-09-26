@@ -497,21 +497,5 @@ module Yast
         }
       )
     end
-
-    # Check if internal data differ from the dialog values
-    # @param [String] defgw current default gw widget contents
-    # @return true if differ
-    def RoutingModified(defgw)
-      forward_v4 = UI.QueryWidget(Id(:forward_v4), :Value)
-      forward_v6 = UI.QueryWidget(Id(:forward_v6), :Value)
-
-      defg = Convert.to_string(UI.QueryWidget(Id(:gw), :Value))
-
-      return true if forward_v4 != Routing.Forward_v4 
-      return true if forward_v6 != Routing.Forward_v6 
-      return true if defg != defgw
-
-      false
-    end
   end
 end
