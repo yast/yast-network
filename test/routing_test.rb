@@ -118,7 +118,7 @@ describe "Routing" do
   #
   # 2) Test if it behaves correctly when data were imported by AutoYast
   #
-  context "When imported from AutoYast" do
+  context "When working with AutoYast profile" do
 
     # list of inputs provided by AutoYast
     # keys has to be strings
@@ -144,12 +144,48 @@ describe "Routing" do
         end
       end
     end
+
+    describe "#Import" do
+
+      it "Returns true for non nil settings" do
+        expect( Routing.Import({})).to be_true
+      end
+
+      it "Returns true for nil settings" do
+        expect( Routing.Import({})).to be_true
+      end
+    end
+
+    describe "#Export" do
+
+      AY_TESTS = [
+        {
+          input: {},
+          keys: ["ip_forward"]
+        },
+        {
+          input: { "routes" => ["route"] },
+          keys: ["ip_forward", "routes"]
+        },
+        {
+          input: { "ip_forward" => true, "routes" => ["route"] },
+          keys: ["ip_forward", "routes"]
+        }
+      ]
+
+      AY_TESTS.each do |ay_test|
+        it "Returns hash with proper values" do
+          Routing.Import( ay_test[ :input])
+          expect( Routing.Export).to include( *ay_test[ :keys])
+        end
+      end
+    end
   end
 
   #
   # 3) Test if it behaves correctly when data were read from system
   #
-  context "When read from system" do
+  context "When working with configuration present in system" do
 
     CONFIGS_OS = [
       { ip_forward_v4: "0", ip_forward_v6: "0" },

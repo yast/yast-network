@@ -148,7 +148,6 @@ module Yast
     def RoutingEditDialog(id, entry, devs)
       entry = deep_copy(entry)
       devs = deep_copy(devs)
-      #    ScreenName("routing-edit");
 
       UI.OpenDialog(
         Opt(:decorated),
@@ -413,7 +412,7 @@ module Yast
 
     def validateRouting(key, event)
       event = deep_copy(event)
-      gw = Convert.to_string(UI.QueryWidget(Id(:gw), :Value))
+      gw = UI.QueryWidget(Id(:gw), :Value)
       if gw != "" && !IP.Check(gw)
         Popup.Error(_("The default gateway is invalid."))
         UI.SetFocus(Id(:gw))
@@ -435,10 +434,10 @@ module Yast
         }
       end
 
-      @defgw = Convert.to_string(UI.QueryWidget(Id(:gw), :Value))
-      @defgwdev = Convert.to_string(UI.QueryWidget(Id(:gw4dev), :Value))
-      @defgw6 = Convert.to_string(UI.QueryWidget(Id(:gw6), :Value))
-      @defgwdev6 = Convert.to_string(UI.QueryWidget(Id(:gw6dev), :Value))
+      @defgw = UI.QueryWidget(Id(:gw), :Value)
+      @defgwdev = UI.QueryWidget(Id(:gw4dev), :Value)
+      @defgw6 = UI.QueryWidget(Id(:gw6), :Value)
+      @defgwdev6 = UI.QueryWidget(Id(:gw6dev), :Value)
 
       if @defgw != ""
         route_conf = Builtins.add(

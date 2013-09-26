@@ -139,6 +139,9 @@ module Yast
     end
 
     def WriteIPForwarding
+      forward_ipv4 = @Forward_v4 ? "1" : "0"
+      forward_ipv6 = @Forward_v6 ? "1" : "0"
+
       if SuSEFirewall.IsEnabled
         # FIXME: missing support for setting IPv6 forwarding enablement in 
         # SuSEFirewall module and in SuSEFirewall2 at all
@@ -146,28 +149,22 @@ module Yast
       else
         SCR.Write(
           path(SYSCTL_IPV4_PATH),
-          @Forward_v4 ? "1" : "0"
+          forward_ipv4
         )
         SCR.Write(
           path(SYSCTL_IPV6_PATH),
-          @Forward_v6 ? "1" : "0"
+          forward_ipv6
         )
         SCR.Write(path(".etc.sysctl_conf"), nil)
       end
 
       SCR.Execute(
         path(".target.bash"),
-        Builtins.sformat(
-          "echo %1 > /proc/sys/net/ipv4/ip_forward",
-          @Forward_v4 ? 1 : 0
-        )
+        "echo #{forward_ipv4} > /proc/sys/net/ipv4/ip_forward"
       )
       SCR.Execute(
         path(".target.bash"),
-        Builtins.sformat(
-          "echo %1 > /proc/sys/net/ipv6/conf/all/forwarding",
-          @Forward_v6 ? 1 : 0
-        )
+        "echo #{forward_ipv6} > /proc/sys/net/ipv6/conf/all/forwarding",
       )
 
       nil
