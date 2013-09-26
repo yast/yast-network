@@ -9,38 +9,63 @@ require "yast"
 
 include Yast
 include UIShortcuts
+
+# This is needed bcs of Yast.includ(ed) dialog in UI tests
 include I18n
 
-describe "Routing" do
+Yast.import "Routing"
 
-  SYSCTL_IPV4_PATH = path(".etc.sysctl_conf.\"net.ipv4.ip_forward\"")
-  SYSCTL_IPV6_PATH = path(".etc.sysctl_conf.\"net.ipv6.conf.all.forwarding\"")
+describe Routing do
 
-  before( :all) do
-    Yast.import "Routing"
-  end
+  SYSCTL_IPV4_PATH = path( RoutingClass::SYSCTL_IPV4_PATH)
+  SYSCTL_IPV6_PATH = path( RoutingClass::SYSCTL_IPV6_PATH)
 
   # This describes how Routing should behave independently on the way how its
   # internal state was reached
   shared_examples_for "routing setter" do
 
-    context "When Firewall is enabled" do
+    before( :each) do
+      @value4 = forward_v4 ? "1" : "0"
+      @value6 = forward_v6 ? "1" : "0"
+
+      SCR.stub( :Execute) { nil }
+    end
+
+    def fw_independent_write_expects
+      expect( SCR)
+        .to receive( :Execute)
+        .with( 
+          path(".target.bash"),
+          "echo #{@value4} > /proc/sys/net/ipv4/ip_forward"
+        )
+      expect( SCR)
+        .to receive( :Execute)
+        .with( 
+          path(".target.bash"),
+          "echo #{@value6} > /proc/sys/net/ipv6/conf/all/forwarding",
+        )
+    end
+
+    context "when Firewall is enabled" do
 
       before( :each) do
         SuSEFirewall.stub( :IsEnabled) { true }
       end
 
       describe "#WriteIPForwarding" do
-        it "Lefts setup on SuSEFirewall2" do
-          expect( SuSEFirewall)
-            .to receive( :SetSupportRoute)
-            .with( forward_v4)
+        it "Delegates setup to SuSEFirewall2" do
+          expect(SuSEFirewall)
+            .to receive(:SetSupportRoute)
+            .with(forward_v4)
+
+          fw_independent_write_expects
+
           expect( Routing.WriteIPForwarding).to be_equal nil
         end
       end
     end
 
-    context "When Firewall is disabled" do
+    context "when Firewall is disabled" do
 
       before( :each) do
         SuSEFirewall.stub( :IsEnabled) { false }
@@ -48,29 +73,27 @@ describe "Routing" do
 
       describe "#WriteIPForwarding" do
         it "Updates IPv4 and IPv6 forwarding in sysctl.conf" do
-          value4 = forward_v4 ? "1" : "0"
-          value6 = forward_v6 ? "1" : "0"
-
           SCR.stub( :Write) { nil }
           expect( SCR)
             .to receive( :Write)
-            .with( SYSCTL_IPV4_PATH, value4)
+            .with( SYSCTL_IPV4_PATH, @value4)
           expect( SCR)
             .to receive( :Write)
-            .with( SYSCTL_IPV6_PATH, value6)
+            .with( SYSCTL_IPV6_PATH, @value6)
+
+          fw_independent_write_expects
 
           expect( Routing.WriteIPForwarding).to be_equal nil
         end
       end
     end
-
   end
 
   # Various contexts which mocks different setup sources follows.
   #
   # 1) Test if it behaves correctly when data were obtained from dialog
   #
-  context "When set up via dialog" do
+  context "when set up via dialog" do
 
     CONFIGS_UI = [
       { ip_forward_v4: false, ip_forward_v6: false },
@@ -84,8 +107,8 @@ describe "Routing" do
       ipv4 = config[ :ip_forward_v4]
       ipv6 = config[ :ip_forward_v6]
 
-      context "When user sets IPv4 Forwarding to #{ipv4} and IPv6 to #{ipv6}" do
-        before( :each) do
+      context "when user sets IPv4 Forwarding to #{ipv4} and IPv6 to #{ipv6}" do
+        before(:each) do
 
           Wizard.as_null_object
           Label.as_null_object
@@ -118,7 +141,7 @@ describe "Routing" do
   #
   # 2) Test if it behaves correctly when data were imported by AutoYast
   #
-  context "When working with AutoYast profile" do
+  context "when working with AutoYast profile" do
 
     # list of inputs provided by AutoYast
     # keys has to be strings
@@ -131,9 +154,9 @@ describe "Routing" do
 
       ipfw = config[ "ip_forward"]
 
-      context "When ip_forward is #{ipfw} in AutoYast profile" do
-        before( :all) do
-          Routing.Import( config)
+      context "when ip_forward is #{ipfw} in AutoYast profile" do
+        before(:all) do
+          Routing.Import(config)
         end
 
         it_should_behave_like "routing setter" do
@@ -152,23 +175,29 @@ describe "Routing" do
       end
 
       it "Returns true for nil settings" do
-        expect( Routing.Import({})).to be_true
+        expect( Routing.Import(nil)).to be_true
       end
     end
 
     describe "#Export" do
 
+      # An array of hashes. Each hash should contain keys input: and keys: which
+      # describes test this way
+      # - input: a hash as provided by AutoYast. Interesting keys are "routes"
+      #          and "ip_forward"
+      # - keys: array of keys which are expected in obtained hash when above 
+      #         imported data are exported consequently
       AY_TESTS = [
         {
           input: {},
           keys: ["ip_forward"]
         },
         {
-          input: { "routes" => ["route"] },
+          input: { "routes" => [{ "1" => "r1" }, { "2" => "r2" }] },
           keys: ["ip_forward", "routes"]
         },
         {
-          input: { "ip_forward" => true, "routes" => ["route"] },
+          input: { "ip_forward" => true, "routes" => [{ "1" => "r1" }, { "2" => "r2" }] },
           keys: ["ip_forward", "routes"]
         }
       ]
@@ -185,7 +214,7 @@ describe "Routing" do
   #
   # 3) Test if it behaves correctly when data were read from system
   #
-  context "When working with configuration present in system" do
+  context "when working with configuration present in system" do
 
     CONFIGS_OS = [
       { ip_forward_v4: "0", ip_forward_v6: "0" },
@@ -194,17 +223,19 @@ describe "Routing" do
       { ip_forward_v4: "1", ip_forward_v6: "0" },
     ]
 
+    MOCKED_ROUTES = [{ "1" => "r1" }, { "2" => "r2" }]
+
     CONFIGS_OS.each do |config|
       
       ipv4 = config[ :ip_forward_v4]
       ipv6 = config[ :ip_forward_v6]
 
-      context "When ipv4.ip_forward=#{ipv4} and .ipv6.conf.all.forwarding=#{ipv6}" do
-        before( :each) do
-          SCR.stub( :Read) { nil }
-          expect( SCR)
-            .to receive( :Read)
-            .with(path(".routes")) { [] }
+      context "when ipv4.ip_forward=#{ipv4} and .ipv6.conf.all.forwarding=#{ipv6}" do
+        before(:each) do
+          SCR.stub(:Read) { nil }
+          expect(SCR)
+            .to receive(:Read)
+            .with(path(".routes")) { MOCKED_ROUTES }
           expect( SCR)
             .to receive( :Read)
             .with(path(".target.size"), "#{RoutingClass::ROUTES_FILE}") { 1 }
@@ -221,6 +252,15 @@ describe "Routing" do
         it_should_behave_like "routing setter" do
           let( :forward_v4) { ipv4 == "1" }
           let( :forward_v6) { ipv6 == "1" }
+        end
+
+        describe "#Read" do
+          
+          it "loads configuration from system" do
+            NetworkInterfaces.as_null_object
+
+            expect( Routing.Read).to be_true  
+          end
         end
       end
     end
