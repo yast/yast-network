@@ -299,8 +299,8 @@ module Yast
     def Export
       exproute = {}
 
-      exproute[ "routes"] = deep_copy(@Routes) unless @Routes.empty?
-      exproute[ "ip_forward"] = @Forward_v4
+      exproute["routes"] = deep_copy(@Routes) unless @Routes.empty?
+      exproute["ip_forward"] = @Forward_v4
       # FIXME:
       # Separated option for IPv6 forwarding enablement in AutoYast has to be introduced
 
@@ -351,7 +351,7 @@ module Yast
       gw = "#{gw} (#{gwhost})" unless gwhost.empty?
 
       # Summary text
-      summary = Summary.AddListItem( summary, _("Gateway: %s") % gw) unless gw.empty?
+      summary = Summary.AddListItem(summary, _("Gateway: %s") % gw) unless gw.empty?
 
       on_off = @Forward_v4 ? "on" : "off"
       # Summary text
