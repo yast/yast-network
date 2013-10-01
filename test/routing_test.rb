@@ -147,12 +147,19 @@ describe Routing do
     # keys has to be strings
     AY_CONFIGS = [
       { "ip_forward" => false },
-      { "ip_forward" => true }
+      { "ip_forward" => true },
+      { "ipv4_forward" => true },
+      { "ipv6_forward" => true },
     ]
 
     AY_CONFIGS.each do |config|
 
-      ipfw = config["ip_forward"]
+      # default value for ip_forward is false
+      ipfw = config.has_key?("ip_forward") ? config["ip_forward"] : false
+      # when protocol specific {ipv4,ipv6}_forward is present use it for expectation
+      # otherwise use ip_forward as default
+      ip4fw = config.has_key?("ipv4_forward") ? config["ipv4_forward"] : ipfw
+      ip6fw = config.has_key?("ipv6_forward") ? config["ipv6_forward"] : ipfw
 
       context "when ip_forward is #{ipfw} in AutoYast profile" do
         before(:all) do
@@ -160,10 +167,8 @@ describe Routing do
         end
 
         it_should_behave_like "routing setter" do
-          # separate setup for IPv6 forwarding is not implemented in AutoYast 
-          # yet, so it fallbacks to old behavior
-          let(:forward_v4) { ipfw }
-          let(:forward_v6) { ipfw }
+          let(:forward_v4) { ip4fw }
+          let(:forward_v6) { ip6fw }
         end
       end
     end
@@ -190,15 +195,37 @@ describe Routing do
       AY_TESTS = [
         {
           input: {},
-          keys: ["ip_forward"]
+          keys: [
+            "ipv4_forward",
+            "ipv6_forward"
+          ]
+        },
+        {
+          input: { 
+            "ip_forward" => true,
+            "ipv4_forward" => false,
+            "ipv6_forward" => false,
+          },
+          keys: [
+            "ipv4_forward",
+            "ipv6_forward"
+          ]
         },
         {
           input: { "routes" => [{ "1" => "r1" }, { "2" => "r2" }] },
-          keys: ["ip_forward", "routes"]
+          keys: [
+            "ipv4_forward",
+            "ipv6_forward",
+            "routes"
+          ]
         },
         {
           input: { "ip_forward" => true, "routes" => [{ "1" => "r1" }, { "2" => "r2" }] },
-          keys: ["ip_forward", "routes"]
+          keys: [
+            "ipv4_forward",
+            "ipv6_forward",
+            "routes"
+          ]
         }
       ]
 
@@ -206,6 +233,16 @@ describe Routing do
         it "Returns hash with proper values" do
           Routing.Import(ay_test[:input])
           expect(Routing.Export).to include(*ay_test[:keys])
+        end
+
+        it "Overloads generic ip_forward using concrete one" do
+          Routing.Import(ay_test[:input])
+          
+          exported = Routing.Export
+          expect( exported[ "ipv4_forward"])
+            .to be_equal( ay_test[ "ipv4_forward"]) if ay_test.has_key?( "ipv4_forward")
+          expect( exported[ "ipv6_forward"])
+            .to be_equal( ay_test[ "ipv6_forward"]) if ay_test.has_key?( "ipv6_forward")
         end
       end
     end
