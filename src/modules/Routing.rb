@@ -277,13 +277,13 @@ module Yast
     # @return true if success
     def Import(settings)
       settings = deep_copy(settings)
+      ip_forward = Ops.get_boolean(settings, "ip_forward", false)
+      ipv4_forward = Ops.get_boolean(settings, "ipv4_forward", ip_forward)
+      ipv6_forward = Ops.get_boolean(settings, "ipv6_forward", ip_forward)
 
       @Routes = deep_copy(Ops.get_list(settings, "routes", []))
-      @Forward_v4 = Ops.get_boolean(settings, "ip_forward", false)
-      # FIXME:
-      # This one is for backward compatibility only.
-      # Separated option for IPv6 forwarding enablement in AutoYast has to be introduced
-      @Forward_v6 = @Forward_v4
+      @Forward_v4 = ipv4_forward
+      @Forward_v6 = ipv6_forward
 
       @Orig_Routes = nil
       @Orig_Forward_v4 = nil
@@ -300,9 +300,8 @@ module Yast
       exproute = {}
 
       exproute["routes"] = deep_copy(@Routes) unless @Routes.empty?
-      exproute["ip_forward"] = @Forward_v4
-      # FIXME:
-      # Separated option for IPv6 forwarding enablement in AutoYast has to be introduced
+      exproute["ipv4_forward"] = @Forward_v4
+      exproute["ipv6_forward"] = @Forward_v6
 
       exproute
     end
