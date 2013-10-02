@@ -7,10 +7,9 @@ Makefile*
 !Makefile.cvs
 !/Makefile.am
 configure
-configure.in
+configure.ac
 config.*
 *.tar.*
-*.spec
 .dep
 autodocs*
 *.cache
