@@ -1,5 +1,7 @@
 #! /usr/bin/env ruby
 
+ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
+
 # hwinfo is based on real hwinfo netcard output
 MOCKED_ITEMS = {
   # present but unconfigured devices
