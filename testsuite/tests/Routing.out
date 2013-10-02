@@ -19,4 +19,4 @@ Return	true
 Dump	==== Import ====
 Return	true
 Dump	==== Export ====
-Return	$["ip_forward":true, "routes":["r7", "r8"]]
+Return	$["ipv4_forward":true, "ipv6_forward":true, "routes":["r7", "r8"]]

@@ -150,6 +150,11 @@ describe Routing do
       { "ip_forward" => true },
       { "ipv4_forward" => true },
       { "ipv6_forward" => true },
+      { "ip_forward_v4" => false, "ip_forward_v6" => false },
+      { "ip_forward_v4" => false, "ip_forward_v6" => true },
+      { "ip_forward_v4" => true, "ip_forward_v6" => true },
+      { "ip_forward_v4" => true, "ip_forward_v6" => false },
+      { "ip_forward" => true, "ip_forward_v4" => false, "ip_forward_v6" => false }
     ]
 
     AY_CONFIGS.each do |config|
