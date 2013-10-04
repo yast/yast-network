@@ -195,7 +195,7 @@ describe Routing do
       # describes test this way
       # - input: a hash as provided by AutoYast. Interesting keys are "routes"
       #          and "ip_forward"
-      # - keys: array of keys which are expected in obtained hash when above 
+      # - keys: array of keys which are expected in obtained hash when above
       #         imported data are exported consequently
       AY_TESTS = [
         {
@@ -206,7 +206,7 @@ describe Routing do
           ]
         },
         {
-          input: { 
+          input: {
             "ip_forward" => true,
             "ipv4_forward" => false,
             "ipv6_forward" => false,
@@ -242,12 +242,12 @@ describe Routing do
 
         it "Overloads generic ip_forward using concrete one" do
           Routing.Import(ay_test[:input])
-          
+
           exported = Routing.Export
-          expect( exported[ "ipv4_forward"])
-            .to be_equal( ay_test[ "ipv4_forward"]) if ay_test.has_key?( "ipv4_forward")
-          expect( exported[ "ipv6_forward"])
-            .to be_equal( ay_test[ "ipv6_forward"]) if ay_test.has_key?( "ipv6_forward")
+          expect(exported["ipv4_forward"])
+            .to be_equal(ay_test["ipv4_forward"]) if ay_test.has_key?("ipv4_forward")
+          expect(exported["ipv6_forward"])
+            .to be_equal(ay_test["ipv6_forward"]) if ay_test.has_key?("ipv6_forward")
         end
       end
     end
@@ -268,7 +268,7 @@ describe Routing do
     MOCKED_ROUTES = [{ "1" => "r1" }, { "2" => "r2" }]
 
     CONFIGS_OS.each do |config|
-      
+
       ipv4 = config[:ip_forward_v4]
       ipv6 = config[:ip_forward_v6]
 
@@ -297,11 +297,11 @@ describe Routing do
         end
 
         describe "#Read" do
-          
+
           it "loads configuration from system" do
             NetworkInterfaces.as_null_object
 
-            expect(Routing.Read).to be_true  
+            expect(Routing.Read).to be_true
           end
         end
       end
