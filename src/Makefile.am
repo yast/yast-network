@@ -110,7 +110,8 @@ desktop_DATA = \
 
 ylibdir = "${yast2dir}/lib/network"
 ylib_DATA = \
-  lib/network/edit_nic_name.rb
+  lib/network/edit_nic_name.rb \
+  lib/network/confirm_virt_proposal.rb
 
 EXTRA_DIST = \
   $(module_DATA) \

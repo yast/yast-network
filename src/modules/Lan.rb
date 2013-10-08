@@ -30,6 +30,7 @@
 # Representation of the configuration of network cards.
 # Input and output routines.
 require "yast"
+require "network/confirm_virt_proposal"
 
 module Yast
   class LanClass < Module
@@ -642,74 +643,16 @@ module Yast
           )
         end
 
-        Builtins.y2internal("virt_net_proposal %1", @virt_net_proposal)
+        Builtins.y2milestone("virt_net_proposal %1", @virt_net_proposal)
         if Stage.cont && @virt_net_proposal == true &&
             (Linuxrc.usessh || Linuxrc.vnc || Linuxrc.display_ip)
-          UI.OpenDialog(
-            Opt(:decorated),
-            HBox(
-              HSpacing(1),
-              HCenter(
-                HSquash(
-                  VBox(
-                    HCenter(
-                      HSquash(
-                        VBox(
-                          # This is the heading of the popup box
-                          Left(Heading(_("Confirm Network Restart"))),
-                          VSpacing(0.5),
-                          # This is in information message. Next come the
-                          # hardware class name (network cards).
-                          HVCenter(
-                            Label(
-                              _(
-                                "Because of the bridged network, YaST2 needs to restart the network to apply the settings."
-                              )
-                            )
-                          ),
-                          VSpacing(0.5)
-                        )
-                      )
-                    ),
-                    ButtonBox(
-                      HWeight(
-                        1,
-                        PushButton(
-                          Id(:ok),
-                          Opt(:default, :okButton),
-                          Label.OKButton
-                        )
-                      ),
-                      # PushButton label
-                      HWeight(
-                        1,
-                        PushButton(
-                          Id(:cancel),
-                          Opt(:cancelButton),
-                          Label.CancelButton
-                        )
-                      )
-                    ),
-                    VSpacing(0.2)
-                  )
-                )
-              ),
-              HSpacing(1)
-            )
-          )
 
-          UI.SetFocus(Id(:ok))
-
-          # for autoinstallation popup has timeout 10 seconds (#192181)
-          # timeout for every case (bnc#429562)
-          ret = UI.TimeoutUserInput(10 * 1000)
-          if ret == :ok
-            Builtins.y2internal(
+          if ConfirmVirtProposal.run == :ok
+            Builtins.y2milestone(
               "Restarting network because of bridged proposal"
             )
             NetworkService.Restart
           end
-          UI.CloseDialog
         # For ssh/vnc installation don't reload/restart network because possibility of IP change (bnc#347482)
         elsif Stage.cont &&
             (Linuxrc.usessh || Linuxrc.vnc || Linuxrc.display_ip)
