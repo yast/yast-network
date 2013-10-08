@@ -352,31 +352,29 @@ module Yast
     # @param [String] key	id of the widget
     # @param [Hash] event	the event being handled
     def ManagedStore(key, event)
-      event = deep_copy(event)
-      value_g = UI.QueryWidget(Id(key), :CurrentButton)
-      value = value_g == "managed"
+      new_backend = UI.QueryWidget(Id(key), :CurrentButton)
 
-      if NetworkService.controlled_by_network_manager != value
-        LanItems.SetModified
-        if value && Stage.normal
-          Popup.AnyMessage(
-            _("Applet needed"),
-            _(
-              "NetworkManager is controlled by desktop applet\n" +
-                "(KDE plasma widget and nm-applet for GNOME).\n" +
-                "Be sure it's running and if not, start it manually."
-            )
-          )
-        end
-      end
-
-      case value_g
+      case new_backend
         when "ifup"
           NetworkService.use_netconfig
         when "managed"
           NetworkService.use_network_manager
         when "wicked"
           NetworkService.use_wicked
+      end
+
+      if NetworkService.Modified
+        LanItems.SetModified
+
+        if Stage.normal && NetworkService.is_network_manager
+          Popup.AnyMessage(
+            _("Applet needed"),
+            _(
+              "NetworkManager is controlled by desktop applet\n" +
+              "(KDE plasma widget and nm-applet for GNOME).\n" +
+              "Be sure it's running and if not, start it manually."
+           ))
+        end
       end
 
       nil
