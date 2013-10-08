@@ -594,7 +594,7 @@ module Yast
                   Builtins.size(Ops.get_map(v, "_aliases", {})),
                   0
                 ) &&
-                  !NetworkService.IsManaged
+                  !NetworkService.is_network_manager
                 Builtins.foreach(Ops.get_map(v, "_aliases", {})) do |key, desc|
                   parameters = Builtins.sformat(
                     _("IP address: %1, subnet mask %2"),

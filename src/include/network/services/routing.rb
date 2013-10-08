@@ -324,7 +324,7 @@ module Yast
 
       # #178538 - disable routing dialog when NetworkManager is used
       # but instead of default route (#299448) - NM reads it
-      enabled = !NetworkService.IsManaged
+      enabled = !NetworkService.is_network_manager
 
       UI.ChangeWidget(Id(:table), :Enabled, enabled)
       UI.ChangeWidget(Id(:forward_v4), :Enabled, enabled)
@@ -348,7 +348,7 @@ module Yast
 
     def handleRouting(key, event)
       event = deep_copy(event)
-      enabled = !NetworkService.IsManaged
+      enabled = !NetworkService.is_network_manager
       devs = Routing.GetDevices
       devs = Builtins.add(devs, "-")
       cur = Convert.to_integer(UI.QueryWidget(Id(:table), :CurrentItem))

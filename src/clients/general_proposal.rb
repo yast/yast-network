@@ -75,9 +75,9 @@ module Yast
         @chosen_id = Ops.get_string(@param, "chosen_id", "")
         @seq = :next
         if @chosen_id == "lan--nm-enable"
-          NetworkService.SetManaged(true)
+          NetworkService.use_network_manager
         elsif @chosen_id == "lan--nm-disable"
-          NetworkService.SetManaged(false)
+          NetworkService.use_netconfig
         elsif @chosen_id == "ipv6-enable"
           Lan.SetIPv6(true)
         elsif @chosen_id == "ipv6-disable"

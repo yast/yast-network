@@ -545,7 +545,7 @@ module Yast
       end
       # Progress stage 10
       step_labels = Builtins.add(step_labels, _("Update configuration"))
-      if !NetworkService.IsManaged &&
+      if !NetworkService.is_network_manager &&
           !@write_only #(boolean) SCR::Read(.init.scripts.exists, "smpppd") &&
         # Progress stage 11
         step_labels = Builtins.add(step_labels, _("Set up smpppd"))
@@ -632,7 +632,7 @@ module Yast
         # Progress step 9
         ProgressNextStage(_("Activating network services..."))
         # during installation export sysconfig settings into NetworkManager (bnc#433084)
-        if Mode.installation && NetworkService.IsManaged
+        if Mode.installation && NetworkService.is_network_manager
           Builtins.y2internal(
             "Export sysconfig settings into NetworkManager %1",
             SCR.Execute(
@@ -730,8 +730,7 @@ module Yast
       RunSuSEconfig() if !@write_only
       Builtins.sleep(sl)
 
-      if !NetworkService.IsManaged && #&& (boolean) SCR::Read(.init.scripts.exists, "smpppd")
-          !@write_only
+      if !NetworkService.is_network_manager && !@write_only
         return false if Abort()
         # Progress step 11
         ProgressNextStage(_("Setting up smpppd(8)..."))
@@ -740,7 +739,7 @@ module Yast
         Builtins.sleep(sl)
       end
 
-      if NetworkService.IsManaged
+      if NetworkService.is_network_manager
         network = false
         timeout = 15
         while Ops.greater_than(timeout, 0)
@@ -807,7 +806,12 @@ module Yast
       NetworkConfig.Import(Ops.get_map(settings, "config", {}))
       DNS.Import(Builtins.eval(Ops.get_map(settings, "dns", {})))
       Routing.Import(Builtins.eval(Ops.get_map(settings, "routing", {})))
-      NetworkService.SetManaged(Ops.get_boolean(settings, "managed", false))
+
+      if Ops.get_boolean(settings, "managed", false)
+        NetworkService.use_network_manager
+      else
+        NetworkService.use_netconfig
+      end
       if Builtins.haskey(settings, "ipv6")
         @ipv6 = Ops.get_boolean(settings, "ipv6", true)
       end
@@ -834,7 +838,7 @@ module Yast
         "devices"              => devices,
         "ipv6"                 => @ipv6,
         "routing"              => Routing.Export,
-        "managed"              => NetworkService.IsManaged,
+        "managed"              => NetworkService.is_network_manager,
         "start_immediately"    => Ops.get_boolean(
           LanItems.autoinstall_settings,
           "start_immediately",
@@ -890,7 +894,7 @@ module Yast
       link_virt_net = nil
       header_nm = _("Network Mode")
 
-      if NetworkService.IsManaged
+      if NetworkService.is_network_manager
         href_nm = "lan--nm-disable"
         # network mode: the interfaces are controlled by the user
         status_nm = _("Interfaces controlled by NetworkManager")
@@ -1238,11 +1242,16 @@ module Yast
         ProposeVirtualized()
       else
         if !LanItems.nm_proposal_valid
-          NetworkService.SetManaged(UseNetworkManager())
+          if UseNetworkManager()
+            NetworkService.use_network_manager
+          else
+            NetworkService.use_netconfig
+          end
+
           LanItems.nm_proposal_valid = true
         end
 
-        if NetworkService.IsManaged
+        if NetworkService.is_network_manager
           ProposeNMInterfaces()
 
           LanItems.modified = true # #144139 workaround
@@ -1532,7 +1541,7 @@ module Yast
         end
       end
 
-      if NetworkService.IsManaged
+      if NetworkService.is_network_manager
         if !PackageSystem.Installed("NetworkManager")
           pkgs = Builtins.add(pkgs, "NetworkManager")
         end
