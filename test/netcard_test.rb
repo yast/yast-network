@@ -1,4 +1,6 @@
-#! /usr/bin/env ruby
+#! /usr/bin/env rspec
+
+ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
 
 # hwinfo is based on real hwinfo netcard output
 MOCKED_ITEMS = {
@@ -52,15 +54,12 @@ MOCKED_ITEMS = {
   5=>{"ifcfg"=>"tap0"}
 }
 
-require "minitest/spec"
-require "minitest/autorun"
-
 require "yast"
 
 Yast.import "LanItems"
 
 describe "When querying netcard device name" do
-  before do
+  before(:each) do
     @lan_items = Yast::LanItems
     @lan_items.main
 
@@ -70,12 +69,12 @@ describe "When querying netcard device name" do
   end
 
   it "returns empty list when querying device name with nil or empty input" do
-    [ nil, [] ].each { |i| @lan_items.GetDeviceNames( i).must_be_empty }
+    [ nil, [] ].each { |i| expect(@lan_items.GetDeviceNames(i)).to be_empty }
   end
 
   it "can return list of device names available in the system" do
     expected_names = ["bond0", "br0", "eth1", "eth11", "tap0", "tun0"]
 
-    @lan_items.GetNetcardNames.sort.must_equal expected_names
+    expect(@lan_items.GetNetcardNames.sort).to eq expected_names
   end
 end

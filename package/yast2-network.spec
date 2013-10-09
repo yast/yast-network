@@ -49,6 +49,9 @@ Requires:       yast2-country-data >= 2.16.3
 BuildRequires:  yast2-storage >= 2.21.11
 Requires:       yast2-storage >= 2.21.11
 
+# testsuite
+BuildRequires:       rubygem-rspec
+
 PreReq:         /bin/rm
 
 # carrier detection
