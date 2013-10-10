@@ -6,7 +6,7 @@
 ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
 
 require "yast"
-require "network/EditNicName"
+require "network/edit_nic_name"
 
 module Yast
 
