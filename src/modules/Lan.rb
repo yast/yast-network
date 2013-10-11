@@ -613,7 +613,6 @@ module Yast
       return false if Abort()
       # Progress step 7
       ProgressNextStage(_("Setting up network services..."))
-      NetworkService.EnableDisable
       writeIPv6
       Builtins.sleep(sl)
 
