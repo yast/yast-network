@@ -71,13 +71,22 @@ module Yast
             # radio button label
             # the user can control the network with the NetworkManager
             # program
-            ["managed", _("&User Controlled with NetworkManager")],
+            [
+              "managed",
+              _("&User Controlled with NetworkManager")
+            ],
             # radio button label
             # ifup is a program name
-            ["ifup", _("&Traditional Method with ifup")],
+            [
+              "ifup",
+              _("&Traditional Method with ifup")
+            ],
             # radio button label
             # wicked is network configuration backend like netconfig
-            ["wicked", _("Controlled by &wicked")],
+            [
+              "wicked",
+              _("Controlled by &wicked")
+            ],
           ],
           "opt"    => [],
           "help"   => Ops.get_string(@help, "managed", ""),
@@ -342,6 +351,19 @@ module Yast
       value = "managed" if NetworkService.is_network_manager
       value = "ifup"    if NetworkService.is_netconfig
       value = "wicked"  if NetworkService.is_wicked
+
+      UI.ChangeWidget(
+        Id("managed"),
+        :Enabled,
+        NetworkService.is_backend_available(:network_manager))
+      UI.ChangeWidget(
+        Id("ifup"),
+        :Enabled,
+        NetworkService.is_backend_available(:netconfig))
+      UI.ChangeWidget(
+        Id("wicked"),
+        :Enabled,
+        NetworkService.is_backend_available(:wicked))
 
       UI.ChangeWidget(Id(key), :CurrentButton, value)
 
