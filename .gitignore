@@ -3,9 +3,10 @@ tmp.*
 *.orig
 *.rej
 *.sw?
-Makefile*
-!Makefile.cvs
-!/Makefile.am
+/Makefile.am
+/Makefile.am.common
+Makefile.in
+Makefile
 configure
 configure.ac
 config.*

@@ -49,7 +49,6 @@ module Yast
       Yast.include include_target, "network/lan/help.rb"
       Yast.include include_target, "network/routines.rb"
 
-
       @r_items = []
       @defgw = ""
       @defgwdev = ""
@@ -108,7 +107,8 @@ module Yast
               ),
               VSpacing(1),
               # CheckBox label
-              Left(CheckBox(Id(:forward), _("Enable &IP Forwarding"))),
+              Left(CheckBox(Id(:forward_v4), _("Enable &IPv4 Forwarding"))),
+              Left(CheckBox(Id(:forward_v6), _("Enable I&Pv6 Forwarding"))),
               VStretch()
             ),
             HSpacing(5)
@@ -148,7 +148,6 @@ module Yast
     def RoutingEditDialog(id, entry, devs)
       entry = deep_copy(entry)
       devs = deep_copy(devs)
-      #    ScreenName("routing-edit");
 
       UI.OpenDialog(
         Opt(:decorated),
@@ -227,7 +226,6 @@ module Yast
       ret = nil
       route = nil
 
-
       while true
         route = nil
         ret = UI.UserInput
@@ -276,9 +274,7 @@ module Yast
 
     def initRouting(key)
       max = 0
-      #    integer items = 0;
       table_items_orig = []
-      forward = Routing.Forward
       route_conf = deep_copy(Routing.Routes)
 
       #reset, so that UI really reflect current state
@@ -322,7 +318,8 @@ module Yast
       UI.ChangeWidget(:gw6, :Value, @defgw6)
       UI.ChangeWidget(Id(:gw), :ValidChars, IP.ValidChars)
       UI.ChangeWidget(Id(:table), :Items, @r_items)
-      UI.ChangeWidget(Id(:forward), :Value, forward)
+      UI.ChangeWidget(Id(:forward_v4), :Value, Routing.Forward_v4)
+      UI.ChangeWidget(Id(:forward_v6), :Value, Routing.Forward_v6)
       UI.SetFocus(Id(:gw))
 
       # #178538 - disable routing dialog when NetworkManager is used
@@ -330,7 +327,8 @@ module Yast
       enabled = !NetworkService.IsManaged
 
       UI.ChangeWidget(Id(:table), :Enabled, enabled)
-      UI.ChangeWidget(Id(:forward), :Enabled, enabled)
+      UI.ChangeWidget(Id(:forward_v4), :Enabled, enabled)
+      UI.ChangeWidget(Id(:forward_v6), :Enabled, enabled)
       disableItemsIfNM([:gw, :table, :add, :edit, :delete], false)
       if !Lan.ipv6
         UI.ChangeWidget(Id(:gw6), :Enabled, false)
@@ -414,7 +412,7 @@ module Yast
 
     def validateRouting(key, event)
       event = deep_copy(event)
-      gw = Convert.to_string(UI.QueryWidget(Id(:gw), :Value))
+      gw = UI.QueryWidget(Id(:gw), :Value)
       if gw != "" && !IP.Check(gw)
         Popup.Error(_("The default gateway is invalid."))
         UI.SetFocus(Id(:gw))
@@ -436,12 +434,10 @@ module Yast
         }
       end
 
-
-
-      @defgw = Convert.to_string(UI.QueryWidget(Id(:gw), :Value))
-      @defgwdev = Convert.to_string(UI.QueryWidget(Id(:gw4dev), :Value))
-      @defgw6 = Convert.to_string(UI.QueryWidget(Id(:gw6), :Value))
-      @defgwdev6 = Convert.to_string(UI.QueryWidget(Id(:gw6dev), :Value))
+      @defgw = UI.QueryWidget(Id(:gw), :Value)
+      @defgwdev = UI.QueryWidget(Id(:gw4dev), :Value)
+      @defgw6 = UI.QueryWidget(Id(:gw6), :Value)
+      @defgwdev6 = UI.QueryWidget(Id(:gw6dev), :Value)
 
       if @defgw != ""
         route_conf = Builtins.add(
@@ -468,7 +464,8 @@ module Yast
       end
 
       Routing.Routes = deep_copy(route_conf)
-      Routing.Forward = Convert.to_boolean(UI.QueryWidget(Id(:forward), :Value))
+      Routing.Forward_v4 = UI.QueryWidget(Id(:forward_v4), :Value)
+      Routing.Forward_v6 = UI.QueryWidget(Id(:forward_v6), :Value)
 
       nil
     end
@@ -488,7 +485,7 @@ module Yast
 
       Wizard.HideBackButton
 
-      ret = CWM.ShowAndRun(
+      CWM.ShowAndRun(
         {
           "widget_descr"       => @wd_routing,
           "contents"           => contents,
@@ -498,21 +495,6 @@ module Yast
           "fallback_functions" => functions
         }
       )
-
-      ret
-    end
-
-
-
-
-
-    # Check if internal data differ from the dialog values
-    # @param [String] defgw current default gw widget contents
-    # @return true if differ
-    def RoutingModified(defgw)
-      forward = Convert.to_boolean(UI.QueryWidget(Id(:forward), :Value))
-      defg = Convert.to_string(UI.QueryWidget(Id(:gw), :Value))
-      forward != Routing.Forward || defg != defgw
     end
   end
 end

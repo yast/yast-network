@@ -221,10 +221,14 @@ dhclient_hostname_option = element dhclient_hostname_option { text }
 routing =
   element routing {
     ip_forward? &
+    ipv4_forward? &
+    ipv6_forward? &
     routes?
   }
 
 ip_forward = element ip_forward { BOOLEAN }
+ipv4_forward = element ipv4_forward { BOOLEAN }
+ipv6_forward = element ipv6_forward { BOOLEAN }
 
 routes =
   element routes {

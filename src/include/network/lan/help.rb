@@ -101,10 +101,17 @@ module Yast
             ) +
             # Routing dialog help 2/2
             _(
-              "<p>Enable <b>IP Forwarding</b> (forwarding packets from external networks\n" +
-                "to the internal one) if this system is a router. Both IPv4 and IPv6 connectivity \n" +
-                "will be affected by this setting. \n" +
-                "<b>Important:</b> if the firewall is enabled, allowing IP forwarding alone is not enough. \n" +
+              "<p>Enable <b>IPv4 Forwarding</b> (forwarding packets from external networks\n" +
+                "to the internal one) if this system is a router.\n"
+            ) +
+            _(
+              "<p>Enable <b>IPv6 Forwarding</b> (forwarding packets from external networks\n" +
+                "to the internal one) if this system is a router.\n" +
+              "<b>Warning:</b> IPv6 forwarding disables IPv6 stateless address\n" +
+              "autoconfiguration (SLAAC)."
+            ) +
+            _(
+                "<p><b>Important:</b> if the firewall is enabled, allowing forwarding alone is not enough. \n" +
                 "You should enable masquerading and/or set at least one redirect rule in the\n" +
                 "firewall configuration. Use the YaST firewall module.</p>\n"
             ),
