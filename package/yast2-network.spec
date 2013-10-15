@@ -117,7 +117,6 @@ fi
 
 %dir %{yast_docdir}
 %{yast_docdir}/COPYING
-%readme %{yast_docdir}/README
 
 %files devel-doc
 %defattr(-,root,root)
