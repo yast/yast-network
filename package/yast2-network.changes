@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Oct 15 07:26:13 UTC 2013 - mfilka@suse.com
+
+- bnc#845534
+  - fixed internal error which appeared when attempting to add an
+  alias
+- 3.0.8 
+
+-------------------------------------------------------------------
 Wed Sep 18 09:12:23 UTC 2013 - mfilka@suse.com
 
 - Refactoring
