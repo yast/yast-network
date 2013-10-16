@@ -76,12 +76,28 @@ module Yast
             "example" => "show dest=10.10.1.0"
           },
           "ip-forwarding" => {
-            "help"    => _("IP forwarding settings"),
+            "help"    => _("IPv4 and IPv6 forwarding settings"),
             "handler" => fun_ref(
               method(:IPFWHandler),
               "boolean (map <string, string>)"
             ),
             "example" => ["ip-forwarding show", "ip-forwarding on"]
+          },
+          "ipv4-forwarding" => {
+            "help"    => _("IPv4 only forwarding settings"),
+            "handler" => fun_ref(
+              method(:IPv4FWHandler),
+              "boolean (map <string, string>)"
+            ),
+            "example" => ["ipv4-forwarding show", "ipv4-forwarding on"]
+          },
+          "ipv6-forwarding" => {
+            "help"    => _("IPv6 only forwarding settings"),
+            "handler" => fun_ref(
+              method(:IPv6FWHandler),
+              "boolean (map <string, string>)"
+            ),
+            "example" => ["ipv6-forwarding show", "ipv6-forwarding on"]
           },
           "add"           => {
             "help"    => _("Add new route"),
@@ -124,6 +140,8 @@ module Yast
         "mappings"   => {
           "show"          => ["dest"],
           "ip-forwarding" => ["show", "on", "off"],
+          "ipv4-forwarding" => ["show", "on", "off"],
+          "ipv6-forwarding" => ["show", "on", "off"],
           "add"           => ["dest", "gateway", "netmask", "dev", "options"],
           "edit"          => ["dest", "gateway", "netmask", "dev", "options"],
           "delete"        => ["dest"]
@@ -231,29 +249,63 @@ module Yast
       true
     end
 
-    def IPFWHandler(options)
-      options = deep_copy(options)
-      CommandLine.Print(String.UnderlinedHeader(_("IP Forwarding:"), 0))
+    def forwarding_handler(options, protocol)
+
+      forward_ivars = {
+        "IPv4" => :@Forward_v4,
+        "IPv6" => :@Forward_v6
+      }
+      forward_ivar = forward_ivars[protocol]
+
+      return false unless forward_ivar
 
       if Ops.get(options, "show") != nil
-        CommandLine.Print("")
-        if Routing.Forward
-          CommandLine.Print(_("IP forwarding is enabled"))
+        if Routing.instance_variable_get(forward_ivar)
+          # translators: %s is "IPv4" or "IPv6"
+          CommandLine.Print(_("%s forwarding is enabled") % protocol)
         else
-          CommandLine.Print(_("IP forwarding is disabled"))
+          # translators: %s is "IPv4" or "IPv6"
+          CommandLine.Print(_("%s forwarding is disabled") % protocol)
         end
-        CommandLine.Print("")
       elsif Ops.get(options, "on") != nil
-        CommandLine.Print("")
-        CommandLine.Print(_("Enabling IP forwarding..."))
-        CommandLine.Print("")
-        Routing.Forward = true
+        # translators: %s is "IPv4" or "IPv6"
+        CommandLine.Print(_("Enabling %s forwarding...") % protocol)
+        Routing.instance_variable_set(forward_ivar, true)
       elsif Ops.get(options, "off") != nil
-        CommandLine.Print("")
-        CommandLine.Print(_("Disabling IP forwarding..."))
-        CommandLine.Print("")
-        Routing.Forward = false
+        # translators: %s is "IPv4" or "IPv6"
+        CommandLine.Print(_("Disabling %s forwarding...") % protocol)
+        Routing.instance_variable_set(forward_ivar, false)
       end
+    end
+
+    def IPv4FWHandler(options)
+      CommandLine.Print(String.UnderlinedHeader(_("IPv4 Forwarding:"), 0))
+
+      CommandLine.Print("")
+      forwarding_handler(options, "IPv4")
+      CommandLine.Print("")
+
+      true
+    end
+
+    def IPv6FWHandler(options)
+      CommandLine.Print(String.UnderlinedHeader(_("IPv6 Forwarding:"), 0))
+
+      CommandLine.Print("")
+      forwarding_handler(options, "IPv6")
+      CommandLine.Print("")
+
+      true
+    end
+
+    def IPFWHandler(options)
+      CommandLine.Print(String.UnderlinedHeader(_("IPv4 and IPv6 Forwarding:"), 0))
+
+      CommandLine.Print("")
+      forwarding_handler(options, "IPv4")
+      forwarding_handler(options, "IPv6")
+      CommandLine.Print("")
+
       true
     end
 

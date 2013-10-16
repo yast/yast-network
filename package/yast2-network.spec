@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.1.0
+Version:        3.1.1
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -112,10 +112,11 @@ fi
 %{yast_agentdir}/ag_udev_persistent
 %{yast_schemadir}/autoyast/rnc/networking.rnc
 %{yast_schemadir}/autoyast/rnc/host.rnc
+/usr/share/YaST2/lib/
+/usr/share/YaST2/lib/network
 
 %dir %{yast_docdir}
 %{yast_docdir}/COPYING
-%readme %{yast_docdir}/README
 
 %files devel-doc
 %defattr(-,root,root)

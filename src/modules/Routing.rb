@@ -33,6 +33,20 @@ require "yast"
 
 module Yast
   class RoutingClass < Module
+
+    # @Orig_Routes [Array]        array of hashes. Caches known routes
+    #
+    # @Orig_Forward_v4 [Boolean]  current status of ipv4 forwarding
+    # @Orig_Forward_v6 [Boolean]  current status of ipv6 forwarding
+    #
+    # @modified [Boolean]         modified by AY (bnc#649494)
+
+    # "routes" file location
+    ROUTES_FILE = "/etc/sysconfig/network/routes"
+
+    SYSCTL_IPV4_PATH = ".etc.sysctl_conf.\"net.ipv4.ip_forward\""
+    SYSCTL_IPV6_PATH = ".etc.sysctl_conf.\"net.ipv6.conf.all.forwarding\""
+
     def main
       Yast.import "UI"
       textdomain "network"
@@ -50,32 +64,31 @@ module Yast
       # keys: destination, gateway, netmask, [device, [extrapara]]
       @Routes = []
 
-      # modified by AY (bnc#649494)
-      @modified = nil
       # Enable IP forwarding
       # .etc.sysctl_conf."net.ipv4.ip_forward"
-      @Forward = false
+      @Forward_v4 = false
+      @Forward_v6 = false
 
       # List of available devices
       @devices = []
-
-      # All routes read at the start
-      @Orig_Routes = nil
-      @Orig_Forward = nil
-
-      # "routes" file location
-      @routes_file = "/etc/sysconfig/network/routes"
     end
 
     # Data was modified?
     # @return true if modified
     def Modified
-      ret = @Routes != @Orig_Routes || @Forward != @Orig_Forward
       # probably called without Read()  (bnc#649494)
-      if @Orig_Routes == nil && @Orig_Forward == nil && @modified != true
-        ret = false
-      end
-      Builtins.y2debug("ret=%1", ret)
+      no_orig_values = @Orig_Routes.nil?
+      no_orig_values &&= @Orig_Forward_v4.nil?
+      no_orig_values &&= @Orig_Forward_v6.nil?
+      no_orig_values &&= @modified != true
+
+      return false if no_orig_values
+
+      ret = @Routes != @Orig_Routes 
+      ret ||= @Forward_v4 != @Orig_Forward_v4
+      ret ||= @Forward_v6 != @Orig_Forward_v6
+
+      Builtins.y2debug("Routing#modified: #{ret}")
       ret
     end
 
@@ -114,41 +127,44 @@ module Yast
 
     def ReadIPForwarding
       if SuSEFirewall.IsEnabled
-        @Forward = SuSEFirewall.GetSupportRoute
+        @Forward_v4 = SuSEFirewall.GetSupportRoute
+        # FIXME: missing support for setting IPv6 forwarding enablement in 
+        # SuSEFirewall module and in SuSEFirewall2 at all
       else
-        @Forward = SCR.Read(path(".etc.sysctl_conf.\"net.ipv4.ip_forward\"")) == "1"
+        @Forward_v4 = SCR.Read(path(SYSCTL_IPV4_PATH)) == "1"
+        @Forward_v6 = SCR.Read(path(SYSCTL_IPV6_PATH)) == "1"
       end
 
       nil
     end
 
     def WriteIPForwarding
+      forward_ipv4 = @Forward_v4 ? "1" : "0"
+      forward_ipv6 = @Forward_v6 ? "1" : "0"
+
       if SuSEFirewall.IsEnabled
-        SuSEFirewall.SetSupportRoute(@Forward)
+        # FIXME: missing support for setting IPv6 forwarding enablement in 
+        # SuSEFirewall module and in SuSEFirewall2 at all
+        SuSEFirewall.SetSupportRoute(@Forward_v4)
       else
         SCR.Write(
-          path(".etc.sysctl_conf.\"net.ipv4.ip_forward\""),
-          @Forward ? "1" : "0"
+          path(SYSCTL_IPV4_PATH),
+          forward_ipv4
         )
         SCR.Write(
-          path(".etc.sysctl_conf.\"net.ipv6.conf.all.forwarding\""),
-          @Forward ? "1" : "0"
+          path(SYSCTL_IPV6_PATH),
+          forward_ipv6
         )
         SCR.Write(path(".etc.sysctl_conf"), nil)
       end
+
       SCR.Execute(
         path(".target.bash"),
-        Builtins.sformat(
-          "echo %1 > /proc/sys/net/ipv4/ip_forward",
-          @Forward ? 1 : 0
-        )
+        "echo #{forward_ipv4} > /proc/sys/net/ipv4/ip_forward"
       )
       SCR.Execute(
         path(".target.bash"),
-        Builtins.sformat(
-          "echo %1 > /proc/sys/net/ipv6/conf/all/forwarding",
-          @Forward ? 1 : 0
-        )
+        "echo #{forward_ipv6} > /proc/sys/net/ipv6/conf/all/forwarding",
       )
 
       nil
@@ -159,7 +175,7 @@ module Yast
     # @return true if success
     def Read
       # read route.conf
-      if Ops.greater_than(SCR.Read(path(".target.size"), @routes_file), 0)
+      if Ops.greater_than(SCR.Read(path(".target.size"), ROUTES_FILE), 0)
         @Routes = Convert.convert(
           SCR.Read(path(".routes")),
           :from => "any",
@@ -171,12 +187,14 @@ module Yast
 
       ReadIPForwarding()
 
-      Builtins.y2debug("Routes=%1", @Routes)
-      Builtins.y2debug("Forward=%1", @Forward)
+      Builtins.y2debug("Routes=#{@Routes}")
+      Builtins.y2debug("Forward_v4=#{@Forward_v4}")
+      Builtins.y2debug("Forward_v6=#{@Forward_v6}")
 
       # save routes to check for changes later
-      @Orig_Routes = Builtins.eval(@Routes)
-      @Orig_Forward = Builtins.eval(@Forward)
+      @Orig_Routes = deep_copy(@Routes)
+      @Orig_Forward_v4 = deep_copy(@Forward_v4)
+      @Orig_Forward_v6 = deep_copy(@Forward_v6)
 
       # read available devices
       NetworkInterfaces.Read
@@ -225,25 +243,19 @@ module Yast
       ProgressNextStage(_("Writing routing settings..."))
 
       # create if not exists, otherwise backup
-      if Ops.less_than(SCR.Read(path(".target.size"), @routes_file), 0)
-        SCR.Write(path(".target.string"), @routes_file, "")
+      if Ops.less_than(SCR.Read(path(".target.size"), ROUTES_FILE), 0)
+        SCR.Write(path(".target.string"), ROUTES_FILE, "")
       else
         SCR.Execute(
           path(".target.bash"),
-          Ops.add(
-            Ops.add(
-              Ops.add(Ops.add("/bin/cp ", @routes_file), " "),
-              @routes_file
-            ),
-            ".YaST2save"
-          )
+          "/bin/cp #{ROUTES_FILE} #{ROUTES_FILE}.YaST2save"
         )
       end
 
       ret = false
       if @Routes == []
         # workaround bug [#4476]
-        ret = SCR.Write(path(".target.string"), @routes_file, "")
+        ret = SCR.Write(path(".target.string"), ROUTES_FILE, "")
       else
         # update the routes config
         ret = SCR.Write(path(".routes"), @Routes)
@@ -265,11 +277,17 @@ module Yast
     # @return true if success
     def Import(settings)
       settings = deep_copy(settings)
-      @Routes = Builtins.eval(Ops.get_list(settings, "routes", []))
-      @Forward = Ops.get_boolean(settings, "ip_forward", false)
+      ip_forward = Ops.get_boolean(settings, "ip_forward", false)
+      ipv4_forward = Ops.get_boolean(settings, "ipv4_forward", ip_forward)
+      ipv6_forward = Ops.get_boolean(settings, "ipv6_forward", ip_forward)
+
+      @Routes = deep_copy(Ops.get_list(settings, "routes", []))
+      @Forward_v4 = ipv4_forward
+      @Forward_v6 = ipv6_forward
 
       @Orig_Routes = nil
-      @Orig_Forward = nil
+      @Orig_Forward_v4 = nil
+      @Orig_Forward_v6 = nil
 
       @modified = true
 
@@ -280,11 +298,12 @@ module Yast
     # @return autoinstallation settings
     def Export
       exproute = {}
-      if Ops.greater_than(Builtins.size(Builtins.eval(@Routes)), 0)
-        Ops.set(exproute, "routes", Builtins.eval(@Routes))
-      end
-      Ops.set(exproute, "ip_forward", @Forward)
-      deep_copy(exproute)
+
+      exproute["routes"] = deep_copy(@Routes) unless @Routes.empty?
+      exproute["ipv4_forward"] = @Forward_v4
+      exproute["ipv6_forward"] = @Forward_v6
+
+      exproute
     end
 
     # Get the current devices list
@@ -319,49 +338,36 @@ module Yast
     end
 
     # Create routing text summary
-    # @return summary text
+    # @returns [String] summary text
     def Summary
-      return "" if Ops.less_than(Builtins.size(@Routes), 1)
+      return "" if @Routes.nil? || @Routes.empty?
 
       Yast.import "Summary"
       summary = ""
 
       gw = GetGateway()
       gwhost = NetHwDetection.ResolveIP(gw)
-      gw = Ops.add(Ops.add(Ops.add(gw, " ("), gwhost), ")") if gwhost != ""
+      gw = "#{gw} (#{gwhost})" unless gwhost.empty?
 
-      if gw != ""
-        # Summary text
-        summary = Summary.AddListItem(
-          summary,
-          Builtins.sformat(_("Gateway: %1"), gw)
-        ) 
-        # summary = add(summary, Summary::Device(sformat(_("Gateway: %1"), gw), ""));
-      end
+      # Summary text
+      summary = Summary.AddListItem(summary, _("Gateway: %s") % gw) unless gw.empty?
 
-      if @Forward == true
-        # Summary text
-        summary = Summary.AddListItem(summary, _("IP Forwarding: on"))
-      else
-        # summary = add(summary, Summary::Device(_("IP Forwarding: on"), ""));
+      on_off = @Forward_v4 ? "on" : "off"
+      # Summary text
+      summary = Summary.AddListItem(summary, _("IP Forwarding for IPv4: %s") % on_off)
 
-        # Summary text
-        summary = Summary.AddListItem(summary, _("IP Forwarding: off"))
-      end
-      # summary = add(summary, Summary::Device(_("IP Forwarding: off"), ""));
+      on_off = @Forward_v6 ? "on" : "off"
+      # Summary text
+      summary = Summary.AddListItem(summary, _("IP Forwarding for IPv6: %s") % on_off)
 
-      if @Routes != []
-        # Summary text
-        # summary = add(summary, Summary::Device(sformat(_("Routes: %1"), Routes), ""));
-        Builtins.y2debug("not adding Routes to summary")
-      end
-
-      return "" if Ops.less_than(Builtins.size(summary), 1)
-      Ops.add(Ops.add("<ul>", summary), "</ul>")
+      return "" if summary.empty?
+      
+      "<ul>#{summary}</ul>"
     end
 
     publish :variable => :Routes, :type => "list <map>"
-    publish :variable => :Forward, :type => "boolean"
+    publish :variable => :Forward_v4, :type => "boolean"
+    publish :variable => :Forward_v6, :type => "boolean"
     publish :function => :Modified, :type => "boolean ()"
     publish :function => :ReadFromGateway, :type => "boolean (string)"
     publish :function => :RemoveDefaultGw, :type => "void ()"
