@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Oct 16 07:09:13 UTC 2013 - mfilka@suse.com
+
+- bnc#845534
+  - fixed internal error which appeared when attempting to add an
+  alias
+- 3.1.2
+
+-------------------------------------------------------------------
 Wed Sep 25 07:00:21 UTC 2013 - mfilka@suse.com
 
 - bnc#572202
@@ -20,7 +28,7 @@ Wed Sep 18 09:12:23 UTC 2013 - mfilka@suse.com
 - Refactoring
   - removing ycp artifacts
   - separated dialog for editing nic name into own class
-- 3.0.7 
+- 3.0.7
 
 -------------------------------------------------------------------
 Wed Sep 11 09:34:47 UTC 2013 - mfilka@suse.com
