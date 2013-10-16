@@ -232,7 +232,7 @@ module Yast
       UI.ChangeWidget(
         Id(:name),
         :ValidChars,
-        String.calnum
+        String.CAlnum
       )
       UI.ChangeWidget(Id(:ipaddr), :ValidChars, IP.ValidChars)
 
