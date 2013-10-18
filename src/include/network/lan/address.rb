@@ -1490,8 +1490,10 @@ module Yast
 
       address_dhcp_contents = VBox("BOOTPROTO")
       just_address_contents = is_ptp ?
-        address_p2p_contents :
-        no_dhcp ? address_static_contents : address_dhcp_contents
+        deep_copy(address_p2p_contents) :
+        no_dhcp ?
+          deep_copy(address_static_contents) :
+          deep_copy(address_dhcp_contents)
 
       address_contents = VBox(
         Left(label),
