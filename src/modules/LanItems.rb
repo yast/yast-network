@@ -1454,16 +1454,6 @@ module Yast
       Ops.get_string(@Items, [@current, "table_descr", "rich_descr"], "")
     end
 
-
-    # Check if the given device has any virtual alias.
-    # @param dev device to be checked
-    # @return true if there are some aliases
-    def InterfaceHasAliases
-      NetworkInterfaces.HasAliases(
-        Ops.get_string(@Items, [@current, "ifcfg"], "")
-      )
-    end
-
     # Select the hardware component
     # @param hw the component
     def SelectHWMap(hardware)
@@ -2647,7 +2637,6 @@ module Yast
     publish :function => :isCurrentHotplug, :type => "boolean ()"
     publish :function => :isCurrentDHCP, :type => "boolean ()"
     publish :function => :GetItemDescription, :type => "string ()"
-    publish :function => :InterfaceHasAliases, :type => "boolean ()"
     publish :function => :SelectHWMap, :type => "void (map)"
     publish :function => :SelectHW, :type => "void (integer)"
     publish :function => :FreeDevices, :type => "list (string)"

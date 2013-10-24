@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Oct 22 12:28:17 UTC 2013 - mfilka@suse.com
+
+- adapt to removal of NetworkInterfaces.HasAliases from yast2
+  since 3.1.2
+- 3.1.3
+
+-------------------------------------------------------------------
 Wed Oct 16 07:09:13 UTC 2013 - mfilka@suse.com
 
 - bnc#845534

@@ -532,21 +532,6 @@ module Yast
 
             return :edit
           when :delete
-            @pop = Builtins.sformat(
-              _(
-                "All additional addresses belonging to the interface %1\n" +
-                  "will be deleted as well.\n" +
-                  "\n" +
-                  "Really continue?\n"
-              ),
-              Ops.get_string(LanItems.getCurrentItem, "ifcfg", "")
-            )
-            if LanItems.InterfaceHasAliases &&
-                Popup.YesNoHeadline(Label.WarningMsg, @pop) != true
-              # y2r: cannot break from middle of switch
-              # but in this function return will do
-              return nil
-            end
 
             # warn user when device to delete has STARTMODE=nfsroot (bnc#433867)
             if NetworkInterfaces.GetValue(
