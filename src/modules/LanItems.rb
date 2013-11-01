@@ -725,11 +725,9 @@ module Yast
       devname = GetDeviceName(itemId)
       bonded = BuildBondIndex()
 
-      if Ops.get(bonded, devname) != nil
+      if bonded[ devname]
         Builtins.y2debug(
-          "IsBridgeable: excluding lan item (%1: %2) - is bonded",
-          itemId,
-          devname
+          "IsBridgeable: excluding lan item (#{itemId}: #{devname}) - is bonded",
         )
         return false
       end
@@ -739,23 +737,27 @@ module Yast
       # exclude forbidden configurations
       if devtype == "br"
         Builtins.y2debug(
-          "IsBridgeable: excluding lan item (%1: %2) - is bridge",
-          itemId,
-          devname
+          "IsBridgeable: excluding lan item (#{itemId}: #{devname}) - is bridge",
         )
         return false
       end
 
-      if Ops.get_string(ifcfg, "STARTMODE", "") == "nfsroot"
-        Builtins.y2debug(
-          "IsBridgeable: excluding lan item (%1: %2) - is nfsroot",
-          itemId,
-          devname
-        )
-        return false
-      end
+      case ifcfg[ "STARTMODE"]
+        when "nfsroot"
+          Builtins.y2debug(
+            "IsBridgeable: excluding lan item (#{itemId}: #{devname}) - is nfsroot",
+          )
+          return false
 
-      true
+        when "ifplugd"
+          Builtins.y2debug(
+            "IsBridgeable: excluding lan item (#{itemId}: #{devname}) - ifplugd",
+          )
+          return false
+
+        else
+          return true
+      end
     end
 
     # Iterates over all items and lists those for which given validator returns
