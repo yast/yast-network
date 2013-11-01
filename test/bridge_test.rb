@@ -64,7 +64,7 @@ module Yast
       "tun0"
     ]
 
-    before( :each) do
+    before(:each) do
       NetworkInterfaces.stub(:FilterDevices).with("netcard") { NETCONFIG_ITEMS }
 
       LanItems.stub(:ReadHardware) { HWINFO_ITEMS }
@@ -73,14 +73,16 @@ module Yast
 
     describe "#GetBridgeableInterfaces" do
 
-      before( :each) do
+      before(:each) do
+        # FindAndSelect initializes internal state of LanItems it
+        # is used internally by some helpers
         LanItems.FindAndSelect("br0")
       end
 
       it "returns list of slave candidates" do
         expect(
           LanItems
-            .GetBridgeableInterfaces( LanItems.GetCurrentName)
+            .GetBridgeableInterfaces(LanItems.GetCurrentName)
             .map { |i| LanItems.GetDeviceName(i) }
         ).to match_array EXPECTED_BRIDGEABLE
       end
