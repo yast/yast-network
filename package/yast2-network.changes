@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov  7 20:53:56 UTC 2013 - mfilka@suse.com
+
+- bnc#843646
+  - firewall can be enabled/disabled during installation
+- 3.0.9
+
+-------------------------------------------------------------------
 Tue Oct 15 07:26:13 UTC 2013 - mfilka@suse.com
 
 - bnc#845534
