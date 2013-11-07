@@ -1,9 +1,16 @@
 -------------------------------------------------------------------
+Thu Nov  7 20:53:56 UTC 2013 - mfilka@suse.com
+
+- bnc#843646
+  - firewall can be enabled/disabled during installation
+- 3.1.5
+
+-------------------------------------------------------------------
 Wed Oct 30 21:43:14 UTC 2013 - mfilka@suse.com
 
 - bnc#847783
   - do not offer ifplugd devices as bridge port candidate
-- 3.1.4 
+- 3.1.4
 
 -------------------------------------------------------------------
 Tue Oct 22 12:28:17 UTC 2013 - mfilka@suse.com
