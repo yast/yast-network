@@ -82,7 +82,7 @@ module Yast
       TEST(lambda { RunSuSEconfig() }, [{}, {}, @EXEC1], nil)
 
       Yast.import "NetworkInterfaces"
-      NetworkInterfaces.Devices = { "dsl" => { "0" => {} } }
+      NetworkInterfaces.instance_variable_set(:@Devices, { "dsl" => { "0" => {} } })
 
       DUMP("SetupSMPPPD")
       TEST(lambda { SetupSMPPPD(true) }, [@READ, {}, @EXEC0], nil)
