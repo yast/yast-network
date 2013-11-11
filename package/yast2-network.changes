@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Mon Jul 29 18:08:19 CEST 2013 - locilka@suse.com
+
+- Fixed detection whether interface is handled by firewall and thus
+  fixed accidental stopping and disabling the firewall services.
+  Added detection of interfaces handled by implicit assignment
+  with 'any' in firewall zone.
+  (bnc#829556)
+- 2.17.197
+
+-------------------------------------------------------------------
 Wed Sep  4 08:59:44 UTC 2013 - mfilka@suse.com
 
 - bnc#837793
