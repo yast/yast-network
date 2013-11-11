@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Mon Nov 11 12:40:25 UTC 2013 - mfilka@suse.com
+
+- bnc#779531
+  - workaround for buggy implementation of inotify which causes
+    that nscd's cache is not updated when src files are edited.
+- bnc#829556
+  - Fixed detection whether interface is handled by firewall and thus
+    fixed accidental stopping and disabling the firewall services.
+    Added detection of interfaces handled by implicit assignment
+    with 'any' in firewall zone. (author: locilka@suse.com)
+- 2.17.197
+
+-------------------------------------------------------------------
 Wed Sep  4 08:59:44 UTC 2013 - mfilka@suse.com
 
 - bnc#837793
