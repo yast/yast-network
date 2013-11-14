@@ -66,9 +66,7 @@ module Yast
           "title" => _(
             "Writing Firewall Configuration..."
           ),
-          "when"  => SuSEFirewallProposal.GetChangedByUser || @ssh_enabled || @vnc_enabled ?
-            [:installation, :autoinst] :
-            []
+          "when"  => [:installation, :autoinst]
         }
       elsif @func == "Write"
         Builtins.y2milestone(
