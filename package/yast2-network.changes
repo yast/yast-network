@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Mon Dec  9 09:51:17 UTC 2013 - mfilka@suse.com
+
+- fate#308681
+  - dropped ISDN configuration support
+- fate#308680
+  - dropped DSL configuration support
+- fate#313104
+  - dropped modem configuration support
+- 3.1.11
+
+-------------------------------------------------------------------
 Fri Nov 29 13:38:11 UTC 2013 - jreidinger@suse.com
 
 - fix DHCP capable cards client to not break installation
