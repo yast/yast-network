@@ -106,18 +106,10 @@ schemafiles_DATA = \
 ybin_SCRIPTS = \
   bin/cut-messages
 
-ydata_DATA = \
-  data/modem-t35-keys.ycp \
-  data/phone-codes.ycp
-
 desktop_DATA = \
-  desktop/isdn.desktop \
   desktop/host.desktop \
-  desktop/provider.desktop \
   desktop/network.desktop \
   desktop/remote.desktop \
-  desktop/modem.desktop \
-  desktop/dsl.desktop \
   desktop/lan.desktop
 
 ylibdir = "${yast2dir}/lib/network"
@@ -137,7 +129,6 @@ EXTRA_DIST = \
   $(agent_SCRIPTS) \
   $(schemafiles_DATA) \
   $(ybin_SCRIPTS) \
-  $(ydata_DATA) \
   $(desktop_DATA) \
   $(ylib_DATA)
 
