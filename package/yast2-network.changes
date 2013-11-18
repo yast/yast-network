@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov 18 10:26:50 UTC 2013 - jreidinger@suse.com
+
+- Fix testsuite to the latest changes in NetworkInterfaces
+- 3.1.6
+
+-------------------------------------------------------------------
 Thu Nov  7 20:53:56 UTC 2013 - mfilka@suse.com
 
 - bnc#843646
