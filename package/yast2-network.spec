@@ -102,7 +102,6 @@ fi
 %files
 %defattr(-,root,root)
 %{yast_ybindir}/*
-%{yast_ydatadir}/*
 %{yast_yncludedir}/network
 %{yast_clientdir}/*.rb
 %{yast_moduledir}/YaPI/NETWORK.pm
