@@ -41,7 +41,6 @@ module Yast
       Yast.import "Modem"
       Yast.import "Popup"
       Yast.import "Progress"
-      Yast.import "GetInstArgs"
 
       Yast.include self, "network/routines.rb"
 
@@ -58,18 +57,16 @@ module Yast
 
         if @force_reset || !Modem.proposal_valid
           Modem.proposal_valid = true
-          if !GetInstArgs.automatic_configuration
-            # Popup text
-            BusyPopup(_("Detecting modems..."))
-          end
+
+          # Popup text
+          BusyPopup(_("Detecting modems..."))
 
           @progress_orig = Progress.set(false)
           Modem.Read
           # no Modem::Propose () ?
-          if !GetInstArgs.automatic_configuration
-            Progress.set(@progress_orig)
-            BusyPopupClose()
-          end
+
+          Progress.set(@progress_orig)
+          BusyPopupClose()
         end
         @sum = Modem.Summary(false)
         @proposal = Ops.get_string(@sum, 0, "")

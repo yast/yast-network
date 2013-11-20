@@ -86,11 +86,6 @@ module Yast
       # are applied at once, like during the normal installation. #128810, #168806
       # boolean start_immediately = false;
 
-      # boolean if we do automatic installation in second stage
-
-      @automatic_configuration = false
-
-
       # ipv6 module
       @ipv6 = true
 
@@ -757,13 +752,8 @@ module Yast
           Builtins.sleep(1000)
           timeout = Ops.subtract(timeout, 1)
         end
-        if !network
-          if @automatic_configuration
-            Builtins.y2error("No network running")
-          else
-            Popup.Error(_("No network running"))
-          end
-        end
+
+        Popup.Error(_("No network running")) unless network
       end
 
       # Final progress step
@@ -1566,7 +1556,6 @@ module Yast
     end
 
     publish :variable => :virt_net_proposal, :type => "boolean"
-    publish :variable => :automatic_configuration, :type => "boolean"
     publish :variable => :ipv6, :type => "boolean"
     publish :variable => :AbortFunction, :type => "block <boolean>"
     publish :variable => :bond_autoconf_slaves, :type => "list <string>"

@@ -41,7 +41,6 @@ module Yast
       Yast.import "DSL"
       Yast.import "Popup"
       Yast.import "Progress"
-      Yast.import "GetInstArgs"
 
       Yast.include self, "network/routines.rb"
 
@@ -58,15 +57,16 @@ module Yast
 
         if @force_reset || !DSL.proposal_valid
           DSL.proposal_valid = true
-          if !GetInstArgs.automatic_configuration
-            # Popup text
-            BusyPopup(_("Detecting DSL devices..."))
-          end
+
+          # Popup text
+          BusyPopup(_("Detecting DSL devices..."))
+
           @progress_orig = Progress.set(false)
           DSL.Read
           DSL.Propose
           Progress.set(@progress_orig)
-          BusyPopupClose() if !GetInstArgs.automatic_configuration
+
+          BusyPopupClose()
         end
         @sum = DSL.Summary(false)
         @proposal = Ops.get_string(@sum, 0, "")
