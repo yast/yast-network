@@ -35,7 +35,6 @@ module Yast
 
       Yast.import "Arch"
       Yast.import "DNS"
-      Yast.import "GetInstArgs"
       Yast.import "Host"
       Yast.import "NetworkConfig"
       Yast.import "String"
@@ -44,11 +43,6 @@ module Yast
       Yast.import "ProductFeatures"
 
       Yast.include self, "network/services/dns.rb"
-
-
-      # Called backwards
-      #if(GetInstArgs::going_back())
-      #   return `auto;
 
       # only once, do not re-propose if user gets back to this dialog from
       # the previous screen - bnc#438124
@@ -63,13 +57,8 @@ module Yast
         DNS.write_hostname = DNS.DefaultWriteHostname
       end
 
-      @ret = :next
-
-      #No need for interactive UI in automatic configuration
-      if !GetInstArgs.automatic_configuration
-        Wizard.SetDesktopIcon("dns")
-        @ret = HostnameDialog()
-      end
+      Wizard.SetDesktopIcon("dns")
+      @ret = HostnameDialog()
 
       if @ret == :next
         Host.Read
