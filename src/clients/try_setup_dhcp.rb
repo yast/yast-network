@@ -29,8 +29,6 @@ def setup_dhcp card
   end
 
   LanItems.bootproto = "dhcp"
-  LanItems.ipaddr = ""
-  LanItems.netmask = ""
   LanItems.startmode = "auto"
 
   LanItems.Commit
