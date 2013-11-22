@@ -22,9 +22,8 @@ def setup_dhcp card
 
   #tricky part if ifcfg is not set
   # yes, this code smell and show bad API of LanItems
-  if (LanItems.getCurrentItem["ifcfg"] || "").empty?
+  if !LanItems.IsCurrentConfigured
     NetworkInterfaces.Add
-    LanItems.operation = :edit
     current = LanItems.Items[LanItems.current]
     current["ifcfg"] = card
   end
@@ -53,9 +52,9 @@ end
 # TODO time consuming, some progress would be nice
 dhcp_cards = network_cards.select { |c| get_lease?(c) }
 
-dhcp_cards.each do |ncard|
-  setup_dhcp(ncard) # make DHCP setup persistent
-  start_dhcp(ncard)
+dhcp_cards.each do |dcard|
+  setup_dhcp(dcard) # make DHCP setup persistent
+  start_dhcp(dcard)
 end
 
 write_configuration
