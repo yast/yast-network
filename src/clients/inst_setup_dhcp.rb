@@ -57,4 +57,4 @@ end
 
 write_configuration
 
-true
+:next
