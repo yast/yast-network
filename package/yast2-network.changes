@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Nov 28 15:07:16 UTC 2013 - jreidinger@suse.com
+
+- fix distribution of client for detection DHCP capable cards
+- 3.1.9
+
+-------------------------------------------------------------------
 Mon Nov 25 13:29:43 UTC 2013 - jreidinger@suse.com
 
 - add installation client that detect all DHCP capable network

@@ -35,6 +35,7 @@ client_DATA = \
   clients/firewall_stage1_finish.rb \
   clients/inst_netprobe.rb \
   clients/inst_do_net_test.rb \
+  clients/inst_setup_dhcp.rb \
   clients/routing.rb \
   clients/lan.rb \
   clients/host_auto.rb \
