@@ -1,60 +1,63 @@
 Yast.import "LanItems"
 Yast.import "NetworkInterfaces"
 
-include Yast
+#enclose client into own namespace to prevent messign global namespace
+module SetupDHCPClient
+  include Yast
 
-BASH_PATH = Path.new(".target.bash")
+  BASH_PATH = Path.new(".target.bash")
 
-def network_cards
-  LanItems.Read
-  LanItems.GetNetcardNames
-end
-
-def setup_dhcp card
-  index = LanItems.FindDeviceIndex(card)
-
-  if index == -1
-    raise "Failed to save configuration for device #{card}"
+  def self.network_cards
+    LanItems.Read
+    LanItems.GetNetcardNames
   end
 
-  LanItems.current = index
-  LanItems.SetItem
+  def self.setup_dhcp card
+    index = LanItems.FindDeviceIndex(card)
 
-  #tricky part if ifcfg is not set
-  # yes, this code smell and show bad API of LanItems
-  if !LanItems.IsCurrentConfigured
-    NetworkInterfaces.Add
-    current = LanItems.Items[LanItems.current]
-    current["ifcfg"] = card
+    if index == -1
+      raise "Failed to save configuration for device #{card}"
+    end
+
+    LanItems.current = index
+    LanItems.SetItem
+
+    #tricky part if ifcfg is not set
+    # yes, this code smell and show bad API of LanItems
+    if !LanItems.IsCurrentConfigured
+      NetworkInterfaces.Add
+      current = LanItems.Items[LanItems.current]
+      current["ifcfg"] = card
+    end
+
+    LanItems.bootproto = "dhcp"
+    LanItems.startmode = "auto"
+
+    LanItems.Commit
   end
 
-  LanItems.bootproto = "dhcp"
-  LanItems.startmode = "auto"
+  def self.get_lease?(card)
+    SCR.Execute(BASH_PATH, "dhcpcd-test '#{card}'") == 0
+  end
 
-  LanItems.Commit
-end
+  def self.start_dhcp(card)
+    SCR.Execute(BASH_PATH, "dhcpcd '#{card}'") == 0
+  end
 
-def get_lease?(card)
-  SCR.Execute(BASH_PATH, "dhcpcd-test '#{card}'") == 0
-end
-
-def start_dhcp(card)
-  SCR.Execute(BASH_PATH, "dhcpcd '#{card}'") == 0
-end
-
-def write_configuration
-  NetworkInterfaces.Write("")
-end
+  def self.write_configuration
+    NetworkInterfaces.Write("")
+  end
 
 
 # TODO time consuming, some progress would be nice
-dhcp_cards = network_cards.select { |c| get_lease?(c) }
+  dhcp_cards = network_cards.select { |c| get_lease?(c) }
 
-dhcp_cards.each do |dcard|
-  setup_dhcp(dcard) # make DHCP setup persistent
-  start_dhcp(dcard)
+  dhcp_cards.each do |dcard|
+    setup_dhcp(dcard) # make DHCP setup persistent
+    start_dhcp(dcard)
+  end
+
+  write_configuration
 end
-
-write_configuration
 
 :next
