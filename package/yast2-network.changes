@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
 Fri Nov 29 13:38:11 UTC 2013 - jreidinger@suse.com
 
-- fix DHCP capable cards client to not breaks installation
+- fix DHCP capable cards client to not break installation
 - 3.1.10
 
 -------------------------------------------------------------------

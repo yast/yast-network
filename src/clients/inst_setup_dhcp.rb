@@ -1,7 +1,7 @@
 Yast.import "LanItems"
 Yast.import "NetworkInterfaces"
 
-#enclose client into own namespace to prevent messign global namespace
+#enclose client into own namespace to prevent messing global namespace
 module SetupDHCPClient
   include Yast
 
