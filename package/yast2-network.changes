@@ -7,6 +7,8 @@ Mon Dec  9 09:51:17 UTC 2013 - mfilka@suse.com
   - dropped DSL configuration support
 - fate#313104
   - dropped modem configuration support
+- dropped parts were moved into newly created package yast2-dialup
+  which is available at github
 - 3.1.11
 
 -------------------------------------------------------------------
