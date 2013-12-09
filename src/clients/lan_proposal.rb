@@ -44,7 +44,6 @@ module Yast
       Yast.import "Popup"
       Yast.import "Progress"
       Yast.import "LanItems"
-      Yast.import "GetInstArgs"
 
       Yast.include self, "network/lan/wizards.rb"
 
@@ -54,11 +53,7 @@ module Yast
       #
       #  WFM::CallFunction( <proposal>, [<client function>, <map of arguments>])
       #
-      # particularly for AutomaticConfiguration:
-      #
-      #  WFM::CallFunction( <proposal>, ["MakeProposal", $[ "AutomaticConfiguration":true ]])
-      #
-      # see inst_proposal.ycp and inst_automatic_configuration.ycp
+      # see inst_proposal.ycp
       @func = Ops.get_string(@args, 0, "")
       @param = Ops.get_map(@args, 1, {})
 
@@ -70,14 +65,7 @@ module Yast
         @warning = nil
         @warning_level = nil
         @force_reset = Ops.get_boolean(@param, "force_reset", false)
-        @automatic_configuration = GetInstArgs.automatic_configuration
 
-        Lan.automatic_configuration = @automatic_configuration
-
-        Builtins.y2milestone(
-          "lan_proposal/MakeProposal automatic_configuration: %1",
-          @automatic_configuration
-        )
         Builtins.y2milestone(
           "lan_proposal/MakeProposal force_reset: %1",
           @force_reset
@@ -86,9 +74,7 @@ module Yast
         if @force_reset || !LanItems.proposal_valid
           LanItems.proposal_valid = true
 
-          if !@automatic_configuration
-            BusyPopup(_("Detecting network cards..."))
-          end
+          BusyPopup(_("Detecting network cards..."))
 
           @progress_orig = Progress.set(false)
 
@@ -103,7 +89,7 @@ module Yast
           Lan.Propose
           Progress.set(@progress_orig)
 
-          BusyPopupClose() if !@automatic_configuration
+          BusyPopupClose()
         end
 
         @sum = Lan.Summary("proposal")

@@ -1,4 +1,36 @@
 -------------------------------------------------------------------
+Fri Nov 29 13:38:11 UTC 2013 - jreidinger@suse.com
+
+- fix DHCP capable cards client to not break installation
+- 3.1.10
+
+-------------------------------------------------------------------
+Thu Nov 28 15:07:16 UTC 2013 - jreidinger@suse.com
+
+- fix distribution of client for detection DHCP capable cards
+- 3.1.9
+
+-------------------------------------------------------------------
+Mon Nov 25 13:29:43 UTC 2013 - jreidinger@suse.com
+
+- add installation client that detect all DHCP capable network
+  cards and set it up
+- 3.1.8
+
+-------------------------------------------------------------------
+Wed Nov 20 08:50:16 UTC 2013 - lslezak@suse.cz
+
+- removed automatic 2nd stage support (the 2nd stage has been
+  dropped completely) (FATE#314695)
+- 3.1.7
+
+-------------------------------------------------------------------
+Mon Nov 18 10:26:50 UTC 2013 - jreidinger@suse.com
+
+- Fix testsuite to the latest changes in NetworkInterfaces
+- 3.1.6
+
+-------------------------------------------------------------------
 Thu Nov  7 20:53:56 UTC 2013 - mfilka@suse.com
 
 - bnc#843646

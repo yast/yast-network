@@ -40,7 +40,6 @@ module Yast
 
       Yast.import "ISDN"
       Yast.import "Progress"
-      Yast.import "GetInstArgs"
 
       Yast.include self, "network/routines.rb"
 
@@ -57,15 +56,16 @@ module Yast
 
         if @force_reset || !ISDN.proposal_valid
           ISDN.proposal_valid = true
-          if !GetInstArgs.automatic_configuration
-            # Popup text
-            BusyPopup(_("Detecting ISDN cards..."))
-          end
+
+          # Popup text
+          BusyPopup(_("Detecting ISDN cards..."))
+
           @progress_orig = Progress.set(false)
           ISDN.Read
           # no ISDN::Propose () ?
           Progress.set(@progress_orig)
-          BusyPopupClose() if !GetInstArgs.automatic_configuration
+
+          BusyPopupClose()
         end
         @sum = ISDN.Summary(false)
         @proposal = Ops.get_string(@sum, 0, "")

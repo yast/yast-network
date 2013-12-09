@@ -22,6 +22,11 @@
 #
 #**************************************************************************
 module Yast
+
+  class NetworkInterfacesClass < Module
+    attr_writer :initialized
+  end
+
   class InternetDevicesClient < Client
     def main
       Yast.include self, "testsuite.rb"
