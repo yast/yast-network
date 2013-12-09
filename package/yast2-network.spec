@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.1.10
+Version:        3.1.11
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -102,7 +102,6 @@ fi
 %files
 %defattr(-,root,root)
 %{yast_ybindir}/*
-%{yast_ydatadir}/*
 %{yast_yncludedir}/network
 %{yast_clientdir}/*.rb
 %{yast_moduledir}/YaPI/NETWORK.pm

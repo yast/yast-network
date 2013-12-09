@@ -32,7 +32,6 @@ module Yast
 
       Yast.import "Arch"
       Yast.import "Desktop"
-      Yast.import "ISDN"
       Yast.import "Mode"
       Yast.import "NetworkInterfaces"
       Yast.import "Package"
@@ -77,9 +76,6 @@ module Yast
       devs = NetworkInterfaces.Locate("USERCONTROL", "yes")
       Builtins.y2milestone("user controlled interfaces: %1", devs)
       return true if devs != []
-
-      devs = ISDN.Locate("USERCONTROL", "yes")
-      Builtins.y2milestone("user controlled ISDN interfaces: %1", devs)
 
       devs != []
     end
