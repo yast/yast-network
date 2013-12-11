@@ -83,15 +83,11 @@ ynclude6_DATA = \
   include/network/lan/cmdline.rb
 
 scrconf_DATA = \
-  scrconf/providers.scr \
   scrconf/cfg_slmodemd.scr \
   scrconf/cfg_udev_persistent.scr \
   scrconf/etc_hosts.scr \
-  scrconf/etc_resolv_conf.scr \
-  scrconf/cfg_providers.scr \
   scrconf/cfg_dhcp.scr \
   scrconf/cfg_network.scr \
-  scrconf/isdn.scr \
   scrconf/routes.scr \
   scrconf/etc_defaultdomain.scr
 
