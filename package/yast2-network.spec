@@ -29,7 +29,7 @@ License:        GPL-2.0
 BuildRequires:  perl-XML-Writer pkgconfig rpm
 BuildRequires:  update-desktop-files
 BuildRequires:  yast2-testsuite
-BuildRequires:  yast2-devtools >= 3.0.6
+BuildRequires:  yast2-devtools >= 3.1.10
 BuildRequires:  yast2-country
 BuildRequires:  yast2-installation >= 2.15.27
 
