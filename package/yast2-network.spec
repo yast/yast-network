@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.1.11
+Version:        3.1.12
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -33,12 +33,9 @@ BuildRequires:  yast2-devtools >= 3.1.10
 BuildRequires:  yast2-country
 BuildRequires:  yast2-installation >= 2.15.27
 
-# yast2 v2.23.22: NetworkService handles
-# systemd link network.service->NetworkManager.service
-# yast2 v2.24.4: changes in API for Device type detection
-# yast2 v2.24.5: net device type detection based on sysfs
-BuildRequires:  yast2 >= 2.24.4
-Requires:       yast2 >= 2.24.5
+# yast2 v3.1.11: wicked support
+BuildRequires:  yast2 >= 3.1.11
+Requires:       yast2 >= 3.1.11
 
 #netconfig (FaTE #303618)
 Requires:       sysconfig >= 0.80.0
