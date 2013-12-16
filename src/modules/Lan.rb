@@ -30,6 +30,7 @@
 # Representation of the configuration of network cards.
 # Input and output routines.
 require "yast"
+require "network/confirm_virt_proposal"
 
 module Yast
   class LanClass < Module
@@ -545,7 +546,7 @@ module Yast
       end
       # Progress stage 10
       step_labels = Builtins.add(step_labels, _("Update configuration"))
-      if !NetworkService.IsManaged &&
+      if !NetworkService.is_network_manager &&
           !@write_only #(boolean) SCR::Read(.init.scripts.exists, "smpppd") &&
         # Progress stage 11
         step_labels = Builtins.add(step_labels, _("Set up smpppd"))
@@ -612,7 +613,6 @@ module Yast
       return false if Abort()
       # Progress step 7
       ProgressNextStage(_("Setting up network services..."))
-      NetworkService.EnableDisable
       writeIPv6
       Builtins.sleep(sl)
 
@@ -632,7 +632,7 @@ module Yast
         # Progress step 9
         ProgressNextStage(_("Activating network services..."))
         # during installation export sysconfig settings into NetworkManager (bnc#433084)
-        if Mode.installation && NetworkService.IsManaged
+        if Mode.installation && NetworkService.is_network_manager
           Builtins.y2internal(
             "Export sysconfig settings into NetworkManager %1",
             SCR.Execute(
@@ -642,74 +642,16 @@ module Yast
           )
         end
 
-        Builtins.y2internal("virt_net_proposal %1", @virt_net_proposal)
+        Builtins.y2milestone("virt_net_proposal %1", @virt_net_proposal)
         if Stage.cont && @virt_net_proposal == true &&
             (Linuxrc.usessh || Linuxrc.vnc || Linuxrc.display_ip)
-          UI.OpenDialog(
-            Opt(:decorated),
-            HBox(
-              HSpacing(1),
-              HCenter(
-                HSquash(
-                  VBox(
-                    HCenter(
-                      HSquash(
-                        VBox(
-                          # This is the heading of the popup box
-                          Left(Heading(_("Confirm Network Restart"))),
-                          VSpacing(0.5),
-                          # This is in information message. Next come the
-                          # hardware class name (network cards).
-                          HVCenter(
-                            Label(
-                              _(
-                                "Because of the bridged network, YaST2 needs to restart the network to apply the settings."
-                              )
-                            )
-                          ),
-                          VSpacing(0.5)
-                        )
-                      )
-                    ),
-                    ButtonBox(
-                      HWeight(
-                        1,
-                        PushButton(
-                          Id(:ok),
-                          Opt(:default, :okButton),
-                          Label.OKButton
-                        )
-                      ),
-                      # PushButton label
-                      HWeight(
-                        1,
-                        PushButton(
-                          Id(:cancel),
-                          Opt(:cancelButton),
-                          Label.CancelButton
-                        )
-                      )
-                    ),
-                    VSpacing(0.2)
-                  )
-                )
-              ),
-              HSpacing(1)
-            )
-          )
 
-          UI.SetFocus(Id(:ok))
-
-          # for autoinstallation popup has timeout 10 seconds (#192181)
-          # timeout for every case (bnc#429562)
-          ret = UI.TimeoutUserInput(10 * 1000)
-          if ret == :ok
-            Builtins.y2internal(
+          if ConfirmVirtProposal.run == :ok
+            Builtins.y2milestone(
               "Restarting network because of bridged proposal"
             )
             NetworkService.Restart
           end
-          UI.CloseDialog
         # For ssh/vnc installation don't reload/restart network because possibility of IP change (bnc#347482)
         elsif Stage.cont &&
             (Linuxrc.usessh || Linuxrc.vnc || Linuxrc.display_ip)
@@ -730,8 +672,7 @@ module Yast
       RunSuSEconfig() if !@write_only
       Builtins.sleep(sl)
 
-      if !NetworkService.IsManaged && #&& (boolean) SCR::Read(.init.scripts.exists, "smpppd")
-          !@write_only
+      if !NetworkService.is_network_manager && !@write_only
         return false if Abort()
         # Progress step 11
         ProgressNextStage(_("Setting up smpppd(8)..."))
@@ -740,7 +681,7 @@ module Yast
         Builtins.sleep(sl)
       end
 
-      if NetworkService.IsManaged
+      if NetworkService.is_network_manager
         network = false
         timeout = 15
         while Ops.greater_than(timeout, 0)
@@ -807,7 +748,12 @@ module Yast
       NetworkConfig.Import(Ops.get_map(settings, "config", {}))
       DNS.Import(Builtins.eval(Ops.get_map(settings, "dns", {})))
       Routing.Import(Builtins.eval(Ops.get_map(settings, "routing", {})))
-      NetworkService.SetManaged(Ops.get_boolean(settings, "managed", false))
+
+      if Ops.get_boolean(settings, "managed", false)
+        NetworkService.use_network_manager
+      else
+        NetworkService.use_netconfig
+      end
       if Builtins.haskey(settings, "ipv6")
         @ipv6 = Ops.get_boolean(settings, "ipv6", true)
       end
@@ -834,7 +780,7 @@ module Yast
         "devices"              => devices,
         "ipv6"                 => @ipv6,
         "routing"              => Routing.Export,
-        "managed"              => NetworkService.IsManaged,
+        "managed"              => NetworkService.is_network_manager,
         "start_immediately"    => Ops.get_boolean(
           LanItems.autoinstall_settings,
           "start_immediately",
@@ -890,7 +836,7 @@ module Yast
       link_virt_net = nil
       header_nm = _("Network Mode")
 
-      if NetworkService.IsManaged
+      if NetworkService.is_network_manager
         href_nm = "lan--nm-disable"
         # network mode: the interfaces are controlled by the user
         status_nm = _("Interfaces controlled by NetworkManager")
@@ -1238,11 +1184,16 @@ module Yast
         ProposeVirtualized()
       else
         if !LanItems.nm_proposal_valid
-          NetworkService.SetManaged(UseNetworkManager())
+          if UseNetworkManager()
+            NetworkService.use_network_manager
+          else
+            NetworkService.use_netconfig
+          end
+
           LanItems.nm_proposal_valid = true
         end
 
-        if NetworkService.IsManaged
+        if NetworkService.is_network_manager
           ProposeNMInterfaces()
 
           LanItems.modified = true # #144139 workaround
@@ -1532,7 +1483,7 @@ module Yast
         end
       end
 
-      if NetworkService.IsManaged
+      if NetworkService.is_network_manager
         if !PackageSystem.Installed("NetworkManager")
           pkgs = Builtins.add(pkgs, "NetworkManager")
         end

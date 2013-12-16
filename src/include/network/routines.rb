@@ -1067,7 +1067,7 @@ module Yast
     def disableItemsIfNM(items, show_popup)
       items = deep_copy(items)
       disable = true
-      if Mode.normal && NetworkService.IsManaged
+      if Mode.normal && NetworkService.is_network_manager
         Builtins.foreach(items) { |w| UI.ChangeWidget(Id(w), :Enabled, false) }
         if show_popup
           Popup.Warning(

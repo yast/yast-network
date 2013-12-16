@@ -219,7 +219,7 @@ module Yast
 
       Builtins.foreach(options) do |option, value|
         if Builtins.contains(unmanaged_only_options, option) &&
-            NetworkService.IsManaged
+            NetworkService.is_network_manager
           CommandLine.Print(
             Ops.add(
               Ops.add(_("Cannot set "), option),

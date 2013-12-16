@@ -1265,7 +1265,7 @@ module Yast
                 ),
                 0
               ) &&
-                !NetworkService.IsManaged
+                !NetworkService.is_network_manager
               Builtins.foreach(
                 Ops.get_map(NetworkInterfaces.Current, "_aliases", {})
               ) do |key2, desc|
@@ -1848,7 +1848,7 @@ module Yast
             Ops.get_string(@Items, [@current, "hwinfo", "hotplug"], "")
           ) ? "hotplug" : "auto"
         end
-        if product_startmode == "ifplugd" && NetworkService.IsManaged
+        if product_startmode == "ifplugd" && NetworkService.is_network_manager
           Builtins.y2milestone("For NetworkManager will not prefer ifplugd")
           product_startmode = IsNotEmpty(
             Ops.get_string(@Items, [@current, "hwinfo", "hotplug"], "")

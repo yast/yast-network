@@ -47,7 +47,7 @@ module Yast
 
     def initAdditional(key)
       ##165059
-      if NetworkService.IsManaged
+      if NetworkService.is_network_manager
         UI.ChangeWidget(:f_additional, :Enabled, false)
       end
 
@@ -85,7 +85,7 @@ module Yast
     # @return dialog result
     def handleAdditional(key, event)
       event = deep_copy(event)
-      return nil if NetworkService.IsManaged
+      return nil if NetworkService.is_network_manager
 
       table_items = Convert.convert(
         UI.QueryWidget(Id(:table), :Items),
@@ -148,7 +148,7 @@ module Yast
 
     def storeAdditional(key, event)
       event = deep_copy(event)
-      if !NetworkService.IsManaged
+      if !NetworkService.is_network_manager
         table_items = Convert.convert(
           UI.QueryWidget(Id(:table), :Items),
           :from => "any",

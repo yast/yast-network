@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Dec 13 11:03:05 UTC 2013 - mfilka@suse.com
+
+- wicked support - initial implementation
+- adapted to API changes in yast2 3.0.9
+- 3.1.12
+
+-------------------------------------------------------------------
 Mon Dec  9 09:51:17 UTC 2013 - mfilka@suse.com
 
 - fate#308681

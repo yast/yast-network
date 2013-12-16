@@ -633,7 +633,6 @@ module Yast
     # Used in GUI mode - initializes widgets according hn_settings
     # @param [String] key ignored
     def initHostnameGlobal(key)
-      # NetworkService::IsManaged () not: #169858, #156830
       InitHnSettings()
 
       Builtins.foreach(

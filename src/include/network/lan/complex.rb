@@ -71,10 +71,22 @@ module Yast
             # radio button label
             # the user can control the network with the NetworkManager
             # program
-            ["managed", _("&User Controlled with NetworkManager")],
+            [
+              "managed",
+              _("&User Controlled with NetworkManager")
+            ],
             # radio button label
             # ifup is a program name
-            ["ifup", _("&Traditional Method with ifup")]
+            [
+              "ifup",
+              _("&Traditional Method with ifup")
+            ],
+            # radio button label
+            # wicked is network configuration backend like netconfig
+            [
+              "wicked",
+              _("Controlled by &wicked")
+            ],
           ],
           "opt"    => [],
           "help"   => Ops.get_string(@help, "managed", ""),
@@ -336,7 +348,23 @@ module Yast
     # Initialize the NetworkManager widget
     # @param [String] key id of the widget
     def ManagedInit(key)
-      value = NetworkService.IsManaged ? "managed" : "ifup"
+      value = "managed" if NetworkService.is_network_manager
+      value = "ifup"    if NetworkService.is_netconfig
+      value = "wicked"  if NetworkService.is_wicked
+
+      UI.ChangeWidget(
+        Id("managed"),
+        :Enabled,
+        NetworkService.is_backend_available(:network_manager))
+      UI.ChangeWidget(
+        Id("ifup"),
+        :Enabled,
+        NetworkService.is_backend_available(:netconfig))
+      UI.ChangeWidget(
+        Id("wicked"),
+        :Enabled,
+        NetworkService.is_backend_available(:wicked))
+
       UI.ChangeWidget(Id(key), :CurrentButton, value)
 
       nil
@@ -346,23 +374,30 @@ module Yast
     # @param [String] key	id of the widget
     # @param [Hash] event	the event being handled
     def ManagedStore(key, event)
-      event = deep_copy(event)
-      value_g = Convert.to_string(UI.QueryWidget(Id(key), :CurrentButton))
-      value = value_g == "managed"
-      if NetworkService.IsManaged != value
+      new_backend = UI.QueryWidget(Id(key), :CurrentButton)
+
+      case new_backend
+        when "ifup"
+          NetworkService.use_netconfig
+        when "managed"
+          NetworkService.use_network_manager
+        when "wicked"
+          NetworkService.use_wicked
+      end
+
+      if NetworkService.Modified
         LanItems.SetModified
-        if value && Stage.normal
+
+        if Stage.normal && NetworkService.is_network_manager
           Popup.AnyMessage(
             _("Applet needed"),
             _(
               "NetworkManager is controlled by desktop applet\n" +
-                "(KDE plasma widget and nm-applet for GNOME).\n" +
-                "Be sure it's running and if not, start it manually."
-            )
-          )
+              "(KDE plasma widget and nm-applet for GNOME).\n" +
+              "Be sure it's running and if not, start it manually."
+           ))
         end
       end
-      NetworkService.SetManaged(value)
 
       nil
     end
@@ -589,7 +624,6 @@ module Yast
       )
 
       # #148485: always show the device overview
-      ret = :managed if false && ret == :next && NetworkService.IsManaged
       ret
     end
 
