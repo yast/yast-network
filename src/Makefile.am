@@ -83,13 +83,11 @@ ynclude6_DATA = \
   include/network/lan/cmdline.rb
 
 scrconf_DATA = \
-  scrconf/cfg_slmodemd.scr \
   scrconf/cfg_udev_persistent.scr \
   scrconf/etc_hosts.scr \
   scrconf/cfg_dhcp.scr \
   scrconf/cfg_network.scr \
-  scrconf/routes.scr \
-  scrconf/etc_defaultdomain.scr
+  scrconf/routes.scr
 
 agent_SCRIPTS = \
   servers_non_y2/ag_udev_persistent
