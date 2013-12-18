@@ -29,7 +29,7 @@ License:        GPL-2.0
 BuildRequires:  perl-XML-Writer pkgconfig rpm
 BuildRequires:  update-desktop-files
 BuildRequires:  yast2-testsuite
-BuildRequires:  yast2-devtools >= 3.1.10
+BuildRequires:  yast2-devtools >= 3.1.14
 BuildRequires:  yast2-country
 BuildRequires:  yast2-installation >= 2.15.27
 
@@ -108,8 +108,8 @@ fi
 %{yast_agentdir}/ag_udev_persistent
 %{yast_schemadir}/autoyast/rnc/networking.rnc
 %{yast_schemadir}/autoyast/rnc/host.rnc
-%dir %{_datadir}/YaST2/lib/
-%{_datadir}/YaST2/lib/network/
+%dir %{yast_libdir}/network
+%{yast_libdir}/network
 
 %dir %{yast_docdir}
 %{yast_docdir}/COPYING
