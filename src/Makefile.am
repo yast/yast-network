@@ -106,7 +106,7 @@ desktop_DATA = \
   desktop/remote.desktop \
   desktop/lan.desktop
 
-ylibdir = "${yast2dir}/lib/network"
+ylibdir = @ylibdir@/network
 ylib_DATA = \
   lib/network/edit_nic_name.rb \
   lib/network/confirm_virt_proposal.rb
