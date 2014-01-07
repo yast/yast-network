@@ -116,7 +116,6 @@ module Yast
           @dev = Ops.get(@match, 0, "")
           # unescape colons
           @dev = Builtins.mergestring(Builtins.splitstring(@dev, "/"), ":")
-          #	Lan::Edit (dev);
 
           Builtins.foreach(LanItems.Items) do |row, value|
             LanItems.current = row

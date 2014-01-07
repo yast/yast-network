@@ -920,16 +920,6 @@ module Yast
       true
     end
 
-    # Edit the given device
-    # @param [String] name device to edit
-    # @return true if success
-    def Edit(name)
-      LanItems.operation = nil
-      return false if LanItems.Select(name) != true
-      NetworkInterfaces.Edit(name)
-      LanItems.operation = :edit
-      true
-    end
     # Delete the given device
     # @param name device to delete
     # @return true if success
@@ -1523,7 +1513,6 @@ module Yast
     publish :function => :Summary, :type => "list (string)"
     publish :function => :SummaryGeneral, :type => "list ()"
     publish :function => :Add, :type => "boolean ()"
-    publish :function => :Edit, :type => "boolean (string)"
     publish :function => :Delete, :type => "boolean ()"
     publish :function => :ProposeInterfaces, :type => "boolean ()"
     publish :function => :ProposeRoutesAndResolver, :type => "boolean ()"
