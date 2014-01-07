@@ -1817,24 +1817,10 @@ module Yast
       nil
     end
 
-    # Select the given device
-    # @param [String] dev device to select ("" for new device, default values)
-    # @return true if success
-    def Select(dev)
-      Builtins.y2debug("dev=%1", dev)
-      devmap = {}
-      # defaults for a new device
-      devmap = {
-        # for hotplug devices set STARTMODE=hotplug (#132583)
-        "STARTMODE" => IsNotEmpty(
-          Ops.get_string(@Items, [@current, "hwinfo", "hotplug"], "")
-        ) ? "hotplug" : "auto", # #115448, #156388
-        "NETMASK"   => Ops.get_string(
-          NetHwDetection.result,
-          "NETMASK",
-          "255.255.255.0"
-        )
-      } # #31369
+    # returns default startmode for the product
+    #
+    # startmode is returned according product, Arch and current device type
+    def startmode_for_product( devmap)
       product_startmode = ProductFeatures.GetStringFeature(
         "network",
         "startmode"
@@ -1855,7 +1841,7 @@ module Yast
           ) ? "hotplug" : "auto"
         end
         if product_startmode == "ifplugd" &&
-            Builtins.contains(["bond", "vlan", "br"], @type)
+            Builtins.contains(["bond", "vlan", "br"], type)
           Builtins.y2milestone(
             "For virtual networktypes (bond, bridge, vlan) will not prefer ifplugd"
           )
@@ -1863,8 +1849,33 @@ module Yast
             Ops.get_string(@Items, [@current, "hwinfo", "hotplug"], "")
           ) ? "hotplug" : "auto"
         end
+
         Ops.set(devmap, "STARTMODE", product_startmode)
       end
+
+      devmap
+    end
+
+    # Select the given device
+    # @param [String] dev device to select ("" for new device, default values)
+    # @return true if success
+    def Select(dev)
+      Builtins.y2debug("dev=%1", dev)
+      devmap = {}
+      # defaults for a new device
+      devmap = {
+        # for hotplug devices set STARTMODE=hotplug (#132583)
+        "STARTMODE" => IsNotEmpty(
+          Ops.get_string(@Items, [@current, "hwinfo", "hotplug"], "")
+        ) ? "hotplug" : "auto", # #115448, #156388
+        "NETMASK"   => Ops.get_string(
+          NetHwDetection.result,
+          "NETMASK",
+          "255.255.255.0"
+        )
+      } # #31369
+
+      devmap = startmode_for_product( devmap)
 
       @type = Ops.get_string(@Items, [@current, "hwinfo", "type"], "eth")
       @device = NetworkInterfaces.GetFreeDevice(@type)
