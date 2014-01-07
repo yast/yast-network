@@ -99,14 +99,9 @@ describe "#startmode_for_product" do
             .to receive(:GetStringFeature)
             .with("network", "startmode") { product_startmode }
 
-          Yast::Builtins.y2milestone( "Failing test ... ")
-          Yast::Builtins.y2milestone( "#{DEVMAP_STARTMODE_INVALID}")
-
           devmap = Yast::deep_copy( DEVMAP_STARTMODE_INVALID)
           result_devmap = Yast::LanItems.startmode_for_product(devmap)
           expect(result_devmap).to be_eql DEVMAP_STARTMODE_INVALID
-
-          Yast::Builtins.y2milestone( "#{result_devmap}")
         end
       end
     end
