@@ -121,9 +121,7 @@ module Yast
             ),
             VWeight(1, RichText(Id(:_hw_sum), "")),
             HBox(
-              PushButton(Id(:add), Label.AddButton),
-              PushButton(Id(:edit), Label.EditButton),
-              PushButton(Id(:delete), Label.DeleteButton),
+              *overview_buttons.map { |k,v| PushButton( Id(k), v) },
               HStretch()
             )
           ),
@@ -418,9 +416,7 @@ module Yast
 
       if !Mode.config && Lan.HaveXenBridge # #196479
         # #178848
-        Builtins.foreach([:add, :edit, :delete]) do |b|
-          UI.ChangeWidget(Id(b), :Enabled, false)
-        end
+        overview_buttons.keys.each { |b| UI.ChangeWidget(Id(b), :Enabled, false) }
       end
 
       nil
@@ -499,7 +495,7 @@ module Yast
       UI.ChangeWidget(Id(:_hw_items), :Items, term_items)
 
       if !@shown
-        disableItemsIfNM([:_hw_items, :_hw_sum, :add, :edit, :delete], true)
+        disableItemsIfNM([:_hw_items, :_hw_sum] + overview_buttons.keys, true)
         @shown = true
       else
         enableDisableButtons
@@ -512,7 +508,7 @@ module Yast
 
     def handleOverview(key, event)
       event = deep_copy(event)
-      if !disableItemsIfNM([:_hw_items, :_hw_sum, :add, :edit, :delete], false)
+      if !disableItemsIfNM([:_hw_items, :_hw_sum] + overview_buttons.keys, false)
         enableDisableButtons
       end
       UI.ChangeWidget(:_hw_sum, :Value, LanItems.GetItemDescription)
@@ -679,4 +675,20 @@ module Yast
       nil
     end
   end
+
+  private
+  def overview_buttons
+    ret = {}
+
+    # User should be able to configure existing devices during installation.
+    # This can be achieved via "Edit" button on automatically detected
+    # devices. Advanced configuration should be postponed to installed system.
+    # Therefor adding devices is not available during installation
+    ret[:add]    = Label.AddButton if !Mode.installation
+    ret[:edit]   = Label.EditButton
+    ret[:delete] = Label.DeleteButton
+
+    ret
+  end
+
 end
