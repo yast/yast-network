@@ -1817,6 +1817,47 @@ module Yast
       nil
     end
 
+    def hotplug_usable?
+      true unless Ops.get_string(@Items, [@current, "hwinfo", "hotplug"], "").empty?
+    end
+
+    def replace_ifplugd?
+      return true if !Arch.is_laptop
+      return true if NetworkService.is_network_manager
+      return true if ["bond", "vlan", "br"].include? type
+
+      return false
+    end
+
+    # returns default startmode for a new device
+    #
+    # startmode is returned according product, Arch and current device type
+    def new_device_startmode
+      product_startmode = ProductFeatures.GetStringFeature(
+        "network",
+        "startmode"
+      )
+
+      Builtins.y2milestone("Startmode by product: #{product_startmode}")
+
+      case product_startmode
+        when "ifplugd"
+          if replace_ifplugd?
+            startmode = hotplug_usable? ? "hotplug" : "auto"
+          else
+            startmode = product_startmode
+          end
+        when "auto"
+          startmode = "auto"
+        else
+          startmode = hotplug_usable? ? "hotplug" : "auto"
+      end
+
+      Builtins.y2milestone("New device startmode: #{startmode}")
+
+      startmode
+    end
+
     # Select the given device
     # @param [String] dev device to select ("" for new device, default values)
     # @return true if success
@@ -1825,46 +1866,14 @@ module Yast
       devmap = {}
       # defaults for a new device
       devmap = {
-        # for hotplug devices set STARTMODE=hotplug (#132583)
-        "STARTMODE" => IsNotEmpty(
-          Ops.get_string(@Items, [@current, "hwinfo", "hotplug"], "")
-        ) ? "hotplug" : "auto", # #115448, #156388
         "NETMASK"   => Ops.get_string(
           NetHwDetection.result,
           "NETMASK",
           "255.255.255.0"
         )
       } # #31369
-      product_startmode = ProductFeatures.GetStringFeature(
-        "network",
-        "startmode"
-      )
-      if Builtins.contains(["auto", "ifplugd"], product_startmode)
-        Builtins.y2milestone("Product startmode: %1", product_startmode)
-        if product_startmode == "ifplugd" && !Arch.is_laptop
-          # #164816
-          Builtins.y2milestone("Not a laptop, will not prefer ifplugd")
-          product_startmode = IsNotEmpty(
-            Ops.get_string(@Items, [@current, "hwinfo", "hotplug"], "")
-          ) ? "hotplug" : "auto"
-        end
-        if product_startmode == "ifplugd" && NetworkService.is_network_manager
-          Builtins.y2milestone("For NetworkManager will not prefer ifplugd")
-          product_startmode = IsNotEmpty(
-            Ops.get_string(@Items, [@current, "hwinfo", "hotplug"], "")
-          ) ? "hotplug" : "auto"
-        end
-        if product_startmode == "ifplugd" &&
-            Builtins.contains(["bond", "vlan", "br"], @type)
-          Builtins.y2milestone(
-            "For virtual networktypes (bond, bridge, vlan) will not prefer ifplugd"
-          )
-          product_startmode = IsNotEmpty(
-            Ops.get_string(@Items, [@current, "hwinfo", "hotplug"], "")
-          ) ? "hotplug" : "auto"
-        end
-        Ops.set(devmap, "STARTMODE", product_startmode)
-      end
+
+      devmap[ "STARTMODE"] = new_device_startmode
 
       @type = Ops.get_string(@Items, [@current, "hwinfo", "type"], "eth")
       @device = NetworkInterfaces.GetFreeDevice(@type)
