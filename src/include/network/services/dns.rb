@@ -28,6 +28,12 @@
 #
 module Yast
   module NetworkServicesDnsInclude
+
+    RESOLV_CONF_POLICIES = {
+      static:          "STATIC",
+      static_fallback: "STATIC_FALLBACK"
+    }
+
     def initialize_network_services_dns(include_target)
       textdomain "network"
 
@@ -160,10 +166,7 @@ module Yast
           "widget" => :combobox,
           "label"  => _("&Custom Policy Rule"),
           "opt"    => [:editable],
-          "items"  => [
-            [:static, "STATIC"],
-            [:static_fallback, "STATIC_FALLBACK"]
-          ],
+          "items"  => RESOLV_CONF_POLICIES.to_a,
           "init"   => fun_ref(method(:initPolicy), "void (string)"),
           "handle" => fun_ref(method(:handlePolicy), "symbol (string, map)"),
           "help"   => ""
@@ -294,7 +297,8 @@ module Yast
         "HOSTNAME"       => DNS.hostname,
         "DOMAIN"         => DNS.domain,
         "DHCP_HOSTNAME"  => DNS.dhcp_hostname,
-        "WRITE_HOSTNAME" => DNS.write_hostname
+        "WRITE_HOSTNAME" => DNS.write_hostname,
+        "PLAIN_POLICY"   => DNS.resolv_conf_policy
       }
       # the rest is not so straightforward,
       # because we have list variables but non-list widgets
@@ -335,6 +339,10 @@ module Yast
       DNS.searchlist = NonEmpty(searchlist)
       DNS.dhcp_hostname = Ops.get_boolean(settings, "DHCP_HOSTNAME", false)
       DNS.write_hostname = Ops.get_boolean(settings, "WRITE_HOSTNAME", true)
+
+      # "auto" is default defined in netconfig
+      policy_name = RESOLV_CONF_POLICIES[settings["PLAIN_POLICY"]]
+      DNS.resolv_conf_policy = policy_name
 
       # update modified flag
       DNS.modified = DNS.modified || settings != @settings_orig
@@ -578,14 +586,13 @@ module Yast
       event = deep_copy(event)
       Builtins.y2milestone("handlePolicy")
 
-      if UI.QueryWidget(Id("MODIFY_RESOLV"), :Value) == :custom
-        DNS.resolv_conf_policy = Convert.to_string(
-          UI.QueryWidget(Id("PLAIN_POLICY"), :Value)
-        )
-      elsif UI.QueryWidget(Id("MODIFY_RESOLV"), :Value) == :auto
-        DNS.resolv_conf_policy = "auto"
-      else
-        DNS.resolv_conf_policy = ""
+      case UI.QueryWidget(Id("MODIFY_RESOLV"), :Value)
+        when :custom
+          SetHnItem("PLAIN_POLICY", UI.QueryWidget(Id("PLAIN_POLICY"), :Value))
+        when :auto
+          SetHnItem("PLAIN_POLICY", :auto)
+        else
+          SetHnItem("PLAIN_POLICY", nil)
       end
 
       nil
