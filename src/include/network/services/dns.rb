@@ -28,6 +28,13 @@
 #
 module Yast
   module NetworkServicesDnsInclude
+
+    # CWM wants id-value pairs
+    CUSTOM_RESOLV_POLICIES = {
+      "STATIC" =>          "STATIC",
+      "STATIC_FALLBACK" => "STATIC_FALLBACK"
+    }
+
     def initialize_network_services_dns(include_target)
       textdomain "network"
 
@@ -160,10 +167,7 @@ module Yast
           "widget" => :combobox,
           "label"  => _("&Custom Policy Rule"),
           "opt"    => [:editable],
-          "items"  => [
-            [:static, "STATIC"],
-            [:static_fallback, "STATIC_FALLBACK"]
-          ],
+          "items"  => CUSTOM_RESOLV_POLICIES.to_a,
           "init"   => fun_ref(method(:initPolicy), "void (string)"),
           "handle" => fun_ref(method(:handlePolicy), "symbol (string, map)"),
           "help"   => ""
@@ -294,7 +298,8 @@ module Yast
         "HOSTNAME"       => DNS.hostname,
         "DOMAIN"         => DNS.domain,
         "DHCP_HOSTNAME"  => DNS.dhcp_hostname,
-        "WRITE_HOSTNAME" => DNS.write_hostname
+        "WRITE_HOSTNAME" => DNS.write_hostname,
+        "PLAIN_POLICY"   => DNS.resolv_conf_policy
       }
       # the rest is not so straightforward,
       # because we have list variables but non-list widgets
@@ -335,6 +340,7 @@ module Yast
       DNS.searchlist = NonEmpty(searchlist)
       DNS.dhcp_hostname = Ops.get_boolean(settings, "DHCP_HOSTNAME", false)
       DNS.write_hostname = Ops.get_boolean(settings, "WRITE_HOSTNAME", true)
+      DNS.resolv_conf_policy = settings["PLAIN_POLICY"]
 
       # update modified flag
       DNS.modified = DNS.modified || settings != @settings_orig
@@ -552,7 +558,6 @@ module Yast
       true
     end
 
-
     def initPolicy(key)
       #first initialize correctly
       Builtins.y2milestone(
@@ -578,30 +583,35 @@ module Yast
       event = deep_copy(event)
       Builtins.y2milestone("handlePolicy")
 
-      if UI.QueryWidget(Id("MODIFY_RESOLV"), :Value) == :custom
-        DNS.resolv_conf_policy = Convert.to_string(
-          UI.QueryWidget(Id("PLAIN_POLICY"), :Value)
-        )
-      elsif UI.QueryWidget(Id("MODIFY_RESOLV"), :Value) == :auto
-        DNS.resolv_conf_policy = "auto"
-      else
-        DNS.resolv_conf_policy = ""
+      case UI.QueryWidget(Id("MODIFY_RESOLV"), :Value)
+        when :custom
+          SetHnItem("PLAIN_POLICY", UI.QueryWidget(Id("PLAIN_POLICY"), :Value))
+        when :auto
+          SetHnItem("PLAIN_POLICY", "auto")
+        else
+          SetHnItem("PLAIN_POLICY", "")
       end
 
       nil
     end
 
+    def modify_resolv_default
+      if DNS.resolv_conf_policy == nil || DNS.resolv_conf_policy == ""
+        Id(:nomodify)
+      elsif DNS.resolv_conf_policy == "auto" || DNS.resolv_conf_policy == "STATIC *"
+        Id(:auto)
+      else
+        Id(:custom)
+      end
+    end
+
     def initModifyResolvPolicy(key)
       Builtins.y2milestone("initModifyResolvPolicy")
+
       #first initialize correctly
-      if DNS.resolv_conf_policy == nil || DNS.resolv_conf_policy == ""
-        UI.ChangeWidget(Id("MODIFY_RESOLV"), :Value, Id(:nomodify))
-      elsif DNS.resolv_conf_policy == "auto" ||
-          DNS.resolv_conf_policy == "STATIC *"
-        UI.ChangeWidget(Id("MODIFY_RESOLV"), :Value, Id(:auto))
-      else
-        UI.ChangeWidget(Id("MODIFY_RESOLV"), :Value, Id(:custom))
-      end
+      default = modify_resolv_default
+
+      UI.ChangeWidget(Id("MODIFY_RESOLV"), :Value, default)
       #then disable if needed
       disableItemsIfNM(["MODIFY_RESOLV"], false)
 
