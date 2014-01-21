@@ -459,35 +459,6 @@ module Yast
         Builtins.y2error("Command '%1' failed -> %2", run_command, ret_command)
       end
 
-      if Internet.logfile != ""
-        # label of combobox where the log is selected
-        @logs = Builtins.add(
-          @logs,
-          {
-            :menuname => _("PPP Daemon"),
-            :filename => "smpppd.log",
-            :prio     => 20
-          }
-        )
-        run_command = Ops.add(
-          Ops.add(
-            Ops.add(Ops.add("/bin/cp '", String.Quote(Internet.logfile)), "' '"),
-            String.Quote(@logdir)
-          ),
-          "/smpppd.log'"
-        )
-        ret_command = Convert.to_integer(
-          SCR.Execute(path(".target.bash"), run_command)
-        )
-        if ret_command != 0
-          Builtins.y2error(
-            "Command '%1' failed -> %2",
-            run_command,
-            ret_command
-          )
-        end
-      end
-
       nil
     end
 

@@ -69,42 +69,5 @@ module Yast
       true
     end
 
-    # Are there interfaces controlled by smpppd and qinternet?
-    # They are the ones with USERCONTROL=yes (#44303)
-    # @return true/false
-    def HaveDialupLikeInterfaces
-      devs = NetworkInterfaces.Locate("USERCONTROL", "yes")
-      Builtins.y2milestone("user controlled interfaces: %1", devs)
-      return true if devs != []
-
-      devs != []
-    end
-
-    # Setup smpppd(8)
-    # @return true if success
-    def SetupSMPPPD(install_force)
-      ret = true
-      # Stop and disable
-      if !HaveDialupLikeInterfaces()
-        ret = Service.Disable("smpppd") && ret
-        ret = Service.Stop("smpppd") && ret
-      else
-        # (#299033) - if not forced, user can continue also without packages
-        ret = PackageSystem.CheckAndInstallPackagesInteractive(["smpppd"])
-
-        ret = Service.Enable("smpppd") && ret
-
-        # Installation?
-        if Mode.normal
-          if Service.Status("smpppd") == 0
-            ret = Service.Reload("smpppd") && ret
-          else
-            ret = Service.Start("smpppd") && ret
-          end
-        end
-      end
-
-      ret
-    end
   end
 end

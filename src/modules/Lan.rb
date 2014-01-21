@@ -546,11 +546,6 @@ module Yast
       end
       # Progress stage 10
       step_labels = Builtins.add(step_labels, _("Update configuration"))
-      if !NetworkService.is_network_manager &&
-          !@write_only #(boolean) SCR::Read(.init.scripts.exists, "smpppd") &&
-        # Progress stage 11
-        step_labels = Builtins.add(step_labels, _("Set up smpppd"))
-      end
 
       Progress.New(
         caption,
@@ -671,15 +666,6 @@ module Yast
       ProgressNextStage(_("Updating configuration..."))
       RunSuSEconfig() if !@write_only
       Builtins.sleep(sl)
-
-      if !NetworkService.is_network_manager && !@write_only
-        return false if Abort()
-        # Progress step 11
-        ProgressNextStage(_("Setting up smpppd(8)..."))
-        # takes care of autoinst by itself
-        SetupSMPPPD(false)
-        Builtins.sleep(sl)
-      end
 
       if NetworkService.is_network_manager
         network = false

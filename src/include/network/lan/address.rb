@@ -1266,7 +1266,6 @@ module Yast
         "STARTMODE"        => LanItems.startmode(
         ),
         "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
-        "USERCONTROL"      => LanItems.usercontrol,
         # problems when renaming the interface?
         "FWZONE"           => fwzone,
         "MTU"              => LanItems.mtu,
@@ -1541,8 +1540,6 @@ module Yast
                     VSpacing(0.4),
                     Frame(_("Firewall Zone"), HBox("FWZONE", HStretch())),
                     VSpacing(0.4),
-                    Frame(_("Device Control"), HBox("USERCONTROL", HStretch())),
-                    VSpacing(0.4),
                     Frame(
                       _("Maximum Transfer Unit (MTU)"),
                       HBox("MTU", HStretch())
@@ -1654,7 +1651,6 @@ module Yast
           )
           LanItems.ifplugd_priority = ifp_prio if ifp_prio != nil
         end
-        LanItems.usercontrol = Ops.get_boolean(@settings, "USERCONTROL", false)
 
         if fw_is_installed
           zone = Ops.get_string(@settings, "FWZONE", "")
