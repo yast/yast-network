@@ -184,12 +184,6 @@ module Yast
       :next
     end
 
-    # Display finished popup
-    # @return dialog result
-    # define symbol FinishDialog() ``{
-    #     return FinishPopup(Modified(), "lan", "", "mail", ["permanent"]);
-    # }
-
     # Read settings dialog
     # @return `abort if aborted and `next otherwise
     def ReadDialog
