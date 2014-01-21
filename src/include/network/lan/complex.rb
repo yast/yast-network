@@ -184,12 +184,6 @@ module Yast
       :next
     end
 
-    # Display finished popup
-    # @return dialog result
-    # define symbol FinishDialog() ``{
-    #     return FinishPopup(Modified(), "lan", "", "mail", ["permanent"]);
-    # }
-
     # Read settings dialog
     # @return `abort if aborted and `next otherwise
     def ReadDialog
@@ -273,9 +267,8 @@ module Yast
         end
       end
 
-      # this is one of 3 places to install packages :-(
+      # this is one of 2 places to install packages :-(
       # - kernel modules (InstallKernel): before loaded
-      # - smpppd & qinternet: before net start
       # - wlan firmware: here, just because it is copied from modems
       #   #45960
       if LanItems.Requires != [] && LanItems.Requires != nil

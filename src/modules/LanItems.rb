@@ -84,7 +84,6 @@ module Yast
 
       @startmode = "auto"
       @ifplugd_priority = "0"
-      @usercontrol = false
       @mtu = ""
       @ethtool_options = ""
 
@@ -225,7 +224,6 @@ module Yast
         "NAME"                         => "",
         "STARTMODE"                    => "manual",
         "IFPLUGD_PRIORITY"             => "0",
-        "USERCONTROL"                  => "no",
         "WIRELESS_MODE"                => "Managed",
         "WIRELESS_ESSID"               => "",
         "WIRELESS_NWID"                => "",
@@ -1607,11 +1605,6 @@ module Yast
     # must be in sync with {#SetDefaultsForHW}
     def GetDefaultsForHW
       ret = {}
-      if @type == "wlan"
-        ret = Builtins.union(
-          ret, # #63767
-          { "USERCONTROL" => "yes" }
-        )
       # LCS eth interfaces on s390 need the MTU of 1492. #81815.
       # TODO: lcs, or eth?
       # will eth not get mapped to lcs?
@@ -1620,7 +1613,7 @@ module Yast
       # #93798: limit to s390 to minimize regressions. Probably it could
       # be also done by only testing for lcs and not eth but that
       # would need more testing.
-      elsif Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
+      if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
         Builtins.y2milestone("Adding LCS: setting MTU")
         ret = Builtins.add(ret, "MTU", "1492")
       end
@@ -1630,16 +1623,9 @@ module Yast
     # must be in sync with {#GetDefaultsForHW}
     def SetDefaultsForHW
       Builtins.y2milestone("SetDefaultsForHW type %1", @type)
-      if @type == "wlan"
-        @usercontrol = true
-      elsif Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
+      if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
         @mtu = "1492"
       end 
-      # if (!needHwcfg(hw)){
-      # 		nm_name_old = nm_name;
-      # 		nm_name = "";
-      # 	}
-      # y2milestone("hwcfg name %1", nm_name);
 
       nil
     end
@@ -1670,7 +1656,6 @@ module Yast
       @ethtool_options = GetDeviceVar(devmap, defaults, "ETHTOOL_OPTIONS")
       @startmode = GetDeviceVar(devmap, defaults, "STARTMODE")
       @ifplugd_priority = GetDeviceVar(devmap, defaults, "IFPLUGD_PRIORITY")
-      @usercontrol = GetDeviceVar(devmap, defaults, "USERCONTROL") == "yes"
       @description = GetDeviceVar(devmap, defaults, "NAME")
       @bond_option = GetDeviceVar(devmap, defaults, "BONDING_MODULE_OPTS")
       @vlan_etherdevice = GetDeviceVar(devmap, defaults, "ETHERDEVICE")
@@ -1957,7 +1942,6 @@ module Yast
               )
             end
           end
-          Ops.set(newdev, "USERCONTROL", @usercontrol ? "yes" : "no")
           Ops.set(newdev, "BOOTPROTO", @bootproto)
         end
         Ops.set(newdev, "NAME", @description)
@@ -2568,7 +2552,6 @@ module Yast
     publish :variable => :prefix, :type => "string"
     publish :variable => :startmode, :type => "string"
     publish :variable => :ifplugd_priority, :type => "string"
-    publish :variable => :usercontrol, :type => "boolean"
     publish :variable => :mtu, :type => "string"
     publish :variable => :ethtool_options, :type => "string"
     publish :variable => :wl_mode, :type => "string"

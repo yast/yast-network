@@ -45,6 +45,7 @@ interface =
     bootproto? &
     startmode? &
     ifplugd_priority? &
+	# ignored, present for backward compatibility
     usercontrol? &
 
     # address

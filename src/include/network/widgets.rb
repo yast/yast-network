@@ -45,24 +45,6 @@ module Yast
       Yast.include include_target, "network/complex.rb"
 
       @widget_descr = {
-        "USERCONTROL"     => {
-          "widget" => :checkbox,
-          # CheckBox label
-          # is the interface administrable by users (as opposed to root)
-          "label"  => _(
-            "E&nable Device Control for Non-root User Via QInternet"
-          ),
-          "opt"    => [:notify],
-          "help" =>
-            # Details dialog help
-            _(
-              "<p><b><big>Device Control</big></b></p>\n" +
-                "<p>Usually, only the system administrator is allowed to activate and\n" +
-                "deactivate a network interface. With <b>Enable Device Control for Non-root User\n" +
-                "Via QInternet</b>, any user may control the interface via QInternet.This will require\n" +
-                "<b>smpppd</b> installed and running.</p>\n"
-            )
-        },
         # #23315
         "DIALPREFIXREGEX" => {
           "widget" => :textentry,

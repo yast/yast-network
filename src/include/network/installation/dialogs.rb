@@ -111,15 +111,6 @@ module Yast
         Internet.capi_isdn = Ops.get_string(Provider.Current, "PPPMODE", "ippp") == "capi-isdn"
       end
 
-      # Set logfile
-      if Internet.type == "dsl" || Internet.type == "modem" ||
-          Internet.type == "isdn" && Internet.capi_isdn
-        Internet.logfile = Ops.add(
-          Ops.add("/var/log/smpppd/ifcfg-", Internet.device),
-          ".log"
-        )
-      end
-
       nil
     end
 
