@@ -1308,47 +1308,6 @@ module Yast
         Ops.set(@settings, "BOOTPROTO", "static")
       end
 
-      # FIXME duplicated in hardware.ycp
-      device_types = [
-        "arc",
-        "bnep",
-        "dummy",
-        "eth",
-        "fddi",
-        "myri",
-        "tr",
-        "usb",
-        "wlan",
-        "bond",
-        "vlan",
-        "br",
-        "tun",
-        "tap",
-        "ib"
-      ]
-
-      if Arch.s390
-        device_types = [
-          "eth",
-          "tr",
-          "hsi",
-          "ctc",
-          "escon",
-          "ficon",
-          "iucv",
-          "qeth",
-          "lcs",
-          "vlan",
-          "br",
-          "tun",
-          "tap"
-        ]
-      end
-
-      device_types = Builtins.add(device_types, "xp") if Arch.ia64
-
-      fw_is_installed = SuSEFirewall4Network.IsInstalled
-
       wd = Convert.convert(
         Builtins.union(@widget_descr, @widget_descr_local),
         :from => "map",
@@ -1395,7 +1354,7 @@ module Yast
         }
       )
 
-      Ops.set(wd, ["IFCFGTYPE", "items"], BuildTypesListCWM(device_types))
+      Ops.set(wd, ["IFCFGTYPE", "items"], BuildTypesListCWM(NetworkInterfaces.GetDeviceTypes))
       Ops.set(
         wd,
         ["IFCFGID", "items"],
@@ -1406,6 +1365,8 @@ module Yast
           ]
         ]
       )
+
+      fw_is_installed = SuSEFirewall4Network.IsInstalled
 
       if fw_is_installed
         Ops.set(
