@@ -1224,6 +1224,138 @@ module Yast
       nil
     end
 
+    def general_tab
+      {
+        "header"   => _("&General"),
+        "contents" => MarginBox(
+          1,
+          0,
+          VBox(
+            MarginBox(
+              1,
+              0,
+              VBox(
+                # TODO:
+                # "MANDATORY",
+                Frame(
+                  _("Device Activation"),
+                  HBox("STARTMODE", "IFPLUGD_PRIORITY", HStretch())
+                ),
+                VSpacing(0.4),
+                Frame(_("Firewall Zone"), HBox("FWZONE", HStretch())),
+                VSpacing(0.4),
+                Frame(
+                  _("Maximum Transfer Unit (MTU)"),
+                  HBox("MTU", HStretch())
+                ),
+                VStretch()
+              )
+            )
+          )
+        ),
+        # FIXME we have helps per widget and for the whole
+        # tab set but not for one tab
+        "help"     => _(
+          "<p>Configure the detailed network card settings here.</p>"
+        )
+      }          
+    end
+
+    def address_tab
+      type = LanItems.GetCurrentType 
+      drvtype = DriverType(type)
+      is_ptp = drvtype == "ctc" || drvtype == "iucv"
+      # TODO: dynamic for dummy. or add dummy from outside?
+      no_dhcp = 
+        is_ptp || 
+        type == "dummy" ||
+        LanItems.alias != ""
+
+      address_p2p_contents = Frame(
+        "", # labelless frame
+        VBox("IPADDR", "REMOTEIP")
+      )
+
+      address_static_contents = Frame(
+        "", # labelless frame
+        VBox(
+          "IPADDR",
+          "NETMASK",
+          # TODO new widget, add logic
+          #"GATEWAY"
+          Empty()
+        )
+      )
+
+      address_dhcp_contents = VBox("BOOTPROTO")
+      just_address_contents = is_ptp ?
+        address_p2p_contents :
+        no_dhcp ? address_static_contents : address_dhcp_contents
+
+      label = HBox(
+        HSpacing(0.5),
+        # The combo is a hack to allow changing misdetected
+        # interface types. It will work in some cases, like
+        # overriding eth to wlan but not in others where we would
+        # need to change the contents of the dialog. #30890.
+        type != "vlan" ?
+          "IFCFGTYPE" :
+          Empty(),
+        HSpacing(1.5),
+        MinWidth(30, "IFCFGID"),
+        HSpacing(0.5),
+        type == "vlan" ? VBox("ETHERDEVICE") : Empty()
+      )
+
+      address_contents = VBox(
+        Left(label),
+        just_address_contents,
+        "AD_ADDRESSES"
+      )
+
+      {
+        # FIXME: here it does not complain about missing
+        # shortcuts
+        "header"   => _(
+          "&Address"
+        ),
+        "contents" => address_contents,
+        # Address tab help
+        "help"     => _(
+          "<p>Configure your IP address.</p>"
+        )
+      }    
+    end
+
+    def hardware_tab
+      {
+        "header"   => _("&Hardware"),
+        "contents" => VBox("HWDIALOG")
+      }    
+    end
+
+    def bond_slaves_tab
+      {
+        "header"   => _("&Bond Slaves"),
+        "contents" => VBox("BONDSLAVE", "BONDOPTION")
+      }
+    end
+
+    def bridge_slaves_tab
+      {
+        "header"   => _("Bridged Devices"),
+        "contents" => VBox("BRIDGE_PORTS")
+      }    
+    end
+
+    def wireless_tab
+      {
+        "header"       => _("&Wireless"),
+        "contents"     => Empty(),
+        "widget_names" => []
+      }    
+    end
+
     # Dialog for setting up IP address
     # @return dialog result
     def AddressDialog
@@ -1265,13 +1397,6 @@ module Yast
         "IFCFGTYPE"        => LanItems.type,
         "IFCFGID"          => LanItems.device
       }
-
-      drvtype = DriverType(Ops.get_string(@settings, "IFCFGTYPE", ""))
-
-      is_ptp = drvtype == "ctc" || drvtype == "iucv"
-      # TODO: dynamic for dummy. or add dummy from outside?
-      no_dhcp = is_ptp || Ops.get_string(@settings, "IFCFGTYPE", "") == "dummy" ||
-        LanItems.alias != ""
 
       if LanItems.type == "vlan"
         Ops.set(@settings, "ETHERDEVICE", LanItems.vlan_etherdevice)
@@ -1369,20 +1494,6 @@ module Yast
       end
 
 
-      label = HBox(
-        HSpacing(0.5),
-        # The combo is a hack to allow changing misdetected
-        # interface types. It will work in some cases, like
-        # overriding eth to wlan but not in others where we would
-        # need to change the contents of the dialog. #30890.
-        LanItems.type != "vlan" ?
-          "IFCFGTYPE" :
-          Empty(),
-        HSpacing(1.5),
-        MinWidth(30, "IFCFGID"),
-        HSpacing(0.5),
-        LanItems.type == "vlan" ? VBox("ETHERDEVICE") : Empty()
-      )
       if LanItems.operation != :add
         if LanItems.alias == ""
           Ops.set(@settings, "IFCFG", LanItems.device)
@@ -1390,33 +1501,6 @@ module Yast
           Ops.set(@settings, "IFCFG", LanItems.device)
         end
       end
-
-      address_p2p_contents = Frame(
-        "", # labelless frame
-        VBox("IPADDR", "REMOTEIP")
-      )
-
-      address_static_contents = Frame(
-        "", # labelless frame
-        VBox(
-          "IPADDR",
-          "NETMASK",
-          # TODO new widget, add logic
-          #"GATEWAY"
-          Empty()
-        )
-      )
-
-      address_dhcp_contents = VBox("BOOTPROTO")
-      just_address_contents = is_ptp ?
-        address_p2p_contents :
-        no_dhcp ? address_static_contents : address_dhcp_contents
-
-      address_contents = VBox(
-        Left(label),
-        just_address_contents,
-        "AD_ADDRESSES"
-      )
 
       if Builtins.contains(["tun", "tap"], LanItems.type)
         address_contents = VBox(Left(label), "TUNNEL")
@@ -1440,69 +1524,12 @@ module Yast
       wd_content = {
         "tab_order"          => ["t_general", "t_addr", "hardware"],
         "tabs"               => {
-          "t_general"    => {
-            "header"   => _("&General"),
-            "contents" => MarginBox(
-              1,
-              0,
-              VBox(
-                MarginBox(
-                  1,
-                  0,
-                  VBox(
-                    # TODO:
-                    # "MANDATORY",
-                    Frame(
-                      _("Device Activation"),
-                      HBox("STARTMODE", "IFPLUGD_PRIORITY", HStretch())
-                    ),
-                    VSpacing(0.4),
-                    Frame(_("Firewall Zone"), HBox("FWZONE", HStretch())),
-                    VSpacing(0.4),
-                    Frame(
-                      _("Maximum Transfer Unit (MTU)"),
-                      HBox("MTU", HStretch())
-                    ),
-                    VStretch()
-                  )
-                )
-              )
-            ),
-            # FIXME we have helps per widget and for the whole
-            # tab set but not for one tab
-            "help"     => _(
-              "<p>Configure the detailed network card settings here.</p>"
-            )
-          },
-          "t_addr"       => {
-            # FIXME: here it does not complain about missing
-            # shortcuts
-            "header"   => _(
-              "&Address"
-            ),
-            "contents" => address_contents,
-            # Address tab help
-            "help"     => _(
-              "<p>Configure your IP address.</p>"
-            )
-          },
-          "hardware"     => {
-            "header"   => _("&Hardware"),
-            "contents" => VBox("HWDIALOG")
-          },
-          "bond_slaves"  => {
-            "header"   => _("&Bond Slaves"),
-            "contents" => VBox("BONDSLAVE", "BONDOPTION")
-          },
-          "bridge_ports" => {
-            "header"   => _("Bridged Devices"),
-            "contents" => VBox("BRIDGE_PORTS")
-          },
-          "t3"           => {
-            "header"       => _("&Wireless"),
-            "contents"     => Empty(),
-            "widget_names" => []
-          }
+          "t_general"    => general_tab,
+          "t_addr"       => address_tab,
+          "hardware"     => hardware_tab,
+          "bond_slaves"  => bond_slaves_tab,
+          "bridge_ports" => bridge_slaves_tab,
+          "t3"           => wireless_tab
         },
         "initial_tab"        => "t_addr",
         "widget_descr"       => wd,
