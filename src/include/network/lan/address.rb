@@ -388,20 +388,6 @@ module Yast
             IP.Valid4
           )
         },
-        "ADVANCED_MB"  => {
-          "widget" => :menu_button,
-          # menu button label
-          "label"  => _("&Advanced..."),
-          "opt"    => [:hstretch],
-          "help"   => "",
-          # "items" will be filled in the dialog itself
-          "init"   => fun_ref(
-            CWM.method(:InitNull),
-            "void (string)"
-          ),
-          "store"  => fun_ref(CWM.method(:StoreNull), "void (string, map)"),
-          "handle" => fun_ref(method(:HandleButton), "symbol (string, map)")
-        },
         # leftovers
         "S390"         => {
           "widget" => :push_button,
@@ -1405,33 +1391,6 @@ module Yast
         end
       end
 
-      mb_items = []
-      Ops.set(wd, ["ADVANCED_MB", "items"], Builtins.maplist(mb_items) do |btn|
-        [btn, Ops.get_string(wd, [btn, "label"], btn)]
-      end)
-
-      frame2 = Empty()
-      if Ops.greater_than(Builtins.size(mb_items), 0)
-        frame2 = MarginBox(
-          1,
-          0,
-          Frame(
-            _("Detailed Settings"),
-            HBox(
-              HStretch(),
-              HSquash(
-                VBox(
-                  "ADVANCED_MB"
-                )
-              ),
-              HStretch()
-            )
-          )
-        )
-      end
-
-      frame2 = VSpacing(0) if LanItems.alias != ""
-
       address_p2p_contents = Frame(
         "", # labelless frame
         VBox("IPADDR", "REMOTEIP")
@@ -1456,12 +1415,11 @@ module Yast
       address_contents = VBox(
         Left(label),
         just_address_contents,
-        "AD_ADDRESSES",
-        frame2
+        "AD_ADDRESSES"
       )
 
       if Builtins.contains(["tun", "tap"], LanItems.type)
-        address_contents = VBox(Left(label), "TUNNEL", frame2)
+        address_contents = VBox(Left(label), "TUNNEL")
       end
 
 
