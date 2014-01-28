@@ -28,6 +28,7 @@
 #
 module Yast
   module NetworkWidgetsInclude
+
     def initialize_network_widgets(include_target)
       Yast.import "UI"
 
@@ -212,6 +213,33 @@ module Yast
       deep_copy(ret)
     end
 
+    def init_ipoib_mode_widget(key)
+      
+      ipoib_mode = LanItems.ipoib_mode
+
+      return unless LanItems.ipoib_modes.keys.include?(ipoib_mode)
+
+      UI.ChangeWidget(
+        Id(key),
+        :CurrentButton,
+        ipoib_mode
+      )
+    end
+
+    def store_ipoib_mode_widget(key, event)
+      LanItems.ipoib_mode = UI.QueryWidget(Id(key), :CurrentButton)
+    end
+
+    def ipoib_mode_widget
+      {
+        "widget" => :radio_buttons,
+        "items"  => LanItems.ipoib_modes.to_a,
+        "label"  => _("IPoIB device mode"),
+        "opt"    => [:hstretch],
+        "init"   => fun_ref(method(:init_ipoib_mode_widget), "void (string)"),
+        "store"  => fun_ref(method(:store_ipoib_mode_widget), "void (string, map)")
+      }
+    end
 
     def firewall_widget
       if SuSEFirewall4Network.IsInstalled

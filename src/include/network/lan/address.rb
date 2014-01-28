@@ -1225,6 +1225,8 @@ module Yast
     end
 
     def general_tab
+      type = LanItems.GetCurrentType 
+
       {
         "header"   => _("&General"),
         "contents" => MarginBox(
@@ -1244,6 +1246,8 @@ module Yast
                 VSpacing(0.4),
                 Frame(_("Firewall Zone"), HBox("FWZONE", HStretch())),
                 VSpacing(0.4),
+                type == "ib" ? HBox("IPOIB_MODE") : Empty(),
+                type == "ib" ? VSpacing(0.4) : Empty(),
                 Frame(
                   _("Maximum Transfer Unit (MTU)"),
                   HBox("MTU", HStretch())
@@ -1478,6 +1482,7 @@ module Yast
       )
 
       wd["FWZONE"]["items"] = firewall_widget
+      wd["IPOIB_MODE"] = ipoib_mode_widget if LanItems.GetCurrentType == "ib"
 
       if LanItems.operation != :add
         if LanItems.alias == ""
