@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Jan 30 09:55:29 UTC 2014 - mfilka@suse.com
+
+- bnc#861078
+  - network configuration created during installation is copied to
+    target
+- 3.1.16 
+
+-------------------------------------------------------------------
 Tue Jan 21 10:30:13 UTC 2014 - mfilka@suse.com
 
 - bnc#859181
