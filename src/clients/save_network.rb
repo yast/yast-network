@@ -706,11 +706,9 @@ module Yast
         copy_from = String.Quote(Builtins.sformat("%1%2", sysconfig, file))
         Builtins.y2milestone("Copy %1 into %2", copy_from, copy_to)
         cmd = Builtins.sformat("cp %1 %2", copy_from, copy_to)
-        Builtins.y2internal(
-          "cml %1:%2",
-          cmd,
-          SCR.Execute(path(".target.bash_output"), cmd)
-        )
+        ret = SCR.Execute(path(".target.bash_output"), cmd)
+
+        Builtins.y2error("cmd: '#{cmd}' failed: #{ret}") if ret["exit"] != 0
       end
 
       # merge files with default installed by sysconfig
@@ -761,13 +759,13 @@ module Yast
 
       # when root is on nfs/iscsi set startmode=nfsroot #176804
       device = NetworkStorage.getDevice(Installation.destdir)
-      Builtins.y2internal(
+      Builtins.y2debug(
         "%1 directory is on %2 device",
         Installation.destdir,
         device
       )
       @network_disk = NetworkStorage.isDiskOnNetwork(device)
-      Builtins.y2internal("Network based device: %1", @network_disk)
+      Builtins.y2milestone("Network based device: %1", @network_disk)
 
 
       if Arch.s390
@@ -852,18 +850,11 @@ module Yast
           )
         )
       else
-        Builtins.y2internal("file %1 exists", net_destfile)
+        Builtins.y2milestone("Not copying file %1 - it already exists", net_destfile)
       end
 
-      install_inf = ReadInstallInf()
-      configure_network = false
-      if install_inf
-        configure_network = Ops.get_string(
-          @InstallInf,
-          "firststage_network",
-          "0"
-        ) == "1"
-        CopyConfiguredNetworkFiles() if configure_network
+      if ReadInstallInf()
+        CopyConfiguredNetworkFiles()
       else
         Builtins.y2error("Error while reading install.inf!")
       end
@@ -874,26 +865,13 @@ module Yast
 
       LanUdevAuto.Write if Mode.autoinst
 
+      SCR.Execute(path(".target.bash"), "chkconfig network on")
 
-      if install_inf
-        #  string hwcfgname = CreateHardwareFile();
-        #  string ifcfg = sformat("ifcfg-%1", InstallInf["netdevice"]:"");
-
-        if !configure_network
-          CreateIfcfg()
-          CreateOtherNetworkFiles()
-        end
-
-        SCR.Execute(path(".target.bash"), "chkconfig network on")
-
-        # if portmap running - start it after reboot
-        WFM.Execute(
-          path(".local.bash"),
-          "pidofproc rpcbind && touch /var/lib/YaST2/network_install_rpcbind"
-        )
-      else
-        Builtins.y2error("Error while reading install.inf!")
-      end
+      # if portmap running - start it after reboot
+      WFM.Execute(
+        path(".local.bash"),
+        "pidofproc rpcbind && touch /var/lib/YaST2/network_install_rpcbind"
+      )
 
       nil
     end
