@@ -308,7 +308,7 @@ module Yast
 
       if @allow_administration
         # Install required packages
-        packages = ["xinetd", "tightvnc", "xorg-x11", "xorg-x11-Xvnc"]
+        packages = ["xinetd", "xorg-x11", "xorg-x11-Xvnc"]
 
         #At least one windowmanager must be installed (#427044)
         #If none is, there, use icewm as fallback
