@@ -1477,22 +1477,7 @@ module Yast
         ]
       )
 
-      fw_is_installed = SuSEFirewall4Network.IsInstalled
-
-      if fw_is_installed
-        Ops.set(
-          wd,
-          ["FWZONE", "items"],
-          SuSEFirewall4Network.FirewallZonesComboBoxItems
-        )
-      else
-        Ops.set(
-          wd,
-          ["FWZONE", "items"],
-          [["", _("Firewall is not installed.")]]
-        )
-      end
-
+      wd["FWZONE"]["items"] = firewall_widget
 
       if LanItems.operation != :add
         if LanItems.alias == ""
@@ -1598,7 +1583,7 @@ module Yast
           LanItems.ifplugd_priority = ifp_prio if ifp_prio != nil
         end
 
-        if fw_is_installed
+        if SuSEFirewall4Network.IsInstalled
           zone = Ops.get_string(@settings, "FWZONE", "")
           SuSEFirewall4Network.ChangedByUser(true) if zone != @fwzone_initial
           SuSEFirewall4Network.ProtectByFirewall(ifcfgname, zone, zone != "")

@@ -213,6 +213,15 @@ module Yast
     end
 
 
+    def firewall_widget
+      if SuSEFirewall4Network.IsInstalled
+        SuSEFirewall4Network.FirewallZonesComboBoxItems
+      else
+        [["", _("Firewall is not installed.")]]
+      end
+
+    end
+
     def GetDeviceDescription(device_id)
       device_name = NetworkInterfaces.GetValue(device_id, "NAME")
       if device_name == nil || device_name == ""
