@@ -1843,13 +1843,9 @@ module Yast
       startmode
     end
 
-    # Select the given device
-    # @param [String] dev device to select ("" for new device, default values)
-    # @return true if success
-    def Select(dev)
-      Builtins.y2debug("dev=%1", dev)
-      devmap = {}
-      # defaults for a new device
+    # returns a map with device options for newly created item
+    def new_item_default_options
+      # common options
       devmap = {
         "NETMASK"   => Ops.get_string(
           NetHwDetection.result,
@@ -1860,6 +1856,18 @@ module Yast
 
       devmap[ "STARTMODE"] = new_device_startmode
 
+      deep_copy(devmap)
+    end
+
+    # Select the given device
+    # @param [String] dev device to select ("" for new device, default values)
+    # @return true if success
+    def Select(dev)
+      Builtins.y2debug("dev=%1", dev)
+
+      devmap = new_item_default_options
+
+      # FIXME: encapsulate into LanItems.GetItemType ?
       @type = Ops.get_string(@Items, [@current, "hwinfo", "type"], "eth")
       @device = NetworkInterfaces.GetFreeDevice(@type)
 
