@@ -1203,18 +1203,8 @@ module Yast
       nil
     end
 
-    def handleStartmode(key, event)
-      event = deep_copy(event)
-      UI.ChangeWidget(
-        Id("IFPLUGD_PRIORITY"),
-        :Enabled,
-        UI.QueryWidget(Id("STARTMODE"), :Value) == "ifplugd"
-      )
-      nil
-    end
-
     def general_tab
-      type = LanItems.GetCurrentType 
+      type = LanItems.GetCurrentType
 
       {
         "header"   => _("&General"),
@@ -1251,16 +1241,16 @@ module Yast
         "help"     => _(
           "<p>Configure the detailed network card settings here.</p>"
         )
-      }          
+      }
     end
 
     def address_tab
-      type = LanItems.GetCurrentType 
+      type = LanItems.GetCurrentType
       drvtype = DriverType(type)
       is_ptp = drvtype == "ctc" || drvtype == "iucv"
       # TODO: dynamic for dummy. or add dummy from outside?
-      no_dhcp = 
-        is_ptp || 
+      no_dhcp =
+        is_ptp ||
         type == "dummy" ||
         LanItems.alias != ""
 
@@ -1309,22 +1299,18 @@ module Yast
       {
         # FIXME: here it does not complain about missing
         # shortcuts
-        "header"   => _(
-          "&Address"
-        ),
+        "header"   => _("&Address"),
         "contents" => address_contents,
         # Address tab help
-        "help"     => _(
-          "<p>Configure your IP address.</p>"
-        )
-      }    
+        "help"     => _("<p>Configure your IP address.</p>")
+      }
     end
 
     def hardware_tab
       {
         "header"   => _("&Hardware"),
         "contents" => VBox("HWDIALOG")
-      }    
+      }
     end
 
     def bond_slaves_tab
@@ -1338,7 +1324,7 @@ module Yast
       {
         "header"   => _("Bridged Devices"),
         "contents" => VBox("BRIDGE_PORTS")
-      }    
+      }
     end
 
     def wireless_tab
@@ -1346,7 +1332,7 @@ module Yast
         "header"       => _("&Wireless"),
         "contents"     => Empty(),
         "widget_names" => []
-      }    
+      }
     end
 
     # Dialog for setting up IP address
@@ -1374,8 +1360,7 @@ module Yast
 
       @settings = {
         # general tab:
-        "STARTMODE"        => LanItems.startmode(
-        ),
+        "STARTMODE"        => LanItems.startmode,
         "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
         # problems when renaming the interface?
         "FWZONE"           => fwzone,
@@ -1418,20 +1403,9 @@ module Yast
         :to   => "map <string, map <string, any>>"
       )
 
-
-      Ops.set(
-        wd,
-        "STARTMODE",
-        MakeStartmode(
+      wd["STARTMODE"] = MakeStartmode(
           ["auto", "ifplugd", "hotplug", "manual", "off", "nfsroot"]
-        )
       )
-      Ops.set(
-        wd,
-        ["STARTMODE", "handle"],
-        fun_ref(method(:handleStartmode), "symbol (string, map)")
-      )
-      Ops.set(wd, ["STARTMODE", "opt"], [:notify])
 
       Ops.set(
         wd,
@@ -1479,13 +1453,7 @@ module Yast
         wd["MTU"]["items"] = NetworkWidgetsInclude::COMMON_MTU_ITEMS
       end
 
-      if LanItems.operation != :add
-        if LanItems.alias == ""
-          Ops.set(@settings, "IFCFG", LanItems.device)
-        else
-          Ops.set(@settings, "IFCFG", LanItems.device)
-        end
-      end
+      @settings["IFCFG"] = LanItems.device if LanItems.operation != :add
 
       if Builtins.contains(["tun", "tap"], LanItems.type)
         address_contents = VBox(Left(label), "TUNNEL")
@@ -1498,13 +1466,11 @@ module Yast
         :abort  => fun_ref(LanItems.method(:Rollback), "boolean ()")
       }
 
-      if Builtins.contains(["tun", "tap"], LanItems.type)
+      if ["tun", "tap"].include?(LanItems.type)
         functions = {
           :abort => fun_ref(LanItems.method(:Rollback), "boolean ()")
         }
       end
-
-
 
       wd_content = {
         "tab_order"          => ["t_general", "t_addr", "hardware"],
@@ -1521,25 +1487,15 @@ module Yast
         "tab_help"           => "",
         "fallback_functions" => functions
       }
-      if LanItems.type == "vlan"
-        Ops.set(wd_content, "tab_order", ["t_general", "t_addr"])
-      end
-      if Builtins.contains(["tun", "tap"], LanItems.type)
-        Ops.set(wd_content, "tab_order", ["t_addr"])
-      end
-      if LanItems.type == "br"
-        Ops.set(
-          wd_content,
-          "tab_order",
-          ["t_general", "t_addr", "bridge_ports"]
-        )
-      end
-      if LanItems.type == "bond"
-        Ops.set(
-          wd_content,
-          "tab_order",
-          Builtins.add(Ops.get_list(wd_content, "tab_order", []), "bond_slaves")
-        )
+      case LanItems.type
+      when "vlan"
+        wd_content["tab_order"] = ["t_general", "t_addr"]
+      when "tun", "tap"
+        wd_content["tab_order"] = ["t_addr"]
+      when "br"
+        wd_content["tab_order"] = ["t_general", "t_addr", "bridge_ports"]
+      when "bond"
+        wd_content["tab_order"] << "bond_slaves"
       end
 
       wd = Convert.convert(

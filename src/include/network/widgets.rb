@@ -171,10 +171,18 @@ module Yast
     # @param [Hash] event	the event being handled
     # @return whether valid
     def ValidateIP(key, event)
-      event = deep_copy(event)
       value = Convert.to_string(UI.QueryWidget(Id(key), :Value))
       return IP.Check(value) if value != ""
       true
+    end
+
+    def handleStartmode(key, event)
+      UI.ChangeWidget(
+        Id("IFPLUGD_PRIORITY"),
+        :Enabled,
+        UI.QueryWidget(Id("STARTMODE"), :Value) == "ifplugd"
+      )
+      nil
     end
 
     def MakeStartmode(ids)
@@ -182,10 +190,10 @@ module Yast
       ret = {
         "widget" => :combobox,
         # Combo box label - when to activate device (e.g. on boot, manually, never,..)
-        "label"  => _(
-          "Activate &device"
-        ),
-        "help" =>
+        "label"  => _("Activate &device"),
+        "opt"    => [:notify],
+        "handle" => fun_ref(method(:handleStartmode), "symbol (string, map)"),
+        "help"   =>
           # Device activation main help. The individual parts will be
           # substituted as %1
           _(
@@ -214,7 +222,7 @@ module Yast
     end
 
     def init_ipoib_mode_widget(key)
-      
+
       ipoib_mode = LanItems.ipoib_mode
 
       return unless LanItems.ipoib_modes.keys.include?(ipoib_mode)
@@ -268,7 +276,7 @@ module Yast
         "label"  => _("Set &MTU"),
         "opt"    => [:hstretch, :editable],
         "items"  => [],
-        "help"   => Ops.get_string(@help, "mtu", "")
+        "help"   => @help["mtu"] || ""
       }
     end
 
