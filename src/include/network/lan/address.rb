@@ -148,18 +148,7 @@ module Yast
           "opt"    => [],
           "help"   => Ops.get_string(@help, "mandatory", "")
         },
-        "MTU"          => {
-          "widget" => :combobox,
-          # textentry label, Maximum Transfer Unit
-          "label"  => _("Set &MTU"),
-          "opt"    => [:hstretch, :editable],
-          "items"  => [
-            ["1500", "1500 (Ethernet, DSL broadband)"],
-            ["1492", "1492 (PPPoE broadband)"],
-            ["576", "576 (dial-up)"]
-          ],
-          "help"   => Ops.get_string(@help, "mtu", "")
-        },
+        "MTU"          => mtu_widget,
         "IFCFGTYPE"    => {
           "widget"            => :combobox,
           # ComboBox label
@@ -1482,7 +1471,13 @@ module Yast
       )
 
       wd["FWZONE"]["items"] = firewall_widget
-      wd["IPOIB_MODE"] = ipoib_mode_widget if LanItems.GetCurrentType == "ib"
+
+      if LanItems.GetCurrentType == "ib"
+        wd["IPOIB_MODE"] = ipoib_mode_widget
+        wd["MTU"]["items"] = NetworkWidgetsInclude::IPOIB_MTU_ITEMS
+      else
+        wd["MTU"]["items"] = NetworkWidgetsInclude::COMMON_MTU_ITEMS
+      end
 
       if LanItems.operation != :add
         if LanItems.alias == ""

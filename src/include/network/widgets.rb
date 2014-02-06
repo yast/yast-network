@@ -250,6 +250,28 @@ module Yast
 
     end
 
+    COMMON_MTU_ITEMS = [
+      ["1500", "1500 (Ethernet, DSL broadband)"],
+      ["1492", "1492 (PPPoE broadband)"],
+      ["576", "576 (dial-up)"]
+    ]
+
+    IPOIB_MTU_ITEMS = [
+      ["65520", "65520 (IPoIB in connected mode)"],
+      ["2044", "2044 (IPoIB in datagram mode)"]
+    ]
+
+    def mtu_widget
+      {
+        "widget" => :combobox,
+        # textentry label, Maximum Transfer Unit
+        "label"  => _("Set &MTU"),
+        "opt"    => [:hstretch, :editable],
+        "items"  => [],
+        "help"   => Ops.get_string(@help, "mtu", "")
+      }
+    end
+
     def GetDeviceDescription(device_id)
       device_name = NetworkInterfaces.GetValue(device_id, "NAME")
       if device_name == nil || device_name == ""
