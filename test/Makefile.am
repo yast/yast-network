@@ -4,7 +4,8 @@ TESTS = \
   lan_udev_auto_test.rb \
   bridge_test.rb \
   routing_test.rb \
-  new_device_startmode_test.rb
+  new_device_startmode_test.rb \
+  widgets_test.rb
 
 TEST_EXTENSIONS = .rb
 RB_LOG_COMPILER = rspec
