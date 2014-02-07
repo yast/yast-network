@@ -1448,9 +1448,9 @@ module Yast
 
       if LanItems.GetCurrentType == "ib"
         wd["IPOIB_MODE"] = ipoib_mode_widget
-        wd["MTU"]["items"] = NetworkWidgetsInclude::IPOIB_MTU_ITEMS
+        wd["MTU"]["items"] = ipoib_mtu_items
       else
-        wd["MTU"]["items"] = NetworkWidgetsInclude::COMMON_MTU_ITEMS
+        wd["MTU"]["items"] = common_mtu_items
       end
 
       @settings["IFCFG"] = LanItems.device if LanItems.operation != :add

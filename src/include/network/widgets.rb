@@ -258,16 +258,22 @@ module Yast
 
     end
 
-    COMMON_MTU_ITEMS = [
-      ["1500", "1500 (Ethernet, DSL broadband)"],
-      ["1492", "1492 (PPPoE broadband)"],
-      ["576", "576 (dial-up)"]
-    ]
+    def common_mtu_items
+      [
+        # translators: MTU value description (size in bytes, desc)
+        ["1500", _("1500 (Ethernet, DSL broadband)")],
+        ["1492", _("1492 (PPPoE broadband)")],
+        ["576", _("576 (dial-up)")]
+      ]
+    end
 
-    IPOIB_MTU_ITEMS = [
-      ["65520", "65520 (IPoIB in connected mode)"],
-      ["2044", "2044 (IPoIB in datagram mode)"]
-    ]
+    def ipoib_mtu_items
+      [
+        # translators: MTU value description (size in bytes, desc)
+        ["65520", _("65520 (IPoIB in connected mode)")],
+        ["2044", _("2044 (IPoIB in datagram mode)")]
+      ]
+    end
 
     def mtu_widget
       {
