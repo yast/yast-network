@@ -25,6 +25,9 @@ require "yast"
 
 module Yast
   class LanItemsClass < Module
+    attr_reader :ipoib_modes
+    attr_accessor :ipoib_mode
+
     def main
       Yast.import "UI"
       textdomain "network"
@@ -170,6 +173,13 @@ module Yast
       @tunnel_set_owner = ""
       @tunnel_set_group = ""
 
+      # infiniband options
+      @ipoib_mode = ""
+      @ipoib_modes = {
+        # translators: a possible value for: IPoIB device mode
+        "connected" => _("connected"),
+        "datagram" => _("datagram")
+      }
 
       # propose options
       @proposal_valid = false
@@ -261,7 +271,10 @@ module Yast
         # defaults for tun/tap devices
         "TUNNEL_SET_OWNER"             => "",
         "TUNNEL_SET_GROUP"             => "",
-        "TUNNEL_SET_PERSISTENT"        => "yes"
+        "TUNNEL_SET_PERSISTENT"        => "yes",
+        # Infiniband
+        # default mode for IPoIB devices suggested in fate#315501
+        "IPOIB_MODE"                   => "connected"
       }
 
       # Default values used when creating an emulated NIC for physical s390 hardware.
@@ -347,6 +360,11 @@ module Yast
       NetworkInterfaces.GetType(GetDeviceName(itemId))
     end
 
+    # Returns device type for current lan item (see LanItems::current)
+    def GetCurrentType
+      GetDeviceType(@current)
+    end
+
     # Returns ifcfg configuration for particular item
     def GetDeviceMap(itemId)
       return nil if !IsItemConfigured(itemId)
@@ -359,6 +377,10 @@ module Yast
         :from => "any",
         :to   => "map <string, any>"
       )
+    end
+
+    def GetCurrentMap
+      GetDeviceMap(@current)
     end
 
     # Returns udev rule known for particular item
@@ -1764,6 +1786,8 @@ module Yast
       # We always have to set the MAC Address for qeth Layer2 support
       @qeth_macaddress = GetDeviceVar(devmap, defaults, "LLADDR")
 
+      @ipoib_mode = GetDeviceVar(devmap, defaults, "IPOIB_MODE")
+
       @aliases = Ops.get_map(devmap, "_aliases", {})
 
       nil
@@ -1843,13 +1867,9 @@ module Yast
       startmode
     end
 
-    # Select the given device
-    # @param [String] dev device to select ("" for new device, default values)
-    # @return true if success
-    def Select(dev)
-      Builtins.y2debug("dev=%1", dev)
-      devmap = {}
-      # defaults for a new device
+    # returns a map with device options for newly created item
+    def new_item_default_options
+      # common options
       devmap = {
         "NETMASK"   => Ops.get_string(
           NetHwDetection.result,
@@ -1860,6 +1880,18 @@ module Yast
 
       devmap[ "STARTMODE"] = new_device_startmode
 
+      deep_copy(devmap)
+    end
+
+    # Select the given device
+    # @param [String] dev device to select ("" for new device, default values)
+    # @return true if success
+    def Select(dev)
+      Builtins.y2debug("dev=%1", dev)
+
+      devmap = new_item_default_options
+
+      # FIXME: encapsulate into LanItems.GetItemType ?
       @type = Ops.get_string(@Items, [@current, "hwinfo", "type"], "eth")
       @device = NetworkInterfaces.GetFreeDevice(@type)
 
@@ -1949,7 +1981,8 @@ module Yast
         Ops.set(newdev, "DHCLIENT_SET_DOWN_LINK", "yes") if @hotplug == "pcmcia"
 
 
-        if @type == "bond"
+        case @type 
+        when "bond"
           i = 0
           Builtins.foreach(@bond_slaves) do |slave|
             Ops.set(newdev, Builtins.sformat("BONDING_SLAVE%1", i), slave)
@@ -1966,20 +1999,18 @@ module Yast
 
           #BONDING_MASTER always is yes
           Ops.set(newdev, "BONDING_MASTER", "yes")
-        end
 
-        if @type == "vlan"
+        when "vlan"
           Ops.set(newdev, "ETHERDEVICE", @vlan_etherdevice)
           Ops.set(newdev, "VLAN_ID", @vlan_id)
-        end
-        if @type == "br"
+        
+        when "br"
           Ops.set(newdev, "BRIDGE_PORTS", @bridge_ports)
           Ops.set(newdev, "BRIDGE", "yes")
           Ops.set(newdev, "BRIDGE_STP", "off")
           Ops.set(newdev, "BRIDGE_FORWARDDELAY", "0")
-        end
 
-        if @type == "wlan"
+        when "wlan"
           Ops.set(newdev, "WIRELESS_MODE", @wl_mode)
           Ops.set(newdev, "WIRELESS_ESSID", @wl_essid)
           Ops.set(newdev, "WIRELESS_NWID", @wl_nwid)
@@ -2058,6 +2089,10 @@ module Yast
           Ops.set(newdev, "WIRELESS_BITRATE", @wl_bitrate)
           Ops.set(newdev, "WIRELESS_AP", @wl_accesspoint)
           Ops.set(newdev, "WIRELESS_POWER", @wl_power ? "yes" : "no")
+
+        when "ib"
+          newdev["IPOIB_MODE"] = @ipoib_mode
+
         end
 
         if DriverType(@type) == "ctc"

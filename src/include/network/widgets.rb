@@ -28,6 +28,7 @@
 #
 module Yast
   module NetworkWidgetsInclude
+
     def initialize_network_widgets(include_target)
       Yast.import "UI"
 
@@ -170,10 +171,18 @@ module Yast
     # @param [Hash] event	the event being handled
     # @return whether valid
     def ValidateIP(key, event)
-      event = deep_copy(event)
       value = Convert.to_string(UI.QueryWidget(Id(key), :Value))
       return IP.Check(value) if value != ""
       true
+    end
+
+    def handleStartmode(key, event)
+      UI.ChangeWidget(
+        Id("IFPLUGD_PRIORITY"),
+        :Enabled,
+        UI.QueryWidget(Id("STARTMODE"), :Value) == "ifplugd"
+      )
+      nil
     end
 
     def MakeStartmode(ids)
@@ -181,10 +190,10 @@ module Yast
       ret = {
         "widget" => :combobox,
         # Combo box label - when to activate device (e.g. on boot, manually, never,..)
-        "label"  => _(
-          "Activate &device"
-        ),
-        "help" =>
+        "label"  => _("Activate &device"),
+        "opt"    => [:notify],
+        "handle" => fun_ref(method(:handleStartmode), "symbol (string, map)"),
+        "help"   =>
           # Device activation main help. The individual parts will be
           # substituted as %1
           _(
@@ -212,6 +221,70 @@ module Yast
       deep_copy(ret)
     end
 
+    def init_ipoib_mode_widget(key)
+
+      ipoib_mode = LanItems.ipoib_mode
+
+      return unless LanItems.ipoib_modes.keys.include?(ipoib_mode)
+
+      UI.ChangeWidget(
+        Id(key),
+        :CurrentButton,
+        ipoib_mode
+      )
+    end
+
+    def store_ipoib_mode_widget(key, event)
+      LanItems.ipoib_mode = UI.QueryWidget(Id(key), :CurrentButton)
+    end
+
+    def ipoib_mode_widget
+      {
+        "widget" => :radio_buttons,
+        "items"  => LanItems.ipoib_modes.to_a,
+        "label"  => _("IPoIB device mode"),
+        "opt"    => [:hstretch],
+        "init"   => fun_ref(method(:init_ipoib_mode_widget), "void (string)"),
+        "store"  => fun_ref(method(:store_ipoib_mode_widget), "void (string, map)")
+      }
+    end
+
+    def firewall_widget
+      if SuSEFirewall4Network.IsInstalled
+        SuSEFirewall4Network.FirewallZonesComboBoxItems
+      else
+        [["", _("Firewall is not installed.")]]
+      end
+
+    end
+
+    def common_mtu_items
+      [
+        # translators: MTU value description (size in bytes, desc)
+        ["1500", _("1500 (Ethernet, DSL broadband)")],
+        ["1492", _("1492 (PPPoE broadband)")],
+        ["576", _("576 (dial-up)")]
+      ]
+    end
+
+    def ipoib_mtu_items
+      [
+        # translators: MTU value description (size in bytes, desc)
+        ["65520", _("65520 (IPoIB in connected mode)")],
+        ["2044", _("2044 (IPoIB in datagram mode)")]
+      ]
+    end
+
+    def mtu_widget
+      {
+        "widget" => :combobox,
+        # textentry label, Maximum Transfer Unit
+        "label"  => _("Set &MTU"),
+        "opt"    => [:hstretch, :editable],
+        "items"  => [],
+        "help"   => @help["mtu"] || ""
+      }
+    end
 
     def GetDeviceDescription(device_id)
       device_name = NetworkInterfaces.GetValue(device_id, "NAME")

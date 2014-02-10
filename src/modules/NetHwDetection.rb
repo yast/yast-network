@@ -191,6 +191,11 @@ module Yast
     # @return true if duplicate found
     # @see arping(8), ip(8)
     def DuplicateIP(ip)
+
+      # missing param for arping. Arping does nothing in such case only
+      # floods logs.
+      return false if ip.nil? || ip.empty?
+
       command = "LC_ALL=C ip link show|grep BROADCAST|grep -v NOARP|cut -d: -f2"
       exe = Convert.to_map(SCR.Execute(path(".target.bash_output"), command))
       ifs = Ops.get_string(exe, "stdout", "")

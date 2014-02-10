@@ -148,18 +148,7 @@ module Yast
           "opt"    => [],
           "help"   => Ops.get_string(@help, "mandatory", "")
         },
-        "MTU"          => {
-          "widget" => :combobox,
-          # textentry label, Maximum Transfer Unit
-          "label"  => _("Set &MTU"),
-          "opt"    => [:hstretch, :editable],
-          "items"  => [
-            ["1500", "1500 (Ethernet, DSL broadband)"],
-            ["1492", "1492 (PPPoE broadband)"],
-            ["576", "576 (dial-up)"]
-          ],
-          "help"   => Ops.get_string(@help, "mtu", "")
-        },
+        "MTU"          => mtu_widget,
         "IFCFGTYPE"    => {
           "widget"            => :combobox,
           # ComboBox label
@@ -387,20 +376,6 @@ module Yast
             _("The remote IP address is invalid.") + "\n",
             IP.Valid4
           )
-        },
-        "ADVANCED_MB"  => {
-          "widget" => :menu_button,
-          # menu button label
-          "label"  => _("&Advanced..."),
-          "opt"    => [:hstretch],
-          "help"   => "",
-          # "items" will be filled in the dialog itself
-          "init"   => fun_ref(
-            CWM.method(:InitNull),
-            "void (string)"
-          ),
-          "store"  => fun_ref(CWM.method(:StoreNull), "void (string, map)"),
-          "handle" => fun_ref(method(:HandleButton), "symbol (string, map)")
         },
         # leftovers
         "S390"         => {
@@ -1228,14 +1203,136 @@ module Yast
       nil
     end
 
-    def handleStartmode(key, event)
-      event = deep_copy(event)
-      UI.ChangeWidget(
-        Id("IFPLUGD_PRIORITY"),
-        :Enabled,
-        UI.QueryWidget(Id("STARTMODE"), :Value) == "ifplugd"
+    def general_tab
+      type = LanItems.GetCurrentType
+
+      {
+        "header"   => _("&General"),
+        "contents" => MarginBox(
+          1,
+          0,
+          VBox(
+            MarginBox(
+              1,
+              0,
+              VBox(
+                # TODO:
+                # "MANDATORY",
+                Frame(
+                  _("Device Activation"),
+                  HBox("STARTMODE", "IFPLUGD_PRIORITY", HStretch())
+                ),
+                VSpacing(0.4),
+                Frame(_("Firewall Zone"), HBox("FWZONE", HStretch())),
+                VSpacing(0.4),
+                type == "ib" ? HBox("IPOIB_MODE") : Empty(),
+                type == "ib" ? VSpacing(0.4) : Empty(),
+                Frame(
+                  _("Maximum Transfer Unit (MTU)"),
+                  HBox("MTU", HStretch())
+                ),
+                VStretch()
+              )
+            )
+          )
+        ),
+        # FIXME we have helps per widget and for the whole
+        # tab set but not for one tab
+        "help"     => _(
+          "<p>Configure the detailed network card settings here.</p>"
+        )
+      }
+    end
+
+    def address_tab
+      type = LanItems.GetCurrentType
+      drvtype = DriverType(type)
+      is_ptp = drvtype == "ctc" || drvtype == "iucv"
+      # TODO: dynamic for dummy. or add dummy from outside?
+      no_dhcp =
+        is_ptp ||
+        type == "dummy" ||
+        LanItems.alias != ""
+
+      address_p2p_contents = Frame(
+        "", # labelless frame
+        VBox("IPADDR", "REMOTEIP")
       )
-      nil
+
+      address_static_contents = Frame(
+        "", # labelless frame
+        VBox(
+          "IPADDR",
+          "NETMASK",
+          # TODO new widget, add logic
+          #"GATEWAY"
+          Empty()
+        )
+      )
+
+      address_dhcp_contents = VBox("BOOTPROTO")
+      just_address_contents = is_ptp ?
+        address_p2p_contents :
+        no_dhcp ? address_static_contents : address_dhcp_contents
+
+      label = HBox(
+        HSpacing(0.5),
+        # The combo is a hack to allow changing misdetected
+        # interface types. It will work in some cases, like
+        # overriding eth to wlan but not in others where we would
+        # need to change the contents of the dialog. #30890.
+        type != "vlan" ?
+          "IFCFGTYPE" :
+          Empty(),
+        HSpacing(1.5),
+        MinWidth(30, "IFCFGID"),
+        HSpacing(0.5),
+        type == "vlan" ? VBox("ETHERDEVICE") : Empty()
+      )
+
+      address_contents = VBox(
+        Left(label),
+        just_address_contents,
+        "AD_ADDRESSES"
+      )
+
+      {
+        # FIXME: here it does not complain about missing
+        # shortcuts
+        "header"   => _("&Address"),
+        "contents" => address_contents,
+        # Address tab help
+        "help"     => _("<p>Configure your IP address.</p>")
+      }
+    end
+
+    def hardware_tab
+      {
+        "header"   => _("&Hardware"),
+        "contents" => VBox("HWDIALOG")
+      }
+    end
+
+    def bond_slaves_tab
+      {
+        "header"   => _("&Bond Slaves"),
+        "contents" => VBox("BONDSLAVE", "BONDOPTION")
+      }
+    end
+
+    def bridge_slaves_tab
+      {
+        "header"   => _("Bridged Devices"),
+        "contents" => VBox("BRIDGE_PORTS")
+      }
+    end
+
+    def wireless_tab
+      {
+        "header"       => _("&Wireless"),
+        "contents"     => Empty(),
+        "widget_names" => []
+      }
     end
 
     # Dialog for setting up IP address
@@ -1263,8 +1360,7 @@ module Yast
 
       @settings = {
         # general tab:
-        "STARTMODE"        => LanItems.startmode(
-        ),
+        "STARTMODE"        => LanItems.startmode,
         "IFPLUGD_PRIORITY" => LanItems.ifplugd_priority,
         # problems when renaming the interface?
         "FWZONE"           => fwzone,
@@ -1279,13 +1375,6 @@ module Yast
         "IFCFGTYPE"        => LanItems.type,
         "IFCFGID"          => LanItems.device
       }
-
-      drvtype = DriverType(Ops.get_string(@settings, "IFCFGTYPE", ""))
-
-      is_ptp = drvtype == "ctc" || drvtype == "iucv"
-      # TODO: dynamic for dummy. or add dummy from outside?
-      no_dhcp = is_ptp || Ops.get_string(@settings, "IFCFGTYPE", "") == "dummy" ||
-        LanItems.alias != ""
 
       if LanItems.type == "vlan"
         Ops.set(@settings, "ETHERDEVICE", LanItems.vlan_etherdevice)
@@ -1308,67 +1397,15 @@ module Yast
         Ops.set(@settings, "BOOTPROTO", "static")
       end
 
-      # FIXME duplicated in hardware.ycp
-      device_types = [
-        "arc",
-        "bnep",
-        "dummy",
-        "eth",
-        "fddi",
-        "myri",
-        "tr",
-        "usb",
-        "wlan",
-        "bond",
-        "vlan",
-        "br",
-        "tun",
-        "tap",
-        "ib"
-      ]
-
-      if Arch.s390
-        device_types = [
-          "eth",
-          "tr",
-          "hsi",
-          "ctc",
-          "escon",
-          "ficon",
-          "iucv",
-          "qeth",
-          "lcs",
-          "vlan",
-          "br",
-          "tun",
-          "tap"
-        ]
-      end
-
-      device_types = Builtins.add(device_types, "xp") if Arch.ia64
-
-      fw_is_installed = SuSEFirewall4Network.IsInstalled
-
       wd = Convert.convert(
         Builtins.union(@widget_descr, @widget_descr_local),
         :from => "map",
         :to   => "map <string, map <string, any>>"
       )
 
-
-      Ops.set(
-        wd,
-        "STARTMODE",
-        MakeStartmode(
+      wd["STARTMODE"] = MakeStartmode(
           ["auto", "ifplugd", "hotplug", "manual", "off", "nfsroot"]
-        )
       )
-      Ops.set(
-        wd,
-        ["STARTMODE", "handle"],
-        fun_ref(method(:handleStartmode), "symbol (string, map)")
-      )
-      Ops.set(wd, ["STARTMODE", "opt"], [:notify])
 
       Ops.set(
         wd,
@@ -1395,7 +1432,7 @@ module Yast
         }
       )
 
-      Ops.set(wd, ["IFCFGTYPE", "items"], BuildTypesListCWM(device_types))
+      Ops.set(wd, ["IFCFGTYPE", "items"], BuildTypesListCWM(NetworkInterfaces.GetDeviceTypes))
       Ops.set(
         wd,
         ["IFCFGID", "items"],
@@ -1407,100 +1444,19 @@ module Yast
         ]
       )
 
-      if fw_is_installed
-        Ops.set(
-          wd,
-          ["FWZONE", "items"],
-          SuSEFirewall4Network.FirewallZonesComboBoxItems
-        )
+      wd["FWZONE"]["items"] = firewall_widget
+
+      if LanItems.GetCurrentType == "ib"
+        wd["IPOIB_MODE"] = ipoib_mode_widget
+        wd["MTU"]["items"] = ipoib_mtu_items
       else
-        Ops.set(
-          wd,
-          ["FWZONE", "items"],
-          [["", _("Firewall is not installed.")]]
-        )
+        wd["MTU"]["items"] = common_mtu_items
       end
 
-
-      label = HBox(
-        HSpacing(0.5),
-        # The combo is a hack to allow changing misdetected
-        # interface types. It will work in some cases, like
-        # overriding eth to wlan but not in others where we would
-        # need to change the contents of the dialog. #30890.
-        LanItems.type != "vlan" ?
-          "IFCFGTYPE" :
-          Empty(),
-        HSpacing(1.5),
-        MinWidth(30, "IFCFGID"),
-        HSpacing(0.5),
-        LanItems.type == "vlan" ? VBox("ETHERDEVICE") : Empty()
-      )
-      if LanItems.operation != :add
-        if LanItems.alias == ""
-          Ops.set(@settings, "IFCFG", LanItems.device)
-        else
-          Ops.set(@settings, "IFCFG", LanItems.device)
-        end
-      end
-
-      mb_items = []
-      Ops.set(wd, ["ADVANCED_MB", "items"], Builtins.maplist(mb_items) do |btn|
-        [btn, Ops.get_string(wd, [btn, "label"], btn)]
-      end)
-
-      frame2 = Empty()
-      if Ops.greater_than(Builtins.size(mb_items), 0)
-        frame2 = MarginBox(
-          1,
-          0,
-          Frame(
-            _("Detailed Settings"),
-            HBox(
-              HStretch(),
-              HSquash(
-                VBox(
-                  "ADVANCED_MB"
-                )
-              ),
-              HStretch()
-            )
-          )
-        )
-      end
-
-      frame2 = VSpacing(0) if LanItems.alias != ""
-
-      address_p2p_contents = Frame(
-        "", # labelless frame
-        VBox("IPADDR", "REMOTEIP")
-      )
-
-      address_static_contents = Frame(
-        "", # labelless frame
-        VBox(
-          "IPADDR",
-          "NETMASK",
-          # TODO new widget, add logic
-          #"GATEWAY"
-          Empty()
-        )
-      )
-
-      address_dhcp_contents = VBox("BOOTPROTO")
-      just_address_contents = is_ptp ?
-        address_p2p_contents :
-        no_dhcp ? address_static_contents : address_dhcp_contents
-
-      address_contents = VBox(
-        Left(label),
-        just_address_contents,
-        "AD_ADDRESSES",
-        frame2
-      )
+      @settings["IFCFG"] = LanItems.device if LanItems.operation != :add
 
       if Builtins.contains(["tun", "tap"], LanItems.type)
-        address_contents = VBox(Left(label), "TUNNEL", frame2)
+        address_contents = VBox(Left(label), "TUNNEL")
       end
 
 
@@ -1510,105 +1466,36 @@ module Yast
         :abort  => fun_ref(LanItems.method(:Rollback), "boolean ()")
       }
 
-      if Builtins.contains(["tun", "tap"], LanItems.type)
+      if ["tun", "tap"].include?(LanItems.type)
         functions = {
           :abort => fun_ref(LanItems.method(:Rollback), "boolean ()")
         }
       end
 
-
-
       wd_content = {
         "tab_order"          => ["t_general", "t_addr", "hardware"],
         "tabs"               => {
-          "t_general"    => {
-            "header"   => _("&General"),
-            "contents" => MarginBox(
-              1,
-              0,
-              VBox(
-                MarginBox(
-                  1,
-                  0,
-                  VBox(
-                    # TODO:
-                    # "MANDATORY",
-                    Frame(
-                      _("Device Activation"),
-                      HBox("STARTMODE", "IFPLUGD_PRIORITY", HStretch())
-                    ),
-                    VSpacing(0.4),
-                    Frame(_("Firewall Zone"), HBox("FWZONE", HStretch())),
-                    VSpacing(0.4),
-                    Frame(
-                      _("Maximum Transfer Unit (MTU)"),
-                      HBox("MTU", HStretch())
-                    ),
-                    VStretch()
-                  )
-                )
-              )
-            ),
-            # FIXME we have helps per widget and for the whole
-            # tab set but not for one tab
-            "help"     => _(
-              "<p>Configure the detailed network card settings here.</p>"
-            )
-          },
-          "t_addr"       => {
-            # FIXME: here it does not complain about missing
-            # shortcuts
-            "header"   => _(
-              "&Address"
-            ),
-            "contents" => address_contents,
-            # Address tab help
-            "help"     => _(
-              "<p>Configure your IP address.</p>"
-            )
-          },
-          "hardware"     => {
-            "header"   => _("&Hardware"),
-            "contents" => VBox("HWDIALOG")
-          },
-          "bond_slaves"  => {
-            "header"   => _("&Bond Slaves"),
-            "contents" => VBox("BONDSLAVE", "BONDOPTION")
-          },
-          "bridge_ports" => {
-            "header"   => _("Bridged Devices"),
-            "contents" => VBox("BRIDGE_PORTS")
-          },
-          "t3"           => {
-            "header"       => _("&Wireless"),
-            "contents"     => Empty(),
-            "widget_names" => []
-          }
+          "t_general"    => general_tab,
+          "t_addr"       => address_tab,
+          "hardware"     => hardware_tab,
+          "bond_slaves"  => bond_slaves_tab,
+          "bridge_ports" => bridge_slaves_tab,
+          "t3"           => wireless_tab
         },
         "initial_tab"        => "t_addr",
         "widget_descr"       => wd,
         "tab_help"           => "",
         "fallback_functions" => functions
       }
-      if LanItems.type == "vlan"
-        Ops.set(wd_content, "tab_order", ["t_general", "t_addr"])
-      end
-      if Builtins.contains(["tun", "tap"], LanItems.type)
-        Ops.set(wd_content, "tab_order", ["t_addr"])
-      end
-      if LanItems.type == "br"
-        Ops.set(
-          wd_content,
-          "tab_order",
-          ["t_general", "t_addr", "bridge_ports"]
-        )
-      end
-      if LanItems.type == "bond"
-        Ops.set(
-          wd_content,
-          "tab_order",
-          Builtins.add(Ops.get_list(wd_content, "tab_order", []), "bond_slaves")
-        )
+      case LanItems.type
+      when "vlan"
+        wd_content["tab_order"] = ["t_general", "t_addr"]
+      when "tun", "tap"
+        wd_content["tab_order"] = ["t_addr"]
+      when "br"
+        wd_content["tab_order"] = ["t_general", "t_addr", "bridge_ports"]
+      when "bond"
+        wd_content["tab_order"] << "bond_slaves"
       end
 
       wd = Convert.convert(
@@ -1652,7 +1539,7 @@ module Yast
           LanItems.ifplugd_priority = ifp_prio if ifp_prio != nil
         end
 
-        if fw_is_installed
+        if SuSEFirewall4Network.IsInstalled
           zone = Ops.get_string(@settings, "FWZONE", "")
           SuSEFirewall4Network.ChangedByUser(true) if zone != @fwzone_initial
           SuSEFirewall4Network.ProtectByFirewall(ifcfgname, zone, zone != "")
