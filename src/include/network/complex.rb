@@ -51,18 +51,14 @@ module Yast
     # Take the NAME field from ifcfg
     # If empty, identify the hardware and use its data
     def BuildDescription(devtype, devnum, devmap, _Hardware)
-      devmap = deep_copy(devmap)
-      _Hardware = deep_copy(_Hardware)
-      descr = Ops.get_string(devmap, "NAME", "")
+      descr = devmap["NAME"] || ""
       return descr if descr != ""
       descr = HardwareName(_Hardware, devnum)
       return descr if descr != ""
-      descr = HardwareName(_Hardware, Ops.get_string(devmap, "UNIQUE", ""))
+      descr = HardwareName(_Hardware, devmap["UNIQUE"] || "")
       return descr if descr != ""
-      descr = HardwareName(_Hardware, Ops.get_string(devmap, "dev_name", ""))
-      return descr if descr != ""
-      descr = CheckEmptyName(devtype, descr)
-      descr
+
+      CheckEmptyName(devtype, descr)
     end
 
     # TODO move to HTML.ycp
