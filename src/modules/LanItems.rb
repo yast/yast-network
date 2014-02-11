@@ -1226,14 +1226,8 @@ module Yast
               Ops.get_string(@Items, [key, "ifcfg"], "")
             )
           end
-          descr = BuildDescription(
-            @type,
-            NetworkInterfaces.GetType(
-              Ops.get_string(@Items, [key, "ifcfg"], "")
-            ),
-            NetworkInterfaces.Current,
-            [Ops.get_map(@Items, [key, "hwinfo"], {})]
-          )
+          ifcfg_desc = GetDeviceMap(key)["NAME"]
+          descr = ifcfg_desc if !ifcfg_desc.nil? && !ifcfg_desc.empty?
           dev = NetworkInterfaces.Name #NetworkInterfaces::device_name(type, NetworkInterfaces::Name);
           ip = DeviceProtocol(NetworkInterfaces.Current)
           status = DeviceStatus(
