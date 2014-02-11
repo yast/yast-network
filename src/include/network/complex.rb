@@ -265,27 +265,34 @@ module Yast
       # Device type label
       _("Unknown Network Device")
     end
+
     def HardwareName(_Hardware, id)
-      _Hardware = deep_copy(_Hardware)
-      hwname = ""
-      Builtins.foreach(_Hardware) do |h|
+      return "" if id.nil? || id.empty?
+      return "" if _Hardware.nil? || _Hardware.empty?
+
+      # filter out a list of hwinfos which correspond to the given id
+      res_list = _Hardware.select do |h|
         have = [
-          Ops.add("id-", Ops.get_string(h, "mac", "")),
-          Ops.add(
-            Ops.add("bus-", Ops.get_string(h, "bus", "")),
-            String.OptFormat("-%1", Ops.get_string(h, "busid", ""))
-          ),
-          Ops.get_string(h, "udi", ""),
-          Ops.get_string(h, "dev_name", "")
+          "id-" + (h["mac"] || ""),
+          "bus-" + (h["bus"] || "") + "-" + (h["busid"] || ""),
+          h["udi"] || "",
+          h["dev_name"] || ""
         ]
-        Builtins.y2debug("what: %1, have: %2", id, have)
-        if Builtins.contains(have, id)
-          hwname = Ops.get_string(h, "name", "")
-          raise Break
-        end
-      end if id != ""
-      Builtins.y2milestone("hwname=%1", hwname)
-      hwname
+
+        have.include?(id)
+      end
+
+      # take first item from the list - there should be just one
+      if res_list.empty?
+        Builtins.y2warning("HardwareName: no matching hardware for id=#{id}")
+
+        return ""
+      else
+        hwname = res_list.first["name"] || ""
+        Builtins.y2milestone("HardwareName: hwname=#{hwname} for id=#{id}")
+
+        return hwname
+      end
     end
 
     # Get aprovider name from the provider map
