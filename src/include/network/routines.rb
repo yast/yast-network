@@ -389,15 +389,6 @@ module Yast
       need
     end
 
-    def busid_to_sysfs_id(busid, hardware)
-      hardware = deep_copy(hardware)
-      # hardware is cached list of netcards
-      hw_item = Builtins.find(hardware) do |i|
-        Ops.get_string(i, "busid", "") == busid
-      end
-      Ops.get_string(hw_item, "sysfs_id", "")
-    end
-
     def dev_name_to_sysfs_id(dev_name, hardware)
       hardware = deep_copy(hardware)
       # hardware is cached list of netcards

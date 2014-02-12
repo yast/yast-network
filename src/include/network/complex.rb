@@ -40,7 +40,6 @@ module Yast
       Yast.import "Popup"
       Yast.import "String"
       Yast.import "Summary"
-      Yast.import "NetworkService"
 
       Yast.include include_target, "network/routines.rb"
       Yast.include include_target, "network/summary.rb"
@@ -51,18 +50,14 @@ module Yast
     # Take the NAME field from ifcfg
     # If empty, identify the hardware and use its data
     def BuildDescription(devtype, devnum, devmap, _Hardware)
-      devmap = deep_copy(devmap)
-      _Hardware = deep_copy(_Hardware)
-      descr = Ops.get_string(devmap, "NAME", "")
+      descr = devmap["NAME"] || ""
       return descr if descr != ""
       descr = HardwareName(_Hardware, devnum)
       return descr if descr != ""
-      descr = HardwareName(_Hardware, Ops.get_string(devmap, "UNIQUE", ""))
+      descr = HardwareName(_Hardware, devmap["UNIQUE"] || "")
       return descr if descr != ""
-      descr = HardwareName(_Hardware, Ops.get_string(devmap, "dev_name", ""))
-      return descr if descr != ""
-      descr = CheckEmptyName(devtype, descr)
-      descr
+
+      CheckEmptyName(devtype, descr)
     end
 
     # TODO move to HTML.ycp
@@ -183,18 +178,12 @@ module Yast
 
       # create a table of unconfigured devices
       selected = Ops.get_integer(unconfigured, [0, "num"], -1)
-      #    list devs = hwlist2items(unconfigured, selected);
 
       # FIXME OtherDevices(devs, type);
 
-      # Label for not detected devices
-      #    devs = add(devs, `item(`id(`other), _("Other (not detected)"), size(devs) == 0));
-
       Builtins.y2debug("summary=%1", summary)
-      #    y2debug("devs=%1", devs);
 
-      [summary, unconfigured] 
-      #    return [ summary, devs ];
+      [summary, unconfigured]
     end
 
     # Build textual summary
@@ -269,27 +258,34 @@ module Yast
       # Device type label
       _("Unknown Network Device")
     end
+
     def HardwareName(_Hardware, id)
-      _Hardware = deep_copy(_Hardware)
-      hwname = ""
-      Builtins.foreach(_Hardware) do |h|
+      return "" if id.nil? || id.empty?
+      return "" if _Hardware.nil? || _Hardware.empty?
+
+      # filter out a list of hwinfos which correspond to the given id
+      res_list = _Hardware.select do |h|
         have = [
-          Ops.add("id-", Ops.get_string(h, "mac", "")),
-          Ops.add(
-            Ops.add("bus-", Ops.get_string(h, "bus", "")),
-            String.OptFormat("-%1", Ops.get_string(h, "busid", ""))
-          ),
-          Ops.get_string(h, "udi", ""),
-          Ops.get_string(h, "dev_name", "")
+          "id-" + (h["mac"] || ""),
+          "bus-" + (h["bus"] || "") + "-" + (h["busid"] || ""),
+          h["udi"] || "",
+          h["dev_name"] || ""
         ]
-        Builtins.y2debug("what: %1, have: %2", id, have)
-        if Builtins.contains(have, id)
-          hwname = Ops.get_string(h, "name", "")
-          raise Break
-        end
-      end if id != ""
-      Builtins.y2milestone("hwname=%1", hwname)
-      hwname
+
+        have.include?(id)
+      end
+
+      # take first item from the list - there should be just one
+      if res_list.empty?
+        Builtins.y2warning("HardwareName: no matching hardware for id=#{id}")
+
+        return ""
+      else
+        hwname = res_list.first["name"] || ""
+        Builtins.y2milestone("HardwareName: hwname=#{hwname} for id=#{id}")
+
+        return hwname
+      end
     end
 
     # Get aprovider name from the provider map
@@ -339,13 +335,9 @@ module Yast
           devname,
           nam,
           proto
-        ) 
+        )
 
-        # example: ISDN Connection to Arcor with syncppp on net0
-        # return sformat(_("to %1 with %2 on %3"), provider, proto, dev);
       else
-        # if(!regexpmatch(devtype, NetworkAllRegex))
-        #     y2error("Unknown type: %1", devtype);
 
         proto = Ops.get_string(devmap, "BOOTPROTO", "static")
 
@@ -436,320 +428,5 @@ module Yast
       ip
     end
 
-    # Return description used for device summary dialog
-    # In case device is not connected "(not connected)" string
-    # will be added.
-    # Description also contains MAC address or BusID information.
-
-    def getConnMacBusDescription(v, _Hardware)
-      v = deep_copy(v)
-      _Hardware = deep_copy(_Hardware)
-      descr = ""
-      conn = ""
-      mac_dev = ""
-      Builtins.foreach(_Hardware) do |device|
-        if Ops.get_string(v, "UNIQUE", "") ==
-            Ops.get_string(device, "unique_key", "")
-          conn = HTML.Bold(
-            Ops.get_boolean(device, "link", false) == true ?
-              "" :
-              _("(not connected)")
-          )
-          if Ops.greater_than(
-              Builtins.size(Ops.get_string(device, "mac", "")),
-              0
-            )
-            mac_dev = Ops.add(
-              Ops.add(HTML.Bold("MAC : "), Ops.get_string(device, "mac", "")),
-              "<br>"
-            )
-          elsif Ops.greater_than(
-              Builtins.size(Ops.get_string(device, "busid", "")),
-              0
-            )
-            mac_dev = Ops.add(
-              Ops.add(
-                HTML.Bold("BusID : "),
-                Ops.get_string(device, "busid", "")
-              ),
-              "<br>"
-            )
-          end
-        end
-      end
-      descr = Ops.add(Ops.add(Ops.add(" ", conn), "<br>"), mac_dev)
-      descr
-    end
-
-    # Create overview table contents
-    # List of terms
-    # `item (`id (id), ...)
-    # @return table items
-    def BuildOverviewDevs(_Devs, _Hardware)
-      _Devs = deep_copy(_Devs)
-      _Hardware = deep_copy(_Hardware)
-      overview = []
-
-      startmode_descrs = {
-        # summary description of STARTMODE=auto
-        "auto"    => _(
-          "Started automatically at boot"
-        ),
-        # summary description of STARTMODE=hotplug
-        "hotplug" => _(
-          "Started automatically at boot"
-        ),
-        # summary description of STARTMODE=ifplugd
-        "ifplugd" => _(
-          "Started automatically on cable connection"
-        ),
-        # summary description of STARTMODE=managed
-        "managed" => _(
-          "Managed by NetworkManager"
-        ),
-        # summary description of STARTMODE=off
-        "off"     => _(
-          "Will not be started at all"
-        )
-      }
-
-      Builtins.maplist(_Devs) do |type, devmap|
-        Builtins.maplist(
-          Convert.convert(devmap, :from => "map", :to => "map <string, map>")
-        ) do |devname, v|
-          item = nil
-          ip = DeviceProtocol(v)
-          descr = BuildDescription(type, devname, v, _Hardware)
-          startmode_descr = Ops.get_locale(
-            startmode_descrs,
-            Ops.get_string(v, "STARTMODE", ""),
-            _("Started manually")
-          )
-          # Modem and DSL
-          if type == "ppp" || type == "modem" || type == "dsl"
-            # create the rich text description
-            rich = Ops.add(
-              Ops.add(HTML.Bold(descr), "<br>"),
-              HTML.List(
-                [
-                  Builtins.sformat(_("Device Name: %1"), devname),
-                  Builtins.sformat(
-                    _("Mode: %1"),
-                    Ops.get_locale(v, "PPPMODE", _("Unknown"))
-                  ),
-                  startmode_descr
-                ]
-              )
-            )
-            item = Item(
-              Id(devname),
-              devname,
-              NetworkInterfaces.GetDevTypeDescription(type, false),
-              ProviderName(Ops.get_string(v, "PROVIDER", "")),
-              rich
-            )
-          # ISDN stuff
-          elsif type == "contr"
-            # FIXME: richtext
-            cname = Ops.get_string(v, "NAME", "unknown")
-            item = Item(
-              Id(devname), #, "active?", ip, "?", "?"
-              devname,
-              NetworkInterfaces.GetDevTypeDescription(type, false),
-              cname
-            )
-          # ISDN stuff
-          elsif type == "net"
-            # FIXME: richtext
-            cname = Ops.get_string(v, "PROVIDER", "unknown")
-            rip = Ops.get_string(v, "PTPADDR", "none")
-            proto = Ops.get_string(v, "PROTOCOL", "unknown")
-            item = Item(Id(devname), devname, proto, cname, ip, rip)
-          else
-            # if(!regexpmatch(type, NetworkAllRegex))
-            #     y2error("Unknown type: %1", type);
-
-            bullets = [
-              Builtins.sformat(_("Device Name: %1"), devname),
-              startmode_descr
-            ]
-            if Ops.get_string(v, "STARTMODE", "") != "managed"
-              if ip != "NONE"
-                bullets = Ops.add(
-                  bullets,
-                  [
-                    ip == "DHCP" ?
-                      _("IP address assigned using DHCP") :
-                      Builtins.sformat(
-                        _("IP address: %1, subnet mask %2"),
-                        ip,
-                        Ops.get_string(v, "NETMASK", "")
-                      )
-                  ]
-                )
-              end
-
-              # build aliases overview
-              if Ops.greater_than(
-                  Builtins.size(Ops.get_map(v, "_aliases", {})),
-                  0
-                ) &&
-                  !NetworkService.is_network_manager
-                Builtins.foreach(Ops.get_map(v, "_aliases", {})) do |key, desc|
-                  parameters = Builtins.sformat(
-                    _("IP address: %1, subnet mask %2"),
-                    Ops.get_string(desc, "IPADDR", ""),
-                    Ops.get_string(desc, "NETMASK", "")
-                  )
-                  bullets = Builtins.add(
-                    bullets,
-                    Builtins.sformat("%1 (%2)", key, parameters)
-                  )
-                end
-              end
-            end
-
-            # build the "Bond Slaves" entry of rich box
-            if type == "bond"
-              slaves = ""
-              Builtins.foreach(
-                Convert.convert(v, :from => "map", :to => "map <string, any>")
-              ) do |key, value|
-                if value != nil &&
-                    Builtins.regexpmatch(key, "BONDING_SLAVE[0-9]")
-                  slaves = Ops.add(
-                    Ops.add(slaves, slaves != "" ? ", " : ""),
-                    Convert.to_string(value)
-                  )
-                end
-              end
-              if slaves != ""
-                bullets = Ops.add(
-                  bullets,
-                  [Ops.add(_("Bond slaves") + " : ", slaves)]
-                )
-              end
-            end
-
-            rich = descr
-            rich = Ops.add(
-              Ops.add(HTML.Bold(rich), getConnMacBusDescription(v, _Hardware)),
-              HTML.List(bullets)
-            )
-            hw_id = -1
-            found = false
-            Builtins.foreach(_Hardware) do |device|
-              hw_id = Ops.add(hw_id, 1)
-              if Ops.get_string(v, "UNIQUE", "") ==
-                  Ops.get_string(device, "unique_key", "")
-                found = true
-                raise Break
-              end
-            end
-
-            item = Item(Id(devname), descr, ip, rich, found ? hw_id : -1)
-          end
-          overview = Builtins.add(overview, item)
-        end
-      end
-
-      Builtins.y2debug("overview=%1", overview)
-      deep_copy(overview)
-    end
-
-    # Create overview table contents
-    # @return table items
-    def BuildOverview(devregex, _Hardware)
-      _Hardware = deep_copy(_Hardware)
-      _Devs = NetworkInterfaces.FilterDevices(devregex)
-      BuildOverviewDevs(_Devs, _Hardware)
-    end
-
-    # Convert the output of BuildSummary for inclusion in the unified device list.
-    # Called by BuildUnconfigured and BuildUnconfiguredDevs.
-    # @param [Array] sum output of BuildSumary
-    # @param [String] class netcard modem dsl, isdn too;
-    # determines how to arrange output, yuck
-    # @return [ $[id, table_descr, rich descr] ]
-    def BuildUnconfiguredCommon(sum, _class)
-      sum = deep_copy(sum)
-      # unconfigured devices
-      #    list<term> res = sum[1]:[`item(`id(`other))];
-      # filter out the item for adding an unknown one
-      #    list res = filter (term card, sum, ``( card[0,0]:nil != `other ));
-      # translators: this device has not been configured yet
-      nc = _("Not configured")
-      Builtins.maplist(
-        Convert.convert(sum, :from => "list", :to => "list <map <string, any>>")
-      ) do |card|
-        # configured cards are identified by the string after ifcfg-,
-        # unconfigured ones by "-%1" where %1 is the index in hardware list
-        id = Builtins.sformat("-%1", Ops.get_integer(card, "id", 0))
-        name = Ops.get_string(card, "name", "")
-        desc = []
-        case _class
-          when "netcard"
-            desc = [name, nc]
-          when "dsl", "modem"
-            desc = [
-              name,
-              NetworkInterfaces.GetDevTypeDescription(_class, false),
-              nc
-            ]
-          when "isdn"
-            desc = [
-              nc,
-              NetworkInterfaces.GetDevTypeDescription(_class, false),
-              name
-            ]
-          else
-            Builtins.y2warning(1, "invalid class %1", _class)
-        end
-        rich = Ops.add(
-          Ops.add(
-            HTML.Bold(name),
-            getConnMacBusDescription(
-              card,
-              Convert.convert(sum, :from => "list", :to => "list <map>")
-            )
-          ),
-          _(
-            "<p>The device is not configured. Press <b>Edit</b> for configuration.</p>"
-          )
-        )
-        { "id" => id, "table_descr" => desc, "rich_descr" => rich }
-      end
-    end
-
-    # @param [Hash{String => map}] Devs configured devices
-    # @param [String] class netcard modem dsl, isdn too
-    # @param [Array<Hash>] Hardware the detected hardware
-    # @return [ $[id, table_descr, rich descr] ]
-    def BuildUnconfiguredDevs(_Devs, _class, _Hardware)
-      _Devs = deep_copy(_Devs)
-      _Hardware = deep_copy(_Hardware)
-      split = true
-      proposal = false
-      sum = BuildSummaryDevs(_Devs, _Hardware, split, proposal)
-      BuildUnconfiguredCommon(
-        Ops.get_list(sum, Ops.subtract(Builtins.size(sum), 1), []),
-        _class
-      )
-    end
-
-    # @param [String] class netcard modem dsl. not isdn because it does not use
-    # NetworkInterfaces (#103073)
-    # @param [Array<Hash>] Hardware the detected hardware
-    # @return [ $[id, table_descr, rich descr] ]
-    def BuildUnconfigured(_class, _Hardware)
-      _Hardware = deep_copy(_Hardware)
-      split = true
-      proposal = false
-      sum = BuildSummary(_class, _Hardware, split, proposal)
-      BuildUnconfiguredCommon(
-        Ops.get_list(sum, Ops.subtract(Builtins.size(sum), 1), []),
-        _class
-      )
-    end
   end
 end

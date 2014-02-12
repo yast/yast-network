@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Feb 11 13:22:26 UTC 2014 - mfilka@suse.com
+
+- bnc#862378
+  - Device name set according hwinfo when ifcfg["NAME"] is empty
+- 3.1.19 
+
+-------------------------------------------------------------------
 Fri Feb  7 20:48:18 UTC 2014 - mfilka@suse.com
 
 - fate#315501

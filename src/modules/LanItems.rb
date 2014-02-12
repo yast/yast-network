@@ -254,7 +254,6 @@ module Yast
         "WIRELESS_BITRATE"             => "auto",
         "WIRELESS_AP"                  => "",
         "WIRELESS_POWER"               => "",
-        # aliases = devmap["_aliases"]:$[]; // ?
         "WIRELESS_EAP_MODE"            => "",
         "WIRELESS_WPA_IDENTITY"        => "",
         "WIRELESS_WPA_PASSWORD"        => "",
@@ -399,7 +398,6 @@ module Yast
       Builtins.y2milestone("Reading driver options ...")
       Builtins.foreach(SCR.Dir(path(".modules.options"))) do |driver|
         pth = Builtins.sformat(".modules.options.%1", driver)
-        #  driver_options[driver] = SCR::Read(topath(pth));
         Builtins.foreach(
           Convert.convert(
             SCR.Read(Builtins.topath(pth)),
@@ -1226,15 +1224,9 @@ module Yast
               Ops.get_string(@Items, [key, "ifcfg"], "")
             )
           end
-          descr = BuildDescription(
-            @type,
-            NetworkInterfaces.GetType(
-              Ops.get_string(@Items, [key, "ifcfg"], "")
-            ),
-            NetworkInterfaces.Current,
-            [Ops.get_map(@Items, [key, "hwinfo"], {})]
-          )
-          dev = NetworkInterfaces.Name #NetworkInterfaces::device_name(type, NetworkInterfaces::Name);
+          ifcfg_desc = GetDeviceMap(key)["NAME"]
+          descr = ifcfg_desc if !ifcfg_desc.nil? && !ifcfg_desc.empty?
+          dev = NetworkInterfaces.Name
           ip = DeviceProtocol(NetworkInterfaces.Current)
           status = DeviceStatus(
             @type,
@@ -1480,7 +1472,6 @@ module Yast
     # @param hw the component
     def SelectHWMap(hardware)
       hardware = deep_copy(hardware)
-      #    sysfs_id = hardware["sysfs_id"]:"";
       sel = SelectHardwareMap(hardware)
 
       # common stuff
@@ -1949,7 +1940,6 @@ module Yast
         # set LLADDR to sysconfig only for device on layer2 and only these which needs it
         if @qeth_layer2
           busid = Ops.get_string(@Items, [@current, "hwinfo", "busid"], "")
-          # string sysfs_id = busid_to_sysfs_id(busid, Hardware);
           # sysfs id has changed from css0...
           sysfs_id = Ops.add("/devices/qeth/", busid)
           Builtins.y2milestone("busid %1", busid)
