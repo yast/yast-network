@@ -1215,7 +1215,6 @@ module Yast
         dev = ""
         note = ""
         @type = Ops.get_string(@Items, [key, "hwinfo", "type"], "")
-        descr = CheckEmptyName(@type, descr)
         bullets = []
         if IsNotEmpty(Ops.get_string(@Items, [key, "ifcfg"], ""))
           NetworkInterfaces.Select(Ops.get_string(@Items, [key, "ifcfg"], ""))
@@ -1226,6 +1225,7 @@ module Yast
           end
           ifcfg_desc = GetDeviceMap(key)["NAME"]
           descr = ifcfg_desc if !ifcfg_desc.nil? && !ifcfg_desc.empty?
+          descr = CheckEmptyName(@type, descr)
           dev = NetworkInterfaces.Name
           ip = DeviceProtocol(NetworkInterfaces.Current)
           status = DeviceStatus(
@@ -1348,6 +1348,7 @@ module Yast
 
           overview = Builtins.add(overview, Summary.Device(descr, status))
         else
+          descr = CheckEmptyName(@type, descr)
           overview = Builtins.add(
             overview,
             Summary.Device(descr, Summary.NotConfigured)
