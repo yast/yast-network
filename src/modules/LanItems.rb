@@ -1172,6 +1172,9 @@ module Yast
       deep_copy(index)
     end
 
+    # FIXME: 
+    # - side effect: sets @type. No reason for that. It should only build item
+    # overview. Check and remove.
     def BuildLanOverview
       overview = []
       links = []
@@ -1211,22 +1214,21 @@ module Yast
       ) do |key|
         rich = ""
         ip = _("Not configured")
-        descr = Ops.get_string(@Items, [key, "hwinfo", "name"], "")
-        dev = ""
+
+        item_hwinfo = @Items[key]["hwinfo"] || {}
+        descr = item_hwinfo["name"] || ""
+        @type = item_hwinfo["type"] || ""
+
         note = ""
-        @type = Ops.get_string(@Items, [key, "hwinfo", "type"], "")
         bullets = []
-        if IsNotEmpty(Ops.get_string(@Items, [key, "ifcfg"], ""))
-          NetworkInterfaces.Select(Ops.get_string(@Items, [key, "ifcfg"], ""))
-          if IsEmpty(@type)
-            @type = NetworkInterfaces.GetType(
-              Ops.get_string(@Items, [key, "ifcfg"], "")
-            )
-          end
+        ifcfg_name = @Items[key]["ifcfg"] || ""
+        if !ifcfg_name.empty?
+          NetworkInterfaces.Select(ifcfg_name)
+
+          @type = NetworkInterfaces.GetType(ifcfg_name) if @type.empty?
           ifcfg_desc = GetDeviceMap(key)["NAME"]
           descr = ifcfg_desc if !ifcfg_desc.nil? && !ifcfg_desc.empty?
           descr = CheckEmptyName(@type, descr)
-          dev = NetworkInterfaces.Name
           ip = DeviceProtocol(NetworkInterfaces.Current)
           status = DeviceStatus(
             @type,
@@ -1241,201 +1243,128 @@ module Yast
           )
 
           bullets = [
-            Builtins.sformat(_("Device Name: %1"), dev),
+            _("Device Name: %s") % ifcfg_name,
             startmode_descr
           ]
 
-          if Ops.get_string(NetworkInterfaces.Current, "STARTMODE", "") != "managed"
+          if NetworkInterfaces.Current["STARTMODE"] != "managed"
             if ip != "NONE"
-              prefixlen = Ops.get_string(
-                NetworkInterfaces.Current,
-                "PREFIXLEN",
-                ""
-              )
-              if Ops.greater_than(Builtins.size(ip), 0)
-                descr2 = Builtins.sformat(
-                  "%1 %2",
-                  _("IP address assigned using"),
-                  ip
-                )
+              prefixlen = NetworkInterfaces.Current["PREFIXLEN"] || ""
+
+              if !ip.empty?
+                descr2 = ("%s %s") % [_("IP address assigned using"), ip]
+
                 if !Builtins.issubstring(ip, "DHCP")
-                  descr2 = Ops.greater_than(Builtins.size(prefixlen), 0) ?
+                  descr2 = !prefixlen.empty? ?
                     Builtins.sformat(_("IP address: %1/%2"), ip, prefixlen) :
                     Builtins.sformat(
                       _("IP address: %1, subnet mask %2"),
                       ip,
-                      Ops.get_string(NetworkInterfaces.Current, "NETMASK", "")
+                      NetworkInterfaces.Current["NETMASK"] || ""
                     )
                 end
-                bullets = Ops.add(bullets, [descr2])
+                bullets << descr2
               end
             end
             # build aliases overview
-            if Ops.greater_than(
-                Builtins.size(
-                  Ops.get_map(NetworkInterfaces.Current, "_aliases", {})
-                ),
-                0
-              ) &&
-                !NetworkService.is_network_manager
-              Builtins.foreach(
-                Ops.get_map(NetworkInterfaces.Current, "_aliases", {})
-              ) do |key2, desc|
+            item_aliases = NetworkInterfaces.Current["_aliases"] || {}
+            if !item_aliases.empty? && !NetworkService.is_network_manager
+              item_aliases.each do |key2, desc|
                 parameters = Builtins.sformat(
                   "%1/%2",
-                  Ops.get_string(desc, "IPADDR", ""),
-                  Ops.get_string(desc, "PREFIXLEN", "")
+                  desc["IPADDR"] || "",
+                  desc["PREFIXLEN"] || ""
                 )
-                bullets = Builtins.add(
-                  bullets,
-                  Builtins.sformat(
-                    "%1 (%2)",
-                    Ops.get_string(desc, "LABEL", ""),
-                    parameters
-                  )
-                )
+                bullets << ("%s (%s)") % [desc["LABEL"], parameters]
               end
             end
           end
 
           if @type == "wlan" &&
-              !(Ops.get_string(
-                NetworkInterfaces.Current,
-                "WIRELESS_AUTH_MODE",
-                ""
-              ) != "open") &&
-              IsEmpty(
-                Ops.get_string(NetworkInterfaces.Current, "WIRELESS_KEY_0", "")
-              )
+            NetworkInterfaces.Current["WIRELESS_AUTH_MODE"] == "open" &&
+            IsEmpty(NetworkInterfaces.Current["WIRELESS_KEY_0"])
+
             # avoid colons
-            dev = Builtins.mergestring(Builtins.splitstring(dev, ":"), "/")
-            href = Ops.add("lan--wifi-encryption-", dev)
+            ifcfg_name.tr!(":", "/")
+            href = "lan--wifi-encryption-" + ifcfg_name
             # interface summary: WiFi without encryption
             warning = HTML.Colorize(_("Warning: no encryption is used."), "red")
-            status = Ops.add(
-              Ops.add(Ops.add(Ops.add(status, " "), warning), " "),
-              # Hyperlink: Change the configuration of an interface
-              Hyperlink(href, _("Change."))
-            )
-            links = Builtins.add(links, href)
+            # Hyperlink: Change the configuration of an interface
+            status << " " << warning << " " << Hyperlink(href, _("Change."))
+            links << href
           end
 
           if @type == "bond"
-            bullets = Builtins.add(
-              bullets,
-              Builtins.sformat(
-                "%1: %2",
-                _("Bonding slaves"),
-                Builtins.mergestring(GetBondSlaves(dev), " ")
-              )
-            )
+            bond_slaves_desc = ("%s: %s") % [
+              _("Bonding slaves"),
+              GetBondSlaves(ifcfg_name).join(" ")
+            ]
+            bullets << bond_slaves_desc
           end
 
           bond_index = BuildBondIndex()
           bond_master = Ops.get(
             bond_index,
-            Ops.get_string(@Items, [key, "ifcfg"], ""),
+            ifcfg_name,
             ""
           )
 
-          if Ops.greater_than(Builtins.size(bond_master), 0)
-            note = Builtins.sformat(_("enslaved in %1"), bond_master)
-            bullets = Builtins.add(
-              bullets,
-              Builtins.sformat("%1: %2", _("Bonding master"), bond_master)
-            )
+          if !bond_master.empty?
+            note = _("enslaved in %s") % bond_master
+            bond_master_desc = ("%s: %s") % [_("Bonding master"), bond_master]
+            bullets << bond_master_desc
           end
 
-          overview = Builtins.add(overview, Summary.Device(descr, status))
+          overview << Summary.Device(descr, status)
         else
           descr = CheckEmptyName(@type, descr)
-          overview = Builtins.add(
-            overview,
-            Summary.Device(descr, Summary.NotConfigured)
-          )
+          overview << Summary.Device(descr, Summary.NotConfigured)
         end
-        conn = HTML.Bold(
-          Ops.get_boolean(@Items, [key, "hwinfo", "link"], false) == true ?
-            "" :
-            Builtins.sformat("(%1)", _("Not connected"))
-        )
-        if Builtins.size(Ops.get_map(@Items, [key, "hwinfo"], {})) == 0
-          conn = HTML.Bold(Builtins.sformat("(%1)", _("No hwinfo")))
+        conn = ""
+        conn = HTML.Bold("(%s)" % _("Not connected")) if !item_hwinfo["link"]
+
+        if item_hwinfo.empty?
+          conn = HTML.Bold("(%s)" % _("No hwinfo"))
         end
-        mac_dev = Ops.add(
-          Ops.add(
-            HTML.Bold("MAC : "),
-            Ops.get_string(@Items, [key, "hwinfo", "mac"], "")
-          ),
-          "<br>"
-        )
-        bus_id = Ops.add(
-          Ops.add(
-            HTML.Bold("BusID : "),
-            Ops.get_string(@Items, [key, "hwinfo", "busid"], "")
-          ),
-          "<br>"
-        )
-        if IsNotEmpty(Ops.get_string(@Items, [key, "hwinfo", "mac"], ""))
-          rich = Ops.add(Ops.add(Ops.add(rich, " "), conn), "<br>")
-          rich = Ops.add(rich, mac_dev)
+
+        mac_dev = HTML.Bold("MAC : ") + item_hwinfo["mac"].to_s + "<br>"
+        bus_id  = HTML.Bold("BusID : ") + item_hwinfo["busid"].to_s + "<br>"
+
+        if IsNotEmpty(item_hwinfo["mac"])
+          rich << " " << conn << "<br>" << mac_dev
         end
-        if IsNotEmpty(Ops.get_string(@Items, [key, "hwinfo", "busid"], ""))
-          rich = Ops.add(rich, bus_id)
+        if IsNotEmpty(item_hwinfo["busid"])
+          rich << bus_id
         end
-        # display it only if we need it, don't duplicate "dev" above
-        if IsNotEmpty(Ops.get_string(@Items, [key, "hwinfo", "dev_name"], "")) &&
-            IsEmpty(Ops.get_string(@Items, [key, "ifcfg"], ""))
-          dev_name = Builtins.sformat(
-            _("Device Name: %1"),
-            Ops.get_string(@Items, [key, "hwinfo", "dev_name"], "")
-          )
-          dev_name_r = Ops.add(HTML.Bold(dev_name), "<br>")
-          rich = Ops.add(rich, dev_name_r)
+        # display it only if we need it, don't duplicate "ifcfg_name" above
+        if IsNotEmpty(item_hwinfo["dev_name"]) && ifcfg_name.empty?
+          dev_name = _("Device Name: %s") %  item_hwinfo["dev_name"]
+          rich << HTML.Bold(dev_name) << "<br>"
         end
-        rich = Ops.add(HTML.Bold(descr), rich)
-        if IsEmpty(Ops.get_string(@Items, [key, "hwinfo", "dev_name"], "")) &&
-            Ops.greater_than(
-              Builtins.size(Ops.get_map(@Items, [key, "hwinfo"], {})),
-              0
-            ) &&
-            !Arch.s390
-          rich = Ops.add(
-            rich,
-            _(
-              "<p>Unable to configure the network card because the kernel device (eth0, wlan0) is not present. This is mostly caused by missing firmware (for wlan devices). See dmesg output for details.</p>"
-            )
-          )
-        elsif IsNotEmpty(Ops.get_string(@Items, [key, "ifcfg"], ""))
-          rich = Ops.add(rich, HTML.List(bullets))
+        rich = HTML.Bold(descr) + rich
+        if IsEmpty(item_hwinfo["dev_name"]) && !item_hwinfo.empty? && !Arch.s390
+          rich << "<p>"
+          rich << _("Unable to configure the network card because the kernel device (eth0, wlan0) is not present. This is mostly caused by missing firmware (for wlan devices). See dmesg output for details.")
+          rich << "</p>"
+        elsif !ifcfg_name.empty?
+          rich << HTML.List(bullets)
         else
-          rich = Ops.add(
-            rich,
-            _(
-              "<p>The device is not configured. Press <b>Edit</b>\nto configure.</p>\n"
-            )
-          )
+          rich << "<p>"
+          rich << _("The device is not configured. Press <b>Edit</b>\nto configure.\n")
+          rich << "</p>"
 
           curr = @current
           @current = key
           if needFirmwareCurrentItem
             fw = GetFirmwareForCurrentItem()
-            rich = Ops.add(
-              rich,
-              Builtins.sformat(
-                "%1 : %2",
-                _("Needed firmware"),
-                fw != "" ? fw : _("unknown")
-              )
-            )
+            rich << ("%s : %s") % [_("Needed firmware"), !fw.empty? ? fw : _("unknown")]
           end
           @current = curr
         end
-        Ops.set(
-          @Items,
-          [key, "table_descr"],
-          { "rich_descr" => rich, "table_descr" => [descr, ip, dev, note] }
-        )
+        @Items[key]["table_descr"] = {
+          "rich_descr" => rich,
+          "table_descr" => [descr, ip, ifcfg_name, note]
+        }
       end
       [Summary.DevicesList(overview), links]
     end
