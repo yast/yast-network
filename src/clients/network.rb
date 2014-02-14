@@ -64,39 +64,23 @@ module Yast
             "\n" +
             "lan\t"
         ) +
-          _("Network Card") + "\nisdn\t" +
-          _("ISDN Card") + "\nmodem\t" +
-          _("Modem") + "\ndsl\t" +
-          _("DSL Connection") + "\n",
+          _("Network Card"),
         "guihandler" => fun_ref(method(:startDialog), "any ()"),
-        "initialize" => fun_ref(method(:initNet), "void ()"),
-        "finish"     => fun_ref(method(:finishNet), "void ()"),
-        # 	"actions" : $[
-        # 	   "run" : $[
-        # 		"handler" : runHandler,
-        # 		"help" : _("Run network modules")
-        # 		    ],
-        # 		],
         "options"    => {},
-        "mapping" =>
-          #		"run" : [  ],
-          {}
+        "mapping"    => {}
       }
 
 
       # main ui function
-      @ret = nil
-
       if @propose
         @ret = startDialog
       else
-        #	y2internal("%1", CommandLine::Parse(cmdline_description));
         @ret = CommandLine.Run(@cmdline_description)
       end
       Builtins.y2debug("ret=%1", @ret)
 
 
-      :next 
+      :next
 
       # EOF
     end
@@ -114,7 +98,6 @@ module Yast
       contents = HBox(
         HSpacing(8),
         # Frame label
-        #`Frame(_("Available network modules:"), `HBox(`HSpacing(2),
         VBox(
           VSpacing(3),
           # Selection box label
@@ -124,18 +107,11 @@ module Yast
             _("&Available Network Modules:"),
             [
               # Selection box item
-              Item(Id("lan"), _("Network Card"), true),
-              # Selection box item
-              Item(Id("isdn"), _("ISDN Card")),
-              # Selection box item
-              Item(Id("modem"), _("Modem")),
-              # Selection box item
-              Item(Id("dsl"), _("DSL Connection"))
+              Item(Id("lan"), _("Network Card"), true)
             ]
           ),
           VSpacing(3)
         ),
-        #`HSpacing(2))),
         HSpacing(8)
       )
 
@@ -145,7 +121,7 @@ module Yast
         caption,
         contents,
         help,
-        Label.BackButton, # Label::FinishButton()
+        Label.BackButton,
         _("&Launch")
       )
 
@@ -157,8 +133,6 @@ module Yast
 
         # abort?
         if ret == :abort || ret == :cancel
-          # if(ReallyAbort()) break;
-          # else continue;
           break
         # next
         elsif ret == :next || ret == :modules
@@ -195,17 +169,9 @@ module Yast
 
     def runHandler(options)
       options = deep_copy(options)
-      # CommandLine::Print(_("bla"));
       true
     end
 
-    def initNet
-      nil
-    end
-
-    def finishNet
-      nil
-    end
   end
 end
 
