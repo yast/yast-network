@@ -1208,25 +1208,21 @@ module Yast
     def ip_overview(ip)
       bullets = []
 
-      if ip != "NONE"
-        prefixlen = NetworkInterfaces.Current["PREFIXLEN"] || ""
-
-        if !ip.empty?
-          descr2 = ("%s %s") % [_("IP address assigned using"), ip]
-
-          if !(ip =~ /DHCP/)
-            descr2 = if !prefixlen.empty?
-              _("IP address: %s/%s") % [ip, prefixlen]
-            else
-              _("IP address: %s, subnet mask %s") % [
-                ip,
-                NetworkInterfaces.Current["NETMASK"].to_s
-              ]
-            end
-          end
-          bullets << descr2
+      case ip
+      when "NONE", ""
+      # do nothing
+      when /DHCP/
+        bullets << ("%s %s") % [_("IP address assigned using"), ip]
+      else
+        prefixlen = NetworkInterfaces.Current["PREFIXLEN"]
+        if prefixlen
+          bullets << _("IP address: %s/%s") % [ip, prefixlen]
+        else
+          subnetmask = NetworkInterfaces.Current["NETMASK"]
+          bullets << _("IP address: %s, subnet mask %s") % [ip, subnetmask]
         end
       end
+
       # build aliases overview
       item_aliases = NetworkInterfaces.Current["_aliases"] || {}
       if !item_aliases.empty? && !NetworkService.is_network_manager
