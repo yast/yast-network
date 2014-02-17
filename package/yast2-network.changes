@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Feb 17 08:01:21 UTC 2014 - mfilka@suse.com
+
+- bnc#862378
+  - improved earlier fix. It handles virtual devices without
+    configuration better now.
+- 3.1.21
+
+-------------------------------------------------------------------
 Fri Feb 14 09:56:48 UTC 2014 - mfilka@suse.com
 
 - bnc#863952
