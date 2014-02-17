@@ -1172,12 +1172,7 @@ module Yast
       deep_copy(index)
     end
 
-    # FIXME: 
-    # - side effect: sets @type. No reason for that. It should only build item
-    # overview. Check and remove.
-    def BuildLanOverview
-      overview = []
-      links = []
+    def startmode_overview
       startmode_descrs = {
         # summary description of STARTMODE=auto
         "auto"    => _(
@@ -1205,6 +1200,52 @@ module Yast
         )
       }
 
+      startmode_descr = startmode_descrs[NetworkInterfaces.Current["STARTMODE"].to_s] || _("Started manually")
+
+      return [startmode_descr]
+    end
+
+    def ip_overview(ip)
+      bullets = []
+
+      if ip != "NONE"
+        prefixlen = NetworkInterfaces.Current["PREFIXLEN"] || ""
+
+        if !ip.empty?
+          descr2 = ("%s %s") % [_("IP address assigned using"), ip]
+
+          if !(ip =~ /DHCP/)
+            descr2 = if !prefixlen.empty?
+              _("IP address: %s/%s") % [ip, prefixlen]
+            else
+              _("IP address: %s, subnet mask %s") % [
+                ip,
+                NetworkInterfaces.Current["NETMASK"].to_s
+              ]
+            end
+          end
+          bullets << descr2
+        end
+      end
+      # build aliases overview
+      item_aliases = NetworkInterfaces.Current["_aliases"] || {}
+      if !item_aliases.empty? && !NetworkService.is_network_manager
+        item_aliases.each do |key2, desc|
+          parameters = "%s/%s" % [desc["IPADDR"], desc["PREFIXLEN"]]
+          bullets << ("%s (%s)") % [desc["LABEL"], parameters]
+        end
+      end
+
+      return bullets
+    end
+
+    # FIXME: 
+    # - side effect: sets @type. No reason for that. It should only build item
+    # overview. Check and remove.
+    def BuildLanOverview
+      overview = []
+      links = []
+
       Builtins.foreach(
         Convert.convert(
           Map.Keys(@Items),
@@ -1217,15 +1258,15 @@ module Yast
 
         item_hwinfo = @Items[key]["hwinfo"] || {}
         descr = item_hwinfo["name"] || ""
-        @type = item_hwinfo["type"] || ""
 
         note = ""
         bullets = []
         ifcfg_name = @Items[key]["ifcfg"] || ""
+
+        @type = NetworkInterfaces.GetType(ifcfg_name)
         if !ifcfg_name.empty?
           NetworkInterfaces.Select(ifcfg_name)
 
-          @type = NetworkInterfaces.GetType(ifcfg_name) if @type.empty?
           ifcfg_desc = GetDeviceMap(key)["NAME"]
           descr = ifcfg_desc if !ifcfg_desc.nil? && !ifcfg_desc.empty?
           descr = CheckEmptyName(@type, descr)
@@ -1236,49 +1277,9 @@ module Yast
             NetworkInterfaces.Current
           )
 
-          startmode_descr = Ops.get_locale(
-            startmode_descrs,
-            Ops.get_string(NetworkInterfaces.Current, "STARTMODE", ""),
-            _("Started manually")
-          )
-
-          bullets = [
-            _("Device Name: %s") % ifcfg_name,
-            startmode_descr
-          ]
-
-          if NetworkInterfaces.Current["STARTMODE"] != "managed"
-            if ip != "NONE"
-              prefixlen = NetworkInterfaces.Current["PREFIXLEN"] || ""
-
-              if !ip.empty?
-                descr2 = ("%s %s") % [_("IP address assigned using"), ip]
-
-                if !Builtins.issubstring(ip, "DHCP")
-                  descr2 = !prefixlen.empty? ?
-                    Builtins.sformat(_("IP address: %1/%2"), ip, prefixlen) :
-                    Builtins.sformat(
-                      _("IP address: %1, subnet mask %2"),
-                      ip,
-                      NetworkInterfaces.Current["NETMASK"] || ""
-                    )
-                end
-                bullets << descr2
-              end
-            end
-            # build aliases overview
-            item_aliases = NetworkInterfaces.Current["_aliases"] || {}
-            if !item_aliases.empty? && !NetworkService.is_network_manager
-              item_aliases.each do |key2, desc|
-                parameters = Builtins.sformat(
-                  "%1/%2",
-                  desc["IPADDR"] || "",
-                  desc["PREFIXLEN"] || ""
-                )
-                bullets << ("%s (%s)") % [desc["LABEL"], parameters]
-              end
-            end
-          end
+          bullets << _("Device Name: %s") % ifcfg_name
+          bullets = bullets + startmode_overview
+          bullets = bullets + ip_overview(ip) if NetworkInterfaces.Current["STARTMODE"] != "managed"
 
           if @type == "wlan" &&
             NetworkInterfaces.Current["WIRELESS_AUTH_MODE"] == "open" &&
