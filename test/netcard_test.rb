@@ -56,7 +56,7 @@ MOCKED_ITEMS = {
   2 => {"ifcfg" => "eth1"},
   3 => {"ifcfg" => "br0"},
   4 => {"ifcfg" => "tun0"},
-  5 => {"ifcfg" => "tap0"}
+  5 => {"ifcfg" => "tap0"},
 }
 
 require "yast"
@@ -99,18 +99,18 @@ describe "NetworkComplexInclude#HardwareName" do
 
   it "returns expected name when querying oldfashioned mac based id" do
     expect(HardwareName([@hwinfo], "id-#{HWINFO_DEVICE_MAC}"))
-      .to be_eql @expected_desc
+      .to eql @expected_desc
   end
 
   it "returns expected name when querying oldfashioned bus based id" do
     busid = "bus-#{HWINFO_DEVICE_BUS}-#{HWINFO_DEVICE_BUSID}"
     expect(HardwareName([@hwinfo], busid))
-      .to be_eql @expected_desc
+      .to eql @expected_desc
   end
 
   it "returns expected name when querying by device name" do
     expect(HardwareName([@hwinfo], HWINFO_DEVICE_NAME))
-      .to be_eql @expected_desc
+      .to eql @expected_desc
   end
 
   it "returns empty string when id is not given" do
@@ -125,5 +125,49 @@ describe "NetworkComplexInclude#HardwareName" do
 
   it "returns empty string when querying unknown id" do
     expect(HardwareName(@hwinfo, "unknown")).to be_empty
+  end
+end
+
+describe "LanItemsClass#BuildLanOverview" do
+  before(:each) do
+    @lan_items = Yast::LanItems
+    @lan_items.main
+    @lan_items.Items = MOCKED_ITEMS
+  end
+
+  it "returns description and uses custom name if present" do
+    @lan_items.stub(:GetDeviceMap) { { "NAME" => "Custom name" } }
+
+    @lan_items.BuildLanOverview
+    @lan_items.Items.each_pair do |key, value|
+      # it is not issue, really same index two times
+      desc = value["table_descr"]["table_descr"].first
+
+      if value["ifcfg"]
+        expect(desc).to eql "Custom name"
+      else
+        expect(desc).not_to be_empty
+      end
+    end
+  end
+
+  it "returns description and uses type based name if hwinfo is not present" do
+    @lan_items.stub(:GetDeviceMap) { { "NAME" => "" } }
+
+    @lan_items.BuildLanOverview
+    @lan_items.Items.each_pair do |key, value|
+      desc = value["table_descr"]["table_descr"].first
+
+      if !value["hwinfo"]
+        dev_name = value["ifcfg"].to_s
+        dev_type = Yast::NetworkInterfaces.GetType(dev_name)
+        expected_dev_desc = Yast::NetworkInterfaces.GetDevTypeDescription(dev_type, true)
+      else
+        expected_dev_desc = value["hwinfo"]["name"]
+      end
+
+      expect(desc).not_to be_empty
+      expect(desc).to eql expected_dev_desc
+    end
   end
 end
