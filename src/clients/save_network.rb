@@ -717,15 +717,16 @@ module Yast
         dest_file = Builtins.sformat("%1%2", copy_to, file)
         # apply options from initrd configuration files into installed system
         # i.e. just modify (not replace) files from sysconfig rpm
+        # FIXME this must be ripped out, refactored and tested
+        # In particular, values containing slashes will break the last sed
         cmd2 = "\n" +
-          "for row in $(grep -v \"^[[:space:]]*#\" $source_file)\n" +
+          "grep -v \"^[[:space:]]*#\" $source_file | grep = | while read option\n" +
           " do\n" +
-          "  option=$(echo $row|sed s/\"^[[:space:]]$row\"/\"$row\"/g)\n" +
-          "  key=${option%*=*}\n" +
+          "  key=${option%=*}=\n" +
           "  grep -v \"^[[:space:]]*#\" $dest_file | grep -q $key\n" +
           "  if [ $? != \"0\" ]\n" +
           "   then\n" +
-          "    echo $option >> $dest_file\n" +
+          "    echo \"$option\" >> $dest_file\n" +
           "   else\n" +
           "    sed -i s/\"^[[:space:]]*$key.*\"/\"$option\"/g $dest_file\n" +
           "  fi\n" +
