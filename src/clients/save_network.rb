@@ -702,7 +702,7 @@ module Yast
       )
 
       # just copy files
-      Builtins.foreach(["ifcfg-*", "routes"]) do |file|
+      Builtins.foreach(["ifcfg-*", "ifroute-*", "routes"]) do |file|
         copy_from = String.Quote(Builtins.sformat("%1%2", sysconfig, file))
         Builtins.y2milestone("Copy %1 into %2", copy_from, copy_to)
         cmd = Builtins.sformat("cp %1 %2", copy_from, copy_to)
