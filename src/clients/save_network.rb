@@ -708,7 +708,7 @@ module Yast
         cmd = Builtins.sformat("cp %1 %2", copy_from, copy_to)
         ret = SCR.Execute(path(".target.bash_output"), cmd)
 
-        Builtins.y2error("cmd: '#{cmd}' failed: #{ret}") if ret["exit"] != 0
+        Builtins.y2warning("cmd: '#{cmd}' failed: #{ret}") if ret["exit"] != 0
       end
 
       # merge files with default installed by sysconfig
