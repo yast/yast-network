@@ -728,7 +728,7 @@ module Yast
           "   else\n" +
           "    sed -i s/\"^[[:space:]]*$key.*\"/\"$option\"/g $dest_file\n" +
           "  fi\n" +
-          " done";
+          " done"
         cmd1 = Builtins.sformat(
           "source_file=%1;dest_file=%2\n",
           source_file,
