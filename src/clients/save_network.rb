@@ -717,6 +717,8 @@ module Yast
         dest_file = Builtins.sformat("%1%2", copy_to, file)
         # apply options from initrd configuration files into installed system
         # i.e. just modify (not replace) files from sysconfig rpm
+        # FIXME this must be ripped out, refactored and tested
+        # In particular, values containing slashes will break the last sed
         cmd2 = "\n" +
           "grep -v \"^[[:space:]]*#\" $source_file | grep = | while read option\n" +
           " do\n" +
