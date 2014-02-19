@@ -718,18 +718,17 @@ module Yast
         # apply options from initrd configuration files into installed system
         # i.e. just modify (not replace) files from sysconfig rpm
         cmd2 = "\n" +
-          "for row in $(grep -v \"^[[:space:]]*#\" $source_file)\n" +
+          "grep -v \"^[[:space:]]*#\" $source_file | grep = | while read option\n" +
           " do\n" +
-          "  option=$(echo $row|sed s/\"^[[:space:]]$row\"/\"$row\"/g)\n" +
-          "  key=${option%*=*}\n" +
+          "  key=${option%=*}=\n" +
           "  grep -v \"^[[:space:]]*#\" $dest_file | grep -q $key\n" +
           "  if [ $? != \"0\" ]\n" +
           "   then\n" +
-          "    echo $option >> $dest_file\n" +
+          "    echo \"$option\" >> $dest_file\n" +
           "   else\n" +
           "    sed -i s/\"^[[:space:]]*$key.*\"/\"$option\"/g $dest_file\n" +
           "  fi\n" +
-          " done"
+          " done";
         cmd1 = Builtins.sformat(
           "source_file=%1;dest_file=%2\n",
           source_file,
