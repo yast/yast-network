@@ -61,7 +61,6 @@ module Yast
       nil
     end
 
-
     def CopyConfiguredNetworkFiles
       Builtins.y2milestone(
         "Copy network configuration files from 1st stage into installed system"

@@ -6,17 +6,18 @@ include I18n
 
 module Yast
 
-  class InstInstallInfClient < Client
-    def init
-      @network_disk = NetworkStorage.isDiskOnNetwork(device)
-      Builtins.y2milestone("Network based device: %1", @network_disk)
+  BASH_PATH = Path.new(".target.bash")
+
+  class InstallInf
+    INSTALL_INF = Path.new(".etc.install_inf")
+
+    def self.[](item)
+      SCR.Read(INSTALL_INF + Path.new(".#{item}")).to_s
     end
+  end
 
-    def main
-      Yast.import "UI"
-
-      textdomain "network"
-
+  class InstInstallInfClient < Client
+    def self.init
       Yast.import "Hostname"
       Yast.import "IP"
       Yast.import "NetworkInterfaces"
@@ -33,168 +34,46 @@ module Yast
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/complex.rb"
 
-      @InstallInf = {}
-
-      # global variable because chrooted environment
-      @network_disk = :no # `nfs `iscsi `fcoe
-      @netdevice = ""
-
       @hardware = ReadHardware("netcard")
       Builtins.y2milestone("hardware %1", @hardware)
 
-    end
-
-    # Read one install.inf item
-    # @param [String] item InstallInf map key
-    # @param [String] var install.inf SCR variable
-    # @return true on success
-    def ReadInstallInfItem(install_inf, item, var)
-      return false if item == nil || item == "" || var == nil || var == ""
-
-      val = Convert.to_string(SCR.Read(Builtins.add(install_inf, var)))
-      return false if val == nil
-
-      Ops.set(@InstallInf, item, val) if val != ""
-
-      true
-    end
-
-    def DeleteFirstWord(s)
-      ret = Builtins.regexpsub(s, "^[^ ]* +(.*)", "\\1")
-      ret == nil ? s : ret
-    end
-
-    # Read install.inf from the correct location
-    # @return true on success
-    def ReadInstallInf
-      Builtins.y2milestone("ReadInstallInf()")
-
-      # Detect install.inf location
-      install_inf = nil
-      if Ops.greater_than(SCR.Read(path(".target.size"), "/etc/install.inf"), 0)
-        install_inf = path(".etc.install_inf")
-        Ops.set(@InstallInf, "installation", "yes")
-      else
-        # FIXME
-        # else if(SCR::Read(.target.size,"/var/lib/YaST2/install.inf") > 0)
-        # 	install_inf = .var.lib.YaST2.install_inf;
-        return false
-      end
-
-      # Read install.inf items
-      ReadInstallInfItem(install_inf, "firststage_network", "ConfigureNetwork")
-      ReadInstallInfItem(install_inf, "ipaddr", "IP")
-      ReadInstallInfItem(install_inf, "ipaddr6", "IP6")
-      ReadInstallInfItem(install_inf, "netmask", "Netmask")
-      ReadInstallInfItem(install_inf, "bcast", "Broadcast")
-      ReadInstallInfItem(install_inf, "remote_ip", "Pointopoint")
-      ReadInstallInfItem(install_inf, "mtu", "IP_MTU")
-      ReadInstallInfItem(install_inf, "bootproto", "NetConfig")
-      ReadInstallInfItem(install_inf, "netdevice", "Netdevice")
-      ReadInstallInfItem(install_inf, "gateway", "Gateway")
-      ReadInstallInfItem(install_inf, "nameserver", "Nameserver")
-      ReadInstallInfItem(install_inf, "nameserver2", "Nameserver2")
-      ReadInstallInfItem(install_inf, "nameserver3", "Nameserver3")
-      ReadInstallInfItem(install_inf, "domain", "Domain")
-      ReadInstallInfItem(install_inf, "nisdomain", "NISDomain")
-      ReadInstallInfItem(install_inf, "hostname", "Hostname")
-      ReadInstallInfItem(install_inf, "module", "Alias")
-      ReadInstallInfItem(install_inf, "proxyUrl", "ProxyUrl")
-      ReadInstallInfItem(install_inf, "proxyProto", "ProxyProto")
-      #    ReadInstallInfItem(install_inf, "options", "Options");
-      # OSAHwAddr parameter s390
-      ReadInstallInfItem(install_inf, "hwaddr", "HWAddr")
-      ReadInstallInfItem(install_inf, "ethtool_options", "ethtool")
-      ReadInstallInfItem(install_inf, "unique", "NetUniqueID")
-      ReadInstallInfItem(install_inf, "connect_wait", "ConnectWait")
-
-      ReadInstallInfItem(install_inf, "QETH_LAYER2_SUPPORT", "Layer2")
-      #    ReadInstallInfItem(install_inf, "LLADDR", "OSAHWAddr");
-      ReadInstallInfItem(install_inf, "dhcptimeout", "DHCPTimeout")
-
-      ReadInstallInfItem(install_inf, "WESSID", "WlanESSID")
-      ReadInstallInfItem(install_inf, "WAuth", "WlanAuth")
-      ReadInstallInfItem(install_inf, "WKey", "WlanKey")
-      ReadInstallInfItem(install_inf, "WkeyType", "WlanKeyType")
-      ReadInstallInfItem(install_inf, "WkeyLen", "WlanKeyLen")
-
-
       # Split network device
-      @netdevice = Ops.get_string(@InstallInf, "netdevice", "")
+      @netdevice = InstallInf["Netdevice"]
       Builtins.y2milestone("InstallInf::netdevice:%1", @netdevice)
+
       if Mode.autoinst
         # if possible, for temporary installation network use same device
         # with same MAC address (even if devicename changed) (bnc#648270)
-        new_devname = LanUdevAuto.GetDevnameByMAC(
-          Ops.get_string(@InstallInf, "hwaddr", "")
-        )
-        Builtins.y2milestone("LanUdevAuto::netdevice:%1", new_devname)
-        if Ops.greater_than(Builtins.size(new_devname), 0)
-          Builtins.y2milestone(
-            "old devname: %1, new devname: %2",
-            @netdevice,
-            new_devname
-          )
-          @netdevice = new_devname
-        end
-      end
-      if @netdevice != ""
-        devtype = NetworkInterfaces.device_type(@netdevice)
-        Ops.set(@InstallInf, "type", devtype) if devtype != nil && devtype != "" 
-        #	InstallInf = remove(InstallInf, "netdevice");
-      end
+        new_devname = LanUdevAuto.GetDevnameByMAC(InstallInf["HWAddr"])
 
-      if Arch.s390
-        Builtins.y2milestone(
-          "Interface type: %1",
-          Ops.get_string(@InstallInf, "type", "")
-        )
-        # only some card types need a persistent MAC (bnc#658708)
-        sysfs_id = dev_name_to_sysfs_id(@netdevice, @hardware)
-        if !s390_device_needs_persistent_mac(sysfs_id, @hardware)
-          @InstallInf = Builtins.remove(@InstallInf, "hwaddr")
-        end
-        # hsi devices do not support setting hwaddr (bnc #479481)
-        if Ops.get_string(@InstallInf, "type", "") == "hsi" &&
-            Builtins.haskey(@InstallInf, "hwaddr")
-          @InstallInf = Builtins.remove(@InstallInf, "hwaddr")
-        end
-        # set HW address only for qeth set to Layer 2 (bnc #479481)
-        if Ops.get_string(@InstallInf, "type", "") == "eth" &&
-            Ops.get_string(@InstallInf, "QETH_LAYER2_SUPPORT", "0") != "1"
-          @InstallInf = Builtins.remove(@InstallInf, "hwaddr")
-        end
+        Builtins.y2milestone("LanUdevAuto::netdevice:%1", new_devname)
+
+        @netdevice = new_devname if !new_devname.empty?
       end
 
       # Split FQ hostname
-      hostname = Ops.get_string(@InstallInf, "hostname", "")
-      if hostname != "" && !IP.Check(hostname)
-        split = Hostname.SplitFQ(hostname)
+      @hostname = InstallInf["Hostname"]
+      if !@hostname.empty? && !IP.Check(@hostname)
+        split = Hostname.SplitFQ(@hostname)
 
         # hostname is supposed to be FQDN (http://en.opensuse.org/Linuxrc)
         # so we should not cut off domain name ... anyway remember domain,
         # use it as fallback below, if there is no DNS search domain (#476208)
-        if Ops.greater_than(Builtins.size(split), 1)
-          Ops.set(@InstallInf, "fqdomain", Ops.get_string(split, 1, ""))
-        end
+        @fqdomain = split[1] if split.size > 1
       else
         # do not have numeric hostname, #152218
-        Ops.set(@InstallInf, "hostname", "")
+        @hostname = ""
       end
 
       # #180821, todo cleanup
-      if @netdevice != ""
-        mod = Convert.to_string(
-          SCR.Read(Builtins.add(path(".etc.install_inf_alias"), @netdevice))
-        )
-        if mod != "" && mod != nil
-          Ops.set(@InstallInf, "module", mod)
-          options = Convert.to_string(
-            SCR.Read(Builtins.add(path(".etc.install_inf_options"), mod))
-          )
-          if options != "" && options != nil
-            Ops.set(@InstallInf, "options", options)
-          end
+      if !@netdevice.empty?
+        mod = SCR.Read(Builtins.add(path(".etc.install_inf_alias"), @netdevice)).to_s
+
+        if !mod.empty?
+          @module = mod
+          options = SCR.Read(Builtins.add(path(".etc.install_inf_options"), mod)).to_s
+
+          @options = options if !options.empty?
         end
       else
         # FIXME: alias = eth0 tulip
@@ -203,231 +82,148 @@ module Yast
         # #42203: correctly parse module and options for proposal
         # "eth0 qeth" -> "qeth"
         # FIXME: this only works for a single module
-        mod = Ops.get_string(@InstallInf, "module", "")
-        Ops.set(@InstallInf, "module", DeleteFirstWord(mod)) if mod != ""
-
-        options = Ops.get_string(@InstallInf, "options", "")
-        if options != ""
-          Ops.set(@InstallInf, "options", DeleteFirstWord(options))
-        end
+        mod = InstallInf["Alias"]
+        @module = DeleteFirstWord(mod) if mod != ""
       end
 
-      Builtins.y2milestone("InstallInf(%1)", @InstallInf)
       true
     end
 
-    # Read module options from /etc/install.inf
-    # @param [String] module_name Module name
-    # @return module options, empty string if none
-    def InstallModuleOptions(module_name)
-      if Ops.greater_than(SCR.Read(path(".target.size"), "/etc/install.inf"), 0)
-        modules = SCR.Dir(path(".etc.install_inf_options"))
-        Builtins.y2milestone(
-          "Module with options in /etc/install.inf: %1",
-          modules
-        )
-        if Builtins.contains(modules, module_name)
-          options = SCR.Read(
-            Builtins.add(path(".etc.install_inf_options"), module_name)
-          )
-          return Convert.to_string(options) if options != nil && options != ""
-        end
-      end
-      ""
+    def self.DeleteFirstWord(s)
+      ret = Builtins.regexpsub(s, "^[^ ]* +(.*)", "\\1")
+      ret == nil ? s : ret
     end
 
-    def StdoutOf(command)
+    def self.StdoutOf(command)
       out = Convert.to_map(SCR.Execute(path(".target.bash_output"), command))
       Ops.get_string(out, "stdout", "")
     end
 
-    def CreateIfcfg
+    def self.CreateIfcfg
       ifcfg = ""
 
-      if @network_disk == :iscsi &&
-          Builtins.contains(
-            NetworkStorage.getiBFTDevices,
-            Ops.get_string(@InstallInf, "netdevice", "")
-          )
-        ifcfg = Builtins.sformat(
-          "%1STARTMODE='nfsroot'\nBOOTPROTO='ibft'\n",
-          ifcfg
-        )
+      # known net devices: `nfs `iscsi `fcoe
+      device = NetworkStorage.getDevice(Installation.destdir)
+      network_disk = NetworkStorage.isDiskOnNetwork(device)
+      Builtins.y2milestone("Network based device: %1", network_disk)
+
+      if network_disk == :iscsi && NetworkStorage.getiBFTDevices.include?(InstallInf["Netdevice"])
+        ifcfg << "STARTMODE='nfsroot'\nBOOTPROTO='ibft'\n"
       else
-        # set BOOTPROTO=[ static | dhcp ]
-        if Ops.get_string(@InstallInf, "bootproto", "dhcp") == "static"
+        # set BOOTPROTO=[ static | dhcp ], linuxrc names it "NetConfig"
+        bootproto = InstallInf["NetConfig"]
+        case bootproto
+        when "static"
           # add broadcast interface #suse49131
-          ifcfg = Builtins.sformat(
-            "BOOTPROTO='static'\n" +
-              "IPADDR='%1/%2'\n" +
-              "BROADCAST='%3'\n",
-            Ops.get_string(@InstallInf, "ipaddr", ""),
-            Netmask.ToBits(Ops.get_string(@InstallInf, "netmask", "")),
-            Ops.get_string(@InstallInf, "bcast", "")
-          )
-          if Ops.greater_than(
-              Builtins.size(Ops.get_string(@InstallInf, "ipaddr6", "")),
-              0
-            )
-            ifcfg = Builtins.sformat(
-              "%1\n%2",
-              ifcfg,
-              Builtins.sformat(
-                "LABEL_ipv6='ipv6'\nIPADDR_ipv6='%1'\n",
-                Ops.get_string(@InstallInf, "ipaddr6", "")
-              )
-            )
-          end
-        else
-          #DHCP (also for IPv6) setup
-          if Ops.get_string(@InstallInf, "bootproto", "") == "dhcp"
-            ifcfg = "BOOTPROTO='dhcp4'\n"
-          elsif Ops.get_string(@InstallInf, "bootproto", "") == "dhcp6"
-            ifcfg = "BOOTPROTO='dhcp6'\n"
-          elsif Ops.get_string(@InstallInf, "bootproto", "") == "dhcp,dhcp6"
-            ifcfg = "BOOTPROTO='dhcp'\n"
+          ifcfg << "BOOTPROTO='static'\n"
+          ifcfg << "IPADDR='%s/%s'\n" % [
+            InstallInf["IP"],
+            Netmask.ToBits(InstallInf["Netmask"])
+          ]
+          ifcfg << "BROADCAST='%s'\n" % InstallInf["Broadcast"]
+
+          if !InstallInf["IP6"].empty?
+            ifcfg << "%s" % "LABEL_ipv6='ipv6'\n"
+            ifcfg << "IPADDR_ipv6='%s'\n" % InstallInf["IP6"]
           end
 
-          # set DHCP_SET_HOSTNAME=yes  #suse30528
-          Builtins.y2milestone(
-            "set DHCLIENT_SET_HOSTNAME=yes on installed system"
-          )
+        when "dhcp"
+          ifcfg << "BOOTPROTO='dhcp4'\n"
+
+        when "dhcp6"
+          ifcfg << "BOOTPROTO='dhcp6'\n"
+
+        when "dhcp,dhcp6"
+          ifcfg << "BOOTPROTO='dhcp'\n"
+        end
+
+        # set DHCP_SET_HOSTNAME=yes  #suse30528
+        if bootproto =~ /dhcp/
+          Builtins.y2milestone("set DHCLIENT_SET_HOSTNAME=yes on installed system")
           SCR.Execute(
-            path(".target.bash_output"),
+            path(".target.bash"),
             "sed -i s/\"DHCLIENT_SET_HOSTNAME=.*\"/'DHCLIENT_SET_HOSTNAME=\"yes\"'/g /etc/sysconfig/network/dhcp"
           )
         end
 
-        if @network_disk == :no
-          ifcfg = Builtins.sformat("%1STARTMODE='onboot'\n", ifcfg)
-        else
-          ifcfg = Builtins.sformat("%1STARTMODE='nfsroot'\n", ifcfg)
-        end
+        ifcfg << "STARTMODE='onboot'\n"
       end
 
       # wireless devices (bnc#223570)
-      if Ops.greater_than(
-          Builtins.size(Ops.get_string(@InstallInf, "WESSID", "")),
-          0
-        )
-        ifcfg = Builtins.sformat(
-          "%1WIRELESS_ESSID='%2'\n",
-          ifcfg,
-          Ops.get_string(@InstallInf, "WESSID", "")
-        )
+      if !InstallInf["WlanESSID"].empty?
+        ifcfg << "WIRELESS_ESSID='%s'\n" % InstallInf["WlanESSID"]
 
-        case Ops.get_string(@InstallInf, "WAuth", "")
+        case InstallInf["WlanAuth"]
           when "", "psk"
-            ifcfg = Builtins.sformat(
-              "%1WIRELESS_WPA_PSK='%2'\n",
-              ifcfg,
-              Ops.get_string(@InstallInf, "WKey", "")
-            )
-            ifcfg = Builtins.sformat("%1WIRELESS_AUTH_MODE='psk'\n", ifcfg)
+            ifcfg << "WIRELESS_WPA_PSK='%s'\n" % InstallInf["WlanKey"]
+            ifcfg << "WIRELESS_AUTH_MODE='psk'\n"
+
           when "open"
-            ifcfg = Builtins.sformat(
-              "%1WIRELESS_AUTH_MODE='no-encryption'\n",
-              ifcfg
-            )
+            ifcfg << "WIRELESS_AUTH_MODE='no-encryption'\n"
+
           when "wep_open", "wep_restricted"
-            @type = ""
-            if Ops.get_string(@InstallInf, "WkeyType", "") == "password"
-              @type = "h:"
-            elsif Ops.get_string(@InstallInf, "WkeyType", "") == "ascii"
-              @type = "s:"
+            type = ""
+            if InstallInf["WlankeyType"] == "password"
+              type = "h:"
+            elsif InstallInf["WlankeyType"] == "ascii"
+              type = "s:"
             end
-            ifcfg = Builtins.sformat(
-              "%1WIRELESS_AUTH_MODE='%2'\n",
-              ifcfg,
-              Ops.get_string(@InstallInf, "WAuth", "") == "wep-open" ? "open" : "sharedkey"
-            )
-            ifcfg = Builtins.sformat("%1WIRELESS_DEFAULT_KEY='0'\n", ifcfg)
-            ifcfg = Builtins.sformat(
-              "%1WIRELESS_KEY_0='%2%3'\n",
-              ifcfg,
-              @type,
-              Ops.get_string(@InstallInf, "WKey", "")
-            )
-            ifcfg = Builtins.sformat(
-              "%1WIRELESS_KEY_LENGTH='%2'\n",
-              ifcfg,
-              Ops.get_string(@InstallInf, "WKeyLen", "")
-            )
-            if Ops.greater_than(
-                Builtins.size(Ops.get_string(@InstallInf, "WKeyType", "")),
-                0
-              ) &&
-                Ops.greater_than(
-                  Builtins.size(Ops.get_string(@InstallInf, "WKey", "")),
-                  0
-                )
-              ifcfg = Builtins.sformat(
-                "%1WIRELESS_KEY_0='%2:%3'\n",
-                ifcfg,
-                Builtins.substring(
-                  Ops.get_string(@InstallInf, "WKeyType", ""),
-                  0,
-                  1
-                ),
-                Ops.get_string(@InstallInf, "WKey", "")
-              )
+
+            ifcfg << "WIRELESS_AUTH_MODE='%s'\n" % InstallInf["WlanAuth"] == "wep-open" ? "open" : "sharedkey"
+            ifcfg << "WIRELESS_DEFAULT_KEY='0'\n"
+            ifcfg << "WIRELESS_KEY_0='%s%s'\n" % [type, InstallInf["WlanKey"]]
+            ifcfg << "WIRELESS_KEY_LENGTH='%s'\n" % InstallInf["WlanKeyLen"]
+
+            if !InstallInf["WlanKeyType"].empty? && !InstallInf["WlanKey"].empty?
+              ifcfg = "WIRELESS_KEY_0='%s:%s'\n" % [
+                Builtins.substring(InstallInf["WlanKeyType"], 0, 1),
+                InstallInf["WlanKey"]
+              ]
             end
         end
       end
 
       # if available, write MTU
-      if Ops.greater_than(
-          Builtins.size(Ops.get_string(@InstallInf, "mtu", "")),
-          0
-        )
-        ifcfg = Builtins.sformat(
-          "%1MTU='%2'\n",
-          ifcfg,
-          Ops.get_string(@InstallInf, "mtu", "")
-        )
+      mtu = InstallInf["IP_MTU"]
+      ifcfg << "MTU='%s'\n" % mtu if !mtu.empty?
+
+      # for qeth devices (s390)
+      # bnc#578689 - YaST2 should not write the MAC address into ifcfg file
+      hwaddr = InstallInf["HWAddr"]
+      if Arch.s390
+        devtype = NetworkInterfaces.GetType(@netdevice) if !@netdevice.empty?
+
+        Builtins.y2milestone("Interface type: %1", devtype)
+
+        # only some card types need a persistent MAC (bnc#658708)
+        sysfs_id = dev_name_to_sysfs_id(@netdevice, @hardware)
+        hwaddr = "" if !s390_device_needs_persistent_mac(sysfs_id, @hardware)
+
+        # hsi devices do not support setting hwaddr (bnc #479481)
+        hwaddr = "" if devtype == "hsi"
+
+        # set HW address only for qeth set to Layer 2 (bnc #479481)
+        hwaddr = "" if devtype == "eth" && InstallInf["QETH_LAYER2_SUPPORT"] != "1"
       end
 
-      # for queth devices (s390)
-      # bnc#578689 - YaST2 should not write the MAC address into ifcfg file
-      if Arch.s390 &&
-          Ops.greater_than(
-            Builtins.size(Ops.get_string(@InstallInf, "hwaddr", "")),
-            0
-          )
-        ifcfg = Builtins.sformat(
-          "%1LLADDR='%2'\n",
-          ifcfg,
-          Ops.get_string(@InstallInf, "hwaddr", "")
-        )
-      end
+      ifcfg << "LLADDR='%s'\n" % hwaddr if Arch.s390 && !hwaddr.empty?
 
       # point to point interface
-      if Ops.greater_than(
-          Builtins.size(Ops.get_string(@InstallInf, "remote_ip", "")),
-          0
-        )
-        ifcfg = Builtins.sformat(
-          "%1REMOTE_IPADDR='%2'\n",
-          ifcfg,
-          Ops.get_string(@InstallInf, "remote_ip", "")
-        )
-      end
+      remote_ip = InstallInf["Pointopoint"]
+      ifcfg << "REMOTE_IPADDR='%s'\n" % remote_ip if !remote_ip.empty?
 
-      new_netdevice = @netdevice
+      device_name = @netdevice
       if !LanUdevAuto.AllowUdevModify
         # bnc#821427: use same options as in /lib/udev/rules.d/71-biosdevname.rules
-        cmd = Builtins.sformat(
-          "biosdevname --policy physical --smbios 2.6 --nopirq -i %1",
-          @netdevice
-        )
+        cmd = "biosdevname --policy physical --smbios 2.6 --nopirq -i %s" % @netdevice
         out = String.FirstChunk(StdoutOf(cmd), "\n")
-        if out != ""
-          Builtins.y2milestone("biosdevname renames %1 to %2", @netdevice, out)
-          new_netdevice = out
+        if !out.empty?
+          device_name = out
+          Builtins.y2milestone("biosdevname renames #{@netdevice} to #{device_name}")
         end
       end
 
-      ifcfg_name = Builtins.sformat("ifcfg-%1", new_netdevice)
+      ifcfg_name = "ifcfg-%s" % device_name
 
       hw_name = BuildDescription(
         NetworkInterfaces.device_type(@netdevice),
@@ -436,14 +232,11 @@ module Yast
         @hardware
       )
       # protect special characters, #305343
-      if Ops.greater_than(Builtins.size(hw_name), 0)
-        ifcfg = Builtins.sformat("%1NAME='%2'\n", ifcfg, String.Quote(hw_name))
-      end
+      ifcfg << "NAME='%s'\n" % String.Quote(hw_name) if !hw_name.empty?
 
       Builtins.y2milestone(
-        "Network Configuration:\n%1\nifcfg file: %2",
-        ifcfg,
-        ifcfg_name
+        "Network Configuration:\n%1",
+        ifcfg
       )
 
       # write only if file doesn't exists
@@ -458,104 +251,64 @@ module Yast
     # create all network files except ifcfg and hwcfg
     # directly to installed system
 
-    def CreateOtherNetworkFiles
+    def self.CreateOtherNetworkFiles
       # create hostname
-      if Ops.greater_than(
-          Builtins.size(Ops.get_string(@InstallInf, "hostname", "")),
-          0
-        )
+      if !@hostname.empty?
         Builtins.y2milestone(
           "Write HOSTNAME: %1",
-          Ops.get_string(@InstallInf, "hostname", "")
+          @hostname
         )
-        SCR.Write(
-          path(".target.string"),
-          "/etc/HOSTNAME",
-          Ops.get_string(@InstallInf, "hostname", "")
-        )
+        SCR.Write(path(".target.string"), "/etc/HOSTNAME", @hostname)
       end
 
-      if Ops.get_string(@InstallInf, "bootproto", "dhcp") == "static"
+      if InstallInf["NetConfig"] == "static"
         # create routes file
-        if Ops.greater_than(
-            Builtins.size(Ops.get_string(@InstallInf, "gateway", "")),
-            0
-          )
+        if !InstallInf["Gateway"].empty?
           Builtins.y2milestone(
             "Writing route : %1",
-            Ops.get_string(@InstallInf, "gateway", "")
+            InstallInf["Gateway"]
           )
           SCR.Write(
             path(".target.string"),
             "/etc/sysconfig/network/routes",
-            Builtins.sformat(
-              "default %1 - -\n",
-              Ops.get_string(@InstallInf, "gateway", "")
-            )
+            "default %s - -\n" % InstallInf["Gateway"]
           )
-        elsif Ops.greater_than(
-            Builtins.size(Ops.get_string(@InstallInf, "remote_ip", "")),
-            0
-          )
+        elsif InstallInf["Pointopoint"]
           Builtins.y2milestone(
             "Writing Peer-to-Peer route: %1",
-            Ops.get_string(@InstallInf, "remote_ip", "")
+            InstallInf["Pointopoint"]
           )
           SCR.Write(
             path(".target.string"),
             "/etc/sysconfig/network/routes",
-            Builtins.sformat(
-              "default %1 - -\n",
-              Ops.get_string(@InstallInf, "remote_ip", "")
-            )
+            "default %s - -\n" % InstallInf["Pointopoint"]
           )
         else
           Builtins.y2warning("No routing information in install.inf")
         end
 
         # write DHCPTimeout linuxrc parameter as /etc/sysconfig/network/config.WAIT_FOR_INTERFACES (bnc#396824)
-        if Ops.greater_than(
-            Builtins.size(Ops.get_string(@InstallInf, "dhcptimeout", "")),
-            0
-          )
+        if InstallInf["DHCPTimeout"]
           SCR.Write(
             path(".sysconfig.network.config.WAIT_FOR_INTERFACES"),
-            Ops.get_string(@InstallInf, "dhcptimeout", "")
+            InstallInf["DHCPTimeout"]
           )
           Builtins.y2milestone(
             "Writing WAIT_FOR_INTERFACES=%1",
-            Ops.get_string(@InstallInf, "dhcptimeout", "")
+            InstallInf["DHCPTimeout"]
           )
         end
 
-
         # create resolv.conf only for static configuration
-        if Ops.greater_than(
-            Builtins.size(Ops.get_string(@InstallInf, "nameserver", "")),
-            0
-          )
-          serverlist = Ops.get_string(@InstallInf, "nameserver", "")
+        if InstallInf["Nameserver"]
+          serverlist = InstallInf["Nameserver"]
           # write also secondary and third nameserver when available (bnc#446101)
-          if Ops.greater_than(
-              Builtins.size(Ops.get_string(@InstallInf, "nameserver2", "")),
-              0
-            )
-            serverlist = Builtins.sformat(
-              "%1 %2",
-              serverlist,
-              Ops.get_string(@InstallInf, "nameserver2", "")
-            )
-          end
-          if Ops.greater_than(
-              Builtins.size(Ops.get_string(@InstallInf, "nameserver3", "")),
-              0
-            )
-            serverlist = Builtins.sformat(
-              "%1 %2",
-              serverlist,
-              Ops.get_string(@InstallInf, "nameserver3", "")
-            )
-          end
+          nameserver2 = InstallInf["Nameserver2"]
+          serverlist << " " << nameserver2 if !nameserver2.empty?
+
+          nameserver3 = InstallInf["Nameserver3"]
+          serverlist << " " << nameserver3 if !nameserver3.empty?
+          #
           #Do not write /etc/resolv.conf directly, feed the data to sysconfig instead,
           #'netconfig' will do the job later on network startup (FaTE #303618)
           SCR.Write(
@@ -564,33 +317,28 @@ module Yast
           )
           Builtins.y2milestone(
             "Writing static nameserver entry: %1",
-            Ops.get_string(@InstallInf, "nameserver", "")
+            nameserver
           )
 
           #Enter search domain data only if present
-          if Ops.greater_than(
-              Builtins.size(Ops.get_string(@InstallInf, "domain", "")),
-              0
-            )
+          domain = InstallInf["Domain"]
+          if !domain.empty?
             SCR.Write(
               path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST"),
-              Ops.get_string(@InstallInf, "domain", "")
+              domain
             )
             Builtins.y2milestone(
               "Writing static searchlist entry: %1",
-              Ops.get_string(@InstallInf, "domain", "")
+              domain
             )
-          elsif Ops.greater_than(
-              Builtins.size(Ops.get_string(@InstallInf, "fqdomain", "")),
-              0
-            )
+          elsif !@fqdomain.empty?
             SCR.Write(
               path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST"),
-              Ops.get_string(@InstallInf, "fqdomain", "")
+              @fqdomain
             )
             Builtins.y2milestone(
               "No DNS search domain defined, using FQ domain name %1 as a fallback",
-              Ops.get_string(@InstallInf, "fqdomain", "")
+              @fqdomain
             )
           end
 
@@ -601,17 +349,12 @@ module Yast
       end
 
       # create proxy sysconfig file
-      if Ops.greater_than(
-          Builtins.size(Ops.get_string(@InstallInf, "proxyProto", "")),
-          0
-        ) &&
-          Ops.greater_than(
-            Builtins.size(Ops.get_string(@InstallInf, "proxyUrl", "")),
-            0
-          )
+      proxyUrl = InstallInf["ProxyUrl"]
+      proxyProto = InstallInf["ProxyProto"].empty? 
+      if !proxyProto && !proxyUrl.empty?
         Builtins.y2milestone(
           "Writing proxy settings: %1",
-          Ops.get_string(@InstallInf, "proxyUrl", "")
+          proxyUrl
         )
 
         Proxy.Read
@@ -620,11 +363,7 @@ module Yast
         # bnc#693640 - update Proxy module's configuration
         # username and password is stored in url because it is handled by linuxrc this way and it is impossible
         # to distinguish how the user inserted it (separate or as a part of url?)
-        Ops.set(
-          ex,
-          Ops.add(Ops.get_string(@InstallInf, "proxyProto", ""), "_proxy"),
-          Ops.get_string(@InstallInf, "proxyUrl", "")
-        )
+        ex["#{proxyProto}_proxy"] = proxyUrl if ex
 
         Proxy.Import(ex)
         Proxy.Write
@@ -632,33 +371,25 @@ module Yast
         Builtins.y2debug("Written proxy settings: %1", ex)
       end
       # create defaultdomain
-      if Ops.greater_than(
-          Builtins.size(Ops.get_string(@InstallInf, "nisdomain", "")),
-          0
-        ) &&
-          FileUtils.Exists("/etc/defaultdomain")
+      nisdomain = InstallInf["NISDomain"]
+      if !nisdomain.empty? && FileUtils.Exists("/etc/defaultdomain")
         Builtins.y2milestone(
           "Write defaultdomain: %1",
-          Ops.get_string(@InstallInf, "nisdomain", "")
+          nisdomain
         )
         SCR.Write(
           path(".target.string"),
           "/etc/defaultdomain",
-          Ops.get_string(@InstallInf, "nisdomain", "")
+          nisdomain
         )
       end
 
       # write wait_for_interfaces if needed
-      if Ops.greater_than(
-          Builtins.size(Ops.get_string(@InstallInf, "connect_wait", "")),
-          0
-        )
+      connect_wait = InstallInf["ConnectWait"]
+      if !connect_wait.empty?
         SCR.Execute(
           path(".target.bash_output"),
-          Builtins.sformat(
-            "sed -i s/^WAIT_FOR_INTERFACES=.*/WAIT_FOR_INTERFACES=%1/g /etc/sysconfig/network/config",
-            Ops.get_string(@InstallInf, "connect_wait", "")
-          )
+          "sed -i s/^WAIT_FOR_INTERFACES=.*/WAIT_FOR_INTERFACES=%s/g /etc/sysconfig/network/config" % connect_wait
         )
       end
 
@@ -668,10 +399,9 @@ module Yast
   end
 end
 
-client = Yast::InstallInfClient.new
-
-client.init
-client.CreateIfcfg
-client.CreateOtherNetworkFiles
+if Yast::InstInstallInfClient.init
+  Yast::InstInstallInfClient.CreateIfcfg
+  Yast::InstInstallInfClient.CreateOtherNetworkFiles
+end
 
 :next
