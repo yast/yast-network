@@ -284,6 +284,11 @@ module Yast
       nil
     end
 
+    def write
+      write_ifcfg(CreateIfcfg())
+      CreateOtherNetworkFiles()
+    end
+
     private
     def dev_name
       netdevice = InstallInf["Netdevice"]
@@ -405,9 +410,6 @@ module Yast
   end
 end
 
-install_inf_parser = Yast::InstInstallInfClient.instance
-
-install_inf_parser.write_ifcfg(install_inf_parser.CreateIfcfg)
-install_inf_parser.CreateOtherNetworkFiles
+Yast::InstInstallInfClient.instance.write
 
 :next
