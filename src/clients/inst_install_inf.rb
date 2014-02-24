@@ -18,23 +18,27 @@ module Yast
 
   class InstInstallInfClient < Client
 
-    Yast.import "Hostname"
-    Yast.import "IP"
-    Yast.import "NetworkInterfaces"
-    Yast.import "FileUtils"
-    Yast.import "Netmask"
-    Yast.import "NetworkStorage"
-    Yast.import "Proxy"
-    Yast.import "Installation"
-    Yast.import "String"
-    Yast.import "Mode"
-    Yast.import "Arch"
-    Yast.import "LanUdevAuto"
+    include Singleton
 
-    Yast.include self, "network/routines.rb"
-    Yast.include self, "network/complex.rb"
+    def initialize
+      Yast.import "Hostname"
+      Yast.import "IP"
+      Yast.import "NetworkInterfaces"
+      Yast.import "FileUtils"
+      Yast.import "Netmask"
+      Yast.import "NetworkStorage"
+      Yast.import "Proxy"
+      Yast.import "Installation"
+      Yast.import "String"
+      Yast.import "Mode"
+      Yast.import "Arch"
+      Yast.import "LanUdevAuto"
 
-    def self.dev_name
+      Yast.include self, "network/routines.rb"
+      Yast.include self, "network/complex.rb"
+    end
+
+    def dev_name
       netdevice = InstallInf["Netdevice"]
 
       if Mode.autoinst
@@ -49,11 +53,11 @@ module Yast
       return netdevice
     end
 
-    def self.StdoutOf(command)
+    def StdoutOf(command)
       SCR.Execute(path(".target.bash_output"), command)["stdout"].to_s
     end
 
-    def self.create_wlan_ifcfg
+    def create_wlan_ifcfg
       wlan_key = InstallInf["WlanKey"]
       wlan_essid = InstallInf["WlanESSID"]
       wlan_key_type = InstallInf["WlanKeyType"]
@@ -96,7 +100,7 @@ module Yast
       return ifcfg
     end
 
-    def self.create_s390_ifcfg(hardware)
+    def create_s390_ifcfg(hardware)
       hwaddr = InstallInf["HWAddr"]
       netdevice = dev_name
       devtype = NetworkInterfaces.GetType(netdevice) if !netdevice.empty?
@@ -116,7 +120,7 @@ module Yast
       return "LLADDR='%s'\n" % hwaddr if !hwaddr.empty?
     end
 
-    def self.create_device_name_ifcfg(hardware)
+    def create_device_name_ifcfg(hardware)
       device_name = dev_name
 
       hw_name = BuildDescription(
@@ -130,7 +134,7 @@ module Yast
       return "NAME='%s'\n" % String.Quote(hw_name) if !hw_name.empty?
     end
 
-    def self.write_ifcfg(ifcfg)
+    def write_ifcfg(ifcfg)
       device_name = dev_name
 
       if !LanUdevAuto.AllowUdevModify
@@ -152,7 +156,7 @@ module Yast
       Builtins.y2milestone("ifcfg file: %1", dev_file)
     end
 
-    def self.CreateIfcfg
+    def CreateIfcfg
       ifcfg = ""
 
       # known net devices: `nfs `iscsi `fcoe
@@ -161,7 +165,8 @@ module Yast
       Builtins.y2milestone("Network based device: %1", network_disk)
 
       if network_disk == :iscsi && NetworkStorage.getiBFTDevices.include?(InstallInf["Netdevice"])
-        ifcfg << "STARTMODE='nfsroot'\nBOOTPROTO='ibft'\n"
+        ifcfg << "STARTMODE='nfsroot'\n"
+        ifcfg << "BOOTPROTO='ibft'\n"
       else
         # set BOOTPROTO=[ static | dhcp ], linuxrc names it "NetConfig"
         bootproto = InstallInf["NetConfig"]
@@ -234,7 +239,7 @@ module Yast
     # create all network files except ifcfg and hwcfg
     # directly to installed system
 
-    def self.CreateOtherNetworkFiles
+    def CreateOtherNetworkFiles
       # Split FQ hostname
       hostname = InstallInf["Hostname"]
       if !hostname.empty? && !IP.Check(hostname)
@@ -347,7 +352,7 @@ module Yast
 
       # create proxy sysconfig file
       proxyUrl = InstallInf["ProxyUrl"]
-      proxyProto = InstallInf["ProxyProto"].empty? 
+      proxyProto = InstallInf["ProxyProto"].empty?
       if !proxyProto && !proxyUrl.empty?
         Builtins.y2milestone(
           "Writing proxy settings: %1",
@@ -396,7 +401,9 @@ module Yast
   end
 end
 
-Yast::InstInstallInfClient.write_ifcfg(Yast::InstInstallInfClient.CreateIfcfg)
-Yast::InstInstallInfClient.CreateOtherNetworkFiles
+install_inf_parser = Yast::InstInstallInfClient.instance
+
+install_inf_parser.write_ifcfg(install_inf_parser.CreateIfcfg)
+install_inf_parser.CreateOtherNetworkFiles
 
 :next
