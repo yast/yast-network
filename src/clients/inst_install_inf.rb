@@ -34,9 +34,6 @@ module Yast
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/complex.rb"
 
-      @hardware = ReadHardware("netcard")
-      Builtins.y2milestone("hardware %1", @hardware)
-
       # Split network device
       @netdevice = InstallInf["Netdevice"]
       Builtins.y2milestone("InstallInf::netdevice:%1", @netdevice)
@@ -95,8 +92,66 @@ module Yast
     end
 
     def self.StdoutOf(command)
-      out = Convert.to_map(SCR.Execute(path(".target.bash_output"), command))
-      Ops.get_string(out, "stdout", "")
+      SCR.Execute(path(".target.bash_output"), command)["stdout"].to_s
+    end
+
+    def self.create_wlan_ifcfg
+      ifcfg = ""
+      ifcfg << "WIRELESS_ESSID='%s'\n" % wlan_essid
+
+      wlan_key = InstallInf["WlanKey"]
+      wlan_essid = InstallInf["WlanESSID"]
+      wlan_key_type = InstallInf["WlanKeyType"]
+      wlan_auth = InstallInf["WlanAuth"]
+
+      case wlan_auth
+        when "", "psk"
+          ifcfg << "WIRELESS_WPA_PSK='%s'\n" % wlan_key
+          ifcfg << "WIRELESS_AUTH_MODE='psk'\n"
+
+        when "open"
+          ifcfg << "WIRELESS_AUTH_MODE='no-encryption'\n"
+
+        when "wep_open", "wep_restricted"
+          type = ""
+          if wlan_key_type == "password"
+            type = "h:"
+          elsif wlan_key_type == "ascii"
+            type = "s:"
+          end
+
+          ifcfg << "WIRELESS_AUTH_MODE='%s'\n" % wlan_auth == "wep-open" ? "open" : "sharedkey"
+          ifcfg << "WIRELESS_DEFAULT_KEY='0'\n"
+          ifcfg << "WIRELESS_KEY_0='%s%s'\n" % [type, wlan_key]
+          ifcfg << "WIRELESS_KEY_LENGTH='%s'\n" % InstallInf["WlanKeyLen"]
+
+          if !wlan_key_type.empty? && !wlan_key.empty?
+            ifcfg = "WIRELESS_KEY_0='%s:%s'\n" % [
+              Builtins.substring(wlan_key_type, 0, 1),
+              wlan_key
+            ]
+          end
+      end
+
+      return ifcfg
+    end
+
+    def self.create_s390_ifcfg
+      devtype = NetworkInterfaces.GetType(@netdevice) if !@netdevice.empty?
+
+      Builtins.y2milestone("Interface type: %1", devtype)
+
+      # only some card types need a persistent MAC (bnc#658708)
+      sysfs_id = dev_name_to_sysfs_id(@netdevice, hardware)
+      hwaddr = "" if !s390_device_needs_persistent_mac(sysfs_id, hardware)
+
+      # hsi devices do not support setting hwaddr (bnc #479481)
+      hwaddr = "" if devtype == "hsi"
+
+      # set HW address only for qeth set to Layer 2 (bnc #479481)
+      hwaddr = "" if devtype == "eth" && InstallInf["QETH_LAYER2_SUPPORT"] != "1"
+
+      ifcfg << "LLADDR='%s'\n" % hwaddr if !hwaddr.empty?
     end
 
     def self.CreateIfcfg
@@ -122,9 +177,10 @@ module Yast
           ]
           ifcfg << "BROADCAST='%s'\n" % InstallInf["Broadcast"]
 
-          if !InstallInf["IP6"].empty?
+          ip6_addr = InstallInf["IP6"]
+          if !ip6_addr.empty?
             ifcfg << "%s" % "LABEL_ipv6='ipv6'\n"
-            ifcfg << "IPADDR_ipv6='%s'\n" % InstallInf["IP6"]
+            ifcfg << "IPADDR_ipv6='%s'\n" % ip6_addr
           end
 
         when "dhcp"
@@ -150,38 +206,7 @@ module Yast
       end
 
       # wireless devices (bnc#223570)
-      if !InstallInf["WlanESSID"].empty?
-        ifcfg << "WIRELESS_ESSID='%s'\n" % InstallInf["WlanESSID"]
-
-        case InstallInf["WlanAuth"]
-          when "", "psk"
-            ifcfg << "WIRELESS_WPA_PSK='%s'\n" % InstallInf["WlanKey"]
-            ifcfg << "WIRELESS_AUTH_MODE='psk'\n"
-
-          when "open"
-            ifcfg << "WIRELESS_AUTH_MODE='no-encryption'\n"
-
-          when "wep_open", "wep_restricted"
-            type = ""
-            if InstallInf["WlankeyType"] == "password"
-              type = "h:"
-            elsif InstallInf["WlankeyType"] == "ascii"
-              type = "s:"
-            end
-
-            ifcfg << "WIRELESS_AUTH_MODE='%s'\n" % InstallInf["WlanAuth"] == "wep-open" ? "open" : "sharedkey"
-            ifcfg << "WIRELESS_DEFAULT_KEY='0'\n"
-            ifcfg << "WIRELESS_KEY_0='%s%s'\n" % [type, InstallInf["WlanKey"]]
-            ifcfg << "WIRELESS_KEY_LENGTH='%s'\n" % InstallInf["WlanKeyLen"]
-
-            if !InstallInf["WlanKeyType"].empty? && !InstallInf["WlanKey"].empty?
-              ifcfg = "WIRELESS_KEY_0='%s:%s'\n" % [
-                Builtins.substring(InstallInf["WlanKeyType"], 0, 1),
-                InstallInf["WlanKey"]
-              ]
-            end
-        end
-      end
+      ifcfg << create_wlan_ifcfg if !wlan_essid.empty?
 
       # if available, write MTU
       mtu = InstallInf["IP_MTU"]
@@ -190,23 +215,10 @@ module Yast
       # for qeth devices (s390)
       # bnc#578689 - YaST2 should not write the MAC address into ifcfg file
       hwaddr = InstallInf["HWAddr"]
-      if Arch.s390
-        devtype = NetworkInterfaces.GetType(@netdevice) if !@netdevice.empty?
+      hardware = ReadHardware("netcard")
+      Builtins.y2milestone("hardware %1", hardware)
 
-        Builtins.y2milestone("Interface type: %1", devtype)
-
-        # only some card types need a persistent MAC (bnc#658708)
-        sysfs_id = dev_name_to_sysfs_id(@netdevice, @hardware)
-        hwaddr = "" if !s390_device_needs_persistent_mac(sysfs_id, @hardware)
-
-        # hsi devices do not support setting hwaddr (bnc #479481)
-        hwaddr = "" if devtype == "hsi"
-
-        # set HW address only for qeth set to Layer 2 (bnc #479481)
-        hwaddr = "" if devtype == "eth" && InstallInf["QETH_LAYER2_SUPPORT"] != "1"
-      end
-
-      ifcfg << "LLADDR='%s'\n" % hwaddr if Arch.s390 && !hwaddr.empty?
+      ifcfg << create_s390_ifcfg if Arch.s390
 
       # point to point interface
       remote_ip = InstallInf["Pointopoint"]
@@ -229,7 +241,7 @@ module Yast
         NetworkInterfaces.device_type(@netdevice),
         NetworkInterfaces.device_num(ifcfg_name),
         { "dev_name" => @netdevice },
-        @hardware
+        hardware
       )
       # protect special characters, #305343
       ifcfg << "NAME='%s'\n" % String.Quote(hw_name) if !hw_name.empty?
