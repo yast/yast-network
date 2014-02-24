@@ -62,33 +62,7 @@ module Yast
         @hostname = ""
       end
 
-      # #180821, todo cleanup
-      if !@netdevice.empty?
-        mod = SCR.Read(Builtins.add(path(".etc.install_inf_alias"), @netdevice)).to_s
-
-        if !mod.empty?
-          @module = mod
-          options = SCR.Read(Builtins.add(path(".etc.install_inf_options"), mod)).to_s
-
-          @options = options if !options.empty?
-        end
-      else
-        # FIXME: alias = eth0 tulip
-        # FIXME: options = ne io=0x200
-
-        # #42203: correctly parse module and options for proposal
-        # "eth0 qeth" -> "qeth"
-        # FIXME: this only works for a single module
-        mod = InstallInf["Alias"]
-        @module = DeleteFirstWord(mod) if mod != ""
-      end
-
       true
-    end
-
-    def self.DeleteFirstWord(s)
-      ret = Builtins.regexpsub(s, "^[^ ]* +(.*)", "\\1")
-      ret == nil ? s : ret
     end
 
     def self.StdoutOf(command)
