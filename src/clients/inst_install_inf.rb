@@ -17,52 +17,36 @@ module Yast
   end
 
   class InstInstallInfClient < Client
-    def self.init
-      Yast.import "Hostname"
-      Yast.import "IP"
-      Yast.import "NetworkInterfaces"
-      Yast.import "FileUtils"
-      Yast.import "Netmask"
-      Yast.import "NetworkStorage"
-      Yast.import "Proxy"
-      Yast.import "Installation"
-      Yast.import "String"
-      Yast.import "Mode"
-      Yast.import "Arch"
-      Yast.import "LanUdevAuto"
 
-      Yast.include self, "network/routines.rb"
-      Yast.include self, "network/complex.rb"
+    Yast.import "Hostname"
+    Yast.import "IP"
+    Yast.import "NetworkInterfaces"
+    Yast.import "FileUtils"
+    Yast.import "Netmask"
+    Yast.import "NetworkStorage"
+    Yast.import "Proxy"
+    Yast.import "Installation"
+    Yast.import "String"
+    Yast.import "Mode"
+    Yast.import "Arch"
+    Yast.import "LanUdevAuto"
 
-      # Split network device
-      @netdevice = InstallInf["Netdevice"]
-      Builtins.y2milestone("InstallInf::netdevice:%1", @netdevice)
+    Yast.include self, "network/routines.rb"
+    Yast.include self, "network/complex.rb"
+
+    def self.dev_name
+      netdevice = InstallInf["Netdevice"]
 
       if Mode.autoinst
         # if possible, for temporary installation network use same device
         # with same MAC address (even if devicename changed) (bnc#648270)
         new_devname = LanUdevAuto.GetDevnameByMAC(InstallInf["HWAddr"])
 
-        Builtins.y2milestone("LanUdevAuto::netdevice:%1", new_devname)
-
-        @netdevice = new_devname if !new_devname.empty?
+        netdevice = new_devname if !new_devname.empty?
       end
 
-      # Split FQ hostname
-      @hostname = InstallInf["Hostname"]
-      if !@hostname.empty? && !IP.Check(@hostname)
-        split = Hostname.SplitFQ(@hostname)
-
-        # hostname is supposed to be FQDN (http://en.opensuse.org/Linuxrc)
-        # so we should not cut off domain name ... anyway remember domain,
-        # use it as fallback below, if there is no DNS search domain (#476208)
-        @fqdomain = split[1] if split.size > 1
-      else
-        # do not have numeric hostname, #152218
-        @hostname = ""
-      end
-
-      true
+      Builtins.y2milestone("InstInstallInfClient#dev_name:%1", netdevice)
+      return netdevice
     end
 
     def self.StdoutOf(command)
@@ -70,13 +54,15 @@ module Yast
     end
 
     def self.create_wlan_ifcfg
-      ifcfg = ""
-      ifcfg << "WIRELESS_ESSID='%s'\n" % wlan_essid
-
       wlan_key = InstallInf["WlanKey"]
       wlan_essid = InstallInf["WlanESSID"]
       wlan_key_type = InstallInf["WlanKeyType"]
       wlan_auth = InstallInf["WlanAuth"]
+
+      return "" if wlan_essid.empty?
+
+      ifcfg = ""
+      ifcfg << "WIRELESS_ESSID='%s'\n" % wlan_essid
 
       case wlan_auth
         when "", "psk"
@@ -110,13 +96,15 @@ module Yast
       return ifcfg
     end
 
-    def self.create_s390_ifcfg
-      devtype = NetworkInterfaces.GetType(@netdevice) if !@netdevice.empty?
+    def self.create_s390_ifcfg(hardware)
+      hwaddr = InstallInf["HWAddr"]
+      netdevice = dev_name
+      devtype = NetworkInterfaces.GetType(netdevice) if !netdevice.empty?
 
       Builtins.y2milestone("Interface type: %1", devtype)
 
       # only some card types need a persistent MAC (bnc#658708)
-      sysfs_id = dev_name_to_sysfs_id(@netdevice, hardware)
+      sysfs_id = dev_name_to_sysfs_id(netdevice, hardware)
       hwaddr = "" if !s390_device_needs_persistent_mac(sysfs_id, hardware)
 
       # hsi devices do not support setting hwaddr (bnc #479481)
@@ -125,7 +113,43 @@ module Yast
       # set HW address only for qeth set to Layer 2 (bnc #479481)
       hwaddr = "" if devtype == "eth" && InstallInf["QETH_LAYER2_SUPPORT"] != "1"
 
-      ifcfg << "LLADDR='%s'\n" % hwaddr if !hwaddr.empty?
+      return "LLADDR='%s'\n" % hwaddr if !hwaddr.empty?
+    end
+
+    def self.create_device_name_ifcfg(hardware)
+      device_name = dev_name
+
+      hw_name = BuildDescription(
+        NetworkInterfaces.device_type(device_name),
+        NetworkInterfaces.device_num(device_name),
+        { "dev_name" => device_name },
+        hardware
+      )
+
+      # protect special characters, #305343
+      return "NAME='%s'\n" % String.Quote(hw_name) if !hw_name.empty?
+    end
+
+    def self.write_ifcfg(ifcfg)
+      device_name = dev_name
+
+      if !LanUdevAuto.AllowUdevModify
+        # bnc#821427: use same options as in /lib/udev/rules.d/71-biosdevname.rules
+        cmd = "biosdevname --policy physical --smbios 2.6 --nopirq -i %s" % dev_name
+        out = String.FirstChunk(StdoutOf(cmd), "\n")
+        if !out.empty?
+          device_name = out
+          Builtins.y2milestone("biosdevname renames #{dev_name} to #{device_name}")
+        end
+      end
+
+      ifcfg_name = "ifcfg-%s" % device_name
+
+      # write only if file doesn't exists
+      dev_file = Builtins.sformat("/etc/sysconfig/network/%1", ifcfg_name)
+
+      SCR.Write(path(".target.string"), dev_file, ifcfg)
+      Builtins.y2milestone("ifcfg file: %1", dev_file)
     end
 
     def self.CreateIfcfg
@@ -180,7 +204,7 @@ module Yast
       end
 
       # wireless devices (bnc#223570)
-      ifcfg << create_wlan_ifcfg if !wlan_essid.empty?
+      ifcfg << create_wlan_ifcfg
 
       # if available, write MTU
       mtu = InstallInf["IP_MTU"]
@@ -188,63 +212,50 @@ module Yast
 
       # for qeth devices (s390)
       # bnc#578689 - YaST2 should not write the MAC address into ifcfg file
-      hwaddr = InstallInf["HWAddr"]
       hardware = ReadHardware("netcard")
       Builtins.y2milestone("hardware %1", hardware)
 
-      ifcfg << create_s390_ifcfg if Arch.s390
+      ifcfg << create_s390_ifcfg(hardware) if Arch.s390
 
       # point to point interface
       remote_ip = InstallInf["Pointopoint"]
       ifcfg << "REMOTE_IPADDR='%s'\n" % remote_ip if !remote_ip.empty?
 
-      device_name = @netdevice
-      if !LanUdevAuto.AllowUdevModify
-        # bnc#821427: use same options as in /lib/udev/rules.d/71-biosdevname.rules
-        cmd = "biosdevname --policy physical --smbios 2.6 --nopirq -i %s" % @netdevice
-        out = String.FirstChunk(StdoutOf(cmd), "\n")
-        if !out.empty?
-          device_name = out
-          Builtins.y2milestone("biosdevname renames #{@netdevice} to #{device_name}")
-        end
-      end
-
-      ifcfg_name = "ifcfg-%s" % device_name
-
-      hw_name = BuildDescription(
-        NetworkInterfaces.device_type(@netdevice),
-        NetworkInterfaces.device_num(ifcfg_name),
-        { "dev_name" => @netdevice },
-        hardware
-      )
-      # protect special characters, #305343
-      ifcfg << "NAME='%s'\n" % String.Quote(hw_name) if !hw_name.empty?
+      ifcfg << create_device_name_ifcfg(hardware)
 
       Builtins.y2milestone(
         "Network Configuration:\n%1",
         ifcfg
       )
 
-      # write only if file doesn't exists
-      dev_file = Builtins.sformat("/etc/sysconfig/network/%1", ifcfg_name)
-
-      SCR.Write(path(".target.string"), dev_file, ifcfg)
-      Builtins.y2milestone("ifcfg file: %1", dev_file)
-
-      nil
+      ifcfg
     end
 
     # create all network files except ifcfg and hwcfg
     # directly to installed system
 
     def self.CreateOtherNetworkFiles
+      # Split FQ hostname
+      hostname = InstallInf["Hostname"]
+      if !hostname.empty? && !IP.Check(hostname)
+        split = Hostname.SplitFQ(hostname)
+
+        # hostname is supposed to be FQDN (http://en.opensuse.org/Linuxrc)
+        # so we should not cut off domain name ... anyway remember domain,
+        # use it as fallback below, if there is no DNS search domain (#476208)
+        fqdomain = split[1] if split.size > 1
+      else
+        # do not have numeric hostname, #152218
+        hostname = ""
+      end
+
       # create hostname
-      if !@hostname.empty?
+      if !hostname.empty?
         Builtins.y2milestone(
           "Write HOSTNAME: %1",
-          @hostname
+          hostname
         )
-        SCR.Write(path(".target.string"), "/etc/HOSTNAME", @hostname)
+        SCR.Write(path(".target.string"), "/etc/HOSTNAME", hostname)
       end
 
       if InstallInf["NetConfig"] == "static"
@@ -317,14 +328,14 @@ module Yast
               "Writing static searchlist entry: %1",
               domain
             )
-          elsif !@fqdomain.empty?
+          elsif !fqdomain.empty?
             SCR.Write(
               path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST"),
-              @fqdomain
+              fqdomain
             )
             Builtins.y2milestone(
               "No DNS search domain defined, using FQ domain name %1 as a fallback",
-              @fqdomain
+              fqdomain
             )
           end
 
@@ -385,9 +396,7 @@ module Yast
   end
 end
 
-if Yast::InstInstallInfClient.init
-  Yast::InstInstallInfClient.CreateIfcfg
-  Yast::InstInstallInfClient.CreateOtherNetworkFiles
-end
+Yast::InstInstallInfClient.write_ifcfg(Yast::InstInstallInfClient.CreateIfcfg)
+Yast::InstInstallInfClient.CreateOtherNetworkFiles
 
 :next
