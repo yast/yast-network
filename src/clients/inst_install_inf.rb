@@ -19,6 +19,7 @@ module Yast
   class InstInstallInfClient < Client
 
     include Singleton
+    include Logger
 
     def initialize
       Yast.import "Hostname"
@@ -44,7 +45,7 @@ module Yast
       # known net devices: `nfs `iscsi `fcoe
       device = NetworkStorage.getDevice(Installation.destdir)
       network_disk = NetworkStorage.isDiskOnNetwork(device)
-      Builtins.y2milestone("Network based device: %1", network_disk)
+      log.info("Network based device: #{network_disk}")
 
       if network_disk == :iscsi && NetworkStorage.getiBFTDevices.include?(InstallInf["Netdevice"])
         ifcfg << "STARTMODE='nfsroot'\n"
@@ -80,7 +81,7 @@ module Yast
 
         # set DHCP_SET_HOSTNAME=yes  #suse30528
         if bootproto =~ /dhcp/
-          Builtins.y2milestone("set DHCLIENT_SET_HOSTNAME=yes on installed system")
+          log.info("set DHCLIENT_SET_HOSTNAME=yes on installed system")
           SCR.Execute(
             BASH_PATH,
             "sed -i s/\"DHCLIENT_SET_HOSTNAME=.*\"/'DHCLIENT_SET_HOSTNAME=\"yes\"'/g /etc/sysconfig/network/dhcp"
@@ -100,7 +101,7 @@ module Yast
       # for qeth devices (s390)
       # bnc#578689 - YaST2 should not write the MAC address into ifcfg file
       hardware = ReadHardware("netcard")
-      Builtins.y2milestone("hardware %1", hardware)
+      log.info("hardware: #{hardware}")
 
       ifcfg << create_s390_ifcfg(hardware) if Arch.s390
 
@@ -110,10 +111,7 @@ module Yast
 
       ifcfg << create_device_name_ifcfg(hardware)
 
-      Builtins.y2milestone(
-        "Network Configuration:\n%1",
-        ifcfg
-      )
+      log.info("Network Configuration:\n#{ifcfg}")
 
       ifcfg
     end
@@ -159,7 +157,7 @@ module Yast
 
       return false if dhcp_timeout.empty?
 
-      Builtins.y2milestone("Writing WAIT_FOR_INTERFACES=%1", dhcp_timeout)
+      log.info("Writing WAIT_FOR_INTERFACES=#{dhcp_timeout}")
       SCR.Write(path(".sysconfig.network.config.WAIT_FOR_INTERFACES"), dhcp_timeout)
     end
 
@@ -169,20 +167,20 @@ module Yast
 
       # create routes file
       if !gateway.empty?
-        Builtins.y2milestone("Writing route : %1", gateway)
+        log.info("Writing route : #{gateway}")
         return SCR.Write(
           path(".target.string"),
           "/etc/sysconfig/network/routes",
           "default #{gateway} - -\n")
       elsif !ptp.empty?
-        Builtins.y2milestone("Writing Peer-to-Peer route: %1", ptp)
+        log.info("Writing Peer-to-Peer route: #{ptp}")
         return SCR.Write(
           path(".target.string"),
           "/etc/sysconfig/network/routes",
           "default #{ptp} - -\n"
         )
       else
-        Builtins.y2warning("No routing information in install.inf")
+        log.warn("No routing information in install.inf")
         return false
       end
     end
@@ -198,7 +196,7 @@ module Yast
     def write_hostname
       return false if hostname.empty?
 
-      Builtins.y2milestone("Write HOSTNAME: #{hostname}")
+      log.info("Write HOSTNAME: #{hostname}")
       SCR.Write(path(".target.string"), "/etc/HOSTNAME", hostname)
     end
 
@@ -227,10 +225,7 @@ module Yast
         path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS"),
         serverlist
       )
-      Builtins.y2milestone(
-        "Writing static nameserver entry: %1",
-        nameserver
-      )
+      log.info("Writing static nameserver entry: #{nameserver}")
 
       # Enter search domain data only if present
       domain = InstallInf["Domain"].to_s
@@ -239,19 +234,13 @@ module Yast
           path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST"),
           domain
         )
-        Builtins.y2milestone(
-          "Writing static searchlist entry: %1",
-          domain
-        )
+        log.info("Writing static searchlist entry: #{domain}")
       elsif !fqdomain.empty?
         SCR.Write(
           path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST"),
           fqdomain
         )
-        Builtins.y2milestone(
-          "No DNS search domain defined, using FQ domain name %1 as a fallback",
-          fqdomain
-        )
+        log.info("No DNS search domain defined, using FQ domain name #{fqdomain} as a fallback")
       end
 
       #We're done. It is OK not to touch NETCONFIG_DNS_POLICY now as it is set to 'auto' by default
@@ -265,7 +254,7 @@ module Yast
 
       return false if proxyProto || proxyUrl.empty?
 
-      Builtins.y2milestone("Writing proxy settings: #{proxyProto}_proxy = '#{proxyUrl}'")
+      log.info("Writing proxy settings: #{proxyProto}_proxy = '#{proxyUrl}'")
 
       Proxy.Read
       ex = Proxy.Export
@@ -274,7 +263,7 @@ module Yast
       # username and password is stored in url because it is handled by linuxrc this way and it is impossible
       # to distinguish how the user inserted it (separate or as a part of url?)
       ex["#{proxyProto}_proxy"] = proxyUrl if ex
-      Builtins.y2debug("Written proxy settings: #{ex}")
+      log.debug("Written proxy settings: #{ex}")
 
       Proxy.Import(ex)
       Proxy.Write
@@ -285,7 +274,7 @@ module Yast
 
       return false if nisdomain.empty? || !FileUtils.Exists("/etc/defaultdomain")
 
-      Builtins.y2milestone("Write defaultdomain: #{nisdomain}")
+      log.info("Write defaultdomain: #{nisdomain}")
       SCR.Write(path(".target.string"), "/etc/defaultdomain", nisdomain)
     end
 
@@ -313,7 +302,7 @@ module Yast
         netdevice = new_devname if !new_devname.empty?
       end
 
-      Builtins.y2milestone("InstInstallInfClient#dev_name:%1", netdevice)
+      log.info("InstInstallInfClient#dev_name:#{netdevice}")
       return netdevice
     end
 
@@ -369,7 +358,7 @@ module Yast
 
       devtype = NetworkInterfaces.GetType(netdevice)
 
-      Builtins.y2milestone("Interface type: %1", devtype)
+      log.info("Interface type: #{devtype}")
 
       # only some card types need a persistent MAC (bnc#658708)
       sysfs_id = dev_name_to_sysfs_id(netdevice, hardware)
@@ -409,13 +398,13 @@ module Yast
         out = String.FirstChunk(StdoutOf(cmd), "\n")
         if !out.empty?
           device_name = out
-          Builtins.y2milestone("biosdevname renames #{dev_name} to #{device_name}")
+          log.info("biosdevname renames #{dev_name} to #{device_name}")
         end
       end
 
       dev_file = "/etc/sysconfig/network/ifcfg-#{device_name}"
 
-      Builtins.y2milestone("ifcfg file: %1", dev_file)
+      log.info("ifcfg file: #{dev_file}")
       SCR.Write(path(".target.string"), dev_file, ifcfg)
     end
 
