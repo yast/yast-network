@@ -28,6 +28,8 @@
 #
 #
 module Yast
+  require "network/install_inf_convertor"
+
   class SaveNetworkClient < Client
     def main
       Yast.import "UI"
@@ -61,6 +63,29 @@ module Yast
       nil
     end
 
+    def adjust_for_network_disks(file)
+      # known net devices: `nfs `iscsi `fcoe
+      device = NetworkStorage.getDevice(Installation.destdir)
+      network_disk = NetworkStorage.isDiskOnNetwork(device)
+
+      log.info("Network based device: #{network_disk}")
+
+      # overwrite configuration created during network setup e.g. in InstInstallInfClient
+      if network_disk == :iscsi && 
+        NetworkStorage.getiBFTDevices.include?(
+          InstallInfConvertor::InstallInf["Netdevice"]
+        )
+        SCR.Execute(
+          path(".target.bash"),
+          "sed -i s/STARTMODE.*/STARTMODE='nfsroot'/ #{file}"
+        )
+        SCR.Execute(
+          path(".target.bash"),
+          "sed -i s/BOOTPROTO.*/BOOTPROTO='ibft'/ #{file}"
+        )
+      end
+    end
+
     def CopyConfiguredNetworkFiles
       Builtins.y2milestone(
         "Copy network configuration files from 1st stage into installed system"
@@ -72,6 +97,10 @@ module Yast
 
       # just copy files
       Builtins.foreach(["ifcfg-*", "ifroute-*", "routes"]) do |file|
+        if file.include?("ifcfg-")
+          adjust_for_network_disks("#{sysconfig}/#{file}")
+        end
+
         copy_from = String.Quote(Builtins.sformat("%1%2", sysconfig, file))
         Builtins.y2milestone("Copy %1 into %2", copy_from, copy_to)
         cmd = Builtins.sformat("cp %1 %2", copy_from, copy_to)

@@ -48,54 +48,44 @@ module Yast
     def create_ifcfg
       ifcfg = ""
 
-      # known net devices: `nfs `iscsi `fcoe
-      device = NetworkStorage.getDevice(Installation.destdir)
-      network_disk = NetworkStorage.isDiskOnNetwork(device)
-      log.info("Network based device: #{network_disk}")
+      # set BOOTPROTO=[ static | dhcp ], linuxrc names it "NetConfig"
+      bootproto = InstallInf["NetConfig"]
+      case bootproto
+      when "static"
+        # add broadcast interface #suse49131
+        ifcfg << "BOOTPROTO='static'\n"
+        ifcfg << "IPADDR='%s/%s'\n" % [
+          InstallInf["IP"],
+          Netmask.ToBits(InstallInf["Netmask"])
+        ]
+        ifcfg << "BROADCAST='%s'\n" % InstallInf["Broadcast"]
 
-      if network_disk == :iscsi && NetworkStorage.getiBFTDevices.include?(InstallInf["Netdevice"])
-        ifcfg << "STARTMODE='nfsroot'\n"
-        ifcfg << "BOOTPROTO='ibft'\n"
-      else
-        # set BOOTPROTO=[ static | dhcp ], linuxrc names it "NetConfig"
-        bootproto = InstallInf["NetConfig"]
-        case bootproto
-        when "static"
-          # add broadcast interface #suse49131
-          ifcfg << "BOOTPROTO='static'\n"
-          ifcfg << "IPADDR='%s/%s'\n" % [
-            InstallInf["IP"],
-            Netmask.ToBits(InstallInf["Netmask"])
-          ]
-          ifcfg << "BROADCAST='%s'\n" % InstallInf["Broadcast"]
-
-          ip6_addr = InstallInf["IP6"]
-          if !ip6_addr.empty?
-            ifcfg << "LABEL_ipv6='ipv6'\n"
-            ifcfg << "IPADDR_ipv6='#{ip6_addr}'\n"
-          end
-
-        when "dhcp"
-          ifcfg << "BOOTPROTO='dhcp4'\n"
-
-        when "dhcp6"
-          ifcfg << "BOOTPROTO='dhcp6'\n"
-
-        when "dhcp,dhcp6"
-          ifcfg << "BOOTPROTO='dhcp'\n"
+        ip6_addr = InstallInf["IP6"]
+        if !ip6_addr.empty?
+          ifcfg << "LABEL_ipv6='ipv6'\n"
+          ifcfg << "IPADDR_ipv6='#{ip6_addr}'\n"
         end
 
-        # set DHCP_SET_HOSTNAME=yes  #suse30528
-        if bootproto =~ /dhcp/
-          log.info("set DHCLIENT_SET_HOSTNAME=yes on installed system")
-          SCR.Execute(
-            BASH_PATH,
-            "sed -i s/\"DHCLIENT_SET_HOSTNAME=.*\"/'DHCLIENT_SET_HOSTNAME=\"yes\"'/g /etc/sysconfig/network/dhcp"
-          )
-        end
+      when "dhcp"
+        ifcfg << "BOOTPROTO='dhcp4'\n"
 
-        ifcfg << "STARTMODE='onboot'\n"
+      when "dhcp6"
+        ifcfg << "BOOTPROTO='dhcp6'\n"
+
+      when "dhcp,dhcp6"
+        ifcfg << "BOOTPROTO='dhcp'\n"
       end
+
+      # set DHCP_SET_HOSTNAME=yes  #suse30528
+      if bootproto =~ /dhcp/
+        log.info("set DHCLIENT_SET_HOSTNAME=yes on installed system")
+        SCR.Execute(
+          BASH_PATH,
+          "sed -i s/\"DHCLIENT_SET_HOSTNAME=.*\"/'DHCLIENT_SET_HOSTNAME=\"yes\"'/g /etc/sysconfig/network/dhcp"
+        )
+      end
+
+      ifcfg << "STARTMODE='onboot'\n"
 
       # wireless devices (bnc#223570)
       ifcfg << create_wlan_ifcfg
