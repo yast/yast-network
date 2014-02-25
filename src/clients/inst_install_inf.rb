@@ -8,18 +8,18 @@ module Yast
 
   BASH_PATH = Path.new(".target.bash")
 
-  class InstallInf
-    INSTALL_INF = Path.new(".etc.install_inf")
-
-    def self.[](item)
-      SCR.Read(INSTALL_INF + Path.new(".#{item}")).to_s
-    end
-  end
-
   class InstInstallInfClient < Client
 
     include Singleton
     include Logger
+
+    class InstallInf
+      INSTALL_INF = Path.new(".etc.install_inf")
+
+      def self.[](item)
+        SCR.Read(INSTALL_INF + Path.new(".#{item}")).to_s
+      end
+    end
 
     def initialize
       Yast.import "Hostname"
