@@ -122,164 +122,27 @@ module Yast
     # directly to installed system
 
     def CreateOtherNetworkFiles
-      # Split FQ hostname
-      hostname = InstallInf["Hostname"]
-      if !hostname.empty? && !IP.Check(hostname)
-        split = Hostname.SplitFQ(hostname)
-
-        # hostname is supposed to be FQDN (http://en.opensuse.org/Linuxrc)
-        # so we should not cut off domain name ... anyway remember domain,
-        # use it as fallback below, if there is no DNS search domain (#476208)
-        fqdomain = split[1] if split.size > 1
-      else
-        # do not have numeric hostname, #152218
-        hostname = ""
-      end
-
       # create hostname
-      if !hostname.empty?
-        Builtins.y2milestone(
-          "Write HOSTNAME: %1",
-          hostname
-        )
-        SCR.Write(path(".target.string"), "/etc/HOSTNAME", hostname)
-      end
+      write_hostname
 
-      gateway = InstallInf["Gateway"]
-      ptp =  InstallInf["Pointopoint"]
       if InstallInf["NetConfig"] == "static"
-        # create routes file
-        if !gateway.empty?
-          Builtins.y2milestone(
-            "Writing route : %1",
-            gateway
-          )
-          SCR.Write(
-            path(".target.string"),
-            "/etc/sysconfig/network/routes",
-            "default %s - -\n" % gateway
-          )
-        elsif ptp
-          Builtins.y2milestone(
-            "Writing Peer-to-Peer route: %1",
-            ptp
-          )
-          SCR.Write(
-            path(".target.string"),
-            "/etc/sysconfig/network/routes",
-            "default %s - -\n" % ptp
-          )
-        else
-          Builtins.y2warning("No routing information in install.inf")
-        end
+        write_gateway
 
         # write DHCPTimeout linuxrc parameter as /etc/sysconfig/network/config.WAIT_FOR_INTERFACES (bnc#396824)
-        dhcp_timeout = InstallInf["DHCPTimeout"]
-        if dhcp_timeout
-          SCR.Write(
-            path(".sysconfig.network.config.WAIT_FOR_INTERFACES"),
-            dhcp_timeout
-          )
-          Builtins.y2milestone(
-            "Writing WAIT_FOR_INTERFACES=%1",
-            dhcp_timeout
-          )
-        end
+        write_dhcp_timeout
 
         # create resolv.conf only for static configuration
-        nameserver = InstallInf["Nameserver"]
-        if nameserver
-          serverlist = nameserver
-          # write also secondary and third nameserver when available (bnc#446101)
-          nameserver2 = InstallInf["Nameserver2"]
-          serverlist << " " << nameserver2 if !nameserver2.empty?
-
-          nameserver3 = InstallInf["Nameserver3"]
-          serverlist << " " << nameserver3 if !nameserver3.empty?
-          #
-          #Do not write /etc/resolv.conf directly, feed the data to sysconfig instead,
-          #'netconfig' will do the job later on network startup (FaTE #303618)
-          SCR.Write(
-            path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS"),
-            serverlist
-          )
-          Builtins.y2milestone(
-            "Writing static nameserver entry: %1",
-            nameserver
-          )
-
-          #Enter search domain data only if present
-          domain = InstallInf["Domain"]
-          if !domain.empty?
-            SCR.Write(
-              path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST"),
-              domain
-            )
-            Builtins.y2milestone(
-              "Writing static searchlist entry: %1",
-              domain
-            )
-          elsif !fqdomain.empty?
-            SCR.Write(
-              path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST"),
-              fqdomain
-            )
-            Builtins.y2milestone(
-              "No DNS search domain defined, using FQ domain name %1 as a fallback",
-              fqdomain
-            )
-          end
-
-          #We're done. It is OK not to touch NETCONFIG_DNS_POLICY now as it is set to 'auto' by default
-          #and user did not have a chance to modify it up to now
-          SCR.Write(path(".sysconfig.network.config"), nil)
-        end
+        write_dns
       end
 
       # create proxy sysconfig file
-      proxyUrl = InstallInf["ProxyUrl"]
-      proxyProto = InstallInf["ProxyProto"].empty?
-      if !proxyProto && !proxyUrl.empty?
-        Builtins.y2milestone(
-          "Writing proxy settings: %1",
-          proxyUrl
-        )
+      write_proxy
 
-        Proxy.Read
-        ex = Proxy.Export
-
-        # bnc#693640 - update Proxy module's configuration
-        # username and password is stored in url because it is handled by linuxrc this way and it is impossible
-        # to distinguish how the user inserted it (separate or as a part of url?)
-        ex["#{proxyProto}_proxy"] = proxyUrl if ex
-
-        Proxy.Import(ex)
-        Proxy.Write
-
-        Builtins.y2debug("Written proxy settings: %1", ex)
-      end
       # create defaultdomain
-      nisdomain = InstallInf["NISDomain"]
-      if !nisdomain.empty? && FileUtils.Exists("/etc/defaultdomain")
-        Builtins.y2milestone(
-          "Write defaultdomain: %1",
-          nisdomain
-        )
-        SCR.Write(
-          path(".target.string"),
-          "/etc/defaultdomain",
-          nisdomain
-        )
-      end
+      write_nis_domain
 
       # write wait_for_interfaces if needed
-      connect_wait = InstallInf["ConnectWait"]
-      if !connect_wait.empty?
-        SCR.Execute(
-          BASH_PATH,
-          "sed -i s/^WAIT_FOR_INTERFACES=.*/WAIT_FOR_INTERFACES=%s/g /etc/sysconfig/network/config" % connect_wait
-        )
-      end
+      write_connect_wait
 
       nil
     end
@@ -290,6 +153,155 @@ module Yast
     end
 
     private
+
+    def write_dhcp_timeout
+      dhcp_timeout = InstallInf["DHCPTimeout"].to_s
+
+      return false if dhcp_timeout.empty?
+
+      Builtins.y2milestone("Writing WAIT_FOR_INTERFACES=%1", dhcp_timeout)
+      SCR.Write(path(".sysconfig.network.config.WAIT_FOR_INTERFACES"), dhcp_timeout)
+    end
+
+    def write_gateway
+      gateway = InstallInf["Gateway"].to_s
+      ptp =  InstallInf["Pointopoint"].to_s
+
+      # create routes file
+      if !gateway.empty?
+        Builtins.y2milestone("Writing route : %1", gateway)
+        return SCR.Write(
+          path(".target.string"),
+          "/etc/sysconfig/network/routes",
+          "default #{gateway} - -\n")
+      elsif !ptp.empty?
+        Builtins.y2milestone("Writing Peer-to-Peer route: %1", ptp)
+        return SCR.Write(
+          path(".target.string"),
+          "/etc/sysconfig/network/routes",
+          "default #{ptp} - -\n"
+        )
+      else
+        Builtins.y2warning("No routing information in install.inf")
+        return false
+      end
+    end
+
+    def hostname
+      hostname = InstallInf["Hostname"].to_s
+
+      # do not have numeric hostname, #152218
+      return "" if hostname.empty? || IP.Check(hostname)
+      return hostname
+    end
+
+    def write_hostname
+      return false if hostname.empty?
+
+      Builtins.y2milestone("Write HOSTNAME: #{hostname}")
+      SCR.Write(path(".target.string"), "/etc/HOSTNAME", hostname)
+    end
+
+    def write_dns
+      nameserver = InstallInf["Nameserver"].to_s
+
+      # hostname is supposed to be FQDN (http://en.opensuse.org/Linuxrc)
+      # remember domain, use it as fallback below, if there is no DNS search 
+      # domain (#476208)
+      split = Hostname.SplitFQ(hostname) if !hostname.empty? && !IP.Check(hostname)
+      fqdomain = split[1] if split.size > 1
+
+      return false if nameserver.empty?
+
+      serverlist = nameserver
+      # write also secondary and third nameserver when available (bnc#446101)
+      nameserver2 = InstallInf["Nameserver2"].to_s
+      serverlist << " " << nameserver2 if !nameserver2.empty?
+
+      nameserver3 = InstallInf["Nameserver3"].to_s
+      serverlist << " " << nameserver3 if !nameserver3.empty?
+
+      # Do not write /etc/resolv.conf directly, feed the data to sysconfig instead,
+      # 'netconfig' will do the job later on network startup (FaTE #303618)
+      SCR.Write(
+        path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS"),
+        serverlist
+      )
+      Builtins.y2milestone(
+        "Writing static nameserver entry: %1",
+        nameserver
+      )
+
+      # Enter search domain data only if present
+      domain = InstallInf["Domain"].to_s
+      if !domain.empty?
+        SCR.Write(
+          path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST"),
+          domain
+        )
+        Builtins.y2milestone(
+          "Writing static searchlist entry: %1",
+          domain
+        )
+      elsif !fqdomain.empty?
+        SCR.Write(
+          path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST"),
+          fqdomain
+        )
+        Builtins.y2milestone(
+          "No DNS search domain defined, using FQ domain name %1 as a fallback",
+          fqdomain
+        )
+      end
+
+      #We're done. It is OK not to touch NETCONFIG_DNS_POLICY now as it is set to 'auto' by default
+      #and user did not have a chance to modify it up to now
+      SCR.Write(path(".sysconfig.network.config"), nil)
+    end
+
+    def write_proxy
+      proxyUrl = InstallInf["ProxyUrl"].to_s
+      proxyProto = InstallInf["ProxyProto"].to_s
+
+      return false if proxyProto || proxyUrl.empty?
+
+      Builtins.y2milestone("Writing proxy settings: #{proxyProto}_proxy = '#{proxyUrl}'")
+
+      Proxy.Read
+      ex = Proxy.Export
+
+      # bnc#693640 - update Proxy module's configuration
+      # username and password is stored in url because it is handled by linuxrc this way and it is impossible
+      # to distinguish how the user inserted it (separate or as a part of url?)
+      ex["#{proxyProto}_proxy"] = proxyUrl if ex
+      Builtins.y2debug("Written proxy settings: #{ex}")
+
+      Proxy.Import(ex)
+      Proxy.Write
+    end
+
+    def write_nis_domain
+      nisdomain = InstallInf["NISDomain"]
+
+      return false if nisdomain.empty? || !FileUtils.Exists("/etc/defaultdomain")
+
+      Builtins.y2milestone("Write defaultdomain: #{nisdomain}")
+      SCR.Write(path(".target.string"), "/etc/defaultdomain", nisdomain)
+    end
+
+    def write_connect_wait
+      connect_wait = InstallInf["ConnectWait"]
+
+      return false if connect_wait.empty?
+
+      ret = SCR.Execute(
+          BASH_PATH,
+          "sed -i s/^WAIT_FOR_INTERFACES=.*/WAIT_FOR_INTERFACES=%s/g /etc/sysconfig/network/config" % connect_wait
+      )
+
+      return ret == 0
+    end
+
     def dev_name
       netdevice = InstallInf["Netdevice"]
 
