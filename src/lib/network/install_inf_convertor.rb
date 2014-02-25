@@ -278,7 +278,7 @@ module Yast
     end
 
     def write_connect_wait
-      connect_wait = InstallInf["ConnectWait"]
+      connect_wait = InstallInf["ConnectWait"].to_s
 
       return false if connect_wait.empty?
 
