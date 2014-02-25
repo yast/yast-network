@@ -38,7 +38,14 @@ module Yast
       Yast.include self, "network/complex.rb"
     end
 
-    def CreateIfcfg
+    def write_netconfig
+      write_ifcfg(create_ifcfg)
+      write_global_netconfig
+    end
+
+    private
+
+    def create_ifcfg
       ifcfg = ""
 
       # known net devices: `nfs `iscsi `fcoe
@@ -117,8 +124,7 @@ module Yast
 
     # create all network files except ifcfg and hwcfg
     # directly to installed system
-
-    def CreateOtherNetworkFiles
+    def write_global_netconfig
       # create hostname
       write_hostname
 
@@ -143,13 +149,6 @@ module Yast
 
       nil
     end
-
-    def write_netconfig
-      write_ifcfg(CreateIfcfg())
-      CreateOtherNetworkFiles()
-    end
-
-    private
 
     def write_dhcp_timeout
       dhcp_timeout = InstallInf["DHCPTimeout"].to_s
@@ -305,7 +304,7 @@ module Yast
       return netdevice
     end
 
-    def StdoutOf(command)
+    def stdout_of(command)
       SCR.Execute(path(".target.bash_output"), command)["stdout"].to_s
     end
 
@@ -396,7 +395,7 @@ module Yast
       if !LanUdevAuto.AllowUdevModify
         # bnc#821427: use same options as in /lib/udev/rules.d/71-biosdevname.rules
         cmd = "biosdevname --policy physical --smbios 2.6 --nopirq -i %s" % dev_name
-        out = String.FirstChunk(StdoutOf(cmd), "\n")
+        out = String.FirstChunk(stdout_of(cmd), "\n")
         if !out.empty?
           device_name = out
           log.info("biosdevname renames #{dev_name} to #{device_name}")
