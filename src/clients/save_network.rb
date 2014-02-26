@@ -31,6 +31,8 @@ module Yast
   require "network/install_inf_convertor"
 
   class SaveNetworkClient < Client
+    include Logger
+
     def main
       Yast.import "UI"
 
@@ -57,7 +59,7 @@ module Yast
         save_network
       else
         Builtins.y2milestone("update - skip save_network")
-      end 
+      end
       # EOF
 
       nil
@@ -71,7 +73,7 @@ module Yast
       log.info("Network based device: #{network_disk}")
 
       # overwrite configuration created during network setup e.g. in InstInstallInfClient
-      if network_disk == :iscsi && 
+      if network_disk == :iscsi &&
         NetworkStorage.getiBFTDevices.include?(
           InstallInfConvertor::InstallInf["Netdevice"]
         )
