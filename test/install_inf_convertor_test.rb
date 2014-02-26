@@ -82,4 +82,48 @@ describe "InstallInfConvertor" do
       end
     end
   end
+
+  context "linuxrc provides dhcp configuration" do
+
+    DEVICE = "enp0s3"
+    NETCONFIG = "dhcp"
+
+    before(:each) do
+      @install_inf_convertor = Yast::InstallInfConvertor.instance
+
+      Yast::InstallInfConvertor::InstallInf
+        .stub(:[]) { "" }
+      Yast::InstallInfConvertor::InstallInf
+        .stub(:[])
+        .with("Netdevice") { DEVICE }
+      Yast::InstallInfConvertor::InstallInf
+        .stub(:[])
+        .with("NetConfig") { NETCONFIG }
+    end
+
+    describe "#dev_name" do
+      it "returns expected device name" do
+        expect(@install_inf_convertor.send(:dev_name)).to eql DEVICE
+      end
+    end
+
+    describe "#write_ifcfg" do
+      it "creates ifcfg file for #{DEVICE}" do
+        expect(SCR)
+          .to receive(:Write)
+          .with(path(".target.string"), /.*-#{DEVICE}/, "") { true }
+        expect(@install_inf_convertor.send(:write_ifcfg, "")).to eql true
+      end
+    end
+
+    describe "#create_ifcfg" do
+      it "creates a valid ifcfg for netconfig" do
+        expect(ifcfg = @install_inf_convertor.send(:create_ifcfg)).not_to be_empty
+        expect(ifcfg).to match /BOOTPROTO='dhcp4'/
+        expect(ifcfg).to match /STARTMODE='onboot'/
+        expect(ifcfg).to match /NAME='.*'/
+      end
+    end
+  end
+
 end
