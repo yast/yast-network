@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Feb 26 13:19:08 UTC 2014 - mfilka@suse.com
+
+- bnc#859213 
+  - generate install.inf based netconfig at the begining of 
+  installation. Generated configuration is copied to target at the
+  end of installation
+- 3.1.24
+
+-------------------------------------------------------------------
 Wed Feb 19 16:30:43 CET 2014 - snwint@suse.de
 
 - copy also ifroute-* files into installed system
