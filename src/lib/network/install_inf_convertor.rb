@@ -197,7 +197,8 @@ module Yast
       # remember domain, use it as fallback below, if there is no DNS search 
       # domain (#476208)
       split = Hostname.SplitFQ(hostname) if !hostname.empty? && !IP.Check(hostname)
-      fqdomain = split[1] if split.size > 1
+      fqdomain = ""
+      fqdomain = split[1].to_s if split
 
       serverlist = nameserver
       # write also secondary and third nameserver when available (bnc#446101)
