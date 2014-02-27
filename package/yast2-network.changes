@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Feb 27 10:44:09 UTC 2014 - mfilka@suse.com
+
+- bnc#865199
+  - netmask generated corectly when handling static net
+    configuration provided by install.inf
+- 3.1.26
+
+-------------------------------------------------------------------
 Wed Feb 26 23:00:17 UTC 2014 - mfilka@suse.com
 
 - fixed internal error in save_network client
