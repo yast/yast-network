@@ -48,9 +48,21 @@ module SetupDHCPClient
     NetworkInterfaces.Write("")
   end
 
+  def self.configured?(devname)
+    # TODO:
+    # one day there should be LanItems.IsItemConfigured, but we currently
+    # miss index -> devname translation. As this LanItems internal structure
+    # will be subject of refactoring, we will use NetworkInterfaces directly.
+    # It currently doesn't hurt as it currently writes configuration for both
+    # wicked even sysconfig.
+    NetworkInterfaces.Check(devname)
+  end
+
+  include Logger
 
 # TODO time consuming, some progress would be nice
-  dhcp_cards = network_cards.select { |c| get_lease?(c) }
+  dhcp_cards = network_cards.select { |c| !configured?(c) && get_lease?(c) }
+  log.info "Candidates for enabling DHCP: #{dhcp_cards}"
 
   dhcp_cards.each do |dcard|
     setup_dhcp(dcard) # make DHCP setup persistent
