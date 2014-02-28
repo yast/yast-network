@@ -41,7 +41,7 @@ module SetupDHCPClient
   end
 
   def self.start_dhcp(card)
-    SCR.Execute(BASH_PATH, "dhcpcd '#{card}'") == 0
+    SCR.Execute(BASH_PATH, "wicked ifreload '#{card}'") == 0
   end
 
   def self.write_configuration
