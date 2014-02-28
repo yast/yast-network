@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar  4 09:37:06 UTC 2014 - mfilka@suse.com
+
+- bnc#865707
+  - use wicked as dhcp client in instsys
+- 3.1.30 
+
+-------------------------------------------------------------------
 Fri Feb 28 15:30:41 UTC 2014 - jreidinger@suse.com
 
 - fix installation crash - do not mess ruby global namespace
