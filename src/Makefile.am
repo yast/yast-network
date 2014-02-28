@@ -40,7 +40,8 @@ client_DATA = \
   clients/remote.rb \
   clients/dns.rb \
   clients/lan_proposal.rb \
-  clients/host.rb
+  clients/host.rb \
+  clients/inst_install_inf.rb
 
 yncludedir = @yncludedir@/network/installation
 ynclude_DATA = \
