@@ -4,6 +4,7 @@ ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
 
 require "yast"
 require "network/install_inf_convertor"
+include Yast # for path shortcut and avoid namespace
 
 describe "InstallInfConvertor" do
 

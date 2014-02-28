@@ -1,14 +1,13 @@
 require "yast"
 
-include Yast
-include UIShortcuts
-include I18n
 
 module Yast
 
   class InstallInfConvertor
     include Singleton
     include Logger
+    include Yast # for path shortcuts
+    include I18n # for textdomain
 
     BASH_PATH = Path.new(".target.bash")
 
