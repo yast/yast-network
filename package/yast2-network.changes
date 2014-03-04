@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar  4 16:24:22 UTC 2014 - mvidner@suse.com
+
+- Use wickedd-dhcp{6,4} instead of (dropped) dhcpcd-test when
+  setting up DHCP interfaces (bnc#866617)
+- 3.1.30
+
+-------------------------------------------------------------------
 Fri Feb 28 15:30:41 UTC 2014 - jreidinger@suse.com
 
 - fix installation crash - do not mess ruby global namespace

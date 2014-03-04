@@ -6,6 +6,7 @@ module SetupDHCPClient
   include Yast
 
   BASH_PATH = Path.new(".target.bash")
+  WICKED_BIN_DIR = "/usr/lib/wicked/bin"
 
   def self.network_cards
     LanItems.Read
@@ -36,8 +37,12 @@ module SetupDHCPClient
     LanItems.Commit
   end
 
+  def self.get_lease_ipvx?(v, card)
+    SCR.Execute(BASH_PATH, "#{WICKED_BIN_DIR}/wickedd-dhcp#{v} --test '#{card}' | grep ^IPADDR") == 0
+  end
+
   def self.get_lease?(card)
-    SCR.Execute(BASH_PATH, "dhcpcd-test '#{card}'") == 0
+    get_lease_ipvx?(6, card) || get_lease_ipvx?(4, card)
   end
 
   def self.start_dhcp(card)
