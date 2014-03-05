@@ -6,7 +6,6 @@ module SetupDHCPClient
   include Yast
 
   BASH_PATH = Path.new(".target.bash")
-  BASH_OUT_PATH = Path.new(".target.bash_output")
 
   def self.network_cards
     LanItems.Read
@@ -73,14 +72,10 @@ module SetupDHCPClient
 
   # Checks if given device is active
   #
-  # inactive device <=> a device which is not reported as "up" by wicked
-  def self.inactive_config?(devname)
-    wicked_query = "wicked ifstatus --brief #{devname} | grep -v 'up$'"
-    ret = SCR.Execute(BASH_OUT_PATH, wicked_query)["stdout"].to_s
-
-    return false if ret.empty?
-
-    ret.split(/\s+/, 2).first
+  # active device <=> a device which is reported as "up" by wicked
+  def self.active_config?(devname)
+    wicked_query = "wicked ifstatus --brief #{devname} | grep 'up$'"
+    SCR.Execute(BASH_PATH, wicked_query) == 0
   end
 
   include Logger
@@ -94,7 +89,7 @@ module SetupDHCPClient
   activate_changes(dhcp_cards)
 
   # drop devices without dhcp lease
-  inactive_devices = dhcp_cards.select { |c| inactive_config?(c) }
+  inactive_devices = dhcp_cards.select { |c| ! active_config?(c) }
   log.info "Inactive devices: #{inactive_devices}"
 
   inactive_devices.each { |c| delete_config(c) }
