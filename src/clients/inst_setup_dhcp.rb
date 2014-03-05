@@ -97,6 +97,7 @@ module SetupDHCPClient
   inactive_devices = dhcp_cards.select { |c| inactive_config?(c) }
   log.info "Inactive devices: #{inactive_devices}"
 
+  inactive_devices.each { |c| delete_config(c) }
   activate_changes(inactive_devices)
 end
 
