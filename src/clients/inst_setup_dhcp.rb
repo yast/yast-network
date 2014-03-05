@@ -6,13 +6,18 @@ module SetupDHCPClient
   include Yast
 
   BASH_PATH = Path.new(".target.bash")
-  WICKED_BIN_DIR = "/usr/lib/wicked/bin"
 
   def self.network_cards
     LanItems.Read
     LanItems.GetNetcardNames
   end
 
+  # Makes DHCP setup persistent
+  #
+  # instsys currently uses wicked as network services "manager" (including
+  # dhcp client). wicked is currently able to configure a card for dhcp leases
+  # only via loading config from file. All other ways are workarounds and
+  # needn't to work when wickedd* services are already running
   def self.setup_dhcp card
     index = LanItems.FindDeviceIndex(card)
 
@@ -37,20 +42,22 @@ module SetupDHCPClient
     LanItems.Commit
   end
 
-  def self.get_lease_ipvx?(v, card)
-    SCR.Execute(BASH_PATH, "#{WICKED_BIN_DIR}/wickedd-dhcp#{v} --test '#{card}' | grep ^IPADDR") == 0
+  def self.reload_config(card)
+    SCR.Execute(BASH_PATH, "wicked ifreload '#{card}'") == 0
   end
 
-  def self.get_lease?(card)
-    get_lease_ipvx?(6, card) || get_lease_ipvx?(4, card)
-  end
-
-  def self.start_dhcp(card)
-    SCR.Execute(BASH_PATH, "dhcpcd '#{card}'") == 0
+  def self.delete_config(devname)
+    NetworkInterfaces.Delete2(devname)
   end
 
   def self.write_configuration
     NetworkInterfaces.Write("")
+  end
+
+  def self.activate_changes(devnames)
+    return false if !write_configuration
+
+    devnames.map { |d| reload_config(d) }
   end
 
   def self.configured?(devname)
@@ -63,18 +70,30 @@ module SetupDHCPClient
     NetworkInterfaces.Check(devname)
   end
 
-  include Logger
-
-# TODO time consuming, some progress would be nice
-  dhcp_cards = network_cards.select { |c| !configured?(c) && get_lease?(c) }
-  log.info "Candidates for enabling DHCP: #{dhcp_cards}"
-
-  dhcp_cards.each do |dcard|
-    setup_dhcp(dcard) # make DHCP setup persistent
-    start_dhcp(dcard)
+  # Checks if given device is active
+  #
+  # active device <=> a device which is reported as "up" by wicked
+  def self.active_config?(devname)
+    wicked_query = "wicked ifstatus --brief #{devname} | grep 'up$'"
+    SCR.Execute(BASH_PATH, wicked_query) == 0
   end
 
-  write_configuration
+  include Logger
+
+  dhcp_cards = network_cards.select { |c| !configured?(c) }
+  log.info "Candidates for enabling DHCP: #{dhcp_cards}"
+
+  # TODO time consuming, some progress would be nice
+  dhcp_cards.each { |d| setup_dhcp(d) } 
+
+  activate_changes(dhcp_cards)
+
+  # drop devices without dhcp lease
+  inactive_devices = dhcp_cards.select { |c| ! active_config?(c) }
+  log.info "Inactive devices: #{inactive_devices}"
+
+  inactive_devices.each { |c| delete_config(c) }
+  activate_changes(inactive_devices)
 end
 
 :next

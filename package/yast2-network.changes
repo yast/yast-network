@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Mar  5 10:11:41 UTC 2014 - mvidner@suse.com
+
+- bnc#865707
+  - use wicked as dhcp client in instsys (by mfilka)
+  - reverted wickedd-dhcp{6,4}, instead try wicked ifreload
+    and delete the config if that didn't work
+- 3.1.31
+
+-------------------------------------------------------------------
 Tue Mar  4 16:24:22 UTC 2014 - mvidner@suse.com
 
 - Use wickedd-dhcp{6,4} instead of (dropped) dhcpcd-test when
