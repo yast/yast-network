@@ -333,11 +333,10 @@ module Yast
     def GetDeviceName(itemId)
       lanItem = GetLanItem(itemId)
 
-      Ops.get_string(
-        lanItem,
-        "ifcfg",
-        Ops.get_string(lanItem, ["hwinfo", "dev_name"], "")
-      )
+      return "" if lanItem.nil?
+      return lanItem["ifcfg"] if !lanItem["ifcfg"].to_s.empty?
+      return lanItem["hwinfo"]["dev_name"].to_s if lanItem["hwinfo"]
+      return ""
     end
 
     # transforms given list of item ids onto device names
