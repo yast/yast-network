@@ -20,3 +20,8 @@ install-sh
 *.ami
 YaST:Head/
 home:*:*/
+/testsuite/config/
+testsuite/run/
+/testsuite/*.exp
+/testsuite/yast2-network.*
+/test-driver
