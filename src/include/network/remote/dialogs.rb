@@ -78,7 +78,7 @@ module Yast
       )
 
       firewall_widget = CWMFirewallInterfaces.CreateOpenFirewallWidget(
-        { "services" => ["service:xorg-x11-Xvnc"], "display_details" => true }
+        { "services" => ["service:vnc-httpd", "service:vnc-server"], "display_details" => true }
       )
       firewall_layout = Ops.get_term(firewall_widget, "custom_widget", VBox())
       firewall_help = Ops.get_string(firewall_widget, "help", "")
