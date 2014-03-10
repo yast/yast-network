@@ -365,7 +365,7 @@ module Yast
 
     # Returns ifcfg configuration for particular item
     def GetDeviceMap(itemId)
-      return nil if !IsItemConfigured(itemId)
+      return {} if !IsItemConfigured(itemId)
 
       devname = GetDeviceName(itemId)
       devtype = NetworkInterfaces.GetType(devname)
@@ -717,7 +717,7 @@ module Yast
         return false
       end
 
-      return ret if ifcfg == nil
+      return ret if ifcfg.empty?
 
       # filter the eth devices (BOOTPROTO=none)
       # don't care about STARTMODE (see bnc#652987c6)
@@ -737,7 +737,7 @@ module Yast
 
       # no netconfig configuration has been found so nothing
       # blocks using the device as bridge slave
-      return true if ifcfg == nil
+      return true if ifcfg.empty?
 
       devname = GetDeviceName(itemId)
       bonded = BuildBondIndex()
