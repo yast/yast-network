@@ -333,11 +333,10 @@ module Yast
     def GetDeviceName(itemId)
       lanItem = GetLanItem(itemId)
 
-      Ops.get_string(
-        lanItem,
-        "ifcfg",
-        Ops.get_string(lanItem, ["hwinfo", "dev_name"], "")
-      )
+      return "" if lanItem.nil?
+      return lanItem["ifcfg"] if !lanItem["ifcfg"].to_s.empty?
+      return lanItem["hwinfo"]["dev_name"].to_s if lanItem["hwinfo"]
+      return ""
     end
 
     # transforms given list of item ids onto device names
@@ -366,16 +365,17 @@ module Yast
 
     # Returns ifcfg configuration for particular item
     def GetDeviceMap(itemId)
-      return nil if !IsItemConfigured(itemId)
+      return {} if !IsItemConfigured(itemId)
 
       devname = GetDeviceName(itemId)
       devtype = NetworkInterfaces.GetType(devname)
 
-      Convert.convert(
-        Ops.get(NetworkInterfaces.FilterDevices("netcard"), [devtype, devname]),
-        :from => "any",
-        :to   => "map <string, any>"
-      )
+      netcards = NetworkInterfaces.FilterDevices("netcard")
+
+      map = netcards[devtype][devname] if netcards[devtype]
+      map = {} if map.nil?
+
+      return map
     end
 
     def GetCurrentMap
@@ -718,7 +718,7 @@ module Yast
         return false
       end
 
-      return ret if ifcfg == nil
+      return ret if ifcfg.empty?
 
       # filter the eth devices (BOOTPROTO=none)
       # don't care about STARTMODE (see bnc#652987c6)
@@ -738,7 +738,7 @@ module Yast
 
       # no netconfig configuration has been found so nothing
       # blocks using the device as bridge slave
-      return true if ifcfg == nil
+      return true if ifcfg.empty?
 
       devname = GetDeviceName(itemId)
       bonded = BuildBondIndex()

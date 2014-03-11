@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Mar 10 14:22:17 UTC 2014 - mfilka@suse.com
+
+- bnc#866742
+  - fixed internal error raised when cloning network configuration
+  using AutoYast module
+-3.1.33
+
+-------------------------------------------------------------------
 Mon Mar 10 10:54:18 CET 2014 - locilka@suse.com
 
 - Fixed Yast Remote to allow enabling vnc-httpd and vnc-server
