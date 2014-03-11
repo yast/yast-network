@@ -370,11 +370,12 @@ module Yast
       devname = GetDeviceName(itemId)
       devtype = NetworkInterfaces.GetType(devname)
 
-      Convert.convert(
-        Ops.get(NetworkInterfaces.FilterDevices("netcard"), [devtype, devname]),
-        :from => "any",
-        :to   => "map <string, any>"
-      )
+      netcards = NetworkInterfaces.FilterDevices("netcard")
+
+      map = netcards[devtype][devname] if netcards[devtype]
+      map = {} if map.nil?
+
+      return map
     end
 
     def GetCurrentMap
