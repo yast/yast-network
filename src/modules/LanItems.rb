@@ -28,6 +28,8 @@ module Yast
     attr_reader :ipoib_modes
     attr_accessor :ipoib_mode
 
+    include Logger
+
     def main
       Yast.import "UI"
       textdomain "network"
@@ -306,18 +308,10 @@ module Yast
     # Returns true if the item (see LanItems::Items) has
     # netconfig configuration.
     def IsItemConfigured(itemId)
-      ret = false
+      ret = !GetLanItem(itemId)["ifcfg"].to_s.empty?
+      log.info("IsItemConfigured: item=#{itemId} configured=#{ret}")
 
-      if Ops.greater_than(
-          Builtins.size(Ops.get_string(GetLanItem(itemId), "ifcfg", "")),
-          0
-        )
-        ret = true
-      end
-
-      Builtins.y2milestone("is item %1 configured? %2", itemId, ret)
-
-      ret
+      return ret
     end
 
     # Returns true if current (see LanItems::current) has

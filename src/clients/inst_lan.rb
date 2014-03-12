@@ -31,38 +31,38 @@
 # Uses all other files.
 module Yast
   class InstLanClient < Client
+    include Logger
+
     def main
       Yast.import "UI"
-
-      #**
-      # <h3>Network configuration</h3>
-
-      textdomain "network"
-
-      # The main ()
-      Builtins.y2milestone("----------------------------------------")
-      Builtins.y2milestone("Lan module started")
-
       Yast.import "Label"
       Yast.import "Lan"
       Yast.import "RichText"
 
+      textdomain "network"
+
+      log.info("----------------------------------------")
+      log.info("Lan module started")
+
       Yast.include self, "network/lan/cmdline.rb"
       Yast.include self, "network/lan/wizards.rb"
 
-      @ret = LanSequence()
+      ret = LanSequence()
 
-      Builtins.y2internal("Network inst ret = %1", @ret)
-      Builtins.y2debug("ret=%1", @ret)
+      log.info("Lan module finished, ret = #{ret}")
+      log.info("----------------------------------------")
 
-      # Finish
-      Builtins.y2milestone("Lan module finished")
-      Builtins.y2milestone("----------------------------------------")
-
-      deep_copy(@ret) 
-      # EOF
+      ret
     end
   end
-end
 
-Yast::InstLanClient.new.main
+  conf_net = LanItems.Items.keys.any? { |i| LanItems.IsItemConfigured(i) }
+
+  log.info("Configured network found: #{conf_net}")
+
+  if !conf_net
+    Yast::InstLanClient.new.main
+  else
+    :next
+  end
+end

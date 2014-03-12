@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Mar 12 08:01:43 UTC 2014 - mfilka@suse.com
+
+- bnc#866827, fate#314695
+  - show a dialog for network configuration when autoconfiguration
+  is unable to proceed
+- 3.1.33
+
+-------------------------------------------------------------------
 Mon Mar 10 10:54:18 CET 2014 - locilka@suse.com
 
 - Fixed Yast Remote to allow enabling vnc-httpd and vnc-server
