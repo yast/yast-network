@@ -6,7 +6,8 @@ TESTS = \
   routing_test.rb \
   new_device_startmode_test.rb \
   widgets_test.rb \
-  install_inf_convertor_test.rb
+  install_inf_convertor_test.rb \
+  lan_items_helpers_test.rb
 
 TEST_EXTENSIONS = .rb
 RB_LOG_COMPILER = rspec
