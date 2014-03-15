@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Sat Mar 15 22:54:30 UTC 2014 - mfilka@suse.com
+
+- bnc#868436
+  - fixed internal error at the begining of installation
+- 3.1.34
+
+-------------------------------------------------------------------
 Wed Mar 12 08:01:43 UTC 2014 - mfilka@suse.com
 
 - bnc#866827, fate#314695
