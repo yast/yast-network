@@ -84,9 +84,12 @@ module SetupDHCPClient
   log.info "Candidates for enabling DHCP: #{dhcp_cards}"
 
   # TODO time consuming, some progress would be nice
-  dhcp_cards.each { |d| setup_dhcp(d) } 
+  dhcp_cards.each { |d| setup_dhcp(d) }
 
   activate_changes(dhcp_cards)
+
+  # workaround for gh#yast/yast-core#74 (https://github.com/yast/yast-core/issues/74)
+  NetworkInterfaces.CleanCacheRead()
 
   # drop devices without dhcp lease
   inactive_devices = dhcp_cards.select { |c| ! active_config?(c) }
