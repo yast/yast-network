@@ -47,7 +47,11 @@ module Yast
       Yast.include self, "network/lan/cmdline.rb"
       Yast.include self, "network/lan/wizards.rb"
 
-      ret = LanSequence()
+      conf_net = LanItems.Items.keys.any? { |i| LanItems.IsItemConfigured(i) }
+
+      log.info("Configured network found: #{conf_net}")
+
+      ret = !conf_net ? LanSequence() : :next
 
       log.info("Lan module finished, ret = #{ret}")
       log.info("----------------------------------------")
@@ -56,13 +60,5 @@ module Yast
     end
   end
 
-  conf_net = LanItems.Items.keys.any? { |i| LanItems.IsItemConfigured(i) }
-
-  log.info("Configured network found: #{conf_net}")
-
-  if !conf_net
-    Yast::InstLanClient.new.main
-  else
-    :next
-  end
+  Yast::InstLanClient.new.main
 end
