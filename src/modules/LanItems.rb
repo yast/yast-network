@@ -2235,6 +2235,15 @@ module Yast
       deep_copy(tosel)
     end
 
+    def delete_dev(name)
+      old_current = @current
+
+      FindAndSelect(name)
+      DeleteItem()
+
+      @current = old_current
+    end
+
     def DeleteItem
       Builtins.y2milestone("deleting ... %1", Ops.get_map(@Items, @current, {}))
       ifcfg = Ops.get_string(@Items, [@current, "ifcfg"], "")
