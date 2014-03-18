@@ -26,3 +26,21 @@ describe "LanItemsClass#IsItemConfigured" do
     expect(Yast::LanItems.IsItemConfigured(0)).to be_false
   end
 end
+
+describe "LanItemsClass#delete_dev" do
+
+  MOCKED_ITEMS = {
+    0 => {
+      "ifcfg" => "enp0s3"
+    }
+  }
+
+  before(:each) do
+    Yast::LanItems.Items = MOCKED_ITEMS
+  end
+
+  it "removes device config when found" do
+    Yast::LanItems.delete_dev("enp0s3")
+    expect(Yast::LanItems.Items).to be_empty
+  end
+end
