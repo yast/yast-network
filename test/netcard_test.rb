@@ -57,6 +57,14 @@ MOCKED_ITEMS = {
   3 => {"ifcfg" => "br0"},
   4 => {"ifcfg" => "tun0"},
   5 => {"ifcfg" => "tap0"},
+  # devices with configuration and hwinfo
+  6 => {
+    "ifcfg" => "enp0s3",
+    "hwinfo" => {
+      "name" => "SUSE test card",
+      "dev_name" => "enp0s3"
+    }
+  },
 }
 
 require "yast"
@@ -82,7 +90,7 @@ describe "When querying netcard device name" do
   end
 
   it "can return list of device names available in the system" do
-    expected_names = ["bond0", "br0", "eth1", "eth11", "tap0", "tun0"]
+    expected_names = ["bond0", "br0", "eth1", "eth11", "enp0s3", "tap0", "tun0"].sort
 
     expect(@lan_items.GetNetcardNames.sort).to eq expected_names
   end
@@ -169,5 +177,41 @@ describe "LanItemsClass#BuildLanOverview" do
       expect(desc).not_to be_empty
       expect(desc).to eql expected_dev_desc
     end
+  end
+end
+
+
+describe "LanItemsClass#DeleteItem" do
+  before(:each) do
+    @lan_items = Yast::LanItems
+    @lan_items.main
+    @lan_items.Items = MOCKED_ITEMS
+  end
+
+  it "removes an existing item" do
+    before_items = nil
+
+    while before_items != @lan_items.Items && !@lan_items.Items.empty?
+      @lan_items.current = 0
+
+      item_name = @lan_items.GetCurrentName
+      before_items = @lan_items.Items
+
+      @lan_items.DeleteItem
+
+      expect(@lan_items.FindAndSelect(item_name)).to be_false
+    end
+  end
+
+  it "removes only the configuration if the item has hwinfo" do
+    before_size = @lan_items.Items.size
+    item_name = "enp0s3"
+
+    expect(@lan_items.FindAndSelect(item_name)).to be_true
+
+    @lan_items.DeleteItem
+
+    expect(@lan_items.FindAndSelect(item_name)).to be_false
+    expect(@lan_items.Items.size).to eql before_size
   end
 end
