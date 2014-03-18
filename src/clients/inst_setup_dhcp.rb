@@ -47,7 +47,7 @@ module SetupDHCPClient
   end
 
   def self.delete_config(devname)
-    NetworkInterfaces.Delete2(devname)
+    LanItems.delete_dev(devname)
   end
 
   def self.write_configuration
