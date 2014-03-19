@@ -497,6 +497,8 @@ module Yast
     # Updates device name.
     #
     # It updates device's udev rules and config name.
+    # Updating config name means that old configuration is deleted from
+    # the system.
     #
     # Returns new name
     def SetItemName( itemId, name)
@@ -518,6 +520,8 @@ module Yast
     # Updates current device name.
     #
     # It updates device's udev rules and config name.
+    # Updating config name means that old configuration is deleted from
+    # the system.
     #
     # Returns new name
     def SetCurrentName( name)
