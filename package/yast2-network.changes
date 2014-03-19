@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Mar 19 09:53:20 UTC 2014 - mfilka@suse.com
+
+- bnc#868830
+  - remove device also from LanItems' cache when deleting during
+    automatic configuration in installer
+- 3.1.36
+
+-------------------------------------------------------------------
 Mon Mar 17 10:54:05 UTC 2014 - mfilka@suse.com
 
 - gh#yast/yast-core#74

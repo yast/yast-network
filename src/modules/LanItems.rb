@@ -497,14 +497,21 @@ module Yast
     # Updates device name.
     #
     # It updates device's udev rules and config name.
+    # Updating config name means that old configuration is deleted from
+    # the system.
     #
     # Returns new name
     def SetItemName( itemId, name)
-      SetItemUdev("NAME", name)
+      if name && !name.empty?
+        SetItemUdev("NAME", name)
+      else
+        # rewrite rule for empty name is meaningless
+        @Items[itemId].delete("udev")
+      end
 
       if @Items[ itemId].has_key?( "ifcfg")
         NetworkInterfaces.Delete2( @Items[ itemId][ "ifcfg"])
-        @Items[ itemId][ "ifcfg"] = name
+        @Items[ itemId][ "ifcfg"] = name.to_s
       end
 
       name
@@ -513,6 +520,8 @@ module Yast
     # Updates current device name.
     #
     # It updates device's udev rules and config name.
+    # Updating config name means that old configuration is deleted from
+    # the system.
     #
     # Returns new name
     def SetCurrentName( name)
@@ -2235,38 +2244,39 @@ module Yast
       deep_copy(tosel)
     end
 
-    def DeleteItem
-      Builtins.y2milestone("deleting ... %1", Ops.get_map(@Items, @current, {}))
-      ifcfg = Ops.get_string(@Items, [@current, "ifcfg"], "")
-      hwcfg = Ops.get_string(@Items, [@current, "hwcfg"], "")
+    # Deletes item and its configuration
+    #
+    # Item for deletion is searched using device name
+    def delete_dev(name)
+      FindAndSelect(name)
+      DeleteItem()
+    end
 
-      if IsNotEmpty(ifcfg)
-        NetworkInterfaces.Delete(ifcfg)
+    # Deletes the {current} item and its configuration
+    def DeleteItem
+      return if @current < 0
+      return if @Items.nil? || @Items.empty?
+
+      log.info("DeleteItem: #{@Items[@current]}")
+
+      if IsCurrentConfigured()
+        SetCurrentName("")
         NetworkInterfaces.Commit
-        Ops.set(@Items, [@current, "ifcfg"], "")
       end
-      if !Ops.greater_than(
-          Builtins.size(Ops.get_map(@Items, [@current, "hwinfo"], {})),
-          0
-        )
-        tmp_items = {}
-        Builtins.foreach(@Items) do |key, value|
-          if key == @current
-            next
-          else
-            if Ops.less_than(key, @current)
-              Ops.set(tmp_items, key, Ops.get_map(@Items, key, {}))
-            else
-              Ops.set(
-                tmp_items,
-                Ops.subtract(key, 1),
-                Ops.get_map(@Items, key, {})
-              )
-            end
-          end
-        end
-        @Items = deep_copy(tmp_items)
+
+      current_item = @Items[@current]
+
+      if current_item["hwinfo"].nil? || current_item["hwinfo"].empty?
+        # size is always > 0 here and items are numbered 0, 1, ..., size -1
+        delete_index = @Items.size - 1
+
+        @Items[@current] = @Items[delete_index] if delete_index != @current
+        @Items.delete(delete_index)
+
+        # item was deleted, so original @current is invalid
+        @current = -1
       end
+
       SetModified()
 
       nil
