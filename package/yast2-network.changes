@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Mar 21 15:24:19 UTC 2014 - mfilka@suse.com
+
+- bnc#869224
+  - enlarged nic name input field in "Edit Nic Name" dialogue in 
+    ncurses mode 
+- 3.0.9
+
+-------------------------------------------------------------------
 Tue Oct 15 07:26:13 UTC 2013 - mfilka@suse.com
 
 - bnc#845534
