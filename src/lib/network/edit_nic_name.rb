@@ -95,7 +95,7 @@ module Yast
           Left(
             HBox(
               Label(_("Device name:")),
-              InputField(Id(:dev_name), "", @old_name)
+              InputField(Id(:dev_name), Opt(:hstretch), "", @old_name)
             )
           ),
           VSpacing(0.5),
