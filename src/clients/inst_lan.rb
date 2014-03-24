@@ -38,6 +38,7 @@ module Yast
       Yast.import "Label"
       Yast.import "Lan"
       Yast.import "RichText"
+      Yast.import "GetInstArgs"
 
       textdomain "network"
 
@@ -47,11 +48,19 @@ module Yast
       Yast.include self, "network/lan/cmdline.rb"
       Yast.include self, "network/lan/wizards.rb"
 
-      conf_net = LanItems.Items.keys.any? { |i| LanItems.IsItemConfigured(i) }
+      # keep network configuration state in @@conf_net to gurantee same
+      # behavior when walking :back in installation workflow
+      if !defined?(@@network_configured)
+        @@network_configured = LanItems.Items.keys.any? { |i| LanItems.IsItemConfigured(i) }
+      end
 
-      log.info("Configured network found: #{conf_net}")
+      log.info("Configured network found: #{@@network_configured}")
 
-      ret = !conf_net ? LanSequence() : :next
+      if @@network_configured
+        ret = GetInstArgs.going_back ? :back : :next
+      else
+        ret = LanSequence()
+      end
 
       log.info("Lan module finished, ret = #{ret}")
       log.info("----------------------------------------")
