@@ -13,7 +13,7 @@ module Yast
   class ConfirmVirtProposal
 
     include UIShortcuts
-    include I18n
+    extend I18n
 
     def self.run
       open
@@ -30,6 +30,8 @@ module Yast
   private
 
     def self.open
+      textdomain "network"
+
       UI.OpenDialog(
         Opt(:decorated),
         HBox(
