@@ -641,7 +641,7 @@ module Yast
         if Stage.cont && @virt_net_proposal == true &&
             (Linuxrc.usessh || Linuxrc.vnc || Linuxrc.display_ip)
 
-          if ConfirmVirtProposal.run == :ok
+          if ConfirmVirtProposal.instance.run == :ok
             Builtins.y2milestone(
               "Restarting network because of bridged proposal"
             )
