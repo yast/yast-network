@@ -11,7 +11,9 @@ Read	.target.string "/etc/HOSTNAME" "laptop.suse.cz"
 Read	.target.size "/etc/sysconfig/network/routes" 27
 Read	.routes [$["destination":"default", "gateway":"10.20.30.40"]]
 Execute	.target.bash "rpm -q --whatprovides SuSEfirewall2" 0
-Execute	.target.bash "/bin/systemctl is-enabled SuSEfirewall2.service" 0
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password show SuSEfirewall2.service  --property=Id  --property=MainPID  --property=Description  --property=LoadState  --property=ActiveState  --property=SubState  --property=UnitFileState  --property=FragmentPath " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Read	.etc.sysctl_conf."net.ipv4.ip_forward" nil
+Read	.etc.sysctl_conf."net.ipv6.conf.all.forwarding" nil
 Dir	.network.section: ["eth0", "eth1", "eth2", "eth3", "eth4", "eth5", "eth5.23"]
 Dir	.network.value."eth0": ["BOOTPROTO", "STARTMODE"]
 Read	.network.value."eth0".BOOTPROTO "dhcp4"
@@ -104,7 +106,7 @@ Read	.network.value."eth5.23".STARTMODE "auto"
 Read	.network.value."eth5.23".VLAN_ID "23"
 Read	.probe.architecture "i386"
 Read	.sysconfig.console.CONSOLE_ENCODING "UTF-8"
-Execute	.target.bash_output "locale -k charmap" $["exit":0, "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output "locale -k charmap" $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
 Read	.target.size "/etc/install.inf" 27
 Dir	.etc.install_inf: []
 Read	.target.string "/proc/cmdline" "laptop.suse.cz"
@@ -202,8 +204,8 @@ Read	.target.stat "/sys/class/net/eth5.23/type" $["exists":true]
 Read	.target.string "/sys/class/net/eth5.23/type" "laptop.suse.cz"
 Read	.target.stat "/sys/class/net/eth5.23/type" $["exists":true]
 Read	.target.string "/sys/class/net/eth5.23/type" "laptop.suse.cz"
-Execute	.target.bash_output "hostname --fqdn" $["exit":0, "stdout":"laptop.suse.cz"]
-Execute	.target.bash_output "hostname --fqdn" $["exit":0, "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output "hostname --fqdn" $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output "hostname --fqdn" $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
 Return	$["dns":$["nameservers":["208.67.222.222", "208.67.220.220"], "searches":["suse.cz", "suse.de"]], "hostname":$["dhcp_hostname":"1", "domain":"suse.cz", "name":"laptop"], "interfaces":$["eth0":$["bootproto":"dhcp4", "mtu":"", "startmode":"manual"], "eth1":$["bootproto":"static", "ipaddr":"1.2.3.4/24", "mtu":"1234", "startmode":"auto"], "eth2":$["bootproto":"static", "ipaddr":"1.2.3.5/24", "mtu":"", "startmode":"auto"], "eth3":$["bootproto":"static", "ipaddr":"1.2.3.6/24", "mtu":"", "startmode":"auto"], "eth4":$["bootproto":"static", "ipaddr":"1.2.3.7/24", "mtu":"", "startmode":"auto"], "eth5":$["bootproto":"static", "ipaddr":"", "mtu":"", "startmode":"auto"], "eth5.23":$["bootproto":"static", "ipaddr":"1.2.3.8/24", "mtu":"", "startmode":"auto", "vlan_etherdevice":"eth5", "vlan_id":"23"]], "routes":$["default":$["via":"10.20.30.40"]]]
 Dump	Testing YaPI Write
 Dir	.network.section: ["eth0", "eth1", "eth2", "eth3", "eth4", "eth5", "eth5.23"]
@@ -268,11 +270,18 @@ Read	.target.string "/sys/class/net/eth0/type" "laptop.suse.cz"
 Write	.network.value."eth0".BOOTPROTO "dhcp4" true
 Write	.network.value."eth0".STARTMODE "auto" true
 Write	.network nil true
-Execute	.target.bash_output "/bin/systemctl restart network.service" $["TERM":"raw"] $["exit":0, "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password show network.service  --property=Id  --property=MainPID  --property=Description  --property=LoadState  --property=ActiveState  --property=SubState  --property=UnitFileState  --property=FragmentPath " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password restart network.service " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password show network.service  --property=Id  --property=MainPID  --property=Description  --property=LoadState  --property=ActiveState  --property=SubState  --property=UnitFileState  --property=FragmentPath " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
 Read	.target.size "/etc/sysconfig/network/routes" 27
 Read	.routes [$["destination":"default", "gateway":"10.20.30.40"]]
-Execute	.target.bash "/bin/systemctl is-enabled SuSEfirewall2.service" 0
-Execute	.target.bash "/bin/systemctl is-enabled SuSEfirewall2.service" 0
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password show SuSEfirewall2.service  --property=Id  --property=MainPID  --property=Description  --property=LoadState  --property=ActiveState  --property=SubState  --property=UnitFileState  --property=FragmentPath " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Read	.etc.sysctl_conf."net.ipv4.ip_forward" nil
+Read	.etc.sysctl_conf."net.ipv6.conf.all.forwarding" nil
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password show SuSEfirewall2.service  --property=Id  --property=MainPID  --property=Description  --property=LoadState  --property=ActiveState  --property=SubState  --property=UnitFileState  --property=FragmentPath " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Write	.etc.sysctl_conf."net.ipv4.ip_forward" "0" true
+Write	.etc.sysctl_conf."net.ipv6.conf.all.forwarding" "0" true
+Write	.etc.sysctl_conf nil true
 Execute	.target.bash "echo 0 > /proc/sys/net/ipv4/ip_forward" 0
 Execute	.target.bash "echo 0 > /proc/sys/net/ipv6/conf/all/forwarding" 0
 Read	.target.size "/etc/sysconfig/network/routes" 27
@@ -342,7 +351,9 @@ Write	.network.value."eth3".BOOTPROTO "static" true
 Write	.network.value."eth3".IPADDR "1.2.3.7/24" true
 Write	.network.value."eth3".STARTMODE "auto" true
 Write	.network nil true
-Execute	.target.bash_output "/bin/systemctl restart network.service" $["TERM":"raw"] $["exit":0, "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password show network.service  --property=Id  --property=MainPID  --property=Description  --property=LoadState  --property=ActiveState  --property=SubState  --property=UnitFileState  --property=FragmentPath " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password restart network.service " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password show network.service  --property=Id  --property=MainPID  --property=Description  --property=LoadState  --property=ActiveState  --property=SubState  --property=UnitFileState  --property=FragmentPath " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
 Dir	.network.section: ["eth0", "eth1", "eth2", "eth3", "eth4", "eth5", "eth5.23"]
 Dir	.network.value."eth0": ["BOOTPROTO", "STARTMODE"]
 Read	.network.value."eth0".BOOTPROTO "dhcp4"
@@ -408,4 +419,6 @@ Write	.network.value."eth5.23".IPADDR "1.2.3.8/24" true
 Write	.network.value."eth5.23".STARTMODE "auto" true
 Write	.network.value."eth5.23".VLAN_ID "42" true
 Write	.network nil true
-Execute	.target.bash_output "/bin/systemctl restart network.service" $["TERM":"raw"] $["exit":0, "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password show network.service  --property=Id  --property=MainPID  --property=Description  --property=LoadState  --property=ActiveState  --property=SubState  --property=UnitFileState  --property=FragmentPath " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password restart network.service " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password show network.service  --property=Id  --property=MainPID  --property=Description  --property=LoadState  --property=ActiveState  --property=SubState  --property=UnitFileState  --property=FragmentPath " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
