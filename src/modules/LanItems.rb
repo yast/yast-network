@@ -857,25 +857,13 @@ module Yast
 
     # get list of all configurations for "netcard" macro in NetworkInterfaces module
     def getNetworkInterfaces
-      confs = []
       configurations = NetworkInterfaces.FilterDevices("netcard")
+      devtypes = NetworkInterfaces.CardRegex["netcard"].to_s.split("|")
 
-      Builtins.foreach(
-        Builtins.splitstring(
-          Ops.get(NetworkInterfaces.CardRegex, "netcard", ""),
-          "|"
-        )
-      ) do |devtype|
-        Builtins.foreach(
-          Convert.convert(
-            Map.Keys(Ops.get_map(configurations, devtype, {})),
-            :from => "list",
-            :to   => "list <string>"
-          )
-        ) { |file| confs = Builtins.add(confs, file) }
+      devtypes.inject([]) do |acc, type|
+        conf = configurations[type].to_h
+        acc.concat(conf.keys)
       end
-
-      deep_copy(confs)
     end
 
     def FindAndSelect(device)
@@ -1285,7 +1273,7 @@ module Yast
             IsEmpty(NetworkInterfaces.Current["WIRELESS_KEY_0"])
 
             # avoid colons
-            ifcfg_name.tr!(":", "/")
+            ifcfg_name = ifcfg_name.tr(":", "/")
             href = "lan--wifi-encryption-" + ifcfg_name
             # interface summary: WiFi without encryption
             warning = HTML.Colorize(_("Warning: no encryption is used."), "red")

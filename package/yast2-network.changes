@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Mar 27 08:11:59 UTC 2014 - mfilka@suse.com
+
+- bnc#869776
+  - fixed internal error raised when building interface overview
+- 3.1.39 
+
+-------------------------------------------------------------------
 Mon Mar 24 23:18:43 UTC 2014 - mfilka@suse.com
 
 - bnc#869353
