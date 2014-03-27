@@ -1285,7 +1285,7 @@ module Yast
             IsEmpty(NetworkInterfaces.Current["WIRELESS_KEY_0"])
 
             # avoid colons
-            ifcfg_name.tr!(":", "/")
+            ifcfg_name = ifcfg_name.tr(":", "/")
             href = "lan--wifi-encryption-" + ifcfg_name
             # interface summary: WiFi without encryption
             warning = HTML.Colorize(_("Warning: no encryption is used."), "red")
