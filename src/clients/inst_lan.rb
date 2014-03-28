@@ -48,6 +48,9 @@ module Yast
       Yast.include self, "network/lan/cmdline.rb"
       Yast.include self, "network/lan/wizards.rb"
 
+      manual_conf_request = GetInstArgs.argmap["skip_detection"] || false
+      log_info("Lan module forces manual configuration: #{manual_conf_request}")
+
       # keep network configuration state in @@conf_net to gurantee same
       # behavior when walking :back in installation workflow
       if !defined?(@@network_configured)
@@ -56,7 +59,7 @@ module Yast
 
       log.info("Configured network found: #{@@network_configured}")
 
-      if @@network_configured
+      if @@network_configured && !manual_conf_request
         ret = GetInstArgs.going_back ? :back : :next
       else
         ret = LanSequence()
