@@ -49,7 +49,7 @@ module Yast
       Yast.include self, "network/lan/wizards.rb"
 
       manual_conf_request = GetInstArgs.argmap["skip_detection"] || false
-      log_info("Lan module forces manual configuration: #{manual_conf_request}")
+      log.info("Lan module forces manual configuration: #{manual_conf_request}")
 
       # keep network configuration state in @@conf_net to gurantee same
       # behavior when walking :back in installation workflow
