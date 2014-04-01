@@ -1838,6 +1838,14 @@ module Yast
       true
     end
 
+    # Sets device map items related to dhclient
+    def setup_dhclient_options(devmap)
+      devmap["DHCLIENT_SET_DOWN_LINK"] = "yes" if @hotplug == "pcmcia"
+      devmap["DHCLIENT_SET_DEFAULT_ROUTE"] = @set_default_route ? "yes" : "no" if isCurrentDHCP
+
+      return devmap
+    end
+
     # Commit pending operation
     # @return true if success
     def Commit
@@ -1888,8 +1896,7 @@ module Yast
         end
         Ops.set(newdev, "NAME", @description)
 
-        Ops.set(newdev, "DHCLIENT_SET_DOWN_LINK", "yes") if @hotplug == "pcmcia"
-        newdev["DHCLIENT_SET_DEFAULT_ROUTE"] = @set_default_route ? "yes" : "no" if isCurrentDHCP
+        newdev = setup_dhclient_options(newdev)
 
         case @type
         when "bond"
@@ -1913,7 +1920,7 @@ module Yast
         when "vlan"
           Ops.set(newdev, "ETHERDEVICE", @vlan_etherdevice)
           Ops.set(newdev, "VLAN_ID", @vlan_id)
-        
+
         when "br"
           Ops.set(newdev, "BRIDGE_PORTS", @bridge_ports)
           Ops.set(newdev, "BRIDGE", "yes")
