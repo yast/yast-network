@@ -231,6 +231,7 @@ module Yast
         "REMOTE_IPADDR"                => "",
         "NETMASK"                      => "",
         "MTU"                          => "",
+        "DHCLIENT_SET_DEFAULT_ROUTE"   => "no",
         "LLADDR"                       => "00:00:00:00:00:00",
         "ETHTOOL_OPTIONS"              => "",
         "NAME"                         => "",
@@ -1582,6 +1583,7 @@ module Yast
       @prefix = GetDeviceVar(devmap, defaults, "PREFIXLEN")
       @remoteip = GetDeviceVar(devmap, defaults, "REMOTE_IPADDR")
       @netmask = GetDeviceVar(devmap, defaults, "NETMASK")
+      @set_default_route = GetDeviceVar(devmap, defaults, "DHCLIENT_SET_DEFAULT_ROUTE") == "yes"
 
       @mtu = GetDeviceVar(devmap, defaults, "MTU")
       @ethtool_options = GetDeviceVar(devmap, defaults, "ETHTOOL_OPTIONS")
@@ -1887,9 +1889,9 @@ module Yast
         Ops.set(newdev, "NAME", @description)
 
         Ops.set(newdev, "DHCLIENT_SET_DOWN_LINK", "yes") if @hotplug == "pcmcia"
+        newdev["DHCLIENT_SET_DEFAULT_ROUTE"] = @set_default_route ? "yes" : "no" if isCurrentDHCP
 
-
-        case @type 
+        case @type
         when "bond"
           i = 0
           Builtins.foreach(@bond_slaves) do |slave|
