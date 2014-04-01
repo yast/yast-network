@@ -88,71 +88,40 @@ module Yast
       if @func == "MakeProposal"
         # Summary is visible only if installing over VNC
         # and if firewall is enabled - otherwise port could not be blocked
-        @vnc_proposal = Linuxrc.vnc && SuSEFirewall4Network.Enabled1stStage ?
-          Ops.add(
-            Ops.add(
-              "<li>",
-              SuSEFirewall4Network.EnabledVnc1stStage ?
-                Builtins.sformat(
-                  _("VNC ports will be open (<a href=\"%1\">close</a>)"),
-                  @LINK_DISABLE_VNC
-                ) :
-                Builtins.sformat(
-                  _("VNC ports will be blocked (<a href=\"%1\">open</a>)"),
-                  @LINK_ENABLE_VNC
-                )
-            ),
-            "</li>\n"
-          ) :
-          ""
+        vnc_proposal_element = ""
+        if Linuxrc.vnc && SuSEFirewall4Network.Enabled1stStage
+          vnc_proposal = SuSEFirewall4Network.EnabledVnc1stStage ?
+            _("VNC ports will be open (<a href=\"%s\">close</a>)") %
+              @LINK_DISABLE_VNC
+            : _("VNC ports will be blocked (<a href=\"%s\">open</a>)") %
+              @LINK_ENABLE_VNC
+          vnc_proposal_element = "<li>#{vnc_proposal}</li>"
+        end
 
-        @output = Ops.add(
-          Ops.add(
-            Ops.add(
-              Ops.add(
-                Ops.add(
-                  Ops.add(
-                    Ops.add(
-                      "<ul>\n" + "<li>",
-                      SuSEFirewall4Network.Enabled1stStage ?
-                        Builtins.sformat(
-                          _(
-                            "Firewall will be enabled (<a href=\"%1\">disable</a>)"
-                          ),
-                          @LINK_DISABLE_FIREWALL
-                        ) :
-                        Builtins.sformat(
-                          _(
-                            "Firewall will be disabled (<a href=\"%1\">enable</a>)"
-                          ),
-                          @LINK_ENABLE_FIREWALL
-                        )
-                    ),
-                    "</li>\n"
-                  ),
-                  # Summary is visible even if firewall is disabled - it also installs and enables the SSHD service
-                  "<li>"
-                ),
-                SuSEFirewall4Network.EnabledSsh1stStage ?
-                  Builtins.sformat(
-                    _(
-                      "SSH service will be enabled, SSH port will be open (<a href=\"%1\">disable and close</a>)"
-                    ),
-                    @LINK_DISABLE_SSH
-                  ) :
-                  Builtins.sformat(
-                    _(
-                      "SSH service will be disabled, SSH port will be blocked (<a href=\"%1\">enable and open</a>)"
-                    ),
-                    @LINK_ENABLE_SSH
-                  )
-              ),
-              "</li>\n"
-            ),
-            @vnc_proposal
-          ),
-          "</ul>\n"
-        )
+        firewall_proposal = SuSEFirewall4Network.Enabled1stStage ?
+            _(
+              "Firewall will be enabled (<a href=\"%s\">disable</a>)"
+            ) % @LINK_DISABLE_FIREWALL
+          :
+            _(
+              "Firewall will be disabled (<a href=\"%s\">enable</a>)"
+            ) % @LINK_ENABLE_FIREWALL
+
+        ssh_proposal = SuSEFirewall4Network.EnabledSsh1stStage ?
+            _(
+              "SSH service will be enabled, SSH port will be open (<a href=\"%s\">disable and close</a>)"
+            ) % @LINK_DISABLE_SSH
+          :
+            _(
+              "SSH service will be disabled, SSH port will be blocked (<a href=\"%s\">enable and open</a>)"
+            ) % @LINK_ENABLE_SSH
+
+
+
+        @output = "<ul>\n<li>#{firewall_proposal}</li>\n" +
+                  "<li>#{ssh_proposal}</li>\n" +
+                  vnc_proposal_element +
+                  "</ul>\n"
 
         @ret = {
           "preformatted_proposal" => @output,
