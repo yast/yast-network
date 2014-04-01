@@ -45,8 +45,10 @@ module Yast
 
       @LINK_ENABLE_FIREWALL = "firewall--enable_firewall_in_proposal"
       @LINK_DISABLE_FIREWALL = "firewall--disable_firewall_in_proposal"
-      @LINK_ENABLE_SSH = "firewall--enable_ssh_in_proposal"
-      @LINK_DISABLE_SSH = "firewall--disable_ssh_in_proposal"
+      @LINK_ENABLE_SSH = "firewall--enable_ssh_port_in_proposal"
+      @LINK_DISABLE_SSH = "firewall--disable_ssh_port_in_proposal"
+      @LINK_ENABLE_SSHD = "firewall--enable_sshd_in_proposal"
+      @LINK_DISABLE_SSHD = "firewall--disable_sshd_in_proposal"
       @LINK_ENABLE_VNC = "firewall--enable_vnc_in_proposal"
       @LINK_DISABLE_VNC = "firewall--disable_vnc_in_proposal"
       @LINK_FIREWALL_DIALOG = "firewall_stage1"
@@ -55,9 +57,10 @@ module Yast
       if !SuSEFirewallProposal.GetProposalInitialized
         # variables from control file
         Builtins.y2milestone(
-          "Default firewall values: enable_firewall=%1, enable_ssh=%2",
+          "Default firewall values: enable_firewall=%1, enable_ssh=%2 enable_sshd=%3",
           ProductFeatures.GetBooleanFeature("globals", "enable_firewall"),
-          ProductFeatures.GetBooleanFeature("globals", "firewall_enable_ssh")
+          ProductFeatures.GetBooleanFeature("globals", "firewall_enable_ssh"),
+          ProductFeatures.GetBooleanFeature("globals", "enable_sshd")
         )
 
         SuSEFirewall4Network.SetEnabled1stStage(
@@ -67,9 +70,13 @@ module Yast
         #we're installing over SSH, propose opening SSH port (bnc#535206)
         if Linuxrc.usessh
           SuSEFirewall4Network.SetSshEnabled1stStage(true)
+          SuSEFirewall4Network.SetSshdEnabled(true)
         else
           SuSEFirewall4Network.SetSshEnabled1stStage(
             ProductFeatures.GetBooleanFeature("globals", "firewall_enable_ssh")
+          )
+          SuSEFirewall4Network.SetSshdEnabled1stStage(
+            ProductFeatures.GetBooleanFeature("globals", "enable_sshd")
           )
         end
 
@@ -109,17 +116,28 @@ module Yast
 
         ssh_proposal = SuSEFirewall4Network.EnabledSsh1stStage ?
             _(
-              "SSH service will be enabled, SSH port will be open (<a href=\"%s\">disable and close</a>)"
+              "SSH port will be open (<a href=\"%s\">close</a>)"
             ) % @LINK_DISABLE_SSH
           :
             _(
-              "SSH service will be disabled, SSH port will be blocked (<a href=\"%s\">enable and open</a>)"
+              "SSH port will be blocked (<a href=\"%s\">open</a>)"
             ) % @LINK_ENABLE_SSH
+
+        sshd_proposal = SuSEFirewall4Network.EnabledSsh ?
+            _(
+              "SSH service will be enabled (<a href=\"%s\">disable</a>)"
+            ) % @LINK_DISABLE_SSHD
+          :
+            _(
+              "SSH service will be disabled (<a href=\"%s\">enable</a>)"
+            ) % @LINK_ENABLE_SSHD
+
 
 
 
         @output = "<ul>\n<li>#{firewall_proposal}</li>\n" +
                   "<li>#{ssh_proposal}</li>\n" +
+                  "<li>#{sshd_proposal}</li>\n" +
                   vnc_proposal_element +
                   "</ul>\n"
 
@@ -131,6 +149,8 @@ module Yast
             @LINK_DISABLE_FIREWALL,
             @LINK_ENABLE_SSH,
             @LINK_DISABLE_SSH,
+            @LINK_ENABLE_SSHD,
+            @LINK_DISABLE_SSHD,
             @LINK_ENABLE_VNC,
             @LINK_DISABLE_VNC
           ]
@@ -158,11 +178,17 @@ module Yast
           )
         elsif @chosen_link == @LINK_ENABLE_SSH
           Builtins.y2milestone("Enabling SSH")
-          PackagesProposal.AddResolvables(@PROPOSAL_ID, :package, ["openssh"])
           SuSEFirewall4Network.SetSshEnabled1stStage(true)
         elsif @chosen_link == @LINK_DISABLE_SSH
           Builtins.y2milestone("Disabling SSH")
           SuSEFirewall4Network.SetSshEnabled1stStage(false)
+        elsif @chosen_link == @LINK_ENABLE_SSHD
+          Builtins.y2milestone("Enabling SSHD")
+          PackagesProposal.AddResolvables(@PROPOSAL_ID, :package, ["openssh"])
+          SuSEFirewall4Network.SetSshdEnabled(true)
+        elsif @chosen_link == @LINK_DISABLE_SSHD
+          Builtins.y2milestone("Disabling SSHD")
+          SuSEFirewall4Network.SetSshdEnabled(false)
           PackagesProposal.RemoveResolvables(
             @PROPOSAL_ID,
             :package,
@@ -231,10 +257,19 @@ module Yast
                   CheckBox(
                     Id("open_ssh_port"),
                     # TRANSLATORS: check-box label
-                    _("Open SSH Port and Enable SSH Service"),
+                    _("Open SSH Port"),
                     SuSEFirewall4Network.EnabledSsh1stStage
                   )
                 ),
+                Left(
+                  CheckBox(
+                    Id("enable_sshd"),
+                    # TRANSLATORS: check-box label
+                    _("Enable SSH Service"),
+                    SuSEFirewall4Network.EnabledSshd
+                  )
+                ),
+
                 Linuxrc.vnc ? vnc_support : Empty()
               )
             )
@@ -253,7 +288,7 @@ module Yast
         ) +
         _(
           "<p>With enabled firewall, you can decide whether to open firewall port for SSH\n" +
-            "service and allow remote SSH logins. This will also enable SSH service (i.e. it\n" +
+            "service and allow remote SSH logins. Independentlu you can also enable SSH service (i.e. it\n" +
             "will be started on computer boot).</p>"
         ) +
         (Linuxrc.vnc ?
@@ -315,6 +350,10 @@ module Yast
             SuSEFirewall4Network.SetSshEnabled1stStage(open_ssh_port)
             SuSEFirewall4Network.SetVncEnabled1stStage(open_vnc_port)
           end
+
+          SuSEFirewall4Network.SetSshdEnabled(
+            UI::QueryWidget(Id("enable_sshd"), :Value)
+          )
         end
 
         # anything but enabling the firewall closes this dialog
