@@ -44,6 +44,7 @@ module Yast
 
       @firewall_enabled_1st_stage = false
       @ssh_enabled_1st_stage = false
+      @sshd_enabled = false
       @vnc_enabled_1st_stage = false
     end
 
@@ -249,6 +250,19 @@ module Yast
       @ssh_enabled_1st_stage
     end
 
+    # Sets whether start sshd
+    # @param boolean new state
+    def SetSshdEnabled(enabled)
+      @sshd_enabled = enabled
+
+      nil
+    end
+
+    # Returns whether sshd will be enabled
+    def EnabledSshd
+      @sshd_enabled
+    end
+
     # Sets whether VNC ports should be opened in firewall
     # @param boolean new state
     def SetVncEnabled1stStage(enabled)
@@ -276,6 +290,8 @@ module Yast
     publish :function => :Enabled1stStage, :type => "boolean ()"
     publish :function => :SetSshEnabled1stStage, :type => "void (boolean)"
     publish :function => :EnabledSsh1stStage, :type => "boolean ()"
+    publish :function => :SetSshdEnabled, :type => "void (boolean)"
+    publish :function => :EnabledSshd, :type => "boolean ()"
     publish :function => :SetVncEnabled1stStage, :type => "void (boolean)"
     publish :function => :EnabledVnc1stStage, :type => "boolean ()"
   end

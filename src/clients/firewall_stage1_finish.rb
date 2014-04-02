@@ -57,6 +57,7 @@ module Yast
       #we have those from the proposal
       @fw_enabled = SuSEFirewall4Network.Enabled1stStage
       @ssh_enabled = SuSEFirewall4Network.EnabledSsh1stStage
+      @sshd_enabled = SuSEFirewall4Network.EnabledSshd
       @vnc_enabled = SuSEFirewall4Network.EnabledVnc1stStage
 
       if @func == "Info"
@@ -94,7 +95,10 @@ module Yast
             SuSEFirewall.GetKnownFirewallZones,
             true
           )
-          #enable SSH service if the port is to be opened (bnc#537980)
+        end
+
+        if @sshd_enabled
+          #enable SSH service independent of port open (bnc#865056)
           Service.Enable("sshd")
         end
 

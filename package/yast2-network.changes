@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Apr  2 09:22:07 UTC 2014 - jreidinger@suse.com
+
+- split enabling sshd and opening firewall port in installation
+  (bnc#865056)
+- 3.1.42
+
+-------------------------------------------------------------------
 Mon Mar 31 08:53:01 CEST 2014 - locilka@suse.com
 
 - Fixed calling logging function in inst_lan (bnc#871091)
