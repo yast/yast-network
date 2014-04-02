@@ -672,7 +672,7 @@ module Yast
           :from => "list",
           :to   => "list <string>"
         )
-      ) { |key2| StoreHnWidget(key2, event) }
+      ) { |key2| StoreHnWidget(key2, event) if UI.QueryWidget(Id(key2), :Enabled) }
 
       StoreHnSettings()
 
