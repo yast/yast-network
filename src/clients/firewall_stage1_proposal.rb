@@ -76,7 +76,7 @@ module Yast
           SuSEFirewall4Network.SetSshEnabled1stStage(
             ProductFeatures.GetBooleanFeature("globals", "firewall_enable_ssh")
           )
-          SuSEFirewall4Network.SetSshdEnabled1stStage(
+          SuSEFirewall4Network.SetSshdEnabled(
             ProductFeatures.GetBooleanFeature("globals", "enable_sshd")
           )
         end
@@ -124,7 +124,7 @@ module Yast
               "SSH port will be blocked (<a href=\"%s\">open</a>)"
             ) % LINK_OPEN_SSH_PORT
 
-        sshd_proposal = SuSEFirewall4Network.EnabledSsh ?
+        sshd_proposal = SuSEFirewall4Network.EnabledSshd ?
             _(
               "SSH service will be enabled (<a href=\"%s\">disable</a>)"
             ) % LINK_DISABLE_SSHD
