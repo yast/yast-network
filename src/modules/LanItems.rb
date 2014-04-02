@@ -497,14 +497,21 @@ module Yast
     # Updates device name.
     #
     # It updates device's udev rules and config name.
+    # Updating config name means that old configuration is deleted from
+    # the system.
     #
     # Returns new name
     def SetItemName( itemId, name)
-      SetItemUdev("NAME", name)
+      if name && !name.empty?
+        SetItemUdev("NAME", name)
+      else
+        # rewrite rule for empty name is meaningless
+        @Items[itemId].delete("udev")
+      end
 
       if @Items[ itemId].has_key?( "ifcfg")
         NetworkInterfaces.Delete2( @Items[ itemId][ "ifcfg"])
-        @Items[ itemId][ "ifcfg"] = name
+        @Items[ itemId][ "ifcfg"] = name.to_s
       end
 
       name
@@ -513,6 +520,8 @@ module Yast
     # Updates current device name.
     #
     # It updates device's udev rules and config name.
+    # Updating config name means that old configuration is deleted from
+    # the system.
     #
     # Returns new name
     def SetCurrentName( name)
@@ -848,25 +857,13 @@ module Yast
 
     # get list of all configurations for "netcard" macro in NetworkInterfaces module
     def getNetworkInterfaces
-      confs = []
       configurations = NetworkInterfaces.FilterDevices("netcard")
+      devtypes = NetworkInterfaces.CardRegex["netcard"].to_s.split("|")
 
-      Builtins.foreach(
-        Builtins.splitstring(
-          Ops.get(NetworkInterfaces.CardRegex, "netcard", ""),
-          "|"
-        )
-      ) do |devtype|
-        Builtins.foreach(
-          Convert.convert(
-            Map.Keys(Ops.get_map(configurations, devtype, {})),
-            :from => "list",
-            :to   => "list <string>"
-          )
-        ) { |file| confs = Builtins.add(confs, file) }
+      devtypes.inject([]) do |acc, type|
+        conf = configurations[type].to_h
+        acc.concat(conf.keys)
       end
-
-      deep_copy(confs)
     end
 
     def FindAndSelect(device)
@@ -1276,7 +1273,7 @@ module Yast
             IsEmpty(NetworkInterfaces.Current["WIRELESS_KEY_0"])
 
             # avoid colons
-            ifcfg_name.tr!(":", "/")
+            ifcfg_name = ifcfg_name.tr(":", "/")
             href = "lan--wifi-encryption-" + ifcfg_name
             # interface summary: WiFi without encryption
             warning = HTML.Colorize(_("Warning: no encryption is used."), "red")
@@ -2235,38 +2232,39 @@ module Yast
       deep_copy(tosel)
     end
 
-    def DeleteItem
-      Builtins.y2milestone("deleting ... %1", Ops.get_map(@Items, @current, {}))
-      ifcfg = Ops.get_string(@Items, [@current, "ifcfg"], "")
-      hwcfg = Ops.get_string(@Items, [@current, "hwcfg"], "")
+    # Deletes item and its configuration
+    #
+    # Item for deletion is searched using device name
+    def delete_dev(name)
+      FindAndSelect(name)
+      DeleteItem()
+    end
 
-      if IsNotEmpty(ifcfg)
-        NetworkInterfaces.Delete(ifcfg)
+    # Deletes the {current} item and its configuration
+    def DeleteItem
+      return if @current < 0
+      return if @Items.nil? || @Items.empty?
+
+      log.info("DeleteItem: #{@Items[@current]}")
+
+      if IsCurrentConfigured()
+        SetCurrentName("")
         NetworkInterfaces.Commit
-        Ops.set(@Items, [@current, "ifcfg"], "")
       end
-      if !Ops.greater_than(
-          Builtins.size(Ops.get_map(@Items, [@current, "hwinfo"], {})),
-          0
-        )
-        tmp_items = {}
-        Builtins.foreach(@Items) do |key, value|
-          if key == @current
-            next
-          else
-            if Ops.less_than(key, @current)
-              Ops.set(tmp_items, key, Ops.get_map(@Items, key, {}))
-            else
-              Ops.set(
-                tmp_items,
-                Ops.subtract(key, 1),
-                Ops.get_map(@Items, key, {})
-              )
-            end
-          end
-        end
-        @Items = deep_copy(tmp_items)
+
+      current_item = @Items[@current]
+
+      if current_item["hwinfo"].nil? || current_item["hwinfo"].empty?
+        # size is always > 0 here and items are numbered 0, 1, ..., size -1
+        delete_index = @Items.size - 1
+
+        @Items[@current] = @Items[delete_index] if delete_index != @current
+        @Items.delete(delete_index)
+
+        # item was deleted, so original @current is invalid
+        @current = -1
       end
+
       SetModified()
 
       nil

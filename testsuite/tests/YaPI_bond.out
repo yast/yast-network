@@ -17,4 +17,6 @@ Write	.network.value."bond0".BOOTPROTO "static" true
 Write	.network.value."bond0".IPADDR "4.3.2.1/24" true
 Write	.network.value."bond0".STARTMODE "auto" true
 Write	.network nil true
-Execute	.target.bash_output "/bin/systemctl restart network.service" $["TERM":"raw"] $["exit":0, "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password show network.service  --property=Id  --property=MainPID  --property=Description  --property=LoadState  --property=ActiveState  --property=SubState  --property=UnitFileState  --property=FragmentPath " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password restart network.service " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password show network.service  --property=Id  --property=MainPID  --property=Description  --property=LoadState  --property=ActiveState  --property=SubState  --property=UnitFileState  --property=FragmentPath " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
