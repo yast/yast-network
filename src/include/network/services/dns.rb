@@ -665,14 +665,9 @@ module Yast
     # @param [String] key ignored
     # @param [Hash] event user generated event
     def storeHostnameGlobal(key, event)
-      event = deep_copy(event)
-      Builtins.foreach(
-        Convert.convert(
-          Map.Keys(@hn_settings),
-          :from => "list",
-          :to   => "list <string>"
-        )
-      ) { |key2| StoreHnWidget(key2, event) if UI.QueryWidget(Id(key2), :Enabled) }
+      @hn_settings.keys.each do |key2|
+        StoreHnWidget(key2, event) if UI.QueryWidget(Id(key2), :Enabled)
+      end
 
       StoreHnSettings()
 
