@@ -68,7 +68,7 @@ module Yast
           ProductFeatures.GetBooleanFeature("globals", "enable_firewall")
         )
 
-        #we're installing over SSH, propose opening SSH port (bnc#535206)
+        # we're installing over SSH, propose opening SSH port (bnc#535206)
         if Linuxrc.usessh
           SuSEFirewall4Network.SetSshEnabled1stStage(true)
           SuSEFirewall4Network.SetSshdEnabled(true)
@@ -81,7 +81,7 @@ module Yast
           )
         end
 
-        #we're installing over VNC, propose opening VNC port (bnc#734264)
+        # we're installing over VNC, propose opening VNC port (bnc#734264)
         SuSEFirewall4Network.SetVncEnabled1stStage(true) if Linuxrc.vnc
 
         SuSEFirewallProposal.SetProposalInitialized(true)
@@ -292,7 +292,7 @@ module Yast
         ) +
         _(
           "<p>With enabled firewall, you can decide whether to open firewall port for SSH\n" +
-            "service and allow remote SSH logins. Independentlu you can also enable SSH service (i.e. it\n" +
+            "service and allow remote SSH logins. Independently you can also enable SSH service (i.e. it\n" +
             "will be started on computer boot).</p>"
         ) +
         (Linuxrc.vnc ?
