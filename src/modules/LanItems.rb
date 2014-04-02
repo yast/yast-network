@@ -377,6 +377,28 @@ module Yast
       GetDeviceMap(@current)
     end
 
+    # Sets item's sysconfig device map to given one
+    #
+    # It updates NetworkInterfaces according given map. Map is expected
+    # to be a hash where both key even value are strings
+    def SetDeviceMap(item_id, devmap)
+      devname = GetDeviceName(item_id)
+      return false if devname.nil? || devname.empty?
+
+      NetworkInterfaces.Change2(devname, devmap, false)
+    end
+
+    # Sets one option in items sysconfig device map
+    #
+    # Currently no checks on sysconfig option validity are performed
+    def SetItemSysconfigOpt(item_id, opt, value)
+      devmap = GetDeviceMap(item_id)
+      return false if devmap.nil?
+
+      devmap[opt] = value
+      SetDeviceMap(item_id, devmap)
+    end
+
     # Returns udev rule known for particular item
     def GetItemUdevRule(itemId)
       Ops.get_list(GetLanItem(itemId), ["udev", "net"], [])
