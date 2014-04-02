@@ -28,6 +28,19 @@
 #
 module Yast
   class FirewallStage1ProposalClient < Client
+    PROPOSAL_ID = "fw_1ststage"
+
+    LINK_ENABLE_FIREWALL = "firewall--enable_firewall_in_proposal"
+    LINK_DISABLE_FIREWALL = "firewall--disable_firewall_in_proposal"
+    LINK_OPEN_SSH_PORT = "firewall--enable_ssh_port_in_proposal"
+    LINK_BLOCK_SSH_PORT = "firewall--disable_ssh_port_in_proposal"
+    LINK_ENABLE_SSHD = "firewall--enable_sshd_in_proposal"
+    LINK_DISABLE_SSHD = "firewall--disable_sshd_in_proposal"
+    LINK_ENABLE_VNC = "firewall--enable_vnc_in_proposal"
+    LINK_DISABLE_VNC = "firewall--disable_vnc_in_proposal"
+    LINK_FIREWALL_DIALOG = "firewall_stage1"
+
+
     def main
       Yast.import "UI"
       textdomain "network"
@@ -40,18 +53,6 @@ module Yast
       Yast.import "SuSEFirewall4Network"
       Yast.import "SuSEFirewallProposal"
       Yast.import "Wizard"
-
-      @PROPOSAL_ID = "fw_1ststage"
-
-      @LINK_ENABLE_FIREWALL = "firewall--enable_firewall_in_proposal"
-      @LINK_DISABLE_FIREWALL = "firewall--disable_firewall_in_proposal"
-      @LINK_ENABLE_SSH = "firewall--enable_ssh_port_in_proposal"
-      @LINK_DISABLE_SSH = "firewall--disable_ssh_port_in_proposal"
-      @LINK_ENABLE_SSHD = "firewall--enable_sshd_in_proposal"
-      @LINK_DISABLE_SSHD = "firewall--disable_sshd_in_proposal"
-      @LINK_ENABLE_VNC = "firewall--enable_vnc_in_proposal"
-      @LINK_DISABLE_VNC = "firewall--disable_vnc_in_proposal"
-      @LINK_FIREWALL_DIALOG = "firewall_stage1"
 
       # run this only once
       if !SuSEFirewallProposal.GetProposalInitialized
@@ -99,38 +100,38 @@ module Yast
         if Linuxrc.vnc && SuSEFirewall4Network.Enabled1stStage
           vnc_proposal = SuSEFirewall4Network.EnabledVnc1stStage ?
             _("VNC ports will be open (<a href=\"%s\">close</a>)") %
-              @LINK_DISABLE_VNC
+              LINK_DISABLE_VNC
             : _("VNC ports will be blocked (<a href=\"%s\">open</a>)") %
-              @LINK_ENABLE_VNC
+              LINK_ENABLE_VNC
           vnc_proposal_element = "<li>#{vnc_proposal}</li>"
         end
 
         firewall_proposal = SuSEFirewall4Network.Enabled1stStage ?
             _(
               "Firewall will be enabled (<a href=\"%s\">disable</a>)"
-            ) % @LINK_DISABLE_FIREWALL
+            ) % LINK_DISABLE_FIREWALL
           :
             _(
               "Firewall will be disabled (<a href=\"%s\">enable</a>)"
-            ) % @LINK_ENABLE_FIREWALL
+            ) % LINK_ENABLE_FIREWALL
 
         ssh_proposal = SuSEFirewall4Network.EnabledSsh1stStage ?
             _(
-              "SSH port will be open (<a href=\"%s\">close</a>)"
-            ) % @LINK_DISABLE_SSH
+              "SSH port will be open (<a href=\"%s\">block</a>)"
+            ) % LINK_BLOCK_SSH_PORT
           :
             _(
               "SSH port will be blocked (<a href=\"%s\">open</a>)"
-            ) % @LINK_ENABLE_SSH
+            ) % LINK_OPEN_SSH_PORT
 
         sshd_proposal = SuSEFirewall4Network.EnabledSsh ?
             _(
               "SSH service will be enabled (<a href=\"%s\">disable</a>)"
-            ) % @LINK_DISABLE_SSHD
+            ) % LINK_DISABLE_SSHD
           :
             _(
               "SSH service will be disabled (<a href=\"%s\">enable</a>)"
-            ) % @LINK_ENABLE_SSHD
+            ) % LINK_ENABLE_SSHD
 
 
 
@@ -145,14 +146,14 @@ module Yast
           "preformatted_proposal" => @output,
           "warning_level"         => :warning,
           "links"                 => [
-            @LINK_ENABLE_FIREWALL,
-            @LINK_DISABLE_FIREWALL,
-            @LINK_ENABLE_SSH,
-            @LINK_DISABLE_SSH,
-            @LINK_ENABLE_SSHD,
-            @LINK_DISABLE_SSHD,
-            @LINK_ENABLE_VNC,
-            @LINK_DISABLE_VNC
+            LINK_ENABLE_FIREWALL,
+            LINK_DISABLE_FIREWALL,
+            LINK_OPEN_SSH_PORT,
+            LINK_BLOCK_SSH_PORT,
+            LINK_ENABLE_SSHD,
+            LINK_DISABLE_SSHD,
+            LINK_ENABLE_VNC,
+            LINK_DISABLE_VNC
           ]
         }
       elsif @func == "AskUser"
@@ -160,48 +161,51 @@ module Yast
         @result = :next
         Builtins.y2milestone("User clicked %1", @chosen_link)
 
-        if @chosen_link == @LINK_ENABLE_FIREWALL
+        case @chosen_link
+        when LINK_ENABLE_FIREWALL
           Builtins.y2milestone("Enabling FW")
           SuSEFirewall4Network.SetEnabled1stStage(true)
           PackagesProposal.AddResolvables(
-            @PROPOSAL_ID,
+            PROPOSAL_ID,
             :package,
             ["SuSEfirewall2"]
           )
-        elsif @chosen_link == @LINK_DISABLE_FIREWALL
+        when LINK_DISABLE_FIREWALL
           Builtins.y2milestone("Disabling FW")
           SuSEFirewall4Network.SetEnabled1stStage(false)
           PackagesProposal.RemoveResolvables(
-            @PROPOSAL_ID,
+            PROPOSAL_ID,
             :package,
             ["SuSEfirewall2"]
           )
-        elsif @chosen_link == @LINK_ENABLE_SSH
-          Builtins.y2milestone("Enabling SSH")
+        when LINK_OPEN_SSH_PORT
+          Builtins.y2milestone("Opening SSH port")
           SuSEFirewall4Network.SetSshEnabled1stStage(true)
-        elsif @chosen_link == @LINK_DISABLE_SSH
-          Builtins.y2milestone("Disabling SSH")
+        when LINK_BLOCK_SSH_PORT
+          Builtins.y2milestone("Blocking SSH port")
           SuSEFirewall4Network.SetSshEnabled1stStage(false)
-        elsif @chosen_link == @LINK_ENABLE_SSHD
+        when LINK_ENABLE_SSHD
           Builtins.y2milestone("Enabling SSHD")
-          PackagesProposal.AddResolvables(@PROPOSAL_ID, :package, ["openssh"])
+          PackagesProposal.AddResolvables(PROPOSAL_ID, :package, ["openssh"])
           SuSEFirewall4Network.SetSshdEnabled(true)
-        elsif @chosen_link == @LINK_DISABLE_SSHD
+        when LINK_DISABLE_SSHD
           Builtins.y2milestone("Disabling SSHD")
           SuSEFirewall4Network.SetSshdEnabled(false)
           PackagesProposal.RemoveResolvables(
-            @PROPOSAL_ID,
+            PROPOSAL_ID,
             :package,
             ["openssh"]
           )
-        elsif @chosen_link == @LINK_ENABLE_VNC
+        when LINK_ENABLE_VNC
           Builtins.y2milestone("Enabling VNC")
           SuSEFirewall4Network.SetVncEnabled1stStage(true)
-        elsif @chosen_link == @LINK_DISABLE_VNC
+        when LINK_DISABLE_VNC
           Builtins.y2milestone("Disabling VNC")
           SuSEFirewall4Network.SetVncEnabled1stStage(false)
-        elsif @chosen_link == @LINK_FIREWALL_DIALOG
+        when LINK_FIREWALL_DIALOG
           @result = FirewallDialogSimple()
+        else
+          raise "INTERNAL ERROR: unknown action '#{@chosen_link}' for proposal client"
         end
 
         SuSEFirewallProposal.SetChangedByUser(true)
@@ -214,7 +218,7 @@ module Yast
           "rich_text_title" => _("Firewall and SSH"),
           # Menu entry label
           "menu_title"      => _("&Firewall and SSH"),
-          "id"              => @LINK_FIREWALL_DIALOG
+          "id"              => LINK_FIREWALL_DIALOG
         }
       elsif @func == "Write"
         @ret = { "success" => true }
