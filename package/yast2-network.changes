@@ -54,7 +54,6 @@ Mon Mar 17 10:54:05 UTC 2014 - mfilka@suse.com
 - gh#yast/yast-core#74
   - automatic dhcp configuration is unable to clear unused
     configurations. It blocks starting manual configuration dialog.
->>>>>>> 29e3456fde95c557b4712046d2d99d3a4290fde4
 - 3.1.35
 
 -------------------------------------------------------------------
