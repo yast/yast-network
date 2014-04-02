@@ -369,14 +369,13 @@ module Yast
     # @param [String] key for known keys see hn_settings
     # @param [Object] value value for particular hn_settings key
     def SetHnItem(key, value)
-      value = deep_copy(value)
       Builtins.y2milestone(
         "hn_settings[ \"%1\"] changes '%2' -> '%3'",
         key,
-        Ops.get_string(@hn_settings, key, ""),
+        @hn_settings[key].to_s,
         value
       )
-      Ops.set(@hn_settings, key, value)
+      @hn_settings[key] = value
 
       nil
     end
@@ -666,14 +665,9 @@ module Yast
     # @param [String] key ignored
     # @param [Hash] event user generated event
     def storeHostnameGlobal(key, event)
-      event = deep_copy(event)
-      Builtins.foreach(
-        Convert.convert(
-          Map.Keys(@hn_settings),
-          :from => "list",
-          :to   => "list <string>"
-        )
-      ) { |key2| StoreHnWidget(key2, event) }
+      @hn_settings.keys.each do |key2|
+        StoreHnWidget(key2, event) if UI.QueryWidget(Id(key2), :Enabled)
+      end
 
       StoreHnSettings()
 
