@@ -686,8 +686,8 @@ module Yast
     end
 
     def AddNew
-      @current = Builtins.size(@Items)
-      Ops.set(@Items, @current, { "commited" => false })
+      @current = @Items.to_h.size
+      @Items[@current] = { "commited" => false }
       @operation = :add
 
       nil
