@@ -1868,217 +1868,213 @@ module Yast
       return devmap
     end
 
+    # Sets device map items for device when it is not alias
+    def setup_basic_device_options(devmap)
+      return devmap if !@alias.empty?
+
+      devmap["MTU"] = @mtu
+      devmap["ETHTOOL_OPTIONS"] = @ethtool_options
+      devmap["STARTMODE"] = @startmode
+      devmap["IFPLUGD_PRIORITY"] = @ifplugd_priority.to_i if @startmode == "ifplugd"
+      devmap["BOOTPROTO"] = @bootproto
+      devmap["_aliases"] = @aliases
+
+      log.info("aliases #{@aliases}")
+
+      devmap
+    end
+
     # Commit pending operation
     # @return true if success
     def Commit
-      if @operation == :add || @operation == :edit
-        newdev = {}
-
-        # #104494 - always write IPADDR+NETMASK, even empty
-        Ops.set(newdev, "IPADDR", @ipaddr)
-        if Ops.greater_than(Builtins.size(@prefix), 0)
-          Ops.set(newdev, "PREFIXLEN", @prefix)
-        else
-          Ops.set(newdev, "NETMASK", @netmask)
-        end
-        # #50955 omit computable fields
-        Ops.set(newdev, "BROADCAST", "")
-        Ops.set(newdev, "NETWORK", "")
-
-        Ops.set(newdev, "REMOTE_IPADDR", @remoteip)
-
-        # set LLADDR to sysconfig only for device on layer2 and only these which needs it
-        if @qeth_layer2
-          busid = Ops.get_string(@Items, [@current, "hwinfo", "busid"], "")
-          # sysfs id has changed from css0...
-          sysfs_id = Ops.add("/devices/qeth/", busid)
-          Builtins.y2milestone("busid %1", busid)
-          if s390_device_needs_persistent_mac(sysfs_id, @Hardware)
-            Ops.set(newdev, "LLADDR", @qeth_macaddress)
-          end
-        end
-
-        if @alias == ""
-          Ops.set(newdev, "MTU", @mtu)
-          Ops.set(newdev, "ETHTOOL_OPTIONS", @ethtool_options)
-          Ops.set(newdev, "STARTMODE", @startmode)
-          # it is not in Select yet because we don't have a widget for it
-          if @startmode == "ifplugd"
-            if @ifplugd_priority != nil
-              Ops.set(newdev, "IFPLUGD_PRIORITY", @ifplugd_priority)
-            else
-              Ops.set(
-                newdev,
-                "IFPLUGD_PRIORITY",
-                Ops.get(@ifplugd_priorities, @type, "0")
-              )
-            end
-          end
-          Ops.set(newdev, "BOOTPROTO", @bootproto)
-        end
-        Ops.set(newdev, "NAME", @description)
-
-        newdev = setup_dhclient_options(newdev)
-
-        case @type
-        when "bond"
-          i = 0
-          Builtins.foreach(@bond_slaves) do |slave|
-            Ops.set(newdev, Builtins.sformat("BONDING_SLAVE%1", i), slave)
-            i = Ops.add(i, 1)
-          end
-
-          #assign nil to rest BONDING_SLAVEn to remove them
-          while Ops.less_than(i, @MAX_BOND_SLAVE)
-            Ops.set(newdev, Builtins.sformat("BONDING_SLAVE%1", i), nil)
-            i = Ops.add(i, 1)
-          end
-
-          Ops.set(newdev, "BONDING_MODULE_OPTS", @bond_option)
-
-          #BONDING_MASTER always is yes
-          Ops.set(newdev, "BONDING_MASTER", "yes")
-
-        when "vlan"
-          Ops.set(newdev, "ETHERDEVICE", @vlan_etherdevice)
-          Ops.set(newdev, "VLAN_ID", @vlan_id)
-
-        when "br"
-          Ops.set(newdev, "BRIDGE_PORTS", @bridge_ports)
-          Ops.set(newdev, "BRIDGE", "yes")
-          Ops.set(newdev, "BRIDGE_STP", "off")
-          Ops.set(newdev, "BRIDGE_FORWARDDELAY", "0")
-
-        when "wlan"
-          Ops.set(newdev, "WIRELESS_MODE", @wl_mode)
-          Ops.set(newdev, "WIRELESS_ESSID", @wl_essid)
-          Ops.set(newdev, "WIRELESS_NWID", @wl_nwid)
-          Ops.set(newdev, "WIRELESS_AUTH_MODE", @wl_auth_mode)
-          Ops.set(newdev, "WIRELESS_WPA_PSK", @wl_wpa_psk)
-          Ops.set(newdev, "WIRELESS_KEY_LENGTH", @wl_key_length)
-          # obsoleted by WIRELESS_KEY_0
-          Ops.set(newdev, "WIRELESS_KEY", "") # TODO: delete the varlable
-          Ops.set(newdev, "WIRELESS_KEY_0", Ops.get(@wl_key, 0, ""))
-          Ops.set(newdev, "WIRELESS_KEY_1", Ops.get(@wl_key, 1, ""))
-          Ops.set(newdev, "WIRELESS_KEY_2", Ops.get(@wl_key, 2, ""))
-          Ops.set(newdev, "WIRELESS_KEY_3", Ops.get(@wl_key, 3, ""))
-          Ops.set(
-            newdev,
-            "WIRELESS_DEFAULT_KEY",
-            Builtins.tostring(@wl_default_key)
-          )
-          Ops.set(newdev, "WIRELESS_NICK", @wl_nick)
-          Ops.set(newdev, "WIRELESS_AP_SCANMODE", @wl_ap_scanmode)
-
-          if @wl_wpa_eap != {}
-            Ops.set(
-              newdev,
-              "WIRELESS_EAP_MODE",
-              Ops.get_string(@wl_wpa_eap, "WPA_EAP_MODE", "")
-            )
-            Ops.set(
-              newdev,
-              "WIRELESS_WPA_IDENTITY",
-              Ops.get_string(@wl_wpa_eap, "WPA_EAP_IDENTITY", "")
-            )
-            Ops.set(
-              newdev,
-              "WIRELESS_WPA_PASSWORD",
-              Ops.get_string(@wl_wpa_eap, "WPA_EAP_PASSWORD", "")
-            )
-            Ops.set(
-              newdev,
-              "WIRELESS_WPA_ANONID",
-              Ops.get_string(@wl_wpa_eap, "WPA_EAP_ANONID", "")
-            )
-            Ops.set(
-              newdev,
-              "WIRELESS_CLIENT_CERT",
-              Ops.get_string(@wl_wpa_eap, "WPA_EAP_CLIENT_CERT", "")
-            )
-            Ops.set(
-              newdev,
-              "WIRELESS_CLIENT_KEY",
-              Ops.get_string(@wl_wpa_eap, "WPA_EAP_CLIENT_KEY", "")
-            )
-            Ops.set(
-              newdev,
-              "WIRELESS_CLIENT_KEY_PASSWORD",
-              Ops.get_string(@wl_wpa_eap, "WPA_EAP_CLIENT_KEY_PASSWORD", "")
-            )
-            Ops.set(
-              newdev,
-              "WIRELESS_CA_CERT",
-              Ops.get_string(@wl_wpa_eap, "WPA_EAP_CA_CERT", "")
-            )
-            Ops.set(
-              newdev,
-              "WIRELESS_EAP_AUTH",
-              Ops.get_string(@wl_wpa_eap, "WPA_EAP_AUTH", "")
-            )
-            Ops.set(
-              newdev,
-              "WIRELESS_PEAP_VERSION",
-              Ops.get_string(@wl_wpa_eap, "WPA_EAP_PEAP_VERSION", "")
-            )
-          end
-
-          Ops.set(newdev, "WIRELESS_CHANNEL", @wl_channel)
-          Ops.set(newdev, "WIRELESS_FREQUENCY", @wl_frequency)
-          Ops.set(newdev, "WIRELESS_BITRATE", @wl_bitrate)
-          Ops.set(newdev, "WIRELESS_AP", @wl_accesspoint)
-          Ops.set(newdev, "WIRELESS_POWER", @wl_power ? "yes" : "no")
-
-        when "ib"
-          newdev["IPOIB_MODE"] = @ipoib_mode
-
-        end
-
-        if DriverType(@type) == "ctc"
-          if Ops.get(NetworkConfig.Config, "WAIT_FOR_INTERFACES") == nil ||
-              Ops.less_than(
-                Ops.get_integer(NetworkConfig.Config, "WAIT_FOR_INTERFACES", 0),
-                40
-              )
-            Ops.set(NetworkConfig.Config, "WAIT_FOR_INTERFACES", 40)
-          end
-        end
-
-        if @alias == ""
-          Ops.set(newdev, "_aliases", @aliases)
-          Builtins.y2milestone("aliases %1", @aliases)
-        end
-        if Builtins.contains(["tun", "tap"], @type)
-          newdev = {
-            "BOOTPROTO"             => "static",
-            "STARTMODE"             => "auto",
-            "TUNNEL"                => @type,
-            "TUNNEL_SET_PERSISTENT" => @tunnel_set_persistent ? "yes" : "no",
-            "TUNNEL_SET_OWNER"      => @tunnel_set_owner,
-            "TUNNEL_SET_GROUP"      => @tunnel_set_group
-          }
-        end
-
-        # L3: bnc#585458
-        # FIXME: INTERFACETYPE confuses sysconfig, bnc#458412
-        # Only test when newdev has enough info for GetTypeFromIfcfg to work.
-        implied_type = NetworkInterfaces.GetTypeFromIfcfg(newdev)
-        if implied_type != nil && implied_type != @type
-          Ops.set(newdev, "INTERFACETYPE", @type)
-        end
-
-        NetworkInterfaces.Name = Ops.get_string(@Items, [@current, "ifcfg"], "")
-        NetworkInterfaces.Current = deep_copy(newdev)
-
-        # bnc#752464 - can leak wireless passwords
-        # useful only for debugging. Writes huge struct mostly filled by defaults.
-        Builtins.y2debug("%1", NetworkInterfaces.ConcealSecrets1(newdev))
-
-        Ops.set(@Items, [@current, "ifcfg"], "") if !NetworkInterfaces.Commit
-      else
+      if @operation != :add && @operation != :edit
         Builtins.y2error("Unknown operation: %1", @operation)
         return false
       end
+
+      newdev = {}
+
+      # #104494 - always write IPADDR+NETMASK, even empty
+      Ops.set(newdev, "IPADDR", @ipaddr)
+      if Ops.greater_than(Builtins.size(@prefix), 0)
+        Ops.set(newdev, "PREFIXLEN", @prefix)
+      else
+        Ops.set(newdev, "NETMASK", @netmask)
+      end
+      # #50955 omit computable fields
+      Ops.set(newdev, "BROADCAST", "")
+      Ops.set(newdev, "NETWORK", "")
+
+      Ops.set(newdev, "REMOTE_IPADDR", @remoteip)
+
+      # set LLADDR to sysconfig only for device on layer2 and only these which needs it
+      if @qeth_layer2
+        busid = Ops.get_string(@Items, [@current, "hwinfo", "busid"], "")
+        # sysfs id has changed from css0...
+        sysfs_id = Ops.add("/devices/qeth/", busid)
+        Builtins.y2milestone("busid %1", busid)
+        if s390_device_needs_persistent_mac(sysfs_id, @Hardware)
+          Ops.set(newdev, "LLADDR", @qeth_macaddress)
+        end
+      end
+
+      newdev["NAME"] = @description
+
+      newdev = setup_basic_device_options(newdev)
+      newdev = setup_dhclient_options(newdev)
+
+      case @type
+      when "bond"
+        i = 0
+        Builtins.foreach(@bond_slaves) do |slave|
+          Ops.set(newdev, Builtins.sformat("BONDING_SLAVE%1", i), slave)
+          i = Ops.add(i, 1)
+        end
+
+        #assign nil to rest BONDING_SLAVEn to remove them
+        while Ops.less_than(i, @MAX_BOND_SLAVE)
+          Ops.set(newdev, Builtins.sformat("BONDING_SLAVE%1", i), nil)
+          i = Ops.add(i, 1)
+        end
+
+        Ops.set(newdev, "BONDING_MODULE_OPTS", @bond_option)
+
+        #BONDING_MASTER always is yes
+        Ops.set(newdev, "BONDING_MASTER", "yes")
+
+      when "vlan"
+        Ops.set(newdev, "ETHERDEVICE", @vlan_etherdevice)
+        Ops.set(newdev, "VLAN_ID", @vlan_id)
+
+      when "br"
+        Ops.set(newdev, "BRIDGE_PORTS", @bridge_ports)
+        Ops.set(newdev, "BRIDGE", "yes")
+        Ops.set(newdev, "BRIDGE_STP", "off")
+        Ops.set(newdev, "BRIDGE_FORWARDDELAY", "0")
+
+      when "wlan"
+        Ops.set(newdev, "WIRELESS_MODE", @wl_mode)
+        Ops.set(newdev, "WIRELESS_ESSID", @wl_essid)
+        Ops.set(newdev, "WIRELESS_NWID", @wl_nwid)
+        Ops.set(newdev, "WIRELESS_AUTH_MODE", @wl_auth_mode)
+        Ops.set(newdev, "WIRELESS_WPA_PSK", @wl_wpa_psk)
+        Ops.set(newdev, "WIRELESS_KEY_LENGTH", @wl_key_length)
+        # obsoleted by WIRELESS_KEY_0
+        Ops.set(newdev, "WIRELESS_KEY", "") # TODO: delete the varlable
+        Ops.set(newdev, "WIRELESS_KEY_0", Ops.get(@wl_key, 0, ""))
+        Ops.set(newdev, "WIRELESS_KEY_1", Ops.get(@wl_key, 1, ""))
+        Ops.set(newdev, "WIRELESS_KEY_2", Ops.get(@wl_key, 2, ""))
+        Ops.set(newdev, "WIRELESS_KEY_3", Ops.get(@wl_key, 3, ""))
+        Ops.set(
+          newdev,
+          "WIRELESS_DEFAULT_KEY",
+          Builtins.tostring(@wl_default_key)
+        )
+        Ops.set(newdev, "WIRELESS_NICK", @wl_nick)
+        Ops.set(newdev, "WIRELESS_AP_SCANMODE", @wl_ap_scanmode)
+
+        if @wl_wpa_eap != {}
+          Ops.set(
+            newdev,
+            "WIRELESS_EAP_MODE",
+            Ops.get_string(@wl_wpa_eap, "WPA_EAP_MODE", "")
+          )
+          Ops.set(
+            newdev,
+            "WIRELESS_WPA_IDENTITY",
+            Ops.get_string(@wl_wpa_eap, "WPA_EAP_IDENTITY", "")
+          )
+          Ops.set(
+            newdev,
+            "WIRELESS_WPA_PASSWORD",
+            Ops.get_string(@wl_wpa_eap, "WPA_EAP_PASSWORD", "")
+          )
+          Ops.set(
+            newdev,
+            "WIRELESS_WPA_ANONID",
+            Ops.get_string(@wl_wpa_eap, "WPA_EAP_ANONID", "")
+          )
+          Ops.set(
+            newdev,
+            "WIRELESS_CLIENT_CERT",
+            Ops.get_string(@wl_wpa_eap, "WPA_EAP_CLIENT_CERT", "")
+          )
+          Ops.set(
+            newdev,
+            "WIRELESS_CLIENT_KEY",
+            Ops.get_string(@wl_wpa_eap, "WPA_EAP_CLIENT_KEY", "")
+          )
+          Ops.set(
+            newdev,
+            "WIRELESS_CLIENT_KEY_PASSWORD",
+            Ops.get_string(@wl_wpa_eap, "WPA_EAP_CLIENT_KEY_PASSWORD", "")
+          )
+          Ops.set(
+            newdev,
+            "WIRELESS_CA_CERT",
+            Ops.get_string(@wl_wpa_eap, "WPA_EAP_CA_CERT", "")
+          )
+          Ops.set(
+            newdev,
+            "WIRELESS_EAP_AUTH",
+            Ops.get_string(@wl_wpa_eap, "WPA_EAP_AUTH", "")
+          )
+          Ops.set(
+            newdev,
+            "WIRELESS_PEAP_VERSION",
+            Ops.get_string(@wl_wpa_eap, "WPA_EAP_PEAP_VERSION", "")
+          )
+        end
+
+        Ops.set(newdev, "WIRELESS_CHANNEL", @wl_channel)
+        Ops.set(newdev, "WIRELESS_FREQUENCY", @wl_frequency)
+        Ops.set(newdev, "WIRELESS_BITRATE", @wl_bitrate)
+        Ops.set(newdev, "WIRELESS_AP", @wl_accesspoint)
+        Ops.set(newdev, "WIRELESS_POWER", @wl_power ? "yes" : "no")
+
+      when "ib"
+        newdev["IPOIB_MODE"] = @ipoib_mode
+
+      end
+
+      if DriverType(@type) == "ctc"
+        if Ops.get(NetworkConfig.Config, "WAIT_FOR_INTERFACES") == nil ||
+            Ops.less_than(
+              Ops.get_integer(NetworkConfig.Config, "WAIT_FOR_INTERFACES", 0),
+              40
+            )
+          Ops.set(NetworkConfig.Config, "WAIT_FOR_INTERFACES", 40)
+        end
+      end
+
+      if Builtins.contains(["tun", "tap"], @type)
+        newdev = {
+          "BOOTPROTO"             => "static",
+          "STARTMODE"             => "auto",
+          "TUNNEL"                => @type,
+          "TUNNEL_SET_PERSISTENT" => @tunnel_set_persistent ? "yes" : "no",
+          "TUNNEL_SET_OWNER"      => @tunnel_set_owner,
+          "TUNNEL_SET_GROUP"      => @tunnel_set_group
+        }
+      end
+
+      # L3: bnc#585458
+      # FIXME: INTERFACETYPE confuses sysconfig, bnc#458412
+      # Only test when newdev has enough info for GetTypeFromIfcfg to work.
+      implied_type = NetworkInterfaces.GetTypeFromIfcfg(newdev)
+      if implied_type != nil && implied_type != @type
+        Ops.set(newdev, "INTERFACETYPE", @type)
+      end
+
+      NetworkInterfaces.Name = Ops.get_string(@Items, [@current, "ifcfg"], "")
+      NetworkInterfaces.Current = deep_copy(newdev)
+
+      # bnc#752464 - can leak wireless passwords
+      # useful only for debugging. Writes huge struct mostly filled by defaults.
+      Builtins.y2debug("%1", NetworkInterfaces.ConcealSecrets1(newdev))
+
+      Ops.set(@Items, [@current, "ifcfg"], "") if !NetworkInterfaces.Commit
+
       @modified = true
       @operation = nil
       true
