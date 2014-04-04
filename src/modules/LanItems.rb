@@ -2520,6 +2520,7 @@ module Yast
     publish :variable => :ipaddr, :type => "string"
     publish :variable => :remoteip, :type => "string"
     publish :variable => :netmask, :type => "string"
+    publish :variable => :set_default_route, :type => "boolean"
     publish :variable => :prefix, :type => "string"
     publish :variable => :startmode, :type => "string"
     publish :variable => :ifplugd_priority, :type => "string"
