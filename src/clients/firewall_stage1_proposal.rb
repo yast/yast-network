@@ -368,7 +368,7 @@ module Yast
       Wizard.CloseDialog
       Convert.to_symbol(dialog_ret)
     end
-  end
+  end unless defined? FirewallStage1ProposalClient
 end
 
 Yast::FirewallStage1ProposalClient.new.main
