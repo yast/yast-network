@@ -1881,7 +1881,7 @@ module Yast
     def Commit
       if @operation != :add && @operation != :edit
         Builtins.y2error("Unknown operation: %1", @operation)
-        return false
+        raise ArgumentError, "Unknown operation: #{@operation}"
       end
 
       newdev = {}
