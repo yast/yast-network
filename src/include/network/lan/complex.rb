@@ -511,6 +511,16 @@ module Yast
           when :add
             LanItems.AddNew
             Lan.Add
+
+            # FIXME: This is for backward compatibility only
+            # dhclient needs to set just one dhcp enabled interface to
+            # DHCLIENT_SET_DEFAULT_ROUTE=yes. Otherwise interface is selected more
+            # or less randomly (bnc#868187). However, UI is not ready for such change yet.
+            # As it could easily happen that all interfaces are set to "no" (and
+            # default route is unrecheable in such case) this explicite setup was
+            # added.
+            LanItems.set_default_route = true
+
             return :add
           when :edit
             if LanItems.IsCurrentConfigured
@@ -542,6 +552,15 @@ module Yast
                 # but in this function return will do
                 return nil
               end
+
+              # FIXME: This is for backward compatibility only
+              # dhclient needs to set just one dhcp enabled interface to
+              # DHCLIENT_SET_DEFAULT_ROUTE=yes. Otherwise interface is selected more
+              # or less randomly (bnc#868187). However, UI is not ready for such change yet.
+              # As it could easily happen that all interfaces are set to "no" (and
+              # default route is unrecheable in such case) this explicite setup was
+              # added.
+              LanItems.set_default_route = true
 
               if !DeviceReady(
                   Ops.get_string(

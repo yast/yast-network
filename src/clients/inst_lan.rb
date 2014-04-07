@@ -35,18 +35,16 @@ module Yast
 
     def main
       Yast.import "UI"
-      Yast.import "Label"
-      Yast.import "Lan"
-      Yast.import "RichText"
+      Yast.import "LanItems"
       Yast.import "GetInstArgs"
+
+      Yast.include self, "network/lan/wizards.rb"
 
       textdomain "network"
 
       log.info("----------------------------------------")
       log.info("Lan module started")
 
-      Yast.include self, "network/lan/cmdline.rb"
-      Yast.include self, "network/lan/wizards.rb"
 
       manual_conf_request = GetInstArgs.argmap["skip_detection"] || false
       log.info("Lan module forces manual configuration: #{manual_conf_request}")

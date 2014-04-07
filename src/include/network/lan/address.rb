@@ -168,8 +168,6 @@ module Yast
           )
         },
         "IFCFGID" =>
-          #	"valid_chars": NetworkInterfaces::ValidCharsIfcfg (),
-          #	"handle": HandleIfcfg,
           {
             "widget" => :textentry,
             # ComboBox label
@@ -181,7 +179,6 @@ module Yast
         "TUNNEL"       => {
           "widget"        => :custom,
           "custom_widget" => VBox(
-            Left(CheckBox(Id(:persistent), _("Persistent Tunnel"))),
             HBox(
               InputField(Id(:owner), _("Tunnel owner")),
               InputField(Id(:group), _("Tunnel group"))
@@ -758,11 +755,6 @@ module Yast
     def initTunnel(key)
       Builtins.y2internal("initTunnel %1", @settings)
       UI.ChangeWidget(
-        :persistent,
-        :Value,
-        Ops.get_string(@settings, "TUNNEL_SET_PERSISTENT", "") == "yes"
-      )
-      UI.ChangeWidget(
         :owner,
         :Value,
         Ops.get_string(@settings, "TUNNEL_SET_OWNER", "")
@@ -778,11 +770,6 @@ module Yast
 
     def storeTunnel(key, event)
       event = deep_copy(event)
-      Ops.set(
-        @settings,
-        "TUNNEL_SET_PERSISTENT",
-        Convert.to_boolean(UI.QueryWidget(:persistent, :Value)) ? "yes" : "no"
-      )
       Ops.set(
         @settings,
         "TUNNEL_SET_OWNER",
@@ -1386,7 +1373,6 @@ module Yast
           "BOOTPROTO"             => "static",
           "STARTMODE"             => "auto",
           "TUNNEL"                => LanItems.type,
-          "TUNNEL_SET_PERSISTENT" => LanItems.tunnel_set_persistent ? "yes" : "no",
           "TUNNEL_SET_OWNER"      => LanItems.tunnel_set_owner,
           "TUNNEL_SET_GROUP"      => LanItems.tunnel_set_group
         }
@@ -1605,11 +1591,6 @@ module Yast
       elsif LanItems.type == "br"
         LanItems.bridge_ports = Ops.get_string(@settings, "BRIDGE_PORTS", "")
       elsif Builtins.contains(["tun", "tap"], LanItems.type)
-        LanItems.tunnel_set_persistent = Ops.get_string(
-          @settings,
-          "TUNNEL_SET_PERSISTENT",
-          ""
-        ) == "yes"
         LanItems.tunnel_set_owner = Ops.get_string(
           @settings,
           "TUNNEL_SET_OWNER",
