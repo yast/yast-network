@@ -171,7 +171,6 @@ module Yast
 
 
       # for TUN / TAP devices
-      @tunnel_set_persistent = true
       @tunnel_set_owner = ""
       @tunnel_set_group = ""
 
@@ -273,7 +272,6 @@ module Yast
         # defaults for tun/tap devices
         "TUNNEL_SET_OWNER"             => "",
         "TUNNEL_SET_GROUP"             => "",
-        "TUNNEL_SET_PERSISTENT"        => "yes",
         # Infiniband
         # default mode for IPoIB devices suggested in fate#315501
         "IPOIB_MODE"                   => "connected"
@@ -1630,11 +1628,6 @@ module Yast
       # tun/tap settings
       @tunnel_set_owner = GetDeviceVar(devmap, defaults, "TUNNEL_SET_OWNER")
       @tunnel_set_group = GetDeviceVar(devmap, defaults, "TUNNEL_SET_GROUP")
-      @tunnel_set_persistent = GetDeviceVar(
-        devmap,
-        defaults,
-        "TUNNEL_SET_PERSISTENT"
-      ) == "yes"
 
       # wireless options
       @wl_mode = GetDeviceVar(devmap, defaults, "WIRELESS_MODE")
@@ -1862,7 +1855,6 @@ module Yast
 
     # Sets device map items related to dhclient
     def setup_dhclient_options(devmap)
-      devmap["DHCLIENT_SET_DOWN_LINK"] = "yes" if @hotplug == "pcmcia"
       devmap["DHCLIENT_SET_DEFAULT_ROUTE"] = @set_default_route ? "yes" : "no" if isCurrentDHCP
 
       return devmap
@@ -2052,7 +2044,6 @@ module Yast
           "BOOTPROTO"             => "static",
           "STARTMODE"             => "auto",
           "TUNNEL"                => @type,
-          "TUNNEL_SET_PERSISTENT" => @tunnel_set_persistent ? "yes" : "no",
           "TUNNEL_SET_OWNER"      => @tunnel_set_owner,
           "TUNNEL_SET_GROUP"      => @tunnel_set_group
         }
@@ -2562,7 +2553,6 @@ module Yast
     publish :variable => :qeth_chanids, :type => "string"
     publish :variable => :lcs_timeout, :type => "string"
     publish :variable => :aliases, :type => "map"
-    publish :variable => :tunnel_set_persistent, :type => "boolean"
     publish :variable => :tunnel_set_owner, :type => "string"
     publish :variable => :tunnel_set_group, :type => "string"
     publish :variable => :proposal_valid, :type => "boolean"
