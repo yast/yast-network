@@ -660,35 +660,31 @@ module Yast
           :to   => "map <string, map <string, any>>"
         )
       )
+
       help = CWM.MergeHelps(w)
       contents = CWM.PrepareDialog(contents, w)
+      running_installer = Mode.installation || Mode.update
 
       Wizard.SetContentsButtons(
         caption,
         contents,
         help,
         Label.BackButton,
-        Label.OKButton
+        running_installer ? Label.NextButton : Label.OKButton
       )
-      running_installer = Mode.installation || Mode.update
 
-      Wizard.SetNextButton(:next, running_installer ? Label.NextButton : Label.OKButton)
-      Wizard.SetAbortButton(:abort, Label.CancelButton)
-
-      Wizard.HideBackButton if !running_installer
-      Wizard.HideAbortButton if running_installer
-
-      ret = nil
-      while true
-        ret = CWM.Run(w, {})
-        if ret == :abort
-          next if LanItems.modified && !ReallyAbort()
-          return ret
-        end
-        return ret
+      if running_installer
+        Wizard.SetAbortButton(:abort, Label.AbortButton)
+      else
+        Wizard.SetAbortButton(:abort, Label.CancelButton)
+        Wizard.HideBackButton
       end
 
-      nil
+      begin
+        ret = CWM.Run(w, {})
+      end while ret == :abort && LanItems.modified && !ReallyAbort()
+
+      return ret
     end
   end
 
