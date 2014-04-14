@@ -635,6 +635,19 @@ module Yast
       ret
     end
 
+    # Evaluates if user should be asked again according dialogs result value
+    #
+    # it is basically useful if user aborts dialog and he has done some
+    # changes already. Calling this function may results in confirmation
+    # popup.
+    def input_done?(ret)
+      if ret == :abort && LanItems.modified
+        return ReallyAbort()
+      else
+        return true
+      end
+    end
+
     def MainDialog(init_tab)
       caption = _("Network Settings")
       widget_descr = {
@@ -682,25 +695,25 @@ module Yast
 
       begin
         ret = CWM.Run(w, {})
-      end while ret == :abort && LanItems.modified && !ReallyAbort()
+      end while !input_done?(ret)
 
       return ret
     end
-  end
 
   private
-  def overview_buttons
-    ret = {}
+    def overview_buttons
+      ret = {}
 
-    # User should be able to configure existing devices during installation.
-    # This can be achieved via "Edit" button on automatically detected
-    # devices. Advanced configuration should be postponed to installed system.
-    # Therefor adding devices is not available during installation
-    ret[:add]    = Label.AddButton if !Mode.installation
-    ret[:edit]   = Label.EditButton
-    ret[:delete] = Label.DeleteButton
+      # User should be able to configure existing devices during installation.
+      # This can be achieved via "Edit" button on automatically detected
+      # devices. Advanced configuration should be postponed to installed system.
+      # Therefor adding devices is not available during installation
+      ret[:add]    = Label.AddButton if !Mode.installation
+      ret[:edit]   = Label.EditButton
+      ret[:delete] = Label.DeleteButton
 
-    ret
+      ret
+    end
+
   end
-
 end
