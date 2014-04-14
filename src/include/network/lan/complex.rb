@@ -670,9 +670,13 @@ module Yast
         Label.BackButton,
         Label.OKButton
       )
-      Wizard.SetNextButton(:next, Label.OKButton)
+      running_installer = Mode.installation || Mode.update
+
+      Wizard.SetNextButton(:next, running_installer ? Label.NextButton : Label.OKButton)
       Wizard.SetAbortButton(:abort, Label.CancelButton)
-      Wizard.HideBackButton
+
+      Wizard.HideBackButton if !running_installer
+      Wizard.HideAbortButton if running_installer
 
       ret = nil
       while true
