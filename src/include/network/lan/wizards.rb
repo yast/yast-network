@@ -59,16 +59,28 @@ module Yast
         "write"    => [lambda { WriteDialog() }, true]
       }
 
-      sequence = {
-        "ws_start" => "read",
-        "read"     => { :abort => :abort, :next => "main" },
-        "main"     => { :abort => :abort, :next => "packages" },
-        "packages" => { :abort => :abort, :next => "write" },
-        "write"    => { :abort => :abort, :next => :next }
-      }
+      if Mode.installation || Mode.update
+        sequence = {
+          "ws_start" => "read",
+          "read"     => { :abort => :abort, :back => :back, :next => "main" },
+          "main"     => { :abort => :abort, :back => :back, :next => "packages" },
+          "packages" => { :abort => :abort, :back => :back, :next => "write" },
+          "write"    => { :abort => :abort, :back => :back, :next => :next }
+        }
 
-      Wizard.OpenCancelOKDialog
-      Wizard.SetDesktopTitleAndIcon("lan")
+        Wizard.OpenNextBackDialog
+      else
+        sequence = {
+          "ws_start" => "read",
+          "read"     => { :abort => :abort, :next => "main" },
+          "main"     => { :abort => :abort, :next => "packages" },
+          "packages" => { :abort => :abort, :next => "write" },
+          "write"    => { :abort => :abort, :next => :next }
+        }
+
+        Wizard.OpenCancelOKDialog
+        Wizard.SetDesktopTitleAndIcon("lan")
+      end
 
       ret = Sequencer.Run(aliases, sequence)
 

@@ -635,6 +635,19 @@ module Yast
       ret
     end
 
+    # Evaluates if user should be asked again according dialogs result value
+    #
+    # it is basically useful if user aborts dialog and he has done some
+    # changes already. Calling this function may results in confirmation
+    # popup.
+    def input_done?(ret)
+      if ret == :abort && LanItems.modified
+        return ReallyAbort()
+      else
+        return true
+      end
+    end
+
     def MainDialog(init_tab)
       caption = _("Network Settings")
       widget_descr = {
@@ -660,47 +673,47 @@ module Yast
           :to   => "map <string, map <string, any>>"
         )
       )
+
       help = CWM.MergeHelps(w)
       contents = CWM.PrepareDialog(contents, w)
+      running_installer = Mode.installation || Mode.update
 
       Wizard.SetContentsButtons(
         caption,
         contents,
         help,
         Label.BackButton,
-        Label.OKButton
+        running_installer ? Label.NextButton : Label.OKButton
       )
-      Wizard.SetNextButton(:next, Label.OKButton)
-      Wizard.SetAbortButton(:abort, Label.CancelButton)
-      Wizard.HideBackButton
 
-      ret = nil
-      while true
-        ret = CWM.Run(w, {})
-        if ret == :abort
-          next if LanItems.modified && !ReallyAbort()
-          return ret
-        end
-        return ret
+      if running_installer
+        Wizard.SetAbortButton(:abort, Label.AbortButton)
+      else
+        Wizard.SetAbortButton(:abort, Label.CancelButton)
+        Wizard.HideBackButton
       end
 
-      nil
+      begin
+        ret = CWM.Run(w, {})
+      end while !input_done?(ret)
+
+      return ret
     end
-  end
 
   private
-  def overview_buttons
-    ret = {}
+    def overview_buttons
+      ret = {}
 
-    # User should be able to configure existing devices during installation.
-    # This can be achieved via "Edit" button on automatically detected
-    # devices. Advanced configuration should be postponed to installed system.
-    # Therefor adding devices is not available during installation
-    ret[:add]    = Label.AddButton if !Mode.installation
-    ret[:edit]   = Label.EditButton
-    ret[:delete] = Label.DeleteButton
+      # User should be able to configure existing devices during installation.
+      # This can be achieved via "Edit" button on automatically detected
+      # devices. Advanced configuration should be postponed to installed system.
+      # Therefor adding devices is not available during installation
+      ret[:add]    = Label.AddButton if !Mode.installation
+      ret[:edit]   = Label.EditButton
+      ret[:delete] = Label.DeleteButton
 
-    ret
+      ret
+    end
+
   end
-
 end
