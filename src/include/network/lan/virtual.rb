@@ -211,7 +211,7 @@ module Yast
           HSpacing(1),
           VBox(
             # TextEntry label
-            TextEntry(Id(:name), _("Alias &Name"), Ops.get_string(entry, 1, "")),
+            TextEntry(Id(:name), _("IPv4 &Address Label"), Ops.get_string(entry, 1, "")),
             # TextEntry label
             TextEntry(
               Id(:ipaddr),
