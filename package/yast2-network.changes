@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Apr 17 08:18:58 UTC 2014 - mfilka@suse.com
+
+- bnc#870406
+  - fixed assigning device name in ifcfg created during installation
+- 3.1.48 
+
+-------------------------------------------------------------------
 Mon Apr 14 16:46:02 UTC 2014 - mfilka@suse.com
 
 - bnc#873149
