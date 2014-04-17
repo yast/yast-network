@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Apr 17 11:44:20 UTC 2014 - mfilka@suse.com
+
+- fixed terminology confusion. "Alias name" turned into  "IPv4 
+  Address Label". "Alias name" is obsolete since kernel 2.0.0
+- 3.1.49
+
+-------------------------------------------------------------------
 Thu Apr 17 08:18:58 UTC 2014 - mfilka@suse.com
 
 - bnc#870406

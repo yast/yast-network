@@ -93,7 +93,7 @@ module Yast
                     Opt(:notify),
                     Header(
                       # Table header label
-                      _("Alias Name"),
+                      _("IPv4 Address Label"),
                       # Table header label
                       _("IP Address"),
                       # Table header label
