@@ -11,6 +11,8 @@ module Yast
 
     BASH_PATH = Path.new(".target.bash")
 
+    # Class for accessing /etc/install.inf.
+    # See http://en.opensuse.org/SDB:Linuxrc_install.inf
     class InstallInf
       INSTALL_INF = Path.new(".etc.install_inf")
 
@@ -364,12 +366,13 @@ module Yast
     def create_device_name_ifcfg(hardware)
       device_name = dev_name
 
-      hw_name = BuildDescription(
-        NetworkInterfaces.device_type(device_name),
-        NetworkInterfaces.device_num(device_name),
-        { "dev_name" => device_name },
-        hardware
-      )
+      # authoritative sources of device name are:
+      # - hwinfo
+      # - install.inf 
+      # nobody else was able to edit device name so far (so ifcfg["NAME"])
+      # is empty
+      hw_name = HardwareName(hardware, device_name)
+      hw_name = InstallInf["NetCardName"] || "" if hw_name.empty?
 
       return "" if hw_name.empty?
 
