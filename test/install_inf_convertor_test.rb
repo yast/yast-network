@@ -89,6 +89,7 @@ describe "InstallInfConvertor" do
     before(:each) do
       @device = "enp0s3"
       @netconfig = "dhcp"
+      @netcardname = "Network card name"
 
       @install_inf_convertor = Yast::InstallInfConvertor.instance
 
@@ -100,6 +101,9 @@ describe "InstallInfConvertor" do
       Yast::InstallInfConvertor::InstallInf
         .stub(:[])
         .with("NetConfig") { @netconfig }
+      Yast::InstallInfConvertor::InstallInf
+        .stub(:[])
+        .with("NetCardName") { @netcardname }
     end
 
     describe "#dev_name" do
@@ -122,7 +126,7 @@ describe "InstallInfConvertor" do
         expect(ifcfg = @install_inf_convertor.send(:create_ifcfg)).not_to be_empty
         expect(ifcfg).to match /BOOTPROTO='dhcp4'/
         expect(ifcfg).to match /STARTMODE='onboot'/
-        expect(ifcfg).to match /NAME='.*'/
+        expect(ifcfg).to match /NAME='#{@netcardname}'/
       end
     end
   end
