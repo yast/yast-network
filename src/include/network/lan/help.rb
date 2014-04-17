@@ -263,15 +263,15 @@ module Yast
         "additional" =>
           # Aliases dialog help 1/4
           _(
-            "<p><b><big>Additional Addresses</big></b></p>\n<p>Configure additional addresses of an interface (its aliases) in this table.</p>\n"
+            "<p><b><big>Additional Addresses</big></b></p>\n<p>Configure additional addresses of an interface in this table.</p>\n"
           ) +
             # Aliases dialog help 2/4
             _(
-              "<p>Enter an <b>Alias Name</b>, an <b>IP Address</b>, and\nthe <b>Netmask</b>.</p>"
+              "<p>Enter an <b>IPv4 Address Label</b>, an <b>IP Address</b>, and\nthe <b>Netmask</b>.</p>"
             ) +
             # Aliases dialog help 3/4
             _(
-              "<p><b>Alias Name</b> is optional and legacy.The total\n" +
+              "<p><b>IPv4 Address Label</b>, formerly known as Alias Name, is optional and legacy.The total\n" +
                 "              length of interface name (inclusive of the colon and  label)  is\n" +
                 "              limited to 15 characters and the obsolete ifconfig utility truncates it after 9 characters.</p>"
             ) +
