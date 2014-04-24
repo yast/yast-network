@@ -7,6 +7,8 @@ module SetupDHCPClient
   Yast.import "LanItems"
   Yast.import "NetworkInterfaces"
 
+  Yast.include self, "network/routines.rb"
+
   BASH_PATH = Path.new(".target.bash")
 
   def self.network_cards
@@ -121,7 +123,7 @@ module SetupDHCPClient
 
   include Logger
 
-  dhcp_cards = network_cards.select { |c| !configured?(c) }
+  dhcp_cards = network_cards.select { |c| !configured?(c) && phy_connected?(c) }
   log.info "Candidates for enabling DHCP: #{dhcp_cards}"
 
   # TODO time consuming, some progress would be nice
