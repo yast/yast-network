@@ -1034,6 +1034,16 @@ module Yast
       ret
     end
 
+    # Checks if given device is physically connected to a network
+    #
+    # @return [boolean] true if physical layer is connected
+    def phy_connected?(dev_name)
+      SCR.Read(
+        path(".target.string"),
+        "/sys/class/net/#{dev_name}/carrier"
+      ).to_i != 0
+    end
+
     def validPrefixOrNetmask(ip, mask)
       valid_mask = false
       if Builtins.substring(mask, 0, 1) == "/"
