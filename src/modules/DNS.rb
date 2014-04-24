@@ -429,7 +429,7 @@ module Yast
       ProgressNextStage(_("Updating configuration..."))
 
       # Finish him
-      RunSuSEconfig()
+      update_mta_config
       Builtins.sleep(sl)
 
       #     if(SCR::Read(.target.size, resolv_conf) < 0)

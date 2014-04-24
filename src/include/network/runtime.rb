@@ -32,16 +32,18 @@ module Yast
       textdomain "network"
     end
 
-    # Run SuSEconfig
-    # @return true if success
-    def RunSuSEconfig
+    # Runs external script which updates MTA's configuration.
+    #
+    # Currently supported MTAs:
+    #   - sendmail
+    #   - postfix
+    def update_mta_config
       Builtins.y2milestone("Updating sendmail and/or postfix configuration.")
       SCR.Execute(
         path(".target.bash"),
         "/usr/lib/sendmail.d/update 2>/dev/null"
       )
       SCR.Execute(path(".target.bash"), "/usr/sbin/config.postfix 2>/dev/null")
-      true
     end
 
   end

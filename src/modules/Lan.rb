@@ -664,7 +664,7 @@ module Yast
       return false if Abort()
       # Progress step 10
       ProgressNextStage(_("Updating configuration..."))
-      RunSuSEconfig() if !@write_only
+      update_mta_config if !@write_only
       Builtins.sleep(sl)
 
       if NetworkService.is_network_manager
