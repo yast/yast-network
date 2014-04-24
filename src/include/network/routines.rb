@@ -28,6 +28,9 @@
 #
 module Yast
   module NetworkRoutinesInclude
+    include I18n
+    include Yast
+
     def initialize_network_routines(include_target)
       Yast.import "UI"
 
