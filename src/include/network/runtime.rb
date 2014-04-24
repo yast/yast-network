@@ -29,15 +29,6 @@
 module Yast
   module NetworkRuntimeInclude
     def initialize_network_runtime(include_target)
-
-      Yast.import "Arch"
-      Yast.import "Desktop"
-      Yast.import "Mode"
-      Yast.import "NetworkInterfaces"
-      Yast.import "Package"
-      Yast.import "Service"
-      Yast.import "PackageSystem"
-
       textdomain "network"
     end
 
@@ -50,22 +41,6 @@ module Yast
         "/usr/lib/sendmail.d/update 2>/dev/null"
       )
       SCR.Execute(path(".target.bash"), "/usr/sbin/config.postfix 2>/dev/null")
-      true
-    end
-
-    # Link detection
-    # @return true if link found
-    # @see #ethtool(8)
-    def HasLink
-      ifname = "eth0"
-
-      command = Builtins.sformat(
-        "ethtool %1 | grep -q 'Link detected: no'",
-        ifname
-      )
-      if Convert.to_integer(SCR.Execute(path(".target.bash"), command)) == 1
-        return false
-      end
       true
     end
 
