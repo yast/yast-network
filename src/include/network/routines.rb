@@ -1018,18 +1018,18 @@ module Yast
     end
 
     def SetLinkUp(dev_name)
-      Run(Builtins.sformat("ip link set %1 up", dev_name))
+      Run("ip link set #{dev_name} up")
     end
 
     def SetLinkDown(dev_name)
-      Run(Builtins.sformat("ip link set %1 down", dev_name))
+      Run("ip link set #{dev_name} down")
     end
 
     def SetAllLinksUp
       interfaces = GetAllInterfaces()
-      ret = Ops.greater_than(Builtins.size(interfaces), 0)
+      ret = !interfaces.empty?
 
-      Builtins.foreach(interfaces) do |ifc|
+      interfaces.each do |ifc|
         Builtins.y2milestone("Setting link up for interface %1", ifc)
         ret = SetLinkUp(ifc) && ret
       end
