@@ -1037,14 +1037,25 @@ module Yast
       ret
     end
 
-    # Checks if given device is physically connected to a network
+    # Checks if given device has carrier
     #
-    # @return [boolean] true if physical layer is connected
-    def phy_connected?(dev_name)
+    # @return [boolean] true if device has carrier
+    def has_carrier?(dev_name)
       SCR.Read(
         path(".target.string"),
         "/sys/class/net/#{dev_name}/carrier"
       ).to_i != 0
+    end
+
+    # Checks if device is physically connected to a network
+    #
+    # It does neccessary steps which might be needed for proper initialization
+    # of devices driver.
+    #
+    # @return [boolean] true if physical layer is connected
+    def phy_connected?(dev_name)
+      # SetLinkUp ensures that driver is properly initialized
+      SetLinkUp(dev_name) && has_carrier?(dev_name)
     end
 
     def validPrefixOrNetmask(ip, mask)
