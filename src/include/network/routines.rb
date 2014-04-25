@@ -28,6 +28,9 @@
 #
 module Yast
   module NetworkRoutinesInclude
+    include I18n
+    include Yast
+
     def initialize_network_routines(include_target)
       Yast.import "UI"
 
@@ -1015,23 +1018,44 @@ module Yast
     end
 
     def SetLinkUp(dev_name)
-      Run(Builtins.sformat("ip link set %1 up", dev_name))
+      Run("ip link set #{dev_name} up")
     end
 
     def SetLinkDown(dev_name)
-      Run(Builtins.sformat("ip link set %1 down", dev_name))
+      Run("ip link set #{dev_name} down")
     end
 
     def SetAllLinksUp
       interfaces = GetAllInterfaces()
-      ret = Ops.greater_than(Builtins.size(interfaces), 0)
+      ret = !interfaces.empty?
 
-      Builtins.foreach(interfaces) do |ifc|
+      interfaces.each do |ifc|
         Builtins.y2milestone("Setting link up for interface %1", ifc)
         ret = SetLinkUp(ifc) && ret
       end
 
       ret
+    end
+
+    # Checks if given device has carrier
+    #
+    # @return [boolean] true if device has carrier
+    def has_carrier?(dev_name)
+      SCR.Read(
+        path(".target.string"),
+        "/sys/class/net/#{dev_name}/carrier"
+      ).to_i != 0
+    end
+
+    # Checks if device is physically connected to a network
+    #
+    # It does neccessary steps which might be needed for proper initialization
+    # of devices driver.
+    #
+    # @return [boolean] true if physical layer is connected
+    def phy_connected?(dev_name)
+      # SetLinkUp ensures that driver is properly initialized
+      SetLinkUp(dev_name) && has_carrier?(dev_name)
     end
 
     def validPrefixOrNetmask(ip, mask)
