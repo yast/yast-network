@@ -7,6 +7,8 @@ require "yast"
 describe "phy_connected?" do
   before(:each) do
     Yast.include self, "network/routines.rb"
+
+    Yast::SCR.stub(:Execute).with(path(".target.bash"), //) { 0 }
   end
 
   it "returns true if PHY layer is available" do
