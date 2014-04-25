@@ -19,12 +19,19 @@ module Yast
     def configure_dhcp
       Yast.include self, "network/routines.rb"
 
+      # find out network devices suitable for dhcp autoconfiguration.
+      # Such device has to:
+      # - be unconfigured
+      # - physically connected to a network (it speeds up initialization phase of
+      #   installer - bnc#872319)
       dhcp_cards = network_cards.select { |c| !configured?(c) && phy_connected?(c) }
       log.info "Candidates for enabling DHCP: #{dhcp_cards}"
 
       # TODO time consuming, some progress would be nice
       dhcp_cards.each { |d| setup_dhcp(d) }
 
+      # FIXME this can be really slow as it calls wicked one-by-one. So for n devices
+      # connected to a network but without dhcp it takes n * <dhcp lease wait timeout>.
       activate_changes(dhcp_cards)
 
       # drop devices without dhcp lease
