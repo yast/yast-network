@@ -271,8 +271,8 @@ module Yast
             ) +
             # Aliases dialog help 3/4
             _(
-              "<p><b>IPv4 Address Label</b>, formerly known as Alias Name, is optional and legacy.The total\n" +
-                "              length of interface name (inclusive of the colon and  label)  is\n" +
+              "<p><b>IPv4 Address Label</b>, formerly known as Alias Name, is optional and legacy. The total\n" +
+                "              length of interface name (inclusive of the colon and label) is\n" +
                 "              limited to 15 characters and the obsolete ifconfig utility truncates it after 9 characters.</p>"
             ) +
             # Aliases dialog help 3/4, #83766
