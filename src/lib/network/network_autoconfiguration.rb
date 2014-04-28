@@ -11,8 +11,10 @@ module Yast
     include Logger
     include Yast
 
+    Yast.import "Lan"
     Yast.import "LanItems"
     Yast.import "NetworkInterfaces"
+    Yast.import "Package"
 
     BASH_PATH = Path.new(".target.bash")
 
@@ -54,6 +56,23 @@ module Yast
       end
 
       activate_changes(dhcp_cards)
+    end
+
+    # Propose configuration for virtual devices
+    #
+    # It checks if any of supported virtual machines were installed. If found,
+    # propose virtual device(s) configuration
+    def configure_virtuals
+      return if !virtual_proposal_required?
+
+      log.info("NetworkAutoconfiguration: proposing virtual devices")
+
+      Lan.ProposeVirtualized
+
+      # avoid restarting network (installation can run via ssh, vnc, ...)
+      # Moreover virtual devices are not needed during first stage. So, it can
+      # wait for rebooting into just installed target
+      Lan.WriteOnly
     end
 
   private
@@ -165,6 +184,18 @@ module Yast
     def set_default_route_flag(devname, value)
       item_id = LanItems.FindDeviceIndex(devname)
       LanItems.SetItemSysconfigOpt(item_id, "DHCLIENT_SET_DEFAULT_ROUTE", value)
+    end
+
+    # Decides if a proposal for virtualization host machine is required.
+    def virtual_proposal_required?
+      # S390 has special requirements. See bnc#817943
+      return false if Arch.s390
+
+      return true if PackageSystem.Installed("xen") && !Arch.is_xenU
+      return true if PackageSystem.Installed("kvm")
+      return true if PackageSystem.Installed("qemu")
+
+      false
     end
 
   end

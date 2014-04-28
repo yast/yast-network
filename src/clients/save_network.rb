@@ -29,6 +29,7 @@
 #
 module Yast
   require "network/install_inf_convertor"
+  require "network/network_autoconfiguration"
 
   class SaveNetworkClient < Client
     include Logger
@@ -257,6 +258,7 @@ module Yast
       WFM.SCRSetDefault(old_SCR)
       WFM.SCRClose(new_SCR)
 
+      NetworkAutoconfiguration.instance.configure_virtuals
       LanUdevAuto.Write if Mode.autoinst
 
       SCR.Execute(path(".target.bash"), "chkconfig network on")
