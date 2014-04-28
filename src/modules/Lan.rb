@@ -627,13 +627,7 @@ module Yast
           )
         end
 
-        # For ssh/vnc installation don't reload/restart network because possibility of IP change (bnc#347482)
-        if Stage.cont &&
-            (Linuxrc.usessh || Linuxrc.vnc || Linuxrc.display_ip)
-          Builtins.y2milestone(
-            "For ssh or vnc installation don't reload/restart network during installation."
-          )
-        elsif LanItems.force_restart
+        if LanItems.force_restart
           NetworkService.Restart
         else
           NetworkService.ReloadOrRestart
