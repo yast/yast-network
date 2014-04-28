@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Apr 28 11:06:47 UTC 2014 - mfilka@suse.com
+
+- bnc#867451 
+  - when virtual machine is installed, propose virtual interface
+    configuration
+- 3.1.51
+
+-------------------------------------------------------------------
 Fri Apr 25 07:15:25 UTC 2014 - mfilka@suse.com
 
 - bnc#872319
