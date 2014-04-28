@@ -77,16 +77,6 @@ module Yast
 
       @write_only = false
 
-      # Current module information
-      # FIXME: MOD global map Module = $[];
-
-      # propose configuration for virtual networks (bridged) ?
-      @virt_net_proposal = nil
-
-      # autoinstallation: if true, write_only is disabled and the network settings
-      # are applied at once, like during the normal installation. #128810, #168806
-      # boolean start_immediately = false;
-
       # ipv6 module
       @ipv6 = true
 
@@ -637,18 +627,8 @@ module Yast
           )
         end
 
-        Builtins.y2milestone("virt_net_proposal %1", @virt_net_proposal)
-        if Stage.cont && @virt_net_proposal == true &&
-            (Linuxrc.usessh || Linuxrc.vnc || Linuxrc.display_ip)
-
-          if ConfirmVirtProposal.instance.run == :ok
-            Builtins.y2milestone(
-              "Restarting network because of bridged proposal"
-            )
-            NetworkService.Restart
-          end
         # For ssh/vnc installation don't reload/restart network because possibility of IP change (bnc#347482)
-        elsif Stage.cont &&
+        if Stage.cont &&
             (Linuxrc.usessh || Linuxrc.vnc || Linuxrc.display_ip)
           Builtins.y2milestone(
             "For ssh or vnc installation don't reload/restart network during installation."
@@ -834,9 +814,7 @@ module Yast
         status_nm = _("Traditional network setup with NetControl - ifup")
         # enable NetworkManager applet
         # for virtual network proposal (bridged) don't show hyperlink to enable networkmanager
-        link_nm = @virt_net_proposal ?
-          "..." :
-          Hyperlink(href_nm, _("Enable NetworkManager"))
+        link_nm = Hyperlink(href_nm, _("Enable NetworkManager"))
       end
 
       if @ipv6
@@ -851,28 +829,6 @@ module Yast
         status_v6 = _("Support for IPv6 protocol is disabled")
         # enable ipv6 support
         link_v6 = Hyperlink(href_v6, _("Enable IPv6"))
-      end
-      # no exception needed for virtualbox* (bnc#648044) http://www.virtualbox.org/manual/ch06.html
-      if PackageSystem.Installed("xen") && !Arch.is_xenU ||
-          PackageSystem.Installed("kvm") ||
-          PackageSystem.Installed("qemu")
-        if @virt_net_proposal
-          href_virt_net = "virtual-revert"
-          status_virt_net = _(
-            "Proposed bridged configuration for virtual machine network"
-          )
-          link_virt_net = Hyperlink(
-            href_virt_net,
-            _("Use non-bridged configuration")
-          )
-        else
-          href_virt_net = "virtual-enable"
-          status_virt_net = _("Proposed non-bridged network configuration")
-          link_virt_net = Hyperlink(
-            href_virt_net,
-            _("Use bridged configuration")
-          )
-        end
       end
       descr = Builtins.sformat(
         "<ul><li>%1: %2 (%3)</li></ul> \n\t\t\t     <ul><li>%4 (%5)</li></ul>",
@@ -1153,29 +1109,22 @@ module Yast
       Builtins.y2milestone("NetworkConfig::DHCP=%1", NetworkConfig.DHCP)
 
       # test if we have any virtualization installed
-      if @virt_net_proposal
-        Builtins.y2milestone(
-          "Virtualization [xen|kvm|qemu] detected - will propose virtualization network"
-        )
-        ProposeVirtualized()
-      else
-        if !LanItems.nm_proposal_valid
-          if UseNetworkManager()
-            NetworkService.use_network_manager
-          else
-            NetworkService.use_netconfig
-          end
-
-          LanItems.nm_proposal_valid = true
+      if !LanItems.nm_proposal_valid
+        if UseNetworkManager()
+          NetworkService.use_network_manager
+        else
+          NetworkService.use_netconfig
         end
 
-        if NetworkService.is_network_manager
-          ProposeNMInterfaces()
+        LanItems.nm_proposal_valid = true
+      end
 
-          LanItems.modified = true # #144139 workaround
-          Builtins.y2milestone("NM proposal")
-          return true
-        end
+      if NetworkService.is_network_manager
+        ProposeNMInterfaces()
+
+        LanItems.modified = true # #144139 workaround
+        Builtins.y2milestone("NM proposal")
+        return true
       end
       # Something is already configured -> do nothing
       configured = false
@@ -1482,7 +1431,6 @@ module Yast
       have_br
     end
 
-    publish :variable => :virt_net_proposal, :type => "boolean"
     publish :variable => :ipv6, :type => "boolean"
     publish :variable => :AbortFunction, :type => "block <boolean>"
     publish :variable => :bond_autoconf_slaves, :type => "list <string>"
