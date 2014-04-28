@@ -41,6 +41,8 @@ module Yast
       Yast.import "IP"
       Yast.import "NetworkPopup"
       Yast.import "NetworkInterfaces"
+      Yast.import "NetworkService"
+      Yast.import "Lan"
       Yast.import "LanItems"
 
       Yast.include include_target, "network/complex.rb"
@@ -283,6 +285,139 @@ module Yast
         "opt"    => [:hstretch, :editable],
         "items"  => [],
         "help"   => @help["mtu"] || ""
+      }
+    end
+
+    # Initialize the NetworkManager widget
+    # @param [String] key id of the widget
+    def ManagedInit(key)
+      value = "managed" if NetworkService.is_network_manager
+      value = "ifup"    if NetworkService.is_netconfig
+      value = "wicked"  if NetworkService.is_wicked
+
+      UI.ChangeWidget(
+        Id("managed"),
+        :Enabled,
+        NetworkService.is_backend_available(:network_manager))
+      UI.ChangeWidget(
+        Id("ifup"),
+        :Enabled,
+        NetworkService.is_backend_available(:netconfig))
+      UI.ChangeWidget(
+        Id("wicked"),
+        :Enabled,
+        NetworkService.is_backend_available(:wicked))
+
+      UI.ChangeWidget(Id(key), :CurrentButton, value)
+
+      nil
+    end
+
+    # Store the NetworkManager widget
+    # @param [String] key	id of the widget
+    # @param [Hash] event	the event being handled
+    def ManagedStore(key, event)
+      new_backend = UI.QueryWidget(Id(key), :CurrentButton)
+
+      case new_backend
+        when "ifup"
+          NetworkService.use_netconfig
+        when "managed"
+          NetworkService.use_network_manager
+        when "wicked"
+          NetworkService.use_wicked
+      end
+
+      if NetworkService.Modified
+        LanItems.SetModified
+
+        if Stage.normal && NetworkService.is_network_manager
+          Popup.AnyMessage(
+            _("Applet needed"),
+            _(
+              "NetworkManager is controlled by desktop applet\n" +
+              "(KDE plasma widget and nm-applet for GNOME).\n" +
+              "Be sure it's running and if not, start it manually."
+           ))
+        end
+      end
+
+      nil
+    end
+
+    def managed_widget
+      {
+        "widget" => :radio_buttons,
+        # radio button group label, method of setup
+        "label"  => _("Network Setup Method"),
+        "items"  => [
+          # radio button label
+          # the user can control the network with the NetworkManager
+          # program
+          [
+            "managed",
+            _("&User Controlled with NetworkManager")
+          ],
+          # radio button label
+          # ifup is a program name
+          [
+            "ifup",
+            _("&Traditional Method with ifup")
+          ],
+          # radio button label
+          # wicked is network configuration backend like netconfig
+          [
+            "wicked",
+            _("Controlled by &wicked")
+          ],
+        ],
+        "opt"    => [],
+        "help"   => Ops.get_string(@help, "managed", ""),
+        "init"   => fun_ref(method(:ManagedInit), "void (string)"),
+        "store"  => fun_ref(method(:ManagedStore), "void (string, map)")
+      }
+    end
+
+    def initIPv6(key)
+      UI.ChangeWidget(Id(:ipv6), :Value, Lan.ipv6 ? true : false)
+
+      nil
+    end
+
+    def handleIPv6(key, event)
+      event = deep_copy(event)
+      if Ops.get_string(event, "EventReason", "") == "ValueChanged"
+        Lan.SetIPv6(Convert.to_boolean(UI.QueryWidget(Id(:ipv6), :Value)))
+      end
+      nil
+    end
+
+    def storeIPv6(key, event)
+      event = deep_copy(event)
+      if Convert.to_boolean(UI.QueryWidget(Id(:ipv6), :Value))
+        Lan.SetIPv6(true)
+      else
+        Lan.SetIPv6(false)
+      end
+
+      nil
+    end
+
+    def ipv6_widget
+      {
+        "widget"        => :custom,
+        "custom_widget" => Frame(
+          _("IPv6 Protocol Settings"),
+          Left(CheckBox(Id(:ipv6), Opt(:notify), _("Enable IPv6")))
+        ),
+        "opt"           => [],
+        "help"          => Ops.get_string(@help, "ipv6", ""),
+        "init"          => fun_ref(method(:initIPv6), "void (string)"),
+        "handle"        => fun_ref(
+          method(:handleIPv6),
+          "symbol (string, map)"
+        ),
+        "store"         => fun_ref(method(:storeIPv6), "void (string, map)")
       }
     end
 
