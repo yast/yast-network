@@ -15,6 +15,8 @@ module Yast
     Yast.import "LanItems"
     Yast.import "NetworkInterfaces"
     Yast.import "Package"
+    Yast.import "DNS"
+    Yast.import "Arch"
 
     BASH_PATH = Path.new(".target.bash")
 
@@ -73,6 +75,20 @@ module Yast
       # Moreover virtual devices are not needed during first stage. So, it can
       # wait for rebooting into just installed target
       Lan.WriteOnly
+    end
+
+    # Propose DNS and Hostname setup
+    def configure_dns
+      DNS.Read # handles NetworkConfig too
+      DNS.ProposeHostname # generate random hostname, if none known so far
+
+      # propose settings
+      DNS.dhcp_hostname = !Arch.is_laptop
+
+      # get default value, from control.xml
+      DNS.write_hostname = DNS.DefaultWriteHostname
+
+      DNS.Write
     end
 
   private
