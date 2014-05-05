@@ -88,6 +88,10 @@ module Yast
       # get default value, from control.xml
       DNS.write_hostname = DNS.DefaultWriteHostname
 
+      log.info("NetworkAutoconfiguration: proposing DNS / Hostname configuration")
+      log.info("dhcp hostname: #{DNS.dhcp_hostname}")
+      log.info("write hostname: #{DNS.write_hostname}")
+
       DNS.Write
     end
 
