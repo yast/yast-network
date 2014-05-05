@@ -259,6 +259,8 @@ module Yast
       WFM.SCRClose(new_SCR)
 
       NetworkAutoconfiguration.instance.configure_virtuals
+      NetworkAutoconfiguration.instance.configure_dns
+
       LanUdevAuto.Write if Mode.autoinst
 
       SCR.Execute(path(".target.bash"), "chkconfig network on")
