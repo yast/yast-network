@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon May  5 08:50:48 UTC 2014 - mfilka@suse.com
+
+- bnc#870896
+  - fixed proposed DNS / Hostname configuration to be same as in
+    SLE-11
+- 3.1.52 
+
+-------------------------------------------------------------------
 Mon Apr 28 11:06:47 UTC 2014 - mfilka@suse.com
 
 - bnc#867451 
