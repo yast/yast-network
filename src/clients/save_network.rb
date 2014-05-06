@@ -89,38 +89,41 @@ module Yast
       end
     end
 
+    SYSCONFIG = "/etc/sysconfig/network/"
+
     def CopyConfiguredNetworkFiles
       Builtins.y2milestone(
         "Copy network configuration files from 1st stage into installed system"
       )
-      sysconfig = "/etc/sysconfig/network/"
-      copy_to = String.Quote(
-        Builtins.sformat("%1%2", Installation.destdir, sysconfig)
-      )
+
+      copy_to = String.Quote(Installation.destdir + SYSCONFIG)
 
       # just copy files
-      Builtins.foreach(["ifcfg-*", "ifroute-*", "routes"]) do |file|
+      ["ifcfg-*", "ifroute-*", "routes"].each do |file|
         if file.include?("ifcfg-")
-          adjust_for_network_disks("#{sysconfig}/#{file}")
+          adjust_for_network_disks("#{SYSCONFIG}/#{file}")
         end
 
-        copy_from = String.Quote(Builtins.sformat("%1%2", sysconfig, file))
-        Builtins.y2milestone("Copy %1 into %2", copy_from, copy_to)
-        cmd = Builtins.sformat("cp %1 %2", copy_from, copy_to)
+        copy_from = String.Quote(SYSCONFIG + file)
+
+        log.info("Copying #{copy_from} to #{copy_to}")
+
+        cmd = "cp " << copy_from << " " << copy_to
         ret = SCR.Execute(path(".target.bash_output"), cmd)
 
-        Builtins.y2warning("cmd: '#{cmd}' failed: #{ret}") if ret["exit"] != 0
+        log.warn("cmd: '#{cmd}' failed: #{ret}") if ret["exit"] != 0
       end
 
       # merge files with default installed by sysconfig
-      Builtins.foreach(["dhcp", "config"]) do |file|
-        source_file = Builtins.sformat("%1%2", sysconfig, file)
-        dest_file = Builtins.sformat("%1%2", copy_to, file)
+      ["dhcp", "config"].each do |file|
+        source_file = SYSCONFIG + file
+        dest_file = copy_to + file
         # apply options from initrd configuration files into installed system
         # i.e. just modify (not replace) files from sysconfig rpm
         # FIXME this must be ripped out, refactored and tested
         # In particular, values containing slashes will break the last sed
-        cmd2 = "\n" +
+        command = "\n" +
+          "source_file=#{source_file};dest_file=#{dest_file}\n" +
           "grep -v \"^[[:space:]]*#\" $source_file | grep = | while read option\n" +
           " do\n" +
           "  key=${option%=*}=\n" +
@@ -132,18 +135,10 @@ module Yast
           "    sed -i s/\"^[[:space:]]*$key.*\"/\"$option\"/g $dest_file\n" +
           "  fi\n" +
           " done"
-        cmd1 = Builtins.sformat(
-          "source_file=%1;dest_file=%2\n",
-          source_file,
-          dest_file
-        )
-        # merge commands (add file-path variables) because of some sformat limits with % character
-        command = Builtins.sformat("%1%2", cmd1, cmd2)
-        Builtins.y2milestone(
-          "Execute file merging script : %1",
-          SCR.Execute(path(".target.bash_output"), command)
-        )
-      end 
+        ret = SCR.Execute(path(".target.bash_output"), command)
+
+        log.error("Execute file merging script failed: #{ret}") if ret["exit"] != 0
+      end
       #FIXME: proxy
 
       nil
