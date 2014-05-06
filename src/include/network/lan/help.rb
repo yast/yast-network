@@ -252,7 +252,7 @@ module Yast
             # DHCP dialog help 3/7
             _(
               "<p>The <b>Hostname to Send</b> specifies a string used for the\n" +
-                "hostname option field when dhcpcd sends messages to the DHCP server. Some \n" +
+                "hostname option field when the DHCP client sends messages to the DHCP server. Some \n" +
                 "DHCP servers update name server zones (forward and reverse records) \n" +
                 "according to this hostname (dynamic DNS).</p>\n" +
                 "Some DHCP servers require the <b>Hostname to Send</b> option field to\n" +
