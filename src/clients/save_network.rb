@@ -89,38 +89,51 @@ module Yast
       end
     end
 
+    ETC = "/etc/"
+    SYSCONFIG = "/etc/sysconfig/network/"
+
     def CopyConfiguredNetworkFiles
-      Builtins.y2milestone(
+      log.info(
         "Copy network configuration files from 1st stage into installed system"
       )
-      sysconfig = "/etc/sysconfig/network/"
-      copy_to = String.Quote(
-        Builtins.sformat("%1%2", Installation.destdir, sysconfig)
-      )
+
+      inst_dir = Installation.destdir
+
+      copy_receipts = [
+        { dir: SYSCONFIG, file: "ifcfg-*" },
+        { dir: SYSCONFIG, file: "ifroute-*" },
+        { dir: SYSCONFIG, file: "routes" },
+        { dir: ETC, file: "HOSTNAME" }
+      ]
 
       # just copy files
-      Builtins.foreach(["ifcfg-*", "ifroute-*", "routes"]) do |file|
-        if file.include?("ifcfg-")
-          adjust_for_network_disks("#{sysconfig}/#{file}")
-        end
+      copy_receipts.each do |receipt|
+        file = receipt[:dir] + receipt[:file]
+        adjust_for_network_disks(file) if file.include?("ifcfg-")
 
-        copy_from = String.Quote(Builtins.sformat("%1%2", sysconfig, file))
-        Builtins.y2milestone("Copy %1 into %2", copy_from, copy_to)
-        cmd = Builtins.sformat("cp %1 %2", copy_from, copy_to)
+        copy_from = String.Quote(file)
+        copy_to = String.Quote(inst_dir + receipt[:dir])
+
+        log.info("Copying #{copy_from} to #{copy_to}")
+
+        cmd = "cp " << copy_from << " " << copy_to
         ret = SCR.Execute(path(".target.bash_output"), cmd)
 
-        Builtins.y2warning("cmd: '#{cmd}' failed: #{ret}") if ret["exit"] != 0
+        log.warn("cmd: '#{cmd}' failed: #{ret}") if ret["exit"] != 0
       end
 
+      copy_to = String.Quote(inst_dir + SYSCONFIG)
+
       # merge files with default installed by sysconfig
-      Builtins.foreach(["dhcp", "config"]) do |file|
-        source_file = Builtins.sformat("%1%2", sysconfig, file)
-        dest_file = Builtins.sformat("%1%2", copy_to, file)
+      ["dhcp", "config"].each do |file|
+        source_file = SYSCONFIG + file
+        dest_file = copy_to + file
         # apply options from initrd configuration files into installed system
         # i.e. just modify (not replace) files from sysconfig rpm
         # FIXME this must be ripped out, refactored and tested
         # In particular, values containing slashes will break the last sed
-        cmd2 = "\n" +
+        command = "\n" +
+          "source_file=#{source_file};dest_file=#{dest_file}\n" +
           "grep -v \"^[[:space:]]*#\" $source_file | grep = | while read option\n" +
           " do\n" +
           "  key=${option%=*}=\n" +
@@ -132,28 +145,74 @@ module Yast
           "    sed -i s/\"^[[:space:]]*$key.*\"/\"$option\"/g $dest_file\n" +
           "  fi\n" +
           " done"
-        cmd1 = Builtins.sformat(
-          "source_file=%1;dest_file=%2\n",
-          source_file,
-          dest_file
-        )
-        # merge commands (add file-path variables) because of some sformat limits with % character
-        command = Builtins.sformat("%1%2", cmd1, cmd2)
-        Builtins.y2milestone(
-          "Execute file merging script : %1",
-          SCR.Execute(path(".target.bash_output"), command)
-        )
-      end 
+        ret = SCR.Execute(path(".target.bash_output"), command)
+
+        log.error("Execute file merging script failed: #{ret}") if ret["exit"] != 0
+      end
       #FIXME: proxy
 
       nil
     end
 
+    def copy_udev_rules
+      dest_root = String.Quote(Installation.destdir)
 
+      if Arch.s390
+        log.info("Copy S390 specific udev rule files (/etc/udev/rules/51*)")
 
-    # this replaces bash script create_interface
-    def save_network
-      Builtins.y2milestone("starting save_network")
+        WFM.Execute(
+          path(".local.bash"),
+          Builtins.sformat(
+            "/bin/cp -p %1/51-* '%2%1'",
+            "/etc/udev/rules.d",
+            dest_root
+          )
+        )
+      end
+
+      #Deleting lockfiles and re-triggering udev events for *net is not needed any more
+      #(#292375 c#18)
+
+      udev_rules_srcdir = "/etc/udev/rules.d"
+      net_srcfile = "70-persistent-net.rules"
+
+      udev_rules_destdir = dest_root + udev_rules_srcdir
+      net_destfile = dest_root + udev_rules_srcdir + "/" + net_srcfile
+
+      log.info("udev_rules_destdir #{udev_rules_destdir}")
+      log.info("net_destfile #{net_destfile}")
+
+      #Do not create udev_rules_destdir if it already exists (in case of update)
+      #(bug #293366, c#7)
+
+      if !FileUtils.Exists(udev_rules_destdir)
+        log.info("#{udev_rules_destdir} does not exist yet, creating it")
+        WFM.Execute(
+          path(".local.bash"),
+          "mkdir -p '#{udev_rules_destdir}'"
+        )
+      else
+        log.info("File #{udev_rules_destdir} exists")
+      end
+
+      if !FileUtils.Exists(net_destfile)
+        log.info("Copying #{net_srcfile} to the installed system ")
+        WFM.Execute(
+          path(".local.bash"),
+          "/bin/cp -p '#{udev_rules_srcdir}/#{net_srcfile}' '#{net_destfile}'"
+        )
+      else
+        log.info("Not copying file #{net_destfile} - it already exists")
+      end
+
+      nil
+    end
+
+    # Copies parts configuration created during installation.
+    #
+    # Copies several config files which should be preserved when installation
+    # is done. E.g. ifcfg-* files, custom udev rules and so on.
+    def copy_from_instsys
       # skip from chroot
       old_SCR = WFM.SCRGetDefault
       new_SCR = WFM.SCROpen("chroot=/:scr", false)
@@ -167,19 +226,6 @@ module Yast
         device
       )
 
-      if Arch.s390
-        Builtins.y2milestone(
-          "For s390 architecture copy udev rule files (/etc/udev/rules/51*)"
-        )
-        WFM.Execute(
-          path(".local.bash"),
-          Builtins.sformat(
-            "/bin/cp -p %1/51-* '%2%1'",
-            "/etc/udev/rules.d",
-            String.Quote(Installation.destdir)
-          )
-        )
-      end
       # --------------------------------------------------------------
       # Copy DHCP client cache so that we can request the same IP (#43974).
       WFM.Execute(
@@ -200,66 +246,23 @@ module Yast
         )
       )
 
-      #Deleting lockfiles and re-triggering udev events for *net is not needed any more
-      #(#292375 c#18)
-
-      udev_rules_srcdir = "/etc/udev/rules.d"
-      net_srcfile = "70-persistent-net.rules"
-
-      udev_rules_destdir = Builtins.sformat(
-        "%1%2",
-        String.Quote(Installation.destdir),
-        udev_rules_srcdir
-      )
-      net_destfile = Builtins.sformat(
-        "%1%2/%3",
-        String.Quote(Installation.destdir),
-        udev_rules_srcdir,
-        net_srcfile
-      )
-
-      Builtins.y2milestone("udev_rules_destdir %1", udev_rules_destdir)
-      Builtins.y2milestone("net_destfile %1", net_destfile)
-
-      #Do not create udev_rules_destdir if it already exists (in case of update)
-      #(bug #293366, c#7)
-
-      if !FileUtils.Exists(udev_rules_destdir)
-        Builtins.y2milestone(
-          "%1 does not exist yet, creating it",
-          udev_rules_destdir
-        )
-        WFM.Execute(
-          path(".local.bash"),
-          Builtins.sformat("mkdir -p '%1'", udev_rules_destdir)
-        )
-      else
-        Builtins.y2milestone("File %1 exists", udev_rules_destdir)
-      end
-
-      if !FileUtils.Exists(net_destfile)
-        Builtins.y2milestone("Copying %1 to the installed system ", net_srcfile)
-        WFM.Execute(
-          path(".local.bash"),
-          Builtins.sformat(
-            "/bin/cp -p '%1/%2' '%3'",
-            udev_rules_srcdir,
-            net_srcfile,
-            net_destfile
-          )
-        )
-      else
-        Builtins.y2milestone("Not copying file %1 - it already exists", net_destfile)
-      end
-
+      copy_udev_rules
       CopyConfiguredNetworkFiles()
 
       # close and chroot back
       WFM.SCRSetDefault(old_SCR)
       WFM.SCRClose(new_SCR)
 
+      nil
+    end
+
+    # It does an automatic configuration of installed system
+    #
+    # Basically, it runs several proposals.
+    def configure_target
       NetworkAutoconfiguration.instance.configure_virtuals
       NetworkAutoconfiguration.instance.configure_dns
+      NetworkAutoconfiguration.instance.configure_hosts
 
       LanUdevAuto.Write if Mode.autoinst
 
@@ -270,6 +273,16 @@ module Yast
         path(".local.bash"),
         "pidofproc rpcbind && touch /var/lib/YaST2/network_install_rpcbind"
       )
+
+      nil
+    end
+
+    # this replaces bash script create_interface
+    def save_network
+      log.info("starting save_network")
+
+      copy_from_instsys
+      configure_target
 
       nil
     end

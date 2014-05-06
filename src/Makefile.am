@@ -33,7 +33,6 @@ client_DATA = \
   clients/lan.rb \
   clients/host_auto.rb \
   clients/inst_ask_net_test.rb \
-  clients/inst_hostname.rb \
   clients/firewall_stage1_proposal.rb \
   clients/routing_auto.rb \
   clients/remote.rb \
