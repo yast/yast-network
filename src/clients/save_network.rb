@@ -154,11 +154,11 @@ module Yast
       nil
     end
 
-
-
-    # this replaces bash script create_interface
-    def save_network
-      Builtins.y2milestone("starting save_network")
+    # Copies parts configuration created during installation.
+    #
+    # Copies several config files which should be preserved when installation
+    # is done. E.g. ifcfg-* files, custom udev rules and so on.
+    def copy_from_instsys
       # skip from chroot
       old_SCR = WFM.SCRGetDefault
       new_SCR = WFM.SCROpen("chroot=/:scr", false)
@@ -263,6 +263,13 @@ module Yast
       WFM.SCRSetDefault(old_SCR)
       WFM.SCRClose(new_SCR)
 
+      nil
+    end
+
+    # It does an automatic configuration of installed system
+    #
+    # Basically, it runs several proposals.
+    def configure_target
       NetworkAutoconfiguration.instance.configure_virtuals
       NetworkAutoconfiguration.instance.configure_dns
 
@@ -275,6 +282,16 @@ module Yast
         path(".local.bash"),
         "pidofproc rpcbind && touch /var/lib/YaST2/network_install_rpcbind"
       )
+
+      nil
+    end
+
+    # this replaces bash script create_interface
+    def save_network
+      log.info("starting save_network")
+
+      copy_from_instsys
+      configure_target
 
       nil
     end
