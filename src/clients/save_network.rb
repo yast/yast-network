@@ -92,19 +92,25 @@ module Yast
     SYSCONFIG = "/etc/sysconfig/network/"
 
     def CopyConfiguredNetworkFiles
-      Builtins.y2milestone(
+      log.info(
         "Copy network configuration files from 1st stage into installed system"
       )
 
-      copy_to = String.Quote(Installation.destdir + SYSCONFIG)
+      inst_dir = Installation.destdir
+
+      copy_receipts = [
+        { dir: SYSCONFIG, file: "ifcfg-*" },
+        { dir: SYSCONFIG, file: "ifroute-*" },
+        { dir: SYSCONFIG, file: "routes" }
+      ]
 
       # just copy files
-      ["ifcfg-*", "ifroute-*", "routes"].each do |file|
-        if file.include?("ifcfg-")
-          adjust_for_network_disks("#{SYSCONFIG}/#{file}")
-        end
+      copy_receipts.each do |receipt|
+        file = receipt[:dir] + receipt[:file]
+        adjust_for_network_disks(file) if file.include?("ifcfg-")
 
-        copy_from = String.Quote(SYSCONFIG + file)
+        copy_from = String.Quote(file)
+        copy_to = String.Quote(inst_dir + receipt[:dir])
 
         log.info("Copying #{copy_from} to #{copy_to}")
 
@@ -113,6 +119,8 @@ module Yast
 
         log.warn("cmd: '#{cmd}' failed: #{ret}") if ret["exit"] != 0
       end
+
+      copy_to = String.Quote(inst_dir + SYSCONFIG)
 
       # merge files with default installed by sysconfig
       ["dhcp", "config"].each do |file|
