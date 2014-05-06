@@ -155,6 +155,8 @@ module Yast
     end
 
     def copy_udev_rules
+      dest_root = String.Quote(Installation.destdir)
+
       if Arch.s390
         log.info("Copy S390 specific udev rule files (/etc/udev/rules/51*)")
 
@@ -163,7 +165,7 @@ module Yast
           Builtins.sformat(
             "/bin/cp -p %1/51-* '%2%1'",
             "/etc/udev/rules.d",
-            String.Quote(Installation.destdir)
+            dest_root
           )
         )
       end
@@ -174,51 +176,36 @@ module Yast
       udev_rules_srcdir = "/etc/udev/rules.d"
       net_srcfile = "70-persistent-net.rules"
 
-      udev_rules_destdir = Builtins.sformat(
-        "%1%2",
-        String.Quote(Installation.destdir),
-        udev_rules_srcdir
-      )
-      net_destfile = Builtins.sformat(
-        "%1%2/%3",
-        String.Quote(Installation.destdir),
-        udev_rules_srcdir,
-        net_srcfile
-      )
+      udev_rules_destdir = dest_root + udev_rules_srcdir
+      net_destfile = dest_root + udev_rules_srcdir + "/" + net_srcfile
 
-      Builtins.y2milestone("udev_rules_destdir %1", udev_rules_destdir)
-      Builtins.y2milestone("net_destfile %1", net_destfile)
+      log.info("udev_rules_destdir #{udev_rules_destdir}")
+      log.info("net_destfile #{net_destfile}")
 
       #Do not create udev_rules_destdir if it already exists (in case of update)
       #(bug #293366, c#7)
 
       if !FileUtils.Exists(udev_rules_destdir)
-        Builtins.y2milestone(
-          "%1 does not exist yet, creating it",
-          udev_rules_destdir
-        )
+        log.info("#{udev_rules_destdir} does not exist yet, creating it")
         WFM.Execute(
           path(".local.bash"),
-          Builtins.sformat("mkdir -p '%1'", udev_rules_destdir)
+          "mkdir -p '#{udev_rules_destdir}'"
         )
       else
-        Builtins.y2milestone("File %1 exists", udev_rules_destdir)
+        log.info("File #{udev_rules_destdir} exists")
       end
 
       if !FileUtils.Exists(net_destfile)
-        Builtins.y2milestone("Copying %1 to the installed system ", net_srcfile)
+        log.info("Copying #{net_srcfile} to the installed system ")
         WFM.Execute(
           path(".local.bash"),
-          Builtins.sformat(
-            "/bin/cp -p '%1/%2' '%3'",
-            udev_rules_srcdir,
-            net_srcfile,
-            net_destfile
-          )
+          "/bin/cp -p '#{udev_rules_srcdir}/#{net_srcfile}' '#{net_destfile}'"
         )
       else
-        Builtins.y2milestone("Not copying file %1 - it already exists", net_destfile)
+        log.info("Not copying file #{net_destfile} - it already exists")
       end
+
+      nil
     end
 
     # Copies parts configuration created during installation.
