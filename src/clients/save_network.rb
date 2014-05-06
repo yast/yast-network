@@ -89,6 +89,7 @@ module Yast
       end
     end
 
+    ETC = "/etc/"
     SYSCONFIG = "/etc/sysconfig/network/"
 
     def CopyConfiguredNetworkFiles
@@ -101,7 +102,8 @@ module Yast
       copy_receipts = [
         { dir: SYSCONFIG, file: "ifcfg-*" },
         { dir: SYSCONFIG, file: "ifroute-*" },
-        { dir: SYSCONFIG, file: "routes" }
+        { dir: SYSCONFIG, file: "routes" },
+        { dir: ETC, file: "HOSTNAME" }
       ]
 
       # just copy files
