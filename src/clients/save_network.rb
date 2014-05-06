@@ -154,28 +154,10 @@ module Yast
       nil
     end
 
-    # Copies parts configuration created during installation.
-    #
-    # Copies several config files which should be preserved when installation
-    # is done. E.g. ifcfg-* files, custom udev rules and so on.
-    def copy_from_instsys
-      # skip from chroot
-      old_SCR = WFM.SCRGetDefault
-      new_SCR = WFM.SCROpen("chroot=/:scr", false)
-      WFM.SCRSetDefault(new_SCR)
-
-      # when root is on nfs/iscsi set startmode=nfsroot #176804
-      device = NetworkStorage.getDevice(Installation.destdir)
-      Builtins.y2debug(
-        "%1 directory is on %2 device",
-        Installation.destdir,
-        device
-      )
-
+    def copy_udev_rules
       if Arch.s390
-        Builtins.y2milestone(
-          "For s390 architecture copy udev rule files (/etc/udev/rules/51*)"
-        )
+        log.info("Copy S390 specific udev rule files (/etc/udev/rules/51*)")
+
         WFM.Execute(
           path(".local.bash"),
           Builtins.sformat(
@@ -185,25 +167,6 @@ module Yast
           )
         )
       end
-      # --------------------------------------------------------------
-      # Copy DHCP client cache so that we can request the same IP (#43974).
-      WFM.Execute(
-        path(".local.bash"),
-        Builtins.sformat(
-          "mkdir -p '%2%1'; /bin/cp -p %1/dhcpcd-*.cache '%2%1'",
-          "/var/lib/dhcpcd",
-          String.Quote(Installation.destdir)
-        )
-      )
-      # Copy DHCPv6 (DHCP for IPv6) client cache.
-      WFM.Execute(
-        path(".local.bash"),
-        Builtins.sformat(
-          "/bin/cp -p %1/ '%2%1'",
-          "/var/lib/dhcpv6",
-          String.Quote(Installation.destdir)
-        )
-      )
 
       #Deleting lockfiles and re-triggering udev events for *net is not needed any more
       #(#292375 c#18)
@@ -256,7 +219,47 @@ module Yast
       else
         Builtins.y2milestone("Not copying file %1 - it already exists", net_destfile)
       end
+    end
 
+    # Copies parts configuration created during installation.
+    #
+    # Copies several config files which should be preserved when installation
+    # is done. E.g. ifcfg-* files, custom udev rules and so on.
+    def copy_from_instsys
+      # skip from chroot
+      old_SCR = WFM.SCRGetDefault
+      new_SCR = WFM.SCROpen("chroot=/:scr", false)
+      WFM.SCRSetDefault(new_SCR)
+
+      # when root is on nfs/iscsi set startmode=nfsroot #176804
+      device = NetworkStorage.getDevice(Installation.destdir)
+      Builtins.y2debug(
+        "%1 directory is on %2 device",
+        Installation.destdir,
+        device
+      )
+
+      # --------------------------------------------------------------
+      # Copy DHCP client cache so that we can request the same IP (#43974).
+      WFM.Execute(
+        path(".local.bash"),
+        Builtins.sformat(
+          "mkdir -p '%2%1'; /bin/cp -p %1/dhcpcd-*.cache '%2%1'",
+          "/var/lib/dhcpcd",
+          String.Quote(Installation.destdir)
+        )
+      )
+      # Copy DHCPv6 (DHCP for IPv6) client cache.
+      WFM.Execute(
+        path(".local.bash"),
+        Builtins.sformat(
+          "/bin/cp -p %1/ '%2%1'",
+          "/var/lib/dhcpv6",
+          String.Quote(Installation.destdir)
+        )
+      )
+
+      copy_udev_rules
       CopyConfiguredNetworkFiles()
 
       # close and chroot back
