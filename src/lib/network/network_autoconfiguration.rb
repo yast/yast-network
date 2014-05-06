@@ -17,6 +17,7 @@ module Yast
     Yast.import "Package"
     Yast.import "DNS"
     Yast.import "Arch"
+    Yast.import "Host"
 
     BASH_PATH = Path.new(".target.bash")
 
@@ -93,6 +94,16 @@ module Yast
       log.info("write hostname: #{DNS.write_hostname}")
 
       DNS.Write
+    end
+
+    # Proposes updates for /etc/hosts
+    #
+    # Expected to be used for updating target system's config.
+    # Currently it only updates /etc/hosts with static IP if any.
+    def configure_hosts
+      Host.Read
+      Host.ResolveHostnameToStaticIPs
+      Host.Write
     end
 
   private

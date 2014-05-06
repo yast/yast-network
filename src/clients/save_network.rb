@@ -272,6 +272,7 @@ module Yast
     def configure_target
       NetworkAutoconfiguration.instance.configure_virtuals
       NetworkAutoconfiguration.instance.configure_dns
+      NetworkAutoconfiguration.instance.configure_hosts
 
       LanUdevAuto.Write if Mode.autoinst
 
