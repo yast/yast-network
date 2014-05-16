@@ -149,7 +149,7 @@ module Yast
         },
         "MODIFY_RESOLV"   => {
           "widget" => :combobox,
-          "label"  => _("&Modify DNS configuration"),
+          "label"  => _("&Modify DNS Configuration"),
           "opt"    => [:notify],
           "items"  => [
             [:nomodify, _("Only Manually")],
