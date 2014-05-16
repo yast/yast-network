@@ -1054,8 +1054,17 @@ module Yast
     #
     # @return [boolean] true if physical layer is connected
     def phy_connected?(dev_name)
-      # SetLinkUp ensures that driver is properly initialized
-      SetLinkUp(dev_name) && has_carrier?(dev_name)
+      # SetLinkUp ensures that driver is loaded
+      SetLinkUp(dev_name)
+
+      # Wait for driver initialization if needed. bnc#876848
+      # 5 secs is minimum proposed by sysconfig guys for intel drivers.
+      #
+      # For a discussion regarding this see
+      # https://github.com/yast/yast-network/pull/202
+      sleep(5)
+
+      has_carrier?(dev_name)
     end
 
     def validPrefixOrNetmask(ip, mask)
