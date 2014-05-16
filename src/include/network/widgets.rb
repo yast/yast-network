@@ -192,7 +192,7 @@ module Yast
       ret = {
         "widget" => :combobox,
         # Combo box label - when to activate device (e.g. on boot, manually, never,..)
-        "label"  => _("Activate &device"),
+        "label"  => _("Activate &Device"),
         "opt"    => [:notify],
         "handle" => fun_ref(method(:handleStartmode), "symbol (string, map)"),
         "help"   =>
@@ -244,7 +244,7 @@ module Yast
       {
         "widget" => :radio_buttons,
         "items"  => LanItems.ipoib_modes.to_a,
-        "label"  => _("IPoIB device mode"),
+        "label"  => _("IPoIB Device Mode"),
         "opt"    => [:hstretch],
         "init"   => fun_ref(method(:init_ipoib_mode_widget), "void (string)"),
         "store"  => fun_ref(method(:store_ipoib_mode_widget), "void (string, map)")

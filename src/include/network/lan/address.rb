@@ -285,7 +285,7 @@ module Yast
                       _("No Link and IP Setup (Bonding Slaves)")
                     ),
                     HSpacing(1),
-                    CheckBox(Id(:ibft), Opt(:notify), _("Use iBFT values"))
+                    CheckBox(Id(:ibft), Opt(:notify), _("Use iBFT Values"))
                   )
                 )
               ),
@@ -320,7 +320,7 @@ module Yast
                   RadioButton(
                     Id(:static),
                     Opt(:notify),
-                    _("Statically assigned IP Address")
+                    _("Statically Assigned IP Address")
                   )
                 ),
                 HBox(
@@ -1402,7 +1402,7 @@ module Yast
           "maximum" => 100,
           # Combo box label - when to activate device (e.g. on boot, manually, never,..)
           "label"   => _(
-            "Ifplugd priority"
+            "Ifplugd Priority"
           ),
           "help" =>
             # Device activation main help. The individual parts will be
