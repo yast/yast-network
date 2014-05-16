@@ -1054,6 +1054,8 @@ module Yast
     #
     # @return [boolean] true if physical layer is connected
     def phy_connected?(dev_name)
+      return true if has_carrier?(dev_name)
+
       # SetLinkUp ensures that driver is loaded
       SetLinkUp(dev_name)
 
