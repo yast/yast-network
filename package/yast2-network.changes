@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri May 16 11:11:53 UTC 2014 - mfilka@suse.com
+
+- bnc#876848
+  - network autoconfiguration fixed for kvm guests
+- 3.1.56 
+
+-------------------------------------------------------------------
 Tue May  6 12:53:02 UTC 2014 - mfilka@suse.com
 
 - bnc#874178
