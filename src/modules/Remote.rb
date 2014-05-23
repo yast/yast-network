@@ -32,6 +32,13 @@ require "yast"
 
 module Yast
   class RemoteClass < Module
+    include Yast::Logger
+
+    XDM_SERVICE_NAME = "display-manager"
+    XINETD_SERVICE = "xinetd"
+
+    PKG_CONTAINING_FW_SERVICES = "xorg-x11-Xvnc"
+
     def main
       Yast.import "UI"
       textdomain "network"
@@ -45,6 +52,7 @@ module Yast
       Yast.import "Linuxrc"
       Yast.import "String"
       Yast.import "FileUtils"
+      Yast.import "Message"
 
       Yast.include self, "network/routines.rb"
 
@@ -99,11 +107,8 @@ module Yast
       @already_proposed = true
 
       # Bugzilla #135605 - enabling Remote Administration when installing using VNC
-      if Linuxrc.vnc
-        @allow_administration = true
-      else
-        @allow_administration = false
-      end
+      @allow_administration = Linuxrc.vnc
+
       Builtins.y2milestone(
         "Remote Administration was proposed as: %1",
         @allow_administration ? "enabled" : "disabled"
@@ -151,7 +156,7 @@ module Yast
       # - is case insensitive to option names.
       # - option can be prefixed by 0 or up to 2 dashes
       # - option and value can be separated by space or =
-      new_server_args = Builtins.tolower(server_args)
+      new_server_args = server_args.downcase
 
       new_server_args = String.CutRegexMatch(new_server_args, pattern, true)
 
@@ -187,7 +192,7 @@ module Yast
     #                      if sec_type is valid. Unchanged server_args otherwise.
     def SetSecurityType(server_args, sec_type)
       # validate sec_type
-      return server_args if !Builtins.contains(@SEC_TYPES, sec_type)
+      return server_args if !@SEC_TYPES.include?(sec_type)
 
       SetServerArgsOpt(server_args, @SEC_OPT_SECURITYTYPE, sec_type)
     end
@@ -195,7 +200,7 @@ module Yast
     # Read the current status
     # @return true on success
     def Read
-      xdm = Service.Enabled("xdm")
+      xdm = Service.Enabled(XDM_SERVICE_NAME)
       dm_ra = Convert.to_string(
         SCR.Read(path(".sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS"))
       ) == "yes"
@@ -203,7 +208,7 @@ module Yast
         SCR.Read(path(".sysconfig.displaymanager.DISPLAYMANAGER"))
       )
 
-      xinetd = Service.Enabled("xinetd")
+      xinetd = Service.Enabled(XINETD_SERVICE)
       # are the proper services enabled in xinetd?
       xinetd_conf = Convert.convert(
         SCR.Read(path(".etc.xinetd_conf.services")),
@@ -218,28 +223,26 @@ module Yast
         Ops.get_boolean(vnc_conf, [0, "enabled"], false) &&
         Ops.get_boolean(vnc_conf, [1, "enabled"], false)
 
-      Builtins.y2milestone("XDM: %1, DM_R_A: %2", xdm, dm_ra)
-      Builtins.y2milestone("xinetd: %1, VNC: %2", xinetd, vnc)
+      log.info "#{XDM_SERVICE_NAME}: #{xdm}, DM_R_A: #{dm_ra}"
+      log.info "xinetd: #{xinetd}, VNC: #{vnc}"
+
       @allow_administration = xdm && dm_ra && xinetd && vnc
 
-      current_progress = Progress.set(false)
-      SuSEFirewall.Read
-      Progress.set(current_progress)
+      # Package containing SuSEfirewall2 services has to be installed before
+      # reading SuSEFirewall, otherwise exception is thrown by firewall
+      if Package.Install(PKG_CONTAINING_FW_SERVICES)
+        current_progress = Progress.set(false)
+        SuSEFirewall.Read
+        Progress.set(current_progress)
+      else
+        Report.Error(
+          _("Package %{package} is not installed\nfirewall settings will be disabled.") % {
+            :package => PKG_CONTAINING_FW_SERVICES
+          }
+        )
+      end
 
       true
-    end
-
-    # Function creates automatic X configuration by calling sax2
-    # see bugs #135605, #157342
-    def CreateSaxAutomaticConfiguration
-      command = "TERM=dumb /usr/sbin/sax2 -r -a | /usr/bin/grep -v '\\r$'"
-      Builtins.y2milestone("Creating automatic Xconfiguration: %1", command)
-      Builtins.y2milestone(
-        "SaX2 returned: %1",
-        SCR.Execute(path(".target.bash_output"), command)
-      )
-
-      nil
     end
 
     def WriteXinetd
@@ -269,7 +272,7 @@ module Yast
             ServerArgsRemoveOpt(server_args, @SEC_OPT_SECURITYTYPE, true)
           )
         end
-        Builtins.y2milestone("Updated xinet cfg: %1", m)
+        log.info "Updated xinet cfg: #{m}"
         deep_copy(m)
       end
 
@@ -290,11 +293,10 @@ module Yast
 
       if Mode.normal
         # Progress stage 3
-        steps = Builtins.add(steps, _("Restart the services"))
+        steps << _("Restart the services")
       end
 
       caption = _("Saving Remote Administration Configuration")
-      sl = 0 #100; //for testing
 
       Progress.New(caption, " ", Builtins.size(steps), steps, [], "")
 
@@ -302,42 +304,38 @@ module Yast
       current_progress = Progress.set(false)
       SuSEFirewall.Write
       Progress.set(current_progress)
-      Builtins.sleep(sl)
 
       ProgressNextStage(_("Configuring display manager..."))
 
       if @allow_administration
         # Install required packages
-        packages = ["xinetd", "xorg-x11", "xorg-x11-Xvnc"]
+        packages = ["xinetd", "xorg-x11", PKG_CONTAINING_FW_SERVICES]
 
         #At least one windowmanager must be installed (#427044)
         #If none is, there, use icewm as fallback
         #Package::Installed uses rpm -q --whatprovides
-        if !Package.Installed("windowmanager")
-          packages = Builtins.add(packages, "icewm")
-        end
+        packages << "icewm" unless Package.Installed("windowmanager")
 
         if !Package.InstallAll(packages)
-          Builtins.y2error("Installing of required packages failed")
+          log.error "Installing of required packages failed"
           return false
         end
 
         # Enable xinetd
-        if !Service.Enable("xinetd")
-          Builtins.y2error("Enabling of xinetd failed")
+        if !Service.Enable(XINETD_SERVICE)
+          Report.Error(
+            _("Enabling service %{service} has failed") % { :service => XINETD_SERVICE }
+          )
           return false
         end
 
         # Enable XDM
-        if !Service.Enable("xdm")
-          Builtins.y2error("Enabling of xdm failed")
+        if !Service.Enable(XDM_SERVICE_NAME)
+          Report.Error(
+            _("Enabling service %{service} has failed") % { :service => XDM_SERVICE_NAME }
+          )
           return false
         end
-
-        # Bugzilla #135605 - creating xorg.conf based on the sax2 automatic configuration
-        # It is a special case when the installation runs in VNC
-        #     - Xconfiguration in the hardware proposal is disabled
-        CreateSaxAutomaticConfiguration() if Mode.installation && Linuxrc.vnc
       end
 
       # Set DISPLAYMANAGER_REMOTE_ACCESS in sysconfig/displaymanager
@@ -356,51 +354,32 @@ module Yast
 
       #Do this only if package xinetd is installed (#256385)
       return false if have_xinetd && !WriteXinetd()
-      Builtins.sleep(sl)
 
       if Mode.normal
-        dm_was_running = Service.Status("xdm") == 0
-
         ProgressNextStage(_("Restarting the service..."))
+
         if @allow_administration
           SCR.Write(path(".etc.inittab.id"), "5:initdefault:")
           SCR.Write(path(".etc.inittab"), nil)
 
           #if allow_administration is set to true, xinetd must be already installed
-          Service.Restart("xinetd")
-          if !dm_was_running
-            ##41611: with Service::Start, yast hangs :-(
-            SCR.Execute(
-              path(".target.bash_background"),
-              "/etc/init.d/xdm start"
-            )
-          end
+          Report.Error(Message.CannotRestartService(XINETD_SERVICE)) unless Service.Restart(XINETD_SERVICE)
+          Report.Error(Message.CannotRestartService(XDM_SERVICE_NAME)) unless Service.Restart(XDM_SERVICE_NAME)
         else
           if have_xinetd
             # xinetd may be needed for other services so we never turn it
             # off. It will exit anyway if no services are configured.
             # If it is running, restart it.
-            Service.RunInitScript("xinetd", "try-restart")
+            Service.Restart(XINETD_SERVICE) if Service.active?(XINETD_SERVICE)
           end
         end
 
-        #do not call 'rcxdm reload' for gdm - use SuSEconfig
-        if dm_was_running && @default_dm != "gdm"
-          Service.RunInitScript("xdm", "reload") 
-          # import "Report";
-          #     Report::Message (sformat (
-          #     // message popup
-          #     // %1 is a system command
-          #     // Note: it is a DISPLAY manager, not a WINDOW manager
-          # _("For the settings to take effect, the display manager
-          # must be restarted. Because this terminates all X Window System
-          # sessions, do it manually from the console with
-          # \"%1\".
-          # Note that restarting the X server alone is not enough."),
-          # "rcxdm restart"));
+        # do not call '$service reload' for gdm - use SuSEconfig
+        # TODO: confirm that it's still needed
+        if @default_dm != "gdm"
+          Service.Reload(XDM_SERVICE_NAME)
         end
 
-        Builtins.sleep(sl)
         Progress.NextStage
       end
 
@@ -410,13 +389,8 @@ module Yast
     # Create summary
     # @return summary text
     def Summary
-      if @allow_administration
-        # Label in proposal text
-        return _("Remote administration is enabled.")
-      else
-        # Label in proposal text
-        return _("Remote administration is disabled.")
-      end
+      # description in proposal
+      @allow_administration ? _("Remote administration is enabled.") : _("Remote administration is disabled.")
     end
 
     publish :variable => :SEC_NONE, :type => "const string"

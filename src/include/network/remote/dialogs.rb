@@ -41,8 +41,7 @@ module Yast
     end
 
     def DialogDone(event)
-      event = deep_copy(event)
-      action = Convert.to_symbol(event)
+      action = event.to_sym
 
       return true if action == :next || action == :back
       return true if action == :abort || action == :cancel
