@@ -107,7 +107,7 @@ module Yast
       @already_proposed = true
 
       # Bugzilla #135605 - enabling Remote Administration when installing using VNC
-      @allow_administration = Linuxrc.vnc.dup
+      @allow_administration = Linuxrc.vnc
 
       Builtins.y2milestone(
         "Remote Administration was proposed as: %1",
@@ -293,7 +293,7 @@ module Yast
 
       if Mode.normal
         # Progress stage 3
-        steps = steps << _("Restart the services")
+        steps << _("Restart the services")
       end
 
       caption = _("Saving Remote Administration Configuration")
@@ -314,7 +314,7 @@ module Yast
         #At least one windowmanager must be installed (#427044)
         #If none is, there, use icewm as fallback
         #Package::Installed uses rpm -q --whatprovides
-        packages << "icewm" unless !Package.Installed("windowmanager")
+        packages << "icewm" unless Package.Installed("windowmanager")
 
         if !Package.InstallAll(packages)
           log.error "Installing of required packages failed"
@@ -323,7 +323,6 @@ module Yast
 
         # Enable xinetd
         if !Service.Enable(XINETD_SERVICE)
-          log.error "Enabling #{XINETD_SERVICE} failed"
           Report.Error(
             _("Enabling service %{service} has failed") % { :service => XINETD_SERVICE }
           )
@@ -332,7 +331,6 @@ module Yast
 
         # Enable XDM
         if !Service.Enable(XDM_SERVICE_NAME)
-          log.error "Enabling #{XDM_SERVICE_NAME} has failed"
           Report.Error(
             _("Enabling service %{service} has failed") % { :service => XDM_SERVICE_NAME }
           )
@@ -391,12 +389,8 @@ module Yast
     # Create summary
     # @return summary text
     def Summary
-      @allow_administration ?
-        # description in proposal
-        _("Remote administration is enabled.")
-        :
-        # description in proposal
-        _("Remote administration is disabled.")
+      # description in proposal
+      @allow_administration ? _("Remote administration is enabled.") : _("Remote administration is disabled.")
     end
 
     publish :variable => :SEC_NONE, :type => "const string"
