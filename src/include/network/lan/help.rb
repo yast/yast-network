@@ -55,10 +55,9 @@ module Yast
               "for switching among wired and wireless networks.</p>\n"
           ) +
             # Network setup method help
-            # NetworkManager and ifup are programs
+            # NetworkManager and wicked are programs
             _(
-              "<p>Use the <b>Traditional Method with <tt>ifup</tt></b>\n" +
-                "if you do not run a desktop environment (GNOME or KDE)\n" +
+              "<p>Use <b>wicked</b> if you do not run a desktop environment\n" +
                 "or need to use multiple interfaces at the same time.</p>\n"
             ),
         "overview"          => _(
