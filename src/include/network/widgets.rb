@@ -291,24 +291,33 @@ module Yast
     # Initialize the NetworkManager widget
     # @param [String] key id of the widget
     def ManagedInit(key)
-      value = "managed" if NetworkService.is_network_manager
-      value = "ifup"    if NetworkService.is_netconfig
-      value = "wicked"  if NetworkService.is_wicked
+      items = []
+      if NetworkService.is_backend_available(:network_manager)
+        items << Item(
+          Id("managed"),
+          # the user can control the network with the NetworkManager program
+          _("NetworkManager Service"),
+          NetworkService.is_network_manager
+        )
+      end
+      if NetworkService.is_backend_available(:netconfig)
+        items << Item(
+          Id("ifup"),
+          # ifup is a program name
+          _("Traditional ifup"),
+          NetworkService.is_netconfig
+        )
+      end
+      if NetworkService.is_backend_available(:wicked)
+        items << Item(
+          Id("wicked"),
+          # wicked is network configuration backend like netconfig
+          _("Wicked Service"),
+          NetworkService.is_wicked
+        )
+      end
 
-      UI.ChangeWidget(
-        Id("managed"),
-        :Enabled,
-        NetworkService.is_backend_available(:network_manager))
-      UI.ChangeWidget(
-        Id("ifup"),
-        :Enabled,
-        NetworkService.is_backend_available(:netconfig))
-      UI.ChangeWidget(
-        Id("wicked"),
-        :Enabled,
-        NetworkService.is_backend_available(:wicked))
-
-      UI.ChangeWidget(Id(key), :CurrentButton, value)
+      UI.ChangeWidget(Id(:managed), :Items, items)
 
       nil
     end
@@ -317,7 +326,7 @@ module Yast
     # @param [String] key	id of the widget
     # @param [Hash] event	the event being handled
     def ManagedStore(key, event)
-      new_backend = UI.QueryWidget(Id(key), :CurrentButton)
+      new_backend = UI.QueryWidget(Id(:managed), :Value)
 
       case new_backend
         when "ifup"
@@ -347,32 +356,20 @@ module Yast
 
     def managed_widget
       {
-        "widget" => :radio_buttons,
-        # radio button group label, method of setup
-        "label"  => _("Network Setup Method"),
-        "items"  => [
-          # radio button label
-          # the user can control the network with the NetworkManager
-          # program
-          [
-            "managed",
-            _("&User Controlled with NetworkManager")
-          ],
-          # radio button label
-          # ifup is a program name
-          [
-            "ifup",
-            _("&Traditional Method with ifup")
-          ],
-          # radio button label
-          # wicked is network configuration backend like netconfig
-          [
-            "wicked",
-            _("Controlled by &wicked")
-          ],
-        ],
+        "widget" => :custom,
+        "custom_widget" => Frame(
+          _("General Network Settings"),
+          Left(
+            ComboBox(
+              Id(:managed),
+              Opt(:hstretch),
+              _("Network Setup Method"),
+              []
+            )
+          )
+        ),
         "opt"    => [],
-        "help"   => Ops.get_string(@help, "managed", ""),
+        "help"   => @help["managed"] || "",
         "init"   => fun_ref(method(:ManagedInit), "void (string)"),
         "store"  => fun_ref(method(:ManagedStore), "void (string, map)")
       }
