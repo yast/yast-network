@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri May 30 14:41:29 UTC 2014 - mfilka@suse.com
+
+- bnc#880754
+  - fixed internal error when configuring TUN/TAP device
+- 3.1.61 
+
+-------------------------------------------------------------------
 Fri May 30 13:50:20 UTC 2014 - vmoravec@suse.com
 
 - Fix failing tests due to changes in SystemdService#restart
