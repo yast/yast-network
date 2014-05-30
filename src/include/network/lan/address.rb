@@ -1277,11 +1277,15 @@ module Yast
         type == "vlan" ? VBox("ETHERDEVICE") : Empty()
       )
 
-      address_contents = VBox(
-        Left(label),
-        just_address_contents,
-        "AD_ADDRESSES"
-      )
+      if ["tun", "tap"].include?(LanItems.type)
+        address_contents = VBox(Left(label), "TUNNEL")
+      else
+        address_contents = VBox(
+          Left(label),
+          just_address_contents,
+          "AD_ADDRESSES"
+        )
+      end
 
       {
         # FIXME: here it does not complain about missing
@@ -1440,10 +1444,6 @@ module Yast
       end
 
       @settings["IFCFG"] = LanItems.device if LanItems.operation != :add
-
-      if Builtins.contains(["tun", "tap"], LanItems.type)
-        address_contents = VBox(Left(label), "TUNNEL")
-      end
 
 
       functions = {
