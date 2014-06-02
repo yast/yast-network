@@ -34,7 +34,7 @@ require "yast"
 module Yast
   class DNSClass < Module
 
-    HOSTNAME_FILE = "HOSTNAME"
+    HOSTNAME_FILE = "hostname"
     HOSTNAME_PATH = "/etc/" + HOSTNAME_FILE
 
     def main
