@@ -262,6 +262,8 @@ module Yast
 
       LanUdevAuto.Write if Mode.autoinst
 
+      DNS.create_hostname_link
+
       SCR.Execute(path(".target.bash"), "chkconfig network on")
 
       # if portmap running - start it after reboot

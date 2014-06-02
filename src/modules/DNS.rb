@@ -34,6 +34,8 @@ require "yast"
 module Yast
   class DNSClass < Module
 
+    include Logger
+
     HOSTNAME_FILE = "hostname"
     HOSTNAME_PATH = "/etc/" + HOSTNAME_FILE
 
@@ -234,11 +236,8 @@ module Yast
         fqhostname = read_hostname_from_install_inf
       end
 
-      if fqhostname.empty? && FileUtils.Exists(HOSTNAME_PATH)
-        fqhostname = SCR.Read(path(".target.string"), HOSTNAME_PATH)
-        #avoid passing nil argument when we get non-\n-terminated string (#445531)
-        fqhostname = String.FirstChunk(fqhostname, "\n")
-        Builtins.y2milestone("Got #{fqhostname} from #{HOSTNAME_PATH}")
+      if fqhostname.empty?
+        fqhostname = read_hostname_from_etc
       end
 
       split = Hostname.SplitFQ(fqhostname)
@@ -397,6 +396,9 @@ module Yast
         HOSTNAME_PATH,
         Ops.add(fqhostname, "\n")
       )
+
+      create_hostname_link
+
       Builtins.sleep(sl)
 
       # Progress step 2/3
@@ -645,6 +647,20 @@ module Yast
       false
     end
 
+    # Creates symlink /etc/HOSTNAME -> /etc/hostname to gurantee backward compatibility
+    # after changes in bnc#858908
+    def create_hostname_link
+      link_name = "/etc/HOSTNAME"
+      return if FileUtils.IsLink(link_name)
+
+      log.info "Creating #{link_name} symlink"
+
+      SCR.Execute(path(".target.bash"), "rm #{link_name}") if FileUtils.Exists(link_name)
+      SCR.Execute(path(".target.bash"), "ln -s #{DNSClass::HOSTNAME_PATH} #{link_name}")
+
+      nil
+    end
+
   private
     def read_hostname_from_install_inf
       install_inf_hostname = SCR.Read(path(".etc.install_inf.Hostname")) || ""
@@ -663,6 +679,25 @@ module Yast
       # We have non-empty hostname by now => we must set DNS modified flag
       # in order to get the setting actually written (bnc#588938)
       @modified = true if !fqhostname.empty?
+
+      return fqhostname
+    end
+
+    def read_hostname_from_etc
+      if FileUtils.Exists(HOSTNAME_PATH)
+        hostname_path = HOSTNAME_PATH
+      elsif FileUtils.Exists("/etc/HOSTNAME")
+        # backward compatibility due to changes done in bnc#858908
+        hostname_path = "/etc/HOSTNAME"
+      else
+        return ""
+      end
+
+      fqhostname = SCR.Read(path(".target.string"), hostname_path) || ""
+
+      #avoid passing nil argument when we get non-\n-terminated string (#445531)
+      fqhostname = String.FirstChunk(fqhostname, "\n")
+      log.info("Read #{fqhostname} from '/etc/'")
 
       return fqhostname
     end
