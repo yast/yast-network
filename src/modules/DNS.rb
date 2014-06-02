@@ -33,6 +33,10 @@ require "yast"
 
 module Yast
   class DNSClass < Module
+
+    HOSTNAME_FILE = "HOSTNAME"
+    HOSTNAME_PATH = "/etc/" + HOSTNAME_FILE
+
     def main
       Yast.import "UI"
       textdomain "network"
@@ -253,17 +257,14 @@ module Yast
       # in order to get the setting actually written (bnc#588938)
       @modified = true if Ops.greater_than(Builtins.size(fqhostname), 0)
 
-
-      # /etc/HOSTNAME
-      # the usual location
       if fqhostname == ""
-        if Ops.greater_than(SCR.Read(path(".target.size"), "/etc/HOSTNAME"), 0)
+        if Ops.greater_than(SCR.Read(path(".target.size"), HOSTNAME_PATH), 0)
           fqhostname = Convert.to_string(
-            SCR.Read(path(".target.string"), "/etc/HOSTNAME")
+            SCR.Read(path(".target.string"), HOSTNAME_PATH)
           )
           #avoid passing nil argument when we get non-\n-terminated string (#445531)
           fqhostname = String.FirstChunk(fqhostname, "\n")
-          Builtins.y2milestone("Got %1 from /etc/HOSTNAME", fqhostname)
+          Builtins.y2milestone("Got #{fqhostname} from #{HOSTNAME_PATH}")
         end
       end
 
@@ -420,7 +421,7 @@ module Yast
       # write hostname
       SCR.Write(
         path(".target.string"),
-        "/etc/HOSTNAME",
+        HOSTNAME_PATH,
         Ops.add(fqhostname, "\n")
       )
       Builtins.sleep(sl)
