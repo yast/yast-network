@@ -40,6 +40,7 @@ module Yast
       textdomain "network"
 
       Yast.import "Hostname"
+      Yast.import "DNS"
       Yast.import "IP"
       Yast.import "NetworkInterfaces"
       Yast.import "FileUtils"
@@ -103,7 +104,7 @@ module Yast
         { dir: SYSCONFIG, file: "ifcfg-*" },
         { dir: SYSCONFIG, file: "ifroute-*" },
         { dir: SYSCONFIG, file: "routes" },
-        { dir: ETC, file: "HOSTNAME" }
+        { dir: ETC, file: DNSClass::HOSTNAME_FILE }
       ]
 
       # just copy files
