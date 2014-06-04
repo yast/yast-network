@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Jun  3 20:37:11 UTC 2014 - mfilka@suse.com
+
+- bnc#858908
+  - write hostname into cross platform /etc/hostname instead of
+    SUSE specific /etc/HOSTNAME
+- 3.1.62
+
+-------------------------------------------------------------------
 Fri May 30 14:41:29 UTC 2014 - mfilka@suse.com
 
 - bnc#880754

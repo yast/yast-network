@@ -23,6 +23,7 @@ module Yast
 
     def initialize
       Yast.import "Hostname"
+      Yast.import "DNS"
       Yast.import "IP"
       Yast.import "NetworkInterfaces"
       Yast.import "FileUtils"
@@ -186,7 +187,7 @@ module Yast
       return false if hostname.empty?
 
       log.info("Write HOSTNAME: #{hostname}")
-      SCR.Write(path(".target.string"), "/etc/HOSTNAME", hostname)
+      SCR.Write(path(".target.string"), DNSClass::HOSTNAME_PATH, hostname)
     end
 
     def write_dns

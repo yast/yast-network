@@ -39,13 +39,9 @@ module Yast
 
       textdomain "network"
 
-      Yast.import "Hostname"
-      Yast.import "IP"
-      Yast.import "NetworkInterfaces"
+      Yast.import "DNS"
       Yast.import "FileUtils"
-      Yast.import "Netmask"
       Yast.import "NetworkStorage"
-      Yast.import "Proxy"
       Yast.import "Installation"
       Yast.import "String"
       Yast.import "Mode"
@@ -103,7 +99,7 @@ module Yast
         { dir: SYSCONFIG, file: "ifcfg-*" },
         { dir: SYSCONFIG, file: "ifroute-*" },
         { dir: SYSCONFIG, file: "routes" },
-        { dir: ETC, file: "HOSTNAME" }
+        { dir: ETC, file: DNSClass::HOSTNAME_FILE }
       ]
 
       # just copy files
@@ -265,6 +261,8 @@ module Yast
       NetworkAutoconfiguration.instance.configure_hosts
 
       LanUdevAuto.Write if Mode.autoinst
+
+      DNS.create_hostname_link
 
       SCR.Execute(path(".target.bash"), "chkconfig network on")
 

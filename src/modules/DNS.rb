@@ -33,6 +33,12 @@ require "yast"
 
 module Yast
   class DNSClass < Module
+
+    include Logger
+
+    HOSTNAME_FILE = "hostname"
+    HOSTNAME_PATH = "/etc/" + HOSTNAME_FILE
+
     def main
       Yast.import "UI"
       textdomain "network"
@@ -45,6 +51,7 @@ module Yast
       Yast.import "Progress"
       Yast.import "Service"
       Yast.import "String"
+      Yast.import "FileUtils"
 
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/runtime.rb"
@@ -225,51 +232,17 @@ module Yast
       fqhostname = ""
       # In installation (standard, or AutoYaST one), prefer /etc/install.inf
       # (because HOSTNAME comes with netcfg.rpm already, #144687)
-      if (Mode.installation || Mode.autoinst) &&
-          Ops.greater_than(
-            SCR.Read(path(".target.size"), "/etc/install.inf"),
-            0
-          )
-        install_inf_hostname = Convert.to_string(
-          SCR.Read(path(".etc.install_inf.Hostname"))
-        )
-        Builtins.y2milestone("Got %1 from install.inf", install_inf_hostname)
-
-        if Ops.greater_than(Builtins.size(install_inf_hostname), 0)
-          #if the name is actually IP, try to resolve it (bnc#556613, bnc#435649)
-          if IP.Check(install_inf_hostname)
-            fqhostname = ResolveIP(install_inf_hostname)
-            Builtins.y2milestone(
-              "Got %1 after resolving IP from install.inf",
-              fqhostname
-            )
-          else
-            fqhostname = install_inf_hostname
-          end
-        end
+      if (Mode.installation || Mode.autoinst) && FileUtils.Exists("/etc/install.inf")
+        fqhostname = read_hostname_from_install_inf
       end
 
-      # We have non-empty hostname by now => we must set DNS modified flag
-      # in order to get the setting actually written (bnc#588938)
-      @modified = true if Ops.greater_than(Builtins.size(fqhostname), 0)
-
-
-      # /etc/HOSTNAME
-      # the usual location
-      if fqhostname == ""
-        if Ops.greater_than(SCR.Read(path(".target.size"), "/etc/HOSTNAME"), 0)
-          fqhostname = Convert.to_string(
-            SCR.Read(path(".target.string"), "/etc/HOSTNAME")
-          )
-          #avoid passing nil argument when we get non-\n-terminated string (#445531)
-          fqhostname = String.FirstChunk(fqhostname, "\n")
-          Builtins.y2milestone("Got %1 from /etc/HOSTNAME", fqhostname)
-        end
+      if fqhostname.empty?
+        fqhostname = read_hostname_from_etc
       end
 
       split = Hostname.SplitFQ(fqhostname)
-      @hostname = Ops.get(split, 0, "")
-      @domain = Ops.get(split, 1, "")
+      @hostname = split[0] || ""
+      @domain = split[1] || ""
 
       # last resort
       if @hostname == ""
@@ -420,9 +393,12 @@ module Yast
       # write hostname
       SCR.Write(
         path(".target.string"),
-        "/etc/HOSTNAME",
+        HOSTNAME_PATH,
         Ops.add(fqhostname, "\n")
       )
+
+      create_hostname_link
+
       Builtins.sleep(sl)
 
       # Progress step 2/3
@@ -669,6 +645,61 @@ module Yast
         end
       end
       false
+    end
+
+    # Creates symlink /etc/HOSTNAME -> /etc/hostname to gurantee backward compatibility
+    # after changes in bnc#858908
+    def create_hostname_link
+      link_name = "/etc/HOSTNAME"
+      return if FileUtils.IsLink(link_name)
+
+      log.info "Creating #{link_name} symlink"
+
+      SCR.Execute(path(".target.bash"), "rm #{link_name}") if FileUtils.Exists(link_name)
+      SCR.Execute(path(".target.bash"), "ln -s #{DNSClass::HOSTNAME_PATH} #{link_name}")
+
+      nil
+    end
+
+  private
+    def read_hostname_from_install_inf
+      install_inf_hostname = SCR.Read(path(".etc.install_inf.Hostname")) || ""
+      log.info("Got #{install_inf_hostname} from install.inf")
+
+      return "" if install_inf_hostname.empty?
+
+      #if the name is actually IP, try to resolve it (bnc#556613, bnc#435649)
+      if IP.Check(install_inf_hostname)
+        fqhostname = ResolveIP(install_inf_hostname)
+        log.info("Got #{fqhostname} after resolving IP from install.inf")
+      else
+        fqhostname = install_inf_hostname
+      end
+
+      # We have non-empty hostname by now => we must set DNS modified flag
+      # in order to get the setting actually written (bnc#588938)
+      @modified = true if !fqhostname.empty?
+
+      return fqhostname
+    end
+
+    def read_hostname_from_etc
+      if FileUtils.Exists(HOSTNAME_PATH)
+        hostname_path = HOSTNAME_PATH
+      elsif FileUtils.Exists("/etc/HOSTNAME")
+        # backward compatibility due to changes done in bnc#858908
+        hostname_path = "/etc/HOSTNAME"
+      else
+        return ""
+      end
+
+      fqhostname = SCR.Read(path(".target.string"), hostname_path) || ""
+
+      #avoid passing nil argument when we get non-\n-terminated string (#445531)
+      fqhostname = String.FirstChunk(fqhostname, "\n")
+      log.info("Read #{fqhostname} from '/etc/'")
+
+      return fqhostname
     end
 
     publish :variable => :proposal_valid, :type => "boolean"

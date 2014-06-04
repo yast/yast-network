@@ -6,8 +6,8 @@ Read	.sysconfig.network.dhcp.WRITE_HOSTNAME_TO_HOSTS "no"
 Read	.sysconfig.network.config.NETCONFIG_DNS_POLICY nil
 Read	.sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS "208.67.222.222 208.67.220.220"
 Read	.sysconfig.network.config.NETCONFIG_DNS_STATIC_SEARCHLIST "suse.cz suse.de"
-Read	.target.size "/etc/HOSTNAME" 27
-Read	.target.string "/etc/HOSTNAME" "laptop.suse.cz"
+Read	.target.stat "/etc/hostname" $["exists":true]
+Read	.target.string "/etc/hostname" "laptop.suse.cz"
 Read	.target.size "/etc/sysconfig/network/routes" 27
 Read	.routes [$["destination":"default", "gateway":"10.20.30.40"]]
 Execute	.target.bash "rpm -q --whatprovides SuSEfirewall2" 0
