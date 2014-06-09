@@ -539,10 +539,14 @@ symbol handleHW (string key, map event) {
 	    }
 	    else if (hardware["type"]:"" == "dummy") // #44582
 	    {
-		hardware["hwcfg"] = (string) UI::QueryWidget (`id (`hwcfg), `Value);
-
 		hardware["modul"] = "dummy";
-		hardware["options"] = sformat ("-o dummy-%1", hardware["hwcfg"]:"");
+
+                if( UI::WidgetExists( `id( `hwcfg))) // bnc#767946
+                {
+		    hardware["hwcfg"] = (string) UI::QueryWidget (`id (`hwcfg), `Value);
+		    hardware["options"] = sformat ("-o dummy-%1", hardware["hwcfg"]:"");
+                }
+
 		UI::ChangeWidget(`id(`modul), `Value, hardware["modul"]:"");
 		UI::ChangeWidget(`id(`options), `Value, hardware["options"]:"");
 	    }
