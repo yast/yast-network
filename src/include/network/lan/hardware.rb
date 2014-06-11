@@ -46,7 +46,6 @@ module Yast
       Yast.import "LanItems"
       Yast.include include_target, "network/summary.rb"
       Yast.include include_target, "network/routines.rb"
-      # map NetworkCards
       Yast.include include_target, "network/lan/cards.rb"
 
       @hardware = nil
@@ -160,7 +159,6 @@ module Yast
 
     def initHardware
       @hardware = {}
-      #    hardware["modul"] = NetworkModules::Alias; // FIXME: MOD Lan::Module["module"]:"";
       Ops.set(@hardware, "hotplug", LanItems.hotplug)
       Builtins.y2milestone("hotplug=%1", LanItems.hotplug)
       Ops.set(
@@ -436,7 +434,6 @@ module Yast
         :Enabled,
         Ops.get_boolean(@hardware, "no_hotplug_dummy", false)
       )
-      #    UI::ChangeWidget(`id(`options), `Enabled, hardware["no_hotplug_dummy"]:false);
       ChangeWidgetIfExists(
         Id(:list),
         :Enabled,
@@ -475,7 +472,6 @@ module Yast
         :ValidChars,
         NetworkInterfaces.ValidCharsIfcfg
       ) 
-      #    ChangeWidgetIfExists(`id(`hwcfg), `ValidChars, NetworkModules::ValidCharsHwcfg ());
 
       nil
     end
@@ -527,7 +523,6 @@ module Yast
       while true
         ret = UI.UserInput
 
-        # abort?
         if ret == :abort || ret == :cancel
           if ReallyAbort()
             break
@@ -579,9 +574,6 @@ module Yast
         selected = 0 if selected == nil
         card = Ops.get(hwlist, selected, {})
         LanItems.description = Ops.get_string(card, "name", "") 
-
-        #	NetworkModules::Alias /* FIXME: MOD Lan::Module["module"] */ = card["module"]:"";
-        #	NetworkModules::Options /* FIXME: MOD Lan::Module["options"] */ = card["options"]:"";
       end
 
       deep_copy(ret)
@@ -604,7 +596,6 @@ module Yast
         ret = Ops.get_symbol(event, "WidgetID")
       end
       SelectionDialog() if ret == :list
-      # if (ret == `abort) LanItems::Rollback();
       if ret == :pcmcia || ret == :usb || ret == :dev
         if UI.WidgetExists(Id(:pcmcia)) || UI.WidgetExists(Id(:usb))
           if UI.QueryWidget(Id(:pcmcia), :Value) == true
@@ -1163,9 +1154,6 @@ module Yast
           UI.SetFocus(Id(:chan_mode))
       end
 
-      # FIXME: no spaces
-      # UI::ChangeWidget(`id(`key), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_:;");
-
       ret = nil
       while true
         if drvtype == "qeth"
@@ -1290,13 +1278,11 @@ module Yast
       Wizard.OpenNextBackDialog
       Wizard.SetContents(caption, contents, initHelp, false, true)
       Wizard.SetAbortButton(:cancel, Label.CancelButton)
-      #    Wizard::DisableBackButton();
       ret = CWM.Run(
-        w, #`abort:ReallyAbort
+        w,
         {}
       )
       Wizard.CloseDialog
-      #    Wizard::RestoreAbortButton();
       deep_copy(ret)
     end
   end
