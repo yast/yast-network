@@ -377,7 +377,7 @@ module Yast
       _UdevWidget =
         # TODO: Ud ... Rules
         Frame(
-          _("Udev rules"),
+          _("Udev Rules"),
           HBox(
             InputField(Id(:device_name), Opt(:hstretch), _("Device Name"), ""),
             PushButton(Id(:change_udev), _("Change"))
@@ -391,7 +391,7 @@ module Yast
       end
 
       _BlinkCard = Frame(
-        _("Show visible port identification"),
+        _("Show Visible Port Identification"),
         HBox(
           #translators: how many seconds will card be blinking
           IntField(
@@ -406,7 +406,7 @@ module Yast
       )
 
       _EthtoolWidget = Frame(
-        _("Ethtool options"),
+        _("Ethtool Options"),
         HBox(
           InputField(
             Id(:ethtool_opts),
