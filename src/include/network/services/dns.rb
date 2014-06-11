@@ -573,7 +573,7 @@ module Yast
         UI.ChangeWidget(Id("PLAIN_POLICY"), :Enabled, false)
       end
       #then disable if needed
-      disableItemsIfNM(["PLAIN_POLICY"], false)
+      disable_unconfigureable_items(["PLAIN_POLICY"], false)
 
       nil
     end
@@ -612,7 +612,7 @@ module Yast
 
       UI.ChangeWidget(Id("MODIFY_RESOLV"), :Value, default)
       #then disable if needed
-      disableItemsIfNM(["MODIFY_RESOLV"], false)
+      disable_unconfigureable_items(["MODIFY_RESOLV"], false)
 
       nil
     end
@@ -652,7 +652,7 @@ module Yast
         )
       ) { |key2| InitHnWidget(key2) }
       #disable those if NM is in charge
-      disableItemsIfNM(
+      disable_unconfigureable_items(
         ["NAMESERVER_1", "NAMESERVER_2", "NAMESERVER_3", "SEARCHLIST_S"],
         false
       )

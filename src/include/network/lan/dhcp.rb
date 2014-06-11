@@ -116,7 +116,7 @@ module Yast
         Ops.get_boolean(NetworkConfig.DHCP, "DHCLIENT_SET_DEFAULT_ROUTE", true)
       )
 
-      disableItemsIfNM(
+      disable_unconfigureable_items(
         [:broadcast, :clientid, :hostname, :no_defaultroute],
         false
       )

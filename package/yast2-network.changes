@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Wed Jun 11 10:06:12 UTC 2014 - mfilka@suse.com
+
+- bnc#878719
+  - handle inactive network service state
+  - allow disabling network service completely
+- fixed disabling of unconfigureable items when e.g. NetworkManager
+  is used as network service
+- 3.1.63 
+
+-------------------------------------------------------------------
 Tue Jun  3 20:37:11 UTC 2014 - mfilka@suse.com
 
 - bnc#858908
