@@ -1097,6 +1097,8 @@ module Yast
     #
     # see bnc#433084
     # if listed any items, disable them, if show_popup, show warning popup
+    #
+    # returns true if items were disabled
     def disable_unconfigureable_items(items, show_popup)
       return false if !unconfigureable_service?
 
