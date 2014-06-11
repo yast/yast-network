@@ -344,6 +344,8 @@ module Yast
           NetworkService.use_network_manager
         when "wicked"
           NetworkService.use_wicked
+        else
+          NetworkService.disable
       end
 
       if NetworkService.Modified
