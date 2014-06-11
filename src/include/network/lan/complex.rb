@@ -1,4 +1,4 @@
-# encoding: utf-8
+#, :gw6dev encoding: utf-8
 
 #***************************************************************************
 #
@@ -372,7 +372,6 @@ module Yast
     end
 
     def handleOverview(key, event)
-      event = deep_copy(event)
       if !disable_unconfigureable_items([:_hw_items, :_hw_sum] + overview_buttons.keys, false)
         enableDisableButtons
       end

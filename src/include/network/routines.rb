@@ -1100,7 +1100,6 @@ module Yast
     def disable_unconfigureable_items(items, show_popup)
       return false if !unconfigureable_service?
 
-      disable = true
       items.each { |i| UI.ChangeWidget(Id(i), :Enabled, false) }
 
       if show_popup
