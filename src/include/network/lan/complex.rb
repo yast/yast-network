@@ -360,7 +360,7 @@ module Yast
       UI.ChangeWidget(Id(:_hw_items), :Items, term_items)
 
       if !@shown
-        disableItemsIfNM([:_hw_items, :_hw_sum] + overview_buttons.keys, true)
+        disable_unconfigureable_items([:_hw_items, :_hw_sum] + overview_buttons.keys, true)
         @shown = true
       else
         enableDisableButtons
@@ -373,7 +373,7 @@ module Yast
 
     def handleOverview(key, event)
       event = deep_copy(event)
-      if !disableItemsIfNM([:_hw_items, :_hw_sum] + overview_buttons.keys, false)
+      if !disable_unconfigureable_items([:_hw_items, :_hw_sum] + overview_buttons.keys, false)
         enableDisableButtons
       end
       UI.ChangeWidget(:_hw_sum, :Value, LanItems.GetItemDescription)

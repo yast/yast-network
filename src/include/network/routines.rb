@@ -1086,31 +1086,35 @@ module Yast
     end
 
 
-    # Check if we're running in "normal" stage with NM
+    def unconfigureable_service?
+      return true if Mode.normal && NetworkService.is_network_manager
+      return true if NetworkService.is_disabled
+
+      return false
+    end
+
+    # Disables all widgets which cannot be configured with current network service
+    #
     # see bnc#433084
     # if listed any items, disable them, if show_popup, show warning popup
+    def disable_unconfigureable_items(items, show_popup)
+      return false if !unconfigureable_service?
 
-    def disableItemsIfNM(items, show_popup)
-      items = deep_copy(items)
       disable = true
-      if Mode.normal && NetworkService.is_network_manager
-        Builtins.foreach(items) { |w| UI.ChangeWidget(Id(w), :Enabled, false) }
-        if show_popup
-          Popup.Warning(
-            _(
-              "Network is currently controlled by NetworkManager and its settings \n" +
-                "cannot be edited by YaST.\n" +
-                "\n" +
-                "To edit the settings, use the NetworkManager connection editor or\n" +
-                "switch the network setup method to Traditional with ifup.\n"
-            )
+      items.each { |i| UI.ChangeWidget(Id(i), :Enabled, false) }
+
+      if show_popup
+        Popup.Warning(
+          _(
+            "Network is currently handled by an unsupported network service\n" +
+            "or completely disabled. YaST is unable to configure some options."
           )
-          UI.FakeUserInput({ "ID" => "global" })
-        end
-      else
-        disable = false
+        )
+        UI.FakeUserInput({ "ID" => "global" })
       end
-      disable
+
+      return true
     end
+
   end
 end
