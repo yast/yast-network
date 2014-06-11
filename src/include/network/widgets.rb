@@ -292,12 +292,14 @@ module Yast
     # @param [String] key id of the widget
     def ManagedInit(key)
       items = []
+      any_service_active = false
+
       if NetworkService.is_backend_available(:network_manager)
         items << Item(
           Id("managed"),
           # the user can control the network with the NetworkManager program
           _("NetworkManager Service"),
-          NetworkService.is_network_manager
+          any_service_active = NetworkService.is_network_manager
         )
       end
       if NetworkService.is_backend_available(:netconfig)
@@ -305,7 +307,7 @@ module Yast
           Id("ifup"),
           # ifup is a program name
           _("Traditional ifup"),
-          NetworkService.is_netconfig
+          any_service_active = NetworkService.is_netconfig
         )
       end
       if NetworkService.is_backend_available(:wicked)
@@ -313,9 +315,16 @@ module Yast
           Id("wicked"),
           # wicked is network configuration backend like netconfig
           _("Wicked Service"),
-          NetworkService.is_wicked
+          any_service_active = NetworkService.is_wicked
         )
       end
+
+      items << Item(
+        Id("disabled"),
+        # used when no network service is active or to disable network service
+        _("Network Services Disabled"),
+        !any_service_active
+      )
 
       UI.ChangeWidget(Id(:managed), :Items, items)
 
