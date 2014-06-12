@@ -549,6 +549,34 @@ module Yast
       SetItemName( @current, name)
     end
 
+    # Sets new device name for current item
+    def rename(name)
+      if(GetCurrentName() != name)
+        @Items[@current]["renamed_to"] = name
+      else
+        @Items[@current].delete("renamed_to")
+      end
+    end
+
+    # Returns new name for current item
+    def renamed_to(item_id)
+      @Items[item_id]["renamed_to"]
+    end
+
+    def current_renamed_to
+      renamed_to(@current)
+    end
+
+    # Tells if current item was renamed
+    def renamed?(item_id)
+      return false if !@Items[item_id].has_key?("renamed_to")
+      renamed_to(item_id) != GetDeviceName(item_id)
+    end
+
+    def current_renamed?
+      renamed?(@current)
+    end
+
     # Writes udev rules for all items.
     #
     # Currently only interesting change is renaming interface.
@@ -1322,6 +1350,10 @@ module Yast
             note = _("enslaved in %s") % bond_master
             bond_master_desc = ("%s: %s") % [_("Bonding master"), bond_master]
             bullets << bond_master_desc
+          end
+
+          if renamed?(key)
+            note = ("%s -> %s") % [GetDeviceName(key), renamed_to(key)]
           end
 
           overview << Summary.Device(descr, status)

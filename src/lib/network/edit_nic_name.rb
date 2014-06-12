@@ -30,7 +30,11 @@ module Yast
 
       current_item = LanItems.getCurrentItem
 
-      @old_name = LanItems.GetItemUdev("NAME")
+      @old_name = if LanItems.current_renamed?
+        LanItems.current_renamed_to
+      else
+        LanItems.GetItemUdev("NAME")
+      end
 
       @old_key = MAC_UDEV_ATTR unless LanItems.GetItemUdev( MAC_UDEV_ATTR).empty?
       @old_key = BUSID_UDEV_ATTR unless LanItems.GetItemUdev( BUSID_UDEV_ATTR).empty?
@@ -51,6 +55,7 @@ module Yast
       open
 
       ret = nil
+      new_name = @old_name
       while ![:cancel, :abort, :ok].include? ret
         ret = UI.UserInput
 
@@ -60,13 +65,15 @@ module Yast
 
             if new_name != @old_name
               if CheckUdevNicName(new_name)
-                LanItems.SetCurrentName( new_name)
+                LanItems.rename(new_name)
               else
                 UI.SetFocus(:dev_name)
                 ret = nil
 
                 next
               end
+            else
+              LanItems.rename(new_name)
             end
 
             if UI.QueryWidget(:udev_type, :CurrentButton) == :mac
@@ -84,7 +91,7 @@ module Yast
 
       close
 
-      LanItems.GetCurrentName
+      new_name
     end
 
   private
