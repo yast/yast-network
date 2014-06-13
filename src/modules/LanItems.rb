@@ -698,7 +698,14 @@ module Yast
     end
 
     def write
+      renamed_items = @Items.keys.select { |item_id| renamed?(item_id) }
+      renamed_items.each do |item_id|
+        NetworkInterfaces.Change2(renamed_to(item_id), GetDeviceMap(item_id), false)
+        SetItemName(item_id, renamed_to(item_id))
+      end
+
       LanItems.WriteUdevRules if !Mode.autoinst && LanUdevAuto.AllowUdevModify
+
       # FIXME: hack: no "netcard" filter as biosdevname names it diferently (bnc#712232)
       NetworkInterfaces.Write("")
     end
