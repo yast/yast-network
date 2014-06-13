@@ -101,13 +101,13 @@ module Yast
         VBox(
           Left(
             HBox(
-              Label(_("Device name:")),
+              Label(_("Device Name:")),
               InputField(Id(:dev_name), Opt(:hstretch), "", @old_name)
             )
           ),
           VSpacing(0.5),
           Frame(
-            _("Base udev rule on"),
+            _("Base Udev Rule On"),
             RadioButtonGroup(
               Id(:udev_type),
               VBox(
