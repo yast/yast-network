@@ -25,6 +25,8 @@ module Yast
       # mock devices configuration
       LanItems.stub( :ReadHardware) { [ { "dev_name" => CURRENT_NAME } ] }
       LanItems.stub( :getNetworkInterfaces) { [ CURRENT_NAME ] }
+      LanItems.stub( :GetItemUdev) { "" }
+      LanItems.stub( :GetItemUdev).with("NAME") { CURRENT_NAME }
 
       # LanItems initialization
       Yast.import "LanItems"
