@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Sat Jun 14 20:20:57 UTC 2014 - mfilka@suse.com
+
+- bnc#880167
+  - fixed internal error when renaming device
+- bnc#877690
+  - turned more labels into title style.
+- 3.1.64
+
+-------------------------------------------------------------------
 Wed Jun 11 10:06:12 UTC 2014 - mfilka@suse.com
 
 - bnc#878719
