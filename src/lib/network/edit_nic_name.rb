@@ -30,12 +30,7 @@ module Yast
 
       current_item = LanItems.getCurrentItem
 
-      @old_name = if LanItems.current_renamed?
-        LanItems.current_renamed_to
-      else
-        LanItems.GetItemUdev("NAME")
-      end
-
+      @old_name = LanItems.current_udev_name
       @old_key = MAC_UDEV_ATTR unless LanItems.GetItemUdev( MAC_UDEV_ATTR).empty?
       @old_key = BUSID_UDEV_ATTR unless LanItems.GetItemUdev( BUSID_UDEV_ATTR).empty?
 

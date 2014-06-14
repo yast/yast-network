@@ -333,6 +333,15 @@ module Yast
       )
     end
 
+    # Returns name which is going to be used in the udev rule
+    def current_udev_name
+      if LanItems.current_renamed?
+        LanItems.current_renamed_to
+      else
+        LanItems.GetItemUdev("NAME")
+      end
+    end
+
     # transforms given list of item ids onto device names
     #
     # item id is index into internal @Items structure

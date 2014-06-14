@@ -459,17 +459,10 @@ module Yast
           Ops.get_string(@hardware, "type", "") != "dummy"
       )
 
-      device_name = if LanItems.current_renamed?
-        LanItems.current_renamed_to
-      else
-        LanItems.GetItemUdev("NAME")
-      end
+      device_name = LanItems.current_udev_name
+
       ChangeWidgetIfExists(Id(:device_name), :Enabled, false)
-      ChangeWidgetIfExists(
-        Id(:device_name),
-        :Value,
-        device_name
-      )
+      ChangeWidgetIfExists(Id(:device_name), :Value, device_name)
 
       ChangeWidgetIfExists(Id(:dev), :Enabled, false) if !isNewDevice
       ChangeWidgetIfExists(
