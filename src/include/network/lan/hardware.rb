@@ -270,6 +270,9 @@ module Yast
 
       initHardware
 
+      hotplug_type = @hardware["hotplug"] || ""
+      hw_type = @hardware["type"] || ""
+
       _CheckBoxes = HBox(
         HSpacing(1.5),
         # CheckBox label
@@ -277,15 +280,16 @@ module Yast
           Id(:pcmcia),
           Opt(:notify),
           _("&PCMCIA"),
-          Ops.get_string(@hardware, "hotplug", "") == "pcmcia"
+          hotplug_type == "pcmcia"
         ),
         HSpacing(1.5),
+
         # CheckBox label
         CheckBox(
           Id(:usb),
           Opt(:notify),
           _("&USB"),
-          Ops.get_string(@hardware, "hotplug", "") == "usb"
+          hotplug_type == "usb"
         ),
         HSpacing(1.5)
       )
@@ -299,7 +303,7 @@ module Yast
           Id(:pci),
           Opt(:notify),
           _("P&CI"),
-          Ops.get_string(@hardware, "hotplug", "") == "pci"
+          hotplug_type == "pci"
         ),
         HSpacing(1.5)
       )
@@ -321,14 +325,14 @@ module Yast
                 Id(:modul),
                 Opt(:editable),
                 _("&Module Name"),
-                Ops.get_list(@hardware, "modules_from_hwinfo", [])
+                @hardware["modules_from_hwinfo"] || []
               ),
               HSpacing(0.2),
               InputField(
                 Id(:options),
                 Opt(:hstretch),
                 Label.Options,
-                Ops.get_string(@hardware, "options", "")
+                @hardware["options"] || ""
               )
             ),
             VSpacing(0.4),
@@ -347,7 +351,7 @@ module Yast
           Id(:num),
           Opt(:editable, :hstretch),
           _("&Configuration Name"),
-          [Ops.get_string(@hardware, "device", "")]
+          [@hardware["device"] || ""]
         )
       )
 
@@ -362,8 +366,8 @@ module Yast
             # ComboBox label
             _("&Device Type"),
             BuildTypesList(
-              Ops.get_list(@hardware, "device_types", []),
-              Ops.get_string(@hardware, "type", "")
+              @hardware["device_types"] || [],
+              hw_type
             )
           ),
           HSpacing(1.5),
@@ -394,7 +398,7 @@ module Yast
           #translators: how many seconds will card be blinking
           IntField(
             Id(:blink_time),
-            Builtins.sformat("%1:", _("Seconds")),
+            "%s:" % _("Seconds"),
             0,
             100,
             5
@@ -410,7 +414,7 @@ module Yast
             Id(:ethtool_opts),
             Opt(:hstretch),
             _("Options"),
-            Ops.get_string(@hardware, "ethtool_options", "")
+            @hardware["ethtool_options"] || ""
           )
         )
       )
@@ -427,36 +431,34 @@ module Yast
       UI.ChangeWidget(
         :modul,
         :Value,
-        Ops.get_string(@hardware, "default_device", "")
+        @hardware["default_device"] || ""
       )
       UI.ChangeWidget(
         Id(:modul),
         :Enabled,
-        Ops.get_boolean(@hardware, "no_hotplug_dummy", false)
+        !!@hardware["no_hotplug_dummy"]
       )
       ChangeWidgetIfExists(
         Id(:list),
         :Enabled,
-        Ops.get_boolean(@hardware, "no_hotplug_dummy", false)
+        !!@hardware["no_hotplug_dummy"]
       )
       ChangeWidgetIfExists(
         Id(:hwcfg),
         :Enabled,
-        Ops.get_boolean(@hardware, "no_hotplug", false)
+        !!@hardware["no_hotplug"]
       )
       ChangeWidgetIfExists(
         Id(:usb),
         :Enabled,
-        (Ops.get_string(@hardware, "hotplug", "") == "usb" ||
-          Ops.get_string(@hardware, "hotplug", "") == "") &&
-          Ops.get_string(@hardware, "type", "") != "dummy"
+        (hotplug_type == "usb" || hotplug_type == "") &&
+        hw_type != "dummy"
       )
       ChangeWidgetIfExists(
         Id(:pcmcia),
         :Enabled,
-        (Ops.get_string(@hardware, "hotplug", "") == "pcmcia" ||
-          Ops.get_string(@hardware, "hotplug", "") == "") &&
-          Ops.get_string(@hardware, "type", "") != "dummy"
+        (hotplug_type == "pcmcia" || hotplug_type == "") &&
+        hw_type != "dummy"
       )
 
       device_name = LanItems.current_udev_name
