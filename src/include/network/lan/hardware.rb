@@ -327,7 +327,7 @@ module Yast
                 _("&Module Name"),
                 @hardware["modules_from_hwinfo"] || []
               ),
-              HSpacing(0.2),
+              HSpacing(0.5),
               InputField(
                 Id(:options),
                 Opt(:hstretch),
