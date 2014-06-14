@@ -58,17 +58,13 @@ module Yast
           when :ok
             new_name = UI.QueryWidget(:dev_name, :Value)
 
-            if new_name != @old_name
-              if CheckUdevNicName(new_name)
-                LanItems.rename(new_name)
-              else
-                UI.SetFocus(:dev_name)
-                ret = nil
-
-                next
-              end
-            else
+            if CheckUdevNicName(new_name)
               LanItems.rename(new_name)
+            else
+              UI.SetFocus(:dev_name)
+              ret = nil
+
+              next
             end
 
             if UI.QueryWidget(:udev_type, :CurrentButton) == :mac
@@ -152,7 +148,8 @@ module Yast
     #
     # @return [boolean] false if name is invalid
     def CheckUdevNicName(name)
-      if UsedNicName(name)
+      # check if the name is assigned to another device already
+      if UsedNicName(name) && name != LanItems.GetCurrentName
         Popup.Error(_("Configuration name already exists."))
         return false
       end
