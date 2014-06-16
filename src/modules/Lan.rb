@@ -555,17 +555,7 @@ module Yast
       return false if Abort()
       # Progress step 3 - multiple devices may be present, really plural
       ProgressNextStage(_("Writing device configuration..."))
-      if !Mode.autoinst && LanUdevAuto.AllowUdevModify
-        LanItems.WriteUdevRules
-        # wait so that ifcfgs written in NetworkInterfaces are newer
-        # (1-second-wise) than netcontrol status files,
-        # and rcnetwork reload actually works (bnc#749365)
-        SCR.Execute(path(".target.bash"), "udevadm settle")
-        Builtins.sleep(1000)
-      end
-      # hack: no "netcard" filter as biosdevname names it diferently (bnc#712232)
-      NetworkInterfaces.Write("")
-      # WriteDevices();
+      LanItems.write
       Builtins.sleep(sl)
 
       return false if Abort()

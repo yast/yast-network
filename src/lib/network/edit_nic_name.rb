@@ -30,8 +30,7 @@ module Yast
 
       current_item = LanItems.getCurrentItem
 
-      @old_name = LanItems.GetItemUdev("NAME")
-
+      @old_name = LanItems.current_udev_name
       @old_key = MAC_UDEV_ATTR unless LanItems.GetItemUdev( MAC_UDEV_ATTR).empty?
       @old_key = BUSID_UDEV_ATTR unless LanItems.GetItemUdev( BUSID_UDEV_ATTR).empty?
 
@@ -51,6 +50,7 @@ module Yast
       open
 
       ret = nil
+      new_name = @old_name
       while ![:cancel, :abort, :ok].include? ret
         ret = UI.UserInput
 
@@ -58,15 +58,13 @@ module Yast
           when :ok
             new_name = UI.QueryWidget(:dev_name, :Value)
 
-            if new_name != @old_name
-              if CheckUdevNicName(new_name)
-                LanItems.SetCurrentName( new_name)
-              else
-                UI.SetFocus(:dev_name)
-                ret = nil
+            if CheckUdevNicName(new_name)
+              LanItems.rename(new_name)
+            else
+              UI.SetFocus(:dev_name)
+              ret = nil
 
-                next
-              end
+              next
             end
 
             if UI.QueryWidget(:udev_type, :CurrentButton) == :mac
@@ -84,7 +82,7 @@ module Yast
 
       close
 
-      LanItems.GetCurrentName
+      new_name
     end
 
   private
@@ -94,13 +92,13 @@ module Yast
         VBox(
           Left(
             HBox(
-              Label(_("Device name:")),
+              Label(_("Device Name:")),
               InputField(Id(:dev_name), Opt(:hstretch), "", @old_name)
             )
           ),
           VSpacing(0.5),
           Frame(
-            _("Base udev rule on"),
+            _("Base Udev Rule On"),
             RadioButtonGroup(
               Id(:udev_type),
               VBox(
@@ -150,7 +148,8 @@ module Yast
     #
     # @return [boolean] false if name is invalid
     def CheckUdevNicName(name)
-      if UsedNicName(name)
+      # check if the name is assigned to another device already
+      if UsedNicName(name) && name != LanItems.GetCurrentName
         Popup.Error(_("Configuration name already exists."))
         return false
       end

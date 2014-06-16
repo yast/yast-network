@@ -333,6 +333,15 @@ module Yast
       )
     end
 
+    # Returns name which is going to be used in the udev rule
+    def current_udev_name
+      if LanItems.current_renamed?
+        LanItems.current_renamed_to
+      else
+        LanItems.GetItemUdev("NAME")
+      end
+    end
+
     # transforms given list of item ids onto device names
     #
     # item id is index into internal @Items structure
@@ -549,6 +558,34 @@ module Yast
       SetItemName( @current, name)
     end
 
+    # Sets new device name for current item
+    def rename(name)
+      if(GetCurrentName() != name)
+        @Items[@current]["renamed_to"] = name
+      else
+        @Items[@current].delete("renamed_to")
+      end
+    end
+
+    # Returns new name for current item
+    def renamed_to(item_id)
+      @Items[item_id]["renamed_to"]
+    end
+
+    def current_renamed_to
+      renamed_to(@current)
+    end
+
+    # Tells if current item was renamed
+    def renamed?(item_id)
+      return false if !@Items[item_id].has_key?("renamed_to")
+      renamed_to(item_id) != GetDeviceName(item_id)
+    end
+
+    def current_renamed?
+      renamed?(@current)
+    end
+
     # Writes udev rules for all items.
     #
     # Currently only interesting change is renaming interface.
@@ -660,7 +697,26 @@ module Yast
       WriteUdevItemsRules()
       WriteUdevDriverRules()
 
+      # wait so that ifcfgs written in NetworkInterfaces are newer
+      # (1-second-wise) than netcontrol status files,
+      # and rcnetwork reload actually works (bnc#749365)
+      SCR.Execute(path(".target.bash"), "udevadm settle")
+      sleep(1)
+
       nil
+    end
+
+    def write
+      renamed_items = @Items.keys.select { |item_id| renamed?(item_id) }
+      renamed_items.each do |item_id|
+        NetworkInterfaces.Change2(renamed_to(item_id), GetDeviceMap(item_id), false)
+        SetItemName(item_id, renamed_to(item_id))
+      end
+
+      LanItems.WriteUdevRules if !Mode.autoinst && LanUdevAuto.AllowUdevModify
+
+      # FIXME: hack: no "netcard" filter as biosdevname names it diferently (bnc#712232)
+      NetworkInterfaces.Write("")
     end
 
     # Function which returns if the settings were modified
@@ -1322,6 +1378,10 @@ module Yast
             note = _("enslaved in %s") % bond_master
             bond_master_desc = ("%s: %s") % [_("Bonding master"), bond_master]
             bullets << bond_master_desc
+          end
+
+          if renamed?(key)
+            note = ("%s -> %s") % [GetDeviceName(key), renamed_to(key)]
           end
 
           overview << Summary.Device(descr, status)

@@ -46,7 +46,6 @@ module Yast
       Yast.import "LanItems"
       Yast.include include_target, "network/summary.rb"
       Yast.include include_target, "network/routines.rb"
-      # map NetworkCards
       Yast.include include_target, "network/lan/cards.rb"
 
       @hardware = nil
@@ -160,7 +159,6 @@ module Yast
 
     def initHardware
       @hardware = {}
-      #    hardware["modul"] = NetworkModules::Alias; // FIXME: MOD Lan::Module["module"]:"";
       Ops.set(@hardware, "hotplug", LanItems.hotplug)
       Builtins.y2milestone("hotplug=%1", LanItems.hotplug)
       Ops.set(
@@ -272,6 +270,9 @@ module Yast
 
       initHardware
 
+      hotplug_type = @hardware["hotplug"] || ""
+      hw_type = @hardware["type"] || ""
+
       _CheckBoxes = HBox(
         HSpacing(1.5),
         # CheckBox label
@@ -279,15 +280,16 @@ module Yast
           Id(:pcmcia),
           Opt(:notify),
           _("&PCMCIA"),
-          Ops.get_string(@hardware, "hotplug", "") == "pcmcia"
+          hotplug_type == "pcmcia"
         ),
         HSpacing(1.5),
+
         # CheckBox label
         CheckBox(
           Id(:usb),
           Opt(:notify),
           _("&USB"),
-          Ops.get_string(@hardware, "hotplug", "") == "usb"
+          hotplug_type == "usb"
         ),
         HSpacing(1.5)
       )
@@ -301,7 +303,7 @@ module Yast
           Id(:pci),
           Opt(:notify),
           _("P&CI"),
-          Ops.get_string(@hardware, "hotplug", "") == "pci"
+          hotplug_type == "pci"
         ),
         HSpacing(1.5)
       )
@@ -323,14 +325,14 @@ module Yast
                 Id(:modul),
                 Opt(:editable),
                 _("&Module Name"),
-                Ops.get_list(@hardware, "modules_from_hwinfo", [])
+                @hardware["modules_from_hwinfo"] || []
               ),
-              HSpacing(0.2),
+              HSpacing(0.5),
               InputField(
                 Id(:options),
                 Opt(:hstretch),
                 Label.Options,
-                Ops.get_string(@hardware, "options", "")
+                @hardware["options"] || ""
               )
             ),
             VSpacing(0.4),
@@ -349,7 +351,7 @@ module Yast
           Id(:num),
           Opt(:editable, :hstretch),
           _("&Configuration Name"),
-          [Ops.get_string(@hardware, "device", "")]
+          [@hardware["device"] || ""]
         )
       )
 
@@ -364,8 +366,8 @@ module Yast
             # ComboBox label
             _("&Device Type"),
             BuildTypesList(
-              Ops.get_list(@hardware, "device_types", []),
-              Ops.get_string(@hardware, "type", "")
+              @hardware["device_types"] || [],
+              hw_type
             )
           ),
           HSpacing(1.5),
@@ -377,7 +379,7 @@ module Yast
       _UdevWidget =
         # TODO: Ud ... Rules
         Frame(
-          _("Udev rules"),
+          _("Udev Rules"),
           HBox(
             InputField(Id(:device_name), Opt(:hstretch), _("Device Name"), ""),
             PushButton(Id(:change_udev), _("Change"))
@@ -391,12 +393,12 @@ module Yast
       end
 
       _BlinkCard = Frame(
-        _("Show visible port identification"),
+        _("Show Visible Port Identification"),
         HBox(
           #translators: how many seconds will card be blinking
           IntField(
             Id(:blink_time),
-            Builtins.sformat("%1:", _("Seconds")),
+            "%s:" % _("Seconds"),
             0,
             100,
             5
@@ -406,13 +408,13 @@ module Yast
       )
 
       _EthtoolWidget = Frame(
-        _("Ethtool options"),
+        _("Ethtool Options"),
         HBox(
           InputField(
             Id(:ethtool_opts),
             Opt(:hstretch),
             _("Options"),
-            Ops.get_string(@hardware, "ethtool_options", "")
+            @hardware["ethtool_options"] || ""
           )
         )
       )
@@ -429,53 +431,47 @@ module Yast
       UI.ChangeWidget(
         :modul,
         :Value,
-        Ops.get_string(@hardware, "default_device", "")
+        @hardware["default_device"] || ""
       )
       UI.ChangeWidget(
         Id(:modul),
         :Enabled,
-        Ops.get_boolean(@hardware, "no_hotplug_dummy", false)
+        !!@hardware["no_hotplug_dummy"]
       )
-      #    UI::ChangeWidget(`id(`options), `Enabled, hardware["no_hotplug_dummy"]:false);
       ChangeWidgetIfExists(
         Id(:list),
         :Enabled,
-        Ops.get_boolean(@hardware, "no_hotplug_dummy", false)
+        !!@hardware["no_hotplug_dummy"]
       )
       ChangeWidgetIfExists(
         Id(:hwcfg),
         :Enabled,
-        Ops.get_boolean(@hardware, "no_hotplug", false)
+        !!@hardware["no_hotplug"]
       )
       ChangeWidgetIfExists(
         Id(:usb),
         :Enabled,
-        (Ops.get_string(@hardware, "hotplug", "") == "usb" ||
-          Ops.get_string(@hardware, "hotplug", "") == "") &&
-          Ops.get_string(@hardware, "type", "") != "dummy"
+        (hotplug_type == "usb" || hotplug_type == "") &&
+        hw_type != "dummy"
       )
       ChangeWidgetIfExists(
         Id(:pcmcia),
         :Enabled,
-        (Ops.get_string(@hardware, "hotplug", "") == "pcmcia" ||
-          Ops.get_string(@hardware, "hotplug", "") == "") &&
-          Ops.get_string(@hardware, "type", "") != "dummy"
+        (hotplug_type == "pcmcia" || hotplug_type == "") &&
+        hw_type != "dummy"
       )
 
+      device_name = LanItems.current_udev_name
+
       ChangeWidgetIfExists(Id(:device_name), :Enabled, false)
-      ChangeWidgetIfExists(
-        Id(:device_name),
-        :Value,
-        LanItems.GetItemUdev("NAME")
-      )
+      ChangeWidgetIfExists(Id(:device_name), :Value, device_name)
 
       ChangeWidgetIfExists(Id(:dev), :Enabled, false) if !isNewDevice
       ChangeWidgetIfExists(
         Id(:num),
         :ValidChars,
         NetworkInterfaces.ValidCharsIfcfg
-      ) 
-      #    ChangeWidgetIfExists(`id(`hwcfg), `ValidChars, NetworkModules::ValidCharsHwcfg ());
+      )
 
       nil
     end
@@ -527,7 +523,6 @@ module Yast
       while true
         ret = UI.UserInput
 
-        # abort?
         if ret == :abort || ret == :cancel
           if ReallyAbort()
             break
@@ -579,9 +574,6 @@ module Yast
         selected = 0 if selected == nil
         card = Ops.get(hwlist, selected, {})
         LanItems.description = Ops.get_string(card, "name", "") 
-
-        #	NetworkModules::Alias /* FIXME: MOD Lan::Module["module"] */ = card["module"]:"";
-        #	NetworkModules::Options /* FIXME: MOD Lan::Module["options"] */ = card["options"]:"";
       end
 
       deep_copy(ret)
@@ -604,7 +596,6 @@ module Yast
         ret = Ops.get_symbol(event, "WidgetID")
       end
       SelectionDialog() if ret == :list
-      # if (ret == `abort) LanItems::Rollback();
       if ret == :pcmcia || ret == :usb || ret == :dev
         if UI.WidgetExists(Id(:pcmcia)) || UI.WidgetExists(Id(:usb))
           if UI.QueryWidget(Id(:pcmcia), :Value) == true
@@ -1163,9 +1154,6 @@ module Yast
           UI.SetFocus(Id(:chan_mode))
       end
 
-      # FIXME: no spaces
-      # UI::ChangeWidget(`id(`key), `ValidChars, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_:;");
-
       ret = nil
       while true
         if drvtype == "qeth"
@@ -1290,13 +1278,11 @@ module Yast
       Wizard.OpenNextBackDialog
       Wizard.SetContents(caption, contents, initHelp, false, true)
       Wizard.SetAbortButton(:cancel, Label.CancelButton)
-      #    Wizard::DisableBackButton();
       ret = CWM.Run(
-        w, #`abort:ReallyAbort
+        w,
         {}
       )
       Wizard.CloseDialog
-      #    Wizard::RestoreAbortButton();
       deep_copy(ret)
     end
   end
