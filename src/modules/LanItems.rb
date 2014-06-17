@@ -323,14 +323,14 @@ module Yast
     #
     # First it looks into the item's netconfig and if it doesn't exist
     # it uses device name from hwinfo if available.
-    def GetDeviceName(itemId)
-      lanItem = GetLanItem(itemId)
+    def GetDeviceName(item_id)
+      lan_item = GetLanItem(item_id)
 
-      Ops.get_string(
-        lanItem,
-        "ifcfg",
-        Ops.get_string(lanItem, ["hwinfo", "dev_name"], "")
-      )
+      return lan_item["ifcfg"] if lan_item["ifcfg"]
+      return lan_item["hwinfo"]["dev_name"] || "" if lan_item["hwinfo"]
+
+      log.error("Item #{item_id} has no dev_name nor configuration associated")
+      return "" # this should never happen
     end
 
     # Returns name which is going to be used in the udev rule
