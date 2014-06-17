@@ -215,3 +215,23 @@ describe "LanItemsClass#DeleteItem" do
     expect(@lan_items.Items.size).to eql before_size
   end
 end
+
+describe "LanItemsClass#GetItemName" do
+  before(:each) do
+    @lan_items = Yast::LanItems
+    @lan_items.main
+    @lan_items.Items = MOCKED_ITEMS
+  end
+
+  it "returns name provided by hwinfo if not configured" do
+    MOCKED_ITEMS.select { |k,v| !v.has_key?("ifcfg") }.each_pair do |item_id, conf|
+      expect(@lan_items.GetDeviceName(item_id)).to eql conf["hwinfo"]["dev_name"]
+    end
+  end
+
+  it "returns name according configuration if available" do
+    MOCKED_ITEMS.select { |k,v| v.has_key?("ifcfg") }.each_pair do |item_id, conf|
+      expect(@lan_items.GetDeviceName(item_id)).to eql conf["ifcfg"]
+    end
+  end
+end
