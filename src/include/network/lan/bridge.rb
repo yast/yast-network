@@ -52,7 +52,6 @@ module Yast
     end
 
     def ValidateBridge(key, event)
-      event = deep_copy(event)
       old_name = NetworkInterfaces.Name
       valid = true
       confirmed = false
