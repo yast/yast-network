@@ -60,8 +60,7 @@ module Yast
       "eth4",
       "eth11",
       "eth12",
-      "tap0",
-      "tun0"
+      "tap0"
     ]
 
     before(:each) do
