@@ -823,10 +823,8 @@ module Yast
       devname = GetDeviceName(itemId)
       bonded = BuildBondIndex()
 
-      if bonded[ devname]
-        Builtins.y2debug(
-          "IsBridgeable: excluding lan item (#{itemId}: #{devname}) - is bonded",
-        )
+      if bonded[devname]
+        log.debug("Excluding lan item (#{itemId}: #{devname}) - is bonded")
         return false
       end
 
@@ -835,28 +833,21 @@ module Yast
       # exclude forbidden configurations
       case devtype
         when "br"
-          Builtins.y2debug(
-            "IsBridgeable: excluding lan item (#{itemId}: #{devname}) - is bridge",
-          )
+          log.debug("Excluding lan item (#{itemId}: #{devname}) - is bridge")
           return false
+
         when "tun"
-          Builtins.y2debug(
-            "IsBridgeable: excluding lan item (#{itemId}: #{devname}) - is tun",
-          )
+          log.debug("Excluding lan item (#{itemId}: #{devname}) - is tun")
           return false
       end
 
-      case ifcfg[ "STARTMODE"]
+      case ifcfg["STARTMODE"]
         when "nfsroot"
-          Builtins.y2debug(
-            "IsBridgeable: excluding lan item (#{itemId}: #{devname}) - is nfsroot",
-          )
+          log.debug("Excluding lan item (#{itemId}: #{devname}) - is nfsroot")
           return false
 
         when "ifplugd"
-          Builtins.y2debug(
-            "IsBridgeable: excluding lan item (#{itemId}: #{devname}) - ifplugd",
-          )
+          log.debug("Excluding lan item (#{itemId}: #{devname}) - ifplugd")
           return false
 
         else
