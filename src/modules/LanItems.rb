@@ -833,11 +833,17 @@ module Yast
       devtype = GetDeviceType(itemId)
 
       # exclude forbidden configurations
-      if devtype == "br"
-        Builtins.y2debug(
-          "IsBridgeable: excluding lan item (#{itemId}: #{devname}) - is bridge",
-        )
-        return false
+      case devtype
+        when "br"
+          Builtins.y2debug(
+            "IsBridgeable: excluding lan item (#{itemId}: #{devname}) - is bridge",
+          )
+          return false
+        when "tun"
+          Builtins.y2debug(
+            "IsBridgeable: excluding lan item (#{itemId}: #{devname}) - is tun",
+          )
+          return false
       end
 
       case ifcfg[ "STARTMODE"]
