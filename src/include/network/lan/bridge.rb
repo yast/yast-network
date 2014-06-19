@@ -68,38 +68,32 @@ module Yast
     end
 
     def ValidateBridge(key, event)
+      sel = UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems)
+
+      configurations = NetworkInterfaces.FilterDevices("netcard")
+      netcard_types = (NetworkInterfaces.CardRegex["netcard"] || "").split("|")
+
+      confs = netcard_types.reduce([]) do |res, devtype|
+        res.concat((configurations[devtype] || {}).keys)
+      end
+
       valid = true
       confirmed = false
-      sel = UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems)
-      confs = []
-      configurations = NetworkInterfaces.FilterDevices("netcard")
-      Builtins.foreach(
-        Builtins.splitstring(
-          NetworkInterfaces.CardRegex["netcard"] || "",
-          "|"
-        )
-      ) do |devtype|
-        confs = Builtins.union(
-          confs,
-          Map.Keys(configurations[devtype] || {})
-        )
-      end
+
       sel.each do |device|
-          if confs.include?(device)
-            # allow to add bonding device into bridge and also device with mask /32(bnc#405343)
-            dev_type = NetworkInterfaces.GetType(device)
-            ifcfg_conf = configurations[dev_type][device]
-              if (ifcfg_conf["BOOTPROTO"] || "") != "none"
-                if !confirmed
-                  valid = Popup.ContinueCancel(
-                    _(
-                      "At least one selected device is already configured.\nAdapt the configuration for bridge?\n"
-                    )
-                  )
-                  confirmed = true
-                end
-              end
-          end
+        next if !confs.include?(device)
+
+        dev_type = NetworkInterfaces.GetType(device)
+        ifcfg_conf = configurations[dev_type][device]
+
+        if ifcfg_conf["BOOTPROTO"] != "none" && !confirmed
+            valid = Popup.ContinueCancel(
+              _(
+                "At least one selected device is already configured.\nAdapt the configuration for bridge?\n"
+              )
+            )
+            confirmed = true
+        end
       end
       valid
     end
