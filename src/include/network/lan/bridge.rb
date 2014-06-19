@@ -68,11 +68,6 @@ module Yast
       old_name = NetworkInterfaces.Name
       valid = true
       confirmed = false
-      items = Convert.convert(
-        UI.QueryWidget(Id(key), :Items),
-        :from => "any",
-        :to   => "list <term>"
-      )
       sel = UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems)
       confs = []
       configurations = NetworkInterfaces.FilterDevices("netcard")
