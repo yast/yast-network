@@ -87,9 +87,9 @@ module Yast
               when "bond"
                 if LanItems.operation == :add
                   NetworkInterfaces.Edit(device)
-                  NetworkInterfaces.Current["IPADDR"] = "0.0.0.0"
-                  NetworkInterfaces.Current["NETMASK"] = "255.255.255.255"
-                  NetworkInterfaces.Current["BOOTPROTO"] = "static"
+                  NetworkInterfaces.Current["IPADDR"] = ""
+                  NetworkInterfaces.Current["NETMASK"] = ""
+                  NetworkInterfaces.Current["BOOTPROTO"] = "none"
                   NetworkInterfaces.Commit
                   NetworkInterfaces.Add
                 end
@@ -114,9 +114,9 @@ module Yast
                   if LanItems.FindAndSelect(device)
                     log.info("Adapt device #{device} for bridge (0.0.0.0/32)")
                     NetworkInterfaces.Edit(device)
-                    NetworkInterfaces.Current["IPADDR"] = "0.0.0.0"
-                    NetworkInterfaces.Current["PREFIXLEN"] = "32"
-                    NetworkInterfaces.Current["BOOTPROTO"] = "static"
+                    NetworkInterfaces.Current["IPADDR"] = ""
+                    NetworkInterfaces.Current["PREFIXLEN"] = ""
+                    NetworkInterfaces.Current["BOOTPROTO"] = "none"
                     NetworkInterfaces.Commit
                     NetworkInterfaces.Add
                     LanItems.current = i
