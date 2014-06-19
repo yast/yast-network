@@ -53,6 +53,17 @@ module Yast
       nil
     end
 
+    def configure_as_bridge_port(device)
+      log.info("Adapt device #{device} as bridge port")
+
+      NetworkInterfaces.Edit(device)
+      NetworkInterfaces.Current["IPADDR"] = ""
+      NetworkInterfaces.Current["NETMASK"] = ""
+      NetworkInterfaces.Current["BOOTPROTO"] = "none"
+      NetworkInterfaces.Commit
+      NetworkInterfaces.Add
+    end
+
     def ValidateBridge(key, event)
       old_name = NetworkInterfaces.Name
       valid = true
@@ -86,12 +97,7 @@ module Yast
 
               when "bond"
                 if LanItems.operation == :add
-                  NetworkInterfaces.Edit(device)
-                  NetworkInterfaces.Current["IPADDR"] = ""
-                  NetworkInterfaces.Current["NETMASK"] = ""
-                  NetworkInterfaces.Current["BOOTPROTO"] = "none"
-                  NetworkInterfaces.Commit
-                  NetworkInterfaces.Add
+                  configure_as_bridge_port(device)
                 end
                 next
             end
@@ -112,13 +118,7 @@ module Yast
                 if valid
                   i = LanItems.current
                   if LanItems.FindAndSelect(device)
-                    log.info("Adapt device #{device} for bridge (0.0.0.0/32)")
-                    NetworkInterfaces.Edit(device)
-                    NetworkInterfaces.Current["IPADDR"] = ""
-                    NetworkInterfaces.Current["PREFIXLEN"] = ""
-                    NetworkInterfaces.Current["BOOTPROTO"] = "none"
-                    NetworkInterfaces.Commit
-                    NetworkInterfaces.Add
+                    configure_as_bridge_port(device)
                     LanItems.current = i
                   end
                 end
