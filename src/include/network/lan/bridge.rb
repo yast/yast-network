@@ -28,6 +28,8 @@
 #
 module Yast
   module NetworkLanBridgeInclude
+    include Logger
+
     def initialize_network_lan_bridge(include_target)
       textdomain "network"
     end
@@ -60,71 +62,48 @@ module Yast
         :from => "any",
         :to   => "list <term>"
       )
-      sel = Convert.convert(
-        UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems),
-        :from => "any",
-        :to   => "list <string>"
-      )
+      sel = UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems)
       confs = []
       configurations = NetworkInterfaces.FilterDevices("netcard")
       Builtins.foreach(
         Builtins.splitstring(
-          Ops.get(NetworkInterfaces.CardRegex, "netcard", ""),
+          NetworkInterfaces.CardRegex["netcard"] || "",
           "|"
         )
       ) do |devtype|
-        confs = Convert.convert(
-          Builtins.union(
-            confs,
-            Map.Keys(Ops.get_map(configurations, devtype, {}))
-          ),
-          :from => "list",
-          :to   => "list <string>"
+        confs = Builtins.union(
+          confs,
+          Map.Keys(configurations[devtype] || {})
         )
       end
       Builtins.foreach(items) do |t|
         device = Ops.get_string(t, [0, 0], "")
-        if Builtins.contains(sel, device) && IsNotEmpty(device)
-          if Builtins.contains(confs, device)
+        if sel.include?(device) && !device.empty?
+          if confs.include?(device)
             # allow to add bonding device into bridge and also device with mask /32(bnc#405343)
-            if Builtins.contains(
-                ["tun", "tap"],
-                NetworkInterfaces.GetType(device)
-              )
-              next
+            dev_type = NetworkInterfaces.GetType(device)
+            case dev_type
+              when "tun", "tap"
+                next
+
+              when "bond"
+                if LanItems.operation == :add
+                  old_name2 = NetworkInterfaces.Name
+                  NetworkInterfaces.Edit(device)
+                  NetworkInterfaces.Current["IPADDR"] = "0.0.0.0"
+                  NetworkInterfaces.Current["NETMASK"] = "255.255.255.255"
+                  NetworkInterfaces.Current["BOOTPROTO"] = "static"
+                  NetworkInterfaces.Commit
+                  NetworkInterfaces.Add
+                end
+                next
             end
-            if Builtins.contains(["bond"], NetworkInterfaces.GetType(device))
-              if LanItems.operation == :add
-                old_name2 = NetworkInterfaces.Name
-                NetworkInterfaces.Edit(device)
-                Ops.set(NetworkInterfaces.Current, "IPADDR", "0.0.0.0")
-                Ops.set(NetworkInterfaces.Current, "NETMASK", "255.255.255.255")
-                Ops.set(NetworkInterfaces.Current, "BOOTPROTO", "static")
-                NetworkInterfaces.Commit
-                NetworkInterfaces.Add
-              end
-              next
-            end
-            if Ops.get_string(
-                configurations,
-                [NetworkInterfaces.GetType(device), device, "PREFIXLEN"],
-                ""
-              ) != "32" ||
-                Ops.get_string(
-                  configurations,
-                  [NetworkInterfaces.GetType(device), device, "NETMASK"],
-                  ""
-                ) != "255.255.255.255"
-              if Ops.get_string(
-                  configurations,
-                  [NetworkInterfaces.GetType(device), device, "IPADDR"],
-                  ""
-                ) != "0.0.0.0" &&
-                  Ops.get_string(
-                    configurations,
-                    [NetworkInterfaces.GetType(device), device, "BOOTPROTO"],
-                    ""
-                  ) != "none"
+
+            ifcfg_conf = configurations[dev_type][device]
+            if (ifcfg_conf["PREFIXLEN"] || "") != "32" ||
+               (ifcfg_conf["NETMASK"] || "") != "255.255.255.255"
+              if (ifcfg_conf["IPADDR"] || "") != "0.0.0.0" &&
+                 (ifcfg_conf["BOOTPROTO"] || "") != "none"
                 if !confirmed
                   valid = Popup.ContinueCancel(
                     _(
@@ -136,14 +115,11 @@ module Yast
                 if valid
                   i = LanItems.current
                   if LanItems.FindAndSelect(device)
-                    Builtins.y2internal(
-                      "Adapt device %1 for bridge (0.0.0.0/32)",
-                      device
-                    )
+                    log.info("Adapt device #{device} for bridge (0.0.0.0/32)")
                     NetworkInterfaces.Edit(device)
-                    Ops.set(NetworkInterfaces.Current, "IPADDR", "0.0.0.0")
-                    Ops.set(NetworkInterfaces.Current, "PREFIXLEN", "32")
-                    Ops.set(NetworkInterfaces.Current, "BOOTPROTO", "static")
+                    NetworkInterfaces.Current["IPADDR"] = "0.0.0.0"
+                    NetworkInterfaces.Current["PREFIXLEN"] = "32"
+                    NetworkInterfaces.Current["BOOTPROTO"] = "static"
                     NetworkInterfaces.Commit
                     NetworkInterfaces.Add
                     LanItems.current = i
