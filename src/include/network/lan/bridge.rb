@@ -91,22 +91,8 @@ module Yast
           if confs.include?(device)
             # allow to add bonding device into bridge and also device with mask /32(bnc#405343)
             dev_type = NetworkInterfaces.GetType(device)
-            case dev_type
-              when "tap"
-                next
-
-              when "bond"
-                if LanItems.operation == :add
-                  configure_as_bridge_port(device)
-                end
-                next
-            end
-
             ifcfg_conf = configurations[dev_type][device]
-            if (ifcfg_conf["PREFIXLEN"] || "") != "32" ||
-               (ifcfg_conf["NETMASK"] || "") != "255.255.255.255"
-              if (ifcfg_conf["IPADDR"] || "") != "0.0.0.0" &&
-                 (ifcfg_conf["BOOTPROTO"] || "") != "none"
+              if (ifcfg_conf["BOOTPROTO"] || "") != "none"
                 if !confirmed
                   valid = Popup.ContinueCancel(
                     _(
@@ -123,7 +109,6 @@ module Yast
                   end
                 end
               end
-            end
           end
       end
       NetworkInterfaces.Select(old_name)
