@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Jun 19 11:53:55 UTC 2014 - mfilka@suse.com
+
+- bnc#879617
+  - fixed generated bridge port configuration
+  - tun device is not allowed as bridge port anymore
+- 3.1.65 
+
+-------------------------------------------------------------------
 Sat Jun 14 20:20:57 UTC 2014 - mfilka@suse.com
 
 - bnc#880167
