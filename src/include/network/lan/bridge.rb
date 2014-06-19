@@ -76,19 +76,16 @@ module Yast
           Map.Keys(configurations[devtype] || {})
         )
       end
-      Builtins.foreach(items) do |t|
-        device = Ops.get_string(t, [0, 0], "")
-        if sel.include?(device) && !device.empty?
+      sel.each do |device|
           if confs.include?(device)
             # allow to add bonding device into bridge and also device with mask /32(bnc#405343)
             dev_type = NetworkInterfaces.GetType(device)
             case dev_type
-              when "tun", "tap"
+              when "tap"
                 next
 
               when "bond"
                 if LanItems.operation == :add
-                  old_name2 = NetworkInterfaces.Name
                   NetworkInterfaces.Edit(device)
                   NetworkInterfaces.Current["IPADDR"] = "0.0.0.0"
                   NetworkInterfaces.Current["NETMASK"] = "255.255.255.255"
@@ -107,7 +104,7 @@ module Yast
                 if !confirmed
                   valid = Popup.ContinueCancel(
                     _(
-                      "At least one selected device is already configured.\nAdapt the configuration for bridge (IP address 0.0.0.0/32)?\n"
+                      "At least one selected device is already configured.\nAdapt the configuration for bridge?\n"
                     )
                   )
                   confirmed = true
@@ -128,7 +125,6 @@ module Yast
               end
             end
           end
-        end
       end
       NetworkInterfaces.Select(old_name)
       valid
