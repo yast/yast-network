@@ -56,6 +56,9 @@ module Yast
     def configure_as_bridge_port(device)
       log.info("Adapt device #{device} as bridge port")
 
+      # when using wicked every device which can be bridged
+      # can be set to BOOTPROTO=none. No workaround with
+      # BOOTPROTO=static required anymore
       NetworkInterfaces.Edit(device)
       NetworkInterfaces.Current["IPADDR"] = ""
       NetworkInterfaces.Current["NETMASK"] = ""
