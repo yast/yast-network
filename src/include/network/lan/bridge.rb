@@ -68,7 +68,6 @@ module Yast
     end
 
     def ValidateBridge(key, event)
-      old_name = NetworkInterfaces.Name
       valid = true
       confirmed = false
       sel = UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems)
@@ -99,17 +98,9 @@ module Yast
                   )
                   confirmed = true
                 end
-                if valid
-                  i = LanItems.current
-                  if LanItems.FindAndSelect(device)
-                    configure_as_bridge_port(device)
-                    LanItems.current = i
-                  end
-                end
               end
           end
       end
-      NetworkInterfaces.Select(old_name)
       valid
     end
   end

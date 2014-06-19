@@ -42,6 +42,7 @@ module Yast
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/lan/s390.rb"
       Yast.include self, "network/lan/udev.rb"
+      Yast.include self, "network/lan/bridge.rb"
 
       # Hardware information
       # @see #ReadHardware
@@ -2116,6 +2117,11 @@ module Yast
       Builtins.y2debug("%1", NetworkInterfaces.ConcealSecrets1(newdev))
 
       Ops.set(@Items, [@current, "ifcfg"], "") if !NetworkInterfaces.Commit
+
+      # configure bridge ports
+      if @bridge_ports
+        @bridge_ports.split.each { |bp| configure_as_bridge_port(bp) }
+      end
 
       @modified = true
       @operation = nil
