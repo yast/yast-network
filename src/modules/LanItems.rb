@@ -940,21 +940,15 @@ module Yast
       end
     end
 
+    def find_configured(device)
+      @Items.select { |k,v| v["ifcfg"] == device }.keys.first
+    end
+
     def FindAndSelect(device)
-      found = false
-      Builtins.foreach(
-        Convert.convert(
-          @Items,
-          :from => "map <integer, any>",
-          :to   => "map <integer, map <string, any>>"
-        )
-      ) do |i, a|
-        if Ops.get_string(a, "ifcfg", "") == device
-          found = true
-          @current = i
-        end
-      end
-      found
+      item_id = find_configured(device)
+      @current = item_id if item_id
+
+      return !item_id.nil?
     end
 
     # search all known devices to find it's index in Items array
