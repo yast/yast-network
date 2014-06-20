@@ -64,7 +64,7 @@ MOCKED_ITEMS = {
       "name" => "SUSE test card",
       "dev_name" => "enp0s3"
     }
-  },
+  }
 }
 
 require "yast"
@@ -82,7 +82,7 @@ describe "When querying netcard device name" do
 
     # mocking only neccessary parts of Yast::LanItems so we need not to call
     # and mock inputs for Yast::LanItems.Read here
-    @lan_items.Items = MOCKED_ITEMS
+    @lan_items.Items = deep_copy(MOCKED_ITEMS)
   end
 
   it "returns empty list when querying device name with nil or empty input" do
@@ -140,7 +140,7 @@ describe "LanItemsClass#BuildLanOverview" do
   before(:each) do
     @lan_items = Yast::LanItems
     @lan_items.main
-    @lan_items.Items = MOCKED_ITEMS
+    @lan_items.Items = deep_copy(MOCKED_ITEMS)
   end
 
   it "returns description and uses custom name if present" do
@@ -185,7 +185,7 @@ describe "LanItemsClass#DeleteItem" do
   before(:each) do
     @lan_items = Yast::LanItems
     @lan_items.main
-    @lan_items.Items = MOCKED_ITEMS
+    @lan_items.Items = deep_copy(MOCKED_ITEMS)
   end
 
   it "removes an existing item" do
@@ -213,5 +213,41 @@ describe "LanItemsClass#DeleteItem" do
 
     expect(@lan_items.FindAndSelect(item_name)).to be_false
     expect(@lan_items.Items.size).to eql before_size
+  end
+end
+
+describe "LanItemsClass#GetItemName" do
+  before(:each) do
+    @lan_items = Yast::LanItems
+    @lan_items.main
+    @lan_items.Items = deep_copy(MOCKED_ITEMS)
+  end
+
+  it "returns name provided by hwinfo if not configured" do
+    MOCKED_ITEMS.select { |k,v| !v.has_key?("ifcfg") }.each_pair do |item_id, conf|
+      expect(@lan_items.GetDeviceName(item_id)).to eql conf["hwinfo"]["dev_name"]
+    end
+  end
+
+  it "returns name according configuration if available" do
+    MOCKED_ITEMS.select { |k,v| v.has_key?("ifcfg") }.each_pair do |item_id, conf|
+      expect(@lan_items.GetDeviceName(item_id)).to eql conf["ifcfg"]
+    end
+  end
+end
+
+describe "LanItemsClass#FindAndSelect" do
+  before(:each) do
+    @lan_items = Yast::LanItems
+    @lan_items.main
+    @lan_items.Items = deep_copy(MOCKED_ITEMS)
+  end
+
+  it "finds configured device" do
+    expect(@lan_items.FindAndSelect("enp0s3")).to be_true
+  end
+
+  it "fails to find unconfigured device" do
+    expect(@lan_items.FindAndSelect("nonexistent")).to be_false
   end
 end

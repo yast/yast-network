@@ -42,6 +42,7 @@ module Yast
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/lan/s390.rb"
       Yast.include self, "network/lan/udev.rb"
+      Yast.include self, "network/lan/bridge.rb"
 
       # Hardware information
       # @see #ReadHardware
@@ -323,14 +324,14 @@ module Yast
     #
     # First it looks into the item's netconfig and if it doesn't exist
     # it uses device name from hwinfo if available.
-    def GetDeviceName(itemId)
-      lanItem = GetLanItem(itemId)
+    def GetDeviceName(item_id)
+      lan_item = GetLanItem(item_id)
 
-      Ops.get_string(
-        lanItem,
-        "ifcfg",
-        Ops.get_string(lanItem, ["hwinfo", "dev_name"], "")
-      )
+      return lan_item["ifcfg"] if lan_item["ifcfg"]
+      return lan_item["hwinfo"]["dev_name"] || "" if lan_item["hwinfo"]
+
+      log.error("Item #{item_id} has no dev_name nor configuration associated")
+      return "" # this should never happen
     end
 
     # Returns name which is going to be used in the udev rule
@@ -823,34 +824,31 @@ module Yast
       devname = GetDeviceName(itemId)
       bonded = BuildBondIndex()
 
-      if bonded[ devname]
-        Builtins.y2debug(
-          "IsBridgeable: excluding lan item (#{itemId}: #{devname}) - is bonded",
-        )
+      if bonded[devname]
+        log.debug("Excluding lan item (#{itemId}: #{devname}) - is bonded")
         return false
       end
 
       devtype = GetDeviceType(itemId)
 
       # exclude forbidden configurations
-      if devtype == "br"
-        Builtins.y2debug(
-          "IsBridgeable: excluding lan item (#{itemId}: #{devname}) - is bridge",
-        )
-        return false
+      case devtype
+        when "br"
+          log.debug("Excluding lan item (#{itemId}: #{devname}) - is bridge")
+          return false
+
+        when "tun"
+          log.debug("Excluding lan item (#{itemId}: #{devname}) - is tun")
+          return false
       end
 
-      case ifcfg[ "STARTMODE"]
+      case ifcfg["STARTMODE"]
         when "nfsroot"
-          Builtins.y2debug(
-            "IsBridgeable: excluding lan item (#{itemId}: #{devname}) - is nfsroot",
-          )
+          log.debug("Excluding lan item (#{itemId}: #{devname}) - is nfsroot")
           return false
 
         when "ifplugd"
-          Builtins.y2debug(
-            "IsBridgeable: excluding lan item (#{itemId}: #{devname}) - ifplugd",
-          )
+          log.debug("Excluding lan item (#{itemId}: #{devname}) - ifplugd")
           return false
 
         else
@@ -943,21 +941,15 @@ module Yast
       end
     end
 
+    def find_configured(device)
+      @Items.select { |k,v| v["ifcfg"] == device }.keys.first
+    end
+
     def FindAndSelect(device)
-      found = false
-      Builtins.foreach(
-        Convert.convert(
-          @Items,
-          :from => "map <integer, any>",
-          :to   => "map <integer, map <string, any>>"
-        )
-      ) do |i, a|
-        if Ops.get_string(a, "ifcfg", "") == device
-          found = true
-          @current = i
-        end
-      end
-      found
+      item_id = find_configured(device)
+      @current = item_id if item_id
+
+      return !item_id.nil?
     end
 
     # search all known devices to find it's index in Items array
@@ -2125,6 +2117,11 @@ module Yast
       Builtins.y2debug("%1", NetworkInterfaces.ConcealSecrets1(newdev))
 
       Ops.set(@Items, [@current, "ifcfg"], "") if !NetworkInterfaces.Commit
+
+      # configure bridge ports
+      if @bridge_ports
+        @bridge_ports.split.each { |bp| configure_as_bridge_port(bp) }
+      end
 
       @modified = true
       @operation = nil
