@@ -702,7 +702,7 @@ module Yast
       if Ops.get_boolean(settings, "managed", false)
         NetworkService.use_network_manager
       else
-        NetworkService.use_netconfig
+        NetworkService.use_wicked
       end
       if Builtins.haskey(settings, "ipv6")
         @ipv6 = Ops.get_boolean(settings, "ipv6", true)
