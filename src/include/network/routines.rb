@@ -1107,7 +1107,7 @@ module Yast
       if show_popup
         Popup.Warning(
           _(
-            "Network is currently handled by an unsupported network service\n" +
+            "Network is currently handled by NetworkManager\n" +
             "or completely disabled. YaST is unable to configure some options."
           )
         )
