@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jul 11 08:52:08 UTC 2014 - mfilka@suse.com
+
+- bnc#885257
+  - rephrased message informing on active NetworkManager
+- 3.1.68 
+
+-------------------------------------------------------------------
 Tue Jun 24 10:00:47 CEST 2014 - schubi@suse.de
 
 - bnc#883718
