@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jul 17 11:07:46 CEST 2014 - snwint@suse.de
+
+- Use ProxyURL when reading proxy settings from install.inf.
+- 3.1.70
+
+-------------------------------------------------------------------
 Mon Jul 14 10:32:34 CEST 2014 - schubi@suse.de
 
 - Do not restart network if the installation has been started
