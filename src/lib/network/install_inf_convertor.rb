@@ -240,10 +240,11 @@ module Yast
     end
 
     def write_proxy
-      proxyUrl = InstallInf["ProxyUrl"].to_s
-      proxyProto = InstallInf["ProxyProto"].to_s
+      proxyUrl = InstallInf["ProxyURL"].to_s
 
-      return false if proxyProto.empty? || proxyUrl.empty?
+      return false if proxyUrl.empty?
+
+      proxyProto = proxyUrl.sub(/:.*/, "")
 
       log.info("Writing proxy settings: #{proxyProto}_proxy = '#{proxyUrl}'")
 
