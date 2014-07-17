@@ -240,6 +240,7 @@ module Yast
     end
 
     def write_proxy
+      # ProxyURL format: scheme://user:password@server:port
       proxyUrl = InstallInf["ProxyURL"].to_s
 
       return false if proxyUrl.empty?
