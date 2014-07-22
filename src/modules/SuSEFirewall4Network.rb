@@ -41,6 +41,7 @@ module Yast
       Yast.import "SuSEFirewall"
       Yast.import "SuSEFirewallProposal"
       Yast.import "Stage"
+      Yast.import "ServicesProposal"
 
       @firewall_enabled_1st_stage = false
       @ssh_enabled_1st_stage = false
@@ -254,6 +255,13 @@ module Yast
     # @param boolean new state
     def SetSshdEnabled(enabled)
       @sshd_enabled = enabled
+
+      # bnc#887688 Needed for AutoYast export functionality at the end
+      # of installation (clone_finish)
+      enabled ?
+        ServicesProposal.enable_service('sshd')
+        :
+        ServicesProposal.disable_service('sshd')
 
       nil
     end
