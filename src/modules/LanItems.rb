@@ -26,9 +26,17 @@ require "yast"
 module Yast
   # Does way too many things.
   #
-  # 1. Provides direct access to individual items of ifcfg files.
+  # 1. Aggregates data about network interfaces, both configured
+  # and unconfigured, in {#Items}, which see.
+  #
+  # 2. Provides direct access to individual items of ifcfg files.
   # For example BOOTPROTO and STARTMODE are accessible in
-  # {#bootproto} and {#startmode}
+  # {#bootproto} and {#startmode} (set via {#SetDeviceVars}
+  # via {#Select} or {#SetItem}).
+  #
+  # 3. ...
+  #
+
   class LanItemsClass < Module
     attr_reader :ipoib_modes
     attr_accessor :ipoib_mode
@@ -2569,6 +2577,14 @@ module Yast
     public
 
     # @attribute Items
+    # @return [Hash<Integer, Hash<String, Object> >]
+    # Each item, indexed by an Integer in a Hash, aggregates several aspects
+    # of a network interface. These aspects are in the inner Hash
+    # which mostly has other hashes as values:
+    #
+    # - ifcfg: String, just a foreign key for NetworkInterfaces#Select
+    # - hwinfo: Hash, detected hardware information
+    # - udev: Hash, udev naming rules
     publish_variable :Items                , "map <integer, any>"
     # @attribute Hardware
     publish_variable :Hardware             , "list <map>"
