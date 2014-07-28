@@ -2655,6 +2655,8 @@ module Yast
     publish_variable :nm_proposal_valid    , "boolean"
     publish_variable :nm_name              , "string"
     publish_variable :nm_name_old          , "string"
+    # @attribute SysconfigDefaults
+    publish_variable :SysconfigDefaults    , "map <string, string>"
     publish :function => :GetLanItem, :type => "map (integer)"
     publish :function => :getCurrentItem, :type => "map ()"
     publish :function => :IsItemConfigured, :type => "boolean (integer)"
@@ -2696,8 +2698,6 @@ module Yast
     publish :function => :GetDefaultsForHW, :type => "map ()"
     publish :function => :SetDefaultsForHW, :type => "void ()"
     publish :function => :SetDeviceVars, :type => "void (map, map)"
-    # @attribute SysconfigDefaults
-    publish_variable :SysconfigDefaults, "map <string, string>"
     publish :function => :Select, :type => "boolean (string)"
     publish :function => :Commit, :type => "boolean ()"
     publish :function => :Rollback, :type => "boolean ()"
