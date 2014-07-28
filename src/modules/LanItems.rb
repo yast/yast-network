@@ -24,6 +24,19 @@
 require "yast"
 
 module Yast
+  # Does way too many things.
+  #
+  # 1. Aggregates data about network interfaces, both configured
+  # and unconfigured, in {#Items}, which see.
+  #
+  # 2. Provides direct access to individual items of ifcfg files.
+  # For example BOOTPROTO and STARTMODE are accessible in
+  # {#bootproto} and {#startmode} (set via {#SetDeviceVars}
+  # via {#Select} or {#SetItem}).
+  #
+  # 3. ...
+  #
+
   class LanItemsClass < Module
     attr_reader :ipoib_modes
     attr_accessor :ipoib_mode
@@ -1460,7 +1473,7 @@ module Yast
     end
 
     # Select the hardware component
-    # @param hw the component
+    # @param hardware the component
     def SelectHWMap(hardware)
       hardware = deep_copy(hardware)
       sel = SelectHardwareMap(hardware)
@@ -2315,7 +2328,7 @@ module Yast
       DeleteItem()
     end
 
-    # Deletes the {current} item and its configuration
+    # Deletes the {#current} item and its configuration
     def DeleteItem
       return if @current < 0
       return if @Items.nil? || @Items.empty?
@@ -2549,73 +2562,101 @@ module Yast
       result
     end
 
-    publish :variable => :Items, :type => "map <integer, any>"
-    publish :variable => :Hardware, :type => "list <map>"
-    publish :variable => :udev_net_rules, :type => "map <string, any>"
-    publish :variable => :driver_options, :type => "map <string, any>"
-    publish :variable => :autoinstall_settings, :type => "map"
-    publish :variable => :modified, :type => "boolean"
-    publish :variable => :operation, :type => "symbol"
-    publish :variable => :force_restart, :type => "boolean"
-    publish :variable => :description, :type => "string"
-    publish :variable => :type, :type => "string"
-    publish :variable => :device, :type => "string"
-    publish :variable => :alias, :type => "string"
-    publish :variable => :current, :type => "integer"
-    publish :variable => :hotplug, :type => "string"
-    publish :variable => :Requires, :type => "list <string>"
-    publish :variable => :bootproto, :type => "string"
-    publish :variable => :ipaddr, :type => "string"
-    publish :variable => :remoteip, :type => "string"
-    publish :variable => :netmask, :type => "string"
-    publish :variable => :set_default_route, :type => "boolean"
-    publish :variable => :prefix, :type => "string"
-    publish :variable => :startmode, :type => "string"
-    publish :variable => :ifplugd_priority, :type => "string"
-    publish :variable => :mtu, :type => "string"
-    publish :variable => :ethtool_options, :type => "string"
-    publish :variable => :wl_mode, :type => "string"
-    publish :variable => :wl_essid, :type => "string"
-    publish :variable => :wl_nwid, :type => "string"
-    publish :variable => :wl_auth_mode, :type => "string"
-    publish :variable => :wl_wpa_psk, :type => "string"
-    publish :variable => :wl_key_length, :type => "string"
-    publish :variable => :wl_key, :type => "list <string>"
-    publish :variable => :wl_default_key, :type => "integer"
-    publish :variable => :wl_nick, :type => "string"
-    publish :variable => :bond_slaves, :type => "list <string>"
-    publish :variable => :bond_option, :type => "string"
-    publish :variable => :vlan_etherdevice, :type => "string"
-    publish :variable => :vlan_id, :type => "string"
-    publish :variable => :bridge_ports, :type => "string"
-    publish :variable => :wl_wpa_eap, :type => "map <string, any>"
-    publish :variable => :wl_channel, :type => "string"
-    publish :variable => :wl_frequency, :type => "string"
-    publish :variable => :wl_bitrate, :type => "string"
-    publish :variable => :wl_accesspoint, :type => "string"
-    publish :variable => :wl_power, :type => "boolean"
-    publish :variable => :wl_ap_scanmode, :type => "string"
-    publish :variable => :wl_auth_modes, :type => "list <string>"
-    publish :variable => :wl_enc_modes, :type => "list <string>"
-    publish :variable => :wl_channels, :type => "list <string>"
-    publish :variable => :wl_bitrates, :type => "list <string>"
-    publish :variable => :qeth_portname, :type => "string"
-    publish :variable => :qeth_portnumber, :type => "string"
-    publish :variable => :chan_mode, :type => "string"
-    publish :variable => :qeth_options, :type => "string"
-    publish :variable => :ipa_takeover, :type => "boolean"
-    publish :variable => :iucv_user, :type => "string"
-    publish :variable => :qeth_layer2, :type => "boolean"
-    publish :variable => :qeth_macaddress, :type => "string"
-    publish :variable => :qeth_chanids, :type => "string"
-    publish :variable => :lcs_timeout, :type => "string"
-    publish :variable => :aliases, :type => "map"
-    publish :variable => :tunnel_set_owner, :type => "string"
-    publish :variable => :tunnel_set_group, :type => "string"
-    publish :variable => :proposal_valid, :type => "boolean"
-    publish :variable => :nm_proposal_valid, :type => "boolean"
-    publish :variable => :nm_name, :type => "string"
-    publish :variable => :nm_name_old, :type => "string"
+    private
+
+    # This helper allows YARD to extract DSL-defined attributes.
+    # Unfortunately YARD has problems with the Capitalized ones,
+    # so those must be done manually.
+    # @!macro [attach] publish_variable
+    #  @!attribute $1
+    #  @return [$2]
+    def self.publish_variable(name, type)
+      publish :variable => name, :type => type
+    end
+
+    public
+
+    # @attribute Items
+    # @return [Hash<Integer, Hash<String, Object> >]
+    # Each item, indexed by an Integer in a Hash, aggregates several aspects
+    # of a network interface. These aspects are in the inner Hash
+    # which mostly has other hashes as values:
+    #
+    # - ifcfg: String, just a foreign key for NetworkInterfaces#Select
+    # - hwinfo: Hash, detected hardware information
+    # - udev: Hash, udev naming rules
+    publish_variable :Items                , "map <integer, any>"
+    # @attribute Hardware
+    publish_variable :Hardware             , "list <map>"
+    publish_variable :udev_net_rules       , "map <string, any>"
+    publish_variable :driver_options       , "map <string, any>"
+    publish_variable :autoinstall_settings , "map"
+    publish_variable :modified             , "boolean"
+    publish_variable :operation            , "symbol"
+    publish_variable :force_restart        , "boolean"
+    publish_variable :description          , "string"
+    publish_variable :type                 , "string"
+    publish_variable :device               , "string"
+    publish_variable :alias                , "string"
+    # the index into {#Items}
+    publish_variable :current              , "integer"
+    publish_variable :hotplug              , "string"
+    # @attribute Requires
+    publish_variable :Requires             , "list <string>"
+    publish_variable :bootproto            , "string"
+    publish_variable :ipaddr               , "string"
+    publish_variable :remoteip             , "string"
+    publish_variable :netmask              , "string"
+    publish_variable :set_default_route    , "boolean"
+    publish_variable :prefix               , "string"
+    publish_variable :startmode            , "string"
+    publish_variable :ifplugd_priority     , "string"
+    publish_variable :mtu                  , "string"
+    publish_variable :ethtool_options      , "string"
+    publish_variable :wl_mode              , "string"
+    publish_variable :wl_essid             , "string"
+    publish_variable :wl_nwid              , "string"
+    publish_variable :wl_auth_mode         , "string"
+    publish_variable :wl_wpa_psk           , "string"
+    publish_variable :wl_key_length        , "string"
+    publish_variable :wl_key               , "list <string>"
+    publish_variable :wl_default_key       , "integer"
+    publish_variable :wl_nick              , "string"
+    publish_variable :bond_slaves          , "list <string>"
+    publish_variable :bond_option          , "string"
+    publish_variable :vlan_etherdevice     , "string"
+    publish_variable :vlan_id              , "string"
+    publish_variable :bridge_ports         , "string"
+    publish_variable :wl_wpa_eap           , "map <string, any>"
+    publish_variable :wl_channel           , "string"
+    publish_variable :wl_frequency         , "string"
+    publish_variable :wl_bitrate           , "string"
+    publish_variable :wl_accesspoint       , "string"
+    publish_variable :wl_power             , "boolean"
+    publish_variable :wl_ap_scanmode       , "string"
+    publish_variable :wl_auth_modes        , "list <string>"
+    publish_variable :wl_enc_modes         , "list <string>"
+    publish_variable :wl_channels          , "list <string>"
+    publish_variable :wl_bitrates          , "list <string>"
+    publish_variable :qeth_portname        , "string"
+    publish_variable :qeth_portnumber      , "string"
+    publish_variable :chan_mode            , "string"
+    publish_variable :qeth_options         , "string"
+    publish_variable :ipa_takeover         , "boolean"
+    publish_variable :iucv_user            , "string"
+    publish_variable :qeth_layer2          , "boolean"
+    publish_variable :qeth_macaddress      , "string"
+    publish_variable :qeth_chanids         , "string"
+    publish_variable :lcs_timeout          , "string"
+    publish_variable :aliases              , "map"
+    publish_variable :tunnel_set_owner     , "string"
+    publish_variable :tunnel_set_group     , "string"
+    publish_variable :proposal_valid       , "boolean"
+    publish_variable :nm_proposal_valid    , "boolean"
+    publish_variable :nm_name              , "string"
+    publish_variable :nm_name_old          , "string"
+    # @attribute SysconfigDefaults
+    publish_variable :SysconfigDefaults    , "map <string, string>"
     publish :function => :GetLanItem, :type => "map (integer)"
     publish :function => :getCurrentItem, :type => "map ()"
     publish :function => :IsItemConfigured, :type => "boolean (integer)"
@@ -2657,7 +2698,6 @@ module Yast
     publish :function => :GetDefaultsForHW, :type => "map ()"
     publish :function => :SetDefaultsForHW, :type => "void ()"
     publish :function => :SetDeviceVars, :type => "void (map, map)"
-    publish :variable => :SysconfigDefaults, :type => "map <string, string>"
     publish :function => :Select, :type => "boolean (string)"
     publish :function => :Commit, :type => "boolean ()"
     publish :function => :Rollback, :type => "boolean ()"
