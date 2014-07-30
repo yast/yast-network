@@ -891,29 +891,6 @@ module Yast
       nm_default && nm_installed
     end
 
-    # Create minimal ifcfgs for the case when NetworkManager is used:
-    # NM does not need them but yast2-firewall and SuSEfirewall2 do
-    # Avoid existing ifcfg from network installation
-    def ProposeNMInterfaces
-      Builtins.y2milestone("Minimal ifcfgs for NM")
-      Builtins.foreach(LanItems.Items) do |number, lanitem|
-        if IsNotEmpty(
-            Ops.get_string(Convert.to_map(lanitem), ["hwinfo", "dev_name"], "")
-          )
-          LanItems.current = number
-          if !LanItems.IsCurrentConfigured
-            Builtins.y2milestone(
-              "Nothing already configured start proposing %1 (NM)",
-              LanItems.getCurrentItem
-            )
-            LanItems.ProposeItem
-          end
-        end
-      end
-
-      nil
-    end
-
     def IfcfgsToSkipVirtualizedProposal
       skipped = []
       Builtins.foreach(LanItems.Items) do |current, config|
@@ -1087,215 +1064,8 @@ module Yast
       nil
     end
 
-    # Propose interface configuration
-    # @return true if something was proposed
-    def ProposeInterfaces
-      Builtins.y2milestone("Hardware=%1", LanItems.Hardware)
-
-      Builtins.y2milestone("NetworkConfig::Config=%1", NetworkConfig.Config)
-      Builtins.y2milestone("NetworkConfig::DHCP=%1", NetworkConfig.DHCP)
-
-      # test if we have any virtualization installed
-      if !LanItems.nm_proposal_valid
-        if UseNetworkManager()
-          NetworkService.use_network_manager
-        else
-          NetworkService.use_netconfig
-        end
-
-        LanItems.nm_proposal_valid = true
-      end
-
-      if NetworkService.is_network_manager
-        ProposeNMInterfaces()
-
-        LanItems.modified = true # #144139 workaround
-        Builtins.y2milestone("NM proposal")
-        return true
-      end
-      # Something is already configured -> do nothing
-      configured = false
-      Builtins.foreach(LanItems.Items) do |number, lanitem|
-        LanItems.current = number
-        if LanItems.IsCurrentConfigured
-          Builtins.y2milestone("Something already configured: don't propose.")
-          configured = true
-          raise Break
-        end
-      end
-      return false if configured
-
-
-      Builtins.foreach(LanItems.Items) do |number, lanitem|
-        if IsNotEmpty(
-            Ops.get_string(Convert.to_map(lanitem), ["hwinfo", "dev_name"], "")
-          )
-          LanItems.current = number
-          link = Ops.get_boolean(
-            LanItems.getCurrentItem,
-            ["hwinfo", "link"],
-            false
-          )
-          if Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "type"], "") == "wlan"
-            Builtins.y2warning("Will not propose wlan interfaces")
-          else
-            if !link
-              Builtins.y2warning(
-                "item number %1 has link:false detected",
-                number
-              )
-            elsif !LanItems.IsCurrentConfigured && link
-              Builtins.y2milestone(
-                "Nothing already configured - start proposing"
-              )
-              LanItems.ProposeItem
-              raise Break
-            end
-          end
-        end
-      end
-
-      Builtins.y2milestone("NetworkConfig::Config=%1", NetworkConfig.Config)
-      Builtins.y2milestone("NetworkConfig::DHCP=%1", NetworkConfig.DHCP)
-
-      true
-    end
-
-    # Propose the hostname
-    # See also DNS::Read
-    # @return true if something was proposed
-    def ProposeHostname
-      if DNS.proposal_valid
-        # the standalone hostname dialog did the job already
-        return false
-      end
-
-      true
-    end
-
-    # Propose configuration for routing and resolver
-    # @return true if something was proposed
-    def ProposeRoutesAndResolver
-      if LanItems.bootproto == "static" && LanItems.ipaddr != "" &&
-          LanItems.ipaddr != nil
-        ProposeHostname()
-      end
-      true
-    end
-
-    # Propose a configuration
-    # @return true if something was proposed
-    def Propose
-      NetworkInterfaces.CleanCacheRead
-      LanItems.Read
-      ProposeInterfaces() && ProposeRoutesAndResolver()
-    end
-
     # Create a configuration for autoyast
     # @return true if something was proposed
-    def Autoinstall
-      Builtins.y2milestone("Hardware=%1", LanItems.Hardware)
-      tosel = nil
-
-      # Some HW found -> use it for proposal
-      if Ops.greater_than(Builtins.size(LanItems.Hardware), 0) &&
-          Ops.greater_than(
-            Builtins.size(
-              Ops.get_list(LanItems.autoinstall_settings, "interfaces", [])
-            ),
-            0
-          )
-        Builtins.foreach(
-          Ops.get_list(LanItems.autoinstall_settings, "interfaces", [])
-        ) do |interface|
-          devs = NetworkInterfaces.List("")
-          Builtins.y2milestone("devs: %1", devs)
-          tosel = nil
-          Add()
-          tosel = LanItems.FindMatchingDevice(interface)
-          Builtins.y2milestone("tosel=%1", tosel)
-          # Read module data from autoyast
-          aymodule = LanItems.GetModuleForInterface(
-            Ops.get(interface, "device", ""),
-            Ops.get_list(LanItems.autoinstall_settings, "modules", [])
-          )
-          if tosel != nil
-            Ops.set(
-              tosel,
-              "module",
-              Ops.get_string(aymodule, "module", "") != "" ?
-                Ops.get_string(aymodule, "module", "") :
-                Ops.get_string(tosel, "module", "")
-            )
-            Ops.set(
-              tosel,
-              "options",
-              Ops.get_string(aymodule, "options", "") != "" ?
-                Ops.get_string(aymodule, "options", "") :
-                Ops.get_string(tosel, "options", "")
-            )
-
-            LanItems.SelectHWMap(tosel)
-          else
-            Builtins.y2milestone(
-              "No hardware, no install.inf -> no autoinstallation possible."
-            )
-            next false
-          end
-          # The uppercasing is also done in lan_auto::FromAY
-          # but the output goes to "devices" whereas here
-          # we use "interfaces". FIXME.
-          newk = nil
-          interface = Builtins.mapmap(interface) do |k, v|
-            newk = Builtins.toupper(k)
-            { newk => v }
-          end
-          defaults = Builtins.union(
-            LanItems.SysconfigDefaults,
-            LanItems.GetDefaultsForHW
-          )
-          # Set interface variables
-          LanItems.SetDeviceVars(interface, defaults)
-          Builtins.y2debug(
-            "ipaddr,bootproto=%1,%2",
-            LanItems.ipaddr,
-            LanItems.bootproto
-          )
-          if LanItems.bootproto == "static" && LanItems.ipaddr != "" &&
-              LanItems.ipaddr != nil
-            Builtins.y2milestone("static configuration")
-
-            if LanItems.netmask == nil || LanItems.netmask == ""
-              LanItems.netmask = "255.255.255.0"
-            end
-          end
-          LanItems.Commit
-        end
-      else
-        Builtins.y2milestone(
-          "no interface configuration, taking it from install.inf"
-        )
-        ProposeInterfaces()
-      end
-
-      # #153426 - using ProposeInterfaces instead of Propose omitted these
-      # if they are nonempty, Import has already taken care of them.
-      if Ops.get_list(LanItems.autoinstall_settings, ["routing", "routes"], []) == []
-        Builtins.y2milestone("gateway from install.inf") 
-        #	Routing::ReadFromGateway (InstallInf["gateway"]:"");
-      end
-      if Ops.get_list(LanItems.autoinstall_settings, ["dns", "nameservers"], []) == []
-        Builtins.y2milestone("nameserver from install.inf") 
-        #	DNS::ReadNameserver (InstallInf["nameserver"]:"");
-      end
-      if Ops.get_string(LanItems.autoinstall_settings, ["dns", "hostname"], "") == ""
-        ProposeHostname()
-      end
-
-      true
-    end
-
-
     # Check if any device  is configured with DHCP.
     # @return true if any DHCP device is configured
     def AnyDHCPDevice
@@ -1315,13 +1085,6 @@ module Yast
         ),
         0
       )
-    end
-
-
-    def PrepareForAutoinst
-      #    ReadInstallInf();
-      LanItems.ReadHw
-      deep_copy(LanItems.Hardware)
     end
 
     # @return [Array] of packages needed when writing the config
@@ -1435,12 +1198,7 @@ module Yast
     publish :function => :SummaryGeneral, :type => "list ()"
     publish :function => :Add, :type => "boolean ()"
     publish :function => :Delete, :type => "boolean ()"
-    publish :function => :ProposeInterfaces, :type => "boolean ()"
-    publish :function => :ProposeRoutesAndResolver, :type => "boolean ()"
-    publish :function => :Propose, :type => "boolean ()"
-    publish :function => :Autoinstall, :type => "boolean ()"
     publish :function => :AnyDHCPDevice, :type => "boolean ()"
-    publish :function => :PrepareForAutoinst, :type => "list <map> ()"
     publish :function => :Packages, :type => "list <string> ()"
     publish :function => :AutoPackages, :type => "map ()"
     publish :function => :HaveXenBridge, :type => "boolean ()"

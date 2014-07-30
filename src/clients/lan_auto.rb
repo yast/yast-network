@@ -159,8 +159,6 @@ module Yast
         @ret = deep_copy(@autoyast)
       elsif @func == "Write"
         @progress_orig = Progress.set(false)
-        #    Lan::PrepareForAutoinst();
-        #    Lan::Autoinstall();
         @ret = Lan.WriteOnly
         if Ops.get(LanItems.autoinstall_settings, "strict_IP_check_timeout") != nil
           if Lan.isAnyInterfaceDown
