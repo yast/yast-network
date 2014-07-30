@@ -58,9 +58,20 @@ module Yast
       # can be set to BOOTPROTO=none. No workaround with
       # BOOTPROTO=static required anymore
       NetworkInterfaces.Edit(device)
+
       NetworkInterfaces.Current["IPADDR"] = ""
       NetworkInterfaces.Current["NETMASK"] = ""
       NetworkInterfaces.Current["BOOTPROTO"] = "none"
+      #take out PREFIXLEN from old configuration (BNC#735109)
+      NetworkInterfaces.Current["PREFIXLEN"] = ""
+
+      # remove all aliases (bnc#590167)
+      aliases = NetworkInterfaces.Current["_aliases"] || {}
+      aliases.each do |alias_name, alias_ip|
+        NetworkInterfaces.DeleteAlias(device, alias_name) if alias_ip
+      end
+      NetworkInterfaces.Current["_aliases"] = {}
+
       NetworkInterfaces.Commit
       NetworkInterfaces.Add
     end

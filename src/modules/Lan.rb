@@ -68,6 +68,7 @@ module Yast
 
       Yast.include self, "network/complex.rb"
       Yast.include self, "network/runtime.rb"
+      Yast.include self, "network/lan/bridge.rb"
 
       #-------------
       # GLOBAL DATA
@@ -1026,28 +1027,8 @@ module Yast
             "ETHTOOLS_OPTIONS"
           )
           if NetworkInterfaces.Commit
-            NetworkInterfaces.Add
-            NetworkInterfaces.Edit(ifcfg)
-            Ops.set(old_config, "BOOTPROTO", "static")
-            Ops.set(old_config, "IPADDR", "0.0.0.0/32")
-            # remove all aliases (bnc#590167)
-            Builtins.foreach(
-              Ops.get_map(NetworkInterfaces.Current, "_aliases", {})
-            ) do |a, v|
-              if v != nil
-                NetworkInterfaces.DeleteAlias(NetworkInterfaces.Name, a)
-              end
-            end
-            #take out PREFIXLEN from old configuration (BNC#735109)
-            Ops.set(old_config, "PREFIXLEN", "")
-            Ops.set(old_config, "_aliases", {})
-            Builtins.y2milestone(
-              "Old Config with apllied changes %1\n%2",
-              ifcfg,
-              old_config
-            )
-            NetworkInterfaces.Current = deep_copy(old_config)
-            NetworkInterfaces.Commit
+            # reconfigure existing device as newly created bridge's port
+            configure_as_bridge_port(ifcfg)
 
             Ops.set(LanItems.Items, [current, "ifcfg"], new_ifcfg)
             LanItems.modified = true
