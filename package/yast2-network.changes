@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Aug  4 05:36:41 UTC 2014 - mfilka@suse.com
+
+- bnc#884517
+  - fixed proposal when virtual machine proposal is selected
+  - /etc/hosts do not contain incorrect 0.0.0.0 entry
+- 3.1.74
+
+-------------------------------------------------------------------
 Fri Aug  1 14:15:49 UTC 2014 - ancor@suse.com
 
 - Avoid confusing firewall proposals by hidding the details (ssh
@@ -30,7 +38,7 @@ Mon Jul 14 10:32:34 CEST 2014 - schubi@suse.de
 
 - Do not restart network if the installation has been started
   via a SSH connection. (bnc#885640)
-- 3.1.89
+- 3.1.69
 
 -------------------------------------------------------------------
 Fri Jul 11 08:52:08 UTC 2014 - mfilka@suse.com
