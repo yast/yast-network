@@ -49,51 +49,18 @@ module Yast
       Yast.import "Linuxrc"
       Yast.import "PackagesProposal"
       Yast.import "ProductControl"
-      Yast.import "ProductFeatures"
       Yast.import "SuSEFirewall4Network"
       Yast.import "SuSEFirewallProposal"
       Yast.import "Wizard"
-
-      # run this only once
-      if !SuSEFirewallProposal.GetProposalInitialized
-        # variables from control file
-        Builtins.y2milestone(
-          "Default firewall values: enable_firewall=%1, enable_ssh=%2 enable_sshd=%3",
-          ProductFeatures.GetBooleanFeature("globals", "enable_firewall"),
-          ProductFeatures.GetBooleanFeature("globals", "firewall_enable_ssh"),
-          ProductFeatures.GetBooleanFeature("globals", "enable_sshd")
-        )
-
-        SuSEFirewall4Network.SetEnabled1stStage(
-          ProductFeatures.GetBooleanFeature("globals", "enable_firewall")
-        )
-
-        # we're installing over SSH, propose opening SSH port (bnc#535206)
-        if Linuxrc.usessh
-          SuSEFirewall4Network.SetSshEnabled1stStage(true)
-          SuSEFirewall4Network.SetSshdEnabled(true)
-        else
-          SuSEFirewall4Network.SetSshEnabled1stStage(
-            ProductFeatures.GetBooleanFeature("globals", "firewall_enable_ssh")
-          )
-          SuSEFirewall4Network.SetSshdEnabled(
-            ProductFeatures.GetBooleanFeature("globals", "enable_sshd")
-          )
-        end
-
-        # we're installing over VNC, propose opening VNC port (bnc#734264)
-        SuSEFirewall4Network.SetVncEnabled1stStage(true) if Linuxrc.vnc
-
-        SuSEFirewallProposal.SetProposalInitialized(true)
-      end
-
 
       @func = Convert.to_string(WFM.Args(0))
       @param = Convert.to_map(WFM.Args(1))
       @ret = {}
 
-
       if @func == "MakeProposal"
+        # Don't override users settings
+        SuSEFirewall4Network.prepare_proposal unless SuSEFirewallProposal.GetChangedByUser
+
         # Summary is visible only if installing over VNC
         # and if firewall is enabled - otherwise port could not be blocked
         vnc_proposal_element = ""
