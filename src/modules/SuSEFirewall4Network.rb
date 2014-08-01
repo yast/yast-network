@@ -35,6 +35,9 @@ require "yast"
 
 module Yast
   class SuSEFirewall4NetworkClass < Module
+
+    include Yast::Logger
+
     def main
       textdomain "network"
 
@@ -42,6 +45,9 @@ module Yast
       Yast.import "SuSEFirewallProposal"
       Yast.import "Stage"
       Yast.import "ServicesProposal"
+      Yast.import "Linuxrc"
+      Yast.import "ProductFeatures"
+      Yast.import "Pkg"
 
       @firewall_enabled_1st_stage = false
       @ssh_enabled_1st_stage = false
@@ -68,6 +74,38 @@ module Yast
     # @return [Boolean] whether enabled and started
     def IsOn
       SuSEFirewall.GetEnableService && SuSEFirewall.GetStartService
+    end
+
+    # Sets the values of the initial proposal based on the product features,
+    # the packages selected for installation and the installation method
+    def prepare_proposal
+      # variables from control file
+      default_firewall = ProductFeatures.GetBooleanFeature("globals", "enable_firewall")
+      default_fw_ssh = ProductFeatures.GetBooleanFeature("globals", "firewall_enable_ssh")
+      default_sshd = ProductFeatures.GetBooleanFeature("globals", "enable_sshd")
+
+      log.info "Default firewall values: enable_firewall=#{default_firewall}, "\
+               "enable_ssh=#{default_fw_ssh}, enable_sshd=#{default_sshd}"
+
+      # Enabling SuSEFirewall only makes sense if it's going to be
+      # installed (bnc#881250)
+      if Pkg.IsSelected(SuSEFirewall.FIREWALL_PACKAGE)
+        SuSEFirewall4Network.SetEnabled1stStage(default_firewall)
+      else
+        SuSEFirewall4Network.SetEnabled1stStage(false)
+      end
+
+      # we're installing over SSH, propose opening SSH port (bnc#535206)
+      if Linuxrc.usessh
+        SuSEFirewall4Network.SetSshEnabled1stStage(true)
+        SuSEFirewall4Network.SetSshdEnabled(true)
+      else
+        SuSEFirewall4Network.SetSshEnabled1stStage(default_fw_ssh)
+        SuSEFirewall4Network.SetSshdEnabled(default_sshd)
+      end
+
+      # we're installing over VNC, propose opening VNC port (bnc#734264)
+      SuSEFirewall4Network.SetVncEnabled1stStage(true) if Linuxrc.vnc
     end
 
     # Function returns list of items for combo box with all known
