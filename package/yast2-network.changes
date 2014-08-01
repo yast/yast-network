@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Aug  1 14:15:49 UTC 2014 - ancor@suse.com
+
+- Avoid confusing firewall proposals by hidding the details (ssh
+  and vnc ports) when the firewall is disabled (bnc#886554).
+- 3.1.73 
+
+-------------------------------------------------------------------
 Fri Aug  1 08:21:36 UTC 2014 - ancor@suse.com
 
 - Don't propose to enable the firewall if SuSEFirewall is not
