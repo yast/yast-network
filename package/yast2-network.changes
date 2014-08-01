@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Aug  1 08:21:36 UTC 2014 - ancor@suse.com
+
+- Don't propose to enable the firewall if SuSEFirewall is not
+  selected for installation (bnc#881250)
+- 3.1.72 
+
+-------------------------------------------------------------------
 Tue Jul 22 14:30:00 CEST 2014 - locilka@suse.com
 
 - Using new ServicesProposal library to set the sshd service status
