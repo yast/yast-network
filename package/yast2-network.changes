@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Aug  4 06:22:20 UTC 2014 - mfilka@suse.com
+
+- bnc#889359
+  - Re-enable Add button in Overview dialog during installation
+- 3.1.75 
+
+-------------------------------------------------------------------
 Mon Aug  4 05:36:41 UTC 2014 - mfilka@suse.com
 
 - bnc#884517
