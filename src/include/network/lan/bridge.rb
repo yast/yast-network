@@ -51,6 +51,9 @@ module Yast
       nil
     end
 
+    # Immediately updates device's ifcfg to be usable as bridge port.
+    #
+    # It mainly setups suitable BOOTPROTO an IP related values
     def configure_as_bridge_port(device)
       log.info("Adapt device #{device} as bridge port")
 
