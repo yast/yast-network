@@ -60,6 +60,7 @@ module Yast
       Yast.import "ModuleLoading"
       Yast.import "Linuxrc"
       Yast.import "LanUdevAuto"
+      Yast.import "Report"
 
       Yast.include self, "network/complex.rb"
       Yast.include self, "network/runtime.rb"
@@ -699,7 +700,12 @@ module Yast
       Routing.Import(Builtins.eval(Ops.get_map(settings, "routing", {})))
 
       if Ops.get_boolean(settings, "managed", false)
-        NetworkService.use_network_manager
+        if NetworkService.is_backend_available(:network_manager)
+          NetworkService.use_network_manager
+        else
+          Report.Warning(_("AutoYaST setting networking/managed: NetworkManager is not available, Wicked will be used."))
+          NetworkService.use_wicked
+        end
       else
         NetworkService.use_wicked
       end
