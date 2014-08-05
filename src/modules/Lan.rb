@@ -60,6 +60,7 @@ module Yast
       Yast.import "ModuleLoading"
       Yast.import "Linuxrc"
       Yast.import "LanUdevAuto"
+      Yast.import "Report"
 
       Yast.include self, "network/complex.rb"
       Yast.include self, "network/runtime.rb"
