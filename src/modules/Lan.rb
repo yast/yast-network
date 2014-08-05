@@ -699,7 +699,12 @@ module Yast
       Routing.Import(Builtins.eval(Ops.get_map(settings, "routing", {})))
 
       if Ops.get_boolean(settings, "managed", false)
-        NetworkService.use_network_manager
+        if NetworkService.is_backend_available(:network_manager)
+          NetworkService.use_network_manager
+        else
+          Popup.Warning(_("Taking Wicked cause NetworkManager is not available (autoyast setting <managed>)."))
+          NetworkService.use_wicked
+        end
       else
         NetworkService.use_wicked
       end
