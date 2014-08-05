@@ -702,7 +702,7 @@ module Yast
         if NetworkService.is_backend_available(:network_manager)
           NetworkService.use_network_manager
         else
-          Popup.Warning(_("Taking Wicked cause NetworkManager is not available (autoyast setting <managed>)."))
+          Report.Warning(_("AutoYaST setting networking/managed: NetworkManager is not available, Wicked will be used."))
           NetworkService.use_wicked
         end
       else
