@@ -1052,8 +1052,9 @@ module Yast
       NetworkInterfaces.Read
       NetworkInterfaces.CleanHotplugSymlink
 
+      interfaces = getNetworkInterfaces
       # match configurations to Items list with hwinfo
-      Builtins.foreach(getNetworkInterfaces) do |confname|
+      Builtins.foreach(interfaces) do |confname|
         pos = nil
         val = {}
         Builtins.foreach(
@@ -1076,7 +1077,7 @@ module Yast
       end
 
       # add to Items also virtual devices (configurations) without hwinfo
-      Builtins.foreach(getNetworkInterfaces) do |confname|
+      Builtins.foreach(interfaces) do |confname|
         already = false
         Builtins.foreach(
           Convert.convert(
