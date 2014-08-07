@@ -49,101 +49,20 @@ module Yast
       Yast.import "Linuxrc"
       Yast.import "PackagesProposal"
       Yast.import "ProductControl"
-      Yast.import "ProductFeatures"
       Yast.import "SuSEFirewall4Network"
       Yast.import "SuSEFirewallProposal"
       Yast.import "Wizard"
-
-      # run this only once
-      if !SuSEFirewallProposal.GetProposalInitialized
-        # variables from control file
-        Builtins.y2milestone(
-          "Default firewall values: enable_firewall=%1, enable_ssh=%2 enable_sshd=%3",
-          ProductFeatures.GetBooleanFeature("globals", "enable_firewall"),
-          ProductFeatures.GetBooleanFeature("globals", "firewall_enable_ssh"),
-          ProductFeatures.GetBooleanFeature("globals", "enable_sshd")
-        )
-
-        SuSEFirewall4Network.SetEnabled1stStage(
-          ProductFeatures.GetBooleanFeature("globals", "enable_firewall")
-        )
-
-        # we're installing over SSH, propose opening SSH port (bnc#535206)
-        if Linuxrc.usessh
-          SuSEFirewall4Network.SetSshEnabled1stStage(true)
-          SuSEFirewall4Network.SetSshdEnabled(true)
-        else
-          SuSEFirewall4Network.SetSshEnabled1stStage(
-            ProductFeatures.GetBooleanFeature("globals", "firewall_enable_ssh")
-          )
-          SuSEFirewall4Network.SetSshdEnabled(
-            ProductFeatures.GetBooleanFeature("globals", "enable_sshd")
-          )
-        end
-
-        # we're installing over VNC, propose opening VNC port (bnc#734264)
-        SuSEFirewall4Network.SetVncEnabled1stStage(true) if Linuxrc.vnc
-
-        SuSEFirewallProposal.SetProposalInitialized(true)
-      end
-
 
       @func = Convert.to_string(WFM.Args(0))
       @param = Convert.to_map(WFM.Args(1))
       @ret = {}
 
-
       if @func == "MakeProposal"
-        # Summary is visible only if installing over VNC
-        # and if firewall is enabled - otherwise port could not be blocked
-        vnc_proposal_element = ""
-        if Linuxrc.vnc && SuSEFirewall4Network.Enabled1stStage
-          vnc_proposal = SuSEFirewall4Network.EnabledVnc1stStage ?
-            _("VNC ports will be open (<a href=\"%s\">close</a>)") %
-              LINK_DISABLE_VNC
-            : _("VNC ports will be blocked (<a href=\"%s\">open</a>)") %
-              LINK_ENABLE_VNC
-          vnc_proposal_element = "<li>#{vnc_proposal}</li>"
-        end
-
-        firewall_proposal = SuSEFirewall4Network.Enabled1stStage ?
-            _(
-              "Firewall will be enabled (<a href=\"%s\">disable</a>)"
-            ) % LINK_DISABLE_FIREWALL
-          :
-            _(
-              "Firewall will be disabled (<a href=\"%s\">enable</a>)"
-            ) % LINK_ENABLE_FIREWALL
-
-        ssh_proposal = SuSEFirewall4Network.EnabledSsh1stStage ?
-            _(
-              "SSH port will be open (<a href=\"%s\">block</a>)"
-            ) % LINK_BLOCK_SSH_PORT
-          :
-            _(
-              "SSH port will be blocked (<a href=\"%s\">open</a>)"
-            ) % LINK_OPEN_SSH_PORT
-
-        sshd_proposal = SuSEFirewall4Network.EnabledSshd ?
-            _(
-              "SSH service will be enabled (<a href=\"%s\">disable</a>)"
-            ) % LINK_DISABLE_SSHD
-          :
-            _(
-              "SSH service will be disabled (<a href=\"%s\">enable</a>)"
-            ) % LINK_ENABLE_SSHD
-
-
-
-
-        @output = "<ul>\n<li>#{firewall_proposal}</li>\n" +
-                  "<li>#{ssh_proposal}</li>\n" +
-                  "<li>#{sshd_proposal}</li>\n" +
-                  vnc_proposal_element +
-                  "</ul>\n"
+        # Don't override users settings
+        SuSEFirewall4Network.prepare_proposal unless SuSEFirewallProposal.GetChangedByUser
 
         @ret = {
-          "preformatted_proposal" => @output,
+          "preformatted_proposal" => preformatted_proposal,
           "warning_level"         => :warning,
           "links"                 => [
             LINK_ENABLE_FIREWALL,
@@ -368,6 +287,58 @@ module Yast
       Wizard.CloseDialog
       Convert.to_symbol(dialog_ret)
     end
+
+  private
+
+    def preformatted_proposal
+
+      firewall_proposal = SuSEFirewall4Network.Enabled1stStage ?
+          _(
+            "Firewall will be enabled (<a href=\"%s\">disable</a>)"
+          ) % LINK_DISABLE_FIREWALL
+        :
+          _(
+            "Firewall will be disabled (<a href=\"%s\">enable</a>)"
+          ) % LINK_ENABLE_FIREWALL
+
+      sshd_proposal = SuSEFirewall4Network.EnabledSshd ?
+          _(
+            "SSH service will be enabled (<a href=\"%s\">disable</a>)"
+          ) % LINK_DISABLE_SSHD
+        :
+          _(
+            "SSH service will be disabled (<a href=\"%s\">enable</a>)"
+          ) % LINK_ENABLE_SSHD
+
+      vnc_fw_proposal = nil
+      ssh_fw_proposal = nil
+      # It only makes sense to show the blocked ports if firewall is
+      # enabled (bnc#886554)
+      if SuSEFirewall4Network.Enabled1stStage
+        # Display vnc port only if installing over VNC
+        if Linuxrc.vnc
+          vnc_fw_proposal = SuSEFirewall4Network.EnabledVnc1stStage ?
+            _("VNC ports will be open (<a href=\"%s\">close</a>)") %
+              LINK_DISABLE_VNC
+            : _("VNC ports will be blocked (<a href=\"%s\">open</a>)") %
+              LINK_ENABLE_VNC
+        end
+
+        ssh_fw_proposal = SuSEFirewall4Network.EnabledSsh1stStage ?
+            _(
+              "SSH port will be open (<a href=\"%s\">block</a>)"
+            ) % LINK_BLOCK_SSH_PORT
+          :
+            _(
+              "SSH port will be blocked (<a href=\"%s\">open</a>)"
+            ) % LINK_OPEN_SSH_PORT
+      end
+
+      # Filter proposals with content and sort them
+      proposals = [firewall_proposal, ssh_fw_proposal, sshd_proposal, vnc_fw_proposal].compact
+      "<ul>\n" + proposals.map {|prop| "<li>#{prop}</li>\n" }.join + "</ul>\n"
+    end
+
   end unless defined? FirewallStage1ProposalClient
 end
 

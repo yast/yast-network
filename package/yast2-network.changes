@@ -1,8 +1,45 @@
 -------------------------------------------------------------------
-Tue Aug  5 15:28:28 UTC 2014 - mvidner@suse.com
+Thu Aug  7 12:20:44 UTC 2014 - mvidner@suse.com
 
 - Do not lose default route when editing an interface (bnc#883836).
+- 3.1.77
+
+-------------------------------------------------------------------
+Tue Aug  5 14:59:19 CEST 2014 - schubi@suse.de
+
+- Autoyast: If NetworkManager is not available taking wicked although
+  the user has set it explicit. ( with warning Popup )
+  (bnc#890238)
 - 3.1.76
+
+-------------------------------------------------------------------
+Mon Aug  4 06:22:20 UTC 2014 - mfilka@suse.com
+
+- bnc#889359
+  - Re-enable Add button in Overview dialog during installation
+- 3.1.75 
+
+-------------------------------------------------------------------
+Mon Aug  4 05:36:41 UTC 2014 - mfilka@suse.com
+
+- bnc#884517
+  - fixed proposal when virtual machine proposal is selected
+  - /etc/hosts do not contain incorrect 0.0.0.0 entry
+- 3.1.74
+
+-------------------------------------------------------------------
+Fri Aug  1 14:15:49 UTC 2014 - ancor@suse.com
+
+- Avoid confusing firewall proposals by hidding the details (ssh
+  and vnc ports) when the firewall is disabled (bnc#886554).
+- 3.1.73 
+
+-------------------------------------------------------------------
+Fri Aug  1 08:21:36 UTC 2014 - ancor@suse.com
+
+- Don't propose to enable the firewall if SuSEFirewall is not
+  selected for installation (bnc#881250)
+- 3.1.72 
 
 -------------------------------------------------------------------
 Tue Jul 22 14:30:00 CEST 2014 - locilka@suse.com
@@ -22,7 +59,7 @@ Mon Jul 14 10:32:34 CEST 2014 - schubi@suse.de
 
 - Do not restart network if the installation has been started
   via a SSH connection. (bnc#885640)
-- 3.1.89
+- 3.1.69
 
 -------------------------------------------------------------------
 Fri Jul 11 08:52:08 UTC 2014 - mfilka@suse.com

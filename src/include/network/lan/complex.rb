@@ -575,11 +575,7 @@ module Yast
     def overview_buttons
       ret = {}
 
-      # User should be able to configure existing devices during installation.
-      # This can be achieved via "Edit" button on automatically detected
-      # devices. Advanced configuration should be postponed to installed system.
-      # Therefor adding devices is not available during installation
-      ret[:add]    = Label.AddButton if !Mode.installation
+      ret[:add]    = Label.AddButton
       ret[:edit]   = Label.EditButton
       ret[:delete] = Label.DeleteButton
 
