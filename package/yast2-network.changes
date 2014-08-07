@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Aug  5 15:28:28 UTC 2014 - mvidner@suse.com
+
+- Do not lose default route when editing an interface (bnc#883836).
+- 3.1.76
+
+-------------------------------------------------------------------
 Tue Jul 22 14:30:00 CEST 2014 - locilka@suse.com
 
 - Using new ServicesProposal library to set the sshd service status
