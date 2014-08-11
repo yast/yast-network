@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Aug  7 12:20:44 UTC 2014 - mvidner@suse.com
+
+- Do not lose default route when editing an interface (bnc#883836).
+- 3.1.77
+
+-------------------------------------------------------------------
 Tue Aug  5 14:59:19 CEST 2014 - schubi@suse.de
 
 - Autoyast: If NetworkManager is not available taking wicked although

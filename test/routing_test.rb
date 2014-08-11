@@ -1,9 +1,6 @@
 #!/usr/bin/env rspec
 
-# The test is currently not started automatically because of missing rspec.rpm
-# in OpenSUSE:Factory
-
-ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
+require_relative "test_helper"
 
 require "yast"
 
