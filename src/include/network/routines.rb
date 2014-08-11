@@ -802,7 +802,7 @@ module Yast
               module0 = Ops.get_list(d, ["modules", 0], []) # [module, options]
               brk = Builtins.contains(
                 broken_modules,
-                Ops.get_string(module0, 0, "")
+                module0[0] || ""
               )
               if brk
                 Builtins.y2milestone("In BrokenModules, skipping: %1", module0)
@@ -815,11 +815,11 @@ module Yast
             else
               one["drivers"] = drivers
 
-              driver = Ops.get_map(drivers, 0, {})
-              one["active"] = Ops.get_boolean(driver, "active", false)
+              driver = drivers[0] || {}
+              one["active"] = driver["active"] || false
               module0 = Ops.get_list(driver, ["modules", 0], [])
-              one["module"] = Ops.get_string(module0, 0, "")
-              one["options"] = Ops.get_string(module0, 1, "")
+              one["module"] = module0[0] || ""
+              one["options"] = module0[1] || ""
             end
 
             # FIXME: this should be also done for modems and others
@@ -911,9 +911,9 @@ module Yast
       end
 
       if found
-        temp = Ops.get(_Hardware, 0, {})
-        Ops.set(_Hardware, 0, Ops.get(_Hardware, i, {}))
-        Ops.set(_Hardware, i, temp)
+        temp = _Hardware[0] || {}
+        _Hardware[0] = _Hardware[i]
+        _Hardware[i] = temp
         # adjust mapping: #98852, #102945
         Ops.set(_Hardware, [0, "num"], 0)
         Ops.set(_Hardware, [i, "num"], i)
