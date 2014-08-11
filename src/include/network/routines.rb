@@ -668,7 +668,6 @@ module Yast
       Builtins.y2debug("hwtype=%1", hwtype)
 
       num = 0
-      paths = []
       allcards = []
 
       hwtypes = {
