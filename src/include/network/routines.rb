@@ -1050,9 +1050,7 @@ module Yast
     def filter_out(device_info, driver)
       # filter out device with virtio_pci Driver and no Device File (bnc#585506)
       if driver == "virtio_pci" && (device_info["dev_name"] || "") == ""
-        Builtins.y2milestone(
-          "Filtering out virtio device without device file."
-        )
+        log.info("Filtering out virtio device without device file.")
         return true
       end
 
@@ -1061,9 +1059,7 @@ module Yast
         (device_info["dev_name"] || "") == "" ||
         device_info["vendor_id"] == 70693 &&
         device_info["device_id"] == 82178
-        Builtins.y2milestone(
-          "Filtering out Chelsio device without device file."
-        )
+        log.info("Filtering out Chelsio device without device file.")
         return true
       end
 
