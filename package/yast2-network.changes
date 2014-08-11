@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Aug 14 14:52:14 UTC 2014 - mfilka@suse.com
+
+- bnc#841170, fate#316090
+  - support for filtering broadcoms storage only devices out of
+    device list
+- 3.1.81
+
+-------------------------------------------------------------------
 Wed Aug 13 11:09:05 UTC 2014 - lslezak@suse.cz
 
 - properly convert proxy configuration from install.inf during
