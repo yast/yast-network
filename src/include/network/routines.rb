@@ -1047,9 +1047,9 @@ module Yast
 
   private
     # Checks if the device should be filtered out in ReadHardware
-    def filter_out(card, driver)
+    def filter_out(device_info, driver)
       # filter out device with virtio_pci Driver and no Device File (bnc#585506)
-      if driver == "virtio_pci" && (card["dev_name"] || "") == ""
+      if driver == "virtio_pci" && (device_info["dev_name"] || "") == ""
         Builtins.y2milestone(
           "Filtering out virtio device without device file."
         )
@@ -1058,22 +1058,22 @@ module Yast
 
       # filter out device with chelsio Driver and no Device File or which cannot networking(bnc#711432)
       if driver == "cxgb4" &&
-        (card["dev_name"] || "") == "" ||
-        card["vendor_id"] == 70693 &&
-        card["device_id"] == 82178
+        (device_info["dev_name"] || "") == "" ||
+        device_info["vendor_id"] == 70693 &&
+        device_info["device_id"] == 82178
         Builtins.y2milestone(
           "Filtering out Chelsio device without device file."
         )
         return true
       end
 
-      if card["device"] == "IUCV" && card["sysfs_bus_id"] != "netiucv"
+      if device_info["device"] == "IUCV" && device_info["sysfs_bus_id"] != "netiucv"
         # exception to filter out uicv devices (bnc#585363)
         log.info("Filtering out iucv device different from netiucv.")
         return true
       end
 
-      if card["storageonly"]
+      if device_info["storageonly"]
         # This is for broadcoms multifunctional devices. bnc#841170
         log.info("Filtering out device with storage only flag")
         return true
