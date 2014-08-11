@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Aug 11 11:29:11 UTC 2014 - mfilka@suse.com
+
+- bnc#841170, fate#316090
+  - support for filtering broadcoms storage only devices out of
+    device list
+- 3.1.77 
+
+-------------------------------------------------------------------
 Tue Aug  5 14:59:19 CEST 2014 - schubi@suse.de
 
 - Autoyast: If NetworkManager is not available taking wicked although
