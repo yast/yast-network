@@ -887,6 +887,10 @@ module Yast
             )
           end
 
+          if card["storageonly"]
+            card_ok = false
+          end
+
           Builtins.y2debug("found device: %1", one)
 
           if card_ok
