@@ -667,9 +667,6 @@ module Yast
 
       Builtins.y2debug("hwtype=%1", hwtype)
 
-      num = 0
-      allcards = []
-
       hwtypes = {
         "netcard" => path(".probe.netcard"),
         "modem"   => path(".probe.modem"),
@@ -701,6 +698,7 @@ module Yast
       return [] if !Confirm.Detection(hwstring, "yast-lan")
 
       # read the corresponding hardware
+      allcards = []
       if hwtypes[hwtype]
         allcards = Convert.to_list(SCR.Read(hwtypes[hwtype]))
       elsif hwtype == "all" || hwtype.nil? || hwtype.empty?
@@ -730,6 +728,7 @@ module Yast
       broken_modules = Builtins.splitstring(bms, " ")
 
       # fill in the hardware data
+      num = 0
       Builtins.maplist(
         Convert.convert(allcards, :from => "list", :to => "list <map>")
       ) do |card|
