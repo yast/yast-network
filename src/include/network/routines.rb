@@ -857,7 +857,7 @@ module Yast
           end
 
           # filter out device with virtio_pci Driver and no Device File (bnc#585506)
-          if one["module"] == "virtio_pci" && (one["dev_name"] || "") == ""
+          if one["module"] == "virtio_pci" && (card["dev_name"] || "") == ""
             card_ok = false
             Builtins.y2milestone(
               "Filtering out virtio device without device file."
@@ -866,7 +866,7 @@ module Yast
 
           # filter out device with chelsio Driver and no Device File or which cannot networking(bnc#711432)
           if one["module"] == "cxgb4" &&
-            (one["dev_name"] || "") == "" ||
+            (card["dev_name"] || "") == "" ||
             card["vendor_id"] == 70693 &&
             card["device_id"] == 82178
             card_ok = false
