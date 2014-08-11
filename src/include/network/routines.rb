@@ -801,13 +801,12 @@ module Yast
             drivers = Builtins.filter(Ops.get_list(card, "drivers", [])) do |d|
               # ignoring more modules per driver...
               module0 = Ops.get_list(d, ["modules", 0], []) # [module, options]
-              brk = Builtins.contains(
-                broken_modules,
-                module0[0] || ""
-              )
+              brk = broken_modules.include?(module0[0])
+
               if brk
                 Builtins.y2milestone("In BrokenModules, skipping: %1", module0)
               end
+
               !brk
             end
 
