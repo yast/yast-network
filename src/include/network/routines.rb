@@ -720,7 +720,7 @@ module Yast
 
       if allcards.nil?
         Builtins.y2error("hardware detection failure")
-        allcards = []
+        return []
       end
 
 
