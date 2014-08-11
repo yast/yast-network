@@ -30,6 +30,7 @@ module Yast
   module NetworkRoutinesInclude
     include I18n
     include Yast
+    include Logger
 
     def initialize_network_routines(include_target)
       Yast.import "UI"
@@ -874,22 +875,9 @@ module Yast
             )
           end
 
-          # exception to filter out uicv devices (bnc#585363)
-          if card["device"] == "IUCV" &&
-            card["sysfs_bus_id"] != "netiucv"
-            card_ok = false
-            Builtins.y2milestone(
-              "Filtering out iucv device different from netiucv."
-            )
-          end
-
-          if card["storageonly"]
-            card_ok = false
-          end
-
           Builtins.y2debug("found device: %1", one)
 
-          if card_ok
+          if card_ok && !filter_out(card)
             Ops.set(_Hardware, Builtins.size(_Hardware), one)
             num = num + 1
           else
@@ -1076,6 +1064,23 @@ module Yast
       end
 
       return true
+    end
+
+  private
+    # Checks if the device should be filtered out in ReadHardware
+    def filter_out(card)
+      if card["device"] == "IUCV" && card["sysfs_bus_id"] != "netiucv"
+        # exception to filter out uicv devices (bnc#585363)
+        log.info("Filtering out iucv device different from netiucv.")
+        return true
+      end
+      if card["storageonly"]
+        # This is for broadcoms multifunctional devices. bnc#841170
+        log.info("Filtering out device with storage only flag")
+        return true
+      end
+
+      return false
     end
 
   end
