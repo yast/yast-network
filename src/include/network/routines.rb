@@ -812,10 +812,6 @@ module Yast
 
             if drivers == []
               Builtins.y2milestone("No good drivers found")
-              # #153235
-              # fail, unless we are in xen (it has the driver built in)
-              # or PPC (#bnc#361063)
-              #		card_ok = Arch::is_xenU () || Arch::ppc();
             else
               one["drivers"] = drivers
 
