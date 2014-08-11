@@ -737,7 +737,6 @@ module Yast
         # common stuff
         resource = Ops.get_map(card, "resource", {})
         controller = ControllerType(card)
-        card_ok = controller != ""
 
         one = {}
         one["name"] = DeviceName(card)
@@ -855,28 +854,9 @@ module Yast
             one["wl_enc_modes"] = Ops.get(resource, ["wlan", 0, "enc_modes"])
           end
 
-          # filter out device with virtio_pci Driver and no Device File (bnc#585506)
-          if one["module"] == "virtio_pci" && (card["dev_name"] || "") == ""
-            card_ok = false
-            Builtins.y2milestone(
-              "Filtering out virtio device without device file."
-            )
-          end
+          if controller != "" && !filter_out(card, one["module"])
+            Builtins.y2debug("found device: %1", one)
 
-          # filter out device with chelsio Driver and no Device File or which cannot networking(bnc#711432)
-          if one["module"] == "cxgb4" &&
-            (card["dev_name"] || "") == "" ||
-            card["vendor_id"] == 70693 &&
-            card["device_id"] == 82178
-            card_ok = false
-            Builtins.y2milestone(
-              "Filtering out Chelsio device without device file."
-            )
-          end
-
-          Builtins.y2debug("found device: %1", one)
-
-          if card_ok && !filter_out(card)
             Ops.set(_Hardware, Builtins.size(_Hardware), one)
             num = num + 1
           else
@@ -1067,12 +1047,32 @@ module Yast
 
   private
     # Checks if the device should be filtered out in ReadHardware
-    def filter_out(card)
+    def filter_out(card, driver)
+      # filter out device with virtio_pci Driver and no Device File (bnc#585506)
+      if driver == "virtio_pci" && (card["dev_name"] || "") == ""
+        Builtins.y2milestone(
+          "Filtering out virtio device without device file."
+        )
+        return true
+      end
+
+      # filter out device with chelsio Driver and no Device File or which cannot networking(bnc#711432)
+      if driver == "cxgb4" &&
+        (card["dev_name"] || "") == "" ||
+        card["vendor_id"] == 70693 &&
+        card["device_id"] == 82178
+        Builtins.y2milestone(
+          "Filtering out Chelsio device without device file."
+        )
+        return true
+      end
+
       if card["device"] == "IUCV" && card["sysfs_bus_id"] != "netiucv"
         # exception to filter out uicv devices (bnc#585363)
         log.info("Filtering out iucv device different from netiucv.")
         return true
       end
+
       if card["storageonly"]
         # This is for broadcoms multifunctional devices. bnc#841170
         log.info("Filtering out device with storage only flag")
