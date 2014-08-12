@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.1.77
+Version:        3.1.78
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -35,7 +35,8 @@ BuildRequires:  yast2-installation >= 2.15.27
 
 # yast2 v3.1.86: Added ServicesProposal library
 BuildRequires:  yast2 >= 3.1.86
-Requires:       yast2 >= 3.1.86
+# yast2 v3.1.97: Fixed checking whether SuSEfirewall2 package is installed/selected
+Requires:       yast2 >= 3.1.97
 
 #netconfig (FaTE #303618)
 Requires:       sysconfig >= 0.80.0
