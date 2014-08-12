@@ -26,6 +26,8 @@
 # Summary:	Configuration of fw in 1st stage
 # Author:	Bubli <kmachalkova@suse.cz>
 #
+require "yast"
+
 module Yast
   class FirewallStage1ProposalClient < Client
     PROPOSAL_ID = "fw_1ststage"
@@ -40,6 +42,7 @@ module Yast
     LINK_DISABLE_VNC = "firewall--disable_vnc_in_proposal"
     LINK_FIREWALL_DIALOG = "firewall_stage1"
 
+    include Yast::Logger
 
     def main
       Yast.import "UI"
@@ -49,6 +52,8 @@ module Yast
       Yast.import "Linuxrc"
       Yast.import "PackagesProposal"
       Yast.import "ProductControl"
+      Yast.import "Progress"
+      Yast.import "SuSEFirewall"
       Yast.import "SuSEFirewall4Network"
       Yast.import "SuSEFirewallProposal"
       Yast.import "Wizard"
@@ -75,6 +80,8 @@ module Yast
             LINK_DISABLE_VNC
           ]
         }
+
+        adjust_configuration
       elsif @func == "AskUser"
         @chosen_link = Ops.get(@param, "chosen_id")
         @result = :next
@@ -84,19 +91,11 @@ module Yast
         when LINK_ENABLE_FIREWALL
           Builtins.y2milestone("Enabling FW")
           SuSEFirewall4Network.SetEnabled1stStage(true)
-          PackagesProposal.AddResolvables(
-            PROPOSAL_ID,
-            :package,
-            ["SuSEfirewall2"]
-          )
+          PackagesProposal.AddResolvables(PROPOSAL_ID, :package, [SuSEfirewall2.FIREWALL_PACKAGE])
         when LINK_DISABLE_FIREWALL
           Builtins.y2milestone("Disabling FW")
           SuSEFirewall4Network.SetEnabled1stStage(false)
-          PackagesProposal.RemoveResolvables(
-            PROPOSAL_ID,
-            :package,
-            ["SuSEfirewall2"]
-          )
+          PackagesProposal.RemoveResolvables(PROPOSAL_ID, :package, [SuSEfirewall2.FIREWALL_PACKAGE])
         when LINK_OPEN_SSH_PORT
           Builtins.y2milestone("Opening SSH port")
           SuSEFirewall4Network.SetSshEnabled1stStage(true)
@@ -110,11 +109,7 @@ module Yast
         when LINK_DISABLE_SSHD
           Builtins.y2milestone("Disabling SSHD")
           SuSEFirewall4Network.SetSshdEnabled(false)
-          PackagesProposal.RemoveResolvables(
-            PROPOSAL_ID,
-            :package,
-            ["openssh"]
-          )
+          PackagesProposal.RemoveResolvables(PROPOSAL_ID, :package, ["openssh"])
         when LINK_ENABLE_VNC
           Builtins.y2milestone("Enabling VNC")
           SuSEFirewall4Network.SetVncEnabled1stStage(true)
@@ -131,6 +126,7 @@ module Yast
 
         @ret = { "workflow_sequence" => @result }
 
+        adjust_configuration
       elsif @func == "Description"
         @ret = {
           # Proposal title
@@ -337,6 +333,49 @@ module Yast
       # Filter proposals with content and sort them
       proposals = [firewall_proposal, ssh_fw_proposal, sshd_proposal, vnc_fw_proposal].compact
       "<ul>\n" + proposals.map {|prop| "<li>#{prop}</li>\n" }.join + "</ul>\n"
+    end
+
+    # Reads and adjust the configuration for SuSEfirewall2 according to the current proposal.
+    # bnc#887406: This needs to be done before user exports any configuration
+    # to AutoYast profile.
+    def adjust_configuration
+      enable_fw = SuSEFirewall4Network.Enabled1stStage
+      open_ssh_port = SuSEFirewall4Network.EnabledSsh1stStage
+      open_vnc_port = SuSEFirewall4Network.EnabledVnc1stStage
+
+      log.info "After installation, firewall will be #{enable_fw ? 'enabled':'disabled'}, " <<
+        "SSH port will be #{open_ssh_port ? 'open':'closed'} " <<
+        "VNC port will be #{open_vnc_port ? 'open':'closed'}"
+
+      # Read the configuration from sysconfig
+      # bnc#887406: The file is in inst-sys
+      previous_state = Progress.set(false)
+      SuSEFirewall.Read
+      Progress.set(previous_state)
+
+      SuSEFirewall.SetEnableService(enable_fw)
+      SuSEFirewall.SetStartService(enable_fw)
+
+      # only if we have openssh package - proposal takes care
+      # it gets installed if the user wants to open ssh port
+      if open_ssh_port
+        SuSEFirewall.SetServicesForZones(
+          ["service:sshd"],
+          SuSEFirewall.GetKnownFirewallZones,
+          true
+        )
+      end
+
+      if open_vnc_port
+        SuSEFirewall.SetServicesForZones(
+          ["service:xorg-x11-Xvnc"],
+          SuSEFirewall.GetKnownFirewallZones,
+          true
+        )
+      end
+
+      # Writing the configuration including adjusting services
+      # is done in firewall_stage1_finish
     end
 
   end unless defined? FirewallStage1ProposalClient

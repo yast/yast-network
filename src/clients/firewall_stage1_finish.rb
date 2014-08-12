@@ -26,6 +26,8 @@
 #		at the end of 1st stage
 # Author:	Bubli <kmachalkova@suse.cz>
 #
+require "yast"
+
 module Yast
   class FirewallStage1FinishClient < Client
     def main
@@ -54,13 +56,8 @@ module Yast
       Builtins.y2debug("func=%1", @func)
       Builtins.y2debug("param=%1", @param)
 
-      #we have those from the proposal
-      @fw_enabled = SuSEFirewall4Network.Enabled1stStage
-      @ssh_enabled = SuSEFirewall4Network.EnabledSsh1stStage
-      @sshd_enabled = SuSEFirewall4Network.EnabledSshd
-      @vnc_enabled = SuSEFirewall4Network.EnabledVnc1stStage
-
-      if @func == "Info"
+      case @func
+      when "Info"
         return {
           "steps" => 1,
           # progress step title
@@ -69,46 +66,11 @@ module Yast
           ),
           "when"  => [:installation, :autoinst]
         }
-      elsif @func == "Write"
-        Builtins.y2milestone(
-          "After installation, firewall will be %1",
-          @fw_enabled ?
-            Builtins.sformat(
-              "enabled, ssh port will be %1",
-              @ssh_enabled ? "open" : "closed"
-            ) :
-            "disabled"
-        )
+      when "Write"
+        # Enable SSH service independent of port open (bnc#865056)
+        Service.Enable("sshd") if SuSEFirewall4Network.EnabledSshd
 
-        #now read the config from SuSEfirewall2 RPM
-        SuSEFirewall.Read
-
-        #and merge
-        SuSEFirewall.SetEnableService(@fw_enabled)
-        SuSEFirewall.SetStartService(@fw_enabled)
-
-        #only if we have openssh package - proposal takes care
-        #it gets installed if the user wants to open ssh port
-        if @ssh_enabled
-          SuSEFirewall.SetServicesForZones(
-            ["service:sshd"],
-            SuSEFirewall.GetKnownFirewallZones,
-            true
-          )
-        end
-
-        if @sshd_enabled
-          #enable SSH service independent of port open (bnc#865056)
-          Service.Enable("sshd")
-        end
-
-        Builtins.foreach(SuSEFirewall.GetKnownFirewallZones) do |zone|
-          # This VNC service doesn't have firewall services defined by package thus using ports
-          # Ports taken from yast2-installation:/startup/common/vnc.sh (function startVNCServer)
-          SuSEFirewall.SetAdditionalServices("TCP", zone, ["5801", "5901"])
-        end if @vnc_enabled
-
-        #this is equivalent to write-only, do not attempt to restart the service
+        # This is equivalent to write-only, do not attempt to restart the service
         SuSEFirewall.WriteConfiguration
       else
         Builtins.y2error("unknown function: %1", @func)
