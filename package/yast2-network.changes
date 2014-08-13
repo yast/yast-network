@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Aug 13 11:09:05 UTC 2014 - lslezak@suse.cz
+
+- properly convert proxy configuration from install.inf during
+  installation (bnc#885957)
+- 3.1.80
+
+-------------------------------------------------------------------
 Wed Aug 13 08:40:28 UTC 2014 - mvidner@suse.com
 
 - Fixed network_autoconfiguration_test stubbing on s390 (bnc#883836).
