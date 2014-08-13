@@ -661,7 +661,7 @@ module Yast
 
     # Read HW information
     # @param [String] hwtype type of devices to read (netcard|modem|isdn)
-    # @return true if success
+    # @return array of hashes describing detected device
     def ReadHardware(hwtype)
       _Hardware = []
 
@@ -1059,7 +1059,7 @@ module Yast
       }
     end
 
-    # Requests user's confirmation on hw detection
+    # If the user requested manual installation, ask whether to probe hardware of this type
     def confirmed_detection(hwtype)
       # Device type labels.
       def hwstrings
