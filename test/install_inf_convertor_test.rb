@@ -213,17 +213,17 @@ describe "InstallInfConvertor" do
         "http_proxy"     => "",
         "https_proxy"    => "",
         "ftp_proxy"      => "",
-        "no_proxy"       => "",
+        "no_proxy"       => "localhost, 127.0.0.1",
         "proxy_user"     => "",
-        "proxy_password" => "localhost, 127.0.0.1"
+        "proxy_password" => ""
       )
-      # proxy is enabled and the URL is set
       expect(Yast::Proxy).to receive(:Import) do |config|
+        # proxy is enabled and the URL is set
         expect(config).to include("enabled" => true, "http_proxy" => proxy_url)
       end
       expect(Yast::Proxy).to receive(:Write).and_return(true)
 
-      expect(Yast::InstallInfConvertor.instance.send(:write_proxy)).to eql true
+      expect(Yast::InstallInfConvertor.instance.send(:write_proxy)).to be_true
     end
 
     it "does not write proxy configuration if not defined in install.inf" do
@@ -233,7 +233,7 @@ describe "InstallInfConvertor" do
       expect(Yast::Proxy).to receive(:Read).never
       expect(Yast::Proxy).to receive(:Write).never
 
-      expect(Yast::InstallInfConvertor.instance.send(:write_proxy)).to eql false
+      expect(Yast::InstallInfConvertor.instance.send(:write_proxy)).to be_false
     end
   end
 
