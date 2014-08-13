@@ -668,8 +668,7 @@ module Yast
       Builtins.y2debug("hwtype=%1", hwtype)
 
       # Confirmation: label text (detecting hardware: xxx)
-      hwstring = hwstrings[hwtype] || _("All Network Devices")
-      return [] if !Confirm.Detection(hwstring, "yast-lan")
+      return [] if !confirmed_detection(hwtype)
 
       # read the corresponding hardware
       allcards = []
@@ -1050,9 +1049,20 @@ module Yast
       return false
     end
 
-    # Device type labels. Mainly used in ReadHardware
-    def hwstrings
+    # Device type probe paths.
+    def hwtypes
       {
+        "netcard" => path(".probe.netcard"),
+        "modem"   => path(".probe.modem"),
+        "isdn"    => path(".probe.isdn"),
+        "dsl"     => path(".probe.dsl")
+      }
+    end
+
+    # Requests user's confirmation on hw detection
+    def confirmed_detection(hwtype)
+      # Device type labels.
+      hwstrings = {
         # Confirmation: label text (detecting hardware: xxx)
         "netcard" => _(
           "Network Cards"
@@ -1070,16 +1080,9 @@ module Yast
           "DSL Devices"
         )
       }
-    end
 
-    # Device type probe paths. Mainly used in ReadHardware
-    def hwtypes
-      {
-        "netcard" => path(".probe.netcard"),
-        "modem"   => path(".probe.modem"),
-        "isdn"    => path(".probe.isdn"),
-        "dsl"     => path(".probe.dsl")
-      }
+      hwstring = hwstrings[hwtype] || _("All Network Devices")
+      Confirm.Detection(hwstring, "yast-lan")
     end
   end
 end
