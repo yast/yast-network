@@ -1,5 +1,5 @@
 require "yast"
-
+require "uri"
 
 module Yast
 
@@ -196,7 +196,7 @@ module Yast
       return false if nameserver.empty?
 
       # hostname is supposed to be FQDN (http://en.opensuse.org/Linuxrc)
-      # remember domain, use it as fallback below, if there is no DNS search 
+      # remember domain, use it as fallback below, if there is no DNS search
       # domain (#476208)
       split = Hostname.SplitFQ(hostname) if !hostname.empty? && !IP.Check(hostname)
       fqdomain = ""
@@ -245,9 +245,13 @@ module Yast
 
       return false if proxyUrl.empty?
 
-      proxyProto = proxyUrl.sub(/:.*/, "")
+      proxy = URI(proxyUrl)
+      proxyProto = proxy.scheme
 
-      log.info("Writing proxy settings: #{proxyProto}_proxy = '#{proxyUrl}'")
+      # do not log the password
+      log_proxy = proxy.dup
+      log_proxy.password = "********" if log_proxy.password
+      log.info("Writing proxy settings: #{proxyProto}_proxy = '#{log_proxy}'")
 
       Proxy.Read
       ex = Proxy.Export
@@ -255,7 +259,8 @@ module Yast
       # bnc#693640 - update Proxy module's configuration
       # username and password is stored in url because it is handled by linuxrc this way and it is impossible
       # to distinguish how the user inserted it (separate or as a part of url?)
-      ex["#{proxyProto}_proxy"] = proxyUrl if ex
+      ex["#{proxyProto}_proxy"] = proxyUrl
+      ex["enabled"] = true
       log.debug("Written proxy settings: #{ex}")
 
       Proxy.Import(ex)
@@ -371,7 +376,7 @@ module Yast
 
       # authoritative sources of device name are:
       # - hwinfo
-      # - install.inf 
+      # - install.inf
       # nobody else was able to edit device name so far (so ifcfg["NAME"])
       # is empty
       hw_name = HardwareName(hardware, device_name)
