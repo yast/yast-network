@@ -36,7 +36,6 @@ module Yast
       Yast.import "Service"
       Yast.import "SuSEFirewall"
       Yast.import "SuSEFirewall4Network"
-      Yast.import "SuSEFirewallProposal"
 
       @ret = nil
       @func = ""
