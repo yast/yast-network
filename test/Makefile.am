@@ -10,7 +10,8 @@ TESTS = \
   new_device_startmode_test.rb \
   routing_test.rb \
   suse_firewall_4_network_test.rb \
-  widgets_test.rb
+  widgets_test.rb \
+  read_hardware_test.rb
 
 TEST_EXTENSIONS = .rb
 RB_LOG_COMPILER = rspec --format doc
