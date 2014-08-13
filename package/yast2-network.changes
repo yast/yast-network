@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Aug 13 08:40:28 UTC 2014 - mvidner@suse.com
+
+- Fixed network_autoconfiguration_test stubbing on s390 (bnc#883836).
+- 3.1.79
+
+-------------------------------------------------------------------
 Tue Aug 12 16:58:55 CEST 2014 - locilka@suse.com
 
 - Reading and adjusting the SuSEfirewall2 configuration has been

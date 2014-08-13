@@ -115,7 +115,7 @@ describe Yast::NetworkAutoconfiguration do
     allow(Yast::NetworkInterfaces).
       to receive(:GetType).           with(/eth\d+/).      and_return "eth"
     allow(Yast::NetworkInterfaces).
-      to receive(:GetType).           with("").             and_return nil
+      to receive(:GetType).           with("").            and_return nil
 
     # stub program execution
     # - interfaces are up
@@ -152,6 +152,7 @@ describe Yast::NetworkAutoconfiguration do
 
     # miscellaneous uninteresting but hard to avoid stuff
 
+    allow(Yast::Arch).to receive(:architecture).and_return "x86_64"
     allow(Yast::Confirm).to receive(:Detection).and_return true
     expect(Yast::SCR).
       to receive(:Read).
