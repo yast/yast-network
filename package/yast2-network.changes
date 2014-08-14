@@ -1,10 +1,37 @@
 -------------------------------------------------------------------
-Mon Aug 11 11:29:11 UTC 2014 - mfilka@suse.com
+Thu Aug 14 09:40:48 UTC 2014 - mfilka@suse.com
 
 - bnc#841170, fate#316090
   - support for filtering broadcoms storage only devices out of
     device list
-- 3.1.77 
+- 3.1.81
+
+-------------------------------------------------------------------
+Wed Aug 13 11:09:05 UTC 2014 - lslezak@suse.cz
+
+- properly convert proxy configuration from install.inf during
+  installation (bnc#885957)
+- 3.1.80
+
+-------------------------------------------------------------------
+Wed Aug 13 08:40:28 UTC 2014 - mvidner@suse.com
+
+- Fixed network_autoconfiguration_test stubbing on s390 (bnc#883836).
+- 3.1.79
+
+-------------------------------------------------------------------
+Tue Aug 12 16:58:55 CEST 2014 - locilka@suse.com
+
+- Reading and adjusting the SuSEfirewall2 configuration has been
+  moved from inst_finish to inst_proposal because AutoYast export
+  can be already requested in inst_proposal (bnc#887406)
+- 3.1.78
+
+-------------------------------------------------------------------
+Thu Aug  7 12:20:44 UTC 2014 - mvidner@suse.com
+
+- Do not lose default route when editing an interface (bnc#883836).
+- 3.1.77
 
 -------------------------------------------------------------------
 Tue Aug  5 14:59:19 CEST 2014 - schubi@suse.de

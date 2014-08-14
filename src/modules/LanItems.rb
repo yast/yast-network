@@ -244,7 +244,6 @@ module Yast
         "REMOTE_IPADDR"                => "",
         "NETMASK"                      => "",
         "MTU"                          => "",
-        "DHCLIENT_SET_DEFAULT_ROUTE"   => "no",
         "LLADDR"                       => "00:00:00:00:00:00",
         "ETHTOOL_OPTIONS"              => "",
         "NAME"                         => "",
@@ -1053,8 +1052,9 @@ module Yast
       NetworkInterfaces.Read
       NetworkInterfaces.CleanHotplugSymlink
 
+      interfaces = getNetworkInterfaces
       # match configurations to Items list with hwinfo
-      Builtins.foreach(getNetworkInterfaces) do |confname|
+      Builtins.foreach(interfaces) do |confname|
         pos = nil
         val = {}
         Builtins.foreach(
@@ -1077,7 +1077,7 @@ module Yast
       end
 
       # add to Items also virtual devices (configurations) without hwinfo
-      Builtins.foreach(getNetworkInterfaces) do |confname|
+      Builtins.foreach(interfaces) do |confname|
         already = false
         Builtins.foreach(
           Convert.convert(
@@ -1860,18 +1860,13 @@ module Yast
 
     # returns a map with device options for newly created item
     def new_item_default_options
-      # common options
-      devmap = {
-        "NETMASK"   => Ops.get_string(
-          NetHwDetection.result,
-          "NETMASK",
-          "255.255.255.0"
-        )
-      } # #31369
-
-      devmap[ "STARTMODE"] = new_device_startmode
-
-      deep_copy(devmap)
+      {
+        # bnc#46369
+        "NETMASK"   => NetHwDetection.result["NETMASK"] || "255.255.255.0",
+        "STARTMODE" => new_device_startmode,
+        # bnc#883836 bnc#868187
+        "DHCLIENT_SET_DEFAULT_ROUTE" => "no"
+      }
     end
 
     # Select the given device

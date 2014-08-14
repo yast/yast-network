@@ -1,6 +1,6 @@
 #! /usr/bin/env rspec
 
-ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
+require_relative "test_helper"
 
 HWINFO_DEVICE_DESC = "Intel Ethernet controller"
 HWINFO_DEVICE_MAC = "00:01:02:03:04:05"
