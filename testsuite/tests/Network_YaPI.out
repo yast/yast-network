@@ -113,7 +113,6 @@ Dir	.etc.install_inf: []
 Read	.target.string "/proc/cmdline" "laptop.suse.cz"
 Read	.probe.netcard nil
 Log	hardware detection failure
-Read	.etc.install_inf.BrokenModules nil
 Read	.udev_persistent.net nil
 Dir	.modules.options: []
 Read	.udev_persistent.drivers nil
