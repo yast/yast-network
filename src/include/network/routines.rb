@@ -30,6 +30,7 @@ module Yast
   module NetworkRoutinesInclude
     include I18n
     include Yast
+    include Logger
 
     def initialize_network_routines(include_target)
       Yast.import "UI"
@@ -660,54 +661,20 @@ module Yast
 
     # Read HW information
     # @param [String] hwtype type of devices to read (netcard|modem|isdn)
-    # @return true if success
+    # @return array of hashes describing detected device
     def ReadHardware(hwtype)
       _Hardware = []
 
       Builtins.y2debug("hwtype=%1", hwtype)
 
-      num = 0
-      paths = []
-      allcards = []
-
-      hwtypes = {
-        "netcard" => path(".probe.netcard"),
-        "modem"   => path(".probe.modem"),
-        "isdn"    => path(".probe.isdn"),
-        "dsl"     => path(".probe.dsl")
-      }
-
-      hwstrings = {
-        # Confirmation: label text (detecting hardware: xxx)
-        "netcard" => _(
-          "Network Cards"
-        ),
-        # Confirmation: label text (detecting hardware: xxx)
-        "modem"   => _(
-          "Modems"
-        ),
-        # Confirmation: label text (detecting hardware: xxx)
-        "isdn"    => _(
-          "ISDN Cards"
-        ),
-        # Confirmation: label text (detecting hardware: xxx)
-        "dsl"     => _(
-          "DSL Devices"
-        )
-      }
-
       # Confirmation: label text (detecting hardware: xxx)
-      hwstring = _("All Network Devices")
-      if Builtins.haskey(hwstrings, hwtype)
-        hwstring = Ops.get(hwstrings, hwtype, "")
-      end
-      return [] if !Confirm.Detection(hwstring, "yast-lan")
+      return [] if !confirmed_detection(hwtype)
 
       # read the corresponding hardware
-      if Builtins.haskey(hwtypes, hwtype)
-        allcards = Convert.to_list(SCR.Read(Ops.get(hwtypes, hwtype)))
-      #allcards=[$["bus":"PCI", "bus_hwcfg":"pci", "bus_id":2, "class_id":2, "dev_name":"wlan0", "dev_names":["wlan0"], "device":"AR242x 802.11abg Wireless PCI Express Adapter", "device_id":65564, "driver":"ath5k_pci", "driver_module":"ath5k", "drivers":[$["active":true, "modprobe":true, "modules":[["ath5k", ""]]]], "modalias":"pci:v0000168Cd0000001Csv00001A3Bsd00001026bc02sc00i00", "model":"Atheros AR242x 802.11abg Wireless PCI Express Adapter", "old_unique_key":"eHlF.oTCoeEt5Tw6", "parent_unique_key":"qTvu.bQ30eTbcr+3", "resource":$["hwaddr":[$["addr":"00:22:43:37:55:c3"]], "irq":[$["count":0, "enabled":true, "irq":17]], "link":[$["state":true]], "mem":[$["active":true, "length":65536, "start":4227792896]], "wlan":[$["auth_modes":["open", "sharedkey", "wpa-psk", "wpa-eap"], "channels":["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"], "enc_modes":["WEP40", "WEP104", "TKIP", "CCMP"], "frequencies":["2.412", "2.417", "2.422", "2.427", "2.432", "2.437", "2.442", "2.447", "2.452", "2.457", "2.462"]]]], "rev":"1", "sub_class_id":130, "sub_device":"AR5007EG 802.11bg Wi-Fi mini PCI express card", "sub_device_id":69670, "sub_vendor_id":72251, "sysfs_bus_id":"0000:02:00.0", "sysfs_id":"/devices/pci0000:00/0000:00:1c.1/0000:02:00.0", "udi":"/org/freedesktop/Hal/devices/pci_168c_1c", "unique_key":"y9sn.oTCoeEt5Tw6", "vendor":"Atheros Communications Inc.", "vendor_id":71308, "wlan":true], $["bus":"PCI", "bus_hwcfg":"pci", "bus_id":1, "class_id":2, "dev_name":"eth0", "dev_names":["eth0"], "device":"L1 Gigabit EthernetAdapter", "device_id":69670, "driver":"ATL1E", "driver_module":"atl1e", "drivers":[$["active":true, "modprobe":true, "modules":[["atl1e", ""]]]], "modalias":"pci:v00001969d00001026sv00001043sd00008324bc02sc00i00", "model":"Attansic L1 Gigabit Ethernet Adapter", "old_unique_key":"BiAc.emcIbgAqn59", "parent_unique_key":"Z7uZ.f4r+Yl3RyX5", "resource":$["hwaddr":[$["addr":"00:23:54:3f:7c:c3"]], "io":[$["active":true, "length":128, "mode":"rw", "start":56320]], "irq":[$["count":74680, "enabled":true, "irq":220]], "link":[$["state":true]], "mem":[$["active":true, "length":262144, "start":4093378560]]], "rev":"176", "sub_class_id":0,"sub_device_id":99108, "sub_vendor":"ASUSTeK Computer Inc.", "sub_vendor_id":69699, "sysfs_bus_id":"0000:01:00.0","sysfs_id":"/devices/pci0000:00/0000:00:1c.3/0000:01:00.0", "udi":"/org/freedesktop/Hal/devices/pci_1969_1026", "unique_key":"rBUF.emcIbgAqn59", "vendor":"Attansic Technology Corp.", "vendor_id":72041]];
-      elsif hwtype == "all" || hwtype == "" || hwtype == nil
+      allcards = []
+      if hwtypes[hwtype]
+        allcards = Convert.to_list(SCR.Read(hwtypes[hwtype]))
+      elsif hwtype == "all" || hwtype.nil? || hwtype.empty?
         Builtins.maplist(
           Convert.convert(
             Map.Values(hwtypes),
@@ -722,9 +689,9 @@ module Yast
         return []
       end
 
-      if allcards == nil
+      if allcards.nil?
         Builtins.y2error("hardware detection failure")
-        allcards = []
+        return []
       end
 
 
@@ -734,207 +701,138 @@ module Yast
       broken_modules = Builtins.splitstring(bms, " ")
 
       # fill in the hardware data
+      num = 0
       Builtins.maplist(
         Convert.convert(allcards, :from => "list", :to => "list <map>")
       ) do |card|
-        one = {}
         # common stuff
         resource = Ops.get_map(card, "resource", {})
         controller = ControllerType(card)
-        card_ok = controller != ""
-        Ops.set(one, "name", DeviceName(card))
-        Ops.set(one, "type", controller)
-        Ops.set(one, "udi", Ops.get_string(card, "udi", ""))
-        Ops.set(one, "sysfs_id", Ops.get_string(card, "sysfs_id", ""))
-        Ops.set(one, "dev_name", Ops.get_string(card, "dev_name", ""))
-        Ops.set(one, "requires", Ops.get_list(card, "requires", []))
-        Ops.set(one, "modalias", Ops.get_string(card, "modalias", ""))
-        Ops.set(one, "unique", Ops.get_string(card, "unique_key", ""))
+
+        one = {}
+        one["name"] = DeviceName(card)
+        # Temporary solution for s390: #40587
+        one["name"] = DistinguishedName(one["name"], card) if Arch.s390
+        one["type"] = controller
+        one["udi"] = card["udi"] || ""
+        one["sysfs_id"] = card["sysfs_id"] || ""
+        one["dev_name"] = card["dev_name"] || ""
+        one["requires"] = card["requires"] || []
+        one["modalias"] = card["modalias"] || ""
+        one["unique"] = card["unique_key"] || ""
         # driver option needs for (bnc#412248)
-        Ops.set(one, "driver", Ops.get_string(card, "driver", ""))
+        one["driver"] = card["driver"] || ""
         # Each card remembers its position in the list of _all_ cards.
         # It is used when selecting the card from the list of _unconfigured_
         # ones (which may be smaller). #102945.
-        Ops.set(one, "num", num)
-        # Temporary solution for s390: #40587
-        if Arch.s390
-          Ops.set(
-            one,
-            "name",
-            DistinguishedName(Ops.get_string(one, "name", ""), card)
-          )
-        end
-        # modem
-        if controller == "modem"
-          Ops.set(one, "device_name", Ops.get_string(card, "dev_name", ""))
-          Ops.set(one, "drivers", Ops.get_list(card, "drivers", []))
-          speed = Ops.get_integer(resource, ["baud", 0, "speed"], 57600)
-          # :-) have to check .probe and libhd if this confusion is
-          # really necessary. maybe a pppd bug too? #148893
-          if speed == 12000000
-            speed = 57600
-            Builtins.y2milestone(
-              "Driving faster than light is prohibited on this planet."
-            )
-          end
-          Ops.set(one, "speed", speed)
-          Ops.set(
-            one,
-            "init1",
-            Ops.get_string(resource, ["init_strings", 0, "init1"], "")
-          )
-          Ops.set(
-            one,
-            "init2",
-            Ops.get_string(resource, ["init_strings", 0, "init2"], "")
-          )
-          Ops.set(
-            one,
-            "pppd_options",
-            Ops.get_string(resource, ["pppd_option", 0, "option"], "")
-          )
-        # isdn card
-        elsif controller == "isdn"
-          drivers = Ops.get_list(card, "isdn", [])
-          Ops.set(one, "drivers", drivers)
-          Ops.set(one, "sel_drv", 0)
-          Ops.set(one, "bus", Ops.get_string(card, "bus", ""))
-          Ops.set(one, "io", Ops.get_integer(resource, ["io", 0, "start"], 0))
-          Ops.set(one, "irq", Ops.get_integer(resource, ["irq", 0, "irq"], 0))
-        # dsl card
-        elsif controller == "dsl"
-          driver_info = Ops.get_map(card, ["dsl", 0], {})
-          translate_mode = { "capiadsl" => "capi-adsl", "pppoe" => "pppoe" }
-          m = Ops.get_string(driver_info, "mode", "")
-          Ops.set(one, "pppmode", Ops.get(translate_mode, m, m)) 
-          # driver_info["name"]:"" has no use here??
-        # treat the rest as a network card
-        elsif controller != ""
-          # drivers:
-          # Although normally there is only one module
-          # (one=$[active:, module:, options:,...]), the generic
-          # situation is: one or more driver variants (exclusive),
-          # each having one or more modules (one[drivers])
+        one["num"] = num
 
-          # only drivers that are not marked as broken (#97540)
-          drivers = Builtins.filter(Ops.get_list(card, "drivers", [])) do |d|
-            # ignoring more modules per driver...
-            module0 = Ops.get_list(d, ["modules", 0], []) # [module, options]
-            brk = Builtins.contains(
-              broken_modules,
-              Ops.get_string(module0, 0, "")
-            )
-            if brk
-              Builtins.y2milestone("In BrokenModules, skipping: %1", module0)
-            end
-            !brk
-          end
+        case controller
+          # modem
+          when "modem"
+            one["device_name"] = card["dev_name"] || ""
+            one["drivers"] = card["drivers"] || []
 
-          if drivers == []
-            Builtins.y2milestone("No good drivers found") 
-            # #153235
-            # fail, unless we are in xen (it has the driver built in)
-            # or PPC (#bnc#361063)
-            #		card_ok = Arch::is_xenU () || Arch::ppc();
+            speed = Ops.get_integer(resource, ["baud", 0, "speed"], 57600)
+            # :-) have to check .probe and libhd if this confusion is
+            # really necessary. maybe a pppd bug too? #148893
+            speed = 57600 if speed == 12000000
+
+            one["speed"] = speed
+            one["init1"] = Ops.get_string(resource, ["init_strings", 0, "init1"], "")
+            one["init2"] = Ops.get_string(resource, ["init_strings", 0, "init2"], "")
+            one["pppd_options"] = Ops.get_string(resource, ["pppd_option", 0, "option"], "")
+
+          # isdn card
+          when "isdn"
+            drivers = card["isdn"] || []
+            one["drivers"] = drivers
+            one["sel_drv"] = 0
+            one["bus"] = card["bus"] || ""
+            one["io"] = Ops.get_integer(resource, ["io", 0, "start"], 0)
+            one["irq"] = Ops.get_integer(resource, ["irq", 0, "irq"], 0)
+
+          # dsl card
+          when "dsl"
+            driver_info = Ops.get_map(card, ["dsl", 0], {})
+            translate_mode = { "capiadsl" => "capi-adsl", "pppoe" => "pppoe" }
+            m = driver_info["mode"] || ""
+            one["pppmode"] = translate_mode[m] || m
+
+          # treat the rest as a network card
           else
-            Ops.set(one, "drivers", drivers)
+            # drivers:
+            # Although normally there is only one module
+            # (one=$[active:, module:, options:,...]), the generic
+            # situation is: one or more driver variants (exclusive),
+            # each having one or more modules (one[drivers])
 
-            driver = Ops.get_map(drivers, 0, {})
-            Ops.set(one, "active", Ops.get_boolean(driver, "active", false))
-            module0 = Ops.get_list(driver, ["modules", 0], []) # [module, options]
-            Ops.set(one, "module", Ops.get_string(module0, 0, ""))
-            Ops.set(one, "options", Ops.get_string(module0, 1, ""))
+            # only drivers that are not marked as broken (#97540)
+            drivers = Builtins.filter(Ops.get_list(card, "drivers", [])) do |d|
+              # ignoring more modules per driver...
+              module0 = Ops.get_list(d, ["modules", 0], []) # [module, options]
+              brk = broken_modules.include?(module0[0])
+
+              if brk
+                Builtins.y2milestone("In BrokenModules, skipping: %1", module0)
+              end
+
+              !brk
+            end
+
+            if drivers == []
+              Builtins.y2milestone("No good drivers found")
+            else
+              one["drivers"] = drivers
+
+              driver = drivers[0] || {}
+              one["active"] = driver["active"] || false
+              module0 = Ops.get_list(driver, ["modules", 0], [])
+              one["module"] = module0[0] || ""
+              one["options"] = module0[1] || ""
+            end
+
+            # FIXME: this should be also done for modems and others
+            # FIXME: #13571
+            hp = card["hotplug"] || ""
+            if hp == "pcmcia" || hp == "cardbus"
+              one["hotplug"] = "pcmcia"
+            elsif hp == "usb"
+              one["hotplug"] = "usb"
+            end
+
+            # store the BUS type
+            bus = card["bus_hwcfg"] || card["bus"] || ""
+
+            if bus == "PCI"
+              bus = "pci"
+            elsif bus == "USB"
+              bus = "usb"
+            elsif bus == "Virtual IO"
+              bus = "vio"
+            end
+
+            one["bus"] = bus
+            one["busid"] = card["sysfs_bus_id"] || ""
+            one["mac"] = Ops.get_string(resource, ["hwaddr", 0, "addr"], "")
+            # is the cable plugged in? nil = don't know
+            one["link"] = Ops.get(resource, ["link", 0, "state"])
+
+            # Wireless Card Features
+            one["wl_channels"] = Ops.get(resource, ["wlan", 0, "channels"])
+            one["wl_bitrates"] = Ops.get(resource, ["wlan", 0, "bitrates"])
+            one["wl_auth_modes"] = Ops.get(resource, ["wlan", 0, "auth_modes"])
+            one["wl_enc_modes"] = Ops.get(resource, ["wlan", 0, "enc_modes"])
           end
 
-          # FIXME: this should be also done for modems and others
-          # FIXME: #13571
-          hp = Ops.get_string(card, "hotplug", "")
-          if hp == "pcmcia" || hp == "cardbus"
-            Ops.set(one, "hotplug", "pcmcia")
-          elsif hp == "usb"
-            Ops.set(one, "hotplug", "usb")
+          if controller != "" && !filter_out(card, one["module"])
+            Builtins.y2debug("found device: %1", one)
+
+            Ops.set(_Hardware, Builtins.size(_Hardware), one)
+            num = num + 1
+          else
+            Builtins.y2milestone("Filtering out: %1", card)
           end
-
-          # store the BUS type
-          bus = Ops.get_string(
-            card,
-            "bus_hwcfg",
-            Ops.get_string(card, "bus", "")
-          )
-          if bus == "PCI"
-            bus = "pci"
-          elsif bus == "USB"
-            bus = "usb"
-          elsif bus == "Virtual IO"
-            bus = "vio"
-          end
-          Ops.set(one, "bus", bus)
-
-          Ops.set(one, "busid", Ops.get_string(card, "sysfs_bus_id", ""))
-          Ops.set(
-            one,
-            "mac",
-            Ops.get_string(resource, ["hwaddr", 0, "addr"], "")
-          )
-          # is the cable plugged in? nil = don't know
-          Ops.set(one, "link", Ops.get(resource, ["link", 0, "state"]))
-
-          # Wireless Card Features
-          Ops.set(
-            one,
-            "wl_channels",
-            Ops.get(resource, ["wlan", 0, "channels"])
-          )
-          #one["wl_frequencies"] = resource["wlan", 0, "frequencies"]:nil;
-          Ops.set(
-            one,
-            "wl_bitrates",
-            Ops.get(resource, ["wlan", 0, "bitrates"])
-          )
-          Ops.set(
-            one,
-            "wl_auth_modes",
-            Ops.get(resource, ["wlan", 0, "auth_modes"])
-          )
-          Ops.set(
-            one,
-            "wl_enc_modes",
-            Ops.get(resource, ["wlan", 0, "enc_modes"])
-          )
-        end
-        # filter out device with virtio_pci Driver and no Device File (bnc#585506)
-        if Ops.get_string(one, "module", "") == "virtio_pci" &&
-            Ops.get_string(one, "dev_name", "") == ""
-          card_ok = false
-          Builtins.y2milestone(
-            "Filtering out virtio device without device file."
-          )
-        end
-        # filter out device with chelsio Driver and no Device File or which cannot networking(bnc#711432)
-        if Ops.get_string(one, "module", "") == "cxgb4" &&
-            Ops.get_string(one, "dev_name", "") == "" ||
-            Ops.get_integer(card, "vendor_id", 0) == 70693 &&
-              Ops.get_integer(card, "device_id", 0) == 82178
-          card_ok = false
-          Builtins.y2milestone(
-            "Filtering out Chelsio device without device file."
-          )
-        end
-        # exception to filter out uicv devices (bnc#585363)
-        if Ops.get_string(card, "device", "") == "IUCV" &&
-            Ops.get_string(card, "sysfs_bus_id", "") != "netiucv"
-          card_ok = false
-          Builtins.y2milestone(
-            "Filtering out iucv device different from netiucv."
-          )
-        end
-        Builtins.y2debug("found device: %1", one)
-        if card_ok
-          Ops.set(_Hardware, Builtins.size(_Hardware), one)
-          num = Ops.add(num, 1)
-        else
-          Builtins.y2milestone("Filtering out: %1", card)
-        end
       end
 
       # if there is wlan, put it to the front of the list
@@ -943,16 +841,17 @@ module Yast
       found = false
       i = 0
       Builtins.foreach(_Hardware) do |h|
-        if Ops.get_string(h, "type", "") == "wlan"
+        if h["type"] == "wlan"
           found = true
           raise Break
         end
-        i = Ops.add(i, 1)
+        i = i + 1
       end
+
       if found
-        temp = Ops.get(_Hardware, 0, {})
-        Ops.set(_Hardware, 0, Ops.get(_Hardware, i, {}))
-        Ops.set(_Hardware, i, temp)
+        temp = _Hardware[0] || {}
+        _Hardware[0] = _Hardware[i]
+        _Hardware[i] = temp
         # adjust mapping: #98852, #102945
         Ops.set(_Hardware, [0, "num"], 0)
         Ops.set(_Hardware, [i, "num"], i)
@@ -1117,5 +1016,75 @@ module Yast
       return true
     end
 
+  private
+    # Checks if the device should be filtered out in ReadHardware
+    def filter_out(device_info, driver)
+      # filter out device with virtio_pci Driver and no Device File (bnc#585506)
+      if driver == "virtio_pci" && (device_info["dev_name"] || "") == ""
+        log.info("Filtering out virtio device without device file.")
+        return true
+      end
+
+      # filter out device with chelsio Driver and no Device File or which cannot networking(bnc#711432)
+      if driver == "cxgb4" &&
+        (device_info["dev_name"] || "") == "" ||
+        device_info["vendor_id"] == 70693 &&
+        device_info["device_id"] == 82178
+        log.info("Filtering out Chelsio device without device file.")
+        return true
+      end
+
+      if device_info["device"] == "IUCV" && device_info["sysfs_bus_id"] != "netiucv"
+        # exception to filter out uicv devices (bnc#585363)
+        log.info("Filtering out iucv device different from netiucv.")
+        return true
+      end
+
+      if device_info["storageonly"]
+        # This is for broadcoms multifunctional devices. bnc#841170
+        log.info("Filtering out device with storage only flag")
+        return true
+      end
+
+      return false
+    end
+
+    # Device type probe paths.
+    def hwtypes
+      {
+        "netcard" => path(".probe.netcard"),
+        "modem"   => path(".probe.modem"),
+        "isdn"    => path(".probe.isdn"),
+        "dsl"     => path(".probe.dsl")
+      }
+    end
+
+    # If the user requested manual installation, ask whether to probe hardware of this type
+    def confirmed_detection(hwtype)
+      # Device type labels.
+      def hwstrings
+        {
+          # Confirmation: label text (detecting hardware: xxx)
+          "netcard" => _(
+            "Network Cards"
+          ),
+          # Confirmation: label text (detecting hardware: xxx)
+          "modem"   => _(
+            "Modems"
+          ),
+          # Confirmation: label text (detecting hardware: xxx)
+          "isdn"    => _(
+            "ISDN Cards"
+          ),
+          # Confirmation: label text (detecting hardware: xxx)
+          "dsl"     => _(
+            "DSL Devices"
+          )
+        }
+      end
+
+      hwstring = hwstrings[hwtype] || _("All Network Devices")
+      Confirm.Detection(hwstring, "yast-lan")
+    end
   end
 end
