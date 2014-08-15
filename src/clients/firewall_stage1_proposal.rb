@@ -91,11 +91,11 @@ module Yast
         when LINK_ENABLE_FIREWALL
           Builtins.y2milestone("Enabling FW")
           SuSEFirewall4Network.SetEnabled1stStage(true)
-          PackagesProposal.AddResolvables(PROPOSAL_ID, :package, [SuSEfirewall2.FIREWALL_PACKAGE])
+          PackagesProposal.AddResolvables(PROPOSAL_ID, :package, [SuSEFirewall.FIREWALL_PACKAGE])
         when LINK_DISABLE_FIREWALL
           Builtins.y2milestone("Disabling FW")
           SuSEFirewall4Network.SetEnabled1stStage(false)
-          PackagesProposal.RemoveResolvables(PROPOSAL_ID, :package, [SuSEfirewall2.FIREWALL_PACKAGE])
+          PackagesProposal.RemoveResolvables(PROPOSAL_ID, :package, [SuSEFirewall.FIREWALL_PACKAGE])
         when LINK_OPEN_SSH_PORT
           Builtins.y2milestone("Opening SSH port")
           SuSEFirewall4Network.SetSshEnabled1stStage(true)
