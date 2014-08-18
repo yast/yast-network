@@ -99,6 +99,7 @@ module Yast
         { dir: SYSCONFIG, file: "ifcfg-*" },
         { dir: SYSCONFIG, file: "ifroute-*" },
         { dir: SYSCONFIG, file: "routes" },
+        { dir: ETC + "wicked/", file: "common.xml" },
         { dir: ETC, file: DNSClass::HOSTNAME_FILE }
       ]
 
