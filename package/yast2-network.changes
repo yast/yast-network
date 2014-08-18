@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Aug 15 09:24:04 UTC 2014 - mfilka@suse.com
+
+- bnc#887238
+  - Layer2 availability option is referenced correctly during
+    autoconfiguration
+- 3.1.83
+
+-------------------------------------------------------------------
 Fri Aug 15 08:31:59 UTC 2014 - jsrain@suse.cz
 
 - fixed typo in module name (bnc#891921)

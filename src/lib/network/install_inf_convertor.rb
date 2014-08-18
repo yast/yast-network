@@ -366,7 +366,7 @@ module Yast
       return "" if devtype == "hsi"
 
       # set HW address only for qeth set to Layer 2 (bnc #479481)
-      return "" if devtype == "eth" && InstallInf["QETH_LAYER2_SUPPORT"] != "1"
+      return "" if devtype == "eth" && InstallInf["Layer2"] != "1"
 
       return "LLADDR='#{hwaddr}'\n"
     end
