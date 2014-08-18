@@ -237,4 +237,29 @@ describe "InstallInfConvertor" do
     end
   end
 
+  context "running in system z/VM" do
+    it "writes hw address into ifcfg for Layer 2 aware qeth devices" do
+      HWADDR = "02:AA:BB:CC:DD:FF"
+
+      allow(Yast::InstallInfConvertor::InstallInf)
+        .to receive(:[])
+        .with("Layer2")
+        .and_return("1")
+      allow(Yast::InstallInfConvertor::InstallInf)
+        .to receive(:[])
+        .with("Netdevice")
+        .and_return("eth1")
+      allow(Yast::InstallInfConvertor.instance)
+        .to receive(:s390_device_needs_persistent_mac)
+        .and_return(true)
+
+      expect(Yast::InstallInfConvertor::InstallInf)
+        .to receive(:[])
+        .with("HWAddr")
+        .and_return(HWADDR)
+      expect(Yast::InstallInfConvertor.instance.send(:create_s390_ifcfg, nil).strip!)
+        .to eql ("LLADDR='#{HWADDR}'")
+    end
+  end
+
 end
