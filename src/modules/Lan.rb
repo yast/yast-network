@@ -1071,80 +1071,50 @@ module Yast
 
     # @return [Array] of packages needed when writing the config
     def Packages
-      pkgs = []
-      required = {
-        "types"   => {
-          #for wlan require iw instead of wireless-tools (bnc#539669)
-          "wlan" => "iw",
-          "vlan" => "vlan",
-          "br"   => "bridge-utils",
-          "tun"  => "tunctl",
-          "tap"  => "tunctl"
-        },
-        "options" => {
-          "WIRELESS_AUTH_MODE" => {
-            "psk" => "wpa_supplicant",
-            "eap" => "wpa_supplicant"
-          }
+      # various device types require some special packages ...
+      type_requires =  {
+        # for wlan require iw instead of wireless-tools (bnc#539669)
+        "wlan" => "iw",
+        "vlan" => "vlan",
+        "br"   => "bridge-utils",
+        "tun"  => "tunctl",
+        "tap"  => "tunctl"
+      }
+      # ... and some options require special packages as well
+      option_requires =  {
+        "WIRELESS_AUTH_MODE" => {
+          "psk" => "wpa_supplicant",
+          "eap" => "wpa_supplicant"
         }
       }
 
-      Builtins.foreach(
-        Convert.convert(
-          Map.Keys(Ops.get_map(required, "types", {})),
-          :from => "list",
-          :to   => "list <string>"
-        )
-      ) do |type|
-        package = Ops.get_string(required, ["types", type], "")
-        if Ops.greater_than(Builtins.size(NetworkInterfaces.List(type)), 0)
+      pkgs = []
+      type_requires.each do |type, package|
+        ifaces = NetworkInterfaces.List(type)
+        if !ifaces.empty?
           Builtins.y2milestone(
-            "Network interface type %1 requires package %2",
-            type,
-            package
+            "Network interface type #{type} requires package #{package}"
           )
-          if !PackageSystem.Installed(package)
-            pkgs = Builtins.add(pkgs, package)
-          end
+          pkgs << package if !PackageSystem.Installed(package)
         end
       end
 
-
-      Builtins.foreach(
-        Convert.convert(
-          Map.Keys(Ops.get_map(required, "options", {})),
-          :from => "list",
-          :to   => "list <string>"
-        )
-      ) do |type|
-        Builtins.foreach(
-          Convert.convert(
-            Map.Keys(Ops.get_map(required, ["options", type], {})),
-            :from => "list",
-            :to   => "list <string>"
-          )
-        ) do |option|
-          package = Ops.get_string(required, ["options", type, option], "")
-          if NetworkInterfaces.Locate(type, option) != []
+      option_requires.each do |option, option_values|
+        option_values.each do |value, package|
+          if NetworkInterfaces.Locate(option, value) != []
             Builtins.y2milestone(
-              "Network interface with options %1, %2 requires package %3",
-              type,
-              option,
-              package
+              "Network interface with option #{option}=#{value} requires package #{package}",
             )
-            if !PackageSystem.Installed(package)
-              pkgs = Builtins.add(pkgs, package)
-            end
+            pkgs << package if !PackageSystem.Installed(package)
           end
         end
       end
 
       if NetworkService.is_network_manager
-        if !PackageSystem.Installed("NetworkManager")
-          pkgs = Builtins.add(pkgs, "NetworkManager")
-        end
+        pkgs << "NetworkManager" if !PackageSystem.Installed("NetworkManager")
       end
-      deep_copy(pkgs)
+
+      pkgs
     end
 
     # @return [Array] of packages needed when writing the config in autoinst
