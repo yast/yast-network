@@ -1082,7 +1082,6 @@ module Yast
           "tap"  => "tunctl"
         },
         "options" => {
-          "STARTMODE"          => { "ifplugd" => "ifplugd" },
           "WIRELESS_AUTH_MODE" => {
             "psk" => "wpa_supplicant",
             "eap" => "wpa_supplicant"
