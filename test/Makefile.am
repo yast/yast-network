@@ -3,6 +3,7 @@ TESTS = \
   edit_nic_name_test.rb \
   install_inf_convertor_test.rb \
   lan_items_helpers_test.rb \
+  lan_test.rb \
   lan_udev_auto_test.rb \
   link_handlers_test.rb \
   netcard_test.rb \
