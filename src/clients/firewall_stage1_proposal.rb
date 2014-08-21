@@ -368,7 +368,7 @@ module Yast
 
       if open_vnc_port
         SuSEFirewall.SetServicesForZones(
-          ["service:xorg-x11-Xvnc"],
+          ["service:vnc-httpd", "service:vnc-server"],
           SuSEFirewall.GetKnownFirewallZones,
           true
         )
