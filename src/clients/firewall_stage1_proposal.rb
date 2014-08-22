@@ -345,8 +345,8 @@ module Yast
       open_vnc_port = SuSEFirewall4Network.EnabledVnc1stStage
 
       log.info "After installation, firewall will be #{enable_fw ? 'enabled':'disabled'}, " <<
-        "SSHD will be #{enable_sshd ? 'enabled':'disabled'}," <<
-        "SSH port will be #{open_ssh_port ? 'open':'closed'} " <<
+        "SSHD will be #{enable_sshd ? 'enabled':'disabled'}, " <<
+        "SSH port will be #{open_ssh_port ? 'open':'closed'}, " <<
         "VNC port will be #{open_vnc_port ? 'open':'closed'}"
 
       # Read the configuration from sysconfig
@@ -367,22 +367,22 @@ module Yast
       end
 
       if enable_sshd
-        PackagesProposal.AddResolvables(PROPOSAL_ID, :package, [SuSEFirewall4NetworkClass.SSH_PACKAGE])
+        PackagesProposal.AddResolvables(PROPOSAL_ID, :package, [SuSEFirewall4NetworkClass::SSH_PACKAGE])
       else
-        PackagesProposal.RemoveResolvables(PROPOSAL_ID, :package, [SuSEFirewall4NetworkClass.SSH_PACKAGE])
+        PackagesProposal.RemoveResolvables(PROPOSAL_ID, :package, [SuSEFirewall4NetworkClass::SSH_PACKAGE])
       end
 
       # Open or close FW ports depending on user decision
       # This can raise an exception if requested service-files are not part of the current system
       # For that reason, these files have to be part of the inst-sys
       SuSEFirewall.SetServicesForZones(
-        SuSEFirewall4NetworkClass.SSH_SERVICES,
+        SuSEFirewall4NetworkClass::SSH_SERVICES,
         SuSEFirewall.GetKnownFirewallZones,
         open_ssh_port
       )
 
       SuSEFirewall.SetServicesForZones(
-        SuSEFirewall4NetworkClass.VNC_SERVICES,
+        SuSEFirewall4NetworkClass::VNC_SERVICES,
         SuSEFirewall.GetKnownFirewallZones,
         open_vnc_port
       )
