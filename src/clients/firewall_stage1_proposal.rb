@@ -66,6 +66,8 @@ module Yast
         # Don't override users settings
         SuSEFirewall4Network.prepare_proposal unless SuSEFirewallProposal.GetChangedByUser
 
+        adjust_configuration
+
         @ret = {
           "preformatted_proposal" => preformatted_proposal,
           "warning_level"         => :warning,
@@ -80,8 +82,6 @@ module Yast
             LINK_DISABLE_VNC
           ]
         }
-
-        adjust_configuration
       elsif @func == "AskUser"
         @chosen_link = Ops.get(@param, "chosen_id")
         @result = :next
@@ -91,11 +91,9 @@ module Yast
         when LINK_ENABLE_FIREWALL
           Builtins.y2milestone("Enabling FW")
           SuSEFirewall4Network.SetEnabled1stStage(true)
-          PackagesProposal.AddResolvables(PROPOSAL_ID, :package, [SuSEFirewall.FIREWALL_PACKAGE])
         when LINK_DISABLE_FIREWALL
           Builtins.y2milestone("Disabling FW")
           SuSEFirewall4Network.SetEnabled1stStage(false)
-          PackagesProposal.RemoveResolvables(PROPOSAL_ID, :package, [SuSEFirewall.FIREWALL_PACKAGE])
         when LINK_OPEN_SSH_PORT
           Builtins.y2milestone("Opening SSH port")
           SuSEFirewall4Network.SetSshEnabled1stStage(true)
@@ -104,12 +102,10 @@ module Yast
           SuSEFirewall4Network.SetSshEnabled1stStage(false)
         when LINK_ENABLE_SSHD
           Builtins.y2milestone("Enabling SSHD")
-          PackagesProposal.AddResolvables(PROPOSAL_ID, :package, ["openssh"])
           SuSEFirewall4Network.SetSshdEnabled(true)
         when LINK_DISABLE_SSHD
           Builtins.y2milestone("Disabling SSHD")
           SuSEFirewall4Network.SetSshdEnabled(false)
-          PackagesProposal.RemoveResolvables(PROPOSAL_ID, :package, ["openssh"])
         when LINK_ENABLE_VNC
           Builtins.y2milestone("Enabling VNC")
           SuSEFirewall4Network.SetVncEnabled1stStage(true)
@@ -124,9 +120,9 @@ module Yast
 
         SuSEFirewallProposal.SetChangedByUser(true)
 
-        @ret = { "workflow_sequence" => @result }
-
         adjust_configuration
+
+        @ret = { "workflow_sequence" => @result }
       elsif @func == "Description"
         @ret = {
           # Proposal title
@@ -340,10 +336,12 @@ module Yast
     # to AutoYast profile.
     def adjust_configuration
       enable_fw = SuSEFirewall4Network.Enabled1stStage
+      enable_sshd = SuSEFirewall4Network.EnabledSshd
       open_ssh_port = SuSEFirewall4Network.EnabledSsh1stStage
       open_vnc_port = SuSEFirewall4Network.EnabledVnc1stStage
 
       log.info "After installation, firewall will be #{enable_fw ? 'enabled':'disabled'}, " <<
+        "SSHD will be #{enable_sshd ? 'enabled':'disabled'}," <<
         "SSH port will be #{open_ssh_port ? 'open':'closed'} " <<
         "VNC port will be #{open_vnc_port ? 'open':'closed'}"
 
@@ -355,6 +353,20 @@ module Yast
 
       SuSEFirewall.SetEnableService(enable_fw)
       SuSEFirewall.SetStartService(enable_fw)
+
+      # Request needed packages to be installed
+      # bnc#893126
+      if enable_fw
+        PackagesProposal.AddResolvables(PROPOSAL_ID, :package, [SuSEFirewall.FIREWALL_PACKAGE])
+      else
+        PackagesProposal.RemoveResolvables(PROPOSAL_ID, :package, [SuSEFirewall.FIREWALL_PACKAGE])
+      end
+
+      if enable_sshd
+        PackagesProposal.AddResolvables(PROPOSAL_ID, :package, [SuSEFirewall4NetworkClass.SSH_PACKAGE])
+      else
+        PackagesProposal.RemoveResolvables(PROPOSAL_ID, :package, [SuSEFirewall4NetworkClass.SSH_PACKAGE])
+      end
 
       # only if we have openssh package - proposal takes care
       # it gets installed if the user wants to open ssh port

@@ -38,6 +38,8 @@ module Yast
 
     include Yast::Logger
 
+    SSH_PACKAGE = "openssh"
+
     def main
       textdomain "network"
 
