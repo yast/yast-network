@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Aug 22 16:43:24 CEST 2014 - locilka@suse.com
+
+- Fixed requesting sshd/firewall packages in case of the default
+  configuration together with minimal installation (bnc#893126)
+- 3.1.86
+
+-------------------------------------------------------------------
 Thu Aug 21 14:20:20 CEST 2014 - locilka@suse.com
 
 - Fixed firewall proposal in case of VNC installation: using
