@@ -39,6 +39,8 @@ module Yast
     include Yast::Logger
 
     SSH_PACKAGE = "openssh"
+    SSH_SERVICES = ["service:sshd"]
+    VNC_SERVICES = ["service:vnc-httpd", "service:vnc-server"]
 
     def main
       textdomain "network"

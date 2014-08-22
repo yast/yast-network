@@ -42,6 +42,13 @@ module Yast
     LINK_DISABLE_VNC = "firewall--disable_vnc_in_proposal"
     LINK_FIREWALL_DIALOG = "firewall_stage1"
 
+    module IDs
+      SSH_PORT = "open_ssh_port"
+      VNC_PORT = "open_vnc_port"
+      ENABLE_FW = "enable_fw"
+      ENABLE_SSHD = "enable_sshd"
+    end
+
     include Yast::Logger
 
     def main
@@ -58,17 +65,18 @@ module Yast
       Yast.import "SuSEFirewallProposal"
       Yast.import "Wizard"
 
-      @func = Convert.to_string(WFM.Args(0))
-      @param = Convert.to_map(WFM.Args(1))
-      @ret = {}
+      script_command = WFM.Args(0)
+      params = WFM.Args(1) || {}
+      script_return = {}
 
-      if @func == "MakeProposal"
+      case script_command
+      when "MakeProposal"
         # Don't override users settings
         SuSEFirewall4Network.prepare_proposal unless SuSEFirewallProposal.GetChangedByUser
 
         adjust_configuration
 
-        @ret = {
+        script_return = {
           "preformatted_proposal" => preformatted_proposal,
           "warning_level"         => :warning,
           "links"                 => [
@@ -82,38 +90,38 @@ module Yast
             LINK_DISABLE_VNC
           ]
         }
-      elsif @func == "AskUser"
-        @chosen_link = Ops.get(@param, "chosen_id")
-        @result = :next
-        Builtins.y2milestone("User clicked %1", @chosen_link)
+      when "AskUser"
+        chosen_link = params["chosen_id"]
+        result = :next
+        Builtins.y2milestone("User clicked %1", chosen_link)
 
-        case @chosen_link
+        case chosen_link
         when LINK_ENABLE_FIREWALL
-          Builtins.y2milestone("Enabling FW")
+          log.info "Enabling FW"
           SuSEFirewall4Network.SetEnabled1stStage(true)
         when LINK_DISABLE_FIREWALL
-          Builtins.y2milestone("Disabling FW")
+          log.info "Disabling FW"
           SuSEFirewall4Network.SetEnabled1stStage(false)
         when LINK_OPEN_SSH_PORT
-          Builtins.y2milestone("Opening SSH port")
+          log.info "Opening SSH port"
           SuSEFirewall4Network.SetSshEnabled1stStage(true)
         when LINK_BLOCK_SSH_PORT
-          Builtins.y2milestone("Blocking SSH port")
+          log.info "Blocking SSH port"
           SuSEFirewall4Network.SetSshEnabled1stStage(false)
         when LINK_ENABLE_SSHD
-          Builtins.y2milestone("Enabling SSHD")
+          log.info "Enabling SSHD"
           SuSEFirewall4Network.SetSshdEnabled(true)
         when LINK_DISABLE_SSHD
-          Builtins.y2milestone("Disabling SSHD")
+          log.info "Disabling SSHD"
           SuSEFirewall4Network.SetSshdEnabled(false)
         when LINK_ENABLE_VNC
-          Builtins.y2milestone("Enabling VNC")
+          log.info "Enabling VNC"
           SuSEFirewall4Network.SetVncEnabled1stStage(true)
         when LINK_DISABLE_VNC
-          Builtins.y2milestone("Disabling VNC")
+          log.info "Disabling VNC"
           SuSEFirewall4Network.SetVncEnabled1stStage(false)
         when LINK_FIREWALL_DIALOG
-          @result = FirewallDialogSimple()
+          result = FirewallDialogSimple()
         else
           raise "INTERNAL ERROR: unknown action '#{@chosen_link}' for proposal client"
         end
@@ -122,20 +130,22 @@ module Yast
 
         adjust_configuration
 
-        @ret = { "workflow_sequence" => @result }
-      elsif @func == "Description"
-        @ret = {
+        script_return = { "workflow_sequence" => result }
+      when "Description"
+        script_return = {
           # Proposal title
           "rich_text_title" => _("Firewall and SSH"),
           # Menu entry label
           "menu_title"      => _("&Firewall and SSH"),
           "id"              => LINK_FIREWALL_DIALOG
         }
-      elsif @func == "Write"
-        @ret = { "success" => true }
+      when "Write"
+        script_return = { "success" => true }
+      else
+        log.error "Unknown command #{script_command}"
       end
 
-      deep_copy(@ret)
+      deep_copy(script_return)
     end
 
     def FirewallDialogSimple
@@ -143,7 +153,7 @@ module Yast
 
       vnc_support = Left(
         CheckBox(
-          Id("open_vnc_port"),
+          Id(IDs::VNC_PORT),
           # TRANSLATORS: check-box label
           _("Open &VNC Ports"),
           SuSEFirewall4Network.EnabledVnc1stStage
@@ -161,7 +171,7 @@ module Yast
               VBox(
                 Left(
                   CheckBox(
-                    Id("enable_fw"),
+                    Id(IDs::ENABLE_FW),
                     Opt(:notify),
                     # TRANSLATORS: check-box label
                     _("Enable Firewall"),
@@ -170,7 +180,7 @@ module Yast
                 ),
                 Left(
                   CheckBox(
-                    Id("open_ssh_port"),
+                    Id(IDs::SSH_PORT),
                     # TRANSLATORS: check-box label
                     _("Open SSH Port"),
                     SuSEFirewall4Network.EnabledSsh1stStage
@@ -178,7 +188,7 @@ module Yast
                 ),
                 Left(
                   CheckBox(
-                    Id("enable_sshd"),
+                    Id(IDs::ENABLE_SSHD),
                     # TRANSLATORS: check-box label
                     _("Enable SSH Service"),
                     SuSEFirewall4Network.EnabledSshd
@@ -229,12 +239,12 @@ module Yast
       Wizard.HideBackButton
 
       UI.ChangeWidget(
-        Id("open_ssh_port"),
+        Id(IDs::SSH_PORT),
         :Enabled,
         SuSEFirewall4Network.Enabled1stStage
       )
       UI.ChangeWidget(
-        Id("open_vnc_port"),
+        Id(IDs::VNC_PORT),
         :Enabled,
         SuSEFirewall4Network.Enabled1stStage
       )
@@ -243,21 +253,15 @@ module Yast
 
       while true
         dialog_ret = UI.UserInput
-        enable_firewall = Convert.to_boolean(
-          UI.QueryWidget(Id("enable_fw"), :Value)
-        )
+        enable_firewall = UI.QueryWidget(Id(IDs::ENABLE_FW), :Value)
 
-        if dialog_ret == "enable_fw"
-          UI.ChangeWidget(Id("open_ssh_port"), :Enabled, enable_firewall)
-          UI.ChangeWidget(Id("open_vnc_port"), :Enabled, enable_firewall)
+        if dialog_ret == IDs::ENABLE_FW
+          UI.ChangeWidget(Id(IDs::SSH_PORT), :Enabled, enable_firewall)
+          UI.ChangeWidget(Id(IDs::VNC_PORT), :Enabled, enable_firewall)
           next
         elsif dialog_ret == :next || dialog_ret == :ok
-          open_ssh_port = Convert.to_boolean(
-            UI.QueryWidget(Id("open_ssh_port"), :Value)
-          )
-          open_vnc_port = Convert.to_boolean(
-            UI.QueryWidget(Id("open_vnc_port"), :Value)
-          )
+          open_ssh_port = UI.QueryWidget(Id(IDs::SSH_PORT), :Value)
+          open_vnc_port = UI.QueryWidget(Id(IDs::VNC_PORT), :Value)
 
           SuSEFirewall4Network.SetEnabled1stStage(enable_firewall)
 
@@ -267,7 +271,7 @@ module Yast
           end
 
           SuSEFirewall4Network.SetSshdEnabled(
-            UI::QueryWidget(Id("enable_sshd"), :Value)
+            UI::QueryWidget(Id(IDs::ENABLE_SSHD), :Value)
           )
         end
 
@@ -372,7 +376,7 @@ module Yast
       # it gets installed if the user wants to open ssh port
       if open_ssh_port
         SuSEFirewall.SetServicesForZones(
-          ["service:sshd"],
+          SuSEFirewall4NetworkClass.SSH_SERVICES,
           SuSEFirewall.GetKnownFirewallZones,
           true
         )
@@ -380,7 +384,7 @@ module Yast
 
       if open_vnc_port
         SuSEFirewall.SetServicesForZones(
-          ["service:vnc-httpd", "service:vnc-server"],
+          SuSEFirewall4NetworkClass.VNC_SERVICES,
           SuSEFirewall.GetKnownFirewallZones,
           true
         )
