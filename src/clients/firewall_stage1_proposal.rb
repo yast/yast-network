@@ -93,7 +93,7 @@ module Yast
       when "AskUser"
         chosen_link = params["chosen_id"]
         result = :next
-        Builtins.y2milestone("User clicked %1", chosen_link)
+        log.info "User clicked #{chosen_link}"
 
         case chosen_link
         when LINK_ENABLE_FIREWALL
@@ -372,23 +372,20 @@ module Yast
         PackagesProposal.RemoveResolvables(PROPOSAL_ID, :package, [SuSEFirewall4NetworkClass.SSH_PACKAGE])
       end
 
-      # only if we have openssh package - proposal takes care
-      # it gets installed if the user wants to open ssh port
-      if open_ssh_port
-        SuSEFirewall.SetServicesForZones(
-          SuSEFirewall4NetworkClass.SSH_SERVICES,
-          SuSEFirewall.GetKnownFirewallZones,
-          true
-        )
-      end
+      # Open or close FW ports depending on user decision
+      # This can raise an exception if requested service-files are not part of the current system
+      # For that reason, these files have to be part of the inst-sys
+      SuSEFirewall.SetServicesForZones(
+        SuSEFirewall4NetworkClass.SSH_SERVICES,
+        SuSEFirewall.GetKnownFirewallZones,
+        open_ssh_port
+      )
 
-      if open_vnc_port
-        SuSEFirewall.SetServicesForZones(
-          SuSEFirewall4NetworkClass.VNC_SERVICES,
-          SuSEFirewall.GetKnownFirewallZones,
-          true
-        )
-      end
+      SuSEFirewall.SetServicesForZones(
+        SuSEFirewall4NetworkClass.VNC_SERVICES,
+        SuSEFirewall.GetKnownFirewallZones,
+        open_vnc_port
+      )
 
       # Writing the configuration including adjusting services
       # is done in firewall_stage1_finish
