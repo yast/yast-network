@@ -42,7 +42,7 @@ module Yast
     LINK_DISABLE_VNC = "firewall--disable_vnc_in_proposal"
     LINK_FIREWALL_DIALOG = "firewall_stage1"
 
-    module IDs
+    module ID
       SSH_PORT = "open_ssh_port"
       VNC_PORT = "open_vnc_port"
       ENABLE_FW = "enable_fw"
@@ -153,7 +153,7 @@ module Yast
 
       vnc_support = Left(
         CheckBox(
-          Id(IDs::VNC_PORT),
+          Id(ID::VNC_PORT),
           # TRANSLATORS: check-box label
           _("Open &VNC Ports"),
           SuSEFirewall4Network.EnabledVnc1stStage
@@ -171,7 +171,7 @@ module Yast
               VBox(
                 Left(
                   CheckBox(
-                    Id(IDs::ENABLE_FW),
+                    Id(ID::ENABLE_FW),
                     Opt(:notify),
                     # TRANSLATORS: check-box label
                     _("Enable Firewall"),
@@ -180,7 +180,7 @@ module Yast
                 ),
                 Left(
                   CheckBox(
-                    Id(IDs::SSH_PORT),
+                    Id(ID::SSH_PORT),
                     # TRANSLATORS: check-box label
                     _("Open SSH Port"),
                     SuSEFirewall4Network.EnabledSsh1stStage
@@ -188,7 +188,7 @@ module Yast
                 ),
                 Left(
                   CheckBox(
-                    Id(IDs::ENABLE_SSHD),
+                    Id(ID::ENABLE_SSHD),
                     # TRANSLATORS: check-box label
                     _("Enable SSH Service"),
                     SuSEFirewall4Network.EnabledSshd
@@ -239,12 +239,12 @@ module Yast
       Wizard.HideBackButton
 
       UI.ChangeWidget(
-        Id(IDs::SSH_PORT),
+        Id(ID::SSH_PORT),
         :Enabled,
         SuSEFirewall4Network.Enabled1stStage
       )
       UI.ChangeWidget(
-        Id(IDs::VNC_PORT),
+        Id(ID::VNC_PORT),
         :Enabled,
         SuSEFirewall4Network.Enabled1stStage
       )
@@ -253,15 +253,15 @@ module Yast
 
       while true
         dialog_ret = UI.UserInput
-        enable_firewall = UI.QueryWidget(Id(IDs::ENABLE_FW), :Value)
+        enable_firewall = UI.QueryWidget(Id(ID::ENABLE_FW), :Value)
 
-        if dialog_ret == IDs::ENABLE_FW
-          UI.ChangeWidget(Id(IDs::SSH_PORT), :Enabled, enable_firewall)
-          UI.ChangeWidget(Id(IDs::VNC_PORT), :Enabled, enable_firewall)
+        if dialog_ret == ID::ENABLE_FW
+          UI.ChangeWidget(Id(ID::SSH_PORT), :Enabled, enable_firewall)
+          UI.ChangeWidget(Id(ID::VNC_PORT), :Enabled, enable_firewall)
           next
         elsif dialog_ret == :next || dialog_ret == :ok
-          open_ssh_port = UI.QueryWidget(Id(IDs::SSH_PORT), :Value)
-          open_vnc_port = UI.QueryWidget(Id(IDs::VNC_PORT), :Value)
+          open_ssh_port = UI.QueryWidget(Id(ID::SSH_PORT), :Value)
+          open_vnc_port = UI.QueryWidget(Id(ID::VNC_PORT), :Value)
 
           SuSEFirewall4Network.SetEnabled1stStage(enable_firewall)
 
@@ -271,7 +271,7 @@ module Yast
           end
 
           SuSEFirewall4Network.SetSshdEnabled(
-            UI::QueryWidget(Id(IDs::ENABLE_SSHD), :Value)
+            UI::QueryWidget(Id(ID::ENABLE_SSHD), :Value)
           )
         end
 
