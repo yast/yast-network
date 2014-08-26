@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Aug 25 10:46:44 UTC 2014 - mfilka@suse.com
+
+- bnc#891517
+  - do not require ifplugd package for devices with
+    STARTMODE='ifplugd' in ifcfg
+- 3.1.87
+
+-------------------------------------------------------------------
 Fri Aug 22 16:43:24 CEST 2014 - locilka@suse.com
 
 - Fixed requesting sshd/firewall packages in case of the default
