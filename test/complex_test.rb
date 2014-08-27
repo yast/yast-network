@@ -20,6 +20,8 @@ end
 
 describe "NetworkLanComplexInclude::input_done?" do
 
+  BOOLEAN_PLACEHOLDER = "placeholder (true or false)"
+
   context "when not running in installer" do
 
     before(:each) do
@@ -47,8 +49,9 @@ describe "NetworkLanComplexInclude::input_done?" do
 
       expect(NetworkLanComplexInclude)
         .to receive(:ReallyAbort)
+        .and_return(BOOLEAN_PLACEHOLDER)
 
-      NetworkLanComplexInclude.input_done?(:abort)
+      expect(NetworkLanComplexInclude.input_done?(:abort)).to eql BOOLEAN_PLACEHOLDER
     end
   end
 
@@ -63,8 +66,9 @@ describe "NetworkLanComplexInclude::input_done?" do
     it "asks user for installation abort confirmation for input equal to :abort" do
       expect(Yast::Popup)
         .to receive(:ConfirmAbort)
+        .and_return(BOOLEAN_PLACEHOLDER)
 
-      NetworkLanComplexInclude.input_done?(:abort)
+      expect(NetworkLanComplexInclude.input_done?(:abort)).to eql BOOLEAN_PLACEHOLDER
     end
   end
 end
