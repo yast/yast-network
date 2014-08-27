@@ -512,8 +512,9 @@ module Yast
     # changes already. Calling this function may results in confirmation
     # popup.
     def input_done?(ret)
-      if ret == :abort && LanItems.modified
-        return ReallyAbort()
+      if ret == :abort
+        return ReallyAbort() if LanItems.modified
+        return true
       else
         return true
       end
