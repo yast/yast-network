@@ -512,14 +512,12 @@ module Yast
     # changes already. Calling this function may results in confirmation
     # popup.
     def input_done?(ret)
-      if ret == :abort
-        if(Stage.initial)
-          return Popup.ConfirmAbort(:painless)
-        else
-          return ReallyAbort() if LanItems.modified
-        end
-        return true
+      return true if ret != :abort
+
+      if Stage.initial
+        return Popup.ConfirmAbort(:painless)
       else
+        return ReallyAbort() if LanItems.modified
         return true
       end
     end
