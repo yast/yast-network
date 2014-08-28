@@ -245,23 +245,21 @@ module Yast
 
       return false if proxyUrl.empty?
 
-      proxy = URI(proxyUrl)
-      proxyProto = proxy.scheme
-
-      # do not log the password
-      log_proxy = proxy.dup
-      log_proxy.password = "********" if log_proxy.password
-      log.info("Writing proxy settings: #{proxyProto}_proxy = '#{log_proxy}'")
-
       Proxy.Read
       ex = Proxy.Export
 
-      # bnc#693640 - update Proxy module's configuration
-      # username and password is stored in url because it is handled by linuxrc this way and it is impossible
-      # to distinguish how the user inserted it (separate or as a part of url?)
-      ex["#{proxyProto}_proxy"] = proxyUrl
+      proxy = URI(proxyUrl)
+      proxyProto = proxy.scheme
+
+      # save user name and password separately
+      ex["proxy_user"] = proxy.user
+      proxy.user = nil
+      ex["proxy_password"] = proxy.password
+      proxy.password = nil
+      ex["#{proxyProto}_proxy"] = proxy.to_s
       ex["enabled"] = true
-      log.debug("Written proxy settings: #{ex}")
+      log.info "Writing proxy settings: #{proxyProto}_proxy = '#{proxy}'"
+      log.debug "Writing proxy settings: #{ex}"
 
       Proxy.Import(ex)
       Proxy.Write

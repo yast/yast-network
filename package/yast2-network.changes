@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Aug 28 11:16:20 UTC 2014 - lslezak@suse.cz
+
+- write the proxy credentials from install.inf separately, make it
+  compatible with the proxy module used at installed system
+  (bnc#885957)
+- 3.1.89
+
+-------------------------------------------------------------------
 Wed Aug 27 14:39:13 UTC 2014 - mfilka@suse.com
 
 - bnc#893638
