@@ -145,8 +145,15 @@ module Yast
       LanItems.Commit
     end
 
-    def reload_config(card)
-      SCR.Execute(BASH_PATH, "wicked ifreload '#{card}'") == 0
+    # Reloads configuration for each device named in devs
+    #
+    # @devs list of device names
+    # @return true if configuration was reloaded
+    def reload_config(devs)
+      raise ArgumentError if devs.nil?
+      return true if devs.empty?
+
+      SCR.Execute(BASH_PATH, "wicked ifreload #{devs.join(" ")}") == 0
     end
 
     def delete_config(devname)
@@ -163,7 +170,7 @@ module Yast
       # workaround for gh#yast/yast-core#74 (https://github.com/yast/yast-core/issues/74)
       NetworkInterfaces.CleanCacheRead()
 
-      devnames.map { |d| reload_config(d) }
+      reload_config(devnames)
     end
 
     def configured?(devname)
@@ -194,7 +201,11 @@ module Yast
     # Check if given device can reach some of reference servers
     def set_default_route_flag_if_wan_dev?(devname)
       set_default_route_flag(devname, "yes")
-      activate_changes([devname])
+
+      if !activate_changes([devname])
+        log.warn("Cannot reach reference server via #{devname}")
+        return false
+      end
 
       reached = target_servers.any? do |server|
         ping_cmd = "ping -I #{devname} -c 3 #{server}"
