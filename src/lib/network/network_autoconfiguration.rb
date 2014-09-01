@@ -37,9 +37,6 @@ module Yast
       # TODO time consuming, some progress would be nice
       dhcp_cards.each { |d| setup_dhcp(d) }
 
-      # FIXME this can be really slow as it calls wicked one-by-one.
-      # So for n devices connected to a network but without dhcp
-      # it takes n * <dhcp lease wait timeout>.
       activate_changes(dhcp_cards)
 
       # drop devices without dhcp lease
@@ -147,7 +144,7 @@ module Yast
 
     # Reloads configuration for each device named in devs
     #
-    # @devs list of device names
+    # @devs [Array] list of device names
     # @return true if configuration was reloaded
     def reload_config(devs)
       raise ArgumentError if devs.nil?
@@ -164,6 +161,10 @@ module Yast
       NetworkInterfaces.Write("")
     end
 
+    # Writes and activates changes in devices configurations
+    #
+    # @devnames [Array] list of device names
+    # @return true when changes were successfully applied
     def activate_changes(devnames)
       return false if !write_configuration
 
