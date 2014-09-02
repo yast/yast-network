@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.1.89
+Version:        3.1.90
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -31,7 +31,7 @@ BuildRequires:  update-desktop-files
 BuildRequires:  yast2-testsuite
 BuildRequires:  yast2-devtools >= 3.1.15
 BuildRequires:  yast2-country
-BuildRequires:  yast2-installation >= 2.15.27
+BuildRequires:  yast2-proxy
 
 # yast2 v3.1.86: Added ServicesProposal library
 BuildRequires:  yast2 >= 3.1.86

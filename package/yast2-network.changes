@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Sep  2 08:45:30 UTC 2014 - ancor@suse.com
+
+- Updated BuildRequires to break cycle introduced in
+  yast2-installation 3.1.114 (which fixes bnc#893501)
+- 3.1.90
+
+-------------------------------------------------------------------
 Thu Aug 28 11:16:20 UTC 2014 - lslezak@suse.cz
 
 - write the proxy credentials from install.inf separately, make it
