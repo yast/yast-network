@@ -29,14 +29,14 @@ end
 
 describe "LanItemsClass#delete_dev" do
 
-  MOCKED_ITEMS = {
+  MOCKED_ITEMS_DEL = {
     0 => {
       "ifcfg" => "enp0s3"
     }
   }
 
   before(:each) do
-    Yast::LanItems.Items = MOCKED_ITEMS
+    Yast::LanItems.Items = MOCKED_ITEMS_DEL
   end
 
   it "removes device config when found" do

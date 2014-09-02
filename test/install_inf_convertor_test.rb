@@ -6,6 +6,8 @@ require "yast"
 require "network/install_inf_convertor"
 include Yast # for path shortcut and avoid namespace
 
+Yast.import "Proxy"
+
 describe "InstallInfConvertor" do
 
   context "in case of no network config in /etc/install.inf" do
