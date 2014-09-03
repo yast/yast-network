@@ -161,11 +161,11 @@ describe Yast::NetworkAutoconfiguration do
     expect(Yast::SCR).
       to receive(:Read).
       with(Yast::Path.new(".udev_persistent.net")).
-      and_return {}
+      and_return({})
     expect(Yast::SCR).
       to receive(:Read).
       with(Yast::Path.new(".udev_persistent.drivers")).
-      and_return {}
+      and_return({})
   end
 
   it "configures just one NIC to have a default route" do
