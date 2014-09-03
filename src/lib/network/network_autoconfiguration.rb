@@ -37,9 +37,6 @@ module Yast
       # TODO time consuming, some progress would be nice
       dhcp_cards.each { |d| setup_dhcp(d) }
 
-      # FIXME this can be really slow as it calls wicked one-by-one.
-      # So for n devices connected to a network but without dhcp
-      # it takes n * <dhcp lease wait timeout>.
       activate_changes(dhcp_cards)
 
       # drop devices without dhcp lease
@@ -145,8 +142,15 @@ module Yast
       LanItems.Commit
     end
 
-    def reload_config(card)
-      SCR.Execute(BASH_PATH, "wicked ifreload '#{card}'") == 0
+    # Reloads configuration for each device named in devs
+    #
+    # @devs [Array] list of device names
+    # @return true if configuration was reloaded
+    def reload_config(devs)
+      raise ArgumentError if devs.nil?
+      return true if devs.empty?
+
+      SCR.Execute(BASH_PATH, "wicked ifreload #{devs.join(" ")}") == 0
     end
 
     def delete_config(devname)
@@ -157,13 +161,17 @@ module Yast
       NetworkInterfaces.Write("")
     end
 
+    # Writes and activates changes in devices configurations
+    #
+    # @devnames [Array] list of device names
+    # @return true when changes were successfully applied
     def activate_changes(devnames)
       return false if !write_configuration
 
       # workaround for gh#yast/yast-core#74 (https://github.com/yast/yast-core/issues/74)
       NetworkInterfaces.CleanCacheRead()
 
-      devnames.map { |d| reload_config(d) }
+      reload_config(devnames)
     end
 
     def configured?(devname)
@@ -194,7 +202,11 @@ module Yast
     # Check if given device can reach some of reference servers
     def set_default_route_flag_if_wan_dev?(devname)
       set_default_route_flag(devname, "yes")
-      activate_changes([devname])
+
+      if !activate_changes([devname])
+        log.warn("Cannot reach reference server via #{devname}")
+        return false
+      end
 
       reached = target_servers.any? do |server|
         ping_cmd = "ping -I #{devname} -c 3 #{server}"
