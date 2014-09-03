@@ -178,11 +178,11 @@ describe Routing do
     describe "#Import" do
 
       it "Returns true for non nil settings" do
-        expect(Routing.Import({})).to be_true
+        expect(Routing.Import({})).to be true
       end
 
       it "Returns true for nil settings" do
-        expect(Routing.Import(nil)).to be_true
+        expect(Routing.Import(nil)).to be true
       end
     end
 
@@ -298,7 +298,7 @@ describe Routing do
           it "loads configuration from system" do
             NetworkInterfaces.as_null_object
 
-            expect(Routing.Read).to be_true
+            expect(Routing.Read).to be true
           end
         end
       end

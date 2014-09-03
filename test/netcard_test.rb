@@ -199,7 +199,7 @@ describe "LanItemsClass#DeleteItem" do
 
       @lan_items.DeleteItem
 
-      expect(@lan_items.FindAndSelect(item_name)).to be_false
+      expect(@lan_items.FindAndSelect(item_name)).to be false
     end
   end
 
@@ -207,11 +207,11 @@ describe "LanItemsClass#DeleteItem" do
     before_size = @lan_items.Items.size
     item_name = "enp0s3"
 
-    expect(@lan_items.FindAndSelect(item_name)).to be_true
+    expect(@lan_items.FindAndSelect(item_name)).to be true
 
     @lan_items.DeleteItem
 
-    expect(@lan_items.FindAndSelect(item_name)).to be_false
+    expect(@lan_items.FindAndSelect(item_name)).to be false
     expect(@lan_items.Items.size).to eql before_size
   end
 end
@@ -244,10 +244,10 @@ describe "LanItemsClass#FindAndSelect" do
   end
 
   it "finds configured device" do
-    expect(@lan_items.FindAndSelect("enp0s3")).to be_true
+    expect(@lan_items.FindAndSelect("enp0s3")).to be true
   end
 
   it "fails to find unconfigured device" do
-    expect(@lan_items.FindAndSelect("nonexistent")).to be_false
+    expect(@lan_items.FindAndSelect("nonexistent")).to be false
   end
 end

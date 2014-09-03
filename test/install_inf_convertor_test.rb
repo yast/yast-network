@@ -22,7 +22,7 @@ describe "InstallInfConvertor" do
 
     describe "#write_dhcp_timeout" do
       it "returns false" do
-        expect(@install_inf_convertor.send(:write_dhcp_timeout)).to be_false
+        expect(@install_inf_convertor.send(:write_dhcp_timeout)).to be false
       end
     end
 
@@ -34,31 +34,31 @@ describe "InstallInfConvertor" do
 
     describe "#write_hostname" do
       it "returns false" do
-        expect(@install_inf_convertor.send(:write_hostname)).to be_false
+        expect(@install_inf_convertor.send(:write_hostname)).to be false
       end
     end
 
     describe "#write_dns" do
       it "returns false" do
-        expect(@install_inf_convertor.send(:write_dns)).to be_false
+        expect(@install_inf_convertor.send(:write_dns)).to be false
       end
     end
 
     describe "#write_proxy" do
       it "returns false" do
-        expect(@install_inf_convertor.send(:write_proxy)).to be_false
+        expect(@install_inf_convertor.send(:write_proxy)).to be false
       end
     end
 
     describe "#write_nis_domain" do
       it "returns false" do
-        expect(@install_inf_convertor.send(:write_nis_domain)).to be_false
+        expect(@install_inf_convertor.send(:write_nis_domain)).to be false
       end
     end
 
     describe "#write_connect_wait" do
       it "returns false" do
-        expect(@install_inf_convertor.send(:write_connect_wait)).to be_false
+        expect(@install_inf_convertor.send(:write_connect_wait)).to be false
       end
     end
 
@@ -226,7 +226,7 @@ describe "InstallInfConvertor" do
       end
       expect(Yast::Proxy).to receive(:Write).and_return(true)
 
-      expect(Yast::InstallInfConvertor.instance.send(:write_proxy)).to be_true
+      expect(Yast::InstallInfConvertor.instance.send(:write_proxy)).to be true
     end
 
     it "writes proxy credentials separately" do
@@ -251,7 +251,7 @@ describe "InstallInfConvertor" do
       end
       expect(Yast::Proxy).to receive(:Write).and_return(true)
 
-      expect(Yast::InstallInfConvertor.instance.send(:write_proxy)).to be_true
+      expect(Yast::InstallInfConvertor.instance.send(:write_proxy)).to be true
     end
 
     it "does not write proxy configuration if not defined in install.inf" do
@@ -261,7 +261,7 @@ describe "InstallInfConvertor" do
       expect(Yast::Proxy).to receive(:Read).never
       expect(Yast::Proxy).to receive(:Write).never
 
-      expect(Yast::InstallInfConvertor.instance.send(:write_proxy)).to be_false
+      expect(Yast::InstallInfConvertor.instance.send(:write_proxy)).to be false
     end
   end
 
