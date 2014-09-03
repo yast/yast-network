@@ -4,8 +4,6 @@ require_relative "test_helper"
 
 require "yast"
 
-include Yast
-
 Yast.import "LanItems"
 
 module Yast

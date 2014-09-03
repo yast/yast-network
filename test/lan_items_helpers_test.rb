@@ -11,32 +11,32 @@ describe "LanItemsClass#IsItemConfigured" do
   it "succeeds when item has configuration" do
     Yast::LanItems.stub(:GetLanItem) { { "ifcfg" => "enp0s3" } }
 
-    expect(Yast::LanItems.IsItemConfigured(0)).to be_true
+    expect(Yast::LanItems.IsItemConfigured(0)).to be true
   end
 
   it "fails when item doesn't exist" do
     Yast::LanItems.stub(:GetLanItem) { {} }
 
-    expect(Yast::LanItems.IsItemConfigured(0)).to be_false
+    expect(Yast::LanItems.IsItemConfigured(0)).to be false
   end
 
   it "fails when item's configuration doesn't exist" do
     Yast::LanItems.stub(:GetLanItem) { { "ifcfg" => nil } }
 
-    expect(Yast::LanItems.IsItemConfigured(0)).to be_false
+    expect(Yast::LanItems.IsItemConfigured(0)).to be false
   end
 end
 
 describe "LanItemsClass#delete_dev" do
 
-  MOCKED_ITEMS = {
+  MOCKED_ITEMS_DEL = {
     0 => {
       "ifcfg" => "enp0s3"
     }
   }
 
   before(:each) do
-    Yast::LanItems.Items = MOCKED_ITEMS
+    Yast::LanItems.Items = MOCKED_ITEMS_DEL
   end
 
   it "removes device config when found" do

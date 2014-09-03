@@ -13,6 +13,13 @@ describe "LanItemsClass#new_device_startmode" do
     "STARTMODE" => "invalid"
   }
 
+  AVAILABLE_PRODUCT_STARTMODES = [
+    "hotplug",
+    "manual",
+    "off",
+    "nfsroot"
+  ]
+
   ["hotplug", ""].each do |hwinfo_hotplug|
 
     expected_startmode = hwinfo_hotplug == "hotplug" ? "hotplug" : "auto"
@@ -78,13 +85,6 @@ describe "LanItemsClass#new_device_startmode" do
     end
 
     context "When product_startmode is not auto neither ifplugd" do
-
-      AVAILABLE_PRODUCT_STARTMODES = [
-        "hotplug",
-        "manual",
-        "off",
-        "nfsroot"
-      ]
 
       AVAILABLE_PRODUCT_STARTMODES.each do |product_startmode|
 

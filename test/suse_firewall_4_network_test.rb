@@ -27,14 +27,14 @@ module Yast
     describe "#SetSshdEnabled" do
       it "sets whether sshd service should be started and caches the information in ServicesProposal" do
         SuSEFirewall4Network.SetSshdEnabled(true)
-        expect(SuSEFirewall4Network.EnabledSshd).to be_true
-        expect(ServicesProposal.enabled_services.include?('sshd')).to be_true
-        expect(ServicesProposal.disabled_services.include?('sshd')).to be_false
+        expect(SuSEFirewall4Network.EnabledSshd).to be true
+        expect(ServicesProposal.enabled_services.include?('sshd')).to be true
+        expect(ServicesProposal.disabled_services.include?('sshd')).to be false
 
         SuSEFirewall4Network.SetSshdEnabled(false)
-        expect(SuSEFirewall4Network.EnabledSshd).to be_false
-        expect(ServicesProposal.enabled_services.include?('sshd')).to be_false
-        expect(ServicesProposal.disabled_services.include?('sshd')).to be_true
+        expect(SuSEFirewall4Network.EnabledSshd).to be false
+        expect(ServicesProposal.enabled_services.include?('sshd')).to be false
+        expect(ServicesProposal.disabled_services.include?('sshd')).to be true
       end
     end
 
@@ -46,8 +46,8 @@ module Yast
 
         it "proposes firewall and ssh port according to control file" do
           SuSEFirewall4Network.prepare_proposal
-          expect(SuSEFirewall4Network.Enabled1stStage).to be_true
-          expect(SuSEFirewall4Network.EnabledSsh1stStage).to be_false
+          expect(SuSEFirewall4Network.Enabled1stStage).to be true
+          expect(SuSEFirewall4Network.EnabledSsh1stStage).to be false
         end
       end
 
@@ -58,8 +58,8 @@ module Yast
 
         it "proposes disabled firewall and proposes ssh port according to control file" do
           SuSEFirewall4Network.prepare_proposal
-          expect(SuSEFirewall4Network.Enabled1stStage).to be_false
-          expect(SuSEFirewall4Network.EnabledSsh1stStage).to be_false
+          expect(SuSEFirewall4Network.Enabled1stStage).to be false
+          expect(SuSEFirewall4Network.EnabledSsh1stStage).to be false
         end
       end
     end
