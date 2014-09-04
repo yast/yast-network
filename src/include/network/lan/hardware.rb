@@ -377,7 +377,6 @@ module Yast
       )
 
       _UdevWidget =
-        # TODO: Ud ... Rules
         Frame(
           _("Udev Rules"),
           HBox(
@@ -395,7 +394,7 @@ module Yast
       _BlinkCard = Frame(
         _("Show Visible Port Identification"),
         HBox(
-          #translators: how many seconds will card be blinking
+          # translators: how many seconds will card be blinking
           IntField(
             Id(:blink_time),
             "%s:" % _("Seconds"),
@@ -812,7 +811,7 @@ module Yast
           LanItems.type,
           Convert.to_string(UI.QueryWidget(Id(:num), :Value))
         )
-        #Remember current device number (#308763)
+        # Remember current device number (#308763)
         # see also bnc#391802
         LanItems.device = IsNotEmpty(LanItems.device) ?
           Convert.to_string(UI.QueryWidget(Id(:num), :Value)) :
@@ -832,9 +831,9 @@ module Yast
 
         NetworkInterfaces.Name = nm
         Ops.set(LanItems.Items, [LanItems.current, "ifcfg"], nm)
-        #Initialize udev map, so that setDriver (see below) sets correct module
+        # Initialize udev map, so that setDriver (see below) sets correct module
         Ops.set(LanItems.Items, [LanItems.current, "udev"], {})
-        #FIXME: for interfaces with no hwinfo don't propose ifplugd
+        # FIXME: for interfaces with no hwinfo don't propose ifplugd
         if Builtins.size(Ops.get_map(LanItems.getCurrentItem, "hwinfo", {})) == 0
           Builtins.y2milestone(
             "interface without hwinfo, proposing STARTMODE=auto"
