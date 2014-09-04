@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Sep  4 11:03:29 CEST 2014 - locilka@suse.com
+
+- Fixed firewall proposal to survive missing SuSEfirewall2 services
+  files for openssh or VNC - if files are missing, services are not
+  handled by the proposal (bnc#894419)
+- 3.1.93
+
+-------------------------------------------------------------------
 Wed Sep  3 09:01:40 UTC 2014 - mvidner@suse.com
 
 - Test speed-up.

@@ -151,15 +151,6 @@ module Yast
     def FirewallDialogSimple
       title = _("Basic Firewall and SSH Configuration")
 
-      vnc_support = Left(
-        CheckBox(
-          Id(ID::VNC_PORT),
-          # TRANSLATORS: check-box label
-          _("Open &VNC Ports"),
-          SuSEFirewall4Network.EnabledVnc1stStage
-        )
-      )
-
       contents = VBox(
         Frame(
           # frame label
@@ -178,14 +169,7 @@ module Yast
                     SuSEFirewall4Network.Enabled1stStage
                   )
                 ),
-                Left(
-                  CheckBox(
-                    Id(ID::SSH_PORT),
-                    # TRANSLATORS: check-box label
-                    _("Open SSH Port"),
-                    SuSEFirewall4Network.EnabledSsh1stStage
-                  )
-                ),
+
                 Left(
                   CheckBox(
                     Id(ID::ENABLE_SSHD),
@@ -195,7 +179,9 @@ module Yast
                   )
                 ),
 
-                Linuxrc.vnc ? vnc_support : Empty()
+                sshd_port_ui,
+
+                vnc_ports_ui
               )
             )
           )
@@ -306,33 +292,75 @@ module Yast
             "SSH service will be disabled (<a href=\"%s\">enable</a>)"
           ) % LINK_ENABLE_SSHD
 
-      vnc_fw_proposal = nil
-      ssh_fw_proposal = nil
-      # It only makes sense to show the blocked ports if firewall is
-      # enabled (bnc#886554)
-      if SuSEFirewall4Network.Enabled1stStage
-        # Display vnc port only if installing over VNC
-        if Linuxrc.vnc
-          vnc_fw_proposal = SuSEFirewall4Network.EnabledVnc1stStage ?
-            _("VNC ports will be open (<a href=\"%s\">close</a>)") %
-              LINK_DISABLE_VNC
-            : _("VNC ports will be blocked (<a href=\"%s\">open</a>)") %
-              LINK_ENABLE_VNC
-        end
-
-        ssh_fw_proposal = SuSEFirewall4Network.EnabledSsh1stStage ?
-            _(
-              "SSH port will be open (<a href=\"%s\">block</a>)"
-            ) % LINK_BLOCK_SSH_PORT
-          :
-            _(
-              "SSH port will be blocked (<a href=\"%s\">open</a>)"
-            ) % LINK_OPEN_SSH_PORT
-      end
-
       # Filter proposals with content and sort them
       proposals = [firewall_proposal, ssh_fw_proposal, sshd_proposal, vnc_fw_proposal].compact
       "<ul>\n" + proposals.map {|prop| "<li>#{prop}</li>\n" }.join + "</ul>\n"
+    end
+
+    def sshd_port_ui
+      return Empty() unless known_firewall_services?(SuSEFirewall4NetworkClass::SSH_SERVICES)
+
+      Left(
+        CheckBox(
+          Id(ID::SSH_PORT),
+          # TRANSLATORS: check-box label
+          _("Open SSH Port"),
+          SuSEFirewall4Network.EnabledSsh1stStage
+        )
+      )
+    end
+
+    def vnc_ports_ui
+      return Empty() unless Linuxrc.vnc
+      return Empty() unless known_firewall_services?(SuSEFirewall4NetworkClass::VNC_SERVICES)
+
+      Left(
+        CheckBox(
+          Id(ID::VNC_PORT),
+          # TRANSLATORS: check-box label
+          _("Open &VNC Ports"),
+          SuSEFirewall4Network.EnabledVnc1stStage
+        )
+      )
+    end
+
+    # Returns the VNC-port part of the firewall proposal description
+    # Returns nil if this part should be skipped
+    # @return [String] proposal html text
+    def vnc_fw_proposal
+      # It only makes sense to show the blocked ports if firewall is
+      # enabled (bnc#886554)
+      return nil unless SuSEFirewall4Network.Enabled1stStage
+      return nil unless known_firewall_services?(SuSEFirewall4NetworkClass::VNC_SERVICES)
+      # Show VNC port only if installing over VNC
+      return nil unless Linuxrc.vnc
+
+      SuSEFirewall4Network.EnabledVnc1stStage ?
+        _("VNC ports will be open (<a href=\"%s\">close</a>)") % LINK_DISABLE_VNC
+        :
+        _("VNC ports will be blocked (<a href=\"%s\">open</a>)") % LINK_ENABLE_VNC
+    end
+
+    # Returns the SSH-port part of the firewall proposal description
+    # Returns nil if this part should be skipped
+    # @return [String] proposal html text
+    def ssh_fw_proposal
+      return nil unless SuSEFirewall4Network.Enabled1stStage
+      return nil unless known_firewall_services?(SuSEFirewall4NetworkClass::SSH_SERVICES)
+
+      SuSEFirewall4Network.EnabledSsh1stStage ?
+        _("SSH port will be open (<a href=\"%s\">block</a>)") % LINK_BLOCK_SSH_PORT
+        :
+        _("SSH port will be blocked (<a href=\"%s\">open</a>)") % LINK_OPEN_SSH_PORT
+    end
+
+    # Returns true if all services are known to firewall
+    # @param [Array <String>] services
+    # @return [Boolean] if all are known
+    def known_firewall_services?(services)
+      @all_known_services ||= SuSEFirewallServices.all_services.keys
+
+      (services - @all_known_services).empty?
     end
 
     # Reads and adjust the configuration for SuSEfirewall2 according to the current proposal.
@@ -375,17 +403,25 @@ module Yast
       # Open or close FW ports depending on user decision
       # This can raise an exception if requested service-files are not part of the current system
       # For that reason, these files have to be part of the inst-sys
-      SuSEFirewall.SetServicesForZones(
-        SuSEFirewall4NetworkClass::SSH_SERVICES,
-        SuSEFirewall.GetKnownFirewallZones,
-        open_ssh_port
-      )
+      if known_firewall_services?(SuSEFirewall4NetworkClass::SSH_SERVICES)
+        SuSEFirewall.SetServicesForZones(
+          SuSEFirewall4NetworkClass::SSH_SERVICES,
+          SuSEFirewall.GetKnownFirewallZones,
+          open_ssh_port
+        )
+      else
+        log.warn "Services #{SuSEFirewall4NetworkClass::SSH_SERVICES} are unknown"
+      end
 
-      SuSEFirewall.SetServicesForZones(
-        SuSEFirewall4NetworkClass::VNC_SERVICES,
-        SuSEFirewall.GetKnownFirewallZones,
-        open_vnc_port
-      )
+      if known_firewall_services?(SuSEFirewall4NetworkClass::VNC_SERVICES)
+        SuSEFirewall.SetServicesForZones(
+          SuSEFirewall4NetworkClass::VNC_SERVICES,
+          SuSEFirewall.GetKnownFirewallZones,
+          open_vnc_port
+        )
+      else
+        log.warn "Services #{SuSEFirewall4NetworkClass::VNC_SERVICES} are unknown"
+      end
 
       # Writing the configuration including adjusting services
       # is done in firewall_stage1_finish
