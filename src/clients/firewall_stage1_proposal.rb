@@ -358,9 +358,9 @@ module Yast
     # @param [Array <String>] services
     # @return [Boolean] if all are known
     def known_firewall_services?(services)
-      all_known_services = SuSEFirewallServices.all_services.keys
+      @all_known_services ||= SuSEFirewallServices.all_services.keys
 
-      services.all?{|service| all_known_services.include?(service)}
+      (services - @all_known_services).empty?
     end
 
     # Reads and adjust the configuration for SuSEfirewall2 according to the current proposal.
