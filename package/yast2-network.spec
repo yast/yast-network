@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.1.94
+Version:        3.1.95
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -48,7 +48,7 @@ BuildRequires:  yast2-storage >= 2.21.11
 Requires:       yast2-storage >= 2.21.11
 
 # testsuite
-BuildRequires:       rubygem-rspec
+BuildRequires:       rubygem(rspec)
 
 PreReq:         /bin/rm
 
