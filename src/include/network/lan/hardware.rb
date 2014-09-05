@@ -53,12 +53,14 @@ module Yast
 
       @widget_descr_hardware = {
         "HWDIALOG" => {
-          "widget"        => :custom,
-          "custom_widget" => ReplacePoint(Id(:hw_content), Empty()),
-          "init"          => fun_ref(method(:initHwDialog), "void (string)"),
-          "handle"        => fun_ref(method(:handleHW), "symbol (string, map)"),
-          "store"         => fun_ref(method(:storeHW), "void (string, map)"),
-          "help"          => initHelp
+          "widget"            => :custom,
+          "custom_widget"     => ReplacePoint(Id(:hw_content), Empty()),
+          "init"              => fun_ref(method(:initHwDialog), "void (string)"),
+          "handle"            => fun_ref(method(:handleHW), "symbol (string, map)"),
+          "store"             => fun_ref(method(:storeHW), "void (string, map)"),
+          "validate_type"     => :function,
+          "validate_function" => fun_ref(method(:validate_hw), "boolean (string, map)"),
+          "help"              => initHelp
         }
       }
     end
@@ -802,6 +804,28 @@ module Yast
       nil
     end
 
+    def validate_hw(key, event)
+      device_num = UI.QueryWidget(Id(:num), :Value)
+      nm = ""
+      nm = UI.QueryWidget(Id(:dev), :Value) << device_num
+
+      if UsedNicName(nm)
+        Popup.Error(
+          Builtins.sformat(
+            _(
+              "Configuration name %1 already exists.\nChoose a different one."
+            ),
+            nm
+          )
+        )
+        UI.SetFocus(Id(:num))
+
+        return false
+      end
+
+      return true
+    end
+
     def storeHW(key, event)
       if isNewDevice
         device_num = UI.QueryWidget(Id(:num), :Value)
@@ -812,18 +836,6 @@ module Yast
         # Remember current device number (#308763)
         # see also bnc#391802
         LanItems.device = !LanItems.device.empty? ? device_num : nm
-
-        if UsedNicName(nm)
-          Popup.Error(
-            Builtins.sformat(
-              _(
-                "Configuration name %1 already exists.\nChoose a different one."
-              ),
-              nm
-            )
-          )
-          UI.SetFocus(Id(:num))
-        end
 
         NetworkInterfaces.Name = nm
         Ops.set(LanItems.Items, [LanItems.current, "ifcfg"], nm)
