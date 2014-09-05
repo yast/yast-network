@@ -937,7 +937,7 @@ module Yast
       @Items.keys
     end
 
-    # Creates list of names of all known netcards
+    # Creates list of names of all known netcards configured even unconfigured
     def GetNetcardNames
       GetDeviceNames( GetNetcardInterfaces())
     end
