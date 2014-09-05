@@ -803,19 +803,15 @@ module Yast
     end
 
     def storeHW(key, event)
-      event = deep_copy(event)
       if isNewDevice
+        device_num = UI.QueryWidget(Id(:num), :Value)
         LanItems.type = Convert.to_string(UI.QueryWidget(Id(:dev), :Value))
-        nm = Builtins.sformat(
-          "%1%2",
-          LanItems.type,
-          Convert.to_string(UI.QueryWidget(Id(:num), :Value))
-        )
+        nm = ""
+        nm << LanItems.type << device_num
+
         # Remember current device number (#308763)
         # see also bnc#391802
-        LanItems.device = IsNotEmpty(LanItems.device) ?
-          Convert.to_string(UI.QueryWidget(Id(:num), :Value)) :
-          nm
+        LanItems.device = !LanItems.device.empty? ? device_num : nm
 
         if UsedNicName(nm)
           Popup.Error(
