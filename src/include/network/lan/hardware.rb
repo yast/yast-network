@@ -804,10 +804,24 @@ module Yast
       nil
     end
 
-    def validate_hw(key, event)
+    def devname_from_hw_dialog
       device_num = UI.QueryWidget(Id(:num), :Value)
-      nm = ""
-      nm = UI.QueryWidget(Id(:dev), :Value) << device_num
+
+      # hw dialog is badly designed. :num sometimes contains device number
+      # (0 from eth0 - e.g. when adding new configuration) and sometimes whole
+      # device name (hardware tab when editing device)
+      # see also bnc#391802
+      device_type = UI.QueryWidget(Id(:dev), :Value)
+
+      if device_type.nil? || (device_num =~ /^#{device_type}/)
+        device_num
+      else
+        device_type + device_num
+      end
+    end
+
+    def validate_hw(key, event)
+      nm = devname_from_hw_dialog
 
       if UsedNicName(nm)
         Popup.Error(
@@ -828,14 +842,11 @@ module Yast
 
     def storeHW(key, event)
       if isNewDevice
-        device_num = UI.QueryWidget(Id(:num), :Value)
+        nm = devname_from_hw_dialog
         LanItems.type = Convert.to_string(UI.QueryWidget(Id(:dev), :Value))
-        nm = ""
-        nm << LanItems.type << device_num
 
         # Remember current device number (#308763)
-        # see also bnc#391802
-        LanItems.device = !LanItems.device.empty? ? device_num : nm
+        LanItems.device = nm
 
         NetworkInterfaces.Name = nm
         Ops.set(LanItems.Items, [LanItems.current, "ifcfg"], nm)
