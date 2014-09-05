@@ -817,7 +817,7 @@ module Yast
           Convert.to_string(UI.QueryWidget(Id(:num), :Value)) :
           nm
 
-        if Builtins.contains(NetworkInterfaces.List(""), nm)
+        if UsedNicName(nm)
           Popup.Error(
             Builtins.sformat(
               _(
