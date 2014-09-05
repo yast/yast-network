@@ -33,7 +33,10 @@ module Yast
 
       # create the dialog
       @edit_name_dlg = EditNicName.new
-      @edit_name_dlg.stub( :UsedNicName) { false }
+
+      allow(LanItems)
+        .to receive(:GetNetcardNames)
+        .and_return([CURRENT_NAME])
     end
 
     context 'when closed without any change' do
