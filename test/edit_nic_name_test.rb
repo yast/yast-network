@@ -11,6 +11,7 @@ module Yast
 
   CURRENT_NAME = "spec0"
   NEW_NAME = "new1"
+  EXISTING_NEW_NAME = "existing_new_name"
 
   describe '#run' do
 
@@ -77,6 +78,33 @@ module Yast
         UI.stub( :UserInput) { :cancel }
 
         expect( @edit_name_dlg.run).to be_equal CURRENT_NAME
+      end
+
+      it 'asks for new user input when name already exists' do
+        allow(UI)
+          .to receive(:QueryWidget)
+          .with(:dev_name, :Value)
+          .and_return(EXISTING_NEW_NAME, NEW_NAME)
+        allow(UI)
+          .to receive(:UserInput)
+          .and_return(:ok)
+
+        expect(@edit_name_dlg)
+          .to receive(:CheckUdevNicName)
+          .with(EXISTING_NEW_NAME)
+          .and_return(false)
+        expect(@edit_name_dlg)
+          .to receive(:CheckUdevNicName)
+          .with(NEW_NAME)
+          .and_return(true)
+
+        expect(UI)
+          .to receive(:SetFocus)
+        expect(LanItems)
+          .to receive(:rename)
+          .with(NEW_NAME)
+
+        expect(@edit_name_dlg.run).to eql NEW_NAME
       end
     end
   end
