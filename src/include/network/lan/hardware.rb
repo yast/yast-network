@@ -805,19 +805,7 @@ module Yast
     end
 
     def devname_from_hw_dialog
-      device_num = UI.QueryWidget(Id(:num), :Value)
-
-      # hw dialog is badly designed. :num sometimes contains device number
-      # (0 from eth0 - e.g. when adding new configuration) and sometimes whole
-      # device name (hardware tab when editing device)
-      # see also bnc#391802
-      device_type = UI.QueryWidget(Id(:dev), :Value)
-
-      if device_type.nil? || (device_num =~ /^#{device_type}/)
-        device_num
-      else
-        device_type + device_num
-      end
+      UI.QueryWidget(Id(:num), :Value)
     end
 
     def validate_hw(key, event)
@@ -843,10 +831,7 @@ module Yast
     def storeHW(key, event)
       if isNewDevice
         nm = devname_from_hw_dialog
-        LanItems.type = Convert.to_string(UI.QueryWidget(Id(:dev), :Value))
-
-        # Remember current device number (#308763)
-        LanItems.device = nm
+        LanItems.type = UI.QueryWidget(Id(:dev), :Value)
 
         NetworkInterfaces.Name = nm
         Ops.set(LanItems.Items, [LanItems.current, "ifcfg"], nm)
