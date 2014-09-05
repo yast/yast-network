@@ -350,7 +350,7 @@ module Yast
         Id(:rnum),
         # TextEntry label
         ComboBox(
-          Id(:num),
+          Id(:ifcfg_name),
           Opt(:editable, :hstretch),
           _("&Configuration Name"),
           [@hardware["device"] || ""]
@@ -363,7 +363,7 @@ module Yast
         HBox(
           HSpacing(0.5),
           ComboBox(
-            Id(:dev),
+            Id(:type),
             Opt(:hstretch, :notify),
             # ComboBox label
             _("&Device Type"),
@@ -467,9 +467,9 @@ module Yast
       ChangeWidgetIfExists(Id(:device_name), :Enabled, false)
       ChangeWidgetIfExists(Id(:device_name), :Value, device_name)
 
-      ChangeWidgetIfExists(Id(:dev), :Enabled, false) if !isNewDevice
+      ChangeWidgetIfExists(Id(:type), :Enabled, false) if !isNewDevice
       ChangeWidgetIfExists(
-        Id(:num),
+        Id(:ifcfg_name),
         :ValidChars,
         NetworkInterfaces.ValidCharsIfcfg
       )
@@ -597,7 +597,7 @@ module Yast
         ret = Ops.get_symbol(event, "WidgetID")
       end
       SelectionDialog() if ret == :list
-      if ret == :pcmcia || ret == :usb || ret == :dev
+      if ret == :pcmcia || ret == :usb || ret == :type
         if UI.WidgetExists(Id(:pcmcia)) || UI.WidgetExists(Id(:usb))
           if UI.QueryWidget(Id(:pcmcia), :Value) == true
             Ops.set(@hardware, "hotplug", "pcmcia")
@@ -609,11 +609,11 @@ module Yast
         end
         Builtins.y2debug("hotplug=%1", Ops.get_string(@hardware, "hotplug", ""))
 
-        if UI.WidgetExists(Id(:dev))
+        if UI.WidgetExists(Id(:type))
           Ops.set(
             @hardware,
             "type",
-            Convert.to_string(UI.QueryWidget(Id(:dev), :Value))
+            Convert.to_string(UI.QueryWidget(Id(:type), :Value))
           )
           Ops.set(
             @hardware,
@@ -624,7 +624,7 @@ module Yast
             )
           )
           UI.ChangeWidget(
-            Id(:num),
+            Id(:ifcfg_name),
             :Items,
             LanItems.FreeDevices(Ops.get_string(@hardware, "realtype", ""))
           )
@@ -688,7 +688,7 @@ module Yast
         Ops.set(
           @hardware,
           "device",
-          Convert.to_string(UI.QueryWidget(Id(:num), :Value))
+          Convert.to_string(UI.QueryWidget(Id(:ifcfg_name), :Value))
         )
         if Ops.get_string(@hardware, "device", "") != "bus-usb" &&
             Ops.get_string(@hardware, "device", "") != "bus-pcmcia"
@@ -712,7 +712,7 @@ module Yast
         end
 
         UI.ChangeWidget(
-          Id(:num),
+          Id(:ifcfg_name),
           :Value,
           Ops.get_string(@hardware, "device", "")
         )
@@ -805,7 +805,7 @@ module Yast
     end
 
     def devname_from_hw_dialog
-      UI.QueryWidget(Id(:num), :Value)
+      UI.QueryWidget(Id(:ifcfg_name), :Value)
     end
 
     def validate_hw(key, event)
@@ -820,7 +820,7 @@ module Yast
             nm
           )
         )
-        UI.SetFocus(Id(:num))
+        UI.SetFocus(Id(:ifcfg_name))
 
         return false
       end
@@ -831,7 +831,7 @@ module Yast
     def storeHW(key, event)
       if isNewDevice
         nm = devname_from_hw_dialog
-        LanItems.type = UI.QueryWidget(Id(:dev), :Value)
+        LanItems.type = UI.QueryWidget(Id(:type), :Value)
 
         NetworkInterfaces.Name = nm
         Ops.set(LanItems.Items, [LanItems.current, "ifcfg"], nm)
@@ -845,7 +845,7 @@ module Yast
           LanItems.startmode = "auto"
         end
         if LanItems.type == "vlan"
-          LanItems.vlan_id = Convert.to_string(UI.QueryWidget(Id(:num), :Value))
+          LanItems.vlan_id = Convert.to_string(UI.QueryWidget(Id(:ifcfg_name), :Value))
         end
       end
 
