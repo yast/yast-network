@@ -626,7 +626,9 @@ module Yast
           UI.ChangeWidget(
             Id(:ifcfg_name),
             :Items,
-            LanItems.FreeDevices(Ops.get_string(@hardware, "realtype", ""))
+            LanItems.FreeDevices(@hardware["realtype"]).map do |index|
+              @hardware["realtype"] + index
+            end
           )
         end
         Builtins.y2debug("type=%1", Ops.get_string(@hardware, "type", ""))
@@ -845,7 +847,8 @@ module Yast
           LanItems.startmode = "auto"
         end
         if LanItems.type == "vlan"
-          LanItems.vlan_id = Convert.to_string(UI.QueryWidget(Id(:ifcfg_name), :Value))
+          # for vlan devices named vlanN pre-set vlan_id to N, otherwise default to 0
+          LanItems.vlan_id = "#{nm["vlan".size].to_i}"
         end
       end
 
