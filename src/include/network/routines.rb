@@ -510,7 +510,7 @@ module Yast
       true
     end
 
-    # Checks if given nic name is used already.
+    # Checks if device with the given name is configured already.
     def UsedNicName(name)
       Builtins.contains(NetworkInterfaces.List(""), name)
     end

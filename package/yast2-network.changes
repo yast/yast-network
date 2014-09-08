@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Fri Sep  5 09:48:22 UTC 2014 - mfilka@suse.com
+
+- bnc#894053
+  - it is not possible to rename a device to a name same as an
+    unconfigured device's one
+- bnc#895273
+  - when adding new device, whole name is shown instead of only
+    number.
+  - it is possible to fill in a name which conforms to a new device
+    naming scheme
+- 3.1.94
+
+-------------------------------------------------------------------
 Thu Sep  4 11:03:29 CEST 2014 - locilka@suse.com
 
 - Fixed firewall proposal to survive missing SuSEfirewall2 services

@@ -937,7 +937,7 @@ module Yast
       @Items.keys
     end
 
-    # Creates list of names of all known netcards
+    # Creates list of names of all known netcards configured even unconfigured
     def GetNetcardNames
       GetDeviceNames( GetNetcardInterfaces())
     end
@@ -1879,7 +1879,7 @@ module Yast
 
       # FIXME: encapsulate into LanItems.GetItemType ?
       @type = Ops.get_string(@Items, [@current, "hwinfo", "type"], "eth")
-      @device = NetworkInterfaces.GetFreeDevice(@type)
+      @device = @type + NetworkInterfaces.GetFreeDevice(@type)
 
       # TODO: instead of udev use hwinfo dev_name
       NetworkInterfaces.Name = GetItemUdev("NAME")

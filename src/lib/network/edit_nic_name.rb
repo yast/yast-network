@@ -149,7 +149,7 @@ module Yast
     # @return [boolean] false if name is invalid
     def CheckUdevNicName(name)
       # check if the name is assigned to another device already
-      if UsedNicName(name) && name != LanItems.GetCurrentName
+      if LanItems.GetNetcardNames.include?(name) && name != LanItems.GetCurrentName
         Popup.Error(_("Configuration name already exists."))
         return false
       end

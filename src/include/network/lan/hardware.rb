@@ -53,12 +53,14 @@ module Yast
 
       @widget_descr_hardware = {
         "HWDIALOG" => {
-          "widget"        => :custom,
-          "custom_widget" => ReplacePoint(Id(:hw_content), Empty()),
-          "init"          => fun_ref(method(:initHwDialog), "void (string)"),
-          "handle"        => fun_ref(method(:handleHW), "symbol (string, map)"),
-          "store"         => fun_ref(method(:storeHW), "void (string, map)"),
-          "help"          => initHelp
+          "widget"            => :custom,
+          "custom_widget"     => ReplacePoint(Id(:hw_content), Empty()),
+          "init"              => fun_ref(method(:initHwDialog), "void (string)"),
+          "handle"            => fun_ref(method(:handleHW), "symbol (string, map)"),
+          "store"             => fun_ref(method(:storeHW), "void (string, map)"),
+          "validate_type"     => :function,
+          "validate_function" => fun_ref(method(:validate_hw), "boolean (string, map)"),
+          "help"              => initHelp
         }
       }
     end
@@ -348,7 +350,7 @@ module Yast
         Id(:rnum),
         # TextEntry label
         ComboBox(
-          Id(:num),
+          Id(:ifcfg_name),
           Opt(:editable, :hstretch),
           _("&Configuration Name"),
           [@hardware["device"] || ""]
@@ -361,7 +363,7 @@ module Yast
         HBox(
           HSpacing(0.5),
           ComboBox(
-            Id(:dev),
+            Id(:type),
             Opt(:hstretch, :notify),
             # ComboBox label
             _("&Device Type"),
@@ -377,7 +379,6 @@ module Yast
       )
 
       _UdevWidget =
-        # TODO: Ud ... Rules
         Frame(
           _("Udev Rules"),
           HBox(
@@ -395,7 +396,7 @@ module Yast
       _BlinkCard = Frame(
         _("Show Visible Port Identification"),
         HBox(
-          #translators: how many seconds will card be blinking
+          # translators: how many seconds will card be blinking
           IntField(
             Id(:blink_time),
             "%s:" % _("Seconds"),
@@ -466,9 +467,9 @@ module Yast
       ChangeWidgetIfExists(Id(:device_name), :Enabled, false)
       ChangeWidgetIfExists(Id(:device_name), :Value, device_name)
 
-      ChangeWidgetIfExists(Id(:dev), :Enabled, false) if !isNewDevice
+      ChangeWidgetIfExists(Id(:type), :Enabled, false) if !isNewDevice
       ChangeWidgetIfExists(
-        Id(:num),
+        Id(:ifcfg_name),
         :ValidChars,
         NetworkInterfaces.ValidCharsIfcfg
       )
@@ -596,7 +597,7 @@ module Yast
         ret = Ops.get_symbol(event, "WidgetID")
       end
       SelectionDialog() if ret == :list
-      if ret == :pcmcia || ret == :usb || ret == :dev
+      if ret == :pcmcia || ret == :usb || ret == :type
         if UI.WidgetExists(Id(:pcmcia)) || UI.WidgetExists(Id(:usb))
           if UI.QueryWidget(Id(:pcmcia), :Value) == true
             Ops.set(@hardware, "hotplug", "pcmcia")
@@ -608,11 +609,11 @@ module Yast
         end
         Builtins.y2debug("hotplug=%1", Ops.get_string(@hardware, "hotplug", ""))
 
-        if UI.WidgetExists(Id(:dev))
+        if UI.WidgetExists(Id(:type))
           Ops.set(
             @hardware,
             "type",
-            Convert.to_string(UI.QueryWidget(Id(:dev), :Value))
+            Convert.to_string(UI.QueryWidget(Id(:type), :Value))
           )
           Ops.set(
             @hardware,
@@ -623,9 +624,11 @@ module Yast
             )
           )
           UI.ChangeWidget(
-            Id(:num),
+            Id(:ifcfg_name),
             :Items,
-            LanItems.FreeDevices(Ops.get_string(@hardware, "realtype", ""))
+            LanItems.FreeDevices(@hardware["realtype"]).map do |index|
+              @hardware["realtype"] + index
+            end
           )
         end
         Builtins.y2debug("type=%1", Ops.get_string(@hardware, "type", ""))
@@ -687,7 +690,7 @@ module Yast
         Ops.set(
           @hardware,
           "device",
-          Convert.to_string(UI.QueryWidget(Id(:num), :Value))
+          Convert.to_string(UI.QueryWidget(Id(:ifcfg_name), :Value))
         )
         if Ops.get_string(@hardware, "device", "") != "bus-usb" &&
             Ops.get_string(@hardware, "device", "") != "bus-pcmcia"
@@ -711,7 +714,7 @@ module Yast
         end
 
         UI.ChangeWidget(
-          Id(:num),
+          Id(:ifcfg_name),
           :Value,
           Ops.get_string(@hardware, "device", "")
         )
@@ -803,38 +806,40 @@ module Yast
       nil
     end
 
-    def storeHW(key, event)
-      event = deep_copy(event)
-      if isNewDevice
-        LanItems.type = Convert.to_string(UI.QueryWidget(Id(:dev), :Value))
-        nm = Builtins.sformat(
-          "%1%2",
-          LanItems.type,
-          Convert.to_string(UI.QueryWidget(Id(:num), :Value))
-        )
-        #Remember current device number (#308763)
-        # see also bnc#391802
-        LanItems.device = IsNotEmpty(LanItems.device) ?
-          Convert.to_string(UI.QueryWidget(Id(:num), :Value)) :
-          nm
+    def devname_from_hw_dialog
+      UI.QueryWidget(Id(:ifcfg_name), :Value)
+    end
 
-        if Builtins.contains(NetworkInterfaces.List(""), nm)
-          Popup.Error(
-            Builtins.sformat(
-              _(
-                "Configuration name %1 already exists.\nChoose a different one."
-              ),
-              nm
-            )
+    def validate_hw(key, event)
+      nm = devname_from_hw_dialog
+
+      if UsedNicName(nm)
+        Popup.Error(
+          Builtins.sformat(
+            _(
+              "Configuration name %1 already exists.\nChoose a different one."
+            ),
+            nm
           )
-          UI.SetFocus(Id(:num))
-        end
+        )
+        UI.SetFocus(Id(:ifcfg_name))
+
+        return false
+      end
+
+      return true
+    end
+
+    def storeHW(key, event)
+      if isNewDevice
+        nm = devname_from_hw_dialog
+        LanItems.type = UI.QueryWidget(Id(:type), :Value)
 
         NetworkInterfaces.Name = nm
         Ops.set(LanItems.Items, [LanItems.current, "ifcfg"], nm)
-        #Initialize udev map, so that setDriver (see below) sets correct module
+        # Initialize udev map, so that setDriver (see below) sets correct module
         Ops.set(LanItems.Items, [LanItems.current, "udev"], {})
-        #FIXME: for interfaces with no hwinfo don't propose ifplugd
+        # FIXME: for interfaces with no hwinfo don't propose ifplugd
         if Builtins.size(Ops.get_map(LanItems.getCurrentItem, "hwinfo", {})) == 0
           Builtins.y2milestone(
             "interface without hwinfo, proposing STARTMODE=auto"
@@ -842,7 +847,8 @@ module Yast
           LanItems.startmode = "auto"
         end
         if LanItems.type == "vlan"
-          LanItems.vlan_id = Convert.to_string(UI.QueryWidget(Id(:num), :Value))
+          # for vlan devices named vlanN pre-set vlan_id to N, otherwise default to 0
+          LanItems.vlan_id = "#{nm["vlan".size].to_i}"
         end
       end
 
