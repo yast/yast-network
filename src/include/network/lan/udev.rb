@@ -21,6 +21,23 @@ module Yast
       deep_copy(default_rule)
     end
 
+    def update_udev_rule_key(rule, key, value)
+      return rule if rule.nil? || rule.empty?
+
+      raise ArgumentError if key.nil?
+      raise ArgumentError if value.nil?
+
+      i = rule.find_index { |k| k =~ /^#{key}/ }
+
+      if i
+        rule[i] = rule[i].gsub(/#{key}={1,2}"([^"]*)"/) do |m|
+          m.gsub($1, value)
+        end
+      end
+
+      rule
+    end
+
     # Removes (key,operator,value) tripplet from given udev rule.
     def RemoveKeyFromUdevRule(rule, key)
       rule = deep_copy(rule)
