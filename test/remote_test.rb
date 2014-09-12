@@ -9,6 +9,7 @@ module Yast
   import "Remote"
   import "Linuxrc"
   import "Package"
+  import "Packages"
 
   RSpec.configure do |c|
     c.include SCRStub
@@ -48,21 +49,19 @@ module Yast
 
       context "with VNC enabled" do
         before do
-          # This one will disappear soon (after removing the logic from here and
-          # calling Packages.vnc_packages)
-          allow(Package).to receive(:Installed).with("windowmanager").and_return true
-
           Remote.Enable
         end
 
-        it "installs relevant packages" do
+        it "installs packages provided by Packages.vnc_packages" do
           allow(Service).to receive(:Enable).and_return true
 
-          expect(Package).to receive(:InstallAll).with(["xinetd", "xorg-x11", "xorg-x11-Xvnc"]).and_return true
+          expect(Packages).to receive(:vnc_packages).and_return %w(some names)
+          expect(Package).to receive(:InstallAll).with(%w(some names)).and_return true
           expect(Remote.configure_display_manager).to eql(true)
         end
 
         it "enables the services" do
+          allow(Packages).to receive(:vnc_packages)
           allow(Package).to receive(:InstallAll).and_return true
 
           expect(Service).to receive(:Enable).with("display-manager").and_return true
@@ -71,6 +70,7 @@ module Yast
         end
 
         it "writes the VNC configuration" do
+          allow(Packages).to receive(:vnc_packages)
           allow(Service).to receive(:Enable).twice.and_return true
           allow(Package).to receive(:InstallAll).and_return true
 

@@ -46,6 +46,7 @@ module Yast
       Yast.import "Label"
       Yast.import "Mode"
       Yast.import "Package"
+      Yast.import "Packages"
       Yast.import "Service"
       Yast.import "SuSEFirewall"
       Yast.import "Progress"
@@ -328,14 +329,7 @@ module Yast
 
       if @allow_administration
         # Install required packages
-        packages = ["xinetd", "xorg-x11", PKG_CONTAINING_FW_SERVICES]
-
-        #At least one windowmanager must be installed (#427044)
-        #If none is, there, use icewm as fallback
-        #Package::Installed uses rpm -q --whatprovides
-        packages << "icewm" unless Package.Installed("windowmanager")
-
-        if !Package.InstallAll(packages)
+        if !Package.InstallAll(Packages.vnc_packages)
           log.error "Installing of required packages failed"
           return false
         end
