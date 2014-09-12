@@ -533,10 +533,6 @@ module Yast
       deep_copy(new_rules)
     end
 
-    def SetItemUdev(rule_key, rule_val)
-      ReplaceItemUdev(rule_key, rule_key, rule_val)
-    end
-
     # Updates device name.
     #
     # It updates device's udev rules and config name.
@@ -2663,7 +2659,6 @@ module Yast
     publish :function => :GetItemUdevRule, :type => "list <string> (integer)"
     publish :function => :GetItemUdev, :type => "string (string)"
     publish :function => :ReplaceItemUdev, :type => "list <string> (string, string, string)"
-    publish :function => :SetItemUdev, :type => "list <string> (string, string)"
     publish :function => :WriteUdevRules, :type => "void ()"
     publish :function => :GetModified, :type => "boolean ()"
     publish :function => :SetModified, :type => "void ()"
