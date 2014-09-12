@@ -76,6 +76,8 @@ module Yast
             end
 
             # update udev rules and other config
+            # FIXME: it changes udev key used for device identification
+            #  and / or its value only, name is changed elsewhere
             LanItems.ReplaceItemUdev(@old_key, rule_key, rule_value)
         end
       end
