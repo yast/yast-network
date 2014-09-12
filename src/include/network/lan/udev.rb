@@ -13,12 +13,10 @@ module Yast
         "SUBSYSTEM==\"net\"",
         "ACTION==\"add\"",
         "DRIVERS==\"?*\"",
-        Builtins.sformat("ATTR{address}==\"%1\"", dev_mac),
+        "ATTR{address}==\"#{dev_mac}\"",
         "ATTR{type}==\"1\"",
-        Builtins.sformat("NAME=\"%1\"", dev_name)
+        "NAME=\"#{dev_name}\""
       ]
-
-      deep_copy(default_rule)
     end
 
     def update_udev_rule_key(rule, key, value)
