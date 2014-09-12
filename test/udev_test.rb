@@ -20,18 +20,42 @@ class NetworkLanComplexUdev
 end
 
 describe "NetworkLanUdevInclude::update_udev_rule_key" do
-  it "updates specified udev rule's key to the new value" do
-    default_rule = NetworkLanComplexUdev.GetDefaultUdevRule(
-      "default1", "00:11:22:33:44:55"
+  before(:each) do
+    @default_rule = NetworkLanComplexUdev.GetDefaultUdevRule(
+      "default1",
+      "00:11:22:33:44:55"
     )
+  end
+
+  it "updates specified udev rule's key to the new value" do
+    # check if it works with assignment (=) operator
     new_name = "renamed2"
 
     updated_rule = NetworkLanComplexUdev.update_udev_rule_key(
-      default_rule,
+      @default_rule,
       "NAME",
       new_name
     )
     expect(updated_rule.any? { |i| i =~ /NAME.*#{new_name}/ })
       .to be true
+
+    # check if it works with comparison (==) operator
+    new_subsystem = "hdd"
+
+    updated_rule = NetworkLanComplexUdev.update_udev_rule_key(
+      @default_rule,
+      "SUBSYSTEM",
+      new_subsystem
+    )
+    expect(updated_rule.any? { |i| i =~ /SUBSYSTEM.*#{new_subsystem}/ })
+      .to be true
+  end
+
+  it "returns unchanged rule when key is not found" do
+    expect(NetworkLanComplexUdev.update_udev_rule_key(
+      @default_rule,
+      "NONEXISTENT_UDEV_KEY",
+      "value"
+    )).to eql @default_rule
   end
 end
