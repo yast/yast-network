@@ -32,7 +32,8 @@ module Yast
   # 2. Provides direct access to individual items of ifcfg files.
   # For example BOOTPROTO and STARTMODE are accessible in
   # {#bootproto} and {#startmode} (set via {#SetDeviceVars}
-  # via {#Select} or {#SetItem}).
+  # via {#Select} or {#SetItem}). The reverse direction (putting
+  # the individual values back to an item) is {#Commit}.
   #
   # 3. ...
   #
@@ -1668,7 +1669,12 @@ module Yast
       @prefix = GetDeviceVar(devmap, defaults, "PREFIXLEN")
       @remoteip = GetDeviceVar(devmap, defaults, "REMOTE_IPADDR")
       @netmask = GetDeviceVar(devmap, defaults, "NETMASK")
-      @set_default_route = GetDeviceVar(devmap, defaults, "DHCLIENT_SET_DEFAULT_ROUTE") == "yes"
+      @set_default_route = GetDeviceVar(devmap, defaults, "DHCLIENT_SET_DEFAULT_ROUTE")
+      @set_default_route = case @set_default_route
+                           when "yes"; true
+                           when "no";  false
+                           when nil;   nil
+                           end
 
       @mtu = GetDeviceVar(devmap, defaults, "MTU")
       @ethtool_options = GetDeviceVar(devmap, defaults, "ETHTOOL_OPTIONS")
@@ -1915,8 +1921,10 @@ module Yast
 
     # Sets device map items related to dhclient
     def setup_dhclient_options(devmap)
-      devmap["DHCLIENT_SET_DEFAULT_ROUTE"] = @set_default_route ? "yes" : "no" if isCurrentDHCP
-
+      if isCurrentDHCP
+        tristate_to_s = { nil => nil, false => "no", true => "yes" }
+        devmap["DHCLIENT_SET_DEFAULT_ROUTE"] = tristate_to_s.fetch(@set_default_route)
+      end
       return devmap
     end
 
