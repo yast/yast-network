@@ -27,7 +27,7 @@ describe "NetworkLanUdevInclude::update_udev_rule_key" do
     )
   end
 
-  it "updates specified udev rule's key to the new value" do
+  it "updates existing assignment key to new value" do
     # check if it works with assignment (=) operator
     new_name = "renamed2"
 
@@ -36,9 +36,10 @@ describe "NetworkLanUdevInclude::update_udev_rule_key" do
       "NAME",
       new_name
     )
-    expect(updated_rule.any? { |i| i =~ /NAME.*#{new_name}/ })
-      .to be true
+    expect(updated_rule).to include "NAME=\"#{new_name}\""
+  end
 
+  it "updates existing comparison key to new value" do
     # check if it works with comparison (==) operator
     new_subsystem = "hdd"
 
@@ -47,8 +48,7 @@ describe "NetworkLanUdevInclude::update_udev_rule_key" do
       "SUBSYSTEM",
       new_subsystem
     )
-    expect(updated_rule.any? { |i| i =~ /SUBSYSTEM.*#{new_subsystem}/ })
-      .to be true
+    expect(updated_rule).to include "SUBSYSTEM==\"#{new_subsystem}\""
   end
 
   it "returns unchanged rule when key is not found" do
