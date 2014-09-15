@@ -542,7 +542,8 @@ module Yast
     # Returns new name
     def SetItemName( itemId, name)
       if name && !name.empty?
-        update_udev_rule_key(GetItemUdevRule(itemId), "NAME", name)
+        updated_rule = update_udev_rule_key(GetItemUdevRule(itemId), "NAME", name)
+        @Items[itemId]["udev"]["net"] = updated_rule
       else
         # rewrite rule for empty name is meaningless
         @Items[itemId].delete("udev")
