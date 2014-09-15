@@ -8,6 +8,12 @@
 # Functions for handling udev rules
 module Yast
   module NetworkLanUdevInclude
+
+    # Creates default udev rule for given NIC.
+    #
+    # Udev rule is based on device's MAC.
+    #
+    # @return [Array] an udev rule
     def GetDefaultUdevRule(dev_name, dev_mac)
       default_rule = [
         "SUBSYSTEM==\"net\"",
