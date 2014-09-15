@@ -25,6 +25,9 @@ module Yast
       ]
     end
 
+    # Updates existing key in a rule to new value.
+    # Modifies rule and returns it.
+    # If key is not found, rule is unchanged.
     def update_udev_rule_key(rule, key, value)
       return rule if rule.nil? || rule.empty?
 

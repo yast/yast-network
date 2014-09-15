@@ -28,7 +28,6 @@ describe "NetworkLanUdevInclude::update_udev_rule_key" do
   end
 
   it "updates existing assignment key to new value" do
-    # check if it works with assignment (=) operator
     new_name = "renamed2"
 
     updated_rule = NetworkLanComplexUdev.update_udev_rule_key(
@@ -40,7 +39,6 @@ describe "NetworkLanUdevInclude::update_udev_rule_key" do
   end
 
   it "updates existing comparison key to new value" do
-    # check if it works with comparison (==) operator
     new_subsystem = "hdd"
 
     updated_rule = NetworkLanComplexUdev.update_udev_rule_key(
