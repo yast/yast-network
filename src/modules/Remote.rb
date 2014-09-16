@@ -265,7 +265,7 @@ module Yast
         Ops.set(m, "changed", true)
         Ops.set(m, "enabled", @allow_administration)
         server_args = Ops.get_string(m, "server_args", "")
-        if @allow_administration
+        if IsEnabled()
           # use none authentication, xdm will take care of it
           Ops.set(m, "server_args", SetSecurityType(server_args, @SEC_NONE))
         else
@@ -330,7 +330,7 @@ module Yast
     # @return [Boolean] true if success, false otherwise
     def configure_display_manager
 
-      if @allow_administration
+      if IsEnabled()
         # Install required packages
         if !Package.InstallAll(Packages.vnc_packages)
           log.error "Installing of required packages failed"
@@ -357,11 +357,11 @@ module Yast
       # Set DISPLAYMANAGER_REMOTE_ACCESS in sysconfig/displaymanager
       SCR.Write(
         path(".sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS"),
-        @allow_administration ? "yes" : "no"
+        IsEnabled() ? "yes" : "no"
       )
       SCR.Write(
         path(".sysconfig.displaymanager.DISPLAYMANAGER_ROOT_LOGIN_REMOTE"),
-        @allow_administration ? "yes" : "no"
+        IsEnabled() ? "yes" : "no"
       )
       SCR.Write(path(".sysconfig.displaymanager"), nil)
 
@@ -376,7 +376,7 @@ module Yast
 
     # Restarts xinetd and xdm, reporting errors to the user
     def restart_service
-      if @allow_administration
+      if IsEnabled()
         SystemdTarget.set_default(GRAPHICAL_TARGET)
 
         Report.Error(Message.CannotRestartService(XINETD_SERVICE)) unless Service.Restart(XINETD_SERVICE)
@@ -405,7 +405,7 @@ module Yast
     # @return summary text
     def Summary
       # description in proposal
-      @allow_administration ? _("Remote administration is enabled.") : _("Remote administration is disabled.")
+      IsEnabled() ? _("Remote administration is enabled.") : _("Remote administration is disabled.")
     end
 
     publish :variable => :SEC_NONE, :type => "const string"
