@@ -216,10 +216,24 @@ module Yast
       end
 
       context "when remote adminitration is being disabled" do
-        it "reloads the xinetd service" do
+        before(:each) do
           Remote.Disable()
-          expect(Service).to receive(:Reload).with("xinetd").and_return(true)
-          Remote.restart_service
+        end
+
+        context "xinetd is active" do
+          it "reloads the xinetd service" do
+            expect(Service).to receive(:active?).with("xinetd").and_return(true)
+            expect(Service).to receive(:Reload).with("xinetd").and_return(true)
+            Remote.restart_service
+          end
+        end
+
+        context "xinetd is inactive" do
+          it "does nothing with services" do
+            expect(Service).to receive(:active?).with("xinetd").and_return(false)
+            expect(Service).not_to receive(:Reload)
+            Remote.restart_service
+          end
         end
       end
     end
