@@ -1673,7 +1673,8 @@ module Yast
       @set_default_route = case @set_default_route
                            when "yes"; true
                            when "no";  false
-                           when nil;   nil
+                           # all other values! count as unspecified
+                           else        nil
                            end
 
       @mtu = GetDeviceVar(devmap, defaults, "MTU")
