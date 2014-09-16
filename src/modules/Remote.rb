@@ -394,12 +394,10 @@ module Yast
           Report.Error(Message.CannotRestartService(XDM_SERVICE_NAME)) unless Service.Restart(XDM_SERVICE_NAME)
         end
       else
-        if @xinetd_installed
-          # xinetd may be needed for other services so we never turn it
-          # off. It will exit anyway if no services are configured.
-          # If it is running, restart it.
-          Service.Reload(XINETD_SERVICE) if Service.active?(XINETD_SERVICE)
-        end
+        # xinetd may be needed for other services so we never turn it
+        # off. It will exit anyway if no services are configured.
+        # If it is running, restart it.
+        Service.Reload(XINETD_SERVICE) if Service.active?(XINETD_SERVICE)
       end
     end
 
