@@ -195,11 +195,13 @@ module Yast
           Remote.Enable()
           expect(SystemdTarget).to receive(:set_default).with("graphical").and_return(true)
           expect(Service).to receive(:Restart).with("xinetd").and_return(true)
+          allow(Service).to receive(:active?).with("display-manager").and_return(active_display_manager)
         end
 
         context "when display-manager service is active" do
+          let(:active_display_manager) { true }
+
           it "adjusts needed services and warns the user" do
-            expect(Service).to receive(:active?).with("display-manager").and_return(true)
             expect(Service).to receive(:Reload).with("display-manager").and_return(true)
             expect(Report).to receive(:Warning)
             Remote.restart_service
@@ -207,8 +209,9 @@ module Yast
         end
 
         context "when display-manager service is inactive" do
+          let(:active_display_manager) { false }
+
           it "adjusts needed services" do
-            expect(Service).to receive(:active?).with("display-manager").and_return(false)
             expect(Service).to receive(:Restart).with("display-manager").and_return(true)
             Remote.restart_service
           end
@@ -218,19 +221,22 @@ module Yast
       context "when remote adminitration is being disabled" do
         before(:each) do
           Remote.Disable()
+          allow(Service).to receive(:active?).with("xinetd").and_return(active_xinetd)
         end
 
         context "xinetd is active" do
+          let(:active_xinetd) { true }
+
           it "reloads the xinetd service" do
-            expect(Service).to receive(:active?).with("xinetd").and_return(true)
             expect(Service).to receive(:Reload).with("xinetd").and_return(true)
             Remote.restart_service
           end
         end
 
         context "xinetd is inactive" do
+          let(:active_xinetd) { false }
+
           it "does nothing with services" do
-            expect(Service).to receive(:active?).with("xinetd").and_return(false)
             expect(Service).not_to receive(:Reload)
             Remote.restart_service
           end
