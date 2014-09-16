@@ -1,0 +1,88 @@
+---
+- comment: |2
+     default: off
+     description: An echo server. This is the tcp version.
+  comment_inside: ''
+  enabled: false
+  group: ''
+  iid: 1:/etc/xinetd.d/echo
+  protocol: tcp
+  rpc_version: ''
+  script: echo
+  server: ''
+  server_args: ''
+  service: echo
+  socket_type: stream
+  unparsed: "\ttype\t\t= INTERNAL\n\tid\t\t= echo-stream\n\tFLAGS\t\t= IPv6 IPv4\n"
+  user: root
+  wait: false
+- comment: |2
+     default: off
+     description: An echo server. This is the udp version.
+  comment_inside: ''
+  enabled: false
+  group: ''
+  iid: 1:/etc/xinetd.d/echo-udp
+  protocol: udp
+  rpc_version: ''
+  script: echo-udp
+  server: ''
+  server_args: ''
+  service: echo
+  socket_type: dgram
+  unparsed: "\ttype\t\t= INTERNAL UNLISTED\n\tid\t\t= echo-dgram\n\tport\t\t= 7\n\tFLAGS\t\t=
+    IPv6 IPv4\n"
+  user: root
+  wait: true
+- comment: |2
+     default: off
+     description: An internal xinetd service, listing active services.
+  comment_inside: ''
+  enabled: false
+  group: ''
+  iid: 1:/etc/xinetd.d/services
+  protocol: tcp
+  rpc_version: ''
+  script: services
+  server: ''
+  server_args: ''
+  service: services
+  socket_type: stream
+  unparsed: "\ttype\t\t= INTERNAL UNLISTED\n\tport\t\t= 9098\n\tonly_from\t= 127.0.0.1\n\tFLAGS\t\t=
+    IPv6 IPv4\n"
+  user: ''
+  wait: false
+- comment: " default: off\n description: This serves out a VNC connection which starts
+    at a KDM login \\\n\tprompt. This VNC connection has a resolution of 1024x768,
+    16bit depth.\n"
+  comment_inside: ''
+  enabled: false
+  group: ''
+  iid: 1:/etc/xinetd.d/vnc
+  protocol: tcp
+  rpc_version: ''
+  script: vnc
+  server: "/usr/bin/Xvnc"
+  server_args: "-noreset -inetd -once -query localhost -geometry 1024x768 -securitytypes
+    none"
+  service: vnc1
+  socket_type: stream
+  unparsed: "\ttype\t\t= UNLISTED\n\tport\t\t= 5901\n"
+  user: nobody
+  wait: false
+- comment: " default: off\n description: This serves out the vncviewer Java applet
+    for the VNC \\\n\tserver running on port 5901, (vnc port 1).\n"
+  comment_inside: ''
+  enabled: false
+  group: ''
+  iid: 45:/etc/xinetd.d/vnc
+  protocol: tcp
+  rpc_version: ''
+  script: vnc
+  server: "/usr/bin/vnc_inetd_httpd"
+  server_args: 1024 768 5901 -securitytypes none
+  service: vnchttpd1
+  socket_type: stream
+  unparsed: "\ttype\t\t= UNLISTED\n\tport\t\t= 5801\n"
+  user: nobody
+  wait: false

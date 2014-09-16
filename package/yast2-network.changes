@@ -1,4 +1,19 @@
 -------------------------------------------------------------------
+Fri Sep 12 11:44:46 UTC 2014 - mfilka@suse.com
+
+- bnc#894089
+  - update udev rules correctly when changing device names for more
+    than one net device
+- 3.1.97
+
+-------------------------------------------------------------------
+Fri Sep 12 09:03:27 UTC 2014 - ancor@suse.com
+
+- Changed the remote administration module to get the list of
+  required packages from yast2-packager (bnc#896178).
+- 3.1.96
+
+-------------------------------------------------------------------
 Mon Sep  8 08:55:09 UTC 2014 - mvidner@suse.com
 
 - Use a more flexible rubygem requirement syntax (bnc#895069)

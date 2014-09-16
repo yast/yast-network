@@ -75,15 +75,6 @@ module Yast
 
       LanItems.FindAndSelect("eth1")
 
-      @new_rules = LanItems.SetItemUdev("NAME", "nic_name")
-      Assert.Equal(true, Builtins.contains(@new_rules, "NAME=\"nic_name\""))
-
-      @new_rules = LanItems.SetItemUdev("KERNELS", "0000:00:19.x")
-      Assert.Equal(
-        true,
-        Builtins.contains(@new_rules, "KERNELS==\"0000:00:19.x\"")
-      )
-
       @new_rules = LanItems.ReplaceItemUdev(
         "KERNELS",
         "ATTR{address}",
