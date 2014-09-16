@@ -9,7 +9,19 @@ describe "LanItemsClass" do
   subject(:li) { Yast::LanItems }
 
   describe "#SetDeviceVars" do
-    let(:defaults) { { } }
+    let(:defaults) do
+      {
+        "WIRELESS_KEY" => "",
+        "WIRELESS_KEY_0" => "",
+        "WIRELESS_KEY_1" => "",
+        "WIRELESS_KEY_2" => "",
+        "WIRELESS_KEY_3" => ""
+      }
+    end
+
+    before do
+      li.SetDeviceVars({}, {})
+    end
 
     it "reads value from sysconfig data" do
       li.SetDeviceVars({"BOOTPROTO" => "dhcp8"}, {"BOOTPROTO" => "dhcp7"})
@@ -22,7 +34,6 @@ describe "LanItemsClass" do
     end
 
     it "reads nil if neither hash specifies the data" do
-      li.SetDeviceVars({}, {})
       expect(li.bootproto).to eq nil
     end
 
@@ -45,6 +56,18 @@ describe "LanItemsClass" do
       expect(li.wl_power).to eq true
     end
 
+    it "converts wl_key for 1 key" do
+      li.SetDeviceVars({"WIRELESS_KEY" => "k0"}, defaults)
+      expect(li.wl_key).to eq ["k0", "", "", ""]
+    end
+
+    it "converts wl_key for 2 keys" do
+      li.SetDeviceVars({"WIRELESS_KEY_0" => "k00", "WIRELESS_KEY_1" => "k01"}, defaults)
+      expect(li.wl_key).to eq ["k00", "k01", "", ""]
+    end
+
+    it "converts wl_wpa_eap" do
+    end
   end
 
   describe "#SetS390Vars" do
