@@ -193,8 +193,6 @@ module Yast
       context "when remote administration is being enabled" do
         before(:each) do
           Remote.Enable()
-          expect(SystemdTarget).to receive(:set_default).with("graphical").and_return(true)
-          expect(Service).to receive(:Restart).with("xinetd").and_return(true)
           allow(Service).to receive(:active?).with("display-manager").and_return(active_display_manager)
         end
 
@@ -202,6 +200,8 @@ module Yast
           let(:active_display_manager) { true }
 
           it "adjusts needed services and warns the user" do
+            expect(SystemdTarget).to receive(:set_default).with("graphical").and_return(true)
+            expect(Service).to receive(:Restart).with("xinetd").and_return(true)
             expect(Service).to receive(:Reload).with("display-manager").and_return(true)
             expect(Report).to receive(:Warning)
             Remote.restart_service
@@ -212,6 +212,8 @@ module Yast
           let(:active_display_manager) { false }
 
           it "adjusts needed services" do
+            expect(SystemdTarget).to receive(:set_default).with("graphical").and_return(true)
+            expect(Service).to receive(:Restart).with("xinetd").and_return(true)
             expect(Service).to receive(:Restart).with("display-manager").and_return(true)
             Remote.restart_service
           end
