@@ -39,6 +39,8 @@ module Yast
 
     PKG_CONTAINING_FW_SERVICES = "xorg-x11-Xvnc"
 
+    GRAPHICAL_TARGET = "graphical"
+
     def main
       Yast.import "UI"
       textdomain "network"
@@ -54,6 +56,7 @@ module Yast
       Yast.import "String"
       Yast.import "FileUtils"
       Yast.import "Message"
+      Yast.import "SystemdTarget"
 
       Yast.include self, "network/routines.rb"
 
@@ -363,10 +366,10 @@ module Yast
       SCR.Write(path(".sysconfig.displaymanager"), nil)
 
       #Query xinetd presence here (it might not have been even installed before)
-      have_xinetd = Package.Installed("xinetd")
+      @xinetd_installed = Package.Installed("xinetd")
 
       #Do this only if package xinetd is installed (#256385)
-      return false if have_xinetd && !WriteXinetd()
+      return false if @xinetd_installed && !WriteXinetd()
 
       true
     end
@@ -374,27 +377,29 @@ module Yast
     # Restarts xinetd and xdm, reporting errors to the user
     def restart_service
       if @allow_administration
-        # FIXME after SLES12 release: inittab is not used with systemd
-        SCR.Write(path(".etc.inittab.id"), "5:initdefault:")
-        SCR.Write(path(".etc.inittab"), nil)
+        SystemdTarget.set_default(GRAPHICAL_TARGET)
 
-        #if allow_administration is set to true, xinetd must be already installed
         Report.Error(Message.CannotRestartService(XINETD_SERVICE)) unless Service.Restart(XINETD_SERVICE)
-        Report.Error(Message.CannotRestartService(XDM_SERVICE_NAME)) unless Service.Restart(XDM_SERVICE_NAME)
+
+        if Service.active?(XDM_SERVICE_NAME)
+          Report.Error(Message.CannotRestartService(XDM_SERVICE_NAME)) unless Service.Reload(XDM_SERVICE_NAME)
+          Report.Warning(
+            _(
+              "Your display manager must be restarted.\n" +
+              "To take the changes in remote administration into account, \n" +
+              "please restart it manually or log out and log in again."
+            )
+          )
+        else
+          Report.Error(Message.CannotRestartService(XDM_SERVICE_NAME)) unless Service.Restart(XDM_SERVICE_NAME)
+        end
       else
-        if have_xinetd
+        if @xinetd_installed
           # xinetd may be needed for other services so we never turn it
           # off. It will exit anyway if no services are configured.
           # If it is running, restart it.
-          Service.Restart(XINETD_SERVICE) if Service.active?(XINETD_SERVICE)
+          Service.Reload(XINETD_SERVICE) if Service.active?(XINETD_SERVICE)
         end
-      end
-
-      # do not call '$service reload' for gdm - use SuSEconfig
-      # TODO: confirm that it's still needed
-      # FIXME after SLES12 release: looks useless. SuSEconfig not longer used.
-      if @default_dm != "gdm"
-        Service.Reload(XDM_SERVICE_NAME)
       end
     end
 
