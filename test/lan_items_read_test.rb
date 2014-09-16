@@ -67,6 +67,8 @@ describe "LanItemsClass" do
     end
 
     it "converts wl_wpa_eap" do
+      expect(li.wl_wpa_eap).to have_key "WPA_EAP_MODE"
+      expect(li.wl_wpa_eap).to have_key "WPA_EAP_PEAP_VERSION"
     end
   end
 
