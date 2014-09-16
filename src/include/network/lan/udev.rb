@@ -8,17 +8,41 @@
 # Functions for handling udev rules
 module Yast
   module NetworkLanUdevInclude
+
+    # Creates default udev rule for given NIC.
+    #
+    # Udev rule is based on device's MAC.
+    #
+    # @return [Array] an udev rule
     def GetDefaultUdevRule(dev_name, dev_mac)
       default_rule = [
         "SUBSYSTEM==\"net\"",
         "ACTION==\"add\"",
         "DRIVERS==\"?*\"",
-        Builtins.sformat("ATTR{address}==\"%1\"", dev_mac),
+        "ATTR{address}==\"#{dev_mac}\"",
         "ATTR{type}==\"1\"",
-        Builtins.sformat("NAME=\"%1\"", dev_name)
+        "NAME=\"#{dev_name}\""
       ]
+    end
 
-      deep_copy(default_rule)
+    # Updates existing key in a rule to new value.
+    # Modifies rule and returns it.
+    # If key is not found, rule is unchanged.
+    def update_udev_rule_key(rule, key, value)
+      return rule if rule.nil? || rule.empty?
+
+      raise ArgumentError if key.nil?
+      raise ArgumentError if value.nil?
+
+      i = rule.find_index { |k| k =~ /^#{key}/ }
+
+      if i
+        rule[i] = rule[i].gsub(/#{key}={1,2}"([^"]*)"/) do |m|
+          m.gsub($1, value)
+        end
+      end
+
+      rule
     end
 
     # Removes (key,operator,value) tripplet from given udev rule.

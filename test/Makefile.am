@@ -14,6 +14,7 @@ TESTS = \
   widgets_test.rb \
   complex_test.rb \
   read_hardware_test.rb \
+  udev_test.rb \
   remote_test.rb
 
 TEST_EXTENSIONS = .rb
