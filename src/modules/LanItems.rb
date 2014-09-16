@@ -1698,14 +1698,15 @@ module Yast
       @wl_auth_mode = d["WIRELESS_AUTH_MODE"]
       @wl_wpa_psk = d["WIRELESS_WPA_PSK"]
       @wl_key_length = d["WIRELESS_KEY_LENGTH"]
-      @wl_key = [] # ensure exactly 4 entries
-      Ops.set(@wl_key, 0, d["WIRELESS_KEY_0"])
-      if Ops.get(@wl_key, 0, "") == ""
-        Ops.set(@wl_key, 0, d["WIRELESS_KEY"])
+      @wl_key = [
+                 d["WIRELESS_KEY_0"],
+                 d["WIRELESS_KEY_1"],
+                 d["WIRELESS_KEY_2"],
+                 d["WIRELESS_KEY_3"]
+                ]
+      if (@wl_key[0] || "") == ""
+        @wl_key[0] = d["WIRELESS_KEY"]
       end
-      Ops.set(@wl_key, 1, d["WIRELESS_KEY_1"])
-      Ops.set(@wl_key, 2, d["WIRELESS_KEY_2"])
-      Ops.set(@wl_key, 3, d["WIRELESS_KEY_3"])
 
       @wl_default_key = Builtins.tointeger(
         d["WIRELESS_DEFAULT_KEY"]
