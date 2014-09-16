@@ -171,7 +171,7 @@ describe Yast::NetworkAutoconfiguration do
   it "configures just one NIC to have a default route" do
     expect { instance.configure_dhcp }.to_not raise_error
     result = Yast::NetworkInterfaces.FilterDevices("")
-    expect(result["eth"]["eth0"]["DHCLIENT_SET_DEFAULT_ROUTE"]).to eq "yes"
-    expect(result["eth"]["eth1"]["DHCLIENT_SET_DEFAULT_ROUTE"]).to eq "no"
+    expect(result["eth"]["eth0"]["DHCLIENT_SET_DEFAULT_ROUTE"]).to     eq "yes"
+    expect(result["eth"]["eth1"]["DHCLIENT_SET_DEFAULT_ROUTE"]).to_not eq "yes"
   end
 end
