@@ -1648,45 +1648,35 @@ module Yast
       nil
     end
 
-    def GetDeviceVar(primary, fallback, key)
-      primary = deep_copy(primary)
-      fallback = deep_copy(fallback)
-      ret = Ops.get_string(primary, key, Ops.get(fallback, key))
-      Builtins.y2debug("%1 does not have a default defined", key) if ret == nil
-      ret
-    end
-
-
     # Set various device variables
     # @param [Hash] devmap map with variables
     # @return [void]
     def SetDeviceVars(devmap, defaults)
-      devmap = deep_copy(devmap)
-      defaults = deep_copy(defaults)
+      d = defaults.merge(devmap)
       # address options
-      @bootproto = GetDeviceVar(devmap, defaults, "BOOTPROTO")
-      @ipaddr = GetDeviceVar(devmap, defaults, "IPADDR")
-      @prefix = GetDeviceVar(devmap, defaults, "PREFIXLEN")
-      @remoteip = GetDeviceVar(devmap, defaults, "REMOTE_IPADDR")
-      @netmask = GetDeviceVar(devmap, defaults, "NETMASK")
-      @set_default_route = GetDeviceVar(devmap, defaults, "DHCLIENT_SET_DEFAULT_ROUTE")
-      @set_default_route = case @set_default_route
+      @bootproto         = d["BOOTPROTO"]
+      @ipaddr            = d["IPADDR"]
+      @prefix            = d["PREFIXLEN"]
+      @remoteip          = d["REMOTE_IPADDR"]
+      @netmask           = d["NETMASK"]
+      @set_default_route = case d["DHCLIENT_SET_DEFAULT_ROUTE"]
                            when "yes"; true
                            when "no";  false
                            # all other values! count as unspecified
                            else        nil
                            end
 
-      @mtu = GetDeviceVar(devmap, defaults, "MTU")
-      @ethtool_options = GetDeviceVar(devmap, defaults, "ETHTOOL_OPTIONS")
-      @startmode = GetDeviceVar(devmap, defaults, "STARTMODE")
-      @ifplugd_priority = GetDeviceVar(devmap, defaults, "IFPLUGD_PRIORITY")
-      @description = GetDeviceVar(devmap, defaults, "NAME")
-      @bond_option = GetDeviceVar(devmap, defaults, "BONDING_MODULE_OPTS")
-      @vlan_etherdevice = GetDeviceVar(devmap, defaults, "ETHERDEVICE")
-      @vlan_id = GetDeviceVar(devmap, defaults, "VLAN_ID") # FIXME, remember that it can be implied from the name. probably
+      @mtu               = d["MTU"]
+      @ethtool_options   = d["ETHTOOL_OPTIONS"]
+      @startmode         = d["STARTMODE"]
+      @ifplugd_priority  = d["IFPLUGD_PRIORITY"]
+      @description       = d["NAME"]
+      @bond_option       = d["BONDING_MODULE_OPTS"]
+      @vlan_etherdevice  = d["ETHERDEVICE"]
+      # FIXME, remember that it can be implied from the name. probably
+      @vlan_id           = d["VLAN_ID"]
 
-      @bridge_ports = GetDeviceVar(devmap, defaults, "BRIDGE_PORTS")
+      @bridge_ports = d["BRIDGE_PORTS"]
 
       @bond_slaves = []
       Builtins.foreach(devmap) do |key, value|
@@ -1698,93 +1688,93 @@ module Yast
       end
 
       # tun/tap settings
-      @tunnel_set_owner = GetDeviceVar(devmap, defaults, "TUNNEL_SET_OWNER")
-      @tunnel_set_group = GetDeviceVar(devmap, defaults, "TUNNEL_SET_GROUP")
+      @tunnel_set_owner = d["TUNNEL_SET_OWNER"]
+      @tunnel_set_group = d["TUNNEL_SET_GROUP"]
 
       # wireless options
-      @wl_mode = GetDeviceVar(devmap, defaults, "WIRELESS_MODE")
-      @wl_essid = GetDeviceVar(devmap, defaults, "WIRELESS_ESSID")
-      @wl_nwid = GetDeviceVar(devmap, defaults, "WIRELESS_NWID")
-      @wl_auth_mode = GetDeviceVar(devmap, defaults, "WIRELESS_AUTH_MODE")
-      @wl_wpa_psk = GetDeviceVar(devmap, defaults, "WIRELESS_WPA_PSK")
-      @wl_key_length = GetDeviceVar(devmap, defaults, "WIRELESS_KEY_LENGTH")
+      @wl_mode = d["WIRELESS_MODE"]
+      @wl_essid = d["WIRELESS_ESSID"]
+      @wl_nwid = d["WIRELESS_NWID"]
+      @wl_auth_mode = d["WIRELESS_AUTH_MODE"]
+      @wl_wpa_psk = d["WIRELESS_WPA_PSK"]
+      @wl_key_length = d["WIRELESS_KEY_LENGTH"]
       @wl_key = [] # ensure exactly 4 entries
-      Ops.set(@wl_key, 0, GetDeviceVar(devmap, defaults, "WIRELESS_KEY_0"))
+      Ops.set(@wl_key, 0, d["WIRELESS_KEY_0"])
       if Ops.get(@wl_key, 0, "") == ""
-        Ops.set(@wl_key, 0, GetDeviceVar(devmap, defaults, "WIRELESS_KEY"))
+        Ops.set(@wl_key, 0, d["WIRELESS_KEY"])
       end
-      Ops.set(@wl_key, 1, GetDeviceVar(devmap, defaults, "WIRELESS_KEY_1"))
-      Ops.set(@wl_key, 2, GetDeviceVar(devmap, defaults, "WIRELESS_KEY_2"))
-      Ops.set(@wl_key, 3, GetDeviceVar(devmap, defaults, "WIRELESS_KEY_3"))
+      Ops.set(@wl_key, 1, d["WIRELESS_KEY_1"])
+      Ops.set(@wl_key, 2, d["WIRELESS_KEY_2"])
+      Ops.set(@wl_key, 3, d["WIRELESS_KEY_3"])
 
       @wl_default_key = Builtins.tointeger(
-        GetDeviceVar(devmap, defaults, "WIRELESS_DEFAULT_KEY")
+        d["WIRELESS_DEFAULT_KEY"]
       )
-      @wl_nick = GetDeviceVar(devmap, defaults, "WIRELESS_NICK")
+      @wl_nick = d["WIRELESS_NICK"]
 
       @wl_wpa_eap = {}
       Ops.set(
         @wl_wpa_eap,
         "WPA_EAP_MODE",
-        GetDeviceVar(devmap, defaults, "WIRELESS_EAP_MODE")
+        d["WIRELESS_EAP_MODE"]
       )
       Ops.set(
         @wl_wpa_eap,
         "WPA_EAP_IDENTITY",
-        GetDeviceVar(devmap, defaults, "WIRELESS_WPA_IDENTITY")
+        d["WIRELESS_WPA_IDENTITY"]
       )
       Ops.set(
         @wl_wpa_eap,
         "WPA_EAP_PASSWORD",
-        GetDeviceVar(devmap, defaults, "WIRELESS_WPA_PASSWORD")
+        d["WIRELESS_WPA_PASSWORD"]
       )
       Ops.set(
         @wl_wpa_eap,
         "WPA_EAP_ANONID",
-        GetDeviceVar(devmap, defaults, "WIRELESS_WPA_ANONID")
+        d["WIRELESS_WPA_ANONID"]
       )
       Ops.set(
         @wl_wpa_eap,
         "WPA_EAP_CLIENT_CERT",
-        GetDeviceVar(devmap, defaults, "WIRELESS_CLIENT_CERT")
+        d["WIRELESS_CLIENT_CERT"]
       )
       Ops.set(
         @wl_wpa_eap,
         "WPA_EAP_CLIENT_KEY",
-        GetDeviceVar(devmap, defaults, "WIRELESS_CLIENT_KEY")
+        d["WIRELESS_CLIENT_KEY"]
       )
       Ops.set(
         @wl_wpa_eap,
         "WPA_EAP_CLIENT_KEY_PASSWORD",
-        GetDeviceVar(devmap, defaults, "WIRELESS_CLIENT_KEY_PASSWORD")
+        d["WIRELESS_CLIENT_KEY_PASSWORD"]
       )
       Ops.set(
         @wl_wpa_eap,
         "WPA_EAP_CA_CERT",
-        GetDeviceVar(devmap, defaults, "WIRELESS_CA_CERT")
+        d["WIRELESS_CA_CERT"]
       )
       Ops.set(
         @wl_wpa_eap,
         "WPA_EAP_AUTH",
-        GetDeviceVar(devmap, defaults, "WIRELESS_EAP_AUTH")
+        d["WIRELESS_EAP_AUTH"]
       )
       Ops.set(
         @wl_wpa_eap,
         "WPA_EAP_PEAP_VERSION",
-        GetDeviceVar(devmap, defaults, "WIRELESS_PEAP_VERSION")
+        d["WIRELESS_PEAP_VERSION"]
       )
 
-      @wl_channel = GetDeviceVar(devmap, defaults, "WIRELESS_CHANNEL")
-      @wl_frequency = GetDeviceVar(devmap, defaults, "WIRELESS_FREQUENCY")
-      @wl_bitrate = GetDeviceVar(devmap, defaults, "WIRELESS_BITRATE")
-      @wl_accesspoint = GetDeviceVar(devmap, defaults, "WIRELESS_AP")
-      @wl_power = GetDeviceVar(devmap, defaults, "WIRELESS_POWER") == "yes"
-      @wl_ap_scanmode = GetDeviceVar(devmap, defaults, "WIRELESS_AP_SCANMODE")
+      @wl_channel = d["WIRELESS_CHANNEL"]
+      @wl_frequency = d["WIRELESS_FREQUENCY"]
+      @wl_bitrate = d["WIRELESS_BITRATE"]
+      @wl_accesspoint = d["WIRELESS_AP"]
+      @wl_power = d["WIRELESS_POWER"] == "yes"
+      @wl_ap_scanmode = d["WIRELESS_AP_SCANMODE"]
       # s/390 options
       # We always have to set the MAC Address for qeth Layer2 support
-      @qeth_macaddress = GetDeviceVar(devmap, defaults, "LLADDR")
+      @qeth_macaddress = d["LLADDR"]
 
-      @ipoib_mode = GetDeviceVar(devmap, defaults, "IPOIB_MODE")
+      @ipoib_mode = d["IPOIB_MODE"]
 
       @aliases = Ops.get_map(devmap, "_aliases", {})
 
@@ -1796,14 +1786,13 @@ module Yast
     # @param [Hash] devmap    map with s390 specific attributes and its values
     # @param [Hash] defaults  map with default values for attributes not found in devmap
     def SetS390Vars(devmap, defaults)
-      devmap = deep_copy(devmap)
-      defaults = deep_copy(defaults)
       return if !Arch.s390
+      d = defaults.merge(devmap)
 
-      @qeth_portname = GetDeviceVar(devmap, defaults, "QETH_PORTNAME")
-      @qeth_portnumber = GetDeviceVar(devmap, defaults, "QETH_PORTNUMBER")
-      @qeth_layer2 = GetDeviceVar(devmap, defaults, "QETH_LAYER2") == "yes"
-      @qeth_chanids = GetDeviceVar(devmap, defaults, "QETH_CHANIDS")
+      @qeth_portname   = d["QETH_PORTNAME"]
+      @qeth_portnumber = d["QETH_PORTNUMBER"]
+      @qeth_layer2     = d["QETH_LAYER2"] == "yes"
+      @qeth_chanids    = d["QETH_CHANIDS"]
 
       # qeth attribute. FIXME: currently not read from system.
       @ipa_takeover = Ops.get_string(defaults, "IPA_TAKEOVER", "") == "yes"
