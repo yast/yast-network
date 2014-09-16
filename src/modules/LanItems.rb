@@ -1692,85 +1692,43 @@ module Yast
       @tunnel_set_group = d["TUNNEL_SET_GROUP"]
 
       # wireless options
-      @wl_mode = d["WIRELESS_MODE"]
-      @wl_essid = d["WIRELESS_ESSID"]
-      @wl_nwid = d["WIRELESS_NWID"]
-      @wl_auth_mode = d["WIRELESS_AUTH_MODE"]
-      @wl_wpa_psk = d["WIRELESS_WPA_PSK"]
-      @wl_key_length = d["WIRELESS_KEY_LENGTH"]
-      @wl_key = [
-                 d["WIRELESS_KEY_0"],
-                 d["WIRELESS_KEY_1"],
-                 d["WIRELESS_KEY_2"],
-                 d["WIRELESS_KEY_3"]
-                ]
+      @wl_mode            = d["WIRELESS_MODE"]
+      @wl_essid           = d["WIRELESS_ESSID"]
+      @wl_nwid            = d["WIRELESS_NWID"]
+      @wl_auth_mode       = d["WIRELESS_AUTH_MODE"]
+      @wl_wpa_psk         = d["WIRELESS_WPA_PSK"]
+      @wl_key_length      = d["WIRELESS_KEY_LENGTH"]
+      @wl_key             = [
+                             d["WIRELESS_KEY_0"],
+                             d["WIRELESS_KEY_1"],
+                             d["WIRELESS_KEY_2"],
+                             d["WIRELESS_KEY_3"]
+                            ]
       if (@wl_key[0] || "") == ""
-        @wl_key[0] = d["WIRELESS_KEY"]
+        @wl_key[0]        = d["WIRELESS_KEY"]
       end
 
-      @wl_default_key = Builtins.tointeger(
-        d["WIRELESS_DEFAULT_KEY"]
-      )
-      @wl_nick = d["WIRELESS_NICK"]
-
-      @wl_wpa_eap = {}
-      Ops.set(
-        @wl_wpa_eap,
-        "WPA_EAP_MODE",
-        d["WIRELESS_EAP_MODE"]
-      )
-      Ops.set(
-        @wl_wpa_eap,
-        "WPA_EAP_IDENTITY",
-        d["WIRELESS_WPA_IDENTITY"]
-      )
-      Ops.set(
-        @wl_wpa_eap,
-        "WPA_EAP_PASSWORD",
-        d["WIRELESS_WPA_PASSWORD"]
-      )
-      Ops.set(
-        @wl_wpa_eap,
-        "WPA_EAP_ANONID",
-        d["WIRELESS_WPA_ANONID"]
-      )
-      Ops.set(
-        @wl_wpa_eap,
-        "WPA_EAP_CLIENT_CERT",
-        d["WIRELESS_CLIENT_CERT"]
-      )
-      Ops.set(
-        @wl_wpa_eap,
-        "WPA_EAP_CLIENT_KEY",
-        d["WIRELESS_CLIENT_KEY"]
-      )
-      Ops.set(
-        @wl_wpa_eap,
-        "WPA_EAP_CLIENT_KEY_PASSWORD",
-        d["WIRELESS_CLIENT_KEY_PASSWORD"]
-      )
-      Ops.set(
-        @wl_wpa_eap,
-        "WPA_EAP_CA_CERT",
-        d["WIRELESS_CA_CERT"]
-      )
-      Ops.set(
-        @wl_wpa_eap,
-        "WPA_EAP_AUTH",
-        d["WIRELESS_EAP_AUTH"]
-      )
-      Ops.set(
-        @wl_wpa_eap,
-        "WPA_EAP_PEAP_VERSION",
-        d["WIRELESS_PEAP_VERSION"]
-      )
-
-      @wl_channel = d["WIRELESS_CHANNEL"]
-      @wl_frequency = d["WIRELESS_FREQUENCY"]
-      @wl_bitrate = d["WIRELESS_BITRATE"]
+      @wl_default_key     = Builtins.tointeger(d["WIRELESS_DEFAULT_KEY"])
+      @wl_nick            = d["WIRELESS_NICK"]
+      @wl_wpa_eap = {
+        "WPA_EAP_MODE"                => d["WIRELESS_EAP_MODE"],
+        "WPA_EAP_IDENTITY"            => d["WIRELESS_WPA_IDENTITY"],
+        "WPA_EAP_PASSWORD"            => d["WIRELESS_WPA_PASSWORD"],
+        "WPA_EAP_ANONID"              => d["WIRELESS_WPA_ANONID"],
+        "WPA_EAP_CLIENT_CERT"         => d["WIRELESS_CLIENT_CERT"],
+        "WPA_EAP_CLIENT_KEY"          => d["WIRELESS_CLIENT_KEY"],
+        "WPA_EAP_CLIENT_KEY_PASSWORD" => d["WIRELESS_CLIENT_KEY_PASSWORD"],
+        "WPA_EAP_CA_CERT"             => d["WIRELESS_CA_CERT"],
+        "WPA_EAP_AUTH"                => d["WIRELESS_EAP_AUTH"],
+        "WPA_EAP_PEAP_VERSION"        => d["WIRELESS_PEAP_VERSION"]
+      }
+      @wl_channel     = d["WIRELESS_CHANNEL"]
+      @wl_frequency   = d["WIRELESS_FREQUENCY"]
+      @wl_bitrate     = d["WIRELESS_BITRATE"]
       @wl_accesspoint = d["WIRELESS_AP"]
-      @wl_power = d["WIRELESS_POWER"] == "yes"
+      @wl_power       = d["WIRELESS_POWER"] == "yes"
       @wl_ap_scanmode = d["WIRELESS_AP_SCANMODE"]
+
       # s/390 options
       # We always have to set the MAC Address for qeth Layer2 support
       @qeth_macaddress = d["LLADDR"]
