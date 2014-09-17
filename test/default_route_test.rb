@@ -30,7 +30,7 @@ class SectionKeyValue
 end
 
 describe "Yast::LanItemsClass" do
-  subject(:li) { Yast::LanItems }
+  subject { Yast::LanItems }
 
   before do
     Yast.import "LanItems"
@@ -115,14 +115,14 @@ describe "Yast::LanItemsClass" do
     @ifcfg_files.set("eth0", "STARTMODE", "auto")
     @ifcfg_files.set("eth0", "BOOTPROTO", "dhcp4")
 
-    li.Read
-    li.current = 0
-    li.SetItem
+    subject.Read
+    subject.current = 0
+    subject.SetItem
 
-    li.bootproto = "dhcp"
+    subject.bootproto = "dhcp"
 
-    li.Commit
-    li.write
+    subject.Commit
+    subject.write
 
     ifcfg = Yast::NetworkInterfaces.FilterDevices("")["eth"]["eth0"]
     expect(ifcfg["DHCLIENT_SET_DEFAULT_ROUTE"]).to be_nil
