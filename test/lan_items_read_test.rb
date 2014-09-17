@@ -19,10 +19,6 @@ describe "LanItemsClass" do
       }
     end
 
-    before do
-      li.SetDeviceVars({}, {})
-    end
-
     it "reads value from sysconfig data" do
       li.SetDeviceVars({"BOOTPROTO" => "dhcp8"}, {"BOOTPROTO" => "dhcp7"})
       expect(li.bootproto).to eq "dhcp8"
@@ -34,6 +30,7 @@ describe "LanItemsClass" do
     end
 
     it "reads nil if neither hash specifies the data" do
+      li.SetDeviceVars({}, {})
       expect(li.bootproto).to eq nil
     end
 
@@ -56,19 +53,23 @@ describe "LanItemsClass" do
       expect(li.wl_power).to eq true
     end
 
-    it "converts wl_key for 1 key" do
+    it "makes wl_key a 4-tuple when 1 key is specified" do
       li.SetDeviceVars({"WIRELESS_KEY" => "k0"}, defaults)
       expect(li.wl_key).to eq ["k0", "", "", ""]
     end
 
-    it "converts wl_key for 2 keys" do
+    it "makes wl_key a 4-tuple when 2 keys are specified" do
       li.SetDeviceVars({"WIRELESS_KEY_0" => "k00", "WIRELESS_KEY_1" => "k01"}, defaults)
       expect(li.wl_key).to eq ["k00", "k01", "", ""]
     end
 
-    it "converts wl_wpa_eap" do
-      expect(li.wl_wpa_eap).to have_key "WPA_EAP_MODE"
-      expect(li.wl_wpa_eap).to have_key "WPA_EAP_PEAP_VERSION"
+    it "makes wl_wpa_eap a hash, with renamed kes" do
+      li.SetDeviceVars({
+                         "WIRELESS_EAP_MODE"     => "foo",
+                         "WIRELESS_PEAP_VERSION" => "bar"
+                       }, {})
+      expect(li.wl_wpa_eap["WPA_EAP_MODE"]).to eq "foo"
+      expect(li.wl_wpa_eap["WPA_EAP_PEAP_VERSION"]).to eq "bar"
     end
   end
 

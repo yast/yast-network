@@ -1701,7 +1701,7 @@ module Yast
                              d["WIRELESS_KEY_2"],
                              d["WIRELESS_KEY_3"]
                             ]
-      if (@wl_key[0] || "") == ""
+      if (@wl_key[0] || "").empty?
         @wl_key[0]        = d["WIRELESS_KEY"]
       end
 
@@ -1865,11 +1865,12 @@ module Yast
       true
     end
 
+    TRISTATE_TO_S = { nil => nil, false => "no", true => "yes" }.freeze
+
     # Sets device map items related to dhclient
     def setup_dhclient_options(devmap)
       if isCurrentDHCP
-        tristate_to_s = { nil => nil, false => "no", true => "yes" }
-        devmap["DHCLIENT_SET_DEFAULT_ROUTE"] = tristate_to_s.fetch(@set_default_route)
+        devmap["DHCLIENT_SET_DEFAULT_ROUTE"] = TRISTATE_TO_S.fetch(@set_default_route)
       end
       return devmap
     end
