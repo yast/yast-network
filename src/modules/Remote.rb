@@ -314,7 +314,7 @@ module Yast
 
       if Mode.normal
         ProgressNextStage(_("Restarting the service..."))
-        restart_service
+        restart_services
         Progress.NextStage
       end
 
@@ -365,34 +365,35 @@ module Yast
       )
       SCR.Write(path(".sysconfig.displaymanager"), nil)
 
-      #Query xinetd presence here (it might not have been even installed before)
-      @xinetd_installed = Package.Installed("xinetd")
-
       #Do this only if package xinetd is installed (#256385)
-      return false if @xinetd_installed && !WriteXinetd()
+      return false if Package.Installed("xinetd") && !WriteXinetd()
 
       true
     end
 
+    def restart_display_manager
+      if Service.active?(XDM_SERVICE_NAME)
+        Report.Error(Message.CannotRestartService(XDM_SERVICE_NAME)) unless Service.Reload(XDM_SERVICE_NAME)
+        Report.Warning(
+          _(
+            "Your display manager must be restarted.\n" +
+            "To take the changes in remote administration into account, \n" +
+            "please restart it manually or log out and log in again."
+          )
+        )
+      else
+        Report.Error(Message.CannotRestartService(XDM_SERVICE_NAME)) unless Service.Restart(XDM_SERVICE_NAME)
+      end
+    end
+
     # Restarts xinetd and xdm, reporting errors to the user
-    def restart_service
+    def restart_services
       if IsEnabled()
         SystemdTarget.set_default(GRAPHICAL_TARGET)
 
         Report.Error(Message.CannotRestartService(XINETD_SERVICE)) unless Service.Restart(XINETD_SERVICE)
 
-        if Service.active?(XDM_SERVICE_NAME)
-          Report.Error(Message.CannotRestartService(XDM_SERVICE_NAME)) unless Service.Reload(XDM_SERVICE_NAME)
-          Report.Warning(
-            _(
-              "Your display manager must be restarted.\n" +
-              "To take the changes in remote administration into account, \n" +
-              "please restart it manually or log out and log in again."
-            )
-          )
-        else
-          Report.Error(Message.CannotRestartService(XDM_SERVICE_NAME)) unless Service.Restart(XDM_SERVICE_NAME)
-        end
+        restart_display_manager
       else
         # xinetd may be needed for other services so we never turn it
         # off. It will exit anyway if no services are configured.
