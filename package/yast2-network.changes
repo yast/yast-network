@@ -1,8 +1,14 @@
 -------------------------------------------------------------------
-Wed Sep 17 11:35:12 UTC 2014 - mvidner@suse.com
+Wed Sep 17 16:35:12 CEST 2014 - mvidner@suse.com
 
 - Really do not lose the default route
   when editing an interface (bnc#883836#c15).
+- 3.1.100
+
+-------------------------------------------------------------------
+Wed Sep 17 15:26:59 CEST 2014 - locilka@suse.com
+
+- Do not check for / install packages in inst-sys (bnc#888130)
 - 3.1.99
 
 -------------------------------------------------------------------
