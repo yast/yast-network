@@ -51,6 +51,7 @@ module Yast
       Yast.import "Mode"
       Yast.import "IP"
       Yast.import "TypeRepository"
+      Yast.import "Stage"
     end
 
     # Abort function
@@ -135,7 +136,17 @@ module Yast
     def PackagesInstall(packages)
       packages = deep_copy(packages)
       return :next if packages == []
-      Builtins.y2debug("Checking packages: %1", packages)
+
+      log.info "Checking packages: #{packages}"
+
+      # bnc#888130 In inst-sys, there is no RPM database to check
+      # If the required package is part of the inst-sys, it will work,
+      # if not, package can't be installed anyway
+      #
+      # Ideas:
+      # - check /.packages.* for presence of the required package
+      # - use `extend` to load the required packages on-the-fly
+      return :next if Stage.initial
 
       Yast.import "Package"
       return :next if Package.InstalledAll(packages)
