@@ -39,6 +39,8 @@ module Yast
 
     PKG_CONTAINING_FW_SERVICES = "xorg-x11-Xvnc"
 
+    GRAPHICAL_TARGET = "graphical"
+
     def main
       Yast.import "UI"
       textdomain "network"
@@ -54,6 +56,7 @@ module Yast
       Yast.import "String"
       Yast.import "FileUtils"
       Yast.import "Message"
+      Yast.import "SystemdTarget"
 
       Yast.include self, "network/routines.rb"
 
@@ -262,7 +265,7 @@ module Yast
         Ops.set(m, "changed", true)
         Ops.set(m, "enabled", @allow_administration)
         server_args = Ops.get_string(m, "server_args", "")
-        if @allow_administration
+        if IsEnabled()
           # use none authentication, xdm will take care of it
           Ops.set(m, "server_args", SetSecurityType(server_args, @SEC_NONE))
         else
@@ -311,7 +314,7 @@ module Yast
 
       if Mode.normal
         ProgressNextStage(_("Restarting the service..."))
-        restart_service
+        restart_services
         Progress.NextStage
       end
 
@@ -327,7 +330,7 @@ module Yast
     # @return [Boolean] true if success, false otherwise
     def configure_display_manager
 
-      if @allow_administration
+      if IsEnabled()
         # Install required packages
         if !Package.InstallAll(Packages.vnc_packages)
           log.error "Installing of required packages failed"
@@ -354,47 +357,48 @@ module Yast
       # Set DISPLAYMANAGER_REMOTE_ACCESS in sysconfig/displaymanager
       SCR.Write(
         path(".sysconfig.displaymanager.DISPLAYMANAGER_REMOTE_ACCESS"),
-        @allow_administration ? "yes" : "no"
+        IsEnabled() ? "yes" : "no"
       )
       SCR.Write(
         path(".sysconfig.displaymanager.DISPLAYMANAGER_ROOT_LOGIN_REMOTE"),
-        @allow_administration ? "yes" : "no"
+        IsEnabled() ? "yes" : "no"
       )
       SCR.Write(path(".sysconfig.displaymanager"), nil)
 
-      #Query xinetd presence here (it might not have been even installed before)
-      have_xinetd = Package.Installed("xinetd")
-
       #Do this only if package xinetd is installed (#256385)
-      return false if have_xinetd && !WriteXinetd()
+      return false if Package.Installed("xinetd") && !WriteXinetd()
 
       true
     end
 
-    # Restarts xinetd and xdm, reporting errors to the user
-    def restart_service
-      if @allow_administration
-        # FIXME after SLES12 release: inittab is not used with systemd
-        SCR.Write(path(".etc.inittab.id"), "5:initdefault:")
-        SCR.Write(path(".etc.inittab"), nil)
-
-        #if allow_administration is set to true, xinetd must be already installed
-        Report.Error(Message.CannotRestartService(XINETD_SERVICE)) unless Service.Restart(XINETD_SERVICE)
-        Report.Error(Message.CannotRestartService(XDM_SERVICE_NAME)) unless Service.Restart(XDM_SERVICE_NAME)
+    def restart_display_manager
+      if Service.active?(XDM_SERVICE_NAME)
+        Report.Error(Message.CannotRestartService(XDM_SERVICE_NAME)) unless Service.Reload(XDM_SERVICE_NAME)
+        Report.Warning(
+          _(
+            "Your display manager must be restarted.\n" +
+            "To take the changes in remote administration into account, \n" +
+            "please restart it manually or log out and log in again."
+          )
+        )
       else
-        if have_xinetd
-          # xinetd may be needed for other services so we never turn it
-          # off. It will exit anyway if no services are configured.
-          # If it is running, restart it.
-          Service.Restart(XINETD_SERVICE) if Service.active?(XINETD_SERVICE)
-        end
+        Report.Error(Message.CannotRestartService(XDM_SERVICE_NAME)) unless Service.Restart(XDM_SERVICE_NAME)
       end
+    end
 
-      # do not call '$service reload' for gdm - use SuSEconfig
-      # TODO: confirm that it's still needed
-      # FIXME after SLES12 release: looks useless. SuSEconfig not longer used.
-      if @default_dm != "gdm"
-        Service.Reload(XDM_SERVICE_NAME)
+    # Restarts xinetd and xdm, reporting errors to the user
+    def restart_services
+      if IsEnabled()
+        SystemdTarget.set_default(GRAPHICAL_TARGET)
+
+        Report.Error(Message.CannotRestartService(XINETD_SERVICE)) unless Service.Restart(XINETD_SERVICE)
+
+        restart_display_manager
+      else
+        # xinetd may be needed for other services so we never turn it
+        # off. It will exit anyway if no services are configured.
+        # If it is running, restart it.
+        Service.Reload(XINETD_SERVICE) if Service.active?(XINETD_SERVICE)
       end
     end
 
@@ -402,7 +406,7 @@ module Yast
     # @return summary text
     def Summary
       # description in proposal
-      @allow_administration ? _("Remote administration is enabled.") : _("Remote administration is disabled.")
+      IsEnabled() ? _("Remote administration is enabled.") : _("Remote administration is disabled.")
     end
 
     publish :variable => :SEC_NONE, :type => "const string"
