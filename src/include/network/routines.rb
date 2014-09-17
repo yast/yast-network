@@ -133,6 +133,10 @@ module Yast
     # @param [Array<String>] packages list of required packages (["rpm", "bash"])
     # @return `next if packages installation is successfull, `abort otherwise
     def PackagesInstall(packages)
+      # FIXME: in inst-sys grep for packages in /.packages.*
+      #        but these packages need to be in order first
+      return :next if Stage.initial
+
       packages = deep_copy(packages)
       return :next if packages == []
       Builtins.y2debug("Checking packages: %1", packages)
