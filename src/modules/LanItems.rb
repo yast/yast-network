@@ -1706,7 +1706,7 @@ module Yast
         @wl_key[0]        = d["WIRELESS_KEY"]
       end
 
-      @wl_default_key     = Builtins.tointeger(d["WIRELESS_DEFAULT_KEY"])
+      @wl_default_key     = d["WIRELESS_DEFAULT_KEY"].to_i
       @wl_nick            = d["WIRELESS_NICK"]
       @wl_wpa_eap = {
         "WPA_EAP_MODE"                => d["WIRELESS_EAP_MODE"],
