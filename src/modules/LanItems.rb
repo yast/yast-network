@@ -1645,8 +1645,9 @@ module Yast
       nil
     end
 
-    # Set various device variables
-    # @param [Hash] devmap map with variables
+    # Distributes an ifcfg hash to individual attributes.
+    # @param devmap   [Hash] an ifcfg, values are strings
+    # @param defaults [Hash] should provide defaults for devmap
     # @return [void]
     def SetDeviceVars(devmap, defaults)
       d = defaults.merge(devmap)
@@ -1822,6 +1823,7 @@ module Yast
     end
 
     # Select the given device
+    # FIXME currently *dev* is always ""
     # @param [String] dev device to select ("" for new device, default values)
     # @return true if success
     def Select(dev)
