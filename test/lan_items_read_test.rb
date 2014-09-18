@@ -65,9 +65,9 @@ describe "LanItemsClass" do
 
     it "makes wl_wpa_eap a hash, with renamed kes" do
       subject.SetDeviceVars({
-                              "WIRELESS_EAP_MODE"     => "foo",
-                              "WIRELESS_PEAP_VERSION" => "bar"
-                            }, {})
+          "WIRELESS_EAP_MODE"     => "foo",
+          "WIRELESS_PEAP_VERSION" => "bar"
+        }, {})
       expect(subject.wl_wpa_eap["WPA_EAP_MODE"]).to eq "foo"
       expect(subject.wl_wpa_eap["WPA_EAP_PEAP_VERSION"]).to eq "bar"
     end

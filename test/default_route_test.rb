@@ -90,7 +90,7 @@ describe "Yast::LanItemsClass" do
     expect(Yast::SCR).
       to receive(:Read).
       with(Yast::Path.new(".probe.netcard")).
-      and_return( [] )
+      and_return([])
 
     # miscellaneous uninteresting but hard to avoid stuff
 

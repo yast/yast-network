@@ -1697,11 +1697,11 @@ module Yast
       @wl_wpa_psk         = d["WIRELESS_WPA_PSK"]
       @wl_key_length      = d["WIRELESS_KEY_LENGTH"]
       @wl_key             = [
-                             d["WIRELESS_KEY_0"],
-                             d["WIRELESS_KEY_1"],
-                             d["WIRELESS_KEY_2"],
-                             d["WIRELESS_KEY_3"]
-                            ]
+        d["WIRELESS_KEY_0"],
+        d["WIRELESS_KEY_1"],
+        d["WIRELESS_KEY_2"],
+        d["WIRELESS_KEY_3"]
+      ]
       if (@wl_key[0] || "").empty?
         @wl_key[0]        = d["WIRELESS_KEY"]
       end
