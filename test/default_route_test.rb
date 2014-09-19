@@ -74,11 +74,17 @@ describe "Yast::LanItemsClass" do
     allow(Yast::NetworkInterfaces).
       to receive(:CleanHotplugSymlink)
     allow(Yast::NetworkInterfaces).
-      to receive(:GetTypeFromSysfs).  with(/eth\d+/).      and_return "eth"
+      to receive(:GetTypeFromSysfs).
+      with(/eth\d+/).
+      and_return "eth"
     allow(Yast::NetworkInterfaces).
-      to receive(:GetType).           with(/eth\d+/).      and_return "eth"
+      to receive(:GetType).
+      with(/eth\d+/).
+      and_return "eth"
     allow(Yast::NetworkInterfaces).
-      to receive(:GetType).           with("").            and_return nil
+      to receive(:GetType).
+      with("").
+      and_return nil
 
     allow(Yast::LanUdevAuto).
       to receive(:AllowUdevModify).and_return false
