@@ -217,14 +217,6 @@ module Yast
       new_SCR = WFM.SCROpen("chroot=/:scr", false)
       WFM.SCRSetDefault(new_SCR)
 
-      # when root is on nfs/iscsi set startmode=nfsroot #176804
-      device = NetworkStorage.getDevice(Installation.destdir)
-      Builtins.y2debug(
-        "%1 directory is on %2 device",
-        Installation.destdir,
-        device
-      )
-
       # --------------------------------------------------------------
       # Copy DHCP client cache so that we can request the same IP (#43974).
       WFM.Execute(
