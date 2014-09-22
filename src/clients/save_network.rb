@@ -69,20 +69,20 @@ module Yast
 
       log.info("Network based device: #{network_disk}")
 
-      # overwrite configuration created during network setup e.g. in InstInstallInfClient
-      if network_disk == :iscsi &&
-        NetworkStorage.getiBFTDevices.include?(
-          InstallInfConvertor::InstallInf["Netdevice"]
-        )
-        SCR.Execute(
-          path(".target.bash"),
-          "sed -i s/STARTMODE.*/STARTMODE='nfsroot'/ #{file}"
-        )
-        SCR.Execute(
-          path(".target.bash"),
-          "sed -i s/BOOTPROTO.*/BOOTPROTO='ibft'/ #{file}"
-        )
-      end
+      return if network_disk != :iscsi
+      return if !NetworkStorage.getiBFTDevice.include?(
+        InstallInfConvertor::InstallInf["Netdevice"]
+      )
+
+      # tune ifcfg file for remote filesystem
+      SCR.Execute(
+        path(".target.bash"),
+        "sed -i s/STARTMODE.*/STARTMODE='nfsroot'/ #{file}"
+      )
+      SCR.Execute(
+        path(".target.bash"),
+        "sed -i s/BOOTPROTO.*/BOOTPROTO='ibft'/ #{file}"
+      )
     end
 
     ETC = "/etc/"
