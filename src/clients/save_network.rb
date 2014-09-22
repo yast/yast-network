@@ -63,13 +63,15 @@ module Yast
     end
 
     def adjust_for_network_disks(file)
-      # known net devices: `nfs `iscsi `fcoe
-      device = NetworkStorage.getDevice(Installation.destdir)
-      network_disk = NetworkStorage.isDiskOnNetwork(device)
+      # Check if installation is targeted to a remote destination.
+      # Discover remote access method here - { :nfs, :iscsi, :fcoe }
+      remote_access = NetworkStorage.isDiskOnNetwork(
+        NetworkStorage.getDevice(Installation.destdir)
+      )
 
-      log.info("Network based device: #{network_disk}")
+      log.info("Network based device: #{remote_access}")
 
-      return if network_disk != :iscsi
+      return if remote_access != :iscsi
       return if !NetworkStorage.getiBFTDevice.include?(
         InstallInfConvertor::InstallInf["Netdevice"]
       )
