@@ -78,7 +78,7 @@ module Yast
       # tune ifcfg file for remote filesystem
       SCR.Execute(
         path(".target.bash"),
-        "sed -i s/STARTMODE.*/STARTMODE='nfsroot'/ #{file}"
+        "sed -i s/^[[:space:]]*STARTMODE=.*/STARTMODE='nfsroot'/ #{file}"
       )
     end
 
