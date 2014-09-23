@@ -52,6 +52,7 @@ module Yast
       Yast.import "ProductFeatures"
       Yast.import "NetworkConfig"
       Yast.import "NetworkStorage"
+      Yast.import "Storage"
       Yast.include self, "network/complex.rb"
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/lan/s390.rb"
@@ -2351,7 +2352,7 @@ module Yast
       @netmask = ""
       @bootproto = "dhcp"
       # #176804
-      if NetworkStorage.isDiskOnNetwork(NetworkStorage.getDevice("/")) != :no
+      if Storage.IsDeviceOnNetwork(NetworkStorage.getDevice("/")) != :no
         @startmode = "nfsroot"
         Builtins.y2milestone("startmode nfsroot")
       end

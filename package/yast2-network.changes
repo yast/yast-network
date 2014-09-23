@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Sep 23 15:03:15 UTC 2014 - mfilka@suse.com
+
+- bnc#892958
+  - propose STARTMODE=nfsroot when installing to remote device
+- 3.1.101 
+
+-------------------------------------------------------------------
 Wed Sep 17 16:35:12 CEST 2014 - mvidner@suse.com
 
 - Really do not lose the default route

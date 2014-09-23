@@ -47,6 +47,7 @@ module Yast
       Yast.import "Mode"
       Yast.import "Arch"
       Yast.import "LanUdevAuto"
+      Yast.import "Storage"
 
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/complex.rb"
@@ -63,26 +64,22 @@ module Yast
     end
 
     def adjust_for_network_disks(file)
-      # known net devices: `nfs `iscsi `fcoe
-      device = NetworkStorage.getDevice(Installation.destdir)
-      network_disk = NetworkStorage.isDiskOnNetwork(device)
+      # Check if installation is targeted to a remote destination.
+      # Discover remote access method here - { :nfs, :iscsi, :fcoe }
+      # or :no when no remote storage
+      remote_access = Storage.IsDeviceOnNetwork(
+        NetworkStorage.getDevice(Installation.destdir)
+      )
 
-      log.info("Network based device: #{network_disk}")
+      log.info("Network based device: #{remote_access}")
 
-      # overwrite configuration created during network setup e.g. in InstInstallInfClient
-      if network_disk == :iscsi &&
-        NetworkStorage.getiBFTDevices.include?(
-          InstallInfConvertor::InstallInf["Netdevice"]
-        )
-        SCR.Execute(
-          path(".target.bash"),
-          "sed -i s/STARTMODE.*/STARTMODE='nfsroot'/ #{file}"
-        )
-        SCR.Execute(
-          path(".target.bash"),
-          "sed -i s/BOOTPROTO.*/BOOTPROTO='ibft'/ #{file}"
-        )
-      end
+      return if remote_access == :no
+
+      # tune ifcfg file for remote filesystem
+      SCR.Execute(
+        path(".target.bash"),
+        "sed -i s/^[[:space:]]*STARTMODE=.*/STARTMODE='nfsroot'/ #{file}"
+      )
     end
 
     ETC = "/etc/"
@@ -214,14 +211,6 @@ module Yast
       old_SCR = WFM.SCRGetDefault
       new_SCR = WFM.SCROpen("chroot=/:scr", false)
       WFM.SCRSetDefault(new_SCR)
-
-      # when root is on nfs/iscsi set startmode=nfsroot #176804
-      device = NetworkStorage.getDevice(Installation.destdir)
-      Builtins.y2debug(
-        "%1 directory is on %2 device",
-        Installation.destdir,
-        device
-      )
 
       # --------------------------------------------------------------
       # Copy DHCP client cache so that we can request the same IP (#43974).
