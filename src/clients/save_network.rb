@@ -47,6 +47,7 @@ module Yast
       Yast.import "Mode"
       Yast.import "Arch"
       Yast.import "LanUdevAuto"
+      Yast.import "Storage"
 
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/complex.rb"
@@ -65,7 +66,7 @@ module Yast
     def adjust_for_network_disks(file)
       # Check if installation is targeted to a remote destination.
       # Discover remote access method here - { :nfs, :iscsi, :fcoe }
-      remote_access = NetworkStorage.isDiskOnNetwork(
+      remote_access = Storage.IsDeviceOnNetwork(
         NetworkStorage.getDevice(Installation.destdir)
       )
 

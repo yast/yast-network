@@ -55,35 +55,7 @@ module Yast
       device
     end
 
-    # If the disk is on a networked device (NFS, ISCSI),
-    # the main NIC needs STARTMODE nfsroot instead of auto.
-    # @return root dev over network: `no `iscsi `nfs `fcoe
-    def isDiskOnNetwork(device)
-      Storage.IsDeviceOnNetwork(device)
-    end
-
-    def getiBFTDevices
-      if SCR.Execute(path(".target.bash"), "ls /sys/firmware/ibft") == 0
-        output = Convert.convert(
-          SCR.Execute(
-            path(".target.bash_output"),
-            "ls /sys/firmware/ibft/ethernet*/device/net/"
-          ),
-          :from => "any",
-          :to   => "map <string, any>"
-        )
-        ifaces = Builtins.filter(
-          Builtins.splitstring(Ops.get_string(output, "stdout", ""), "\n")
-        ) { |row| Ops.greater_than(Builtins.size(row), 0) }
-        return deep_copy(ifaces)
-      else
-        return []
-      end
-    end
-
     publish :function => :getDevice, :type => "string (string)"
-    publish :function => :isDiskOnNetwork, :type => "symbol (string)"
-    publish :function => :getiBFTDevices, :type => "list <string> ()"
   end
 
   NetworkStorage = NetworkStorageClass.new
