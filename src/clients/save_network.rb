@@ -66,16 +66,14 @@ module Yast
     def adjust_for_network_disks(file)
       # Check if installation is targeted to a remote destination.
       # Discover remote access method here - { :nfs, :iscsi, :fcoe }
+      # or :no when no remote storage
       remote_access = Storage.IsDeviceOnNetwork(
         NetworkStorage.getDevice(Installation.destdir)
       )
 
       log.info("Network based device: #{remote_access}")
 
-      return if remote_access != :iscsi
-      return if !NetworkStorage.getiBFTDevice.include?(
-        InstallInfConvertor::InstallInf["Netdevice"]
-      )
+      return if remote_access == :no
 
       # tune ifcfg file for remote filesystem
       SCR.Execute(
