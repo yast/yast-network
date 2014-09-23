@@ -81,10 +81,6 @@ module Yast
         path(".target.bash"),
         "sed -i s/STARTMODE.*/STARTMODE='nfsroot'/ #{file}"
       )
-      SCR.Execute(
-        path(".target.bash"),
-        "sed -i s/BOOTPROTO.*/BOOTPROTO='ibft'/ #{file}"
-      )
     end
 
     ETC = "/etc/"
