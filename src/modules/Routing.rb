@@ -171,14 +171,17 @@ module Yast
       nil
     end
 
-    def register_ifroute_agent_for_device(device)
-      SCR.RegisterAgent(path(".ifroute-#{device}"), ifroute_term(device))
-    end
-
     # Read routing settings
     # If no routes, sets a default gateway from Detection
     # @return true if success
     def Read
+      # read available devices
+      NetworkInterfaces.Read
+      @devices = NetworkInterfaces.List("")
+
+      @devices.each { |d| register_ifroute_agent_for_device(d) }
+
+      # read routes
       @Routes = SCR.Read(path(".routes")) || []
 
       ReadIPForwarding()
@@ -191,10 +194,6 @@ module Yast
       @Orig_Routes = deep_copy(@Routes)
       @Orig_Forward_v4 = deep_copy(@Forward_v4)
       @Orig_Forward_v6 = deep_copy(@Forward_v6)
-
-      # read available devices
-      NetworkInterfaces.Read
-      @devices = NetworkInterfaces.List("")
 
       if @Routes == []
         ReadFromGateway(Ops.get_string(NetHwDetection.result, "GATEWAY", ""))
@@ -422,6 +421,10 @@ module Yast
           routes_content_term
         )
       )
+    end
+
+    def register_ifroute_agent_for_device(device)
+      SCR.RegisterAgent(path(".ifroute-#{device}"), ifroute_term(device))
     end
 
   end
