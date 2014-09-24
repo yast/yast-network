@@ -179,15 +179,7 @@ module Yast
     # @return true if success
     def Read
       # read route.conf
-      if Ops.greater_than(SCR.Read(path(".target.size"), ROUTES_FILE), 0)
-        @Routes = Convert.convert(
-          SCR.Read(path(".routes")),
-          :from => "any",
-          :to   => "list <map>"
-        )
-      else
-        @Routes = []
-      end
+      @Routes = SCR.Read(path(".routes")) || []
 
       ReadIPForwarding()
 
