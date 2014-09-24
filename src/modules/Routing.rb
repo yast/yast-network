@@ -33,6 +33,7 @@ require "yast"
 
 module Yast
   class RoutingClass < Module
+    include Logger
 
     # @Orig_Routes [Array]        array of hashes. Caches known routes
     #
@@ -183,9 +184,9 @@ module Yast
 
       ReadIPForwarding()
 
-      Builtins.y2debug("Routes=#{@Routes}")
-      Builtins.y2debug("Forward_v4=#{@Forward_v4}")
-      Builtins.y2debug("Forward_v6=#{@Forward_v6}")
+      log.info("Routes=#{@Routes}")
+      log.info("Forward_v4=#{@Forward_v4}")
+      log.info("Forward_v6=#{@Forward_v6}")
 
       # save routes to check for changes later
       @Orig_Routes = deep_copy(@Routes)
