@@ -179,7 +179,6 @@ module Yast
     # If no routes, sets a default gateway from Detection
     # @return true if success
     def Read
-      # read route.conf
       @Routes = SCR.Read(path(".routes")) || []
 
       ReadIPForwarding()
