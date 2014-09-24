@@ -170,6 +170,10 @@ module Yast
       nil
     end
 
+    def register_ifroute_agent_for_device(device)
+      SCR.RegisterAgent(path(".ifroute-#{device}"), ifroute_term(device))
+    end
+
     # Read routing settings
     # If no routes, sets a default gateway from Detection
     # @return true if success
@@ -379,6 +383,55 @@ module Yast
     publish :function => :GetGateway, :type => "string ()"
     publish :function => :SetDevices, :type => "boolean (list)"
     publish :function => :Summary, :type => "string ()"
+
+    private
+    def ifroute_term(device)
+      raise ArgumentError if device.nil? || device.empty?
+
+      non_empty_str_term = term(:String, "^ \t\n")
+      whitespace_term = term(:Whitespace)
+      optional_whitespace_term = term(:Optional, whitespace_term)
+      routes_content_term = term(
+        :List,
+        term(
+          :Tuple,
+            term(
+              :destination,
+              non_empty_str_term
+            ),
+            whitespace_term,
+            term(:gateway, non_empty_str_term),
+            whitespace_term,
+            term(:netmask, non_empty_str_term),
+            optional_whitespace_term,
+            term(
+              :Optional,
+              term(:device, non_empty_str_term)
+            ),
+            optional_whitespace_term,
+            term(
+              :Optional,
+              term(
+                :extrapara,
+                term(:String, "^\n")
+              )
+            )
+        ),
+        "\n"
+      )
+
+      term(
+        :ag_anyagent,
+        term(
+          :Description,
+          term(:File, "/etc/sysconfig/network/ifroute-#{device}"),
+          "#\n",
+          false,
+          routes_content_term
+        )
+      )
+    end
+
   end
 
   Routing = RoutingClass.new
