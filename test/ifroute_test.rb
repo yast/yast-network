@@ -9,7 +9,15 @@ include Yast
 Yast.import "NetworkInterfaces"
 Yast.import "Routing"
 
-describe "Routing#PackagesInstall" do
+describe "Routing#Read" do
+  ROUTES_FILE = [
+    {
+      "destination"=>"default",
+      "device"=>"eth0",
+      "gateway"=>"1.1.1.1",
+      "netmask"=>"-"
+    }
+  ]
   IFROUTE_FILE = [
     {
       "destination"=>"default",
@@ -53,6 +61,19 @@ describe "Routing#PackagesInstall" do
     expect(Routing.Read).to be true
     expect(Routing.Routes.first["device"])
       .to eql "eth0"
+  end
+
+  it "removes duplicit routes" do
+    expect(SCR)
+      .to receive(:Read)
+      .with(path(".routes"))
+      .and_return(ROUTES_FILE)
+    expect(SCR)
+      .to receive(:Read)
+      .with(path(".ifroute-eth0"))
+      .and_return(IFROUTE_FILE)
+    expect(Routing.Read).to be true
+    expect(Routing.Routes.size).to eql 1
   end
 
 end
