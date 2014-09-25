@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Sep 25 15:51:37 UTC 2014 - mfilka@suse.com
+
+- bnc#897394, bnc#866250
+  - device specific routes configuration (ifroute-<devname>) is
+    supported
+- 3.1.102
+
+-------------------------------------------------------------------
 Tue Sep 23 15:03:15 UTC 2014 - mfilka@suse.com
 
 - bnc#892958
