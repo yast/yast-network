@@ -17,6 +17,7 @@ TESTS = \
   complex_test.rb \
   read_hardware_test.rb \
   udev_test.rb \
+  ifroute_test.rb \
   remote_test.rb
 
 TEST_EXTENSIONS = .rb
