@@ -77,3 +77,40 @@ describe "Routing#Read" do
   end
 
 end
+
+describe "Routing#write_routes" do
+  ROUTES_WITH_DEV = [
+    {
+      "destination"=>"default",
+      "device"=>"eth0",
+      "gateway"=>"1.1.1.1",
+      "netmask"=>"-"
+    },
+    {
+      "destination"=>"default",
+      "device"=>"eth1",
+      "gateway"=>"2.2.2.2",
+      "netmask"=>"-"
+    }
+  ]
+
+  it "writes device assigned routes into correct ifroute file" do
+    allow(SCR)
+      .to receive(:Read)
+      .with(path(".target.size"), RoutingClass::ROUTES_FILE)
+      .and_return(1)
+    allow(Routing)
+      .to receive(:devices)
+      .and_return(["eth0", "eth1"])
+
+    expect(SCR)
+      .to receive(:Write)
+      .with(path(".ifroute-eth0"), anything())
+      .and_return(true)
+    expect(SCR)
+      .to receive(:Write)
+      .with(path(".ifroute-eth1"), anything())
+      .and_return(true)
+    expect(Routing.write_routes(ROUTES_WITH_DEV)).to be true
+  end
+end
