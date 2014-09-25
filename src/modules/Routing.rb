@@ -179,10 +179,25 @@ module Yast
       NetworkInterfaces.Read
       @devices = NetworkInterfaces.List("")
 
-      @devices.each { |d| register_ifroute_agent_for_device(d) }
-
       # read routes
       @Routes = SCR.Read(path(".routes")) || []
+
+      @devices.each do |device|
+        dev_routes = []
+
+        register_ifroute_agent_for_device(device)
+        dev_routes << SCR.Read(path(".ifroute-#{device}")) || []
+
+        # see man ifcfg - difference on implicit device param (aka "-") in
+        # case of /etc/sysconfig/network/routes and /etc/sysconfig/network/
+        # /ifroute-<device>
+        dev_routes.map! do |route|
+          route["device"] = device if route["device"] == "-"
+          route
+        end
+
+        @Routes += dev_routes
+      end
 
       ReadIPForwarding()
 
