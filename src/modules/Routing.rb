@@ -55,7 +55,9 @@ module Yast
       Yast.import "NetHwDetection"
       Yast.import "NetworkInterfaces"
       Yast.import "Map"
+      Yast.import "Mode"
       Yast.import "SuSEFirewall"
+      Yast.import "FileUtils"
 
       Yast.include self, "network/runtime.rb"
       Yast.include self, "network/routines.rb"
@@ -179,14 +181,16 @@ module Yast
       NetworkInterfaces.Read
       @devices = NetworkInterfaces.List("")
 
-      # read routes
+      # read routes)
+
       @Routes = SCR.Read(path(".routes")) || []
 
       @devices.each do |device|
-        register_ifroute_agent_for_device(device)
+        register_ifroute_agent_for_device(device) unless Mode.test
+
         dev_routes = SCR.Read(path(".ifroute-#{device}")) || []
 
-        next if dev_routes.empty?
+        next if dev_routes.nil? || dev_routes.empty?
 
         # see man ifcfg - difference on implicit device param (aka "-") in
         # case of /etc/sysconfig/network/routes and /etc/sysconfig/network/

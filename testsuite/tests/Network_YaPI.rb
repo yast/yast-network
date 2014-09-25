@@ -110,6 +110,15 @@ module Yast
         }
       }
 
+      # mock /etc/sysconfig/network/ifroute-* files. It was not supported
+      # at time of writing the testsuite and if not mocked causes false
+      # positives
+      ifroutes = {}
+      @READ["network"]["section"].keys.each do |devname|
+        ifroutes["ifroute-#{devname}"] = []
+      end
+      @READ.merge!(ifroutes)
+
       Testsuite.Init([@READ, {}, @EXEC], nil)
 
       Yast.import "YaPI::NETWORK"

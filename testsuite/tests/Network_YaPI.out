@@ -54,6 +54,18 @@ Read	.network.value."eth5.23".IPADDR "1.2.3.8/24"
 Read	.network.value."eth5.23".STARTMODE "auto"
 Read	.network.value."eth5.23".VLAN_ID "23"
 Read	.routes [$["destination":"default", "gateway":"10.20.30.40"]]
+Read	.ifroute-eth0 []
+Read	.ifroute-eth1 []
+Read	.ifroute-eth2 []
+Read	.ifroute-eth3 []
+Read	.ifroute-eth4 []
+Read	.ifroute-eth5 []
+Read	.ifroute-eth5.23 []
+Execute	.target.bash "rpm -q --whatprovides SuSEfirewall2" 0
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password show SuSEfirewall2.service  --property=Id  --property=MainPID  --property=Description  --property=LoadState  --property=ActiveState  --property=SubState  --property=UnitFileState  --property=FragmentPath " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password is-enabled SuSEfirewall2.service " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Read	.etc.sysctl_conf."net.ipv4.ip_forward" nil
+Read	.etc.sysctl_conf."net.ipv6.conf.all.forwarding" nil
 Dir	.network.section: ["eth0", "eth1", "eth2", "eth3", "eth4", "eth5", "eth5.23"]
 Dir	.network.value."eth0": ["BOOTPROTO", "STARTMODE"]
 Read	.network.value."eth0".BOOTPROTO "dhcp4"
@@ -270,6 +282,27 @@ Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legen
 Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password show network.service  --property=Id  --property=MainPID  --property=Description  --property=LoadState  --property=ActiveState  --property=SubState  --property=UnitFileState  --property=FragmentPath " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
 Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password is-enabled network.service " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
 Read	.routes [$["destination":"default", "gateway":"10.20.30.40"]]
+Read	.ifroute-eth0 []
+Read	.ifroute-eth1 []
+Read	.ifroute-eth2 []
+Read	.ifroute-eth3 []
+Read	.ifroute-eth4 []
+Read	.ifroute-eth5 []
+Read	.ifroute-eth5.23 []
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password show SuSEfirewall2.service  --property=Id  --property=MainPID  --property=Description  --property=LoadState  --property=ActiveState  --property=SubState  --property=UnitFileState  --property=FragmentPath " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password is-enabled SuSEfirewall2.service " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Read	.etc.sysctl_conf."net.ipv4.ip_forward" nil
+Read	.etc.sysctl_conf."net.ipv6.conf.all.forwarding" nil
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password show SuSEfirewall2.service  --property=Id  --property=MainPID  --property=Description  --property=LoadState  --property=ActiveState  --property=SubState  --property=UnitFileState  --property=FragmentPath " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password is-enabled SuSEfirewall2.service " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
+Write	.etc.sysctl_conf."net.ipv4.ip_forward" "0" true
+Write	.etc.sysctl_conf."net.ipv6.conf.all.forwarding" "0" true
+Write	.etc.sysctl_conf nil true
+Execute	.target.bash "echo 0 > /proc/sys/net/ipv4/ip_forward" 0
+Execute	.target.bash "echo 0 > /proc/sys/net/ipv6/conf/all/forwarding" 0
+Read	.target.size "/etc/sysconfig/network/routes" 27
+Execute	.target.bash "/bin/cp /etc/sysconfig/network/routes /etc/sysconfig/network/routes.YaST2save" 0
+Write	.routes [$["destination":"default", "device":"-", "gateway":"10.20.30.40", "netmask":"-"]] true
 Log	assertion failure, expected '$["error":"A valid IP address consists of four integers\nin the range 0-255 separated by dots.", "exit":"-1"]', got '$["error":"A valid IPv4 address consists of four integers\nin the range 0-255 separated by dots.", "exit":"-1"]'
 Dir	.network.section: ["eth0", "eth1", "eth2", "eth3", "eth4", "eth5", "eth5.23"]
 Dir	.network.value."eth0": ["BOOTPROTO", "STARTMODE"]
