@@ -202,6 +202,7 @@ module Yast
 
         @Routes += dev_routes
       end
+      @Routes.uniq!
 
       ReadIPForwarding()
 
