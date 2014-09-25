@@ -269,20 +269,21 @@ module Yast
 
     def write_routes(routes)
       # create if not exists, otherwise backup
-      if Ops.less_than(SCR.Read(path(".target.size"), ROUTES_FILE), 0)
-        SCR.Write(path(".target.string"), ROUTES_FILE, "")
-      else
+      if SCR.Read(path(".target.size"), ROUTES_FILE) > 0
         SCR.Execute(
           path(".target.bash"),
           "/bin/cp #{ROUTES_FILE} #{ROUTES_FILE}.YaST2save"
         )
+      else
+        SCR.Write(path(".target.string"), ROUTES_FILE, "")
       end
 
-      ret = true
-      if routes == []
+      if routes.empty?
         # workaround bug [#4476]
         ret = SCR.Write(path(".target.string"), ROUTES_FILE, "")
       else
+        ret = true
+
         # update the routes config
         Routing.devices.each do |device|
           ifroutes = routes.select { |r| r["device"] == device }
