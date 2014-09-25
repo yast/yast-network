@@ -278,9 +278,6 @@ module Yast
       Builtins.sleep(sl)
       Progress.NextStage
 
-      # and finally set up the new routes
-      # FIXME SCR::Execute(.target.bash, "/etc/init.d/route start");
-
       ret == true
     end
 
