@@ -183,10 +183,10 @@ module Yast
       @Routes = SCR.Read(path(".routes")) || []
 
       @devices.each do |device|
-        dev_routes = []
-
         register_ifroute_agent_for_device(device)
-        dev_routes << SCR.Read(path(".ifroute-#{device}")) || []
+        dev_routes = SCR.Read(path(".ifroute-#{device}")) || []
+
+        next if dev_routes.empty?
 
         # see man ifcfg - difference on implicit device param (aka "-") in
         # case of /etc/sysconfig/network/routes and /etc/sysconfig/network/
