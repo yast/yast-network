@@ -138,6 +138,9 @@ module Yast
         @Forward_v6 = SCR.Read(path(SYSCTL_IPV6_PATH)) == "1"
       end
 
+      log.info("Forward_v4=#{@Forward_v4}")
+      log.info("Forward_v6=#{@Forward_v6}")
+
       nil
     end
 
@@ -181,8 +184,7 @@ module Yast
       NetworkInterfaces.Read
       @devices = NetworkInterfaces.List("")
 
-      # read routes)
-
+      # read routes
       @Routes = SCR.Read(path(".routes")) || []
 
       @devices.each do |device|
@@ -202,21 +204,19 @@ module Yast
 
         @Routes += dev_routes
       end
+
       @Routes.uniq!
+      log.info("Routes=#{@Routes}")
 
       ReadIPForwarding()
 
-      log.info("Routes=#{@Routes}")
-      log.info("Forward_v4=#{@Forward_v4}")
-      log.info("Forward_v6=#{@Forward_v6}")
-
       # save routes to check for changes later
       @Orig_Routes = deep_copy(@Routes)
-      @Orig_Forward_v4 = deep_copy(@Forward_v4)
-      @Orig_Forward_v6 = deep_copy(@Forward_v6)
+      @Orig_Forward_v4 = @Forward_v4
+      @Orig_Forward_v6 = @Forward_v6
 
-      if @Routes == []
-        ReadFromGateway(Ops.get_string(NetHwDetection.result, "GATEWAY", ""))
+      if @Routes.empty?
+        ReadFromGateway(NetHwDetection.result["GATEWAY"] || "")
       end
 
       true
