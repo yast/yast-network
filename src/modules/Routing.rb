@@ -423,6 +423,11 @@ module Yast
       )
     end
 
+    # Registers SCR agent which is used for accessing particular ifroute-device
+    # file
+    #
+    # @param device [String] device name (e.g. eth0, enp0s3, ...)
+    # @return [true,false] if succeed
     def register_ifroute_agent_for_device(device)
       SCR.RegisterAgent(path(".ifroute-#{device}"), ifroute_term(device))
     end
