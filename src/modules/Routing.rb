@@ -33,6 +33,7 @@ require "yast"
 
 module Yast
   class RoutingClass < Module
+    # @return [Array<String>] names of devices with sysconfig configuration
     attr_reader :devices
 
     include Logger
@@ -190,6 +191,8 @@ module Yast
       @Routes = SCR.Read(path(".routes")) || []
 
       @devices.each do |device|
+        # Mode.test required for old testsuite. Dynamic agent registration break
+        # stubing there
         register_ifroute_agent_for_device(device) unless Mode.test
 
         dev_routes = SCR.Read(path(".ifroute-#{device}")) || []
@@ -267,6 +270,13 @@ module Yast
       ret == true
     end
 
+    # Updates routing configuration files
+    #
+    # It means /etc/sysconfig/network/routes and
+    # /etc/sysconfig/network/ifroute-*
+    #
+    # @param routes [Array] of hashes which defines route
+    # @return [true, false] if it succeedes
     def write_routes(routes)
       # create if not exists, otherwise backup
       if SCR.Read(path(".target.size"), ROUTES_FILE) > 0
