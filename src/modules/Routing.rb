@@ -33,6 +33,8 @@ require "yast"
 
 module Yast
   class RoutingClass < Module
+    attr_reader :devices
+
     include Logger
 
     # @Orig_Routes [Array]        array of hashes. Caches known routes
@@ -257,6 +259,15 @@ module Yast
       #Progress stage 2/2
       ProgressNextStage(_("Writing routing settings..."))
 
+      ret = write_routes(@Routes)
+
+      Builtins.sleep(sl)
+      Progress.NextStage
+
+      ret == true
+    end
+
+    def write_routes(routes)
       # create if not exists, otherwise backup
       if Ops.less_than(SCR.Read(path(".target.size"), ROUTES_FILE), 0)
         SCR.Write(path(".target.string"), ROUTES_FILE, "")
@@ -267,18 +278,22 @@ module Yast
         )
       end
 
-      ret = false
-      if @Routes == []
+      ret = true
+      if routes == []
         # workaround bug [#4476]
         ret = SCR.Write(path(".target.string"), ROUTES_FILE, "")
       else
         # update the routes config
-        ret = SCR.Write(path(".routes"), @Routes)
-      end
-      Builtins.sleep(sl)
-      Progress.NextStage
+        Routing.devices.each do |device|
+          ifroutes = routes.select { |r| r["device"] == device }
+          ret = SCR.Write(path(".ifroute-#{device}"), ifroutes) && ret if !ifroutes.empty?
+        end
 
-      ret == true
+        routes = routes.select { |r| r["device"] == "-" }
+        ret = SCR.Write(path(".routes"), routes) && ret if !routes.empty?
+      end
+
+      return ret
     end
 
 
