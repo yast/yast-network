@@ -6,7 +6,7 @@ require "yast"
 
 # creating a wrapper for Yast's 'header' file
 $LOAD_PATH.unshift File.expand_path('../../src', __FILE__)
-require "include/network/lan/udev"
+require "include/network/lan/s390"
 
 class NetworkLanS390Include
   include Singleton
@@ -16,6 +16,9 @@ class NetworkLanS390Include
     initialize_network_lan_s390(self)
   end
 end
+
+Yast.import "Arch"
+Yast.import "FileUtils"
 
 describe "NetworkLanS390Include::s390_DriverLoaded" do
   DEVNAME = "devname"
@@ -47,4 +50,4 @@ describe "NetworkLanS390Include::s390_DriverLoaded" do
     expect(NetworkLanS390Include.instance.s390_DriverLoaded(DEVNAME))
       .to be false
   end
-ed
+end

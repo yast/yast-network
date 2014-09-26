@@ -56,16 +56,6 @@ module Yast
         @EXECUTE
       ], nil) 
 
-      # FIXME polish it to really test it
-      #
-      # TEST(``(
-      #         Assert::Equal(`nfs, NetworkStorage::isDiskOnNetwork("server:/export"))
-      #         ), [READ, WRITE, EXECUTE], nil);
-      #
-      # TEST(``(
-      #         Assert::Equal(`nfs, NetworkStorage::isDiskOnNetwork("server-v4:/"))
-      #         ), [READ, WRITE, EXECUTE], nil);
-
       nil
     end
 
