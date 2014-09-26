@@ -59,6 +59,8 @@ describe "Routing#Read" do
       .with(path(".ifroute-eth0"))
       .and_return(IFROUTE_FILE)
     expect(Routing.Read).to be true
+    # check if implicit device name "-" is rewritten according device name
+    # which ifroute belongs to
     expect(Routing.Routes.first["device"])
       .to eql "eth0"
   end

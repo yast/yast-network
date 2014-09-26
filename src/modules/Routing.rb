@@ -33,6 +33,7 @@ require "yast"
 
 module Yast
   class RoutingClass < Module
+    # @!attribute [r] devices
     # @return [Array<String>] names of devices with sysconfig configuration
     attr_reader :devices
 
@@ -207,7 +208,7 @@ module Yast
           route
         end
 
-        @Routes += dev_routes
+        @Routes << dev_routes
       end
 
       @Routes.uniq!
@@ -264,10 +265,12 @@ module Yast
 
       ret = write_routes(@Routes)
 
+      # FIXME: no idea why sleep should be needed here. May be it had it's
+      # meaning in /etc/init.d/routes times
       Builtins.sleep(sl)
       Progress.NextStage
 
-      ret == true
+      ret
     end
 
     # Updates routing configuration files
@@ -297,7 +300,8 @@ module Yast
         # update the routes config
         Routing.devices.each do |device|
           ifroutes = routes.select { |r| r["device"] == device }
-          ret = SCR.Write(path(".ifroute-#{device}"), ifroutes) && ret if !ifroutes.empty?
+          written = SCR.Write(path(".ifroute-#{device}"), ifroutes) if !ifroutes.empty?
+          ret &&= written
         end
 
         routes = routes.select { |r| r["device"] == "-" }
