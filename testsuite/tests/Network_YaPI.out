@@ -302,13 +302,13 @@ Execute	.target.bash "echo 0 > /proc/sys/net/ipv4/ip_forward" 0
 Execute	.target.bash "echo 0 > /proc/sys/net/ipv6/conf/all/forwarding" 0
 Read	.target.size "/etc/sysconfig/network/routes" 27
 Execute	.target.bash "/bin/cp /etc/sysconfig/network/routes /etc/sysconfig/network/routes.YaST2save" 0
-Write	.target.string "/etc/sysconfig/network/ifroute-eth0" "" true
-Write	.target.string "/etc/sysconfig/network/ifroute-eth1" "" true
-Write	.target.string "/etc/sysconfig/network/ifroute-eth2" "" true
-Write	.target.string "/etc/sysconfig/network/ifroute-eth3" "" true
-Write	.target.string "/etc/sysconfig/network/ifroute-eth4" "" true
-Write	.target.string "/etc/sysconfig/network/ifroute-eth5" "" true
-Write	.target.string "/etc/sysconfig/network/ifroute-eth5.23" "" true
+Execute	.target.remove "/etc/sysconfig/network/ifroute-eth0" 0
+Execute	.target.remove "/etc/sysconfig/network/ifroute-eth1" 0
+Execute	.target.remove "/etc/sysconfig/network/ifroute-eth2" 0
+Execute	.target.remove "/etc/sysconfig/network/ifroute-eth3" 0
+Execute	.target.remove "/etc/sysconfig/network/ifroute-eth4" 0
+Execute	.target.remove "/etc/sysconfig/network/ifroute-eth5" 0
+Execute	.target.remove "/etc/sysconfig/network/ifroute-eth5.23" 0
 Write	.routes [$["destination":"default", "device":"-", "gateway":"10.20.30.40", "netmask":"-"]] true
 Log	assertion failure, expected '$["error":"A valid IP address consists of four integers\nin the range 0-255 separated by dots.", "exit":"-1"]', got '$["error":"A valid IPv4 address consists of four integers\nin the range 0-255 separated by dots.", "exit":"-1"]'
 Dir	.network.section: ["eth0", "eth1", "eth2", "eth3", "eth4", "eth5", "eth5.23"]

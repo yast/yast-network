@@ -210,7 +210,7 @@ module Yast
           route
         end
 
-        @Routes.push(* dev_routes)
+        @Routes.concat dev_routes
       end
 
       @Routes.uniq!
@@ -282,10 +282,11 @@ module Yast
         # work around bnc#19476
         if device == ANY_DEVICE
           filename = ROUTES_FILE
+          return SCR.Write(path(".target.string"), filename, "")
         else
           filename = "#{ROUTES_DIR}/ifroute-#{device}"
+          return SCR.Execute(path(".target.remove"), filename)
         end
-        return SCR.Write(path(".target.string"), filename, "")
       else
         if device == ANY_DEVICE
           scr_path = path(".routes")
