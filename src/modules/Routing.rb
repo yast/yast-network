@@ -33,7 +33,6 @@ require "yast"
 
 module Yast
   class RoutingClass < Module
-    # @!attribute [r] devices
     # @return [Array<String>] names of devices with sysconfig configuration
     attr_reader :devices
 
@@ -63,7 +62,6 @@ module Yast
       Yast.import "Map"
       Yast.import "Mode"
       Yast.import "SuSEFirewall"
-      Yast.import "FileUtils"
 
       Yast.include self, "network/runtime.rb"
       Yast.include self, "network/routines.rb"
@@ -247,7 +245,6 @@ module Yast
       ]
 
       caption = _("Saving Routing Configuration")
-      sl = 0 #100; //for testing
 
       Progress.New(caption, " ", Builtins.size(steps), steps, [], "")
 
@@ -255,7 +252,6 @@ module Yast
       ProgressNextStage(_("Writing IP forwarding settings..."))
 
       WriteIPForwarding()
-      Builtins.sleep(sl)
 
       # at first stop the running routes
       # FIXME SCR::Execute(.target.bash, "/etc/init.d/route stop");
@@ -267,9 +263,6 @@ module Yast
 
       ret = write_routes(@Routes)
 
-      # FIXME: no idea why sleep should be needed here. May be it had it's
-      # meaning in /etc/init.d/routes times
-      Builtins.sleep(sl)
       Progress.NextStage
 
       ret
