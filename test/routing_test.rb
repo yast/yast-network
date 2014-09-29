@@ -277,9 +277,6 @@ describe Routing do
             .with(path(".routes")) { MOCKED_ROUTES }
           expect(SCR)
             .to receive(:Read)
-            .with(path(".target.size"), "#{RoutingClass::ROUTES_FILE}") { 1 }
-          expect(SCR)
-            .to receive(:Read)
             .with(SYSCTL_IPV4_PATH) { ipv4 }
           expect(SCR)
             .to receive(:Read)
@@ -300,6 +297,7 @@ describe Routing do
 
             expect(Routing.Read).to be true
           end
+
         end
       end
     end

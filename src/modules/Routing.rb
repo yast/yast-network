@@ -33,6 +33,10 @@ require "yast"
 
 module Yast
   class RoutingClass < Module
+    # @return [Array<String>] names of devices with sysconfig configuration
+    attr_reader :devices
+
+    include Logger
 
     # @Orig_Routes [Array]        array of hashes. Caches known routes
     #
@@ -41,11 +45,18 @@ module Yast
     #
     # @modified [Boolean]         modified by AY (bnc#649494)
 
+    # "routes" and ifroute-DEV file directory
+    ROUTES_DIR  = "/etc/sysconfig/network"
     # "routes" file location
     ROUTES_FILE = "/etc/sysconfig/network/routes"
 
     SYSCTL_IPV4_PATH = ".etc.sysctl_conf.\"net.ipv4.ip_forward\""
     SYSCTL_IPV6_PATH = ".etc.sysctl_conf.\"net.ipv6.conf.all.forwarding\""
+
+    # see man routes - difference on implicit device param (aka "-") in
+    # case of /etc/sysconfig/network/routes and /etc/sysconfig/network/
+    # /ifroute-<device>
+    ANY_DEVICE = "-"
 
     def main
       Yast.import "UI"
@@ -54,6 +65,7 @@ module Yast
       Yast.import "NetHwDetection"
       Yast.import "NetworkInterfaces"
       Yast.import "Map"
+      Yast.import "Mode"
       Yast.import "SuSEFirewall"
 
       Yast.include self, "network/runtime.rb"
@@ -103,7 +115,7 @@ module Yast
           "destination" => "default",
           "gateway"     => gw,
           "netmask"     => "-",
-          "device"      => "-"
+          "device"      => ANY_DEVICE
         }
       ]
       true
@@ -134,6 +146,9 @@ module Yast
         @Forward_v4 = SCR.Read(path(SYSCTL_IPV4_PATH)) == "1"
         @Forward_v6 = SCR.Read(path(SYSCTL_IPV6_PATH)) == "1"
       end
+
+      log.info("Forward_v4=#{@Forward_v4}")
+      log.info("Forward_v6=#{@Forward_v6}")
 
       nil
     end
@@ -174,34 +189,42 @@ module Yast
     # If no routes, sets a default gateway from Detection
     # @return true if success
     def Read
-      # read route.conf
-      if Ops.greater_than(SCR.Read(path(".target.size"), ROUTES_FILE), 0)
-        @Routes = Convert.convert(
-          SCR.Read(path(".routes")),
-          :from => "any",
-          :to   => "list <map>"
-        )
-      else
-        @Routes = []
-      end
-
-      ReadIPForwarding()
-
-      Builtins.y2debug("Routes=#{@Routes}")
-      Builtins.y2debug("Forward_v4=#{@Forward_v4}")
-      Builtins.y2debug("Forward_v6=#{@Forward_v6}")
-
-      # save routes to check for changes later
-      @Orig_Routes = deep_copy(@Routes)
-      @Orig_Forward_v4 = deep_copy(@Forward_v4)
-      @Orig_Forward_v6 = deep_copy(@Forward_v6)
-
       # read available devices
       NetworkInterfaces.Read
       @devices = NetworkInterfaces.List("")
 
-      if @Routes == []
-        ReadFromGateway(Ops.get_string(NetHwDetection.result, "GATEWAY", ""))
+      # read routes
+      @Routes = SCR.Read(path(".routes")) || []
+
+      @devices.each do |device|
+        # Mode.test required for old testsuite. Dynamic agent registration break
+        # stubing there
+        register_ifroute_agent_for_device(device) unless Mode.test
+
+        dev_routes = SCR.Read(path(".ifroute-#{device}")) || []
+
+        next if dev_routes.nil? || dev_routes.empty?
+
+        dev_routes.map! do |route|
+          route["device"] = device if route["device"] == ANY_DEVICE
+          route
+        end
+
+        @Routes.concat dev_routes
+      end
+
+      @Routes.uniq!
+      log.info("Routes=#{@Routes}")
+
+      ReadIPForwarding()
+
+      # save routes to check for changes later
+      @Orig_Routes = deep_copy(@Routes)
+      @Orig_Forward_v4 = @Forward_v4
+      @Orig_Forward_v6 = @Forward_v6
+
+      if @Routes.empty?
+        ReadFromGateway(NetHwDetection.result["GATEWAY"] || "")
       end
 
       true
@@ -224,7 +247,6 @@ module Yast
       ]
 
       caption = _("Saving Routing Configuration")
-      sl = 0 #100; //for testing
 
       Progress.New(caption, " ", Builtins.size(steps), steps, [], "")
 
@@ -232,7 +254,6 @@ module Yast
       ProgressNextStage(_("Writing IP forwarding settings..."))
 
       WriteIPForwarding()
-      Builtins.sleep(sl)
 
       # at first stop the running routes
       # FIXME SCR::Execute(.target.bash, "/etc/init.d/route stop");
@@ -242,31 +263,70 @@ module Yast
       #Progress stage 2/2
       ProgressNextStage(_("Writing routing settings..."))
 
-      # create if not exists, otherwise backup
-      if Ops.less_than(SCR.Read(path(".target.size"), ROUTES_FILE), 0)
-        SCR.Write(path(".target.string"), ROUTES_FILE, "")
+      ret = write_routes(@Routes)
+
+      Progress.NextStage
+
+      ret
+    end
+
+    # From *routes*, select those belonging to *device* and write
+    # an appropriate config file.
+    # @param device device name, or "-" for global routes
+    # @param routes [Array<Hash>] defines route; even unrelated to *device*
+    # @return [true, false] if it succeedes
+    def write_route_file(device, routes)
+      routes = routes.select { |r| r["device"] == device }
+
+      if routes.empty?
+        # work around bnc#19476
+        if device == ANY_DEVICE
+          filename = ROUTES_FILE
+          return SCR.Write(path(".target.string"), filename, "")
+        else
+          filename = "#{ROUTES_DIR}/ifroute-#{device}"
+          return SCR.Execute(path(".target.remove"), filename)
+        end
       else
+        if device == ANY_DEVICE
+          scr_path = path(".routes")
+        else
+          scr_path = register_ifroute_agent_for_device(device)
+        end
+        return SCR.Write(scr_path, routes)
+      end
+    end
+
+    # Updates routing configuration files
+    #
+    # It means /etc/sysconfig/network/routes and
+    # /etc/sysconfig/network/ifroute-*
+    #
+    # @param routes [Array] of hashes which defines route
+    # @return [true, false] if it succeedes
+    def write_routes(routes)
+      # create if not exists, otherwise backup
+      if SCR.Read(path(".target.size"), ROUTES_FILE) > 0
         SCR.Execute(
           path(".target.bash"),
           "/bin/cp #{ROUTES_FILE} #{ROUTES_FILE}.YaST2save"
         )
-      end
-
-      ret = false
-      if @Routes == []
-        # workaround bug [#4476]
-        ret = SCR.Write(path(".target.string"), ROUTES_FILE, "")
       else
-        # update the routes config
-        ret = SCR.Write(path(".routes"), @Routes)
+        SCR.Write(path(".target.string"), ROUTES_FILE, "")
       end
-      Builtins.sleep(sl)
-      Progress.NextStage
 
-      # and finally set up the new routes
-      # FIXME SCR::Execute(.target.bash, "/etc/init.d/route start");
+      ret = true
 
-      ret == true
+      # update the routes config
+      Routing.devices.each do |device|
+        written = write_route_file(device, routes)
+        ret &&= written
+      end
+
+      written = write_route_file(ANY_DEVICE, routes)
+      ret &&= written
+
+      return ret
     end
 
 
@@ -379,6 +439,68 @@ module Yast
     publish :function => :GetGateway, :type => "string ()"
     publish :function => :SetDevices, :type => "boolean (list)"
     publish :function => :Summary, :type => "string ()"
+
+    private
+    def ifroute_term(device)
+      raise ArgumentError if device.nil? || device.empty?
+
+      non_empty_str_term = term(:String, "^ \t\n")
+      whitespace_term = term(:Whitespace)
+      optional_whitespace_term = term(:Optional, whitespace_term)
+      routes_content_term = term(
+        :List,
+        term(
+          :Tuple,
+            term(
+              :destination,
+              non_empty_str_term
+            ),
+            whitespace_term,
+            term(:gateway, non_empty_str_term),
+            whitespace_term,
+            term(:netmask, non_empty_str_term),
+            optional_whitespace_term,
+            term(
+              :Optional,
+              term(:device, non_empty_str_term)
+            ),
+            optional_whitespace_term,
+            term(
+              :Optional,
+              term(
+                :extrapara,
+                term(:String, "^\n")
+              )
+            )
+        ),
+        "\n"
+      )
+
+      term(
+        :ag_anyagent,
+        term(
+          :Description,
+          term(:File, "#{ROUTES_DIR}/ifroute-#{device}"),
+          "#\n",
+          false,
+          routes_content_term
+        )
+      )
+    end
+
+    # Registers SCR agent which is used for accessing particular ifroute-device
+    # file
+    #
+    # @param device [String] device name (e.g. eth0, enp0s3, ...)
+    # @return [Path] SCR path of the agent
+    # @raise  [RuntimeError] if it fails
+    def register_ifroute_agent_for_device(device)
+      scr_path = path(".ifroute-#{device}")
+      SCR.RegisterAgent(scr_path, ifroute_term(device)) or
+        raise "Cannot SCR.RegisterAgent(#{scr_path}, ...)"
+      scr_path
+    end
+
   end
 
   Routing = RoutingClass.new
