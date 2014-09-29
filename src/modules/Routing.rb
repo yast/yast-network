@@ -53,6 +53,11 @@ module Yast
     SYSCTL_IPV4_PATH = ".etc.sysctl_conf.\"net.ipv4.ip_forward\""
     SYSCTL_IPV6_PATH = ".etc.sysctl_conf.\"net.ipv6.conf.all.forwarding\""
 
+    # see man routes - difference on implicit device param (aka "-") in
+    # case of /etc/sysconfig/network/routes and /etc/sysconfig/network/
+    # /ifroute-<device>
+    ANY_DEVICE = "-"
+
     def main
       Yast.import "UI"
       textdomain "network"
@@ -110,7 +115,7 @@ module Yast
           "destination" => "default",
           "gateway"     => gw,
           "netmask"     => "-",
-          "device"      => "-"
+          "device"      => ANY_DEVICE
         }
       ]
       true
@@ -200,11 +205,8 @@ module Yast
 
         next if dev_routes.nil? || dev_routes.empty?
 
-        # see man ifcfg - difference on implicit device param (aka "-") in
-        # case of /etc/sysconfig/network/routes and /etc/sysconfig/network/
-        # /ifroute-<device>
         dev_routes.map! do |route|
-          route["device"] = device if route["device"] == "-"
+          route["device"] = device if route["device"] == ANY_DEVICE
           route
         end
 
@@ -270,28 +272,27 @@ module Yast
 
     # From *routes*, select those belonging to *device* and write
     # an appropriate config file.
-    # @param device device name, or "-" for global reoutes
-    # @param routes [Array] of hashes which defines route; even unrelated to *device*
+    # @param device device name, or "-" for global routes
+    # @param routes [Array<Hash>] defines route; even unrelated to *device*
     # @return [true, false] if it succeedes
     def write_route_file(device, routes)
       routes = routes.select { |r| r["device"] == device }
-      if device == "-"
-        scr_path = path(".routes")
-      else
-        scr_path = path(".ifroute-#{device}")
-      end
 
       if routes.empty?
         # work around bnc#19476
-        if device == "-"
+        if device == ANY_DEVICE
           filename = ROUTES_FILE
         else
-          basename = scr_path.to_s[1..-1] # eat "."
-          filename = "#{ROUTES_DIR}/#{basename}"
+          filename = "#{ROUTES_DIR}/ifroute-#{device}"
         end
         return SCR.Write(path(".target.string"), filename, "")
       else
-        register_ifroute_agent_for_device(device)
+        if device == ANY_DEVICE
+          scr_path = path(".routes")
+        else
+          scr_path = path(".ifroute-#{device}")
+          register_ifroute_agent_for_device(device)
+        end
         return SCR.Write(scr_path, routes)
       end
     end
@@ -322,7 +323,7 @@ module Yast
         ret &&= written
       end
 
-      written = write_route_file("-", routes)
+      written = write_route_file(ANY_DEVICE, routes)
       ret &&= written
 
       return ret
@@ -493,7 +494,6 @@ module Yast
     # @param device [String] device name (e.g. eth0, enp0s3, ...)
     # @return [true,false] if succeed
     def register_ifroute_agent_for_device(device)
-      return true if device == "-" # .routes is always registered
       SCR.RegisterAgent(path(".ifroute-#{device}"), ifroute_term(device))
     end
 
