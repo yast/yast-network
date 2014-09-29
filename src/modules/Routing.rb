@@ -208,7 +208,7 @@ module Yast
           route
         end
 
-        @Routes << dev_routes
+        @Routes.push(* dev_routes)
       end
 
       @Routes.uniq!
