@@ -275,21 +275,31 @@ module Yast
       ret
     end
 
-    # @param scr_path `.routes` or previously registered `.ifroute-#{device}`
-    # @param routes [Array] of hashes which defines route; for that file only
+    # From *routes*, select those belonging to *device* and write
+    # an appropriate config file.
+    # @param device device name, or "-" for global reoutes
+    # @param routes [Array] of hashes which defines route; even unrelated to *device*
     # @return [true, false] if it succeedes
-    def write_route_file(scr_path, routes)
-      # easy case:
-      return SCR.Write(scr_path, routes) unless routes.empty?
-
-      # work around bnc#19476
-      if scr_path == path(".routes")
-        filename = ROUTES_FILE
+    def write_route_file(device, routes)
+      routes = routes.select { |r| r["device"] == device }
+      if device == "-"
+        scr_path = path(".routes")
       else
-        basename = scr_path.to_s[1..-1] # eat "."
-        filename = "#{ROUTES_DIR}/#{basename}"
+        scr_path = path(".ifroute-#{device}")
       end
-      return SCR.Write(path(".target.string"), filename, "")
+
+      if routes.empty?
+        # work around bnc#19476
+        if device == "-"
+          filename = ROUTES_FILE
+        else
+          basename = scr_path.to_s[1..-1] # eat "."
+          filename = "#{ROUTES_DIR}/#{basename}"
+        end
+        return SCR.Write(path(".target.string"), filename, "")
+      else
+        return SCR.Write(scr_path, routes)
+      end
     end
 
     # Updates routing configuration files
@@ -314,13 +324,11 @@ module Yast
 
       # update the routes config
       Routing.devices.each do |device|
-        ifroutes = routes.select { |r| r["device"] == device }
-        written = write_route_file(path(".ifroute-#{device}"), ifroutes)
+        written = write_route_file(device, routes)
         ret &&= written
       end
 
-      routes = routes.select { |r| r["device"] == "-" }
-      written = write_route_file(path(".routes"), routes)
+      written = write_route_file("-", routes)
       ret &&= written
 
       return ret
