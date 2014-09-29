@@ -1728,10 +1728,6 @@ module Yast
       @wl_power       = d["WIRELESS_POWER"] == "yes"
       @wl_ap_scanmode = d["WIRELESS_AP_SCANMODE"]
 
-      # s/390 options
-      # We always have to set the MAC Address for qeth Layer2 support
-      @qeth_macaddress = d["LLADDR"]
-
       @ipoib_mode = d["IPOIB_MODE"]
 
       @aliases = Ops.get_map(devmap, "_aliases", {})
@@ -1751,6 +1747,11 @@ module Yast
       @qeth_portnumber = d["QETH_PORTNUMBER"]
       @qeth_layer2     = d["QETH_LAYER2"] == "yes"
       @qeth_chanids    = d["QETH_CHANIDS"]
+
+      # s/390 options
+      # We always have to set the MAC Address for qeth Layer2 support
+      @qeth_macaddress = d["LLADDR"]
+
 
       # qeth attribute. FIXME: currently not read from system.
       @ipa_takeover = Ops.get_string(defaults, "IPA_TAKEOVER", "") == "yes"
