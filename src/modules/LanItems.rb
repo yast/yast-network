@@ -1917,10 +1917,10 @@ module Yast
       if @qeth_layer2 && s390_correct_lladdr(@qeth_macaddress)
         busid = Ops.get_string(@Items, [@current, "hwinfo", "busid"], "")
         # sysfs id has changed from css0...
-        sysfs_id = Ops.add("/devices/qeth/", busid)
-        Builtins.y2milestone("busid %1", busid)
+        sysfs_id = "/devices/qeth/#{busid}"
+        log.info("busid #{busid}")
         if s390_device_needs_persistent_mac(sysfs_id, @Hardware)
-          Ops.set(newdev, "LLADDR", @qeth_macaddress)
+          newdev["LLADDR"] = @qeth_macaddress
         end
       end
 
