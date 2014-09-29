@@ -1860,11 +1860,6 @@ module Yast
       end
       Builtins.y2debug("type=%1", @type)
 
-      # We always have to set the MAC Address for qeth Layer2 support
-      if @qeth_layer2
-        @qeth_macaddress = Ops.get_string(devmap, "LLADDR", "00:00:00:00:00:00")
-      end
-
       true
     end
 
