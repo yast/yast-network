@@ -103,7 +103,7 @@ describe "Routing#write_routes" do
       .and_return(1)
     allow(Routing)
       .to receive(:devices)
-      .and_return(["eth0", "eth1"])
+      .and_return(["eth0", "eth1", "eth2"])
 
     expect(SCR)
       .to receive(:Write)
@@ -112,6 +112,14 @@ describe "Routing#write_routes" do
     expect(SCR)
       .to receive(:Write)
       .with(path(".ifroute-eth1"), anything())
+      .and_return(true)
+    expect(SCR)
+      .to receive(:Write)
+      .with(path(".target.string"), "/etc/sysconfig/network/ifroute-eth2", "")
+      .and_return(true)
+    expect(SCR)
+      .to receive(:Write)
+      .with(path(".target.string"), "/etc/sysconfig/network/routes", "")
       .and_return(true)
     expect(Routing.write_routes(ROUTES_WITH_DEV)).to be true
   end
