@@ -103,3 +103,29 @@ describe "LanItemsClass#getNetworkInterfaces" do
       expect(Yast::LanItems.getNetworkInterfaces).to match_array(EXPECTED_INTERFACES)
     end
 end
+
+describe "LanItemsClass#s390_correct_lladdr" do
+  Yast.import "Arch"
+
+  before(:each) do
+    allow(Yast::Arch)
+      .to receive(:s390)
+      .and_return(true)
+  end
+
+  it "fails if given lladdr is nil" do
+    expect(Yast::LanItems.send(:s390_correct_lladdr, nil)).to be false
+  end
+
+  it "fails if given lladdr is empty" do
+    expect(Yast::LanItems.send(:s390_correct_lladdr, "")).to be false
+  end
+
+  it "fails if given lladdr contains zeroes only" do
+    expect(Yast::LanItems.send(:s390_correct_lladdr, "00:00:00:00:00:00")).to be false
+  end
+
+  it "succeeds if given lladdr contains valid MAC" do
+    expect(Yast::LanItems.send(:s390_correct_lladdr, "0a:00:27:00:00:00")).to be true
+  end
+end
