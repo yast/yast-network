@@ -12,18 +12,18 @@ Yast.import "Routing"
 describe "Routing#Read" do
   ROUTES_FILE = [
     {
-      "destination"=>"default",
-      "device"=>"eth0",
-      "gateway"=>"1.1.1.1",
-      "netmask"=>"-"
+      "destination" => "default",
+      "device"      => "eth0",
+      "gateway"     => "1.1.1.1",
+      "netmask"     => "-"
     }
   ]
   IFROUTE_FILE = [
     {
-      "destination"=>"default",
-      "device"=>"-",
-      "gateway"=>"1.1.1.1",
-      "netmask"=>"-"
+      "destination" => "default",
+      "device"      => "-",
+      "gateway"     => "1.1.1.1",
+      "netmask"     => "-"
     }
   ]
 
@@ -83,16 +83,16 @@ end
 describe "Routing#write_routes" do
   ROUTES_WITH_DEV = [
     {
-      "destination"=>"default",
-      "device"=>"eth0",
-      "gateway"=>"1.1.1.1",
-      "netmask"=>"-"
+      "destination" => "default",
+      "device"      => "eth0",
+      "gateway"     => "1.1.1.1",
+      "netmask"     => "-"
     },
     {
-      "destination"=>"default",
-      "device"=>"eth1",
-      "gateway"=>"2.2.2.2",
-      "netmask"=>"-"
+      "destination" => "default",
+      "device"      => "eth1",
+      "gateway"     => "2.2.2.2",
+      "netmask"     => "-"
     }
   ]
 
