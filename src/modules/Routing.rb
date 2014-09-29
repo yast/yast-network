@@ -46,6 +46,8 @@ module Yast
     #
     # @modified [Boolean]         modified by AY (bnc#649494)
 
+    # "routes" and ifroute-DEV file directory
+    ROUTES_DIR  = "/etc/sysconfig/network"
     # "routes" file location
     ROUTES_FILE = "/etc/sysconfig/network/routes"
 
@@ -273,6 +275,23 @@ module Yast
       ret
     end
 
+    # @param scr_path `.routes` or previously registered `.ifroute-#{device}`
+    # @param routes [Array] of hashes which defines route; for that file only
+    # @return [true, false] if it succeedes
+    def write_route_file(scr_path, routes)
+      # easy case:
+      return SCR.Write(scr_path, routes) unless routes.empty?
+
+      # work around bnc#19476
+      if scr_path == path(".routes")
+        filename = ROUTES_FILE
+      else
+        basename = scr_path.to_s[1..-1] # eat "."
+        filename = "#{ROUTES_DIR}/#{basename}"
+      end
+      return SCR.Write(path(".target.string"), filename, "")
+    end
+
     # Updates routing configuration files
     #
     # It means /etc/sysconfig/network/routes and
@@ -291,22 +310,18 @@ module Yast
         SCR.Write(path(".target.string"), ROUTES_FILE, "")
       end
 
-      if routes.empty?
-        # workaround bug [#4476]
-        ret = SCR.Write(path(".target.string"), ROUTES_FILE, "")
-      else
-        ret = true
+      ret = true
 
-        # update the routes config
-        Routing.devices.each do |device|
-          ifroutes = routes.select { |r| r["device"] == device }
-          written = SCR.Write(path(".ifroute-#{device}"), ifroutes) if !ifroutes.empty?
-          ret &&= written
-        end
-
-        routes = routes.select { |r| r["device"] == "-" }
-        ret = SCR.Write(path(".routes"), routes) && ret if !routes.empty?
+      # update the routes config
+      Routing.devices.each do |device|
+        ifroutes = routes.select { |r| r["device"] == device }
+        written = write_route_file(path(".ifroute-#{device}"), ifroutes)
+        ret &&= written
       end
+
+      routes = routes.select { |r| r["device"] == "-" }
+      written = write_route_file(path(".routes"), routes)
+      ret &&= written
 
       return ret
     end
@@ -462,7 +477,7 @@ module Yast
         :ag_anyagent,
         term(
           :Description,
-          term(:File, "/etc/sysconfig/network/ifroute-#{device}"),
+          term(:File, "#{ROUTES_DIR}/ifroute-#{device}"),
           "#\n",
           false,
           routes_content_term
