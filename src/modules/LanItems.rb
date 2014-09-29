@@ -1750,7 +1750,7 @@ module Yast
 
       # s/390 options
       # We always have to set the MAC Address for qeth Layer2 support
-      @qeth_macaddress = d["LLADDR"]
+      @qeth_macaddress = d["LLADDR"] if @qeth_layer2
 
 
       # qeth attribute. FIXME: currently not read from system.
