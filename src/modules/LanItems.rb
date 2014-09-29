@@ -1914,7 +1914,7 @@ module Yast
       Ops.set(newdev, "REMOTE_IPADDR", @remoteip)
 
       # set LLADDR to sysconfig only for device on layer2 and only these which needs it
-      if @qeth_layer2
+      if @qeth_layer2 && s390_correct_lladdr(@qeth_macaddress)
         busid = Ops.get_string(@Items, [@current, "hwinfo", "busid"], "")
         # sysfs id has changed from css0...
         sysfs_id = Ops.add("/devices/qeth/", busid)
@@ -2521,6 +2521,20 @@ module Yast
     #  @return [$2]
     def self.publish_variable(name, type)
       publish :variable => name, :type => type
+    end
+
+    # Checks if given lladdr can be written into ifcfg
+    #
+    # @param lladdr [String] logical link address, usually MAC address in case
+    #                        of qeth device
+    # @return [true, false] check result
+    def s390_correct_lladdr(lladdr)
+      return false if !Arch.s390
+      return false if lladdr.nil?
+      return false if lladdr.empty?
+      return false if lladdr.strip == "00:00:00:00:00:00"
+
+      return true
     end
 
     public
