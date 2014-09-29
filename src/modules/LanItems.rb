@@ -82,9 +82,6 @@ module Yast
 
       @description = ""
 
-      #unique - only for backward compatibility
-      #global string unique = "";
-
       @type = ""
       # ifcfg name for the @current device
       @device = ""
@@ -204,7 +201,6 @@ module Yast
 
       # NetworkModules:: name
       @nm_name = ""
-      @nm_name_old = nil
 
       #this is the map of kernel modules vs. requested firmware
       #non-empty keys are firmware packages shipped by SUSE
@@ -2617,7 +2613,6 @@ module Yast
     publish_variable :proposal_valid       , "boolean"
     publish_variable :nm_proposal_valid    , "boolean"
     publish_variable :nm_name              , "string"
-    publish_variable :nm_name_old          , "string"
     # @attribute SysconfigDefaults
     publish_variable :SysconfigDefaults    , "map <string, string>"
     publish :function => :GetLanItem, :type => "map (integer)"
