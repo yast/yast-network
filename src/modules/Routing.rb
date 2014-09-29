@@ -298,6 +298,7 @@ module Yast
         end
         return SCR.Write(path(".target.string"), filename, "")
       else
+        register_ifroute_agent_for_device(device)
         return SCR.Write(scr_path, routes)
       end
     end
@@ -499,6 +500,7 @@ module Yast
     # @param device [String] device name (e.g. eth0, enp0s3, ...)
     # @return [true,false] if succeed
     def register_ifroute_agent_for_device(device)
+      return true if device == "-" # .routes is always registered
       SCR.RegisterAgent(path(".ifroute-#{device}"), ifroute_term(device))
     end
 
