@@ -262,8 +262,9 @@ module Yast
     # @param [Symbol] cache:
     #  `cache=use cached data,
     #  `nocache=reread from disk (for reproposal); TODO pass to submodules
+    # @param [Boolean]: read_firewall_settings; default = true
     # @return true on success
-    def Read(cache)
+    def Read(cache, read_firewall_settings = true)
       if cache == :cache && @initialized
         Builtins.y2milestone("Using cached data")
         return true
@@ -379,24 +380,7 @@ module Yast
       # Progress step 5/9
       ProgressNextStage(_("Reading firewall settings...")) if @gui
       orig = Progress.set(false)
-
-      # The Read function can also be called from an autoyast installation
-      # if the installed network will be kept.
-      #
-      # So, read firewall setting only if
-      # - we are not in an autoinstallation mode
-      # - or we are not using the installed network while autoyast installation
-      # - or we are configuring firewall in an own section while autoyast installation
-      #   when we are keeping the installed network. In this case firewall will be
-      #   set in the firewall module.
-      # (bnc#897129)
-      if !Mode.autoinst ||
-        !(Profile.current.has_key?("networking") &&
-          Profile.current["networking"]["keep_install_network"]) ||
-        !Profile.current.has_key?("firewall")
-
-        SuSEFirewall4Network.Read
-      end
+      SuSEFirewall4Network.Read if read_firewall_settings
       Progress.set(orig) if @gui
       Builtins.sleep(sl)
 

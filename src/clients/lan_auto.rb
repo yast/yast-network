@@ -98,7 +98,9 @@ module Yast
         # and merge with XML data (bnc#712864)
         if Ops.get_boolean(@param, "keep_install_network", false) == true
           # read settings from installation
-          Lan.Read(:cache)
+          # But do not overwrite firewall settings which are
+          # defined in autoinst.xml. (bnc#897129)
+          Lan.Read(:cache, read_firewall_settings = false)
           # export settings into AY map
           @from_system = Lan.Export
           @dns = Ops.get_map(@from_system, "dns", {})
