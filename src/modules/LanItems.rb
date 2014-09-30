@@ -242,7 +242,6 @@ module Yast
         "REMOTE_IPADDR"                => "",
         "NETMASK"                      => "",
         "MTU"                          => "",
-        "LLADDR"                       => "00:00:00:00:00:00",
         "ETHTOOL_OPTIONS"              => "",
         "NAME"                         => "",
         "STARTMODE"                    => "manual",
@@ -297,7 +296,8 @@ module Yast
         "QETH_LAYER2"     => "no",
         "QETH_CHANIDS"    => "",
         "IPA_TAKEOVER"    => "no",
-        "IUCV_USER"       => ""
+        "IUCV_USER"       => "",
+        "LLADDR"          => "00:00:00:00:00:00"
       }
 
       # ifplugd sometimes does not work for wifi
