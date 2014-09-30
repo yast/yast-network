@@ -8,7 +8,7 @@ require "yast"
 $LOAD_PATH.unshift File.expand_path('../../src', __FILE__)
 require "include/network/lan/s390"
 
-class NetworkLanS390Include
+class NetworkLanS390Include < Yast::Client
   include Singleton
 
   def initialize
