@@ -10,10 +10,9 @@ require "include/network/lan/s390"
 
 class NetworkLanS390Include
   include Singleton
-  include Yast::NetworkLanS390Include
 
   def initialize
-    initialize_network_lan_s390(self)
+    Yast.include self, "network/lan/s390.rb"
   end
 end
 
