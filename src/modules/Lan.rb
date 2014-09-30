@@ -61,6 +61,7 @@ module Yast
       Yast.import "Linuxrc"
       Yast.import "LanUdevAuto"
       Yast.import "Report"
+      Yast.import "Profile"
 
       Yast.include self, "network/complex.rb"
       Yast.include self, "network/runtime.rb"
@@ -378,7 +379,24 @@ module Yast
       # Progress step 5/9
       ProgressNextStage(_("Reading firewall settings...")) if @gui
       orig = Progress.set(false)
-      SuSEFirewall4Network.Read
+
+      # The Read function can also be called from an autoyast installation
+      # if the installed network will be kept.
+      #
+      # So, read firewall setting only if
+      # - we are not in an autoinstallation mode
+      # - or we are not using the installed network while autoyast installation
+      # - or we are configuring firewall in an own section while autoyast installation
+      #   when we are keeping the installed network. In this case firewall will be
+      #   set in the firewall module.
+      # (bnc#897129)
+      if !Mode.autoinst ||
+        !(Profile.current.has_key?("networking") &&
+          Profile.current["networking"]["keep_install_network"]) ||
+        !Profile.current.has_key?("firewall")
+
+        SuSEFirewall4Network.Read
+      end
       Progress.set(orig) if @gui
       Builtins.sleep(sl)
 
