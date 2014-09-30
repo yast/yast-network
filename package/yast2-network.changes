@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Sep 30 10:15:38 UTC 2014 - ancor@suse.com
+
+- The "change hostname via DHCP" setting is now configurable via
+  control file (bnc#870896).
+- 3.1.104
+
+-------------------------------------------------------------------
 Mon Sep 29 22:14:49 UTC 2014 - mfilka@suse.com
 
 - bnc#898620
