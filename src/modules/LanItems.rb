@@ -1745,7 +1745,10 @@ module Yast
       @qeth_chanids    = d["QETH_CHANIDS"]
 
       # s/390 options
-      # We always have to set the MAC Address for qeth Layer2 support
+      # We always have to set the MAC Address for qeth Layer2 support.
+      # It is used mainly as a hint for user that MAC is expected in case
+      # of Layer2 devices. Other devices do not need it. Simply
+      # because such devices do not emulate Layer2
       @qeth_macaddress = d["LLADDR"] if @qeth_layer2
 
 
@@ -1910,6 +1913,7 @@ module Yast
       Ops.set(newdev, "REMOTE_IPADDR", @remoteip)
 
       # set LLADDR to sysconfig only for device on layer2 and only these which needs it
+      # do not write incorrect LLADDR.
       if @qeth_layer2 && s390_correct_lladdr(@qeth_macaddress)
         busid = Ops.get_string(@Items, [@current, "hwinfo", "busid"], "")
         # sysfs id has changed from css0...
