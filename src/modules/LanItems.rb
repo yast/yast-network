@@ -82,9 +82,6 @@ module Yast
 
       @description = ""
 
-      #unique - only for backward compatibility
-      #global string unique = "";
-
       @type = ""
       # ifcfg name for the @current device
       @device = ""
@@ -204,7 +201,6 @@ module Yast
 
       # NetworkModules:: name
       @nm_name = ""
-      @nm_name_old = nil
 
       #this is the map of kernel modules vs. requested firmware
       #non-empty keys are firmware packages shipped by SUSE
@@ -246,7 +242,6 @@ module Yast
         "REMOTE_IPADDR"                => "",
         "NETMASK"                      => "",
         "MTU"                          => "",
-        "LLADDR"                       => "00:00:00:00:00:00",
         "ETHTOOL_OPTIONS"              => "",
         "NAME"                         => "",
         "STARTMODE"                    => "manual",
@@ -301,7 +296,8 @@ module Yast
         "QETH_LAYER2"     => "no",
         "QETH_CHANIDS"    => "",
         "IPA_TAKEOVER"    => "no",
-        "IUCV_USER"       => ""
+        "IUCV_USER"       => "",
+        "LLADDR"          => "00:00:00:00:00:00"
       }
 
       # ifplugd sometimes does not work for wifi
@@ -1728,10 +1724,6 @@ module Yast
       @wl_power       = d["WIRELESS_POWER"] == "yes"
       @wl_ap_scanmode = d["WIRELESS_AP_SCANMODE"]
 
-      # s/390 options
-      # We always have to set the MAC Address for qeth Layer2 support
-      @qeth_macaddress = d["LLADDR"]
-
       @ipoib_mode = d["IPOIB_MODE"]
 
       @aliases = Ops.get_map(devmap, "_aliases", {})
@@ -1751,6 +1743,14 @@ module Yast
       @qeth_portnumber = d["QETH_PORTNUMBER"]
       @qeth_layer2     = d["QETH_LAYER2"] == "yes"
       @qeth_chanids    = d["QETH_CHANIDS"]
+
+      # s/390 options
+      # We always have to set the MAC Address for qeth Layer2 support.
+      # It is used mainly as a hint for user that MAC is expected in case
+      # of Layer2 devices. Other devices do not need it. Simply
+      # because such devices do not emulate Layer2
+      @qeth_macaddress = d["LLADDR"] if @qeth_layer2
+
 
       # qeth attribute. FIXME: currently not read from system.
       @ipa_takeover = Ops.get_string(defaults, "IPA_TAKEOVER", "") == "yes"
@@ -1860,11 +1860,6 @@ module Yast
       end
       Builtins.y2debug("type=%1", @type)
 
-      # We always have to set the MAC Address for qeth Layer2 support
-      if @qeth_layer2
-        @qeth_macaddress = Ops.get_string(devmap, "LLADDR", "00:00:00:00:00:00")
-      end
-
       true
     end
 
@@ -1918,13 +1913,14 @@ module Yast
       Ops.set(newdev, "REMOTE_IPADDR", @remoteip)
 
       # set LLADDR to sysconfig only for device on layer2 and only these which needs it
-      if @qeth_layer2
+      # do not write incorrect LLADDR.
+      if @qeth_layer2 && s390_correct_lladdr(@qeth_macaddress)
         busid = Ops.get_string(@Items, [@current, "hwinfo", "busid"], "")
         # sysfs id has changed from css0...
-        sysfs_id = Ops.add("/devices/qeth/", busid)
-        Builtins.y2milestone("busid %1", busid)
+        sysfs_id = "/devices/qeth/#{busid}"
+        log.info("busid #{busid}")
         if s390_device_needs_persistent_mac(sysfs_id, @Hardware)
-          Ops.set(newdev, "LLADDR", @qeth_macaddress)
+          newdev["LLADDR"] = @qeth_macaddress
         end
       end
 
@@ -2527,6 +2523,20 @@ module Yast
       publish :variable => name, :type => type
     end
 
+    # Checks if given lladdr can be written into ifcfg
+    #
+    # @param lladdr [String] logical link address, usually MAC address in case
+    #                        of qeth device
+    # @return [true, false] check result
+    def s390_correct_lladdr(lladdr)
+      return false if !Arch.s390
+      return false if lladdr.nil?
+      return false if lladdr.empty?
+      return false if lladdr.strip == "00:00:00:00:00:00"
+
+      return true
+    end
+
     public
 
     # @attribute Items
@@ -2607,7 +2617,6 @@ module Yast
     publish_variable :proposal_valid       , "boolean"
     publish_variable :nm_proposal_valid    , "boolean"
     publish_variable :nm_name              , "string"
-    publish_variable :nm_name_old          , "string"
     # @attribute SysconfigDefaults
     publish_variable :SysconfigDefaults    , "map <string, string>"
     publish :function => :GetLanItem, :type => "map (integer)"

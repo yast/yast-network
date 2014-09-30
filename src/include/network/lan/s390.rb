@@ -8,23 +8,18 @@
 # Functions for accessing and handling s390 specific needs.
 module Yast
   module NetworkLanS390Include
+    SYS_DIR = "/sys/class/net"
+
     def initialize_network_lan_s390(include_target)
-      Yast.import "UI"
-
       Yast.import "FileUtils"
-
-      Yast.include include_target, "network/routines.rb"
-
-      @sys_dir = "/sys/class/net"
     end
 
     # Checks if driver was successfully loaded for particular device.
     def s390_DriverLoaded(devname)
       return false if !Arch.s390
+      return false if devname.empty?
 
-      return false if IsEmpty(devname)
-
-      FileUtils.IsDirectory(Builtins.sformat("%1/%2", @sys_dir, devname)) == true
+      FileUtils.IsDirectory("#{SYS_DIR}/#{devname}") == true
     end
 
     # Reads particular qeth attribute and returns its value as a string.
@@ -37,7 +32,7 @@ module Yast
       result = Convert.to_string(
         SCR.Read(
           path(".target.string"),
-          Builtins.sformat("%1/%2/device/%3", @sys_dir, devname, attrib)
+          Builtins.sformat("%1/%2/device/%3", SYS_DIR, devname, attrib)
         )
       )
 
