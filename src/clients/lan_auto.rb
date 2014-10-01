@@ -100,7 +100,7 @@ module Yast
           # read settings from installation
           # But do not overwrite firewall settings which are
           # defined in autoinst.xml. (bnc#897129)
-          Lan.Read(:cache, read_firewall_settings = false)
+          Lan.Read(:cache, false) #read_firewall_settings = false
           # export settings into AY map
           @from_system = Lan.Export
           @dns = Ops.get_map(@from_system, "dns", {})
