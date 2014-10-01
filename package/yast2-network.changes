@@ -3,7 +3,7 @@ Tue Sep 30 16:41:19 CEST 2014 - schubi@suse.de
 
 - AutoYaST: Do not overwrite firewall settings (configured in
   autoinst.xml) by installed firewall settings if the installed network
-  is kept. (bnc#897129)
+  will be kept. (bnc#897129)
 - 3.1.104
 
 -------------------------------------------------------------------
