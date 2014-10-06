@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Oct  6 09:31:41 UTC 2014 - mfilka@suse.com
+
+- bnc#889287
+  - during autoconfiguration at s390 use linuxrc's OSAHWAddr param
+    for LLADDR when available.
+- 3.1.105
+
+-------------------------------------------------------------------
 Tue Sep 30 10:15:38 UTC 2014 - ancor@suse.com
 
 - The "change hostname via DHCP" setting is now configurable via
