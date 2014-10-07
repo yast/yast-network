@@ -83,8 +83,10 @@ module Yast
       DNS.Read # handles NetworkConfig too
       DNS.ProposeHostname # generate random hostname, if none known so far
 
-      # propose settings
-      DNS.dhcp_hostname = !Arch.is_laptop
+      # FIXME after SLE12: DNS.default_dhcp_hostname should be private (setting
+      # default values is not something for an API), but that would need some
+      # refactoring of this part.
+      DNS.dhcp_hostname = DNS.default_dhcp_hostname
 
       # get default value, from control.xml
       DNS.write_hostname = DNS.DefaultWriteHostname
