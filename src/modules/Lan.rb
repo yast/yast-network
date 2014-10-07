@@ -261,7 +261,7 @@ module Yast
     # @param [Symbol] cache:
     #  `cache=use cached data,
     #  `nocache=reread from disk (for reproposal); TODO pass to submodules
-    # @param [Boolean]: read_firewall_settings; default = true
+    # @param [Boolean] read_firewall: reading system firewall settings
     # @return true on success
     def Read(cache, read_firewall: true)
       if cache == :cache && @initialized
