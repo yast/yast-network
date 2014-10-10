@@ -1,5 +1,5 @@
 -------------------------------------------------------------------
-Thu Oct  9 17:01:42 CEST 2014 - schubi@suse.de
+Thu Oct  9 17:01:42 UTC 2014 - schubi@suse.de
 
 - AutoYaST Routing Import: Initialize device list correctly.
   (bnc#900352)
