@@ -285,12 +285,8 @@ describe Routing do
 
           expect(Routing).
             to receive(:write_route_file).
-            with("eth0", ay_test[:input].fetch("routes", [])).
-            and_return true
-
-          expect(Routing).
-            to receive(:write_route_file).
-            with("-", kind_of(Array)).
+            twice.
+            with(kind_of(String), ay_test[:input].fetch("routes", [])).
             and_return true
 
           Routing.Write
