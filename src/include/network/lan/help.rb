@@ -47,18 +47,23 @@ module Yast
             ),
         "managed" =>
           # Network setup method help
-          # NetworkManager and ifup are programs
+          # NetworkManager and wicked are programs
           _(
             "<p><b><big>Network Setup Method</big></b></p>\n" +
               "<p>Use the <b>NetworkManager</b> as a desktop applet\n" +
               "managing connections for all interfaces. It is well suited\n" +
               "for switching among wired and wireless networks.</p>\n"
           ) +
-            # Network setup method help
-            # NetworkManager and wicked are programs
             _(
               "<p>Use <b>wicked</b> if you do not run a desktop environment\n" +
                 "or need to use multiple interfaces at the same time.</p>\n"
+            ) +
+            # For systems not including NetworkManager by default (bnc#892678)
+            _(
+              "<p><b>NetworkManager</b> is not part of every base\n" +
+              "installation repository. For example, to enable it on SUSE\n" +
+              "Linux Enterprise Server add the Workstation Extension\n" +
+              "repository and install the 'NetworkManager' package.</p>\n"
             ),
         "overview"          => _(
           "<p><b><big>Network Card Overview</big></b><br>\n" +
