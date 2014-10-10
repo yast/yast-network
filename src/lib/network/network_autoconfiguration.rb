@@ -206,7 +206,7 @@ module Yast
       set_default_route_flag(devname, "yes")
 
       if !activate_changes([devname])
-        log.warn("Cannot reach reference server via #{devname}")
+        log.warn("Cannot activate default_route for device #{devname}")
         return false
       end
 
@@ -218,7 +218,10 @@ module Yast
       log.info("Release notes can be reached via #{devname}: #{reached}")
 
       if !reached
-        set_default_route_flag(devname, "no")
+        # bsc#900466: Device is currently used for default route, but the test
+        # did not work, removing the default_route flag completely.
+        log.info "Removing default_route flag for device #{devname}"
+        set_default_route_flag(devname, nil)
         activate_changes([devname])
       end
 

@@ -1,8 +1,15 @@
 -------------------------------------------------------------------
-Thu Oct  9 17:01:42 UTC 2014 - schubi@suse.de
+Thu Oct 10 17:10:42 CEST 2014 - schubi@suse.de
 
 - AutoYaST Routing Import: Initialize device list correctly.
   (bnc#900352)
+- 3.1.108
+
+-------------------------------------------------------------------
+Fri Oct 10 15:20:36 CEST 2014 - locilka@suse.com
+
+- Do not set default_route to "no" in auto-configuration in
+  inst-sys, just remove the entry completely (bnc#900466)
 - 3.1.107
 
 -------------------------------------------------------------------
