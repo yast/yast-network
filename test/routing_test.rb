@@ -276,15 +276,24 @@ describe Routing do
         it "Checking routes entries" do
           # Devices which have already been imported by Lan.Import have to be read.
           # (bnc#900352)
-          expect(NetworkInterfaces)
+          allow(NetworkInterfaces)
             .to receive(:List)
-            .with("") { ["eth0"] }
+            .with("")
+            .and_return(["eth0"])
 
           Routing.Import(ay_test[:input])
 
-          exported = Routing.Export
-          expect(exported["routes"])
-            .to be_equal(ay_test["routes"]) if ay_test.has_key?("routes")
+          expect(Routing).
+            to receive(:write_route_file).
+            with("eth0", ay_test[:input].fetch("routes", [])).
+            and_return true
+
+          expect(Routing).
+            to receive(:write_route_file).
+            with("-", kind_of(Array)).
+            and_return true
+
+          Routing.Write
         end
 
       end
