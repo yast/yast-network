@@ -337,6 +337,11 @@ module Yast
     # @return true if success
     def Import(settings)
       settings = deep_copy(settings)
+
+      # Getting a list of devices which have already been imported by Lan.Import
+      # (bnc#900352)
+      @devices = NetworkInterfaces.List("")
+
       ip_forward = Ops.get_boolean(settings, "ip_forward", false)
       ipv4_forward = Ops.get_boolean(settings, "ipv4_forward", ip_forward)
       ipv6_forward = Ops.get_boolean(settings, "ipv6_forward", ip_forward)
