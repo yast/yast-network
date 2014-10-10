@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Oct 10 15:20:36 CEST 2014 - locilka@suse.com
+
+- Do not set default_route to "no" in auto-configuration in
+  inst-sys, just remove the entry completely (bnc#900466)
+- 3.1.107
+
+-------------------------------------------------------------------
 Thu Oct  9 15:47:14 UTC 2014 - ancor@suse.com
 
 - Improved help text in "global options" (bnc#892678)
