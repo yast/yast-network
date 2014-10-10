@@ -214,7 +214,20 @@ describe Routing do
           ]
         },
         {
-          input: { "routes" => [{ "1" => "r1" }, { "2" => "r2" }] },
+          input: { "routes" => [
+            { "destination" => "192.168.1.0",
+              "device" => "eth0",
+              "gateway" => "10.1.188.1",
+              "netmask" => "255.255.255.0" },
+            { "destination" => "10.1.230.0",
+              "device" => "eth0",
+              "gateway" => "10.1.18.254",
+              "netmask" => "255.255.255.0" },
+            { "destination" => "default",
+              "device" => "eth0",
+              "gateway" => "172.24.88.1",
+              "netmask" => "-" },
+          ] },
           keys: [
             "ipv4_forward",
             "ipv6_forward",
@@ -222,7 +235,20 @@ describe Routing do
           ]
         },
         {
-          input: { "ip_forward" => true, "routes" => [{ "1" => "r1" }, { "2" => "r2" }] },
+          input: { "ip_forward" => true, "routes" => [
+            { "destination" => "192.168.1.0",
+              "device" => "eth0",
+              "gateway" => "10.1.188.1",
+              "netmask" => "255.255.255.0" },
+            { "destination" => "10.1.230.0",
+              "device" => "eth0",
+              "gateway" => "10.1.18.254",
+              "netmask" => "255.255.255.0" },
+            { "destination" => "default",
+              "device" => "eth0",
+              "gateway" => "172.24.88.1",
+              "netmask" => "-" },
+          ] },
           keys: [
             "ipv4_forward",
             "ipv6_forward",
@@ -246,6 +272,21 @@ describe Routing do
           expect(exported["ipv6_forward"])
             .to be_equal(ay_test["ipv6_forward"]) if ay_test.has_key?("ipv6_forward")
         end
+
+        it "Checking routes entries" do
+          # Devices which have already been imported by Lan.Import have to be read.
+          # (bnc#900352)
+          expect(NetworkInterfaces)
+            .to receive(:List)
+            .with("") { ["eth0"] }
+
+          Routing.Import(ay_test[:input])
+
+          exported = Routing.Export
+          expect(exported["routes"])
+            .to be_equal(ay_test["routes"]) if ay_test.has_key?("routes")
+        end
+
       end
     end
   end
