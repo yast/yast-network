@@ -1151,8 +1151,13 @@ module Yast
   private
     def activate_network_service
       if LanItems.force_restart
+        log.info("Network service activation forced")
         NetworkService.Restart
       else
+        log.info(
+          ("Attempting to reload network service, normal stage %s, ssh: %s") %
+          [Stage.normal, Linuxrc.usessh]
+        )
         # If the second installation stage has been called by yast.ssh via
         # ssh, we should not restart network cause systemctl
         # hangs in that case. (bnc#885640)
