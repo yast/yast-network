@@ -614,14 +614,8 @@ module Yast
           )
         end
 
-        if LanItems.force_restart
-          NetworkService.Restart
-        else
-          # If the second installation stage has been called by yast.ssh via
-          # ssh, we should not restart network cause systemctl
-          # hangs in that case. (bnc#885640)
-          NetworkService.ReloadOrRestart if Stage.normal || !Linuxrc.usessh
-        end
+        activate_network_service
+
         Builtins.sleep(sl)
       end
 
@@ -1153,6 +1147,19 @@ module Yast
     publish :function => :Packages, :type => "list <string> ()"
     publish :function => :AutoPackages, :type => "map ()"
     publish :function => :HaveXenBridge, :type => "boolean ()"
+
+  private
+    def activate_network_service
+      if LanItems.force_restart
+        NetworkService.Restart
+      else
+        # If the second installation stage has been called by yast.ssh via
+        # ssh, we should not restart network cause systemctl
+        # hangs in that case. (bnc#885640)
+        NetworkService.ReloadOrRestart if Stage.normal || !Linuxrc.usessh
+      end
+    end
+
   end
 
   Lan = LanClass.new
