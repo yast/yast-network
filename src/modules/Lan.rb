@@ -620,7 +620,7 @@ module Yast
           # If the second installation stage has been called by yast.ssh via
           # ssh, we should not restart network cause systemctl
           # hangs in that case. (bnc#885640)
-          NetworkService.ReloadOrRestart if !Linuxrc.usessh
+          NetworkService.ReloadOrRestart if Stage.normal || !Linuxrc.usessh
         end
         Builtins.sleep(sl)
       end
