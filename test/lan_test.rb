@@ -84,3 +84,56 @@ describe "LanClass#Packages" do
   end
 
 end
+
+describe "LanClass#activate_network_service" do
+
+  Yast.import "Stage"
+  Yast.import "NetworkService"
+
+  [0, 1].each do |linuxrc_usessh|
+    ssh_flag = linuxrc_usessh != 0
+
+    context "when linuxrc %s usessh flag" % ssh_flag ? "sets" : "doesn't set" do
+      before(:each) do
+        allow(Yast::Linuxrc)
+          .to receive(:usessh)
+          .and_return(ssh_flag)
+      end
+
+      context "when asked in normal mode" do
+        before(:each) do
+          allow(Yast::Stage)
+            .to receive(:normal)
+            .and_return(true)
+        end
+
+        it "tries to reload network service" do
+          expect(Yast::NetworkService)
+            .to receive(:ReloadOrRestart)
+
+          Yast::Lan.send(:activate_network_service)
+        end
+      end
+
+      context "when asked during installation" do
+        before(:each) do
+          allow(Yast::Stage)
+            .to receive(:normal)
+            .and_return(false)
+        end
+
+        it "updates network service according usessh flag" do
+          if ssh_flag
+            expect(Yast::NetworkService)
+              .not_to receive(:ReloadOrRestart)
+          else
+            expect(Yast::NetworkService)
+              .to receive(:ReloadOrRestart)
+          end
+
+          Yast::Lan.send(:activate_network_service)
+        end
+      end
+    end
+  end
+end
