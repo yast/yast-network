@@ -23,6 +23,10 @@ home:*:*/
 /testsuite/config/
 testsuite/run/
 /testsuite/*.exp
+/testsuite/raw.tmp.*
 /testsuite/yast2-network.*
+/testsuite/*.log
 /test-driver
+/test/*.trs
+/test/*.log
 .yardoc
