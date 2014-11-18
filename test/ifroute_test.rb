@@ -128,3 +128,55 @@ describe "Routing#write_routes" do
     expect(Routing.write_routes(ROUTES_WITH_DEV)).to be true
   end
 end
+
+describe "Routing#Write" do
+  AY_ROUTES = [
+    # empty AY config
+    {},
+    # some routes
+    {
+      "routes" => [
+        {
+          "destination" => "192.168.1.0",
+          "device"      => "eth0",
+          "gateway"     => "10.1.188.1",
+          "netmask"     => "255.255.255.0"
+        },
+        {
+          "destination" => "10.1.230.0",
+          "device"      => "eth0",
+          "gateway"     => "10.1.18.254",
+          "netmask"     => "255.255.255.0"
+        },
+        {
+          "destination" => "default",
+          "device"      => "eth0",
+          "gateway"     => "172.24.88.1",
+          "netmask"     => "-"
+        },
+      ]
+    }
+  ]
+
+  AY_ROUTES.each_with_index do |ay_test, i|
+    it "does write route configuration files, ##{i}" do
+      # Devices which have already been imported by Lan.Import have to be read.
+      # (bnc#900352)
+      allow(NetworkInterfaces).
+        to receive(:List).
+        with("").
+        and_return(["eth0"])
+
+      Routing.Import(ay_test)
+
+      expect(Routing).
+        to receive(:write_route_file).
+        twice.
+        with(kind_of(String), ay_test.fetch("routes", [])).
+        and_return true
+
+      Routing.Write
+    end
+  end
+
+end

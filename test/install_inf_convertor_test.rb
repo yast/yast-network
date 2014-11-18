@@ -283,7 +283,7 @@ describe "InstallInfConvertor" do
 
       expect(Yast::InstallInfConvertor::InstallInf)
         .to receive(:[])
-        .with("HWAddr")
+        .with("OSAHWAddr")
         .and_return(HWADDR)
       expect(Yast::InstallInfConvertor.instance.send(:create_s390_ifcfg, nil).strip!)
         .to eql ("LLADDR='#{HWADDR}'")
