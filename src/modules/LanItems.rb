@@ -1352,10 +1352,14 @@ module Yast
             # avoid colons
             ifcfg_name = ifcfg_name.tr(":", "/")
             href = "lan--wifi-encryption-" + ifcfg_name
+
             # interface summary: WiFi without encryption
             warning = HTML.Colorize(_("Warning: no encryption is used."), "red")
+            warning << " " << Hyperlink(href, _("Change."))
+
             # Hyperlink: Change the configuration of an interface
-            status << " " << warning << " " << Hyperlink(href, _("Change."))
+            status = status + " " + warning
+
             links << href
           end
 
