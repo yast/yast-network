@@ -10,8 +10,15 @@ include Yast::UIShortcuts
 include Yast::I18n
 
 describe "LanItemsClass#BuildLanOverview" do
-  let(:unknown_device_overview) { ["<ul><li><p>Unknown Network Device<br>Not configured yet.</p></li></ul>", []] }
-  let(:german_translation_overview) { ["<ul><li><p>WiFi Link 6000 Series<br>Ohne Adresse konfiguriert (KEINE) <font color=\"red\">Warnung: Es wird keine Verschl\u00FCsselung verwendet.</font> <a href=\"lan--wifi-encryption-wlan0\">\u00C4ndern Sie dies.</a></p></li></ul>", ["lan--wifi-encryption-wlan0"]] }
+  let(:unknown_device_overview) {
+    ["<ul><li><p>Unknown Network Device<br>Not configured yet.</p></li></ul>", []]
+  }
+  let(:german_translation_overview) {
+    [
+      "<ul><li><p>WiFi Link 6000 Series<br>Ohne Adresse konfiguriert (KEINE) <font color=\"red\">Warnung: Es wird keine Verschl\u00FCsselung verwendet.</font> <a href=\"lan--wifi-encryption-wlan0\">\u00C4ndern Sie dies.</a></p></li></ul>",
+      ["lan--wifi-encryption-wlan0"]
+    ]
+  }
   let(:wlan_items) {
     {
       0 => {
