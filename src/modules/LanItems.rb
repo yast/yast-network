@@ -1330,7 +1330,7 @@ module Yast
           ip = DeviceProtocol(ifcfg_conf)
           status = DeviceStatus(
             LanItems.type,
-            NetworkInterfaces.device_num(ifcfg_name),
+            ifcfg_name,
             ifcfg_conf
           )
 
