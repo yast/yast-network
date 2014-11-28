@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Nov 28 08:51:22 UTC 2014 - mfilka@suse.com
+
+- bnc#906694
+  - fixed exception raised due to modifying frozen string when
+    running in localized mode
+- 3.1.110
+
+-------------------------------------------------------------------
 Fri Oct 17 07:45:24 UTC 2014 - mfilka@suse.com
 
 - bnc#898250, bnc#899363
