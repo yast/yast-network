@@ -1310,13 +1310,7 @@ module Yast
       overview = []
       links = []
 
-      Builtins.foreach(
-        Convert.convert(
-          Map.Keys(LanItems.Items),
-          :from => "list",
-          :to   => "list <integer>"
-        )
-      ) do |key|
+      LanItems.Items.each_key do |key|
         rich = ""
         ip = _("Not configured")
 
