@@ -1329,25 +1329,24 @@ module Yast
 
         LanItems.type = NetworkInterfaces.GetType(ifcfg_name)
         if !ifcfg_name.empty?
-          NetworkInterfaces.Select(ifcfg_name)
-
-          ifcfg_desc = GetDeviceMap(key)["NAME"]
+          ifcfg_conf = GetDeviceMap(key)
+          ifcfg_desc = ifcfg_conf["NAME"]
           descr = ifcfg_desc if !ifcfg_desc.nil? && !ifcfg_desc.empty?
           descr = CheckEmptyName(LanItems.type, descr)
-          ip = DeviceProtocol(NetworkInterfaces.Current)
+          ip = DeviceProtocol(ifcfg_conf)
           status = DeviceStatus(
             LanItems.type,
-            NetworkInterfaces.device_num(NetworkInterfaces.Name),
-            NetworkInterfaces.Current
+            NetworkInterfaces.device_num(ifcfg_name),
+            ifcfg_conf
           )
 
           bullets << _("Device Name: %s") % ifcfg_name
           bullets = bullets + startmode_overview
-          bullets = bullets + ip_overview(ip) if NetworkInterfaces.Current["STARTMODE"] != "managed"
+          bullets = bullets + ip_overview(ip) if ifcfg_conf["STARTMODE"] != "managed"
 
           if LanItems.type == "wlan" &&
-            NetworkInterfaces.Current["WIRELESS_AUTH_MODE"] == "open" &&
-            IsEmpty(NetworkInterfaces.Current["WIRELESS_KEY_0"])
+            ifcfg_conf["WIRELESS_AUTH_MODE"] == "open" &&
+            IsEmpty(ifcfg_conf["WIRELESS_KEY_0"])
 
             # avoid colons
             ifcfg_name = ifcfg_name.tr(":", "/")
