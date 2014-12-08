@@ -51,7 +51,9 @@ BuildRequires:  yast2-packager >= 3.1.47
 Requires:       yast2-packager >= 3.1.47
 
 # testsuite
-BuildRequires:       rubygem(rspec)
+BuildRequires:  rubygem(rspec)
+
+BuildRequires:  rubygem(gettext)
 
 PreReq:         /bin/rm
 
