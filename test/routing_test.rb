@@ -242,9 +242,9 @@ describe Routing do
 
           exported = Routing.Export
           expect(exported["ipv4_forward"])
-            .to be_equal(ay_test["ipv4_forward"]) if ay_test.has_key?("ipv4_forward")
+            .to eql(ay_test[:input]["ipv4_forward"]) if ay_test[:input].has_key?("ipv4_forward")
           expect(exported["ipv6_forward"])
-            .to be_equal(ay_test["ipv6_forward"]) if ay_test.has_key?("ipv6_forward")
+            .to eql(ay_test[:input]["ipv6_forward"]) if ay_test[:input].has_key?("ipv6_forward")
         end
       end
     end

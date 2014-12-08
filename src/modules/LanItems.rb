@@ -586,7 +586,7 @@ module Yast
 
     # Tells if current item was renamed
     def renamed?(item_id)
-      return false if !@Items[item_id].has_key?("renamed_to")
+      return false if !LanItems.Items[item_id].has_key?("renamed_to")
       renamed_to(item_id) != GetDeviceName(item_id)
     end
 
@@ -1310,44 +1310,37 @@ module Yast
       overview = []
       links = []
 
-      Builtins.foreach(
-        Convert.convert(
-          Map.Keys(@Items),
-          :from => "list",
-          :to   => "list <integer>"
-        )
-      ) do |key|
+      LanItems.Items.each_key do |key|
         rich = ""
         ip = _("Not configured")
 
-        item_hwinfo = @Items[key]["hwinfo"] || {}
+        item_hwinfo = LanItems.Items[key]["hwinfo"] || {}
         descr = item_hwinfo["name"] || ""
 
         note = ""
         bullets = []
-        ifcfg_name = @Items[key]["ifcfg"] || ""
+        ifcfg_name = LanItems.Items[key]["ifcfg"] || ""
 
-        @type = NetworkInterfaces.GetType(ifcfg_name)
+        LanItems.type = NetworkInterfaces.GetType(ifcfg_name)
         if !ifcfg_name.empty?
-          NetworkInterfaces.Select(ifcfg_name)
-
-          ifcfg_desc = GetDeviceMap(key)["NAME"]
+          ifcfg_conf = GetDeviceMap(key)
+          ifcfg_desc = ifcfg_conf["NAME"]
           descr = ifcfg_desc if !ifcfg_desc.nil? && !ifcfg_desc.empty?
-          descr = CheckEmptyName(@type, descr)
-          ip = DeviceProtocol(NetworkInterfaces.Current)
+          descr = CheckEmptyName(LanItems.type, descr)
+          ip = DeviceProtocol(ifcfg_conf)
           status = DeviceStatus(
-            @type,
-            NetworkInterfaces.device_num(NetworkInterfaces.Name),
-            NetworkInterfaces.Current
+            LanItems.type,
+            ifcfg_name,
+            ifcfg_conf
           )
 
           bullets << _("Device Name: %s") % ifcfg_name
           bullets = bullets + startmode_overview
-          bullets = bullets + ip_overview(ip) if NetworkInterfaces.Current["STARTMODE"] != "managed"
+          bullets = bullets + ip_overview(ip) if ifcfg_conf["STARTMODE"] != "managed"
 
-          if @type == "wlan" &&
-            NetworkInterfaces.Current["WIRELESS_AUTH_MODE"] == "open" &&
-            IsEmpty(NetworkInterfaces.Current["WIRELESS_KEY_0"])
+          if LanItems.type == "wlan" &&
+            ifcfg_conf["WIRELESS_AUTH_MODE"] == "open" &&
+            IsEmpty(ifcfg_conf["WIRELESS_KEY_0"])
 
             # avoid colons
             ifcfg_name = ifcfg_name.tr(":", "/")
@@ -1359,7 +1352,7 @@ module Yast
             links << href
           end
 
-          if @type == "bond"
+          if LanItems.type == "bond"
             bond_slaves_desc = ("%s: %s") % [
               _("Bonding slaves"),
               GetBondSlaves(ifcfg_name).join(" ")
@@ -1386,7 +1379,7 @@ module Yast
 
           overview << Summary.Device(descr, status)
         else
-          descr = CheckEmptyName(@type, descr)
+          descr = CheckEmptyName(LanItems.type, descr)
           overview << Summary.Device(descr, Summary.NotConfigured)
         end
         conn = ""
@@ -1430,7 +1423,7 @@ module Yast
           end
           @current = curr
         end
-        @Items[key]["table_descr"] = {
+        LanItems.Items[key]["table_descr"] = {
           "rich_descr" => rich,
           "table_descr" => [descr, ip, ifcfg_name, note]
         }

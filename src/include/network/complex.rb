@@ -346,7 +346,7 @@ module Yast
           host = NetHwDetection.ResolveIP(addr)
           remip = Ops.get_string(devmap, "REMOTE_IPADDR", "")
           if proto == "none"
-            return _("Configured without address (NONE)")
+            return _("Configured without address (NONE)").dup
           elsif IsEmpty(addr)
             # Network card status
             return HTML.Colorize(_("Configured without an address"), "red")

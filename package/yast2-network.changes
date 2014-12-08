@@ -1,4 +1,35 @@
 -------------------------------------------------------------------
+Fri Nov 28 08:51:22 UTC 2014 - mfilka@suse.com
+
+- bnc#906694
+  - fixed exception raised due to modifying frozen string when
+    running in localized mode
+- 3.1.110
+
+-------------------------------------------------------------------
+Fri Oct 17 07:45:24 UTC 2014 - mfilka@suse.com
+
+- bnc#898250, bnc#899363
+  - ignore /etc/install.inf:usessh flag when the file is present in
+    installed system and always reload / restart network service in
+    case of updated configuration
+- 3.1.109
+
+-------------------------------------------------------------------
+Thu Oct 10 17:10:42 CEST 2014 - schubi@suse.de
+
+- AutoYaST Routing Import: Initialize device list correctly.
+  (bnc#900352)
+- 3.1.108
+
+-------------------------------------------------------------------
+Fri Oct 10 15:20:36 CEST 2014 - locilka@suse.com
+
+- Do not set default_route to "no" in auto-configuration in
+  inst-sys, just remove the entry completely (bnc#900466)
+- 3.1.107
+
+-------------------------------------------------------------------
 Thu Oct  9 15:47:14 UTC 2014 - ancor@suse.com
 
 - Improved help text in "global options" (bnc#892678)
