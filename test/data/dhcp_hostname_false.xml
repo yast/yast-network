@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<productDefines xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+
+<!--
+Work around for the text domain
+textdomain="control"
+-->
+
+    <textdomain>control</textdomain>
+
+    <globals>
+        <additional_kernel_parameters/>
+        <enable_autologin config:type="boolean">false</enable_autologin>
+        <write_hostname_to_hosts config:type="boolean">true</write_hostname_to_hosts>
+        <dhclient_set_hostname config:type="boolean">false</dhclient_set_hostname>
+    </globals>
+
+    <software>
+        <delete_old_packages config:type="boolean">true</delete_old_packages>
+    </software>
+
+    <partitioning>
+        <try_separate_home config:type="boolean">true</try_separate_home>
+    </partitioning>
+
+    <network>
+        <force_static_ip config:type="boolean">false</force_static_ip>
+        <network_manager>always</network_manager>
+        <startmode>auto</startmode>
+    </network>
+
+    <texts>
+        <dummy_desktop><label/></dummy_desktop>
+    </texts>
+
+</productDefines>

@@ -43,6 +43,7 @@ module Yast
       Yast.import "UI"
       textdomain "network"
 
+      Yast.import "Arch"
       Yast.import "NetHwDetection"
       Yast.import "Hostname"
       Yast.import "IP"
@@ -226,6 +227,24 @@ module Yast
       )
       Builtins.y2milestone("write_hostname_to_hosts default value: %1", whth)
       whth
+    end
+
+    # Default value for #dhcp_hostname based on ProductFeatures and Arch
+    #
+    # @return [Boolean] value set in features or, if none is set, false just
+    #                   for laptops
+    def default_dhcp_hostname
+      # ProductFeatures.GetBooleanFeature returns false either if the value is
+      # false or if it's missing, so let's discard the later case calling
+      # ProductFeatures.GetFeature first
+      feature_index = ["globals", "dhclient_set_hostname"]
+      feature = ProductFeatures.GetFeature(*feature_index)
+      # No value for the feature
+      if feature.nil? || (feature.respond_to?(:empty?) && feature.empty?)
+        !Arch.is_laptop
+      else
+        ProductFeatures.GetBooleanFeature(*feature_index)
+      end
     end
 
     def ReadHostname
@@ -445,7 +464,7 @@ module Yast
     # @return true if success
     def Import(settings)
       settings = deep_copy(settings)
-      @dhcp_hostname = Ops.get_boolean(settings, "dhcp_hostname", false)
+      @dhcp_hostname = settings.fetch("dhcp_hostname") { default_dhcp_hostname }
       #if not defined, set to 'auto'
       @resolv_conf_policy = Ops.get_string(
         settings,

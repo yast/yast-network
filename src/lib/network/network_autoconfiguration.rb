@@ -83,8 +83,10 @@ module Yast
       DNS.Read # handles NetworkConfig too
       DNS.ProposeHostname # generate random hostname, if none known so far
 
-      # propose settings
-      DNS.dhcp_hostname = !Arch.is_laptop
+      # FIXME after SLE12: DNS.default_dhcp_hostname should be private (setting
+      # default values is not something for an API), but that would need some
+      # refactoring of this part.
+      DNS.dhcp_hostname = DNS.default_dhcp_hostname
 
       # get default value, from control.xml
       DNS.write_hostname = DNS.DefaultWriteHostname
@@ -204,7 +206,7 @@ module Yast
       set_default_route_flag(devname, "yes")
 
       if !activate_changes([devname])
-        log.warn("Cannot reach reference server via #{devname}")
+        log.warn("Cannot activate default_route for device #{devname}")
         return false
       end
 
@@ -216,7 +218,10 @@ module Yast
       log.info("Release notes can be reached via #{devname}: #{reached}")
 
       if !reached
-        set_default_route_flag(devname, "no")
+        # bsc#900466: Device is currently used for default route, but the test
+        # did not work, removing the default_route flag completely.
+        log.info "Removing default_route flag for device #{devname}"
+        set_default_route_flag(devname, nil)
         activate_changes([devname])
       end
 

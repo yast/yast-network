@@ -346,7 +346,7 @@ module Yast
     end
 
     def create_s390_ifcfg(hardware)
-      hwaddr = InstallInf["HWAddr"]
+      hwaddr = InstallInf["OSAHWAddr"]
       return "" if hwaddr.empty?
 
       netdevice = dev_name

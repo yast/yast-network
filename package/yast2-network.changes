@@ -1,9 +1,53 @@
 -------------------------------------------------------------------
-Tue Sep 30 16:41:19 CEST 2014 - schubi@suse.de
+Wed Dec 10 14:51:51 UTC 2014 - schubi@suse.de
 
 - AutoYaST: Do not overwrite firewall settings (configured in
   autoinst.xml) by installed firewall settings if the installed network
   will be kept. (bnc#897129)
+- 3.1.109.1
+
+-------------------------------------------------------------------
+Fri Oct 17 07:45:24 UTC 2014 - mfilka@suse.com
+
+- bnc#898250, bnc#899363
+  - ignore /etc/install.inf:usessh flag when the file is present in
+    installed system and always reload / restart network service in
+    case of updated configuration
+- 3.1.109
+
+-------------------------------------------------------------------
+Thu Oct 10 17:10:42 CEST 2014 - schubi@suse.de
+
+- AutoYaST Routing Import: Initialize device list correctly.
+  (bnc#900352)
+- 3.1.108
+
+-------------------------------------------------------------------
+Fri Oct 10 15:20:36 CEST 2014 - locilka@suse.com
+
+- Do not set default_route to "no" in auto-configuration in
+  inst-sys, just remove the entry completely (bnc#900466)
+- 3.1.107
+
+-------------------------------------------------------------------
+Thu Oct  9 15:47:14 UTC 2014 - ancor@suse.com
+
+- Improved help text in "global options" (bnc#892678)
+- 3.1.106
+
+-------------------------------------------------------------------
+Mon Oct  6 09:31:41 UTC 2014 - mfilka@suse.com
+
+- bnc#889287
+  - during autoconfiguration at s390 use linuxrc's OSAHWAddr param
+    for LLADDR when available.
+- 3.1.105
+
+-------------------------------------------------------------------
+Tue Sep 30 10:15:38 UTC 2014 - ancor@suse.com
+
+- The "change hostname via DHCP" setting is now configurable via
+  control file (bnc#870896).
 - 3.1.104
 
 -------------------------------------------------------------------
