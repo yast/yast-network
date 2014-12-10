@@ -250,8 +250,6 @@ module Yast
       NetworkAutoconfiguration.instance.configure_dns
       NetworkAutoconfiguration.instance.configure_hosts
 
-      LanUdevAuto.Write if Mode.autoinst
-
       DNS.create_hostname_link
 
       SCR.Execute(path(".target.bash"), "chkconfig network on")
