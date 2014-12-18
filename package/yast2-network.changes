@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Dec 10 14:51:51 UTC 2014 - schubi@suse.de
+
+- AutoYaST: Do not overwrite firewall settings (configured in
+  autoinst.xml) by installed firewall settings if the installed network
+  will be kept. (bnc#897129)
+- 3.1.109.1
+
+-------------------------------------------------------------------
 Fri Oct 17 07:45:24 UTC 2014 - mfilka@suse.com
 
 - bnc#898250, bnc#899363

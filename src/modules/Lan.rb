@@ -261,8 +261,9 @@ module Yast
     # @param [Symbol] cache:
     #  `cache=use cached data,
     #  `nocache=reread from disk (for reproposal); TODO pass to submodules
+    # @param [Boolean] read_firewall: reading system firewall settings
     # @return true on success
-    def Read(cache)
+    def Read(cache, read_firewall: true)
       if cache == :cache && @initialized
         Builtins.y2milestone("Using cached data")
         return true
@@ -376,11 +377,15 @@ module Yast
 
       return false if Abort()
       # Progress step 5/9
-      ProgressNextStage(_("Reading firewall settings...")) if @gui
-      orig = Progress.set(false)
-      SuSEFirewall4Network.Read
-      Progress.set(orig) if @gui
-      Builtins.sleep(sl)
+      if read_firewall
+        ProgressNextStage(_("Reading firewall settings...")) if @gui
+        orig = Progress.set(false)
+        SuSEFirewall4Network.Read
+        Progress.set(orig) if @gui
+        Builtins.sleep(sl)
+      else
+        Progress.NextStage
+      end
 
       return false if Abort()
       # Progress step 6/9
