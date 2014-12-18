@@ -377,11 +377,15 @@ module Yast
 
       return false if Abort()
       # Progress step 5/9
-      ProgressNextStage(_("Reading firewall settings...")) if @gui
-      orig = Progress.set(false)
-      SuSEFirewall4Network.Read if read_firewall
-      Progress.set(orig) if @gui
-      Builtins.sleep(sl)
+      if read_firewall
+        ProgressNextStage(_("Reading firewall settings...")) if @gui
+        orig = Progress.set(false)
+        SuSEFirewall4Network.Read
+        Progress.set(orig) if @gui
+        Builtins.sleep(sl)
+      else
+        Progress.NextStage
+      end
 
       return false if Abort()
       # Progress step 6/9
