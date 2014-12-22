@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Dec 22 22:51:00 UTC 2014 - Led <ledest@gmail.com>
+
+- fix bashisms in post script
+
+-------------------------------------------------------------------
 Thu Dec  4 09:50:29 UTC 2014 - jreidinger@suse.com
 
 - remove X-KDE-Library from desktop file (bnc#899104)
