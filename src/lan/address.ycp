@@ -901,7 +901,11 @@ define any AddressDialog() {
         wd["FWZONE", "items"] = SuSEFirewall4Network::FirewallZonesComboBoxItems();
     else
 	wd["FWZONE", "items"] = [ ["", _("Firewall is not installed") ] ];
-    
+
+    string type = LanItems::GetCurrentType();
+
+    if( type == "ib")
+        wd["IPOIB_MODE"] = ipoib_mode_widget();
 
     term label = `HBox (
 	    `HSpacing(0.5),
@@ -998,11 +1002,9 @@ define any AddressDialog() {
 	`abort : LanItems::Rollback,
     ];
 
-   if (contains(["tun", "tap"], LanItems::type)) functions=$[ `abort:LanItems::Rollback ];
+    if (contains(["tun", "tap"], LanItems::type)) functions=$[ `abort:LanItems::Rollback ];
 
-
-
-   map<string, any> wd_content = $[
+    map<string, any> wd_content = $[
 	"tab_order" : ["t_general", "t_addr", "hardware"],
 	"tabs" : $[
 	    "t_general" : $[
@@ -1020,6 +1022,8 @@ define any AddressDialog() {
 				    `VSpacing(0.4),
 				    `Frame(_("Device Control"), `HBox(("USERCONTROL"), `HStretch())) ,
 				    `VSpacing (0.4),
+                                    type == "ib" ? `HBox("IPOIB_MODE") : `Empty(),
+                                    type == "ib" ? `VSpacing(0.4) : `Empty(),
 			            `Frame(_("Maximum Transfer Unit (MTU)"), `HBox(("MTU"), `HStretch())),
 				    `VStretch()
 				    )

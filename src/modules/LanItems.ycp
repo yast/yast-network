@@ -153,6 +153,12 @@ global boolean tunnel_set_persistent=true;
 global string tunnel_set_owner="";
 global string tunnel_set_group="";
 
+// infiniband options
+global string ipoib_mode = "";
+global map<string, string> ipoib_modes = $[
+    "connected": _("connected"),
+    "datagram": _("datagram")
+];
 
 /* propose options */
 global boolean proposal_valid = false;
@@ -257,6 +263,12 @@ global string GetDeviceType( integer itemId)
     return NetworkInterfaces::GetType( GetDeviceName( itemId));
 }
 
+// Returns device type for current lan item (see LanItems::current)
+global string GetCurrentType()
+{
+    return GetDeviceType(current);
+}
+
 /**
  * Returns ifcfg configuration for particular item
  */
@@ -279,6 +291,11 @@ global map< string, any> GetDeviceMap( integer itemId)
 global list< string> GetItemUdevRule( integer itemId)
 {
     return GetLanItem( itemId)[ "udev", "net"]:[];
+}
+
+global map<string, any> GetCurrentMap()
+{
+    return GetDeviceMap(current);
 }
 
 boolean ReadUdevDriverRules(){
@@ -1308,8 +1325,10 @@ global void SetDeviceVars(map devmap, map defaults) {
 
     /* s/390 options */
     /* We always have to set the MAC Address for qeth Layer2 support */
-    qeth_macaddress = GetDeviceVar (devmap, defaults, "LLADDR");
-    
+    qeth_macaddress = GetDeviceVar(devmap, defaults, "LLADDR");
+
+    ipoib_mode = GetDeviceVar(devmap, defaults, "IPOIB_MODE");
+
     aliases = devmap["_aliases"]:$[];
 
     return;
@@ -1378,7 +1397,6 @@ global map<string, string> SysconfigDefaults = $[
     "WIRELESS_BITRATE": "auto",
     "WIRELESS_AP": "",
     "WIRELESS_POWER": "",
-    // aliases = devmap["_aliases"]:$[]; // ?
     "WIRELESS_EAP_MODE": "",
     "WIRELESS_WPA_IDENTITY": "",
     "WIRELESS_WPA_PASSWORD": "",
@@ -1397,7 +1415,11 @@ global map<string, string> SysconfigDefaults = $[
     "TUNNEL_SET_OWNER": "",
     "TUNNEL_SET_GROUP": "",
     "TUNNEL_SET_PERSISTENT": "yes",
-    ];
+
+    // Infiniband
+    // default mode for IPoIB devices suggested in fate#315501
+    "IPOIB_MODE": "connected"
+];
 
 /**
  * Default values used when creating an emulated NIC for physical s390 hardware.
@@ -1610,6 +1632,9 @@ global define boolean Commit() {
             newdev["WIRELESS_AP"] = wl_accesspoint;
             newdev["WIRELESS_POWER"] = wl_power ? "yes" : "no";
         }
+
+        if(type == "ib")
+            newdev["IPOIB_MODE"] = ipoib_mode;
 
         if(DriverType (type) == "ctc")
             if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 40)

@@ -186,6 +186,36 @@ _("<p><b><big>Device Activation</big></b></p>
     return ret;
 }
 
+void init_ipoib_mode_widget(string key)
+{
+    string ipoib_mode = LanItems::ipoib_mode;
+
+    if(!haskey(LanItems::ipoib_modes, ipoib_mode))
+      return;
+
+    UI::ChangeWidget(
+        `id(key),
+        `CurrentButton,
+        ipoib_mode
+    );
+}
+
+void store_ipoib_mode_widget(string key, map event)
+{
+    LanItems::ipoib_mode = (string) UI::QueryWidget(`id(key), `CurrentButton);
+}
+
+map<string, any> ipoib_mode_widget()
+{
+    return $[
+        "widget": `radio_buttons,
+        "items" : maplist(string k, string v, LanItems::ipoib_modes, { return [k, v]; }),
+        "label" : _("IPoIB device mode"),
+        "opt"   : [`hstretch],
+        "init"  : init_ipoib_mode_widget,
+        "store" : store_ipoib_mode_widget
+    ];
+}
 
 define string GetDeviceDescription(string device_id) {
     string device_name = NetworkInterfaces::GetValue(device_id,"NAME");
