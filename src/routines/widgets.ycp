@@ -21,6 +21,7 @@ import "NetworkInterfaces";
 import "LanItems";
 
 include "network/complex.ycp";
+include "network/lan/help.ycp";
 
 /**
  * Validator for IP adresses, no_popup
@@ -214,6 +215,29 @@ map<string, any> ipoib_mode_widget()
         "opt"   : [`hstretch],
         "init"  : init_ipoib_mode_widget,
         "store" : store_ipoib_mode_widget
+    ];
+}
+
+const list<list> COMMON_MTU_ITEMS = [
+    ["1500", "1500 (Ethernet, DSL broadband)"],
+    ["1492", "1492 (PPPoE broadband)"],
+    ["576", "576 (dial-up)"]
+];
+
+const list<list> IPOIB_MTU_ITEMS = [
+    ["65520", "65520 (IPoIB in connected mode)"],
+    ["2044", "2044 (IPoIB in datagram mode)"]
+];
+
+map<string, any> mtu_widget()
+{
+    return $[
+        "widget": `combobox,
+        // textentry label, Maximum Transfer Unit
+        "label" : _("Set &MTU"),
+        "opt"   : [`hstretch, `editable],
+        "items" : [],
+        "help"  : help["mtu"]:""
     ];
 }
 
