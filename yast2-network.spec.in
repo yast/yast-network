@@ -8,10 +8,8 @@ BuildRequires:  yast2-devtools yast2-testsuite
 BuildRequires:  yast2-country
 BuildRequires:  yast2-installation >= 2.15.27
 
-# NetworkInterfaces::Write should write ifcfgs only once
-# yast2 v2.17.132: changes in API for Device type detection
-BuildRequires:	yast2 >= 2.17.132
-Requires:	yast2 >= 2.17.132
+BuildRequires:	yast2 >= 2.17.135.1
+Requires:	yast2 >= 2.17.135.1
 
 #netconfig (FaTE #303618)
 Requires:       sysconfig >= 0.71.2

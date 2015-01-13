@@ -11,6 +11,7 @@ map READ = $[
     "target" : $[
 	"size":27,
 	"string" : "laptop.suse.cz",
+	"bash_output" : "laptop.suse.cz",
 	"stat" : $[ "exists": true]
     ],
     "probe": $[
