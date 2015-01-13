@@ -29,17 +29,11 @@ import "TypeRepository";
 
 /**
  * Abort function
- * @return blah blah lahjk
  */
 define boolean Abort() {
-    import "Mode";
     if(Mode::commandline ()) return false;
     return UI::PollInput() == `abort;
 
-    /* FIXME: NI
-    if(AbortFunction != nil)
-	return eval(AbortFunction) == true;
-    */
     return false;
 }
 
@@ -57,10 +51,6 @@ define boolean PollAbort() {
  */
 define boolean ReallyAbort() {
     return Popup::ReallyAbort(true);
-
-    /* FIXME: NI
-    return !Modified() || Popup::ReallyAbort(true);
-    */
 }
 
 /**
@@ -70,10 +60,6 @@ define boolean ReallyAbort() {
  */
 define boolean ReallyAbortCond(boolean modified) {
     return (!modified) || Popup::ReallyAbort(true);
-
-    /* FIXME: NI
-    return (!modified && !Modified()) || Popup::ReallyAbort(true);
-    */
 }
 
 /**

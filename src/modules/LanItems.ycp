@@ -21,9 +21,9 @@ global list<map> Hardware = [];
 global map <string, any> udev_net_rules = $[];
 global map<string, any> driver_options = $[];
 
-// FIXME: what's the difference against "device" defined below? 
+// FIXME: what's the difference against "device" defined below?
 // some refactoring led to interfacename = device in SetItem.
-// Probably, interfacename is used outside. It is only set in 
+// Probably, interfacename is used outside. It is only set in
 // this file.
 global string interfacename="";
 
@@ -47,9 +47,6 @@ global boolean force_restart=false;
 
 global string description = "";
 
-//unique - only for backward compatibility
-//global string unique = "";
-
 global string type = "";
 global string device = "";
 //FIXME: always empty string - remove all occuriences
@@ -60,7 +57,6 @@ global string hotplug = "";
 global list<string> Requires = [];
 
 /* address options */
-/** boot protocol: BOOTPROTO */
 global string bootproto = "static";
 global string ipaddr = "";
 global string remoteip = "";
@@ -84,7 +80,7 @@ global list<string> wl_key = [];
 global integer wl_default_key = 0;
 global string wl_nick = "";
 
-//bond options
+// bond options
 global list<string> bond_slaves = [];
 global string bond_option="";
 
@@ -156,6 +152,8 @@ global string tunnel_set_group="";
 // infiniband options
 global string ipoib_mode = "";
 global map<string, string> ipoib_modes = $[
+    // translators: connected and/or datagram means mode of operation
+    // of IPoIB device
     "connected": _("connected"),
     "datagram": _("datagram")
 ];
@@ -168,8 +166,8 @@ global boolean nm_proposal_valid = false;
 global string nm_name = "";
 global string nm_name_old = nil;
 
-    //this is the map of kernel modules vs. requested firmware
-    //non-empty keys are firmware packages shipped by SUSE
+// this is the map of kernel modules vs. requested firmware
+// non-empty keys are firmware packages shipped by SUSE
 map <string, string> request_firmware = $[
 	"atmel_pci" : "atmel-firmware",
 	"atmel_cs"  : "atmel-firmware",
@@ -305,7 +303,6 @@ boolean ReadUdevDriverRules(){
  y2milestone ("Reading driver options ...");
  foreach(string driver, SCR::Dir(.modules.options), {
   string pth=sformat(".modules.options.%1",driver);
-//  driver_options[driver] = SCR::Read(topath(pth));
   foreach(string key, string value, (map<string, string>)SCR::Read(topath(pth)), {
    driver_options[driver] = sformat("%1%2%3=%4", driver_options[driver]:"",
 	(size(driver_options[driver]:"")>0)?" ":"", key, value);
@@ -383,7 +380,7 @@ boolean WriteUdevItemsRules()
     // loop over all items and checks if device name has changed
     list<string> net_rules = [];
 
-    foreach(integer key, (list<integer>)Map::Keys(Items), 
+    foreach(integer key, (list<integer>)Map::Keys(Items),
     {
         list< string> item_udev_net = GetItemUdevRule( key);
 
@@ -450,11 +447,11 @@ void WriteUdevDriverRules()
     SCR::Write(.udev_persistent.drivers, udev_drivers_rules);
 
     // write rules from driver
-    foreach(string key, string value, (map<string, string>)driver_options, 
+    foreach(string key, string value, (map<string, string>)driver_options,
     {
         map val=$[];
 
-        foreach(string k, splitstring(value, " "), 
+        foreach(string k, splitstring(value, " "),
         {
             list<string> l = splitstring(k, "=");
             val[ l[0]:"" ]=l[1]:"";
@@ -462,7 +459,7 @@ void WriteUdevDriverRules()
   
         if (IsEmpty(value)) 
             val=nil;
-        
+
         SCR::Write(add(.modules.options, key), val);
     });
     SCR::Write(.modules,nil);
@@ -655,7 +652,7 @@ global list< integer> GetSlaveCandidates( string master, boolean( string, intege
 
 /**
  * Creates list of items (interfaces) which can be used as
- * a bond slave. 
+ * a bond slave.
  *
  * @param bondMaster    bond device name
  */
@@ -666,7 +663,7 @@ global list< integer> GetBondableInterfaces( string bondMaster)
 
 /**
  * Creates list of items (interfaces) which can be used as
- * a bridge slave. 
+ * a bridge slave.
  *
  * @param bridgeMaster  bridge device name
  */
@@ -708,7 +705,7 @@ global integer FindDeviceIndex( string device)
 {
     integer ret = -1;
 
-    foreach(integer i, map<string, any> a, (map<integer, map<string, any> >)Items, 
+    foreach(integer i, map<string, any> a, (map<integer, map<string, any> >)Items,
     {
         if( a[ "hwinfo", "dev_name"]:"" == device)
         {
@@ -896,7 +893,7 @@ global list BuildLanOverview() {
             NetworkInterfaces::Select(Items[key, "ifcfg"]:"");
             if (IsEmpty(type)) type = NetworkInterfaces::GetType(Items[key, "ifcfg"]:"");
             descr = BuildDescription(type, NetworkInterfaces::GetType(Items[key, "ifcfg"]:""), NetworkInterfaces::Current, [Items[key, "hwinfo"]:$[]]);
-            dev = NetworkInterfaces::Name; //NetworkInterfaces::device_name(type, NetworkInterfaces::Name);
+            dev = NetworkInterfaces::Name;
             ip = DeviceProtocol(NetworkInterfaces::Current);
             string status = DeviceStatus(type, NetworkInterfaces::device_num(NetworkInterfaces::Name), NetworkInterfaces::Current);
 
@@ -937,9 +934,8 @@ global list BuildLanOverview() {
                 string href = "lan--wifi-encryption-" + dev;
                 // interface summary: WiFi without encryption
                 string warning = HTML::Colorize (_("Warning: no encryption is used."), "red");
-                status = status + " " + warning + " " +
-                    // Hyperlink: Change the configuration of an interface
-                    Hyperlink (href, _("Change."));
+                // Hyperlink: Change the configuration of an interface
+                status = status + " " + warning + " " + Hyperlink (href, _("Change."));
                 links = add (links, href);
             }
 
@@ -1039,7 +1035,7 @@ global boolean isCurrentHotplug(){
 }
 
 /**
- * Check if currently edited device gets its IP address 
+ * Check if currently edited device gets its IP address
  * from DHCP (v4, v6 or both)
  * @return true if it is
  */
@@ -1102,9 +1098,6 @@ global void SelectHWMap (map hardware) {
     string mac = hardware["mac"]:"";
     string busid = hardware["busid"]:"";
 
-
-//    nm_name = createHwcfgName(hardware, type);
-
     interfacename = hardware["dev_name"]:"";
 
     // name of ifcfg
@@ -1124,7 +1117,7 @@ global void SelectHWMap (map hardware) {
     else
 	y2milestone("No detailed HW info: %1", device);
 
-    y2milestone("hw=%1", hardware);
+   y2milestone("hw=%1", hardware);
    y2milestone("device=%1", device);
    hw=hardware;
    if(Arch::s390() && operation==`add){
@@ -1142,11 +1135,10 @@ global void SelectHWMap (map hardware) {
              string devid0 = String::PadZeros(regexpsub(tohexstring(devid), "0x(.*)", "\\1"), 4);
              string devid1 = String::PadZeros(regexpsub(tohexstring(devid+1), "0x(.*)", "\\1"), 4);
              string devid2 = String::PadZeros(regexpsub(tohexstring(devid+2), "0x(.*)", "\\1"), 4);
-             if (DriverType(type)=="ctc" || DriverType(type)=="lcs") qeth_chanids = sformat("%1%2 %1%3", devstr, devid0, devid1);
-                    else qeth_chanids = sformat("%1%2 %1%3 %1%4", devstr, devid0, devid1, devid2);
-
-//            qeth_chanids = sformat("%1%2 %1%3 %1%4", devstr, devid0, devid1, devid2);
-
+             if (DriverType(type)=="ctc" || DriverType(type)=="lcs")
+                qeth_chanids = sformat("%1%2 %1%3", devstr, devid0, devid1);
+            else
+                qeth_chanids = sformat("%1%2 %1%3 %1%4", devstr, devid0, devid1, devid2);
    }
 
 }
@@ -1229,13 +1221,6 @@ global define void SetDefaultsForHW () {
     {
 	mtu = "1492";
     }
-/*
- if (!needHwcfg(hw)){
-		nm_name_old = nm_name;
-		nm_name = "";
-	}
- y2milestone("hwcfg name %1", nm_name);
-*/
 }
 
 string GetDeviceVar (map primary, map fallback, string key) {
@@ -1424,9 +1409,9 @@ global map<string, string> SysconfigDefaults = $[
 /**
  * Default values used when creating an emulated NIC for physical s390 hardware.
  */
-const map<string, string> s390_defaults = $[  
+const map<string, string> s390_defaults = $[
     "CHAN_MODE": "0",
-    "QETH_PORTNAME": "", 
+    "QETH_PORTNAME": "",
     "QETH_PORTNUMBER": "",
     "QETH_OPTIONS": "",
     "QETH_LAYER2": "no",
@@ -1450,7 +1435,7 @@ global define boolean Select(string dev) {
     map devmap = $[];
 	// defaults for a new device
 	devmap = $[
-			// for hotplug devices set STARTMODE=hotplug (#132583)
+            // for hotplug devices set STARTMODE=hotplug (#132583)
 	    "STARTMODE": IsNotEmpty(Items[current, "hwinfo", "hotplug"]:"") ? "hotplug" : "auto",	// #115448, #156388
 	    "NETMASK": (NetHwDetection::result["NETMASK"]:"255.255.255.0"), // #31369
 	    ];
@@ -1480,7 +1465,7 @@ global define boolean Select(string dev) {
 	type = Items[current, "hwinfo", "type"]:"eth";
 	device = NetworkInterfaces::GetFreeDevice(type);
 
-			// TODO: instead of udev use hwinfo dev_name
+        // TODO: instead of udev use hwinfo dev_name
 	NetworkInterfaces::Name = GetItemUdev("NAME");
 	if (size(Items)<current) Items[current] = $["ifcfg":NetworkInterfaces::Name];
 		else Items[current, "ifcfg"] = NetworkInterfaces::Name;
@@ -1536,7 +1521,6 @@ global define boolean Commit() {
         // set LLADDR to sysconfig only for device on layer2 and only these which needs it
         if (qeth_layer2) {
             string busid = Items[current, "hwinfo", "busid"]:"";
-            // string sysfs_id = busid_to_sysfs_id(busid, Hardware);
             // sysfs id has changed from css0...
             string sysfs_id = "/devices/qeth/" + busid;
             y2milestone("busid %1", busid);
@@ -1572,7 +1556,7 @@ global define boolean Commit() {
                     i = i + 1;
                     });
 
-            //assign nil to rest BONDING_SLAVEn to remove them
+            // assign nil to rest BONDING_SLAVEn to remove them
             while (i < MAX_BOND_SLAVE)
             {
                 newdev[sformat("BONDING_SLAVE%1", i)] = nil;
@@ -1581,7 +1565,7 @@ global define boolean Commit() {
 
             newdev["BONDING_MODULE_OPTS"] = bond_option;
 
-            //BONDING_MASTER always is yes
+            // BONDING_MASTER always is yes
             newdev["BONDING_MASTER"] = "yes";
         }
 
@@ -1623,7 +1607,7 @@ global define boolean Commit() {
                 newdev["WIRELESS_CLIENT_KEY_PASSWORD"] = wl_wpa_eap["WPA_EAP_CLIENT_KEY_PASSWORD"]:"";
                 newdev["WIRELESS_CA_CERT"] = wl_wpa_eap["WPA_EAP_CA_CERT"]:"";
                 newdev["WIRELESS_EAP_AUTH"] = wl_wpa_eap["WPA_EAP_AUTH"]:"";
-                newdev["WIRELESS_PEAP_VERSION"] = wl_wpa_eap["WPA_EAP_PEAP_VERSION"]:"";	    
+                newdev["WIRELESS_PEAP_VERSION"] = wl_wpa_eap["WPA_EAP_PEAP_VERSION"]:"";
             }
 
             newdev["WIRELESS_CHANNEL"] = wl_channel;
@@ -1639,12 +1623,6 @@ global define boolean Commit() {
         if(DriverType (type) == "ctc")
             if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 40)
                 NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 40;
-
-        /* FIXME: MOD
-           if(DriverType (type) == "qeth")
-           if(NetworkConfig::Config["WAIT_FOR_INTERFACES"]:nil == nil || NetworkConfig::Config["WAIT_FOR_INTERFACES"]:0 < 15)
-           NetworkConfig::Config["WAIT_FOR_INTERFACES"] = 15;
-         */
 
         if(alias == "") {
             newdev["_aliases"] = aliases;
@@ -1682,7 +1660,6 @@ global define boolean Commit() {
         y2error("Unknown operation: %1", operation);
         return false;
     }
-    //   nm_name_old = nil;
     modified = true;
     operation = nil;
     return true;
@@ -1702,7 +1679,7 @@ global boolean Rollback(){
 }
 
 /**
- * Get the module configuration for the modules configured in the 
+ * Get the module configuration for the modules configured in the
  * interface section
  * @param ay_device Device, for example eth0
  * @param ay_modules list of modules from the AY profile
@@ -1714,7 +1691,7 @@ global map GetModuleForInterface(string ay_device ,
     list<map> ay_filtered = filter(map ay_m, ay_modules,
 				  ``(
 				     ay_m["device"]:"" == ay_device ));
-    
+
     if (size(ay_filtered) > 0 ) {
 	ayret = ay_filtered[0]:$[];
     }
@@ -1724,9 +1701,9 @@ global map GetModuleForInterface(string ay_device ,
 
 
 /**
- * Find matching device 
+ * Find matching device
  * Find a device, optionally with some predefined values
- * @param interface interface map 
+ * @param interface interface map
  * @return map The map of the matching device.
  */
 global map FindMatchingDevice(map interface) {
@@ -1755,7 +1732,7 @@ global map FindMatchingDevice(map interface) {
             string hwaddr = device_id[2]:"";
             if(hwaddr != nil && hwaddr != "") {
                 tosel = find (map h, Hardware, ``( h["mac"]:"" == hwaddr ));
-            }			
+            }
             y2milestone("Rule: matching mac in device name");
         }
         /* code for eth-bus-pci-0000:00:0d.0 configurations */
@@ -1768,14 +1745,14 @@ global map FindMatchingDevice(map interface) {
             if(bus != nil && bus != "" && busid != nil && busid != "") {
                 tosel = find (map h, Hardware, ``( h["busid"]:"" == busid
                             && h["bus"]:"" == bus ));
-            }	
+            }
             y2milestone("Rule: matching bus id in device name");
         }
 
         /* code for module configuration */
 	// join with the modules list of the ay profile according to "device"
 	// if exists => find H["module"] == AH["module"]
-        map aymodule = GetModuleForInterface(interface["device"]:"", 
+        map aymodule = GetModuleForInterface(interface["device"]:"",
                 autoinstall_settings["modules"]:[]);
         y2milestone("module data: %1", aymodule );
         if (tosel == nil && aymodule != $[]) {
@@ -1789,13 +1766,13 @@ global map FindMatchingDevice(map interface) {
             y2milestone("Rule: matching module configuration");
         }
     }
-    
-    // First device was already configured, we are now looking for 
+
+    // First device was already configured, we are now looking for
     // a second (third,...) one
     if (size(devs) > 0 )
     {
         // #119592, #146965: this used to be unconditional, overwriting the
-        // results of the above matching.	
+        // results of the above matching.
 	if (matched_by_module || tosel == nil)
 	{
 	    // go thru all devices, check whether there's one that does
@@ -1804,7 +1781,6 @@ global map FindMatchingDevice(map interface) {
 	    foreach (map h, LanItems::Hardware, {
 		y2milestone("Checking for device=%1", h);
 		SelectHWMap(h);
-//		string _device_name = NetworkInterfaces::device_name(NetworkInterfaces::RealType(type, hotplug), device);
 		if (!NetworkInterfaces::Check(device) &&
 		    type == NetworkInterfaces::GetType(interface["device"]:"")
 		    )
@@ -1821,31 +1797,6 @@ global map FindMatchingDevice(map interface) {
         }
 
     } else {
-	// this is the first interface, match the hardware with install.inf
-/*
- // couldn't happen 
-	if (size(InstallInf)>0){
-         // Select the one from install.inf with the same MAC 
-	 // find H["mac"] == InstallInf["hwaddr"]
-         if (tosel == nil  ) {
-            string hwaddr = InstallInf["hwaddr"]:"";
-            if(hwaddr != nil && hwaddr != "") {
-                tosel = find (map h, Hardware, ``( h["mac"]:"" == hwaddr ));
-            }
-            y2milestone("Rule: matching hwaddr in install.inf");
-         }
-
-         // Select the one from install.inf with the same module 
-	 // find H["module"] == InstallInf["module"]
-         if (tosel == nil) {
-            string infmodule = InstallInf["module"]:"";
-            if(infmodule != nil && infmodule != "") {
-                tosel = find (map h, Hardware, ``( h["module"]:"" == infmodule ));
-            }
-            y2milestone("Rule: matching module in install.inf");
-         }
-	} else
-*/
 	   {
 	 /* No install.inf -> select the first connected */
          // find H["active"] == true
@@ -1867,7 +1818,6 @@ global map FindMatchingDevice(map interface) {
         }
 
         /* No active driver -> select the first with a driver */
-	// find H["module"] != ""
         if (tosel == nil) {
             y2milestone("No active driver found, trying further.");
             tosel = find (map h, LanItems::Hardware, ``(
@@ -1950,7 +1900,6 @@ global boolean ProposeItem(){
     }
   NetworkInterfaces::Add();
   operation = `edit;
-//  interfacename=getCurrentItem()["hwinfo", "dev_name"]:"";
   Items[current, "ifcfg"]=getCurrentItem()["hwinfo", "dev_name"]:"";
   description = HardwareName([getCurrentItem()["hwinfo"]:$[]], getCurrentItem()["hwinfo", "dev_name"]:"");
   Commit ();
@@ -1988,17 +1937,17 @@ global boolean createS390Device(){
 	command2=sformat("ls /sys/devices/qeth/%1/net/|head -n1|tr -d '\n'", (splitstring(qeth_chanids, " "))[0]:"");
 	break;
   case "ctc":
-					// chan_ids (read, write), protocol
+        // chan_ids (read, write), protocol
 	command1=sformat("ctc_configure %1 1 %2", qeth_chanids, chan_mode);
 	command2=sformat("ls /sys/devices/ctcm/%1/net/|head -n1|tr -d '\n'", (splitstring(qeth_chanids, " "))[0]:"");
 	break;
   case "lcs":
-					// chan_ids (read, write), protocol
+        // chan_ids (read, write), protocol
 	command1=sformat("ctc_configure %1 1 %2", qeth_chanids, chan_mode);
 	command2=sformat("ls /sys/devices/lcs/%1/net/|head -n1|tr -d '\n'", (splitstring(qeth_chanids, " "))[0]:"");
 	break;
   case "iucv":
-					// router
+        // router
 	command1=sformat("iucv_configure %1 1", iucv_user);
 	command2=sformat("ls /sys/devices/%1/*/net/|head -n1|tr -d '\n'", type);
 	break;

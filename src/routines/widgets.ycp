@@ -218,15 +218,17 @@ map<string, any> ipoib_mode_widget()
     ];
 }
 
+// translators: *_MTU_ITEMS describes common max datagram size for particular
+// device type
 const list<list> COMMON_MTU_ITEMS = [
-    ["1500", "1500 (Ethernet, DSL broadband)"],
-    ["1492", "1492 (PPPoE broadband)"],
-    ["576", "576 (dial-up)"]
+    ["1500", _("1500 (Ethernet, DSL broadband)")],
+    ["1492", _("1492 (PPPoE broadband)")],
+    ["576", _("576 (dial-up)")]
 ];
 
 const list<list> IPOIB_MTU_ITEMS = [
-    ["65520", "65520 (IPoIB in connected mode)"],
-    ["2044", "2044 (IPoIB in datagram mode)"]
+    ["65520", _("65520 (IPoIB in connected mode)")],
+    ["2044", _("2044 (IPoIB in datagram mode)")]
 ];
 
 map<string, any> mtu_widget()
