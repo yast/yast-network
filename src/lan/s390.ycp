@@ -21,7 +21,7 @@ define boolean s390_DriverLoaded( string devname)
     if( !Arch::s390())
         return false;
 
-    if( IsEmptyString( devname))
+    if( IsEmpty( devname))
         return false;
 
     return FileUtils::IsDirectory( sformat( "%1/%2", sys_dir, devname)) == true;
