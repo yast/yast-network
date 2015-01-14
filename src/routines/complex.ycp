@@ -235,7 +235,7 @@ define string CheckEmptyName(string devtype, string hwname) {
     if(haskey(device_names, devtype)) return device_names[devtype]:"";
 	else {
 		string descr =	NetworkInterfaces::GetDevTypeDescription(devtype, true);
-		if (hasAnyValue(descr)) return descr;
+		if (IsNotEmpty(descr)) return descr;
 	     }
 
     if(haskey(device_names, devtype + "-")) {
@@ -347,7 +347,7 @@ define string DeviceStatus(string devtype, string devname, map devmap) {
 	    string host = NetHwDetection::ResolveIP (addr);
 	    string remip = devmap["REMOTE_IPADDR"]:"";
             if (proto == "none") return _("Configured without address (NONE)");
-            else if(!hasAnyValue(addr))
+            else if(IsEmpty(addr))
 		/* Network card status */
                 return HTML::Colorize (_("Configured without an address"), "red");
             else if(remip == "" || remip == nil)

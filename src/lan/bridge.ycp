@@ -37,7 +37,7 @@ boolean ValidateBridge (string key, map event) {
     });
  foreach(term t, items, {
   string device = t[0, 0]:"";
-  if (contains(sel, device) && hasAnyValue(device)) {
+  if (contains(sel, device) && IsNotEmpty(device)) {
     if (contains(confs, device)){
      // allow to add bonding device into bridge and also device with mask /32(bnc#405343)
      if (contains(["tun", "tap"], NetworkInterfaces::GetType(device))) continue;
