@@ -467,7 +467,7 @@ global define boolean Write() {
     /* Progress step 3 - multiple devices may be present, really plural*/
     ProgressNextStage(_("Writing device configuration..."));
     if (!Mode::autoinst() && LanUdevAuto::AllowUdevModify()) {
-	LanItems::WriteUdevDriverRules();
+	LanItems::WriteUdevRules();
         // wait so that ifcfgs written in NetworkInterfaces are newer
         // (1-second-wise) than netcontrol status files,
         // and rcnetwork reload actually works (bnc#749365)
@@ -862,7 +862,7 @@ define boolean UseNetworkManager () {
 define void ProposeNMInterfaces () {
     y2milestone ("Minimal ifcfgs for NM");
     foreach (integer number, any lanitem, LanItems::Items, {
-	if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) {
+	if (IsNotEmpty(((map)lanitem)["hwinfo", "dev_name"]:"")) {
 	LanItems::current = number;
 	if (!LanItems::IsCurrentConfigured()){
 	  y2milestone("Nothing already configured start proposing %1 (NM)", LanItems::getCurrentItem());
@@ -917,7 +917,7 @@ void ProposeVirtualized() {
 
     // first configure all connected unconfigured devices with dhcp (with default parameters)
     foreach (integer number, any lanitem, LanItems::Items, {
-            if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) {
+            if (IsNotEmpty(((map)lanitem)["hwinfo", "dev_name"]:"")) {
                 LanItems::current = number;
                 boolean link = LanItems::getCurrentItem()["hwinfo", "link"]:false == true;
                 if (!link) y2warning("item number %1 has link:false detected", number);
@@ -1032,7 +1032,7 @@ global define boolean ProposeInterfaces () {
 
 
     foreach (integer number, any lanitem, LanItems::Items, {
-            if (hasAnyValue(((map)lanitem)["hwinfo", "dev_name"]:"")) {
+            if (IsNotEmpty(((map)lanitem)["hwinfo", "dev_name"]:"")) {
                 LanItems::current = number;
                 boolean link = LanItems::getCurrentItem()["hwinfo", "link"]:false;
                 if (LanItems::getCurrentItem()["hwinfo", "type"]:"" == "wlan")

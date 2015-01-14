@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Thu Nov  6 10:48:55 UTC 2014 - mfilka@suse.com
+
+- bnc#900383
+  - adapted to new device type detection API provided by yast2
+- fixed problem with not matching udev rule (bnc#551310)
+- bnc#695262
+    - fixed write sequence to enable device renaming.
+- 2.17.199.1
+
+-------------------------------------------------------------------
 Mon Jun  9 07:21:45 UTC 2014 - mfilka@suse.com
 
 - bnc#840565

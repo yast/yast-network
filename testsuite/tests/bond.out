@@ -22,14 +22,24 @@ Read	.network.value."bond1".BONDING_MASTER "yes"
 Read	.network.value."bond1".BOOTPROTO "static"
 Dir	.network.value."eth1": ["BOOTPROTO"]
 Read	.network.value."eth1".BOOTPROTO "none"
+Read	.target.stat "/sys/class/net/eth1/type" nil
+Read	.target.string "/sys/class/net/eth1/type" nil
 Dir	.network.value."eth2": ["BOOTPROTO"]
 Read	.network.value."eth2".BOOTPROTO "none"
+Read	.target.stat "/sys/class/net/eth2/type" nil
+Read	.target.string "/sys/class/net/eth2/type" nil
 Dir	.network.value."eth4": ["BOOTPROTO"]
 Read	.network.value."eth4".BOOTPROTO "none"
+Read	.target.stat "/sys/class/net/eth4/type" nil
+Read	.target.string "/sys/class/net/eth4/type" nil
 Dir	.network.value."eth5": ["BOOTPROTO"]
 Read	.network.value."eth5".BOOTPROTO "none"
+Read	.target.stat "/sys/class/net/eth5/type" nil
+Read	.target.string "/sys/class/net/eth5/type" nil
 Dir	.network.value."eth6": ["BOOTPROTO"]
 Read	.network.value."eth6".BOOTPROTO "dhcp"
+Read	.target.stat "/sys/class/net/eth6/type" nil
+Read	.target.string "/sys/class/net/eth6/type" nil
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-pcmcia" nil
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-eth-usb" nil
 Read	.target.lstat "/etc/sysconfig/network/ifcfg-tr-pcmcia" nil
@@ -38,3 +48,27 @@ Return	nil
 Dump	LanItems::BuildBondIndex
 Dump	LanItems::GetBondSlaves
 Dump	LanItems::GetBondableInterfaces
+Read	.target.stat "/sys/class/net/bond0/type" nil
+Read	.target.string "/sys/class/net/bond0/type" nil
+Read	.target.stat "/sys/class/net/bond0/type" nil
+Read	.target.string "/sys/class/net/bond0/type" nil
+Read	.target.stat "/sys/class/net/eth1/type" nil
+Read	.target.string "/sys/class/net/eth1/type" nil
+Read	.target.stat "/sys/class/net/eth1/type" nil
+Read	.target.string "/sys/class/net/eth1/type" nil
+Read	.target.stat "/sys/class/net/eth2/type" nil
+Read	.target.string "/sys/class/net/eth2/type" nil
+Read	.target.stat "/sys/class/net/eth2/type" nil
+Read	.target.string "/sys/class/net/eth2/type" nil
+Read	.target.stat "/sys/class/net/eth4/type" nil
+Read	.target.string "/sys/class/net/eth4/type" nil
+Read	.target.stat "/sys/class/net/eth4/type" nil
+Read	.target.string "/sys/class/net/eth4/type" nil
+Read	.target.stat "/sys/class/net/eth5/type" nil
+Read	.target.string "/sys/class/net/eth5/type" nil
+Read	.target.stat "/sys/class/net/eth5/type" nil
+Read	.target.string "/sys/class/net/eth5/type" nil
+Read	.target.stat "/sys/class/net/eth6/type" nil
+Read	.target.string "/sys/class/net/eth6/type" nil
+Read	.target.stat "/sys/class/net/eth6/type" nil
+Read	.target.string "/sys/class/net/eth6/type" nil
