@@ -1,18 +1,18 @@
 -------------------------------------------------------------------
 Wed Jan 14 11:26:43 UTC 2015 - mfilka@suse.com
 
-- bnc#900383
-  - adapted to new device type detection API provided by yast2
-- fixed problem with not matching udev rule (bnc#551310)
-- bnc#695262
-    - fixed write sequence to enable device renaming.
+- fate#315162
+  - IPoIB mode configuration in YaST
 - 2.17.202
 
 -------------------------------------------------------------------
 Thu Jan  8 21:07:28 UTC 2015 - mfilka@suse.com
 
-- fate#315162
-  - IPoIB mode configuration in YaST
+- bnc#900383
+  - adapted to new device type detection API provided by yast2
+- fixed problem with not matching udev rule (bnc#551310)
+- bnc#695262
+    - fixed write sequence to enable device renaming.
 - 2.17.201
 
 -------------------------------------------------------------------
