@@ -21,6 +21,7 @@ import "NetworkInterfaces";
 import "LanItems";
 
 include "network/complex.ycp";
+include "network/lan/help.ycp";
 
 /**
  * Validator for IP adresses, no_popup
@@ -186,6 +187,61 @@ _("<p><b><big>Device Activation</big></b></p>
     return ret;
 }
 
+void init_ipoib_mode_widget(string key)
+{
+    string ipoib_mode = LanItems::ipoib_mode;
+
+    if(!haskey(LanItems::ipoib_modes, ipoib_mode))
+      return;
+
+    UI::ChangeWidget(
+        `id(key),
+        `CurrentButton,
+        ipoib_mode
+    );
+}
+
+void store_ipoib_mode_widget(string key, map event)
+{
+    LanItems::ipoib_mode = (string) UI::QueryWidget(`id(key), `CurrentButton);
+}
+
+map<string, any> ipoib_mode_widget()
+{
+    return $[
+        "widget": `radio_buttons,
+        "items" : maplist(string k, string v, LanItems::ipoib_modes, { return [k, v]; }),
+        "label" : _("IPoIB device mode"),
+        "opt"   : [`hstretch],
+        "init"  : init_ipoib_mode_widget,
+        "store" : store_ipoib_mode_widget
+    ];
+}
+
+// translators: *_MTU_ITEMS describes common max datagram size for particular
+// device type
+const list<list> COMMON_MTU_ITEMS = [
+    ["1500", _("1500 (Ethernet, DSL broadband)")],
+    ["1492", _("1492 (PPPoE broadband)")],
+    ["576", _("576 (dial-up)")]
+];
+
+const list<list> IPOIB_MTU_ITEMS = [
+    ["65520", _("65520 (IPoIB in connected mode)")],
+    ["2044", _("2044 (IPoIB in datagram mode)")]
+];
+
+map<string, any> mtu_widget()
+{
+    return $[
+        "widget": `combobox,
+        // textentry label, Maximum Transfer Unit
+        "label" : _("Set &MTU"),
+        "opt"   : [`hstretch, `editable],
+        "items" : [],
+        "help"  : help["mtu"]:""
+    ];
+}
 
 define string GetDeviceDescription(string device_id) {
     string device_name = NetworkInterfaces::GetValue(device_id,"NAME");

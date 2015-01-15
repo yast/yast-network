@@ -613,18 +613,7 @@ map<string, map<string,any> > widget_descr_local = $[
 	"opt": [],
 	"help": help["mandatory"]:"",
 	],
-    "MTU": $[
-	"widget": `combobox,
-	// textentry label, Maximum Transfer Unit
-	"label": _("Set &MTU"),
-	"opt": [`hstretch, `editable],
-	"items": [
-	    ["1500","1500 (Ethernet, DSL broadband)"],
-	    ["1492","1492 (PPPoE broadband)"],
-	    ["576","576 (dial-up)"],
-	 ],
-	"help": help["mtu"]:"",
-	],
+    "MTU": mtu_widget(),
     "IFCFGTYPE": $[
 	"widget": `combobox,
 	/* ComboBox label */
@@ -901,7 +890,18 @@ define any AddressDialog() {
         wd["FWZONE", "items"] = SuSEFirewall4Network::FirewallZonesComboBoxItems();
     else
 	wd["FWZONE", "items"] = [ ["", _("Firewall is not installed") ] ];
-    
+
+    string type = LanItems::GetCurrentType();
+
+    map<string, any> mtu_widget_def = wd["MTU"]:$[];
+    if( type == "ib")
+    {
+        wd["IPOIB_MODE"] = ipoib_mode_widget();
+        mtu_widget_def["items"] = IPOIB_MTU_ITEMS;
+    }
+    else
+        mtu_widget_def["items"] = COMMON_MTU_ITEMS;
+    wd["MTU"] = mtu_widget_def;
 
     term label = `HBox (
 	    `HSpacing(0.5),
@@ -998,11 +998,9 @@ define any AddressDialog() {
 	`abort : LanItems::Rollback,
     ];
 
-   if (contains(["tun", "tap"], LanItems::type)) functions=$[ `abort:LanItems::Rollback ];
+    if (contains(["tun", "tap"], LanItems::type)) functions=$[ `abort:LanItems::Rollback ];
 
-
-
-   map<string, any> wd_content = $[
+    map<string, any> wd_content = $[
 	"tab_order" : ["t_general", "t_addr", "hardware"],
 	"tabs" : $[
 	    "t_general" : $[
@@ -1020,6 +1018,8 @@ define any AddressDialog() {
 				    `VSpacing(0.4),
 				    `Frame(_("Device Control"), `HBox(("USERCONTROL"), `HStretch())) ,
 				    `VSpacing (0.4),
+                                    type == "ib" ? `HBox("IPOIB_MODE") : `Empty(),
+                                    type == "ib" ? `VSpacing(0.4) : `Empty(),
 			            `Frame(_("Maximum Transfer Unit (MTU)"), `HBox(("MTU"), `HStretch())),
 				    `VStretch()
 				    )
