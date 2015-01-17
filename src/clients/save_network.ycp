@@ -76,10 +76,6 @@ define boolean ReadInstallInf() {
 	install_inf = .etc.install_inf;
 	InstallInf["installation"] = "yes";
     }
-    /* FIXME
-    else if(SCR::Read(.target.size,"/var/lib/YaST2/install.inf") > 0)
-	install_inf = .var.lib.YaST2.install_inf;
-    */
     else
 	return false;
 
@@ -102,7 +98,6 @@ define boolean ReadInstallInf() {
     ReadInstallInfItem(install_inf, "hostname", "Hostname");
     ReadInstallInfItem(install_inf, "module", "Alias");
     ReadInstallInfItem(install_inf, "proxy", "Proxy");
-//    ReadInstallInfItem(install_inf, "options", "Options");
     // OSAHwAddr parameter s390
     ReadInstallInfItem(install_inf, "hwaddr", "HWAddr");
     ReadInstallInfItem(install_inf, "ethtool_options", "ethtool");
@@ -110,7 +105,6 @@ define boolean ReadInstallInf() {
     ReadInstallInfItem(install_inf, "connect_wait", "ConnectWait");
 
     ReadInstallInfItem(install_inf, "QETH_LAYER2_SUPPORT", "Layer2");
-//    ReadInstallInfItem(install_inf, "LLADDR", "OSAHWAddr");
     ReadInstallInfItem(install_inf, "dhcptimeout", "DHCPTimeout");
 
     ReadInstallInfItem(install_inf, "WESSID", "WlanESSID");
@@ -136,7 +130,6 @@ define boolean ReadInstallInf() {
     if(netdevice != "") {
 	string devtype = NetworkInterfaces::device_type(netdevice);
 	if(devtype != nil && devtype != "") InstallInf["type"] = devtype;
-//	InstallInf = remove(InstallInf, "netdevice");
     }
 
     if (Arch::s390()) {
@@ -564,9 +557,6 @@ void save_network(){
 
 
     if(install_inf){
-    //  string hwcfgname = CreateHardwareFile();
-    //  string ifcfg = sformat("ifcfg-%1", InstallInf["netdevice"]:"");
-
 	if (!configure_network){
           CreateIfcfg();
           CreateOtherNetworkFiles();
