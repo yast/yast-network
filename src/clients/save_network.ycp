@@ -76,10 +76,6 @@ define boolean ReadInstallInf() {
 	install_inf = .etc.install_inf;
 	InstallInf["installation"] = "yes";
     }
-    /* FIXME
-    else if(SCR::Read(.target.size,"/var/lib/YaST2/install.inf") > 0)
-	install_inf = .var.lib.YaST2.install_inf;
-    */
     else
 	return false;
 
@@ -102,7 +98,7 @@ define boolean ReadInstallInf() {
     ReadInstallInfItem(install_inf, "hostname", "Hostname");
     ReadInstallInfItem(install_inf, "module", "Alias");
     ReadInstallInfItem(install_inf, "proxy", "Proxy");
-//    ReadInstallInfItem(install_inf, "options", "Options");
+    ReadInstallInfItem(install_inf, "vlanid", "VLanID");
     // OSAHwAddr parameter s390
     ReadInstallInfItem(install_inf, "hwaddr", "HWAddr");
     ReadInstallInfItem(install_inf, "ethtool_options", "ethtool");
@@ -110,7 +106,6 @@ define boolean ReadInstallInf() {
     ReadInstallInfItem(install_inf, "connect_wait", "ConnectWait");
 
     ReadInstallInfItem(install_inf, "QETH_LAYER2_SUPPORT", "Layer2");
-//    ReadInstallInfItem(install_inf, "LLADDR", "OSAHWAddr");
     ReadInstallInfItem(install_inf, "dhcptimeout", "DHCPTimeout");
 
     ReadInstallInfItem(install_inf, "WESSID", "WlanESSID");
@@ -136,7 +131,6 @@ define boolean ReadInstallInf() {
     if(netdevice != "") {
 	string devtype = NetworkInterfaces::device_type(netdevice);
 	if(devtype != nil && devtype != "") InstallInf["type"] = devtype;
-//	InstallInf = remove(InstallInf, "netdevice");
     }
 
     if (Arch::s390()) {
@@ -234,6 +228,9 @@ string StdoutOf(string command) {
 
 void CreateIfcfg() {
     string ifcfg="";
+    integer vlanid = tointeger(InstallInf["vlanid"]:nil);
+
+    y2milestone("creating ifcfg, vlan id: %1", vlanid);
 
     if (network_disk == `iscsi && contains(NetworkStorage::getiBFTDevices(), InstallInf["netdevice"]:"")){
         ifcfg = sformat("%1STARTMODE='nfsroot'\nBOOTPROTO='ibft'\n", ifcfg);
@@ -252,9 +249,12 @@ void CreateIfcfg() {
         }
         else {
             //DHCP (also for IPv6) setup
-            if (InstallInf["bootproto"]:""=="dhcp") ifcfg="BOOTPROTO='dhcp4'\n";
-            else if (InstallInf["bootproto"]:""=="dhcp6") ifcfg="BOOTPROTO='dhcp6'\n";
-            else if (InstallInf["bootproto"]:""=="dhcp,dhcp6") ifcfg="BOOTPROTO='dhcp'\n";
+            if (InstallInf["bootproto"]:""=="dhcp")
+                ifcfg="BOOTPROTO='dhcp4'\n";
+            else if (InstallInf["bootproto"]:""=="dhcp6")
+                ifcfg="BOOTPROTO='dhcp6'\n";
+            else if (InstallInf["bootproto"]:""=="dhcp,dhcp6")
+                ifcfg="BOOTPROTO='dhcp'\n";
 
             // set DHCP_SET_HOSTNAME=yes  #suse30528
             y2milestone("set DHCLIENT_SET_HOSTNAME=yes on installed system");
@@ -316,7 +316,8 @@ void CreateIfcfg() {
     }
 
     string new_netdevice = netdevice;
-    if (! LanUdevAuto::AllowUdevModify()) {
+    if(!LanUdevAuto::AllowUdevModify())
+    {
         // bnc#821427: use same options as in /lib/udev/rules.d/71-biosdevname.rules
         string cmd = sformat("biosdevname --policy physical --smbios 2.6 --nopirq -i %1", netdevice);
         string out = String::FirstChunk(StdoutOf(cmd), "\n");
@@ -324,6 +325,13 @@ void CreateIfcfg() {
             y2milestone ("biosdevname renames %1 to %2", netdevice, out);
             new_netdevice = out;
         }
+    }
+    string real_device = new_netdevice;
+    if(vlanid != nil)
+    {
+        new_netdevice = sformat("vlan%1", vlanid);
+        ifcfg = sformat("%1ETHERDEVICE='%2'\n", ifcfg, real_device);
+        ifcfg = sformat("%1VLAN_ID='%2'\n", ifcfg, vlanid);
     }
 
     string ifcfg_name = sformat("ifcfg-%1", new_netdevice);
@@ -343,6 +351,16 @@ void CreateIfcfg() {
     string dev_file=sformat("/etc/sysconfig/network/%1", ifcfg_name);
 
     SCR::Write(.target.string, dev_file, ifcfg);
+
+    if(vlanid != nil)
+    {
+        string real_dev_file = sformat("/etc/sysconfig/network/ifcfg-%1", real_device);
+        // very minimal ifcfg for vlan's phy device - see man ifcfg-vlan
+        string real_dev_ifcfg = "STARTMODE='auto'\n";
+
+        SCR::Write(.target.string, real_dev_file, real_dev_ifcfg);
+    }
+
     y2milestone("ifcfg file: %1", dev_file);
 }
 
@@ -564,9 +582,6 @@ void save_network(){
 
 
     if(install_inf){
-    //  string hwcfgname = CreateHardwareFile();
-    //  string ifcfg = sformat("ifcfg-%1", InstallInf["netdevice"]:"");
-
 	if (!configure_network){
           CreateIfcfg();
           CreateOtherNetworkFiles();

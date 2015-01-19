@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Jan 19 08:07:42 UTC 2015 - mfilka@suse.com
+
+- fate#316140
+  - configure vlan during installation when vlan id is provided by
+    user / linuxrc
+- 2.17.203
+
+-------------------------------------------------------------------
 Wed Jan 14 11:26:43 UTC 2015 - mfilka@suse.com
 
 - fate#315162

@@ -330,7 +330,6 @@ Check configuration manually."));
     if(Abort()) return false;
     /* Progress step 7/9 */
     if (gui) ProgressNextStage(_("Reading installation information..."));
-//    ReadInstallInf();
     sleep(sl);
 
     if(Abort()) return false;
@@ -1260,9 +1259,8 @@ global define boolean AnyDHCPDevice() {
 }
 
 
-global define list<map> PrepareForAutoinst() {
-  
-//    ReadInstallInf();     
+global define list<map> PrepareForAutoinst()
+{
     LanItems::ReadHw();
     return LanItems::Hardware;
 }
