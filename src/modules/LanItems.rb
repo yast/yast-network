@@ -542,8 +542,10 @@ module Yast
       lan_items = LanItems.Items
 
       if name && !name.empty?
-        updated_rule = update_udev_rule_key(GetItemUdevRule(itemId), "NAME", name)
-        lan_items[itemId]["udev"]["net"] = updated_rule
+        if lan_items[itemId]["udev"]
+          updated_rule = update_udev_rule_key(GetItemUdevRule(itemId), "NAME", name)
+          lan_items[itemId]["udev"]["net"] = updated_rule
+        end
       else
         # rewrite rule for empty name is meaningless
         lan_items[itemId].delete("udev")
