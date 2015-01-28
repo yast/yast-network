@@ -1093,7 +1093,7 @@ module Yast
       }
 
       hwstring = hwstrings[hwtype] || _("All Network Devices")
-      Confirm.Detection(hwstring, "yast-lan")
+      Confirm.Detection(hwstring, nil)
     end
   end
 end
