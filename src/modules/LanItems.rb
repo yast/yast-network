@@ -1885,24 +1885,24 @@ module Yast
     # @return true if success
     def Commit
       if @operation != :add && @operation != :edit
-        Builtins.y2error("Unknown operation: %1", @operation)
+        log.error("Unknown operation: %1", @operation)
         raise ArgumentError, "Unknown operation: #{@operation}"
       end
 
       newdev = {}
 
       # #104494 - always write IPADDR+NETMASK, even empty
-      Ops.set(newdev, "IPADDR", @ipaddr)
-      if Ops.greater_than(Builtins.size(@prefix), 0)
-        Ops.set(newdev, "PREFIXLEN", @prefix)
+      newdev["IPADDR"] = @ipaddr
+      if !@prefix.empty?
+        newdev["PREFIXLEN"] = @prefix
       else
-        Ops.set(newdev, "NETMASK", @netmask)
+        newdev["NETMASK"] = @netmask
       end
       # #50955 omit computable fields
-      Ops.set(newdev, "BROADCAST", "")
-      Ops.set(newdev, "NETWORK", "")
+      newdev["BROADCAST"] = ""
+      newdev["NETWORK"] = ""
 
-      Ops.set(newdev, "REMOTE_IPADDR", @remoteip)
+      newdev["REMOTE_IPADDR"] = @remoteip
 
       # set LLADDR to sysconfig only for device on layer2 and only these which needs it
       # do not write incorrect LLADDR.
@@ -1924,45 +1924,43 @@ module Yast
       case @type
       when "bond"
         i = 0
-        Builtins.foreach(@bond_slaves) do |slave|
-          Ops.set(newdev, Builtins.sformat("BONDING_SLAVE%1", i), slave)
-          i = Ops.add(i, 1)
+        @bond_slaves.each do |slave|
+          newdev["BONDING_SLAVE#{i}"] = slave
+          i += 1
         end
 
         #assign nil to rest BONDING_SLAVEn to remove them
-        while Ops.less_than(i, @MAX_BOND_SLAVE)
-          Ops.set(newdev, Builtins.sformat("BONDING_SLAVE%1", i), nil)
-          i = Ops.add(i, 1)
+        while i < @MAX_BOND_SLAVE
+          newdev["BONDING_SLAVE#{i}"] = nil
+          i += 1
         end
 
-        Ops.set(newdev, "BONDING_MODULE_OPTS", @bond_option)
-
-        #BONDING_MASTER always is yes
-        Ops.set(newdev, "BONDING_MASTER", "yes")
+        newdev["BONDING_MODULE_OPTS"] = @bond_option
+        newdev["BONDING_MASTER"] = "yes"
 
       when "vlan"
-        Ops.set(newdev, "ETHERDEVICE", @vlan_etherdevice)
-        Ops.set(newdev, "VLAN_ID", @vlan_id)
+        newdev["ETHERDEVICE"] = @vlan_etherdevice
+        newdev["VLAN_ID"] = @vlan_id
 
       when "br"
-        Ops.set(newdev, "BRIDGE_PORTS", @bridge_ports)
-        Ops.set(newdev, "BRIDGE", "yes")
-        Ops.set(newdev, "BRIDGE_STP", "off")
-        Ops.set(newdev, "BRIDGE_FORWARDDELAY", "0")
+        newdev["BRIDGE_PORTS"] = @bridge_ports
+        newdev["BRIDGE"] = "yes"
+        newdev["BRIDGE_STP"] = "off"
+        newdev["BRIDGE_FORWARDDELAY"] = "0"
 
       when "wlan"
-        Ops.set(newdev, "WIRELESS_MODE", @wl_mode)
-        Ops.set(newdev, "WIRELESS_ESSID", @wl_essid)
-        Ops.set(newdev, "WIRELESS_NWID", @wl_nwid)
-        Ops.set(newdev, "WIRELESS_AUTH_MODE", @wl_auth_mode)
-        Ops.set(newdev, "WIRELESS_WPA_PSK", @wl_wpa_psk)
-        Ops.set(newdev, "WIRELESS_KEY_LENGTH", @wl_key_length)
+        newdev["WIRELESS_MODE"] = @wl_mode
+        newdev["WIRELESS_ESSID"] = @wl_essid
+        newdev["WIRELESS_NWID"] = @wl_nwid
+        newdev["WIRELESS_AUTH_MODE"] = @wl_auth_mode
+        newdev["WIRELESS_WPA_PSK"] = @wl_wpa_psk
+        newdev["WIRELESS_KEY_LENGTH"] = @wl_key_length
         # obsoleted by WIRELESS_KEY_0
-        Ops.set(newdev, "WIRELESS_KEY", "") # TODO: delete the varlable
-        Ops.set(newdev, "WIRELESS_KEY_0", Ops.get(@wl_key, 0, ""))
-        Ops.set(newdev, "WIRELESS_KEY_1", Ops.get(@wl_key, 1, ""))
-        Ops.set(newdev, "WIRELESS_KEY_2", Ops.get(@wl_key, 2, ""))
-        Ops.set(newdev, "WIRELESS_KEY_3", Ops.get(@wl_key, 3, ""))
+        newdev["WIRELESS_KEY"] = "" # TODO: delete the varlable
+        newdev["WIRELESS_KEY_0"] = Ops.get(@wl_key, 0, "")
+        newdev["WIRELESS_KEY_1"] = Ops.get(@wl_key, 1, "")
+        newdev["WIRELESS_KEY_2"] = Ops.get(@wl_key, 2, "")
+        newdev["WIRELESS_KEY_3"] = Ops.get(@wl_key, 3, "")
         Ops.set(
           newdev,
           "WIRELESS_DEFAULT_KEY",
@@ -2024,11 +2022,11 @@ module Yast
           )
         end
 
-        Ops.set(newdev, "WIRELESS_CHANNEL", @wl_channel)
-        Ops.set(newdev, "WIRELESS_FREQUENCY", @wl_frequency)
-        Ops.set(newdev, "WIRELESS_BITRATE", @wl_bitrate)
-        Ops.set(newdev, "WIRELESS_AP", @wl_accesspoint)
-        Ops.set(newdev, "WIRELESS_POWER", @wl_power ? "yes" : "no")
+        newdev["WIRELESS_CHANNEL"] = @wl_channel
+        newdev["WIRELESS_FREQUENCY"] = @wl_frequency
+        newdev["WIRELESS_BITRATE"] = @wl_bitrate
+        newdev["WIRELESS_AP"] = @wl_accesspoint
+        newdev["WIRELESS_POWER"] = @wl_power ? "yes" : "no"
 
       when "ib"
         newdev["IPOIB_MODE"] = @ipoib_mode
@@ -2045,7 +2043,7 @@ module Yast
         end
       end
 
-      if Builtins.contains(["tun", "tap"], @type)
+      if ["tun", "tap"].include?(@type)
         newdev = {
           "BOOTPROTO"             => "static",
           "STARTMODE"             => "auto",
@@ -2060,7 +2058,7 @@ module Yast
       # Only test when newdev has enough info for GetTypeFromIfcfg to work.
       implied_type = NetworkInterfaces.GetTypeFromIfcfg(newdev)
       if implied_type != nil && implied_type != @type
-        Ops.set(newdev, "INTERFACETYPE", @type)
+        newdev["INTERFACETYPE"] = @type
       end
 
       NetworkInterfaces.Name = Ops.get_string(@Items, [@current, "ifcfg"], "")
