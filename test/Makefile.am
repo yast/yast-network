@@ -17,6 +17,7 @@ TESTS = \
   complex_test.rb \
   read_hardware_test.rb \
   udev_test.rb \
+  udev_auto_test.rb \
   ifroute_test.rb \
   s390_helpers_test.rb \
   remote_test.rb
