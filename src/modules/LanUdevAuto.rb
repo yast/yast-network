@@ -207,7 +207,7 @@ module Yast
           Builtins.sformat(
             "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", %1==\"%2\", NAME=\"%3\"",
             Ops.get_string(rule, "rule", ""),
-            Ops.get_string(rule, "value", ""),
+            Ops.get_string(rule, "value", "").downcase,
             Ops.get_string(rule, "name", "")
           )
         )
