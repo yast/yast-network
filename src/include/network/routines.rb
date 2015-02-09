@@ -947,6 +947,18 @@ module Yast
       ret
     end
 
+    def SetAllLinksDown
+      interfaces = GetAllInterfaces()
+      ret = !interfaces.empty?
+
+      interfaces.each do |ifc|
+        Builtins.y2milestone("Setting link down for interface %1", ifc)
+        ret = SetLinkDown(ifc) && ret
+      end
+
+      ret
+    end
+
     # Checks if given device has carrier
     #
     # @return [boolean] true if device has carrier

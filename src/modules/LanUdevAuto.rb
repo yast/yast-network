@@ -214,15 +214,20 @@ module Yast
         )
       end
       if Ops.greater_than(Builtins.size(rules), 0)
-        Builtins.y2milestone(
-          "Writing AY udev rules for network (will replace original rules from 1st stage)"
-        )
         if AllowUdevModify()
+          SetAllLinksDown()
+
+          Builtins.y2milestone(
+            "Writing AY udev rules for network (will replace original rules from 1st stage)"
+          )
+
           SCR.Write(path(".udev_persistent.rules_comment"), comment)
           SCR.Write(path(".udev_persistent.rules"), rules)
           SCR.Write(path(".udev_persistent.nil"), [])
 
           update_udevd
+
+          SCR.Execute(path(".target.bash"), "udevadm settle")
         end
       else
         Builtins.y2milestone(
