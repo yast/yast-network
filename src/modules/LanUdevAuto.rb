@@ -37,6 +37,7 @@ module Yast
       Yast.import "LanItems"
       Yast.import "Map"
       Yast.include self, "network/routines.rb"
+      Yast.include self, "network/lan/udev.rb"
 
       textdomain "network"
 
@@ -219,6 +220,9 @@ module Yast
         if AllowUdevModify()
           SCR.Write(path(".udev_persistent.rules_comment"), comment)
           SCR.Write(path(".udev_persistent.rules"), rules)
+          SCR.Write(path(".udev_persistent.nil"), [])
+
+          update_udevd
         end
       else
         Builtins.y2milestone(
