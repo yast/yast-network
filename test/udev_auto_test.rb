@@ -34,7 +34,7 @@ describe "LanUdevAuto#Write" do
     expect(Yast::SCR)
       .to receive(:Write)
       .with(path(".udev_persistent.rules"), ay_rules)
-    expect(Yast::SCR)
+    allow(Yast::SCR)
       .to receive(:Write)
       .and_return 0
 
