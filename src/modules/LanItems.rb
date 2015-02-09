@@ -633,16 +633,7 @@ module Yast
       SCR.Write(path(".udev_persistent.rules"), net_rules)
       SCR.Write(path(".udev_persistent.nil"), [])
 
-      SCR.Execute(path(".target.bash"), "udevadm control --reload")
-
-      # When configuring a new s390 card, we neglect to fill
-      # its Items[i, "udev", "net"], causing jumbled names (bnc#721520)
-      # The udev trigger will will make udev write the persistent names
-      # (which it already has done, but we have overwritten them now).
-      SCR.Execute(
-        path(".target.bash"),
-        "udevadm trigger --subsystem-match=net --action=add"
-      )
+      update_udevd
 
       true
     end
