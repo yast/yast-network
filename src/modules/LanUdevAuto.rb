@@ -32,6 +32,9 @@ require "yast"
 
 module Yast
   class LanUdevAutoClass < Module
+
+    include Logger
+
     def main
       Yast.import "UI"
       Yast.import "LanItems"
@@ -217,9 +220,7 @@ module Yast
         if AllowUdevModify()
           SetAllLinksDown()
 
-          Builtins.y2milestone(
-            "Writing AY udev rules for network (will replace original rules from 1st stage)"
-          )
+          log.info("Writing AY udev rules for network")
 
           SCR.Write(path(".udev_persistent.rules_comment"), comment)
           SCR.Write(path(".udev_persistent.rules"), rules)
@@ -230,9 +231,7 @@ module Yast
           SCR.Execute(path(".target.bash"), "udevadm settle")
         end
       else
-        Builtins.y2milestone(
-          "No udev rules defined by AY, nothing to write (keep original file)"
-        )
+        log.info("No udev rules defined by AY")
       end
       if Arch.s390
         Builtins.foreach(@s390_devices) do |rule|
@@ -251,7 +250,7 @@ module Yast
           LanItems.createS390Device
           Builtins.y2milestone("rule %1", rule)
         end
-        Builtins.y2milestone("Writing s390 rules %1", @s390_devices)
+        log.info("Writing s390 rules %1", @s390_devices)
       end
       true
     end
