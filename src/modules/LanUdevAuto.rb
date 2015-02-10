@@ -204,19 +204,19 @@ module Yast
         "#",
         "# You can modify it, as long as you keep each rule on a single line."
       ]
+      template = "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", %s==\"%s\", NAME=\"%s\""
+
       rules = []
-      Builtins.foreach(@udev_rules) do |rule|
-        rules = Builtins.add(
-          rules,
-          Builtins.sformat(
-            "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", %1==\"%2\", NAME=\"%3\"",
-            Ops.get_string(rule, "rule", ""),
-            Ops.get_string(rule, "value", "").downcase,
-            Ops.get_string(rule, "name", "")
-          )
-        )
+
+      @udev_rules.each do |rule|
+        opt = rule["rule"] || ""
+        value = rule["value"] || ""
+        devname = rule["name"] || ""
+
+        rules << template % [opt, value.downcase, devname]
       end
-      if Ops.greater_than(Builtins.size(rules), 0)
+
+      if rules.size > 0
         if AllowUdevModify()
           SetAllLinksDown()
 
@@ -233,8 +233,11 @@ module Yast
       else
         log.info("No udev rules defined by AY")
       end
+
+      # FIXME: In fact, this has nothing to do with udev. At least no
+      # directly. It creates linux emulation for s390 devices.
       if Arch.s390
-        Builtins.foreach(@s390_devices) do |rule|
+        @s390_devices.each do |rule|
           LanItems.Select("")
           LanItems.type = Ops.get_string(rule, "type", "")
           LanItems.qeth_chanids = Ops.get_string(rule, "chanids", "")
