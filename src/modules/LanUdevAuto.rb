@@ -223,10 +223,8 @@ module Yast
           log.info("Writing AY udev rules for network")
 
           SCR.Write(path(".udev_persistent.rules_comment"), comment)
-          SCR.Write(path(".udev_persistent.rules"), rules)
-          SCR.Write(path(".udev_persistent.nil"), [])
 
-          update_udevd
+          write_update_udevd(rules)
 
           SCR.Execute(path(".target.bash"), "udevadm settle")
         end

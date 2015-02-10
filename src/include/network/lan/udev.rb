@@ -45,6 +45,14 @@ module Yast
       rule
     end
 
+    # Writes new persistent udev net rules and tells udevd to update its configuration
+    def write_update_udevd(udev_rules)
+      SCR.Write(path(".udev_persistent.rules"), udev_rules)
+      SCR.Write(path(".udev_persistent.nil"), [])
+
+      update_udevd
+    end
+
     # Tells udevd to reload and update its configuration
     def update_udevd
       SCR.Execute(path(".target.bash"), "udevadm control --reload")

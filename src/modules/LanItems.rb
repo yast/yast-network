@@ -630,10 +630,7 @@ module Yast
 
       Builtins.y2milestone("write net udev rules: %1", net_rules)
 
-      SCR.Write(path(".udev_persistent.rules"), net_rules)
-      SCR.Write(path(".udev_persistent.nil"), [])
-
-      update_udevd
+      write_update_udevd(net_rules)
 
       true
     end
