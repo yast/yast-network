@@ -928,35 +928,29 @@ module Yast
     end
 
     def SetLinkUp(dev_name)
+      log.info("Setting link up for interface #{dev_name}")
       Run("ip link set #{dev_name} up")
     end
 
     def SetLinkDown(dev_name)
+      log.info("Setting link down for interface #{dev_name}")
       Run("ip link set #{dev_name} down")
     end
 
     def SetAllLinksUp
       interfaces = GetAllInterfaces()
-      ret = !interfaces.empty?
 
-      interfaces.each do |ifc|
-        Builtins.y2milestone("Setting link up for interface %1", ifc)
-        ret = SetLinkUp(ifc) && ret
-      end
+      return false if interfaces.empty?
 
-      ret
+      interfaces.all? { |i| SetLinkUp(i) }
     end
 
     def SetAllLinksDown
       interfaces = GetAllInterfaces()
-      ret = !interfaces.empty?
 
-      interfaces.each do |ifc|
-        Builtins.y2milestone("Setting link down for interface %1", ifc)
-        ret = SetLinkDown(ifc) && ret
-      end
+      return false if interfaces.empty?
 
-      ret
+      interfaces.all? { |i| SetLinkDown(i) }
     end
 
     # Checks if given device has carrier
