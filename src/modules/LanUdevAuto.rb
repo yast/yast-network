@@ -33,7 +33,7 @@ require "yast"
 module Yast
   class LanUdevAutoClass < Module
 
-    include Logger
+    include Yast::Logger
 
     def main
       Yast.import "UI"
@@ -210,7 +210,7 @@ module Yast
         rules << template % [opt, value.downcase, devname]
       end
 
-      if (rules.size > 0) && AllowUdevModify()
+      if !rules.empty? && AllowUdevModify()
         SetAllLinksDown()
 
         log.info("Writing AY udev rules for network")
