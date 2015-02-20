@@ -937,6 +937,9 @@ module Yast
       Run("ip link set #{dev_name} down")
     end
 
+    # Tries to set all available interfaces up
+    #
+    # @return [boolean] false if some of interfaces cannot be set up
     def SetAllLinksUp
       interfaces = GetAllInterfaces()
 
@@ -945,6 +948,9 @@ module Yast
       interfaces.all? { |i| SetLinkUp(i) }
     end
 
+    # Tries to set all available interfaces down
+    #
+    # @return [boolean] false if some of interfaces cannot be set down
     def SetAllLinksDown
       interfaces = GetAllInterfaces()
 

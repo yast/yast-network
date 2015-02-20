@@ -54,6 +54,8 @@ module Yast
     end
 
     # Tells udevd to reload and update its configuration
+    #
+    # @return [boolean] false when new configuration cannot be activated
     def update_udevd
       SCR.Execute(path(".target.bash"), "udevadm control --reload")
 
