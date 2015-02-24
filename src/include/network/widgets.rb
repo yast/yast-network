@@ -559,22 +559,23 @@ module Yast
     # @param [Array<Fixnum>] itemIds           list of indexes into LanItems::Items
     # @param [Array<String>] enslavedIfaces    list of device names of already enslaved devices
     def CreateSlaveItems(itemIds, enslavedIfaces)
-      itemIds = deep_copy(itemIds)
-      enslavedIfaces = deep_copy(enslavedIfaces)
       items = []
 
       Builtins.foreach(itemIds) do |itemId|
         description = ""
         dev_name = LanItems.GetDeviceName(itemId)
         ifcfg = LanItems.GetDeviceMap(itemId)
+
         next if IsEmpty(dev_name)
+
         ifcfg = { "dev_name" => dev_name } if ifcfg == nil
         dev_type = LanItems.GetDeviceType(itemId)
+
         if Builtins.contains(["tun", "tap"], dev_type)
           description = NetworkInterfaces.GetDevTypeDescription(dev_type, true)
         else
           description = BuildDescription(
-            "",
+            dev_type,
             "",
             ifcfg,
             [Ops.get_map(LanItems.GetLanItem(itemId), "hwinfo", {})]
