@@ -559,47 +559,48 @@ module Yast
     # @param [Array<Fixnum>] itemIds           list of indexes into LanItems::Items
     # @param [Array<String>] enslavedIfaces    list of device names of already enslaved devices
     def CreateSlaveItems(itemIds, enslavedIfaces)
+      raise ArgumentError if itemIds.nil?
+
       items = []
 
-      Builtins.foreach(itemIds) do |itemId|
-        description = ""
+      itemIds.each do |itemId|
         dev_name = LanItems.GetDeviceName(itemId)
         ifcfg = LanItems.GetDeviceMap(itemId)
 
-        next if IsEmpty(dev_name)
+        next if dev_name.nil? || dev_name.empty?
 
         ifcfg = { "dev_name" => dev_name } if ifcfg == nil
         dev_type = LanItems.GetDeviceType(itemId)
 
-        if Builtins.contains(["tun", "tap"], dev_type)
+        if ["tun", "tap"].include? dev_type
           description = NetworkInterfaces.GetDevTypeDescription(dev_type, true)
         else
           description = BuildDescription(
             dev_type,
             "",
             ifcfg,
-            [Ops.get_map(LanItems.GetLanItem(itemId), "hwinfo", {})]
+            [LanItems.GetLanItem(itemId)["hwinfo"] || {}]
           )
 
           # this conditions origin from bridge configuration
           # if enslaving a configured device then its configuration is rewritten
           # to "0.0.0.0/32"
-          if Ops.get_string(ifcfg, "IPADDR", "") != "0.0.0.0"
-            description = Builtins.sformat("%1 (%2)", description, "configured")
-          end
+          #
+          # translators: a note that listed device is already configured
+          description = description + " " + _("configured") if ifcfg["IPADDR"] != "0.0.0.0"
         end
-        selected = Builtins.contains(enslavedIfaces, dev_name)
-        items = Builtins.add(
-          items,
-          Item(
-            Id(dev_name),
-            Builtins.sformat("%1 - %2", dev_name, description),
-            selected
-          )
+
+        selected = false
+        selected = enslavedIfaces.include?(dev_name) if enslavedIfaces
+
+        items << Item(
+          Id(dev_name),
+          "#{dev_name} - #{description}",
+          selected
         )
       end
 
-      deep_copy(items)
+      items
     end
   end
 end
