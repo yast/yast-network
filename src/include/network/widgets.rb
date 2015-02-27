@@ -565,19 +565,19 @@ module Yast
 
       itemIds.each do |itemId|
         dev_name = LanItems.GetDeviceName(itemId)
-        ifcfg = LanItems.GetDeviceMap(itemId)
 
         next if dev_name.nil? || dev_name.empty?
 
-        ifcfg = { "dev_name" => dev_name } if ifcfg == nil
         dev_type = LanItems.GetDeviceType(itemId)
 
         if ["tun", "tap"].include? dev_type
           description = NetworkInterfaces.GetDevTypeDescription(dev_type, true)
         else
+          ifcfg = LanItems.GetDeviceMap(itemId) || {}
+
           description = BuildDescription(
             dev_type,
-            "",
+            dev_name,
             ifcfg,
             [LanItems.GetLanItem(itemId)["hwinfo"] || {}]
           )
@@ -587,7 +587,7 @@ module Yast
           # to "0.0.0.0/32"
           #
           # translators: a note that listed device is already configured
-          description = description + " " + _("configured") if ifcfg["IPADDR"] != "0.0.0.0"
+          description += " " + _("configured") if ifcfg["IPADDR"] != "0.0.0.0"
         end
 
         selected = false
