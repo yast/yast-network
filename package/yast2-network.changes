@@ -3,7 +3,7 @@ Mon Mar  2 08:03:42 UTC 2015 - mfilka@suse.com
 
 - bnc#905738
   - udev rules provided by AutoYaST profile gets applied
-- 3.1.110
+- 3.1.111
 
 -------------------------------------------------------------------
 Sat Feb 28 20:49:41 UTC 2015 - mfilka@suse.com
