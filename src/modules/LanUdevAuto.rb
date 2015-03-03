@@ -241,7 +241,7 @@ module Yast
           LanItems.createS390Device
           Builtins.y2milestone("rule %1", rule)
         end
-        log.info("Writing s390 rules %1", @s390_devices)
+        log.info("Writing s390 rules #{@s390_devices}")
       end
 
       true
