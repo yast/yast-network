@@ -127,7 +127,6 @@ define map FromAY(map input)
     foreach(string devname, map if_data, interfaces, {
 
 	string type = NetworkInterfaces::GetType(devname);
-//	string id = NetworkInterfaces::device_num (devname);
 	map d = devices[type]:$[];
 	d[devname] = if_data;
 	devices[type] = d;
@@ -136,8 +135,6 @@ define map FromAY(map input)
     map hwcfg = $[];
     if (size(input["modules"]:[]) > 0)
     {
-        // "hwcfg":$["bus-pci-0000:02:05.0":$["MODULE":"sk98lin",
-        // "MODULE_OPTIONS":"", "STARTMODE":"auto"]]
 	hwcfg = listmap(map mod, input["modules"]:[], {
             string options = mod["options"]:"";
             string module_name = mod["module"]:"";
@@ -163,7 +160,7 @@ define map FromAY(map input)
 
     if (haskey(dns, "dhcp_hostname"))
         dhcp["DHCLIENT_SET_HOSTNAME"] = dns["dhcp_hostname"]:false;
-	
+
     dhcp = UpcaseCondSet (dhcp, dhcpopts, "dhclient_client_id");
     dhcp = UpcaseCondSet (dhcp, dhcpopts, "dhclient_additional_options");
     dhcp = UpcaseCondSet (dhcp, dhcpopts, "dhclient_hostname_option");
@@ -305,17 +302,17 @@ else if(func == "Import") {
         // bnc#796580 The problem with this is that due to compatibility with
         // older profiles, a missing element may have a different meaning than
         // "use what the filesystem/kernel currently uses".
-        // In particular, a missing write_hostname [1] means
+        // In particular, a missing write_hostname means
         // "use the product default from DVD1/control.xml".
         // Other elements may have similar problems,
         // to be fixed post-PTF for maintenance.
         if (! haskey(param, "dns")) {
             param["dns"] = $[];
         }
-        foreach( string key, any value, dns, {
-            
+        foreach( string key, any value, dns,
+        {
             if( ! haskey( param["dns"]:$[], key )
-                && key != "write_hostname" ) { // [1] ^
+                && key != "write_hostname" ) {
                 y2milestone("(dns) taking %1 from inst-sys. Value = %2", key, value);
                 param["dns",key] = value;
             }
