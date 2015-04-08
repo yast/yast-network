@@ -62,6 +62,65 @@ map UpcaseCondSet (map ret, map m, string key) {
     return ret;
 }
 
+/**
+ * Merges two devices map into one.
+ *
+ * Maps are expected in NetworkInterfaces format. That is
+ * $[
+ *   type1:
+ *     $[
+ *       dev_name_1: $[ ... ],
+ *       ...
+ *      ],
+ *    ...
+ *  ]
+ *
+ * If a device definition is present in both maps, then the one from devices2
+ * wins.
+ *
+ * @param in_devs1 first map of devices in NetworkInterfaces format
+ * @param in_devs2 second map of devices in NetworkInterfaces format
+ *
+ * @return merged device map in NetworkInterfaces format or empty map
+ */
+define map MergeDevices(map<string, any> in_devs1, map<string, any> in_devs2)
+{
+    map merged_devices = $[];
+
+    y2milestone("MergeDevices: start (in_devs1: %1, in_devs2: %2)", in_devs1, in_devs2);
+
+    if(IsEmpty(in_devs1))
+    {
+        merged_devices = in_devs2 == nil ? $[] : in_devs2;
+        return merged_devices;
+    }
+    if(IsEmpty(in_devs2))
+    {
+        merged_devices = in_devs1;
+        return merged_devices;
+    }
+
+    merged_devices = in_devs1;
+
+    y2milestone("MergeDevices: going to do real merge");
+
+    foreach(string type, any devices, in_devs2,
+    {
+        if(haskey(in_devs1, type))
+        {
+            map merged = union((map) in_devs1[type]:$[], (map) in_devs2[type]:$[]);
+            merged_devices[type] = merged;
+        }
+        else
+        {
+            merged_devices = add(in_devs1, type, devices);
+        }
+    });
+
+    y2milestone("MergeDevices: result %1", merged_devices);
+
+    return merged_devices;
+}
 
 /**
  * Convert data from autoyast to structure used by module.
@@ -149,8 +208,9 @@ define map FromAY(map input)
         });
     }
 
-
-    input["devices"] = devices;
+    // merge devices definitions obtained from inst-sys (input["devices"])
+    // and those which were read from AY profile. bnc#874259
+    input["devices"] = MergeDevices((map<string, any>) input["devices"]:$[], devices);
     input["hwcfg"] = hwcfg;
 
     // DHCP:: config: some of it is in the DNS part of the profile
@@ -326,6 +386,9 @@ else if(func == "Import") {
                 y2milestone("(routing) taking %1 from inst-sys. Value = %2", key, value);
             }
         });
+
+        // store device configuration from inst-sys, bnc#874259
+        param["devices"] = from_system["devices"]:nil;
     }
     map new = FromAY(param);
     Lan::Import(new);
