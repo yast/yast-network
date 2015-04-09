@@ -6,8 +6,8 @@ Write	.sysconfig.proxy.HTTPS_PROXY "" true
 Write	.sysconfig.proxy.FTP_PROXY "" true
 Write	.sysconfig.proxy.NO_PROXY "localhost" true
 Write	.sysconfig.proxy nil true
-Write	.root.curlrc."--proxy-user" nil true
 Write	.root.curlrc."--proxy" nil true
+Write	.root.curlrc."--proxy-user" nil true
 Write	.root.curlrc nil true
 Return	true
 Dump	Write: enabled
@@ -17,10 +17,10 @@ Write	.sysconfig.proxy.HTTPS_PROXY "" true
 Write	.sysconfig.proxy.FTP_PROXY "" true
 Write	.sysconfig.proxy.NO_PROXY "localhost" true
 Write	.sysconfig.proxy nil true
-Write	.root.curlrc."--proxy-user" nil true
 Write	.root.curlrc."--proxy" "proxy.example.org:3128" true
 Execute	.target.bash_output "/bin/date '+%x'" $["stdout":"2015-01-31\n"]
 Write	.root.curlrc."--proxy"."comment" "\n# Changed by YaST2 module proxy 2015-01-31\n" true
+Write	.root.curlrc."--proxy-user" nil true
 Write	.root.curlrc nil true
 Return	true
 Dump	Write: authenticated
@@ -30,10 +30,10 @@ Write	.sysconfig.proxy.HTTPS_PROXY "" true
 Write	.sysconfig.proxy.FTP_PROXY "" true
 Write	.sysconfig.proxy.NO_PROXY "localhost" true
 Write	.sysconfig.proxy nil true
-Write	.root.curlrc."--proxy-user" "User\\\\Domain:P" true
 Write	.root.curlrc."--proxy" "proxy.example.org:3128" true
 Execute	.target.bash_output "/bin/date '+%x'" $["stdout":"2015-01-31\n"]
-Write	.root.curlrc."--proxy-user"."comment" "\n# Changed by YaST2 module proxy 2015-01-31\n" true
+Write	.root.curlrc."--proxy"."comment" "\n# Changed by YaST2 module proxy 2015-01-31\n" true
+Write	.root.curlrc."--proxy-user" "User\\\\Domain:P" true
 Write	.root.curlrc nil true
 Return	true
 Dump	Write: ftp
@@ -43,8 +43,8 @@ Write	.sysconfig.proxy.HTTPS_PROXY "" true
 Write	.sysconfig.proxy.FTP_PROXY "proxy.example.org:3128" true
 Write	.sysconfig.proxy.NO_PROXY "localhost" true
 Write	.sysconfig.proxy nil true
-Write	.root.curlrc."--proxy-user" nil true
 Write	.root.curlrc."--proxy" nil true
+Write	.root.curlrc."--proxy-user" nil true
 Write	.root.curlrc nil true
 Return	true
 Dump	Write: authenticated ftp
@@ -54,8 +54,8 @@ Write	.sysconfig.proxy.HTTPS_PROXY "" true
 Write	.sysconfig.proxy.FTP_PROXY "proxy.example.org:3128" true
 Write	.sysconfig.proxy.NO_PROXY "localhost" true
 Write	.sysconfig.proxy nil true
-Write	.root.curlrc."--proxy-user" "U:P" true
 Write	.root.curlrc."--proxy" nil true
+Write	.root.curlrc."--proxy-user" "U:P" true
 Execute	.target.bash_output "/bin/date '+%x'" $["stdout":"2015-01-31\n"]
 Write	.root.curlrc."--proxy-user"."comment" "\n# Changed by YaST2 module proxy 2015-01-31\n" true
 Write	.root.curlrc nil true
@@ -67,9 +67,9 @@ Write	.sysconfig.proxy.HTTPS_PROXY "proxy2.example.org:3128" true
 Write	.sysconfig.proxy.FTP_PROXY "proxy3.example.org:3128" true
 Write	.sysconfig.proxy.NO_PROXY "example.org,example.com,localhost" true
 Write	.sysconfig.proxy nil true
-Write	.root.curlrc."--proxy-user" "U:P" true
 Write	.root.curlrc."--proxy" "proxy1.example.org:3128" true
 Execute	.target.bash_output "/bin/date '+%x'" $["stdout":"2015-01-31\n"]
-Write	.root.curlrc."--proxy-user"."comment" "\n# Changed by YaST2 module proxy 2015-01-31\n" true
+Write	.root.curlrc."--proxy"."comment" "\n# Changed by YaST2 module proxy 2015-01-31\n" true
+Write	.root.curlrc."--proxy-user" "U:P" true
 Write	.root.curlrc nil true
 Return	true

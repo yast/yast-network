@@ -108,41 +108,49 @@ void WriteSysconfig() {
     SCR::Write(.sysconfig.proxy, nil);
 }
 
+/*
+ * Escape backslash characters in .curlrc (bnc#331038)
+ * see also http://curl.haxx.se/docs/manpage.html#-K for escaping rules
+ */
+string EscapeForCurlrc(string s) {
+    return mergestring (splitstring(s, "\\"), "\\\\");
+}
+
 void WriteCurlrc() {
+    string proxyuser = nil;
+    if (user != "") {
+        user = EscapeForCurlrc(user); // FIXME this clobbers the master value
+        proxyuser = user;
+        if (pass != "") proxyuser = user + ":" + pass;
+    }
+
+    map<string, string> options = $[
+        "--proxy-user": proxyuser,
+        // bnc#305163
+        "--proxy":      http
+    ];
+
     // proxy is used, write /root/.curlrc
-    // bugzilla #305163
     if (enabled) {
-	/* Update /root/.curlrc */
-	string proxyuser = nil;
-	if (user != "") {
-	    //Escape backslash characters in .curlrc (#331038)
-            user = mergestring (splitstring(user, "\\"), "\\\\");
-	    proxyuser = user;
-	    if (pass != "") proxyuser = user + ":" + pass;
-	}
+        boolean write_comment = true;
+        foreach(string option, string value, options, {
+            if (value == "") {
+                value = nil;
+            }
 
-	// nil or real value
-	SCR::Write (add (.root.curlrc, "--proxy-user"), proxyuser);
+            SCR::Write (add (.root.curlrc, option), value);
 
-	// not 'nil', not empty
-	// bugzilla #305163
-	if (http != nil && size (http) > 0) {
-	    SCR::Write (add (.root.curlrc, "--proxy"), http);
-	} else {
-	    SCR::Write (add (.root.curlrc, "--proxy"), nil);
-	}
-
-	// only written value can have a comment
-	if (proxyuser != nil) {
-	    SCR::Write (add (add (.root.curlrc, "--proxy-user"), "comment"), ChangedComment("proxy"));
-	// only when set, can have a comment
-	} else if (http != nil && size (http) > 0) {
-	    SCR::Write (add (add (.root.curlrc, "--proxy"), "comment"), ChangedComment("proxy"));
-	}
+            if (value != nil && write_comment) {
+                SCR::Write (add (add (.root.curlrc, option), "comment"),
+                            ChangedComment("proxy"));
+                write_comment = false;
+            }
+        });
     // proxy is not used, remove proxy-related settings
     } else {
-	SCR::Write (add (.root.curlrc, "--proxy-user"), nil);
-	SCR::Write (add (.root.curlrc, "--proxy"), nil);
+        foreach(string option, string value, options, {
+            SCR::Write (add (.root.curlrc, option), nil);
+        });
     }
 
     SCR::Write(.root.curlrc, nil);
