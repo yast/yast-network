@@ -113,13 +113,15 @@ void WriteSysconfig() {
  * see also http://curl.haxx.se/docs/manpage.html#-K for escaping rules
  */
 string EscapeForCurlrc(string s) {
+    if (s == nil) {
+        return nil;
+    }
     return mergestring (splitstring(s, "\\"), "\\\\");
 }
 
 void WriteCurlrc() {
     string proxyuser = nil;
     if (user != "") {
-        user = EscapeForCurlrc(user); // FIXME this clobbers the master value
         proxyuser = user;
         if (pass != "") proxyuser = user + ":" + pass;
     }
@@ -141,7 +143,7 @@ void WriteCurlrc() {
                 value = nil;
             }
 
-            SCR::Write (add (.root.curlrc, option), value);
+            SCR::Write (add (.root.curlrc, option), EscapeForCurlrc(value));
 
             if (value != nil && write_comment) {
                 SCR::Write (add (add (.root.curlrc, option), "comment"),
