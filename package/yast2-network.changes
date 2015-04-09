@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Apr  9 15:35:53 UTC 2015 - mvidner@suse.com
+
+- Write also --noproxy to .curlrc otherwise it is ignored even if
+  set in the environment (bsc#923788).
+
+-------------------------------------------------------------------
 Mon Jun  9 07:21:45 UTC 2014 - mfilka@suse.com
 
 - bnc#840565
