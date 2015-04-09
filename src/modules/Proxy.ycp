@@ -99,39 +99,16 @@ global define boolean Read() {
     return true;
 }
 
-/**
- * Write routing settings and apply changes
- * @return true if success
- */
-global define boolean Write() {
-
-    y2milestone("Writing configuration");
-    if(!modified) {
-	y2milestone("No changes to proxy configuration -> nothing to write");
-	return true;
-    }
-
-    list <string> steps = [
-	_("Update proxy configuration"),
-    ];
-
-    string caption = _("Saving Proxy Configuration");
-    // sleep for longer time, so that progress does not disappear right afterwards
-    // but only when Progress is visible
-    integer sl = (Progress::status() == true ? 500 : 0);
-
-    Progress::New(caption, " ", size(steps), steps, [], "");
-
-    ProgressNextStage(_("Updating proxy configuration..."));
-
-    /* Update /etc/sysconfig/proxy */
+void WriteSysconfig() {
     SCR::Write(.sysconfig.proxy.PROXY_ENABLED, enabled?"yes":"no");
     SCR::Write(.sysconfig.proxy.HTTP_PROXY, http);
     SCR::Write(.sysconfig.proxy.HTTPS_PROXY, https);
     SCR::Write(.sysconfig.proxy.FTP_PROXY, ftp);
     SCR::Write(.sysconfig.proxy.NO_PROXY, no);
     SCR::Write(.sysconfig.proxy, nil);
+}
 
+void WriteCurlrc() {
     // proxy is used, write /root/.curlrc
     // bugzilla #305163
     if (enabled) {
@@ -169,6 +146,37 @@ global define boolean Write() {
     }
 
     SCR::Write(.root.curlrc, nil);
+}
+
+/**
+ * Write routing settings and apply changes
+ * @return true if success
+ */
+global define boolean Write() {
+
+    y2milestone("Writing configuration");
+    if(!modified) {
+	y2milestone("No changes to proxy configuration -> nothing to write");
+	return true;
+    }
+
+    list <string> steps = [
+	_("Update proxy configuration"),
+    ];
+
+    string caption = _("Saving Proxy Configuration");
+    // sleep for longer time, so that progress does not disappear right afterwards
+    // but only when Progress is visible
+    integer sl = (Progress::status() == true ? 500 : 0);
+
+    Progress::New(caption, " ", size(steps), steps, [], "");
+
+    ProgressNextStage(_("Updating proxy configuration..."));
+
+    /* Update /etc/sysconfig/proxy */
+    WriteSysconfig();
+
+    WriteCurlrc();
     sleep(sl);
     Progress::NextStage();
 
