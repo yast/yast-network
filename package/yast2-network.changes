@@ -3,6 +3,39 @@ Thu Apr  9 15:35:53 UTC 2015 - mvidner@suse.com
 
 - Write also --noproxy to .curlrc otherwise it is ignored even if
   set in the environment (bsc#923788).
+- 2.17.204
+
+-------------------------------------------------------------------
+Mon Jan 19 08:07:42 UTC 2015 - mfilka@suse.com
+
+- fate#316140
+  - configure vlan during installation when vlan id is provided by
+    user / linuxrc
+- 2.17.203
+
+-------------------------------------------------------------------
+Wed Jan 14 11:26:43 UTC 2015 - mfilka@suse.com
+
+- fate#315162
+  - IPoIB mode configuration in YaST
+- 2.17.202
+
+-------------------------------------------------------------------
+Thu Jan  8 21:07:28 UTC 2015 - mfilka@suse.com
+
+- bnc#900383
+  - adapted to new device type detection API provided by yast2
+- fixed problem with not matching udev rule (bnc#551310)
+- bnc#695262
+    - fixed write sequence to enable device renaming.
+- 2.17.201
+
+-------------------------------------------------------------------
+Fri Nov 14 07:12:35 UTC 2014 - mfilka@suse.com
+
+- fate#316938, bnc#633310
+  - AY: added IPv6 option ()
+- 2.17.200
 
 -------------------------------------------------------------------
 Mon Jun  9 07:21:45 UTC 2014 - mfilka@suse.com

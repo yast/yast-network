@@ -11,7 +11,8 @@ map READ = $[
     "target" : $[
 	"size":27,
 	"string" : "laptop.suse.cz",
-	"bash_output" : "laptop.suse.cz"
+	"bash_output" : "laptop.suse.cz",
+	"stat" : $[ "exists": true]
     ],
     "probe": $[
         "architecture": "i386"
@@ -100,6 +101,8 @@ Testsuite::Init([READ, $[], EXEC], nil);
 import "YaPI::NETWORK";
 
 // Test Read
+Testsuite::Dump( "Testing YaPI Read");
+
 Testsuite::Test(``(YaPI::NETWORK::Read()), [READ, $[], EXEC], nil);
 
 // Test various writes. Writing is done as stateless in YaPI so it cannot be checked by rereading values.
@@ -107,6 +110,8 @@ map write_succeeded = $[
     "error":"", 
     "exit":"0",
 ];
+
+Testsuite::Dump( "Testing YaPI Write");
 
 Assert::Equal( write_succeeded, YaPI::NETWORK::Write($[]));
 

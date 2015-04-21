@@ -96,10 +96,6 @@ void initHardware(){
 	hardware["type"] = "eth";
     }
     hardware["realtype"] = NetworkInterfaces::RealType(hardware["type"]:"", hardware["hotplug"]:"");
-    /*if (hasAnyValue(NetworkInterfaces::Name))
-    {
-	hardware["device"] = NetworkInterfaces::device_num(NetworkInterfaces::Name);
-    }*/
 
     //Use rather LanItems::device, so that device number is initialized correctly at all times (#308763) 
     hardware["device"] = LanItems::device;
@@ -107,16 +103,13 @@ void initHardware(){
     string driver = LanItems::getCurrentItem()["udev", "driver"]:"";
 
 
-    hardware["default_device"] = hasAnyValue(driver) ? driver : LanItems::getCurrentItem()["hwinfo", "module"]:"" ;
+    hardware["default_device"] = IsNotEmpty(driver) ? driver : LanItems::getCurrentItem()["hwinfo", "module"]:"" ;
 
     hardware["options"] = LanItems::driver_options[hardware["default_device"]:""]:"";
 
     // #38213, remember device id when we switch back from pcmcia/usb
     hardware["non_hotplug_device_id"] = hardware["device"]:"";
-/*
-    hardware["hwcfg"] = LanItems::nm_name;
-    if (!hasAnyValue(LanItems::nm_name) && hasAnyValue(LanItems::nm_name_old)) hardware["hwcfg"]=LanItems::nm_name_old;
-*/
+
     // FIXME duplicated in address.ycp
     hardware["device_types"] = NetworkInterfaces::GetDeviceTypes();
 
@@ -584,7 +577,7 @@ if (LanItems::operation==`add){
     string nm = sformat("%1%2", LanItems::type, (string) UI::QueryWidget(`id(`num), `Value));
     //Remember current device number (#308763)
     // see also bnc#391802
-    LanItems::device = hasAnyValue(LanItems::device) ? (string) UI::QueryWidget(`id(`num), `Value) : nm;
+    LanItems::device = IsNotEmpty(LanItems::device) ? (string) UI::QueryWidget(`id(`num), `Value) : nm;
 
     if(contains(NetworkInterfaces::List(""), nm)) {
 	Popup::Error(sformat(_("Configuration name %1 already exists.
