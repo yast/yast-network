@@ -100,7 +100,7 @@ global define boolean Read() {
 }
 
 void WriteSysconfig() {
-    SCR::Write(.sysconfig.proxy.PROXY_ENABLED, enabled?"yes":"no");
+    SCR::Write(.sysconfig.proxy.PROXY_ENABLED, enabled ? "yes" : "no");
     SCR::Write(.sysconfig.proxy.HTTP_PROXY, http);
     SCR::Write(.sysconfig.proxy.HTTPS_PROXY, https);
     SCR::Write(.sysconfig.proxy.FTP_PROXY, ftp);
