@@ -6,6 +6,10 @@ Fri Mar  6 13:48:24 UTC 2015 - mfilka@suse.com
     name is changed to new one
 - bnc#914833
   - do not crash when renaming virtual device via hardware tab
+- bnc#910337
+  - initialize configuration name in Hardware tab correctly. It
+    means according device type. Also uses custom name if user
+    used nonstandard one.
 - 3.1.112
 
 -------------------------------------------------------------------
