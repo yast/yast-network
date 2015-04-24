@@ -539,17 +539,19 @@ module Yast
     #
     # Returns new name
     def SetItemName( itemId, name)
+      lan_items = LanItems.Items
+
       if name && !name.empty?
         updated_rule = update_udev_rule_key(GetItemUdevRule(itemId), "NAME", name)
-        @Items[itemId]["udev"]["net"] = updated_rule
+        lan_items[itemId]["udev"]["net"] = updated_rule
       else
         # rewrite rule for empty name is meaningless
-        @Items[itemId].delete("udev")
+        lan_items[itemId].delete("udev")
       end
 
-      if @Items[ itemId].has_key?( "ifcfg")
-        NetworkInterfaces.Delete2( @Items[ itemId][ "ifcfg"])
-        @Items[ itemId][ "ifcfg"] = name.to_s
+      if lan_items[ itemId].has_key?( "ifcfg")
+        NetworkInterfaces.Delete2(lan_items[ itemId][ "ifcfg"])
+        lan_items[ itemId][ "ifcfg"] = name.to_s
       end
 
       name
