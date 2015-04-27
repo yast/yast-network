@@ -1536,10 +1536,6 @@ module Yast
         # address tab
         if LanItems.operation == :add
           LanItems.device = NetworkInterfaces.device_num(ifcfgname)
-          LanItems.type = NetworkInterfaces.GetTypeFromIfcfg(@settings)
-          if LanItems.type == nil
-            LanItems.type = NetworkInterfaces.device_type(ifcfgname)
-          end
         end
 
         LanItems.bootproto = Ops.get_string(@settings, "BOOTPROTO", "")

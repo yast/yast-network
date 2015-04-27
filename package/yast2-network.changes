@@ -1,4 +1,22 @@
 -------------------------------------------------------------------
+Mon Apr 27 07:06:18 UTC 2015 - mfilka@suse.com
+
+- bnc#912904 
+  - do not crash when adding new device and proposed configuration
+    name is changed to new one
+- bnc#914833
+  - do not crash when renaming virtual device via hardware tab
+- bnc#910337
+  - initialize configuration name in Hardware tab correctly. It
+    means according device type. Also uses custom name if user
+    used nonstandard one.
+- bnc#905738
+  - udev rules provided by AutoYaST profile gets applied
+- bnc918356
+  - populate bond slave candidates list with proper device names
+- 3.1.114
+
+-------------------------------------------------------------------
 Wed Jan 28 13:12:16 UTC 2015 - lslezak@suse.cz
 
 - fixed a build failure when building against the latest yast2

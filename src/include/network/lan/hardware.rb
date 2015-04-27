@@ -834,6 +834,7 @@ module Yast
       if isNewDevice
         nm = devname_from_hw_dialog
         LanItems.type = UI.QueryWidget(Id(:type), :Value)
+        LanItems.device = nm
 
         NetworkInterfaces.Name = nm
         Ops.set(LanItems.Items, [LanItems.current, "ifcfg"], nm)

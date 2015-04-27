@@ -236,6 +236,20 @@ describe "LanItemsClass#GetItemName" do
   end
 end
 
+describe "LanItemsClass#SetItemName" do
+  let(:new_name) { "new_name" }
+
+  # this test covers bnc#914833
+  it "doesn't try to update udev rules when none exists for the item" do
+    allow(LanItems)
+      .to receive(:Items)
+      .and_return(MOCKED_ITEMS)
+
+    item_id = LanItems.Items.find { |k, v| !v.has_key?("udev") }.first
+    expect(LanItems.SetItemName(item_id, new_name)).to eql new_name
+  end
+end
+
 describe "LanItemsClass#FindAndSelect" do
   before(:each) do
     @lan_items = Yast::LanItems
