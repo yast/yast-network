@@ -161,11 +161,13 @@ module Yast
       elsif @func == "Write"
         @progress_orig = Progress.set(false)
 
-        @ret = LanUdevAuto.Write
-        Builtins.y2error("Writing udev rules failed") if !@ret
+        result = LanUdevAuto.Write
+        Builtins.y2error("Writing udev rules failed") if !result
+        @ret = result
 
-        @ret = Lan.WriteOnly && @ret
-        Builtins.y2error("Writing lan config failed") if !@ret
+        result = Lan.WriteOnly
+        Builtins.y2error("Writing lan config failed") if !result
+        @ret = @ret && result
 
         if Ops.get(LanItems.autoinstall_settings, "strict_IP_check_timeout") != nil
           if Lan.isAnyInterfaceDown
