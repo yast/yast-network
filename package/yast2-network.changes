@@ -12,7 +12,7 @@ Mon Apr 27 07:06:18 UTC 2015 - mfilka@suse.com
     used nonstandard one.
 - bnc#905738
   - udev rules provided by AutoYaST profile gets applied
-- bnc918356
+- bnc#918356
   - populate bond slave candidates list with proper device names
 - 3.1.114
 
