@@ -63,10 +63,11 @@ module Yast
       # its Items[i, "udev", "net"], causing jumbled names (bnc#721520)
       # The udev trigger will make udev write the persistent names
       # (which it already has done, but we have overwritten them now).
-      SCR.Execute(
+      ret = SCR.Execute(
         path(".target.bash"),
         "udevadm trigger --subsystem-match=net --action=add"
-      ) == 0
+      )
+      ret == 0
     end
 
     # Removes (key,operator,value) tripplet from given udev rule.

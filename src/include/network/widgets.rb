@@ -559,7 +559,7 @@ module Yast
     # @param [Array<Fixnum>] itemIds           list of indexes into LanItems::Items
     # @param [Array<String>] enslavedIfaces    list of device names of already enslaved devices
     def CreateSlaveItems(itemIds, enslavedIfaces)
-      raise ArgumentError if itemIds.nil?
+      raise ArgumentError, "no slave device defined" if itemIds.nil?
 
       items = []
 
