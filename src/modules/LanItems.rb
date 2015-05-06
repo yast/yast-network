@@ -1878,7 +1878,7 @@ module Yast
     # @return true if success
     def Commit
       if @operation != :add && @operation != :edit
-        log.error("Unknown operation: %1", @operation)
+        log.error("Unknown operation: #{@operation}")
         raise ArgumentError, "Unknown operation: #{@operation}"
       end
 
