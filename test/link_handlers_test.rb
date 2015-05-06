@@ -16,17 +16,17 @@ describe "phy_connected?" do
   subject { LinkHandlersClass.new }
 
   before(:each) do
-    Yast::SCR.stub(:Execute).with(path(".target.bash"), //) { 0 }
+    allow(Yast::SCR).to receive(:Execute).with(path(".target.bash"), //) { 0 }
     allow(subject).to receive(:sleep)
   end
 
   it "returns true if PHY layer is available" do
-    Yast::SCR.stub(:Read).with(path(".target.string"), /\/sys\/class\/net/) { 1 }
+    allow(Yast::SCR).to receive(:Read).with(path(".target.string"), /\/sys\/class\/net/) { 1 }
     expect(subject.phy_connected?("enp0s3")).to eql true
   end
 
   it "returns false if PHY layer is available" do
-    Yast::SCR.stub(:Read).with(path(".target.string"), /\/sys\/class\/net/) { 0 }
+    allow(Yast::SCR).to receive(:Read).with(path(".target.string"), /\/sys\/class\/net/) { 0 }
     expect(subject.phy_connected?("enp0s3")).to eql false
   end
 end

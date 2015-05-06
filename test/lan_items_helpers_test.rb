@@ -9,19 +9,19 @@ Yast.import "LanItems"
 describe "LanItemsClass#IsItemConfigured" do
 
   it "succeeds when item has configuration" do
-    Yast::LanItems.stub(:GetLanItem) { { "ifcfg" => "enp0s3" } }
+    allow(Yast::LanItems).to receive(:GetLanItem) { { "ifcfg" => "enp0s3" } }
 
     expect(Yast::LanItems.IsItemConfigured(0)).to be true
   end
 
   it "fails when item doesn't exist" do
-    Yast::LanItems.stub(:GetLanItem) { {} }
+    allow(Yast::LanItems).to receive(:GetLanItem) { {} }
 
     expect(Yast::LanItems.IsItemConfigured(0)).to be false
   end
 
   it "fails when item's configuration doesn't exist" do
-    Yast::LanItems.stub(:GetLanItem) { { "ifcfg" => nil } }
+    allow(Yast::LanItems).to receive(:GetLanItem) { { "ifcfg" => nil } }
 
     expect(Yast::LanItems.IsItemConfigured(0)).to be false
   end
@@ -99,7 +99,7 @@ describe "LanItemsClass#getNetworkInterfaces" do
     ]
 
     it "returns list of known interfaces" do
-      Yast::NetworkInterfaces.stub(:FilterDevices) { NETCONFIG_ITEMS }
+      allow(Yast::NetworkInterfaces).to receive(:FilterDevices) { NETCONFIG_ITEMS }
       expect(Yast::LanItems.getNetworkInterfaces).to match_array(EXPECTED_INTERFACES)
     end
 end

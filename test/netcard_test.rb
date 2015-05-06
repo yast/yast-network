@@ -144,7 +144,7 @@ describe "LanItemsClass#BuildLanOverview" do
   end
 
   it "returns description and uses custom name if present" do
-    @lan_items.stub(:GetDeviceMap) { { "NAME" => "Custom name" } }
+    allow(@lan_items).to receive(:GetDeviceMap) { { "NAME" => "Custom name" } }
 
     @lan_items.BuildLanOverview
     @lan_items.Items.each_pair do |key, value|
@@ -160,7 +160,7 @@ describe "LanItemsClass#BuildLanOverview" do
   end
 
   it "returns description and uses type based name if hwinfo is not present" do
-    @lan_items.stub(:GetDeviceMap) { { "NAME" => "" } }
+    allow(@lan_items).to receive(:GetDeviceMap) { { "NAME" => "" } }
 
     @lan_items.BuildLanOverview
     @lan_items.Items.each_pair do |key, value|
@@ -233,6 +233,20 @@ describe "LanItemsClass#GetItemName" do
     MOCKED_ITEMS.select { |k,v| v.has_key?("ifcfg") }.each_pair do |item_id, conf|
       expect(@lan_items.GetDeviceName(item_id)).to eql conf["ifcfg"]
     end
+  end
+end
+
+describe "LanItemsClass#SetItemName" do
+  let(:new_name) { "new_name" }
+
+  # this test covers bnc#914833
+  it "doesn't try to update udev rules when none exists for the item" do
+    allow(LanItems)
+      .to receive(:Items)
+      .and_return(MOCKED_ITEMS)
+
+    item_id = LanItems.Items.find { |k, v| !v.has_key?("udev") }.first
+    expect(LanItems.SetItemName(item_id, new_name)).to eql new_name
   end
 end
 
