@@ -200,14 +200,12 @@ module Yast
     def Write
       template = "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", %s==\"%s\", NAME=\"%s\""
 
-      rules = []
-
-      @udev_rules.each do |rule|
+      rules = @udev_rules.map do |rule|
         opt = rule["rule"] || ""
         value = rule["value"] || ""
         devname = rule["name"] || ""
 
-        rules << template % [opt, value.downcase, devname]
+        template % [opt, value.downcase, devname]
       end
 
       if !rules.empty? && AllowUdevModify()
