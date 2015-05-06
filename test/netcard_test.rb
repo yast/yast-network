@@ -144,7 +144,7 @@ describe "LanItemsClass#BuildLanOverview" do
   end
 
   it "returns description and uses custom name if present" do
-    @lan_items.stub(:GetDeviceMap) { { "NAME" => "Custom name" } }
+    allow(@lan_items).to receive(:GetDeviceMap) { { "NAME" => "Custom name" } }
 
     @lan_items.BuildLanOverview
     @lan_items.Items.each_pair do |key, value|
@@ -160,7 +160,7 @@ describe "LanItemsClass#BuildLanOverview" do
   end
 
   it "returns description and uses type based name if hwinfo is not present" do
-    @lan_items.stub(:GetDeviceMap) { { "NAME" => "" } }
+    allow(@lan_items).to receive(:GetDeviceMap) { { "NAME" => "" } }
 
     @lan_items.BuildLanOverview
     @lan_items.Items.each_pair do |key, value|

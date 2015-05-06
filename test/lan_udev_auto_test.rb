@@ -25,7 +25,7 @@ describe '#getDeviceName' do
   # general mocking stuff is placed here
   before( :each) do
     # mock devices configuration
-    LanUdevAuto.stub( :ReadHardware) {
+    allow(LanUdevAuto).to receive( :ReadHardware) {
       [
         {
           "dev_name" => NEW_STYLE_NAME,

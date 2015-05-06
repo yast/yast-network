@@ -69,7 +69,7 @@ describe "InstallInfConvertor" do
 
       it "returns empty string even in autoinst mode" do
         Yast.import "Mode"
-        Mode.stub(:autoinst) { true }
+        allow(Mode).to receive(:autoinst) { true }
 
         expect(@install_inf_convertor.send(:dev_name)).to be_empty
       end
@@ -95,16 +95,16 @@ describe "InstallInfConvertor" do
 
       @install_inf_convertor = Yast::InstallInfConvertor.instance
 
-      Yast::InstallInfConvertor::InstallInf
-        .stub(:[]) { "" }
-      Yast::InstallInfConvertor::InstallInf
-        .stub(:[])
+      allow(Yast::InstallInfConvertor::InstallInf)
+        .to receive(:[]) { "" }
+      allow(Yast::InstallInfConvertor::InstallInf)
+        .to receive(:[])
         .with("Netdevice") { @device }
-      Yast::InstallInfConvertor::InstallInf
-        .stub(:[])
+      allow(Yast::InstallInfConvertor::InstallInf)
+        .to receive(:[])
         .with("NetConfig") { @netconfig }
-      Yast::InstallInfConvertor::InstallInf
-        .stub(:[])
+      allow(Yast::InstallInfConvertor::InstallInf)
+        .to receive(:[])
         .with("NetCardName") { @netcardname }
     end
 
@@ -146,22 +146,22 @@ describe "InstallInfConvertor" do
 
       @install_inf_convertor = Yast::InstallInfConvertor.instance
 
-      Yast::InstallInfConvertor::InstallInf
-        .stub(:[]) { "" }
-      Yast::InstallInfConvertor::InstallInf
-        .stub(:[])
+      allow(Yast::InstallInfConvertor::InstallInf)
+        .to receive(:[]) { "" }
+      allow(Yast::InstallInfConvertor::InstallInf)
+        .to receive(:[])
         .with("Netdevice") { @device }
-      Yast::InstallInfConvertor::InstallInf
-        .stub(:[])
+      allow(Yast::InstallInfConvertor::InstallInf)
+        .to receive(:[])
         .with("NetConfig") { @netconfig }
-      Yast::InstallInfConvertor::InstallInf
-        .stub(:[])
+      allow(Yast::InstallInfConvertor::InstallInf)
+        .to receive(:[])
         .with("IP") { @ip }
-      Yast::InstallInfConvertor::InstallInf
-        .stub(:[])
+      allow(Yast::InstallInfConvertor::InstallInf)
+        .to receive(:[])
         .with("Netmask") { @netmask }
-      Yast::InstallInfConvertor::InstallInf
-        .stub(:[])
+      allow(Yast::InstallInfConvertor::InstallInf)
+        .to receive(:[])
         .with("Nameserver") { @nameserver }
     end
 
