@@ -149,12 +149,11 @@ module Yast
     end
 
     def NetworkCardSequence(action)
-      aliases = { "hardware" => -> { HardwareDialog() }, "address" => lambda do
-        AddressSequence("")
-      end, "s390" => lambda
-       do
-        S390Dialog()
-      end }
+      aliases = {
+        "hardware" => -> { HardwareDialog() },
+        "address"  => -> { AddressSequence("") },
+        "s390"     => -> { S390Dialog() }
+      }
 
       ws_start = "address"
 
@@ -184,11 +183,7 @@ module Yast
 
     def AddressSequence(which)
       aliases = {
-        #	"changedefaults": [ ``(ChangeDefaults()), true ],
-        "address"     => lambda
-         do
-          AddressDialog()
-        end,
+        "address"     => -> { AddressDialog() },
         "hosts"       => -> { HostsMainDialog(false) },
         "s390"        => -> { S390Dialog() },
         "wire"        => -> { WirelessDialog() },
