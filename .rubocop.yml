@@ -37,3 +37,12 @@ Metrics/ParameterLists:
 # Offense count: 74
 Metrics/PerceivedComplexity:
   Max: 59
+
+# Offense count: 1
+Style/AccessorMethodName:
+  Enabled: false
+
+# Offense count: 436
+# Configuration parameters: EnforcedStyle, SupportedStyles.
+Style/MethodName:
+  Enabled: false
