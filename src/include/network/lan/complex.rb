@@ -1,6 +1,6 @@
-#, :gw6dev encoding: utf-8
+# , :gw6dev encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/lan/dialogs.ycp
 # Package:	Network configuration
 # Summary:	Summary, overview and IO dialogs for network cards config
@@ -77,7 +77,7 @@ module Yast
             ),
             VWeight(1, RichText(Id(:_hw_sum), "")),
             HBox(
-              *overview_buttons.map { |k,v| PushButton( Id(k), v) },
+              *overview_buttons.map { |k, v| PushButton(Id(k), v) },
               HStretch()
             )
           ),
@@ -96,20 +96,19 @@ module Yast
 
       @wd = Convert.convert(
         Builtins.union(@wd, @widget_descr_dns),
-        :from => "map",
-        :to   => "map <string, map <string, any>>"
+        from: "map",
+        to:   "map <string, map <string, any>>"
       )
       @wd = Convert.convert(
         Builtins.union(@wd, @wd_routing),
-        :from => "map",
-        :to   => "map <string, map <string, any>>"
+        from: "map",
+        to:   "map <string, map <string, any>>"
       )
       @wd = Convert.convert(
         Builtins.union(@wd, @widget_descr_dhclient),
-        :from => "map",
-        :to   => "map <string, map <string, any>>"
+        from: "map",
+        to:   "map <string, map <string, any>>"
       )
-
 
       @tabs_descr = {
         "global"   => {
@@ -143,22 +142,22 @@ module Yast
     # @return `abort if aborted and `next otherwise
     def ReadDialog
       Wizard.RestoreHelp(Ops.get_string(@help, "read", ""))
-      Lan.AbortFunction = lambda { PollAbort() }
+      Lan.AbortFunction = -> { PollAbort() }
       ret = Lan.Read(:cache)
 
       if Lan.HaveXenBridge
         if !Popup.ContinueCancel(
-            Builtins.sformat(
-              # continue-cancel popup, #178848
-              # %1 is a (long) path to a README file
-              _(
-                "A Xen network bridge was detected.\n" +
-                  "Due to the renaming of network interfaces by the bridge script,\n" +
-                  "network interfaces should not be configured or restarted.\n" +
-                  "See %1 for details."
-              ),
-              "/usr/share/doc/packages/xen/README.SuSE"
-            )
+          Builtins.sformat(
+            # continue-cancel popup, #178848
+            # %1 is a (long) path to a README file
+            _(
+              "A Xen network bridge was detected.\n" \
+                "Due to the renaming of network interfaces by the bridge script,\n" \
+                "network interfaces should not be configured or restarted.\n" \
+                "See %1 for details."
+            ),
+            "/usr/share/doc/packages/xen/README.SuSE"
+          )
           )
           ret = false
         end
@@ -174,7 +173,7 @@ module Yast
 
       LanItems.SetModified
       Wizard.RestoreHelp(Ops.get_string(@help, "write", ""))
-      Lan.AbortFunction = lambda { PollAbort() && ReallyAbort() }
+      Lan.AbortFunction = -> { PollAbort() && ReallyAbort() }
       ret = Lan.Write
       ret ? :next : :abort
     end
@@ -198,9 +197,9 @@ module Yast
             Popup.Message(
               Builtins.sformat(
                 _(
-                  "Firmware is needed. Install it from \n" +
-                    "the add-on CD.\n" +
-                    "First add the add-on CD to your YaST software repositories then return \n" +
+                  "Firmware is needed. Install it from \n" \
+                    "the add-on CD.\n" \
+                    "First add the add-on CD to your YaST software repositories then return \n" \
                     "to this configuration dialog.\n"
                 )
               )
@@ -212,10 +211,10 @@ module Yast
         else
           return Popup.ContinueCancel(
             _(
-              "The device needs a firmware to function properly. Usually, it can be\n" +
-                "downloaded from your driver vendor's Web page. \n" +
-                "If you have already downloaded and installed the firmware, click\n" +
-                "<b>Continue</b> to configure the device. Otherwise click <b>Cancel</b> and\n" +
+              "The device needs a firmware to function properly. Usually, it can be\n" \
+                "downloaded from your driver vendor's Web page. \n" \
+                "If you have already downloaded and installed the firmware, click\n" \
+                "<b>Continue</b> to configure the device. Otherwise click <b>Cancel</b> and\n" \
                 "return to this dialog once you have installed the firmware.\n"
             )
           )
@@ -226,22 +225,22 @@ module Yast
       # - kernel modules (InstallKernel): before loaded
       # - wlan firmware: here, just because it is copied from modems
       #   #45960
-      if LanItems.Requires != [] && LanItems.Requires != nil
+      if LanItems.Requires != [] && !LanItems.Requires.nil?
         return false if PackagesInstall(LanItems.Requires) != :next
         if fw == "b43-fwcutter"
           if Popup.ContinueCancelHeadline(
-              _("Installing firmware"),
-              _(
-                "For successful firmware installation, the 'install_bcm43xx_firmware' script needs to be executed. Execute it now?"
-              )
+            _("Installing firmware"),
+            _(
+              "For successful firmware installation, the 'install_bcm43xx_firmware' script needs to be executed. Execute it now?"
+            )
             )
             command = Convert.convert(
               SCR.Execute(
                 path(".target.bash_output"),
                 "/usr/sbin/install_bcm43xx_firmware"
               ),
-              :from => "any",
-              :to   => "map <string, any>"
+              from: "any",
+              to:   "map <string, any>"
             )
             if Ops.get_integer(command, "exit", -1) != 0
               Popup.ErrorDetails(
@@ -339,7 +338,7 @@ module Yast
       nil
     end
 
-    def initOverview(key)
+    def initOverview(_key)
       # search for automatic updates
       AutoUpdateOverview()
 
@@ -347,8 +346,8 @@ module Yast
       term_items = Builtins.maplist(
         Convert.convert(
           LanItems.Overview,
-          :from => "list",
-          :to   => "list <map <string, any>>"
+          from: "list",
+          to:   "list <map <string, any>>"
         )
       ) do |i|
         t = Item(Id(Ops.get_integer(i, "id", -1)))
@@ -371,7 +370,7 @@ module Yast
       nil
     end
 
-    def handleOverview(key, event)
+    def handleOverview(_key, event)
       if !disable_unconfigureable_items([:_hw_items, :_hw_sum] + overview_buttons.keys, false)
         enableDisableButtons
       end
@@ -400,13 +399,13 @@ module Yast
               if LanItems.startmode == "managed"
                 # Continue-Cancel popup
                 if !Popup.ContinueCancel(
-                    _(
-                      "The interface is currently set to be managed\n" +
-                        "by the NetworkManager applet.\n" +
-                        "\n" +
-                        "If you edit the settings for this interface here,\n" +
-                        "the interface will no longer be managed by NetworkManager.\n"
-                    )
+                  _(
+                    "The interface is currently set to be managed\n" \
+                      "by the NetworkManager applet.\n" \
+                      "\n" \
+                      "If you edit the settings for this interface here,\n" \
+                      "the interface will no longer be managed by NetworkManager.\n"
+                  )
                   )
                   # y2r: cannot break from middle of switch
                   # but in this function return will do
@@ -434,11 +433,11 @@ module Yast
               LanItems.set_default_route = true
 
               if !DeviceReady(
-                  Ops.get_string(
-                    LanItems.getCurrentItem,
-                    ["hwinfo", "dev_name"],
-                    ""
-                  )
+                Ops.get_string(
+                  LanItems.getCurrentItem,
+                  ["hwinfo", "dev_name"],
+                  ""
+                )
                 )
                 return :init_s390
               end
@@ -449,12 +448,12 @@ module Yast
 
             # warn user when device to delete has STARTMODE=nfsroot (bnc#433867)
             if NetworkInterfaces.GetValue(
-                Ops.get_string(LanItems.getCurrentItem, "ifcfg", ""),
-                "STARTMODE"
+              Ops.get_string(LanItems.getCurrentItem, "ifcfg", ""),
+              "STARTMODE"
               ) == "nfsroot"
               if !Popup.YesNoHeadline(
-                  Label.WarningMsg,
-                  _("Device you select has STARTMODE=nfsroot. Really delete?")
+                Label.WarningMsg,
+                _("Device you select has STARTMODE=nfsroot. Really delete?")
                 )
                 # y2r: cannot break from middle of switch
                 # but in this function return will do
@@ -483,23 +482,21 @@ module Yast
       )
       contents = VBox(HSquash(VBox("MANAGED", VSpacing(0.5), "IPV6")))
 
-      functions = { :abort => fun_ref(method(:ReallyAbort), "boolean ()") }
+      functions = { abort: fun_ref(method(:ReallyAbort), "boolean ()") }
 
       ret = CWM.ShowAndRun(
-        {
-          "widget_descr"       => @wd,
-          "contents"           => contents,
-          # Network setup method dialog caption
-          "caption"            => _(
-            "Network Setup Method"
-          ),
-          "back_button"        => Label.BackButton,
-          "abort_button"       => Label.CancelButton,
-          "next_button"        => Label.OKButton,
-          # #54027
-          "disable_buttons"    => ["back_button"],
-          "fallback_functions" => functions
-        }
+        "widget_descr"       => @wd,
+        "contents"           => contents,
+        # Network setup method dialog caption
+        "caption"            => _(
+          "Network Setup Method"
+),
+        "back_button"        => Label.BackButton,
+        "abort_button"       => Label.CancelButton,
+        "next_button"        => Label.OKButton,
+        # #54027
+        "disable_buttons"    => ["back_button"],
+        "fallback_functions" => functions
       )
 
       # #148485: always show the device overview
@@ -526,15 +523,13 @@ module Yast
       caption = _("Network Settings")
       widget_descr = {
         "tab" => CWMTab.CreateWidget(
-          {
-            "tab_order"    => Stage.normal ?
-              ["global", "overview", "resolv", "route"] :
-              ["overview", "resolv", "route"],
-            "tabs"         => @tabs_descr,
-            "widget_descr" => @wd,
-            "initial_tab"  => Stage.normal ? init_tab : "overview",
-            "tab_help"     => ""
-          }
+          "tab_order"    => Stage.normal ?
+  ["global", "overview", "resolv", "route"] :
+  ["overview", "resolv", "route"],
+          "tabs"         => @tabs_descr,
+          "widget_descr" => @wd,
+          "initial_tab"  => Stage.normal ? init_tab : "overview",
+          "tab_help"     => ""
         )
       }
       contents = VBox("tab")
@@ -543,8 +538,8 @@ module Yast
         ["tab"],
         Convert.convert(
           widget_descr,
-          :from => "map",
-          :to   => "map <string, map <string, any>>"
+          from: "map",
+          to:   "map <string, map <string, any>>"
         )
       )
 
@@ -571,10 +566,11 @@ module Yast
         ret = CWM.Run(w, {})
       end while !input_done?(ret)
 
-      return ret
+      ret
     end
 
-  private
+    private
+
     def overview_buttons
       ret = {}
 
@@ -584,6 +580,5 @@ module Yast
 
       ret
     end
-
   end
 end

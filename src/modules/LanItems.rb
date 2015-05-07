@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 require "yast"
 
 module Yast
@@ -85,7 +85,7 @@ module Yast
       @type = ""
       # ifcfg name for the @current device
       @device = ""
-      #FIXME: always empty string - remove all occuriences
+      # FIXME: always empty string - remove all occuriences
       @alias = ""
       @current = -1
       @hotplug = ""
@@ -117,7 +117,7 @@ module Yast
       @wl_default_key = 0
       @wl_nick = ""
 
-      #bond options
+      # bond options
       @bond_slaves = []
       @bond_option = ""
 
@@ -182,7 +182,6 @@ module Yast
       # aliases
       @aliases = {}
 
-
       # for TUN / TAP devices
       @tunnel_set_owner = ""
       @tunnel_set_group = ""
@@ -192,7 +191,7 @@ module Yast
       @ipoib_modes = {
         # translators: a possible value for: IPoIB device mode
         "connected" => _("connected"),
-        "datagram" => _("datagram")
+        "datagram"  => _("datagram")
       }
 
       # propose options
@@ -202,8 +201,8 @@ module Yast
       # NetworkModules:: name
       @nm_name = ""
 
-      #this is the map of kernel modules vs. requested firmware
-      #non-empty keys are firmware packages shipped by SUSE
+      # this is the map of kernel modules vs. requested firmware
+      # non-empty keys are firmware packages shipped by SUSE
       @request_firmware = {
         "atmel_pci"      => "atmel-firmware",
         "atmel_cs"       => "atmel-firmware",
@@ -321,7 +320,7 @@ module Yast
       ret = !GetLanItem(itemId)["ifcfg"].to_s.empty?
       log.info("IsItemConfigured: item=#{itemId} configured=#{ret}")
 
-      return ret
+      ret
     end
 
     # Returns true if current (see LanItems::current) has
@@ -341,7 +340,7 @@ module Yast
       return lan_item["hwinfo"]["dev_name"] || "" if lan_item["hwinfo"]
 
       log.error("Item #{item_id} has no dev_name nor configuration associated")
-      return "" # this should never happen
+      "" # this should never happen
     end
 
     # Returns name which is going to be used in the udev rule
@@ -356,10 +355,10 @@ module Yast
     # transforms given list of item ids onto device names
     #
     # item id is index into internal @Items structure
-    def GetDeviceNames( items)
+    def GetDeviceNames(items)
       return [] unless items
 
-      items.map { |itemId| GetDeviceName( itemId) }.reject( &:empty?)
+      items.map { |itemId| GetDeviceName(itemId) }.reject(&:empty?)
     end
 
     # Returns device name for current lan item (see LanItems::current)
@@ -386,8 +385,8 @@ module Yast
 
       Convert.convert(
         Ops.get(NetworkInterfaces.FilterDevices("netcard"), [devtype, devname]),
-        :from => "any",
-        :to   => "map <string, any>"
+        from: "any",
+        to:   "map <string, any>"
       )
     end
 
@@ -426,8 +425,8 @@ module Yast
       Builtins.y2milestone("Reading udev rules ...")
       @udev_net_rules = Convert.convert(
         SCR.Read(path(".udev_persistent.net")),
-        :from => "any",
-        :to   => "map <string, any>"
+        from: "any",
+        to:   "map <string, any>"
       )
 
       Builtins.y2milestone("Reading driver options ...")
@@ -436,8 +435,8 @@ module Yast
         Builtins.foreach(
           Convert.convert(
             SCR.Read(Builtins.topath(pth)),
-            :from => "any",
-            :to   => "map <string, string>"
+            from: "any",
+            to:   "map <string, string>"
           )
         ) do |key, value|
           Ops.set(
@@ -538,7 +537,7 @@ module Yast
     # the system.
     #
     # Returns new name
-    def SetItemName( itemId, name)
+    def SetItemName(itemId, name)
       lan_items = LanItems.Items
 
       if name && !name.empty?
@@ -551,9 +550,9 @@ module Yast
         lan_items[itemId].delete("udev")
       end
 
-      if lan_items[ itemId].has_key?( "ifcfg")
-        NetworkInterfaces.Delete2(lan_items[ itemId][ "ifcfg"])
-        lan_items[ itemId][ "ifcfg"] = name.to_s
+      if lan_items[itemId].key?("ifcfg")
+        NetworkInterfaces.Delete2(lan_items[itemId]["ifcfg"])
+        lan_items[itemId]["ifcfg"] = name.to_s
       end
 
       name
@@ -566,13 +565,13 @@ module Yast
     # the system.
     #
     # Returns new name
-    def SetCurrentName( name)
-      SetItemName( @current, name)
+    def SetCurrentName(name)
+      SetItemName(@current, name)
     end
 
     # Sets new device name for current item
     def rename(name)
-      if(GetCurrentName() != name)
+      if (GetCurrentName() != name)
         @Items[@current]["renamed_to"] = name
       else
         @Items[@current].delete("renamed_to")
@@ -590,7 +589,7 @@ module Yast
 
     # Tells if current item was renamed
     def renamed?(item_id)
-      return false if !LanItems.Items[item_id].has_key?("renamed_to")
+      return false if !LanItems.Items[item_id].key?("renamed_to")
       renamed_to(item_id) != GetDeviceName(item_id)
     end
 
@@ -608,8 +607,8 @@ module Yast
       Builtins.foreach(
         Convert.convert(
           Map.Keys(@Items),
-          :from => "list",
-          :to   => "list <integer>"
+          from: "list",
+          to:   "list <integer>"
         )
       ) do |key|
         item_udev_net = GetItemUdevRule(key)
@@ -645,8 +644,8 @@ module Yast
       Builtins.foreach(
         Convert.convert(
           Map.Keys(@Items),
-          :from => "list",
-          :to   => "list <integer>"
+          from: "list",
+          to:   "list <integer>"
         )
       ) do |key|
         driver = Ops.get_string(@Items, [key, "udev", "driver"], "")
@@ -675,8 +674,8 @@ module Yast
       Builtins.foreach(
         Convert.convert(
           @driver_options,
-          :from => "map <string, any>",
-          :to   => "map <string, string>"
+          from: "map <string, any>",
+          to:   "map <string, string>"
         )
       ) do |key, value|
         val = {}
@@ -747,7 +746,6 @@ module Yast
       nil
     end
 
-
     # return list of available modules for current device
     # with default default_module (on first possition)
 
@@ -781,7 +779,7 @@ module Yast
         s390_config = s390_ReadQethConfig(devname)
 
         # only devices with L2 support can be enslaved in bond. See bnc#719881
-        ret = ret && Ops.get_string(s390_config, "QETH_LAYER2", "no") == "yes"
+        ret &&= Ops.get_string(s390_config, "QETH_LAYER2", "no") == "yes"
       end
 
       ifcfg = GetDeviceMap(itemId)
@@ -798,11 +796,11 @@ module Yast
         return false
       end
 
-      return ret if ifcfg == nil
+      return ret if ifcfg.nil?
 
       # filter the eth devices (BOOTPROTO=none)
       # don't care about STARTMODE (see bnc#652987c6)
-      ret = ret && Ops.get_string(ifcfg, "BOOTPROTO", "") == "none"
+      ret &&= Ops.get_string(ifcfg, "BOOTPROTO", "") == "none"
 
       ret
     end
@@ -813,12 +811,12 @@ module Yast
     # @param [Fixnum] itemId        index into LanItems::Items
     # TODO: bridgeMaster is not used yet bcs detection of bridge master
     # for checked device is missing.
-    def IsBridgeable(bridgeMaster, itemId)
+    def IsBridgeable(_bridgeMaster, itemId)
       ifcfg = GetDeviceMap(itemId)
 
       # no netconfig configuration has been found so nothing
       # blocks using the device as bridge slave
-      return true if ifcfg == nil
+      return true if ifcfg.nil?
 
       devname = GetDeviceName(itemId)
       bonded = BuildBondIndex()
@@ -863,7 +861,7 @@ module Yast
     # @return  [Array] of lan item ids (see LanItems::Items)
     def GetSlaveCandidates(master, validator)
       validator = deep_copy(validator)
-      if validator == nil
+      if validator.nil?
         Builtins.y2error("GetSlaveCandidates: needs a validator.")
         return []
       end
@@ -874,7 +872,7 @@ module Yast
 
       result = []
 
-      Builtins.foreach(@Items) do |itemId, attribs|
+      Builtins.foreach(@Items) do |itemId, _attribs|
         if @current != itemId && validator.call(master, itemId)
           result = Builtins.add(result, itemId)
         else
@@ -926,7 +924,7 @@ module Yast
 
     # Creates list of names of all known netcards configured even unconfigured
     def GetNetcardNames
-      GetDeviceNames( GetNetcardInterfaces())
+      GetDeviceNames(GetNetcardInterfaces())
     end
 
     # get list of all configurations for "netcard" macro in NetworkInterfaces module
@@ -941,14 +939,14 @@ module Yast
     end
 
     def find_configured(device)
-      @Items.select { |k,v| v["ifcfg"] == device }.keys.first
+      @Items.select { |_k, v| v["ifcfg"] == device }.keys.first
     end
 
     def FindAndSelect(device)
       item_id = find_configured(device)
       @current = item_id if item_id
 
-      return !item_id.nil?
+      !item_id.nil?
     end
 
     # search all known devices to find it's index in Items array
@@ -961,8 +959,8 @@ module Yast
       Builtins.foreach(
         Convert.convert(
           @Items,
-          :from => "map <integer, any>",
-          :to   => "map <integer, map <string, any>>"
+          from: "map <integer, any>",
+          to:   "map <integer, map <string, any>>"
         )
       ) do |i, a|
         if Ops.get_string(a, ["hwinfo", "dev_name"], "") == device
@@ -983,8 +981,8 @@ module Yast
 
       udev_drivers_rules = Convert.convert(
         SCR.Read(path(".udev_persistent.drivers")),
-        :from => "any",
-        :to   => "map <string, any>"
+        from: "any",
+        to:   "map <string, any>"
       )
       Builtins.foreach(@Hardware) do |hwitem|
         udev_net = Ops.get_string(hwitem, "dev_name", "") != "" ?
@@ -1016,10 +1014,8 @@ module Yast
         Ops.set(
           @Items,
           Builtins.size(@Items),
-          {
-            "hwinfo" => hwitem,
-            "udev"   => { "net" => udev_net, "driver" => mod }
-          }
+          "hwinfo" => hwitem,
+          "udev"   => { "net" => udev_net, "driver" => mod }
         )
       end
 
@@ -1047,8 +1043,8 @@ module Yast
         Builtins.foreach(
           Convert.convert(
             @Items,
-            :from => "map <integer, any>",
-            :to   => "map <integer, map <string, any>>"
+            from: "map <integer, any>",
+            to:   "map <integer, map <string, any>>"
           )
         ) do |key, value|
           if Ops.get_string(value, ["hwinfo", "dev_name"], "") == confname
@@ -1056,7 +1052,7 @@ module Yast
             val = deep_copy(value)
           end
         end
-        if pos == nil
+        if pos.nil?
           pos = Builtins.size(@Items)
           Ops.set(@Items, pos, {})
         end
@@ -1069,8 +1065,8 @@ module Yast
         Builtins.foreach(
           Convert.convert(
             Map.Keys(@Items),
-            :from => "list",
-            :to   => "list <integer>"
+            from: "list",
+            to:   "list <integer>"
           )
         ) do |key|
           if confname == Ops.get_string(@Items, [key, "ifcfg"], "")
@@ -1080,7 +1076,7 @@ module Yast
         end
         if !already
           AddNew()
-          Ops.set(@Items, @current, { "ifcfg" => confname })
+          Ops.set(@Items, @current, "ifcfg" => confname)
         end
       end
       Builtins.y2milestone("Read Configuration LanItems::Items %1", @Items)
@@ -1093,8 +1089,8 @@ module Yast
       Builtins.foreach(
         Convert.convert(
           @Items,
-          :from => "map <integer, any>",
-          :to   => "map <integer, map <string, any>>"
+          from: "map <integer, any>",
+          to:   "map <integer, map <string, any>>"
         )
       ) do |key, value|
         if Builtins.haskey(value, "table_descr") &&
@@ -1104,19 +1100,17 @@ module Yast
             )
           descr = Builtins.add(
             descr,
-            {
-              "id"          => key,
-              "rich_descr"  => Ops.get_string(
-                @Items,
-                [key, "table_descr", "rich_descr"],
-                ""
-              ),
-              "table_descr" => Ops.get_list(
-                @Items,
-                [key, "table_descr", "table_descr"],
-                []
-              )
-            }
+            "id"          => key,
+            "rich_descr"  => Ops.get_string(
+              @Items,
+              [key, "table_descr", "rich_descr"],
+              ""
+),
+            "table_descr" => Ops.get_list(
+              @Items,
+              [key, "table_descr", "table_descr"],
+              []
+)
           )
         end
       end
@@ -1127,8 +1121,8 @@ module Yast
       need = false
       if IsNotEmpty(Ops.get_string(@Items, [@current, "hwinfo", "driver"], ""))
         if Builtins.haskey(
-            @request_firmware,
-            Ops.get_string(@Items, [@current, "hwinfo", "driver"], "")
+          @request_firmware,
+          Ops.get_string(@Items, [@current, "hwinfo", "driver"], "")
           )
           need = true
         end
@@ -1137,8 +1131,8 @@ module Yast
           Ops.get_list(@Items, [@current, "hwinfo", "drivers"], [])
         ) do |driver|
           if Builtins.haskey(
-              @request_firmware,
-              Ops.get_string(driver, ["modules", 0, 0], "")
+            @request_firmware,
+            Ops.get_string(driver, ["modules", 0, 0], "")
             )
             Builtins.y2milestone(
               "driver %1 needs firmware",
@@ -1156,8 +1150,8 @@ module Yast
       kernel_module = ""
       if IsNotEmpty(Ops.get_string(@Items, [@current, "hwinfo", "driver"], ""))
         if Builtins.haskey(
-            @request_firmware,
-            Ops.get_string(@Items, [@current, "hwinfo", "driver"], "")
+          @request_firmware,
+          Ops.get_string(@Items, [@current, "hwinfo", "driver"], "")
           )
           kernel_module = Ops.get_string(
             @Items,
@@ -1170,8 +1164,8 @@ module Yast
           Ops.get_list(@Items, [@current, "hwinfo", "drivers"], [])
         ) do |driver|
           if Builtins.haskey(
-              @request_firmware,
-              Ops.get_string(driver, ["modules", 0, 0], "")
+            @request_firmware,
+            Ops.get_string(driver, ["modules", 0, 0], "")
             )
             kernel_module = Ops.get_string(driver, ["modules", 0, 0], "")
             raise Break
@@ -1213,15 +1207,16 @@ module Yast
 
       deep_copy(slaves)
     end
+
     def BuildBondIndex
       index = {}
       bond_devs = Convert.convert(
         Ops.get(NetworkInterfaces.FilterDevices("netcard"), "bond", {}),
-        :from => "map",
-        :to   => "map <string, map>"
+        from: "map",
+        to:   "map <string, map>"
       )
 
-      Builtins.foreach(bond_devs) do |bond_master, value|
+      Builtins.foreach(bond_devs) do |bond_master, _value|
         Builtins.foreach(GetBondSlaves(bond_master)) do |slave|
           index = Builtins.add(index, slave, bond_master)
         end
@@ -1262,7 +1257,7 @@ module Yast
 
       startmode_descr = startmode_descrs[NetworkInterfaces.Current["STARTMODE"].to_s] || _("Started manually")
 
-      return [startmode_descr]
+      [startmode_descr]
     end
 
     def ip_overview(ip)
@@ -1286,16 +1281,16 @@ module Yast
       # build aliases overview
       item_aliases = NetworkInterfaces.Current["_aliases"] || {}
       if !item_aliases.empty? && !NetworkService.is_network_manager
-        item_aliases.each do |key2, desc|
+        item_aliases.each do |_key2, desc|
           parameters = "%s/%s" % [desc["IPADDR"], desc["PREFIXLEN"]]
           bullets << ("%s (%s)") % [desc["LABEL"], parameters]
         end
       end
 
-      return bullets
+      bullets
     end
 
-    # FIXME: 
+    # FIXME:
     # - side effect: sets @type. No reason for that. It should only build item
     # overview. Check and remove.
     def BuildLanOverview
@@ -1327,12 +1322,12 @@ module Yast
           )
 
           bullets << _("Device Name: %s") % ifcfg_name
-          bullets = bullets + startmode_overview
-          bullets = bullets + ip_overview(ip) if ifcfg_conf["STARTMODE"] != "managed"
+          bullets += startmode_overview
+          bullets += ip_overview(ip) if ifcfg_conf["STARTMODE"] != "managed"
 
           if LanItems.type == "wlan" &&
-            ifcfg_conf["WIRELESS_AUTH_MODE"] == "open" &&
-            IsEmpty(ifcfg_conf["WIRELESS_KEY_0"])
+              ifcfg_conf["WIRELESS_AUTH_MODE"] == "open" &&
+              IsEmpty(ifcfg_conf["WIRELESS_KEY_0"])
 
             # avoid colons
             ifcfg_name = ifcfg_name.tr(":", "/")
@@ -1416,13 +1411,12 @@ module Yast
           @current = curr
         end
         LanItems.Items[key]["table_descr"] = {
-          "rich_descr" => rich,
+          "rich_descr"  => rich,
           "table_descr" => [descr, ip, ifcfg_name, note]
         }
       end
       [Summary.DevicesList(overview), links]
     end
-
 
     # Create an overview table with all configured devices
     # @return table items
@@ -1480,25 +1474,25 @@ module Yast
       @wl_auth_modes = Builtins.prepend(
         Convert.convert(
           Ops.get(hardware, "wl_auth_modes", @nilliststring),
-          :from => "any",
-          :to   => "list <string>"
+          from: "any",
+          to:   "list <string>"
         ),
         "no-encryption"
       )
       @wl_enc_modes = Convert.convert(
         Ops.get(hardware, "wl_enc_modes", @nilliststring),
-        :from => "any",
-        :to   => "list <string>"
+        from: "any",
+        to:   "list <string>"
       )
       @wl_channels = Convert.convert(
         Ops.get(hardware, "wl_channels", @nilliststring),
-        :from => "any",
-        :to   => "list <string>"
+        from: "any",
+        to:   "list <string>"
       )
       @wl_bitrates = Convert.convert(
         Ops.get(hardware, "wl_bitrates", @nilliststring),
-        :from => "any",
-        :to   => "list <string>"
+        from: "any",
+        to:   "list <string>"
       )
 
       busid = Ops.get_string(hardware, "busid", "")
@@ -1529,7 +1523,7 @@ module Yast
         end
 
         Builtins.y2milestone("devid=%1(%2)", devid, devstr)
-        devid = 0 if devid == nil
+        devid = 0 if devid.nil?
         devid0 = String.PadZeros(
           Builtins.regexpsub(Builtins.tohexstring(devid), "0x(.*)", "\\1"),
           4
@@ -1575,8 +1569,6 @@ module Yast
       nil
     end
 
-
-
     #-------------------
     # PRIVATE FUNCTIONS
 
@@ -1591,13 +1583,12 @@ module Yast
     # @param [String] type device type
     # @param [Fixnum] num device number
     # @return [Array] of 10 free devices
-    def FreeAliases(type, num)
+    def FreeAliases(_type, _num)
       # FIXME: NI y2debug("Devices=%1", Devices);
       _Devices_1 = {} # FIXME: NI Devices[type, sformat("%1",num)]:$[];
       Builtins.y2debug("Devices=%1", _Devices_1)
       NetworkInterfaces.GetFreeDevices("_aliases", 10)
     end
-
 
     # must be in sync with {#SetDefaultsForHW}
     def GetDefaultsForHW
@@ -1622,7 +1613,7 @@ module Yast
       Builtins.y2milestone("SetDefaultsForHW type %1", @type)
       if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
         @mtu = "1492"
-      end 
+      end
 
       nil
     end
@@ -1640,8 +1631,8 @@ module Yast
       @remoteip          = d["REMOTE_IPADDR"]
       @netmask           = d["NETMASK"]
       @set_default_route = case d["DHCLIENT_SET_DEFAULT_ROUTE"]
-                           when "yes"; true
-                           when "no";  false
+                           when "yes" then true
+                           when "no" then  false
                            # all other values! count as unspecified
                            else        nil
                            end
@@ -1661,7 +1652,7 @@ module Yast
       @bond_slaves = []
       Builtins.foreach(devmap) do |key, value|
         if Builtins.regexpmatch(Convert.to_string(key), "BONDING_SLAVE[0-9]+")
-          if Convert.to_string(value) != nil
+          if !Convert.to_string(value).nil?
             @bond_slaves = Builtins.add(@bond_slaves, Convert.to_string(value))
           end
         end
@@ -1736,7 +1727,6 @@ module Yast
       # because such devices do not emulate Layer2
       @qeth_macaddress = d["LLADDR"] if @qeth_layer2
 
-
       # qeth attribute. FIXME: currently not read from system.
       @ipa_takeover = Ops.get_string(defaults, "IPA_TAKEOVER", "") == "yes"
 
@@ -1765,7 +1755,7 @@ module Yast
       return true if NetworkService.is_network_manager
       return true if ["bond", "vlan", "br"].include? type
 
-      return false
+      false
     end
 
     # returns default startmode for a new device
@@ -1801,8 +1791,8 @@ module Yast
     def new_item_default_options
       {
         # bnc#46369
-        "NETMASK"   => NetHwDetection.result["NETMASK"] || "255.255.255.0",
-        "STARTMODE" => new_device_startmode,
+        "NETMASK"                    => NetHwDetection.result["NETMASK"] || "255.255.255.0",
+        "STARTMODE"                  => new_device_startmode,
         # bnc#883836 bnc#868187
         "DHCLIENT_SET_DEFAULT_ROUTE" => "no"
       }
@@ -1824,7 +1814,7 @@ module Yast
       # TODO: instead of udev use hwinfo dev_name
       NetworkInterfaces.Name = GetItemUdev("NAME")
       if Ops.less_than(Builtins.size(@Items), @current)
-        Ops.set(@Items, @current, { "ifcfg" => NetworkInterfaces.Name })
+        Ops.set(@Items, @current, "ifcfg" => NetworkInterfaces.Name)
       else
         Ops.set(@Items, [@current, "ifcfg"], NetworkInterfaces.Name)
       end
@@ -1855,7 +1845,7 @@ module Yast
       if isCurrentDHCP
         devmap["DHCLIENT_SET_DEFAULT_ROUTE"] = TRISTATE_TO_S.fetch(@set_default_route)
       end
-      return devmap
+      devmap
     end
 
     # Sets device map items for device when it is not alias
@@ -1922,7 +1912,7 @@ module Yast
           i += 1
         end
 
-        #assign nil to rest BONDING_SLAVEn to remove them
+        # assign nil to rest BONDING_SLAVEn to remove them
         while i < @MAX_BOND_SLAVE
           newdev["BONDING_SLAVE#{i}"] = nil
           i += 1
@@ -2027,7 +2017,7 @@ module Yast
       end
 
       if DriverType(@type) == "ctc"
-        if Ops.get(NetworkConfig.Config, "WAIT_FOR_INTERFACES") == nil ||
+        if Ops.get(NetworkConfig.Config, "WAIT_FOR_INTERFACES").nil? ||
             Ops.less_than(
               Ops.get_integer(NetworkConfig.Config, "WAIT_FOR_INTERFACES", 0),
               40
@@ -2038,11 +2028,11 @@ module Yast
 
       if ["tun", "tap"].include?(@type)
         newdev = {
-          "BOOTPROTO"             => "static",
-          "STARTMODE"             => "auto",
-          "TUNNEL"                => @type,
-          "TUNNEL_SET_OWNER"      => @tunnel_set_owner,
-          "TUNNEL_SET_GROUP"      => @tunnel_set_group
+          "BOOTPROTO"        => "static",
+          "STARTMODE"        => "auto",
+          "TUNNEL"           => @type,
+          "TUNNEL_SET_OWNER" => @tunnel_set_owner,
+          "TUNNEL_SET_GROUP" => @tunnel_set_group
         }
       end
 
@@ -2050,7 +2040,7 @@ module Yast
       # FIXME: INTERFACETYPE confuses sysconfig, bnc#458412
       # Only test when newdev has enough info for GetTypeFromIfcfg to work.
       implied_type = NetworkInterfaces.GetTypeFromIfcfg(newdev)
-      if implied_type != nil && implied_type != @type
+      if !implied_type.nil? && implied_type != @type
         newdev["INTERFACETYPE"] = @type
       end
 
@@ -2077,15 +2067,15 @@ module Yast
       if Ops.get_boolean(getCurrentItem, "commited", true) == false
         Builtins.y2milestone("rollback item %1", @current)
         if !Ops.greater_than(
-            Builtins.size(Ops.get_map(getCurrentItem, "hwinfo", {})),
-            0
+          Builtins.size(Ops.get_map(getCurrentItem, "hwinfo", {})),
+          0
           )
           @Items = Builtins.remove(@Items, @current)
         else
           if Builtins.haskey(Ops.get_map(@Items, @current, {}), "ifcfg")
             if !Builtins.contains(
-                getNetworkInterfaces,
-                Ops.get_string(getCurrentItem, "ifcfg", "")
+              getNetworkInterfaces,
+              Ops.get_string(getCurrentItem, "ifcfg", "")
               )
               Ops.set(
                 @Items,
@@ -2098,7 +2088,6 @@ module Yast
       end
       true
     end
-
 
     # Get the module configuration for the modules configured in the
     # interface section
@@ -2118,7 +2107,6 @@ module Yast
 
       deep_copy(ayret)
     end
-
 
     # Find matching device
     # Find a device, optionally with some predefined values
@@ -2153,8 +2141,8 @@ module Yast
           hwaddr = Ops.get_string(device_id, 2, "")
           tosel = Builtins.find(@Hardware) do |h|
             Ops.get_string(h, "mac", "") == hwaddr
-          end if hwaddr != nil &&
-            hwaddr != ""
+          end if !hwaddr.nil? &&
+              hwaddr != ""
           Builtins.y2milestone("Rule: matching mac in device name")
         # code for eth-bus-pci-0000:00:0d.0 configurations
         # code for eth-bus-vio-30000001 configurations
@@ -2163,7 +2151,7 @@ module Yast
             Ops.get_string(device_id, 1, "") == "bus"
           bus = Ops.get_string(device_id, 2, "")
           busid = Ops.get_string(device_id, 3, "")
-          if bus != nil && bus != "" && busid != nil && busid != ""
+          if !bus.nil? && bus != "" && !busid.nil? && busid != ""
             tosel = Builtins.find(@Hardware) do |h|
               Ops.get_string(h, "busid", "") == busid &&
                 Ops.get_string(h, "bus", "") == bus
@@ -2180,14 +2168,14 @@ module Yast
           Ops.get_list(@autoinstall_settings, "modules", [])
         )
         Builtins.y2milestone("module data: %1", aymodule)
-        if tosel == nil && aymodule != {}
-          if aymodule != nil && Ops.get_string(aymodule, "module", "") != ""
+        if tosel.nil? && aymodule != {}
+          if !aymodule.nil? && Ops.get_string(aymodule, "module", "") != ""
             tosel = Builtins.find(@Hardware) do |h|
               Ops.get_string(h, "module", "") ==
                 Ops.get_string(aymodule, "module", "")
             end
           end
-          matched_by_module = true if tosel != nil
+          matched_by_module = true if !tosel.nil?
           Builtins.y2milestone("Rule: matching module configuration")
         end
       end
@@ -2197,7 +2185,7 @@ module Yast
       if Ops.greater_than(Builtins.size(devs), 0)
         # #119592, #146965: this used to be unconditional, overwriting the
         # results of the above matching.
-        if matched_by_module || tosel == nil
+        if matched_by_module || tosel.nil?
           # go thru all devices, check whether there's one that does
           # not have a configuration yet
           # and has the same type as the current profile item
@@ -2207,21 +2195,21 @@ module Yast
             #		string _device_name = NetworkInterfaces::device_name(NetworkInterfaces::RealType(type, hotplug), device);
             if !NetworkInterfaces.Check(@device) &&
                 @type ==
-                  NetworkInterfaces.GetType(
-                    Ops.get_string(interface, "device", "")
-                  )
+                    NetworkInterfaces.GetType(
+                      Ops.get_string(interface, "device", "")
+                    )
               Builtins.y2milestone("Selected: %1", h)
               tosel = deep_copy(h)
               raise Break
             end
           end
         end
-        Builtins.y2error("Nothing found") if tosel == nil
+        Builtins.y2error("Nothing found") if tosel.nil?
       else
         # this is the first interface, match the hardware with install.inf
         # No install.inf -> select the first connected
         # find H["active"] == true
-        if tosel == nil
+        if tosel.nil?
           tosel = Builtins.find(@Hardware) do |h|
             Ops.get_boolean(h, ["link", "state"], false)
           end
@@ -2230,7 +2218,7 @@ module Yast
 
         # No install.inf driver -> select the first active
         # find H["active"] == true
-        if tosel == nil
+        if tosel.nil?
           tosel = Builtins.find(@Hardware) do |h|
             Ops.get_boolean(h, "active", false)
           end
@@ -2239,11 +2227,11 @@ module Yast
 
         # No active driver -> select the first with a driver
         # find H["module"] != ""
-        if tosel == nil
+        if tosel.nil?
           Builtins.y2milestone("No active driver found, trying further.")
           tosel = Builtins.find(@Hardware) do |h|
             Ops.get_string(h, "module", "") != "" &&
-              Builtins.y2milestone("Using driver: %1", h) == nil
+              Builtins.y2milestone("Using driver: %1", h).nil?
           end
           Builtins.y2milestone("Rule: first with driver")
         end
@@ -2448,8 +2436,8 @@ module Yast
       Builtins.y2milestone("execute %1", command1)
       output1 = Convert.convert(
         SCR.Execute(path(".target.bash_output"), command1),
-        :from => "any",
-        :to   => "map <string, any>"
+        from: "any",
+        to:   "map <string, any>"
       )
       if Ops.get_integer(output1, "exit", -1) == 0 &&
           Builtins.size(Ops.get_string(output1, "stderr", "")) == 0
@@ -2460,13 +2448,12 @@ module Yast
       end
       Builtins.y2milestone("output1 %1", output1)
 
-
       if result
         Builtins.y2milestone("command2 %1", command2)
         output2 = Convert.convert(
           SCR.Execute(path(".target.bash_output"), command2),
-          :from => "any",
-          :to   => "map <string, any>"
+          from: "any",
+          to:   "map <string, any>"
         )
         Builtins.y2milestone("output2 %1", output2)
         if Ops.get_integer(output2, "exit", -1) == 0 &&
@@ -2503,7 +2490,7 @@ module Yast
     #  @!attribute $1
     #  @return [$2]
     def self.publish_variable(name, type)
-      publish :variable => name, :type => type
+      publish variable: name, type: type
     end
 
     # Checks if given lladdr can be written into ifcfg
@@ -2517,7 +2504,7 @@ module Yast
       return false if lladdr.empty?
       return false if lladdr.strip == "00:00:00:00:00:00"
 
-      return true
+      true
     end
 
     public
@@ -2531,128 +2518,128 @@ module Yast
     # - ifcfg: String, just a foreign key for NetworkInterfaces#Select
     # - hwinfo: Hash, detected hardware information
     # - udev: Hash, udev naming rules
-    publish_variable :Items                , "map <integer, any>"
+    publish_variable :Items, "map <integer, any>"
     # @attribute Hardware
-    publish_variable :Hardware             , "list <map>"
-    publish_variable :udev_net_rules       , "map <string, any>"
-    publish_variable :driver_options       , "map <string, any>"
-    publish_variable :autoinstall_settings , "map"
-    publish_variable :modified             , "boolean"
-    publish_variable :operation            , "symbol"
-    publish_variable :force_restart        , "boolean"
-    publish_variable :description          , "string"
-    publish_variable :type                 , "string"
-    publish_variable :device               , "string"
-    publish_variable :alias                , "string"
+    publish_variable :Hardware, "list <map>"
+    publish_variable :udev_net_rules, "map <string, any>"
+    publish_variable :driver_options, "map <string, any>"
+    publish_variable :autoinstall_settings, "map"
+    publish_variable :modified, "boolean"
+    publish_variable :operation, "symbol"
+    publish_variable :force_restart, "boolean"
+    publish_variable :description, "string"
+    publish_variable :type, "string"
+    publish_variable :device, "string"
+    publish_variable :alias, "string"
     # the index into {#Items}
-    publish_variable :current              , "integer"
-    publish_variable :hotplug              , "string"
+    publish_variable :current, "integer"
+    publish_variable :hotplug, "string"
     # @attribute Requires
-    publish_variable :Requires             , "list <string>"
-    publish_variable :bootproto            , "string"
-    publish_variable :ipaddr               , "string"
-    publish_variable :remoteip             , "string"
-    publish_variable :netmask              , "string"
-    publish_variable :set_default_route    , "boolean"
-    publish_variable :prefix               , "string"
-    publish_variable :startmode            , "string"
-    publish_variable :ifplugd_priority     , "string"
-    publish_variable :mtu                  , "string"
-    publish_variable :ethtool_options      , "string"
-    publish_variable :wl_mode              , "string"
-    publish_variable :wl_essid             , "string"
-    publish_variable :wl_nwid              , "string"
-    publish_variable :wl_auth_mode         , "string"
-    publish_variable :wl_wpa_psk           , "string"
-    publish_variable :wl_key_length        , "string"
-    publish_variable :wl_key               , "list <string>"
-    publish_variable :wl_default_key       , "integer"
-    publish_variable :wl_nick              , "string"
-    publish_variable :bond_slaves          , "list <string>"
-    publish_variable :bond_option          , "string"
-    publish_variable :vlan_etherdevice     , "string"
-    publish_variable :vlan_id              , "string"
-    publish_variable :bridge_ports         , "string"
-    publish_variable :wl_wpa_eap           , "map <string, any>"
-    publish_variable :wl_channel           , "string"
-    publish_variable :wl_frequency         , "string"
-    publish_variable :wl_bitrate           , "string"
-    publish_variable :wl_accesspoint       , "string"
-    publish_variable :wl_power             , "boolean"
-    publish_variable :wl_ap_scanmode       , "string"
-    publish_variable :wl_auth_modes        , "list <string>"
-    publish_variable :wl_enc_modes         , "list <string>"
-    publish_variable :wl_channels          , "list <string>"
-    publish_variable :wl_bitrates          , "list <string>"
-    publish_variable :qeth_portname        , "string"
-    publish_variable :qeth_portnumber      , "string"
-    publish_variable :chan_mode            , "string"
-    publish_variable :qeth_options         , "string"
-    publish_variable :ipa_takeover         , "boolean"
-    publish_variable :iucv_user            , "string"
-    publish_variable :qeth_layer2          , "boolean"
-    publish_variable :qeth_macaddress      , "string"
-    publish_variable :qeth_chanids         , "string"
-    publish_variable :lcs_timeout          , "string"
-    publish_variable :aliases              , "map"
-    publish_variable :tunnel_set_owner     , "string"
-    publish_variable :tunnel_set_group     , "string"
-    publish_variable :proposal_valid       , "boolean"
-    publish_variable :nm_proposal_valid    , "boolean"
-    publish_variable :nm_name              , "string"
+    publish_variable :Requires, "list <string>"
+    publish_variable :bootproto, "string"
+    publish_variable :ipaddr, "string"
+    publish_variable :remoteip, "string"
+    publish_variable :netmask, "string"
+    publish_variable :set_default_route, "boolean"
+    publish_variable :prefix, "string"
+    publish_variable :startmode, "string"
+    publish_variable :ifplugd_priority, "string"
+    publish_variable :mtu, "string"
+    publish_variable :ethtool_options, "string"
+    publish_variable :wl_mode, "string"
+    publish_variable :wl_essid, "string"
+    publish_variable :wl_nwid, "string"
+    publish_variable :wl_auth_mode, "string"
+    publish_variable :wl_wpa_psk, "string"
+    publish_variable :wl_key_length, "string"
+    publish_variable :wl_key, "list <string>"
+    publish_variable :wl_default_key, "integer"
+    publish_variable :wl_nick, "string"
+    publish_variable :bond_slaves, "list <string>"
+    publish_variable :bond_option, "string"
+    publish_variable :vlan_etherdevice, "string"
+    publish_variable :vlan_id, "string"
+    publish_variable :bridge_ports, "string"
+    publish_variable :wl_wpa_eap, "map <string, any>"
+    publish_variable :wl_channel, "string"
+    publish_variable :wl_frequency, "string"
+    publish_variable :wl_bitrate, "string"
+    publish_variable :wl_accesspoint, "string"
+    publish_variable :wl_power, "boolean"
+    publish_variable :wl_ap_scanmode, "string"
+    publish_variable :wl_auth_modes, "list <string>"
+    publish_variable :wl_enc_modes, "list <string>"
+    publish_variable :wl_channels, "list <string>"
+    publish_variable :wl_bitrates, "list <string>"
+    publish_variable :qeth_portname, "string"
+    publish_variable :qeth_portnumber, "string"
+    publish_variable :chan_mode, "string"
+    publish_variable :qeth_options, "string"
+    publish_variable :ipa_takeover, "boolean"
+    publish_variable :iucv_user, "string"
+    publish_variable :qeth_layer2, "boolean"
+    publish_variable :qeth_macaddress, "string"
+    publish_variable :qeth_chanids, "string"
+    publish_variable :lcs_timeout, "string"
+    publish_variable :aliases, "map"
+    publish_variable :tunnel_set_owner, "string"
+    publish_variable :tunnel_set_group, "string"
+    publish_variable :proposal_valid, "boolean"
+    publish_variable :nm_proposal_valid, "boolean"
+    publish_variable :nm_name, "string"
     # @attribute SysconfigDefaults
-    publish_variable :SysconfigDefaults    , "map <string, string>"
-    publish :function => :GetLanItem, :type => "map (integer)"
-    publish :function => :getCurrentItem, :type => "map ()"
-    publish :function => :IsItemConfigured, :type => "boolean (integer)"
-    publish :function => :IsCurrentConfigured, :type => "boolean ()"
-    publish :function => :GetDeviceName, :type => "string (integer)"
-    publish :function => :GetCurrentName, :type => "string ()"
-    publish :function => :GetDeviceType, :type => "string (integer)"
-    publish :function => :GetDeviceMap, :type => "map <string, any> (integer)"
-    publish :function => :GetItemUdevRule, :type => "list <string> (integer)"
-    publish :function => :GetItemUdev, :type => "string (string)"
-    publish :function => :ReplaceItemUdev, :type => "list <string> (string, string, string)"
-    publish :function => :WriteUdevRules, :type => "void ()"
-    publish :function => :GetModified, :type => "boolean ()"
-    publish :function => :SetModified, :type => "void ()"
-    publish :function => :UnsetModified, :type => "void ()"
-    publish :function => :AddNew, :type => "void ()"
-    publish :function => :GetItemModules, :type => "list <string> (string)"
-    publish :function => :GetSlaveCandidates, :type => "list <integer> (string, boolean (string, integer))"
-    publish :function => :GetBondableInterfaces, :type => "list <integer> (string)"
-    publish :function => :GetBridgeableInterfaces, :type => "list <integer> (string)"
-    publish :function => :GetNetcardNames, :type => "list <string> ( list <integer>)"
-    publish :function => :FindAndSelect, :type => "boolean (string)"
-    publish :function => :FindDeviceIndex, :type => "integer (string)"
-    publish :function => :ReadHw, :type => "void ()"
-    publish :function => :Read, :type => "void ()"
-    publish :function => :needFirmwareCurrentItem, :type => "boolean ()"
-    publish :function => :GetFirmwareForCurrentItem, :type => "string ()"
-    publish :function => :GetBondSlaves, :type => "list <string> (string)"
-    publish :function => :BuildLanOverview, :type => "list ()"
-    publish :function => :Overview, :type => "list ()"
-    publish :function => :isCurrentHotplug, :type => "boolean ()"
-    publish :function => :isCurrentDHCP, :type => "boolean ()"
-    publish :function => :GetItemDescription, :type => "string ()"
-    publish :function => :SelectHWMap, :type => "void (map)"
-    publish :function => :SelectHW, :type => "void (integer)"
-    publish :function => :FreeDevices, :type => "list (string)"
-    publish :function => :FreeAliases, :type => "list (string, integer)"
-    publish :function => :GetDefaultsForHW, :type => "map ()"
-    publish :function => :SetDefaultsForHW, :type => "void ()"
-    publish :function => :SetDeviceVars, :type => "void (map, map)"
-    publish :function => :Select, :type => "boolean (string)"
-    publish :function => :Commit, :type => "boolean ()"
-    publish :function => :Rollback, :type => "boolean ()"
-    publish :function => :GetModuleForInterface, :type => "map (string, list <map>)"
-    publish :function => :FindMatchingDevice, :type => "map (map)"
-    publish :function => :DeleteItem, :type => "void ()"
-    publish :function => :SetItem, :type => "void ()"
-    publish :function => :ProposeItem, :type => "boolean ()"
-    publish :function => :setDriver, :type => "void (string)"
-    publish :function => :enableCurrentEditButton, :type => "boolean ()"
-    publish :function => :createS390Device, :type => "boolean ()"
+    publish_variable :SysconfigDefaults, "map <string, string>"
+    publish function: :GetLanItem, type: "map (integer)"
+    publish function: :getCurrentItem, type: "map ()"
+    publish function: :IsItemConfigured, type: "boolean (integer)"
+    publish function: :IsCurrentConfigured, type: "boolean ()"
+    publish function: :GetDeviceName, type: "string (integer)"
+    publish function: :GetCurrentName, type: "string ()"
+    publish function: :GetDeviceType, type: "string (integer)"
+    publish function: :GetDeviceMap, type: "map <string, any> (integer)"
+    publish function: :GetItemUdevRule, type: "list <string> (integer)"
+    publish function: :GetItemUdev, type: "string (string)"
+    publish function: :ReplaceItemUdev, type: "list <string> (string, string, string)"
+    publish function: :WriteUdevRules, type: "void ()"
+    publish function: :GetModified, type: "boolean ()"
+    publish function: :SetModified, type: "void ()"
+    publish function: :UnsetModified, type: "void ()"
+    publish function: :AddNew, type: "void ()"
+    publish function: :GetItemModules, type: "list <string> (string)"
+    publish function: :GetSlaveCandidates, type: "list <integer> (string, boolean (string, integer))"
+    publish function: :GetBondableInterfaces, type: "list <integer> (string)"
+    publish function: :GetBridgeableInterfaces, type: "list <integer> (string)"
+    publish function: :GetNetcardNames, type: "list <string> ( list <integer>)"
+    publish function: :FindAndSelect, type: "boolean (string)"
+    publish function: :FindDeviceIndex, type: "integer (string)"
+    publish function: :ReadHw, type: "void ()"
+    publish function: :Read, type: "void ()"
+    publish function: :needFirmwareCurrentItem, type: "boolean ()"
+    publish function: :GetFirmwareForCurrentItem, type: "string ()"
+    publish function: :GetBondSlaves, type: "list <string> (string)"
+    publish function: :BuildLanOverview, type: "list ()"
+    publish function: :Overview, type: "list ()"
+    publish function: :isCurrentHotplug, type: "boolean ()"
+    publish function: :isCurrentDHCP, type: "boolean ()"
+    publish function: :GetItemDescription, type: "string ()"
+    publish function: :SelectHWMap, type: "void (map)"
+    publish function: :SelectHW, type: "void (integer)"
+    publish function: :FreeDevices, type: "list (string)"
+    publish function: :FreeAliases, type: "list (string, integer)"
+    publish function: :GetDefaultsForHW, type: "map ()"
+    publish function: :SetDefaultsForHW, type: "void ()"
+    publish function: :SetDeviceVars, type: "void (map, map)"
+    publish function: :Select, type: "boolean (string)"
+    publish function: :Commit, type: "boolean ()"
+    publish function: :Rollback, type: "boolean ()"
+    publish function: :GetModuleForInterface, type: "map (string, list <map>)"
+    publish function: :FindMatchingDevice, type: "map (map)"
+    publish function: :DeleteItem, type: "void ()"
+    publish function: :SetItem, type: "void ()"
+    publish function: :ProposeItem, type: "boolean ()"
+    publish function: :setDriver, type: "void (string)"
+    publish function: :enableCurrentEditButton, type: "boolean ()"
+    publish function: :createS390Device, type: "boolean ()"
   end
 
   LanItems = LanItemsClass.new

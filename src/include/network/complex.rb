@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/complex.ycp
 # Package:	Network configuration
 # Summary:	Summary and overview functions
@@ -85,7 +85,7 @@ module Yast
       # build a list of configured devices
       Builtins.maplist(_Devs) do |devtype, devsmap|
         Builtins.maplist(
-          Convert.convert(devsmap, :from => "map", :to => "map <string, map>")
+          Convert.convert(devsmap, from: "map", to: "map <string, map>")
         ) do |devname, devmap|
           # main device summary
           descr = BuildDescription(devtype, devname, devmap, _Hardware)
@@ -114,7 +114,7 @@ module Yast
           uniques_old = Builtins.add(uniques_old, unq)
           # aliases summary
           aliasee = Ops.get_map(devmap, "_aliases", {})
-          Builtins.maplist(aliasee) do |aid, amap|
+          Builtins.maplist(aliasee) do |_aid, amap|
             # Table item
             # this is what used to be Virtual Interface
             # (eth0:1)
@@ -196,8 +196,9 @@ module Yast
       ret = BuildSummaryDevs(_Devs, _Hardware, split, link)
       deep_copy(ret)
     end
+
     def CheckEmptyName(devtype, hwname)
-      return hwname if hwname != nil && hwname != ""
+      return hwname if !hwname.nil? && hwname != ""
 
       device_names = {
         # Device type label
@@ -295,20 +296,21 @@ module Yast
     def ProviderName(provider)
       Yast.import "Provider"
 
-      return "" if provider == nil || provider == ""
+      return "" if provider.nil? || provider == ""
 
       Provider.Select(provider)
       nam = Ops.get_string(Provider.Current, "PROVIDER", provider)
-      return provider if nam == nil || nam == ""
+      return provider if nam.nil? || nam == ""
       nam
     end
+
     def DeviceStatus(devtype, devname, devmap)
       devmap = deep_copy(devmap)
       # Modem and DSL
       if devtype == "ppp" || devtype == "modem" || devtype == "dsl"
         nam = ProviderName(Ops.get_string(devmap, "PROVIDER", ""))
 
-        if nam == "" || nam == nil
+        if nam == "" || nam.nil?
           # Modem status (%1 is device)
           return Builtins.sformat(_("Configured as %1"), devname)
         else
@@ -341,7 +343,7 @@ module Yast
 
         proto = Ops.get_string(devmap, "BOOTPROTO", "static")
 
-        if proto == "" || proto == "static" || proto == "none" || proto == nil
+        if proto == "" || proto == "static" || proto == "none" || proto.nil?
           addr = Ops.get_string(devmap, "IPADDR", "")
           host = NetHwDetection.ResolveIP(addr)
           remip = Ops.get_string(devmap, "REMOTE_IPADDR", "")
@@ -350,7 +352,7 @@ module Yast
           elsif IsEmpty(addr)
             # Network card status
             return HTML.Colorize(_("Configured without an address"), "red")
-          elsif remip == "" || remip == nil
+          elsif remip == "" || remip.nil?
             # Network card status (%1 is address)
             return Builtins.sformat(
               _("Configured with address %1"),
@@ -376,13 +378,13 @@ module Yast
         # configuration name. But the name is long and cryptic so wen
         # don't use it.
         # FIXME: dropped interface name
-        if proto == "" || proto == "static" || proto == "none" || proto == nil
+        if proto == "" || proto == "static" || proto == "none" || proto.nil?
           addr = Ops.get_string(devmap, "IPADDR", "")
           remip = Ops.get_string(devmap, "REMOTE_IPADDR", "")
-          if addr == "" || addr == nil
+          if addr == "" || addr.nil?
             # Network card status (%1 is device)
             return Builtins.sformat(_("Configured as %1"), devname)
-          elsif remip == "" || remip == nil
+          elsif remip == "" || remip.nil?
             # Network card status (%1 is device, %2 is address)
             return Builtins.sformat(
               _("Configured as %1 with address %2"),
@@ -420,13 +422,12 @@ module Yast
         return _("Managed")
       end
       ip = Ops.get_string(devmap, "BOOTPROTO", "static")
-      if ip == nil || ip == "" || ip == "static"
+      if ip.nil? || ip == "" || ip == "static"
         ip = Ops.get_string(devmap, "IPADDR", "")
       else
         ip = Builtins.toupper(ip)
       end
       ip
     end
-
   end
 end

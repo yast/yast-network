@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:        include/network/widgets.ycp
 # Package:     Network configuration
 # Summary:     Widgets for CWM
@@ -28,7 +28,6 @@
 #
 module Yast
   module NetworkWidgetsInclude
-
     def initialize_network_widgets(include_target)
       Yast.import "UI"
 
@@ -53,14 +52,14 @@ module Yast
           "widget" => :textentry,
           # TextEntry label
           "label"  => _("&Dial Prefix Regular Expression"),
-          "help" =>
-            # dial prefix regex help
-            _(
-              "<p>When <b>Dial Prefix Regular Expression</b> is set, users can\n" +
-                "change the dial prefix in KInternet provided that it matches the expression.\n" +
-                "A recommended value is <tt>[09]?</tt>, allowing <tt>0</tt>, <tt>9</tt>,\n" +
-                "and the empty prefix. If the expression is empty, users are not allowed\n" +
-                "to change the prefix.</p>\n"
+          "help"   =>
+                      # dial prefix regex help
+                      _(
+                        "<p>When <b>Dial Prefix Regular Expression</b> is set, users can\n" \
+                          "change the dial prefix in KInternet provided that it matches the expression.\n" \
+                          "A recommended value is <tt>[09]?</tt>, allowing <tt>0</tt>, <tt>9</tt>,\n" \
+                          "and the empty prefix. If the expression is empty, users are not allowed\n" \
+                          "to change the prefix.</p>\n"
             )
         },
         # obsoleted by BOOTPROTO_*
@@ -89,18 +88,18 @@ module Yast
       @startmode_items = {
         # onboot, on and boot are aliases for auto
         # See NetworkInterfaces::CanonicalizeStartmode
-        "auto" =>
-          # is a part of the static help text
-          {
-            # Combo box option for Device Activation
-            "label" => _(
-              "At Boot Time"
-            ),
-            "help"  => ""
-          },
-        "off" =>
-          # is a part of the static help text
-          { "label" => _("Never"), "help" => "" },
+        "auto"    =>
+                     # is a part of the static help text
+                     {
+                       # Combo box option for Device Activation
+                       "label" => _(
+                         "At Boot Time"
+                       ),
+                       "help"  => ""
+                     },
+        "off"     =>
+                     # is a part of the static help text
+                     { "label" => _("Never"), "help" => "" },
         "managed" => {
           # Combo box option for Device Activation
           # DO NOT TRANSLATE NetworkManager, it is a program name
@@ -128,9 +127,9 @@ module Yast
           ),
           # help text for Device Activation
           "help"  => _(
-            "<b>On Cable Connection</b>:\n" +
-              "The interface is watched for whether there is a physical\n" +
-              "network connection. That means either the cable is connected or the\n" +
+            "<b>On Cable Connection</b>:\n" \
+              "The interface is watched for whether there is a physical\n" \
+              "network connection. That means either the cable is connected or the\n" \
               "wireless interface can connect to an access point.\n"
           )
         },
@@ -139,9 +138,9 @@ module Yast
           "label" => _("On Hotplug"),
           # help text for Device Activation
           "help"  => _(
-            "With <b>On Hotplug</b>,\n" +
-              "the interface is set up as soon as it is available. This is\n" +
-              "nearly the same as 'At Boot Time', but does not result in an error at\n" +
+            "With <b>On Hotplug</b>,\n" \
+              "the interface is set up as soon as it is available. This is\n" \
+              "nearly the same as 'At Boot Time', but does not result in an error at\n" \
               "boot time if the interface is not present.\n"
           )
         },
@@ -150,8 +149,8 @@ module Yast
           "label" => _("On NFSroot"),
           # help text for Device Activation
           "help"  => _(
-            "Using <b>On NFSroot</b> is similar to <tt>auto</tt>. Interfaces with this startmode will never\n" +
-              "be shut down via <tt>rcnetwork stop</tt>. <tt>ifdown <iface></tt> is still available.\n" +
+            "Using <b>On NFSroot</b> is similar to <tt>auto</tt>. Interfaces with this startmode will never\n" \
+              "be shut down via <tt>rcnetwork stop</tt>. <tt>ifdown <iface></tt> is still available.\n" \
               "Use this if you have an NFS or iSCSI root filesystem.\n"
           )
         },
@@ -160,8 +159,8 @@ module Yast
           "label" => _("On NFSroot"),
           # help text for Device Activation
           "help"  => _(
-            "Using <b>On NFSroot</b> is nearly like 'auto'. But interfaces with this startmode will never\n" +
-              "be shut down via 'rcnetwork stop'. 'ifdown <iface>' still works.\n" +
+            "Using <b>On NFSroot</b> is nearly like 'auto'. But interfaces with this startmode will never\n" \
+              "be shut down via 'rcnetwork stop'. 'ifdown <iface>' still works.\n" \
               "Use this when you have a nfs or iscsi root filesystem.\n"
           )
         }
@@ -172,13 +171,13 @@ module Yast
     # @param [String] key	the widget being validated
     # @param [Hash] event	the event being handled
     # @return whether valid
-    def ValidateIP(key, event)
+    def ValidateIP(key, _event)
       value = Convert.to_string(UI.QueryWidget(Id(key), :Value))
       return IP.Check(value) if value != ""
       true
     end
 
-    def handleStartmode(key, event)
+    def handleStartmode(_key, _event)
       UI.ChangeWidget(
         Id("IFPLUGD_PRIORITY"),
         :Enabled,
@@ -196,13 +195,13 @@ module Yast
         "opt"    => [:notify],
         "handle" => fun_ref(method(:handleStartmode), "symbol (string, map)"),
         "help"   =>
-          # Device activation main help. The individual parts will be
-          # substituted as %1
-          _(
-            "<p><b><big>Device Activation</big></b></p> \n" +
-              "<p>Choose when to bring up the network interface. <b>At Boot Time</b> activates it during system boot, \n" +
-              "<b>Never</b> does not start the device.\n" +
-              "%1</p>\n"
+                    # Device activation main help. The individual parts will be
+                    # substituted as %1
+                    _(
+                      "<p><b><big>Device Activation</big></b></p> \n" \
+                        "<p>Choose when to bring up the network interface. <b>At Boot Time</b> activates it during system boot, \n" \
+                        "<b>Never</b> does not start the device.\n" \
+                        "%1</p>\n"
           )
       }
       helps = ""
@@ -224,7 +223,6 @@ module Yast
     end
 
     def init_ipoib_mode_widget(key)
-
       ipoib_mode = LanItems.ipoib_mode
 
       return unless LanItems.ipoib_modes.keys.include?(ipoib_mode)
@@ -236,7 +234,7 @@ module Yast
       )
     end
 
-    def store_ipoib_mode_widget(key, event)
+    def store_ipoib_mode_widget(key, _event)
       LanItems.ipoib_mode = UI.QueryWidget(Id(key), :CurrentButton)
     end
 
@@ -257,7 +255,6 @@ module Yast
       else
         [["", _("Firewall is not installed.")]]
       end
-
     end
 
     def common_mtu_items
@@ -290,7 +287,7 @@ module Yast
 
     # Initialize the NetworkManager widget
     # @param [String] key id of the widget
-    def ManagedInit(key)
+    def ManagedInit(_key)
       items = []
 
       if NetworkService.is_backend_available(:network_manager)
@@ -333,7 +330,7 @@ module Yast
     # Store the NetworkManager widget
     # @param [String] key	id of the widget
     # @param [Hash] event	the event being handled
-    def ManagedStore(key, event)
+    def ManagedStore(_key, _event)
       new_backend = UI.QueryWidget(Id(:managed), :Value)
 
       case new_backend
@@ -354,8 +351,8 @@ module Yast
           Popup.AnyMessage(
             _("Applet needed"),
             _(
-              "NetworkManager is controlled by desktop applet\n" +
-              "(KDE plasma widget and nm-applet for GNOME).\n" +
+              "NetworkManager is controlled by desktop applet\n" \
+              "(KDE plasma widget and nm-applet for GNOME).\n" \
               "Be sure it's running and if not, start it manually."
            ))
         end
@@ -366,7 +363,7 @@ module Yast
 
     def managed_widget
       {
-        "widget" => :custom,
+        "widget"        => :custom,
         "custom_widget" => Frame(
           _("General Network Settings"),
           Left(
@@ -378,20 +375,20 @@ module Yast
             )
           )
         ),
-        "opt"    => [],
-        "help"   => @help["managed"] || "",
-        "init"   => fun_ref(method(:ManagedInit), "void (string)"),
-        "store"  => fun_ref(method(:ManagedStore), "void (string, map)")
+        "opt"           => [],
+        "help"          => @help["managed"] || "",
+        "init"          => fun_ref(method(:ManagedInit), "void (string)"),
+        "store"         => fun_ref(method(:ManagedStore), "void (string, map)")
       }
     end
 
-    def initIPv6(key)
+    def initIPv6(_key)
       UI.ChangeWidget(Id(:ipv6), :Value, Lan.ipv6 ? true : false)
 
       nil
     end
 
-    def handleIPv6(key, event)
+    def handleIPv6(_key, event)
       event = deep_copy(event)
       if Ops.get_string(event, "EventReason", "") == "ValueChanged"
         Lan.SetIPv6(Convert.to_boolean(UI.QueryWidget(Id(:ipv6), :Value)))
@@ -399,7 +396,7 @@ module Yast
       nil
     end
 
-    def storeIPv6(key, event)
+    def storeIPv6(_key, event)
       event = deep_copy(event)
       if Convert.to_boolean(UI.QueryWidget(Id(:ipv6), :Value))
         Lan.SetIPv6(true)
@@ -430,15 +427,15 @@ module Yast
 
     def GetDeviceDescription(device_id)
       device_name = NetworkInterfaces.GetValue(device_id, "NAME")
-      if device_name == nil || device_name == ""
-        #TRANSLATORS: Informs that device name is not known
+      if device_name.nil? || device_name == ""
+        # TRANSLATORS: Informs that device name is not known
         device_name = _("Unknown device")
       end
       Builtins.y2milestone("device_name %1", device_name)
-      #avoid too long device names
-      #if (size(device_name) > 30) {
+      # avoid too long device names
+      # if (size(device_name) > 30) {
       #    device_name = substring (device_name, 0, 27) + "...";
-      #}
+      # }
       ip_addr = Builtins.issubstring(
         NetworkInterfaces.GetValue(device_id, "BOOTPROTO"),
         "dhcp"
@@ -447,8 +444,8 @@ module Yast
         _("DHCP address") :
         # TRANSLATORS: Part of label, device with static IP address
         NetworkInterfaces.GetValue(device_id, "IPADDR")
-      if ip_addr == nil || ip_addr == ""
-        #TRANSLATORS: Informs that no IP has been assigned to the device
+      if ip_addr.nil? || ip_addr == ""
+        # TRANSLATORS: Informs that no IP has been assigned to the device
         ip_addr = _("No IP address assigned")
       end
       output = Builtins.sformat(
@@ -459,8 +456,6 @@ module Yast
       )
       output
     end
-
-
 
     def getInternetItems
       NetworkInterfaces.Read
@@ -475,19 +470,19 @@ module Yast
       Builtins.y2debug("ifaces=%1", ifaces)
       ifaces = Convert.convert(
         Builtins.union(ifaces, NetworkInterfaces.List("eth-pcmcia")),
-        :from => "list",
-        :to   => "list <string>"
+        from: "list",
+        to:   "list <string>"
       )
       Builtins.y2debug("ifaces=%1", ifaces)
       ifaces = Convert.convert(
         Builtins.union(ifaces, NetworkInterfaces.List("eth-usb")),
-        :from => "list",
-        :to   => "list <string>"
+        from: "list",
+        to:   "list <string>"
       )
       ifaces = Convert.convert(
         Builtins.union(ifaces, NetworkInterfaces.List("wlan")),
-        :from => "list",
-        :to   => "list <string>"
+        from: "list",
+        to:   "list <string>"
       ) # #186102
       Builtins.y2debug("ifaces=%1", ifaces)
       deep_copy(ifaces)
@@ -513,10 +508,9 @@ module Yast
       )
     end
 
-
     def initDevice(items)
       items = deep_copy(items)
-      #If only one device is present, disable "Change device" button
+      # If only one device is present, disable "Change device" button
       if Ops.less_or_equal(Builtins.size(items), 1)
         UI.ChangeWidget(Id(:net_expert), :Enabled, false)
       end
@@ -545,7 +539,7 @@ module Yast
         items,
         selected
       )
-      if via_device != nil
+      if !via_device.nil?
         UI.ChangeWidget(:net_device, :Value, GetDeviceDescription(via_device))
         Builtins.y2milestone("selected network device :%1", via_device)
         selected = via_device

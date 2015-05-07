@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	lan/cmdline.ycp
 # Package:	Network configuration
 # Summary:	Network cards cmdline handlers
@@ -28,8 +28,7 @@
 #
 module Yast
   module NetworkLanCmdlineInclude
-    def initialize_network_lan_cmdline(include_target)
-
+    def initialize_network_lan_cmdline(_include_target)
       textdomain "network"
 
       Yast.import "CommandLine"
@@ -46,13 +45,13 @@ module Yast
       confList = []
       count = -1
       LanItems.BuildLanOverview
-      #list<map<string,any> > overview = (list<map<string,any> >)LanItems::Overview();
-      Builtins.foreach(LanItems.Items) do |position, row|
+      # list<map<string,any> > overview = (list<map<string,any> >)LanItems::Overview();
+      Builtins.foreach(LanItems.Items) do |position, _row|
         LanItems.current = position
         count = Ops.add(count, 1)
         if Ops.greater_than(
-            Builtins.size(Ops.get_string(LanItems.getCurrentItem, "ifcfg", "")),
-            0
+          Builtins.size(Ops.get_string(LanItems.getCurrentItem, "ifcfg", "")),
+          0
           )
           next if config_filter == "unconfigured"
         else
@@ -60,25 +59,23 @@ module Yast
         end
         confList = Builtins.add(
           confList,
-          {
-            Builtins.tostring(count) => {
-              "id"         => position,
-              "rich_descr" => Ops.get_string(
-                LanItems.getCurrentItem,
-                ["table_descr", "rich_descr"],
-                ""
-              ),
-              "descr"      => Ops.get_string(
-                LanItems.getCurrentItem,
-                ["table_descr", "table_descr", 0],
-                ""
-              ),
-              "addr"       => Ops.get_string(
-                LanItems.getCurrentItem,
-                ["table_descr", "table_descr", 1],
-                ""
-              )
-            }
+          Builtins.tostring(count) => {
+            "id"         => position,
+            "rich_descr" => Ops.get_string(
+              LanItems.getCurrentItem,
+              ["table_descr", "rich_descr"],
+              ""
+  ),
+            "descr"      => Ops.get_string(
+              LanItems.getCurrentItem,
+              ["table_descr", "table_descr", 0],
+              ""
+  ),
+            "addr"       => Ops.get_string(
+              LanItems.getCurrentItem,
+              ["table_descr", "table_descr", 1],
+              ""
+  )
           }
         )
       end
@@ -88,14 +85,14 @@ module Yast
     def validateId(options, config)
       options = deep_copy(options)
       config = deep_copy(config)
-      if Ops.get(options, "id") == nil
+      if Ops.get(options, "id").nil?
         Report.Error(_("Use \"id\" option to determine device."))
         return false
       end
 
       if Ops.greater_than(
-          Builtins.tointeger(Ops.get(options, "id", "0")),
-          Ops.subtract(Builtins.size(config), 1)
+        Builtins.tointeger(Ops.get(options, "id", "0")),
+        Ops.subtract(Builtins.size(config), 1)
         )
         Report.Error(
           _(
@@ -120,8 +117,6 @@ module Yast
       ret
     end
 
-
-
     # Handler for action "show"
     # @param [Hash{String => String}] options action options
     def ShowHandler(options)
@@ -132,8 +127,8 @@ module Yast
         Builtins.foreach(
           Convert.convert(
             row,
-            :from => "map <string, any>",
-            :to   => "map <string, map <string, any>>"
+            from: "map <string, any>",
+            to:   "map <string, map <string, any>>"
           )
         ) do |key, value|
           if key == Ops.get(options, "id", "0")
@@ -144,8 +139,8 @@ module Yast
             )
             descr = Convert.convert(
               SCR.Execute(path(".target.bash_output"), text),
-              :from => "any",
-              :to   => "map <string, any>"
+              from: "any",
+              to:   "map <string, any>"
             )
             CommandLine.Print(Ops.get_string(descr, "stdout", ""))
           end
@@ -171,8 +166,8 @@ module Yast
         Builtins.foreach(
           Convert.convert(
             row,
-            :from => "map <string, any>",
-            :to   => "map <string, map <string, any>>"
+            from: "map <string, any>",
+            to:   "map <string, map <string, any>>"
           )
         ) do |id, detail|
           CommandLine.Print(
@@ -309,8 +304,8 @@ module Yast
         Builtins.foreach(
           Convert.convert(
             row,
-            :from => "map <string, any>",
-            :to   => "map <string, map <string, any>>"
+            from: "map <string, any>",
+            to:   "map <string, map <string, any>>"
           )
         ) do |key, value|
           if key == Ops.get(options, "id", "0")
@@ -323,7 +318,6 @@ module Yast
           end
         end
       end
-
 
       true
     end

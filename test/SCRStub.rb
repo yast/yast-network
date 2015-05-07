@@ -1,4 +1,4 @@
-require 'yaml'
+require "yaml"
 
 # Helpers for stubbing several agent operations.
 #
@@ -52,7 +52,7 @@ module SCRStub
   #
   # @return Object
   def stub_scr_read(path_name)
-    file = File.join(DATA_PATH, "scr_read", path_name[1..-1]+".yml")
+    file = File.join(DATA_PATH, "scr_read", path_name[1..-1] + ".yml")
     info = YAML.load_file(file)
     path = Yast::Path.new(path_name)
     allow(Yast::SCR).to receive(:Read).with(path).and_return info

@@ -7,14 +7,12 @@ require "yast"
 Yast.import "Lan"
 
 describe "LanClass#Packages" do
-
   packages = {
-    "iw" => "wlan",
-    "vlan" => "vlan",
+    "iw"           => "wlan",
+    "vlan"         => "vlan",
     "bridge-utils" => "br",
-    "tunctl" => "tun"
+    "tunctl"       => "tun"
   }
-
 
   packages.each do |pkg, type|
     it "lists '#{pkg}' package for #{type} device" do
@@ -82,11 +80,9 @@ describe "LanClass#Packages" do
       .and_return(false)
     expect(Yast::Lan.Packages).to include "NetworkManager"
   end
-
 end
 
 describe "LanClass#activate_network_service" do
-
   Yast.import "Stage"
   Yast.import "NetworkService"
 

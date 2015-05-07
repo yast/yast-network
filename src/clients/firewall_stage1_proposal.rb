@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2008 - 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 
 # File:	firewall_stage1_proposal.ycp
 # Summary:	Configuration of fw in 1st stage
@@ -189,24 +189,24 @@ module Yast
       )
 
       help = _(
-        "<p><b><big>Firewall and SSH</big></b><br>\n" +
-          "Firewall is a defensive mechanism that protects your computer from network attacks.\n" +
-          "SSH is a service that allows logging into this computer remotely via dedicated\n" +
+        "<p><b><big>Firewall and SSH</big></b><br>\n" \
+          "Firewall is a defensive mechanism that protects your computer from network attacks.\n" \
+          "SSH is a service that allows logging into this computer remotely via dedicated\n" \
           "SSH client</p>"
       ) +
         _(
           "<p>Here you can choose whether the firewall will be enabled or disabled after\nthe installation. It is recommended to keep it enabled.</p>"
         ) +
         _(
-          "<p>With enabled firewall, you can decide whether to open firewall port for SSH\n" +
-            "service and allow remote SSH logins. Independently you can also enable SSH service (i.e. it\n" +
+          "<p>With enabled firewall, you can decide whether to open firewall port for SSH\n" \
+            "service and allow remote SSH logins. Independently you can also enable SSH service (i.e. it\n" \
             "will be started on computer boot).</p>"
         ) +
         (Linuxrc.vnc ?
           # TRANSLATORS: help text
           _(
-            "<p>You can also open VNC ports in firewall. It will not enable\n" +
-              "the remote administration service on a running system but it is\n" +
+            "<p>You can also open VNC ports in firewall. It will not enable\n" \
+              "the remote administration service on a running system but it is\n" \
               "started by the installer automatically if needed.</p>"
           ) :
           "")
@@ -237,7 +237,7 @@ module Yast
 
       dialog_ret = nil
 
-      while true
+      loop do
         dialog_ret = UI.UserInput
         enable_firewall = UI.QueryWidget(Id(ID::ENABLE_FW), :Value)
 
@@ -270,10 +270,9 @@ module Yast
       Convert.to_symbol(dialog_ret)
     end
 
-  private
+    private
 
     def preformatted_proposal
-
       firewall_proposal = SuSEFirewall4Network.Enabled1stStage ?
           _(
             "Firewall will be enabled (<a href=\"%s\">disable</a>)"
@@ -294,7 +293,7 @@ module Yast
 
       # Filter proposals with content and sort them
       proposals = [firewall_proposal, ssh_fw_proposal, sshd_proposal, vnc_fw_proposal].compact
-      "<ul>\n" + proposals.map {|prop| "<li>#{prop}</li>\n" }.join + "</ul>\n"
+      "<ul>\n" + proposals.map { |prop| "<li>#{prop}</li>\n" }.join + "</ul>\n"
     end
 
     def sshd_port_ui
@@ -372,10 +371,10 @@ module Yast
       open_ssh_port = SuSEFirewall4Network.EnabledSsh1stStage
       open_vnc_port = SuSEFirewall4Network.EnabledVnc1stStage
 
-      log.info "After installation, firewall will be #{enable_fw ? 'enabled':'disabled'}, " <<
-        "SSHD will be #{enable_sshd ? 'enabled':'disabled'}, " <<
-        "SSH port will be #{open_ssh_port ? 'open':'closed'}, " <<
-        "VNC port will be #{open_vnc_port ? 'open':'closed'}"
+      log.info "After installation, firewall will be #{enable_fw ? "enabled" : "disabled"}, " \
+        "SSHD will be #{enable_sshd ? "enabled" : "disabled"}, " \
+        "SSH port will be #{open_ssh_port ? "open" : "closed"}, " \
+        "VNC port will be #{open_vnc_port ? "open" : "closed"}"
 
       # Read the configuration from sysconfig
       # bnc#887406: The file is in inst-sys
@@ -426,7 +425,6 @@ module Yast
       # Writing the configuration including adjusting services
       # is done in firewall_stage1_finish
     end
-
   end unless defined? FirewallStage1ProposalClient
 end
 

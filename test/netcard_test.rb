@@ -52,16 +52,16 @@ MOCKED_ITEMS = {
     }
   },
   # devices with configuration, but not present
-  1 => {"ifcfg" => "bond0"},
-  2 => {"ifcfg" => "eth1"},
-  3 => {"ifcfg" => "br0"},
-  4 => {"ifcfg" => "tun0"},
-  5 => {"ifcfg" => "tap0"},
+  1 => { "ifcfg" => "bond0" },
+  2 => { "ifcfg" => "eth1" },
+  3 => { "ifcfg" => "br0" },
+  4 => { "ifcfg" => "tun0" },
+  5 => { "ifcfg" => "tap0" },
   # devices with configuration and hwinfo
   6 => {
-    "ifcfg" => "enp0s3",
+    "ifcfg"  => "enp0s3",
     "hwinfo" => {
-      "name" => "SUSE test card",
+      "name"     => "SUSE test card",
       "dev_name" => "enp0s3"
     }
   }
@@ -86,7 +86,7 @@ describe "When querying netcard device name" do
   end
 
   it "returns empty list when querying device name with nil or empty input" do
-    [ nil, [] ].each { |i| expect(@lan_items.GetDeviceNames(i)).to be_empty }
+    [nil, []].each { |i| expect(@lan_items.GetDeviceNames(i)).to be_empty }
   end
 
   it "can return list of device names available in the system" do
@@ -97,7 +97,6 @@ describe "When querying netcard device name" do
 end
 
 describe "NetworkComplexInclude#HardwareName" do
-
   before(:each) do
     Yast.include self, "network/complex.rb"
 
@@ -147,7 +146,7 @@ describe "LanItemsClass#BuildLanOverview" do
     allow(@lan_items).to receive(:GetDeviceMap) { { "NAME" => "Custom name" } }
 
     @lan_items.BuildLanOverview
-    @lan_items.Items.each_pair do |key, value|
+    @lan_items.Items.each_pair do |_key, value|
       # it is not issue, really same index two times
       desc = value["table_descr"]["table_descr"].first
 
@@ -163,7 +162,7 @@ describe "LanItemsClass#BuildLanOverview" do
     allow(@lan_items).to receive(:GetDeviceMap) { { "NAME" => "" } }
 
     @lan_items.BuildLanOverview
-    @lan_items.Items.each_pair do |key, value|
+    @lan_items.Items.each_pair do |_key, value|
       desc = value["table_descr"]["table_descr"].first
 
       if !value["hwinfo"]
@@ -179,7 +178,6 @@ describe "LanItemsClass#BuildLanOverview" do
     end
   end
 end
-
 
 describe "LanItemsClass#DeleteItem" do
   before(:each) do
@@ -224,13 +222,13 @@ describe "LanItemsClass#GetItemName" do
   end
 
   it "returns name provided by hwinfo if not configured" do
-    MOCKED_ITEMS.select { |k,v| !v.has_key?("ifcfg") }.each_pair do |item_id, conf|
+    MOCKED_ITEMS.select { |_k, v| !v.key?("ifcfg") }.each_pair do |item_id, conf|
       expect(@lan_items.GetDeviceName(item_id)).to eql conf["hwinfo"]["dev_name"]
     end
   end
 
   it "returns name according configuration if available" do
-    MOCKED_ITEMS.select { |k,v| v.has_key?("ifcfg") }.each_pair do |item_id, conf|
+    MOCKED_ITEMS.select { |_k, v| v.key?("ifcfg") }.each_pair do |item_id, conf|
       expect(@lan_items.GetDeviceName(item_id)).to eql conf["ifcfg"]
     end
   end
@@ -245,7 +243,7 @@ describe "LanItemsClass#SetItemName" do
       .to receive(:Items)
       .and_return(MOCKED_ITEMS)
 
-    item_id = LanItems.Items.find { |k, v| !v.has_key?("udev") }.first
+    item_id = LanItems.Items.find { |_k, v| !v.key?("udev") }.first
     expect(LanItems.SetItemName(item_id, new_name)).to eql new_name
   end
 end

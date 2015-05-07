@@ -81,8 +81,8 @@ module Yast
 
           # vnc1 and vnchttp1 services are enabled
           services = written_value_for(".etc.xinetd_conf.services")
-          services = services.select {|s| s["service"] =~ /vnc/ }
-          expect(services.map {|s| s["enabled"]}).to eq([true, true])
+          services = services.select { |s| s["service"] =~ /vnc/ }
+          expect(services.map { |s| s["enabled"] }).to eq([true, true])
         end
       end
 
@@ -109,8 +109,8 @@ module Yast
 
           # vnc1 and vnchttp1 services are enabled
           services = written_value_for(".etc.xinetd_conf.services")
-          services = services.select {|s| s["service"] =~ /vnc/ }
-          expect(services.map {|s| s["enabled"]}).to eq([false, false])
+          services = services.select { |s| s["service"] =~ /vnc/ }
+          expect(services.map { |s| s["enabled"] }).to eq([false, false])
         end
       end
     end
@@ -245,6 +245,5 @@ module Yast
         end
       end
     end
-
   end
 end

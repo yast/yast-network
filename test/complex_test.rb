@@ -11,7 +11,7 @@ Yast.import "LanItems"
 Yast.import "Stage"
 
 # creating a wrapper for Yast's 'header' file
-$LOAD_PATH.unshift File.expand_path('../../src', __FILE__)
+$LOAD_PATH.unshift File.expand_path("../../src", __FILE__)
 require "include/network/lan/complex"
 
 class NetworkLanComplexInclude
@@ -19,11 +19,9 @@ class NetworkLanComplexInclude
 end
 
 describe "NetworkLanComplexInclude::input_done?" do
-
   BOOLEAN_PLACEHOLDER = "placeholder (true or false)"
 
   context "when not running in installer" do
-
     before(:each) do
       allow(Yast::Stage)
         .to receive(:initial)
@@ -56,7 +54,6 @@ describe "NetworkLanComplexInclude::input_done?" do
   end
 
   context "when running in installer" do
-
     before(:each) do
       allow(Yast::Stage)
         .to receive(:initial)

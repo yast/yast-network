@@ -28,10 +28,10 @@ describe "LanItemsClass#BuildLanOverview" do
   }
   let(:wlan_ifcfg) {
     {
-      "BOOTPROTO" => "none",
-      "NAME" => "WiFi Link 6000 Series",
+      "BOOTPROTO"          => "none",
+      "NAME"               => "WiFi Link 6000 Series",
       "WIRELESS_AUTH_MODE" => "open",
-      "WIRELESS_KEY_0" => ""
+      "WIRELESS_KEY_0"     => ""
     }
   }
 

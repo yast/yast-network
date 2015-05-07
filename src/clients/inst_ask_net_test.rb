@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	clients/inst_ask_net_test.ycp
 # Package:	Network configuration
 # Summary:	Configuration dialogs for installation
@@ -55,7 +55,7 @@ module Yast
         return :auto
       end
 
-      TestStepsDialog() 
+      TestStepsDialog()
 
       # EOF
     end

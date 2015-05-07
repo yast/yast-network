@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	clients/lan.ycp
 # Package:	Network configuration
 # Summary:	Network cards main file
@@ -44,7 +44,6 @@ module Yast
 
       log.info("----------------------------------------")
       log.info("Lan module started")
-
 
       manual_conf_request = GetInstArgs.argmap["skip_detection"] || false
       log.info("Lan module forces manual configuration: #{manual_conf_request}")

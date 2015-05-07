@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	src/modules/Remote.ycp
 # Module:	Network configuration
 # Summary:	Module for Remote Administration via VNC
@@ -216,8 +216,8 @@ module Yast
       # are the proper services enabled in xinetd?
       xinetd_conf = Convert.convert(
         SCR.Read(path(".etc.xinetd_conf.services")),
-        :from => "any",
-        :to   => "list <map>"
+        from: "any",
+        to:   "list <map>"
       )
       vnc_conf = Builtins.filter(xinetd_conf) do |m|
         s = Ops.get_string(m, "service", "")
@@ -241,7 +241,7 @@ module Yast
       else
         Report.Error(
           _("Package %{package} is not installed\nfirewall settings will be disabled.") % {
-            :package => PKG_CONTAINING_FW_SERVICES
+            package: PKG_CONTAINING_FW_SERVICES
           }
         )
       end
@@ -255,8 +255,8 @@ module Yast
       # The agent is in yast2-inetd.rpm
       xinetd = Convert.convert(
         SCR.Read(path(".etc.xinetd_conf.services")),
-        :from => "any",
-        :to   => "list <map>"
+        from: "any",
+        to:   "list <map>"
       )
 
       xinetd = Builtins.maplist(xinetd) do |m|
@@ -329,7 +329,6 @@ module Yast
     #
     # @return [Boolean] true if success, false otherwise
     def configure_display_manager
-
       if IsEnabled()
         # Install required packages
         if !Package.InstallAll(Packages.vnc_packages)
@@ -340,7 +339,7 @@ module Yast
         # Enable xinetd
         if !Service.Enable(XINETD_SERVICE)
           Report.Error(
-            _("Enabling service %{service} has failed") % { :service => XINETD_SERVICE }
+            _("Enabling service %{service} has failed") % { service: XINETD_SERVICE }
           )
           return false
         end
@@ -348,7 +347,7 @@ module Yast
         # Enable XDM
         if !Service.Enable(XDM_SERVICE_NAME)
           Report.Error(
-            _("Enabling service %{service} has failed") % { :service => XDM_SERVICE_NAME }
+            _("Enabling service %{service} has failed") % { service: XDM_SERVICE_NAME }
           )
           return false
         end
@@ -365,7 +364,7 @@ module Yast
       )
       SCR.Write(path(".sysconfig.displaymanager"), nil)
 
-      #Do this only if package xinetd is installed (#256385)
+      # Do this only if package xinetd is installed (#256385)
       return false if Package.Installed("xinetd") && !WriteXinetd()
 
       true
@@ -376,8 +375,8 @@ module Yast
         Report.Error(Message.CannotRestartService(XDM_SERVICE_NAME)) unless Service.Reload(XDM_SERVICE_NAME)
         Report.Warning(
           _(
-            "Your display manager must be restarted.\n" +
-            "To take the changes in remote administration into account, \n" +
+            "Your display manager must be restarted.\n" \
+            "To take the changes in remote administration into account, \n" \
             "please restart it manually or log out and log in again."
           )
         )
@@ -409,20 +408,20 @@ module Yast
       IsEnabled() ? _("Remote administration is enabled.") : _("Remote administration is disabled.")
     end
 
-    publish :variable => :SEC_NONE, :type => "const string"
-    publish :variable => :SEC_VNCAUTH, :type => "const string"
-    publish :variable => :SEC_TYPES, :type => "list <string>"
-    publish :variable => :SEC_OPT_SECURITYTYPE, :type => "const string"
-    publish :variable => :default_dm, :type => "string"
-    publish :function => :IsEnabled, :type => "boolean ()"
-    publish :function => :IsDisabled, :type => "boolean ()"
-    publish :function => :Enable, :type => "void ()"
-    publish :function => :Disable, :type => "void ()"
-    publish :function => :Reset, :type => "void ()"
-    publish :function => :Propose, :type => "void ()"
-    publish :function => :Read, :type => "boolean ()"
-    publish :function => :Write, :type => "boolean ()"
-    publish :function => :Summary, :type => "string ()"
+    publish variable: :SEC_NONE, type: "const string"
+    publish variable: :SEC_VNCAUTH, type: "const string"
+    publish variable: :SEC_TYPES, type: "list <string>"
+    publish variable: :SEC_OPT_SECURITYTYPE, type: "const string"
+    publish variable: :default_dm, type: "string"
+    publish function: :IsEnabled, type: "boolean ()"
+    publish function: :IsDisabled, type: "boolean ()"
+    publish function: :Enable, type: "void ()"
+    publish function: :Disable, type: "void ()"
+    publish function: :Reset, type: "void ()"
+    publish function: :Propose, type: "void ()"
+    publish function: :Read, type: "boolean ()"
+    publish function: :Write, type: "boolean ()"
+    publish function: :Summary, type: "string ()"
   end
 
   Remote = RemoteClass.new

@@ -8,35 +8,34 @@ Yast.import "LanItems"
 
 module Yast
   describe LanItems do
-
     NETCONFIG_ITEMS = {
-      "eth" => {
-        "eth1"  => { "BOOTPROTO" => "none" },
-        "eth2"  => { "BOOTPROTO" => "none" },
-        "eth4"  => {
+      "eth"  => {
+        "eth1" => { "BOOTPROTO" => "none" },
+        "eth2" => { "BOOTPROTO" => "none" },
+        "eth4" => {
           "BOOTPROTO" => "static",
           "IPADDR"    => "0.0.0.0",
           "PREFIX"    => "32"
         },
-        "eth5"  => { "BOOTPROTO" => "static", "STARTMODE" => "nfsroot" },
-        "eth6"  => { "BOOTPROTO" => "static", "STARTMODE" => "ifplugd" },
+        "eth5" => { "BOOTPROTO" => "static", "STARTMODE" => "nfsroot" },
+        "eth6" => { "BOOTPROTO" => "static", "STARTMODE" => "ifplugd" }
       },
-      "tun" => {
+      "tun"  => {
         "tun0"  => {
           "BOOTPROTO" => "static",
           "STARTMODE" => "onboot",
           "TUNNEL"    => "tun"
-        },
+        }
       },
-      "tap" => {
+      "tap"  => {
         "tap0"  => {
           "BOOTPROTO" => "static",
           "STARTMODE" => "onboot",
           "TUNNEL"    => "tap"
-        },
+        }
       },
-      "br" => {
-        "br0"   => { "BOOTPROTO" => "dhcp" },
+      "br"   => {
+        "br0"   => { "BOOTPROTO" => "dhcp" }
       },
       "bond" => {
         "bond0" => {
@@ -69,7 +68,6 @@ module Yast
     end
 
     describe "#GetBridgeableInterfaces" do
-
       before(:each) do
         # FindAndSelect initializes internal state of LanItems it
         # is used internally by some helpers

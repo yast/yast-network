@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	clients/dns.ycp
 # Package:	Network configuration
 # Summary:	Hostname and DNS client
@@ -117,7 +117,7 @@ module Yast
       # Finish
       Builtins.y2milestone("DNS module finished")
       Builtins.y2milestone("----------------------------------------")
-      deep_copy(@ret) 
+      deep_copy(@ret)
 
       # EOF
     end
@@ -231,20 +231,20 @@ module Yast
         end
         option_validator = Convert.convert(
           Ops.get(option_handlers, [option, "validator"]),
-          :from => "any",
-          :to   => "boolean (string)"
+          from: "any",
+          to:   "boolean (string)"
         )
         option_setter = Convert.convert(
           Ops.get(option_handlers, [option, "setter"]),
-          :from => "any",
-          :to   => "void (any)"
+          from: "any",
+          to:   "void (any)"
         )
         fail_message = Ops.get_locale(
           option_handlers,
           [option, "fail_message"],
           _("Invalid option value.")
         )
-        if option_validator == nil || option_setter == nil
+        if option_validator.nil? || option_setter.nil?
           Builtins.y2internal(
             "Edit handler: unknown option (%1=%2) or unknown option handlers",
             option,

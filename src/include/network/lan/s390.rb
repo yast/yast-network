@@ -10,7 +10,7 @@ module Yast
   module NetworkLanS390Include
     SYS_DIR = "/sys/class/net"
 
-    def initialize_network_lan_s390(include_target)
+    def initialize_network_lan_s390(_include_target)
       Yast.import "FileUtils"
     end
 

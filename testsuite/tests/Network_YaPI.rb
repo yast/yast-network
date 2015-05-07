@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 module Yast
   class NetworkYaPIClient < Client
     def main
@@ -102,7 +102,7 @@ module Yast
       @EXEC = {
         "target" => {
           "bash_output" => {
-            "exit" => 0,
+            "exit"   => 0,
             "stdout" => "laptop.suse.cz",
             "stderr" => ""
           },
@@ -126,7 +126,7 @@ module Yast
       # Test Read
       Testsuite.Dump("Testing YaPI Read")
 
-      Testsuite.Test(lambda { YaPI::NETWORK.Read }, [@READ, {}, @EXEC], nil)
+      Testsuite.Test(-> { YaPI::NETWORK.Read }, [@READ, {}, @EXEC], nil)
 
       # Test various writes. Writing is done as stateless in YaPI so it cannot be checked by rereading values.
       @write_succeeded = { "error" => "", "exit" => "0" }
@@ -139,10 +139,8 @@ module Yast
       Assert.Equal(
         @write_succeeded,
         YaPI::NETWORK.Write(
-          {
-            "interface" => {
-              "eth0" => { "bootproto" => "dhcp4", "STARTMODE" => "auto" }
-            }
+          "interface" => {
+            "eth0" => { "bootproto" => "dhcp4", "STARTMODE" => "auto" }
           }
         )
       )
@@ -151,7 +149,7 @@ module Yast
       Assert.Equal(
         @write_succeeded,
         YaPI::NETWORK.Write(
-          { "route" => { "default" => { "via" => "10.20.30.40" } } }
+          "route" => { "default" => { "via" => "10.20.30.40" } }
         )
       )
 
@@ -164,7 +162,7 @@ module Yast
       Assert.Equal(
         @write_ip_fails,
         YaPI::NETWORK.Write(
-          { "route" => { "default" => { "via" => "10.20.30" } } }
+          "route" => { "default" => { "via" => "10.20.30" } }
         )
       )
 
@@ -172,10 +170,8 @@ module Yast
       Assert.Equal(
         @write_succeeded,
         YaPI::NETWORK.Write(
-          {
-            "interface" => {
-              "eth3" => { "bootproto" => "static", "ipaddr" => "1.2.3.7/24" }
-            }
+          "interface" => {
+            "eth3" => { "bootproto" => "static", "ipaddr" => "1.2.3.7/24" }
           }
         )
       )
@@ -184,14 +180,12 @@ module Yast
       Assert.Equal(
         @write_succeeded,
         YaPI::NETWORK.Write(
-          {
-            "interface" => {
-              "eth5.23" => {
-                "bootproto"        => "static",
-                "ipaddr"           => "1.2.3.8/24",
-                "vlan_etherdevice" => "eth5",
-                "vlan_id"          => "42"
-              }
+          "interface" => {
+            "eth5.23" => {
+              "bootproto"        => "static",
+              "ipaddr"           => "1.2.3.8/24",
+              "vlan_etherdevice" => "eth5",
+              "vlan_id"          => "42"
             }
           }
         )

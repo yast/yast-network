@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	modules/ISDN.ycp
 # Package:	Network configuration
 # Summary:	ISDN data
@@ -47,7 +47,7 @@ module Yast
       _Hardware = deep_copy(_Hardware)
       sel = {}
 
-      if which != nil
+      if !which.nil?
         sel = Ops.get_map(_Hardware, which, {})
 
         if Ops.greater_than(which, Builtins.size(_Hardware)) ||
@@ -89,7 +89,6 @@ module Yast
 
       deep_copy(sel)
     end
-
 
     # Select the given hardware item or clean up structures (item == nil)
     # @param [Fixnum] which item to be chosen

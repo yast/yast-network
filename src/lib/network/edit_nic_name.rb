@@ -1,9 +1,8 @@
 # encoding: utf-8
 
-require 'yast'
+require "yast"
 
 module Yast
-
   Yast.import "UI"
   Yast.import "LanItems"
   Yast.import "Popup"
@@ -12,7 +11,6 @@ module Yast
   # name. It also allows to select a device attribute (MAC, Bus id, ...) which will
   # be used for device selection.
   class EditNicName
-
     include UIShortcuts
     include I18n
 
@@ -23,7 +21,6 @@ module Yast
     BUSID_UDEV_ATTR = "KERNELS"
 
     def initialize
-
       textdomain "network"
 
       Yast.include self, "network/routines.rb"
@@ -31,8 +28,8 @@ module Yast
       current_item = LanItems.getCurrentItem
 
       @old_name = LanItems.current_udev_name
-      @old_key = MAC_UDEV_ATTR unless LanItems.GetItemUdev( MAC_UDEV_ATTR).empty?
-      @old_key = BUSID_UDEV_ATTR unless LanItems.GetItemUdev( BUSID_UDEV_ATTR).empty?
+      @old_key = MAC_UDEV_ATTR unless LanItems.GetItemUdev(MAC_UDEV_ATTR).empty?
+      @old_key = BUSID_UDEV_ATTR unless LanItems.GetItemUdev(BUSID_UDEV_ATTR).empty?
 
       if current_item["hwinfo"]
         @mac = current_item["hwinfo"]["mac"]
@@ -51,7 +48,7 @@ module Yast
 
       ret = nil
       new_name = @old_name
-      while ![:cancel, :abort, :ok].include? ret
+      until [:cancel, :abort, :ok].include? ret
         ret = UI.UserInput
 
         case ret
@@ -87,7 +84,8 @@ module Yast
       new_name
     end
 
-  private
+    private
+
     # Opens dialog for editing NIC name
     def open
       UI.OpenDialog(
@@ -104,7 +102,7 @@ module Yast
             RadioButtonGroup(
               Id(:udev_type),
               VBox(
-                #make sure there is enough space (#367239)
+                # make sure there is enough space (#367239)
                 HSpacing(30),
                 Left(
                   RadioButton(
@@ -119,7 +117,7 @@ module Yast
                   )
                 )
               )
-            ),
+            )
           ),
           VSpacing(0.5),
           HBox(
@@ -162,6 +160,5 @@ module Yast
 
       true
     end
-
   end
 end

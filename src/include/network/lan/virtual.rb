@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/lan/address.ycp
 # Package:	Network configuration
 # Summary:	Network card adresss configuration dialogs
@@ -45,8 +45,8 @@ module Yast
       Yast.include include_target, "network/routines.rb"
     end
 
-    def initAdditional(key)
-      ##165059
+    def initAdditional(_key)
+      # #165059
       if NetworkService.is_network_manager
         UI.ChangeWidget(:f_additional, :Enabled, false)
       end
@@ -56,16 +56,16 @@ module Yast
       Builtins.maplist(
         Convert.convert(
           LanItems.aliases,
-          :from => "map",
-          :to   => "map <string, map>"
+          from: "map",
+          to:   "map <string, map>"
         )
       ) do |_alias, data|
         label = Ops.get_string(data, "LABEL", "")
         ip = Ops.get_string(data, "IPADDR", "")
         mask = Ops.get_string(data, "NETMASK", "")
         if Ops.greater_than(
-            Builtins.size(Ops.get_string(data, "PREFIXLEN", "")),
-            0
+          Builtins.size(Ops.get_string(data, "PREFIXLEN", "")),
+          0
           )
           mask = Builtins.sformat("/%1", Ops.get_string(data, "PREFIXLEN", ""))
         end
@@ -83,14 +83,14 @@ module Yast
     # Main aliases dialog
     # @param standalone true if not run from another ycp client
     # @return dialog result
-    def handleAdditional(key, event)
+    def handleAdditional(_key, event)
       event = deep_copy(event)
       return nil if NetworkService.is_network_manager
 
       table_items = Convert.convert(
         UI.QueryWidget(Id(:table), :Items),
-        :from => "any",
-        :to   => "list <term>"
+        from: "any",
+        to:   "list <term>"
       )
 
       if Ops.get_string(event, "EventReason", "") == "Activated"
@@ -99,7 +99,7 @@ module Yast
         case Ops.get_symbol(event, "ID", :nil)
           when :edit
             @item = VirtualEditDialog(cur, Ops.get(table_items, cur), [])
-            if @item != nil
+            if !@item.nil?
               Ops.set(table_items, cur, @item)
               UI.ChangeWidget(Id(:table), :Items, table_items)
               UI.ChangeWidget(Id(:table), :CurrentItem, cur)
@@ -114,7 +114,7 @@ module Yast
               @forbidden
             )
             Builtins.y2debug("item=%1", @item2)
-            if @item2 != nil
+            if !@item2.nil?
               table_items = Builtins.add(table_items, @item2)
               UI.ChangeWidget(Id(:table), :Items, table_items)
               UI.ChangeWidget(
@@ -145,14 +145,13 @@ module Yast
       nil
     end
 
-
-    def storeAdditional(key, event)
+    def storeAdditional(_key, event)
       event = deep_copy(event)
       if !NetworkService.is_network_manager
         table_items = Convert.convert(
           UI.QueryWidget(Id(:table), :Items),
-          :from => "any",
-          :to   => "list <term>"
+          from: "any",
+          to:   "list <term>"
         )
         aliases_to_delete = deep_copy(LanItems.aliases) # #48191
         LanItems.aliases = {}
@@ -184,11 +183,11 @@ module Yast
         Builtins.foreach(
           Convert.convert(
             aliases_to_delete,
-            :from => "map",
-            :to   => "map <string, any>"
+            from: "map",
+            to:   "map <string, any>"
           )
         ) do |a, v|
-          NetworkInterfaces.DeleteAlias(NetworkInterfaces.Name, a) if v != nil
+          NetworkInterfaces.DeleteAlias(NetworkInterfaces.Name, a) if !v.nil?
         end
       end
 
@@ -242,7 +241,7 @@ module Yast
         UI.SetFocus(Id(:ipaddr))
       end
 
-      while true
+      loop do
         host = nil
         ret = UI.UserInput
         break if ret != :ok

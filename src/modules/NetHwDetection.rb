@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	modules/NetHwDetection.ycp
 # Package:	Network configuration
 # Summary:	Network detection
@@ -114,18 +114,18 @@ module Yast
         active_driver = Builtins.find(Ops.get_list(h, "drivers", [])) do |d|
           Ops.get_boolean(d, "active", false)
         end
-        { Ops.get_string(h, "module", "") => active_driver == nil } # TODO 1: choose which driver to load
+        { Ops.get_string(h, "module", "") => active_driver.nil? } # TODO 1: choose which driver to load
         # (2: load all its modules: no cards use multiple modules)
         # (3: either modprobe or insmod: ISA history)
       end
       needed_modules = Builtins.filter(needed_modules) do |m, load|
-        load && m != nil && m != "" &&
+        load && !m.nil? && m != "" &&
           SCR.Execute(
             path(".target.bash"),
             Builtins.sformat("grep ^%1 /proc/modules", m)
           ) != 0
       end
-      @detection_modules = Builtins.maplist(needed_modules) { |m, a| m }
+      @detection_modules = Builtins.maplist(needed_modules) { |m, _a| m }
       Package.InstallKernel(Builtins.maplist(@detection_modules) do |m|
         Ops.add(m, ".ko")
       end)
@@ -191,7 +191,6 @@ module Yast
     # @return true if duplicate found
     # @see arping(8), ip(8)
     def DuplicateIP(ip)
-
       # missing param for arping. Arping does nothing in such case only
       # floods logs.
       return false if ip.nil? || ip.empty?
@@ -217,7 +216,7 @@ module Yast
         SCR.Execute(path(".target.bash"), command) == 1
       end
 
-      ifc != nil
+      !ifc.nil?
     end
 
     # this function is moved here just to kee it out of the tangle of
@@ -245,22 +244,22 @@ module Yast
       hnent = Ops.get_string(getent, "stdout", "")
       Builtins.y2debug("%1", hnent)
       hnent = String.FirstChunk(hnent, " \t\n")
-      hnent = "" if hnent == nil
+      hnent = "" if hnent.nil?
       Builtins.y2debug("'%1'", hnent)
       String.CutBlanks(hnent)
     end
 
-    publish :variable => :description, :type => "string"
-    publish :variable => :type, :type => "string"
-    publish :variable => :unique, :type => "string"
-    publish :variable => :hotplug, :type => "string"
-    publish :variable => :Requires, :type => "list <string>"
-    publish :variable => :result, :type => "map"
-    publish :variable => :running, :type => "boolean"
-    publish :function => :Start, :type => "boolean ()"
-    publish :function => :Stop, :type => "boolean ()"
-    publish :function => :DuplicateIP, :type => "boolean (string)"
-    publish :function => :ResolveIP, :type => "string (string)"
+    publish variable: :description, type: "string"
+    publish variable: :type, type: "string"
+    publish variable: :unique, type: "string"
+    publish variable: :hotplug, type: "string"
+    publish variable: :Requires, type: "list <string>"
+    publish variable: :result, type: "map"
+    publish variable: :running, type: "boolean"
+    publish function: :Start, type: "boolean ()"
+    publish function: :Stop, type: "boolean ()"
+    publish function: :DuplicateIP, type: "boolean (string)"
+    publish function: :ResolveIP, type: "string (string)"
   end
 
   NetHwDetection = NetHwDetectionClass.new

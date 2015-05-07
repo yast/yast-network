@@ -9,15 +9,13 @@ include Yast # for path shortcut and avoid namespace
 Yast.import "Proxy"
 
 describe "InstallInfConvertor" do
-
   context "in case of no network config in /etc/install.inf" do
-
     before(:each) do
       @install_inf_convertor = Yast::InstallInfConvertor.instance
 
       expect(Yast::InstallInfConvertor::InstallInf)
         .to receive(:[])
-        .at_least(:once) { nil }
+          .at_least(:once) { nil }
     end
 
     describe "#write_dhcp_timeout" do
@@ -87,7 +85,6 @@ describe "InstallInfConvertor" do
   end
 
   context "linuxrc provides dhcp configuration" do
-
     before(:each) do
       @device = "enp0s3"
       @netconfig = "dhcp"
@@ -99,13 +96,13 @@ describe "InstallInfConvertor" do
         .to receive(:[]) { "" }
       allow(Yast::InstallInfConvertor::InstallInf)
         .to receive(:[])
-        .with("Netdevice") { @device }
+          .with("Netdevice") { @device }
       allow(Yast::InstallInfConvertor::InstallInf)
         .to receive(:[])
-        .with("NetConfig") { @netconfig }
+          .with("NetConfig") { @netconfig }
       allow(Yast::InstallInfConvertor::InstallInf)
         .to receive(:[])
-        .with("NetCardName") { @netcardname }
+          .with("NetCardName") { @netcardname }
     end
 
     describe "#dev_name" do
@@ -118,7 +115,7 @@ describe "InstallInfConvertor" do
       it "creates ifcfg file for #{@device}" do
         expect(SCR)
           .to receive(:Write)
-          .with(path(".target.string"), /.*-#{@device}/, "") { true }
+            .with(path(".target.string"), /.*-#{@device}/, "") { true }
         expect(@install_inf_convertor.send(:write_ifcfg, "")).to eql true
       end
     end
@@ -134,7 +131,6 @@ describe "InstallInfConvertor" do
   end
 
   context "linuxrc provides static configuration" do
-
     before(:each) do
       Yast.import "Netmask"
 
@@ -150,19 +146,19 @@ describe "InstallInfConvertor" do
         .to receive(:[]) { "" }
       allow(Yast::InstallInfConvertor::InstallInf)
         .to receive(:[])
-        .with("Netdevice") { @device }
+          .with("Netdevice") { @device }
       allow(Yast::InstallInfConvertor::InstallInf)
         .to receive(:[])
-        .with("NetConfig") { @netconfig }
+          .with("NetConfig") { @netconfig }
       allow(Yast::InstallInfConvertor::InstallInf)
         .to receive(:[])
-        .with("IP") { @ip }
+          .with("IP") { @ip }
       allow(Yast::InstallInfConvertor::InstallInf)
         .to receive(:[])
-        .with("Netmask") { @netmask }
+          .with("Netmask") { @netmask }
       allow(Yast::InstallInfConvertor::InstallInf)
         .to receive(:[])
-        .with("Nameserver") { @nameserver }
+          .with("Nameserver") { @nameserver }
     end
 
     describe "#create_ifcfg" do
@@ -186,20 +182,19 @@ describe "InstallInfConvertor" do
       it "updates global netconfig file" do
         expect(Yast::SCR)
           .to receive(:Write)
-          .with(
-            path(".sysconfig.network.config"),
-            nil
+            .with(
+              path(".sysconfig.network.config"),
+              nil
           ) { true }
         expect(Yast::SCR)
           .to receive(:Write)
-          .with(
-            path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS"),
-            @nameserver
+            .with(
+              path(".sysconfig.network.config.NETCONFIG_DNS_STATIC_SERVERS"),
+              @nameserver
           ).once { true }
         expect(@install_inf_convertor.send(:write_dns)).to eql true
       end
     end
-
   end
 
   describe "#write_proxy" do
@@ -289,5 +284,4 @@ describe "InstallInfConvertor" do
         .to eql ("LLADDR='#{HWADDR}'")
     end
   end
-
 end

@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 module Yast
   class BondClient < Client
     def main
@@ -63,7 +63,7 @@ module Yast
               "class_id"       => 2,
               "dev_name"       => "eth11",
               "dev_names"      => ["eth11"],
-              "device_id"      => 70914,
+              "device_id"      => 70_914,
               "driver"         => "e1000e",
               "driver_module"  => "e1000e",
               "drivers"        => [
@@ -83,30 +83,30 @@ module Yast
                     "active" => true,
                     "length" => 32,
                     "mode"   => "rw",
-                    "start"  => 24704
+                    "start"  => 24_704
                   }
                 ],
                 "irq"    => [{ "count" => 0, "enabled" => true, "irq" => 20 }],
                 "mem"    => [
                   {
                     "active" => true,
-                    "length" => 131072,
-                    "start"  => 4087349248
+                    "length" => 131_072,
+                    "start"  => 4_087_349_248
                   },
-                  { "active" => true, "length" => 4096, "start" => 4087590912 }
+                  { "active" => true, "length" => 4096, "start" => 4_087_590_912 }
                 ]
               },
               "rev"            => "4",
               "slot_id"        => 25,
               "sub_class_id"   => 0,
-              "sub_device_id"  => 74227,
+              "sub_device_id"  => 74_227,
               "sub_vendor"     => "Vendor",
               "sub_vendor_id"  => 7,
               "sysfs_bus_id"   => "0000:00:19.0",
               "sysfs_id"       => "/devices/pci0000:00/0000:00:19.0",
               "unique_key"     => "rBUF.41x4AT4gee2",
               "vendor"         => "Intel Corporation",
-              "vendor_id"      => 98438
+              "vendor_id"      => 98_438
             },
             {
               "bus"            => "PCI",
@@ -114,7 +114,7 @@ module Yast
               "class_id"       => 2,
               "dev_name"       => "eth12",
               "dev_names"      => ["eth12"],
-              "device_id"      => 70914,
+              "device_id"      => 70_914,
               "driver"         => "e1000e",
               "driver_module"  => "e1000e",
               "drivers"        => [
@@ -134,30 +134,30 @@ module Yast
                     "active" => true,
                     "length" => 32,
                     "mode"   => "rw",
-                    "start"  => 24704
+                    "start"  => 24_704
                   }
                 ],
                 "irq"    => [{ "count" => 0, "enabled" => true, "irq" => 20 }],
                 "mem"    => [
                   {
                     "active" => true,
-                    "length" => 131072,
-                    "start"  => 4087349248
+                    "length" => 131_072,
+                    "start"  => 4_087_349_248
                   },
-                  { "active" => true, "length" => 4096, "start" => 4087590912 }
+                  { "active" => true, "length" => 4096, "start" => 4_087_590_912 }
                 ]
               },
               "rev"            => "4",
               "slot_id"        => 25,
               "sub_class_id"   => 0,
-              "sub_device_id"  => 74227,
+              "sub_device_id"  => 74_227,
               "sub_vendor"     => "Vendor",
               "sub_vendor_id"  => 7,
               "sysfs_bus_id"   => "0000:00:19.0",
               "sysfs_id"       => "/devices/pci0000:00/0000:00:19.0",
               "unique_key"     => "rBUF.41x4AT4gee2",
               "vendor"         => "Intel Corporation",
-              "vendor_id"      => 98438
+              "vendor_id"      => 98_438
             }
           ]
         },

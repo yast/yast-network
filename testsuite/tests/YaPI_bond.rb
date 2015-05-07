@@ -35,10 +35,10 @@ module Yast
       @EXEC = {
         "target" => {
           "bash_output" => {
-            "exit" => 0,
+            "exit"   => 0,
             "stdout" => "laptop.suse.cz",
             "stderr" => ""
-           }
+          }
         }
       }
 

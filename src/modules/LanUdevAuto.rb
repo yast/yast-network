@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:        modules/LanUdevAuto.ycp
 # Package:     Network configuration
 # Summary:     Udev rules for autoinstallation
@@ -32,7 +32,6 @@ require "yast"
 
 module Yast
   class LanUdevAutoClass < Module
-
     include Yast::Logger
 
     def main
@@ -68,7 +67,7 @@ module Yast
     # @param [String] name parameter name, case sensitive
     def InstallationParameter(name)
       value = InstallInfParameter(name)
-      value = KernelCmdlineParameter(name) if value == nil
+      value = KernelCmdlineParameter(name) if value.nil?
       value
     end
 
@@ -88,7 +87,7 @@ module Yast
       # raise an exception when old name could not be matched to existing cfg.
       newname = oldname
 
-      @hardware = ReadHardware("netcard") if @hardware == nil
+      @hardware = ReadHardware("netcard") if @hardware.nil?
 
       @hardware.each do |hw|
         hw_dev_name = hw["dev_name"] || ""
@@ -106,7 +105,7 @@ module Yast
       end
 
       log = "nothing changed, #{newname} is old style dev_name"
-      Builtins.y2milestone( log) if oldname == newname
+      Builtins.y2milestone(log) if oldname == newname
 
       newname
     end
@@ -121,8 +120,8 @@ module Yast
           old_style_found = true
         end
         if Builtins.issubstring(
-            Ops.get_string(interface, "device", ""),
-            "-bus-"
+          Ops.get_string(interface, "device", ""),
+          "-bus-"
           )
           old_style_found = true
         end
@@ -153,19 +152,17 @@ module Yast
           )
           rule = "ATTR{address}"
           if Ops.get(
-              Builtins.splitstring(Ops.get_string(interface, "device", ""), "-"),
-              1,
-              ""
+            Builtins.splitstring(Ops.get_string(interface, "device", ""), "-"),
+            1,
+            ""
             ) == "bus"
             rule = "KERNELS"
           end
           @udev_rules = Builtins.add(
             @udev_rules,
-            {
-              "rule"  => rule,
-              "value" => value,
-              "name"  => getDeviceName(Ops.get_string(interface, "device", ""))
-            }
+            "rule"  => rule,
+            "value" => value,
+            "name"  => getDeviceName(Ops.get_string(interface, "device", ""))
           )
           tmp_interfaces = Builtins.add(tmp_interfaces, interface)
         end
@@ -251,12 +248,12 @@ module Yast
       if Arch.s390
         devs = []
         Builtins.foreach(
-          Convert.convert(devices, :from => "map", :to => "map <string, any>")
-        ) do |type, value|
+          Convert.convert(devices, from: "map", to: "map <string, any>")
+        ) do |_type, value|
           devs = Convert.convert(
             Builtins.union(devs, Map.Keys(Convert.to_map(value))),
-            :from => "list",
-            :to   => "list <string>"
+            from: "list",
+            to:   "list <string>"
           )
         end
         Builtins.foreach(devs) do |device|
@@ -268,8 +265,8 @@ module Yast
                 device
               )
             ),
-            :from => "any",
-            :to   => "map <string, any>"
+            from: "any",
+            to:   "map <string, any>"
           )
           device_type = ""
           chanids = ""
@@ -301,12 +298,12 @@ module Yast
                 device
               )
             ),
-            :from => "any",
-            :to   => "map <string, any>"
+            from: "any",
+            to:   "map <string, any>"
           )
           if Ops.greater_than(
-              Builtins.size(Ops.get_string(chan_ids, "stdout", "")),
-              0
+            Builtins.size(Ops.get_string(chan_ids, "stdout", "")),
+            0
             )
             chanids = String.CutBlanks(Ops.get_string(chan_ids, "stdout", ""))
           end
@@ -318,12 +315,12 @@ module Yast
                 device
               )
             ),
-            :from => "any",
-            :to   => "map <string, any>"
+            from: "any",
+            to:   "map <string, any>"
           )
           if Ops.greater_than(
-              Builtins.size(Ops.get_string(port_name, "stdout", "")),
-              0
+            Builtins.size(Ops.get_string(port_name, "stdout", "")),
+            0
             )
             portname = String.CutBlanks(Ops.get_string(port_name, "stdout", ""))
           end
@@ -335,12 +332,12 @@ module Yast
                 device
               )
             ),
-            :from => "any",
-            :to   => "map <string, any>"
+            from: "any",
+            to:   "map <string, any>"
           )
           if Ops.greater_than(
-              Builtins.size(Ops.get_string(proto, "stdout", "")),
-              0
+            Builtins.size(Ops.get_string(proto, "stdout", "")),
+            0
             )
             protocol = String.CutBlanks(Ops.get_string(proto, "stdout", ""))
           end
@@ -353,7 +350,7 @@ module Yast
               )
             )
           ) == 0 ? true : false
-          Ops.set(_AY, ["s390-devices", device], { "type" => device_type })
+          Ops.set(_AY, ["s390-devices", device], "type" => device_type)
           if Ops.greater_than(Builtins.size(chanids), 0)
             Ops.set(_AY, ["s390-devices", device, "chanids"], chanids)
           end
@@ -372,19 +369,19 @@ module Yast
                 device
               )
             ),
-            :from => "any",
-            :to   => "map <string, any>"
+            from: "any",
+            to:   "map <string, any>"
           )
           Builtins.y2milestone("port0 %1", port0)
           if Ops.greater_than(
-              Builtins.size(Ops.get_string(port0, "stdout", "")),
-              0
+            Builtins.size(Ops.get_string(port0, "stdout", "")),
+            0
             )
             value = Ops.get_string(port0, "stdout", "")
             Ops.set(
               _AY,
               ["net-udev", device],
-              { "rule" => "KERNELS", "name" => device, "value" => value }
+              "rule" => "KERNELS", "name" => device, "value" => value
             )
           end
         end
@@ -392,14 +389,14 @@ module Yast
         Builtins.foreach(
           Convert.convert(
             LanItems.Items,
-            :from => "map <integer, any>",
-            :to   => "map <integer, map <string, any>>"
+            from: "map <integer, any>",
+            to:   "map <integer, map <string, any>>"
           )
         ) do |id, row|
           LanItems.current = id
           if Ops.greater_than(
-              Builtins.size(Ops.get_string(row, "ifcfg", "")),
-              0
+            Builtins.size(Ops.get_string(row, "ifcfg", "")),
+            0
             )
             name = LanItems.GetItemUdev("NAME")
             mac_rule = LanItems.GetItemUdev("ATTR{address}")
@@ -411,11 +408,9 @@ module Yast
             Ops.set(
               _AY,
               ["net-udev", name],
-              {
-                "rule"  => Ops.greater_than(Builtins.size(mac_rule), 0) ? "ATTR{address}" : "KERNELS",
-                "name"  => name,
-                "value" => Ops.greater_than(Builtins.size(mac_rule), 0) ? mac_rule : bus_rule
-              }
+              "rule"  => Ops.greater_than(Builtins.size(mac_rule), 0) ? "ATTR{address}" : "KERNELS",
+              "name"  => name,
+              "value" => Ops.greater_than(Builtins.size(mac_rule), 0) ? mac_rule : bus_rule
             )
           end
         end
@@ -472,12 +467,12 @@ module Yast
       devname
     end
 
-    publish :function => :AllowUdevModify, :type => "boolean ()"
-    publish :function => :getDeviceName, :type => "string (string)"
-    publish :function => :Import, :type => "boolean (map)"
-    publish :function => :Write, :type => "boolean ()"
-    publish :function => :Export, :type => "map (map)"
-    publish :function => :GetDevnameByMAC, :type => "string (string)"
+    publish function: :AllowUdevModify, type: "boolean ()"
+    publish function: :getDeviceName, type: "string (string)"
+    publish function: :Import, type: "boolean (map)"
+    publish function: :Write, type: "boolean ()"
+    publish function: :Export, type: "map (map)"
+    publish function: :GetDevnameByMAC, type: "string (string)"
   end
 
   LanUdevAuto = LanUdevAutoClass.new

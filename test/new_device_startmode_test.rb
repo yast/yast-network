@@ -8,7 +8,6 @@ Yast.import "ProductFeatures"
 Yast.import "LanItems"
 
 describe "LanItemsClass#new_device_startmode" do
-
   DEVMAP_STARTMODE_INVALID = {
     "STARTMODE" => "invalid"
   }
@@ -21,16 +20,14 @@ describe "LanItemsClass#new_device_startmode" do
   ]
 
   ["hotplug", ""].each do |hwinfo_hotplug|
-
     expected_startmode = hwinfo_hotplug == "hotplug" ? "hotplug" : "auto"
     hotplug_desc = hwinfo_hotplug == "hotplug" ? "can hotplug" : "cannot hotplug"
 
     context "When product_startmode is auto and device " + hotplug_desc do
-
       it "results to auto" do
         expect(Yast::ProductFeatures)
           .to receive(:GetStringFeature)
-          .with("network", "startmode") { "auto" }
+            .with("network", "startmode") { "auto" }
 
         result = Yast::LanItems.new_device_startmode
         expect(result).to be_eql "auto"
@@ -38,11 +35,10 @@ describe "LanItemsClass#new_device_startmode" do
     end
 
     context "When product_startmode is ifplugd and device " + hotplug_desc do
-
-      before( :each) do
+      before(:each) do
         expect(Yast::ProductFeatures)
           .to receive(:GetStringFeature)
-          .with("network", "startmode") { "ifplugd" }
+            .with("network", "startmode") { "ifplugd" }
         allow(Yast::LanItems).to receive(:hotplug_usable?) { hwinfo_hotplug == "hotplug" }
         # setup stubs by default at results which doesn't need special handling
         allow(Yast::Arch).to receive(:is_laptop) { true }
@@ -85,13 +81,11 @@ describe "LanItemsClass#new_device_startmode" do
     end
 
     context "When product_startmode is not auto neither ifplugd" do
-
       AVAILABLE_PRODUCT_STARTMODES.each do |product_startmode|
-
         it "for #{product_startmode} it results to #{expected_startmode} if device " + hotplug_desc do
           expect(Yast::ProductFeatures)
             .to receive(:GetStringFeature)
-            .with("network", "startmode") { product_startmode }
+              .with("network", "startmode") { product_startmode }
           expect(Yast::LanItems)
             .to receive(:hotplug_usable?) { hwinfo_hotplug == "hotplug" }
 

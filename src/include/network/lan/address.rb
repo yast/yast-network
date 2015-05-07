@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/lan/address.ycp
 # Package:	Network configuration
 # Summary:	Network card adresss configuration dialogs
@@ -78,43 +78,43 @@ module Yast
         "AD_ADDRESSES" => {
           "widget"        => :custom,
           "custom_widget" =>
-            # Frame label
-            Frame(
-              Id(:f_additional),
-              _("Additional Addresses"),
-              HBox(
-                HSpacing(3),
-                VBox(
-                  # :-) this is a small trick to make ncurses in 80x25 happy :-)
-                  # it rounds spacing up or down to the nearest integer, 0.5 -> 1, 0.49 -> 0
-                  VSpacing(0.49),
-                  Table(
-                    Id(:table),
-                    Opt(:notify),
-                    Header(
-                      # Table header label
-                      _("IPv4 Address Label"),
-                      # Table header label
-                      _("IP Address"),
-                      # Table header label
-                      _("Netmask")
-                    ),
-                    []
-                  ),
-                  Left(
-                    HBox(
-                      # PushButton label
-                      PushButton(Id(:add), _("Ad&d")),
-                      # PushButton label
-                      PushButton(Id(:edit), Opt(:disabled), _("&Edit")),
-                      # PushButton label
-                      PushButton(Id(:delete), Opt(:disabled), _("De&lete"))
-                    )
-                  ),
-                  VSpacing(0.49)
-                ),
-                HSpacing(3)
-              )
+                             # Frame label
+                             Frame(
+                               Id(:f_additional),
+                               _("Additional Addresses"),
+                               HBox(
+                                 HSpacing(3),
+                                 VBox(
+                                   # :-) this is a small trick to make ncurses in 80x25 happy :-)
+                                   # it rounds spacing up or down to the nearest integer, 0.5 -> 1, 0.49 -> 0
+                                   VSpacing(0.49),
+                                   Table(
+                                     Id(:table),
+                                     Opt(:notify),
+                                     Header(
+                                       # Table header label
+                                       _("IPv4 Address Label"),
+                                       # Table header label
+                                       _("IP Address"),
+                                       # Table header label
+                                       _("Netmask")
+                                     ),
+                                     []
+                                   ),
+                                   Left(
+                                     HBox(
+                                       # PushButton label
+                                       PushButton(Id(:add), _("Ad&d")),
+                                       # PushButton label
+                                       PushButton(Id(:edit), Opt(:disabled), _("&Edit")),
+                                       # PushButton label
+                                       PushButton(Id(:delete), Opt(:disabled), _("De&lete"))
+                                     )
+                                   ),
+                                   VSpacing(0.49)
+                                 ),
+                                 HSpacing(3)
+                               )
             ),
           "help"          => Ops.get_string(@help, "additional", ""),
           "init"          => fun_ref(method(:initAdditional), "void (string)"),
@@ -167,15 +167,15 @@ module Yast
             "boolean (string, map)"
           )
         },
-        "IFCFGID" =>
-          {
-            "widget" => :textentry,
-            # ComboBox label
-            "label"  => _("&Configuration Name"),
-            "opt"    => [:hstretch, :disabled],
-            "help"   => "",
-            "init"   => fun_ref(method(:initIfcfgId), "void (string)")
-          },
+        "IFCFGID"      =>
+                          {
+                            "widget" => :textentry,
+                            # ComboBox label
+                            "label"  => _("&Configuration Name"),
+                            "opt"    => [:hstretch, :disabled],
+                            "help"   => "",
+                            "init"   => fun_ref(method(:initIfcfgId), "void (string)")
+                          },
         "TUNNEL"       => {
           "widget"        => :custom,
           "custom_widget" => VBox(
@@ -435,7 +435,6 @@ module Yast
       nil
     end
 
-
     # Default function to store the value of a widget.
     # @param [String] key	id of the widget
     # @param [Hash] event	the event being handled
@@ -451,7 +450,6 @@ module Yast
       nil
     end
 
-
     # Default function to store the value of devices attached to bridge (BRIDGE_PORTS).
     # @param [String] key	id of the widget
     # @param [String] key id of the widget
@@ -464,8 +462,8 @@ module Yast
           Builtins.mergestring(
             Convert.convert(
               UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems),
-              :from => "any",
-              :to   => "list <string>"
+              from: "any",
+              to:   "list <string>"
             ),
             " "
           )
@@ -480,19 +478,18 @@ module Yast
       nil
     end
 
-
     # Default function to init the value of slave ETHERDEVICE box.
     # @param [String] key	id of the widget
-    def InitVLANSlave(key)
+    def InitVLANSlave(_key)
       items = []
       # unconfigured devices
       Builtins.foreach(
         Convert.convert(
           LanItems.Items,
-          :from => "map <integer, any>",
-          :to   => "map <integer, map>"
+          from: "map <integer, any>",
+          to:   "map <integer, map>"
         )
-      ) do |i, a|
+      ) do |_i, a|
         if Builtins.size(Ops.get_string(a, "ifcfg", "")) == 0
           dev_name = Ops.get_string(a, ["hwinfo", "dev_name"], "")
           items = Builtins.add(
@@ -516,8 +513,8 @@ module Yast
         Builtins.foreach(
           Convert.convert(
             Map.Keys(Ops.get_map(configurations, devtype, {})),
-            :from => "list",
-            :to   => "list <string>"
+            from: "list",
+            to:   "list <string>"
           )
         ) do |devname|
           if Builtins.contains(["vlan"], NetworkInterfaces.GetType(devname))
@@ -547,8 +544,7 @@ module Yast
       nil
     end
 
-
-    def HandleVLANSlave(key, event)
+    def HandleVLANSlave(_key, event)
       event = deep_copy(event)
       # formerly tried to edit ifcfg name. bad idea, surrounding code not ready
       nil
@@ -557,7 +553,7 @@ module Yast
     # Default function to store the value of ETHERDEVICE devices box.
     # @param [String] key	id of the widget
     # @param [String] key id of the widget
-    def StoreVLANSlave(key, event)
+    def StoreVLANSlave(_key, event)
       event = deep_copy(event)
       Ops.set(
         @settings,
@@ -572,8 +568,8 @@ module Yast
     def getISlaveIndex(slave)
       items = Convert.convert(
         UI.QueryWidget(:msbox_items, :Items),
-        :from => "any",
-        :to   => "list <term>"
+        from: "any",
+        to:   "list <term>"
       )
       index = -1
       pos = 0
@@ -590,8 +586,8 @@ module Yast
     def enableSlaveButtons
       items = Convert.convert(
         UI.QueryWidget(:msbox_items, :Items),
-        :from => "any",
-        :to   => "list <term>"
+        from: "any",
+        to:   "list <term>"
       )
       current = Builtins.tostring(UI.QueryWidget(:msbox_items, :CurrentItem))
       index = getISlaveIndex(current)
@@ -607,7 +603,7 @@ module Yast
 
     # Default function to init the value of slave devices box for bonding.
     # @param [String] key	id of the widget
-    def InitSlave(key)
+    def InitSlave(_key)
       Ops.set(@settings, "SLAVES", LanItems.bond_slaves)
       UI.ChangeWidget(
         :msbox_items,
@@ -626,11 +622,11 @@ module Yast
       l2 = []
       l1 = []
       Builtins.foreach(
-        Convert.convert(items, :from => "list", :to => "list <term>")
+        Convert.convert(items, from: "list", to: "list <term>")
       ) do |t|
         if Builtins.contains(
-            Ops.get_list(@settings, "SLAVES", []),
-            Ops.get_string(t, [0, 0], "")
+          Ops.get_list(@settings, "SLAVES", []),
+          Ops.get_string(t, [0, 0], "")
           )
           l1 = Builtins.add(l1, t)
         else
@@ -641,7 +637,7 @@ module Yast
       items = []
       Builtins.foreach(Ops.get_list(@settings, "SLAVES", [])) do |s|
         Builtins.foreach(
-          Convert.convert(l1, :from => "list", :to => "list <term>")
+          Convert.convert(l1, from: "list", to: "list <term>")
         ) do |t|
           items = Builtins.add(items, t) if Ops.get_string(t, [0, 0], "") == s
         end
@@ -654,7 +650,7 @@ module Yast
       nil
     end
 
-    def HandleSlave(key, event)
+    def HandleSlave(_key, event)
       event = deep_copy(event)
       if Ops.get_string(event, "EventReason", "") == "SelectionChanged"
         enableSlaveButtons
@@ -662,8 +658,8 @@ module Yast
           Ops.get(event, "WidgetClass") == :PushButton
         items = Convert.convert(
           UI.QueryWidget(:msbox_items, :Items),
-          :from => "any",
-          :to   => "list <term>"
+          from: "any",
+          to:   "list <term>"
         )
         current = Builtins.tostring(UI.QueryWidget(:msbox_items, :CurrentItem))
         index = getISlaveIndex(current)
@@ -682,8 +678,8 @@ module Yast
             )
             new_items = Convert.convert(
               Builtins.union(new_items, Builtins.sublist(items, index)),
-              :from => "list",
-              :to   => "list <term>"
+              from: "list",
+              to:   "list <term>"
             )
           when :down
             while Ops.greater_than(index, pos)
@@ -700,8 +696,8 @@ module Yast
                 new_items,
                 Builtins.sublist(items, Ops.add(index, 1))
               ),
-              :from => "list",
-              :to   => "list <term>"
+              from: "list",
+              to:   "list <term>"
             )
           else
             Builtins.y2warning("unknown action")
@@ -720,7 +716,7 @@ module Yast
     # Default function to store the value of slave devices box.
     # @param [String] key	id of the widget
     # @param [String] key id of the widget
-    def StoreSlave(key, event)
+    def StoreSlave(_key, event)
       event = deep_copy(event)
       configured_slaves = Ops.get_list(@settings, "SLAVES", [])
 
@@ -729,8 +725,8 @@ module Yast
         "SLAVES",
         Convert.convert(
           UI.QueryWidget(:msbox_items, :SelectedItems),
-          :from => "any",
-          :to   => "list <string>"
+          from: "any",
+          to:   "list <string>"
         )
       )
       Ops.set(@settings, "BONDOPTION", UI.QueryWidget(Id("BONDOPTION"), :Value))
@@ -745,14 +741,14 @@ module Yast
 
       Lan.bond_autoconf_slaves = Convert.convert(
         Builtins.toset(Builtins.merge(Lan.bond_autoconf_slaves, new_slaves)),
-        :from => "list",
-        :to   => "list <string>"
+        from: "list",
+        to:   "list <string>"
       )
 
       nil
     end
 
-    def initTunnel(key)
+    def initTunnel(_key)
       Builtins.y2internal("initTunnel %1", @settings)
       UI.ChangeWidget(
         :owner,
@@ -768,7 +764,7 @@ module Yast
       nil
     end
 
-    def storeTunnel(key, event)
+    def storeTunnel(_key, event)
       event = deep_copy(event)
       Ops.set(
         @settings,
@@ -798,7 +794,7 @@ module Yast
     # Initialize a RadioButtonGroup
     # Group called FOO has buttons FOO_bar FOO_qux and values bar qux
     # @param [String] key id of the widget
-    def initBootProto(key)
+    def initBootProto(_key)
       #  if (LanItems::type=="br") UI::ReplaceWidget(`rp, `Empty());
       # 	else
       if LanItems.type != "eth"
@@ -823,8 +819,8 @@ module Yast
             Ops.get_string(@settings, "IPADDR", "")
           )
           if Ops.greater_than(
-              Builtins.size(Ops.get_string(@settings, "PREFIXLEN", "")),
-              0
+            Builtins.size(Ops.get_string(@settings, "PREFIXLEN", "")),
+            0
             )
             UI.ChangeWidget(
               Id(:netmask),
@@ -875,8 +871,7 @@ module Yast
       nil
     end
 
-
-    def handleBootProto(key, event)
+    def handleBootProto(_key, event)
       event = deep_copy(event)
       if Ops.get_string(event, "EventReason", "") == "ValueChanged"
         current = Convert.to_symbol(
@@ -899,12 +894,11 @@ module Yast
       nil
     end
 
-
     # Store a RadioButtonGroup
     # Group called FOO has buttons FOO_bar FOO_qux and values bar qux
     # @param [String] key	id of the widget
     # @param [Hash] event	the event being handled
-    def storeBootProto(key, event)
+    def storeBootProto(_key, event)
       event = deep_copy(event)
       case Convert.to_symbol(UI.QueryWidget(Id(:bootproto), :CurrentButton))
         when :none
@@ -963,7 +957,6 @@ module Yast
       nil
     end
 
-
     def initIfcfg(key)
       UI.ChangeWidget(Id(key), :Value, LanItems.type)
       UI.ChangeWidget(Id(key), :Enabled, false)
@@ -986,7 +979,7 @@ module Yast
     # @param [String] key	the widget receiving the event
     # @param [Hash] event	the event being handled
     # @return nil so that the dialog loops on
-    def HandleButton(key, event)
+    def HandleButton(_key, event)
       event = deep_copy(event)
       ret = Ops.get(event, "ID")
       symbols = { "S390" => :s390 }
@@ -1034,11 +1027,11 @@ module Yast
         if ifcfgtype != LanItems.type
           UI.SetFocus(Id(key))
           if !Popup.ContinueCancel(
-              _(
-                "You have changed the interface type from the one\n" +
-                  "that has been detected. This only makes sense\n" +
-                  "if you know that the detection is wrong."
-              )
+            _(
+              "You have changed the interface type from the one\n" \
+                "that has been detected. This only makes sense\n" \
+                "if you know that the detection is wrong."
+            )
             )
             return false
           end
@@ -1079,8 +1072,8 @@ module Yast
           return Popup.YesNoHeadline(
             Label.WarningMsg,
             _(
-              "The firewall is active, but this interface is not\n" +
-                "in any zone. All its traffic would be blocked.\n" +
+              "The firewall is active, but this interface is not\n" \
+                "in any zone. All its traffic would be blocked.\n" \
                 "Assign it to a zone now?"
             )
           )
@@ -1093,7 +1086,7 @@ module Yast
     # @param [String] key	the widget being validated
     # @param [Hash] event	the event being handled
     # @return whether valid
-    def ValidateBootproto(key, event)
+    def ValidateBootproto(_key, event)
       event = deep_copy(event)
       if UI.QueryWidget(:bootproto, :CurrentButton) == :static
         ipa = Convert.to_string(UI.QueryWidget(:ipaddr, :Value))
@@ -1122,10 +1115,10 @@ module Yast
           if !Host.NeedDummyIP &&
               !Popup.YesNo(
                 _(
-                  "No hostname has been specified. We recommend to associate \n" +
-                    "a hostname with a static IP, otherwise the machine name will \n" +
-                    "not be resolvable without an active network connection.\n" +
-                    "\n" +
+                  "No hostname has been specified. We recommend to associate \n" \
+                    "a hostname with a static IP, otherwise the machine name will \n" \
+                    "not be resolvable without an active network connection.\n" \
+                    "\n" \
                     "Really leave the hostname blank?\n"
                 )
               )
@@ -1139,15 +1132,15 @@ module Yast
           UI.SetFocus(:ipaddr)
           # Popup text
           if !Popup.YesNoHeadline(
-              Label.WarningMsg,
-              _("Duplicate IP address detected.\nReally continue?\n")
+            Label.WarningMsg,
+            _("Duplicate IP address detected.\nReally continue?\n")
             )
             return false
           end
         end
       end
       if NeedToAssignFwZone(event)
-        UI.FakeUserInput({ "ID" => "t_general" })
+        UI.FakeUserInput("ID" => "t_general")
         return false
       end
       true
@@ -1156,7 +1149,7 @@ module Yast
     # Initialize value of firewall zone widget
     # (disables it when SuSEFirewall is not installed)
     # @param [String] key id of the widget
-    def InitFwZone(key)
+    def InitFwZone(_key)
       if SuSEFirewall4Network.IsInstalled
         UI.ChangeWidget(
           Id("FWZONE"),
@@ -1179,8 +1172,7 @@ module Yast
       end
     end
 
-
-    def initIfplugdPriority(key)
+    def initIfplugdPriority(_key)
       UI.ChangeWidget(
         Id("IFPLUGD_PRIORITY"),
         :Value,
@@ -1238,8 +1230,8 @@ module Yast
       # TODO: dynamic for dummy. or add dummy from outside?
       no_dhcp =
         is_ptp ||
-        type == "dummy" ||
-        LanItems.alias != ""
+          type == "dummy" ||
+          LanItems.alias != ""
 
       address_p2p_contents = Frame(
         "", # labelless frame
@@ -1252,7 +1244,7 @@ module Yast
           "IPADDR",
           "NETMASK",
           # TODO new widget, add logic
-          #"GATEWAY"
+          # "GATEWAY"
           Empty()
         )
       )
@@ -1374,11 +1366,11 @@ module Yast
 
       if Builtins.contains(["tun", "tap"], LanItems.type)
         @settings = {
-          "BOOTPROTO"             => "static",
-          "STARTMODE"             => "auto",
-          "TUNNEL"                => LanItems.type,
-          "TUNNEL_SET_OWNER"      => LanItems.tunnel_set_owner,
-          "TUNNEL_SET_GROUP"      => LanItems.tunnel_set_group
+          "BOOTPROTO"        => "static",
+          "STARTMODE"        => "auto",
+          "TUNNEL"           => LanItems.type,
+          "TUNNEL_SET_OWNER" => LanItems.tunnel_set_owner,
+          "TUNNEL_SET_GROUP" => LanItems.tunnel_set_group
         }
       end
 
@@ -1389,37 +1381,35 @@ module Yast
 
       wd = Convert.convert(
         Builtins.union(@widget_descr, @widget_descr_local),
-        :from => "map",
-        :to   => "map <string, map <string, any>>"
+        from: "map",
+        to:   "map <string, map <string, any>>"
       )
 
       wd["STARTMODE"] = MakeStartmode(
-          ["auto", "ifplugd", "hotplug", "manual", "off", "nfsroot"]
+        ["auto", "ifplugd", "hotplug", "manual", "off", "nfsroot"]
       )
 
       Ops.set(
         wd,
         "IFPLUGD_PRIORITY",
-        {
-          "widget"  => :intfield,
-          "minimum" => 0,
-          "maximum" => 100,
-          # Combo box label - when to activate device (e.g. on boot, manually, never,..)
-          "label"   => _(
-            "Ifplugd Priority"
-          ),
-          "help" =>
-            # Device activation main help. The individual parts will be
-            # substituted as %1
-            _(
-              "<p><b><big>IFPLUGD PRIORITY</big></b></p> \n" +
-                "<p> All interfaces configured with <b>On Cable Connection</b> and with IFPLUGD_PRIORITY != 0 will be\n" +
-                " used mutually exclusive. If more then one of these interfaces is <b>On Cable Connection</b>\n" +
-                " then we need a way to decide which interface to take up. Therefore we have to\n" +
-                " set the priority of each interface.  </p>\n"
-            ),
-          "init"    => fun_ref(method(:initIfplugdPriority), "void (string)")
-        }
+        "widget"  => :intfield,
+        "minimum" => 0,
+        "maximum" => 100,
+        # Combo box label - when to activate device (e.g. on boot, manually, never,..)
+        "label"   => _(
+          "Ifplugd Priority"
+),
+        "help"    =>
+                     # Device activation main help. The individual parts will be
+                     # substituted as %1
+                     _(
+                       "<p><b><big>IFPLUGD PRIORITY</big></b></p> \n" \
+                         "<p> All interfaces configured with <b>On Cable Connection</b> and with IFPLUGD_PRIORITY != 0 will be\n" \
+                         " used mutually exclusive. If more then one of these interfaces is <b>On Cable Connection</b>\n" \
+                         " then we need a way to decide which interface to take up. Therefore we have to\n" \
+                         " set the priority of each interface.  </p>\n"
+  ),
+        "init"    => fun_ref(method(:initIfplugdPriority), "void (string)")
       )
 
       Ops.set(wd, ["IFCFGTYPE", "items"], BuildTypesListCWM(NetworkInterfaces.GetDeviceTypes))
@@ -1445,7 +1435,6 @@ module Yast
 
       @settings["IFCFG"] = LanItems.device if LanItems.operation != :add
 
-
       functions = {
         "init"  => fun_ref(method(:InitAddrWidget), "void (string)"),
         "store" => fun_ref(method(:StoreAddrWidget), "void (string, map)"),
@@ -1454,7 +1443,7 @@ module Yast
 
       if ["tun", "tap"].include?(LanItems.type)
         functions = {
-          :abort => fun_ref(LanItems.method(:Rollback), "boolean ()")
+          abort: fun_ref(LanItems.method(:Rollback), "boolean ()")
         }
       end
 
@@ -1485,28 +1474,26 @@ module Yast
       end
 
       wd = Convert.convert(
-        Builtins.union(wd, { "tab" => CWMTab.CreateWidget(wd_content) }),
-        :from => "map",
-        :to   => "map <string, map <string, any>>"
+        Builtins.union(wd, "tab" => CWMTab.CreateWidget(wd_content)),
+        from: "map",
+        to:   "map <string, map <string, any>>"
       )
 
       ret = CWM.ShowAndRun(
-        {
-          "widget_names"       => ["tab"],
-          "widget_descr"       => wd,
-          "contents"           => HBox("tab"),
-          # Address dialog caption
-          "caption"            => _(
-            "Network Card Setup"
-          ),
-          "back_button"        => Label.BackButton,
-          "abort_button"       => Label.CancelButton,
-          "next_button"        => Label.NextButton,
-          "fallback_functions" => functions,
-          "disable_buttons"    => LanItems.operation != :add ?
-            ["back_button"] :
-            []
-        }
+        "widget_names"       => ["tab"],
+        "widget_descr"       => wd,
+        "contents"           => HBox("tab"),
+        # Address dialog caption
+        "caption"            => _(
+          "Network Card Setup"
+),
+        "back_button"        => Label.BackButton,
+        "abort_button"       => Label.CancelButton,
+        "next_button"        => Label.NextButton,
+        "fallback_functions" => functions,
+        "disable_buttons"    => LanItems.operation != :add ?
+  ["back_button"] :
+  []
       )
       Wizard.RestoreAbortButton
 
@@ -1522,7 +1509,7 @@ module Yast
           ifp_prio = Builtins.tostring(
             UI.QueryWidget(Id("IFPLUGD_PRIORITY"), :Value)
           )
-          LanItems.ifplugd_priority = ifp_prio if ifp_prio != nil
+          LanItems.ifplugd_priority = ifp_prio if !ifp_prio.nil?
         end
 
         if SuSEFirewall4Network.IsInstalled
@@ -1599,15 +1586,12 @@ module Yast
         )
       end
 
-
-
       # proceed with WLAN settings if appropriate, #42420
       if ret == :next && LanItems.type == "wlan" && LanItems.alias == ""
         ret = :wire
       end
 
       Routing.SetDevices(NetworkInterfaces.List("")) if ret == :routing
-
 
       deep_copy(ret)
     end

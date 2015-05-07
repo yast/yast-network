@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/installation/dialogs.ycp
 # Package:	Network configuration
 # Summary:	Configuration dialogs for installation
@@ -48,7 +48,7 @@ module Yast
     # Ask for password if required
     # @return true on success
     def AskForPassword
-      return true if Internet.askpassword == nil
+      return true if Internet.askpassword.nil?
 
       return true if Internet.askpassword == false
 
@@ -248,7 +248,6 @@ module Yast
       Wizard.SetTitleIcon("yast-network")
       initDevice(items)
 
-
       ret = nil
       exit = false
       begin
@@ -317,7 +316,6 @@ module Yast
       nil
     end
 
-
     # Show several log files.
     # @param [Array<Hash>] logs log files
     # @param [String] logdir log files directory
@@ -365,7 +363,7 @@ module Yast
 
       filename = Ops.get(file_index, 1, "none")
 
-      while true
+      loop do
         # Read file and fill logview
         Builtins.y2milestone(
           "Opening file: %1",
@@ -377,7 +375,7 @@ module Yast
             Ops.add(Ops.add(logdir, "/"), filename)
           )
         )
-        tmp2 = "file not found" if tmp2 == nil
+        tmp2 = "file not found" if tmp2.nil?
         UI.ChangeWidget(
           Id(:log),
           :Value,

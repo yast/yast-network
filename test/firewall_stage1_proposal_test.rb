@@ -6,7 +6,7 @@ require "yast"
 
 module Yast
   extend Yast::I18n
-  Yast::textdomain "network"
+  Yast.textdomain "network"
 
   import "SuSEFirewall4Network"
   import "SuSEFirewallProposal"
@@ -14,7 +14,6 @@ module Yast
 
   describe "FirewallStage1ProposalClient" do
     describe "MakeProposal" do
-
       before(:each) do
         # Ensure a fixed proposal
         SuSEFirewallProposal.SetChangedByUser(true)
@@ -25,7 +24,7 @@ module Yast
         Yast::WFM.CallFunction("firewall_stage1_proposal", ["MakeProposal"])["preformatted_proposal"]
       }
       let(:ssh_string) {
-        Yast::_("SSH port will be open (<a href=\"%s\">block</a>)") % "firewall--disable_ssh_port_in_proposal"
+        Yast._("SSH port will be open (<a href=\"%s\">block</a>)") % "firewall--disable_ssh_port_in_proposal"
       }
 
       context "when firewall is enabled" do

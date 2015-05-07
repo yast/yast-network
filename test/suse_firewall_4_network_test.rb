@@ -28,13 +28,13 @@ module Yast
       it "sets whether sshd service should be started and caches the information in ServicesProposal" do
         SuSEFirewall4Network.SetSshdEnabled(true)
         expect(SuSEFirewall4Network.EnabledSshd).to be true
-        expect(ServicesProposal.enabled_services.include?('sshd')).to be true
-        expect(ServicesProposal.disabled_services.include?('sshd')).to be false
+        expect(ServicesProposal.enabled_services.include?("sshd")).to be true
+        expect(ServicesProposal.disabled_services.include?("sshd")).to be false
 
         SuSEFirewall4Network.SetSshdEnabled(false)
         expect(SuSEFirewall4Network.EnabledSshd).to be false
-        expect(ServicesProposal.enabled_services.include?('sshd')).to be false
-        expect(ServicesProposal.disabled_services.include?('sshd')).to be true
+        expect(ServicesProposal.enabled_services.include?("sshd")).to be false
+        expect(ServicesProposal.disabled_services.include?("sshd")).to be true
       end
     end
 

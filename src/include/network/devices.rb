@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	modules/ISDN.ycp
 # Package:	Network configuration
 # Summary:	ISDN data
@@ -32,7 +32,7 @@
 # Input and output routines.
 module Yast
   module NetworkDevicesInclude
-    def initialize_network_devices(include_target)
+    def initialize_network_devices(_include_target)
       textdomain "network"
 
       Yast.import "Map"
@@ -84,7 +84,7 @@ module Yast
     def GetFreeDevice(type)
       Builtins.y2debug("type=%1", type)
       ret = Ops.get(GetFreeDevices(type, 1), 0)
-      Builtins.y2error("Free device location error: %1", ret) if ret == nil
+      Builtins.y2error("Free device location error: %1", ret) if ret.nil?
       Builtins.y2debug("Free device=%1", ret)
       ret
     end
@@ -125,7 +125,7 @@ module Yast
         Builtins.y2error("Key not found: %1(%2)", dev, type)
         return false
       end
-      #remove(devmap, dev);
+      # remove(devmap, dev);
       devmap = Builtins.remove(devmap, dev)
       Ops.set(@Devices, type, devmap)
       @DeletedDevices = Builtins.add(@DeletedDevices, dev)

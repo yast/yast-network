@@ -2,7 +2,6 @@ require "yast"
 require "uri"
 
 module Yast
-
   class InstallInfConvertor
     include Singleton
     include Logger
@@ -180,7 +179,7 @@ module Yast
 
       # do not have numeric hostname, #152218
       return "" if hostname.empty? || IP.Check(hostname)
-      return hostname
+      hostname
     end
 
     def write_hostname
@@ -234,8 +233,8 @@ module Yast
         log.info("No DNS search domain defined, using FQ domain name #{fqdomain} as a fallback")
       end
 
-      #We're done. It is OK not to touch NETCONFIG_DNS_POLICY now as it is set to 'auto' by default
-      #and user did not have a chance to modify it up to now
+      # We're done. It is OK not to touch NETCONFIG_DNS_POLICY now as it is set to 'auto' by default
+      # and user did not have a chance to modify it up to now
       SCR.Write(path(".sysconfig.network.config"), nil)
     end
 
@@ -280,11 +279,11 @@ module Yast
       return false if connect_wait.empty?
 
       ret = SCR.Execute(
-          BASH_PATH,
-          "sed -i s/^WAIT_FOR_INTERFACES=.*/WAIT_FOR_INTERFACES=%s/g /etc/sysconfig/network/config" % connect_wait
+        BASH_PATH,
+        "sed -i s/^WAIT_FOR_INTERFACES=.*/WAIT_FOR_INTERFACES=%s/g /etc/sysconfig/network/config" % connect_wait
       )
 
-      return ret == 0
+      ret == 0
     end
 
     def dev_name
@@ -299,7 +298,7 @@ module Yast
       end
 
       log.info("InstInstallInfClient#dev_name:#{netdevice}")
-      return netdevice
+      netdevice
     end
 
     def stdout_of(command)
@@ -342,7 +341,7 @@ module Yast
           ifcfg << "WIRELESS_KEY_LENGTH='#{wlan_key_len}'\n"
       end
 
-      return ifcfg
+      ifcfg
     end
 
     def create_s390_ifcfg(hardware)
@@ -366,7 +365,7 @@ module Yast
       # set HW address only for qeth set to Layer 2 (bnc #479481)
       return "" if devtype == "eth" && InstallInf["Layer2"] != "1"
 
-      return "LLADDR='#{hwaddr}'\n"
+      "LLADDR='#{hwaddr}'\n"
     end
 
     def create_device_name_ifcfg(hardware)
@@ -383,7 +382,7 @@ module Yast
       return "" if hw_name.empty?
 
       # protect special characters, #305343
-      return "NAME='%s'\n" % String.Quote(hw_name)
+      "NAME='%s'\n" % String.Quote(hw_name)
     end
 
     def write_ifcfg(ifcfg)
@@ -406,7 +405,5 @@ module Yast
       log.info("ifcfg file: #{dev_file}")
       SCR.Write(path(".target.string"), dev_file, ifcfg)
     end
-
   end
-
 end

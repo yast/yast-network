@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 module Yast
   class HostClient < Client
     def main
@@ -43,10 +43,10 @@ module Yast
       Progress.off
 
       DUMP("Read")
-      TEST(lambda { Host.Read }, [@READ], nil)
+      TEST(-> { Host.Read }, [@READ], nil)
 
       DUMP("Write")
-      #TEST(``(Host::Write()), [], nil);
+      # TEST(``(Host::Write()), [], nil);
 
       @lan_settings = {
         "dns"        => {
@@ -84,10 +84,10 @@ module Yast
       }
 
       DUMP("Import")
-      #TEST(``(Host::Import(lan_settings)), [], nil);
+      # TEST(``(Host::Import(lan_settings)), [], nil);
 
       DUMP("Export")
-      TEST(lambda { Host.Export }, [], nil)
+      TEST(-> { Host.Export }, [], nil)
 
       nil
     end

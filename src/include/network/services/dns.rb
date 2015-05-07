@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/lan/dialogs.ycp
 # Package:	Network configuration
 # Summary:	Summary, overview and IO dialogs for network cards config
@@ -28,10 +28,9 @@
 #
 module Yast
   module NetworkServicesDnsInclude
-
     # CWM wants id-value pairs
     CUSTOM_RESOLV_POLICIES = {
-      "STATIC" =>          "STATIC",
+      "STATIC"          => "STATIC",
       "STATIC_FALLBACK" => "STATIC_FALLBACK"
     }
 
@@ -422,7 +421,6 @@ module Yast
       nil
     end
 
-
     # Default function to store the value of a widget.
     # @param [String] key	id of the widget
     # @param [Hash] event	the event being handled
@@ -439,7 +437,7 @@ module Yast
     # @param [String] key	the widget receiving the event
     # @param event	the event being handled
     # @return nil so that the dialog loops on
-    def InitDhcpHostname(key)
+    def InitDhcpHostname(_key)
       UI.ChangeWidget(Id("DHCP_HOSTNAME"), :Enabled, @has_dhcp)
       if !@has_dhcp
         UI.ReplaceWidget(Id("dh_host_text"), Label(_("No interface with dhcp")))
@@ -461,9 +459,9 @@ module Yast
     # @return nil so that the dialog loops on
     def HandleResolverData(key, event)
       event = deep_copy(event)
-      #if this one is disabled, it means NM is in charge (see also initModifyResolvPolicy())
+      # if this one is disabled, it means NM is in charge (see also initModifyResolvPolicy())
       if Convert.to_boolean(UI.QueryWidget(Id("MODIFY_RESOLV"), :Enabled))
-        #thus, we should not re-enable already disabled widgets
+        # thus, we should not re-enable already disabled widgets
         UI.ChangeWidget(Id(key), :Enabled, @resolver_modifiable)
       end
       nil
@@ -499,9 +497,9 @@ module Yast
       if !dhn || value != ""
         if value == "local"
           if !Popup.YesNo(
-              _(
-                "It's not recommended to use .local as domainname due to Multicast DNS. Use it at your own risk?"
-              )
+            _(
+              "It's not recommended to use .local as domainname due to Multicast DNS. Use it at your own risk?"
+            )
             )
             return false
           end
@@ -557,8 +555,8 @@ module Yast
       true
     end
 
-    def initPolicy(key)
-      #first initialize correctly
+    def initPolicy(_key)
+      # first initialize correctly
       Builtins.y2milestone(
         "initPolicy: %1",
         UI.QueryWidget(Id("MODIFY_RESOLV"), :Value)
@@ -572,13 +570,13 @@ module Yast
         UI.ChangeWidget(Id("PLAIN_POLICY"), :Value, "")
         UI.ChangeWidget(Id("PLAIN_POLICY"), :Enabled, false)
       end
-      #then disable if needed
+      # then disable if needed
       disable_unconfigureable_items(["PLAIN_POLICY"], false)
 
       nil
     end
 
-    def handlePolicy(key, event)
+    def handlePolicy(_key, event)
       event = deep_copy(event)
       Builtins.y2milestone("handlePolicy")
 
@@ -595,7 +593,7 @@ module Yast
     end
 
     def modify_resolv_default
-      if DNS.resolv_conf_policy == nil || DNS.resolv_conf_policy == ""
+      if DNS.resolv_conf_policy.nil? || DNS.resolv_conf_policy == ""
         Id(:nomodify)
       elsif DNS.resolv_conf_policy == "auto" || DNS.resolv_conf_policy == "STATIC *"
         Id(:auto)
@@ -604,14 +602,14 @@ module Yast
       end
     end
 
-    def initModifyResolvPolicy(key)
+    def initModifyResolvPolicy(_key)
       Builtins.y2milestone("initModifyResolvPolicy")
 
-      #first initialize correctly
+      # first initialize correctly
       default = modify_resolv_default
 
       UI.ChangeWidget(Id("MODIFY_RESOLV"), :Value, default)
-      #then disable if needed
+      # then disable if needed
       disable_unconfigureable_items(["MODIFY_RESOLV"], false)
 
       nil
@@ -641,17 +639,17 @@ module Yast
 
     # Used in GUI mode - initializes widgets according hn_settings
     # @param [String] key ignored
-    def initHostnameGlobal(key)
+    def initHostnameGlobal(_key)
       InitHnSettings()
 
       Builtins.foreach(
         Convert.convert(
           Map.Keys(@hn_settings),
-          :from => "list",
-          :to   => "list <string>"
+          from: "list",
+          to:   "list <string>"
         )
       ) { |key2| InitHnWidget(key2) }
-      #disable those if NM is in charge
+      # disable those if NM is in charge
       disable_unconfigureable_items(
         ["NAMESERVER_1", "NAMESERVER_2", "NAMESERVER_3", "SEARCHLIST_S"],
         false
@@ -664,7 +662,7 @@ module Yast
     # It calls store handler for every widget from hn_settings with event as an option.
     # @param [String] key ignored
     # @param [Hash] event user generated event
-    def storeHostnameGlobal(key, event)
+    def storeHostnameGlobal(_key, event)
       @hn_settings.keys.each do |key2|
         StoreHnWidget(key2, event) if UI.QueryWidget(Id(key2), :Enabled)
       end
@@ -701,26 +699,24 @@ module Yast
       )
 
       ret = CWM.ShowAndRun(
-        {
-          "widget_descr"       => @widget_descr_dns,
-          "contents"           => contents,
-          # dialog caption
-          "caption"            => _("Hostname and Domain Name"),
-          "back_button"        => Label.BackButton,
-          "next_button"        => Label.NextButton,
-          "fallback_functions" => functions,
-          "disable_buttons"    => GetInstArgs.enable_back ? [] : ["back_button"]
-        }
+        "widget_descr"       => @widget_descr_dns,
+        "contents"           => contents,
+        # dialog caption
+        "caption"            => _("Hostname and Domain Name"),
+        "back_button"        => Label.BackButton,
+        "next_button"        => Label.NextButton,
+        "fallback_functions" => functions,
+        "disable_buttons"    => GetInstArgs.enable_back ? [] : ["back_button"]
       )
 
       if ret == :next
-        #Pre-populate resolv.conf search list with current domain name
-        #but only if none exists so far
+        # Pre-populate resolv.conf search list with current domain name
+        # but only if none exists so far
         current_domain = Ops.get_string(@hn_settings, "DOMAIN", "")
 
-        #Need to modify hn_settings explicitly as SEARCHLIST_S widget
-        #does not exist in this dialog, thus StoreHnWidget won't do it
-        ##438167
+        # Need to modify hn_settings explicitly as SEARCHLIST_S widget
+        # does not exist in this dialog, thus StoreHnWidget won't do it
+        # #438167
         if DNS.searchlist == [] && current_domain != "site"
           Ops.set(@hn_settings, "SEARCHLIST_S", current_domain)
         end
@@ -733,7 +729,7 @@ module Yast
 
     # Standalone dialog only - embedded one is handled separately
     # via CWMTab
-    def DNSMainDialog(standalone)
+    def DNSMainDialog(_standalone)
       caption = _("Hostname and Name Server Configuration")
 
       functions = {
@@ -745,17 +741,14 @@ module Yast
       Wizard.HideBackButton
 
       ret = CWM.ShowAndRun(
-        {
-          "widget_descr"       => @widget_descr_dns,
-          "contents"           => @dns_contents,
-          # dialog caption
-          "caption"            => caption,
-          "back_button"        => Label.BackButton,
-          "next_button"        => Label.FinishButton,
-          "fallback_functions" => functions
-        }
+        "widget_descr"       => @widget_descr_dns,
+        "contents"           => @dns_contents,
+        # dialog caption
+        "caption"            => caption,
+        "back_button"        => Label.BackButton,
+        "next_button"        => Label.FinishButton,
+        "fallback_functions" => functions
       )
-
 
       ret
     end

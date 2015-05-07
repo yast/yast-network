@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 module Yast
   class UdevClient < Client
     def main
@@ -60,16 +60,14 @@ module Yast
       Ops.set(
         LanItems.Items,
         0,
-        {
-          "ifcfg" => "eth1",
-          "udev"  => {
-            "net"    => [
-              "KERNELS=\"invalid\"",
-              "KERNEL=\"eth*\"",
-              "NAME=\"eth1\""
-            ],
-            "driver" => nil
-          }
+        "ifcfg" => "eth1",
+        "udev"  => {
+          "net"    => [
+            "KERNELS=\"invalid\"",
+            "KERNEL=\"eth*\"",
+            "NAME=\"eth1\""
+          ],
+          "driver" => nil
         }
       )
 

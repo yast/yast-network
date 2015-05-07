@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	clients/lan_proposal.ycp
 # Package:	Network configuration
 # Summary:	Lan configuration proposal
@@ -208,7 +208,6 @@ module Yast
       deep_copy(ret)
     end
 
-
     # Convert data from autoyast to structure used by module.
     # @param [Hash] input autoyast settings
     # @return native network settings
@@ -224,15 +223,15 @@ module Yast
             Builtins.foreach(
               Convert.convert(
                 value,
-                :from => "any",
-                :to   => "map <string, map <string, any>>"
+                from: "any",
+                to:   "map <string, map <string, any>>"
               )
             ) do |k, v|
               # replace "alias0" to "0" (bnc#372687)
               t = Convert.convert(
                 value,
-                :from => "any",
-                :to   => "map <string, any>"
+                from: "any",
+                to:   "map <string, any>"
               )
               Ops.set(t, Ops.get_string(v, "LABEL", ""), Ops.get_map(t, k, {}))
               t = Builtins.remove(t, k)
@@ -297,7 +296,6 @@ module Yast
         end
       end
 
-
       Ops.set(input, "devices", devices)
       Ops.set(input, "hwcfg", hwcfg)
 
@@ -318,15 +316,14 @@ module Yast
       dhcp = UpcaseCondSet(dhcp, dhcpopts, "dhclient_additional_options")
       dhcp = UpcaseCondSet(dhcp, dhcpopts, "dhclient_hostname_option")
 
-      Ops.set(input, "config", { "dhcp" => dhcp })
+      Ops.set(input, "config", "dhcp" => dhcp)
       if Ops.get(input, "strict_IP_check_timeout") != nil
-        Ops.set(input, ["config", "config"], { "CHECK_DUPLICATE_IP" => true })
+        Ops.set(input, ["config", "config"], "CHECK_DUPLICATE_IP" => true)
       end
 
       Builtins.y2milestone("input=%1", input)
       deep_copy(input)
     end
-
 
     # Convert data from native network to autoyast for XML
     # @param [Hash] settings native network settings
@@ -335,19 +332,19 @@ module Yast
       settings = deep_copy(settings)
       interfaces = []
       discard = ["UDI", "_nm_name"]
-      Builtins.foreach(Ops.get_map(settings, "devices", {})) do |type, devsmap|
+      Builtins.foreach(Ops.get_map(settings, "devices", {})) do |_type, devsmap|
         Builtins.foreach(
-          Convert.convert(devsmap, :from => "map", :to => "map <string, map>")
+          Convert.convert(devsmap, from: "map", to: "map <string, map>")
         ) do |device, devmap|
           newmap = {}
           Builtins.foreach(
-            Convert.convert(devmap, :from => "map", :to => "map <string, any>")
+            Convert.convert(devmap, from: "map", to: "map <string, any>")
           ) do |key, val|
             Builtins.y2milestone("Adding: %1=%2", key, val)
             if key != "_aliases"
               if Ops.greater_than(Builtins.size(Convert.to_string(val)), 0) &&
                   !Builtins.contains(discard, key) &&
-                    !Builtins.contains(discard, Builtins.tolower(key))
+                  !Builtins.contains(discard, Builtins.tolower(key))
                 Ops.set(newmap, Builtins.tolower(key), Convert.to_string(val))
               end
             else
@@ -359,8 +356,8 @@ module Yast
                 Builtins.foreach(
                   Convert.convert(
                     val,
-                    :from => "any",
-                    :to   => "map <string, map <string, any>>"
+                    from: "any",
+                    to:   "map <string, map <string, any>>"
                   )
                 ) do |k, v|
                   Ops.set(
@@ -388,12 +385,12 @@ module Yast
       # Modules
 
       s390_devices = []
-      Builtins.foreach(Ops.get_map(settings, "s390-devices", {})) do |device, mod|
+      Builtins.foreach(Ops.get_map(settings, "s390-devices", {})) do |_device, mod|
         s390_devices = Builtins.add(s390_devices, mod)
       end
 
       net_udev = []
-      Builtins.foreach(Ops.get_map(settings, "net-udev", {})) do |device, mod|
+      Builtins.foreach(Ops.get_map(settings, "net-udev", {})) do |_device, mod|
         net_udev = Builtins.add(net_udev, mod)
       end
 
@@ -434,7 +431,6 @@ module Yast
         )
       end
 
-
       ret = {}
       Ops.set(ret, "managed", Ops.get_boolean(settings, "managed", false))
       if Builtins.haskey(settings, "ipv6")
@@ -453,8 +449,8 @@ module Yast
         Ops.set(ret, "dhcp_options", dhcpopts)
       end
       if Ops.greater_than(
-          Builtins.size(Ops.get_map(settings, "routing", {})),
-          0
+        Builtins.size(Ops.get_map(settings, "routing", {})),
+        0
         )
         Ops.set(ret, "routing", Ops.get_map(settings, "routing", {}))
       end

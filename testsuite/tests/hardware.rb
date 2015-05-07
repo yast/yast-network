@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 module Yast
   class HardwareClient < Client
     def main
@@ -31,7 +31,6 @@ module Yast
       @READ = { "target" => { "tmpdir" => "/tmp", "stat" => {} } }
       Testsuite.Init([@READ], 0)
 
-
       @description = ""
       @type = ""
       @unique = ""
@@ -40,10 +39,10 @@ module Yast
       Yast.include self, "network/hardware.rb"
 
       Testsuite.Dump("DeviceName")
-      Testsuite.Test(lambda { DeviceName({}) }, [], nil)
-      Testsuite.Test(lambda { DeviceName({ "model" => "hwmodel" }) }, [], nil)
+      Testsuite.Test(-> { DeviceName({}) }, [], nil)
+      Testsuite.Test(-> { DeviceName("model" => "hwmodel") }, [], nil)
       Testsuite.Test(lambda do
-        DeviceName({ "sub_vendor" => "hwvendor", "sub_device" => "hwdevice" })
+        DeviceName("sub_vendor" => "hwvendor", "sub_device" => "hwdevice")
       end, [], nil)
 
       nil

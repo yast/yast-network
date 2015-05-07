@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # Copyright 2004, Novell, Inc.  All rights reserved.
 #
 # File:	modules/SuSEFirewall4Network.ycp
@@ -35,7 +35,6 @@ require "yast"
 
 module Yast
   class SuSEFirewall4NetworkClass < Module
-
     include Yast::Logger
 
     SSH_PACKAGE = "openssh"
@@ -164,7 +163,7 @@ module Yast
       end
 
       # firewall must be running and enabled, interface must be in any zone
-      IsOn() && interface_zone != nil
+      IsOn() && !interface_zone.nil?
     end
 
     # Function returns the firewall zone of interface, "" if no zone includes
@@ -177,7 +176,7 @@ module Yast
     def GetZoneOfInterface(interface)
       return "" if !IsOn()
       zoi = SuSEFirewall.GetZoneOfInterface(interface)
-      zoi == nil ? "" : zoi
+      zoi.nil? ? "" : zoi
     end
 
     # Returns whether any network interfaces are handled firewall either
@@ -195,8 +194,8 @@ module Yast
             interfaces,
             SuSEFirewall.GetInterfacesInZoneSupportingAnyFeature(zone)
           ),
-          :from => "list",
-          :to   => "list <string>"
+          from: "list",
+          to:   "list <string>"
         )
       end
 
@@ -223,7 +222,7 @@ module Yast
         )
         SuSEFirewall.AddInterfaceIntoZone(interface, zone)
         SuSEFirewall.SetEnableService(true)
-        SuSEFirewall.SetStartService(true) 
+        SuSEFirewall.SetStartService(true)
         # Removing protection
       else
         # removing from all known zones
@@ -301,9 +300,9 @@ module Yast
       # bnc#887688 Needed for AutoYast export functionality at the end
       # of installation (clone_finish)
       enabled ?
-        ServicesProposal.enable_service('sshd')
+        ServicesProposal.enable_service("sshd")
         :
-        ServicesProposal.disable_service('sshd')
+        ServicesProposal.disable_service("sshd")
 
       nil
     end
@@ -326,24 +325,24 @@ module Yast
       @vnc_enabled_1st_stage
     end
 
-    publish :function => :Read, :type => "boolean ()"
-    publish :function => :Write, :type => "boolean ()"
-    publish :function => :IsOn, :type => "boolean ()"
-    publish :function => :FirewallZonesComboBoxItems, :type => "list <list <string>> ()"
-    publish :function => :IsProtectedByFirewall, :type => "boolean (string)"
-    publish :function => :GetZoneOfInterface, :type => "string (string)"
-    publish :function => :ProtectByFirewall, :type => "boolean (string, string, boolean)"
-    publish :function => :UnconfiguredIsBlocked, :type => "boolean ()"
-    publish :function => :ChangedByUser, :type => "void (boolean)"
-    publish :function => :IsInstalled, :type => "boolean ()"
-    publish :function => :SetEnabled1stStage, :type => "void (boolean)"
-    publish :function => :Enabled1stStage, :type => "boolean ()"
-    publish :function => :SetSshEnabled1stStage, :type => "void (boolean)"
-    publish :function => :EnabledSsh1stStage, :type => "boolean ()"
-    publish :function => :SetSshdEnabled, :type => "void (boolean)"
-    publish :function => :EnabledSshd, :type => "boolean ()"
-    publish :function => :SetVncEnabled1stStage, :type => "void (boolean)"
-    publish :function => :EnabledVnc1stStage, :type => "boolean ()"
+    publish function: :Read, type: "boolean ()"
+    publish function: :Write, type: "boolean ()"
+    publish function: :IsOn, type: "boolean ()"
+    publish function: :FirewallZonesComboBoxItems, type: "list <list <string>> ()"
+    publish function: :IsProtectedByFirewall, type: "boolean (string)"
+    publish function: :GetZoneOfInterface, type: "string (string)"
+    publish function: :ProtectByFirewall, type: "boolean (string, string, boolean)"
+    publish function: :UnconfiguredIsBlocked, type: "boolean ()"
+    publish function: :ChangedByUser, type: "void (boolean)"
+    publish function: :IsInstalled, type: "boolean ()"
+    publish function: :SetEnabled1stStage, type: "void (boolean)"
+    publish function: :Enabled1stStage, type: "boolean ()"
+    publish function: :SetSshEnabled1stStage, type: "void (boolean)"
+    publish function: :EnabledSsh1stStage, type: "boolean ()"
+    publish function: :SetSshdEnabled, type: "void (boolean)"
+    publish function: :EnabledSshd, type: "boolean ()"
+    publish function: :SetVncEnabled1stStage, type: "void (boolean)"
+    publish function: :EnabledVnc1stStage, type: "boolean ()"
   end
 
   SuSEFirewall4Network = SuSEFirewall4NetworkClass.new
