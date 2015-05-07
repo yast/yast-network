@@ -14,7 +14,7 @@ module Yast
     #
     # @return [Array] an udev rule
     def GetDefaultUdevRule(dev_name, dev_mac)
-      default_rule = [
+      [
         "SUBSYSTEM==\"net\"",
         "ACTION==\"add\"",
         "DRIVERS==\"?*\"",

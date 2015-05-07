@@ -272,8 +272,6 @@ module Yast
     end
 
     def initRouting(_key)
-      max = 0
-      table_items_orig = []
       route_conf = deep_copy(Routing.Routes)
 
       # reset, so that UI really reflect current state
@@ -309,7 +307,6 @@ module Yast
           @r_items = Builtins.add(@r_items, item)
         end
       end
-      table_items_orig = Builtins.eval(@r_items)
 
       Builtins.y2debug("table_items=%1", @r_items)
 
@@ -358,43 +355,43 @@ module Yast
       if Ops.get_string(event, "EventReason", "") == "Activated" ||
           Ops.get_string(event, "EventReason", "") == "ValueChanged"
         case Ops.get_symbol(event, "ID", :nil)
-          when :add
-            item = RoutingEditDialog(
-              Builtins.size(@r_items),
-              term(:empty),
-              devs
-            )
+        when :add
+          item = RoutingEditDialog(
+            Builtins.size(@r_items),
+            term(:empty),
+            devs
+          )
 
-            if !item.nil?
-              @r_items = Builtins.add(@r_items, item)
-              UI.ChangeWidget(Id(:table), :Items, @r_items)
-            end
-          when :delete
-            @r_items = Builtins.filter(@r_items) do |e|
-              cur != Ops.get(e, [0, 0])
+          if !item.nil?
+            @r_items = Builtins.add(@r_items, item)
+            UI.ChangeWidget(Id(:table), :Items, @r_items)
+          end
+        when :delete
+          @r_items = Builtins.filter(@r_items) do |e|
+            cur != Ops.get(e, [0, 0])
+          end
+          UI.ChangeWidget(Id(:table), :Items, @r_items)
+        when :edit
+          @cur_item = Builtins.filter(@r_items) do |e|
+            cur == Ops.get(e, [0, 0])
+          end
+
+          item = Ops.get(@cur_item, 0)
+          @dev = Ops.get_string(item, 4, "")
+          if @dev != "" && !Builtins.contains(devs, @dev)
+            devs = Builtins.add(devs, @dev)
+          end
+          devs = Builtins.sort(devs)
+
+          item = RoutingEditDialog(cur, item, devs)
+          if !item.nil?
+            @r_items = Builtins.maplist(@r_items) do |e|
+              next deep_copy(item) if cur == Ops.get_integer(e, [0, 0], -1)
+              deep_copy(e)
             end
             UI.ChangeWidget(Id(:table), :Items, @r_items)
-          when :edit
-            @cur_item = Builtins.filter(@r_items) do |e|
-              cur == Ops.get(e, [0, 0])
-            end
-
-            item = Ops.get(@cur_item, 0)
-            @dev = Ops.get_string(item, 4, "")
-            if @dev != "" && !Builtins.contains(devs, @dev)
-              devs = Builtins.add(devs, @dev)
-            end
-            devs = Builtins.sort(devs)
-
-            item = RoutingEditDialog(cur, item, devs)
-            if !item.nil?
-              @r_items = Builtins.maplist(@r_items) do |e|
-                next deep_copy(item) if cur == Ops.get_integer(e, [0, 0], -1)
-                deep_copy(e)
-              end
-              UI.ChangeWidget(Id(:table), :Items, @r_items)
-              UI.ChangeWidget(Id(:table), :CurrentItem, cur)
-            end
+            UI.ChangeWidget(Id(:table), :CurrentItem, cur)
+          end
         end
       end
       UI.ChangeWidget(Id(:add), :Enabled, enabled)
@@ -411,8 +408,7 @@ module Yast
       nil
     end
 
-    def validateRouting(_key, event)
-      event = deep_copy(event)
+    def validateRouting(_key, _event)
       gw = UI.QueryWidget(Id(:gw), :Value)
       if gw != "" && !IP.Check(gw)
         Popup.Error(_("The default gateway is invalid."))
@@ -423,8 +419,7 @@ module Yast
       end
     end
 
-    def storeRouting(_key, event)
-      event = deep_copy(event)
+    def storeRouting(_key, _event)
       route_conf = Builtins.maplist(@r_items) do |e|
         {
           "destination" => Ops.get_string(e, 1, ""),

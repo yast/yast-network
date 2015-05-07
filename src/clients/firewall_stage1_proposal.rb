@@ -23,12 +23,13 @@
 # **************************************************************************
 
 # File:	firewall_stage1_proposal.ycp
-# Summary:	Configuration of fw in 1st stage
 # Author:	Bubli <kmachalkova@suse.cz>
 #
 require "yast"
 
+# yast namespace
 module Yast
+  # Configuration of fw in 1st stage
   class FirewallStage1ProposalClient < Client
     PROPOSAL_ID = "fw_1ststage"
 
@@ -42,6 +43,7 @@ module Yast
     LINK_DISABLE_VNC = "firewall--disable_vnc_in_proposal"
     LINK_FIREWALL_DIALOG = "firewall_stage1"
 
+    # Namespace for UI constants
     module ID
       SSH_PORT = "open_ssh_port"
       VNC_PORT = "open_vnc_port"
@@ -201,15 +203,18 @@ module Yast
           "<p>With enabled firewall, you can decide whether to open firewall port for SSH\n" \
             "service and allow remote SSH logins. Independently you can also enable SSH service (i.e. it\n" \
             "will be started on computer boot).</p>"
-        ) +
-        (Linuxrc.vnc ?
-          # TRANSLATORS: help text
-          _(
-            "<p>You can also open VNC ports in firewall. It will not enable\n" \
-              "the remote administration service on a running system but it is\n" \
-              "started by the installer automatically if needed.</p>"
-          ) :
-          "")
+        ) + (
+          if Linuxrc.vnc
+            # TRANSLATORS: help text
+            _(
+              "<p>You can also open VNC ports in firewall. It will not enable\n" \
+                "the remote administration service on a running system but it is\n" \
+                "started by the installer automatically if needed.</p>"
+            )
+          else
+            ""
+          end
+        )
 
       Wizard.CreateDialog
       Wizard.SetTitleIcon("yast-firewall")
@@ -273,23 +278,25 @@ module Yast
     private
 
     def preformatted_proposal
-      firewall_proposal = SuSEFirewall4Network.Enabled1stStage ?
-          _(
-            "Firewall will be enabled (<a href=\"%s\">disable</a>)"
-          ) % LINK_DISABLE_FIREWALL
-        :
-          _(
-            "Firewall will be disabled (<a href=\"%s\">enable</a>)"
-          ) % LINK_ENABLE_FIREWALL
+      firewall_proposal = if SuSEFirewall4Network.Enabled1stStage
+                            _(
+                              "Firewall will be enabled (<a href=\"%s\">disable</a>)"
+                            ) % LINK_DISABLE_FIREWALL
+                          else
+                            _(
+                              "Firewall will be disabled (<a href=\"%s\">enable</a>)"
+                            ) % LINK_ENABLE_FIREWALL
+                          end
 
-      sshd_proposal = SuSEFirewall4Network.EnabledSshd ?
-          _(
-            "SSH service will be enabled (<a href=\"%s\">disable</a>)"
-          ) % LINK_DISABLE_SSHD
-        :
-          _(
-            "SSH service will be disabled (<a href=\"%s\">enable</a>)"
-          ) % LINK_ENABLE_SSHD
+      sshd_proposal = if SuSEFirewall4Network.EnabledSshd
+                        _(
+                          "SSH service will be enabled (<a href=\"%s\">disable</a>)"
+                        ) % LINK_DISABLE_SSHD
+                      else
+                        _(
+                          "SSH service will be disabled (<a href=\"%s\">enable</a>)"
+                        ) % LINK_ENABLE_SSHD
+                      end
 
       # Filter proposals with content and sort them
       proposals = [firewall_proposal, ssh_fw_proposal, sshd_proposal, vnc_fw_proposal].compact
@@ -334,10 +341,11 @@ module Yast
       # Show VNC port only if installing over VNC
       return nil unless Linuxrc.vnc
 
-      SuSEFirewall4Network.EnabledVnc1stStage ?
+      if SuSEFirewall4Network.EnabledVnc1stStage
         _("VNC ports will be open (<a href=\"%s\">close</a>)") % LINK_DISABLE_VNC
-        :
+      else
         _("VNC ports will be blocked (<a href=\"%s\">open</a>)") % LINK_ENABLE_VNC
+      end
     end
 
     # Returns the SSH-port part of the firewall proposal description
@@ -347,10 +355,11 @@ module Yast
       return nil unless SuSEFirewall4Network.Enabled1stStage
       return nil unless known_firewall_services?(SuSEFirewall4NetworkClass::SSH_SERVICES)
 
-      SuSEFirewall4Network.EnabledSsh1stStage ?
+      if SuSEFirewall4Network.EnabledSsh1stStage
         _("SSH port will be open (<a href=\"%s\">block</a>)") % LINK_BLOCK_SSH_PORT
-        :
+      else
         _("SSH port will be blocked (<a href=\"%s\">open</a>)") % LINK_OPEN_SSH_PORT
+      end
     end
 
     # Returns true if all services are known to firewall

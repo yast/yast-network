@@ -83,8 +83,7 @@ module Yast
     #
     # @returns [String] new style name in case of success. Given name otherwise.
     def getDeviceName(oldname)
-      # TODO:
-      # raise an exception when old name could not be matched to existing cfg.
+      # TODO: raise an exception when old name could not be matched to existing cfg.
       newname = oldname
 
       @hardware = ReadHardware("netcard") if @hardware.nil?
@@ -202,7 +201,7 @@ module Yast
         value = rule["value"] || ""
         devname = rule["name"] || ""
 
-        template % [opt, value.downcase, devname]
+        format(template, opt, value.downcase, devname)
       end
 
       if !rules.empty? && AllowUdevModify()
@@ -244,7 +243,7 @@ module Yast
 
     def Export(devices)
       devices = deep_copy(devices)
-      _AY = { "s390-devices" => {}, "net-udev" => {} }
+      ay = { "s390-devices" => {}, "net-udev" => {} }
       if Arch.s390
         devs = []
         Builtins.foreach(
@@ -274,17 +273,17 @@ module Yast
           protocol = ""
           if Ops.get_integer(driver, "exit", -1) == 0
             case Ops.get_string(driver, "stdout", "")
-              when "qeth"
-                device_type = Ops.get_string(driver, "stdout", "")
-              when "ctcm"
-                device_type = "ctc"
-              when "netiucv"
-                device_type = "iucv"
-              else
-                Builtins.y2error(
-                  "unknown driver type :%1",
-                  Ops.get_string(driver, "stdout", "")
-                )
+            when "qeth"
+              device_type = Ops.get_string(driver, "stdout", "")
+            when "ctcm"
+              device_type = "ctc"
+            when "netiucv"
+              device_type = "iucv"
+            else
+              Builtins.y2error(
+                "unknown driver type :%1",
+                Ops.get_string(driver, "stdout", "")
+              )
             end
           else
             Builtins.y2error("%1", driver)
@@ -341,26 +340,25 @@ module Yast
             )
             protocol = String.CutBlanks(Ops.get_string(proto, "stdout", ""))
           end
-          layer2 = Convert.to_integer(
-            SCR.Execute(
-              path(".target.bash"),
-              Builtins.sformat(
-                "grep -q 1 /sys/class/net/%1/device/layer2",
-                device
-              )
-            )
-          ) == 0 ? true : false
-          Ops.set(_AY, ["s390-devices", device], "type" => device_type)
+          layer2_ret = SCR.Execute(
+            path(".target.bash"),
+            Builtins.sformat(
+              "grep -q 1 /sys/class/net/%1/device/layer2",
+              device
+          )
+                   )
+          layer2 = layer2_ret == 0
+          Ops.set(ay, ["s390-devices", device], "type" => device_type)
           if Ops.greater_than(Builtins.size(chanids), 0)
-            Ops.set(_AY, ["s390-devices", device, "chanids"], chanids)
+            Ops.set(ay, ["s390-devices", device, "chanids"], chanids)
           end
           if Ops.greater_than(Builtins.size(portname), 0)
-            Ops.set(_AY, ["s390-devices", device, "portname"], portname)
+            Ops.set(ay, ["s390-devices", device, "portname"], portname)
           end
           if Ops.greater_than(Builtins.size(protocol), 0)
-            Ops.set(_AY, ["s390-devices", device, "protocol"], protocol)
+            Ops.set(ay, ["s390-devices", device, "protocol"], protocol)
           end
-          Ops.set(_AY, ["s390-devices", device, "layer2"], true) if layer2
+          Ops.set(ay, ["s390-devices", device, "layer2"], true) if layer2
           port0 = Convert.convert(
             SCR.Execute(
               path(".target.bash_output"),
@@ -379,7 +377,7 @@ module Yast
             )
             value = Ops.get_string(port0, "stdout", "")
             Ops.set(
-              _AY,
+              ay,
               ["net-udev", device],
               "rule" => "KERNELS", "name" => device, "value" => value
             )
@@ -406,7 +404,7 @@ module Yast
               next
             end
             Ops.set(
-              _AY,
+              ay,
               ["net-udev", name],
               "rule"  => Ops.greater_than(Builtins.size(mac_rule), 0) ? "ATTR{address}" : "KERNELS",
               "name"  => name,
@@ -416,8 +414,8 @@ module Yast
         end
       end
 
-      Builtins.y2milestone("AY profile %1", _AY)
-      deep_copy(_AY)
+      Builtins.y2milestone("AY profile %1", ay)
+      deep_copy(ay)
     end
 
     def GetDevnameByMAC(mac)

@@ -33,7 +33,7 @@ module Yast
       end
       log.info "Candidates for enabling DHCP: #{dhcp_cards}"
 
-      # TODO time consuming, some progress would be nice
+      # TODO: time consuming, some progress would be nice
       dhcp_cards.each { |d| setup_dhcp(d) }
 
       activate_changes(dhcp_cards)
@@ -82,7 +82,7 @@ module Yast
       DNS.Read # handles NetworkConfig too
       DNS.ProposeHostname # generate random hostname, if none known so far
 
-      # FIXME after SLE12: DNS.default_dhcp_hostname should be private (setting
+      # FIXME: after SLE12: DNS.default_dhcp_hostname should be private (setting
       # default values is not something for an API), but that would need some
       # refactoring of this part.
       DNS.dhcp_hostname = DNS.default_dhcp_hostname
@@ -123,9 +123,7 @@ module Yast
     def setup_dhcp(card)
       index = LanItems.FindDeviceIndex(card)
 
-      if index == -1
-        raise "Failed to save configuration for device #{card}"
-      end
+      raise "Failed to save configuration for device #{card}" if index == -1
 
       LanItems.current = index
       LanItems.SetItem
@@ -177,8 +175,7 @@ module Yast
     end
 
     def configured?(devname)
-      # TODO:
-      # one day there should be LanItems.IsItemConfigured, but we currently
+      # TODO: one day there should be LanItems.IsItemConfigured, but we currently
       # miss index -> devname translation. As this LanItems internal structure
       # will be subject of refactoring, we will use NetworkInterfaces directly.
       # It currently doesn't hurt as it currently writes configuration for both

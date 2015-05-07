@@ -57,14 +57,9 @@ module Yast
     # Abort function
     # @return blah blah lahjk
     def Abort
-      Yast.import "Mode"
       return false if Mode.commandline
-      return UI.PollInput == :abort
 
-      # FIXME: NI
-      # if(AbortFunction != nil)
-      # 	return eval(AbortFunction) == true;
-      false
+      UI.PollInput == :abort
     end
 
     # Check for pending Abort press
@@ -77,9 +72,6 @@ module Yast
     # @return true if abort is confirmed
     def ReallyAbort
       Popup.ReallyAbort(true)
-
-      # FIXME: NI
-      # return !Modified() || Popup::ReallyAbort(true);
     end
 
     # If modified, ask for confirmation
@@ -87,9 +79,6 @@ module Yast
     # @return true if abort is confirmed
     def ReallyAbortCond(modified)
       !modified || Popup.ReallyAbort(true)
-
-      # FIXME: NI
-      # return (!modified && !Modified()) || Popup::ReallyAbort(true);
     end
 
     # Progress::NextStage and Progress::Title combined into one function
@@ -259,20 +248,11 @@ module Yast
     # @return a list of items
     def hwlist2items(l, selected)
       l = deep_copy(l)
-      # Translators: Appended after a network card name to indicate that
-      # there is no carrier, no link to the network, the cable is not
-      # plugged in. Preferably a short string.
-      nolink = _("unplugged")
-
       items = []
       n = 0
       Builtins.foreach(l) do |i|
         # Table field (Unknown device)
         hwname = Ops.get_locale(i, "name", _("Unknown"))
-        label = Ops.add(
-          hwname,
-          Ops.get(i, "link") == false ? Builtins.sformat(" (%1)", nolink) : ""
-        )
         num = Ops.get_integer(i, "num", n) # num for detected, n for manual
         items = Builtins.add(items, Item(Id(num), hwname, num == selected))
         n = Ops.add(n, 1)
@@ -346,13 +326,12 @@ module Yast
         t = Builtins.sformat(_("Run configuration of %1?"), run)
       end
 
-      ret = nil
       if run != ""
         ret = Popup.YesNoHeadline(h, t)
         # FIXME: check for the module presence
         Call.Function(run, params) if ret == true
       else
-        ret = Popup.AnyMessage(h, t)
+        Popup.AnyMessage(h, t)
       end
 
       :next
@@ -413,8 +392,7 @@ module Yast
       Ops.get_string(hw_item, "sysfs_id", "")
     end
 
-    def sysfs_card_type(sysfs_id, hardware)
-      hardware = deep_copy(hardware)
+    def sysfs_card_type(sysfs_id, _hardware)
       return "none" if sysfs_id == ""
       filename = Ops.add(Ops.add("/sys", sysfs_id), "/card_type")
       card_type = Convert.to_string(SCR.Read(path(".target.string"), filename))
@@ -456,10 +434,9 @@ module Yast
     #  return cfg;
     # }
 
-    def getHardware(sysfs_id, _Hw)
-      _Hw = deep_copy(_Hw)
+    def getHardware(sysfs_id, hw)
       hardware = {}
-      Builtins.foreach(_Hw) do |hw_temp|
+      Builtins.foreach(hw) do |hw_temp|
         if sysfs_id ==
             Builtins.sformat("/sys%1", Ops.get_string(hw_temp, "sysfs_id", ""))
           hardware = deep_copy(hw_temp)
@@ -485,10 +462,7 @@ module Yast
     # @return name consisting of vendor and device name
     def DeviceName(hwdevice)
       hwdevice = deep_copy(hwdevice)
-      delimiter = " " # "\n";
-      model = ""
-      vendor = ""
-      dev = ""
+      delimiter = " " # "\n"; #FIXME: constant
 
       if IsNotEmpty(Ops.get_string(hwdevice, "device", ""))
         return Ops.get_string(hwdevice, "device", "")
@@ -673,7 +647,7 @@ module Yast
     # @param [String] hwtype type of devices to read (netcard|modem|isdn)
     # @return array of hashes describing detected device
     def ReadHardware(hwtype)
-      _Hardware = []
+      hardware = []
 
       Builtins.y2debug("hwtype=%1", hwtype)
 
@@ -837,7 +811,7 @@ module Yast
         if controller != "" && !filter_out(card, one["module"])
           Builtins.y2debug("found device: %1", one)
 
-          Ops.set(_Hardware, Builtins.size(_Hardware), one)
+          Ops.set(hardware, Builtins.size(hardware), one)
           num += 1
         else
           Builtins.y2milestone("Filtering out: %1", card)
@@ -849,7 +823,7 @@ module Yast
       # can be proposed
       found = false
       i = 0
-      Builtins.foreach(_Hardware) do |h|
+      Builtins.foreach(hardware) do |h|
         if h["type"] == "wlan"
           found = true
           raise Break
@@ -858,19 +832,19 @@ module Yast
       end
 
       if found
-        temp = _Hardware[0] || {}
-        _Hardware[0] = _Hardware[i]
-        _Hardware[i] = temp
+        temp = hardware[0] || {}
+        hardware[0] = hardware[i]
+        hardware[i] = temp
         # adjust mapping: #98852, #102945
-        Ops.set(_Hardware, [0, "num"], 0)
-        Ops.set(_Hardware, [i, "num"], i)
+        Ops.set(hardware, [0, "num"], 0)
+        Ops.set(hardware, [i, "num"], i)
       end
 
-      Builtins.y2debug("Hardware=%1", _Hardware)
-      deep_copy(_Hardware)
+      Builtins.y2debug("Hardware=%1", hardware)
+      deep_copy(hardware)
     end
 
-    # TODO - begin:
+    # TODO: begin:
     # Following functions should be generalized and ported into yast-yast2
 
     # @param Shell command to run
@@ -912,7 +886,7 @@ module Yast
 
       ret
     end
-    # TODO - end
+    # TODO: end
 
     # Return list of all interfaces present in the system (not only configured ones as NetworkInterfaces::List does).
     #
@@ -920,9 +894,11 @@ module Yast
     def GetAllInterfaces
       result = RunAndRead("ls /sys/class/net")
 
-      Ops.get_boolean(result, "exit", false) ?
-        Ops.get_list(result, "output", []) :
+      if Ops.get_boolean(result, "exit", false)
+        Ops.get_list(result, "output", [])
+      else
         []
+      end
     end
 
     def SetLinkUp(dev_name)

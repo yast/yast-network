@@ -42,7 +42,7 @@ module Yast
       Yast.include self, "network/installation/dialogs.rb"
 
       if Mode.update
-        # FIXME should be made somewhere else
+        # FIXME: should be made somewhere else
 
         Builtins.y2milestone("starting network")
         SCR.Execute(path(".target.bash"), "/sbin/rcnetwork start")

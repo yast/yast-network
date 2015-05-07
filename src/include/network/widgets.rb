@@ -334,14 +334,14 @@ module Yast
       new_backend = UI.QueryWidget(Id(:managed), :Value)
 
       case new_backend
-        when "ifup"
-          NetworkService.use_netconfig
-        when "managed"
-          NetworkService.use_network_manager
-        when "wicked"
-          NetworkService.use_wicked
-        else
-          NetworkService.disable
+      when "ifup"
+        NetworkService.use_netconfig
+      when "managed"
+        NetworkService.use_network_manager
+      when "wicked"
+        NetworkService.use_wicked
+      else
+        NetworkService.disable
       end
 
       if NetworkService.Modified
@@ -389,15 +389,13 @@ module Yast
     end
 
     def handleIPv6(_key, event)
-      event = deep_copy(event)
       if Ops.get_string(event, "EventReason", "") == "ValueChanged"
         Lan.SetIPv6(Convert.to_boolean(UI.QueryWidget(Id(:ipv6), :Value)))
       end
       nil
     end
 
-    def storeIPv6(_key, event)
-      event = deep_copy(event)
+    def storeIPv6(_key, _event)
       if Convert.to_boolean(UI.QueryWidget(Id(:ipv6), :Value))
         Lan.SetIPv6(true)
       else
@@ -436,14 +434,13 @@ module Yast
       # if (size(device_name) > 30) {
       #    device_name = substring (device_name, 0, 27) + "...";
       # }
-      ip_addr = Builtins.issubstring(
-        NetworkInterfaces.GetValue(device_id, "BOOTPROTO"),
-        "dhcp"
-      ) ?
-        # TRANSLATORS: Part of label, device with IP address assigned by DHCP
-        _("DHCP address") :
-        # TRANSLATORS: Part of label, device with static IP address
-        NetworkInterfaces.GetValue(device_id, "IPADDR")
+      ip_addr = if Builtins.issubstring(NetworkInterfaces.GetValue(device_id, "BOOTPROTO"), "dhcp")
+                  # TRANSLATORS: Part of label, device with IP address assigned by DHCP
+                  _("DHCP address")
+                else
+                  # TRANSLATORS: Part of label, device with static IP address
+                  NetworkInterfaces.GetValue(device_id, "IPADDR")
+                end
       if ip_addr.nil? || ip_addr == ""
         # TRANSLATORS: Informs that no IP has been assigned to the device
         ip_addr = _("No IP address assigned")

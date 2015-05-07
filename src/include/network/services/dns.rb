@@ -424,8 +424,7 @@ module Yast
     # Default function to store the value of a widget.
     # @param [String] key	id of the widget
     # @param [Hash] event	the event being handled
-    def StoreHnWidget(key, event)
-      event = deep_copy(event)
+    def StoreHnWidget(key, _event)
       value = UI.QueryWidget(Id(key), :Value)
       SetHnItem(key, value)
 
@@ -457,8 +456,7 @@ module Yast
     # @param [String] key	the widget receiving the event
     # @param [Hash] event	the event being handled
     # @return nil so that the dialog loops on
-    def HandleResolverData(key, event)
-      event = deep_copy(event)
+    def HandleResolverData(key, _event)
       # if this one is disabled, it means NM is in charge (see also initModifyResolvPolicy())
       if Convert.to_boolean(UI.QueryWidget(Id("MODIFY_RESOLV"), :Enabled))
         # thus, we should not re-enable already disabled widgets
@@ -471,8 +469,7 @@ module Yast
     # @param [String] key	the widget being validated
     # @param [Hash] event	the event being handled
     # @return whether valid
-    def ValidateHostname(key, event)
-      event = deep_copy(event)
+    def ValidateHostname(key, _event)
       dhn = @has_dhcp &&
         Convert.to_boolean(UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value))
       # If the names are set by dhcp, the user may enter backup values
@@ -488,8 +485,7 @@ module Yast
     # @param [String] key	the widget being validated
     # @param [Hash] event	the event being handled
     # @return whether valid
-    def ValidateDomain(key, event)
-      event = deep_copy(event)
+    def ValidateDomain(key, _event)
       dhn = @has_dhcp &&
         Convert.to_boolean(UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value))
       value = Convert.to_string(UI.QueryWidget(Id(key), :Value))
@@ -513,8 +509,7 @@ module Yast
     # @param [String] key	the widget being validated
     # @param [Hash] event	the event being handled
     # @return whether valid
-    def ValidateSearchList(key, event)
-      event = deep_copy(event)
+    def ValidateSearchList(key, _event)
       value = Convert.to_string(UI.QueryWidget(Id(key), :Value))
       sl = NonEmpty(Builtins.splitstring(value, " ,\n\t"))
       error = ""
@@ -532,7 +527,7 @@ module Yast
           256
         )
       end
-      bad = Builtins.find(sl) do |s|
+      Builtins.foreach(sl) do |s|
         if !Hostname.CheckDomain(s)
           # Popup::Error text
           error = Ops.add(
@@ -542,9 +537,8 @@ module Yast
             ),
             Hostname.ValidDomain
           )
-          next true
+          break
         end
-        false
       end
 
       if error != ""
@@ -576,17 +570,16 @@ module Yast
       nil
     end
 
-    def handlePolicy(_key, event)
-      event = deep_copy(event)
+    def handlePolicy(_key, _event)
       Builtins.y2milestone("handlePolicy")
 
       case UI.QueryWidget(Id("MODIFY_RESOLV"), :Value)
-        when :custom
-          SetHnItem("PLAIN_POLICY", UI.QueryWidget(Id("PLAIN_POLICY"), :Value))
-        when :auto
-          SetHnItem("PLAIN_POLICY", "auto")
-        else
-          SetHnItem("PLAIN_POLICY", "")
+      when :custom
+        SetHnItem("PLAIN_POLICY", UI.QueryWidget(Id("PLAIN_POLICY"), :Value))
+      when :auto
+        SetHnItem("PLAIN_POLICY", "auto")
+      else
+        SetHnItem("PLAIN_POLICY", "")
       end
 
       nil
@@ -615,8 +608,7 @@ module Yast
       nil
     end
 
-    def handleModifyResolvPolicy(key, event)
-      event = deep_copy(event)
+    def handleModifyResolvPolicy(key, _event)
       Builtins.y2milestone(
         "handleModifyResolvPolicy called: %1",
         UI.QueryWidget(Id("MODIFY_RESOLV"), :Value)

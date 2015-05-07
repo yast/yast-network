@@ -195,13 +195,11 @@ module Yast
         # label text - one step of during network test
         steps = Builtins.add(steps, Left(Label(_("- Connect to the Internet"))))
       end
-      if true
-        # label text - one step of during network test
-        steps = Builtins.add(
-          steps,
-          Left(Label(_("- Download latest release notes")))
-        )
-      end
+      # label text - one step of during network test
+      steps = Builtins.add(
+        steps,
+        Left(Label(_("- Download latest release notes")))
+      )
       if Product.run_you
         # label text - one step of during network test
         steps = Builtins.add(
@@ -249,24 +247,25 @@ module Yast
       initDevice(items)
 
       ret = nil
-      exit = false
-      begin
+      quit = false
+      loop do
         ret = Convert.to_symbol(UI.UserInput)
         case ret
-          when :net_expert
-            current = handleDevice(items, current)
-          when :abort, :cancel
-            exit = true if Popup.ConfirmAbort(:incomplete)
-          when :back, :next
-            exit = true
-          when :yes
-            enableDevices(Ops.greater_than(Builtins.size(items), 1))
-          when :no
-            enableDevices(false)
-          else
-            Builtins.y2error("Unexpected return code:%1", ret)
+        when :net_expert
+          current = handleDevice(items, current)
+        when :abort, :cancel
+          quit = true if Popup.ConfirmAbort(:incomplete)
+        when :back, :next
+          quit = true
+        when :yes
+          enableDevices(Ops.greater_than(Builtins.size(items), 1))
+        when :no
+          enableDevices(false)
+        else
+          Builtins.y2error("Unexpected return code:%1", ret)
         end
-      end while !exit
+        break if quit
+      end
 
       Internet.do_test = UI.QueryWidget(Id(:rb), :CurrentButton) == :yes
       SetDevice(current)

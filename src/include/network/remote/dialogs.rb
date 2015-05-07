@@ -130,15 +130,15 @@ module Yast
 
       ret = nil
       event = nil
-      begin
+      loop do
         event = UI.WaitForEvent
         ret = Ops.get(event, "ID")
 
         CWMFirewallInterfaces.OpenFirewallHandle(firewall_widget, "", event)
 
         Wizard.ShowHelp(help) if ret == :help
-      end until DialogDone(ret)
-
+        break if DialogDone(ret)
+      end
       if ret == :next
         CWMFirewallInterfaces.OpenFirewallStore(firewall_widget, "", event)
 

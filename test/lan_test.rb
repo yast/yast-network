@@ -89,7 +89,7 @@ describe "LanClass#activate_network_service" do
   [0, 1].each do |linuxrc_usessh|
     ssh_flag = linuxrc_usessh != 0
 
-    context "when linuxrc %s usessh flag" % ssh_flag ? "sets" : "doesn't set" do
+    context format("when linuxrc %s usessh flag", ssh_flag ? "sets" : "doesn't set") do
       before(:each) do
         allow(Yast::Linuxrc)
           .to receive(:usessh)

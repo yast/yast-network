@@ -267,12 +267,10 @@ module Yast
           Left(HBox(Heading(Id(:s1), @dash), Label(@l1)))
         )
       end
-      if true
-        progress = Builtins.add(
-          progress,
-          Left(HBox(Heading(Id(:s2), @dash), Label(@l2)))
-        )
-      end
+      progress = Builtins.add(
+        progress,
+        Left(HBox(Heading(Id(:s2), @dash), Label(@l2)))
+      )
       # do not shutdown the connection when already connected
       if !@already_up
         progress = Builtins.add(
@@ -361,9 +359,6 @@ module Yast
     end
 
     def copy_logs1
-      ret_command = nil
-      run_command = nil
-
       # label of combobox where the log is selected
       @logs = Builtins.add(
         @logs,
@@ -425,9 +420,6 @@ module Yast
     end
 
     def copy_logs2
-      ret_command = nil
-      run_command = nil
-
       # label of combobox where the log is selected
       @logs = Builtins.add(
         @logs,
@@ -451,22 +443,22 @@ module Yast
     end
 
     def wait_for_test
-      while Convert.to_boolean(SCR.Read(path(".background.output_open"))) ||
-          Convert.to_boolean(SCR.Read(path(".background.isrunning")))
+      while SCR.Read(path(".background.output_open")) ||
+          SCR.Read(path(".background.isrunning"))
         Builtins.sleep(100)
 
         ret = UI.PollInput
 
-        if ret == :abort || ret == :abort_test
-          # Abort pressed by the user
-          Builtins.y2milestone("Test aborted by user")
-          SCR.Execute(path(".background.kill"))
-          return -1
-        end
+        next unless [:abort, :abort_test].include?(ret)
+
+        # Abort pressed by the user
+        Builtins.y2milestone("Test aborted by user")
+        SCR.Execute(path(".background.kill"))
+        return -1
       end
 
       # check the exit code of the test
-      res = Convert.to_integer(SCR.Read(path(".background.status")))
+      res = SCR.Read(path(".background.status"))
 
       Builtins.y2milestone("Command returned: %1", res)
 
@@ -536,14 +528,18 @@ module Yast
 
           if Ops.get_boolean(proxy_ret, ["HTTP", "tested"], true) == true &&
               Ops.get_integer(proxy_ret, ["HTTP", "exit"], 1) == 0
-            user_pass = Proxy.user != "" ?
-              Ops.add(Ops.add(Proxy.user, ":"), Proxy.pass) :
-              ""
+            user_pass = if Proxy.user != ""
+                          Ops.add(Ops.add(Proxy.user, ":"), Proxy.pass)
+                        else
+                          ""
+                        end
             proxy = Ops.add(
               Ops.add("--proxy ", Proxy.http),
-              user_pass != "" ?
-                Ops.add(Ops.add(" --proxy-user '", user_pass), "'") :
+              if user_pass != ""
+                Ops.add(Ops.add(" --proxy-user '", user_pass), "'")
+              else
                 ""
+              end
             )
           end
         end

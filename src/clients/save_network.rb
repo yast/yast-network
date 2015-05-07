@@ -124,7 +124,7 @@ module Yast
         dest_file = copy_to + file
         # apply options from initrd configuration files into installed system
         # i.e. just modify (not replace) files from sysconfig rpm
-        # FIXME this must be ripped out, refactored and tested
+        # FIXME: this must be ripped out, refactored and tested
         # In particular, values containing slashes will break the last sed
         command = "\n" \
           "source_file=#{source_file};dest_file=#{dest_file}\n" \

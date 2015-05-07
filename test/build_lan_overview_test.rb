@@ -10,30 +10,30 @@ include Yast::UIShortcuts
 include Yast::I18n
 
 describe "LanItemsClass#BuildLanOverview" do
-  let(:unknown_device_overview) {
+  let(:unknown_device_overview) do
     ["<ul><li><p>Unknown Network Device<br>Not configured yet.</p></li></ul>", []]
-  }
-  let(:german_translation_overview) {
+  end
+  let(:german_translation_overview) do
     [
       "<ul><li><p>WiFi Link 6000 Series<br>Ohne Adresse konfiguriert (KEINE) <font color=\"red\">Warnung: Es wird keine Verschl\u00FCsselung verwendet.</font> <a href=\"lan--wifi-encryption-wlan0\">\u00C4ndern Sie dies.</a></p></li></ul>",
       ["lan--wifi-encryption-wlan0"]
     ]
-  }
-  let(:wlan_items) {
+  end
+  let(:wlan_items) do
     {
       0 => {
         "ifcfg" => "wlan0"
       }
     }
-  }
-  let(:wlan_ifcfg) {
+  end
+  let(:wlan_ifcfg) do
     {
       "BOOTPROTO"          => "none",
       "NAME"               => "WiFi Link 6000 Series",
       "WIRELESS_AUTH_MODE" => "open",
       "WIRELESS_KEY_0"     => ""
     }
-  }
+  end
 
   # targeted mainly against bnc#906694
   it "returns translated network device textual description for wlan device" do
@@ -50,7 +50,7 @@ describe "LanItemsClass#BuildLanOverview" do
       .to receive(:locale)
       .and_return("de")
 
-    # hack locale search path
+    # HACK: locale search path
     Yast::I18n::LOCALE_DIR = File.expand_path("../locale", __FILE__)
 
     textdomain("network")

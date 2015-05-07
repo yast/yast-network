@@ -98,12 +98,12 @@ module Yast
     def LoadNetModules
       Builtins.y2milestone("Network detection prepare")
 
-      _Hardware = ReadHardware("netcard")
+      hardware = ReadHardware("netcard")
 
-      Builtins.y2debug("Hardware=%1", _Hardware)
-      return false if Ops.less_than(Builtins.size(_Hardware), 1)
+      Builtins.y2debug("Hardware=%1", hardware)
+      return false if Ops.less_than(Builtins.size(hardware), 1)
 
-      needed_modules = Builtins.listmap(_Hardware) do |h|
+      needed_modules = Builtins.listmap(hardware) do |h|
         # Formerly we simply modprobed the first module of the first
         # driver, if it was not already loaded.  But if the user
         # configured the card to use the second driver and unloads it
@@ -114,9 +114,11 @@ module Yast
         active_driver = Builtins.find(Ops.get_list(h, "drivers", [])) do |d|
           Ops.get_boolean(d, "active", false)
         end
-        { Ops.get_string(h, "module", "") => active_driver.nil? } # TODO 1: choose which driver to load
-        # (2: load all its modules: no cards use multiple modules)
-        # (3: either modprobe or insmod: ISA history)
+        { Ops.get_string(h, "module", "") => active_driver.nil? }
+        # TODO: list of todos
+        # 1: choose which driver to load
+        # 2: load all its modules: no cards use multiple modules
+        # 3: either modprobe or insmod: ISA history
       end
       needed_modules = Builtins.filter(needed_modules) do |m, load|
         load && !m.nil? && m != "" &&

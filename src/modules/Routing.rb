@@ -223,9 +223,7 @@ module Yast
       @Orig_Forward_v4 = @Forward_v4
       @Orig_Forward_v6 = @Forward_v6
 
-      if @Routes.empty?
-        ReadFromGateway(NetHwDetection.result["GATEWAY"] || "")
-      end
+      ReadFromGateway(NetHwDetection.result["GATEWAY"] || "") if @Routes.empty?
 
       true
     end
@@ -256,7 +254,7 @@ module Yast
       WriteIPForwarding()
 
       # at first stop the running routes
-      # FIXME SCR::Execute(.target.bash, "/etc/init.d/route stop");
+      # FIXME: SCR::Execute(.target.bash, "/etc/init.d/route stop");
       # sysconfig does not support restarting routes only,
       # so we let our caller do it together with other things
 

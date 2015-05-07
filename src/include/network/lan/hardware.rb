@@ -190,9 +190,11 @@ module Yast
       Ops.set(
         @hardware,
         "default_device",
-        IsNotEmpty(driver) ?
-          driver :
+        if IsNotEmpty(driver)
+          driver
+        else
           Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "module"], "")
+        end
       )
 
       Ops.set(
@@ -212,7 +214,7 @@ module Yast
         Ops.get_string(@hardware, "device", "")
       )
 
-      # FIXME duplicated in address.ycp
+      # FIXME: duplicated in address.ycp
       Ops.set(@hardware, "device_types", NetworkInterfaces.GetDeviceTypes)
 
       if Builtins.issubstring(
@@ -265,15 +267,12 @@ module Yast
     end
 
     def initHwDialog(_text)
-      # Manual dialog caption
-      caption = _("Manual Network Card Configuration")
-
       initHardware
 
       hotplug_type = @hardware["hotplug"] || ""
       hw_type = @hardware["type"] || ""
 
-      _CheckBoxes = HBox(
+      check_boxes = HBox(
         HSpacing(1.5),
         # CheckBox label
         CheckBox(
@@ -294,26 +293,12 @@ module Yast
         HSpacing(1.5)
       )
 
-      # Placeholders (translations)
-      _XBox = HBox(
-        # ComboBox label
-        ComboBox(Id(:hotplug), Opt(:notify), _("&Hotplug Type"), []),
-        # CheckBox label
-        CheckBox(
-          Id(:pci),
-          Opt(:notify),
-          _("P&CI"),
-          hotplug_type == "pci"
-        ),
-        HSpacing(1.5)
-      )
-
       # Disable PCMCIA and USB checkboxex on Edit and s390
-      _CheckBoxes = VSpacing(0) if !isNewDevice || Arch.s390
+      check_boxes = VSpacing(0) if !isNewDevice || Arch.s390
 
       # #116211 - allow user to change modules from list
       # Frame label
-      _KernelBox = Frame(
+      kernel_box = Frame(
         _("&Kernel Module"),
         HBox(
           HSpacing(0.5),
@@ -336,14 +321,14 @@ module Yast
               )
             ),
             VSpacing(0.4),
-            _CheckBoxes,
+            check_boxes,
             VSpacing(0.4)
           ),
           HSpacing(0.5)
         )
       )
 
-      _DeviceNumberBox = ReplacePoint(
+      device_number_box = ReplacePoint(
         Id(:rnum),
         # TextEntry label
         ComboBox(
@@ -355,7 +340,7 @@ module Yast
       )
 
       # Manual dialog contents
-      _TypeNameWidgets = VBox(
+      type_name_widgets = VBox(
         VSpacing(0.2),
         HBox(
           HSpacing(0.5),
@@ -370,12 +355,12 @@ module Yast
             )
           ),
           HSpacing(1.5),
-          _DeviceNumberBox,
+          device_number_box,
           HSpacing(0.5)
         )
       )
 
-      _UdevWidget =
+      udev_widget =
         Frame(
           _("Udev Rules"),
           HBox(
@@ -385,18 +370,18 @@ module Yast
         )
 
       if !isNewDevice
-        _TypeNameWidgets = Empty()
+        type_name_widgets = Empty()
       else
-        _UdevWidget = Empty()
+        udev_widget = Empty()
       end
 
-      _BlinkCard = Frame(
+      blink_card = Frame(
         _("Show Visible Port Identification"),
         HBox(
           # translators: how many seconds will card be blinking
           IntField(
             Id(:blink_time),
-            "%s:" % _("Seconds"),
+            format("%s:", _("Seconds")),
             0,
             100,
             5
@@ -405,7 +390,7 @@ module Yast
         )
       )
 
-      _EthtoolWidget = Frame(
+      ethtool_widget = Frame(
         _("Ethtool Options"),
         HBox(
           InputField(
@@ -418,10 +403,10 @@ module Yast
       )
 
       contents = VBox(
-        HBox(_UdevWidget, HStretch(), isNewDevice ? Empty() : _BlinkCard),
-        _TypeNameWidgets,
-        _KernelBox,
-        _EthtoolWidget,
+        HBox(udev_widget, HStretch(), isNewDevice ? Empty() : blink_card),
+        type_name_widgets,
+        kernel_box,
+        ethtool_widget,
         VStretch()
       )
 
@@ -434,17 +419,17 @@ module Yast
       UI.ChangeWidget(
         Id(:modul),
         :Enabled,
-        !!@hardware["no_hotplug_dummy"]
+        @hardware["no_hotplug_dummy"] == true # convert tri state boolean to two state
       )
       ChangeWidgetIfExists(
         Id(:list),
         :Enabled,
-        !!@hardware["no_hotplug_dummy"]
+        @hardware["no_hotplug_dummy"] == true # convert tri state boolean to two state
       )
       ChangeWidgetIfExists(
         Id(:hwcfg),
         :Enabled,
-        !!@hardware["no_hotplug"]
+        @hardware["no_hotplug"] == true # convert tri state boolean to two state
       )
       ChangeWidgetIfExists(
         Id(:usb),
@@ -1143,16 +1128,13 @@ module Yast
         )
       end
 
-      case LanItems.type
-        when "hsi"
-          UI.SetFocus(Id(:qeth_options))
-        when "qeth"
-          UI.SetFocus(Id(:qeth_portname))
-        when "iucv"
-          UI.SetFocus(Id(:iucv_user))
-        else
-          UI.SetFocus(Id(:chan_mode))
+      id = case LanItems.type
+      when "hsi"  then :qeth_options
+      when "qeth" then :qeth_portname
+      when "iucv" then :iucv_user
+      else             :chan_mode
       end
+      UI.SetFocus(Id(id))
 
       ret = nil
       loop do
@@ -1272,18 +1254,14 @@ module Yast
         VStretch()
       )
 
-      help = CWM.MergeHelps(w)
       contents = CWM.PrepareDialog(contents, w)
 
       Wizard.OpenNextBackDialog
       Wizard.SetContents(caption, contents, initHelp, false, true)
       Wizard.SetAbortButton(:cancel, Label.CancelButton)
-      ret = CWM.Run(
-        w,
-        {}
-      )
+      ret = CWM.Run(w, {})
       Wizard.CloseDialog
-      deep_copy(ret)
+      ret
     end
   end
 end

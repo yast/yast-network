@@ -124,8 +124,7 @@ module Yast
       nil
     end
 
-    def storeDhclientOptions(_key, event)
-      event = deep_copy(event)
+    def storeDhclientOptions(_key, _event)
       Ops.set(
         NetworkConfig.DHCP,
         "DHCLIENT_SET_DEFAULT_ROUTE",

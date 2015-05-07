@@ -123,9 +123,9 @@ describe "InstallInfConvertor" do
     describe "#create_ifcfg" do
       it "creates a valid ifcfg for netconfig" do
         expect(ifcfg = @install_inf_convertor.send(:create_ifcfg)).not_to be_empty
-        expect(ifcfg).to match /BOOTPROTO='dhcp4'/
-        expect(ifcfg).to match /STARTMODE='onboot'/
-        expect(ifcfg).to match /NAME='#{@netcardname}'/
+        expect(ifcfg).to include "BOOTPROTO='dhcp4'"
+        expect(ifcfg).to include "STARTMODE='onboot'"
+        expect(ifcfg).to include "NAME='#{@netcardname}'"
       end
     end
   end
@@ -164,8 +164,8 @@ describe "InstallInfConvertor" do
     describe "#create_ifcfg" do
       it "creates a valid ifcfg for netconfig" do
         expect(ifcfg = @install_inf_convertor.send(:create_ifcfg)).not_to be_empty
-        expect(ifcfg).to match /BOOTPROTO='static'/
-        expect(ifcfg).to match /IPADDR='#{@ip}\/#{Netmask.ToBits(@netmask)}'/
+        expect(ifcfg).to include "BOOTPROTO='static'"
+        expect(ifcfg).to include "IPADDR='#{@ip}\/#{Netmask.ToBits(@netmask)}'"
       end
     end
 
@@ -281,7 +281,7 @@ describe "InstallInfConvertor" do
         .with("OSAHWAddr")
         .and_return(HWADDR)
       expect(Yast::InstallInfConvertor.instance.send(:create_s390_ifcfg, nil).strip!)
-        .to eql ("LLADDR='#{HWADDR}'")
+        .to eql "LLADDR='#{HWADDR}'"
     end
   end
 end

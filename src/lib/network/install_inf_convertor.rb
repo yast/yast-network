@@ -55,11 +55,8 @@ module Yast
       when "static"
         # add broadcast interface #suse49131
         ifcfg << "BOOTPROTO='static'\n"
-        ifcfg << "IPADDR='%s/%s'\n" % [
-          InstallInf["IP"],
-          Netmask.ToBits(InstallInf["Netmask"])
-        ]
-        ifcfg << "BROADCAST='%s'\n" % InstallInf["Broadcast"]
+        ifcfg << "IPADDR='#{InstallInf["IP"]}/#{Netmask.ToBits(InstallInf["Netmask"])}'\n"
+        ifcfg << "BROADCAST='#{InstallInf["Broadcast"]}'\n"
 
         ip6_addr = InstallInf["IP6"]
         if !ip6_addr.empty?
@@ -280,7 +277,7 @@ module Yast
 
       ret = SCR.Execute(
         BASH_PATH,
-        "sed -i s/^WAIT_FOR_INTERFACES=.*/WAIT_FOR_INTERFACES=%s/g /etc/sysconfig/network/config" % connect_wait
+        "sed -i s/^WAIT_FOR_INTERFACES=.*/WAIT_FOR_INTERFACES=#{connect_wait}/g /etc/sysconfig/network/config"
       )
 
       ret == 0
@@ -317,28 +314,28 @@ module Yast
       ifcfg = "WIRELESS_ESSID='#{wlan_essid}'\n"
 
       case wlan_auth
-        when "", "psk"
-          ifcfg << "WIRELESS_WPA_PSK='#{wlan_key}'\n"
-          ifcfg << "WIRELESS_AUTH_MODE='psk'\n"
+      when "", "psk"
+        ifcfg << "WIRELESS_WPA_PSK='#{wlan_key}'\n"
+        ifcfg << "WIRELESS_AUTH_MODE='psk'\n"
 
-        when "open"
-          ifcfg << "WIRELESS_AUTH_MODE='no-encryption'\n"
+      when "open"
+        ifcfg << "WIRELESS_AUTH_MODE='no-encryption'\n"
 
-        when "wep_open", "wep_restricted"
-          if wlan_key_type == "password"
-            type = "h:"
-          elsif wlan_key_type == "ascii"
-            type = "s:"
-          else
-            type = wlan_key_type[0] + ":"
-          end
+      when "wep_open", "wep_restricted"
+        if wlan_key_type == "password"
+          type = "h:"
+        elsif wlan_key_type == "ascii"
+          type = "s:"
+        else
+          type = wlan_key_type[0] + ":"
+        end
 
-          auth_mode = wlan_auth == "wep-open" ? "open" : "sharedkey"
+        wlan_auth_mode = wlan_auth == "wep-open" ? "open" : "sharedkey"
 
-          ifcfg << "WIRELESS_AUTH_MODE='%s'\n" % wlan_auth_mode
-          ifcfg << "WIRELESS_DEFAULT_KEY='0'\n"
-          ifcfg << "WIRELESS_KEY_0='#{type}#{wlan_key}'\n"
-          ifcfg << "WIRELESS_KEY_LENGTH='#{wlan_key_len}'\n"
+        ifcfg << "WIRELESS_AUTH_MODE='#{wlan_auth_mode}'\n"
+        ifcfg << "WIRELESS_DEFAULT_KEY='0'\n"
+        ifcfg << "WIRELESS_KEY_0='#{type}#{wlan_key}'\n"
+        ifcfg << "WIRELESS_KEY_LENGTH='#{wlan_key_len}'\n"
       end
 
       ifcfg
@@ -382,7 +379,7 @@ module Yast
       return "" if hw_name.empty?
 
       # protect special characters, #305343
-      "NAME='%s'\n" % String.Quote(hw_name)
+      "NAME='#{String.Quote(hw_name)}'\n"
     end
 
     def write_ifcfg(ifcfg)
@@ -392,7 +389,7 @@ module Yast
 
       if !LanUdevAuto.AllowUdevModify
         # bnc#821427: use same options as in /lib/udev/rules.d/71-biosdevname.rules
-        cmd = "biosdevname --policy physical --smbios 2.6 --nopirq -i %s" % dev_name
+        cmd = "biosdevname --policy physical --smbios 2.6 --nopirq -i #{dev_name}"
         out = String.FirstChunk(stdout_of(cmd), "\n")
         if !out.empty?
           device_name = out

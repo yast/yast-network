@@ -119,11 +119,13 @@ module Yast
     def FirewallZonesComboBoxItems
       list_items = []
       protected_from_internal = SuSEFirewall.GetProtectFromInternalZone
-      nozone = IsOn() ?
-        # item in combo box Firewall Zone
-        _("Automatically Assigned Zone") :
-        # item in combo box Firewall Zone
-        _("Firewall Disabled")
+      nozone = if IsOn()
+                 # item in combo box Firewall Zone
+                 _("Automatically Assigned Zone")
+               else
+                 # item in combo box Firewall Zone
+                 _("Firewall Disabled")
+               end
       list_items = Builtins.add(list_items, ["", nozone])
 
       # Listing all known zones
@@ -132,11 +134,12 @@ module Yast
         # Informing user about Unprotected inetrnal zone
         zone_name = Ops.add(
           SuSEFirewall.GetZoneFullName(zone_shortname),
-          zone_shortname == "INT" && !protected_from_internal ?
+          if zone_shortname == "INT" && !protected_from_internal
             # TRANSLATORS: Part of combo box item -> "Internal Zone (Unprotected)"
-            " " +
-              _("(Unprotected)") :
+            " " + _("(Unprotected)")
+          else
             ""
+          end
         )
         list_items = Builtins.add(list_items, [zone_shortname, zone_name])
       end
@@ -299,10 +302,11 @@ module Yast
 
       # bnc#887688 Needed for AutoYast export functionality at the end
       # of installation (clone_finish)
-      enabled ?
+      if enabled
         ServicesProposal.enable_service("sshd")
-        :
+      else
         ServicesProposal.disable_service("sshd")
+      end
 
       nil
     end

@@ -120,9 +120,9 @@ module Yast
     # the method
     describe ".SetSecurityTpe" do
       let(:result) { Remote.SetSecurityType(server_args, sec_type) }
-      let(:default_xvnc_args) {
+      let(:default_xvnc_args) do
         "-noreset -inetd -once -query localhost -geometry 1024x768 -depth 16"
-      }
+      end
 
       context "with invalid sec_type parameter" do
         let(:sec_type) { "INVALID" }

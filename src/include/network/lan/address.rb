@@ -335,9 +335,7 @@ module Yast
             )
           ),
           "help"              => Ops.add(
-            @force_static_ip ?
-              Ops.get_string(@help, "force_static_ip", "") :
-              Ops.get_string(@help, "bootproto", ""),
+            @help[@force_static_ip ? "force_static_ip" : "bootproto"] || "",
             Ops.get_string(@help, "netmask", "")
           ),
           "init"              => fun_ref(
@@ -413,9 +411,9 @@ module Yast
     # Debug messages configurable at runtime
     # @param [String] class debug class
     # @param [String] msg message to log
-    def my2debug(_class, msg)
-      if SCR.Read(path(".target.size"), Ops.add("/tmp/my2debug/", _class)) != -1
-        Builtins.y2internal(Ops.add(Ops.add(_class, ": "), msg))
+    def my2debug(class_, msg)
+      if SCR.Read(path(".target.size"), Ops.add("/tmp/my2debug/", class_)) != -1
+        Builtins.y2internal(Ops.add(Ops.add(class_, ": "), msg))
       end
 
       nil
@@ -453,8 +451,7 @@ module Yast
     # Default function to store the value of devices attached to bridge (BRIDGE_PORTS).
     # @param [String] key	id of the widget
     # @param [String] key id of the widget
-    def StoreBridge(key, event)
-      event = deep_copy(event)
+    def StoreBridge(key, _event)
       Ops.set(
         @settings,
         "BRIDGE_PORTS",
@@ -544,8 +541,7 @@ module Yast
       nil
     end
 
-    def HandleVLANSlave(_key, event)
-      event = deep_copy(event)
+    def HandleVLANSlave(_key, _event)
       # formerly tried to edit ifcfg name. bad idea, surrounding code not ready
       nil
     end
@@ -553,8 +549,7 @@ module Yast
     # Default function to store the value of ETHERDEVICE devices box.
     # @param [String] key	id of the widget
     # @param [String] key id of the widget
-    def StoreVLANSlave(_key, event)
-      event = deep_copy(event)
+    def StoreVLANSlave(_key, _event)
       Ops.set(
         @settings,
         "ETHERDEVICE",
@@ -666,42 +661,42 @@ module Yast
         new_items = []
         pos = 0
         case Ops.get_symbol(event, "ID", :nil)
-          when :up
-            while Ops.greater_than(index, Ops.add(pos, 1))
-              new_items = Builtins.add(new_items, Ops.get(items, pos))
-              pos = Ops.add(pos, 1)
-            end
-            new_items = Builtins.add(new_items, Ops.get(items, index))
-            new_items = Builtins.add(
+        when :up
+          while Ops.greater_than(index, Ops.add(pos, 1))
+            new_items = Builtins.add(new_items, Ops.get(items, pos))
+            pos = Ops.add(pos, 1)
+          end
+          new_items = Builtins.add(new_items, Ops.get(items, index))
+          new_items = Builtins.add(
+            new_items,
+            Ops.get(items, Ops.subtract(index, 1))
+          )
+          new_items = Convert.convert(
+            Builtins.union(new_items, Builtins.sublist(items, index)),
+            from: "list",
+            to:   "list <term>"
+          )
+        when :down
+          while Ops.greater_than(index, pos)
+            new_items = Builtins.add(new_items, Ops.get(items, pos))
+            pos = Ops.add(pos, 1)
+          end
+          new_items = Builtins.add(
+            new_items,
+            Ops.get(items, Ops.add(index, 1))
+          )
+          new_items = Builtins.add(new_items, Ops.get(items, index))
+          new_items = Convert.convert(
+            Builtins.union(
               new_items,
-              Ops.get(items, Ops.subtract(index, 1))
-            )
-            new_items = Convert.convert(
-              Builtins.union(new_items, Builtins.sublist(items, index)),
-              from: "list",
-              to:   "list <term>"
-            )
-          when :down
-            while Ops.greater_than(index, pos)
-              new_items = Builtins.add(new_items, Ops.get(items, pos))
-              pos = Ops.add(pos, 1)
-            end
-            new_items = Builtins.add(
-              new_items,
-              Ops.get(items, Ops.add(index, 1))
-            )
-            new_items = Builtins.add(new_items, Ops.get(items, index))
-            new_items = Convert.convert(
-              Builtins.union(
-                new_items,
-                Builtins.sublist(items, Ops.add(index, 1))
-              ),
-              from: "list",
-              to:   "list <term>"
-            )
-          else
-            Builtins.y2warning("unknown action")
-            return nil
+              Builtins.sublist(items, Ops.add(index, 1))
+            ),
+            from: "list",
+            to:   "list <term>"
+          )
+        else
+          Builtins.y2warning("unknown action")
+          return nil
         end
         items = deep_copy(new_items)
         UI.ChangeWidget(:msbox_items, :Items, items)
@@ -716,8 +711,7 @@ module Yast
     # Default function to store the value of slave devices box.
     # @param [String] key	id of the widget
     # @param [String] key id of the widget
-    def StoreSlave(_key, event)
-      event = deep_copy(event)
+    def StoreSlave(_key, _event)
       configured_slaves = Ops.get_list(@settings, "SLAVES", [])
 
       Ops.set(
@@ -764,8 +758,7 @@ module Yast
       nil
     end
 
-    def storeTunnel(_key, event)
-      event = deep_copy(event)
+    def storeTunnel(_key, _event)
       Ops.set(
         @settings,
         "TUNNEL_SET_OWNER",
@@ -811,57 +804,57 @@ module Yast
       end
 
       case Ops.get_string(@settings, "BOOTPROTO", "")
-        when "static"
-          UI.ChangeWidget(Id(:bootproto), :CurrentButton, :static)
-          UI.ChangeWidget(
-            Id(:ipaddr),
-            :Value,
-            Ops.get_string(@settings, "IPADDR", "")
+      when "static"
+        UI.ChangeWidget(Id(:bootproto), :CurrentButton, :static)
+        UI.ChangeWidget(
+          Id(:ipaddr),
+          :Value,
+          Ops.get_string(@settings, "IPADDR", "")
+        )
+        if Ops.greater_than(
+          Builtins.size(Ops.get_string(@settings, "PREFIXLEN", "")),
+          0
           )
-          if Ops.greater_than(
-            Builtins.size(Ops.get_string(@settings, "PREFIXLEN", "")),
-            0
-            )
-            UI.ChangeWidget(
-              Id(:netmask),
-              :Value,
-              Builtins.sformat(
-                "/%1",
-                Ops.get_string(@settings, "PREFIXLEN", "")
-              )
-            )
-          else
-            UI.ChangeWidget(
-              Id(:netmask),
-              :Value,
-              Ops.get_string(@settings, "NETMASK", "")
-            )
-          end
           UI.ChangeWidget(
-            Id(:hostname),
+            Id(:netmask),
             :Value,
-            Ops.get_string(@settings, "HOSTNAME", "")
+            Builtins.sformat(
+              "/%1",
+              Ops.get_string(@settings, "PREFIXLEN", "")
+            )
           )
-        when "dhcp"
-          UI.ChangeWidget(Id(:bootproto), :CurrentButton, :dynamic)
-          UI.ChangeWidget(Id(:dhcp_mode), :Value, :dhcp_both)
-        when "dhcp4"
-          UI.ChangeWidget(Id(:bootproto), :CurrentButton, :dynamic)
-          UI.ChangeWidget(Id(:dhcp_mode), :Value, :dhcp_v4)
-        when "dhcp6"
-          UI.ChangeWidget(Id(:bootproto), :CurrentButton, :dynamic)
-          UI.ChangeWidget(Id(:dhcp_mode), :Value, :dhcp_v6)
-        when "dhcp+autoip"
-          UI.ChangeWidget(Id(:bootproto), :CurrentButton, :dynamic)
-          UI.ChangeWidget(Id(:dyn), :Value, :dhcp_auto)
-        when "autoip"
-          UI.ChangeWidget(Id(:bootproto), :CurrentButton, :dynamic)
-          UI.ChangeWidget(Id(:dyn), :Value, :auto)
-        when "none"
-          UI.ChangeWidget(Id(:bootproto), :CurrentButton, :none)
-        when "ibft"
-          UI.ChangeWidget(Id(:bootproto), :CurrentButton, :none)
-          UI.ChangeWidget(Id(:ibft), :Value, true)
+        else
+          UI.ChangeWidget(
+            Id(:netmask),
+            :Value,
+            Ops.get_string(@settings, "NETMASK", "")
+          )
+        end
+        UI.ChangeWidget(
+          Id(:hostname),
+          :Value,
+          Ops.get_string(@settings, "HOSTNAME", "")
+        )
+      when "dhcp"
+        UI.ChangeWidget(Id(:bootproto), :CurrentButton, :dynamic)
+        UI.ChangeWidget(Id(:dhcp_mode), :Value, :dhcp_both)
+      when "dhcp4"
+        UI.ChangeWidget(Id(:bootproto), :CurrentButton, :dynamic)
+        UI.ChangeWidget(Id(:dhcp_mode), :Value, :dhcp_v4)
+      when "dhcp6"
+        UI.ChangeWidget(Id(:bootproto), :CurrentButton, :dynamic)
+        UI.ChangeWidget(Id(:dhcp_mode), :Value, :dhcp_v6)
+      when "dhcp+autoip"
+        UI.ChangeWidget(Id(:bootproto), :CurrentButton, :dynamic)
+        UI.ChangeWidget(Id(:dyn), :Value, :dhcp_auto)
+      when "autoip"
+        UI.ChangeWidget(Id(:bootproto), :CurrentButton, :dynamic)
+        UI.ChangeWidget(Id(:dyn), :Value, :auto)
+      when "none"
+        UI.ChangeWidget(Id(:bootproto), :CurrentButton, :none)
+      when "ibft"
+        UI.ChangeWidget(Id(:bootproto), :CurrentButton, :none)
+        UI.ChangeWidget(Id(:ibft), :Value, true)
       end
 
       enableDisableBootProto(
@@ -898,60 +891,59 @@ module Yast
     # Group called FOO has buttons FOO_bar FOO_qux and values bar qux
     # @param [String] key	id of the widget
     # @param [Hash] event	the event being handled
-    def storeBootProto(_key, event)
-      event = deep_copy(event)
+    def storeBootProto(_key, _event)
       case Convert.to_symbol(UI.QueryWidget(Id(:bootproto), :CurrentButton))
-        when :none
-          @bootproto = "none"
-          if UI.WidgetExists(Id(:ibft))
-            @bootproto = Convert.to_boolean(UI.QueryWidget(Id(:ibft), :Value)) ? "ibft" : "none"
-          end
-          Ops.set(@settings, "BOOTPROTO", @bootproto)
-          Ops.set(@settings, "IPADDR", "")
-          Ops.set(@settings, "NETMASK", "")
-          Ops.set(@settings, "PREFIXLEN", "")
-        when :static
-          Ops.set(@settings, "BOOTPROTO", "static")
-          Ops.set(@settings, "NETMASK", "")
-          Ops.set(@settings, "PREFIXLEN", "")
-          Ops.set(
-            @settings,
-            "IPADDR",
-            Convert.to_string(UI.QueryWidget(:ipaddr, :Value))
-          )
-          @mask = Convert.to_string(UI.QueryWidget(:netmask, :Value))
-          if Builtins.substring(@mask, 0, 1) == "/"
-            Ops.set(@settings, "PREFIXLEN", Builtins.substring(@mask, 1))
-          else
-            if Netmask.Check6(@mask)
-              Ops.set(@settings, "PREFIXLEN", @mask)
-            else
-              Ops.set(@settings, "NETMASK", @mask)
-            end
-          end
-          Ops.set(
-            @settings,
-            "HOSTNAME",
-            Convert.to_string(UI.QueryWidget(:hostname, :Value))
-          )
+      when :none
+        @bootproto = "none"
+        if UI.WidgetExists(Id(:ibft))
+          @bootproto = Convert.to_boolean(UI.QueryWidget(Id(:ibft), :Value)) ? "ibft" : "none"
+        end
+        Ops.set(@settings, "BOOTPROTO", @bootproto)
+        Ops.set(@settings, "IPADDR", "")
+        Ops.set(@settings, "NETMASK", "")
+        Ops.set(@settings, "PREFIXLEN", "")
+      when :static
+        Ops.set(@settings, "BOOTPROTO", "static")
+        Ops.set(@settings, "NETMASK", "")
+        Ops.set(@settings, "PREFIXLEN", "")
+        Ops.set(
+          @settings,
+          "IPADDR",
+          Convert.to_string(UI.QueryWidget(:ipaddr, :Value))
+        )
+        @mask = Convert.to_string(UI.QueryWidget(:netmask, :Value))
+        if Builtins.substring(@mask, 0, 1) == "/"
+          Ops.set(@settings, "PREFIXLEN", Builtins.substring(@mask, 1))
         else
-          case Convert.to_symbol(UI.QueryWidget(:dyn, :Value))
-            when :dhcp
-              case Convert.to_symbol(UI.QueryWidget(:dhcp_mode, :Value))
-                when :dhcp_both
-                  Ops.set(@settings, "BOOTPROTO", "dhcp")
-                when :dhcp_v4
-                  Ops.set(@settings, "BOOTPROTO", "dhcp4")
-                when :dhcp_v6
-                  Ops.set(@settings, "BOOTPROTO", "dhcp6")
-              end
-            when :dhcp_auto
-              Ops.set(@settings, "BOOTPROTO", "dhcp+autoip")
-            when :auto
-              Ops.set(@settings, "BOOTPROTO", "autoip")
+          if Netmask.Check6(@mask)
+            Ops.set(@settings, "PREFIXLEN", @mask)
+          else
+            Ops.set(@settings, "NETMASK", @mask)
           end
-          Ops.set(@settings, "IPADDR", "")
-          Ops.set(@settings, "NETMASK", "")
+        end
+        Ops.set(
+          @settings,
+          "HOSTNAME",
+          Convert.to_string(UI.QueryWidget(:hostname, :Value))
+        )
+      else
+        case Convert.to_symbol(UI.QueryWidget(:dyn, :Value))
+        when :dhcp
+          case Convert.to_symbol(UI.QueryWidget(:dhcp_mode, :Value))
+          when :dhcp_both
+            Ops.set(@settings, "BOOTPROTO", "dhcp")
+          when :dhcp_v4
+            Ops.set(@settings, "BOOTPROTO", "dhcp4")
+          when :dhcp_v6
+            Ops.set(@settings, "BOOTPROTO", "dhcp6")
+          end
+        when :dhcp_auto
+          Ops.set(@settings, "BOOTPROTO", "dhcp+autoip")
+        when :auto
+          Ops.set(@settings, "BOOTPROTO", "autoip")
+        end
+        Ops.set(@settings, "IPADDR", "")
+        Ops.set(@settings, "NETMASK", "")
       end
 
       nil
@@ -1003,9 +995,8 @@ module Yast
     # @param [String] key	the widget being validated
     # @param [Hash] event	the event being handled
     # @return whether valid
-    def ValidateNetmask(key, event)
-      event = deep_copy(event)
-      # TODO general CWM improvement idea: validate and save only nondisabled
+    def ValidateNetmask(key, _event)
+      # TODO: general CWM improvement idea: validate and save only nondisabled
       # widgets
       if UI.QueryWidget(:bootproto, :CurrentButton) == :static
         ipa = Convert.to_string(UI.QueryWidget(Id(key), :Value))
@@ -1018,8 +1009,7 @@ module Yast
     # @param [String] key	the widget being validated
     # @param [Hash] event	the event being handled
     # @return whether valid
-    def ValidateIfcfgType(key, event)
-      event = deep_copy(event)
+    def ValidateIfcfgType(key, _event)
       if LanItems.operation == :add
         ifcfgtype = Convert.to_string(UI.QueryWidget(Id(key), :Value))
 
@@ -1195,8 +1185,7 @@ module Yast
               1,
               0,
               VBox(
-                # TODO:
-                # "MANDATORY",
+                # TODO: "MANDATORY",
                 Frame(
                   _("Device Activation"),
                   HBox("STARTMODE", "IFPLUGD_PRIORITY", HStretch())
@@ -1215,7 +1204,7 @@ module Yast
             )
           )
         ),
-        # FIXME we have helps per widget and for the whole
+        # FIXME: we have helps per widget and for the whole
         # tab set but not for one tab
         "help"     => _(
           "<p>Configure the detailed network card settings here.</p>"
@@ -1243,16 +1232,20 @@ module Yast
         VBox(
           "IPADDR",
           "NETMASK",
-          # TODO new widget, add logic
+          # TODO: new widget, add logic
           # "GATEWAY"
           Empty()
         )
       )
 
       address_dhcp_contents = VBox("BOOTPROTO")
-      just_address_contents = is_ptp ?
-        address_p2p_contents :
-        no_dhcp ? address_static_contents : address_dhcp_contents
+      just_address_contents = if is_ptp
+                                address_p2p_contents
+                              elsif no_dhcp
+                                address_static_contents
+                              else
+                                address_dhcp_contents
+                              end
 
       label = HBox(
         HSpacing(0.5),
@@ -1260,9 +1253,7 @@ module Yast
         # interface types. It will work in some cases, like
         # overriding eth to wlan but not in others where we would
         # need to change the contents of the dialog. #30890.
-        type != "vlan" ?
-          "IFCFGTYPE" :
-          Empty(),
+        type != "vlan" ? "IFCFGTYPE" : Empty(),
         HSpacing(1.5),
         MinWidth(30, "IFCFGID"),
         HSpacing(0.5),
@@ -1484,16 +1475,16 @@ module Yast
         "widget_descr"       => wd,
         "contents"           => HBox("tab"),
         # Address dialog caption
-        "caption"            => _(
-          "Network Card Setup"
-),
+        "caption"            => _("Network Card Setup"),
         "back_button"        => Label.BackButton,
         "abort_button"       => Label.CancelButton,
         "next_button"        => Label.NextButton,
         "fallback_functions" => functions,
-        "disable_buttons"    => LanItems.operation != :add ?
-  ["back_button"] :
-  []
+        "disable_buttons"    => if LanItems.operation != :add
+                                  ["back_button"]
+                                else
+                                  []
+                                end
       )
       Wizard.RestoreAbortButton
 

@@ -154,9 +154,7 @@ module Yast
       # Finish
       Builtins.y2milestone("Routing module finished")
       Builtins.y2milestone("----------------------------------------")
-      deep_copy(@ret) 
-
-      # EOF
+      deep_copy(@ret)
     end
 
     # Return a modification status
@@ -219,8 +217,7 @@ module Yast
     end
     # Handler for action "list"
     # @param [Hash{String => String}] options action options
-    def ListHandler(options)
-      options = deep_copy(options)
+    def ListHandler(_options)
       CommandLine.Print(PrintableRoutingTable(Routing.Routes))
       CommandLine.Print("")
 
@@ -258,7 +255,7 @@ module Yast
 
       return false unless forward_ivar
 
-      if Ops.get(options, "show") != nil
+      if !Ops.get(options, "show").nil?
         if Routing.instance_variable_get(forward_ivar)
           # translators: %s is "IPv4" or "IPv6"
           CommandLine.Print(_("%s forwarding is enabled") % protocol)
@@ -266,11 +263,11 @@ module Yast
           # translators: %s is "IPv4" or "IPv6"
           CommandLine.Print(_("%s forwarding is disabled") % protocol)
         end
-      elsif Ops.get(options, "on") != nil
+      elsif !Ops.get(options, "on").nil?
         # translators: %s is "IPv4" or "IPv6"
         CommandLine.Print(_("Enabling %s forwarding...") % protocol)
         Routing.instance_variable_set(forward_ivar, true)
-      elsif Ops.get(options, "off") != nil
+      elsif !Ops.get(options, "off").nil?
         # translators: %s is "IPv4" or "IPv6"
         CommandLine.Print(_("Disabling %s forwarding...") % protocol)
         Routing.instance_variable_set(forward_ivar, false)

@@ -253,9 +253,7 @@ module Yast
         fqhostname = read_hostname_from_install_inf
       end
 
-      if fqhostname.empty?
-        fqhostname = read_hostname_from_etc
-      end
+      fqhostname = read_hostname_from_etc if fqhostname.empty?
 
       split = Hostname.SplitFQ(fqhostname)
       @hostname = split[0] || ""

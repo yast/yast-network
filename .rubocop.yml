@@ -38,11 +38,46 @@ Metrics/ParameterLists:
 Metrics/PerceivedComplexity:
   Max: 59
 
-# Offense count: 1
-Style/AccessorMethodName:
+# Offense count: 436
+# Configuration parameters: EnforcedStyle, SupportedStyles.
+Style/MethodName:
+  Enabled: false
+
+# Offense count: 94
+Style/Documentation:
   Enabled: false
 
 # Offense count: 436
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 Style/MethodName:
   Enabled: false
+
+# Offense count: 97
+# Configuration parameters: EnforcedStyle, SupportedStyles.
+Style/VariableName:
+  Enabled: false
+
+# Offense count: 1
+Style/ClassVars:
+  Enabled: false
+
+# Offense count: 20
+# Configuration parameters: Exclude.
+Style/FileName:
+  Enabled: false
+
+# Offense count: 1
+# Configuration parameters: NamePrefix, NamePrefixBlacklist.
+Style/PredicateName:
+  Enabled: false
+
+# Offense count: 1
+Style/AccessorMethodName:
+  Enabled: false
+
+# Offense count: 7
+# Cop supports --auto-correct.
+# Configuration parameters: ExactNameMatch, AllowPredicates, AllowDSLWriters, Whitelist.
+Style/TrivialAccessors:
+  Enabled: false
+

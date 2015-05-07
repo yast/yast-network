@@ -719,28 +719,6 @@ module Yast
             "be disconnected from AC power.</p>\n"
         )
 
-      helpunused =
-        # Wireless expert dialog help 2b/5
-        _(
-          "<p>To specify the <b>Frequency</b> instead of\nthe channel, select the desired value.</p>\n"
-        )
-
-      # Combobox label
-      freq = ComboBox(
-        Id(:frequency),
-        Opt(:hstretch),
-        _("&Frequency"),
-        [
-          # Combobox item
-          Item(Id("Automatic"), _("Automatic"), LanItems.wl_frequency == ""),
-          Item(
-            Id("Automatic"),
-            "FIXME: ASK jg@suse.de",
-            LanItems.wl_frequency != ""
-          )
-        ]
-      )
-
       channels = [
         "1",
         "2",
@@ -1104,9 +1082,11 @@ module Yast
           Ops.set(
             keys,
             current,
-            ret != :delete ?
-              WirelessKeyPopup(Ops.get(keys, current, ""), [rlength]) :
+            if ret != :delete
+              WirelessKeyPopup(Ops.get(keys, current, ""), [rlength])
+            else
               ""
+            end
           )
           defaultk = FindGoodDefault(keys, defaultk)
           UI.ChangeWidget(Id(:table), :Items, WirelessKeysItems(keys, defaultk))
@@ -1163,9 +1143,7 @@ module Yast
     # @param [String] key	the widget receiving the event
     # @param [Hash] event	the event being handled
     # @return nil so that the dialog loops on
-    def HandleEapMode(key, event)
-      event = deep_copy(event)
-      #    my2debug ("HSI", sformat ("k: %1 e: %2", key, event));
+    def HandleEapMode(key, _event)
       tls = UI.QueryWidget(Id(key), :Value) == "TLS"
       Builtins.foreach(["WPA_EAP_PASSWORD", "WPA_EAP_ANONID", "DETAILS_B"]) do |id|
         UI.ChangeWidget(Id(id), :Enabled, !tls)
@@ -1252,8 +1230,7 @@ module Yast
     # @param [String] key widget id
     # @param [Hash] event ?
     # @return ok?
-    def ValidateFileExists(key, event)
-      event = deep_copy(event)
+    def ValidateFileExists(key, _event)
       file = Convert.to_string(UI.QueryWidget(Id(key), :Value))
 
       if file == ""
@@ -1289,8 +1266,7 @@ module Yast
     # @param [String] key widget id
     # @param [Hash] event ?
     # @return ok?
-    def ValidateWpaEap(_key, event)
-      event = deep_copy(event)
+    def ValidateWpaEap(_key, _event)
       tmp = Builtins.listmap(
         [
           "WPA_EAP_IDENTITY",

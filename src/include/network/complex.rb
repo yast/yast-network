@@ -49,18 +49,18 @@ module Yast
     # The code is mostly moved from BuildSummaryDevs
     # Take the NAME field from ifcfg
     # If empty, identify the hardware and use its data
-    def BuildDescription(devtype, devnum, devmap, _Hardware)
+    def BuildDescription(devtype, devnum, devmap, hardware)
       descr = devmap["NAME"] || ""
       return descr if descr != ""
-      descr = HardwareName(_Hardware, devnum)
+      descr = HardwareName(hardware, devnum)
       return descr if descr != ""
-      descr = HardwareName(_Hardware, devmap["UNIQUE"] || "")
+      descr = HardwareName(hardware, devmap["UNIQUE"] || "")
       return descr if descr != ""
 
       CheckEmptyName(devtype, descr)
     end
 
-    # TODO move to HTML.ycp
+    # TODO: move to HTML.ycp
     def Hyperlink(href, text)
       Builtins.sformat("<a href=\"%1\">%2</a>", href, text)
     end
@@ -69,11 +69,11 @@ module Yast
     # @param [Boolean] split split configured and unconfigured?
     # @param [Boolean] link  add a link to configure the device (only if !split)
     # @return [ configured, unconfigured ] if split, [ summary, links ] otherwise
-    def BuildSummaryDevs(_Devs, _Hardware, split, link)
-      _Devs = deep_copy(_Devs)
-      _Hardware = deep_copy(_Hardware)
-      Builtins.y2milestone("Devs=%1", NetworkInterfaces.ConcealSecrets(_Devs))
-      Builtins.y2milestone("Hardware=%1", _Hardware)
+    def BuildSummaryDevs(devs, hardware, split, link)
+      devs = deep_copy(devs)
+      hardware = deep_copy(hardware)
+      Builtins.y2milestone("Devs=%1", NetworkInterfaces.ConcealSecrets(devs))
+      Builtins.y2milestone("Hardware=%1", hardware)
       Builtins.y2debug("split=%1", split)
 
       uniques = []
@@ -83,12 +83,12 @@ module Yast
       links = []
 
       # build a list of configured devices
-      Builtins.maplist(_Devs) do |devtype, devsmap|
+      Builtins.maplist(devs) do |devtype, devsmap|
         Builtins.maplist(
           Convert.convert(devsmap, from: "map", to: "map <string, map>")
         ) do |devname, devmap|
           # main device summary
-          descr = BuildDescription(devtype, devname, devmap, _Hardware)
+          descr = BuildDescription(devtype, devname, devmap, hardware)
           unq = Ops.get_string(devmap, "UNIQUE", "")
           status = DeviceStatus(devtype, devname, devmap)
           if link
@@ -130,7 +130,7 @@ module Yast
 
       # build a list of unconfigured devices
       id = 0
-      Builtins.maplist(_Hardware) do |h|
+      Builtins.maplist(hardware) do |h|
         unq = Ops.get_string(h, "unique", "")
         busid = Ops.add(
           Ops.add(Ops.add("bus-", Ops.get_string(h, "bus", "")), "-"),
@@ -176,10 +176,7 @@ module Yast
         summary = Summary.AddHeader("", _("Nothing is configured"))
       end
 
-      # create a table of unconfigured devices
-      selected = Ops.get_integer(unconfigured, [0, "num"], -1)
-
-      # FIXME OtherDevices(devs, type);
+      # FIXME: OtherDevices(devs, type);
 
       Builtins.y2debug("summary=%1", summary)
 
@@ -190,10 +187,10 @@ module Yast
     # @param [Boolean] split split configured and unconfigured?
     # @param [Boolean] link  add a link to configure the device (only if !split)
     # @return [ configured, unconfigured ] if split, [ summary, links ] otherwise
-    def BuildSummary(devregex, _Hardware, split, link)
-      _Hardware = deep_copy(_Hardware)
-      _Devs = NetworkInterfaces.FilterDevices(devregex)
-      ret = BuildSummaryDevs(_Devs, _Hardware, split, link)
+    def BuildSummary(devregex, hardware, split, link)
+      hardware = deep_copy(hardware)
+      devs = NetworkInterfaces.FilterDevices(devregex)
+      ret = BuildSummaryDevs(devs, hardware, split, link)
       deep_copy(ret)
     end
 
@@ -260,12 +257,12 @@ module Yast
       _("Unknown Network Device")
     end
 
-    def HardwareName(_Hardware, id)
+    def HardwareName(hardware, id)
       return "" if id.nil? || id.empty?
-      return "" if _Hardware.nil? || _Hardware.empty?
+      return "" if hardware.nil? || hardware.empty?
 
       # filter out a list of hwinfos which correspond to the given id
-      res_list = _Hardware.select do |h|
+      res_list = hardware.select do |h|
         have = [
           "id-" + (h["mac"] || ""),
           "bus-" + (h["bus"] || "") + "-" + (h["busid"] || ""),

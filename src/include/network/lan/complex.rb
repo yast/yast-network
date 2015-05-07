@@ -378,9 +378,50 @@ module Yast
 
       if Ops.get_string(event, "EventReason", "") == "Activated"
         case Ops.get_symbol(event, "ID")
-          when :add
-            LanItems.AddNew
-            Lan.Add
+        when :add
+          LanItems.AddNew
+          Lan.Add
+
+          # FIXME: This is for backward compatibility only
+          # dhclient needs to set just one dhcp enabled interface to
+          # DHCLIENT_SET_DEFAULT_ROUTE=yes. Otherwise interface is selected more
+          # or less randomly (bnc#868187). However, UI is not ready for such change yet.
+          # As it could easily happen that all interfaces are set to "no" (and
+          # default route is unrecheable in such case) this explicite setup was
+          # added.
+          LanItems.set_default_route = true
+
+          return :add
+        when :edit
+          if LanItems.IsCurrentConfigured
+            LanItems.SetItem
+
+            if LanItems.startmode == "managed"
+              # Continue-Cancel popup
+              if !Popup.ContinueCancel(
+                _(
+                  "The interface is currently set to be managed\n" \
+                    "by the NetworkManager applet.\n" \
+                    "\n" \
+                    "If you edit the settings for this interface here,\n" \
+                    "the interface will no longer be managed by NetworkManager.\n"
+                )
+                )
+                # y2r: cannot break from middle of switch
+                # but in this function return will do
+                return nil # means cancel
+              end
+
+              # TODO: move the defaults to GetDefaultsForHW
+              LanItems.startmode = "ifplugd"
+            end
+          else
+            if !AddInterface()
+              Builtins.y2error("handleOverview: AddInterface failed.")
+              # y2r: cannot break from middle of switch
+              # but in this function return will do
+              return nil
+            end
 
             # FIXME: This is for backward compatibility only
             # dhclient needs to set just one dhcp enabled interface to
@@ -391,78 +432,37 @@ module Yast
             # added.
             LanItems.set_default_route = true
 
-            return :add
-          when :edit
-            if LanItems.IsCurrentConfigured
-              LanItems.SetItem
-
-              if LanItems.startmode == "managed"
-                # Continue-Cancel popup
-                if !Popup.ContinueCancel(
-                  _(
-                    "The interface is currently set to be managed\n" \
-                      "by the NetworkManager applet.\n" \
-                      "\n" \
-                      "If you edit the settings for this interface here,\n" \
-                      "the interface will no longer be managed by NetworkManager.\n"
-                  )
-                  )
-                  # y2r: cannot break from middle of switch
-                  # but in this function return will do
-                  return nil # means cancel
-                end
-
-                # TODO move the defaults to GetDefaultsForHW
-                LanItems.startmode = "ifplugd"
-              end
-            else
-              if !AddInterface()
-                Builtins.y2error("handleOverview: AddInterface failed.")
-                # y2r: cannot break from middle of switch
-                # but in this function return will do
-                return nil
-              end
-
-              # FIXME: This is for backward compatibility only
-              # dhclient needs to set just one dhcp enabled interface to
-              # DHCLIENT_SET_DEFAULT_ROUTE=yes. Otherwise interface is selected more
-              # or less randomly (bnc#868187). However, UI is not ready for such change yet.
-              # As it could easily happen that all interfaces are set to "no" (and
-              # default route is unrecheable in such case) this explicite setup was
-              # added.
-              LanItems.set_default_route = true
-
-              if !DeviceReady(
-                Ops.get_string(
-                  LanItems.getCurrentItem,
-                  ["hwinfo", "dev_name"],
-                  ""
-                )
-                )
-                return :init_s390
-              end
+            if !DeviceReady(
+              Ops.get_string(
+                LanItems.getCurrentItem,
+                ["hwinfo", "dev_name"],
+                ""
+              )
+              )
+              return :init_s390
             end
+          end
 
-            return :edit
-          when :delete
+          return :edit
+        when :delete
 
-            # warn user when device to delete has STARTMODE=nfsroot (bnc#433867)
-            if NetworkInterfaces.GetValue(
-              Ops.get_string(LanItems.getCurrentItem, "ifcfg", ""),
-              "STARTMODE"
-              ) == "nfsroot"
-              if !Popup.YesNoHeadline(
-                Label.WarningMsg,
-                _("Device you select has STARTMODE=nfsroot. Really delete?")
-                )
-                # y2r: cannot break from middle of switch
-                # but in this function return will do
-                return nil
-              end
+          # warn user when device to delete has STARTMODE=nfsroot (bnc#433867)
+          if NetworkInterfaces.GetValue(
+            Ops.get_string(LanItems.getCurrentItem, "ifcfg", ""),
+            "STARTMODE"
+            ) == "nfsroot"
+            if !Popup.YesNoHeadline(
+              Label.WarningMsg,
+              _("Device you select has STARTMODE=nfsroot. Really delete?")
+              )
+              # y2r: cannot break from middle of switch
+              # but in this function return will do
+              return nil
             end
+          end
 
-            LanItems.DeleteItem
-            initOverview("")
+          LanItems.DeleteItem
+          initOverview("")
         end
       end
       if Builtins.size(LanItems.Items) == 0
@@ -476,10 +476,6 @@ module Yast
     end
 
     def ManagedDialog
-      widget_descr = Builtins.union(
-        Ops.get(@wd, "MANAGED", {}),
-        Ops.get(@wd, "IPV6", {})
-      )
       contents = VBox(HSquash(VBox("MANAGED", VSpacing(0.5), "IPV6")))
 
       functions = { abort: fun_ref(method(:ReallyAbort), "boolean ()") }
@@ -523,9 +519,11 @@ module Yast
       caption = _("Network Settings")
       widget_descr = {
         "tab" => CWMTab.CreateWidget(
-          "tab_order"    => Stage.normal ?
-  ["global", "overview", "resolv", "route"] :
-  ["overview", "resolv", "route"],
+          "tab_order"    => if Stage.normal
+                              ["global", "overview", "resolv", "route"]
+                            else
+                              ["overview", "resolv", "route"]
+                            end,
           "tabs"         => @tabs_descr,
           "widget_descr" => @wd,
           "initial_tab"  => Stage.normal ? init_tab : "overview",
@@ -562,9 +560,11 @@ module Yast
         Wizard.HideBackButton
       end
 
-      begin
+      ret = nil
+      loop do
         ret = CWM.Run(w, {})
-      end while !input_done?(ret)
+        break if input_done?(ret)
+      end
 
       ret
     end

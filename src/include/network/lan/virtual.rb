@@ -95,39 +95,38 @@ module Yast
 
       if Ops.get_string(event, "EventReason", "") == "Activated"
         cur = Convert.to_integer(UI.QueryWidget(Id(:table), :CurrentItem))
-        cur_item = Builtins.filter(table_items) { |e| cur == Ops.get(e, [0, 0]) }
         case Ops.get_symbol(event, "ID", :nil)
-          when :edit
-            @item = VirtualEditDialog(cur, Ops.get(table_items, cur), [])
-            if !@item.nil?
-              Ops.set(table_items, cur, @item)
-              UI.ChangeWidget(Id(:table), :Items, table_items)
-              UI.ChangeWidget(Id(:table), :CurrentItem, cur)
-            end
-          when :add
-            @forbidden = Builtins.maplist(table_items) do |e|
-              Ops.get_string(e, 1, "")
-            end
-            @item2 = VirtualEditDialog(
-              Builtins.size(table_items),
-              term(:empty),
-              @forbidden
-            )
-            Builtins.y2debug("item=%1", @item2)
-            if !@item2.nil?
-              table_items = Builtins.add(table_items, @item2)
-              UI.ChangeWidget(Id(:table), :Items, table_items)
-              UI.ChangeWidget(
-                Id(:table),
-                :CurrentItem,
-                Builtins.size(table_items)
-              )
-            end
-          when :delete
-            table_items = Builtins.filter(table_items) do |e|
-              cur != Ops.get(e, [0, 0])
-            end
+        when :edit
+          @item = VirtualEditDialog(cur, Ops.get(table_items, cur), [])
+          if !@item.nil?
+            Ops.set(table_items, cur, @item)
             UI.ChangeWidget(Id(:table), :Items, table_items)
+            UI.ChangeWidget(Id(:table), :CurrentItem, cur)
+          end
+        when :add
+          @forbidden = Builtins.maplist(table_items) do |e|
+            Ops.get_string(e, 1, "")
+          end
+          @item2 = VirtualEditDialog(
+            Builtins.size(table_items),
+            term(:empty),
+            @forbidden
+          )
+          Builtins.y2debug("item=%1", @item2)
+          if !@item2.nil?
+            table_items = Builtins.add(table_items, @item2)
+            UI.ChangeWidget(Id(:table), :Items, table_items)
+            UI.ChangeWidget(
+              Id(:table),
+              :CurrentItem,
+              Builtins.size(table_items)
+            )
+          end
+        when :delete
+          table_items = Builtins.filter(table_items) do |e|
+            cur != Ops.get(e, [0, 0])
+          end
+          UI.ChangeWidget(Id(:table), :Items, table_items)
         end
       end
 
@@ -145,8 +144,7 @@ module Yast
       nil
     end
 
-    def storeAdditional(_key, event)
-      event = deep_copy(event)
+    def storeAdditional(_key, _event)
       if !NetworkService.is_network_manager
         table_items = Convert.convert(
           UI.QueryWidget(Id(:table), :Items),
@@ -156,29 +154,29 @@ module Yast
         aliases_to_delete = deep_copy(LanItems.aliases) # #48191
         LanItems.aliases = {}
         Builtins.maplist(table_items) do |e|
-          _alias = {}
-          Ops.set(_alias, "IPADDR", Ops.get_string(e, 2, ""))
+          alias_ = {}
+          Ops.set(alias_, "IPADDR", Ops.get_string(e, 2, ""))
           if Ops.greater_than(Builtins.size(Ops.get_string(e, 1, "")), 0)
-            Ops.set(_alias, "LABEL", Ops.get_string(e, 1, ""))
+            Ops.set(alias_, "LABEL", Ops.get_string(e, 1, ""))
           end
           if Builtins.substring(Ops.get_string(e, 3, ""), 0, 1) == "/"
             Ops.set(
-              _alias,
+              alias_,
               "PREFIXLEN",
               Builtins.substring(Ops.get_string(e, 3, ""), 1)
             )
           else
             if Netmask.Check6(Ops.get_string(e, 3, ""))
-              Ops.set(_alias, "PREFIXLEN", Ops.get_string(e, 3, ""))
+              Ops.set(alias_, "PREFIXLEN", Ops.get_string(e, 3, ""))
             else
-              Ops.set(_alias, "NETMASK", Ops.get_string(e, 3, ""))
+              Ops.set(alias_, "NETMASK", Ops.get_string(e, 3, ""))
             end
           end
           Ops.set(
             LanItems.aliases,
             Builtins.tostring(Builtins.size(LanItems.aliases)),
-            _alias
-          ) #	    aliases_to_delete[tostring(size(LanItems::aliases))] = nil;
+            alias_
+          )
         end
         Builtins.foreach(
           Convert.convert(
@@ -241,8 +239,8 @@ module Yast
         UI.SetFocus(Id(:ipaddr))
       end
 
+      host = nil
       loop do
-        host = nil
         ret = UI.UserInput
         break if ret != :ok
 

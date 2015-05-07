@@ -749,8 +749,6 @@ module Yast
     #		"proposal": for proposal, add links for direct config
     # @return summary of the current configuration
     def Summary(mode)
-      split = mode == "split"
-
       sum = LanItems.BuildLanOverview
 
       # Testing improved summary
@@ -1079,22 +1077,22 @@ module Yast
       pkgs = []
       type_requires.each do |type, package|
         ifaces = NetworkInterfaces.List(type)
-        if !ifaces.empty?
-          Builtins.y2milestone(
-            "Network interface type #{type} requires package #{package}"
-          )
-          pkgs << package if !PackageSystem.Installed(package)
-        end
+        next if ifaces.empty?
+
+        Builtins.y2milestone(
+          "Network interface type #{type} requires package #{package}"
+        )
+        pkgs << package if !PackageSystem.Installed(package)
       end
 
       option_requires.each do |option, option_values|
         option_values.each do |value, package|
-          if NetworkInterfaces.Locate(option, value) != []
-            Builtins.y2milestone(
-              "Network interface with option #{option}=#{value} requires package #{package}"
-            )
-            pkgs << package if !PackageSystem.Installed(package)
-          end
+          next if NetworkInterfaces.Locate(option, value) == []
+
+          Builtins.y2milestone(
+            "Network interface with option #{option}=#{value} requires package #{package}"
+          )
+          pkgs << package if !PackageSystem.Installed(package)
         end
       end
 
@@ -1149,10 +1147,9 @@ module Yast
         log.info("Network service activation forced")
         NetworkService.Restart
       else
-        log.info(
-          ("Attempting to reload network service, normal stage %s, ssh: %s") %
-          [Stage.normal, Linuxrc.usessh]
-        )
+        log.info "Attempting to reload network service, normal stage " \
+          "#{Stage.normal}, ssh: #{Linuxrc.usessh}"
+
         # If the second installation stage has been called by yast.ssh via
         # ssh, we should not restart network cause systemctl
         # hangs in that case. (bnc#885640)

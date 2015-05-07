@@ -89,8 +89,10 @@ describe "LanUdevAuto#Write" do
     ]
 
     ay_rules = [
-      "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", %s==\"%s\", NAME=\"%s\"" %
+      format(
+        "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", %s==\"%s\", NAME=\"%s\"",
         [ATTR, VALUE.downcase, NAME]
+      )
     ]
 
     allow(Yast::LanUdevAuto)

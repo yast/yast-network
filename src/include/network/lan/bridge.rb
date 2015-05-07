@@ -90,7 +90,6 @@ module Yast
       end
 
       valid = true
-      confirmed = false
 
       sel.each do |device|
         next if !confs.include?(device)
@@ -98,14 +97,14 @@ module Yast
         dev_type = NetworkInterfaces.GetType(device)
         ifcfg_conf = configurations[dev_type][device]
 
-        if ifcfg_conf["BOOTPROTO"] != "none" && !confirmed
-          valid = Popup.ContinueCancel(
-            _(
-              "At least one selected device is already configured.\nAdapt the configuration for bridge?\n"
-            )
+        next if ifcfg_conf["BOOTPROTO"] == "none"
+
+        valid = Popup.ContinueCancel(
+          _(
+            "At least one selected device is already configured.\nAdapt the configuration for bridge?\n"
           )
-          confirmed = true
-        end
+        )
+        break
       end
       valid
     end

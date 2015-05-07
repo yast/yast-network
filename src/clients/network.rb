@@ -165,8 +165,7 @@ module Yast
       end
     end
 
-    def runHandler(options)
-      options = deep_copy(options)
+    def runHandler(_options)
       true
     end
   end

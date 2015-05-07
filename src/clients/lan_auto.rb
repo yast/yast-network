@@ -27,6 +27,7 @@
 # Authors:	Michal Svec <msvec@suse.cz>
 #
 module Yast
+  # Client providing autoyast functionality
   class LanAutoClient < Client
     def main
       Yast.import "UI"
@@ -167,9 +168,9 @@ module Yast
 
         result = Lan.WriteOnly
         Builtins.y2error("Writing lan config failed") if !result
-        @ret = @ret && result
+        @ret &&= result
 
-        if Ops.get(LanItems.autoinstall_settings, "strict_IP_check_timeout") != nil
+        if Ops.get(LanItems.autoinstall_settings, "strict_IP_check_timeout")
           if Lan.isAnyInterfaceDown
             @timeout = Ops.get_integer(
               LanItems.autoinstall_settings,
@@ -317,7 +318,7 @@ module Yast
       dhcp = UpcaseCondSet(dhcp, dhcpopts, "dhclient_hostname_option")
 
       Ops.set(input, "config", "dhcp" => dhcp)
-      if Ops.get(input, "strict_IP_check_timeout") != nil
+      if !Ops.get(input, "strict_IP_check_timeout").nil?
         Ops.set(input, ["config", "config"], "CHECK_DUPLICATE_IP" => true)
       end
 

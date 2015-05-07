@@ -445,10 +445,14 @@ module Yast
             Builtins.sformat(
               "%1%2%3=%4",
               Ops.get_string(@driver_options, driver, ""),
-              Ops.greater_than(
+              if Ops.greater_than(
                 Builtins.size(Ops.get_string(@driver_options, driver, "")),
                 0
-              ) ? " " : "",
+                )
+                " "
+              else
+                ""
+              end,
               key,
               value
             )
@@ -830,26 +834,26 @@ module Yast
 
       # exclude forbidden configurations
       case devtype
-        when "br"
-          log.debug("Excluding lan item (#{itemId}: #{devname}) - is bridge")
-          return false
+      when "br"
+        log.debug("Excluding lan item (#{itemId}: #{devname}) - is bridge")
+        return false
 
-        when "tun"
-          log.debug("Excluding lan item (#{itemId}: #{devname}) - is tun")
-          return false
+      when "tun"
+        log.debug("Excluding lan item (#{itemId}: #{devname}) - is tun")
+        return false
       end
 
       case ifcfg["STARTMODE"]
-        when "nfsroot"
-          log.debug("Excluding lan item (#{itemId}: #{devname}) - is nfsroot")
-          return false
+      when "nfsroot"
+        log.debug("Excluding lan item (#{itemId}: #{devname}) - is nfsroot")
+        return false
 
-        when "ifplugd"
-          log.debug("Excluding lan item (#{itemId}: #{devname}) - ifplugd")
-          return false
+      when "ifplugd"
+        log.debug("Excluding lan item (#{itemId}: #{devname}) - ifplugd")
+        return false
 
-        else
-          return true
+      else
+        return true
       end
     end
 
@@ -985,13 +989,15 @@ module Yast
         to:   "map <string, any>"
       )
       Builtins.foreach(@Hardware) do |hwitem|
-        udev_net = Ops.get_string(hwitem, "dev_name", "") != "" ?
-          Ops.get_list(
-            @udev_net_rules,
-            Ops.get_string(hwitem, "dev_name", ""),
-            []
-          ) :
-          []
+        udev_net = if Ops.get_string(hwitem, "dev_name", "") != ""
+                     Ops.get_list(
+                       @udev_net_rules,
+                       Ops.get_string(hwitem, "dev_name", ""),
+                       []
+                     )
+                   else
+                     []
+                   end
         mod = Builtins.deletechars(
           Ops.get(
             Builtins.splitstring(
@@ -1267,14 +1273,14 @@ module Yast
       when "NONE", ""
       # do nothing
       when /DHCP/
-        bullets << ("%s %s") % [_("IP address assigned using"), ip]
+        bullets << format("%s %s", _("IP address assigned using"), ip)
       else
         prefixlen = NetworkInterfaces.Current["PREFIXLEN"]
         if prefixlen
-          bullets << _("IP address: %s/%s") % [ip, prefixlen]
+          bullets << format(_("IP address: %s/%s"), ip, prefixlen)
         else
           subnetmask = NetworkInterfaces.Current["NETMASK"]
-          bullets << _("IP address: %s, subnet mask %s") % [ip, subnetmask]
+          bullets << format(_("IP address: %s, subnet mask %s"), ip, subnetmask)
         end
       end
 
@@ -1282,17 +1288,16 @@ module Yast
       item_aliases = NetworkInterfaces.Current["_aliases"] || {}
       if !item_aliases.empty? && !NetworkService.is_network_manager
         item_aliases.each do |_key2, desc|
-          parameters = "%s/%s" % [desc["IPADDR"], desc["PREFIXLEN"]]
-          bullets << ("%s (%s)") % [desc["LABEL"], parameters]
+          parameters = format("%s/%s", desc["IPADDR"], desc["PREFIXLEN"])
+          bullets << format("%s (%s)", desc["LABEL"], parameters)
         end
       end
 
       bullets
     end
 
-    # FIXME:
-    # - side effect: sets @type. No reason for that. It should only build item
-    # overview. Check and remove.
+    # FIXME: side effect: sets @type. No reason for that. It should only build item
+    #   overview. Check and remove.
     def BuildLanOverview
       overview = []
       links = []
@@ -1340,10 +1345,11 @@ module Yast
           end
 
           if LanItems.type == "bond"
-            bond_slaves_desc = ("%s: %s") % [
+            bond_slaves_desc = format(
+              "%s: %s",
               _("Bonding slaves"),
               GetBondSlaves(ifcfg_name).join(" ")
-            ]
+            )
             bullets << bond_slaves_desc
           end
 
@@ -1355,13 +1361,13 @@ module Yast
           )
 
           if !bond_master.empty?
-            note = _("enslaved in %s") % bond_master
-            bond_master_desc = ("%s: %s") % [_("Bonding master"), bond_master]
+            note = format(_("enslaved in %s"), bond_master)
+            bond_master_desc = format("%s: %s", _("Bonding master"), bond_master)
             bullets << bond_master_desc
           end
 
           if renamed?(key)
-            note = ("%s -> %s") % [GetDeviceName(key), renamed_to(key)]
+            note = format("%s -> %s", GetDeviceName(key), renamed_to(key))
           end
 
           overview << Summary.Device(descr, status)
@@ -1370,21 +1376,14 @@ module Yast
           overview << Summary.Device(descr, Summary.NotConfigured)
         end
         conn = ""
-        conn = HTML.Bold("(%s)" % _("Not connected")) if !item_hwinfo["link"]
-
-        if item_hwinfo.empty?
-          conn = HTML.Bold("(%s)" % _("No hwinfo"))
-        end
+        conn = HTML.Bold(format("(%s)", _("Not connected"))) if !item_hwinfo["link"]
+        conn = HTML.Bold(format("(%s)", _("No hwinfo"))) if item_hwinfo.empty?
 
         mac_dev = HTML.Bold("MAC : ") + item_hwinfo["mac"].to_s + "<br>"
         bus_id  = HTML.Bold("BusID : ") + item_hwinfo["busid"].to_s + "<br>"
 
-        if IsNotEmpty(item_hwinfo["mac"])
-          rich << " " << conn << "<br>" << mac_dev
-        end
-        if IsNotEmpty(item_hwinfo["busid"])
-          rich << bus_id
-        end
+        rich << " " << conn << "<br>" << mac_dev if IsNotEmpty(item_hwinfo["mac"])
+        rich << bus_id if IsNotEmpty(item_hwinfo["busid"])
         # display it only if we need it, don't duplicate "ifcfg_name" above
         if IsNotEmpty(item_hwinfo["dev_name"]) && ifcfg_name.empty?
           dev_name = _("Device Name: %s") %  item_hwinfo["dev_name"]
@@ -1406,7 +1405,7 @@ module Yast
           @current = key
           if needFirmwareCurrentItem
             fw = GetFirmwareForCurrentItem()
-            rich << ("%s : %s") % [_("Needed firmware"), !fw.empty? ? fw : _("unknown")]
+            rich << format("%s : %s", _("Needed firmware"), !fw.empty? ? fw : _("unknown"))
           end
           @current = curr
         end
@@ -1495,8 +1494,6 @@ module Yast
         to:   "list <string>"
       )
 
-      busid = Ops.get_string(hardware, "busid", "")
-
       Builtins.y2milestone("hw=%1", hardware)
       @hw = deep_copy(hardware)
       if Arch.s390 && @operation == :add
@@ -1584,9 +1581,6 @@ module Yast
     # @param [Fixnum] num device number
     # @return [Array] of 10 free devices
     def FreeAliases(_type, _num)
-      # FIXME: NI y2debug("Devices=%1", Devices);
-      _Devices_1 = {} # FIXME: NI Devices[type, sformat("%1",num)]:$[];
-      Builtins.y2debug("Devices=%1", _Devices_1)
       NetworkInterfaces.GetFreeDevices("_aliases", 10)
     end
 
@@ -1611,9 +1605,7 @@ module Yast
     # must be in sync with {#GetDefaultsForHW}
     def SetDefaultsForHW
       Builtins.y2milestone("SetDefaultsForHW type %1", @type)
-      if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
-        @mtu = "1492"
-      end
+      @mtu = "1492" if Arch.s390 && Builtins.contains(["lcs", "eth"], @type)
 
       nil
     end
@@ -1633,8 +1625,7 @@ module Yast
       @set_default_route = case d["DHCLIENT_SET_DEFAULT_ROUTE"]
                            when "yes" then true
                            when "no" then  false
-                           # all other values! count as unspecified
-                           else        nil
+                             # all other values! count as unspecified which is default value
                            end
 
       @mtu               = d["MTU"]
@@ -1675,9 +1666,7 @@ module Yast
         d["WIRELESS_KEY_2"],
         d["WIRELESS_KEY_3"]
       ]
-      if (@wl_key[0] || "").empty?
-        @wl_key[0]        = d["WIRELESS_KEY"]
-      end
+      @wl_key[0]          = d["WIRELESS_KEY"] if (@wl_key[0] || "").empty?
 
       @wl_default_key     = d["WIRELESS_DEFAULT_KEY"].to_i
       @wl_nick            = d["WIRELESS_NICK"]
@@ -1770,16 +1759,16 @@ module Yast
       Builtins.y2milestone("Startmode by product: #{product_startmode}")
 
       case product_startmode
-        when "ifplugd"
-          if replace_ifplugd?
-            startmode = hotplug_usable? ? "hotplug" : "auto"
-          else
-            startmode = product_startmode
-          end
-        when "auto"
-          startmode = "auto"
-        else
+      when "ifplugd"
+        if replace_ifplugd?
           startmode = hotplug_usable? ? "hotplug" : "auto"
+        else
+          startmode = product_startmode
+        end
+      when "auto"
+        startmode = "auto"
+      else
+        startmode = hotplug_usable? ? "hotplug" : "auto"
       end
 
       Builtins.y2milestone("New device startmode: #{startmode}")
@@ -1799,7 +1788,7 @@ module Yast
     end
 
     # Select the given device
-    # FIXME currently *dev* is always ""
+    # FIXME: currently *dev* is always ""
     # @param [String] dev device to select ("" for new device, default values)
     # @return true if success
     def Select(dev)
@@ -2376,62 +2365,65 @@ module Yast
       # command to find created device
       command2 = ""
       case @type
-        when "hsi", "qeth"
-          @portnumber_param = Ops.greater_than(
-            Builtins.size(@qeth_portnumber),
-            0
-          ) ?
-            Builtins.sformat("-n %1", @qeth_portnumber) :
-            ""
-          @portname_param = Ops.greater_than(Builtins.size(@qeth_portname), 0) ?
-            Builtins.sformat("-p %1", @qeth_portname) :
-            ""
-          @options_param = Ops.greater_than(Builtins.size(@qeth_options), 0) ?
-            Builtins.sformat("-o %1", @qeth_options) :
-            ""
-          command1 = Builtins.sformat(
-            "qeth_configure %1 %2 %3 %4 %5 1",
-            @options_param,
-            @qeth_layer2 ? "-l" : "",
-            @portname_param,
-            @portnumber_param,
-            @qeth_chanids
-          )
-          command2 = Builtins.sformat(
-            "ls /sys/devices/qeth/%1/net/|head -n1|tr -d '\n'",
-            Ops.get(Builtins.splitstring(@qeth_chanids, " "), 0, "")
-          )
-        when "ctc"
-          # chan_ids (read, write), protocol
-          command1 = Builtins.sformat(
-            "ctc_configure %1 1 %2",
-            @qeth_chanids,
-            @chan_mode
-          )
-          command2 = Builtins.sformat(
-            "ls /sys/devices/ctcm/%1/net/|head -n1|tr -d '\n'",
-            Ops.get(Builtins.splitstring(@qeth_chanids, " "), 0, "")
-          )
-        when "lcs"
-          # chan_ids (read, write), protocol
-          command1 = Builtins.sformat(
-            "ctc_configure %1 1 %2",
-            @qeth_chanids,
-            @chan_mode
-          )
-          command2 = Builtins.sformat(
-            "ls /sys/devices/lcs/%1/net/|head -n1|tr -d '\n'",
-            Ops.get(Builtins.splitstring(@qeth_chanids, " "), 0, "")
-          )
-        when "iucv"
-          # router
-          command1 = Builtins.sformat("iucv_configure %1 1", @iucv_user)
-          command2 = Builtins.sformat(
-            "ls /sys/devices/%1/*/net/|head -n1|tr -d '\n'",
-            @type
-          )
-        else
-          Builtins.y2error("Unsupported type : %1", @type)
+      when "hsi", "qeth"
+        @portnumber_param = if Ops.greater_than(Builtins.size(@qeth_portnumber), 0)
+                              Builtins.sformat("-n %1", @qeth_portnumber)
+                            else
+                              ""
+                            end
+        @portname_param = if Ops.greater_than(Builtins.size(@qeth_portname), 0)
+                            Builtins.sformat("-p %1", @qeth_portname)
+                          else
+                            ""
+                          end
+        @options_param = if Ops.greater_than(Builtins.size(@qeth_options), 0)
+                           Builtins.sformat("-o %1", @qeth_options)
+                         else
+                           ""
+                         end
+        command1 = Builtins.sformat(
+          "qeth_configure %1 %2 %3 %4 %5 1",
+          @options_param,
+          @qeth_layer2 ? "-l" : "",
+          @portname_param,
+          @portnumber_param,
+          @qeth_chanids
+        )
+        command2 = Builtins.sformat(
+          "ls /sys/devices/qeth/%1/net/|head -n1|tr -d '\n'",
+          Ops.get(Builtins.splitstring(@qeth_chanids, " "), 0, "")
+        )
+      when "ctc"
+        # chan_ids (read, write), protocol
+        command1 = Builtins.sformat(
+          "ctc_configure %1 1 %2",
+          @qeth_chanids,
+          @chan_mode
+        )
+        command2 = Builtins.sformat(
+          "ls /sys/devices/ctcm/%1/net/|head -n1|tr -d '\n'",
+          Ops.get(Builtins.splitstring(@qeth_chanids, " "), 0, "")
+        )
+      when "lcs"
+        # chan_ids (read, write), protocol
+        command1 = Builtins.sformat(
+          "ctc_configure %1 1 %2",
+          @qeth_chanids,
+          @chan_mode
+        )
+        command2 = Builtins.sformat(
+          "ls /sys/devices/lcs/%1/net/|head -n1|tr -d '\n'",
+          Ops.get(Builtins.splitstring(@qeth_chanids, " "), 0, "")
+        )
+      when "iucv"
+        # router
+        command1 = Builtins.sformat("iucv_configure %1 1", @iucv_user)
+        command2 = Builtins.sformat(
+          "ls /sys/devices/%1/*/net/|head -n1|tr -d '\n'",
+          @type
+        )
+      else
+        Builtins.y2error("Unsupported type : %1", @type)
       end
       Builtins.y2milestone("execute %1", command1)
       output1 = Convert.convert(

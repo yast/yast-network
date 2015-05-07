@@ -115,9 +115,7 @@ module Yast
 
     # Handler for action "list"
     # @param [Hash{String => String}] options action options
-    def ListHandler(options)
-      options = deep_copy(options)
-      summary = ""
+    def ListHandler(_options)
       # Command line output Headline
       # configuration of hosts
       summary = Ops.add(

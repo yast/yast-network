@@ -47,41 +47,39 @@ module Yast
       open
 
       ret = nil
-      new_name = @old_name
       until [:cancel, :abort, :ok].include? ret
         ret = UI.UserInput
 
-        case ret
-          when :ok
-            new_name = UI.QueryWidget(:dev_name, :Value)
+        next if ret != :ok
 
-            if CheckUdevNicName(new_name)
-              LanItems.rename(new_name)
-            else
-              UI.SetFocus(:dev_name)
-              ret = nil
+        new_name = UI.QueryWidget(:dev_name, :Value)
 
-              next
-            end
+        if CheckUdevNicName(new_name)
+          LanItems.rename(new_name)
+        else
+          UI.SetFocus(:dev_name)
+          ret = nil
 
-            if UI.QueryWidget(:udev_type, :CurrentButton) == :mac
-              rule_key = MAC_UDEV_ATTR
-              rule_value = @mac
-            else
-              rule_key = BUSID_UDEV_ATTR
-              rule_value = @bus_id
-            end
-
-            # update udev rules and other config
-            # FIXME: it changes udev key used for device identification
-            #  and / or its value only, name is changed elsewhere
-            LanItems.ReplaceItemUdev(@old_key, rule_key, rule_value)
+          next
         end
+
+        if UI.QueryWidget(:udev_type, :CurrentButton) == :mac
+          rule_key = MAC_UDEV_ATTR
+          rule_value = @mac
+        else
+          rule_key = BUSID_UDEV_ATTR
+          rule_value = @bus_id
+        end
+
+        # update udev rules and other config
+        # FIXME: it changes udev key used for device identification
+        #  and / or its value only, name is changed elsewhere
+        LanItems.ReplaceItemUdev(@old_key, rule_key, rule_value)
       end
 
       close
 
-      new_name
+      new_name || @old_name
     end
 
     private
@@ -128,12 +126,12 @@ module Yast
       )
 
       case @old_key
-        when MAC_UDEV_ATTR
-          UI.ChangeWidget(Id(:udev_type), :CurrentButton, :mac)
-        when BUSID_UDEV_ATTR
-          UI.ChangeWidget(Id(:udev_type), :CurrentButton, :busid)
-        else
-          Builtins.y2error("Unknown udev rule.")
+      when MAC_UDEV_ATTR
+        UI.ChangeWidget(Id(:udev_type), :CurrentButton, :mac)
+      when BUSID_UDEV_ATTR
+        UI.ChangeWidget(Id(:udev_type), :CurrentButton, :busid)
+      else
+        Builtins.y2error("Unknown udev rule.")
       end
     end
 

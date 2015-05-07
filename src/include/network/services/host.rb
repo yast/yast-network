@@ -220,12 +220,6 @@ module Yast
           Builtins.y2debug("cur_item=%1", cur_item)
 
           olditem = Ops.get(cur_item, 0)
-          forbidden = Builtins.maplist(table_items) do |e|
-            Ops.get_string(e, 1, "")
-          end
-          forbidden = Builtins.filter(
-            Convert.convert(forbidden, from: "list", to: "list <string>")
-          ) { |h| h != Ops.get_string(olditem, 1, "") }
 
           next if !HostSystemPopup(Ops.get_string(olditem, 1, ""), false)
           item = HostDialog(cur, olditem)
@@ -238,14 +232,9 @@ module Yast
                 [Ops.get_string(olditem, 2, ""), Ops.get_string(olditem, 3, "")],
                 " "
               )
-              entry = Builtins.mergestring(
-                [Ops.get_string(item, 2, ""), Ops.get_string(item, 3, "")],
-                " "
-              )
 
               Builtins.y2debug("item: %1", item)
               Builtins.y2debug("olditem: %1", olditem)
-              Builtins.y2debug("entry: %1", entry)
               Builtins.y2debug("oldentry: %1", oldentry)
 
               ip = Ops.get_string(item, 1, "")
@@ -273,10 +262,6 @@ module Yast
           Builtins.y2debug("cur_item=%1", cur_item)
 
           item = Ops.get(cur_item, 0)
-          entry = Builtins.mergestring(
-            [Ops.get_string(item, 2, ""), Ops.get_string(item, 3, "")],
-            " "
-          )
 
           next if !HostSystemPopup(Ops.get_string(item, 1, ""), true)
 
