@@ -77,44 +77,43 @@ module Yast
       @widget_descr_local = {
         "AD_ADDRESSES" => {
           "widget"        => :custom,
-          "custom_widget" =>
-                             # Frame label
-                             Frame(
-                               Id(:f_additional),
-                               _("Additional Addresses"),
-                               HBox(
-                                 HSpacing(3),
-                                 VBox(
-                                   # :-) this is a small trick to make ncurses in 80x25 happy :-)
-                                   # it rounds spacing up or down to the nearest integer, 0.5 -> 1, 0.49 -> 0
-                                   VSpacing(0.49),
-                                   Table(
-                                     Id(:table),
-                                     Opt(:notify),
-                                     Header(
-                                       # Table header label
-                                       _("IPv4 Address Label"),
-                                       # Table header label
-                                       _("IP Address"),
-                                       # Table header label
-                                       _("Netmask")
-                                     ),
-                                     []
-                                   ),
-                                   Left(
-                                     HBox(
-                                       # PushButton label
-                                       PushButton(Id(:add), _("Ad&d")),
-                                       # PushButton label
-                                       PushButton(Id(:edit), Opt(:disabled), _("&Edit")),
-                                       # PushButton label
-                                       PushButton(Id(:delete), Opt(:disabled), _("De&lete"))
-                                     )
-                                   ),
-                                   VSpacing(0.49)
-                                 ),
-                                 HSpacing(3)
-                               )
+          "custom_widget" => Frame(
+            Id(:f_additional),
+            # Frame label
+            _("Additional Addresses"),
+            HBox(
+              HSpacing(3),
+              VBox(
+                # :-) this is a small trick to make ncurses in 80x25 happy :-)
+                # it rounds spacing up or down to the nearest integer, 0.5 -> 1, 0.49 -> 0
+                VSpacing(0.49),
+                Table(
+                  Id(:table),
+                  Opt(:notify),
+                  Header(
+                    # Table header label
+                    _("IPv4 Address Label"),
+                    # Table header label
+                    _("IP Address"),
+                    # Table header label
+                    _("Netmask")
+                  ),
+                  []
+                 ),
+                Left(
+                  HBox(
+                    # PushButton label
+                    PushButton(Id(:add), _("Ad&d")),
+                    # PushButton label
+                    PushButton(Id(:edit), Opt(:disabled), _("&Edit")),
+                    # PushButton label
+                    PushButton(Id(:delete), Opt(:disabled), _("De&lete"))
+                  )
+                ),
+                VSpacing(0.49)
+               ),
+              HSpacing(3)
+             )
             ),
           "help"          => Ops.get_string(@help, "additional", ""),
           "init"          => fun_ref(method(:initAdditional), "void (string)"),
@@ -167,15 +166,14 @@ module Yast
             "boolean (string, map)"
           )
         },
-        "IFCFGID"      =>
-                          {
-                            "widget" => :textentry,
-                            # ComboBox label
-                            "label"  => _("&Configuration Name"),
-                            "opt"    => [:hstretch, :disabled],
-                            "help"   => "",
-                            "init"   => fun_ref(method(:initIfcfgId), "void (string)")
-                          },
+        "IFCFGID"      => {
+          "widget" => :textentry,
+          # ComboBox label
+          "label"  => _("&Configuration Name"),
+          "opt"    => [:hstretch, :disabled],
+          "help"   => "",
+          "init"   => fun_ref(method(:initIfcfgId), "void (string)")
+        },
         "TUNNEL"       => {
           "widget"        => :custom,
           "custom_widget" => VBox(

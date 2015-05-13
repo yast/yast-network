@@ -91,7 +91,7 @@ describe "LanUdevAuto#Write" do
     ay_rules = [
       format(
         "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", %s==\"%s\", NAME=\"%s\"",
-        [ATTR, VALUE.downcase, NAME]
+        ATTR, VALUE.downcase, NAME
       )
     ]
 
