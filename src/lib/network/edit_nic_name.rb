@@ -1,9 +1,8 @@
 # encoding: utf-8
 
-require 'yast'
+require "yast"
 
 module Yast
-
   Yast.import "UI"
   Yast.import "LanItems"
   Yast.import "Popup"
@@ -12,7 +11,6 @@ module Yast
   # name. It also allows to select a device attribute (MAC, Bus id, ...) which will
   # be used for device selection.
   class EditNicName
-
     include UIShortcuts
     include I18n
 
@@ -23,7 +21,6 @@ module Yast
     BUSID_UDEV_ATTR = "KERNELS"
 
     def initialize
-
       textdomain "network"
 
       Yast.include self, "network/routines.rb"
@@ -31,8 +28,8 @@ module Yast
       current_item = LanItems.getCurrentItem
 
       @old_name = LanItems.current_udev_name
-      @old_key = MAC_UDEV_ATTR unless LanItems.GetItemUdev( MAC_UDEV_ATTR).empty?
-      @old_key = BUSID_UDEV_ATTR unless LanItems.GetItemUdev( BUSID_UDEV_ATTR).empty?
+      @old_key = MAC_UDEV_ATTR unless LanItems.GetItemUdev(MAC_UDEV_ATTR).empty?
+      @old_key = BUSID_UDEV_ATTR unless LanItems.GetItemUdev(BUSID_UDEV_ATTR).empty?
 
       if current_item["hwinfo"]
         @mac = current_item["hwinfo"]["mac"]
@@ -50,44 +47,43 @@ module Yast
       open
 
       ret = nil
-      new_name = @old_name
-      while ![:cancel, :abort, :ok].include? ret
+      until [:cancel, :abort, :ok].include? ret
         ret = UI.UserInput
 
-        case ret
-          when :ok
-            new_name = UI.QueryWidget(:dev_name, :Value)
+        next if ret != :ok
 
-            if CheckUdevNicName(new_name)
-              LanItems.rename(new_name)
-            else
-              UI.SetFocus(:dev_name)
-              ret = nil
+        new_name = UI.QueryWidget(:dev_name, :Value)
 
-              next
-            end
+        if CheckUdevNicName(new_name)
+          LanItems.rename(new_name)
+        else
+          UI.SetFocus(:dev_name)
+          ret = nil
 
-            if UI.QueryWidget(:udev_type, :CurrentButton) == :mac
-              rule_key = MAC_UDEV_ATTR
-              rule_value = @mac
-            else
-              rule_key = BUSID_UDEV_ATTR
-              rule_value = @bus_id
-            end
-
-            # update udev rules and other config
-            # FIXME: it changes udev key used for device identification
-            #  and / or its value only, name is changed elsewhere
-            LanItems.ReplaceItemUdev(@old_key, rule_key, rule_value)
+          next
         end
+
+        if UI.QueryWidget(:udev_type, :CurrentButton) == :mac
+          rule_key = MAC_UDEV_ATTR
+          rule_value = @mac
+        else
+          rule_key = BUSID_UDEV_ATTR
+          rule_value = @bus_id
+        end
+
+        # update udev rules and other config
+        # FIXME: it changes udev key used for device identification
+        #  and / or its value only, name is changed elsewhere
+        LanItems.ReplaceItemUdev(@old_key, rule_key, rule_value)
       end
 
       close
 
-      new_name
+      new_name || @old_name
     end
 
-  private
+    private
+
     # Opens dialog for editing NIC name
     def open
       UI.OpenDialog(
@@ -104,7 +100,7 @@ module Yast
             RadioButtonGroup(
               Id(:udev_type),
               VBox(
-                #make sure there is enough space (#367239)
+                # make sure there is enough space (#367239)
                 HSpacing(30),
                 Left(
                   RadioButton(
@@ -119,7 +115,7 @@ module Yast
                   )
                 )
               )
-            ),
+            )
           ),
           VSpacing(0.5),
           HBox(
@@ -130,12 +126,12 @@ module Yast
       )
 
       case @old_key
-        when MAC_UDEV_ATTR
-          UI.ChangeWidget(Id(:udev_type), :CurrentButton, :mac)
-        when BUSID_UDEV_ATTR
-          UI.ChangeWidget(Id(:udev_type), :CurrentButton, :busid)
-        else
-          Builtins.y2error("Unknown udev rule.")
+      when MAC_UDEV_ATTR
+        UI.ChangeWidget(Id(:udev_type), :CurrentButton, :mac)
+      when BUSID_UDEV_ATTR
+        UI.ChangeWidget(Id(:udev_type), :CurrentButton, :busid)
+      else
+        Builtins.y2error("Unknown udev rule.")
       end
     end
 
@@ -162,6 +158,5 @@ module Yast
 
       true
     end
-
   end
 end

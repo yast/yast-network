@@ -1,13 +1,11 @@
 # encoding: utf-8
 
-require 'yast'
+require "yast"
 
 module Yast
-
   # The class represents a simple dialog which asks user for confirmation of
   # network.service restart during installation.
   class ConfirmVirtProposal
-
     include Singleton
     include UIShortcuts
     include I18n

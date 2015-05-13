@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/lan/address.ycp
 # Package:	Network configuration
 # Summary:	Network card adresss configuration dialogs
@@ -30,7 +30,7 @@ module Yast
   module NetworkLanBridgeInclude
     include Logger
 
-    def initialize_network_lan_bridge(include_target)
+    def initialize_network_lan_bridge(_include_target)
       textdomain "network"
     end
 
@@ -65,7 +65,7 @@ module Yast
       NetworkInterfaces.Current["IPADDR"] = ""
       NetworkInterfaces.Current["NETMASK"] = ""
       NetworkInterfaces.Current["BOOTPROTO"] = "none"
-      #take out PREFIXLEN from old configuration (BNC#735109)
+      # take out PREFIXLEN from old configuration (BNC#735109)
       NetworkInterfaces.Current["PREFIXLEN"] = ""
 
       # remove all aliases (bnc#590167)
@@ -79,7 +79,7 @@ module Yast
       NetworkInterfaces.Add
     end
 
-    def ValidateBridge(key, event)
+    def ValidateBridge(_key, _event)
       sel = UI.QueryWidget(Id("BRIDGE_PORTS"), :SelectedItems)
 
       configurations = NetworkInterfaces.FilterDevices("netcard")
@@ -90,7 +90,6 @@ module Yast
       end
 
       valid = true
-      confirmed = false
 
       sel.each do |device|
         next if !confs.include?(device)
@@ -98,14 +97,14 @@ module Yast
         dev_type = NetworkInterfaces.GetType(device)
         ifcfg_conf = configurations[dev_type][device]
 
-        if ifcfg_conf["BOOTPROTO"] != "none" && !confirmed
-            valid = Popup.ContinueCancel(
-              _(
-                "At least one selected device is already configured.\nAdapt the configuration for bridge?\n"
-              )
-            )
-            confirmed = true
-        end
+        next if ifcfg_conf["BOOTPROTO"] == "none"
+
+        valid = Popup.ContinueCancel(
+          _(
+            "At least one selected device is already configured.\nAdapt the configuration for bridge?\n"
+          )
+        )
+        break
       end
       valid
     end

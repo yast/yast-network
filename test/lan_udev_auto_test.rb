@@ -6,8 +6,7 @@ require "yast"
 
 Yast.import "LanUdevAuto"
 
-describe '#getDeviceName' do
-
+describe "#getDeviceName" do
   NEW_STYLE_NAME = "spec0"
   MAC_BASED_NAME = "spec-id-00:11:22:33:44:FF"
   BUS_BASED_NAME = "spec-bus-0000:00:19.0"
@@ -26,52 +25,51 @@ describe '#getDeviceName' do
       [
         {
           "dev_name" => NEW_STYLE_NAME,
-          "mac" => "00:11:22:33:44:FF",
-          "busid" => "0000:00:19.0"
+          "mac"      => "00:11:22:33:44:FF",
+          "busid"    => "0000:00:19.0"
         }
       ]
     }
   end
 
-  context 'when new style name is provided' do
-    it 'returns the new style name' do
+  context "when new style name is provided" do
+    it "returns the new style name" do
       expect(Yast::LanUdevAuto.getDeviceName(NEW_STYLE_NAME)).to be_equal NEW_STYLE_NAME
     end
   end
 
-  context 'when old fashioned mac based name is provided' do
-    it 'returns corresponding new style name' do
+  context "when old fashioned mac based name is provided" do
+    it "returns corresponding new style name" do
       expect(Yast::LanUdevAuto.getDeviceName(MAC_BASED_NAME)).to be_equal NEW_STYLE_NAME
     end
 
-    it 'returns same result despite of letter case in mac' do
+    it "returns same result despite of letter case in mac" do
       expect(
         Yast::LanUdevAuto.getDeviceName(LCASE_MAC_NAME)
       ).to be_equal Yast::LanUdevAuto.getDeviceName(MAC_BASED_NAME)
     end
 
-    it 'returns given name if no known device is matched' do
+    it "returns given name if no known device is matched" do
       expect(Yast::LanUdevAuto.getDeviceName(UNKNOWN_MAC_NAME)).to be_equal UNKNOWN_MAC_NAME
     end
   end
 
-  context 'when old fashioned bus id based name is provided' do
-    it 'returns corresponding new style name' do
+  context "when old fashioned bus id based name is provided" do
+    it "returns corresponding new style name" do
       expect(Yast::LanUdevAuto.getDeviceName(BUS_BASED_NAME)).to be_equal NEW_STYLE_NAME
     end
 
-    it 'returns given name if no known device is matched' do
+    it "returns given name if no known device is matched" do
       expect(Yast::LanUdevAuto.getDeviceName(UNKNOWN_MAC_NAME)).to be_equal UNKNOWN_MAC_NAME
     end
   end
 
-  context 'when provided invalid input' do
+  context "when provided invalid input" do
     # TODO: should raise an exception in future
-    it 'returns given input' do
+    it "returns given input" do
       expect(Yast::LanUdevAuto.getDeviceName(INVALID_NAME)).to be_equal INVALID_NAME
     end
   end
-
 end
 
 describe "LanUdevAuto#Write" do
@@ -91,8 +89,10 @@ describe "LanUdevAuto#Write" do
     ]
 
     ay_rules = [
-      "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", %s==\"%s\", NAME=\"%s\"" %
-      [ATTR, VALUE.downcase, NAME]
+      format(
+        "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", %s==\"%s\", NAME=\"%s\"",
+        ATTR, VALUE.downcase, NAME
+      )
     ]
 
     allow(Yast::LanUdevAuto)
@@ -103,10 +103,10 @@ describe "LanUdevAuto#Write" do
       .to receive(:Write)
       .with(path(".udev_persistent.rules"), ay_rules)
     allow(Yast::SCR)
-        .to receive(:Write)
-        .and_return 0
+      .to receive(:Write)
+      .and_return 0
 
-    Yast::LanUdevAuto.Import({ "net-udev" => udev_rules })
+    Yast::LanUdevAuto.Import("net-udev" => udev_rules)
     Yast::LanUdevAuto.Write
   end
 end

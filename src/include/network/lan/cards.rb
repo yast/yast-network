@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/lan/cards.ycp
 # Package:	Network configuration
 # Summary:	Network cards database
@@ -43,7 +43,7 @@
 #     "s390", "axp", "i386", "ix86", "x86_64", "ia64", "ppc", "sparc", ...
 module Yast
   module NetworkLanCardsInclude
-    def initialize_network_lan_cards(include_target)
+    def initialize_network_lan_cards(_include_target)
       textdomain "network"
 
       # Network cards database
@@ -579,7 +579,7 @@ module Yast
             "options" => ""
           }
         ]
-      } 
+      }
 
       # EOF
     end

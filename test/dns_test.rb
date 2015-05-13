@@ -84,7 +84,7 @@ module Yast
 
     describe ".Import" do
       context "with present dhcp_hostname and write_hostname" do
-        let(:settings) { {"hostname" => "host", "dhcp_hostname" => true, "write_hostname" => true} }
+        let(:settings) { { "hostname" => "host", "dhcp_hostname" => true, "write_hostname" => true } }
 
         it "honors the provided values" do
           expect(DNS).to_not receive(:DefaultWriteHostname)
@@ -96,7 +96,7 @@ module Yast
       end
 
       context "with missing dhcp_hostname and write_hostname" do
-        let(:settings) { {"hostname" => "host"} }
+        let(:settings) { { "hostname" => "host" } }
 
         it "relies on proper methods to get default values" do
           expect(DNS).to receive(:DefaultWriteHostname).and_return false

@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	modules/Host.ycp
 # Package:	Network configuration
 # Summary:	Hosts data (/etc/hosts)
@@ -71,9 +71,9 @@ module Yast
       local_ip = "127.0.0.2"
       if NeedDummyIP()
         Builtins.y2milestone("Dummy 127.0.0.2 IP will be added")
-        #Add 127.0.0.2 entry to /etc/hosts,if product default says so
-        #or user requests it otherwise some desktop apps may hang,
-        #being unable to resolve hostname (bnc#304632)
+        # Add 127.0.0.2 entry to /etc/hosts,if product default says so
+        # or user requests it otherwise some desktop apps may hang,
+        # being unable to resolve hostname (bnc#304632)
 
         fqhostname = Hostname.MergeFQ(DNS.hostname, DNS.domain)
         Ops.set(
@@ -104,8 +104,8 @@ module Yast
             SCR.Read(
               Builtins.topath(Builtins.sformat(".etc.hosts.\"%1\"", host))
             ),
-            :from => "any",
-            :to   => "list <string>"
+            from: "any",
+            to:   "list <string>"
           )
           next { host => names } if names != []
         end
@@ -138,7 +138,7 @@ module Yast
       steps = [_("Update /etc/hosts")]
 
       caption = _("Saving Hostname Configuration")
-      sl = 500 #sleep for longer time, so that progress does not disappear right afterwards
+      sl = 500 # sleep for longer time, so that progress does not disappear right afterwards
 
       Progress.New(caption, " ", Builtins.size(steps), steps, [], "")
 
@@ -158,7 +158,7 @@ module Yast
       end
 
       ret = false
-      if @hosts == {} || @hosts == nil
+      if @hosts == {} || @hosts.nil?
         # Workaround bug [#4476]
         ret = SCR.Write(path(".target.string"), @hosts_file, "")
       else
@@ -194,8 +194,8 @@ module Yast
 
       @hosts = Builtins.eval(Ops.get_map(settings, "hosts", {}))
 
-      #convert from old format to the new one
-      #use ::1 entry as a reference
+      # convert from old format to the new one
+      # use ::1 entry as a reference
       if Ops.greater_than(Builtins.size(Ops.get(@hosts, "::1", [])), 1)
         Builtins.foreach(@hosts) do |ip, hn|
           Ops.set(@hosts, ip, [Builtins.mergestring(hn, " ")])
@@ -208,9 +208,9 @@ module Yast
     # @return autoinstallation settings
     def Export
       if Ops.greater_than(Builtins.size(@hosts), 0)
-        #Filter out IPs with empty hostname (so that valid autoyast
-        #profile is created)(#335120)
-        @hosts = Builtins.filter(@hosts) { |ip, names| names != [] }
+        # Filter out IPs with empty hostname (so that valid autoyast
+        # profile is created)(#335120)
+        @hosts = Builtins.filter(@hosts) { |_ip, names| names != [] }
         return { "hosts" => Builtins.eval(@hosts) }
       else
         return {}
@@ -272,14 +272,13 @@ module Yast
         Ops.set(@hosts, "127.0.0.1", ["localhost"])
       end
 
-
       # Add hostname/ip for all ips
       nickadded = false
       Builtins.maplist(ips) do |ip|
         # Only add if not present yet
         #		if(haskey(hosts, ip)) return;
         # Omit some IP addresses
-        next if ip == "" || ip == nil || ip == "127.0.0.1"
+        next if ip == "" || ip.nil? || ip == "127.0.0.1"
         name = newhn
         # Add nick for the first one
         if !nickadded && name != ""
@@ -349,21 +348,21 @@ module Yast
       nil
     end
 
-    publish :variable => :hosts, :type => "map <string, list <string>>"
-    publish :variable => :modified, :type => "boolean"
-    publish :variable => :write_only, :type => "boolean"
-    publish :function => :NeedDummyIP, :type => "boolean ()"
-    publish :function => :EnsureHostnameResolvable, :type => "void ()"
-    publish :function => :Read, :type => "boolean ()"
-    publish :function => :Write, :type => "boolean ()"
-    publish :function => :Import, :type => "boolean (map)"
-    publish :function => :Export, :type => "map ()"
-    publish :function => :GetSystemHosts, :type => "list ()"
-    publish :function => :Update, :type => "boolean (string, string, list <string>)"
-    publish :function => :Summary, :type => "string ()"
-    publish :function => :ResolveHostnameToStaticIPs, :type => "void ()"
-    publish :function => :GetModified, :type => "boolean ()"
-    publish :function => :SetModified, :type => "void ()"
+    publish variable: :hosts, type: "map <string, list <string>>"
+    publish variable: :modified, type: "boolean"
+    publish variable: :write_only, type: "boolean"
+    publish function: :NeedDummyIP, type: "boolean ()"
+    publish function: :EnsureHostnameResolvable, type: "void ()"
+    publish function: :Read, type: "boolean ()"
+    publish function: :Write, type: "boolean ()"
+    publish function: :Import, type: "boolean (map)"
+    publish function: :Export, type: "map ()"
+    publish function: :GetSystemHosts, type: "list ()"
+    publish function: :Update, type: "boolean (string, string, list <string>)"
+    publish function: :Summary, type: "string ()"
+    publish function: :ResolveHostnameToStaticIPs, type: "void ()"
+    publish function: :GetModified, type: "boolean ()"
+    publish function: :SetModified, type: "void ()"
   end
 
   Host = HostClass.new

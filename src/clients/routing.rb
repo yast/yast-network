@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	clients/routing.ycp
 # Package:	Network configuration
 # Summary:	Routing client
@@ -60,14 +60,14 @@ module Yast
         "initialize" => fun_ref(Routing.method(:Read), "boolean ()"),
         "finish"     => fun_ref(Routing.method(:Write), "boolean ()"), # FIXME
         "actions"    => {
-          "list"          => {
+          "list"            => {
             "help"    => _("Show complete routing table"),
             "handler" => fun_ref(
               method(:ListHandler),
               "boolean (map <string, string>)"
             )
           },
-          "show"          => {
+          "show"            => {
             "help"    => _("Show routing table entry for selected destination"),
             "handler" => fun_ref(
               method(:ShowHandler),
@@ -75,7 +75,7 @@ module Yast
             ),
             "example" => "show dest=10.10.1.0"
           },
-          "ip-forwarding" => {
+          "ip-forwarding"   => {
             "help"    => _("IPv4 and IPv6 forwarding settings"),
             "handler" => fun_ref(
               method(:IPFWHandler),
@@ -99,7 +99,7 @@ module Yast
             ),
             "example" => ["ipv6-forwarding show", "ipv6-forwarding on"]
           },
-          "add"           => {
+          "add"             => {
             "help"    => _("Add new route"),
             "handler" => fun_ref(
               method(:AddHandler),
@@ -107,7 +107,7 @@ module Yast
             ),
             "example" => "add dest=10.10.1.0 gateway=10.10.1.1 netmask=255.255.255.0"
           },
-          "edit"          => {
+          "edit"            => {
             "help"    => _("Edit an existing route"),
             "handler" => fun_ref(
               method(:EditHandler),
@@ -115,7 +115,7 @@ module Yast
             ),
             "example" => "edit dest=10.10.1.0 gateway=10.10.1.1 netmask=255.255.255.0"
           },
-          "delete"        => {
+          "delete"          => {
             "help"    => _("Delete an existing route"),
             "handler" => fun_ref(
               method(:DeleteHandler),
@@ -138,13 +138,13 @@ module Yast
           "off"     => { "help" => _("Disable IP forwarding") }
         },
         "mappings"   => {
-          "show"          => ["dest"],
-          "ip-forwarding" => ["show", "on", "off"],
+          "show"            => ["dest"],
+          "ip-forwarding"   => ["show", "on", "off"],
           "ipv4-forwarding" => ["show", "on", "off"],
           "ipv6-forwarding" => ["show", "on", "off"],
-          "add"           => ["dest", "gateway", "netmask", "dev", "options"],
-          "edit"          => ["dest", "gateway", "netmask", "dev", "options"],
-          "delete"        => ["dest"]
+          "add"             => ["dest", "gateway", "netmask", "dev", "options"],
+          "edit"            => ["dest", "gateway", "netmask", "dev", "options"],
+          "delete"          => ["dest"]
         }
       }
 
@@ -154,9 +154,7 @@ module Yast
       # Finish
       Builtins.y2milestone("Routing module finished")
       Builtins.y2milestone("----------------------------------------")
-      deep_copy(@ret) 
-
-      # EOF
+      deep_copy(@ret)
     end
 
     # Return a modification status
@@ -219,8 +217,7 @@ module Yast
     end
     # Handler for action "list"
     # @param [Hash{String => String}] options action options
-    def ListHandler(options)
-      options = deep_copy(options)
+    def ListHandler(_options)
       CommandLine.Print(PrintableRoutingTable(Routing.Routes))
       CommandLine.Print("")
 
@@ -233,7 +230,7 @@ module Yast
         Ops.get_string(route, "destination", "") == Ops.get(options, "dest", "")
       end
 
-      if routes != [] && routes != nil
+      if routes != [] && !routes.nil?
         CommandLine.Print(PrintableRoutingTable(routes))
         CommandLine.Print("")
       else
@@ -250,7 +247,6 @@ module Yast
     end
 
     def forwarding_handler(options, protocol)
-
       forward_ivars = {
         "IPv4" => :@Forward_v4,
         "IPv6" => :@Forward_v6
@@ -259,7 +255,7 @@ module Yast
 
       return false unless forward_ivar
 
-      if Ops.get(options, "show") != nil
+      if !Ops.get(options, "show").nil?
         if Routing.instance_variable_get(forward_ivar)
           # translators: %s is "IPv4" or "IPv6"
           CommandLine.Print(_("%s forwarding is enabled") % protocol)
@@ -267,11 +263,11 @@ module Yast
           # translators: %s is "IPv4" or "IPv6"
           CommandLine.Print(_("%s forwarding is disabled") % protocol)
         end
-      elsif Ops.get(options, "on") != nil
+      elsif !Ops.get(options, "on").nil?
         # translators: %s is "IPv4" or "IPv6"
         CommandLine.Print(_("Enabling %s forwarding...") % protocol)
         Routing.instance_variable_set(forward_ivar, true)
-      elsif Ops.get(options, "off") != nil
+      elsif !Ops.get(options, "off").nil?
         # translators: %s is "IPv4" or "IPv6"
         CommandLine.Print(_("Disabling %s forwarding...") % protocol)
         Routing.instance_variable_set(forward_ivar, false)
@@ -336,13 +332,11 @@ module Yast
         )
         routes = Builtins.add(
           routes,
-          {
-            "destination" => destination,
-            "gateway"     => gateway,
-            "netmask"     => netmask,
-            "device"      => device,
-            "extrapara"   => extrapara
-          }
+          "destination" => destination,
+          "gateway"     => gateway,
+          "netmask"     => netmask,
+          "device"      => device,
+          "extrapara"   => extrapara
         )
       elsif addedit == :edit
         if destination == ""
@@ -397,11 +391,13 @@ module Yast
       AddEditHandler(:add, options)
       true
     end
+
     def EditHandler(options)
       options = deep_copy(options)
       AddEditHandler(:edit, options)
       true
     end
+
     def DeleteHandler(options)
       options = deep_copy(options)
       found = false

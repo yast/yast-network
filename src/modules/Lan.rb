@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	modules/Lan.ycp
 # Package:	Network configuration
 # Summary:	Network card data
@@ -114,8 +114,8 @@ module Yast
               path(".target.bash_output"),
               "ls /sys/class/net/ | grep -v lo | tr '\n' ','"
             ),
-            :from => "any",
-            :to   => "map <string, any>"
+            from: "any",
+            to:   "map <string, any>"
           ),
           "stdout",
           ""
@@ -136,8 +136,8 @@ module Yast
                   net_dev
                 )
               ),
-              :from => "any",
-              :to   => "map <string, any>"
+              from: "any",
+              to:   "map <string, any>"
             ),
             "stdout",
             ""
@@ -174,8 +174,8 @@ module Yast
         Builtins.foreach(
           Convert.convert(
             Map.Keys(Ops.get_map(configurations, devtype, {})),
-            :from => "list",
-            :to   => "list <string>"
+            from: "list",
+            to:   "list <string>"
           )
         ) do |devname|
           mac = Ops.get_string(
@@ -187,8 +187,8 @@ module Yast
                   devname
                 )
               ),
-              :from => "any",
-              :to   => "map <string, any>"
+              from: "any",
+              to:   "map <string, any>"
             ),
             "stdout",
             ""
@@ -242,10 +242,10 @@ module Yast
               )
             ) do |row|
               if Ops.greater_than(
-                  Builtins.size(
-                    Builtins.regexptokenize(String.CutBlanks(row), regexp)
-                  ),
-                  0
+                Builtins.size(
+                  Builtins.regexptokenize(String.CutBlanks(row), regexp)
+                ),
+                0
                 )
                 Builtins.y2milestone("IPv6 is disabled by '%1' method.", which)
                 @ipv6 = false
@@ -317,23 +317,23 @@ module Yast
       if !Mode.autoinst && PackageSystem.Installed("ndiswrapper")
         Builtins.y2milestone("ndiswrapper: installed")
         if Ops.greater_than(
-            Builtins.size(
-              Convert.convert(
-                SCR.Read(path(".target.dir"), "/etc/ndiswrapper"),
-                :from => "any",
-                :to   => "list <string>"
-              )
-            ),
-            0
+          Builtins.size(
+            Convert.convert(
+              SCR.Read(path(".target.dir"), "/etc/ndiswrapper"),
+              from: "any",
+              to:   "list <string>"
+            )
+          ),
+          0
           )
           Builtins.y2milestone("ndiswrapper: configuration found")
           if Convert.to_integer(
-              SCR.Execute(path(".target.bash"), "lsmod |grep -q ndiswrapper")
+            SCR.Execute(path(".target.bash"), "lsmod |grep -q ndiswrapper")
             ) != 0 &&
               Popup.YesNo(
                 _(
-                  "Detected a ndiswrapper configuration,\n" +
-                    "but the kernel module was not modprobed.\n" +
+                  "Detected a ndiswrapper configuration,\n" \
+                    "but the kernel module was not modprobed.\n" \
                     "Do you want to modprobe ndiswrapper?\n"
                 )
               )
@@ -452,14 +452,14 @@ module Yast
         "%1net.ipv6.conf.all.disable_ipv6 = 1",
         @ipv6 ? "# " : ""
       )
-      found = false #size(regexptokenize(sysctl, "(net.ipv6.conf.all.disable_ipv6)"))>0;
+      found = false # size(regexptokenize(sysctl, "(net.ipv6.conf.all.disable_ipv6)"))>0;
       file = []
       Builtins.foreach(Builtins.splitstring(sysctl, "\n")) do |row|
         if Ops.greater_than(
-            Builtins.size(
-              Builtins.regexptokenize(row, "(net.ipv6.conf.all.disable_ipv6)")
-            ),
-            0
+          Builtins.size(
+            Builtins.regexptokenize(row, "(net.ipv6.conf.all.disable_ipv6)")
+          ),
+          0
           )
           row = sysctl_row
           found = true
@@ -486,7 +486,6 @@ module Yast
 
       nil
     end
-
 
     # Update the SCR according to network settings
     # @return true on success
@@ -543,7 +542,6 @@ module Yast
         ""
       )
 
-
       return false if Abort()
       # Progress step 2
       ProgressNextStage(_("Writing /etc/modprobe.conf..."))
@@ -588,7 +586,7 @@ module Yast
       writeIPv6
       Builtins.sleep(sl)
 
-      #Show this only if SuSEfirewall is installed
+      # Show this only if SuSEfirewall is installed
       if fw_is_installed
         return false if Abort()
         # Progress step 8
@@ -670,7 +668,7 @@ module Yast
       NetworkInterfaces.Import("netcard", Ops.get_map(settings, "devices", {}))
       Builtins.foreach(NetworkInterfaces.List("netcard")) do |device|
         LanItems.AddNew
-        Ops.set(LanItems.Items, LanItems.current, { "ifcfg" => device })
+        Ops.set(LanItems.Items, LanItems.current, "ifcfg" => device)
       end
 
       Ops.set(
@@ -734,7 +732,7 @@ module Yast
           LanItems.autoinstall_settings,
           "start_immediately",
           false
-        ), #start_immediately,
+        ), # start_immediately,
         "keep_install_network" => Ops.get_boolean(
           LanItems.autoinstall_settings,
           "keep_install_network",
@@ -751,8 +749,6 @@ module Yast
     #		"proposal": for proposal, add links for direct config
     # @return summary of the current configuration
     def Summary(mode)
-      split = mode == "split"
-
       sum = LanItems.BuildLanOverview
 
       # Testing improved summary
@@ -821,7 +817,7 @@ module Yast
         status_v6,
         link_v6
       )
-      if link_virt_net != nil
+      if !link_virt_net.nil?
         descr = Builtins.sformat(
           "%1\n\t\t\t\t\t\t<ul><li>%2 (%3)</li></ul>",
           descr,
@@ -830,12 +826,9 @@ module Yast
         )
       end
       links = [href_nm, href_v6]
-      links = Builtins.add(links, href_virt_net) if href_virt_net != nil
+      links = Builtins.add(links, href_virt_net) if !href_virt_net.nil?
       [descr, links]
     end
-
-
-
 
     # Add a new device
     # @return true if success
@@ -852,7 +845,6 @@ module Yast
       LanItems.DeleteItem
       true
     end
-
 
     # Uses product info and is subject to installed packages.
     # @return Should NM be enabled?
@@ -889,7 +881,7 @@ module Yast
 
     def IfcfgsToSkipVirtualizedProposal
       skipped = []
-      Builtins.foreach(LanItems.Items) do |current, config|
+      Builtins.foreach(LanItems.Items) do |current, _config|
         ifcfg = Ops.get_string(LanItems.Items, [current, "ifcfg"], "")
         if NetworkInterfaces.GetType(ifcfg) == "br"
           NetworkInterfaces.Edit(ifcfg)
@@ -947,7 +939,7 @@ module Yast
       # first configure all connected unconfigured devices with dhcp (with default parameters)
       Builtins.foreach(LanItems.Items) do |number, lanitem|
         if IsNotEmpty(
-            Ops.get_string(Convert.to_map(lanitem), ["hwinfo", "dev_name"], "")
+          Ops.get_string(Convert.to_map(lanitem), ["hwinfo", "dev_name"], "")
           )
           LanItems.current = number
           valid = Ops.get_boolean(
@@ -980,7 +972,7 @@ module Yast
 
       # then each configuration (except bridges) move to the bridge
       # and add old device name into bridge_ports
-      Builtins.foreach(LanItems.Items) do |current, config|
+      Builtins.foreach(LanItems.Items) do |current, _config|
         ifcfg = Ops.get_string(LanItems.Items, [current, "ifcfg"], "")
         if Builtins.contains(skipped, ifcfg)
           Builtins.y2milestone("Skipping interface %1", ifcfg)
@@ -1000,7 +992,7 @@ module Yast
           )
           NetworkInterfaces.Name = new_ifcfg
           # from bridge interface remove all bonding-related stuff
-          Builtins.foreach(NetworkInterfaces.Current) do |key, value|
+          Builtins.foreach(NetworkInterfaces.Current) do |key, _value|
             if Builtins.issubstring(key, "BONDING")
               Ops.set(NetworkInterfaces.Current, key, nil)
             end
@@ -1085,22 +1077,22 @@ module Yast
       pkgs = []
       type_requires.each do |type, package|
         ifaces = NetworkInterfaces.List(type)
-        if !ifaces.empty?
-          Builtins.y2milestone(
-            "Network interface type #{type} requires package #{package}"
-          )
-          pkgs << package if !PackageSystem.Installed(package)
-        end
+        next if ifaces.empty?
+
+        Builtins.y2milestone(
+          "Network interface type #{type} requires package #{package}"
+        )
+        pkgs << package if !PackageSystem.Installed(package)
       end
 
       option_requires.each do |option, option_values|
         option_values.each do |value, package|
-          if NetworkInterfaces.Locate(option, value) != []
-            Builtins.y2milestone(
-              "Network interface with option #{option}=#{value} requires package #{package}",
-            )
-            pkgs << package if !PackageSystem.Installed(package)
-          end
+          next if NetworkInterfaces.Locate(option, value) == []
+
+          Builtins.y2milestone(
+            "Network interface with option #{option}=#{value} requires package #{package}"
+          )
+          pkgs << package if !PackageSystem.Installed(package)
         end
       end
 
@@ -1120,51 +1112,50 @@ module Yast
     # Xen bridging confuses us (#178848)
     # @return whether xenbr* exists
     def HaveXenBridge
-      #adapted test for xen bridged network (bnc#553794)
+      # adapted test for xen bridged network (bnc#553794)
       have_br = FileUtils.Exists("/dev/.sysconfig/network/xenbridges")
       Builtins.y2milestone("Have Xen bridge: %1", have_br)
       have_br
     end
 
-    publish :variable => :ipv6, :type => "boolean"
-    publish :variable => :AbortFunction, :type => "block <boolean>"
-    publish :variable => :bond_autoconf_slaves, :type => "list <string>"
-    publish :function => :Modified, :type => "boolean ()"
-    publish :function => :isAnyInterfaceDown, :type => "boolean ()"
-    publish :function => :Read, :type => "boolean (symbol)"
-    publish :function => :ReadWithCache, :type => "boolean ()"
-    publish :function => :ReadWithCacheNoGUI, :type => "boolean ()"
-    publish :function => :SetIPv6, :type => "void (boolean)"
-    publish :function => :Write, :type => "boolean ()"
-    publish :function => :WriteOnly, :type => "boolean ()"
-    publish :function => :Import, :type => "boolean (map)"
-    publish :function => :Export, :type => "map ()"
-    publish :function => :Summary, :type => "list (string)"
-    publish :function => :SummaryGeneral, :type => "list ()"
-    publish :function => :Add, :type => "boolean ()"
-    publish :function => :Delete, :type => "boolean ()"
-    publish :function => :AnyDHCPDevice, :type => "boolean ()"
-    publish :function => :Packages, :type => "list <string> ()"
-    publish :function => :AutoPackages, :type => "map ()"
-    publish :function => :HaveXenBridge, :type => "boolean ()"
+    publish variable: :ipv6, type: "boolean"
+    publish variable: :AbortFunction, type: "block <boolean>"
+    publish variable: :bond_autoconf_slaves, type: "list <string>"
+    publish function: :Modified, type: "boolean ()"
+    publish function: :isAnyInterfaceDown, type: "boolean ()"
+    publish function: :Read, type: "boolean (symbol)"
+    publish function: :ReadWithCache, type: "boolean ()"
+    publish function: :ReadWithCacheNoGUI, type: "boolean ()"
+    publish function: :SetIPv6, type: "void (boolean)"
+    publish function: :Write, type: "boolean ()"
+    publish function: :WriteOnly, type: "boolean ()"
+    publish function: :Import, type: "boolean (map)"
+    publish function: :Export, type: "map ()"
+    publish function: :Summary, type: "list (string)"
+    publish function: :SummaryGeneral, type: "list ()"
+    publish function: :Add, type: "boolean ()"
+    publish function: :Delete, type: "boolean ()"
+    publish function: :AnyDHCPDevice, type: "boolean ()"
+    publish function: :Packages, type: "list <string> ()"
+    publish function: :AutoPackages, type: "map ()"
+    publish function: :HaveXenBridge, type: "boolean ()"
 
-  private
+    private
+
     def activate_network_service
       if LanItems.force_restart
         log.info("Network service activation forced")
         NetworkService.Restart
       else
-        log.info(
-          ("Attempting to reload network service, normal stage %s, ssh: %s") %
-          [Stage.normal, Linuxrc.usessh]
-        )
+        log.info "Attempting to reload network service, normal stage " \
+          "#{Stage.normal}, ssh: #{Linuxrc.usessh}"
+
         # If the second installation stage has been called by yast.ssh via
         # ssh, we should not restart network cause systemctl
         # hangs in that case. (bnc#885640)
         NetworkService.ReloadOrRestart if Stage.normal || !Linuxrc.usessh
       end
     end
-
   end
 
   Lan = LanClass.new

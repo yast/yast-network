@@ -44,7 +44,7 @@ describe "Yast::LanItemsClass" do
       when ".network.section"
         @ifcfg_files.sections
       when /^\.network\.value\."(eth\d+)"$/
-        @ifcfg_files.keys($1)
+        @ifcfg_files.keys(Regexp.last_match(1))
       when ".modules.options", ".etc.install_inf"
         []
       else
@@ -54,7 +54,7 @@ describe "Yast::LanItemsClass" do
 
     allow(Yast::SCR).to receive(:Read) do |path|
       if path.to_s =~ /^\.network\.value\."(eth\d+)".(.*)/
-        @ifcfg_files.get($1, $2)
+        @ifcfg_files.get(Regexp.last_match(1), Regexp.last_match(2))
       else
         raise "Unexpected Read #{path}"
       end
@@ -62,7 +62,7 @@ describe "Yast::LanItemsClass" do
 
     allow(Yast::SCR).to receive(:Write) do |path, value|
       if path.to_s =~ /^\.network\.value\."(eth\d+)".(.*)/
-        @ifcfg_files.set($1, $2, value)
+        @ifcfg_files.set(Regexp.last_match(1), Regexp.last_match(2), value)
       elsif path.to_s == ".network" && value.nil?
         true
       else
@@ -71,50 +71,50 @@ describe "Yast::LanItemsClass" do
     end
 
     # stub NetworkInterfaces, apart from the ifcfgs
-    allow(Yast::NetworkInterfaces).
-      to receive(:CleanHotplugSymlink)
-    allow(Yast::NetworkInterfaces).
-      to receive(:GetTypeFromSysfs).
-      with(/eth\d+/).
-      and_return "eth"
-    allow(Yast::NetworkInterfaces).
-      to receive(:GetType).
-      with(/eth\d+/).
-      and_return "eth"
-    allow(Yast::NetworkInterfaces).
-      to receive(:GetType).
-      with("").
-      and_return nil
+    allow(Yast::NetworkInterfaces)
+      .to receive(:CleanHotplugSymlink)
+    allow(Yast::NetworkInterfaces)
+      .to receive(:GetTypeFromSysfs)
+      .with(/eth\d+/)
+      .and_return "eth"
+    allow(Yast::NetworkInterfaces)
+      .to receive(:GetType)
+      .with(/eth\d+/)
+      .and_return "eth"
+    allow(Yast::NetworkInterfaces)
+      .to receive(:GetType)
+      .with("")
+      .and_return nil
 
-    allow(Yast::LanUdevAuto).
-      to receive(:AllowUdevModify).and_return false
+    allow(Yast::LanUdevAuto)
+      .to receive(:AllowUdevModify).and_return false
 
     # These "expect" should be "allow", but then it does not work out,
     # because SCR multiplexes too much and the matchers get confused.
 
     # Hardware detection
-    expect(Yast::SCR).
-      to receive(:Read).
-      with(Yast::Path.new(".probe.netcard")).
-      and_return([])
+    expect(Yast::SCR)
+      .to receive(:Read)
+      .with(Yast::Path.new(".probe.netcard"))
+      .and_return([])
 
     # miscellaneous uninteresting but hard to avoid stuff
 
     allow(Yast::Arch).to receive(:architecture).and_return "x86_64"
     allow(Yast::Confirm).to receive(:Detection).and_return true
 
-    expect(Yast::SCR).
-      to receive(:Read).
-      with(Yast::Path.new(".etc.install_inf.BrokenModules")).
-      and_return ""
-    expect(Yast::SCR).
-      to receive(:Read).
-      with(Yast::Path.new(".udev_persistent.net")).
-      and_return({})
-    expect(Yast::SCR).
-      to receive(:Read).
-      with(Yast::Path.new(".udev_persistent.drivers")).
-      and_return({})
+    expect(Yast::SCR)
+      .to receive(:Read)
+      .with(Yast::Path.new(".etc.install_inf.BrokenModules"))
+      .and_return ""
+    expect(Yast::SCR)
+      .to receive(:Read)
+      .with(Yast::Path.new(".udev_persistent.net"))
+      .and_return({})
+    expect(Yast::SCR)
+      .to receive(:Read)
+      .with(Yast::Path.new(".udev_persistent.drivers"))
+      .and_return({})
   end
 
   it "does not modify DHCLIENT_SET_DEFAULT_ROUTE if not explicitly set, when editing an ifcfg" do

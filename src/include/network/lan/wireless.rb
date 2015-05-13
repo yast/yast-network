@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/lan/wizards.ycp
 # Package:	Network configuration
 # Summary:	Network cards configuration wizards
@@ -68,7 +68,6 @@ module Yast
         )
       )
 
-
       @wpa_eap_widget_descr = {
         "WPA_EAP_MODE"                => {
           "widget" => :combobox,
@@ -84,8 +83,8 @@ module Yast
             ["TLS", _("TLS")]
           ],
           "help"   => _(
-            "<p>WPA-EAP uses a RADIUS server to authenticate users. There\n" +
-              "are different methods in EAP to connect to the server and\n" +
+            "<p>WPA-EAP uses a RADIUS server to authenticate users. There\n" \
+              "are different methods in EAP to connect to the server and\n" \
               "perform the authentication, namely TLS, TTLS, and PEAP.</p>\n"
           ),
           "init"   => fun_ref(method(:InitEapMode), "void (string)"),
@@ -99,9 +98,9 @@ module Yast
           "label"  => _("&Identity"),
           "opt"    => [],
           "help"   => _(
-            "<p>For TTLS and PEAP, enter your <b>Identity</b>\n" +
-              "and <b>Password</b> as configured on the server.\n" +
-              "If you have special requirements to set the username used as\n" +
+            "<p>For TTLS and PEAP, enter your <b>Identity</b>\n" \
+              "and <b>Password</b> as configured on the server.\n" \
+              "If you have special requirements to set the username used as\n" \
               "<b>Anonymous Identity</b>, you may set it here. This is usually not needed.</p>\n"
           )
         },
@@ -126,10 +125,10 @@ module Yast
           "label"             => _("&Client Certificate"),
           "opt"               => [],
           "help"              => _(
-            "<p>TLS uses a <b>Client Certificate</b> instead of a username and\n" +
-              "password combination for authentication. It uses a public and private key pair\n" +
-              "to encrypt negotiation communication, therefore you will additionally need\n" +
-              "a <b>Client Key</b> file that contains your private key and\n" +
+            "<p>TLS uses a <b>Client Certificate</b> instead of a username and\n" \
+              "password combination for authentication. It uses a public and private key pair\n" \
+              "to encrypt negotiation communication, therefore you will additionally need\n" \
+              "a <b>Client Key</b> file that contains your private key and\n" \
               "the appropriate <b>Client Key Password</b> for that file.</p>\n"
           ),
           "validate_type"     => :function,
@@ -169,8 +168,8 @@ module Yast
           ),
           "opt"               => [],
           "help"              => _(
-            "<p>To increase security, it is recommended to configure\n" +
-              "a <b>Server Certificate</b>. It is used\n" +
+            "<p>To increase security, it is recommended to configure\n" \
+              "a <b>Server Certificate</b>. It is used\n" \
               "to validate the server's authenticity.</p>\n"
           ),
           "validate_type"     => :function,
@@ -238,9 +237,9 @@ module Yast
           # combo box label
           "label"  => _("&Authentication Method"),
           "help"   => _(
-            "<p>Here you can configure the inner authentication (also known as phase 2)\n" +
-              "method. By default, all methods are allowed. If you want to restrict the\n" +
-              "allowed methods or in case you have encountered difficulties regarding\n" +
+            "<p>Here you can configure the inner authentication (also known as phase 2)\n" \
+              "method. By default, all methods are allowed. If you want to restrict the\n" \
+              "allowed methods or in case you have encountered difficulties regarding\n" \
               "authentication, choose your inner authentication method.</p>\n"
           )
         },
@@ -297,11 +296,11 @@ module Yast
     # @param [Array<Fixnum>] lengths allowed real key lengths
     def CheckWirelessKey(key, lengths)
       lengths = deep_copy(lengths)
-      return false if key == nil
+      return false if key.nil?
 
       if Builtins.regexpmatch(key, "^s:.{5}$") && Builtins.contains(lengths, 40) ||
           Builtins.regexpmatch(key, "^s:.{6,13}$") &&
-            Builtins.contains(lengths, 104)
+              Builtins.contains(lengths, 104)
         return true
       end
 
@@ -321,7 +320,6 @@ module Yast
       false
     end
 
-
     # Takes the WEP items from the list and returns the key lengths as integers
     # Like the input, uses the real length which is 24 bits shorter
     # than the marketing one.
@@ -330,7 +328,7 @@ module Yast
     # @return [Array] of real key lengths
     def ParseKeyLengths(enc_modes)
       enc_modes = deep_copy(enc_modes)
-      return [40, 104] if enc_modes == nil
+      return [40, 104] if enc_modes.nil?
 
       lengths = []
       Builtins.foreach(enc_modes) do |em|
@@ -372,11 +370,11 @@ module Yast
         "wpa-eap"       => _("WPA-EAP (WPA version 1 or 2)")
       }
       ids = { "wpa-psk" => "psk", "wpa-eap" => "eap" }
-      if authmodes == nil
+      if authmodes.nil?
         authmodes = Convert.convert(
           Map.Keys(names),
-          :from => "list",
-          :to   => "list <string>"
+          from: "list",
+          to:   "list <string>"
         )
       else
         # keep only those that we know how to handle
@@ -515,7 +513,7 @@ module Yast
 
       ckey = nil
       ret = nil
-      while true
+      loop do
         UI.ChangeWidget(Id(:mode), :Value, "Managed") if authmode_wpa
 
         UI.ChangeWidget(
@@ -650,8 +648,8 @@ module Yast
           )
           output = Convert.convert(
             SCR.Execute(path(".target.bash_output"), command),
-            :from => "any",
-            :to   => "map <string, any>"
+            from: "any",
+            to:   "map <string, any>"
           )
 
           if Ops.get_integer(output, "exit", -1) == 0
@@ -701,9 +699,9 @@ module Yast
       ) +
         # Wireless expert dialog help 2/5
         _(
-          "<p>To use your wireless LAN card in master or ad-hoc mode,\n" +
-            "set the <b>Channel</b> the card should use here. This is not needed\n" +
-            "for managed mode--the card will hop through the channels searching for access\n" +
+          "<p>To use your wireless LAN card in master or ad-hoc mode,\n" \
+            "set the <b>Channel</b> the card should use here. This is not needed\n" \
+            "for managed mode--the card will hop through the channels searching for access\n" \
             "points in that case.</p>\n"
         ) +
         # Wireless expert dialog help 3/5
@@ -716,32 +714,10 @@ module Yast
         ) +
         # Wireless expert dialog help 5/5
         _(
-          "<p><b>Use Power Management</b> enables power saving mechanisms.\n" +
-            "This is generally a good idea, especially if you are a laptop user and may\n" +
+          "<p><b>Use Power Management</b> enables power saving mechanisms.\n" \
+            "This is generally a good idea, especially if you are a laptop user and may\n" \
             "be disconnected from AC power.</p>\n"
         )
-
-      helpunused =
-        # Wireless expert dialog help 2b/5
-        _(
-          "<p>To specify the <b>Frequency</b> instead of\nthe channel, select the desired value.</p>\n"
-        )
-
-      # Combobox label
-      freq = ComboBox(
-        Id(:frequency),
-        Opt(:hstretch),
-        _("&Frequency"),
-        [
-          # Combobox item
-          Item(Id("Automatic"), _("Automatic"), LanItems.wl_frequency == ""),
-          Item(
-            Id("Automatic"),
-            "FIXME: ASK jg@suse.de",
-            LanItems.wl_frequency != ""
-          )
-        ]
-      )
 
       channels = [
         "1",
@@ -759,7 +735,7 @@ module Yast
         "13",
         "14"
       ]
-      channels = deep_copy(LanItems.wl_channels) if LanItems.wl_channels != nil
+      channels = deep_copy(LanItems.wl_channels) if !LanItems.wl_channels.nil?
       if LanItems.wl_channel != "" &&
           !Builtins.contains(channels, LanItems.wl_channel)
         channels = Builtins.prepend(channels, LanItems.wl_channel)
@@ -781,7 +757,7 @@ module Yast
         "2",
         "1"
       ]
-      bitrates = deep_copy(LanItems.wl_bitrates) if LanItems.wl_bitrates != nil
+      bitrates = deep_copy(LanItems.wl_bitrates) if !LanItems.wl_bitrates.nil?
       if LanItems.wl_bitrate != "" &&
           !Builtins.contains(bitrates, LanItems.wl_bitrate)
         bitrates = Builtins.prepend(bitrates, LanItems.wl_bitrate)
@@ -862,7 +838,7 @@ module Yast
       UI.ChangeWidget(Id(:channel), :Enabled, channel_changeable)
 
       ret = nil
-      while true
+      loop do
         ret = UI.UserInput
 
         if ret == :abort || ret == :cancel
@@ -940,7 +916,7 @@ module Yast
 
       ret = nil
       ckey = nil
-      while true
+      loop do
         ret = UI.UserInput
 
         if ret == :help
@@ -987,7 +963,7 @@ module Yast
       keys = deep_copy(keys)
       return defaultk if Ops.get(keys, defaultk, "") != ""
       defaultk = Builtins.find([0, 1, 2, 3]) { |i| Ops.get(keys, i, "") != "" }
-      defaultk = 0 if defaultk == nil
+      defaultk = 0 if defaultk.nil?
       defaultk
     end
 
@@ -999,18 +975,18 @@ module Yast
 
       # Wireless keys dialog help 1/3
       helptext = _(
-        "<p>In this dialog, define your WEP keys used\n" +
-          "to encrypt your data before it is transmitted. You can have up to four keys,\n" +
-          "although only one key is used to encrypt the data. This is the default key.\n" +
-          "The other keys can be used to decrypt data. Usually you have only\n" +
+        "<p>In this dialog, define your WEP keys used\n" \
+          "to encrypt your data before it is transmitted. You can have up to four keys,\n" \
+          "although only one key is used to encrypt the data. This is the default key.\n" \
+          "The other keys can be used to decrypt data. Usually you have only\n" \
           "one key.</p>"
       ) +
         # Wireless keys dialog help 2/3
         _(
-          "<p><b>Key Length</b> defines the bit length of your WEP keys.\n" +
-            "Possible are 64 and 128 bit, sometimes also referred to as 40 and 104 bit.\n" +
-            "Some older hardware might not be able to handle 128 bit keys, so if your\n" +
-            "wireless LAN connection does not establish, you may need to set this\n" +
+          "<p><b>Key Length</b> defines the bit length of your WEP keys.\n" \
+            "Possible are 64 and 128 bit, sometimes also referred to as 40 and 104 bit.\n" \
+            "Some older hardware might not be able to handle 128 bit keys, so if your\n" \
+            "wireless LAN connection does not establish, you may need to set this\n" \
             "value to 64.</p>"
         ) + ""
 
@@ -1084,9 +1060,9 @@ module Yast
       current = Convert.to_integer(UI.QueryWidget(Id(:table), :CurrentItem))
 
       ret = nil
-      while true
+      loop do
         Builtins.foreach([:edit, :delete, :default]) do |btn|
-          UI.ChangeWidget(Id(btn), :Enabled, current != nil)
+          UI.ChangeWidget(Id(btn), :Enabled, !current.nil?)
         end
 
         UI.SetFocus(Id(:table))
@@ -1106,9 +1082,11 @@ module Yast
           Ops.set(
             keys,
             current,
-            ret != :delete ?
-              WirelessKeyPopup(Ops.get(keys, current, ""), [rlength]) :
+            if ret != :delete
+              WirelessKeyPopup(Ops.get(keys, current, ""), [rlength])
+            else
               ""
+            end
           )
           defaultk = FindGoodDefault(keys, defaultk)
           UI.ChangeWidget(Id(:table), :Items, WirelessKeysItems(keys, defaultk))
@@ -1165,9 +1143,7 @@ module Yast
     # @param [String] key	the widget receiving the event
     # @param [Hash] event	the event being handled
     # @return nil so that the dialog loops on
-    def HandleEapMode(key, event)
-      event = deep_copy(event)
-      #    my2debug ("HSI", sformat ("k: %1 e: %2", key, event));
+    def HandleEapMode(key, _event)
       tls = UI.QueryWidget(Id(key), :Value) == "TLS"
       Builtins.foreach(["WPA_EAP_PASSWORD", "WPA_EAP_ANONID", "DETAILS_B"]) do |id|
         UI.ChangeWidget(Id(id), :Enabled, !tls)
@@ -1190,7 +1166,7 @@ module Yast
       # inherited
       InitializeWidget(key)
       # enable/disable
-      HandleEapMode(key, { "ID" => "_cwm_wakeup" })
+      HandleEapMode(key, "ID" => "_cwm_wakeup")
 
       nil
     end
@@ -1228,12 +1204,12 @@ module Yast
       file = Convert.to_string(UI.QueryWidget(Id(key), :Value))
       slashpos = Builtins.findlastof(file, "/")
       defaultd = "." # "/etc/cert";
-      dir = slashpos == nil ? defaultd : Builtins.substring(file, 0, slashpos)
+      dir = slashpos.nil? ? defaultd : Builtins.substring(file, 0, slashpos)
 
       # file browser dialog headline
       file = UI.AskForExistingFile(dir, "*", _("Choose a Certificate"))
 
-      if file != nil
+      if !file.nil?
         # fill the value
         UI.ChangeWidget(Id(key), :Value, file)
       end
@@ -1244,19 +1220,17 @@ module Yast
     # @param [String] key	the widget receiving the event
     # @param [Hash] event	the event being handled
     # @return nil so that the dialog loops on
-    def HandleDetails(key, event)
+    def HandleDetails(_key, event)
       event = deep_copy(event)
       return :details if Ops.get(event, "ID") == "DETAILS_B"
       nil
     end
 
-
     # Called to validate that the file entered exists
     # @param [String] key widget id
     # @param [Hash] event ?
     # @return ok?
-    def ValidateFileExists(key, event)
-      event = deep_copy(event)
+    def ValidateFileExists(key, _event)
       file = Convert.to_string(UI.QueryWidget(Id(key), :Value))
 
       if file == ""
@@ -1278,9 +1252,9 @@ module Yast
       if Builtins.size(Convert.to_string(UI.QueryWidget(Id(key), :Value))) == 0 ||
           !ValidateFileExists(key, event)
         if !Popup.YesNo(
-            _(
-              "Not using a Certificate Authority (CA) certificate can result in connections\nto insecure, rogue wireless networks. Continue without CA ?"
-            )
+          _(
+            "Not using a Certificate Authority (CA) certificate can result in connections\nto insecure, rogue wireless networks. Continue without CA ?"
+          )
           )
           ret = false
         end
@@ -1292,12 +1266,11 @@ module Yast
     # @param [String] key widget id
     # @param [Hash] event ?
     # @return ok?
-    def ValidateWpaEap(key, event)
-      event = deep_copy(event)
+    def ValidateWpaEap(_key, _event)
       tmp = Builtins.listmap(
         [
           "WPA_EAP_IDENTITY",
-          #"WPA_EAP_PASSWORD",
+          # "WPA_EAP_PASSWORD",
           "WPA_EAP_CLIENT_CERT"
         ]
       ) { |key2| { key2 => UI.QueryWidget(Id(key2), :Value) } }
@@ -1350,15 +1323,13 @@ module Yast
       } # undocumented, FIXME
 
       CWM.ShowAndRun(
-        {
-          "widget_descr"       => @wpa_eap_widget_descr,
-          "contents"           => contents,
-          # dialog caption
-          "caption"            => _("WPA-EAP"),
-          "back_button"        => Label.BackButton,
-          "next_button"        => Label.NextButton,
-          "fallback_functions" => functions
-        }
+        "widget_descr"       => @wpa_eap_widget_descr,
+        "contents"           => contents,
+        # dialog caption
+        "caption"            => _("WPA-EAP"),
+        "back_button"        => Label.BackButton,
+        "next_button"        => Label.NextButton,
+        "fallback_functions" => functions
       )
     end
 
@@ -1413,15 +1384,13 @@ module Yast
       )
 
       CWM.ShowAndRun(
-        {
-          "widget_descr"       => wd,
-          "contents"           => contents,
-          # dialog caption
-          "caption"            => _("WPA-EAP Details"),
-          "back_button"        => Label.BackButton,
-          "next_button"        => Label.OKButton,
-          "fallback_functions" => functions
-        }
+        "widget_descr"       => wd,
+        "contents"           => contents,
+        # dialog caption
+        "caption"            => _("WPA-EAP Details"),
+        "back_button"        => Label.BackButton,
+        "next_button"        => Label.OKButton,
+        "fallback_functions" => functions
       )
     end
   end

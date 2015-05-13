@@ -1,0 +1,83 @@
+# use the shared Yast defaults
+inherit_from:
+  /usr/share/YaST2/data/devtools/data/rubocop_yast_style.yml
+
+# Offense count: 221
+Metrics/AbcSize:
+  Max: 312
+
+# Offense count: 14
+Metrics/BlockNesting:
+  Max: 5
+
+# Offense count: 5
+# Configuration parameters: CountComments.
+Metrics/ClassLength:
+  Max: 1916
+
+# Offense count: 81
+Metrics/CyclomaticComplexity:
+  Max: 50
+
+# Offense count: 15
+# Configuration parameters: AllowURI, URISchemes.
+Metrics/LineLength:
+  Max: 1285
+
+# Offense count: 321
+# Configuration parameters: CountComments.
+Metrics/MethodLength:
+  Max: 494
+
+# Offense count: 1
+# Configuration parameters: CountKeywordArgs.
+Metrics/ParameterLists:
+  Max: 6
+
+# Offense count: 74
+Metrics/PerceivedComplexity:
+  Max: 59
+
+# Offense count: 436
+# Configuration parameters: EnforcedStyle, SupportedStyles.
+Style/MethodName:
+  Enabled: false
+
+# Offense count: 94
+Style/Documentation:
+  Enabled: false
+
+# Offense count: 436
+# Configuration parameters: EnforcedStyle, SupportedStyles.
+Style/MethodName:
+  Enabled: false
+
+# Offense count: 97
+# Configuration parameters: EnforcedStyle, SupportedStyles.
+Style/VariableName:
+  Enabled: false
+
+# Offense count: 1
+Style/ClassVars:
+  Enabled: false
+
+# Offense count: 20
+# Configuration parameters: Exclude.
+Style/FileName:
+  Enabled: false
+
+# Offense count: 1
+# Configuration parameters: NamePrefix, NamePrefixBlacklist.
+Style/PredicateName:
+  Enabled: false
+
+# Offense count: 1
+Style/AccessorMethodName:
+  Enabled: false
+
+# Offense count: 7
+# Cop supports --auto-correct.
+# Configuration parameters: ExactNameMatch, AllowPredicates, AllowDSLWriters, Whitelist.
+Style/TrivialAccessors:
+  Enabled: false
+

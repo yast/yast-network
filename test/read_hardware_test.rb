@@ -6,7 +6,7 @@ require "yast"
 
 include Yast
 
-require_relative 'netcard_probe_helper'
+require_relative "netcard_probe_helper"
 
 Yast.include self, "network/routines.rb"
 

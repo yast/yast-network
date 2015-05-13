@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/lan/dhcp.ycp
 # Package:	Network configuration
 # Summary:	Network card adresss configuration dialogs
@@ -92,7 +92,7 @@ module Yast
       }
     end
 
-    def initDhclientOptions(key)
+    def initDhclientOptions(_key)
       #     boolean dhclient_broadcast = false;
       #
       #     if(issubstring(NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"]:"", "-B"))
@@ -124,8 +124,7 @@ module Yast
       nil
     end
 
-    def storeDhclientOptions(key, event)
-      event = deep_copy(event)
+    def storeDhclientOptions(_key, _event)
       Ops.set(
         NetworkConfig.DHCP,
         "DHCLIENT_SET_DEFAULT_ROUTE",
@@ -140,7 +139,7 @@ module Yast
         NetworkConfig.DHCP,
         "DHCLIENT_HOSTNAME_OPTION",
         UI.QueryWidget(Id(:hostname), :Value)
-      ) 
+      )
       #     boolean dhclient_broadcast = UI::QueryWidget(`id(`broadcast), `Value) == true;
       #
       #     string options = NetworkConfig::DHCP["DHCLIENT_ADDITIONAL_OPTIONS"]:"";

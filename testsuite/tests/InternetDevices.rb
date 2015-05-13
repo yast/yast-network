@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,9 +20,8 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 module Yast
-
   class NetworkInterfacesClass < Module
     attr_writer :initialized
   end
@@ -69,49 +68,49 @@ module Yast
           "network" => { "config" => { "NETWORKMANAGER" => "yes" } }
         }
       }
-      TEST(lambda { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
+      TEST(-> { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
       DUMP(Internet.device)
       DUMP(Internet.type)
 
       NetworkInterfaces.initialized = false
-      Ops.set(@READ, "network", { "section" => { "dsl0" => {}, "eth0" => {} } })
-      TEST(lambda { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
+      Ops.set(@READ, "network", "section" => { "dsl0" => {}, "eth0" => {} })
+      TEST(-> { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
       DUMP(Internet.device)
       DUMP(Internet.type)
 
       NetworkInterfaces.initialized = false
-      Ops.set(@READ, "network", { "section" => { "eth1" => {}, "tr0" => {} } })
-      TEST(lambda { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
+      Ops.set(@READ, "network", "section" => { "eth1" => {}, "tr0" => {} })
+      TEST(-> { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
       DUMP(Internet.device)
       DUMP(Internet.type)
 
       NetworkInterfaces.initialized = false
-      Ops.set(@READ, "network", { "section" => { "dsl0" => {}, "tr0" => {} } })
-      TEST(lambda { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
+      Ops.set(@READ, "network", "section" => { "dsl0" => {}, "tr0" => {} })
+      TEST(-> { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
       DUMP(Internet.device)
       DUMP(Internet.type)
 
       NetworkInterfaces.initialized = false
-      Ops.set(@READ, "network", { "section" => { "dsl0" => {}, "ppp0" => {} } })
-      TEST(lambda { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
+      Ops.set(@READ, "network", "section" => { "dsl0" => {}, "ppp0" => {} })
+      TEST(-> { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
       DUMP(Internet.device)
       DUMP(Internet.type)
 
       NetworkInterfaces.initialized = false
-      Ops.set(@READ, "network", { "section" => { "ppp0" => {}, "tr1" => {} } })
-      TEST(lambda { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
+      Ops.set(@READ, "network", "section" => { "ppp0" => {}, "tr1" => {} })
+      TEST(-> { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
       DUMP(Internet.device)
       DUMP(Internet.type)
 
       NetworkInterfaces.initialized = false
-      Ops.set(@READ, "network", { "section" => { "ppp0" => {} } })
-      TEST(lambda { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
+      Ops.set(@READ, "network", "section" => { "ppp0" => {} })
+      TEST(-> { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
       DUMP(Internet.device)
       DUMP(Internet.type)
 
       NetworkInterfaces.initialized = false
-      Ops.set(@READ, "network", { "section" => { "ippp0" => {}, "tr1" => {} } })
-      TEST(lambda { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
+      Ops.set(@READ, "network", "section" => { "ippp0" => {}, "tr1" => {} })
+      TEST(-> { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
       DUMP(Internet.device)
       DUMP(Internet.type)
 
@@ -119,22 +118,22 @@ module Yast
       Ops.set(
         @READ,
         "network",
-        { "section" => { "ippp0" => {}, "ppp0" => {} } }
+        "section" => { "ippp0" => {}, "ppp0" => {} }
       )
-      TEST(lambda { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
+      TEST(-> { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
       DUMP(Internet.device)
       DUMP(Internet.type)
 
       NetworkInterfaces.initialized = false
-      Ops.set(@READ, "network", { "section" => {} })
-      TEST(lambda { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
+      Ops.set(@READ, "network", "section" => {})
+      TEST(-> { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE], nil)
       DUMP(Internet.device)
       DUMP(Internet.type)
 
       NetworkInterfaces.initialized = false
       Internet.devices = nil
-      Ops.set(@READ, "network", { "section" => {} })
-      TEST(lambda { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE2], nil)
+      Ops.set(@READ, "network", "section" => {})
+      TEST(-> { InternetDevices.FindFastest }, [@READ, @WRITE, @EXECUTE2], nil)
       DUMP(Internet.device)
       DUMP(Internet.type)
 

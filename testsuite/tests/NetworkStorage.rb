@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 #
 module Yast
   class NetworkStorageClient < Client
@@ -41,7 +41,7 @@ module Yast
       @EXECUTE = MockBash(
         "/dev/sda2 / ext3 rw,relatime,errors=continue,user_xattr,acl,commit=15,barrier=1,data=ordered 0 0"
       )
-      TEST(lambda { Assert.Equal("/dev/sda2", NetworkStorage.getDevice("/")) }, [
+      TEST(-> { Assert.Equal("/dev/sda2", NetworkStorage.getDevice("/")) }, [
         @READ,
         @WRITE,
         @EXECUTE
@@ -50,11 +50,11 @@ module Yast
       @EXECUTE = MockBash(
         "nfs.example.com:/home/ /home nfs4 rw,relatime,vers=4,rsize=1048576,wsize=1048576,namlen=255,hard,proto=tcp,port=0,timeo=600,retrans=2,sec=krb5i,clientaddr=10.0.2.2,minorversion=0,local_lock=none,addr=10.0.0.1 0 0"
       )
-      TEST(lambda { Assert.Equal("nfs", NetworkStorage.getDevice("/home")) }, [
+      TEST(-> { Assert.Equal("nfs", NetworkStorage.getDevice("/home")) }, [
         @READ,
         @WRITE,
         @EXECUTE
-      ], nil) 
+      ], nil)
 
       nil
     end

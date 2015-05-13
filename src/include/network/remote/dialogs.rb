@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	remote/dialogs.ycp
 # Module:	Network configuration
 # Summary:	Dialog for Remote Administration
@@ -28,7 +28,7 @@
 #
 module Yast
   module NetworkRemoteDialogsInclude
-    def initialize_network_remote_dialogs(include_target)
+    def initialize_network_remote_dialogs(_include_target)
       Yast.import "UI"
 
       textdomain "network"
@@ -77,7 +77,7 @@ module Yast
       )
 
       firewall_widget = CWMFirewallInterfaces.CreateOpenFirewallWidget(
-        { "services" => ["service:vnc-httpd", "service:vnc-server"], "display_details" => true }
+        "services" => ["service:vnc-httpd", "service:vnc-server"], "display_details" => true
       )
       firewall_layout = Ops.get_term(firewall_widget, "custom_widget", VBox())
       firewall_help = Ops.get_string(firewall_widget, "help", "")
@@ -87,11 +87,11 @@ module Yast
       help = Ops.add(
         Builtins.sformat(
           _(
-            "<p><b><big>Remote Administration Settings</big></b></p>\n" +
-              "<p>If this feature is enabled, you can\n" +
-              "administer this machine remotely from another machine. Use a VNC\n" +
-              "client, such as krdc (connect to <tt>&lt;hostname&gt;:%1</tt>), or\n" +
-              "a Java-capable Web browser (connect to <tt>http://&lt;hostname&gt;:%2/</tt>).\n" +
+            "<p><b><big>Remote Administration Settings</big></b></p>\n" \
+              "<p>If this feature is enabled, you can\n" \
+              "administer this machine remotely from another machine. Use a VNC\n" \
+              "client, such as krdc (connect to <tt>&lt;hostname&gt;:%1</tt>), or\n" \
+              "a Java-capable Web browser (connect to <tt>http://&lt;hostname&gt;:%2/</tt>).\n" \
               "This form of remote administration is less secure than using SSH.</p>\n"
           ),
           5901,
@@ -130,15 +130,15 @@ module Yast
 
       ret = nil
       event = nil
-      begin
+      loop do
         event = UI.WaitForEvent
         ret = Ops.get(event, "ID")
 
         CWMFirewallInterfaces.OpenFirewallHandle(firewall_widget, "", event)
 
         Wizard.ShowHelp(help) if ret == :help
-      end until DialogDone(ret)
-
+        break if DialogDone(ret)
+      end
       if ret == :next
         CWMFirewallInterfaces.OpenFirewallStore(firewall_widget, "", event)
 

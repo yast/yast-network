@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	modules/DNS.ycp
 # Package:	Network configuration
 # Summary:	Hostname and DNS data
@@ -33,7 +33,6 @@ require "yast"
 
 module Yast
   class DNSClass < Module
-
     include Logger
 
     HOSTNAME_FILE = "hostname"
@@ -91,9 +90,9 @@ module Yast
     # @param [String] ns ip of the nameserver
     # @return true if success
     def ReadNameserver(ns)
-      return false if ns == "" || ns == nil
+      return false if ns == "" || ns.nil?
       @nameservers = [ns]
-      #modified = true;
+      # modified = true;
       true
     end
 
@@ -102,10 +101,10 @@ module Yast
     # @param [String] dn domain name
     # @return true if the hostname has been assigned
     def ReadHostDomain(hn, dn)
-      return false if hn == "" || hn == nil || dn == nil
+      return false if hn == "" || hn.nil? || dn.nil?
       @hostname = hn
       @domain = dn
-      #modified = true;
+      # modified = true;
       true
     end
 
@@ -218,7 +217,6 @@ module Yast
       GetHostnameFromGetent(Ops.get_string(getent, "stdout", ""))
     end
 
-
     def DefaultWriteHostname
       # FaTe#303875: Introduce a switch regarding 127.0.0.2 entry in /etc/hosts
       whth = ProductFeatures.GetBooleanFeature(
@@ -255,9 +253,7 @@ module Yast
         fqhostname = read_hostname_from_install_inf
       end
 
-      if fqhostname.empty?
-        fqhostname = read_hostname_from_etc
-      end
+      fqhostname = read_hostname_from_etc if fqhostname.empty?
 
       split = Hostname.SplitFQ(fqhostname)
       @hostname = split[0] || ""
@@ -341,9 +337,9 @@ module Yast
       # build FQ hostname
       fqhostname = Hostname.MergeFQ(@hostname, @domain)
 
-      #We do not collect static IP addresses here, as hostnames
-      #are defined for each static IP separately in address dialog
-      #FaTE #2202
+      # We do not collect static IP addresses here, as hostnames
+      # are defined for each static IP separately in address dialog
+      # FaTE #2202
 
       @oldhostname = fqhostname # #49634
 
@@ -384,7 +380,6 @@ module Yast
         @write_hostname
       )
 
-
       steps = [
         # Progress stage 1
         _("Write hostname"),
@@ -396,7 +391,7 @@ module Yast
 
       # Write dialog caption
       caption = _("Saving Hostname and DNS Configuration")
-      sl = 0 #100; for testing
+      sl = 0 # 100; for testing
 
       Progress.New(caption, " ", Builtins.size(steps), steps, [], "")
 
@@ -429,7 +424,6 @@ module Yast
 
       #     if(SCR::Read(.target.size, resolv_conf) < 0)
       # SCR::Write(.target.string, resolv_conf, "");
-
 
       # Progress step 3/3
       ProgressNextStage(_("Updating /etc/resolv.conf ..."))
@@ -465,7 +459,7 @@ module Yast
     def Import(settings)
       settings = deep_copy(settings)
       @dhcp_hostname = settings.fetch("dhcp_hostname") { default_dhcp_hostname }
-      #if not defined, set to 'auto'
+      # if not defined, set to 'auto'
       @resolv_conf_policy = Ops.get_string(
         settings,
         "resolv_conf_policy",
@@ -529,9 +523,9 @@ module Yast
         Ops.set(expdns, "searchlist", Builtins.eval(@searchlist))
       end
       Ops.set(expdns, "dhcp_hostname", @dhcp_hostname)
-      #TODO: test if it really works with empty string
+      # TODO: test if it really works with empty string
       Ops.set(expdns, "resolv_conf_policy", @resolv_conf_policy)
-      #bnc#576495, FaTE#305281 - clone write_hostname, too
+      # bnc#576495, FaTE#305281 - clone write_hostname, too
       Ops.set(expdns, "write_hostname", @write_hostname)
       deep_copy(expdns)
     end
@@ -567,14 +561,13 @@ module Yast
         )
       end
 
-
-      #if (has_dhcp && NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false) {
+      # if (has_dhcp && NetworkConfig::DHCP["DHCLIENT_MODIFY_RESOLV_CONF"]:false) {
       # Summary text
-      #summary = Summary::AddListItem(summary, _("Name Servers: Set by DHCP"));
+      # summary = Summary::AddListItem(summary, _("Name Servers: Set by DHCP"));
       # Summary text
-      #summary = Summary::AddListItem(summary, _("Search List: Set by DHCP"));
-      #}
-      #else {
+      # summary = Summary::AddListItem(summary, _("Search List: Set by DHCP"));
+      # }
+      # else {
       nslist = Builtins.maplist(@nameservers) do |ns|
         nss = NetHwDetection.ResolveIP(ns)
         nss == "" ? ns : Ops.add(Ops.add(Ops.add(ns, " ("), nss), ")")
@@ -600,7 +593,7 @@ module Yast
           )
         )
       end
-      #}
+      # }
 
       return "" if Ops.less_than(Builtins.size(summary), 1)
       Ops.add(Ops.add("<ul>", summary), "</ul>")
@@ -618,8 +611,8 @@ module Yast
       dhcp_data = {}
 
       if Ops.greater_than(
-          Builtins.size(NetworkInterfaces.Locate("BOOTPROTO", "dhcp")),
-          0
+        Builtins.size(NetworkInterfaces.Locate("BOOTPROTO", "dhcp")),
+        0
         ) || @dhcp_hostname
         dhcp_data = GetDHCPHostnameIP()
         Builtins.y2milestone("Got DHCP-configured data: %1", dhcp_data)
@@ -639,8 +632,8 @@ module Yast
       # IPv4 address
       if IP.Check4(check_host)
         if Ops.greater_than(
-            Builtins.size(NetworkInterfaces.Locate("IPADDR", check_host)),
-            0
+          Builtins.size(NetworkInterfaces.Locate("IPADDR", check_host)),
+          0
           ) ||
             Ops.get(dhcp_data, "ip", "") == check_host
           return true
@@ -651,7 +644,7 @@ module Yast
           "TODO make it similar to IPv4 after other code adapted to IPv6"
         )
       # short hostname
-      elsif Builtins.findfirstof(check_host, ".") == nil
+      elsif Builtins.findfirstof(check_host, ".").nil?
         if Builtins.tolower(check_host) == Builtins.tolower(@hostname) ||
             Ops.get(dhcp_data, "hostname_short", "") == check_host
           return true
@@ -680,14 +673,15 @@ module Yast
       nil
     end
 
-  private
+    private
+
     def read_hostname_from_install_inf
       install_inf_hostname = SCR.Read(path(".etc.install_inf.Hostname")) || ""
       log.info("Got #{install_inf_hostname} from install.inf")
 
       return "" if install_inf_hostname.empty?
 
-      #if the name is actually IP, try to resolve it (bnc#556613, bnc#435649)
+      # if the name is actually IP, try to resolve it (bnc#556613, bnc#435649)
       if IP.Check(install_inf_hostname)
         fqhostname = ResolveIP(install_inf_hostname)
         log.info("Got #{fqhostname} after resolving IP from install.inf")
@@ -699,7 +693,7 @@ module Yast
       # in order to get the setting actually written (bnc#588938)
       @modified = true if !fqhostname.empty?
 
-      return fqhostname
+      fqhostname
     end
 
     def read_hostname_from_etc
@@ -714,34 +708,34 @@ module Yast
 
       fqhostname = SCR.Read(path(".target.string"), hostname_path) || ""
 
-      #avoid passing nil argument when we get non-\n-terminated string (#445531)
+      # avoid passing nil argument when we get non-\n-terminated string (#445531)
       fqhostname = String.FirstChunk(fqhostname, "\n")
       log.info("Read #{fqhostname} from '/etc/'")
 
-      return fqhostname
+      fqhostname
     end
 
-    publish :variable => :proposal_valid, :type => "boolean"
-    publish :variable => :hostname, :type => "string"
-    publish :variable => :domain, :type => "string"
-    publish :variable => :nameservers, :type => "list <string>"
-    publish :variable => :searchlist, :type => "list <string>"
-    publish :variable => :dhcp_hostname, :type => "boolean"
-    publish :variable => :write_hostname, :type => "boolean"
-    publish :variable => :resolv_conf_policy, :type => "string"
-    publish :variable => :modified, :type => "boolean"
-    publish :function => :ReadNameserver, :type => "boolean (string)"
-    publish :function => :ReadHostDomain, :type => "boolean (string, string)"
-    publish :function => :GetDHCPHostnameIP, :type => "map <string, string> ()"
-    publish :function => :DefaultWriteHostname, :type => "boolean ()"
-    publish :function => :ReadHostname, :type => "void ()"
-    publish :function => :ProposeHostname, :type => "void ()"
-    publish :function => :Read, :type => "boolean ()"
-    publish :function => :Write, :type => "boolean ()"
-    publish :function => :Import, :type => "boolean (map)"
-    publish :function => :Export, :type => "map ()"
-    publish :function => :Summary, :type => "string ()"
-    publish :function => :IsHostLocal, :type => "boolean (string)"
+    publish variable: :proposal_valid, type: "boolean"
+    publish variable: :hostname, type: "string"
+    publish variable: :domain, type: "string"
+    publish variable: :nameservers, type: "list <string>"
+    publish variable: :searchlist, type: "list <string>"
+    publish variable: :dhcp_hostname, type: "boolean"
+    publish variable: :write_hostname, type: "boolean"
+    publish variable: :resolv_conf_policy, type: "string"
+    publish variable: :modified, type: "boolean"
+    publish function: :ReadNameserver, type: "boolean (string)"
+    publish function: :ReadHostDomain, type: "boolean (string, string)"
+    publish function: :GetDHCPHostnameIP, type: "map <string, string> ()"
+    publish function: :DefaultWriteHostname, type: "boolean ()"
+    publish function: :ReadHostname, type: "void ()"
+    publish function: :ProposeHostname, type: "void ()"
+    publish function: :Read, type: "boolean ()"
+    publish function: :Write, type: "boolean ()"
+    publish function: :Import, type: "boolean (map)"
+    publish function: :Export, type: "map ()"
+    publish function: :Summary, type: "string ()"
+    publish function: :IsHostLocal, type: "boolean (string)"
   end
 
   DNS = DNSClass.new

@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/lan/hardware.ycp
 # Package:	Network configuration
 # Summary:	Hardware dialogs
@@ -49,7 +49,6 @@ module Yast
       Yast.include include_target, "network/lan/cards.rb"
 
       @hardware = nil
-
 
       @widget_descr_hardware = {
         "HWDIALOG" => {
@@ -98,14 +97,14 @@ module Yast
           Ops.add(
             hw_help,
             _(
-              "<p><b>Udev Rules</b> are rules for the kernel device manager that allow\n" +
-                "associating the MAC address or BusID of the network device with its name (for\n" +
+              "<p><b>Udev Rules</b> are rules for the kernel device manager that allow\n" \
+                "associating the MAC address or BusID of the network device with its name (for\n" \
                 "example, eth1, wlan0 ) and assures a persistent device name upon reboot.\n"
             )
           ),
           _(
-            "<p><b>Show visible port identification</b> allows you to physically identify now configured NIC. \n" +
-              "Set appropriate time, click <b>Blink</b> and LED diodes on you NIC will start blinking for selected time.\n" +
+            "<p><b>Show visible port identification</b> allows you to physically identify now configured NIC. \n" \
+              "Set appropriate time, click <b>Blink</b> and LED diodes on you NIC will start blinking for selected time.\n" \
               "</p>"
           )
         )
@@ -117,15 +116,15 @@ module Yast
           Ops.add(
             hw_help,
             _(
-              "<p><b>Kernel Module</b>. Enter the kernel module (driver) name \n" +
-                "for your network device here. If the device is already configured, see if there is more than one driver available for\n" +
+              "<p><b>Kernel Module</b>. Enter the kernel module (driver) name \n" \
+                "for your network device here. If the device is already configured, see if there is more than one driver available for\n" \
                 "your device in the drop-down list. If necessary, choose a driver from the list, but usually the default value works.</p>\n"
             )
           ),
           # Manual networ card setup help 3/4
           _(
-            "<p>Additionally, specify <b>Options</b> for the kernel module. Use this\n" +
-              "format: <i>option</i>=<i>value</i>. Each entry should be space-separated, for example: <i>io=0x300 irq=5</i>. <b>Note:</b> If two cards are \n" +
+            "<p>Additionally, specify <b>Options</b> for the kernel module. Use this\n" \
+              "format: <i>option</i>=<i>value</i>. Each entry should be space-separated, for example: <i>io=0x300 irq=5</i>. <b>Note:</b> If two cards are \n" \
               "configured with the same module name, the options will be merged while saving.</p>\n"
           )
         ),
@@ -183,18 +182,19 @@ module Yast
         )
       )
 
-      #Use rather LanItems::device, so that device number is initialized correctly at all times (#308763)
+      # Use rather LanItems::device, so that device number is initialized correctly at all times (#308763)
       Ops.set(@hardware, "device", LanItems.device)
 
       driver = Ops.get_string(LanItems.getCurrentItem, ["udev", "driver"], "")
 
-
       Ops.set(
         @hardware,
         "default_device",
-        IsNotEmpty(driver) ?
-          driver :
+        if IsNotEmpty(driver)
+          driver
+        else
           Ops.get_string(LanItems.getCurrentItem, ["hwinfo", "module"], "")
+        end
       )
 
       Ops.set(
@@ -214,17 +214,17 @@ module Yast
         Ops.get_string(@hardware, "device", "")
       )
 
-      # FIXME duplicated in address.ycp
+      # FIXME: duplicated in address.ycp
       Ops.set(@hardware, "device_types", NetworkInterfaces.GetDeviceTypes)
 
       if Builtins.issubstring(
-          Ops.get_string(@hardware, "device", ""),
-          "bus-pcmcia"
+        Ops.get_string(@hardware, "device", ""),
+        "bus-pcmcia"
         )
         Ops.set(@hardware, "hotplug", "pcmcia")
       elsif Builtins.issubstring(
-          Ops.get_string(@hardware, "device", ""),
-          "bus-usb"
+        Ops.get_string(@hardware, "device", ""),
+        "bus-usb"
         )
         Ops.set(@hardware, "hotplug", "usb")
       end
@@ -237,8 +237,8 @@ module Yast
         LanItems.FreeDevices(Ops.get_string(@hardware, "realtype", ""))
       ) # TODO: id-, bus-, ... here
       if !Builtins.contains(
-          Ops.get_list(@hardware, "devices", []),
-          Ops.get_string(@hardware, "device", "")
+        Ops.get_list(@hardware, "devices", []),
+        Ops.get_string(@hardware, "device", "")
         )
         Ops.set(
           @hardware,
@@ -266,16 +266,13 @@ module Yast
       nil
     end
 
-    def initHwDialog(text)
-      # Manual dialog caption
-      caption = _("Manual Network Card Configuration")
-
+    def initHwDialog(_text)
       initHardware
 
       hotplug_type = @hardware["hotplug"] || ""
       hw_type = @hardware["type"] || ""
 
-      _CheckBoxes = HBox(
+      check_boxes = HBox(
         HSpacing(1.5),
         # CheckBox label
         CheckBox(
@@ -296,26 +293,12 @@ module Yast
         HSpacing(1.5)
       )
 
-      # Placeholders (translations)
-      _XBox = HBox(
-        # ComboBox label
-        ComboBox(Id(:hotplug), Opt(:notify), _("&Hotplug Type"), []),
-        # CheckBox label
-        CheckBox(
-          Id(:pci),
-          Opt(:notify),
-          _("P&CI"),
-          hotplug_type == "pci"
-        ),
-        HSpacing(1.5)
-      )
-
       # Disable PCMCIA and USB checkboxex on Edit and s390
-      _CheckBoxes = VSpacing(0) if !isNewDevice || Arch.s390
+      check_boxes = VSpacing(0) if !isNewDevice || Arch.s390
 
       # #116211 - allow user to change modules from list
       # Frame label
-      _KernelBox = Frame(
+      kernel_box = Frame(
         _("&Kernel Module"),
         HBox(
           HSpacing(0.5),
@@ -338,15 +321,14 @@ module Yast
               )
             ),
             VSpacing(0.4),
-            _CheckBoxes,
+            check_boxes,
             VSpacing(0.4)
           ),
           HSpacing(0.5)
         )
       )
 
-
-      _DeviceNumberBox = ReplacePoint(
+      device_number_box = ReplacePoint(
         Id(:rnum),
         # TextEntry label
         ComboBox(
@@ -358,7 +340,7 @@ module Yast
       )
 
       # Manual dialog contents
-      _TypeNameWidgets = VBox(
+      type_name_widgets = VBox(
         VSpacing(0.2),
         HBox(
           HSpacing(0.5),
@@ -373,12 +355,12 @@ module Yast
             )
           ),
           HSpacing(1.5),
-          _DeviceNumberBox,
+          device_number_box,
           HSpacing(0.5)
         )
       )
 
-      _UdevWidget =
+      udev_widget =
         Frame(
           _("Udev Rules"),
           HBox(
@@ -388,18 +370,18 @@ module Yast
         )
 
       if !isNewDevice
-        _TypeNameWidgets = Empty()
+        type_name_widgets = Empty()
       else
-        _UdevWidget = Empty()
+        udev_widget = Empty()
       end
 
-      _BlinkCard = Frame(
+      blink_card = Frame(
         _("Show Visible Port Identification"),
         HBox(
           # translators: how many seconds will card be blinking
           IntField(
             Id(:blink_time),
-            "%s:" % _("Seconds"),
+            format("%s:", _("Seconds")),
             0,
             100,
             5
@@ -408,7 +390,7 @@ module Yast
         )
       )
 
-      _EthtoolWidget = Frame(
+      ethtool_widget = Frame(
         _("Ethtool Options"),
         HBox(
           InputField(
@@ -421,10 +403,10 @@ module Yast
       )
 
       contents = VBox(
-        HBox(_UdevWidget, HStretch(), isNewDevice ? Empty() : _BlinkCard),
-        _TypeNameWidgets,
-        _KernelBox,
-        _EthtoolWidget,
+        HBox(udev_widget, HStretch(), isNewDevice ? Empty() : blink_card),
+        type_name_widgets,
+        kernel_box,
+        ethtool_widget,
         VStretch()
       )
 
@@ -437,17 +419,17 @@ module Yast
       UI.ChangeWidget(
         Id(:modul),
         :Enabled,
-        !!@hardware["no_hotplug_dummy"]
+        @hardware["no_hotplug_dummy"] == true # convert tri state boolean to two state
       )
       ChangeWidgetIfExists(
         Id(:list),
         :Enabled,
-        !!@hardware["no_hotplug_dummy"]
+        @hardware["no_hotplug_dummy"] == true # convert tri state boolean to two state
       )
       ChangeWidgetIfExists(
         Id(:hwcfg),
         :Enabled,
-        !!@hardware["no_hotplug"]
+        @hardware["no_hotplug"] == true # convert tri state boolean to two state
       )
       ChangeWidgetIfExists(
         Id(:usb),
@@ -476,8 +458,6 @@ module Yast
 
       nil
     end
-
-
 
     # Call back for a manual selection from the list
     # @return dialog result
@@ -521,7 +501,7 @@ module Yast
       UI.SetFocus(Id(:cards))
 
       ret = nil
-      while true
+      loop do
         ret = UI.UserInput
 
         if ret == :abort || ret == :cancel
@@ -534,7 +514,7 @@ module Yast
           entry = Convert.to_string(UI.QueryWidget(Id(:search), :Value))
 
           l = Builtins.filter(
-            Convert.convert(cards, :from => "list", :to => "list <term>")
+            Convert.convert(cards, from: "list", to: "list <term>")
           ) do |e|
             Builtins.tolower(
               Builtins.substring(
@@ -572,9 +552,9 @@ module Yast
 
       if ret == :next
         selected = Convert.to_integer(UI.QueryWidget(Id(:cards), :CurrentItem))
-        selected = 0 if selected == nil
+        selected = 0 if selected.nil?
         card = Ops.get(hwlist, selected, {})
-        LanItems.description = Ops.get_string(card, "name", "") 
+        LanItems.description = Ops.get_string(card, "name", "")
       end
 
       deep_copy(ret)
@@ -588,7 +568,7 @@ module Yast
       edit_name_dlg.run
     end
 
-    def handleHW(key, event)
+    def handleHW(_key, event)
       event = deep_copy(event)
       LanItems.Rollback if Ops.get(event, "ID") == :cancel
       ret = nil
@@ -770,8 +750,8 @@ module Yast
             Ops.get_string(@hardware, "options", "")
           )
         elsif Builtins.contains(
-            ["bond", "vlan", "br", "tun", "tap"],
-            Ops.get_string(@hardware, "type", "")
+          ["bond", "vlan", "br", "tun", "tap"],
+          Ops.get_string(@hardware, "type", "")
           )
           UI.ChangeWidget(Id(:hwcfg), :Enabled, false)
           UI.ChangeWidget(Id(:modul), :Enabled, false)
@@ -810,7 +790,7 @@ module Yast
       UI.QueryWidget(Id(:ifcfg_name), :Value)
     end
 
-    def validate_hw(key, event)
+    def validate_hw(_key, _event)
       nm = devname_from_hw_dialog
 
       if UsedNicName(nm)
@@ -827,10 +807,10 @@ module Yast
         return false
       end
 
-      return true
+      true
     end
 
-    def storeHW(key, event)
+    def storeHW(_key, _event)
       if isNewDevice
         nm = devname_from_hw_dialog
         LanItems.type = UI.QueryWidget(Id(:type), :Value)
@@ -867,7 +847,6 @@ module Yast
       nil
     end
 
-
     # S/390 devices configuration dialog
     # @return dialog result
     def S390Dialog
@@ -878,7 +857,6 @@ module Yast
 
       helptext = ""
       contents = Empty()
-
 
       if Builtins.contains(["qeth", "hsi"], LanItems.type)
         # CHANIDS
@@ -1150,19 +1128,16 @@ module Yast
         )
       end
 
-      case LanItems.type
-        when "hsi"
-          UI.SetFocus(Id(:qeth_options))
-        when "qeth"
-          UI.SetFocus(Id(:qeth_portname))
-        when "iucv"
-          UI.SetFocus(Id(:iucv_user))
-        else
-          UI.SetFocus(Id(:chan_mode))
+      id = case LanItems.type
+      when "hsi"  then :qeth_options
+      when "qeth" then :qeth_portname
+      when "iucv" then :iucv_user
+      else             :chan_mode
       end
+      UI.SetFocus(Id(id))
 
       ret = nil
-      while true
+      loop do
         if drvtype == "qeth"
           mac_enabled = Convert.to_boolean(
             UI.QueryWidget(Id(:qeth_layer2), :Value)
@@ -1236,7 +1211,7 @@ module Yast
           control = Convert.to_string(
             UI.QueryWidget(Id(:qeth_chan_control), :Value)
           )
-          control = "" if control == nil
+          control = "" if control.nil?
           LanItems.qeth_chanids = String.CutBlanks(
             Builtins.sformat("%1 %2 %3", read, write, control)
           )
@@ -1279,18 +1254,14 @@ module Yast
         VStretch()
       )
 
-      help = CWM.MergeHelps(w)
       contents = CWM.PrepareDialog(contents, w)
 
       Wizard.OpenNextBackDialog
       Wizard.SetContents(caption, contents, initHelp, false, true)
       Wizard.SetAbortButton(:cancel, Label.CancelButton)
-      ret = CWM.Run(
-        w,
-        {}
-      )
+      ret = CWM.Run(w, {})
       Wizard.CloseDialog
-      deep_copy(ret)
+      ret
     end
   end
 end

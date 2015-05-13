@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	clients/host.ycp
 # Package:	Network configuration
 # Summary:	Hosts client
@@ -81,7 +81,7 @@ module Yast
       # Finish
       Builtins.y2milestone("Host module finished")
       Builtins.y2milestone("----------------------------------------")
-      deep_copy(@ret) 
+      deep_copy(@ret)
 
       # EOF
     end
@@ -105,7 +105,7 @@ module Yast
       Builtins.y2debug("ret == %1", ret)
 
       if ret == :next && Host.modified
-        Host.Write 
+        Host.Write
         # Not needed? RestartNetwork();
       end
 
@@ -115,9 +115,7 @@ module Yast
 
     # Handler for action "list"
     # @param [Hash{String => String}] options action options
-    def ListHandler(options)
-      options = deep_copy(options)
-      summary = ""
+    def ListHandler(_options)
       # Command line output Headline
       # configuration of hosts
       summary = Ops.add(

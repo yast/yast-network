@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/summary.ycp
 # Package:	Network configuration
 # Summary:	Summary and overview functions
@@ -32,7 +32,7 @@
 # Deleted devices are in the global list DELETED.
 module Yast
   module NetworkSummaryInclude
-    def initialize_network_summary(include_target)
+    def initialize_network_summary(_include_target)
       textdomain "network"
 
       Yast.import "String"

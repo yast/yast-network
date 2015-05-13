@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/installation/dialogs.ycp
 # Package:	Network configuration
 # Summary:	Configuration dialogs for installation
@@ -48,7 +48,7 @@ module Yast
     # Ask for password if required
     # @return true on success
     def AskForPassword
-      return true if Internet.askpassword == nil
+      return true if Internet.askpassword.nil?
 
       return true if Internet.askpassword == false
 
@@ -195,13 +195,11 @@ module Yast
         # label text - one step of during network test
         steps = Builtins.add(steps, Left(Label(_("- Connect to the Internet"))))
       end
-      if true
-        # label text - one step of during network test
-        steps = Builtins.add(
-          steps,
-          Left(Label(_("- Download latest release notes")))
-        )
-      end
+      # label text - one step of during network test
+      steps = Builtins.add(
+        steps,
+        Left(Label(_("- Download latest release notes")))
+      )
       if Product.run_you
         # label text - one step of during network test
         steps = Builtins.add(
@@ -248,26 +246,26 @@ module Yast
       Wizard.SetTitleIcon("yast-network")
       initDevice(items)
 
-
       ret = nil
-      exit = false
-      begin
+      quit = false
+      loop do
         ret = Convert.to_symbol(UI.UserInput)
         case ret
-          when :net_expert
-            current = handleDevice(items, current)
-          when :abort, :cancel
-            exit = true if Popup.ConfirmAbort(:incomplete)
-          when :back, :next
-            exit = true
-          when :yes
-            enableDevices(Ops.greater_than(Builtins.size(items), 1))
-          when :no
-            enableDevices(false)
-          else
-            Builtins.y2error("Unexpected return code:%1", ret)
+        when :net_expert
+          current = handleDevice(items, current)
+        when :abort, :cancel
+          quit = true if Popup.ConfirmAbort(:incomplete)
+        when :back, :next
+          quit = true
+        when :yes
+          enableDevices(Ops.greater_than(Builtins.size(items), 1))
+        when :no
+          enableDevices(false)
+        else
+          Builtins.y2error("Unexpected return code:%1", ret)
         end
-      end while !exit
+        break if quit
+      end
 
       Internet.do_test = UI.QueryWidget(Id(:rb), :CurrentButton) == :yes
       SetDevice(current)
@@ -317,7 +315,6 @@ module Yast
       nil
     end
 
-
     # Show several log files.
     # @param [Array<Hash>] logs log files
     # @param [String] logdir log files directory
@@ -365,7 +362,7 @@ module Yast
 
       filename = Ops.get(file_index, 1, "none")
 
-      while true
+      loop do
         # Read file and fill logview
         Builtins.y2milestone(
           "Opening file: %1",
@@ -377,7 +374,7 @@ module Yast
             Ops.add(Ops.add(logdir, "/"), filename)
           )
         )
-        tmp2 = "file not found" if tmp2 == nil
+        tmp2 = "file not found" if tmp2.nil?
         UI.ChangeWidget(
           Id(:log),
           :Value,

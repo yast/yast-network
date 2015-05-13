@@ -2,7 +2,6 @@ require "yast"
 require "uri"
 
 module Yast
-
   class InstallInfConvertor
     include Singleton
     include Logger
@@ -56,11 +55,8 @@ module Yast
       when "static"
         # add broadcast interface #suse49131
         ifcfg << "BOOTPROTO='static'\n"
-        ifcfg << "IPADDR='%s/%s'\n" % [
-          InstallInf["IP"],
-          Netmask.ToBits(InstallInf["Netmask"])
-        ]
-        ifcfg << "BROADCAST='%s'\n" % InstallInf["Broadcast"]
+        ifcfg << "IPADDR='#{InstallInf["IP"]}/#{Netmask.ToBits(InstallInf["Netmask"])}'\n"
+        ifcfg << "BROADCAST='#{InstallInf["Broadcast"]}'\n"
 
         ip6_addr = InstallInf["IP6"]
         if !ip6_addr.empty?
@@ -180,7 +176,7 @@ module Yast
 
       # do not have numeric hostname, #152218
       return "" if hostname.empty? || IP.Check(hostname)
-      return hostname
+      hostname
     end
 
     def write_hostname
@@ -234,8 +230,8 @@ module Yast
         log.info("No DNS search domain defined, using FQ domain name #{fqdomain} as a fallback")
       end
 
-      #We're done. It is OK not to touch NETCONFIG_DNS_POLICY now as it is set to 'auto' by default
-      #and user did not have a chance to modify it up to now
+      # We're done. It is OK not to touch NETCONFIG_DNS_POLICY now as it is set to 'auto' by default
+      # and user did not have a chance to modify it up to now
       SCR.Write(path(".sysconfig.network.config"), nil)
     end
 
@@ -280,11 +276,11 @@ module Yast
       return false if connect_wait.empty?
 
       ret = SCR.Execute(
-          BASH_PATH,
-          "sed -i s/^WAIT_FOR_INTERFACES=.*/WAIT_FOR_INTERFACES=%s/g /etc/sysconfig/network/config" % connect_wait
+        BASH_PATH,
+        "sed -i s/^WAIT_FOR_INTERFACES=.*/WAIT_FOR_INTERFACES=#{connect_wait}/g /etc/sysconfig/network/config"
       )
 
-      return ret == 0
+      ret == 0
     end
 
     def dev_name
@@ -299,7 +295,7 @@ module Yast
       end
 
       log.info("InstInstallInfClient#dev_name:#{netdevice}")
-      return netdevice
+      netdevice
     end
 
     def stdout_of(command)
@@ -318,31 +314,31 @@ module Yast
       ifcfg = "WIRELESS_ESSID='#{wlan_essid}'\n"
 
       case wlan_auth
-        when "", "psk"
-          ifcfg << "WIRELESS_WPA_PSK='#{wlan_key}'\n"
-          ifcfg << "WIRELESS_AUTH_MODE='psk'\n"
+      when "", "psk"
+        ifcfg << "WIRELESS_WPA_PSK='#{wlan_key}'\n"
+        ifcfg << "WIRELESS_AUTH_MODE='psk'\n"
 
-        when "open"
-          ifcfg << "WIRELESS_AUTH_MODE='no-encryption'\n"
+      when "open"
+        ifcfg << "WIRELESS_AUTH_MODE='no-encryption'\n"
 
-        when "wep_open", "wep_restricted"
-          if wlan_key_type == "password"
-            type = "h:"
-          elsif wlan_key_type == "ascii"
-            type = "s:"
-          else
-            type = wlan_key_type[0] + ":"
-          end
+      when "wep_open", "wep_restricted"
+        if wlan_key_type == "password"
+          type = "h:"
+        elsif wlan_key_type == "ascii"
+          type = "s:"
+        else
+          type = wlan_key_type[0] + ":"
+        end
 
-          auth_mode = wlan_auth == "wep-open" ? "open" : "sharedkey"
+        wlan_auth_mode = wlan_auth == "wep-open" ? "open" : "sharedkey"
 
-          ifcfg << "WIRELESS_AUTH_MODE='%s'\n" % wlan_auth_mode
-          ifcfg << "WIRELESS_DEFAULT_KEY='0'\n"
-          ifcfg << "WIRELESS_KEY_0='#{type}#{wlan_key}'\n"
-          ifcfg << "WIRELESS_KEY_LENGTH='#{wlan_key_len}'\n"
+        ifcfg << "WIRELESS_AUTH_MODE='#{wlan_auth_mode}'\n"
+        ifcfg << "WIRELESS_DEFAULT_KEY='0'\n"
+        ifcfg << "WIRELESS_KEY_0='#{type}#{wlan_key}'\n"
+        ifcfg << "WIRELESS_KEY_LENGTH='#{wlan_key_len}'\n"
       end
 
-      return ifcfg
+      ifcfg
     end
 
     def create_s390_ifcfg(hardware)
@@ -366,7 +362,7 @@ module Yast
       # set HW address only for qeth set to Layer 2 (bnc #479481)
       return "" if devtype == "eth" && InstallInf["Layer2"] != "1"
 
-      return "LLADDR='#{hwaddr}'\n"
+      "LLADDR='#{hwaddr}'\n"
     end
 
     def create_device_name_ifcfg(hardware)
@@ -383,7 +379,7 @@ module Yast
       return "" if hw_name.empty?
 
       # protect special characters, #305343
-      return "NAME='%s'\n" % String.Quote(hw_name)
+      "NAME='#{String.Quote(hw_name)}'\n"
     end
 
     def write_ifcfg(ifcfg)
@@ -393,7 +389,7 @@ module Yast
 
       if !LanUdevAuto.AllowUdevModify
         # bnc#821427: use same options as in /lib/udev/rules.d/71-biosdevname.rules
-        cmd = "biosdevname --policy physical --smbios 2.6 --nopirq -i %s" % dev_name
+        cmd = "biosdevname --policy physical --smbios 2.6 --nopirq -i #{dev_name}"
         out = String.FirstChunk(stdout_of(cmd), "\n")
         if !out.empty?
           device_name = out
@@ -406,7 +402,5 @@ module Yast
       log.info("ifcfg file: #{dev_file}")
       SCR.Write(path(".target.string"), dev_file, ifcfg)
     end
-
   end
-
 end

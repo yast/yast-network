@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	modules/Routing.ycp
 # Package:	Network configuration
 # Summary:	Routing data (/etc/sysconfig/network/routes)
@@ -96,7 +96,7 @@ module Yast
 
       return false if no_orig_values
 
-      ret = @Routes != @Orig_Routes 
+      ret = @Routes != @Orig_Routes
       ret ||= @Forward_v4 != @Orig_Forward_v4
       ret ||= @Forward_v6 != @Orig_Forward_v6
 
@@ -109,7 +109,7 @@ module Yast
     # @param [String] gw ip of the default gateway
     # @return true if success
     def ReadFromGateway(gw)
-      return false if gw == "" || gw == nil
+      return false if gw == "" || gw.nil?
       @Routes = [
         {
           "destination" => "default",
@@ -140,7 +140,7 @@ module Yast
     def ReadIPForwarding
       if SuSEFirewall.IsEnabled
         @Forward_v4 = SuSEFirewall.GetSupportRoute
-        # FIXME: missing support for setting IPv6 forwarding enablement in 
+        # FIXME: missing support for setting IPv6 forwarding enablement in
         # SuSEFirewall module and in SuSEFirewall2 at all
       else
         @Forward_v4 = SCR.Read(path(SYSCTL_IPV4_PATH)) == "1"
@@ -158,7 +158,7 @@ module Yast
       forward_ipv6 = @Forward_v6 ? "1" : "0"
 
       if SuSEFirewall.IsEnabled
-        # FIXME: missing support for setting IPv6 forwarding enablement in 
+        # FIXME: missing support for setting IPv6 forwarding enablement in
         # SuSEFirewall module and in SuSEFirewall2 at all
         SuSEFirewall.SetSupportRoute(@Forward_v4)
       else
@@ -179,7 +179,7 @@ module Yast
       )
       SCR.Execute(
         path(".target.bash"),
-        "echo #{forward_ipv6} > /proc/sys/net/ipv6/conf/all/forwarding",
+        "echo #{forward_ipv6} > /proc/sys/net/ipv6/conf/all/forwarding"
       )
 
       nil
@@ -223,9 +223,7 @@ module Yast
       @Orig_Forward_v4 = @Forward_v4
       @Orig_Forward_v6 = @Forward_v6
 
-      if @Routes.empty?
-        ReadFromGateway(NetHwDetection.result["GATEWAY"] || "")
-      end
+      ReadFromGateway(NetHwDetection.result["GATEWAY"] || "") if @Routes.empty?
 
       true
     end
@@ -250,17 +248,17 @@ module Yast
 
       Progress.New(caption, " ", Builtins.size(steps), steps, [], "")
 
-      #Progress stage 1/2
+      # Progress stage 1/2
       ProgressNextStage(_("Writing IP forwarding settings..."))
 
       WriteIPForwarding()
 
       # at first stop the running routes
-      # FIXME SCR::Execute(.target.bash, "/etc/init.d/route stop");
+      # FIXME: SCR::Execute(.target.bash, "/etc/init.d/route stop");
       # sysconfig does not support restarting routes only,
       # so we let our caller do it together with other things
 
-      #Progress stage 2/2
+      # Progress stage 2/2
       ProgressNextStage(_("Writing routing settings..."))
 
       ret = write_routes(@Routes)
@@ -326,9 +324,8 @@ module Yast
       written = write_route_file(ANY_DEVICE, routes)
       ret &&= written
 
-      return ret
+      ret
     end
-
 
     # Get all the Routing configuration from a map.
     # When called by routing_auto (preparing autoinstallation data)
@@ -394,7 +391,7 @@ module Yast
     # @return true if success
     def SetDevices(devs)
       devs = deep_copy(devs)
-      if devs == nil
+      if devs.nil?
         @devices = []
         return false
       end
@@ -426,26 +423,27 @@ module Yast
       summary = Summary.AddListItem(summary, _("IP Forwarding for IPv6: %s") % on_off)
 
       return "" if summary.empty?
-      
+
       "<ul>#{summary}</ul>"
     end
 
-    publish :variable => :Routes, :type => "list <map>"
-    publish :variable => :Forward_v4, :type => "boolean"
-    publish :variable => :Forward_v6, :type => "boolean"
-    publish :function => :Modified, :type => "boolean ()"
-    publish :function => :ReadFromGateway, :type => "boolean (string)"
-    publish :function => :RemoveDefaultGw, :type => "void ()"
-    publish :function => :Read, :type => "boolean ()"
-    publish :function => :Write, :type => "boolean ()"
-    publish :function => :Import, :type => "boolean (map)"
-    publish :function => :Export, :type => "map ()"
-    publish :function => :GetDevices, :type => "list ()"
-    publish :function => :GetGateway, :type => "string ()"
-    publish :function => :SetDevices, :type => "boolean (list)"
-    publish :function => :Summary, :type => "string ()"
+    publish variable: :Routes, type: "list <map>"
+    publish variable: :Forward_v4, type: "boolean"
+    publish variable: :Forward_v6, type: "boolean"
+    publish function: :Modified, type: "boolean ()"
+    publish function: :ReadFromGateway, type: "boolean (string)"
+    publish function: :RemoveDefaultGw, type: "void ()"
+    publish function: :Read, type: "boolean ()"
+    publish function: :Write, type: "boolean ()"
+    publish function: :Import, type: "boolean (map)"
+    publish function: :Export, type: "map ()"
+    publish function: :GetDevices, type: "list ()"
+    publish function: :GetGateway, type: "string ()"
+    publish function: :SetDevices, type: "boolean (list)"
+    publish function: :Summary, type: "string ()"
 
     private
+
     def ifroute_term(device)
       raise ArgumentError if device.nil? || device.empty?
 
@@ -456,27 +454,27 @@ module Yast
         :List,
         term(
           :Tuple,
+          term(
+            :destination,
+            non_empty_str_term
+          ),
+          whitespace_term,
+          term(:gateway, non_empty_str_term),
+          whitespace_term,
+          term(:netmask, non_empty_str_term),
+          optional_whitespace_term,
+          term(
+            :Optional,
+            term(:device, non_empty_str_term)
+          ),
+          optional_whitespace_term,
+          term(
+            :Optional,
             term(
-              :destination,
-              non_empty_str_term
-            ),
-            whitespace_term,
-            term(:gateway, non_empty_str_term),
-            whitespace_term,
-            term(:netmask, non_empty_str_term),
-            optional_whitespace_term,
-            term(
-              :Optional,
-              term(:device, non_empty_str_term)
-            ),
-            optional_whitespace_term,
-            term(
-              :Optional,
-              term(
-                :extrapara,
-                term(:String, "^\n")
-              )
+              :extrapara,
+              term(:String, "^\n")
             )
+          )
         ),
         "\n"
       )
@@ -501,11 +499,10 @@ module Yast
     # @raise  [RuntimeError] if it fails
     def register_ifroute_agent_for_device(device)
       scr_path = path(".ifroute-#{device}")
-      SCR.RegisterAgent(scr_path, ifroute_term(device)) or
-        raise "Cannot SCR.RegisterAgent(#{scr_path}, ...)"
+      SCR.RegisterAgent(scr_path, ifroute_term(device)) ||
+        raise("Cannot SCR.RegisterAgent(#{scr_path}, ...)")
       scr_path
     end
-
   end
 
   Routing = RoutingClass.new

@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/routines.ycp
 # Package:	Network configuration
 # Summary:	Miscellaneous routines
@@ -32,7 +32,7 @@ module Yast
     include Yast
     include Logger
 
-    def initialize_network_routines(include_target)
+    def initialize_network_routines(_include_target)
       Yast.import "UI"
 
       textdomain "network"
@@ -57,14 +57,9 @@ module Yast
     # Abort function
     # @return blah blah lahjk
     def Abort
-      Yast.import "Mode"
       return false if Mode.commandline
-      return UI.PollInput == :abort
 
-      # FIXME: NI
-      # if(AbortFunction != nil)
-      # 	return eval(AbortFunction) == true;
-      false
+      UI.PollInput == :abort
     end
 
     # Check for pending Abort press
@@ -76,20 +71,14 @@ module Yast
     # If modified, ask for confirmation
     # @return true if abort is confirmed
     def ReallyAbort
-      Popup.ReallyAbort(true) 
-
-      # FIXME: NI
-      # return !Modified() || Popup::ReallyAbort(true);
+      Popup.ReallyAbort(true)
     end
 
     # If modified, ask for confirmation
     # @param [Boolean] modified true if modified
     # @return true if abort is confirmed
     def ReallyAbortCond(modified)
-      !modified || Popup.ReallyAbort(true) 
-
-      # FIXME: NI
-      # return (!modified && !Modified()) || Popup::ReallyAbort(true);
+      !modified || Popup.ReallyAbort(true)
     end
 
     # Progress::NextStage and Progress::Title combined into one function
@@ -159,7 +148,7 @@ module Yast
       Builtins.y2debug("Installing packages: %1", text)
 
       ret = false
-      while true
+      loop do
         ret = Package.InstallAll(packages)
         break if ret == true
 
@@ -170,12 +159,12 @@ module Yast
 
         # Popup text
         if !Popup.YesNo(
-            _(
-              "The required packages are not installed.\n" +
-                "The configuration will be aborted.\n" +
-                "\n" +
-                "Try again?\n"
-            ) + "\n"
+          _(
+            "The required packages are not installed.\n" \
+              "The configuration will be aborted.\n" \
+              "\n" \
+              "Try again?\n"
+          ) + "\n"
           )
           break
         end
@@ -190,7 +179,7 @@ module Yast
     # @example ChangedComment("lan") -> # Changed by YaST2 module lan 1.1.2000"
     def ChangedComment(modul)
       ret = "\n# Changed by YaST2"
-      if modul != nil && modul != ""
+      if !modul.nil? && modul != ""
         ret = Ops.add(Ops.add(ret, " module "), modul)
       end
       out = Convert.to_map(
@@ -259,26 +248,17 @@ module Yast
     # @return a list of items
     def hwlist2items(l, selected)
       l = deep_copy(l)
-      # Translators: Appended after a network card name to indicate that
-      # there is no carrier, no link to the network, the cable is not
-      # plugged in. Preferably a short string.
-      nolink = _("unplugged")
-
       items = []
       n = 0
       Builtins.foreach(l) do |i|
         # Table field (Unknown device)
         hwname = Ops.get_locale(i, "name", _("Unknown"))
-        label = Ops.add(
-          hwname,
-          Ops.get(i, "link") == false ? Builtins.sformat(" (%1)", nolink) : ""
-        )
         num = Ops.get_integer(i, "num", n) # num for detected, n for manual
         items = Builtins.add(items, Item(Id(num), hwname, num == selected))
         n = Ops.add(n, 1)
       end
-      deep_copy(items) 
-      #return list2items(maplist(map h, l, { return h["name"]:_("Unknown Device"); }), selected);
+      deep_copy(items)
+      # return list2items(maplist(map h, l, { return h["name"]:_("Unknown Device"); }), selected);
     end
 
     # Display the finished popup and possibly run another module.
@@ -294,7 +274,7 @@ module Yast
       return :next if !modified
 
       h = head
-      if h == nil || h == ""
+      if h.nil? || h == ""
         # Popup headline
         h = _("Configuration Successfully Saved")
       end
@@ -346,13 +326,12 @@ module Yast
         t = Builtins.sformat(_("Run configuration of %1?"), run)
       end
 
-      ret = nil
       if run != ""
         ret = Popup.YesNoHeadline(h, t)
         # FIXME: check for the module presence
         Call.Function(run, params) if ret == true
       else
-        ret = Popup.AnyMessage(h, t)
+        Popup.AnyMessage(h, t)
       end
 
       :next
@@ -413,8 +392,7 @@ module Yast
       Ops.get_string(hw_item, "sysfs_id", "")
     end
 
-    def sysfs_card_type(sysfs_id, hardware)
-      hardware = deep_copy(hardware)
+    def sysfs_card_type(sysfs_id, _hardware)
       return "none" if sysfs_id == ""
       filename = Ops.add(Ops.add("/sys", sysfs_id), "/card_type")
       card_type = Convert.to_string(SCR.Read(path(".target.string"), filename))
@@ -442,7 +420,6 @@ module Yast
       needs_persistent
     end
 
-
     # map<string, any> getcfg(string options, string device){
     #  map <string, any> cfg=$[];
     #  map <string, any> output = (map <string, any>)SCR::Execute(.target.bash_output,
@@ -457,10 +434,9 @@ module Yast
     #  return cfg;
     # }
 
-    def getHardware(sysfs_id, _Hw)
-      _Hw = deep_copy(_Hw)
+    def getHardware(sysfs_id, hw)
       hardware = {}
-      Builtins.foreach(_Hw) do |hw_temp|
+      Builtins.foreach(hw) do |hw_temp|
         if sysfs_id ==
             Builtins.sformat("/sys%1", Ops.get_string(hw_temp, "sysfs_id", ""))
           hardware = deep_copy(hw_temp)
@@ -486,17 +462,14 @@ module Yast
     # @return name consisting of vendor and device name
     def DeviceName(hwdevice)
       hwdevice = deep_copy(hwdevice)
-      delimiter = " " # "\n";
-      model = ""
-      vendor = ""
-      dev = ""
+      delimiter = " " # "\n"; #FIXME: constant
 
       if IsNotEmpty(Ops.get_string(hwdevice, "device", ""))
         return Ops.get_string(hwdevice, "device", "")
       end
 
       model = Ops.get_string(hwdevice, "model", "")
-      return model if model != "" && model != nil
+      return model if model != "" && !model.nil?
 
       vendor = Ops.get_string(hwdevice, "sub_vendor", "")
       dev = Ops.get_string(hwdevice, "sub_device", "")
@@ -674,7 +647,7 @@ module Yast
     # @param [String] hwtype type of devices to read (netcard|modem|isdn)
     # @return array of hashes describing detected device
     def ReadHardware(hwtype)
-      _Hardware = []
+      hardware = []
 
       Builtins.y2debug("hwtype=%1", hwtype)
 
@@ -689,8 +662,8 @@ module Yast
         Builtins.maplist(
           Convert.convert(
             Map.Values(hwtypes),
-            :from => "list",
-            :to   => "list <path>"
+            from: "list",
+            to:   "list <path>"
           )
         ) do |v|
           allcards = Builtins.merge(allcards, Convert.to_list(SCR.Read(v)))
@@ -705,16 +678,15 @@ module Yast
         return []
       end
 
-
       # #97540
       bms = Convert.to_string(SCR.Read(path(".etc.install_inf.BrokenModules")))
-      bms = "" if bms == nil
+      bms = "" if bms.nil?
       broken_modules = Builtins.splitstring(bms, " ")
 
       # fill in the hardware data
       num = 0
       Builtins.maplist(
-        Convert.convert(allcards, :from => "list", :to => "list <map>")
+        Convert.convert(allcards, from: "list", to: "list <map>")
       ) do |card|
         # common stuff
         resource = Ops.get_map(card, "resource", {})
@@ -744,10 +716,10 @@ module Yast
             one["device_name"] = card["dev_name"] || ""
             one["drivers"] = card["drivers"] || []
 
-            speed = Ops.get_integer(resource, ["baud", 0, "speed"], 57600)
+            speed = Ops.get_integer(resource, ["baud", 0, "speed"], 57_600)
             # :-) have to check .probe and libhd if this confusion is
             # really necessary. maybe a pppd bug too? #148893
-            speed = 57600 if speed == 12000000
+            speed = 57_600 if speed == 12_000_000
 
             one["speed"] = speed
             one["init1"] = Ops.get_string(resource, ["init_strings", 0, "init1"], "")
@@ -836,14 +808,14 @@ module Yast
             one["wl_enc_modes"] = Ops.get(resource, ["wlan", 0, "enc_modes"])
           end
 
-          if controller != "" && !filter_out(card, one["module"])
-            Builtins.y2debug("found device: %1", one)
+        if controller != "" && !filter_out(card, one["module"])
+          Builtins.y2debug("found device: %1", one)
 
-            Ops.set(_Hardware, Builtins.size(_Hardware), one)
-            num = num + 1
-          else
-            Builtins.y2milestone("Filtering out: %1", card)
-          end
+          Ops.set(hardware, Builtins.size(hardware), one)
+          num += 1
+        else
+          Builtins.y2milestone("Filtering out: %1", card)
+        end
       end
 
       # if there is wlan, put it to the front of the list
@@ -851,28 +823,28 @@ module Yast
       # can be proposed
       found = false
       i = 0
-      Builtins.foreach(_Hardware) do |h|
+      Builtins.foreach(hardware) do |h|
         if h["type"] == "wlan"
           found = true
           raise Break
         end
-        i = i + 1
+        i += 1
       end
 
       if found
-        temp = _Hardware[0] || {}
-        _Hardware[0] = _Hardware[i]
-        _Hardware[i] = temp
+        temp = hardware[0] || {}
+        hardware[0] = hardware[i]
+        hardware[i] = temp
         # adjust mapping: #98852, #102945
-        Ops.set(_Hardware, [0, "num"], 0)
-        Ops.set(_Hardware, [i, "num"], i)
+        Ops.set(hardware, [0, "num"], 0)
+        Ops.set(hardware, [i, "num"], i)
       end
 
-      Builtins.y2debug("Hardware=%1", _Hardware)
-      deep_copy(_Hardware)
+      Builtins.y2debug("Hardware=%1", hardware)
+      deep_copy(hardware)
     end
 
-    # TODO - begin:
+    # TODO: begin:
     # Following functions should be generalized and ported into yast-yast2
 
     # @param Shell command to run
@@ -914,7 +886,7 @@ module Yast
 
       ret
     end
-    # TODO - end
+    # TODO: end
 
     # Return list of all interfaces present in the system (not only configured ones as NetworkInterfaces::List does).
     #
@@ -922,9 +894,11 @@ module Yast
     def GetAllInterfaces
       result = RunAndRead("ls /sys/class/net")
 
-      Ops.get_boolean(result, "exit", false) ?
-        Ops.get_list(result, "output", []) :
+      if Ops.get_boolean(result, "exit", false)
+        Ops.get_list(result, "output", [])
+      else
         []
+      end
     end
 
     def SetLinkUp(dev_name)
@@ -1007,12 +981,11 @@ module Yast
       valid_mask
     end
 
-
     def unconfigureable_service?
       return true if Mode.normal && NetworkService.is_network_manager
       return true if NetworkService.is_disabled
 
-      return false
+      false
     end
 
     # Disables all widgets which cannot be configured with current network service
@@ -1029,17 +1002,18 @@ module Yast
       if show_popup
         Popup.Warning(
           _(
-            "Network is currently handled by NetworkManager\n" +
+            "Network is currently handled by NetworkManager\n" \
             "or completely disabled. YaST is unable to configure some options."
           )
         )
-        UI.FakeUserInput({ "ID" => "global" })
+        UI.FakeUserInput("ID" => "global")
       end
 
-      return true
+      true
     end
 
-  private
+    private
+
     # Checks if the device should be filtered out in ReadHardware
     def filter_out(device_info, driver)
       # filter out device with virtio_pci Driver and no Device File (bnc#585506)
@@ -1050,9 +1024,9 @@ module Yast
 
       # filter out device with chelsio Driver and no Device File or which cannot networking(bnc#711432)
       if driver == "cxgb4" &&
-        (device_info["dev_name"] || "") == "" ||
-        device_info["vendor_id"] == 70693 &&
-        device_info["device_id"] == 82178
+          (device_info["dev_name"] || "") == "" ||
+          device_info["vendor_id"] == 70_693 &&
+              device_info["device_id"] == 82_178
         log.info("Filtering out Chelsio device without device file.")
         return true
       end
@@ -1069,7 +1043,7 @@ module Yast
         return true
       end
 
-      return false
+      false
     end
 
     # Device type probe paths.

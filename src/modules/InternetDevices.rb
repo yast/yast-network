@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	modules/InternetDevices.ycp
 # Package:	Network configuration
 # Summary:	Internet connection and YOU during the installation
@@ -107,8 +107,8 @@ module Yast
       true
     end
 
-    publish :function => :SetDevice, :type => "void (string)"
-    publish :function => :FindFastest, :type => "boolean ()"
+    publish function: :SetDevice, type: "void (string)"
+    publish function: :FindFastest, type: "boolean ()"
   end
 
   InternetDevices = InternetDevicesClass.new

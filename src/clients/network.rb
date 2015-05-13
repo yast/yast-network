@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	clients/network.ycp
 # Package:	Network configuration
 # Summary:	Main network client
@@ -58,10 +58,10 @@ module Yast
         "id"         => "network",
         # translators: command line help for network module
         "help"       => _(
-          "Configuration of network.\n" +
-            "This is only a delegator to network sub-modules.\n" +
-            "You can run these network modules:\n" +
-            "\n" +
+          "Configuration of network.\n" \
+            "This is only a delegator to network sub-modules.\n" \
+            "You can run these network modules:\n" \
+            "\n" \
             "lan\t"
         ) +
           _("Network Card"),
@@ -70,7 +70,6 @@ module Yast
         "mapping"    => {}
       }
 
-
       # main ui function
       if @propose
         @ret = startDialog
@@ -78,7 +77,6 @@ module Yast
         @ret = CommandLine.Run(@cmdline_description)
       end
       Builtins.y2debug("ret=%1", @ret)
-
 
       :next
 
@@ -128,7 +126,7 @@ module Yast
       UI.SetFocus(Id(:modules))
 
       ret = nil
-      while true
+      loop do
         ret = UI.UserInput
 
         # abort?
@@ -167,11 +165,9 @@ module Yast
       end
     end
 
-    def runHandler(options)
-      options = deep_copy(options)
+    def runHandler(_options)
       true
     end
-
   end
 end
 

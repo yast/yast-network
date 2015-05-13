@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:        clients/remote_proposal.ycp
 # Package:     Network configuration
 # Summary:     Proposal for Remote Administration
@@ -91,7 +91,7 @@ module Yast
       Builtins.y2debug("ret=%1", @ret)
       Builtins.y2milestone("Remote proposal finished")
       Builtins.y2milestone("----------------------------------------")
-      deep_copy(@ret) 
+      deep_copy(@ret)
 
       # EOF
     end

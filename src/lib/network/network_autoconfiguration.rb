@@ -3,7 +3,6 @@
 require "yast"
 
 module Yast
-
   # The class is responsible for generating / proposing automatic
   # configuration during installation workflow
   class NetworkAutoconfiguration
@@ -34,13 +33,13 @@ module Yast
       end
       log.info "Candidates for enabling DHCP: #{dhcp_cards}"
 
-      # TODO time consuming, some progress would be nice
+      # TODO: time consuming, some progress would be nice
       dhcp_cards.each { |d| setup_dhcp(d) }
 
       activate_changes(dhcp_cards)
 
       # drop devices without dhcp lease
-      inactive_devices = dhcp_cards.select { |c| ! active_config?(c) }
+      inactive_devices = dhcp_cards.select { |c| !active_config?(c) }
       log.info "Inactive devices: #{inactive_devices}"
 
       inactive_devices.each { |c| delete_config(c) }
@@ -83,7 +82,7 @@ module Yast
       DNS.Read # handles NetworkConfig too
       DNS.ProposeHostname # generate random hostname, if none known so far
 
-      # FIXME after SLE12: DNS.default_dhcp_hostname should be private (setting
+      # FIXME: after SLE12: DNS.default_dhcp_hostname should be private (setting
       # default values is not something for an API), but that would need some
       # refactoring of this part.
       DNS.dhcp_hostname = DNS.default_dhcp_hostname
@@ -108,7 +107,8 @@ module Yast
       Host.Write
     end
 
-  private
+    private
+
     def network_cards
       LanItems.Read
       LanItems.GetNetcardNames
@@ -120,17 +120,15 @@ module Yast
     # dhcp client). wicked is currently able to configure a card for dhcp leases
     # only via loading config from file. All other ways are workarounds and
     # needn't to work when wickedd* services are already running
-    def setup_dhcp card
+    def setup_dhcp(card)
       index = LanItems.FindDeviceIndex(card)
 
-      if index == -1
-        raise "Failed to save configuration for device #{card}"
-      end
+      raise "Failed to save configuration for device #{card}" if index == -1
 
       LanItems.current = index
       LanItems.SetItem
 
-      #tricky part if ifcfg is not set
+      # tricky part if ifcfg is not set
       # yes, this code smell and show bad API of LanItems
       if !LanItems.IsCurrentConfigured
         NetworkInterfaces.Add
@@ -177,8 +175,7 @@ module Yast
     end
 
     def configured?(devname)
-      # TODO:
-      # one day there should be LanItems.IsItemConfigured, but we currently
+      # TODO: one day there should be LanItems.IsItemConfigured, but we currently
       # miss index -> devname translation. As this LanItems internal structure
       # will be subject of refactoring, we will use NetworkInterfaces directly.
       # It currently doesn't hurt as it currently writes configuration for both
@@ -248,6 +245,5 @@ module Yast
 
       false
     end
-
   end
 end

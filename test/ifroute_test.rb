@@ -77,7 +77,6 @@ describe "Routing#Read" do
     expect(Routing.Read).to be true
     expect(Routing.Routes.size).to eql 1
   end
-
 end
 
 describe "Routing#write_routes" do
@@ -111,11 +110,11 @@ describe "Routing#write_routes" do
 
     expect(SCR)
       .to receive(:Write)
-      .with(path(".ifroute-eth0"), anything())
+      .with(path(".ifroute-eth0"), anything)
       .and_return(true)
     expect(SCR)
       .to receive(:Write)
-      .with(path(".ifroute-eth1"), anything())
+      .with(path(".ifroute-eth1"), anything)
       .and_return(true)
     expect(SCR)
       .to receive(:Execute)
@@ -153,7 +152,7 @@ describe "Routing#Write" do
           "device"      => "eth0",
           "gateway"     => "172.24.88.1",
           "netmask"     => "-"
-        },
+        }
       ]
     }
   ]
@@ -162,21 +161,20 @@ describe "Routing#Write" do
     it "does write route configuration files, ##{i}" do
       # Devices which have already been imported by Lan.Import have to be read.
       # (bnc#900352)
-      allow(NetworkInterfaces).
-        to receive(:List).
-        with("").
-        and_return(["eth0"])
+      allow(NetworkInterfaces)
+        .to receive(:List)
+        .with("")
+        .and_return(["eth0"])
 
       Routing.Import(ay_test)
 
-      expect(Routing).
-        to receive(:write_route_file).
-        twice.
-        with(kind_of(String), ay_test.fetch("routes", [])).
-        and_return true
+      expect(Routing)
+        .to receive(:write_route_file)
+        .twice
+        .with(kind_of(String), ay_test.fetch("routes", []))
+        .and_return true
 
       Routing.Write
     end
   end
-
 end

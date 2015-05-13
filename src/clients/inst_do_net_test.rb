@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	clients/inst_do_net_test.ycp
 # Package:	Network configuration
 # Summary:	Configuration dialogs for installation
@@ -51,7 +51,6 @@ module Yast
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/installation/dialogs.rb"
 
-
       # Called backwards
       return :auto if GetInstArgs.going_back
 
@@ -75,12 +74,12 @@ module Yast
       # from server side error (#236371)
       @curl_ret_code = 0
 
-      #subset of curl return codes, indicating misconfigured network
+      # subset of curl return codes, indicating misconfigured network
       @curl_ret_codes_bad = [
-        5, #couldn't resolve proxy
-        6, #couldn't resolve host
+        5, # couldn't resolve proxy
+        6, # couldn't resolve host
         7
-      ] #couldn't connect()
+      ] # couldn't connect()
 
       # Stage transitions in handle_stage:
       # open: wait (test), copy, finish (failure), wait
@@ -102,9 +101,7 @@ module Yast
       # Now we want to keep it (#46285), so let's put it under logdir.
       @logdir = Ops.add(Directory.logdir, "/internet-test")
 
-
       @already_up = Internet.Status if !Mode.test
-
 
       # Progress step 1/3
       @l1 = _("Connecting to Internet...")
@@ -112,7 +109,6 @@ module Yast
       @l2 = _("Downloading the latest release notes...")
       # Progress step 3/3
       @l4 = _("Closing connection...")
-
 
       # fix checkycp complaints
       @dash = "-   "
@@ -150,7 +146,7 @@ module Yast
         "/bin/logger BEGIN OF YAST2 INTERNET TEST"
       )
 
-      while true
+      loop do
         handle_stage
 
         break if @test_stage == :finish
@@ -177,7 +173,6 @@ module Yast
 
       copy_logs2
 
-
       Wizard.EnableBackButton
       Wizard.DisableAbortButton
       Wizard.EnableNextButton
@@ -191,7 +186,7 @@ module Yast
       # --- internet test ends here ---
 
       # loop after internet test
-      while true
+      loop do
         @ret = UI.UserInput
 
         if @ret == :view_log
@@ -209,10 +204,9 @@ module Yast
         Builtins.y2error("Unexpected return code: %1", @ret)
       end
 
-
       # set internal data according the test result
       if @ret == :next
-        Internet.suse_register = @test_result == :success 
+        Internet.suse_register = @test_result == :success
 
         # we don't check for patches here anymore
         #	if (we_have_patches)
@@ -225,7 +219,7 @@ module Yast
         #	    Internet::do_you = false;
       end
 
-      Convert.to_symbol(@ret) 
+      Convert.to_symbol(@ret)
 
       # EOF
     end
@@ -235,7 +229,7 @@ module Yast
     def GetLanguageUTF8
       tmp = WFM.GetLanguage
       pos = Builtins.findfirstof(tmp, "@.")
-      tmp = Builtins.substring(tmp, 0, pos) if pos != nil
+      tmp = Builtins.substring(tmp, 0, pos) if !pos.nil?
       Ops.add(tmp, ".UTF-8")
     end
 
@@ -273,12 +267,10 @@ module Yast
           Left(HBox(Heading(Id(:s1), @dash), Label(@l1)))
         )
       end
-      if true
-        progress = Builtins.add(
-          progress,
-          Left(HBox(Heading(Id(:s2), @dash), Label(@l2)))
-        )
-      end
+      progress = Builtins.add(
+        progress,
+        Left(HBox(Heading(Id(:s2), @dash), Label(@l2)))
+      )
       # do not shutdown the connection when already connected
       if !@already_up
         progress = Builtins.add(
@@ -329,15 +321,14 @@ module Yast
       nil
     end
 
-
     # @param [Fixnum] i step number 1..4
     # @param [Symbol] s bullet: `arrow: current, `check: done, `dash: not done or failed
     def mark_label(i, s)
       widgets = [nil, :s1, :s2, :s3, :s4]
       bullets = {
-        :arrow => UI.Glyph(:BulletArrowRight),
-        :check => UI.Glyph(:CheckMark),
-        :dash  => @excl
+        arrow: UI.Glyph(:BulletArrowRight),
+        check: UI.Glyph(:CheckMark),
+        dash:  @excl
       }
 
       if UI.WidgetExists(Id(Ops.get(widgets, i)))
@@ -353,7 +344,6 @@ module Yast
       nil
     end
 
-
     def show_result
       if @test_result == :success
         Internet.test = true
@@ -368,18 +358,12 @@ module Yast
       nil
     end
 
-
     def copy_logs1
-      ret_command = nil
-      run_command = nil
-
       # label of combobox where the log is selected
       @logs = Builtins.add(
         @logs,
-        {
-          :menuname => _("Kernel Network Interfaces"),
-          :filename => "ip_addr.log"
-        }
+        menuname: _("Kernel Network Interfaces"),
+        filename: "ip_addr.log"
       )
       run_command = Ops.add(
         Ops.add("/sbin/ip addr show > '", String.Quote(@logdir)),
@@ -389,7 +373,7 @@ module Yast
         SCR.Execute(
           path(".target.bash"),
           run_command,
-          { "LANG" => GetLanguageUTF8() }
+          "LANG" => GetLanguageUTF8()
         )
       )
       if ret_command != 0
@@ -399,7 +383,7 @@ module Yast
       # label of combobox where the log is selected
       @logs = Builtins.add(
         @logs,
-        { :menuname => _("Kernel Routing Table"), :filename => "ip_route.log" }
+        menuname: _("Kernel Routing Table"), filename: "ip_route.log"
       )
       run_command = Ops.add(
         Ops.add("/sbin/ip route show > '", String.Quote(@logdir)),
@@ -409,7 +393,7 @@ module Yast
         SCR.Execute(
           path(".target.bash"),
           run_command,
-          { "LANG" => GetLanguageUTF8() }
+          "LANG" => GetLanguageUTF8()
         )
       )
       if ret_command != 0
@@ -419,7 +403,7 @@ module Yast
       # label of combobox where the log is selected
       @logs = Builtins.add(
         @logs,
-        { :menuname => _("Hostname Lookup"), :filename => "resolv.conf" }
+        menuname: _("Hostname Lookup"), filename: "resolv.conf"
       )
       run_command = Ops.add(
         Ops.add("/bin/cp /etc/resolv.conf '", String.Quote(@logdir)),
@@ -435,15 +419,11 @@ module Yast
       nil
     end
 
-
     def copy_logs2
-      ret_command = nil
-      run_command = nil
-
       # label of combobox where the log is selected
       @logs = Builtins.add(
         @logs,
-        { :menuname => _("Kernel Messages"), :filename => "messages" }
+        menuname: _("Kernel Messages"), filename: "messages"
       )
       run_command = Ops.add(
         Ops.add(
@@ -462,24 +442,23 @@ module Yast
       nil
     end
 
-
     def wait_for_test
-      while Convert.to_boolean(SCR.Read(path(".background.output_open"))) ||
-          Convert.to_boolean(SCR.Read(path(".background.isrunning")))
+      while SCR.Read(path(".background.output_open")) ||
+          SCR.Read(path(".background.isrunning"))
         Builtins.sleep(100)
 
         ret = UI.PollInput
 
-        if ret == :abort || ret == :abort_test
-          # Abort pressed by the user
-          Builtins.y2milestone("Test aborted by user")
-          SCR.Execute(path(".background.kill"))
-          return -1
-        end
+        next unless [:abort, :abort_test].include?(ret)
+
+        # Abort pressed by the user
+        Builtins.y2milestone("Test aborted by user")
+        SCR.Execute(path(".background.kill"))
+        return -1
       end
 
       # check the exit code of the test
-      res = Convert.to_integer(SCR.Read(path(".background.status")))
+      res = SCR.Read(path(".background.status"))
 
       Builtins.y2milestone("Command returned: %1", res)
 
@@ -500,16 +479,16 @@ module Yast
 
       Product.relnotesurl_all = Builtins.toset(Product.relnotesurl_all)
 
-      ##390738: only one URL now
-      #works well with the list of all products
+      # #390738: only one URL now
+      # works well with the list of all products
       Builtins.foreach(Product.relnotesurl_all) do |url|
         # protect from wrong urls
-        if url == nil || url == ""
+        if url.nil? || url == ""
           Builtins.y2warning("Skipping relnotesurl '%1'", url)
           next false
         end
         pos = Ops.add(Builtins.findlastof(url, "/"), 1)
-        if pos == nil
+        if pos.nil?
           Builtins.y2error("broken url for release notes: %1", url)
           next false
         end
@@ -538,7 +517,7 @@ module Yast
         Proxy.Read
         # Test if proxy works
         if Proxy.enabled
-          #it is enough to test http proxy, release notes are downloaded via http
+          # it is enough to test http proxy, release notes are downloaded via http
           proxy_ret = Proxy.RunTestProxy(
             Proxy.http,
             "",
@@ -549,18 +528,22 @@ module Yast
 
           if Ops.get_boolean(proxy_ret, ["HTTP", "tested"], true) == true &&
               Ops.get_integer(proxy_ret, ["HTTP", "exit"], 1) == 0
-            user_pass = Proxy.user != "" ?
-              Ops.add(Ops.add(Proxy.user, ":"), Proxy.pass) :
-              ""
+            user_pass = if Proxy.user != ""
+                          Ops.add(Ops.add(Proxy.user, ":"), Proxy.pass)
+                        else
+                          ""
+                        end
             proxy = Ops.add(
               Ops.add("--proxy ", Proxy.http),
-              user_pass != "" ?
-                Ops.add(Ops.add(" --proxy-user '", user_pass), "'") :
+              if user_pass != ""
+                Ops.add(Ops.add(" --proxy-user '", user_pass), "'")
+              else
                 ""
+              end
             )
           end
         end
-        #Include also proxy option (if applicable) - #162800, #260407
+        # Include also proxy option (if applicable) - #162800, #260407
         cmd = Ops.add(
           "/usr/bin/curl --location --verbose --fail --max-time 300 ",
           Builtins.sformat(
@@ -603,10 +586,10 @@ module Yast
         end
         @logs = Builtins.add(
           @logs,
-          { :menuname => menu_name, :filename => log_filename }
+          menuname: menu_name, filename: log_filename
         )
 
-        relnotes_counter += 1;
+        relnotes_counter += 1
       end
       test_ret
     end
@@ -796,11 +779,9 @@ module Yast
           # label of combobox where the log is selected
           @logs = Builtins.add(
             @logs,
-            {
-              :menuname => _("Opening of Connection"),
-              :filename => "ifup.log",
-              :prio     => 16
-            }
+            menuname: _("Opening of Connection"),
+            filename: "ifup.log",
+            prio:     16
           )
           if !Internet.Start(Ops.add(@logdir, "/ifup.log"))
             # popup to inform user about the failure
@@ -875,11 +856,11 @@ module Yast
 
         ret = true
 
-        #Product::relnotesurl_all=[ "http://www.suse.com/relnotes/i386/openSUSE/10.3/release-notes.rpm" ];
-        #y2error("FAKE RELNOTES!");
+        # Product::relnotesurl_all=[ "http://www.suse.com/relnotes/i386/openSUSE/10.3/release-notes.rpm" ];
+        # y2error("FAKE RELNOTES!");
 
-        ##390738: need to read available products here (hopefully only one)
-        #but need to switch off package callbacks first
+        # #390738: need to read available products here (hopefully only one)
+        # but need to switch off package callbacks first
         PackageCallbacks.RegisterEmptyProgressCallbacks
         Product.ReadProducts
         PackageCallbacks.RestorePreviousProgressCallbacks
@@ -887,7 +868,7 @@ module Yast
         Builtins.y2milestone("Product::relnotesurl = %1", Product.relnotesurl)
         # Fallback for situation that mustn't exist
         if Builtins.size(Product.relnotesurl_all) == 0 &&
-            (Product.relnotesurl == nil || Product.relnotesurl == "")
+            (Product.relnotesurl.nil? || Product.relnotesurl == "")
           Popup.Warning(
             _(
               "No URL for the release notes defined. Internet test cannot be performed."
@@ -899,15 +880,15 @@ module Yast
             # return code is not on the blacklist (meaning misconfigured network)
             # return true if user wants to continue despite the failure, false otherwise
             if !Builtins.contains(@curl_ret_codes_bad, @curl_ret_code)
-              #popup informing user about the failure to retrieve release notes
-              #most likely due to server-side error
+              # popup informing user about the failure to retrieve release notes
+              # most likely due to server-side error
               ret = Popup.ContinueCancel(
                 _(
-                  "Download of latest release notes failed due to server-side error. \n" +
-                    "This does not necessarily imply a faulty network configuration.\n" +
-                    "\n" +
-                    "Click 'Continue' to proceed to the next installation step. To skip any steps\n" +
-                    "requiring an internet connection or to get back to your network configuration,\n" +
+                  "Download of latest release notes failed due to server-side error. \n" \
+                    "This does not necessarily imply a faulty network configuration.\n" \
+                    "\n" \
+                    "Click 'Continue' to proceed to the next installation step. To skip any steps\n" \
+                    "requiring an internet connection or to get back to your network configuration,\n" \
                     "click 'Cancel'.\n"
                 )
               )
@@ -951,18 +932,17 @@ module Yast
 
         Builtins.y2milestone("online_update command: %1", cmd)
 
-
         SCR.Execute(
           path(".background.run"),
           cmd,
-          { "LANG" => GetLanguageUTF8() }
+          "LANG" => GetLanguageUTF8()
         )
         ret = wait_for_test
 
         # label of combobox where the log is selected
         @logs = Builtins.add(
           @logs,
-          { :menuname => _("Check for Patches"), :filename => "you.log" }
+          menuname: _("Check for Patches"), filename: "you.log"
         )
 
         if ret == 0 || ret == 1 || ret == 2 # success
@@ -997,11 +977,9 @@ module Yast
           # label of combobox where the log is selected
           @logs = Builtins.add(
             @logs,
-            {
-              :menuname => _("Closing of Connection"),
-              :filename => "ifdown.log",
-              :prio     => 14
-            }
+            menuname: _("Closing of Connection"),
+            filename: "ifdown.log",
+            prio:     14
           )
           if Internet.Stop(Ops.add(@logdir, "/ifdown.log"))
             mark_label(4, :check)

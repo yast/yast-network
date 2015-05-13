@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # Copyright 2004, Novell, Inc.  All rights reserved.
 #
 # File:	modules/SuSEFirewall4Network.ycp
@@ -35,7 +35,6 @@ require "yast"
 
 module Yast
   class SuSEFirewall4NetworkClass < Module
-
     include Yast::Logger
 
     SSH_PACKAGE = "openssh"
@@ -120,11 +119,13 @@ module Yast
     def FirewallZonesComboBoxItems
       list_items = []
       protected_from_internal = SuSEFirewall.GetProtectFromInternalZone
-      nozone = IsOn() ?
-        # item in combo box Firewall Zone
-        _("Automatically Assigned Zone") :
-        # item in combo box Firewall Zone
-        _("Firewall Disabled")
+      nozone = if IsOn()
+                 # item in combo box Firewall Zone
+                 _("Automatically Assigned Zone")
+               else
+                 # item in combo box Firewall Zone
+                 _("Firewall Disabled")
+               end
       list_items = Builtins.add(list_items, ["", nozone])
 
       # Listing all known zones
@@ -133,11 +134,12 @@ module Yast
         # Informing user about Unprotected inetrnal zone
         zone_name = Ops.add(
           SuSEFirewall.GetZoneFullName(zone_shortname),
-          zone_shortname == "INT" && !protected_from_internal ?
+          if zone_shortname == "INT" && !protected_from_internal
             # TRANSLATORS: Part of combo box item -> "Internal Zone (Unprotected)"
-            " " +
-              _("(Unprotected)") :
+            " " + _("(Unprotected)")
+          else
             ""
+          end
         )
         list_items = Builtins.add(list_items, [zone_shortname, zone_name])
       end
@@ -164,7 +166,7 @@ module Yast
       end
 
       # firewall must be running and enabled, interface must be in any zone
-      IsOn() && interface_zone != nil
+      IsOn() && !interface_zone.nil?
     end
 
     # Function returns the firewall zone of interface, "" if no zone includes
@@ -177,7 +179,7 @@ module Yast
     def GetZoneOfInterface(interface)
       return "" if !IsOn()
       zoi = SuSEFirewall.GetZoneOfInterface(interface)
-      zoi == nil ? "" : zoi
+      zoi.nil? ? "" : zoi
     end
 
     # Returns whether any network interfaces are handled firewall either
@@ -195,8 +197,8 @@ module Yast
             interfaces,
             SuSEFirewall.GetInterfacesInZoneSupportingAnyFeature(zone)
           ),
-          :from => "list",
-          :to   => "list <string>"
+          from: "list",
+          to:   "list <string>"
         )
       end
 
@@ -223,7 +225,7 @@ module Yast
         )
         SuSEFirewall.AddInterfaceIntoZone(interface, zone)
         SuSEFirewall.SetEnableService(true)
-        SuSEFirewall.SetStartService(true) 
+        SuSEFirewall.SetStartService(true)
         # Removing protection
       else
         # removing from all known zones
@@ -300,10 +302,11 @@ module Yast
 
       # bnc#887688 Needed for AutoYast export functionality at the end
       # of installation (clone_finish)
-      enabled ?
-        ServicesProposal.enable_service('sshd')
-        :
-        ServicesProposal.disable_service('sshd')
+      if enabled
+        ServicesProposal.enable_service("sshd")
+      else
+        ServicesProposal.disable_service("sshd")
+      end
 
       nil
     end
@@ -326,24 +329,24 @@ module Yast
       @vnc_enabled_1st_stage
     end
 
-    publish :function => :Read, :type => "boolean ()"
-    publish :function => :Write, :type => "boolean ()"
-    publish :function => :IsOn, :type => "boolean ()"
-    publish :function => :FirewallZonesComboBoxItems, :type => "list <list <string>> ()"
-    publish :function => :IsProtectedByFirewall, :type => "boolean (string)"
-    publish :function => :GetZoneOfInterface, :type => "string (string)"
-    publish :function => :ProtectByFirewall, :type => "boolean (string, string, boolean)"
-    publish :function => :UnconfiguredIsBlocked, :type => "boolean ()"
-    publish :function => :ChangedByUser, :type => "void (boolean)"
-    publish :function => :IsInstalled, :type => "boolean ()"
-    publish :function => :SetEnabled1stStage, :type => "void (boolean)"
-    publish :function => :Enabled1stStage, :type => "boolean ()"
-    publish :function => :SetSshEnabled1stStage, :type => "void (boolean)"
-    publish :function => :EnabledSsh1stStage, :type => "boolean ()"
-    publish :function => :SetSshdEnabled, :type => "void (boolean)"
-    publish :function => :EnabledSshd, :type => "boolean ()"
-    publish :function => :SetVncEnabled1stStage, :type => "void (boolean)"
-    publish :function => :EnabledVnc1stStage, :type => "boolean ()"
+    publish function: :Read, type: "boolean ()"
+    publish function: :Write, type: "boolean ()"
+    publish function: :IsOn, type: "boolean ()"
+    publish function: :FirewallZonesComboBoxItems, type: "list <list <string>> ()"
+    publish function: :IsProtectedByFirewall, type: "boolean (string)"
+    publish function: :GetZoneOfInterface, type: "string (string)"
+    publish function: :ProtectByFirewall, type: "boolean (string, string, boolean)"
+    publish function: :UnconfiguredIsBlocked, type: "boolean ()"
+    publish function: :ChangedByUser, type: "void (boolean)"
+    publish function: :IsInstalled, type: "boolean ()"
+    publish function: :SetEnabled1stStage, type: "void (boolean)"
+    publish function: :Enabled1stStage, type: "boolean ()"
+    publish function: :SetSshEnabled1stStage, type: "void (boolean)"
+    publish function: :EnabledSsh1stStage, type: "boolean ()"
+    publish function: :SetSshdEnabled, type: "void (boolean)"
+    publish function: :EnabledSshd, type: "boolean ()"
+    publish function: :SetVncEnabled1stStage, type: "void (boolean)"
+    publish function: :EnabledVnc1stStage, type: "boolean ()"
   end
 
   SuSEFirewall4Network = SuSEFirewall4NetworkClass.new

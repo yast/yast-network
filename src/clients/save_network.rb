@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	clients/save_network.ycp
 # Package:	Network configuration
 # Summary:	Installation routines
@@ -124,26 +124,26 @@ module Yast
         dest_file = copy_to + file
         # apply options from initrd configuration files into installed system
         # i.e. just modify (not replace) files from sysconfig rpm
-        # FIXME this must be ripped out, refactored and tested
+        # FIXME: this must be ripped out, refactored and tested
         # In particular, values containing slashes will break the last sed
-        command = "\n" +
-          "source_file=#{source_file};dest_file=#{dest_file}\n" +
-          "grep -v \"^[[:space:]]*#\" $source_file | grep = | while read option\n" +
-          " do\n" +
-          "  key=${option%=*}=\n" +
-          "  grep -v \"^[[:space:]]*#\" $dest_file | grep -q $key\n" +
-          "  if [ $? != \"0\" ]\n" +
-          "   then\n" +
-          "    echo \"$option\" >> $dest_file\n" +
-          "   else\n" +
-          "    sed -i s/\"^[[:space:]]*$key.*\"/\"$option\"/g $dest_file\n" +
-          "  fi\n" +
+        command = "\n" \
+          "source_file=#{source_file};dest_file=#{dest_file}\n" \
+          "grep -v \"^[[:space:]]*#\" $source_file | grep = | while read option\n" \
+          " do\n" \
+          "  key=${option%=*}=\n" \
+          "  grep -v \"^[[:space:]]*#\" $dest_file | grep -q $key\n" \
+          "  if [ $? != \"0\" ]\n" \
+          "   then\n" \
+          "    echo \"$option\" >> $dest_file\n" \
+          "   else\n" \
+          "    sed -i s/\"^[[:space:]]*$key.*\"/\"$option\"/g $dest_file\n" \
+          "  fi\n" \
           " done"
         ret = SCR.Execute(path(".target.bash_output"), command)
 
         log.error("Execute file merging script failed: #{ret}") if ret["exit"] != 0
       end
-      #FIXME: proxy
+      # FIXME: proxy
 
       nil
     end
@@ -164,8 +164,8 @@ module Yast
         )
       end
 
-      #Deleting lockfiles and re-triggering udev events for *net is not needed any more
-      #(#292375 c#18)
+      # Deleting lockfiles and re-triggering udev events for *net is not needed any more
+      # (#292375 c#18)
 
       udev_rules_srcdir = "/etc/udev/rules.d"
       net_srcfile = "70-persistent-net.rules"
@@ -176,8 +176,8 @@ module Yast
       log.info("udev_rules_destdir #{udev_rules_destdir}")
       log.info("net_destfile #{net_destfile}")
 
-      #Do not create udev_rules_destdir if it already exists (in case of update)
-      #(bug #293366, c#7)
+      # Do not create udev_rules_destdir if it already exists (in case of update)
+      # (bug #293366, c#7)
 
       if !FileUtils.Exists(udev_rules_destdir)
         log.info("#{udev_rules_destdir} does not exist yet, creating it")

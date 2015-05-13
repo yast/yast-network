@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/services/routing.ycp
 # Package:	Network configuration
 # Summary:	Routing configuration dialogs
@@ -198,8 +198,8 @@ module Yast
         )
       )
 
-      #Allow declaring route without iface (for gateway) #93996
-      #if empty, use '-' which stands for any
+      # Allow declaring route without iface (for gateway) #93996
+      # if empty, use '-' which stands for any
       if Ops.get_string(entry, 4, "") != ""
         UI.ChangeWidget(Id(:device), :Value, Ops.get_string(entry, 4, ""))
       else
@@ -226,7 +226,7 @@ module Yast
       ret = nil
       route = nil
 
-      while true
+      loop do
         route = nil
         ret = UI.UserInput
         break if ret != :ok
@@ -234,7 +234,7 @@ module Yast
         route = Item(Id(id))
         val = Convert.to_string(UI.QueryWidget(Id(:destination), :Value))
         slash = Builtins.search(val, "/")
-        noprefix = slash == nil ? val : Builtins.substring(val, 0, slash)
+        noprefix = slash.nil? ? val : Builtins.substring(val, 0, slash)
         if val != "default" && !IP.Check(noprefix)
           # Popup::Error text
           Popup.Error(_("Destination is invalid."))
@@ -271,14 +271,11 @@ module Yast
       deep_copy(route)
     end
 
-
-    def initRouting(key)
-      max = 0
-      table_items_orig = []
+    def initRouting(_key)
       route_conf = deep_copy(Routing.Routes)
 
-      #reset, so that UI really reflect current state
-      #maplist below will supply correct data, if there are some
+      # reset, so that UI really reflect current state
+      # maplist below will supply correct data, if there are some
       @defgw = ""
       @defgwdev = "-"
       @defgw6 = ""
@@ -310,7 +307,6 @@ module Yast
           @r_items = Builtins.add(@r_items, item)
         end
       end
-      table_items_orig = Builtins.eval(@r_items)
 
       Builtins.y2debug("table_items=%1", @r_items)
 
@@ -348,8 +344,7 @@ module Yast
       nil
     end
 
-
-    def handleRouting(key, event)
+    def handleRouting(_key, event)
       event = deep_copy(event)
       enabled = !NetworkService.is_network_manager
       devs = Routing.GetDevices
@@ -360,43 +355,43 @@ module Yast
       if Ops.get_string(event, "EventReason", "") == "Activated" ||
           Ops.get_string(event, "EventReason", "") == "ValueChanged"
         case Ops.get_symbol(event, "ID", :nil)
-          when :add
-            item = RoutingEditDialog(
-              Builtins.size(@r_items),
-              term(:empty),
-              devs
-            )
+        when :add
+          item = RoutingEditDialog(
+            Builtins.size(@r_items),
+            term(:empty),
+            devs
+          )
 
-            if item != nil
-              @r_items = Builtins.add(@r_items, item)
-              UI.ChangeWidget(Id(:table), :Items, @r_items)
-            end
-          when :delete
-            @r_items = Builtins.filter(@r_items) do |e|
-              cur != Ops.get(e, [0, 0])
+          if !item.nil?
+            @r_items = Builtins.add(@r_items, item)
+            UI.ChangeWidget(Id(:table), :Items, @r_items)
+          end
+        when :delete
+          @r_items = Builtins.filter(@r_items) do |e|
+            cur != Ops.get(e, [0, 0])
+          end
+          UI.ChangeWidget(Id(:table), :Items, @r_items)
+        when :edit
+          @cur_item = Builtins.filter(@r_items) do |e|
+            cur == Ops.get(e, [0, 0])
+          end
+
+          item = Ops.get(@cur_item, 0)
+          @dev = Ops.get_string(item, 4, "")
+          if @dev != "" && !Builtins.contains(devs, @dev)
+            devs = Builtins.add(devs, @dev)
+          end
+          devs = Builtins.sort(devs)
+
+          item = RoutingEditDialog(cur, item, devs)
+          if !item.nil?
+            @r_items = Builtins.maplist(@r_items) do |e|
+              next deep_copy(item) if cur == Ops.get_integer(e, [0, 0], -1)
+              deep_copy(e)
             end
             UI.ChangeWidget(Id(:table), :Items, @r_items)
-          when :edit
-            @cur_item = Builtins.filter(@r_items) do |e|
-              cur == Ops.get(e, [0, 0])
-            end
-
-            item = Ops.get(@cur_item, 0)
-            @dev = Ops.get_string(item, 4, "")
-            if @dev != "" && !Builtins.contains(devs, @dev)
-              devs = Builtins.add(devs, @dev)
-            end
-            devs = Builtins.sort(devs)
-
-            item = RoutingEditDialog(cur, item, devs)
-            if item != nil
-              @r_items = Builtins.maplist(@r_items) do |e|
-                next deep_copy(item) if cur == Ops.get_integer(e, [0, 0], -1)
-                deep_copy(e)
-              end
-              UI.ChangeWidget(Id(:table), :Items, @r_items)
-              UI.ChangeWidget(Id(:table), :CurrentItem, cur)
-            end
+            UI.ChangeWidget(Id(:table), :CurrentItem, cur)
+          end
         end
       end
       UI.ChangeWidget(Id(:add), :Enabled, enabled)
@@ -413,8 +408,7 @@ module Yast
       nil
     end
 
-    def validateRouting(key, event)
-      event = deep_copy(event)
+    def validateRouting(_key, _event)
       gw = UI.QueryWidget(Id(:gw), :Value)
       if gw != "" && !IP.Check(gw)
         Popup.Error(_("The default gateway is invalid."))
@@ -425,8 +419,7 @@ module Yast
       end
     end
 
-    def storeRouting(key, event)
-      event = deep_copy(event)
+    def storeRouting(_key, _event)
       route_conf = Builtins.maplist(@r_items) do |e|
         {
           "destination" => Ops.get_string(e, 1, ""),
@@ -445,24 +438,20 @@ module Yast
       if @defgw != ""
         route_conf = Builtins.add(
           route_conf,
-          {
-            "destination" => "default",
-            "gateway"     => @defgw,
-            "netmask"     => "-",
-            "device"      => @defgwdev
-          }
+          "destination" => "default",
+          "gateway"     => @defgw,
+          "netmask"     => "-",
+          "device"      => @defgwdev
         )
       end
 
       if @defgw6 != ""
         route_conf = Builtins.add(
           route_conf,
-          {
-            "destination" => "default",
-            "gateway"     => @defgw6,
-            "netmask"     => "-",
-            "device"      => @defgwdev6
-          }
+          "destination" => "default",
+          "gateway"     => @defgw6,
+          "netmask"     => "-",
+          "device"      => @defgwdev6
         )
       end
 
@@ -489,14 +478,12 @@ module Yast
       Wizard.HideBackButton
 
       CWM.ShowAndRun(
-        {
-          "widget_descr"       => @wd_routing,
-          "contents"           => contents,
-          "caption"            => caption,
-          "back_button"        => Label.BackButton,
-          "next_button"        => Label.NextButton,
-          "fallback_functions" => functions
-        }
+        "widget_descr"       => @wd_routing,
+        "contents"           => contents,
+        "caption"            => caption,
+        "back_button"        => Label.BackButton,
+        "next_button"        => Label.NextButton,
+        "fallback_functions" => functions
       )
     end
   end

@@ -5,7 +5,7 @@ require_relative "test_helper"
 require "yast"
 
 # creating a wrapper for Yast's 'header' file
-$LOAD_PATH.unshift File.expand_path('../../src', __FILE__)
+$LOAD_PATH.unshift File.expand_path("../../src", __FILE__)
 require "include/network/lan/s390"
 
 class NetworkLanS390Include < Yast::Client

@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/lan/wizards.ycp
 # Package:	Network configuration
 # Summary:	Network cards configuration wizards
@@ -53,29 +53,29 @@ module Yast
     # @return successfully finished
     def LanSequence
       aliases = {
-        "read"     => [lambda { ReadDialog() }, true],
-        "main"     => lambda { MainSequence("") },
-        "packages" => [lambda { PackagesInstall(Lan.Packages) }, true],
-        "write"    => [lambda { WriteDialog() }, true]
+        "read"     => [-> { ReadDialog() }, true],
+        "main"     => -> { MainSequence("") },
+        "packages" => [-> { PackagesInstall(Lan.Packages) }, true],
+        "write"    => [-> { WriteDialog() }, true]
       }
 
       if Mode.installation || Mode.update
         sequence = {
           "ws_start" => "read",
-          "read"     => { :abort => :abort, :back => :back, :next => "main" },
-          "main"     => { :abort => :abort, :back => :back, :next => "packages" },
-          "packages" => { :abort => :abort, :back => :back, :next => "write" },
-          "write"    => { :abort => :abort, :back => :back, :next => :next }
+          "read"     => { abort: :abort, back: :back, next: "main" },
+          "main"     => { abort: :abort, back: :back, next: "packages" },
+          "packages" => { abort: :abort, back: :back, next: "write" },
+          "write"    => { abort: :abort, back: :back, next: :next }
         }
 
         Wizard.OpenNextBackDialog
       else
         sequence = {
           "ws_start" => "read",
-          "read"     => { :abort => :abort, :next => "main" },
-          "main"     => { :abort => :abort, :next => "packages" },
-          "packages" => { :abort => :abort, :next => "write" },
-          "write"    => { :abort => :abort, :next => :next }
+          "read"     => { abort: :abort, next: "main" },
+          "main"     => { abort: :abort, next: "packages" },
+          "packages" => { abort: :abort, next: "write" },
+          "write"    => { abort: :abort, next: :next }
         }
 
         Wizard.OpenCancelOKDialog
@@ -111,13 +111,14 @@ module Yast
       UI.CloseDialog
       ret
     end
+
     def MainSequence(mode)
       aliases = {
-        "global"    => lambda { MainDialog("global") },
-        "overview"  => lambda { MainDialog("overview") },
-        "add"       => [lambda { NetworkCardSequence("add") }, true],
-        "edit"      => [lambda { NetworkCardSequence("edit") }, true],
-        "init_s390" => [lambda { NetworkCardSequence("init_s390") }, true]
+        "global"    => -> { MainDialog("global") },
+        "overview"  => -> { MainDialog("overview") },
+        "add"       => [-> { NetworkCardSequence("add") }, true],
+        "edit"      => [-> { NetworkCardSequence("edit") }, true],
+        "init_s390" => [-> { NetworkCardSequence("init_s390") }, true]
       }
 
       start = "overview"
@@ -127,107 +128,102 @@ module Yast
       sequence = {
         "ws_start"  => start,
         "global"    => {
-          :abort => :abort,
-          :next  => :next,
-          :add   => "add",
-          :edit  => "edit"
+          abort: :abort,
+          next:  :next,
+          add:   "add",
+          edit:  "edit"
         },
         "overview"  => {
-          :abort     => :abort,
-          :next      => :next,
-          :add       => "add",
-          :edit      => "edit",
-          :init_s390 => "init_s390"
+          abort:     :abort,
+          next:      :next,
+          add:       "add",
+          edit:      "edit",
+          init_s390: "init_s390"
         },
-        "add"       => { :abort => :abort, :next => "overview" },
-        "edit"      => { :abort => :abort, :next => "overview" },
-        "init_s390" => { :abort => :abort, :next => "overview" }
+        "add"       => { abort: :abort, next: "overview" },
+        "edit"      => { abort: :abort, next: "overview" },
+        "init_s390" => { abort: :abort, next: "overview" }
       }
 
       Sequencer.Run(aliases, sequence)
     end
+
     def NetworkCardSequence(action)
-      aliases = { "hardware" => lambda { HardwareDialog() }, "address" => lambda do
-        AddressSequence("")
-      end, "s390" => lambda(
-      ) do
-        S390Dialog()
-      end }
+      aliases = {
+        "hardware" => -> { HardwareDialog() },
+        "address"  => -> { AddressSequence("") },
+        "s390"     => -> { S390Dialog() }
+      }
 
-      ws_start = "address"
-
-      case action
-        when "add"
-          ws_start = "hardware"
-        when "edit"
-          ws_start = "address"
-        when "init_s390"
-          # s390 may require configuring additional modules. Which
-          # enables IBM net cards for linux. Basicaly it creates
-          # linux devices with common api (e.g. eth0, hsi1, ...)
-          ws_start = "s390"
-      end
+      ws_start = case action
+                 when "add"
+                   "hardware"
+                 when "init_s390"
+                   # s390 may require configuring additional modules. Which
+                   # enables IBM net cards for linux. Basicaly it creates
+                   # linux devices with common api (e.g. eth0, hsi1, ...)
+                   "s390"
+                 else
+                   "address"
+                 end
 
       Builtins.y2milestone("ws_start %1", ws_start)
 
       sequence = {
         "ws_start" => ws_start,
-        "hardware" => { :abort => :back, :next => "address" },
-        "address"  => { :abort => :back, :next => :next },
-        "s390"     => { :abort => :abort, :next => "address" }
+        "hardware" => { abort: :back, next: "address" },
+        "address"  => { abort: :back, next: :next },
+        "s390"     => { abort: :abort, next: "address" }
       }
 
       Sequencer.Run(aliases, sequence)
     end
+
     def AddressSequence(which)
       aliases = {
-        #	"changedefaults": [ ``(ChangeDefaults()), true ],
-        "address"     => lambda(
-        ) do
-          AddressDialog()
-        end,
-        "hosts"       => lambda { HostsMainDialog(false) },
-        "s390"        => lambda { S390Dialog() },
-        "wire"        => lambda { WirelessDialog() },
-        "expert"      => lambda { WirelessExpertDialog() },
-        "keys"        => lambda { WirelessKeysDialog() },
-        "eap"         => lambda { WirelessWpaEapDialog() },
-        "eap-details" => lambda { WirelessWpaEapDetailsDialog() },
-        "commit"      => [lambda { Commit() }, true]
+        "address"     => -> { AddressDialog() },
+        "hosts"       => -> { HostsMainDialog(false) },
+        "s390"        => -> { S390Dialog() },
+        "wire"        => -> { WirelessDialog() },
+        "expert"      => -> { WirelessExpertDialog() },
+        "keys"        => -> { WirelessKeysDialog() },
+        "eap"         => -> { WirelessWpaEapDialog() },
+        "eap-details" => -> { WirelessWpaEapDetailsDialog() },
+        "commit"      => [-> { Commit() }, true]
       }
 
-      ws_start = which == "wire" ? "wire" : "address" #"changedefaults";
+      ws_start = which == "wire" ? "wire" : "address" # "changedefaults";
       sequence = {
         "ws_start"    => ws_start,
         # 	"changedefaults" : $[
         # 	    `next	: "address",
         # 	],
         "address"     => {
-          :abort    => :abort,
-          :next     => "commit",
-          :wire     => "wire",
-          :hosts    => "hosts",
-          :s390     => "s390",
-          :hardware => :hardware
+          abort:    :abort,
+          next:     "commit",
+          wire:     "wire",
+          hosts:    "hosts",
+          s390:     "s390",
+          hardware: :hardware
         },
-        "s390"        => { :abort => :abort, :next => "address" },
-        "hosts"       => { :abort => :abort, :next => "address" },
+        "s390"        => { abort: :abort, next: "address" },
+        "hosts"       => { abort: :abort, next: "address" },
         "wire"        => {
-          :next   => "commit",
-          :expert => "expert",
-          :keys   => "keys",
-          :eap    => "eap",
-          :abort  => :abort
+          next:   "commit",
+          expert: "expert",
+          keys:   "keys",
+          eap:    "eap",
+          abort:  :abort
         },
-        "expert"      => { :next => "wire", :abort => :abort },
-        "keys"        => { :next => "wire", :abort => :abort },
+        "expert"      => { next: "wire", abort: :abort },
+        "keys"        => { next: "wire", abort: :abort },
         "eap"         => {
-          :next    => "commit",
-          :details => "eap-details",
-          :abort   => :abort
+          next:    "commit",
+          details: "eap-details",
+          abort:   :abort
         },
-        "eap-details" => { :next => "eap", :abort => :abort },
-        "commit"      => { :next => :next }
+        "eap-details" => { next: "eap", abort: :abort },
+        "commit"      => { next: :next }
       }
 
       Sequencer.Run(aliases, sequence)

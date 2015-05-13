@@ -12,7 +12,6 @@ Yast.import "LanItems"
 Yast.include self, "network/widgets.rb"
 
 describe "NetworkWidgetsInclude::ipoib_mode_widget" do
-
   it "contains known IPoIB modes" do
     widget_def = ipoib_mode_widget
     expect(widget_def).to include("items")

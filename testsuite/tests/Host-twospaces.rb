@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 module Yast
   class HostClient < Client
     def main
@@ -30,8 +30,8 @@ module Yast
         "target" => { "size" => 1, "tmpdir" => "/tmp" },
         "etc"    => {
           "hosts" => {
-            "127.0.0.1"  => ["localhost localhost.localdomain"],
-            "10.0.0.1" => ["somehost.example.com  notice-two-spaces"]
+            "127.0.0.1" => ["localhost localhost.localdomain"],
+            "10.0.0.1"  => ["somehost.example.com  notice-two-spaces"]
           }
         }
       }
@@ -44,7 +44,7 @@ module Yast
       Progress.off
 
       DUMP("Read")
-      TEST(lambda { Host.Read }, [@READ], nil)
+      TEST(-> { Host.Read }, [@READ], nil)
 
       names = Host.hosts["10.0.0.1"]
       Host.Update("", "newname", ["10.0.0.42"])

@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	modules/ISDN.ycp
 # Package:	Network configuration
 # Summary:	ISDN data
@@ -43,23 +43,23 @@ module Yast
 
     # Select the given hardware item or clean up structures (item == nil)
     # @param [Fixnum] which item to be chosen
-    def FindHardware(_Hardware, which)
-      _Hardware = deep_copy(_Hardware)
+    def FindHardware(hardware, which)
       sel = {}
 
-      if which != nil
-        sel = Ops.get_map(_Hardware, which, {})
+      if !which.nil?
+        sel = Ops.get_map(hardware, which, {})
 
-        if Ops.greater_than(which, Builtins.size(_Hardware)) ||
+        if Ops.greater_than(which, Builtins.size(hardware)) ||
             Ops.less_than(which, 0)
           Builtins.y2error(
             "Item not found in Hardware: %1 (%2)",
             which,
-            Builtins.size(_Hardware)
+            Builtins.size(hardware)
           )
         end
       end
-      deep_copy(sel)
+
+      sel
     end
 
     # Select the given hardware item
@@ -90,12 +90,10 @@ module Yast
       deep_copy(sel)
     end
 
-
     # Select the given hardware item or clean up structures (item == nil)
     # @param [Fixnum] which item to be chosen
-    def SelectHardware(_Hardware, which)
-      _Hardware = deep_copy(_Hardware)
-      SelectHardwareMap(FindHardware(_Hardware, which))
+    def SelectHardware(hardware, which)
+      SelectHardwareMap(FindHardware(hardware, which))
     end
   end
 end

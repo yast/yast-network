@@ -8,14 +8,13 @@
 # Functions for handling udev rules
 module Yast
   module NetworkLanUdevInclude
-
     # Creates default udev rule for given NIC.
     #
     # Udev rule is based on device's MAC.
     #
     # @return [Array] an udev rule
     def GetDefaultUdevRule(dev_name, dev_mac)
-      default_rule = [
+      [
         "SUBSYSTEM==\"net\"",
         "ACTION==\"add\"",
         "DRIVERS==\"?*\"",
@@ -38,7 +37,7 @@ module Yast
 
       if i
         rule[i] = rule[i].gsub(/#{key}={1,2}"([^"]*)"/) do |m|
-          m.gsub($1, value)
+          m.gsub(Regexp.last_match(1), value)
         end
       end
 
@@ -87,7 +86,7 @@ module Yast
       if !Builtins.regexpmatch(tripplet, ".+={1,2}\".*\"")
         return deep_copy(rule)
       end
-      rule = [] if rule == nil
+      rule = [] if rule.nil?
 
       Builtins.add(rule, tripplet)
     end

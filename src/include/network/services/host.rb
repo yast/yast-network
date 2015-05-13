@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 # File:	include/network/services/host.ycp
 # Module:	Network configuration
 # Summary:	Hosts configuration dialogs
@@ -177,7 +177,7 @@ module Yast
       UI.SetFocus(Id(:table)) if Ops.greater_than(Builtins.size(table_items), 0)
 
       ret = nil
-      while true
+      loop do
         UI.ChangeWidget(
           Id(:edit),
           :Enabled,
@@ -202,7 +202,7 @@ module Yast
         # add host
         elsif ret == :add
           item = HostDialog(max, term(:empty))
-          next if item == nil
+          next if item.nil?
           table_items = Builtins.add(table_items, item)
           UI.ChangeWidget(Id(:table), :Items, table_items)
           UI.ChangeWidget(Id(:table), :CurrentItem, max)
@@ -220,17 +220,11 @@ module Yast
           Builtins.y2debug("cur_item=%1", cur_item)
 
           olditem = Ops.get(cur_item, 0)
-          forbidden = Builtins.maplist(table_items) do |e|
-            Ops.get_string(e, 1, "")
-          end
-          forbidden = Builtins.filter(
-            Convert.convert(forbidden, :from => "list", :to => "list <string>")
-          ) { |h| h != Ops.get_string(olditem, 1, "") }
 
           next if !HostSystemPopup(Ops.get_string(olditem, 1, ""), false)
           item = HostDialog(cur, olditem)
 
-          next if item == nil
+          next if item.nil?
 
           table_items = Builtins.maplist(table_items) do |e|
             if cur == Ops.get_integer(e, [0, 0], -1)
@@ -238,14 +232,9 @@ module Yast
                 [Ops.get_string(olditem, 2, ""), Ops.get_string(olditem, 3, "")],
                 " "
               )
-              entry = Builtins.mergestring(
-                [Ops.get_string(item, 2, ""), Ops.get_string(item, 3, "")],
-                " "
-              )
 
               Builtins.y2debug("item: %1", item)
               Builtins.y2debug("olditem: %1", olditem)
-              Builtins.y2debug("entry: %1", entry)
               Builtins.y2debug("oldentry: %1", oldentry)
 
               ip = Ops.get_string(item, 1, "")
@@ -273,17 +262,13 @@ module Yast
           Builtins.y2debug("cur_item=%1", cur_item)
 
           item = Ops.get(cur_item, 0)
-          entry = Builtins.mergestring(
-            [Ops.get_string(item, 2, ""), Ops.get_string(item, 3, "")],
-            " "
-          )
 
           next if !HostSystemPopup(Ops.get_string(item, 1, ""), true)
 
           table_items = Builtins.filter(table_items) do |e|
             ip = Ops.get_string(e, 1, "")
             if cur == Ops.get(e, [0, 0])
-              if ip != "" && ip != nil
+              if ip != "" && !ip.nil?
                 deleted_items = Builtins.add(deleted_items, ip)
                 next false
               end
@@ -318,9 +303,9 @@ module Yast
                 )
               end
             end
-            #deleted entries need to be set to [],
-            #so that ini-agent does not keep them in
-            #config file (#455862)
+            # deleted entries need to be set to [],
+            # so that ini-agent does not keep them in
+            # config file (#455862)
             Builtins.foreach(deleted_items) { |d| Ops.set(Host.hosts, d, []) }
           end
           break
@@ -330,17 +315,17 @@ module Yast
         end
       end
 
-
       Builtins.y2debug("table_items=%1", table_items)
       Builtins.y2debug("hosts=%1", Host.hosts)
 
       Convert.to_symbol(ret)
     end
+
     def HostDialog(id, entry)
       entry = deep_copy(entry)
       Builtins.y2debug("id=%1", id)
       Builtins.y2debug("entry=%1", entry)
-      #y2debug("forbidden=%1", forbidden);
+      # y2debug("forbidden=%1", forbidden);
 
       UI.OpenDialog(
         Opt(:decorated),
@@ -389,7 +374,7 @@ module Yast
       ret = nil
       host = nil
 
-      while true
+      loop do
         host = nil
         ret = UI.UserInput
         break if ret != :ok

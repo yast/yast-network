@@ -81,8 +81,8 @@ module Yast
 
           # vnc1 and vnchttp1 services are enabled
           services = written_value_for(".etc.xinetd_conf.services")
-          services = services.select {|s| s["service"] =~ /vnc/ }
-          expect(services.map {|s| s["enabled"]}).to eq([true, true])
+          services = services.select { |s| s["service"] =~ /vnc/ }
+          expect(services.map { |s| s["enabled"] }).to eq([true, true])
         end
       end
 
@@ -109,8 +109,8 @@ module Yast
 
           # vnc1 and vnchttp1 services are enabled
           services = written_value_for(".etc.xinetd_conf.services")
-          services = services.select {|s| s["service"] =~ /vnc/ }
-          expect(services.map {|s| s["enabled"]}).to eq([false, false])
+          services = services.select { |s| s["service"] =~ /vnc/ }
+          expect(services.map { |s| s["enabled"] }).to eq([false, false])
         end
       end
     end
@@ -120,9 +120,9 @@ module Yast
     # the method
     describe ".SetSecurityTpe" do
       let(:result) { Remote.SetSecurityType(server_args, sec_type) }
-      let(:default_xvnc_args) {
+      let(:default_xvnc_args) do
         "-noreset -inetd -once -query localhost -geometry 1024x768 -depth 16"
-      }
+      end
 
       context "with invalid sec_type parameter" do
         let(:sec_type) { "INVALID" }
@@ -245,6 +245,5 @@ module Yast
         end
       end
     end
-
   end
 end

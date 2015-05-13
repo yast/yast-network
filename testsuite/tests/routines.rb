@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-#***************************************************************************
+# ***************************************************************************
 #
 # Copyright (c) 2012 Novell, Inc.
 # All Rights Reserved.
@@ -20,7 +20,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #
-#**************************************************************************
+# **************************************************************************
 module Yast
   class RoutinesClient < Client
     def main
@@ -34,7 +34,7 @@ module Yast
       Yast.include self, "network/routines.rb"
 
       Testsuite.Dump("list2items")
-      Testsuite.Test(lambda { list2items(["x", "y"], 0) }, [], nil)
+      Testsuite.Test(-> { list2items(["x", "y"], 0) }, [], nil)
 
       Testsuite.Dump("hwlist2items")
       Testsuite.Test(lambda do
