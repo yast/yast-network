@@ -62,6 +62,65 @@ map UpcaseCondSet (map ret, map m, string key) {
     return ret;
 }
 
+/**
+ * Merges two devices map into one.
+ *
+ * Maps are expected in NetworkInterfaces format. That is
+ * $[
+ *   type1:
+ *     $[
+ *       dev_name_1: $[ ... ],
+ *       ...
+ *      ],
+ *    ...
+ *  ]
+ *
+ * If a device definition is present in both maps, then the one from devices2
+ * wins.
+ *
+ * @param in_devs1 first map of devices in NetworkInterfaces format
+ * @param in_devs2 second map of devices in NetworkInterfaces format
+ *
+ * @return merged device map in NetworkInterfaces format or empty map
+ */
+define map MergeDevices(map<string, any> in_devs1, map<string, any> in_devs2)
+{
+    map merged_devices = $[];
+
+    y2milestone("MergeDevices: start (in_devs1: %1, in_devs2: %2)", in_devs1, in_devs2);
+
+    if(IsEmpty(in_devs1))
+    {
+        merged_devices = in_devs2 == nil ? $[] : in_devs2;
+        return merged_devices;
+    }
+    if(IsEmpty(in_devs2))
+    {
+        merged_devices = in_devs1;
+        return merged_devices;
+    }
+
+    merged_devices = in_devs1;
+
+    y2milestone("MergeDevices: going to do real merge");
+
+    foreach(string type, any devices, in_devs2,
+    {
+        if(haskey(in_devs1, type))
+        {
+            map merged = union((map) in_devs1[type]:$[], (map) in_devs2[type]:$[]);
+            merged_devices[type] = merged;
+        }
+        else
+        {
+            merged_devices = add(in_devs1, type, devices);
+        }
+    });
+
+    y2milestone("MergeDevices: result %1", merged_devices);
+
+    return merged_devices;
+}
 
 /**
  * Convert data from autoyast to structure used by module.
@@ -127,7 +186,6 @@ define map FromAY(map input)
     foreach(string devname, map if_data, interfaces, {
 
 	string type = NetworkInterfaces::GetType(devname);
-//	string id = NetworkInterfaces::device_num (devname);
 	map d = devices[type]:$[];
 	d[devname] = if_data;
 	devices[type] = d;
@@ -136,8 +194,6 @@ define map FromAY(map input)
     map hwcfg = $[];
     if (size(input["modules"]:[]) > 0)
     {
-        // "hwcfg":$["bus-pci-0000:02:05.0":$["MODULE":"sk98lin",
-        // "MODULE_OPTIONS":"", "STARTMODE":"auto"]]
 	hwcfg = listmap(map mod, input["modules"]:[], {
             string options = mod["options"]:"";
             string module_name = mod["module"]:"";
@@ -152,8 +208,9 @@ define map FromAY(map input)
         });
     }
 
-
-    input["devices"] = devices;
+    // merge devices definitions obtained from inst-sys (input["devices"])
+    // and those which were read from AY profile. bnc#874259
+    input["devices"] = MergeDevices((map<string, any>) input["devices"]:$[], devices);
     input["hwcfg"] = hwcfg;
 
     // DHCP:: config: some of it is in the DNS part of the profile
@@ -163,7 +220,7 @@ define map FromAY(map input)
 
     if (haskey(dns, "dhcp_hostname"))
         dhcp["DHCLIENT_SET_HOSTNAME"] = dns["dhcp_hostname"]:false;
-	
+
     dhcp = UpcaseCondSet (dhcp, dhcpopts, "dhclient_client_id");
     dhcp = UpcaseCondSet (dhcp, dhcpopts, "dhclient_additional_options");
     dhcp = UpcaseCondSet (dhcp, dhcpopts, "dhclient_hostname_option");
@@ -307,17 +364,17 @@ else if(func == "Import") {
         // bnc#796580 The problem with this is that due to compatibility with
         // older profiles, a missing element may have a different meaning than
         // "use what the filesystem/kernel currently uses".
-        // In particular, a missing write_hostname [1] means
+        // In particular, a missing write_hostname means
         // "use the product default from DVD1/control.xml".
         // Other elements may have similar problems,
         // to be fixed post-PTF for maintenance.
         if (! haskey(param, "dns")) {
             param["dns"] = $[];
         }
-        foreach( string key, any value, dns, {
-            
+        foreach( string key, any value, dns,
+        {
             if( ! haskey( param["dns"]:$[], key )
-                && key != "write_hostname" ) { // [1] ^
+                && key != "write_hostname" ) {
                 y2milestone("(dns) taking %1 from inst-sys. Value = %2", key, value);
                 param["dns",key] = value;
             }
@@ -331,6 +388,9 @@ else if(func == "Import") {
                 y2milestone("(routing) taking %1 from inst-sys. Value = %2", key, value);
             }
         });
+
+        // store device configuration from inst-sys, bnc#874259
+        param["devices"] = from_system["devices"]:nil;
     }
     map new = FromAY(param);
     Lan::Import(new);
