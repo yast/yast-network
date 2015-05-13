@@ -4,6 +4,13 @@ Tue May 12 19:13:46 UTC 2015 - mfilka@suse.com
 - bnc#874259
   - keep device configuration provided via linuxrc when autoyast
     keep_install_network is set
+- 2.17.205
+
+-------------------------------------------------------------------
+Thu Apr  9 15:35:53 UTC 2015 - mvidner@suse.com
+
+- Write also --noproxy to .curlrc otherwise it is ignored even if
+  set in the environment (bsc#923788).
 - 2.17.204
 
 -------------------------------------------------------------------
