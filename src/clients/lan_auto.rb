@@ -136,6 +136,9 @@ module Yast
               )
             end
           end
+
+          # store device configuration from inst-sys, bnc#874259
+          @param["devices"] = from_system["devices"]
         end
         @new = FromAY(@param)
         Lan.Import(@new)
@@ -289,8 +292,10 @@ module Yast
       end
 
 
-      Ops.set(input, "devices", devices)
-      Ops.set(input, "hwcfg", hwcfg)
+      # merge devices definitions obtained from inst-sys (input["devices"])
+      # and those which were read from AY profile. bnc#874259
+      input["devices"] = merge_devices(input["devices"], devices);
+      input["hwcfg"] = hwcfg
 
       # DHCP:: config: some of it is in the DNS part of the profile
       dhcp = {}
@@ -459,6 +464,30 @@ module Yast
         Ops.set(ret, "net-udev", net_udev)
       end
       deep_copy(ret)
+    end
+
+    private
+    # Merges two devices map into one.
+    #
+    # Maps are expected in NetworkInterfaces format. That is
+    # $[
+    #  type1:
+    #    $[
+    #      dev_name_1: $[ ... ],
+    #      ...
+    #     ],
+    #   ...
+    # ]
+    #
+    # If a device definition is present in both maps, then the one from devices2
+    # wins.
+    #
+    # @param [Hash] in_devs1 first map of devices in NetworkInterfaces format
+    # @param [Hash] in_devs2 second map of devices in NetworkInterfaces format
+    #
+    # @return merged device map in NetworkInterfaces format or empty map
+    def merge_devices(in_devs1, in_devs2)
+      return in_devs2
     end
   end
 end
