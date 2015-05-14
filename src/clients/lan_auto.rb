@@ -62,8 +62,6 @@ module Yast
       Builtins.y2debug("func=%1", @func)
       Builtins.y2debug("param=%1", @param)
 
-      # Mode::SetTest("test");
-
       if Mode.test
         Mode.SetMode("autoinstallation")
         @param = {
@@ -111,7 +109,7 @@ module Yast
           # bnc#796580 The problem with this is that due to compatibility with
           # older profiles, a missing element may have a different meaning than
           # "use what the filesystem/kernel currently uses".
-          # In particular, a missing write_hostname [1] means
+          # In particular, a missing write_hostname means
           # "use the product default from DVD1/control.xml".
           # Other elements may have similar problems,
           # to be fixed post-PTF for maintenance.
@@ -191,8 +189,6 @@ module Yast
 
       Builtins.y2milestone("Lan auto finished (#{@ret})")
       Builtins.y2milestone("----------------------------------------")
-
-      # EOF
     end
 
     # If there's key in m, upcase key and assign the value to ret
@@ -271,7 +267,6 @@ module Yast
 
       Builtins.foreach(interfaces) do |devname, if_data|
         type = NetworkInterfaces.GetType(devname)
-        #	string id = NetworkInterfaces::device_num (devname);
         d = Ops.get(devices, type, {})
         Ops.set(d, devname, if_data)
         Ops.set(devices, type, d)
@@ -279,8 +274,6 @@ module Yast
 
       hwcfg = {}
       if Ops.greater_than(Builtins.size(Ops.get_list(input, "modules", [])), 0)
-        # "hwcfg":$["bus-pci-0000:02:05.0":$["MODULE":"sk98lin",
-        # "MODULE_OPTIONS":"", "STARTMODE":"auto"]]
         hwcfg = Builtins.listmap(Ops.get_list(input, "modules", [])) do |mod|
           options = Ops.get_string(mod, "options", "")
           module_name = Ops.get_string(mod, "module", "")
