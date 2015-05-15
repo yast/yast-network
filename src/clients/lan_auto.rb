@@ -21,11 +21,7 @@
 # you may find current contact information at www.novell.com
 #
 #**************************************************************************
-# File:	clients/lan_proposal.ycp
-# Package:	Network configuration
-# Summary:	Lan configuration proposal
-# Authors:	Michal Svec <msvec@suse.cz>
-#
+
 require "network/network_autoyast"
 
 module Yast
