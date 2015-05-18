@@ -272,6 +272,7 @@ define string GetDeviceDescription(string device_id)
     string output = sformat(
         _("%1 \n%2 - %3"),
         device_name,
+        // true = long, no abbreviation
         NetworkInterfaces::GetDevTypeDescription(type, true),
         ip_addr
     );
