@@ -7,7 +7,7 @@ Mon May 18 12:59:27 CEST 2015 - locilka@suse.com
 - 3.1.115
 
 -------------------------------------------------------------------
-Fri Mar  6 13:48:24 UTC 2015 - mfilka@suse.com
+Mon Apr 27 07:06:18 UTC 2015 - mfilka@suse.com
 
 - bnc#912904 
   - do not crash when adding new device and proposed configuration
