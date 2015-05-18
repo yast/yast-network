@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon May 18 12:59:27 CEST 2015 - locilka@suse.com
+
+- bsc#916376
+  - proposing iSCSI-related configuration in firewall proposal
+    in first stage if iSCSI is in use
+- 3.1.115
+
+-------------------------------------------------------------------
 Mon Apr 27 07:06:18 UTC 2015 - mfilka@suse.com
 
 - bnc#912904 

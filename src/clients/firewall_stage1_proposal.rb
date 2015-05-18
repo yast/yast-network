@@ -431,6 +431,10 @@ module Yast
         log.warn "Services #{SuSEFirewall4NetworkClass::VNC_SERVICES} are unknown"
       end
 
+      # BNC #766300 - Automatically propose opening iscsi-target port
+      # when installing with withiscsi=1
+      SuSEFirewallProposal.propose_iscsi if Linuxrc.useiscsi
+
       # Writing the configuration including adjusting services
       # is done in firewall_stage1_finish
     end
