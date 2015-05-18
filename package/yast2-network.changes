@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon May 18 07:57:50 UTC 2015 - mfilka@suse.com
+
+- bnc#913722
+  - improved device description in installer's Internet Connection
+    Test client. Especially regarding virtual devices.
+- 2.17.206
+
+-------------------------------------------------------------------
 Tue May 12 19:13:46 UTC 2015 - mfilka@suse.com
 
 - bnc#874259
