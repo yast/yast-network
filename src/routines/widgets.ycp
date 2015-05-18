@@ -243,29 +243,41 @@ map<string, any> mtu_widget()
     ];
 }
 
-define string GetDeviceDescription(string device_id) {
-    string device_name = NetworkInterfaces::GetValue(device_id,"NAME");
-    if ( (device_name == nil) || (device_name == "") ) {
-        //TRANSLATORS: Informs that device name is not known
-        device_name = _("Unknown device");
-    }
+define string GetDeviceDescription(string device_id)
+{
+    string type = NetworkInterfaces::GetType(device_id);
+    string device_name = CheckEmptyName(type, NetworkInterfaces::GetValue(device_id,"NAME"));
+
     y2milestone ("device_name %1", device_name);
-    //avoid too long device names
-    //if (size(device_name) > 30) {
-    //    device_name = substring (device_name, 0, 27) + "...";
-    //}
-    string ip_addr = (issubstring(NetworkInterfaces::GetValue(device_id, "BOOTPROTO"), "dhcp") ?
-		   // TRANSLATORS: Part of label, device with IP address assigned by DHCP
-                    _("DHCP address") :
-		   // TRANSLATORS: Part of label, device with static IP address
-                    NetworkInterfaces::GetValue(device_id, "IPADDR"));
-    if ( (ip_addr == nil) || (ip_addr == "")) {
+
+    string ip_addr = nil;
+
+    if(issubstring(NetworkInterfaces::GetValue(device_id, "BOOTPROTO"), "dhcp"))
+    {
+        // TRANSLATORS: Part of label, device with IP address assigned by DHCP
+        ip_addr = _("DHCP address");
+    }
+    else
+    {
+        // TRANSLATORS: Part of label, device with static IP address
+        ip_addr = NetworkInterfaces::GetValue(device_id, "IPADDR");
+    }
+
+    if(IsEmpty(ip_addr))
+    {
         //TRANSLATORS: Informs that no IP has been assigned to the device
         ip_addr = _("No IP address assigned");
     }
-    string output = sformat(_("%1 \n%2 - %3"),
-                        device_name, NetworkInterfaces::GetDeviceTypeName(device_id), ip_addr);
-        return output;
+
+    string output = sformat(
+        _("%1 \n%2 - %3"),
+        device_name,
+        // true = long, no abbreviation
+        NetworkInterfaces::GetDevTypeDescription(type, true),
+        ip_addr
+    );
+
+    return output;
 }
 
 

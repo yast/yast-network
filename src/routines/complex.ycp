@@ -186,7 +186,7 @@ define list<any> BuildSummary(string devregex, list<map> Hardware, boolean split
  * Fill in sensible string if the name is empty
  * @param devtype device type
  * @param hwname device name
- * @return hwname if not empty, "Unknown device" otherwise
+ * @return hwname, or if it is empty, a translated generic name based on devtype
  */
 define string CheckEmptyName(string devtype, string hwname) {
     if(hwname != nil && hwname != "") return hwname;
