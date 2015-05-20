@@ -1,12 +1,11 @@
 #!/usr/bin/env rspec
 
-ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
+require_relative "test_helper"
 
 require "yast"
 
 module Yast
   extend Yast::I18n
-  Yast.textdomain "network"
 
   import "SuSEFirewall4Network"
   import "SuSEFirewallProposal"
