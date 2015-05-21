@@ -27,6 +27,7 @@ module Yast
         res["preformatted_proposal"]
       end
       let(:ssh_string) do
+        Yast.textdomain "network"
         format(
           Yast._("SSH port will be open (<a href=\"%s\">block</a>)"),
           "firewall--disable_ssh_port_in_proposal"
