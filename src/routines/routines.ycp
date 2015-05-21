@@ -26,6 +26,7 @@ import "Mode";
 import "IP";
 import "Netmask";
 import "TypeRepository";
+import "Stage";
 
 /**
  * Abort function
@@ -640,7 +641,10 @@ define list<map> ReadHardware(string hwtype) {
     /* Confirmation: label text (detecting hardware: xxx) */
     string hwstring = _("All Network Devices");
     if(haskey(hwstrings, hwtype)) hwstring = hwstrings[hwtype]:"";
-    if(!Confirm::Detection(hwstring, "yast-lan")) return [];
+
+    // don't ask in the 1st stage, if we need to save a netcard config then network was already
+    // used for installation and asking is useless
+    if(!Stage::initial() && !Confirm::Detection(hwstring, "yast-lan")) return [];
 
     /* read the corresponding hardware */
     if(haskey(hwtypes, hwtype))

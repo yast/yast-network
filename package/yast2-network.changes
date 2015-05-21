@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu May 21 14:43:03 UTC 2015 - lslezak@suse.cz
+
+- Always detect network cards when saving the network config before
+  reboot in the first stage to include the correct card name
+  in the ifcfg file (bnc#915180).
+- 2.17.207
+
+-------------------------------------------------------------------
 Mon May 18 07:57:50 UTC 2015 - mfilka@suse.com
 
 - bnc#913722
