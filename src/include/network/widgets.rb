@@ -153,16 +153,6 @@ module Yast
               "be shut down via <tt>rcnetwork stop</tt>. <tt>ifdown <iface></tt> is still available.\n" \
               "Use this if you have an NFS or iSCSI root filesystem.\n"
           )
-        },
-        "nfsroot" => {
-          # Combo box option for Device Activation
-          "label" => _("On NFSroot"),
-          # help text for Device Activation
-          "help"  => _(
-            "Using <b>On NFSroot</b> is nearly like 'auto'. But interfaces with this startmode will never\n" \
-              "be shut down via 'rcnetwork stop'. 'ifdown <iface>' still works.\n" \
-              "Use this when you have a nfs or iscsi root filesystem.\n"
-          )
         }
       }
     end
