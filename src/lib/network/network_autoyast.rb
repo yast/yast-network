@@ -25,7 +25,13 @@ module Yast
     #
     # @return merged device map in NetworkInterfaces format or empty map
     def merge_devices(in_devs1, in_devs2)
-      return in_devs2
+      return in_devs2 if in_devs1.nil? && !in_devs2.nil?
+      return in_devs1 if in_devs2.nil? && !in_devs1.nil?
+      return {} if in_devs1.nil? && in_devs2.nil?
+
+      return in_devs1.merge(in_devs2) do |key, devs1_vals, devs2_vals|
+        devs1_vals.merge(devs2_vals)
+      end
     end
   end
 end
