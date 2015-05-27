@@ -18,6 +18,11 @@ describe "NetworkAutoYast" do
         "eth" => { "eth1" => {} }
       }
     end
+    let(:netconfig_ay_colliding) do
+      {
+        "eth" => { "eth0" => { ifcfg_key: "value" } }
+      }
+    end
     let(:netconfig_no_eth) do
       {
         "tun" => {
@@ -59,6 +64,12 @@ describe "NetworkAutoYast" do
 
       expect(merged.keys).to match_array (netconfig_linuxrc.keys + netconfig_ay.keys).uniq
       expect(merged["eth"].keys).to match_array (netconfig_linuxrc["eth"].keys + netconfig_ay["eth"].keys).uniq
+    end
+
+    it "returns merged map where inner map uses values from second argument in case of collision" do
+      merged = network_autoyast.merge_devices(netconfig_linuxrc, netconfig_ay_colliding)
+
+      expect(merged["eth"]).to eql netconfig_ay_colliding["eth"]
     end
   end
 end
