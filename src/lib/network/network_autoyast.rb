@@ -36,7 +36,7 @@ module Yast
 
     # Merges two maps with dns related values.
     #
-    # Value in first map has precendence over the value in second one in
+    # Value in second map has precendence over the value in first one in
     # case of key collision.
     #
     # bnc#796580 The problem with this is that due to compatibility with
@@ -46,21 +46,16 @@ module Yast
     # "use the product default from DVD1/control.xml".
     # Other elements may have similar problems,
     # to be fixed post-PTF for maintenance.
-    def merge_dns(in_dns1, in_dns2)
-      ret = in_dns1
+    #
+    # @param instsys_dns [Hash, nil] first map with DNS configuration
+    # @param ay_dns [Hash, nil] second map with DNS configuration
+    #
+    # @return merged DNS maps or empty map
+    def merge_dns(instsys_dns, ay_dns)
+      ay_dns ||= {}
+      instsys_dns ||= {}
 
-      Builtins.foreach(in_dns2) do |key, value|
-        if !Builtins.haskey(in_dns1, key) && key != "write_hostname"
-          Builtins.y2milestone(
-            "(dns) taking %1 from inst-sys. Value = %2",
-            key,
-            value
-          )
-          ret[key] = value
-        end
-      end
-
-      ret
+      instsys_dns.delete_if { |k,v| k == "write_hostname" }.merge(ay_dns)
     end
   end
 end

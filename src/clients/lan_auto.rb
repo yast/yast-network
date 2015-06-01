@@ -103,9 +103,7 @@ module Yast
           # copy the keys/values that are not existing in the XML
           # so we merge the inst-sys settings with the XML while XML
           # has higher priority
-          #
-          Ops.set(@param, "dns", {}) if !Builtins.haskey(@param, "dns")
-          @param["dns"] = NetworkAutoYast.instance.merge_dns(@param["dns"], @dns)
+          @param["dns"] = NetworkAutoYast.instance.merge_dns(@dns, @param["dns"] || {})
 
           Ops.set(@param, "routing", {}) if !Builtins.haskey(@param, "routing")
           Builtins.foreach(@routing) do |key, value|
