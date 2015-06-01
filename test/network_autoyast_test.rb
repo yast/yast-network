@@ -72,4 +72,41 @@ describe "NetworkAutoYast" do
       expect(merged["eth"]).to eql netconfig_ay_colliding["eth"]
     end
   end
+
+  describe "#merge_dns" do
+    let(:instsys_dns_setup) do
+      {
+        "hostname"           => "instsys_hostname",
+        "domain"             => "instsys_domain",
+        "nameservers"        => [],
+        "searchlist"         => [],
+        "dhcp_hostname"      => false,
+        "resolv_conf_policy" => "instsys_resolv_conf_policy",
+        "write_hostname"     => false
+      }
+    end
+    let(:ay_dns_setup) do
+      {
+        "hostname"           => "ay_hostname",
+        "domain"             => "ay_domain",
+        "nameservers"        => [],
+        "searchlist"         => [],
+        "dhcp_hostname"      => true,
+        "resolv_conf_policy" => "ay_resolv_conf_policy",
+      }
+    end
+    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
+
+    it "uses values from instsys, when nothing else is defined" do
+      result = network_autoyast.merge_dns(instsys_dns_setup, {})
+
+      expect(result).to eql instsys_dns_setup.delete_if { |k,v| k == "write_hostname" }
+    end
+
+    it "ignores instsys values, when AY provides ones" do
+      result = network_autoyast.merge_dns(instsys_dns_setup, ay_dns_setup)
+
+      expect(result).to eql ay_dns_setup
+    end
+  end
 end
