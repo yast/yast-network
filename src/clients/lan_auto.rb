@@ -92,13 +92,13 @@ module Yast
         # in case keep_install_network is set to true (in AY)
         # we'll keep values from installation
         # and merge with XML data (bnc#712864)
-        if Ops.get_boolean(@param, "keep_install_network", false) == true
+        if @param["keep_install_network"]
           # read settings from installation
           Lan.Read(:cache)
           # export settings into AY map
           @from_system = Lan.Export
-          @dns = Ops.get_map(@from_system, "dns", {})
-          @routing = Ops.get_map(@from_system, "routing", {})
+          @dns = @from_system["dns"] || {}
+          @routing = @from_system["routing"] || {}
 
           # copy the keys/values that are not existing in the XML
           # so we merge the inst-sys settings with the XML while XML
