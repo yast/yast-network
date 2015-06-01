@@ -104,25 +104,9 @@ module Yast
           # so we merge the inst-sys settings with the XML while XML
           # has higher priority
           #
-          # bnc#796580 The problem with this is that due to compatibility with
-          # older profiles, a missing element may have a different meaning than
-          # "use what the filesystem/kernel currently uses".
-          # In particular, a missing write_hostname means
-          # "use the product default from DVD1/control.xml".
-          # Other elements may have similar problems,
-          # to be fixed post-PTF for maintenance.
           Ops.set(@param, "dns", {}) if !Builtins.haskey(@param, "dns")
-          Builtins.foreach(@dns) do |key, value|
-            if !Builtins.haskey(Ops.get_map(@param, "dns", {}), key) &&
-                key != "write_hostname"
-              Builtins.y2milestone(
-                "(dns) taking %1 from inst-sys. Value = %2",
-                key,
-                value
-              )
-              Ops.set(@param, ["dns", key], value)
-            end
-          end
+          @param["dns"] = NetworkAutoYast.instance.merge_dns(@param["dns"], @dns)
+
           Ops.set(@param, "routing", {}) if !Builtins.haskey(@param, "routing")
           Builtins.foreach(@routing) do |key, value|
             if !Builtins.haskey(Ops.get_map(@param, "routing", {}), key)
