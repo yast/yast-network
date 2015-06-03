@@ -16,6 +16,7 @@ TESTS = \
   s390_helpers_test.rb \
   build_lan_overview_test.rb \
   network_autoyast_test.rb \
+  firewall_stage1_proposal_test.rb \
   remote_test.rb
 
 TEST_EXTENSIONS = .rb
