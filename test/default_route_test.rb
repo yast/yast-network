@@ -85,6 +85,7 @@ describe "Yast::LanItemsClass" do
       .to receive(:GetType)
       .with("")
       .and_return nil
+    Yast::NetworkInterfaces.instance_variable_set(:@initialized, false)
 
     allow(Yast::LanUdevAuto)
       .to receive(:AllowUdevModify).and_return false

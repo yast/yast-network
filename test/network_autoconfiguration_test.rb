@@ -116,6 +116,7 @@ describe Yast::NetworkAutoconfiguration do
       .to receive(:GetType).           with(/eth\d+/).      and_return "eth"
     allow(Yast::NetworkInterfaces)
       .to receive(:GetType).           with("").            and_return nil
+    Yast::NetworkInterfaces.instance_variable_set(:@initialized, false)
 
     # stub program execution
     # - interfaces are up
