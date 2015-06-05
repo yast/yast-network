@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jun  5 08:21:01 UTC 2015 - mfilka@suse.com
+
+- bnc#923990
+  - replaced already registered ".site" TLD with ".suse"
+- 2.17.208 
+
+-------------------------------------------------------------------
 Thu May 21 14:43:03 UTC 2015 - lslezak@suse.cz
 
 - Always detect network cards when saving the network config before

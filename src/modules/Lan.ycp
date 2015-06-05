@@ -1069,30 +1069,6 @@ define boolean ProposeHostname () {
 	return false;
     }
 
-/*
-    y2milestone ("hostname from install.inf");
-    if (! DNS::ReadHostDomain (InstallInf["hostname"]:"",
-			       InstallInf["domain"]:""))
-    {
-	y2milestone ("hostname from dns");
-	// try to get hostname from the network 
-	string hnent = NetHwDetection::ResolveIP(ipaddr);
-
-        //last resort - generate random hostname (#165269)
-        if (hnent == "")
-        {
-            y2milestone("random hostname");
-            srandom ();
-            DNS::ReadHostDomain("linux-" + String::Random(4), "site");
-        }
-        else
-        {
-            list hnsplit = Hostname::SplitFQ(hnent);
-            DNS::ReadHostDomain (hnsplit[0]:"", hnsplit[1]:"");
-        }
-
-    }
-*/
     return true;    
 }
 
@@ -1102,11 +1078,6 @@ define boolean ProposeHostname () {
  */
 global define boolean ProposeRoutesAndResolver () {
     if(LanItems::bootproto == "static" && LanItems::ipaddr != "" && LanItems::ipaddr != nil) {
-	/* propose default gateway from /etc/install.inf */
-//	Routing::ReadFromGateway (InstallInf["gateway"]:"");
-
-	/* propose DNS setup from /etc/install.inf */
-//	DNS::ReadNameserver (InstallInf["nameserver"]:"");
 	ProposeHostname ();
     }
     return true;
