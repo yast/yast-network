@@ -41,6 +41,7 @@ global string hostname = "";
  * Domain Name (not including the host part)
  */
 global string domain = "";
+global const string DEFAULT_DOMAIN = "site";
 
 global list<string> nameservers = [];
 global list<string> searchlist = [];
@@ -232,7 +233,7 @@ global void ReadHostname() {
     if (hostname == "")
     {
 	hostname = "linux";
-	domain = "site";
+	domain = DEFAULT_DOMAIN;
     }
 }
 
