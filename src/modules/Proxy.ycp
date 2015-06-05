@@ -99,6 +99,69 @@ global define boolean Read() {
     return true;
 }
 
+void WriteSysconfig() {
+    SCR::Write(.sysconfig.proxy.PROXY_ENABLED, enabled ? "yes" : "no");
+    SCR::Write(.sysconfig.proxy.HTTP_PROXY, http);
+    SCR::Write(.sysconfig.proxy.HTTPS_PROXY, https);
+    SCR::Write(.sysconfig.proxy.FTP_PROXY, ftp);
+    SCR::Write(.sysconfig.proxy.NO_PROXY, no);
+    SCR::Write(.sysconfig.proxy, nil);
+}
+
+/*
+ * Escape backslash characters in .curlrc (bnc#331038)
+ * see also http://curl.haxx.se/docs/manpage.html#-K for escaping rules
+ */
+string EscapeForCurlrc(string s) {
+    if (s == nil) {
+        return nil;
+    }
+    return mergestring (splitstring(s, "\\"), "\\\\");
+}
+
+void WriteCurlrc() {
+    string proxyuser = nil;
+    if (user != "") {
+        proxyuser = user;
+        if (pass != "") proxyuser = user + ":" + pass;
+    }
+
+    map<string, string> options = $[
+        "--proxy-user": proxyuser,
+        // bnc#305163
+        "--proxy":      http,
+        // bsc#923788, add --noproxy explicitely into .curlrc. Setup in ENV is
+        // ignored
+        "--noproxy":    no
+        // there are no options for https and ftp
+    ];
+
+    // proxy is used, write /root/.curlrc
+    if (enabled) {
+        boolean write_comment = true;
+        foreach(string option, string value, options, {
+            if (value == "") {
+                value = nil;
+            }
+
+            SCR::Write (add (.root.curlrc, option), EscapeForCurlrc(value));
+
+            if (value != nil && write_comment) {
+                SCR::Write (add (add (.root.curlrc, option), "comment"),
+                            ChangedComment("proxy"));
+                write_comment = false;
+            }
+        });
+    // proxy is not used, remove proxy-related settings
+    } else {
+        foreach(string option, string value, options, {
+            SCR::Write (add (.root.curlrc, option), nil);
+        });
+    }
+
+    SCR::Write(.root.curlrc, nil);
+}
+
 /**
  * Write routing settings and apply changes
  * @return true if success
@@ -125,50 +188,9 @@ global define boolean Write() {
     ProgressNextStage(_("Updating proxy configuration..."));
 
     /* Update /etc/sysconfig/proxy */
-    SCR::Write(.sysconfig.proxy.PROXY_ENABLED, enabled?"yes":"no");
-    SCR::Write(.sysconfig.proxy.HTTP_PROXY, http);
-    SCR::Write(.sysconfig.proxy.HTTPS_PROXY, https);
-    SCR::Write(.sysconfig.proxy.FTP_PROXY, ftp);
-    SCR::Write(.sysconfig.proxy.NO_PROXY, no);
-    SCR::Write(.sysconfig.proxy, nil);
+    WriteSysconfig();
 
-    // proxy is used, write /root/.curlrc
-    // bugzilla #305163
-    if (enabled) {
-	/* Update /root/.curlrc */
-	string proxyuser = nil;
-	if (user != "") {
-	    //Escape backslash characters in .curlrc (#331038)
-            user = mergestring (splitstring(user, "\\"), "\\\\");
-	    proxyuser = user;
-	    if (pass != "") proxyuser = user + ":" + pass;
-	}
-
-	// nil or real value
-	SCR::Write (add (.root.curlrc, "--proxy-user"), proxyuser);
-
-	// not 'nil', not empty
-	// bugzilla #305163
-	if (http != nil && size (http) > 0) {
-	    SCR::Write (add (.root.curlrc, "--proxy"), http);
-	} else {
-	    SCR::Write (add (.root.curlrc, "--proxy"), nil);
-	}
-
-	// only written value can have a comment
-	if (proxyuser != nil) {
-	    SCR::Write (add (add (.root.curlrc, "--proxy-user"), "comment"), ChangedComment("proxy"));
-	// only when set, can have a comment
-	} else if (http != nil && size (http) > 0) {
-	    SCR::Write (add (add (.root.curlrc, "--proxy"), "comment"), ChangedComment("proxy"));
-	}
-    // proxy is not used, remove proxy-related settings
-    } else {
-	SCR::Write (add (.root.curlrc, "--proxy-user"), nil);
-	SCR::Write (add (.root.curlrc, "--proxy"), nil);
-    }
-
-    SCR::Write(.root.curlrc, nil);
+    WriteCurlrc();
     sleep(sl);
     Progress::NextStage();
 

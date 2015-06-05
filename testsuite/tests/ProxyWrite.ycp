@@ -1,0 +1,73 @@
+{
+include "testsuite.ycp";
+
+map READ = $[
+    "target" : $[
+	"tmpdir" : "/tmp",
+    ],
+];
+
+map EXEC = $[
+    "target": $[
+        "bash_output": $[
+            "stdout": "2015-01-31\n"
+        ]
+    ]
+];
+
+list<map> stubs = [READ, $[], EXEC];
+TESTSUITE_INIT(stubs, nil);
+
+import "Proxy";
+import "Progress";
+Progress::off();
+
+DUMP("Write: disabled");
+Proxy::Import($["enabled": false]);
+TEST(``(Proxy::Write()), stubs, nil);
+
+DUMP("Write: enabled");
+Proxy::Import($[
+                "enabled":    true,
+                "http_proxy": "proxy.example.org:3128",
+                ]);
+TEST(``(Proxy::Write()), stubs, nil);
+
+DUMP("Write: authenticated");
+Proxy::Import($[
+                "enabled":        true,
+                "http_proxy":     "proxy.example.org:3128",
+                "proxy_user":     "User\\Domain",
+                "proxy_password": "P",
+                ]);
+TEST(``(Proxy::Write()), stubs, nil);
+
+DUMP("Write: ftp");
+Proxy::Import($[
+                "enabled":        true,
+                "ftp_proxy":      "proxy.example.org:3128",
+                ]);
+TEST(``(Proxy::Write()), stubs, nil);
+
+DUMP("Write: authenticated ftp");
+Proxy::Import($[
+                "enabled":        true,
+                "ftp_proxy":      "proxy.example.org:3128",
+                "proxy_user":     "U",
+                "proxy_password": "P",
+                ]);
+TEST(``(Proxy::Write()), stubs, nil);
+
+DUMP("Write: full");
+Proxy::Import($[
+                "enabled":        true,
+                "http_proxy":     "proxy1.example.org:3128",
+                "https_proxy":    "proxy2.example.org:3128",
+                "ftp_proxy":      "proxy3.example.org:3128",
+                "no_proxy":       "example.org,example.com,localhost",
+                "proxy_user":     "U",
+                "proxy_password": "P",
+                ]);
+TEST(``(Proxy::Write()), stubs, nil);
+
+}
