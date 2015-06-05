@@ -82,7 +82,7 @@ define map InitSettings () {
     /* domain search */
     string searchstring = mergestring (DNS::searchlist, "\n");
     // #49094: populate the search list
-    // #437759: discard 'site', nobody really wants that pre-set
+    // #437759: discard default domain
     if (searchstring == "" && settings["DOMAIN"]:"" != DNS::DEFAULT_DOMAIN)
     {
 	searchstring = settings["DOMAIN"]:"";
