@@ -41,7 +41,7 @@ global string hostname = "";
  * Domain Name (not including the host part)
  */
 global string domain = "";
-global const string DEFAULT_DOMAIN = "site";
+global const string DEFAULT_DOMAIN = "suse";
 
 global list<string> nameservers = [];
 global list<string> searchlist = [];
