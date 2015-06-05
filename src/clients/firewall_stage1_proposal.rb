@@ -76,7 +76,9 @@ module Yast
         # Don't override users settings
         SuSEFirewall4Network.prepare_proposal unless SuSEFirewallProposal.GetChangedByUser
 
-        adjust_configuration
+        # this method is not easily mockable in rspec and currently is out of scope
+        # for testing in firewall_stage1_proposal_test.rb
+        adjust_configuration if !Mode.test
 
         script_return = {
           "preformatted_proposal" => preformatted_proposal,
