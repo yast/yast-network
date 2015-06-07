@@ -109,4 +109,34 @@ describe "NetworkAutoYast" do
       expect(result).to eql ay_dns_setup
     end
   end
+
+  describe "#merge_routing" do
+    let(:instsys_routing_setup) do
+      {
+        "routes"       => ["array of instsys routes"],
+        "ipv4_forward" => false,
+        "ipv6_forward" => false
+      }
+    end
+    let(:ay_routing_setup) do
+      {
+        "routes"       => ["array of AY routes"],
+        "ipv4_forward" => true,
+        "ipv6_forward" => true
+      }
+    end
+    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
+
+    it "uses values from instsys, when nothing else is defined" do
+      result = network_autoyast.merge_routing(instsys_routing_setup, {})
+
+      expect(result).to eql instsys_routing_setup
+    end
+
+    it "ignores instsys values, when AY provides ones" do
+      result = network_autoyast.merge_routing(instsys_routing_setup, ay_routing_setup)
+
+      expect(result).to eql ay_routing_setup
+    end
+  end
 end
