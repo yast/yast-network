@@ -104,19 +104,7 @@ module Yast
           # so we merge the inst-sys settings with the XML while XML
           # has higher priority
           @param["dns"] = NetworkAutoYast.instance.merge_dns(@dns, @param["dns"] || {})
-
-          Ops.set(@param, "routing", {}) if !Builtins.haskey(@param, "routing")
-          Builtins.foreach(@routing) do |key, value|
-            if !Builtins.haskey(Ops.get_map(@param, "routing", {}), key)
-              Ops.set(@param, ["routing", key], value)
-              Builtins.y2milestone(
-                "(routing) taking %1 from inst-sys. Value = %2",
-                key,
-                value
-              )
-            end
-          end
-
+          @param["routing"] = NetworkAutoYast.instance.merge_routing(@routing, @param["routing"])
           # store device configuration from inst-sys, bnc#874259
           @param["devices"] = from_system["devices"]
         end

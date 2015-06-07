@@ -57,5 +57,12 @@ module Yast
 
       instsys_dns.delete_if { |k,v| k == "write_hostname" }.merge(ay_dns)
     end
+
+    def merge_routing(instsys_routing, ay_routing)
+      ay_routing ||= {}
+      instsys_routing ||= {}
+
+      instsys_routing.merge(ay_routing)
+    end
   end
 end
