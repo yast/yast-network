@@ -5,6 +5,35 @@ module Yast
   class NetworkAutoYast
     include Singleton
 
+    # Merges existing config from system into given configuration map
+    #
+    # @param [Hash, nil] configurtion map
+    #
+    # @return updated configuration map
+    def merge_configs(conf)
+      Yast.import "Lan"
+
+      # read settings from installation
+      Lan.Read(:cache)
+      # export settings into AY map
+      from_system = Lan.Export
+      dns = from_system["dns"] || {}
+      routing = from_system["routing"] || {}
+
+      return from_system if conf.nil? || conf.empty?
+
+      # copy the keys/values that are not existing in the XML
+      # so we merge the inst-sys settings with the XML while XML
+      # has higher priority
+      conf["dns"] = merge_dns(dns, conf["dns"] || {})
+      conf["routing"] = merge_routing(routing, conf["routing"])
+      # store device configuration from inst-sys, bnc#874259
+      conf["devices"] = from_system["devices"]
+
+      conf
+    end
+
+    private
     # Merges two devices map into one.
     #
     # Maps are expected in NetworkInterfaces format. That is

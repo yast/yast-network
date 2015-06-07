@@ -92,22 +92,8 @@ module Yast
         # in case keep_install_network is set to true (in AY)
         # we'll keep values from installation
         # and merge with XML data (bnc#712864)
-        if @param["keep_install_network"]
-          # read settings from installation
-          Lan.Read(:cache)
-          # export settings into AY map
-          @from_system = Lan.Export
-          @dns = @from_system["dns"] || {}
-          @routing = @from_system["routing"] || {}
+        @param = NetworkAutoYast.instance.merge_configs if @param["keep_install_network"]
 
-          # copy the keys/values that are not existing in the XML
-          # so we merge the inst-sys settings with the XML while XML
-          # has higher priority
-          @param["dns"] = NetworkAutoYast.instance.merge_dns(@dns, @param["dns"] || {})
-          @param["routing"] = NetworkAutoYast.instance.merge_routing(@routing, @param["routing"])
-          # store device configuration from inst-sys, bnc#874259
-          @param["devices"] = from_system["devices"]
-        end
         @new = FromAY(@param)
         Lan.Import(@new)
         LanUdevAuto.Import(@new)
