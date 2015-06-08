@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Jun  8 09:58:46 UTC 2015 - mfilka@suse.com
+
+- bnc#874259
+  - keep device configuration provided via linuxrc when autoyast
+    keep_install_network is set
+- 3.1.112.2
+
+-------------------------------------------------------------------
 Mon May 18 12:59:27 CEST 2015 - locilka@suse.com
 
 - bsc#916376
