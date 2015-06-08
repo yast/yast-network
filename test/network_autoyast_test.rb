@@ -139,4 +139,16 @@ describe "NetworkAutoYast" do
       expect(result).to eql ay_routing_setup
     end
   end
+
+  describe "#merge_configs" do
+    let(:network_autoyast) { Yast::NetworkAutoYast.instance }
+
+    it "merges all necessary stuff" do
+      expect(network_autoyast).to receive(:merge_dns)
+      expect(network_autoyast).to receive(:merge_routing)
+      expect(network_autoyast).to receive(:merge_devices)
+
+      network_autoyast.merge_configs({"dns" => {}, "routing" => {}, "devices" => {}})
+    end
+  end
 end
