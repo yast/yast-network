@@ -92,7 +92,7 @@ module Yast
         # in case keep_install_network is set to true (in AY)
         # we'll keep values from installation
         # and merge with XML data (bnc#712864)
-        @param = NetworkAutoYast.instance.merge_configs if @param["keep_install_network"]
+        @param = NetworkAutoYast.instance.merge_configs(@params) if @param["keep_install_network"]
 
         @new = FromAY(@param)
         Lan.Import(@new)
@@ -245,10 +245,6 @@ module Yast
         end
       end
 
-
-      # merge devices definitions obtained from inst-sys (input["devices"])
-      # and those which were read from AY profile. bnc#874259
-      input["devices"] = NetworkAutoYast.instance.merge_devices(input["devices"], devices);
       input["hwcfg"] = hwcfg
 
       # DHCP:: config: some of it is in the DNS part of the profile

@@ -19,16 +19,18 @@ module Yast
       from_system = Lan.Export
       dns = from_system["dns"] || {}
       routing = from_system["routing"] || {}
+      devices = from_system["devices"] || {}
 
       return from_system if conf.nil? || conf.empty?
 
       # copy the keys/values that are not existing in the XML
       # so we merge the inst-sys settings with the XML while XML
       # has higher priority
-      conf["dns"] = merge_dns(dns, conf["dns"] || {})
+      conf["dns"] = merge_dns(dns, conf["dns"])
       conf["routing"] = merge_routing(routing, conf["routing"])
-      # store device configuration from inst-sys, bnc#874259
-      conf["devices"] = from_system["devices"]
+      # merge devices definitions obtained from inst-sys
+      # and those which were read from AY profile. bnc#874259
+      conf["devices"] = merge_devices(devices, conf["devices"])
 
       conf
     end
