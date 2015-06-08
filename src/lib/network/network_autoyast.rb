@@ -87,6 +87,15 @@ module Yast
       instsys_dns.delete_if { |k,v| k == "write_hostname" }.merge(ay_dns)
     end
 
+    # Merges two maps with routing related values
+    #
+    # Value in second map has precendence over the value in first one in
+    # case of key collision.
+    #
+    # @param instsys_routing [Hash, nil] first map with routing configuration
+    # @param ay_routing [Hash, nil] second map with routing configuration
+    #
+    # @return merged DNS maps or empty map
     def merge_routing(instsys_routing, ay_routing)
       ay_routing ||= {}
       instsys_routing ||= {}
