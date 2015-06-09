@@ -21,11 +21,9 @@
 # you may find current contact information at www.novell.com
 #
 #**************************************************************************
-# File:	clients/lan_proposal.ycp
-# Package:	Network configuration
-# Summary:	Lan configuration proposal
-# Authors:	Michal Svec <msvec@suse.cz>
-#
+
+require "network/network_autoyast"
+
 module Yast
   class LanAutoClient < Client
     def main
@@ -62,8 +60,6 @@ module Yast
       Builtins.y2debug("func=%1", @func)
       Builtins.y2debug("param=%1", @param)
 
-      # Mode::SetTest("test");
-
       if Mode.test
         Mode.SetMode("autoinstallation")
         @param = {
@@ -96,49 +92,8 @@ module Yast
         # in case keep_install_network is set to true (in AY)
         # we'll keep values from installation
         # and merge with XML data (bnc#712864)
-        if Ops.get_boolean(@param, "keep_install_network", false) == true
-          # read settings from installation
-          Lan.Read(:cache)
-          # export settings into AY map
-          @from_system = Lan.Export
-          @dns = Ops.get_map(@from_system, "dns", {})
-          @routing = Ops.get_map(@from_system, "routing", {})
+        @param = NetworkAutoYast.instance.merge_configs(@params) if @param["keep_install_network"]
 
-          # copy the keys/values that are not existing in the XML
-          # so we merge the inst-sys settings with the XML while XML
-          # has higher priority
-          #
-          # bnc#796580 The problem with this is that due to compatibility with
-          # older profiles, a missing element may have a different meaning than
-          # "use what the filesystem/kernel currently uses".
-          # In particular, a missing write_hostname [1] means
-          # "use the product default from DVD1/control.xml".
-          # Other elements may have similar problems,
-          # to be fixed post-PTF for maintenance.
-          Ops.set(@param, "dns", {}) if !Builtins.haskey(@param, "dns")
-          Builtins.foreach(@dns) do |key, value|
-            if !Builtins.haskey(Ops.get_map(@param, "dns", {}), key) &&
-                key != "write_hostname"
-              Builtins.y2milestone(
-                "(dns) taking %1 from inst-sys. Value = %2",
-                key,
-                value
-              )
-              Ops.set(@param, ["dns", key], value)
-            end
-          end
-          Ops.set(@param, "routing", {}) if !Builtins.haskey(@param, "routing")
-          Builtins.foreach(@routing) do |key, value|
-            if !Builtins.haskey(Ops.get_map(@param, "routing", {}), key)
-              Ops.set(@param, ["routing", key], value)
-              Builtins.y2milestone(
-                "(routing) taking %1 from inst-sys. Value = %2",
-                key,
-                value
-              )
-            end
-          end
-        end
         @new = FromAY(@param)
         Lan.Import(@new)
         LanUdevAuto.Import(@new)
@@ -191,8 +146,6 @@ module Yast
 
       Builtins.y2milestone("Lan auto finished (#{@ret})")
       Builtins.y2milestone("----------------------------------------")
-
-      # EOF
     end
 
     # If there's key in m, upcase key and assign the value to ret
@@ -271,7 +224,6 @@ module Yast
 
       Builtins.foreach(interfaces) do |devname, if_data|
         type = NetworkInterfaces.GetType(devname)
-        #	string id = NetworkInterfaces::device_num (devname);
         d = Ops.get(devices, type, {})
         Ops.set(d, devname, if_data)
         Ops.set(devices, type, d)
@@ -279,8 +231,6 @@ module Yast
 
       hwcfg = {}
       if Ops.greater_than(Builtins.size(Ops.get_list(input, "modules", [])), 0)
-        # "hwcfg":$["bus-pci-0000:02:05.0":$["MODULE":"sk98lin",
-        # "MODULE_OPTIONS":"", "STARTMODE":"auto"]]
         hwcfg = Builtins.listmap(Ops.get_list(input, "modules", [])) do |mod|
           options = Ops.get_string(mod, "options", "")
           module_name = Ops.get_string(mod, "module", "")
@@ -295,9 +245,7 @@ module Yast
         end
       end
 
-
-      Ops.set(input, "devices", devices)
-      Ops.set(input, "hwcfg", hwcfg)
+      input["hwcfg"] = hwcfg
 
       # DHCP:: config: some of it is in the DNS part of the profile
       dhcp = {}

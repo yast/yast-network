@@ -26,3 +26,4 @@ testsuite/run/
 /testsuite/yast2-network.*
 /test-driver
 .yardoc
+/coverage
