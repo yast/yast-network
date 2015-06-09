@@ -25,18 +25,10 @@ describe "NetworkAutoYast" do
     end
     let(:netconfig_no_eth) do
       {
-        "tun" => {
-          "tun0"  => {}
-        },
-        "tap" => {
-          "tap0"  => {},
-        },
-        "br" => {
-          "br0"   => {},
-        },
-        "bond" => {
-          "bond0" => {}
-        }
+        "tun"  => { "tun0"  => {} },
+        "tap"  => { "tap0"  => {} },
+        "br"   => { "br0"   => {} },
+        "bond" => { "bond0" => {} }
       }
     end
 
@@ -62,8 +54,11 @@ describe "NetworkAutoYast" do
     it "merges nonempty maps including maps referenced by colliding key" do
       merged = network_autoyast.send(:merge_devices, netconfig_linuxrc, netconfig_ay)
 
-      expect(merged.keys).to match_array (netconfig_linuxrc.keys + netconfig_ay.keys).uniq
-      expect(merged["eth"].keys).to match_array (netconfig_linuxrc["eth"].keys + netconfig_ay["eth"].keys).uniq
+      result_dev_types = (netconfig_linuxrc.keys + netconfig_ay.keys).uniq
+      result_eth_devs  = (netconfig_linuxrc["eth"].keys + netconfig_ay["eth"].keys).uniq
+
+      expect(merged.keys).to match_array result_dev_types
+      expect(merged["eth"].keys).to match_array result_eth_devs
     end
 
     it "returns merged map where inner map uses values from second argument in case of collision" do
@@ -92,7 +87,7 @@ describe "NetworkAutoYast" do
         "nameservers"        => [],
         "searchlist"         => [],
         "dhcp_hostname"      => true,
-        "resolv_conf_policy" => "ay_resolv_conf_policy",
+        "resolv_conf_policy" => "ay_resolv_conf_policy"
       }
     end
     let(:network_autoyast) { Yast::NetworkAutoYast.instance }
@@ -100,7 +95,7 @@ describe "NetworkAutoYast" do
     it "uses values from instsys, when nothing else is defined" do
       result = network_autoyast.send(:merge_dns, instsys_dns_setup, {})
 
-      expect(result).to eql instsys_dns_setup.delete_if { |k,v| k == "write_hostname" }
+      expect(result).to eql instsys_dns_setup.delete_if { |k, _v| k == "write_hostname" }
     end
 
     it "ignores instsys values, when AY provides ones" do
@@ -148,7 +143,7 @@ describe "NetworkAutoYast" do
       expect(network_autoyast).to receive(:merge_routing)
       expect(network_autoyast).to receive(:merge_devices)
 
-      network_autoyast.merge_configs({"dns" => {}, "routing" => {}, "devices" => {}})
+      network_autoyast.merge_configs("dns" => {}, "routing" => {}, "devices" => {})
     end
   end
 end

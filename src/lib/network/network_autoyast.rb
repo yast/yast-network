@@ -36,6 +36,7 @@ module Yast
     end
 
     private
+
     # Merges two devices map into one.
     #
     # Maps are expected in NetworkInterfaces format. That is
@@ -60,7 +61,7 @@ module Yast
       return in_devs1 if in_devs2.nil? && !in_devs1.nil?
       return {} if in_devs1.nil? && in_devs2.nil?
 
-      return in_devs1.merge(in_devs2) do |key, devs1_vals, devs2_vals|
+      in_devs1.merge(in_devs2) do |_key, devs1_vals, devs2_vals|
         devs1_vals.merge(devs2_vals)
       end
     end
@@ -86,7 +87,7 @@ module Yast
       ay_dns ||= {}
       instsys_dns ||= {}
 
-      instsys_dns.delete_if { |k,v| k == "write_hostname" }.merge(ay_dns)
+      instsys_dns.delete_if { |k, _v| k == "write_hostname" }.merge(ay_dns)
     end
 
     # Merges two maps with routing related values
