@@ -20,6 +20,7 @@ TESTS = \
   ifroute_test.rb \
   s390_helpers_test.rb \
   build_lan_overview_test.rb \
+  network_autoyast_test.rb \
   remote_test.rb
 
 TEST_EXTENSIONS = .rb

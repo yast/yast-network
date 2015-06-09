@@ -30,3 +30,4 @@ testsuite/run/
 /test/*.trs
 /test/*.log
 .yardoc
+/coverage
