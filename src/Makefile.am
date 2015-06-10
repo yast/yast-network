@@ -109,7 +109,8 @@ ylib_DATA = \
   lib/network/edit_nic_name.rb \
   lib/network/confirm_virt_proposal.rb \
   lib/network/install_inf_convertor.rb \
-  lib/network/network_autoconfiguration.rb
+  lib/network/network_autoconfiguration.rb \
+  lib/network/network_autoyast.rb
 
 EXTRA_DIST = \
   $(module_DATA) \
