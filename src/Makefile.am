@@ -100,7 +100,6 @@ ybin_SCRIPTS = \
 
 desktop_DATA = \
   desktop/host.desktop \
-  desktop/network.desktop \
   desktop/remote.desktop \
   desktop/lan.desktop
 
