@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Jun 11 07:51:16 UTC 2015 - mfilka@suse.com
+
+- fate#318804
+  - moved "Network Settings" into "System" group in YaST control
+    centre
+- 3.1.118
+
+-------------------------------------------------------------------
 Wed Jun 10 08:37:59 UTC 2015 - mfilka@suse.com
 
 - bnc#934180
