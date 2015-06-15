@@ -93,7 +93,7 @@ module Yast
         # in case keep_install_network is set to true (in AY)
         # we'll keep values from installation
         # and merge with XML data (bnc#712864)
-        @param = NetworkAutoYast.instance.merge_configs(@params) if @param["keep_install_network"]
+        @param = NetworkAutoYast.instance.merge_configs(@param) if @param["keep_install_network"]
 
         @new = FromAY(@param)
         Lan.Import(@new)
