@@ -1229,7 +1229,7 @@ module Yast
       deep_copy(index)
     end
 
-    def startmode_overview
+    def startmode_overview(item_id)
       startmode_descrs = {
         # summary description of STARTMODE=auto
         "auto"    => _(
@@ -1257,7 +1257,8 @@ module Yast
         )
       }
 
-      startmode_descr = startmode_descrs[NetworkInterfaces.Current["STARTMODE"].to_s] || _("Started manually")
+      ifcfg = GetDeviceMap(item_id) || {}
+      startmode_descr = startmode_descrs[ifcfg["STARTMODE"].to_s] || _("Started manually")
 
       [startmode_descr]
     end
@@ -1323,7 +1324,7 @@ module Yast
           )
 
           bullets << _("Device Name: %s") % ifcfg_name
-          bullets += startmode_overview
+          bullets += startmode_overview(key)
           bullets += ip_overview(ip) if ifcfg_conf["STARTMODE"] != "managed"
 
           if LanItems.type == "wlan" &&
