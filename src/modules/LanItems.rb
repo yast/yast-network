@@ -301,6 +301,8 @@ module Yast
     end
 
     # Returns configuration of item (see LanItems::Items) with given id.
+    #
+    # @param itemId [Integer] a key for {#Items}
     def GetLanItem(itemId)
       Ops.get_map(@Items, itemId, {})
     end
@@ -312,6 +314,8 @@ module Yast
 
     # Returns true if the item (see LanItems::Items) has
     # netconfig configuration.
+    #
+    # @param itemId [Integer] a key for {#Items}
     def IsItemConfigured(itemId)
       ret = !GetLanItem(itemId)["ifcfg"].to_s.empty?
       log.info("IsItemConfigured: item=#{itemId} configured=#{ret}")
@@ -329,6 +333,8 @@ module Yast
     #
     # First it looks into the item's netconfig and if it doesn't exist
     # it uses device name from hwinfo if available.
+    #
+    # @param item_id [Integer] a key for {#Items}
     def GetDeviceName(item_id)
       lan_item = GetLanItem(item_id)
 
@@ -363,6 +369,8 @@ module Yast
     end
 
     # Returns device type for particular lan item
+    #
+    # @param itemId [Integer] a key for {#Items}
     def GetDeviceType(itemId)
       NetworkInterfaces.GetType(GetDeviceName(itemId))
     end
@@ -373,6 +381,8 @@ module Yast
     end
 
     # Returns ifcfg configuration for particular item
+    #
+    # @param itemId [Integer] a key for {#Items}
     def GetDeviceMap(itemId)
       return nil if !IsItemConfigured(itemId)
 
@@ -394,6 +404,8 @@ module Yast
     #
     # It updates NetworkInterfaces according given map. Map is expected
     # to be a hash where both key even value are strings
+    #
+    # @param item_id [Integer] a key for {#Items}
     def SetDeviceMap(item_id, devmap)
       devname = GetDeviceName(item_id)
       return false if devname.nil? || devname.empty?
@@ -404,6 +416,8 @@ module Yast
     # Sets one option in items sysconfig device map
     #
     # Currently no checks on sysconfig option validity are performed
+    #
+    # @param item_id [Integer] a key for {#Items}
     def SetItemSysconfigOpt(item_id, opt, value)
       devmap = GetDeviceMap(item_id)
       return false if devmap.nil?
@@ -413,6 +427,8 @@ module Yast
     end
 
     # Returns udev rule known for particular item
+    #
+    # @param itemId [Integer] a key for {#Items}
     def GetItemUdevRule(itemId)
       Ops.get_list(GetLanItem(itemId), ["udev", "net"], [])
     end
@@ -536,6 +552,8 @@ module Yast
     # Updating config name means that old configuration is deleted from
     # the system.
     #
+    # @param itemId [Integer] a key for {#Items}
+    #
     # Returns new name
     def SetItemName(itemId, name)
       lan_items = LanItems.Items
@@ -579,6 +597,8 @@ module Yast
     end
 
     # Returns new name for current item
+    #
+    # @param item_id [Integer] a key for {#Items}
     def renamed_to(item_id)
       @Items[item_id]["renamed_to"]
     end
@@ -588,6 +608,8 @@ module Yast
     end
 
     # Tells if current item was renamed
+    #
+    # @param item_id [Integer] a key for {#Items}
     def renamed?(item_id)
       return false if !LanItems.Items[item_id].key?("renamed_to")
       renamed_to(item_id) != GetDeviceName(item_id)
@@ -1229,7 +1251,10 @@ module Yast
       deep_copy(index)
     end
 
-    def startmode_overview
+    # Creates item's startmode human description
+    #
+    # @param item_id [Integer] a key for {#Items}
+    def startmode_overview(item_id)
       startmode_descrs = {
         # summary description of STARTMODE=auto
         "auto"    => _(
@@ -1257,7 +1282,8 @@ module Yast
         )
       }
 
-      startmode_descr = startmode_descrs[NetworkInterfaces.Current["STARTMODE"].to_s] || _("Started manually")
+      ifcfg = GetDeviceMap(item_id) || {}
+      startmode_descr = startmode_descrs[ifcfg["STARTMODE"].to_s] || _("Started manually")
 
       [startmode_descr]
     end
@@ -1323,7 +1349,7 @@ module Yast
           )
 
           bullets << _("Device Name: %s") % ifcfg_name
-          bullets += startmode_overview
+          bullets += startmode_overview(key)
           bullets += ip_overview(ip) if ifcfg_conf["STARTMODE"] != "managed"
 
           if LanItems.type == "wlan" &&

@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jun 18 08:56:20 UTC 2015 - mfilka@suse.com
+
+- bnc#930448
+  - display proper startmode description in Overview dialogue
+- 3.1.120 
+
+-------------------------------------------------------------------
 Mon Jun 15 10:46:18 UTC 2015 - igonzalezsosa@suse.com
 
 - Fix handling of AutoYaST parameter keep_install_network
