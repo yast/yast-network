@@ -246,24 +246,16 @@ module Yast
     end
 
     def ReadHostname
-      fqhostname = ""
       # In installation (standard, or AutoYaST one), prefer /etc/install.inf
       # (because HOSTNAME comes with netcfg.rpm already, #144687)
       if (Mode.installation || Mode.autoinst) && FileUtils.Exists("/etc/install.inf")
         fqhostname = read_hostname_from_install_inf
       end
 
-      fqhostname = read_hostname_from_etc if fqhostname.empty?
+      # reads setup from /etc/HOSTNAME, returns a default if nothing found
+      fqhostname = Hostname.CurrentFQ if fqhostname.nil? || fqhostname.empty?
 
-      split = Hostname.SplitFQ(fqhostname)
-      @hostname = split[0] || ""
-      @domain = split[1] || ""
-
-      # last resort
-      if @hostname == ""
-        @hostname = "linux"
-        @domain = "site"
-      end
+      @hostname, @domain = *Hostname.SplitFQ(fqhostname)
 
       nil
     end
@@ -692,25 +684,6 @@ module Yast
       # We have non-empty hostname by now => we must set DNS modified flag
       # in order to get the setting actually written (bnc#588938)
       @modified = true if !fqhostname.empty?
-
-      fqhostname
-    end
-
-    def read_hostname_from_etc
-      if FileUtils.Exists(HOSTNAME_PATH)
-        hostname_path = HOSTNAME_PATH
-      elsif FileUtils.Exists("/etc/HOSTNAME")
-        # backward compatibility due to changes done in bnc#858908
-        hostname_path = "/etc/HOSTNAME"
-      else
-        return ""
-      end
-
-      fqhostname = SCR.Read(path(".target.string"), hostname_path) || ""
-
-      # avoid passing nil argument when we get non-\n-terminated string (#445531)
-      fqhostname = String.FirstChunk(fqhostname, "\n")
-      log.info("Read #{fqhostname} from '/etc/'")
 
       fqhostname
     end
