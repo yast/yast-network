@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.1.120
+Version:        3.1.121
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -35,8 +35,8 @@ BuildRequires:  yast2-proxy
 
 # yast2 v3.1.86: Added ServicesProposal library
 BuildRequires:  yast2 >= 3.1.86
-# yast2 v3.1.123: Added new API SuSEFirewallProposal.propose_iscsi
-Requires:       yast2 >= 3.1.123
+# yast2 v3.1.135: Fixed Hostname API
+Requires:       yast2 >= 3.1.136
 
 #netconfig (FaTE #303618)
 Requires:       sysconfig >= 0.80.0
