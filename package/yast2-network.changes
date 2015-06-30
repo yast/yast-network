@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jun 30 16:18:26 UTC 2015 - mvidner@suse.com
+
+- Fixed warnings like 'duplicated key at line 230 ignored:
+  "rt73usb"' (boo#930870)
+  (recording a fix present in 3.1.116 already).
+
+-------------------------------------------------------------------
 Thu Jun 25 14:15:06 UTC 2015 - mfilka@suse.com
 
 - bnc#922765, bnc#923990
