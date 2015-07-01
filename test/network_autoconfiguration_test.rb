@@ -43,31 +43,6 @@ def probe_netcard_factory(num)
   }
 end
 
-# A two level section/key => value store
-# to remember values of /etc/sysconfig/network/ifcfg-*
-class SectionKeyValue
-  def initialize
-    @sections = {}
-  end
-
-  def sections
-    @sections.keys
-  end
-
-  def keys(section)
-    @sections[section].keys
-  end
-
-  def get(section, key)
-    @sections[section][key]
-  end
-
-  def set(section, key, value)
-    section_hash = @sections[section] ||=  {}
-    section_hash[key] = value
-  end
-end
-
 describe Yast::NetworkAutoconfiguration do
   let(:instance) { Yast::NetworkAutoconfiguration.instance }
   let(:network_interfaces) { double("NetworkInterfaces") }

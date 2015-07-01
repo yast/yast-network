@@ -4,31 +4,6 @@ require_relative "test_helper"
 
 require "yast"
 
-# A two level section/key => value store
-# to remember values of /etc/sysconfig/network/ifcfg-*
-class SectionKeyValue
-  def initialize
-    @sections = {}
-  end
-
-  def sections
-    @sections.keys
-  end
-
-  def keys(section)
-    @sections[section].keys
-  end
-
-  def get(section, key)
-    @sections[section][key]
-  end
-
-  def set(section, key, value)
-    section_hash = @sections[section] ||=  {}
-    section_hash[key] = value
-  end
-end
-
 describe "Yast::LanItemsClass" do
   subject { Yast::LanItems }
 
