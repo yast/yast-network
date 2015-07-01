@@ -6,7 +6,9 @@ require "yast"
 
 if ENV["COVERAGE"]
   require "simplecov"
-  SimpleCov.start
+  SimpleCov.start do
+    add_filter "/test/"
+  end
 
   # For coverage we need to load all ruby files
   # Note that clients/ are excluded because they run too eagerly by design
