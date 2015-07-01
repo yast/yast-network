@@ -238,9 +238,8 @@ module Yast
       end
 
       host = nil
-      loop do
-        ret = UI.UserInput
-        break if ret != :ok
+
+      while (ret = UI.UserInput) == :ok
 
         host = Item(Id(id))
         val = UI.QueryWidget(Id(:name), :Value)
@@ -277,6 +276,7 @@ module Yast
 
       UI.CloseDialog
       return nil if ret != :ok
+
       deep_copy(host)
     end
   end
