@@ -12,7 +12,6 @@ class LinkHandlersClass
 end
 
 describe "phy_connected?" do
-  include Yast
   subject { LinkHandlersClass.new }
 
   before(:each) do

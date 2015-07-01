@@ -69,9 +69,8 @@ MOCKED_ITEMS = {
 
 require "yast"
 
-include Yast
-include UIShortcuts
-include I18n
+include Yast::UIShortcuts
+include Yast::I18n
 
 Yast.import "LanItems"
 
@@ -82,7 +81,7 @@ describe "When querying netcard device name" do
 
     # mocking only neccessary parts of Yast::LanItems so we need not to call
     # and mock inputs for Yast::LanItems.Read here
-    @lan_items.Items = deep_copy(MOCKED_ITEMS)
+    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
   end
 
   it "returns empty list when querying device name with nil or empty input" do
@@ -139,7 +138,7 @@ describe "LanItemsClass#BuildLanOverview" do
   before(:each) do
     @lan_items = Yast::LanItems
     @lan_items.main
-    @lan_items.Items = deep_copy(MOCKED_ITEMS)
+    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
   end
 
   it "returns description and uses custom name if present" do
@@ -183,7 +182,7 @@ describe "LanItemsClass#DeleteItem" do
   before(:each) do
     @lan_items = Yast::LanItems
     @lan_items.main
-    @lan_items.Items = deep_copy(MOCKED_ITEMS)
+    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
   end
 
   it "removes an existing item" do
@@ -218,7 +217,7 @@ describe "LanItemsClass#GetItemName" do
   before(:each) do
     @lan_items = Yast::LanItems
     @lan_items.main
-    @lan_items.Items = deep_copy(MOCKED_ITEMS)
+    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
   end
 
   it "returns name provided by hwinfo if not configured" do
@@ -235,16 +234,17 @@ describe "LanItemsClass#GetItemName" do
 end
 
 describe "LanItemsClass#SetItemName" do
+  subject { Yast::LanItems }
   let(:new_name) { "new_name" }
 
   # this test covers bnc#914833
   it "doesn't try to update udev rules when none exists for the item" do
-    allow(LanItems)
+    allow(subject)
       .to receive(:Items)
       .and_return(MOCKED_ITEMS)
 
-    item_id = LanItems.Items.find { |_k, v| !v.key?("udev") }.first
-    expect(LanItems.SetItemName(item_id, new_name)).to eql new_name
+    item_id = subject.Items.find { |_k, v| !v.key?("udev") }.first
+    expect(subject.SetItemName(item_id, new_name)).to eql new_name
   end
 end
 
@@ -252,7 +252,7 @@ describe "LanItemsClass#FindAndSelect" do
   before(:each) do
     @lan_items = Yast::LanItems
     @lan_items.main
-    @lan_items.Items = deep_copy(MOCKED_ITEMS)
+    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
   end
 
   it "finds configured device" do

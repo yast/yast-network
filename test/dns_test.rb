@@ -1,12 +1,12 @@
 #!/usr/bin/env rspec
 
-ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
+require_relative "test_helper"
 
 require "yast"
 require_relative "SCRStub"
 
 module Yast
-  RSpec.configure do |c|
+  ::RSpec.configure do |c|
     c.include SCRStub
   end
 

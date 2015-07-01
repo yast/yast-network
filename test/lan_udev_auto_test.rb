@@ -73,8 +73,6 @@ describe "#getDeviceName" do
 end
 
 describe "LanUdevAuto#Write" do
-  include Yast
-
   ATTR = "ATTR{address}"
   VALUE = "aa:BB:cc:DD:ee:FF"
   NAME = "custom-name"

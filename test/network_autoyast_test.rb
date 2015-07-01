@@ -139,6 +139,8 @@ describe "NetworkAutoYast" do
     let(:network_autoyast) { Yast::NetworkAutoYast.instance }
 
     it "merges all necessary stuff" do
+      Yast.import "UI"
+      Yast::UI.as_null_object
       expect(network_autoyast).to receive(:merge_dns)
       expect(network_autoyast).to receive(:merge_routing)
       expect(network_autoyast).to receive(:merge_devices)
