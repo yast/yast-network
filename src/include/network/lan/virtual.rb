@@ -237,8 +237,6 @@ module Yast
         UI.SetFocus(Id(:ipaddr))
       end
 
-      host = nil
-
       while (ret = UI.UserInput) == :ok
 
         host = Item(Id(id))
