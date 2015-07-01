@@ -195,12 +195,10 @@ module Yast
     # max length of device / interface filename lenght supported by kernel
     IFACE_LABEL_MAX = 16
 
-    def VirtualEditDialog(id, entry, forbidden)
+    def VirtualEditDialog(id, entry, _)
       entry = deep_copy(entry)
-      forbidden = deep_copy(forbidden)
       Builtins.y2debug("id=%1", id)
       Builtins.y2debug("entry=%1", entry)
-      Builtins.y2debug("forbidden=%1", forbidden)
 
       UI.OpenDialog(
         Opt(:decorated),
@@ -246,7 +244,8 @@ module Yast
 
         host = Item(Id(id))
         val = UI.QueryWidget(Id(:name), :Value)
-        if Builtins.size(LanItems.device) + Builtins.size(val) + 1 > IFACE_LABEL_MAX
+
+        if LanItems.device.size + val.size + 1 > IFACE_LABEL_MAX
           # Popup::Error text
           Popup.Error(_("Label is too long."))
           UI.SetFocus(Id(:name))
