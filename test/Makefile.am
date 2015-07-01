@@ -3,7 +3,9 @@ TESTS = \
   build_lan_overview_test.rb \
   complex_test.rb \
   default_route_test.rb \
+  dns_test.rb \
   edit_nic_name_test.rb \
+  firewall_stage1_proposal_test.rb \
   ifroute_test.rb \
   install_inf_convertor_test.rb \
   lan_items_helpers_test.rb \
@@ -17,6 +19,7 @@ TESTS = \
   new_device_startmode_test.rb \
   read_hardware_test.rb \
   remote_test.rb \
+  routines_test.rb \
   routing_test.rb \
   s390_helpers_test.rb \
   suse_firewall_4_network_test.rb \
