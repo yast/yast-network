@@ -69,9 +69,6 @@ MOCKED_ITEMS = {
 
 require "yast"
 
-include Yast::UIShortcuts
-include Yast::I18n
-
 Yast.import "LanItems"
 
 describe "When querying netcard device name" do
@@ -95,42 +92,48 @@ describe "When querying netcard device name" do
   end
 end
 
-describe "NetworkComplexInclude#HardwareName" do
-  before(:each) do
+class NetworkComplexIncludeClass < Yast::Module
+  def initialize
     Yast.include self, "network/complex.rb"
+  end
+end
 
+describe "NetworkComplexInclude#HardwareName" do
+  subject { NetworkComplexIncludeClass.new }
+
+  before(:each) do
     @hwinfo = MOCKED_ITEMS[0]["hwinfo"]
     @expected_desc = HWINFO_DEVICE_DESC
   end
 
   it "returns expected name when querying oldfashioned mac based id" do
-    expect(HardwareName([@hwinfo], "id-#{HWINFO_DEVICE_MAC}"))
+    expect(subject.HardwareName([@hwinfo], "id-#{HWINFO_DEVICE_MAC}"))
       .to eql @expected_desc
   end
 
   it "returns expected name when querying oldfashioned bus based id" do
     busid = "bus-#{HWINFO_DEVICE_BUS}-#{HWINFO_DEVICE_BUSID}"
-    expect(HardwareName([@hwinfo], busid))
+    expect(subject.HardwareName([@hwinfo], busid))
       .to eql @expected_desc
   end
 
   it "returns expected name when querying by device name" do
-    expect(HardwareName([@hwinfo], HWINFO_DEVICE_NAME))
+    expect(subject.HardwareName([@hwinfo], HWINFO_DEVICE_NAME))
       .to eql @expected_desc
   end
 
   it "returns empty string when id is not given" do
-    expect(HardwareName(@hwinfo, nil)).to be_empty
-    expect(HardwareName(@hwinfo, "")).to be_empty
+    expect(subject.HardwareName(@hwinfo, nil)).to be_empty
+    expect(subject.HardwareName(@hwinfo, "")).to be_empty
   end
 
   it "returns empty string when no hwinfo is available" do
-    expect(HardwareName(nil, HWINFO_DEVICE_NAME)).to be_empty
-    expect(HardwareName([], HWINFO_DEVICE_NAME)).to be_empty
+    expect(subject.HardwareName(nil, HWINFO_DEVICE_NAME)).to be_empty
+    expect(subject.HardwareName([], HWINFO_DEVICE_NAME)).to be_empty
   end
 
   it "returns empty string when querying unknown id" do
-    expect(HardwareName(@hwinfo, "unknown")).to be_empty
+    expect(subject.HardwareName(@hwinfo, "unknown")).to be_empty
   end
 end
 

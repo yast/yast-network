@@ -4,12 +4,9 @@ require_relative "test_helper"
 
 require "yast"
 
-include Yast::UIShortcuts
-include Yast::I18n
-
 Yast.import "LanItems"
 
-class WidgetsTestClass
+class WidgetsTestClass < Yast::Module
   def initialize
     Yast.include self, "network/widgets.rb"
   end

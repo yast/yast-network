@@ -6,7 +6,6 @@ require "yast"
 
 Yast.import "LanItems"
 
-include Yast::UIShortcuts
 include Yast::I18n
 
 describe "LanItemsClass#BuildLanOverview" do
