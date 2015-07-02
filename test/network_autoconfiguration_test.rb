@@ -97,17 +97,17 @@ describe Yast::NetworkAutoconfiguration do
     # - interfaces are up
     allow(Yast::SCR)
       .to receive(:Execute)
-      .with(Yast::Path.new(".target.bash"), /^wicked ifstatus/)
+      .with(path(".target.bash"), /^wicked ifstatus/)
       .and_return 0
     # - reload works
     allow(Yast::SCR)
       .to receive(:Execute)
-      .with(Yast::Path.new(".target.bash"), /^wicked ifreload/)
+      .with(path(".target.bash"), /^wicked ifreload/)
       .and_return 0
     # - ping works
     allow(Yast::SCR)
       .to receive(:Execute)
-      .with(Yast::Path.new(".target.bash"), /^ping/)
+      .with(path(".target.bash"), /^ping/)
       .and_return 0
 
     # These "expect" should be "allow", but then it does not work out,
@@ -116,13 +116,13 @@ describe Yast::NetworkAutoconfiguration do
     # Hardware detection
     expect(Yast::SCR)
       .to receive(:Read)
-      .with(Yast::Path.new(".probe.netcard"))
+      .with(path(".probe.netcard"))
       .and_return([probe_netcard_factory(0), probe_netcard_factory(1)])
 
     # link status
     expect(Yast::SCR)
       .to receive(:Read)
-      .with(Yast::Path.new(".target.string"), %r{/sys/class/net/.*/carrier})
+      .with(path(".target.string"), %r{/sys/class/net/.*/carrier})
       .twice
       .and_return "1"
 
@@ -132,15 +132,15 @@ describe Yast::NetworkAutoconfiguration do
     allow(Yast::Confirm).to receive(:Detection).and_return true
     expect(Yast::SCR)
       .to receive(:Read)
-      .with(Yast::Path.new(".etc.install_inf.BrokenModules"))
+      .with(path(".etc.install_inf.BrokenModules"))
       .and_return ""
     expect(Yast::SCR)
       .to receive(:Read)
-      .with(Yast::Path.new(".udev_persistent.net"))
+      .with(path(".udev_persistent.net"))
       .and_return({})
     expect(Yast::SCR)
       .to receive(:Read)
-      .with(Yast::Path.new(".udev_persistent.drivers"))
+      .with(path(".udev_persistent.drivers"))
       .and_return({})
   end
 

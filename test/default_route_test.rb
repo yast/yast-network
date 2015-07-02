@@ -71,7 +71,7 @@ describe "Yast::LanItemsClass" do
     # Hardware detection
     expect(Yast::SCR)
       .to receive(:Read)
-      .with(Yast::Path.new(".probe.netcard"))
+      .with(path(".probe.netcard"))
       .and_return([])
 
     # miscellaneous uninteresting but hard to avoid stuff
@@ -81,15 +81,15 @@ describe "Yast::LanItemsClass" do
 
     expect(Yast::SCR)
       .to receive(:Read)
-      .with(Yast::Path.new(".etc.install_inf.BrokenModules"))
+      .with(path(".etc.install_inf.BrokenModules"))
       .and_return ""
     expect(Yast::SCR)
       .to receive(:Read)
-      .with(Yast::Path.new(".udev_persistent.net"))
+      .with(path(".udev_persistent.net"))
       .and_return({})
     expect(Yast::SCR)
       .to receive(:Read)
-      .with(Yast::Path.new(".udev_persistent.drivers"))
+      .with(path(".udev_persistent.drivers"))
       .and_return({})
   end
 

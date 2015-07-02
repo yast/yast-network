@@ -8,8 +8,10 @@ include Yast::I18n
 Yast.import "Routing"
 
 describe Yast::Routing do
-  SYSCTL_IPV4_PATH = Yast::Path.new(Yast::RoutingClass::SYSCTL_IPV4_PATH)
-  SYSCTL_IPV6_PATH = Yast::Path.new(Yast::RoutingClass::SYSCTL_IPV6_PATH)
+  before(:all) do
+    SYSCTL_IPV4_PATH = path(Yast::RoutingClass::SYSCTL_IPV4_PATH)
+    SYSCTL_IPV6_PATH = path(Yast::RoutingClass::SYSCTL_IPV6_PATH)
+  end
 
   # This describes how Routing should behave independently on the way how its
   # internal state was reached
@@ -25,13 +27,13 @@ describe Yast::Routing do
       expect(Yast::SCR)
         .to receive(:Execute)
         .with(
-          Yast::Path.new(".target.bash"),
+          path(".target.bash"),
           "echo #{@value4} > /proc/sys/net/ipv4/ip_forward"
         )
       expect(Yast::SCR)
         .to receive(:Execute)
         .with(
-          Yast::Path.new(".target.bash"),
+          path(".target.bash"),
           "echo #{@value6} > /proc/sys/net/ipv6/conf/all/forwarding"
         )
     end
