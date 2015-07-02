@@ -46,6 +46,8 @@ describe "Yast::LanItemsClass" do
     end
 
     # stub NetworkInterfaces, apart from the ifcfgs
+    Yast::NetworkInterfaces.instance_variable_set(:@initialized, false)
+
     allow(Yast::NetworkInterfaces)
       .to receive(:CleanHotplugSymlink)
     allow(Yast::NetworkInterfaces)
