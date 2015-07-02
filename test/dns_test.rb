@@ -3,13 +3,8 @@
 require_relative "test_helper"
 
 require "yast"
-require_relative "SCRStub"
 
 module Yast
-  ::RSpec.configure do |c|
-    c.include SCRStub
-  end
-
   import "Arch"
   import "DNS"
   import "ProductControl"

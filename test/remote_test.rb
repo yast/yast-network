@@ -3,17 +3,12 @@
 require_relative "test_helper"
 
 require "yast"
-require_relative "SCRStub"
 
 module Yast
   import "Remote"
   import "Linuxrc"
   import "Package"
   import "Packages"
-
-  ::RSpec.configure do |c|
-    c.include SCRStub
-  end
 
   describe Remote do
     describe ".Reset" do

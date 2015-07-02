@@ -5,6 +5,12 @@ ENV["Y2DIR"] = y2dirs.unshift(srcdir).join(":")
 require "yast"
 require "yast/rspec"
 
+require_relative "SCRStub"
+
+RSpec.configure do |c|
+  c.include SCRStub
+end
+
 # A two level section/key => value store
 # to remember values of /etc/sysconfig/network/ifcfg-*
 class SectionKeyValue
