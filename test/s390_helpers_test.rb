@@ -8,7 +8,7 @@ require "yast"
 $LOAD_PATH.unshift File.expand_path("../../src", __FILE__)
 require "include/network/lan/s390"
 
-class NetworkLanS390Include < Yast::Client
+class NetworkLanS390IncludeTestClient < Yast::Client
   include Singleton
 
   def initialize
@@ -20,6 +20,7 @@ Yast.import "Arch"
 Yast.import "FileUtils"
 
 describe "NetworkLanS390Include::s390_DriverLoaded" do
+  subject { NetworkLanS390IncludeTestClient.instance }
   DEVNAME = "devname"
 
   before(:each) do
@@ -36,8 +37,7 @@ describe "NetworkLanS390Include::s390_DriverLoaded" do
       .with("#{Yast::NetworkLanS390Include::SYS_DIR}/#{DEVNAME}")
       .and_return(true)
 
-    expect(NetworkLanS390Include.instance.s390_DriverLoaded(DEVNAME))
-      .to be true
+    expect(subject.s390_DriverLoaded(DEVNAME)).to be true
   end
 
   it "fails when driver is not loaded" do
@@ -46,7 +46,6 @@ describe "NetworkLanS390Include::s390_DriverLoaded" do
       .with("#{Yast::NetworkLanS390Include::SYS_DIR}/#{DEVNAME}")
       .and_return(false)
 
-    expect(NetworkLanS390Include.instance.s390_DriverLoaded(DEVNAME))
-      .to be false
+    expect(subject.s390_DriverLoaded(DEVNAME)).to be false
   end
 end

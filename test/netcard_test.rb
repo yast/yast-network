@@ -69,10 +69,6 @@ MOCKED_ITEMS = {
 
 require "yast"
 
-include Yast
-include UIShortcuts
-include I18n
-
 Yast.import "LanItems"
 
 describe "When querying netcard device name" do
@@ -82,7 +78,7 @@ describe "When querying netcard device name" do
 
     # mocking only neccessary parts of Yast::LanItems so we need not to call
     # and mock inputs for Yast::LanItems.Read here
-    @lan_items.Items = deep_copy(MOCKED_ITEMS)
+    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
   end
 
   it "returns empty list when querying device name with nil or empty input" do
@@ -96,42 +92,48 @@ describe "When querying netcard device name" do
   end
 end
 
-describe "NetworkComplexInclude#HardwareName" do
-  before(:each) do
+class NetworkComplexIncludeClass < Yast::Module
+  def initialize
     Yast.include self, "network/complex.rb"
+  end
+end
 
+describe "NetworkComplexInclude#HardwareName" do
+  subject { NetworkComplexIncludeClass.new }
+
+  before(:each) do
     @hwinfo = MOCKED_ITEMS[0]["hwinfo"]
     @expected_desc = HWINFO_DEVICE_DESC
   end
 
   it "returns expected name when querying oldfashioned mac based id" do
-    expect(HardwareName([@hwinfo], "id-#{HWINFO_DEVICE_MAC}"))
+    expect(subject.HardwareName([@hwinfo], "id-#{HWINFO_DEVICE_MAC}"))
       .to eql @expected_desc
   end
 
   it "returns expected name when querying oldfashioned bus based id" do
     busid = "bus-#{HWINFO_DEVICE_BUS}-#{HWINFO_DEVICE_BUSID}"
-    expect(HardwareName([@hwinfo], busid))
+    expect(subject.HardwareName([@hwinfo], busid))
       .to eql @expected_desc
   end
 
   it "returns expected name when querying by device name" do
-    expect(HardwareName([@hwinfo], HWINFO_DEVICE_NAME))
+    expect(subject.HardwareName([@hwinfo], HWINFO_DEVICE_NAME))
       .to eql @expected_desc
   end
 
   it "returns empty string when id is not given" do
-    expect(HardwareName(@hwinfo, nil)).to be_empty
-    expect(HardwareName(@hwinfo, "")).to be_empty
+    expect(subject.HardwareName(@hwinfo, nil)).to be_empty
+    expect(subject.HardwareName(@hwinfo, "")).to be_empty
   end
 
   it "returns empty string when no hwinfo is available" do
-    expect(HardwareName(nil, HWINFO_DEVICE_NAME)).to be_empty
-    expect(HardwareName([], HWINFO_DEVICE_NAME)).to be_empty
+    expect(subject.HardwareName(nil, HWINFO_DEVICE_NAME)).to be_empty
+    expect(subject.HardwareName([], HWINFO_DEVICE_NAME)).to be_empty
   end
 
   it "returns empty string when querying unknown id" do
-    expect(HardwareName(@hwinfo, "unknown")).to be_empty
+    expect(subject.HardwareName(@hwinfo, "unknown")).to be_empty
   end
 end
 
@@ -139,7 +141,7 @@ describe "LanItemsClass#BuildLanOverview" do
   before(:each) do
     @lan_items = Yast::LanItems
     @lan_items.main
-    @lan_items.Items = deep_copy(MOCKED_ITEMS)
+    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
   end
 
   it "returns description and uses custom name if present" do
@@ -183,7 +185,7 @@ describe "LanItemsClass#DeleteItem" do
   before(:each) do
     @lan_items = Yast::LanItems
     @lan_items.main
-    @lan_items.Items = deep_copy(MOCKED_ITEMS)
+    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
   end
 
   it "removes an existing item" do
@@ -218,7 +220,7 @@ describe "LanItemsClass#GetItemName" do
   before(:each) do
     @lan_items = Yast::LanItems
     @lan_items.main
-    @lan_items.Items = deep_copy(MOCKED_ITEMS)
+    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
   end
 
   it "returns name provided by hwinfo if not configured" do
@@ -235,16 +237,17 @@ describe "LanItemsClass#GetItemName" do
 end
 
 describe "LanItemsClass#SetItemName" do
+  subject { Yast::LanItems }
   let(:new_name) { "new_name" }
 
   # this test covers bnc#914833
   it "doesn't try to update udev rules when none exists for the item" do
-    allow(LanItems)
+    allow(subject)
       .to receive(:Items)
       .and_return(MOCKED_ITEMS)
 
-    item_id = LanItems.Items.find { |_k, v| !v.key?("udev") }.first
-    expect(LanItems.SetItemName(item_id, new_name)).to eql new_name
+    item_id = subject.Items.find { |_k, v| !v.key?("udev") }.first
+    expect(subject.SetItemName(item_id, new_name)).to eql new_name
   end
 end
 
@@ -252,7 +255,7 @@ describe "LanItemsClass#FindAndSelect" do
   before(:each) do
     @lan_items = Yast::LanItems
     @lan_items.main
-    @lan_items.Items = deep_copy(MOCKED_ITEMS)
+    @lan_items.Items = Yast.deep_copy(MOCKED_ITEMS)
   end
 
   it "finds configured device" do

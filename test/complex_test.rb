@@ -4,21 +4,18 @@ require_relative "test_helper"
 
 require "yast"
 
-include Yast::UIShortcuts
-include Yast::I18n
-
 Yast.import "LanItems"
 Yast.import "Stage"
 
-# creating a wrapper for Yast's 'header' file
-$LOAD_PATH.unshift File.expand_path("../../src", __FILE__)
-require "include/network/lan/complex"
-
-class NetworkLanComplexInclude
-  extend Yast::NetworkLanComplexInclude
+class NetworkLanComplexIncludeClass < Yast::Module
+  def initialize
+    Yast.include self, "network/lan/complex.rb"
+  end
 end
 
 describe "NetworkLanComplexInclude::input_done?" do
+  subject { NetworkLanComplexIncludeClass.new }
+
   BOOLEAN_PLACEHOLDER = "placeholder (true or false)"
 
   context "when not running in installer" do
@@ -29,7 +26,7 @@ describe "NetworkLanComplexInclude::input_done?" do
     end
 
     it "returns true for input different than :abort" do
-      expect(NetworkLanComplexInclude.input_done?(:no_abort)).to eql true
+      expect(subject.input_done?(:no_abort)).to eql true
     end
 
     it "returns true for input equal to :abort in case of no user modifications" do
@@ -37,7 +34,7 @@ describe "NetworkLanComplexInclude::input_done?" do
         .to receive(:modified)
         .and_return(false)
 
-      expect(NetworkLanComplexInclude.input_done?(:abort)).to eql true
+      expect(subject.input_done?(:abort)).to eql true
     end
 
     it "asks user for abort confirmation for input equal to :abort and user did modifications" do
@@ -45,11 +42,11 @@ describe "NetworkLanComplexInclude::input_done?" do
         .to receive(:modified)
         .and_return(true)
 
-      expect(NetworkLanComplexInclude)
+      expect(subject)
         .to receive(:ReallyAbort)
         .and_return(BOOLEAN_PLACEHOLDER)
 
-      expect(NetworkLanComplexInclude.input_done?(:abort)).to eql BOOLEAN_PLACEHOLDER
+      expect(subject.input_done?(:abort)).to eql BOOLEAN_PLACEHOLDER
     end
   end
 
@@ -65,7 +62,7 @@ describe "NetworkLanComplexInclude::input_done?" do
         .to receive(:ConfirmAbort)
         .and_return(BOOLEAN_PLACEHOLDER)
 
-      expect(NetworkLanComplexInclude.input_done?(:abort)).to eql BOOLEAN_PLACEHOLDER
+      expect(subject.input_done?(:abort)).to eql BOOLEAN_PLACEHOLDER
     end
   end
 end

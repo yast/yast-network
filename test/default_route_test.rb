@@ -4,31 +4,6 @@ require_relative "test_helper"
 
 require "yast"
 
-# A two level section/key => value store
-# to remember values of /etc/sysconfig/network/ifcfg-*
-class SectionKeyValue
-  def initialize
-    @sections = {}
-  end
-
-  def sections
-    @sections.keys
-  end
-
-  def keys(section)
-    @sections[section].keys
-  end
-
-  def get(section, key)
-    @sections[section][key]
-  end
-
-  def set(section, key, value)
-    section_hash = @sections[section] ||=  {}
-    section_hash[key] = value
-  end
-end
-
 describe "Yast::LanItemsClass" do
   subject { Yast::LanItems }
 
@@ -85,6 +60,7 @@ describe "Yast::LanItemsClass" do
       .to receive(:GetType)
       .with("")
       .and_return nil
+    Yast::NetworkInterfaces.instance_variable_set(:@initialized, false)
 
     allow(Yast::LanUdevAuto)
       .to receive(:AllowUdevModify).and_return false
@@ -95,7 +71,7 @@ describe "Yast::LanItemsClass" do
     # Hardware detection
     expect(Yast::SCR)
       .to receive(:Read)
-      .with(Yast::Path.new(".probe.netcard"))
+      .with(path(".probe.netcard"))
       .and_return([])
 
     # miscellaneous uninteresting but hard to avoid stuff
@@ -105,15 +81,15 @@ describe "Yast::LanItemsClass" do
 
     expect(Yast::SCR)
       .to receive(:Read)
-      .with(Yast::Path.new(".etc.install_inf.BrokenModules"))
+      .with(path(".etc.install_inf.BrokenModules"))
       .and_return ""
     expect(Yast::SCR)
       .to receive(:Read)
-      .with(Yast::Path.new(".udev_persistent.net"))
+      .with(path(".udev_persistent.net"))
       .and_return({})
     expect(Yast::SCR)
       .to receive(:Read)
-      .with(Yast::Path.new(".udev_persistent.drivers"))
+      .with(path(".udev_persistent.drivers"))
       .and_return({})
   end
 

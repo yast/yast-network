@@ -17,6 +17,13 @@ module Yast
         # Ensure a fixed proposal
         SuSEFirewallProposal.SetChangedByUser(true)
         SuSEFirewall4Network.SetSshEnabled1stStage(true)
+
+        allow(SuSEFirewallServices)
+          .to receive(:all_services)
+          .and_return(SuSEFirewall4NetworkClass::SSH_SERVICES.zip([]).to_h)
+        allow(Mode)
+          .to receive(:test)
+          .and_return(true)
       end
 
       let(:proposal) do

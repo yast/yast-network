@@ -1,16 +1,20 @@
 #! /usr/bin/env rspec
 
-ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
+require_relative "test_helper"
 
 require "yast"
 
-include Yast
-
 require_relative "netcard_probe_helper"
 
-Yast.include self, "network/routines.rb"
+class ReadHardwareTestClass
+  def initialize
+    Yast.include self, "network/routines.rb"
+  end
+end
 
 describe "#ReadHardware" do
+  subject { ReadHardwareTestClass.new }
+
   def storage_only_devices
     devices = probe_netcard.select { |n| n["storageonly"] }
     devices.map { |d| d["dev_name"] }
@@ -21,7 +25,7 @@ describe "#ReadHardware" do
     allow(Yast::SCR).to receive(:Read).and_return(nil)
     allow(Yast::SCR).to receive(:Read).with(path(".probe.netcard")) { probe_netcard }
 
-    read_storage_devices = ReadHardware("netcard").select do |d|
+    read_storage_devices = subject.ReadHardware("netcard").select do |d|
       storage_only_devices.include? d["dev_name"]
     end
 
