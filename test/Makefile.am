@@ -11,6 +11,7 @@ TESTS = \
   netcard_test.rb \
   network_autoconfiguration_test.rb \
   new_device_startmode_test.rb \
+  routing_test.rb \
   suse_firewall_4_network_test.rb \
   widgets_test.rb \
   complex_test.rb \
