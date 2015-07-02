@@ -12,6 +12,7 @@ TESTS = \
   network_autoconfiguration_test.rb \
   new_device_startmode_test.rb \
   suse_firewall_4_network_test.rb \
+  widgets_test.rb \
   complex_test.rb \
   read_hardware_test.rb \
   udev_test.rb \
