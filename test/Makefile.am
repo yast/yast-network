@@ -13,6 +13,7 @@ TESTS = \
   new_device_startmode_test.rb \
   suse_firewall_4_network_test.rb \
   complex_test.rb \
+  read_hardware_test.rb \
   udev_test.rb \
   ifroute_test.rb \
   s390_helpers_test.rb \
