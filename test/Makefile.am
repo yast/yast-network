@@ -8,6 +8,7 @@ TESTS = \
   lan_test.rb \
   lan_udev_auto_test.rb \
   link_handlers_test.rb \
+  netcard_test.rb \
   network_autoconfiguration_test.rb \
   new_device_startmode_test.rb \
   suse_firewall_4_network_test.rb \
