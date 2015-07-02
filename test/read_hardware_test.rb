@@ -1,14 +1,8 @@
 #! /usr/bin/env rspec
 
-ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
-
 require "yast"
 
-include Yast
-
 require_relative "netcard_probe_helper"
-
-Yast.include self, "network/routines.rb"
 
 describe "#ReadHardware" do
   def storage_only_devices
@@ -16,8 +10,14 @@ describe "#ReadHardware" do
     devices.map { |d| d["dev_name"] }
   end
 
+  def path(p)
+    Yast::Path.new(p)
+  end
+
   # testsuite for bnc#841170
   it "excludes storage only devices" do
+    Yast.include self, "network/routines.rb"
+
     allow(Yast::SCR).to receive(:Read).and_return(nil)
     allow(Yast::SCR).to receive(:Read).with(path(".probe.netcard")) { probe_netcard }
 

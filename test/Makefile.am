@@ -12,6 +12,7 @@ TESTS = \
   network_autoconfiguration_test.rb \
   new_device_startmode_test.rb \
   routing_test.rb \
+  routines_test.rb \
   suse_firewall_4_network_test.rb \
   widgets_test.rb \
   complex_test.rb \
@@ -21,6 +22,7 @@ TESTS = \
   s390_helpers_test.rb \
   build_lan_overview_test.rb \
   network_autoyast_test.rb \
+  firewall_stage1_proposal_test.rb \
   remote_test.rb
 
 TEST_EXTENSIONS = .rb

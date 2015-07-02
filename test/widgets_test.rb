@@ -4,9 +4,8 @@ require_relative "test_helper"
 
 require "yast"
 
-include Yast
-include UIShortcuts
-include I18n
+include Yast::UIShortcuts
+include Yast::I18n
 
 Yast.import "LanItems"
 Yast.include self, "network/widgets.rb"
@@ -16,6 +15,6 @@ describe "NetworkWidgetsInclude::ipoib_mode_widget" do
     widget_def = ipoib_mode_widget
     expect(widget_def).to include("items")
 
-    expect(widget_def["items"]).to be_eql LanItems.ipoib_modes.to_a
+    expect(widget_def["items"]).to be_eql Yast::LanItems.ipoib_modes.to_a
   end
 end

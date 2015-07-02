@@ -4,11 +4,14 @@ require_relative "test_helper"
 
 require "yast"
 require "network/install_inf_convertor"
-include Yast # for path shortcut and avoid namespace
 
 Yast.import "Proxy"
 
 describe "InstallInfConvertor" do
+  def path(p)
+    Yast::Path.new(p)
+  end
+
   context "in case of no network config in /etc/install.inf" do
     before(:each) do
       @install_inf_convertor = Yast::InstallInfConvertor.instance
@@ -67,7 +70,7 @@ describe "InstallInfConvertor" do
 
       it "returns empty string even in autoinst mode" do
         Yast.import "Mode"
-        allow(Mode).to receive(:autoinst) { true }
+        allow(Yast::Mode).to receive(:autoinst) { true }
 
         expect(@install_inf_convertor.send(:dev_name)).to be_empty
       end
@@ -113,7 +116,7 @@ describe "InstallInfConvertor" do
 
     describe "#write_ifcfg" do
       it "creates ifcfg file for #{@device}" do
-        expect(SCR)
+        expect(Yast::SCR)
           .to receive(:Write)
             .with(path(".target.string"), /.*-#{@device}/, "") { true }
         expect(@install_inf_convertor.send(:write_ifcfg, "")).to eql true
@@ -165,7 +168,7 @@ describe "InstallInfConvertor" do
       it "creates a valid ifcfg for netconfig" do
         expect(ifcfg = @install_inf_convertor.send(:create_ifcfg)).not_to be_empty
         expect(ifcfg).to include "BOOTPROTO='static'"
-        expect(ifcfg).to include "IPADDR='#{@ip}\/#{Netmask.ToBits(@netmask)}'"
+        expect(ifcfg).to include "IPADDR='#{@ip}\/#{Yast::Netmask.ToBits(@netmask)}'"
       end
     end
 

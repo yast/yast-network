@@ -4,12 +4,16 @@ require_relative "test_helper"
 
 require "yast"
 
-include Yast
-
 Yast.import "NetworkInterfaces"
 Yast.import "Routing"
 
 describe "Routing#Read" do
+  include Yast
+
+  subject(:network_interfaces) { Yast::NetworkInterfaces }
+  subject(:scr) { Yast::SCR }
+  subject(:routing) { Yast::Routing }
+
   ROUTES_FILE = [
     {
       "destination" => "default",
@@ -28,58 +32,63 @@ describe "Routing#Read" do
   ]
 
   before(:each) do
-    allow(NetworkInterfaces)
+    allow(network_interfaces)
       .to receive(:Read)
       .and_return(true)
-    allow(NetworkInterfaces)
+    allow(network_interfaces)
       .to receive(:List)
       .and_return(["eth0"])
-    allow(SCR)
+    allow(scr)
       .to receive(:Read)
       .and_return(nil)
   end
 
   it "loades ifroute-* files" do
-    allow(SCR)
+    allow(scr)
       .to receive(:Read)
       .with(path(".routes"))
       .and_return([])
 
-    expect(SCR)
+    expect(scr)
       .to receive(:Read)
       .with(path(".ifroute-eth0"))
       .and_return(IFROUTE_FILE)
-    expect(Routing.Read).to be true
-    expect(Routing.Routes).not_to be_empty
+    expect(Yast::Routing.Read).to be true
+    expect(routing.Routes).not_to be_empty
   end
 
   it "replace implicit device name using explicit one" do
-    expect(SCR)
+    expect(scr)
       .to receive(:Read)
       .with(path(".ifroute-eth0"))
       .and_return(IFROUTE_FILE)
-    expect(Routing.Read).to be true
+    expect(routing.Read).to be true
     # check if implicit device name "-" is rewritten according device name
     # which ifroute belongs to
-    expect(Routing.Routes.first["device"])
+    expect(routing.Routes.first["device"])
       .to eql "eth0"
   end
 
   it "removes duplicit routes" do
-    expect(SCR)
+    expect(scr)
       .to receive(:Read)
       .with(path(".routes"))
       .and_return(ROUTES_FILE)
-    expect(SCR)
+    expect(scr)
       .to receive(:Read)
       .with(path(".ifroute-eth0"))
       .and_return(IFROUTE_FILE)
-    expect(Routing.Read).to be true
-    expect(Routing.Routes.size).to eql 1
+    expect(routing.Read).to be true
+    expect(routing.Routes.size).to eql 1
   end
 end
 
 describe "Routing#write_routes" do
+  include Yast
+
+  subject(:scr) { Yast::SCR }
+  subject(:routing) { Yast::Routing }
+
   ROUTES_WITH_DEV = [
     {
       "destination" => "default",
@@ -96,39 +105,44 @@ describe "Routing#write_routes" do
   ]
 
   it "writes device assigned routes into correct ifroute file" do
-    allow(SCR)
+    allow(scr)
       .to receive(:Read)
-      .with(path(".target.size"), RoutingClass::ROUTES_FILE)
+      .with(path(".target.size"), Yast::RoutingClass::ROUTES_FILE)
       .and_return(1)
-    allow(Routing)
+    allow(routing)
       .to receive(:devices)
       .and_return(["eth0", "eth1", "eth2"])
-    expect(SCR)
+    expect(scr)
       .to receive(:Execute)
       .with(path(".target.bash"), /^\/bin\/cp/)
       .and_return(0)
 
-    expect(SCR)
+    expect(scr)
       .to receive(:Write)
       .with(path(".ifroute-eth0"), anything)
       .and_return(true)
-    expect(SCR)
+    expect(scr)
       .to receive(:Write)
       .with(path(".ifroute-eth1"), anything)
       .and_return(true)
-    expect(SCR)
+    expect(scr)
       .to receive(:Execute)
       .with(path(".target.remove"), "/etc/sysconfig/network/ifroute-eth2")
       .and_return(true)
-    expect(SCR)
+    expect(scr)
       .to receive(:Write)
       .with(path(".target.string"), "/etc/sysconfig/network/routes", "")
       .and_return(true)
-    expect(Routing.write_routes(ROUTES_WITH_DEV)).to be true
+    expect(routing.write_routes(ROUTES_WITH_DEV)).to be true
   end
 end
 
 describe "Routing#Write" do
+  include Yast
+
+  subject(:network_interfaces) { Yast::NetworkInterfaces }
+  subject(:routing) { Yast::Routing }
+
   AY_ROUTES = [
     # empty AY config
     {},
@@ -161,20 +175,20 @@ describe "Routing#Write" do
     it "does write route configuration files, ##{i}" do
       # Devices which have already been imported by Lan.Import have to be read.
       # (bnc#900352)
-      allow(NetworkInterfaces)
+      allow(network_interfaces)
         .to receive(:List)
         .with("")
         .and_return(["eth0"])
 
-      Routing.Import(ay_test)
+      routing.Import(ay_test)
 
-      expect(Routing)
+      expect(routing)
         .to receive(:write_route_file)
         .twice
         .with(kind_of(String), ay_test.fetch("routes", []))
         .and_return true
 
-      Routing.Write
+      routing.Write
     end
   end
 end
