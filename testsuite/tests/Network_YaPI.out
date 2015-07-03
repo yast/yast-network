@@ -296,10 +296,9 @@ Read	.etc.sysctl_conf."net.ipv6.conf.all.forwarding" nil
 Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password show SuSEfirewall2.service  --property=Id  --property=MainPID  --property=Description  --property=LoadState  --property=ActiveState  --property=SubState  --property=UnitFileState  --property=FragmentPath " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
 Execute	.target.bash_output " LANG=C TERM=dumb COLUMNS=1024 systemctl --no-legend --no-pager --no-ask-password is-enabled SuSEfirewall2.service " $["exit":0, "stderr":"", "stdout":"laptop.suse.cz"]
 Write	.etc.sysctl_conf."net.ipv4.ip_forward" "0" true
+Write	.etc.sysctl_conf nil true
 Write	.etc.sysctl_conf."net.ipv6.conf.all.forwarding" "0" true
 Write	.etc.sysctl_conf nil true
-Execute	.target.bash "echo 0 > /proc/sys/net/ipv4/ip_forward" 0
-Execute	.target.bash "echo 0 > /proc/sys/net/ipv6/conf/all/forwarding" 0
 Read	.target.size "/etc/sysconfig/network/routes" 27
 Execute	.target.bash "/bin/cp /etc/sysconfig/network/routes /etc/sysconfig/network/routes.YaST2save" 0
 Execute	.target.remove "/etc/sysconfig/network/ifroute-eth0" 0
