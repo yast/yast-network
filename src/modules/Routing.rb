@@ -50,8 +50,13 @@ module Yast
     # "routes" file location
     ROUTES_FILE = "/etc/sysconfig/network/routes"
 
-    SYSCTL_IPV4_PATH = ".etc.sysctl_conf.\"net.ipv4.ip_forward\""
-    SYSCTL_IPV6_PATH = ".etc.sysctl_conf.\"net.ipv6.conf.all.forwarding\""
+    # sysctl keys, used as *single* SCR path components below
+    IPV4_SYSCTL = "net.ipv4.ip_forward"
+    IPV6_SYSCTL = "net.ipv6.conf.all.forwarding"
+    # SCR paths
+    SYSCTL_AGENT_PATH = ".etc.sysctl_conf"
+    SYSCTL_IPV4_PATH = SYSCTL_AGENT_PATH + ".\"#{IPV4_SYSCTL}\""
+    SYSCTL_IPV6_PATH = SYSCTL_AGENT_PATH + ".\"#{IPV6_SYSCTL}\""
 
     # see man routes - difference on implicit device param (aka "-") in
     # case of /etc/sysconfig/network/routes and /etc/sysconfig/network/
@@ -165,13 +170,10 @@ module Yast
           path(SYSCTL_IPV4_PATH),
           sysctl_val
         )
-        SCR.Write(path(".etc.sysctl_conf"), nil)
-      end
+        SCR.Write(path(SYSCTL_AGENT_PATH), nil)
 
-      SCR.Execute(
-        path(".target.bash"),
-        "echo #{sysctl_val} > /proc/sys/net/ipv4/ip_forward"
-      )
+        SCR.Execute(path(".target.bash"), "sysctl -w #{IPV4_SYSCTL}=#{sysctl_val}")
+      end
 
       nil
     end
@@ -188,12 +190,9 @@ module Yast
         path(SYSCTL_IPV6_PATH),
         sysctl_val
       )
-      SCR.Write(path(".etc.sysctl_conf"), nil)
+      SCR.Write(path(SYSCTL_AGENT_PATH), nil)
 
-      SCR.Execute(
-        path(".target.bash"),
-        "echo #{sysctl_val} > /proc/sys/net/ipv6/conf/all/forwarding"
-      )
+      SCR.Execute(path(".target.bash"), "sysctl -w #{IPV6_SYSCTL}=#{sysctl_val}")
 
       nil
     end
