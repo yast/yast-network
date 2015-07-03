@@ -140,12 +140,11 @@ module Yast
     def ReadIPForwarding
       if SuSEFirewall.IsEnabled
         @Forward_v4 = SuSEFirewall.GetSupportRoute
-        # FIXME: missing support for setting IPv6 forwarding enablement in
-        # SuSEFirewall module and in SuSEFirewall2 at all
       else
         @Forward_v4 = SCR.Read(path(SYSCTL_IPV4_PATH)) == "1"
-        @Forward_v6 = SCR.Read(path(SYSCTL_IPV6_PATH)) == "1"
       end
+
+      @Forward_v6 = SCR.Read(path(SYSCTL_IPV6_PATH)) == "1"
 
       log.info("Forward_v4=#{@Forward_v4}")
       log.info("Forward_v6=#{@Forward_v6}")
@@ -153,36 +152,56 @@ module Yast
       nil
     end
 
-    def WriteIPForwarding
-      forward_ipv4 = @Forward_v4 ? "1" : "0"
-      forward_ipv6 = @Forward_v6 ? "1" : "0"
+    # Configures system for IPv4 forwarding
+    #
+    # @param [Boolean] true when forwarding should be enabled
+    def write_ipv4_forwarding(forward_ipv4)
+      sysctl_val = forward_ipv4 ? "1" : "0"
 
       if SuSEFirewall.IsEnabled
-        # FIXME: missing support for setting IPv6 forwarding enablement in
-        # SuSEFirewall module and in SuSEFirewall2 at all
-        SuSEFirewall.SetSupportRoute(@Forward_v4)
+        SuSEFirewall.SetSupportRoute(forward_ipv4)
       else
         SCR.Write(
           path(SYSCTL_IPV4_PATH),
-          forward_ipv4
-        )
-        SCR.Write(
-          path(SYSCTL_IPV6_PATH),
-          forward_ipv6
+          sysctl_val
         )
         SCR.Write(path(".etc.sysctl_conf"), nil)
       end
 
       SCR.Execute(
         path(".target.bash"),
-        "echo #{forward_ipv4} > /proc/sys/net/ipv4/ip_forward"
-      )
-      SCR.Execute(
-        path(".target.bash"),
-        "echo #{forward_ipv6} > /proc/sys/net/ipv6/conf/all/forwarding"
+        "echo #{sysctl_val} > /proc/sys/net/ipv4/ip_forward"
       )
 
       nil
+    end
+
+    # Configures system for IPv6 forwarding
+    #
+    # @param [Boolean] true when forwarding should be enabled
+    def write_ipv6_forwarding(forward_ipv6)
+      sysctl_val = forward_ipv6 ? "1" : "0"
+
+      # SuSEfirewall2 has no direct support for IPv6 (aka FW_FORWARD).
+      # Sysctl has to be configured manualy. bnc#916013
+      SCR.Write(
+        path(SYSCTL_IPV6_PATH),
+        sysctl_val
+      )
+      SCR.Write(path(".etc.sysctl_conf"), nil)
+
+      SCR.Execute(
+        path(".target.bash"),
+        "echo #{sysctl_val} > /proc/sys/net/ipv6/conf/all/forwarding"
+      )
+
+      nil
+    end
+
+    # Configures system for both IPv4 and IPv6 forwarding
+    def WriteIPForwarding
+      write_ipv4_forwarding(@Forward_v4)
+      write_ipv6_forwarding(@Forward_v6)
     end
 
     # Read routing settings
