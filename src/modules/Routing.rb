@@ -142,6 +142,7 @@ module Yast
       nil
     end
 
+    # Reads current status for both IPv4 and IPv6 forwarding
     def ReadIPForwarding
       if SuSEFirewall.IsEnabled
         @Forward_v4 = SuSEFirewall.GetSupportRoute
