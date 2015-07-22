@@ -24,6 +24,7 @@ TESTS = \
   s390_helpers_test.rb \
   suse_firewall_4_network_test.rb \
   udev_test.rb \
+  alias_dialog_test.rb \
   widgets_test.rb
 
 TEST_EXTENSIONS = .rb
