@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jul  1 11:21:36 UTC 2015 - mfilka@suse.com
+
+- bnc#864264
+  - fixed internal error in adding alias
+- 3.1.122
+
+-------------------------------------------------------------------
 Tue Jun 30 16:18:26 UTC 2015 - mvidner@suse.com
 
 - Fixed warnings like 'duplicated key at line 230 ignored:

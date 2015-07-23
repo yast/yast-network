@@ -97,20 +97,16 @@ module Yast
         cur = Convert.to_integer(UI.QueryWidget(Id(:table), :CurrentItem))
         case Ops.get_symbol(event, "ID", :nil)
         when :edit
-          @item = VirtualEditDialog(cur, Ops.get(table_items, cur), [])
+          @item = VirtualEditDialog(cur, Ops.get(table_items, cur))
           if !@item.nil?
             Ops.set(table_items, cur, @item)
             UI.ChangeWidget(Id(:table), :Items, table_items)
             UI.ChangeWidget(Id(:table), :CurrentItem, cur)
           end
         when :add
-          @forbidden = Builtins.maplist(table_items) do |e|
-            Ops.get_string(e, 1, "")
-          end
           @item2 = VirtualEditDialog(
             Builtins.size(table_items),
-            term(:empty),
-            @forbidden
+            term(:empty)
           )
           Builtins.y2debug("item=%1", @item2)
           if !@item2.nil?
@@ -195,12 +191,14 @@ module Yast
     # max length of device / interface filename lenght supported by kernel
     IFACE_LABEL_MAX = 16
 
-    def VirtualEditDialog(id, entry, forbidden)
+    # Open a dialog to edit a name-ipaddr-netmask triple.
+    # @param id    [Integer]    an id for the table item to be returned
+    # @param entry [Yast::Term] an existing entry to be edited, or term(:empty)
+    # @return      [Yast::Term] a table item for OK, nil for Cancel
+    def VirtualEditDialog(id, entry)
       entry = deep_copy(entry)
-      forbidden = deep_copy(forbidden)
       Builtins.y2debug("id=%1", id)
       Builtins.y2debug("entry=%1", entry)
-      Builtins.y2debug("forbidden=%1", forbidden)
 
       UI.OpenDialog(
         Opt(:decorated),
@@ -239,14 +237,12 @@ module Yast
         UI.SetFocus(Id(:ipaddr))
       end
 
-      host = nil
-      loop do
-        ret = UI.UserInput
-        break if ret != :ok
+      while (ret = UI.UserInput) == :ok
 
         host = Item(Id(id))
         val = UI.QueryWidget(Id(:name), :Value)
-        if Builtins.size(LanItems.device) + Builtins.size(val) + 1 > IFACE_LABEL_MAX
+
+        if LanItems.device.size + val.size + 1 > IFACE_LABEL_MAX
           # Popup::Error text
           Popup.Error(_("Label is too long."))
           UI.SetFocus(Id(:name))
@@ -278,6 +274,7 @@ module Yast
 
       UI.CloseDialog
       return nil if ret != :ok
+
       deep_copy(host)
     end
   end

@@ -133,16 +133,12 @@ module Yast
             "type" => "string"
           },
           "bootproto"    => {
+            # Commandline option help
             "help" => _("Use static or dynamic configuration"),
             "type" => "string"
           },
           "name"         => {
             "help" => _("Configuration Name"),
-            "type" => "string"
-          },
-          "bootproto"    => {
-            # Commandline option help
-            "help" => _("Device boot protocol"),
             "type" => "string"
           },
           "ip"           => {
