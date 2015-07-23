@@ -36,6 +36,9 @@ describe "VirtualEditDialog" do
     allow(Yast::LanItems).to receive(:device).and_return("")
 
     expect(Yast::UI).to receive(:UserInput).once
-    expect(AliasDialog.new.VirtualEditDialog(0, term(:empty), nil)).not_to be nil
+
+    new_id = 0
+    existing_item = term(:empty)
+    expect(AliasDialog.new.VirtualEditDialog(new_id, existing_item)).not_to be nil
   end
 end

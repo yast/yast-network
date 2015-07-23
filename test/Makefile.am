@@ -1,4 +1,5 @@
 TESTS = \
+  alias_dialog_test.rb \
   bridge_test.rb \
   build_lan_overview_test.rb \
   complex_test.rb \
@@ -24,7 +25,6 @@ TESTS = \
   s390_helpers_test.rb \
   suse_firewall_4_network_test.rb \
   udev_test.rb \
-  alias_dialog_test.rb \
   widgets_test.rb
 
 TEST_EXTENSIONS = .rb
