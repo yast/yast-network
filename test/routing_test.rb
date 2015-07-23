@@ -28,21 +28,6 @@ describe Routing do
       SCR.stub(:Execute) { nil }
     end
 
-    def fw_independent_write_expects
-      expect(SCR)
-        .to receive(:Execute)
-        .with(
-          path(".target.bash"),
-          "echo #{@value4} > /proc/sys/net/ipv4/ip_forward"
-        )
-      expect(SCR)
-        .to receive(:Execute)
-        .with(
-          path(".target.bash"),
-          "echo #{@value6} > /proc/sys/net/ipv6/conf/all/forwarding",
-        )
-    end
-
     context "when Firewall is enabled" do
 
       before(:each) do
@@ -55,9 +40,7 @@ describe Routing do
             .to receive(:SetSupportRoute)
             .with(forward_v4)
 
-          fw_independent_write_expects
-
-          expect(Routing.WriteIPForwarding).to be_equal nil
+          expect(Yast::Routing.WriteIPForwarding).to be_equal nil
         end
       end
     end
@@ -78,9 +61,7 @@ describe Routing do
             .to receive(:Write)
             .with(SYSCTL_IPV6_PATH, @value6)
 
-          fw_independent_write_expects
-
-          expect(Routing.WriteIPForwarding).to be_equal nil
+          expect(Yast::Routing.WriteIPForwarding).to be_equal nil
         end
       end
     end
