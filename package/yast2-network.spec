@@ -17,7 +17,7 @@
 
 
 Name:           yast2-network
-Version:        3.1.112.5
+Version:        3.1.112.6
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
