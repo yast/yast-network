@@ -13,7 +13,6 @@ system to run such tests.
   way), so use them in a scratch VM.
 
 ```sh
-cd test/cli
 prove
 ```
 
