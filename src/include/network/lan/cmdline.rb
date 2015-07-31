@@ -313,7 +313,6 @@ module Yast
               Ops.get_integer(value, "id", -1)
             )
             Lan.Delete
-            LanItems.Commit
             CommandLine.Print(_("The device was deleted."))
           end
         end
