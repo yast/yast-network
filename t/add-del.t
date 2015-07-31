@@ -22,11 +22,11 @@ ip addr show dev eth0
 echo "ok 1 eth0: exists already"
 
 echo "# add a (virtual) interface"
-$YAST lan add name=vlan50 ethdevice=eth0 bootproto=dhcp
+$YAST lan add name=vlan50 ethdevice=eth0 bootproto=dhcp || tapfail
 echo "ok 2 vlan50: added"
 
 # check it has worked
-ip addr show dev vlan50 || tapfail
+ip addr show dev vlan50
 echo "ok 3 vlan50: interface exists"
 
 ls /etc/sysconfig/network/ifcfg-vlan50 || tapfail
