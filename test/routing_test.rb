@@ -23,21 +23,6 @@ describe Yast::Routing do
       allow(Yast::SCR).to receive(:Execute) { nil }
     end
 
-    def fw_independent_write_expects
-      expect(Yast::SCR)
-        .to receive(:Execute)
-        .with(
-          path(".target.bash"),
-          "echo #{@value4} > /proc/sys/net/ipv4/ip_forward"
-        )
-      expect(Yast::SCR)
-        .to receive(:Execute)
-        .with(
-          path(".target.bash"),
-          "echo #{@value6} > /proc/sys/net/ipv6/conf/all/forwarding"
-        )
-    end
-
     context "when Firewall is enabled" do
       before(:each) do
         allow(Yast::SuSEFirewall).to receive(:IsEnabled) { true }
@@ -48,8 +33,6 @@ describe Yast::Routing do
           expect(Yast::SuSEFirewall)
             .to receive(:SetSupportRoute)
             .with(forward_v4)
-
-          fw_independent_write_expects
 
           expect(Yast::Routing.WriteIPForwarding).to be_equal nil
         end
@@ -70,8 +53,6 @@ describe Yast::Routing do
           expect(Yast::SCR)
             .to receive(:Write)
             .with(SYSCTL_IPV6_PATH, @value6)
-
-          fw_independent_write_expects
 
           expect(Yast::Routing.WriteIPForwarding).to be_equal nil
         end
