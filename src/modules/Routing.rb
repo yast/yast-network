@@ -172,9 +172,9 @@ module Yast
           sysctl_val
         )
         SCR.Write(path(SYSCTL_AGENT_PATH), nil)
-
-        SCR.Execute(path(".target.bash"), "sysctl -w #{IPV4_SYSCTL}=#{sysctl_val}")
       end
+
+      SCR.Execute(path(".target.bash"), "sysctl -w #{IPV4_SYSCTL}=#{sysctl_val}")
 
       nil
     end
