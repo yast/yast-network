@@ -77,11 +77,11 @@ describe '#getDeviceName' do
 
 end
 
-describe "LanUdevAuto#Write" do
+ATTR = "ATTR{address}"
+VALUE = "aa:BB:cc:DD:ee:FF"
+NAME = "custom-name"
 
-  ATTR = "ATTR{address}"
-  VALUE = "aa:BB:cc:DD:ee:FF"
-  NAME = "custom-name"
+describe "LanUdevAuto#Write" do
 
   it "writes MAC in lowercase" do
     udev_rules = [
@@ -105,10 +105,29 @@ describe "LanUdevAuto#Write" do
       .to receive(:Write)
       .with(path(".udev_persistent.rules"), ay_rules)
     allow(Yast::SCR)
-        .to receive(:Write)
-        .and_return 0
+      .to receive(:Write)
+      .and_return 0
 
-      LanUdevAuto.Import({ "net-udev" => udev_rules })
-      LanUdevAuto.Write
-    end
+    LanUdevAuto.Import({ "net-udev" => udev_rules })
+    LanUdevAuto.Write
   end
+end
+
+describe "LanUdevAuto#Import" do
+  it "imports defined udev rules correctly" do
+    udev_rules = [
+      {
+        "rule"  => ATTR,
+        "value" => VALUE,
+        "name"  => NAME
+      }
+    ]
+
+    expect(LanUdevAuto.Import({ "net-udev" => udev_rules }))
+      .to be_true
+  end
+
+  it "sucessfully imports data when no udev rule is defined" do
+    expect(LanUdevAuto.Import({})).to be_true
+  end
+end
