@@ -73,23 +73,24 @@ describe "#getDeviceName" do
 end
 
 describe "LanUdevAuto#Write" do
-  ATTR = "ATTR{address}"
-  VALUE = "aa:BB:cc:DD:ee:FF"
-  NAME = "custom-name"
+  let(:attr_addr) { "ATTR{address}" }
+  let(:value) { "aa:BB:cc:DD:ee:FF" }
+  let(:name) { "custom-name" }
+
 
   it "writes MAC in lowercase" do
     udev_rules = [
       {
-        "rule"  => ATTR,
-        "value" => VALUE,
-        "name"  => NAME
+        "rule"  => attr_addr,
+        "value" => value,
+        "name"  => name
       }
     ]
 
     ay_rules = [
       format(
         "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", %s==\"%s\", NAME=\"%s\"",
-        ATTR, VALUE.downcase, NAME
+        attr_addr, value.downcase, name
       )
     ]
 
@@ -106,5 +107,28 @@ describe "LanUdevAuto#Write" do
 
     Yast::LanUdevAuto.Import("net-udev" => udev_rules)
     Yast::LanUdevAuto.Write
+  end
+end
+
+describe "LanUdevAuto#Import" do
+  let(:attr_addr) { "ATTR{address}" }
+  let(:value) { "aa:BB:cc:DD:ee:FF" }
+  let(:name) { "custom-name" }
+
+  it "doesn't crash when importing udev rule" do
+    udev_rules = [
+      {
+        "rule"  => attr_addr,
+        "value" => value,
+        "name"  => name
+      }
+    ]
+
+    expect(Yast::LanUdevAuto.Import({ "net-udev" => udev_rules }))
+      .to be true
+  end
+
+  it "doesn't crash when no udev rule is defined in data for importing" do
+    expect(Yast::LanUdevAuto.Import({})).to be true
   end
 end

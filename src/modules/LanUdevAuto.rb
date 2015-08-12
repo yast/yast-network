@@ -180,7 +180,7 @@ module Yast
           createUdevFromIfaceName(Ops.get_list(settings, "interfaces", []))
         )
       else
-        @udev_rules = Ops.get_list(settings, "net-udev", [])
+        @udev_rules = settings["net-udev"] || []
       end
       #  if (Arch::s390())
       @s390_devices = Ops.get_list(settings, "s390-devices", [])
