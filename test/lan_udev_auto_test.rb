@@ -77,7 +77,6 @@ describe "LanUdevAuto#Write" do
   let(:value) { "aa:BB:cc:DD:ee:FF" }
   let(:name) { "custom-name" }
 
-
   it "writes MAC in lowercase" do
     udev_rules = [
       {
@@ -124,7 +123,7 @@ describe "LanUdevAuto#Import" do
       }
     ]
 
-    expect(Yast::LanUdevAuto.Import({ "net-udev" => udev_rules }))
+    expect(Yast::LanUdevAuto.Import("net-udev" => udev_rules))
       .to be true
   end
 
