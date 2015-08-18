@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Aug 18 12:29:56 UTC 2015 - mfilka@suse.com
+
+- bnc#940892
+  - fixed internal error when importing AY profile
+- 3.1.127
+
+-------------------------------------------------------------------
 Tue Aug 18 09:35:05 UTC 2015 - igonzalezsosa@suse.com
 
 - bsc#941948
