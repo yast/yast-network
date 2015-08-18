@@ -149,6 +149,7 @@ module Yast
 
       Builtins.y2milestone("Lan auto finished (#{@ret})")
       Builtins.y2milestone("----------------------------------------")
+      @ret
     end
 
     # If there's key in m, upcase key and assign the value to ret
