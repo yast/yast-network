@@ -34,23 +34,6 @@ module Yast
       textdomain "network"
     end
 
-    # Initializes widget (BRIDGE_PORTS) which contains list of devices available
-    # for enslaving in a brige.
-    #
-    # @param [String] key	id of the widget
-    def InitBridge(key)
-      br_ports = (NetworkInterfaces.Current["BRIDGE_PORTS"] || "").split
-
-      items = CreateSlaveItems(
-        LanItems.GetBridgeableInterfaces(LanItems.GetCurrentName),
-        br_ports
-      )
-
-      UI.ChangeWidget(Id(key), :Items, items)
-
-      nil
-    end
-
     # Immediately updates device's ifcfg to be usable as bridge port.
     #
     # It mainly setups suitable BOOTPROTO an IP related values

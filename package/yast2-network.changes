@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Aug 27 20:29:41 UTC 2015 - mfilka@suse.com
+
+- bnc#846201
+  - made bridge port selection persistent across tab switching
+- 3.1.128
+
+-------------------------------------------------------------------
 Tue Aug 18 12:29:56 UTC 2015 - mfilka@suse.com
 
 - bnc#940892

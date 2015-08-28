@@ -446,6 +446,24 @@ module Yast
       nil
     end
 
+    # Initializes widget (BRIDGE_PORTS) which contains list of devices available
+    # for enslaving in a brige.
+    #
+    # @param [String] key	id of the widget
+    def InitBridge(key)
+      br_ports = @settings["BRIDGE_PORTS"] || ""
+      br_ports = NetworkInterfaces.Current["BRIDGE_PORTS"] || "" if br_ports.empty?
+
+      items = CreateSlaveItems(
+        LanItems.GetBridgeableInterfaces(LanItems.GetCurrentName),
+        br_ports.split
+      )
+
+      UI.ChangeWidget(Id(key), :Items, items)
+
+      nil
+    end
+
     # Default function to store the value of devices attached to bridge (BRIDGE_PORTS).
     # @param [String] key	id of the widget
     # @param [String] key id of the widget
