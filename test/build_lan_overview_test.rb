@@ -63,4 +63,22 @@ describe "LanItemsClass#BuildLanOverview" do
     expect(overview).not_to eql unknown_device_overview
     expect(overview).to eql german_translation_overview
   end
+
+  # bsc#911571
+  context "when no ifcfg DeviceMap information is available" do
+    it "returns a summary and links" do
+      allow(Yast::LanItems)
+        .to receive(:Items)
+        .and_return(wlan_items)
+      allow(Yast::LanItems)
+        .to receive(:GetDeviceMap)
+        .and_return(nil)
+      allow(Yast::NetworkInterfaces)
+        .to receive(:Current)
+        .and_return(wlan_ifcfg)
+
+      overview = Yast::LanItems.BuildLanOverview
+      expect(overview[0]).to match("Wireless Network Card")
+    end
+  end
 end

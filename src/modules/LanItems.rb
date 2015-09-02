@@ -1337,7 +1337,8 @@ module Yast
 
         LanItems.type = NetworkInterfaces.GetType(ifcfg_name)
         if !ifcfg_name.empty?
-          ifcfg_conf = GetDeviceMap(key)
+          ifcfg_conf = GetDeviceMap(key) || {}
+          log.error "Failed to get device map for #{key}, interface #{ifcfg_name}" if ifcfg_conf.empty?
           ifcfg_desc = ifcfg_conf["NAME"]
           descr = ifcfg_desc if !ifcfg_desc.nil? && !ifcfg_desc.empty?
           descr = CheckEmptyName(LanItems.type, descr)
