@@ -928,23 +928,35 @@ module Yast
     end
 
     def SetLinkUp(dev_name)
+      log.info("Setting link up for interface #{dev_name}")
       Run("ip link set #{dev_name} up")
     end
 
     def SetLinkDown(dev_name)
+      log.info("Setting link down for interface #{dev_name}")
       Run("ip link set #{dev_name} down")
     end
 
+    # Tries to set all available interfaces up
+    #
+    # @return [boolean] false if some of interfaces cannot be set up
     def SetAllLinksUp
       interfaces = GetAllInterfaces()
-      ret = !interfaces.empty?
 
-      interfaces.each do |ifc|
-        Builtins.y2milestone("Setting link up for interface %1", ifc)
-        ret = SetLinkUp(ifc) && ret
-      end
+      return false if interfaces.empty?
 
-      ret
+      interfaces.all? { |i| SetLinkUp(i) }
+    end
+
+    # Tries to set all available interfaces down
+    #
+    # @return [boolean] false if some of interfaces cannot be set down
+    def SetAllLinksDown
+      interfaces = GetAllInterfaces()
+
+      return false if interfaces.empty?
+
+      interfaces.all? { |i| SetLinkDown(i) }
     end
 
     # Checks if given device has carrier
@@ -1093,7 +1105,7 @@ module Yast
       }
 
       hwstring = hwstrings[hwtype] || _("All Network Devices")
-      Confirm.Detection(hwstring, "yast-lan")
+      Confirm.Detection(hwstring, nil)
     end
   end
 end
