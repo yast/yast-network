@@ -336,7 +336,7 @@ module Yast
     # @return [true, false] if it succeedes
     def write_routes(routes)
       # create if not exists, otherwise backup
-      if SCR.Read(path(".target.size"), ROUTES_FILE) > 0
+      if FileUtils.Exists(ROUTES_FILE)
         SCR.Execute(
           path(".target.bash"),
           "/bin/cp #{ROUTES_FILE} #{ROUTES_FILE}.YaST2save"
