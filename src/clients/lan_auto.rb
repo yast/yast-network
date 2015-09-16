@@ -47,7 +47,6 @@ module Yast
       Yast.include self, "network/lan/wizards.rb"
       Yast.include self, "network/routines.rb"
 
-      @ret = nil
       @func = ""
       @param = {}
 
@@ -82,6 +81,7 @@ module Yast
         @func = "Import"
       end
 
+      Builtins.y2milestone("Lan autoinst callback: #{@func}")
 
       if @func == "Summary"
         @ret = Ops.get_string(Lan.Summary("summary"), 0, "")
@@ -141,6 +141,7 @@ module Yast
         end
         @new = FromAY(@param)
         Lan.Import(@new)
+        LanUdevAuto.Import(@new)
         @ret = true
       elsif @func == "Read"
         @progress_orig = Progress.set(false)
@@ -159,7 +160,15 @@ module Yast
         @ret = deep_copy(@autoyast)
       elsif @func == "Write"
         @progress_orig = Progress.set(false)
-        @ret = Lan.WriteOnly
+
+        result = LanUdevAuto.Write
+        Builtins.y2error("Writing udev rules failed") if !result
+        @ret = result
+
+        result = Lan.WriteOnly
+        Builtins.y2error("Writing lan config failed") if !result
+        @ret = @ret && result
+
         if Ops.get(LanItems.autoinstall_settings, "strict_IP_check_timeout") != nil
           if Lan.isAnyInterfaceDown
             @timeout = Ops.get_integer(
@@ -182,10 +191,8 @@ module Yast
         @ret = false
       end
 
-      Builtins.y2debug("ret=%1", @ret)
-      Builtins.y2milestone("Lan auto finished")
+      Builtins.y2milestone("Lan auto finished (#{@ret})")
       Builtins.y2milestone("----------------------------------------")
-      deep_copy(@ret) 
 
       # EOF
     end

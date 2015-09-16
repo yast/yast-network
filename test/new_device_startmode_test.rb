@@ -43,10 +43,10 @@ describe "LanItemsClass#new_device_startmode" do
         expect(Yast::ProductFeatures)
           .to receive(:GetStringFeature)
           .with("network", "startmode") { "ifplugd" }
-        Yast::LanItems.stub(:hotplug_usable?) { hwinfo_hotplug == "hotplug" }
+        allow(Yast::LanItems).to receive(:hotplug_usable?) { hwinfo_hotplug == "hotplug" }
         # setup stubs by default at results which doesn't need special handling
-        Yast::Arch.stub(:is_laptop) { true }
-        Yast::NetworkService.stub(:is_network_manager) { false }
+        allow(Yast::Arch).to receive(:is_laptop) { true }
+        allow(Yast::NetworkService).to receive(:is_network_manager) { false }
       end
 
       it "results to #{expected_startmode} when not running on laptop" do
@@ -77,7 +77,7 @@ describe "LanItemsClass#new_device_startmode" do
         # check for virtual device type is done via Builtins.contains. I don't
         # want to stub it because it requires default stub value definition for
         # other calls of the function. It might have unexpected inpacts.
-        Yast::LanItems.stub(:type) { "bond" }
+        allow(Yast::LanItems).to receive(:type) { "bond" }
 
         result = Yast::LanItems.new_device_startmode
         expect(result).to be_eql expected_startmode

@@ -25,7 +25,7 @@ describe Routing do
       @value4 = forward_v4 ? "1" : "0"
       @value6 = forward_v6 ? "1" : "0"
 
-      SCR.stub(:Execute) { nil }
+      allow(SCR).to receive(:Execute) { nil }
     end
 
     def fw_independent_write_expects
@@ -46,7 +46,7 @@ describe Routing do
     context "when Firewall is enabled" do
 
       before(:each) do
-        SuSEFirewall.stub(:IsEnabled) { true }
+        allow(SuSEFirewall).to receive(:IsEnabled) { true }
       end
 
       describe "#WriteIPForwarding" do
@@ -65,12 +65,12 @@ describe Routing do
     context "when Firewall is disabled" do
 
       before(:each) do
-        SuSEFirewall.stub(:IsEnabled) { false }
+        allow(SuSEFirewall).to receive(:IsEnabled) { false }
       end
 
       describe "#WriteIPForwarding" do
         it "Updates IPv4 and IPv6 forwarding in sysctl.conf" do
-          SCR.stub(:Write) { nil }
+          allow(SCR).to receive(:Write) { nil }
           expect(SCR)
             .to receive(:Write)
             .with(SYSCTL_IPV4_PATH, @value4)
@@ -113,7 +113,7 @@ describe Routing do
           Popup.as_null_object
 
           Yast.import "UI"
-          UI.stub(:QueryWidget) { "" }
+          allow(UI).to receive(:QueryWidget) { "" }
           expect(UI)
             .to receive(:QueryWidget)
             .with(Id(:forward_v4), :Value) { ipv4 }
@@ -271,7 +271,7 @@ describe Routing do
 
       context "when ipv4.ip_forward=#{ipv4} and .ipv6.conf.all.forwarding=#{ipv6}" do
         before(:each) do
-          SCR.stub(:Read) { nil }
+          allow(SCR).to receive(:Read) { nil }
           expect(SCR)
             .to receive(:Read)
             .with(path(".routes")) { MOCKED_ROUTES }

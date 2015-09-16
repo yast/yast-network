@@ -1,4 +1,39 @@
 -------------------------------------------------------------------
+Mon Apr 27 07:06:18 UTC 2015 - mfilka@suse.com
+
+- bnc#912904 
+  - do not crash when adding new device and proposed configuration
+    name is changed to new one
+- bnc#914833
+  - do not crash when renaming virtual device via hardware tab
+- bnc#910337
+  - initialize configuration name in Hardware tab correctly. It
+    means according device type. Also uses custom name if user
+    used nonstandard one.
+- bnc#905738
+  - udev rules provided by AutoYaST profile gets applied
+- bnc#918356
+  - populate bond slave candidates list with proper device names
+- 3.1.110.1
+
+-------------------------------------------------------------------
+Wed Jan 28 13:12:16 UTC 2015 - lslezak@suse.cz
+
+- fixed a build failure when building against the latest yast2
+  package
+
+-------------------------------------------------------------------
+Tue Dec 23 10:52:11 UTC 2014 - mvidner@suse.com
+
+- Removed a bash specific post script with a workaround
+  for an ancient bug (bnc#39842).
+
+-------------------------------------------------------------------
+Thu Dec  4 09:50:29 UTC 2014 - jreidinger@suse.com
+
+- remove X-KDE-Library from desktop file (bnc#899104)
+
+-------------------------------------------------------------------
 Fri Nov 28 08:51:22 UTC 2014 - mfilka@suse.com
 
 - bnc#906694

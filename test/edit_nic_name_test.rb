@@ -21,10 +21,10 @@ module Yast
       NetworkInterfaces.as_null_object
 
       # mock devices configuration
-      LanItems.stub( :ReadHardware) { [ { "dev_name" => CURRENT_NAME } ] }
-      LanItems.stub( :getNetworkInterfaces) { [ CURRENT_NAME ] }
-      LanItems.stub( :GetItemUdev) { "" }
-      LanItems.stub( :GetItemUdev).with("NAME") { CURRENT_NAME }
+      allow(LanItems).to receive( :ReadHardware) { [ { "dev_name" => CURRENT_NAME } ] }
+      allow(LanItems).to receive( :getNetworkInterfaces) { [ CURRENT_NAME ] }
+      allow(LanItems).to receive( :GetItemUdev) { "" }
+      allow(LanItems).to receive( :GetItemUdev).with("NAME") { CURRENT_NAME }
 
       # LanItems initialization
       Yast.import "LanItems"
@@ -43,19 +43,19 @@ module Yast
     context 'when closed without any change' do
       before( :each) do
         # emulate UI work
-        UI.stub( :QueryWidget).with( :dev_name, :Value) { CURRENT_NAME }
-        UI.stub( :QueryWidget).with( :udev_type, :CurrentButton) { :mac }
+        allow(UI).to receive( :QueryWidget).with( :dev_name, :Value) { CURRENT_NAME }
+        allow(UI).to receive( :QueryWidget).with( :udev_type, :CurrentButton) { :mac }
 
       end
 
       it 'returns current name when used Ok button' do
-        UI.stub( :UserInput) { :ok }
+        allow(UI).to receive( :UserInput) { :ok }
 
         expect( @edit_name_dlg.run).to be_equal CURRENT_NAME
       end
 
       it 'returns current name when used Cancel button' do
-        UI.stub( :UserInput) { :cancel }
+        allow(UI).to receive( :UserInput) { :cancel }
 
         expect( @edit_name_dlg.run).to be_equal CURRENT_NAME
       end
@@ -64,18 +64,18 @@ module Yast
     context 'when closed after name change' do
       before( :each) do
         # emulate UI work
-        UI.stub( :QueryWidget).with( :dev_name, :Value) { NEW_NAME }
-        UI.stub( :QueryWidget).with( :udev_type, :CurrentButton) { :mac }
+        allow(UI).to receive( :QueryWidget).with( :dev_name, :Value) { NEW_NAME }
+        allow(UI).to receive( :QueryWidget).with( :udev_type, :CurrentButton) { :mac }
       end
 
       it 'returns new name when used Ok button' do
-        UI.stub( :UserInput) { :ok }
+        allow(UI).to receive( :UserInput) { :ok }
 
         expect( @edit_name_dlg.run).to be_equal NEW_NAME
       end
 
       it 'returns current name when used Cancel button' do
-        UI.stub( :UserInput) { :cancel }
+        allow(UI).to receive( :UserInput) { :cancel }
 
         expect( @edit_name_dlg.run).to be_equal CURRENT_NAME
       end

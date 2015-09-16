@@ -62,9 +62,9 @@ module Yast
     ]
 
     before(:each) do
-      NetworkInterfaces.stub(:FilterDevices).with("netcard") { NETCONFIG_ITEMS }
+      allow(NetworkInterfaces).to receive(:FilterDevices).with("netcard") { NETCONFIG_ITEMS }
 
-      LanItems.stub(:ReadHardware) { HWINFO_ITEMS }
+      allow(LanItems).to receive(:ReadHardware) { HWINFO_ITEMS }
       LanItems.Read
     end
 
