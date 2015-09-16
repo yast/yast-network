@@ -72,6 +72,7 @@ module Yast
       Yast.import "Map"
       Yast.import "Mode"
       Yast.import "SuSEFirewall"
+      Yast.import "FileUtils"
 
       Yast.include self, "network/runtime.rb"
       Yast.include self, "network/routines.rb"
@@ -289,6 +290,24 @@ module Yast
       ret
     end
 
+    # Clear file with routes definitions for particular device
+    #
+    # @param device is a device name (eth0) or special string Routes::ANY_DEVICE
+    # @return [true, false] if succeedes
+    def clear_route_file(device)
+      # work around bnc#19476
+      if device == ANY_DEVICE
+        filename = ROUTES_FILE
+
+        return SCR.Write(path(".target.string"), filename, "")
+      else
+        filename = "#{ROUTES_DIR}/ifroute-#{device}"
+
+        return SCR.Execute(path(".target.remove"), filename) if FileUtils.Exists(filename)
+        return true
+      end
+    end
+
     # From *routes*, select those belonging to *device* and write
     # an appropriate config file.
     # @param device device name, or "-" for global routes
@@ -297,23 +316,15 @@ module Yast
     def write_route_file(device, routes)
       routes = routes.select { |r| r["device"] == device }
 
-      if routes.empty?
-        # work around bnc#19476
-        if device == ANY_DEVICE
-          filename = ROUTES_FILE
-          return SCR.Write(path(".target.string"), filename, "")
-        else
-          filename = "#{ROUTES_DIR}/ifroute-#{device}"
-          return SCR.Execute(path(".target.remove"), filename)
-        end
+      return clear_route_file(device) if routes.empty?
+
+      if device == ANY_DEVICE
+        scr_path = path(".routes")
       else
-        if device == ANY_DEVICE
-          scr_path = path(".routes")
-        else
-          scr_path = register_ifroute_agent_for_device(device)
-        end
-        return SCR.Write(scr_path, routes)
+        scr_path = register_ifroute_agent_for_device(device)
       end
+
+      return SCR.Write(scr_path, routes)
     end
 
     # Updates routing configuration files
