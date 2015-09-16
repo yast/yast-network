@@ -94,10 +94,9 @@ describe "Yast::Routing#write_routes" do
   ]
 
   it "writes device assigned routes into correct ifroute file" do
-    allow(Yast::SCR)
-      .to receive(:Read)
-      .with(path(".target.size"), Yast::RoutingClass::ROUTES_FILE)
-      .and_return(1)
+    allow(Yast::FileUtils)
+      .to receive(:Exists)
+      .and_return(true)
     allow(Yast::Routing)
       .to receive(:devices)
       .and_return(["eth0", "eth1", "eth2"])
