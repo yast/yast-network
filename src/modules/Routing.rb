@@ -322,7 +322,7 @@ module Yast
         scr_path = register_ifroute_agent_for_device(device)
       end
 
-      return SCR.Write(scr_path, routes)
+      SCR.Write(scr_path, routes)
     end
 
     # Updates routing configuration files
