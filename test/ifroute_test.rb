@@ -8,7 +8,6 @@ include Yast
 
 Yast.import "NetworkInterfaces"
 Yast.import "Routing"
-Yast.import "FileUtils"
 
 describe "Routing#Read" do
   ROUTES_FILE = [
@@ -82,6 +81,8 @@ describe "Routing#Read" do
 end
 
 describe "Routing#write_routes" do
+  Yast.import "FileUtils"
+
   ROUTES_WITH_DEV = [
     {
       "destination" => "default",
@@ -98,13 +99,9 @@ describe "Routing#write_routes" do
   ]
 
   it "writes device assigned routes into correct ifroute file" do
-    allow(FileUtils)
+    allow(Yast::FileUtils)
       .to receive(:Exists)
       .and_return(true)
-    allow(SCR)
-      .to receive(:Read)
-      .with(path(".target.size"), RoutingClass::ROUTES_FILE)
-      .and_return(1)
     allow(Routing)
       .to receive(:devices)
       .and_return(["eth0", "eth1", "eth2"])
