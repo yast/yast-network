@@ -8,6 +8,7 @@ include Yast
 
 Yast.import "NetworkInterfaces"
 Yast.import "Routing"
+Yast.import "FileUtils"
 
 describe "Routing#Read" do
   ROUTES_FILE = [
@@ -97,6 +98,9 @@ describe "Routing#write_routes" do
   ]
 
   it "writes device assigned routes into correct ifroute file" do
+    allow(FileUtils)
+      .to receive(:Exists)
+      .and_return(true)
     allow(SCR)
       .to receive(:Read)
       .with(path(".target.size"), RoutingClass::ROUTES_FILE)
