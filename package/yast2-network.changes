@@ -14,21 +14,19 @@ Mon Apr 27 07:06:18 UTC 2015 - mfilka@suse.com
   - udev rules provided by AutoYaST profile gets applied
 - bnc#918356
   - populate bond slave candidates list with proper device names
-- 3.1.114
+- 3.1.110.1
 
 -------------------------------------------------------------------
 Wed Jan 28 13:12:16 UTC 2015 - lslezak@suse.cz
 
 - fixed a build failure when building against the latest yast2
   package
-- 3.1.113
 
 -------------------------------------------------------------------
 Tue Dec 23 10:52:11 UTC 2014 - mvidner@suse.com
 
 - Removed a bash specific post script with a workaround
   for an ancient bug (bnc#39842).
-- 3.1.112
 
 -------------------------------------------------------------------
 Thu Dec  4 09:50:29 UTC 2014 - jreidinger@suse.com
