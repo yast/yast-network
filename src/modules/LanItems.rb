@@ -1088,6 +1088,29 @@ module Yast
       nil
     end
 
+    # Imports data from AY profile
+    #
+    # As network related configuration is spread over the whole AY profile
+    # the function requires hash map with whole AY profile.
+    #
+    # @param [Hash] AY profile converted into hash
+    # @return [Boolean] on success
+    def Import(settings)
+      NetworkInterfaces.Import("netcard", settings["devices"] || {})
+      NetworkInterfaces.List("netcard").each do |device|
+        AddNew()
+        LanItems.Items[current] = { "ifcfg" => device }
+      end
+
+      autoinstall_settings["start_immediately"] = settings["start_immediately"] || false
+      autoinstall_settings["strict_IP_check_timeout"] = settings["strict_IP_check_timeout"] || -1
+      autoinstall_settings["keep_install_network"] = settings["keep_install_network"] || false
+
+      SetModified()
+
+      true
+    end
+
     def GetDescr
       descr = []
       Builtins.foreach(

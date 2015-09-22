@@ -668,16 +668,7 @@ module Yast
     def Import(settings)
       settings = {} if settings.nil?
 
-      NetworkInterfaces.Import("netcard", settings["devices"] || {})
-      NetworkInterfaces.List("netcard").each do |device|
-        LanItems.AddNew
-        LanItems.Items[LanItems.current] = { "ifcfg" => device }
-      end
-
-      LanItems.autoinstall_settings["start_immediately"] = settings["start_immediately"] || false
-      LanItems.autoinstall_settings["strict_IP_check_timeout"] = settings["strict_IP_check_timeout"] || -1
-      LanItems.autoinstall_settings["keep_install_network"] = settings["keep_install_network"] || false
-
+      LanItems.Import(settings)
       NetworkConfig.Import(settings["config"] || {})
       DNS.Import(settings["dns"] || {})
       Routing.Import(settings["routing"] || {})
@@ -695,7 +686,6 @@ module Yast
 
       @ipv6 = settings.fetch("ipv6", true)
 
-      LanItems.SetModified
       true
     end
 
