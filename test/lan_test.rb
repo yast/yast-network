@@ -137,3 +137,25 @@ describe "LanClass#activate_network_service" do
     end
   end
 end
+
+describe "LanClass#Import" do
+  it "flushes internal state of LanItems correctly when asked for reset" do
+    AY_PROFILE = {
+      "devices" => {
+        "eth" => {
+          "eth0" => {
+            "BOOTPROTO" => "static",
+            "BROADCAST" => "192.168.127.255",
+            "IPADDR" => "192.168.73.138",
+            "NETMASK" => "255.255.192.0",
+            "STARTMODE" => "manual"
+          }
+        }
+      }
+    }
+
+    expect(Yast::Lan.Import(AY_PROFILE)).to be true
+    expect(Yast::Lan.Import({})).to be true
+    expect(Yast::LanItems.Items).to be_empty
+  end
+end
