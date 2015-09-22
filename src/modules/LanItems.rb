@@ -1096,6 +1096,8 @@ module Yast
     # @param [Hash] AY profile converted into hash
     # @return [Boolean] on success
     def Import(settings)
+      LanItems.Items = {}
+
       NetworkInterfaces.Import("netcard", settings["devices"] || {})
       NetworkInterfaces.List("netcard").each do |device|
         AddNew()
