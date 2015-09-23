@@ -1096,8 +1096,9 @@ module Yast
 
     # Imports data from AY profile
     #
-    # As network related configuration is spread over the whole AY profile
-    # the function requires hash map with whole AY profile.
+    # As network related configuration is spread over the whole AY profile's
+    # networking section the function requires hash map with whole AY profile hash
+    # representation as returned by LanAutoClient#FromAY profile.
     #
     # @param [Hash] AY profile converted into hash
     # @return [Boolean] on success
