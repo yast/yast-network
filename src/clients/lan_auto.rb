@@ -100,7 +100,7 @@ module Yast
         @ret = true
       elsif @func == "Read"
         @progress_orig = Progress.set(false)
-        @ret = Lan.Read(:cache)
+        @ret = Lan.Read(:nocache)
         Progress.set(@progress_orig)
       elsif @func == "Packages"
         @ret = Lan.AutoPackages
