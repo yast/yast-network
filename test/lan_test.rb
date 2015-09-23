@@ -155,7 +155,11 @@ describe "LanClass#Import" do
     }
 
     expect(Yast::Lan.Import(AY_PROFILE)).to be true
+    expect(Yast::LanItems.GetModified).to be true
+    expect(Yast::LanItems.Items).not_to be_empty
+
     expect(Yast::Lan.Import({})).to be true
+    expect(Yast::LanItems.GetModified).to be false
     expect(Yast::LanItems.Items).to be_empty
   end
 end

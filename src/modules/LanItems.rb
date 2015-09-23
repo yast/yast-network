@@ -59,9 +59,10 @@ module Yast
       Yast.include self, "network/lan/udev.rb"
       Yast.include self, "network/lan/bridge.rb"
 
+      reset_cache
+
       # Hardware information
       # @see #ReadHardware
-      @Items = {}
       @Hardware = []
       @udev_net_rules = {}
       @driver_options = {}
@@ -70,7 +71,6 @@ module Yast
       @autoinstall_settings = {}
 
       # Data was modified?
-      @modified = false
       # current selected HW
       @hw = {}
 
@@ -731,13 +731,6 @@ module Yast
 
       nil
     end
-    # Function sets internal variable, which indicates, that any
-    # settings were modified, to "false"
-    def UnsetModified
-      @modified = false
-
-      nil
-    end
 
     def AddNew
       @current = @Items.to_h.size
@@ -1088,6 +1081,19 @@ module Yast
       nil
     end
 
+    # Clears internal cache of the module to default values
+    #
+    # TODO: LanItems consists of several sets of internal variables.
+    # 1) cache of items describing network interface
+    # 2) variables used as a kind of iterator in the cache
+    # 3) variables which keeps (some of) attributes of the current item (= item
+    # which is being pointed by the iterator)
+    def reset_cache
+      LanItems.Items = {}
+
+      @modified = false
+    end
+
     # Imports data from AY profile
     #
     # As network related configuration is spread over the whole AY profile
@@ -1096,7 +1102,7 @@ module Yast
     # @param [Hash] AY profile converted into hash
     # @return [Boolean] on success
     def Import(settings)
-      LanItems.Items = {}
+      reset_cache
 
       NetworkInterfaces.Import("netcard", settings["devices"] || {})
       NetworkInterfaces.List("netcard").each do |device|
@@ -1108,7 +1114,8 @@ module Yast
       autoinstall_settings["strict_IP_check_timeout"] = settings["strict_IP_check_timeout"] || -1
       autoinstall_settings["keep_install_network"] = settings["keep_install_network"] || false
 
-      SetModified()
+      # settings == {} has special meaning 'Reset' used by AY
+      SetModified() if !settings.empty?
 
       true
     end
@@ -2648,7 +2655,6 @@ module Yast
     publish :function => :WriteUdevRules, :type => "void ()"
     publish :function => :GetModified, :type => "boolean ()"
     publish :function => :SetModified, :type => "void ()"
-    publish :function => :UnsetModified, :type => "void ()"
     publish :function => :AddNew, :type => "void ()"
     publish :function => :GetItemModules, :type => "list <string> (string)"
     publish :function => :GetSlaveCandidates, :type => "list <integer> (string, boolean (string, integer))"

@@ -83,7 +83,6 @@ module Yast
         @ret = Ops.get_string(Lan.Summary("summary"), 0, "")
       elsif @func == "Reset"
         Lan.Import({})
-        LanItems.UnsetModified
         @ret = {}
       elsif @func == "Change"
         @ret = LanAutoSequence("")
