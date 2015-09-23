@@ -38,6 +38,8 @@ module Yast
   # 3. ...
   #
 
+  # FIXME: well this class really is not nice
+  # rubocop:disable ClassLength
   class LanItemsClass < Module
     attr_reader :ipoib_modes
     attr_accessor :ipoib_mode

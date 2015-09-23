@@ -142,8 +142,8 @@ describe "LanClass#Import" do
           "eth0" => {
             "BOOTPROTO" => "static",
             "BROADCAST" => "192.168.127.255",
-            "IPADDR" => "192.168.73.138",
-            "NETMASK" => "255.255.192.0",
+            "IPADDR"    => "192.168.73.138",
+            "NETMASK"   => "255.255.192.0",
             "STARTMODE" => "manual"
           }
         }
