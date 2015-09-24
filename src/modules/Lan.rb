@@ -664,34 +664,14 @@ module Yast
     # @param [Hash] settings settings to be imported
     # @return true on success
     def Import(settings)
-      settings = deep_copy(settings)
-      NetworkInterfaces.Import("netcard", Ops.get_map(settings, "devices", {}))
-      Builtins.foreach(NetworkInterfaces.List("netcard")) do |device|
-        LanItems.AddNew
-        Ops.set(LanItems.Items, LanItems.current, "ifcfg" => device)
-      end
+      settings = {} if settings.nil?
 
-      Ops.set(
-        LanItems.autoinstall_settings,
-        "start_immediately",
-        Ops.get_boolean(settings, "start_immediately", false)
-      )
-      Ops.set(
-        LanItems.autoinstall_settings,
-        "strict_IP_check_timeout",
-        Ops.get_integer(settings, "strict_IP_check_timeout", -1)
-      )
-      Ops.set(
-        LanItems.autoinstall_settings,
-        "keep_install_network",
-        Ops.get_boolean(settings, "keep_install_network", false)
-      )
+      LanItems.Import(settings)
+      NetworkConfig.Import(settings["config"] || {})
+      DNS.Import(settings["dns"] || {})
+      Routing.Import(settings["routing"] || {})
 
-      NetworkConfig.Import(Ops.get_map(settings, "config", {}))
-      DNS.Import(Builtins.eval(Ops.get_map(settings, "dns", {})))
-      Routing.Import(Builtins.eval(Ops.get_map(settings, "routing", {})))
-
-      if Ops.get_boolean(settings, "managed", false)
+      if settings["managed"]
         if NetworkService.is_backend_available(:network_manager)
           NetworkService.use_network_manager
         else
@@ -701,11 +681,9 @@ module Yast
       else
         NetworkService.use_wicked
       end
-      if Builtins.haskey(settings, "ipv6")
-        @ipv6 = Ops.get_boolean(settings, "ipv6", true)
-      end
 
-      LanItems.modified = true
+      @ipv6 = settings.fetch("ipv6", true)
+
       true
     end
 

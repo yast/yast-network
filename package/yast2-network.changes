@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Sep 23 09:06:08 UTC 2015 - mfilka@suse.com
+
+- bnc#866742
+  - Do not fail with internal error when cloning configuration
+    twice in a row
+- 3.1.130
+
+-------------------------------------------------------------------
 Wed Sep 16 09:06:48 UTC 2015 - mfilka@suse.com
 
 - bnc#945947

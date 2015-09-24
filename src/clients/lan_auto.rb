@@ -84,7 +84,6 @@ module Yast
         @ret = Ops.get_string(Lan.Summary("summary"), 0, "")
       elsif @func == "Reset"
         Lan.Import({})
-        LanItems.UnsetModified
         @ret = {}
       elsif @func == "Change"
         @ret = LanAutoSequence("")
@@ -101,7 +100,7 @@ module Yast
         @ret = true
       elsif @func == "Read"
         @progress_orig = Progress.set(false)
-        @ret = Lan.Read(:cache)
+        @ret = Lan.Read(:nocache)
         Progress.set(@progress_orig)
       elsif @func == "Packages"
         @ret = Lan.AutoPackages
