@@ -160,7 +160,6 @@ module Yast
       @wl_enc_modes = nil
       @wl_channels = nil
       @wl_bitrates = nil
-      @nilliststring = nil # to save some casting
 
       # s390 options
       @qeth_portname = ""
@@ -198,7 +197,6 @@ module Yast
 
       # propose options
       @proposal_valid = false
-      @nm_proposal_valid = false
 
       # NetworkModules:: name
       @nm_name = ""
@@ -296,10 +294,6 @@ module Yast
         "IUCV_USER"       => "",
         "LLADDR"          => "00:00:00:00:00:00"
       }
-
-      # ifplugd sometimes does not work for wifi
-      # so wired needs higher priority to override it
-      @ifplugd_priorities = { "eth" => "20", "wlan" => "10" }
     end
 
     # Returns configuration of item (see LanItems::Items) with given id.
@@ -1529,24 +1523,24 @@ module Yast
       # Wireless Card Features
       @wl_auth_modes = Builtins.prepend(
         Convert.convert(
-          Ops.get(hardware, "wl_auth_modes", @nilliststring),
+          Ops.get(hardware, "wl_auth_modes", nil),
           from: "any",
           to:   "list <string>"
         ),
         "no-encryption"
       )
       @wl_enc_modes = Convert.convert(
-        Ops.get(hardware, "wl_enc_modes", @nilliststring),
+        Ops.get(hardware, "wl_enc_modes", nil),
         from: "any",
         to:   "list <string>"
       )
       @wl_channels = Convert.convert(
-        Ops.get(hardware, "wl_channels", @nilliststring),
+        Ops.get(hardware, "wl_channels", nil),
         from: "any",
         to:   "list <string>"
       )
       @wl_bitrates = Convert.convert(
-        Ops.get(hardware, "wl_bitrates", @nilliststring),
+        Ops.get(hardware, "wl_bitrates", nil),
         from: "any",
         to:   "list <string>"
       )
@@ -2634,7 +2628,6 @@ module Yast
     publish_variable :tunnel_set_owner, "string"
     publish_variable :tunnel_set_group, "string"
     publish_variable :proposal_valid, "boolean"
-    publish_variable :nm_proposal_valid, "boolean"
     publish_variable :nm_name, "string"
     # @attribute SysconfigDefaults
     publish_variable :SysconfigDefaults, "map <string, string>"
