@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Oct  1 07:26:55 UTC 2015 - mvidner@suse.com
+
+- Moved "Network Settings" into "System" group also in the Gnome/GTK
+  control center (FATE#318804, bsc#867809).
+- 3.1.131
+
+-------------------------------------------------------------------
 Wed Sep 23 09:06:08 UTC 2015 - mfilka@suse.com
 
 - bnc#866742
