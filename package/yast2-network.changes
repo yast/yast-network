@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Oct  2 13:44:00 UTC 2015 - mvidner@suse.com
+
+- Fixed "Relax-NG parser error : Some defines for ipv6_forward
+  needs the combine attribute" when checking validity
+  of any AutoYaST profile (bsc#948206).
+- 3.1.112.9
+
+-------------------------------------------------------------------
 Wed Sep 23 09:06:08 UTC 2015 - mfilka@suse.com
 
 - bnc#866742
