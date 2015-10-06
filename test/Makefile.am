@@ -5,6 +5,7 @@ TESTS = \
   complex_test.rb \
   default_route_test.rb \
   dns_test.rb \
+  dns_service_test.rb \
   edit_nic_name_test.rb \
   firewall_stage1_proposal_test.rb \
   ifroute_test.rb \
