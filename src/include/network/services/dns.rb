@@ -495,7 +495,7 @@ module Yast
       msg = _("It's not recommended to use .local as domainname due to Multicast DNS. Use it at your own risk?")
       return false if value == "local" && !Popup.YesNo(msg)
 
-      return Hostname.CheckDomain(value)
+      Hostname.CheckDomain(value)
     end
 
     # Validator for the search list
