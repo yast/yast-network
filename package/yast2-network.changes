@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Oct  6 16:44:44 UTC 2015 - mfilka@suse.com
+
+- bnc#900647
+  - fixed to accept an empty domain in /etc/hostname
+- 3.1.132
+
+-------------------------------------------------------------------
 Thu Oct  1 07:26:55 UTC 2015 - mvidner@suse.com
 
 - Moved "Network Settings" into "System" group also in the Gnome/GTK

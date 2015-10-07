@@ -486,23 +486,16 @@ module Yast
     # @param [Hash] event	the event being handled
     # @return whether valid
     def ValidateDomain(key, _event)
-      dhn = @has_dhcp &&
-        Convert.to_boolean(UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value))
-      value = Convert.to_string(UI.QueryWidget(Id(key), :Value))
+      dhn = @has_dhcp && UI.QueryWidget(Id("DHCP_HOSTNAME"), :Value) == true
+      return true if dhn
 
-      if !dhn || value != ""
-        if value == "local"
-          if !Popup.YesNo(
-            _(
-              "It's not recommended to use .local as domainname due to Multicast DNS. Use it at your own risk?"
-            )
-            )
-            return false
-          end
-        end
-        return Hostname.CheckDomain(value)
-      end
-      true
+      value = UI.QueryWidget(Id(key), :Value).to_s
+      return true if value.empty?
+
+      msg = _("It's not recommended to use .local as domainname due to Multicast DNS. Use it at your own risk?")
+      return false if value == "local" && !Popup.YesNo(msg)
+
+      Hostname.CheckDomain(value)
     end
 
     # Validator for the search list
