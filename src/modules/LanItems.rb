@@ -1768,22 +1768,20 @@ module Yast
       @qeth_macaddress = d["LLADDR"] if @qeth_layer2
 
       # qeth attribute. FIXME: currently not read from system.
-      @ipa_takeover = Ops.get_string(defaults, "IPA_TAKEOVER", "") == "yes"
+      @ipa_takeover = defaults["IPA_TAKEOVER"] == "yes"
 
       # not device attribute
-      @qeth_options = Ops.get_string(defaults, "QETH_OPTIONS", "")
+      @qeth_options = defaults["QETH_OPTIONS"] || ""
 
       # handle non qeth devices
-      @iucv_user = Ops.get_string(defaults, "IUCV_USER", "")
-      @chan_mode = Ops.get_string(defaults, "CHAN_MODE", "")
+      @iucv_user = defaults["IUCV_USER"] || ""
+      @chan_mode = defaults["CHAN_MODE"] || ""
 
       nil
     end
 
     def InitS390VarsByDefaults
       SetS390Vars({}, @s390_defaults)
-
-      nil
     end
 
     def hotplug_usable?
