@@ -2629,8 +2629,6 @@ module Yast
     publish_variable :tunnel_set_group, "string"
     publish_variable :proposal_valid, "boolean"
     publish_variable :nm_name, "string"
-    # @attribute SysconfigDefaults
-    publish_variable :SysconfigDefaults, "map <string, string>"
     publish function: :GetLanItem, type: "map (integer)"
     publish function: :getCurrentItem, type: "map ()"
     publish function: :IsItemConfigured, type: "boolean (integer)"
