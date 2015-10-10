@@ -22,6 +22,7 @@
 #
 # **************************************************************************
 require "yast"
+require "yaml"
 
 module Yast
   # Does way too many things.
@@ -230,70 +231,15 @@ module Yast
 
       Yast.include self, "network/hardware.rb"
 
-      # the defaults here are what sysconfig defaults to
-      # (as opposed to what a new interface gets, in {#Select)}
-      @SysconfigDefaults = {
-        "BOOTPROTO"                    => "static",
-        "IPADDR"                       => "",
-        "PREFIXLEN"                    => "",
-        "REMOTE_IPADDR"                => "",
-        "NETMASK"                      => "",
-        "MTU"                          => "",
-        "ETHTOOL_OPTIONS"              => "",
-        "NAME"                         => "",
-        "STARTMODE"                    => "manual",
-        "IFPLUGD_PRIORITY"             => "0",
-        "WIRELESS_MODE"                => "Managed",
-        "WIRELESS_ESSID"               => "",
-        "WIRELESS_NWID"                => "",
-        "WIRELESS_AUTH_MODE"           => "open",
-        "WIRELESS_WPA_PSK"             => "",
-        "WIRELESS_KEY_LENGTH"          => "128",
-        "WIRELESS_KEY"                 => "",
-        "WIRELESS_KEY_0"               => "",
-        "WIRELESS_KEY_1"               => "",
-        "WIRELESS_KEY_2"               => "",
-        "WIRELESS_KEY_3"               => "",
-        "WIRELESS_DEFAULT_KEY"         => "0",
-        "WIRELESS_NICK"                => "",
-        "WIRELESS_CHANNEL"             => "",
-        "WIRELESS_FREQUENCY"           => "",
-        "WIRELESS_BITRATE"             => "auto",
-        "WIRELESS_AP"                  => "",
-        "WIRELESS_POWER"               => "",
-        "WIRELESS_EAP_MODE"            => "",
-        "WIRELESS_WPA_IDENTITY"        => "",
-        "WIRELESS_WPA_PASSWORD"        => "",
-        "WIRELESS_WPA_ANONID"          => "",
-        "WIRELESS_CLIENT_CERT"         => "",
-        "WIRELESS_CLIENT_KEY"          => "",
-        "WIRELESS_CLIENT_KEY_PASSWORD" => "",
-        "WIRELESS_CA_CERT"             => "",
-        "WIRELESS_EAP_AUTH"            => "",
-        "WIRELESS_PEAP_VERSION"        => "",
-        "WIRELESS_AP_SCANMODE"         => "1",
-        # default options for bonding (bnc#404449)
-        "BONDING_MODULE_OPTS"          => "mode=active-backup miimon=100",
-        # defaults for tun/tap devices
-        "TUNNEL_SET_OWNER"             => "",
-        "TUNNEL_SET_GROUP"             => "",
-        # Infiniband
-        # default mode for IPoIB devices suggested in fate#315501
-        "IPOIB_MODE"                   => "connected"
-      }
+      yaml_dir = File.expand_path("../../data", __FILE__)
+      yaml = YAML.load_stream(File.open("#{yaml_dir}/network_defaults.yml"))
 
       # Default values used when creating an emulated NIC for physical s390 hardware.
-      @s390_defaults = {
-        "CHAN_MODE"       => "0",
-        "QETH_PORTNAME"   => "",
-        "QETH_PORTNUMBER" => "",
-        "QETH_OPTIONS"    => "",
-        "QETH_LAYER2"     => "no",
-        "QETH_CHANIDS"    => "",
-        "IPA_TAKEOVER"    => "no",
-        "IUCV_USER"       => "",
-        "LLADDR"          => "00:00:00:00:00:00"
-      }
+      @s390_defaults = yaml[0]
+
+      # the defaults here are what sysconfig defaults to
+      # (as opposed to what a new interface gets, in {#Select)}
+      @SysconfigDefaults = yaml[1]
     end
 
     # Returns configuration of item (see LanItems::Items) with given id.
