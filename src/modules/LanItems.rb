@@ -202,43 +202,20 @@ module Yast
       # NetworkModules:: name
       @nm_name = ""
 
-      # this is the map of kernel modules vs. requested firmware
-      # non-empty keys are firmware packages shipped by SUSE
-      @request_firmware = {
-        "atmel_pci"      => "atmel-firmware",
-        "atmel_cs"       => "atmel-firmware",
-        "at76_usb"       => "atmel-firmware",
-        "ipw2100"        => "ipw-firmware",
-        "ipw2200"        => "ipw-firmware",
-        "ipw3945"        => "ipw-firmware",
-        "iwl1000"        => "kernel-firmware",
-        "iwl3945"        => "kernel-firmware",
-        "iwl4965"        => "kernel-firmware",
-        "iwl5000"        => "kernel-firmware",
-        "iwl5150"        => "kernel-firmware",
-        "iwl6000"        => "kernel-firmware",
-        "b43"            => "b43-fwcutter",
-        "b43-pci-bridge" => "b43-fwcutter",
-        "bcm43xx"        => "",
-        "prism54"        => "",
-        "spectrum_cs"    => "",
-        "zd1201"         => "",
-        "zd1211rw"       => "",
-        "acx"            => "",
-        "rt73usb"        => "",
-        "prism54usb"     => ""
-      }
-
       Yast.include self, "network/hardware.rb"
 
       yaml_dir = File.expand_path("../../data", __FILE__) + "/network"
 
       # Default values used when creating an emulated NIC for physical s390 hardware.
-      @s390_defaults = YAML.load_file("#{yaml_dir}/network_s390_defaults.yml") if Arch.s390
+      @s390_defaults = YAML.load_file("#{yaml_dir}/s390_defaults.yml") if Arch.s390
 
       # the defaults here are what sysconfig defaults to
       # (as opposed to what a new interface gets, in {#Select)}
-      @SysconfigDefaults = YAML.load_file("#{yaml_dir}/network_defaults.yml")
+      @SysconfigDefaults = YAML.load_file("#{yaml_dir}/sysconfig_defaults.yml")
+
+      # this is the map of kernel modules vs. requested firmware
+      # non-empty keys are firmware packages shipped by SUSE
+      @request_firmware = YAML.load_file("#{yaml_dir}/firmwares.yml")
     end
 
     # Returns configuration of item (see LanItems::Items) with given id.

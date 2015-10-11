@@ -113,8 +113,9 @@ ylib_DATA = \
 
 ydatadir = @ydatadir@/network
 ydata_DATA = \
-  data/network/network_defaults.yml \
-  data/network/network_s390_defaults.yml
+  data/network/sysconfig_defaults.yml \
+  data/network/s390_defaults.yml \
+  data/network/firmwares.yml
 
 EXTRA_DIST = \
   $(module_DATA) \

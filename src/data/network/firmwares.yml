@@ -1,0 +1,23 @@
+---
+atmel_pci: atmel-firmware
+atmel_cs: atmel-firmware
+at76_usb: atmel-firmware
+ipw2100: ipw-firmware
+ipw2200: ipw-firmware
+ipw3945: ipw-firmware
+iwl1000: kernel-firmware
+iwl3945: kernel-firmware
+iwl4965: kernel-firmware
+iwl5000: kernel-firmware
+iwl5150: kernel-firmware
+iwl6000: kernel-firmware
+b43: b43-fwcutter
+b43-pci-bridge: b43-fwcutter
+bcm43xx: ''
+prism54: ''
+spectrum_cs: ''
+zd1201: ''
+zd1211rw: ''
+acx: ''
+rt73usb: ''
+prism54usb: ''
