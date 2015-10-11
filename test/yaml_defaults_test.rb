@@ -41,3 +41,14 @@ describe "LanItems#SetDeviceVars" do
     expect(lan_items.ipoib_mode).to eql "connected"
   end
 end
+
+describe "LanItems#request_firmware" do
+  subject(:lan_items) { Yast::LanItems }
+
+  it "loads module to firmware mapping properly" do
+    lan_items.main
+
+    mapping = lan_items.instance_variable_get("@request_firmware")
+    expect(mapping["b43"]).to eql "b43-fwcutter"
+  end
+end
