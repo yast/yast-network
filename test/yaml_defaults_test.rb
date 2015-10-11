@@ -7,9 +7,19 @@ require "yast"
 Yast.import "LanItems"
 
 describe "LanItems#InitS390VarsByDefaults" do
+  Yast.import "Arch"
+
   subject(:lan_items) { Yast::LanItems }
 
   it "sets defaults for s390 as expected" do
+    allow(Yast::Arch)
+      .to receive(:s390)
+      .and_return(true)
+
+    # we need to be sure that LanItems' initialization is done *now*
+    # to accept arch mocking which is needed for loading reasonable
+    # defaults
+    lan_items.main
     lan_items.InitS390VarsByDefaults
 
     expect(lan_items.chan_mode).to eql "0"

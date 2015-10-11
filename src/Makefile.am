@@ -111,8 +111,10 @@ ylib_DATA = \
   lib/network/network_autoconfiguration.rb \
   lib/network/network_autoyast.rb
 
+ydatadir = @ydatadir@/network
 ydata_DATA = \
-  data/network_defaults.yml
+  data/network/network_defaults.yml \
+  data/network/network_s390_defaults.yml
 
 EXTRA_DIST = \
   $(module_DATA) \

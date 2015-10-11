@@ -231,15 +231,14 @@ module Yast
 
       Yast.include self, "network/hardware.rb"
 
-      yaml_dir = File.expand_path("../../data", __FILE__)
-      yaml = YAML.load_stream(File.open("#{yaml_dir}/network_defaults.yml"))
+      yaml_dir = File.expand_path("../../data", __FILE__) + "/network"
 
       # Default values used when creating an emulated NIC for physical s390 hardware.
-      @s390_defaults = yaml[0]
+      @s390_defaults = YAML.load_file("#{yaml_dir}/network_s390_defaults.yml") if Arch.s390
 
       # the defaults here are what sysconfig defaults to
       # (as opposed to what a new interface gets, in {#Select)}
-      @SysconfigDefaults = yaml[1]
+      @SysconfigDefaults = YAML.load_file("#{yaml_dir}/network_defaults.yml")
     end
 
     # Returns configuration of item (see LanItems::Items) with given id.
