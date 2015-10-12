@@ -39,3 +39,23 @@ describe "#PackagesInstall" do
     end
   end
 end
+
+describe "#ValidNicName" do
+  subject(:routines) { RoutinesTestClass.new }
+
+  it "succeedes for valid names" do
+    expect(routines.ValidNicName("eth0")).to be true
+    expect(routines.ValidNicName("eth_0")).to be true
+    expect(routines.ValidNicName("eth-0")).to be true
+    expect(routines.ValidNicName("eth.0")).to be true
+    expect(routines.ValidNicName("eth:0")).to be true
+  end
+
+  it "fails in case of long name" do
+    expect(routines.ValidNicName("0123456789012345")). to be false
+  end
+
+  it "fails when it contains invalid character" do
+    expect(routines.ValidNicName("eth0?")).to be false
+  end
+end
