@@ -1443,30 +1443,15 @@ module Yast
 
       # Wireless Card Features
       @wl_auth_modes = Builtins.prepend(
-        Convert.convert(
-          Ops.get(hardware, "wl_auth_modes", nil),
-          from: "any",
-          to:   "list <string>"
-        ),
+        hardware["wl_auth_modes"],
         "no-encryption"
       )
-      @wl_enc_modes = Convert.convert(
-        Ops.get(hardware, "wl_enc_modes", nil),
-        from: "any",
-        to:   "list <string>"
-      )
-      @wl_channels = Convert.convert(
-        Ops.get(hardware, "wl_channels", nil),
-        from: "any",
-        to:   "list <string>"
-      )
-      @wl_bitrates = Convert.convert(
-        Ops.get(hardware, "wl_bitrates", nil),
-        from: "any",
-        to:   "list <string>"
-      )
+      @wl_enc_modes = hardware["wl_enc_modes"]
+      @wl_channels = hardware["wl_channels"]
+      @wl_bitrates = hardware["wl_bitrates"]
 
       Builtins.y2milestone("hw=%1", hardware)
+
       @hw = deep_copy(hardware)
       if Arch.s390 && @operation == :add
         Builtins.y2internal("Propose chan_ids values for %1", @hw)
