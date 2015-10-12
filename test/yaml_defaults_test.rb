@@ -52,3 +52,13 @@ describe "LanItems#request_firmware" do
     expect(mapping["b43"]).to eql "b43-fwcutter"
   end
 end
+
+describe "YAML data files" do
+  globs = Yast.y2paths.map { |p| "#{p}/data/**/*.yml" }
+  yml_filenames = Dir.glob(globs)
+  yml_filenames.each do |f|
+    it "parse without error: #{f}" do
+      expect { YAML.load_file(f) }.to_not raise_error
+    end
+  end
+end
