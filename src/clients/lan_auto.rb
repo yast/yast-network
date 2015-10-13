@@ -87,13 +87,13 @@ module Yast
       elsif @func == "Change"
         @ret = LanAutoSequence("")
       elsif @func == "Import"
+        @new = FromAY(@param)
         # see bnc#498993
         # in case keep_install_network is set to true (in AY)
         # we'll keep values from installation
         # and merge with XML data (bnc#712864)
-        @param = NetworkAutoYast.instance.merge_configs(@param) if @param["keep_install_network"]
+        @new = NetworkAutoYast.instance.merge_configs(@new) if @new["keep_install_network"]
 
-        @new = FromAY(@param)
         Lan.Import(@new)
         LanUdevAuto.Import(@new)
         @ret = true
@@ -245,6 +245,7 @@ module Yast
         end
       end
 
+      input["devices"] = devices
       input["hwcfg"] = hwcfg
 
       # DHCP:: config: some of it is in the DNS part of the profile
