@@ -8,62 +8,68 @@ Yast.import "LanItems"
 
 module Yast
   describe LanItems do
-    NETCONFIG_ITEMS = {
-      "eth"  => {
-        "eth1" => { "BOOTPROTO" => "none" },
-        "eth2" => { "BOOTPROTO" => "none" },
-        "eth4" => {
-          "BOOTPROTO" => "static",
-          "IPADDR"    => "0.0.0.0",
-          "PREFIX"    => "32"
+    let(:netconfig_items) do
+      {
+        "eth"  => {
+          "eth1" => { "BOOTPROTO" => "none" },
+          "eth2" => { "BOOTPROTO" => "none" },
+          "eth4" => {
+            "BOOTPROTO" => "static",
+            "IPADDR"    => "0.0.0.0",
+            "PREFIX"    => "32"
+          },
+          "eth5" => { "BOOTPROTO" => "static", "STARTMODE" => "nfsroot" },
+          "eth6" => { "BOOTPROTO" => "static", "STARTMODE" => "ifplugd" }
         },
-        "eth5" => { "BOOTPROTO" => "static", "STARTMODE" => "nfsroot" },
-        "eth6" => { "BOOTPROTO" => "static", "STARTMODE" => "ifplugd" }
-      },
-      "tun"  => {
-        "tun0"  => {
-          "BOOTPROTO" => "static",
-          "STARTMODE" => "onboot",
-          "TUNNEL"    => "tun"
-        }
-      },
-      "tap"  => {
-        "tap0"  => {
-          "BOOTPROTO" => "static",
-          "STARTMODE" => "onboot",
-          "TUNNEL"    => "tap"
-        }
-      },
-      "br"   => {
-        "br0"   => { "BOOTPROTO" => "dhcp" }
-      },
-      "bond" => {
-        "bond0" => {
-          "BOOTPROTO"      => "static",
-          "BONDING_MASTER" => "yes",
-          "BONDING_SLAVE0" => "eth1",
-          "BONDING_SLAVE1" => "eth2"
+        "tun"  => {
+          "tun0"  => {
+            "BOOTPROTO" => "static",
+            "STARTMODE" => "onboot",
+            "TUNNEL"    => "tun"
+          }
+        },
+        "tap"  => {
+          "tap0"  => {
+            "BOOTPROTO" => "static",
+            "STARTMODE" => "onboot",
+            "TUNNEL"    => "tap"
+          }
+        },
+        "br"   => {
+          "br0"   => { "BOOTPROTO" => "dhcp" }
+        },
+        "bond" => {
+          "bond0" => {
+            "BOOTPROTO"      => "static",
+            "BONDING_MASTER" => "yes",
+            "BONDING_SLAVE0" => "eth1",
+            "BONDING_SLAVE1" => "eth2"
+          }
         }
       }
-    }
+    end
 
-    HWINFO_ITEMS = [
-      { "dev_name" => "eth11" },
-      { "dev_name" => "eth12" }
-    ]
+    let(:hwinfo_items) do
+      [
+        { "dev_name" => "eth11" },
+        { "dev_name" => "eth12" }
+      ]
+    end
 
-    EXPECTED_BRIDGEABLE = [
-      "bond0",
-      "eth4",
-      "eth11",
-      "eth12",
-      "tap0"
-    ]
+    let(:expected_bridgeable) do
+      [
+        "bond0",
+        "eth4",
+        "eth11",
+        "eth12",
+        "tap0"
+      ]
+    end
 
     before(:each) do
-      allow(NetworkInterfaces).to receive(:FilterDevices).with("netcard") { NETCONFIG_ITEMS }
+      allow(NetworkInterfaces).to receive(:FilterDevices).with("netcard") { netconfig_items }
 
-      allow(LanItems).to receive(:ReadHardware) { HWINFO_ITEMS }
+      allow(LanItems).to receive(:ReadHardware) { hwinfo_items }
       LanItems.Read
     end
 
@@ -79,7 +85,7 @@ module Yast
           LanItems
             .GetBridgeableInterfaces(LanItems.GetCurrentName)
             .map { |i| LanItems.GetDeviceName(i) }
-        ).to match_array EXPECTED_BRIDGEABLE
+        ).to match_array expected_bridgeable
       end
     end
   end
