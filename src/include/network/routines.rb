@@ -461,29 +461,21 @@ module Yast
     # @param [Hash] hwdevice hardware device
     # @return name consisting of vendor and device name
     def DeviceName(hwdevice)
-      hwdevice = deep_copy(hwdevice)
-      delimiter = " " # "\n"; #FIXME: constant
+      device = hwdevice["device"] || ""
+      return device if !device.empty?
 
-      if IsNotEmpty(Ops.get_string(hwdevice, "device", ""))
-        return Ops.get_string(hwdevice, "device", "")
+      model = hwdevice["model"] || ""
+      return model if !model.empty?
+
+      vendor = hwdevice["sub_vendor"] || ""
+      dev = hwdevice["sub_device"] || ""
+
+      if vendor.empty? || dev.empty?
+        vendor = hwdevice["vendor"] || ""
+        dev = hwdevice["device"] || ""
       end
 
-      model = Ops.get_string(hwdevice, "model", "")
-      return model if model != "" && !model.nil?
-
-      vendor = Ops.get_string(hwdevice, "sub_vendor", "")
-      dev = Ops.get_string(hwdevice, "sub_device", "")
-
-      if vendor == "" || dev == ""
-        vendor = Ops.get_string(hwdevice, "vendor", "")
-        dev = Ops.get_string(hwdevice, "device", "")
-      end
-
-      if vendor != ""
-        return Ops.add(Ops.add(vendor, delimiter), dev)
-      else
-        return dev
-      end
+      "#{vendor} #{dev}".strip
     end
 
     # Validates given name for use as a nic name in sysconfig. See bnc#784952
