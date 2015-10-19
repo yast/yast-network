@@ -26,7 +26,8 @@ TESTS = \
   s390_helpers_test.rb \
   suse_firewall_4_network_test.rb \
   udev_test.rb \
-  widgets_test.rb
+  widgets_test.rb \
+  yaml_defaults_test.rb
 
 TEST_EXTENSIONS = .rb
 RB_LOG_COMPILER = rspec --format doc

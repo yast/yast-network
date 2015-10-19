@@ -22,6 +22,7 @@
 #
 # **************************************************************************
 require "yast"
+require "yaml"
 
 module Yast
   # Does way too many things.
@@ -55,6 +56,7 @@ module Yast
       Yast.import "NetworkConfig"
       Yast.import "NetworkStorage"
       Yast.import "Storage"
+      Yast.import "Directory"
       Yast.include self, "network/complex.rb"
       Yast.include self, "network/routines.rb"
       Yast.include self, "network/lan/s390.rb"
@@ -160,7 +162,6 @@ module Yast
       @wl_enc_modes = nil
       @wl_channels = nil
       @wl_bitrates = nil
-      @nilliststring = nil # to save some casting
 
       # s390 options
       @qeth_portname = ""
@@ -198,108 +199,22 @@ module Yast
 
       # propose options
       @proposal_valid = false
-      @nm_proposal_valid = false
 
       # NetworkModules:: name
       @nm_name = ""
 
-      # this is the map of kernel modules vs. requested firmware
-      # non-empty keys are firmware packages shipped by SUSE
-      @request_firmware = {
-        "atmel_pci"      => "atmel-firmware",
-        "atmel_cs"       => "atmel-firmware",
-        "at76_usb"       => "atmel-firmware",
-        "ipw2100"        => "ipw-firmware",
-        "ipw2200"        => "ipw-firmware",
-        "ipw3945"        => "ipw-firmware",
-        "iwl1000"        => "kernel-firmware",
-        "iwl3945"        => "kernel-firmware",
-        "iwl4965"        => "kernel-firmware",
-        "iwl5000"        => "kernel-firmware",
-        "iwl5150"        => "kernel-firmware",
-        "iwl6000"        => "kernel-firmware",
-        "b43"            => "b43-fwcutter",
-        "b43-pci-bridge" => "b43-fwcutter",
-        "bcm43xx"        => "",
-        "prism54"        => "",
-        "spectrum_cs"    => "",
-        "zd1201"         => "",
-        "zd1211rw"       => "",
-        "acx"            => "",
-        "rt73usb"        => "",
-        "prism54usb"     => ""
-      }
-
       Yast.include self, "network/hardware.rb"
+
+      # Default values used when creating an emulated NIC for physical s390 hardware.
+      @s390_defaults = YAML.load_file(Directory.find_data_file("network/s390_defaults.yml")) if Arch.s390
 
       # the defaults here are what sysconfig defaults to
       # (as opposed to what a new interface gets, in {#Select)}
-      @SysconfigDefaults = {
-        "BOOTPROTO"                    => "static",
-        "IPADDR"                       => "",
-        "PREFIXLEN"                    => "",
-        "REMOTE_IPADDR"                => "",
-        "NETMASK"                      => "",
-        "MTU"                          => "",
-        "ETHTOOL_OPTIONS"              => "",
-        "NAME"                         => "",
-        "STARTMODE"                    => "manual",
-        "IFPLUGD_PRIORITY"             => "0",
-        "WIRELESS_MODE"                => "Managed",
-        "WIRELESS_ESSID"               => "",
-        "WIRELESS_NWID"                => "",
-        "WIRELESS_AUTH_MODE"           => "open",
-        "WIRELESS_WPA_PSK"             => "",
-        "WIRELESS_KEY_LENGTH"          => "128",
-        "WIRELESS_KEY"                 => "",
-        "WIRELESS_KEY_0"               => "",
-        "WIRELESS_KEY_1"               => "",
-        "WIRELESS_KEY_2"               => "",
-        "WIRELESS_KEY_3"               => "",
-        "WIRELESS_DEFAULT_KEY"         => "0",
-        "WIRELESS_NICK"                => "",
-        "WIRELESS_CHANNEL"             => "",
-        "WIRELESS_FREQUENCY"           => "",
-        "WIRELESS_BITRATE"             => "auto",
-        "WIRELESS_AP"                  => "",
-        "WIRELESS_POWER"               => "",
-        "WIRELESS_EAP_MODE"            => "",
-        "WIRELESS_WPA_IDENTITY"        => "",
-        "WIRELESS_WPA_PASSWORD"        => "",
-        "WIRELESS_WPA_ANONID"          => "",
-        "WIRELESS_CLIENT_CERT"         => "",
-        "WIRELESS_CLIENT_KEY"          => "",
-        "WIRELESS_CLIENT_KEY_PASSWORD" => "",
-        "WIRELESS_CA_CERT"             => "",
-        "WIRELESS_EAP_AUTH"            => "",
-        "WIRELESS_PEAP_VERSION"        => "",
-        "WIRELESS_AP_SCANMODE"         => "1",
-        # default options for bonding (bnc#404449)
-        "BONDING_MODULE_OPTS"          => "mode=active-backup miimon=100",
-        # defaults for tun/tap devices
-        "TUNNEL_SET_OWNER"             => "",
-        "TUNNEL_SET_GROUP"             => "",
-        # Infiniband
-        # default mode for IPoIB devices suggested in fate#315501
-        "IPOIB_MODE"                   => "connected"
-      }
+      @SysconfigDefaults = YAML.load_file(Directory.find_data_file("network/sysconfig_defaults.yml"))
 
-      # Default values used when creating an emulated NIC for physical s390 hardware.
-      @s390_defaults = {
-        "CHAN_MODE"       => "0",
-        "QETH_PORTNAME"   => "",
-        "QETH_PORTNUMBER" => "",
-        "QETH_OPTIONS"    => "",
-        "QETH_LAYER2"     => "no",
-        "QETH_CHANIDS"    => "",
-        "IPA_TAKEOVER"    => "no",
-        "IUCV_USER"       => "",
-        "LLADDR"          => "00:00:00:00:00:00"
-      }
-
-      # ifplugd sometimes does not work for wifi
-      # so wired needs higher priority to override it
-      @ifplugd_priorities = { "eth" => "20", "wlan" => "10" }
+      # this is the map of kernel modules vs. requested firmware
+      # non-empty keys are firmware packages shipped by SUSE
+      @request_firmware = YAML.load_file(Directory.find_data_file("network/firmwares.yml"))
     end
 
     # Returns configuration of item (see LanItems::Items) with given id.
@@ -1528,30 +1443,15 @@ module Yast
 
       # Wireless Card Features
       @wl_auth_modes = Builtins.prepend(
-        Convert.convert(
-          Ops.get(hardware, "wl_auth_modes", @nilliststring),
-          from: "any",
-          to:   "list <string>"
-        ),
+        hardware["wl_auth_modes"],
         "no-encryption"
       )
-      @wl_enc_modes = Convert.convert(
-        Ops.get(hardware, "wl_enc_modes", @nilliststring),
-        from: "any",
-        to:   "list <string>"
-      )
-      @wl_channels = Convert.convert(
-        Ops.get(hardware, "wl_channels", @nilliststring),
-        from: "any",
-        to:   "list <string>"
-      )
-      @wl_bitrates = Convert.convert(
-        Ops.get(hardware, "wl_bitrates", @nilliststring),
-        from: "any",
-        to:   "list <string>"
-      )
+      @wl_enc_modes = hardware["wl_enc_modes"]
+      @wl_channels = hardware["wl_channels"]
+      @wl_bitrates = hardware["wl_bitrates"]
 
       Builtins.y2milestone("hw=%1", hardware)
+
       @hw = deep_copy(hardware)
       if Arch.s390 && @operation == :add
         Builtins.y2internal("Propose chan_ids values for %1", @hw)
@@ -1774,22 +1674,20 @@ module Yast
       @qeth_macaddress = d["LLADDR"] if @qeth_layer2
 
       # qeth attribute. FIXME: currently not read from system.
-      @ipa_takeover = Ops.get_string(defaults, "IPA_TAKEOVER", "") == "yes"
+      @ipa_takeover = defaults["IPA_TAKEOVER"] == "yes"
 
       # not device attribute
-      @qeth_options = Ops.get_string(defaults, "QETH_OPTIONS", "")
+      @qeth_options = defaults["QETH_OPTIONS"] || ""
 
       # handle non qeth devices
-      @iucv_user = Ops.get_string(defaults, "IUCV_USER", "")
-      @chan_mode = Ops.get_string(defaults, "CHAN_MODE", "")
+      @iucv_user = defaults["IUCV_USER"] || ""
+      @chan_mode = defaults["CHAN_MODE"] || ""
 
       nil
     end
 
     def InitS390VarsByDefaults
       SetS390Vars({}, @s390_defaults)
-
-      nil
     end
 
     def hotplug_usable?
@@ -2634,10 +2532,7 @@ module Yast
     publish_variable :tunnel_set_owner, "string"
     publish_variable :tunnel_set_group, "string"
     publish_variable :proposal_valid, "boolean"
-    publish_variable :nm_proposal_valid, "boolean"
     publish_variable :nm_name, "string"
-    # @attribute SysconfigDefaults
-    publish_variable :SysconfigDefaults, "map <string, string>"
     publish function: :GetLanItem, type: "map (integer)"
     publish function: :getCurrentItem, type: "map ()"
     publish function: :IsItemConfigured, type: "boolean (integer)"

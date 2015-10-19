@@ -111,6 +111,12 @@ ylib_DATA = \
   lib/network/network_autoconfiguration.rb \
   lib/network/network_autoyast.rb
 
+ydatadir = @ydatadir@/network
+ydata_DATA = \
+  data/network/sysconfig_defaults.yml \
+  data/network/s390_defaults.yml \
+  data/network/firmwares.yml
+
 EXTRA_DIST = \
   $(module_DATA) \
   $(module1_DATA) \
@@ -125,6 +131,7 @@ EXTRA_DIST = \
   $(schemafiles_DATA) \
   $(ybin_SCRIPTS) \
   $(desktop_DATA) \
-  $(ylib_DATA)
+  $(ylib_DATA) \
+  $(ydata_DATA)
 
 include $(top_srcdir)/Makefile.am.common
