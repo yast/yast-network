@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Oct 19 12:17:07 UTC 2015 - mvidner@suse.com
+
+- Fixed a regression where AutoYaST flag keep_install_network=false
+  was ignored (bsc#949193, introduced in 3.1.112.2).
+- 3.1.112.10
+
+-------------------------------------------------------------------
 Fri Oct  2 13:44:00 UTC 2015 - mvidner@suse.com
 
 - Fixed "Relax-NG parser error : Some defines for ipv6_forward
