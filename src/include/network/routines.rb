@@ -258,7 +258,6 @@ module Yast
         n = Ops.add(n, 1)
       end
       deep_copy(items)
-      # return list2items(maplist(map h, l, { return h["name"]:_("Unknown Device"); }), selected);
     end
 
     # Display the finished popup and possibly run another module.
