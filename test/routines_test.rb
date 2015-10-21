@@ -58,16 +58,26 @@ describe "#ValidNicName" do
   it "fails when it contains invalid character" do
     expect(routines.ValidNicName("eth0?")).to be false
   end
+
+  it "fails for empty string" do
+    expect(routines.ValidNicName("")).to be false
+  end
 end
 
 describe "#DeviceName" do
   subject(:routines) { RoutinesTestClass.new }
-  let(:hwinfo) do
+  let(:hwinfo_details) do
     {
       "sub_vendor" => "hw_vendor",
       "sub_device" => "hw_device"
     }
   end
+  let(:hwinfo_generic) do
+    {
+      "vendor"     => "vendor"
+    }
+  end
+  let(:hwinfo) { hwinfo_generic.merge(hwinfo_details) }
 
   it "returns empty string when nothing is defined" do
     expect(routines.DeviceName({})).to be_empty
@@ -79,5 +89,9 @@ describe "#DeviceName" do
 
   it "returns description build from vendor and device details when model name is uknown" do
     expect(routines.DeviceName(hwinfo)).to eql "hw_vendor hw_device"
+  end
+
+  it "uses vendor for building description when no detailed information is known" do
+    expect(routines.DeviceName(hwinfo_generic)).to eql "vendor"
   end
 end
