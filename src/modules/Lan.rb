@@ -662,7 +662,11 @@ module Yast
       Write()
     end
 
-    # Import data
+    # Import data.
+    # It expects data described networking.rnc
+    # and then passed through {LanAutoClient#FromAY}.
+    # Most prominently, instead of a flat list called "interfaces"
+    # we import a 2-level map of typed "devices"
     # @param [Hash] settings settings to be imported
     # @return true on success
     def Import(settings)
@@ -689,14 +693,17 @@ module Yast
       true
     end
 
-    # Export data
-    # @return dumped settings (later acceptable by Import())
+    # Export data.
+    # They need to be passed through {LanAutoClient#ToAY} to become
+    # what networking.rnc describes.
+    # Most prominently, instead of a flat list called "interfaces"
+    # we export a 2-level map of typed "devices"
+    # @return dumped settings
     def Export
       devices = NetworkInterfaces.Export("")
       udev_rules = LanUdevAuto.Export(devices)
       ay = {
         "dns"                  => DNS.Export,
-        # FIXME: MOD "modules"	: Modules,
         "s390-devices"         => Ops.get_map(
           udev_rules,
           "s390-devices",
