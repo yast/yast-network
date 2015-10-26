@@ -64,6 +64,10 @@ describe "#ValidNicName" do
   it "fails for empty string" do
     expect(routines.ValidNicName("")).to be false
   end
+
+  it "fails for newline terminated string" do
+    expect(routines.ValidNicName("eth0\n")).to be false
+  end
 end
 
 describe "#DeviceName" do
