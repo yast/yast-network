@@ -37,12 +37,10 @@ module Yast
 
       textdomain "network"
 
-      Yast.import "Call"
       Yast.import "Popup"
       Yast.import "Progress"
       Yast.import "String"
       Yast.import "NetworkService"
-      Yast.import "PackageSystem"
       Yast.import "NetworkInterfaces"
       Yast.import "Arch"
       Yast.import "Confirm"
@@ -104,19 +102,6 @@ module Yast
       end
 
       nil
-    end
-
-    # Query UI widget only if it exists
-    # @param [Yast::Term] id widget id
-    # @param [Symbol] param widget parameter
-    # @param [Object] value previous parameter value
-    # @return widget value if exists, previous value otherwise
-    def QueryWidgetIfExists(id, param, value)
-      id = deep_copy(id)
-      value = deep_copy(value)
-      return UI.QueryWidget(id, param) if UI.WidgetExists(id)
-      Builtins.y2debug("Not changing: %1", id)
-      deep_copy(value)
     end
 
     # Check if required packages are installed and install them if they're not
