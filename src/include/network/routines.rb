@@ -319,7 +319,7 @@ module Yast
     # Validates given name for use as a nic name in sysconfig. See bnc#784952
     def ValidNicName(name)
       # 16 is the kernel limit on interface name size (IFNAMSIZ)
-      !(name =~ /^[[:alnum:]._:-]{1,15}$/).nil?
+      !(name =~ /^[[:alnum:]._:-]{1,15}\z/).nil?
     end
 
     # Checks if device with the given name is configured already.
