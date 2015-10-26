@@ -175,15 +175,8 @@ module Yast
     # @param [Fixnum] selected selected item (0 for the first)
     # @return a list of items
     # @example [ "x", "y" ] -&gt; [ `item(`id(0), "x"), `item(`id(1), "y") ]
-    def list2items(l, selected)
-      l = deep_copy(l)
-      items = []
-      n = 0
-      Builtins.foreach(l) do |i|
-        items = Builtins.add(items, Item(Id(n), i, n == selected))
-        n = Ops.add(n, 1)
-      end
-      deep_copy(items)
+    def list2items(descriptions, selected_index)
+      descriptions.map.with_index {|d, i| Item(Id(i), d, i == selected_index) }
     end
 
     # Create a list of items for UI from the given hardware list.
