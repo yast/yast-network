@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Nov  9 08:32:20 UTC 2015 - igonzalezsosa@suse.com
+
+- Fix validation of AutoYaST profiles (add missing 'firewall'
+  element) (bsc#805275)
+- 2.17.210
+
+-------------------------------------------------------------------
 Wed Nov  4 13:48:57 UTC 2015 - mfilka@suse.com
 
 - bnc#951330
