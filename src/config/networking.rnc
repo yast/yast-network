@@ -69,7 +69,9 @@ interface =
     wireless? &
     wifi_settings? &
 
-    dhclient_set_down_link?
+    dhclient_set_down_link? &
+
+    element firewall { text }?
   }
 
 
