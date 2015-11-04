@@ -7,6 +7,7 @@ import "NetworkInterfaces";
 import "ProductFeatures";
 import "NetworkConfig";
 import "NetworkStorage";
+import "Host";
 include "network/complex.ycp";
 include "network/routines.ycp";
 include "network/lan/s390.ycp";
@@ -1837,13 +1838,18 @@ global void DeleteItem()
 
     string ifcfg = Items[current, "ifcfg"]:"";
     string hwcfg = Items[current, "hwcfg"]:"";
+    string ip = NetworkInterfaces::GetValue(ifcfg, "IPADDR");
 
-    if (IsNotEmpty(ifcfg))
+    if(IsNotEmpty(ip))
     {
-        NetworkInterfaces::Delete(ifcfg);
-        NetworkInterfaces::Commit();
-        Items[current, "ifcfg"] = "";
+        y2milestone("Deleting hostnames assigned to %1 from /etc/hosts", ip);
+        Host::SetNames(ip, []);
     }
+
+    if(NetworkInterfaces::Delete(ifcfg))
+        NetworkInterfaces::Commit();
+
+    Items[current, "ifcfg"] = "";
 
     if (! (size(Items[current, "hwinfo"]:$[])>0) )
     {
