@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Nov  4 13:48:57 UTC 2015 - mfilka@suse.com
+
+- bnc#951330
+  - drop record from /etc/hosts when deleting nic configuration
+-2.17.209 
+
+-------------------------------------------------------------------
 Fri Jun  5 08:21:01 UTC 2015 - mfilka@suse.com
 
 - bnc#923990
