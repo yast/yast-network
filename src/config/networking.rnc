@@ -71,7 +71,7 @@ interface =
 
     dhclient_set_down_link? &
 
-    element firewall { text }?
+    element firewall { "yes" | "no" }?
   }
 
 
