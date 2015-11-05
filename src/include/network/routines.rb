@@ -176,7 +176,7 @@ module Yast
     # @return a list of items
     # @example [ "x", "y" ] -&gt; [ `item(`id(0), "x"), `item(`id(1), "y") ]
     def list2items(descriptions, selected_index)
-      descriptions.map.with_index {|d, i| Item(Id(i), d, i == selected_index) }
+      descriptions.map.with_index { |d, i| Item(Id(i), d, i == selected_index) }
     end
 
     # Create a list of items for UI from the given hardware list.
