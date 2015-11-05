@@ -711,20 +711,15 @@ module Yast
         s390_config = s390_ReadQethConfig(devname)
 
         # only devices with L2 support can be enslaved in bond. See bnc#719881
-        ret &&= Ops.get_string(s390_config, "QETH_LAYER2", "no") == "yes"
+        ret &&= s390_config["QETH_LAYER2"] == "yes"
       end
 
       ifcfg = GetDeviceMap(itemId)
 
-      itemBondMaster = Ops.get(bonded, devname, "")
+      itemBondMaster = bonded[devname] || ""
 
-      if IsNotEmpty(itemBondMaster) && bondMaster != itemBondMaster
-        Builtins.y2debug(
-          "IsBondable: excluding lan item (%1: %2) for %3 - is already bonded",
-          itemId,
-          devname,
-          GetDeviceName(@current)
-        )
+      if !itemBondMaster.empty? && bondMaster != itemBondMaster
+        log.debug("IsBondable: excluding lan item (#{itemId}: #{devname}) for #{GetCurrentName()} - is already bonded")
         return false
       end
 
@@ -732,7 +727,7 @@ module Yast
 
       # filter the eth devices (BOOTPROTO=none)
       # don't care about STARTMODE (see bnc#652987c6)
-      ret &&= Ops.get_string(ifcfg, "BOOTPROTO", "") == "none"
+      ret &&= ifcfg["BOOTPROTO"] == "none"
 
       ret
     end

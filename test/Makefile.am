@@ -1,6 +1,7 @@
 TESTS = \
   alias_dialog_test.rb \
   bridge_test.rb \
+  bond_test.rb \
   build_lan_overview_test.rb \
   complex_test.rb \
   default_route_test.rb \

@@ -173,40 +173,6 @@ module Yast
       ret == true ? :next : :abort
     end
 
-    # Create comment for changed file
-    # @param [String] modul YaST2 module changing the file
-    # @return comment
-    # @example ChangedComment("lan") -> # Changed by YaST2 module lan 1.1.2000"
-    def ChangedComment(modul)
-      ret = "\n# Changed by YaST2"
-      if !modul.nil? && modul != ""
-        ret = Ops.add(Ops.add(ret, " module "), modul)
-      end
-      out = Convert.to_map(
-        SCR.Execute(path(".target.bash_output"), "/bin/date '+%x'")
-      )
-      date = Ops.get_string(out, "stdout", "")
-      ret = Ops.add(Ops.add(ret, " "), date) if date != ""
-      ret
-    end
-
-    # Show busy popup (for proposal)
-    # @param [String] message label to be shown
-    def BusyPopup(message)
-      UI.BusyCursor
-      UI.OpenDialog(VBox(Label(message)))
-
-      nil
-    end
-
-    # Close busy popup
-    # @see #BusyPopup
-    def BusyPopupClose
-      UI.CloseDialog
-
-      nil
-    end
-
     # Checks if given value is emtpy.
     def IsEmpty(value)
       value = deep_copy(value)
@@ -258,83 +224,6 @@ module Yast
         n = Ops.add(n, 1)
       end
       deep_copy(items)
-      # return list2items(maplist(map h, l, { return h["name"]:_("Unknown Device"); }), selected);
-    end
-
-    # Display the finished popup and possibly run another module.
-    # If not modified, don't do anything.
-    # @param [Boolean] modified true if there are any modified data
-    # @param [String] head headline to be shown
-    # @param [String] text text to be shown
-    # @param [String] run module to be run
-    # @param [Array] params parameters to pass to the module
-    # @return always `next
-    def FinishPopup(modified, head, text, run, params)
-      params = deep_copy(params)
-      return :next if !modified
-
-      h = head
-      if h.nil? || h == ""
-        # Popup headline
-        h = _("Configuration Successfully Saved")
-      end
-
-      heads = {
-        # Popup headline
-        "dns"      => _("DNS Configuration Successfully Saved"),
-        # Popup headline
-        "dsl"      => _("DSL Configuration Successfully Saved"),
-        # Popup headline
-        "host"     => _(
-          "Hosts Configuration Successfully Saved"
-        ),
-        # Popup headline
-        "isdn"     => _(
-          "ISDN Configuration Successfully Saved"
-        ),
-        # Popup headline
-        "lan"      => _(
-          "Network Card Configuration Successfully Saved"
-        ),
-        # Popup headline
-        "modem"    => _(
-          "Modem Configuration Successfully Saved"
-        ),
-        # Popup headline
-        "proxy"    => _(
-          "Proxy Configuration Successfully Saved"
-        ),
-        # Popup headline
-        "provider" => _(
-          "Provider Configuration Successfully Saved"
-        ),
-        # Popup headline
-        "routing"  => _(
-          "Routing Configuration Successfully Saved"
-        )
-      }
-      h = Ops.get_string(heads, head, h)
-
-      t = text
-      texts = {
-        # Popup text
-        "mail" => _("Configure mail now?")
-      }
-      t = Ops.get_string(texts, run, text) if t == ""
-      if t == ""
-        # Popup text
-        t = Builtins.sformat(_("Run configuration of %1?"), run)
-      end
-
-      if run != ""
-        ret = Popup.YesNoHeadline(h, t)
-        # FIXME: check for the module presence
-        Call.Function(run, params) if ret == true
-      else
-        Popup.AnyMessage(h, t)
-      end
-
-      :next
     end
 
     # For s390 hwinfo gives us a multitude of types but some are handled
@@ -355,32 +244,6 @@ module Yast
         drvtype = "ctc"
       end
       drvtype
-    end
-
-    def needHwcfg(hw)
-      hw = deep_copy(hw)
-      need = true
-      # if kernel will autoload module for device
-      if IsNotEmpty(Ops.get_string(hw, "modalias", ""))
-        if Ops.greater_than(Builtins.size(Ops.get_list(hw, "drivers", [])), 1)
-          Builtins.y2milestone(
-            "there are more modules available for device, hwcfg is needed"
-          )
-        else
-          Builtins.y2milestone(
-            "Just one autoloadable module available.No need to write hwcfg"
-          )
-          need = false
-        end
-      # not autoload because of built-in driver (compiled in kernel)
-      elsif IsEmpty(Ops.get_string(hw, "driver_module", ""))
-        Builtins.y2milestone(
-          "built-in driver %1",
-          Ops.get_string(hw, "driver", "")
-        )
-        need = false
-      end
-      need
     end
 
     def dev_name_to_sysfs_id(dev_name, hardware)
@@ -420,31 +283,6 @@ module Yast
       needs_persistent
     end
 
-    # map<string, any> getcfg(string options, string device){
-    #  map <string, any> cfg=$[];
-    #  map <string, any> output = (map <string, any>)SCR::Execute(.target.bash_output,
-    # 		sformat("getcfg %1 %2", options, device));
-    #   foreach(string row, splitstring(output["stdout"]:"", "\n"), {
-    #    row=deletechars(row, "\\\"\;");
-    #    list<string> keyval=splitstring(row, "=");
-    #    if (size(keyval)>1) cfg[keyval[0]:""]=keyval[1]:"";
-    #
-    #   });
-    #  y2milestone("%1 %2\n%3", options, device, cfg);
-    #  return cfg;
-    # }
-
-    def getHardware(sysfs_id, hw)
-      hardware = {}
-      Builtins.foreach(hw) do |hw_temp|
-        if sysfs_id ==
-            Builtins.sformat("/sys%1", Ops.get_string(hw_temp, "sysfs_id", ""))
-          hardware = deep_copy(hw_temp)
-        end
-      end
-      deep_copy(hardware)
-    end
-
     def DistinguishedName(name, hwdevice)
       hwdevice = deep_copy(hwdevice)
       if Ops.get_string(hwdevice, "sysfs_bus_id", "") != ""
@@ -461,37 +299,27 @@ module Yast
     # @param [Hash] hwdevice hardware device
     # @return name consisting of vendor and device name
     def DeviceName(hwdevice)
-      hwdevice = deep_copy(hwdevice)
-      delimiter = " " # "\n"; #FIXME: constant
+      device = hwdevice["device"] || ""
+      return device if !device.empty?
 
-      if IsNotEmpty(Ops.get_string(hwdevice, "device", ""))
-        return Ops.get_string(hwdevice, "device", "")
+      model = hwdevice["model"] || ""
+      return model if !model.empty?
+
+      vendor = hwdevice["sub_vendor"] || ""
+      dev = hwdevice["sub_device"] || ""
+
+      if vendor.empty? || dev.empty?
+        vendor = hwdevice["vendor"] || ""
+        dev = hwdevice["device"] || ""
       end
 
-      model = Ops.get_string(hwdevice, "model", "")
-      return model if model != "" && !model.nil?
-
-      vendor = Ops.get_string(hwdevice, "sub_vendor", "")
-      dev = Ops.get_string(hwdevice, "sub_device", "")
-
-      if vendor == "" || dev == ""
-        vendor = Ops.get_string(hwdevice, "vendor", "")
-        dev = Ops.get_string(hwdevice, "device", "")
-      end
-
-      if vendor != ""
-        return Ops.add(Ops.add(vendor, delimiter), dev)
-      else
-        return dev
-      end
+      "#{vendor} #{dev}".strip
     end
 
     # Validates given name for use as a nic name in sysconfig. See bnc#784952
     def ValidNicName(name)
       # 16 is the kernel limit on interface name size (IFNAMSIZ)
-      return false if !Builtins.regexpmatch(name, "^[[:alnum:]._:-]{1,15}$")
-
-      true
+      !(name =~ /^[[:alnum:]._:-]{1,15}\z/).nil?
     end
 
     # Checks if device with the given name is configured already.

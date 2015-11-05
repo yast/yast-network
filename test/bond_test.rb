@@ -13,30 +13,9 @@ module Yast
         "eth"  => {
           "eth1" => { "BOOTPROTO" => "none" },
           "eth2" => { "BOOTPROTO" => "none" },
-          "eth4" => {
-            "BOOTPROTO" => "static",
-            "IPADDR"    => "0.0.0.0",
-            "PREFIX"    => "32"
-          },
-          "eth5" => { "BOOTPROTO" => "static", "STARTMODE" => "nfsroot" },
-          "eth6" => { "BOOTPROTO" => "static", "STARTMODE" => "ifplugd" }
-        },
-        "tun"  => {
-          "tun0"  => {
-            "BOOTPROTO" => "static",
-            "STARTMODE" => "onboot",
-            "TUNNEL"    => "tun"
-          }
-        },
-        "tap"  => {
-          "tap0"  => {
-            "BOOTPROTO" => "static",
-            "STARTMODE" => "onboot",
-            "TUNNEL"    => "tap"
-          }
-        },
-        "br"   => {
-          "br0"   => { "BOOTPROTO" => "dhcp" }
+          "eth4" => { "BOOTPROTO" => "none" },
+          "eth5" => { "BOOTPROTO" => "none" },
+          "eth6" => { "BOOTPROTO" => "dhcp" }
         },
         "bond" => {
           "bond0" => {
@@ -44,25 +23,18 @@ module Yast
             "BONDING_MASTER" => "yes",
             "BONDING_SLAVE0" => "eth1",
             "BONDING_SLAVE1" => "eth2"
+          },
+          "bond1" => {
+            "BOOTPROTO"      => "static",
+            "BONDING_MASTER" => "yes"
           }
         }
       }
     end
-
     let(:hwinfo_items) do
       [
         { "dev_name" => "eth11" },
         { "dev_name" => "eth12" }
-      ]
-    end
-
-    let(:expected_bridgeable) do
-      [
-        "bond0",
-        "eth4",
-        "eth11",
-        "eth12",
-        "tap0"
       ]
     end
 
@@ -73,19 +45,39 @@ module Yast
       LanItems.Read
     end
 
-    describe "#GetBridgeableInterfaces" do
+    describe "#GetBondableInterfaces" do
+      let(:expected_bondable) { ["eth4", "eth5", "eth11", "eth12"] }
+
       before(:each) do
         # FindAndSelect initializes internal state of LanItems it
         # is used internally by some helpers
-        LanItems.FindAndSelect("br0")
+        LanItems.FindAndSelect("bond1")
       end
 
       it "returns list of slave candidates" do
         expect(
           LanItems
-            .GetBridgeableInterfaces(LanItems.GetCurrentName)
+            .GetBondableInterfaces(LanItems.GetCurrentName)
             .map { |i| LanItems.GetDeviceName(i) }
-        ).to match_array expected_bridgeable
+        ).to match_array expected_bondable
+      end
+    end
+
+    describe "#GetBondSlaves" do
+      it "returns list of slaves if bond device has some" do
+        expect(LanItems.GetBondSlaves("bond0")).to match_array ["eth1", "eth2"]
+      end
+
+      it "returns empty list if bond device doesn't have slaves assigned" do
+        expect(LanItems.GetBondSlaves("bond1")).to be_empty
+      end
+    end
+
+    describe "#BuildBondIndex" do
+      let(:expected_mapping) { { "eth1" => "bond0", "eth2" => "bond0" } }
+
+      it "creates mapping of device names to corresponding bond master" do
+        expect(LanItems.BuildBondIndex).to match(expected_mapping)
       end
     end
   end

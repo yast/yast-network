@@ -40,19 +40,7 @@ module Yast
 
       Yast.import "LanItems"
 
-      Yast.include self, "network/routines.rb"
       Yast.include self, "network/lan/udev.rb"
-
-      # valid
-      Assert.Equal(true, ValidNicName("eth0"))
-      Assert.Equal(true, ValidNicName("eth_0"))
-      Assert.Equal(true, ValidNicName("eth-0"))
-      Assert.Equal(true, ValidNicName("eth.0"))
-      Assert.Equal(true, ValidNicName("eth:0"))
-      # invalid: too long
-      Assert.Equal(false, ValidNicName("0123456789012345"))
-      # invalid: wrong char
-      Assert.Equal(false, ValidNicName("eth0?"))
 
       # create Items hash, it's easier to create by hand than use LanItems::Read
       # due to embedded ReadHardware and co (too many faked inputs which are not
