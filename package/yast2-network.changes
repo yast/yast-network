@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Oct 30 13:16:17 UTC 2015 - igonzalezsosa@suse.com
+
+- Fix validation of AutoYaST profiles (add missing 'firewall'
+  element) (bsc#805275)
+- 2.17.199.4
+
+-------------------------------------------------------------------
 Fri Jun  5 06:59:41 UTC 2015 - mfilka@suse.com
 
 - Write also --noproxy to .curlrc otherwise it is ignored even if
