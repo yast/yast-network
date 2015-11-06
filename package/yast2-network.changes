@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Nov  4 13:48:57 UTC 2015 - mfilka@suse.com
+
+- bnc#951330
+  - drop record from /etc/hosts when deleting nic configuration
+-2.17.199.5
+
+-------------------------------------------------------------------
 Fri Oct 30 13:16:17 UTC 2015 - igonzalezsosa@suse.com
 
 - Fix validation of AutoYaST profiles (add missing 'firewall'

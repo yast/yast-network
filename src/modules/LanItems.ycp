@@ -7,6 +7,7 @@ import "NetworkInterfaces";
 import "ProductFeatures";
 import "NetworkConfig";
 import "NetworkStorage";
+import "Host";
 include "network/complex.ycp";
 include "network/routines.ycp";
 include "network/lan/s390.ycp";
@@ -1856,28 +1857,45 @@ global map FindMatchingDevice(map interface) {
     return tosel;
 }
 
-global void DeleteItem(){
- y2milestone("deleting ... %1", Items[current]:$[]);
- string ifcfg = Items[current, "ifcfg"]:"";
- string hwcfg = Items[current, "hwcfg"]:"";
+global void DeleteItem()
+{
+    y2milestone("deleting ... %1", Items[current]:$[]);
 
- if (IsNotEmpty(ifcfg)) {
-	 NetworkInterfaces::Delete(ifcfg);
-	 NetworkInterfaces::Commit();
-	 Items[current, "ifcfg"] = "";
-	}
- if (! (size(Items[current, "hwinfo"]:$[])>0) ){
-  map<integer, any> tmp_items = $[];
-  foreach(integer key, any value, Items, {
-   if (key==current) continue;
-    else{
-	if (key<current) tmp_items[key]=Items[key]:$[];
-		else tmp_items[key-1]=Items[key]:$[];
-	}
-  });
-  Items = tmp_items;
- }
- SetModified();
+    string ifcfg = Items[current, "ifcfg"]:"";
+    string hwcfg = Items[current, "hwcfg"]:"";
+    string ip = NetworkInterfaces::GetValue(ifcfg, "IPADDR");
+
+    if(IsNotEmpty(ip))
+    {
+        y2milestone("Deleting hostnames assigned to %1 from /etc/hosts", ip);
+        Host::SetNames(ip, []);
+    }
+
+    if(NetworkInterfaces::Delete(ifcfg))
+        NetworkInterfaces::Commit();
+
+    Items[current, "ifcfg"] = "";
+
+    if (! (size(Items[current, "hwinfo"]:$[])>0) )
+    {
+        map<integer, any> tmp_items = $[];
+
+        foreach(integer key, any value, Items,
+        {
+            if (key==current)
+                continue;
+            else
+            {
+	        if (key<current)
+                    tmp_items[key]=Items[key]:$[];
+		else
+                    tmp_items[key-1]=Items[key]:$[];
+	    }
+        });
+        Items = tmp_items;
+    }
+
+    SetModified();
 }
 
 global void SetItem()
