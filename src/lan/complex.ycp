@@ -324,78 +324,82 @@ void initOverview (string key) ``{
     y2milestone("LanItems %1", LanItems::Items);
 }
 
-symbol handleOverview( string key, map event ) {
+symbol handleOverview( string key, map event )
+{
+    if (!disableItemsIfNM([`_hw_items, `_hw_sum, `add, `edit, `delete], false))
+        // We have LanItems::current set since now, are you surprised?
+        enableDisableButtons();
 
- if (!disableItemsIfNM([`_hw_items, `_hw_sum, `add, `edit, `delete], false))
-     enableDisableButtons();
-   UI::ChangeWidget(`_hw_sum, `Value,LanItems::GetItemDescription());
+    UI::ChangeWidget(`_hw_sum, `Value,LanItems::GetItemDescription());
 
- if (event["EventReason"]:"" == "Activated")
- {
-  switch ((symbol)event["ID"]:nil){
-   case `add:
-	LanItems::AddNew();
-	Lan::Add();
-	return `add;
-   case `edit:
-	if( LanItems::IsCurrentConfigured())
+    if (event["EventReason"]:"" == "Activated")
+    {
+        switch ((symbol)event["ID"]:nil)
         {
-            LanItems::SetItem();
+            case `add:
+	        LanItems::AddNew();
+	        Lan::Add();
+	        return `add;
+            case `edit:
+                if( LanItems::IsCurrentConfigured())
+                {
+                    LanItems::SetItem();
 
-            if (LanItems::startmode == "managed")
-            {
-                // Continue-Cancel popup
-                if (!Popup::ContinueCancel (_("The interface is currently set to be managed
+                    if (LanItems::startmode == "managed")
+                    {
+                        // Continue-Cancel popup
+                        if (!Popup::ContinueCancel (_("The interface is currently set to be managed
 by the NetworkManager applet.
 
 If you edit the settings for this interface here,
 the interface will no longer be managed by NetworkManager.
 ")))
+                        {
+                            break; // means cancel
+                        }
+
+                        // TODO move the defaults to GetDefaultsForHW
+                        LanItems::startmode = "ifplugd";
+                    }
+                }
+                else
                 {
-                    break; // means cancel
+                    if (! AddInterface ())
+                    {
+                        y2error( "handleOverview: AddInterface failed.");
+                        break;
+                    }
+
+                    if( !DeviceReady( LanItems::getCurrentItem()[ "hwinfo", "dev_name"]:"") )
+                    {
+                        return `init_s390;
+                    }
                 }
 
-                // TODO move the defaults to GetDefaultsForHW
-                LanItems::startmode = "ifplugd";
-            }
-        }
-        else
-        {
-            if (! AddInterface ()) 
-            {
-                y2error( "handleOverview: AddInterface failed.");
-                break;
-            }
+                return `edit;
 
-            if( !DeviceReady( LanItems::getCurrentItem()[ "hwinfo", "dev_name"]:"") )
-            {
-                return `init_s390;
-            }
-        }
-
-        return `edit;
-
-   case `delete:
-
-	    string pop = sformat(_("All additional addresses belonging to the interface %1
+           case `delete:
+                string pop = sformat(_("All additional addresses belonging to the interface %1
 will be deleted as well.
 
 Really continue?
 "), LanItems::getCurrentItem()["ifcfg"]:"");
-	    if(LanItems::InterfaceHasAliases() && Popup::YesNoHeadline(Label::WarningMsg(), pop) != true)
-		break;
+                if(LanItems::InterfaceHasAliases() && Popup::YesNoHeadline(Label::WarningMsg(), pop) != true)
+                    break;
 
-	    LanItems::DeleteItem();
-	    initOverview("");
-	    break;
-  }
- }
- if (size(LanItems::Items)==0){
-   UI::ChangeWidget(`_hw_sum, `Value, "");
-   UI::ChangeWidget (`id (`edit), `Enabled, false);
-   UI::ChangeWidget (`id (`delete), `Enabled, false);
-   return nil;
-  }
+                LanItems::DeleteItem();
+                initOverview("");
+                break;
+        }
+     }
+
+    if (size(LanItems::Items)==0)
+    {
+        UI::ChangeWidget(`_hw_sum, `Value, "");
+        UI::ChangeWidget (`id (`edit), `Enabled, false);
+        UI::ChangeWidget (`id (`delete), `Enabled, false);
+        return nil;
+    }
 }
 
 map<string, map<string,any> > wd = $[
