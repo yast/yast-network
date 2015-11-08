@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Sun Nov  8 20:55:53 UTC 2015 - mfilka@suse.com
+
+- bnc#944349
+  - do not set links down when installing over network
+- 3.1.134
+
+-------------------------------------------------------------------
 Thu Oct  8 12:02:44 UTC 2015 - mvidner@suse.com
 
 - Fixed "Relax-NG parser error : Some defines for ipv6_forward
