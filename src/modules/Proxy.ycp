@@ -130,7 +130,8 @@ void WriteCurlrc() {
         "--proxy-user": proxyuser,
         // bnc#305163
         "--proxy":      http,
-        // bsc#923788
+        // bsc#923788, add --noproxy explicitely into .curlrc. Setup in ENV is
+        // ignored
         "--noproxy":    no
         // there are no options for https and ftp
     ];
