@@ -72,10 +72,9 @@ module Yast
 
     # Removes (key,operator,value) tripplet from given udev rule.
     def RemoveKeyFromUdevRule(rule, key)
-      rule = deep_copy(rule)
-      pattern = Builtins.sformat("%1={1,2}[^[:space:]]*", key)
+      pattern = /#{key}={1,2}[^[:space:]]*/
 
-      Builtins.filter(rule) { |atom| !Builtins.regexpmatch(atom, pattern) }
+      rule.delete_if { |tripplet| tripplet =~ pattern }
     end
 
     # Adds (key, operator, value) tripplet into given udev rule
