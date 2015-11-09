@@ -6,6 +6,7 @@
 # Authors:     Michal Filka <mfilka@suse.cz>
 #
 # Functions for handling udev rules
+
 module Yast
   module NetworkLanUdevInclude
     # Creates default udev rule for given NIC.
