@@ -98,13 +98,10 @@ module Yast
     # Tripplet is given as a string in form KEY="VALUE" or
     # MATCHKEY=="MATCHVALUE"
     def AddToUdevRule(rule, tripplet)
-      rule = deep_copy(rule)
-      if !Builtins.regexpmatch(tripplet, ".+={1,2}\".*\"")
-        return deep_copy(rule)
-      end
-      rule = [] if rule.nil?
+      return rule unless tripplet =~ /.+={1,2}\".*\"/
 
-      Builtins.add(rule, tripplet)
+      rule ||= []
+      rule + [tripplet]
     end
   end
 end
