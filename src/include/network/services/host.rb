@@ -298,7 +298,7 @@ module Yast
           break
         elsif ret == :next
           # check_
-          if Host.modified
+          if Host.GetModified
             Host.clear
             Builtins.foreach(table_items) do |row|
               value = Builtins.mergestring(
@@ -435,7 +435,7 @@ module Yast
       UI.CloseDialog
       return nil if ret != :ok
 
-      Host.modified = true
+      Host.SetModified
       deep_copy(host)
     end
   end

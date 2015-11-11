@@ -66,7 +66,7 @@ module Yast
     # Remove all entries from the host table.
     def clear
       @hosts = {}
-      modified = true
+      @modified = true
     end
 
     # @return [hash] address->list of names
@@ -82,7 +82,7 @@ module Yast
     # Give address a new list of names.
     def set_names(address, names)
       @hosts[address] = names
-      modified = true
+      @modified = true
     end
 
     # Add another name to the list for address (which may be empty so far)
@@ -90,7 +90,7 @@ module Yast
       @hosts[address] = [] if @hosts[address].nil?
       @hosts[address] << name
 
-      modified = true
+      @modified = true
     end
 
     def NeedDummyIP
@@ -371,6 +371,7 @@ module Yast
     def GetModified
       @modified
     end
+
     # Function sets internal variable, which indicates, that any
     # settings were modified, to "true"
     def SetModified
@@ -379,7 +380,6 @@ module Yast
       nil
     end
 
-    publish :variable => :modified, :type => "boolean"
     publish :variable => :write_only, :type => "boolean"
     publish :function => :NeedDummyIP, :type => "boolean ()"
     publish :function => :EnsureHostnameResolvable, :type => "void ()"

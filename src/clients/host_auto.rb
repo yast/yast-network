@@ -72,7 +72,6 @@ module Yast
         @ret = Host.Summary
       # Reset configuration
       elsif @func == "Reset"
-        Host.modified = false
         Host.Import({})
         @ret = {}
       # Change configuration (run AutoSequence)
@@ -140,11 +139,6 @@ module Yast
       # EOF
     end
 
-    # Return a modification status
-    # @return true if data was modified
-    def Modified
-      Host.modified
-    end
   end
 end
 
