@@ -46,10 +46,10 @@ module Yast
       DUMP("Read")
       TEST(lambda { Host.Read }, [@READ], nil)
 
-      names = Host.hosts["10.0.0.1"]
+      names = Host.name_map["10.0.0.1"]
       Host.Update("", "newname", ["10.0.0.42"])
 
-      new_names = Host.hosts["10.0.0.1"]
+      new_names = Host.name_map["10.0.0.1"]
       Assert.Equal(names, new_names)
 
       nil
