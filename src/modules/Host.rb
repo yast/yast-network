@@ -57,9 +57,6 @@ module Yast
       # "hosts" file location
       @hosts_file = "/etc/hosts"
 
-      # Only write configuration
-      @write_only = false
-
       @initialized = false
     end
 
@@ -380,7 +377,6 @@ module Yast
       nil
     end
 
-    publish :variable => :write_only, :type => "boolean"
     publish :function => :NeedDummyIP, :type => "boolean ()"
     publish :function => :EnsureHostnameResolvable, :type => "void ()"
     publish :function => :Read, :type => "boolean ()"

@@ -118,7 +118,6 @@ module Yast
       elsif @func == "Write"
         Yast.import "Progress"
         @progress_orig = Progress.set(false)
-        Host.write_only = true
         @ret = Host.Write
         Progress.set(@progress_orig)
       elsif @func == "SetModified"
