@@ -1341,7 +1341,7 @@ module Yast
 
       @fwzone_initial = fwzone
 
-      host_list = Ops.get(Host.hosts, LanItems.ipaddr, [])
+      host_list = Host.names(LanItems.ipaddr)
       if Ops.greater_than(Builtins.size(host_list), 1)
         Builtins.y2milestone(
           "More than one hostname for single IP detected, using the first one only"
@@ -1543,7 +1543,7 @@ module Yast
           ip_changed = LanItems.ipaddr !=
             Ops.get_string(@settings, "IPADDR", "")
           if ip_changed
-            Ops.set(Host.hosts, LanItems.ipaddr, [])
+            Host.set_names(LanItems.ipaddr, [])
             Builtins.y2milestone("IP has changed")
             Host.SetModified
           end
@@ -1555,7 +1555,7 @@ module Yast
 
           if @hostname_initial != Ops.get_string(@settings, "HOSTNAME", "") || ip_changed
             if Ops.get_string(@settings, "HOSTNAME", "") == ""
-              Ops.set(Host.hosts, LanItems.ipaddr, [])
+              Host.set_names(LanItems.ipaddr, [])
             else
               Host.Update(
                 @hostname_initial,

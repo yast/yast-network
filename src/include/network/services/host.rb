@@ -84,11 +84,12 @@ module Yast
       max = 0
       table_items = []
       deleted_items = []
+      hosts = Host.name_map
 
-      Builtins.y2debug("hosts=%1", Host.hosts)
+      Builtins.y2debug("hosts=%1", hosts)
 
       # make ui items from the hosts list
-      Builtins.maplist(Host.hosts) do |host, names|
+      Builtins.maplist(hosts) do |host, names|
         if Ops.less_than(Builtins.size(names), 1)
           Builtins.y2error("Invalid host: %1, (%2)", host, names)
           next
@@ -298,7 +299,7 @@ module Yast
         elsif ret == :next
           # check_
           if Host.modified
-            Host.hosts = {}
+            Host.clear
             Builtins.foreach(table_items) do |row|
               value = Builtins.mergestring(
                 Builtins.prepend(
@@ -308,20 +309,12 @@ module Yast
                 " "
               )
               key = Ops.get_string(row, 1, "")
-              if !Builtins.haskey(Host.hosts, key)
-                Ops.set(Host.hosts, key, [value])
-              else
-                Ops.set(
-                  Host.hosts,
-                  key,
-                  Builtins.add(Ops.get(Host.hosts, key, []), value)
-                )
-              end
+              Host.add_name(key, value)
             end
             #deleted entries need to be set to [],
             #so that ini-agent does not keep them in
             #config file (#455862)
-            Builtins.foreach(deleted_items) { |d| Ops.set(Host.hosts, d, []) }
+            Builtins.foreach(deleted_items) { |d| Host.set_names(d, []) }
           end
           break
         else
@@ -332,7 +325,7 @@ module Yast
 
 
       Builtins.y2debug("table_items=%1", table_items)
-      Builtins.y2debug("hosts=%1", Host.hosts)
+      Builtins.y2debug("hosts=%1", hosts)
 
       Convert.to_symbol(ret)
     end
