@@ -46,7 +46,6 @@ module Yast
       Yast.import "String"
       Yast.import "Mode"
       Yast.import "Arch"
-      Yast.import "LanUdevAuto"
       Yast.import "Storage"
 
       Yast.include self, "network/routines.rb"
