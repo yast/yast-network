@@ -207,7 +207,7 @@ module Yast
       end
 
       if !rules.empty? && AllowUdevModify()
-        SetAllLinksDown() if !Linuxrc.usessh
+        SetAllLinksDown() if !(Linuxrc.usessh || Linuxrc.vnc)
 
         log.info("Writing AY udev rules for network")
 
